@@ -329,7 +329,7 @@ static void next_stage(u8 *g, int stage, u32 line)
 /* a game mode (+8) with no next stage: a fatal message */
 static void no_next(u8 *g)
 {
-	GAME_FN(sys_fatalError, 0x46c710, void, char *, const char *, int, int, int)((char *)OBJ(g_logConsole), (const char *)STR(0x4c5060, "next submode not defined(W%d:P%d:S%d)..."), GS->network, GS->inputState,
+	sys_fatalErrorN((char *)OBJ(g_logConsole), (const char *)STR(0x4c5060, "next submode not defined(W%d:P%d:S%d)..."), GS->network, GS->inputState,
 	                                                             GS->loadStage);
 }
 
@@ -458,9 +458,9 @@ u32 THISCALL (game_processLoadingMode)(u8 *g)
 		log_message((int)STAGE(g), 1, 0, (const char *)STR(0x4c5198, ".load zone information"));
 		keep_alive(g);
 		if (!map_loadGroundInfoFrom(STAGE(g), bfd_name(g, path)))
-			GAME_FN(sys_fatalError, 0x46c710, void, char *, const char *)((char *)OBJ(g_logConsole), (const char *)STR(0x4c4598, "file damaged!"));
+			sys_fatalErrorN((char *)OBJ(g_logConsole), (const char *)STR(0x4c4598, "file damaged!"));
 		if (g_missionStage != GS->missionNumber)
-			GAME_FN(sys_fatalError, 0x46c710, void, char *, const char *)((char *)OBJ(g_logConsole), (const char *)STR(0x4c4598, "file damaged!"));
+			sys_fatalErrorN((char *)OBJ(g_logConsole), (const char *)STR(0x4c4598, "file damaged!"));
 		mode = GS->network;
 		if (mode == 0 || mode == 1 || mode == 3)
 			next_stage(g, 4, STR(0x4c5180, ".LOAD OBJECT"));   /* .LOAD OBJECT */

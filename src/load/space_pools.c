@@ -53,7 +53,7 @@ static void *take_free(u8 *space, SpacePool *pool, int next, int prev, Clear cle
 	Space *sp = (Space *)space;
 	u8 *r = pool->freeHead;
 	if (!r) {
-		GAME_FN(sys_fatalError, 0x46c710, void, void *, const char *, int, int, int, int, int, int, int, int)(   /* sys_fatalError */
+		sys_fatalErrorN(   /* sys_fatalError */
 			(void *)OBJ(g_logCollisionVolume), (const char *)RELOC(format), sp->planes.used, sp->planes.count, sp->nodes.used,
 			sp->nodes.count, sp->units.used, sp->units.count, sp->blocks.used,
 			sp->blocks.count);
@@ -86,7 +86,7 @@ void *THISCALL (space_getNextFreeBlockPtrBy)(u8 *space, const u32 *mn, const u32
 #define SP sp   /* the same by its fields (src/scene.fields) */
 	u32 *block = (*(u32 * *)&SP->blocks.freeHead);
 	if (!block) {
-		GAME_FN(sys_fatalError, 0x46c710, void, char *, const char *, int, int, int, int, int, int, int, int)((char *)OBJ(g_logCollisionVolume), (const char *)STR(0x4c7924, "not enoush free block-getNextFreeBloc..."),
+		sys_fatalErrorN((char *)OBJ(g_logCollisionVolume), (const char *)STR(0x4c7924, "not enoush free block-getNextFreeBloc..."),
 			SP->planes.used, SP->planes.count, SP->nodes.used, SP->nodes.count, SP->units.used, SP->units.count, SP->blocks.used, SP->blocks.count);
 		return 0;
 	}

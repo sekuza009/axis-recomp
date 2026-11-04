@@ -4,7 +4,7 @@
 #include <string.h>
 
 #define FIELD(type, obj, offset) GAME_VAR(type, (u8 *)RELOC(obj) + (offset))
-#define fatal4(format, a, b) GAME_FN(sys_fatalError, 0x46c710, void, char *, const char *, int, int)((char *)OBJ(g_logStage), (const char *)RELOC(format), a, b)
+#define fatal4(format, a, b) sys_fatalErrorN((char *)OBJ(g_logStage), (const char *)RELOC(format), a, b)
 
 /* 0x48b4a0 (thiscall on the scene): the way points: their count (+0xe3b034) and 0x14-byte records (+0xe36214), each
    given its run of 0x30-byte actor commands (+0x10: from +0xdc0f10; +0xc: its length); the commands' total against +0xe36210.
@@ -55,11 +55,11 @@ int THISCALL (map_loadItemInfoFrom)(u8 *scene, const char *path)
 #define crt_fread(p, size, count, f) GAME_CDECL(0x49e836, u32, void *, u32, u32, void *)(p, size, count, f)
 	void *f = crt_fopen(path, (const char *)STR(0x4ad170, "rb"));
 	if (!f)
-		GAME_FN(sys_fatalError, 0x46c710, void, char *, const char *, const char *)((char *)OBJ(g_logStage), (const char *)STR(0x4c7bd4, "can not read file %s - loadItemInfoFr..."), path);
+		sys_fatalErrorN((char *)OBJ(g_logStage), (const char *)STR(0x4c7bd4, "can not read file %s - loadItemInfoFr..."), path);
 	u32 version;
 	crt_fread(&version, 4, 1, f);
 	if (version != 0x1201)
-		GAME_FN(sys_fatalError, 0x46c710, void, char *, const char *, const char *)((char *)OBJ(g_logStage), (const char *)STR(0x4c7b94, "incorrect file version, remove the fi..."), path);
+		sys_fatalErrorN((char *)OBJ(g_logStage), (const char *)STR(0x4c7b94, "incorrect file version, remove the fi..."), path);
 	int *count = &((Stage *)scene)->itemTypeCount;
 	fread_scrambled(count, 4, 1, f);
 	fread_scrambled(st->itemTypes, 0x90, *count, f);

@@ -298,7 +298,7 @@ void *THISCALL (image_initBy)(u8 *image, const char *path)
 {
 	BmpFile *bmp = (BmpFile *)image;
 #define crt_fread(p, size, count, f) GAME_CDECL(0x49e836, u32, void *, u32, u32, void *)(p, size, count, f)
-#define fatal(text) GAME_FN(sys_fatalError, 0x46c710, void, char *, const char *)((char *)OBJ(g_logBMPRGBFile), (const char *)RELOC(text))
+#define fatal(text) sys_fatalErrorN((char *)OBJ(g_logBMPRGBFile), (const char *)RELOC(text))
 	if (bmp->file)
 		fclose(bmp->file);
 	void *f = bmp->file = crt_fopen(path, (const char *)STR(0x4ad170, "rb"));
@@ -442,7 +442,7 @@ void THISCALL (image_copyTo)(u8 *image, u8 *dst, int dw, int dh, int depth, int 
 	if (w <= 0 || h <= 0)
 		return;
 	if (w > 0x400)
-		GAME_FN(sys_fatalError, 0x46c710, void, char *, const char *)((char *)OBJ(g_logBMPRGBFile), (const char *)STR(0x4c5984, "temporary imageWidthA exceeds _SIZE_O..."));
+		sys_fatalErrorN((char *)OBJ(g_logBMPRGBFile), (const char *)STR(0x4c5984, "temporary imageWidthA exceeds _SIZE_O..."));
 	crt_fseek(f, bmp->dataOffset + ((bmp->height - sy - h) * bmp->width + sx) * 3, 0);
 	u8 row[0xc00];
 	int first = topDown ? dy : h - 1 + dy, step = topDown ? dw : -dw;
@@ -463,7 +463,7 @@ void THISCALL (image_copyTo)(u8 *image, u8 *dst, int dw, int dh, int depth, int 
 				p4[k * 4 + 3] = 0xff;
 			}
 		else
-			GAME_FN(sys_fatalError, 0x46c710, void, char *, const char *)((char *)OBJ(g_logBMPRGBFile), (const char *)STR(0x4c5964, "invalid bufferDepthA-copyTo()"));
+			sys_fatalErrorN((char *)OBJ(g_logBMPRGBFile), (const char *)STR(0x4c5964, "invalid bufferDepthA-copyTo()"));
 		crt_fseek(f, (bmp->width - w) * 3, 1);
 		p3 += step * 3;
 		p4 += step * 4;
@@ -548,9 +548,9 @@ u8 *THISCALL (game_loadAllData)(u8 *g)
 	item_initTextures(s, STR(0x4c45a8, "Stage"), STR(0x4b1784, "Map"), STR(0x4c45b0, "Texture"), STR(0x4c45b8, "Shape"),
 	                                                                                  STR(0x4c45c0, "Skeleton"), STR(0x4c45cc, "Actor"), STR(0x4c45d4, "Bullet"), STR(0x4c45dc, "Effect"), STR(0x4c45e4, "Scene"));   /* item_initTextures */
 	if (!PATCHED_THISCALL(0x460920, int, void *, const char *)(s, (const char *)STR(0x4b4418, "Data/Component.dat")))   /* catalogue_loadComponents (the patch DLL adds the KYRIE parts here) */
-		GAME_FN(sys_fatalError, 0x46c710, void, char *, const char *)((char *)OBJ(g_logConsole), (const char *)STR(0x4c4598, "file damaged!"));
+		sys_fatalErrorN((char *)OBJ(g_logConsole), (const char *)STR(0x4c4598, "file damaged!"));
 	if (!map_loadItemInfoFrom(s, (const char *)STR(0x4c4588, "Data/Item.dat")))   /* map_loadItemInfoFrom */
-		GAME_FN(sys_fatalError, 0x46c710, void, char *, const char *)((char *)OBJ(g_logConsole), (const char *)STR(0x4c4598, "file damaged!"));
+		sys_fatalErrorN((char *)OBJ(g_logConsole), (const char *)STR(0x4c4598, "file damaged!"));
 	memcpy(GS->cameraPresets, k_cameraPresets, sizeof k_cameraPresets);
 	GS->cameraMode = 1;
 	stage_selectActor((Stage *)s, -1);
@@ -601,7 +601,7 @@ static void zero_dwords(u8 *at, int n)
 void THISCALL (app_requireCd)(u8 *g, u32 a, int mode)
 {
 	if (!cd_findDrive())
-		GAME_FN(sys_fatalError, 0x46c710, void, char *, const char *)((char *)OBJ(g_logConsole), g_insertCdMessage);
+		sys_fatalErrorN((char *)OBJ(g_logConsole), g_insertCdMessage);
 	GS->client = a;
 	GS->network = mode;
 	GS->objectsMode = 0;

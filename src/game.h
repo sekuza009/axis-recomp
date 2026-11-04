@@ -207,7 +207,7 @@ typedef struct { u32 vtable; void *managers[6]; i32 count; } TextureSets;   /* t
 #define sys_errorMessage(out, format, a, b) GAME_FN(sys_errorMessage, 0x46c5f0, void, char *, const char *, int, int)(out, format, a, b)
 #define ObjectList_load(self, a, b, c, d, e, f, g, h, i, j, limit) GAME_THISFN(ObjectList_load, 0x46f4e0, void, void *, void *, void *, u32, void *, u32, void *, u32, u32, u32, void *, u32)(self, a, b, c, d, e, f, g, h, i, j, limit)
 #define shape_getByName(cache, name, flag) GAME_THISFN(shape_getByName, 0x466dc0, u32, void *, const char *, int)(cache, name, flag)
-#define sys_fatalErrorN(out, format, ...) GAME_FN(sys_fatalError, 0x46c710, void, char *, const char *, ...)(out, format, __VA_ARGS__)   /* (several values) */
+#define sys_fatalErrorN(out, ...) GAME_FN(sys_fatalError, 0x46c710, void, char *, const char *, ...)((char *)(out), __VA_ARGS__)   /* (a format and any values) */
 #define script_processCommandBy(scene, a, i, b) GAME_THISFN(script_processCommandBy, 0x483770, void, void *, int, int, int)(scene, a, i, b)
 #define space_resetPlanes(space) GAME_THISFN(space_resetPlanes, 0x481520, int, void *)(space)
 #define space_resetNodes(space) GAME_THISFN(space_resetNodes, 0x481630, int, void *)(space)

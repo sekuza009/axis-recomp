@@ -87,7 +87,7 @@ long double THISCALL (timer_getGameTime)(u8 *t)
 {
 	TimeSync *ts = (TimeSync *)t;
 #define QueryPerformanceCounter(out) IMPORT(0x4a9140, int, u64 *)(out)
-#define fatal() GAME_FN(sys_fatalError, 0x46c710, void, char *, const char *)((char *)OBJ(g_logTimeSync), (const char *)STR(0x4c7b80, "invalid system time"))
+#define fatal() sys_fatalErrorN((char *)OBJ(g_logTimeSync), (const char *)STR(0x4c7b80, "invalid system time"))
 	if (ts->started == 0) {
 		if (!QueryPerformanceFrequency(&ts->frequency))
 			fatal();

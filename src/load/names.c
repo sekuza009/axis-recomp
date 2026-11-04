@@ -263,7 +263,7 @@ int THISCALL (tex_textureFileExist)(u8 *tm, const char *name)
 void THISCALL (tex_initBy)(u8 *tm, const char *dir, int slots, int format, int w, int h, int linear, int mipmaps)
 {
 #define crt_fread(p, size, count, f) GAME_CDECL(0x49e836, u32, void *, u32, u32, void *)(p, size, count, f)
-#define fatal(text, ...) GAME_FN(sys_fatalError, 0x46c710, void, char *, const char *, ...)((char *)OBJ(g_logTexture), (const char *)RELOC(text), ##__VA_ARGS__)
+#define fatal(text, ...) sys_fatalErrorN((char *)OBJ(g_logTexture), (const char *)RELOC(text), ##__VA_ARGS__)
 	static const u32 names[6][3] = { { 64, 64, STR(0x4b3f54, "Image0") }, { 128, 64, STR(0x4b3f4c, "Image1") }, { 128, 128, STR(0x4b3f3c, "Image3") },
 	                                 { 256, 64, STR(0x4b3f44, "Image2") }, { 256, 128, STR(0x4b3f34, "Image4") }, { 256, 256, STR(0x4b3f2c, "Image5") } };
 	if (TM->ready == 1)
@@ -392,7 +392,7 @@ static void tex_path(u8 *m, char *path, u32 with_dir, u32 plain, const char *nam
 static void size_check(u8 *m, int w, int h)
 {
 	if (W(m) != w || H(m) != h)
-		GAME_FN(sys_fatalError, 0x46c710, void, char *, const char *, int, int, int, int)((char *)OBJ(g_logTexture), (const char *)STR(0x4b4104, "mismatching image size(%dx%d/%dx%d)-b..."), W(m), H(m), w, h);
+		sys_fatalErrorN((char *)OBJ(g_logTexture), (const char *)STR(0x4b4104, "mismatching image size(%dx%d/%dx%d)-b..."), W(m), H(m), w, h);
 }
 
 /* the image's alpha (each pixel's 4th byte): the grey of the ALPHA image, or opaque */

@@ -174,7 +174,7 @@ int (sound_initSoundTable)(const char *file, int volume)
 	sound_setVolume(volume);   /* sound_setVolume */
 	void *f = crt_fopen(file, (const char *)STR(0x4ad170, "rb"));
 	if (!f)
-		GAME_FN(sys_fatalError, 0x46c710, void, void *, const char *, const char *)((void *)OBJ(g_logSound), (const char *)STR(0x4b42e8, "can't open file %s - initSoundTable()"), file);   /* sys_fatalError */
+		sys_fatalErrorN((void *)OBJ(g_logSound), (const char *)STR(0x4b42e8, "can't open file %s - initSoundTable()"), file);   /* sys_fatalError */
 	int index;
 	char name[0x100];
 	fread_scrambled(&index, 4, 1, f);

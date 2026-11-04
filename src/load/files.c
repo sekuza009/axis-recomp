@@ -101,7 +101,7 @@ u32 (file_readScrambled)(u8 *p, u32 size, u32 count, void *f)
 static void *dat_entry(int index, const char *name, u32 table, u32 file, u32 log)
 {
 	if (index < 0) {
-		GAME_FN(sys_fatalError, 0x46c710, void, void *, const char *, const char *)((void *)RELOC(log), (const char *)STR(0x4b3f80, "can't find item(%s) - getItemFileBy()"), name);   /* sys_fatalError */
+		sys_fatalErrorN((void *)RELOC(log), (const char *)STR(0x4b3f80, "can't find item(%s) - getItemFileBy()"), name);   /* sys_fatalError */
 		return 0;
 	}
 	GAME_CDECL(0x49e91e, int, void *, int, int)(GAME_VAR(void *, file), FIELD(int, GAME_VAR(u8 *, table) + index * 0x44, 0x40), 0);   /* fseek */
@@ -278,11 +278,11 @@ static u32 dat_open(u32 count, const char *format, void *log)
 	crt_sprintf(path, format);   /* sprintf */
 	GAME_VAR(void *, file) = crt_fopen(path, (const char *)STR(0x4ad170, "rb"));
 	if (!GAME_VAR(void *, file))
-		GAME_FN(sys_fatalError, 0x46c710, void, void *, const char *, const char *)(log, (const char *)STR(0x4b3ee4, "can't open file(%s) - initBy()"), path);
+		sys_fatalErrorN(log, (const char *)STR(0x4b3ee4, "can't open file(%s) - initBy()"), path);
 	GAME_CDECL(0x49e836, u32, void *, u32, u32, void *)((void *)RELOC(count), 4, 1, GAME_VAR(void *, file));   /* fread */
 	GAME_VAR(void *, table) = crt_malloc(GAME_VAR(int, count) * 0x44);
 	if (!GAME_VAR(void *, table))
-		GAME_FN(sys_fatalError, 0x46c710, void, void *, const char *, int)(log, (const char *)STR(0x4b3eb4, "insufficient memory for itemBuffer(%d..."), GAME_VAR(int, count));
+		sys_fatalErrorN(log, (const char *)STR(0x4b3eb4, "insufficient memory for itemBuffer(%d..."), GAME_VAR(int, count));
 	return GAME_CDECL(0x49e836, u32, void *, u32, u32, void *)(GAME_VAR(void *, table), 0x44, GAME_VAR(int, count),
 	                                                          GAME_VAR(void *, file));
 }

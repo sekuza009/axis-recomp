@@ -318,7 +318,7 @@ static int tree_lookup(u8 *cache, const char *key, char *out, u32 no_room, u32 f
 	Manager *mg = (Manager *)cache;
 	*added = 0;
 	if (mg->capacity == 0)
-		GAME_FN(sys_fatalError, 0x46c710, void, char *, const char *)(out, (const char *)RELOC(no_room));
+		sys_fatalErrorN(out, (const char *)RELOC(no_room));
 	u8 *nodes = mg->nodes, *node = nodes;
 	u8 **link = NULL;
 	if (mg->count != 0)
