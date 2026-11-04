@@ -1455,7 +1455,7 @@ typedef struct Scene {
 	i32 event6A;   /* +0x2343247: (unclear) kind 6: two values (their low bytes sent) */
 	i32 event6B;   /* +0x234324b */
 	i32 event6Pending;   /* +0x234324f */
-	u8 _pad2343253[0x4];
+	i32 itemLevelsTaken;   /* +0x2343253: (by use) 1: the host's item levels (game packet 14) taken in; later ones ignored */
 	i32 mouseX;   /* +0x2343257: (by use) the cursor this frame (g_mouseX), screen pixels */
 	i32 mouseY;   /* +0x234325b */
 	i32 holdAltitude;   /* +0x234325f: (by use) the movement keys held for the local actor (right button / its binding) */
@@ -2667,6 +2667,7 @@ _Static_assert(offsetof(Scene, event13Pending) == 0x2343243 && sizeof(((Scene *)
 _Static_assert(offsetof(Scene, event6A) == 0x2343247 && sizeof(((Scene *)0)->event6A) == 0x4, "scene.fields: Scene.event6A");
 _Static_assert(offsetof(Scene, event6B) == 0x234324b && sizeof(((Scene *)0)->event6B) == 0x4, "scene.fields: Scene.event6B");
 _Static_assert(offsetof(Scene, event6Pending) == 0x234324f && sizeof(((Scene *)0)->event6Pending) == 0x4, "scene.fields: Scene.event6Pending");
+_Static_assert(offsetof(Scene, itemLevelsTaken) == 0x2343253 && sizeof(((Scene *)0)->itemLevelsTaken) == 0x4, "scene.fields: Scene.itemLevelsTaken");
 _Static_assert(offsetof(Scene, mouseX) == 0x2343257 && sizeof(((Scene *)0)->mouseX) == 0x4, "scene.fields: Scene.mouseX");
 _Static_assert(offsetof(Scene, mouseY) == 0x234325b && sizeof(((Scene *)0)->mouseY) == 0x4, "scene.fields: Scene.mouseY");
 _Static_assert(offsetof(Scene, holdAltitude) == 0x234325f && sizeof(((Scene *)0)->holdAltitude) == 0x4, "scene.fields: Scene.holdAltitude");

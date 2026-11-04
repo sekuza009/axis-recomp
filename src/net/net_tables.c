@@ -1436,8 +1436,8 @@ static void send_packet(u8 *s, u8 *packet)
 	((Scene *)s)->packetsSent++;
 	if (((Scene *)s)->recording == 1) {
 		int size = 0x40;
-		file_writeScrambled(s + 0x2340d29, 4, 1, ((Scene *)s)->replayFile);
-		file_writeScrambled(s + 0x234240d, 4, 1, ((Scene *)s)->replayFile);
+		file_writeScrambled(&((Scene *)s)->recordTime, 4, 1, ((Scene *)s)->replayFile);
+		file_writeScrambled(&((Scene *)s)->localPlayer, 4, 1, ((Scene *)s)->replayFile);
 		file_writeScrambled(&size, 4, 1, ((Scene *)s)->replayFile);
 		file_writeScrambled(packet, 1, size, ((Scene *)s)->replayFile);
 	}
@@ -1453,8 +1453,8 @@ static void send_packet(u8 *s, u8 *packet)
 static void THISCALL __attribute__((used)) net_sendPlayerLevels_body(u8 *s, u8 *packet)
 {
 	packet[1] = 0xe;
-	for (int i = 0; i < FIELD(int, s, 0x22f0400) && i < 0x7c; i++) {
-		u8 *player = s + 0x22ee4c0 + i * 0x28;
+	for (int i = 0; i < SCENE_STAGE(s)->itemCount && i < 0x7c; i++) {
+		u8 *player = (u8 *)&SCENE_STAGE(s)->items[i];   /* (an item, its level sent) */
 		if (i % 2 == 0)
 			packet[2 + i / 2] = 0;
 		if (FIELD(int, player, 0) < 0 || FIELD(int, player, 0x20) != 1)
@@ -1476,7 +1476,7 @@ PACKET_ENTRY(net_sendPlayerLevels, 0);
    leaves */
 static void THISCALL __attribute__((used)) net_sendPlayerInfo_body(u8 *s, int p, u8 *packet)
 {
-	int *flag = (int *)(s + 0x234300a + p * 0x10);
+	int *flag = &((Scene *)s)->sendFlags[p][1];
 	if (!*flag)
 		return;
 	u8 *r = (u8 *)&((Scene *)s)->playerRecords[p];
@@ -1671,7 +1671,7 @@ static void THISCALL __attribute__((used)) net_sendPlayerState_body(u8 *g, int p
 		u8 *o = packet + 0x13 + k * 9;
 		if (*slot < 0)
 			continue;
-		u8 *shot = g + 0x22225fc + *slot * 0x4e8;
+		u8 *shot = (u8 *)&SCENE_STAGE(g)->bullets[*slot];
 		if (((Bullet *)shot)->active != 1) {
 			*slot = -1;
 			continue;
@@ -1685,7 +1685,7 @@ static void THISCALL __attribute__((used)) net_sendPlayerState_body(u8 *g, int p
 			o[0] |= 4;
 			w = (u16)((Bullet *)shot)->hitActor;
 		} else if ((*(void * *)&((Bullet *)shot)->hit))
-			w = (u16)(array_indexOf((*(void * *)&((Bullet *)shot)->hit), GAME_VAR(int, g + 0x1f40ec), 0xac) + 1);
+			w = (u16)(array_indexOf((*(void * *)&((Bullet *)shot)->hit), (int)SCENE_STAGE(g)->collisionPlanes, 0xac) + 1);
 		else
 			w = 0;
 		memcpy(o + 1, &w, 2);
@@ -1736,10 +1736,9 @@ static void THISCALL __attribute__((used)) net_sendGamePacket_body(u8 *s, int p,
 		{ 0x23423e5, 0x15de6c8, 682, 0x15bd1f8 }, { 0x23423e9, 0x15fff84, 687, 0x15de6cc },
 		{ 0x23423ed, 0x163b588, 0x4c0, 0x15fff88 }, { 0x23423f1, 0x1679b34, 1277, 0x163b58c },
 		{ 0x23423f5, 0x16c5178, 1544, 0x1679b38 } };
-	int *flag = (int *)(s + 0x2343006 + p * 0x10);
+	int *flag = &((Scene *)s)->sendFlags[p][0];
 	if (!*flag)
 		return;
-	u8 *a = s + p * 0x8888;
 	packet[1] = 1;
 	packet[2] = (u8)p;
 	if (((Scene *)s)->rotationCount > 0 && !(((Scene *)s)->endTime > k_0f)) {
@@ -1748,10 +1747,10 @@ static void THISCALL __attribute__((used)) net_sendGamePacket_body(u8 *s, int p,
 		packet[4] = s[0x1f1cb4];
 		packet[5] = s[0x1f166c + k];
 		packet[6] = s[0x1f1cb8];
-		memcpy(packet + 7, s + 0xbe3000, 2);
+		memcpy(packet + 7, &((Scene *)s)->missionNumber, 2);
 	} else
 		memset(packet + 3, 0xff, 6);
-	memcpy(packet + 9, s + 0x22f0408, 4);
+	memcpy(packet + 9, &((Scene *)s)->elapsed, 4);
 	float clock = f32(fld_m(&((Scene *)s)->timeFraction));
 	memcpy(packet + 0xd, &clock, 4);
 	u32 turn = ((u32)((Scene *)s)->geometryCheckTurn);
@@ -1762,14 +1761,14 @@ static void THISCALL __attribute__((used)) net_sendGamePacket_body(u8 *s, int p,
 	memcpy(packet + 0x2e, &v, 4);
 	v = sample(s, 0x23423f9, 0x175522c, 2950, 0x16c517c, packet + 0x32);
 	memcpy(packet + 0x34, &v, 4);
-	memcpy(packet + 0x11, a + 0x1eccb6c, 4);
-	memcpy(packet + 0x15, a + 0x1eccb70, 4);
+	memcpy(packet + 0x11, &((Scene *)s)->players[p].timePlayed, 4);
+	memcpy(packet + 0x15, &((Scene *)s)->players[p].timeExtra, 4);
 	u32 twice[2] = { 0, 0 };
 	for (int i = 0; i < 16; i++) {
 		if (net_playerInUse(i) != 1)
 			continue;
 		for (int k = 0; k < 2; k++) {
-			int *f = (int *)(s + 0x234300e + i * 0x10 + k * 4);
+			int *f = &((Scene *)s)->sendFlags[i][2 + k];
 			if (*f == 1) {
 				*f = 0;
 				twice[k] |= 1u << i;
@@ -1777,12 +1776,12 @@ static void THISCALL __attribute__((used)) net_sendGamePacket_body(u8 *s, int p,
 		}
 	}
 	memcpy(packet + 0x19, twice, 8);
-	memcpy(packet + 0x21, a + 0x1eccb54, 2);
-	memcpy(packet + 0x23, a + 0x1eccb58, 2);
-	memcpy(packet + 0x25, s + 0x2221fb8, 2);
-	memcpy(packet + 0x27, s + 0x2221fbc, 2);
-	memcpy(packet + 0x29, s + 0x22f0404, 2);
-	GAME_VAR(int, s + 0x22f0404) = -1;
+	memcpy(packet + 0x21, &((Scene *)s)->players[p].kills, 2);
+	memcpy(packet + 0x23, &((Scene *)s)->players[p].deaths, 2);
+	memcpy(packet + 0x25, &((Scene *)s)->teamScores[0], 2);
+	memcpy(packet + 0x27, &((Scene *)s)->teamScores[1], 2);
+	memcpy(packet + 0x29, &SCENE_STAGE(s)->lastPickup, 2);
+	SCENE_STAGE(s)->lastPickup = -1;
 	*flag = 0;
 	send_packet(s, packet);
 }
@@ -1904,8 +1903,8 @@ void THISCALL (net_processGamePacket)(u8 *g, u32 from, int type, const char *pkt
 			yaw = f32(fsub_m(fld_m(&yaw), K(0x4a94c8)));
 		float pitch = f32(fmul_m((long double)b[0xc], K(0x4aa494)));
 		if (GAME_VAR(int, PLAYER(i)) == 0) {
-			G(int, 0x2343006 + GS->localPlayer * 0x10) = 1;
-			G(int, 0x234300e + i * 0x10) = 1;
+			GS->sendFlags[GS->localPlayer][0] = 1;
+			GS->sendFlags[i][2] = 1;
 			return;
 		}
 		u8 *ac = ACTOR(i);
@@ -2003,7 +2002,7 @@ void THISCALL (net_processGamePacket)(u8 *g, u32 from, int type, const char *pkt
 				}
 				GS->nextMap = pkt[4];
 				GS->nextMode = pkt[6];
-				if (g_missionStage == pkt[3] && G(int, 0xbe3000) != *(const short *)(pkt + 7)) {
+				if (g_missionStage == pkt[3] && GS->missionNumber != *(const short *)(pkt + 7)) {
 					GS->roundClear2 = 1;
 					GS->dataLossCode = 1;
 				}
@@ -2027,7 +2026,7 @@ void THISCALL (net_processGamePacket)(u8 *g, u32 from, int type, const char *pkt
 		BITS(((Player *)ac)->timeExtra) = *(const u32 *)(pkt + 0x15);
 		int me = GS->localPlayer;
 		if (*(const u32 *)(pkt + 0x19) & 1u << (me & 0x1f))
-			G(int, 0x234300a + me * 0x10) = 1;
+			GS->sendFlags[me][1] = 1;
 		if (*(const u32 *)(pkt + 0x1d) & 1u << (me & 0x1f))
 			GAME_VAR(int, PLAYER(me) + 0x47fce) = 0;
 		GAME_VAR(int, ACTOR(b[2]) + 0xe4) = *(const short *)(pkt + 0x21);
@@ -2037,11 +2036,11 @@ void THISCALL (net_processGamePacket)(u8 *g, u32 from, int type, const char *pkt
 			GS->teamScores[1] = *(const short *)(pkt + 0x27);
 		}
 		short item = *(const short *)(pkt + 0x29);
-		if ((GS->network != 3 || G(int, 0x1f35c4) > 0x1201) && item >= 0 && G(int, (item + 0xdf8ec) * 0x28) == 0) {
-			G(int, (item + 0xdf8ec) * 0x28) = 1;
-			G(int, 0x22ee4e4 + item * 0x28) = 0;
+		if ((GS->network != 3 || GS->replayVersion > 0x1201) && item >= 0 && SCENE_STAGE(g)->items[item].taken == 0) {
+			SCENE_STAGE(g)->items[item].taken = 1;
+			BITS(SCENE_STAGE(g)->items[item].fade) = 0;
 		}
-		if (GS->network == 3 && G(int, 0x1f35c4) >= 0x1202)
+		if (GS->network == 3 && GS->replayVersion >= 0x1202)
 			msg_newKing(g);   /* msg_newKing */
 		return;
 	}
@@ -2128,7 +2127,7 @@ void THISCALL (net_processGamePacket)(u8 *g, u32 from, int type, const char *pkt
 		player_setName(STAGE, b[2], pkt + 3);   /* player_setName */
 		actor_resetSlot(STAGE, b[2]);   /* actor_resetSlot */
 		actor_name(g, b[2], pkt + 3);
-		G(int, 0x234300a + GS->localPlayer * 0x10) = 1;
+		GS->sendFlags[GS->localPlayer][1] = 1;
 		msg_playerConnected(g, b[2]);
 		if (GS->client == 0)
 			net_sendPlayerLevels(g);   /* net_sendPlayerLevels */
@@ -2185,22 +2184,22 @@ void THISCALL (net_processGamePacket)(u8 *g, u32 from, int type, const char *pkt
 		GS->startTimer = 5.0f;
 		return;
 	case 14:
-		if (G(int, 0x2343253) == 1)
+		if (GS->itemLevelsTaken == 1)
 			return;
-		for (int k = 0; k < G(int, 0x22f0400) && k < 0x7c; k++) {
-			u8 *it = g + 0x22ee4c0 + k * 0x28;
-			if (GAME_VAR(int, it) < 0)
+		for (int k = 0; k < SCENE_STAGE(g)->itemCount && k < 0x7c; k++) {
+			MapItem *it = &SCENE_STAGE(g)->items[k];
+			if (it->type < 0)
 				continue;
 			u8 v = b[2 + k / 2];
 			int n = (k % 2 == 0 ? v : v >> 4) & 0xf;
 			if (n == 0)
-				GAME_VAR(int, it + 0x20) = GAME_VAR(int, it + 0x24) = 0;
+				it->taken = BITS(it->fade) = 0;
 			else {
-				GAME_VAR(int, it + 0x20) = 1;
-				GAME_VAR(float, it + 0x24) = f32(fmul_m((long double)n, K(0x4a9418)));
+				it->taken = 1;
+				it->fade = f32(fmul_m((long double)n, K(0x4a9418)));
 			}
 		}
-		G(int, 0x2343253) = 1;
+		GS->itemLevelsTaken = 1;
 		return;
 	}
 	GAME_FN(debug_traceStripped, 0x48b420, void, const char *)(pkt);   /* debug_traceStripped */
