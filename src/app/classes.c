@@ -499,10 +499,10 @@ u8 *THISCALL (game_loadAllData)(u8 *g)
 	VTABLE((u8 *)GS->view, STR(0x4aa24c, "04F"));
 	ViewVolume_clear((u8 *)GS->view);
 	CollisionVolume_ctor((u8 *)&st->space);   /* CollisionVolume_ctor */
-	VECTOR(s + 0x9cd000, 0x2c, 0x400);
+	VECTOR((u8 *)((Stage *)s)->mapLights.records, sizeof(Factor), 0x400);
 	VTABLE((u8 *)&((Stage *)s)->mapLights, VT(Light, 0x4aa248));
 	Light_clearCounts((u8 *)&((Stage *)s)->mapLights);
-	VECTOR(s + 0x9d8014, 0x2c, 0x400);
+	VECTOR((u8 *)((Stage *)s)->dynamicLights.records, sizeof(Factor), 0x400);
 	VTABLE((u8 *)&((Stage *)s)->dynamicLights, VT(Light, 0x4aa248));
 	Light_clearCounts((u8 *)&((Stage *)s)->dynamicLights);
 	Light_ctor((u8 *)&((Stage *)s)->actorLights);   /* Light_ctor */

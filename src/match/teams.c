@@ -61,24 +61,24 @@ void *THISCALL (scene_followedActor)(Scene *scene)
 	return (u8 *)&scene->players[i];
 }
 
-/* 0x472310: the factor pool (+0x9d8010) refilled: flagged (+0x9d800c), emptied (0x483d60), then a factor (kind
-   0xa1f23c) for each active actor, of (its +0x4ec + 0x4a9424) * 0x4aa410 at its +0x154, and for each active
-   projectile whose +0x7c is above 0x4a93e8, of that at its +0x10 */
+/* 0x472310: the dynamic lights refilled: flagged (dynamicLightsSet), emptied (0x483d60), then a white light for
+   each active actor, of (its glow + 1) * 2500 at its position, and for each active projectile whose size is above
+   0, of that at its position */
 void THISCALL (stage_refillFactors)(Stage *stage)
 {
 	u8 *pool = (u8 *)&((Stage *)stage)->dynamicLights;
-	GAME_VAR(int, (u8 *)stage + 0x9d800c) = 1;
+	stage->dynamicLightsSet = 1;
 	Light_clearCounts(pool);
 	for (int i = 0; i < stage->actorCount; i++) {
 		u8 *a = (u8 *)&stage->actors[i];
 		if (stage->actors[i].active == 1) {
 			float value = f32(fmul_m(fadd_m(fld_m(&((const Player *)a)->glow), (const float *)ADDR(k_1f)), k_2500f));
-			GAME_THISFN(factors_addDirected, 0x483f00, int, void *, u32, float, void *)(pool, OBJ(g_packedWhite), value, a + 0x154);   /* factors_addDirected */
+			GAME_THISFN(factors_addDirected, 0x483f00, int, void *, u32, float, void *)(pool, OBJ(g_packedWhite), value, ((Player *)a)->pos);   /* factors_addDirected */
 		}
 	}
 	for (int i = 0; i < stage->projectileCount; i++) {
-		u8 *p = (u8 *)&stage->projectiles[i];
-		if (stage->projectiles[i].active == 1 && *(const float *)(p + 0x7c) > k_0f)
-			GAME_THISFN(factors_addDirected, 0x483f00, int, void *, u32, u32, void *)(pool, OBJ(g_packedWhite), GAME_VAR(u32, p + 0x7c), p + 0x10);
+		Projectile *p = &stage->projectiles[i];
+		if (p->active == 1 && p->size > k_0f)
+			GAME_THISFN(factors_addDirected, 0x483f00, int, void *, u32, u32, void *)(pool, OBJ(g_packedWhite), BITS(p->size), p->pos);
 	}
 }
