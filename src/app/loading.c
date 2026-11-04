@@ -439,7 +439,7 @@ u32 THISCALL (game_processLoadingMode)(u8 *g)
 			while ((r = netq_receive(&from, &size, data)) != 0) {
 				if (r == 1)
 					net_processGamePacket(g, from, size, data);
-				GS->firstRoundClear[2]++;
+				GS->packetsReceived++;
 				netq_poll();
 			}
 		}

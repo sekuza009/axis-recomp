@@ -1433,7 +1433,7 @@ void (net_recv)(void)
 static void send_packet(u8 *s, u8 *packet)
 {
 	net_sendPacketData(0x40, packet);
-	((Scene *)s)->firstRoundClear[1]++;
+	((Scene *)s)->packetsSent++;
 	if (((Scene *)s)->recording == 1) {
 		int size = 0x40;
 		file_writeScrambled(s + 0x2340d29, 4, 1, ((Scene *)s)->replayFile);

@@ -176,39 +176,39 @@ static void count_down(u8 *s, u32 offset, const float *dt)
    the state (+0x233cc20) */
 int THISCALL (match_inputState2)(u8 *s)
 {
-#define FIELD(type, offset) GAME_VAR(type, s + (offset))
-	const float *dt = (const float *)(s + 0x44);
-	if (FIELD(int, 0x233cc28) == 0)
+#define SC ((Scene *)s)
+	const float *dt = &SC->frameTime;
+	if (SC->modeStarted == 0)
 		game_processGameModeInit(s);
 	(void)frameTimer_average(s);
-	long double second = fadd_m(fld_m(dt), (const float *)(s + 0x233cc34));
-	FIELD(float, 0x233cc34) = f32(second);
-	float window = f32(fadd_m(fld_m((const float *)(s + 0x2340c90)), dt));
-	FIELD(float, 0x2340c90) = window;
+	long double second = fadd_m(fld_m(dt), &SC->secondFraction);
+	SC->secondFraction = f32(second);
+	float window = f32(fadd_m(fld_m(&SC->windowTime), dt));
+	SC->windowTime = window;
 	count_down(s, 0x233cc40, dt);
 	count_down(s, 0x2342f02, dt);
 	count_down(s, 0x2340d39, dt);
 	if (second > k_1f) {
 		int whole = ftol(second);
-		FIELD(int, 0x233cc30) += whole;
-		FIELD(float, 0x233cc34) = f32(second - whole);
+		SC->wholeSeconds += whole;
+		SC->secondFraction = f32(second - whole);
 		if (window > k_0f) {
-			FIELD(float, 0x2340c88) = f32((long double)FIELD(int, 0x2340c80) / window);
-			FIELD(float, 0x2340c8c) = f32((long double)FIELD(int, 0x2340c84) / window);
+			SC->sendRate = f32((long double)SC->windowSent / window);
+			SC->receiveRate = f32((long double)SC->windowReceived / window);
 		} else
-			FIELD(int, 0x2340c88) = FIELD(int, 0x2340c8c) = 0;
-		FIELD(int, 0x2340c90) = FIELD(int, 0x2340c80) = FIELD(int, 0x2340c84) = 0;
+			(*(int *)&SC->sendRate) = (*(int *)&SC->receiveRate) = 0;
+		(*(int *)&SC->windowTime) = SC->windowSent = SC->windowReceived = 0;
 	}
 	match_combatInput(s);
 	game_processGameMode(s);
-	if (FIELD(int, 0x233cc20) == 2)
+	if (SC->inputState == 2)
 		PATCHED_THISCALL(0x48b386, void, void *)(s);   /* hud_pass; the patch DLL calls its hud_pass_wrap here */
-	if (FIELD(int, 0x23432cf) == 1) {
+	if (SC->quitAsked == 1) {
 		music_shutdown();
 		return 0;
 	}
-	return FIELD(int, 0x233cc20);
-#undef FIELD
+	return SC->inputState;
+#undef SC
 }
 
 #define S(type, offset) GAME_VAR(type, s + (offset))
@@ -998,18 +998,18 @@ u32 THISCALL (replay_frame)(u8 *s)
 		int y = gfx_getHeight() / 2;
 		input_setCursorPos(gfx_getWidth() / 2, y);
 		(*(int *)&SC->followTime) = (*(int *)&SC->presetTime) = (*(int *)&SC->screenshotUpload) = 0;
-		SC->roundClear3 = (*(int *)&SC->chatBlink) = 0;
+		SC->wholeSeconds = (*(int *)&SC->secondFraction) = 0;
 		(*(int *)&SC->recordTime) = (*(int *)&SC->replayTime) = 0;
 		events_clear((Scene *)s, 60.0f);
 	}
 	frameTimer_average(s);
 	/* the replay clock (+0x233cc30 whole seconds, +0x233cc34 the fraction) */
-	long double t = fadd_m(fld_m(&SC->chatBlink), &SC->frameTime);
-	SC->chatBlink = (float)t;
+	long double t = fadd_m(fld_m(&SC->secondFraction), &SC->frameTime);
+	SC->secondFraction = (float)t;
 	if (t > 1.0f) {
-		SC->roundClear3 += ftol(t);
-		int whole = ftol(fld_m(&SC->chatBlink));
-		SC->chatBlink = f32(fsubr_m((long double)whole, &SC->chatBlink));
+		SC->wholeSeconds += ftol(t);
+		int whole = ftol(fld_m(&SC->secondFraction));
+		SC->secondFraction = f32(fsubr_m((long double)whole, &SC->secondFraction));
 	}
 	match_resetInputState(s);
 	for (int k = 0; k < 7; k++)
@@ -1243,11 +1243,11 @@ u32 THISCALL (replay_frame)(u8 *s)
 			sprintf(text, (const char *)STR(0x4b0320, "%d"), n > 0 ? n : n + 10);
 			PATCHED_CALL(0x48a259, void, int, int, const char *, int)(0x28, 0x10, text, 0x10);   /* text_drawSized */
 		}
-		if (!(SC->chatBlink >= 0.5f)) {
+		if (!(SC->secondFraction >= 0.5f)) {
 			glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 			PATCHED_THISCALL(0x48a299, void, void *, int, int, int)(s, 0x20e, 0x10, 5);   /* replay_drawIcon */
 			text_setColor(1.0f, 1.0f, 1.0f, 1.0f);
-			sprintf(text, (const char *)STR(0x4c7cd8, "%02d:%02d"), SC->roundClear3 / 60, SC->roundClear3 % 60);
+			sprintf(text, (const char *)STR(0x4c7cd8, "%02d:%02d"), SC->wholeSeconds / 60, SC->wholeSeconds % 60);
 			PATCHED_CALL(0x48a2ff, void, int, int, const char *, int)(0x226, 0x10, text, 0x10);   /* text_drawSized */
 		}
 		PATCHED_THISCALL(0x48a309, void, void *)(s);                                 /* replay_drawFollowedName */
@@ -1788,15 +1788,15 @@ void THISCALL (game_processGameMode)(u8 *s)
 	}
 	zoom_view(s, &step);
 	/* the network's packets */
-	SC->firstRoundClear[3] += SC->firstRoundClear[1];
-	SC->firstRoundClear[4] += SC->firstRoundClear[2];
-	SC->firstRoundClear[1] = SC->firstRoundClear[2] = 0;
+	SC->windowSent += SC->packetsSent;
+	SC->windowReceived += SC->packetsReceived;
+	SC->packetsSent = SC->packetsReceived = 0;
 	if (SC->roundOver == 0) {
 		netq_poll();
 		for (int r = netq_receive(&from, &size, packet); r != 0; r = netq_receive(&from, &size, packet)) {
 			if (r == 1)
 				net_processGamePacket(s, from, size, packet);
-			SC->firstRoundClear[2]++;
+			SC->packetsReceived++;
 			netq_poll();
 		}
 	}
@@ -1972,19 +1972,19 @@ void THISCALL (game_processGameMode)(u8 *s)
 				net_sendGamePacket(s, i);
 			if (S(int, 0x234300a + i * 16) == 1)
 				net_sendPlayerInfo(s, i);
-			if (net_playerInUse(i) == 1 && (*(float *)&SC->firstRoundClear[0]) > 0.05f && P_INT(SC->localPlayer, 0x179d1fe) < 0x180) {
+			if (net_playerInUse(i) == 1 && SC->sendTimer > 0.05f && P_INT(SC->localPlayer, 0x179d1fe) < 0x180) {
 				net_sendColourRing(s, SC->localPlayer);
-				(*(float *)&SC->firstRoundClear[0]) = (float)-fld_m(&SC->frameTime);
+				SC->sendTimer = (float)-fld_m(&SC->frameTime);
 			}
 			if (net_playerInUse(i) == 1 && SC->players[i].active == 1 && SC->players[i].pilot == SC->localPlayer
-			    && ((*(float *)&SC->firstRoundClear[0]) > 0.05f || SC->players[i].firing == 1
+			    && (SC->sendTimer > 0.05f || SC->players[i].firing == 1
 			        || (!(GAME_VAR(float, s + 0x1eccfa4 + i * 0x8888) < 0) && !(GAME_VAR(float, s + 0x1eccfa4 + i * 0x8888) > 0))
 			        || SC->players[i].sendFlag == 1)) {
 				net_sendPlayerState(s, i);
-				(*(float *)&SC->firstRoundClear[0]) = (float)-fld_m(&SC->frameTime);
+				SC->sendTimer = (float)-fld_m(&SC->frameTime);
 			}
 		}
-		(*(float *)&SC->firstRoundClear[0]) = f32(fadd_m(fld_m((const float *)(s + 0x2340c74)), &SC->frameTime));
+		SC->sendTimer = f32(fadd_m(fld_m(&SC->sendTimer), &SC->frameTime));
 	}
 	/* the round's end */
 	if (SC->endTime > 0) {
@@ -2209,9 +2209,9 @@ void THISCALL (game_processGameMode)(u8 *s)
 		}
 		if (netq_resends() > 0) {
 			netq_clearResends();
-			SC->firstRoundClear[8] = 0x3f800000;
+			SC->resendWarning = 1.0f;
 		} else if (run_down(s, 0x2340c94))
-			SC->firstRoundClear[8] = 0;
+			SC->resendWarning = 0.0f;
 	}
 	/* the match restart count */
 	if (SC->startTimer > 0) {

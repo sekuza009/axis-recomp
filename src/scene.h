@@ -1127,8 +1127,8 @@ typedef struct Scene {
 	u8 _pad233cc24[0x4];
 	i32 modeStarted;   /* +0x233cc28: (by use) 0 until game_processGameModeInit has run */
 	u8 _pad233cc2c[0x4];
-	i32 roundClear3;   /* +0x233cc30: (unclear) */
-	float chatBlink;   /* +0x233cc34: cursor blink clock of the chat line */
+	i32 wholeSeconds;   /* +0x233cc30: (by use) the seconds counted (match_inputState2: the fraction carried over) */
+	float secondFraction;   /* +0x233cc34: the second's fraction so far (the chat cursor blinks by it) */
 	float followTime;   /* +0x233cc38: (by use) seconds the replay viewer has followed its player (a new one after 14) */
 	float presetTime;   /* +0x233cc3c: (by use) seconds on the camera preset (a random one after 7) */
 	float msgFade;   /* +0x233cc40: message box fade, seconds (1 or more: opaque) */
@@ -1142,7 +1142,15 @@ typedef struct Scene {
 	u8 _pad233cc60[0x4004];
 	i32 watchedPlayer;   /* +0x2340c64: the player a spectator watches */
 	i32 watchClear[3];   /* +0x2340c68: (unclear) cleared with watchedPlayer */
-	i32 firstRoundClear[9];   /* +0x2340c74: (unclear) cleared at a game's first round */
+	float sendTimer;   /* +0x2340c74: (by use) seconds since the local player's state was sent (again past 0.05) */
+	i32 packetsSent;   /* +0x2340c78: this frame's packets out and in (net_sendPacket, the receive loops) */
+	i32 packetsReceived;   /* +0x2340c7c */
+	i32 windowSent;   /* +0x2340c80: summed over the window (about a second), then rates */
+	i32 windowReceived;   /* +0x2340c84 */
+	float sendRate;   /* +0x2340c88: packets a second */
+	float receiveRate;   /* +0x2340c8c */
+	float windowTime;   /* +0x2340c90: the window's seconds */
+	float resendWarning;   /* +0x2340c94: 1 when packets had to be sent again, running down */
 	u8 _pad2340c98[0x4];
 	float escTimer;   /* +0x2340c9c: time the in-match menu has been open (fades in over 0.25 s) */
 	u8 _pad2340ca0[0x30];
@@ -2146,8 +2154,8 @@ _Static_assert(offsetof(Scene, cameraSettings) == 0x233cb20 && sizeof(((Scene *)
 _Static_assert(offsetof(Scene, cameraMode) == 0x233cc10 && sizeof(((Scene *)0)->cameraMode) == 0x4, "scene.fields: Scene.cameraMode");
 _Static_assert(offsetof(Scene, inputState) == 0x233cc20 && sizeof(((Scene *)0)->inputState) == 0x4, "scene.fields: Scene.inputState");
 _Static_assert(offsetof(Scene, modeStarted) == 0x233cc28 && sizeof(((Scene *)0)->modeStarted) == 0x4, "scene.fields: Scene.modeStarted");
-_Static_assert(offsetof(Scene, roundClear3) == 0x233cc30 && sizeof(((Scene *)0)->roundClear3) == 0x4, "scene.fields: Scene.roundClear3");
-_Static_assert(offsetof(Scene, chatBlink) == 0x233cc34 && sizeof(((Scene *)0)->chatBlink) == 0x4, "scene.fields: Scene.chatBlink");
+_Static_assert(offsetof(Scene, wholeSeconds) == 0x233cc30 && sizeof(((Scene *)0)->wholeSeconds) == 0x4, "scene.fields: Scene.wholeSeconds");
+_Static_assert(offsetof(Scene, secondFraction) == 0x233cc34 && sizeof(((Scene *)0)->secondFraction) == 0x4, "scene.fields: Scene.secondFraction");
 _Static_assert(offsetof(Scene, followTime) == 0x233cc38 && sizeof(((Scene *)0)->followTime) == 0x4, "scene.fields: Scene.followTime");
 _Static_assert(offsetof(Scene, presetTime) == 0x233cc3c && sizeof(((Scene *)0)->presetTime) == 0x4, "scene.fields: Scene.presetTime");
 _Static_assert(offsetof(Scene, msgFade) == 0x233cc40 && sizeof(((Scene *)0)->msgFade) == 0x4, "scene.fields: Scene.msgFade");
@@ -2159,7 +2167,15 @@ _Static_assert(offsetof(Scene, kingTimer) == 0x233cc58 && sizeof(((Scene *)0)->k
 _Static_assert(offsetof(Scene, teamSyncTime) == 0x233cc5c && sizeof(((Scene *)0)->teamSyncTime) == 0x4, "scene.fields: Scene.teamSyncTime");
 _Static_assert(offsetof(Scene, watchedPlayer) == 0x2340c64 && sizeof(((Scene *)0)->watchedPlayer) == 0x4, "scene.fields: Scene.watchedPlayer");
 _Static_assert(offsetof(Scene, watchClear) == 0x2340c68 && sizeof(((Scene *)0)->watchClear) == 0xc, "scene.fields: Scene.watchClear");
-_Static_assert(offsetof(Scene, firstRoundClear) == 0x2340c74 && sizeof(((Scene *)0)->firstRoundClear) == 0x24, "scene.fields: Scene.firstRoundClear");
+_Static_assert(offsetof(Scene, sendTimer) == 0x2340c74 && sizeof(((Scene *)0)->sendTimer) == 0x4, "scene.fields: Scene.sendTimer");
+_Static_assert(offsetof(Scene, packetsSent) == 0x2340c78 && sizeof(((Scene *)0)->packetsSent) == 0x4, "scene.fields: Scene.packetsSent");
+_Static_assert(offsetof(Scene, packetsReceived) == 0x2340c7c && sizeof(((Scene *)0)->packetsReceived) == 0x4, "scene.fields: Scene.packetsReceived");
+_Static_assert(offsetof(Scene, windowSent) == 0x2340c80 && sizeof(((Scene *)0)->windowSent) == 0x4, "scene.fields: Scene.windowSent");
+_Static_assert(offsetof(Scene, windowReceived) == 0x2340c84 && sizeof(((Scene *)0)->windowReceived) == 0x4, "scene.fields: Scene.windowReceived");
+_Static_assert(offsetof(Scene, sendRate) == 0x2340c88 && sizeof(((Scene *)0)->sendRate) == 0x4, "scene.fields: Scene.sendRate");
+_Static_assert(offsetof(Scene, receiveRate) == 0x2340c8c && sizeof(((Scene *)0)->receiveRate) == 0x4, "scene.fields: Scene.receiveRate");
+_Static_assert(offsetof(Scene, windowTime) == 0x2340c90 && sizeof(((Scene *)0)->windowTime) == 0x4, "scene.fields: Scene.windowTime");
+_Static_assert(offsetof(Scene, resendWarning) == 0x2340c94 && sizeof(((Scene *)0)->resendWarning) == 0x4, "scene.fields: Scene.resendWarning");
 _Static_assert(offsetof(Scene, escTimer) == 0x2340c9c && sizeof(((Scene *)0)->escTimer) == 0x4, "scene.fields: Scene.escTimer");
 _Static_assert(offsetof(Scene, debugGrid) == 0x2340cd0 && sizeof(((Scene *)0)->debugGrid) == 0x4, "scene.fields: Scene.debugGrid");
 _Static_assert(offsetof(Scene, debugPoints) == 0x2340cd4 && sizeof(((Scene *)0)->debugPoints) == 0x4, "scene.fields: Scene.debugPoints");

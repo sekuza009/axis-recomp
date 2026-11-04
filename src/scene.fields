@@ -928,13 +928,21 @@ struct Scene 0x2343b0b                                          # the scene: the
 0x233cc50  4          float emblemTime                           # (unclear) 300 with showEmblems
 0x2342442  4          i32 level                                  # the room game's level (1 .. 20, from levelPoints)
 0x2342446  4          i32 levelPoints
-0x2340c74  0x24       i32 firstRoundClear[9]                     # (unclear) cleared at a game's first round
+0x2340c74  4          float sendTimer                            # (by use) seconds since the local player's state was sent (again past 0.05)
+0x2340c78  4          i32 packetsSent                            # this frame's packets out and in (net_sendPacket, the receive loops)
+0x2340c7c  4          i32 packetsReceived
+0x2340c80  4          i32 windowSent                             # summed over the window (about a second), then rates
+0x2340c84  4          i32 windowReceived
+0x2340c88  4          float sendRate                             # packets a second
+0x2340c8c  4          float receiveRate
+0x2340c90  4          float windowTime                           # the window's seconds
+0x2340c94  4          float resendWarning                        # 1 when packets had to be sent again, running down
 0x2342395  4          float lostTime                               # (by use) a client's seconds without the server (over 5: the connection lost)
 0x2221f9c  4          i32 soloClear                              # (unclear) cleared at the first round of a solo game
 0x23423c9  4          i32 roundClear                             # (unclear) cleared at a later round
 0x23423cd  0x18       i32 geometryPick[6]                        # (unclear) a random position in each of the six geometry tables
 0x23423fd  4          i32 roundClear2                            # (unclear)
-0x233cc30  4          i32 roundClear3                            # (unclear)
+0x233cc30  4          i32 wholeSeconds                           # (by use) the seconds counted (match_inputState2: the fraction carried over)
 0x233cc54  4          float roundTimer                           # (unclear) 3 at a later round
 0x233ca30  0xf0       u32 cameraPresets[6][10]                   # (by use) the camera presets: six fields by ten camera modes (classes.c k_cameraPresets), copied into cameraSettings
 0x233cb20  0xf0       u32 cameraSettings[6][10]                  # the working set (the free camera, each later round)
@@ -1001,7 +1009,7 @@ struct Scene 0x2343b0b                                          # the scene: the
 0x233c9f0  4          i32 showEmblems                            # 1: emblems in the ranking
 0x233cc10  4          i32 cameraMode
 0x233cc20  4          i32 inputState                             # the match's state: 1 loading, 2 playing, 3 free camera, 4 replay
-0x233cc34  4          float chatBlink                            # cursor blink clock of the chat line
+0x233cc34  4          float secondFraction                       # the second's fraction so far (the chat cursor blinks by it)
 0x233cc4c  4          float startTimer                           # > 0: "start" shown
 0x233cc40  4          float msgFade                              # message box fade, seconds (1 or more: opaque)
 0x2340c64  4          i32 watchedPlayer                          # the player a spectator watches

@@ -119,7 +119,7 @@ static void first_round(Scene *s)
 			s->nextMap = -1;
 			s->nextMode = -1;
 		}
-		memset(s->firstRoundClear, 0, sizeof s->firstRoundClear);
+		memset(&s->sendTimer, 0, 9 * 4);   /* sendTimer .. resendWarning */
 		s->rankingShown = 1;
 	} else {
 		g_netHostGone = 0;
@@ -158,8 +158,8 @@ static void later_round(Scene *s)
 		s->geometryPick[k] = random_below(((u32)FIELD(int, s, counts[k]) * rows[k] * 4) >> 2);
 	s->roundClear2 = 0;
 	s->dataLossCode = -1;
-	s->roundClear3 = 0;
-	BITS(s->chatBlink) = 0;
+	s->wholeSeconds = 0;
+	BITS(s->secondFraction) = 0;
 	BITS(s->roundTimer) = 0x40400000;   /* 3 */
 	for (int k = 0; k < 3; k++)
 		s->cameraPos[k] = s->cameraSaved[k];

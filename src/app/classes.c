@@ -633,7 +633,7 @@ void THISCALL (app_requireCd)(u8 *g, u32 a, int mode)
 	memcpy(GS->cameraUp, (const void *)OBJ(g_vecUnitY), 12);
 	(*(int *)&GS->cameraAngle[0]) = (*(int *)&GS->cameraAngle[1]) = 0;
 	GS->inputState = GS->network == 2 ? 3 : GS->network == 3 ? 1 : 2;
-	GS->modeStarted = GS->roundClear3 = (*(int *)&GS->chatBlink) = 0;
+	GS->modeStarted = GS->wholeSeconds = (*(int *)&GS->secondFraction) = 0;
 	(*(int *)&GS->msgFade) = GAME_VAR(int, g + 0x233cc44) = 0;
 	BITS(GS->emblemTime) = 0x43960000;   /* 300, 3, 5, 15 */
 	BITS(GS->roundTimer) = 0x40400000;
