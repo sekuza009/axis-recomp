@@ -1382,6 +1382,8 @@ extern struct GameData g_data;
 #define g_loginFormLeft (*(int *)g_loginFormLeft_v)
 #undef g_loginFormRects
 #define g_loginFormRects ((int *)g_loginFormRects_v)
+#undef g_loginFormRight
+#define g_loginFormRight (g_data.g_loginFormRight_)
 #undef g_loginFormTop
 #define g_loginFormTop (*(int *)g_loginFormTop_v)
 #undef g_loginToSend

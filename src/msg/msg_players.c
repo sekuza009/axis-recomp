@@ -57,9 +57,8 @@ void THISCALL (msg_kill)(Scene *scene, int victim, int killer)
 	}
 }
 
-/* the players' records (stride 0x47fd2 from Scene + 0x1755230; scene.fields does not hold them yet): the name at +4,
-   empty when the player is not there */
-#define PLAYER_NAME(scene, p) ((const char *)RELOC(scene) + 0x1755234 + (p) * 0x47fd2)
+/* player p's name (its PlayerRecord's; empty when the player is not there) */
+#define PLAYER_NAME(scene, p) (((const Scene *)RELOC(scene))->playerRecords[p].name)
 
 /* 0x462c30: a chat line "[%s]%s" (name, text) said to team: shown in colour 3 or 2 to the first two teams' own
    players, in colour 1 to everyone when said to all (a team without a slot); sound 9 */

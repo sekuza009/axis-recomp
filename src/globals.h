@@ -865,6 +865,7 @@
 #define g_roomGameListRight GAME_VAR(int, 0x9dd4b0)
 #define g_roomGameListBottom GAME_VAR(int, 0x9dd4b4)
 #define g_loginFormLeft GAME_VAR(int, 0x9dd6e8)
+#define g_loginFormRight GAME_VAR(int, 0x9dd6f0)
 #define g_loginFormBottom GAME_VAR(int, 0x9dd6f4)
 #define g_mapSelectLeft GAME_VAR(int, 0x9dd908)
 #define g_mapSelectTop GAME_VAR(int, 0x9dd90c)

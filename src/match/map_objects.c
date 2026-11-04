@@ -19,8 +19,8 @@ void THISCALL (space_disableUnit)(void *unit) { unit_parts_flag(unit, 1); }
 void THISCALL (space_enableUnit)(void *unit) { unit_parts_flag(unit, 0); }
 
 /* an object's collision unit (+0x28c), used while +0x290 is 1 */
-#define OBJECT_UNIT(o) FIELD(void *, o, 0x28c)
-#define OBJECT_HAS_UNIT(o) FIELD(int, o, 0x290)
+#define OBJECT_UNIT(o) (((MapObject *)RELOC(o))->unit)
+#define OBJECT_HAS_UNIT(o) (((MapObject *)RELOC(o))->animated)
 
 /* 0x490ee0, 0x490f30: map object i switched on / off (when it was not already), its unit with it */
 void THISCALL (object_activate)(Stage *stage, int i)

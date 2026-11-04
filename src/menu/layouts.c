@@ -68,8 +68,8 @@ static void armc_tabs(u32 rec)
 {
 	static const RArg a[4] = { RA(AX, 0x10, 1), RA(AY, -8, 0), RA(AX, 0x70, 1), RA(AY, 0x18, 0) };
 	static const RArg b[4] = { RA(AX, 0x10, 1), RA(AY2, -0x20, 0), RA(AX, 0x70, 1), RA(AY2, 0, 0) };
-	rect_spec(rec, rec + 0x30, 0x64, a);
-	rect_spec(rec + 0x30, rec + 0x50, 0x64, b);
+	rect_spec(rec, rec + 3 * 16, 0x64, a);              /* three tabs (16-byte rects) .. */
+	rect_spec(rec + 3 * 16, rec + 5 * 16, 0x64, b);     /* .. then two */
 }
 
 void (arenaCreate_layout)(void) { rects_column(OBJ(g_arenaCreateRects), OBJ(g_arenaCreateRects) + 2 * 16, 0xb4); }

@@ -452,7 +452,7 @@ static void beam(u8 *s, u8 *b, const u8 *w, u32 *r, int flying)
 		r[18] = 0xffffffff;
 		memcpy(r + 19, prev, 12);
 		memcpy(r + 22, cur, 12);
-		memcpy(r + 25, side + 0x30, 12);
+		memcpy(r + 25, side + sizeof BU->trail[0], 12);   /* (the next section's same corner) */
 		memcpy(r + 28, side, 12);
 		particle_spawn(s, r);
 	}

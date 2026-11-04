@@ -241,7 +241,7 @@ void (armc_buildPartLists)(void)
 	for (int k = 0; k < 5; k++)
 		GAME_VAR(int, lengths[k]) = 0;
 	u32 tables = network ? OBJ(g_unlockTablesNet) : OBJ(g_unlockTablesSolo);
-#define TABLE(k, lv) ((const Unlock *)(RELOC(tables) + (k) * 0x320) + (lv))
+#define TABLE(k, lv) ((const Unlock *)RELOC(tables) + (k) * 20 + (lv))   /* (20 levels a part kind) */
 	if (level >= 0) {
 		int last = 0;   /* the fifth list's length: the original keeps it in a register until the end */
 		for (int lv = 0; lv <= level; lv++) {

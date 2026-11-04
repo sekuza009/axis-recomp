@@ -320,7 +320,7 @@ static int esc_team(Scene *scene)
 		scene->localTeam = scene->teamIds[scene->escCursor == 0 ? 0 : 1];
 		scene->chosenTeam = scene->localTeam;
 	}
-#define TEAM_NOW GAME_VAR(int, (u8 *)STAGE(scene) + 0x1561b68 + scene->localPlayer * 0x47fd2 + 0x48)   /* the player's resource set */
+#define TEAM_NOW (((Stage *)STAGE(scene))->playerRecords[scene->localPlayer].team)   /* the player's team now */
 	if (TEAM_NOW == scene->localTeam)
 		return 1;
 	if (TEAM_NOW >= 0) {

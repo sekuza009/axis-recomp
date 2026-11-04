@@ -605,7 +605,7 @@ u32 (loginDialog_draw)(void)
 {
 #define X0 g_loginFormLeft
 #define Y0 g_loginFormTop
-#define X1 GAME_VAR(int, 0x9dd6f0)
+#define X1 g_loginFormRight
 #define Y1 g_loginFormBottom
 	if (g_dialogOpen)
 		return GAME_FN(menu_drawFrame, 0x428c30, u32, int, int, int, int)(X0, Y0, X1, Y1);   /* the frame */
