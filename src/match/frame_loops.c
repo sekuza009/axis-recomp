@@ -156,7 +156,7 @@ void THISCALL (script_processTriggers)(u8 *s)
 		}
 		int player = ST->playerActor;
 		if (flags & 2 && player >= 0) {
-			const float *at = (const float *)(s + 0x1cd94fc + player * 0x8888);
+			const float *at = ST->actors[player].pos;
 			const float *point = ((const float *)t->wayPoints);
 			long double dx = (long double)at[0] - point[0], dy = (long double)at[1] - point[1], dz = (long double)at[2] - point[2];
 			if (!(dz * dz + dy * dy + dx * dx >= t->radiusSq))
@@ -193,9 +193,9 @@ void THISCALL (sound_updateListener)(u8 *s)
 		for (int k = 0; k < 3; k++)
 			LAST(k) = NOW(k);
 	}
-	if (!FIELD(int, s, 0x23423a1))
+	if (!((Scene *)s)->roundOver)
 		room_keepText();
-	FIELD(u32, s, 0x233cc50) = 0x43960000;   /* 300.0f */
+	BITS(((Scene *)s)->emblemTime) = 0x43960000;   /* 300.0f */
 #undef ACTOR
 #undef NOW
 #undef LAST
@@ -271,7 +271,7 @@ void THISCALL (script_processCommandBy)(u8 *s, int a, int trig, int entry)
 				ac->speed = f32(fmul_m(fld_m((const float *)&c[1]), (const float *)ADDR(k_27_7778f)));
 			break;
 		case 14: if (actor) ac->invulnerable = 1; break;
-		case 15: actor_applySpawnRecord(s, c[1], s + 0x1cd6fb4 + c[1] * 0x5c); break;
+		case 15: actor_applySpawnRecord(s, c[1], (u8 *)&ST->mapActors[c[1]]); break;
 		case 16: ACTOR(c[1], int, 0x128) = 0; break;
 		case 17: actor_deactivate((Stage *)s, c[1]); break;
 		case 18: if (actor) (*(u32 *)&ac->lookActor) = c[1]; break;
@@ -284,7 +284,7 @@ void THISCALL (script_processCommandBy)(u8 *s, int a, int trig, int entry)
 		case 20:   /* the actor's weapon holding item c[1] selected */
 			if (actor) {
 				for (int k = 0; k < 6; k++)
-					if (FIELD(u32, s, 0x1561e88 + ac->player * 0x47fd2 + k * 4) == c[1])
+					if ((u32)ST->playerRecords[ac->player].items[k] == c[1])
 						actor_selectWeapon((Stage *)s, a, k);
 				ac->inFire = 1;
 			}
@@ -295,8 +295,8 @@ void THISCALL (script_processCommandBy)(u8 *s, int a, int trig, int entry)
 			ACTOR(c[1], int, 0x87fc) = -1;
 			break;
 		case 23:
-			ACTOR(c[1], u32, 0x87f8) = c[2];
-			ACTOR(c[1], u32, 0x87fc) = c[3];
+			ST->actors[c[1]].target1 = c[2];
+			ST->actors[c[1]].target2 = c[3];
 			break;
 		case 24: camera_setTarget(s, c[1], c[2], c[3]); break;
 		case 25: camera_setTarget(s, -1, -1, 0); break;
@@ -308,7 +308,7 @@ void THISCALL (script_processCommandBy)(u8 *s, int a, int trig, int entry)
 			script_pushEvent(s, c[1], c[2], c[3], c[4]);
 			break;
 		case 27:
-			sprintf(name, (const char *)STR(0x4c7a3c, "%s/%s.scp"), s + 0x808, (const char *)&c[1]);
+			sprintf(name, (const char *)STR(0x4c7a3c, "%s/%s.scp"), ST->sceneDir, (const char *)&c[1]);
 			script_runScpFile(s, name, c[9]);
 			break;
 		case 28:
@@ -349,20 +349,20 @@ void THISCALL (object_initObjectBy)(u8 *s, int i, const u8 *type)
 	MapObject *mo = (MapObject *)obj;
 	int idx = 0;
 	for (; idx < ST->objectNameCount; idx++)
-		if (!strcmp((const char *)RELOC(type), (const char *)s + 0x130b440 + idx * 0x40))
+		if (!strcmp((const char *)RELOC(type), ST->objectNames[idx]))
 			break;
 	if (idx == ST->objectNameCount) {
 		if (idx >= 1000)
 			sys_fatalError((char *)OBJ(g_logStage), (const char *)STR(0x4c8364, "object type buffer overflow (%d) - in..."), 1000);
 		idx = ST->objectNameCount++;
-		strcpy((char *)s + 0x130b440 + idx * 0x40, (const char *)RELOC(type));
+		strcpy(ST->objectNames[idx], (const char *)RELOC(type));
 	}
 	mo->id = ST->objectSerial++;
 	mo->active = 1;
 	mo->nameIndex = idx;
-	memcpy(obj + 0xc, type + 0x40, 12);
+	memcpy(obj + offsetof(MapObject, flags), type + 0x40, 12);   /* flags, trigger, animSpeed */
 	if (type[0x4c])
-		sprintf((char *)obj + 0x18, (const char *)STR(0x4c7a30, "%s/%s/%s"), s + 8, ST->stageName, type + 0x4c);
+		sprintf(mo->animPath, (const char *)STR(0x4c7a30, "%s/%s/%s"), ST->stageDir, ST->stageName, type + 0x4c);
 	else
 		obj[0x18] = 0;
 	memcpy(mo->place, type + 0x8c, 12);
@@ -376,25 +376,25 @@ void THISCALL (object_initObjectBy)(u8 *s, int i, const u8 *type)
 	float *m = mo->matrix;
 	Mat4_multiply(mo->placeMatrix, (const float *)RELOC(move), turn);
 	Mat4_invert(mo->placeInverse, mo->placeMatrix);
-	Mat4_copy(m, obj + 0x74);
+	Mat4_copy(m, mo->placeMatrix);
 	Mat4_invert(mo->matrixInverse, m);
-	identity4((u32 *)(obj + 0x174));
-	identity4((u32 *)(obj + 0x1b4));
+	identity4((u32 *)mo->animMatrix);
+	identity4((u32 *)mo->animInverse);
 	Mat4_multiply(mo->relMatrix, m, mo->placeInverse);
 	Mat4_invert(mo->relInverse, mo->relMatrix);
 	u8 *shape = (u8 *)shape_getByName((u8 *)&ST->objectShapes, (const char *)RELOC(type), 1);
-	FIELD(u8 *, obj, 0x27c) = shape;
+	mo->model = (Model *)shape;
 	for (int r = 0; r < 2; r++) {
 		int need = ST->objectColourCount + FIELD(int, shape, 0x18);
 		if (need > 1000000)
 			sys_fatalErrorN((char *)OBJ(g_logStage), (const char *)STR(0x4c8314, "object(%d) objectShapeElementShadingC..."), i, need, 1000000);
-		FIELD(u8 *, obj, 0x280 + r * 4) = s + 0xf30dc8 + ST->objectColourCount * 4;
+		mo->colours[r] = (u32)&ST->objectColours[ST->objectColourCount];
 		ST->objectColourCount += FIELD(int, ((u8 *)mo->model), 0x18);
 	}
 	mo->colourSide = 1;
 	mo->typeValue1 = FIELD(u32, type, 0xa8);
 	mo->typeValue2 = FIELD(u32, type, 0xac);
-	memset(obj + 0x28c, 0, 7 * 4);
+	memset(obj + offsetof(MapObject, unit), 0, 7 * 4);   /* unit .. poseStale */
 	if (shape) {
 		const float *c = (const float *)(shape + 0x20);
 		float *out = mo->pos;
@@ -403,8 +403,8 @@ void THISCALL (object_initObjectBy)(u8 *s, int i, const u8 *type)
 			out[r] = f32(fadd_m(fmul_m(fld_m(&m[8 + r]), &c[2]) + fmul_m(fld_m(&m[r]), &c[0]) + fmul_m(fld_m(&m[4 + r]), &c[1]), &m[12 + r]));
 	} else
 		memcpy(mo->pos, mo->place, 12);
-	FIELD(int, obj, 0x2a8) = 0;
-	FIELD(int, obj, 0x2c8) = 0;
+	BITS(mo->glow) = 0;
+	BITS(mo->waitTime) = 0;
 	if (ST->mapShaded == 0)
 		shape_shadeParts((*(u32 * *)&mo->colours[0]), 1, (Model *)((u8 *)mo->model), (const LightFactors *)&((Stage *)s)->mapLights,
 		                 mo->matrixInverse);
