@@ -488,9 +488,9 @@ void THISCALL (shape_read)(u8 *shape, void *f, void *mem, int size)
 	}
 	if (!current)
 		shape_relocate(shape);
-	memcpy(shape + 0x34, shape + 0x20, 12);
-	memcpy(shape + 0x40, shape + 0x20, 12);
-	float *low = (float *)(RELOC(shape) + 0x34), *high = (float *)(RELOC(shape) + 0x40);
+	memcpy(md->low, md->centre, 12);
+	memcpy(md->high, md->centre, 12);
+	float *low = md->low, *high = md->high;
 	for (int i = 0; i < md->partCount; i++) {
 		const float *box = (const float *)(md->parts + i * 0x80 + 0x68);
 		for (int c = 0; c < 3; c++)

@@ -278,14 +278,14 @@ void THISCALL (ViewVolume_projectObject)(u8 *view, u8 *model, u32 *extra, const 
 		glGetFloatv(0xba6, m);
 	}
 	float clip_m[16];
-	Mat4_multiply(clip_m, (const float *)(view + 0x9130), m);
+	Mat4_multiply(clip_m, ((ViewVolume *)view)->clip, m);
 	for (int i = 0; i < ((Model *)model)->partCount; i++) {
 		u8 *part = ((Model *)model)->parts + i * 0x80;
 		ShapePart *sp = (ShapePart *)part;
 		if (sp->primCount <= 0)
 			continue;
 		if (cull == 1) {
-			const float *lo = (const float *)(part + 0x68), *hi = (const float *)(part + 0x74);
+			const float *lo = sp->box, *hi = &sp->box[3];
 			static const u8 pick[7][3] = { { 0, 1, 1 }, { 1, 1, 1 }, { 0, 1, 0 }, { 1, 1, 0 }, { 0, 0, 1 }, { 1, 0, 1 }, { 0, 0, 0 } };
 			float c[8][4], p[3];
 			for (int k = 0; k < 7; k++) {
