@@ -297,9 +297,9 @@ void THISCALL (script_processCommandBy)(u8 *s, int a, int trig, int entry)
 		case 24: camera_setTarget(s, c[1], c[2], c[3]); break;
 		case 25: camera_setTarget(s, -1, -1, 0); break;
 		case 26:
-			if (FIELD(int, s, 0x2104fe8 + c[1] * 0x88) == 0)
+			if (*(const int *)ST->speakers[c[1]] == 0)
 				sys_fatalError((char *)OBJ(g_logStage), (const char *)STR(0x4c7a8c, "invalid speaker (%d) in command MESSA..."), c[1]);
-			if (FIELD(int, s, 0x210850c + c[2] * 0x108) == 0)
+			if (*(const int *)ST->texts[c[2]] == 0)
 				sys_fatalError((char *)OBJ(g_logStage), (const char *)STR(0x4c7a48, "invalid text (%d) in command MESSAGE ..."), c[2]);
 			script_pushEvent(s, c[1], c[2], c[3], c[4]);
 			break;

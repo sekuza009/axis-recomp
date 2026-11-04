@@ -1379,7 +1379,10 @@ typedef struct Stage {
 	u32 emblemTexture;   /* +0x20fcfe0: (by use) the emblem atlas's GL texture */
 	u32 emblemAtlas[64][128];   /* +0x20fcfe4: the players' emblems, four to a row */
 	i32 clanTexture;   /* +0x2104fe4: (by use) the map's clan texture (Stage\<map>\Clan) */
-	u8 _pad2104fe8[0x43c68];
+	u8 speakers[100][0x88];   /* +0x2104fe8: (by use) the script's speakers: one exists when its first dword is not 0 (the MESSAGE */
+	u8 _pad2108508[0x4];
+	u8 texts[1000][0x108];   /* +0x210850c: (by use) the script's texts, the same (1000 inferred from the gap to scriptEvents) */
+	u8 _pad2148c4c[0x4];
 	i32 scriptEvents[32][5];   /* +0x2148c50: (by use) the script's event ring (script_pushEvent: a, b, c, d, d) */
 	i32 eventHead;   /* +0x2148ed0: events pushed (the ring's next: % 32) */
 	i32 eventTail;   /* +0x2148ed4: the oldest kept (moved on when the ring is full) */
@@ -2831,6 +2834,8 @@ _Static_assert(offsetof(Stage, teamCommanders) == 0x20fce50 && sizeof(((Stage *)
 _Static_assert(offsetof(Stage, emblemTexture) == 0x20fcfe0 && sizeof(((Stage *)0)->emblemTexture) == 0x4, "scene.fields: Stage.emblemTexture");
 _Static_assert(offsetof(Stage, emblemAtlas) == 0x20fcfe4 && sizeof(((Stage *)0)->emblemAtlas) == 0x8000, "scene.fields: Stage.emblemAtlas");
 _Static_assert(offsetof(Stage, clanTexture) == 0x2104fe4 && sizeof(((Stage *)0)->clanTexture) == 0x4, "scene.fields: Stage.clanTexture");
+_Static_assert(offsetof(Stage, speakers) == 0x2104fe8 && sizeof(((Stage *)0)->speakers) == 0x3520, "scene.fields: Stage.speakers");
+_Static_assert(offsetof(Stage, texts) == 0x210850c && sizeof(((Stage *)0)->texts) == 0x40740, "scene.fields: Stage.texts");
 _Static_assert(offsetof(Stage, scriptEvents) == 0x2148c50 && sizeof(((Stage *)0)->scriptEvents) == 0x280, "scene.fields: Stage.scriptEvents");
 _Static_assert(offsetof(Stage, eventHead) == 0x2148ed0 && sizeof(((Stage *)0)->eventHead) == 0x4, "scene.fields: Stage.eventHead");
 _Static_assert(offsetof(Stage, eventTail) == 0x2148ed4 && sizeof(((Stage *)0)->eventTail) == 0x4, "scene.fields: Stage.eventTail");
