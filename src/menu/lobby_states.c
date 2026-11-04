@@ -220,12 +220,18 @@ void (room_copyJoinedSettings)(void)
 		GAME_VAR(int, copy[k][0]) = GAME_VAR(int, copy[k][1]);
 }
 
-/* a window rectangle record's seven fields copied (in the original's order) */
-static void rect_copy(u32 dst, u32 src)
+/* a PilotStats record's seven fields copied (all but clan, in the original's order) */
+static void stats_copy(u32 dst, u32 src)
 {
-	static const int field[] = { 0, 0xc, 0x1c, 0x18, 4, 0x14, 0x10 };
-	for (int k = 0; k < 7; k++)
-		GAME_VAR(int, dst + field[k]) = GAME_VAR(int, src + field[k]);
+	PilotStats *d = (PilotStats *)RELOC(dst);
+	const PilotStats *s = (const PilotStats *)RELOC(src);
+	d->level = s->level;
+	d->rating = s->rating;
+	BITS(d->winRate) = BITS(s->winRate);
+	d->losses = s->losses;
+	d->points = s->points;
+	d->wins = s->wins;
+	d->score = s->score;
 }
 
 /* 0x41e390 (named room_fitWindowRects; by use the pilot's record): the two copies of the pilot's record (the server's,
@@ -235,7 +241,7 @@ void (room_fitWindowRects)(void)
 {
 	int c5, a1, b1;   /* the values the original holds in registers where the branches meet */
 	if (g_pilotWins > g_pilotWinsKept || g_pilotPoints > g_pilotPointsKept) {
-		rect_copy(ADDR(g_pilotLevel), ADDR(g_pilotLevelKept));
+		stats_copy(ADDR(g_pilotLevel), ADDR(g_pilotLevelKept));
 		c5 = g_pilotWinsKept;
 		a1 = b1 = g_pilotPointsKept;
 	} else {
@@ -243,7 +249,7 @@ void (room_fitWindowRects)(void)
 		a1 = g_pilotPoints;
 		b1 = g_pilotPointsKept;
 		if (g_pilotWinsKept > c5 || b1 > a1) {
-			rect_copy(ADDR(g_pilotLevelKept), ADDR(g_pilotLevel));
+			stats_copy(ADDR(g_pilotLevelKept), ADDR(g_pilotLevel));
 			b1 = a1;
 		}
 	}

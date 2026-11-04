@@ -5,14 +5,12 @@
 
 #define FIELD(type, obj, offset) GAME_VAR(type, (u8 *)RELOC(obj) + (offset))
 
-/* ActorInfo offsets copied as they are (record offset, ActorInfo offset) */
-static const short copied[6][2] = { { 0x40, 0x2dbc }, { 0x44, 0x2dc0 }, { 0x48, 0x2dc4 }, { 0x4c, 0x2dc8 },
-                                    { 0x50, 0x2ddc }, { 0x54, 0x2de0 } };
+/* ActorInfo fields copied as they are (PartInfo field, ActorInfo field) */
+static const short copied[6][2] = { { offsetof(PartInfo, slotType), offsetof(ActorInfo, slotType) }, { offsetof(PartInfo, ammoSlot), offsetof(ActorInfo, ammoSlot) }, { offsetof(PartInfo, ammoPerShot), offsetof(ActorInfo, ammoPerShot) }, { offsetof(PartInfo, burst), offsetof(ActorInfo, burst) }, { offsetof(PartInfo, damageMode), offsetof(ActorInfo, damageMode) }, { offsetof(PartInfo, damage), offsetof(ActorInfo, damage) } };
 
-/* and those scaled by a constant of the game (record offset, ActorInfo offset, constant's address) */
+/* and those scaled by a constant of the game (PartInfo field, ActorInfo field, constant's address) */
 static const struct { short dst, src; u32 scale; } scaled[8] = {
-	{ 0x58, 0x2de4, ADDR(k_0_01f) }, { 0x5c, 0x2de8, ADDR(k_0_01f) }, { 0x60, 0x2dec, ADDR(k_tenthsToDegrees) }, { 0x64, 0x2df0, ADDR(k_0_01f) },
-	{ 0x68, 0x2df4, ADDR(k_0_01f) }, { 0x70, 0x2e08, OBJ(k_1000f) }, { 0x74, 0x2e0c, ADDR(k_tenthsToDegrees) }, { 0x78, 0x2e10, OBJ(k_1000f) } };
+	{ offsetof(PartInfo, range), offsetof(ActorInfo, stepLength), ADDR(k_0_01f) }, { offsetof(PartInfo, speed), offsetof(ActorInfo, velocity), ADDR(k_0_01f) }, { offsetof(PartInfo, spread), offsetof(ActorInfo, spread), ADDR(k_tenthsToDegrees) }, { offsetof(PartInfo, flashSize), offsetof(ActorInfo, flashSize), ADDR(k_0_01f) }, { offsetof(PartInfo, splashRadius), offsetof(ActorInfo, splashRadius), ADDR(k_0_01f) }, { offsetof(PartInfo, cycleTime), offsetof(ActorInfo, cycleTime), OBJ(k_1000f) }, { offsetof(PartInfo, tracer), offsetof(ActorInfo, tracer), ADDR(k_tenthsToDegrees) }, { offsetof(PartInfo, ringRange), offsetof(ActorInfo, ringRange), OBJ(k_1000f) } };
 
 /* record rec for actor type idx; idx -1: the record emptied (its +0x40 -1) */
 static void part_info(u8 *rec, int idx)

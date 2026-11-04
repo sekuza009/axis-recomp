@@ -463,10 +463,10 @@ void (menuState210_frame)(void)
 	menu_drawBackground();
 	if (g_introZoom > k_0f)
 		return;
-	static const signed char fields[9] = { -8, 0, 4, -4, 12, 8, 16, 24, 20 };   /* in the order checked */
-	for (u32 rec = 0x9f9070; rec < 0x9f931c; rec += 0x4c)
+	static const signed char stats[9] = { 0, 2, 3, 1, 5, 4, 6, 8, 7 };   /* in the order checked */
+	for (int p = 0; p < 9; p++)   /* (the first nine profiles: any value past its limit reloads them all) */
 		for (int f = 0; f < 9; f++)
-			if (GAME_VAR(int, rec + fields[f]) > (fields[f] == 20 ? 50 : 30))
+			if (g_profileRecords[p].stats[stats[f]] > (stats[f] == 7 ? 50 : 30))
 				data_loadPilotProfiles();
 	static const u32 pages[6] = { FN_ADDR(profile_frame, 0x44f410), FN_ADDR(profile_nameEntryStep, 0x44f4b0), FN_ADDR(profile_pilotPanelPage, 0x44f5f0), FN_ADDR(profile_logIn, 0x44f6c0), FN_ADDR(profile_secondPanelPage, 0x44f740), FN_ADDR(profile_drawScreen, 0x44f810) };
 	u32 page = (*(u32 *)&g_profilePage) - 1;

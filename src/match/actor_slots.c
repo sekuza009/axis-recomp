@@ -8,8 +8,7 @@
 
 /* an actor's input record: twelve ints (the moves and buttons the actor acts on this frame); the ninth is the
    one cleared to -1 */
-static const int input_fields[12] = { 0x44c, 0x450, 0x454, 0x458, 0x464, 0x468, 0x46c, 0x470, 0x474, 0x478, 0x47c,
-                                      0x480 };
+static const int input_fields[12] = { offsetof(Player, inForward), offsetof(Player, inBackward), offsetof(Player, inStepLeft), offsetof(Player, inStepRight), offsetof(Player, inPitch), offsetof(Player, inYaw), offsetof(Player, inFire), offsetof(Player, inAltitude), offsetof(Player, inBooster), offsetof(Player, inView), offsetof(Player, inPrevWeapon), offsetof(Player, inNextWeapon) };
 
 /* 0x45eab0: actor i's input cleared */
 void THISCALL (actor_clearInput)(Stage *stage, int i)
@@ -906,7 +905,7 @@ void THISCALL (actor_setupFromParts)(u8 *s, int a, int id, u32 a3, const u32 *pp
 #define K(address) ((const float *)RELOC(address))
 
 /* the actor's eight part lists (constructed on the stack copy as the original does) */
-static const u16 k_listAt[8] = { 0x554, 0xd54, 0x1554, 0x2524, 0x34f4, 0x40dc, 0x587c, 0x701c };
+static const u16 k_listAt[8] = { offsetof(Player, headModel), offsetof(Player, chestModel), offsetof(Player, armsModel), offsetof(Player, legsModel), offsetof(Player, boosterModel), offsetof(Player, weaponModel), offsetof(Player, weaponModel4), offsetof(Player, weaponModel5) };
 
 /* |a - b| (an x87 abs: a NaN stays) within 0.1 */
 static int close_enough(const float *a, const float *b)
@@ -932,8 +931,8 @@ static int totals_agree(u8 *s, u8 *ac, u8 *me)
 		if (pair < 4)
 			act->ammoMax[pair] = 100;
 	}
-	static const u8 floats1[] = { 0, 4 }, ints[] = { 0x1c, 0x20, 0x24, 0x28, 0x2c, 0x30, 0x34 };
-	static const u8 floats2[] = { 0xc, 0x10, 0x14, 0x18 }, floats3[] = { 0x38, 0x44, 0x48, 0x4c, 0x50, 0x3c, 0x54, 0x58, 0x5c, 0x60 };
+	static const u8 floats1[] = { offsetof(Player, radiusSq), offsetof(Player, detectionAngle) }, ints[] = { offsetof(Player, armorMax), offsetof(Player, shieldMax), offsetof(Player, accuracy), offsetof(Player, ammoMax[0]), offsetof(Player, ammoMax[1]), offsetof(Player, ammoMax[2]), offsetof(Player, ammoMax[3]) };
+	static const u8 floats2[] = { offsetof(Player, lockOnTime), offsetof(Player, targetKeepTime), offsetof(Player, loadMax), offsetof(Player, load) }, floats3[] = { offsetof(Player, mobility), offsetof(Player, boostTime), offsetof(Player, rechargeTime), offsetof(Player, restTime), offsetof(Player, speed), offsetof(Player, moveAccel), offsetof(Player, runTop[0]), offsetof(Player, runTop[1]), offsetof(Player, runTop[2]), offsetof(Player, runTop[3]) };
 	for (int k = 0; k < 2; k++)
 		if (!close_enough((const float *)(ac + floats1[k]), (const float *)(me + floats1[k])))
 			return 0;

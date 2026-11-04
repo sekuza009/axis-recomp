@@ -272,7 +272,7 @@ void (Mat4_transpose)(u32 *d, const u32 *s)
 /* 0x463a40: a resource set's eight lists, each a UnitPoseInfo (vtable 0x4a9754) with its members cleared */
 void *THISCALL (ResourceSet_initLists)(u8 *self)
 {
-	static const int lists[8] = { 0x554, 0xd54, 0x1554, 0x2524, 0x34f4, 0x40dc, 0x587c, 0x701c };
+	static const int lists[8] = { offsetof(Player, headModel), offsetof(Player, chestModel), offsetof(Player, armsModel), offsetof(Player, legsModel), offsetof(Player, boosterModel), offsetof(Player, weaponModel), offsetof(Player, weaponModel4), offsetof(Player, weaponModel5) };
 	for (int k = 0; k < 8; k++) {
 		FIELD(u32, self, lists[k]) = VT(UnitPoseInfo, 0x4a9754);
 		partList_clear(self + lists[k]);

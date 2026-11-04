@@ -1350,9 +1350,9 @@ void (profile_scanSaves)(void)
 u32 THISCALL (catalogue_loadComponents)(u8 *scene, const char *path)
 {
 	static const u32 tables[6][4] = {   /* log message, count, records, record size */
-		{ STR(0x4c755c, "read ActorHeadInfo"), offsetof(Stage, headTypeCount), offsetof(Stage, headTypes), 0xaa8 }, { STR(0x4c7548, "read ActorChestInfo"), offsetof(Stage, chestTypeCount), offsetof(Stage, chestTypes), 0xabc },
-		{ STR(0x4c7534, "read ActorArmInfo"), offsetof(Stage, armTypeCount), offsetof(Stage, armTypes), 0x1300 }, { STR(0x4c7520, "read ActorLegInfo"), offsetof(Stage, legTypeCount), offsetof(Stage, legTypes), 0x13f4 },
-		{ STR(0x4c7508, "read ActorBoosterInfo"), offsetof(Stage, boosterTypeCount), offsetof(Stage, boosterTypes), 0x1820 }, { STR(0x4c74f4, "read ActorItemInfo"), offsetof(Stage, actorInfoCount), offsetof(Stage, actorInfo), 0x2e18 } };
+		{ STR(0x4c755c, "read ActorHeadInfo"), offsetof(Stage, headTypeCount), offsetof(Stage, headTypes), sizeof(HeadType) }, { STR(0x4c7548, "read ActorChestInfo"), offsetof(Stage, chestTypeCount), offsetof(Stage, chestTypes), sizeof(ChestType) },
+		{ STR(0x4c7534, "read ActorArmInfo"), offsetof(Stage, armTypeCount), offsetof(Stage, armTypes), sizeof(ArmType) }, { STR(0x4c7520, "read ActorLegInfo"), offsetof(Stage, legTypeCount), offsetof(Stage, legTypes), sizeof(LegType) },
+		{ STR(0x4c7508, "read ActorBoosterInfo"), offsetof(Stage, boosterTypeCount), offsetof(Stage, boosterTypes), sizeof(BoosterType) }, { STR(0x4c74f4, "read ActorItemInfo"), offsetof(Stage, actorInfoCount), offsetof(Stage, actorInfo), sizeof(ActorInfo) } };
 	void *f = crt_fopen(path, (const char *)STR(0x4ad170, "rb"));
 	if (!f)
 		sys_fatalError((char *)OBJ(g_logStage), (const char *)STR(0x4c75bc, "can't open file %s - loadActorCompone..."), (int)path);

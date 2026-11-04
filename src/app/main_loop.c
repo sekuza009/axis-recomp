@@ -399,9 +399,12 @@ static void about(float *out, const float *v, const u8 *actor)
 }
 
 /* the free-camera part steps: the flag (F1 .. F5 held), the player's part field, the setter, the table size */
-static const u32 k_partSteps[5][4] = { { 0x23432d3, 0x30c, FN_ADDR(actor_setActorTypeHeadInfoBy, 0x473b10), 0x15de6c8 }, { 0x23432d7, 0x310, FN_ADDR(actor_setActorTypeChestInfoBy, 0x473c20), 0x15fff84 },
-                                       { 0x23432db, 0x314, FN_ADDR(actor_setActorTypeArmInfoBy, 0x473d30), 0x163b588 }, { 0x23432df, 0x318, FN_ADDR(actor_setActorTypeLegInfoBy, 0x473e40), 0x1679b34 },
-                                       { 0x23432e3, 0x31c, FN_ADDR(actor_setActorTypeBoosterInfoBy, 0x473f50), 0x16c5178 } };
+static const u32 k_partSteps[5][4] = {   /* the F key, the part in the player record, its setter, the types' count */
+	{ offsetof(Scene, fKeys[0]), offsetof(PlayerRecord, parts[0]), FN_ADDR(actor_setActorTypeHeadInfoBy, 0x473b10), offsetof(Scene, headCount) },
+	{ offsetof(Scene, fKeys[1]), offsetof(PlayerRecord, parts[1]), FN_ADDR(actor_setActorTypeChestInfoBy, 0x473c20), offsetof(Scene, chestCount) },
+	{ offsetof(Scene, fKeys[2]), offsetof(PlayerRecord, parts[2]), FN_ADDR(actor_setActorTypeArmInfoBy, 0x473d30), offsetof(Scene, armCount) },
+	{ offsetof(Scene, fKeys[3]), offsetof(PlayerRecord, parts[3]), FN_ADDR(actor_setActorTypeLegInfoBy, 0x473e40), offsetof(Scene, legCount) },
+	{ offsetof(Scene, fKeys[4]), offsetof(PlayerRecord, parts[4]), FN_ADDR(actor_setActorTypeBoosterInfoBy, 0x473f50), offsetof(Scene, boosterCount) } };
 /* the held keys and their flags: right button, A, D, W, S, Q, E, left button, shift */
 static const u32 k_freeKeys[9][2] = { { 2, 0x234325f }, { 0x41, 0x234326b }, { 0x44, 0x234326f }, { 0x57, 0x2343263 }, { 0x53, 0x2343267 },
                                       { 0x51, 0x2343273 }, { 0x45, 0x2343277 }, { 1, 0x234327b }, { 0x10, 0x2343283 } };
