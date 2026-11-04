@@ -269,7 +269,7 @@ void THISCALL (match_combatInput)(u8 *s)
 		return;
 	if (SC->chatMode == 0 && SC->escMenuOpen == 0) {
 		if (SC->playing == 0) {
-			if (SC->localAlive == 0 || (SC->network == 0 && S(int, 0x1eccb48 + SC->localPlayer * 0x8888) == 0)) {
+			if (SC->localAlive == 0 || (SC->network == 0 && SC->players[SC->localPlayer].statD8 == 0)) {
 				if (pressed2((OBJ(g_controls) + 0x50), (OBJ(g_controls) + 0x54)))
 					SC->quitAsked = 1;
 			} else {
@@ -423,7 +423,7 @@ u32 THISCALL (match_inputState3)(u8 *s)
 		(*(int *)&SC->cameraAngle[0]) = (*(int *)&SC->cameraAngle[1]) = 0;
 		for (SC->cameraMode = 0; SC->cameraMode < 10; SC->cameraMode++)
 			for (int f = 0; f < 6; f++)
-				S(u32, 0x233cb20 + f * 0x28 + SC->cameraMode * 4) = S(u32, 0x233ca30 + f * 0x28 + SC->cameraMode * 4);
+				SC->cameraSettings[f][SC->cameraMode] = SC->cameraPresets[f][SC->cameraMode];
 		SC->cameraMode = 0;
 		timer_getGameTime((u8 *)&SC->timer);
 		int y = gfx_getHeight() / 2;
@@ -533,7 +533,7 @@ u32 THISCALL (match_inputState3)(u8 *s)
 		}
 	}
 	if (item >= 0) {
-		int slot = S(int, 0x16c7f38 + item * 0x2e18) ? 4 : 0;
+		int slot = SC->actorInfo[item].slotType ? 4 : 0;
 		actor_setActorTypeItemInfoBy((Stage *)stage, 0, slot, item);
 		actor_selectWeapon((Stage *)stage, 0, slot);
 	}
@@ -614,7 +614,7 @@ static void start_view(u8 *s)
 static void preset_reset(u8 *s)
 {
 	for (int f = 0; f < 6; f++)
-		S(u32, 0x233cb20 + f * 0x28 + SC->cameraMode * 4) = S(u32, 0x233ca30 + f * 0x28 + SC->cameraMode * 4);
+		SC->cameraSettings[f][SC->cameraMode] = SC->cameraPresets[f][SC->cameraMode];
 }
 
 /* following no one: the free camera from the start view */
@@ -757,7 +757,7 @@ static void preset_angles(u8 *s, const u8 *t, u32 preset)
 {
 	int i = S(int, preset);
 	SC->cameraAngle[0] = (float)fld_m((const float *)&SC->cameraSettings[0][i]);
-	if (S(int, 0x233cbc0 + S(int, preset) * 4) == 0)
+	if (SC->cameraSettings[4][S(int, preset)] == 0)
 		SC->cameraAngle[0] = f32(fadd_m(fld_m((const float *)&SC->cameraSettings[0][i]), &((const Player *)t)->pitch));
 	if (SC->cameraAngle[0] > 890.0f)
 		SC->cameraAngle[0] = 890.0f;
@@ -765,7 +765,7 @@ static void preset_angles(u8 *s, const u8 *t, u32 preset)
 		SC->cameraAngle[0] = -890.0f;
 	i = S(int, preset);
 	SC->cameraAngle[1] = (float)fld_m((const float *)&SC->cameraSettings[1][i]);
-	if (S(int, 0x233cbe8 + S(int, preset) * 4) == 0)
+	if (SC->cameraSettings[5][S(int, preset)] == 0)
 		SC->cameraAngle[1] = f32(fadd_m(fld_m((const float *)&SC->cameraSettings[1][i]), &((const Player *)t)->yaw));
 }
 
@@ -1160,7 +1160,7 @@ u32 THISCALL (replay_frame)(u8 *s)
 		turn_view(s);
 	} else {
 		int i = SC->cameraMode;
-		if (S(int, 0x233cb98 + i * 4) == 0 && i != 1) {
+		if (SC->cameraSettings[3][i] == 0 && i != 1) {
 			orbit_camera(s, i);
 			turn_view(s);
 		} else {
@@ -1371,7 +1371,7 @@ static void local_spawn(u8 *s)
 	}
 	stage_claimPlayerActor(SCENE_STAGE(s), rec[0], -1, rec[0], rec);
 	if (SC->recording == 1)
-		S(int, 0x234300a + SC->localPlayer * 16) = 1;
+		SC->sendFlags[SC->localPlayer][1] = 1;
 	SC->playing = 1;
 	notice_printCentre((Scene *)s, (const char *)STR(0x4d0618, "PREPARE THE BATTLE"));
 	SC->startCount = 3.0f;   /* 3 */
@@ -1683,7 +1683,7 @@ void THISCALL (game_processGameMode)(u8 *s)
 	}
 	if (SC->screenshotTaken == 0 && SC->localPlayer >= 0 && SC->network == 1) {
 		int shot = gfx_saveScreenshot(stage, SC->localPlayer);
-		P_INT(SC->localPlayer, 0x179d1fa) = shot;
+		SC->playerRecords[SC->localPlayer].emblemChanged = shot;
 		SC->playerRecords[SC->localPlayer].emblemSent = 0;
 		SC->screenshotUpload = 5.0f;   /* 5 */
 		SC->screenshotTaken = 1;
@@ -1749,7 +1749,7 @@ void THISCALL (game_processGameMode)(u8 *s)
 	if (SC->actionKey == 1)
 		for (int k = 0; k < 10; k++)
 			for (int f = 0; f < 6; f++)
-				S(u32, 0x233cb20 + f * 0x28 + k * 4) = S(u32, 0x233ca30 + f * 0x28 + k * 4);
+				SC->cameraSettings[f][k] = SC->cameraPresets[f][k];
 	if (SC->playing == 0) {
 		if (SC->cameraSlot >= 0 && SC->watchedPlayer >= 0) {
 			int i = SC->cameraSlot;
@@ -1951,14 +1951,14 @@ void THISCALL (game_processGameMode)(u8 *s)
 		long double v = fsub_m(fld_m(&SC->roundTimer), &SC->frameTime);
 		SC->roundTimer = (float)v;
 		if (!(v > 0)) {
-			S(int, 0x2343006 + SC->localPlayer * 16) = 1;
+			SC->sendFlags[SC->localPlayer][0] = 1;
 			SC->roundTimer = 3.0f;
 		}
 		if (SC->players[SC->localPlayer].team >= 0) {
 			v = fsub_m(fld_m(&SC->teamSyncTime), &SC->frameTime);
 			SC->teamSyncTime = (float)v;
 			if (!(v > 0)) {
-				S(int, 0x234300a + SC->localPlayer * 16) = 1;
+				SC->sendFlags[SC->localPlayer][1] = 1;
 				SC->teamSyncTime = 15.0f;   /* 15 */
 			}
 		}
@@ -1967,9 +1967,9 @@ void THISCALL (game_processGameMode)(u8 *s)
 				net_sendMatchEvent(s);
 			while (SC->noticeChanged == 1);
 		for (int i = 0; i < 16; i++) {
-			if (S(int, 0x2343006 + i * 16) == 1)
+			if (SC->sendFlags[i][0] == 1)
 				net_sendGamePacket(s, i);
-			if (S(int, 0x234300a + i * 16) == 1)
+			if (SC->sendFlags[i][1] == 1)
 				net_sendPlayerInfo(s, i);
 			if (net_playerInUse(i) == 1 && SC->sendTimer > 0.05f && SC->playerRecords[SC->localPlayer].emblemSent < 0x180) {
 				net_sendColourRing(s, SC->localPlayer);
@@ -1977,7 +1977,7 @@ void THISCALL (game_processGameMode)(u8 *s)
 			}
 			if (net_playerInUse(i) == 1 && SC->players[i].active == 1 && SC->players[i].pilot == SC->localPlayer
 			    && (SC->sendTimer > 0.05f || SC->players[i].firing == 1
-			        || (!(GAME_VAR(float, s + 0x1eccfa4 + i * 0x8888) < 0) && !(GAME_VAR(float, s + 0x1eccfa4 + i * 0x8888) > 0))
+			        || (!(SC->players[i].messageTime < 0) && !(SC->players[i].messageTime > 0))
 			        || SC->players[i].sendFlag == 1)) {
 				net_sendPlayerState(s, i);
 				SC->sendTimer = (float)-fld_m(&SC->frameTime);
@@ -2017,8 +2017,8 @@ void THISCALL (game_processGameMode)(u8 *s)
 			SC->cameraSlot = -1;
 			replay_closeRecording((Scene *)s);
 			stage_deactivateActors(stage);
-			S(int, 0x233cb20 + SC->cameraMode * 4) = 0;
-			S(int, 0x233cb48 + SC->cameraMode * 4) = 0;
+			SC->cameraSettings[0][SC->cameraMode] = 0;
+			SC->cameraSettings[1][SC->cameraMode] = 0;
 			if (SC->network == 0 && SC->stageCleared == 1 && g_missionStage == 14) {
 				SC->lastMissionWon = 1;   /* the last mission won */
 				SC->roundOver = 1;
@@ -2050,10 +2050,10 @@ void THISCALL (game_processGameMode)(u8 *s)
 				} else {
 					if (SC->rotationCount > 0) {   /* the server's map rotation (+0x1f1668: map, mode) */
 						SC->rotationAt = (SC->rotationAt + 1) % SC->rotationCount;
-						g_missionStage = S(int, 0x1f1668 + SC->rotationAt * 16);
-						SC->nextMap = S(int, 0x1f1668 + (SC->rotationAt + 1) % SC->rotationCount * 16);
-						SC->nextMode = S(int, 0x1f166c + (SC->rotationAt + 1) % SC->rotationCount * 16);
-						game_setGameTypeFlags((Stage *)stage, S(int, 0x1f166c + SC->rotationAt * 16));
+						g_missionStage = SC->rotation[SC->rotationAt].map;
+						SC->nextMap = SC->rotation[(SC->rotationAt + 1) % SC->rotationCount].map;
+						SC->nextMode = SC->rotation[(SC->rotationAt + 1) % SC->rotationCount].mode;
+						game_setGameTypeFlags((Stage *)stage, SC->rotation[SC->rotationAt].mode);
 					} else {
 						g_missionStage = SC->nextMap;
 						SC->nextMap = -1;
@@ -2122,7 +2122,7 @@ void THISCALL (game_processGameMode)(u8 *s)
 				killer_view(s, ACTOR_AT(c));
 			else {
 				int i = SC->cameraSlot;
-				if (S(int, 0x233cb98 + i * 4) == 0 && i != 1) {
+				if (SC->cameraSettings[3][i] == 0 && i != 1) {
 					preset_angles(s, ACTOR_AT(SC->watchedPlayer), 0x23424f2);
 					orbit_from(s, ACTOR_AT(SC->watchedPlayer), 0x23424f2, 1);
 					turn_view(s);
@@ -2159,7 +2159,7 @@ void THISCALL (game_processGameMode)(u8 *s)
 		}
 		if (((Player *)t)->state != 1 && ((Player *)t)->lastAttacker >= 0)
 			killer_view(s, t);
-		else if (S(int, 0x233cb98 + SC->cameraMode * 4) != 0)
+		else if (SC->cameraSettings[3][SC->cameraMode] != 0)
 			look_at(s, ((const Player *)t)->pos);
 		else {
 			preset_angles(s, t, 0x233cc10);
@@ -2229,8 +2229,8 @@ void THISCALL (game_processGameMode)(u8 *s)
 				g_titleScore++;
 				sound_updateListener((Scene *)s);
 			}
-			for (int i = 0; i < S(int, 0x22f0400); i++)
-				S(int, 0x22ee4e0 + i * 0x28) = S(int, 0x22ee4e4 + i * 0x28) = 0;
+			for (int i = 0; i < SCENE_STAGE(s)->itemCount; i++)
+				SCENE_STAGE(s)->items[i].taken = BITS(SCENE_STAGE(s)->items[i].fade) = 0;
 			for (int i = 0; i < 16; i++) {
 				SC->players[i].kills = SC->players[i].deaths = SC->players[i].statF0 = 0;
 				SC->players[i].statF4 = SC->players[i].timePlayed = A_INT(i, 0x1eccb70) = 0;
