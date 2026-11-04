@@ -969,7 +969,8 @@ typedef struct ParticleDesc {
 
 /* the stage: the scene's own object at Scene + 0x1f36c8 (STAGE()), "this" of the */
 typedef struct Stage {
-	u8 _pad0000000[0x8];
+	u8 _pad0000000[0x4];
+	i32 built;   /* +0x4: (by use) 1: item_initTextures has built it */
 	char stageDir[0x100];   /* +0x8: (by use) the data directories (object_setNames; game_loadAllData: "Stage" .. "Scene"): the stage's */
 	char mapDir[0x100];   /* +0x108: the maps' (a map's files: "<mapDir>/<name>") */
 	char textureDir[0x100];   /* +0x208 */
@@ -1099,8 +1100,9 @@ typedef struct Stage {
 	u8 _pad20f2e0c[0x68];
 	u32 effectShapes[8];   /* +0x20f2e74: shell / rail / blade fire, shell / rail / lightning / missile / homing bullet */
 	u8 _pad20f2e94[0xa8];
-	i32 effectShapesReset;   /* +0x20f2f3c: (unclear) cleared when the effects' shapes are looked up */
-	u8 _pad20f2f40[0x88];
+	i32 itemTextures[3];   /* +0x20f2f3c: (by use) the items' animated textures: damage map, booster, shield (item_initTextures; [0] cleared first by effect_initTextures) */
+	float lightMatrix[16];   /* +0x20f2f48: (by use) an identity (item_initTextures): a faintly tinted actor's light (actor_updateAllParts) */
+	float litMatrix[16];   /* +0x20f2f88: a 1.1 scale (the last element 1): the lit pass's (partList_queue) */
 	float baseMatrix[16];   /* +0x20f2fc8: (by use) the stage's identity matrix (stage_resetMatrixAndPoints) */
 	i32 pointCount;   /* +0x20f3008 */
 	float points[200][3];   /* +0x20f300c: at the origin until set */
@@ -2252,6 +2254,7 @@ _Static_assert(offsetof(ParticleDesc, isQuad) == 0x30 && sizeof(((ParticleDesc *
 _Static_assert(offsetof(ParticleDesc, quad) == 0x34 && sizeof(((ParticleDesc *)0)->quad) == 0x18, "scene.fields: ParticleDesc.quad");
 _Static_assert(offsetof(ParticleDesc, quadPoints) == 0x4c && sizeof(((ParticleDesc *)0)->quadPoints) == 0x30, "scene.fields: ParticleDesc.quadPoints");
 _Static_assert(sizeof(ParticleDesc) == 0x7c, "scene.fields: size of ParticleDesc");
+_Static_assert(offsetof(Stage, built) == 0x4 && sizeof(((Stage *)0)->built) == 0x4, "scene.fields: Stage.built");
 _Static_assert(offsetof(Stage, stageDir) == 0x8 && sizeof(((Stage *)0)->stageDir) == 0x100, "scene.fields: Stage.stageDir");
 _Static_assert(offsetof(Stage, mapDir) == 0x108 && sizeof(((Stage *)0)->mapDir) == 0x100, "scene.fields: Stage.mapDir");
 _Static_assert(offsetof(Stage, textureDir) == 0x208 && sizeof(((Stage *)0)->textureDir) == 0x100, "scene.fields: Stage.textureDir");
@@ -2376,7 +2379,9 @@ _Static_assert(offsetof(Stage, projectileFreeHint) == 0x20f2da4 && sizeof(((Stag
 _Static_assert(offsetof(Stage, projectileSerial) == 0x20f2da8 && sizeof(((Stage *)0)->projectileSerial) == 0x4, "scene.fields: Stage.projectileSerial");
 _Static_assert(offsetof(Stage, thrustShapes) == 0x20f2dac && sizeof(((Stage *)0)->thrustShapes) == 0x60, "scene.fields: Stage.thrustShapes");
 _Static_assert(offsetof(Stage, effectShapes) == 0x20f2e74 && sizeof(((Stage *)0)->effectShapes) == 0x20, "scene.fields: Stage.effectShapes");
-_Static_assert(offsetof(Stage, effectShapesReset) == 0x20f2f3c && sizeof(((Stage *)0)->effectShapesReset) == 0x4, "scene.fields: Stage.effectShapesReset");
+_Static_assert(offsetof(Stage, itemTextures) == 0x20f2f3c && sizeof(((Stage *)0)->itemTextures) == 0xc, "scene.fields: Stage.itemTextures");
+_Static_assert(offsetof(Stage, lightMatrix) == 0x20f2f48 && sizeof(((Stage *)0)->lightMatrix) == 0x40, "scene.fields: Stage.lightMatrix");
+_Static_assert(offsetof(Stage, litMatrix) == 0x20f2f88 && sizeof(((Stage *)0)->litMatrix) == 0x40, "scene.fields: Stage.litMatrix");
 _Static_assert(offsetof(Stage, baseMatrix) == 0x20f2fc8 && sizeof(((Stage *)0)->baseMatrix) == 0x40, "scene.fields: Stage.baseMatrix");
 _Static_assert(offsetof(Stage, pointCount) == 0x20f3008 && sizeof(((Stage *)0)->pointCount) == 0x4, "scene.fields: Stage.pointCount");
 _Static_assert(offsetof(Stage, points) == 0x20f300c && sizeof(((Stage *)0)->points) == 0x960, "scene.fields: Stage.points");

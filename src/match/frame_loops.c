@@ -206,14 +206,14 @@ void THISCALL (sound_updateListener)(u8 *s)
    (+0x20f2e74 ..); +0x20f2f3c cleared first. Its caller ignores the eax it leaves */
 void THISCALL (effect_initTextures)(u8 *s)
 {
-	static const u32 sets[3][2] = { { STR(0x4c8170, "Effect\\PlasmaThrust-%d"), 0x20f2dac }, { STR(0x4c815c, "Effect\\IonThrust-%d"), 0x20f2dcc }, { STR(0x4c8144, "Effect\\GravityThrust-%d"), 0x20f2dec } };
+	static const u32 sets[3] = { STR(0x4c8170, "Effect\\PlasmaThrust-%d"), STR(0x4c815c, "Effect\\IonThrust-%d"), STR(0x4c8144, "Effect\\GravityThrust-%d") };
 	static const u32 singles[8] = { STR(0x4c8130, "Effect\\Shell-Fire"), STR(0x4c811c, "Effect\\Shell-Bullet"), STR(0x4c8108, "Effect\\Rail-Fire"), STR(0x4c80f4, "Effect\\Blade-Fire"), STR(0x4c80e0, "Effect\\Rail-Bullet"), STR(0x4c80c8, "Effect\\Lightning-Bullet"), STR(0x4c80b0, "Effect\\Missile-Bullet"), STR(0x4c8098, "Effect\\Homing-Bullet") };
-	ST->effectShapesReset = 0;
+	ST->itemTextures[0] = 0;
 	char name[0x100];
 	for (int set = 0; set < 3; set++)
 		for (int k = 0; k < 8; k++) {
-			sprintf(name, (const char *)RELOC(sets[set][0]), k);
-			FIELD(u32, s, sets[set][1] + k * 4) = shape_getByName((u8 *)&ST->partShapes, name, 1);
+			sprintf(name, (const char *)RELOC(sets[set]), k);
+			ST->thrustShapes[set][k] = shape_getByName((u8 *)&ST->partShapes, name, 1);
 		}
 	for (int k = 0; k < 8; k++)
 		ST->effectShapes[k] = shape_getByName((u8 *)&ST->partShapes, (const char *)RELOC(singles[k]), 1);

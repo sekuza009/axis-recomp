@@ -574,7 +574,7 @@ void THISCALL (actor_updateAllParts)(u8 *s, int a, void *vv, int draw)
 		tint[3] = 0xff;
 	} else
 		tint = NULL;
-	u32 light = tint && tint[3] <= 0x10 ? (u32)(s + 0x20f2f48) : 0;
+	u32 light = tint && tint[3] <= 0x10 ? (u32)st->lightMatrix : 0;
 	u8 *lights = (u8 *)&((Stage *)s)->actorLights;
 	int ok = 1;
 	u32 f;
@@ -583,7 +583,7 @@ void THISCALL (actor_updateAllParts)(u8 *s, int a, void *vv, int draw)
 			ok = partList_queue(weapon_list(ac), vv, lights, tint, 1, (u32)-1, light) & 1;
 			f = ((u32)AC->timerFlags);
 			if ((f & 0x100) || (f & 0xc00))
-				ok &= partList_queue(weapon_list(ac), vv, lights, tint, 1, flag_light(s, f), (u32)(s + 0x20f2f88));
+				ok &= partList_queue(weapon_list(ac), vv, lights, tint, 1, flag_light(s, f), (u32)st->litMatrix);
 		}
 	} else if (draw != 1) {
 		f = ((u32)AC->timerFlags);
@@ -617,7 +617,7 @@ void THISCALL (actor_updateAllParts)(u8 *s, int a, void *vv, int draw)
 			u32 lt = flag_light(s, f);
 			for (int k = 0; k < 8; k++)
 				if (k != 4 || !AC->viewMarked)
-					ok &= partList_queue(ac + k_partLists[k], vv, lights, tint, 1, lt, (u32)(s + 0x20f2f88));
+					ok &= partList_queue(ac + k_partLists[k], vv, lights, tint, 1, lt, (u32)st->litMatrix);
 		}
 	}
 	AC->viewMarked = 0;

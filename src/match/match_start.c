@@ -215,17 +215,19 @@ void THISCALL (game_processGameModeInit)(Scene *s)
    +0x20f3ad4 and 13 +0x20f3ad8. Its callers ignore the eax it leaves */
 void THISCALL (game_setGameTypeFlags)(u8 *scene, int t)
 {
-	static const u16 second[14] = { 0, 0, 0x20f3ac0 - 0x20f3ab8, 0x20f3ac0 - 0x20f3ab8, 0x20f3ac4 - 0x20f3ab8, 0x20f3ac4 - 0x20f3ab8,
-		0x20f3ac8 - 0x20f3ab8, 0x20f3ac8 - 0x20f3ab8, 0x20f3acc - 0x20f3ab8, 0x20f3acc - 0x20f3ab8, 0x20f3ad0 - 0x20f3ab8,
-		0x20f3ad0 - 0x20f3ab8, 0x20f3ad4 - 0x20f3ab8, 0x20f3ad8 - 0x20f3ab8 };
-	u8 *flags = scene + 0x20f3ab8;
+#define AT(field) (offsetof(Stage, field) - offsetof(Stage, gameType))
+	static const u16 second[14] = { 0, 0, AT(suddenDeath), AT(suddenDeath), AT(shotgunArena), AT(shotgunArena), AT(ionCannonArena),
+		AT(ionCannonArena), AT(rocketArena), AT(rocketArena), AT(gladiator), AT(gladiator), AT(kingOfTheHill), AT(platoon) };
+#undef AT
+	Stage *st = (Stage *)scene;
+	u8 *flags = scene + offsetof(Stage, gameType);
 	for (int k = 1; k <= 8; k++)
-		FIELD(int, flags, k * 4) = 0;
-	FIELD(int, flags, 0) = t;
+		FIELD(int, flags, k * 4) = 0;   /* teamGame .. platoon */
+	st->gameType = t;
 	if (t < 1 || t > 13)
 		return;
 	if (t % 2)
-		FIELD(int, flags, 4) = 1;
+		st->teamGame = 1;
 	if (second[t])
 		FIELD(int, flags, second[t]) = 1;
 }
@@ -299,7 +301,7 @@ void THISCALL (item_initTextures)(u8 *s, u32 a1, u32 a2, const char *sky, u32 a4
 	char name[0x100];
 	for (int i = 0; i < 10; i++) {
 		sprintf(name, (const char *)STR(0x4c7410, "%s\\%02d"), sky, i);
-		FIELD(int, s, 0x9ccfd4 + i * 4) = tex_getIdByName((*(void **)&g_textures), name, i > 7, 0, 0, 0, 0, 0, 0);
+		st->effectTextures[i] = tex_getIdByName((*(void **)&g_textures), name, i > 7, 0, 0, 0, 0, 0, 0);
 	}
 	Light_clearCounts((u8 *)&((Stage *)s)->mapLights);
 	factors_addConstant((u8 *)&((Stage *)s)->mapLights, (const void *)OBJ(g_packedWhite));
@@ -379,7 +381,7 @@ void THISCALL (item_initTextures)(u8 *s, u32 a1, u32 a2, const char *sky, u32 a4
 	}
 	memcpy(st->worldLow, st->levelLow, 12);
 	FIELD(u32, s, 0x9ef934) = 0x3f800000;
-	FIELD(int, s, 0xdc0240) = 0;
+	st->poolUsed = 0;
 	memcpy(st->worldHigh, st->levelHigh, 12);
 	st->groundLayerCount = 0;
 	st->layerModel.parts = st->layerParts;
@@ -409,19 +411,19 @@ void THISCALL (item_initTextures)(u8 *s, u32 a1, u32 a2, const char *sky, u32 a4
 	static const u32 names[3] = { STR(0x4c73f4, "Texture\\Item_damagemap_ani0"), STR(0x4c73d8, "Texture\\Item_booster_ani0"), STR(0x4c73bc, "Texture\\Item_shield_ani0") };
 	for (int k = 0; k < 3; k++) {
 		sprintf(name, (const char *)RELOC(names[k]));
-		FIELD(int, s, 0x20f2f3c + k * 4) = tex_getIdByName((*(void **)&g_textures), name, 0, 0, 0, 0, 0, 0, 0);
+		st->itemTextures[k] = tex_getIdByName((*(void **)&g_textures), name, 0, 0, 0, 0, 0, 0, 0);
 	}
 	for (int k = 0; k < 16; k++) {
-		FIELD(u32, s, 0x20f2f48 + k * 4) = k % 5 == 0 ? 0x3f800000 : 0;
-		FIELD(u32, s, 0x20f2f88 + k * 4) = k == 15 ? 0x3f800000 : k % 5 == 0 ? 0x3f8ccccd : 0;   /* 1.1 */
+		BITS(st->lightMatrix[k]) = k % 5 == 0 ? 0x3f800000 : 0;
+		BITS(st->litMatrix[k]) = k == 15 ? 0x3f800000 : k % 5 == 0 ? 0x3f8ccccd : 0;   /* 1.1 */
 	}
 	glGenTextures(1, &st->emblemTexture);   /* glGenTextures */
 	for (int k = 0; k < 0x2000; k++)
-		FIELD(u32, s, 0x20fcfe4 + k * 4) = (*(u32 *)&g_defaultColour);
+		st->emblemAtlas[k / 128][k % 128] = (*(u32 *)&g_defaultColour);
 	st->showExp = 0;
 	game_setGameTypeFlags((Stage *)s, 0);
 	scene_resetActors(s);
 	scene_reset(s);
-	FIELD(int, s, 4) = 1;
+	st->built = 1;
 }
 #undef K
