@@ -192,18 +192,18 @@ void THISCALL (space_initBy)(u8 *space, int planes, int nodes, int units, int bl
 	SP->planes.count = planes;
 	SP->nodes.count = nodes;
 	SP->cellCapacity = cells;
-	int need = FIELD(int, 4) = planes * 0xac + nodes * 0x10 + units * 0x14 + blocks * 0x50 + cells * 2;
+	int need = SP->blockSize = planes * 0xac + nodes * 0x10 + units * 0x14 + blocks * 0x50 + cells * 2;
 	if (!mem) {
-		FIELD(void *, 8) = operator_new(need);
-		if (!FIELD(void *, 8))
-			sys_fatalError((char *)OBJ(g_logCollisionVolume), (const char *)STR(0x4c4cec, "insufficient memory for dataMemory(%d..."), FIELD(int, 4));
-		FIELD(int, 0xc) = 1;
+		SP->block = operator_new(need);
+		if (!SP->block)
+			sys_fatalError((char *)OBJ(g_logCollisionVolume), (const char *)STR(0x4c4cec, "insufficient memory for dataMemory(%d..."), SP->blockSize);
+		SP->ownsBlock = 1;
 	} else {
 		if (size < need)
 			sys_fatalErrorN((char *)OBJ(g_logCollisionVolume), (const char *)STR(0x4c4cbc, "reserved dataMemory overflow(%d/%d) -..."), need, size);
-		FIELD(void *, 8) = mem;
+		SP->block = mem;
 	}
-	u8 *block = FIELD(u8 *, 8);
+	u8 *block = SP->block;
 	SP->planes.records = SP->planes.freeHead = block;
 	int at = SP->planes.count * 0xac;
 	SP->nodes.records = block + at;

@@ -535,7 +535,7 @@ static void item_pickup(u8 *s, u8 *ac, u8 *it, int i, u8 *t, int type)
 			return;
 		}
 		int k = type < 10 ? type : 6 + type % 10;
-		if (A(u8, 0x3f0) & k_supplies[k].flag)
+		if (*(const u8 *)&AC->timerFlags & k_supplies[k].flag)
 			return;
 		int limit = A(int, k_supplies[k].limit) + k_supplies[k].over;
 		A(int, k_supplies[k].count) += k_supplies[k].add;

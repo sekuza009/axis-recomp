@@ -232,7 +232,7 @@ static int tag_narrow(u8 *ac, u32 k)
    (+0x2149308 / +0x214930c) are set, every active light (flag 1) glows (object_glow). Every live actor gets its
    screen position and depth (+0x87bc); another than the viewer (+0x202e8d8) that is in view with a clear line of
    sight also gets its name-tag corners (its radius +0x3e8 out), a too-small flag (+0x484), and unless cloaked at the
-   local player's rank or above, when the local player faces it (its cosine +0x87e4 against the table 0xa17f38 by
+   local player's rank or above, when the local player faces it (its facingCos against the table 0xa17f38 by
    the local player's heading +4), a timer (+0x87e8) for enemies of a player with a weapon and a tag size (+0x87f0
    3 when the tag is wide); +0x87e0 says it is tagged. Its callers ignore the eax it leaves */
 void THISCALL (camera_setupView)(u8 *s, const float *pos, const float *dir, const float *up, float fov, int w, int h, float nr,
@@ -314,7 +314,7 @@ void THISCALL (camera_setupView)(u8 *s, const float *pos, const float *dir, cons
 			continue;
 		}
 		long double cosv = -fld_m(&e[2]) / x87_fsqrt(fmul_m(fld_m(&e[2]), &e[2]) + fmul_m(fld_m(&e[1]), &e[1]) + fmul_m(fld_m(&e[0]), &e[0]));
-		A(float, 0x87e4) = f32(cosv);
+		AC->facingCos = f32(cosv);
 		int heading = ftol(fld_m((const float *)(me + 4)));
 		if (!(cosv > GAME_VAR(float, OBJ(g_cosTable) + ((heading % 3600 + 3600) % 3600) * 4))) {
 			AC->lockedOn = 0.0f;

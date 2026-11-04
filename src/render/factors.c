@@ -96,18 +96,18 @@ void THISCALL (factor_initBy)(u8 *view, int a, int b, int c, int d, int e, int f
 	VV->triangleLimit = d;
 	VV->quadLimit = e;
 	VV->segmentLimit = f;
-	int need = FIELD(int, 4) = a * 0x1c + b * 0x40 + c * 4 + d * 0x68 + e * 0x64 + f * 0x24;
+	int need = VV->blockSize = a * 0x1c + b * 0x40 + c * 4 + d * 0x68 + e * 0x64 + f * 0x24;
 	if (!mem) {
-		FIELD(void *, 8) = operator_new(need);
-		if (!FIELD(void *, 8))
-			sys_fatalError((char *)OBJ(g_logViewVolume), (const char *)STR(0x4c4cec, "insufficient memory for dataMemory(%d..."), FIELD(int, 4));
-		FIELD(int, 0xc) = 1;
+		VV->block = operator_new(need);
+		if (!VV->block)
+			sys_fatalError((char *)OBJ(g_logViewVolume), (const char *)STR(0x4c4cec, "insufficient memory for dataMemory(%d..."), VV->blockSize);
+		VV->ownsBlock = 1;
 	} else {
 		if (size < need)
 			sys_fatalErrorN((char *)OBJ(g_logViewVolume), (const char *)STR(0x4c4cbc, "reserved dataMemory overflow(%d/%d) -..."), need, size);
-		FIELD(void *, 8) = mem;
+		VV->block = mem;
 	}
-	u8 *block = FIELD(u8 *, 8);
+	u8 *block = VV->block;
 	VV->entries = block;
 	int at = VV->entryLimit * 0x1c;
 	VV->matrices = block + at;

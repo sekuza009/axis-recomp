@@ -73,9 +73,9 @@ static void first_round(Scene *s)
 	if (s->showEmblems == 1) {
 		BITS(s->emblemTime) = 0x43960000;   /* 300 */
 		g_titleScore++;
-		FIELD(int, s, 0x22e717c) = 1;        /* (in projection's last dword) */
+		s->emblemMatch = 1;
 	} else
-		FIELD(int, s, 0x22e717c) = 0;
+		s->emblemMatch = 0;
 	make_rotation(s);
 	if (s->rotationCount > 0)
 		game_setGameTypeFlags(STAGE(s), s->rotation[s->rotationAt].mode);

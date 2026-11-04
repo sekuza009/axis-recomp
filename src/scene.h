@@ -335,7 +335,7 @@ typedef struct Player {
 	float tagTopLeft[3];   /* +0x87c8: (by use) its radius box's top-left corner on the screen (x, y: the marks stand on y), the depth */
 	float tagBottomRight[3];   /* +0x87d4: the box's bottom-right corner (tag_narrow: the width from these) */
 	i32 onScreen;   /* +0x87e0: 1: projected in front of the camera */
-	u8 _pad00087e4[0x4];
+	float facingCos;   /* +0x87e4: (by use) the cosine of its angle off the local player's view (render: who faces it) */
 	float lockedOn;   /* +0x87e8: > 0: locked on by the local player */
 	float lockSize;   /* +0x87ec: how far the lock-on box still has to close */
 	float labelFade;   /* +0x87f0: > 0: the name label is up (alpha labelFade / 3) */
@@ -554,7 +554,10 @@ typedef struct SpaceBlock {
 
 /* the collision space (space_pools.c; the size is unknown: only the fields used) */
 typedef struct Space {
-	u8 _pad0000000[0x10];
+	u8 _pad0000000[0x4];
+	i32 blockSize;   /* +0x4: its pools' memory (space_initBy: allocated when none is given) */
+	u8 *block;   /* +0x8 */
+	i32 ownsBlock;   /* +0xc: 1: allocated here */
 	SpacePool planes;   /* +0x10: 0xac-byte planes */
 	SpacePool nodes;   /* +0x20: 0x10-byte nodes */
 	SpacePool units;   /* +0x30: 0x14-byte units */
@@ -823,8 +826,9 @@ typedef struct ViewTriangle {
 
 /* the view volume: what a frame draws, queued by material and depth (view_volume.c, factors.c; the size is unknown: only the fields used) */
 typedef struct ViewVolume {
-	u8 _pad0000000[0x8];
-	u8 *block;   /* +0x8: (by use) its lists' memory */
+	u8 _pad0000000[0x4];
+	i32 blockSize;   /* +0x4: (by use) its lists' memory (factor_initBy) */
+	u8 *block;   /* +0x8 */
 	i32 ownsBlock;   /* +0xc: 1: allocated here (freed with it) */
 	i32 entryPointsSet;   /* +0x10: (by use) set once its three GL entry points are looked up (+0x14 .. +0x1c) */
 	void *glArrays[3];   /* +0x14: (by use) the GL vertex / colour / texture-coordinate array entry points (wglGetProcAddress; none: the GL 1.1 ones) */
@@ -1618,8 +1622,11 @@ typedef struct Scene {
 	u8 _pad2221fc8[0x180];
 	float lockTimers[16];   /* +0x2222148: per player: the lock-on building up (> 0) */
 	u8 _pad2222188[0xc4ee0];
-	u8 modelview[0x94];   /* +0x22e7068: (unclear) matrices captured for the overlay parts */
-	u8 projection[0x84];   /* +0x22e70fc */
+	float modelview[16];   /* +0x22e7068: the view matrix the overlay parts are drawn with (ViewVolume_captureMatrices) */
+	u8 _pad22e70a8[0x54];
+	float projection[16];   /* +0x22e70fc: and its projection (hud_pass) */
+	u8 _pad22e713c[0x40];
+	i32 emblemMatch;   /* +0x22e717c: (by use) 1: the match started with emblems shown (first_round); not read */
 	i32 gameMode;   /* +0x22e7180: index into g_gameModeNames */
 	i32 teamGame;   /* +0x22e7184: 1: teams */
 	u8 _pad22e7188[0x14];
@@ -2126,6 +2133,7 @@ _Static_assert(offsetof(Player, screenPos) == 0x87bc && sizeof(((Player *)0)->sc
 _Static_assert(offsetof(Player, tagTopLeft) == 0x87c8 && sizeof(((Player *)0)->tagTopLeft) == 0xc, "scene.fields: Player.tagTopLeft");
 _Static_assert(offsetof(Player, tagBottomRight) == 0x87d4 && sizeof(((Player *)0)->tagBottomRight) == 0xc, "scene.fields: Player.tagBottomRight");
 _Static_assert(offsetof(Player, onScreen) == 0x87e0 && sizeof(((Player *)0)->onScreen) == 0x4, "scene.fields: Player.onScreen");
+_Static_assert(offsetof(Player, facingCos) == 0x87e4 && sizeof(((Player *)0)->facingCos) == 0x4, "scene.fields: Player.facingCos");
 _Static_assert(offsetof(Player, lockedOn) == 0x87e8 && sizeof(((Player *)0)->lockedOn) == 0x4, "scene.fields: Player.lockedOn");
 _Static_assert(offsetof(Player, lockSize) == 0x87ec && sizeof(((Player *)0)->lockSize) == 0x4, "scene.fields: Player.lockSize");
 _Static_assert(offsetof(Player, labelFade) == 0x87f0 && sizeof(((Player *)0)->labelFade) == 0x4, "scene.fields: Player.labelFade");
@@ -2302,6 +2310,9 @@ _Static_assert(offsetof(SpaceBlock, children) == 0x28 && sizeof(((SpaceBlock *)0
 _Static_assert(offsetof(SpaceBlock, poolPrev) == 0x48 && sizeof(((SpaceBlock *)0)->poolPrev) == 0x4, "scene.fields: SpaceBlock.poolPrev");
 _Static_assert(offsetof(SpaceBlock, poolNext) == 0x4c && sizeof(((SpaceBlock *)0)->poolNext) == 0x4, "scene.fields: SpaceBlock.poolNext");
 _Static_assert(sizeof(SpaceBlock) == 0x50, "scene.fields: size of SpaceBlock");
+_Static_assert(offsetof(Space, blockSize) == 0x4 && sizeof(((Space *)0)->blockSize) == 0x4, "scene.fields: Space.blockSize");
+_Static_assert(offsetof(Space, block) == 0x8 && sizeof(((Space *)0)->block) == 0x4, "scene.fields: Space.block");
+_Static_assert(offsetof(Space, ownsBlock) == 0xc && sizeof(((Space *)0)->ownsBlock) == 0x4, "scene.fields: Space.ownsBlock");
 _Static_assert(offsetof(Space, planes) == 0x10 && sizeof(((Space *)0)->planes) == 0x10, "scene.fields: Space.planes");
 _Static_assert(offsetof(Space, nodes) == 0x20 && sizeof(((Space *)0)->nodes) == 0x10, "scene.fields: Space.nodes");
 _Static_assert(offsetof(Space, units) == 0x30 && sizeof(((Space *)0)->units) == 0x10, "scene.fields: Space.units");
@@ -2496,6 +2507,7 @@ _Static_assert(offsetof(ViewTriangle, points) == 0x28 && sizeof(((ViewTriangle *
 _Static_assert(offsetof(ViewTriangle, matrix) == 0x58 && sizeof(((ViewTriangle *)0)->matrix) == 0x4, "scene.fields: ViewTriangle.matrix");
 _Static_assert(offsetof(ViewTriangle, kind) == 0x5c && sizeof(((ViewTriangle *)0)->kind) == 0x4, "scene.fields: ViewTriangle.kind");
 _Static_assert(sizeof(ViewTriangle) == 0x60, "scene.fields: size of ViewTriangle");
+_Static_assert(offsetof(ViewVolume, blockSize) == 0x4 && sizeof(((ViewVolume *)0)->blockSize) == 0x4, "scene.fields: ViewVolume.blockSize");
 _Static_assert(offsetof(ViewVolume, block) == 0x8 && sizeof(((ViewVolume *)0)->block) == 0x4, "scene.fields: ViewVolume.block");
 _Static_assert(offsetof(ViewVolume, ownsBlock) == 0xc && sizeof(((ViewVolume *)0)->ownsBlock) == 0x4, "scene.fields: ViewVolume.ownsBlock");
 _Static_assert(offsetof(ViewVolume, entryPointsSet) == 0x10 && sizeof(((ViewVolume *)0)->entryPointsSet) == 0x4, "scene.fields: ViewVolume.entryPointsSet");
@@ -3130,8 +3142,9 @@ _Static_assert(offsetof(Scene, roundWinner) == 0x2221fb0 && sizeof(((Scene *)0)-
 _Static_assert(offsetof(Scene, kingChanged) == 0x2221fb4 && sizeof(((Scene *)0)->kingChanged) == 0x4, "scene.fields: Scene.kingChanged");
 _Static_assert(offsetof(Scene, teamScores) == 0x2221fb8 && sizeof(((Scene *)0)->teamScores) == 0x10, "scene.fields: Scene.teamScores");
 _Static_assert(offsetof(Scene, lockTimers) == 0x2222148 && sizeof(((Scene *)0)->lockTimers) == 0x40, "scene.fields: Scene.lockTimers");
-_Static_assert(offsetof(Scene, modelview) == 0x22e7068 && sizeof(((Scene *)0)->modelview) == 0x94, "scene.fields: Scene.modelview");
-_Static_assert(offsetof(Scene, projection) == 0x22e70fc && sizeof(((Scene *)0)->projection) == 0x84, "scene.fields: Scene.projection");
+_Static_assert(offsetof(Scene, modelview) == 0x22e7068 && sizeof(((Scene *)0)->modelview) == 0x40, "scene.fields: Scene.modelview");
+_Static_assert(offsetof(Scene, projection) == 0x22e70fc && sizeof(((Scene *)0)->projection) == 0x40, "scene.fields: Scene.projection");
+_Static_assert(offsetof(Scene, emblemMatch) == 0x22e717c && sizeof(((Scene *)0)->emblemMatch) == 0x4, "scene.fields: Scene.emblemMatch");
 _Static_assert(offsetof(Scene, gameMode) == 0x22e7180 && sizeof(((Scene *)0)->gameMode) == 0x4, "scene.fields: Scene.gameMode");
 _Static_assert(offsetof(Scene, teamGame) == 0x22e7184 && sizeof(((Scene *)0)->teamGame) == 0x4, "scene.fields: Scene.teamGame");
 _Static_assert(offsetof(Scene, markersOff) == 0x22e719c && sizeof(((Scene *)0)->markersOff) == 0x4, "scene.fields: Scene.markersOff");
