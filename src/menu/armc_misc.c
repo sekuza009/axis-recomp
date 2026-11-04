@@ -576,26 +576,23 @@ void (armc_initCameraBox)(void)
 		GAME_VAR(u32, OBJ(g_armcCameraBox) - 0x40 + corner[k].offset) = corner[k].sign > 0 ? 0x442f0000 : corner[k].sign < 0 ? 0xc42f0000 : 0;
 }
 
-/* 0x40dfa0: the six parts' bounding boxes (+-600, 0x58 bytes each from 0x4dc550), their offsets, and the camera's
-   limits (200, 600, 2, -2) */
+/* 0x40dfa0: the six part panels (g_panels): their corners (+-600), x, angle cleared and turning speeds, and the
+   camera's limits (200, 600, 2, -2) */
 void (armc_initPartBoxes)(void)
 {
-	for (u32 p = (OBJ(g_panelBoxes) + 0x4); p < (OBJ(g_panelBoxes) + 0x4) + 6 * 0x58; p += 0x58) {   /* (the six boxes) */
-		static const signed char corner[] = { -1, -1, -1, 0, 1, -1, -1, 0, 1, -1, 1, 0, -1, -1, 1 };
+	for (Panel *p = g_panels; p < g_panels + 6; p++) {
+		static const signed char corner[] = { -1, -1, -1, 0, 1, -1, -1, 0, 1, -1, 1, 0, -1, -1, 1 };   /* (their pads kept) */
 		for (int k = 0; k < 15; k++)
 			if (corner[k])
-				GAME_VAR(u32, p - 4 + k * 4) = corner[k] > 0 ? 0x44160000 : 0xc4160000;
-		GAME_VAR(int, p + 0x3c) = 0;
-		GAME_VAR(int, p + 0x40) = 0;
-		GAME_VAR(int, p + 0x44) = 0;
-		GAME_VAR(int, p + 0x4c) = 0;
+				p->corners[k / 4][k % 4] = corner[k] > 0 ? 0x44160000 : 0xc4160000;
+		p->x = 0;
+		p->pad[0] = 0;
+		p->pad[1] = 0;
+		BITS(p->angle) = 0;
 	}
-	g_partBox0Offset = 0x3e19999a;   /* 0.15 */
-	g_partBox1Offset = 0xbeb33333;   /* -0.35 */
-	g_partBox2Offset = 0xbfc00000;   /* -1.5 */
-	g_partBox3Offset = 0x3fc00000;   /* 1.5 */
-	g_partBox4Offset = 0xbe3851ec;   /* -0.18 */
-	g_partBox5Offset = 0x3e3851ec;   /* 0.18 */
+	static const u32 speed[6] = { 0x3e19999a, 0xbeb33333, 0xbfc00000, 0x3fc00000, 0xbe3851ec, 0x3e3851ec };   /* 0.15, -0.35, -1.5, 1.5, -0.18, 0.18 */
+	for (int k = 0; k < 6; k++)
+		BITS(g_panels[k].speed) = speed[k];
 	(*(u32 *)&g_panelSize3) = 0x43480000;   /* 200 */
 	(*(u32 *)&g_panelSize2) = 0x44160000;   /* 600 */
 	(*(u32 *)&g_panelRate3) = 0x40000000;   /* 2 */

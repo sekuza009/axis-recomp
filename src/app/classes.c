@@ -60,11 +60,12 @@ void THISCALL (ints_set3)(int *p, int a, int b, int c)
 	p[2] = c;
 }
 
-/* 0x4569b0: TextureManager's members cleared, and its count */
+/* 0x4569b0: the texture sets' members cleared (TextureManager_clear: the six managers), and its count (the class at
+   0x83a5e0 is TextureSets, not a TextureManager) */
 int THISCALL (TextureManager_reset)(void *self)
 {
 	TextureManager_clear(self);
-	FIELD(int, self, 0x1c) = 0;
+	((TextureSets *)RELOC(self))->count = 0;
 	return 0;
 }
 
