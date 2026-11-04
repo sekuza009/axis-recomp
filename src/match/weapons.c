@@ -130,7 +130,7 @@ void THISCALL (bullet_playImpactSound)(u8 *scene, int attacker, int target, int 
 		ac->hitPending = 1;
 	}
 	BITS(ac->hitFlash) = 0x3f000000;   /* 0.5 */
-	if (target == FIELD(int, scene, 0x202e8d4))
+	if (target == ((Stage *)scene)->playerActor)
 		sound_playVolume(0xc, 100);
 #undef ACTOR
 }
@@ -166,12 +166,12 @@ void THISCALL (actor_checkLineOfSight)(u8 *scene, int p)
 	const float *from = (const float *)(RELOC(a) + 0x154), *range = (const float *)(RELOC(a) + 0x8848);
 	int lists[5], points[5], clear[5], n = 0;
 	u8 out[12];
-	for (int i = 0; i < FIELD(int, scene, 0xe3c938); i++) {
+	for (int i = 0; i < ((Stage *)scene)->triggerCount; i++) {
 		if (i == ac->stuckPath)
 			continue;
-		u8 *list = (u8 *)&((Stage *)scene)->triggers[i];
-		for (int j = 0; j < FIELD(int, list, 0); j++) {
-			const float *pt = (const float *)(FIELD(u8 *, list, 4) + j * 0x14);
+		const Trigger *list = &((Stage *)scene)->triggers[i];
+		for (int j = 0; j < list->wayPointCount; j++) {
+			const float *pt = ((const WayPoint *)list->wayPoints)[j].pos;
 			if (!within(&pt[0], &from[0], range) || !within(&pt[1], &from[1], range) || !within(&pt[2], &from[2], range))
 				continue;
 			if (n < 5) {
@@ -229,7 +229,7 @@ static u32 next_rand(u32 n)
 void THISCALL (bullet_init)(u8 *s, int slot, int id, int owner, int a4, const u8 *shot, int quiet)
 {
 	u8 *b = (u8 *)&ST->bullets[slot];
-	u8 *w = s + 0x14d1ab4 + GAME_VAR(int, shot + 4) * 0x2e18;
+	u8 *w = (u8 *)&ST->actorInfo[GAME_VAR(int, shot + 4)];
 	const float *o = (const float *)(shot + 8), *aim = (const float *)(shot + 0x18);
 	if (id >= 0)
 		BU->id = id;
@@ -297,7 +297,7 @@ void THISCALL (bullet_init)(u8 *s, int slot, int id, int owner, int a4, const u8
 			dir[k] = f32(fsub_m(fld_m(&aim[k]), &o[k]));
 		Vec3_normalize(dir);
 		int target = GAME_VAR(int, shot + 0x14);
-		BITS(BU->hit) = target >= 0 ? GAME_VAR(u32, s + 0xa24) + target * 0xac : 0;
+		BITS(BU->hit) = target >= 0 ? (u32)ST->collisionPlanes + target * 0xac : 0;
 		memcpy(BU->end, aim, 12);
 		BU->life = 10.0f;   /* 10 */
 	}
@@ -352,8 +352,6 @@ void THISCALL (bullet_init)(u8 *s, int slot, int id, int owner, int a4, const u8
 #define BU ((Bullet *)b)   /* the same by its fields (src/scene.fields) */
 #define W(type, offset) GAME_VAR(type, w + (offset))
 #define WI ((ActorInfo *)w)   /* the same by its fields (src/scene.fields) */
-#define AF(i, offset) GAME_VAR(float, s + (offset) + (i) * 0x8888)   /* an actor's field */
-#define AI(i, offset) GAME_VAR(int, s + (offset) + (i) * 0x8888)
 
 /* an effect (particle_spawn's record r, 31 words: kind, flag, a point, a direction, three words, the size, one
    more; the rest as the last effect left them) */
@@ -531,7 +529,7 @@ static void hit_actor(u8 *s, u8 *b, const u8 *w, u32 *r, int weapon)
 	effect(s, r, WI->shotMode + 0x1e, 0, b + 0x60, dir, 0, 0, 0, effect_size(w), 0);
 	effect(s, r, 8, ST->actors[BU->hitActor].timerFlags & 0x2000, b + 0x60, dir, 0, 0, 0, 0, 0);
 	if (WI->hitSound >= 0)
-		sound_play3D(WI->hitSound, s + 0x20f3970, b + 0x84, s + 0x20f397c, 0x47435000);
+		sound_play3D(WI->hitSound, ST->cameraPos, b + 0x84, ST->viewDir, 0x47435000);
 	if (BU->owner == ST->playerActor)
 		sound_playVolume(0xb, 100);
 	if (WI->push > 0) {
@@ -579,11 +577,11 @@ static void decal(u8 *s, u8 *b, const u8 *w, u32 *r, const u8 *h, const float *N
 	}
 	const int *obj = ((const CollisionPlane *)h)->object;
 	if (obj) {
-		u8 *part = GAME_VAR(u8 *, GAME_VAR(u8 *, s + 0x131b0c0 + *obj * 0x2cc) + 0x14) + ((const CollisionPlane *)h)->part * 0x80;
+		const ShapePart *part = (const ShapePart *)ST->objects[*obj].model->parts + ((const CollisionPlane *)h)->part;
 		float tri[9];
 		for (int k = 0; k < 3; k++)
-			memcpy(tri + k * 3, GAME_VAR(float *, part + 0x50) + ((const CollisionPlane *)h)->cornerIndices[k] * 3, 12);
-		effect(s, r, WI->shotMode + 0x28, 0, imp, N, (u32)(s + 0x131af38 + *((const CollisionPlane *)h)->object * 0x2cc), (u32)tri, (u32)uv, 0, 0);
+			memcpy(tri + k * 3, (const float *)part->vertices + ((const CollisionPlane *)h)->cornerIndices[k] * 3, 12);
+		effect(s, r, WI->shotMode + 0x28, 0, imp, N, (u32)ST->objects[*((const CollisionPlane *)h)->object].matrix, (u32)tri, (u32)uv, 0, 0);
 	} else
 		effect(s, r, WI->shotMode + 0x28, 0, imp, N, 0, (u32)P, (u32)uv, effect_size(w), 0);
 }
@@ -622,7 +620,7 @@ static void hit_surface(u8 *s, u8 *b, const u8 *w, u32 *r)
 	if (!(*(*(const u8 * *)&BU->hit) & 0x10) && g_items3D == 1)
 		decal(s, b, w, r, (*(const u8 * *)&BU->hit), N, P);
 	if (WI->hitSound >= 0)
-		sound_play3D(WI->hitSound, s + 0x20f3970, b + 0x60, s + 0x20f397c, 0x47435000);
+		sound_play3D(WI->hitSound, ST->cameraPos, b + 0x60, ST->viewDir, 0x47435000);
 	BU->hitWorld = 1;
 }
 
@@ -677,7 +675,7 @@ static void home(u8 *s, u8 *b, const u8 *w)
 	}
 	int tg = BU->link;
 	for (int k = 0; k < 3; k++)
-		T[k] = f32(fsub_m(fld_m(tg >= 0 ? &AF(tg, 0x1cd9528 + k * 4) : (const float *)(RELOC(b) + 0xc4) + k), &prev[k]));
+		T[k] = f32(fsub_m(fld_m(tg >= 0 ? &ST->actors[tg].nextPos[k] : (const float *)(RELOC(b) + 0xc4) + k), &prev[k]));
 	Vec3_normalize(T);
 	Vec3_normalize(vel);
 	long double dot = (fmul_m(fld_m(&T[2]), &vel[2]) + fmul_m(fld_m(&T[1]), &vel[1])) + fmul_m(fld_m(&T[0]), &vel[0]);
@@ -735,8 +733,8 @@ static void fly_local(u8 *s, u8 *b, const u8 *w, const float *dt)
 	for (int j = 0; j < ST->actorCount; j++) {
 		if (ST->actors[j].state != 1 || !(ST->actors[j].blinkTime > 3.0f) || j == BU->owner || ST->actors[j].cameraValue != 0)
 			continue;
-		float radius = f32(fadd_m(fld_m(&AF(j, 0x1cd9790)), &WI->flashSize));
-		if (math_segmentSphere(prev, cur, dir, &AF(j, 0x1cd9528), radius, hit, &t) == 1 && !(t >= best)) {
+		float radius = f32(fadd_m(fld_m(&ST->actors[j].radius), &WI->flashSize));
+		if (math_segmentSphere(prev, cur, dir, ST->actors[j].nextPos, radius, hit, &t) == 1 && !(t >= best)) {
 			BU->hitActor = j;
 			memcpy(cur, hit, 12);
 			memcpy(BU->end, hit, 12);
@@ -799,7 +797,7 @@ void THISCALL (bullet_update)(u8 *s, int slot, u32 dt_bits)
 		long double age = fadd_m(fld_m(dt), &BU->age);
 		BU->age = (float)age;
 		if (age > BU->life)
-			AI(BU->owner, 0x1cd971c) = 1;
+			ST->actors[BU->owner].sendFlag = 1;
 		BU->moved = 0;
 		return;
 	}
@@ -818,5 +816,3 @@ void THISCALL (bullet_update)(u8 *s, int slot, u32 dt_bits)
 #undef BU
 #undef W
 #undef WI
-#undef AF
-#undef AI
