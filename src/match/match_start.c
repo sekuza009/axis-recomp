@@ -247,7 +247,7 @@ void THISCALL (scene_reset)(u8 *s)
 	Stage *st = (Stage *)s;
 	stage_resetLights(s);
 	memset(s + 0x202ea80, 0, 0x64 * 4);
-	st->bulletCount = 0;
+	st->lockCount = 0;
 	stage_clearMapObjects(s);
 	stage_clearBullets(s);
 	stage_clearProjectiles(s);
@@ -261,10 +261,10 @@ void THISCALL (scene_reset)(u8 *s)
 	st->startCount = 0;
 	st->itemCount = 0;
 	st->lastPickup = -1;
-	st->clockSeconds = (*(int *)&st->clockFraction) = FIELD(int, s, 0x20fcd48) = 0;
+	st->clockSeconds = (*(int *)&st->clockFraction) = st->holdFire = 0;
 	s[0x20fcd4c] = 0;
 	st->kingActor = -1;
-	memset(s + 0x20fce50, 0xff, 0x64 * 4);
+	memset(st->teamCommanders, 0xff, 0x64 * 4);
 	stage_clearMapItemCounts(s);
 	script_reset(st);
 	scene_initLevelGrid(s);

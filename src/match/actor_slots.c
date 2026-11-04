@@ -260,8 +260,8 @@ void THISCALL (actor_deactivate)(Stage *stage, int i)
 	if (stage->kingActor == i)
 		stage->kingActor = -1;
 	int team = FIELD(int, a, 0x1cd94c0);
-	if (team > -1 && FIELD(int, stage, 0x20fce50 + team * 4) == i)
-		FIELD(int, stage, 0x20fce50 + team * 4) = -1;
+	if (team > -1 && stage->teamCommanders[team] == i)
+		stage->teamCommanders[team] = -1;
 	FIELD(int, stage, 0x202ea80 + i * 4) = 0;
 	if (i < stage->actorFreeHint)
 		stage->actorFreeHint = i;

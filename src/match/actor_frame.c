@@ -224,7 +224,7 @@ static void actor_dies(u8 *s, u8 *a, int i, u32 *fx, float *v28)
 				ST->frags[1] += n;
 			else
 				ST->frags[0] += n;
-			GAME_VAR(int, s + 0x20fce50 + AC->team * 4) = -1;
+			ST->teamCommanders[AC->team] = -1;
 		}
 	} else if (k != i) {   /* teams */
 		int lv = AC->emblem;
@@ -252,7 +252,7 @@ static void actor_dies(u8 *s, u8 *a, int i, u32 *fx, float *v28)
 		AC->deaths++;
 	GAME_VAR(int, s + 0x202ea80 + i * 4) = 0;
 	AC->killPending = 1;
-	GAME_VAR(int, s + 0x202e8e8) = i;
+	ST->lastDeath = i;
 }
 
 /* a timer down to 0 */
@@ -359,7 +359,7 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 			aimed = 1;
 			if (AC->alert == 0 && AC->bot != 0 && AC->botTarget < 0) {
 				int t = ST->bullets[k].owner;
-				if (ST->actors[t].team != AC->team && ST->actors[t].state == 1 && (!(ST->actors[t].timerFlags & 0x200) || OI(t, 0x1cd93b0) < AC->hackingLevel)) {
+				if (ST->actors[t].team != AC->team && ST->actors[t].state == 1 && (!(ST->actors[t].timerFlags & 0x200) || ST->actors[t].hackingLevel < AC->hackingLevel)) {
 					AC->botTarget = t;
 					AC->botTargetTime = 10.5f;   /* 10.5 */
 					actor_pickRandomWeapon(s, i);
@@ -388,14 +388,14 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 			AC->scanTime = (float)v;
 			int k = AC->lastAttacker;
 			if (AC->hitFlash > 0 && k != i && ST->actors[k].team != AC->team && ST->actors[k].state == 1 && AC->botTarget != k
-			    && (!(ST->actors[k].timerFlags & 0x200) || OI(k, 0x1cd93b0) < AC->hackingLevel)) {   /* the one who hit it */
+			    && (!(ST->actors[k].timerFlags & 0x200) || ST->actors[k].hackingLevel < AC->hackingLevel)) {   /* the one who hit it */
 				AC->botTarget = k;
 				AC->botTargetTime = 10.5f;
 				actor_pickRandomWeapon(s, i);
 			} else if (!(v > 0) && !(AU8(0x87f4) & 2)) {
 				if (AC->botTarget < 0) {   /* the first other team's actor in sight within its range (+0) */
 					for (int j = 0; j < ST->actorCount; j++) {
-						if (j == i || ST->actors[j].state != 1 || ST->actors[j].team == AC->team || ((ST->actors[j].timerFlags & 0x200) && OI(j, 0x1cd93b0) >= AC->hackingLevel))
+						if (j == i || ST->actors[j].state != 1 || ST->actors[j].team == AC->team || ((ST->actors[j].timerFlags & 0x200) && ST->actors[j].hackingLevel >= AC->hackingLevel))
 							continue;
 						float d[3];
 						const float *at = &ST->actors[j].pos[0];
@@ -414,13 +414,13 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 				} else {
 					int t = AC->botTarget;
 					if (collision_rayTrace(s, &AC->pos[0], &ST->actors[t].pos[0], v28) != 0
-					    || ((ST->actors[AC->botTarget].timerFlags & 0x200) && OI(AC->botTarget, 0x1cd93b0) >= AC->hackingLevel)) {   /* lost from sight */
+					    || ((ST->actors[AC->botTarget].timerFlags & 0x200) && ST->actors[AC->botTarget].hackingLevel >= AC->hackingLevel)) {   /* lost from sight */
 						if (!(AC->botTargetTime > 0))
 							AC->botTarget = -1;
 						else
 							for (int j = 0; j < ST->actorCount; j++) {
 								if (j == i || ST->actors[j].state != 1 || ST->actors[j].team == AC->team
-								    || ((ST->actors[j].timerFlags & 0x200) && OI(j, 0x1cd93b0) >= AC->hackingLevel))
+								    || ((ST->actors[j].timerFlags & 0x200) && ST->actors[j].hackingLevel >= AC->hackingLevel))
 									continue;
 								if (collision_rayTrace(s, &AC->pos[0], &ST->actors[j].pos[0], v28) == 0) {
 									AC->botTarget = j;
@@ -432,7 +432,7 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 				}
 				AC->scanTime = 0.5f;   /* 0.5 */
 			}
-			if (AC->botTarget >= 0 && GAME_VAR(int, s + 0x20fcd48) == 0) {   /* fire in bursts */
+			if (AC->botTarget >= 0 && ST->holdFire == 0) {   /* fire in bursts */
 				v = fsub_m(fld_m(&AC->burstPause), dt);
 				AC->burstPause = (float)v;
 				if (!(v > 0)) {
@@ -689,7 +689,7 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 		for (int j = 0; j < ST->actorCount; j++) {   /* slide around the other live actors */
 			if (ST->actors[j].state != 1 || j == i || ST->actors[j].cameraValue != 0)
 				continue;
-			float r = f32(fmul_m(fadd_m(fld_m(&OF(j, 0x1cd9790)), &AC->radius), K(0x4a9730)));
+			float r = f32(fmul_m(fadd_m(fld_m(&ST->actors[j].radius), &AC->radius), K(0x4a9730)));
 			if (math_segmentSphere(AC->pos, AC->nextPos, dir, &ST->actors[j].pos[0], r, hit, hit_t) != 1)
 				continue;
 			memcpy(AC->nextPos, hit, 12);
@@ -867,9 +867,9 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 		hold(grip, weapon + 0x2d94 + AC->variantLoaded * 12, 1, &AC->weaponLower);
 	skel_poseBones(a + 0x701c, 0);
 	glPopMatrix();
-	if (i == ST->playerActor) {   /* the lock-on warnings (s+0x202ea80 per actor), sorted longest first */
-		float *lock = &GAME_VAR(float, s + 0x202ea80);
-		int *count = &ST->bulletCount;
+	if (i == ST->playerActor) {   /* the lock-on warnings (lockWarnings per actor), sorted longest first (lockTimes / lockIds) */
+		float *lock = ST->lockWarnings;
+		int *count = &ST->lockCount;
 		if (weapon && ((ActorInfo *)weapon)->ringRange > 0) {
 			for (int j = 0; j < ST->actorCount; j++) {
 				float *seen = &ST->actors[j].lockSize;
@@ -899,11 +899,11 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 			*count = 0;
 			for (int j = 0; j < ST->actorCount; j++)
 				if (lock[j] > 0) {
-					BITS(GAME_VAR(float, s + 0x202ec10 + *count * 4)) = BITS(lock[j]);
-					GAME_VAR(int, s + 0x202eda0 + *count * 4) = j;
+					BITS(ST->lockTimes[*count]) = BITS(lock[j]);
+					ST->lockIds[*count] = j;
 					++*count;
 				}
-			float *t = &GAME_VAR(float, s + 0x202ec10);
+			float *t = ST->lockTimes;
 			if (*count > 0)
 				for (int k = 1; k - 1 < *count; k++)
 					for (int m = k; m < *count; m++)
@@ -911,7 +911,7 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 							long double was = fld_m(&t[k - 1]);
 							BITS(t[k - 1]) = BITS(t[m]);
 							t[m] = (float)was;
-							int *id = &GAME_VAR(int, s + 0x202eda0);
+							int *id = ST->lockIds;
 							int w = id[m];
 							id[m] = id[k - 1];
 							id[k - 1] = w;
@@ -1047,8 +1047,8 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 					rec[9] = (u32)(uintptr_t)q;
 					int target;
 					if (i == ST->playerActor) {
-						int c = ST->bulletCount;
-						target = c > 0 ? GAME_VAR(int, s + 0x202eda0 + (n % c) * 4) : -1;
+						int c = ST->lockCount;
+						target = c > 0 ? ST->lockIds[n % c] : -1;
 					} else
 						target = AC->botTarget;
 					AI(0x360 + k * 4) = bullet_spawn(s, -1, i, target, rec, n);
@@ -1110,7 +1110,7 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 			if (GAME_VAR(int, b + 4) != 1)
 				continue;
 			GAME_VAR(u32, b + 0xb8) = f[1];
-			GAME_VAR(int, b + 0x6c) = array_recordAt(f[2], GAME_VAR(u32, s + 0xa24), 0xac);
+			GAME_VAR(int, b + 0x6c) = array_recordAt(f[2], BITS(ST->collisionPlanes), 0xac);
 			if (f[3] == 1)
 				GAME_VAR(float, b + 0x74) = f32(fsub_m(fld_m(&GAME_VAR(float, b + 0x70)), dt));
 			memcpy(b + 0x90, f + 4, 12);
@@ -1151,7 +1151,7 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 			AC->effectScale = 3.0f;
 		if (i != ST->selectedActor && AC->viewMarked == 0) {   /* the legs' and booster's emitters, faint when cloaked or hurt */
 			BITS(v28[0]) = BITS(AC->effectScale);
-			if ((((u32)AC->timerFlags) & 0x200) && AC->hackingLevel >= OI(ST->playerActor, 0x1cd93b0))
+			if ((((u32)AC->timerFlags) & 0x200) && AC->hackingLevel >= ST->actors[ST->playerActor].hackingLevel)
 				BITS(v28[1]) = 0x3d808081;   /* 1/255 */
 			else if (AC->blinkTime > 3.0f)
 				BITS(v28[1]) = 0x3f800000;
@@ -1167,7 +1167,7 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 		if (v > *K(0x4a9704)) {
 			if (i == ST->playerActor && (AC->warned == 1 || AC->overheat == 1) && !(AC->timers[2] > 0))
 				sound_playVolume(0x10, 0x64);   /* out of breath */
-			if (i != GAME_VAR(int, s + 0x202e8dc)) {
+			if (i != ST->silentActor) {
 				int step = GAME_VAR(int, booster + 0x17fc);
 				if (i == ST->playerActor)
 					sound_playVolume(AC->inBooster == 0 ? step : step + 3, AC->inBooster == 0 ? 0x28 : 0x50);
@@ -1196,7 +1196,7 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 		long double g = fsub_m(fld_m(K(0x4a942c)), &AC->fireAnim);
 		AC->glow = (float)(g + g);
 	}
-	if ((((u32)AC->timerFlags) & 0x200) && AC->hackingLevel >= OI(ST->playerActor, 0x1cd93b0)) {
+	if ((((u32)AC->timerFlags) & 0x200) && AC->hackingLevel >= ST->actors[ST->playerActor].hackingLevel) {
 		if (AC->effectScale > 1.0f)
 			AC->glow = f32(fadd_m(fmul_m(fsub_m(fld_m(&AC->effectScale), K(0x4a9424)), K(0x4a94f8)), &AC->glow));
 	} else

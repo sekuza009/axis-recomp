@@ -887,12 +887,13 @@ typedef struct Stage {
 	i32 silentActor;   /* +0x202e8dc: (by use) stage_setSilentActor's value */
 	i32 cameraTarget;   /* +0x202e8e0: (by use) the actor the camera follows (-1 none; camera_setTarget) */
 	i32 cameraTargetMode;   /* +0x202e8e4 */
-	u8 _pad202e8e8[0x4];
+	i32 lastDeath;   /* +0x202e8e8: (by use) the actor that died last */
 	i32 teamsChanged;   /* +0x202e8ec: (by use) 1: an actor joined or changed team */
 	i32 frags[100];   /* +0x202e8f0: (by use) frags by team (a kill counts for the other team's slot); cleared together (stage_clearActorRefs) */
 	float lockWarnings[100];   /* +0x202ea80: (by use) per actor: the lock-on warnings, sorted longest first for the local player */
-	u8 _pad202ec10[0x320];
-	i32 bulletCount;   /* +0x202ef30: (by use) bullets in flight */
+	float lockTimes[100];   /* +0x202ec10: (by use) the locked-on actors' lock times, longest first (actor_frame.c) */
+	i32 lockIds[100];   /* +0x202eda0: and which actors they are */
+	i32 lockCount;   /* +0x202ef30: (by use) the local player's locked-on actors (lockTimes / lockIds; was named bulletCount) */
 	Bullet bullets[400];   /* +0x202ef34: (stage_clearBullets) */
 	i32 bulletSlotsUsed;   /* +0x20a99b4: (by use) bullet slots up to the highest in use */
 	i32 bulletFreeHint;   /* +0x20a99b8: the lowest free bullet slot */
@@ -946,9 +947,10 @@ typedef struct Stage {
 	i32 lastPickup;   /* +0x20fcd3c: (by use) the last item taken that ends something (a supply at its cap, a power-up; -1 after the map is read) */
 	i32 clockSeconds;   /* +0x20fcd40: (by use) the match clock: whole seconds (triggers' times) */
 	float clockFraction;   /* +0x20fcd44: and the part of a second */
-	u8 _pad20fcd48[0x104];
+	i32 holdFire;   /* +0x20fcd48: (unclear) not 0: the bots do not fire (cleared with the clock; no setter found in C) */
+	u8 _pad20fcd4c[0x100];
 	i32 kingActor;   /* +0x20fce4c: (by use) the king (-1 none; dropped when fragged) */
-	u8 _pad20fce50[0x190];
+	i32 teamCommanders[100];   /* +0x20fce50: (by use) each team's commander actor (-1 none: "YOUR COMMANDER .. HAS BEEN KILLED!") */
 	u32 emblemTexture;   /* +0x20fcfe0: (by use) the emblem atlas's GL texture */
 	u32 emblemAtlas[64][128];   /* +0x20fcfe4: the players' emblems, four to a row */
 	i32 clanTexture;   /* +0x2104fe4: (by use) the map's clan texture (Stage\<map>\Clan) */
@@ -1983,10 +1985,13 @@ _Static_assert(offsetof(Stage, selectedActor) == 0x202e8d8 && sizeof(((Stage *)0
 _Static_assert(offsetof(Stage, silentActor) == 0x202e8dc && sizeof(((Stage *)0)->silentActor) == 0x4, "scene.fields: Stage.silentActor");
 _Static_assert(offsetof(Stage, cameraTarget) == 0x202e8e0 && sizeof(((Stage *)0)->cameraTarget) == 0x4, "scene.fields: Stage.cameraTarget");
 _Static_assert(offsetof(Stage, cameraTargetMode) == 0x202e8e4 && sizeof(((Stage *)0)->cameraTargetMode) == 0x4, "scene.fields: Stage.cameraTargetMode");
+_Static_assert(offsetof(Stage, lastDeath) == 0x202e8e8 && sizeof(((Stage *)0)->lastDeath) == 0x4, "scene.fields: Stage.lastDeath");
 _Static_assert(offsetof(Stage, teamsChanged) == 0x202e8ec && sizeof(((Stage *)0)->teamsChanged) == 0x4, "scene.fields: Stage.teamsChanged");
 _Static_assert(offsetof(Stage, frags) == 0x202e8f0 && sizeof(((Stage *)0)->frags) == 0x190, "scene.fields: Stage.frags");
 _Static_assert(offsetof(Stage, lockWarnings) == 0x202ea80 && sizeof(((Stage *)0)->lockWarnings) == 0x190, "scene.fields: Stage.lockWarnings");
-_Static_assert(offsetof(Stage, bulletCount) == 0x202ef30 && sizeof(((Stage *)0)->bulletCount) == 0x4, "scene.fields: Stage.bulletCount");
+_Static_assert(offsetof(Stage, lockTimes) == 0x202ec10 && sizeof(((Stage *)0)->lockTimes) == 0x190, "scene.fields: Stage.lockTimes");
+_Static_assert(offsetof(Stage, lockIds) == 0x202eda0 && sizeof(((Stage *)0)->lockIds) == 0x190, "scene.fields: Stage.lockIds");
+_Static_assert(offsetof(Stage, lockCount) == 0x202ef30 && sizeof(((Stage *)0)->lockCount) == 0x4, "scene.fields: Stage.lockCount");
 _Static_assert(offsetof(Stage, bullets) == 0x202ef34 && sizeof(((Stage *)0)->bullets) == 0x7aa80, "scene.fields: Stage.bullets");
 _Static_assert(offsetof(Stage, bulletSlotsUsed) == 0x20a99b4 && sizeof(((Stage *)0)->bulletSlotsUsed) == 0x4, "scene.fields: Stage.bulletSlotsUsed");
 _Static_assert(offsetof(Stage, bulletFreeHint) == 0x20a99b8 && sizeof(((Stage *)0)->bulletFreeHint) == 0x4, "scene.fields: Stage.bulletFreeHint");
@@ -2035,7 +2040,9 @@ _Static_assert(offsetof(Stage, itemCount) == 0x20fcd38 && sizeof(((Stage *)0)->i
 _Static_assert(offsetof(Stage, lastPickup) == 0x20fcd3c && sizeof(((Stage *)0)->lastPickup) == 0x4, "scene.fields: Stage.lastPickup");
 _Static_assert(offsetof(Stage, clockSeconds) == 0x20fcd40 && sizeof(((Stage *)0)->clockSeconds) == 0x4, "scene.fields: Stage.clockSeconds");
 _Static_assert(offsetof(Stage, clockFraction) == 0x20fcd44 && sizeof(((Stage *)0)->clockFraction) == 0x4, "scene.fields: Stage.clockFraction");
+_Static_assert(offsetof(Stage, holdFire) == 0x20fcd48 && sizeof(((Stage *)0)->holdFire) == 0x4, "scene.fields: Stage.holdFire");
 _Static_assert(offsetof(Stage, kingActor) == 0x20fce4c && sizeof(((Stage *)0)->kingActor) == 0x4, "scene.fields: Stage.kingActor");
+_Static_assert(offsetof(Stage, teamCommanders) == 0x20fce50 && sizeof(((Stage *)0)->teamCommanders) == 0x190, "scene.fields: Stage.teamCommanders");
 _Static_assert(offsetof(Stage, emblemTexture) == 0x20fcfe0 && sizeof(((Stage *)0)->emblemTexture) == 0x4, "scene.fields: Stage.emblemTexture");
 _Static_assert(offsetof(Stage, emblemAtlas) == 0x20fcfe4 && sizeof(((Stage *)0)->emblemAtlas) == 0x8000, "scene.fields: Stage.emblemAtlas");
 _Static_assert(offsetof(Stage, clanTexture) == 0x2104fe4 && sizeof(((Stage *)0)->clanTexture) == 0x4, "scene.fields: Stage.clanTexture");
