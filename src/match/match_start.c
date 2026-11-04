@@ -268,7 +268,7 @@ void THISCALL (scene_reset)(u8 *s)
 	stage_clearScriptEvents(s);
 	script_reset(st);
 	scene_initLevelGrid(s);
-	memset(s + 0x1cd6968, 0xff, 0x32 * 4);
+	memset(st->idTable, 0xff, 0x32 * 4);
 }
 
 #define K(address) ((const float *)RELOC(address))
@@ -277,7 +277,7 @@ void THISCALL (scene_reset)(u8 *s)
 static void model_sets(u8 *shapes, const char *dir, int n, int extra, int size, u8 *skels, const char *skel_dir, int sn,
                        int sextra, u8 *smem, int ssize)
 {
-	shape_initBy(shapes, dir, n, 2, extra, shapes + 0x24c, size);
+	shape_initBy(shapes, dir, n, 2, extra, shapes + sizeof(Manager), size);   /* (its block right after it) */
 	skelSet_setup(skels, skel_dir, sn, 2, sextra, smem, ssize);
 }
 
@@ -295,7 +295,7 @@ void THISCALL (item_initTextures)(u8 *s, u32 a1, u32 a2, const char *sky, u32 a4
 {
 	Stage *st = (Stage *)s;
 	object_setNames(s, a1, a2, (u32)sky, a4, (u32)skel_dir, a6, a7, a8, a9);
-	space_initBy(s + 0xa10, 0x9c40, 0x27100, 0x3e8, 0x2710, 0x3e8, s + 0xb04, 0x9c95f0);
+	space_initBy(s + 0xa10, 0x9c40, 0x27100, 0x3e8, 0x2710, 0x3e8, st->spaceData, sizeof st->spaceData);
 	char name[0x100];
 	for (int i = 0; i < 10; i++) {
 		sprintf(name, (const char *)STR(0x4c7410, "%s\\%02d"), sky, i);
@@ -382,12 +382,12 @@ void THISCALL (item_initTextures)(u8 *s, u32 a1, u32 a2, const char *sky, u32 a4
 	FIELD(int, s, 0xdc0240) = 0;
 	memcpy(st->worldHigh, st->levelHigh, 12);
 	st->groundLayerCount = 0;
-	st->layerModel.parts = s + 0xdc0ac4;
-	st->layerBoxModel.parts = s + 0xdc0d10;
-	const char *dir = (const char *)s + 0x308;
-	shape_initBy(s + 0xe3c93c, dir, 0x190, 2, 0xe54c0, s + 0xe3cb88, 1000000);
+	st->layerModel.parts = st->layerParts;
+	st->layerBoxModel.parts = st->layerBoxParts;
+	const char *dir = st->shapeDir;
+	shape_initBy((u8 *)&st->objectShapes, dir, 0x190, 2, 0xe54c0, st->objectShapeData, sizeof st->objectShapeData);
 	st->objectColourCount = 0;
-	skelSet_setup(s + 0x13016d0, (const char *)s + 0x408, 0x64, 2, 0x7080, s + 0x1301800, 0x9c40);
+	skelSet_setup((u8 *)&st->objectSkeletons, st->skeletonDir, 0x64, 2, 0x7080, st->objectSkeletonData, sizeof st->objectSkeletonData);
 	static const u32 zero[10] = { offsetof(Stage, objectNameCount), offsetof(Stage, objectCount), offsetof(Stage, objectFreeHint), offsetof(Stage, objectSerial), offsetof(Stage, headTypeCount), offsetof(Stage, chestTypeCount), offsetof(Stage, armTypeCount), offsetof(Stage, legTypeCount),
 	                              offsetof(Stage, boosterTypeCount), offsetof(Stage, playerRecordCount) };
 	for (int k = 0; k < 10; k++)
@@ -402,8 +402,8 @@ void THISCALL (item_initTextures)(u8 *s, u32 a1, u32 a2, const char *sky, u32 a4
 			model_sets(type + parts[k].shapes, dir, parts[k].n, parts[k].extra, parts[k].size, type + parts[k].skels, skel_dir, 2,
 			           parts[k].sextra, type + parts[k].smem, parts[k].ssize);
 	}
-	shape_initBy(s + 0x19e188c, dir, 0x258, 2, 0x2c6280, s + 0x19e1ad8, 0x2dc6c0);
-	skelSet_setup(s + 0x1cbe198, skel_dir, 0x64, 2, 0x15ae0, s + 0x1cbe2c8, 0x186a0);
+	shape_initBy((u8 *)&st->partShapes, dir, 0x258, 2, 0x2c6280, st->partShapeData, sizeof st->partShapeData);
+	skelSet_setup((u8 *)&st->partSkeletons, skel_dir, 0x64, 2, 0x15ae0, st->partSkeletonData, sizeof st->partSkeletonData);
 	debug_traceStripped((Scene *)s);
 	effect_initTextures(s);
 	static const u32 names[3] = { STR(0x4c73f4, "Texture\\Item_damagemap_ani0"), STR(0x4c73d8, "Texture\\Item_booster_ani0"), STR(0x4c73bc, "Texture\\Item_shield_ani0") };
@@ -415,7 +415,7 @@ void THISCALL (item_initTextures)(u8 *s, u32 a1, u32 a2, const char *sky, u32 a4
 		FIELD(u32, s, 0x20f2f48 + k * 4) = k % 5 == 0 ? 0x3f800000 : 0;
 		FIELD(u32, s, 0x20f2f88 + k * 4) = k == 15 ? 0x3f800000 : k % 5 == 0 ? 0x3f8ccccd : 0;   /* 1.1 */
 	}
-	glGenTextures(1, s + 0x20fcfe0);   /* glGenTextures */
+	glGenTextures(1, &st->emblemTexture);   /* glGenTextures */
 	for (int k = 0; k < 0x2000; k++)
 		FIELD(u32, s, 0x20fcfe4 + k * 4) = (*(u32 *)&g_defaultColour);
 	st->showExp = 0;

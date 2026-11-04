@@ -665,7 +665,7 @@ typedef struct RotKey {
 	float stepAxis[3];   /* +0x1c */
 } RotKey;
 
-/* a shape or skeleton manager (skel_data.c): items loaded by name into one block, found through a name tree */
+/* a shape manager (skel_data.c; a skeleton manager is its first 0x130 bytes: SkelManager): items loaded by name into one block, found through a name tree */
 typedef struct Manager {
 	u8 _pad0000000[0x4];
 	i32 blockSize;   /* +0x4 */
@@ -684,6 +684,23 @@ typedef struct Manager {
 	u32 bindFlags;   /* +0x230: (shapes) given to shape_bindTextureBy with the tint; bit 1: tinted (shape_setTint) */
 	u32 tint[6];   /* +0x234: two hue / chroma / value triples (floats' bits) */
 } Manager;
+
+/* a skeleton manager (skel_data.c: skelSet_setup): Manager's first 0x130 bytes, without the textures and tint */
+typedef struct SkelManager {
+	u8 _pad0000000[0x4];
+	i32 blockSize;   /* +0x4 */
+	u8 *block;   /* +0x8: the name nodes, then the items, then the data memory */
+	i32 ownsBlock;   /* +0xc: 1: allocated here */
+	char dir[0x100];   /* +0x10: where the items' files are */
+	u32 setupArg;   /* +0x110: (unclear) the a given to setup */
+	i32 capacity;   /* +0x114: items it has room for */
+	u8 *nodes;   /* +0x118: the name tree: one 0x4c-byte TreeNode per item */
+	u8 *items;   /* +0x11c: the items (skeletons 0x24 bytes, shapes 0x4c) */
+	i32 count;   /* +0x120: items loaded */
+	i32 dataSize;   /* +0x124: the data memory items are read into */
+	u8 *data;   /* +0x128 */
+	i32 dataUsed;   /* +0x12c */
+} SkelManager;
 
 /* a manager's name tree node: by strcmp, smaller left */
 typedef struct TreeNode {
@@ -944,14 +961,23 @@ typedef struct ParticleDesc {
 
 /* the stage: the scene's own object at Scene + 0x1f36c8 (STAGE()), "this" of the */
 typedef struct Stage {
-	u8 _pad0000000[0x108];
-	char mapDir[0x100];   /* +0x108: (by use) the map's directory (its files: "<mapDir>/<name>") */
-	u8 _pad0000208[0x700];
+	u8 _pad0000000[0x8];
+	char stageDir[0x100];   /* +0x8: (by use) the data directories (object_setNames; game_loadAllData: "Stage" .. "Scene"): the stage's */
+	char mapDir[0x100];   /* +0x108: the maps' (a map's files: "<mapDir>/<name>") */
+	char textureDir[0x100];   /* +0x208 */
+	char shapeDir[0x100];   /* +0x308 */
+	char skeletonDir[0x100];   /* +0x408 */
+	char actorDir[0x100];   /* +0x508 */
+	char bulletDir[0x100];   /* +0x608 */
+	char effectDir[0x100];   /* +0x708 */
+	char sceneDir[0x100];   /* +0x808 */
 	char stageName[0x100];   /* +0x908: (by use) the stage's name (its clan texture: Stage\\<name>\\Clan) */
 	float cullMargin;   /* +0xa08: (by use) added to an object's radius when testing it against the camera box */
 	u8 _pad0000a0c[0x18];
 	u8 *collisionPlanes;   /* +0xa24: (by use) the collision planes (0xac bytes each; a hit record points into them) */
-	u8 _pad0000a28[0x9cc5ac];
+	u8 _pad0000a28[0xdc];
+	u8 spaceData[0x9c95f0];   /* +0xb04: (by use) the collision space's block (space_initBy on +0xa10) */
+	u8 _pad09ca0f4[0x2ee0];
 	i32 effectTextures[9];   /* +0x9ccfd4: (by use) the effects' textures "<dir>\00" .. "08" (item_initTextures; objects.c TEX(k)); "09" is billboards */
 	i32 billboards;   /* +0x9ccff8: (by use) the billboard list map items are drawn with (hud_484ca0's id) */
 	LightFactors mapLights;   /* +0x9ccffc: (by use) the map's lights (Light_read from the map file): they shade the map objects */
@@ -991,9 +1017,9 @@ typedef struct Stage {
 	GroundLayer groundLayers[4];   /* +0xdc0244: (groundLayerCount of them) */
 	i32 groundLayerCount;   /* +0xdc0a74 */
 	Model layerModel;   /* +0xdc0a78: (by use) the ground layers drawn as one shape: a part each (stage_buildMeshDrawRecords) */
-	u8 _pad0dc0ac4[0x200];
+	u8 layerParts[0x200];   /* +0xdc0ac4: (by use) layerModel's parts */
 	Model layerBoxModel;   /* +0xdc0cc4: their boxes: a part each */
-	u8 _pad0dc0d10[0x200];
+	u8 layerBoxParts[0x200];   /* +0xdc0d10: layerBoxModel's parts */
 	u8 commands[10000][0x30];   /* +0xdc0f10: (by use) the actor commands (0x30 bytes each) the way points run */
 	i32 commandCount;   /* +0xe36210 */
 	WayPoint wayPoints[1000];   /* +0xe36214 */
@@ -1002,12 +1028,12 @@ typedef struct Stage {
 	i32 triggerFired[200];   /* +0xe3c618: (by use) 1: the trigger fired this frame */
 	i32 triggerCount;   /* +0xe3c938 */
 	Manager objectShapes;   /* +0xe3c93c: (by use) the map objects' shapes (ShapeManager) */
-	u8 _pad0e3cb88[0xf4240];
+	u8 objectShapeData[0xf4240];   /* +0xe3cb88: (by use) objectShapes' block (shape_initBy) */
 	u32 objectColours[1000000];   /* +0xf30dc8: (by use) the map objects' shading colours (each object's run: MapObject +0x280) */
 	i32 objectColourCount;   /* +0x13016c8: dwords of it used (over 1000000: a fatal message) */
 	i32 mapShaded;   /* +0x13016cc: (by use) 1: the map brings its objects' shading (not worked out) */
-	Manager objectSkeletons;   /* +0x13016d0: their skeletons (SkeletonManager) */
-	u8 _pad130191c[0x9b24];
+	SkelManager objectSkeletons;   /* +0x13016d0: their skeletons (SkeletonManager) */
+	u8 objectSkeletonData[0x9c40];   /* +0x1301800: objectSkeletons' block (skelSet_setup) */
 	char objectNames[1000][0x40];   /* +0x130b440: (by use) the map objects' type names */
 	i32 objectNameCount;   /* +0x131ae40 */
 	MapObject objects[1000];   /* +0x131ae44 */
@@ -1029,9 +1055,10 @@ typedef struct Stage {
 	PlayerRecord playerRecords[16];   /* +0x1561b68: (Scene.playerRecords) */
 	i32 playerRecordCount;   /* +0x19e1888: (by use) player records in use (grows to cover a new player) */
 	Manager partShapes;   /* +0x19e188c: the mech parts' and items' shapes (ShapeManager; ObjectList_load) */
-	u8 _pad19e1ad8[0x2dc6c0];
-	Manager partSkeletons;   /* +0x1cbe198: their skeletons (SkeletonManager) */
-	u8 _pad1cbe3e4[0x1864c];
+	u8 partShapeData[0x2dc6c0];   /* +0x19e1ad8: partShapes' block */
+	SkelManager partSkeletons;   /* +0x1cbe198: their skeletons (SkeletonManager) */
+	u8 partSkeletonData[0x186a0];   /* +0x1cbe2c8: partSkeletons' block */
+	i32 idTable[50];   /* +0x1cd6968: (unclear) an id table set to -1 with the stage (stage_reset) */
 	u8 mapPlayers[16][0x58];   /* +0x1cd6a30: (by use) the map's player records (map_loadActorInfoFrom: colour scheme +4, items +0x40) */
 	i32 mapPlayerCount;   /* +0x1cd6fb0 */
 	SpawnRecord mapActors[100];   /* +0x1cd6fb4: the map's actors (the first: the player's) */
@@ -2013,6 +2040,19 @@ _Static_assert(offsetof(Manager, textureDir) == 0x130 && sizeof(((Manager *)0)->
 _Static_assert(offsetof(Manager, bindFlags) == 0x230 && sizeof(((Manager *)0)->bindFlags) == 0x4, "scene.fields: Manager.bindFlags");
 _Static_assert(offsetof(Manager, tint) == 0x234 && sizeof(((Manager *)0)->tint) == 0x18, "scene.fields: Manager.tint");
 _Static_assert(sizeof(Manager) == 0x24c, "scene.fields: size of Manager");
+_Static_assert(offsetof(SkelManager, blockSize) == 0x4 && sizeof(((SkelManager *)0)->blockSize) == 0x4, "scene.fields: SkelManager.blockSize");
+_Static_assert(offsetof(SkelManager, block) == 0x8 && sizeof(((SkelManager *)0)->block) == 0x4, "scene.fields: SkelManager.block");
+_Static_assert(offsetof(SkelManager, ownsBlock) == 0xc && sizeof(((SkelManager *)0)->ownsBlock) == 0x4, "scene.fields: SkelManager.ownsBlock");
+_Static_assert(offsetof(SkelManager, dir) == 0x10 && sizeof(((SkelManager *)0)->dir) == 0x100, "scene.fields: SkelManager.dir");
+_Static_assert(offsetof(SkelManager, setupArg) == 0x110 && sizeof(((SkelManager *)0)->setupArg) == 0x4, "scene.fields: SkelManager.setupArg");
+_Static_assert(offsetof(SkelManager, capacity) == 0x114 && sizeof(((SkelManager *)0)->capacity) == 0x4, "scene.fields: SkelManager.capacity");
+_Static_assert(offsetof(SkelManager, nodes) == 0x118 && sizeof(((SkelManager *)0)->nodes) == 0x4, "scene.fields: SkelManager.nodes");
+_Static_assert(offsetof(SkelManager, items) == 0x11c && sizeof(((SkelManager *)0)->items) == 0x4, "scene.fields: SkelManager.items");
+_Static_assert(offsetof(SkelManager, count) == 0x120 && sizeof(((SkelManager *)0)->count) == 0x4, "scene.fields: SkelManager.count");
+_Static_assert(offsetof(SkelManager, dataSize) == 0x124 && sizeof(((SkelManager *)0)->dataSize) == 0x4, "scene.fields: SkelManager.dataSize");
+_Static_assert(offsetof(SkelManager, data) == 0x128 && sizeof(((SkelManager *)0)->data) == 0x4, "scene.fields: SkelManager.data");
+_Static_assert(offsetof(SkelManager, dataUsed) == 0x12c && sizeof(((SkelManager *)0)->dataUsed) == 0x4, "scene.fields: SkelManager.dataUsed");
+_Static_assert(sizeof(SkelManager) == 0x130, "scene.fields: size of SkelManager");
 _Static_assert(offsetof(TreeNode, name) == 0x0 && sizeof(((TreeNode *)0)->name) == 0x40, "scene.fields: TreeNode.name");
 _Static_assert(offsetof(TreeNode, index) == 0x40 && sizeof(((TreeNode *)0)->index) == 0x4, "scene.fields: TreeNode.index");
 _Static_assert(offsetof(TreeNode, left) == 0x44 && sizeof(((TreeNode *)0)->left) == 0x4, "scene.fields: TreeNode.left");
@@ -2200,10 +2240,19 @@ _Static_assert(offsetof(ParticleDesc, isQuad) == 0x30 && sizeof(((ParticleDesc *
 _Static_assert(offsetof(ParticleDesc, quad) == 0x34 && sizeof(((ParticleDesc *)0)->quad) == 0x18, "scene.fields: ParticleDesc.quad");
 _Static_assert(offsetof(ParticleDesc, quadPoints) == 0x4c && sizeof(((ParticleDesc *)0)->quadPoints) == 0x30, "scene.fields: ParticleDesc.quadPoints");
 _Static_assert(sizeof(ParticleDesc) == 0x7c, "scene.fields: size of ParticleDesc");
+_Static_assert(offsetof(Stage, stageDir) == 0x8 && sizeof(((Stage *)0)->stageDir) == 0x100, "scene.fields: Stage.stageDir");
 _Static_assert(offsetof(Stage, mapDir) == 0x108 && sizeof(((Stage *)0)->mapDir) == 0x100, "scene.fields: Stage.mapDir");
+_Static_assert(offsetof(Stage, textureDir) == 0x208 && sizeof(((Stage *)0)->textureDir) == 0x100, "scene.fields: Stage.textureDir");
+_Static_assert(offsetof(Stage, shapeDir) == 0x308 && sizeof(((Stage *)0)->shapeDir) == 0x100, "scene.fields: Stage.shapeDir");
+_Static_assert(offsetof(Stage, skeletonDir) == 0x408 && sizeof(((Stage *)0)->skeletonDir) == 0x100, "scene.fields: Stage.skeletonDir");
+_Static_assert(offsetof(Stage, actorDir) == 0x508 && sizeof(((Stage *)0)->actorDir) == 0x100, "scene.fields: Stage.actorDir");
+_Static_assert(offsetof(Stage, bulletDir) == 0x608 && sizeof(((Stage *)0)->bulletDir) == 0x100, "scene.fields: Stage.bulletDir");
+_Static_assert(offsetof(Stage, effectDir) == 0x708 && sizeof(((Stage *)0)->effectDir) == 0x100, "scene.fields: Stage.effectDir");
+_Static_assert(offsetof(Stage, sceneDir) == 0x808 && sizeof(((Stage *)0)->sceneDir) == 0x100, "scene.fields: Stage.sceneDir");
 _Static_assert(offsetof(Stage, stageName) == 0x908 && sizeof(((Stage *)0)->stageName) == 0x100, "scene.fields: Stage.stageName");
 _Static_assert(offsetof(Stage, cullMargin) == 0xa08 && sizeof(((Stage *)0)->cullMargin) == 0x4, "scene.fields: Stage.cullMargin");
 _Static_assert(offsetof(Stage, collisionPlanes) == 0xa24 && sizeof(((Stage *)0)->collisionPlanes) == 0x4, "scene.fields: Stage.collisionPlanes");
+_Static_assert(offsetof(Stage, spaceData) == 0xb04 && sizeof(((Stage *)0)->spaceData) == 0x9c95f0, "scene.fields: Stage.spaceData");
 _Static_assert(offsetof(Stage, effectTextures) == 0x9ccfd4 && sizeof(((Stage *)0)->effectTextures) == 0x24, "scene.fields: Stage.effectTextures");
 _Static_assert(offsetof(Stage, billboards) == 0x9ccff8 && sizeof(((Stage *)0)->billboards) == 0x4, "scene.fields: Stage.billboards");
 _Static_assert(offsetof(Stage, mapLights) == 0x9ccffc && sizeof(((Stage *)0)->mapLights) == 0xb010, "scene.fields: Stage.mapLights");
@@ -2242,7 +2291,9 @@ _Static_assert(offsetof(Stage, poolUsed) == 0xdc0240 && sizeof(((Stage *)0)->poo
 _Static_assert(offsetof(Stage, groundLayers) == 0xdc0244 && sizeof(((Stage *)0)->groundLayers) == 0x830, "scene.fields: Stage.groundLayers");
 _Static_assert(offsetof(Stage, groundLayerCount) == 0xdc0a74 && sizeof(((Stage *)0)->groundLayerCount) == 0x4, "scene.fields: Stage.groundLayerCount");
 _Static_assert(offsetof(Stage, layerModel) == 0xdc0a78 && sizeof(((Stage *)0)->layerModel) == 0x4c, "scene.fields: Stage.layerModel");
+_Static_assert(offsetof(Stage, layerParts) == 0xdc0ac4 && sizeof(((Stage *)0)->layerParts) == 0x200, "scene.fields: Stage.layerParts");
 _Static_assert(offsetof(Stage, layerBoxModel) == 0xdc0cc4 && sizeof(((Stage *)0)->layerBoxModel) == 0x4c, "scene.fields: Stage.layerBoxModel");
+_Static_assert(offsetof(Stage, layerBoxParts) == 0xdc0d10 && sizeof(((Stage *)0)->layerBoxParts) == 0x200, "scene.fields: Stage.layerBoxParts");
 _Static_assert(offsetof(Stage, commands) == 0xdc0f10 && sizeof(((Stage *)0)->commands) == 0x75300, "scene.fields: Stage.commands");
 _Static_assert(offsetof(Stage, commandCount) == 0xe36210 && sizeof(((Stage *)0)->commandCount) == 0x4, "scene.fields: Stage.commandCount");
 _Static_assert(offsetof(Stage, wayPoints) == 0xe36214 && sizeof(((Stage *)0)->wayPoints) == 0x4e20, "scene.fields: Stage.wayPoints");
@@ -2251,10 +2302,12 @@ _Static_assert(offsetof(Stage, triggers) == 0xe3b038 && sizeof(((Stage *)0)->tri
 _Static_assert(offsetof(Stage, triggerFired) == 0xe3c618 && sizeof(((Stage *)0)->triggerFired) == 0x320, "scene.fields: Stage.triggerFired");
 _Static_assert(offsetof(Stage, triggerCount) == 0xe3c938 && sizeof(((Stage *)0)->triggerCount) == 0x4, "scene.fields: Stage.triggerCount");
 _Static_assert(offsetof(Stage, objectShapes) == 0xe3c93c && sizeof(((Stage *)0)->objectShapes) == 0x24c, "scene.fields: Stage.objectShapes");
+_Static_assert(offsetof(Stage, objectShapeData) == 0xe3cb88 && sizeof(((Stage *)0)->objectShapeData) == 0xf4240, "scene.fields: Stage.objectShapeData");
 _Static_assert(offsetof(Stage, objectColours) == 0xf30dc8 && sizeof(((Stage *)0)->objectColours) == 0x3d0900, "scene.fields: Stage.objectColours");
 _Static_assert(offsetof(Stage, objectColourCount) == 0x13016c8 && sizeof(((Stage *)0)->objectColourCount) == 0x4, "scene.fields: Stage.objectColourCount");
 _Static_assert(offsetof(Stage, mapShaded) == 0x13016cc && sizeof(((Stage *)0)->mapShaded) == 0x4, "scene.fields: Stage.mapShaded");
-_Static_assert(offsetof(Stage, objectSkeletons) == 0x13016d0 && sizeof(((Stage *)0)->objectSkeletons) == 0x24c, "scene.fields: Stage.objectSkeletons");
+_Static_assert(offsetof(Stage, objectSkeletons) == 0x13016d0 && sizeof(((Stage *)0)->objectSkeletons) == 0x130, "scene.fields: Stage.objectSkeletons");
+_Static_assert(offsetof(Stage, objectSkeletonData) == 0x1301800 && sizeof(((Stage *)0)->objectSkeletonData) == 0x9c40, "scene.fields: Stage.objectSkeletonData");
 _Static_assert(offsetof(Stage, objectNames) == 0x130b440 && sizeof(((Stage *)0)->objectNames) == 0xfa00, "scene.fields: Stage.objectNames");
 _Static_assert(offsetof(Stage, objectNameCount) == 0x131ae40 && sizeof(((Stage *)0)->objectNameCount) == 0x4, "scene.fields: Stage.objectNameCount");
 _Static_assert(offsetof(Stage, objects) == 0x131ae44 && sizeof(((Stage *)0)->objects) == 0xaece0, "scene.fields: Stage.objects");
@@ -2276,7 +2329,10 @@ _Static_assert(offsetof(Stage, actorInfoCount) == 0x1561b64 && sizeof(((Stage *)
 _Static_assert(offsetof(Stage, playerRecords) == 0x1561b68 && sizeof(((Stage *)0)->playerRecords) == 0x47fd20, "scene.fields: Stage.playerRecords");
 _Static_assert(offsetof(Stage, playerRecordCount) == 0x19e1888 && sizeof(((Stage *)0)->playerRecordCount) == 0x4, "scene.fields: Stage.playerRecordCount");
 _Static_assert(offsetof(Stage, partShapes) == 0x19e188c && sizeof(((Stage *)0)->partShapes) == 0x24c, "scene.fields: Stage.partShapes");
-_Static_assert(offsetof(Stage, partSkeletons) == 0x1cbe198 && sizeof(((Stage *)0)->partSkeletons) == 0x24c, "scene.fields: Stage.partSkeletons");
+_Static_assert(offsetof(Stage, partShapeData) == 0x19e1ad8 && sizeof(((Stage *)0)->partShapeData) == 0x2dc6c0, "scene.fields: Stage.partShapeData");
+_Static_assert(offsetof(Stage, partSkeletons) == 0x1cbe198 && sizeof(((Stage *)0)->partSkeletons) == 0x130, "scene.fields: Stage.partSkeletons");
+_Static_assert(offsetof(Stage, partSkeletonData) == 0x1cbe2c8 && sizeof(((Stage *)0)->partSkeletonData) == 0x186a0, "scene.fields: Stage.partSkeletonData");
+_Static_assert(offsetof(Stage, idTable) == 0x1cd6968 && sizeof(((Stage *)0)->idTable) == 0xc8, "scene.fields: Stage.idTable");
 _Static_assert(offsetof(Stage, mapPlayers) == 0x1cd6a30 && sizeof(((Stage *)0)->mapPlayers) == 0x580, "scene.fields: Stage.mapPlayers");
 _Static_assert(offsetof(Stage, mapPlayerCount) == 0x1cd6fb0 && sizeof(((Stage *)0)->mapPlayerCount) == 0x4, "scene.fields: Stage.mapPlayerCount");
 _Static_assert(offsetof(Stage, mapActors) == 0x1cd6fb4 && sizeof(((Stage *)0)->mapActors) == 0x23f0, "scene.fields: Stage.mapActors");
