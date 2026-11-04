@@ -84,14 +84,14 @@ void THISCALL (actor_updateAll)(u8 *s, float dt)
 	}
 }
 
-/* 0x47ce50 (thiscall on the scene): a bullet fired (a4 its weapon: none with a4 +4 negative) into the next free slot
+/* 0x47ce50 (thiscall on the scene): a bullet fired (a4 the FiredRound: none when its weapon is negative) into the next free slot
    (+0x20a99b8; at most 399; a slot added when that is the count, +0x20a99b4), the next free one after it found, then
    the bullet set up (bullet_init). Returns its slot, or -1 */
 int THISCALL (bullet_spawn)(u8 *s, u32 a1, u32 a2, u32 a3, const u8 *a4, u32 a5)
 {
 #define COUNT ST->bulletSlotsUsed
 #define NEXT ST->bulletFreeHint
-	if (GAME_VAR(int, a4 + 4) < 0 || NEXT >= 400)
+	if (((const FiredRound *)RELOC(a4))->weapon < 0 || NEXT >= 400)
 		return -1;
 	if (NEXT == COUNT) {
 		COUNT++;

@@ -230,18 +230,20 @@ void THISCALL (ObjectList_load)(u8 *list, void *shapes, void *skels, int ns, con
    starting at or before it (a binary search); a frame before the first key is moved up to it */
 static u8 *key_at(u8 *keys, int n, int size, int *frame)
 {
+#define KEY_FRAME(p) (((const PosKey *)RELOC(p))->frame)   /* (PosKey and RotKey both start with it) */
 	int lo = 0;
-	if (*frame < AT(int, keys, 0))
-		*frame = AT(int, keys, 0);
+	if (*frame < KEY_FRAME(keys))
+		*frame = KEY_FRAME(keys);
 	else
 		for (int hi = n - 1; lo < hi;) {
 			int mid = (hi + lo + 1) / 2;
-			if (*frame < AT(int, keys, mid * size))
+			if (*frame < KEY_FRAME(keys + mid * size))
 				hi = mid - 1;
 			else
 				lo = mid;
 		}
 	return keys + lo * size;
+#undef KEY_FRAME
 }
 
 /* does the FPU compare v with 0 as equal (as fcomp's C3 says: also for a NaN)? */

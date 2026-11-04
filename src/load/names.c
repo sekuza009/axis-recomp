@@ -375,14 +375,15 @@ int THISCALL (tex_allocIdBy)(u8 *tm, const char *name, u32 flags, u32 h1, u32 s1
 	return i;
 }
 
-#define W(m) GAME_VAR(int, (m) + 0xc0118)
-#define H(m) GAME_VAR(int, (m) + 0xc011c)
+#define W(m) (((TextureManager *)RELOC(m))->width)
+#define H(m) (((TextureManager *)RELOC(m))->height)
 
-/* path: the texture name in the given format, under the manager's directory (+8) when it has one */
+/* path: the texture name in the given format, under the manager's directory when it has one */
 static void tex_path(u8 *m, char *path, u32 with_dir, u32 plain, const char *name)
 {
-	if (m[8])
-		sprintf(path, (const char *)RELOC(with_dir), (const char *)m + 8, name);
+	const TextureManager *tm = (const TextureManager *)m;
+	if (tm->dir[0])
+		sprintf(path, (const char *)RELOC(with_dir), tm->dir, name);
 	else
 		sprintf(path, (const char *)RELOC(plain), name);
 }
@@ -394,22 +395,24 @@ static void size_check(u8 *m, int w, int h)
 		GAME_FN(sys_fatalError, 0x46c710, void, char *, const char *, int, int, int, int)((char *)OBJ(g_logTexture), (const char *)STR(0x4b4104, "mismatching image size(%dx%d/%dx%d)-b..."), W(m), H(m), w, h);
 }
 
-/* the image's alpha (the 4th bytes from +0x114): the grey of the ALPHA image at +0x40114, or opaque */
+/* the image's alpha (each pixel's 4th byte): the grey of the ALPHA image, or opaque */
 static void alpha_from(u8 *m, int have)
 {
+	TextureManager *tm = (TextureManager *)m;
 	for (int y = 0; y < H(m); y++)
 		for (int x = 0; x < W(m); x++) {
-			u8 *px = m + (y * W(m) + x) * 4;
-			px[0x117] = have ? (u8)((px[0x40116] + px[0x40115] + px[0x40114]) / 3) : 0xff;
+			int i = (y * W(m) + x) * 4;
+			tm->image[i + 3] = have ? (u8)((tm->alphaImage[i + 2] + tm->alphaImage[i + 1] + tm->alphaImage[i]) / 3) : 0xff;
 		}
 }
 
-/* no colour mask: every pixel of +0x80114 the colour at 0xa1f238 */
+/* no colour mask: every pixel of the mask the colour at 0xa1f238 */
 static void colour_fill(u8 *m)
 {
+	TextureManager *tm = (TextureManager *)m;
 	for (int y = 0; y < H(m); y++)
 		for (int x = 0; x < W(m); x++)
-			GAME_VAR(u32, m + 0x80114 + (y * W(m) + x) * 4) = g_colourMaskRed;
+			((u32 *)tm->colourMask)[y * W(m) + x] = g_colourMaskRed;
 }
 
 /* 0x455aa0 (thiscall on the texture manager): texture i's image (its name +0xc0128 + i * 0x68 cut at '*') loaded at
