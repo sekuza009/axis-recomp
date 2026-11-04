@@ -51,9 +51,9 @@ int (str_dropLast)(char *s)
 
 /* ---- the scene's and stage's flags and lists ---- */
 /* 0x463670, 0x463690, 0x4636b0: one of three requests raised (and the "something requested" flag) */
-void THISCALL (event_raise3)(Scene *scene) { FIELD(int, scene, 0x2343237) = 1; scene->noticeChanged = 1; }
-void THISCALL (event_raise4)(Scene *scene) { FIELD(int, scene, 0x234323b) = 1; scene->noticeChanged = 1; }
-void THISCALL (event_raise5)(Scene *scene) { FIELD(int, scene, 0x234323f) = 1; scene->noticeChanged = 1; }
+void THISCALL (event_raise3)(Scene *scene) { scene->endEvents[0] = 1; scene->noticeChanged = 1; }
+void THISCALL (event_raise4)(Scene *scene) { scene->endEvents[1] = 1; scene->noticeChanged = 1; }
+void THISCALL (event_raise5)(Scene *scene) { scene->endEvents[2] = 1; scene->noticeChanged = 1; }
 /* 0x463780: team slot i's id */
 int THISCALL (scene_teamSlot)(Scene *scene, int i) { return scene->teamIds[i]; }
 /* 0x474390: player record p marked used; 0x4743b0: marked free, its colour grid cleared */
@@ -169,15 +169,15 @@ void THISCALL (stage_selectActor)(Stage *stage, int i)
 	if (i < 0 || stage->actors[i].state == 1)
 		stage->selectedActor = i;
 }
-/* 0x456820: material m (0x68-byte records at +0xc016c) marked changed, its flags kept to the bits 0x11111113 (the
+/* 0x456820: material m (the manager's record m) marked changed, its flags kept to the bits 0x11111113 (the
    original's guard, flags | 2, is always true) */
 void THISCALL (tex_markMaterialChanged)(void *self, int m)
 {
-	u8 *r = (u8 *)self + m * 0x68;
-	u32 f = FIELD(u32, r, 0xc016c);
+	TexRecord *r = &((TextureManager *)self)->records[m];
+	u32 f = r->flags;
 	if ((f | 2) != 0) {
-		FIELD(u32, r, 0xc016c) = f & 0x11111113;
-		FIELD(int, r, 0xc018c) = 1;
+		r->flags = f & 0x11111113;
+		r->changed = 1;
 	}
 }
 /* 0x456b50: three fields cleared in each of the six objects the object points to (+4 .. +0x18) */
@@ -373,11 +373,12 @@ int THISCALL (script_runScpFile)(Stage *stage, const char *name, int mode)
    length (the frame's int at +0x20) times scale */
 void THISCALL (anim_setFrame)(u8 *anim, int i, float scale)
 {
-	if (!FIELD(int, anim, 0x20) || i >= FIELD(int, anim, 0x1c))
+	ObjectList *ol = (ObjectList *)anim;
+	if (!ol->frames || i >= ol->frameCount)
 		return;
-	FIELD(int, anim, 0x24) = i;
-	const int *frame = FIELD(int **, anim, 0x20)[i];
-	FIELD(int, anim, 0x28) = ftol(fmul_m((long double)frame[8], &scale));
+	ol->frame = i;
+	const int *frame = ((int **)ol->frames)[i];
+	ol->animTick = ftol(fmul_m((long double)frame[8], &scale));
 }
 
 /* 0x4722e0: a view's distance set (+0xa08, the float's bits copied) and its depth -v * a + b from the stage's pair */
@@ -844,8 +845,8 @@ void THISCALL (actor_setActorTypeItemInfoBy)(Stage *stage, int p, int slot, int 
 		type[0x18c + slot * 0x40] = 0;
 	if (item >= st->actorInfoCount)
 		sys_fatalError((char *)OBJ(g_logStage), (const char *)STR(0x4c76f0, "invalid itemIndex(%d) - setActorTypeI..."), item);
-	GAME_VAR(int, type + 0x320 + slot * 4) = item;
+	((PlayerRecord *)type)->items[slot] = item;
 	for (int i = 0; i < st->actorCount; i++)
 		if (st->actors[i].player == p)
-			actor_updatePart(scene, i, slot, GAME_VAR(u32, scene + 0x1cd9844 + i * 0x8888));
+			actor_updatePart(scene, i, slot, st->actors[i].variantLoaded);
 }
