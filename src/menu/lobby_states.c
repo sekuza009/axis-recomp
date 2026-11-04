@@ -1502,24 +1502,23 @@ static void special_map(const char *name, u8 *map)
 			}
 }
 
-#define ARENA(off) GAME_VAR(signed char, OBJ(g_playerName) + (off))   /* the arena's settings: the name, then the map (+0x20) .. */
 
 /* the arena hosted with its settings (dplay_host): 0 when that failed */
 static int host_arena(void)
 {
-	return dplay_host(g_playerName, g_cfgPlayerName, ((int)ARENA(0x22) << 8) | (int)ARENA(0x20),
-	                    ARENA(0x21), ARENA(0x23), (u8)ARENA(0x24), (u8)ARENA(0x25), g_playerCorporation);
+	return dplay_host(g_playerName, g_cfgPlayerName, ((int)(signed char)g_arenaCustomize << 8) | (int)g_arenaMap,
+	                    (signed char)g_arenaPlayers, (signed char)g_arenaGameType, g_arenaFragLimit, g_arenaTimeLimit, g_playerCorporation);
 }
 
 /* the hosted arena's settings taken for the match */
 static void take_arena(void)
 {
-	g_missionStage = ARENA(0x20);
+	g_missionStage = g_arenaMap;
 	memcpy((void *)OBJ(g_mapTitle), (const void *)OBJ(g_playerName), 32);
-	g_mapRotation = ARENA(0x22);
-	g_chosenGameMode = ARENA(0x23);
-	g_fragLimit = (u8)ARENA(0x24);
-	g_timeLimit = (u8)ARENA(0x25);
+	g_mapRotation = (signed char)g_arenaCustomize;
+	g_chosenGameMode = (signed char)g_arenaGameType;
+	g_fragLimit = g_arenaFragLimit;
+	g_timeLimit = g_arenaTimeLimit;
 	g_arenaGameSetUp = 1;
 }
 
@@ -1588,14 +1587,14 @@ int (lobby_checkReservedName2)(void)
 	special_map(g_playerName, (u8 *)ADDR(g_arenaMap));
 	u8 *packet = g_roomPacket;
 	packet[0] = 0x18;
-	packet[0x49] = ARENA(0x22);
-	packet[0x48] = ARENA(0x25);
-	packet[0x47] = ARENA(0x24);
-	packet[0x46] = ARENA(0x23);
+	packet[0x49] = g_arenaCustomize;
+	packet[0x48] = g_arenaTimeLimit;
+	packet[0x47] = g_arenaFragLimit;
+	packet[0x46] = g_arenaGameType;
 	packet[0x45] = 1;
-	packet[0x43] = ARENA(0x20);
-	packet[0x44] = ARENA(0x21);
-	packet[0x52] = ARENA(0x2e);
+	packet[0x43] = g_arenaMap;
+	packet[0x44] = g_arenaPlayers;
+	packet[0x52] = g_playerHasClan;
 	lstrcpyA((char *)packet + 0x53, (const char *)ADDR(g_unusedPlayerRecord26));
 	lstrcpyA((char *)g_roomPacket + 1, g_playerName);
 	jmp_net_getLocalAddress();
@@ -1606,7 +1605,6 @@ int (lobby_checkReservedName2)(void)
 	g_arenaLobbyState = 2;
 	return 1;
 }
-#undef ARENA
 
 /* 0x4351c0: the game room's game announced on the game server: the room's settings kept (0x5b1b30), a special
    room's map, the packet (0xa0b328: kind 0x18, the player's name 0x9dd570 at +0x43, the settings, the game's name,
