@@ -84,13 +84,14 @@ void THISCALL (spaceSlot_clear)(int *self) { self[1] = self[2] = self[3] = self[
 /* 0x469980, 0x46f480: members cleared (0x46f480 keeps the sixth) */
 void THISCALL (Skeleton_clear)(int *self) { for (int i = 1; i <= 7; i++) self[i] = 0; }
 void THISCALL (partList_clear)(int *self) { for (int i = 1; i <= 11; i++) if (i != 6) self[i] = 0; }
-/* 0x4699a0, 0x46f4b0: the owned buffer (+8 while +0xc is 1) freed, then the members cleared */
+/* 0x4699a0, 0x46f4b0: the owned block (BlockOwner) freed, then the members cleared */
 static void free_owned(void *self)
 {
-	if (FIELD(int, self, 0xc) == 1) {
-		operator_delete(FIELD(void *, self, 8));
-		FIELD(void *, self, 8) = NULL;
-		FIELD(int, self, 0xc) = 0;
+	BlockOwner *bo = (BlockOwner *)self;
+	if (bo->ownsBlock == 1) {
+		operator_delete(bo->block);
+		bo->block = NULL;
+		bo->ownsBlock = 0;
 	}
 }
 int THISCALL (Skeleton_release)(void *self) { free_owned(self); Skeleton_clear(self); return 0; }

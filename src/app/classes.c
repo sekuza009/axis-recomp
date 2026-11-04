@@ -68,13 +68,14 @@ int THISCALL (TextureManager_reset)(void *self)
 	return 0;
 }
 
-/* an object's owned buffer (+8, owned while +0xc is 1) freed */
+/* an object's owned block (BlockOwner: block, owned while ownsBlock is 1) freed */
 static void free_owned(void *self)
 {
-	if (FIELD(int, self, 0xc) == 1) {
-		operator_delete(FIELD(void *, self, 8));
-		FIELD(void *, self, 8) = NULL;
-		FIELD(int, self, 0xc) = 0;
+	BlockOwner *bo = (BlockOwner *)self;
+	if (bo->ownsBlock == 1) {
+		operator_delete(bo->block);
+		bo->block = NULL;
+		bo->ownsBlock = 0;
 	}
 }
 
@@ -659,5 +660,5 @@ void THISCALL (app_requireCd)(u8 *g, u32 a, int mode)
 	zero_dwords((u8 *)g + offsetof(Scene, roundClear4), 3);   /* roundClear4 .. statsTaken */
 	GS->chosenTeam = -1;
 	GS->screenshotTaken = 0;
-	GAME_VAR(int, g + 0x2343253) = 0;
+	GS->itemLevelsTaken = 0;
 }
