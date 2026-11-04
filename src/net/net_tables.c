@@ -22,24 +22,24 @@ int (net_sessionValue)(int i)
 	return 0;
 }
 
-/* 0x4514a0: player slot (its low byte) taken by player id: the shorts at +0x10 .. +0x22 reset (two of them -1),
-   +0x32 the current value of 0xa0b428 */
+/* 0x4514a0: player slot (its low byte) taken by player id: the first ten shorts of its packet reset (two of them
+   -1), the one at +0x22 the current value of 0xa0b428 */
 void (net_takePlayerSlot)(u32 slot, int id)
 {
 	static const short init[10] = { 0, 0, 0, 0, 0, -1, 0, 0, -1, 0 };
-	u32 r = OBJ(g_netSlots) + (slot & 0xff) * 0x410;
-	GAME_VAR(int, r) = 1;
-	GAME_VAR(int, r + 4) = id;
-	memcpy((void *)(RELOC(r) + 0x10), init, sizeof init);
-	GAME_VAR(short, r + 0x32) = (*(short *)&g_localPlayerData);
+	NetSlot *r = &g_netSlots[slot & 0xff];
+	r->used = 1;
+	r->id = id;
+	memcpy(r->packet, init, sizeof init);
+	memcpy(&r->packet[0x22], &g_localPlayerData, 2);
 }
 
 /* 0x4515a0: all slots freed (and the 0x40 bytes at 0x9f93d8 cleared) */
 void (net_freeAllSlots)(void)
 {
 	memset((void *)OBJ(g_playerSlotFlags), 0, 0x40);
-	for (u32 r = OBJ(g_netSlots); r < OBJ(g_netSlots) + 16 * 0x410; r += 0x410)
-		memset((void *)RELOC(r), 0, 16);
+	for (NetSlot *r = g_netSlots; r < g_netSlots + 16; r++)
+		memset(r, 0, offsetof(NetSlot, packet));
 }
 
 /* 0x451450: a free player slot claimed (its flag in the sixteen at 0x9f93d8 set); 0xff when none is free */
@@ -920,7 +920,7 @@ u32 (net_handleMessage)(const u8 *message, u32 size, u32 from)
 	(void)size;
 	u32 type = *(const u32 *)RELOC(message);
 	u32 slot = message[4], length = *(const u32 *)(RELOC(message) + 5);
-	u8 *player = g_netSlots + slot * 0x410;   /* +0 taken, +4 the id, +8 data there, +0xc its size, +0x10 data */
+	NetSlot *player = &g_netSlots[slot];
 	int r;
 	switch (type) {
 	case 1:
@@ -936,22 +936,22 @@ u32 (net_handleMessage)(const u8 *message, u32 size, u32 from)
 		return GAME_FN(net_freeAllSlots, 0x4515a0, u32, void)();
 	case 6:
 		net_takePlayerSlot(slot, (*(int *)&g_localPlayerId));
-		*(int *)player = 1;
+		player->used = 1;
 		g_slotTakenFlag = 1;
 		g_watchedSlot = (u8)slot;
 		return slot;
 	case 7:
-		if (*(int *)player != 1) {
+		if (player->used != 1) {
 			net_takePlayerSlot(slot, from);
-			*(int *)player = 1;
-			*(u32 *)(player + 4) = from;
+			player->used = 1;
+			player->id = from;
 		} else if (length != 0x40)
 			return slot * 0x410;
 		if (length != 0x40)
 			return length;
-		*(int *)(player + 8) = 1;
-		*(u32 *)(player + 0xc) = length;
-		memcpy(player + 0x10, message + 9, length);
+		player->waiting = 1;
+		player->size = length;
+		memcpy(player->packet, message + 9, length);
 		return length;
 	}
 	return type - 1;

@@ -541,9 +541,9 @@ static void leave_game(u32 lobby, int disconnect)
 	if (disconnect)
 		GAME_FN(net_disconnect, 0x451e60, void, void)();   /* net_disconnect */
 	g_arenaLobbyState = 0;
-	for (u32 p = (OBJ(g_netSlots) + 0x4); p < OBJ(g_netSlots) + 4 + 16 * 0x410; p += 0x410) {
-		GAME_VAR(int, p - 4) = 0;
-		GAME_VAR(int, p) = 0;
+	for (NetSlot *p = g_netSlots; p < g_netSlots + 16; p++) {
+		p->used = 0;
+		p->id = 0;
 	}
 }
 /* the menu cameras placed (both at (0, 0, z), the far one at farZ, the near one at nearZ: float bits), the keys

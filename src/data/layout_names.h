@@ -1665,7 +1665,7 @@ extern struct GameData g_data;
 #undef g_missionTop
 #define g_missionTop (*(int *)g_missionTop_v)
 #undef g_missions
-#define g_missions ((u8 *)g_missions_v)
+#define g_missions ((Mission *)g_missions_v)
 #undef g_missionselRects
 #define g_missionselRects ((int *)g_missionselRects_v)
 #undef g_modeChanged
@@ -1791,7 +1791,7 @@ extern struct GameData g_data;
 #undef g_netSlotMsg
 #define g_netSlotMsg ((u32 *)g_netSlotMsg_v)
 #undef g_netSlots
-#define g_netSlots ((u8 *)g_data.g_netSlots_)
+#define g_netSlots ((NetSlot *)g_data.g_netSlots_)
 #undef g_newArenaForm
 #define g_newArenaForm ((int *)g_newArenaForm_v)
 #undef g_newArenaFormBottom

@@ -626,10 +626,10 @@ void THISCALL (app_requireCd)(u8 *g, u32 a, int mode)
 		}
 		memcpy(((Stage *)s)->worldLow, ((Stage *)s)->levelLow, 12);
 		memcpy(((Stage *)s)->worldHigh, ((Stage *)s)->levelHigh, 12);
-		GAME_VAR(u32, g + 0xbe2ffc) = 0x3f800000;
+		BITS(GS->unusedBe2ffc) = 0x3f800000;
 		game_setGameTypeFlags((Stage *)s, 0);
 	}
-	GS->playing = GAME_VAR(int, g + 0x233ca00) = 0;
+	GS->playing = GS->unused233ca00 = 0;
 	memcpy(GS->cameraPos, (const void *)ADDR(g_vecOrigin), 12);
 	for (int k = 0; k < 3; k++)
 		GS->cameraDir[k] = f32(-fld_m((const float *)ADDR(g_vecUnitZ) + k));
@@ -637,7 +637,7 @@ void THISCALL (app_requireCd)(u8 *g, u32 a, int mode)
 	(*(int *)&GS->cameraAngle[0]) = (*(int *)&GS->cameraAngle[1]) = 0;
 	GS->inputState = GS->network == 2 ? 3 : GS->network == 3 ? 1 : 2;
 	GS->modeStarted = GS->wholeSeconds = (*(int *)&GS->secondFraction) = 0;
-	(*(int *)&GS->msgFade) = GAME_VAR(int, g + 0x233cc44) = 0;
+	(*(int *)&GS->msgFade) = GS->unused233cc44 = 0;
 	BITS(GS->emblemTime) = 0x43960000;   /* 300, 3, 5, 15 */
 	BITS(GS->roundTimer) = 0x40400000;
 	BITS(GS->kingTimer) = 0x40a00000;

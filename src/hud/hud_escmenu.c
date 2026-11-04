@@ -239,7 +239,7 @@ static void esc_resetScore(Scene *scene)
 {
 	if (scene->showEmblems == 1)
 		sound_updateListener(scene);
-	scene->players[scene->localPlayer].statF0 = 0;
+	scene->players[scene->localPlayer].killsCounted = 0;
 	scene->players[scene->localPlayer].kills = 0;
 	scene->players[scene->localPlayer].deaths++;
 }

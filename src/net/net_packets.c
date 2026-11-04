@@ -2,14 +2,12 @@
    bytes; each player's packets are numbered 0..127 in turn (the number goes in the packet's first byte). Sent
    packets are kept (0xaef6a0: 16 players x 128 x 64 bytes) so a lost one can be sent again when its receiver asks:
    a packet whose first byte has bit 7 set is such a request, for the number in its low bits, from the player in its
-   second byte. Received ones wait in the player table (0x9f9840, 0x410 bytes a player: +0 in use, +8 a packet
-   waiting, +0x10 the packet) or, arriving ahead of their turn, in the history marked in 0xb0f6a0 (16 x 128 flags). */
+   second byte. Received ones wait in the player table (g_netSlots) or, arriving ahead of their turn, in the history marked in 0xb0f6a0 (16 x 128 flags). */
 #include "../game.h"
 #include <string.h>
 
 #define g_netClient g_slotTakenFlag           /* the packet layer is on (as a client) */
 #define g_localSlot g_watchedSlot            /* the local player's slot */
-#define PLAYER(i, offset) GAME_VAR(int, OBJ(g_netSlots) + (i) * 0x410 + (offset))
 #define g_send ((u8 *)ADDR(g_netPacketMessageKind))                       /* the message sent: +4 the slot, +5 the size, +9 the packet */
 
 /* 0x4a8300: the layer reset; host 1: on as a client. Returns the eax the fills leave (-1) */
@@ -73,7 +71,7 @@ int (netq_receive)(int *from, int *size, void *data)
 	int start = g_cursor;
 	for (;;) {
 		int p = g_cursor;
-		if (net_playerInUse(p) && PLAYER(g_cursor, 8) == 1)
+		if (net_playerInUse(p) && g_netSlots[g_cursor].waiting == 1)
 			break;
 		p = g_cursor;
 		if (g_ahead[(p << 7) + g_nextNumber[p]] == 1) {   /* the one due arrived earlier */
@@ -81,7 +79,7 @@ int (netq_receive)(int *from, int *size, void *data)
 			*size = 0x40;
 			memcpy(data, g_history + ((g_cursor << 7) + g_nextNumber[g_cursor]) * 0x40, 0x40);
 			p = g_cursor;
-			PLAYER(p, 8) = 0;
+			g_netSlots[p].waiting = 0;
 			taken(p);
 			return 1;
 		}
@@ -92,15 +90,15 @@ int (netq_receive)(int *from, int *size, void *data)
 	*from = g_cursor;
 	*size = 0x40;
 	int p = g_cursor;
-	memcpy(data, (const u8 *)(OBJ(g_netSlots) + 0x10) + p * 0x410, 0x40);
+	memcpy(data, g_netSlots[p].packet, 0x40);
 	p = g_cursor;
 	int due = g_nextNumber[p];
-	PLAYER(p, 8) = 0;
-	u8 head = GAME_VAR(u8, OBJ(g_netSlots) + 0x10 + p * 0x410);
+	g_netSlots[p].waiting = 0;
+	u8 head = g_netSlots[p].packet[0];
 	int number = head & 0x7f;
 	if (head & 0x80) {   /* a resend request */
 		u8 local = g_localSlot;
-		if (GAME_VAR(u8, OBJ(g_netSlots) + 0x11 + p * 0x410) == local) {
+		if (g_netSlots[p].packet[1] == local) {
 			g_send[4] = local;
 			GAME_VAR(int, g_send + 5) = 0x40;
 			memcpy(g_send + 9, g_history + ((local << 7) + number) * 0x40, 0x40);
@@ -126,6 +124,6 @@ int (netq_online)(void) { return g_netQueueOnline; }
 int (net_isClient)(void) { return g_netClient; }
 int (net_matchOver)(void) { return g_netHostGone; }
 int (net_localSlot)(void) { return g_localSlot; }
-int (net_playerInUse)(int i) { return PLAYER(i, 0); }
+int (net_playerInUse)(int i) { return g_netSlots[i].used; }
 void (netq_clearResends)(void) { g_resends = 0; }
 int (netq_resends)(void) { return g_resends; }

@@ -239,8 +239,8 @@ void THISCALL (stage_newRound)(Stage *stage)
 	}
 	stage->playerRecordCount = 0;
 	stage_clearActorSlots(stage);
-	static const short cleared[] = { offsetof(Player, statD8), offsetof(Player, kills), offsetof(Player, deaths), offsetof(Player, statF0),
-	                                 offsetof(Player, statF4), offsetof(Player, timePlayed), offsetof(Player, timeExtra), offsetof(Player, state),
+	static const short cleared[] = { offsetof(Player, statD8), offsetof(Player, kills), offsetof(Player, deaths), offsetof(Player, killsCounted),
+	                                 offsetof(Player, deathsCounted), offsetof(Player, timePlayed), offsetof(Player, timeExtra), offsetof(Player, state),
 	                                 offsetof(Player, orderFlag), offsetof(Player, markSolo), offsetof(Player, markTeam) };
 	for (int i = 0; i < 100; i++) {
 		Player *ac = &stage->actors[i];
@@ -827,13 +827,16 @@ void THISCALL (actor_setupFromParts)(u8 *s, int a, int id, u32 a3, const u32 *pp
 	BITS(AC->pitch) = pp[5];
 	BITS(AC->yaw) = pp[6];
 	fill_dwords(ac + offsetof(Player, forward), 6, 0);   /* forward .. fireAnim */
-	static const u16 past[3] = { offsetof(Player, nextPos), offsetof(Player, netPos), offsetof(Player, botGoal) };   /* the next, sent and bot-goal states start at the place and the heading (nextPos, netPos, botGoal) */
-	for (int k = 0; k < 3; k++) {
-		u8 *h = ac + past[k];
-		memcpy(h, AC->pos, 12);
-		GAME_VAR(u32, h + 0xc) = BITS(AC->pitch);
-		GAME_VAR(u32, h + 0x10) = BITS(AC->yaw);
-	}
+	/* the next, sent and bot-goal states start at the place and the heading */
+	memcpy(AC->nextPos, AC->pos, 12);
+	BITS(AC->nextPitch) = BITS(AC->pitch);
+	BITS(AC->nextYaw) = BITS(AC->yaw);
+	memcpy(AC->netPos, AC->pos, 12);
+	BITS(AC->netPitch) = BITS(AC->pitch);
+	BITS(AC->netYaw) = BITS(AC->yaw);
+	memcpy(AC->botGoal, AC->pos, 12);
+	BITS(AC->botLookPitch) = BITS(AC->pitch);
+	BITS(AC->botLookYaw) = BITS(AC->yaw);
 	fill_dwords(ac + offsetof(Player, nextForward), 6, 0);   /* nextForward .. fireCycle */
 	fill_dwords(ac + offsetof(Player, netMotion), 5, 0);   /* netMotion */
 	fill_dwords(ac + offsetof(Player, netFired), 3, 0);   /* netFired .. burstLeft */

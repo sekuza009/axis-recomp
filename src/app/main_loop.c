@@ -1348,8 +1348,9 @@ static void local_spawn(u8 *s)
 		team_colours(s, SC->localPlayer, SC->localTeam);
 	else if (SC->players[SC->localPlayer].statD8 == 0)
 		for (int part = 0; part < 5; part++) {
-			const u32 *c = (const u32 *)(s + 0x23424a2) + part * 2;
-			actor_setPartColor_bits((u8 *)SCENE_STAGE(s), SC->localPlayer, part, c[-11], c[-1], c[9], c[-10], c[0], c[10]);
+			float (*c)[5][2] = SC->mechColours;
+			actor_setPartColor_bits((u8 *)SCENE_STAGE(s), SC->localPlayer, part, BITS(c[0][part][0]), BITS(c[1][part][0]), BITS(c[2][part][0]),
+			                        BITS(c[0][part][1]), BITS(c[1][part][1]), BITS(c[2][part][1]));
 		}
 	u32 rec[7];   /* the actor, 0, the position, the pitch and heading */
 	const u8 *at = spawn_point(s, 0);
@@ -2071,9 +2072,9 @@ void THISCALL (game_processGameMode)(u8 *s)
 						SC->players[SC->localPlayer].statD8 = 0;
 					scene_setLocalTeam((Scene *)s, -1);
 				}
-				SC->players[SC->localPlayer].statF0 = 0;
+				SC->players[SC->localPlayer].killsCounted = 0;
 				SC->players[SC->localPlayer].kills = 0;
-				SC->players[SC->localPlayer].statF4 = 0;
+				SC->players[SC->localPlayer].deathsCounted = 0;
 				SC->players[SC->localPlayer].deaths = 0;
 				SC->rankingShown = 1;
 				SC->stageCleared = 0;
@@ -2229,8 +2230,8 @@ void THISCALL (game_processGameMode)(u8 *s)
 			for (int i = 0; i < SCENE_STAGE(s)->itemCount; i++)
 				SCENE_STAGE(s)->items[i].taken = BITS(SCENE_STAGE(s)->items[i].fade) = 0;
 			for (int i = 0; i < 16; i++) {
-				SC->players[i].kills = SC->players[i].deaths = SC->players[i].statF0 = 0;
-				SC->players[i].statF4 = SC->players[i].timePlayed = BITS(SC->players[i].timeExtra) = 0;
+				SC->players[i].kills = SC->players[i].deaths = SC->players[i].killsCounted = 0;
+				SC->players[i].deathsCounted = SC->players[i].timePlayed = BITS(SC->players[i].timeExtra) = 0;
 			}
 			stage_clearActorRefs((Stage *)stage);
 			msg_newKing((Scene *)s);
@@ -2238,9 +2239,9 @@ void THISCALL (game_processGameMode)(u8 *s)
 			events_clear((Scene *)s, 60.0f);
 			notices_clearAll(s);
 			SC->elapsed = (*(int *)&SC->timeFraction) = 0;
-			SC->players[SC->localPlayer].statF0 = 0;
+			SC->players[SC->localPlayer].killsCounted = 0;
 			SC->players[SC->localPlayer].kills = 0;
-			SC->players[SC->localPlayer].statF4 = 0;
+			SC->players[SC->localPlayer].deathsCounted = 0;
 			SC->players[SC->localPlayer].deaths = 0;
 			SC->startTimer = 0.0f;
 			sound_playVolume(0x18, 100);

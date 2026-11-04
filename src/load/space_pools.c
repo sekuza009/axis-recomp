@@ -106,11 +106,10 @@ void *THISCALL (space_getNextFreeBlockPtrBy)(u8 *space, const u32 *mn, const u32
 }
 
 /* 0x482320 (thiscall on the space): a unit's planes built (space_buildPlanes) and, when there are any, linked at the
-   end of the owner's list (owner +4 its last; +0xa0 / +0xa4 next / previous) and given a node (space_getNextFreeNode
-   Ptr: +0 the planes, +8 / +0xc next / previous; owner +8 its last node). Its callers ignore the eax it leaves */
+   end of the owner's list (SpaceUnit.lastPlane; CollisionPlane.listNext / listPrev) and given a node (space_getNextFreeNodePtr)
+   at the head of its nodes (SpaceUnit.lastNode). Its callers ignore the eax it leaves */
 void THISCALL (space_addUnitPlanes)(void *space, u32 id, u8 *owner, u32 part, u32 i0, u32 i1, u32 i2, u32 v0, u32 v1, u32 v2)
 {
-#define AT(type, p, offset) GAME_VAR(type, (u8 *)RELOC(p) + (offset))
 #define PL(p) ((CollisionPlane *)(p))
 	SpaceUnit *un = (SpaceUnit *)owner;
 	u8 *planes = space_buildPlanes(space, id, v0, v1, v2, owner, part, i0, i1, i2);
@@ -122,18 +121,17 @@ void THISCALL (space_addUnitPlanes)(void *space, u32 id, u8 *owner, u32 part, u3
 		PL(planes)->listPrev = un->lastPlane;
 	}
 	un->lastPlane = planes;
-	u8 **node = space_getNextFreeNodePtr(space);
-	node[0] = planes;
-	u8 **last_node = un->lastNode;
+	SpaceNode *node = space_getNextFreeNodePtr(space);
+	node->item = planes;
+	SpaceNode *last_node = un->lastNode;
 	if (last_node) {
-		PL(last_node[0])->listNext = planes;
-		PL(node[0])->listPrev = un->lastNode[0];
-		AT(u8 **, un->lastNode, 8) = node;
-		AT(u8 **, node, 0xc) = un->lastNode;
+		PL(last_node->item)->listNext = planes;
+		PL(node->item)->listPrev = un->lastNode->item;
+		RELOC(un->lastNode)->newer = node;
+		RELOC(node)->next = un->lastNode;
 	}
 	un->lastNode = node;
 #undef PL
-#undef AT
 }
 
 /* 0x4819b0 (thiscall on the space): the space emptied (planes, nodes, units, blocks) and laid out: its bounds mn / mx
@@ -344,7 +342,7 @@ static u8 *make_octant(u8 *space, const float *low, const float *high, int i)
 /* a child block that ended up with no items and no children given back (space_freeBlock) and forgotten */
 static void drop_if_empty(u8 *space, u8 **child)
 {
-	if (FIELD(int, *child, 0x1c) <= 0 && FIELD(int, *child, 0x24) == 0) {
+	if (((SpaceBlock *)RELOC(*child))->itemCount <= 0 && ((SpaceBlock *)RELOC(*child))->split == 0) {
 		space_freeBlock(space, *child);
 		*child = NULL;
 	}
@@ -363,8 +361,8 @@ int THISCALL (space_insertItem)(u8 *space, u8 *block, u8 *item, int depth)
 	const float *low = (const float *)block, *high = bk->high;
 	if (!space_itemMeetsBox(item, low, high, sp->margin))
 		return 0;
-	u32 *first = bk->items;
-	if (first && first[0] == (u32)item)
+	SpaceNode *first = bk->items;
+	if (first && first->item == item)
 		return 0;
 	u8 **child = bk->children;
 	if (bk->split) {
@@ -376,12 +374,12 @@ int THISCALL (space_insertItem)(u8 *space, u8 *block, u8 *item, int depth)
 		}
 		return 1;
 	}
-	u32 *node = space_getNextFreeNodePtr(space);
-	node[0] = (u32)item;
-	node[1] = (u32)block;
-	node[3] = BITS(bk->items);
+	SpaceNode *node = space_getNextFreeNodePtr(space);
+	node->item = item;
+	node->block = block;
+	node->next = bk->items;
 	if (bk->items)
-		bk->items[2] = (u32)node;
+		bk->items->newer = node;
 	bk->items = node;
 	if (++bk->itemCount <= sp->splitCount || depth <= 0)
 		return 1;
@@ -389,14 +387,14 @@ int THISCALL (space_insertItem)(u8 *space, u8 *block, u8 *item, int depth)
 		child[i] = make_octant(space, low, high, i);
 		bk->split = 1;
 	}
-	for (u32 *n = bk->items; n;) {
+	for (SpaceNode *n = bk->items; n;) {
 		for (int j = 0; j < 8; j++)
-			space_insertItem(space, child[j], (void *)RELOC(n[0]), depth - 1);
-		u32 *next = (u32 *)RELOC(n[3]);
+			space_insertItem(space, child[j], RELOC(n->item), depth - 1);
+		SpaceNode *next = RELOC(n->next);
 		space_freeNode(space, n);
 		n = next;
 	}
-	BITS(bk->items) = 0;
+	bk->items = NULL;
 	bk->itemCount = 0;
 	for (int j = 0; j < 8; j++)
 		drop_if_empty(space, &child[j]);
@@ -784,7 +782,7 @@ u32 THISCALL (space_traceUnit)(u8 *unit, const float *from, const float *to, flo
 				return 0;
 		}
 	}
-	u32 *node = ((SpaceBlock *)unit)->items;
+	SpaceNode *node = ((SpaceBlock *)unit)->items;
 	if (!node)
 		return 0;
 	GAME_VAR(u32, dist) = 0xff7fffff;
@@ -794,7 +792,7 @@ u32 THISCALL (space_traceUnit)(u8 *unit, const float *from, const float *to, flo
 	u32 found = 0;
 	const u32 *sub = NULL;
 	for (int s = -1;;) {
-		u8 *rec = (u8 *)RELOC(node[0]);
+		u8 *rec = RELOC(node->item);
 		if (s >= 0 || !(rec[0] & 1)) {
 			float at[3], tt;
 			if (collisionTri_traceSegment(rec, f, t, at, &tt) == 1 && tt > *dist) {
@@ -807,15 +805,15 @@ u32 THISCALL (space_traceUnit)(u8 *unit, const float *from, const float *to, flo
 						                    fmul_m(fld_m(&at[0]), &m[r]), &m[12 + r]));
 				}
 				*dist = tt;
-				found = node[0];
+				found = (u32)node->item;
 			}
 		}
-		node = (u32 *)RELOC(node[3]);
+		node = RELOC(node->next);
 		if (!node) {
 			if (++s >= nsubs)
 				return found;
 			sub = subs + s * 3;
-			node = (u32 *)RELOC(sub[0]);
+			node = (SpaceNode *)RELOC(sub[0]);
 			through_m(f, (const float *)RELOC(sub[2]), from, 0);
 			through_m(t, (const float *)RELOC(sub[2]), to, 1);
 		}

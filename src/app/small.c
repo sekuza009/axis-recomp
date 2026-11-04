@@ -129,15 +129,15 @@ char *(path_normalize)(char *s)
 	return s;
 }
 
-/* 0x451530: every one of the 16 network slots (0x410 bytes from 0x9f9840: +4 the owner) owned by id emptied, its
-   flag (0x9f93d8) too; slot 0 freed sets 0x9fd94c. Leaves 0xff in AL */
+/* 0x451530: every one of the 16 network slots (g_netSlots) owned by id emptied, its flag (0x9f93d8) too; slot 0
+   freed sets 0x9fd94c. Leaves 0xff in AL */
 u8 (net_freeSlotsOf)(int id)
 {
 	for (int s = 0; s < 16; s++) {
-		u32 r = OBJ(g_netSlots) + s * 0x410;
-		if (GAME_VAR(int, r + 4) != id)
+		NetSlot *r = &g_netSlots[s];
+		if (r->id != (u32)id)
 			continue;
-		GAME_VAR(int, r) = GAME_VAR(int, r + 4) = GAME_VAR(int, r + 8) = GAME_VAR(int, r + 0xc) = 0;
+		r->used = r->id = r->waiting = r->size = 0;
 		GAME_VAR(int, OBJ(g_playerSlotFlags) + s * 4) = 0;
 		if (s == 0)
 			g_netHostGone = 1;
@@ -145,8 +145,8 @@ u8 (net_freeSlotsOf)(int id)
 	return 0xff;
 }
 
-/* 0x430bd0: the 16 entries of 0x410 bytes from 0x9f9840 marked empty */
-void (net_clearSlots)(void) { for (u32 p = OBJ(g_netSlots); p < OBJ(g_netSlots) + 16 * 0x410; p += 0x410) GAME_VAR(int, p) = 0; }
+/* 0x430bd0: the 16 network slots marked empty */
+void (net_clearSlots)(void) { for (NetSlot *p = g_netSlots; p < g_netSlots + 16; p++) p->used = 0; }
 
 /* ---- front end ---- */
 /* 0x453a30: 1 if connection kind i (0 .. 3) is available */

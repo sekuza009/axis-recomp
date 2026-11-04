@@ -11,8 +11,8 @@ void THISCALL (scene_resetScores)(Scene *scene)
 		p->statD8 = 0;
 		p->kills = 0;
 		p->deaths = 0;
-		p->statF0 = 0;
-		p->statF4 = 0;
+		p->killsCounted = 0;
+		p->deathsCounted = 0;
 		p->timePlayed = 0;
 		p->timeExtra = 0.0f;
 		p->team = -1;

@@ -177,28 +177,25 @@ void THISCALL (script_processTriggers)(u8 *s)
 
 }
 
-/* 0x49d150 (thiscall on the scene): the camera's actor (+0x234240d, none when negative): how far it moved since the
-   last frame (its position +0x1eccb54 .., the last one +0x1eccb60 ..) added to the listener's position (0x4de72e,
-   0x4de732, 0x4de722), and the last position brought up to date; outside the menus' text mode (+0x23423a1 0) the
+/* 0x49d150 (thiscall on the scene): the local player (none when negative): its kills, deaths and score since they
+   were last counted (killsCounted, deathsCounted, startPoints) added to the title's wins, losses and points, and
+   counted; outside the menus' text mode (+0x23423a1 0) the
    room's text kept (room_keepText); the view distance (+0x233cc50) 300. Its callers ignore the eax it leaves */
 void THISCALL (sound_updateListener)(u8 *s)
 {
-#define ACTOR FIELD(int, s, 0x234240d)
-#define NOW(k) FIELD(int, s, 0x1eccb54 + ACTOR * 0x8888 + (k) * 4)
-#define LAST(k) FIELD(int, s, 0x1eccb60 + ACTOR * 0x8888 + (k) * 4)
-	if (ACTOR >= 0) {
-		g_titleWins += NOW(0) - LAST(0);
-		g_titleLosses += NOW(1) - LAST(1);
-		g_titlePoints += NOW(2) - LAST(2);
-		for (int k = 0; k < 3; k++)
-			LAST(k) = NOW(k);
+	Scene *sc = (Scene *)s;
+	if (sc->localPlayer >= 0) {
+		Player *me = &sc->players[sc->localPlayer];
+		g_titleWins += me->kills - me->killsCounted;
+		g_titleLosses += me->deaths - me->deathsCounted;
+		g_titlePoints += me->score - me->startPoints;
+		me->killsCounted = me->kills;
+		me->deathsCounted = me->deaths;
+		me->startPoints = me->score;
 	}
 	if (!((Scene *)s)->roundOver)
 		room_keepText();
 	BITS(((Scene *)s)->emblemTime) = 0x43960000;   /* 300.0f */
-#undef ACTOR
-#undef NOW
-#undef LAST
 }
 
 /* 0x48ec20 (thiscall on the scene): the effects' shapes looked up in the shape cache (+0x19e188c): three sets of eight
@@ -227,7 +224,6 @@ void THISCALL (effect_initTextures)(u8 *s)
    ignore the eax it leaves */
 void THISCALL (script_processCommandBy)(u8 *s, int a, int trig, int entry)
 {
-#define ACTOR(i, type, offset) FIELD(type, s, 0x1cd93a8 + (i) * 0x8888 + (offset))
 	u8 *actor = a >= 0 ? (u8 *)&ST->actors[a] : NULL;
 	Player *ac = (Player *)actor;
 	WayPoint *e = (WayPoint *)(ST->triggers[trig].wayPoints + entry * 0x14);
@@ -272,7 +268,7 @@ void THISCALL (script_processCommandBy)(u8 *s, int a, int trig, int entry)
 			break;
 		case 14: if (actor) ac->invulnerable = 1; break;
 		case 15: actor_applySpawnRecord(s, c[1], (u8 *)&ST->mapActors[c[1]]); break;
-		case 16: ACTOR(c[1], int, 0x128) = 0; break;
+		case 16: ST->actors[c[1]].armor = 0; break;
 		case 17: actor_deactivate((Stage *)s, c[1]); break;
 		case 18: if (actor) (*(u32 *)&ac->lookActor) = c[1]; break;
 		case 19:
@@ -291,8 +287,8 @@ void THISCALL (script_processCommandBy)(u8 *s, int a, int trig, int entry)
 			break;
 		case 21: if (actor) (*(u32 *)&ac->followTarget) = c[1]; break;
 		case 22:
-			ACTOR(c[1], int, 0x87f8) = -1;
-			ACTOR(c[1], int, 0x87fc) = -1;
+			ST->actors[c[1]].target1 = -1;
+			ST->actors[c[1]].target2 = -1;
 			break;
 		case 23:
 			ST->actors[c[1]].target1 = c[2];
@@ -323,7 +319,6 @@ void THISCALL (script_processCommandBy)(u8 *s, int a, int trig, int entry)
 		case 31: object_deactivate(s, c[1]); break;
 		}
 	}
-#undef ACTOR
 }
 
 /* a 4 x 4 identity matrix (as float bits) */
@@ -385,11 +380,11 @@ void THISCALL (object_initObjectBy)(u8 *s, int i, const u8 *type)
 	u8 *shape = (u8 *)shape_getByName((u8 *)&ST->objectShapes, (const char *)RELOC(type), 1);
 	mo->model = (Model *)shape;
 	for (int r = 0; r < 2; r++) {
-		int need = ST->objectColourCount + FIELD(int, shape, 0x18);
+		int need = ST->objectColourCount + ((Model *)shape)->colourCount;
 		if (need > 1000000)
 			sys_fatalErrorN((char *)OBJ(g_logStage), (const char *)STR(0x4c8314, "object(%d) objectShapeElementShadingC..."), i, need, 1000000);
 		mo->colours[r] = (u32)&ST->objectColours[ST->objectColourCount];
-		ST->objectColourCount += FIELD(int, ((u8 *)mo->model), 0x18);
+		ST->objectColourCount += mo->model->colourCount;
 	}
 	mo->colourSide = 1;
 	mo->typeValue1 = ((const ObjectType *)type)->value1;

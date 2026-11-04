@@ -6815,8 +6815,8 @@ static void run_stest(const STest *t)
 	DWORD t0 = GetTickCount();
 	int nfull = t->nfull, nfast = t->nfast;
 	{	/* RECOMP_ONLY=name,name,...: run only these state tests (for working on one batch; the rest stay unhooked) */
-		static char only[4096]; static int got;
-		if (!got) { got = 1; if (!GetEnvironmentVariableA("RECOMP_ONLY", only + 1, sizeof only - 2)) only[1] = 0; only[0] = ','; strcat(only, ","); dump_code(); }
+		static char only[32768]; static int got;   /* (a longer list than fits would run every test) */
+		if (!got) { got = 1; DWORD n = GetEnvironmentVariableA("RECOMP_ONLY", only + 1, sizeof only - 2); if (!n || n >= sizeof only - 2) only[1] = 0; only[0] = ','; strcat(only, ","); dump_code(); }
 		char key[128];
 		wsprintfA(key, ",%s,", t->name);
 		if (only[2] && !strstr(only, key)) return;   /* only[2]: the list is ",," when unset */

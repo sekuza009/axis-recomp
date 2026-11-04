@@ -810,7 +810,7 @@ static int obj_corner(u8 *part, int i, char *corner, const float *vs, const floa
 	char *b = TOK(NULL, SLASH);
 	float *uv = sp->texCoords + i * 2;
 	if (!b) {
-		GAME_VAR(int, uv) = GAME_VAR(int, uv + 1) = 0;
+		BITS(uv[0]) = BITS(uv[1]) = 0;
 		memcpy(sp->normals + i * 12, ns + ai * 3, 12);
 	} else {
 		memcpy(uv, ts + ai * 2, 8);

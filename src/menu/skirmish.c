@@ -92,9 +92,7 @@ static void bind_button_texture(void)
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 }
 
-/* ---- the mission list: 0xfc-byte records from 0x9ef2d4 (count 0x9ef2c0): the name, +0x40 a text, +0x60 the
-   description, +0xe0 a number, +0xe8 the kind (a MSG(511, "DON'T") string) ---- */
-#define mission(i) ((const u8 *)(OBJ(g_missions) + 0x4) + (i) * 0xfc)
+/* ---- the mission list: g_missions (count 0x9ef2c0) ---- */
 
 /* the columns' left (and right) x from the window's left */
 static const int column_x0[4] = { 0x10, 0x159, 0x1b3, 0x20d }, column_x1[4] = { 0x154, 0x1ae, 0x208, 0x25d };
@@ -128,16 +126,17 @@ void (skirmish_drawScreenA)(void)
 		const u32 *colour = g_missionPicked == g_missionTop + i ? g_panelColour : g_dimColour;
 		set_colour_bits(g_textColour, colour[0], colour[1], colour[2], colour[3]);
 		int y = BY0 + i * 0x1a + 0x48;
-		text_draw8(BX0 + 0x18, y, (const char *)mission(g_missionTop + i));
-		text_draw8b(BX0 + column_x0[1], y, BX0 + column_x1[1], (const char *)mission(g_missionTop + i) + 0x40);
-		itoa(*(const int *)(mission(g_missionTop + i) + 0xe0), number, 10);
+		const Mission *m = &g_missions[g_missionTop + i];
+		text_draw8(BX0 + 0x18, y, m->name);
+		text_draw8b(BX0 + column_x0[1], y, BX0 + column_x1[1], m->title);
+		itoa(m->number, number, 10);
 		text_draw8b(BX0 + column_x0[2], y, BX0 + column_x1[2], number);
 		text_draw8b(BX0 + column_x0[3], y, BX0 + column_x1[3],
-		            (const char *)(MSG(511, "DON'T") + *(const int *)(mission(g_missionTop + i) + 0xe8) * 0x80));
+		            (const char *)(MSG(511, "DON'T") + m->result * 0x80));
 	}
 	text_setWrapX(BX1 - 0x38);
 	set_colour_bits(g_textColour, g_panelColour[0], g_panelColour[1], g_panelColour[2], g_panelColour[3]);
-	text_draw8(BX0 + 0xf0, BY1 - 0x8c, (const char *)mission(g_missionPicked) + 0x60);
+	text_draw8(BX0 + 0xf0, BY1 - 0x8c, g_missions[g_missionPicked].briefing);
 	text_setWrapX(0x280);
 	for (int k = 0; k < 2; k++) {
 		bind_button_texture();

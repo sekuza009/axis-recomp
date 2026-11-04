@@ -97,12 +97,12 @@ static void first_round(Scene *s)
 	static const u32 items[6] = { ADDR(g_savedMechItem2), ADDR(g_savedMechItem3), ADDR(g_savedMechItem4), ADDR(g_savedMechItem5), ADDR(g_savedMechWeapons), ADDR(g_savedMechItem1) };
 	for (int k = 0; k < 6; k++)
 		s->mechItems[k] = GAME_VAR(int, items[k]);
-	/* the five colour sets (six dwords each from 0x4dcfe0) into three tables of pairs (0x2342476, 0x234249e,
-	   0x23424c6): set i's dwords 0 / 3, 1 / 4 and 2 / 5 */
+	/* the five parts' colour pairs (six dwords each from 0x4dcfe0: hue, saturation, value of the first tint, then
+	   of the second) */
 	for (int i = 0; i < 5; i++)
 		for (int t = 0; t < 3; t++) {
-			FIELD(u32, s, 0x2342476 + t * 0x28 + i * 8) = GAME_VAR(u32, OBJ(g_savedColourChoices) + i * 0x18 + t * 4);
-			FIELD(u32, s, 0x234247a + t * 0x28 + i * 8) = GAME_VAR(u32, OBJ(g_savedColourChoices) + 0xc + i * 0x18 + t * 4);
+			BITS(s->mechColours[t][i][0]) = GAME_VAR(u32, OBJ(g_savedColourChoices) + i * 0x18 + t * 4);
+			BITS(s->mechColours[t][i][1]) = GAME_VAR(u32, OBJ(g_savedColourChoices) + 0xc + i * 0x18 + t * 4);
 		}
 	if (s->network == 1) {
 		if (!s->client) {

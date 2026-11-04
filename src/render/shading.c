@@ -348,10 +348,10 @@ void THISCALL (render_processRenderingBy)(u8 *s, void *view, float h)
 		}
 		((ShapePart *)part)->primCount = gl->stripCount;
 		if (gl->lit != 1) {
-			GAME_VAR(int, water + 0x60) = 0;
+			((ShapePart *)water)->primCount = 0;
 			continue;
 		}
-		GAME_VAR(int, water + 0x60) = 4;
+		((ShapePart *)water)->primCount = 4;
 		for (int ring = 0; ring < 2; ring++)   /* (the original makes the same ring twice) */
 			for (int angle = 0, at = 0, tex_at = 0; angle < 3600; angle += 900, at += 0xc, tex_at += 8) {
 				float v[3];

@@ -2,6 +2,7 @@
    light factors (shape_shadeParts, through the inverse of the shape's matrix) and point lights (shape_lightParts),
    and handed to the view volume. */
 #include "../game.h"
+#include <string.h>
 
 #define FIELD(type, obj, offset) GAME_VAR(type, (u8 *)RELOC(obj) + (offset))
 
@@ -66,7 +67,7 @@ int THISCALL (partList_queue)(ObjectList *list, void *view, const LightFactors *
 
 /* 0x497a90: the draw records of the stage's meshes (0x20c bytes each from +0xdc0278): for mesh i a vertex record B
    (at *(+0xdc0a8c) + i * 0x80) and a box record A (*(+0xdc0cd8) + i * 0x80), the vertex and index counts summed, and
-   each mesh's fixed six-face index lists written into it (with their pointers) */
+   each mesh's box sides written into it: four fans of five of its twelve points */
 void THISCALL (stage_buildMeshDrawRecords)(u8 *stage)
 {
 	Stage *st = (Stage *)stage;
@@ -77,14 +78,9 @@ void THISCALL (stage_buildMeshDrawRecords)(u8 *stage)
 	st->layerBoxModel.partCount = st->groundLayerCount;
 	st->layerBoxModel.colourCount = 0;
 	st->layerBoxModel.triangleCount = 0;
-	static const short faces[][2] = {   /* (offset in the mesh, value), in the original's order of stores */
-		{ 0x1b4, 6 }, { 0x1a8, 6 }, { 0x1c0, 6 }, { 0x1cc, 6 }, { 0x1ac, 5 }, { 0x1b8, 5 }, { 0x1c4, 5 }, { 0x1d0, 5 },
-		{ 0x158, 4 }, { 0x16c, 6 }, { 0x15c, 5 }, { 0x160, 0 }, { 0x164, 3 }, { 0x168, 0xb }, { 0x170, 7 }, { 0x174, 1 },
-		{ 0x178, 0 }, { 0x17c, 5 }, { 0x180, 8 }, { 0x184, 9 }, { 0x188, 2 }, { 0x18c, 1 }, { 0x190, 7 }, { 0x194, 0xa },
-		{ 0x198, 0xb }, { 0x19c, 3 }, { 0x1a0, 2 }, { 0x1a4, 9 } };
+	static const int sides[4][5] = { { 4, 5, 0, 3, 0xb }, { 6, 7, 1, 0, 5 }, { 8, 9, 2, 1, 7 }, { 0xa, 0xb, 3, 2, 9 } };
 	for (int i = 0; i < st->groundLayerCount; i++) {
 		GroundLayer *gl = &st->groundLayers[i];
-		u8 *m = (u8 *)gl + 0x34;   /* (the faces table's offsets are from here) */
 		ShapePart *A = (ShapePart *)st->layerBoxModel.parts + i, *B = (ShapePart *)st->layerModel.parts + i;
 		switch (gl->kind) {
 		case 0:
@@ -116,15 +112,11 @@ void THISCALL (stage_buildMeshDrawRecords)(u8 *stage)
 		A->texCoords = &gl->boxUv[0][0];
 		A->primCount = gl->lit == 1 ? 4 : 0;
 		A->prims = (u8 *)gl->boxPrims;
-		for (unsigned k = 0; k < sizeof faces / sizeof faces[0]; k++) {
-			if (k == 8) {   /* the index lists' pointers, stored among the constants */
-				FIELD(u8 *, m, 0x1b0) = m + 0x158;
-				FIELD(u8 *, m, 0x1c8) = m + 0x180;
-				FIELD(u8 *, m, 0x1bc) = m + 0x16c;
-			}
-			if (k == 10)
-				FIELD(u8 *, m, 0x1d4) = m + 0x194;
-			FIELD(int, m, faces[k][0]) = faces[k][1];
+		for (int f = 0; f < 4; f++) {
+			gl->boxPrims[f].kind = 6;   /* (a fan) */
+			gl->boxPrims[f].indexCount = 5;
+			gl->boxPrims[f].indices = (u8 *)gl->boxIndices[f];
+			memcpy(gl->boxIndices[f], sides[f], sizeof sides[f]);
 		}
 		st->layerModel.colourCount += B->vertexCount;
 		st->layerBoxModel.colourCount += A->vertexCount;

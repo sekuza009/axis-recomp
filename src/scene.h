@@ -212,9 +212,9 @@ typedef struct Player {
 	i32 kills;   /* +0xe4 */
 	i32 deaths;   /* +0xe8 */
 	i32 score;   /* +0xec: shown top left */
-	i32 statF0;   /* +0xf0: (unclear) cleared with the scores */
-	i32 statF4;   /* +0xf4: (unclear) cleared with the scores */
-	i32 startPoints;   /* +0xf8: the level points it started the match with */
+	i32 killsCounted;   /* +0xf0: kills already added to the title's wins (sound_updateListener); cleared with the scores */
+	i32 deathsCounted;   /* +0xf4: deaths already added to the title's losses */
+	i32 startPoints;   /* +0xf8: the level points it started the match with (then the score already added to the */
 	i32 timePlayed;   /* +0xfc: seconds */
 	float timeExtra;   /* +0x100: (by use) added to timePlayed when a team's leader is picked; cleared with the scores */
 	i32 id;   /* +0x104: (by use) its id (the next serial, or the network's) */
@@ -549,11 +549,19 @@ typedef struct SpacePool {
 	i32 used;   /* +0xc: records taken */
 } SpacePool;
 
+/* a node of the collision space's lists (its pool: Space.nodes): a block's items */
+typedef struct SpaceNode {
+	u8 *item;   /* +0x0: what it holds (a unit's: its planes; their first byte flags, 1: skipped) */
+	u8 *block;   /* +0x4: (a block's items) the block */
+	struct SpaceNode *newer;   /* +0x8: the one put in after it (also the free list's link) */
+	struct SpaceNode *next;   /* +0xc: the one put in before it */
+} SpaceNode;
+
 /* a block of the collision space (Space.blocks): an octree node over a box */
 typedef struct SpaceBlock {
 	float low[3];   /* +0x0 */
 	float high[3];   /* +0xc */
-	u32 *items;   /* +0x18: (by use) its items' list (nodes: [2] back, [3] on) */
+	SpaceNode *items;   /* +0x18: its items' list */
 	i32 itemCount;   /* +0x1c: over Space.splitCount (depth left): it splits */
 	u8 _pad0000020[0x4];
 	i32 split;   /* +0x24: 1: its items are in its children */
@@ -604,6 +612,29 @@ typedef struct PartInfo {
 	float ringRange;   /* +0x78: x 1000 */
 	float weight;   /* +0x7c */
 } PartInfo;
+
+/* one of the 30 missions of axis.mis (g_missions: mission_loadAxisMis; the skirmish list) */
+typedef struct Mission {
+	i32 id;   /* +0x0: (the file's first word) */
+	char name[64];   /* +0x4: the list's first column */
+	char title[32];   /* +0x44: its second */
+	char briefing[128];   /* +0x64: (shown under the list for the one picked) */
+	i32 number;   /* +0xe4: the third column */
+	i32 valueE8;   /* +0xe8 */
+	i32 result;   /* +0xec: the fourth: a message (MSG(511) + result * 0x80) */
+	i32 valueF0;   /* +0xf0: (-1 when the list is cleared) */
+	i32 blockSize;   /* +0xf4: its block in axis.mis (read after all the entries) */
+	u8 _pad00000f8[0x4];
+} Mission;
+
+/* one of the sixteen network player slots (g_netSlots): the packet layer's player table */
+typedef struct NetSlot {
+	i32 used;   /* +0x0 */
+	u32 id;   /* +0x4: its DirectPlay player id */
+	i32 waiting;   /* +0x8: a packet is waiting in packet */
+	u32 size;   /* +0xc: (0x40) */
+	u8 packet[0x400];   /* +0x10: the packet received (64 bytes: its first byte the number, bit 7 a resend request */
+} NetSlot;
 
 /* an arena session DirectPlay's enumeration found (dplay_enumSessionsCallback, from its */
 typedef struct SessionDesc {
@@ -921,8 +952,8 @@ typedef struct GroundLayer {
 	float boxPoints[12][3];   /* +0x6c: (by use) its box's draw part (Stage.layerBoxModel): 12 points */
 	u32 boxColours[12];   /* +0xfc */
 	float boxUv[12][2];   /* +0x12c */
-	u8 boxIndices[0x50];   /* +0x18c: its index lists and their pointers (stage_buildMeshDrawRecords' faces table) */
-	u8 boxPrims[4][0xc];   /* +0x1dc: 4 primitives (only when lit) */
+	i32 boxIndices[4][5];   /* +0x18c: its box's four side faces, a five-point fan each (stage_buildMeshDrawRecords) */
+	ShapePrim boxPrims[4];   /* +0x1dc: the four fans (drawn only when lit) */
 } GroundLayer;
 
 /* a way point (Trigger.wayPoints): a place on the trigger's path, with the actor commands run there (map_info.c, script_processCommandBy) */
@@ -1098,7 +1129,7 @@ typedef struct TimeSync {
 typedef struct SpaceUnit {
 	i32 index;   /* +0x0: (-1 when cleared) */
 	u8 *lastPlane;   /* +0x4: its planes' list (CollisionPlane.listNext / listPrev): the last */
-	u8 **lastNode;   /* +0x8: its nodes' list: the last (a node: [0] its planes, [2] next, [3] previous) */
+	SpaceNode *lastNode;   /* +0x8: its planes' nodes: the last */
 	u8 *poolPrev;   /* +0xc: its links in the units' pool */
 	u8 *poolNext;   /* +0x10 */
 } SpaceUnit;
@@ -1404,7 +1435,8 @@ typedef struct Scene {
 	i32 fogInOverlay;   /* +0xbe170c: 1: the stage's fog volume is drawn in the 2D pass */
 	u8 fogVolume[0x10];   /* +0xbe1710 */
 	u32 fogVolumeArgs[3];   /* +0xbe1720: (floats, passed on unchanged) */
-	u8 _pad0be172c[0x18d4];
+	u8 _pad0be172c[0x18d0];
+	float unusedBe2ffc;   /* +0xbe2ffc: (by use) only written: 1.0 by app_requireCd (network 2) */
 	i32 missionNumber;   /* +0xbe3000: (by use) the mission loaded (its number sent and compared in the network packets) */
 	u8 _pad0be3004[0x9fb6c4];
 	i32 headCount;   /* +0x15de6c8: parts of each kind (the pickers wrap around them) */
@@ -1473,7 +1505,7 @@ typedef struct Scene {
 	u8 _pad233c9f4[0x4];
 	i32 crosshairTexture;   /* +0x233c9f8 */
 	i32 playing;   /* +0x233c9fc: 1: the local player plays; 0: watching watchedPlayer */
-	u8 _pad233ca00[0x4];
+	i32 unused233ca00;   /* +0x233ca00: (by use) only written: 0 by app_requireCd */
 	u32 cameraPos[3];   /* +0x233ca04: (by use) the camera's position (app_requireCd: the origin) */
 	float cameraDir[3];   /* +0x233ca10: its direction (-Z) */
 	float cameraUp[3];   /* +0x233ca1c: its up (Y) */
@@ -1491,7 +1523,7 @@ typedef struct Scene {
 	float followTime;   /* +0x233cc38: (by use) seconds the replay viewer has followed its player (a new one after 14) */
 	float presetTime;   /* +0x233cc3c: (by use) seconds on the camera preset (a random one after 7) */
 	float msgFade;   /* +0x233cc40: message box fade, seconds (1 or more: opaque) */
-	u8 _pad233cc44[0x4];
+	i32 unused233cc44;   /* +0x233cc44: (by use) only written: 0 by app_requireCd */
 	float respawnTime;   /* +0x233cc48: (by use) the local player's wait to respawn (10 s) */
 	float startTimer;   /* +0x233cc4c: > 0: "start" shown */
 	float emblemTime;   /* +0x233cc50: (unclear) 300 with showEmblems */
@@ -1573,7 +1605,7 @@ typedef struct Scene {
 	i32 levelPoints;   /* +0x2342446 */
 	i32 mechParts[5];   /* +0x234244a: head, chest, arm, leg, booster */
 	i32 mechItems[6];   /* +0x234245e */
-	u8 _pad2342476[0x78];
+	float mechColours[3][5][2];   /* +0x2342476: the local mech's part colours (match_start, from g_savedColourChoices): [hue, */
 	i32 startCameraMode;   /* +0x23424ee: (unclear) the camera mode a round starts with */
 	i32 cameraSlot;   /* +0x23424f2: the spectator camera's number (0 shows as 10) */
 	char playerNames[16][0x40];   /* +0x23424f6: the players' names kept apart (match_4616e0 / match_461730) */
@@ -1816,8 +1848,8 @@ _Static_assert(offsetof(Player, levelShown) == 0xe0 && sizeof(((Player *)0)->lev
 _Static_assert(offsetof(Player, kills) == 0xe4 && sizeof(((Player *)0)->kills) == 0x4, "scene.fields: Player.kills");
 _Static_assert(offsetof(Player, deaths) == 0xe8 && sizeof(((Player *)0)->deaths) == 0x4, "scene.fields: Player.deaths");
 _Static_assert(offsetof(Player, score) == 0xec && sizeof(((Player *)0)->score) == 0x4, "scene.fields: Player.score");
-_Static_assert(offsetof(Player, statF0) == 0xf0 && sizeof(((Player *)0)->statF0) == 0x4, "scene.fields: Player.statF0");
-_Static_assert(offsetof(Player, statF4) == 0xf4 && sizeof(((Player *)0)->statF4) == 0x4, "scene.fields: Player.statF4");
+_Static_assert(offsetof(Player, killsCounted) == 0xf0 && sizeof(((Player *)0)->killsCounted) == 0x4, "scene.fields: Player.killsCounted");
+_Static_assert(offsetof(Player, deathsCounted) == 0xf4 && sizeof(((Player *)0)->deathsCounted) == 0x4, "scene.fields: Player.deathsCounted");
 _Static_assert(offsetof(Player, startPoints) == 0xf8 && sizeof(((Player *)0)->startPoints) == 0x4, "scene.fields: Player.startPoints");
 _Static_assert(offsetof(Player, timePlayed) == 0xfc && sizeof(((Player *)0)->timePlayed) == 0x4, "scene.fields: Player.timePlayed");
 _Static_assert(offsetof(Player, timeExtra) == 0x100 && sizeof(((Player *)0)->timeExtra) == 0x4, "scene.fields: Player.timeExtra");
@@ -2108,6 +2140,11 @@ _Static_assert(offsetof(SpacePool, records) == 0x4 && sizeof(((SpacePool *)0)->r
 _Static_assert(offsetof(SpacePool, freeHead) == 0x8 && sizeof(((SpacePool *)0)->freeHead) == 0x4, "scene.fields: SpacePool.freeHead");
 _Static_assert(offsetof(SpacePool, used) == 0xc && sizeof(((SpacePool *)0)->used) == 0x4, "scene.fields: SpacePool.used");
 _Static_assert(sizeof(SpacePool) == 0x10, "scene.fields: size of SpacePool");
+_Static_assert(offsetof(SpaceNode, item) == 0x0 && sizeof(((SpaceNode *)0)->item) == 0x4, "scene.fields: SpaceNode.item");
+_Static_assert(offsetof(SpaceNode, block) == 0x4 && sizeof(((SpaceNode *)0)->block) == 0x4, "scene.fields: SpaceNode.block");
+_Static_assert(offsetof(SpaceNode, newer) == 0x8 && sizeof(((SpaceNode *)0)->newer) == 0x4, "scene.fields: SpaceNode.newer");
+_Static_assert(offsetof(SpaceNode, next) == 0xc && sizeof(((SpaceNode *)0)->next) == 0x4, "scene.fields: SpaceNode.next");
+_Static_assert(sizeof(SpaceNode) == 0x10, "scene.fields: size of SpaceNode");
 _Static_assert(offsetof(SpaceBlock, low) == 0x0 && sizeof(((SpaceBlock *)0)->low) == 0xc, "scene.fields: SpaceBlock.low");
 _Static_assert(offsetof(SpaceBlock, high) == 0xc && sizeof(((SpaceBlock *)0)->high) == 0xc, "scene.fields: SpaceBlock.high");
 _Static_assert(offsetof(SpaceBlock, items) == 0x18 && sizeof(((SpaceBlock *)0)->items) == 0x4, "scene.fields: SpaceBlock.items");
@@ -2153,6 +2190,22 @@ _Static_assert(offsetof(PartInfo, tracer) == 0x74 && sizeof(((PartInfo *)0)->tra
 _Static_assert(offsetof(PartInfo, ringRange) == 0x78 && sizeof(((PartInfo *)0)->ringRange) == 0x4, "scene.fields: PartInfo.ringRange");
 _Static_assert(offsetof(PartInfo, weight) == 0x7c && sizeof(((PartInfo *)0)->weight) == 0x4, "scene.fields: PartInfo.weight");
 _Static_assert(sizeof(PartInfo) == 0x80, "scene.fields: size of PartInfo");
+_Static_assert(offsetof(Mission, id) == 0x0 && sizeof(((Mission *)0)->id) == 0x4, "scene.fields: Mission.id");
+_Static_assert(offsetof(Mission, name) == 0x4 && sizeof(((Mission *)0)->name) == 0x40, "scene.fields: Mission.name");
+_Static_assert(offsetof(Mission, title) == 0x44 && sizeof(((Mission *)0)->title) == 0x20, "scene.fields: Mission.title");
+_Static_assert(offsetof(Mission, briefing) == 0x64 && sizeof(((Mission *)0)->briefing) == 0x80, "scene.fields: Mission.briefing");
+_Static_assert(offsetof(Mission, number) == 0xe4 && sizeof(((Mission *)0)->number) == 0x4, "scene.fields: Mission.number");
+_Static_assert(offsetof(Mission, valueE8) == 0xe8 && sizeof(((Mission *)0)->valueE8) == 0x4, "scene.fields: Mission.valueE8");
+_Static_assert(offsetof(Mission, result) == 0xec && sizeof(((Mission *)0)->result) == 0x4, "scene.fields: Mission.result");
+_Static_assert(offsetof(Mission, valueF0) == 0xf0 && sizeof(((Mission *)0)->valueF0) == 0x4, "scene.fields: Mission.valueF0");
+_Static_assert(offsetof(Mission, blockSize) == 0xf4 && sizeof(((Mission *)0)->blockSize) == 0x4, "scene.fields: Mission.blockSize");
+_Static_assert(sizeof(Mission) == 0xfc, "scene.fields: size of Mission");
+_Static_assert(offsetof(NetSlot, used) == 0x0 && sizeof(((NetSlot *)0)->used) == 0x4, "scene.fields: NetSlot.used");
+_Static_assert(offsetof(NetSlot, id) == 0x4 && sizeof(((NetSlot *)0)->id) == 0x4, "scene.fields: NetSlot.id");
+_Static_assert(offsetof(NetSlot, waiting) == 0x8 && sizeof(((NetSlot *)0)->waiting) == 0x4, "scene.fields: NetSlot.waiting");
+_Static_assert(offsetof(NetSlot, size) == 0xc && sizeof(((NetSlot *)0)->size) == 0x4, "scene.fields: NetSlot.size");
+_Static_assert(offsetof(NetSlot, packet) == 0x10 && sizeof(((NetSlot *)0)->packet) == 0x400, "scene.fields: NetSlot.packet");
+_Static_assert(sizeof(NetSlot) == 0x410, "scene.fields: size of NetSlot");
 _Static_assert(offsetof(SessionDesc, guid) == 0x0 && sizeof(((SessionDesc *)0)->guid) == 0x4, "scene.fields: SessionDesc.guid");
 _Static_assert(offsetof(SessionDesc, instance) == 0x4 && sizeof(((SessionDesc *)0)->instance) == 0x10, "scene.fields: SessionDesc.instance");
 _Static_assert(offsetof(SessionDesc, application) == 0x14 && sizeof(((SessionDesc *)0)->application) == 0x10, "scene.fields: SessionDesc.application");
@@ -2773,6 +2826,7 @@ _Static_assert(offsetof(Scene, fogColour) == 0xbe16fc && sizeof(((Scene *)0)->fo
 _Static_assert(offsetof(Scene, fogInOverlay) == 0xbe170c && sizeof(((Scene *)0)->fogInOverlay) == 0x4, "scene.fields: Scene.fogInOverlay");
 _Static_assert(offsetof(Scene, fogVolume) == 0xbe1710 && sizeof(((Scene *)0)->fogVolume) == 0x10, "scene.fields: Scene.fogVolume");
 _Static_assert(offsetof(Scene, fogVolumeArgs) == 0xbe1720 && sizeof(((Scene *)0)->fogVolumeArgs) == 0xc, "scene.fields: Scene.fogVolumeArgs");
+_Static_assert(offsetof(Scene, unusedBe2ffc) == 0xbe2ffc && sizeof(((Scene *)0)->unusedBe2ffc) == 0x4, "scene.fields: Scene.unusedBe2ffc");
 _Static_assert(offsetof(Scene, missionNumber) == 0xbe3000 && sizeof(((Scene *)0)->missionNumber) == 0x4, "scene.fields: Scene.missionNumber");
 _Static_assert(offsetof(Scene, headCount) == 0x15de6c8 && sizeof(((Scene *)0)->headCount) == 0x4, "scene.fields: Scene.headCount");
 _Static_assert(offsetof(Scene, chestCount) == 0x15fff84 && sizeof(((Scene *)0)->chestCount) == 0x4, "scene.fields: Scene.chestCount");
@@ -2819,6 +2873,7 @@ _Static_assert(offsetof(Scene, lastMissionWon) == 0x233c9ec && sizeof(((Scene *)
 _Static_assert(offsetof(Scene, showEmblems) == 0x233c9f0 && sizeof(((Scene *)0)->showEmblems) == 0x4, "scene.fields: Scene.showEmblems");
 _Static_assert(offsetof(Scene, crosshairTexture) == 0x233c9f8 && sizeof(((Scene *)0)->crosshairTexture) == 0x4, "scene.fields: Scene.crosshairTexture");
 _Static_assert(offsetof(Scene, playing) == 0x233c9fc && sizeof(((Scene *)0)->playing) == 0x4, "scene.fields: Scene.playing");
+_Static_assert(offsetof(Scene, unused233ca00) == 0x233ca00 && sizeof(((Scene *)0)->unused233ca00) == 0x4, "scene.fields: Scene.unused233ca00");
 _Static_assert(offsetof(Scene, cameraPos) == 0x233ca04 && sizeof(((Scene *)0)->cameraPos) == 0xc, "scene.fields: Scene.cameraPos");
 _Static_assert(offsetof(Scene, cameraDir) == 0x233ca10 && sizeof(((Scene *)0)->cameraDir) == 0xc, "scene.fields: Scene.cameraDir");
 _Static_assert(offsetof(Scene, cameraUp) == 0x233ca1c && sizeof(((Scene *)0)->cameraUp) == 0xc, "scene.fields: Scene.cameraUp");
@@ -2836,6 +2891,7 @@ _Static_assert(offsetof(Scene, secondFraction) == 0x233cc34 && sizeof(((Scene *)
 _Static_assert(offsetof(Scene, followTime) == 0x233cc38 && sizeof(((Scene *)0)->followTime) == 0x4, "scene.fields: Scene.followTime");
 _Static_assert(offsetof(Scene, presetTime) == 0x233cc3c && sizeof(((Scene *)0)->presetTime) == 0x4, "scene.fields: Scene.presetTime");
 _Static_assert(offsetof(Scene, msgFade) == 0x233cc40 && sizeof(((Scene *)0)->msgFade) == 0x4, "scene.fields: Scene.msgFade");
+_Static_assert(offsetof(Scene, unused233cc44) == 0x233cc44 && sizeof(((Scene *)0)->unused233cc44) == 0x4, "scene.fields: Scene.unused233cc44");
 _Static_assert(offsetof(Scene, respawnTime) == 0x233cc48 && sizeof(((Scene *)0)->respawnTime) == 0x4, "scene.fields: Scene.respawnTime");
 _Static_assert(offsetof(Scene, startTimer) == 0x233cc4c && sizeof(((Scene *)0)->startTimer) == 0x4, "scene.fields: Scene.startTimer");
 _Static_assert(offsetof(Scene, emblemTime) == 0x233cc50 && sizeof(((Scene *)0)->emblemTime) == 0x4, "scene.fields: Scene.emblemTime");
@@ -2913,6 +2969,7 @@ _Static_assert(offsetof(Scene, level) == 0x2342442 && sizeof(((Scene *)0)->level
 _Static_assert(offsetof(Scene, levelPoints) == 0x2342446 && sizeof(((Scene *)0)->levelPoints) == 0x4, "scene.fields: Scene.levelPoints");
 _Static_assert(offsetof(Scene, mechParts) == 0x234244a && sizeof(((Scene *)0)->mechParts) == 0x14, "scene.fields: Scene.mechParts");
 _Static_assert(offsetof(Scene, mechItems) == 0x234245e && sizeof(((Scene *)0)->mechItems) == 0x18, "scene.fields: Scene.mechItems");
+_Static_assert(offsetof(Scene, mechColours) == 0x2342476 && sizeof(((Scene *)0)->mechColours) == 0x78, "scene.fields: Scene.mechColours");
 _Static_assert(offsetof(Scene, startCameraMode) == 0x23424ee && sizeof(((Scene *)0)->startCameraMode) == 0x4, "scene.fields: Scene.startCameraMode");
 _Static_assert(offsetof(Scene, cameraSlot) == 0x23424f2 && sizeof(((Scene *)0)->cameraSlot) == 0x4, "scene.fields: Scene.cameraSlot");
 _Static_assert(offsetof(Scene, playerNames) == 0x23424f6 && sizeof(((Scene *)0)->playerNames) == 0x400, "scene.fields: Scene.playerNames");

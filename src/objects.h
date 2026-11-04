@@ -99,7 +99,7 @@
 #define g_tanTable ((float *)IMG(0xa146f8))   /* float[3600]; by tenths of a degree (to the cos table) */
 #define g_cosTable ((float *)IMG(0xa17f38))   /* float[3600]; (to the sin table) */
 #define g_sinTable ((float *)IMG(0xa1b778))   /* float[3600] */
-#define g_netSlots ((u8 *)IMG(0x9f9840))   /* u8[16640]; 16 network slots of 0x410 bytes (net_clearSlots runs to 0x9fd940); overlapped by g_profileRecords' 103 records at start-up */
+#define g_netSlots ((NetSlot *)IMG(0x9f9840))   /* NetSlot[16] (net_clearSlots runs to 0x9fd940); overlapped by g_profileRecords' 103 records at start-up */
 #define g_netPlayerList ((RankedPlayer *)IMG(0xa05330))   /* RankedPlayer[11]; (net_clearPlayerList) */
 #define g_keySeen ((int *)IMG(0x4d1a98))   /* int[256]; a key's press seen until released (0x400 bytes) */
 #define g_briefingText ((char *)IMG(0x9f1064))   /* char[1600]; the briefing's text (memset 0x640) */
@@ -120,7 +120,7 @@
 #define g_ptxPixels ((u8 *)IMG(0xa21708))   /* u8[262144]; the image decoder's output (RGB(A) */
 #define g_ptxData ((u8 *)IMG(0xaa2e98))   /* u8[262144]; the image decoder's input */
 #define g_roomList ((u8 *)IMG(0x9fd960))   /* u8[30976]; the server's room list: 256 rooms of 0x79 bytes (net_clearRoomList: 0x1e40 dwords) */
-#define g_missions ((u8 *)IMG(0x9ef2d0))   /* u8[7560]; the 30 missions of axis.mis: 0xfc bytes each (mission_clear runs to 0x9f109c) */
+#define g_missions ((Mission *)IMG(0x9ef2d0))   /* Mission[30]; the missions of axis.mis (mission_clear runs to 0x9f109c) */
 #define g_serverNames ((u32 *)IMG(0xa0bf20))   /* u32[1280]; 256 server names of 0x14 bytes */
 #define g_ptxCbGreen ((int *)IMG(0xa6170c))   /* int[256]; YCbCr -> RGB: Cb's part of green (ptx_initColourTables: 256 entries) */
 #define g_ptxCrRed ((int *)IMG(0xaa228c))   /* int[256]; Cr's part of red */

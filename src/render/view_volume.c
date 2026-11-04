@@ -321,7 +321,7 @@ void THISCALL (ViewVolume_projectObject)(u8 *view, u8 *model, u32 *extra, const 
 		if (!e)
 			return;
 		if (((ViewVolume *)view)->materialHeads[list] == 0) {
-			GAME_VAR(int, view + 0x20 + ((ViewVolume *)view)->materialCount * 4) = list;
+			((ViewVolume *)view)->materialOrder[((ViewVolume *)view)->materialCount] = list;
 			((ViewVolume *)view)->materialCount++;
 			((ViewVolume *)view)->materialHeads[list] = (u8 *)e;
 		}

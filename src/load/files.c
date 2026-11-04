@@ -450,8 +450,8 @@ static void *mis_open(void)
 }
 
 /* 0x4435f0: the mission list read from axis.mis: the list cleared first (skirmish_clearPlayerRows), four header words (the
-   count 0x9ef2c0, then 0x9ef2c4 .. 0x9ef2cc), each mission's 0xfc-byte entry from 0x9ef2d0 (a word, the 0x40-byte
-   name, 0x20 and 0x80-byte texts, four words) and then all their block sizes (+0xf4). Without the file, message
+   count 0x9ef2c0, then 0x9ef2c4 .. 0x9ef2cc), each mission's entry (g_missions: all but its block size, field by
+   field) and then all their block sizes. Without the file, message
    0xb and its eax; otherwise fclose's */
 u32 (mission_loadAxisMis)(void)
 {
@@ -462,18 +462,19 @@ u32 (mission_loadAxisMis)(void)
 	for (int k = 0; k < 4; k++)
 		crt_fread((void *)(ADDR(g_missionCount) + k * 4), 4, 1, f);
 	static const struct { int offset, size; } part[8] = {
-		{ 0, 4 }, { 4, 0x40 }, { 0x44, 0x20 }, { 0x64, 0x80 }, { 0xe4, 4 }, { 0xe8, 4 }, { 0xec, 4 }, { 0xf0, 4 } };
-	u8 *mission = g_missions;
+		{ offsetof(Mission, id), 4 }, { offsetof(Mission, name), 0x40 }, { offsetof(Mission, title), 0x20 }, { offsetof(Mission, briefing), 0x80 },
+		{ offsetof(Mission, number), 4 }, { offsetof(Mission, valueE8), 4 }, { offsetof(Mission, result), 4 }, { offsetof(Mission, valueF0), 4 } };
+	Mission *mission = g_missions;
 	for (int i = 0; i < g_missionCount; i++)
 		for (int k = 0; k < 8; k++)
-			crt_fread(mission + i * 0xfc + part[k].offset, part[k].size, 1, f);
+			crt_fread((u8 *)&mission[i] + part[k].offset, part[k].size, 1, f);
 	for (int i = 0; i < g_missionCount; i++)
-		crt_fread(mission + i * 0xfc + 0xf4, 4, 1, f);
+		crt_fread(&mission[i].blockSize, 4, 1, f);
 	return fclose(f);
 }
 
 /* 0x443af0: mission k's block read from axis.mis (in the data folder): after a 0x1a-byte header, 0xf8 bytes for
-   each of the 0x9ef2c0 entries and the blocks before it (sizes 0xfc apart from 0x9ef3c4) into a new buffer
+   each of the 0x9ef2c0 entries and the blocks before it (their blockSize) into a new buffer
    0x9ef1ec (the old one freed); its size into 0x9ef200, the settings page's state cleared and the page set to
    20 (the mission settings). Without the file, message 0xb and its eax; otherwise 0 */
 u32 (mission_saveAxisMis)(int k)
@@ -481,16 +482,16 @@ u32 (mission_saveAxisMis)(int k)
 	void *f = mis_open();
 	if (!f)
 		return GAME_FN(menu_showMessage, 0x41ee40, u32, int)(0xb);
-	const int *size = (const int *)(OBJ(g_missions) + 0xf4);   /* size[i * 63] */
+	const Mission *mission = g_missions;
 	int offset = 0;
 	for (int i = 0; i < k; i++)
-		offset += size[i * 63];
+		offset += mission[i].blockSize;
 	crt_fseek(f, offset + g_missionCount * 0xf8 + 0x1a, 0);
 	if ((*(void **)&g_briefingSource))
 		crt_free((*(void **)&g_briefingSource));
-	void *block = crt_malloc(size[k * 63]);
+	void *block = crt_malloc(mission[k].blockSize);
 	(*(void **)&g_briefingSource) = block;
-	crt_fread(block, size[k * 63], 1, f);
+	crt_fread(block, mission[k].blockSize, 1, f);
 	fclose(f);
 	memset((void *)OBJ(g_undoStack), 0, 0xc8);
 	g_unusedMissionSaveWord = 0;
@@ -502,7 +503,7 @@ u32 (mission_saveAxisMis)(int k)
 	g_briefingSkipped = 0;
 	g_undoDepth = 0;
 	g_settingsPage = 20;
-	g_briefingEnd = size[k * 63];
+	g_briefingEnd = mission[k].blockSize;
 	(*(int *)&g_briefingClock) = 0;
 	return 0;
 }

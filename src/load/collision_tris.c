@@ -566,10 +566,10 @@ int THISCALL (space_collideUnit)(u8 *self, float r, const float *pos, const floa
 	memcpy(step, vel, 12);
 	memcpy(from, pos, 12);
 	int result = 0;
-	u8 *last = 0;
+	SpaceNode *last = 0;
 	for (int pass = 0;; pass++) {
 		memcpy(at, from, 12);
-		u8 *node = (u8 *)((SpaceBlock *)self)->items;
+		SpaceNode *node = ((SpaceBlock *)self)->items;
 		int sub = -1, hit = 0;
 		FIELD(u32, &best, 0) = 0xff7fffff;   /* -FLT_MAX */
 		memcpy(move, step, 12);
@@ -578,14 +578,14 @@ int THISCALL (space_collideUnit)(u8 *self, float r, const float *pos, const floa
 				if (++sub >= nsubs)
 					break;
 				const float *in = (const float *)RELOC(subs[sub * 3 + 2]);
-				node = (u8 *)RELOC(subs[sub * 3]);
+				node = (SpaceNode *)RELOC(subs[sub * 3]);
 				for (int i = 0; i < 3; i++)
 					at[i] = row_point(in, from, i);
 				for (int i = 0; i < 3; i++)
 					move[i] = row_dir(in, step, i);
 			}
-			if (node != last && (sub >= 0 || !(*FIELD(u8 *, node, 0) & 1))
-			    && collision_sphereVsUnit(FIELD(void *, node, 0), r, at, move, k, hitPos, hitVel, &dist, plane, axis) == 1) {
+			if (node != last && (sub >= 0 || !(*RELOC(node)->item & 1))
+			    && collision_sphereVsUnit(RELOC(node)->item, r, at, move, k, hitPos, hitVel, &dist, plane, axis) == 1) {
 				hit = 1;
 				if (dist > best) {
 					if (sub < 0) {
@@ -606,7 +606,7 @@ int THISCALL (space_collideUnit)(u8 *self, float r, const float *pos, const floa
 					FIELD(u32, &best, 0) = FIELD(u32, &dist, 0);
 				}
 			}
-			node = FIELD(u8 *, node, 0xc);
+			node = RELOC(node)->next;
 		}
 		const float *tiny = (const float *)ADDR(k_1em8f);   /* 1e-8 */
 		if (!(hit == 1 && best > *tiny))

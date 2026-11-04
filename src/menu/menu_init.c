@@ -36,23 +36,22 @@ void (arena_initOptionTexts)(void)
 		strcpy((char *)RELOC(d), (const char *)RELOC(s));
 }
 
-/* 0x443570: the skirmish list's 32 player rows (0xfc bytes: a 0x40-byte name, 0xa0 bytes of settings, the team
-   -1) emptied */
+/* 0x443570: the mission list's 30 entries (g_missions) emptied (valueF0 -1) */
 void (skirmish_clearPlayerRows)(void)
 {
 	g_missionCount = 0;
 	g_misHeader1 = 0;
 	g_misHeader2 = 0;
 	g_misHeader3 = 0;
-	for (u32 e = OBJ(g_missions) + 0x44; e < OBJ(g_missions) + 30 * 0xfc + 0x44; e += 0xfc) {   /* (+0x44: each entry's name) */
-		memset((void *)(RELOC(e) - 0x40), 0, 0x40);
-		memset((void *)RELOC(e), 0, 0xa0);
-		GAME_VAR(int, e - 0x44) = 0;
-		GAME_VAR(int, e + 0xa0) = 0;
-		GAME_VAR(int, e + 0xa4) = 0;
-		GAME_VAR(int, e + 0xac) = -1;
-		GAME_VAR(int, e + 0xa8) = 0;
-		GAME_VAR(int, e + 0xb0) = 0;
+	for (Mission *e = g_missions; e < g_missions + 30; e++) {
+		memset(e->name, 0, 0x40);
+		memset((u8 *)e + offsetof(Mission, title), 0, sizeof e->title + sizeof e->briefing);
+		e->id = 0;
+		e->number = 0;
+		e->valueE8 = 0;
+		e->valueF0 = -1;
+		e->result = 0;
+		e->blockSize = 0;
 	}
 }
 
