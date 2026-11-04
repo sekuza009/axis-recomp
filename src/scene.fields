@@ -242,6 +242,7 @@ struct PlayerRecord 0x47fd2                                      # a player of t
 0x479c2    0x600      u32 emblem[16][24]                         # (by use) its emblem: 24 x 16 RGBA (its screenshot, Save\<name>.BMP)
 0x47fca    4          i32 emblemChanged                          # 1: to be copied into the emblem atlas (flagShown: it is there)
 0x47fce    4          i32 emblemSent                             # (by use) its emblem's pixels sent so far (0x180 = 24 x 16: all; the map's players start with all)
+4          0x40       char name[0x40]                            # (by use) its name (its screenshot: Save\\<name>.BMP)
 0x44       4          i32 level                                  # (by use) its level (the profile's factors by it)
 0x48       4          i32 team
 0x30c      0x14       i32 parts[5]                               # its mech's parts: head, chest, arms, legs, booster (records of the stage's part tables; "invalid headIndex")

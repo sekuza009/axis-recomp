@@ -265,7 +265,7 @@ typedef struct ActorInfo {
 /* a player of the match (Scene / Stage playerRecords): its team, mech parts and items; its actor points back (Player.player) */
 typedef struct PlayerRecord {
 	i32 used;   /* +0x0: (by use) 1: in use (playerRecord_markUsed / markFree) */
-	u8 _pad0000004[0x40];
+	char name[0x40];   /* +0x4: (by use) its name (its screenshot: Save\\<name>.BMP) */
 	i32 level;   /* +0x44: (by use) its level (the profile's factors by it) */
 	i32 team;   /* +0x48 */
 	u8 _pad000004c[0x2c0];
@@ -1664,6 +1664,7 @@ _Static_assert(offsetof(ActorInfo, ringRange) == 0x2e10 && sizeof(((ActorInfo *)
 _Static_assert(offsetof(ActorInfo, push) == 0x2e14 && sizeof(((ActorInfo *)0)->push) == 0x4, "scene.fields: ActorInfo.push");
 _Static_assert(sizeof(ActorInfo) == 0x2e18, "scene.fields: size of ActorInfo");
 _Static_assert(offsetof(PlayerRecord, used) == 0x0 && sizeof(((PlayerRecord *)0)->used) == 0x4, "scene.fields: PlayerRecord.used");
+_Static_assert(offsetof(PlayerRecord, name) == 0x4 && sizeof(((PlayerRecord *)0)->name) == 0x40, "scene.fields: PlayerRecord.name");
 _Static_assert(offsetof(PlayerRecord, level) == 0x44 && sizeof(((PlayerRecord *)0)->level) == 0x4, "scene.fields: PlayerRecord.level");
 _Static_assert(offsetof(PlayerRecord, team) == 0x48 && sizeof(((PlayerRecord *)0)->team) == 0x4, "scene.fields: PlayerRecord.team");
 _Static_assert(offsetof(PlayerRecord, parts) == 0x30c && sizeof(((PlayerRecord *)0)->parts) == 0x14, "scene.fields: PlayerRecord.parts");

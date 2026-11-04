@@ -610,13 +610,13 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 			/* the turns towards the view, at most the turn rate (+0x6c) a second */
 			float rate = f32(fmul_m(fld_m(dt), &AC->accel));
 			for (int c = 0; c < 2; c++) {
-				long double r = angle_turn(BITS((&AC->pitch)[c]), BITS((&AC->botLookPitch)[c]));
+				long double r = angle_turn(AU(offsetof(Player, pitch) + c * 4), AU(offsetof(Player, botLookPitch) + c * 4));
 				float rr = (float)r;
-				(&AC->inPitch)[c] = rr;
+				AF(offsetof(Player, inPitch) + c * 4) = rr;
 				if (r > rate)
-					BITS((&AC->inPitch)[c]) = BITS(rate);
+					AU(offsetof(Player, inPitch) + c * 4) = BITS(rate);
 				else if (!(rr >= -fld_m(&rate)))
-					(&AC->inPitch)[c] = (float)-fld_m(&rate);
+					AF(offsetof(Player, inPitch) + c * 4) = (float)-fld_m(&rate);
 			}
 		}
 		if (AC->bot == 1)
@@ -786,7 +786,7 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 		AC->nextPitch = f32(fadd_m(fmul_m(fsub_m(fld_m(&AC->netPitch), &AC->pitch), &k), &AC->pitch));
 		AC->nextYaw = f32(angle_stepTowards(BITS(AC->nextYaw), BITS(AC->netYaw), BITS(k)));
 		for (int c = 0; c < 5; c++)   /* +0x194..+0x1a4 */
-			(&AC->nextForward)[c] = f32(fadd_m(fmul_m(fsub_m(fld_m(&AC->netMotion[c]), &(&AC->forward)[c]), &k), &(&AC->forward)[c]));
+			AF(offsetof(Player, nextForward) + c * 4) = f32(fadd_m(fmul_m(fsub_m(fld_m(&AC->netMotion[c]), &AF(offsetof(Player, forward) + c * 4)), &k), &AF(offsetof(Player, forward) + c * 4)));
 	}
 	if (AC->fireAnim > 0 && weapon) {   /* the firing cycle, wrapping at 1 */
 		long double v = fadd_m(fdiv_m(fld_m(dt), &((ActorInfo *)weapon)->cycleTime), &AC->fireCycle);

@@ -131,7 +131,7 @@ int THISCALL (script_notifyObject)(Stage *stage, int a, int b, int c, int d)
 void THISCALL (scene_resetActors)(Stage *stage)
 {
 	for (int k = 0; k < 6; k++)
-		FIELD(int, stage, 0x202e8d4 + k * 4) = -1;
+		FIELD(int, stage, offsetof(Stage, playerActor) + k * 4) = -1;   /* playerActor .. cameraTargetMode */
 	stage->teamsChanged = 1;
 	stage_clearActorRefs(stage);
 	stage_resetPlayerRecords(stage);
@@ -159,15 +159,15 @@ void THISCALL (stage_clearActorSlots)(Stage *stage)
    slot and the used count kept up to date) */
 void THISCALL (actor_clearTargetRefs)(Stage *stage, int b)
 {
-	u8 *bullet = (u8 *)stage + b * 0x4e8;
+	Bullet *bu = &stage->bullets[b];
 	for (int k = 0; k < 5; k++) {
-		int *ref = &FIELD(int, stage, FIELD(int, bullet, 0x202ef40) * 0x8888 + k * 4 + 0x1cd9708);
+		int *ref = &stage->actors[bu->owner].shotBullets[k];
 		if (*ref == b)
 			*ref = -1;
 	}
-	if (!FIELD(int, bullet, 0x202ef38))
+	if (!bu->active)
 		return;
-	FIELD(int, bullet, 0x202ef38) = 0;
+	bu->active = 0;
 	if (b < stage->bulletFreeHint)
 		stage->bulletFreeHint = b;
 	int n = stage->bulletSlotsUsed;
@@ -175,7 +175,7 @@ void THISCALL (actor_clearTargetRefs)(Stage *stage, int b)
 		return;
 	do {
 		n = stage->bulletSlotsUsed;
-		if (FIELD(int, stage, 0x202ea50 + n * 0x4e8))
+		if (stage->bullets[n - 1].active)
 			return;
 		stage->bulletSlotsUsed = --n;
 	} while (n > 0);
@@ -190,11 +190,12 @@ static void player_clear(u8 *e)
 	e[0x88] = 0;
 	e[0xc8] = 0;
 	e[0x108] = 0;
+	PlayerRecord *pr = (PlayerRecord *)(e - 0x44);   /* (e: the record's level) */
 	for (int k = 0; k < 5; k++)
-		FIELD(int, e, 0x2c8 + k * 4) = -1;
+		pr->parts[k] = -1;
 	for (int k = 0; k < 6; k++) {
 		e[0x148 + k * 0x40] = 0;
-		FIELD(int, e, 0x2dc + k * 4) = -1;
+		pr->items[k] = -1;
 	}
 	for (int r = 0; r < 5; r++)
 		for (int c = 0; c < 2; c++) {
@@ -209,11 +210,12 @@ static void player_clear(u8 *e)
 void THISCALL (stage_resetPlayerRecords)(Stage *stage)
 {
 	for (int p = 0; p < 16; p++) {
-		u8 *e = (u8 *)stage + 0x1561bac + p * 0x47fd2;
-		FIELD(int, e, -0x44) = 0;
-		e[-0x40] = 0;
-		FIELD(int, e, 0) = 0;
-		FIELD(int, e, 4) = -1;
+		PlayerRecord *pr = &stage->playerRecords[p];
+		u8 *e = (u8 *)&pr->level;
+		pr->used = 0;
+		pr->name[0] = 0;
+		pr->level = 0;
+		pr->team = -1;
 		player_clear(e);
 		playerRecord_resetColourGrid(stage, p);
 	}
@@ -225,13 +227,14 @@ void THISCALL (stage_resetPlayerRecords)(Stage *stage)
 void THISCALL (stage_newRound)(Stage *stage)
 {
 	for (int k = 0; k < 6; k++)
-		FIELD(int, stage, 0x202e8d4 + k * 4) = -1;
+		FIELD(int, stage, offsetof(Stage, playerActor) + k * 4) = -1;   /* playerActor .. cameraTargetMode */
 	stage->teamsChanged = 1;
 	stage_clearActorRefs(stage);
 	for (int p = 0; p < 16; p++) {
-		u8 *e = (u8 *)stage + 0x1561bac + p * 0x47fd2;
-		FIELD(int, e, -0x44) = 0;
-		FIELD(int, e, 4) = -1;
+		PlayerRecord *pr = &stage->playerRecords[p];
+		u8 *e = (u8 *)&pr->level;
+		pr->used = 0;
+		pr->team = -1;
 		player_clear(e);
 	}
 	stage->playerRecordCount = 0;
@@ -269,7 +272,7 @@ void THISCALL (actor_deactivate)(Stage *stage, int i)
 		stage->actorFreeHint = i;
 	int n = stage->actorCount;
 	if (i == n - 1)
-		while (n > 0 && FIELD(int, stage, 0x1cd0c28 + stage->actorCount * 0x8888) == 0) {
+		while (n > 0 && stage->actors[stage->actorCount - 1].active == 0) {
 			n = stage->actorCount - 1;
 			stage->actorCount = n;
 		}
