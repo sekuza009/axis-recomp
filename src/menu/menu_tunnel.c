@@ -286,7 +286,7 @@ void (intro_cameraPath)(u8 *o, int h)
 	tr->depth = (float)(H * k_m1000f + H * k_m100f);
 	tr->cells = 100;
 	for (int pass = 0; pass < 2; pass++) {
-		u32 base = 0x10;
+		float (*band)[201][4] = tr->outer;
 		X radius = pass ? k_23 : k_25;
 		if (pass) {   /* the second circle after the path's four fields */
 			(*(int *)&tr->spin) = 0;
@@ -296,20 +296,19 @@ void (intro_cameraPath)(u8 *o, int h)
 			FIELD(int, o, 0x1938) = 0;
 			(*(int *)&tr->turn) = 0;
 			tr->moveSteps = 0;
-			base = 0x1944;
+			band = tr->inner;
 			if (tr->cells < 0)
 				break;
 		}
 		for (int i = 0; ; ) {
 			X a = (X)i * k_3_6f * k_pi * k_oneOver180;
-			u8 *r = o + base + i * 16;
 			float s = f32(x87_fsin(a) * radius), c = f32(x87_fcos(a) * radius);
-			FIELD(float, r, 0xc90) = s;
-			FIELD(float, r, 0) = s;
-			FIELD(float, r, 0xc94) = c;
-			FIELD(float, r, 4) = c;
-			FIELD(u32, r, 8) = 0x43fa0000;       /* 500 */
-			FIELD(u32, r, 0xc98) = 0xc3fa0000;   /* -500 */
+			band[1][i][0] = s;
+			band[0][i][0] = s;
+			band[1][i][1] = c;
+			band[0][i][1] = c;
+			BITS(band[0][i][2]) = 0x43fa0000;   /* 500: the near circle */
+			BITS(band[1][i][2]) = 0xc3fa0000;   /* -500: the far one */
 			if (!(++i <= tr->cells))
 				break;
 		}
