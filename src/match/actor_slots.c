@@ -720,7 +720,7 @@ static void mech_stats(u8 *s, u8 *ac, u8 *p, int check)
 		for (int k = 0; k < 6; k++) {
 			int it = GAME_VAR(int, p + 0x320 + k * 4);
 			if (it >= 0)
-				AC->load = f32(fadd_m(fld_m((const float *)((u8 *)&st->actorInfo[it] + 0x2db8)), &AC->load));
+				AC->load = f32(fadd_m(fld_m(&st->actorInfo[it].weight), &AC->load));
 		}
 	long double over = AC->load > AC->loadMax
 		? fmul_m(fdiv_m(fsub_m(fld_m(&AC->load), &AC->loadMax), &AC->loadMax), K(0x4a947c))
