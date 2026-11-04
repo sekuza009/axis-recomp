@@ -1066,6 +1066,8 @@ struct Stage 0x2150443                                          # the stage: the
 0x9ef910   0xc        float levelHigh[3]
 0x9ef91c   0xc        float worldLow[3]                          # the world box moves are kept inside (collision_tris.c)
 0x9ef928   0xc        float worldHigh[3]
+0x9ef934   0xc        float areaExtra[3]                         # (by use) three more values of the ground file's area limits (the first 1.0 by
+                                                                 # default: scene_reset); nothing reads them
 0x20fcfe0  4          u32 emblemTexture                          # (by use) the emblem atlas's GL texture
 0x20fcfe4  0x8000     u32 emblemAtlas[64][128]                   # the players' emblems, four to a row
 0x13c9b30  0x214d0    HeadType headTypes[50] 

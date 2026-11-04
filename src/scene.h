@@ -1237,7 +1237,7 @@ typedef struct Stage {
 	float levelHigh[3];   /* +0x9ef910 */
 	float worldLow[3];   /* +0x9ef91c: the world box moves are kept inside (collision_tris.c) */
 	float worldHigh[3];   /* +0x9ef928 */
-	u8 _pad09ef934[0xc];
+	float areaExtra[3];   /* +0x9ef934: (by use) three more values of the ground file's area limits (the first 1.0 by */
 	u8 pool[0x3d0900];   /* +0x9ef940: (by use) the ground layers' tables are taken from it (pool_take: map_info.c) */
 	i32 poolUsed;   /* +0xdc0240: its bytes taken */
 	GroundLayer groundLayers[4];   /* +0xdc0244: (groundLayerCount of them) */
@@ -2683,6 +2683,7 @@ _Static_assert(offsetof(Stage, levelLow) == 0x9ef904 && sizeof(((Stage *)0)->lev
 _Static_assert(offsetof(Stage, levelHigh) == 0x9ef910 && sizeof(((Stage *)0)->levelHigh) == 0xc, "scene.fields: Stage.levelHigh");
 _Static_assert(offsetof(Stage, worldLow) == 0x9ef91c && sizeof(((Stage *)0)->worldLow) == 0xc, "scene.fields: Stage.worldLow");
 _Static_assert(offsetof(Stage, worldHigh) == 0x9ef928 && sizeof(((Stage *)0)->worldHigh) == 0xc, "scene.fields: Stage.worldHigh");
+_Static_assert(offsetof(Stage, areaExtra) == 0x9ef934 && sizeof(((Stage *)0)->areaExtra) == 0xc, "scene.fields: Stage.areaExtra");
 _Static_assert(offsetof(Stage, pool) == 0x9ef940 && sizeof(((Stage *)0)->pool) == 0x3d0900, "scene.fields: Stage.pool");
 _Static_assert(offsetof(Stage, poolUsed) == 0xdc0240 && sizeof(((Stage *)0)->poolUsed) == 0x4, "scene.fields: Stage.poolUsed");
 _Static_assert(offsetof(Stage, groundLayers) == 0xdc0244 && sizeof(((Stage *)0)->groundLayers) == 0x830, "scene.fields: Stage.groundLayers");

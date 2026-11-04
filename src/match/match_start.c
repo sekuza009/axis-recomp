@@ -151,11 +151,11 @@ static int random_below(u32 n)
    kept (chat_keepLastLine) and the round's flags cleared */
 static void later_round(Scene *s)
 {
-	static const u32 counts[6] = { 0x15de6c8, 0x15fff84, 0x163b588, 0x1679b34, 0x16c5178, 0x175522c };
+	const int *counts[6] = { &s->headCount, &s->chestCount, &s->armCount, &s->legCount, &s->boosterCount, &s->actorInfoCount };
 	static const u32 rows[6] = { 0x2aa, 0x2af, 0x4c0, 0x4fd, 0x608, 0xb86 };
 	s->geometryCheckTurn = 0;
 	for (int k = 0; k < 6; k++)
-		s->geometryPick[k] = random_below(((u32)FIELD(int, s, counts[k]) * rows[k] * 4) >> 2);
+		s->geometryPick[k] = random_below(((u32)*counts[k] * rows[k] * 4) >> 2);
 	s->roundClear2 = 0;
 	s->dataLossCode = -1;
 	s->wholeSeconds = 0;
@@ -359,7 +359,7 @@ void THISCALL (item_initTextures)(u8 *s, u32 a1, u32 a2, const char *sky, u32 a4
 			memcpy(st->sides[o][k], v, 12);
 			float *low = st->sides[o][4 + k];
 			low[0] = f32(fld_m((float *)&v[0]));
-			FIELD(int, low, 4) = 0;
+			BITS(low[1]) = 0;
 			low[2] = f32(fld_m((float *)&v[2]));
 		}
 	}
@@ -370,7 +370,7 @@ void THISCALL (item_initTextures)(u8 *s, u32 a1, u32 a2, const char *sky, u32 a4
 		float x = f32(fmul_m(fsub_m((long double)i, K(0x4a93d0)), K(0x4aa400)));
 		for (int j = 0; j <= 10; j++, grid += 3) {
 			grid[0] = f32(fmul_m(fsub_m((long double)j, K(0x4a93d0)), K(0x4aa400)));
-			FIELD(int, grid, 4) = 0;
+			BITS(grid[1]) = 0;
 			grid[2] = x;
 		}
 	}
@@ -380,7 +380,7 @@ void THISCALL (item_initTextures)(u8 *s, u32 a1, u32 a2, const char *sky, u32 a4
 		BITS(st->levelHigh[c]) = 0x47c35000;   /* 100000 */
 	}
 	memcpy(st->worldLow, st->levelLow, 12);
-	FIELD(u32, s, 0x9ef934) = 0x3f800000;
+	BITS(st->areaExtra[0]) = 0x3f800000;   /* 1.0 */
 	st->poolUsed = 0;
 	memcpy(st->worldHigh, st->levelHigh, 12);
 	st->groundLayerCount = 0;
