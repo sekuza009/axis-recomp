@@ -1356,9 +1356,9 @@ typedef struct Scene {
 	i32 winnerTeam;   /* +0x23423bd */
 	float startCount;   /* +0x23423c1: (by use) "PREPARE THE BATTLE": seconds before the start (3) */
 	i32 startCountShown;   /* +0x23423c5: (by use) the count last shown (-1 none) */
-	i32 roundClear;   /* +0x23423c9: (unclear) cleared at a later round */
+	i32 geometryCheckTurn;   /* +0x23423c9: (by use) the geometry table the next game packet checks (net_sendGamePacket: this % 5, then one on; 0 at a later round) */
 	i32 geometryPick[6];   /* +0x23423cd: (unclear) a random position in each of the six geometry tables */
-	u8 _pad23423e5[0x18];
+	i32 geometryPerRow[6];   /* +0x23423e5: (by use) the six geometry tables' entries per row (6 3 6 7 10 0x18: game_loadAllData; net_sendGamePacket's checks) */
 	i32 roundClear2;   /* +0x23423fd: (unclear) */
 	i32 dataLossCode;   /* +0x2342401: shown when a game ends for lost data */
 	float partsCheckTime;   /* +0x2342405: (by use) the local player's parts checked every 20 s (network) */
@@ -2537,8 +2537,9 @@ _Static_assert(offsetof(Scene, endNoticeTime) == 0x23423b9 && sizeof(((Scene *)0
 _Static_assert(offsetof(Scene, winnerTeam) == 0x23423bd && sizeof(((Scene *)0)->winnerTeam) == 0x4, "scene.fields: Scene.winnerTeam");
 _Static_assert(offsetof(Scene, startCount) == 0x23423c1 && sizeof(((Scene *)0)->startCount) == 0x4, "scene.fields: Scene.startCount");
 _Static_assert(offsetof(Scene, startCountShown) == 0x23423c5 && sizeof(((Scene *)0)->startCountShown) == 0x4, "scene.fields: Scene.startCountShown");
-_Static_assert(offsetof(Scene, roundClear) == 0x23423c9 && sizeof(((Scene *)0)->roundClear) == 0x4, "scene.fields: Scene.roundClear");
+_Static_assert(offsetof(Scene, geometryCheckTurn) == 0x23423c9 && sizeof(((Scene *)0)->geometryCheckTurn) == 0x4, "scene.fields: Scene.geometryCheckTurn");
 _Static_assert(offsetof(Scene, geometryPick) == 0x23423cd && sizeof(((Scene *)0)->geometryPick) == 0x18, "scene.fields: Scene.geometryPick");
+_Static_assert(offsetof(Scene, geometryPerRow) == 0x23423e5 && sizeof(((Scene *)0)->geometryPerRow) == 0x18, "scene.fields: Scene.geometryPerRow");
 _Static_assert(offsetof(Scene, roundClear2) == 0x23423fd && sizeof(((Scene *)0)->roundClear2) == 0x4, "scene.fields: Scene.roundClear2");
 _Static_assert(offsetof(Scene, dataLossCode) == 0x2342401 && sizeof(((Scene *)0)->dataLossCode) == 0x4, "scene.fields: Scene.dataLossCode");
 _Static_assert(offsetof(Scene, partsCheckTime) == 0x2342405 && sizeof(((Scene *)0)->partsCheckTime) == 0x4, "scene.fields: Scene.partsCheckTime");

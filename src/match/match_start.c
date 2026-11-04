@@ -153,7 +153,7 @@ static void later_round(Scene *s)
 {
 	static const u32 counts[6] = { 0x15de6c8, 0x15fff84, 0x163b588, 0x1679b34, 0x16c5178, 0x175522c };
 	static const u32 rows[6] = { 0x2aa, 0x2af, 0x4c0, 0x4fd, 0x608, 0xb86 };
-	s->roundClear = 0;
+	s->geometryCheckTurn = 0;
 	for (int k = 0; k < 6; k++)
 		s->geometryPick[k] = random_below(((u32)FIELD(int, s, counts[k]) * rows[k] * 4) >> 2);
 	s->roundClear2 = 0;

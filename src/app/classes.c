@@ -215,19 +215,20 @@ void *THISCALL (ResourceSet_ctor)(u8 *self)
 }
 
 /* ---- arrays of members released ---- */
-/* the array at +0x11c (count +0x120) of stride-byte entries, each released, the count 0; +0x12c set to 0 if it
-   was positive; returns its old value */
+/* a manager's items (count of them, stride bytes each) each released, the count 0; dataUsed set to 0 if it was
+   positive; returns its old value */
 typedef int (THISCALL *Release)(void *entry);
 static int release_all(u8 *self, int stride, Release release)
 {
-	if (*(int *)(self + 0x120) > 0) {
-		for (int i = 0; i < *(int *)(self + 0x120); i++)
-			release(*(u8 **)(self + 0x11c) + i * stride);
-		*(int *)(self + 0x120) = 0;
+	Manager *mg = (Manager *)self;
+	if (mg->count > 0) {
+		for (int i = 0; i < mg->count; i++)
+			release(mg->items + i * stride);
+		mg->count = 0;
 	}
-	int r = *(int *)(self + 0x12c);
+	int r = mg->dataUsed;
 	if (r > 0)
-		*(int *)(self + 0x12c) = 0;
+		mg->dataUsed = 0;
 	return r;
 }
 static int THISCALL release_model(void *e) { return Model_release(e); }
@@ -271,16 +272,17 @@ u32 THISCALL (ResourceSet_dtor)(u8 *self)
    Returns the last destructor's eax */
 u32 THISCALL (Stage_dtor)(u8 *self)
 {
+	Stage *stage = (Stage *)self;
 	*(u32 *)self = STR(0x4aa23c, "08F");   /* the vtable */
 	Scene_dtor(self + 0x2148ed8);
-	eh_vector_destructor(self + 0x1cd93a8, 0x8888, 100, FN_ADDR(actor_destroyPartLists, 0x45ff30));
-	SkeletonManager_dtor(self + 0x1cbe198);   /* SkeletonManager_dtor */
-	GAME_THISFN(ShapeManager_dtor, 0x466a10, void, void *)(self + 0x19e188c);   /* ShapeManager_dtor */
-	eh_vector_destructor(self + 0x1561b68, 0x47fd2, 16, FN_ADDR(ResourceSet_dtor, 0x463960));
-	SkeletonManager_dtor(self + 0x13016d0);
-	ShapeManager_dtor(self + 0xe3c93c);
-	Model_dtor(self + 0xdc0cc4);
-	Model_dtor(self + 0xdc0a78);
+	eh_vector_destructor((u8 *)stage->actors, 0x8888, 100, FN_ADDR(actor_destroyPartLists, 0x45ff30));
+	SkeletonManager_dtor((u8 *)&stage->partSkeletons);   /* SkeletonManager_dtor */
+	GAME_THISFN(ShapeManager_dtor, 0x466a10, void, void *)((u8 *)&stage->partShapes);   /* ShapeManager_dtor */
+	eh_vector_destructor((u8 *)stage->playerRecords, 0x47fd2, 16, FN_ADDR(ResourceSet_dtor, 0x463960));
+	SkeletonManager_dtor((u8 *)&stage->objectSkeletons);
+	ShapeManager_dtor((u8 *)&stage->objectShapes);
+	Model_dtor((u8 *)&stage->layerBoxModel);
+	Model_dtor((u8 *)&stage->layerModel);
 	Light_dtor((u8 *)&((Stage *)self)->actorLights);
 	Light_dtor((u8 *)&((Stage *)self)->dynamicLights);
 	Light_dtor((u8 *)&((Stage *)self)->mapLights);
@@ -490,9 +492,10 @@ u8 *THISCALL (game_loadAllData)(u8 *g)
 #define VECTOR(at, size, count) ((void (STDCALL *)(void *, int, int, u32))FN_ADDR(crt_arrayConstruct, 0x401290))(at, size, count, FN_ADDR(ResourceSet_trivialCtor, 0x45fff0))   /* (the CRT's iterators are stdcall) */
 #define VTABLE(at, vt) (GAME_VAR(u32, at) = (vt))
 	u8 *s = (u8 *)SCENE_STAGE(g);
+	Stage *st = (Stage *)s;
 	TimeSync_ctor((u8 *)&GS->timer);   /* TimeSync_ctor */
-	VTABLE(g + 0x74, STR(0x4aa24c, "04F"));
-	ViewVolume_clear(g + 0x74);
+	VTABLE((u8 *)GS->view, STR(0x4aa24c, "04F"));
+	ViewVolume_clear((u8 *)GS->view);
 	CollisionVolume_ctor(s + 0xa10);   /* CollisionVolume_ctor */
 	VECTOR(s + 0x9cd000, 0x2c, 0x400);
 	VTABLE((u8 *)&((Stage *)s)->mapLights, VT(Light, 0x4aa248));
@@ -501,34 +504,34 @@ u8 *THISCALL (game_loadAllData)(u8 *g)
 	VTABLE((u8 *)&((Stage *)s)->dynamicLights, VT(Light, 0x4aa248));
 	Light_clearCounts((u8 *)&((Stage *)s)->dynamicLights);
 	Light_ctor((u8 *)&((Stage *)s)->actorLights);   /* Light_ctor */
-	VECTOR(s + 0x9ee080, 0xc, 0x126);
-	VECTOR(s + 0x9eee54, 0xc, 0x31);
-	VECTOR(s + 0x9ef0cc, 0xc, 0x30);
-	VECTOR(s + 0x9ef350, 0xc, 0x79);
-	VECTOR(s + 0xdc0244, 0x20c, 4);
-	Model_ctor(s + 0xdc0a78);   /* Model_ctor */
-	Model_ctor(s + 0xdc0cc4);
-	VECTOR(s + 0xe36214, 0x14, 0x3e8);
-	VTABLE(s + 0xe3c93c, VT(ShapeManager, 0x4aa244));
-	ShapeManager_clear(s + 0xe3c93c);
-	VECTOR(s + 0xf30dc8, 4, 1000000);
-	VTABLE(s + 0x13016d0, STR(0x4aa240, "\3207F"));
-	SkeletonManager_clear(s + 0x13016d0);
-	VECTOR(s + 0x131ae44, 0x2cc, 0x3e8);
-	VECTOR(s + 0x14d1ab4, 0x2e18, 0x32);
-	((void (STDCALL *)(void *, int, int, u32, u32))IMG(0x49fd2d))(s + 0x1561b68, 0x47fd2, 0x10, FN_ADDR(ResourceSet_ctor, 0x463850), FN_ADDR(ResourceSet_dtor, 0x463960));
-	VTABLE(s + 0x19e188c, VT(ShapeManager, 0x4aa244));
-	ShapeManager_clear(s + 0x19e188c);
-	VTABLE(s + 0x1cbe198, STR(0x4aa240, "\3207F"));
-	SkeletonManager_clear(s + 0x1cbe198);
-	VECTOR(s + 0x1cd6fb4, 0x5c, 0x64);
-	((void (STDCALL *)(void *, int, int, u32, u32))IMG(0x49fd2d))(s + 0x1cd93a8, 0x8888, 0x64, FN_ADDR(ResourceSet_initLists, 0x463a40), FN_ADDR(actor_destroyPartLists, 0x45ff30));
-	VECTOR(s + 0x202ef34, 0x4e8, 0x190);
-	VECTOR(s + 0x20a99c0, 0x12c, 0x3e8);
-	VECTOR(s + 0x20f300c, 0xc, 0xc8);
-	VECTOR(s + 0x20fab74, 0x14, 0x20);
-	VECTOR(s + 0x20fadf8, 0x28, 0xc8);
-	VECTOR(s + 0x20fcfe4, 4, 0x2000);
+	VECTOR((u8 *)st->skySphere, 0xc, 0x126);
+	VECTOR((u8 *)st->layer, 0xc, 0x31);
+	VECTOR((u8 *)st->sides, 0xc, 0x30);
+	VECTOR((u8 *)st->floor, 0xc, 0x79);
+	VECTOR((u8 *)st->groundLayers, 0x20c, 4);
+	Model_ctor((u8 *)&st->layerModel);   /* Model_ctor */
+	Model_ctor((u8 *)&st->layerBoxModel);
+	VECTOR((u8 *)st->wayPoints, 0x14, 0x3e8);
+	VTABLE((u8 *)&st->objectShapes, VT(ShapeManager, 0x4aa244));
+	ShapeManager_clear((u8 *)&st->objectShapes);
+	VECTOR((u8 *)st->objectColours, 4, 1000000);
+	VTABLE((u8 *)&st->objectSkeletons, STR(0x4aa240, "\3207F"));
+	SkeletonManager_clear((u8 *)&st->objectSkeletons);
+	VECTOR((u8 *)st->objects, 0x2cc, 0x3e8);
+	VECTOR((u8 *)st->actorInfo, 0x2e18, 0x32);
+	((void (STDCALL *)(void *, int, int, u32, u32))IMG(0x49fd2d))((u8 *)st->playerRecords, 0x47fd2, 0x10, FN_ADDR(ResourceSet_ctor, 0x463850), FN_ADDR(ResourceSet_dtor, 0x463960));
+	VTABLE((u8 *)&st->partShapes, VT(ShapeManager, 0x4aa244));
+	ShapeManager_clear((u8 *)&st->partShapes);
+	VTABLE((u8 *)&st->partSkeletons, STR(0x4aa240, "\3207F"));
+	SkeletonManager_clear((u8 *)&st->partSkeletons);
+	VECTOR((u8 *)st->mapActors, 0x5c, 0x64);
+	((void (STDCALL *)(void *, int, int, u32, u32))IMG(0x49fd2d))((u8 *)st->actors, 0x8888, 0x64, FN_ADDR(ResourceSet_initLists, 0x463a40), FN_ADDR(actor_destroyPartLists, 0x45ff30));
+	VECTOR((u8 *)st->bullets, 0x4e8, 0x190);
+	VECTOR((u8 *)st->projectiles, 0x12c, 0x3e8);
+	VECTOR((u8 *)st->points, 0xc, 0xc8);
+	VECTOR((u8 *)st->starts, 0x14, 0x20);
+	VECTOR((u8 *)st->items, 0x28, 0xc8);
+	VECTOR((u8 *)st->emblemAtlas, 4, 0x2000);
 	Scene_ctor(s + 0x2148ed8);   /* Scene_ctor */
 	VTABLE(s, STR(0x4aa23c, "08F"));
 	GAME_VAR(int, s + 4) = 0;
@@ -538,7 +541,7 @@ u8 *THISCALL (game_loadAllData)(u8 *g)
 	for (int k = 0; k < 10; k++)
 		BITS(GS->frameTimes[k]) = 0x3d088889;   /* 1/30 */
 	GS->frameTimeNext = 0;
-	factor_initBy(g + 0x74, 10000, 1000, 20000, 4000, 400, 10000,
+	factor_initBy((u8 *)GS->view, 10000, 1000, 20000, 4000, 400, 10000,
 	                                                                                g + 0x91e4, 2000000);   /* factor_initBy */
 	item_initTextures(s, STR(0x4c45a8, "Stage"), STR(0x4b1784, "Map"), STR(0x4c45b0, "Texture"), STR(0x4c45b8, "Shape"),
 	                                                                                  STR(0x4c45c0, "Skeleton"), STR(0x4c45cc, "Actor"), STR(0x4c45d4, "Bullet"), STR(0x4c45dc, "Effect"), STR(0x4c45e4, "Scene"));   /* item_initTextures */
@@ -549,28 +552,27 @@ u8 *THISCALL (game_loadAllData)(u8 *g)
 	memcpy(GS->cameraPresets, k_cameraPresets, sizeof k_cameraPresets);
 	GS->cameraMode = 1;
 	stage_selectActor((Stage *)s, -1);
-	GAME_VAR(int, g + 0x23423e5) = 6;
-	GAME_VAR(int, g + 0x23423ed) = 6;
+	GS->geometryPerRow[0] = 6;
+	GS->geometryPerRow[2] = 6;
 	GS->watchedPlayer = -1;
 	GS->watchClear[0] = GS->watchClear[1] = GS->watchClear[2] = 0;
-	GAME_VAR(int, g + 0x23423e9) = 3;
-	GAME_VAR(int, g + 0x23423f1) = 7;
-	GAME_VAR(int, g + 0x23423f5) = 10;
-	GAME_VAR(int, g + 0x23423f9) = 0x18;
-	char *macros = (char *)g + 0x234334b;
+	GS->geometryPerRow[1] = 3;
+	GS->geometryPerRow[3] = 7;
+	GS->geometryPerRow[4] = 10;
+	GS->geometryPerRow[5] = 0x18;
 	for (int k = 0; k < 30; k++)
-		macros[k * 0x40] = 0;
+		GS->consoleLines[k][0] = 0;
 	void *f = crt_fopen((const char *)STR(0x4c457c, "Help.txt"), (const char *)STR(0x4ad5e0, "rt"));
 	if (f) {
 #define crt_fgets(line, n, f) GAME_CDECL(0x49ecd7, char *, char *, int, void *)(line, n, f)
-		if (crt_fgets(macros, 0x3f, f))
-			for (int k = 1; k < 30 && crt_fgets(macros + k * 0x40, 0x3f, f); k++)
+		if (crt_fgets(GS->consoleLines[0], 0x3f, f))
+			for (int k = 1; k < 30 && crt_fgets(GS->consoleLines[k], 0x3f, f); k++)
 				;
 #undef crt_fgets
 		fclose(f);
 	}
 	for (int k = 0; k < 30; k++) {
-		char *m = macros + k * 0x40;
+		char *m = GS->consoleLines[k];   /* (the help text's lines, from Help.txt) */
 		m[(int)strlen(m) - 1] = 0;
 	}
 	chat_saveMacros(g);   /* chat_saveMacros */
@@ -601,8 +603,8 @@ void THISCALL (app_requireCd)(u8 *g, u32 a, int mode)
 	GS->client = a;
 	GS->network = mode;
 	GS->objectsMode = 0;
-	zero_dwords(g + 0x1f1ca8, 3);
-	zero_dwords(g + 0x233c9e8, 3);
+	zero_dwords((u8 *)g + offsetof(Scene, rotationCount), 3);   /* rotationCount .. rotationOff */
+	zero_dwords((u8 *)g + offsetof(Scene, frameFlag), 3);   /* frameFlag .. showEmblems */
 	GS->replayCount = 0;
 	if (GS->network == 3)
 		for (int k = 0; k < g_mapListFlaggedCount; k++) {
@@ -641,20 +643,20 @@ void THISCALL (app_requireCd)(u8 *g, u32 a, int mode)
 	BITS(GS->teamSyncTime) = 0x41700000;
 	zero_dwords(g + 0x2340ca4, 11);
 	GS->debugGrid = 1;
-	zero_dwords(g + 0x2340cd4, 13);
-	zero_dwords(g + 0x2340d1d, 7);
+	zero_dwords((u8 *)g + offsetof(Scene, debugPoints), 13);   /* debugPoints .. rankingShown */
+	zero_dwords((u8 *)g + offsetof(Scene, recording), 7);   /* recording .. chatMode */
 	teams_setup((Scene *)g);
-	zero_dwords(g + 0x2342395, 8);
+	zero_dwords((u8 *)g + offsetof(Scene, lostTime), 8);   /* lostTime .. timeLimit */
 	GS->endedByTime = -1;
-	zero_dwords(g + 0x23423c9, 7);
+	zero_dwords((u8 *)g + offsetof(Scene, geometryCheckTurn), 7);   /* geometryCheckTurn .. geometryPick */
 	GS->roundClear2 = (*(int *)&GS->previewTurn) = 0;
-	zero_dwords(g + 0x234325f, 10);
+	zero_dwords((u8 *)g + offsetof(Scene, holdAltitude), 10);   /* holdAltitude .. holdBooster */
 	GS->viewKey = -1;
-	zero_dwords(g + 0x234328b, 31);
-	zero_dwords(g + 0x234330b, 4);
+	zero_dwords((u8 *)g + offsetof(Scene, holdZoom), 31);   /* holdZoom .. helpPressed */
+	zero_dwords((u8 *)g + offsetof(Scene, menuKeys), 4);   /* menuKeys */
 	notices_clearAll(g);
 	GS->localPlayer = GS->network == 1 || GS->network == 3 ? -1 : 0;
-	zero_dwords(g + 0x2342411, 3);
+	zero_dwords((u8 *)g + offsetof(Scene, roundClear4), 3);   /* roundClear4 .. statsTaken */
 	GS->chosenTeam = -1;
 	GS->screenshotTaken = 0;
 	GAME_VAR(int, g + 0x2343253) = 0;

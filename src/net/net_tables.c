@@ -1754,9 +1754,9 @@ static void THISCALL __attribute__((used)) net_sendGamePacket_body(u8 *s, int p,
 	memcpy(packet + 9, s + 0x22f0408, 4);
 	float clock = f32(fld_m(&((Scene *)s)->timeFraction));
 	memcpy(packet + 0xd, &clock, 4);
-	u32 turn = ((u32)((Scene *)s)->roundClear);
+	u32 turn = ((u32)((Scene *)s)->geometryCheckTurn);
 	packet[0x2b] = (u8)(turn % 5);
-	((Scene *)s)->roundClear = turn + 1;
+	((Scene *)s)->geometryCheckTurn = turn + 1;
 	u32 v = sample(s, tables[packet[0x2b]].per_row, tables[packet[0x2b]].rows, tables[packet[0x2b]].row_len, tables[packet[0x2b]].base,
 	               packet + 0x2c);
 	memcpy(packet + 0x2e, &v, 4);
