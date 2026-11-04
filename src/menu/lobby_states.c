@@ -162,9 +162,9 @@ void (room_enterRoomList)(void)
 {
 	static const u32 cleared[] = { ADDR(g_roomListPage), ADDR(g_rankingRequestPending), ADDR(g_roomListWaiting), ADDR(g_rankingWaiting), ADDR(g_rankingHaveList), ADDR(g_playerListRefused), ADDR(g_playerListCount), ADDR(g_roomListPrevPage),
 	                               ADDR(g_rankingSort), ADDR(g_roomListPrev), ADDR(g_roomListPrevRank) };
-	for (u32 e = OBJ(g_roomListRows) + 8; e < OBJ(g_roomListRows) + 8 + 10 * 0x44; e += 0x44) {
-		memset((void *)(RELOC(e) - 4), 0, 0x36);
-		GAME_VAR(int, e + 0x32) = 1;
+	for (RankRow *row = g_roomListRows; row < g_roomListRows + 10; row++) {
+		memset(&row->rank, 0, offsetof(RankRow, level) - offsetof(RankRow, rank));
+		row->level = 1;
 	}
 	clear_all(cleared, sizeof cleared / sizeof cleared[0]);
 	g_roomMode = 1;

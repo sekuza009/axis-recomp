@@ -934,9 +934,9 @@ void (account_drawPanel)(void)
 /* 0x43d060: the ranking table (0x9dced8 .. 0x9dcee4): the title 0x75aba4; the page arrows (0 / 1 under the pointer,
    by ranking_hitTest, lit) about "first ~ last" of page 0x9dd6ac (stored in 0x9dd83c / 0x9dd7dc); the sort button
    (MSG(412, "OPTION"); 2) with the sorted column's name; two rules and the column heads (MSG(413, "RANK") .., the sorted one in
-   yellow); when there is a list (0x9dd3b0) up to ten 0x44-byte rows (g_roomListRows: the name at +8, its rank at +4) until an
-   empty name (which stores the page in 0x9dd4b8): rank, name, rank badge (+0x32) in a yellow frame, "%8.1f" (+0x36),
-   "%3.2f" (+0x2e) and three counts (+0x26, +0x2a, +0x1e), the sorted value in yellow; a rule, two buttons
+   yellow); when there is a list (0x9dd3b0) up to ten rows (g_roomListRows) until an
+   empty name (which stores the page in 0x9dd4b8): rank, name, rank badge (level) in a yellow frame, power "%8.1f",
+   rate "%3.2f" and three counts (kills, deaths, exp), the sorted value in yellow; a rule, two buttons
    (MSG(421, "$[0] STOP"); 3 / 4, the first dead until the list is loaded, 0x9dd6b8); while loading the blinking MSG(423, "DOWNLOADING RANKING DATA"); the
    border. Returns the border's eax */
 u32 (ranking_drawTable)(void)
@@ -1007,48 +1007,46 @@ u32 (ranking_drawTable)(void)
 	if (g_rankingHaveList) {
 		char text[64];
 		for (int i = 0; i < 10; i++) {
-			const u8 *row = (const u8 *)(OBJ(g_roomListRows) + 8) + i * 0x44;
-#define ROW(type, offset) (*(const type *)(row + (offset)))
-			if (!*row) {
+			const RankRow *row = &g_roomListRows[i];
+			if (!row->name[0]) {
 				g_roomListPages = g_roomListPage;
 				break;
 			}
 			int y = Y0 + i * 0x16 + 0x78;
 			TEXT(white);
-			itoa(ROW(int, -4), text, 10);
+			itoa(row->rank, text, 10);
 			text_draw8(X0 + 0x18, y, text);
-			text_draw8(X0 + 0x48, y, (const char *)row);
+			text_draw8(X0 + 0x48, y, row->name);
 			glEnable(GL_TEXTURE_2D);
 			texture = g_fontAscii;
 			tex_bind(g_textures->managers[texture / 512], texture % 512);
-			rank_badge(ROW(int, 0x32), X0 + 0xd2, y);
+			rank_badge(row->level, X0 + 0xd2, y);
 			glDisable(GL_TEXTURE_2D);
 			set_colour_bits(g_rectColour, 0x3f800000, 0x3f800000, 0, 0x3e99999a);   /* 1, 1, 0, 0.3 */
 			menu_drawRect(X0 + 0xd3, y + 1, X0 + 0xea, y + 0x10, 0);
 			TEXT(white);
 			if (g_rankingSort == 0)
 				TEXT(yellow);
-			sprintf(text, (const char *)STR(0x4b2784, "%8.1f"), (double)ROW(float, 0x36));
+			sprintf(text, (const char *)STR(0x4b2784, "%8.1f"), (double)row->power);
 			text_draw8(X0 - (int)strlen(text) * 8 + 0x144, y, text);
 			TEXT(white);
 			if (g_rankingSort == 3)
 				TEXT(yellow);
-			sprintf(text, (const char *)STR(0x4b277c, "%3.2f"), (double)ROW(float, 0x2e));
+			sprintf(text, (const char *)STR(0x4b277c, "%3.2f"), (double)row->rate);
 			text_draw8(X0 + (0x30 - (int)strlen(text)) * 8, y, text);
 			TEXT(white);
 			if (g_rankingSort == 1)
 				TEXT(yellow);
-			itoa(ROW(int, 0x26), text, 10);
+			itoa(row->kills, text, 10);
 			text_draw8(X0 - (int)strlen(text) * 8 + 0x1bc, y, text);
 			TEXT(white);
-			itoa(ROW(int, 0x2a), text, 10);
+			itoa(row->deaths, text, 10);
 			text_draw8(X0 - (int)strlen(text) * 8 + 0x1f4, y, text);
 			TEXT(white);
 			if (g_rankingSort == 2)
 				TEXT(yellow);
-			itoa(ROW(int, 0x1e), text, 10);
+			itoa(row->exp, text, 10);
 			text_draw8(X0 - (int)strlen(text) * 8 + 0x23e, y, text);
-#undef ROW
 		}
 	}
 	set_colour_bits(g_rectColour, 0, 0x3f800000, 0x3f800000, 0x3f800000);

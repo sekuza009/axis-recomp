@@ -522,6 +522,29 @@ struct PartInfo 0x80                                            # an ARM CENTER 
 0x78       4          float ringRange                            # x 1000
 0x7c       4          float weight
 
+struct RankedPlayer 0x3e                                         # a player of the ranking list as the game server sends it (62 bytes: g_serverReply;
+                                                                 # kept in g_netPlayerList, eleven of them, by net_addPlayerRecord)
+0          0x1e       char name[30]
+0x1e       4          i32 kind                                   # the reply's kind: 0 a player (added), 1 refused
+0x22       4          i32 value22                                # (not shown; copied to RankRow.value2a)
+0x26       4          i32 kills                                  # the columns of the ranking table (RankRow)
+0x2a       4          i32 deaths
+0x2e       4          i32 exp
+0x32       4          i32 level                                  # its grade (the rank badge)
+0x36       4          float power
+0x3a       4          float rate
+
+struct RankRow 0x44                                              # a row of the ranking table (g_roomListRows, ten: roomList_fillPage from g_netPlayerList)
+4          4          i32 rank                                   # its place (the row before's when its sorted value is the same)
+8          0x1e       char name[30]                              # (empty: past the list's end)
+0x26       4          i32 exp                                    # (sort 2)
+0x2a       4          i32 value2a                                # (RankedPlayer.value22; not shown)
+0x2e       4          i32 kills                                  # (sort 1)
+0x32       4          i32 deaths
+0x36       4          float rate                                 # (sort 3)
+0x3a       4          i32 level                                  # the rank badge (1 when the row is cleared)
+0x3e       4          float power                                # (sort 0; not cleared with the rest)
+
 struct PilotStats 0x20                                          # a pilot's standing (g_pilotLevel .., kept as g_pilotLevelKept ..: lobby_states.c take_back)
 0          4          i32 level
 4          4          i32 points

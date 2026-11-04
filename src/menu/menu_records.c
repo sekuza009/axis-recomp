@@ -220,18 +220,18 @@ void (roomList_cycleMode)(void)
 	g_rankingSort = (mode + 1) % 3;
 }
 
-/* the value a row is ranked by in mode (0x9dd1d0): 0 a float at +0x3e, 1 an int at +0x2e, 2 an int at +0x26, 3 a
-   float at +0x36; another mode keeps the one before (0: none) */
-static int rank_value(const u8 *row, int mode, long double *value)
+/* the value a row is ranked by in mode (0x9dd1d0): 0 its power, 1 its kills, 2 its exp, 3 its rate; another mode
+   keeps the one before (0: none) */
+static int rank_value(const RankRow *row, int mode, long double *value)
 {
 	if (mode == 0)
-		*value = fld_m((const float *)(RELOC(row) + 0x3e));
+		*value = fld_m(&row->power);
 	else if (mode == 1)
-		*value = (long double)*(const int *)(RELOC(row) + 0x2e);
+		*value = (long double)row->kills;
 	else if (mode == 2)
-		*value = (long double)*(const int *)(RELOC(row) + 0x26);
+		*value = (long double)row->exp;
 	else if (mode == 3)
-		*value = fld_m((const float *)(RELOC(row) + 0x36));
+		*value = fld_m(&row->rate);
 	else
 		return 0;
 	return 1;
@@ -243,45 +243,48 @@ static int rank_value(const u8 *row, int mode, long double *value)
    (0x9dd384, 0x9dd328) start the comparison, and this page's are kept there for the next */
 void (roomList_fillPage)(void)
 {
-	static const u8 dst[7] = { 0x26, 0x3e, 0x36, 0x2a, 0x2e, 0x32, 0x3a }, src[7] = { 0x2e, 0x36, 0x3a, 0x22, 0x26, 0x2a, 0x32 };
-	u8 *rows = g_roomListRows;
+	RankRow *rows = g_roomListRows;
 	for (int i = 0; i < 10; i++) {
-		u8 *row = rows + i * 0x44;
-		*(int *)(RELOC(row) + 4) = 0;
-		memset(row + 8, 0, 30);
-		static const u8 cleared[5] = { 0x26, 0x2a, 0x2e, 0x32, 0x36 };   /* (+0x3e is left as it was) */
-		for (int k = 0; k < 5; k++)
-			*(int *)(RELOC(row) + cleared[k]) = 0;
-		*(int *)(RELOC(row) + 0x3a) = 1;
+		RankRow *row = &rows[i];
+		row->rank = 0;
+		memset(row->name, 0, 30);
+		row->exp = row->value2a = row->kills = row->deaths = 0;   /* (power is left as it was) */
+		BITS(row->rate) = 0;
+		row->level = 1;
 	}
 	long double value = fld_m((const float *)ADDR(k_1000000f));
 	float before = 1000000.0f;
 	int i;
 	for (i = 0; i < 10; i++) {
-		const u8 *player = g_netPlayerList + i * 62;
-		if (!*player)
+		const RankedPlayer *player = &g_netPlayerList[i];
+		if (!player->name[0])
 			break;
-		u8 *row = rows + i * 0x44;
-		*(int *)(RELOC(row) + 4) = i + g_roomListPage * 10 + 1;
-		strcpy((char *)(RELOC(row) + 8), (const char *)player);
-		for (int k = 0; k < 7; k++)
-			*(u32 *)(RELOC(row) + dst[k]) = *(const u32 *)(player + src[k]);
+		RankRow *row = &rows[i];
+		row->rank = i + g_roomListPage * 10 + 1;
+		strcpy(row->name, player->name);
+		row->exp = player->exp;
+		BITS(row->power) = BITS(player->power);
+		BITS(row->rate) = BITS(player->rate);
+		row->value2a = player->value22;
+		row->kills = player->kills;
+		row->deaths = player->deaths;
+		row->level = player->level;
 		int mode = g_rankingSort, rank;
 		if (i == 0) {
 			before = (*(float *)&g_roomListDistanceLimit);
 			rank = g_roomListPrevRank;
 		} else {
 			long double v;
-			rank = *(const int *)(RELOC(row) - 0x44 + 4);
-			if (rank_value(row - 0x44, mode, &v))
+			rank = row[-1].rank;
+			if (rank_value(&row[-1], mode, &v))
 				before = f32(v);
 		}
 		rank_value(row, mode, &value);
 		if (!(value < before) && !(value > before))   /* (fcom: unordered counts as equal) */
-			*(int *)(RELOC(row) + 4) = rank;
+			row->rank = rank;
 	}
 	(*(float *)&g_roomListDistanceLimit) = f32(value);
-	g_roomListPrevRank = *(const int *)(rows + (i - 1) * 0x44 + 4);
+	g_roomListPrevRank = rows[i - 1].rank;
 }
 
 /* ---- the skirmish list: eight rows shown from entry top, the cursor on row; sel = top + row ---- */

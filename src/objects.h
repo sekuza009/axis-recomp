@@ -100,7 +100,7 @@
 #define g_cosTable ((float *)IMG(0xa17f38))   /* float[3600]; (to the sin table) */
 #define g_sinTable ((float *)IMG(0xa1b778))   /* float[3600] */
 #define g_netSlots ((u8 *)IMG(0x9f9840))   /* u8[16640]; 16 network slots of 0x410 bytes (net_clearSlots runs to 0x9fd940); overlapped by g_profileRecords' 103 records at start-up */
-#define g_netPlayerList ((u8 *)IMG(0xa05330))   /* u8[682]; (net_clearPlayerList) */
+#define g_netPlayerList ((RankedPlayer *)IMG(0xa05330))   /* RankedPlayer[11]; (net_clearPlayerList) */
 #define g_keySeen ((int *)IMG(0x4d1a98))   /* int[256]; a key's press seen until released (0x400 bytes) */
 #define g_briefingText ((char *)IMG(0x9f1064))   /* char[1600]; the briefing's text (memset 0x640) */
 #define g_roomMech ((u8 *)IMG(0x9dd5f8))   /* u8[11]; the room's copy of the mech bytes (11) */
@@ -425,7 +425,7 @@
 #define g_roomTextAndRows ((u8 *)IMG(0x9dcee8))   /* u8[684]; the room's typed password text (+0; 8 bytes cleared; a strcpy of the chat line) and the room list's ten 0x44-byte rows from +4 (to 0x9dd194): the two overlap in the original */
 #define g_roomMessageText (*(int *)g_roomTextAndRows)   /* the typed password (text from here) */
 #define g_roomMessageText4 (*(int *)(g_roomTextAndRows + 4))   /* the rows' start (cleared with the text) */
-#define g_roomListRows (g_roomTextAndRows + 4)   /* the rows: +4 the rank; +8 the name; +0x3a 1 when empty */
+#define g_roomListRows ((RankRow *)(g_roomTextAndRows + 4))   /* RankRow[10] */
 #define g_roomDialogBox ((int *)IMG(0x9dd1a0))   /* int[4]; the room's server dialog box (room_openDialog58; popup_layout) */
 #define g_roomMechKept ((u8 *)IMG(0x9dd260))   /* u8[11]; the room record's mech parts kept (lobby_states) */
 #define g_roomColoursKept ((u8 *)IMG(0x9dd26b))   /* u8[144]; the room record's colours kept */

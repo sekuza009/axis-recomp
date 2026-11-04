@@ -532,16 +532,21 @@ int (net_startThread)(void)
 	return 1;
 }
 
-/* 0x452de0: a player record appended to the list at 0xa05330 (62 bytes a slot, count 0xa0b35c): its name and seven
-   dwords (+0x22 .. +0x3a). Returns the slot's offset (the original's eax) */
+/* 0x452de0: a player record appended to the list at 0xa05330 (count 0xa0b35c): its name and the seven values after
+   its kind. Returns the slot's offset (the original's eax) */
 int (net_addPlayerRecord)(const u8 *rec)
 {
-	static const u8 fields[7] = { 0x2a, 0x26, 0x22, 0x2e, 0x36, 0x3a, 0x32 };
-	lstrcpyA((char *)(OBJ(g_netPlayerList) + g_playerListCount * 62), (const char *)RELOC(rec));
+	const RankedPlayer *from = (const RankedPlayer *)RELOC(rec);
+	lstrcpyA(g_netPlayerList[g_playerListCount].name, from->name);
 	int i = g_playerListCount;
-	u8 *slot = (u8 *)(OBJ(g_netPlayerList) + i * 62);
-	for (int k = 0; k < 7; k++)
-		*(u32 *)(RELOC(slot) + fields[k]) = *(const u32 *)(RELOC(rec) + fields[k]);
+	RankedPlayer *slot = &g_netPlayerList[i];
+	slot->deaths = from->deaths;
+	slot->kills = from->kills;
+	slot->value22 = from->value22;
+	slot->exp = from->exp;
+	BITS(slot->power) = BITS(from->power);
+	BITS(slot->rate) = BITS(from->rate);
+	slot->level = from->level;
 	g_playerListCount = i + 1;
 	return i * 62;
 }

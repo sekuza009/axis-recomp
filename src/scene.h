@@ -605,6 +605,34 @@ typedef struct PartInfo {
 	float weight;   /* +0x7c */
 } PartInfo;
 
+/* a player of the ranking list as the game server sends it (62 bytes: g_serverReply; */
+typedef struct RankedPlayer {
+	char name[30];   /* +0x0 */
+	i32 kind;   /* +0x1e: the reply's kind: 0 a player (added), 1 refused */
+	i32 value22;   /* +0x22: (not shown; copied to RankRow.value2a) */
+	i32 kills;   /* +0x26: the columns of the ranking table (RankRow) */
+	i32 deaths;   /* +0x2a */
+	i32 exp;   /* +0x2e */
+	i32 level;   /* +0x32: its grade (the rank badge) */
+	float power;   /* +0x36 */
+	float rate;   /* +0x3a */
+} RankedPlayer;
+
+/* a row of the ranking table (g_roomListRows, ten: roomList_fillPage from g_netPlayerList) */
+typedef struct RankRow {
+	u8 _pad0000000[0x4];
+	i32 rank;   /* +0x4: its place (the row before's when its sorted value is the same) */
+	char name[30];   /* +0x8: (empty: past the list's end) */
+	i32 exp;   /* +0x26: (sort 2) */
+	i32 value2a;   /* +0x2a: (RankedPlayer.value22; not shown) */
+	i32 kills;   /* +0x2e: (sort 1) */
+	i32 deaths;   /* +0x32 */
+	float rate;   /* +0x36: (sort 3) */
+	i32 level;   /* +0x3a: the rank badge (1 when the row is cleared) */
+	float power;   /* +0x3e: (sort 0; not cleared with the rest) */
+	u8 _pad0000042[0x2];
+} RankRow;
+
 /* a pilot's standing (g_pilotLevel .., kept as g_pilotLevelKept ..: lobby_states.c take_back) */
 typedef struct PilotStats {
 	i32 level;   /* +0x0 */
@@ -2084,6 +2112,26 @@ _Static_assert(offsetof(PartInfo, tracer) == 0x74 && sizeof(((PartInfo *)0)->tra
 _Static_assert(offsetof(PartInfo, ringRange) == 0x78 && sizeof(((PartInfo *)0)->ringRange) == 0x4, "scene.fields: PartInfo.ringRange");
 _Static_assert(offsetof(PartInfo, weight) == 0x7c && sizeof(((PartInfo *)0)->weight) == 0x4, "scene.fields: PartInfo.weight");
 _Static_assert(sizeof(PartInfo) == 0x80, "scene.fields: size of PartInfo");
+_Static_assert(offsetof(RankedPlayer, name) == 0x0 && sizeof(((RankedPlayer *)0)->name) == 0x1e, "scene.fields: RankedPlayer.name");
+_Static_assert(offsetof(RankedPlayer, kind) == 0x1e && sizeof(((RankedPlayer *)0)->kind) == 0x4, "scene.fields: RankedPlayer.kind");
+_Static_assert(offsetof(RankedPlayer, value22) == 0x22 && sizeof(((RankedPlayer *)0)->value22) == 0x4, "scene.fields: RankedPlayer.value22");
+_Static_assert(offsetof(RankedPlayer, kills) == 0x26 && sizeof(((RankedPlayer *)0)->kills) == 0x4, "scene.fields: RankedPlayer.kills");
+_Static_assert(offsetof(RankedPlayer, deaths) == 0x2a && sizeof(((RankedPlayer *)0)->deaths) == 0x4, "scene.fields: RankedPlayer.deaths");
+_Static_assert(offsetof(RankedPlayer, exp) == 0x2e && sizeof(((RankedPlayer *)0)->exp) == 0x4, "scene.fields: RankedPlayer.exp");
+_Static_assert(offsetof(RankedPlayer, level) == 0x32 && sizeof(((RankedPlayer *)0)->level) == 0x4, "scene.fields: RankedPlayer.level");
+_Static_assert(offsetof(RankedPlayer, power) == 0x36 && sizeof(((RankedPlayer *)0)->power) == 0x4, "scene.fields: RankedPlayer.power");
+_Static_assert(offsetof(RankedPlayer, rate) == 0x3a && sizeof(((RankedPlayer *)0)->rate) == 0x4, "scene.fields: RankedPlayer.rate");
+_Static_assert(sizeof(RankedPlayer) == 0x3e, "scene.fields: size of RankedPlayer");
+_Static_assert(offsetof(RankRow, rank) == 0x4 && sizeof(((RankRow *)0)->rank) == 0x4, "scene.fields: RankRow.rank");
+_Static_assert(offsetof(RankRow, name) == 0x8 && sizeof(((RankRow *)0)->name) == 0x1e, "scene.fields: RankRow.name");
+_Static_assert(offsetof(RankRow, exp) == 0x26 && sizeof(((RankRow *)0)->exp) == 0x4, "scene.fields: RankRow.exp");
+_Static_assert(offsetof(RankRow, value2a) == 0x2a && sizeof(((RankRow *)0)->value2a) == 0x4, "scene.fields: RankRow.value2a");
+_Static_assert(offsetof(RankRow, kills) == 0x2e && sizeof(((RankRow *)0)->kills) == 0x4, "scene.fields: RankRow.kills");
+_Static_assert(offsetof(RankRow, deaths) == 0x32 && sizeof(((RankRow *)0)->deaths) == 0x4, "scene.fields: RankRow.deaths");
+_Static_assert(offsetof(RankRow, rate) == 0x36 && sizeof(((RankRow *)0)->rate) == 0x4, "scene.fields: RankRow.rate");
+_Static_assert(offsetof(RankRow, level) == 0x3a && sizeof(((RankRow *)0)->level) == 0x4, "scene.fields: RankRow.level");
+_Static_assert(offsetof(RankRow, power) == 0x3e && sizeof(((RankRow *)0)->power) == 0x4, "scene.fields: RankRow.power");
+_Static_assert(sizeof(RankRow) == 0x44, "scene.fields: size of RankRow");
 _Static_assert(offsetof(PilotStats, level) == 0x0 && sizeof(((PilotStats *)0)->level) == 0x4, "scene.fields: PilotStats.level");
 _Static_assert(offsetof(PilotStats, points) == 0x4 && sizeof(((PilotStats *)0)->points) == 0x4, "scene.fields: PilotStats.points");
 _Static_assert(offsetof(PilotStats, clan) == 0x8 && sizeof(((PilotStats *)0)->clan) == 0x4, "scene.fields: PilotStats.clan");
