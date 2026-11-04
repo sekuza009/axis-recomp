@@ -321,11 +321,20 @@ struct Player 0x8888                                            # a player's rec
 0x550      4          i32 viewMarked                            # set by hud_pass for the player the view follows
 0x4dc      4          i32 markTeam                              # (unclear) 1: a mark (the team's icon) after the player's ranking row and over the player, team games
 
+struct Factor 0x2c                                              # a light factor (LightFactors.records; factors.c builds them)
+0          4          i32 index                                  # its slot (factor_addFactorBy)
+4          4          i32 used                                   # 1: in use
+8          4          i32 kind                                   # 0 a constant, 1 a point, 2 a directed one
+0xc        4          u32 value                                  # (a float's bits)
+0x10       0xc        u32 dir[3]                                 # kind 2: towards (floats' bits)
+0x1c       0xc        u32 point[3]                               # kind 1: at (floats' bits)
+0x28       4          u32 spread                                 # (unclear) kind 2's x
+
 struct LightFactors 0xb010                                      # (by use) the light factors shape_shadeParts takes (the size is unknown)
-4          0xb000     u8 records[0x400][0x2c]                    # (by use) its factors (factors.c: an index, then the factor)
+4          0xb000     Factor records[0x400]                         # (by use) its factors
 0xb004     4          i32 count                                  # records in use (a slot added when the next free is the count)
 0xb008     4          i32 nextFree                               # the next free slot
-0xb00c     4          i32 enabled                               # 1: a pre-lit object list uses them without point lights
+0xb00c     4          i32 enabled                               # 1: a pre-lit object list uses them without point lights; set as one is added
 
 struct MapObject 0x2cc                                          # a map object (Scene.objects): animated scenery
 0x10       4          i32 trigger                                # (by use) a proximity object's radius (x k) / a timed one's seconds

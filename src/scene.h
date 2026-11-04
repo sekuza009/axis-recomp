@@ -369,13 +369,24 @@ typedef struct Player {
 	float beepTimer;   /* +0x8884: (by use) the warning beep while aimed at (0.5 s) */
 } Player;
 
+/* a light factor (LightFactors.records; factors.c builds them) */
+typedef struct Factor {
+	i32 index;   /* +0x0: its slot (factor_addFactorBy) */
+	i32 used;   /* +0x4: 1: in use */
+	i32 kind;   /* +0x8: 0 a constant, 1 a point, 2 a directed one */
+	u32 value;   /* +0xc: (a float's bits) */
+	u32 dir[3];   /* +0x10: kind 2: towards (floats' bits) */
+	u32 point[3];   /* +0x1c: kind 1: at (floats' bits) */
+	u32 spread;   /* +0x28: (unclear) kind 2's x */
+} Factor;
+
 /* (by use) the light factors shape_shadeParts takes (the size is unknown) */
 typedef struct LightFactors {
 	u8 _pad0000000[0x4];
-	u8 records[0x400][0x2c];   /* +0x4: (by use) its factors (factors.c: an index, then the factor) */
+	Factor records[0x400];   /* +0x4: (by use) its factors */
 	i32 count;   /* +0xb004: records in use (a slot added when the next free is the count) */
 	i32 nextFree;   /* +0xb008: the next free slot */
-	i32 enabled;   /* +0xb00c: 1: a pre-lit object list uses them without point lights */
+	i32 enabled;   /* +0xb00c: 1: a pre-lit object list uses them without point lights; set as one is added */
 } LightFactors;
 
 /* a map object (Scene.objects): animated scenery */
@@ -1844,6 +1855,14 @@ _Static_assert(offsetof(Player, stuckMove) == 0x8874 && sizeof(((Player *)0)->st
 _Static_assert(offsetof(Player, alert) == 0x8880 && sizeof(((Player *)0)->alert) == 0x4, "scene.fields: Player.alert");
 _Static_assert(offsetof(Player, beepTimer) == 0x8884 && sizeof(((Player *)0)->beepTimer) == 0x4, "scene.fields: Player.beepTimer");
 _Static_assert(sizeof(Player) == 0x8888, "scene.fields: size of Player");
+_Static_assert(offsetof(Factor, index) == 0x0 && sizeof(((Factor *)0)->index) == 0x4, "scene.fields: Factor.index");
+_Static_assert(offsetof(Factor, used) == 0x4 && sizeof(((Factor *)0)->used) == 0x4, "scene.fields: Factor.used");
+_Static_assert(offsetof(Factor, kind) == 0x8 && sizeof(((Factor *)0)->kind) == 0x4, "scene.fields: Factor.kind");
+_Static_assert(offsetof(Factor, value) == 0xc && sizeof(((Factor *)0)->value) == 0x4, "scene.fields: Factor.value");
+_Static_assert(offsetof(Factor, dir) == 0x10 && sizeof(((Factor *)0)->dir) == 0xc, "scene.fields: Factor.dir");
+_Static_assert(offsetof(Factor, point) == 0x1c && sizeof(((Factor *)0)->point) == 0xc, "scene.fields: Factor.point");
+_Static_assert(offsetof(Factor, spread) == 0x28 && sizeof(((Factor *)0)->spread) == 0x4, "scene.fields: Factor.spread");
+_Static_assert(sizeof(Factor) == 0x2c, "scene.fields: size of Factor");
 _Static_assert(offsetof(LightFactors, records) == 0x4 && sizeof(((LightFactors *)0)->records) == 0xb000, "scene.fields: LightFactors.records");
 _Static_assert(offsetof(LightFactors, count) == 0xb004 && sizeof(((LightFactors *)0)->count) == 0x4, "scene.fields: LightFactors.count");
 _Static_assert(offsetof(LightFactors, nextFree) == 0xb008 && sizeof(((LightFactors *)0)->nextFree) == 0x4, "scene.fields: LightFactors.nextFree");

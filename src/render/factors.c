@@ -1,5 +1,5 @@
 /* factors.c: the factor pool's records built and added (factor_addFactorBy): a 0x2c-byte record of which only the
-   kind (+8), the value (+0xc) and the kind's own fields are set; the rest is left as the stack holds it, as the
+   kind, the value and the kind's own fields are set (Factor); the rest is left as the stack holds it, as the
    originals leave it (they add the whole record). Also a layer's lighting. */
 #include "../game.h"
 
@@ -9,44 +9,44 @@ typedef struct { u8 bytes[0x2c]; } FactorRecord;
 /* 0x483e90 (thiscall on the pool): a kind 0 factor of the value *a. Its callers ignore the eax it leaves */
 void THISCALL (factors_addConstant)(void *pool, const u32 *a)
 {
-	FactorRecord r;
+	Factor r;
 	__asm__("" : "=m"(r));   /* (left as the stack holds it) */
-	REC(int, 8) = 0;
-	REC(u32, 0xc) = *a;
+	r.kind = 0;
+	r.value = *a;
 	factor_addFactorBy(pool, &r);
 }
 
-/* 0x483ec0: a kind 1 factor of the value *a at the point p (+0x1c) */
+/* 0x483ec0: a kind 1 factor of the value *a at the point p */
 void THISCALL (factors_addPoint)(void *pool, const u32 *a, const u32 *p)
 {
-	FactorRecord r;
+	Factor r;
 	__asm__("" : "=m"(r));
-	REC(int, 8) = 1;
-	REC(u32, 0xc) = *a;
+	r.kind = 1;
+	r.value = *a;
 	for (int i = 0; i < 3; i++)
-		REC(u32, 0x1c + i * 4) = p[i];
+		r.point[i] = p[i];
 	factor_addFactorBy(pool, &r);
 }
 
-/* 0x483f00: a kind 2 factor of the value *a towards p (+0x10) with x (+0x28) */
+/* 0x483f00: a kind 2 factor of the value *a towards p with x (spread) */
 void THISCALL (factors_addDirected)(void *pool, const u32 *a, u32 x, const u32 *p)
 {
-	FactorRecord r;
+	Factor r;
 	__asm__("" : "=m"(r));
-	REC(int, 8) = 2;
-	REC(u32, 0xc) = *a;
+	r.kind = 2;
+	r.value = *a;
 	for (int i = 0; i < 3; i++)
-		REC(u32, 0x10 + i * 4) = p[i];
-	REC(u32, 0x28) = x;
+		r.dir[i] = p[i];
+	r.spread = x;
 	factor_addFactorBy(pool, &r);
 }
 #undef REC
 
-/* 0x4728e0 (thiscall on the scene): the layer's lighting computed over its vertices (+0x48), rows (+0x1c) and
-   columns (+0x20). Its caller ignores the eax it leaves */
+/* 0x4728e0 (thiscall on the scene): the layer's lighting computed into its colours over its rows and
+   columns. Its caller ignores the eax it leaves */
 void THISCALL (ground_computeLighting)(void *scene, const u8 *layer)
 {
-	light_computeLayerLightBy(scene, layer, GAME_VAR(u32, layer + 0x48), 1, 0, 0, GAME_VAR(int, layer + 0x1c), GAME_VAR(int, layer + 0x20));
+	light_computeLayerLightBy(scene, layer, (u32)((const GroundLayer *)layer)->colours, 1, 0, 0, ((const GroundLayer *)layer)->rows, ((const GroundLayer *)layer)->cols);
 }
 
 /* 0x483dd0 (thiscall on the pool): the record copied into the next free slot (+0xb008; 0x2c-byte slots from +4,
@@ -57,7 +57,7 @@ void THISCALL (factor_addFactorBy)(u8 *pool, const u32 *record)
 {
 #define COUNT (((LightFactors *)pool)->count)
 #define NEXT (((LightFactors *)pool)->nextFree)
-#define SLOT(k) ((u32 *)(pool + 4 + (k) * 0x2c))
+#define SLOT(k) ((u32 *)&((LightFactors *)pool)->records[k])
 	if (NEXT >= 0x400)
 		sys_fatalError((char *)OBJ(g_logLight), (const char *)STR(0x4c7ae0, "factorPool overflow(%d) - addFactorBy()"), NEXT);
 	if (NEXT == COUNT) {
@@ -74,7 +74,7 @@ void THISCALL (factor_addFactorBy)(u8 *pool, const u32 *record)
 			NEXT = k;
 			break;
 		}
-	GAME_VAR(int, pool + 0xb00c) = 1;
+	((LightFactors *)pool)->enabled = 1;
 #undef COUNT
 #undef NEXT
 #undef SLOT
