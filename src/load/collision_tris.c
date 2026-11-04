@@ -571,7 +571,7 @@ int THISCALL (space_collideUnit)(u8 *self, float r, const float *pos, const floa
 		memcpy(at, from, 12);
 		SpaceNode *node = ((SpaceBlock *)self)->items;
 		int sub = -1, hit = 0;
-		FIELD(u32, &best, 0) = 0xff7fffff;   /* -FLT_MAX */
+		BITS(best) = 0xff7fffff;   /* -FLT_MAX */
 		memcpy(move, step, 12);
 		for (;;) {
 			if (!node) {
@@ -603,7 +603,7 @@ int THISCALL (space_collideUnit)(u8 *self, float r, const float *pos, const floa
 							                  + mul(fld_m(&plane[1]), &out[4 + i]) + mul(fld_m(&plane[0]), &out[i]));
 					}
 					last = node;
-					FIELD(u32, &best, 0) = FIELD(u32, &dist, 0);
+					BITS(best) = BITS(dist);
 				}
 			}
 			node = RELOC(node)->next;
@@ -613,13 +613,13 @@ int THISCALL (space_collideUnit)(u8 *self, float r, const float *pos, const floa
 			return result;
 		if (!(mul(fld_m(&outVel[2]), &vel[2]) + mul(fld_m(&outVel[1]), &vel[1]) + mul(fld_m(&outVel[0]), &vel[0]) > *tiny)) {
 			memcpy(outVel, (const void *)ADDR(g_vecZero), 12);
-			FIELD(u32, outDist, 0) = 0;
+			BITS(*outDist) = 0;
 			return 1;
 		}
 		result = 1;
 		memcpy(from, outPos, 12);
 		memcpy(step, outVel, 12);
-		FIELD(u32, outDist, 0) = FIELD(u32, &best, 0);
+		BITS(*outDist) = BITS(best);
 		if (pass != 0 && mul(fld_m(&r), (const float *)ADDR(k_tenthsToDegrees)) > best)
 			return result;
 		if (pass + 1 > 5)

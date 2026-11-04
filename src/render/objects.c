@@ -323,7 +323,7 @@ void THISCALL (camera_setupView)(u8 *s, const float *pos, const float *dir, cons
 		}
 		int weapon = act->actorType;
 		if (ST->playerActor >= 0 && AC->team != act->team && weapon >= 0 &&
-		    GAME_VAR(float, s + 0x14d48c4 + weapon * 0x2e18) > 0)
+		    ST->actorInfo[weapon].ringRange > 0)
 			AC->lockedOn = f32(fadd_m(fld_m(&dt), &AC->lockedOn));
 		else
 			AC->lockedOn = 0.0f;
@@ -342,7 +342,7 @@ void THISCALL (camera_setupView)(u8 *s, const float *pos, const float *dir, cons
 #define P(type, offset) GAME_VAR(type, p + (offset))
 #define PR ((Projectile *)p)   /* the same by its fields (src/scene.fields) */
 #define ALPHA(rgba) (((u8 *)&(rgba))[3])   /* an RGBA dword's alpha byte */
-#define TEX(k) GAME_VAR(int, s + 0x9ccfd4 + (k) * 4)   /* the effect textures */
+#define TEX(k) (ST->effectTextures[k])   /* the effect textures */
 
 static u8 clamp255(int a) { return a < 0 ? 0 : a > 255 ? 255 : (u8)a; }
 
@@ -606,7 +606,7 @@ void THISCALL (projectile_draw)(u8 *s, int i, void *vv)
 	case 10:
 	case 11:
 	case 18:
-		shape(vv, p, GAME_VAR(void *, s + (type == 10 ? 0x20f2e74 : type == 11 ? 0x20f2e7c : 0x20f2e80)), 0, 1);
+		shape(vv, p, (void *)ST->effectShapes[type == 10 ? 0 : type == 11 ? 2 : 3], 0, 1);   /* shell / rail / blade fire */
 		glow(s, p, vv, fsub_m(fld_m(K(0x4a9424)), &t), 600.0f, 300.0f);
 		return;
 	case 12:
@@ -636,7 +636,7 @@ void THISCALL (projectile_draw)(u8 *s, int i, void *vv)
 	case 20:
 	case 21:
 		if (PR->owner != ST->selectedActor)
-			shape(vv, p, GAME_VAR(void *, s + (type == 20 ? 0x20f2e78 : 0x20f2e84)), p + 0x78, 0);
+			shape(vv, p, (void *)ST->effectShapes[type == 20 ? 1 : 4], p + 0x78, 0);   /* shell / rail bullet */
 		return;
 	case 22:
 		if (PR->owner == 1)

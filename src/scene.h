@@ -1315,7 +1315,7 @@ typedef struct Stage {
 	i32 projectileSerial;   /* +0x20f2da8: the next particle's id */
 	u32 thrustShapes[3][8];   /* +0x20f2dac: (by use) the thrust effects' shapes: plasma, ion, gravity (eight frames each) */
 	u8 _pad20f2e0c[0x68];
-	u32 effectShapes[8];   /* +0x20f2e74: shell / rail / blade fire, shell / rail / lightning / missile / homing bullet */
+	u32 effectShapes[8];   /* +0x20f2e74: Effect\Shell-Fire, Shell-Bullet, Rail-Fire, Blade-Fire, Rail-Bullet, Lightning-, Missile-, Homing-Bullet */
 	u8 _pad20f2e94[0xa8];
 	i32 itemTextures[3];   /* +0x20f2f3c: (by use) the items' animated textures: damage map, booster, shield (item_initTextures; [0] cleared first by effect_initTextures) */
 	float lightMatrix[16];   /* +0x20f2f48: (by use) an identity (item_initTextures): a faintly tinted actor's light (actor_updateAllParts) */

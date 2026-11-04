@@ -610,8 +610,8 @@ void THISCALL (app_requireCd)(u8 *g, u32 a, int mode)
 	GS->replayCount = 0;
 	if (GS->network == 3)
 		for (int k = 0; k < g_mapListFlaggedCount; k++) {
-			const char *e = (const char *)OBJ(g_fileList) + k * 0x44;
-			if (GAME_VAR(int, e + 0x40) == 1)
+			const char *e = (const char *)OBJ(g_fileList) + k * 0x44;   /* (a 0x40-byte name, then its flag) */
+			if (*(const int *)(e + 0x40) == 1)
 				strcpy(GS->replayFiles[GS->replayCount++], e);
 		}
 	u8 *s = (u8 *)SCENE_STAGE(g);

@@ -6,10 +6,11 @@
 
 static void set_box(u32 box, int left, int top, int right, int bottom)
 {
-	GAME_VAR(int, box) = left;
-	GAME_VAR(int, box + 4) = top;
-	GAME_VAR(int, box + 8) = right;
-	GAME_VAR(int, box + 12) = bottom;
+	int *b = (int *)RELOC(box);
+	b[0] = left;
+	b[1] = top;
+	b[2] = right;
+	b[3] = bottom;
 }
 
 /* the cursor, the picked field and the key repeat of a dialog cleared */
