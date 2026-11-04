@@ -1454,12 +1454,12 @@ static void THISCALL __attribute__((used)) net_sendPlayerLevels_body(u8 *s, u8 *
 {
 	packet[1] = 0xe;
 	for (int i = 0; i < SCENE_STAGE(s)->itemCount && i < 0x7c; i++) {
-		u8 *player = (u8 *)&SCENE_STAGE(s)->items[i];   /* (an item, its level sent) */
+		const MapItem *player = &SCENE_STAGE(s)->items[i];   /* (an item, its level sent) */
 		if (i % 2 == 0)
 			packet[2 + i / 2] = 0;
-		if (FIELD(int, player, 0) < 0 || FIELD(int, player, 0x20) != 1)
+		if (player->type < 0 || player->taken != 1)
 			continue;
-		int level = ftol(FIELD(float, player, 0x24)) / 10 + 1;
+		int level = ftol(player->fade) / 10 + 1;
 		if (level > 15)
 			level = 15;
 		packet[2 + i / 2] |= (u8)(i % 2 ? level << 4 : level);
@@ -2156,9 +2156,9 @@ void THISCALL (net_processGamePacket)(u8 *g, u32 from, int type, const char *pkt
 		short row = *(const short *)(pkt + 3);
 		if (pkt[2] > 0x10 || row > 0x170)
 			break;
-		u8 *p = PLAYER(pkt[2]);
+		PlayerRecord *p = (PlayerRecord *)PLAYER(pkt[2]);
 		if (row >= 0) {
-			u8 *to = p + 0x479c2 + row * 4;
+			u8 *to = (u8 *)p->emblem + row * 4;   /* (16 pixels from pixel row: the grid as one run) */
 			const u8 *from3 = b + 5;
 			for (int k = 0; k < 16; k++, from3 += 3, to += 4) {
 				to[0] = from3[0];
@@ -2167,15 +2167,15 @@ void THISCALL (net_processGamePacket)(u8 *g, u32 from, int type, const char *pkt
 				to[3] = from3[0] || from3[1] || from3[2] ? 0xff : 0;
 			}
 		}
-		if (GAME_VAR(int, p + 0x47fca))
+		if (p->emblemChanged)
 			return;
-		u8 *mine = PLAYER(GS->localPlayer);
-		if (GAME_VAR(int, p + 0x47fc6) == 0 && (GAME_VAR(int, mine + 0x47fc6) == 1 || GAME_VAR(int, mine + 0x47fca) == 1))
-			GAME_VAR(int, mine + 0x47fce) = 0;
+		PlayerRecord *mine = (PlayerRecord *)PLAYER(GS->localPlayer);
+		if (p->flagShown == 0 && (mine->flagShown == 1 || mine->emblemChanged == 1))
+			mine->emblemSent = 0;
 		GS->screenshotUpload = 5.0f;
 		if (*(const short *)(pkt + 3) < 0)
 			return;
-		GAME_VAR(int, p + 0x47fca) = 1;
+		p->emblemChanged = 1;
 		return;
 	}
 	case 13:
