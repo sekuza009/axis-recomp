@@ -856,15 +856,15 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 	memcpy(grip, &g_vecZero, 12);   /* where the weapon is held, for the local player's view */
 	glLoadMatrixf(part_matrix((u8 *)&AC->armsModel.entries, arms->weaponJoints[0], AC->detail));
 	if (i == ST->selectedActor && weapon && AC->slot <= 3)
-		hold(grip, weapon + 0x16d8 + AC->variantLoaded * 12, 0, &AC->weaponLower);
+		hold(grip, (const u8 *)((const ActorInfo *)weapon)->sets[0].grip[AC->variantLoaded], 0, &AC->weaponLower);
 	skel_poseBones((u8 *)&AC->weaponModel, 0);
 	glLoadMatrixf(part_matrix((u8 *)&AC->armsModel.entries, arms->weaponJoints[1], AC->detail));
 	if (i == ST->selectedActor && weapon && AC->slot == 4)
-		hold(grip, weapon + 0x16d8 + AC->variantLoaded * 12, 0, &AC->weaponLower);
+		hold(grip, (const u8 *)((const ActorInfo *)weapon)->sets[0].grip[AC->variantLoaded], 0, &AC->weaponLower);
 	skel_poseBones((u8 *)&AC->weaponModel4, 0);
 	glLoadMatrixf(part_matrix((u8 *)&AC->armsModel.entries, arms->weaponJoints[2], AC->detail));
 	if (i == ST->selectedActor && weapon && AC->slot == 5)
-		hold(grip, weapon + 0x2d94 + AC->variantLoaded * 12, 1, &AC->weaponLower);
+		hold(grip, (const u8 *)((const ActorInfo *)weapon)->sets[1].grip[AC->variantLoaded], 1, &AC->weaponLower);
 	skel_poseBones((u8 *)&AC->weaponModel5, 0);
 	glPopMatrix();
 	if (i == ST->playerActor) {   /* the lock-on warnings (lockWarnings per actor), sorted longest first (lockTimes / lockIds) */
@@ -994,9 +994,9 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 					Mat4_multiply(m230, m270, m0d0);
 					Mat4_multiply(m18c, m230, m1e0);
 					long double r = (long double)(n % burst);   /* this round's v28 */
-					v28[0] = f32(fmul_m(r, &GAME_VAR(float, weapon + 0x2dd0)));
-					v28[1] = f32(fmul_m(r, &GAME_VAR(float, weapon + 0x2dd4)));
-					v28[2] = f32(fmul_m(r, &GAME_VAR(float, weapon + 0x2dd8)));
+					v28[0] = f32(fmul_m(r, &((const ActorInfo *)weapon)->burstStep[0]));
+					v28[1] = f32(fmul_m(r, &((const ActorInfo *)weapon)->burstStep[1]));
+					v28[2] = f32(fmul_m(r, &((const ActorInfo *)weapon)->burstStep[2]));
 					long double x = ((fmul_m(fld_m(&m18c[8]), &v28[2]) + fmul_m(fld_m(&m18c[4]), &v28[1])) + fmul_m(fld_m(&m18c[0]), &v28[0])) + m18c[12];
 					long double y = ((fmul_m(fld_m(&m18c[9]), &v28[2]) + fmul_m(fld_m(&m18c[5]), &v28[1])) + fmul_m(fld_m(&m18c[1]), &v28[0])) + m18c[13];
 					long double z = ((fmul_m(fld_m(&m18c[10]), &v28[2]) + fmul_m(fld_m(&m18c[6]), &v28[1])) + fmul_m(fld_m(&m18c[2]), &v28[0])) + m18c[14];

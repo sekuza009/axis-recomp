@@ -27,7 +27,17 @@ struct ShotRecord 0x20                                          # a round an act
 0x10       4          i32 flag
 0x14       0xc        float dir[3]
 
+struct ItemModelSet 0x16bc                                      # an item's models, per variant (ActorInfo.sets: [0] in hand / slot 4, [1] slot 5)
+0          0xc        u32 models[3]                              # (by use) its shapes' list (ObjectList_load)
+0x90c      0x990      u8 bones[3][0x330]
+0x129c     0xc        i32 counts[3]
+0x1428     0x180      u8 frames[3][0x80]
+0x1674     0x24       float muzzle[3][3]                         # the muzzle (muzzle_camera)
+0x1698     0x24       float grip[3][3]                           # where the actor holds it (actor_processFrame: hold)
+
 struct ActorInfo 0x2e18                                         # an actor type's record (Scene.actorInfo)
+0x40       0x2d78     ItemModelSet sets[2]                       # (by use) its models: [0] in hand and in slot 4, [1] in slot 5
+0x2dd0     0xc        float burstStep[3]                         # (by use) a burst's round n placed n x this along the muzzle (actor_processFrame)
 0x2db8     4          float weight                               # (by use, an item's) added to the actor's load (mech_stats)
 0x2dbc     4          i32 slotType                               # (the ARM CENTER's SLOT TYPE: message 321 + this, "HAND" ..)
 0x2df8     4          i32 value2df8                              # (unclear) shown by the ARM CENTER as a plain number

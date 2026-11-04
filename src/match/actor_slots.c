@@ -440,23 +440,23 @@ void THISCALL (actor_updatePart)(u8 *scene, int a, int slot, int variant)
 	u8 *type = (u8 *)&STS->playerRecords[((Player *)actor)->player];
 	int item = ((PlayerRecord *)type)->items[slot];
 	u8 *it = item >= 0 ? (u8 *)&STS->actorInfo[item] : NULL;
-	int self, models = 0x40, bones = 0x94c, counts = 0x12dc, frames = 0x1468;
+	int self, set = 0;
 	if (slot == 4)
 		self = offsetof(Player, weaponModel4);
 	else if (slot == 5) {
 		self = offsetof(Player, weaponModel5);
-		models = 0x16fc, bones = 0x2008, counts = 0x2998, frames = 0x2b24;
+		set = 1;
 	} else if (slot == ((Player *)actor)->slot)
 		self = offsetof(Player, weaponModel);
 	else
 		return;
 	if (it)
-		ObjectList_load(actor + self, (u8 *)&STS->partShapes, (u8 *)&STS->partSkeletons, FIELD(u32, it, models + variant * 4),
-		                     it + bones + variant * 0x330, FIELD(u32, it, counts + variant * 4), it + frames + variant * 0x80,
+		ObjectList_load(actor + self, (u8 *)&STS->partShapes, (u8 *)&STS->partSkeletons, ((ActorInfo *)it)->sets[set].models[variant],
+		                     ((ActorInfo *)it)->sets[set].bones[variant], ((ActorInfo *)it)->sets[set].counts[variant], ((ActorInfo *)it)->sets[set].frames[variant],
 		                     0, 0, 0, actor + self + 0x30, 0x1770);
 	else
 		partList_release(actor + self);
-	if (self == 0x40dc)
+	if (self == offsetof(Player, weaponModel))
 		((Player *)actor)->weapon = it ? ((ActorInfo *)it)->ammoSlot : -1;
 }
 

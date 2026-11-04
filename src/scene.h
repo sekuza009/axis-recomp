@@ -40,17 +40,30 @@ typedef struct ShotRecord {
 	float dir[3];   /* +0x14 */
 } ShotRecord;
 
+/* an item's models, per variant (ActorInfo.sets: [0] in hand / slot 4, [1] slot 5) */
+typedef struct ItemModelSet {
+	u32 models[3];   /* +0x0: (by use) its shapes' list (ObjectList_load) */
+	u8 _pad000000c[0x900];
+	u8 bones[3][0x330];   /* +0x90c */
+	i32 counts[3];   /* +0x129c */
+	u8 _pad00012a8[0x180];
+	u8 frames[3][0x80];   /* +0x1428 */
+	u8 _pad00015a8[0xcc];
+	float muzzle[3][3];   /* +0x1674: the muzzle (muzzle_camera) */
+	float grip[3][3];   /* +0x1698: where the actor holds it (actor_processFrame: hold) */
+} ItemModelSet;
+
 /* an actor type's record (Scene.actorInfo) */
 typedef struct ActorInfo {
 	char name[0x40];   /* +0x0: the folder under Actor/ */
-	u8 _pad0000040[0x2d78];
+	ItemModelSet sets[2];   /* +0x40: (by use) its models: [0] in hand and in slot 4, [1] in slot 5 */
 	float weight;   /* +0x2db8: (by use, an item's) added to the actor's load (mech_stats) */
 	i32 slotType;   /* +0x2dbc: (the ARM CENTER's SLOT TYPE: message 321 + this, "HAND" ..) */
 	i32 ammoSlot;   /* +0x2dc0: (by use, a weapon's) the ammunition slot it uses (Player.ammo) */
 	i32 ammoPerShot;   /* +0x2dc4: ammunition one shot takes */
 	i32 burst;   /* +0x2dc8: rounds a burst */
 	float burstGap;   /* +0x2dcc: (unclear) the time between bursts */
-	u8 _pad0002dd0[0xc];
+	float burstStep[3];   /* +0x2dd0: (by use) a burst's round n placed n x this along the muzzle (actor_processFrame) */
 	i32 damageMode;   /* +0x2ddc: (by use, a weapon's) 0: its damage off the armour first, 1: off the shield */
 	i32 damage;   /* +0x2de0: a hit's damage */
 	float stepLength;   /* +0x2de4: a shot's first step (traced) */
@@ -1582,13 +1595,22 @@ _Static_assert(offsetof(ShotRecord, owner) == 0xc && sizeof(((ShotRecord *)0)->o
 _Static_assert(offsetof(ShotRecord, flag) == 0x10 && sizeof(((ShotRecord *)0)->flag) == 0x4, "scene.fields: ShotRecord.flag");
 _Static_assert(offsetof(ShotRecord, dir) == 0x14 && sizeof(((ShotRecord *)0)->dir) == 0xc, "scene.fields: ShotRecord.dir");
 _Static_assert(sizeof(ShotRecord) == 0x20, "scene.fields: size of ShotRecord");
+_Static_assert(offsetof(ItemModelSet, models) == 0x0 && sizeof(((ItemModelSet *)0)->models) == 0xc, "scene.fields: ItemModelSet.models");
+_Static_assert(offsetof(ItemModelSet, bones) == 0x90c && sizeof(((ItemModelSet *)0)->bones) == 0x990, "scene.fields: ItemModelSet.bones");
+_Static_assert(offsetof(ItemModelSet, counts) == 0x129c && sizeof(((ItemModelSet *)0)->counts) == 0xc, "scene.fields: ItemModelSet.counts");
+_Static_assert(offsetof(ItemModelSet, frames) == 0x1428 && sizeof(((ItemModelSet *)0)->frames) == 0x180, "scene.fields: ItemModelSet.frames");
+_Static_assert(offsetof(ItemModelSet, muzzle) == 0x1674 && sizeof(((ItemModelSet *)0)->muzzle) == 0x24, "scene.fields: ItemModelSet.muzzle");
+_Static_assert(offsetof(ItemModelSet, grip) == 0x1698 && sizeof(((ItemModelSet *)0)->grip) == 0x24, "scene.fields: ItemModelSet.grip");
+_Static_assert(sizeof(ItemModelSet) == 0x16bc, "scene.fields: size of ItemModelSet");
 _Static_assert(offsetof(ActorInfo, name) == 0x0 && sizeof(((ActorInfo *)0)->name) == 0x40, "scene.fields: ActorInfo.name");
+_Static_assert(offsetof(ActorInfo, sets) == 0x40 && sizeof(((ActorInfo *)0)->sets) == 0x2d78, "scene.fields: ActorInfo.sets");
 _Static_assert(offsetof(ActorInfo, weight) == 0x2db8 && sizeof(((ActorInfo *)0)->weight) == 0x4, "scene.fields: ActorInfo.weight");
 _Static_assert(offsetof(ActorInfo, slotType) == 0x2dbc && sizeof(((ActorInfo *)0)->slotType) == 0x4, "scene.fields: ActorInfo.slotType");
 _Static_assert(offsetof(ActorInfo, ammoSlot) == 0x2dc0 && sizeof(((ActorInfo *)0)->ammoSlot) == 0x4, "scene.fields: ActorInfo.ammoSlot");
 _Static_assert(offsetof(ActorInfo, ammoPerShot) == 0x2dc4 && sizeof(((ActorInfo *)0)->ammoPerShot) == 0x4, "scene.fields: ActorInfo.ammoPerShot");
 _Static_assert(offsetof(ActorInfo, burst) == 0x2dc8 && sizeof(((ActorInfo *)0)->burst) == 0x4, "scene.fields: ActorInfo.burst");
 _Static_assert(offsetof(ActorInfo, burstGap) == 0x2dcc && sizeof(((ActorInfo *)0)->burstGap) == 0x4, "scene.fields: ActorInfo.burstGap");
+_Static_assert(offsetof(ActorInfo, burstStep) == 0x2dd0 && sizeof(((ActorInfo *)0)->burstStep) == 0xc, "scene.fields: ActorInfo.burstStep");
 _Static_assert(offsetof(ActorInfo, damageMode) == 0x2ddc && sizeof(((ActorInfo *)0)->damageMode) == 0x4, "scene.fields: ActorInfo.damageMode");
 _Static_assert(offsetof(ActorInfo, damage) == 0x2de0 && sizeof(((ActorInfo *)0)->damage) == 0x4, "scene.fields: ActorInfo.damage");
 _Static_assert(offsetof(ActorInfo, stepLength) == 0x2de4 && sizeof(((ActorInfo *)0)->stepLength) == 0x4, "scene.fields: ActorInfo.stepLength");
