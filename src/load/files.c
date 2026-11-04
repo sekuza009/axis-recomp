@@ -933,17 +933,17 @@ void (data_loadPilotProfiles)(void)
 		u8 record[0x4c];
 		crt_fread(record, 0x4c, 1, f);
 		crypt_countingKey(record, key++);
-		memcpy((void *)(OBJ(g_profileRecords) + i * 0x4c), record, 0x4c);
+		memcpy(&g_profileRecords[i], record, 0x4c);
 	}
 	fclose(f);
 	for (int i = 0; i < version; i++) {
-		int *stats = (int *)(OBJ(g_profileRecords) + i * 0x4c);
-		static const u8 limited[8] = { 0x28, 0x30, 0x34, 0x2c, 0x3c, 0x38, 0x40, 0x48 };
+		int *stats = g_profileRecords[i].stats;
+		static const u8 limited[8] = { 0, 2, 3, 1, 5, 4, 6, 8 };   /* (the original's order) */
 		for (int k = 0; k < 8; k++)
-			if (stats[limited[k] / 4] > 30)
-				stats[limited[k] / 4] = 0;
-		if (stats[0x44 / 4] > 50)
-			stats[0x44 / 4] = 0;
+			if (stats[limited[k]] > 30)
+				stats[limited[k]] = 0;
+		if (stats[7] > 50)
+			stats[7] = 0;
 	}
 }
 

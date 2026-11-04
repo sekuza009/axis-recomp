@@ -643,12 +643,11 @@ static void fill_dwords(u8 *at, int n, u32 v)
 		GAME_VAR(u32, at + k * 4) = v;
 }
 
-/* the pilot level's factor k (the level table 0x9f9078, 0x4c bytes a level, by the player's +0x44) as
-   level value x 0.01 + 1 */
+/* the pilot level's factor k (its profile's stats[4 + k], by the player's level) as value x 0.01 + 1 */
 static long double level_factor(u8 *p, int k)
 {
 	PlayerRecord *pr = (PlayerRecord *)p;
-	return fadd_m(fmul_m((long double)GAME_VAR(int, OBJ(g_profileRecords) + 0x38 + pr->level * 0x4c + k * 4), K(0x4a9420)), K(0x4a9424));
+	return fadd_m(fmul_m((long double)g_profileRecords[pr->level].stats[4 + k], K(0x4a9420)), K(0x4a9424));
 }
 
 /* the mech's stats for actor ac from player record p's parts (the head, chest, arms, legs and booster records, the
@@ -743,7 +742,7 @@ static void mech_stats(u8 *s, u8 *ac, u8 *p, int check)
 	AC->rechargeTime = f32(fmul_m(fld_m(&boost->activeTime[1]), &AC->rechargeTimeFactor));
 	AC->restTime = f32(fmul_m(fld_m(&boost->activeTime[2]), &AC->restTimeFactor));
 	/* the legs' factors: the level's second value plus the legs' own, plus 1 */
-#define LEG(f) fadd_m(fadd_m(fmul_m((long double)GAME_VAR(int, OBJ(g_profileRecords) + 0x3c + pr->level * 0x4c), K(0x4a9420)), &legs->f), K(0x4a9424))
+#define LEG(f) fadd_m(fadd_m(fmul_m((long double)g_profileRecords[pr->level].stats[5], K(0x4a9420)), &legs->f), K(0x4a9424))
 	v = fmul_m(LEG(speedCorrection), &boost->normalSpeed[0]) * left;
 	AC->speed = f32(v);
 	if (!(v >= *K(0x4a93f4)))

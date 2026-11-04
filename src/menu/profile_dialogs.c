@@ -270,16 +270,15 @@ void (mainmenu_drawScreen)(void)
 #undef PAGE
 }
 
-/* ---- a pilot's details (0x9f9040, 0x4c bytes a pilot: name, +0x10 title, +0x20 class, +0x24 level, +0x28 nine
-   stats) ---- */
-#define PILOT(n) (g_profileRecords + (n) * 0x4c)
+/* ---- a pilot's details (g_profileRecords: name, title, class, level, nine stats) ---- */
+#define PILOT(n) (&g_profileRecords[n])
 
 /* the nine stats, right-aligned (by their digits and sign) from x, step apart from y, each with 0x4b3e2c */
 static void pilot_stats(int pilot, int x, int y, int step)
 {
 	char text[20];
 	for (int k = 0; k < 9; k++) {
-		itoa(*(const int *)(PILOT(pilot) + 0x28 + k * 4), text, 10);
+		itoa(PILOT(pilot)->stats[k], text, 10);
 		int pad;
 		if (text[0] != '-')
 			pad = strlen(text) < 2 ? 0x10 : 8;
@@ -428,11 +427,11 @@ void (profile_drawPilotSelect)(void)
 	for (int k = 0; k < 13; k++)
 		text_draw8(X0 + 0x138, Y0 + k * 0x15 + 0x48, (const char *)(MSG(532, "NAME :") + k * 0x80));
 	set_colour_bits(g_textColour, 0x3f800000, 0x3f800000, 0x3f800000, 0x3f800000);
-text_draw8(X0 + 0x184, Y0 + 0x48, (const char *)PILOT(g_pilot));
-	text_draw8(X0 + 0x184, Y0 + 0x5d, (const char *)PILOT(g_pilot) + 0x10);
-	text_draw8(X0 + 0x184, Y0 + 0x72, (const char *)(MSG(545, "RESERVED") + *(const int *)(PILOT(g_pilot) + 0x20) * 0x80));
+text_draw8(X0 + 0x184, Y0 + 0x48, PILOT(g_pilot)->name);
+	text_draw8(X0 + 0x184, Y0 + 0x5d, PILOT(g_pilot)->title);
+	text_draw8(X0 + 0x184, Y0 + 0x72, (const char *)(MSG(545, "RESERVED") + PILOT(g_pilot)->rank * 0x80));
 	char text[20];
-	itoa(*(const int *)(PILOT(g_pilot) + 0x24), text, 10);
+	itoa(PILOT(g_pilot)->level, text, 10);
 	text_draw8(X0 + 0x184, Y0 + 0x87, text);
 	pilot_stats(g_pilot, X0 + 0x192, Y0 + 0x9c, 0x15);
 	stat_bars(X0 + 0x1bc, Y0 + 0x9f, 0x15, K(0x4a95f4), 1.0f);
@@ -496,11 +495,11 @@ void (profile_drawChosenPilot)(void)
 	menu_drawRect(X0 + 0x1a4, Y0 + 0x24, X0 + 0x1e4, Y0 + 0x64, 0);
 	u32 text_grey = focus ? 0x3f800000 : 0x3f000000;
 	set_colour_bits(g_textColour, text_grey, text_grey, text_grey, 0x3f800000);
-	text_draw8(X0 + 0x14e, Y0 + 0x24, (const char *)PILOT(g_chosenPilot));
-	text_draw8(X0 + 0x14e, X0 + 0x38, (const char *)PILOT(g_chosenPilot) + 0x10);
-	text_draw8(X0 + 0x14e, X0 + 0x4c, (const char *)(MSG(545, "RESERVED") + *(const int *)(PILOT(g_chosenPilot) + 0x20) * 0x80));
+	text_draw8(X0 + 0x14e, Y0 + 0x24, PILOT(g_chosenPilot)->name);
+	text_draw8(X0 + 0x14e, X0 + 0x38, PILOT(g_chosenPilot)->title);
+	text_draw8(X0 + 0x14e, X0 + 0x4c, (const char *)(MSG(545, "RESERVED") + PILOT(g_chosenPilot)->rank * 0x80));
 	char text[20];
-	itoa(*(const int *)(PILOT(g_chosenPilot) + 0x24), text, 10);
+	itoa(PILOT(g_chosenPilot)->level, text, 10);
 	text_draw8(X0 + 0x14e, Y0 + 0x60, text);
 	pilot_stats(g_chosenPilot, X0 + 0x166, Y0 + 0x74, 0x14);
 	stat_bars(X0 + 0x18a, Y0 + 0x78, 0x14, k_m0_9f, grey);

@@ -9,8 +9,8 @@ typedef long double X;
 #define F(a) GAME_VAR(float, a)
 #define I(a) GAME_VAR(int, a)
 #define FMT(a) ((const char *)RELOC(a))
-/* the pilot's skill k (19-dword records from 0x9f9078, pilot 0x9f1818) */
-#define SKILL(k) ((X)GAME_VAR(int, OBJ(g_profileRecords) + 0x38 + g_armcValue * 0x4c + (k) * 4))
+/* the pilot's skill k (its level's profile stats[4 + k]) */
+#define SKILL(k) ((X)g_profileRecords[g_armcValue].stats[4 + (k)])
 #define HUNDREDTH F(0x4a9420)   /* 0.01 */
 #define THOUSANDTH F(0x4a9480)  /* 0.001 */
 #define HUNDRED F(0x4a93f4)

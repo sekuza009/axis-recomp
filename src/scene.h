@@ -747,6 +747,15 @@ typedef struct RankRow {
 	u8 _pad0000042[0x2];
 } RankRow;
 
+/* a pilot level's profile (g_profileRecords: the character profile data file's records, */
+typedef struct PilotProfile {
+	char name[16];   /* +0x0 */
+	char title[16];   /* +0x10 */
+	i32 rank;   /* +0x20: its class (a MSG(545) string) */
+	i32 level;   /* +0x24 */
+	i32 stats[9];   /* +0x28: percentages: [0] .. [3] the weapon groups' damage, [4] .. the skills (actor and */
+} PilotProfile;
+
 /* a pilot's standing (g_pilotLevel .., kept as g_pilotLevelKept ..: lobby_states.c take_back) */
 typedef struct PilotStats {
 	i32 level;   /* +0x0 */
@@ -2341,6 +2350,12 @@ _Static_assert(offsetof(RankRow, rate) == 0x36 && sizeof(((RankRow *)0)->rate) =
 _Static_assert(offsetof(RankRow, level) == 0x3a && sizeof(((RankRow *)0)->level) == 0x4, "scene.fields: RankRow.level");
 _Static_assert(offsetof(RankRow, power) == 0x3e && sizeof(((RankRow *)0)->power) == 0x4, "scene.fields: RankRow.power");
 _Static_assert(sizeof(RankRow) == 0x44, "scene.fields: size of RankRow");
+_Static_assert(offsetof(PilotProfile, name) == 0x0 && sizeof(((PilotProfile *)0)->name) == 0x10, "scene.fields: PilotProfile.name");
+_Static_assert(offsetof(PilotProfile, title) == 0x10 && sizeof(((PilotProfile *)0)->title) == 0x10, "scene.fields: PilotProfile.title");
+_Static_assert(offsetof(PilotProfile, rank) == 0x20 && sizeof(((PilotProfile *)0)->rank) == 0x4, "scene.fields: PilotProfile.rank");
+_Static_assert(offsetof(PilotProfile, level) == 0x24 && sizeof(((PilotProfile *)0)->level) == 0x4, "scene.fields: PilotProfile.level");
+_Static_assert(offsetof(PilotProfile, stats) == 0x28 && sizeof(((PilotProfile *)0)->stats) == 0x24, "scene.fields: PilotProfile.stats");
+_Static_assert(sizeof(PilotProfile) == 0x4c, "scene.fields: size of PilotProfile");
 _Static_assert(offsetof(PilotStats, level) == 0x0 && sizeof(((PilotStats *)0)->level) == 0x4, "scene.fields: PilotStats.level");
 _Static_assert(offsetof(PilotStats, points) == 0x4 && sizeof(((PilotStats *)0)->points) == 0x4, "scene.fields: PilotStats.points");
 _Static_assert(offsetof(PilotStats, clan) == 0x8 && sizeof(((PilotStats *)0)->clan) == 0x4, "scene.fields: PilotStats.clan");

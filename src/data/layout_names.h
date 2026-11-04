@@ -2075,7 +2075,7 @@ extern struct GameData g_data;
 #undef g_profileProgressSaved
 #define g_profileProgressSaved (*(int *)g_profileProgressSaved_v)
 #undef g_profileRecords
-#define g_profileRecords ((u8 *)g_data.g_profileRecords_)
+#define g_profileRecords ((PilotProfile *)g_data.g_profileRecords_)
 #undef g_profileRowClicked
 #define g_profileRowClicked (*(int *)g_profileRowClicked_v)
 #undef g_profileScreenReady

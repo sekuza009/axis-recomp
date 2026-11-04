@@ -47,7 +47,7 @@ static void load_colour(int i)
 	g_emblemMoved = 0;
 	for (int k = 0; k < 9; k++)
 		GAME_VAR(float, OBJ(g_statBarTargets) + k * 4) =
-			(float)((long double)GAME_VAR(int, OBJ(g_profileRecords) + 0x28 + i * 76 + k * 4) + k_50f);
+			(float)((long double)g_profileRecords[i].stats[k] + k_50f);
 }
 
 /* 0x44bc50: the selected profile's colours; 0x44bd20: those of the pilot under the list cursor */

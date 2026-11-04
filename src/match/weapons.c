@@ -89,14 +89,14 @@ void THISCALL (actor_pickRandomWeapon)(Stage *stage, int i)
 void THISCALL (bullet_playImpactSound)(u8 *scene, int attacker, int target, int mode, int damage, int kind, u32 value)
 {
 #define ACTOR(i) ((u8 *)&((Stage *)scene)->actors[i])
-	static const u8 group[10] = { 0, 0, 4, 4, 4, 8, 8, 4, 12, 12 };
+	static const u8 group[10] = { 0, 0, 1, 1, 1, 2, 2, 1, 3, 3 };   /* (the stat by weapon kind) */
 	u8 *t = ACTOR(target), *a = ACTOR(attacker);
 	Player *ac = (Player *)t;
 	if (ac->state != 1 || ac->invulnerable == 1)
 		return;
 	int player = ((Player *)a)->active == 1 ? ((Player *)a)->level : -1;
 	if ((unsigned)kind <= 9) {
-		int level = GAME_VAR(int, OBJ(g_profileRecords) + 0x28 + player * 0x4c + group[kind]) + 100;
+		int level = g_profileRecords[player].stats[group[kind]] + 100;
 		damage = ftol(fadd_m(fmul_m((long double)level * damage, (const float *)ADDR(k_0_01f)), (const float *)ADDR(k_0_5f)));
 	}
 	if (((u32)((Player *)a)->timerFlags) & 0x100)
