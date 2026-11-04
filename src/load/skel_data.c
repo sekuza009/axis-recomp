@@ -6,21 +6,22 @@
 #define AT(type, p, offset) GAME_VAR(type, (u8 *)RELOC(p) + (offset))
 #define crt_fread(p, size, count, f) GAME_CDECL(0x49e836, u32, void *, u32, u32, void *)(p, size, count, f)
 
-/* the block (+8; +4 its size): allocated (owned, +0xc 1) without memory given, else the memory given (owned 0 when
-   own_flag; the caller's size checked) */
+/* the block (BlockOwner: block, its size blockSize): allocated (owned: ownsBlock 1) without memory given, else the
+   memory given (owned 0 when own_flag; the caller's size checked) */
 static void take_block(u8 *self, void *mem, int size, char *out, u32 no_memory, u32 too_small, int own_flag)
 {
+	BlockOwner *bo = (BlockOwner *)self;
 	if (!mem) {
-		AT(void *, self, 8) = operator_new(AT(u32, self, 4));
-		if (!AT(void *, self, 8))
-			sys_fatalError(out, (const char *)RELOC(no_memory), AT(int, self, 4));
-		AT(int, self, 0xc) = 1;
+		bo->block = operator_new(bo->blockSize);
+		if (!bo->block)
+			sys_fatalError(out, (const char *)RELOC(no_memory), bo->blockSize);
+		bo->ownsBlock = 1;
 	} else {
-		if (size < AT(int, self, 4))
-			sys_fatalErrorN(out, (const char *)RELOC(too_small), AT(int, self, 4), size);
-		AT(void *, self, 8) = mem;
+		if (size < bo->blockSize)
+			sys_fatalErrorN(out, (const char *)RELOC(too_small), bo->blockSize, size);
+		bo->block = mem;
 		if (own_flag)
-			AT(int, self, 0xc) = 0;
+			bo->ownsBlock = 0;
 	}
 }
 
@@ -99,10 +100,10 @@ void THISCALL (shape_initBy)(u8 *self, const char *dir, int n, u32 a, int extra,
 		Model_clear(mg->items + i * 0x4c);
 		Model_release(mg->items + i * 0x4c);
 	}
-	self[0x130] = 0;
+	mg->textureDir[0] = 0;
 	mg->data = mg->block + n * 0x98;
 	for (int k = 0; k < 7; k++)
-		AT(int, self, 0x230 + k * 4) = 0;
+		AT(int, self, offsetof(Manager, bindFlags) + k * 4) = 0;   /* bindFlags, tint */
 }
 
 /* a file's format by its extension (after the last '.', none past a '\' or '/'; its first three letters compared
@@ -337,7 +338,7 @@ static int tree_lookup(u8 *cache, const char *key, char *out, u32 no_room, u32 f
 	}
 	strcpy((char *)node, key);
 	((TreeNode *)node)->index = link ? i : 0;
-	AT(int, node, 0x44) = AT(int, node, 0x48) = 0;
+	((TreeNode *)node)->left = ((TreeNode *)node)->right = 0;
 	*added = 1;
 	return i;
 }
@@ -466,12 +467,13 @@ void THISCALL (shape_read)(u8 *shape, void *f, void *mem, int size)
 		sp->texture = -1;
 		int n = sp->vertexCount;
 		static const u8 sizes[4] = { 12, 12, 4, 8 };   /* vertices, normals, colours, texture coordinates */
+		u8 **arrays[4] = { &sp->vertices, &sp->normals, &sp->colours, (u8 **)&sp->texCoords };
 		for (int t = 0; t < 4; t++) {
-			AT(u8 *, p, 0x50 + t * 4) = md->block + at;
+			*arrays[t] = md->block + at;
 			at += n * sizes[t];
 		}
 		for (int t = 0; t < 4; t++)
-			crt_fread(AT(u8 *, p, 0x50 + t * 4), sizes[t], ((u32)sp->vertexCount), f);
+			crt_fread(*arrays[t], sizes[t], ((u32)sp->vertexCount), f);
 		sp->prims = md->block + at;
 		crt_fread(sp->prims, 0xc, ((u32)sp->primCount), f);
 		at += 0xc;

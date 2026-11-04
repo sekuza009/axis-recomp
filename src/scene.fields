@@ -58,6 +58,11 @@ struct PlayerRecord 0x47fd2                                      # a player of t
 0x320      0x18       i32 items[6]                              # per item slot (Player.slot): its weapon's record (index into Scene.actorInfo; < 0 none)
 0x47fc6    4          i32 flagShown                             # 1: its flag is shown (ranking, markers)
 
+struct BlockOwner 0x10                                          # the head Model, Manager, SkelManager and ObjectList share: their data block (take_block)
+4          4          i32 blockSize
+8          4          u8 *block
+0xc        4          i32 ownsBlock                              # 1: allocated here (freed with it)
+
 struct Model 0x4c                                               # a shape (skel_data.c: its 0x34-byte file header, then its box; a map object's model, an object list's entries...)
 4          4          i32 blockSize                              # its data block (take_block): the parts and their tables
 8          4          u8 *block

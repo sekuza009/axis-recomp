@@ -78,6 +78,14 @@ typedef struct PlayerRecord {
 	i32 emblemSent;   /* +0x47fce: (by use) its emblem's pixels sent so far (0x180 = 24 x 16: all; the map's players start with all) */
 } PlayerRecord;
 
+/* the head Model, Manager, SkelManager and ObjectList share: their data block (take_block) */
+typedef struct BlockOwner {
+	u8 _pad0000000[0x4];
+	i32 blockSize;   /* +0x4 */
+	u8 *block;   /* +0x8 */
+	i32 ownsBlock;   /* +0xc: 1: allocated here (freed with it) */
+} BlockOwner;
+
 /* a shape (skel_data.c: its 0x34-byte file header, then its box; a map object's model, an object list's entries...) */
 typedef struct Model {
 	u8 _pad0000000[0x4];
@@ -1566,6 +1574,10 @@ _Static_assert(offsetof(PlayerRecord, flagShown) == 0x47fc6 && sizeof(((PlayerRe
 _Static_assert(offsetof(PlayerRecord, emblemChanged) == 0x47fca && sizeof(((PlayerRecord *)0)->emblemChanged) == 0x4, "scene.fields: PlayerRecord.emblemChanged");
 _Static_assert(offsetof(PlayerRecord, emblemSent) == 0x47fce && sizeof(((PlayerRecord *)0)->emblemSent) == 0x4, "scene.fields: PlayerRecord.emblemSent");
 _Static_assert(sizeof(PlayerRecord) == 0x47fd2, "scene.fields: size of PlayerRecord");
+_Static_assert(offsetof(BlockOwner, blockSize) == 0x4 && sizeof(((BlockOwner *)0)->blockSize) == 0x4, "scene.fields: BlockOwner.blockSize");
+_Static_assert(offsetof(BlockOwner, block) == 0x8 && sizeof(((BlockOwner *)0)->block) == 0x4, "scene.fields: BlockOwner.block");
+_Static_assert(offsetof(BlockOwner, ownsBlock) == 0xc && sizeof(((BlockOwner *)0)->ownsBlock) == 0x4, "scene.fields: BlockOwner.ownsBlock");
+_Static_assert(sizeof(BlockOwner) == 0x10, "scene.fields: size of BlockOwner");
 _Static_assert(offsetof(Model, blockSize) == 0x4 && sizeof(((Model *)0)->blockSize) == 0x4, "scene.fields: Model.blockSize");
 _Static_assert(offsetof(Model, block) == 0x8 && sizeof(((Model *)0)->block) == 0x4, "scene.fields: Model.block");
 _Static_assert(offsetof(Model, ownsBlock) == 0xc && sizeof(((Model *)0)->ownsBlock) == 0x4, "scene.fields: Model.ownsBlock");
