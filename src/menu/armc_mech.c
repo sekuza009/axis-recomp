@@ -108,27 +108,27 @@ void THISCALL (mech_setAll)(Scene *scene, const char *name, int v, int team, int
    its +0x1eccbb4 one. Its callers ignore the eax it leaves */
 void THISCALL (armc_giveShownActorWeapon)(u8 *game, int slot)
 {
-#define I GAME_VAR(int, game + 0x234240d)
-#define ACTOR(type, offset) GAME_VAR(type, game + I * 0x8888 + (offset))
+#define I (((Scene *)game)->localPlayer)
+#define ACTOR (((Scene *)game)->players[I])   /* the shown actor */
 	if (I < 0)
 		return;
-	u32 at[3] = { ACTOR(u32, 0x1eccbf0), ACTOR(u32, 0x1eccbf4), ACTOR(u32, 0x1eccbf8) };
-	u32 angle0 = ACTOR(u32, 0x1eccbfc), angle1 = ACTOR(u32, 0x1eccc00);   /* (copied as dwords, put back through the FPU) */
-	int other = ACTOR(int, 0x1eccbb4);
-	int chosen = slot >= 0 ? slot : ACTOR(int, 0x1eccbb0);
-	ACTOR(int, 0x1eccf0c) = I != GAME_VAR(int, game + 0x2221fa0);
+	u32 at[3] = { BITS(ACTOR.nextPos[0]), BITS(ACTOR.nextPos[1]), BITS(ACTOR.nextPos[2]) };
+	u32 angle0 = BITS(ACTOR.nextPitch), angle1 = BITS(ACTOR.nextYaw);   /* (copied as dwords, put back through the FPU) */
+	int other = ACTOR.lastWeaponSlot;
+	int chosen = slot >= 0 ? slot : ACTOR.slot;
+	ACTOR.variantLoaded = I != ((Scene *)game)->cockpitPlayer;
 	Stage *stage = (Stage *)(game + 0x1f36c8);
 	stage_remakePlayerActor(stage);
 	for (int k = 0; k < 3; k++)
-		ACTOR(u32, 0x1eccbf0 + k * 4) = at[k];
-	ACTOR(float, 0x1eccbfc) = f32(fld_m((const float *)&angle0));
-	ACTOR(float, 0x1eccc00) = f32(fld_m((const float *)&angle1));
+		BITS(ACTOR.nextPos[k]) = at[k];
+	ACTOR.nextPitch = f32(fld_m((const float *)&angle0));
+	ACTOR.nextYaw = f32(fld_m((const float *)&angle1));
 	if (slot > 3) {
 		actor_setWeaponSlot(stage, I, other);
-		actor_updatePart(stage, I, other, ACTOR(u32, 0x1eccf0c));
+		actor_updatePart(stage, I, other, ACTOR.variantLoaded);
 	}
 	actor_setWeaponSlot(stage, I, chosen);
-	actor_updatePart(stage, I, chosen, ACTOR(u32, 0x1eccf0c));
+	actor_updatePart(stage, I, chosen, ACTOR.variantLoaded);
 #undef I
 #undef ACTOR
 }
