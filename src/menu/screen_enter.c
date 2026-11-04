@@ -251,7 +251,7 @@ u32 (menu_enterState)(void)
 		g_enteringMenus = 1;
 		menuState300_enter();                 /* menuState300_enter */
 		break;
-	case 400: GAME_FN(menuState400_enter, 0x404640, u32, void)(); break;   /* menuState400_enter */
+	case 400: menuState400_enter(); break;   /* menuState400_enter */
 	case 500: menuState500_enter(); break;   /* menuState500_enter */
 	case 600: menuState600_enterSetup(); break;   /* menuState600_enterSetup */
 	case 800: menuState800_enterGameRoom(); break;   /* menuState800_enterGameRoom */
@@ -359,7 +359,7 @@ u32 (menuState210_enter)(void)
 	for (int k = 0; k < 7; k++)
 		GAME_CDECL(rects[k], void, void)();
 	STORE_ALL(colours);
-	return GAME_FN(profile_resetPreview, 0x44b7a0, u32, void)();   /* profile_resetPreview */
+	return profile_resetPreview();   /* profile_resetPreview */
 }
 
 /* the profile files checked (the English one, then four times the Korean one): a missing one ends the game with

@@ -753,10 +753,10 @@ u32 (game_postMatch)(void)
 	default:
 		game_returnToMainMenu();
 	}
-	r = GAME_FN(music_play, 0x457150, u32, const char *)((const char *)STR(0x4b01cc, "music/Netsphere.mp3"));   /* music_play */
+	r = music_play((const char *)STR(0x4b01cc, "music/Netsphere.mp3"));   /* music_play */
 message:
 	if (g_mapMissing) {
-		r = GAME_FN(menu_showMessage, 0x41ee40, u32, int)(6);
+		r = menu_showMessage(6);
 		g_mapMissing = 0;
 	}
 	return r;

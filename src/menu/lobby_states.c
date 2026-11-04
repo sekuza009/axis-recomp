@@ -379,7 +379,7 @@ u32 (lobbyPlayer_draw)(void)
 		return mode;
 	if (!g_dialogOpen)
 		return arena_drawNameDialog();   /* arena_drawNameDialog */
-	return GAME_FN(menu_drawFrame, 0x428c30, u32, int, int, int, int)(g_arenaNameDialogLeft, g_arenaNameDialogTop,
+	return menu_drawFrame(g_arenaNameDialogLeft, g_arenaNameDialogTop,
 	                                                     g_arenaNameDialogRight, g_arenaNameDialogBottom);   /* menu_drawFrame */
 }
 
@@ -446,7 +446,7 @@ u32 (menuState400_frame)(void)
 		lobbyTop_draw();   /* lobbyTop_draw */
 		menu_drawBackground();
 		if (g_quitAsked == 1 && g_arenaLobbyMode == 2)
-			return GAME_FN(menu_drawDimOverlay, 0x40ce70, u32, void)();   /* menu_drawDimOverlay */
+			return menu_drawDimOverlay();   /* menu_drawDimOverlay */
 		return lobbyTop_drawTitle();       /* lobbyTop_drawTitle */
 	case 0:
 		menu_drawBackground();
@@ -517,17 +517,17 @@ u32 (lobby_close)(void)
 u32 (room_mapListKeys)(void)
 {
 	if (input_justPressed(g_dikO))
-		return GAME_FN(mapList_ok, 0x403640, u32, void)();   /* mapList_ok */
+		return mapList_ok();   /* mapList_ok */
 	if (input_justPressed(g_dikO)) {
-		u32 r = GAME_FN(sound_playMenu, 0x41e760, u32, int)(0);   /* sound_playMenu */
+		u32 r = sound_playMenu(0);   /* sound_playMenu */
 		g_mapListOpen = 0;
 		return r;
 	}
 	if (input_justPressed(g_dikA))
-		return GAME_FN(mapList_chooseAll, 0x4034e0, u32, void)();   /* mapList_chooseAll */
+		return mapList_chooseAll();   /* mapList_chooseAll */
 	u32 r = input_justPressed(g_dikD);
 	if (r)
-		return GAME_FN(mapList_chooseNone, 0x403530, u32, void)();   /* mapList_chooseNone */
+		return mapList_chooseNone();   /* mapList_chooseNone */
 	return r;
 }
 
@@ -633,7 +633,7 @@ u32 (lobbyCreate_draw)(void)
 	if (mode == 1 || mode == 0 || g_lobbySubState == 5)
 		return (u32)mode;
 	if (g_dialogOpen)
-		return GAME_FN(menu_drawFrame, 0x428c30, u32, int, int, int, int)(g_newArenaFormLeft, g_newArenaFormTop,
+		return menu_drawFrame(g_newArenaFormLeft, g_newArenaFormTop,
 		                                                     g_newArenaFormRight, g_newArenaFormBottom);   /* menu_drawFrame */
 	signed char players = (*(signed char *)&g_arenaPlayers);
 	if (players < 0 || players > 0x10)
@@ -693,7 +693,7 @@ u32 (lobby_playerScreenClicks)(void)
 		return (u32)mode;
 	if (g_keyEnter) {
 		g_arenaLobbyMode = 0;
-		return GAME_FN(sound_playMenu, 0x41e760, u32, int)(0);
+		return sound_playMenu(0);
 	}
 	if (!g_mouseClick || mode != 2)
 		return (u32)mode;
@@ -712,7 +712,7 @@ u32 (lobby_playerScreenClicks)(void)
 		g_arenaLobbyMode = 0;
 		return r;
 	case 4:
-		r = GAME_FN(sound_playMenu, 0x41e760, u32, int)(0);
+		r = sound_playMenu(0);
 		g_arenaLobbyMode = 0;
 		return r;
 	case 5:
@@ -751,7 +751,7 @@ u32 (arena_joinSession)(int session)
 	int r = dplay_join(session, rec->guid, g_cfgPlayerName,
 	                                                               g_playerCorporation);   /* dplay_join: join */
 	if (r != 0x1f4)
-		return GAME_FN(menu_showMessage, 0x41ee40, u32, int)(r == 0x1f5 ? 0x36 : 0x35);   /* the message */
+		return menu_showMessage(r == 0x1f5 ? 0x36 : 0x35);   /* the message */
 	take_session(rec);
 	g_arenaConfirming = 0;
 	return rec->timeLimit;
@@ -822,7 +822,7 @@ static int key_hit(u32 binding)
 /* back to the main menu; returns input_setKeysBlocked's eax (4) */
 static u32 to_main_menu(void)
 {
-	u32 r = GAME_FN(input_setKeysBlocked, 0x441250, u32, int)(4);   /* input_setKeysBlocked: keys blocked */
+	u32 r = input_setKeysBlocked(4);   /* input_setKeysBlocked: keys blocked */
 	g_nextScreen = 300;
 	GAME_FN(debug_traceStripped, 0x48b420, void, void)();          /* debug_traceStripped */
 	return r;
@@ -845,7 +845,7 @@ u32 (lobbyTop_keys)(void)
 	if (key_hit(ADDR(g_dikP)))
 		return lobby_setSubState0();   /* lobby_setSubState0 */
 	if (key_hit(ADDR(g_dikJ)))
-		return GAME_FN(lobby_setSubState1, 0x404b30, u32, void)();   /* lobby_setSubState1 */
+		return lobby_setSubState1();   /* lobby_setSubState1 */
 	if (key_hit(ADDR(g_dikX)))
 		return to_main_menu();
 	return 0;
@@ -921,7 +921,7 @@ u32 (lobbyPlayer_keys)(void)
 	}
 	if (!input_justPressed(g_keyBack))
 		return 0;
-	u32 r = GAME_FN(sound_playMenu, 0x41e760, u32, int)(0);      /* sound_playMenu */
+	u32 r = sound_playMenu(0);      /* sound_playMenu */
 	g_arenaLobbyMode = 0;
 	return r;
 }
@@ -981,7 +981,7 @@ u32 (arena_loadAndQuit)(void)
 		lobby_setSubState1();   /* lobby_setSubState1 */
 		memset((void *)ADDR(g_typedArenaName), 0, 24);
 		strcpy((char *)ADDR(g_typedArenaName), g_serverAddressArg);
-		u32 r = GAME_FN(arena_joinListed, 0x406200, u32, int)(99999);   /* arena_joinListed */
+		u32 r = arena_joinListed(99999);   /* arena_joinListed */
 		g_lobbyReply = 0x69;
 		return r;
 	}
@@ -1084,7 +1084,7 @@ u32 (arena_connectionOutcome)(void)
 	g_connectionAwaited = 0;
 	g_arenaGameSetUp = 0;
 	if (state == 4)
-		r = GAME_FN(menu_showMessage, 0x41ee40, u32, int)(0x46);   /* the message */
+		r = menu_showMessage(0x46);   /* the message */
 	return r;
 }
 
@@ -1103,7 +1103,7 @@ u32 (lobbyTop_connect)(void)
 		if (g_paused)
 			return mode;
 		if (!strlen(line) || name_isBlank(line) == 1) {   /* name_isBlank: blank */
-			u32 r = strlen(line) ? GAME_FN(sound_playMenu, 0x41e760, u32, int)(6) : 0;
+			u32 r = strlen(line) ? sound_playMenu(6) : 0;
 			g_editingNewArenaName = 0;
 			return r;
 		}
@@ -1154,7 +1154,7 @@ u32 (lobbyTop_connect)(void)
 		if (r) {
 			arena_leaveSession();   /* arena_leaveSession: the arena left */
 			g_arenaLobbyMode = 0;
-			r = GAME_FN(sound_playMenu, 0x41e760, u32, int)(0);
+			r = sound_playMenu(0);
 		}
 	}
 	return r;
@@ -1177,7 +1177,7 @@ u32 (arena_createClick)(void)
 		return mode;
 	if (g_keyEnter) {
 		sound_playMenu(0);
-		u32 r = GAME_FN(arena_leaveSession, 0x452fe0, u32, void)();   /* arena_leaveSession: the arena left */
+		u32 r = arena_leaveSession();   /* arena_leaveSession: the arena left */
 		g_arenaLobbyMode = 0;
 		return r;
 	}
@@ -1244,7 +1244,7 @@ u32 (arena_createClick)(void)
 	case 11:
 		arena_leaveSession();
 		g_arenaLobbyMode = 0;
-		return GAME_FN(sound_playMenu, 0x41e760, u32, int)(0);
+		return sound_playMenu(0);
 	case 15:
 		if (*custom != 1)
 			return 15;

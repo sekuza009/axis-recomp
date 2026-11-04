@@ -169,7 +169,7 @@ u32 (menu_drawDimOverlay)(void)
 	gfx_setProjection2D3D(2);
 	glLoadIdentity();
 	GAME_FN(Color4_set, 0x41f0e0, void, void *, u32, u32, u32, u32)((void *)OBJ(g_rectColour), 0x3f800000, 0x3f800000, 0x3f800000, BITS(alpha));   /* the menu colour (1, 1, 1, alpha) */
-	return GAME_FN(menu_drawRect, 0x427970, u32, int, int, int, int, int)(0, 0, 640, 480, 1);   /* menu_drawRect, filled */
+	return menu_drawRect(0, 0, 640, 480, 1);   /* menu_drawRect, filled */
 }
 
 /* 0x41f050: the menu camera: the scene moved by minus the camera's position (0x4df024), then the view from it towards
@@ -295,7 +295,7 @@ u32 (menu_drawMessageBox)(void)
 	menu_drawRect(0x50, 0xc8, 0x230, 0x118, 1);
 	GAME_FN(Color4_set, 0x41f0e0, void, void *, u32, u32, u32, u32)((void *)OBJ(g_textColour), 0x3f800000, 0x3f800000, 0, 0x3f800000);
 	text_drawBox16(0x69, 0xdc, 0x217, g_messageBoxLine);
-	return GAME_FN(text_drawBox16, 0x4029d0, u32, int, int, int, const char *)(0x69, 0xf4, 0x217, (const char *)MSG(0, "PRESS ENTER OR CLICK MOUSE"));
+	return text_drawBox16(0x69, 0xf4, 0x217, (const char *)MSG(0, "PRESS ENTER OR CLICK MOUSE"));
 }
 
 /* 0x428890: the text cursor at (x, y), a green bar 7 x 15 menu units, its alpha 1 - a timer (0x4de1f0: grows by the
@@ -331,11 +331,11 @@ u32 (menu_drawInputLine)(int x, int y)
 	GAME_FN(Color4_set, 0x41f0e0, void, void *, u32, u32, u32, u32)((void *)OBJ(g_textColour), 0, 0x3f800000, 0, 0x3f800000);
 	menu_drawTextCursor(x + g_chatLength * 8, y);   /* menu_drawTextCursor: the cursor */
 	if (!g_chatFieldFlag)
-		return GAME_FN(text_draw8, 0x402620, u32, int, int, const char *)(x, y, g_chatLine);   /* text_draw8 */
+		return text_draw8(x, y, g_chatLine);   /* text_draw8 */
 	char stars[0x30];   /* the original zeroes 30 bytes of its frame here: a longer password (the fields take 20) would run over */
 	int n = (int)strlen(g_chatLine);
 	memset(stars, 0, 30);
 	if (n > 0)
 		memset(stars, '*', n);
-	return GAME_FN(text_draw8, 0x402620, u32, int, int, const char *)(x, y, stars);
+	return text_draw8(x, y, stars);
 }

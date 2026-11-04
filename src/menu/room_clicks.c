@@ -178,12 +178,12 @@ u32 (room_leftClicks)(void)
 	switch (button) {
 	case 0:
 		chat_closeEdit();
-		r = GAME_FN(field_editGameName, 0x433b00, u32, void)();       /* field_editGameName */
+		r = field_editGameName();       /* field_editGameName */
 		g_typingRoomName = 1;
 		return r;
 	case 1:
 		chat_closeEdit();
-		r = GAME_FN(field_editGamePassword, 0x433bb0, u32, void)();       /* field_editGamePassword */
+		r = field_editGamePassword();       /* field_editGamePassword */
 		g_typingRoomPassword = 1;
 		return r;
 	case 2:
@@ -209,7 +209,7 @@ u32 (room_leftClicks)(void)
 		return net_disconnect();
 	case 4:
 		sound_playMenu(0);
-		return GAME_FN(room_openDialog4d, 0x4338c0, u32, void)();    /* room_openDialog4d */
+		return room_openDialog4d();    /* room_openDialog4d */
 	}
 	return button;
 }
@@ -342,7 +342,7 @@ u32 (room_hostingStep)(void)
 		g_connectionAwaited = 0;
 		g_connectStep = 2;
 		g_arenaGameSetUp = 0;
-		return GAME_FN(menu_showMessage, 0x41ee40, u32, int)(0x2a);   /* the message */
+		return menu_showMessage(0x2a);   /* the message */
 	}
 	return step;
 }
@@ -358,7 +358,7 @@ u32 (app_onClose)(void)
 		g_arenaSearchTicks = 0;
 		g_arenaJoinWaiting = 0;
 		arena_leaveSession();
-		u32 r = GAME_FN(menu_showMessage, 0x41ee40, u32, int)(0x44);   /* the message */
+		u32 r = menu_showMessage(0x44);   /* the message */
 		g_arenaConfirming = 0;
 		return r;
 	}
@@ -374,7 +374,7 @@ u32 (app_onClose)(void)
 		static const u8 message[5] = { 0x43, 0x42, 0x42, 0x44, 0x45 };
 		if ((u32)(r - 0x1f5) <= 4)
 			menu_showMessage(message[r - 0x1f5]);
-		u32 e = GAME_FN(arena_leaveSession, 0x452fe0, u32, void)();
+		u32 e = arena_leaveSession();
 		g_arenaSearchTicks = 0;
 		g_arenaJoinPending = 0;
 		g_arenaConfirming = 0;
@@ -420,7 +420,7 @@ u32 (account_checkForm)(void)
 		message = 0x81, reopen = ADDR(g_typingAccountEmail);
 	else
 		return room_openDialog58();   /* the next dialog */
-	u32 r = GAME_FN(menu_showMessage, 0x41ee40, u32, int)(message);
+	u32 r = menu_showMessage(message);
 	GAME_VAR(int, reopen) = 1;
 	return r;
 }
@@ -529,7 +529,7 @@ u32 (login_send)(void)
 	int bad = room_nameHasBadChar(name) == 1 ? 0x15a
 	        : room_nameHasBadChar(password) == 1 ? 0x15b : 0;   /* room_nameHasBadChar */
 	if (bad) {
-		u32 r = GAME_FN(menu_showMessage, 0x41ee40, u32, int)(bad);
+		u32 r = menu_showMessage(bad);
 		g_roomLoginDue = 0;
 		return r;
 	}
@@ -565,7 +565,7 @@ u32 (ranking_clicks)(void)
 	u32 button = ranking_hitTest(g_mouseX, g_mouseY);   /* ranking_hitTest */
 	if (button > 8 || button == 6 || (button == 3 ? !g_rankingWaiting : g_rankingWaiting != 0))
 		return button;
-	u32 r = GAME_FN(sound_playMenu, 0x41e760, u32, int)(0);   /* the click sound */
+	u32 r = sound_playMenu(0);   /* the click sound */
 	static const u32 page[3] = { FN_ADDR(roomList_prevPage, 0x435970), FN_ADDR(roomList_nextPage, 0x4359b0), FN_ADDR(roomList_cycleMode, 0x4359f0) };
 	int column;
 	switch (button) {
@@ -635,13 +635,13 @@ u32 (room_settingsClicks)(void)
 	case 5:
 		if (input_isDown(g_dikLShift) || input_isDown(g_dikRShift) ||
 		    input_isDown(g_dikLCtrl) || input_isDown(g_dikRCtrl)) {
-			r = GAME_FN(sound_playMenu, 0x41e760, u32, int)(2);
+			r = sound_playMenu(2);
 			*type -= 1;
 			r = (r & ~0xffu) | *type;
 			if ((signed char)*type < 0)
 				*type = 9;
 		} else {
-			r = GAME_FN(sound_playMenu, 0x41e760, u32, int)(2);
+			r = sound_playMenu(2);
 			*type += 1;
 			r = (r & ~0xffu) | *type;
 			if ((signed char)*type > 9)
@@ -666,7 +666,7 @@ u32 (room_settingsClicks)(void)
 		sound_playMenu(0);
 		return lobby_checkReservedName3();   /* room_4351c0: start */
 	case 9:
-		r = GAME_FN(sound_playMenu, 0x41e760, u32, int)(0);
+		r = sound_playMenu(0);
 		g_roomMode = 0;
 		return r;
 	case 13:
@@ -690,7 +690,7 @@ u32 (room_settingsAfterTyping)(void)
 	const char *line = g_chatLine;
 	if (g_editingRoomName) {   /* the room's name */
 		if (!strlen(line) || name_isBlank(line) == 1) {   /* name_isBlank: blank */
-			u32 r = strlen(line) ? GAME_FN(sound_playMenu, 0x41e760, u32, int)(6) : 0;
+			u32 r = strlen(line) ? sound_playMenu(6) : 0;
 			g_editingRoomName = 0;
 			return r;
 		}
@@ -726,7 +726,7 @@ u32 (room_settingsAfterTyping)(void)
 	for (int k = 0; k < 2; k++) {
 		r = (u32)input_justPressed(GAME_VAR(int, close[k]));
 		if (r) {
-			r = GAME_FN(sound_playMenu, 0x41e760, u32, int)(0);
+			r = sound_playMenu(0);
 			g_roomMode = 0;
 		}
 	}
@@ -767,7 +767,7 @@ static u32 map_preview_box(const int *panel, u32 custom, u32 reload)
 		glDisable(GL_TEXTURE_2D);
 	}
 	Color4_set(g_rectColour, 1.0f, 1.0f, 0.0f, 1.0f);
-	return GAME_FN(menu_drawRect, 0x427970, u32, int, int, int, int, int)(X0, Y0, X1, Y1, 0);   /* menu_drawRect: the outline */
+	return menu_drawRect(X0, Y0, X1, Y1, 0);   /* menu_drawRect: the outline */
 #undef X0
 #undef X1
 #undef Y0
@@ -794,7 +794,7 @@ u32 (account_page)(void)
 	if (mode == 1 || mode == 0 || g_roomState == 99)
 		return mode;
 	if (g_dialogOpen)
-		return GAME_FN(menu_drawFrame, 0x428c30, u32, int, int, int, int)(g_accountPanelLeft, g_accountPanelTop,
+		return menu_drawFrame(g_accountPanelLeft, g_accountPanelTop,
 		                                                     g_accountPanelRight, g_accountPanelBottom);
 	if (g_accountNotice)
 		room_selectJoinedSession();

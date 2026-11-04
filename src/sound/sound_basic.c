@@ -171,7 +171,7 @@ int (sound_initSoundTable)(const char *file, int volume)
 	if (!g_soundOn)
 		return 0;
 	sound_freeAll();   /* sound_freeAll */
-	GAME_FN(sound_setVolume, 0x456de0, int, int)(volume);   /* sound_setVolume */
+	sound_setVolume(volume);   /* sound_setVolume */
 	void *f = crt_fopen(file, (const char *)STR(0x4ad170, "rb"));
 	if (!f)
 		GAME_FN(sys_fatalError, 0x46c710, void, void *, const char *, const char *)((void *)OBJ(g_logSound), (const char *)STR(0x4b42e8, "can't open file %s - initSoundTable()"), file);   /* sys_fatalError */
@@ -376,14 +376,14 @@ u32 THISCALL (music_playMatch)(u8 *stage)
 	switch (kind) {
 	case 0:
 		n = g_randPos++;
-		return GAME_FN(music_play, 0x457150, u32, const char *)((const char *)RELOC(kind1[random[n & 0xfff] & 3]));   /* music_play */
+		return music_play((const char *)RELOC(kind1[random[n & 0xfff] & 3]));   /* music_play */
 	case 1:
 		g_randPos++;
-		return GAME_FN(music_play, 0x457150, u32, const char *)((const char *)STR(0x4b4f6c, "Music/darkness.mp3"));   /* darkness */
+		return music_play((const char *)STR(0x4b4f6c, "Music/darkness.mp3"));   /* darkness */
 	case 2:
 	case 3:
 		n = ++g_randPos;
-		return GAME_FN(music_play, 0x457150, u32, const char *)((const char *)(RELOC(kind) == 2 ? kind3 : kind4)[random[n & 0xfff] % 3]);
+		return music_play((const char *)(RELOC(kind) == 2 ? kind3 : kind4)[random[n & 0xfff] % 3]);
 	}
 	return kind;
 }

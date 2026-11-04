@@ -150,10 +150,10 @@ u32 (armc_partScreenClicks)(void)
 		return GAME_CDECL(button == 0 ? FN_ADDR(armc_showPartsPage, 0x40f200) : FN_ADDR(armc_showColourPage, 0x40f320), u32, void)();
 	case 3: case 4:
 		sound_playMenu(0);
-		return GAME_FN(armc_exit, 0x40f0f0, u32, int)(button == 3);
+		return armc_exit(button == 3);
 	case 6: case 7: case 8: case 9: case 10: case 11:
 		armc_pickSlot(button - 6);   /* armc_pickSlot: the slot picked */
-		return GAME_FN(sound_playMenu, 0x41e760, u32, int)(2);
+		return sound_playMenu(2);
 	case 12: case 13:
 		step = button == 12 ? -1 : 1;
 		g_armcCursor += step;
@@ -166,7 +166,7 @@ u32 (armc_partScreenClicks)(void)
 			g_armcCursor += step;
 		sound_playMenu(8);
 		armc_showCursorItem();          /* armc_showCursorItem: the item shown */
-		return GAME_FN(armc_takeCursorItem, 0x40f9e0, u32, void)();    /* armc_takeCursorItem: and taken */
+		return armc_takeCursorItem();    /* armc_takeCursorItem: and taken */
 	case 14:
 		sound_playMenu(2);
 		r = 1 - (*(u32 *)&g_armcSpin);

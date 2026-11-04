@@ -104,7 +104,7 @@ static u32 graphics_apply(void)
 	sound_playMenu(0);
 	for (int i = 0; i < 7; i++)
 		g_graphicInUse[i] = g_graphicEdited[i];
-	u32 r = GAME_FN(cfg_loadAxisCfg, 0x42d730, u32, void)();   /* cfg_loadAxisCfg */
+	u32 r = cfg_loadAxisCfg();   /* cfg_loadAxisCfg */
 	if (!same)
 		return GAME_FN(app_closeWindow, 0x41e7a0, u32, int)(1);   /* app_closeWindow */
 	g_setupPage = 0;
@@ -250,7 +250,7 @@ u32 (setup_drawTopPage)(void)
 	if (allowed <= 0)
 		return allowed;
 	sound_playMenu(0);
-	u32 r = GAME_FN(input_setKeysBlocked, 0x441250, u32, int)(4);   /* input_setKeysBlocked */
+	u32 r = input_setKeysBlocked(4);   /* input_setKeysBlocked */
 	g_nextScreen = 300;
 	(*(int *)&g_cursorBlink) = 0;
 	GAME_FN(debug_traceStripped, 0x48b420, void, void)();
@@ -293,7 +293,7 @@ u32 (setup_drawGraphicTab)(void)
 	case 7:
 		return graphics_apply();
 	case 8:
-		old = GAME_FN(sound_playMenu, 0x41e760, u32, int)(0);
+		old = sound_playMenu(0);
 		g_setupPage = 0;
 		return old;
 	}

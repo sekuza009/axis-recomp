@@ -457,7 +457,7 @@ u32 (mission_loadAxisMis)(void)
 {
 	void *f = mis_open();
 	if (!f)
-		return GAME_FN(menu_showMessage, 0x41ee40, u32, int)(0xb);
+		return menu_showMessage(0xb);
 	skirmish_clearPlayerRows();   /* skirmish_clearPlayerRows */
 	for (int k = 0; k < 4; k++)
 		crt_fread((void *)(ADDR(g_missionCount) + k * 4), 4, 1, f);
@@ -481,7 +481,7 @@ u32 (mission_saveAxisMis)(int k)
 {
 	void *f = mis_open();
 	if (!f)
-		return GAME_FN(menu_showMessage, 0x41ee40, u32, int)(0xb);
+		return menu_showMessage(0xb);
 	const Mission *mission = g_missions;
 	int offset = 0;
 	for (int i = 0; i < k; i++)

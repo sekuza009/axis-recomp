@@ -411,13 +411,13 @@ u32 (room_leaveKeys)(void)
 {
 	u32 r = input_justPressed(g_dikO);
 	if (r == 1) {
-		r = GAME_FN(sound_playMenu, 0x41e760, u32, int)(0);   /* sound_playMenu */
+		r = sound_playMenu(0);   /* sound_playMenu */
 		g_roomPopup = 1;
 		return r;
 	}
 	r = input_justPressed(g_dikC);
 	if (r == 1) {
-		r = GAME_FN(sound_playMenu, 0x41e760, u32, int)(0);
+		r = sound_playMenu(0);
 		g_roomPopup = 2;
 	}
 	return r;
@@ -437,7 +437,7 @@ u32 (menuState900_skirmishSetup)(void)
 	if (state == 1 || state == 0)
 		return state;
 	if (g_dialogOpen)
-		return GAME_FN(menu_drawFrame, 0x428c30, u32, int, int, int, int)(g_briefingX, g_briefingY,
+		return menu_drawFrame(g_briefingX, g_briefingY,
 		                                                     g_briefingRight, g_briefingBottom);   /* menu_drawFrame */
 	int screen = g_settingsPage;
 	if (screen == 10)
@@ -458,10 +458,10 @@ u32 (skirmish_settingsKeys)(void)
 		return 1;
 	}
 	if (input_justPressed(g_dikN) == 1)
-		return GAME_FN(undo_push, 0x443d80, u32, void)();   /* undo_push: the pending step pushed */
+		return undo_push();   /* undo_push: the pending step pushed */
 	u32 r = input_justPressed(g_dikP);
 	if (r == 1)
-		return GAME_FN(undo_pop, 0x443de0, u32, void)();   /* undo_pop: one step undone */
+		return undo_pop();   /* undo_pop: one step undone */
 	return r;
 }
 
@@ -480,7 +480,7 @@ u32 (mission_choose)(void)
 	g_chosenGameMode = a;
 	g_fragLimit = b;
 	g_timeLimit = c;
-	u32 r = GAME_FN(missionSettings_leave, 0x447960, u32, void)();   /* missionSettings_leave: the settings left */
+	u32 r = missionSettings_leave();   /* missionSettings_leave: the settings left */
 	g_quitAsked = 1;
 	g_matchMode = 3;
 	return r;
@@ -493,26 +493,26 @@ u32 (missionsel_clicks)(void)
 	if (g_dialogOpen)
 		return g_dialogOpen;
 	if (g_keyEnter)
-		GAME_FN(missionSettings_leave, 0x447960, u32, void)();
+		missionSettings_leave();
 	if (!g_mouseClick)
 		return 0;
 	u32 button = GAME_FN(missionsel_hitTest, 0x447710, u32, int, int)(g_mouseX, g_mouseY);   /* the screen's hit test */
 	int sel = g_missionShown;
 	switch (button) {
 	case 0:
-		return GAME_FN(mission_choose, 0x4479d0, u32, void)();   /* mission_choose */
+		return mission_choose();   /* mission_choose */
 	case 1:
-		return GAME_FN(missionSettings_leave, 0x447960, u32, void)();
+		return missionSettings_leave();
 	case 2:
 		if (sel <= 0)
 			return (u32)sel;
 		g_missionShown = --sel;
-		return GAME_FN(mission_chosen, 0x4479b0, u32, int)(sel);   /* mission_chosen */
+		return mission_chosen(sel);   /* mission_chosen */
 	case 3:
 		if (sel >= g_progress || sel >= 0xe)
 			return (u32)sel;
 		g_missionShown = ++sel;
-		return GAME_FN(mission_chosen, 0x4479b0, u32, int)(sel);
+		return mission_chosen(sel);
 	}
 	return button;
 }
@@ -588,7 +588,7 @@ u32 (mapSelect_drawNames)(void)
 			set_colour_bits(g_textColour, 0x3f800000, 0x3f800000, 0, 0x3f800000);   /* yellow */
 		}
 		map = g_mapSelectFirst + i;
-		r = GAME_FN(text_draw8, 0x402620, u32, int, int, const char *)(g_mapSelectLeft + 0x28, g_mapSelectTop + dy + 0x2c,
+		r = text_draw8(g_mapSelectLeft + 0x28, g_mapSelectTop + dy + 0x2c,
 		                                                      g_fileList[map].name);   /* text_draw8 */
 	}
 	return r;
@@ -624,12 +624,12 @@ static int menu_choice(int i, u32 *r)
 		result = net_connect(0x65);
 		if (result == 2 || result == 0 || net_asyncSelect(g_mainWindow, 0x65) == 0) {
 			sound_playMenu(6);
-			*r = GAME_FN(menu_showMessage, 0x41ee40, u32, int)(result == 2 ? 0x2a : 0x29);
+			*r = menu_showMessage(result == 2 ? 0x2a : 0x29);
 			return 1;
 		}
 		/* fall through */
 	case 1: case 3:
-		*r = GAME_FN(input_setKeysBlocked, 0x441250, u32, int)(2);   /* input_setKeysBlocked */
+		*r = input_setKeysBlocked(2);   /* input_setKeysBlocked */
 		g_enteringMenus = 0;
 		g_nextScreen = i == 1 ? 400 : i == 2 ? 800 : 600;
 		return 0;

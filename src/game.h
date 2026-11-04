@@ -111,7 +111,7 @@ typedef struct { u32 vtable; void *managers[6]; i32 count; } TextureSets;   /* t
 /* ---- text ---- */
 #define text_setColor(r, g, b, a) GAME_FN(text_setColor, 0x44ad30, void, float, float, float, float)(r, g, b, a)
 #define text_draw5(x, y, s) GAME_FN(text_draw5, 0x403170, void, int, int, const char *)(x, y, s)
-#define text_draw8(x, y, s) GAME_FN(text_draw8, 0x402620, void, int, int, const char *)(x, y, s)
+#define text_draw8(x, y, s) GAME_FN(text_draw8, 0x402620, u32, int, int, const char *)(x, y, s)
 #define createArena_hitTest(x, y) GAME_FN(createArena_hitTest, 0x404520, int, int, int)(x, y)   /* the new-arena form: the item under (x, y), -1 none */
 #define arenaCreate_hitTest(x, y) GAME_FN(arenaCreate_hitTest, 0x4045a0, int, int, int)(x, y)   /* its "leave?" box: the button under (x, y) */
 #define arena_drawCustomOption(map) GAME_FN(arena_drawCustomOption, 0x40b550, u32, int)(map)   /* its map preview (the map passed, unused) */
@@ -123,14 +123,14 @@ typedef struct { u32 vtable; void *managers[6]; i32 count; } TextureSets;   /* t
 #define sys_fatalError(out, format, value) GAME_FN(sys_fatalError, 0x46c710, void, char *, const char *, int)(out, format, value)   /* (one value) a message, then exit */
 #define netq_reset(host) GAME_FN(netq_reset, 0x4a8300, void, int)(host)
 #define stage_selectActor(stage, i) GAME_THISFN(stage_selectActor, 0x45dfb0, void, Stage *, int)(stage, i)
-#define sound_setVolume(v) GAME_FN(sound_setVolume, 0x456de0, void, int)(v)
+#define sound_setVolume(v) GAME_FN(sound_setVolume, 0x456de0, int, int)(v)
 #define music_setVolumeSetting(v) GAME_FN(music_setVolumeSetting, 0x457140, void, int)(v)
 #define scene_resetScores(scene) GAME_THISFN(scene_resetScores, 0x4620e0, void, Scene *)(scene)
 #define events_clear(scene, t) GAME_THISFN(events_clear, 0x4629c0, void, Scene *, float)(scene, t)
 /* (app/main_loop.c: the replay's frame) */
 #define events_age(scene, dt) GAME_THISFN(events_age, 0x462ac0, void, void *, u32)(scene, dt)
 /* (app/main_loop.c: the match's frame) */
-#define profile_saveProgress() GAME_FN(profile_saveProgress, 0x447010, void, void)()
+#define profile_saveProgress() GAME_FN(profile_saveProgress, 0x447010, u32, void)()
 #define stage_deactivateActors(stage) GAME_THISFN(stage_deactivateActors, 0x45e1c0, void, void *)(stage)
 #define armc_computeTotals(stage, a) GAME_THISFN(armc_computeTotals, 0x45ee40, u32, void *, int)(stage, a)   /* 0: the parts' data was changed */
 #define scene_saveNames(scene) GAME_THISFN(scene_saveNames, 0x4616e0, void, void *)(scene)
@@ -393,7 +393,7 @@ typedef struct { u32 vtable; void *managers[6]; i32 count; } TextureSets;   /* t
 /* the box passes: text centred between x0 and x1 */
 #define text_drawCentred5(x0, y, x1, s) GAME_FN(text_drawCentred5, 0x403210, void, int, int, int, const char *)(x0, y, x1, s)
 #define text_draw8b(x0, y, x1, s) GAME_FN(text_draw8b, 0x402740, void, int, int, int, const char *)(x0, y, x1, s)
-#define text_drawBox16(x0, y, x1, s) GAME_FN(text_drawBox16, 0x4029d0, void, int, int, int, const char *)(x0, y, x1, s)
+#define text_drawBox16(x0, y, x1, s) GAME_FN(text_drawBox16, 0x4029d0, u32, int, int, int, const char *)(x0, y, x1, s)
 #define text_drawCentred32(x0, y, x1, s) GAME_FN(text_drawCentred32, 0x402db0, void, int, int, int, const char *)(x0, y, x1, s)
 #define text_drawCentred(x0, y, x1, s, size) GAME_FN(text_drawCentred, 0x44ae10, void, int, int, int, const char *, int)(x0, y, x1, s, size)
 #define text_drawSized(x, y, s, size) GAME_FN(text_drawSized, 0x44ad60, void, int, int, const char *, int)(x, y, s, size)
@@ -458,7 +458,7 @@ typedef struct { u32 vtable; void *managers[6]; i32 count; } TextureSets;   /* t
 #define menu_drawCursor() GAME_FN(menu_drawCursor, 0x429bc0, void, void)()
 #define menu_enterState() GAME_FN(menu_enterState, 0x41f970, void, void)()
 #define menu_drawBackground() GAME_FN(menu_drawBackground, 0x441740, void, void)()
-#define menu_drawFrame(x0, y0, x1, y1) GAME_FN(menu_drawFrame, 0x428c30, void, int, int, int, int)(x0, y0, x1, y1)
+#define menu_drawFrame(x0, y0, x1, y1) GAME_FN(menu_drawFrame, 0x428c30, u32, int, int, int, int)(x0, y0, x1, y1)
 /* textured quads (menu_quads.c): buttons from the bound sheet (lit == 1: the lit cell), whole textures, panel ornaments */
 #define menu_drawWideButton(x0, y0, x1, y1, lit) GAME_FN(menu_drawWideButton, 0x4282f0, void, int, int, int, int, int)(x0, y0, x1, y1, lit)
 #define profile_drawButton(x0, y0, x1, y1, lit) GAME_FN(profile_drawButton, 0x4283e0, void, int, int, int, int, int)(x0, y0, x1, y1, lit)
@@ -468,7 +468,7 @@ typedef struct { u32 vtable; void *managers[6]; i32 count; } TextureSets;   /* t
 #define menu_drawSmallButton4(x0, y0, x1, y1, lit) GAME_FN(menu_drawSmallButton4, 0x4287a0, void, int, int, int, int, int)(x0, y0, x1, y1, lit)
 #define menu_drawTexture(x0, y0, x1, y1, tex) GAME_FN(menu_drawTexture, 0x427a90, void, int, int, int, int, int)(x0, y0, x1, y1, tex)
 #define menu_drawTextureFlipped(x0, y0, x1, y1, tex) GAME_FN(menu_drawTextureFlipped, 0x427b60, void, int, int, int, int, int)(x0, y0, x1, y1, tex)
-#define menu_drawCornerOrnaments(x0, y0, x1, y1) GAME_FN(menu_drawCornerOrnaments, 0x428a00, void, int, int, int, int)(x0, y0, x1, y1)
+#define menu_drawCornerOrnaments(x0, y0, x1, y1) GAME_FN(menu_drawCornerOrnaments, 0x428a00, u32, int, int, int, int)(x0, y0, x1, y1)
 #define menu_drawTopRightOrnament(x0, y0, x1) GAME_FN(menu_drawTopRightOrnament, 0x428b50, void, int, int, int)(x0, y0, x1)
 #define g_menuOrnamentTexture (g_menuFrameTextures[0])   /* the panel corner ornaments (texture id, four 128-unit quarters) */
 #define messageBox_keyClose() GAME_FN(messageBox_keyClose, 0x431950, void, void)()
@@ -491,8 +491,8 @@ typedef struct { u32 vtable; void *managers[6]; i32 count; } TextureSets;   /* t
 #define missionsel_drawTunnel() GAME_FN(missionsel_drawTunnel, 0x448140, void, void)()
 #define missionsel_frameSettings() GAME_FN(missionsel_frameSettings, 0x44aa20, void, void)()
 #define missionsel_frameScreen() GAME_FN(missionsel_frameScreen, 0x44aa30, void, void)()
-#define sound_playMenu(id) GAME_FN(sound_playMenu, 0x41e760, void, int)(id)          /* 0 confirm / back, 2 move */
-#define profile_typeNewName() GAME_FN(profile_typeNewName, 0x44b600, void, void)()
+#define sound_playMenu(id) GAME_FN(sound_playMenu, 0x41e760, u32, int)(id)          /* 0 confirm / back, 2 move */
+#define profile_typeNewName() GAME_FN(profile_typeNewName, 0x44b600, u32, void)()
 #define profile_resetCamera() GAME_FN(profile_resetCamera, 0x44bc00, void, void)()
 #define profile_deleteFiles() GAME_FN(profile_deleteFiles, 0x44ba60, void, void)()
 #define profile_selectAndLoad() GAME_FN(profile_selectAndLoad, 0x44b990, void, void)()
@@ -608,7 +608,7 @@ typedef struct { float r, g, b, a; } Colour;
 #define g_hWndMain g_mainWindow
 #define KillTimer(hwnd, id) IMPORT(0x4a9330, int, void *, u32)(hwnd, id)
 /* a rectangle in menu units in g_rectColour, filled or outlined (the patch DLL replaces it: kept original) */
-#define menu_drawRect(x0, y0, x1, y1, filled) GAME_FN(menu_drawRect, 0x427970, void, int, int, int, int, int)(x0, y0, x1, y1, filled)
+#define menu_drawRect(x0, y0, x1, y1, filled) GAME_FN(menu_drawRect, 0x427970, u32, int, int, int, int, int)(x0, y0, x1, y1, filled)
 /* the room's buttons under (x, y): the index of the button hit, or -1 */
 #define leaveDialog_hitTest(x, y) GAME_FN(leaveDialog_hitTest, 0x4321c0, int, int, int)(x, y)
 #define popup_hitTest(x, y) GAME_FN(popup_hitTest, 0x432280, int, int, int)(x, y)
@@ -618,7 +618,7 @@ typedef struct { float r, g, b, a; } Colour;
 #define PostMessageA(hwnd, msg, w, l) IMPORT(0x4a9328, int, void *, u32, u32, u32)(hwnd, msg, w, l)
 #define profile_loadSelectedColours() GAME_FN(profile_loadSelectedColours, 0x44bc50, void, void)()
 #define profile_drawPilotSelect() GAME_FN(profile_drawPilotSelect, 0x44e640, void, void)()
-#define arena_leaveSession() GAME_FN(arena_leaveSession, 0x452fe0, void, void)()
+#define arena_leaveSession() GAME_FN(arena_leaveSession, 0x452fe0, u32, void)()
 /* two-button dialogs: the highlighted choice and its marker */
 /* the profile screen's pages */
 /* the mission-select screen */
@@ -692,11 +692,11 @@ typedef struct { float r, g, b, a; } Colour;
 #define armc_drawColourPage() GAME_FN(armc_drawColourPage, 0x41dfe0, void, void)()
 #define armc_drawThirdPage() GAME_FN(armc_drawThirdPage, 0x41e010, void, void)()
 #define armc_drawWeightLine() GAME_FN(armc_drawWeightLine, 0x41dab0, void, void)()
-#define armc_exit(confirmed) GAME_FN(armc_exit, 0x40f0f0, void, int)(confirmed)   /* leave the screen (menu/armc_misc.c) */
+#define armc_exit(confirmed) GAME_FN(armc_exit, 0x40f0f0, u32, int)(confirmed)   /* leave the screen (menu/armc_misc.c) */
 #define armc_showPartsPage() GAME_FN(armc_showPartsPage, 0x40f200, void, void)()   /* to the parts page */
-#define armc_showColourPage() GAME_FN(armc_showColourPage, 0x40f320, void, void)()   /* to the third page */
-#define armc_drawPartScreen() GAME_FN(armc_drawPartScreen, 0x40f220, void, void)()   /* to the weapons page (menu/armc_items.c) */
-#define armc_backupColours() GAME_FN(armc_backupColours, 0x40f590, void, void)()   /* the colour slot kept for undo (menu/armc_state.c) */
+#define armc_showColourPage() GAME_FN(armc_showColourPage, 0x40f320, u32, void)()   /* to the third page */
+#define armc_drawPartScreen() GAME_FN(armc_drawPartScreen, 0x40f220, u32, void)()   /* to the weapons page (menu/armc_items.c) */
+#define armc_backupColours() GAME_FN(armc_backupColours, 0x40f590, u32, void)()   /* the colour slot kept for undo (menu/armc_state.c) */
 #define armc_stepPart(part, dir) GAME_FN(armc_stepPart, 0x40f340, u32, u32, int)(part, dir)   /* the part in view stepped (menu/armc_parts.c) */
 #define armc_drawPartPanels() GAME_FN(armc_drawPartPanels, 0x41b750, void, void)()
 #define armc_retintParts() GAME_FN(armc_retintParts, 0x41d280, void, void)()
@@ -721,7 +721,7 @@ typedef struct { float r, g, b, a; } Colour;
 #define armc_giveShownActorWeapon(scene, slot) GAME_THISFN(armc_giveShownActorWeapon, 0x461540, void, Scene *, int)(scene, slot)   /* re-equip the preview mech */
 #define armc_pickSlot(slot) GAME_FN(armc_pickSlot, 0x40f870, void, int)(slot)
 #define armc_showCursorItem() GAME_FN(armc_showCursorItem, 0x40f950, void, void)()
-#define armc_takeCursorItem() GAME_FN(armc_takeCursorItem, 0x40f9e0, void, void)()   /* the item slots given to the mech (menu/armc_items.c) */
+#define armc_takeCursorItem() GAME_FN(armc_takeCursorItem, 0x40f9e0, u32, void)()   /* the item slots given to the mech (menu/armc_items.c) */
 #define armc_colourPartEquipped(i) GAME_FN(armc_colourPartEquipped, 0x40f830, int, int)(i)   /* item list entry i is a colour part already in a slot */
 #define armc_initCameraPoints() GAME_FN(armc_initCameraPoints, 0x40e510, void, void)()
 #define armcMain_layout() GAME_FN(armcMain_layout, 0x40e060, void, void)()   /* the part lists made (heads, chests, arms...) */
@@ -746,14 +746,14 @@ typedef struct { float r, g, b, a; } Colour;
 #define armc_saveSelection() GAME_FN(armc_saveSelection, 0x40e7a0, void, void)()       /* keep the mech, save the progress */
 #define armc_sendSelectionToNet() GAME_FN(armc_sendSelectionToNet, 0x40e930, void, void)()
 #define armc_easeCamera() GAME_FN(armc_easeCamera, 0x41b300, void, void)()               /* the camera towards the page's target */
-#define music_play(path) GAME_FN(music_play, 0x457150, void, const char *)(path)
+#define music_play(path) GAME_FN(music_play, 0x457150, u32, const char *)(path)
 
 /* ---- messages ---- */
 #define msg_print(scene, colour, ...) GAME_FN(msg_print, 0x4629f0, void, Scene *, int, const char *, ...)(scene, colour, __VA_ARGS__)   /* a line in the message box (printf) */
 #define sound_playVolume(id, volume) GAME_FN(sound_playVolume, 0x456e50, void, int, int)(id, volume)   /* volume 0..100 */
 
 /* ---- the setup screen (menu/setup_keys.c) ---- */
-#define input_setKeysBlocked(v) GAME_FN(input_setKeysBlocked, 0x441250, void, int)(v)   /* g_keysBlocked = v */
+#define input_setKeysBlocked(v) GAME_FN(input_setKeysBlocked, 0x441250, u32, int)(v)   /* g_keysBlocked = v */
 #define setup_drawTopPage() GAME_FN(setup_drawTopPage, 0x4220c0, void, void)()
 #define setup_drawSoundTab() GAME_FN(setup_drawSoundTab, 0x4221d0, void, void)()
 #define setup_drawGraphicTab() GAME_FN(setup_drawGraphicTab, 0x422480, void, void)()
@@ -783,13 +783,13 @@ typedef struct { float r, g, b, a; } Colour;
 #define tunnel_addRing() GAME_FN(tunnel_addRing, 0x441200, TunnelRing *, void)()   /* one more tunnel ring */
 #define tunnel_removeLastRing(head) GAME_FN(tunnel_removeLastRing, 0x441190, u32, TunnelRing **)(head)   /* the last ring taken off and freed */
 #define crypt_countingKey(p, key) GAME_FN(crypt_countingKey, 0x42b3c0, int, u8 *, u8)(p, key)   /* a 0x4c-byte record decoded (xor key, key + 1, ...) */
-#define cfg_loadAxisCfg() GAME_FN(cfg_loadAxisCfg, 0x42d730, void, void)()
+#define cfg_loadAxisCfg() GAME_FN(cfg_loadAxisCfg, 0x42d730, u32, void)()
 #define setup_drawKeyBindingRows(key) GAME_FN(setup_drawKeyBindingRows, 0x421680, void, int)(key)   /* (by use) the row being bound gets key */
 #define setup_keepKeyBindings() GAME_FN(setup_keepKeyBindings, 0x420c10, void, void)()   /* the default key bindings */
 #define music_shutdown() GAME_FN(music_shutdown, 0x457310, void, void)()
 
 /* ---- devices and sound (app/devices.c, sound/sound_basic.c) ---- */
-#define dsbuf_play(sound) GAME_FN(dsbuf_play, 0x467d70, void, void *)(sound)
+#define dsbuf_play(sound) GAME_FN(dsbuf_play, 0x467d70, u32, void *)(sound)
 #define dsbuf_setVolume(sound, volume) GAME_FN(dsbuf_setVolume, 0x467db0, void, void *, int)(sound, volume)
 #define sound_playNextBuffer(sound, mode, value) GAME_FN(sound_playNextBuffer, 0x467dd0, u32, void *, int, int)(sound, mode, value)   /* played with a pan (mode 1 / 2) */
 #define input_releaseMouse() GAME_FN(input_releaseMouse, 0x401490, void, void)()   /* the mouse let go and released */
@@ -801,20 +801,20 @@ typedef struct { float r, g, b, a; } Colour;
 #define g_progress (*(int *)(g_campaign + 0x104))            /* rounds beaten (missions unlocked) */
 #define armc_enter(tunnel) GAME_FN(armc_enter, 0x441260, void, void *)(tunnel)   /* moves the background tunnel on */
 #define menu_drawBackground3D(tunnel) GAME_FN(menu_drawBackground3D, 0x429d70, void, void *)(tunnel)
-#define mission_chosen(m) GAME_FN(mission_chosen, 0x4479b0, void, int)(m)
+#define mission_chosen(m) GAME_FN(mission_chosen, 0x4479b0, u32, int)(m)
 #define mainmenu_drawMapSelect() GAME_FN(mainmenu_drawMapSelect, 0x4434f0, void, void)()
 #define mapSelect_drawNames() GAME_FN(mapSelect_drawNames, 0x442d10, u32, void)()   /* the map-select dialog's list */
 #define menu_mainMenu() GAME_FN(menu_mainMenu, 0x442050, void, void)()
 #define mapSelect_drawDialog() GAME_FN(mapSelect_drawDialog, 0x442e10, void, void)()
-#define menu_drawDimOverlay() GAME_FN(menu_drawDimOverlay, 0x40ce70, void, void)()
+#define menu_drawDimOverlay() GAME_FN(menu_drawDimOverlay, 0x40ce70, u32, void)()
 #define skirmish_saveSettings() GAME_FN(skirmish_saveSettings, 0x443e20, void, void)()
 #define skirmish_settingsArrowClick() GAME_FN(skirmish_settingsArrowClick, 0x443ea0, void, void)()
 #define skirmish_processKeys() GAME_FN(skirmish_processKeys, 0x443f20, void, void)()
 #define skirmish_settingsKeys() GAME_FN(skirmish_settingsKeys, 0x444070, void, void)()
 #define briefing_clickClose() GAME_FN(briefing_clickClose, 0x447af0, void, void)()
 #define missionsel_clicks() GAME_FN(missionsel_clicks, 0x447a50, void, void)()
-#define mission_choose() GAME_FN(mission_choose, 0x4479d0, void, void)()
-#define missionSettings_leave() GAME_FN(missionSettings_leave, 0x447960, void, void)()
+#define mission_choose() GAME_FN(mission_choose, 0x4479d0, u32, void)()
+#define missionSettings_leave() GAME_FN(missionSettings_leave, 0x447960, u32, void)()
 #define briefing_keys() GAME_FN(briefing_keys, 0x447c30, void, void)()
 #define missionList_keys() GAME_FN(missionList_keys, 0x447b40, void, void)()
 
@@ -836,7 +836,7 @@ typedef struct { float r, g, b, a; } Colour;
 #define data_loadPilotProfiles() GAME_FN(data_loadPilotProfiles, 0x42b590, void, void)()
 #define menu_drawLine(x0, y0, x1, y1) GAME_FN(menu_drawLine, 0x427a40, void, int, int, int, int)(x0, y0, x1, y1)   /* a line in the menu colour */
 #define timer_waitFrames(frames) GAME_FN(timer_waitFrames, 0x41e730, void, double)(frames)   /* wait frames 1/60 s (app/timer.c) */
-#define frontEnd_drawProgress() GAME_FN(frontEnd_drawProgress, 0x41f100, void, void)()   /* the loading picture at the next step (0x4dda34) */
+#define frontEnd_drawProgress() GAME_FN(frontEnd_drawProgress, 0x41f100, u32, void)()   /* the loading picture at the next step (0x4dda34) */
 #define tunnel_rebuild() GAME_FN(tunnel_rebuild, 0x4411e0, void, void)()
 #define frontEnd_startUp() GAME_FN(frontEnd_startUp, 0x430bf0, void, void)()
 #define menu_loadIntroTextures() GAME_FN(menu_loadIntroTextures, 0x430ca0, void, void)()
@@ -855,9 +855,9 @@ typedef struct { float r, g, b, a; } Colour;
 #define mapList_hitTest(x, y) GAME_FN(mapList_hitTest, 0x4033e0, int, int, int)(x, y)   /* the arena map list's control at (x, y) */
 #define mapList_toggle(i) GAME_FN(mapList_toggle, 0x403560, void, int)(i)     /* the arena list: map i in or out */
 #define mapList_stepGameType(i) GAME_FN(mapList_stepGameType, 0x403590, void, int)(i)     /* map i's game type stepped */
-#define mapList_chooseNone() GAME_FN(mapList_chooseNone, 0x403530, void, void)()      /* no map chosen */
-#define mapList_chooseAll() GAME_FN(mapList_chooseAll, 0x4034e0, void, void)()      /* every map chosen */
-#define mapList_ok() GAME_FN(mapList_ok, 0x403640, void, void)()      /* the list kept */
+#define mapList_chooseNone() GAME_FN(mapList_chooseNone, 0x403530, u32, void)()      /* no map chosen */
+#define mapList_chooseAll() GAME_FN(mapList_chooseAll, 0x4034e0, u32, void)()      /* every map chosen */
+#define mapList_ok() GAME_FN(mapList_ok, 0x403640, u32, void)()      /* the list kept */
 #define mapSelect_allOut() GAME_FN(mapSelect_allOut, 0x440df0, void, void)()   /* and out */
 #define mapSelect_ok() GAME_FN(mapSelect_ok, 0x441770, void, void)()   /* the map-select dialog's OK */
 #define net_addPlayerRecord(reply) GAME_FN(net_addPlayerRecord, 0x452de0, void, void *)(reply)   /* the server's accept reply handled */
@@ -1054,7 +1054,7 @@ typedef struct { float r, g, b, a; } Colour;
 #define space_disableUnit(unit) GAME_THISFN(space_disableUnit, 0x480460, void, void *)(unit)
 #define space_enableUnit(unit) GAME_THISFN(space_enableUnit, 0x480480, void, void *)(unit)
 #define tex_markMaterialChanged(self, m) GAME_THISFN(tex_markMaterialChanged, 0x456820, void, void *, int)(self, m)   /* material m marked changed */
-#define profile_resetPreview() GAME_FN(profile_resetPreview, 0x44b7a0, void, void)()
+#define profile_resetPreview() GAME_FN(profile_resetPreview, 0x44b7a0, u32, void)()
 #define ptx_initClampTable() GAME_FN(ptx_initClampTable, 0x46e320, void, void)()
 #define ptx_initYCbCrTables() GAME_FN(ptx_initYCbCrTables, 0x46efd0, void, void)()
 #define ptx_initDequantTables(q) GAME_FN(ptx_initDequantTables, 0x46e2b0, void, int)(q)
@@ -1125,8 +1125,8 @@ typedef struct { float r, g, b, a; } Colour;
 #define model_clearTint(model) GAME_THISFN(model_clearTint, 0x4675f0, void, void *)(model)   /* the model's shapes' own colours back */
 #define script_reset(stage) GAME_THISFN(script_reset, 0x48fca0, int, Stage *)(stage)
 #define briefing_hitTest(x, y) GAME_FN(briefing_hitTest, 0x443910, int, int, int)(x, y)   /* which skirmish settings arrow is at (x, y) */
-#define undo_push() GAME_FN(undo_push, 0x443d80, void, void)()   /* skirmish settings: the pending step pushed */
-#define undo_pop() GAME_FN(undo_pop, 0x443de0, void, void)()   /* one step undone */
+#define undo_push() GAME_FN(undo_push, 0x443d80, u32, void)()   /* skirmish settings: the pending step pushed */
+#define undo_pop() GAME_FN(undo_pop, 0x443de0, u32, void)()   /* one step undone */
 
 /* ---- the lobby's and room's screens (menu/lobby_states.c) ---- */
 #define arena_copyProfile() GAME_FN(arena_copyProfile, 0x404930, void, void)()   /* the player's record from the profile */
@@ -1174,8 +1174,8 @@ typedef struct { float r, g, b, a; } Colour;
 
 #define room_copyJoinedSettings() GAME_FN(room_copyJoinedSettings, 0x432be0, void, void)()   /* the joined game's settings into the room screen */
 #define room_takeReceivedSettings() GAME_FN(room_takeReceivedSettings, 0x432db0, void, void)()   /* a received game's settings into the room */
-#define field_editGameName() GAME_FN(field_editGameName, 0x433b00, void, void)()   /* the game's name opened for typing */
-#define field_editGamePassword() GAME_FN(field_editGamePassword, 0x433bb0, void, void)()   /* the game's password opened for typing */
+#define field_editGameName() GAME_FN(field_editGameName, 0x433b00, u32, void)()   /* the game's name opened for typing */
+#define field_editGamePassword() GAME_FN(field_editGamePassword, 0x433bb0, u32, void)()   /* the game's password opened for typing */
 #define chat_closeEdit() GAME_FN(chat_closeEdit, 0x433c70, void, void)()   /* the chat edit control closed, the line taken */
 #define login_send() GAME_FN(login_send, 0x434490, void, void)()   /* the login sent */
 #define loginForm_openField(k) GAME_FN(loginForm_openField, 0x433e60, int, int)(k)   /* the login form's field k opened for typing */
@@ -1187,17 +1187,17 @@ typedef struct { float r, g, b, a; } Colour;
 #define room_startChat() GAME_FN(room_startChat, 0x434da0, void, void)()   /* the selected game joined */
 #define gameList_open() GAME_FN(gameList_open, 0x434d00, int, void)()    /* the search asked for: 1 sent */
 #define createDialog_hitTest(x, y) GAME_FN(createDialog_hitTest, 0x432200, int, int, int)(x, y)   /* the create-game dialog's button at (x, y) */
-#define room_openDialog4d() GAME_FN(room_openDialog4d, 0x4338c0, void, void)()
+#define room_openDialog4d() GAME_FN(room_openDialog4d, 0x4338c0, u32, void)()
 #define dplay_host(name, player, map, a, b, c, d, corp) GAME_FN(dplay_host, 0x453090, int, const void *, const char *, int, int, int, int, int, int)(name, player, map, a, b, c, d, corp)   /* the arena hosted: 0 failed */
 #define net_asyncSelect(hwnd, socket) GAME_FN(net_asyncSelect, 0x452170, int, void *, int)(hwnd, socket)
 #define lobby_keepArenaSettings() GAME_FN(lobby_keepArenaSettings, 0x405140, u32, void)()   /* the arena's settings kept (0x4db528 into 0x4ded20) */
 #define room_keepSettings() GAME_FN(room_keepSettings, 0x433640, u32, void)()    /* the room's settings kept (0x4df9c8 into 0x5b1b30) */
 #define arena_drawTunnel() GAME_FN(arena_drawTunnel, 0x4091b0, void, void)()   /* the arena's tunnel */
-#define dplay_listSessions() GAME_FN(dplay_listSessions, 0x453260, void, void)()   /* DirectPlay's session list polled */
+#define dplay_listSessions() GAME_FN(dplay_listSessions, 0x453260, u32, void)()   /* DirectPlay's session list polled */
 #define arenaList_rebuild() GAME_FN(arenaList_rebuild, 0x406810, void, void)()
 #define arena_mergeReceivedSessions() GAME_FN(arena_mergeReceivedSessions, 0x406640, void, void)()   /* the list of games asked for again */
 #define arena_drawGameList() GAME_FN(arena_drawGameList, 0x40a070, void, void)()   /* the arena's list of games drawn */
-#define arena_joinListed(i) GAME_FN(arena_joinListed, 0x406200, void, int)(i)   /* game i joined (99999: the one typed) */
+#define arena_joinListed(i) GAME_FN(arena_joinListed, 0x406200, u32, int)(i)   /* game i joined (99999: the one typed) */
 #define arena_joinSession(i) GAME_FN(arena_joinSession, 0x405690, u32, int)(i)   /* session i joined */
 #define sys_checkClockTampering() GAME_FN(sys_checkClockTampering, 0x43f300, void, void)()
 #define glWindow_init(title, w, h, bits, depth, full, hwnd, flag) GAME_FN(glWindow_init, 0x468250, void, const char *, int, int, int, int, int, void *, int)(title, w, h, bits, depth, full, hwnd, flag)
@@ -1217,8 +1217,8 @@ typedef struct { float r, g, b, a; } Colour;
 #define arenaGameList_hitTest(x, y) GAME_FN(arenaGameList_hitTest, 0x4044a0, int, int, int)(x, y)   /* the arena lobby's button under (x, y), -1 none */
 #define arena_chatLine() GAME_FN(arena_chatLine, 0x405200, void, void)()   /* the arena screen's chat line opened */
 #define arena_editTitle() GAME_FN(arena_editTitle, 0x405230, void, void)()   /* the arena title's edit field opened */
-#define menu_showMessage(i) GAME_FN(menu_showMessage, 0x41ee40, void, int)(i)   /* message i in the message box */
-#define reg_writeCharacterSettings() GAME_FN(reg_writeCharacterSettings, 0x432400, void, void)()
+#define menu_showMessage(i) GAME_FN(menu_showMessage, 0x41ee40, u32, int)(i)   /* message i in the message box */
+#define reg_writeCharacterSettings() GAME_FN(reg_writeCharacterSettings, 0x432400, u32, void)()
 
 /* ---- the screens' set-ups (menu/screen_enter.c): rectangle builders and resets ---- */
 #define arena_clearChatRecord() GAME_FN(arena_clearChatRecord, 0x4045e0, void, void)()

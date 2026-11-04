@@ -935,7 +935,7 @@ u32 (net_handleMessage)(const u8 *message, u32 size, u32 from)
 	case 2:
 		(*(u32 *)&g_netHostGone) = *(const u32 *)(RELOC(message) + 4);
 		net_freeSessionList();
-		return GAME_FN(net_freeAllSlots, 0x4515a0, u32, void)();
+		return net_freeAllSlots();
 	case 6:
 		net_takePlayerSlot(slot, (*(int *)&g_localPlayerId));
 		player->used = 1;

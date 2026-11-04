@@ -710,7 +710,7 @@ u32 (armc_saveSelection)(void)
 	memcpy((void *)ADDR(g_savedMechParts), (const void *)OBJ(g_armcParts), 5 * 4);
 	memcpy((void *)ADDR(g_savedMechWeapons), (const void *)ADDR(g_itemSlot4), 6 * 4);
 	armc_resetSeraphimParts();
-	return GAME_FN(profile_saveProgress, 0x447010, u32, void)();   /* profile_saveProgress */
+	return profile_saveProgress();   /* profile_saveProgress */
 }
 
 /* 0x40e930: the selection sent to the others in the room: the colour choices (0x90 bytes from 0x4dc4b8, through the
@@ -761,20 +761,20 @@ u32 (armc_mainPageClicks)(void)
 		if (g_armcMode == 2)
 			return 2;
 		sound_playMenu(2);
-		return GAME_FN(armc_drawPartScreen, 0x40f220, u32, void)();
+		return armc_drawPartScreen();
 	case 2:
 		if (g_armcMode == 3)
 			return 1;
 		sound_playMenu(2);
-		return GAME_FN(armc_showColourPage, 0x40f320, u32, void)();
+		return armc_showColourPage();
 	case 3: case 4:
 		sound_playMenu(0);
-		return GAME_FN(armc_exit, 0x40f0f0, u32, int)(button == 3);
+		return armc_exit(button == 3);
 	case 6: case 7: case 8: case 9: case 10: case 11:
 		if (view == (int)button - 6)
 			return button == 7 || button == 11 ? button - 1 : button - 6;
 		{
-			u32 r = GAME_FN(sound_playMenu, 0x41e760, u32, int)(2);
+			u32 r = sound_playMenu(2);
 			g_armcPartSlot = button - 6;
 			g_armcZoom = 1.0f;
 			return r;
@@ -813,13 +813,13 @@ u32 (armc_colourScreenInput)(void)
 		return GAME_CDECL(page[button], u32, void)();
 	case 3: case 4:
 		sound_playMenu(2);
-		return GAME_FN(armc_exit, 0x40f0f0, u32, int)(button == 3);
+		return armc_exit(button == 3);
 	case 5: case 6: case 7: case 8: case 9: case 10:
 		if ((*(u32 *)&g_armcColourSlot) == button - 5)
 			return button - 5;
-		r = GAME_FN(sound_playMenu, 0x41e760, u32, int)(2);
+		r = sound_playMenu(2);
 		(*(u32 *)&g_armcColourSlot) = button - 5;
-		return button == 10 ? GAME_FN(armc_backupColours, 0x40f590, u32, void)() : r;
+		return button == 10 ? armc_backupColours() : r;
 	case 11: case 12: case 13: case 14: case 15: case 16:
 		return GAME_CDECL(control[button - 11], u32, void)();
 	case 17:

@@ -145,7 +145,7 @@ u32 (frontEnd_startUp)(void)
 	u32 r = 0;
 	for (int k = 0; ; k++) {
 		g_loadStep++;
-		r = GAME_FN(frontEnd_drawProgress, 0x41f100, u32, void)();   /* frontEnd_drawProgress: the progress drawn */
+		r = frontEnd_drawProgress();   /* frontEnd_drawProgress: the progress drawn */
 		if (k == 5)
 			break;
 		timer_waitFrames(2.0);   /* timer_waitFrames: wait */
