@@ -299,11 +299,11 @@ void THISCALL (space_resetUnits)(u8 *self)
 		spaceSlot_clear((int *)(sp->units.records + i * 0x14));
 	for (int i = 1; i < sp->units.count; i++) {
 		u8 *e = sp->units.records + i * 0x14;
-		FIELD(u8 *, e, 0xc) = e - 0x14;
+		((SpaceUnit *)e)->poolPrev = e - 0x14;
 	}
 	for (int i = 0; i < sp->units.count - 1; i++) {
 		u8 *e = sp->units.records + i * 0x14;
-		FIELD(u8 *, e, 0x10) = e + 0x14;
+		((SpaceUnit *)e)->poolNext = e + 0x14;
 	}
 	sp->units.used = 0;
 	sp->units.freeHead = sp->units.records;
@@ -717,20 +717,20 @@ int (sys_checkClockTampering)(void)
 	return 1;
 }
 
-/* 0x48fd50 (thiscall on the scene): with a recording on (+0x2149308): the recorder (+0x2148ed8) opened when it is not
-   yet (+0x2148ee0; recorder_openStub with +0x2149208 and 0x4c45e4) and the path given to it (recorder_setPathStub; failing, the
-   recording off); with a name for it (+0x2149108) a sound played (the name formatted by 0x4c8304) at volume 100.
+/* 0x48fd50 (thiscall on the scene): with a recording on (scriptMode): the scene-path player opened when it is not
+   yet (recorder_openStub with scriptName and "Scene") and the path given to it (recorder_setPathStub; failing, the
+   recording off); with a sound named for it (pathSound) the sound played ("scenePath\\<name>") at volume 100.
    Its caller ignores the eax it leaves */
 void THISCALL (scene_loadPath)(u8 *scene, u32 path)
 {
 	Stage *st = (Stage *)scene;
 	if (!st->scriptMode)
 		return;
-	if (!GAME_VAR(int, scene + 0x2148ee0))
-		recorder_openStub(scene + 0x2148ed8, scene + 0x2149208, (const void *)STR(0x4c45e4, "Scene"));
-	if (!recorder_setPathStub(scene + 0x2148ed8, path))
+	if (!st->scenePath.opened)
+		recorder_openStub((u8 *)&st->scenePath, st->scriptName, (const void *)STR(0x4c45e4, "Scene"));
+	if (!recorder_setPathStub((u8 *)&st->scenePath, path))
 		st->scriptMode = 0;
-	const char *name = (const char *)(scene + 0x2149108);
+	const char *name = st->pathSound;
 	if (*name) {
 		char text[0x100];
 		sprintf(text, (const char *)STR(0x4c8304, "scenePath\\%s"), name);

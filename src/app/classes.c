@@ -275,7 +275,7 @@ u32 THISCALL (Stage_dtor)(u8 *self)
 {
 	Stage *stage = (Stage *)self;
 	*(u32 *)self = STR(0x4aa23c, "08F");   /* the vtable */
-	Scene_dtor(self + 0x2148ed8);
+	Scene_dtor((u8 *)&stage->scenePath);
 	eh_vector_destructor((u8 *)stage->actors, 0x8888, 100, FN_ADDR(actor_destroyPartLists, 0x45ff30));
 	SkeletonManager_dtor((u8 *)&stage->partSkeletons);   /* SkeletonManager_dtor */
 	GAME_THISFN(ShapeManager_dtor, 0x466a10, void, void *)((u8 *)&stage->partShapes);   /* ShapeManager_dtor */
@@ -533,7 +533,7 @@ u8 *THISCALL (game_loadAllData)(u8 *g)
 	VECTOR((u8 *)st->starts, 0x14, 0x20);
 	VECTOR((u8 *)st->items, 0x28, 0xc8);
 	VECTOR((u8 *)st->emblemAtlas, 4, 0x2000);
-	Scene_ctor(s + 0x2148ed8);   /* Scene_ctor */
+	Scene_ctor((u8 *)&st->scenePath);   /* Scene_ctor */
 	VTABLE(s, STR(0x4aa23c, "08F"));
 	GAME_VAR(int, s + 4) = 0;
 	VTABLE(g, VT(Console, 0x4aa238));

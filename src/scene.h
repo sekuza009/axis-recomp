@@ -1037,6 +1037,13 @@ typedef struct ParticleDesc {
 	float quadPoints[4][3];   /* +0x4c */
 } ParticleDesc;
 
+/* (by use) the stage's scene-path player (Stage.scenePath: Scene_ctor / Scene_dtor, recorder_openStub / recorder_setPathStub) */
+typedef struct ScenePath {
+	u8 _pad0000000[0x8];
+	i32 opened;   /* +0x8: 1: opened (recorder_openStub) */
+	u8 _pad000000c[0x224];
+} ScenePath;
+
 /* the stage: the scene's own object at Scene + 0x1f36c8 (STAGE()), "this" of the */
 typedef struct Stage {
 	u8 _pad0000000[0x4];
@@ -1224,7 +1231,8 @@ typedef struct Stage {
 	i32 scriptEvents[32][5];   /* +0x2148c50: (by use) the script's event ring (script_pushEvent: a, b, c, d, d) */
 	i32 eventHead;   /* +0x2148ed0: events pushed (the ring's next: % 32) */
 	i32 eventTail;   /* +0x2148ed4: the oldest kept (moved on when the ring is full) */
-	u8 _pad2148ed8[0x330];
+	ScenePath scenePath;   /* +0x2148ed8: (by use) the scene-path player (a recording on: scene_loadPath) */
+	char pathSound[0x100];   /* +0x2149108: (by use) a sound played with each path (scenePath\\<name>; empty: none) */
 	char scriptName[0x100];   /* +0x2149208: (by use) the .scp file running (script_runScpFile) */
 	i32 scriptMode;   /* +0x2149308: its mode (0 .. 2; with scriptRunning 1, mode 1 stops the actors and clocks) */
 	i32 scriptRunning;   /* +0x214930c */
@@ -2380,6 +2388,8 @@ _Static_assert(offsetof(ParticleDesc, isQuad) == 0x30 && sizeof(((ParticleDesc *
 _Static_assert(offsetof(ParticleDesc, quad) == 0x34 && sizeof(((ParticleDesc *)0)->quad) == 0x18, "scene.fields: ParticleDesc.quad");
 _Static_assert(offsetof(ParticleDesc, quadPoints) == 0x4c && sizeof(((ParticleDesc *)0)->quadPoints) == 0x30, "scene.fields: ParticleDesc.quadPoints");
 _Static_assert(sizeof(ParticleDesc) == 0x7c, "scene.fields: size of ParticleDesc");
+_Static_assert(offsetof(ScenePath, opened) == 0x8 && sizeof(((ScenePath *)0)->opened) == 0x4, "scene.fields: ScenePath.opened");
+_Static_assert(sizeof(ScenePath) == 0x230, "scene.fields: size of ScenePath");
 _Static_assert(offsetof(Stage, built) == 0x4 && sizeof(((Stage *)0)->built) == 0x4, "scene.fields: Stage.built");
 _Static_assert(offsetof(Stage, stageDir) == 0x8 && sizeof(((Stage *)0)->stageDir) == 0x100, "scene.fields: Stage.stageDir");
 _Static_assert(offsetof(Stage, mapDir) == 0x108 && sizeof(((Stage *)0)->mapDir) == 0x100, "scene.fields: Stage.mapDir");
@@ -2556,6 +2566,8 @@ _Static_assert(offsetof(Stage, clanTexture) == 0x2104fe4 && sizeof(((Stage *)0)-
 _Static_assert(offsetof(Stage, scriptEvents) == 0x2148c50 && sizeof(((Stage *)0)->scriptEvents) == 0x280, "scene.fields: Stage.scriptEvents");
 _Static_assert(offsetof(Stage, eventHead) == 0x2148ed0 && sizeof(((Stage *)0)->eventHead) == 0x4, "scene.fields: Stage.eventHead");
 _Static_assert(offsetof(Stage, eventTail) == 0x2148ed4 && sizeof(((Stage *)0)->eventTail) == 0x4, "scene.fields: Stage.eventTail");
+_Static_assert(offsetof(Stage, scenePath) == 0x2148ed8 && sizeof(((Stage *)0)->scenePath) == 0x230, "scene.fields: Stage.scenePath");
+_Static_assert(offsetof(Stage, pathSound) == 0x2149108 && sizeof(((Stage *)0)->pathSound) == 0x100, "scene.fields: Stage.pathSound");
 _Static_assert(offsetof(Stage, scriptName) == 0x2149208 && sizeof(((Stage *)0)->scriptName) == 0x100, "scene.fields: Stage.scriptName");
 _Static_assert(offsetof(Stage, scriptMode) == 0x2149308 && sizeof(((Stage *)0)->scriptMode) == 0x4, "scene.fields: Stage.scriptMode");
 _Static_assert(offsetof(Stage, scriptRunning) == 0x214930c && sizeof(((Stage *)0)->scriptRunning) == 0x4, "scene.fields: Stage.scriptRunning");

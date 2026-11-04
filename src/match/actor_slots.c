@@ -122,7 +122,7 @@ int THISCALL (script_notifyObject)(Stage *stage, int a, int b, int c, int d)
 {
 	if (!stage->scriptMode)
 		return 0;
-	recorder_noteStub((u8 *)stage + 0x2148ed8, a, b, c, d);
+	recorder_noteStub((u8 *)&stage->scenePath, a, b, c, d);
 	return b;
 }
 
