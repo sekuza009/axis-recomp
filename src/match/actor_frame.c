@@ -1037,7 +1037,7 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 					}
 					FiredRound *rec = &AC->rounds[k];
 					rec->received = 0;
-					rec->weapon = ((PlayerRecord *)player)->items[AC->slot];
+					rec->weapon = pr->items[AC->slot];
 					memcpy(rec->from, shot_at, 12);
 					rec->hitPlane = -1;
 					memcpy(rec->dir, shot_dir, 12);
@@ -1090,7 +1090,7 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 				shot_at[2] = f32(((fmul_m(x, &q[2]) + fmul_m(z, &q[10])) + fmul_m(y, &q[6])) + q[14]);
 				FiredRound *rec = &AC->rounds[k];
 				rec->received = 1;
-				rec->weapon = ((PlayerRecord *)player)->items[AC->slot];
+				rec->weapon = pr->items[AC->slot];
 				memcpy(rec->from, shot_at, 12);
 				rec->hitPlane = f[2];
 				memcpy(rec->dir, f + 4, 12);

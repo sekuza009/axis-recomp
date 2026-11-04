@@ -312,7 +312,7 @@ void THISCALL (camera_setupView)(u8 *s, const float *pos, const float *dir, cons
 		AC->detail = tag_narrow(ac, OBJ(k_30f));
 		u8 *me = (u8 *)&ST->actors[ST->playerActor];
 		Player *act = (Player *)me;
-		if ((((u32)AC->timerFlags) & 0x200) && AC->hackingLevel >= ((Player *)me)->hackingLevel) {
+		if ((((u32)AC->timerFlags) & 0x200) && AC->hackingLevel >= act->hackingLevel) {
 			AC->lockedOn = 0.0f;
 			AC->onScreen = 1;
 			continue;

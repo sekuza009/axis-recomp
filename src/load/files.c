@@ -1378,7 +1378,7 @@ void THISCALL (autoplay_startRecording)(u8 *s, const char *name)
 	Scene *sc = (Scene *)s;
 	char *kept = sc->recordName, path[0x100];
 	if (sc->recording == 1)
-		replay_closeRecording((Scene *)s);
+		replay_closeRecording(sc);
 	if (name) {
 		strcpy(kept, name);
 		sprintf(path, (const char *)STR(0x4c7cc8, "AutoPlay\\%s.ape"), kept);

@@ -227,7 +227,7 @@ void THISCALL (light_computeLayerLightBy)(u8 *scene, u8 *layer, u8 *cols, int fi
 {
 	GroundLayer *gl = (GroundLayer *)layer;
 	if (gl->kind == 2) {
-		memset(((void *)((GroundLayer *)layer)->colours), 0xff, (gl->cols + 1) * (gl->rows + 1) * 4);
+		memset(((void *)(gl)->colours), 0xff, (gl->cols + 1) * (gl->rows + 1) * 4);
 		if (gl->lit == 1)
 			memset(gl->boxColours, 0xff, 12 * 4);
 		return;
@@ -247,7 +247,7 @@ void THISCALL (light_computeLayerLightBy)(u8 *scene, u8 *layer, u8 *cols, int fi
 		for (int row = r0; row <= r1; row++)
 			for (int col = c0; col <= c1; col++) {
 				int v = (gl->cols + 1) * row + col;
-				const float *n = ((const float *)((GroundLayer *)layer)->normals) + v * 3;
+				const float *n = ((const float *)(gl)->normals) + v * 3;
 				int i = light_level(MUL(&n[1], &dir[1]) + MUL(&n[2], &dir[2]) + MUL(&dir[0], &n[0]));
 				light_mix(cols + v * 4, light, i, first == 1 ? NULL : cols + v * 4);
 			}
@@ -312,7 +312,7 @@ void THISCALL (render_processRenderingBy)(u8 *s, void *view, float h)
 		ShapePart *part = (ShapePart *)(st->layerModel.parts + i * 0x80);
 		u8 *water = st->layerBoxModel.parts + i * 0x80;
 		ShapePart *sp = (ShapePart *)water;
-		const float *size = &((GroundLayer *)layer)->cellSize, *origin = (const float *)(layer + 4);
+		const float *size = &gl->cellSize, *origin = (const float *)(layer + 4);
 		int c0 = !(origin[0] >= min_x) ? ftol(fdiv_m(fsub_m(fld_m(&min_x), &origin[0]), size)) : 0;
 		int r0 = !(origin[2] >= min_z) ? ftol(fdiv_m(fsub_m(fld_m(&min_z), &origin[2]), size)) : 0;
 		int cols = gl->cols, rows = gl->rows;
@@ -320,7 +320,7 @@ void THISCALL (render_processRenderingBy)(u8 *s, void *view, float h)
 		int c1 = (e > max_x ? cols - ftol(fdiv_m(fsub_m(e, &max_x), size)) : cols) - 1;
 		e = fadd_m(fmul_m((long double)rows, size), &origin[0]);   /* (the x origin: the original's slip) */
 		int r1 = (e > max_z ? rows - ftol(fdiv_m(fsub_m(e, &max_z), size)) : rows) - 1;
-		BITS(part->colours) = BITS(((GroundLayer *)layer)->colours);
+		BITS(part->colours) = BITS(gl->colours);
 		int w = gl->cols + 1;
 		gl->indexCount = 0;
 		gl->stripCount = 0;
@@ -338,7 +338,7 @@ void THISCALL (render_processRenderingBy)(u8 *s, void *view, float h)
 						n = 0;
 						prim[0] = 5;
 						prim[1] = 0;
-						prim[2] = (u32)(((u8 *)((GroundLayer *)layer)->indices) + gl->indexCount * 4);
+						prim[2] = (u32)(((u8 *)(gl)->indices) + gl->indexCount * 4);
 					}
 					strip_pair(layer, (u32 *)RELOC(prim[2]), &n, r, c, w);
 				} else if (open) {
@@ -362,7 +362,7 @@ void THISCALL (render_processRenderingBy)(u8 *s, void *view, float h)
 			for (int angle = 0, at = 0, tex_at = 0; angle < 3600; angle += 900, at += 0xc, tex_at += 8) {
 				float v[3];
 				v[0] = f32(-fld_m(range));
-				v[1] = f32(fld_m(&((GroundLayer *)layer)->origin[1]));
+				v[1] = f32(fld_m(&gl->origin[1]));
 				v[2] = v[0];
 				water_point(s, layer, water, at, tex_at, v, angle);
 			}
@@ -371,7 +371,7 @@ void THISCALL (render_processRenderingBy)(u8 *s, void *view, float h)
 		memcpy(&out, &r2, 4);
 		for (int k = 0, angle = 0; k < 8; k++, angle += 450) {
 			float v[3];
-			v[1] = f32(fld_m(&((GroundLayer *)layer)->origin[1]));
+			v[1] = f32(fld_m(&gl->origin[1]));
 			GAME_VAR(int, &v[0]) = 0;
 			GAME_VAR(u32, &v[2]) = out;
 			water_point(s, layer, water, 0x30 + k * 0xc, 0x20 + k * 8, v, angle);

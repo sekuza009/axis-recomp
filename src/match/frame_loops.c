@@ -193,9 +193,9 @@ void THISCALL (sound_updateListener)(u8 *s)
 		me->deathsCounted = me->deaths;
 		me->startPoints = me->score;
 	}
-	if (!((Scene *)s)->roundOver)
+	if (!sc->roundOver)
 		room_keepText();
-	BITS(((Scene *)s)->emblemTime) = 0x43960000;   /* 300.0f */
+	BITS(sc->emblemTime) = 0x43960000;   /* 300.0f */
 }
 
 /* 0x48ec20 (thiscall on the scene): the effects' shapes looked up in the shape cache (+0x19e188c): three sets of eight

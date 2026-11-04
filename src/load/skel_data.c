@@ -39,13 +39,13 @@ void THISCALL (skel_loadFromFile)(u8 *self, void *f, void *mem, int size)
 	for (int i = 0; i < sko->boneCount; i++) {
 		u8 *bone = sko->bones + i * 0x70;
 		Bone *bn = (Bone *)bone;
-		((Bone *)bone)->posKeys = sko->block + at;
+		bn->posKeys = sko->block + at;
 		u32 keys = ((u32)bn->posKeyCount);
 		at += keys * 0x20;
-		((Bone *)bone)->rotKeys = sko->block + at;
+		bn->rotKeys = sko->block + at;
 		at += bn->rotKeyCount * 0x28;
-		crt_fread((*(void * *)&((Bone *)bone)->posKeys), 0x20, keys, f);
-		crt_fread((*(void * *)&((Bone *)bone)->rotKeys), 0x28, ((u32)bn->rotKeyCount), f);
+		crt_fread((*(void * *)&bn->posKeys), 0x20, keys, f);
+		crt_fread((*(void * *)&bn->rotKeys), 0x28, ((u32)bn->rotKeyCount), f);
 	}
 }
 
@@ -296,7 +296,7 @@ void THISCALL (skel_applyPose)(u8 *sk, u32 *out, int bone, float t)
 		long double f = length > 0 ? (long double)(frame - ((int *)key)[0]) / length : fld_m((const float *)ADDR(k_0f));
 		glTranslatef(fadd_m(fmul_m(f, &key[5]), &key[2]), fadd_m(fmul_m(f, &key[6]), &key[3]), fadd_m(fmul_m(f, &key[7]), &key[4]));
 	} else
-		glTranslatef_bits(BITS(((Bone *)b)->pos[0]), BITS(((Bone *)b)->pos[1]), BITS(((Bone *)b)->pos[2]));
+		glTranslatef_bits(BITS(bn->pos[0]), BITS(bn->pos[1]), BITS(bn->pos[2]));
 	if (bn->rotKeyCount > 0) {
 		RotKey *key = (RotKey *)key_at(bn->rotKeys, bn->rotKeyCount, 0x28, &frame);
 		int length = key->length;
@@ -613,32 +613,32 @@ void THISCALL (skel_loadAseFrom)(u8 *sk, void *f, u8 *mem, int memSize)
 	Skeleton *sko = (Skeleton *)sk;
 	char line[0x100], parent[0x40];
 	Skeleton_release(sk);
-	sko->boneCount = ((Skeleton *)sk)->rotKeyTotal = ((Skeleton *)sk)->posKeyTotal = 0;
+	sko->boneCount = sko->rotKeyTotal = sko->posKeyTotal = 0;
 	while (crt_fgets(line, 0x100, f)) {
 		const char *t = crt_strtok(line, (const char *)STR(0x4c5498, "* \t"));
 		if (!strcmp(t, (const char *)STR(0x4c548c, "GEOMOBJECT")))
 			sko->boneCount++;
 		else if (!strcmp(t, (const char *)STR(0x4c5478, "CONTROL_TCB_POS_KEY")) || !strcmp(t, (const char *)STR(0x4c5460, "CONTROL_BEZIER_POS_KEY")))
-			((Skeleton *)sk)->posKeyTotal++;
+			sko->posKeyTotal++;
 		else if (!strcmp(t, (const char *)STR(0x4c544c, "CONTROL_TCB_ROT_KEY")))
-			((Skeleton *)sk)->rotKeyTotal++;
+			sko->rotKeyTotal++;
 	}
 	int bones = sko->boneCount;
 	if (bones <= 0)
 		return;
-	int size = sko->blockSize = bones * 0x70 + ((Skeleton *)sk)->rotKeyTotal * 0x28 + ((Skeleton *)sk)->posKeyTotal * 0x20;
+	int size = sko->blockSize = bones * 0x70 + sko->rotKeyTotal * 0x28 + sko->posKeyTotal * 0x20;
 	if (!mem) {
-		(*(void * *)&((Skeleton *)sk)->block) = operator_new(size);
-		if (!(*(void * *)&((Skeleton *)sk)->block))
+		(*(void * *)&sko->block) = operator_new(size);
+		if (!(*(void * *)&sko->block))
 			sys_fatalError((char *)OBJ(g_logSkeleton), (const char *)STR(0x4c4bec, "insufficient memory for dataMemory(%d..."), sko->blockSize);
 		sko->ownsBlock = 1;
 	} else {
 		if (memSize < size)
 			sys_fatalErrorN((char *)OBJ(g_logSkeleton), (const char *)STR(0x4c4b08, "reserved dataMemory overflow(%d/%d)-l..."), size, memSize);
-		((Skeleton *)sk)->block = mem;
+		sko->block = mem;
 		sko->ownsBlock = 0;
 	}
-	sko->bones = ((Skeleton *)sk)->block;
+	sko->bones = sko->block;
 	int keys = sko->boneCount * 0x70;   /* where the next key list goes, after the bones */
 	crt_fseek(f, 0, 0);
 	int frames = 0, ms = 0x21, ticks = 0xa0, skip = -1, index = -1, at = -0x70;
@@ -688,7 +688,7 @@ void THISCALL (skel_loadAseFrom)(u8 *sk, void *f, u8 *mem, int memSize)
 		} else if (!strcmp(t, (const char *)STR(0x4c5398, "TM_ROTANGLE")))   /* TM_ROTANGLE */
 			((Bone *)b)->rotation[0] = ase_float(LINE_END, 1);
 		else if (!strcmp(t, (const char *)STR(0x4c5388, "CONTROL_POS_TCB")) || !strcmp(t, (const char *)STR(0x4c5374, "CONTROL_POS_BEZIER"))) {   /* CONTROL_POS_TCB / _BEZIER */
-			((Bone *)b)->posKeys = ((Skeleton *)sk)->block + keys;
+			((Bone *)b)->posKeys = sko->block + keys;
 			while (crt_fgets(line, 0x100, f)) {
 				t = crt_strtok(line, (const char *)STR(0x4c535c, "* \t\n"));
 				if (!strcmp(t, (const char *)STR(0x4c5478, "CONTROL_TCB_POS_KEY")) || !strcmp(t, (const char *)STR(0x4c5460, "CONTROL_BEZIER_POS_KEY"))) {
@@ -703,7 +703,7 @@ void THISCALL (skel_loadAseFrom)(u8 *sk, void *f, u8 *mem, int memSize)
 			}
 			keys += ((Bone *)b)->posKeyCount * 0x20;
 		} else if (!strcmp(t, (const char *)STR(0x4c5364, "CONTROL_ROT_TCB"))) {   /* CONTROL_ROT_TCB */
-			((Bone *)b)->rotKeys = ((Skeleton *)sk)->block + keys;
+			((Bone *)b)->rotKeys = sko->block + keys;
 			while (crt_fgets(line, 0x100, f)) {
 				t = crt_strtok(line, (const char *)STR(0x4c535c, "* \t\n"));
 				if (!strcmp(t, (const char *)STR(0x4c544c, "CONTROL_TCB_ROT_KEY"))) {

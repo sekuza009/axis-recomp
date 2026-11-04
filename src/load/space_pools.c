@@ -309,7 +309,7 @@ int THISCALL (space_collideAt)(u8 *grid, u32 r, const float *pos, const float *v
 	const float *half = (const float *)ADDR(k_0_5f);
 	while (node) {
 		if (!((SpaceBlock *)node)->split)
-			return ((Space *)grid)->lastHit = space_collideUnit(node, r, pos, vel, k, outPos, outVel, outDist, outPlane, axis, subs, nsubs);
+			return sp->lastHit = space_collideUnit(node, r, pos, vel, k, outPos, outVel, outDist, outPlane, axis, subs, nsubs);
 		long double mx = fmul_m(fadd_m(fld_m(&box[3]), &box[0]), half);
 		float my = f32(fmul_m(fadd_m(fld_m(&box[4]), &box[1]), half));
 		float mz = f32(fmul_m(fadd_m(fld_m(&box[5]), &box[2]), half));

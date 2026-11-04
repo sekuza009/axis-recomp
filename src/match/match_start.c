@@ -303,14 +303,14 @@ void THISCALL (item_initTextures)(u8 *s, u32 a1, u32 a2, const char *sky, u32 a4
 		sprintf(name, (const char *)STR(0x4c7410, "%s\\%02d"), sky, i);
 		st->effectTextures[i] = tex_getIdByName((*(void **)&g_textures), name, i > 7, 0, 0, 0, 0, 0, 0);
 	}
-	Light_clearCounts((u8 *)&((Stage *)s)->mapLights);
-	factors_addConstant((u8 *)&((Stage *)s)->mapLights, (const void *)OBJ(g_packedWhite));
+	Light_clearCounts((u8 *)&st->mapLights);
+	factors_addConstant((u8 *)&st->mapLights, (const void *)OBJ(g_packedWhite));
 	stage_resetLights(s);
-	Light_clearCounts((u8 *)&((Stage *)s)->actorLights);
+	Light_clearCounts((u8 *)&st->actorLights);
 	u8 grey[4] = { 0x40, 0x40, 0x40, 0xff };
-	factors_addConstant((u8 *)&((Stage *)s)->actorLights, grey);
+	factors_addConstant((u8 *)&st->actorLights, grey);
 	u32 down[3] = { 0xbf800000, 0xbf800000, 0xbf800000 };
-	factors_addPoint((u8 *)&((Stage *)s)->actorLights, (const void *)OBJ(g_packedWhite), down);
+	factors_addPoint((u8 *)&st->actorLights, (const void *)OBJ(g_packedWhite), down);
 	long double root = 1;
 	root = x87_fsqrt(k_27);
 	memset((u8 *)s + offsetof(Stage, clearOn), 0, 14 * 4);   /* clearOn and the next 13 dwords */

@@ -494,13 +494,13 @@ u8 *THISCALL (game_loadAllData)(u8 *g)
 	VTABLE((u8 *)GS->view, STR(0x4aa24c, "04F"));
 	ViewVolume_clear((u8 *)GS->view);
 	CollisionVolume_ctor((u8 *)&st->space);   /* CollisionVolume_ctor */
-	VECTOR((u8 *)((Stage *)s)->mapLights.records, sizeof(Factor), 0x400);
-	VTABLE((u8 *)&((Stage *)s)->mapLights, VT(Light, 0x4aa248));
-	Light_clearCounts((u8 *)&((Stage *)s)->mapLights);
-	VECTOR((u8 *)((Stage *)s)->dynamicLights.records, sizeof(Factor), 0x400);
-	VTABLE((u8 *)&((Stage *)s)->dynamicLights, VT(Light, 0x4aa248));
-	Light_clearCounts((u8 *)&((Stage *)s)->dynamicLights);
-	Light_ctor((u8 *)&((Stage *)s)->actorLights);   /* Light_ctor */
+	VECTOR((u8 *)(st)->mapLights.records, sizeof(Factor), 0x400);
+	VTABLE((u8 *)&st->mapLights, VT(Light, 0x4aa248));
+	Light_clearCounts((u8 *)&st->mapLights);
+	VECTOR((u8 *)(st)->dynamicLights.records, sizeof(Factor), 0x400);
+	VTABLE((u8 *)&st->dynamicLights, VT(Light, 0x4aa248));
+	Light_clearCounts((u8 *)&st->dynamicLights);
+	Light_ctor((u8 *)&st->actorLights);   /* Light_ctor */
 	VECTOR((u8 *)st->skySphere, 0xc, 0x126);
 	VECTOR((u8 *)st->layer, 0xc, 0x31);
 	VECTOR((u8 *)st->sides, 0xc, 0x30);
@@ -531,7 +531,7 @@ u8 *THISCALL (game_loadAllData)(u8 *g)
 	VECTOR((u8 *)st->emblemAtlas, 4, 0x2000);
 	Scene_ctor((u8 *)&st->scenePath);   /* Scene_ctor */
 	VTABLE(s, STR(0x4aa23c, "08F"));
-	((Stage *)s)->built = 0;
+	st->built = 0;
 	VTABLE(g, VT(Console, 0x4aa238));
 	GS->client = GS->network = -1;
 	TimeSync_clear((u8 *)&GS->timer);

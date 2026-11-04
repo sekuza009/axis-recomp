@@ -232,7 +232,7 @@ int THISCALL (collision_moveActor)(u8 *stage, float r, const float *pos, const f
 	to[1] = f32(fadd_m(fld_m(&vel[1]), &pos[1]));
 	to[2] = f32(fadd_m(fld_m(&vel[2]), &pos[2]));
 	memcpy(outPos, to, sizeof to);
-	const float *low = ((Stage *)stage)->worldLow, *high = ((Stage *)stage)->worldHigh;
+	const float *low = st->worldLow, *high = st->worldHigh;
 	int clamped = clamp_to(&outPos[0], &low[0], &high[0]);
 	clamped |= clamp_to(&outPos[1], &low[1], &high[1]);
 	clamped |= clamp_to(&outPos[2], &low[2], &high[2]);
@@ -643,8 +643,8 @@ static void ground_triangle(u8 *grid, u32 id, const void *a, const void *b, cons
 void THISCALL (collision_initVolume)(u8 *stage, float size_z, float size_x, float size_y, u32 a, u32 b, u32 depth)
 {
 	Stage *st = (Stage *)stage;
-	u8 *grid = (u8 *)&((Stage *)stage)->space;
-	const float *low = ((Stage *)stage)->levelLow, *high = ((Stage *)stage)->levelHigh;
+	u8 *grid = (u8 *)&st->space;
+	const float *low = st->levelLow, *high = st->levelHigh;
 	log_message((int)stage, 0, 0, (const char *)STR(0x4c7490, "init. collision volume"));
 	int ny = ftol(fdiv_m(fsub_m(fld_m(&high[1]), &low[1]), &size_y));
 	int nx = ftol(fdiv_m(fsub_m(fld_m(&high[0]), &low[0]), &size_x));
@@ -662,7 +662,7 @@ void THISCALL (collision_initVolume)(u8 *stage, float size_z, float size_x, floa
 		ground_triangle(grid, 0x10, va, vb, vd);
 	}
 	for (int l = 0; l < st->groundLayerCount; l++) {
-		const GroundLayer *layer = &((Stage *)stage)->groundLayers[l];
+		const GroundLayer *layer = &st->groundLayers[l];
 		int kind = layer->kind;
 		if (kind != 0 && kind != 1)
 			continue;
@@ -683,7 +683,7 @@ void THISCALL (collision_initVolume)(u8 *stage, float size_z, float size_x, floa
 		}
 	}
 	for (int i = 0; i < st->objectCount; i++) {
-		MapObject *obj = &((Stage *)stage)->objects[i];
+		MapObject *obj = &st->objects[i];
 		if (obj->active != 1 || (obj->flags & 4))
 			continue;
 		if (i % 2 == 0)

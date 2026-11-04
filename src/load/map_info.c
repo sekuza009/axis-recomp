@@ -59,7 +59,7 @@ int THISCALL (map_loadItemInfoFrom)(u8 *scene, const char *path)
 	crt_fread(&version, 4, 1, f);
 	if (version != 0x1201)
 		sys_fatalErrorN((char *)OBJ(g_logStage), (const char *)STR(0x4c7b94, "incorrect file version, remove the fi..."), path);
-	int *count = &((Stage *)scene)->itemTypeCount;
+	int *count = &st->itemTypeCount;
 	fread_scrambled(count, 4, 1, f);
 	fread_scrambled(st->itemTypes, 0x90, *count, f);
 	fclose(f);
@@ -249,7 +249,7 @@ void THISCALL (map_loadPlayInfoFrom)(u8 *scene, const char *name)
 			mi->warpTo = r[2];
 			mi->warpPitch = r[3];
 			memcpy(item + 0xc, &r[4], 12);
-			((MapItem *)item)->pitch = f32(fmul_m(fld_m(&rf[7]), scale));
+			mi->pitch = f32(fmul_m(fld_m(&rf[7]), scale));
 			mi->angle = f32(fmul_m(fld_m(&rf[8]), scale));
 			mi->taken = 0;
 			(*(int *)&mi->fade) = 0;
@@ -398,7 +398,7 @@ int THISCALL (map_loadGroundInfoFrom)(u8 *s, const char *name)
 	log_message((int)s, 0, 0, (const char *)STR(0x4c804c, "get default rendering distance"));
 	fread_scrambled(&st->cullMargin, 4, 1, f);
 	log_message((int)s, 0, 0, (const char *)STR(0x4c8040, "load light"));
-	Light_read((u8 *)&((Stage *)s)->mapLights, f);
+	Light_read((u8 *)&st->mapLights, f);
 	log_message((int)s, 0, 0, (const char *)STR(0x4c802c, "load clearing color"));
 	fread_scrambled(&st->clearOn, 4, 1, f);
 	fread_scrambled(st->clearColour, 0x10, 1, f);
@@ -412,7 +412,7 @@ int THISCALL (map_loadGroundInfoFrom)(u8 *s, const char *name)
 	int mode = st->skyMode;
 	if (mode == 1 || mode == 2) {
 		if (mode == 2)
-			(*(u32 *)&((Stage *)s)->skyTextures[5]) = ground_tex(dir, STR(0x4c7ff4, "%s/SphereFloor"), 0, tex);   /* SphereFloor */
+			(*(u32 *)&st->skyTextures[5]) = ground_tex(dir, STR(0x4c7ff4, "%s/SphereFloor"), 0, tex);   /* SphereFloor */
 		static const u32 sphere[5] = { STR(0x4c7fe0, "%s/SphereCeiling"), STR(0x4c7fd0, "%s/SphereEast"), STR(0x4c7fc0, "%s/SphereSouth"), STR(0x4c7fb0, "%s/SphereWest"), STR(0x4c7fa0, "%s/SphereNorth") };   /* ceiling, east, south, west, north */
 		for (int k = 0; k < 5; k++)
 			st->skyTextures[k] = (i32) ground_tex(dir, sphere[k], 0, tex);
@@ -421,8 +421,8 @@ int THISCALL (map_loadGroundInfoFrom)(u8 *s, const char *name)
 	mode = st->layerMode;
 	if (mode == 1 || mode == 2) {
 		if (mode == 2)
-			(*(u32 *)&((Stage *)s)->layerTextures[1]) = ground_tex(dir, STR(0x4c7f78, "%s/SkyInnerLayer"), 0, tex);   /* SkyInnerLayer */
-		(*(u32 *)&((Stage *)s)->layerTextures[0]) = ground_tex(dir, STR(0x4c7f64, "%s/SkyOuterLayer"), 0, tex);       /* SkyOuterLayer */
+			(*(u32 *)&st->layerTextures[1]) = ground_tex(dir, STR(0x4c7f78, "%s/SkyInnerLayer"), 0, tex);   /* SkyInnerLayer */
+		(*(u32 *)&st->layerTextures[0]) = ground_tex(dir, STR(0x4c7f64, "%s/SkyOuterLayer"), 0, tex);       /* SkyOuterLayer */
 	}
 	log_message((int)s, 0, 0, (const char *)STR(0x4c7f4c, "load background side"));
 	if (st->sideMode > 0 && st->sideMode <= 2)
@@ -438,9 +438,9 @@ int THISCALL (map_loadGroundInfoFrom)(u8 *s, const char *name)
 	for (int k = 0; k < 7; k++)
 		fread_scrambled(limits[k], sizes[k], 1, f);
 	fread_scrambled(&st->groundLayerCount, 4, 1, f);
-	((Stage *)s)->poolUsed = 0;
+	st->poolUsed = 0;
 	for (int i = 0; i < st->groundLayerCount; i++) {
-		u8 *l = (u8 *)&((Stage *)s)->groundLayers[i];
+		u8 *l = (u8 *)&st->groundLayers[i];
 		GroundLayer *gl = (GroundLayer *)l;
 		log_message((int)s, 0, i, (const char *)STR(0x4c7ef4, "load layer %d"), i);
 		fread_scrambled(l, 0x20c, 1, f);
@@ -454,7 +454,7 @@ int THISCALL (map_loadGroundInfoFrom)(u8 *s, const char *name)
 				int g = grey(image + r * 0x300 + c * 3);
 				heights[(gl->cols + 1) * r + c] = g < 0 ? 0 : (u8)g;
 			}
-		((Stage *)s)->poolUsed += count;
+		st->poolUsed += count;
 		int cells = gl->cols * gl->rows;
 		u8 *flat = gl->flat = pool_take(s, cells);
 		for (int r = 0; r < gl->rows; r++)
@@ -462,10 +462,10 @@ int THISCALL (map_loadGroundInfoFrom)(u8 *s, const char *name)
 				const u8 *px = image + r * 0x300 + c * 3;
 				flat[gl->cols * r + c] = grey(px) >= 0 && grey(px + 0x300) >= 0 && grey(px + 0x303) >= 0 && grey(px + 3) >= 0;
 			}
-		((Stage *)s)->poolUsed += cells;
+		st->poolUsed += cells;
 		int size = (gl->cols + 1) * (gl->rows + 1) * 12;
-		float *v = ((GroundLayer *)l)->points = (float *)pool_take(s, size);
-		const float *origin = (const float *)(l + 4), *cell = &((GroundLayer *)l)->cellSize, *hs = &((GroundLayer *)l)->heightScale;
+		float *v = gl->points = (float *)pool_take(s, size);
+		const float *origin = (const float *)(l + 4), *cell = &gl->cellSize, *hs = &gl->heightScale;
 		for (int r = 0; r <= gl->rows; r++)
 			for (int c = 0; c <= gl->cols; c++) {
 				int at = (gl->cols + 1) * r + c;
@@ -476,9 +476,9 @@ int THISCALL (map_loadGroundInfoFrom)(u8 *s, const char *name)
 				p[1] = f32(y);
 				p[2] = f32(z);
 			}
-		((Stage *)s)->poolUsed += size;
+		st->poolUsed += size;
 		size = (gl->cols + 1) * (gl->rows + 1) * 12;
-		u8 *normals = (u8 *)(((GroundLayer *)l)->normals = (float *)pool_take(s, size));
+		u8 *normals = (u8 *)(gl->normals = (float *)pool_take(s, size));
 		w = gl->cols + 1;
 		for (int r = 0; r <= gl->rows; r++) {
 			memcpy(normals + (w * r) * 12, (const void *)OBJ(g_vecUnitY), 12);
@@ -491,7 +491,7 @@ int THISCALL (map_loadGroundInfoFrom)(u8 *s, const char *name)
 		for (int r = 1; r < gl->rows; r++)
 			for (int c = 1; c < gl->cols; c++) {
 				w = gl->cols + 1;
-				const float *vs = ((const float *)((GroundLayer *)l)->points);
+				const float *vs = ((const float *)(gl)->points);
 				const float *p = vs + (w * r + c) * 3, *up = vs + (w * (r - 1) + c) * 3, *down = vs + (w * (r + 1) + c) * 3;
 				const float *right = p + 3, *left = p - 3;
 				float t[3], n1[3], n2[3], n3[3], n4[3];
@@ -499,39 +499,39 @@ int THISCALL (map_loadGroundInfoFrom)(u8 *s, const char *name)
 				memcpy(n2, math_triangleNormal(t, up, p, right), 12);
 				memcpy(n3, math_triangleNormal(t, right, p, down), 12);
 				memcpy(n4, math_triangleNormal(t, down, p, left), 12);
-				float *out = (float *)(((u8 *)((GroundLayer *)l)->normals) + (w * r + c) * 12);
+				float *out = (float *)(((u8 *)(gl)->normals) + (w * r + c) * 12);
 				for (int k = 0; k < 3; k++)
 					out[k] = f32(fadd_m(fadd_m(fadd_m(fld_m(&n4[k]), &n3[k]), &n2[k]), &n1[k]));
 				if (GAME_VAR(int, l) == 1)
 					for (int k = 0; k < 3; k++)
 						out[k] = f32(-fld_m(&out[k]));
 			}
-		((Stage *)s)->poolUsed += size;
+		st->poolUsed += size;
 		size = (gl->cols + 1) * (gl->rows + 1) * 4;
-		((GroundLayer *)l)->colours = (u32 *)pool_take(s, size);
+		gl->colours = (u32 *)pool_take(s, size);
 		ground_computeLighting(s, l);
-		((Stage *)s)->poolUsed += size;
+		st->poolUsed += size;
 		size = (gl->cols + 1) * (gl->rows + 1) * 8;
 		float *uv = gl->uv = (float *)pool_take(s, size);
 		for (int r = 0; r <= gl->rows; r++)
 			for (int c = 0; c <= gl->cols; c++) {
 				int at = (gl->cols + 1) * r + c;
-				const float *p = ((const float *)((GroundLayer *)l)->points) + at * 3;
-				long double tz = fdiv_m(fld_m(&p[2]), &((GroundLayer *)l)->texScale);
-				uv[at * 2] = f32(fdiv_m(fld_m(&p[0]), &((GroundLayer *)l)->texScale));
+				const float *p = ((const float *)(gl)->points) + at * 3;
+				long double tz = fdiv_m(fld_m(&p[2]), &gl->texScale);
+				uv[at * 2] = f32(fdiv_m(fld_m(&p[0]), &gl->texScale));
 				uv[at * 2 + 1] = f32(tz);
 			}
-		((Stage *)s)->poolUsed += size;
+		st->poolUsed += size;
 		int indices = (gl->cols + 200) * gl->rows * 2;
 		u8 *heap = pool_take(s, indices * 4);
 		gl->indexCapacity = indices;
-		((GroundLayer *)l)->indices = (u32 *)heap;
-		((Stage *)s)->poolUsed += indices * 4;
+		gl->indices = (u32 *)heap;
+		st->poolUsed += indices * 4;
 		int prims = gl->rows * 200 + 4;
 		heap = pool_take(s, prims * 12);
 		gl->stripCapacity = prims;
 		gl->strips = heap;
-		((Stage *)s)->poolUsed += prims * 12;
+		st->poolUsed += prims * 12;
 	}
 	stage_buildMeshDrawRecords(s);
 	fclose(f);

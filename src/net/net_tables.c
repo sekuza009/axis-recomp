@@ -1673,7 +1673,7 @@ static void THISCALL __attribute__((used)) net_sendPlayerState_body(u8 *g, int p
 	for (int k = 0; k < 5; k++)
 		packet[0x13 + k * 9] = 0;
 	for (int k = 0; k < 5; k++) {
-		int *slot = &((Player *)a)->shotBullets[k], *fresh = &((Player *)a)->shots[k].isNew;
+		int *slot = &pl->shotBullets[k], *fresh = &pl->shots[k].isNew;
 		u8 *o = packet + 0x13 + k * 9;
 		if (*slot < 0)
 			continue;
