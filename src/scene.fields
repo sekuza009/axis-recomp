@@ -61,22 +61,6 @@ struct ActorInfo 0x2e18                                         # an actor type'
 0          0x40       char name[0x40]                           # the folder under Actor/
 0x2e10     4          float ringRange                           # (unclear) > 0: the alert ring is shown
 
-struct PlayerRecord 0x47fd2                                      # a player of the match (Scene / Stage playerRecords): its team, mech parts and items; its actor points back (Player.player)
-0          4          i32 used                                   # (by use) 1: in use (playerRecord_markUsed / markFree)
-0x479a4    0xa        u8 partHue[5][2]                           # (by use) per part its two tints' hue (actor_setPartColor; bytes)
-0x479ae    0xa        u8 partSaturation[5][2]
-0x479b8    0xa        u8 partValue[5][2]
-0x479c2    0x600      u32 emblem[16][24]                         # (by use) its emblem: 24 x 16 RGBA (its screenshot, Save\<name>.BMP)
-0x47fca    4          i32 emblemChanged                          # 1: to be copied into the emblem atlas (flagShown: it is there)
-0x47fce    4          i32 emblemSent                             # (by use) its emblem's pixels sent so far (0x180 = 24 x 16: all; the map's players start with all)
-4          0x40       char name[0x40]                            # (by use) its name (its screenshot: Save\\<name>.BMP)
-0x44       4          i32 level                                  # (by use) its level (the profile's factors by it)
-0x48       4          i32 team
-0x4c       0x140      char partNames[5][0x40]                    # its parts' type names (head, chest, arms, legs, booster: set_part)
-0x18c      0x180      char itemNames[6][0x40]                    # its items' names (actor_setItem: the ActorInfo's name)
-0x30c      0x14       i32 parts[5]                               # its mech's parts: head, chest, arms, legs, booster (records of the stage's part tables; "invalid headIndex")
-0x320      0x18       i32 items[6]                              # per item slot (Player.slot): its weapon's record (index into Scene.actorInfo; < 0 none)
-0x47fc6    4          i32 flagShown                             # 1: its flag is shown (ranking, markers)
 
 struct BlockOwner 0x10                                          # the head Model, Manager, SkelManager and ObjectList share: their data block (take_block)
 4          4          i32 blockSize
@@ -140,13 +124,21 @@ struct Player 0x8888                                            # a player's rec
 0x8848     4          float pathRange                            # (by use) how far a bot looks for path points (1500, x1.5 while none is found)
 0x3a8      0x40       float bodyMatrix[16]                       # (by use) the body's matrix (GL modelview at the actor, turned and leant: the chest's bones posed from it)
 0x554      0x30       ObjectList headModel                       # (by use) the posed part models (ObjectList each, their entries following inside): the head (on the chest's neck joint; x5 with timerFlags 0x1000)
+0x584      0x7d0      u8 headModelMem[0x7d0]      # its entries' memory (ObjectList_load's mem)
 0xd54      0x30       ObjectList chestModel                      # the chest: posed at bodyMatrix, carries the head, arms and legs
+0xd84      0x7d0      u8 chestModelMem[0x7d0]     # its entries' memory (ObjectList_load's mem)
 0x1554     0x30       ObjectList armsModel                       # the arms: carry the weapon models
+0x1584     0xfa0      u8 armsModelMem[0xfa0]      # its entries' memory (ObjectList_load's mem)
 0x2524     0x30       ObjectList legsModel                       # the legs (their frame from pose[4])
+0x2554     0xfa0      u8 legsModelMem[0xfa0]      # its entries' memory (ObjectList_load's mem)
 0x34f4     0x30       ObjectList boosterModel                    # the booster (pose[5]: run)
+0x3524     0xbb8      u8 boosterModelMem[0xbb8]   # its entries' memory (ObjectList_load's mem)
 0x40dc     0x30       ObjectList weaponModel                     # the weapon in hand (slots 0 .. 3)
+0x410c     0x1770     u8 weaponModelMem[0x1770]    # its entries' memory (ObjectList_load's mem)
 0x587c     0x30       ObjectList weaponModel4                    # the slot-4 weapon
+0x58ac     0x1770     u8 weaponModel4Mem[0x1770]   # its entries' memory (ObjectList_load's mem)
 0x701c     0x30       ObjectList weaponModel5                    # the slot-5 weapon
+0x704c     0x1770     u8 weaponModel5Mem[0x1770]   # its entries' memory (ObjectList_load's mem)
 0x4bc      4          i32 lastHitMode                                # (by use) the last hit's mode (0 armour first, 1 shield first)
 0x880c     4          i32 invulnerable                           # (by use) 1: hits do nothing (script command 14 sets it)
 0x8850     4          i32 hitPending                             # (by use) 1: a hit to send (net_sendPlayerState, then cleared)
@@ -829,6 +821,42 @@ struct SkelManager 0x130                                        # a skeleton man
 0x124      4          i32 dataSize                              # the data memory items are read into
 0x128      4          u8 *data
 0x12c      4          i32 dataUsed
+struct PlayerRecord 0x47fd2                                      # a player of the match (Scene / Stage playerRecords): its team, mech parts and items; its actor points back (Player.player)
+0          4          i32 used                                   # (by use) 1: in use (playerRecord_markUsed / markFree)
+0x479a4    0xa        u8 partHue[5][2]                           # (by use) per part its two tints' hue (actor_setPartColor; bytes)
+0x479ae    0xa        u8 partSaturation[5][2]
+0x479b8    0xa        u8 partValue[5][2]
+0x479c2    0x600      u32 emblem[16][24]                         # (by use) its emblem: 24 x 16 RGBA (its screenshot, Save\<name>.BMP)
+0x47fca    4          i32 emblemChanged                          # 1: to be copied into the emblem atlas (flagShown: it is there)
+0x47fce    4          i32 emblemSent                             # (by use) its emblem's pixels sent so far (0x180 = 24 x 16: all; the map's players start with all)
+4          0x40       char name[0x40]                            # (by use) its name (its screenshot: Save\\<name>.BMP)
+0x44       4          i32 level                                  # (by use) its level (the profile's factors by it)
+0x48       4          i32 team
+0x4c       0x140      char partNames[5][0x40]                    # its parts' type names (head, chest, arms, legs, booster: set_part)
+0x18c      0x180      char itemNames[6][0x40]                    # its items' names (actor_setItem: the ActorInfo's name)
+0x30c      0x14       i32 parts[5]                               # its mech's parts: head, chest, arms, legs, booster (records of the stage's part tables; "invalid headIndex")
+0x320      0x18       i32 items[6]                              # per item slot (Player.slot): its weapon's record (index into Scene.actorInfo; < 0 none)
+0x338      0x24c      Manager headShapes                     # (by use) its head type's shapes (model_sets: shape_initBy over the data after it)
+0x584      0x7d00     u8 headShapeData[0x7d00]
+0x8284     0x24c      Manager chestShapes                    # (by use) its chest type's shapes (model_sets: shape_initBy over the data after it)
+0x84d0     0x7d00     u8 chestShapeData[0x7d00]
+0x101d0    0x24c      Manager armShapes                      # (by use) its arm type's shapes (model_sets: shape_initBy over the data after it)
+0x1041c    0xfa00     u8 armShapeData[0xfa00]
+0x1fe1c    0x24c      Manager legShapes                      # (by use) its leg type's shapes (model_sets: shape_initBy over the data after it)
+0x20068    0xfa00     u8 legShapeData[0xfa00]
+0x2fa68    0x24c      Manager boosterShapes                  # (by use) its booster type's shapes (model_sets: shape_initBy over the data after it)
+0x2fcb4    0x13880    u8 boosterShapeData[0x13880]
+0x43534    0x130      SkelManager headSkels                 # its skeletons (skelSet_setup over the data after it)
+0x43664    0x7d0      u8 headSkelData[0x7d0]
+0x43e34    0x130      SkelManager chestSkels                # its skeletons (skelSet_setup over the data after it)
+0x43f64    0x7d0      u8 chestSkelData[0x7d0]
+0x44734    0x130      SkelManager armSkels                  # its skeletons (skelSet_setup over the data after it)
+0x44864    0xfa0      u8 armSkelData[0xfa0]
+0x45804    0x130      SkelManager legSkels                  # its skeletons (skelSet_setup over the data after it)
+0x45934    0xfa0      u8 legSkelData[0xfa0]
+0x468d4    0x130      SkelManager boosterSkels              # its skeletons (skelSet_setup over the data after it)
+0x46a04    0xfa0      u8 boosterSkelData[0xfa0]
+0x47fc6    4          i32 flagShown                             # 1: its flag is shown (ranking, markers)
 
 struct TreeNode 0x4c                                            # a manager's name tree node: by strcmp, smaller left
 0          0x40       char name[0x40]
@@ -962,6 +990,10 @@ struct BmpFile 0x48                                             # an uncompresse
 0x42       4          i32 height
 
 struct HeadType 0xaa8                                           # a head part type (Stage.headTypes; the ARM CENTER's head panel: armc_parts.c)
+0x40       8          i32 shapeCount[2]                          # (by use) per pose (detail): the shapes (ObjectList_load's ns) ..
+0x448      0x440      char shapeNames[2][0x220]                 # .. their names (0x44 apart: a name and an int)
+0x888      8          i32 skelCount[2]                           # .. the skeletons ..
+0x990      0x100      char skelNames[2][0x80]                    # .. and their names (0x40 apart)
 0          0x40       char name[0x40]                            # its folder path (the panel's name)
 0xa90      4          float weight
 0xa94      4          float detectionRange                       # (by level: the actor's radiusSq, squared)
@@ -971,6 +1003,10 @@ struct HeadType 0xaa8                                           # a head part ty
 0xaa4      4          float targetKeepTime
 
 struct ChestType 0xabc                                          # a chest part type (Stage.chestTypes)
+0x40       8          i32 shapeCount[2]                          # (by use) per pose (detail): the shapes (ObjectList_load's ns) ..
+0x448      0x440      char shapeNames[2][0x220]                 # .. their names (0x44 apart: a name and an int)
+0x888      8          i32 skelCount[2]                           # .. the skeletons ..
+0x990      0x100      char skelNames[2][0x80]                    # .. and their names (0x40 apart)
 0xa90      8          i32 armsJoint[2]                           # (by use) the joints (bone indices of its shape) the other parts hang on, per detail level (actor_draw)
 0xa98      8          i32 legsJoint[2]
 0xaa0      8          i32 headJoint[2]
@@ -981,12 +1017,20 @@ struct ChestType 0xabc                                          # a chest part t
 0xab8      4          i32 maxShield
 
 struct ArmType 0x1300                                           # an arm part type (Stage.armTypes)
+0x40       8          i32 shapeCount[2]                          # (by use) per pose (detail): the shapes (ObjectList_load's ns) ..
+0x848      0x880      char shapeNames[2][0x440]                 # .. their names (0x44 apart: a name and an int)
+0x10c8     8          i32 skelCount[2]                           # .. the skeletons ..
+0x11d0     0x100      char skelNames[2][0x80]                    # .. and their names (0x40 apart)
 0x12d0     0x18       i32 weaponJoints[3][2]                     # (by use) the weapon joints per detail level: slots 0 .. 3, slot 4, slot 5 (actor_draw)
 0          0x40       char name[0x40]
 0x12e8     4          float weight
 0x12ec     0x14       i32 stats[5]                               # (the ARM CENTER's arm stats) [1 ..] the ammunition per kind (the actor's ammoMax)
 
 struct LegType 0x13f4                                           # a leg part type (Stage.legTypes)
+0x40       8          i32 shapeCount[2]                          # (by use) per pose (detail): the shapes (ObjectList_load's ns) ..
+0x848      0x880      char shapeNames[2][0x440]                 # .. their names (0x44 apart: a name and an int)
+0x10c8     8          i32 skelCount[2]                           # .. the skeletons ..
+0x11d0     0x100      char skelNames[2][0x80]                    # .. and their names (0x40 apart)
 0x12d0     0x100      i32 emitters[2][0x20]                      # (by use) its puffs: [0] the joints, [1] 1: only while running (emit)
 0x13d0     4          i32 emitterCount
 0          0x40       char name[0x40]
@@ -999,6 +1043,10 @@ struct LegType 0x13f4                                           # a leg part typ
 0x13f0     4          float bonus2
 
 struct BoosterType 0x1820                                       # a booster part type (Stage.boosterTypes)
+0x40       8          i32 shapeCount[2]                          # (by use) per pose (detail): the shapes (ObjectList_load's ns) ..
+0xa48      0xaa0      char shapeNames[2][0x550]                 # .. their names (0x44 apart: a name and an int)
+0x14e8     8          i32 skelCount[2]                           # .. the skeletons ..
+0x15f0     0x100      char skelNames[2][0x80]                    # .. and their names (0x40 apart)
 0x16f0     0x100      i32 emitters[2][0x20]                      # (by use) its thrust: [0] the joints, [1] 1: only while running (emit)
 0x17f0     4          i32 emitterCount
 0          0x40       char name[0x40]

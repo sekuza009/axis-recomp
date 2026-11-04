@@ -313,12 +313,12 @@ void THISCALL (actor_applyRemoteColours)(void *scene, int p, int part, int a, in
    type (its type record at +0x1561b68, 0x47fd2 bytes each, by the actor's +0x10c) names the part's model (by +model_at
    in that record); the actor's pose (+0x484) picks the model's frame */
 typedef struct {
-	int model_at;      /* the model's index in the type record */
-	u32 models;        /* the models' table in the scene, */
+	int model_at;      /* the part's type in the player record (parts[k]) */
+	u32 models;        /* the types' table in the stage, */
 	int model_size;    /* and each one's size */
-	int bones, bone_size, counts, frames;   /* in the model: per pose */
-	int data, names;   /* the type record's data handed over */
-	int self;          /* the actor's loader for this part */
+	int shapes_n, names, name_size, skels_n, knames;   /* in the type: per pose (shapeCount, shapeNames, skelCount, skelNames) */
+	int data, skels;   /* the player record's shape and skeleton caches handed over */
+	int self;          /* the actor's ObjectList for this part (its memory right after it) */
 	u32 limit;
 } PartModel;
 
@@ -331,17 +331,18 @@ static void part_load(u8 *scene, int a, const PartModel *m)
 	u8 *type = (u8 *)&STS->playerRecords[act->player];
 	u8 *model = scene + m->models + GAME_VAR(int, type + m->model_at) * m->model_size;
 	int pose = act->detail;
-	ObjectList_load(actor + m->self, type + m->data, type + m->names, GAME_VAR(u32, model + 0x40 + pose * 4),
-	                     model + m->bones + pose * m->bone_size, GAME_VAR(u32, model + m->counts + pose * 4),
-	                     model + m->frames + pose * 0x80, 0, 0, 0, actor + m->self + 0x30, m->limit);
+	ObjectList_load(actor + m->self, type + m->data, type + m->skels, GAME_VAR(u32, model + m->shapes_n + pose * 4),
+	                     model + m->names + pose * m->name_size, GAME_VAR(u32, model + m->skels_n + pose * 4),
+	                     model + m->knames + pose * 0x80, 0, 0, 0, actor + m->self + sizeof(ObjectList), m->limit);
 }
 
 static const PartModel g_parts[5] = {
-	{ 0x30c, offsetof(Stage, headTypes), 0xaa8, 0x448, 0x220, 0x888, 0x990, 0x338, 0x43534, 0x554, 0x7d0 },
-	{ 0x310, offsetof(Stage, chestTypes), 0xabc, 0x448, 0x220, 0x888, 0x990, 0x8284, 0x43e34, 0xd54, 0x7d0 },
-	{ 0x314, offsetof(Stage, armTypes), 0x1300, 0x848, 0x440, 0x10c8, 0x11d0, 0x101d0, 0x44734, 0x1554, 0xfa0 },
-	{ 0x318, offsetof(Stage, legTypes), 0x13f4, 0x848, 0x440, 0x10c8, 0x11d0, 0x1fe1c, 0x45804, 0x2524, 0xfa0 },
-	{ 0x31c, offsetof(Stage, boosterTypes), 0x1820, 0xa48, 0x550, 0x14e8, 0x15f0, 0x2fa68, 0x468d4, 0x34f4, 0xbb8 },
+#define PART(k, T, part, model) { offsetof(PlayerRecord, parts[k]), offsetof(Stage, part##Types), sizeof(T), offsetof(T, shapeCount), offsetof(T, shapeNames), \
+	sizeof ((T *)0)->shapeNames[0], offsetof(T, skelCount), offsetof(T, skelNames), offsetof(PlayerRecord, part##Shapes), offsetof(PlayerRecord, part##Skels), \
+	offsetof(Player, model), sizeof ((Player *)0)->model##Mem }
+	PART(0, HeadType, head, headModel), PART(1, ChestType, chest, chestModel), PART(2, ArmType, arm, armsModel),
+	PART(3, LegType, leg, legsModel), PART(4, BoosterType, booster, boosterModel),
+#undef PART
 };
 
 /* (thiscall on the scene; their callers ignore the eax they leave) */
@@ -449,7 +450,7 @@ void THISCALL (actor_updatePart)(u8 *scene, int a, int slot, int variant)
 	if (it)
 		ObjectList_load(actor + self, (u8 *)&STS->partShapes, (u8 *)&STS->partSkeletons, ((ActorInfo *)it)->sets[set].models[variant],
 		                     ((ActorInfo *)it)->sets[set].bones[variant], ((ActorInfo *)it)->sets[set].counts[variant], ((ActorInfo *)it)->sets[set].frames[variant],
-		                     0, 0, 0, actor + self + 0x30, 0x1770);
+		                     0, 0, 0, actor + self + sizeof(ObjectList), 0x1770);   /* (its memory right after it) */
 	else
 		partList_release(actor + self);
 	if (self == offsetof(Player, weaponModel))

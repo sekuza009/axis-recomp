@@ -81,27 +81,6 @@ typedef struct ActorInfo {
 	float push;   /* +0x2e14: > 0: a hit pushes the actor (x 10, away from the bullet) */
 } ActorInfo;
 
-/* a player of the match (Scene / Stage playerRecords): its team, mech parts and items; its actor points back (Player.player) */
-typedef struct PlayerRecord {
-	i32 used;   /* +0x0: (by use) 1: in use (playerRecord_markUsed / markFree) */
-	char name[0x40];   /* +0x4: (by use) its name (its screenshot: Save\\<name>.BMP) */
-	i32 level;   /* +0x44: (by use) its level (the profile's factors by it) */
-	i32 team;   /* +0x48 */
-	char partNames[5][0x40];   /* +0x4c: its parts' type names (head, chest, arms, legs, booster: set_part) */
-	char itemNames[6][0x40];   /* +0x18c: its items' names (actor_setItem: the ActorInfo's name) */
-	i32 parts[5];   /* +0x30c: its mech's parts: head, chest, arms, legs, booster (records of the stage's part tables; "invalid headIndex") */
-	i32 items[6];   /* +0x320: per item slot (Player.slot): its weapon's record (index into Scene.actorInfo; < 0 none) */
-	u8 _pad0000338[0x4766c];
-	u8 partHue[5][2];   /* +0x479a4: (by use) per part its two tints' hue (actor_setPartColor; bytes) */
-	u8 partSaturation[5][2];   /* +0x479ae */
-	u8 partValue[5][2];   /* +0x479b8 */
-	u32 emblem[16][24];   /* +0x479c2: (by use) its emblem: 24 x 16 RGBA (its screenshot, Save\<name>.BMP) */
-	u8 _pad0047fc2[0x4];
-	i32 flagShown;   /* +0x47fc6: 1: its flag is shown (ranking, markers) */
-	i32 emblemChanged;   /* +0x47fca: 1: to be copied into the emblem atlas (flagShown: it is there) */
-	i32 emblemSent;   /* +0x47fce: (by use) its emblem's pixels sent so far (0x180 = 24 x 16: all; the map's players start with all) */
-} PlayerRecord;
-
 /* the head Model, Manager, SkelManager and ObjectList share: their data block (take_block) */
 typedef struct BlockOwner {
 	u8 _pad0000000[0x4];
@@ -337,21 +316,21 @@ typedef struct Player {
 	i32 breakUp;   /* +0x54c: (by use) the parts' break-up step (one a frame, to 7) */
 	i32 viewMarked;   /* +0x550: set by hud_pass for the player the view follows */
 	ObjectList headModel;   /* +0x554: (by use) the posed part models (ObjectList each, their entries following inside): the head (on the chest's neck joint; x5 with timerFlags 0x1000) */
-	u8 _pad0000584[0x7d0];
+	u8 headModelMem[0x7d0];   /* +0x584: its entries' memory (ObjectList_load's mem) */
 	ObjectList chestModel;   /* +0xd54: the chest: posed at bodyMatrix, carries the head, arms and legs */
-	u8 _pad0000d84[0x7d0];
+	u8 chestModelMem[0x7d0];   /* +0xd84: its entries' memory (ObjectList_load's mem) */
 	ObjectList armsModel;   /* +0x1554: the arms: carry the weapon models */
-	u8 _pad0001584[0xfa0];
+	u8 armsModelMem[0xfa0];   /* +0x1584: its entries' memory (ObjectList_load's mem) */
 	ObjectList legsModel;   /* +0x2524: the legs (their frame from pose[4]) */
-	u8 _pad0002554[0xfa0];
+	u8 legsModelMem[0xfa0];   /* +0x2554: its entries' memory (ObjectList_load's mem) */
 	ObjectList boosterModel;   /* +0x34f4: the booster (pose[5]: run) */
-	u8 _pad0003524[0xbb8];
+	u8 boosterModelMem[0xbb8];   /* +0x3524: its entries' memory (ObjectList_load's mem) */
 	ObjectList weaponModel;   /* +0x40dc: the weapon in hand (slots 0 .. 3) */
-	u8 _pad000410c[0x1770];
+	u8 weaponModelMem[0x1770];   /* +0x410c: its entries' memory (ObjectList_load's mem) */
 	ObjectList weaponModel4;   /* +0x587c: the slot-4 weapon */
-	u8 _pad00058ac[0x1770];
+	u8 weaponModel4Mem[0x1770];   /* +0x58ac: its entries' memory (ObjectList_load's mem) */
 	ObjectList weaponModel5;   /* +0x701c: the slot-5 weapon */
-	u8 _pad000704c[0x1770];
+	u8 weaponModel5Mem[0x1770];   /* +0x704c: its entries' memory (ObjectList_load's mem) */
 	float screenPos[3];   /* +0x87bc: projected position on the screen: x, y (pixels; to_screen), the depth */
 	float tagTopLeft[3];   /* +0x87c8: (by use) its radius box's top-left corner on the screen (x, y: the marks stand on y), the depth */
 	float tagBottomRight[3];   /* +0x87d4: the box's bottom-right corner (tag_narrow: the width from these) */
@@ -969,6 +948,46 @@ typedef struct SkelManager {
 	i32 dataUsed;   /* +0x12c */
 } SkelManager;
 
+/* a player of the match (Scene / Stage playerRecords): its team, mech parts and items; its actor points back (Player.player) */
+typedef struct PlayerRecord {
+	i32 used;   /* +0x0: (by use) 1: in use (playerRecord_markUsed / markFree) */
+	char name[0x40];   /* +0x4: (by use) its name (its screenshot: Save\\<name>.BMP) */
+	i32 level;   /* +0x44: (by use) its level (the profile's factors by it) */
+	i32 team;   /* +0x48 */
+	char partNames[5][0x40];   /* +0x4c: its parts' type names (head, chest, arms, legs, booster: set_part) */
+	char itemNames[6][0x40];   /* +0x18c: its items' names (actor_setItem: the ActorInfo's name) */
+	i32 parts[5];   /* +0x30c: its mech's parts: head, chest, arms, legs, booster (records of the stage's part tables; "invalid headIndex") */
+	i32 items[6];   /* +0x320: per item slot (Player.slot): its weapon's record (index into Scene.actorInfo; < 0 none) */
+	Manager headShapes;   /* +0x338: (by use) its head type's shapes (model_sets: shape_initBy over the data after it) */
+	u8 headShapeData[0x7d00];   /* +0x584 */
+	Manager chestShapes;   /* +0x8284: (by use) its chest type's shapes (model_sets: shape_initBy over the data after it) */
+	u8 chestShapeData[0x7d00];   /* +0x84d0 */
+	Manager armShapes;   /* +0x101d0: (by use) its arm type's shapes (model_sets: shape_initBy over the data after it) */
+	u8 armShapeData[0xfa00];   /* +0x1041c */
+	Manager legShapes;   /* +0x1fe1c: (by use) its leg type's shapes (model_sets: shape_initBy over the data after it) */
+	u8 legShapeData[0xfa00];   /* +0x20068 */
+	Manager boosterShapes;   /* +0x2fa68: (by use) its booster type's shapes (model_sets: shape_initBy over the data after it) */
+	u8 boosterShapeData[0x13880];   /* +0x2fcb4 */
+	SkelManager headSkels;   /* +0x43534: its skeletons (skelSet_setup over the data after it) */
+	u8 headSkelData[0x7d0];   /* +0x43664 */
+	SkelManager chestSkels;   /* +0x43e34: its skeletons (skelSet_setup over the data after it) */
+	u8 chestSkelData[0x7d0];   /* +0x43f64 */
+	SkelManager armSkels;   /* +0x44734: its skeletons (skelSet_setup over the data after it) */
+	u8 armSkelData[0xfa0];   /* +0x44864 */
+	SkelManager legSkels;   /* +0x45804: its skeletons (skelSet_setup over the data after it) */
+	u8 legSkelData[0xfa0];   /* +0x45934 */
+	SkelManager boosterSkels;   /* +0x468d4: its skeletons (skelSet_setup over the data after it) */
+	u8 boosterSkelData[0xfa0];   /* +0x46a04 */
+	u8 partHue[5][2];   /* +0x479a4: (by use) per part its two tints' hue (actor_setPartColor; bytes) */
+	u8 partSaturation[5][2];   /* +0x479ae */
+	u8 partValue[5][2];   /* +0x479b8 */
+	u32 emblem[16][24];   /* +0x479c2: (by use) its emblem: 24 x 16 RGBA (its screenshot, Save\<name>.BMP) */
+	u8 _pad0047fc2[0x4];
+	i32 flagShown;   /* +0x47fc6: 1: its flag is shown (ranking, markers) */
+	i32 emblemChanged;   /* +0x47fca: 1: to be copied into the emblem atlas (flagShown: it is there) */
+	i32 emblemSent;   /* +0x47fce: (by use) its emblem's pixels sent so far (0x180 = 24 x 16: all; the map's players start with all) */
+} PlayerRecord;
+
 /* a manager's name tree node: by strcmp, smaller left */
 typedef struct TreeNode {
 	char name[0x40];   /* +0x0 */
@@ -1132,7 +1151,12 @@ typedef struct BmpFile {
 /* a head part type (Stage.headTypes; the ARM CENTER's head panel: armc_parts.c) */
 typedef struct HeadType {
 	char name[0x40];   /* +0x0: its folder path (the panel's name) */
-	u8 _pad0000040[0xa50];
+	i32 shapeCount[2];   /* +0x40: (by use) per pose (detail): the shapes (ObjectList_load's ns) .. */
+	u8 _pad0000048[0x400];
+	char shapeNames[2][0x220];   /* +0x448: .. their names (0x44 apart: a name and an int) */
+	i32 skelCount[2];   /* +0x888: .. the skeletons .. */
+	u8 _pad0000890[0x100];
+	char skelNames[2][0x80];   /* +0x990: .. and their names (0x40 apart) */
 	float weight;   /* +0xa90 */
 	float detectionRange;   /* +0xa94: (by level: the actor's radiusSq, squared) */
 	float detectionAngle;   /* +0xa98: tenths of a degree */
@@ -1144,7 +1168,12 @@ typedef struct HeadType {
 /* a chest part type (Stage.chestTypes) */
 typedef struct ChestType {
 	char name[0x40];   /* +0x0 */
-	u8 _pad0000040[0xa50];
+	i32 shapeCount[2];   /* +0x40: (by use) per pose (detail): the shapes (ObjectList_load's ns) .. */
+	u8 _pad0000048[0x400];
+	char shapeNames[2][0x220];   /* +0x448: .. their names (0x44 apart: a name and an int) */
+	i32 skelCount[2];   /* +0x888: .. the skeletons .. */
+	u8 _pad0000890[0x100];
+	char skelNames[2][0x80];   /* +0x990: .. and their names (0x40 apart) */
 	i32 armsJoint[2];   /* +0xa90: (by use) the joints (bone indices of its shape) the other parts hang on, per detail level (actor_draw) */
 	i32 legsJoint[2];   /* +0xa98 */
 	i32 headJoint[2];   /* +0xaa0 */
@@ -1157,7 +1186,12 @@ typedef struct ChestType {
 /* an arm part type (Stage.armTypes) */
 typedef struct ArmType {
 	char name[0x40];   /* +0x0 */
-	u8 _pad0000040[0x1290];
+	i32 shapeCount[2];   /* +0x40: (by use) per pose (detail): the shapes (ObjectList_load's ns) .. */
+	u8 _pad0000048[0x800];
+	char shapeNames[2][0x440];   /* +0x848: .. their names (0x44 apart: a name and an int) */
+	i32 skelCount[2];   /* +0x10c8: .. the skeletons .. */
+	u8 _pad00010d0[0x100];
+	char skelNames[2][0x80];   /* +0x11d0: .. and their names (0x40 apart) */
 	i32 weaponJoints[3][2];   /* +0x12d0: (by use) the weapon joints per detail level: slots 0 .. 3, slot 4, slot 5 (actor_draw) */
 	float weight;   /* +0x12e8 */
 	i32 stats[5];   /* +0x12ec: (the ARM CENTER's arm stats) [1 ..] the ammunition per kind (the actor's ammoMax) */
@@ -1166,7 +1200,12 @@ typedef struct ArmType {
 /* a leg part type (Stage.legTypes) */
 typedef struct LegType {
 	char name[0x40];   /* +0x0 */
-	u8 _pad0000040[0x1290];
+	i32 shapeCount[2];   /* +0x40: (by use) per pose (detail): the shapes (ObjectList_load's ns) .. */
+	u8 _pad0000048[0x800];
+	char shapeNames[2][0x440];   /* +0x848: .. their names (0x44 apart: a name and an int) */
+	i32 skelCount[2];   /* +0x10c8: .. the skeletons .. */
+	u8 _pad00010d0[0x100];
+	char skelNames[2][0x80];   /* +0x11d0: .. and their names (0x40 apart) */
 	i32 emitters[2][0x20];   /* +0x12d0: (by use) its puffs: [0] the joints, [1] 1: only while running (emit) */
 	i32 emitterCount;   /* +0x13d0 */
 	u8 _pad00013d4[0x4];
@@ -1182,7 +1221,12 @@ typedef struct LegType {
 /* a booster part type (Stage.boosterTypes) */
 typedef struct BoosterType {
 	char name[0x40];   /* +0x0 */
-	u8 _pad0000040[0x16b0];
+	i32 shapeCount[2];   /* +0x40: (by use) per pose (detail): the shapes (ObjectList_load's ns) .. */
+	u8 _pad0000048[0xa00];
+	char shapeNames[2][0x550];   /* +0xa48: .. their names (0x44 apart: a name and an int) */
+	i32 skelCount[2];   /* +0x14e8: .. the skeletons .. */
+	u8 _pad00014f0[0x100];
+	char skelNames[2][0x80];   /* +0x15f0: .. and their names (0x40 apart) */
 	i32 emitters[2][0x20];   /* +0x16f0: (by use) its thrust: [0] the joints, [1] 1: only while running (emit) */
 	i32 emitterCount;   /* +0x17f0 */
 	u8 _pad00017f4[0x4];
@@ -1854,22 +1898,6 @@ _Static_assert(offsetof(ActorInfo, tracer) == 0x2e0c && sizeof(((ActorInfo *)0)-
 _Static_assert(offsetof(ActorInfo, ringRange) == 0x2e10 && sizeof(((ActorInfo *)0)->ringRange) == 0x4, "scene.fields: ActorInfo.ringRange");
 _Static_assert(offsetof(ActorInfo, push) == 0x2e14 && sizeof(((ActorInfo *)0)->push) == 0x4, "scene.fields: ActorInfo.push");
 _Static_assert(sizeof(ActorInfo) == 0x2e18, "scene.fields: size of ActorInfo");
-_Static_assert(offsetof(PlayerRecord, used) == 0x0 && sizeof(((PlayerRecord *)0)->used) == 0x4, "scene.fields: PlayerRecord.used");
-_Static_assert(offsetof(PlayerRecord, name) == 0x4 && sizeof(((PlayerRecord *)0)->name) == 0x40, "scene.fields: PlayerRecord.name");
-_Static_assert(offsetof(PlayerRecord, level) == 0x44 && sizeof(((PlayerRecord *)0)->level) == 0x4, "scene.fields: PlayerRecord.level");
-_Static_assert(offsetof(PlayerRecord, team) == 0x48 && sizeof(((PlayerRecord *)0)->team) == 0x4, "scene.fields: PlayerRecord.team");
-_Static_assert(offsetof(PlayerRecord, partNames) == 0x4c && sizeof(((PlayerRecord *)0)->partNames) == 0x140, "scene.fields: PlayerRecord.partNames");
-_Static_assert(offsetof(PlayerRecord, itemNames) == 0x18c && sizeof(((PlayerRecord *)0)->itemNames) == 0x180, "scene.fields: PlayerRecord.itemNames");
-_Static_assert(offsetof(PlayerRecord, parts) == 0x30c && sizeof(((PlayerRecord *)0)->parts) == 0x14, "scene.fields: PlayerRecord.parts");
-_Static_assert(offsetof(PlayerRecord, items) == 0x320 && sizeof(((PlayerRecord *)0)->items) == 0x18, "scene.fields: PlayerRecord.items");
-_Static_assert(offsetof(PlayerRecord, partHue) == 0x479a4 && sizeof(((PlayerRecord *)0)->partHue) == 0xa, "scene.fields: PlayerRecord.partHue");
-_Static_assert(offsetof(PlayerRecord, partSaturation) == 0x479ae && sizeof(((PlayerRecord *)0)->partSaturation) == 0xa, "scene.fields: PlayerRecord.partSaturation");
-_Static_assert(offsetof(PlayerRecord, partValue) == 0x479b8 && sizeof(((PlayerRecord *)0)->partValue) == 0xa, "scene.fields: PlayerRecord.partValue");
-_Static_assert(offsetof(PlayerRecord, emblem) == 0x479c2 && sizeof(((PlayerRecord *)0)->emblem) == 0x600, "scene.fields: PlayerRecord.emblem");
-_Static_assert(offsetof(PlayerRecord, flagShown) == 0x47fc6 && sizeof(((PlayerRecord *)0)->flagShown) == 0x4, "scene.fields: PlayerRecord.flagShown");
-_Static_assert(offsetof(PlayerRecord, emblemChanged) == 0x47fca && sizeof(((PlayerRecord *)0)->emblemChanged) == 0x4, "scene.fields: PlayerRecord.emblemChanged");
-_Static_assert(offsetof(PlayerRecord, emblemSent) == 0x47fce && sizeof(((PlayerRecord *)0)->emblemSent) == 0x4, "scene.fields: PlayerRecord.emblemSent");
-_Static_assert(sizeof(PlayerRecord) == 0x47fd2, "scene.fields: size of PlayerRecord");
 _Static_assert(offsetof(BlockOwner, blockSize) == 0x4 && sizeof(((BlockOwner *)0)->blockSize) == 0x4, "scene.fields: BlockOwner.blockSize");
 _Static_assert(offsetof(BlockOwner, block) == 0x8 && sizeof(((BlockOwner *)0)->block) == 0x4, "scene.fields: BlockOwner.block");
 _Static_assert(offsetof(BlockOwner, ownsBlock) == 0xc && sizeof(((BlockOwner *)0)->ownsBlock) == 0x4, "scene.fields: BlockOwner.ownsBlock");
@@ -2079,13 +2107,21 @@ _Static_assert(offsetof(Player, damageFlash) == 0x548 && sizeof(((Player *)0)->d
 _Static_assert(offsetof(Player, breakUp) == 0x54c && sizeof(((Player *)0)->breakUp) == 0x4, "scene.fields: Player.breakUp");
 _Static_assert(offsetof(Player, viewMarked) == 0x550 && sizeof(((Player *)0)->viewMarked) == 0x4, "scene.fields: Player.viewMarked");
 _Static_assert(offsetof(Player, headModel) == 0x554 && sizeof(((Player *)0)->headModel) == 0x30, "scene.fields: Player.headModel");
+_Static_assert(offsetof(Player, headModelMem) == 0x584 && sizeof(((Player *)0)->headModelMem) == 0x7d0, "scene.fields: Player.headModelMem");
 _Static_assert(offsetof(Player, chestModel) == 0xd54 && sizeof(((Player *)0)->chestModel) == 0x30, "scene.fields: Player.chestModel");
+_Static_assert(offsetof(Player, chestModelMem) == 0xd84 && sizeof(((Player *)0)->chestModelMem) == 0x7d0, "scene.fields: Player.chestModelMem");
 _Static_assert(offsetof(Player, armsModel) == 0x1554 && sizeof(((Player *)0)->armsModel) == 0x30, "scene.fields: Player.armsModel");
+_Static_assert(offsetof(Player, armsModelMem) == 0x1584 && sizeof(((Player *)0)->armsModelMem) == 0xfa0, "scene.fields: Player.armsModelMem");
 _Static_assert(offsetof(Player, legsModel) == 0x2524 && sizeof(((Player *)0)->legsModel) == 0x30, "scene.fields: Player.legsModel");
+_Static_assert(offsetof(Player, legsModelMem) == 0x2554 && sizeof(((Player *)0)->legsModelMem) == 0xfa0, "scene.fields: Player.legsModelMem");
 _Static_assert(offsetof(Player, boosterModel) == 0x34f4 && sizeof(((Player *)0)->boosterModel) == 0x30, "scene.fields: Player.boosterModel");
+_Static_assert(offsetof(Player, boosterModelMem) == 0x3524 && sizeof(((Player *)0)->boosterModelMem) == 0xbb8, "scene.fields: Player.boosterModelMem");
 _Static_assert(offsetof(Player, weaponModel) == 0x40dc && sizeof(((Player *)0)->weaponModel) == 0x30, "scene.fields: Player.weaponModel");
+_Static_assert(offsetof(Player, weaponModelMem) == 0x410c && sizeof(((Player *)0)->weaponModelMem) == 0x1770, "scene.fields: Player.weaponModelMem");
 _Static_assert(offsetof(Player, weaponModel4) == 0x587c && sizeof(((Player *)0)->weaponModel4) == 0x30, "scene.fields: Player.weaponModel4");
+_Static_assert(offsetof(Player, weaponModel4Mem) == 0x58ac && sizeof(((Player *)0)->weaponModel4Mem) == 0x1770, "scene.fields: Player.weaponModel4Mem");
 _Static_assert(offsetof(Player, weaponModel5) == 0x701c && sizeof(((Player *)0)->weaponModel5) == 0x30, "scene.fields: Player.weaponModel5");
+_Static_assert(offsetof(Player, weaponModel5Mem) == 0x704c && sizeof(((Player *)0)->weaponModel5Mem) == 0x1770, "scene.fields: Player.weaponModel5Mem");
 _Static_assert(offsetof(Player, screenPos) == 0x87bc && sizeof(((Player *)0)->screenPos) == 0xc, "scene.fields: Player.screenPos");
 _Static_assert(offsetof(Player, tagTopLeft) == 0x87c8 && sizeof(((Player *)0)->tagTopLeft) == 0xc, "scene.fields: Player.tagTopLeft");
 _Static_assert(offsetof(Player, tagBottomRight) == 0x87d4 && sizeof(((Player *)0)->tagBottomRight) == 0xc, "scene.fields: Player.tagBottomRight");
@@ -2560,6 +2596,42 @@ _Static_assert(offsetof(SkelManager, dataSize) == 0x124 && sizeof(((SkelManager 
 _Static_assert(offsetof(SkelManager, data) == 0x128 && sizeof(((SkelManager *)0)->data) == 0x4, "scene.fields: SkelManager.data");
 _Static_assert(offsetof(SkelManager, dataUsed) == 0x12c && sizeof(((SkelManager *)0)->dataUsed) == 0x4, "scene.fields: SkelManager.dataUsed");
 _Static_assert(sizeof(SkelManager) == 0x130, "scene.fields: size of SkelManager");
+_Static_assert(offsetof(PlayerRecord, used) == 0x0 && sizeof(((PlayerRecord *)0)->used) == 0x4, "scene.fields: PlayerRecord.used");
+_Static_assert(offsetof(PlayerRecord, name) == 0x4 && sizeof(((PlayerRecord *)0)->name) == 0x40, "scene.fields: PlayerRecord.name");
+_Static_assert(offsetof(PlayerRecord, level) == 0x44 && sizeof(((PlayerRecord *)0)->level) == 0x4, "scene.fields: PlayerRecord.level");
+_Static_assert(offsetof(PlayerRecord, team) == 0x48 && sizeof(((PlayerRecord *)0)->team) == 0x4, "scene.fields: PlayerRecord.team");
+_Static_assert(offsetof(PlayerRecord, partNames) == 0x4c && sizeof(((PlayerRecord *)0)->partNames) == 0x140, "scene.fields: PlayerRecord.partNames");
+_Static_assert(offsetof(PlayerRecord, itemNames) == 0x18c && sizeof(((PlayerRecord *)0)->itemNames) == 0x180, "scene.fields: PlayerRecord.itemNames");
+_Static_assert(offsetof(PlayerRecord, parts) == 0x30c && sizeof(((PlayerRecord *)0)->parts) == 0x14, "scene.fields: PlayerRecord.parts");
+_Static_assert(offsetof(PlayerRecord, items) == 0x320 && sizeof(((PlayerRecord *)0)->items) == 0x18, "scene.fields: PlayerRecord.items");
+_Static_assert(offsetof(PlayerRecord, headShapes) == 0x338 && sizeof(((PlayerRecord *)0)->headShapes) == 0x24c, "scene.fields: PlayerRecord.headShapes");
+_Static_assert(offsetof(PlayerRecord, headShapeData) == 0x584 && sizeof(((PlayerRecord *)0)->headShapeData) == 0x7d00, "scene.fields: PlayerRecord.headShapeData");
+_Static_assert(offsetof(PlayerRecord, chestShapes) == 0x8284 && sizeof(((PlayerRecord *)0)->chestShapes) == 0x24c, "scene.fields: PlayerRecord.chestShapes");
+_Static_assert(offsetof(PlayerRecord, chestShapeData) == 0x84d0 && sizeof(((PlayerRecord *)0)->chestShapeData) == 0x7d00, "scene.fields: PlayerRecord.chestShapeData");
+_Static_assert(offsetof(PlayerRecord, armShapes) == 0x101d0 && sizeof(((PlayerRecord *)0)->armShapes) == 0x24c, "scene.fields: PlayerRecord.armShapes");
+_Static_assert(offsetof(PlayerRecord, armShapeData) == 0x1041c && sizeof(((PlayerRecord *)0)->armShapeData) == 0xfa00, "scene.fields: PlayerRecord.armShapeData");
+_Static_assert(offsetof(PlayerRecord, legShapes) == 0x1fe1c && sizeof(((PlayerRecord *)0)->legShapes) == 0x24c, "scene.fields: PlayerRecord.legShapes");
+_Static_assert(offsetof(PlayerRecord, legShapeData) == 0x20068 && sizeof(((PlayerRecord *)0)->legShapeData) == 0xfa00, "scene.fields: PlayerRecord.legShapeData");
+_Static_assert(offsetof(PlayerRecord, boosterShapes) == 0x2fa68 && sizeof(((PlayerRecord *)0)->boosterShapes) == 0x24c, "scene.fields: PlayerRecord.boosterShapes");
+_Static_assert(offsetof(PlayerRecord, boosterShapeData) == 0x2fcb4 && sizeof(((PlayerRecord *)0)->boosterShapeData) == 0x13880, "scene.fields: PlayerRecord.boosterShapeData");
+_Static_assert(offsetof(PlayerRecord, headSkels) == 0x43534 && sizeof(((PlayerRecord *)0)->headSkels) == 0x130, "scene.fields: PlayerRecord.headSkels");
+_Static_assert(offsetof(PlayerRecord, headSkelData) == 0x43664 && sizeof(((PlayerRecord *)0)->headSkelData) == 0x7d0, "scene.fields: PlayerRecord.headSkelData");
+_Static_assert(offsetof(PlayerRecord, chestSkels) == 0x43e34 && sizeof(((PlayerRecord *)0)->chestSkels) == 0x130, "scene.fields: PlayerRecord.chestSkels");
+_Static_assert(offsetof(PlayerRecord, chestSkelData) == 0x43f64 && sizeof(((PlayerRecord *)0)->chestSkelData) == 0x7d0, "scene.fields: PlayerRecord.chestSkelData");
+_Static_assert(offsetof(PlayerRecord, armSkels) == 0x44734 && sizeof(((PlayerRecord *)0)->armSkels) == 0x130, "scene.fields: PlayerRecord.armSkels");
+_Static_assert(offsetof(PlayerRecord, armSkelData) == 0x44864 && sizeof(((PlayerRecord *)0)->armSkelData) == 0xfa0, "scene.fields: PlayerRecord.armSkelData");
+_Static_assert(offsetof(PlayerRecord, legSkels) == 0x45804 && sizeof(((PlayerRecord *)0)->legSkels) == 0x130, "scene.fields: PlayerRecord.legSkels");
+_Static_assert(offsetof(PlayerRecord, legSkelData) == 0x45934 && sizeof(((PlayerRecord *)0)->legSkelData) == 0xfa0, "scene.fields: PlayerRecord.legSkelData");
+_Static_assert(offsetof(PlayerRecord, boosterSkels) == 0x468d4 && sizeof(((PlayerRecord *)0)->boosterSkels) == 0x130, "scene.fields: PlayerRecord.boosterSkels");
+_Static_assert(offsetof(PlayerRecord, boosterSkelData) == 0x46a04 && sizeof(((PlayerRecord *)0)->boosterSkelData) == 0xfa0, "scene.fields: PlayerRecord.boosterSkelData");
+_Static_assert(offsetof(PlayerRecord, partHue) == 0x479a4 && sizeof(((PlayerRecord *)0)->partHue) == 0xa, "scene.fields: PlayerRecord.partHue");
+_Static_assert(offsetof(PlayerRecord, partSaturation) == 0x479ae && sizeof(((PlayerRecord *)0)->partSaturation) == 0xa, "scene.fields: PlayerRecord.partSaturation");
+_Static_assert(offsetof(PlayerRecord, partValue) == 0x479b8 && sizeof(((PlayerRecord *)0)->partValue) == 0xa, "scene.fields: PlayerRecord.partValue");
+_Static_assert(offsetof(PlayerRecord, emblem) == 0x479c2 && sizeof(((PlayerRecord *)0)->emblem) == 0x600, "scene.fields: PlayerRecord.emblem");
+_Static_assert(offsetof(PlayerRecord, flagShown) == 0x47fc6 && sizeof(((PlayerRecord *)0)->flagShown) == 0x4, "scene.fields: PlayerRecord.flagShown");
+_Static_assert(offsetof(PlayerRecord, emblemChanged) == 0x47fca && sizeof(((PlayerRecord *)0)->emblemChanged) == 0x4, "scene.fields: PlayerRecord.emblemChanged");
+_Static_assert(offsetof(PlayerRecord, emblemSent) == 0x47fce && sizeof(((PlayerRecord *)0)->emblemSent) == 0x4, "scene.fields: PlayerRecord.emblemSent");
+_Static_assert(sizeof(PlayerRecord) == 0x47fd2, "scene.fields: size of PlayerRecord");
 _Static_assert(offsetof(TreeNode, name) == 0x0 && sizeof(((TreeNode *)0)->name) == 0x40, "scene.fields: TreeNode.name");
 _Static_assert(offsetof(TreeNode, index) == 0x40 && sizeof(((TreeNode *)0)->index) == 0x4, "scene.fields: TreeNode.index");
 _Static_assert(offsetof(TreeNode, left) == 0x44 && sizeof(((TreeNode *)0)->left) == 0x4, "scene.fields: TreeNode.left");
@@ -2681,6 +2753,10 @@ _Static_assert(offsetof(BmpFile, width) == 0x3e && sizeof(((BmpFile *)0)->width)
 _Static_assert(offsetof(BmpFile, height) == 0x42 && sizeof(((BmpFile *)0)->height) == 0x4, "scene.fields: BmpFile.height");
 _Static_assert(sizeof(BmpFile) == 0x48, "scene.fields: size of BmpFile");
 _Static_assert(offsetof(HeadType, name) == 0x0 && sizeof(((HeadType *)0)->name) == 0x40, "scene.fields: HeadType.name");
+_Static_assert(offsetof(HeadType, shapeCount) == 0x40 && sizeof(((HeadType *)0)->shapeCount) == 0x8, "scene.fields: HeadType.shapeCount");
+_Static_assert(offsetof(HeadType, shapeNames) == 0x448 && sizeof(((HeadType *)0)->shapeNames) == 0x440, "scene.fields: HeadType.shapeNames");
+_Static_assert(offsetof(HeadType, skelCount) == 0x888 && sizeof(((HeadType *)0)->skelCount) == 0x8, "scene.fields: HeadType.skelCount");
+_Static_assert(offsetof(HeadType, skelNames) == 0x990 && sizeof(((HeadType *)0)->skelNames) == 0x100, "scene.fields: HeadType.skelNames");
 _Static_assert(offsetof(HeadType, weight) == 0xa90 && sizeof(((HeadType *)0)->weight) == 0x4, "scene.fields: HeadType.weight");
 _Static_assert(offsetof(HeadType, detectionRange) == 0xa94 && sizeof(((HeadType *)0)->detectionRange) == 0x4, "scene.fields: HeadType.detectionRange");
 _Static_assert(offsetof(HeadType, detectionAngle) == 0xa98 && sizeof(((HeadType *)0)->detectionAngle) == 0x4, "scene.fields: HeadType.detectionAngle");
@@ -2689,6 +2765,10 @@ _Static_assert(offsetof(HeadType, lockOnTime) == 0xaa0 && sizeof(((HeadType *)0)
 _Static_assert(offsetof(HeadType, targetKeepTime) == 0xaa4 && sizeof(((HeadType *)0)->targetKeepTime) == 0x4, "scene.fields: HeadType.targetKeepTime");
 _Static_assert(sizeof(HeadType) == 0xaa8, "scene.fields: size of HeadType");
 _Static_assert(offsetof(ChestType, name) == 0x0 && sizeof(((ChestType *)0)->name) == 0x40, "scene.fields: ChestType.name");
+_Static_assert(offsetof(ChestType, shapeCount) == 0x40 && sizeof(((ChestType *)0)->shapeCount) == 0x8, "scene.fields: ChestType.shapeCount");
+_Static_assert(offsetof(ChestType, shapeNames) == 0x448 && sizeof(((ChestType *)0)->shapeNames) == 0x440, "scene.fields: ChestType.shapeNames");
+_Static_assert(offsetof(ChestType, skelCount) == 0x888 && sizeof(((ChestType *)0)->skelCount) == 0x8, "scene.fields: ChestType.skelCount");
+_Static_assert(offsetof(ChestType, skelNames) == 0x990 && sizeof(((ChestType *)0)->skelNames) == 0x100, "scene.fields: ChestType.skelNames");
 _Static_assert(offsetof(ChestType, armsJoint) == 0xa90 && sizeof(((ChestType *)0)->armsJoint) == 0x8, "scene.fields: ChestType.armsJoint");
 _Static_assert(offsetof(ChestType, legsJoint) == 0xa98 && sizeof(((ChestType *)0)->legsJoint) == 0x8, "scene.fields: ChestType.legsJoint");
 _Static_assert(offsetof(ChestType, headJoint) == 0xaa0 && sizeof(((ChestType *)0)->headJoint) == 0x8, "scene.fields: ChestType.headJoint");
@@ -2698,11 +2778,19 @@ _Static_assert(offsetof(ChestType, maxArmor) == 0xab4 && sizeof(((ChestType *)0)
 _Static_assert(offsetof(ChestType, maxShield) == 0xab8 && sizeof(((ChestType *)0)->maxShield) == 0x4, "scene.fields: ChestType.maxShield");
 _Static_assert(sizeof(ChestType) == 0xabc, "scene.fields: size of ChestType");
 _Static_assert(offsetof(ArmType, name) == 0x0 && sizeof(((ArmType *)0)->name) == 0x40, "scene.fields: ArmType.name");
+_Static_assert(offsetof(ArmType, shapeCount) == 0x40 && sizeof(((ArmType *)0)->shapeCount) == 0x8, "scene.fields: ArmType.shapeCount");
+_Static_assert(offsetof(ArmType, shapeNames) == 0x848 && sizeof(((ArmType *)0)->shapeNames) == 0x880, "scene.fields: ArmType.shapeNames");
+_Static_assert(offsetof(ArmType, skelCount) == 0x10c8 && sizeof(((ArmType *)0)->skelCount) == 0x8, "scene.fields: ArmType.skelCount");
+_Static_assert(offsetof(ArmType, skelNames) == 0x11d0 && sizeof(((ArmType *)0)->skelNames) == 0x100, "scene.fields: ArmType.skelNames");
 _Static_assert(offsetof(ArmType, weaponJoints) == 0x12d0 && sizeof(((ArmType *)0)->weaponJoints) == 0x18, "scene.fields: ArmType.weaponJoints");
 _Static_assert(offsetof(ArmType, weight) == 0x12e8 && sizeof(((ArmType *)0)->weight) == 0x4, "scene.fields: ArmType.weight");
 _Static_assert(offsetof(ArmType, stats) == 0x12ec && sizeof(((ArmType *)0)->stats) == 0x14, "scene.fields: ArmType.stats");
 _Static_assert(sizeof(ArmType) == 0x1300, "scene.fields: size of ArmType");
 _Static_assert(offsetof(LegType, name) == 0x0 && sizeof(((LegType *)0)->name) == 0x40, "scene.fields: LegType.name");
+_Static_assert(offsetof(LegType, shapeCount) == 0x40 && sizeof(((LegType *)0)->shapeCount) == 0x8, "scene.fields: LegType.shapeCount");
+_Static_assert(offsetof(LegType, shapeNames) == 0x848 && sizeof(((LegType *)0)->shapeNames) == 0x880, "scene.fields: LegType.shapeNames");
+_Static_assert(offsetof(LegType, skelCount) == 0x10c8 && sizeof(((LegType *)0)->skelCount) == 0x8, "scene.fields: LegType.skelCount");
+_Static_assert(offsetof(LegType, skelNames) == 0x11d0 && sizeof(((LegType *)0)->skelNames) == 0x100, "scene.fields: LegType.skelNames");
 _Static_assert(offsetof(LegType, emitters) == 0x12d0 && sizeof(((LegType *)0)->emitters) == 0x100, "scene.fields: LegType.emitters");
 _Static_assert(offsetof(LegType, emitterCount) == 0x13d0 && sizeof(((LegType *)0)->emitterCount) == 0x4, "scene.fields: LegType.emitterCount");
 _Static_assert(offsetof(LegType, weight) == 0x13d8 && sizeof(((LegType *)0)->weight) == 0x4, "scene.fields: LegType.weight");
@@ -2714,6 +2802,10 @@ _Static_assert(offsetof(LegType, bonus3) == 0x13ec && sizeof(((LegType *)0)->bon
 _Static_assert(offsetof(LegType, bonus2) == 0x13f0 && sizeof(((LegType *)0)->bonus2) == 0x4, "scene.fields: LegType.bonus2");
 _Static_assert(sizeof(LegType) == 0x13f4, "scene.fields: size of LegType");
 _Static_assert(offsetof(BoosterType, name) == 0x0 && sizeof(((BoosterType *)0)->name) == 0x40, "scene.fields: BoosterType.name");
+_Static_assert(offsetof(BoosterType, shapeCount) == 0x40 && sizeof(((BoosterType *)0)->shapeCount) == 0x8, "scene.fields: BoosterType.shapeCount");
+_Static_assert(offsetof(BoosterType, shapeNames) == 0xa48 && sizeof(((BoosterType *)0)->shapeNames) == 0xaa0, "scene.fields: BoosterType.shapeNames");
+_Static_assert(offsetof(BoosterType, skelCount) == 0x14e8 && sizeof(((BoosterType *)0)->skelCount) == 0x8, "scene.fields: BoosterType.skelCount");
+_Static_assert(offsetof(BoosterType, skelNames) == 0x15f0 && sizeof(((BoosterType *)0)->skelNames) == 0x100, "scene.fields: BoosterType.skelNames");
 _Static_assert(offsetof(BoosterType, emitters) == 0x16f0 && sizeof(((BoosterType *)0)->emitters) == 0x100, "scene.fields: BoosterType.emitters");
 _Static_assert(offsetof(BoosterType, emitterCount) == 0x17f0 && sizeof(((BoosterType *)0)->emitterCount) == 0x4, "scene.fields: BoosterType.emitterCount");
 _Static_assert(offsetof(BoosterType, weight) == 0x17f8 && sizeof(((BoosterType *)0)->weight) == 0x4, "scene.fields: BoosterType.weight");

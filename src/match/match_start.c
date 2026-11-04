@@ -394,12 +394,15 @@ void THISCALL (item_initTextures)(u8 *s, u32 a1, u32 a2, const char *sky, u32 a4
 	                              offsetof(Stage, boosterTypeCount), offsetof(Stage, playerRecordCount) };
 	for (int k = 0; k < 10; k++)
 		FIELD(int, s, zero[k]) = 0;
+	/* each player record's five shape and skeleton caches */
+#define PART(p, n, extra, sextra) { offsetof(PlayerRecord, p##Shapes), n, extra, sizeof ((PlayerRecord *)0)->p##ShapeData, offsetof(PlayerRecord, p##Skels), sextra, \
+	offsetof(PlayerRecord, p##SkelData), sizeof ((PlayerRecord *)0)->p##SkelData }
 	static const struct { u32 shapes; int n, extra, size; u32 skels; int sextra; u32 smem; int ssize; } parts[5] = {
-		{ 0, 8, 0x7840, 0x7d00, 0x431fc, 0x6f0, 0x4332c, 0x7d0 }, { 0x7f4c, 8, 0x7840, 0x7d00, 0x43afc, 0x6f0, 0x43c2c, 0x7d0 },
-		{ 0xfe98, 0x10, 0xf080, 0xfa00, 0x443fc, 0xec0, 0x4452c, 0xfa0 }, { 0x1fae4, 0x10, 0xf080, 0xfa00, 0x454cc, 0xec0, 0x455fc, 0xfa0 },
-		{ 0x2f730, 0x14, 0x12ca0, 0x13880, 0x4659c, 0xec0, 0x466cc, 0xfa0 } };
+		PART(head, 8, 0x7840, 0x6f0), PART(chest, 8, 0x7840, 0x6f0), PART(arm, 0x10, 0xf080, 0xec0), PART(leg, 0x10, 0xf080, 0xec0),
+		PART(booster, 0x14, 0x12ca0, 0xec0) };
+#undef PART
 	for (int t = 0; t < 16; t++) {
-		u8 *type = s + 0x1561ea0 + t * 0x47fd2;
+		u8 *type = (u8 *)&st->playerRecords[t];
 		for (int k = 0; k < 5; k++)
 			model_sets(type + parts[k].shapes, dir, parts[k].n, parts[k].extra, parts[k].size, type + parts[k].skels, skel_dir, 2,
 			           parts[k].sextra, type + parts[k].smem, parts[k].ssize);
