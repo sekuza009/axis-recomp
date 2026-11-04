@@ -586,8 +586,8 @@ u32 (arena_editTitle)(void)
 	return r;
 }
 
-/* a settings record (name, six bytes from +0x20, a password from +0x26) stored into another: the password flag
-   (+0x2e: the password is not empty) set in both. Then the store's follow-up; returns what it leaves in eax */
+/* a settings record (GameSettings: the name, the six choices, the password) stored into another: the locked flag
+   (the password is not empty) set in both. Then the store's follow-up; returns what it leaves in eax */
 /* (the copies are plain loops, as the original's inline string instructions: no calls before the follow-up, whose
    stack the original leaves untouched) */
 static void copy_string(u8 *to, const u8 *from)
@@ -596,22 +596,25 @@ static void copy_string(u8 *to, const u8 *from)
 		*to++ = *from;
 	while (*from++);
 }
-static u32 settings_store(u8 *from, u8 *to, u32 then)
+static u32 settings_store(GameSettings *from, GameSettings *to, u32 then)
 {
-	u8 locked = from[0x26] != 0;
-	from[0x2e] = locked;
-	copy_string(to, from);
-	static const u8 order[6] = { 0x21, 0x20, 0x23, 0x22, 0x25, 0x24 };
-	for (int k = 0; k < 6; k++)
-		to[order[k]] = from[order[k]];
-	copy_string(to + 0x26, from + 0x26);
-	to[0x2e] = locked;
+	u8 locked = from->password[0] != 0;
+	from->locked = locked;
+	copy_string((u8 *)to->name, (const u8 *)from->name);
+	to->players = from->players;
+	to->map = from->map;
+	to->mode = from->mode;
+	to->kind = from->kind;
+	to->limit[1] = from->limit[1];
+	to->limit[0] = from->limit[0];
+	copy_string((u8 *)to->password, (const u8 *)from->password);
+	to->locked = locked;
 	return GAME_CDECL(then, u32, void)();
 }
 /* 0x405140: the arena being created kept as the arena settings (0x4ded20), then axis.cfg loaded again */
-u32 (lobby_keepArenaSettings)(void) { return settings_store((u8 *)OBJ(g_newArenaName), (u8 *)OBJ(g_playerName), FN_ADDR(cfg_loadAxisCfg, 0x42d730)); }
+u32 (lobby_keepArenaSettings)(void) { return settings_store((GameSettings *)OBJ(g_newArenaName), (GameSettings *)OBJ(g_playerName), FN_ADDR(cfg_loadAxisCfg, 0x42d730)); }
 /* 0x433640: the room's settings kept (0x5b1b30) and written to the registry (reg_writeCharacterSettings) */
-u32 (room_keepSettings)(void) { return settings_store((u8 *)OBJ(g_roomSettingsName), (u8 *)OBJ(g_roomRecName), FN_ADDR(reg_writeCharacterSettings, 0x432400)); }
+u32 (room_keepSettings)(void) { return settings_store((GameSettings *)OBJ(g_roomSettingsName), (GameSettings *)OBJ(g_roomRecName), FN_ADDR(reg_writeCharacterSettings, 0x432400)); }
 
 /* 0x40d390: the create-arena screen drawn: the tunnel, then (modes other than 0 and 1, not on sub-screen 5) the
    dialog's frame if one is open, else the settings kept in range (players 0 .. 16 else 8, the two limits at most 250
@@ -1616,17 +1619,17 @@ void (lobby_checkReservedName3)(void)
 	u8 *packet = g_arenaPacket;
 	GAME_CDECL(0x49ea80, char *, char *, const char *, int)((char *)packet + 0x43, g_joinedTitleName, 0x1e);   /* strncpy */
 	packet = g_arenaPacket;
-	const u8 *room = (const u8 *)OBJ(g_roomRecName);
+	const GameSettings *room = (const GameSettings *)OBJ(g_roomRecName);
 	packet[0] = 0x18;
-	packet[0x67] = room[0x22];
-	packet[0x66] = room[0x25];
-	packet[0x65] = room[0x24];
-	packet[0x64] = room[0x23];
+	packet[0x67] = room->kind;
+	packet[0x66] = room->limit[1];
+	packet[0x65] = room->limit[0];
+	packet[0x64] = room->mode;
 	packet[0x63] = 1;
-	packet[0x61] = room[0x20];
-	packet[0x62] = room[0x21];
-	packet[0x70] = room[0x2e];
-	lstrcpyA((char *)packet + 0x71, g_roomRecName + 0x26);
+	packet[0x61] = room->map;
+	packet[0x62] = room->players;
+	packet[0x70] = room->locked;
+	lstrcpyA((char *)packet + 0x71, ((const GameSettings *)OBJ(g_roomRecName))->password);
 	lstrcpyA((char *)g_arenaPacket + 1, g_roomRecName);
 	jmp_net_getLocalAddress();
 	lstrcpyA((char *)g_arenaPacket + 0x33, g_localAddress);

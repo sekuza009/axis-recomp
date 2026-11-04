@@ -610,6 +610,17 @@ struct SessionEntry 0x4a                                         # a game of the
 0x3f       8          char password[8]
 0x47       1          u8 locked                                  # a password is asked for (the lock shown)
 
+struct GameSettings 0x30                                         # a game's settings record (g_playerName: the arena's / axis.cfg's, g_roomRecName: the
+                                                                 # registry's, g_roomSettingsName: the room form's, g_newArenaName: the new arena form's)
+0          0x20       char name[32]
+0x20       1          signed char map
+0x21       1          signed char players
+0x22       1          signed char kind                           # the room: custom rules (the map shown as CUSTOM); the arena: the kind of game
+0x23       1          signed char mode
+0x24       2          u8 limit[2]                                # frag, time
+0x26       8          char password[8]
+0x2e       1          u8 locked                                  # the password is not empty (settings_store)
+
 struct RankedPlayer 0x3e                                         # a player of the ranking list as the game server sends it (62 bytes: g_serverReply;
                                                                  # kept in g_netPlayerList, eleven of them, by net_addPlayerRecord)
 0          0x1e       char name[30]

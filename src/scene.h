@@ -705,6 +705,19 @@ typedef struct SessionEntry {
 	u8 _pad0000048[0x2];
 } SessionEntry;
 
+/* a game's settings record (g_playerName: the arena's / axis.cfg's, g_roomRecName: the */
+typedef struct GameSettings {
+	char name[32];   /* +0x0 */
+	signed char map;   /* +0x20 */
+	signed char players;   /* +0x21 */
+	signed char kind;   /* +0x22: the room: custom rules (the map shown as CUSTOM); the arena: the kind of game */
+	signed char mode;   /* +0x23 */
+	u8 limit[2];   /* +0x24: frag, time */
+	char password[8];   /* +0x26 */
+	u8 locked;   /* +0x2e: the password is not empty (settings_store) */
+	u8 _pad000002f[0x1];
+} GameSettings;
+
 /* a player of the ranking list as the game server sends it (62 bytes: g_serverReply; */
 typedef struct RankedPlayer {
 	char name[30];   /* +0x0 */
@@ -2287,6 +2300,15 @@ _Static_assert(offsetof(SessionEntry, address) == 0x2f && sizeof(((SessionEntry 
 _Static_assert(offsetof(SessionEntry, password) == 0x3f && sizeof(((SessionEntry *)0)->password) == 0x8, "scene.fields: SessionEntry.password");
 _Static_assert(offsetof(SessionEntry, locked) == 0x47 && sizeof(((SessionEntry *)0)->locked) == 0x1, "scene.fields: SessionEntry.locked");
 _Static_assert(sizeof(SessionEntry) == 0x4a, "scene.fields: size of SessionEntry");
+_Static_assert(offsetof(GameSettings, name) == 0x0 && sizeof(((GameSettings *)0)->name) == 0x20, "scene.fields: GameSettings.name");
+_Static_assert(offsetof(GameSettings, map) == 0x20 && sizeof(((GameSettings *)0)->map) == 0x1, "scene.fields: GameSettings.map");
+_Static_assert(offsetof(GameSettings, players) == 0x21 && sizeof(((GameSettings *)0)->players) == 0x1, "scene.fields: GameSettings.players");
+_Static_assert(offsetof(GameSettings, kind) == 0x22 && sizeof(((GameSettings *)0)->kind) == 0x1, "scene.fields: GameSettings.kind");
+_Static_assert(offsetof(GameSettings, mode) == 0x23 && sizeof(((GameSettings *)0)->mode) == 0x1, "scene.fields: GameSettings.mode");
+_Static_assert(offsetof(GameSettings, limit) == 0x24 && sizeof(((GameSettings *)0)->limit) == 0x2, "scene.fields: GameSettings.limit");
+_Static_assert(offsetof(GameSettings, password) == 0x26 && sizeof(((GameSettings *)0)->password) == 0x8, "scene.fields: GameSettings.password");
+_Static_assert(offsetof(GameSettings, locked) == 0x2e && sizeof(((GameSettings *)0)->locked) == 0x1, "scene.fields: GameSettings.locked");
+_Static_assert(sizeof(GameSettings) == 0x30, "scene.fields: size of GameSettings");
 _Static_assert(offsetof(RankedPlayer, name) == 0x0 && sizeof(((RankedPlayer *)0)->name) == 0x1e, "scene.fields: RankedPlayer.name");
 _Static_assert(offsetof(RankedPlayer, kind) == 0x1e && sizeof(((RankedPlayer *)0)->kind) == 0x4, "scene.fields: RankedPlayer.kind");
 _Static_assert(offsetof(RankedPlayer, value22) == 0x22 && sizeof(((RankedPlayer *)0)->value22) == 0x4, "scene.fields: RankedPlayer.value22");

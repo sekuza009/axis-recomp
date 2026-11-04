@@ -5,15 +5,6 @@
 #include "../game.h"
 #include <string.h>
 
-typedef struct {
-	char name[0x20];
-	signed char map, players;
-	signed char kind;      /* the room: custom rules (the map shown as CUSTOM); the arena: the kind of game */
-	signed char mode;
-	u8 limit[2];
-	char password[20];
-} GameSettings;
-
 /* where a form keeps its parts: the window (left, top, right, bottom), the record, the four "being edited" flags
    (name, password, the two limits: each hides its value), the mode names (0x80 apart), and the text of the fifth row:
    fixed (row5) or the kind's name (kinds, 20 apart) */

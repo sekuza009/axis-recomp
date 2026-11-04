@@ -699,10 +699,11 @@ u32 (room_settingsAfterTyping)(void)
 		return strlen(line) + 1;
 	}
 	if (g_editingRoomPassword) {   /* the password */
-		memset(g_roomSettingsName + 0x26, 0, 8);
+		GameSettings *rs = (GameSettings *)OBJ(g_roomSettingsName);
+		memset(rs->password, 0, 8);
 		g_editingRoomPassword = 0;
 		g_chatFieldFlag = 0;
-		strcpy(g_roomSettingsName + 0x26, line);
+		strcpy(rs->password, line);
 		return 0;
 	}
 	static const u32 limit[2][2] = { { ADDR(g_editingFragLimit), ADDR(g_roomFragLimit) }, { ADDR(g_editingTimeLimit), ADDR(g_roomTimeLimit) } };   /* frags, time */
