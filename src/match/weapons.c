@@ -306,16 +306,16 @@ void THISCALL (bullet_init)(u8 *s, int slot, int id, int owner, int a4, const u8
 	memcpy(BU->prev, o, 12);
 	memcpy(BU->pos, o, 12);
 	BU->moved = 0;
-	float *vel = (float *)(RELOC(b) + 0xa0);
+	float *vel = BU->vel;
 	for (int k = 0; k < 3; k++)
-		vel[k] = *w2de8 > 0 ? f32(fmul_m(fld_m(w2de8), &dir[k])) : f32(fsub_m(fld_m((const float *)(RELOC(b) + 0x60) + k), (const float *)(RELOC(b) + 0x54) + k));
+		vel[k] = *w2de8 > 0 ? f32(fmul_m(fld_m(w2de8), &dir[k])) : f32(fsub_m(fld_m(BU->end + k), BU->from + k));
 	memcpy(BU->step, (const void *)ADDR(g_vecZero), 12);
 	BU->hitActor = -1;
 	BU->homeTimer = 0.0f;
 	BU->link = a4;
 	if (((ActorInfo *)w)->tracer > 0 && a4 < 0 && BU->owner == ST->playerActor) {
-		const float *at = (const float *)(RELOC(b) + 0x78);
-		float *tip = (float *)(RELOC(b) + 0xc4);
+		const float *at = BU->prev;
+		float *tip = BU->tip;
 		long double tx = fmul_m(fld_m(&aim[0]), K(0x4aa444));
 		float ty = f32(fmul_m(fld_m(&aim[1]), K(0x4aa444))), tz = f32(fmul_m(fld_m(&aim[2]), K(0x4aa444)));
 		tip[0] = f32(fadd_m(tx, &at[0]));
@@ -340,7 +340,7 @@ void THISCALL (bullet_init)(u8 *s, int slot, int id, int owner, int a4, const u8
 		sound_playVolume(sound, 100);
 	else
 		sound_play3D(sound, ST->cameraPos,
-		                                                                                (const float *)(RELOC(b) + 0x78), ST->viewDir, 0x47435000);
+		                                                                                BU->prev, ST->viewDir, 0x47435000);
 }
 #undef K
 #undef B
@@ -380,7 +380,7 @@ static u32 effect_size(const u8 *w)
 /* the inverse of the view gluLookAt makes from the bullet's last point (+0x78) to its point (+0x84) */
 static void look_inverse(u8 *b, float *inv, int x_up)
 {
-	float *prev = (float *)(RELOC(b) + 0x78), *cur = (float *)(RELOC(b) + 0x84), mv[16];
+	float *prev = BU->prev, *cur = BU->pos, mv[16];
 	glPushMatrix();
 	glLoadIdentity();
 	if (x_up)
@@ -525,7 +525,7 @@ static void hit_actor(u8 *s, u8 *b, const u8 *w, u32 *r, int weapon)
 	t = BU->hitActor;
 	float dir[3];
 	for (int k = 0; k < 3; k++)
-		dir[k] = f32(fsub_m(fld_m((const float *)(RELOC(b) + 0x84) + k), &ST->actors[t].nextPos[k]));
+		dir[k] = f32(fsub_m(fld_m(BU->pos + k), &ST->actors[t].nextPos[k]));
 	Vec3_normalize(dir);
 	effect(s, r, WI->shotMode + 0x1e, 0, (u8 *)BU->end, dir, 0, 0, 0, effect_size(w), 0);
 	effect(s, r, 8, ST->actors[BU->hitActor].timerFlags & 0x2000, (u8 *)BU->end, dir, 0, 0, 0, 0, 0);
@@ -556,7 +556,7 @@ static float through(const float *M, const float *p, int a, int ia, int b, int i
    the other two corners' coordinates in them (uv: the axes' lengths, 0, then two pairs) */
 static void decal(u8 *s, u8 *b, const u8 *w, u32 *r, const u8 *h, const float *N, const float *P)
 {
-	const float *imp = (const float *)(RELOC(b) + 0x60);
+	const float *imp = BU->end;
 	float e[3], uv[6], c2, le;
 	for (int k = 0; k < 3; k++)
 		e[k] = f32(fsub_m(fld_m(&P[k]), &imp[k]));
@@ -638,7 +638,7 @@ static void splash(u8 *s, u8 *b, const u8 *w)
 			continue;
 		float d[3];
 		for (int k = 0; k < 3; k++)
-			d[k] = f32(fsub_m(fld_m(&ST->actors[j].nextPos[k]), (const float *)(RELOC(b) + 0x84) + k));
+			d[k] = f32(fsub_m(fld_m(&ST->actors[j].nextPos[k]), BU->pos + k));
 		long double len = Vec3_normalize(d);
 		if (len >= WI->splashRadius)
 			continue;
@@ -664,7 +664,7 @@ static void splash(u8 *s, u8 *b, const u8 *w)
    for kind 3 both by the bullet's age); again in 1/15 s (+0xc0) */
 static void home(u8 *s, u8 *b, const u8 *w)
 {
-	float *prev = (float *)(RELOC(b) + 0x78), *vel = (float *)(RELOC(b) + 0xa0), spd, rate, T[3];
+	float *prev = BU->prev, *vel = BU->vel, spd, rate, T[3];
 	if (WI->shotMode != 3) {
 		BITS(spd) = BITS(WI->velocity);
 		BITS(rate) = BITS(WI->tracer);
@@ -676,7 +676,7 @@ static void home(u8 *s, u8 *b, const u8 *w)
 	}
 	int tg = BU->link;
 	for (int k = 0; k < 3; k++)
-		T[k] = f32(fsub_m(fld_m(tg >= 0 ? &ST->actors[tg].nextPos[k] : (const float *)(RELOC(b) + 0xc4) + k), &prev[k]));
+		T[k] = f32(fsub_m(fld_m(tg >= 0 ? &ST->actors[tg].nextPos[k] : BU->tip + k), &prev[k]));
 	Vec3_normalize(T);
 	Vec3_normalize(vel);
 	long double dot = (fmul_m(fld_m(&T[2]), &vel[2]) + fmul_m(fld_m(&T[1]), &vel[1])) + fmul_m(fld_m(&T[0]), &vel[0]);
@@ -707,7 +707,7 @@ static void home(u8 *s, u8 *b, const u8 *w)
    homing weapon the world in the way (collision_rayTrace: the hit record +0x6c and the life cut to it) */
 static void fly_local(u8 *s, u8 *b, const u8 *w, const float *dt)
 {
-	float *prev = (float *)(RELOC(b) + 0x78), *cur = (float *)(RELOC(b) + 0x84), *vel = (float *)(RELOC(b) + 0xa0), *step = (float *)(RELOC(b) + 0xac);
+	float *prev = BU->prev, *cur = BU->pos, *vel = BU->vel, *step = BU->step;
 	if (WI->tracer > 0 && WI->velocity > 0) {
 		long double v = fsub_m(fld_m(&BU->homeTimer), dt);
 		BU->homeTimer = (float)v;
@@ -778,7 +778,7 @@ void THISCALL (bullet_update)(u8 *s, int slot, u32 dt_bits)
 	int weapon = BU->weapon;
 	u8 *w = (u8 *)&ST->actorInfo[weapon];
 	u32 r[31];   /* particle_spawn's record, reused */
-	float *prev = (float *)(RELOC(b) + 0x78), *cur = (float *)(RELOC(b) + 0x84), *step = (float *)(RELOC(b) + 0xac);
+	float *prev = BU->prev, *cur = BU->pos, *step = BU->step;
 	if (BU->hitActor >= 0)
 		hit_actor(s, b, w, r, weapon);
 	if (!(BU->age > BU->life)) {
