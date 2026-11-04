@@ -577,18 +577,18 @@ static void decal(u8 *s, u8 *b, const u8 *w, u32 *r, const u8 *h, const float *N
 		uv[q * 2] = f32(fdiv_m((fmul_m(f2, &e[2]) + fmul_m(f1, &e[1])) + fmul_m(f0, &e[0]), &le));
 		uv[q * 2 + 1] = f32(((fmul_m(f2, &c2) + f1 * c1) + f0 * c0) / lc);
 	}
-	const int *obj = ((const int *)((const CollisionPlane *)h)->object);
+	const int *obj = ((const CollisionPlane *)h)->object;
 	if (obj) {
 		u8 *part = GAME_VAR(u8 *, GAME_VAR(u8 *, s + 0x131b0c0 + *obj * 0x2cc) + 0x14) + ((const CollisionPlane *)h)->part * 0x80;
 		float tri[9];
 		for (int k = 0; k < 3; k++)
-			memcpy(tri + k * 3, GAME_VAR(float *, part + 0x50) + ((const CollisionPlane *)h)->corners[k] * 3, 12);
-		effect(s, r, WI->shotMode + 0x28, 0, imp, N, (u32)(s + 0x131af38 + *((const int *)((const CollisionPlane *)h)->object) * 0x2cc), (u32)tri, (u32)uv, 0, 0);
+			memcpy(tri + k * 3, GAME_VAR(float *, part + 0x50) + ((const CollisionPlane *)h)->cornerIndices[k] * 3, 12);
+		effect(s, r, WI->shotMode + 0x28, 0, imp, N, (u32)(s + 0x131af38 + *((const CollisionPlane *)h)->object * 0x2cc), (u32)tri, (u32)uv, 0, 0);
 	} else
 		effect(s, r, WI->shotMode + 0x28, 0, imp, N, 0, (u32)P, (u32)uv, effect_size(w), 0);
 }
 
-/* the surface the bullet hit (+0x6c, a collision triangle record: corners +4, normal +0x4c, its object +0x8c):
+/* the surface the bullet hit (Bullet.hit, a CollisionPlane: its corners, normal, object):
    the corners and normal taken into the world through the object's matrix (+0x1f4), the impact (kind + 0x1e), a
    mark unless the surface takes none (flag 0x10) or marks are off (0x83a9c8), the hit sound */
 static void hit_surface(u8 *s, u8 *b, const u8 *w, u32 *r)
@@ -597,10 +597,10 @@ static void hit_surface(u8 *s, u8 *b, const u8 *w, u32 *r)
 	if (!h)
 		return;
 	float N[3], P[9];
-	const float *n = ((const CollisionPlane *)h)->normal, *p = (const float *)(h + 4);
-	const int *obj = ((const int *)((const CollisionPlane *)h)->object);
+	const float *n = ((const CollisionPlane *)h)->normal, *p = &((const CollisionPlane *)h)->cornerPoints[0][0];
+	const int *obj = ((const CollisionPlane *)h)->object;
 	if (obj) {
-		const float *M = (const float *)(s + 0x131ae44 + *obj * 0x2cc + 0x1f4);
+		const float *M = ST->objects[*obj].relMatrix;
 		N[0] = f32((fmul_m(fld_m(&n[2]), &M[8]) + fmul_m(fld_m(&n[1]), &M[4])) + fmul_m(fld_m(&n[0]), &M[0]));
 		N[1] = f32((fmul_m(fld_m(&n[0]), &M[1]) + fmul_m(fld_m(&n[2]), &M[9])) + fmul_m(fld_m(&n[1]), &M[5]));
 		N[2] = f32((fmul_m(fld_m(&n[0]), &M[2]) + fmul_m(fld_m(&n[2]), &M[10])) + fmul_m(fld_m(&n[1]), &M[6]));
