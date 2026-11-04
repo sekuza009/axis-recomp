@@ -2148,9 +2148,9 @@ void THISCALL BMPRGBFile_ctor(void *self);
 /* 0x487ed0 (thiscall) replay_closeRecording(): close the replay file (+0x2340d08) when one is open (+0x2340d1d) */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 THISCALL DWORD replay_closeRecording(char *self);
-/* 0x4617b0 (thiscall) chat_loadMacros() (it saves them): the 100 chat macros (0x39 bytes each, +0x2340d3d) to "Chat.scp" */
+/* 0x4617b0 (thiscall) chat_saveMacros() (it saves them): the 100 chat macros (0x39 bytes each, +0x2340d3d) to "Chat.scp" */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-THISCALL DWORD chat_loadMacros(char *self);
+THISCALL DWORD chat_saveMacros(char *self);
 /* 0x455030 (thiscall) Texture_dtor (really the destructor body): vtable 0x4a956c, delete the pixel buffer (+0x10c,
    when +0x108 >= 0), close the file (+0x110). EAX as the original leaves it */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
@@ -2243,7 +2243,7 @@ THISCALL DWORD map_readMissionRecords(char *self, DWORD f);
 THISCALL DWORD Light_read(char *self, DWORD f);
 /* 0x45ff30 (ECX) actor_destroyPartLists: destroy an actor's 8 sub-objects (UnitPoseInfo_dtor); 0x463960 ResourceSet_dtor:
    a player's 5 skeleton and 5 shape managers; 0x46ff70 Stage_dtor: the stage (scene, 100 actors and 16 players via
-   eh_vector_destructor_iterator, managers, models, lights, collision volume); 0x4617f0 chat_saveMacros (it loads
+   eh_vector_destructor_iterator, managers, models, lights, collision volume); 0x4617f0 chat_loadMacros (it loads
    them): Chat.scp into the 100 chat macros, else empty them and write the file. Lifted */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 THISCALL DWORD actor_destroyPartLists(void *self);
@@ -2252,7 +2252,7 @@ THISCALL DWORD ResourceSet_dtor(void *self);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 THISCALL DWORD Stage_dtor(void *self);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-THISCALL DWORD chat_saveMacros(void *scene);
+THISCALL DWORD chat_loadMacros(void *scene);
 /* 0x462740 (thiscall) chat_macro(in, out): "/N=text" stores macro N, "/N" expands it into out; returns 1 when handled. Lifted */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 THISCALL int chat_macro(char *self, DWORD in, DWORD out);
@@ -8859,7 +8859,7 @@ ST(BMPRGBFile_close, fill(BUF, 0x20); S32(BUF + 0x10, 4) = irnd(0, 1) ? (int)VFS
 ST(BMPRGBFile_ctor, fill(BUF, 0x20); S32(BUF + 0x10, 4) = irnd(0, 1) ? (int)VFS_FILE(irnd(0, 1)) : 0;, (TC(void, 0x46ce60, char *)(BUF + 0x10), 0), (BMPRGBFile_ctor((DWORD *)(BUF + 0x10)), 0))
 ST(replay_closeRecording, fill(BUF + 0x2340d00, 0x40); S32(BUF, 0x2340d1d) = irnd(0, 1) * irnd(-3, 3); S32(BUF, 0x2340d08) = (int)VFS_FILE(irnd(0, 1));,
    TC(DWORD, 0x487ed0, char *)(BUF), replay_closeRecording(BUF))
-ST(chat_loadMacros, fill(BUF + 0x2340d3d, 0x39 * 100); vfs_content(0, 0);, TC(DWORD, 0x4617b0, char *)(BUF), chat_loadMacros(BUF))
+ST(chat_saveMacros, fill(BUF + 0x2340d3d, 0x39 * 100); vfs_content(0, 0);, TC(DWORD, 0x4617b0, char *)(BUF), chat_saveMacros(BUF))
 ST(Texture_dtor, fill(BUF, 0x200); S32(BUF + 0x10, 0x108) = irnd(-2, 2); S32(BUF + 0x10, 0x110) = irnd(0, 1) ? (int)VFS_FILE(0) : 0;,
    TC(DWORD, 0x455030, char *)(BUF + 0x10), Texture_dtor((DWORD *)(BUF + 0x10)))
 ST(file_existsf, vfs_content(0, 0); fill_str(BUF + 0x100, 40, 32, 126); for (char *p = BUF + 0x100; *p; p++) if (*p == '%') *p = 'x';
@@ -8971,7 +8971,7 @@ static void owned_bits(char *base, DWORD span, int n)
 ST(actor_destroyPartLists, memset(BUF, 0, 0x400); owned_bits(BUF + 0x10, 0x300, irnd(0, 4));, CALL_PLAIN(0x45ff30, BUF, 0, 0, 0, 0), (DWORD)(actor_destroyPartLists((void *)BUF)))
 ST(ResourceSet_dtor, owned_bits(BUF + 0x300, 0x46a00, irnd(0, 6));, CALL_PLAIN(0x463960, BUF, 0, 0, 0, 0), (DWORD)(ResourceSet_dtor((void *)BUF)))
 ST(Stage_dtor, owned_bits(BUF + 0x100, 0x2300000, irnd(0, 12));, CALL_PLAIN(0x46ff70, BUF, 0, 0, 0, 0), (DWORD)(Stage_dtor((void *)BUF)))
-ST(chat_saveMacros, fill(BUF + 0x2340d3d, 0x39 * 100); vfs_content(50, 0x2000);, CALL_PLAIN(0x4617f0, BUF, 0, 0, 0, 0), (DWORD)(chat_saveMacros((void *)BUF)))
+ST(chat_loadMacros, fill(BUF + 0x2340d3d, 0x39 * 100); vfs_content(50, 0x2000);, CALL_PLAIN(0x4617f0, BUF, 0, 0, 0, 0), (DWORD)(chat_loadMacros((void *)BUF)))
 /* chat lines: "/N=text", "/N", "/NN...", other text */
 static void chatline_setup(void)
 {
@@ -17376,7 +17376,7 @@ static const STest g_stests[] = {
 	T(CollisionVolume_dtor, 1, 4, 300), T(tunnel_rebuild, 1, 30, 0), T(tunnel_addRing, 1, 30, 0), T(ShapeManager_releaseModels, 1, 4, 1000),
 	T(SkeletonManager_releaseSkeletons, 1, 4, 1000),
 	/* batch 45 */
-	T(BMPRGBFile_close, 1, 4, 300), T(BMPRGBFile_ctor, 0, 4, 300), T(replay_closeRecording, 1, 4, 300), T(chat_loadMacros, 1, 4, 300),
+	T(BMPRGBFile_close, 1, 4, 300), T(BMPRGBFile_ctor, 0, 4, 300), T(replay_closeRecording, 1, 4, 300), T(chat_saveMacros, 1, 4, 300),
 	T(Texture_dtor, 1, 4, 300), T(file_existsf, 1, 4, 300), T(file_readScrambled, 1, 4, 1000), T(file_writeScrambled, 1, 4, 1000),
 	T(cfg_parsePlayer, 1, 60, 0), T(cfg_parseSound, 1, 60, 0), T(cfg_keyBindings, 1, 60, 0), T(console_loadFile, 1, 100, 0),
 	T(app_checkLauncherRunning, 1, 100, 0), T(profile_loadList, 1, 100, 0), T(profile_delete, 1, 100, 0), T(mission_saveAxisMis, 1, 100, 0),
@@ -17387,7 +17387,7 @@ static const STest g_stests[] = {
 	T(CollisionVolume_deletingDtor, 1, 4, 300), T(SkeletonManager_deletingDtor, 1, 4, 300), T(static_destroyTex64x64, 1, 30, 0), T(static_destroyTex128x64, 1, 30, 0),
 	T(static_destroyTex256x64, 1, 30, 0), T(static_destroyTex128x128, 1, 30, 0), T(static_destroyTex256x128, 1, 30, 0), T(static_destroyTex256x256, 1, 30, 0),
 	T(sound_freeAll, 1, 40, 0), T(map_readMissionRecords, 1, 4, 1000), T(Light_read, 1, 4, 1000), T(actor_destroyPartLists, 1, 4, 300),
-	T(ResourceSet_dtor, 1, 4, 100), T(Stage_dtor, 1, 4, 10), T(chat_saveMacros, 1, 30, 0), T(chat_macro, 1, 4, 2000),
+	T(ResourceSet_dtor, 1, 4, 100), T(Stage_dtor, 1, 4, 10), T(chat_loadMacros, 1, 30, 0), T(chat_macro, 1, 4, 2000),
 	/* batch 47 */
 	T(app_readCurrentDirectory, 1, 40, 0), T(gfx_swapBuffers, 1, 40, 0), T(dplay_createLobby, 1, 40, 0), T(net_wakePingThread, 1, 40, 0),
 	T(sys_messageBoxOverActive, 1, 40, 0), T(app_closeWindow, 1, 40, 0), T(menu_vertex, 1, 400, 0), T(mci_pause, 1, 40, 0),
@@ -18354,7 +18354,7 @@ static const struct { DWORD addr; void *fn; const char *name; } g_hooks3[] = {
 	{ 0x46b7f0, (void *)SkeletonManager_releaseSkeletons, "SkeletonManager_releaseSkeletons" },
 	/* batch 45 */
 	{ 0x46ce50, (void *)BMPRGBFile_close, "BMPRGBFile_close" }, { 0x46ce60, (void *)BMPRGBFile_ctor, "BMPRGBFile_ctor" },
-	{ 0x487ed0, (void *)replay_closeRecording, "replay_closeRecording" }, { 0x4617b0, (void *)chat_loadMacros, "chat_loadMacros" },
+	{ 0x487ed0, (void *)replay_closeRecording, "replay_closeRecording" }, { 0x4617b0, (void *)chat_saveMacros, "chat_saveMacros" },
 	{ 0x455030, (void *)Texture_dtor, "Texture_dtor" }, { 0x46ca70, (void *)file_existsf, "file_existsf" },
 	{ 0x46cbe0, (void *)file_readScrambled, "file_readScrambled" }, { 0x46cc30, (void *)file_writeScrambled, "file_writeScrambled" },
 	{ 0x42c650, (void *)cfg_parsePlayer, "cfg_parsePlayer" }, { 0x42c910, (void *)cfg_parseSound, "cfg_parseSound" },
@@ -18374,7 +18374,7 @@ static const struct { DWORD addr; void *fn; const char *name; } g_hooks3[] = {
 	{ 0x456cd0, (void *)sound_freeAll, "sound_freeAll" }, { 0x48b460, (void *)map_readMissionRecords, "map_readMissionRecords" },
 	{ 0x483d70, (void *)Light_read, "Light_read" }, { 0x45ff30, (void *)actor_destroyPartLists, "actor_destroyPartLists" },
 	{ 0x463960, (void *)ResourceSet_dtor, "ResourceSet_dtor" }, { 0x46ff70, (void *)Stage_dtor, "Stage_dtor" },
-	{ 0x4617f0, (void *)chat_saveMacros, "chat_saveMacros" }, { 0x462740, (void *)chat_macro, "chat_macro" },
+	{ 0x4617f0, (void *)chat_loadMacros, "chat_loadMacros" }, { 0x462740, (void *)chat_macro, "chat_macro" },
 	/* batch 47 */
 	{ 0x43f580, (void *)app_readCurrentDirectory, "app_readCurrentDirectory" }, { 0x4685d0, (void *)gfx_swapBuffers, "gfx_swapBuffers" },
 	{ 0x4539f0, (void *)dplay_createLobby, "dplay_createLobby" }, { 0x454740, (void *)net_wakePingThread, "net_wakePingThread" },

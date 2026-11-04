@@ -6,31 +6,32 @@
 
 #define FIELD(type, obj, offset) GAME_VAR(type, (u8 *)RELOC(obj) + (offset))
 
-/* 0x48b460: a count (+0xe36210) and that many 0x30-byte records (+0xdc0f10) */
+/* 0x48b460: the stage's command count and that many 0x30-byte commands */
 u32 THISCALL (map_readMissionRecords)(u8 *self, void *f)
 {
-	fread_scrambled(self + 0xe36210, 4, 1, f);
-	return fread_scrambled(self + 0xdc0f10, 0x30, FIELD(u32, self, 0xe36210), f);
+	Stage *st = (Stage *)self;
+	fread_scrambled(&st->commandCount, 4, 1, f);
+	return fread_scrambled(st->commands, 0x30, (u32)st->commandCount, f);
 }
 
-/* 0x483d70: two counts (+0xb004, +0xb008), the first's number of 0x2c-byte records (+4), and one more value
-   (+0xb00c) */
+/* 0x483d70: a light factor pool read: its count and next free slot, that many 0x2c-byte records, and enabled */
 u32 THISCALL (Light_read)(u8 *self, void *f)
 {
-	fread_scrambled(self + 0xb004, 4, 1, f);
-	fread_scrambled(self + 0xb008, 4, 1, f);
-	fread_scrambled(self + 4, 0x2c, FIELD(u32, self, 0xb004), f);
-	return fread_scrambled(self + 0xb00c, 4, 1, f);
+	LightFactors *lf = (LightFactors *)self;
+	fread_scrambled(&lf->count, 4, 1, f);
+	fread_scrambled(&lf->nextFree, 4, 1, f);
+	fread_scrambled(lf->records, 0x2c, (u32)lf->count, f);
+	return fread_scrambled(&lf->enabled, 4, 1, f);
 }
 
-/* 0x4617b0: the 100 chat macros (0x39 bytes each, from +0x2340d3d) written to "Chat.scp" (the name says load; it
-   saves); fclose's result, 0 when the file cannot be opened */
-u32 THISCALL (chat_loadMacros)(Scene *scene)
+/* 0x4617b0: the 100 chat macros (chatMacros, 0x39 bytes each) written to "Chat.scp"; fclose's result, 0 when the
+   file cannot be opened */
+u32 THISCALL (chat_saveMacros)(Scene *scene)
 {
 	void *f = crt_fopen((const char *)STR(0x4c45ec, "Chat.scp"), (const char *)STR(0x4b2ab0, "wb"));
 	if (!f)
 		return 0;
-	crt_fwrite((u8 *)scene + 0x2340d3d, 0x39, 100, f);
+	crt_fwrite(scene->chatMacros, 0x39, 100, f);
 	return fclose(f);
 }
 
@@ -47,10 +48,10 @@ int THISCALL (chat_macro)(Scene *scene, const char *in, char *out)
 	int n = line[0] - '0';
 	if (line[1] >= '0' && line[1] <= '9')
 		n = n * 10 + line[1] - '0';
-	char *macro = (char *)scene + 0x2340d3d + n * 0x39;
+	char *macro = scene->chatMacros[n];
 	if (line[1] == '=') {
 		strcpy(macro, line + 2);
-		chat_loadMacros(scene);   /* chat_loadMacros: saves them */
+		chat_saveMacros(scene);   /* chat_saveMacros: saves them */
 		return -1;
 	}
 	strcpy(out, macro);
@@ -62,7 +63,7 @@ u32 THISCALL (replay_closeRecording)(Scene *scene)
 {
 	if (!scene->recording)
 		return 0;
-	u32 r = fclose(FIELD(void *, scene, 0x2340d08));
+	u32 r = fclose(scene->replayFile);
 	scene->recording = 0;
 	return r;
 }
@@ -117,18 +118,18 @@ void *(skelDat_getItemFileBy)(const char *name)
 	return dat_entry(skelDat_findByName(name), name, (OBJ(g_skelDat) + 0x4), (OBJ(g_skelDat) + 0x8), OBJ(g_logSkeletonManager));
 }
 
-/* 0x4617f0: the chat macros (100 of 0x39 bytes at +0x2340d3d) read from their file (0x4c45ec); without the file, all
-   emptied and the defaults made (chat_loadMacros). Returns what the original leaves in eax */
-u32 THISCALL (chat_saveMacros)(Scene *scene)
+/* 0x4617f0: the chat macros (chatMacros: 100 of 0x39 bytes) read from Chat.scp; without the file, all
+   emptied and the defaults made (chat_saveMacros). Returns what the original leaves in eax */
+u32 THISCALL (chat_loadMacros)(Scene *scene)
 {
 	void *f = crt_fopen((const char *)STR(0x4c45ec, "Chat.scp"), (const char *)STR(0x4ad170, "rb"));
 	if (f) {
-		GAME_CDECL(0x49e836, u32, void *, u32, u32, void *)((u8 *)scene + 0x2340d3d, 0x39, 100, f);   /* fread */
+		GAME_CDECL(0x49e836, u32, void *, u32, u32, void *)(scene->chatMacros, 0x39, 100, f);   /* fread */
 		return fclose(f);
 	}
 	for (int k = 0; k < 100; k++)
 		((u8 *)scene)[0x2340d3d + k * 0x39] = 0;
-	return chat_loadMacros(scene);   /* chat_loadMacros */
+	return chat_saveMacros(scene);   /* chat_saveMacros */
 }
 
 /* 0x46cc30: count records of size bytes written scrambled (each byte rotated right by one, xor 0x59), then put back

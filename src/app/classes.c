@@ -484,8 +484,8 @@ static const u32 k_cameraPresets[6][10] = {
    element constructors) and vtables set; the factor tables sized (factor_initBy into the block at +0x91e4); the
    parts (item_initTextures with nine names), the component catalogue and the items loaded (failing: a fatal
    message); the ten camera presets, the stage's player slots reset (stage_selectActor -1), the geometry check sizes; the
-   30 chat macros (63 characters each, 0x40 apart from +0x234334b) read from their file, each with its line end cut
-   (an empty one cuts the byte before it), and saved back (chat_saveMacros). (The original's SEH frame, for
+   help text (Help.txt: 30 lines of 63 characters into consoleLines) read, each with its line end cut (an empty one
+   cuts the byte before it), and the chat macros loaded (chat_loadMacros). (The original's SEH frame, for
    unwinding a failed construction, is not reproduced.) Returns the object */
 u8 *THISCALL (game_loadAllData)(u8 *g)
 {
@@ -576,7 +576,7 @@ u8 *THISCALL (game_loadAllData)(u8 *g)
 		char *m = GS->consoleLines[k];   /* (the help text's lines, from Help.txt) */
 		m[(int)strlen(m) - 1] = 0;
 	}
-	chat_saveMacros(g);   /* chat_saveMacros */
+	chat_loadMacros(g);   /* chat_loadMacros */
 	return g;
 #undef CALL
 #undef VECTOR

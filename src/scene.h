@@ -1449,7 +1449,7 @@ typedef struct Scene {
 	u8 _pad2340d31[0x4];
 	i32 chatMode;   /* +0x2340d35: 0 closed, 1 / 2 typing (team / all) */
 	float keyGuard;   /* +0x2340d39: (by use) > 0: the quit / talk keys are ignored (0.1 s) */
-	u8 _pad2340d3d[0x1644];
+	char chatMacros[100][0x39];   /* +0x2340d3d: (by use) the chat macros ("/N=text"; Chat.scp: chat_loadMacros / chat_saveMacros) */
 	i32 teamIds[5];   /* +0x2342381: the teams by slot (free: < 0; match/teams.c) */
 	float lostTime;   /* +0x2342395: (by use) a client's seconds without the server (over 5: the connection lost) */
 	i32 matchOver;   /* +0x2342399: (by use) 1: the result is shown */
@@ -2724,6 +2724,7 @@ _Static_assert(offsetof(Scene, recordTime) == 0x2340d29 && sizeof(((Scene *)0)->
 _Static_assert(offsetof(Scene, replayTime) == 0x2340d2d && sizeof(((Scene *)0)->replayTime) == 0x4, "scene.fields: Scene.replayTime");
 _Static_assert(offsetof(Scene, chatMode) == 0x2340d35 && sizeof(((Scene *)0)->chatMode) == 0x4, "scene.fields: Scene.chatMode");
 _Static_assert(offsetof(Scene, keyGuard) == 0x2340d39 && sizeof(((Scene *)0)->keyGuard) == 0x4, "scene.fields: Scene.keyGuard");
+_Static_assert(offsetof(Scene, chatMacros) == 0x2340d3d && sizeof(((Scene *)0)->chatMacros) == 0x1644, "scene.fields: Scene.chatMacros");
 _Static_assert(offsetof(Scene, teamIds) == 0x2342381 && sizeof(((Scene *)0)->teamIds) == 0x14, "scene.fields: Scene.teamIds");
 _Static_assert(offsetof(Scene, lostTime) == 0x2342395 && sizeof(((Scene *)0)->lostTime) == 0x4, "scene.fields: Scene.lostTime");
 _Static_assert(offsetof(Scene, matchOver) == 0x2342399 && sizeof(((Scene *)0)->matchOver) == 0x4, "scene.fields: Scene.matchOver");
