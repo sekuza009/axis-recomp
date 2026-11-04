@@ -173,7 +173,7 @@ static void later_round(Scene *s)
 	s->watchedPlayer = -1;
 	memset(s->watchClear, 0, sizeof s->watchClear);
 	s->playing = 0;
-	(void)timer_getGameTime((u8 *)s + 0xc);
+	(void)timer_getGameTime((u8 *)&s->timer);
 	g_mouseX = gfx_getWidth() / 2;
 	g_mouseY = gfx_getHeight() / 2;
 	sound_setVolume(g_soundVolume);
@@ -316,7 +316,7 @@ void THISCALL (item_initTextures)(u8 *s, u32 a1, u32 a2, const char *sky, u32 a4
 	float r = f32(inv), out = f32(fmul_m(inv, K(0x4a9534)));
 	for (int face = 0; face < 6; face++) {
 		st->skyTextures[face] = -1;
-		float *dst = (float *)(s + 0x9ee080 + face * 49 * 12);
+		float *dst = &st->skySphere[face][0][0][0];
 		for (int row = 3; row >= -3; row--) {
 			float fr = f32(row);
 			for (int c = 0; c <= 6; c++, dst += 3) {
@@ -337,7 +337,7 @@ void THISCALL (item_initTextures)(u8 *s, u32 a1, u32 a2, const char *sky, u32 a4
 	}
 	st->layerMode = 0;
 	st->layerTextures[0] = st->layerTextures[1] = -1;
-	float *dome = (float *)(s + 0x9eee54);
+	float *dome = &st->layer[0][0][0];
 	for (int i = 0; i <= 6; i++) {
 		int ai = ftol(fmul_m(fsub_m((long double)i, K(0x4a9534)), K(0x4a93f0)));
 		for (int j = 0; j <= 6; j++, dome += 3) {
@@ -348,22 +348,22 @@ void THISCALL (item_initTextures)(u8 *s, u32 a1, u32 a2, const char *sky, u32 a4
 			memcpy(dome, v, 12);
 		}
 	}
-	memset(s + 0x9ef0a0, 0, 5 * 4);
+	memset((u8 *)st + offsetof(Stage, layerTurns), 0, 5 * 4);   /* layerTurns, layerScroll, sideMode */
 	for (int o = 0, angle = 0; angle < 3600; o++, angle += 600) {
 		st->sideTextures[o] = -1;
 		for (int k = 0; k < 4; k++) {
 			u32 v[3] = { 0, 0x3f800000, 0x3f800000 };
 			Vec3_rotateAxis((float *)RELOC(v), 2, angle + k * 200);
-			memcpy(s + 0x9ef0cc + o * 0x60 + k * 0xc, v, 12);
-			float *low = (float *)(s + 0x9ef0fc + o * 0x60 + k * 0xc);
+			memcpy(st->sides[o][k], v, 12);
+			float *low = st->sides[o][4 + k];
 			low[0] = f32(fld_m((float *)&v[0]));
 			FIELD(int, low, 4) = 0;
 			low[2] = f32(fld_m((float *)&v[2]));
 		}
 	}
 	st->floorOn = 0;
-	memset(s + 0x9ef310, 0xff, 16 * 4);
-	float *grid = (float *)(s + 0x9ef350);
+	memset(st->floorTextures, 0xff, 16 * 4);
+	float *grid = &st->floor[0][0][0];
 	for (int i = 0; i <= 10; i++) {
 		float x = f32(fmul_m(fsub_m((long double)i, K(0x4a93d0)), K(0x4aa400)));
 		for (int j = 0; j <= 10; j++, grid += 3) {
@@ -374,8 +374,8 @@ void THISCALL (item_initTextures)(u8 *s, u32 a1, u32 a2, const char *sky, u32 a4
 	}
 	st->floorFrame = (*(int *)&st->floorClock) = 0;
 	for (int c = 0; c < 3; c++) {
-		FIELD(u32, s, 0x9ef904 + c * 4) = 0xc7c35000;   /* -100000 */
-		FIELD(u32, s, 0x9ef910 + c * 4) = 0x47c35000;   /* 100000 */
+		BITS(st->levelLow[c]) = 0xc7c35000;   /* -100000 */
+		BITS(st->levelHigh[c]) = 0x47c35000;   /* 100000 */
 	}
 	memcpy(st->worldLow, st->levelLow, 12);
 	FIELD(u32, s, 0x9ef934) = 0x3f800000;
