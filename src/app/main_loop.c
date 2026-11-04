@@ -600,7 +600,6 @@ u32 THISCALL (match_inputState3)(u8 *s)
 #define S(type, offset) GAME_VAR(type, s + (offset))
 #define SC ((Scene *)s)   /* the same scene by its fields (src/scene.fields) */
 #define K(address) ((const float *)RELOC(address))
-#define ACTOR_INT(i, offset) GAME_VAR(int, s + (offset) + (i) * 0x8888)
 
 /* the camera back at the map's start view (+0x22ee228: position, pitch, heading) */
 static void start_view(u8 *s)
@@ -1207,12 +1206,12 @@ u32 THISCALL (replay_frame)(u8 *s)
 	stage_drawProjectiles((Stage *)stage, view);
 	stage_drawItems(stage, view);
 	if (SC->debugPoints == 1)
-		for (int i = 0; i < S(int, 0xbcb6c8); i++) {
-			const u8 *r = s + 0xbc06cc + i * 0x2c;
-			if (GAME_VAR(int, r) != 1)
+		for (int i = 0; i < SCENE_STAGE(s)->mapLights.count; i++) {   /* (the map's lights: each a yellow star at its direction) */
+			const Factor *r = &SCENE_STAGE(s)->mapLights.records[i];
+			if (r->used != 1)
 				continue;
 			float p[3], q[3];
-			memcpy(p, r + 0xc, 12);
+			memcpy(p, r->dir, 12);
 			for (int l = 0; l < 8; l++) {
 				for (int k = 0; k < 3; k++)
 					q[k] = f32(k_star[l][k] > 0 ? fadd_m(fld_m(&p[k]), K(0x4a93f4)) : fsub_m(fld_m(&p[k]), K(0x4a93f4)));
@@ -1264,8 +1263,6 @@ u32 THISCALL (replay_frame)(u8 *s)
 
 /* ---- 0x4988e0: the match's frame ---- */
 
-#define A_INT(i, offset) GAME_VAR(int, s + (offset) + (i) * 0x8888)    /* an actor's field */
-#define P_INT(i, offset) GAME_VAR(int, s + (offset) + (i) * 0x47fd2)   /* a player's */
 
 /* the team games (odd modes up to 11) */
 static int team_game(void)
@@ -1381,17 +1378,17 @@ static void local_spawn(u8 *s)
 	SC->teamChanged = 0;
 }
 
-/* the bots (+0x1eca67c, 0x5c-byte records, +0x1ecca6c of them) waiting to spawn: placed on a free point */
+/* the bots (the stage's map actors, botsWaiting of them) waiting to spawn: placed on a free point */
 static void bot_spawns(u8 *s)
 {
 	for (int j = 0; j < SC->botsWaiting; j++) {
-		u8 *rec = s + 0x1eca67c + j * 0x5c;
+		const SpawnRecord *rec = &SCENE_STAGE(s)->mapActors[j];
 		int state = SC->players[j].active;
-		if (GAME_VAR(int, rec + 0x18) != 1 || !(state == 0 || (state == 1 && SC->players[j].state == 3)))
+		if (rec->bot != 1 || !(state == 0 || (state == 1 && SC->players[j].state == 3)))
 			continue;
-		PlayerRecord *player = &SC->playerRecords[GAME_VAR(int, rec)];
+		PlayerRecord *player = &SC->playerRecords[rec->player];
 		if (SC->teamGame == 1)
-			team_colours(s, GAME_VAR(int, rec), player->team);
+			team_colours(s, rec->player, player->team);
 		u32 copy[0x17];
 		memcpy(copy, rec, 0x5c);
 		const u8 *at = spawn_point(s, 1);
@@ -2233,7 +2230,7 @@ void THISCALL (game_processGameMode)(u8 *s)
 				SCENE_STAGE(s)->items[i].taken = BITS(SCENE_STAGE(s)->items[i].fade) = 0;
 			for (int i = 0; i < 16; i++) {
 				SC->players[i].kills = SC->players[i].deaths = SC->players[i].statF0 = 0;
-				SC->players[i].statF4 = SC->players[i].timePlayed = A_INT(i, 0x1eccb70) = 0;
+				SC->players[i].statF4 = SC->players[i].timePlayed = BITS(SC->players[i].timeExtra) = 0;
 			}
 			stage_clearActorRefs((Stage *)stage);
 			msg_newKing((Scene *)s);
@@ -2270,11 +2267,8 @@ void THISCALL (game_processGameMode)(u8 *s)
 	}
 	SC->modeStarted++;
 }
-#undef A_INT
-#undef P_INT
 #undef S
 #undef SC
 #undef K
 #undef ACTOR
-#undef ACTOR_INT
 #undef ACTOR_AT
