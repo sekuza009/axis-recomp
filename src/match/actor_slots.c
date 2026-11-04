@@ -147,11 +147,11 @@ void THISCALL (stage_clearActorSlots)(Stage *stage)
 	stage->actorFreeHint = 0;
 	stage->actorSerial = 0;
 	for (int i = 0; i < 100; i++) {
-		u8 *a = (u8 *)stage + i * 0x8888;
-		FIELD(int, a, 0x1cd94b0) = 0;
-		FIELD(int, a, 0x1cd94b4) = -1;
-		FIELD(int, a, 0x1cd94f4) = 0;
-		FIELD(int, stage, 0x202ea80 + i * 4) = 0;
+		Player *ac = &stage->actors[i];
+		ac->active = 0;
+		ac->player = -1;
+		ac->state = 0;
+		(*(int *)&stage->lockWarnings[i]) = 0;
 	}
 }
 
@@ -236,12 +236,14 @@ void THISCALL (stage_newRound)(Stage *stage)
 	}
 	stage->playerRecordCount = 0;
 	stage_clearActorSlots(stage);
-	static const short cleared[] = { 0, 0xc, 0x10, 0x18, 0x1c, 0x24, 0x28, 0x74, 0x3fc, 0x400, 0x404 };
+	static const short cleared[] = { offsetof(Player, statD8), offsetof(Player, kills), offsetof(Player, deaths), offsetof(Player, statF0),
+	                                 offsetof(Player, statF4), offsetof(Player, timePlayed), offsetof(Player, timeExtra), offsetof(Player, state),
+	                                 offsetof(Player, orderFlag), offsetof(Player, markSolo), offsetof(Player, markTeam) };
 	for (int i = 0; i < 100; i++) {
-		u8 *a = (u8 *)stage + 0x1cd9480 + i * 0x8888;
-		FIELD(int, a, 0x40) = -1;
+		Player *ac = &stage->actors[i];
+		ac->team = -1;
 		for (unsigned k = 0; k < sizeof cleared / sizeof cleared[0]; k++)
-			FIELD(int, a, cleared[k]) = 0;
+			FIELD(int, ac, cleared[k]) = 0;
 	}
 }
 
@@ -249,20 +251,20 @@ void THISCALL (stage_newRound)(Stage *stage)
    free slot and the used count kept up to date); the teams changed */
 void THISCALL (actor_deactivate)(Stage *stage, int i)
 {
-	u8 *a = (u8 *)stage + i * 0x8888;
-	if (!FIELD(int, a, 0x1cd94b0))
+	Player *ac = &stage->actors[i];
+	if (!ac->active)
 		return;
-	FIELD(int, a, 0x1cd94b0) = 0;
-	FIELD(int, a, 0x1cd94f4) = 0;
-	FIELD(int, a, 0x1ce1b88) = 0;
-	FIELD(int, a, 0x1ce1b90) = 0;
-	FIELD(int, a, 0x1ce1b98) = 0;
+	ac->active = 0;
+	ac->state = 0;
+	ac->onScreen = 0;
+	(*(int *)&ac->lockedOn) = 0;
+	(*(int *)&ac->labelFade) = 0;
 	if (stage->kingActor == i)
 		stage->kingActor = -1;
-	int team = FIELD(int, a, 0x1cd94c0);
+	int team = ac->team;
 	if (team > -1 && stage->teamCommanders[team] == i)
 		stage->teamCommanders[team] = -1;
-	FIELD(int, stage, 0x202ea80 + i * 4) = 0;
+	(*(int *)&stage->lockWarnings[i]) = 0;
 	if (i < stage->actorFreeHint)
 		stage->actorFreeHint = i;
 	int n = stage->actorCount;
