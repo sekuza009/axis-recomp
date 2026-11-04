@@ -611,7 +611,7 @@ void THISCALL (app_requireCd)(u8 *g, u32 a, int mode)
 				strcpy(GS->replayFiles[GS->replayCount++], e);
 		}
 	u8 *s = g + 0x1f36c8;
-	GS->replayIndex = GAME_VAR(int, g + 0x1f35c4) = 0;
+	GS->replayIndex = GS->replayVersion = 0;
 	scene_resetActors(s);
 	scene_reset(s);
 	if (GS->network == 2) {

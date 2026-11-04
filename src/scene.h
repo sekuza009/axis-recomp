@@ -1105,7 +1105,9 @@ typedef struct Scene {
 	char replayFiles[100][0x40];   /* +0x1f1cbc: (by use) the replay viewer's files (replayCount of them) */
 	i32 replayCount;   /* +0x1f35bc: (by use) replays in the viewer's list */
 	i32 replayIndex;   /* +0x1f35c0: the one playing (random or in order) */
-	u8 _pad01f35c4[0xba0];
+	i32 replayVersion;   /* +0x1f35c4: (by use) the replay file's version (0x1201) */
+	char mapName[0x100];   /* +0x1f35c8: the map's file name (bfd_name: name.bfd) */
+	u8 _pad01f36c8[0xa9c];
 	float freeCamSpeedMax;   /* +0x1f4164: (by use) the free camera's speed cap */
 	u8 _pad01f4168[0x9cc538];
 	i32 hudTexture;   /* +0xbc06a0: texture id of the HUD marks (lock-on boxes) */
@@ -1121,7 +1123,9 @@ typedef struct Scene {
 	i32 fogInOverlay;   /* +0xbe170c: 1: the stage's fog volume is drawn in the 2D pass */
 	u8 fogVolume[0x10];   /* +0xbe1710 */
 	u32 fogVolumeArgs[3];   /* +0xbe1720: (floats, passed on unchanged) */
-	u8 _pad0be172c[0x9fcf9c];
+	u8 _pad0be172c[0x18d4];
+	i32 missionNumber;   /* +0xbe3000: (by use) the mission loaded (its number sent and compared in the network packets) */
+	u8 _pad0be3004[0x9fb6c4];
 	i32 headCount;   /* +0x15de6c8: parts of each kind (the pickers wrap around them) */
 	u8 _pad15de6cc[0x218b8];
 	i32 chestCount;   /* +0x15fff84 */
@@ -1198,9 +1202,9 @@ typedef struct Scene {
 	i32 cameraMode;   /* +0x233cc10 */
 	u8 _pad233cc14[0xc];
 	i32 inputState;   /* +0x233cc20: the match's state: 1 loading, 2 playing, 3 free camera, 4 replay */
-	u8 _pad233cc24[0x4];
+	i32 loadStage;   /* +0x233cc24: (by use) game_processLoadingMode's stage (0 .. 8) */
 	i32 modeStarted;   /* +0x233cc28: (by use) 0 until game_processGameModeInit has run */
-	u8 _pad233cc2c[0x4];
+	i32 loadStep;   /* +0x233cc2c: (unclear) cleared at each stage, not read in C */
 	i32 wholeSeconds;   /* +0x233cc30: (by use) the seconds counted (match_inputState2: the fraction carried over) */
 	float secondFraction;   /* +0x233cc34: the second's fraction so far (the chat cursor blinks by it) */
 	float followTime;   /* +0x233cc38: (by use) seconds the replay viewer has followed its player (a new one after 14) */
@@ -1213,7 +1217,8 @@ typedef struct Scene {
 	float roundTimer;   /* +0x233cc54: (unclear) 3 at a later round */
 	float kingTimer;   /* +0x233cc58: (by use) the king message again after 5 s */
 	float teamSyncTime;   /* +0x233cc5c: (by use) the local player's team sent again every 15 s */
-	u8 _pad233cc60[0x4004];
+	char loadLines[64][0x100];   /* +0x233cc60: the loading screen's lines (loadLineCount of them) */
+	i32 loadLineCount;   /* +0x2340c60 */
 	i32 watchedPlayer;   /* +0x2340c64: the player a spectator watches */
 	i32 watchClear[3];   /* +0x2340c68: (unclear) cleared with watchedPlayer */
 	float sendTimer;   /* +0x2340c74: (by use) seconds since the local player's state was sent (again past 0.05) */
@@ -2240,6 +2245,8 @@ _Static_assert(offsetof(Scene, nextMode) == 0x1f1cb8 && sizeof(((Scene *)0)->nex
 _Static_assert(offsetof(Scene, replayFiles) == 0x1f1cbc && sizeof(((Scene *)0)->replayFiles) == 0x1900, "scene.fields: Scene.replayFiles");
 _Static_assert(offsetof(Scene, replayCount) == 0x1f35bc && sizeof(((Scene *)0)->replayCount) == 0x4, "scene.fields: Scene.replayCount");
 _Static_assert(offsetof(Scene, replayIndex) == 0x1f35c0 && sizeof(((Scene *)0)->replayIndex) == 0x4, "scene.fields: Scene.replayIndex");
+_Static_assert(offsetof(Scene, replayVersion) == 0x1f35c4 && sizeof(((Scene *)0)->replayVersion) == 0x4, "scene.fields: Scene.replayVersion");
+_Static_assert(offsetof(Scene, mapName) == 0x1f35c8 && sizeof(((Scene *)0)->mapName) == 0x100, "scene.fields: Scene.mapName");
 _Static_assert(offsetof(Scene, freeCamSpeedMax) == 0x1f4164 && sizeof(((Scene *)0)->freeCamSpeedMax) == 0x4, "scene.fields: Scene.freeCamSpeedMax");
 _Static_assert(offsetof(Scene, hudTexture) == 0xbc06a0 && sizeof(((Scene *)0)->hudTexture) == 0x4, "scene.fields: Scene.hudTexture");
 _Static_assert(offsetof(Scene, hudBarTexture) == 0xbc06a8 && sizeof(((Scene *)0)->hudBarTexture) == 0x4, "scene.fields: Scene.hudBarTexture");
@@ -2251,6 +2258,7 @@ _Static_assert(offsetof(Scene, fogColour) == 0xbe16fc && sizeof(((Scene *)0)->fo
 _Static_assert(offsetof(Scene, fogInOverlay) == 0xbe170c && sizeof(((Scene *)0)->fogInOverlay) == 0x4, "scene.fields: Scene.fogInOverlay");
 _Static_assert(offsetof(Scene, fogVolume) == 0xbe1710 && sizeof(((Scene *)0)->fogVolume) == 0x10, "scene.fields: Scene.fogVolume");
 _Static_assert(offsetof(Scene, fogVolumeArgs) == 0xbe1720 && sizeof(((Scene *)0)->fogVolumeArgs) == 0xc, "scene.fields: Scene.fogVolumeArgs");
+_Static_assert(offsetof(Scene, missionNumber) == 0xbe3000 && sizeof(((Scene *)0)->missionNumber) == 0x4, "scene.fields: Scene.missionNumber");
 _Static_assert(offsetof(Scene, headCount) == 0x15de6c8 && sizeof(((Scene *)0)->headCount) == 0x4, "scene.fields: Scene.headCount");
 _Static_assert(offsetof(Scene, chestCount) == 0x15fff84 && sizeof(((Scene *)0)->chestCount) == 0x4, "scene.fields: Scene.chestCount");
 _Static_assert(offsetof(Scene, armCount) == 0x163b588 && sizeof(((Scene *)0)->armCount) == 0x4, "scene.fields: Scene.armCount");
@@ -2303,7 +2311,9 @@ _Static_assert(offsetof(Scene, cameraPresets) == 0x233ca30 && sizeof(((Scene *)0
 _Static_assert(offsetof(Scene, cameraSettings) == 0x233cb20 && sizeof(((Scene *)0)->cameraSettings) == 0xf0, "scene.fields: Scene.cameraSettings");
 _Static_assert(offsetof(Scene, cameraMode) == 0x233cc10 && sizeof(((Scene *)0)->cameraMode) == 0x4, "scene.fields: Scene.cameraMode");
 _Static_assert(offsetof(Scene, inputState) == 0x233cc20 && sizeof(((Scene *)0)->inputState) == 0x4, "scene.fields: Scene.inputState");
+_Static_assert(offsetof(Scene, loadStage) == 0x233cc24 && sizeof(((Scene *)0)->loadStage) == 0x4, "scene.fields: Scene.loadStage");
 _Static_assert(offsetof(Scene, modeStarted) == 0x233cc28 && sizeof(((Scene *)0)->modeStarted) == 0x4, "scene.fields: Scene.modeStarted");
+_Static_assert(offsetof(Scene, loadStep) == 0x233cc2c && sizeof(((Scene *)0)->loadStep) == 0x4, "scene.fields: Scene.loadStep");
 _Static_assert(offsetof(Scene, wholeSeconds) == 0x233cc30 && sizeof(((Scene *)0)->wholeSeconds) == 0x4, "scene.fields: Scene.wholeSeconds");
 _Static_assert(offsetof(Scene, secondFraction) == 0x233cc34 && sizeof(((Scene *)0)->secondFraction) == 0x4, "scene.fields: Scene.secondFraction");
 _Static_assert(offsetof(Scene, followTime) == 0x233cc38 && sizeof(((Scene *)0)->followTime) == 0x4, "scene.fields: Scene.followTime");
@@ -2315,6 +2325,8 @@ _Static_assert(offsetof(Scene, emblemTime) == 0x233cc50 && sizeof(((Scene *)0)->
 _Static_assert(offsetof(Scene, roundTimer) == 0x233cc54 && sizeof(((Scene *)0)->roundTimer) == 0x4, "scene.fields: Scene.roundTimer");
 _Static_assert(offsetof(Scene, kingTimer) == 0x233cc58 && sizeof(((Scene *)0)->kingTimer) == 0x4, "scene.fields: Scene.kingTimer");
 _Static_assert(offsetof(Scene, teamSyncTime) == 0x233cc5c && sizeof(((Scene *)0)->teamSyncTime) == 0x4, "scene.fields: Scene.teamSyncTime");
+_Static_assert(offsetof(Scene, loadLines) == 0x233cc60 && sizeof(((Scene *)0)->loadLines) == 0x4000, "scene.fields: Scene.loadLines");
+_Static_assert(offsetof(Scene, loadLineCount) == 0x2340c60 && sizeof(((Scene *)0)->loadLineCount) == 0x4, "scene.fields: Scene.loadLineCount");
 _Static_assert(offsetof(Scene, watchedPlayer) == 0x2340c64 && sizeof(((Scene *)0)->watchedPlayer) == 0x4, "scene.fields: Scene.watchedPlayer");
 _Static_assert(offsetof(Scene, watchClear) == 0x2340c68 && sizeof(((Scene *)0)->watchClear) == 0xc, "scene.fields: Scene.watchClear");
 _Static_assert(offsetof(Scene, sendTimer) == 0x2340c74 && sizeof(((Scene *)0)->sendTimer) == 0x4, "scene.fields: Scene.sendTimer");

@@ -319,18 +319,18 @@ int (app_checkCdAndLoad)(void *instance)
 #define GS ((Scene *)g)   /* the same by its fields (src/scene.fields) */
 #define STAGE(g) ((g) + 0x1f36c8)
 
-/* the next stage: its line added to the loading screen (+0x233cc60, 0x100 a line, +0x2340c60 of them) */
+/* the next stage: its line added to the loading screen (loadLines, loadLineCount) */
 static void next_stage(u8 *g, int stage, u32 line)
 {
-	G(int, 0x233cc24) = stage;
-	strcpy((char *)g + 0x233cc60 + G(int, 0x2340c60)++ * 0x100, (const char *)RELOC(line));
+	GS->loadStage = stage;
+	strcpy(GS->loadLines[GS->loadLineCount++], (const char *)RELOC(line));
 }
 
 /* a game mode (+8) with no next stage: a fatal message */
 static void no_next(u8 *g)
 {
 	GAME_FN(sys_fatalError, 0x46c710, void, char *, const char *, int, int, int)((char *)OBJ(g_logConsole), (const char *)STR(0x4c5060, "next submode not defined(W%d:P%d:S%d)..."), GS->network, GS->inputState,
-	                                                             G(int, 0x233cc24));
+	                                                             GS->loadStage);
 }
 
 /* a network client (mode 1, local player 0) that is online keeps the host told it is still loading */
@@ -340,10 +340,10 @@ static void keep_alive(u8 *g)
 		net_sendGamePacket(g, GS->localPlayer);
 }
 
-/* the map's file name (+0x1f35c8 with .bfd) */
+/* the map's file name (mapName with .bfd) */
 static char *bfd_name(u8 *g, char *out)
 {
-	sprintf(out, (const char *)STR(0x4c5190, "%s.bfd"), (const char *)g + 0x1f35c8);
+	sprintf(out, (const char *)STR(0x4c5190, "%s.bfd"), GS->mapName);
 	return out;
 }
 
@@ -361,24 +361,24 @@ u32 THISCALL (game_processLoadingMode)(u8 *g)
 	if (GS->modeStarted == 0) {
 		g_loadGame = g;
 		g_statusLine = 0;
-		G(int, 0x2340c60) = 1;
-		strcpy((char *)g + 0x233cc60, (const char *)STR(0x4c52b0, "START LOADING PROCESS"));
-		G(int, 0x233cc24) = 0;
-		G(int, 0x233cc2c) = 0;
+		GS->loadLineCount = 1;
+		strcpy(GS->loadLines[0], (const char *)STR(0x4c52b0, "START LOADING PROCESS"));
+		GS->loadStage = 0;
+		GS->loadStep = 0;
 	}
 	int stop = input_asyncKeyPressed(0x1b) != 0;
 	int mode;
-	switch (G(int, 0x233cc24)) {
+	switch (GS->loadStage) {
 	case 0:
 		keep_alive(g);
 		music_shutdown();
 		if (GS->network == 3) {
-			sprintf(path, (const char *)STR(0x4c52a4, "AutoPlay/%s"), (const char *)g + 0x1f1cbc + G(int, 0x1f35c0) * 0x40);
+			sprintf(path, (const char *)STR(0x4c52a4, "AutoPlay/%s"), GS->replayFiles[GS->replayIndex]);
 			void *f = GS->replayFile = crt_fopen(path, (const char *)STR(0x4ad170, "rb"));
 			if (!f)
 				sys_fatalError((char *)OBJ(g_logConsole), (const char *)STR(0x4c5278, "can't open file %s - processAutoPlayM..."), (int)path);
-			fread_scrambled(g + 0x1f35c4, 4, 1, GS->replayFile);
-			if (G(int, 0x1f35c4) != 0x1201)
+			fread_scrambled(&GS->replayVersion, 4, 1, GS->replayFile);
+			if (GS->replayVersion != 0x1201)
 				sys_fatalError((char *)OBJ(g_logConsole), (const char *)STR(0x4c5234, "incorrect file version, remove the fi..."), (int)path);
 			fread_scrambled((void *)ADDR(g_matchMode), 4, 1, GS->replayFile);
 			fread_scrambled((void *)ADDR(g_missionStage), 4, 1, GS->replayFile);
@@ -399,7 +399,7 @@ u32 THISCALL (game_processLoadingMode)(u8 *g)
 			next_stage(g, 2, STR(0x4c51e4, ".INIT PLAY INFO"));   /* .INIT PLAY INFO */
 		else
 			no_next(g);
-		G(int, 0x233cc2c) = 0;
+		GS->loadStep = 0;
 		break;
 	case 1: {
 		log_message((int)STAGE(g), 1, 0, (const char *)STR(0x4c51f4, ".load auto-play file"));
@@ -415,7 +415,7 @@ u32 THISCALL (game_processLoadingMode)(u8 *g)
 			next_stage(g, mode == 2 ? 6 : 2, STR(0x4c51e4, ".INIT PLAY INFO"));   /* .INIT PLAY INFO */
 		else
 			no_next(g);
-		G(int, 0x233cc2c) = 0;
+		GS->loadStep = 0;
 		break;
 	}
 	case 2:
@@ -428,7 +428,7 @@ u32 THISCALL (game_processLoadingMode)(u8 *g)
 				next_stage(g, 3, STR(0x4c51b0, ".LOAD GROUND"));   /* .LOAD GROUND */
 			else
 				no_next(g);
-			G(int, 0x233cc2c) = 0;
+			GS->loadStep = 0;
 			break;
 		}
 		{
@@ -445,7 +445,7 @@ u32 THISCALL (game_processLoadingMode)(u8 *g)
 		}
 		if (net_isClient() == 0) {
 			long double t = fadd_m(fld_m(&GS->frameTime), &GS->lostTime);
-			G(float, 0x2342395) = f32(t);
+			GS->lostTime = f32(t);
 			if (t > k_5f)
 				stop = 1;
 		}
@@ -459,14 +459,14 @@ u32 THISCALL (game_processLoadingMode)(u8 *g)
 		keep_alive(g);
 		if (!map_loadGroundInfoFrom(STAGE(g), bfd_name(g, path)))
 			GAME_FN(sys_fatalError, 0x46c710, void, char *, const char *)((char *)OBJ(g_logConsole), (const char *)STR(0x4c4598, "file damaged!"));
-		if (g_missionStage != G(int, 0xbe3000))
+		if (g_missionStage != GS->missionNumber)
 			GAME_FN(sys_fatalError, 0x46c710, void, char *, const char *)((char *)OBJ(g_logConsole), (const char *)STR(0x4c4598, "file damaged!"));
 		mode = GS->network;
 		if (mode == 0 || mode == 1 || mode == 3)
 			next_stage(g, 4, STR(0x4c5180, ".LOAD OBJECT"));   /* .LOAD OBJECT */
 		else
 			no_next(g);
-		G(int, 0x233cc2c) = 0;
+		GS->loadStep = 0;
 		break;
 	case 4:
 		log_message((int)STAGE(g), 1, 0, (const char *)STR(0x4c5164, ".load obstacle information"));
@@ -477,7 +477,7 @@ u32 THISCALL (game_processLoadingMode)(u8 *g)
 			next_stage(g, 5, STR(0x4c514c, ".SET COLLISION VOLUME"));   /* .SET COLLISION VOLUME */
 		else
 			no_next(g);
-		G(int, 0x233cc2c) = 0;
+		GS->loadStep = 0;
 		break;
 	case 5:
 		log_message((int)STAGE(g), 1, 0, (const char *)STR(0x4c512c, ".analyze collision information"));
@@ -488,7 +488,7 @@ u32 THISCALL (game_processLoadingMode)(u8 *g)
 			next_stage(g, 6, STR(0x4c511c, ".LOAD PLAY INFO"));   /* .LOAD PLAY INFO */
 		else
 			no_next(g);
-		G(int, 0x233cc2c) = 0;
+		GS->loadStep = 0;
 		break;
 	case 6:
 		log_message((int)STAGE(g), 1, 0, (const char *)STR(0x4c5104, ".analyze battle field"));
@@ -501,7 +501,7 @@ u32 THISCALL (game_processLoadingMode)(u8 *g)
 			next_stage(g, mode <= 1 ? 7 : 8, STR(0x4c50a0, "END LOADING PROCESS"));   /* END LOADING PROCESS */
 		else
 			no_next(g);
-		G(int, 0x233cc2c) = 0;
+		GS->loadStep = 0;
 		break;
 	case 7:
 		keep_alive(g);
@@ -516,7 +516,7 @@ u32 THISCALL (game_processLoadingMode)(u8 *g)
 			next_stage(g, 8, STR(0x4c50a0, "END LOADING PROCESS"));   /* END LOADING PROCESS */
 		else
 			no_next(g);
-		G(int, 0x233cc2c) = 0;
+		GS->loadStep = 0;
 		break;
 	case 8:
 		log_message((int)STAGE(g), -2, 0, (const char *)STR(0x4c5048, ".end loading process"));
@@ -542,8 +542,8 @@ u32 THISCALL (game_processLoadingMode)(u8 *g)
 	render_drawObjects(g + 0x74, GS->objectsMode, 0.0f);
 	gfx_setProjectionHud(0, 1.0f);
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
-	for (int k = 0, y = 8; k < G(int, 0x2340c60); k += 2, y += 16)   /* (every other line from the second, as the original steps) */
-		font_penDraw(0x10, y, 0, (const char *)g + 0x233cc60 + (k + 1) * 0x100);
+	for (int k = 0, y = 8; k < GS->loadLineCount; k += 2, y += 16)   /* (every other line from the second, as the original steps) */
+		font_penDraw(0x10, y, 0, GS->loadLines[k + 1]);
 	return stop == 1 ? 0 : ((u32)GS->inputState);
 }
 #undef G
