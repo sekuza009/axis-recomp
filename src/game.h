@@ -293,7 +293,7 @@ typedef struct { u32 count; void *managers[1]; } TextureSets;   /* a texture id 
 #define stage_clearBullets(scene) GAME_THISFN(stage_clearBullets, 0x47cfd0, void, void *)(scene)
 #define stage_clearProjectiles(scene) GAME_THISFN(stage_clearProjectiles, 0x479a60, void, void *)(scene)
 #define stage_resetMatrixAndPoints(scene) GAME_THISFN(stage_resetMatrixAndPoints, 0x48fe10, void, void *)(scene)
-#define stage_clearMapItemCounts(scene) GAME_THISFN(stage_clearMapItemCounts, 0x48fc30, void, void *)(scene)
+#define stage_clearScriptEvents(scene) GAME_THISFN(stage_clearScriptEvents, 0x48fc30, void, void *)(scene)
 #define scene_initLevelGrid(scene) GAME_THISFN(scene_initLevelGrid, 0x471010, void, void *)(scene)
 #define texRecord_init(record, name, id, flags, h1, s1, v1, h2, s2, v2) GAME_THISFN(texRecord_init, 0x454e60, void, void *, const char *, int, u32, u32, u32, u32, u32, u32, u32)(record, name, id, flags, h1, s1, v1, h2, s2, v2)   /* a texture record set up */
 #define tex_textureFileExist(tm, name) GAME_THISFN(tex_textureFileExist, 0x4557e0, int, void *, const char *)(tm, name)

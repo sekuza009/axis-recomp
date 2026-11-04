@@ -240,7 +240,7 @@ static void identity(u32 *m)
 /* 0x470ad0 (thiscall on the scene): the scene's subsystems reset (stage_resetLights; the 100 dwords at +0x202ea80 and
    +0x202ef30 cleared; the object list, stage_clearBullets, stage_clearProjectiles, stage_resetMatrixAndPoints), the camera at the origin looking down
    -z (+0x20f3970 .. +0x20f399c) with identity matrices (+0x20f39a0, +0x20f39e0), the start and item points none, the
-   id tables (+0x20fce50, +0x1cd6968) all -1, then the scripts (stage_clearMapItemCounts, script_reset) and scene_initLevelGrid. Its
+   id tables (+0x20fce50, +0x1cd6968) all -1, then the scripts (stage_clearScriptEvents, script_reset) and scene_initLevelGrid. Its
    callers ignore the eax it leaves */
 void THISCALL (scene_reset)(u8 *s)
 {
@@ -265,7 +265,7 @@ void THISCALL (scene_reset)(u8 *s)
 	s[0x20fcd4c] = 0;
 	st->kingActor = -1;
 	memset(st->teamCommanders, 0xff, 0x64 * 4);
-	stage_clearMapItemCounts(s);
+	stage_clearScriptEvents(s);
 	script_reset(st);
 	scene_initLevelGrid(s);
 	memset(s + 0x1cd6968, 0xff, 0x32 * 4);

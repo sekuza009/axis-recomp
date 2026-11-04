@@ -344,7 +344,10 @@ typedef struct ObjectList {
 
 /* (by use) the light factors shape_shadeParts takes (the size is unknown) */
 typedef struct LightFactors {
-	u8 _pad0000000[0xb00c];
+	u8 _pad0000000[0x4];
+	u8 records[0x400][0x2c];   /* +0x4: (by use) its factors (factors.c: an index, then the factor) */
+	i32 count;   /* +0xb004: records in use (a slot added when the next free is the count) */
+	i32 nextFree;   /* +0xb008: the next free slot */
 	i32 enabled;   /* +0xb00c: 1: a pre-lit object list uses them without point lights */
 } LightFactors;
 
@@ -1647,6 +1650,9 @@ _Static_assert(offsetof(ObjectList, frame) == 0x24 && sizeof(((ObjectList *)0)->
 _Static_assert(offsetof(ObjectList, animTick) == 0x28 && sizeof(((ObjectList *)0)->animTick) == 0x4, "scene.fields: ObjectList.animTick");
 _Static_assert(offsetof(ObjectList, preLit) == 0x2c && sizeof(((ObjectList *)0)->preLit) == 0x4, "scene.fields: ObjectList.preLit");
 _Static_assert(sizeof(ObjectList) == 0x30, "scene.fields: size of ObjectList");
+_Static_assert(offsetof(LightFactors, records) == 0x4 && sizeof(((LightFactors *)0)->records) == 0xb000, "scene.fields: LightFactors.records");
+_Static_assert(offsetof(LightFactors, count) == 0xb004 && sizeof(((LightFactors *)0)->count) == 0x4, "scene.fields: LightFactors.count");
+_Static_assert(offsetof(LightFactors, nextFree) == 0xb008 && sizeof(((LightFactors *)0)->nextFree) == 0x4, "scene.fields: LightFactors.nextFree");
 _Static_assert(offsetof(LightFactors, enabled) == 0xb00c && sizeof(((LightFactors *)0)->enabled) == 0x4, "scene.fields: LightFactors.enabled");
 _Static_assert(sizeof(LightFactors) == 0xb010, "scene.fields: size of LightFactors");
 _Static_assert(offsetof(MapObject, id) == 0x0 && sizeof(((MapObject *)0)->id) == 0x4, "scene.fields: MapObject.id");

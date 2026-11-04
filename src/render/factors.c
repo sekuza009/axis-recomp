@@ -55,8 +55,8 @@ void THISCALL (ground_computeLighting)(void *scene, const u8 *layer)
    it leaves */
 void THISCALL (factor_addFactorBy)(u8 *pool, const u32 *record)
 {
-#define COUNT GAME_VAR(int, pool + 0xb004)
-#define NEXT GAME_VAR(int, pool + 0xb008)
+#define COUNT (((LightFactors *)pool)->count)
+#define NEXT (((LightFactors *)pool)->nextFree)
 #define SLOT(k) ((u32 *)(pool + 4 + (k) * 0x2c))
 	if (NEXT >= 0x400)
 		sys_fatalError((char *)OBJ(g_logLight), (const char *)STR(0x4c7ae0, "factorPool overflow(%d) - addFactorBy()"), NEXT);

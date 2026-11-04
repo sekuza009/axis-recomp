@@ -1564,7 +1564,7 @@ int THISCALL spaceNode_clear(void *self);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 int THISCALL Light_clearCounts(void *self);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-int THISCALL stage_clearMapItemCounts(void *self);
+int THISCALL stage_clearScriptEvents(void *self);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void THISCALL ErrorLog_dtor(void *self);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
@@ -8119,7 +8119,7 @@ ST(ViewVolume_clear, fill(BUF, 0x9190);, TC(int, 0x483fc0, char *)(BUF + 0x10), 
 ST(TimeSync_clear, fill(BUF, 0x58);, TC(int, 0x487480, char *)(BUF + 0x10), TimeSync_clear(BUF + 0x10))
 ST(spaceNode_clear, fill(BUF, 0x30);, TC(int, 0x480430, char *)(BUF + 0x10), spaceNode_clear(BUF + 0x10))
 ST(Light_clearCounts, fill(BUF + 0xb000, 0x10);, TC(int, 0x483d60, char *)(BUF), Light_clearCounts(BUF))
-ST(stage_clearMapItemCounts, fill(BUF + 0x2148ecc, 0x10);, TC(int, 0x48fc30, char *)(BUF), stage_clearMapItemCounts(BUF))
+ST(stage_clearScriptEvents, fill(BUF + 0x2148ecc, 0x10);, TC(int, 0x48fc30, char *)(BUF), stage_clearScriptEvents(BUF))
 ST(ErrorLog_dtor, fill(BUF, 0x10);, (TC(void, 0x46c5e0, char *)(BUF + 4), 0), (ErrorLog_dtor((DWORD *)(BUF + 4)), 0))
 ST(TimeSync_dtor, fill(BUF, 0x10);, (TC(void, 0x487470, char *)(BUF + 4), 0), (TimeSync_dtor((DWORD *)(BUF + 4)), 0))
 ST(Scene_dtor, fill(BUF, 0x10);, (TC(void, 0x48b410, char *)(BUF + 4), 0), (Scene_dtor((DWORD *)(BUF + 4)), 0))
@@ -17305,7 +17305,7 @@ static const STest g_stests[] = {
 	T(view_farPlane, 1, 4, 300), T(TextureManager_clear, 1, 4, 300), T(Model_clear, 1, 4, 300), T(ShapeManager_clear, 1, 4, 300),
 	T(SkeletonManager_clear, 1, 4, 300), T(collisionPlane_clear, 1, 4, 300), T(spaceBlock_clear, 1, 4, 300), T(CollisionVolume_clear, 1, 4, 300),
 	T(ViewVolume_clear, 1, 4, 300), T(TimeSync_clear, 1, 4, 300), T(spaceNode_clear, 1, 4, 300), T(Light_clearCounts, 1, 4, 300),
-	T(stage_clearMapItemCounts, 1, 4, 300), T(ErrorLog_dtor, 0, 4, 300), T(TimeSync_dtor, 0, 4, 300), T(Scene_dtor, 0, 4, 300),
+	T(stage_clearScriptEvents, 1, 4, 300), T(ErrorLog_dtor, 0, 4, 300), T(TimeSync_dtor, 0, 4, 300), T(Scene_dtor, 0, 4, 300),
 	T(stage_setSilentActor, 1, 4, 300), T(scene_teamSlot, 1, 4, 300), T(ResourceSet_trivialCtor, 1, 4, 300), T(recorder_setPathStub, 1, 4, 300),
 	T(recorder_openStub, 0, 4, 0), T(recorder_noteStub, 0, 4, 0), T(stage_triggerActionNone, 0, 4, 0), T(static_emptyCtorSkelData1, 0, 4, 0),
 	T(static_emptyCtorSkelData2, 0, 4, 0), T(static_emptyCtorSkelData3, 0, 4, 0), T(static_emptyCtorSkelData4, 0, 4, 0), T(static_emptyCtorSkelData5, 0, 4, 0),
@@ -18236,7 +18236,7 @@ static const struct { DWORD addr; void *fn; const char *name; } g_hooks3[] = {
 	{ 0x4804a0, (void *)spaceBlock_clear, "spaceBlock_clear" }, { 0x4813a0, (void *)CollisionVolume_clear, "CollisionVolume_clear" },
 	{ 0x483fc0, (void *)ViewVolume_clear, "ViewVolume_clear" }, { 0x487480, (void *)TimeSync_clear, "TimeSync_clear" },
 	{ 0x480430, (void *)spaceNode_clear, "spaceNode_clear" }, { 0x483d60, (void *)Light_clearCounts, "Light_clearCounts" },
-	{ 0x48fc30, (void *)stage_clearMapItemCounts, "stage_clearMapItemCounts" }, { 0x46c5e0, (void *)ErrorLog_dtor, "ErrorLog_dtor" },
+	{ 0x48fc30, (void *)stage_clearScriptEvents, "stage_clearScriptEvents" }, { 0x46c5e0, (void *)ErrorLog_dtor, "ErrorLog_dtor" },
 	{ 0x487470, (void *)TimeSync_dtor, "TimeSync_dtor" }, { 0x48b410, (void *)Scene_dtor, "Scene_dtor" },
 	{ 0x45dfe0, (void *)stage_setSilentActor, "stage_setSilentActor" }, { 0x463780, (void *)scene_teamSlot, "scene_teamSlot" },
 	{ 0x45fff0, (void *)ResourceSet_trivialCtor, "ResourceSet_trivialCtor" }, { 0x48b440, (void *)recorder_setPathStub, "recorder_setPathStub" },

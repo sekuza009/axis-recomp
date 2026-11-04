@@ -31,16 +31,16 @@ int THISCALL (spaceNode_clear)(void *self) { return clear(self, 0x4); }
 /* 0x483d60: Light's two counters cleared */
 int THISCALL (Light_clearCounts)(void *self)
 {
-	FIELD(int, self, 0xb004) = 0;
-	FIELD(int, self, 0xb008) = 0;
+	((LightFactors *)self)->count = 0;
+	((LightFactors *)self)->nextFree = 0;
 	return 0;
 }
 
-/* 0x48fc30: two counters of the stage's map items cleared */
-int THISCALL (stage_clearMapItemCounts)(void *self)
+/* 0x48fc30: the stage's script event ring emptied (its head and tail) */
+int THISCALL (stage_clearScriptEvents)(void *self)
 {
-	FIELD(int, self, 0x2148ed0) = 0;
-	FIELD(int, self, 0x2148ed4) = 0;
+	((Stage *)self)->eventHead = 0;
+	((Stage *)self)->eventTail = 0;
 	return 0;
 }
 
@@ -490,7 +490,7 @@ u8 *THISCALL (game_loadAllData)(u8 *g)
 #define VECTOR(at, size, count) ((void (STDCALL *)(void *, int, int, u32))FN_ADDR(crt_arrayConstruct, 0x401290))(at, size, count, FN_ADDR(ResourceSet_trivialCtor, 0x45fff0))   /* (the CRT's iterators are stdcall) */
 #define VTABLE(at, vt) (GAME_VAR(u32, at) = (vt))
 	u8 *s = g + 0x1f36c8;
-	TimeSync_ctor(g + 0xc);   /* TimeSync_ctor */
+	TimeSync_ctor((u8 *)&GS->timer);   /* TimeSync_ctor */
 	VTABLE(g + 0x74, STR(0x4aa24c, "04F"));
 	ViewVolume_clear(g + 0x74);
 	CollisionVolume_ctor(s + 0xa10);   /* CollisionVolume_ctor */
@@ -534,10 +534,10 @@ u8 *THISCALL (game_loadAllData)(u8 *g)
 	GAME_VAR(int, s + 4) = 0;
 	VTABLE(g, VT(Console, 0x4aa238));
 	GS->client = GS->network = -1;
-	TimeSync_clear(g + 0xc);
+	TimeSync_clear((u8 *)&GS->timer);
 	for (int k = 0; k < 10; k++)
-		GAME_VAR(u32, g + 0x48 + k * 4) = 0x3d088889;
-	GAME_VAR(int, g + 0x70) = 0;
+		BITS(GS->frameTimes[k]) = 0x3d088889;   /* 1/30 */
+	GS->frameTimeNext = 0;
 	factor_initBy(g + 0x74, 10000, 1000, 20000, 4000, 400, 10000,
 	                                                                                g + 0x91e4, 2000000);   /* factor_initBy */
 	item_initTextures(s, STR(0x4c45a8, "Stage"), STR(0x4b1784, "Map"), STR(0x4c45b0, "Texture"), STR(0x4c45b8, "Shape"),
@@ -546,7 +546,7 @@ u8 *THISCALL (game_loadAllData)(u8 *g)
 		GAME_FN(sys_fatalError, 0x46c710, void, char *, const char *)((char *)OBJ(g_logConsole), (const char *)STR(0x4c4598, "file damaged!"));
 	if (!map_loadItemInfoFrom(s, (const char *)STR(0x4c4588, "Data/Item.dat")))   /* map_loadItemInfoFrom */
 		GAME_FN(sys_fatalError, 0x46c710, void, char *, const char *)((char *)OBJ(g_logConsole), (const char *)STR(0x4c4598, "file damaged!"));
-	memcpy(g + 0x233ca30, k_cameraPresets, sizeof k_cameraPresets);
+	memcpy(GS->cameraPresets, k_cameraPresets, sizeof k_cameraPresets);
 	GS->cameraMode = 1;
 	stage_selectActor((Stage *)s, -1);
 	GAME_VAR(int, g + 0x23423e5) = 6;
