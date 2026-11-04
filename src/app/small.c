@@ -282,10 +282,11 @@ void *THISCALL (ResourceSet_initLists)(u8 *self)
 /* 0x484260: the view volume emptied: its two 0xc01-dword tables and its counters */
 void THISCALL (ViewVolume_reset)(u8 *self)
 {
-	static const int cleared[] = { 0x9038, 0x9044, 0x905c, 0x9070, 0x908c, 0x9090, 0x9094, 0x9098, 0x909c, 0x90a0 };
-	FIELD(int, self, 0x3024) = 0;
-	memset(self + 0x3028, 0, 0xc01 * 4);
-	memset(self + 0x602c, 0, 0xc01 * 4);
+	ViewVolume *vw = (ViewVolume *)self;
+	static const int cleared[] = { offsetof(ViewVolume, entryCount), offsetof(ViewVolume, matrixCount), offsetof(ViewVolume, triangleCount), offsetof(ViewVolume, quadCount), offsetof(ViewVolume, segmentCount), offsetof(ViewVolume, entriesFull), offsetof(ViewVolume, matricesFull), offsetof(ViewVolume, trianglesFull), offsetof(ViewVolume, quadsFull), offsetof(ViewVolume, segmentsFull) };
+	vw->materialCount = 0;
+	memset(vw->materialHeads, 0, 0xc01 * 4);
+	memset(vw->materialTails, 0, 0xc01 * 4);
 	for (int k = 0; k < 10; k++)
 		FIELD(int, self, cleared[k]) = 0;
 }
@@ -293,18 +294,19 @@ void THISCALL (ViewVolume_reset)(u8 *self)
    chained (prev at +0xc, next at +0x10) */
 void THISCALL (space_resetUnits)(u8 *self)
 {
-	for (int i = 0; i < FIELD(int, self, 0x30); i++)
-		spaceSlot_clear((int *)(FIELD(u8 *, self, 0x34) + i * 0x14));
-	for (int i = 1; i < FIELD(int, self, 0x30); i++) {
-		u8 *e = FIELD(u8 *, self, 0x34) + i * 0x14;
+	Space *sp = (Space *)self;
+	for (int i = 0; i < sp->units.count; i++)
+		spaceSlot_clear((int *)(sp->units.records + i * 0x14));
+	for (int i = 1; i < sp->units.count; i++) {
+		u8 *e = sp->units.records + i * 0x14;
 		FIELD(u8 *, e, 0xc) = e - 0x14;
 	}
-	for (int i = 0; i < FIELD(int, self, 0x30) - 1; i++) {
-		u8 *e = FIELD(u8 *, self, 0x34) + i * 0x14;
+	for (int i = 0; i < sp->units.count - 1; i++) {
+		u8 *e = sp->units.records + i * 0x14;
 		FIELD(u8 *, e, 0x10) = e + 0x14;
 	}
-	FIELD(int, self, 0x3c) = 0;
-	FIELD(u8 *, self, 0x38) = FIELD(u8 *, self, 0x34);
+	sp->units.used = 0;
+	sp->units.freeHead = sp->units.records;
 }
 /* 0x461f10: the scene's input state cleared (two of its fields -1) */
 void THISCALL (match_resetInputState)(Scene *scene)
