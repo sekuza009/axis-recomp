@@ -665,6 +665,41 @@ typedef struct DPSessionDesc2 {
 	u32 user4;   /* +0x4c: (TCP) the host's address */
 } DPSessionDesc2;
 
+/* an arena as the game server lists it (g_serverList, 256; g_roomPacket: the lobby's own, */
+typedef struct ServerRecord {
+	u8 kind;   /* +0x0: the message (0x18: set up; the player count's, the leave's) */
+	char name[0x32];   /* +0x1 */
+	char address[16];   /* +0x33: the host's address as text */
+	signed char map;   /* +0x43 */
+	signed char maxPlayers;   /* +0x44 */
+	signed char players;   /* +0x45 */
+	signed char gameMode;   /* +0x46 */
+	u8 fragLimit;   /* +0x47 */
+	u8 timeLimit;   /* +0x48 */
+	signed char rotation;   /* +0x49: (the arena's custom flag) */
+	u8 _pad000004a[0x8];
+	u8 locked;   /* +0x52 */
+	char password[8];   /* +0x53 */
+} ServerRecord;
+
+/* a game room as the game server lists it (g_roomList, 256; g_arenaPacket: the room's own, */
+typedef struct RoomRecord {
+	u8 kind;   /* +0x0 */
+	char name[0x32];   /* +0x1 */
+	char address[16];   /* +0x33 */
+	char hostName[30];   /* +0x43: the player who made it (g_joinedTitleName) */
+	signed char map;   /* +0x61 */
+	signed char maxPlayers;   /* +0x62 */
+	signed char players;   /* +0x63 */
+	signed char gameMode;   /* +0x64 */
+	u8 fragLimit;   /* +0x65 */
+	u8 timeLimit;   /* +0x66 */
+	signed char rotation;   /* +0x67: (the room's custom rules flag) */
+	u8 _pad0000068[0x8];
+	u8 locked;   /* +0x70 */
+	char password[8];   /* +0x71 */
+} RoomRecord;
+
 /* an arena session DirectPlay's enumeration found (dplay_enumSessionsCallback, from its */
 typedef struct SessionDesc {
 	u32 guid;   /* +0x0: a GlobalAlloc'd copy of the instance GUID: the join's argument (dplay_join) */
@@ -2291,6 +2326,33 @@ _Static_assert(offsetof(DPSessionDesc2, user2) == 0x44 && sizeof(((DPSessionDesc
 _Static_assert(offsetof(DPSessionDesc2, user3) == 0x48 && sizeof(((DPSessionDesc2 *)0)->user3) == 0x4, "scene.fields: DPSessionDesc2.user3");
 _Static_assert(offsetof(DPSessionDesc2, user4) == 0x4c && sizeof(((DPSessionDesc2 *)0)->user4) == 0x4, "scene.fields: DPSessionDesc2.user4");
 _Static_assert(sizeof(DPSessionDesc2) == 0x50, "scene.fields: size of DPSessionDesc2");
+_Static_assert(offsetof(ServerRecord, kind) == 0x0 && sizeof(((ServerRecord *)0)->kind) == 0x1, "scene.fields: ServerRecord.kind");
+_Static_assert(offsetof(ServerRecord, name) == 0x1 && sizeof(((ServerRecord *)0)->name) == 0x32, "scene.fields: ServerRecord.name");
+_Static_assert(offsetof(ServerRecord, address) == 0x33 && sizeof(((ServerRecord *)0)->address) == 0x10, "scene.fields: ServerRecord.address");
+_Static_assert(offsetof(ServerRecord, map) == 0x43 && sizeof(((ServerRecord *)0)->map) == 0x1, "scene.fields: ServerRecord.map");
+_Static_assert(offsetof(ServerRecord, maxPlayers) == 0x44 && sizeof(((ServerRecord *)0)->maxPlayers) == 0x1, "scene.fields: ServerRecord.maxPlayers");
+_Static_assert(offsetof(ServerRecord, players) == 0x45 && sizeof(((ServerRecord *)0)->players) == 0x1, "scene.fields: ServerRecord.players");
+_Static_assert(offsetof(ServerRecord, gameMode) == 0x46 && sizeof(((ServerRecord *)0)->gameMode) == 0x1, "scene.fields: ServerRecord.gameMode");
+_Static_assert(offsetof(ServerRecord, fragLimit) == 0x47 && sizeof(((ServerRecord *)0)->fragLimit) == 0x1, "scene.fields: ServerRecord.fragLimit");
+_Static_assert(offsetof(ServerRecord, timeLimit) == 0x48 && sizeof(((ServerRecord *)0)->timeLimit) == 0x1, "scene.fields: ServerRecord.timeLimit");
+_Static_assert(offsetof(ServerRecord, rotation) == 0x49 && sizeof(((ServerRecord *)0)->rotation) == 0x1, "scene.fields: ServerRecord.rotation");
+_Static_assert(offsetof(ServerRecord, locked) == 0x52 && sizeof(((ServerRecord *)0)->locked) == 0x1, "scene.fields: ServerRecord.locked");
+_Static_assert(offsetof(ServerRecord, password) == 0x53 && sizeof(((ServerRecord *)0)->password) == 0x8, "scene.fields: ServerRecord.password");
+_Static_assert(sizeof(ServerRecord) == 0x5b, "scene.fields: size of ServerRecord");
+_Static_assert(offsetof(RoomRecord, kind) == 0x0 && sizeof(((RoomRecord *)0)->kind) == 0x1, "scene.fields: RoomRecord.kind");
+_Static_assert(offsetof(RoomRecord, name) == 0x1 && sizeof(((RoomRecord *)0)->name) == 0x32, "scene.fields: RoomRecord.name");
+_Static_assert(offsetof(RoomRecord, address) == 0x33 && sizeof(((RoomRecord *)0)->address) == 0x10, "scene.fields: RoomRecord.address");
+_Static_assert(offsetof(RoomRecord, hostName) == 0x43 && sizeof(((RoomRecord *)0)->hostName) == 0x1e, "scene.fields: RoomRecord.hostName");
+_Static_assert(offsetof(RoomRecord, map) == 0x61 && sizeof(((RoomRecord *)0)->map) == 0x1, "scene.fields: RoomRecord.map");
+_Static_assert(offsetof(RoomRecord, maxPlayers) == 0x62 && sizeof(((RoomRecord *)0)->maxPlayers) == 0x1, "scene.fields: RoomRecord.maxPlayers");
+_Static_assert(offsetof(RoomRecord, players) == 0x63 && sizeof(((RoomRecord *)0)->players) == 0x1, "scene.fields: RoomRecord.players");
+_Static_assert(offsetof(RoomRecord, gameMode) == 0x64 && sizeof(((RoomRecord *)0)->gameMode) == 0x1, "scene.fields: RoomRecord.gameMode");
+_Static_assert(offsetof(RoomRecord, fragLimit) == 0x65 && sizeof(((RoomRecord *)0)->fragLimit) == 0x1, "scene.fields: RoomRecord.fragLimit");
+_Static_assert(offsetof(RoomRecord, timeLimit) == 0x66 && sizeof(((RoomRecord *)0)->timeLimit) == 0x1, "scene.fields: RoomRecord.timeLimit");
+_Static_assert(offsetof(RoomRecord, rotation) == 0x67 && sizeof(((RoomRecord *)0)->rotation) == 0x1, "scene.fields: RoomRecord.rotation");
+_Static_assert(offsetof(RoomRecord, locked) == 0x70 && sizeof(((RoomRecord *)0)->locked) == 0x1, "scene.fields: RoomRecord.locked");
+_Static_assert(offsetof(RoomRecord, password) == 0x71 && sizeof(((RoomRecord *)0)->password) == 0x8, "scene.fields: RoomRecord.password");
+_Static_assert(sizeof(RoomRecord) == 0x79, "scene.fields: size of RoomRecord");
 _Static_assert(offsetof(SessionDesc, guid) == 0x0 && sizeof(((SessionDesc *)0)->guid) == 0x4, "scene.fields: SessionDesc.guid");
 _Static_assert(offsetof(SessionDesc, instance) == 0x4 && sizeof(((SessionDesc *)0)->instance) == 0x10, "scene.fields: SessionDesc.instance");
 _Static_assert(offsetof(SessionDesc, application) == 0x14 && sizeof(((SessionDesc *)0)->application) == 0x10, "scene.fields: SessionDesc.application");

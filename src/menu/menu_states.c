@@ -726,8 +726,8 @@ u32 (game_postMatch)(void)
 		if (g_isHost) {
 			send_result();
 			char *to = (*(char **)&g_roomRecordPacket), *from = (*(char **)&g_arenaPacket);
-			lstrcpyA(to + 0x43, from + 0x43);
-			lstrcpyA(to + 0x33, from + 0x33);
+			lstrcpyA(((RoomRecord *)to)->hostName, ((const RoomRecord *)from)->hostName);
+			lstrcpyA(((RoomRecord *)to)->address, ((const RoomRecord *)from)->address);
 			net_send(0x16, 0x65);   /* net_send */
 		}
 		if (g_gameServerSocket) {

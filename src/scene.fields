@@ -578,6 +578,37 @@ struct DPSessionDesc2 0x50                                       # DirectPlay's 
 0x48       4          u32 user3                                  # the time limit (byte 0), frag limit (byte 1)
 0x4c       4          u32 user4                                  # (TCP) the host's address
 
+struct ServerRecord 0x5b                                         # an arena as the game server lists it (g_serverList, 256; g_roomPacket: the lobby's own,
+                                                                 # sent when it is set up; g_netInfoPacket / g_lobbyLeavePacket: its updates)
+0          1          u8 kind                                    # the message (0x18: set up; the player count's, the leave's)
+1          0x32       char name[0x32]
+0x33       0x10       char address[16]                           # the host's address as text
+0x43       1          signed char map
+0x44       1          signed char maxPlayers
+0x45       1          signed char players
+0x46       1          signed char gameMode
+0x47       1          u8 fragLimit
+0x48       1          u8 timeLimit
+0x49       1          signed char rotation                       # (the arena's custom flag)
+0x52       1          u8 locked
+0x53       8          char password[8]
+
+struct RoomRecord 0x79                                           # a game room as the game server lists it (g_roomList, 256; g_arenaPacket: the room's own,
+                                                                 # g_arenaInfoPacket / g_roomRecordPacket its updates): a ServerRecord with the host's name
+0          1          u8 kind
+1          0x32       char name[0x32]
+0x33       0x10       char address[16]
+0x43       0x1e       char hostName[30]                          # the player who made it (g_joinedTitleName)
+0x61       1          signed char map
+0x62       1          signed char maxPlayers
+0x63       1          signed char players
+0x64       1          signed char gameMode
+0x65       1          u8 fragLimit
+0x66       1          u8 timeLimit
+0x67       1          signed char rotation                       # (the room's custom rules flag)
+0x70       1          u8 locked
+0x71       8          char password[8]
+
 struct SessionDesc 0x85                                          # an arena session DirectPlay's enumeration found (dplay_enumSessionsCallback, from its
                                                                  # DPSESSIONDESC2); net_addSession keeps a malloc'd copy (SessionSlot.desc)
 0          4          u32 guid                                   # a GlobalAlloc'd copy of the instance GUID: the join's argument (dplay_join)

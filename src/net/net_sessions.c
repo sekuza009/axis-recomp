@@ -58,14 +58,14 @@ static void merge(const Received *g)
 /* 0x434ff0: the game room's (0x79-byte records) */
 void (room_mergeReceivedSessions)(void)
 {
-	static const Received room = { ADDR(g_roomListCount), (OBJ(g_roomList) + 0x67), 0x79, -0x66, -0x34, ADDR(g_roomNameSum), { ADDR(g_roomSearching), ADDR(g_roomSearchAnswerIn), ADDR(g_roomRefreshing) } };
+	static const Received room = { ADDR(g_roomListCount), (OBJ(g_roomList) + offsetof(RoomRecord, rotation)), sizeof(RoomRecord), (int)offsetof(RoomRecord, name) - (int)offsetof(RoomRecord, rotation), (int)offsetof(RoomRecord, address) - (int)offsetof(RoomRecord, rotation), ADDR(g_roomNameSum), { ADDR(g_roomSearching), ADDR(g_roomSearchAnswerIn), ADDR(g_roomRefreshing) } };
 	merge(&room);
 }
 
 /* 0x406640: the arena lobby's (0x5b-byte records) */
 void (arena_mergeReceivedSessions)(void)
 {
-	static const Received arena = { ADDR(g_serverListCount), (OBJ(g_serverList) + 0x49), 0x5b, -0x48, -0x16, ADDR(g_arenaNameSum), { ADDR(g_lobbySearching), ADDR(g_serverAnswerIn), ADDR(g_lobbyRefreshing) } };
+	static const Received arena = { ADDR(g_serverListCount), (OBJ(g_serverList) + offsetof(ServerRecord, rotation)), sizeof(ServerRecord), (int)offsetof(ServerRecord, name) - (int)offsetof(ServerRecord, rotation), (int)offsetof(ServerRecord, address) - (int)offsetof(ServerRecord, rotation), ADDR(g_arenaNameSum), { ADDR(g_lobbySearching), ADDR(g_serverAnswerIn), ADDR(g_lobbyRefreshing) } };
 	merge(&arena);
 }
 

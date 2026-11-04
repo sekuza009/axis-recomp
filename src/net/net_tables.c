@@ -457,19 +457,19 @@ static int list_append(u32 count, u32 base, int size, const u8 *rec, const u8 *s
 	GAME_VAR(int, count) = i + 1;
 	return i * size;
 }
-/* 0x452af0: a server record (0x5b bytes) into the list at 0xa05748 (count 0xa0b368) */
+/* 0x452af0: a ServerRecord into the list at 0xa05748 (count 0xa0b368) */
 int (net_addServerRecord)(const u8 *rec)
 {
-	static const u8 strings[3] = { 0x33, 0x01, 0x53 };
-	static const u8 bytes[9] = { 0x00, 0x49, 0x47, 0x48, 0x46, 0x45, 0x43, 0x44, 0x52 };
-	return list_append(ADDR(g_serverListCount), OBJ(g_serverList), 0x5b, rec, strings, 3, 0x33, bytes, 9);
+	static const u8 strings[3] = { offsetof(ServerRecord, address), offsetof(ServerRecord, name), offsetof(ServerRecord, password) };
+	static const u8 bytes[9] = { offsetof(ServerRecord, kind), offsetof(ServerRecord, rotation), offsetof(ServerRecord, fragLimit), offsetof(ServerRecord, timeLimit), offsetof(ServerRecord, gameMode), offsetof(ServerRecord, players), offsetof(ServerRecord, map), offsetof(ServerRecord, maxPlayers), offsetof(ServerRecord, locked) };
+	return list_append(ADDR(g_serverListCount), OBJ(g_serverList), sizeof(ServerRecord), rec, strings, 3, offsetof(ServerRecord, address), bytes, 9);
 }
-/* 0x452c80: a room record (0x79 bytes) into the list at 0x9fd960 (count 0xa0b358) */
+/* 0x452c80: a RoomRecord into the list at 0x9fd960 (count 0xa0b358) */
 int (net_addRoomRecord)(const u8 *rec)
 {
-	static const u8 strings[4] = { 0x43, 0x33, 0x01, 0x71 };
-	static const u8 bytes[9] = { 0x00, 0x67, 0x65, 0x64, 0x63, 0x61, 0x62, 0x66, 0x70 };
-	return list_append(ADDR(g_roomListCount), OBJ(g_roomList), 0x79, rec, strings, 4, 0x33, bytes, 9);
+	static const u8 strings[4] = { offsetof(RoomRecord, hostName), offsetof(RoomRecord, address), offsetof(RoomRecord, name), offsetof(RoomRecord, password) };
+	static const u8 bytes[9] = { offsetof(RoomRecord, kind), offsetof(RoomRecord, rotation), offsetof(RoomRecord, fragLimit), offsetof(RoomRecord, gameMode), offsetof(RoomRecord, players), offsetof(RoomRecord, map), offsetof(RoomRecord, maxPlayers), offsetof(RoomRecord, timeLimit), offsetof(RoomRecord, locked) };
+	return list_append(ADDR(g_roomListCount), OBJ(g_roomList), sizeof(RoomRecord), rec, strings, 4, offsetof(RoomRecord, address), bytes, 9);
 }
 
 #define lstrlenA(s) IMPORT(0x4a9188, int, const char *)(s)
@@ -1051,35 +1051,39 @@ static int send_leave(u32 from, u32 to, const u8 *bytes, int nbytes, int flagged
 
 static void room_info(u8 *dst, u8 first, u8 count)
 {
-	const u8 *src = (*(const u8 **)&g_roomPacket);
-	dst[0] = first;
-	static const u8 bytes[] = { 0x49, 0x47, 0x48, 0x46 };
-	for (int k = 0; k < 4; k++)
-		dst[bytes[k]] = src[bytes[k]];
-	dst[0x45] = count;
-	dst[0x43] = src[0x43];
-	dst[0x44] = src[0x44];
-	dst[0x52] = src[0x52];
-	lstrcpyA((char *)dst + 0x53, (const char *)src + 0x53);
-	lstrcpyA((char *)dst + 0x33, (const char *)src + 0x33);
-	lstrcpyA((char *)dst + 1, (const char *)src + 1);
+	const ServerRecord *src = (*(const ServerRecord **)&g_roomPacket);
+	ServerRecord *to = (ServerRecord *)dst;
+	to->kind = first;
+	to->rotation = src->rotation;
+	to->timeLimit = src->timeLimit;
+	to->fragLimit = src->fragLimit;
+	to->gameMode = src->gameMode;
+	to->players = count;
+	to->map = src->map;
+	to->maxPlayers = src->maxPlayers;
+	to->locked = src->locked;
+	lstrcpyA(to->password, src->password);
+	lstrcpyA(to->address, src->address);
+	lstrcpyA(to->name, src->name);
 	net_send(0xc, 0x64);
 }
 
 static void arena_info(u8 *dst, u8 first, u8 count)
 {
-	const u8 *src = (*(const u8 **)&g_arenaPacket);
-	dst[0] = first;
-	dst[0x67] = src[0x67];
-	dst[0x65] = src[0x65];
-	dst[0x64] = src[0x64];
-	dst[0x63] = count;
-	static const u8 bytes[] = { 0x61, 0x62, 0x66, 0x70 };
-	for (int k = 0; k < 4; k++)
-		dst[bytes[k]] = src[bytes[k]];
-	lstrcpyA((char *)dst + 0x71, (const char *)src + 0x71);
-	lstrcpyA((char *)dst + 0x43, (const char *)src + 0x43);
-	lstrcpyA((char *)dst + 0x33, (const char *)src + 0x33);
+	const RoomRecord *src = (*(const RoomRecord **)&g_arenaPacket);
+	RoomRecord *to = (RoomRecord *)dst;
+	to->kind = first;
+	to->rotation = src->rotation;
+	to->fragLimit = src->fragLimit;
+	to->gameMode = src->gameMode;
+	to->players = count;
+	to->map = src->map;
+	to->maxPlayers = src->maxPlayers;
+	to->timeLimit = src->timeLimit;
+	to->locked = src->locked;
+	lstrcpyA(to->password, src->password);
+	lstrcpyA(to->hostName, src->hostName);
+	lstrcpyA(to->address, src->address);
 	net_send(0x14, 0x65);
 }
 
@@ -1197,8 +1201,8 @@ int (net_connect)(int mode)
    (0). Then the connection flags cleared. Returns what the original leaves in eax */
 u32 (net_disconnect)(void)
 {
-	static const u8 lobbyBytes[9] = { 0x49, 0x47, 0x48, 0x46, 0x45, 0x43, 0x44, 0x52 }, lobbyNames[3] = { 0x53, 0x33, 1 };
-	static const u8 roomBytes[9] = { 0x67, 0x65, 0x64, 0x63, 0x61, 0x62, 0x66, 0x70 }, roomNames[3] = { 0x71, 0x43, 0x33 };
+	static const u8 lobbyBytes[9] = { offsetof(ServerRecord, rotation), offsetof(ServerRecord, fragLimit), offsetof(ServerRecord, timeLimit), offsetof(ServerRecord, gameMode), offsetof(ServerRecord, players), offsetof(ServerRecord, map), offsetof(ServerRecord, maxPlayers), offsetof(ServerRecord, locked) }, lobbyNames[3] = { offsetof(ServerRecord, password), offsetof(ServerRecord, address), offsetof(ServerRecord, name) };
+	static const u8 roomBytes[9] = { offsetof(RoomRecord, rotation), offsetof(RoomRecord, fragLimit), offsetof(RoomRecord, gameMode), offsetof(RoomRecord, players), offsetof(RoomRecord, map), offsetof(RoomRecord, maxPlayers), offsetof(RoomRecord, timeLimit), offsetof(RoomRecord, locked) }, roomNames[3] = { offsetof(RoomRecord, password), offsetof(RoomRecord, hostName), offsetof(RoomRecord, address) };
 	if (g_netConnected != 1)
 		return (*(u32 *)&g_netConnected);
 	u32 r = g_lobbySocket;
@@ -1271,7 +1275,7 @@ void (net_send)(int kind, int to)
 		const char *from = (*(const char **)&g_roomPacket);
 		if (!name || !from)
 			return;
-		strcpy(name, from + 0x33);
+		strcpy(name, ((const ServerRecord *)from)->address);
 		send_buffer(ADDR(g_lobbySocket), ADDR(g_netSendName), 0x10);
 		return;
 	}
