@@ -1048,6 +1048,24 @@ extern struct GameData g_data;
 #define g_hangulVowelSetPlain ((signed char *)g_hangulVowelSetPlain_v)
 #undef g_hangulVowelSetTail
 #define g_hangulVowelSetTail ((signed char *)g_hangulVowelSetTail_v)
+#undef g_hasItem30mm
+#define g_hasItem30mm (g_data.g_hasItem30mm_)
+#undef g_hasItem60mm
+#define g_hasItem60mm (g_data.g_hasItem60mm_)
+#undef g_hasItemBooster
+#define g_hasItemBooster (g_data.g_hasItemBooster_)
+#undef g_hasItemCapacity
+#define g_hasItemCapacity (g_data.g_hasItemCapacity_)
+#undef g_hasItemEpak
+#define g_hasItemEpak (g_data.g_hasItemEpak_)
+#undef g_hasItemMissile
+#define g_hasItemMissile (g_data.g_hasItemMissile_)
+#undef g_hasItemSensor
+#define g_hasItemSensor (g_data.g_hasItemSensor_)
+#undef g_hasItemShield
+#define g_hasItemShield (g_data.g_hasItemShield_)
+#undef g_hasItemWeight
+#define g_hasItemWeight (g_data.g_hasItemWeight_)
 #undef g_hdc
 #define g_hdc (*(void * *)g_hdc_v)
 #undef g_headCount

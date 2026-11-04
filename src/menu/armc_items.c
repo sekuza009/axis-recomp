@@ -177,13 +177,13 @@ u32 (armc_partScreenClicks)(void)
 }
 
 /* 0x41dcf0: the bonuses of the mech's two extra items (slots 5 and 4, 0x4dcb1c / 0x4dcb18): items 27 .. 35 each
-   raise a flag of their own (0x4dcb10 ...); the flags set, their values (as floats): 27 0x4dbc70 0.3; 28, 29, 30
+   raise a flag of their own (g_hasItemCapacity ..); the flags set, their values (as floats): 27 0x4dbc70 0.3; 28, 29, 30
    100 into 0x4dc248, 0x4dcc6c, 0x4dc548; 31 0x4dcb34 50; 32 0x4dbc78 100, 0x4dc898 0.5, 0x4dceb4 3, 0x4dc88c 1;
    33 0x4dcca0 0.5, 0x4dc894 -0.1; 34 0x4dceb0 0.2; 35 0x4dcc68 0.3, 0x4dbc74 1. Every flag and value is cleared
    first. The caller ignores the eax it leaves */
 void (armc_extraItemBonuses)(void)
 {
-	static const u32 flag[9] = { 0x4dcb10, 0x4dcea8, 0x4dcc5c, 0x4dbc54, 0x4dbe44, 0x4dc794, 0x4dbd78, 0x4dc774, 0x4dcf30 };
+	static const u32 flag[9] = { ADDR(g_hasItemCapacity), ADDR(g_hasItemEpak), ADDR(g_hasItem30mm), ADDR(g_hasItem60mm), ADDR(g_hasItemMissile), ADDR(g_hasItemSensor), ADDR(g_hasItemBooster), ADDR(g_hasItemWeight), ADDR(g_hasItemShield) };
 	static const u32 value[14] = { ADDR(g_itemBonusCapacityPerLevel), ADDR(g_itemBonusEpak), ADDR(g_itemBonus30mm), ADDR(g_itemBonus60mm), ADDR(g_itemBonusMissile), ADDR(g_itemBonusDetectionRange), ADDR(g_itemBonusLockOn), ADDR(g_itemBonusHacking), ADDR(g_itemBonusTargetKeep),
 	                               ADDR(g_itemBonusActiveTime), ADDR(g_itemBonusRechargeTime), ADDR(g_itemBonusWeightLimit), ADDR(g_itemBonusShield), ADDR(g_itemBonusShieldUnread) };
 	static const struct { u8 item; u32 at, bits; } bonus[14] = {

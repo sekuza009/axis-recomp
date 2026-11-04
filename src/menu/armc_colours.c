@@ -57,15 +57,15 @@ void (armc_dragSecondaryValue)(void)
 	g_armcColours[g_armcColourSlot * 6 + 5] = (float)(v + v - 1.0f);
 }
 
-/* ---- the preview mech tinted: the local player's five part shapes (in its stride-0x47fd2 record) take colour
+/* ---- the preview mech tinted: the local player's five part shape caches (its PlayerRecord's) take colour
    slots' six values (shape_setTint) ---- */
-static const u32 part_shapes[5] = { 0x1755568, 0x175d4b4, 0x1765400, 0x177504c, 0x1784c98 };
+static const u32 part_shapes[5] = { offsetof(PlayerRecord, headShapes), offsetof(PlayerRecord, chestShapes), offsetof(PlayerRecord, armShapes), offsetof(PlayerRecord, legShapes), offsetof(PlayerRecord, boosterShapes) };
 
 static void tint_part(int part, int slot)
 {
 	const u32 *c = (const u32 *)g_armcColours + slot * 6;
 	Scene *scene = g_scene;
-	shape_setTint((u8 *)scene + part_shapes[part] + scene->localPlayer * 0x47fd2, c[0], c[1], c[2], c[3], c[4], c[5]);
+	shape_setTint((u8 *)&scene->playerRecords[scene->localPlayer] + part_shapes[part], c[0], c[1], c[2], c[3], c[4], c[5]);
 }
 
 /* 0x41cf20: the colour slot being edited applied to its part; slot 5 (all) puts the undo buffer back first and

@@ -786,6 +786,15 @@
 #define g_mechBoosterRecharge GAME_VAR(float, 0x4dcaf0)
 #define g_mechNormalSpeed GAME_VAR(float, 0x4dcaf8)
 #define g_itemBonusShield GAME_VAR(float, 0x4dcc68)
+#define g_hasItemCapacity GAME_VAR(int, 0x4dcb10)   /* (by use) extra item 27 is fitted (armc_extraItemBonuses) */
+#define g_hasItemEpak GAME_VAR(int, 0x4dcea8)   /* (by use) extra item 28 is fitted (armc_extraItemBonuses) */
+#define g_hasItem30mm GAME_VAR(int, 0x4dcc5c)   /* (by use) extra item 29 is fitted (armc_extraItemBonuses) */
+#define g_hasItem60mm GAME_VAR(int, 0x4dbc54)   /* (by use) extra item 30 is fitted (armc_extraItemBonuses) */
+#define g_hasItemMissile GAME_VAR(int, 0x4dbe44)   /* (by use) extra item 31 is fitted (armc_extraItemBonuses) */
+#define g_hasItemSensor GAME_VAR(int, 0x4dc794)   /* (by use) extra item 32 is fitted (armc_extraItemBonuses) */
+#define g_hasItemBooster GAME_VAR(int, 0x4dbd78)   /* (by use) extra item 33 is fitted (armc_extraItemBonuses) */
+#define g_hasItemWeight GAME_VAR(int, 0x4dc774)   /* (by use) extra item 34 is fitted (armc_extraItemBonuses) */
+#define g_hasItemShield GAME_VAR(int, 0x4dcf30)   /* (by use) extra item 35 is fitted (armc_extraItemBonuses) */
 #define g_itemBonusActiveTime GAME_VAR(float, 0x4dcca0)
 #define g_boosterActiveTime GAME_VAR(float, 0x4dce84)
 #define g_boosterRechargeTime GAME_VAR(float, 0x4dce88)
