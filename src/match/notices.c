@@ -39,11 +39,15 @@ void THISCALL (events_clear)(Scene *scene, u32 time)
 /* 0x463480: every notice cleared */
 void THISCALL (notices_clearAll)(Scene *scene)
 {
-	static const int flags[] = { 0x2343106, 0x234314e, 0x2343156, 0x234319b, 0x23431e7, 0x2343233, 0x2343237,
-	                             0x234323b, 0x234323f, 0x234324f };
 	memset(scene->sendFlags, 0, sizeof scene->sendFlags);
-	for (int k = 0; k < 10; k++)
-		FIELD(int, scene, flags[k]) = 0;
+	scene->noticeChanged = 0;
+	scene->connectPending = 0;
+	scene->quitPending = 0;
+	scene->chatPending = 0;
+	scene->joinPending = 0;
+	scene->changePending = 0;
+	scene->endEvents[0] = scene->endEvents[1] = scene->endEvents[2] = 0;
+	scene->event6Pending = 0;
 }
 
 /* 0x4634e0, 0x463530, 0x463550, 0x4635b0, 0x463610: one notice raised, with its values and text */

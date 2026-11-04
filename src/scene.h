@@ -1783,7 +1783,7 @@ typedef struct Scene {
 	i32 menuKeys[4];   /* +0x234330b: (by use) the Esc menu's keys this frame: up, down, enter, escape (1: pressed) */
 	i32 followNextAsked;   /* +0x234331b: (by use) the replay viewer asks for the next live player */
 	i32 presetNextAsked;   /* +0x234331f: (by use) ... and for the next camera preset */
-	u8 _pad2343323[0x28];
+	i32 cleared2343323[10];   /* +0x2343323: (by use) only cleared (match_resetInputState) */
 	char consoleLines[30][0x40];   /* +0x234334b: the full-screen text list (hud_4955a0) */
 	u8 _pad2343acb[0x40];
 } Scene;
@@ -3223,6 +3223,7 @@ _Static_assert(offsetof(Scene, radioMessage) == 0x2343307 && sizeof(((Scene *)0)
 _Static_assert(offsetof(Scene, menuKeys) == 0x234330b && sizeof(((Scene *)0)->menuKeys) == 0x10, "scene.fields: Scene.menuKeys");
 _Static_assert(offsetof(Scene, followNextAsked) == 0x234331b && sizeof(((Scene *)0)->followNextAsked) == 0x4, "scene.fields: Scene.followNextAsked");
 _Static_assert(offsetof(Scene, presetNextAsked) == 0x234331f && sizeof(((Scene *)0)->presetNextAsked) == 0x4, "scene.fields: Scene.presetNextAsked");
+_Static_assert(offsetof(Scene, cleared2343323) == 0x2343323 && sizeof(((Scene *)0)->cleared2343323) == 0x28, "scene.fields: Scene.cleared2343323");
 _Static_assert(offsetof(Scene, consoleLines) == 0x234334b && sizeof(((Scene *)0)->consoleLines) == 0x780, "scene.fields: Scene.consoleLines");
 _Static_assert(sizeof(Scene) == 0x2343b0b, "scene.fields: size of Scene");
 

@@ -290,20 +290,20 @@ void THISCALL (ViewVolume_reset)(u8 *self)
 	for (int k = 0; k < 10; k++)
 		FIELD(int, self, cleared[k]) = 0;
 }
-/* 0x481760: the collision space's units: count at +0x30, the 0x14-byte units at +0x34, each emptied (spaceSlot_clear) and
-   chained (prev at +0xc, next at +0x10) */
+/* 0x481760: the collision space's units (its units pool), each emptied (spaceSlot_clear) and chained (poolPrev /
+   poolNext) */
 void THISCALL (space_resetUnits)(u8 *self)
 {
 	Space *sp = (Space *)self;
 	for (int i = 0; i < sp->units.count; i++)
-		spaceSlot_clear((int *)(sp->units.records + i * 0x14));
+		spaceSlot_clear((int *)(sp->units.records + i * sizeof(SpaceUnit)));
 	for (int i = 1; i < sp->units.count; i++) {
-		u8 *e = sp->units.records + i * 0x14;
-		((SpaceUnit *)e)->poolPrev = e - 0x14;
+		u8 *e = sp->units.records + i * sizeof(SpaceUnit);
+		((SpaceUnit *)e)->poolPrev = e - sizeof(SpaceUnit);
 	}
 	for (int i = 0; i < sp->units.count - 1; i++) {
-		u8 *e = sp->units.records + i * 0x14;
-		((SpaceUnit *)e)->poolNext = e + 0x14;
+		u8 *e = sp->units.records + i * sizeof(SpaceUnit);
+		((SpaceUnit *)e)->poolNext = e + sizeof(SpaceUnit);
 	}
 	sp->units.used = 0;
 	sp->units.freeHead = sp->units.records;
@@ -311,11 +311,11 @@ void THISCALL (space_resetUnits)(u8 *self)
 /* 0x461f10: the scene's input state cleared (two of its fields -1) */
 void THISCALL (match_resetInputState)(Scene *scene)
 {
-	for (int off = 0x234325f; off < 0x2343323; off += 4)
-		FIELD(int, scene, off) = 0;
+	for (int *p = &scene->holdAltitude; p < scene->cleared2343323; p++)   /* holdAltitude .. presetNextAsked */
+		*p = 0;
 	scene->viewKey = -1;
 	scene->radioMessage = -1;
-	memset((u8 *)scene + 0x2343323, 0, 10 * 4);
+	memset(scene->cleared2343323, 0, sizeof scene->cleared2343323);
 }
 
 /* ---- the no-CD build (patched to return at once; the original checks are still behind the ret) ---- */

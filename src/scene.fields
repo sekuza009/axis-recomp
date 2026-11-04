@@ -1529,6 +1529,7 @@ struct Scene 0x2343b0b                                          # the scene: the
 0x2342986  4          i32 counterGreen
 0x2342f02  4          float readyTimer                           # > 0: "ready" shown
 0x2342f06  0x40       char readyText[0x40]                       # shown while no countdown runs
+0x2343323  0x28       i32 cleared2343323[10]                     # (by use) only cleared (match_resetInputState)
 0x234334b  0x780      char consoleLines[30][0x40]                # the full-screen text list (hud_4955a0)
 0x234328f  4          i32 rankingKey                             # 1: the ranking key is held
 0x23429ce  0x528      EventLine events[5]                        # the last five events (ring of 5)
