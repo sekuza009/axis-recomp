@@ -310,7 +310,7 @@ void THISCALL (bullet_init)(u8 *s, int slot, int id, int owner, int a4, const u8
 		vel[k] = *w2de8 > 0 ? f32(fmul_m(fld_m(w2de8), &dir[k])) : f32(fsub_m(fld_m((const float *)(RELOC(b) + 0x60) + k), (const float *)(RELOC(b) + 0x54) + k));
 	memcpy(BU->step, (const void *)ADDR(g_vecZero), 12);
 	BU->hitActor = -1;
-	B(int, 0xc0) = 0;
+	BU->homeTimer = 0.0f;
 	BU->link = a4;
 	if (((ActorInfo *)w)->tracer > 0 && a4 < 0 && BU->owner == ST->playerActor) {
 		const float *at = (const float *)(RELOC(b) + 0x78);
@@ -321,7 +321,7 @@ void THISCALL (bullet_init)(u8 *s, int slot, int id, int owner, int a4, const u8
 		tip[1] = f32(fadd_m(fld_m(&ty), &at[1]));
 		tip[2] = f32(fadd_m(fld_m(&tz), &at[2]));
 	}
-	B(int, 0xd0) = 0;
+	BU->hitWorld = 0;
 	BU->trailCount = 0;
 	if (quiet)
 		return;
@@ -543,7 +543,7 @@ static void hit_actor(u8 *s, u8 *b, const u8 *w, u32 *r, int weapon)
 		push[1] = f32(fmul_m(fld_m(&y), K(0x4a9418)));
 		push[2] = f32(fmul_m(z, K(0x4a9418)));
 	}
-	B(int, 0xd0) = 1;
+	BU->hitWorld = 1;
 }
 
 /* ((M[a] * p[ia] + M[b] * p[ib]) + M[c] * p[ic]) + M[t], each product a matrix entry times a point's */
@@ -577,13 +577,13 @@ static void decal(u8 *s, u8 *b, const u8 *w, u32 *r, const u8 *h, const float *N
 		uv[q * 2] = f32(fdiv_m((fmul_m(f2, &e[2]) + fmul_m(f1, &e[1])) + fmul_m(f0, &e[0]), &le));
 		uv[q * 2 + 1] = f32(((fmul_m(f2, &c2) + f1 * c1) + f0 * c0) / lc);
 	}
-	const int *obj = GAME_VAR(const int *, h + 0x8c);
+	const int *obj = ((const int *)((const CollisionPlane *)h)->object);
 	if (obj) {
-		u8 *part = GAME_VAR(u8 *, GAME_VAR(u8 *, s + 0x131b0c0 + *obj * 0x2cc) + 0x14) + GAME_VAR(int, h + 0x90) * 0x80;
+		u8 *part = GAME_VAR(u8 *, GAME_VAR(u8 *, s + 0x131b0c0 + *obj * 0x2cc) + 0x14) + ((const CollisionPlane *)h)->part * 0x80;
 		float tri[9];
 		for (int k = 0; k < 3; k++)
-			memcpy(tri + k * 3, GAME_VAR(float *, part + 0x50) + GAME_VAR(int, h + 0x94 + k * 4) * 3, 12);
-		effect(s, r, WI->shotMode + 0x28, 0, imp, N, (u32)(s + 0x131af38 + *GAME_VAR(const int *, h + 0x8c) * 0x2cc), (u32)tri, (u32)uv, 0, 0);
+			memcpy(tri + k * 3, GAME_VAR(float *, part + 0x50) + ((const CollisionPlane *)h)->corners[k] * 3, 12);
+		effect(s, r, WI->shotMode + 0x28, 0, imp, N, (u32)(s + 0x131af38 + *((const int *)((const CollisionPlane *)h)->object) * 0x2cc), (u32)tri, (u32)uv, 0, 0);
 	} else
 		effect(s, r, WI->shotMode + 0x28, 0, imp, N, 0, (u32)P, (u32)uv, effect_size(w), 0);
 }
@@ -597,8 +597,8 @@ static void hit_surface(u8 *s, u8 *b, const u8 *w, u32 *r)
 	if (!h)
 		return;
 	float N[3], P[9];
-	const float *n = (const float *)(h + 0x4c), *p = (const float *)(h + 4);
-	const int *obj = GAME_VAR(const int *, h + 0x8c);
+	const float *n = ((const CollisionPlane *)h)->normal, *p = (const float *)(h + 4);
+	const int *obj = ((const int *)((const CollisionPlane *)h)->object);
 	if (obj) {
 		const float *M = (const float *)(s + 0x131ae44 + *obj * 0x2cc + 0x1f4);
 		N[0] = f32((fmul_m(fld_m(&n[2]), &M[8]) + fmul_m(fld_m(&n[1]), &M[4])) + fmul_m(fld_m(&n[0]), &M[0]));
@@ -623,7 +623,7 @@ static void hit_surface(u8 *s, u8 *b, const u8 *w, u32 *r)
 		decal(s, b, w, r, (*(const u8 * *)&BU->hit), N, P);
 	if (WI->hitSound >= 0)
 		sound_play3D(WI->hitSound, s + 0x20f3970, b + 0x60, s + 0x20f397c, 0x47435000);
-	B(int, 0xd0) = 1;
+	BU->hitWorld = 1;
 }
 
 /* splash damage once the bullet hit (+0xd0): every other live actor of the local player's (+0x1cd94b8) with health
@@ -631,7 +631,7 @@ static void hit_surface(u8 *s, u8 *b, const u8 *w, u32 *r)
    pushed (+0x1ce1c04) */
 static void splash(u8 *s, u8 *b, const u8 *w)
 {
-	if (B(int, 0xd0) != 1 || !(WI->splashRadius > 0))
+	if (BU->hitWorld != 1 || !(WI->splashRadius > 0))
 		return;
 	for (int j = 0; j < ST->actorCount; j++) {
 		if (ST->actors[j].state != 1 || !(ST->actors[j].blinkTime > 3.0f) || ST->actors[j].pilot != ST->playerActor || BU->hitActor == j
@@ -696,7 +696,7 @@ static void home(u8 *s, u8 *b, const u8 *w)
 		T[1] = f32((fmul_m(fld_m(&m[1]), &vel[0]) + fmul_m(fld_m(&m[9]), &vel[2])) + fmul_m(fld_m(&m[5]), &vel[1]));
 		T[2] = f32((fmul_m(fld_m(&m[2]), &vel[0]) + fmul_m(fld_m(&m[10]), &vel[2])) + fmul_m(fld_m(&m[6]), &vel[1]));
 	}
-	B(u32, 0xc0) = 0x3d888889;   /* 1/15 */
+	BU->homeTimer = 0.06666667f;   /* 1/15 */
 	vel[0] = f32(fmul_m(fld_m(&spd), &T[0]));
 	vel[1] = f32(fmul_m(fld_m(&T[1]), &spd));
 	vel[2] = f32(fmul_m(fld_m(&T[2]), &spd));
@@ -710,8 +710,8 @@ static void fly_local(u8 *s, u8 *b, const u8 *w, const float *dt)
 {
 	float *prev = (float *)(RELOC(b) + 0x78), *cur = (float *)(RELOC(b) + 0x84), *vel = (float *)(RELOC(b) + 0xa0), *step = (float *)(RELOC(b) + 0xac);
 	if (WI->tracer > 0 && WI->velocity > 0) {
-		long double v = fsub_m(fld_m(&B(float, 0xc0)), dt);
-		B(float, 0xc0) = (float)v;
+		long double v = fsub_m(fld_m(&BU->homeTimer), dt);
+		BU->homeTimer = (float)v;
 		if (!(v > 0))
 			home(s, b, w);
 	}

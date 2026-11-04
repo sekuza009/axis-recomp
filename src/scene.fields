@@ -344,6 +344,8 @@ struct Projectile 0x12c                                         # a particle or 
 4          4          i32 active                                # 1: in use
 
 struct Bullet 0x4e8                                             # a bullet in flight (Stage.bullets: bullet_init, bullet_update)
+0xc0       4          float homeTimer                            # (by use) a homing bullet turns again every 1/15 s
+0xd0       4          i32 hitWorld                               # 1: it hit the world (splash damage then; weapons.c)
 0xd4       0x3c0      float trail[20][12]                        # (by use) a trail's ring of cross-sections (4 points each: weapons.c trail)
 0x494      0x50       float trailAge[20]                         # each one's age when made
 0x4e4      4          i32 trailCount                             # the cross-sections made (the ring's next: % 20)
@@ -656,6 +658,16 @@ struct BoosterType 0x1820                                       # a booster part
 0x1800     4          u32 lean                                   # (by use) a float's bits: the actor's leanPitch
 0x1804     0xc        float activeTime[3]                        # (the actor's boostTime, rechargeTime, restTime by these)
 0x1810     0x10       float normalSpeed[4]
+
+struct CollisionPlane 0xac                                      # a plane of the collision space (Space.planes; a bullet's hit, Bullet.hit)
+0          1          u8 flags                                   # (by use) 0x10: no decal on it
+4          0xc        float point[3]                             # a point on it
+0x4c       0xc        float normal[3]
+0x8c       4          i32 *object                                # its map object's index (none: 0)
+0x90       4          i32 part                                   # the object's shape part
+0x94       0xc        i32 corners[3]                             # the triangle's vertex indices in the part
+0xa0       4          u8 *poolPrev                               # its links in the planes' pool
+0xa4       4          u8 *poolNext
 
 struct Stage 0x2150443                                          # the stage: the scene's own object at Scene + 0x1f36c8 (STAGE()), "this" of the
                                                                 # game's Stage methods; offsets here are from the stage (Scene fields past

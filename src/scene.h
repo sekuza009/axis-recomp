@@ -436,9 +436,9 @@ typedef struct Bullet {
 	float step[3];   /* +0xac: this frame's direction of move */
 	i32 hitActor;   /* +0xb8: an actor it hit (-1 none), which takes it first */
 	i32 link;   /* +0xbc: (unclear) the caller's fourth argument; < 0 for the tracer */
-	u8 _pad00000c0[0x4];
+	float homeTimer;   /* +0xc0: (by use) a homing bullet turns again every 1/15 s */
 	float tip[3];   /* +0xc4: the local player's tracer end */
-	u8 _pad00000d0[0x4];
+	i32 hitWorld;   /* +0xd0: 1: it hit the world (splash damage then; weapons.c) */
 	float trail[20][12];   /* +0xd4: (by use) a trail's ring of cross-sections (4 points each: weapons.c trail) */
 	float trailAge[20];   /* +0x494: each one's age when made */
 	i32 trailCount;   /* +0x4e4: the cross-sections made (the ring's next: % 20) */
@@ -800,6 +800,22 @@ typedef struct BoosterType {
 	float activeTime[3];   /* +0x1804: (the actor's boostTime, rechargeTime, restTime by these) */
 	float normalSpeed[4];   /* +0x1810 */
 } BoosterType;
+
+/* a plane of the collision space (Space.planes; a bullet's hit, Bullet.hit) */
+typedef struct CollisionPlane {
+	u8 flags;   /* +0x0: (by use) 0x10: no decal on it */
+	u8 _pad0000001[0x3];
+	float point[3];   /* +0x4: a point on it */
+	u8 _pad0000010[0x3c];
+	float normal[3];   /* +0x4c */
+	u8 _pad0000058[0x34];
+	i32 *object;   /* +0x8c: its map object's index (none: 0) */
+	i32 part;   /* +0x90: the object's shape part */
+	i32 corners[3];   /* +0x94: the triangle's vertex indices in the part */
+	u8 *poolPrev;   /* +0xa0: its links in the planes' pool */
+	u8 *poolNext;   /* +0xa4 */
+	u8 _pad00000a8[0x4];
+} CollisionPlane;
 
 /* the stage: the scene's own object at Scene + 0x1f36c8 (STAGE()), "this" of the */
 typedef struct Stage {
@@ -1644,7 +1660,9 @@ _Static_assert(offsetof(Bullet, vel) == 0xa0 && sizeof(((Bullet *)0)->vel) == 0x
 _Static_assert(offsetof(Bullet, step) == 0xac && sizeof(((Bullet *)0)->step) == 0xc, "scene.fields: Bullet.step");
 _Static_assert(offsetof(Bullet, hitActor) == 0xb8 && sizeof(((Bullet *)0)->hitActor) == 0x4, "scene.fields: Bullet.hitActor");
 _Static_assert(offsetof(Bullet, link) == 0xbc && sizeof(((Bullet *)0)->link) == 0x4, "scene.fields: Bullet.link");
+_Static_assert(offsetof(Bullet, homeTimer) == 0xc0 && sizeof(((Bullet *)0)->homeTimer) == 0x4, "scene.fields: Bullet.homeTimer");
 _Static_assert(offsetof(Bullet, tip) == 0xc4 && sizeof(((Bullet *)0)->tip) == 0xc, "scene.fields: Bullet.tip");
+_Static_assert(offsetof(Bullet, hitWorld) == 0xd0 && sizeof(((Bullet *)0)->hitWorld) == 0x4, "scene.fields: Bullet.hitWorld");
 _Static_assert(offsetof(Bullet, trail) == 0xd4 && sizeof(((Bullet *)0)->trail) == 0x3c0, "scene.fields: Bullet.trail");
 _Static_assert(offsetof(Bullet, trailAge) == 0x494 && sizeof(((Bullet *)0)->trailAge) == 0x50, "scene.fields: Bullet.trailAge");
 _Static_assert(offsetof(Bullet, trailCount) == 0x4e4 && sizeof(((Bullet *)0)->trailCount) == 0x4, "scene.fields: Bullet.trailCount");
@@ -1915,6 +1933,15 @@ _Static_assert(offsetof(BoosterType, lean) == 0x1800 && sizeof(((BoosterType *)0
 _Static_assert(offsetof(BoosterType, activeTime) == 0x1804 && sizeof(((BoosterType *)0)->activeTime) == 0xc, "scene.fields: BoosterType.activeTime");
 _Static_assert(offsetof(BoosterType, normalSpeed) == 0x1810 && sizeof(((BoosterType *)0)->normalSpeed) == 0x10, "scene.fields: BoosterType.normalSpeed");
 _Static_assert(sizeof(BoosterType) == 0x1820, "scene.fields: size of BoosterType");
+_Static_assert(offsetof(CollisionPlane, flags) == 0x0 && sizeof(((CollisionPlane *)0)->flags) == 0x1, "scene.fields: CollisionPlane.flags");
+_Static_assert(offsetof(CollisionPlane, point) == 0x4 && sizeof(((CollisionPlane *)0)->point) == 0xc, "scene.fields: CollisionPlane.point");
+_Static_assert(offsetof(CollisionPlane, normal) == 0x4c && sizeof(((CollisionPlane *)0)->normal) == 0xc, "scene.fields: CollisionPlane.normal");
+_Static_assert(offsetof(CollisionPlane, object) == 0x8c && sizeof(((CollisionPlane *)0)->object) == 0x4, "scene.fields: CollisionPlane.object");
+_Static_assert(offsetof(CollisionPlane, part) == 0x90 && sizeof(((CollisionPlane *)0)->part) == 0x4, "scene.fields: CollisionPlane.part");
+_Static_assert(offsetof(CollisionPlane, corners) == 0x94 && sizeof(((CollisionPlane *)0)->corners) == 0xc, "scene.fields: CollisionPlane.corners");
+_Static_assert(offsetof(CollisionPlane, poolPrev) == 0xa0 && sizeof(((CollisionPlane *)0)->poolPrev) == 0x4, "scene.fields: CollisionPlane.poolPrev");
+_Static_assert(offsetof(CollisionPlane, poolNext) == 0xa4 && sizeof(((CollisionPlane *)0)->poolNext) == 0x4, "scene.fields: CollisionPlane.poolNext");
+_Static_assert(sizeof(CollisionPlane) == 0xac, "scene.fields: size of CollisionPlane");
 _Static_assert(offsetof(Stage, cullMargin) == 0xa08 && sizeof(((Stage *)0)->cullMargin) == 0x4, "scene.fields: Stage.cullMargin");
 _Static_assert(offsetof(Stage, collisionPlanes) == 0xa24 && sizeof(((Stage *)0)->collisionPlanes) == 0x4, "scene.fields: Stage.collisionPlanes");
 _Static_assert(offsetof(Stage, effectTextures) == 0x9ccfd4 && sizeof(((Stage *)0)->effectTextures) == 0x24, "scene.fields: Stage.effectTextures");
