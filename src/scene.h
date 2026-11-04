@@ -326,7 +326,7 @@ typedef struct ObjectList {
 	i32 frameCount;   /* +0x1c: 0: nothing to draw (ObjectList_load: the skeletons named, one a frame) */
 	i32 *frames;   /* +0x20: frames[frame] == 0: nothing to draw */
 	i32 frame;   /* +0x24 */
-	u8 _pad0000028[0x4];
+	i32 animTick;   /* +0x28: (by use) the animation's tick (its frame: this % the skeleton's frames + 1) */
 	i32 preLit;   /* +0x2c: 1: lit here, drawn with its own colours */
 } ObjectList;
 
@@ -544,7 +544,8 @@ typedef struct Skeleton {
 	i32 ownsBlock;   /* +0xc: 1: allocated here (freed with it) */
 	i32 boneCount;   /* +0x10 */
 	u8 *bones;   /* +0x14: boneCount Bone records */
-	u8 _pad0000018[0x8];
+	i32 posKeyTotal;   /* +0x18: (by use) the ASE file's position keys counted (the block's size: skel_loadAseFrom) */
+	i32 rotKeyTotal;   /* +0x1c: its rotation keys */
 	i32 frames;   /* +0x20: its animation's frames */
 } Skeleton;
 
@@ -1592,6 +1593,7 @@ _Static_assert(offsetof(ObjectList, colourCount) == 0x18 && sizeof(((ObjectList 
 _Static_assert(offsetof(ObjectList, frameCount) == 0x1c && sizeof(((ObjectList *)0)->frameCount) == 0x4, "scene.fields: ObjectList.frameCount");
 _Static_assert(offsetof(ObjectList, frames) == 0x20 && sizeof(((ObjectList *)0)->frames) == 0x4, "scene.fields: ObjectList.frames");
 _Static_assert(offsetof(ObjectList, frame) == 0x24 && sizeof(((ObjectList *)0)->frame) == 0x4, "scene.fields: ObjectList.frame");
+_Static_assert(offsetof(ObjectList, animTick) == 0x28 && sizeof(((ObjectList *)0)->animTick) == 0x4, "scene.fields: ObjectList.animTick");
 _Static_assert(offsetof(ObjectList, preLit) == 0x2c && sizeof(((ObjectList *)0)->preLit) == 0x4, "scene.fields: ObjectList.preLit");
 _Static_assert(sizeof(ObjectList) == 0x30, "scene.fields: size of ObjectList");
 _Static_assert(offsetof(LightFactors, enabled) == 0xb00c && sizeof(((LightFactors *)0)->enabled) == 0x4, "scene.fields: LightFactors.enabled");
@@ -1762,6 +1764,8 @@ _Static_assert(offsetof(Skeleton, block) == 0x8 && sizeof(((Skeleton *)0)->block
 _Static_assert(offsetof(Skeleton, ownsBlock) == 0xc && sizeof(((Skeleton *)0)->ownsBlock) == 0x4, "scene.fields: Skeleton.ownsBlock");
 _Static_assert(offsetof(Skeleton, boneCount) == 0x10 && sizeof(((Skeleton *)0)->boneCount) == 0x4, "scene.fields: Skeleton.boneCount");
 _Static_assert(offsetof(Skeleton, bones) == 0x14 && sizeof(((Skeleton *)0)->bones) == 0x4, "scene.fields: Skeleton.bones");
+_Static_assert(offsetof(Skeleton, posKeyTotal) == 0x18 && sizeof(((Skeleton *)0)->posKeyTotal) == 0x4, "scene.fields: Skeleton.posKeyTotal");
+_Static_assert(offsetof(Skeleton, rotKeyTotal) == 0x1c && sizeof(((Skeleton *)0)->rotKeyTotal) == 0x4, "scene.fields: Skeleton.rotKeyTotal");
 _Static_assert(offsetof(Skeleton, frames) == 0x20 && sizeof(((Skeleton *)0)->frames) == 0x4, "scene.fields: Skeleton.frames");
 _Static_assert(sizeof(Skeleton) == 0x24, "scene.fields: size of Skeleton");
 _Static_assert(offsetof(Bone, parent) == 0x40 && sizeof(((Bone *)0)->parent) == 0x4, "scene.fields: Bone.parent");

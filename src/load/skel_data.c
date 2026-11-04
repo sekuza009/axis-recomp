@@ -515,25 +515,26 @@ static void transform(float *out, const float *m, const float *px, const float *
    own point (+0, its +0x20 ..; none: the first again, to +0x58). Its callers ignore the eax it leaves */
 void THISCALL (skel_poseBones)(u8 *pose, const float *base)
 {
-	if (AT(int, pose, 0x1c) <= 0)
+	ObjectList *ol = (ObjectList *)pose;
+	if (ol->frameCount <= 0)
 		return;
 	float saved[16], root[16];
 	glGetFloatv(0xba6, saved);   /* GL_MODELVIEW_MATRIX */
 	Mat4_copy(root, base ? base : saved);
-	u8 **entry = AT(u8 **, pose, 0x20) + AT(int, pose, 0x24);
+	u8 **entry = ((u8 **)ol->frames) + ol->frame;
 	if (!*entry)
 		return;
 	const float *unit = k_57_2958f, *point = (const float *)ADDR(g_vecOrigin);
-	for (int i = 0; i < AT(int, pose, 0x10); i++) {
+	for (int i = 0; i < ol->count; i++) {
 		Skeleton *sk = (Skeleton *)(*entry);
-		u8 *out = AT(u8 *, pose, 0x14) + i * 0x64;
+		u8 *out = ((u8 *)ol->entries) + i * 0x64;
 		u8 *b = sk->bones + i * 0x70;
 		Bone *bn = (Bone *)b;
-		int frame = AT(int, pose, 0x28) % (sk->frames + 1);
+		int frame = ol->animTick % (sk->frames + 1);
 		if (i >= sk->boneCount)
 			break;
 		int parent = bn->parent;
-		glLoadMatrixf(parent < 0 ? root : (const float *)(AT(u8 *, pose, 0x14) + parent * 0x64 + 0xc));
+		glLoadMatrixf(parent < 0 ? root : (const float *)(((u8 *)ol->entries) + parent * 0x64 + 0xc));
 		const float *scale = (const float *)(out + 4);
 		if (bn->posKeyCount > 0) {
 			int at = frame;
@@ -609,20 +610,20 @@ void THISCALL (skel_loadAseFrom)(u8 *sk, void *f, u8 *mem, int memSize)
 	Skeleton *sko = (Skeleton *)sk;
 	char line[0x100], parent[0x40];
 	Skeleton_release(sk);
-	sko->boneCount = GAME_VAR(int, sk + 0x1c) = GAME_VAR(int, sk + 0x18) = 0;
+	sko->boneCount = ((Skeleton *)sk)->rotKeyTotal = ((Skeleton *)sk)->posKeyTotal = 0;
 	while (crt_fgets(line, 0x100, f)) {
 		const char *t = crt_strtok(line, (const char *)STR(0x4c5498, "* \t"));
 		if (!strcmp(t, (const char *)STR(0x4c548c, "GEOMOBJECT")))
 			sko->boneCount++;
 		else if (!strcmp(t, (const char *)STR(0x4c5478, "CONTROL_TCB_POS_KEY")) || !strcmp(t, (const char *)STR(0x4c5460, "CONTROL_BEZIER_POS_KEY")))
-			GAME_VAR(int, sk + 0x18)++;
+			((Skeleton *)sk)->posKeyTotal++;
 		else if (!strcmp(t, (const char *)STR(0x4c544c, "CONTROL_TCB_ROT_KEY")))
-			GAME_VAR(int, sk + 0x1c)++;
+			((Skeleton *)sk)->rotKeyTotal++;
 	}
 	int bones = sko->boneCount;
 	if (bones <= 0)
 		return;
-	int size = sko->blockSize = bones * 0x70 + GAME_VAR(int, sk + 0x1c) * 0x28 + GAME_VAR(int, sk + 0x18) * 0x20;
+	int size = sko->blockSize = bones * 0x70 + ((Skeleton *)sk)->rotKeyTotal * 0x28 + ((Skeleton *)sk)->posKeyTotal * 0x20;
 	if (!mem) {
 		(*(void * *)&((Skeleton *)sk)->block) = operator_new(size);
 		if (!(*(void * *)&((Skeleton *)sk)->block))
