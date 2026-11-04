@@ -3,7 +3,6 @@
 #include "../game.h"
 #include <string.h>
 
-#define crt_strncpy(to, from, n) GAME_CDECL(0x49ea80, char *, char *, const char *, int)(to, from, n)
 #define g_listTop g_gameListTop
 #define g_searching (g_lanSearch || g_lobbySearching)
 

@@ -139,7 +139,6 @@ u32 (net_addSession)(SessionDesc d)
    +0x30 ..) put into the list (net_addSession, by value) unless its GUID is GUID_NULL (1) or already listed (0, which
    ends the enumeration). With no description (the enumeration timed out) it stops in modes 0 and 1. The copy's
    first word is a GlobalAlloc'd block holding the GUID; in mode 0 (+0x74) the session's address as text. 1 */
-#define crt_strncpy(to, from, n) GAME_CDECL(0x49ea80, char *, char *, const char *, int)(to, from, n)
 int STDCALL (dplay_enumSessionsCallback)(const u8 *desc, void *timeout, u32 flags, void *context)
 {
 	int mode = g_connectionKind;
@@ -173,7 +172,6 @@ int STDCALL (dplay_enumSessionsCallback)(const u8 *desc, void *timeout, u32 flag
 	net_addSession(d);
 	return 1;
 }
-#undef crt_strncpy
 
 /* 0x4547c0: inet_addr of the text (Winsock, through the game's jump to its import) */
 u32 (net_inetAddr)(const char *text) { return ws_inet_addr(text); }

@@ -104,7 +104,7 @@ static void *dat_entry(int index, const char *name, u32 table, u32 file, u32 log
 		sys_fatalErrorN((void *)RELOC(log), (const char *)STR(0x4b3f80, "can't find item(%s) - getItemFileBy()"), name);   /* sys_fatalError */
 		return 0;
 	}
-	GAME_CDECL(0x49e91e, int, void *, int, int)(GAME_VAR(void *, file), FIELD(int, GAME_VAR(u8 *, table) + index * 0x44, 0x40), 0);   /* fseek */
+	crt_fseek(GAME_VAR(void *, file), FIELD(int, GAME_VAR(u8 *, table) + index * 0x44, 0x40), 0);   /* fseek */
 	return GAME_VAR(void *, file);
 }
 /* 0x466d60: in Shape.dat */
@@ -255,7 +255,7 @@ u32 (app_deleteDataFiles)(void)
 	static const u32 marks[3] = { 0xa1a2a3a4, 0xb1b2b3b4, 0xc1c2c3c4 };
 	for (int k = 0; k < 3; k++) {
 		void *f = crt_fopen((const char *)RELOC(files[k]), (const char *)STR(0x4b29e8, "r+"));
-		GAME_CDECL(0x49e91e, int, void *, int, int)(f, 2000, 0);   /* fseek */
+		crt_fseek(f, 2000, 0);   /* fseek */
 		u32 mark = marks[k];
 		crt_fwrite(&mark, 4, 1, f);
 		fclose(f);
@@ -368,7 +368,7 @@ int (app_checkLauncherRunning)(void)
 	if (!f)
 		return 0;
 	for (int i = 0; i < 8; i++) {
-		GAME_CDECL(0x49e91e, int, void *, int, int)(f, offsets[i], 0);   /* fseek */
+		crt_fseek(f, offsets[i], 0);   /* fseek */
 		crt_fread((void *)(OBJ(g_launcherCheck) + i), 1, 1, f);   /* fread */
 	}
 	fclose(f);
@@ -436,7 +436,6 @@ u32 (profile_delete)(void)
 	return profiles_write(f);
 }
 
-#define crt_fseek(f, offset, whence) GAME_CDECL(0x49e91e, int, void *, int, int)(f, offset, whence)
 
 /* axis.mis (in the data folder) opened for reading */
 static void *mis_open(void)

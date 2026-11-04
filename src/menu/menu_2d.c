@@ -168,7 +168,7 @@ u32 (menu_drawDimOverlay)(void)
 		BITS(alpha) = 0x3f800000;
 	gfx_setProjection2D3D(2);
 	glLoadIdentity();
-	GAME_FN(Color4_set, 0x41f0e0, void, void *, u32, u32, u32, u32)((void *)OBJ(g_rectColour), 0x3f800000, 0x3f800000, 0x3f800000, BITS(alpha));   /* the menu colour (1, 1, 1, alpha) */
+	Color4_set_bits((void *)OBJ(g_rectColour), 0x3f800000, 0x3f800000, 0x3f800000, BITS(alpha));   /* the menu colour (1, 1, 1, alpha) */
 	return menu_drawRect(0, 0, 640, 480, 1);   /* menu_drawRect, filled */
 }
 
@@ -291,9 +291,9 @@ u32 (menu_drawMessageBox)(void)
 {
 	gfx_setProjection2D3D(2);
 	glLoadIdentity();
-	GAME_FN(Color4_set, 0x41f0e0, void, void *, u32, u32, u32, u32)((void *)OBJ(g_rectColour), 0x3e4ccccd, 0x3e4ccccd, 0x3f333333, 0x3f333333);
+	Color4_set_bits((void *)OBJ(g_rectColour), 0x3e4ccccd, 0x3e4ccccd, 0x3f333333, 0x3f333333);
 	menu_drawRect(0x50, 0xc8, 0x230, 0x118, 1);
-	GAME_FN(Color4_set, 0x41f0e0, void, void *, u32, u32, u32, u32)((void *)OBJ(g_textColour), 0x3f800000, 0x3f800000, 0, 0x3f800000);
+	Color4_set_bits((void *)OBJ(g_textColour), 0x3f800000, 0x3f800000, 0, 0x3f800000);
 	text_drawBox16(0x69, 0xdc, 0x217, g_messageBoxLine);
 	return text_drawBox16(0x69, 0xf4, 0x217, (const char *)MSG(0, "PRESS ENTER OR CLICK MOUSE"));
 }
@@ -328,7 +328,7 @@ u32 (menu_drawInputLine)(int x, int y)
 {
 	if (g_dialogOpen)
 		return (u32)g_dialogOpen;
-	GAME_FN(Color4_set, 0x41f0e0, void, void *, u32, u32, u32, u32)((void *)OBJ(g_textColour), 0, 0x3f800000, 0, 0x3f800000);
+	Color4_set_bits((void *)OBJ(g_textColour), 0, 0x3f800000, 0, 0x3f800000);
 	menu_drawTextCursor(x + g_chatLength * 8, y);   /* menu_drawTextCursor: the cursor */
 	if (!g_chatFieldFlag)
 		return text_draw8(x, y, g_chatLine);   /* text_draw8 */

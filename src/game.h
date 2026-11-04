@@ -188,7 +188,8 @@ typedef struct { u32 vtable; void *managers[6]; i32 count; } TextureSets;   /* t
 #define particle_update(scene, i, dt) GAME_THISFN(particle_update, 0x476410, void, void *, int, int)(scene, i, dt)   /* one effect updated */
 #define actor_render(scene, i, dt) GAME_THISFN(actor_render, 0x490440, void, void *, int, int)(scene, i, dt)
 #define tex_findByName(manager, name) GAME_THISFN(tex_findByName, 0x4554c0, int, void *, const char *)(manager, name)   /* the item's index by name, < 0 none */
-#define crt_fseek(f, offset, origin) GAME_CDECL(0x49e91e, int, void *, long, int)(f, offset, origin)
+#define crt_fseek(f, offset, origin) GAME_CDECL(0x49e91e, int, void *, int, int)(f, offset, origin)
+#define crt_strncpy(to, from, n) GAME_CDECL(0x49ea80, char *, char *, const char *, int)(to, from, n)
 #define Mat4_copy(d, s) GAME_FN(Mat4_copy, 0x47d5a0, void, void *, const void *)(d, s)   /* a 4 x 4 matrix copied */
 #define Mat4_multiply(out, a, b) GAME_FN(Mat4_multiply, 0x47d380, void, float *, const float *, const float *)(out, a, b)
 #define space_getNextFreeNodePtr(space) GAME_THISFN(space_getNextFreeNodePtr, 0x4816c0, void *, void *)(space)
@@ -499,6 +500,7 @@ typedef struct { u32 vtable; void *managers[6]; i32 count; } TextureSets;   /* t
 #define deleteDialog_hitTest(x, y) GAME_FN(deleteDialog_hitTest, 0x44b320, int, int, int)(x, y)  /* the button at (x, y): 0 left, 1 right */
 #define secondDialog_hitTest(x, y) GAME_FN(secondDialog_hitTest, 0x44b360, int, int, int)(x, y)
 #define Color4_set(dst, r, g, b, a) GAME_FN(Color4_set, 0x41f0e0, void, Colour *, float, float, float, float)(dst, r, g, b, a)
+#define Color4_set_bits(dst, r, g, b, a) GAME_FN(Color4_set, 0x41f0e0, void, void *, u32, u32, u32, u32)(dst, r, g, b, a)   /* (the floats as their bits) */
 
 /* ---- the in-match 2D pass: the scene's view, its stage's overlay parts, the HUD elements ---- */
 #define gfx_setProjectionHud(mode, scale) GAME_FN(gfx_setProjectionHud, 0x4685f0, void, int, float)(mode, scale)

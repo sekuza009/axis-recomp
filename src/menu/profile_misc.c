@@ -367,10 +367,10 @@ u32 (profileList_drawNames)(void)
 	for (int i = 0; i < 13 && i < g_profileCount; i++) {
 		int page1 = g_profilePage == 1;
 		u32 shade = page1 ? 0x3f000000 : 0x3e99999a;   /* 0.5 / 0.3 */
-		GAME_FN(Color4_set, 0x41f0e0, void, void *, u32, u32, u32, u32)((void *)OBJ(g_textColour), 0, shade, shade, 0x3f800000);
+		Color4_set_bits((void *)OBJ(g_textColour), 0, shade, shade, 0x3f800000);
 		if (g_profileListTop + i == g_pilotChosen) {
 			shade = g_profilePage == 1 ? 0x3f800000 : 0x3f000000;   /* 1 / 0.5 */
-			GAME_FN(Color4_set, 0x41f0e0, void, void *, u32, u32, u32, u32)((void *)OBJ(g_textColour), 0, shade, shade, 0x3f800000);
+			Color4_set_bits((void *)OBJ(g_textColour), 0, shade, shade, 0x3f800000);
 		}
 		r = text_draw8(g_profilePageLeft + 0x28, g_profilePageTop + 0x24 + i * 0x14,
 		                                                      (const char *)(OBJ(g_profileList) + (g_profileListTop + i) * 0x48));   /* text_draw8 */
