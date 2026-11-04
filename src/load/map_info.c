@@ -12,13 +12,13 @@
 void THISCALL (map_loadWayPointInfoFrom)(u8 *scene, void *f)
 {
 	Stage *st = (Stage *)scene;
-	int *count = (int *)(scene + 0xe3b034);
+	int *count = &st->wayPointCount;
 	fread_scrambled(count, 4, 1, f);
-	fread_scrambled(scene + 0xe36214, 0x14, *count, f);
+	fread_scrambled(st->wayPoints, 0x14, *count, f);
 	int total = 0;
 	for (int i = 0; i < *count; i++) {
 		WayPoint *r = &st->wayPoints[i];
-		r->commands = scene + 0xdc0f10 + total * 0x30;
+		r->commands = st->commands[total];
 		total += r->commandCount;
 	}
 	if (total != st->commandCount)
@@ -31,9 +31,9 @@ void THISCALL (map_loadWayPointInfoFrom)(u8 *scene, void *f)
 void THISCALL (map_loadTriggerInfoFrom)(u8 *scene, void *f)
 {
 	Stage *st = (Stage *)scene;
-	int *count = (int *)(scene + 0xe3c938);
+	int *count = &st->triggerCount;
 	fread_scrambled(count, 4, 1, f);
-	fread_scrambled(scene + 0xe3b038, 0x1c, *count, f);
+	fread_scrambled(st->triggers, 0x1c, *count, f);
 	int total = 0;
 	for (int i = 0; i < *count; i++) {
 		Trigger *r = &st->triggers[i];
@@ -62,11 +62,11 @@ int THISCALL (map_loadItemInfoFrom)(u8 *scene, const char *path)
 		GAME_FN(sys_fatalError, 0x46c710, void, char *, const char *, const char *)((char *)OBJ(g_logStage), (const char *)STR(0x4c7b94, "incorrect file version, remove the fi..."), path);
 	int *count = &((Stage *)scene)->itemTypeCount;
 	fread_scrambled(count, 4, 1, f);
-	fread_scrambled(scene + 0x20f3ae0, 0x90, *count, f);
+	fread_scrambled(st->itemTypes, 0x90, *count, f);
 	fclose(f);
 	for (int i = 0; i < *count; i++) {
 		u8 *item = (u8 *)&st->itemTypes[i];
-		FIELD(u32, item, 0x8c) = item[0] ? shape_getByName(scene + 0x19e188c, (const char *)(item + 0x4c), 1) : 0;
+		FIELD(u32, item, 0x8c) = item[0] ? shape_getByName((u8 *)&st->partShapes, (const char *)(item + 0x4c), 1) : 0;
 	}
 	return 1;
 #undef crt_fread
@@ -80,7 +80,7 @@ void THISCALL (map_loadMissionInfoFrom)(u8 *scene, const char *name)
 {
 #define crt_fread(p, size, count, f) GAME_CDECL(0x49e836, u32, void *, u32, u32, void *)(p, size, count, f)
 	char path[0x100];
-	sprintf(path, (const char *)STR(0x4c77f0, "%s/%s"), scene + 0x108, name);
+	sprintf(path, (const char *)STR(0x4c77f0, "%s/%s"), ((Stage *)scene)->mapDir, name);
 	void *f = crt_fopen(path, (const char *)STR(0x4ad170, "rb"));
 	if (!f)
 		sys_fatalError((char *)OBJ(g_logStage), (const char *)STR(0x4c7dec, "can not open file %s - loadMissionInf..."), (int)path);
@@ -118,24 +118,24 @@ void THISCALL (map_loadObjectInfoFrom)(u8 *scene, const char *name, int mode)
 	char path[0x100], base[0x100];
 	u8 objects[56][0xb0];
 	st->objectNameCount = 0;
-	ShapeManager_releaseModels(scene + 0xe3c93c);
-	SkeletonManager_releaseSkeletons(scene + 0x13016d0);
+	ShapeManager_releaseModels((u8 *)&st->objectShapes);
+	SkeletonManager_releaseSkeletons((u8 *)&st->objectSkeletons);
 	stage_clearMapObjects(scene);
 	st->mapShaded = 0;
 	if (mode == 0) {
 		path_stripExtension(name, base);
-		sprintf(path, (const char *)STR(0x4c7e90, "%s/Temp-%s-objectShadingInfo.dat"), scene + 0x108, base);
+		sprintf(path, (const char *)STR(0x4c7e90, "%s/Temp-%s-objectShadingInfo.dat"), st->mapDir, base);
 		void *f = crt_fopen(path, (const char *)STR(0x4ad170, "rb"));
 		if (f) {
 			log_message((int)scene, 0, 0, (const char *)STR(0x4c7e74, "load object shading data"));
-			fread_scrambled(scene + 0x13016c8, 4, 1, f);
-			fread_scrambled(scene + 0xf30dc8, 4, ((u32)st->objectColourCount), f);
+			fread_scrambled(&st->objectColourCount, 4, 1, f);
+			fread_scrambled(st->objectColours, 4, ((u32)st->objectColourCount), f);
 			fclose(f);
 			st->objectColourCount = 0;
 			st->mapShaded = 1;
 		}
 	}
-	sprintf(path, (const char *)STR(0x4c77f0, "%s/%s"), scene + 0x108, name);
+	sprintf(path, (const char *)STR(0x4c77f0, "%s/%s"), st->mapDir, name);
 	void *f = crt_fopen(path, (const char *)STR(0x4ad170, "rb"));
 	if (!f)
 		sys_fatalError((char *)OBJ(g_logStage), (const char *)STR(0x4c7e48, "can not open file %s-loadObjectInfoFr..."), (int)path);
@@ -157,13 +157,13 @@ void THISCALL (map_loadObjectInfoFrom)(u8 *scene, const char *name, int mode)
 	}
 	fclose(f);
 	path_stripExtension(name, base);
-	sprintf(path, (const char *)STR(0x4c7e90, "%s/Temp-%s-objectShadingInfo.dat"), scene + 0x108, base);
+	sprintf(path, (const char *)STR(0x4c7e90, "%s/Temp-%s-objectShadingInfo.dat"), st->mapDir, base);
 	if (mode == 1 && st->mapShaded == 0) {
 		f = crt_fopen(path, (const char *)STR(0x4b2ab0, "wb"));
 		if (f) {
 			log_message((int)scene, 0, 0, (const char *)STR(0x4c7e1c, "save object shading data"));
-			file_writeScrambled(scene + 0x13016c8, 4, 1, f);
-			file_writeScrambled(scene + 0xf30dc8, 4, ((u32)st->objectColourCount), f);
+			file_writeScrambled(&st->objectColourCount, 4, 1, f);
+			file_writeScrambled(st->objectColours, 4, ((u32)st->objectColourCount), f);
 			fclose(f);
 		}
 	}
@@ -213,7 +213,7 @@ void THISCALL (map_loadPlayInfoFrom)(u8 *scene, const char *name)
 	st->itemCount = 0;
 	st->lastPickup = -1;
 	char path[0x100];
-	sprintf(path, (const char *)STR(0x4c77f0, "%s/%s"), scene + 0x108, name);
+	sprintf(path, (const char *)STR(0x4c77f0, "%s/%s"), st->mapDir, name);
 	void *f = crt_fopen(path, (const char *)STR(0x4ad170, "rb"));
 	if (!f)
 		sys_fatalError((char *)OBJ(g_logStage), (const char *)STR(0x4c7c8c, "can not open file %s - loadPlayInfoFr..."), (int)path);
@@ -241,7 +241,7 @@ void THISCALL (map_loadPlayInfoFrom)(u8 *scene, const char *name)
 		} else if (r[0] == 1) {
 			if (st->startCount >= 32)
 				sys_fatalError((char *)OBJ(g_logStage), (const char *)STR(0x4c7c00, "numOfMultiPlayStartPoint overflow(lim..."), 0x20);
-			u8 *start = scene + 0x20fab74 + st->startCount * 0x14;
+			u8 *start = (u8 *)&st->starts[st->startCount];
 			memcpy(start, &r[4], 12);
 			((StartPoint *)start)->angle[0] = f32(fmul_m(fld_m(&rf[7]), scale));
 			((StartPoint *)start)->angle[1] = f32(fmul_m(fld_m(&rf[8]), scale));
@@ -297,7 +297,7 @@ void THISCALL (map_loadActorInfoFrom)(u8 *scene, const char *name)
 	k_schemeHue[s][0], k_schemeSat[s][0], k_schemeVal[s][0], k_schemeHue[s][1], k_schemeSat[s][1], k_schemeVal[s][1])
 	static const int fixed[5] = { 3, 5, 0x24, 0x19, 0x16 };
 	char path[0x100];
-	sprintf(path, (const char *)STR(0x4c77f0, "%s/%s"), scene + 0x108, name);
+	sprintf(path, (const char *)STR(0x4c77f0, "%s/%s"), st->mapDir, name);
 	void *f = crt_fopen(path, (const char *)STR(0x4ad170, "rb"));
 	if (!f)
 		sys_fatalError((char *)OBJ(g_logStage), (const char *)STR(0x4c77c4, "can not open file %s - loadActorInfoF..."), (int)path);
@@ -312,14 +312,14 @@ void THISCALL (map_loadActorInfoFrom)(u8 *scene, const char *name)
 	}
 	fread_scrambled(&value, 4, 1, f);
 	log_message((int)scene, 0, 0, (const char *)STR(0x4c774c, "load actor type info info"));
-	fread_scrambled(scene + 0x1cd6fb0, 4, 1, f);
-	fread_scrambled(scene + 0x1cd6a30, 0x58, ((u32)st->mapPlayerCount), f);
+	fread_scrambled(&st->mapPlayerCount, 4, 1, f);
+	fread_scrambled(st->mapPlayers, 0x58, ((u32)st->mapPlayerCount), f);
 	log_message((int)scene, 0, 0, (const char *)STR(0x4c7734, "load actor spawn info"));
-	fread_scrambled(scene + 0x1cd93a4, 4, 1, f);
-	fread_scrambled(scene + 0x1cd6fb4, 0x5c, ((u32)st->mapActorCount), f);
+	fread_scrambled(&st->mapActorCount, 4, 1, f);
+	fread_scrambled(st->mapActors, 0x5c, ((u32)st->mapActorCount), f);
 	fclose(f);
 	for (int p = 1; p < st->mapPlayerCount; p++) {
-		u8 *rec = scene + 0x1cd6a30 + p * 0x58;
+		u8 *rec = st->mapPlayers[p];
 		if (--FIELD(int, rec, 4) >= 0)
 			for (int part = 0; part < 5; part++)
 				setPartColor(p, part, FIELD(int, rec, 4));
@@ -340,7 +340,7 @@ void THISCALL (map_loadActorInfoFrom)(u8 *scene, const char *name)
 	st->playerRecordCount = st->mapPlayerCount;
 	for (int i = 1; i < st->mapActorCount; i++)
 		FIELD(int, scene, 0x1cd6fb4 + i * 0x5c + 0x18) = 1;
-	sprintf(path, (const char *)STR(0x4c7724, "Stage\\%s\\Clan"), scene + 0x908);
+	sprintf(path, (const char *)STR(0x4c7724, "Stage\\%s\\Clan"), st->stageName);
 	st->clanTexture = tex_getIdByName((*(void **)&g_textures), path, 0, 0, 0, 0, 0, 0, 0);
 	for (int p = 0; p < st->mapPlayerCount; p++) {
 		st->playerRecords[p].flagShown = 1;
@@ -392,7 +392,7 @@ int THISCALL (map_loadGroundInfoFrom)(u8 *s, const char *name)
 	u8 image[0x30000];   /* (on the stack, as the original's: the file reads log its address) */
 	char path[0x100], dir[0x100], tex[0x100];
 	u32 n;
-	sprintf(path, (const char *)STR(0x4c77f0, "%s/%s"), (const char *)s + 0x108, name);
+	sprintf(path, (const char *)STR(0x4c77f0, "%s/%s"), st->mapDir, name);
 	void *f = crt_fopen(path, (const char *)STR(0x4ad170, "rb"));
 	if (!f)
 		sys_fatalError((char *)OBJ(g_logStage), (const char *)STR(0x4c806c, "can not open file %s - loadGroundInfo..."), (int)path);
@@ -406,15 +406,15 @@ int THISCALL (map_loadGroundInfoFrom)(u8 *s, const char *name)
 	}
 	fread_scrambled(dir, 1, 0x100, f);
 	log_message((int)s, 0, 0, (const char *)STR(0x4c804c, "get default rendering distance"));
-	fread_scrambled(s + 0xa08, 4, 1, f);
+	fread_scrambled(&st->cullMargin, 4, 1, f);
 	log_message((int)s, 0, 0, (const char *)STR(0x4c8040, "load light"));
 	Light_read((u8 *)&((Stage *)s)->mapLights, f);
 	log_message((int)s, 0, 0, (const char *)STR(0x4c802c, "load clearing color"));
-	fread_scrambled(s + 0x9ee030, 4, 1, f);
-	fread_scrambled(s + 0x9ee034, 0x10, 1, f);
+	fread_scrambled(&st->clearOn, 4, 1, f);
+	fread_scrambled(st->clearColour, 0x10, 1, f);
 	log_message((int)s, 0, 0, (const char *)STR(0x4c801c, "load fog info"));
-	fread_scrambled(s + 0x9ee044, 4, 1, f);
-	fread_scrambled(s + 0x9ee048, 0x10, 1, f);
+	fread_scrambled(&st->fogOn, 4, 1, f);
+	fread_scrambled(st->glFogColour, 0x10, 1, f);
 	static const u32 fog_and_modes[] = { 0x9ee058, 0x9ee05c, 0x9ee060, 0x9ee064, 0x9eee48, 0x9ef0b0, 0x9ef30c };
 	for (int k = 0; k < 7; k++)
 		fread_scrambled(s + fog_and_modes[k], 4, 1, f);
@@ -425,7 +425,7 @@ int THISCALL (map_loadGroundInfoFrom)(u8 *s, const char *name)
 			(*(u32 *)&((Stage *)s)->skyTextures[5]) = ground_tex(dir, STR(0x4c7ff4, "%s/SphereFloor"), 0, tex);   /* SphereFloor */
 		static const u32 sphere[5] = { STR(0x4c7fe0, "%s/SphereCeiling"), STR(0x4c7fd0, "%s/SphereEast"), STR(0x4c7fc0, "%s/SphereSouth"), STR(0x4c7fb0, "%s/SphereWest"), STR(0x4c7fa0, "%s/SphereNorth") };   /* ceiling, east, south, west, north */
 		for (int k = 0; k < 5; k++)
-			GAME_VAR(u32, s + 0x9ee068 + k * 4) = ground_tex(dir, sphere[k], 0, tex);
+			st->skyTextures[k] = (i32) ground_tex(dir, sphere[k], 0, tex);
 	}
 	log_message((int)s, 0, 0, (const char *)STR(0x4c7f8c, "load background sky"));
 	mode = st->layerMode;
@@ -437,16 +437,16 @@ int THISCALL (map_loadGroundInfoFrom)(u8 *s, const char *name)
 	log_message((int)s, 0, 0, (const char *)STR(0x4c7f4c, "load background side"));
 	if (st->sideMode > 0 && st->sideMode <= 2)
 		for (int k = 0; k < 6; k++)
-			GAME_VAR(u32, s + 0x9ef0b4 + k * 4) = ground_tex(dir, STR(0x4c7f3c, "%s/SideLayer%d"), k + 1, tex);   /* SideLayer<n> */
+			st->sideTextures[k] = (i32) ground_tex(dir, STR(0x4c7f3c, "%s/SideLayer%d"), k + 1, tex);   /* SideLayer<n> */
 	log_message((int)s, 0, 0, (const char *)STR(0x4c7f24, "load background floor"));
 	if (st->floorOn > 0 && st->floorOn <= 2)
 		for (int k = 0; k < 16; k++)
-			GAME_VAR(u32, s + 0x9ef310 + k * 4) = ground_tex(dir, STR(0x4c7f14, "%s/FloorAni%02d"), k + 1, tex);   /* FloorAni<nn> */
+			st->floorTextures[k] = (i32) ground_tex(dir, STR(0x4c7f14, "%s/FloorAni%02d"), k + 1, tex);   /* FloorAni<nn> */
 	log_message((int)s, 0, 0, (const char *)STR(0x4c7f04, "load area limit"));
 	static const u8 limits[7][2] = { { 0x04, 0xc }, { 0x10, 0xc }, { 0x1c, 0xc }, { 0x28, 0xc }, { 0x34, 4 }, { 0x38, 4 }, { 0x3c, 4 } };
 	for (int k = 0; k < 7; k++)
 		fread_scrambled(s + 0x9ef900 + limits[k][0], limits[k][1], 1, f);
-	fread_scrambled(s + 0xdc0a74, 4, 1, f);
+	fread_scrambled(&st->groundLayerCount, 4, 1, f);
 	((Stage *)s)->poolUsed = 0;
 	for (int i = 0; i < st->groundLayerCount; i++) {
 		u8 *l = (u8 *)&((Stage *)s)->groundLayers[i];
