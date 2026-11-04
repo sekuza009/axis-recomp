@@ -1296,7 +1296,11 @@ typedef struct Scene {
 	char changeName[0x40];   /* +0x23431f3 */
 	i32 changePending;   /* +0x2343233 */
 	i32 endEvents[3];   /* +0x2343237: kinds 3 .. 5: the round's end (event_raise3 .. 5: by the way it ended) */
-	u8 _pad2343243[0x14];
+	i32 event13Pending;   /* +0x2343243: (unclear) kind 13 to send */
+	i32 event6A;   /* +0x2343247: (unclear) kind 6: two values (their low bytes sent) */
+	i32 event6B;   /* +0x234324b */
+	i32 event6Pending;   /* +0x234324f */
+	u8 _pad2343253[0x4];
 	i32 mouseX;   /* +0x2343257: (by use) the cursor this frame (g_mouseX), screen pixels */
 	i32 mouseY;   /* +0x234325b */
 	i32 holdAltitude;   /* +0x234325f: (by use) the movement keys held for the local actor (right button / its binding) */
@@ -2354,6 +2358,10 @@ _Static_assert(offsetof(Scene, changeTeam) == 0x23431ef && sizeof(((Scene *)0)->
 _Static_assert(offsetof(Scene, changeName) == 0x23431f3 && sizeof(((Scene *)0)->changeName) == 0x40, "scene.fields: Scene.changeName");
 _Static_assert(offsetof(Scene, changePending) == 0x2343233 && sizeof(((Scene *)0)->changePending) == 0x4, "scene.fields: Scene.changePending");
 _Static_assert(offsetof(Scene, endEvents) == 0x2343237 && sizeof(((Scene *)0)->endEvents) == 0xc, "scene.fields: Scene.endEvents");
+_Static_assert(offsetof(Scene, event13Pending) == 0x2343243 && sizeof(((Scene *)0)->event13Pending) == 0x4, "scene.fields: Scene.event13Pending");
+_Static_assert(offsetof(Scene, event6A) == 0x2343247 && sizeof(((Scene *)0)->event6A) == 0x4, "scene.fields: Scene.event6A");
+_Static_assert(offsetof(Scene, event6B) == 0x234324b && sizeof(((Scene *)0)->event6B) == 0x4, "scene.fields: Scene.event6B");
+_Static_assert(offsetof(Scene, event6Pending) == 0x234324f && sizeof(((Scene *)0)->event6Pending) == 0x4, "scene.fields: Scene.event6Pending");
 _Static_assert(offsetof(Scene, mouseX) == 0x2343257 && sizeof(((Scene *)0)->mouseX) == 0x4, "scene.fields: Scene.mouseX");
 _Static_assert(offsetof(Scene, mouseY) == 0x234325b && sizeof(((Scene *)0)->mouseY) == 0x4, "scene.fields: Scene.mouseY");
 _Static_assert(offsetof(Scene, holdAltitude) == 0x234325f && sizeof(((Scene *)0)->holdAltitude) == 0x4, "scene.fields: Scene.holdAltitude");

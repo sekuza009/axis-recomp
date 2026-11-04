@@ -1539,52 +1539,54 @@ u32 STDCALL (dplay_enumConnections)(const u32 *guid, const void *connection, u32
    (+0x2343106 0). Sent by send_packet (even with nothing pending). Its callers ignore the eax it leaves */
 static void THISCALL __attribute__((used)) net_sendMatchEvent_body(u8 *s, u8 *packet)
 {
+#define SC ((Scene *)s)
 #define FLAG(offset) GAME_VAR(int, s + (offset))
-#define TAKE(offset) (FLAG(offset) == 1 && (FLAG(offset) = 0, 1))
-	static const u32 flags[10] = { 0x234319b, 0x234314e, 0x2343156, 0x23431e7, 0x2343233, 0x2343237, 0x234323b, 0x234323f, 0x234324f, 0x2343243 };
-	if (TAKE(0x2343237))
+#define TAKE(f) ((f) == 1 && ((f) = 0, 1))   /* a pending event taken */
+	static const u32 flags[10] = { offsetof(Scene, chatPending), offsetof(Scene, connectPending), offsetof(Scene, quitPending), offsetof(Scene, joinPending), offsetof(Scene, changePending), offsetof(Scene, endEvents[0]), offsetof(Scene, endEvents[1]), offsetof(Scene, endEvents[2]), offsetof(Scene, event6Pending), offsetof(Scene, event13Pending) };
+	if (TAKE(SC->endEvents[0]))
 		packet[1] = 3, packet[2] = 0x6b;
-	else if (TAKE(0x234323b))
+	else if (TAKE(SC->endEvents[1]))
 		packet[1] = 4, packet[2] = 0x6b;
-	else if (TAKE(0x234323f))
+	else if (TAKE(SC->endEvents[2]))
 		packet[1] = 5, packet[2] = 0x6b;
-	else if (TAKE(0x234324f))
-		packet[1] = 6, packet[2] = s[0x2343247], packet[3] = s[0x234324b];
-	else if (((Scene *)s)->chatPending == 1) {
+	else if (TAKE(SC->event6Pending))
+		packet[1] = 6, packet[2] = (u8)SC->event6A, packet[3] = (u8)SC->event6B;
+	else if (SC->chatPending == 1) {
 		packet[1] = 7;
-		packet[2] = (u8)((Scene *)s)->chatPlayer;
-		strcpy((char *)packet + 3, (const char *)((Scene *)s)->chatLine);
-		((Scene *)s)->chatPending = 0;
-		packet[0x3c] = (u8)((Scene *)s)->chatTeam;
-	} else if (((Scene *)s)->connectPending == 1) {
+		packet[2] = (u8)SC->chatPlayer;
+		strcpy((char *)packet + 3, (const char *)SC->chatLine);
+		SC->chatPending = 0;
+		packet[0x3c] = (u8)SC->chatTeam;
+	} else if (SC->connectPending == 1) {
 		packet[1] = 8;
-		packet[2] = (u8)((Scene *)s)->connectPlayer;
-		strcpy((char *)packet + 3, (const char *)((Scene *)s)->connectName);
-		((Scene *)s)->connectPending = 0;
-	} else if (TAKE(0x2343156))
-		packet[1] = 9, packet[2] = (u8)((Scene *)s)->quitPlayer;
-	else if (((Scene *)s)->joinPending == 1) {
+		packet[2] = (u8)SC->connectPlayer;
+		strcpy((char *)packet + 3, (const char *)SC->connectName);
+		SC->connectPending = 0;
+	} else if (TAKE(SC->quitPending))
+		packet[1] = 9, packet[2] = (u8)SC->quitPlayer;
+	else if (SC->joinPending == 1) {
 		packet[1] = 10;
-		packet[2] = (u8)((Scene *)s)->joinPlayer;
-		packet[3] = (u8)((Scene *)s)->joinTeam;
-		strcpy((char *)packet + 4, (const char *)((Scene *)s)->joinName);
-		((Scene *)s)->joinPending = 0;
-	} else if (((Scene *)s)->changePending == 1) {
+		packet[2] = (u8)SC->joinPlayer;
+		packet[3] = (u8)SC->joinTeam;
+		strcpy((char *)packet + 4, (const char *)SC->joinName);
+		SC->joinPending = 0;
+	} else if (SC->changePending == 1) {
 		packet[1] = 11;
-		packet[2] = (u8)((Scene *)s)->localPlayer;
-		packet[3] = (u8)((Scene *)s)->changeTeam;
-		strcpy((char *)packet + 4, (const char *)((Scene *)s)->changeName);
-		((Scene *)s)->changePending = 0;
-	} else if (TAKE(0x2343243))
+		packet[2] = (u8)SC->localPlayer;
+		packet[3] = (u8)SC->changeTeam;
+		strcpy((char *)packet + 4, (const char *)SC->changeName);
+		SC->changePending = 0;
+	} else if (TAKE(SC->event13Pending))
 		packet[1] = 13, packet[2] = 0x6b;
 	int pending = 0;
 	for (int k = 0; k < 10; k++)
 		pending |= FLAG(flags[k]) != 0;
 	if (!pending)
-		((Scene *)s)->noticeChanged = 0;
+		SC->noticeChanged = 0;
 	send_packet(s, packet);
 #undef FLAG
 #undef TAKE
+#undef SC
 }
 PACKET_ENTRY(net_sendMatchEvent, 0);
 
