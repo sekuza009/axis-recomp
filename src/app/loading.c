@@ -317,7 +317,7 @@ int (app_checkCdAndLoad)(void *instance)
 
 #define G(type, offset) GAME_VAR(type, g + (offset))
 #define GS ((Scene *)g)   /* the same by its fields (src/scene.fields) */
-#define STAGE(g) ((g) + 0x1f36c8)
+#define STAGE(g) ((u8 *)SCENE_STAGE(g))
 
 /* the next stage: its line added to the loading screen (loadLines, loadLineCount) */
 static void next_stage(u8 *g, int stage, u32 line)

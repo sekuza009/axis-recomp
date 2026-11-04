@@ -1791,7 +1791,7 @@ PACKET_ENTRY(net_sendGamePacket, 1);
 #define G(type, offset) GAME_VAR(type, g + (offset))
 #define GS ((Scene *)g)   /* the same by its fields (src/scene.fields) */
 #define K(address) ((const float *)RELOC(address))
-#define STAGE (g + 0x1f36c8)
+#define STAGE ((u8 *)SCENE_STAGE(g))
 #define ACTOR(i) ((u8 *)&((Scene *)g)->players[i])   /* the stage's actors, from the game object */
 #define PLAYER(i) ((u8 *)&((Scene *)g)->playerRecords[i])
 #define CALL1(addr, a) GAME_THISCALL(addr, void, void *, int)(STAGE, a)

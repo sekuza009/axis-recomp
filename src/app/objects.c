@@ -49,7 +49,7 @@ void STDCALL (crt_arrayConstruct)(u8 *first, int size, int count, void (THISCALL
 void THISCALL (Console_ctor)(u8 *self)
 {
 	GAME_VAR(u32, self) = VT(Console, 0x4aa238);
-	Stage_dtor((Stage *)(self + 0x1f36c8));
+	Stage_dtor(SCENE_STAGE(self));
 	ViewVolume_dtor(self + 0x74);
 	TimeSync_dtor(self + 0xc);
 }

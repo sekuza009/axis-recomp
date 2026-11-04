@@ -489,7 +489,7 @@ u8 *THISCALL (game_loadAllData)(u8 *g)
 #define CALL(addr, at) GAME_THISCALL(addr, void, void *)(at)
 #define VECTOR(at, size, count) ((void (STDCALL *)(void *, int, int, u32))FN_ADDR(crt_arrayConstruct, 0x401290))(at, size, count, FN_ADDR(ResourceSet_trivialCtor, 0x45fff0))   /* (the CRT's iterators are stdcall) */
 #define VTABLE(at, vt) (GAME_VAR(u32, at) = (vt))
-	u8 *s = g + 0x1f36c8;
+	u8 *s = (u8 *)SCENE_STAGE(g);
 	TimeSync_ctor((u8 *)&GS->timer);   /* TimeSync_ctor */
 	VTABLE(g + 0x74, STR(0x4aa24c, "04F"));
 	ViewVolume_clear(g + 0x74);
@@ -610,7 +610,7 @@ void THISCALL (app_requireCd)(u8 *g, u32 a, int mode)
 			if (GAME_VAR(int, e + 0x40) == 1)
 				strcpy(GS->replayFiles[GS->replayCount++], e);
 		}
-	u8 *s = g + 0x1f36c8;
+	u8 *s = (u8 *)SCENE_STAGE(g);
 	GS->replayIndex = GS->replayVersion = 0;
 	scene_resetActors(s);
 	scene_reset(s);

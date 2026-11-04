@@ -69,7 +69,7 @@ u8 *(armc_readMechStats)(void)
 {
 	u8 *g = (*(u8 **)&g_scene);
 	Scene *sc = (Scene *)g;
-	Stage *st = (Stage *)(g + 0x1f36c8);   /* (the scene's stage) */
+	Stage *st = SCENE_STAGE(g);   /* (the scene's stage) */
 	const Player *A = &sc->players[sc->localPlayer];
 	X s = fld_m(&A->radiusSq);
 	s = x87_fsqrt(s);
@@ -128,7 +128,7 @@ int (armc_drawPartPanels)(void)
 {
 	u8 *g = (*(u8 **)&g_scene);
 	Scene *sc = (Scene *)g;
-	Stage *st = (Stage *)(g + 0x1f36c8);   /* (the scene's stage) */
+	Stage *st = SCENE_STAGE(g);   /* (the scene's stage) */
 	const PlayerRecord *player = &sc->playerRecords[sc->players[sc->localPlayer].player];
 	const HeadType *head = &st->headTypes[player->parts[0]];   /* head */
 	panel_name(OBJ(g_headPanelName), head->name);

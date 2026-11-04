@@ -417,7 +417,7 @@ static const u32 k_freeKeys[9][2] = { { 2, 0x234325f }, { 0x41, 0x234326b }, { 0
    else 3 (this mode again) */
 u32 THISCALL (match_inputState3)(u8 *s)
 {
-	u8 *stage = s + 0x1f36c8;
+	u8 *stage = (u8 *)SCENE_STAGE(s);
 	if (SC->modeStarted == 0) {
 		SC->localPlayer = 0;
 		(*(int *)&SC->cameraAngle[0]) = (*(int *)&SC->cameraAngle[1]) = 0;
@@ -654,7 +654,7 @@ static void zoom_view(u8 *s, const float *step)
    order, the list wrapping round with +0x4b2a7c) with the scene reset; 0 when the list is done (the viewer quits) */
 static int replay_next(u8 *s)
 {
-	u8 *stage = s + 0x1f36c8;
+	u8 *stage = (u8 *)SCENE_STAGE(s);
 	if (g_replayRandomOrder == 1) {
 		scene_resetActors(stage);
 		scene_reset(stage);
@@ -733,7 +733,7 @@ typedef struct { float out[3], delta[3], dist, plane[4]; } Move;
 static void free_camera(u8 *s, const float *mv, u32 filter, Move *m)
 {
 	float *cam = (float *)SC->cameraPos, *out = m->out, *delta = m->delta;
-	int hit = collision_moveActor(s + 0x1f36c8, 500.0f, cam, mv, 0x43fa0000, 0, out, delta, &m->dist, m->plane, filter);
+	int hit = collision_moveActor((u8 *)SCENE_STAGE(s), 500.0f, cam, mv, 0x43fa0000, 0, out, delta, &m->dist, m->plane, filter);
 	memcpy(cam, out, 12);
 	if (hit == 1) {
 		cam[0] = f32(fadd_m(fld_m(&delta[0]), &cam[0]));
@@ -788,7 +788,7 @@ static void orbit_from(u8 *s, const u8 *t, u32 preset, int eye)
 	to[0] = f32(fadd_m(fld_m(&b[0]), &a[0]));
 	to[1] = f32(fadd_m(fld_m(&a[1]), &b[1]));
 	to[2] = f32(fadd_m(fld_m(&a[2]), &b[2]));
-	if (collision_rayTrace(s + 0x1f36c8, a, to, cam) == 0)
+	if (collision_rayTrace((u8 *)SCENE_STAGE(s), a, to, cam) == 0)
 		memcpy(cam, to, 12);
 	for (int k = 0; k < 3; k++)
 		d[k] = f32(fsub_m(fld_m(&cam[k]), &a[k]));
@@ -880,7 +880,7 @@ static void watch_camera(u8 *s)
 	int me = SC->watchedPlayer;
 	float *mid = SC->cameraTarget, *cam = (float *)SC->cameraPos, hit[3];
 	look_toward(s, &SC->players[me].pos[0]);
-	if (collision_rayTrace(s + 0x1f36c8, cam, mid, hit)) {
+	if (collision_rayTrace((u8 *)SCENE_STAGE(s), cam, mid, hit)) {
 		me = SC->watchedPlayer;
 		float e[3] = { 0, 0, f32(-fld_m(&SC->players[me].radius)) };
 		Vec3_rotateAxis(e, 1, ftol(fld_m(&SC->players[me].pitch)));
@@ -981,7 +981,7 @@ static const signed char k_star[8][3] = { { 1, 1, 1 }, { -1, -1, -1 }, { 1, -1, 
    the ranking, the start count. Returns 0 when the viewer quits (the file closed, the music stopped), else 4 */
 u32 THISCALL (replay_frame)(u8 *s)
 {
-	u8 *stage = s + 0x1f36c8;
+	u8 *stage = (u8 *)SCENE_STAGE(s);
 	float mv[3];   /* the free camera's move: set by its keys, which a camera now following no one may not have read
 	                  this frame (the original then moves by whatever its stack held) */
 	Move move;
@@ -1334,7 +1334,7 @@ static void team_colours(u8 *s, int p, int team)
 {
 	int side = scene_teamSide((Scene *)s, team);
 	for (int part = 0; part < 5; part++)
-		actor_setPartColor_bits(s + 0x1f36c8, p, part, GAME_VAR(u32, 0x4a97fc + side * 4), GAME_VAR(u32, 0x4a9810 + side * 4),
+		actor_setPartColor_bits((u8 *)SCENE_STAGE(s), p, part, GAME_VAR(u32, 0x4a97fc + side * 4), GAME_VAR(u32, 0x4a9810 + side * 4),
 		                        GAME_VAR(u32, 0x4a9824 + side * 4), 0, 0xbf800000, 0x3f7fbe77);
 }
 
@@ -1342,7 +1342,7 @@ static void team_colours(u8 *s, int p, int team)
 static void local_spawn(u8 *s)
 {
 	if (SC->roundClear4 == 0) {
-		playerRecord_set(s + 0x1f36c8, SC->localPlayer, (const char *)SC->mechName, (*(u32 *)&SC->mechValue), (*(u32 *)&SC->localTeam), (*(u32 *)&SC->mechParts[0]),
+		playerRecord_set((u8 *)SCENE_STAGE(s), SC->localPlayer, (const char *)SC->mechName, (*(u32 *)&SC->mechValue), (*(u32 *)&SC->localTeam), (*(u32 *)&SC->mechParts[0]),
 		             (*(u32 *)&SC->mechParts[1]), (*(u32 *)&SC->mechParts[2]), (*(u32 *)&SC->mechParts[3]), (*(u32 *)&SC->mechParts[4]), (*(u32 *)&SC->mechItems[0]), (*(u32 *)&SC->mechItems[1]),
 		             (*(u32 *)&SC->mechItems[2]), (*(u32 *)&SC->mechItems[3]), (*(u32 *)&SC->mechItems[4]), (*(u32 *)&SC->mechItems[5]));
 		SC->roundClear4 = 1;
@@ -1352,7 +1352,7 @@ static void local_spawn(u8 *s)
 	else if (SC->players[SC->localPlayer].statD8 == 0)
 		for (int part = 0; part < 5; part++) {
 			const u32 *c = (const u32 *)(s + 0x23424a2) + part * 2;
-			actor_setPartColor_bits(s + 0x1f36c8, SC->localPlayer, part, c[-11], c[-1], c[9], c[-10], c[0], c[10]);
+			actor_setPartColor_bits((u8 *)SCENE_STAGE(s), SC->localPlayer, part, c[-11], c[-1], c[9], c[-10], c[0], c[10]);
 		}
 	u32 rec[7];   /* the actor, 0, the position, the pitch and heading */
 	const u8 *at = spawn_point(s, 0);
@@ -1369,7 +1369,7 @@ static void local_spawn(u8 *s)
 		rec[5] = BITS(pitch);
 		rec[6] = BITS(heading);
 	}
-	stage_claimPlayerActor((Stage *)(s + 0x1f36c8), rec[0], -1, rec[0], rec);
+	stage_claimPlayerActor(SCENE_STAGE(s), rec[0], -1, rec[0], rec);
 	if (SC->recording == 1)
 		S(int, 0x234300a + SC->localPlayer * 16) = 1;
 	SC->playing = 1;
@@ -1396,7 +1396,7 @@ static void bot_spawns(u8 *s)
 		memcpy(copy, rec, 0x5c);
 		const u8 *at = spawn_point(s, 1);
 		memcpy(copy + 1, at ? at : (const u8 *)SC->cameraSaved, 12);
-		actor_applySpawnRecord(s + 0x1f36c8, j, copy);
+		actor_applySpawnRecord((u8 *)SCENE_STAGE(s), j, copy);
 		if (SC->players[j].statD8 == 0)
 			msg_playerJoinedTeam((Scene *)s, GAME_VAR(int, rec), player->team);
 	}
@@ -1416,7 +1416,7 @@ static void killer_view(u8 *s, const u8 *t)
 		p[j] = f32(fmul_m(r, &d[j]));
 	for (int j = 0; j < 3; j++)
 		p[j] = f32(fadd_m(fld_m(&p[j]), &head[j]));
-	if (collision_rayTrace(s + 0x1f36c8, head, p, cam) == 0)
+	if (collision_rayTrace((u8 *)SCENE_STAGE(s), head, p, cam) == 0)
 		memcpy(cam, p, 12);
 	for (int j = 0; j < 3; j++)
 		d[j] = f32(fsub_m(fld_m(&cam[j]), &head[j]));
@@ -1607,7 +1607,7 @@ static void chat_keys(u8 *s)
    keys, the connection checks and the match's end (the log, back to the menu) */
 void THISCALL (game_processGameMode)(u8 *s)
 {
-	u8 *stage = s + 0x1f36c8;
+	u8 *stage = (u8 *)SCENE_STAGE(s);
 	float mv[3];        /* the free camera's move (its keys may not have run: the original's stack then) */
 	Move move;          /* (the stubbed move may leave these as the stack had them) */
 	int from, size;     /* the network packet's sender and size, as the reader leaves them; the opening log's play

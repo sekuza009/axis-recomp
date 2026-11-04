@@ -117,7 +117,7 @@ void THISCALL (armc_giveShownActorWeapon)(u8 *game, int slot)
 	int other = ACTOR.lastWeaponSlot;
 	int chosen = slot >= 0 ? slot : ACTOR.slot;
 	ACTOR.variantLoaded = I != ((Scene *)game)->cockpitPlayer;
-	Stage *stage = (Stage *)(game + 0x1f36c8);
+	Stage *stage = SCENE_STAGE(game);
 	stage_remakePlayerActor(stage);
 	for (int k = 0; k < 3; k++)
 		BITS(ACTOR.nextPos[k]) = at[k];

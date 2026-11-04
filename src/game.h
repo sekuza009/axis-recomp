@@ -532,6 +532,8 @@ typedef struct { u32 count; void *managers[6]; } TextureSets;   /* a texture id 
 #define render_processRenderingBy(stage, view, scale) GAME_THISFN(render_processRenderingBy, 0x497d20, void, void *, void *, float)(stage, view, scale)
 /* the stage, the scene's own object (scene.fields: Stage) */
 #define STAGE(scene) ((Stage *)((u8 *)RELOC(scene) + 0x1f36c8))
+#define SCENE_STAGE_AT 0x1f36c8   /* where a scene's stage (its Stage object) starts */
+#define SCENE_STAGE(scene) ((Stage *)((u8 *)(scene) + SCENE_STAGE_AT))   /* the same for a runtime scene pointer (no RELOC) */
 #define stage_drawObjects(stage, view) GAME_THISFN(stage_drawObjects, 0x490da0, void, Stage *, void *)(stage, view)
 #define stage_drawActors(stage, view, pass) GAME_THISFN(stage_drawActors, 0x45e170, void, Stage *, void *, int)(stage, view, pass)
 /* actor i's frame of its parts (actor_updateBody / actor_updatePart), with the view volume and pass */
