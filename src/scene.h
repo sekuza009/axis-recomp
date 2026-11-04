@@ -853,6 +853,21 @@ typedef struct SpaceUnit {
 	u8 *poolNext;   /* +0x10 */
 } SpaceUnit;
 
+/* what a particle is made from (particle_spawn's record; particle_init) */
+typedef struct ParticleDesc {
+	i32 kind;   /* +0x0 */
+	i32 owner;   /* +0x4 */
+	float pos[3];   /* +0x8 */
+	float target[3];   /* +0x14 */
+	u32 matrixFrom;   /* +0x20: a matrix to copy (none: 0) */
+	const float *trailPoints;   /* +0x24: a trail's three points (kinds 40 .. 49) */
+	const float *trailSizes;   /* +0x28: and its ends' sizes */
+	u32 size;   /* +0x2c: a float's bits */
+	i32 isQuad;   /* +0x30: 1: a kind 50 quad, from the fields below */
+	u8 quad[0x18];   /* +0x34: its texture, two texture corners, colour (Projectile.quadTexture ..) */
+	float quadPoints[4][3];   /* +0x4c */
+} ParticleDesc;
+
 /* the stage: the scene's own object at Scene + 0x1f36c8 (STAGE()), "this" of the */
 typedef struct Stage {
 	u8 _pad0000000[0xa08];
@@ -2012,6 +2027,18 @@ _Static_assert(offsetof(SpaceUnit, lastNode) == 0x8 && sizeof(((SpaceUnit *)0)->
 _Static_assert(offsetof(SpaceUnit, poolPrev) == 0xc && sizeof(((SpaceUnit *)0)->poolPrev) == 0x4, "scene.fields: SpaceUnit.poolPrev");
 _Static_assert(offsetof(SpaceUnit, poolNext) == 0x10 && sizeof(((SpaceUnit *)0)->poolNext) == 0x4, "scene.fields: SpaceUnit.poolNext");
 _Static_assert(sizeof(SpaceUnit) == 0x14, "scene.fields: size of SpaceUnit");
+_Static_assert(offsetof(ParticleDesc, kind) == 0x0 && sizeof(((ParticleDesc *)0)->kind) == 0x4, "scene.fields: ParticleDesc.kind");
+_Static_assert(offsetof(ParticleDesc, owner) == 0x4 && sizeof(((ParticleDesc *)0)->owner) == 0x4, "scene.fields: ParticleDesc.owner");
+_Static_assert(offsetof(ParticleDesc, pos) == 0x8 && sizeof(((ParticleDesc *)0)->pos) == 0xc, "scene.fields: ParticleDesc.pos");
+_Static_assert(offsetof(ParticleDesc, target) == 0x14 && sizeof(((ParticleDesc *)0)->target) == 0xc, "scene.fields: ParticleDesc.target");
+_Static_assert(offsetof(ParticleDesc, matrixFrom) == 0x20 && sizeof(((ParticleDesc *)0)->matrixFrom) == 0x4, "scene.fields: ParticleDesc.matrixFrom");
+_Static_assert(offsetof(ParticleDesc, trailPoints) == 0x24 && sizeof(((ParticleDesc *)0)->trailPoints) == 0x4, "scene.fields: ParticleDesc.trailPoints");
+_Static_assert(offsetof(ParticleDesc, trailSizes) == 0x28 && sizeof(((ParticleDesc *)0)->trailSizes) == 0x4, "scene.fields: ParticleDesc.trailSizes");
+_Static_assert(offsetof(ParticleDesc, size) == 0x2c && sizeof(((ParticleDesc *)0)->size) == 0x4, "scene.fields: ParticleDesc.size");
+_Static_assert(offsetof(ParticleDesc, isQuad) == 0x30 && sizeof(((ParticleDesc *)0)->isQuad) == 0x4, "scene.fields: ParticleDesc.isQuad");
+_Static_assert(offsetof(ParticleDesc, quad) == 0x34 && sizeof(((ParticleDesc *)0)->quad) == 0x18, "scene.fields: ParticleDesc.quad");
+_Static_assert(offsetof(ParticleDesc, quadPoints) == 0x4c && sizeof(((ParticleDesc *)0)->quadPoints) == 0x30, "scene.fields: ParticleDesc.quadPoints");
+_Static_assert(sizeof(ParticleDesc) == 0x7c, "scene.fields: size of ParticleDesc");
 _Static_assert(offsetof(Stage, cullMargin) == 0xa08 && sizeof(((Stage *)0)->cullMargin) == 0x4, "scene.fields: Stage.cullMargin");
 _Static_assert(offsetof(Stage, collisionPlanes) == 0xa24 && sizeof(((Stage *)0)->collisionPlanes) == 0x4, "scene.fields: Stage.collisionPlanes");
 _Static_assert(offsetof(Stage, effectTextures) == 0x9ccfd4 && sizeof(((Stage *)0)->effectTextures) == 0x24, "scene.fields: Stage.effectTextures");

@@ -769,11 +769,12 @@ static void particle_beam(u8 *s, u8 *p, u32 colour)
    plus a margin) as (size / d + 1) / 2; its colours the shared one (0xa1f23c) */
 static void particle_trail(u8 *p, const u8 *desc, u32 margin)
 {
+	const ParticleDesc *pd = (const ParticleDesc *)desc;
 	PR->life = 2.0f;   /* 2 s */
-	memcpy(p + 0x84, GAME_VAR(const u8 *, desc + 0x24), 12);
-	memcpy(p + 0x90, GAME_VAR(const u8 *, desc + 0x24) + 0xc, 12);
-	memcpy(p + 0x9c, GAME_VAR(const u8 *, desc + 0x24) + 0x18, 12);
-	const float *q = GAME_VAR(const float *, desc + 0x28);
+	memcpy(p + 0x84, pd->trailPoints, 12);
+	memcpy(p + 0x90, pd->trailPoints + 3, 12);
+	memcpy(p + 0x9c, pd->trailPoints + 6, 12);
+	const float *q = pd->trailSizes;
 	static const u8 from[5] = { 0, 2, 3, 4, 5 }, to[5] = { 0xb4, 0xbc, 0xc0, 0xc4, 0xc8 };
 	if (!margin) {
 		for (int k = 0; k < 5; k++) {
@@ -799,25 +800,26 @@ static void particle_trail(u8 *p, const u8 *desc, u32 margin)
    through its matrix; 20 / 21 / 24 aimed at the target; 25 / 26 beams; 40 .. 49 trails */
 void THISCALL (particle_init)(u8 *s, int slot, const u8 *desc)
 {
+	const ParticleDesc *pd = (const ParticleDesc *)desc;
 	u8 *p = (u8 *)&ST->projectiles[slot];
 	PR->id = ST->projectileSerial++;
 	PR->active = 1;
-	if (GAME_VAR(int, desc + 0x30) == 1) {
+	if (pd->isQuad == 1) {
 		PR->kind = 0x32;
-		memcpy(p + 0xe4, desc + 0x34, 0x18);
-		memcpy(p + 0xfc, desc + 0x4c, 12);
-		memcpy(p + 0x108, desc + 0x58, 12);
-		memcpy(p + 0x114, desc + 0x64, 12);
-		memcpy(p + 0x120, desc + 0x70, 12);
+		memcpy(&PR->quadTexture, pd->quad, 0x18);
+		memcpy(PR->quadPoints[0], pd->quadPoints[0], 12);
+		memcpy(PR->quadPoints[1], pd->quadPoints[1], 12);
+		memcpy(PR->quadPoints[2], pd->quadPoints[2], 12);
+		memcpy(PR->quadPoints[3], pd->quadPoints[3], 12);
 		PR->life = 0.01f;   /* 0.01 */
 		(*(int *)&PR->drawAge) = (*(int *)&PR->age) = 0;
 		return;
 	}
-	PR->kind = GAME_VAR(u32, desc);
-	PR->owner = GAME_VAR(u32, desc + 4);
-	memcpy(PR->pos, desc + 8, 12);
-	memcpy(PR->target, desc + 0x14, 12);
-	PR->matrixFrom = GAME_VAR(u32, desc + 0x20);
+	PR->kind = pd->kind;
+	PR->owner = pd->owner;
+	memcpy(PR->pos, pd->pos, 12);
+	memcpy(PR->target, pd->target, 12);
+	PR->matrixFrom = pd->matrixFrom;
 	if (PR->matrixFrom)
 		Mat4_copy(p + 0x2c, (*(const void * *)&PR->matrixFrom));
 	PR->drawAge = 0.0f;
@@ -825,7 +827,7 @@ void THISCALL (particle_init)(u8 *s, int slot, const u8 *desc)
 	PR->age = 0.0f;
 	PR->colour = g_white;
 	PR->size = 0.0f;
-	BITS(PR->baseSize) = GAME_VAR(u32, desc + 0x2c);
+	BITS(PR->baseSize) = pd->size;
 	int kind = PR->kind;
 	switch (kind) {
 	case 0: case 1: case 8: PR->life = 0.5f; break;   /* 0.5 s */
