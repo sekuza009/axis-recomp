@@ -819,12 +819,12 @@ typedef struct BoosterType {
 
 /* a plane of the collision space (Space.planes; a bullet's hit, Bullet.hit) */
 typedef struct CollisionPlane {
-	u8 flags;   /* +0x0: (by use) 0x10: no decal on it */
-	u8 _pad0000001[0x3];
+	i32 id;   /* +0x0: (by use) collisionTri_setup's id (its low byte's 0x10: no decal on it) */
 	float cornerPoints[3][3];   /* +0x4: (by use) its triangle's corners */
-	u8 _pad0000028[0x24];
-	float normal[3];   /* +0x4c */
-	u8 _pad0000058[0x34];
+	float edges[3][3];   /* +0x28: (by use) edge i: corner i + 1 - corner i, normalized */
+	float normal[3];   /* +0x4c: the face's: (-edge 0) x edge 1 */
+	float dist;   /* +0x58: the face plane: normal . corner 0 */
+	float edgePlanes[3][4];   /* +0x5c: edge k's plane: normal x edge k, through corner k (its normal and distance) */
 	i32 *object;   /* +0x8c: its map object's index (none: 0) */
 	i32 part;   /* +0x90: the object's shape part */
 	i32 cornerIndices[3];   /* +0x94: the corners' vertex indices in the part */
@@ -2008,9 +2008,12 @@ _Static_assert(offsetof(BoosterType, lean) == 0x1800 && sizeof(((BoosterType *)0
 _Static_assert(offsetof(BoosterType, activeTime) == 0x1804 && sizeof(((BoosterType *)0)->activeTime) == 0xc, "scene.fields: BoosterType.activeTime");
 _Static_assert(offsetof(BoosterType, normalSpeed) == 0x1810 && sizeof(((BoosterType *)0)->normalSpeed) == 0x10, "scene.fields: BoosterType.normalSpeed");
 _Static_assert(sizeof(BoosterType) == 0x1820, "scene.fields: size of BoosterType");
-_Static_assert(offsetof(CollisionPlane, flags) == 0x0 && sizeof(((CollisionPlane *)0)->flags) == 0x1, "scene.fields: CollisionPlane.flags");
+_Static_assert(offsetof(CollisionPlane, id) == 0x0 && sizeof(((CollisionPlane *)0)->id) == 0x4, "scene.fields: CollisionPlane.id");
 _Static_assert(offsetof(CollisionPlane, cornerPoints) == 0x4 && sizeof(((CollisionPlane *)0)->cornerPoints) == 0x24, "scene.fields: CollisionPlane.cornerPoints");
+_Static_assert(offsetof(CollisionPlane, edges) == 0x28 && sizeof(((CollisionPlane *)0)->edges) == 0x24, "scene.fields: CollisionPlane.edges");
 _Static_assert(offsetof(CollisionPlane, normal) == 0x4c && sizeof(((CollisionPlane *)0)->normal) == 0xc, "scene.fields: CollisionPlane.normal");
+_Static_assert(offsetof(CollisionPlane, dist) == 0x58 && sizeof(((CollisionPlane *)0)->dist) == 0x4, "scene.fields: CollisionPlane.dist");
+_Static_assert(offsetof(CollisionPlane, edgePlanes) == 0x5c && sizeof(((CollisionPlane *)0)->edgePlanes) == 0x30, "scene.fields: CollisionPlane.edgePlanes");
 _Static_assert(offsetof(CollisionPlane, object) == 0x8c && sizeof(((CollisionPlane *)0)->object) == 0x4, "scene.fields: CollisionPlane.object");
 _Static_assert(offsetof(CollisionPlane, part) == 0x90 && sizeof(((CollisionPlane *)0)->part) == 0x4, "scene.fields: CollisionPlane.part");
 _Static_assert(offsetof(CollisionPlane, cornerIndices) == 0x94 && sizeof(((CollisionPlane *)0)->cornerIndices) == 0xc, "scene.fields: CollisionPlane.cornerIndices");

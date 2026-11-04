@@ -679,9 +679,12 @@ struct BoosterType 0x1820                                       # a booster part
 0x1810     0x10       float normalSpeed[4]
 
 struct CollisionPlane 0xac                                      # a plane of the collision space (Space.planes; a bullet's hit, Bullet.hit)
-0          1          u8 flags                                   # (by use) 0x10: no decal on it
+0          4          i32 id                                     # (by use) collisionTri_setup's id (its low byte's 0x10: no decal on it)
 4          0x24       float cornerPoints[3][3]                   # (by use) its triangle's corners
-0x4c       0xc        float normal[3]
+0x28       0x24       float edges[3][3]                          # (by use) edge i: corner i + 1 - corner i, normalized
+0x4c       0xc        float normal[3]                            # the face's: (-edge 0) x edge 1
+0x58       4          float dist                                 # the face plane: normal . corner 0
+0x5c       0x30       float edgePlanes[3][4]                     # edge k's plane: normal x edge k, through corner k (its normal and distance)
 0x8c       4          i32 *object                                # its map object's index (none: 0)
 0x90       4          i32 part                                   # the object's shape part
 0x94       0xc        i32 cornerIndices[3]                       # the corners' vertex indices in the part

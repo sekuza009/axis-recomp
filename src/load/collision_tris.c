@@ -20,34 +20,34 @@ static void copy_through_fpu(float *dst, const float *src) { *dst = (float)fld_m
 int THISCALL (collisionTri_setup)(u8 *self, int id, const float *v0, const float *v1, const float *v2, int a, int b, int c, int d,
                            int e)
 {
-	float *f = (float *)self;
+	CollisionPlane *tp = (CollisionPlane *)self;
 	collisionPlane_clear(self);
-	FIELD(int, self, 0) = id;
-	memcpy(f + 1, v0, 12);
-	memcpy(f + 4, v1, 12);
-	memcpy(f + 7, v2, 12);
+	tp->id = id;
+	memcpy(tp->cornerPoints[0], v0, 12);
+	memcpy(tp->cornerPoints[1], v1, 12);
+	memcpy(tp->cornerPoints[2], v2, 12);
 	for (int i = 0; i < 3; i++) {   /* edge i: corner i + 1 - corner i */
 		int j = (i + 1) % 3;
-		float *edge = f + 10 + i * 3;
+		float *edge = tp->edges[i];
 		for (int k = 0; k < 3; k++)
-			edge[k] = (float)fsub_m(fld_m(&f[1 + j * 3 + k]), &f[1 + i * 3 + k]);
+			edge[k] = (float)fsub_m(fld_m(&tp->cornerPoints[j][k]), &tp->cornerPoints[i][k]);
 		Vec3_normalize(edge);
 	}
 	/* the face normal: (-edge 0) x edge 1 */
-	X nx = -fld_m(&f[10]), ny = -fld_m(&f[11]), nz = -fld_m(&f[12]);
+	X nx = -fld_m(&tp->edges[0][0]), ny = -fld_m(&tp->edges[0][1]), nz = -fld_m(&tp->edges[0][2]);
 	float n[3];
-	n[0] = (float)(mul(nz, &f[14]) - mul(ny, &f[15]));
-	n[1] = (float)(mul(nx, &f[15]) - mul(nz, &f[13]));
-	n[2] = (float)(mul(ny, &f[13]) - mul(nx, &f[14]));
+	n[0] = (float)(mul(nz, &tp->edges[1][1]) - mul(ny, &tp->edges[1][2]));
+	n[1] = (float)(mul(nx, &tp->edges[1][2]) - mul(nz, &tp->edges[1][0]));
+	n[2] = (float)(mul(ny, &tp->edges[1][0]) - mul(nx, &tp->edges[1][1]));
 	Vec3_normalize(n);
-	X dist = mul(fld_m(&n[1]), &f[2]) + mul(fld_m(&n[0]), &f[1]);
-	dist = dist + mul(fld_m(&n[2]), &f[3]);
-	copy_through_fpu(f + 0x13, &n[0]);
-	copy_through_fpu(f + 0x14, &n[1]);
-	copy_through_fpu(f + 0x15, &n[2]);
-	f[0x16] = (float)dist;
+	X dist = mul(fld_m(&n[1]), &tp->cornerPoints[0][1]) + mul(fld_m(&n[0]), &tp->cornerPoints[0][0]);
+	dist = dist + mul(fld_m(&n[2]), &tp->cornerPoints[0][2]);
+	copy_through_fpu(&tp->normal[0], &n[0]);
+	copy_through_fpu(&tp->normal[1], &n[1]);
+	copy_through_fpu(&tp->normal[2], &n[2]);
+	tp->dist = (float)dist;
 	for (int k = 0; k < 3; k++) {   /* edge plane k: normal x edge k, through corner k */
-		const float *edge = f + 10 + k * 3, *corner = f + 1 + k * 3;
+		const float *edge = tp->edges[k], *corner = tp->cornerPoints[k];
 		float p[3];
 		p[0] = (float)(mul(fld_m(&n[2]), &edge[1]) - mul(fld_m(&n[1]), &edge[2]));
 		p[1] = (float)(mul(fld_m(&n[0]), &edge[2]) - mul(fld_m(&n[2]), &edge[0]));
@@ -55,17 +55,17 @@ int THISCALL (collisionTri_setup)(u8 *self, int id, const float *v0, const float
 		Vec3_normalize(p);
 		X pd = mul(fld_m(&p[2]), &corner[2]) + mul(fld_m(&p[1]), &corner[1]);
 		pd = pd + mul(fld_m(&p[0]), &corner[0]);
-		float *plane = f + 0x17 + k * 4;
+		float *plane = tp->edgePlanes[k];
 		copy_through_fpu(plane, &p[0]);
 		copy_through_fpu(plane + 1, &p[1]);
 		copy_through_fpu(plane + 2, &p[2]);
 		plane[3] = (float)pd;
 	}
-	FIELD(int, self, 0x8c) = a;
-	FIELD(int, self, 0x90) = b;
-	FIELD(int, self, 0x94) = c;
-	FIELD(int, self, 0x98) = d;
-	FIELD(int, self, 0x9c) = e;
+	tp->object = (i32 *)(uintptr_t)(u32)a;
+	tp->part = b;
+	tp->cornerIndices[0] = c;
+	tp->cornerIndices[1] = d;
+	tp->cornerIndices[2] = e;
 	return d;
 }
 
@@ -73,7 +73,7 @@ int THISCALL (collisionTri_setup)(u8 *self, int id, const float *v0, const float
    planes. On a hit: the point in *hit, its distance to p1 in *dist, returns 1 */
 int THISCALL (collisionTri_traceSegment)(const u8 *self, const float *p0, const float *p1, float *hit, float *dist)
 {
-	const float *n = (const float *)(self + 0x4c);
+	const float *n = ((const CollisionPlane *)self)->normal;
 	X zero = k_0f;
 	X d0 = (X)n[1] * p0[1] + (X)p0[2] * n[2] + (X)n[0] * p0[0] - n[3];
 	X d1 = (X)p1[2] * n[2] + (X)n[0] * p1[0] + (X)n[1] * p1[1] - n[3];
@@ -86,7 +86,7 @@ int THISCALL (collisionTri_traceSegment)(const u8 *self, const float *p0, const 
 	float h[3] = { (float)(dx * t + p0[0]), (float)((X)ey + p0[1]), (float)((X)ez + p0[2]) };
 	memcpy(hit, h, 12);
 	for (int k = 0; k < 3; k++) {
-		const float *e = (const float *)(self + 0x5c + k * 0x10);
+		const float *e = ((const CollisionPlane *)self)->edgePlanes[k];
 		if ((X)e[0] * hit[0] + (X)e[1] * hit[1] + (X)e[2] * hit[2] - e[3] >= zero)
 			return 0;
 	}
