@@ -887,7 +887,7 @@ void THISCALL (actor_setupFromParts)(u8 *s, int a, int id, u32 a3, const u32 *pp
 	AC->invulnerable = 0;
 	fill_dwords(ac + offsetof(Player, lookActor), 5, (u32)-1);   /* lookActor .. botTarget */
 	fill_dwords(ac + offsetof(Player, scanTime), 5, 0);   /* scanTime .. heightTime */
-	memcpy(ac + 0x8838, (const void *)ADDR(g_vecZero), 12);
+	memcpy(AC->cleared8838, (const void *)ADDR(g_vecZero), 12);
 	AC->lookTime = 0.0f;
 	BITS(AC->pathRange) = 0x44bb8000;   /* 1500 */
 	fill_dwords(ac + offsetof(Player, cameraValue), 3, 0);   /* cameraValue .. hitFlash */

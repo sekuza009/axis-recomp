@@ -376,7 +376,7 @@ typedef struct Player {
 	float burstFire;   /* +0x882c: seconds of the burst left (botTimes[4]) */
 	float dodgeTime;   /* +0x8830: (by use) seconds to the next sideways step (botTimes[0]) */
 	float heightTime;   /* +0x8834: seconds to the next height change (botTimes[1]) */
-	u8 _pad0008838[0xc];
+	float cleared8838[3];   /* +0x8838: (by use) only zeroed (actor_setupFromParts); nothing else reads or writes it */
 	float lookTime;   /* +0x8844: (by use) seconds to the next random look (2) */
 	float pathRange;   /* +0x8848: (by use) how far a bot looks for path points (1500, x1.5 while none is found) */
 	i32 cameraValue;   /* +0x884c: (by use) the camera's value while it follows this actor (camera_setTarget) */
@@ -2046,6 +2046,7 @@ _Static_assert(offsetof(Player, burstPause) == 0x8828 && sizeof(((Player *)0)->b
 _Static_assert(offsetof(Player, burstFire) == 0x882c && sizeof(((Player *)0)->burstFire) == 0x4, "scene.fields: Player.burstFire");
 _Static_assert(offsetof(Player, dodgeTime) == 0x8830 && sizeof(((Player *)0)->dodgeTime) == 0x4, "scene.fields: Player.dodgeTime");
 _Static_assert(offsetof(Player, heightTime) == 0x8834 && sizeof(((Player *)0)->heightTime) == 0x4, "scene.fields: Player.heightTime");
+_Static_assert(offsetof(Player, cleared8838) == 0x8838 && sizeof(((Player *)0)->cleared8838) == 0xc, "scene.fields: Player.cleared8838");
 _Static_assert(offsetof(Player, lookTime) == 0x8844 && sizeof(((Player *)0)->lookTime) == 0x4, "scene.fields: Player.lookTime");
 _Static_assert(offsetof(Player, pathRange) == 0x8848 && sizeof(((Player *)0)->pathRange) == 0x4, "scene.fields: Player.pathRange");
 _Static_assert(offsetof(Player, cameraValue) == 0x884c && sizeof(((Player *)0)->cameraValue) == 0x4, "scene.fields: Player.cameraValue");
