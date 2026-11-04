@@ -246,7 +246,7 @@ void THISCALL (scene_reset)(u8 *s)
 {
 	Stage *st = (Stage *)s;
 	stage_resetLights(s);
-	memset(s + 0x202ea80, 0, 0x64 * 4);
+	memset(st->lockWarnings, 0, 0x64 * 4);
 	st->lockCount = 0;
 	stage_clearMapObjects(s);
 	stage_clearBullets(s);
@@ -257,7 +257,7 @@ void THISCALL (scene_reset)(u8 *s)
 	memcpy(st->lastCameraPos, st->cameraPos, 12);
 	identity((u32 *)st->modelview);
 	identity((u32 *)st->lastModelview);
-	FIELD(int, s, 0x20f3adc) = 0;
+	st->itemTypeCount = 0;
 	st->startCount = 0;
 	st->itemCount = 0;
 	st->lastPickup = -1;
@@ -301,14 +301,14 @@ void THISCALL (item_initTextures)(u8 *s, u32 a1, u32 a2, const char *sky, u32 a4
 		sprintf(name, (const char *)STR(0x4c7410, "%s\\%02d"), sky, i);
 		FIELD(int, s, 0x9ccfd4 + i * 4) = tex_getIdByName((*(void **)&g_textures), name, i > 7, 0, 0, 0, 0, 0, 0);
 	}
-	Light_clearCounts(s + 0x9ccffc);
-	factors_addConstant(s + 0x9ccffc, (const void *)OBJ(g_packedWhite));
+	Light_clearCounts((u8 *)&((Stage *)s)->mapLights);
+	factors_addConstant((u8 *)&((Stage *)s)->mapLights, (const void *)OBJ(g_packedWhite));
 	stage_resetLights(s);
-	Light_clearCounts(s + 0x9e3020);
+	Light_clearCounts((u8 *)&((Stage *)s)->actorLights);
 	u8 grey[4] = { 0x40, 0x40, 0x40, 0xff };
-	factors_addConstant(s + 0x9e3020, grey);
+	factors_addConstant((u8 *)&((Stage *)s)->actorLights, grey);
 	u32 down[3] = { 0xbf800000, 0xbf800000, 0xbf800000 };
-	factors_addPoint(s + 0x9e3020, (const void *)OBJ(g_packedWhite), down);
+	factors_addPoint((u8 *)&((Stage *)s)->actorLights, (const void *)OBJ(g_packedWhite), down);
 	long double root = 1;
 	root = x87_fsqrt(k_27);
 	memset(s + 0x9ee030, 0, 14 * 4);

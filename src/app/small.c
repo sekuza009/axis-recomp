@@ -75,7 +75,7 @@ void THISCALL (stage_deactivateActors)(Stage *stage)
 int THISCALL (stage_resetLights)(Stage *stage)
 {
 	FIELD(int, stage, 0x9d800c) = 0;
-	return Light_clearCounts((u8 *)stage + 0x9d8010);
+	return Light_clearCounts((u8 *)&((Stage *)stage)->dynamicLights);
 }
 
 /* ---- small objects ---- */

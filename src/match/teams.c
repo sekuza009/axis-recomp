@@ -67,7 +67,7 @@ void *THISCALL (scene_followedActor)(Scene *scene)
    projectile whose +0x7c is above 0x4a93e8, of that at its +0x10 */
 void THISCALL (stage_refillFactors)(Stage *stage)
 {
-	u8 *pool = (u8 *)stage + 0x9d8010;
+	u8 *pool = (u8 *)&((Stage *)stage)->dynamicLights;
 	GAME_VAR(int, (u8 *)stage + 0x9d800c) = 1;
 	Light_clearCounts(pool);
 	for (int i = 0; i < stage->actorCount; i++) {

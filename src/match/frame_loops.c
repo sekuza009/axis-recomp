@@ -406,7 +406,7 @@ void THISCALL (object_initObjectBy)(u8 *s, int i, const u8 *type)
 	FIELD(int, obj, 0x2a8) = 0;
 	FIELD(int, obj, 0x2c8) = 0;
 	if (ST->mapShaded == 0)
-		shape_shadeParts((*(u32 * *)&mo->colours[0]), 1, (Model *)((u8 *)mo->model), (const LightFactors *)(s + 0x9ccffc),
+		shape_shadeParts((*(u32 * *)&mo->colours[0]), 1, (Model *)((u8 *)mo->model), (const LightFactors *)&((Stage *)s)->mapLights,
 		                 mo->matrixInverse);
 }
 

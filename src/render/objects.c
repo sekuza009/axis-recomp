@@ -143,7 +143,7 @@ void THISCALL (actor_render)(u8 *s, int i, float dt)
 		Mat4_multiply((float *)(obj + 0x1f4), m, (const float *)(obj + 0xb4));
 		Mat4_invert((float *)(obj + 0x234), (const float *)(obj + 0x1f4));
 		if (!(obj[0xc] & 2))
-			shape_shadeParts(F(u32 *, obj, 0x280), 1, (Model *)F(u8 *, obj, 0x27c), (const LightFactors *)(s + 0x9ccffc),
+			shape_shadeParts(F(u32 *, obj, 0x280), 1, (Model *)F(u8 *, obj, 0x27c), (const LightFactors *)&((Stage *)s)->mapLights,
 			                 (const float *)(obj + 0x134));
 		F(int, obj, 0x2a4) = 0;
 		const float *c = (const float *)(F(u8 *, obj, 0x27c) + 0x20);
@@ -154,7 +154,7 @@ void THISCALL (actor_render)(u8 *s, int i, float dt)
 	}
 	if (F(int, obj, 0x288) == 1 && !(obj[0xc] & 2)) {
 		memcpy(F(void *, obj, 0x284), F(void *, obj, 0x280), F(int, F(u8 *, obj, 0x27c), 0x18) * 4);
-		shape_shadeParts(F(u32 *, obj, 0x284), 0, (Model *)F(u8 *, obj, 0x27c), (const LightFactors *)(s + 0x9d8010),
+		shape_shadeParts(F(u32 *, obj, 0x284), 0, (Model *)F(u8 *, obj, 0x27c), (const LightFactors *)&((Stage *)s)->dynamicLights,
 		                 (const float *)(obj + 0x134));
 	}
 	if ((obj[0xc] & 1) && g_items3D == 1) {

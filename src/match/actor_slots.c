@@ -572,7 +572,7 @@ void THISCALL (actor_updateAllParts)(u8 *s, int a, void *vv, int draw)
 	} else
 		tint = NULL;
 	u32 light = tint && tint[3] <= 0x10 ? (u32)(s + 0x20f2f48) : 0;
-	u8 *lights = s + 0x9e3020;
+	u8 *lights = (u8 *)&((Stage *)s)->actorLights;
 	int ok = 1;
 	u32 f;
 	if (a == st->selectedActor) {
@@ -891,7 +891,7 @@ void THISCALL (actor_setupFromParts)(u8 *s, int a, int id, u32 a3, const u32 *pp
 	AC->stuckPath = -1;
 	memcpy(AC->stuckMove, (const void *)ADDR(g_vecZero), 12);
 	AC->alert = (*(int *)&AC->beepTimer) = 0;
-	GAME_VAR(int, s + 0x202ea80 + a * 4) = 0;
+	(*(int *)&((Stage *)s)->lockWarnings[a]) = 0;
 	st->teamsChanged = 1;
 }
 #undef A

@@ -250,7 +250,7 @@ static void actor_dies(u8 *s, u8 *a, int i, u32 *fx, float *v28)
 	}
 	if (AC->lastAttacker != i)
 		AC->deaths++;
-	GAME_VAR(int, s + 0x202ea80 + i * 4) = 0;
+	(*(int *)&ST->lockWarnings[i]) = 0;
 	AC->killPending = 1;
 	ST->lastDeath = i;
 }

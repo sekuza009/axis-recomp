@@ -281,9 +281,9 @@ u32 THISCALL (Stage_dtor)(u8 *self)
 	ShapeManager_dtor(self + 0xe3c93c);
 	Model_dtor(self + 0xdc0cc4);
 	Model_dtor(self + 0xdc0a78);
-	Light_dtor(self + 0x9e3020);
-	Light_dtor(self + 0x9d8010);
-	Light_dtor(self + 0x9ccffc);
+	Light_dtor((u8 *)&((Stage *)self)->actorLights);
+	Light_dtor((u8 *)&((Stage *)self)->dynamicLights);
+	Light_dtor((u8 *)&((Stage *)self)->mapLights);
 	return GAME_THISFN(CollisionVolume_dtor, 0x481390, u32, void *)(self + 0xa10);
 }
 
@@ -495,12 +495,12 @@ u8 *THISCALL (game_loadAllData)(u8 *g)
 	ViewVolume_clear(g + 0x74);
 	CollisionVolume_ctor(s + 0xa10);   /* CollisionVolume_ctor */
 	VECTOR(s + 0x9cd000, 0x2c, 0x400);
-	VTABLE(s + 0x9ccffc, VT(Light, 0x4aa248));
-	Light_clearCounts(s + 0x9ccffc);
+	VTABLE((u8 *)&((Stage *)s)->mapLights, VT(Light, 0x4aa248));
+	Light_clearCounts((u8 *)&((Stage *)s)->mapLights);
 	VECTOR(s + 0x9d8014, 0x2c, 0x400);
-	VTABLE(s + 0x9d8010, VT(Light, 0x4aa248));
-	Light_clearCounts(s + 0x9d8010);
-	Light_ctor(s + 0x9e3020);   /* Light_ctor */
+	VTABLE((u8 *)&((Stage *)s)->dynamicLights, VT(Light, 0x4aa248));
+	Light_clearCounts((u8 *)&((Stage *)s)->dynamicLights);
+	Light_ctor((u8 *)&((Stage *)s)->actorLights);   /* Light_ctor */
 	VECTOR(s + 0x9ee080, 0xc, 0x126);
 	VECTOR(s + 0x9eee54, 0xc, 0x31);
 	VECTOR(s + 0x9ef0cc, 0xc, 0x30);

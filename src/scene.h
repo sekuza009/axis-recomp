@@ -880,7 +880,11 @@ typedef struct Stage {
 	u8 _pad0000a28[0x9cc5ac];
 	i32 effectTextures[9];   /* +0x9ccfd4: (by use) the effects' textures "<dir>\00" .. "08" (item_initTextures; objects.c TEX(k)); "09" is billboards */
 	i32 billboards;   /* +0x9ccff8: (by use) the billboard list map items are drawn with (hud_484ca0's id) */
-	u8 _pad09ccffc[0x2104c];
+	LightFactors mapLights;   /* +0x9ccffc: (by use) the map's lights (Light_read from the map file): they shade the map objects */
+	i32 dynamicLightsSet;   /* +0x9d800c: (unclear) cleared with dynamicLights (stage_resetLights) */
+	LightFactors dynamicLights;   /* +0x9d8010: (by use) the lights cleared each frame (stage_resetLights); the objects' second colours */
+	LightFactors actorLights;   /* +0x9e3020: (by use) the actors' light: a grey ambient one and one from above (actor_slots.c) */
+	u8 _pad09ee030[0x18];
 	u32 glFogColour[4];   /* +0x9ee048: the fog OpenGL draws with (hud_472900): r, g, b, a (floats, kept as bits) */
 	u32 glFogStart;   /* +0x9ee058: (floats, kept as bits) */
 	u32 glFogEnd;   /* +0x9ee05c */
@@ -1008,7 +1012,7 @@ typedef struct Stage {
 	i32 gladiator;   /* +0x20f3ad0: (10, 11) no weapons on the map */
 	i32 kingOfTheHill;   /* +0x20f3ad4: (type 12) the leader is the king: marked, given power-ups */
 	i32 platoon;   /* +0x20f3ad8: (13) */
-	u8 _pad20f3adc[0x4];
+	i32 itemTypeCount;   /* +0x20f3adc: (by use) itemTypes in use */
 	ItemType itemTypes[64];   /* +0x20f3ae0: (count unclear) */
 	u8 _pad20f5ee0[0x4c80];
 	float startPos[3];   /* +0x20fab60: (by use) the map's player start (map_loadPlayInfoFrom) */
@@ -2057,6 +2061,10 @@ _Static_assert(offsetof(Stage, cullMargin) == 0xa08 && sizeof(((Stage *)0)->cull
 _Static_assert(offsetof(Stage, collisionPlanes) == 0xa24 && sizeof(((Stage *)0)->collisionPlanes) == 0x4, "scene.fields: Stage.collisionPlanes");
 _Static_assert(offsetof(Stage, effectTextures) == 0x9ccfd4 && sizeof(((Stage *)0)->effectTextures) == 0x24, "scene.fields: Stage.effectTextures");
 _Static_assert(offsetof(Stage, billboards) == 0x9ccff8 && sizeof(((Stage *)0)->billboards) == 0x4, "scene.fields: Stage.billboards");
+_Static_assert(offsetof(Stage, mapLights) == 0x9ccffc && sizeof(((Stage *)0)->mapLights) == 0xb010, "scene.fields: Stage.mapLights");
+_Static_assert(offsetof(Stage, dynamicLightsSet) == 0x9d800c && sizeof(((Stage *)0)->dynamicLightsSet) == 0x4, "scene.fields: Stage.dynamicLightsSet");
+_Static_assert(offsetof(Stage, dynamicLights) == 0x9d8010 && sizeof(((Stage *)0)->dynamicLights) == 0xb010, "scene.fields: Stage.dynamicLights");
+_Static_assert(offsetof(Stage, actorLights) == 0x9e3020 && sizeof(((Stage *)0)->actorLights) == 0xb010, "scene.fields: Stage.actorLights");
 _Static_assert(offsetof(Stage, glFogColour) == 0x9ee048 && sizeof(((Stage *)0)->glFogColour) == 0x10, "scene.fields: Stage.glFogColour");
 _Static_assert(offsetof(Stage, glFogStart) == 0x9ee058 && sizeof(((Stage *)0)->glFogStart) == 0x4, "scene.fields: Stage.glFogStart");
 _Static_assert(offsetof(Stage, glFogEnd) == 0x9ee05c && sizeof(((Stage *)0)->glFogEnd) == 0x4, "scene.fields: Stage.glFogEnd");
@@ -2175,6 +2183,7 @@ _Static_assert(offsetof(Stage, rocketArena) == 0x20f3acc && sizeof(((Stage *)0)-
 _Static_assert(offsetof(Stage, gladiator) == 0x20f3ad0 && sizeof(((Stage *)0)->gladiator) == 0x4, "scene.fields: Stage.gladiator");
 _Static_assert(offsetof(Stage, kingOfTheHill) == 0x20f3ad4 && sizeof(((Stage *)0)->kingOfTheHill) == 0x4, "scene.fields: Stage.kingOfTheHill");
 _Static_assert(offsetof(Stage, platoon) == 0x20f3ad8 && sizeof(((Stage *)0)->platoon) == 0x4, "scene.fields: Stage.platoon");
+_Static_assert(offsetof(Stage, itemTypeCount) == 0x20f3adc && sizeof(((Stage *)0)->itemTypeCount) == 0x4, "scene.fields: Stage.itemTypeCount");
 _Static_assert(offsetof(Stage, itemTypes) == 0x20f3ae0 && sizeof(((Stage *)0)->itemTypes) == 0x2400, "scene.fields: Stage.itemTypes");
 _Static_assert(offsetof(Stage, startPos) == 0x20fab60 && sizeof(((Stage *)0)->startPos) == 0xc, "scene.fields: Stage.startPos");
 _Static_assert(offsetof(Stage, startAngle) == 0x20fab6c && sizeof(((Stage *)0)->startAngle) == 0x8, "scene.fields: Stage.startAngle");

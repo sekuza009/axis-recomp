@@ -60,7 +60,7 @@ int THISCALL (map_loadItemInfoFrom)(u8 *scene, const char *path)
 	crt_fread(&version, 4, 1, f);
 	if (version != 0x1201)
 		GAME_FN(sys_fatalError, 0x46c710, void, char *, const char *, const char *)((char *)OBJ(g_logStage), (const char *)STR(0x4c7b94, "incorrect file version, remove the fi..."), path);
-	int *count = (int *)(scene + 0x20f3adc);
+	int *count = &((Stage *)scene)->itemTypeCount;
 	fread_scrambled(count, 4, 1, f);
 	fread_scrambled(scene + 0x20f3ae0, 0x90, *count, f);
 	fclose(f);
@@ -408,7 +408,7 @@ int THISCALL (map_loadGroundInfoFrom)(u8 *s, const char *name)
 	log_message((int)s, 0, 0, (const char *)STR(0x4c804c, "get default rendering distance"));
 	fread_scrambled(s + 0xa08, 4, 1, f);
 	log_message((int)s, 0, 0, (const char *)STR(0x4c8040, "load light"));
-	Light_read(s + 0x9ccffc, f);
+	Light_read((u8 *)&((Stage *)s)->mapLights, f);
 	log_message((int)s, 0, 0, (const char *)STR(0x4c802c, "load clearing color"));
 	fread_scrambled(s + 0x9ee030, 4, 1, f);
 	fread_scrambled(s + 0x9ee034, 0x10, 1, f);
