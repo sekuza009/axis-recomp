@@ -382,7 +382,7 @@ typedef struct MapItem {
 	i32 warpTo;   /* +0x4: (by use) a warp zone's: the item it leads to */
 	i32 warpPitch;   /* +0x8: its pitch there (x 10) */
 	float pos[3];   /* +0xc */
-	u8 _pad0000018[0x4];
+	float pitch;   /* +0x18: (by use) the play file's first angle x 10 (angle the second) */
 	float angle;   /* +0x1c: its turn, tenths of a degree */
 	i32 taken;   /* +0x20: 1: taken (not drawn) */
 	float fade;   /* +0x24: below 1: drawn faded (alpha 255 * fade) */
@@ -835,7 +835,9 @@ typedef struct Stage {
 	float levelHigh[3];   /* +0x9ef910 */
 	float worldLow[3];   /* +0x9ef91c: the world box moves are kept inside (collision_tris.c) */
 	float worldHigh[3];   /* +0x9ef928 */
-	u8 _pad09ef934[0x3d0910];
+	u8 _pad09ef934[0xc];
+	u8 pool[0x3d0900];   /* +0x9ef940: (by use) the ground layers' tables are taken from it (pool_take: map_info.c) */
+	i32 poolUsed;   /* +0xdc0240: its bytes taken */
 	GroundLayer groundLayers[4];   /* +0xdc0244: (groundLayerCount of them) */
 	i32 groundLayerCount;   /* +0xdc0a74 */
 	Model layerModel;   /* +0xdc0a78: (by use) the ground layers drawn as one shape: a part each (stage_buildMeshDrawRecords) */
@@ -1597,6 +1599,7 @@ _Static_assert(offsetof(MapItem, type) == 0x0 && sizeof(((MapItem *)0)->type) ==
 _Static_assert(offsetof(MapItem, warpTo) == 0x4 && sizeof(((MapItem *)0)->warpTo) == 0x4, "scene.fields: MapItem.warpTo");
 _Static_assert(offsetof(MapItem, warpPitch) == 0x8 && sizeof(((MapItem *)0)->warpPitch) == 0x4, "scene.fields: MapItem.warpPitch");
 _Static_assert(offsetof(MapItem, pos) == 0xc && sizeof(((MapItem *)0)->pos) == 0xc, "scene.fields: MapItem.pos");
+_Static_assert(offsetof(MapItem, pitch) == 0x18 && sizeof(((MapItem *)0)->pitch) == 0x4, "scene.fields: MapItem.pitch");
 _Static_assert(offsetof(MapItem, angle) == 0x1c && sizeof(((MapItem *)0)->angle) == 0x4, "scene.fields: MapItem.angle");
 _Static_assert(offsetof(MapItem, taken) == 0x20 && sizeof(((MapItem *)0)->taken) == 0x4, "scene.fields: MapItem.taken");
 _Static_assert(offsetof(MapItem, fade) == 0x24 && sizeof(((MapItem *)0)->fade) == 0x4, "scene.fields: MapItem.fade");
@@ -1940,6 +1943,8 @@ _Static_assert(offsetof(Stage, levelLow) == 0x9ef904 && sizeof(((Stage *)0)->lev
 _Static_assert(offsetof(Stage, levelHigh) == 0x9ef910 && sizeof(((Stage *)0)->levelHigh) == 0xc, "scene.fields: Stage.levelHigh");
 _Static_assert(offsetof(Stage, worldLow) == 0x9ef91c && sizeof(((Stage *)0)->worldLow) == 0xc, "scene.fields: Stage.worldLow");
 _Static_assert(offsetof(Stage, worldHigh) == 0x9ef928 && sizeof(((Stage *)0)->worldHigh) == 0xc, "scene.fields: Stage.worldHigh");
+_Static_assert(offsetof(Stage, pool) == 0x9ef940 && sizeof(((Stage *)0)->pool) == 0x3d0900, "scene.fields: Stage.pool");
+_Static_assert(offsetof(Stage, poolUsed) == 0xdc0240 && sizeof(((Stage *)0)->poolUsed) == 0x4, "scene.fields: Stage.poolUsed");
 _Static_assert(offsetof(Stage, groundLayers) == 0xdc0244 && sizeof(((Stage *)0)->groundLayers) == 0x830, "scene.fields: Stage.groundLayers");
 _Static_assert(offsetof(Stage, groundLayerCount) == 0xdc0a74 && sizeof(((Stage *)0)->groundLayerCount) == 0x4, "scene.fields: Stage.groundLayerCount");
 _Static_assert(offsetof(Stage, layerModel) == 0xdc0a78 && sizeof(((Stage *)0)->layerModel) == 0x4c, "scene.fields: Stage.layerModel");
