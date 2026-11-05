@@ -993,7 +993,7 @@ g_boosterPanelName
 g_mechDetectionAngle
 g_mechLockOnTime
 g_mechTargetKeepTime
-g_mechLegsValue2
+g_mechLegsInertia
 g_mechLegsSpeedCorrection
 g_mechLegsBonus1
 g_mechLegsBonus2

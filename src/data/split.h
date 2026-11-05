@@ -1080,9 +1080,9 @@ extern int g_mechPartStats_v[7];
 extern u8 g_mechMobility_v[4];
 #endif
 #ifdef AXIS_FENCE
-#define g_mechLegsValue2_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0x1ba000 : g_fence + 0x1b9ffc))
+#define g_mechLegsInertia_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0x1ba000 : g_fence + 0x1b9ffc))
 #else
-extern u8 g_mechLegsValue2_v[4];
+extern u8 g_mechLegsInertia_v[4];
 #endif
 #ifdef AXIS_FENCE
 #define g_mechLegsSpeedCorrection_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0x1bc000 : g_fence + 0x1bbffc))

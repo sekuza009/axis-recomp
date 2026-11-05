@@ -412,8 +412,8 @@ typedef struct MapObject {
 	float animInverse[16];   /* +0x1b4 */
 	float relMatrix[16];   /* +0x1f4: matrix x placeInverse */
 	float relInverse[16];   /* +0x234 */
-	u32 typeValue1;   /* +0x274: (unclear) the type record's +0xa8, +0xac */
-	u32 typeValue2;   /* +0x278 */
+	u32 glowSize;   /* +0x274: a float's bits: the glow flare's half-size (particle kind 4; objects with flag 1 while 3D items are on) */
+	u32 glowColour;   /* +0x278: the glow flare's colour (RGB; its alpha from the glow) */
 	Model *model;   /* +0x27c */
 	u32 colours[2];   /* +0x280: (by use) two runs of its shading colours (from Stage.objectColours; object_initObjectBy) */
 	i32 colourSide;   /* +0x288: which run is drawn (0: the first) */
@@ -439,8 +439,8 @@ typedef struct ObjectType {
 	char animName[0x40];   /* +0x4c: its animation (empty: none) */
 	float place[3];   /* +0x8c */
 	float rotation[4];   /* +0x98: a quaternion */
-	u32 value1;   /* +0xa8: (unclear) MapObject.typeValue1 / 2 */
-	u32 value2;   /* +0xac */
+	u32 glowSize;   /* +0xa8: a float's bits: the glow flare's half-size (particle kind 4; objects with flag 1 while 3D items are on) */
+	u32 glowColour;   /* +0xac: the glow flare's colour (RGB; its alpha from the glow) */
 } ObjectType;
 
 /* a kind of map item (Stage.itemTypes) */
@@ -1232,12 +1232,12 @@ typedef struct LegType {
 	i32 emitterCount;   /* +0x13d0 */
 	u8 _pad00013d4[0x4];
 	float weight;   /* +0x13d8 */
-	float stat0;   /* +0x13dc: (the ARM CENTER's legs stats [0]) */
-	float value2;   /* +0x13e0 */
+	float agility;   /* +0x13dc: AGILITY (ARM CENTER legs, message 631): x the pilot's level factor 0 = the actor's mobility (actor_setupFromParts) */
+	float inertia;   /* +0x13e0: INERTIA (ARM CENTER legs, message 632): x the speed = the actor's moveAccel */
 	float speedCorrection;   /* +0x13e4 */
-	float bonus1;   /* +0x13e8 */
-	float bonus3;   /* +0x13ec */
-	float bonus2;   /* +0x13f0 */
+	float forwardBoostCorrection;   /* +0x13e8: F.BOOST SPD CORRECTION (message 634): + the level's legs stat + 1, x the booster's speed [1] */
+	float backBoostCorrection;   /* +0x13ec: B.BOOST SPD CORRECTION (message 636): with the booster's speed [2], negated */
+	float sideBoostCorrection;   /* +0x13f0: S.BOOST SPD CORRECTION (message 635): with the booster's speed [3] */
 } LegType;
 
 /* a booster part type (Stage.boosterTypes) */
@@ -2217,8 +2217,8 @@ _Static_assert(offsetof(MapObject, animMatrix) == 0x174 && sizeof(((MapObject *)
 _Static_assert(offsetof(MapObject, animInverse) == 0x1b4 && sizeof(((MapObject *)0)->animInverse) == 0x40, "scene.fields: MapObject.animInverse");
 _Static_assert(offsetof(MapObject, relMatrix) == 0x1f4 && sizeof(((MapObject *)0)->relMatrix) == 0x40, "scene.fields: MapObject.relMatrix");
 _Static_assert(offsetof(MapObject, relInverse) == 0x234 && sizeof(((MapObject *)0)->relInverse) == 0x40, "scene.fields: MapObject.relInverse");
-_Static_assert(offsetof(MapObject, typeValue1) == 0x274 && sizeof(((MapObject *)0)->typeValue1) == 0x4, "scene.fields: MapObject.typeValue1");
-_Static_assert(offsetof(MapObject, typeValue2) == 0x278 && sizeof(((MapObject *)0)->typeValue2) == 0x4, "scene.fields: MapObject.typeValue2");
+_Static_assert(offsetof(MapObject, glowSize) == 0x274 && sizeof(((MapObject *)0)->glowSize) == 0x4, "scene.fields: MapObject.glowSize");
+_Static_assert(offsetof(MapObject, glowColour) == 0x278 && sizeof(((MapObject *)0)->glowColour) == 0x4, "scene.fields: MapObject.glowColour");
 _Static_assert(offsetof(MapObject, model) == 0x27c && sizeof(((MapObject *)0)->model) == 0x4, "scene.fields: MapObject.model");
 _Static_assert(offsetof(MapObject, colours) == 0x280 && sizeof(((MapObject *)0)->colours) == 0x8, "scene.fields: MapObject.colours");
 _Static_assert(offsetof(MapObject, colourSide) == 0x288 && sizeof(((MapObject *)0)->colourSide) == 0x4, "scene.fields: MapObject.colourSide");
@@ -2241,8 +2241,8 @@ _Static_assert(offsetof(ObjectType, animSpeed) == 0x48 && sizeof(((ObjectType *)
 _Static_assert(offsetof(ObjectType, animName) == 0x4c && sizeof(((ObjectType *)0)->animName) == 0x40, "scene.fields: ObjectType.animName");
 _Static_assert(offsetof(ObjectType, place) == 0x8c && sizeof(((ObjectType *)0)->place) == 0xc, "scene.fields: ObjectType.place");
 _Static_assert(offsetof(ObjectType, rotation) == 0x98 && sizeof(((ObjectType *)0)->rotation) == 0x10, "scene.fields: ObjectType.rotation");
-_Static_assert(offsetof(ObjectType, value1) == 0xa8 && sizeof(((ObjectType *)0)->value1) == 0x4, "scene.fields: ObjectType.value1");
-_Static_assert(offsetof(ObjectType, value2) == 0xac && sizeof(((ObjectType *)0)->value2) == 0x4, "scene.fields: ObjectType.value2");
+_Static_assert(offsetof(ObjectType, glowSize) == 0xa8 && sizeof(((ObjectType *)0)->glowSize) == 0x4, "scene.fields: ObjectType.glowSize");
+_Static_assert(offsetof(ObjectType, glowColour) == 0xac && sizeof(((ObjectType *)0)->glowColour) == 0x4, "scene.fields: ObjectType.glowColour");
 _Static_assert(sizeof(ObjectType) == 0xb0, "scene.fields: size of ObjectType");
 _Static_assert(offsetof(ItemType, name) == 0x0 && sizeof(((ItemType *)0)->name) == 0x40, "scene.fields: ItemType.name");
 _Static_assert(offsetof(ItemType, respawnSound) == 0x40 && sizeof(((ItemType *)0)->respawnSound) == 0x4, "scene.fields: ItemType.respawnSound");
@@ -2836,12 +2836,12 @@ _Static_assert(offsetof(LegType, skelNames) == 0x11d0 && sizeof(((LegType *)0)->
 _Static_assert(offsetof(LegType, emitters) == 0x12d0 && sizeof(((LegType *)0)->emitters) == 0x100, "scene.fields: LegType.emitters");
 _Static_assert(offsetof(LegType, emitterCount) == 0x13d0 && sizeof(((LegType *)0)->emitterCount) == 0x4, "scene.fields: LegType.emitterCount");
 _Static_assert(offsetof(LegType, weight) == 0x13d8 && sizeof(((LegType *)0)->weight) == 0x4, "scene.fields: LegType.weight");
-_Static_assert(offsetof(LegType, stat0) == 0x13dc && sizeof(((LegType *)0)->stat0) == 0x4, "scene.fields: LegType.stat0");
-_Static_assert(offsetof(LegType, value2) == 0x13e0 && sizeof(((LegType *)0)->value2) == 0x4, "scene.fields: LegType.value2");
+_Static_assert(offsetof(LegType, agility) == 0x13dc && sizeof(((LegType *)0)->agility) == 0x4, "scene.fields: LegType.agility");
+_Static_assert(offsetof(LegType, inertia) == 0x13e0 && sizeof(((LegType *)0)->inertia) == 0x4, "scene.fields: LegType.inertia");
 _Static_assert(offsetof(LegType, speedCorrection) == 0x13e4 && sizeof(((LegType *)0)->speedCorrection) == 0x4, "scene.fields: LegType.speedCorrection");
-_Static_assert(offsetof(LegType, bonus1) == 0x13e8 && sizeof(((LegType *)0)->bonus1) == 0x4, "scene.fields: LegType.bonus1");
-_Static_assert(offsetof(LegType, bonus3) == 0x13ec && sizeof(((LegType *)0)->bonus3) == 0x4, "scene.fields: LegType.bonus3");
-_Static_assert(offsetof(LegType, bonus2) == 0x13f0 && sizeof(((LegType *)0)->bonus2) == 0x4, "scene.fields: LegType.bonus2");
+_Static_assert(offsetof(LegType, forwardBoostCorrection) == 0x13e8 && sizeof(((LegType *)0)->forwardBoostCorrection) == 0x4, "scene.fields: LegType.forwardBoostCorrection");
+_Static_assert(offsetof(LegType, backBoostCorrection) == 0x13ec && sizeof(((LegType *)0)->backBoostCorrection) == 0x4, "scene.fields: LegType.backBoostCorrection");
+_Static_assert(offsetof(LegType, sideBoostCorrection) == 0x13f0 && sizeof(((LegType *)0)->sideBoostCorrection) == 0x4, "scene.fields: LegType.sideBoostCorrection");
 _Static_assert(sizeof(LegType) == 0x13f4, "scene.fields: size of LegType");
 _Static_assert(offsetof(BoosterType, name) == 0x0 && sizeof(((BoosterType *)0)->name) == 0x40, "scene.fields: BoosterType.name");
 _Static_assert(offsetof(BoosterType, shapeCount) == 0x40 && sizeof(((BoosterType *)0)->shapeCount) == 0x8, "scene.fields: BoosterType.shapeCount");

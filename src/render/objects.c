@@ -167,8 +167,8 @@ void THISCALL (actor_render)(u8 *s, int i, float dt)
 			flare[2] = BITS(MO->place[0]);
 			flare[3] = BITS(MO->place[1]);
 			flare[4] = BITS(MO->place[2]);
-			flare[5] = MO->typeValue1;
-			flare[6] = MO->typeValue2;
+			flare[5] = MO->glowSize;
+			flare[6] = MO->glowColour;
 			for (int k = 8; k < 13; k++)
 				flare[k] = 0;
 			particle_spawn(s, (const void *)RELOC(flare));
@@ -579,7 +579,7 @@ void THISCALL (projectile_draw)(u8 *s, int i, void *vv)
 		square(ab, 800.0f);
 		quad(vv, TEX(2), uv, 800.0f, p, ab, at, 2);
 		return;
-	case 4:   /* a marker the owner's colour index shows through */
+	case 4:   /* a glow flare (a map object's): half-size target[0], colour target[1], its alpha the owner field */
 		ab[0] = ab[1] = (float)-fld_m(&PR->target[0]);
 		ab[2] = ab[3] = (float)fld_m(&PR->target[0]);
 		ALPHA(PR->colour) = *(u8 *)&PR->owner;

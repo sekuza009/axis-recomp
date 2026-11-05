@@ -387,8 +387,8 @@ void THISCALL (object_initObjectBy)(u8 *s, int i, const u8 *type)
 		ST->objectColourCount += mo->model->colourCount;
 	}
 	mo->colourSide = 1;
-	mo->typeValue1 = ((const ObjectType *)type)->value1;
-	mo->typeValue2 = ((const ObjectType *)type)->value2;
+	mo->glowSize = ((const ObjectType *)type)->glowSize;
+	mo->glowColour = ((const ObjectType *)type)->glowColour;
 	memset(obj + offsetof(MapObject, unit), 0, 7 * 4);   /* unit .. poseStale */
 	if (shape) {
 		const float *c = ((const Model *)shape)->centre;

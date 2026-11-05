@@ -727,7 +727,7 @@ static void mech_stats(u8 *s, u8 *ac, u8 *p, int check)
 		AC->ammoMax[k] = ftol(fadd_m(fmul_m((long double)arms->stats[1 + k], AC->ammoFactor + k), &k_0_5f)) +
 		                       AC->ammoBonus[k];
 	long double left = fld_m(&k_1f) - over;
-	long double v = fmul_m(level_factor(p, 0), &legs->stat0) * left;
+	long double v = fmul_m(level_factor(p, 0), &legs->agility) * left;
 	AC->mobility = f32(v);
 	if (!(v >= 0))
 		AC->mobility = 0.0f;
@@ -743,19 +743,19 @@ static void mech_stats(u8 *s, u8 *ac, u8 *p, int check)
 	AC->speed = f32(v);
 	if (!(v >= *&k_100f))
 		AC->speed = 100.0f;   /* 100 */
-	v = fmul_m(fld_m(&legs->value2), &AC->speed);
+	v = fmul_m(fld_m(&legs->inertia), &AC->speed);
 	AC->moveAccel = f32(v);
 	if (st->rocketArena == 1)   /* (the check scales the stored value) */
 		AC->moveAccel = f32(fmul_m(check ? fld_m(&AC->moveAccel) : v, &k_0_333f));
-	v = fdiv_m(fmul_m(LEG(bonus1), &boost->normalSpeed[1]), &AC->speed) * left;
+	v = fdiv_m(fmul_m(LEG(forwardBoostCorrection), &boost->normalSpeed[1]), &AC->speed) * left;
 	AC->runTop[0] = f32(v);
 	if (!(v >= 0))
 		AC->runTop[0] = 0.0f;
-	v = fmul_m(fdiv_m(fmul_m(LEG(bonus3), &boost->normalSpeed[2]), &AC->speed) * left, &k_m1f);
+	v = fmul_m(fdiv_m(fmul_m(LEG(backBoostCorrection), &boost->normalSpeed[2]), &AC->speed) * left, &k_m1f);
 	AC->runTop[1] = f32(v);
 	if (v > 0)
 		AC->runTop[1] = 0.0f;
-	v = fdiv_m(fmul_m(LEG(bonus2), &boost->normalSpeed[3]), &AC->speed) * left;
+	v = fdiv_m(fmul_m(LEG(sideBoostCorrection), &boost->normalSpeed[3]), &AC->speed) * left;
 	AC->runTop[2] = f32(v);
 	if (!((check ? fld_m(&AC->runTop[2]) : v) >= 0))   /* (the check tests the stored value) */
 		AC->runTop[2] = 0.0f;

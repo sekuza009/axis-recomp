@@ -82,11 +82,11 @@ u8 *(armc_readMechStats)(void)
 	copyf(ADDR(g_mechMobility), &A->mobility);
 	const PlayerRecord *player = &sc->playerRecords[A->player];
 	const LegType *leg = &st->legTypes[player->parts[3]];
-	copyf(ADDR(g_mechLegsValue2), &leg->value2);
+	copyf(ADDR(g_mechLegsInertia), &leg->inertia);
 	mulf(ADDR(g_mechLegsSpeedCorrection), &leg->speedCorrection, (const float *)ADDR(k_100f));
-	mulf(ADDR(g_mechLegsBonus1), &leg->bonus1, (const float *)ADDR(k_100f));
-	mulf(ADDR(g_mechLegsBonus2), &leg->bonus2, (const float *)ADDR(k_100f));
-	mulf(ADDR(g_mechLegsBonus3), &leg->bonus3, (const float *)ADDR(k_100f));
+	mulf(ADDR(g_mechLegsBonus1), &leg->forwardBoostCorrection, (const float *)ADDR(k_100f));
+	mulf(ADDR(g_mechLegsBonus2), &leg->sideBoostCorrection, (const float *)ADDR(k_100f));
+	mulf(ADDR(g_mechLegsBonus3), &leg->backBoostCorrection, (const float *)ADDR(k_100f));
 	g_unusedMechStat = st->boosterTypes[player->parts[4]].thrustType;
 	mulf(ADDR(g_mechBoosterEnergy), &A->boostTime, k_1000f);
 	mulf(ADDR(g_mechBoosterRecharge), &A->rechargeTime, k_1000f);
@@ -148,12 +148,12 @@ int (armc_drawPartPanels)(void)
 	copyf(ADDR(g_armsWeight), &arm->weight);
 	const LegType *leg = &st->legTypes[player->parts[3]];   /* leg */
 	panel_name(OBJ(g_legPanelName), leg->name);
-	copyf(OBJ(g_legsStats), &leg->stat0);
-	copyf(OBJ(g_legsStats) + 4, &leg->value2);
+	copyf(OBJ(g_legsStats), &leg->agility);
+	copyf(OBJ(g_legsStats) + 4, &leg->inertia);
 	mulf(ADDR(g_legsSpeedCorrection), &leg->speedCorrection, (const float *)ADDR(k_100f));
-	mulf(OBJ(g_legsStats) + 0xc, &leg->bonus1, (const float *)ADDR(k_100f));
-	mulf(OBJ(g_legsStats) + 0x10, &leg->bonus2, (const float *)ADDR(k_100f));
-	mulf(OBJ(g_legsStats) + 0x14, &leg->bonus3, (const float *)ADDR(k_100f));
+	mulf(OBJ(g_legsStats) + 0xc, &leg->forwardBoostCorrection, (const float *)ADDR(k_100f));
+	mulf(OBJ(g_legsStats) + 0x10, &leg->sideBoostCorrection, (const float *)ADDR(k_100f));
+	mulf(OBJ(g_legsStats) + 0x14, &leg->backBoostCorrection, (const float *)ADDR(k_100f));
 	copyf(ADDR(g_legsWeight), &leg->weight);
 	int weapon = player->parts[4];
 	const BoosterType *booster = &st->boosterTypes[weapon];

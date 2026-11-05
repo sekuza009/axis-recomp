@@ -3,7 +3,7 @@
 0x4dcaa4,float,g_mechDetectionAngle
 0x4dcaac,float,g_mechLockOnTime
 0x4dcab0,float,g_mechTargetKeepTime
-0x4dcad4,float,g_mechLegsValue2
+0x4dcad4,float,g_mechLegsInertia
 0x4dcad8,float,g_mechLegsSpeedCorrection
 0x4dcadc,float,g_mechLegsBonus1
 0x4dcae0,float,g_mechLegsBonus2

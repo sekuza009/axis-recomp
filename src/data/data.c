@@ -228,7 +228,7 @@ u8 g_mechLockOnTime_v[4] __attribute__((aligned(16)));   /* 0x4dcaac */
 u8 g_mechTargetKeepTime_v[4] __attribute__((aligned(16)));   /* 0x4dcab0 */
 int g_mechPartStats_v[7] __attribute__((aligned(16)));   /* 0x4dcab4 */
 u8 g_mechMobility_v[4] __attribute__((aligned(16)));   /* 0x4dcad0 */
-u8 g_mechLegsValue2_v[4] __attribute__((aligned(16)));   /* 0x4dcad4 */
+u8 g_mechLegsInertia_v[4] __attribute__((aligned(16)));   /* 0x4dcad4 */
 u8 g_mechLegsSpeedCorrection_v[4] __attribute__((aligned(16)));   /* 0x4dcad8 */
 u8 g_mechLegsBonus1_v[4] __attribute__((aligned(16)));   /* 0x4dcadc */
 u8 g_mechLegsBonus2_v[4] __attribute__((aligned(16)));   /* 0x4dcae0 */
@@ -1398,7 +1398,7 @@ const DataPiece g_splitObjects[] = {
 	{ 0x4dcab0, g_mechTargetKeepTime_v, 4 },
 	{ 0x4dcab4, g_mechPartStats_v, 28 },
 	{ 0x4dcad0, g_mechMobility_v, 4 },
-	{ 0x4dcad4, g_mechLegsValue2_v, 4 },
+	{ 0x4dcad4, g_mechLegsInertia_v, 4 },
 	{ 0x4dcad8, g_mechLegsSpeedCorrection_v, 4 },
 	{ 0x4dcadc, g_mechLegsBonus1_v, 4 },
 	{ 0x4dcae0, g_mechLegsBonus2_v, 4 },

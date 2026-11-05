@@ -1550,10 +1550,10 @@ extern struct GameData g_data;
 #define g_mechLegsBonus2 (*(float *)g_mechLegsBonus2_v)
 #undef g_mechLegsBonus3
 #define g_mechLegsBonus3 (*(float *)g_mechLegsBonus3_v)
+#undef g_mechLegsInertia
+#define g_mechLegsInertia (*(float *)g_mechLegsInertia_v)
 #undef g_mechLegsSpeedCorrection
 #define g_mechLegsSpeedCorrection (*(float *)g_mechLegsSpeedCorrection_v)
-#undef g_mechLegsValue2
-#define g_mechLegsValue2 (*(float *)g_mechLegsValue2_v)
 #undef g_mechLockOnTime
 #define g_mechLockOnTime (*(float *)g_mechLockOnTime_v)
 #undef g_mechMaxSpeedBwd
