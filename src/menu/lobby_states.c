@@ -220,7 +220,7 @@ void (room_copyJoinedSettings)(void)
 		GAME_VAR(int, copy[k][0]) = GAME_VAR(int, copy[k][1]);
 }
 
-/* a PilotStats record's seven fields copied (all but clan, in the original's order) */
+/* a PilotStats record's seven fields copied (all but rank, in the original's order) */
 static void stats_copy(u32 dst, u32 src)
 {
 	PilotStats *d = (PilotStats *)RELOC(dst);

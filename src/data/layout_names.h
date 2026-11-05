@@ -6,8 +6,6 @@
 extern struct GameRdata g_rdata;
 extern struct GameData g_data;
 #include "split.h"   /* (the variables split out of g_data) */
-#undef g_accountClan
-#define g_accountClan (*(int *)((u8 *)g_pilotStatsKept_v + 0x8))
 #undef g_accountForm
 #define g_accountForm ((u8 *)g_accountForm_v)
 #undef g_accountNotice
@@ -24,6 +22,8 @@ extern struct GameData g_data;
 #define g_accountPanelRight (*(int *)g_accountPanelRight_v)
 #undef g_accountPanelTop
 #define g_accountPanelTop (*(int *)g_accountPanelTop_v)
+#undef g_accountRank
+#define g_accountRank (*(int *)((u8 *)g_pilotStatsKept_v + 0x8))
 #undef g_accountRects
 #define g_accountRects ((int *)g_accountRects_v)
 #undef g_arenaBright
@@ -1178,8 +1178,6 @@ extern struct GameData g_data;
 #define g_itemSlot5 (*(int *)((u8 *)g_mechSettings_v + 0x4))
 #undef g_joinPasswordTyped
 #define g_joinPasswordTyped (*(int *)g_joinPasswordTyped_v)
-#undef g_joinedSessionFlag
-#define g_joinedSessionFlag (*(u8 *)((u8 *)g_netNoticeRecord_v + 0x1))
 #undef g_joinedSessionRec
 #define g_joinedSessionRec ((SessionEntry *)g_joinedSessionRec_v)
 #undef g_joinedTitleEmail
@@ -1860,6 +1858,8 @@ extern struct GameData g_data;
 #define g_otherModeHeight (*(int *)g_otherModeHeight_v)
 #undef g_otherModeWidth
 #define g_otherModeWidth (*(int *)g_otherModeWidth_v)
+#undef g_outOfRank
+#define g_outOfRank (*(u8 *)((u8 *)g_netNoticeRecord_v + 0x1))
 #undef g_outlinesCopy
 #define g_outlinesCopy ((int *)g_outlinesCopy_v)
 #undef g_packedBlue
@@ -1924,8 +1924,6 @@ extern struct GameData g_data;
 #define g_perfCounter (*(u32 *)g_perfCounter_v)
 #undef g_pilotChosen
 #define g_pilotChosen (*(int *)g_pilotChosen_v)
-#undef g_pilotClan
-#define g_pilotClan (*(int *)((u8 *)g_pilotStats_v + 0x8))
 #undef g_pilotLevel
 #define g_pilotLevel (*(int *)((u8 *)g_pilotStats_v + 0x0))
 #undef g_pilotLevelKept
@@ -1940,6 +1938,8 @@ extern struct GameData g_data;
 #define g_pilotPoints (*(int *)((u8 *)g_pilotStats_v + 0x4))
 #undef g_pilotPointsKept
 #define g_pilotPointsKept (*(int *)((u8 *)g_pilotStatsKept_v + 0x4))
+#undef g_pilotRank
+#define g_pilotRank (*(int *)((u8 *)g_pilotStats_v + 0x8))
 #undef g_pilotRating
 #define g_pilotRating (*(int *)((u8 *)g_pilotStats_v + 0xc))
 #undef g_pilotRatingKept
@@ -2184,8 +2184,8 @@ extern struct GameData g_data;
 #define g_realWhite ((float *)g_realWhite_v)
 #undef g_realYellow
 #define g_realYellow ((float *)g_realYellow_v)
-#undef g_receivedClan
-#define g_receivedClan (*(int *)((u8 *)g_netNoticeRecord_v + 0x16))
+#undef g_receivedRank
+#define g_receivedRank (*(int *)((u8 *)g_netNoticeRecord_v + 0x16))
 #undef g_receivedSession
 #define g_receivedSession (*(const u8 * *)g_receivedSession_v)
 #undef g_rectColour

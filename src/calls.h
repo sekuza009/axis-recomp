@@ -86,7 +86,7 @@
 #define menuCamera_initPoints() GAME_FN(menuCamera_initPoints, 0x433360, void, void)()
 #define room_requestJoin() GAME_FN(room_requestJoin, 0x4334c0, u32, void)()
 #define room_start() GAME_FN(room_start, 0x433590, u32, void)()
-#define room_selectJoinedSession() GAME_FN(room_selectJoinedSession, 0x433610, void, void)()
+#define account_takeRank() GAME_FN(account_takeRank, 0x433610, void, void)()
 #define room_enterGameList() GAME_FN(room_enterGameList, 0x433790, u32, void)()
 #define room_enterRoomList() GAME_FN(room_enterRoomList, 0x433800, u32, void)()
 #define room_openDialog58() GAME_FN(room_openDialog58, 0x433980, u32, void)()

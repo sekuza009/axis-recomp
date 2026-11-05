@@ -54,12 +54,12 @@ void (messageBox_clickClose)(void)
 	}
 }
 
-/* 0x433610: the room screen's selection from the joined session (none unless its byte 0xa052c1 is 1) */
-void (room_selectJoinedSession)(void)
+/* 0x433610: the rank reply taken (message 29, received at 0xa052c0): the rank (+0x16), 0 when out of the first 1000 (byte +1 set), into both copies of the pilot's record; the notice flags cleared */
+void (account_takeRank)(void)
 {
-	int v = g_joinedSessionFlag != 1 ? g_receivedClan : 0;
-	g_pilotClan = v;
-	g_accountClan = v;
+	int v = g_outOfRank != 1 ? g_receivedRank : 0;
+	g_pilotRank = v;
+	g_accountRank = v;
 	g_netNoticeIn = 0;
 	g_accountNotice = 0;
 	g_roomAwaitingServer = 0;

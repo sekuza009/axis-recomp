@@ -32,7 +32,7 @@ typedef struct FiredRound {
 
 /* a round an actor fired, as sent (Player.shots) */
 typedef struct ShotRecord {
-	i32 inUse;   /* +0x0 */
+	i32 inUse;   /* +0x0: written, never read */
 	i32 isNew;   /* +0x4: 1: a new round (its bullet made) */
 	i32 kind;   /* +0x8 */
 	i32 owner;   /* +0xc */
@@ -335,7 +335,7 @@ typedef struct Player {
 	float tagTopLeft[3];   /* +0x87c8: (by use) its radius box's top-left corner on the screen (x, y: the marks stand on y), the depth */
 	float tagBottomRight[3];   /* +0x87d4: the box's bottom-right corner (tag_narrow: the width from these) */
 	i32 onScreen;   /* +0x87e0: 1: projected in front of the camera */
-	float facingCos;   /* +0x87e4: (by use) the cosine of its angle off the local player's view (render: who faces it) */
+	float facingCos;   /* +0x87e4: (by use) the cosine of its angle off the local player's view (render: who faces it); written, never read */
 	float lockedOn;   /* +0x87e8: > 0: locked on by the local player */
 	float lockSize;   /* +0x87ec: how far the lock-on box still has to close */
 	float labelFade;   /* +0x87f0: > 0: the name label is up (alpha labelFade / 3) */
@@ -396,7 +396,7 @@ typedef struct LightFactors {
 typedef struct MapObject {
 	i32 id;   /* +0x0: (by use) a serial (Stage.objectSerial) */
 	i32 active;   /* +0x4: 1: in use */
-	i32 nameIndex;   /* +0x8: its type's name (Stage.objectNames) */
+	i32 nameIndex;   /* +0x8: its type's name (Stage.objectNames); written, never read */
 	u8 flags;   /* +0xc: bit 1 (2): not drawn */
 	u8 _pad000000d[0x3];
 	i32 trigger;   /* +0x10: (by use) a proximity object's radius (x k) / a timed one's seconds */
@@ -564,7 +564,7 @@ typedef struct Space {
 	SpacePool blocks;   /* +0x40: 0x50-byte blocks */
 	i32 cellCapacity;   /* +0x50: cells the cells' table has room for */
 	u16 *cells;   /* +0x54: the cells' table: a cell's root block (blocks.records index; 0xffff: none) */
-	i32 cellCount;   /* +0x58: nx * ny * nz */
+	i32 cellCount;   /* +0x58: nx * ny * nz; written, never read */
 	float min[3];   /* +0x5c: its bounds */
 	float max[3];   /* +0x68 */
 	i32 nx;   /* +0x74: the grid's cells per axis */
@@ -574,7 +574,7 @@ typedef struct Space {
 	u32 margin;   /* +0x8c: (by use) a float: the items' and spheres' margin about a box (setBy's a) */
 	i32 splitCount;   /* +0x90: (by use) items a block holds before it splits (setBy's b) */
 	i32 depth;   /* +0x94: the blocks' recursion depth (at most 8) */
-	i32 lastHit;   /* +0x98: (by use) space_collideAt's last result */
+	i32 lastHit;   /* +0x98: (by use) space_collideAt's last result; written, never read */
 } Space;
 
 /* an ARM CENTER part-info record (g_partRecords, g_viewedPart: armc_parts.c part_info) */
@@ -785,7 +785,7 @@ typedef struct RankRow {
 	i32 rank;   /* +0x4: its place (the row before's when its sorted value is the same) */
 	char name[30];   /* +0x8: (empty: past the list's end) */
 	i32 exp;   /* +0x26: (sort 2) */
-	i32 value2a;   /* +0x2a: RankedPlayer.value22 (not shown) */
+	i32 value2a;   /* +0x2a: RankedPlayer.value22 (not shown); written, never read */
 	i32 kills;   /* +0x2e: (sort 1) */
 	i32 deaths;   /* +0x32 */
 	float rate;   /* +0x36: (sort 3) */
@@ -807,7 +807,7 @@ typedef struct PilotProfile {
 typedef struct PilotStats {
 	i32 level;   /* +0x0 */
 	i32 points;   /* +0x4 */
-	i32 clan;   /* +0x8 */
+	i32 rank;   /* +0x8: its place in the ranking (message 29's reply +0x16; 0 out of the first 1000: the account panel shows OUT OF RANK(1000)) */
 	i32 rating;   /* +0xc */
 	i32 score;   /* +0x10 */
 	i32 wins;   /* +0x14 */
@@ -827,8 +827,8 @@ typedef struct SkirmishInfo {
 /* a queued quad or billboard (ViewVolume.quads; view_volume.c quad_fields) */
 typedef struct ViewQuad {
 	i32 texture;   /* +0x0: (none: negative; then no texture corners) */
-	u32 uv0[2];   /* +0x4 */
-	u32 uv1[2];   /* +0xc */
+	u32 uv0[2];   /* +0x4: written, never read */
+	u32 uv1[2];   /* +0xc: written, never read */
 	u32 colour;   /* +0x14 */
 	float points[4][4];   /* +0x18: its corners in clip space */
 	i32 kind;   /* +0x58: 2 / 3: depth-sorted into quadOrderA / B */
@@ -848,7 +848,7 @@ typedef struct ViewVolume {
 	i32 blockSize;   /* +0x4: (by use) its lists' memory (factor_initBy) */
 	u8 *block;   /* +0x8 */
 	i32 ownsBlock;   /* +0xc: 1: allocated here (freed with it) */
-	i32 entryPointsSet;   /* +0x10: (by use) set once its three GL entry points are looked up (+0x14 .. +0x1c) */
+	i32 entryPointsSet;   /* +0x10: (by use) set once its three GL entry points are looked up (+0x14 .. +0x1c); written, never read */
 	void *glArrays[3];   /* +0x14: (by use) the GL vertex / colour / texture-coordinate array entry points (wglGetProcAddress; none: the GL 1.1 ones) */
 	i32 materialOrder[3072];   /* +0x20: the materials in the order first queued (materialCount of them) */
 	u8 _pad0003020[0x4];
@@ -876,7 +876,7 @@ typedef struct ViewVolume {
 	i32 quadOrderACount;   /* +0x9078 */
 	u8 *quadOrderB;   /* +0x907c: ... of kind 3 */
 	i32 quadOrderBCount;   /* +0x9080 */
-	i32 segmentLimit;   /* +0x9084: the objects' segments (0x24 bytes each) */
+	i32 segmentLimit;   /* +0x9084: the objects' segments (0x24 bytes each); written, never read */
 	u8 *segments;   /* +0x9088 */
 	i32 segmentCount;   /* +0x908c */
 	i32 entriesFull;   /* +0x9090: 1: a list overflowed (what did not fit is left out) */
@@ -1024,7 +1024,7 @@ typedef struct TexRecord {
 	i32 slot;   /* +0x40: (by use) its slot in the GL texture cache (TextureManager.slots; -1: not cached) */
 	u32 flags;   /* +0x44 */
 	float colours[6];   /* +0x48: two hue / saturation / value sets */
-	i32 animation;   /* +0x60: (by use) the name's suffix: "_ANI" 1, "_ANI0" .. "_ANI3" 1 .. 4, else 0 */
+	i32 animation;   /* +0x60: (by use) the name's suffix: "_ANI" 1, "_ANI0" .. "_ANI3" 1 .. 4, else 0; written, never read */
 	i32 changed;   /* +0x64: 1: recoloured (tex_recolourMaterial; its image made again) */
 } TexRecord;
 
@@ -1059,8 +1059,8 @@ typedef struct TextureManager {
 	i32 slotCount;   /* +0xcd130: at most 0x200 */
 	u8 *oldest;   /* +0xcd134: the slot to reuse next */
 	i32 loadCount;   /* +0xcd138: (by use) textures loaded into the cache (tex_bind) */
-	i32 counterB;   /* +0xcd13c */
-	i32 counterC;   /* +0xcd140 */
+	i32 counterB;   /* +0xcd13c: written, never read */
+	i32 counterC;   /* +0xcd140: written, never read */
 } TextureManager;
 
 /* a layer of the ground (Stage.groundLayers; map_info.c, shading.c): a height grid read from the map, drawn as strips */
@@ -1155,7 +1155,7 @@ typedef struct BmpFile {
 	u32 vtable;   /* +0x0 */
 	void *file;   /* +0x4: open (none: 0) */
 	u16 type;   /* +0x8: its BITMAPFILEHEADER ("BM") */
-	u32 fileSize;   /* +0xa */
+	u32 fileSize;   /* +0xa: written, never read */
 	u8 _pad000000e[0x4];
 	i32 dataOffset;   /* +0x12: where its pixels start */
 	u32 infoSize;   /* +0x16: its BITMAPINFOHEADER */
@@ -1282,7 +1282,7 @@ typedef struct TimeSync {
 	i32 frames;   /* +0x8: frames counted towards the next second */
 	u64 frequency;   /* +0xc: the counter's */
 	u64 lastCount;   /* +0x14: its reading at the last frame */
-	int64_t rise;   /* +0x1c: the last frame's rise */
+	int64_t rise;   /* +0x1c: the last frame's rise; written, never read */
 	int64_t riseSum;   /* +0x24: the rises summed (past a second: fps, then cleared) */
 	float fps;   /* +0x2c: frames per second (0 for a sum not positive) */
 	float frameTime;   /* +0x30: the last frame's seconds, at most maxFrame */
@@ -1323,19 +1323,19 @@ typedef struct ScenePath {
 /* the stage: the scene's own object at Scene + 0x1f36c8 (STAGE()), "this" of the */
 typedef struct Stage {
 	u8 _pad0000000[0x4];
-	i32 built;   /* +0x4: (by use) 1: item_initTextures has built it */
+	i32 built;   /* +0x4: (by use) 1: item_initTextures has built it; written, never read */
 	char stageDir[0x100];   /* +0x8: (by use) the data directories (object_setNames; game_loadAllData: "Stage" .. "Scene"): the stage's */
 	char mapDir[0x100];   /* +0x108: the maps' (a map's files: "<mapDir>/<name>") */
 	char textureDir[0x100];   /* +0x208 */
 	char shapeDir[0x100];   /* +0x308 */
 	char skeletonDir[0x100];   /* +0x408 */
-	char actorDir[0x100];   /* +0x508 */
-	char bulletDir[0x100];   /* +0x608 */
-	char effectDir[0x100];   /* +0x708 */
+	char actorDir[0x100];   /* +0x508: written, never read */
+	char bulletDir[0x100];   /* +0x608: written, never read */
+	char effectDir[0x100];   /* +0x708: written, never read */
 	char sceneDir[0x100];   /* +0x808 */
 	char stageName[0x100];   /* +0x908: (by use) the stage's name (its clan texture: Stage\\<name>\\Clan) */
 	float cullMargin;   /* +0xa08: (by use) added to an object's radius when testing it against the camera box */
-	float viewDepth;   /* +0xa0c: (by use) the view distance's depth: -cullMargin x viewProjection[10] + viewProjection[14] (view_setDistance) */
+	float viewDepth;   /* +0xa0c: (by use) the view distance's depth: -cullMargin x viewProjection[10] + viewProjection[14] (view_setDistance); written, never read */
 	Space space;   /* +0xa10: (by use) the collision space (space_initBy; its planes - 0xac bytes each, hit records point into them - space.planes.records) */
 	u8 _pad0000aac[0x58];
 	u8 spaceData[0x9c95f0];   /* +0xb04: (by use) the collision space's block (space_initBy on +0xa10) */
@@ -1435,7 +1435,7 @@ typedef struct Stage {
 	i32 selectedActor;   /* +0x202e8d8: (by use) the selected actor (stage_selectActor; -1 none) */
 	i32 silentActor;   /* +0x202e8dc: (by use) stage_setSilentActor's value */
 	i32 cameraTarget;   /* +0x202e8e0: (by use) the actor the camera follows (-1 none; camera_setTarget) */
-	i32 cameraTargetMode;   /* +0x202e8e4 */
+	i32 cameraTargetMode;   /* +0x202e8e4: written, never read */
 	i32 lastDeath;   /* +0x202e8e8: (by use) the actor that died last */
 	i32 teamsChanged;   /* +0x202e8ec: (by use) 1: an actor joined or changed team */
 	i32 frags[100];   /* +0x202e8f0: (by use) frags by team (a kill counts for the other team's slot); cleared together (stage_clearActorRefs) */
@@ -1459,9 +1459,9 @@ typedef struct Stage {
 	float lightMatrix[16];   /* +0x20f2f48: (by use) an identity (item_initTextures): a faintly tinted actor's light (actor_updateAllParts) */
 	float litMatrix[16];   /* +0x20f2f88: a 1.1 scale (the last element 1): the lit pass's (partList_queue) */
 	float baseMatrix[16];   /* +0x20f2fc8: (by use) the stage's identity matrix (stage_resetMatrixAndPoints) */
-	i32 pointCount;   /* +0x20f3008 */
+	i32 pointCount;   /* +0x20f3008: written, never read */
 	float points[200][3];   /* +0x20f300c: at the origin until set */
-	u32 defaultColour;   /* +0x20f396c */
+	u32 defaultColour;   /* +0x20f396c: written, never read */
 	float cameraPos[3];   /* +0x20f3970: (by use) the centre of the camera box objects are tested against */
 	float viewDir[3];   /* +0x20f397c: (by use) the camera's direction (the sky's look-at) */
 	float viewUp[3];   /* +0x20f3988: (by use) the camera's up */
@@ -1551,7 +1551,7 @@ typedef struct TunnelRing {
 	float cageSpeed;   /* +0x330c */
 	Flare flares[6];   /* +0x3310 */
 	float alpha;   /* +0x3520: the flares' alpha */
-	i32 screenHeight;   /* +0x3524: (by use) the screen height it was made for (intro_cameraPath) */
+	i32 screenHeight;   /* +0x3524: (by use) the screen height it was made for (intro_cameraPath); written, never read */
 	i32 cells;   /* +0x3528: quads around each band (at most 200) */
 	u8 _pad000352c[0x4];
 	struct TunnelRing *back;   /* +0x3530: the ring before */
@@ -1675,7 +1675,7 @@ typedef struct Scene {
 	i32 viewMode;   /* +0x233c9d0: 0 normal; 1 no overlay parts; 2 depth cleared again */
 	u8 _pad233c9d4[0x14];
 	i32 matchDrawing;   /* +0x233c9e8: 1: a match is loaded and drawn (set at the loading's end): the frame is presented and the 2D pass drawn */
-	i32 lastMissionWon;   /* +0x233c9ec: (by use) the last mission was won */
+	i32 lastMissionWon;   /* +0x233c9ec: (by use) the last mission was won; written, never read */
 	i32 ladderGame;   /* +0x233c9f0: 1: a Ladder (ranked) game (g_matchMode 2, the game room): emblems in the ranking, the level from the title's points, the scores committed every 300 s */
 	u8 _pad233c9f4[0x4];
 	i32 crosshairTexture;   /* +0x233c9f8 */
@@ -1717,7 +1717,7 @@ typedef struct Scene {
 	float sendRate;   /* +0x2340c88: packets a second */
 	float receiveRate;   /* +0x2340c8c */
 	float windowTime;   /* +0x2340c90: the window's seconds */
-	float resendWarning;   /* +0x2340c94: 1 when packets had to be sent again, running down */
+	float resendWarning;   /* +0x2340c94: 1 when packets had to be sent again, running down; written, never read */
 	u8 _pad2340c98[0x4];
 	float escTimer;   /* +0x2340c9c: time the in-match menu has been open (fades in over 0.25 s) */
 	u8 _pad2340ca0[0x4];
@@ -1815,7 +1815,7 @@ typedef struct Scene {
 	i32 joinTeam;   /* +0x23431a3 */
 	char joinName[0x40];   /* +0x23431a7: its mech's name */
 	i32 joinPending;   /* +0x23431e7 */
-	i32 changePlayer;   /* +0x23431eb: kind 11: a player changed team (notice_changedTeam) */
+	i32 changePlayer;   /* +0x23431eb: kind 11: a player changed team (notice_changedTeam); written, never read */
 	i32 changeTeam;   /* +0x23431ef */
 	char changeName[0x40];   /* +0x23431f3 */
 	i32 changePending;   /* +0x2343233 */
@@ -2515,7 +2515,7 @@ _Static_assert(offsetof(PilotProfile, stats) == 0x28 && sizeof(((PilotProfile *)
 _Static_assert(sizeof(PilotProfile) == 0x4c, "scene.fields: size of PilotProfile");
 _Static_assert(offsetof(PilotStats, level) == 0x0 && sizeof(((PilotStats *)0)->level) == 0x4, "scene.fields: PilotStats.level");
 _Static_assert(offsetof(PilotStats, points) == 0x4 && sizeof(((PilotStats *)0)->points) == 0x4, "scene.fields: PilotStats.points");
-_Static_assert(offsetof(PilotStats, clan) == 0x8 && sizeof(((PilotStats *)0)->clan) == 0x4, "scene.fields: PilotStats.clan");
+_Static_assert(offsetof(PilotStats, rank) == 0x8 && sizeof(((PilotStats *)0)->rank) == 0x4, "scene.fields: PilotStats.rank");
 _Static_assert(offsetof(PilotStats, rating) == 0xc && sizeof(((PilotStats *)0)->rating) == 0x4, "scene.fields: PilotStats.rating");
 _Static_assert(offsetof(PilotStats, score) == 0x10 && sizeof(((PilotStats *)0)->score) == 0x4, "scene.fields: PilotStats.score");
 _Static_assert(offsetof(PilotStats, wins) == 0x14 && sizeof(((PilotStats *)0)->wins) == 0x4, "scene.fields: PilotStats.wins");

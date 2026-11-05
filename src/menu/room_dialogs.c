@@ -830,7 +830,7 @@ static void rank_badge(int rank, int x, int y)
    seven for the record (MSG(367, "LEVEL")); four dark boxes with the name 0x9dd1d8, three passwords as stars (0x9dd6d8,
    0x9dd1f6, 0x9dd202; each left out while it is being typed in: 0x9dd69c / 0x9dd37c / 0x9dd378) and 0x9dd20e (left
    out while 0x9dd304); the level 0x9dd5d8 with its rank badge (cell (level - 1) % 10, / 10 of the texture 0x76d448),
-   the clan 0x9dd248 (MSG(374, "OUT OF RANK(1000)") when none), two ratios ("%.2f": 0x9dd5e4, 0x9dd5f4) and three counts (0x9dd5ec,
+   the rank 0x9dd248 (MSG(374, "OUT OF RANK(1000)") when none), two ratios ("%.2f": 0x9dd5e4, 0x9dd5f4) and three counts (0x9dd5ec,
    0x9dd5f0, 0x9dd5dc); two buttons (MSG(115, "$[0] O K"); 4 / 5 under the pointer by account_hitTest, lit unless 0x68039c), a
    rule and the border. The original leaves eax to callers that ignore it */
 void (account_drawPanel)(void)
@@ -893,10 +893,10 @@ void (account_drawPanel)(void)
 	set_colour_bits(g_rectColour, 0x3f800000, 0x3f800000, 0, 0x3e99999a);   /* 1, 1, 0, 0.3 */
 	menu_drawRect(X0 + 0xc1, Y0 + 0xbe, X0 + 0xd8, Y0 + 0xce, 0);
 	/* the record */
-	if (!g_accountClan)
+	if (!g_accountRank)
 		text_draw8(X0 + 0x98, Y0 + 0xd6, (const char *)MSG(374, "OUT OF RANK(1000)"));
 	else {
-		itoa(g_accountClan, text, 10);
+		itoa(g_accountRank, text, 10);
 		text_draw8(X0 + 0x98, Y0 + 0xd6, text);
 	}
 	sprintf(text, (const char *)STR(0x4b0268, "%.2f"), (double)(*(float *)&g_pilotRating));

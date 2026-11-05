@@ -19,8 +19,8 @@
 0xa055f4,int,g_lobbyTcpPort
 0xa05634,int,g_ladderPort
 0x9eeabc,int,g_unusedMainMenuWord
-0xa052d6,int,g_receivedClan
-0x9dd5e0,int,g_pilotClan
+0xa052d6,int,g_receivedRank
+0x9dd5e0,int,g_pilotRank
 0x9dd8f8,int,g_unusedInitWord
 0x9dd864,u32,g_unusedLastWParam
 0x4df004,int,g_mouseSmooth

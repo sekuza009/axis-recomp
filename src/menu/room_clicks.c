@@ -797,7 +797,7 @@ u32 (account_page)(void)
 		return menu_drawFrame(g_accountPanelLeft, g_accountPanelTop,
 		                                                     g_accountPanelRight, g_accountPanelBottom);
 	if (g_accountNotice)
-		room_selectJoinedSession();
+		account_takeRank();
 	u32 r = account_drawPanel();   /* account_drawPanel: the page */
 	if (g_roomAwaitingServer == 1)
 		return r;

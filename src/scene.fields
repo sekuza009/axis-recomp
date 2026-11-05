@@ -20,7 +20,7 @@ struct FiredRound 0x28                                          # a round as fir
 0x24       4          u32 muzzle                                 # (by use) the muzzle's bone matrix (Bullet.colour takes it)
 
 struct ShotRecord 0x20                                          # a round an actor fired, as sent (Player.shots)
-0          4          i32 inUse
+0          4          i32 inUse                                 # written, never read
 4          4          i32 isNew                                  # 1: a new round (its bullet made)
 8          4          i32 kind
 0xc        4          i32 owner
@@ -328,7 +328,7 @@ struct Player 0x8888                                            # a player's rec
 0x87c8     0xc        float tagTopLeft[3]                        # (by use) its radius box's top-left corner on the screen (x, y: the marks stand on y), the depth
 0x87d4     0xc        float tagBottomRight[3]                    # the box's bottom-right corner (tag_narrow: the width from these)
 0x87e0     4          i32 onScreen                              # 1: projected in front of the camera
-0x87e4     4          float facingCos                            # (by use) the cosine of its angle off the local player's view (render: who faces it)
+0x87e4     4          float facingCos                            # (by use) the cosine of its angle off the local player's view (render: who faces it); written, never read
 0x87e8     4          float lockedOn                            # > 0: locked on by the local player
 0x87ec     4          float lockSize                            # how far the lock-on box still has to close
 0x87f0     4          float labelFade                           # > 0: the name label is up (alpha labelFade / 3)
@@ -361,7 +361,7 @@ struct MapObject 0x2cc                                          # a map object (
 0x2ac      0x10       float clip[4]                              # its position projected (clip space)
 0x2c8      4          float waitTime                             # (by use) a timed object's seconds waited
 0          4          i32 id                                     # (by use) a serial (Stage.objectSerial)
-8          4          i32 nameIndex                              # its type's name (Stage.objectNames)
+8          4          i32 nameIndex                              # its type's name (Stage.objectNames); written, never read
 0x18       0x40       char animPath[0x40]                        # its animation ("dir/map/name"; none: empty)
 0x58       0xc        float place[3]                             # its position (the type record's)
 0x64       0x10       float rotation[4]                          # a quaternion
@@ -501,7 +501,7 @@ struct Space 0x9c                                               # the collision 
 0x40       0x10       SpacePool blocks                          # 0x50-byte blocks
 0x50       4          i32 cellCapacity                          # cells the cells' table has room for
 0x54       4          u16 *cells                                 # the cells' table: a cell's root block (blocks.records index; 0xffff: none)
-0x58       4          i32 cellCount                             # nx * ny * nz
+0x58       4          i32 cellCount                             # nx * ny * nz; written, never read
 0x5c       0xc        float min[3]                              # its bounds
 0x68       0xc        float max[3]
 0x74       4          i32 nx                                    # the grid's cells per axis
@@ -511,7 +511,7 @@ struct Space 0x9c                                               # the collision 
 0x8c       4          u32 margin                                 # (by use) a float: the items' and spheres' margin about a box (setBy's a)
 0x90       4          i32 splitCount                             # (by use) items a block holds before it splits (setBy's b)
 0x94       4          i32 depth                                 # the blocks' recursion depth (at most 8)
-0x98       4          i32 lastHit                                # (by use) space_collideAt's last result
+0x98       4          i32 lastHit                                # (by use) space_collideAt's last result; written, never read
 
 struct PartInfo 0x80                                            # an ARM CENTER part-info record (g_partRecords, g_viewedPart: armc_parts.c part_info)
 0          0x40       char name[0x40]                            # the item's folder path after its last slash
@@ -689,7 +689,7 @@ struct RankRow 0x44                                              # a row of the 
 4          4          i32 rank                                   # its place (the row before's when its sorted value is the same)
 8          0x1e       char name[30]                              # (empty: past the list's end)
 0x26       4          i32 exp                                    # (sort 2)
-0x2a       4          i32 value2a                               # RankedPlayer.value22 (not shown)
+0x2a       4          i32 value2a                               # RankedPlayer.value22 (not shown); written, never read
 0x2e       4          i32 kills                                  # (sort 1)
 0x32       4          i32 deaths
 0x36       4          float rate                                 # (sort 3)
@@ -708,7 +708,7 @@ struct PilotProfile 0x4c                                         # a pilot level
 struct PilotStats 0x20                                          # a pilot's standing (g_pilotLevel .., kept as g_pilotLevelKept ..: lobby_states.c take_back)
 0          4          i32 level
 4          4          i32 points
-8          4          i32 clan
+8          4          i32 rank                                  # its place in the ranking (message 29's reply +0x16; 0 out of the first 1000: the account panel shows OUT OF RANK(1000))
 0xc        4          i32 rating
 0x10       4          i32 score
 0x14       4          i32 wins
@@ -722,8 +722,8 @@ struct SkirmishInfo 0x5c                                        # a skirmish map
 
 struct ViewQuad 0x5c                                            # a queued quad or billboard (ViewVolume.quads; view_volume.c quad_fields)
 0          4          i32 texture                                # (none: negative; then no texture corners)
-4          8          u32 uv0[2]
-0xc        8          u32 uv1[2]
+4          8          u32 uv0[2]                                # written, never read
+0xc        8          u32 uv1[2]                                # written, never read
 0x14       4          u32 colour
 0x18       0x40       float points[4][4]                         # its corners in clip space
 0x58       4          i32 kind                                   # 2 / 3: depth-sorted into quadOrderA / B
@@ -738,7 +738,7 @@ struct ViewVolume 0x9170                                        # the view volum
 8          4          u8 *block
 0xc        4          i32 ownsBlock                              # 1: allocated here (freed with it)
 0x14       0xc        void *glArrays[3]                          # (by use) the GL vertex / colour / texture-coordinate array entry points (wglGetProcAddress; none: the GL 1.1 ones)
-0x10       4          i32 entryPointsSet                        # (by use) set once its three GL entry points are looked up (+0x14 .. +0x1c)
+0x10       4          i32 entryPointsSet                        # (by use) set once its three GL entry points are looked up (+0x14 .. +0x1c); written, never read
 0x20       0x3000     i32 materialOrder[3072]                   # the materials in the order first queued (materialCount of them)
 0x3024     4          i32 materialCount
 0x3028     0x3004     u8 *materialHeads[3073]                    # per material: its first queued entry (0: none yet)
@@ -764,7 +764,7 @@ struct ViewVolume 0x9170                                        # the view volum
 0x9078     4          i32 quadOrderACount
 0x907c     4          u8 *quadOrderB                            # ... of kind 3
 0x9080     4          i32 quadOrderBCount
-0x9084     4          i32 segmentLimit                          # the objects' segments (0x24 bytes each)
+0x9084     4          i32 segmentLimit                          # the objects' segments (0x24 bytes each); written, never read
 0x9088     4          u8 *segments
 0x908c     4          i32 segmentCount
 0x9090     4          i32 entriesFull                           # 1: a list overflowed (what did not fit is left out)
@@ -888,7 +888,7 @@ struct TexRecord 0x68                                           # a texture mana
 0x40       4          i32 slot                                   # (by use) its slot in the GL texture cache (TextureManager.slots; -1: not cached)
 0x44       4          u32 flags
 0x48       0x18       float colours[6]                          # two hue / saturation / value sets
-0x60       4          i32 animation                              # (by use) the name's suffix: "_ANI" 1, "_ANI0" .. "_ANI3" 1 .. 4, else 0
+0x60       4          i32 animation                              # (by use) the name's suffix: "_ANI" 1, "_ANI0" .. "_ANI3" 1 .. 4, else 0; written, never read
 0x64       4          i32 changed                                # 1: recoloured (tex_recolourMaterial; its image made again)
 
 struct TexSlot 0x14                                             # a slot of a texture manager's GL texture cache (names.c tex_bind)
@@ -918,8 +918,8 @@ struct TextureManager 0xcd144                                   # a texture mana
 0xcd130    4          i32 slotCount                             # at most 0x200
 0xcd134    4          u8 *oldest                                # the slot to reuse next
 0xcd138    4          i32 loadCount                              # (by use) textures loaded into the cache (tex_bind)
-0xcd13c    4          i32 counterB
-0xcd140    4          i32 counterC
+0xcd13c    4          i32 counterB                              # written, never read
+0xcd140    4          i32 counterC                              # written, never read
 
 struct GroundLayer 0x20c                                        # a layer of the ground (Stage.groundLayers; map_info.c, shading.c): a height grid read from the map, drawn as strips
 0          4          i32 kind                                   # (by use) 0, 1, 2: its draw records' first word 0, 8, 6 (stage_buildMeshDrawRecords)
@@ -997,7 +997,7 @@ struct BmpFile 0x48                                             # an uncompresse
 0          4          u32 vtable
 4          4          void *file                                 # open (none: 0)
 8          2          u16 type                                   # its BITMAPFILEHEADER ("BM")
-0xa        4          u32 fileSize
+0xa        4          u32 fileSize                              # written, never read
 0x12       4          i32 dataOffset                             # where its pixels start
 0x16       4          u32 infoSize                               # its BITMAPINFOHEADER
 0x1a       4          i32 bmpWidth
@@ -1093,7 +1093,7 @@ struct TimeSync 0x38                                            # a frame timer 
 8          4          i32 frames                                 # frames counted towards the next second
 0xc        8          u64 frequency                              # the counter's
 0x14       8          u64 lastCount                              # its reading at the last frame
-0x1c       8          int64_t rise                               # the last frame's rise
+0x1c       8          int64_t rise                               # the last frame's rise; written, never read
 0x24       8          int64_t riseSum                            # the rises summed (past a second: fps, then cleared)
 0x2c       4          float fps                                  # frames per second (0 for a sum not positive)
 0x30       4          float frameTime                            # the last frame's seconds, at most maxFrame
@@ -1125,8 +1125,8 @@ struct ScenePath 0x230                                          # (by use) the s
 struct Stage 0x2150443                                          # the stage: the scene's own object at Scene + 0x1f36c8 (STAGE()), "this" of the
 0x2148ed8  0x230      ScenePath scenePath                        # (by use) the scene-path player (a recording on: scene_loadPath)
 0x2149108  0x100      char pathSound[0x100]                      # (by use) a sound played with each path (scenePath\\<name>; empty: none)
-0xa0c      4          float viewDepth                            # (by use) the view distance's depth: -cullMargin x viewProjection[10] + viewProjection[14] (view_setDistance)
-4          4          i32 built                                  # (by use) 1: item_initTextures has built it
+0xa0c      4          float viewDepth                            # (by use) the view distance's depth: -cullMargin x viewProjection[10] + viewProjection[14] (view_setDistance); written, never read
+4          4          i32 built                                  # (by use) 1: item_initTextures has built it; written, never read
 0x20f2f48  0x40       float lightMatrix[16]                      # (by use) an identity (item_initTextures): a faintly tinted actor's light (actor_updateAllParts)
 0x20f2f88  0x40       float litMatrix[16]                        # a 1.1 scale (the last element 1): the lit pass's (partList_queue)
 0x9ca0f4   0x2ee0     u32 nearObjects[1000][3]                   # (by use) the map objects near a moving sphere (collision_moveActor): each its unit's planes (SpaceUnit.lastNode), relMatrix and relInverse - space_testSphere's sub-models
@@ -1135,9 +1135,9 @@ struct Stage 0x2150443                                          # the stage: the
 0x208      0x100      char textureDir[0x100]
 0x308      0x100      char shapeDir[0x100]
 0x408      0x100      char skeletonDir[0x100]
-0x508      0x100      char actorDir[0x100]
-0x608      0x100      char bulletDir[0x100]
-0x708      0x100      char effectDir[0x100]
+0x508      0x100      char actorDir[0x100]                      # written, never read
+0x608      0x100      char bulletDir[0x100]                     # written, never read
+0x708      0x100      char effectDir[0x100]                     # written, never read
 0x808      0x100      char sceneDir[0x100]
 0xb04      0x9c95f0   u8 spaceData[0x9c95f0]                     # (by use) the collision space's block (space_initBy on +0xa10)
 0xdc0ac4   0x200      u8 layerParts[0x200]                       # (by use) layerModel's parts
@@ -1185,9 +1185,9 @@ struct Stage 0x2150443                                          # the stage: the
 0x9ef0a0   8          i32 layerTurns[2]                          # (by use) the layers' scroll: whole turns (layerScroll the part)
 0x9ef900   4          float floorClock                           # (by use) the floor's animation clock (floorFrame steps at each turn)
 0x20f2fc8  0x40       float baseMatrix[16]                       # (by use) the stage's identity matrix (stage_resetMatrixAndPoints)
-0x20f3008  4          i32 pointCount
+0x20f3008  4          i32 pointCount                            # written, never read
 0x20f300c  0x960      float points[200][3]                       # at the origin until set
-0x20f396c  4          u32 defaultColour
+0x20f396c  4          u32 defaultColour                         # written, never read
 0x2148c50  0x280      i32 scriptEvents[32][5]                    # (by use) the script's event ring (script_pushEvent: a, b, c, d, d)
 0x2148ed0  4          i32 eventHead                              # events pushed (the ring's next: % 32)
 0x2148ed4  4          i32 eventTail                              # the oldest kept (moved on when the ring is full)
@@ -1259,7 +1259,7 @@ struct Stage 0x2150443                                          # the stage: the
 0x202e8cc  4          i32 actorFreeHint                          # (by use) the lowest free actor slot
 0x202e8d0  4          i32 actorSerial                            # the next actor's id
 0x202e8e0  4          i32 cameraTarget                           # (by use) the actor the camera follows (-1 none; camera_setTarget)
-0x202e8e4  4          i32 cameraTargetMode
+0x202e8e4  4          i32 cameraTargetMode                      # written, never read
 0x202e8ec  4          i32 teamsChanged                           # (by use) 1: an actor joined or changed team
 0x202ea80  0x190      float lockWarnings[100]                    # (by use) per actor: the lock-on warnings, sorted longest first for the local player
 0x20a99b4  4          i32 bulletSlotsUsed                        # (by use) bullet slots up to the highest in use
@@ -1342,7 +1342,7 @@ struct TunnelRing 0x3538                                        # a ring of the 
 0x330c     4          float cageSpeed
 0x3310     0x210      Flare flares[6]
 0x3520     4          float alpha                               # the flares' alpha
-0x3524     4          i32 screenHeight                           # (by use) the screen height it was made for (intro_cameraPath)
+0x3524     4          i32 screenHeight                           # (by use) the screen height it was made for (intro_cameraPath); written, never read
 0x3528     4          i32 cells                                 # quads around each band (at most 200)
 0x3530     4          struct TunnelRing *back                   # the ring before
 0x3534     4          struct TunnelRing *next                   # the ring after (none: the last)
@@ -1386,7 +1386,7 @@ struct Scene 0x2343b0b                                          # the scene: the
 0x23431a3  4          i32 joinTeam
 0x23431a7  0x40       char joinName[0x40]                        # its mech's name
 0x23431e7  4          i32 joinPending
-0x23431eb  4          i32 changePlayer                           # kind 11: a player changed team (notice_changedTeam)
+0x23431eb  4          i32 changePlayer                           # kind 11: a player changed team (notice_changedTeam); written, never read
 0x23431ef  4          i32 changeTeam
 0x23431f3  0x40       char changeName[0x40]
 0x2343233  4          i32 changePending
@@ -1436,7 +1436,7 @@ struct Scene 0x2343b0b                                          # the scene: the
 0x23423b5  4          i32 endedByTime                            # (by use) the match ended on its time limit (else its score limit)
 0x23423c1  4          float startCount                           # (by use) "PREPARE THE BATTLE": seconds before the start (3)
 0x23423c5  4          i32 startCountShown                        # (by use) the count last shown (-1 none)
-0x233c9ec  4          i32 lastMissionWon                         # (by use) the last mission was won
+0x233c9ec  4          i32 lastMissionWon                         # (by use) the last mission was won; written, never read
 0x2343257  4          i32 mouseX                                 # (by use) the cursor this frame (g_mouseX), screen pixels
 0x234325b  4          i32 mouseY
 0x2343293  4          float mouseDy                              # (by use) the cursor's offset from the centre, scaled by the sensitivity; inverted by the setting
@@ -1482,7 +1482,7 @@ struct Scene 0x2343b0b                                          # the scene: the
 0x2340c88  4          float sendRate                             # packets a second
 0x2340c8c  4          float receiveRate
 0x2340c90  4          float windowTime                           # the window's seconds
-0x2340c94  4          float resendWarning                        # 1 when packets had to be sent again, running down
+0x2340c94  4          float resendWarning                        # 1 when packets had to be sent again, running down; written, never read
 0x2342395  4          float lostTime                               # (by use) a client's seconds without the server (over 5: the connection lost)
 0x2221f9c  4          i32 playerActor                           # = Stage.playerActor (the same word): the local player's actor slot; 0 at a solo game's first round
 0x23423c9  4          i32 geometryCheckTurn                           # (by use) the geometry table the next game packet checks (net_sendGamePacket: this % 5, then one on; 0 at a later round)

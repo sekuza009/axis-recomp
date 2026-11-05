@@ -540,7 +540,7 @@ void ptx_startBitReader(int v);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void messageBox_clickClose(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-void room_selectJoinedSession(void);
+void account_takeRank(void);
 /* RGBA colour globals at 0xa1f200..: four bytes or four floats each (0x3f800000 = 1.0, 0x3f000000 = 0.5) */
 static void set4b(DWORD a, BYTE r, BYTE g, BYTE b, BYTE al) { BYTE *p = (BYTE *)a; p[0] = r; p[1] = g; p[2] = b; p[3] = al; }
 static void set4d(DWORD a, DWORD x, DWORD y, DWORD z, DWORD w) { DWORD *p = (DWORD *)a; p[0] = x; p[1] = y; p[2] = z; p[3] = w; }
@@ -7133,7 +7133,7 @@ ST(ptx_startBitReader, g_a[0] = irnd(-99999, 99999); fill((void *)0xa61708, 4); 
    (CD(void, 0x46f090, int)(g_a[0]), 0), (ptx_startBitReader(g_a[0]), 0))
 V0(messageBox_clickClose, 0x445e10, g_mouseClick1 = irnd(0, 1) * irnd(-2, 2); g_mouseClick2 = irnd(0, 1) * irnd(-2, 2);
    fill((void *)0x4dda44, 4); fill((void *)0x4df900, 4);)
-V0(room_selectJoinedSession, 0x433610, *(BYTE *)0xa052c1 = (BYTE)(irnd(0, 1) ? irnd(0, 2) : irnd(0, 255)); fill((void *)0xa052d6, 4);
+V0(account_takeRank, 0x433610, *(BYTE *)0xa052c1 = (BYTE)(irnd(0, 1) ? irnd(0, 2) : irnd(0, 255)); fill((void *)0xa052d6, 4);
    fill((void *)0x9dd5e0, 4); fill((void *)0x9dd248, 4); fill((void *)0xa0b354, 4); fill((void *)0x9dd354, 4); fill((void *)0x9dd6d4, 4);)
 #define COLOURS fill((void *)0xa1f200, 0x100);
 V0(colour_initPackedBlue, 0x46dbf0, COLOURS) V0(colour_initPackedGrey, 0x46db30, COLOURS) V0(colour_initPackedYellow, 0x46dc20, COLOURS)
@@ -17205,7 +17205,7 @@ static const STest g_stests[] = {
 	/* batch 6 */
 	T(net_clearServerList, 0, 4, 0), T(net_clearRoomList, 0, 4, 0), T(net_clearPlayerList, 0, 4, 0), T(input_resetKeys, 0, 4, 0),
 	T(input_clearKeyTable2, 0, 4, 0), T(net_clearBuffers, 0, 4, 0), T(mapSelect_allOut, 0, 4, 0), T(armc_showPartsPage, 0, 4, 0),
-	T(armc_showColourPage, 0, 4, 0), T(ptx_startBitReader, 0, 8, 0), T(messageBox_clickClose, 0, 8, 0), T(room_selectJoinedSession, 0, 8, 0),
+	T(armc_showColourPage, 0, 4, 0), T(ptx_startBitReader, 0, 8, 0), T(messageBox_clickClose, 0, 8, 0), T(account_takeRank, 0, 8, 0),
 	T(colour_initPackedBlue, 0, 4, 0), T(colour_initPackedGrey, 0, 4, 0), T(colour_initPackedYellow, 0, 4, 0), T(colour_initPackedClear, 0, 4, 0),
 	T(colour_initPackedRed, 0, 4, 0), T(colour_initPackedWhite, 0, 4, 0), T(colour_initPackedBlack, 0, 4, 0), T(colour_initPackedGreen, 0, 4, 0),
 	T(colour_initRealClear, 0, 4, 0), T(colour_initRealBlue, 0, 4, 0), T(colour_initRealWhite, 0, 4, 0), T(colour_initRealGreen, 0, 4, 0),
@@ -18074,7 +18074,7 @@ static const struct { DWORD addr; void *fn; const char *name; } g_hooks3[] = {
 	{ 0x401780, (void *)input_clearKeyTable2, "input_clearKeyTable2" }, { 0x4515d0, (void *)net_clearBuffers, "net_clearBuffers" },
 	{ 0x440df0, (void *)mapSelect_allOut, "mapSelect_allOut" }, { 0x40f200, (void *)armc_showPartsPage, "armc_showPartsPage" },
 	{ 0x40f320, (void *)armc_showColourPage, "armc_showColourPage" }, { 0x46f090, (void *)ptx_startBitReader, "ptx_startBitReader" },
-	{ 0x445e10, (void *)messageBox_clickClose, "messageBox_clickClose" }, { 0x433610, (void *)room_selectJoinedSession, "room_selectJoinedSession" },
+	{ 0x445e10, (void *)messageBox_clickClose, "messageBox_clickClose" }, { 0x433610, (void *)account_takeRank, "account_takeRank" },
 	{ 0x46dbf0, (void *)colour_initPackedBlue, "colour_initPackedBlue" }, { 0x46db30, (void *)colour_initPackedGrey, "colour_initPackedGrey" },
 	{ 0x46dc20, (void *)colour_initPackedYellow, "colour_initPackedYellow" }, { 0x46dad0, (void *)colour_initPackedClear, "colour_initPackedClear" },
 	{ 0x46db90, (void *)colour_initPackedRed, "colour_initPackedRed" }, { 0x46db60, (void *)colour_initPackedWhite, "colour_initPackedWhite" },

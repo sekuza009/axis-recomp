@@ -9,3 +9,4 @@ arena_launchFromFile,armc_cameraStep
 console_init,match_enter
 setup_crosshairScreen,setup_drawControlsPage
 setup_frameCrosshairPage,setup_frameControlsPage
+room_selectJoinedSession,account_takeRank
