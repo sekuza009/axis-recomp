@@ -249,7 +249,7 @@ void (ranking_fillPage)(void)
 		RankRow *row = &rows[i];
 		row->rank = 0;
 		memset(row->name, 0, 30);
-		row->exp = row->value2a = row->kills = row->deaths = 0;   /* (power is left as it was) */
+		row->exp = row->games = row->kills = row->deaths = 0;   /* (power is left as it was) */
 		BITS(row->rate) = 0;
 		row->level = 1;
 	}
@@ -266,7 +266,7 @@ void (ranking_fillPage)(void)
 		row->exp = player->exp;
 		BITS(row->power) = BITS(player->power);
 		BITS(row->rate) = BITS(player->rate);
-		row->value2a = player->value22;
+		row->games = player->games;
 		row->kills = player->kills;
 		row->deaths = player->deaths;
 		row->level = player->level;

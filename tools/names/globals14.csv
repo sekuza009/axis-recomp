@@ -36,10 +36,10 @@
 0x4d23d4,int,g_hangulVowelGlyph
 0x4d23dc,int,g_hangulTailGlyph
 # the pilot's record (see globals11): the server's and the kept copy
-0x9dd5f0,int,g_pilotLosses
-0x9dd5f4,float,g_pilotWinRate
-0x9dd24c,int,g_pilotRatingKept
-0x9dd258,int,g_pilotLossesKept
+0x9dd5f0,int,g_pilotDeaths
+0x9dd5f4,float,g_pilotKillRate
+0x9dd24c,int,g_pilotPowerKept
+0x9dd258,int,g_pilotDeathsKept
 # forms' windows (left, top, right, bottom)
 0x4dbb00,int,g_newArenaFormLeft
 0x4dbb04,int,g_newArenaFormTop

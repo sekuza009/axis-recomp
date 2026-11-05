@@ -1198,18 +1198,24 @@ extern struct GameData g_data;
 #define g_keyboard (g_data.g_keyboard_)
 #undef g_keyboardActive
 #define g_keyboardActive (*(int *)g_keyboardActive_v)
+#undef g_ladderDeaths
+#define g_ladderDeaths (*(int *)g_ladderDeaths_v)
 #undef g_ladderDns
 #define g_ladderDns ((char *)g_ladderDns_v)
 #undef g_ladderEmail
 #define g_ladderEmail ((char *)g_data.g_ladderEmail_)
+#undef g_ladderExp
+#define g_ladderExp (*(int *)g_ladderExp_v)
+#undef g_ladderGames
+#define g_ladderGames (*(int *)g_ladderGames_v)
 #undef g_ladderId
 #define g_ladderId ((char *)g_ladderId_v)
 #undef g_ladderIdCopy
 #define g_ladderIdCopy ((char *)g_ladderIdCopy_v)
+#undef g_ladderKills
+#define g_ladderKills (*(int *)g_ladderKills_v)
 #undef g_ladderLevel
 #define g_ladderLevel (*(int *)g_ladderLevel_v)
-#undef g_ladderLosses
-#define g_ladderLosses (*(int *)g_ladderLosses_v)
 #undef g_ladderMenuTextures
 #define g_ladderMenuTextures ((int *)g_ladderMenuTextures_v)
 #undef g_ladderName
@@ -1220,16 +1226,10 @@ extern struct GameData g_data;
 #define g_ladderPassword4 (*(int *)((u8 *)g_ladderId_v + 0x22))
 #undef g_ladderPassword8
 #define g_ladderPassword8 (*(int *)((u8 *)g_ladderId_v + 0x26))
-#undef g_ladderPoints
-#define g_ladderPoints (*(int *)g_ladderPoints_v)
 #undef g_ladderPort
 #define g_ladderPort (*(int *)g_ladderPort_v)
-#undef g_ladderRating
-#define g_ladderRating (*(int *)g_ladderRating_v)
-#undef g_ladderScore
-#define g_ladderScore (*(int *)g_ladderScore_v)
-#undef g_ladderWins
-#define g_ladderWins (*(int *)g_ladderWins_v)
+#undef g_ladderPower
+#define g_ladderPower (*(int *)g_ladderPower_v)
 #undef g_lanSearch
 #define g_lanSearch (*(int *)g_lanSearch_v)
 #undef g_language
@@ -1902,30 +1902,36 @@ extern struct GameData g_data;
 #define g_perfCounter (*(u32 *)g_perfCounter_v)
 #undef g_pilotChosen
 #define g_pilotChosen (*(int *)g_pilotChosen_v)
+#undef g_pilotDeaths
+#define g_pilotDeaths (*(int *)((u8 *)g_pilotStats_v + 0x18))
+#undef g_pilotDeathsKept
+#define g_pilotDeathsKept (*(int *)((u8 *)g_pilotStatsKept_v + 0x18))
+#undef g_pilotExp
+#define g_pilotExp (*(int *)((u8 *)g_pilotStats_v + 0x4))
+#undef g_pilotExpKept
+#define g_pilotExpKept (*(int *)((u8 *)g_pilotStatsKept_v + 0x4))
+#undef g_pilotGames
+#define g_pilotGames (*(int *)((u8 *)g_pilotStats_v + 0x10))
+#undef g_pilotGamesKept
+#define g_pilotGamesKept (*(int *)((u8 *)g_pilotStatsKept_v + 0x10))
+#undef g_pilotKillRate
+#define g_pilotKillRate (*(float *)((u8 *)g_pilotStats_v + 0x1c))
+#undef g_pilotKills
+#define g_pilotKills (*(int *)((u8 *)g_pilotStats_v + 0x14))
+#undef g_pilotKillsKept
+#define g_pilotKillsKept (*(int *)((u8 *)g_pilotStatsKept_v + 0x14))
 #undef g_pilotLevel
 #define g_pilotLevel (*(int *)((u8 *)g_pilotStats_v + 0x0))
 #undef g_pilotLevelKept
 #define g_pilotLevelKept (*(int *)((u8 *)g_pilotStatsKept_v + 0x0))
-#undef g_pilotLosses
-#define g_pilotLosses (*(int *)((u8 *)g_pilotStats_v + 0x18))
-#undef g_pilotLossesKept
-#define g_pilotLossesKept (*(int *)((u8 *)g_pilotStatsKept_v + 0x18))
 #undef g_pilotNoise
 #define g_pilotNoise ((u8 *)g_pilotNoise_v)
-#undef g_pilotPoints
-#define g_pilotPoints (*(int *)((u8 *)g_pilotStats_v + 0x4))
-#undef g_pilotPointsKept
-#define g_pilotPointsKept (*(int *)((u8 *)g_pilotStatsKept_v + 0x4))
+#undef g_pilotPower
+#define g_pilotPower (*(int *)((u8 *)g_pilotStats_v + 0xc))
+#undef g_pilotPowerKept
+#define g_pilotPowerKept (*(int *)((u8 *)g_pilotStatsKept_v + 0xc))
 #undef g_pilotRank
 #define g_pilotRank (*(int *)((u8 *)g_pilotStats_v + 0x8))
-#undef g_pilotRating
-#define g_pilotRating (*(int *)((u8 *)g_pilotStats_v + 0xc))
-#undef g_pilotRatingKept
-#define g_pilotRatingKept (*(int *)((u8 *)g_pilotStatsKept_v + 0xc))
-#undef g_pilotScore
-#define g_pilotScore (*(int *)((u8 *)g_pilotStats_v + 0x10))
-#undef g_pilotScoreKept
-#define g_pilotScoreKept (*(int *)((u8 *)g_pilotStatsKept_v + 0x10))
 #undef g_pilotSelectBottom
 #define g_pilotSelectBottom (*(int *)g_pilotSelectBottom_v)
 #undef g_pilotSelectLeft
@@ -1940,12 +1946,6 @@ extern struct GameData g_data;
 #define g_pilotStats ((int *)g_pilotStats_v)
 #undef g_pilotStatsKept
 #define g_pilotStatsKept ((int *)g_pilotStatsKept_v)
-#undef g_pilotWinRate
-#define g_pilotWinRate (*(float *)((u8 *)g_pilotStats_v + 0x1c))
-#undef g_pilotWins
-#define g_pilotWins (*(int *)((u8 *)g_pilotStats_v + 0x14))
-#undef g_pilotWinsKept
-#define g_pilotWinsKept (*(int *)((u8 *)g_pilotStatsKept_v + 0x14))
 #undef g_pingDataEvent
 #define g_pingDataEvent (*(void * *)g_pingDataEvent_v)
 #undef g_pingStopEvent

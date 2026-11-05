@@ -178,7 +178,7 @@ void THISCALL (script_processTriggers)(u8 *s)
 }
 
 /* 0x49d150 (thiscall on the scene): the local player (none when negative): its kills, deaths and score since they
-   were last counted (killsCounted, deathsCounted, startPoints) added to the title's wins, losses and points, and
+   were last counted (killsCounted, deathsCounted, startPoints) added to the Ladder record's kills, deaths and exp, and
    counted; while the match is not being left (matchLeaving 0) the
    room's text kept (ladder_sendRecord); scoreCommitTimer 300. Its callers ignore the eax it leaves */
 void THISCALL (profile_addMatchScores)(u8 *s)
@@ -186,9 +186,9 @@ void THISCALL (profile_addMatchScores)(u8 *s)
 	Scene *sc = (Scene *)s;
 	if (sc->localPlayer >= 0) {
 		Player *me = &sc->players[sc->localPlayer];
-		g_ladderWins += me->kills - me->killsCounted;
-		g_ladderLosses += me->deaths - me->deathsCounted;
-		g_ladderPoints += me->score - me->startPoints;
+		g_ladderKills += me->kills - me->killsCounted;
+		g_ladderDeaths += me->deaths - me->deathsCounted;
+		g_ladderExp += me->score - me->startPoints;
 		me->killsCounted = me->kills;
 		me->deathsCounted = me->deaths;
 		me->startPoints = me->score;

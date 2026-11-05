@@ -2026,7 +2026,7 @@ void THISCALL (match_frame)(u8 *s)
 			} else {
 				/* the next round */
 				if (SC->ladderGame == 1) {
-					g_ladderScore++;
+					g_ladderGames++;
 					profile_addMatchScores(sc);
 				}
 				scene_resetScores(sc);
@@ -2226,7 +2226,7 @@ void THISCALL (match_frame)(u8 *s)
 			SC->matchOver = 0;
 			replay_closeRecording(sc);
 			if (SC->ladderGame == 1) {
-				g_ladderScore++;
+				g_ladderGames++;
 				profile_addMatchScores(sc);
 			}
 			for (int i = 0; i < SCENE_STAGE(s)->itemCount; i++)

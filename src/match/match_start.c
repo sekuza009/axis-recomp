@@ -64,15 +64,15 @@ static void make_rotation(Scene *s)
 }
 
 /* the first round: a Ladder game (the game room's: g_matchMode 2; the scores committed every 300 s, a game counted at
-   g_ladderScore), the rotation, the limits, the mech (its name g_matchPlayerName, value, parts, items and the five colour sets),
-   the room's level (from its points g_ladderPoints; outside 1 .. 20 fatal); then a network host makes its player 0, a
+   g_ladderGames), the rotation, the limits, the mech (its name g_matchPlayerName, value, parts, items and the five colour sets),
+   the room's level (from its points g_ladderExp; outside 1 .. 20 fatal); then a network host makes its player 0, a
    machine that joined has none yet, and a solo game makes player 0 with rotation on (g_mapRotation) */
 static void first_round(Scene *s)
 {
 	s->ladderGame = g_matchMode == 2;
 	if (s->ladderGame == 1) {
 		BITS(s->scoreCommitTimer) = 0x43960000;   /* 300 */
-		g_ladderScore++;
+		g_ladderGames++;
 		s->showExp = 1;
 	} else
 		s->showExp = 0;
@@ -84,7 +84,7 @@ static void first_round(Scene *s)
 	strcpy(s->mechName, g_matchPlayerName);
 	s->pilotLevel = g_selectedPilotLevel;
 	if (s->ladderGame == 1) {
-		s->levelPoints = g_ladderPoints;
+		s->levelPoints = g_ladderExp;
 		s->level = actor_levelFromValue(s->levelPoints);
 		if (s->level < 1 || s->level > 20)
 			sys_fatalError((char *)OBJ(g_logConsole), (const char *)STR(0x4d0710, "incorrect level(%d) - processGameMode..."), s->level);

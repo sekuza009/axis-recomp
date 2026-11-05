@@ -1695,29 +1695,29 @@ extern u8 g_watchChatOpen_v[4];
 extern u8 g_ladderLevel_v[4];
 #endif
 #ifdef AXIS_FENCE
-#define g_ladderPoints_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0x2b0000 : g_fence + 0x2afffc))
+#define g_ladderExp_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0x2b0000 : g_fence + 0x2afffc))
 #else
-extern u8 g_ladderPoints_v[4];
+extern u8 g_ladderExp_v[4];
 #endif
 #ifdef AXIS_FENCE
-#define g_ladderRating_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0x2b2000 : g_fence + 0x2b1ffc))
+#define g_ladderPower_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0x2b2000 : g_fence + 0x2b1ffc))
 #else
-extern u8 g_ladderRating_v[4];
+extern u8 g_ladderPower_v[4];
 #endif
 #ifdef AXIS_FENCE
-#define g_ladderScore_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0x2b4000 : g_fence + 0x2b3ffc))
+#define g_ladderGames_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0x2b4000 : g_fence + 0x2b3ffc))
 #else
-extern u8 g_ladderScore_v[4];
+extern u8 g_ladderGames_v[4];
 #endif
 #ifdef AXIS_FENCE
-#define g_ladderWins_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0x2b6000 : g_fence + 0x2b5ffc))
+#define g_ladderKills_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0x2b6000 : g_fence + 0x2b5ffc))
 #else
-extern u8 g_ladderWins_v[4];
+extern u8 g_ladderKills_v[4];
 #endif
 #ifdef AXIS_FENCE
-#define g_ladderLosses_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0x2b8000 : g_fence + 0x2b7ffc))
+#define g_ladderDeaths_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0x2b8000 : g_fence + 0x2b7ffc))
 #else
-extern u8 g_ladderLosses_v[4];
+extern u8 g_ladderDeaths_v[4];
 #endif
 #ifdef AXIS_FENCE
 #define g_dikMouse1_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0x2ba000 : g_fence + 0x2b9ffc))

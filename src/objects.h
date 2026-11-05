@@ -4,7 +4,7 @@
 #pragma once
 #define g_chatLine ((char *)IMG(0x9dc92c))   /* char[1024]; the chat line being typed (memset 0x400) */
 #define g_ladderId ((char *)IMG(0x9dd570))   /* char[54]; the Ladder login: the ID (30 bytes; the registry's "Name", default "AxisPlayer"), then its password at +0x1e (g_ladderPassword; 12 at most), up to the registry's e-mail copy at 0x9dd5a6 */
-#define g_ladderName ((char *)IMG(0x4de700))   /* char[30]; the logged-in pilot's Ladder record: the ID, then from +0x1e its level, points, rating, score, wins and losses (g_ladderLevel ..) */
+#define g_ladderName ((char *)IMG(0x4de700))   /* char[30]; the logged-in pilot's Ladder record: the ID, then from +0x1e its level, exp, power, games, kills and losses (g_ladderLevel ..) */
 #define g_accountForm ((u8 *)IMG(0x9dd1d8))   /* u8[94]; the account / Ladder login / new-ID forms' fields: the name (+0; 30); the password (+0x1e; 12); its repeat (+0x2a; 12); the e-mail (+0x36; 40). One clear of 0x54 bytes spans the fields and copies run on from the name: one record */
 #define g_accountName ((char *)(g_accountForm + 0))
 #define g_accountPassword ((char *)(g_accountForm + 0x1e))
@@ -173,7 +173,7 @@
 #define g_soundEdited ((int *)IMG(0x4dde98))   /* int[4]; the sound tab's four values being edited: the volume (g_volumeSetting) */
 #define g_newArenaForm ((int *)IMG(0x4dbb00))   /* int[4]; the create-arena form's window: left (g_newArenaFormLeft) */
 #define g_pilotStats ((int *)IMG(0x9dd5d8))   /* int[8]; the pilot's record from the server: level (g_pilotLevel) */
-#define g_pilotStatsKept ((int *)IMG(0x9dd240))   /* int[8]; the pilot's record as kept: level (g_pilotLevelKept) .. losses */
+#define g_pilotStatsKept ((int *)IMG(0x9dd240))   /* int[8]; the pilot's record as kept: level (g_pilotLevelKept) .. deaths */
 #define g_roomForm ((int *)IMG(0x9dd1b8))   /* int[4]; the game room settings form's window: left (g_roomFormLeft) */
 #define g_roomLookKept ((float *)IMG(0x9dd918))   /* float[3]; the room camera's look-at point kept for the slide (g_roomSlideNearX .. Z; menu_tunnel's LOOK_KEPT) */
 #define g_roomEyeKept ((float *)IMG(0x9dd930))   /* float[3]; the room camera's position kept for the slide (g_roomSlideFarX .. Z; menu_tunnel's EYE_KEPT) */

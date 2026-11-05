@@ -318,8 +318,8 @@ struct Player 0x8888                                            # a player's rec
 0xd8       4          i32 inPlay                                # 1: the slot holds a fielded mech (actor_setupFromParts); 0 when reset, cleared with the scores or a spectator. Spectating follows only these; bots spawn while the local player is
 0xe4       4          i32 kills
 0xe8       4          i32 deaths
-0xf0       4          i32 killsCounted                           # kills already added to the title's wins (profile_addMatchScores); cleared with the scores
-0xf4       4          i32 deathsCounted                          # deaths already added to the title's losses
+0xf0       4          i32 killsCounted                           # kills already added to the Ladder record's (g_ladderKills; profile_addMatchScores); cleared with the scores
+0xf4       4          i32 deathsCounted                          # deaths already added to the Ladder record's (g_ladderDeaths)
 0xfc       4          i32 timePlayed                            # seconds
 0x100      4          float timeExtra                           # (by use) added to timePlayed when a team's leader is picked; cleared with the scores
 0x10c      4          i32 player                                 # (by use) the player record it belongs to (stride 0x47fd2; -1 none); the ranking shows that player's flag (unless Scene.network)
@@ -678,7 +678,7 @@ struct RankedPlayer 0x3e                                         # a player of t
                                                                  # kept in g_netPlayerList, eleven of them, by net_addPlayerRecord)
 0          0x1e       char name[30]
 0x1e       4          i32 kind                                   # the reply's kind: 0 a player (added), 1 refused
-0x22       4          i32 value22                               # not shown, only copied to RankRow.value2a; DServer (axis_server.py) sends it as its account's 'a' (1)
+0x22       4          i32 games                                 # Ladder games played (the account's; DServer keeps it as 'a'); not shown, copied to RankRow.games
 0x26       4          i32 kills                                  # the columns of the ranking table (RankRow)
 0x2a       4          i32 deaths
 0x2e       4          i32 exp
@@ -690,7 +690,7 @@ struct RankRow 0x44                                              # a row of the 
 4          4          i32 rank                                   # its place (the row before's when its sorted value is the same)
 8          0x1e       char name[30]                              # (empty: past the list's end)
 0x26       4          i32 exp                                    # (sort 2)
-0x2a       4          i32 value2a                               # RankedPlayer.value22 (not shown); written, never read
+0x2a       4          i32 games                                 # RankedPlayer.games (not shown); written, never read
 0x2e       4          i32 kills                                  # (sort 1)
 0x32       4          i32 deaths
 0x36       4          float rate                                 # (sort 3)
@@ -732,22 +732,22 @@ struct GamePacket 0x40                                          # match packet k
 
 struct PlayerRecordPacket 0x36                                  # the player's Ladder record sent to the game server (g_netPlayerRecordPacket, packet 0x11: lobby_states.c record_send)
 0          0x1e       char name[0x1e]                            # the Ladder name (written only when asked)
-0x1e       4          i32 score
-0x22       4          i32 wins
-0x26       4          i32 losses
-0x2a       4          i32 points
+0x1e       4          i32 games                                 # Ladder games played (g_ladderGames)
+0x22       4          i32 kills
+0x26       4          i32 deaths
+0x2a       4          i32 exp   
 0x2e       4          i32 level                                  # actor_levelFromValue(points)
-0x32       4          float rating
+0x32       4          float power
 
 struct PilotStats 0x20                                          # a pilot's standing (g_pilotLevel .., kept as g_pilotLevelKept ..: lobby_states.c take_back)
 0          4          i32 level
-4          4          i32 points
+4          4          i32 exp   
 8          4          i32 rank                                  # its place in the ranking (message 29's reply +0x16; 0 out of the first 1000: the account panel shows OUT OF RANK(1000))
-0xc        4          i32 rating
-0x10       4          i32 score
-0x14       4          i32 wins
-0x18       4          i32 losses
-0x1c       4          float winRate
+0xc        4          i32 power
+0x10       4          i32 games                                 # Ladder games played
+0x14       4          i32 kills
+0x18       4          i32 deaths
+0x1c       4          float killRate
 
 struct SkirmishInfo 0x5c                                        # a skirmish map's play settings (g_skirmishInfo, 15 of them: read by files.c)
 0x4c       4          i32 gameMode                               # (by use) taken for the match (menu_records.c)

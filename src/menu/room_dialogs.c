@@ -828,8 +828,8 @@ static void rank_badge(int rank, int x, int y)
    seven for the record (MSG(367, "LEVEL")); four dark boxes with the name g_accountForm, three passwords as stars (g_accountOldPassword,
    g_accountPassword, g_accountPasswordRepeat; each left out while it is being typed in: g_editingOldPassword / g_editingAccountPassword / g_editingPasswordRepeat) and g_accountEmail (left
    out while g_editingEmail); the level g_pilotLevel with its rank badge (cell (level - 1) % 10, / 10 of the texture g_fontAscii),
-   the rank g_accountRank (MSG(374, "OUT OF RANK(1000)") when none), two ratios ("%.2f": g_pilotRating, g_pilotWinRate) and three counts (g_pilotWins,
-   g_pilotLosses, g_pilotPoints); two buttons (MSG(115, "$[0] O K"); 4 / 5 under the pointer by account_hitTest, lit unless g_textFieldOpen), a
+   the rank g_accountRank (MSG(374, "OUT OF RANK(1000)") when none), two ratios ("%.2f": g_pilotPower, g_pilotKillRate) and three counts (g_pilotKills,
+   g_pilotDeaths, g_pilotExp); two buttons (MSG(115, "$[0] O K"); 4 / 5 under the pointer by account_hitTest, lit unless g_textFieldOpen), a
    rule and the border. The original leaves eax to callers that ignore it */
 void (account_drawPanel)(void)
 {
@@ -897,11 +897,11 @@ void (account_drawPanel)(void)
 		itoa(g_accountRank, text, 10);
 		text_draw8(X0 + 0x98, Y0 + 0xd6, text);
 	}
-	sprintf(text, (const char *)STR(0x4b0268, "%.2f"), (double)(*(float *)&g_pilotRating));
+	sprintf(text, (const char *)STR(0x4b0268, "%.2f"), (double)(*(float *)&g_pilotPower));
 	text_draw8(X0 + 0x98, Y0 + 0xee, text);
-	sprintf(text, (const char *)STR(0x4b0268, "%.2f"), (double)g_pilotWinRate);
+	sprintf(text, (const char *)STR(0x4b0268, "%.2f"), (double)g_pilotKillRate);
 	text_draw8(X0 + 0x98, Y0 + 0x106, text);
-	static const u32 counts[3] = { ADDR(g_pilotWins), ADDR(g_pilotLosses), ADDR(g_pilotPoints) };
+	static const u32 counts[3] = { ADDR(g_pilotKills), ADDR(g_pilotDeaths), ADDR(g_pilotExp) };
 	for (int k = 0; k < 3; k++) {
 		itoa(GAME_VAR(int, counts[k]), text, 10);
 		text_draw8(X0 + 0x98, Y0 + 0x11e + k * 0x18, text);

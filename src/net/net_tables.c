@@ -538,7 +538,7 @@ int (net_addPlayerRecord)(const u8 *rec)
 	RankedPlayer *slot = &g_netPlayerList[i];
 	slot->deaths = from->deaths;
 	slot->kills = from->kills;
-	slot->value22 = from->value22;
+	slot->games = from->games;
 	slot->exp = from->exp;
 	BITS(slot->power) = BITS(from->power);
 	BITS(slot->rate) = BITS(from->rate);

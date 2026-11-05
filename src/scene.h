@@ -192,8 +192,8 @@ typedef struct Player {
 	i32 kills;   /* +0xe4 */
 	i32 deaths;   /* +0xe8 */
 	i32 score;   /* +0xec: shown top left */
-	i32 killsCounted;   /* +0xf0: kills already added to the title's wins (profile_addMatchScores); cleared with the scores */
-	i32 deathsCounted;   /* +0xf4: deaths already added to the title's losses */
+	i32 killsCounted;   /* +0xf0: kills already added to the Ladder record's (g_ladderKills; profile_addMatchScores); cleared with the scores */
+	i32 deathsCounted;   /* +0xf4: deaths already added to the Ladder record's (g_ladderDeaths) */
 	i32 startPoints;   /* +0xf8: the level points it started the match with (then the score already added to the */
 	i32 timePlayed;   /* +0xfc: seconds */
 	float timeExtra;   /* +0x100: (by use) added to timePlayed when a team's leader is picked; cleared with the scores */
@@ -770,7 +770,7 @@ typedef struct GameSettings {
 typedef struct RankedPlayer {
 	char name[30];   /* +0x0 */
 	i32 kind;   /* +0x1e: the reply's kind: 0 a player (added), 1 refused */
-	i32 value22;   /* +0x22: not shown, only copied to RankRow.value2a; DServer (axis_server.py) sends it as its account's 'a' (1) */
+	i32 games;   /* +0x22: Ladder games played (the account's; DServer keeps it as 'a'); not shown, copied to RankRow.games */
 	i32 kills;   /* +0x26: the columns of the ranking table (RankRow) */
 	i32 deaths;   /* +0x2a */
 	i32 exp;   /* +0x2e */
@@ -785,7 +785,7 @@ typedef struct RankRow {
 	i32 rank;   /* +0x4: its place (the row before's when its sorted value is the same) */
 	char name[30];   /* +0x8: (empty: past the list's end) */
 	i32 exp;   /* +0x26: (sort 2) */
-	i32 value2a;   /* +0x2a: RankedPlayer.value22 (not shown); written, never read */
+	i32 games;   /* +0x2a: RankedPlayer.games (not shown); written, never read */
 	i32 kills;   /* +0x2e: (sort 1) */
 	i32 deaths;   /* +0x32 */
 	float rate;   /* +0x36: (sort 3) */
@@ -833,24 +833,24 @@ typedef struct GamePacket {
 /* the player's Ladder record sent to the game server (g_netPlayerRecordPacket, packet 0x11: lobby_states.c record_send) */
 typedef struct PlayerRecordPacket {
 	char name[0x1e];   /* +0x0: the Ladder name (written only when asked) */
-	i32 score;   /* +0x1e */
-	i32 wins;   /* +0x22 */
-	i32 losses;   /* +0x26 */
-	i32 points;   /* +0x2a */
+	i32 games;   /* +0x1e: Ladder games played (g_ladderGames) */
+	i32 kills;   /* +0x22 */
+	i32 deaths;   /* +0x26 */
+	i32 exp;   /* +0x2a */
 	i32 level;   /* +0x2e: actor_levelFromValue(points) */
-	float rating;   /* +0x32 */
+	float power;   /* +0x32 */
 } PlayerRecordPacket;
 
 /* a pilot's standing (g_pilotLevel .., kept as g_pilotLevelKept ..: lobby_states.c take_back) */
 typedef struct PilotStats {
 	i32 level;   /* +0x0 */
-	i32 points;   /* +0x4 */
+	i32 exp;   /* +0x4 */
 	i32 rank;   /* +0x8: its place in the ranking (message 29's reply +0x16; 0 out of the first 1000: the account panel shows OUT OF RANK(1000)) */
-	i32 rating;   /* +0xc */
-	i32 score;   /* +0x10 */
-	i32 wins;   /* +0x14 */
-	i32 losses;   /* +0x18 */
-	float winRate;   /* +0x1c */
+	i32 power;   /* +0xc */
+	i32 games;   /* +0x10: Ladder games played */
+	i32 kills;   /* +0x14 */
+	i32 deaths;   /* +0x18 */
+	float killRate;   /* +0x1c */
 } PilotStats;
 
 /* a skirmish map's play settings (g_skirmishInfo, 15 of them: read by files.c) */
@@ -2528,7 +2528,7 @@ _Static_assert(offsetof(GameSettings, locked) == 0x2e && sizeof(((GameSettings *
 _Static_assert(sizeof(GameSettings) == 0x30, "scene.fields: size of GameSettings");
 _Static_assert(offsetof(RankedPlayer, name) == 0x0 && sizeof(((RankedPlayer *)0)->name) == 0x1e, "scene.fields: RankedPlayer.name");
 _Static_assert(offsetof(RankedPlayer, kind) == 0x1e && sizeof(((RankedPlayer *)0)->kind) == 0x4, "scene.fields: RankedPlayer.kind");
-_Static_assert(offsetof(RankedPlayer, value22) == 0x22 && sizeof(((RankedPlayer *)0)->value22) == 0x4, "scene.fields: RankedPlayer.value22");
+_Static_assert(offsetof(RankedPlayer, games) == 0x22 && sizeof(((RankedPlayer *)0)->games) == 0x4, "scene.fields: RankedPlayer.games");
 _Static_assert(offsetof(RankedPlayer, kills) == 0x26 && sizeof(((RankedPlayer *)0)->kills) == 0x4, "scene.fields: RankedPlayer.kills");
 _Static_assert(offsetof(RankedPlayer, deaths) == 0x2a && sizeof(((RankedPlayer *)0)->deaths) == 0x4, "scene.fields: RankedPlayer.deaths");
 _Static_assert(offsetof(RankedPlayer, exp) == 0x2e && sizeof(((RankedPlayer *)0)->exp) == 0x4, "scene.fields: RankedPlayer.exp");
@@ -2539,7 +2539,7 @@ _Static_assert(sizeof(RankedPlayer) == 0x3e, "scene.fields: size of RankedPlayer
 _Static_assert(offsetof(RankRow, rank) == 0x4 && sizeof(((RankRow *)0)->rank) == 0x4, "scene.fields: RankRow.rank");
 _Static_assert(offsetof(RankRow, name) == 0x8 && sizeof(((RankRow *)0)->name) == 0x1e, "scene.fields: RankRow.name");
 _Static_assert(offsetof(RankRow, exp) == 0x26 && sizeof(((RankRow *)0)->exp) == 0x4, "scene.fields: RankRow.exp");
-_Static_assert(offsetof(RankRow, value2a) == 0x2a && sizeof(((RankRow *)0)->value2a) == 0x4, "scene.fields: RankRow.value2a");
+_Static_assert(offsetof(RankRow, games) == 0x2a && sizeof(((RankRow *)0)->games) == 0x4, "scene.fields: RankRow.games");
 _Static_assert(offsetof(RankRow, kills) == 0x2e && sizeof(((RankRow *)0)->kills) == 0x4, "scene.fields: RankRow.kills");
 _Static_assert(offsetof(RankRow, deaths) == 0x32 && sizeof(((RankRow *)0)->deaths) == 0x4, "scene.fields: RankRow.deaths");
 _Static_assert(offsetof(RankRow, rate) == 0x36 && sizeof(((RankRow *)0)->rate) == 0x4, "scene.fields: RankRow.rate");
@@ -2576,21 +2576,21 @@ _Static_assert(offsetof(GamePacket, checkRow2) == 0x32 && sizeof(((GamePacket *)
 _Static_assert(offsetof(GamePacket, checkValue2) == 0x34 && sizeof(((GamePacket *)0)->checkValue2) == 0x4, "scene.fields: GamePacket.checkValue2");
 _Static_assert(sizeof(GamePacket) == 0x40, "scene.fields: size of GamePacket");
 _Static_assert(offsetof(PlayerRecordPacket, name) == 0x0 && sizeof(((PlayerRecordPacket *)0)->name) == 0x1e, "scene.fields: PlayerRecordPacket.name");
-_Static_assert(offsetof(PlayerRecordPacket, score) == 0x1e && sizeof(((PlayerRecordPacket *)0)->score) == 0x4, "scene.fields: PlayerRecordPacket.score");
-_Static_assert(offsetof(PlayerRecordPacket, wins) == 0x22 && sizeof(((PlayerRecordPacket *)0)->wins) == 0x4, "scene.fields: PlayerRecordPacket.wins");
-_Static_assert(offsetof(PlayerRecordPacket, losses) == 0x26 && sizeof(((PlayerRecordPacket *)0)->losses) == 0x4, "scene.fields: PlayerRecordPacket.losses");
-_Static_assert(offsetof(PlayerRecordPacket, points) == 0x2a && sizeof(((PlayerRecordPacket *)0)->points) == 0x4, "scene.fields: PlayerRecordPacket.points");
+_Static_assert(offsetof(PlayerRecordPacket, games) == 0x1e && sizeof(((PlayerRecordPacket *)0)->games) == 0x4, "scene.fields: PlayerRecordPacket.games");
+_Static_assert(offsetof(PlayerRecordPacket, kills) == 0x22 && sizeof(((PlayerRecordPacket *)0)->kills) == 0x4, "scene.fields: PlayerRecordPacket.kills");
+_Static_assert(offsetof(PlayerRecordPacket, deaths) == 0x26 && sizeof(((PlayerRecordPacket *)0)->deaths) == 0x4, "scene.fields: PlayerRecordPacket.deaths");
+_Static_assert(offsetof(PlayerRecordPacket, exp) == 0x2a && sizeof(((PlayerRecordPacket *)0)->exp) == 0x4, "scene.fields: PlayerRecordPacket.exp");
 _Static_assert(offsetof(PlayerRecordPacket, level) == 0x2e && sizeof(((PlayerRecordPacket *)0)->level) == 0x4, "scene.fields: PlayerRecordPacket.level");
-_Static_assert(offsetof(PlayerRecordPacket, rating) == 0x32 && sizeof(((PlayerRecordPacket *)0)->rating) == 0x4, "scene.fields: PlayerRecordPacket.rating");
+_Static_assert(offsetof(PlayerRecordPacket, power) == 0x32 && sizeof(((PlayerRecordPacket *)0)->power) == 0x4, "scene.fields: PlayerRecordPacket.power");
 _Static_assert(sizeof(PlayerRecordPacket) == 0x36, "scene.fields: size of PlayerRecordPacket");
 _Static_assert(offsetof(PilotStats, level) == 0x0 && sizeof(((PilotStats *)0)->level) == 0x4, "scene.fields: PilotStats.level");
-_Static_assert(offsetof(PilotStats, points) == 0x4 && sizeof(((PilotStats *)0)->points) == 0x4, "scene.fields: PilotStats.points");
+_Static_assert(offsetof(PilotStats, exp) == 0x4 && sizeof(((PilotStats *)0)->exp) == 0x4, "scene.fields: PilotStats.exp");
 _Static_assert(offsetof(PilotStats, rank) == 0x8 && sizeof(((PilotStats *)0)->rank) == 0x4, "scene.fields: PilotStats.rank");
-_Static_assert(offsetof(PilotStats, rating) == 0xc && sizeof(((PilotStats *)0)->rating) == 0x4, "scene.fields: PilotStats.rating");
-_Static_assert(offsetof(PilotStats, score) == 0x10 && sizeof(((PilotStats *)0)->score) == 0x4, "scene.fields: PilotStats.score");
-_Static_assert(offsetof(PilotStats, wins) == 0x14 && sizeof(((PilotStats *)0)->wins) == 0x4, "scene.fields: PilotStats.wins");
-_Static_assert(offsetof(PilotStats, losses) == 0x18 && sizeof(((PilotStats *)0)->losses) == 0x4, "scene.fields: PilotStats.losses");
-_Static_assert(offsetof(PilotStats, winRate) == 0x1c && sizeof(((PilotStats *)0)->winRate) == 0x4, "scene.fields: PilotStats.winRate");
+_Static_assert(offsetof(PilotStats, power) == 0xc && sizeof(((PilotStats *)0)->power) == 0x4, "scene.fields: PilotStats.power");
+_Static_assert(offsetof(PilotStats, games) == 0x10 && sizeof(((PilotStats *)0)->games) == 0x4, "scene.fields: PilotStats.games");
+_Static_assert(offsetof(PilotStats, kills) == 0x14 && sizeof(((PilotStats *)0)->kills) == 0x4, "scene.fields: PilotStats.kills");
+_Static_assert(offsetof(PilotStats, deaths) == 0x18 && sizeof(((PilotStats *)0)->deaths) == 0x4, "scene.fields: PilotStats.deaths");
+_Static_assert(offsetof(PilotStats, killRate) == 0x1c && sizeof(((PilotStats *)0)->killRate) == 0x4, "scene.fields: PilotStats.killRate");
 _Static_assert(sizeof(PilotStats) == 0x20, "scene.fields: size of PilotStats");
 _Static_assert(offsetof(SkirmishInfo, gameMode) == 0x4c && sizeof(((SkirmishInfo *)0)->gameMode) == 0x4, "scene.fields: SkirmishInfo.gameMode");
 _Static_assert(offsetof(SkirmishInfo, timeLimit) == 0x50 && sizeof(((SkirmishInfo *)0)->timeLimit) == 0x4, "scene.fields: SkirmishInfo.timeLimit");

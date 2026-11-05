@@ -8,10 +8,10 @@
 # the pilot's network record: the server's copy (0x9dd5d8: level, points, clan, rating, ., wins, losses, win rate)
 # and the room's kept copy (0x9dd240, g_pilotLevelKept)
 0x9dd5d8,int,g_pilotLevel
-0x9dd5dc,int,g_pilotPoints
-0x9dd5ec,int,g_pilotWins
-0x9dd244,int,g_pilotPointsKept
-0x9dd254,int,g_pilotWinsKept
+0x9dd5dc,int,g_pilotExp
+0x9dd5ec,int,g_pilotKills
+0x9dd244,int,g_pilotExpKept
+0x9dd254,int,g_pilotKillsKept
 # the network
 0x9fd94c,int,g_netHostGone
 0xa0b37c,int,g_gameServerAnswer15

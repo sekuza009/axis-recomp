@@ -12,7 +12,7 @@
 0x4ded98,int,g_mouse2Down
 0x9dd900,int,g_chatLineDone
 # the pilot's record (see globals11)
-0x9dd5e4,int,g_pilotRating
+0x9dd5e4,int,g_pilotPower
 0x4de71e,int,g_ladderLevel
 # the ARM CENTER's camera: where it is and where it looks
 0x4df870,int,g_camPoint0X

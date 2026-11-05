@@ -39,5 +39,5 @@
 0x4def08,int,g_keyBackward
 0x4def10,int,g_keyStepLeft
 0x4def18,int,g_keyStepRight
-0x9dd5e8,int,g_pilotScore
-0x9dd250,int,g_pilotScoreKept
+0x9dd5e8,int,g_pilotGames
+0x9dd250,int,g_pilotGamesKept

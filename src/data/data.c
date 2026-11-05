@@ -351,11 +351,11 @@ u8 g_unusedArmcMoveWord_v[4] __attribute__((aligned(16)));   /* 0x4de6f0 */
 u8 g_unusedPostMatchFlag_v[4] __attribute__((aligned(16)));   /* 0x4de6f8 */
 u8 g_watchChatOpen_v[4] __attribute__((aligned(16)));   /* 0x4de6fc */
 u8 g_ladderLevel_v[4] __attribute__((aligned(16)));   /* 0x4de71e */
-u8 g_ladderPoints_v[4] __attribute__((aligned(16)));   /* 0x4de722 */
-u8 g_ladderRating_v[4] __attribute__((aligned(16)));   /* 0x4de726 */
-u8 g_ladderScore_v[4] __attribute__((aligned(16)));   /* 0x4de72a */
-u8 g_ladderWins_v[4] __attribute__((aligned(16)));   /* 0x4de72e */
-u8 g_ladderLosses_v[4] __attribute__((aligned(16)));   /* 0x4de732 */
+u8 g_ladderExp_v[4] __attribute__((aligned(16)));   /* 0x4de722 */
+u8 g_ladderPower_v[4] __attribute__((aligned(16)));   /* 0x4de726 */
+u8 g_ladderGames_v[4] __attribute__((aligned(16)));   /* 0x4de72a */
+u8 g_ladderKills_v[4] __attribute__((aligned(16)));   /* 0x4de72e */
+u8 g_ladderDeaths_v[4] __attribute__((aligned(16)));   /* 0x4de732 */
 u8 g_dikMouse1_v[4] __attribute__((aligned(16)));   /* 0x4de73c */
 u8 g_menuFramePhase_v[4] __attribute__((aligned(16)));   /* 0x4de740 */
 char g_serverAddressArg_v[1024] __attribute__((aligned(16)));   /* 0x4de748 */
@@ -1521,11 +1521,11 @@ const DataPiece g_splitObjects[] = {
 	{ 0x4de6f8, g_unusedPostMatchFlag_v, 4 },
 	{ 0x4de6fc, g_watchChatOpen_v, 4 },
 	{ 0x4de71e, g_ladderLevel_v, 4 },
-	{ 0x4de722, g_ladderPoints_v, 4 },
-	{ 0x4de726, g_ladderRating_v, 4 },
-	{ 0x4de72a, g_ladderScore_v, 4 },
-	{ 0x4de72e, g_ladderWins_v, 4 },
-	{ 0x4de732, g_ladderLosses_v, 4 },
+	{ 0x4de722, g_ladderExp_v, 4 },
+	{ 0x4de726, g_ladderPower_v, 4 },
+	{ 0x4de72a, g_ladderGames_v, 4 },
+	{ 0x4de72e, g_ladderKills_v, 4 },
+	{ 0x4de732, g_ladderDeaths_v, 4 },
 	{ 0x4de73c, g_dikMouse1_v, 4 },
 	{ 0x4de740, g_menuFramePhase_v, 4 },
 	{ 0x4de748, g_serverAddressArg_v, 1024 },

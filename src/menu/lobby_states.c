@@ -215,8 +215,8 @@ void (room_copyJoinedSettings)(void)
 	g_roomTimeLimit = g_roomRecTimeLimit;
 	memcpy((void *)OBJ(g_roomMechKept), (void *)OBJ(g_roomMech), 11);
 	memcpy((void *)OBJ(g_roomColoursKept), (void *)OBJ(g_roomColours), 0x90);
-	static const u32 copy[6][2] = { { ADDR(g_pilotLevelKept), ADDR(g_pilotLevel) }, { ADDR(g_pilotPointsKept), ADDR(g_pilotPoints) }, { (OBJ(g_pilotStatsKept) + 0x1c), ADDR(g_pilotWinRate) },
-	                                { ADDR(g_pilotWinsKept), ADDR(g_pilotWins) }, { ADDR(g_pilotLossesKept), ADDR(g_pilotLosses) }, { ADDR(g_pilotScoreKept), ADDR(g_pilotScore) } };
+	static const u32 copy[6][2] = { { ADDR(g_pilotLevelKept), ADDR(g_pilotLevel) }, { ADDR(g_pilotExpKept), ADDR(g_pilotExp) }, { (OBJ(g_pilotStatsKept) + 0x1c), ADDR(g_pilotKillRate) },
+	                                { ADDR(g_pilotKillsKept), ADDR(g_pilotKills) }, { ADDR(g_pilotDeathsKept), ADDR(g_pilotDeaths) }, { ADDR(g_pilotGamesKept), ADDR(g_pilotGames) } };
 	for (int k = 0; k < 6; k++)
 		GAME_VAR(int, copy[k][0]) = GAME_VAR(int, copy[k][1]);
 }
@@ -227,50 +227,50 @@ static void stats_copy(u32 dst, u32 src)
 	PilotStats *d = (PilotStats *)RELOC(dst);
 	const PilotStats *s = (const PilotStats *)RELOC(src);
 	d->level = s->level;
-	d->rating = s->rating;
-	BITS(d->winRate) = BITS(s->winRate);
-	d->losses = s->losses;
-	d->points = s->points;
-	d->wins = s->wins;
-	d->score = s->score;
+	d->power = s->power;
+	BITS(d->killRate) = BITS(s->killRate);
+	d->deaths = s->deaths;
+	d->exp = s->exp;
+	d->kills = s->kills;
+	d->games = s->games;
 }
 
 /* 0x41e390 (the pilot's record): the two copies of the pilot's record (the server's,
-   g_pilotLevel 0x9dd5d8, and the kept one, g_pilotLevelKept 0x9dd240: level, points, ., rating, ., wins, losses) made
-   the same when one's wins or points are past the other's, then each limited by the Ladder record's (g_ladderLevel) */
+   g_pilotLevel 0x9dd5d8, and the kept one, g_pilotLevelKept 0x9dd240: level, exp, ., power, ., kills, deaths) made
+   the same when one's kills or exp are past the other's, then each limited by the Ladder record's (g_ladderLevel) */
 void (pilotRecord_syncCopies)(void)
 {
 	int c5, a1, b1;   /* the values the original holds in registers where the branches meet */
-	if (g_pilotWins > g_pilotWinsKept || g_pilotPoints > g_pilotPointsKept) {
+	if (g_pilotKills > g_pilotKillsKept || g_pilotExp > g_pilotExpKept) {
 		stats_copy(ADDR(g_pilotLevel), ADDR(g_pilotLevelKept));
-		c5 = g_pilotWinsKept;
-		a1 = b1 = g_pilotPointsKept;
+		c5 = g_pilotKillsKept;
+		a1 = b1 = g_pilotExpKept;
 	} else {
-		c5 = g_pilotWins;
-		a1 = g_pilotPoints;
-		b1 = g_pilotPointsKept;
-		if (g_pilotWinsKept > c5 || b1 > a1) {
+		c5 = g_pilotKills;
+		a1 = g_pilotExp;
+		b1 = g_pilotExpKept;
+		if (g_pilotKillsKept > c5 || b1 > a1) {
 			stats_copy(ADDR(g_pilotLevelKept), ADDR(g_pilotLevel));
 			b1 = a1;
 		}
 	}
-	int e0 = g_ladderLevel, e1 = g_ladderPoints, e3 = g_ladderRating,
-	    e4 = g_ladderScore, e5 = g_ladderWins, e6 = g_ladderLosses;
+	int e0 = g_ladderLevel, e1 = g_ladderExp, e3 = g_ladderPower,
+	    e4 = g_ladderGames, e5 = g_ladderKills, e6 = g_ladderDeaths;
 	if (c5 > e5 || a1 > e1) {
 		g_pilotLevel = e0;
-		g_pilotPoints = e1;
-		g_pilotRating = e3;
-		g_pilotWins = e5;
-		g_pilotLosses = e6;
-		g_pilotScore = e4;
+		g_pilotExp = e1;
+		g_pilotPower = e3;
+		g_pilotKills = e5;
+		g_pilotDeaths = e6;
+		g_pilotGames = e4;
 	}
-	if (g_pilotWinsKept > e5 || b1 > e1) {
-		g_pilotPointsKept = e1;
+	if (g_pilotKillsKept > e5 || b1 > e1) {
+		g_pilotExpKept = e1;
 		g_pilotLevelKept = e0;
-		g_pilotRatingKept = e3;
-		g_pilotWinsKept = e5;
-		g_pilotLossesKept = e6;
-		g_pilotScoreKept = e4;
+		g_pilotPowerKept = e3;
+		g_pilotKillsKept = e5;
+		g_pilotDeathsKept = e6;
+		g_pilotGamesKept = e4;
 	}
 }
 
@@ -289,16 +289,16 @@ void (login_takeAccountRecord)(void)
 		if (!(GAME_VAR(float, OBJ(g_roomColours) + 0x8 + k * 0x18) >= k_0f))
 			GAME_VAR(int, OBJ(g_roomColours) + 0x8 + k * 0x18) = 0;
 	}
-	static const u32 rect[7][2] = { { ADDR(g_pilotLevel), (OBJ(g_netRecvRecord) + 0xef) }, { ADDR(g_pilotPoints), (OBJ(g_netRecvRecord) + 0xff) }, { ADDR(g_pilotRating), (OBJ(g_netRecvRecord) + 0x103) },
-	                                { ADDR(g_pilotWinRate), (OBJ(g_netRecvRecord) + 0x107) }, { ADDR(g_pilotWins), (OBJ(g_netRecvRecord) + 0xf7) }, { ADDR(g_pilotLosses), (OBJ(g_netRecvRecord) + 0xfb) },
-	                                { ADDR(g_pilotScore), (OBJ(g_netRecvRecord) + 0xf3) } };
+	static const u32 rect[7][2] = { { ADDR(g_pilotLevel), (OBJ(g_netRecvRecord) + 0xef) }, { ADDR(g_pilotExp), (OBJ(g_netRecvRecord) + 0xff) }, { ADDR(g_pilotPower), (OBJ(g_netRecvRecord) + 0x103) },
+	                                { ADDR(g_pilotKillRate), (OBJ(g_netRecvRecord) + 0x107) }, { ADDR(g_pilotKills), (OBJ(g_netRecvRecord) + 0xf7) }, { ADDR(g_pilotDeaths), (OBJ(g_netRecvRecord) + 0xfb) },
+	                                { ADDR(g_pilotGames), (OBJ(g_netRecvRecord) + 0xf3) } };
 	for (int k = 0; k < 7; k++)
 		GAME_VAR(int, rect[k][0]) = GAME_VAR(int, rect[k][1]);
 	room_copyJoinedSettings();
 	memset((void *)OBJ(g_ladderName), 0, 7 * 4 + 2);
 	strcpy(g_ladderName, g_ladderId);
-	static const u32 title[6][2] = { { ADDR(g_ladderLevel), ADDR(g_pilotLevel) }, { ADDR(g_ladderPoints), ADDR(g_pilotPoints) }, { ADDR(g_ladderWins), ADDR(g_pilotWins) },
-	                                 { ADDR(g_ladderLosses), ADDR(g_pilotLosses) }, { ADDR(g_ladderScore), ADDR(g_pilotScore) }, { ADDR(g_ladderRating), ADDR(g_pilotRating) } };
+	static const u32 title[6][2] = { { ADDR(g_ladderLevel), ADDR(g_pilotLevel) }, { ADDR(g_ladderExp), ADDR(g_pilotExp) }, { ADDR(g_ladderKills), ADDR(g_pilotKills) },
+	                                 { ADDR(g_ladderDeaths), ADDR(g_pilotDeaths) }, { ADDR(g_ladderGames), ADDR(g_pilotGames) }, { ADDR(g_ladderPower), ADDR(g_pilotPower) } };
 	for (int k = 0; k < 6; k++)
 		GAME_VAR(int, title[k][0]) = GAME_VAR(int, title[k][1]);
 	mech_unpackFromRecord();
@@ -330,14 +330,14 @@ u32 (newId_register)(void)
 	g_pilotLevelKept = 1;
 	g_pilotLevel = 1;
 	memset((void *)OBJ(g_ladderName), 0, 7 * 4 + 2);
-	static const u32 zero[] = { ADDR(g_pilotPoints), ADDR(g_pilotWins), ADDR(g_pilotLosses), ADDR(g_pilotScore), ADDR(g_pilotWinRate), ADDR(g_pilotPointsKept), ADDR(g_pilotWinsKept), ADDR(g_pilotLossesKept),
-	                            ADDR(g_pilotScoreKept), (OBJ(g_pilotStatsKept) + 0x1c) };
+	static const u32 zero[] = { ADDR(g_pilotExp), ADDR(g_pilotKills), ADDR(g_pilotDeaths), ADDR(g_pilotGames), ADDR(g_pilotKillRate), ADDR(g_pilotExpKept), ADDR(g_pilotKillsKept), ADDR(g_pilotDeathsKept),
+	                            ADDR(g_pilotGamesKept), (OBJ(g_pilotStatsKept) + 0x1c) };
 	for (unsigned k = 0; k < sizeof zero / sizeof zero[0]; k++)
 		GAME_VAR(int, zero[k]) = 0;
 	strcpy(g_ladderName, g_ladderId);
-	g_ladderRating = g_pilotRating;
+	g_ladderPower = g_pilotPower;
 	g_ladderLevel = 1;
-	static const u32 zero2[] = { ADDR(g_ladderPoints), ADDR(g_ladderWins), ADDR(g_ladderLosses), ADDR(g_ladderScore) };
+	static const u32 zero2[] = { ADDR(g_ladderExp), ADDR(g_ladderKills), ADDR(g_ladderDeaths), ADDR(g_ladderGames) };
 	for (int k = 0; k < 4; k++)
 		GAME_VAR(int, zero2[k]) = 0;
 	AccountPacket *record = (*(AccountPacket **)&g_accountPacket);
@@ -1400,47 +1400,47 @@ void (arenaGames_keys)(void)
 #undef busy
 }
 
-/* ---- the player's record (from g_ladderName: the name, +0x1e the level, +0x22 points, +0x26 rating, +0x2a g_ladderScore,
-   +0x2e wins, +0x32 losses) and its two kept copies (g_pilotLevel and g_pilotLevelKept: +0 level, +4 points, +0xc rating,
-   +0x10 g_ladderScore's value, +0x14 wins, +0x18 losses, +0x1c the win rate) ---- */
-#define R_POINTS g_ladderPoints
-#define R_RATING (*(float *)&g_ladderRating)
-#define R_SCORE g_ladderScore
-#define R_WINS g_ladderWins
-#define R_LOSSES g_ladderLosses
+/* ---- the player's record (from g_ladderName: the name, +0x1e the level, +0x22 exp, +0x26 power, +0x2a games played,
+   +0x2e kills, +0x32 deaths) and its two kept copies (PilotStats: g_pilotLevel and g_pilotLevelKept) ---- */
+#define R_EXP g_ladderExp
+#define R_POWER (*(float *)&g_ladderPower)
+#define R_GAMES g_ladderGames
+#define R_KILLS g_ladderKills
+#define R_DEATHS g_ladderDeaths
 
-/* the win rate in percent (as its float bits): 0 without games (and, when checked, with a total not above 0) */
-static u32 win_rate(int wins, int losses, int checked)
+/* the kill rate in percent (as its float bits): kills over kills + deaths; 0 without either (and, when checked, with a
+   total not above 0) */
+static u32 kill_rate(int kills, int deaths, int checked)
 {
-	if (!wins && !losses)
+	if (!kills && !deaths)
 		return 0;
-	int total = wins + losses;
+	int total = kills + deaths;
 	if (checked && total <= 0)
 		return 0;
-	float rate = f32(fmul_m((long double)wins, (const float *)ADDR(k_100f)) / (long double)total);   /* x 100 / total */
+	float rate = f32(fmul_m((long double)kills, (const float *)ADDR(k_100f)) / (long double)total);   /* x 100 / total */
 	return BITS(rate);
 }
 
-/* the rating: the rate x 0.01 x the points */
-static void rate_points(u32 rate)
+/* the power: the kill rate x 0.01 x the exp */
+static void power_from_rate(u32 rate)
 {
 	float r;
 	BITS(r) = rate;
-	R_RATING = f32(fmul_m(fld_m(&r), (const float *)ADDR(k_0_01f)) * (long double)R_POINTS);
+	R_POWER = f32(fmul_m(fld_m(&r), (const float *)ADDR(k_0_01f)) * (long double)R_EXP);
 }
 
-/* a kept copy taken back as the record, when the record's wins are more than 300 above it */
+/* a kept copy taken back as the record, when the record's kills are more than 300 above it */
 static u32 take_back(u32 kept, u32 rate)
 {
 	const PilotStats *k = &GAME_VAR(PilotStats, kept);
-	if (R_WINS <= k->wins + 300)
+	if (R_KILLS <= k->kills + 300)
 		return rate;
-	R_POINTS = k->points;
-	R_LOSSES = k->losses;
-	R_SCORE = k->score;
-	R_WINS = k->wins;
-	rate = win_rate(R_WINS, R_LOSSES, 0);
-	rate_points(rate);
+	R_EXP = k->exp;
+	R_DEATHS = k->deaths;
+	R_GAMES = k->games;
+	R_KILLS = k->kills;
+	rate = kill_rate(R_KILLS, R_DEATHS, 0);
+	power_from_rate(rate);
 	return rate;
 }
 
@@ -1451,48 +1451,48 @@ static void record_send(u32 rate, int name)
 	PlayerRecordPacket *packet = (PlayerRecordPacket *)g_netPlayerRecordPacket;
 	if (name)
 		strcpy(packet->name, g_ladderName);
-	packet->score = R_SCORE;
-	packet->wins = R_WINS;
-	packet->losses = R_LOSSES;
-	packet->points = R_POINTS;
-	packet->rating = f32(fld_m(&R_RATING));
-	packet->level = actor_levelFromValue(R_POINTS);
+	packet->games = R_GAMES;
+	packet->kills = R_KILLS;
+	packet->deaths = R_DEATHS;
+	packet->exp = R_EXP;
+	packet->power = f32(fld_m(&R_POWER));
+	packet->level = actor_levelFromValue(R_EXP);
 	static const u32 kept[2] = { ADDR(g_pilotLevel), ADDR(g_pilotLevelKept) };
 	for (int k = 0; k < 2; k++) {
-		GAME_VAR(int, kept[k] + offsetof(PilotStats, score)) = R_SCORE;
-		GAME_VAR(int, kept[k] + offsetof(PilotStats, wins)) = R_WINS;
-		GAME_VAR(int, kept[k] + offsetof(PilotStats, losses)) = R_LOSSES;
-		GAME_VAR(int, kept[k] + offsetof(PilotStats, points)) = R_POINTS;
-		GAME_VAR(int, kept[k] + offsetof(PilotStats, level)) = (signed char)actor_levelFromValue(R_POINTS);
-		GAME_VAR(u32, kept[k] + offsetof(PilotStats, winRate)) = rate;
-		GAME_VAR(u32, kept[k] + offsetof(PilotStats, rating)) = (*(u32 *)&R_RATING);
+		GAME_VAR(int, kept[k] + offsetof(PilotStats, games)) = R_GAMES;
+		GAME_VAR(int, kept[k] + offsetof(PilotStats, kills)) = R_KILLS;
+		GAME_VAR(int, kept[k] + offsetof(PilotStats, deaths)) = R_DEATHS;
+		GAME_VAR(int, kept[k] + offsetof(PilotStats, exp)) = R_EXP;
+		GAME_VAR(int, kept[k] + offsetof(PilotStats, level)) = (signed char)actor_levelFromValue(R_EXP);
+		GAME_VAR(u32, kept[k] + offsetof(PilotStats, killRate)) = rate;
+		GAME_VAR(u32, kept[k] + offsetof(PilotStats, power)) = (*(u32 *)&R_POWER);
 	}
 	net_send(0x11, 0x65);
 }
 
-/* 0x4327f0: the player's Ladder record (g_ladderName ..) checked and sent: the rating worked out from the win rate; a kept copy (g_pilotLevel,
-   then g_pilotLevelKept) taken back when the record's wins are more than 300 above it; the record sent and kept; then, when
-   the points are more than 150 a win, they are cut to 2 a win and the record is sent and kept again. The caller
+/* 0x4327f0: the player's Ladder record (g_ladderName ..) checked and sent: the power worked out from the kill rate; a kept copy (g_pilotLevel,
+   then g_pilotLevelKept) taken back when the record's kills are more than 300 above it; the record sent and kept; then, when
+   the exp is more than 150 a kill, it is cut to 2 a kill and the record is sent and kept again. The caller
    ignores the eax it leaves */
 void (ladder_checkAndSendRecord)(void)
 {
-	u32 rate = win_rate(R_WINS, R_LOSSES, 1);
-	rate_points(rate);
+	u32 rate = kill_rate(R_KILLS, R_DEATHS, 1);
+	power_from_rate(rate);
 	rate = take_back(ADDR(g_pilotLevel), rate);
 	rate = take_back(ADDR(g_pilotLevelKept), rate);
 	record_send(rate, 1);
-	if (R_WINS * 150 >= R_POINTS)
+	if (R_KILLS * 150 >= R_EXP)
 		return;
-	R_POINTS = R_WINS * 2;
-	rate = win_rate(R_WINS, R_LOSSES, 0);
-	rate_points(rate);
+	R_EXP = R_KILLS * 2;
+	rate = kill_rate(R_KILLS, R_DEATHS, 0);
+	power_from_rate(rate);
 	record_send(rate, 0);
 }
-#undef R_POINTS
-#undef R_RATING
-#undef R_SCORE
-#undef R_WINS
-#undef R_LOSSES
+#undef R_EXP
+#undef R_POWER
+#undef R_GAMES
+#undef R_KILLS
+#undef R_DEATHS
 
 /* ---- hosting under a name: the special rooms ---- */
 #define lstrcpyA(dst, src) IMPORT(0x4a911c, char *, char *, const char *)(dst, src)
