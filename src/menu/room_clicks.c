@@ -735,9 +735,9 @@ u32 (room_settingsAfterTyping)(void)
 }
 
 /* ---- the map preview box (panel at y P[0], x P[1]; the box 0x80 square from (x - 0x96, y + 0x50)): the preview
-   reloaded when asked (g_mapPreviewChanged), then either "custom" (0x4ad56c, yellow on a dark box) when the custom flag is
-   set or the preview texture g_mapPreviewTexture, and a yellow outline. Returns the outline call's eax ---- */
-static u32 map_preview_box(const int *panel, u32 custom, u32 reload)
+   reloaded when asked (g_mapPreviewChanged), then either "CUSTOM" (yellow on a dark box) while the map rotation
+   is on or the preview texture g_mapPreviewTexture, and a yellow outline. Returns the outline call's eax ---- */
+static u32 map_preview_box(const int *panel, u32 rotation, u32 reload)
 {
 #define X0 (panel[1] - 0x96)
 #define X1 (panel[1] - 0x16)
@@ -745,7 +745,7 @@ static u32 map_preview_box(const int *panel, u32 custom, u32 reload)
 #define Y1 (panel[0] + 0xd0)
 	if (g_mapPreviewChanged)
 		GAME_CDECL(reload, void, void)();
-	if (GAME_VAR(u8, custom)) {
+	if (GAME_VAR(u8, rotation)) {
 		Color4_set(g_rectColour, 0.0f, 0.0f, 0.0f, 0.4f);
 		menu_drawRect(X0, Y0, X1, Y1, 1);
 		Color4_set(g_textColour, 1.0f, 1.0f, 0.0f, 1.0f);
@@ -775,10 +775,10 @@ static u32 map_preview_box(const int *panel, u32 custom, u32 reload)
 #undef Y1
 }
 
-/* 0x43bde0: the game room's (panel g_roomFormTop, custom flag g_roomCustom, room_loadMapPreview); arena_drawCustomOption: the arena screen's
-   (g_newArenaFormTop, g_newArenaKind, arena_loadMapPreview) */
-u32 (room_drawCustomOption)(void) { return map_preview_box((const int *)ADDR(g_roomFormTop), ADDR(g_roomCustom), FN_ADDR(room_loadMapPreview, 0x43bcb0)); }
-u32 (arena_drawCustomOption)(void) { return map_preview_box((const int *)ADDR(g_newArenaFormTop), ADDR(g_newArenaKind), FN_ADDR(arena_loadMapPreview, 0x40b420)); }
+/* 0x43bde0: the game room's (panel g_roomFormTop, map rotation g_roomRotation, room_loadMapPreview); arena_drawMapPreview: the arena screen's
+   (g_newArenaFormTop, g_newArenaRotation, arena_loadMapPreview) */
+u32 (room_drawMapPreview)(void) { return map_preview_box((const int *)ADDR(g_roomFormTop), ADDR(g_roomRotation), FN_ADDR(room_loadMapPreview, 0x43bcb0)); }
+u32 (arena_drawMapPreview)(void) { return map_preview_box((const int *)ADDR(g_newArenaFormTop), ADDR(g_newArenaRotation), FN_ADDR(arena_loadMapPreview, 0x40b420)); }
 
 /* 0x43e7b0: the account page (room page 0; the room camera arrived (g_roomCameraMode 2), not page 99): with a message box only its
    frame; else the page (account_takeRank when g_accountNotice, then account_drawPanel) and, once a field's typing has ended, the typed

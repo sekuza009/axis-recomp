@@ -5,8 +5,8 @@
 0x9f1a04,int,g_profileMechLeg
 0x9f1a08,int,g_profileMechBooster
 # the room settings record's custom flag and the room's copies of the record's bytes
-0x5b1b52,u8,g_roomRecCustom
-0x4df9ea,u8,g_roomCustom
+0x5b1b52,u8,g_roomRecRotation
+0x4df9ea,u8,g_roomRotation
 0x4df9e9,u8,g_roomPlayers
 0x67ef18,void *,g_hInstance
 0x4ded18,void *,g_mainWindow   # promoted from app/loading.c (name_globals.py --reuse)

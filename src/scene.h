@@ -658,7 +658,7 @@ typedef struct ServerRecord {
 	signed char gameMode;   /* +0x46 */
 	u8 fragLimit;   /* +0x47 */
 	u8 timeLimit;   /* +0x48 */
-	signed char rotation;   /* +0x49: (the arena's custom flag) */
+	signed char rotation;   /* +0x49: the arena's map rotation (GameSettings.rotation) */
 	u8 _pad000004a[0x8];
 	u8 locked;   /* +0x52 */
 	char password[8];   /* +0x53 */
@@ -676,7 +676,7 @@ typedef struct RoomRecord {
 	signed char gameMode;   /* +0x64 */
 	u8 fragLimit;   /* +0x65 */
 	u8 timeLimit;   /* +0x66 */
-	signed char rotation;   /* +0x67: (the room's custom rules flag) */
+	signed char rotation;   /* +0x67: the room's map rotation (GameSettings.rotation) */
 	u8 _pad0000068[0x8];
 	u8 locked;   /* +0x70 */
 	char password[8];   /* +0x71 */
@@ -758,7 +758,7 @@ typedef struct GameSettings {
 	char name[32];   /* +0x0 */
 	signed char map;   /* +0x20 */
 	signed char players;   /* +0x21 */
-	signed char kind;   /* +0x22: the room: custom rules (the map shown as CUSTOM); the arena: the kind of game */
+	signed char rotation;   /* +0x22: 1: map rotation on (the map list's maps in turn: the preview shows CUSTOM; the form's MAP ROTATION row) */
 	signed char mode;   /* +0x23 */
 	u8 limit[2];   /* +0x24: frag, time */
 	char password[8];   /* +0x26 */
@@ -2520,7 +2520,7 @@ _Static_assert(sizeof(AccountForm) == 0x5c, "scene.fields: size of AccountForm")
 _Static_assert(offsetof(GameSettings, name) == 0x0 && sizeof(((GameSettings *)0)->name) == 0x20, "scene.fields: GameSettings.name");
 _Static_assert(offsetof(GameSettings, map) == 0x20 && sizeof(((GameSettings *)0)->map) == 0x1, "scene.fields: GameSettings.map");
 _Static_assert(offsetof(GameSettings, players) == 0x21 && sizeof(((GameSettings *)0)->players) == 0x1, "scene.fields: GameSettings.players");
-_Static_assert(offsetof(GameSettings, kind) == 0x22 && sizeof(((GameSettings *)0)->kind) == 0x1, "scene.fields: GameSettings.kind");
+_Static_assert(offsetof(GameSettings, rotation) == 0x22 && sizeof(((GameSettings *)0)->rotation) == 0x1, "scene.fields: GameSettings.rotation");
 _Static_assert(offsetof(GameSettings, mode) == 0x23 && sizeof(((GameSettings *)0)->mode) == 0x1, "scene.fields: GameSettings.mode");
 _Static_assert(offsetof(GameSettings, limit) == 0x24 && sizeof(((GameSettings *)0)->limit) == 0x2, "scene.fields: GameSettings.limit");
 _Static_assert(offsetof(GameSettings, password) == 0x26 && sizeof(((GameSettings *)0)->password) == 0x8, "scene.fields: GameSettings.password");

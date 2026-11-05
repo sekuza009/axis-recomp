@@ -116,9 +116,9 @@ typedef struct { u32 vtable; void *banks[6]; i32 count; } TextureManager;   /* t
 #define text_draw8(x, y, text) GAME_FN(text_draw8, 0x402620, u32, int, int, const char *)(x, y, text)
 #define createArena_hitTest(x, y) GAME_FN(createArena_hitTest, 0x404520, int, int, int)(x, y)   /* the new-arena form: the item under (x, y), -1 none */
 #define arenaCreate_hitTest(x, y) GAME_FN(arenaCreate_hitTest, 0x4045a0, int, int, int)(x, y)   /* its "leave?" box: the button under (x, y) */
-#define arena_drawCustomOption(map) GAME_FN(arena_drawCustomOption, 0x40b550, u32, int)(map)   /* its map preview (the map passed, unused) */
+#define arena_drawMapPreview(map) GAME_FN(arena_drawMapPreview, 0x40b550, u32, int)(map)   /* its map preview (the map passed, unused) */
 #define roomSettings_hitTest(x, y) GAME_FN(roomSettings_hitTest, 0x432380, int, int, int)(x, y)   /* the room's settings form: the item under (x, y), -1 none */
-#define room_drawCustomOption(map) GAME_FN(room_drawCustomOption, 0x43bde0, u32, int)(map)   /* the room form's map preview (the map passed, unused) */
+#define room_drawMapPreview(map) GAME_FN(room_drawMapPreview, 0x43bde0, u32, int)(map)   /* the room form's map preview (the map passed, unused) */
 #define setup_unbindKey(key) GAME_FN(setup_unbindKey, 0x420e50, void, int)(key)   /* the key taken off the other bindings */
 #define controls_fillPrimaryKeys() GAME_FN(controls_fillPrimaryKeys, 0x421350, void, void)()
 #define game_setGameTypeFlags(scene, mode) GAME_THISFN(game_setGameTypeFlags, 0x4732f0, void, Stage *, int)(scene, mode)

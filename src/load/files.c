@@ -530,7 +530,7 @@ u32 (cfg_writeGraphic)(void *f)
 }
 
 /* 0x42c6f0: the server section of axis.cfg written from the player's record (g_playerName): the name (with an extra
-   line break by fprintf), the map and player count (signed bytes g_arenaMap / 41), customize on/off (g_arenaCustomize), the
+   line break by fprintf), the map and player count (signed bytes g_arenaMap / 41), customize on/off (g_arenaRotation), the
    game type (g_arenaGameType: 1 .. 14 by name, any other DEATH MATCH) and the game and time flags (bytes g_arenaFragLimit / 45).
    Returns the last fputs */
 u32 (cfg_writeServer)(void *f)
@@ -1132,7 +1132,7 @@ static int named(const char *value, const u32 *names, int count)
 #define IS_ON(value) (!strcmp((value), (const char *)STR(0x4b21bc, "ON")))
 
 /* 0x42da70: the server section read back: the server's name (words joined by spaces, cut once more; g_playerName),
-   the map (0 .. 21, else 0; g_arenaMap), the players (0 .. 16, else 8; g_arenaPlayers), a switch (ON; g_arenaCustomize), the game
+   the map (0 .. 21, else 0; g_arenaMap), the players (0 .. 16, else 8; g_arenaPlayers), a switch (ON; g_arenaRotation), the game
    type (TEAM DEATH MATCH 1 .. ACCEPT ADVANCED MODE 14, else 0; g_arenaGameType), two limits (above 250: 30; g_arenaFragLimit /
    g_arenaTimeLimit); then one more line */
 void (cfg_readServer)(void *f)
@@ -1158,7 +1158,7 @@ void (cfg_readServer)(void *f)
 			(*(signed char *)&g_arenaPlayers) = v < 0 || v > 0x10 ? 8 : v;
 			break;
 		case 3:
-			g_arenaCustomize = IS_ON(b.value);
+			g_arenaRotation = IS_ON(b.value);
 			break;
 		case 4:
 			str_dropLast(b.value);

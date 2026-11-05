@@ -586,7 +586,7 @@ struct ServerRecord 0x5b                                         # an arena as t
 0x46       1          signed char gameMode
 0x47       1          u8 fragLimit
 0x48       1          u8 timeLimit
-0x49       1          signed char rotation                       # (the arena's custom flag)
+0x49       1          signed char rotation                       # the arena's map rotation (GameSettings.rotation)
 0x52       1          u8 locked
 0x53       8          char password[8]
 
@@ -602,7 +602,7 @@ struct RoomRecord 0x79                                           # a game room a
 0x64       1          signed char gameMode
 0x65       1          u8 fragLimit
 0x66       1          u8 timeLimit
-0x67       1          signed char rotation                       # (the room's custom rules flag)
+0x67       1          signed char rotation                       # the room's map rotation (GameSettings.rotation)
 0x70       1          u8 locked
 0x71       8          char password[8]
 
@@ -668,7 +668,7 @@ struct GameSettings 0x30                                         # a game's sett
 0          0x20       char name[32]
 0x20       1          signed char map
 0x21       1          signed char players
-0x22       1          signed char kind                           # the room: custom rules (the map shown as CUSTOM); the arena: the kind of game
+0x22       1          signed char rotation                       # 1: map rotation on (the map list's maps in turn: the preview shows CUSTOM; the form's MAP ROTATION row)
 0x23       1          signed char mode
 0x24       2          u8 limit[2]                                # frag, time
 0x26       8          char password[8]

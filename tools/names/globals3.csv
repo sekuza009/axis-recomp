@@ -1,5 +1,5 @@
 # globals, batch 3 (address,type,name)
-0x4ded42,u8,g_arenaCustomize
+0x4ded42,u8,g_arenaRotation
 0x4dc878,int,g_savedMechParts
 0x4dcf18,int,g_savedMechWeapons
 0x4dcc58,int,g_mechChanged

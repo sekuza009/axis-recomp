@@ -1,19 +1,20 @@
 /* settings_form.c: the game settings form, as the game room shows it and as the arena screen shows it for a new
    arena: the window, a title, the labels down the left and each value in its box, the value under the pointer drawn
-   again with a shadow in yellow, the buttons, the map preview with its arrows and the custom rules button. Both
+   again with a shadow in yellow, the buttons, the map preview with its arrows and the ADVANCED button (the rotation's map list). Both
    forms show a GameSettings record (the room's at g_roomSettingsName, the new arena's at g_newArenaName) in the same boxes. */
 #include "../game.h"
 #include <string.h>
 
 /* where a form keeps its parts: the window (left, top, right, bottom), the record, the four "being edited" flags
-   (name, password, the two limits: each hides its value), the mode names (0x80 apart), and the text of the fifth row (the
-   settings' kind): fixed (kindFixed: the room's "DO NOT USE") or the kind's name (kindNames, 20 apart: the arena's) */
+   (name, password, the two limits: each hides its value), the mode names (0x80 apart), and the text of the fifth row (MAP
+   ROTATION, the settings' rotation): fixed (rotationFixed: the room's "DO NOT USE") or its OFF / ON name
+   (rotationNames, 20 apart: the arena's) */
 typedef struct {
 	u32 window;
 	GameSettings *s;
 	u32 edited[4];
 	u32 modes;
-	u32 kindFixed, kindNames;
+	u32 rotationFixed, rotationNames;
 	int stars;   /* the password's star buffer: 20 bytes (the room) or 10 (the arena) */
 } Form;
 
@@ -66,9 +67,9 @@ static const char *stars(const Form *f, char *out)
 
 static const char *map_name(const Form *f) { return (const char *)(OBJ(g_mapAbouts) + f->s->map * 0x50); }
 static const char *mode_name(const Form *f) { return (const char *)(RELOC(f->modes) + f->s->mode * 0x80); }
-static const char *kind_text(const Form *f)
+static const char *rotation_text(const Form *f)
 {
-	return f->kindNames ? (const char *)(RELOC(f->kindNames) + f->s->kind * 20) : (const char *)RELOC(f->kindFixed);
+	return f->rotationNames ? (const char *)(RELOC(f->rotationNames) + f->s->rotation * 20) : (const char *)RELOC(f->rotationFixed);
 }
 
 /* the eight rows' values in their boxes (white text); a value being edited is left out */
@@ -83,7 +84,7 @@ static void draw_values(const Form *f, char *text)
 	if (!GAME_VAR(int, f->edited[1]))
 		text_draw8(X0 + 0xa4, Y0 + 0x54, stars(f, text));
 	field_box(X0 + 0x9f, Y0 + 0x6d, X0 + 0x18f, Y0 + 0x91);
-	if (s->kind)
+	if (s->rotation)
 		text_draw8(X0 + 0xa4, Y0 + 0x76, (const char *)STR(0x4ad56c, "CUSTOM"));   /* CUSTOM */
 	else
 		text_draw8(X0 + 0xa4, Y0 + 0x6f, map_name(f));
@@ -92,7 +93,7 @@ static void draw_values(const Form *f, char *text)
 	text_draw8(X0 + 0xa4, Y0 + 0x98, text);
 	field_box(X0 + 0x9f, Y0 + 0xb7, X0 + 0xef, Y0 + 0xcd);
 	white();
-	text_draw8(X0 + 0xa4, Y0 + 0xba, kind_text(f));
+	text_draw8(X0 + 0xa4, Y0 + 0xba, rotation_text(f));
 	field_box(X0 + 0x9f, Y0 + 0xd9, X0 + 0x18f, Y0 + 0xef);
 	white();
 	text_draw8(X0 + 0xa4, Y0 + 0xdc, mode_name(f));
@@ -109,12 +110,12 @@ static void draw_values(const Form *f, char *text)
 	}
 }
 
-/* the value under the pointer (rows 0 .. 7) drawn again. The map is not highlighted while custom (the kind set); in
-   the arena's form the fifth row is too, and the mode only for kind 0 */
+/* the value under the pointer (rows 0 .. 7) drawn again. The map is not highlighted while the map rotation is on; in
+   the arena's form the fifth row is too, and the mode only with the rotation off */
 static void draw_hover(const Form *f, int hovered, char *text)
 {
 	const GameSettings *s = f->s;
-	int arena = f->kindNames != 0;
+	int arena = f->rotationNames != 0;
 	switch (hovered) {
 	case 0:
 		hover_text(X0 + 0xa4, Y0 + 0x32, s->name);
@@ -123,7 +124,7 @@ static void draw_hover(const Form *f, int hovered, char *text)
 		hover_text(X0 + 0xa4, Y0 + 0x54, stars(f, text));
 		break;
 	case 2:
-		if (!s->kind)
+		if (!s->rotation)
 			hover_text(X0 + 0xa4, Y0 + 0x6f, map_name(f));
 		break;
 	case 3:
@@ -132,10 +133,10 @@ static void draw_hover(const Form *f, int hovered, char *text)
 		break;
 	case 4:
 		if (arena)
-			hover_text(X0 + 0xa4, Y0 + 0xba, kind_text(f));
+			hover_text(X0 + 0xa4, Y0 + 0xba, rotation_text(f));
 		break;
 	case 5:
-		if (!arena || !s->kind)
+		if (!arena || !s->rotation)
 			hover_text(X0 + 0xa4, Y0 + 0xdc, mode_name(f));
 		break;
 	case 6:
@@ -159,8 +160,8 @@ static void button(int lit, float a_lit, int x0, int y0, int x1, int y1, int ty,
 	text_drawBox16(x0, ty, x1, (const char *)RELOC(text));
 }
 
-/* the preview's arrows (lit as given) and the custom rules button: lit in white, else at 0.4 in the colour other */
-static void preview_controls(const Form *f, int left, int right, int custom, const u32 *other)
+/* the preview's arrows (lit as given) and the ADVANCED button (the rotation's map list): lit in white, else at 0.4 in the colour other */
+static void preview_controls(const Form *f, int left, int right, int rotation, const u32 *other)
 {
 	bind_buttons();
 	glEnable(GL_TEXTURE_2D);
@@ -169,7 +170,7 @@ static void preview_controls(const Form *f, int left, int right, int custom, con
 	menu_drawSmallButton2(X1 - 0x50, Y0 + 0xd7, X1 - 0x20, Y0 + 0xef, right);
 	glEnable(GL_TEXTURE_2D);
 	bind_buttons();
-	if (custom) {
+	if (rotation) {
 		glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 		white();
 	} else {
@@ -184,7 +185,7 @@ static void preview_controls(const Form *f, int left, int right, int custom, con
    labels (MSG(397, "TITLE"), 0x80 apart), the values (the fifth row's text MSG(17, "DO NOT USE"), the modes at MSG(791, "DEATH MATCH"); hidden while
    edited: g_editingRoomName, g_editingRoomPassword, g_editingFragLimit, g_editingTimeLimit). Unless a field is being edited (g_textFieldOpen) or the "leave?" box is up
    (g_arenaUpdateNotice), the value under the pointer (roomSettings_hitTest) highlighted. Two buttons (MSG(405, "$[0] O K"), lit from 8 unless
-   editing), the map preview (room_drawCustomOption), its arrows (11 / 12) and the custom rules button (13, not while
+   editing), the map preview (room_drawMapPreview), its arrows (11 / 12) and the ADVANCED button (13, not while
    the map list is up, g_mapListOpen); the border. The caller ignores the eax it leaves */
 void (room_drawGameSettings)(void)
 {
@@ -214,7 +215,7 @@ void (room_drawGameSettings)(void)
 		button(hovered == k + 8 && !editing, 1.0f, bx + 0x64, Y1 - 0x40, bx + 0x104, Y1 - 0x20, Y1 - 0x38, bright, dim,
 		       MSG(405, "$[0] O K") + k * 0x80);
 	}
-	room_drawCustomOption(f->s->map);
+	room_drawMapPreview(f->s->map);
 	preview_controls(f, hovered == 11 && !open, hovered == 12 && !open,
 	                 hovered == 13 && !editing && !g_mapListOpen, grey);
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
@@ -232,11 +233,11 @@ static void box_buttons(int hovered, int lit_from)
 }
 
 /* 0x40b750: the arena screen's form for a new arena (0x4dbb00 .. 0x4dbb0c) for g_newArenaName: the title MSG(156, "CREATE ARENA"), the
-   labels (MSG(157, "GAME NAME")), the values (the kind's name from g_arenaOnOff2, the modes at MSG(471, "DEATH MATCH"); hidden while edited: g_editingNewArenaName,
+   labels (MSG(157, "GAME NAME")), the values (the rotation's OFF / ON from g_arenaOnOff2, the modes at MSG(471, "DEATH MATCH"); hidden while edited: g_editingNewArenaName,
    g_typingArenaPassword, g_editingNewArenaFragLimit, g_editingNewArenaTimeLimit). Unless a field is being edited, the confirmation (g_hostErrorBox) or "leave?" box (g_arenaUpdateNotice)
    or the map list (g_mapListOpen) is up, the value under the pointer (createArena_hitTest) highlighted. Two buttons (MSG(165, "$[0] IPX GAME"), lit
-   from 8 at 0.9) and below the second of the next pair (MSG(168, "$[0] CANCEL"), 11), the map preview (arena_drawCustomOption), its
-   arrows (13 / 14) and the custom rules button (lit for kind 1). The confirmation box (MSG(168, "$[0] CANCEL") / MSG(169, "NETWORK INITIALIZE ERROR"), its buttons
+   from 8 at 0.9) and below the second of the next pair (MSG(168, "$[0] CANCEL"), 11), the map preview (arena_drawMapPreview), its
+   arrows (13 / 14) and the ADVANCED button (lit with the rotation on). The confirmation box (MSG(168, "$[0] CANCEL") / MSG(169, "NETWORK INITIALIZE ERROR"), its buttons
    15 / 16) and the "leave?" box over the whole screen (MSG(3, "THIS PROGRAM HAS BEEN UPDATED") / MSG(4, "DO DOWNLOAD A NEW VERSION"), its buttons by arenaCreate_hitTest); the border.
    The caller ignores the eax it leaves */
 void (arena_createDraw)(void)
@@ -270,8 +271,8 @@ void (arena_createDraw)(void)
 	/* (the next row's first button is skipped) */
 	button(hovered == 11 && !blocked, 1.0f, X0 + 0xfa + 0x3c, Y1 - 0x32, X0 + 0xfa + 0x104, Y1 - 0x12, Y1 - 0x2a, bright,
 	       dim, MSG(168, "$[0] CANCEL"));
-	arena_drawCustomOption(f->s->map);
-	preview_controls(f, hovered == 13 && !blocked, hovered == 14 && !open, f->s->kind == 1 && !blocked, dim);
+	arena_drawMapPreview(f->s->map);
+	preview_controls(f, hovered == 13 && !blocked, hovered == 14 && !open, f->s->rotation == 1 && !blocked, dim);
 	if (hostError) {
 		glColor4f(0.7f, 0.0f, 1.0f, 1.0f);
 		menu_drawTextureFlipped(0x64, 0xb4, 0x21c, 0x140, g_dialogFrameTexture);

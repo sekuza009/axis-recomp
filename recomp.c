@@ -3605,13 +3605,13 @@ void briefing_typeOut(void);
    (texture 0x9db0a4) and its label 0x7517a4, the frame's border */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 DWORD profile_drawMessageWindow(void);
-/* 0x40b550 arena_drawCustomOption() / 0x43bde0 room_drawCustomOption(): the map preview (reloaded first when
+/* 0x40b550 arena_drawMapPreview() / 0x43bde0 room_drawMapPreview(): the map preview (reloaded first when
    0x680cd0 is set: arena_loadMapPreview / room_loadMapPreview) or, for custom rules (0x4db54a / 0x4df9ea), a dark box saying
    "CUSTOM"; a yellow frame round it */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-DWORD arena_drawCustomOption(void);
+DWORD arena_drawMapPreview(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-DWORD room_drawCustomOption(void);
+DWORD room_drawMapPreview(void);
 /* batch 118 (lifted/grp64.c): profile dialogs and the armour weight line */
 /* 0x44e180 profile_drawDeleteQuestion() / 0x44e3e0 profile_drawLogOutQuestion(): two-button profile dialogs (window 0x9f8f1c.. /
    0x9f6834..; titles 0x751da4 / 0x751e24): frame, title, two textured buttons (texture 0x9db0a4) labelled 0x7517a4 /
@@ -3854,7 +3854,7 @@ void gameList_draw(void);
    0x4df9ea, set lower), players (0x4df9e9), mode (0x4df9eb, a 0x7669a4 string), two limits (the bytes 0x4df9ec /
    0x4df9ed, hidden while edited: 0x9dd388 / 0x9dd568); unless a field is being edited (0x68039c) or the form is
    locked (0x907b2c) the hovered value (roomSettings_hitTest) gets a shadow and a highlight; three buttons (0x75a8a4, none
-   bright while 0x4db508); then the custom option / map preview (room_drawCustomOption) */
+   bright while 0x4db508); then the custom option / map preview (room_drawMapPreview) */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void room_drawGameSettings(void);
 /* batch 138 (lifted/grp84.c): the armour screen's colour editor */
@@ -3896,7 +3896,7 @@ void arena_drawGameList(void);
    (0x4db549), the kind (0x4db54a, a 0x4dbba4 string, 5 apart), mode (0x4db54b, a 0x75c9a4 string), two limits (bytes
    0x4db54c / 0x4db54d, hidden while edited: 0x4db850 / 0x4db518); the hovered value highlighted unless something
    is open (0x68039c, 0x4db55c, 0x907b2c, 0x4db508); two button rows (0x7530a4, 0x7531a4); the preview
-   (arena_drawCustomOption), its arrows and the custom button (0x75d8a4, bright for custom rules); the confirmation
+   (arena_drawMapPreview), its arrows and the custom button (0x75d8a4, bright for custom rules); the confirmation
    box (0x4db55c: 0x753224 / 0x7532a4 and two buttons by arenaCreate_hitTest) and the lock box (0x907b2c: 0x74dfa4 /
    0x74e024); the border */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
@@ -12887,8 +12887,8 @@ static void customopt_setup(DWORD idxp, DWORD flag, DWORD px, DWORD py)
 	else { G32(0x9da324) = menutex_fonts(menutex_setup()); G32(0x680cd0) = 0; *(char *)flag = irnd(0, 1) ? 0 : (char)irnd(1, 2); }
 	G32(px) = irnd(-50, 700); G32(py) = irnd(-50, 400);
 }
-ST(arena_drawCustomOption, customopt_setup(0x4db548, 0x4db54a, 0x4dbb08, 0x4dbb04);, CALL_PLAIN(0x40b550, 0, 0, 0, 0, 0), (DWORD)(arena_drawCustomOption()))
-ST(room_drawCustomOption, customopt_setup(0x4df9e8, 0x4df9ea, 0x9dd1c0, 0x9dd1bc);, CALL_PLAIN(0x43bde0, 0, 0, 0, 0, 0), (DWORD)(room_drawCustomOption()))
+ST(arena_drawMapPreview, customopt_setup(0x4db548, 0x4db54a, 0x4dbb08, 0x4dbb04);, CALL_PLAIN(0x40b550, 0, 0, 0, 0, 0), (DWORD)(arena_drawMapPreview()))
+ST(room_drawMapPreview, customopt_setup(0x4df9e8, 0x4df9ea, 0x9dd1c0, 0x9dd1bc);, CALL_PLAIN(0x43bde0, 0, 0, 0, 0, 0), (DWORD)(room_drawMapPreview()))
 /* batch 118 */
 /* a dialog: menutex_setup's set (fonts bindable), its texture as frame, button and border, a window rectangle at
    (xo, yo) .. (xe, ye), the cursor sometimes over a button, colours, titles and the two button labels; the new
@@ -13512,7 +13512,7 @@ static void gamesettings_setup(void)
 	G32(0x4ded68) = irnd(0, 640); G32(0x4ded6c) = irnd(0, 480);
 	if (irnd(0, 1)) { G32(0x4ded68) = G32(0x9dd1b8) + irnd(0x9f, 0x1a7); G32(0x4ded6c) = G32(0x9dd1bc) + irnd(0x2f, 0x133); }
 }
-/* the hit test (roomSettings_hitTest) and the map preview (room_drawCustomOption; it ends the game when its picture is
+/* the hit test (roomSettings_hitTest) and the map preview (room_drawMapPreview; it ends the game when its picture is
    missing, in about a fifth of the runs) stubbed, each with its own test: any item or none */
 static void gamesettings_hover_setup(void)
 {
@@ -17580,8 +17580,8 @@ static const STest g_stests[] = {
 	T(armc_drawText, 0, 300, 0), T(armc_drawTextRight, 0, 300, 0), T(menu_drawMessageBox, 0, 200, 0), T(menu_drawInputLine, 0, 300, 0),
 	T(profileList_drawNames, 0, 200, 0), T(replaySelect_drawNames, 0, 200, 0),
 	/* batch 117 */
-	T(armc_drawModeTabs, 0, 200, 0), T(briefing_typeOut, 0, 300, 0), T(profile_drawMessageWindow, 0, 200, 0), T(arena_drawCustomOption, 0, 200, 0),
-	T(room_drawCustomOption, 0, 200, 0),
+	T(armc_drawModeTabs, 0, 200, 0), T(briefing_typeOut, 0, 300, 0), T(profile_drawMessageWindow, 0, 200, 0), T(arena_drawMapPreview, 0, 200, 0),
+	T(room_drawMapPreview, 0, 200, 0),
 	/* batch 118 */
 	T(profile_drawDeleteQuestion, 0, 200, 0), T(profile_drawLogOutQuestion, 0, 200, 0), T(profile_drawNewDialog, 0, 200, 0), T(armc_drawWeightLine, 0, 300, 0),
 	/* batch 119 */
@@ -18633,8 +18633,8 @@ static const struct { DWORD addr; void *fn; const char *name; } g_hooks3[] = {
 	{ 0x44ce90, (void *)profileList_drawNames, "profileList_drawNames" }, { 0x442d10, (void *)replaySelect_drawNames, "replaySelect_drawNames" },
 	/* batch 117 */
 	{ 0x412450, (void *)armc_drawModeTabs, "armc_drawModeTabs" }, { 0x445520, (void *)briefing_typeOut, "briefing_typeOut" },
-	{ 0x44dc60, (void *)profile_drawMessageWindow, "profile_drawMessageWindow" }, { 0x40b550, (void *)arena_drawCustomOption, "arena_drawCustomOption" },
-	{ 0x43bde0, (void *)room_drawCustomOption, "room_drawCustomOption" },
+	{ 0x44dc60, (void *)profile_drawMessageWindow, "profile_drawMessageWindow" }, { 0x40b550, (void *)arena_drawMapPreview, "arena_drawMapPreview" },
+	{ 0x43bde0, (void *)room_drawMapPreview, "room_drawMapPreview" },
 	/* batch 118 */
 	{ 0x44e180, (void *)profile_drawDeleteQuestion, "profile_drawDeleteQuestion" }, { 0x44e3e0, (void *)profile_drawLogOutQuestion, "profile_drawLogOutQuestion" },
 	{ 0x44de00, (void *)profile_drawNewDialog, "profile_drawNewDialog" }, { 0x41dab0, (void *)armc_drawWeightLine, "armc_drawWeightLine" },

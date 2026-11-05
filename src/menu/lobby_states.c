@@ -69,12 +69,12 @@ void (lobby_loadArenaSettings)(void)
 	}
 	memset((void *)OBJ(g_newArenaName), 0, 32);
 	strcpy(g_newArenaName, g_playerName);
-	u8 b1 = g_arenaPlayers, b2 = g_arenaCustomize, b3 = g_arenaGameType, b4 = g_arenaFragLimit,
+	u8 b1 = g_arenaPlayers, b2 = g_arenaRotation, b3 = g_arenaGameType, b4 = g_arenaFragLimit,
 	   b5 = g_arenaTimeLimit;
 	g_newArenaMap = map;
 	g_newArenaMode = b3;
 	g_newArenaPlayers = b1;
-	g_newArenaKind = b2;
+	g_newArenaRotation = b2;
 	g_newArenaPassword = 0;
 	g_arenaFragLimitTyped = b4;
 	g_arenaTimeLimitTyped = b5;
@@ -137,7 +137,7 @@ void (room_loadSettingsRecord)(void)
 	g_roomGameMode = g_roomRecGameMode;   /* stored before the name is copied, as in the original */
 	strcpy(g_roomSettingsName, g_roomRecName);
 	g_roomPlayers = g_roomRecPlayers;
-	g_roomCustom = g_roomRecCustom;
+	g_roomRotation = g_roomRecRotation;
 	g_roomFragLimit = g_roomRecFragLimit;
 	g_roomTimeLimit = g_roomRecTimeLimit;
 }
@@ -153,7 +153,7 @@ void (room_enterCreatePage)(void)
 	g_roomPanelBrightness = 0x3f333333;
 	clear_all(cleared, sizeof cleared / sizeof cleared[0]);
 	g_mapPreviewChanged = 1;
-	(*(char *)&g_roomCustom) = 0;
+	(*(char *)&g_roomRotation) = 0;
 	mapList_init();
 }
 
@@ -178,7 +178,7 @@ void (ranking_enter)(void)
 }
 
 /* 0x432620: the Ladder room's default game settings: the name "Axis Ladder Game", 8 players, mode 0, map 0, limits 10
-   and 10, not custom, in both the room's form and its record (the Ladder ID copied); the mech unpacked */
+   and 10, no map rotation, in both the room's form and its record (the Ladder ID copied); the mech unpacked */
 void (room_setLadderDefaults)(void)
 {
 	strcpy(g_roomSettingsName, (const char *)STR(0x4b17bc, "Axis Ladder Game"));
@@ -188,14 +188,14 @@ void (room_setLadderDefaults)(void)
 	(*(char *)&g_roomMap) = 0;
 	(*(char *)&g_roomFragLimit) = 10;
 	(*(char *)&g_roomTimeLimit) = 10;
-	(*(char *)&g_roomCustom) = 0;
+	(*(char *)&g_roomRotation) = 0;
 	strcpy(g_roomRecName, g_roomSettingsName);
 	(*(char *)&g_roomRecPlayers) = 8;
 	(*(char *)&g_roomRecGameMode) = 0;
 	(*(char *)&g_roomRecMap) = 0;
 	(*(char *)&g_roomRecFragLimit) = 10;
 	(*(char *)&g_roomRecTimeLimit) = 10;
-	(*(char *)&g_roomRecCustom) = 0;
+	(*(char *)&g_roomRecRotation) = 0;
 	mech_unpackFromRecord();
 }
 
@@ -209,7 +209,7 @@ void (room_copyJoinedSettings)(void)
 	strcpy(g_roomSettingsName, g_roomRecName);
 	g_roomPlayers = map;
 	g_roomMap = (*(u8 *)&g_roomRecMap);
-	g_roomCustom = g_roomRecCustom;
+	g_roomRotation = g_roomRecRotation;
 	g_roomGameMode = g_roomRecGameMode;
 	g_roomFragLimit = g_roomRecFragLimit;
 	g_roomTimeLimit = g_roomRecTimeLimit;
@@ -611,7 +611,7 @@ static u32 settings_store(GameSettings *from, GameSettings *to, u32 then)
 	to->players = from->players;
 	to->map = from->map;
 	to->mode = from->mode;
-	to->kind = from->kind;
+	to->rotation = from->rotation;
 	to->limit[1] = from->limit[1];
 	to->limit[0] = from->limit[0];
 	copy_string((u8 *)to->password, (const u8 *)from->password);
@@ -672,7 +672,7 @@ u32 (hostError_keys)(void)
 	g_netRole = 1;
 	music_shutdown();   /* music_shutdown */
 	u32 limits = (*(u32 *)&g_arenaFragLimit);
-	g_mapRotation = (*(signed char *)&g_arenaCustomize);
+	g_mapRotation = (*(signed char *)&g_arenaRotation);
 	g_missionStage = g_arenaMap;
 	memcpy((void *)OBJ(g_mapTitle), (const void *)OBJ(g_playerName), 32);
 	g_chosenGameMode = (*(signed char *)&g_arenaGameType);
@@ -999,7 +999,7 @@ u32 (arena_startFromLauncher)(void)
 		strcpy((char *)ADDR(g_arenaPassword), (const char *)ADDR(g_arenaFilePassword));
 	g_arenaFragLimit = g_arenaFileFragLimit;
 	g_arenaGameType = g_arenaFileGameType;
-	g_arenaCustomize = 0;
+	g_arenaRotation = 0;
 	(*(u8 *)&g_arenaMap) = g_arenaFileMap;
 	g_arenaPlayers = g_arenaFilePlayers;
 	g_arenaTimeLimit = (*(u8 *)&g_cmdTimeLimit);
@@ -1035,7 +1035,7 @@ u32 (hostError_clicks)(void)
 	g_quitAsked = 1;
 	g_netRole = 1;
 	music_shutdown();
-	g_mapRotation = (signed char)g_arenaCustomize;
+	g_mapRotation = (signed char)g_arenaRotation;
 	g_missionStage = (signed char)(*(u8 *)&g_arenaMap);
 	memcpy((void *)OBJ(g_mapTitle), (const void *)OBJ(g_playerName), 32);
 	g_chosenGameMode = (signed char)g_arenaGameType;
@@ -1164,9 +1164,9 @@ u32 (arena_createAfterTyping)(void)
 
 /* 0x407410: the "create arena" page clicked (no field being typed, page state 2, no message box; a right click leaves
    the arena). Buttons (createArena_hitTest): 0 / 1 / 6 / 7 type a field (arena_editComment, arena_editPassword, arena_editFragLimit, arena_editTimeLimit), 2 / 12 /
-   14 the map on and 13 back (arena_stepMap), 3 the players +2 (to 16, then 2), 4 custom on / off (g_newArenaKind; the game
-   type kept in range), 5 the game type on (with a turn key held back) through 0 .. 13 (0 .. 14 when custom), 8
-   create and 9 join (unless connecting), 11 leave, 15 the custom map list (when custom; mapList_startEdit). Returns what
+   14 the map on and 13 back (arena_stepMap), 3 the players +2 (to 16, then 2), 4 the map rotation on / off (g_newArenaRotation; the game
+   type kept in range), 5 the game type on (with a turn key held back) through 0 .. 13 (0 .. 14 with the rotation on), 8
+   create and 9 join (unless connecting), 11 leave, 15 the rotation's map list (with the rotation on; mapList_startEdit). Returns what
    the original leaves in eax (for the byte settings, its low byte the new value) */
 u32 (arena_createClick)(void)
 {
@@ -1186,7 +1186,7 @@ u32 (arena_createClick)(void)
 	if (!g_mouseClick || mode != 2)
 		return mode;
 	u32 button = ((u32)createArena_hitTest(g_mouseX, g_mouseY));   /* createArena_hitTest */
-	u8 *players = (u8 *)ADDR(g_newArenaPlayers), *custom = (u8 *)ADDR(g_newArenaKind), *type = (u8 *)ADDR(g_newArenaMode);
+	u8 *players = (u8 *)ADDR(g_newArenaPlayers), *rotation = (u8 *)ADDR(g_newArenaRotation), *type = (u8 *)ADDR(g_newArenaMode);
 	u32 r;
 	u8 old;
 	switch (button) {
@@ -1208,9 +1208,9 @@ u32 (arena_createClick)(void)
 			*players = 2;
 		return r;
 	case 4:
-		old = *custom;
-		*custom = 1 - old;
-		if (*custom)
+		old = *rotation;
+		*rotation = 1 - old;
+		if (*rotation)
 			*type = 0xe;
 		else if ((signed char)*type > 0xd)
 			*type = 0;
@@ -1224,11 +1224,11 @@ u32 (arena_createClick)(void)
 			*type -= 1;
 			r = (r & ~0xffu) | *type;
 			if ((signed char)*type < 0)
-				*type = *custom ? 0xe : 0xd;
+				*type = *rotation ? 0xe : 0xd;
 		} else {
 			*type += 1;
 			r = *type;
-			if ((signed char)*type > (*custom ? 0xe : 0xd))
+			if ((signed char)*type > (*rotation ? 0xe : 0xd))
 				*type = 0;
 		}
 		return r;
@@ -1248,7 +1248,7 @@ u32 (arena_createClick)(void)
 		g_arenaCameraMode = 0;
 		return sound_playMenu(0);
 	case 15:
-		if (*custom != 1)
+		if (*rotation != 1)
 			return 15;
 		sound_playMenu(2);
 		return mapList_startEdit(1);   /* mapList_startEdit: the map list (the original pushes a 1 it ignores) */
@@ -1517,7 +1517,7 @@ static void special_map(const char *name, u8 *map)
 /* the arena hosted with its settings (dplay_host): 0 when that failed */
 static int host_arena(void)
 {
-	return dplay_host(g_playerName, g_cfgPlayerName, ((int)(signed char)g_arenaCustomize << 8) | (int)g_arenaMap,
+	return dplay_host(g_playerName, g_cfgPlayerName, ((int)(signed char)g_arenaRotation << 8) | (int)g_arenaMap,
 	                    (signed char)g_arenaPlayers, (signed char)g_arenaGameType, g_arenaFragLimit, g_arenaTimeLimit, g_playerCorporation);
 }
 
@@ -1526,7 +1526,7 @@ static void take_arena(void)
 {
 	g_missionStage = g_arenaMap;
 	memcpy((void *)OBJ(g_mapTitle), (const void *)OBJ(g_playerName), 32);
-	g_mapRotation = (signed char)g_arenaCustomize;
+	g_mapRotation = (signed char)g_arenaRotation;
 	g_chosenGameMode = (signed char)g_arenaGameType;
 	g_fragLimit = g_arenaFragLimit;
 	g_timeLimit = g_arenaTimeLimit;
@@ -1598,7 +1598,7 @@ int (lobby_announceArena)(void)
 	special_map(g_playerName, (u8 *)ADDR(g_arenaMap));
 	ServerRecord *packet = (ServerRecord *)g_roomPacket;
 	packet->kind = 0x18;
-	packet->rotation = g_arenaCustomize;
+	packet->rotation = g_arenaRotation;
 	packet->timeLimit = g_arenaTimeLimit;
 	packet->fragLimit = g_arenaFragLimit;
 	packet->gameMode = g_arenaGameType;
@@ -1629,7 +1629,7 @@ void (room_announceGame)(void)
 	packet = (RoomRecord *)g_arenaPacket;
 	const GameSettings *room = (const GameSettings *)OBJ(g_roomRecName);
 	packet->kind = 0x18;
-	packet->rotation = room->kind;
+	packet->rotation = room->rotation;
 	packet->timeLimit = room->limit[1];
 	packet->fragLimit = room->limit[0];
 	packet->gameMode = room->mode;

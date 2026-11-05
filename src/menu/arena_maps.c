@@ -123,8 +123,8 @@ static void map_step(int dir, u32 lock, u32 choice)
 }
 
 /* 0x4068d0, 0x4356f0: the arena's and the room's map choice */
-void (arena_stepMap)(int dir) { map_step(dir, ADDR(g_newArenaKind), ADDR(g_newArenaMap)); }
-void (room_stepMap)(int dir) { map_step(dir, ADDR(g_roomCustom), ADDR(g_roomMap)); }
+void (arena_stepMap)(int dir) { map_step(dir, ADDR(g_newArenaRotation), ADDR(g_newArenaMap)); }
+void (room_stepMap)(int dir) { map_step(dir, ADDR(g_roomRotation), ADDR(g_roomMap)); }
 
 /* ---- the map list's drawing ---- */
 #define cyan_text(a) set_colour_bits(g_textColour, 0, 0x3f800000, 0x3f800000, a)

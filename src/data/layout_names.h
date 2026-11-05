@@ -36,8 +36,6 @@ extern struct GameData g_data;
 #define g_arenaCorporation (*(int *)g_arenaCorporation_v)
 #undef g_arenaCreateRects
 #define g_arenaCreateRects ((int *)g_arenaCreateRects_v)
-#undef g_arenaCustomize
-#define g_arenaCustomize (*(u8 *)((u8 *)g_playerName_v + 0x22))
 #undef g_arenaDialogBoxRects
 #define g_arenaDialogBoxRects ((int *)g_arenaDialogBoxRects_v)
 #undef g_arenaDim
@@ -140,6 +138,8 @@ extern struct GameData g_data;
 #define g_arenaPlayerName ((char *)g_data.g_arenaPlayerName_)
 #undef g_arenaPlayers
 #define g_arenaPlayers (*(u8 *)((u8 *)g_playerName_v + 0x21))
+#undef g_arenaRotation
+#define g_arenaRotation (*(u8 *)((u8 *)g_playerName_v + 0x22))
 #undef g_arenaSearchClock
 #define g_arenaSearchClock (*(float *)g_arenaSearchClock_v)
 #undef g_arenaSearchStarted
@@ -1784,8 +1784,6 @@ extern struct GameData g_data;
 #define g_newArenaFormRight (*(int *)((u8 *)g_newArenaForm_v + 0x8))
 #undef g_newArenaFormTop
 #define g_newArenaFormTop (*(int *)((u8 *)g_newArenaForm_v + 0x4))
-#undef g_newArenaKind
-#define g_newArenaKind (*(u8 *)((u8 *)g_newArenaName_v + 0x22))
 #undef g_newArenaMap
 #define g_newArenaMap (*(signed char *)((u8 *)g_newArenaName_v + 0x20))
 #undef g_newArenaMode
@@ -1798,6 +1796,8 @@ extern struct GameData g_data;
 #define g_newArenaPassword4 (*(int *)((u8 *)g_newArenaName_v + 0x2a))
 #undef g_newArenaPlayers
 #define g_newArenaPlayers (*(u8 *)((u8 *)g_newArenaName_v + 0x21))
+#undef g_newArenaRotation
+#define g_newArenaRotation (*(u8 *)((u8 *)g_newArenaName_v + 0x22))
 #undef g_newIdConfirmChoice
 #define g_newIdConfirmChoice (*(int *)g_newIdConfirmChoice_v)
 #undef g_newIdConfirmRects
@@ -2254,8 +2254,6 @@ extern struct GameData g_data;
 #define g_roomColoursKept ((u8 *)g_roomColoursKept_v)
 #undef g_roomConnected
 #define g_roomConnected (*(int *)g_roomConnected_v)
-#undef g_roomCustom
-#define g_roomCustom (*(u8 *)((u8 *)g_roomSettingsName_v + 0x22))
 #undef g_roomDialogBox
 #define g_roomDialogBox ((int *)g_roomDialogBox_v)
 #undef g_roomDialogOpen
@@ -2336,8 +2334,6 @@ extern struct GameData g_data;
 #define g_roomPanelEase (*(float *)g_roomPanelEase_v)
 #undef g_roomPlayers
 #define g_roomPlayers (*(u8 *)((u8 *)g_roomSettingsName_v + 0x21))
-#undef g_roomRecCustom
-#define g_roomRecCustom (*(u8 *)((u8 *)g_roomRecName_v + 0x22))
 #undef g_roomRecFragLimit
 #define g_roomRecFragLimit (*(u8 *)((u8 *)g_roomRecName_v + 0x24))
 #undef g_roomRecGameMode
@@ -2348,6 +2344,8 @@ extern struct GameData g_data;
 #define g_roomRecName ((char *)g_roomRecName_v)
 #undef g_roomRecPlayers
 #define g_roomRecPlayers (*(u8 *)((u8 *)g_roomRecName_v + 0x21))
+#undef g_roomRecRotation
+#define g_roomRecRotation (*(u8 *)((u8 *)g_roomRecName_v + 0x22))
 #undef g_roomRecTimeLimit
 #define g_roomRecTimeLimit (*(u8 *)((u8 *)g_roomRecName_v + 0x25))
 #undef g_roomRecordPacket
@@ -2356,6 +2354,8 @@ extern struct GameData g_data;
 #define g_roomRefreshing (*(int *)g_roomRefreshing_v)
 #undef g_roomRequestOut
 #define g_roomRequestOut (*(int *)g_roomRequestOut_v)
+#undef g_roomRotation
+#define g_roomRotation (*(u8 *)((u8 *)g_roomSettingsName_v + 0x22))
 #undef g_roomSearchAnswerIn
 #define g_roomSearchAnswerIn (*(int *)g_roomSearchAnswerIn_v)
 #undef g_roomSearching
