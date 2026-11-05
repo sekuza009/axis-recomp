@@ -129,10 +129,10 @@ void (menuState100_intro)(void)
 	}
 }
 
-/* 0x441740: the 3D background behind the menus: the tunnel's rings moved on (armc_enter) and drawn */
+/* 0x441740: the 3D background behind the menus: the tunnel's rings moved on (menuTunnel_advance) and drawn */
 void (menu_drawBackground)(void)
 {
-	armc_enter(g_menuTunnel);
+	menuTunnel_advance(g_menuTunnel);
 	gfx_setProjection2D3D(1);
 	menu_drawBackground3D(g_menuTunnel);
 }
@@ -233,7 +233,7 @@ void (settingsPage_draw)(void)
 	if (g_dialogOpen != 0)
 		return;
 	if (g_settingsPage == 10)
-		skirmish_saveSettings();
+		skirmish_clicks();
 	else if (g_settingsPage == 20)
 		skirmish_settingsArrowClick();
 }

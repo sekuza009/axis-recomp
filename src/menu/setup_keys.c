@@ -189,7 +189,7 @@ static const u32 bindings[32] = { OBJ(g_controlsEdit), (OBJ(g_controlsEdit) + 0x
 #define KEY_NONE g_dikNone
 
 /* 0x421350: a pair with no primary key gets its secondary as the primary */
-void (setup_drawKeyBindingRow)(void)
+void (controls_fillPrimaryKeys)(void)
 {
 	int none = KEY_NONE;
 	for (int k = 0; k < 32; k++) {
@@ -550,7 +550,7 @@ void (setup_drawKeyBindingRows)(int key)
 		else if (slot[0] != key)
 			slot[1] = key;
 	}
-	setup_drawKeyBindingRow();
+	controls_fillPrimaryKeys();
 }
 
 /* the mouse-sensitivity slider's part under the cursor acted on: the minus / plus buttons step the value (0x4de1c8)

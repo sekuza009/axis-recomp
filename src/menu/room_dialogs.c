@@ -183,7 +183,7 @@ int (gameList_open)(void)
 	(*(u32 *)&g_lobbyBlinkClock) = 0x447a0000;   /* 1000 */
 	g_gameListTop = 0;
 	g_lobbyListRow = 0;
-	arena_clearChatRecord();   /* arena_clearChatRecord */
+	arena_clearSessionEntry();   /* arena_clearSessionEntry */
 	GAME_VAR(u32, g_netRequestWord) = 0x180001;
 	net_send(0x13, 0x65);   /* net_send */
 	g_roomNameSum = 0;

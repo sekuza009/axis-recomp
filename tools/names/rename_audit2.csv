@@ -1,0 +1,23 @@
+# naming audit 2026-11-04, batch 2 (names that only partly matched their function)
+cfg_parseGraphic,cfg_writeGraphic
+cfg_parsePlayer,cfg_writePlayer
+cfg_parseServer,cfg_writeServer
+cfg_parseSound,cfg_writeSound
+armc_computeTotals,actor_checkDataLoss
+armc_onStateEnter,armc_mouse
+console_loadFile,map_fileExists
+game_loadAllData,Game_ctor
+game_processGameMode,match_frame
+actor_checkLineOfSight,actor_pickPathPoint
+actor_clearTargetRefs,bullet_free
+arena_clearChatRecord,arena_clearSessionEntry
+arena_readLaunchFile,app_parseCommandLine
+lobby_checkReservedName2,lobby_announceArena
+lobby_checkReservedName3,room_announceGame
+lobby_roomNameCheck,lobby_hostArenaLan
+setup_drawKeyBindingRow,controls_fillPrimaryKeys
+stage_clearActorRefs,stage_clearFrags
+menu_enterMenus,armc_enterParts
+skirmish_saveSettings,skirmish_clicks
+space_buildPlanes,space_insertTriangle
+armc_enter,menuTunnel_advance

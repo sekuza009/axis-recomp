@@ -523,7 +523,7 @@ long STDCALL (chat_editSubclass)(void *wnd, u32 msg, u32 w, u32 l)
 	return CallWindowProcA(g_editOldProc, (u32)wnd, msg, w, l);
 }
 
-/* 0x43f9d0: the program. The launch file read (arena_readLaunchFile); a running launcher (window class 0x4b2834)
+/* 0x43f9d0: the program. The launch file read (app_parseCommandLine); a running launcher (window class 0x4b2834)
    told to quit, then half a second; the start time (GetSystemTime into 0x9dd878, timeGetTime 0x9dd8e8) and two
    seconds. A game already running (an "AXIS" window), or no CD (cd_findDrive), ends it with a message box. The
    language by the system's (Korean 0x412 / 0x812: 1 and the message 0x4b2794, else 2 and 0x4b27e4, at 0x9dae74 /
@@ -534,7 +534,7 @@ long STDCALL (chat_editSubclass)(void *wnd, u32 msg, u32 w, u32 l)
 u32 STDCALL (game_WinMain)(void *inst, void *prev, const char *cmd, int show)
 {
 #define FindWindowA(cls, name) IMPORT(0x4a92cc, void *, const char *, const char *)(cls, name)
-	arena_readLaunchFile(cmd);
+	app_parseCommandLine(cmd);
 	void *launcher = FindWindowA((const char *)STR(0x4b2834, "#32770"), (const char *)STR(0x4b2854, "\364\270\315\366\361\375\340\362\312\245\341\334\320\357"));
 	if (launcher) {
 		PostMessageA(launcher, 0x12, 0, 0);   /* WM_QUIT */

@@ -132,7 +132,7 @@ void THISCALL (scene_resetActors)(Stage *stage)
 	for (int k = 0; k < 6; k++)
 		FIELD(int, stage, offsetof(Stage, playerActor) + k * 4) = -1;   /* playerActor .. cameraTargetMode */
 	stage->teamsChanged = 1;
-	stage_clearActorRefs(stage);
+	stage_clearFrags(stage);
 	stage_resetPlayerRecords(stage);
 	stage_clearActorSlots(stage);
 	for (int i = 0; i < 100; i++)
@@ -156,7 +156,7 @@ void THISCALL (stage_clearActorSlots)(Stage *stage)
 
 /* 0x47cf10: bullet b is gone: its shooter's five target references to it dropped, its slot freed (the lowest free
    slot and the used count kept up to date) */
-void THISCALL (actor_clearTargetRefs)(Stage *stage, int b)
+void THISCALL (bullet_free)(Stage *stage, int b)
 {
 	Bullet *bu = &stage->bullets[b];
 	for (int k = 0; k < 5; k++) {
@@ -224,7 +224,7 @@ void THISCALL (stage_newRound)(Stage *stage)
 	for (int k = 0; k < 6; k++)
 		FIELD(int, stage, offsetof(Stage, playerActor) + k * 4) = -1;   /* playerActor .. cameraTargetMode */
 	stage->teamsChanged = 1;
-	stage_clearActorRefs(stage);
+	stage_clearFrags(stage);
 	for (int p = 0; p < 16; p++) {
 		PlayerRecord *pr = &stage->playerRecords[p];
 		u8 *e = (u8 *)&pr->level;
@@ -648,7 +648,7 @@ static long double level_factor(u8 *p, int k)
 
 /* the mech's stats for actor ac from player record p's parts (the head, chest, arms, legs and booster records, the
    pilot level, the special items' bonuses at +0x404 .., the weight against the limit and the overload r slowing the
-   legs and booster) and the fixed values, +0 .. +0x94. check: armc_computeTotals' copy, which rounds two of them
+   legs and booster) and the fixed values, +0 .. +0x94. check: actor_checkDataLoss' copy, which rounds two of them
    differently */
 static void mech_stats(u8 *s, u8 *ac, u8 *p, int check)
 {
@@ -955,11 +955,11 @@ static int totals_agree(u8 *s, u8 *ac, u8 *me)
 	return 1;
 }
 
-/* 0x45ee40 (thiscall on the scene): the "data loss" check game_processGameMode runs every 20 s on the local
+/* 0x45ee40 (thiscall on the scene): the "data loss" check match_frame runs every 20 s on the local
    player's actor a: one not in play (+0x14c) passes; else totals_agree. The original's stack actor (its five
    resource sets and eight part lists constructed and destroyed again) is kept; its SEH frame is not reproduced.
    Returns 1 if all agree, else 0 */
-u32 THISCALL (armc_computeTotals)(u8 *s, int a)
+u32 THISCALL (actor_checkDataLoss)(u8 *s, int a)
 {
 	Stage *st = (Stage *)s;
 	u8 me[0x8888];   /* the stack actor (only the fields it computes are read) */

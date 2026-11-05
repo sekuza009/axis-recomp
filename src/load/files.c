@@ -153,7 +153,7 @@ u32 (file_writeScrambled)(u8 *p, u32 size, u32 count, void *f)
 
 /* 0x42c650: the player's section of axis.cfg written: its header, the name, the corporation (0..2) and the sex, by
    their keywords. Returns the last fputs */
-u32 (cfg_parsePlayer)(void *f)
+u32 (cfg_writePlayer)(void *f)
 {
 #define FPUTS(s) GAME_CDECL(0x49f167, u32, const char *, void *)((const char *)RELOC(s), f)
 	FPUTS(STR(0x4b1830, "set_player name "));
@@ -241,7 +241,7 @@ u32 (cfg_loadAxisCfg)(void)
 	void *f = crt_fopen(path, (const char *)STR(0x4b21a4, "wt"));
 	crt_fputs((const char *)STR(0x4b0f50, "AXIS CONFIGURATION FILE Master ver 1...."), f);   /* fputs */
 	crt_fputs((const char *)STR(0x4b182c, "\n"), f);
-	static const u32 sections[5] = { FN_ADDR(cfg_parsePlayer, 0x42c650), FN_ADDR(cfg_parseServer, 0x42c6f0), FN_ADDR(cfg_parseSound, 0x42c910), FN_ADDR(cfg_parseGraphic, 0x42c9f0), FN_ADDR(cfg_keyBindings, 0x42cba0) };   /* player .. key bindings */
+	static const u32 sections[5] = { FN_ADDR(cfg_writePlayer, 0x42c650), FN_ADDR(cfg_writeServer, 0x42c6f0), FN_ADDR(cfg_writeSound, 0x42c910), FN_ADDR(cfg_writeGraphic, 0x42c9f0), FN_ADDR(cfg_keyBindings, 0x42cba0) };   /* player .. key bindings */
 	for (int k = 0; k < 5; k++)
 		GAME_CDECL(sections[k], u32, void *)(f);
 	return fclose(f);
@@ -292,7 +292,7 @@ u32 (skelDat_initBy)(void) { return dat_open(OBJ(g_skelDat), (const char *)STR(0
 
 /* 0x42c910: the sound section of axis.cfg written: the two volumes (0x4e0c90, 0x4e0c94) as numbers, then two on/off
    switches (0x4e0c98, 0x4e0c9c; 1 is on), each after its keyword. Returns the last fputs */
-u32 (cfg_parseSound)(void *f)
+u32 (cfg_writeSound)(void *f)
 {
 #define FPUTS(s) GAME_CDECL(0x49f167, u32, const char *, void *)((const char *)RELOC(s), f)
 	char number[12];
@@ -314,7 +314,7 @@ u32 (cfg_parseSound)(void *f)
 
 /* 0x41e7c0: does map k's file exist ("map/" + its name (32 bytes a slot at 0x907b30) + ".bfd")? 1 when it opens, 0
    when not or when the name is shorter than 2 letters */
-int (console_loadFile)(int k)
+int (map_fileExists)(int k)
 {
 	const char *name = (const char *)(OBJ(g_mapNames) + k * 32);
 	if (strlen(name) <= 1)
@@ -509,7 +509,7 @@ u32 (mission_saveAxisMis)(int k)
    the added wide modes, 1024x768, DESKTOP; nothing for another), the colour depth (0x83a9c4: 16 or 32), polygon
    detail (0x83a9c8: LOW or HIGH), then four on/off switches (0x83a9cc .. 0x83a9d8; 1 is on): linear filtering,
    mipmapping, the frame counter and the simple menu, each line after its keyword. Returns the last fputs */
-u32 (cfg_parseGraphic)(void *f)
+u32 (cfg_writeGraphic)(void *f)
 {
 #define FPUTS(s) GAME_CDECL(0x49f167, u32, const char *, void *)((const char *)RELOC(s), f)
 	static const u32 mode[8] = { STR(0x4b1b6c, "640x480\n"), STR(0x4ac84c, "1280x720\n"), STR(0x4ac870, "1600x900\n"), STR(0x4ac894, "1920x1080\n"), STR(0x4ac8b8, "2560x1440\n"), STR(0x4ac8dc, "3840x2160\n"), STR(0x4ac900, "1024x768\n"), STR(0x4ac920, "DESKTOP\n") };
@@ -533,7 +533,7 @@ u32 (cfg_parseGraphic)(void *f)
    line break by fprintf), the map and player count (signed bytes 0x4ded40 / 41), customize on/off (0x4ded42), the
    game type (0x4ded43: 1 .. 14 by name, any other DEATH MATCH) and the game and time flags (bytes 0x4ded44 / 45).
    Returns the last fputs */
-u32 (cfg_parseServer)(void *f)
+u32 (cfg_writeServer)(void *f)
 {
 #define FPUTS(s) GAME_CDECL(0x49f167, u32, const char *, void *)((const char *)RELOC(s), f)
 	static const u32 type[15] = { STR(0x4b1878, "DEATH MATCH\n"), STR(0x4b1988, "TEAM DEATH MATCH\n"), STR(0x4b1978, "SUDDEN DEATH\n"), STR(0x4b1964, "TEAM SUDDEN DEATH\n"), STR(0x4b1954, "SHOTGUN ARENA\n"), STR(0x4b1940, "TEAM SHOTGUN ARENA\n"), STR(0x4b192c, "IONCANNON ARENA\n"), STR(0x4b1914, "TEAM IONCANNON ARENA\n"),
@@ -571,7 +571,7 @@ u32 (cfg_parseServer)(void *f)
    0x9dd88c). "-net" alone: started for a network game when axiswl.dat is there (0x76d410 and 0x76d364 set);
    "-ip x <server>": the server's address into 0x4de748 (0x76d410 set). Empty or longer than 0x400: nothing.
    Returns what the original leaves in eax (the count, the comparison, fclose's or strcpy's length) */
-u32 (arena_readLaunchFile)(char *line)
+u32 (app_parseCommandLine)(char *line)
 {
 	size_t length = strlen(line);
 	if (length > 0x400 || length <= 1) {
@@ -1058,7 +1058,7 @@ static void skip_line(void *f)
 	crt_fgets(line, 0x50, f);
 }
 
-/* 0x42d7f0: the player's section read back (the lines cfg_parsePlayer writes): the name (its words joined by
+/* 0x42d7f0: the player's section read back (the lines cfg_writePlayer writes): the name (its words joined by
    spaces, then cut once more by str_dropLast, into 0x4dedb0), the corporation (RED 0, BLUE 1, YELLOW 2, else 0;
    0x4dedd0) and the sex (ON: 1; 0x4dedd4); then one more line. The original leaves fgets's eax to callers that
    ignore it */

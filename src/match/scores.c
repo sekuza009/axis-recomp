@@ -19,7 +19,7 @@ void THISCALL (scene_resetScores)(Scene *scene)
 		if (scene->sessionMode == 1)
 			scene->playerRecords[i].team = -1;
 	}
-	stage_clearActorRefs(STAGE(scene));
+	stage_clearFrags(STAGE(scene));
 	scene_updateRanking(scene);
 }
 

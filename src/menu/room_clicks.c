@@ -108,7 +108,7 @@ void (lobbyJoin_keys)(void) { leave_keys(&g_arenaLeaving); }
 /* 0x443e20: the skirmish settings screen's clicks (no dialog open, 0x90d1c4): a right click leaves (0x443c80); a left
    click on its buttons (skirmishSettings_hitTest): rows 0..7 change that setting (0x443d50), 8 saves (0x443af0 with the
    selection 0x9f16a4), 9 leaves. Returns the last call's eax */
-int (skirmish_saveSettings)(void)
+int (skirmish_clicks)(void)
 {
 	int r = g_dialogOpen;
 	if (r)
@@ -137,7 +137,7 @@ static int key_hit(u32 binding)
 }
 
 /* 0x437140: the game room's keys: back or leave leaves the game; the others open the room's pages (0x4334c0,
-   0x433590, 0x433790, 0x433800) or the arm center (0x4dc24c = 3, menu_enterMenus). Returns the action's eax */
+   0x433590, 0x433790, 0x433800) or the arm center (0x4dc24c = 3, armc_enterParts). Returns the action's eax */
 u32 (room_keys)(void)
 {
 	if (key_hit(ADDR(g_dikEscape_2)))
@@ -152,7 +152,7 @@ u32 (room_keys)(void)
 		return room_enterRoomList();   /* room_enterRoomList */
 	if (key_hit(ADDR(g_dikA))) {
 		g_armcFrom = 3;
-		return menu_enterMenus();
+		return armc_enterParts();
 	}
 	if (key_hit(ADDR(g_dikX)))
 		return room_leaveGame();
@@ -233,7 +233,7 @@ u32 (room_pageClicks)(void)
 			sound_playMenu(0);
 			if (i == 3) {   /* the arm center */
 				g_armcFrom = 3;
-				menu_enterMenus();   /* menu_enterMenus */
+				armc_enterParts();   /* armc_enterParts */
 				g_enteringMenus = 0;
 			} else
 				GAME_CDECL(actions[i], void, void)();
@@ -664,7 +664,7 @@ u32 (room_settingsClicks)(void)
 		if (g_arenaGameSetUp)
 			return (*(u32 *)&g_arenaGameSetUp);
 		sound_playMenu(0);
-		return lobby_checkReservedName3();   /* room_4351c0: start */
+		return room_announceGame();   /* room_4351c0: start */
 	case 9:
 		r = sound_playMenu(0);
 		g_roomMode = 0;
@@ -719,7 +719,7 @@ u32 (room_settingsAfterTyping)(void)
 	}
 	if (input_justPressed(g_dikO) && !g_arenaGameSetUp) {
 		sound_playMenu(0);
-		return lobby_checkReservedName3();   /* room_4351c0: start */
+		return room_announceGame();   /* room_4351c0: start */
 	}
 	u32 r = 0;
 	static const u32 close[2] = { ADDR(g_dikC), ADDR(g_dikEscape_2) };

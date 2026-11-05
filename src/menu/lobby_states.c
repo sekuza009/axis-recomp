@@ -704,7 +704,7 @@ u32 (lobby_playerScreenClicks)(void)
 	case 2:
 		sound_playMenu(0);
 		g_armcFrom = 2;
-		return menu_enterMenus();   /* menu_enterMenus: the ARM CENTER */
+		return armc_enterParts();   /* armc_enterParts: the ARM CENTER */
 	case 3:
 		sound_playMenu(0);
 		r = arena_saveSettings();      /* arena_saveSettings */
@@ -1139,11 +1139,11 @@ u32 (lobbyTop_connect)(void)
 	}
 	if (input_justPressed(g_dikI) && !g_arenaGameSetUp) {
 		sound_playMenu(0);
-		return lobby_roomNameCheck();   /* lobby_4052c0: create */
+		return lobby_hostArenaLan();   /* lobby_4052c0: create */
 	}
 	if (input_justPressed(g_dikT) && !g_arenaGameSetUp) {
 		sound_playMenu(0);
-		u32 r = lobby_checkReservedName2();
+		u32 r = lobby_announceArena();
 		return r ? r : lobby_hostArena();   /* lobby_hostArena */
 	}
 	u32 r = 0;
@@ -1233,12 +1233,12 @@ u32 (arena_createClick)(void)
 		if (g_arenaGameSetUp)
 			return 8;
 		sound_playMenu(0);
-		return lobby_roomNameCheck();   /* lobby_4052c0: create */
+		return lobby_hostArenaLan();   /* lobby_4052c0: create */
 	case 9:
 		if (g_arenaGameSetUp)
 			return 9;
 		sound_playMenu(0);
-		r = lobby_checkReservedName2();
+		r = lobby_announceArena();
 		return r ? r : lobby_hostArena();   /* lobby_hostArena */
 	case 11:
 		arena_leaveSession();
@@ -1533,7 +1533,7 @@ static void take_arena(void)
 /* 0x4052c0: the arena hosted on the local network (a slot opened, kind 1): the settings kept, a special room's map;
    the slot or the hosting failing, the game state put back and the connection closed (0x4db55c set); else the music stopped and the
    settings taken (0x4dbbf4 1, back to lobby mode 0). The callers ignore the eax it leaves */
-void (lobby_roomNameCheck)(void)
+void (lobby_hostArenaLan)(void)
 {
 	int was = g_netRole;
 	g_quitAsked = 1;
@@ -1575,7 +1575,7 @@ void (lobby_hostArena)(void)
 /* 0x405cf0: the arena announced on the lobby server: the settings kept, connected (messages 0x3d no server, 0x46
    refused, 0x3e no events; 0), a special room's map, the hello packet (0xa0b310: kind 0x18, the settings, the
    arena's name, this machine's address) sent as kind 10. Returns 1 when sent */
-int (lobby_checkReservedName2)(void)
+int (lobby_announceArena)(void)
 {
 	lobby_keepArenaSettings();
 	int r = net_connect(100);
@@ -1617,7 +1617,7 @@ int (lobby_checkReservedName2)(void)
 /* 0x4351c0: the game room's game announced on the game server: the room's settings kept (0x5b1b30), a special
    room's map, the packet (0xa0b328: kind 0x18, the player's name 0x9dd570 at +0x43, the settings, the game's name,
    this machine's address) sent as kind 0x12. The callers ignore the eax it leaves */
-void (lobby_checkReservedName3)(void)
+void (room_announceGame)(void)
 {
 	room_keepSettings();
 	special_map(g_roomRecName, (u8 *)ADDR(g_roomRecMap));

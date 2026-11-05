@@ -105,14 +105,14 @@ void *THISCALL (space_getNextFreeBlockPtrBy)(u8 *space, const u32 *mn, const u32
 #undef SP
 }
 
-/* 0x482320 (thiscall on the space): a unit's planes built (space_buildPlanes) and, when there are any, linked at the
+/* 0x482320 (thiscall on the space): a unit's planes built (space_insertTriangle) and, when there are any, linked at the
    end of the owner's list (SpaceUnit.lastPlane; CollisionPlane.listNext / listPrev) and given a node (space_getNextFreeNodePtr)
    at the head of its nodes (SpaceUnit.lastNode). Its callers ignore the eax it leaves */
 void THISCALL (space_addUnitPlanes)(void *space, u32 id, u8 *owner, u32 part, u32 i0, u32 i1, u32 i2, u32 v0, u32 v1, u32 v2)
 {
 #define PL(p) ((CollisionPlane *)(p))
 	SpaceUnit *un = (SpaceUnit *)owner;
-	u8 *planes = space_buildPlanes(space, id, v0, v1, v2, owner, part, i0, i1, i2);
+	u8 *planes = space_insertTriangle(space, id, v0, v1, v2, owner, part, i0, i1, i2);
 	if (!planes)
 		return;
 	u8 *last = un->lastPlane;
@@ -404,7 +404,7 @@ int THISCALL (space_insertItem)(u8 *space, u8 *block, u8 *item, int depth)
    by collisionTri_setup), and every grid cell its widened box covers (z, x, y as in space_collideAt) that the
    triangle really meets (space_itemMeetsBox) gets it into its octree (space_insertItem, depth +0x94; the cell's root block made
    when it has none). Returns the plane */
-u8 *THISCALL (space_buildPlanes)(u8 *space, u32 id, const float *v0, const float *v1, const float *v2, u32 unit, u32 part,
+u8 *THISCALL (space_insertTriangle)(u8 *space, u32 id, const float *v0, const float *v1, const float *v2, u32 unit, u32 part,
                                  u32 i0, u32 i1, u32 i2)
 {
 	Space *sp = (Space *)space;

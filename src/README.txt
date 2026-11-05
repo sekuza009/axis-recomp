@@ -108,6 +108,10 @@ RECOMP_ONLY=<the files' functions> bash ../test3.sh, all bit-exact; then bash st
   index_objects.py    GAME_VAR(T, OBJ(arr) + i * size) -> arr[i]
   name_constants.py   K(0x4a....) float constants -> &k_<value>f
   float_stores.py     BITS(x) = 0x43960000; -> x = 300.0f; (where the decimal rounds back to the same bits)
+  rename_fields.py    struct members renamed (members only) and their scene.fields comments set (--comment=[Struct.]name:text)
+  field_uses.py       every use of a field, with the Scene / Stage view of the same bytes (an alias is often the answer)
+  name_audit.py       functions whose name shares no word with their comment, for review (names made before a function
+                      was understood; renames with rename.py, mappings in tools/names/rename_audit*.csv)
 
 Traps met (see the commits for the stories)
   - zig's cache hides a cached file's warnings: check warnings with an extra -D on the compile line.

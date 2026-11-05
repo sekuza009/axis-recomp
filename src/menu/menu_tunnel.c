@@ -389,7 +389,7 @@ static void lower_view(const float *rate)
    ring turned (by -1100, -2200 in the ARM CENTER, or +1100), a ring added (in) or the last one taken off (out),
    the screen's state 0x67ef20 into 0x76d3e8 and the camera kept; moving out also lowers the view. 2 / 4 swing the
    view up and start 1 / 3. The caller ignores the eax it leaves */
-void (armc_enter)(TunnelRing *ring)
+void (menuTunnel_advance)(TunnelRing *ring)
 {
 	if (g_frameTime > k_10f)
 		g_frameTime = 2.0f;
@@ -418,7 +418,7 @@ void (armc_enter)(TunnelRing *ring)
 		}
 		if (g_startedFromLobby == 1 && g_lobbyReply == 0x65) {
 			g_armcFrom = 1;
-			menu_enterMenus();
+			armc_enterParts();
 			g_enteringMenus = 0;
 			g_lobbyReply = 0x66;
 		}

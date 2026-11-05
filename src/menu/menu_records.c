@@ -74,7 +74,7 @@ void (record_swap)(void *a, void *b)
 
 /* 0x4045e0: session list entry g_gameCount (0x67ef30) cleared (all but its guid and rotation); the original does it
    256 times over without moving on */
-void (arena_clearChatRecord)(void)
+void (arena_clearSessionEntry)(void)
 {
 	SessionEntry *e = &g_sessionList[g_gameCount];
 	memset(e->name, 0, 32);
@@ -635,7 +635,7 @@ static int menu_choice(int i, u32 *r)
 		return 0;
 	case 4:
 		g_armcFrom = 1;
-		*r = menu_enterMenus();   /* menu_enterMenus: the armour centre */
+		*r = armc_enterParts();   /* armc_enterParts: the armour centre */
 		g_enteringMenus = 0;
 		return 0;
 	default:

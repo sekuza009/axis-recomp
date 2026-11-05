@@ -159,7 +159,7 @@ static int within(const float *p, const float *from, const float *range)
    random one that is not clear (two tries), and that list is left. One of the candidates picked at random: the
    target (+0x87f8 list, +0x87fc point, +0x8800 a random side), +0x8870 none, the range 1500. With none the range
    grows (x 0x4a974c). Its caller ignores the eax it leaves */
-void THISCALL (actor_checkLineOfSight)(u8 *scene, int p)
+void THISCALL (actor_pickPathPoint)(u8 *scene, int p)
 {
 	Stage *st = (Stage *)scene;
 	u8 *a = (u8 *)&st->actors[p];
@@ -766,7 +766,7 @@ static void fly_local(u8 *s, u8 *b, const u8 *w, const float *dt)
    local player's (+0x202e8d4) bullets move and find their hits (fly_local), other players' follow the network's
    points (+0x90, or the last step again); it is drawn when it moved (+0x9c), aged, and its owner told when it ends
    (+0x1cd971c). Afterwards: another player's bullet is drawn at its last point, then the surface it hit, the
-   splash, and the slot freed (actor_clearTargetRefs) */
+   splash, and the slot freed (bullet_free) */
 void THISCALL (bullet_update)(u8 *s, int slot, u32 dt_bits)
 {
 	const float *dt = (const float *)&dt_bits;   /* (only ever read from memory, as the original does) */
@@ -806,7 +806,7 @@ void THISCALL (bullet_update)(u8 *s, int slot, u32 dt_bits)
 	}
 	hit_surface(s, b, w, r);
 	splash(s, b, w);
-	actor_clearTargetRefs(s, slot);
+	bullet_free(s, slot);
 }
 #undef BU
 #undef WI

@@ -458,7 +458,7 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 			memcpy(AC->stuckMove, (const void *)ADDR(g_vecZero), 12);
 		}
 		if (AC->bot == 1 && AC->target1 < 0 && (AC->botTarget < 0 || ((*(u8 *)&AC->botNeeds) & 3))) {
-			actor_checkLineOfSight(s, i);
+			actor_pickPathPoint(s, i);
 			if ((*(u8 *)&AC->botNeeds) & 2)
 				AC->botTarget = -1;
 		}
@@ -1068,7 +1068,7 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 				continue;
 			if (f[0] == 1) {
 				if (*item >= 0)
-					actor_clearTargetRefs(s, *item);
+					bullet_free(s, *item);
 				const int *muzzle = (const int *)(weapon + (AC->slot == 5 ? 0x2ca4 : 0x15e8) + AC->variantLoaded * 64);
 				skel_applyPose(*(void **)((ObjectList *)model)->frames, m1e0, muzzle[0], 0);
 				Mat4_invert(m270, m1e0);

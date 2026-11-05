@@ -64,7 +64,7 @@ void THISCALL (playerRecord_markFree)(Stage *stage, int p)
 	playerRecord_resetColourGrid(stage, p);
 }
 /* 0x45df90: the stage's frag counts cleared (frags[100]) */
-void THISCALL (stage_clearActorRefs)(Stage *stage) { clear((u8 *)stage->frags, 100); }
+void THISCALL (stage_clearFrags)(Stage *stage) { clear((u8 *)stage->frags, 100); }
 /* 0x45e1c0: every actor in use switched off */
 void THISCALL (stage_deactivateActors)(Stage *stage)
 {

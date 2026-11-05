@@ -482,7 +482,7 @@ static const u32 k_cameraPresets[6][10] = {
    help text (Help.txt: 30 lines of 63 characters into consoleLines) read, each with its line end cut (an empty one
    cuts the byte before it), and the chat macros loaded (chat_loadMacros). (The original's SEH frame, for
    unwinding a failed construction, is not reproduced.) Returns the object */
-u8 *THISCALL (game_loadAllData)(u8 *g)
+u8 *THISCALL (Game_ctor)(u8 *g)
 {
 #define VECTOR(at, size, count) ((void (STDCALL *)(void *, int, int, u32))FN_ADDR(crt_arrayConstruct, 0x401290))(at, size, count, FN_ADDR(ResourceSet_trivialCtor, 0x45fff0))   /* (the CRT's iterators are stdcall) */
 #define VTABLE(at, vt) (GAME_VAR(u32, at) = (vt))

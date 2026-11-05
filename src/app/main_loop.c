@@ -196,7 +196,7 @@ int THISCALL (match_inputState2)(u8 *s)
 		(*(int *)&SC->windowTime) = SC->windowSent = SC->windowReceived = 0;
 	}
 	match_combatInput(s);
-	game_processGameMode(s);
+	match_frame(s);
 	if (SC->inputState == 2)
 		PATCHED_THISCALL(0x48b386, void, void *)(s);   /* hud_pass; the patch DLL calls its hud_pass_wrap here */
 	if (SC->quitAsked == 1) {
@@ -1602,7 +1602,7 @@ static void chat_keys(u8 *s)
    updates, the round's end (frag or time limit) and the next round or map, the camera (spectating: free, one of
    the presets about the followed player or its killer; playing: the presets, the muzzle or the killer), the chat
    keys, the connection checks and the match's end (the log, back to the menu) */
-void THISCALL (game_processGameMode)(u8 *s)
+void THISCALL (match_frame)(u8 *s)
 {
 	Scene *sc = (Scene *)s;
 	u8 *stage = (u8 *)SCENE_STAGE(s);
@@ -1825,7 +1825,7 @@ void THISCALL (game_processGameMode)(u8 *s)
 			long double v = fsub_m(fld_m(&SC->partsCheckTime), &SC->frameTime);
 			SC->partsCheckTime = (float)v;
 			if (!(v >= 0) && SC->localPlayer >= 0 && SC->players[SC->localPlayer].state == 1) {
-				if (armc_computeTotals(stage, SC->localPlayer) == 0) {
+				if (actor_checkDataLoss(stage, SC->localPlayer) == 0) {
 					SC->dataLossPending = 1;
 					SC->dataLossCode = 0;
 				}
@@ -2234,7 +2234,7 @@ void THISCALL (game_processGameMode)(u8 *s)
 				SC->players[i].kills = SC->players[i].deaths = SC->players[i].killsCounted = 0;
 				SC->players[i].deathsCounted = SC->players[i].timePlayed = BITS(SC->players[i].timeExtra) = 0;
 			}
-			stage_clearActorRefs(st);
+			stage_clearFrags(st);
 			scene_updateRanking(sc);
 			SC->rankShown = -1;
 			events_clear((Scene *)s, 60.0f);

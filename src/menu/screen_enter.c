@@ -85,7 +85,7 @@ void (menuState400_enter)(void)
 		{ OBJ(g_arenaDim), 0x3e99999a }, { (OBJ(g_arenaDim) + 0x4), 0x3f333333 }, { (OBJ(g_arenaDim) + 0x8), 0x3f333333 }, { (OBJ(g_arenaDim) + 0xc), ONE }, { ADDR(g_unusedArenaWord), 0xf },
 		{ ADDR(g_armcFrom), 1 } };
 	g_matchMode = 1;
-	arena_clearChatRecord();
+	arena_clearSessionEntry();
 	g_arenaNameDialogLeft = 0x64;
 	g_arenaNameDialogTop = 0x64;
 	(*(int *)&g_cursorBlink) = 0;
@@ -174,7 +174,7 @@ void (menuState800_enterGameRoom)(void)
 	static const u32 cleared[] = { ADDR(g_roomRequestOut), ADDR(g_roomAnswerAwaited), ADDR(g_unusedRoomWord), ADDR(g_arenaGameSetUp), ADDR(g_roomLoginDue), ADDR(g_rankingRequestPending), ADDR(g_roomConnected), ADDR(g_roomAwaitingServer),
 	                               ADDR(g_roomLeaveDialog) };
 	g_matchMode = 2;
-	arena_clearChatRecord();
+	arena_clearSessionEntry();
 	STORE_ALL(layout);
 	roomLogin_layout();
 	account_layout();
@@ -225,7 +225,7 @@ u32 (menu_frameInput)(void)
 	case 400: return lobby_clicks();   /* lobby_clicks */
 	case 500: return missionSelect_draw();
 	case 600: return setup_drawTab();
-	case 700: return armc_onStateEnter();   /* armc_onStateEnter */
+	case 700: return armc_mouse();   /* armc_mouse */
 	case 800: return room_processKeys();   /* room_processKeys */
 	case 900: return settingsPage_draw();
 	case 9999: return armc_mouseLook();  /* armc_mouseLook */
@@ -402,7 +402,7 @@ void (console_init)(void)
 		scene_startSession(scene, 0, 3);
 		return;
 	}
-	int loaded = console_loadFile(g_missionStage);
+	int loaded = map_fileExists(g_missionStage);
 	int kind = g_matchMode;   /* (after the load, as the original reads it) */
 	if (!loaded) {
 		if (kind == 1)

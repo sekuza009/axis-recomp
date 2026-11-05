@@ -277,7 +277,7 @@ int (app_checkCdAndLoad)(void *instance)
 	shapeDat_initBy();
 	skelDat_initBy();
 	void *scene = operator_new(0x2343acb);
-	(*(void **)&g_scene) = scene ? game_loadAllData(scene) : NULL;
+	(*(void **)&g_scene) = scene ? Game_ctor(scene) : NULL;
 	sound_initSoundTable((const char *)STR(0x4b2504, "Data/Sound.dat"), 0x64);
 	char logo[64];
 	strcpy(logo, (const char *)STR(0x4b24f0, "iftex/axis_title"));

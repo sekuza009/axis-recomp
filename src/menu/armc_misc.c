@@ -345,7 +345,7 @@ void (menuState700_armCenter)(void)
    mech (further back from the room), the dialog box and two colours, the camera's point for the screen, the part
    lists built and the mech read (from the room's session or the profile), a sound; g_progressWentUp set when the level
    (0x9dd5d8 from the room, 0x9f181c otherwise) went up since last time (new parts to show), the new value kept and returned */
-u32 (menu_enterMenus)(void)
+u32 (armc_enterParts)(void)
 {
 	g_armcHideInterface = 0;
 	g_armcSlot = 0;
@@ -602,7 +602,7 @@ void (armc_initPartBoxes)(void)
 
 /* 0x410190: the ARM CENTER's mouse, on pages 1 .. 4 (0x4dc798) in a state past 1 (0x4dc790) with no dialog open.
    Returns what the original leaves in eax (the value it stopped at, or the page's handler's) */
-u32 (armc_onStateEnter)(void)
+u32 (armc_mouse)(void)
 {
 	int state = g_armcState;
 	if (state == 1 || state == 0)
