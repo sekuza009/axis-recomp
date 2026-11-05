@@ -60,7 +60,7 @@
 670 elapsed
 671 clockFraction
 672 players[].timePlayed
-673 players[].timeExtra
+673 players[].timeFraction
 674 sendFlags[][2]
 675 sendFlags[][3]
 676 players[].kills

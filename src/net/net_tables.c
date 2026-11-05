@@ -1729,7 +1729,7 @@ static u32 sample(u8 *s, u32 per_row, u32 rows, int row_len, u32 base, u8 *at)
 /* 0x48dbf0 (thiscall on the scene): player p's game packet (1), sent when flagged (sendFlags + p x 0x10, cleared):
    the room's game (its map and modes from rotation / nextMap ..; 0xff and 0xffff without one, or once the end
    countdown endTime is running), the clock (elapsed, clockFraction), the player's two scores (players[].timePlayed,
-   players[].timeExtra of its actor), which of the players in use (net_playerInUse) were flagged twice (sendFlags[][2],
+   players[].timeFraction of its actor), which of the players in use (net_playerInUse) were flagged twice (sendFlags[][2],
    sendFlags[][3]: cleared, one bit each), the actor's two counts (players[].kills / deaths) and the team scores (teamScores[0] /
    [1]), the last pickup (lastPickup, set back to -1), then two random checks of the level: one of the five geometry
    tables in turn (geometryCheckTurn counting; its number in byte 0x2b) and the sixth, each a position and the entry there.
@@ -1767,7 +1767,7 @@ static void THISCALL __attribute__((used)) net_sendGamePacket_body(u8 *s, int p,
 	v = sample(s, 0x23423f9, 0x175522c, 2950, 0x16c517c, packet + 0x32);
 	memcpy(packet + 0x34, &v, 4);
 	memcpy(packet + 0x11, &sc->players[p].timePlayed, 4);
-	memcpy(packet + 0x15, &sc->players[p].timeExtra, 4);
+	memcpy(packet + 0x15, &sc->players[p].timeFraction, 4);
 	u32 twice[2] = { 0, 0 };
 	for (int i = 0; i < 16; i++) {
 		if (net_playerInUse(i) != 1)
@@ -1862,9 +1862,9 @@ static void team_change(u8 *g, int i, const char *pkt, u32 notice)
    play (the red team's score teamScores[0] against the blue teamScores[1]: 0 red ahead, 1 blue, -1 level) */
 static void match_limit(u8 *g, int state, u32 notice)
 {
-	if (GS->elapsed <= 0x1e || GS->endedByTime == state)
+	if (GS->elapsed <= 0x1e || GS->endReason == state)
 		return;
-	GS->endedByTime = state;
+	GS->endReason = state;
 	GAME_THISCALL(notice, void, void *)(g);
 	if (GS->matchOver)
 		return;
@@ -1925,7 +1925,7 @@ void THISCALL (net_processGamePacket)(u8 *g, u32 from, int size, const char *pkt
 			scene_updateRanking(g);   /* scene_updateRanking */
 		}
 		ac->netFired = 1;
-		ac->armorDeadline = f32(FADD(ac->spawnAge, k_10f));
+		ac->dropAge = f32(FADD(ac->spawnAge, k_10f));
 		BITS(ac->timerFlags) = *(const u16 *)(pkt + 2);
 		if (weapon == 6)
 			ac->chatIcon = 1;
@@ -1999,7 +1999,7 @@ void THISCALL (net_processGamePacket)(u8 *g, u32 from, int size, const char *pkt
 					GS->nextMode = pkt[6];
 					scene_setTextureFolder((Scene *)g, g_mapNames + g_missionStage * 0x20);
 					GS->matchState = 1;
-					GS->modeStarted = 0;
+					GS->stateFrames = 0;
 					game_setGameTypeFlags((Stage *)STAGE, pkt[5]);
 					GS->awaitingHostRound = 0;
 					return;
@@ -2030,7 +2030,7 @@ void THISCALL (net_processGamePacket)(u8 *g, u32 from, int size, const char *pkt
 		}
 		Player *ac = (Player *)(ACTOR(b[2]));
 		ac->timePlayed = ((const GamePacket *)pkt)->timePlayed;
-		BITS(ac->timeExtra) = BITS(((const GamePacket *)pkt)->timeExtra);
+		BITS(ac->timeFraction) = BITS(((const GamePacket *)pkt)->timeFraction);
 		int me = GS->localPlayer;
 		if (((const GamePacket *)pkt)->sendTwice[0] & 1u << (me & 0x1f))
 			GS->sendFlags[me][1] = 1;
@@ -2097,9 +2097,9 @@ void THISCALL (net_processGamePacket)(u8 *g, u32 from, int size, const char *pkt
 	case 3:
 		if (pkt[2] != 'k')
 			break;
-		if (GS->endedByTime == 2)
+		if (GS->endReason == 2)
 			return;
-		GS->endedByTime = 2;
+		GS->endReason = 2;
 		msg_serverEndsGame(g);
 		if (GS->matchLeaving)
 			return;

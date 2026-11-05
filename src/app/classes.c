@@ -630,7 +630,7 @@ void THISCALL (scene_startSession)(u8 *g, u32 client, int mode)
 	memcpy(GS->cameraUp, (const void *)OBJ(g_vecUnitY), 12);
 	(*(int *)&GS->cameraAngle[0]) = (*(int *)&GS->cameraAngle[1]) = 0;
 	GS->matchState = GS->sessionMode == 2 ? 3 : GS->sessionMode == 3 ? 1 : 2;
-	GS->modeStarted = GS->wholeSeconds = (*(int *)&GS->secondFraction) = 0;
+	GS->stateFrames = GS->wholeSeconds = (*(int *)&GS->secondFraction) = 0;
 	(*(int *)&GS->msgFade) = GS->unused233cc44 = 0;
 	BITS(GS->scoreCommitTimer) = 0x43960000;   /* 300, 3, 5, 15 */
 	GS->stateSendTimer = 3.0f;
@@ -642,7 +642,7 @@ void THISCALL (scene_startSession)(u8 *g, u32 client, int mode)
 	zero_dwords((u8 *)g + offsetof(Scene, recording), 7);   /* recording .. chatMode */
 	teams_setup((Scene *)g);
 	zero_dwords((u8 *)g + offsetof(Scene, lostTime), 8);   /* lostTime .. timeLimit */
-	GS->endedByTime = -1;
+	GS->endReason = -1;
 	zero_dwords((u8 *)g + offsetof(Scene, geometryCheckTurn), 7);   /* geometryCheckTurn .. geometryPickUnread */
 	GS->dataLossPending = (*(int *)&GS->previewTurn) = 0;
 	zero_dwords((u8 *)g + offsetof(Scene, holdAltitude), 10);   /* holdAltitude .. holdBooster */

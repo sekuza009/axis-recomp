@@ -235,7 +235,7 @@ void THISCALL (stage_newRound)(Stage *stage)
 	stage->playerRecordCount = 0;
 	stage_clearActorSlots(stage);
 	static const short cleared[] = { offsetof(Player, inPlay), offsetof(Player, kills), offsetof(Player, deaths), offsetof(Player, killsCounted),
-	                                 offsetof(Player, deathsCounted), offsetof(Player, timePlayed), offsetof(Player, timeExtra), offsetof(Player, state),
+	                                 offsetof(Player, deathsCounted), offsetof(Player, timePlayed), offsetof(Player, timeFraction), offsetof(Player, state),
 	                                 offsetof(Player, bigHead), offsetof(Player, isKing), offsetof(Player, isCommander) };
 	for (int i = 0; i < 100; i++) {
 		Player *ac = &stage->actors[i];
@@ -805,7 +805,7 @@ void THISCALL (actor_setupFromParts)(u8 *s, int a, int id, u32 controlledBy, con
 	AC->team = ((u32)pr->team);
 	AC->bot = pp[1];
 	AC->spawnAge = 0.0f;
-	AC->armorDeadline = 1.0f;
+	AC->dropAge = 1.0f;
 	AC->armor = ((u32)AC->armorMax);
 	AC->shield = ((u32)AC->shieldMax);
 	fill_dwords(ac + offsetof(Player, ammo), 4, 0);   /* ammo */

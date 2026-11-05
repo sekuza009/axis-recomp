@@ -14,7 +14,7 @@ void THISCALL (scene_resetScores)(Scene *scene)
 		p->killsCounted = 0;
 		p->deathsCounted = 0;
 		p->timePlayed = 0;
-		p->timeExtra = 0.0f;
+		p->timeFraction = 0.0f;
 		p->team = -1;
 		if (scene->sessionMode == 1)
 			scene->playerRecords[i].team = -1;
@@ -40,7 +40,7 @@ static void mark_notice(Scene *scene, int i, u32 local, u32 other)
    first on a tie: ranking[], rank[] their places, ties sharing one), the local player's place. With the king mark
    (kingOfTheHill): the first player marked (isKing, with a notice "you are" / "%s is" the new king when it changes)
    and put on team 0, the others on team 1. With commanders (platoon): per team the player with the most
-   time (timePlayed + timeExtra) marked (isCommander, with a notice when it changes) */
+   time (timePlayed + timeFraction) marked (isCommander, with a notice when it changes) */
 void THISCALL (scene_updateRanking)(Scene *scene)
 {
 	scene->redTeamCount = scene->blueTeamCount = scene->noTeamCount = 0;
@@ -116,7 +116,7 @@ void THISCALL (scene_updateRanking)(Scene *scene)
 			const Player *p = &scene->players[i];
 			if (p->team != t)
 				continue;
-			long double time = fadd_m((long double)p->timePlayed, &p->timeExtra);
+			long double time = fadd_m((long double)p->timePlayed, &p->timeFraction);
 			if (time > (long double)most) {
 				most = f32(time);
 				leader = i;

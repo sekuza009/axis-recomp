@@ -270,7 +270,7 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 	u8 *a = (u8 *)&ST->actors[i];
 	u8 *player = (u8 *)&ST->playerRecords[AC->player];
 	PlayerRecord *pr = (PlayerRecord *)player;
-	if (AC->spawnAge > AC->armorDeadline) {   /* the armour gone */
+	if (AC->spawnAge > AC->dropAge) {   /* not run or heard from for 10 s, or dead: dropped */
 		actor_deactivate((Stage *)s, i);
 		if (ST->selectedActor == i)
 			ST->selectedActor = -1;
@@ -1173,8 +1173,8 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 	if (AC->state == 1) {
 		if (AC->armor <= 0)
 			actor_dies(s, a, i, fx, scratch);
-		else if (AC->controlledBy == ST->playerActor || AC->bot != 0)   /* the armour's timer kept 10 s ahead */
-			AC->armorDeadline = f32(fadd_m(fadd_m(fld_m(dt), &AC->spawnAge), &k_10f));
+		else if (AC->controlledBy == ST->playerActor || AC->bot != 0)   /* the drop age kept 10 s ahead */
+			AC->dropAge = f32(fadd_m(fadd_m(fld_m(dt), &AC->spawnAge), &k_10f));
 	} else if (AC->state == 2) {   /* dying: out after 2 s */
 		if (AC->stateTime > 2.0f) {
 			AC->state = 3;
@@ -1183,7 +1183,7 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 				PATCHED_THISCALL(0x45c638, void, void *, u32)(s, g_componentDatPath);
 		}
 	} else if (AC->state == 3)
-		BITS(AC->spawnAge) = BITS(AC->armorDeadline);
+		BITS(AC->spawnAge) = BITS(AC->dropAge);
 	AC->glow = 0.0f;   /* the glow: a fresh shot's flash, and speed unless cloaked */
 	if (AC->fireAnim > 0 && !(AC->fireAnim >= 0.5f)) {
 		long double g = FSUB(k_0_5f, AC->fireAnim);
@@ -1196,15 +1196,15 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 		AC->glow = f32(fadd_m(FMUL(AC->effectScale, k_0_2f), &AC->glow));
 	goto timers;
 tail:   /* 45cdb1: held by the script */
-	AC->armorDeadline = f32(fadd_m(fadd_m(fld_m(dt), &AC->spawnAge), &k_10f));
+	AC->dropAge = f32(fadd_m(fadd_m(fld_m(dt), &AC->spawnAge), &k_10f));
 timers:
 	AC->spawnAge = f32(fadd_m(fld_m(dt), &AC->spawnAge));
 	AC->stateTime = f32(fadd_m(fld_m(dt), &AC->stateTime));
-	long double sec = fadd_m(fld_m(dt), &AC->timeExtra);   /* whole seconds into timePlayed */
-	AC->timeExtra = (float)sec;
+	long double sec = fadd_m(fld_m(dt), &AC->timeFraction);   /* whole seconds into timePlayed */
+	AC->timeFraction = (float)sec;
 	if (sec > 1.0L) {
 		AC->timePlayed += ftol(sec);
-		AC->timeExtra = f32(fsubr_m((long double)ftol(fld_m(&AC->timeExtra)), &AC->timeExtra));
+		AC->timeFraction = f32(fsubr_m((long double)ftol(fld_m(&AC->timeFraction)), &AC->timeFraction));
 	}
 	countdown(&AC->labelFade, dt);
 	countdown(&AC->hitFlash, dt);

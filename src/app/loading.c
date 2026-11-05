@@ -345,7 +345,7 @@ static char *bfd_name(u8 *g, char *out)
 	return out;
 }
 
-/* 0x468750 (thiscall on the game object): one step of loading per call. The first (modeStarted 0) resets the
+/* 0x468750 (thiscall on the game object): one step of loading per call. The first (stateFrames 0) resets the
    loading lines to the title. By the stage (loadStage): 0 the replay file's header (mode 3: version 0x1201, the
    map, the players' names, the type), the scene reset; 1 the map named (g_missionStage into g_mapNames: none ends it, g_mapMissing
    set); 2 waiting for the stage's play information (the network drained into net_processGamePacket; a timeout
@@ -356,7 +356,7 @@ static char *bfd_name(u8 *g, char *out)
 u32 THISCALL (game_processLoadingMode)(u8 *g)
 {
 	char name[0x100], path[0x100];
-	if (GS->modeStarted == 0) {
+	if (GS->stateFrames == 0) {
 		g_loadGame = g;
 		g_statusLine = 0;
 		GS->loadLineCount = 1;
@@ -526,11 +526,11 @@ u32 THISCALL (game_processLoadingMode)(u8 *g)
 			GS->matchState = mode <= 1 ? 2 : mode == 2 ? 3 : 4;
 		else
 			no_next(g);
-		GS->modeStarted = 0;
+		GS->stateFrames = 0;
 		(*(int *)&g_logHook) = 0;
 		return ((u32)GS->matchState);
 	}
-	GS->modeStarted++;
+	GS->stateFrames++;
 	glClearColor_stored(((const u32[]){ 0, 0, 0 }));
 	glClearDepth(1.0);
 	glClear(0x4100);
