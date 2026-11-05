@@ -4,23 +4,43 @@ Every function here replaces one function of the game and is checked bit-exact a
 harness (../recomp.c runs the same random tests on both and compares memory, call logs and results), then played
 in the game (../test3.sh). Each function's comment gives its original address.
 
-Layout (by subsystem)
-  axis.h        conventions: calling conventions, ftol, how game functions / imports / globals are reached
-  game.h        the game's functions, globals and imports at their original addresses, by name
+Layout (by subsystem; each file's first comment says what it holds)
+  axis.h        conventions: calling conventions, ftol, the x87 memory-operand helpers (fld_m, fmul_m ...; FMUL / FADD /
+                FSUB / FDIV for the "flds a; fmuls b" pairs), BITS, how game functions / imports / globals are reached
+  game.h        the game's functions by name at their original addresses (calls.h: the generated rest)
+  globals.h     every fixed-address global and float constant by name; objects.h: arrays and records at fixed addresses
+  scene.fields  every record type (Scene, Stage, Player, the packets ...) -> scene.h (tools/mkscene.py)
   wide.h/.c     the patch DLL's widescreen state, for the rebuilds that carry its fixes (below)
-  scene.fields  the scene object's known fields -> scene.h (tools/mkscene.py; offsets checked when building)
-  app/          the main loop
-  menu/         the front end: key dispatch, screens, the profile screen's pages, textured quads (buttons, panels)
-  text/         the bitmap fonts: the text passes, sizes
-  hud/          the in-match HUD: overlays, the team box, lock-on marks
-  replay/       the message box (match and replay)
-  net/          DirectPlay (the arena's connection slots, Receive / Send) and the game's own server list
-  msg/          the match's messages
-  match/        the match's rules: teams, weapon cycling
-  load/         loading: name lookups
-  sound/        DirectSound buffers, the menu sounds
-  render/       the stage (scene.fields: Stage, the scene's own object at +0x1f36c8): fog, the lists drawn each pass, the sky
-  crt/          the game's C runtime where msvcrt.dll's differs from it (the standalone build): printf, atof
+  app/          start-up and shutdown, the window and GL (win32.c), devices, the main loop and the match's frame
+                (main_loop.c), loading screens, the C++ classes' constructors / destructors (classes.c), the clock
+                (timer.c), the PTX image decoder, the tables built at start-up, small helpers
+  crt/          the game's C runtime where msvcrt.dll's differs (the standalone build): printf, atof
+  hud/          the in-match HUD: the pass that draws it, the clock, icons, lock-on, markers, messages, the ranking,
+                the Esc menu, overlays
+  load/         loading: data files and axis.cfg (files.c), the map's info files (map_info.c), texture / shape /
+                skeleton lookups and loaders (names.c, skel_data.c), the collision space and its triangles
+                (space_pools.c, collision_tris.c), linked lists
+  match/        the match's rules: rounds (match_start.c), actors' slots and frames (actor_slots.c, actor_frame.c),
+                weapons, bullets and damage (weapons.c), the per-frame passes over bullets / particles / objects /
+                items / triggers and the script (frame_loops.c), map objects, teams, scores, the announcements
+  menu/         the front end: screens entered and dispatched (screen_enter.c, menu_states.c, menu_keys.c), the main
+                menu, the pilot (profile) screen, the setup screen, the skirmish and mission screens, the ARM CENTER
+                (armc_*), the arena lobby (lobby_states.c, game_lists.c) and the Ladder game room (room_*: the login,
+                the new-ID form, the account page, the game list, the create page, the ranking), 2D drawing, cameras
+                and the background tunnel, text fields, button layouts and hit tests
+  msg/          the match's message box lines (players' and system messages)
+  net/          DirectPlay (connection slots, sessions, Receive / Send), the game's own TCP server code and the match's
+                packets (net_tables.c: sending and handling them), the packet layer (net_packets.c)
+  render/       the stage drawn: the view volume (queues and draws), objects / actors / particles, the sky, the
+                ground's shading, light factors, textures' tints, trails, depth sorting, vector / matrix maths
+  replay/       the message box (drawn by the HUD in matches and replays)
+  sound/        DirectSound buffers, the menu sounds, music
+  text/         the bitmap fonts: glyph cells and quads, the text passes (ASCII and Korean), sizes
+
+Finding things: a function by its original address: grep "0xADDR" src (every function's comment starts with it);
+by name: game.h / calls.h; a field's every use: python tools/field_uses.py Struct.field; a global's every
+instruction in the original: python tools/addr_access.py 0xADDR; a message text: python tools/names/msgtext.py
+0xADDR (the code writes them MSG(n, "text")).
 
 Building: ../build.sh (src/ is compiled as its own translation unit with x87 maths and linked into recomp.dll).
 
@@ -55,7 +75,7 @@ Changing a function
      compares so a NaN takes the original's branch; float-to-int through ftol().
   3. ../build.sh, then its state tests: RECOMP_ONLY=name,... bash ../test3.sh - every test bit-exact (the five
      functions that carry the patch DLL's fixes never are: menu_vertex, menu_drawRect, input_justPressed,
-     input_updateMouse, armc_rotateFromCursor). coverage.txt says how much of a function its test reaches.
+     input_updateMouse, armc_drawPreview3D). coverage.txt says how much of a function its test reaches.
   4. python tools/srcaudit.py (every function wired in, every patch-DLL call site followed), commit; then
      bash standalone/build.sh and bash standalone/check3.sh <prefix> (the three builds played: menus, a match,
      a hosted TCP game).
@@ -74,7 +94,7 @@ only the test harness: nothing is lifted any more.
 Readable C: the conventions
   Records     src/scene.fields -> scene.h (tools/mkscene.py): packed structs at the game's offsets, every field's
               offset and size checked by a _Static_assert; anonymous unions allowed where the game keeps two views
-              of the same bytes (Projectile: fade / trailPoints). Fields are named by use; "(unclear)", "(by use)"
+              of the same bytes (Particle: fade / trailPoints). Fields are named by use; "(unclear)", "(by use)"
               and names like valueE8 / cleared2340ca4 / unusedBe2ffc mark what is not understood yet. Scene fields
               over the Stage region (Scene + 0x1f36c8) alias Stage fields: look at both views before calling a
               field unused. Indexing past a field is undefined behaviour: use an array field or a byte offset
@@ -92,6 +112,14 @@ Readable C: the conventions
               u32 * locals indexed as words stay.
   GAME_VAR    left in the helpers that take a global's address from a table of addresses (clears, copies, saves of
               groups of globals): the original's pattern.
+  Names       by what the code does, checked line by line (2026-11-05): screens and dialogs by the titles and labels
+              they draw (MSG texts), records by their fields' uses. Prefixes: the subsystem (room_, lobby_, armc_,
+              profile_, net_, stage_ ...) or the record a thiscall runs on (ViewVolume_, TextureManager_ ...).
+  Comments    name things (fields, globals, functions, MSG texts) rather than raw addresses / offsets; numbers stay
+              only for byte layouts without a record type (packets, file formats, x87 extended reals).
+  x87         the arithmetic keeps the original's memory operands and order (bit-exact with NaNs): FMUL(a, b) is
+              fmul_m(fld_m(&a), &b); longer chains are written with the helpers so the order shows. A float copied
+              without the FPU is a BITS() copy, not an assignment (an assignment loads it, quieting a signalling NaN).
 
 The tools that did it (each keeps the code the same; check: python tools/objcmp.py base build/obj, the base from a
 fresh ../build.sh of the commit before; where an object differs, the harness state tests:
@@ -116,6 +144,15 @@ RECOMP_ONLY=<the files' functions> bash ../test3.sh, all bit-exact; then bash st
   addr_access.py      every instruction of the original touching an address: read / write / address taken
   never_read.py       named globals the original never reads in any form; unread_fields.py: fields the C only writes
   rename_globals.py   globals renamed everywhere (src, tools/names, recomp.c, the Ghidra symbols)
+  rename.py           functions renamed everywhere (src, scene.fields' comments, recomp.c, the Ghidra symbols)
+  comment_names.py, comment_msgs.py   raw data / code addresses and Scene / Stage offsets in comments -> names, message
+                      addresses -> MSG(n, "text") (run after renames: dry run by default, --apply)
+  comment_offsets.py  record offsets in comments: proposals from the fields each function body uses; reviewed choices
+                      applied from a file (tools/names/offsets/)
+  retype_var.py       one u8 * local (or --param a parameter) used through one struct -> that struct's pointer (byte uses
+                      kept as (u8 *)v); retype_all.py runs it everywhere; retype_tidy.py / retype_unwrap.py drop the
+                      doubled casts and needless wraps it leaves; cast_report.py / code_offsets.py list what is left
+  x87_macros.py       fmul_m(fld_m(&a), &b) .. -> FMUL(a, b) ..
 
 Traps met (see the commits for the stories)
   - zig's cache hides a cached file's warnings: check warnings with an extra -D on the compile line.
@@ -126,3 +163,9 @@ Traps met (see the commits for the stories)
     crashed on it). A rewrite of float bits as a float literal converts the value if the target is really an int:
     objcmp and the state tests catch both.
   - Dropping a local macro's #undef can also drop the clearing of a header macro of the same name.
+  - A rewriting script must leave comments and string literals alone (str_check.py catches strings, not comments),
+    and treat a name declared twice in one function (two blocks) or a declarator list (u8 *a = .., *b = ..) by hand.
+  - Some readable forms compile differently: a struct pointer kept across accesses instead of GAME_VAR's per-access
+    address, a field indexed instead of the original's byte arithmetic, a float assigned instead of BITS-copied, a
+    global's pointer cached across a call the original re-reads it after. objcmp says so; keep the original's form.
+  - PACKET_ENTRY(name, n) makes name_body: rename the body by hand when renaming name.
