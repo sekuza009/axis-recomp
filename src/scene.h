@@ -827,8 +827,8 @@ typedef struct SkirmishInfo {
 /* a queued quad or billboard (ViewVolume.quads; view_volume.c quad_fields) */
 typedef struct ViewQuad {
 	i32 texture;   /* +0x0: (none: negative; then no texture corners) */
-	u32 uv0[2];   /* +0x4: written, never read */
-	u32 uv1[2];   /* +0xc: written, never read */
+	u32 uv0[2];   /* +0x4: the corners' texture coordinates (billboard() reads them by word index) */
+	u32 uv1[2];   /* +0xc: (see uv0) */
 	u32 colour;   /* +0x14 */
 	float points[4][4];   /* +0x18: its corners in clip space */
 	i32 kind;   /* +0x58: 2 / 3: depth-sorted into quadOrderA / B */

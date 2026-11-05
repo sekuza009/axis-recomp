@@ -8,7 +8,7 @@
 
 static int paused(void *s) { return ST->scriptMode && ST->scriptRunning == 1; }   /* (a script holds the actors) */
 
-/* 0x47d000 (thiscall on the scene): the bullets (0x4e8-byte slots from +0x202ef38, bulletSlotsUsed of them). Its callers
+/* 0x47d000 (thiscall on the scene): the bullets (0x4e8-byte slots from bullets[].active, bulletSlotsUsed of them). Its callers
    ignore the eax it leaves */
 void THISCALL (bullet_updateAll)(void *s, int dt)
 {
@@ -29,7 +29,7 @@ void THISCALL (stage_updateEffects)(void *s, int dt)
 			particle_update(s, i, dt);
 }
 
-/* 0x490d40: the objects (0x2cc-byte slots from +0x131ae48, objectCount of them) */
+/* 0x490d40: the objects (0x2cc-byte slots from objects[].active, objectCount of them) */
 void THISCALL (stage_updateObjects)(void *s, int dt)
 {
 	if (paused(s))
@@ -64,7 +64,7 @@ int THISCALL (particle_spawn)(u8 *s, u32 desc)
 #undef NEXT
 }
 
-/* 0x45e0c0 (thiscall on the scene): the actors (0x8888-byte slots from +0x1cd94b0, actorCount of them) moved on by
+/* 0x45e0c0 (thiscall on the scene): the actors (0x8888-byte slots from actors[].active, actorCount of them) moved on by
    dt, the triggers run (all of it skipped while paused); dt added to the clock's fraction (clockFraction), whole units over 1 moved into
    the clock (clockSeconds). Its callers ignore the eax it leaves */
 void THISCALL (actor_updateAll)(u8 *s, float dt)
@@ -136,9 +136,9 @@ int THISCALL (object_addObjectBy)(u8 *s, u32 type)
 #undef NEXT
 }
 
-/* 0x483640 (thiscall on the scene): the map's triggers (0x1c-byte records from +0xe3b038, triggerCount of them): each
-   armed one (+8 1) fires (+0x18) on its time (flag 1: the clock, clockSeconds + clockFraction, reaching +0x10) or on the
-   player (flag 2: the player's actor, playerActor, within the squared radius +0x14 of its way point, +4; a NaN distance
+/* 0x483640 (thiscall on the scene): the map's triggers (0x1c-byte records from triggers, triggerCount of them): each
+   armed one (+8 1) fires (fired) on its time (flag 1: the clock, clockSeconds + clockFraction, reaching time) or on the
+   player (flag 2: the player's actor, playerActor, within the squared radius radiusSq of its way point, +4; a NaN distance
    counts as within). Then each fired one runs its command (script_processCommandBy), is disarmed, and noted in the
    fired list (triggerFired, one dword each, the others 0) */
 void THISCALL (script_processTriggers)(u8 *s)
@@ -199,7 +199,7 @@ void THISCALL (profile_addMatchScores)(u8 *s)
 }
 
 /* 0x48ec20 (thiscall on the scene): the effects' shapes looked up in the shape cache (partShapes): three sets of eight
-   numbered ones (thrustShapes, +0x20f2dcc, +0x20f2dec; named by 0x4c8170, 0x4c815c, 0x4c8144) and eight single ones
+   numbered ones (thrustShapes, thrustShapes[8], thrustShapes[16]; named by 0x4c8170, 0x4c815c, 0x4c8144) and eight single ones
    (effectShapes ..); itemTextures cleared first. Its caller ignores the eax it leaves */
 void THISCALL (effect_initShapes)(u8 *s)
 {
@@ -217,8 +217,8 @@ void THISCALL (effect_initShapes)(u8 *s)
 }
 
 /* 0x483770 (thiscall on the scene): entry `entry` of trigger trig's script (the triggers' 0x1c-byte records from
-   +0xe3b03c, +0 their entry list; an entry 0x14 bytes: +0xc its command count, +0x10 the 0x30-byte commands) run for
-   actor actorIndex (none when negative; actors are 0x8888 bytes from +0x1cd93a8). Each command by its type: triggers on / off
+   triggers[].wayPoints, +0 their entry list; an entry 0x14 bytes: commandCount its command count, commands the 0x30-byte commands) run for
+   actor actorIndex (none when negative; actors are 0x8888 bytes from actors). Each command by its type: triggers on / off
    (+4) and armed (+0x14); the actor's orders, targets, speed and flags; actors spawned, reset or deactivated; the
    camera's target; events; .scp files, animations and sounds by formatted names; objects (de)activated. Its callers
    ignore the eax it leaves */
@@ -330,13 +330,13 @@ static void identity4(u32 *m)
 
 /* 0x48fee0 (thiscall on the scene): map object i (0x2cc bytes from objects) set up from its type record: the
    type's name found among the object names (0x40 bytes from objectNames, objectNameCount of them) or added (at most 1000,
-   else a fatal message); the next serial (objectSerial), in use, the name's index, three values (+0x40 ..), the
-   animation path ("dir\sub\name" by 0x4c7a30 when the type names one, +0x4c), the position (+0x8c) and rotation
-   (+0x98, a quaternion); its matrix (+0x74: translation x rotation) and inverse (+0xb4), a copy (+0xf4) and its
-   inverse (+0x134), two identities (+0x174, +0x1b4), the copy times the inverse (+0x1f4) and its inverse (+0x234).
+   else a fatal message); the next serial (objectSerial), in use, the name's index, three values (flags ..), the
+   animation path ("dir\sub\name" by 0x4c7a30 when the type names one, animName), the position (place) and rotation
+   (rotation, a quaternion); its matrix (placeMatrix: translation x rotation) and inverse (placeInverse), a copy (matrix) and its
+   inverse (matrixInverse), two identities (animMatrix, animInverse), the copy times the inverse (relMatrix) and its inverse (relInverse).
    Its shape (shape_getByName, bound) and two ranges of its element count from the shading pool (objectColours, used
-   objectColourCount; past 1000000 a fatal message), two values (+0xa8), the counters cleared, the shape's centre through
-   the matrix (+0x2bc; no shape: the position), and its shading worked out unless the map has it (mapShaded). Its
+   objectColourCount; past 1000000 a fatal message), two values (glowSize), the counters cleared, the shape's centre through
+   the matrix (pos; no shape: the position), and its shading worked out unless the map has it (mapShaded). Its
    callers ignore the eax it leaves */
 void THISCALL (object_initObjectBy)(u8 *s, int i, const u8 *type)
 {
@@ -414,8 +414,8 @@ static void spawn_at(u8 *s, u32 kind, const float *p)
 	particle_spawn(s, rec);
 }
 
-/* a falling spark (kind 9) moved by its velocity (+0x1c) over dt and dropped 2000 dt further: what it meets on the
-   way (collision_rayTrace) stops it there, ends it and leaves a kind 2 particle; its orientation (+0x2c) turned by
+/* a falling spark (kind 9) moved by its velocity (target) over dt and dropped 2000 dt further: what it meets on the
+   way (collision_rayTrace) stops it there, ends it and leaves a kind 2 particle; its orientation (matrix) turned by
    its age; every tenth of a second a trail particle (kind 2 one time in ten, which also ends it, else kind 0) */
 static void spark(u8 *s, u8 *p, float dt)
 {
@@ -456,9 +456,9 @@ static void spark(u8 *s, u8 *p, float dt)
 		BITS(pr->life) = BITS(pr->drawAge);
 }
 
-/* 0x476410 (thiscall on the scene): particle slot's frame (0x12c bytes from particles). Its age (+0x74, kept at +0x6c)
-   past its life (+0x70) frees it (stage_freeParticle); otherwise sparks move (spark), and puffs and flashes (kinds 2, 3, 25,
-   26, 30 .. 38) shrink with age, (1 - age / life)^2 times their size (+0x7c); the age moves on by dt. Its caller
+/* 0x476410 (thiscall on the scene): particle slot's frame (0x12c bytes from particles). Its age (age, kept at drawAge)
+   past its life (life) frees it (stage_freeParticle); otherwise sparks move (spark), and puffs and flashes (kinds 2, 3, 25,
+   26, 30 .. 38) shrink with age, (1 - age / life)^2 times their size (size); the age moves on by dt. Its caller
    ignores the eax it leaves */
 void THISCALL (particle_update)(u8 *s, int slot, float dt)
 {
@@ -501,9 +501,9 @@ void THISCALL (particle_update)(u8 *s, int slot, float dt)
 #define A(type, offset) GAME_VAR(type, ac + (offset))
 #define AC ((Player *)ac)   /* the same by its fields (src/scene.fields) */
 
-/* the cells, armour and shield items (kinds 0 .. 5, 10 .. 19): the actor's flag (+0x3f0) that refuses them, the
+/* the cells, armour and shield items (kinds 0 .. 5, 10 .. 19): the actor's flag (timerFlags) that refuses them, the
    count raised, its limit (and how far an extended one may go past it), the message; an extended one is noted as the
-   last big pickup (+0x20fcd3c) */
+   last big pickup (lastPickup) */
 static const struct { u8 flag; u16 count, limit; u8 add, over; u32 text; } k_supplies[16] = {
 	{ 0x10, offsetof(Player, ammo[0]), offsetof(Player, ammoMax[0]), 1, 0, STR(0x4c82f4, "+1 30MM CELL") }, { 0x10, offsetof(Player, ammo[0]), offsetof(Player, ammoMax[0]), 40, 0, STR(0x4c82e4, "+40 30MM CELLS") }, { 0x20, offsetof(Player, ammo[1]), offsetof(Player, ammoMax[1]), 40, 0, STR(0x4c82d4, "+40 60MM CELLS") },
 	{ 0x40, offsetof(Player, ammo[2]), offsetof(Player, ammoMax[2]), 40, 0, STR(0x4c82c0, "+40 E-PACK CELLS") }, { 0x80, offsetof(Player, ammo[3]), offsetof(Player, ammoMax[3]), 15, 0, STR(0x4c82ac, "+15 MISSILE CELLS") }, { 0x80, offsetof(Player, ammo[3]), offsetof(Player, ammoMax[3]), 5, 0, STR(0x4c8298, "+5 MISSILE CELLS") },
@@ -512,7 +512,7 @@ static const struct { u8 flag; u16 count, limit; u8 add, over; u32 text; } k_sup
 	{ 4, offsetof(Player, shield), offsetof(Player, shieldMax), 25, 0, STR(0x4c823c, "+25 SHIELD") }, { 4, offsetof(Player, shield), offsetof(Player, shieldMax), 50, 0, STR(0x4c8230, "+50 SHIELD") }, { 4, offsetof(Player, shield), offsetof(Player, shieldMax), 100, 0, STR(0x4c8224, "+100 SHIELD") },
 	{ 8, offsetof(Player, shield), offsetof(Player, shieldMax), 100, 100, STR(0x4c820c, "+100 EXTENDED SHIELD") } };
 
-/* the item's sound (its type's +0x40 or +0x44) at its position, heard from the camera */
+/* the item's sound (its type's respawnSound or pickSound) at its position, heard from the camera */
 static void item_sound(u8 *s, int sound, u8 *it)
 {
 	sound_play3D(sound, ST->cameraPos,
@@ -592,11 +592,11 @@ static void item_pickup(u8 *s, u8 *ac, u8 *it, int i, u8 *t, int type)
 	mi->fade = 0.0f;
 }
 
-/* 0x48ed90 (thiscall on the scene): the items' frame. Live actors' touch flags (+0x53c) cleared; every item (0x28
-   bytes from +0x20fadf8, itemCount of them; its kind +0 into the 0x90-byte types at itemTypes, state +0x20, timer
-   +0x24, position +0xc): a taken one comes back after its type's time (+0x48, with its sound +0x40); a present one
-   spins (+0x1c, 600 a second, but kind 0x22) and the first live actor within 1.5 of its radius (+0x3e8) on every
-   axis touches it (item_pickup). An actor touching no warp zone forgets the last one (+0x538 -1). Its callers ignore
+/* 0x48ed90 (thiscall on the scene): the items' frame. Live actors' touch flags (onWarp) cleared; every item (0x28
+   bytes from items, itemCount of them; its kind +0 into the 0x90-byte types at itemTypes, state taken, timer
+   fade, position pos): a taken one comes back after its type's time (respawnTime, with its sound respawnSound); a present one
+   spins (angle, 600 a second, but kind 0x22) and the first live actor within 1.5 of its radius (radius) on every
+   axis touches it (item_pickup). An actor touching no warp zone forgets the last one (lastWarp -1). Its callers ignore
    the eax it leaves */
 void THISCALL (item_update)(u8 *s, float dt)
 {
@@ -664,7 +664,7 @@ static u32 table_rand_below(u32 n)
 	return r;
 }
 
-/* the particle's direction (+0x10, from g_vecOrigin through its matrix +0x2c) */
+/* the particle's direction (pos, from g_vecOrigin through its matrix matrix) */
 static void particle_heading(u8 *p)
 {
 	const float *m = PR->matrix, *v = (const float *)ADDR(g_vecOrigin);
@@ -673,7 +673,7 @@ static void particle_heading(u8 *p)
 		                                    &m[12 + r]));
 }
 
-/* a matrix from the particle's own (+0x28) turned by a random whole degree about z (its +0x2c), and the direction */
+/* a matrix from the particle's own (matrixFrom) turned by a random whole degree about z (its matrix), and the direction */
 static void particle_spin(u8 *p)
 {
 	glPushMatrix();
@@ -685,8 +685,8 @@ static void particle_spin(u8 *p)
 	particle_heading(p);
 }
 
-/* the particle's +0x2c the inverse of a look from its position (+0x10) to its target (+0x1c), stretched by their
-   distance (z) and xy (1, or by size +0x80) */
+/* the particle's matrix the inverse of a look from its position (pos) to its target (target), stretched by their
+   distance (z) and xy (1, or by size baseSize) */
 static void particle_aim(u8 *p, int by_size)
 {
 	float d[3];
@@ -705,7 +705,7 @@ static void particle_aim(u8 *p, int by_size)
 	glPopMatrix();
 }
 
-/* a beam (kinds 25 / 26, its colour): its matrix looking back from the target (+0x1c) away from the position, and
+/* a beam (kinds 25 / 26, its colour): its matrix looking back from the target (target) away from the position, and
    unless it is a remote one (+0xc 1) small particles (kind 0, of its size) along it, one per 200 units */
 static void particle_beam(u8 *s, u8 *p, u32 colour)
 {
@@ -788,8 +788,8 @@ static void particle_trail(u8 *p, const u8 *desc, u32 margin)
 }
 
 /* 0x475070 (thiscall on the scene): particle slot (0x12c bytes from particles) set up from its descriptor: a
-   serial id, in use. A descriptor flagged +0x30 is a kind 50 effect (its 0x48 bytes from +0x34). Otherwise the
-   kind (+0), owner, position, target, a matrix to copy, the size (+0x2c); then by kind its life (+0x70) and: 2 / 3
+   serial id, in use. A descriptor flagged isQuad is a kind 50 effect (its 0x48 bytes from quad). Otherwise the
+   kind (+0), owner, position, target, a matrix to copy, the size (size); then by kind its life (life) and: 2 / 3
    a sound at the position; 4 its colour from +0x20; 9 a fade; 10 / 11 / 18 a random spin; 12 .. 17 the heading
    through its matrix; 20 / 21 / 24 aimed at the target; 25 / 26 beams; 40 .. 49 trails */
 void THISCALL (particle_init)(u8 *s, int slot, const u8 *desc)

@@ -41,7 +41,7 @@ static float *next_record(u8 *vv, int countAt, int full, int size)
 	return r;
 }
 
-/* 0x485120: an object's two points p and q (into the 36-byte records of the list at +0x908c); the object's first
+/* 0x485120: an object's two points p and q (into the 36-byte records of the list at segments); the object's first
    word kept with them */
 void THISCALL (ViewVolume_addSegment)(u8 *vv, const u32 *object, const float *p, const float *q, int flag)
 {
@@ -85,7 +85,7 @@ static int quad_outside(const float *r)
 	return all_outside(common);
 }
 
-/* 0x4848e0: a quad of four points p (into the 92-byte records of the list at +0x9070) */
+/* 0x4848e0: a quad of four points p (into the 92-byte records of the list at quads) */
 void THISCALL (ViewVolume_addQuad)(u8 *vv, int id, const u32 *uv0, const u32 *uv1, const u32 *colour, const float *p, u32 extra,
                            int flag)
 {
@@ -107,9 +107,9 @@ void THISCALL (ViewVolume_addQuad)(u8 *vv, int id, const u32 *uv0, const u32 *uv
 	quad_fields(r, id, uv0, uv1, colour, extra);
 }
 
-/* 0x484ca0: a camera-facing quad at p: p to camera space (the matrix at +0x90f0; x and y rounded, z not), its corners
+/* 0x484ca0: a camera-facing quad at p: p to camera space (the matrix at modelview; x and y rounded, z not), its corners
    (x + A.x, y + A.y), (x + B.x, y + A.y), (x + B.x, y + B.y), (x + A.x, y + B.y) at depth z + dz projected by the
-   matrix at +0x90b0. Corners 0 and 3 are rounded to floats first, 1 and 2 are not, as in the original */
+   matrix at projection. Corners 0 and 3 are rounded to floats first, 1 and 2 are not, as in the original */
 void THISCALL (ViewVolume_addBillboard)(u8 *vv, int id, const u32 *uv0, const u32 *uv1, float dz, const u32 *colour, const float *A,
                            const float *B, const float *p, u32 extra, int flag)
 {
@@ -149,9 +149,9 @@ static X row(X a, const float *ma, X b, const float *mb, X c, const float *mc, c
 }
 #define LD(f) fld_m(&(f))
 
-/* 0x4842d0: a triangle (P: three points) into the 0x60-byte records of the list at +0x905c: taken through the model
+/* 0x4842d0: a triangle (P: three points) into the 0x60-byte records of the list at triangles: taken through the model
    matrix M first when there is one (the first point's coordinates kept unrounded, the others rounded), then the view
-   matrix (+0x9130) into clip space (+0x28); with cull 1 dropped when all three are outside one plane. The record:
+   matrix (clip) into clip space (points); with cull 1 dropped when all three are outside one plane. The record:
    id, six words of info (when id >= 0), three more, raw, M; raw 1 keeps the untransformed points (w = 1) instead.
    Every sum in the original's operand order. Returns what the original leaves in eax: the count when full or culled,
    count + 1 for a null list, else raw, or p2.z's bits when raw is 1 */
@@ -224,8 +224,8 @@ int THISCALL (ViewVolume_addTriangle)(u8 *vv, int id, const u32 *info6, const u3
 	return ret;
 }
 
-/* 0x483fd0: the view's vertex buffer freed (when it owns one, +0xc) and reset; if the driver has GL_EXT_vertex_array,
-   its three entry points looked up (+0x14 .. +0x1c) and the flag (+0x10) set */
+/* 0x483fd0: the view's vertex buffer freed (when it owns one, ownsBlock) and reset; if the driver has GL_EXT_vertex_array,
+   its three entry points looked up (glArrays[0] .. glArrays[2]) and the flag (entryPointsSet) set */
 void THISCALL (gfx_initVertexArrayExt)(u8 *view)
 {
 	ViewVolume *vw = (ViewVolume *)view;
@@ -256,12 +256,12 @@ static void corner(float *out, const float *m, const float *px, long double y, l
 }
 
 /* 0x4853c0 (thiscall on a view volume): every part of model with primitives queued for drawing under the matrix
-   (none given: the current GL modelview into the volume's next matrix slot, +0x9040, +0x9044 used of +0x903c; full:
-   +0x9094 set and nothing queued). With cull 1 a part whose box (+0x68 low, +0x74 high) lies wholly beyond one side
-   of the clip volume (through the projection +0x9130 times the matrix) is left out. Each queued part goes to the end
-   of its material's list (material, or the part's +0x44; plus one; the volume's 0x1c-byte entries +0x9034, +0x9038
-   used of +0x9030: full sets +0x9090; a material's first entry is listed at +0x20, +0x3024 of them; heads +0x3028,
-   tails +0x602c): the part, its colours (from extra, by the part's +0x48), the light factors, the colour (a tint added), the matrix,
+   (none given: the current GL modelview into the volume's next matrix slot, matrices, matrixCount used of matrixLimit; full:
+   matricesFull set and nothing queued). With cull 1 a part whose box (box low, box[3] high) lies wholly beyond one side
+   of the clip volume (through the projection clip times the matrix) is left out. Each queued part goes to the end
+   of its material's list (material, or the part's texture; plus one; the volume's 0x1c-byte entries entries, entryCount
+   used of entryLimit: full sets entriesFull; a material's first entry is listed at materialOrder, materialCount of them; heads materialHeads,
+   tails materialTails): the part, its colours (from extra, by the part's colourBase), the light factors, the colour (a tint added), the matrix,
    an extra matrix (multiplied after it; 0 none) */
 void THISCALL (ViewVolume_projectObject)(u8 *view, u8 *model, u32 *extra, const float *matrix, u32 factors, u32 colour, int cull,
                                          int material, u32 extraMatrix)
@@ -345,7 +345,7 @@ void THISCALL (ViewVolume_projectObject)(u8 *view, u8 *model, u32 *extra, const 
 
 /* ---- ViewVolume_draw: drawing what was queued ---- */
 
-typedef void (STDCALL *ArrayFn)(int size, u32 type, int stride, int count, const void *p);   /* +0x14.. (an extension's) */
+typedef void (STDCALL *ArrayFn)(int size, u32 type, int stride, int count, const void *p);   /* glArrays.. (an extension's) */
 
 /* the fog range (start, end) back with fog on, when it was on; else fog off */
 static void fog_set(u8 on, const float *range)
@@ -374,7 +374,7 @@ static void identity_matrices(void)
 	glLoadIdentity();
 }
 
-/* texture t (an id: manager t / 512, slot t % 512) bound, counted in +0x90ac */
+/* texture t (an id: manager t / 512, slot t % 512) bound, counted in textureBinds */
 static void bind(u8 *vv, int t)
 {
 	glEnable(GL_TEXTURE_2D);
@@ -405,8 +405,8 @@ static void scroll(float *uv, int n, int kind, const float *b)
 	}
 }
 
-/* the colour buffer (+0x904c, room for +0x9048 vertices) about to take the mesh's colours: 0 when they do not fit;
-   the most so far kept in +0x9050 */
+/* the colour buffer (colours, room for colourLimit vertices) about to take the mesh's colours: 0 when they do not fit;
+   the most so far kept in colourMost */
 static int fits(u8 *vv, const u8 *mesh)
 {
 	int n = ((const ShapePart *)mesh)->vertexCount;
@@ -426,7 +426,7 @@ static void invert(float *inv, const float *m)
 	}
 }
 
-/* an item's vertex colours: its own (+4), the mesh's (+0x58), or either lit by the factors (+8, through the inverse
+/* an item's vertex colours: its own (+4), the mesh's (colours), or either lit by the factors (+8, through the inverse
    of the item's matrix) and / or tinted (+0xc) in the colour buffer. NULL when the mesh does not fit the buffer */
 static const u32 *item_colours(u8 *vv, const u32 *it, const u8 *mesh)
 {
@@ -475,10 +475,10 @@ static const u32 *item_colours(u8 *vv, const u32 *it, const u8 *mesh)
 	return ((const u32 *)((const ShapePart *)mesh)->colours);
 }
 
-/* an opaque mesh from vertex arrays (an extension's array functions at +0x14 / +0x18 / +0x1c when set): positions,
+/* an opaque mesh from vertex arrays (an extension's array functions at glArrays[0] / glArrays[1] / glArrays[2] when set): positions,
    colours, texture coordinates when textured (a copy in uvs when the texture scrolls), under the item's matrices;
-   culling by flags 4 (none) / 8 (front), flag 0x10 no depth test; its polygons (+0x60, +0x64: mode, count,
-   indices) counted as triangles in +0x90a4 */
+   culling by flags 4 (none) / 8 (front), flag 0x10 no depth test; its polygons (primCount, prims: mode, count,
+   indices) counted as triangles in trianglesDrawn */
 static void draw_opaque(u8 *vv, const u32 *it, const u8 *mesh, const u32 *col, int id, const float *b, float *uvs)
 {
 	ArrayFn fn;
@@ -588,7 +588,7 @@ static void draw_transparent(u8 *vv, const u32 *it, const u8 *mesh, const u32 *c
 }
 
 /* a queued triangle (0x60-byte record): colours (+0x1c), texture coordinates (+4) when textured, clip-space points
-   (+0x28, w used by four) */
+   (points, w used by four) */
 static void triangle(const u32 *r, int textured, int four)
 {
 	for (int k = 0; k < 3; k++) {
@@ -602,8 +602,8 @@ static void triangle(const u32 *r, int textured, int four)
 	}
 }
 
-/* a queued billboard (0x5c-byte record): colour (+0x14), its four points (+0x48 back to +0x18) with the corners'
-   texture coordinates (from +4 and +0xc) when textured */
+/* a queued billboard (0x5c-byte record): colour (colour), its four points (points[3] back to points) with the corners'
+   texture coordinates (from +4 and uv1) when textured */
 static void billboard(const u32 *r, int textured)
 {
 	glColor4ubv(r + 5);
@@ -626,12 +626,12 @@ static void billboard(const u32 *r, int textured)
 static const float k_third = -0.33333334f, k_half = -0.5f;   /* the depth keys: minus the mean z */
 
 /* 0x485af0: draw what ViewVolume_projectObject queued (mode 1 wireframe, 2 untextured; b the texture scroll).
-   Under the view volume's matrices (+0x90b0 / +0x90f0) and the caller's fog: per material (count +0x3024, ids +0x20:
-   0 none, else the texture id + 1) its item chain (+0x3028 + id * 4: mesh, colours, factors, tint, matrix, second
+   Under the view volume's matrices (projection / modelview) and the caller's fog: per material (count materialCount, ids materialOrder:
+   0 none, else the texture id + 1) its item chain (materialHeads + id * 4: mesh, colours, factors, tint, matrix, second
    matrix, next), opaque meshes drawn, transparent ones (flag 1, or a second matrix) queued as triangles. Then the
-   queued triangles with the first list kind (1) as they are, the lines (+0x9088), and the rest depth-sorted and
+   queued triangles with the first list kind (1) as they are, the lines (segments), and the rest depth-sorted and
    merged back to front with the billboards (kind 2), billboards of kind 3 last; the fog range mapped through the
-   projection (+0x90d8..) for the identity-matrix passes. A mesh too big for the colour buffer is retried forever,
+   projection (projection[10]..) for the identity-matrix passes. A mesh too big for the colour buffer is retried forever,
    as the original does */
 void THISCALL (ViewVolume_draw)(u8 *vv, int mode, float b)
 {
@@ -681,7 +681,7 @@ void THISCALL (ViewVolume_draw)(u8 *vv, int mode, float b)
 			glDisable(GL_TEXTURE_2D);
 	}
 
-	/* the queued triangles of kind 1, each under its own matrix (+0x58) */
+	/* the queued triangles of kind 1, each under its own matrix (matrix) */
 	load_matrices(&VV->projection[0], &VV->modelview[0]);
 	fog_set(fog, range);
 	int cur = -1;

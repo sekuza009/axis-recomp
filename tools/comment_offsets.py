@@ -54,7 +54,7 @@ items = []
 for p in sorted(glob.glob('src/**/*.c', recursive=True)):
 	if 'data' in os.path.dirname(p) or (only and only not in p.replace('\\', '/')):
 		continue
-	t = open(p, encoding='latin-1').read()
+	t = open(p, encoding='latin-1', newline='').read()
 	for cm in re.finditer(r'/\*.*?\*/', t, re.S):
 		c = cm.group(0)
 		if not re.search(r'\+0x[0-9a-f]+', c):
