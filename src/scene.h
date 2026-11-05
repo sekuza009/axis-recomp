@@ -22,7 +22,7 @@ typedef struct EventLine {
 
 /* a round as fired (Player.rounds; bullet_spawn / bullet_init take it) */
 typedef struct FiredRound {
-	i32 received;   /* +0x0: (by use) 0: fired here; 1: another machine's (its hit known) */
+	i32 received;   /* +0x0: (by use; seen running) 0: fired here; 1: another machine's (its hit known) */
 	i32 weapon;   /* +0x4: its item (ActorInfo index) */
 	float from[3];   /* +0x8: where it starts (the muzzle) */
 	i32 hitPlane;   /* +0x14: a received round's collision plane (-1 none) */
@@ -1045,7 +1045,7 @@ typedef struct PlayerRecord {
 	u8 _pad0047fc2[0x4];
 	i32 flagShown;   /* +0x47fc6: 1: its flag is shown (ranking, markers) */
 	i32 flagChanged;   /* +0x47fca: 1: to be copied into the flag atlas (flagShown: it is there) */
-	i32 flagSent;   /* +0x47fce: (by use) its flag's pixels sent so far (0x180 = 24 x 16: all; the map's players start with all) */
+	i32 flagSent;   /* +0x47fce: (by use; seen running) its flag's pixels sent so far (0x180 = 24 x 16: all; the map's players start with all) */
 } PlayerRecord;
 
 /* a manager's name tree node: by strcmp, smaller left */
@@ -1788,7 +1788,7 @@ typedef struct Scene {
 	i32 matchOver;   /* +0x2342399: (by use; seen running) 1: the result is shown */
 	float endTime;   /* +0x234239d: (by use; seen running) seconds left of a round's end (10 from the result) */
 	i32 matchLeaving;   /* +0x23423a1: 1: the match is being left: back to the menu when quitDelay runs out (quit, data loss, lost connection, unstable network, the last mission won); the HUD hides */
-	float quitDelay;   /* +0x23423a5: (by use) seconds before leaving after the round is over (3) */
+	float quitDelay;   /* +0x23423a5: (by use; seen running) seconds before leaving after the round is over (3) */
 	i32 stageCleared;   /* +0x23423a9: 1: the local player (or team) reached the score limit on the campaign's current stage (g_missionStage == g_progress): the progress moves on; 0: MISSION FAILED, RETRY */
 	i32 scoreLimit;   /* +0x23423ad: > 0: the points still needed are shown */
 	i32 timeLimit;   /* +0x23423b1: minutes; > 0: the time left is shown */
@@ -1802,7 +1802,7 @@ typedef struct Scene {
 	i32 geometryPerRow[6];   /* +0x23423e5: (by use; seen running) the six geometry tables' entries per row (6 3 6 7 10 0x18: Game_ctor; net_sendGamePacket's checks) */
 	i32 dataLossPending;   /* +0x23423fd: 1: a data mismatch found (the server's parts check every 20 s, or a packet's map / part tables; dataLossCode says which): the next frame shows the data loss notice and leaves */
 	i32 dataLossCode;   /* +0x2342401: shown when a game ends for lost data */
-	float partsCheckTime;   /* +0x2342405: (by use) the local player's parts checked every 20 s (network) */
+	float partsCheckTime;   /* +0x2342405: (by use; seen running) the local player's parts checked every 20 s (network) */
 	float previewTurn;   /* +0x2342409: the ARM CENTER preview's turn while the right button is held: the cursor's x across the screen as 0 .. 3600, less the view's angle (armc_drawPreview3D) */
 	i32 localPlayer;   /* +0x234240d: the player at this machine (index into players) */
 	i32 localRecordSet;   /* +0x2342411: 1: the local player's record is set this match (local_spawn does it once; cleared at a new match / team change) */
@@ -1861,7 +1861,7 @@ typedef struct Scene {
 	i32 cheatPlayer;   /* +0x2343247: see cheatPending (its low byte sent) */
 	i32 cheatCode;   /* +0x234324b: see cheatPending (its low byte sent) */
 	i32 cheatPending;   /* +0x234324f: 1: a cheat-used notice (packet kind 6: cheatPlayer, cheatCode; msg_cheatUsed on the other side) to send; never set in the game */
-	i32 itemLevelsTaken;   /* +0x2343253: (by use) 1: the host's item levels (game packet 14) taken in; later ones ignored */
+	i32 itemLevelsTaken;   /* +0x2343253: (by use; seen running) 1: the host's item levels (game packet 14) taken in; later ones ignored */
 	i32 mouseX;   /* +0x2343257: (by use; seen running) the cursor this frame (g_mouseX), screen pixels */
 	i32 mouseY;   /* +0x234325b */
 	i32 holdAltitude;   /* +0x234325f: held: the fixed-altitude key (right button); forward / backward then move up / down (the up / down keys set it with them) */
@@ -1888,7 +1888,7 @@ typedef struct Scene {
 	i32 pitchDownHeld;   /* +0x23432bf: down held without Ctrl: the camera pitches down */
 	u8 _pad23432c3[0x8];
 	i32 cameraReset;   /* +0x23432cb: 1 this frame: the camera settings taken from the presets again (the player spawned; a preset picked by a spectator or in the replay viewer: right click, the number keys; Space in the free camera) */
-	i32 quitAsked;   /* +0x23432cf: (by use) 1: the match is to be left (QUIT / no retry) */
+	i32 quitAsked;   /* +0x23432cf: (by use; seen running) 1: the match is to be left (QUIT / no retry) */
 	i32 fKeys[6];   /* +0x23432d3: (by use) F1 .. F6 held (the replay viewer) */
 	i32 prevWeaponPressed;   /* +0x23432eb: (by use; seen running) pressed this frame: pre-weapon */
 	i32 nextWeaponPressed;   /* +0x23432ef: next-weapon */
