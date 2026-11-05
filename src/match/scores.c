@@ -8,7 +8,7 @@ void THISCALL (scene_resetScores)(Scene *scene)
 {
 	for (int i = 0; i < 16; i++) {
 		Player *p = &scene->players[i];
-		p->statD8 = 0;
+		p->inPlay = 0;
 		p->kills = 0;
 		p->deaths = 0;
 		p->killsCounted = 0;

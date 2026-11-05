@@ -1852,7 +1852,7 @@ static void team_change(u8 *g, int i, const char *pkt, u32 notice)
 	player_setName(STAGE, i, pkt + 4);   /* player_setName */
 	actor_name(g, i, pkt + 4);
 	GAME_THISCALL(notice, void, void *, int, int)(g, i, pkt[3]);
-	if (pkt[3] >= 0 || ((Player *)ACTOR(i))->statD8 != 1)
+	if (pkt[3] >= 0 || ((Player *)ACTOR(i))->inPlay != 1)
 		return;
 	actor_deactivate(STAGE, i);   /* actor_deactivate */
 	((Player *)ACTOR(i))->deaths++;

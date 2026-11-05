@@ -313,7 +313,7 @@ void THISCALL (bullet_init)(u8 *s, int slot, int id, int owner, int a4, const u8
 	BU->hitActor = -1;
 	BU->homeTimer = 0.0f;
 	BU->link = a4;
-	if (w->tracer > 0 && a4 < 0 && BU->owner == ST->playerActor) {
+	if (w->guidance > 0 && a4 < 0 && BU->owner == ST->playerActor) {
 		const float *at = BU->prev;
 		float *tip = BU->tip;
 		long double tx = fmul_m(fld_m(&aim[0]), &k_200000f);
@@ -330,7 +330,7 @@ void THISCALL (bullet_init)(u8 *s, int slot, int id, int owner, int a4, const u8
 	memcpy(&rec[2], BU->prev, 12);
 	memcpy(&rec[5], (const void *)OBJ(g_vecZero2), 12);
 	rec[8] = BU->colour;
-	float size = f32(fld_m(&w->flashSize));
+	float size = f32(fld_m(&w->hitRange));
 	memcpy(&rec[11], &size, 4);
 	particle_spawn(s, rec);
 	int sound = w->sound;
@@ -369,7 +369,7 @@ static void effect(u8 *s, u32 *r, u32 kind, u32 flag, const void *at, const void
 /* the weapon's effect size (+0x2df0), as the original passes it through the FPU */
 static u32 effect_size(const u8 *w)
 {
-	float v = (float)fld_m(&WI->flashSize);
+	float v = (float)fld_m(&WI->hitRange);
 	return BITS(v);
 }
 
@@ -402,12 +402,12 @@ static void beam(u8 *s, u8 *b, const u8 *w, u32 *r, int flying)
 {
 	float *prev = BU->prev, *cur = BU->pos, inv[16], a[3];
 	look_inverse(b, inv, 0);
-	float half = f32(fld_m(&WI->flashSize)), minus;
+	float half = f32(fld_m(&WI->hitRange)), minus;
 	for (int k = 0; k < 3; k++)
 		a[k] = f32(fadd_m(fadd_m(fmul_m(fld_m(&half), &inv[4 + k]), &k_0f), &k_0f));
 	offset_point(BU->trail[0][0], a, prev);
 	offset_point(BU->trail[1][0], a, cur);
-	minus = f32(-fld_m(&WI->flashSize));
+	minus = f32(-fld_m(&WI->hitRange));
 	for (int k = 0; k < 3; k++)
 		a[k] = f32(fadd_m(fadd_m(fmul_m(fld_m(&minus), &inv[4 + k]), &k_0f), &k_0f));
 	offset_point(BU->trail[0][1], a, prev);
@@ -463,19 +463,19 @@ static void trail(u8 *b, const u8 *w, int flying)
 	look_inverse(b, inv, !(prev[0] < cur[0]) && !(prev[0] > cur[0]) && !(prev[2] < cur[2]) && !(prev[2] > cur[2]));
 	int i = BU->trailCount % 20;
 	float (*ring)[3] = BU->trail[i];
-	long double half = fld_m(&WI->flashSize);
+	long double half = fld_m(&WI->hitRange);
 	for (int k = 0; k < 3; k++)
 		a[k] = f32(fmul_m(half, &inv[4 + k]));
 	offset_point(ring[0], a, prev);
-	half = fld_m(&WI->flashSize);
+	half = fld_m(&WI->hitRange);
 	for (int k = 0; k < 3; k++)
 		a[k] = f32(fmul_m(half, &inv[k]));
 	offset_point(ring[1], a, prev);
-	half = -fld_m(&WI->flashSize);
+	half = -fld_m(&WI->hitRange);
 	for (int k = 0; k < 3; k++)
 		a[k] = f32(fmul_m(half, &inv[4 + k]));
 	offset_point(ring[2], a, prev);
-	half = -fld_m(&WI->flashSize);
+	half = -fld_m(&WI->hitRange);
 	float *last = ring[3];
 	for (int k = 0; k < 2; k++)
 		a[k] = f32(fmul_m(half, &inv[k]));
@@ -663,12 +663,12 @@ static void home(u8 *s, u8 *b, const u8 *w)
 	float *prev = BU->prev, *vel = BU->vel, spd, rate, T[3];
 	if (WI->shotMode != 3) {
 		BITS(spd) = BITS(WI->velocity);
-		BITS(rate) = BITS(WI->tracer);
+		BITS(rate) = BITS(WI->guidance);
 	} else {
 		long double x = fsub_m(fmul_m(fld_m(&BU->age), &k_4f), &k_1f);   /* 4 age - 1 */
 		spd = f32(fmul_m(fadd_m(((x * x) * x) * x, &k_tenthsToDegrees), &WI->velocity));
 		long double y = fadd_m(fld_m(&BU->age), &k_1f);
-		rate = f32(fdivr_m((y * y) * y, &WI->tracer));
+		rate = f32(fdivr_m((y * y) * y, &WI->guidance));
 	}
 	int tg = BU->link;
 	for (int k = 0; k < 3; k++)
@@ -704,7 +704,7 @@ static void home(u8 *s, u8 *b, const u8 *w)
 static void fly_local(u8 *s, u8 *b, const u8 *w, const float *dt)
 {
 	float *prev = BU->prev, *cur = BU->pos, *vel = BU->vel, *step = BU->step;
-	if (WI->tracer > 0 && WI->velocity > 0) {
+	if (WI->guidance > 0 && WI->velocity > 0) {
 		long double v = fsub_m(fld_m(&BU->homeTimer), dt);
 		BU->homeTimer = (float)v;
 		if (!(v > 0))
@@ -713,7 +713,7 @@ static void fly_local(u8 *s, u8 *b, const u8 *w, const float *dt)
 	if (WI->velocity > 0) {
 		for (int k = 0; k < 3; k++)
 			step[k] = f32(fmul_m(fld_m(dt), &vel[k]));
-		if (!(fadd_m(fld_m(dt), &BU->age) > BU->life) || WI->tracer > 0) {
+		if (!(fadd_m(fld_m(dt), &BU->age) > BU->life) || WI->guidance > 0) {
 			cur[0] = f32(fadd_m(fld_m(&step[0]), &prev[0]));
 			cur[1] = f32(fadd_m(fld_m(&prev[1]), &step[1]));
 			cur[2] = f32(fadd_m(fld_m(&prev[2]), &step[2]));
@@ -730,7 +730,7 @@ static void fly_local(u8 *s, u8 *b, const u8 *w, const float *dt)
 	for (int j = 0; j < ST->actorCount; j++) {
 		if (ST->actors[j].state != 1 || !(ST->actors[j].blinkTime > 3.0f) || j == BU->owner || ST->actors[j].cameraValue != 0)
 			continue;
-		float radius = f32(fadd_m(fld_m(&ST->actors[j].radius), &WI->flashSize));
+		float radius = f32(fadd_m(fld_m(&ST->actors[j].radius), &WI->hitRange));
 		if (math_segmentSphere(prev, cur, dir, ST->actors[j].nextPos, radius, hit, &t) == 1 && !(t >= best)) {
 			BU->hitActor = j;
 			memcpy(cur, hit, 12);
@@ -742,7 +742,7 @@ static void fly_local(u8 *s, u8 *b, const u8 *w, const float *dt)
 		BU->hit = 0;
 		BITS(BU->life) = BITS(BU->age);
 	}
-	if (WI->tracer > 0 && BU->hitActor < 0) {
+	if (WI->guidance > 0 && BU->hitActor < 0) {
 		float h[3];
 		int r = collision_rayTrace(s, prev, cur, h);
 		BU->hit = r;

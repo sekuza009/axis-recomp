@@ -450,7 +450,7 @@ static void main_draw(Scene *scene)
 		gfx_fillRect(0, 0, gfx_getWidth(), h);
 	}
 	if (scene->playing == 1 && (player->alert == 1
-	    || (player->actorType >= 0 && scene->actorInfo[player->actorType].ringRange > 0.0f))) {
+	    || (player->actorType >= 0 && scene->actorInfo[player->actorType].targetingTime > 0.0f))) {
 		part(HUD_PIXELS);
 		main_ring(scene, player);
 	}

@@ -866,7 +866,7 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 	if (i == ST->playerActor) {   /* the lock-on warnings (lockWarnings per actor), sorted longest first (lockTimes / lockIds) */
 		float *lock = ST->lockWarnings;
 		int *count = &ST->lockCount;
-		if (weapon && ((ActorInfo *)weapon)->ringRange > 0) {
+		if (weapon && ((ActorInfo *)weapon)->targetingTime > 0) {
 			for (int j = 0; j < ST->actorCount; j++) {
 				float *seen = &ST->actors[j].lockSize;
 				if (j == i || ST->actors[j].state != 1) {
@@ -879,7 +879,7 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 					if (!(v >= 0))
 						*seen = 0;
 				}
-				if (!(fmul_m(fld_m(&AC->lockOnTime), &((ActorInfo *)weapon)->ringRange) >= ST->actors[j].lockedOn) && AC->team != ST->actors[j].team) {
+				if (!(fmul_m(fld_m(&AC->lockOnTime), &((ActorInfo *)weapon)->targetingTime) >= ST->actors[j].lockedOn) && AC->team != ST->actors[j].team) {
 					if (!(lock[j] > 0)) {
 						sound_playVolume(0x12, 0x64);
 						*seen = 0.25f;
@@ -1005,11 +1005,11 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 						Vec3_rotateAxis(shot_dir, 1, ftol(fld_m(&AC->pitch)));
 						Vec3_rotateAxis(shot_dir, 2, ftol(fld_m(&AC->yaw)));
 					} else {   /* a bot's aim wanders by +-(+0x74) */
-						u32 sp = (u32)(AC->spawn74 * 2);
+						u32 sp = (u32)(AC->aimError * 2);
 						int r1 = (int)sp > 0 ? (int)rand_below(sp) : 0;
-						Vec3_rotateAxis(shot_dir, 1, ftol(fld_m(&AC->pitch)) - AC->spawn74 + r1);
-						int r2 = (int)(u32)(AC->spawn74 * 2) > 0 ? (int)rand_below((u32)(AC->spawn74 * 2)) : 0;
-						Vec3_rotateAxis(shot_dir, 2, ftol(fld_m(&AC->yaw)) - AC->spawn74 + r2);
+						Vec3_rotateAxis(shot_dir, 1, ftol(fld_m(&AC->pitch)) - AC->aimError + r1);
+						int r2 = (int)(u32)(AC->aimError * 2) > 0 ? (int)rand_below((u32)(AC->aimError * 2)) : 0;
+						Vec3_rotateAxis(shot_dir, 2, ftol(fld_m(&AC->yaw)) - AC->aimError + r2);
 					}
 					if (collision_rayTrace(s, AC->pos, shot_at, v28) != 0) {   /* the muzzle inside a wall */
 						if (i == ST->playerActor && AC->firePrev == 0)

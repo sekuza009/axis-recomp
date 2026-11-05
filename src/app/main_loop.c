@@ -265,7 +265,7 @@ void THISCALL (match_combatInput)(u8 *s)
 		return;
 	if (SC->chatMode == 0 && SC->escMenuOpen == 0) {
 		if (SC->playing == 0) {
-			if (SC->localAlive == 0 || (SC->network == 0 && SC->players[SC->localPlayer].statD8 == 0)) {
+			if (SC->localAlive == 0 || (SC->network == 0 && SC->players[SC->localPlayer].inPlay == 0)) {
 				if (pressed2((OBJ(g_controls) + 0x50), (OBJ(g_controls) + 0x54)))
 					SC->quitAsked = 1;
 			} else {
@@ -693,7 +693,7 @@ static void choose_followed(u8 *s, int f)
 			unfollow(s);
 		else
 			for (;;) {
-				if (SC->players[next].statD8 == 1) {
+				if (SC->players[next].inPlay == 1) {
 					SC->watchedPlayer = next;
 					SC->watchClear[2] = 0;
 					break;
@@ -1345,7 +1345,7 @@ static void local_spawn(u8 *s)
 	}
 	if (SC->teamGame == 1)
 		team_colours(s, SC->localPlayer, SC->localTeam);
-	else if (SC->players[SC->localPlayer].statD8 == 0)
+	else if (SC->players[SC->localPlayer].inPlay == 0)
 		for (int part = 0; part < 5; part++) {
 			float (*c)[5][2] = SC->mechColours;
 			actor_setPartColor_bits((u8 *)SCENE_STAGE(s), SC->localPlayer, part, BITS(c[0][part][0]), BITS(c[1][part][0]), BITS(c[2][part][0]),
@@ -1394,7 +1394,7 @@ static void bot_spawns(u8 *s)
 		const u8 *at = spawn_point(s, 1);
 		memcpy(copy + 1, at ? at : (const u8 *)SC->cameraSaved, 12);
 		actor_applySpawnRecord((u8 *)SCENE_STAGE(s), j, copy);
-		if (SC->players[j].statD8 == 0)
+		if (SC->players[j].inPlay == 0)
 			msg_playerJoinedTeam((Scene *)s, GAME_VAR(int, rec), player->team);
 	}
 }
@@ -1636,11 +1636,11 @@ void THISCALL (game_processGameMode)(u8 *s)
 	else if (SC->quitAsked == 1) {
 		if (SC->roundOver == 0) {
 			sound_playVolume(9, 100);
-			if (SC->localAlive == 0 || (SC->network == 0 && SC->teamAsked == 1 && SC->players[SC->localPlayer].statD8 == 0)) {
+			if (SC->localAlive == 0 || (SC->network == 0 && SC->teamAsked == 1 && SC->players[SC->localPlayer].inPlay == 0)) {
 				SC->rankingShown = 0;
 				SC->localAlive = 1;
 			}
-			escMenu_open((Scene *)s, 0, SC->players[SC->localPlayer].statD8 == 0 ? 0 : 4);
+			escMenu_open((Scene *)s, 0, SC->players[SC->localPlayer].inPlay == 0 ? 0 : 4);
 			SC->quitAsked = 0;
 		}
 	} else
@@ -1735,7 +1735,7 @@ void THISCALL (game_processGameMode)(u8 *s)
 	if (SC->teamChanged == 1
 	    || (SC->leaderMarkOff == 1 && SC->players[SC->localPlayer].state == 3 && SC->players[SC->localPlayer].markTeam == 1))
 		local_spawn(s);
-	if (SC->network == 0 && SC->localPlayer >= 0 && SC->players[SC->localPlayer].statD8 == 1 && SC->matchOver == 0)
+	if (SC->network == 0 && SC->localPlayer >= 0 && SC->players[SC->localPlayer].inPlay == 1 && SC->matchOver == 0)
 		bot_spawns(s);
 	stage_selectActor((Stage *)stage, SC->playing == 1 && SC->cameraMode == 1 ? SC->localPlayer : -1);
 	/* the keys' rates */
@@ -2070,7 +2070,7 @@ void THISCALL (game_processGameMode)(u8 *s)
 				if (SC->teamGame == 0) {
 					SC->teamAsked = 0;
 					if (SC->localPlayer >= 0)
-						SC->players[SC->localPlayer].statD8 = 0;
+						SC->players[SC->localPlayer].inPlay = 0;
 					scene_setLocalTeam((Scene *)s, -1);
 				}
 				SC->players[SC->localPlayer].killsCounted = 0;

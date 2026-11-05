@@ -326,7 +326,7 @@ void THISCALL (camera_setupView)(u8 *s, const float *pos, const float *dir, cons
 		}
 		int weapon = act->actorType;
 		if (ST->playerActor >= 0 && AC->team != act->team && weapon >= 0 &&
-		    ST->actorInfo[weapon].ringRange > 0)
+		    ST->actorInfo[weapon].targetingTime > 0)
 			AC->lockedOn = f32(fadd_m(fld_m(&dt), &AC->lockedOn));
 		else
 			AC->lockedOn = 0.0f;

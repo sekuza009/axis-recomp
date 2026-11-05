@@ -251,8 +251,8 @@ void THISCALL (script_processCommandBy)(u8 *s, int a, int trig, int entry)
 			if (actor && ac->botTarget >= 0)
 				stage_triggerActionNone(s, c[1]);
 			break;
-		case 10: if (actor) (*(int *)&ac->spawn78) = 0; break;
-		case 11: if (actor) (*(int *)&ac->spawn78) = 1; break;
+		case 10: if (actor) (*(int *)&ac->scriptFlag) = 0; break;
+		case 11: if (actor) (*(int *)&ac->scriptFlag) = 1; break;
 		case 12:
 			if (actor) {
 				(*(int *)&ac->botWait) = 0;

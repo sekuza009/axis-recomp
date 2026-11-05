@@ -100,7 +100,7 @@ void THISCALL (actor_resetSlot)(Stage *stage, int i)
 	a->level = 0;
 	a->team = -1;
 	for (int k = 0; k < 11; k++)
-		FIELD(int, a, offsetof(Player, statD8) + k * 4) = 0;   /* statD8 .. */
+		FIELD(int, a, offsetof(Player, inPlay) + k * 4) = 0;   /* inPlay .. (11 words) */
 	a->state = 0;
 	a->orderFlag = 0;
 	a->viewMarked = 0;
@@ -234,7 +234,7 @@ void THISCALL (stage_newRound)(Stage *stage)
 	}
 	stage->playerRecordCount = 0;
 	stage_clearActorSlots(stage);
-	static const short cleared[] = { offsetof(Player, statD8), offsetof(Player, kills), offsetof(Player, deaths), offsetof(Player, killsCounted),
+	static const short cleared[] = { offsetof(Player, inPlay), offsetof(Player, kills), offsetof(Player, deaths), offsetof(Player, killsCounted),
 	                                 offsetof(Player, deathsCounted), offsetof(Player, timePlayed), offsetof(Player, timeExtra), offsetof(Player, state),
 	                                 offsetof(Player, orderFlag), offsetof(Player, markSolo), offsetof(Player, markTeam) };
 	for (int i = 0; i < 100; i++) {
@@ -371,7 +371,7 @@ void THISCALL (actor_applySpawnRecord)(u8 *scene, int a, const u8 *rec)
 	u8 *actor = (u8 *)&STS->actors[a];
 	Player *act = (Player *)actor;
 #define AC act   /* the same by its fields (src/scene.fields) */
-	AC->spawn64 = SR->spawn64;
+	AC->unused1c = SR->unused1c;
 	AC->armorMax = SR->armor;
 	AC->shieldMax = SR->shield;
 	AC->armor = SR->armor;
@@ -380,9 +380,9 @@ void THISCALL (actor_applySpawnRecord)(u8 *scene, int a, const u8 *rec)
 	AC->accel = (float)(SR->accel * (long double)k_10f);
 	long double radius = SR->range;
 	AC->radiusSq = (float)(radius * radius * k_10000f);
-	AC->spawn70 = SR->spawn70;
-	AC->spawn74 = ftol(SR->spawn74 * (long double)k_10f);
-	AC->spawn78 = SR->spawn78;
+	AC->unused34 = SR->unused34;
+	AC->aimError = ftol(SR->aimError * (long double)k_10f);
+	AC->scriptFlag = SR->scriptFlag;
 	AC->dodgeSpread = (float)(SR->dodgeSpread * (long double)k_100f);
 	AC->climbSpread = (float)(SR->climbSpread * (long double)k_100f);
 	for (int k = 0; k < 5; k++)
@@ -761,12 +761,12 @@ static void mech_stats(u8 *s, u8 *ac, u8 *p, int check)
 		AC->runTop[2] = 0.0f;
 #undef LEG
 	AC->runTop[3] = f32(-fld_m(&AC->runTop[2]));
-	AC->spawn64 = 100;
+	AC->unused1c = 100;
 	BITS(AC->topSpeed) = BITS(AC->speed);
 	AC->accel = 900.0f;   /* 900 */
-	AC->spawn70 = 0x40400000;   /* 3 */
-	AC->spawn74 = 10;
-	AC->spawn78 = 0;
+	AC->unused34 = 0x40400000;   /* 3 */
+	AC->aimError = 10;
+	AC->scriptFlag = 0;
 	AC->dodgeSpread = 1000.0f;   /* 1000 */
 	AC->climbSpread = 500.0f;   /* 500 */
 	AC->botTimes[0] = 2.0f;   /* 2 */
@@ -793,7 +793,7 @@ void THISCALL (actor_setupFromParts)(u8 *s, int a, int id, u32 a3, const u32 *pp
 	u8 *p = (u8 *)&st->playerRecords[pp[0]];
 	PlayerRecord *pr = (PlayerRecord *)p;
 	mech_stats(s, ac, p, 0);
-	AC->statD8 = 1;
+	AC->inPlay = 1;
 	strcpy(AC->name, (const char *)RELOC(p) + 4);
 	AC->id = id >= 0 ? id : st->actorSerial++;
 	AC->active = 1;

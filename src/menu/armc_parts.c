@@ -10,7 +10,7 @@ static const short copied[6][2] = { { offsetof(PartInfo, slotType), offsetof(Act
 
 /* and those scaled by a constant of the game (PartInfo field, ActorInfo field, constant's address) */
 static const struct { short dst, src; u32 scale; } scaled[8] = {
-	{ offsetof(PartInfo, range), offsetof(ActorInfo, stepLength), ADDR(k_0_01f) }, { offsetof(PartInfo, speed), offsetof(ActorInfo, velocity), ADDR(k_0_01f) }, { offsetof(PartInfo, spread), offsetof(ActorInfo, spread), ADDR(k_tenthsToDegrees) }, { offsetof(PartInfo, flashSize), offsetof(ActorInfo, flashSize), ADDR(k_0_01f) }, { offsetof(PartInfo, splashRadius), offsetof(ActorInfo, splashRadius), ADDR(k_0_01f) }, { offsetof(PartInfo, cycleTime), offsetof(ActorInfo, cycleTime), OBJ(k_1000f) }, { offsetof(PartInfo, tracer), offsetof(ActorInfo, tracer), ADDR(k_tenthsToDegrees) }, { offsetof(PartInfo, ringRange), offsetof(ActorInfo, ringRange), OBJ(k_1000f) } };
+	{ offsetof(PartInfo, range), offsetof(ActorInfo, stepLength), ADDR(k_0_01f) }, { offsetof(PartInfo, speed), offsetof(ActorInfo, velocity), ADDR(k_0_01f) }, { offsetof(PartInfo, spread), offsetof(ActorInfo, spread), ADDR(k_tenthsToDegrees) }, { offsetof(PartInfo, hitRange), offsetof(ActorInfo, hitRange), ADDR(k_0_01f) }, { offsetof(PartInfo, splashRadius), offsetof(ActorInfo, splashRadius), ADDR(k_0_01f) }, { offsetof(PartInfo, cycleTime), offsetof(ActorInfo, cycleTime), OBJ(k_1000f) }, { offsetof(PartInfo, guidance), offsetof(ActorInfo, guidance), ADDR(k_tenthsToDegrees) }, { offsetof(PartInfo, targetingTime), offsetof(ActorInfo, targetingTime), OBJ(k_1000f) } };
 
 /* record rec for actor type idx; idx -1: the record emptied (its +0x40 -1) */
 static void part_info(u8 *rec, int idx)
@@ -37,7 +37,7 @@ static void part_info(u8 *rec, int idx)
 		FIELD(int, rec, copied[k][0]) = FIELD(int, info, copied[k][1]);
 	for (int k = 0; k < 8; k++) {
 		if (k == 5)
-			((PartInfo *)rec)->value2df8 = ((ActorInfo *)info)->value2df8;
+			((PartInfo *)rec)->splashBorderDamage = ((ActorInfo *)info)->splashBorderDamage;
 		FIELD(float, rec, scaled[k].dst) =
 			(float)((long double)FIELD(float, info, scaled[k].src) * GAME_VAR(float, scaled[k].scale));
 	}

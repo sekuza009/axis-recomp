@@ -377,12 +377,12 @@ void (armc_drawBuildScreen)(void)
 	stat_float(vx, y + 0x68, PART->range, STR(0x4b0354, "%.0f"), MSG(751, "m"));
 	stat_float(vx, y + 0x78, PART->speed, STR(0x4b0354, "%.0f"), MSG(759, "m/s"));
 	stat_float(vx, y + 0x88, PART->spread, STR(0x4b0334, "%.1f"), MSG(752, "'"));
-	stat_float(vx, y + 0x98, PART->flashSize, STR(0x4b0334, "%.1f"), MSG(751, "m"));
+	stat_float(vx, y + 0x98, PART->hitRange, STR(0x4b0334, "%.1f"), MSG(751, "m"));
 	stat_float(vx, y + 0xa8, PART->splashRadius, STR(0x4b0334, "%.1f"), MSG(751, "m"));
-	stat_int(vx, y + 0xb8, PART->value2df8, 0);
+	stat_int(vx, y + 0xb8, PART->splashBorderDamage, 0);
 	stat_float(vx, y + 0xc8, PART->cycleTime, STR(0x4b0354, "%.0f"), MSG(754, "ms"));
-	stat_float(vx, y + 0xd8, PART->tracer, STR(0x4b0334, "%.1f"), MSG(752, "'"));
-	stat_float(vx, y + 0xe8, PART->ringRange, STR(0x4b0334, "%.1f"), MSG(754, "ms"));
+	stat_float(vx, y + 0xd8, PART->guidance, STR(0x4b0334, "%.1f"), MSG(752, "'"));
+	stat_float(vx, y + 0xe8, PART->targetingTime, STR(0x4b0334, "%.1f"), MSG(754, "ms"));
 	stat_float(vx, y + 0xf8, PART->weight, STR(0x4b0334, "%.1f"), MSG(755, "t"));
 }
 #undef STAT

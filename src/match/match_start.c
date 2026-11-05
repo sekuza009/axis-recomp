@@ -147,7 +147,7 @@ static int random_below(u32 n)
 /* a later round: a random position in each of the six geometry tables (their counts at +0x15de6c8 .., rows of
    0x2aa .. 0xb86 dwords), the restart point, the round's tables copied (cameraMode counting through them, as in the
    original), the camera back to mode 1, nobody watched, the pointer centred, the volumes (0x4e0c90, 0x4e0c94) set
-   again, the local player's statD8 cleared, the teams (scene_setLocalTeam), the camera and its slot, a typed chat line
+   again, the local player's inPlay cleared, the teams (scene_setLocalTeam), the camera and its slot, a typed chat line
    kept (chat_keepLastLine) and the round's flags cleared */
 static void later_round(Scene *s)
 {
@@ -181,7 +181,7 @@ static void later_round(Scene *s)
 	s->roundClear4 = 0;
 	s->teamAsked = 0;
 	if (s->localPlayer >= 0)
-		s->players[s->localPlayer].statD8 = 0;
+		s->players[s->localPlayer].inPlay = 0;
 	scene_setLocalTeam(s, -1);
 	s->startCameraMode = s->cameraMode;
 	s->cameraSlot = -1;   /* (the -1 still in a register since dataLossCode) */
