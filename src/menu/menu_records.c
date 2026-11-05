@@ -12,7 +12,7 @@ static void copy_name(u32 dst, int clear_bytes, const char *src)
 }
 
 /* ---- the lobby player record (g_arenaPlayerName, its corporation and sex) ---- */
-/* 0x4050f0: "PLAYER" (0x4ad4b0), corporation and sex 0 */
+/* 0x4050f0: the name "PLAYER", corporation and sex 0 */
 void (arena_defaultPlayer)(void)
 {
 	copy_name(OBJ(g_arenaPlayerName), 32, (const char *)STR(0x4ad4b0, "PLAYER"));

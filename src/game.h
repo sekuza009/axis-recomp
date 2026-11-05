@@ -873,8 +873,8 @@ typedef struct { float r, g, b, a; } Colour;
 #define skirmish_cursorUp() GAME_FN(skirmish_cursorUp, 0x443cd0, void, void)()   /* the skirmish list's cursor up */
 #define skirmish_cursorDown() GAME_FN(skirmish_cursorDown, 0x443d10, void, void)()   /* and down */
 #define briefing_typeOut() GAME_FN(briefing_typeOut, 0x445520, void, void)()   /* the briefing typed out (menu/skirmish.c) */
-#define text_setWrapX(v) GAME_FN(text_setWrapX, 0x4017b0, int, int)(v)   /* the text wrap x (0x4ad490) */
-#define text_setBottom(v) GAME_FN(text_setBottom, 0x4017c0, int, int)(v)   /* the text's bottom (0x4ad494) */
+#define text_setWrapX(v) GAME_FN(text_setWrapX, 0x4017b0, int, int)(v)   /* the text wrap x (g_textWrapX) */
+#define text_setBottom(v) GAME_FN(text_setBottom, 0x4017c0, int, int)(v)   /* the text's bottom (g_textBottom) */
 #define timer_now() GAME_FN(timer_now, 0x4301e0, long double, void)()   /* the time in ticks of the shifted performance counter, 80-bit */
 #define QueryPerformanceFrequency(out) IMPORT(0x4a913c, int, u64 *)(out)
 #define scene_updateRanking(scene) GAME_THISFN(scene_updateRanking, 0x462150, void, void *)(scene)   /* the ranking and its "new king" message */

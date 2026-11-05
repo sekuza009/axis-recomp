@@ -372,7 +372,10 @@
 #define g_hangulVowelSetTail ((signed char *)IMG(0x4ad43a))   /* signed char[22]; the lead's glyph set by the vowel; with a tail */
 #define g_hangulLeadSetPlain ((signed char *)IMG(0x4ad450))   /* signed char[20]; the vowel's glyph set by the lead; no tail */
 #define g_hangulLeadSetTail ((signed char *)IMG(0x4ad464))   /* signed char[20]; the vowel's glyph set by the lead; with a tail */
-#define g_hangulTailSet ((signed char *)IMG(0x4ad478))   /* signed char[22]; the tail's glyph set by the vowel (2 padding bytes before 0x4ad490) */
+#define g_hangulTailSet ((signed char *)IMG(0x4ad478))   /* signed char[22]; the tail's glyph set by the vowel (2 padding bytes before g_textWrapX) */
+#define g_ksSyllableJohab ((u16 *)IMG(0x4b2b30))   /* u16[2350]; the Johab code of each KS X 1001 Hangul syllable (rows 0xb0 .. 0xc8, 94 a row) */
+#define g_ksJamoCodes ((u16 *)IMG(0x4b3d8c))   /* u16[39]; the KS X 1001 jamo (row 0xa4) text_hangulConvert knows */
+#define g_ksJamoJohab ((u16 *)IMG(0x4b3ddc))   /* u16[39]; their Johab codes */
 #define g_matchPlayerName ((char *)IMG(0x4dedd8))   /* char[32]; the player's name for the match (match_name clears 32 bytes) */
 #define g_mapInfoDir ((char *)IMG(0x4dedf8))   /* char[261]; the second data path ("initdata/"; app_setDataPaths clears 0x105 bytes; mapinfo.dat's folder) */
 #define g_stageDir ((char *)IMG(0x680bc4))   /* char[261]; the maps' folder ("stage/"; app_setDataPaths clears 0x105 bytes) */

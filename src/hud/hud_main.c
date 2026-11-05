@@ -16,8 +16,8 @@
 #include "hud.h"
 #include "../wide.h"
 
-#define SX (1.0f / 640)          /* 0x4a9578 */
-#define SY (1.0f / 480)          /* 0x4a9574 */
+#define SX (1.0f / 640)          /* k_0_0015625f */
+#define SY (1.0f / 480)          /* k_0_00208333f */
 
 /* k HUD units across / down, in pixels, unrounded */
 static long double wx(float k) { return (long double)gfx_getWidth() * SX * k; }

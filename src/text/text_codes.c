@@ -229,16 +229,16 @@ static int ks_row(int hi, int lo, int base, int first)
 	return (r / 2 + base) * 256 + b;
 }
 
-/* 0x44aac0: one EUC-KR (KS X 1001) character to Johab, 0 for none: the jamo row (0xa4) by the table at 0x4b3d8c
-   (its codes at 0x4b3ddc; the upper half of EAX is left at 0x004b, and a miss gives 0x4b8761), the symbol rows in
-   pairs, the syllables (0xb0 .. 0xc8) by the table at 0x4aa8ae, the hanja rows in pairs */
+/* 0x44aac0: one EUC-KR (KS X 1001) character to Johab, 0 for none: the jamo row (0xa4) by g_ksJamoCodes
+   (its codes g_ksJamoJohab; the upper half of EAX is left at 0x004b, and a miss gives 0x4b8761), the symbol rows in
+   pairs, the syllables (0xb0 .. 0xc8) by g_ksSyllableJohab, the hanja rows in pairs */
 int (text_hangulConvert)(u32 code)
 {
 	int hi = (code >> 8) & 0xff, lo = code & 0xff;
 	if (hi == 0xa4) {
 		for (int k = 0; k < 39; k++)
-			if ((u16)code == GAME_VAR(u16, 0x4b3d8c + k * 2))
-				return (OBJ(g_unlockTablesNet) + 0x1430) | GAME_VAR(u16, 0x4b3ddc + k * 2);
+			if ((u16)code == GAME_VAR(u16, OBJ(g_ksJamoCodes) + k * 2))
+				return (OBJ(g_unlockTablesNet) + 0x1430) | GAME_VAR(u16, OBJ(g_ksJamoJohab) + k * 2);
 		return IMG(0x4b8761);
 	}
 	int ok = lo >= 0xa1 && lo <= 0xfe;
@@ -249,7 +249,7 @@ int (text_hangulConvert)(u32 code)
 	if (hi == 0xae)
 		return lo >= 0xa1 && lo <= 0xc1 ? (u8)(lo + 0x3d) + 0xd400 : 0;
 	if (hi >= 0xb0 && hi <= 0xc8)
-		return ok ? GAME_VAR(u16, 0x4aa8ae + (lo + hi * 94) * 2) : 0;
+		return ok ? GAME_VAR(u16, OBJ(g_ksSyllableJohab) - (0xb0 * 94 + 0xa1) * 2 + (lo + hi * 94) * 2) : 0;
 	if (hi >= 0xca && hi <= 0xfd)
 		return ok ? ks_row(hi, lo, 0xe0, 0xca) : 0;
 	return 0;
