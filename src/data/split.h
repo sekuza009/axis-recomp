@@ -150,14 +150,14 @@ extern u8 g_gameRunning_v[4];
 extern u8 g_keepCameraAsked_v[4];
 #endif
 #ifdef AXIS_FENCE
-#define g_armcEnterStep_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0x3d000 : g_fence + 0x3cffc))
+#define g_tunnelStep_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0x3d000 : g_fence + 0x3cffc))
 #else
-extern u8 g_armcEnterStep_v[4];
+extern u8 g_tunnelStep_v[4];
 #endif
 #ifdef AXIS_FENCE
-#define g_armcEnterStepF_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0x3f000 : g_fence + 0x3effc))
+#define g_tunnelStepF_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0x3f000 : g_fence + 0x3effc))
 #else
-extern u8 g_armcEnterStepF_v[4];
+extern u8 g_tunnelStepF_v[4];
 #endif
 #ifdef AXIS_FENCE
 #define g_replayWrap_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0x41000 : g_fence + 0x40ffc))
@@ -4760,14 +4760,14 @@ extern u8 g_netSendBuffer_v[4];
 extern u8 g_netKindBuffer_v[4];
 #endif
 #ifdef AXIS_FENCE
-#define g_roomPacket_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xc8d000 : g_fence + 0xc8cffc))
+#define g_arenaPacket_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xc8d000 : g_fence + 0xc8cffc))
 #else
-extern u8 g_roomPacket_v[4];
+extern u8 g_arenaPacket_v[4];
 #endif
 #ifdef AXIS_FENCE
-#define g_netInfoPacket_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xc8f000 : g_fence + 0xc8effc))
+#define g_arenaInfoPacket_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xc8f000 : g_fence + 0xc8effc))
 #else
-extern u8 g_netInfoPacket_v[4];
+extern u8 g_arenaInfoPacket_v[4];
 #endif
 #ifdef AXIS_FENCE
 #define g_lobbyLeavePacket_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xc91000 : g_fence + 0xc90ffc))
@@ -4790,19 +4790,19 @@ extern u8 g_accountPacket_v[4];
 extern u8 g_netRankingBuffer_v[4];
 #endif
 #ifdef AXIS_FENCE
-#define g_arenaPacket_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xc99000 : g_fence + 0xc98ffc))
+#define g_roomPacket_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xc99000 : g_fence + 0xc98ffc))
 #else
-extern u8 g_arenaPacket_v[4];
+extern u8 g_roomPacket_v[4];
 #endif
 #ifdef AXIS_FENCE
-#define g_arenaInfoPacket_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xc9b000 : g_fence + 0xc9affc))
+#define g_roomInfoPacket_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xc9b000 : g_fence + 0xc9affc))
 #else
-extern u8 g_arenaInfoPacket_v[4];
+extern u8 g_roomInfoPacket_v[4];
 #endif
 #ifdef AXIS_FENCE
-#define g_roomRecordPacket_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xc9d000 : g_fence + 0xc9cffc))
+#define g_roomLeavePacket_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xc9d000 : g_fence + 0xc9cffc))
 #else
-extern u8 g_roomRecordPacket_v[4];
+extern u8 g_roomLeavePacket_v[4];
 #endif
 #ifdef AXIS_FENCE
 #define g_netRequestBuffer_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xc9f000 : g_fence + 0xc9effc))

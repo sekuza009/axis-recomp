@@ -1,6 +1,6 @@
 # named globals whose address is made a pointer only to reach the global's own value (reviewed 2026-11-01): not a
 # record base for tools/split_candidates.py. One name a line, with how it is used
-g_armcEnterStepF      # menu_tunnel.c: stepF, given to fadd_m / fsub_m (one float)
+g_tunnelStepF      # menu_tunnel.c: stepF, given to fadd_m / fsub_m (one float)
 g_replayWrap          # menu_states.c: ticked[k], read as *ticked[k] (one int)
 g_replayRandomOrder   # menu_states.c: ticked[k], read as *ticked[k] (one int)
 g_defaultColour       # statics.c: a packed colour, its bytes c[0] .. c[3] (its own 4)

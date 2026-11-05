@@ -722,7 +722,7 @@ u32 (game_postMatch)(void)
 	case 2:
 		if (g_isHost) {
 			send_result();
-			RoomRecord *to = (*(RoomRecord **)&g_roomRecordPacket), *from = (*(RoomRecord **)&g_arenaPacket);
+			RoomRecord *to = (*(RoomRecord **)&g_roomLeavePacket), *from = (*(RoomRecord **)&g_roomPacket);
 			lstrcpyA(to->hostName, from->hostName);
 			lstrcpyA(to->address, from->address);
 			net_send(0x16, 0x65);   /* net_send */

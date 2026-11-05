@@ -58,7 +58,7 @@
 0x76d400,int,g_menuLookAtZ
 # the network: buffers, replies, DirectPlay caps
 0xa0b33c,char *,g_netLeaveBuffer
-0xa0b314,u8 *,g_netInfoPacket
+0xa0b314,u8 *,g_arenaInfoPacket
 0xa0b30c,u32 *,g_netKindBuffer
 0xa0b308,char *,g_netSendBuffer
 0xa0b304,char *,g_netSendName
@@ -81,8 +81,8 @@
 # the ARM CENTER, the profile, missions
 0x4dc870,int,g_armcLevel
 0x4dc890,int,g_armcLastPart
-0x4b2a74,int,g_armcEnterStep
-0x4b2a78,float,g_armcEnterStepF
+0x4b2a74,int,g_tunnelStep
+0x4b2a78,float,g_tunnelStepF
 0x9f62fc,int,g_profileProgressSaved
 0x9f6328,int,g_missionChosen
 0x90d1d8,int,g_skirmishInfoCount

@@ -1576,7 +1576,7 @@ void (lobby_hostArena)(void)
 }
 
 /* 0x405cf0: the arena announced on the lobby server: the settings kept, connected (messages 0x3d no server, 0x46
-   refused, 0x3e no events; 0), a special room's map, the hello packet (g_roomPacket: kind 0x18, the settings, the
+   refused, 0x3e no events; 0), a special room's map, the hello packet (g_arenaPacket: kind 0x18, the settings, the
    arena's name, this machine's address) sent as kind 10. Returns 1 when sent */
 int (lobby_announceArena)(void)
 {
@@ -1596,7 +1596,7 @@ int (lobby_announceArena)(void)
 	}
 	g_arenaGameSetUp = 1;
 	special_map(g_playerName, (u8 *)ADDR(g_arenaMap));
-	ServerRecord *packet = (ServerRecord *)g_roomPacket;
+	ServerRecord *packet = (ServerRecord *)g_arenaPacket;
 	packet->kind = 0x18;
 	packet->rotation = g_arenaRotation;
 	packet->timeLimit = g_arenaTimeLimit;
@@ -1607,9 +1607,9 @@ int (lobby_announceArena)(void)
 	packet->maxPlayers = g_arenaPlayers;
 	packet->locked = g_arenaLocked;
 	lstrcpyA(packet->password, (const char *)ADDR(g_arenaPassword));
-	lstrcpyA(((ServerRecord *)g_roomPacket)->name, g_playerName);
+	lstrcpyA(((ServerRecord *)g_arenaPacket)->name, g_playerName);
 	jmp_net_getLocalAddress();
-	lstrcpyA(((ServerRecord *)g_roomPacket)->address, g_localAddress);
+	lstrcpyA(((ServerRecord *)g_arenaPacket)->address, g_localAddress);
 	g_connectionAwaited = 1;
 	g_connectStep = 2;
 	net_send(0xa, 0x64);
@@ -1618,15 +1618,15 @@ int (lobby_announceArena)(void)
 }
 
 /* 0x4351c0: the game room's game announced on the game server: the room's settings kept (g_roomRecName), a special
-   room's map, the packet (g_arenaPacket: kind 0x18, the player's name g_ladderId at +0x43, the settings, the game's name,
+   room's map, the packet (g_roomPacket: kind 0x18, the player's name g_ladderId at +0x43, the settings, the game's name,
    this machine's address) sent as kind 0x12. The callers ignore the eax it leaves */
 void (room_announceGame)(void)
 {
 	room_keepSettings();
 	special_map(g_roomRecName, (u8 *)ADDR(g_roomRecMap));
-	RoomRecord *packet = (RoomRecord *)g_arenaPacket;
+	RoomRecord *packet = (RoomRecord *)g_roomPacket;
 	GAME_CDECL(0x49ea80, char *, char *, const char *, int)(packet->hostName, g_ladderId, 0x1e);   /* strncpy */
-	packet = (RoomRecord *)g_arenaPacket;
+	packet = (RoomRecord *)g_roomPacket;
 	const GameSettings *room = (const GameSettings *)OBJ(g_roomRecName);
 	packet->kind = 0x18;
 	packet->rotation = room->rotation;
@@ -1638,9 +1638,9 @@ void (room_announceGame)(void)
 	packet->maxPlayers = room->players;
 	packet->locked = room->locked;
 	lstrcpyA(packet->password, ((const GameSettings *)OBJ(g_roomRecName))->password);
-	lstrcpyA(((RoomRecord *)g_arenaPacket)->name, g_roomRecName);
+	lstrcpyA(((RoomRecord *)g_roomPacket)->name, g_roomRecName);
 	jmp_net_getLocalAddress();
-	lstrcpyA(((RoomRecord *)g_arenaPacket)->address, g_localAddress);
+	lstrcpyA(((RoomRecord *)g_roomPacket)->address, g_localAddress);
 	g_connectionAwaited = 1;
 	g_connectStep = 2;
 	net_send(0x12, 0x65);

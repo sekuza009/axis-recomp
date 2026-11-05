@@ -317,3 +317,10 @@ net_sendPlayerLevels,net_sendItemStates
 room_drawCustomOption,room_drawMapPreview
 arena_drawCustomOption,arena_drawMapPreview
 g_currentStageName,g_crtErrno
+g_roomPacket,g_arenaPacket
+g_arenaPacket,g_roomPacket
+g_netInfoPacket,g_arenaInfoPacket
+g_arenaInfoPacket,g_roomInfoPacket
+g_roomRecordPacket,g_roomLeavePacket
+g_armcEnterStep,g_tunnelStep
+g_armcEnterStepF,g_tunnelStepF

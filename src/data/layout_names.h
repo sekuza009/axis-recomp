@@ -188,10 +188,6 @@ extern struct GameData g_data;
 #define g_armcColours ((float *)g_armcColours_v)
 #undef g_armcCursor
 #define g_armcCursor (*(int *)g_armcCursor_v)
-#undef g_armcEnterStep
-#define g_armcEnterStep (*(int *)g_armcEnterStep_v)
-#undef g_armcEnterStepF
-#define g_armcEnterStepF (*(float *)g_armcEnterStepF_v)
 #undef g_armcEntered
 #define g_armcEntered (*(int *)g_armcEntered_v)
 #undef g_armcFrom
@@ -1722,8 +1718,6 @@ extern struct GameData g_data;
 #define g_netConnected (*(int *)g_netConnected_v)
 #undef g_netHostGone
 #define g_netHostGone (*(int *)g_netHostGone_v)
-#undef g_netInfoPacket
-#define g_netInfoPacket (*(u8 * *)g_netInfoPacket_v)
 #undef g_netKindBuffer
 #define g_netKindBuffer (*(u32 * *)g_netKindBuffer_v)
 #undef g_netLastRequest
@@ -2286,10 +2280,14 @@ extern struct GameData g_data;
 #define g_roomGameListTop (*(int *)g_roomGameListTop_v)
 #undef g_roomGameMode
 #define g_roomGameMode (*(u8 *)((u8 *)g_roomSettingsName_v + 0x23))
+#undef g_roomInfoPacket
+#define g_roomInfoPacket (*(u8 * *)g_roomInfoPacket_v)
 #undef g_roomJoinNeedsPassword
 #define g_roomJoinNeedsPassword (*(int *)g_roomJoinNeedsPassword_v)
 #undef g_roomJoined
 #define g_roomJoined (*(int *)g_roomJoined_v)
+#undef g_roomLeavePacket
+#define g_roomLeavePacket (*(u8 * *)g_roomLeavePacket_v)
 #undef g_roomList
 #define g_roomList ((u8 *)g_roomList_v)
 #undef g_roomListCount
@@ -2348,8 +2346,6 @@ extern struct GameData g_data;
 #define g_roomRecRotation (*(u8 *)((u8 *)g_roomRecName_v + 0x22))
 #undef g_roomRecTimeLimit
 #define g_roomRecTimeLimit (*(u8 *)((u8 *)g_roomRecName_v + 0x25))
-#undef g_roomRecordPacket
-#define g_roomRecordPacket (*(u8 * *)g_roomRecordPacket_v)
 #undef g_roomRefreshing
 #define g_roomRefreshing (*(int *)g_roomRefreshing_v)
 #undef g_roomRequestOut
@@ -2692,6 +2688,10 @@ extern struct GameData g_data;
 #define g_tunnelPulseStep (*(u32 *)g_tunnelPulseStep_v)
 #undef g_tunnelRings
 #define g_tunnelRings (*(int *)g_tunnelRings_v)
+#undef g_tunnelStep
+#define g_tunnelStep (*(int *)g_tunnelStep_v)
+#undef g_tunnelStepF
+#define g_tunnelStepF (*(float *)g_tunnelStepF_v)
 #undef g_tunnelTexture
 #define g_tunnelTexture (*(int *)g_tunnelTexture_v)
 #undef g_typedArenaAddress

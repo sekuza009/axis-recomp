@@ -647,7 +647,7 @@ typedef struct DPSessionDesc2 {
 	u32 user4;   /* +0x4c: (TCP) the host's address */
 } DPSessionDesc2;
 
-/* an arena as the game server lists it (g_serverList, 256; g_roomPacket: the lobby's own, */
+/* an arena as the lobby server lists it (g_serverList, 256; g_arenaPacket: the hosted arena's own, */
 typedef struct ServerRecord {
 	u8 kind;   /* +0x0: the message (0x18: set up; the player count's, the leave's) */
 	char name[0x32];   /* +0x1 */
@@ -664,7 +664,7 @@ typedef struct ServerRecord {
 	char password[8];   /* +0x53 */
 } ServerRecord;
 
-/* a game room as the game server lists it (g_roomList, 256; g_arenaPacket: the room's own, */
+/* a game room as the game server lists it (g_roomList, 256; g_roomPacket: the room's own, */
 typedef struct RoomRecord {
 	u8 kind;   /* +0x0 */
 	char name[0x32];   /* +0x1 */

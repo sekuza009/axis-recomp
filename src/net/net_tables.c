@@ -331,8 +331,8 @@ void (net_resetConnection)(int kind)
 	memset((void *)OBJ(g_serverList), 0, 0x16c0 * 4);
 	memset((void *)OBJ(g_netPlayerList), 0, 0x2aa);
 	static const struct { u32 at, size; } buffers[] = {
-		{ ADDR(g_roomPacket), 0x5b }, { ADDR(g_netInfoPacket), 0x5b }, { ADDR(g_lobbyLeavePacket), 0x5b }, { ADDR(g_netLobbyMessage), 4 }, { ADDR(g_netSendName), 0x10 }, { ADDR(g_accountPacket), 0x10b },
-		{ ADDR(g_netRankingBuffer), 8 }, { ADDR(g_arenaPacket), 0x79 }, { ADDR(g_arenaInfoPacket), 0x79 }, { ADDR(g_roomRecordPacket), 0x79 }, { ADDR(g_netRequestBuffer), 4 }, { ADDR(g_netKindBuffer), 4 },
+		{ ADDR(g_arenaPacket), 0x5b }, { ADDR(g_arenaInfoPacket), 0x5b }, { ADDR(g_lobbyLeavePacket), 0x5b }, { ADDR(g_netLobbyMessage), 4 }, { ADDR(g_netSendName), 0x10 }, { ADDR(g_accountPacket), 0x10b },
+		{ ADDR(g_netRankingBuffer), 8 }, { ADDR(g_roomPacket), 0x79 }, { ADDR(g_roomInfoPacket), 0x79 }, { ADDR(g_roomLeavePacket), 0x79 }, { ADDR(g_netRequestBuffer), 4 }, { ADDR(g_netKindBuffer), 4 },
 		{ ADDR(g_netSendBuffer), 0x10 }, { ADDR(g_netSelectionPacket), 0xb9 }, { ADDR(g_netAccountBuffer), 0x5c }, { ADDR(g_netPlayerRecordPacket), 0x36 }, { ADDR(g_netByteBuffer), 1 }, { ADDR(g_netAccountRequest), 0x1e } };
 	for (unsigned k = 0; k < sizeof buffers / sizeof *buffers; k++)
 		GAME_VAR(void *, buffers[k].at) = alloc_clear(buffers[k].size);
@@ -1043,12 +1043,12 @@ static int send_leave(u32 from, u32 to, const u8 *bytes, int nbytes, int flagged
 }
 
 
-/* ---- the info sent to the server when a player comes or goes while hosting over TCP/IP: the room's (g_roomPacket into
-   the packet g_netInfoPacket) or the arena's (g_arenaPacket into g_arenaInfoPacket), the player count (g_playerCount) included ---- */
+/* ---- the info sent to the server when a player comes or goes while hosting over TCP/IP: the arena's (g_arenaPacket into
+   the packet g_arenaInfoPacket, to the lobby server) or the Ladder room's (g_roomPacket into g_roomInfoPacket, to the game server), the player count (g_playerCount) included ---- */
 
-static void room_info(u8 *dst, u8 first, u8 count)
+static void arena_info(u8 *dst, u8 first, u8 count)
 {
-	const ServerRecord *src = (*(const ServerRecord **)&g_roomPacket);
+	const ServerRecord *src = (*(const ServerRecord **)&g_arenaPacket);
 	ServerRecord *to = (ServerRecord *)dst;
 	to->kind = first;
 	to->rotation = src->rotation;
@@ -1065,9 +1065,9 @@ static void room_info(u8 *dst, u8 first, u8 count)
 	net_send(0xc, 0x64);
 }
 
-static void arena_info(u8 *dst, u8 first, u8 count)
+static void room_info(u8 *dst, u8 first, u8 count)
 {
-	const RoomRecord *src = (*(const RoomRecord **)&g_arenaPacket);
+	const RoomRecord *src = (*(const RoomRecord **)&g_roomPacket);
 	RoomRecord *to = (RoomRecord *)dst;
 	to->kind = first;
 	to->rotation = src->rotation;
@@ -1089,8 +1089,8 @@ static void arena_info(u8 *dst, u8 first, u8 count)
    (DPSYS_CREATEPLAYERORGROUP), a player joined (the host only): a slot claimed for it (net_claimPlayerSlot into
    g_netClaimedSlot) and sent to it (net_sendMessage), the message's count kept and the info sent (an arena's then starts
    with 1). Only while
-   hosting (g_isHost) over TCP/IP (g_connectionKind = 0) with the right socket open (200: the room on the lobby's, 201: the
-   arena on the game server's) and nothing pending (g_lobbyPending / g_gameServerPending). The original leaves eax to callers that
+   hosting (g_isHost) over TCP/IP (g_connectionKind = 0) with the right socket open (200: the arena on the lobby's, 201: the
+   Ladder room on the game server's) and nothing pending (g_lobbyPending / g_gameServerPending). The original leaves eax to callers that
    ignore it */
 void (net_handleSystemMessage)(const u32 *msg)
 {
@@ -1115,21 +1115,21 @@ void (net_handleSystemMessage)(const u32 *msg)
 			return;
 		if (joined)
 			g_playerCount = msg[3];
-		if (!g_arenaInfoPacket)
+		if (!g_roomInfoPacket)
 			return;
 		if (joined)
-			arena_info(g_arenaInfoPacket, 1, (u8)g_playerCount);
+			room_info(g_roomInfoPacket, 1, (u8)g_playerCount);
 		else
-			arena_info(g_arenaInfoPacket, (*(const u8 **)&g_arenaPacket)[0], (u8)(g_playerCount - 1));
+			room_info(g_roomInfoPacket, (*(const u8 **)&g_roomPacket)[0], (u8)(g_playerCount - 1));
 		break;
 	case 200:
 		if (g_lobbyPending || !(*(int *)&g_lobbySocket))
 			return;
 		if (joined)
 			g_playerCount = msg[3];
-		if (!g_netInfoPacket)
+		if (!g_arenaInfoPacket)
 			return;
-		room_info(g_netInfoPacket, (*(const u8 **)&g_roomPacket)[0], (u8)(g_playerCount - !joined));
+		arena_info(g_arenaInfoPacket, (*(const u8 **)&g_arenaPacket)[0], (u8)(g_playerCount - !joined));
 		break;
 	}
 }
@@ -1194,9 +1194,9 @@ int (net_connect)(int mode)
 	return 1;
 }
 
-/* 0x451e60: leaving the network (while connected, g_netConnected = 1): on the lobby's socket (g_lobbySocket) the player's
-   leave record (g_roomPacket into g_lobbyLeavePacket, message 0xb) unless g_lobbyPending, on the room's (g_gameServerSocket) the room record
-   (g_arenaPacket into g_roomRecordPacket, message 0x16) unless g_gameServerPending; each socket closed. Without a send buffer it stops there
+/* 0x451e60: leaving the network (while connected, g_netConnected = 1): on the lobby's socket (g_lobbySocket) the hosted
+   arena's record (g_arenaPacket into g_lobbyLeavePacket, message 0xb) unless g_lobbyPending, on the game server's (g_gameServerSocket) the room record
+   (g_roomPacket into g_roomLeavePacket, message 0x16) unless g_gameServerPending; each socket closed. Without a send buffer it stops there
    (0). Then the connection flags cleared. Returns what the original leaves in eax */
 u32 (net_disconnect)(void)
 {
@@ -1206,12 +1206,12 @@ u32 (net_disconnect)(void)
 		return (*(u32 *)&g_netConnected);
 	u32 r = g_lobbySocket;
 	if ((*(int *)&g_lobbySocket)) {
-		if (!g_lobbyPending && !send_leave(ADDR(g_roomPacket), ADDR(g_lobbyLeavePacket), lobbyBytes, 8, 0x45, lobbyNames, 0xb, 0x64))
+		if (!g_lobbyPending && !send_leave(ADDR(g_arenaPacket), ADDR(g_lobbyLeavePacket), lobbyBytes, 8, 0x45, lobbyNames, 0xb, 0x64))
 			return 0;
 		r = socket_close(ADDR(g_lobbySocket));
 	}
 	if (g_gameServerSocket) {
-		if (!g_gameServerPending && !send_leave(ADDR(g_arenaPacket), ADDR(g_roomRecordPacket), roomBytes, 8, 0x63, roomNames, 0x16, 0x65))
+		if (!g_gameServerPending && !send_leave(ADDR(g_roomPacket), ADDR(g_roomLeavePacket), roomBytes, 8, 0x63, roomNames, 0x16, 0x65))
 			return 0;
 		r = socket_close(ADDR(g_gameServerSocket));
 	}
@@ -1254,8 +1254,8 @@ void (net_send)(int kind, int to)
 			ws_send(GAME_VAR(u32, socket), (*(void **)&g_netKindBuffer), 4, 0);
 	}
 	static const struct { u32 buffer; int size, lobby; } plain[30] = {
-		[10] = { ADDR(g_roomPacket), 0x5b, 1 }, [11] = { ADDR(g_lobbyLeavePacket), 0x5b, 1 }, [12] = { ADDR(g_netInfoPacket), 0x5b, 1 },
-		[17] = { ADDR(g_netPlayerRecordPacket), 0x36, 0 }, [18] = { ADDR(g_arenaPacket), 0x79, 0 }, [20] = { ADDR(g_arenaInfoPacket), 0x79, 0 },
+		[10] = { ADDR(g_arenaPacket), 0x5b, 1 }, [11] = { ADDR(g_lobbyLeavePacket), 0x5b, 1 }, [12] = { ADDR(g_arenaInfoPacket), 0x5b, 1 },
+		[17] = { ADDR(g_netPlayerRecordPacket), 0x36, 0 }, [18] = { ADDR(g_roomPacket), 0x79, 0 }, [20] = { ADDR(g_roomInfoPacket), 0x79, 0 },
 		[25] = { ADDR(g_netLeaveBuffer), 0x1e, 0 }, [27] = { ADDR(g_netSelectionPacket), 0xb9, 0 }, [28] = { ADDR(g_netAccountBuffer), 0x5c, 0 }, [29] = { ADDR(g_netAccountRequest), 0x1e, 0 } };
 	switch (kind) {
 	case 10: case 11: case 12: case 17: case 18: case 20: case 27: case 28: case 29:
@@ -1271,7 +1271,7 @@ void (net_send)(int kind, int to)
 		return;
 	case 23: {
 		char *name = g_netSendName;
-		const char *from = (*(const char **)&g_roomPacket);
+		const char *from = (*(const char **)&g_arenaPacket);
 		if (!name || !from)
 			return;
 		strcpy(name, ((const ServerRecord *)from)->address);
@@ -1301,10 +1301,10 @@ void (net_send)(int kind, int to)
 		return;
 	case 22:
 		g_netLastRequest = 0x16;
-		if (!g_roomRecordPacket)
+		if (!g_roomLeavePacket)
 			return;
-		*g_roomRecordPacket = 1;
-		send_buffer(ADDR(g_gameServerSocket), ADDR(g_roomRecordPacket), 0x79);
+		*g_roomLeavePacket = 1;
+		send_buffer(ADDR(g_gameServerSocket), ADDR(g_roomLeavePacket), 0x79);
 		return;
 	case 24:
 		jmp_net_getLocalAddress();

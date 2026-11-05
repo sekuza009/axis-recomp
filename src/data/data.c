@@ -42,8 +42,8 @@ u32 g_keyNames_v[256] __attribute__((aligned(16)));   /* 0x4b0750 */
 u8 g_timerFirstCall_v[4] __attribute__((aligned(16)));   /* 0x4b1048 */
 u8 g_gameRunning_v[4] __attribute__((aligned(16)));   /* 0x4b2790 */
 u8 g_keepCameraAsked_v[4] __attribute__((aligned(16)));   /* 0x4b2a70 */
-u8 g_armcEnterStep_v[4] __attribute__((aligned(16)));   /* 0x4b2a74 */
-u8 g_armcEnterStepF_v[4] __attribute__((aligned(16)));   /* 0x4b2a78 */
+u8 g_tunnelStep_v[4] __attribute__((aligned(16)));   /* 0x4b2a74 */
+u8 g_tunnelStepF_v[4] __attribute__((aligned(16)));   /* 0x4b2a78 */
 u8 g_replayWrap_v[4] __attribute__((aligned(16)));   /* 0x4b2a7c */
 u8 g_musicVolumeSetting_v[4] __attribute__((aligned(16)));   /* 0x4b42dc */
 u8 g_componentDatPath_v[4] __attribute__((aligned(16)));   /* 0x4b4414 */
@@ -964,15 +964,15 @@ u8 g_netLastRequest_v[4] __attribute__((aligned(16)));   /* 0xa0b300 */
 u8 g_netSendName_v[4] __attribute__((aligned(16)));   /* 0xa0b304 */
 u8 g_netSendBuffer_v[4] __attribute__((aligned(16)));   /* 0xa0b308 */
 u8 g_netKindBuffer_v[4] __attribute__((aligned(16)));   /* 0xa0b30c */
-u8 g_roomPacket_v[4] __attribute__((aligned(16)));   /* 0xa0b310 */
-u8 g_netInfoPacket_v[4] __attribute__((aligned(16)));   /* 0xa0b314 */
+u8 g_arenaPacket_v[4] __attribute__((aligned(16)));   /* 0xa0b310 */
+u8 g_arenaInfoPacket_v[4] __attribute__((aligned(16)));   /* 0xa0b314 */
 u8 g_lobbyLeavePacket_v[4] __attribute__((aligned(16)));   /* 0xa0b318 */
 u8 g_netLobbyMessage_v[4] __attribute__((aligned(16)));   /* 0xa0b31c */
 u8 g_accountPacket_v[4] __attribute__((aligned(16)));   /* 0xa0b320 */
 u8 g_netRankingBuffer_v[4] __attribute__((aligned(16)));   /* 0xa0b324 */
-u8 g_arenaPacket_v[4] __attribute__((aligned(16)));   /* 0xa0b328 */
-u8 g_arenaInfoPacket_v[4] __attribute__((aligned(16)));   /* 0xa0b32c */
-u8 g_roomRecordPacket_v[4] __attribute__((aligned(16)));   /* 0xa0b330 */
+u8 g_roomPacket_v[4] __attribute__((aligned(16)));   /* 0xa0b328 */
+u8 g_roomInfoPacket_v[4] __attribute__((aligned(16)));   /* 0xa0b32c */
+u8 g_roomLeavePacket_v[4] __attribute__((aligned(16)));   /* 0xa0b330 */
 u8 g_netRequestBuffer_v[4] __attribute__((aligned(16)));   /* 0xa0b334 */
 u8 g_netPlayerRecordPacket_v[4] __attribute__((aligned(16)));   /* 0xa0b338 */
 u8 g_netLeaveBuffer_v[4] __attribute__((aligned(16)));   /* 0xa0b33c */
@@ -1212,8 +1212,8 @@ const DataPiece g_splitObjects[] = {
 	{ 0x4b1048, g_timerFirstCall_v, 4 },
 	{ 0x4b2790, g_gameRunning_v, 4 },
 	{ 0x4b2a70, g_keepCameraAsked_v, 4 },
-	{ 0x4b2a74, g_armcEnterStep_v, 4 },
-	{ 0x4b2a78, g_armcEnterStepF_v, 4 },
+	{ 0x4b2a74, g_tunnelStep_v, 4 },
+	{ 0x4b2a78, g_tunnelStepF_v, 4 },
 	{ 0x4b2a7c, g_replayWrap_v, 4 },
 	{ 0x4b42dc, g_musicVolumeSetting_v, 4 },
 	{ 0x4b4414, g_componentDatPath_v, 4 },
@@ -2134,15 +2134,15 @@ const DataPiece g_splitObjects[] = {
 	{ 0xa0b304, g_netSendName_v, 4 },
 	{ 0xa0b308, g_netSendBuffer_v, 4 },
 	{ 0xa0b30c, g_netKindBuffer_v, 4 },
-	{ 0xa0b310, g_roomPacket_v, 4 },
-	{ 0xa0b314, g_netInfoPacket_v, 4 },
+	{ 0xa0b310, g_arenaPacket_v, 4 },
+	{ 0xa0b314, g_arenaInfoPacket_v, 4 },
 	{ 0xa0b318, g_lobbyLeavePacket_v, 4 },
 	{ 0xa0b31c, g_netLobbyMessage_v, 4 },
 	{ 0xa0b320, g_accountPacket_v, 4 },
 	{ 0xa0b324, g_netRankingBuffer_v, 4 },
-	{ 0xa0b328, g_arenaPacket_v, 4 },
-	{ 0xa0b32c, g_arenaInfoPacket_v, 4 },
-	{ 0xa0b330, g_roomRecordPacket_v, 4 },
+	{ 0xa0b328, g_roomPacket_v, 4 },
+	{ 0xa0b32c, g_roomInfoPacket_v, 4 },
+	{ 0xa0b330, g_roomLeavePacket_v, 4 },
 	{ 0xa0b334, g_netRequestBuffer_v, 4 },
 	{ 0xa0b338, g_netPlayerRecordPacket_v, 4 },
 	{ 0xa0b33c, g_netLeaveBuffer_v, 4 },
@@ -3707,8 +3707,8 @@ static const char d_4b2a54[] = "nstower";
 static const char d_4b2a5c[] = "open";
 static const char d_4b2a64[] = "AxisGL.exe";
 static const u32 init_g_keepCameraAsked[] = { 0x00000001 };
-static const u32 init_g_armcEnterStep[] = { 0x00000014 };
-static const float init_g_armcEnterStepF[] = { 20.0f };
+static const u32 init_g_tunnelStep[] = { 0x00000014 };
+static const float init_g_tunnelStepF[] = { 20.0f };
 static const u32 init_g_replayWrap[] = { 0x00000001, 0x00002e2e };
 static const char d_4b2a84[] = "*.ape";
 static const char d_4b2a8c[] = "autoplay";
@@ -5894,8 +5894,8 @@ const DataPiece g_dataPieces[] = {
 	{ 0x4b2a5c, d_4b2a5c, sizeof d_4b2a5c },
 	{ 0x4b2a64, d_4b2a64, sizeof d_4b2a64 },
 	{ 0x4b2a70, init_g_keepCameraAsked, sizeof init_g_keepCameraAsked },
-	{ 0x4b2a74, init_g_armcEnterStep, sizeof init_g_armcEnterStep },
-	{ 0x4b2a78, init_g_armcEnterStepF, sizeof init_g_armcEnterStepF },
+	{ 0x4b2a74, init_g_tunnelStep, sizeof init_g_tunnelStep },
+	{ 0x4b2a78, init_g_tunnelStepF, sizeof init_g_tunnelStepF },
 	{ 0x4b2a7c, init_g_replayWrap, sizeof init_g_replayWrap },
 	{ 0x4b2a84, d_4b2a84, sizeof d_4b2a84 },
 	{ 0x4b2a8c, d_4b2a8c, sizeof d_4b2a8c },

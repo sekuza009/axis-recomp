@@ -381,7 +381,7 @@ static void lower_view(const float *rate)
 }
 
 /* 0x441260: one frame of the tunnel camera's move, worked on the ring before the last of the chain at ring. The
-   frame time is held at 2 at most; a step is 30 frame times (g_armcEnterStep, and as a float g_armcEnterStepF); a ring is 1100
+   frame time is held at 2 at most; a step is 30 frame times (g_tunnelStep, and as a float g_tunnelStepF); a ring is 1100
    steps (950 when entering the menus, g_enteringMenus, which starts the eye and look point at 0; 2200 in the ARM CENTER,
    g_quitAsked). Still (0): the flares at full alpha, the view lowered, the camera kept once asked (g_keepCameraAsked), and the
    menus entered when the network is ready (g_startedFromLobby, g_lobbyReply 0x65). Moving in (1) / out (3): eye and look point a
@@ -395,8 +395,8 @@ void (menuTunnel_advance)(TunnelRing *ring)
 		g_frameTime = 2.0f;
 	int step = ftol(fmul_m(fld_m(&g_frameTime), k_30f));
 	int ringLength = 0x44c;
-	g_armcEnterStep = step;
-	g_armcEnterStepF = (float)step;
+	g_tunnelStep = step;
+	g_tunnelStepF = (float)step;
 	if (g_enteringMenus) {
 		ringLength = 0x3b6;
 		EYE[0] = EYE[1] = LOOK[0] = LOOK[1] = 0.0f;
@@ -406,7 +406,7 @@ void (menuTunnel_advance)(TunnelRing *ring)
 	TunnelRing *r = ring;
 	for (TunnelRing *last = ring; last->next != NULL; last = last->next)
 		r = last;
-	const float *stepF = (const float *)ADDR(g_armcEnterStepF);
+	const float *stepF = (const float *)ADDR(g_tunnelStepF);
 	int state = g_menuCameraMove;
 	switch (state) {
 	case 0:

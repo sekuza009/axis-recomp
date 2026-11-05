@@ -38,7 +38,7 @@ g_arenaListClickArmed
 g_arenaTunnelDepth
 g_argCount
 g_armcChanged
-g_armcEnterStep
+g_tunnelStep
 g_armcEntered
 g_armcLevel
 g_armcLookCos
@@ -638,7 +638,7 @@ g_cursorPoint
 g_resultMsg
 g_netSlotMsg
 # freed: reviewed single-value pointers (split_ptr_ok.txt) and FPU operands inside nested calls, 2026-11-01
-g_armcEnterStepF
+g_tunnelStepF
 g_packedRed
 g_cursorBlinkTimer
 g_defaultColour
@@ -659,7 +659,7 @@ g_lobbySocket
 g_lobbyTcpPort
 g_netAccountBuffer
 g_netConnected
-g_netInfoPacket
+g_arenaInfoPacket
 g_netAccountRequest
 g_netKindBuffer
 g_netLastRequest
@@ -671,7 +671,7 @@ g_netSendName
 g_playerListCount
 g_playerListDone
 g_roomListCount
-g_roomPacket
+g_arenaPacket
 g_serverPort
 g_unusedNetCloseWord
 # the six texture sets and the manager (objects16.csv), whole
@@ -689,8 +689,8 @@ g_vecZeroXyz
 g_musicDuration
 # freed: pointer reads (*(T **)&x), reviewed pointers / tables, vectors and music records, the generated header not counted, 2026-11-01
 g_accountPacket
-g_arenaInfoPacket
-g_arenaPacket
+g_roomInfoPacket
+g_roomPacket
 g_errorHook
 g_lastFrameClock
 g_menuTunnel
@@ -702,7 +702,7 @@ g_netRequestBuffer
 g_pingThread
 g_pingThreadId
 g_pingTime
-g_roomRecordPacket
+g_roomLeavePacket
 g_serverPingCount
 g_partRecords
 # the resolution names, the typed arena address (objects18.csv) and the grown joined-title record, whole

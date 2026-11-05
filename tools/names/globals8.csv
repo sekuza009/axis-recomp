@@ -3,6 +3,6 @@
 0x4a9540,double,k_oneOver180
 0x4a93ec,float,k_tenthsToDegrees
 0x4dbbf8,const u8 *,g_receivedSession
-0xa0b32c,u8 *,g_arenaInfoPacket
-0xa0b330,u8 *,g_roomRecordPacket
+0xa0b32c,u8 *,g_roomInfoPacket
+0xa0b330,u8 *,g_roomLeavePacket
 0x4dde9c,int,g_effectsVolume
