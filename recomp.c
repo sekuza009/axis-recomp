@@ -1211,9 +1211,9 @@ static void profile_loadColour(int i)            /* nine ints of profile colour 
 	for (int k = 0; k < 9; k++) GF(0x9f8ec0 + k * 4) = (float)((long double)G32(0x9f9068 + i * 76 + k * 4) + GF(0x4a9560));
 }
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-void profile_loadSelectedColours(void);
+void pilotSelect_loadStats(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-void profile_loadCursorColours(void);
+void profile_loadPilotStats(void);
 /* advance the animation timers (wrap at 1 unit) */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 THISCALL void stage_advanceClocks(void *self, float dt);
@@ -2856,10 +2856,10 @@ int sys_checkClockTampering(void);
 /* 0x44ba60 profile_deleteFiles: delete the selected profile's files and reload the list */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 DWORD profile_deleteFiles(void);
-/* 0x432400 reg_writeCharacterSettings: player name and character choices into the registry; 0x433640 room_keepSettings /
+/* 0x432400 reg_writeLadderSettings: player name and character choices into the registry; 0x433640 room_keepSettings /
    0x43e610 newIdConfirm_update: room steps that save them */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-DWORD reg_writeCharacterSettings(void);
+DWORD reg_writeLadderSettings(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 DWORD room_keepSettings(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
@@ -2882,10 +2882,10 @@ THISCALL void profile_addMatchScores(char *scene);
    its window procedure replaced, focus */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 int chat_createEdit(int chars);
-/* 0x42bee0 reg_readCharacterSettings: player name and character choices from the registry (created with the
+/* 0x42bee0 reg_readLadderSettings: player name and character choices from the registry (created with the
    defaults if missing) */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-void reg_readCharacterSettings(void);
+void reg_readLadderSettings(void);
 /* 0x4734d0 (thiscall) playerRecord_loadFlag(p): load player p's emblem picture (Save\<name>.BMP, at least 23 x 15)
    into the player record as 24 x 16 RGBA, black = transparent */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
@@ -3903,7 +3903,7 @@ void arena_drawGameList(void);
 void arena_createDraw(void);
 /* batch 142 (lifted/grp88.c): two more screen dispatchers */
 /* 0x44f810 profile_drawScreen(): the pilot-select dialog (profile_drawPilotSelect), its colours refreshed first when asked
-   (0x9f8d68: profile_loadSelectedColours), or only its frame while a message is open */
+   (0x9f8d68: pilotSelect_loadStats), or only its frame while a message is open */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void profile_drawScreen(void);
 /* 0x43ede0 ranking_page(): the ranking page: a pending request (0x9dd350) for sort column 0x9dd1d0 sends packet
@@ -5017,14 +5017,14 @@ void profile_deleteKeys(void);
 /* 0x44ca90 profile_logOutKeys(): page 4, as page 3 for the second form (logOutDialog_hitTest, profile_resetCamera) */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void profile_logOutKeys(void);
-/* 0x44cc60 profile_emblemKeys(): page 5, the 3 x 3 emblem grid: Esc (profile_44b990), the arrows wrap the cursor
+/* 0x44cc60 pilotSelect_keys(): page 5, the 3 x 3 emblem grid: Esc (profile_44b990), the arrows wrap the cursor
    0x9f8d30 by rows and columns (sound 2) */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-void profile_emblemKeys(void);
+void pilotSelect_keys(void);
 /* batch 201 (lifted/grp158.c, grp159.c): the menu's key dispatch */
 /* 0x44cdd0 profile_screenKeys(): the profile screen's keys: none with a dialog (0x90d1c4); during the intro animation
    (0x9f6838, state 0x9f8e54 != 5) Enter / Esc skip it (state 5, the fade values set); else page 0x9f8f10 (1..6)
-   picks its handler by an inline jump table (profileList_keys .. profile_emblemKeys) */
+   picks its handler by an inline jump table (profileList_keys .. pilotSelect_keys) */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void profile_screenKeys(void);
 /* 0x4319d0 menu_processKeys(): the menus' keys: none while 0x68039c; the input poll (0x4012c0); none while
@@ -7671,8 +7671,8 @@ static void profcol_setup(void)
 	for (int k = 0; k < 21 * 19; k++) G32(0x9f9068 + k * 4) = irnd(0, 3) ? irnd(-300, 300) : irnd(-0x7fffffff, 0x7fffffff);
 	fill((void *)0x9f8ec0, 0x24); fill((void *)0x9f8f08, 4); fill((void *)0x9f8c48, 4); fill((void *)0x9f8d68, 4);
 }
-V0(profile_loadSelectedColours, 0x44bc50, profcol_setup();)
-V0(profile_loadCursorColours, 0x44bd20, profcol_setup();)
+V0(pilotSelect_loadStats, 0x44bc50, profcol_setup();)
+V0(profile_loadPilotStats, 0x44bd20, profcol_setup();)
 static void timers_setup(void)
 {
 	S32(BUF, 0x2149308) = irnd(0, 1); S32(BUF, 0x214930c) = irnd(0, 2); S32(BUF, 0x9ef30c) = irnd(1, 3);
@@ -10096,10 +10096,10 @@ static void clock_setup(void)
 ST(sys_checkClockTampering, clock_setup();, CALL_PLAIN(0x43f300, 0, 0, 0, 0, 0), (DWORD)(sys_checkClockTampering()))
 ST(profile_deleteFiles, selectload_setup(); g_mockDeleteOk = irnd(0, 1);, CALL_PLAIN(0x44ba60, 0, 0, 0, 0, 0), (DWORD)(profile_deleteFiles()))
 static void charset_setup(void) { netstate_setup(); fill_str((char *)0x9dd1d8, 20, 32, 126); g_mockRegFail = !irnd(0, 4); G32(0x9dd6c4) = irnd(0, 3); fill_str((char *)0x4df9ee, 12, 32, 126); }
-ST(reg_writeCharacterSettings, charset_setup();, CALL_PLAIN(0x432400, 0, 0, 0, 0, 0), (DWORD)(reg_writeCharacterSettings()))
-/* the registry always opens here: when it fails, reg_writeCharacterSettings (called without arguments) closes its
+ST(reg_writeLadderSettings, charset_setup();, CALL_PLAIN(0x432400, 0, 0, 0, 0, 0), (DWORD)(reg_writeLadderSettings()))
+/* the registry always opens here: when it fails, reg_writeLadderSettings (called without arguments) closes its
    own argument slot as the key, i.e. the caller's saved register, which no rebuild reproduces (that path is tested
-   in reg_writeCharacterSettings's own test) */
+   in reg_writeLadderSettings's own test) */
 ST(room_keepSettings, charset_setup(); g_mockRegFail = 0;, CALL_PLAIN(0x433640, 0, 0, 0, 0, 0), (DWORD)(room_keepSettings()))
 ST(newIdConfirm_update, charset_setup();, CALL_PLAIN(0x43e610, 0, 0, 0, 0, 0), (DWORD)(newIdConfirm_update()))
 ST(gfx_initGLState, g_a[0] = irnd(0, 2000); g_a[1] = irnd(0, 1500); GF(0x68038c) = csu_fr(100, 12000); GF(0x4e1870) = csu_fr(50, 300);, CALL_PLAIN(0x42f150, 0, g_a[0], g_a[1], 0, 0), (DWORD)(gfx_initGLState((DWORD)(g_a[0]), (DWORD)(g_a[1]))))
@@ -10133,7 +10133,7 @@ static void hits_setup(void)
 ST(profile_addMatchScores, hits_setup();, (TC(void, 0x49d150, char *)(SCENE), 0), (profile_addMatchScores(SCENE), 0))
 ST(chat_createEdit, G32(0x9dae74) = irnd(0, 2);, CALL_PLAIN(0x43f460, 0, 0x10010, 0, 0, 0), (DWORD)(chat_createEdit((DWORD)(0x10010))))
 /* its caller ignores the eax it leaves (tools/eaxuse.py) */
-ST(reg_readCharacterSettings, g_mockRegFail = !irnd(0, 4); g_paintStacks = 1; g_mockRegDisp = irnd(0, 2) ? 2 : 1; g_mockQueryFail = irnd(0, 1) ? rnd32() : 0;   /* values missing now and then */, (CALL_PLAIN(0x42bee0, 0, 0, 0, 0, 0), 0), (reg_readCharacterSettings(), 0))
+ST(reg_readLadderSettings, g_mockRegFail = !irnd(0, 4); g_paintStacks = 1; g_mockRegDisp = irnd(0, 2) ? 2 : 1; g_mockQueryFail = irnd(0, 1) ? rnd32() : 0;   /* values missing now and then */, (CALL_PLAIN(0x42bee0, 0, 0, 0, 0, 0), 0), (reg_readLadderSettings(), 0))
 /* player p's record: name at +4; the emblem BMP (header sizes varied around the 23 x 15 minimum) from the VFS */
 static void emblem_setup(void)
 {
@@ -16119,7 +16119,7 @@ ST(profileList_keys, profileinput_setup(); G32(0x9f8d30) = irnd(0, 8);, (CALL_PL
 ST(profile_messageKeys, profileinput_setup();, CALL_PLAIN(0x44c850, 0, 0, 0, 0, 0), (profile_messageKeys(), 0))
 ST(profile_deleteKeys, profileinput_setup();, CALL_PLAIN(0x44c8c0, 0, 0, 0, 0, 0), (profile_deleteKeys(), 0))
 ST(profile_logOutKeys, profileinput_setup();, CALL_PLAIN(0x44ca90, 0, 0, 0, 0, 0), (profile_logOutKeys(), 0))
-ST(profile_emblemKeys, profileinput_setup(); G32(0x9f8d30) = irnd(0, 8);, CALL_PLAIN(0x44cc60, 0, 0, 0, 0, 0), (profile_emblemKeys(), 0))
+ST(pilotSelect_keys, profileinput_setup(); G32(0x9f8d30) = irnd(0, 8);, CALL_PLAIN(0x44cc60, 0, 0, 0, 0, 0), (pilotSelect_keys(), 0))
 /* the profile screen's key dispatch: profileinput_setup, the dialog flag 0x90d1c4 and Enter's second binding
    0x6803a0 among the same keys; the page handlers stubbed */
 static const DWORD g_stubMenuCdd0[] = { 0x44c600, 0, 0x44c850, 0, 0x44c8c0, 0, 0x44ca90, 0, 0x44cc60, 0, 0 };
@@ -17263,7 +17263,7 @@ static const STest g_stests[] = {
 	/* batch 13 */
 	T(room_copyJoinedSettings, 0, 20, 0), T(room_mergeReceivedSessions, 0, 60, 0),
 	/* batch 14 */
-	T(menuCamera_forward, 0, 300, 0), T(menuCamera_back, 0, 300, 0), T(profile_loadSelectedColours, 0, 60, 0), T(profile_loadCursorColours, 0, 60, 0),
+	T(menuCamera_forward, 0, 300, 0), T(menuCamera_back, 0, 300, 0), T(pilotSelect_loadStats, 0, 60, 0), T(profile_loadPilotStats, 0, 60, 0),
 	T(stage_advanceClocks, 0, 4, 3000), T(text_hangulConvert, 1, 4, 5000),
 	/* batch 15 */
 	T(render_depthSortA, 0, 60, 0), T(render_depthSortB, 0, 60, 0),
@@ -17453,10 +17453,10 @@ static const STest g_stests[] = {
 	T(menu_drawFrame, 0, 400, 0), T(glWindow_restoreDisplayMode, 1, 40, 0), T(glWindow_setDisplayModeBy, 1, 40, 0), T(glWindow_setupPixelFormat, 1, 40, 0),
 	T(glWindow_resize, 1, 40, 0), T(image_initBy, 1, 400, 0), T(shapeDat_initBy, 0, 40, 0), T(skelDat_initBy, 0, 40, 0),
 	T(TimeSync_frameTime, 1, 1000, 0), T(scene_averageFrameTime, 0, 400, 0), T(sys_checkClockTampering, 1, 40, 0), T(profile_deleteFiles, 0, 40, 0),
-	T(reg_writeCharacterSettings, 0, 40, 0), T(room_keepSettings, 0, 40, 0), T(newIdConfirm_update, 0, 40, 0), T(gfx_initGLState, 0, 40, 0),
+	T(reg_writeLadderSettings, 0, 40, 0), T(room_keepSettings, 0, 40, 0), T(newIdConfirm_update, 0, 40, 0), T(gfx_initGLState, 0, 40, 0),
 	T(tex_upload, 0, 400, 0), T(flag_uploadAtlas, 0, 400, 0),
 	/* batch 60 */
-	T(profile_addMatchScores, 0, 400, 0), T(chat_createEdit, 0, 40, 0), T(reg_readCharacterSettings, 0, 1000, 0), T(playerRecord_loadFlag, 1, 400, 0),
+	T(profile_addMatchScores, 0, 400, 0), T(chat_createEdit, 0, 40, 0), T(reg_readLadderSettings, 0, 1000, 0), T(playerRecord_loadFlag, 1, 400, 0),
 	T(catalogue_loadComponents, 1, 400, 0),
 	/* batch 61 */
 	T(space_initBy, 0, 400, 0), T(space_setBy, 0, 400, 0), T(stage_initSpaceOneCell, 0, 40, 0), T(ViewVolume_initBy, 0, 400, 0),
@@ -17795,7 +17795,7 @@ static const STest g_stests[] = {
 	T(actor_updateAll, 0, 400, 0), T(match_freeCamFrame, 1, 600, 0),
 	/* batch 201 */
 	T(profileList_keys, 0, 400, 0), T(profile_messageKeys, 0, 400, 0), T(profile_deleteKeys, 0, 400, 0), T(profile_logOutKeys, 0, 400, 0),
-	T(profile_emblemKeys, 0, 400, 0), T(profile_screenKeys, 0, 400, 0), T(menu_processKeys, 0, 400, 0),
+	T(pilotSelect_keys, 0, 400, 0), T(profile_screenKeys, 0, 400, 0), T(menu_processKeys, 0, 400, 0),
 	/* batch 202 */
 	T(app_frame, 0, 400, 0), T(match_frameByState, 1, 400, 0),
 	/* batch 203 */
@@ -18177,7 +18177,7 @@ static const struct { DWORD addr; void *fn; const char *name; } g_hooks3[] = {
 	{ 0x432be0, (void *)room_copyJoinedSettings, "room_copyJoinedSettings" }, { 0x434ff0, (void *)room_mergeReceivedSessions, "room_mergeReceivedSessions" },
 	/* batch 14 */
 	{ 0x42aa30, (void *)menuCamera_forward, "menuCamera_forward" }, { 0x42aad0, (void *)menuCamera_back, "menuCamera_back" },
-	{ 0x44bc50, (void *)profile_loadSelectedColours, "profile_loadSelectedColours" }, { 0x44bd20, (void *)profile_loadCursorColours, "profile_loadCursorColours" },
+	{ 0x44bc50, (void *)pilotSelect_loadStats, "pilotSelect_loadStats" }, { 0x44bd20, (void *)profile_loadPilotStats, "profile_loadPilotStats" },
 	{ 0x496e40, (void *)stage_advanceClocks, "stage_advanceClocks" }, { 0x44aac0, (void *)text_hangulConvert, "text_hangulConvert" },
 	/* batch 15 */
 	{ 0x490f80, (void *)render_depthSortA, "render_depthSortA" }, { 0x491190, (void *)render_depthSortB, "render_depthSortB" },
@@ -18488,12 +18488,12 @@ static const struct { DWORD addr; void *fn; const char *name; } g_hooks3[] = {
 	{ 0x466c00, (void *)shapeDat_initBy, "shapeDat_initBy" }, { 0x46afe0, (void *)skelDat_initBy, "skelDat_initBy" },
 	{ 0x487490, (void *)TimeSync_frameTime, "TimeSync_frameTime" }, { 0x461210, (void *)scene_averageFrameTime, "scene_averageFrameTime" },
 	{ 0x43f300, (void *)sys_checkClockTampering, "sys_checkClockTampering" }, { 0x44ba60, (void *)profile_deleteFiles, "profile_deleteFiles" },
-	{ 0x432400, (void *)reg_writeCharacterSettings, "reg_writeCharacterSettings" }, { 0x433640, (void *)room_keepSettings, "room_keepSettings" },
+	{ 0x432400, (void *)reg_writeLadderSettings, "reg_writeLadderSettings" }, { 0x433640, (void *)room_keepSettings, "room_keepSettings" },
 	{ 0x43e610, (void *)newIdConfirm_update, "newIdConfirm_update" }, { 0x42f150, (void *)gfx_initGLState, "gfx_initGLState" },
 	{ 0x456520, (void *)tex_upload, "tex_upload" }, { 0x473610, (void *)flag_uploadAtlas, "flag_uploadAtlas" },
 	/* batch 60 */
 	{ 0x49d150, (void *)profile_addMatchScores, "profile_addMatchScores" }, { 0x43f460, (void *)chat_createEdit, "chat_createEdit" },
-	{ 0x42bee0, (void *)reg_readCharacterSettings, "reg_readCharacterSettings" }, { 0x4734d0, (void *)playerRecord_loadFlag, "playerRecord_loadFlag" },
+	{ 0x42bee0, (void *)reg_readLadderSettings, "reg_readLadderSettings" }, { 0x4734d0, (void *)playerRecord_loadFlag, "playerRecord_loadFlag" },
 	{ 0x473780, (void *)catalogue_loadComponents, "catalogue_loadComponents" },
 	/* batch 61 */
 	{ 0x4813e0, (void *)space_initBy, "space_initBy" }, { 0x4819b0, (void *)space_setBy, "space_setBy" },
@@ -18927,7 +18927,7 @@ static const struct { DWORD addr; void *fn; const char *name; } g_hooks3[] = {
 	/* batch 201 */
 	{ 0x44c600, (void *)profileList_keys, "profileList_keys" }, { 0x44c850, (void *)profile_messageKeys, "profile_messageKeys" },
 	{ 0x44c8c0, (void *)profile_deleteKeys, "profile_deleteKeys" }, { 0x44ca90, (void *)profile_logOutKeys, "profile_logOutKeys" },
-	{ 0x44cc60, (void *)profile_emblemKeys, "profile_emblemKeys" }, { 0x44cdd0, (void *)profile_screenKeys, "profile_screenKeys" },
+	{ 0x44cc60, (void *)pilotSelect_keys, "pilotSelect_keys" }, { 0x44cdd0, (void *)profile_screenKeys, "profile_screenKeys" },
 	{ 0x4319d0, (void *)menu_processKeys, "menu_processKeys" },
 	/* batch 202 */
 	{ 0x4202d0, (void *)app_frame, "app_frame" }, { 0x462050, (void *)match_frameByState, "match_frameByState" },

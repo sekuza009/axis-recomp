@@ -883,10 +883,10 @@ u8 g_pilotSelectLeft_v[4] __attribute__((aligned(16)));   /* 0x9f8c54 */
 u8 g_currentProfile_v[4] __attribute__((aligned(16)));   /* 0x9f8c58 */
 u8 g_profileListRow_v[4] __attribute__((aligned(16)));   /* 0x9f8c5c */
 int g_profilePageRects_v[36] __attribute__((aligned(16)));   /* 0x9f8c60 */
-u8 g_emblemCursor_v[4] __attribute__((aligned(16)));   /* 0x9f8d30 */
+u8 g_pilotSelectCursor_v[4] __attribute__((aligned(16)));   /* 0x9f8d30 */
 float g_statBars_v[9] __attribute__((aligned(16)));   /* 0x9f8d34 */
 u32 g_profileDim_v[4] __attribute__((aligned(16)));   /* 0x9f8d58 */
-u8 g_emblemMoved_v[4] __attribute__((aligned(16)));   /* 0x9f8d68 */
+u8 g_statBarsStale_v[4] __attribute__((aligned(16)));   /* 0x9f8d68 */
 u8 g_chosenPilot_v[4] __attribute__((aligned(16)));   /* 0x9f8d6c */
 u8 g_profileScreenReady_v[4] __attribute__((aligned(16)));   /* 0x9f8d70 */
 u8 g_pilotChosen_v[4] __attribute__((aligned(16)));   /* 0x9f8d74 */
@@ -2053,10 +2053,10 @@ const DataPiece g_splitObjects[] = {
 	{ 0x9f8c58, g_currentProfile_v, 4 },
 	{ 0x9f8c5c, g_profileListRow_v, 4 },
 	{ 0x9f8c60, g_profilePageRects_v, 144 },
-	{ 0x9f8d30, g_emblemCursor_v, 4 },
+	{ 0x9f8d30, g_pilotSelectCursor_v, 4 },
 	{ 0x9f8d34, g_statBars_v, 36 },
 	{ 0x9f8d58, g_profileDim_v, 16 },
-	{ 0x9f8d68, g_emblemMoved_v, 4 },
+	{ 0x9f8d68, g_statBarsStale_v, 4 },
 	{ 0x9f8d6c, g_chosenPilot_v, 4 },
 	{ 0x9f8d70, g_profileScreenReady_v, 4 },
 	{ 0x9f8d74, g_pilotChosen_v, 4 },

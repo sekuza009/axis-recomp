@@ -620,8 +620,8 @@ static u32 settings_store(GameSettings *from, GameSettings *to, u32 then)
 }
 /* 0x405140: the arena being created kept as the arena settings (g_playerName), then axis.cfg loaded again */
 u32 (lobby_keepArenaSettings)(void) { return settings_store((GameSettings *)OBJ(g_newArenaName), (GameSettings *)OBJ(g_playerName), FN_ADDR(cfg_writeAxisCfg, 0x42d730)); }
-/* 0x433640: the room's settings kept (g_roomRecName) and written to the registry (reg_writeCharacterSettings) */
-u32 (room_keepSettings)(void) { return settings_store((GameSettings *)OBJ(g_roomSettingsName), (GameSettings *)OBJ(g_roomRecName), FN_ADDR(reg_writeCharacterSettings, 0x432400)); }
+/* 0x433640: the room's settings kept (g_roomRecName) and written to the registry (reg_writeLadderSettings) */
+u32 (room_keepSettings)(void) { return settings_store((GameSettings *)OBJ(g_roomSettingsName), (GameSettings *)OBJ(g_roomRecName), FN_ADDR(reg_writeLadderSettings, 0x432400)); }
 
 /* 0x40d390: the create-arena screen drawn: the tunnel, then (modes other than 0 and 1, not on sub-screen 5) the
    dialog's frame if one is open, else the settings kept in range (players 0 .. 16 else 8, the two limits at most 250

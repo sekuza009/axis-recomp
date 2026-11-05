@@ -507,8 +507,9 @@ void THISCALL (actor_setPartColor)(Stage *scene, int p, int part, float h1, floa
 static const u32 k_partLists[8] = { offsetof(Player, headModel), offsetof(Player, chestModel), offsetof(Player, armsModel), offsetof(Player, legsModel),
                                      offsetof(Player, boosterModel), offsetof(Player, weaponModel4), offsetof(Player, weaponModel5), offsetof(Player, weaponModel) };
 
-/* the item texture the actor's flags ask for (0x100: the damage map, 0x800: the shield, else the booster) */
-static u32 flag_light(u8 *s, u32 f)
+/* the overlay texture the actor's flags ask for (Stage.itemTextures; 0x100: the damage map, 0x800: the shield, else the
+   booster) */
+static u32 flag_texture(u8 *s, u32 f)
 {
 	return ((Stage *)s)->itemTextures[f & 0x100 ? 0 : f & 0x800 ? 2 : 1];
 }
@@ -578,7 +579,7 @@ void THISCALL (actor_drawIntoView)(u8 *s, int a, void *vv, int draw)
 			ok = partList_queue(weapon_list(ac), vv, lights, tint, 1, (u32)-1, light) & 1;
 			f = ((u32)AC->timerFlags);
 			if ((f & 0x100) || (f & 0xc00))
-				ok &= partList_queue(weapon_list(ac), vv, lights, tint, 1, flag_light(s, f), (u32)st->litMatrix);
+				ok &= partList_queue(weapon_list(ac), vv, lights, tint, 1, flag_texture(s, f), (u32)st->litMatrix);
 		}
 	} else if (draw != 1) {
 		f = ((u32)AC->timerFlags);
@@ -609,7 +610,7 @@ void THISCALL (actor_drawIntoView)(u8 *s, int a, void *vv, int draw)
 		}
 		f = ((u32)AC->timerFlags);
 		if ((f & 0x100) || (f & 0xc00)) {
-			u32 lt = flag_light(s, f);
+			u32 lt = flag_texture(s, f);
 			for (int k = 0; k < 8; k++)
 				if (k != 4 || !AC->viewMarked)
 					ok &= partList_queue(ac + k_partLists[k], vv, lights, tint, 1, lt, (u32)st->litMatrix);

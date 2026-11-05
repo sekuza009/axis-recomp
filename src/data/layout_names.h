@@ -850,10 +850,6 @@ extern struct GameData g_data;
 #define g_effectsVolume (*(int *)((u8 *)g_soundEdited_v + 0x4))
 #undef g_emblemAlpha
 #define g_emblemAlpha (*(float *)g_emblemAlpha_v)
-#undef g_emblemCursor
-#define g_emblemCursor (*(int *)g_emblemCursor_v)
-#undef g_emblemMoved
-#define g_emblemMoved (*(int *)g_emblemMoved_v)
 #undef g_emblemPulse
 #define g_emblemPulse (*(float *)g_emblemPulse_v)
 #undef g_emptyItemSlot0
@@ -1930,6 +1926,8 @@ extern struct GameData g_data;
 #define g_pilotRank (*(int *)((u8 *)g_pilotStats_v + 0x8))
 #undef g_pilotSelectBottom
 #define g_pilotSelectBottom (*(int *)g_pilotSelectBottom_v)
+#undef g_pilotSelectCursor
+#define g_pilotSelectCursor (*(int *)g_pilotSelectCursor_v)
 #undef g_pilotSelectLeft
 #define g_pilotSelectLeft (*(int *)g_pilotSelectLeft_v)
 #undef g_pilotSelectRects
@@ -2592,6 +2590,8 @@ extern struct GameData g_data;
 #define g_statBarTargets ((float *)g_statBarTargets_v)
 #undef g_statBars
 #define g_statBars ((float *)g_statBars_v)
+#undef g_statBarsStale
+#define g_statBarsStale (*(int *)g_statBarsStale_v)
 #undef g_statusLine
 #define g_statusLine (g_data.g_statusLine_)
 #undef g_stereoReverse

@@ -1,6 +1,6 @@
 /* profile_keys.c: the profile screen's keys, one handler per page (profile_screenKeys picks it). Pages 3 and 5 are
    two-button dialogs (yes on the left, no on the right) worked by the arrow keys, a toggle key or a click on a
-   button; page 6 is the 3 x 3 emblem grid. Every handler first stops the text cursor's blink. */
+   button; page 6 is CHARACTER SELECT's 3 x 3 pilot grid. Every handler first stops the text cursor's blink. */
 #include "../game.h"
 
 /* the highlight of a two-button dialog whose frame is at (x, y): choice 0 the left button, 1 the right one */
@@ -107,9 +107,9 @@ void (profile_logOutKeys)(void)
 	dialog_keys(g_logOutDialogX, g_logOutDialogY);
 }
 
-/* 0x44cc60 (profile_emblemKeys): page 6, the pilot grid: OK makes the profile with the pilot chosen (profile_create), back or
+/* 0x44cc60 (pilotSelect_keys): page 6, the pilot grid: OK makes the profile with the pilot chosen (profile_create), back or
    cancel leaves; either way back to the list. The arrows move the cursor (0..8) and wrap within its row or column */
-void (profile_emblemKeys)(void)
+void (pilotSelect_keys)(void)
 {
 	g_cursorBlink = 0.0f;
 	if (input_justPressed(g_keyOk) == 1) {
@@ -119,25 +119,25 @@ void (profile_emblemKeys)(void)
 		sound_playMenu(0);
 	} else {
 		if (input_justPressed(g_keyRight) == 1) {
-			if (++g_emblemCursor % 3 == 0)
-				g_emblemCursor = g_emblemCursor - 3;
+			if (++g_pilotSelectCursor % 3 == 0)
+				g_pilotSelectCursor = g_pilotSelectCursor - 3;
 		} else if (input_justPressed(g_keyLeft) == 1) {
-			if (--g_emblemCursor < 0)
-				g_emblemCursor = 2;
-			else if (g_emblemCursor % 3 == 2)
-				g_emblemCursor = g_emblemCursor + 3;
+			if (--g_pilotSelectCursor < 0)
+				g_pilotSelectCursor = 2;
+			else if (g_pilotSelectCursor % 3 == 2)
+				g_pilotSelectCursor = g_pilotSelectCursor + 3;
 		} else if (input_justPressed(g_keyUp) == 1) {
-			g_emblemCursor = g_emblemCursor - 3;
-			if (g_emblemCursor < 0)
-				g_emblemCursor = g_emblemCursor + 9;
+			g_pilotSelectCursor = g_pilotSelectCursor - 3;
+			if (g_pilotSelectCursor < 0)
+				g_pilotSelectCursor = g_pilotSelectCursor + 9;
 		} else if (input_justPressed(g_keyDown) == 1) {
-			g_emblemCursor = g_emblemCursor + 3;
-			if (g_emblemCursor > 8)
-				g_emblemCursor = g_emblemCursor - 9;
+			g_pilotSelectCursor = g_pilotSelectCursor + 3;
+			if (g_pilotSelectCursor > 8)
+				g_pilotSelectCursor = g_pilotSelectCursor - 9;
 		} else {
 			return;
 		}
-		g_emblemMoved = 1;
+		g_statBarsStale = 1;
 		sound_playMenu(2);
 		g_profileRevealClock = 0;
 		g_profileReveal = 0;

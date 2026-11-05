@@ -489,7 +489,7 @@ typedef struct { u32 vtable; void *banks[6]; i32 count; } TextureManager;   /* t
 #define profile_messageKeys() GAME_FN(profile_messageKeys, 0x44c850, void, void)()
 #define profile_deleteKeys() GAME_FN(profile_deleteKeys, 0x44c8c0, void, void)()
 #define profile_logOutKeys() GAME_FN(profile_logOutKeys, 0x44ca90, void, void)()
-#define profile_emblemKeys() GAME_FN(profile_emblemKeys, 0x44cc60, void, void)()
+#define pilotSelect_keys() GAME_FN(pilotSelect_keys, 0x44cc60, void, void)()
 #define missionsel_camera() GAME_FN(missionsel_camera, 0x447cb0, void, void)()
 #define missionsel_drawTunnel() GAME_FN(missionsel_drawTunnel, 0x448140, void, void)()
 #define missionsel_frameSettings() GAME_FN(missionsel_frameSettings, 0x44aa20, void, void)()
@@ -623,7 +623,7 @@ typedef struct { float r, g, b, a; } Colour;
 #define room_editJoinPassword() GAME_FN(room_editJoinPassword, 0x434320, void, void)()   /* open the message field */
 #define app_closeWindow(code) GAME_FN(app_closeWindow, 0x41e7a0, int, int)(code)   /* quit the game with exit code (app/app_quit.c) */
 #define PostMessageA(hwnd, msg, w, l) IMPORT(0x4a9328, int, void *, u32, u32, u32)(hwnd, msg, w, l)
-#define profile_loadSelectedColours() GAME_FN(profile_loadSelectedColours, 0x44bc50, void, void)()
+#define pilotSelect_loadStats() GAME_FN(pilotSelect_loadStats, 0x44bc50, void, void)()
 #define profile_drawPilotSelect() GAME_FN(profile_drawPilotSelect, 0x44e640, void, void)()
 #define arena_leaveSession() GAME_FN(arena_leaveSession, 0x452fe0, u32, void)()
 /* two-button dialogs: the highlighted choice and its marker */
@@ -896,7 +896,7 @@ typedef struct { float r, g, b, a; } Colour;
 #define net_clearServerSettings() GAME_FN(net_clearServerSettings, 0x4515d0, void, void)()
 #define reg_readServerSettings() GAME_FN(reg_readServerSettings, 0x42bde0, int, void)()
 #define math_initMathFunction() GAME_FN(math_initMathFunction, 0x46c270, int, void)()
-#define reg_readCharacterSettings() GAME_FN(reg_readCharacterSettings, 0x42bee0, void, void)()
+#define reg_readLadderSettings() GAME_FN(reg_readLadderSettings, 0x42bee0, void, void)()
 #define mech_setEmpty() GAME_FN(mech_setEmpty, 0x430390, void, void)()
 #define data_loadMapInfo() GAME_FN(data_loadMapInfo, 0x42b830, u32, void)()
 #define data_loadSkirmishInfo() GAME_FN(data_loadSkirmishInfo, 0x42ba40, u32, void)()
@@ -1225,7 +1225,7 @@ typedef struct { float r, g, b, a; } Colour;
 #define arena_askJoinPassword() GAME_FN(arena_askJoinPassword, 0x405200, void, void)()   /* the arena screen's chat line opened */
 #define arena_editAddress() GAME_FN(arena_editAddress, 0x405230, void, void)()   /* the IP address field opened (a game joined by address) */
 #define menu_showMessage(i) GAME_FN(menu_showMessage, 0x41ee40, u32, int)(i)   /* message i in the message box */
-#define reg_writeCharacterSettings() GAME_FN(reg_writeCharacterSettings, 0x432400, u32, void)()
+#define reg_writeLadderSettings() GAME_FN(reg_writeLadderSettings, 0x432400, u32, void)()
 
 /* ---- the screens' set-ups (menu/screen_enter.c): rectangle builders and resets ---- */
 #define arena_clearSessionEntry() GAME_FN(arena_clearSessionEntry, 0x4045e0, void, void)()

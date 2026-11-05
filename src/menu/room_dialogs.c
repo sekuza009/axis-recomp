@@ -411,7 +411,7 @@ void (roomLogin_update)(void)
 	g_roomRequestOut = 0;
 	if (answer == 0x21) {
 		g_roomState = 99;
-		reg_writeCharacterSettings();
+		reg_writeLadderSettings();
 		login_takeAccountRecord();
 	} else if (answer == 0x2a)
 		g_roomUpdateNotice = 1;
@@ -505,7 +505,7 @@ u32 (newIdConfirm_update)(void)
 		g_roomState = 0x63;
 		g_roomRequestOut = 0;
 		room_setLadderDefaults();
-		r = reg_writeCharacterSettings();   /* reg_writeCharacterSettings */
+		r = reg_writeLadderSettings();   /* reg_writeLadderSettings */
 		g_gameServerAnswer15 = 0;
 		g_roomConnected = 1;
 		return r;

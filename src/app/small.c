@@ -508,12 +508,12 @@ static u32 reg_write(u32 value, const char *name)
 		RegSetValueExA(key, name, 0, 4, &data, 4);
 	return RegCloseKey(key);
 }
-/* 0x432400: the player's name and character: the room's name (g_accountForm) and the other name (g_accountEmail) copied into
-   the registry's copies (g_ladderId, g_ladderEmail; the first also into g_ladderIdCopy), the character record g_roomSettingsName (a
+/* 0x432400: the Ladder settings (kept under the registry key "Character"): the room's name (g_accountForm) and the other name (g_accountEmail) copied into
+   the registry's copies (g_ladderId, g_ladderEmail; the first also into g_ladderIdCopy), the room settings record g_roomSettingsName (a
    32-byte name and six choices) into g_roomRecName; then under HKCU\<the game's key> (0x4b179c) the two names and the six
    choices as DWORDs (sign-extended but for the fourth and fifth). Returns RegCloseKey's answer (the key is closed
    even when it could not be opened) */
-u32 (reg_writeCharacterSettings)(void)
+u32 (reg_writeLadderSettings)(void)
 {
 	strcpy(g_ladderId, g_accountName);
 	strcpy(g_ladderEmail, g_accountEmail);
@@ -596,13 +596,13 @@ static void read_string(u32 key, const char *name, char *dest, u32 size, u32 *ty
 		RegSetValueExA(key, name, 0, 1, dest, size);   /* REG_SZ */
 }
 
-/* 0x42bee0: the player's name and character read back (reg_writeCharacterSettings' mirror). First the defaults: the
+/* 0x42bee0: the Ladder settings read back (reg_writeLadderSettings' mirror). First the defaults: the
    name "AxisPlayer" (g_ladderId), the game "Axis Ladder Game" (g_roomRecName), the choices 0, 8, 0, 0, 10, 10. Under
    HKCU\SOFTWARE\AxisArena\Character, created when missing: a new key gets them all written; an existing one has
    each read, and one it lacks written as the default. Then the limits kept within 5 .. 30, the map within 0 .. 21
    (else 0), the players 0 .. 16 (else 8), the game type 0 .. 11 (else 0), and the key closed. The caller ignores
    the eax it leaves */
-void (reg_readCharacterSettings)(void)
+void (reg_readLadderSettings)(void)
 {
 	strcpy(g_ladderId, (const char *)STR(0x4b17d0, "AxisPlayer"));
 	strcpy(g_roomRecName, (const char *)STR(0x4b17bc, "Axis Ladder Game"));

@@ -38,21 +38,22 @@ static int has_any(const char *s, const char *bad)
 int (room_nameHasBadChar)(const char *s) { return has_any(s, "`\"',/\\|~?"); }
 int (profile_nameHasBadChar)(const char *s) { return has_any(s, "\\/:*?\"<>|"); }
 
-/* profile colour record i (nine ints, 76 bytes a record from 0x9f9068) into the preview's floats, each plus the
-   constant at k_50f; the preview reset (distance 40, -1, not turning) */
-static void load_colour(int i)
+/* the stat bars' targets (g_statBarTargets) from pilot character i's nine stats, each plus k_50f; the frame's pulse
+   restarted (g_profileFrameAlpha 40, falling) and the bars no longer stale (g_statBarsStale) */
+static void load_stat_bars(int i)
 {
 	(*(u32 *)&g_profileFrameAlpha) = 0x42200000;   /* 40.0 */
 	g_profileFrameStep = 0xbf800000;   /* -1.0 */
-	g_emblemMoved = 0;
+	g_statBarsStale = 0;
 	for (int k = 0; k < 9; k++)
 		g_statBarTargets[k] =
 			(float)((long double)g_characterProfiles[i].stats[k] + k_50f);
 }
 
-/* 0x44bc50: the selected profile's colours; profile_loadCursorColours: those of the pilot under the list cursor */
-void (profile_loadSelectedColours)(void) { load_colour(g_emblemCursor); }
-void (profile_loadCursorColours)(void) { load_colour(GAME_VAR(int, OBJ(g_profileList) + 0x40 + g_pilotChosen * 72)); }
+/* 0x44bc50: the stat bars for the pilot under CHARACTER SELECT's cursor; profile_loadPilotStats: for the pilot of the
+   profile chosen in the list */
+void (pilotSelect_loadStats)(void) { load_stat_bars(g_pilotSelectCursor); }
+void (profile_loadPilotStats)(void) { load_stat_bars(GAME_VAR(int, OBJ(g_profileList) + 0x40 + g_pilotChosen * 72)); }
 
 /* 0x445ee0: a whole 0x3ac-byte profile record scrambled */
 void (save_cryptRecord)(u8 *rec, u8 key) { crypt_bytes(rec, 0x3ac, key); }
@@ -97,7 +98,7 @@ void (profile_resetPreview)(void)
 {
 	memset((void *)OBJ(g_statBarTargets), 0, 36);
 	memset((void *)OBJ(g_statBars), 0, 36);
-	g_emblemMoved = 1;
+	g_statBarsStale = 1;
 	(*(u32 *)&g_profileFrameAlpha) = 0x42200000;   /* 40.0 */
 	g_profileFrameStep = 0xbf800000;   /* -1.0 */
 }
@@ -106,7 +107,7 @@ void (profile_resetPreview)(void)
 void (profile_resetSelection)(void)
 {
 	profile_resetPreview();
-	g_emblemCursor = 0;
+	g_pilotSelectCursor = 0;
 	g_profileRevealClock = 0;
 	g_profileReveal = 0;
 }
@@ -228,8 +229,8 @@ u32 (profile_frame)(void)
 			return 0;
 		return profile_typeNewName();
 	}
-	if (g_emblemMoved)
-		profile_loadCursorColours();
+	if (g_statBarsStale)
+		profile_loadPilotStats();
 	g_profilePage = 1;
 	return profile_drawManagementWindow();
 }
@@ -272,9 +273,9 @@ int (pilotSelect_clicks)(void)
 	if (g_mouseClick) {
 		u32 row = ((u32)pilotSelect_hitTest(g_mouseX, g_mouseY));   /* the list's hit test */
 		if (row <= 8) {
-			if ((*(u32 *)&g_emblemCursor) != row) {
-				(*(u32 *)&g_emblemCursor) = row;
-				g_emblemMoved = 1;
+			if ((*(u32 *)&g_pilotSelectCursor) != row) {
+				(*(u32 *)&g_pilotSelectCursor) = row;
+				g_statBarsStale = 1;
 				sound_playMenu(2);
 				g_profileRevealClock = 0;
 				g_profileReveal = 0;
@@ -304,7 +305,7 @@ u32 (profile_create)(void)
 {
 	int n = g_profileCount;
 	strcpy((char *)(OBJ(g_profileList) + n * 0x48), g_chatLine);
-	GAME_VAR(int, OBJ(g_profileList) + 0x40 + n * 0x48) = g_emblemCursor;
+	GAME_VAR(int, OBJ(g_profileList) + 0x40 + n * 0x48) = g_pilotSelectCursor;
 	if (chdir_((const char *)STR(0x4b2adc, "save"))) {
 		mkdir_((const char *)STR(0x4b2adc, "save"));
 		chdir_((const char *)STR(0x4b2adc, "save"));
@@ -556,7 +557,7 @@ u32 (profile_newNameDialog)(void)
 static void list_moved(void)
 {
 	g_pilotChosen = g_listTop + g_listRow;
-	g_emblemMoved = 1;
+	g_statBarsStale = 1;
 	sound_playMenu(2);
 }
 
@@ -670,7 +671,7 @@ void (profileList_mouse)(void)
 			(*(int *)&g_profileMessageTime) = 0;
 			if (g_pilotChosen != g_listTop + row) {
 				g_pilotChosen = g_listTop + row;
-				g_emblemMoved = 1;
+				g_statBarsStale = 1;
 			}
 			break;
 		}

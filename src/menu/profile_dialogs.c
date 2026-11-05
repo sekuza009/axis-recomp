@@ -49,8 +49,8 @@ void (profile_drawScreen)(void)
 		menu_drawFrame(g_pilotSelectLeft, g_pilotSelectTop, g_pilotSelectRight, g_pilotSelectBottom);
 		return;
 	}
-	if (g_emblemMoved != 0)
-		profile_loadSelectedColours();
+	if (g_statBarsStale != 0)
+		pilotSelect_loadStats();
 	profile_drawPilotSelect();
 }
 
@@ -323,7 +323,7 @@ static void stat_bars(int x, int y, int step, const float *scale, float grey)
 }
 
 /* 0x44e640: the pilot-select dialog (g_pilotSelectLeft, 0x9f8c50 .. 0x9f6830, g_pilotSelectBottom): the window, its title MSG(531, "CHARACTER SELECT") and
-   rule; the portraits (texture g_characterTexture) and over them the chosen pilot's (g_emblemCursor: cell % 3, / 3 of 86 texels)
+   rule; the portraits (texture g_characterTexture) and over them the chosen pilot's (g_pilotSelectCursor: cell % 3, / 3 of 86 texels)
    growing by 2 a reveal step (g_profileReveal, up to 8, one a 1.0 of g_profileRevealClock) under a pulsing frame (g_fontAsciiLarge; its alpha
    by g_profileFrameAlpha, which bounces between 2 and 38 at g_profileFrameStep a frame); the details: 13 labels (MSG(532, "NAME :")), the pilot's
    name, corporation, sex (MSG(545, "RESERVED") + it: MALE / FEMALE), age and nine stats (right-aligned, with 0x4b3e2c) beside their bars (g_statBars,
@@ -336,7 +336,7 @@ void (profile_drawPilotSelect)(void)
 #define X1 g_pilotSelectRight
 #define Y1 g_pilotSelectBottom
 #define K(addr) ((const float *)RELOC(addr))
-#define g_pilot g_emblemCursor
+#define g_pilot g_pilotSelectCursor
 #define g_revealClock (*(float *)&g_profileRevealClock)
 	const u32 *panel = g_profileColour, *dim = g_profileDim;
 	gfx_setProjection2D3D(2);

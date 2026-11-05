@@ -1068,17 +1068,17 @@
 #define g_missionPage GAME_VAR(int, 0x9f62f8)   /* 0 / 1: no keys; 2: no list refresh */
 #define g_missionBusy GAME_VAR(int, 0x9f6300)
 #define g_missionShowBackground GAME_VAR(int, 0x9f63b8)
-#define g_profileReveal GAME_VAR(int, 0x9f6828)   /* the chosen emblem's cell grown by this (pixels a side, one more each tick of g_profileRevealClock); 0 when the emblem cursor moves */
+#define g_profileReveal GAME_VAR(int, 0x9f6828)   /* the pilot portrait's cell under the cursor grown by this (pixels a side, one more each tick of g_profileRevealClock); 0 when the emblem cursor moves */
 #define g_logOutDialogX GAME_VAR(int, 0x9f6834)   /* page 5's dialog frame */
 #define g_profileIntro GAME_VAR(int, 0x9f6838)   /* the profile screen's intro animation runs */
 #define g_logOutDialogY GAME_VAR(int, 0x9f683c)
-#define g_emblemCursor GAME_VAR(int, 0x9f8d30)   /* page 6: 0..8, row by row */
-#define g_emblemMoved GAME_VAR(int, 0x9f8d68)
+#define g_pilotSelectCursor GAME_VAR(int, 0x9f8d30)   /* page 6, CHARACTER SELECT: the pilot under the cursor, 0..8 row by row */
+#define g_statBarsStale GAME_VAR(int, 0x9f8d68)   /* 1: the pilot shown changed, the stat bars to be loaded again */
 #define g_profileIntroSpeed GAME_VAR(float, 0x9f8e50)
 #define g_profileIntroState GAME_VAR(int, 0x9f8e54)   /* 5: finished */
-#define g_profileRevealClock GAME_VAR(int, 0x9f8ee4)   /* a float: the time to the next step of g_profileReveal; cleared when the emblem cursor moves */
+#define g_profileRevealClock GAME_VAR(int, 0x9f8ee4)   /* a float: the time to the next step of g_profileReveal; cleared when the pilot cursor moves */
 #define g_profileDialogY GAME_VAR(int, 0x9f8f0c)
-#define g_profilePage GAME_VAR(int, 0x9f8f10)   /* 1 list, 2 info, 3 / 5 name forms, 6 emblem; 4 has no keys */
+#define g_profilePage GAME_VAR(int, 0x9f8f10)   /* 1 list, 2 info, 3 / 5 name forms, 6 CHARACTER SELECT; 4 has no keys */
 #define g_profileIntroZoom GAME_VAR(float, 0x9f8f14)
 #define g_profileDialogX GAME_VAR(int, 0x9f8f1c)   /* page 3's dialog frame */
 #define g_profileIntroTime GAME_VAR(int, 0x9f8f30)

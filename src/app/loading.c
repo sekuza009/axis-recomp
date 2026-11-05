@@ -209,7 +209,7 @@ int (app_startupLoad)(void *instance)
 	net_clearServerSettings();
 	reg_readServerSettings();
 	math_initMathFunction();
-	reg_readCharacterSettings();
+	reg_readLadderSettings();
 	mech_setEmpty();
 	data_loadCharacterProfiles();
 	data_loadMapInfo();

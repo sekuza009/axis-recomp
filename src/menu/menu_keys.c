@@ -50,6 +50,6 @@ void (profile_screenKeys)(void)
 	case 2: profile_messageKeys(); break;
 	case 3: profile_deleteKeys(); break;
 	case 5: profile_logOutKeys(); break;
-	case 6: profile_emblemKeys(); break;             /* the emblem grid */
+	case 6: pilotSelect_keys(); break;             /* CHARACTER SELECT's grid */
 	}
 }

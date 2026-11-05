@@ -4355,9 +4355,9 @@ extern u8 g_profileListRow_v[4];
 extern int g_profilePageRects_v[36];
 #endif
 #ifdef AXIS_FENCE
-#define g_emblemCursor_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xbdf000 : g_fence + 0xbdeffc))
+#define g_pilotSelectCursor_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xbdf000 : g_fence + 0xbdeffc))
 #else
-extern u8 g_emblemCursor_v[4];
+extern u8 g_pilotSelectCursor_v[4];
 #endif
 #ifdef AXIS_FENCE
 #define g_statBars_v ((float *)(AXIS_FENCE == 2 ? g_fence + 0xbe1000 : g_fence + 0xbe0fdc))
@@ -4370,9 +4370,9 @@ extern float g_statBars_v[9];
 extern u32 g_profileDim_v[4];
 #endif
 #ifdef AXIS_FENCE
-#define g_emblemMoved_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xbe5000 : g_fence + 0xbe4ffc))
+#define g_statBarsStale_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xbe5000 : g_fence + 0xbe4ffc))
 #else
-extern u8 g_emblemMoved_v[4];
+extern u8 g_statBarsStale_v[4];
 #endif
 #ifdef AXIS_FENCE
 #define g_chosenPilot_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xbe7000 : g_fence + 0xbe6ffc))

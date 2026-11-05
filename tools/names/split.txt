@@ -825,8 +825,8 @@ g_desktopW
 g_dialogChoice
 g_dialogPending
 g_emblemAlpha
-g_emblemCursor
-g_emblemMoved
+g_pilotSelectCursor
+g_statBarsStale
 g_emblemPulse
 g_exitCode
 g_flareSizeA

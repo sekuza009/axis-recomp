@@ -187,7 +187,7 @@
 #define profile_resetSelection() GAME_FN(profile_resetSelection, 0x44b750, void, void)()
 #define profile_nameHasBadChar(s) GAME_FN(profile_nameHasBadChar, 0x44b7e0, int, const char *)(s)
 #define profile_nameExists() GAME_FN(profile_nameExists, 0x44b870, int, void)()
-#define profile_loadCursorColours() GAME_FN(profile_loadCursorColours, 0x44bd20, u32, void)()
+#define profile_loadPilotStats() GAME_FN(profile_loadPilotStats, 0x44bd20, u32, void)()
 #define profileList_mouse() GAME_FN(profileList_mouse, 0x44be00, u32, void)()
 #define profile_newNameDialog() GAME_FN(profile_newNameDialog, 0x44c190, u32, void)()
 #define profile_deleteClicks() GAME_FN(profile_deleteClicks, 0x44c390, u32, void)()
