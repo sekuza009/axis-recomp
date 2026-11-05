@@ -150,7 +150,7 @@ void THISCALL (stage_clearActorSlots)(Stage *stage)
 		ac->active = 0;
 		ac->player = -1;
 		ac->state = 0;
-		(*(int *)&stage->lockWarnings[i]) = 0;
+		(*(int *)&stage->lockHeld[i]) = 0;
 	}
 }
 
@@ -255,14 +255,14 @@ void THISCALL (actor_deactivate)(Stage *stage, int i)
 	ac->active = 0;
 	ac->state = 0;
 	ac->onScreen = 0;
-	(*(int *)&ac->lockedOn) = 0;
+	(*(int *)&ac->aimTime) = 0;
 	(*(int *)&ac->labelFade) = 0;
 	if (stage->kingActor == i)
 		stage->kingActor = -1;
 	int team = ac->team;
 	if (team > -1 && stage->teamCommanders[team] == i)
 		stage->teamCommanders[team] = -1;
-	(*(int *)&stage->lockWarnings[i]) = 0;
+	(*(int *)&stage->lockHeld[i]) = 0;
 	if (i < stage->actorFreeHint)
 		stage->actorFreeHint = i;
 	int n = stage->actorCount;
@@ -871,7 +871,7 @@ void THISCALL (actor_setupFromParts)(u8 *s, int a, int id, u32 a3, const u32 *pp
 	for (int k = 5; k >= 0; k--)
 		actor_updatePart(s, a, k, ((u32)AC->variantLoaded));
 	fill_dwords(ac + offsetof(Player, screenPos), 10, 0);   /* screenPos .. tagBottomRight, onScreen */
-	fill_dwords(ac + offsetof(Player, lockedOn), 4, 0);   /* lockedOn .. botNeeds */
+	fill_dwords(ac + offsetof(Player, aimTime), 4, 0);   /* aimTime .. botNeeds */
 	AC->target1 = AC->target2 = -1;
 	AC->pathReverse = (*(int *)&AC->botWait) = 0;
 	AC->botWaitTrigger = -1;
@@ -889,7 +889,7 @@ void THISCALL (actor_setupFromParts)(u8 *s, int a, int id, u32 a3, const u32 *pp
 	AC->stuckPath = -1;
 	memcpy(AC->stuckMove, (const void *)ADDR(g_vecZero), 12);
 	AC->homedOn = (*(int *)&AC->beepTimer) = 0;
-	(*(int *)&st->lockWarnings[a]) = 0;
+	(*(int *)&st->lockHeld[a]) = 0;
 	st->teamsChanged = 1;
 }
 #undef AC

@@ -336,8 +336,8 @@ typedef struct Player {
 	float tagBottomRight[3];   /* +0x87d4: the box's bottom-right corner (tag_narrow: the width from these) */
 	i32 onScreen;   /* +0x87e0: 1: projected in front of the camera */
 	float facingCos;   /* +0x87e4: (by use) the cosine of its angle off the local player's view (render: who faces it); written, never read */
-	float lockedOn;   /* +0x87e8: > 0: locked on by the local player */
-	float lockSize;   /* +0x87ec: how far the lock-on box still has to close */
+	float aimTime;   /* +0x87e8: seconds this actor has been in the local player's lock-on weapon's view cone (0 out of it); past lockOnTime x targetingTime the lock is made */
+	float lockAnim;   /* +0x87ec: 0.25 when the local player's lock on it is made, counting down: the HUD's box closes in */
 	float labelFade;   /* +0x87f0: > 0: the name label is up (alpha labelFade / 3) */
 	i32 botNeeds;   /* +0x87f4: (by use) bit 0: low armour (under 0.3); bit 1: both weapons empty */
 	i32 target1;   /* +0x87f8: (by use) its targets (-1 none; dropped with the bullet: actor_clearTargetRefs) */
@@ -1439,7 +1439,7 @@ typedef struct Stage {
 	i32 lastDeath;   /* +0x202e8e8: (by use) the actor that died last */
 	i32 teamsChanged;   /* +0x202e8ec: (by use) 1: an actor joined or changed team */
 	i32 frags[100];   /* +0x202e8f0: (by use) frags by team (a kill counts for the other team's slot); cleared together (stage_clearActorRefs) */
-	float lockWarnings[100];   /* +0x202ea80: (by use) per actor: the lock-on warnings, sorted longest first for the local player */
+	float lockHeld[100];   /* +0x202ea80: per actor: seconds the local player's lock on it still holds (targetKeepTime when made; the beep then); sorted longest first into lockTimes / lockIds */
 	float lockTimes[100];   /* +0x202ec10: (by use) the locked-on actors' lock times, longest first (actor_frame.c) */
 	i32 lockIds[100];   /* +0x202eda0: and which actors they are */
 	i32 lockCount;   /* +0x202ef30: (by use) the local player's locked-on actors (lockTimes / lockIds; was named bulletCount) */
@@ -1638,7 +1638,7 @@ typedef struct Scene {
 	i32 teamsChanged;   /* +0x2221fb4: = Stage.teamsChanged (the same word): 1: an actor joined or changed team: the ranking made again (scene_updateRanking) */
 	i32 teamScores[4];   /* +0x2221fb8: by team slot (this_get_0x2342381_463780 gives a team's slot) (= Stage.frags (by team slot)) */
 	u8 _pad2221fc8[0x180];
-	float lockTimers[16];   /* +0x2222148: per player: the lock-on building up (> 0) (= Stage.lockWarnings) */
+	float lockHeld[16];   /* +0x2222148: = Stage.lockHeld (per player): the lock on it still holds */
 	u8 _pad2222188[0xc4ee0];
 	float modelview[16];   /* +0x22e7068: the view matrix the overlay parts are drawn with (ViewVolume_captureMatrices) */
 	u8 _pad22e70a8[0x54];
@@ -1797,8 +1797,8 @@ typedef struct Scene {
 	u32 eventCount;   /* +0x2342ef6: events written so far */
 	u32 eventFirst;   /* +0x2342efa: first event still shown */
 	u32 eventTime;   /* +0x2342efe: (by use) stamped on each new event line */
-	float readyTimer;   /* +0x2342f02: > 0: "ready" shown */
-	char readyText[0x40];   /* +0x2342f06: shown while no countdown runs */
+	float noticeTimer;   /* +0x2342f02: > 0: the notice shown (2 s after notice_printCentre) */
+	char noticeText[0x40];   /* +0x2342f06: the centred notice (notice_printCentre: PREPARE THE BATTLE, FIGHT!, LEVEL UP! ..), shown while no restart counts down */
 	u8 _pad2342f46[0xc0];
 	i32 sendFlags[16][4];   /* +0x2343006: (by use) per player: what is to be sent ([0] its state, [1] its team, ...; notices_clearAll clears them) */
 	i32 noticeChanged;   /* +0x2343106: 1: a HUD notice was raised (match/notices.c) */
@@ -2153,8 +2153,8 @@ _Static_assert(offsetof(Player, tagTopLeft) == 0x87c8 && sizeof(((Player *)0)->t
 _Static_assert(offsetof(Player, tagBottomRight) == 0x87d4 && sizeof(((Player *)0)->tagBottomRight) == 0xc, "scene.fields: Player.tagBottomRight");
 _Static_assert(offsetof(Player, onScreen) == 0x87e0 && sizeof(((Player *)0)->onScreen) == 0x4, "scene.fields: Player.onScreen");
 _Static_assert(offsetof(Player, facingCos) == 0x87e4 && sizeof(((Player *)0)->facingCos) == 0x4, "scene.fields: Player.facingCos");
-_Static_assert(offsetof(Player, lockedOn) == 0x87e8 && sizeof(((Player *)0)->lockedOn) == 0x4, "scene.fields: Player.lockedOn");
-_Static_assert(offsetof(Player, lockSize) == 0x87ec && sizeof(((Player *)0)->lockSize) == 0x4, "scene.fields: Player.lockSize");
+_Static_assert(offsetof(Player, aimTime) == 0x87e8 && sizeof(((Player *)0)->aimTime) == 0x4, "scene.fields: Player.aimTime");
+_Static_assert(offsetof(Player, lockAnim) == 0x87ec && sizeof(((Player *)0)->lockAnim) == 0x4, "scene.fields: Player.lockAnim");
 _Static_assert(offsetof(Player, labelFade) == 0x87f0 && sizeof(((Player *)0)->labelFade) == 0x4, "scene.fields: Player.labelFade");
 _Static_assert(offsetof(Player, botNeeds) == 0x87f4 && sizeof(((Player *)0)->botNeeds) == 0x4, "scene.fields: Player.botNeeds");
 _Static_assert(offsetof(Player, target1) == 0x87f8 && sizeof(((Player *)0)->target1) == 0x4, "scene.fields: Player.target1");
@@ -3014,7 +3014,7 @@ _Static_assert(offsetof(Stage, cameraTargetMode) == 0x202e8e4 && sizeof(((Stage 
 _Static_assert(offsetof(Stage, lastDeath) == 0x202e8e8 && sizeof(((Stage *)0)->lastDeath) == 0x4, "scene.fields: Stage.lastDeath");
 _Static_assert(offsetof(Stage, teamsChanged) == 0x202e8ec && sizeof(((Stage *)0)->teamsChanged) == 0x4, "scene.fields: Stage.teamsChanged");
 _Static_assert(offsetof(Stage, frags) == 0x202e8f0 && sizeof(((Stage *)0)->frags) == 0x190, "scene.fields: Stage.frags");
-_Static_assert(offsetof(Stage, lockWarnings) == 0x202ea80 && sizeof(((Stage *)0)->lockWarnings) == 0x190, "scene.fields: Stage.lockWarnings");
+_Static_assert(offsetof(Stage, lockHeld) == 0x202ea80 && sizeof(((Stage *)0)->lockHeld) == 0x190, "scene.fields: Stage.lockHeld");
 _Static_assert(offsetof(Stage, lockTimes) == 0x202ec10 && sizeof(((Stage *)0)->lockTimes) == 0x190, "scene.fields: Stage.lockTimes");
 _Static_assert(offsetof(Stage, lockIds) == 0x202eda0 && sizeof(((Stage *)0)->lockIds) == 0x190, "scene.fields: Stage.lockIds");
 _Static_assert(offsetof(Stage, lockCount) == 0x202ef30 && sizeof(((Stage *)0)->lockCount) == 0x4, "scene.fields: Stage.lockCount");
@@ -3172,7 +3172,7 @@ _Static_assert(offsetof(Scene, selectedActor) == 0x2221fa0 && sizeof(((Scene *)0
 _Static_assert(offsetof(Scene, lastDeath) == 0x2221fb0 && sizeof(((Scene *)0)->lastDeath) == 0x4, "scene.fields: Scene.lastDeath");
 _Static_assert(offsetof(Scene, teamsChanged) == 0x2221fb4 && sizeof(((Scene *)0)->teamsChanged) == 0x4, "scene.fields: Scene.teamsChanged");
 _Static_assert(offsetof(Scene, teamScores) == 0x2221fb8 && sizeof(((Scene *)0)->teamScores) == 0x10, "scene.fields: Scene.teamScores");
-_Static_assert(offsetof(Scene, lockTimers) == 0x2222148 && sizeof(((Scene *)0)->lockTimers) == 0x40, "scene.fields: Scene.lockTimers");
+_Static_assert(offsetof(Scene, lockHeld) == 0x2222148 && sizeof(((Scene *)0)->lockHeld) == 0x40, "scene.fields: Scene.lockHeld");
 _Static_assert(offsetof(Scene, modelview) == 0x22e7068 && sizeof(((Scene *)0)->modelview) == 0x40, "scene.fields: Scene.modelview");
 _Static_assert(offsetof(Scene, projection) == 0x22e70fc && sizeof(((Scene *)0)->projection) == 0x40, "scene.fields: Scene.projection");
 _Static_assert(offsetof(Scene, showExp) == 0x22e717c && sizeof(((Scene *)0)->showExp) == 0x4, "scene.fields: Scene.showExp");
@@ -3313,8 +3313,8 @@ _Static_assert(offsetof(Scene, events) == 0x23429ce && sizeof(((Scene *)0)->even
 _Static_assert(offsetof(Scene, eventCount) == 0x2342ef6 && sizeof(((Scene *)0)->eventCount) == 0x4, "scene.fields: Scene.eventCount");
 _Static_assert(offsetof(Scene, eventFirst) == 0x2342efa && sizeof(((Scene *)0)->eventFirst) == 0x4, "scene.fields: Scene.eventFirst");
 _Static_assert(offsetof(Scene, eventTime) == 0x2342efe && sizeof(((Scene *)0)->eventTime) == 0x4, "scene.fields: Scene.eventTime");
-_Static_assert(offsetof(Scene, readyTimer) == 0x2342f02 && sizeof(((Scene *)0)->readyTimer) == 0x4, "scene.fields: Scene.readyTimer");
-_Static_assert(offsetof(Scene, readyText) == 0x2342f06 && sizeof(((Scene *)0)->readyText) == 0x40, "scene.fields: Scene.readyText");
+_Static_assert(offsetof(Scene, noticeTimer) == 0x2342f02 && sizeof(((Scene *)0)->noticeTimer) == 0x4, "scene.fields: Scene.noticeTimer");
+_Static_assert(offsetof(Scene, noticeText) == 0x2342f06 && sizeof(((Scene *)0)->noticeText) == 0x40, "scene.fields: Scene.noticeText");
 _Static_assert(offsetof(Scene, sendFlags) == 0x2343006 && sizeof(((Scene *)0)->sendFlags) == 0x100, "scene.fields: Scene.sendFlags");
 _Static_assert(offsetof(Scene, noticeChanged) == 0x2343106 && sizeof(((Scene *)0)->noticeChanged) == 0x4, "scene.fields: Scene.noticeChanged");
 _Static_assert(offsetof(Scene, connectPlayer) == 0x234310a && sizeof(((Scene *)0)->connectPlayer) == 0x4, "scene.fields: Scene.connectPlayer");

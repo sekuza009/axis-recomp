@@ -248,7 +248,7 @@ void THISCALL (scene_reset)(u8 *s)
 {
 	Stage *st = (Stage *)s;
 	stage_resetLights(s);
-	memset(st->lockWarnings, 0, 0x64 * 4);
+	memset(st->lockHeld, 0, 0x64 * 4);
 	st->lockCount = 0;
 	stage_clearMapObjects(s);
 	stage_clearBullets(s);

@@ -32,7 +32,7 @@ void THISCALL (events_clear)(Scene *scene, u32 time)
 	scene->eventFirst = 0;
 	scene->eventTime = time;
 	BITS(scene->msgFade) = 0;
-	BITS(scene->readyTimer) = 0;
+	BITS(scene->noticeTimer) = 0;
 }
 
 /* 0x463480: every notice cleared */
@@ -97,9 +97,9 @@ int (notice_printCentre)(Scene *scene, const char *format, ...)
 {
 	va_list args;
 	va_start(args, format);
-	int n = vsprintf(scene->readyText, format, args);
+	int n = vsprintf(scene->noticeText, format, args);
 	va_end(args);
-	scene->readyTimer = 2.0f;
+	scene->noticeTimer = 2.0f;
 	return n;
 }
 

@@ -41,7 +41,7 @@ static float tex255(int n) { return f32((long double)n * (1.0f / 255)); }
 #endif
 
 /* the alert ring: a quad strip around the screen centre, opaque at its inner edge and fading out 1.2 times further
-   out, turning with the player's heading */
+   out; its size by the player's detection angle (the view's tangent scaled by it), red while a round homes on it */
 static void main_ring(Scene *scene, Player *player)
 {
 	int t = ftol((long double)view_angle() * 5.0f);
@@ -54,8 +54,8 @@ static void main_ring(Scene *scene, Player *player)
 			glColor4f(1.0f, 0.0f, 0.0f, 0.25f);
 		else
 			glColor4f(0.0f, 1.0f, 0.0f, 0.25f);
-		int heading = ftol(player->detectionAngle);
-		float v[2] = { 0.0f, f32(g_trig[(heading % 3600 + 3600) % 3600] * (long double)radius) };
+		int detect = ftol(player->detectionAngle);
+		float v[2] = { 0.0f, f32(g_trig[(detect % 3600 + 3600) % 3600] * (long double)radius) };
 		vec_rotate(v, angle);
 		for (int pass = 0; pass < 2; pass++) {
 			if (pass == 1) {
@@ -215,8 +215,8 @@ static void main_gauge(Scene *scene, Player *player)
 	glDisable(GL_TEXTURE_2D);
 }
 
-/* the four timers down the right side (those whose bit 8 + k is set in timerFlags): an icon from the emblem
-   texture, and the seconds left once 30 or fewer */
+/* the four timers down the right side (those whose bit 8 + k is set in timerFlags): an icon from the HUD\'s icon
+   atlas, and the seconds left once 30 or fewer */
 static void main_timers(Scene *scene, Player *player)
 {
 	for (int k = 0; k < 4; k++) {
@@ -263,8 +263,8 @@ static void main_timers(Scene *scene, Player *player)
 	}
 }
 
-/* the actor's snapshot (Actor/<name>/SnapShot, loaded once per actor type) at the bottom right, while not in the
-   cockpit view (or for a spectator on camera 2) */
+/* the actor's snapshot (Actor/<name>/SnapShot, loaded once per actor type) at the bottom right, while it is not the
+   selected actor (the cockpit view) (or for a spectator on camera 2) */
 static void main_snapshot(Scene *scene, Player *player)
 {
 	char name[256];

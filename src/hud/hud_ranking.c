@@ -1,11 +1,11 @@
 /* hud_ranking.c: the ranking table (held key / end of a match): the mode's title, then one row per player with
-   name, emblem, flag, kills / deaths and time played; in team games the teams in score order, the leader first;
+   name, grade badge, flag, kills / deaths and time played; in team games the teams in score order, the leader first;
    players without a team (spectators) last. */
 #include "../game.h"
 #include <string.h>
 
 /* one row at *y (16 units high, the next row 16 below): the bar in the current colour, the name right-aligned
-   at 0xf4 (8 units per character; the original passes the name to sprintf as its format), emblem and flag
+   at 0xf4 (8 units per character; the original passes the name to sprintf as its format), grade badge and flag
    to the left of the bar, "KILL/DEATH" and "TIME mm:ss". p is the player, flagOwner the player whose flag
    is shown */
 static void ranking_row(Scene *scene, int p, int *y)

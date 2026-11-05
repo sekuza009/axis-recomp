@@ -291,7 +291,7 @@ void THISCALL (camera_setupView)(u8 *s, const float *pos, const float *dir, cons
 		u8 hit[12];
 		if (k == ST->selectedActor || !(c[0] > nw) || !(c[1] > nw) || !(c[2] > nw) || c[0] >= c[3] || c[1] >= c[3] ||
 		    c[2] >= c[3] || collision_rayTrace(s, cam, p, hit)) {
-			AC->lockedOn = 0.0f;
+			AC->aimTime = 0.0f;
 			AC->onScreen = 0;
 			continue;
 		}
@@ -312,7 +312,7 @@ void THISCALL (camera_setupView)(u8 *s, const float *pos, const float *dir, cons
 		u8 *me = (u8 *)&ST->actors[ST->playerActor];
 		Player *act = (Player *)me;
 		if ((((u32)AC->timerFlags) & 0x200) && AC->hackingLevel >= act->hackingLevel) {
-			AC->lockedOn = 0.0f;
+			AC->aimTime = 0.0f;
 			AC->onScreen = 1;
 			continue;
 		}
@@ -320,16 +320,16 @@ void THISCALL (camera_setupView)(u8 *s, const float *pos, const float *dir, cons
 		AC->facingCos = f32(cosv);
 		int heading = ftol(fld_m((const float *)(me + 4)));
 		if (!(cosv > g_cosTable[(heading % 3600 + 3600) % 3600])) {
-			AC->lockedOn = 0.0f;
+			AC->aimTime = 0.0f;
 			AC->onScreen = 1;
 			continue;
 		}
 		int weapon = act->actorType;
 		if (ST->playerActor >= 0 && AC->team != act->team && weapon >= 0 &&
 		    ST->actorInfo[weapon].targetingTime > 0)
-			AC->lockedOn = f32(fadd_m(fld_m(&dt), &AC->lockedOn));
+			AC->aimTime = f32(fadd_m(fld_m(&dt), &AC->aimTime));
 		else
-			AC->lockedOn = 0.0f;
+			AC->aimTime = 0.0f;
 		if (!tag_narrow(ac, OBJ(k_40f)))
 			AC->labelFade = 3.0f;
 		AC->onScreen = 1;

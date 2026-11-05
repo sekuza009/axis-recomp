@@ -182,7 +182,7 @@ int THISCALL (match_playFrame)(u8 *s)
 	float window = f32(fadd_m(fld_m(&SC->windowTime), dt));
 	SC->windowTime = window;
 	count_down(s, offsetof(Scene, msgFade), dt);
-	count_down(s, offsetof(Scene, readyTimer), dt);
+	count_down(s, offsetof(Scene, noticeTimer), dt);
 	count_down(s, offsetof(Scene, keyGuard), dt);
 	if (second > k_1f) {
 		int whole = ftol(second);
@@ -1075,8 +1075,8 @@ u32 THISCALL (replay_frame)(u8 *s)
 	}
 	if (run_down(s, offsetof(Scene, msgFade)))
 		SC->msgFade = 0.0f;
-	if (run_down(s, offsetof(Scene, readyTimer)))
-		SC->readyTimer = 0.0f;
+	if (run_down(s, offsetof(Scene, noticeTimer)))
+		SC->noticeTimer = 0.0f;
 	if (run_down(s, offsetof(Scene, flagUploadTimer))) {
 		flag_uploadAtlas(stage);
 		SC->flagUploadTimer = 0.0f;
@@ -1248,12 +1248,12 @@ u32 THISCALL (replay_frame)(u8 *s)
 			sprintf(text, (const char *)STR(0x4c7cd8, "%02d:%02d"), SC->wholeSeconds / 60, SC->wholeSeconds % 60);
 			PATCHED_CALL(0x48a2ff, void, int, int, const char *, int)(0x226, 0x10, text, 0x10);   /* text_drawSized */
 		}
-		PATCHED_THISCALL(0x48a309, void, void *)(s);                                 /* replay_drawFollowedName */
+		PATCHED_THISCALL(0x48a309, void, void *)(s);                                 /* hud_drawWatchedName */
 		if (SC->rankingKey == 1)
 			PATCHED_THISCALL(0x48a318, void, void *)(s);                             /* hud_drawRanking */
 	}
-	if (SC->readyTimer > 0)
-		hud_drawReadyStart((Scene *)s);
+	if (SC->noticeTimer > 0)
+		hud_drawCentreNotice((Scene *)s);
 	if (SC->quitAsked != 1)
 		return 4;
 	fclose(SC->replayFile);

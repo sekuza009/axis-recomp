@@ -1149,7 +1149,7 @@ static CallSite g_sites[] = {
     {0x48a1c0, 0x495190},   /* replay_drawMessage */
     {0x48a1f7, 0x496820}, {0x48a299, 0x496820},   /* hud_drawIcon */
     {0x48a259, 0x44ad60}, {0x48a2ff, 0x44ad60},   /* text_drawSized */
-    {0x48a309, 0x496b80},   /* replay_drawFollowedName */
+    {0x48a309, 0x496b80},   /* hud_drawWatchedName */
     {0x48a318, 0x494930}, {0x4986a0, 0x494930},   /* hud_drawRanking */
     {0x48b386, 0x4982f0},   /* hud_pass */
     {0x491c2d, 0x44ae10},   /* text_drawCentred */
@@ -1466,7 +1466,7 @@ OV_WRAP(ov_text_left, 6, GAMEFN_ASM(text_drawSized, 0x44ad60))
 OV_WRAP(ov_icon_right, 7, GAMEFN_ASM(hud_drawIcon, 0x496820))
 OV_WRAP(ov_text_right, 7, GAMEFN_ASM(text_drawSized, 0x44ad60))
 OV_WRAP(ov_message, 8, GAMEFN_ASM(replay_drawMessage, 0x495190))
-OV_WRAP(ov_name, 8, GAMEFN_ASM(replay_drawFollowedName, 0x496b80))
+OV_WRAP(ov_name, 8, GAMEFN_ASM(hud_drawWatchedName, 0x496b80))
 OV_WRAP(ov_rank, 4, GAMEFN_ASM(hud_drawRanking, 0x494930))
 #define AXGL_W (*(volatile int *)IMG(0xa0e810))   /* render width / height the HUD scales by */
 #define AXGL_H (*(volatile int *)IMG(0xa0e928))

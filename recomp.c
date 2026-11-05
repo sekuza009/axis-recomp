@@ -4000,10 +4000,10 @@ void THISCALL hud_drawClock(void *scene);
 /* 0x495140 hud_drawPressFire(): "Press fire button to start" centred low (text_drawCentred, patched: native) */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void THISCALL hud_drawPressFire(void *scene);
-/* 0x496c20 (thiscall on the game) hud_drawReadyStart(): the countdown (+0x233cc4c): "READY %d" in yellow, below 1
+/* 0x496c20 (thiscall on the game) hud_drawCentreNotice(): the countdown (+0x233cc4c): "READY %d" in yellow, below 1
    "START!" in red, large; at 0 or below the game's message +0x2342f06 */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-void THISCALL hud_drawReadyStart(void *scene);
+void THISCALL hud_drawCentreNotice(void *scene);
 /* 0x496d10 (thiscall on the game) hud_drawRecordIndicator(): while recording, blinking by the time +0x2340d29: the
    record icon (hud_drawIcon 4), the time as "%02d:%02d" and "[AutoPlay %s]" with the file name +0x2340d0c */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
@@ -4916,10 +4916,10 @@ THISCALL void item_update(char *s, DWORD dt);
    index and dt) */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 THISCALL void stage_updateObjects(char *s, DWORD dt);
-/* 0x496b80 replay_drawFollowedName() (thiscall on the scene): white text at (0x192, 0x280), the followed player's
+/* 0x496b80 hud_drawWatchedName() (thiscall on the scene): white text at (0x192, 0x280), the followed player's
    name (+0x2340c64, the 0x888-byte player records' names at +0x1eccb08) or the fixed text when there is none */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-void THISCALL replay_drawFollowedName(void *scene);
+void THISCALL hud_drawWatchedName(void *scene);
 /* 0x456d10 sound_initSoundTable(file, volume): with sound on (0xa0e80c), the table freed (0x456cd0), the volume set,
    the file opened (an error message when it does not open) and read descrambled (0x46cbe0): index, 0x100-byte
    name, ... until an index < 0, each name loaded (sound_loadWav) into the table 0xa0e02c; 1, or 0 with sound off */
@@ -13931,7 +13931,7 @@ static void readystart_setup(void)
 	SF(BUF, 0x233cc4c) = irnd(0, 3) ? (float)irnd(-10, 50) / 10.0f : (float)irnd(-1, 5);
 	fill_str(BUF + 0x2342f06, 30, 32, 126);
 }
-ST(hud_drawReadyStart, readystart_setup(); screen_random();, (TC(void, 0x496c20, char *)(BUF), 0), (hud_drawReadyStart(BUF), 0))
+ST(hud_drawCentreNotice, readystart_setup(); screen_random();, (TC(void, 0x496c20, char *)(BUF), 0), (hud_drawCentreNotice(BUF), 0))
 /* the recording time 0..3600 s (fractions decide the blink), the file name */
 static void recind_setup(void)
 {
@@ -15747,7 +15747,7 @@ static void followname_setup(void)
 	S32(BUF, 0x2340c64) = i;
 	for (int k = 0; k < 16; k++) fill_str(BUF + 0x1eccb08 + k * 0x888, 12, 'A', 'z');
 }
-ST(replay_drawFollowedName, followname_setup(); screen_random();, (TC(void, 0x496b80, char *)(BUF), 0), (replay_drawFollowedName(BUF), 0))
+ST(hud_drawWatchedName, followname_setup(); screen_random();, (TC(void, 0x496b80, char *)(BUF), 0), (hud_drawWatchedName(BUF), 0))
 /* the sound table file: sound on or off, a volume, a file of 0..6 entries (index 0..40, a short name, the rest of
    the 0x100 bytes random) ended by a negative index, stored scrambled as the reader descrambles it (byte = rol(x ^
    0x59, 1)); the loader, the table free, the volume and the error message stubbed */
@@ -17655,7 +17655,7 @@ static const STest g_stests[] = {
 	/* batch 152 */
 	T(hud_drawClock, 0, 300, 0),
 	/* batch 153 */
-	T(hud_drawPressFire, 0, 100, 0), T(hud_drawReadyStart, 0, 300, 0), T(hud_drawRecordIndicator, 0, 300, 0), T(hud_drawMatchResult, 0, 300, 0),
+	T(hud_drawPressFire, 0, 100, 0), T(hud_drawCentreNotice, 0, 300, 0), T(hud_drawRecordIndicator, 0, 300, 0), T(hud_drawMatchResult, 0, 300, 0),
 	/* batch 154 */
 	T(loading_draw, 0, 300, 0),
 	/* batch 155 */
@@ -17780,7 +17780,7 @@ static const STest g_stests[] = {
 	/* batch 192 */
 	T(item_update, 0, 400, 0),
 	/* batch 193 */
-	T(stage_updateObjects, 0, 300, 0), T(replay_drawFollowedName, 0, 200, 0), T(sound_initSoundTable, 1, 300, 0),
+	T(stage_updateObjects, 0, 300, 0), T(hud_drawWatchedName, 0, 200, 0), T(sound_initSoundTable, 1, 300, 0),
 	/* batch 194 */
 	T(net_processGamePacket, 0, 600, 0),
 	/* batch 195 */
@@ -18713,7 +18713,7 @@ static const struct { DWORD addr; void *fn; const char *name; } g_hooks3[] = {
 	/* batch 152 */
 	{ 0x496610, (void *)hud_drawClock, "hud_drawClock" },
 	/* batch 153 */
-	{ 0x495140, (void *)hud_drawPressFire, "hud_drawPressFire" }, { 0x496c20, (void *)hud_drawReadyStart, "hud_drawReadyStart" },
+	{ 0x495140, (void *)hud_drawPressFire, "hud_drawPressFire" }, { 0x496c20, (void *)hud_drawCentreNotice, "hud_drawCentreNotice" },
 	{ 0x496d10, (void *)hud_drawRecordIndicator, "hud_drawRecordIndicator" }, { 0x496a30, (void *)hud_drawMatchResult, "hud_drawMatchResult" },
 	/* batch 154 */
 	{ 0x469320, (void *)loading_draw, "loading_draw" },
@@ -18910,7 +18910,7 @@ static const struct { DWORD addr; void *fn; const char *name; } g_hooks3[] = {
 	/* batch 192 */
 	{ 0x48ed90, (void *)item_update, "item_update" },
 	/* batch 193 */
-	{ 0x490d40, (void *)stage_updateObjects, "stage_updateObjects" }, { 0x496b80, (void *)replay_drawFollowedName, "replay_drawFollowedName" },
+	{ 0x490d40, (void *)stage_updateObjects, "stage_updateObjects" }, { 0x496b80, (void *)hud_drawWatchedName, "hud_drawWatchedName" },
 	{ 0x456d10, (void *)sound_initSoundTable, "sound_initSoundTable" },
 	/* batch 194 */
 	{ 0x48c830, (void *)net_processGamePacket, "net_processGamePacket" },

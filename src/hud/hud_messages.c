@@ -1,4 +1,4 @@
-/* hud_messages.c: the HUD's centred texts and the text list overlay. */
+/* hud_messages.c: the HUD's centred texts and the help screen. */
 #include "../game.h"
 
 /* 0x495140: "Press fire button to start", centred */
@@ -11,8 +11,8 @@ void THISCALL (hud_drawPressFire)(Scene *scene)
 	text_drawCentred(0, 0x168, 0x280, text, 16);
 }
 
-/* 0x496b80: the name of the player a spectator watches, or "FREE CAMERA" */
-void THISCALL (replay_drawFollowedName)(Scene *scene)
+/* 0x496b80: the name of the player a spectator (or the replay viewer) watches, or "FREE CAMERA" */
+void THISCALL (hud_drawWatchedName)(Scene *scene)
 {
 	char text[256];
 	text_setColor(1.0f, 1.0f, 1.0f, 1.0f);
@@ -23,9 +23,9 @@ void THISCALL (replay_drawFollowedName)(Scene *scene)
 	text_drawCentred(0, 0x192, 0x280, text, 16);
 }
 
-/* 0x496c20: the countdown before a round: "READY n" (yellow) while a second or more is left, then "START!" (red);
-   when there is no countdown, the waiting text (scene->readyText) */
-void THISCALL (hud_drawReadyStart)(Scene *scene)
+/* 0x496c20: the match restart's countdown: "READY n" (yellow) while a second or more is left, then "START!" (red);
+   when there is none, the centred notice (scene->noticeText) */
+void THISCALL (hud_drawCentreNotice)(Scene *scene)
 {
 	char text[256];
 	if (scene->restartTimer > 0.0f) {
@@ -39,7 +39,7 @@ void THISCALL (hud_drawReadyStart)(Scene *scene)
 		text_drawCentred(0, 0xf0, 0x280, text, 32);
 	} else {
 		text_setColor(1.0f, 1.0f, 0.0f, 1.0f);
-		text_drawCentred(0, 0x172, 0x280, scene->readyText, 16);
+		text_drawCentred(0, 0x172, 0x280, scene->noticeText, 16);
 	}
 }
 

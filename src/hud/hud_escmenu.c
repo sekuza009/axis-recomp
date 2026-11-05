@@ -234,7 +234,8 @@ static void esc_pairCursor(Scene *scene)
 		scene->escCursor = 1;
 }
 
-/* the local player's ranking record reset for a team change (the emblems redrawn first) */
+/* a team change's cost: in a Ladder game the scores so far committed to the title first (profile_addMatchScores);
+   the local player's kills dropped and one death added */
 static void esc_resetScore(Scene *scene)
 {
 	if (scene->ladderGame == 1)

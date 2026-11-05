@@ -20,15 +20,15 @@
 [x] src/crt/crt_atof.c 469
 [x] src/crt/crt_format.c 100
 [x] src/hud/hud_clock.c 93
-[ ] src/hud/hud_escmenu.c 398
+[x] src/hud/hud_escmenu.c 398
 [x] src/hud/hud_icons.c 73
-[ ] src/hud/hud_lockon.c 53
-[ ] src/hud/hud_main.c 517
-[ ] src/hud/hud_markers.c 137
-[ ] src/hud/hud_messages.c 67
-[ ] src/hud/hud_overlay.c 98
-[ ] src/hud/hud_pass.c 121
-[ ] src/hud/hud_ranking.c 96
+[x] src/hud/hud_lockon.c 53
+[x] src/hud/hud_main.c 517
+[x] src/hud/hud_markers.c 137
+[x] src/hud/hud_messages.c 67
+[x] src/hud/hud_overlay.c 98
+[x] src/hud/hud_pass.c 121
+[x] src/hud/hud_ranking.c 96
 [ ] src/load/collision_tris.c 693
 [ ] src/load/files.c 1419
 [ ] src/load/lists.c 45

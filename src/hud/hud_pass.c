@@ -93,7 +93,7 @@ void THISCALL (hud_pass)(Scene *scene)
 			if (scene->matchOver == 1 && scene->players[scene->ranking[0]].state == 1)
 				hud_drawMatchResult(scene);
 			if (scene->playing == 0) {
-				replay_drawFollowedName(scene);
+				hud_drawWatchedName(scene);
 				if (scene->playing == 0 && scene->cameraSlot >= 0 && scene->watchedPlayer >= 0) {
 					glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 					hud_drawIcon(scene, 0x10, 0x10, 6);
@@ -116,6 +116,6 @@ void THISCALL (hud_pass)(Scene *scene)
 		if (scene->recording == 1)
 			hud_drawRecordIndicator(scene);
 	}
-	if ((scene->readyTimer > 0.0f && !scene->matchOver) || scene->restartTimer > 0.0f)
-		hud_drawReadyStart(scene);
+	if ((scene->noticeTimer > 0.0f && !scene->matchOver) || scene->restartTimer > 0.0f)
+		hud_drawCentreNotice(scene);
 }

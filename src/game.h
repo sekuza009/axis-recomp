@@ -567,7 +567,7 @@ typedef struct { u32 vtable; void *banks[6]; i32 count; } TextureManager;   /* t
 #define hud_drawPressFire(scene) GAME_THISFN(hud_drawPressFire, 0x495140, void, Scene *)(scene)
 #define hud_drawClock(scene) GAME_THISFN(hud_drawClock, 0x496610, void, Scene *)(scene)
 #define hud_drawMatchResult(scene) GAME_THISFN(hud_drawMatchResult, 0x496a30, void, Scene *)(scene)
-#define replay_drawFollowedName(scene) GAME_THISFN(replay_drawFollowedName, 0x496b80, void, Scene *)(scene)
+#define hud_drawWatchedName(scene) GAME_THISFN(hud_drawWatchedName, 0x496b80, void, Scene *)(scene)
 #define replay_drawMessage(scene) GAME_THISFN(replay_drawMessage, 0x495190, void, Scene *)(scene)
 #define hud_drawChatInput(scene) GAME_THISFN(hud_drawChatInput, 0x4953d0, void, Scene *)(scene)
 #define hud_drawTeamScores(scene) GAME_THISFN(hud_drawTeamScores, 0x496240, void, Scene *)(scene)
@@ -576,7 +576,7 @@ typedef struct { u32 vtable; void *banks[6]; i32 count; } TextureManager;   /* t
 #define hud_drawMenuBox(scene, x0, y0, x1, y1) GAME_THISFN(hud_drawMenuBox, 0x495ed0, void, Scene *, int, int, int, int)(scene, x0, y0, x1, y1)   /* a menu box */
 #define hud_drawEscMenu(scene) GAME_THISFN(hud_drawEscMenu, 0x495610, void, Scene *)(scene)
 #define hud_drawRecordIndicator(scene) GAME_THISFN(hud_drawRecordIndicator, 0x496d10, void, Scene *)(scene)
-#define hud_drawReadyStart(scene) GAME_THISFN(hud_drawReadyStart, 0x496c20, void, Scene *)(scene)
+#define hud_drawCentreNotice(scene) GAME_THISFN(hud_drawCentreNotice, 0x496c20, void, Scene *)(scene)
 
 /* ---- network ---- */
 #define net_playerInUse(i) GAME_FN(net_playerInUse, 0x4a8700, int, int)(i)   /* FUN_004a8700: the player table's slot i is taken */

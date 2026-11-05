@@ -138,3 +138,5 @@ frameTimer_average,scene_averageFrameTime
 wnd_setCursor,app_shutdown
 app_onClose,room_joinAnswer
 replay_drawIcon,hud_drawIcon
+hud_drawReadyStart,hud_drawCentreNotice
+replay_drawFollowedName,hud_drawWatchedName

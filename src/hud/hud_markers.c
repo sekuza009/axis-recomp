@@ -51,11 +51,12 @@ static void marker_big(Scene *scene, Player *player, int texture, float alpha, f
 }
 
 /* 0x4913a0: for every other player in play and on screen:
-   - the king mark (isKing) and the platoon leader mark in the player's team's cell (isPlatoonLeader), from the marker texture;
+   - the king mark (isKing) and the commander mark in the player's team's cell (isCommander), from the marker texture;
    - the rest only while the name label is up (labelFade > 0), or always for a spectator (playing == 0) or in
-     network mode 3, its alpha labelFade / 3 while playing (1 otherwise):
+     replays (session mode 3), its alpha labelFade / 3 while playing (1 otherwise):
      an arrow over team mates (unless kingOfTheHill), the leader mark (rank 1, with the player's kills > 0),
-     the name label in the team's colour with emblem and flag (not for the player a spectator follows), and the
+     the name label in the team's colour with the grade badge (Ladder games) and flag (not for the player a
+     spectator follows), and the
      player's chat icon (chatIcon 1 or 2, always opaque) */
 void THISCALL (hud_drawPlayerMarkers)(Scene *scene)
 {
@@ -101,7 +102,7 @@ void THISCALL (hud_drawPlayerMarkers)(Scene *scene)
 			}
 		strcpy(name, player->name);
 		{
-			/* the name centred 16 units above the point, then emblem and flag to the left of where it starts */
+			/* the name centred 16 units above the point, then the grade badge and flag to the left of where it starts */
 			int right = marker_hudX(player->screenPos[0]);
 			int y = marker_hudY(player->tagTopLeft[1]) - 0x10;
 			int left = marker_hudX(player->screenPos[0]);
@@ -126,7 +127,7 @@ void THISCALL (hud_drawPlayerMarkers)(Scene *scene)
 
 	status:
 		if (player->chatIcon != 0) {
-			/* 64 units, standing 16 units above the point; texture rows 128 (status 1) or 160 */
+			/* 64 units, standing 16 units above the point; texture rows 128 (typing to all) or 160 (to the team) */
 			int w = hud_scaleX(64.0f), h = hud_scaleY(64.0f), lift = hud_scaleY(16.0f);
 			int y = ftol(player->tagTopLeft[1]) - lift - h;
 			int x = ftol(player->screenPos[0]) - w / 2;

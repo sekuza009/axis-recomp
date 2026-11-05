@@ -246,7 +246,7 @@ static void actor_dies(u8 *s, u8 *a, int i, u32 *fx, float *v28)
 	}
 	if (AC->lastAttacker != i)
 		AC->deaths++;
-	(*(int *)&ST->lockWarnings[i]) = 0;
+	(*(int *)&ST->lockHeld[i]) = 0;
 	AC->killPending = 1;
 	ST->lastDeath = i;
 }
@@ -863,12 +863,12 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 		hold(grip, (const u8 *)((const ActorInfo *)weapon)->sets[1].grip[AC->variantLoaded], 1, &AC->weaponLower);
 	skel_poseBones((u8 *)&AC->weaponModel5, 0);
 	glPopMatrix();
-	if (i == ST->playerActor) {   /* the lock-on warnings (lockWarnings per actor), sorted longest first (lockTimes / lockIds) */
-		float *lock = ST->lockWarnings;
+	if (i == ST->playerActor) {   /* the local player's locks (lockHeld per actor), sorted longest first (lockTimes / lockIds) */
+		float *lock = ST->lockHeld;
 		int *count = &ST->lockCount;
 		if (weapon && ((ActorInfo *)weapon)->targetingTime > 0) {
 			for (int j = 0; j < ST->actorCount; j++) {
-				float *seen = &ST->actors[j].lockSize;
+				float *seen = &ST->actors[j].lockAnim;
 				if (j == i || ST->actors[j].state != 1) {
 					lock[j] = 0;
 					continue;
@@ -879,7 +879,7 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 					if (!(v >= 0))
 						*seen = 0;
 				}
-				if (!(fmul_m(fld_m(&AC->lockOnTime), &((ActorInfo *)weapon)->targetingTime) >= ST->actors[j].lockedOn) && AC->team != ST->actors[j].team) {
+				if (!(fmul_m(fld_m(&AC->lockOnTime), &((ActorInfo *)weapon)->targetingTime) >= ST->actors[j].aimTime) && AC->team != ST->actors[j].team) {
 					if (!(lock[j] > 0)) {
 						sound_playVolume(0x12, 0x64);
 						*seen = 0.25f;
