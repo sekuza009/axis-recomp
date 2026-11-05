@@ -95,7 +95,7 @@ long double THISCALL (timer_getGameTime)(u8 *t)
 		if (!QueryPerformanceCounter(&ts->lastCount))
 			fatal();
 		if (!(ts->maxFrame > 0))
-			BITS(ts->maxFrame) = 0x3d888889;   /* 1/15 */
+			ts->maxFrame = 0.06666667f;   /* 1/15 */
 		ts->started = 1;
 	}
 	ts->frames++;

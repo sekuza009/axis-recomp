@@ -21,7 +21,7 @@ static const u32 home[6] = { ADDR(g_menuCameraX), ADDR(g_menuCameraY), ADDR(g_me
 static void limit_frame_time(u32 limit)
 {
 	if (g_frameTime > F(limit))
-		BITS(g_frameTime) = 0x3f800000;
+		g_frameTime = 1.0f;
 }
 
 /* a -= (a - target) * frame time * rate (fsub, fmul, fmul, fsubr) */
@@ -402,7 +402,7 @@ void (armc_mouseLook)(void)
 void (setup_camera)(void)
 {
 	if (g_frameTime > k_10f)
-		BITS(g_frameTime) = 0x3f800000;
+		g_frameTime = 1.0f;
 	int mode = g_setupPage;
 	X k = g_frameTime, c = RATE;
 	if (mode == 1) {

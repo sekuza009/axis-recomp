@@ -160,7 +160,7 @@ static void later_round(Scene *s)
 	s->dataLossCode = -1;
 	s->wholeSeconds = 0;
 	BITS(s->secondFraction) = 0;
-	BITS(s->roundTimer) = 0x40400000;   /* 3 */
+	s->roundTimer = 3.0f;
 	for (int k = 0; k < 3; k++)
 		s->cameraPos[k] = s->cameraSaved[k];
 	BITS(s->cameraAngle[0]) = s->cameraSaved[3];
@@ -379,7 +379,7 @@ void THISCALL (item_initTextures)(u8 *s, u32 a1, u32 a2, const char *sky, u32 a4
 		BITS(st->levelHigh[c]) = 0x47c35000;   /* 100000 */
 	}
 	memcpy(st->worldLow, st->levelLow, 12);
-	BITS(st->areaValue) = 0x3f800000;   /* 1.0 */
+	st->areaValue = 1.0f;
 	st->poolUsed = 0;
 	memcpy(st->worldHigh, st->levelHigh, 12);
 	st->groundLayerCount = 0;

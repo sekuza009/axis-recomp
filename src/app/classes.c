@@ -620,7 +620,7 @@ void THISCALL (app_requireCd)(u8 *g, u32 a, int mode)
 		}
 		memcpy(st->worldLow, st->levelLow, 12);
 		memcpy(st->worldHigh, st->levelHigh, 12);
-		BITS(GS->unusedBe2ffc) = 0x3f800000;
+		GS->unusedBe2ffc = 1.0f;
 		game_setGameTypeFlags((Stage *)s, 0);
 	}
 	GS->playing = GS->unused233ca00 = 0;
@@ -633,9 +633,9 @@ void THISCALL (app_requireCd)(u8 *g, u32 a, int mode)
 	GS->modeStarted = GS->wholeSeconds = (*(int *)&GS->secondFraction) = 0;
 	(*(int *)&GS->msgFade) = GS->unused233cc44 = 0;
 	BITS(GS->emblemTime) = 0x43960000;   /* 300, 3, 5, 15 */
-	BITS(GS->roundTimer) = 0x40400000;
-	BITS(GS->kingTimer) = 0x40a00000;
-	BITS(GS->teamSyncTime) = 0x41700000;
+	GS->roundTimer = 3.0f;
+	GS->kingTimer = 5.0f;
+	GS->teamSyncTime = 15.0f;
 	zero_dwords((u8 *)GS->cleared2340ca4, 11);
 	GS->debugGrid = 1;
 	zero_dwords((u8 *)g + offsetof(Scene, debugPoints), 13);   /* debugPoints .. rankingShown */

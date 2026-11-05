@@ -267,7 +267,7 @@ TunnelRing *(tunnel_addRing)(void)
 	tunnel_appendRing(&g_menuTunnel);
 	TunnelRing *ring = g_menuTunnel;
 	for (; ring->next != NULL; ring = ring->next)
-		BITS(ring->alpha) = 0x3f800000;
+		ring->alpha = 1.0f;
 	return ring;
 }
 
@@ -291,7 +291,7 @@ void (intro_cameraPath)(u8 *o, int h)
 			(*(int *)&tr->spin) = 0;
 			if (tr->back)
 				BITS(tr->spin) = BITS(tr->back->spin);
-			BITS(tr->spinSpeed) = 0x3e4ccccd;   /* 0.2 */
+			tr->spinSpeed = 0.2f;
 			tr->cleared1938 = 0;
 			(*(int *)&tr->turn) = 0;
 			tr->moveSteps = 0;
@@ -315,7 +315,7 @@ void (intro_cameraPath)(u8 *o, int h)
 	BITS(tr->innerSpin) = 0x43b40000;   /* 360 */
 	if (tr->back)
 		BITS(tr->innerSpin) = BITS(tr->back->innerSpin);
-	BITS(tr->innerSpeed) = 0xbf000000;   /* -0.5 */
+	tr->innerSpeed = -0.5f;
 	BITS(tr->innerPos[0]) = BITS(tr->innerPos[1]) = BITS(tr->innerPos[2]) = 0;
 	X y = H * k_m1100f - k_550f;
 	tr->cagePos[2] = (float)y;
@@ -328,7 +328,7 @@ void (intro_cameraPath)(u8 *o, int h)
 	}
 	BITS(tr->cagePos[0]) = BITS(tr->cagePos[1]) = 0;
 	BITS(tr->cageSpin) = 0;
-	BITS(tr->cageSpeed) = 0xbdcccccd;   /* -0.1 */
+	tr->cageSpeed = -0.1f;
 	static const signed char corner[12] = { -1, 1, 0, 1, 1, 0, 1, -1, 0, -1, -1, 0 };   /* a flare's four corners' x, y, z: +-50 (pads kept) */
 	static const u32 speed[6] = { 0x3e19999a, 0xbeb33333, 0xbfc00000, 0x3fc00000, 0xbe3851ec, 0x3e3851ec };   /* 0.15, -0.35, -1.5, 1.5, -0.18, 0.18 */
 	for (int j = 0; j < 6; j++) {
@@ -340,7 +340,7 @@ void (intro_cameraPath)(u8 *o, int h)
 		f->pos[2] = (float)(y - ((X)k_1f - (X)j * k_tenthsToDegrees));
 		BITS(f->spinSpeed) = speed[j];
 	}
-	BITS(tr->alpha) = 0x3f800000;   /* 1 */
+	tr->alpha = 1.0f;
 	tr->screenHeight = h;
 }
 
@@ -392,7 +392,7 @@ static void lower_view(const float *rate)
 void (armc_enter)(TunnelRing *ring)
 {
 	if (g_frameTime > k_10f)
-		BITS(g_frameTime) = 0x40000000;   /* 2 */
+		g_frameTime = 2.0f;
 	int step = ftol(fmul_m(fld_m(&g_frameTime), k_30f));
 	int ringLength = 0x44c;
 	g_armcEnterStep = step;
@@ -410,7 +410,7 @@ void (armc_enter)(TunnelRing *ring)
 	int state = g_keysBlocked;
 	switch (state) {
 	case 0:
-		BITS(r->alpha) = 0x3f800000;
+		r->alpha = 1.0f;
 		lower_view(NULL);
 		if (g_keepCameraAsked) {
 			camera_keep();
@@ -451,7 +451,7 @@ void (armc_enter)(TunnelRing *ring)
 				LOOK[2] = f32(fadd_m((long double)ringLength, &LOOK_KEPT[2]));
 			}
 			g_keysBlocked = 0;
-			BITS(r->alpha) = 0x3f800000;
+			r->alpha = 1.0f;
 			if (state == 1)
 				tunnel_addRing();
 			else {

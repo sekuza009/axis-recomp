@@ -882,7 +882,7 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 				if (!(fmul_m(fld_m(&AC->lockOnTime), &((ActorInfo *)weapon)->ringRange) >= ST->actors[j].lockedOn) && AC->team != ST->actors[j].team) {
 					if (!(lock[j] > 0)) {
 						sound_playVolume(0x12, 0x64);
-						BITS(*seen) = 0x3e800000;   /* 0.25 */
+						*seen = 0.25f;
 					}
 					BITS(lock[j]) = BITS(AC->targetKeepTime);
 				} else {
@@ -1148,9 +1148,9 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 		if (i != ST->selectedActor && AC->viewMarked == 0) {   /* the legs' and booster's emitters, faint when cloaked or hurt */
 			BITS(v28[0]) = BITS(AC->effectScale);
 			if ((((u32)AC->timerFlags) & 0x200) && AC->hackingLevel >= ST->actors[ST->playerActor].hackingLevel)
-				BITS(v28[1]) = 0x3d808081;   /* 1/255 */
+				v28[1] = 0.0627451f;   /* 1/255 */
 			else if (AC->blinkTime > 3.0f)
-				BITS(v28[1]) = 0x3f800000;
+				v28[1] = 1.0f;
 			else
 				v28[1] = f32(fmul_m(fld_m(&AC->blinkTime), k_0_333333f));
 			if (i == ST->playerActor)

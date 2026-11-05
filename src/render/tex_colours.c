@@ -82,13 +82,13 @@ void THISCALL (tex_tintHsv)(float *rgb, float dh, float ds, float dv)
 	if (!(t >= ZERO))
 		s = 0;
 	else if (s > ONE)
-		BITS(s) = 0x3f800000;
+		s = 1.0f;
 	t = (X)v + dv;
 	v = f32(t);
 	if (!(t >= ZERO))
 		v = 0;
 	else if (v > ONE)
-		BITS(v) = 0x3f800000;
+		v = 1.0f;
 	color_hsvToRgb(BITS(h), BITS(s), BITS(v), &rgb[0], &rgb[1], &rgb[2]);
 }
 

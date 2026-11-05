@@ -55,7 +55,7 @@ void THISCALL (actor_selectWeapon)(Stage *stage, int i, int slot)
 	if (weapon > -1 && stage->actorInfo[weapon].ammoSlot > -1) {
 		actor->weaponLowering = 1;
 		actor->slotLoaded = slot;
-		BITS(actor->gauge) = 0x40000000;   /* 2.0 */
+		actor->gauge = 2.0f;
 	}
 }
 
@@ -129,7 +129,7 @@ void THISCALL (bullet_playImpactSound)(u8 *scene, int attacker, int target, int 
 		ac->lastHitWeapon = value;
 		ac->hitPending = 1;
 	}
-	BITS(ac->hitFlash) = 0x3f000000;   /* 0.5 */
+	ac->hitFlash = 0.5f;
 	if (target == st->playerActor)
 		sound_playVolume(0xc, 100);
 #undef ACTOR
@@ -562,7 +562,7 @@ static void decal(u8 *s, u8 *b, const u8 *w, u32 *r, const u8 *h, const float *N
 	le = f32(x87_fsqrt((fmul_m(fld_m(&e[2]), &e[2]) + fmul_m(fld_m(&e[1]), &e[1])) + fmul_m(fld_m(&e[0]), &e[0])));
 	long double lc = x87_fsqrt((fmul_m(fld_m(&c2), &c2) + c1 * c1) + c0 * c0);
 	if (!(le < 0) && !(le > 0))
-		BITS(le) = 0x3f800000;
+		le = 1.0f;
 	if (!(lc < 0) && !(lc > 0))
 		lc = fld_m(&k_1f);
 	uv[0] = le;

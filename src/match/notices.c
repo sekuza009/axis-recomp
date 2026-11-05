@@ -99,7 +99,7 @@ int (notice_printCentre)(Scene *scene, const char *format, ...)
 	va_start(args, format);
 	int n = vsprintf(scene->readyText, format, args);
 	va_end(args);
-	BITS(scene->readyTimer) = 0x40000000;   /* 2.0 */
+	scene->readyTimer = 2.0f;
 	return n;
 }
 

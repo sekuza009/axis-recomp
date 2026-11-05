@@ -86,7 +86,7 @@ static void object_glow(u8 *s, u8 *obj, float dt)
 		long double g = fadd_m(fmul_m(fld_m(&dt), &k_4f), &MO->glow);
 		MO->glow = f32(g);
 		if (g > *&k_1f)
-			BITS(MO->glow) = 0x3f800000;
+			MO->glow = 1.0f;
 	} else {
 		long double g = fld_m(&MO->glow) - fmul_m(fld_m(&dt), &k_4f);
 		MO->glow = f32(g);
@@ -117,7 +117,7 @@ void THISCALL (actor_render)(u8 *s, int i, float dt)
 			if (!(t >= *&k_0f))
 				anim_reset(obj);
 			else if (t > *&k_1f) {
-				BITS(MO->animTime) = 0x3f800000;
+				MO->animTime = 1.0f;
 				(*(int *)&MO->animRate) = 0;
 			}
 			break;

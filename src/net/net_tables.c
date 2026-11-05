@@ -1960,7 +1960,7 @@ void THISCALL (net_processGamePacket)(u8 *g, u32 from, int type, const char *pkt
 				ac->armor = 0;
 		}
 		if (hurt)
-			BITS(ac->hitFlash) = 0x3f000000;
+			ac->hitFlash = 0.5f;
 		const u8 *w = b + 0x13;
 		for (int k = 0; k < 5; k++, w += 9) {
 			u32 *slot = (u32 *)&ac->shots[k];

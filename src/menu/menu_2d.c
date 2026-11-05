@@ -165,7 +165,7 @@ u32 (menu_drawDimOverlay)(void)
 	g_roomFade = (float)a;
 	float alpha = (float)a;
 	if (a > k_1f)
-		BITS(alpha) = 0x3f800000;
+		alpha = 1.0f;
 	gfx_setProjection2D3D(2);
 	glLoadIdentity();
 	Color4_set_bits((void *)OBJ(g_rectColour), 0x3f800000, 0x3f800000, 0x3f800000, BITS(alpha));   /* the menu colour (1, 1, 1, alpha) */

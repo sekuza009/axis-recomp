@@ -451,7 +451,7 @@ static void spark(u8 *s, u8 *p, float dt)
 	u32 r = (*(u32 *)&g_randTable[at & 0xfff]) % 10;
 	g_randPos = at + 1;
 	spawn_at(s, r ? 0 : 2, pos);
-	BITS(pr->fade) = 0x3dcccccd;
+	pr->fade = 0.1f;
 	if (!r)
 		BITS(pr->life) = BITS(pr->drawAge);
 }
@@ -774,14 +774,14 @@ static void particle_trail(u8 *p, const u8 *desc, u32 margin)
 		for (int k = 0; k < 5; k++) {
 			PR->trailUv[uv[k]] = f32(fadd_m(fmul_m(fld_m(&q[uv[k]]), &k_0_005f_4aa428), &k_0_5f));
 			if (k == 0)
-				BITS(PR->trailUv[1]) = 0x3f000000;   /* 0.5 */
+				PR->trailUv[1] = 0.5f;
 		}
 	} else {
 		long double d = fadd_m(fld_m(&PR->baseSize), K(margin));
 		for (int k = 0; k < 5; k++) {
 			PR->trailUv[uv[k]] = f32(fmul_m(fadd_m(fld_m(&q[uv[k]]) / d, &k_1f), &k_0_5f));
 			if (k == 0)
-				BITS(PR->trailUv[1]) = 0x3f000000;
+				PR->trailUv[1] = 0.5f;
 		}
 	}
 	PR->cornerColours[0] = PR->cornerColours[1] = PR->cornerColours[2] = g_white;

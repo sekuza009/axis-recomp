@@ -86,7 +86,7 @@ void (menu_frame)(void)
 		long double zoom = fadd_m(fld_m(&g_introZoom), &g_frameTime);
 		g_introZoom = zoom;
 		if (!(g_viewAspect >= k_0_01f))
-			BITS(g_viewAspect) = 0x3c23d70a;   /* 0.01 */
+			g_viewAspect = 0.01f;
 		if (zoom >= k_100f) {
 			g_screen = 9999;
 			g_nextScreen = 9999;
@@ -745,7 +745,7 @@ static void free_camera(u8 *s, const float *mv, u32 filter, Move *m)
 	}
 	float *dir = SC->cameraDir;
 	dir[0] = dir[1] = 0;
-	BITS(dir[2]) = 0xbf800000;
+	dir[2] = -1.0f;
 }
 
 /* the preset's pitch (+0x233ca28) and heading (+0x233ca2c) from its table (index at +preset), the actor's own
@@ -798,7 +798,7 @@ static void orbit_from(u8 *s, const u8 *t, u32 preset, int eye)
 	}
 	float *dir = SC->cameraDir;
 	dir[0] = dir[1] = 0;
-	BITS(dir[2]) = 0x3f800000;
+	dir[2] = 1.0f;
 }
 
 /* an actor's record (0x8888 bytes from +0x1ecca70) */
@@ -896,7 +896,7 @@ static void turn_view(u8 *s)
 	Vec3_rotateAxis(dir, 1, ftol(fld_m(SC->cameraAngle)));
 	Vec3_rotateAxis(dir, 2, ftol(fld_m(&SC->cameraAngle[1])));
 	up[0] = 0;
-	BITS(up[1]) = 0x3f800000;
+	up[1] = 1.0f;
 	up[2] = 0;
 	Vec3_rotateAxis(up, 1, ftol(fld_m(SC->cameraAngle)));
 	Vec3_rotateAxis(up, 2, ftol(fld_m(&SC->cameraAngle[1])));
@@ -1170,7 +1170,7 @@ u32 THISCALL (replay_frame)(u8 *s)
 			for (int k = 0; k < 3; k++)
 				dir[k] = f32(fsub_m(fld_m(SC->cameraTarget + k), (const float *)SC->cameraPos + k));
 			Vec3_normalize(dir);
-			BITS(up[1]) = 0x3f800000;
+			up[1] = 1.0f;
 			up[0] = up[2] = 0;
 		}
 	}
@@ -1438,7 +1438,7 @@ static void look_at(u8 *s, const float *p)
 		dir[k] = f32(fsub_m(fld_m(SC->cameraTarget + k), (const float *)SC->cameraPos + k));
 	Vec3_normalize(dir);
 	up[0] = 0;
-	BITS(up[1]) = 0x3f800000;
+	up[1] = 1.0f;
 	up[2] = 0;
 }
 
@@ -1501,7 +1501,7 @@ static void muzzle_camera(u8 *s, const u8 *t)
 	cam[1] = f32(fadd_m(fld_m(&hy), &E[1]));
 	cam[2] = f32(fadd_m(fld_m(&hz), &E[2]));
 	dir[0] = dir[1] = 0;
-	BITS(dir[2]) = 0x3f800000;
+	dir[2] = 1.0f;
 }
 
 /* the round's slow motion: the last two seconds of a won round's end (+0x2342399) when the winner (+0x2221fb0) is
@@ -2134,7 +2134,7 @@ void THISCALL (game_processGameMode)(u8 *s)
 					for (int k = 0; k < 3; k++)
 						dir[k] = f32(fsub_m(fld_m(SC->cameraTarget + k), (const float *)SC->cameraPos + k));
 					Vec3_normalize(dir);
-					BITS(up[1]) = 0x3f800000;
+					up[1] = 1.0f;
 					up[0] = up[2] = 0;
 				}
 			}

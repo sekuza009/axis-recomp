@@ -660,7 +660,7 @@ static void mech_stats(u8 *s, u8 *ac, u8 *p, int check)
 	const LegType *legs = &st->legTypes[pr->parts[3]];
 	const BoosterType *boost = &st->boosterTypes[pr->parts[4]];
 	for (int k = 0; k < 4; k++) {
-		BITS(AC->ammoFactor[k]) = 0x3f800000;
+		AC->ammoFactor[k] = 1.0f;
 		AC->ammoBonus[k] = 0;
 	}
 	AC->rangeBonus = 0.0f;
