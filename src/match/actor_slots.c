@@ -8,7 +8,7 @@
 
 /* an actor's input record: twelve ints (the moves and buttons the actor acts on this frame); the ninth is the
    one cleared to -1 */
-static const int input_fields[12] = { offsetof(Player, inForward), offsetof(Player, inBackward), offsetof(Player, inStepLeft), offsetof(Player, inStepRight), offsetof(Player, inPitch), offsetof(Player, inYaw), offsetof(Player, inFire), offsetof(Player, inAltitude), offsetof(Player, inBooster), offsetof(Player, inView), offsetof(Player, inPrevWeapon), offsetof(Player, inNextWeapon) };
+static const int input_fields[12] = { offsetof(Player, inForward), offsetof(Player, inBackward), offsetof(Player, inStepLeft), offsetof(Player, inStepRight), offsetof(Player, inPitch), offsetof(Player, inYaw), offsetof(Player, inFire), offsetof(Player, inAltitude), offsetof(Player, inBooster), offsetof(Player, inWeaponSlot), offsetof(Player, inPrevWeapon), offsetof(Player, inNextWeapon) };
 
 /* 0x45eab0: actor i's input cleared */
 void THISCALL (actor_clearInput)(Stage *stage, int i)
@@ -105,7 +105,7 @@ void THISCALL (actor_resetSlot)(Stage *stage, int i)
 	a->bigHead = 0;
 	a->viewMarked = 0;
 	a->isKing = 0;
-	a->isPlatoonLeader = 0;
+	a->isCommander = 0;
 }
 
 /* 0x47d060: every bullet in use drawn (its trail, bullet_drawTrail) */
@@ -236,7 +236,7 @@ void THISCALL (stage_newRound)(Stage *stage)
 	stage_clearActorSlots(stage);
 	static const short cleared[] = { offsetof(Player, inPlay), offsetof(Player, kills), offsetof(Player, deaths), offsetof(Player, killsCounted),
 	                                 offsetof(Player, deathsCounted), offsetof(Player, timePlayed), offsetof(Player, timeExtra), offsetof(Player, state),
-	                                 offsetof(Player, bigHead), offsetof(Player, isKing), offsetof(Player, isPlatoonLeader) };
+	                                 offsetof(Player, bigHead), offsetof(Player, isKing), offsetof(Player, isCommander) };
 	for (int i = 0; i < 100; i++) {
 		Player *ac = &stage->actors[i];
 		ac->team = -1;
@@ -845,7 +845,7 @@ void THISCALL (actor_setupFromParts)(u8 *s, int a, int id, u32 a3, const u32 *pp
 	AC->timerFlags = AC->id % 2 == 1 ? 0x4000 : 0;
 	fill_dwords(ac + offsetof(Player, timers), 4, 0);   /* timers */
 	fill_dwords(ac + offsetof(Player, inForward), 11, 0);   /* inForward .. inBooster */
-	AC->inView = -1;
+	AC->inWeaponSlot = -1;
 	fill_dwords(ac + offsetof(Player, inPrevWeapon), 5, 0);   /* inPrevWeapon .. weaponLowering */
 	AC->weaponLower = 1.0f;
 	(*(int *)&AC->gauge) = AC->slotLoaded = 0;

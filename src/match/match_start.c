@@ -242,7 +242,7 @@ static void identity(u32 *m)
 /* 0x470ad0 (thiscall on the scene): the scene's subsystems reset (stage_resetLights; the 100 dwords at +0x202ea80 and
    +0x202ef30 cleared; the object list, stage_clearBullets, stage_clearProjectiles, stage_resetMatrixAndPoints), the camera at the origin looking down
    -z (+0x20f3970 .. +0x20f399c) with identity matrices (+0x20f39a0, +0x20f39e0), the start and item points none, the
-   id tables (+0x20fce50, +0x1cd6968) all -1, then the scripts (stage_clearScriptEvents, script_reset) and scene_initLevelGrid. Its
+   id tables (+0x20fce50, +0x1cd6968) all -1, then the scripts (stage_clearMessages, script_reset) and scene_initLevelGrid. Its
    callers ignore the eax it leaves */
 void THISCALL (scene_reset)(u8 *s)
 {
@@ -267,7 +267,7 @@ void THISCALL (scene_reset)(u8 *s)
 	s[0x20fcd4c] = 0;
 	st->kingActor = -1;
 	memset(st->teamCommanders, 0xff, 0x64 * 4);
-	stage_clearScriptEvents(s);
+	stage_clearMessages(s);
 	script_reset(st);
 	scene_initLevelGrid(s);
 	memset(st->snapshotTex, 0xff, 0x32 * 4);
@@ -288,7 +288,7 @@ static void model_sets(u8 *shapes, const char *dir, int n, int extra, int size, 
    1 / sqrt(0x4aa408) turned to each face), the dome (+0x9eee54: 7 x 7 points of the up vector turned by two angles),
    six 4-point rings top and bottom (+0x9ef0cc), an 11 x 11 ground grid (+0x9ef350); the world box (+-100000), the
    layer lists cleared; the shape and skeleton sets of the stage, of each of the 16 part types (five parts each) and
-   of the map; the effects and three textures (0x4c73f4 ..), an identity and a 1.1 scale matrix, the emblem atlas
+   of the map; the effects and three textures (0x4c73f4 ..), an identity and a 1.1 scale matrix, the flag atlas
    (a texture, filled with 0xa1f220); the game type 0, the actors and the scene reset; built (+4 1). Its caller
    ignores the eax it leaves */
 void THISCALL (item_initTextures)(u8 *s, u32 a1, u32 a2, const char *sky, u32 a4, const char *skel_dir, u32 a6, u32 a7, u32 a8,
@@ -419,9 +419,9 @@ void THISCALL (item_initTextures)(u8 *s, u32 a1, u32 a2, const char *sky, u32 a4
 		BITS(st->lightMatrix[k]) = k % 5 == 0 ? 0x3f800000 : 0;
 		BITS(st->litMatrix[k]) = k == 15 ? 0x3f800000 : k % 5 == 0 ? 0x3f8ccccd : 0;   /* 1.1 */
 	}
-	glGenTextures(1, &st->emblemTexture);   /* glGenTextures */
+	glGenTextures(1, &st->flagGlTexture);   /* glGenTextures */
 	for (int k = 0; k < 0x2000; k++)
-		st->emblemAtlas[k / 128][k % 128] = (*(u32 *)&g_defaultColour);
+		st->flagAtlas[k / 128][k % 128] = (*(u32 *)&g_defaultColour);
 	st->showExp = 0;
 	game_setGameTypeFlags((Stage *)s, 0);
 	scene_resetActors(s);

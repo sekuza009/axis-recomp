@@ -35,11 +35,11 @@ int THISCALL (Light_clearCounts)(void *self)
 	return 0;
 }
 
-/* 0x48fc30: the stage's script event ring emptied (its head and tail) */
-int THISCALL (stage_clearScriptEvents)(void *self)
+/* 0x48fc30: the stage's message ring emptied (its write and read counts) */
+int THISCALL (stage_clearMessages)(void *self)
 {
-	((Stage *)self)->eventHead = 0;
-	((Stage *)self)->eventTail = 0;
+	((Stage *)self)->msgWrite = 0;
+	((Stage *)self)->msgRead = 0;
 	return 0;
 }
 
@@ -330,11 +330,11 @@ void *THISCALL (image_tryOpen)(u8 *image, const char *path)
 	return bmp->file;
 }
 
-/* 0x4734d0: player p's emblem loaded: Save\<its name>.BMP (its player record at
+/* 0x4734d0: player p's flag loaded: Save\<its name>.BMP (its player record at
    +0x1561b68, 0x47fd2 bytes each; the name from +4 by 0x4c74e8) read into a local image; at least 23 x 15 of it: its
    24 x 16 corner copied as RGBA into the record (+0x479c2), black pixels made clear and the rest opaque, and 1
    returned; else 0 */
-int THISCALL (playerRecord_loadEmblem)(u8 *scene, int p)
+int THISCALL (playerRecord_loadFlag)(u8 *scene, int p)
 {
 	u8 *record = (u8 *)&((Stage *)scene)->playerRecords[p];
 	u8 image[0x48];
@@ -345,7 +345,7 @@ int THISCALL (playerRecord_loadEmblem)(u8 *scene, int p)
 	int ok = 0;
 	if (image_tryOpen(image, path)) {
 		if (((BmpFile *)image)->width >= 23 && ((BmpFile *)image)->height >= 15) {
-			u8 *pixel = (u8 *)((PlayerRecord *)record)->emblem;
+			u8 *pixel = (u8 *)((PlayerRecord *)record)->flag;
 			image_copyTo(image, pixel, 24, 16, 4, 0, 0, 0, 0, 24, 16, 0);
 			for (int k = 0; k < 24 * 16; k++, pixel += 4)
 				pixel[3] = pixel[0] == 0 && pixel[1] == 0 && pixel[2] == 0 ? 0 : 0xff;
@@ -357,24 +357,24 @@ int THISCALL (playerRecord_loadEmblem)(u8 *scene, int p)
 	return ok;
 }
 
-/* 0x473610 (thiscall on the scene): the sixteen players' emblems (24 x 16 RGBA each, +0x479c2 in a player record)
-   that changed (+0x608 1) copied into the emblem atlas (+0x20fcfe4, 128 x 64, four to a row) and marked done; when one
+/* 0x473610 (thiscall on the scene): the sixteen players' flags (24 x 16 RGBA each, +0x479c2 in a player record)
+   that changed (+0x608 1) copied into the flag atlas (+0x20fcfe4, 128 x 64, four to a row) and marked done; when one
    of them was new (+0x604 0, now 1) the atlas is uploaded to its GL texture (+0x20fcfe0). Its callers ignore the eax
    it leaves */
-void THISCALL (emblem_uploadAtlas)(u8 *scene)
+void THISCALL (flag_uploadAtlas)(u8 *scene)
 {
 	Stage *st = (Stage *)scene;
 	int uploaded = 0;
 	for (int p = 0; p < 16; p++) {
 		PlayerRecord *pr = &st->playerRecords[p];
-		if (pr->emblemChanged != 1)
+		if (pr->flagChanged != 1)
 			continue;
-		u32 *atlas = &st->emblemAtlas[(p / 4) * 16][(p % 4) * 24];
-		const u32 *pixel = &pr->emblem[0][0];
+		u32 *atlas = &st->flagAtlas[(p / 4) * 16][(p % 4) * 24];
+		const u32 *pixel = &pr->flag[0][0];
 		for (int y = 0; y < 16; y++, atlas += 128)
 			for (int x = 0; x < 24; x++)
 				atlas[x] = *pixel++;
-		pr->emblemChanged = 0;
+		pr->flagChanged = 0;
 		if (!pr->flagShown) {
 			pr->flagShown = 1;
 			uploaded = 1;
@@ -383,12 +383,12 @@ void THISCALL (emblem_uploadAtlas)(u8 *scene)
 	if (uploaded != 1)
 		return;
 	glPixelStorei(0xcf5, 1);   /* GL_UNPACK_ALIGNMENT */
-	glBindTexture(0xde1, st->emblemTexture);
+	glBindTexture(0xde1, st->flagGlTexture);
 	glTexParameterf_bits(0xde1, 0x2802, 0x46240000);   /* wrap S: GL_CLAMP */
 	glTexParameterf_bits(0xde1, 0x2803, 0x46240000);   /* wrap T */
 	glTexParameterf_bits(0xde1, 0x2800, 0x46180400);   /* mag filter: GL_LINEAR */
 	glTexParameterf_bits(0xde1, 0x2801, 0x46180400);   /* min filter */
-	glTexImage2D(0xde1, 0, 4, 0x80, 0x40, 0, 0x1908, 0x1401, (u8 *)(st)->emblemAtlas);   /* RGBA, unsigned bytes */
+	glTexImage2D(0xde1, 0, 4, 0x80, 0x40, 0, 0x1908, 0x1401, (u8 *)(st)->flagAtlas);   /* RGBA, unsigned bytes */
 }
 
 /* 0x46ce80 (thiscall on an image): a w x h block of the open 24-bit BMP (its file +4, pixel data at +0x12, size +0x3e
@@ -526,7 +526,7 @@ u8 *THISCALL (Game_ctor)(u8 *g)
 	VECTOR((u8 *)st->points, 0xc, 0xc8);
 	VECTOR((u8 *)st->starts, 0x14, 0x20);
 	VECTOR((u8 *)st->items, 0x28, 0xc8);
-	VECTOR((u8 *)st->emblemAtlas, 4, 0x2000);
+	VECTOR((u8 *)st->flagAtlas, 4, 0x2000);
 	Scene_ctor((u8 *)&st->scenePath);   /* Scene_ctor */
 	VTABLE(s, STR(0x4aa23c, "08F"));
 	st->built = 0;
@@ -629,7 +629,7 @@ void THISCALL (scene_startSession)(u8 *g, u32 a, int mode)
 		GS->cameraDir[k] = f32(-fld_m((const float *)ADDR(g_vecUnitZ) + k));
 	memcpy(GS->cameraUp, (const void *)OBJ(g_vecUnitY), 12);
 	(*(int *)&GS->cameraAngle[0]) = (*(int *)&GS->cameraAngle[1]) = 0;
-	GS->inputState = GS->sessionMode == 2 ? 3 : GS->sessionMode == 3 ? 1 : 2;
+	GS->matchState = GS->sessionMode == 2 ? 3 : GS->sessionMode == 3 ? 1 : 2;
 	GS->modeStarted = GS->wholeSeconds = (*(int *)&GS->secondFraction) = 0;
 	(*(int *)&GS->msgFade) = GS->unused233cc44 = 0;
 	BITS(GS->scoreCommitTimer) = 0x43960000;   /* 300, 3, 5, 15 */
@@ -646,13 +646,13 @@ void THISCALL (scene_startSession)(u8 *g, u32 a, int mode)
 	zero_dwords((u8 *)g + offsetof(Scene, geometryCheckTurn), 7);   /* geometryCheckTurn .. geometryPickUnread */
 	GS->dataLossPending = (*(int *)&GS->previewTurn) = 0;
 	zero_dwords((u8 *)g + offsetof(Scene, holdAltitude), 10);   /* holdAltitude .. holdBooster */
-	GS->viewKey = -1;
+	GS->weaponKey = -1;
 	zero_dwords((u8 *)g + offsetof(Scene, holdZoom), 31);   /* holdZoom .. helpPressed */
 	zero_dwords((u8 *)g + offsetof(Scene, menuKeys), 4);   /* menuKeys */
 	notices_clearAll(g);
 	GS->localPlayer = GS->sessionMode == 1 || GS->sessionMode == 3 ? -1 : 0;
 	zero_dwords((u8 *)g + offsetof(Scene, localRecordSet), 3);   /* localRecordSet .. statsTaken */
 	GS->chosenTeam = -1;
-	GS->screenshotTaken = 0;
+	GS->flagLoaded = 0;
 	GS->itemLevelsTaken = 0;
 }

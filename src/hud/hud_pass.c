@@ -12,8 +12,8 @@ void THISCALL (hud_pass)(Scene *scene)
 		return;
 	tex_clearSetCounters(g_textures);
 	ViewVolume_clearDrawCounts(&scene->view);
-	if (scene->fogOn == 1) {
-		glClearColor_stored(scene->fogColour);
+	if (scene->clearOn == 1) {
+		glClearColor_stored(scene->clearColour);
 		glClearDepth(1.0);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	} else {
@@ -22,7 +22,7 @@ void THISCALL (hud_pass)(Scene *scene)
 	}
 	gfx_setProjectionHud(1, 1.0f);
 
-	if (scene->viewMode != 1) {
+	if (scene->scriptMode != 1) {
 		ViewVolume_captureMatrices(&scene->view, scene->projection, scene->modelview);
 		ViewVolume_reset(&scene->view);
 		/* the player the view shows is marked (the watched one, or the local one in camera mode 2) */
@@ -39,8 +39,8 @@ void THISCALL (hud_pass)(Scene *scene)
 		stage_drawBullets(STAGE(scene), &scene->view);
 		stage_drawProjectiles(STAGE(scene), &scene->view);
 		stage_drawItems(STAGE(scene), &scene->view);
-		if (scene->fogInOverlay == 1) {
-			stage_setFog(STAGE(scene), &scene->fogVolume, scene->fogVolumeArgs[0], scene->fogVolumeArgs[1], scene->fogVolumeArgs[2]);
+		if (scene->fogOn == 1) {
+			stage_setFog(STAGE(scene), &scene->fogColour, scene->fogParams[0], scene->fogParams[1], scene->fogParams[2]);
 			glEnable(GL_FOG);
 		}
 		render_drawObjects(&scene->view, scene->renderMode, scene->clockFraction);
@@ -50,8 +50,8 @@ void THISCALL (hud_pass)(Scene *scene)
 	ViewVolume_reset(&scene->view);
 	stage_drawActors(STAGE(scene), &scene->view, 1);
 	render_drawObjects(&scene->view, scene->renderMode, scene->clockFraction);
-	if (scene->viewMode != 0) {
-		if (scene->viewMode == 2) {
+	if (scene->scriptMode != 0) {
+		if (scene->scriptMode == 2) {
 			glClearDepth(1.0);
 			glClear(GL_DEPTH_BUFFER_BIT);
 		}
@@ -61,7 +61,7 @@ void THISCALL (hud_pass)(Scene *scene)
 	gfx_setProjectionHud(0, 1.0f);
 
 	if (scene->hudHidden == 0) {
-		if (scene->viewMode == 0) {
+		if (scene->scriptMode == 0) {
 			int local = scene->localPlayer;
 			if (local >= 0 && !scene->matchOver && !scene->matchLeaving)
 				PATCHED_THISCALL(0x498580, void, Scene *)(scene);                 /* hud_drawPlayerMarkers */

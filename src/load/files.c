@@ -208,7 +208,7 @@ u32 (cfg_keyBindings)(void *f)
 		{ STR(0x4b1c2c, "set_key change-viewmode1 "), 60 }, { STR(0x4b1c10, "set_key change-viewmode2 "), 61 },   /* change-viewmode */
 		{ STR(0x4b1c00, "set_key help1 "), 62 }, { STR(0x4b1bf0, "set_key help2 "), 63 },   /* help */
 	};
-	const int *binding = (const int *)ADDR(g_keyFreeCam0);
+	const int *binding = (const int *)ADDR(g_keyForward);
 	const char *const *key_name = (const char *const *)OBJ(g_keyNames);
 	for (int k = 0; k < 64; k++) {
 		FPUTS(keys[k].line);
@@ -1414,6 +1414,6 @@ void THISCALL (autoplay_startRecording)(u8 *s, const char *name)
 			sc->sendFlags[i][3] = 1;
 		}
 	sc->sendFlags[sc->localPlayer][1] = 1;
-	sc->playerRecords[sc->localPlayer].emblemSent = 0;
+	sc->playerRecords[sc->localPlayer].flagSent = 0;
 	sc->sendFlags[sc->localPlayer][0] = 1;
 }

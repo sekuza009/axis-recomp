@@ -34,24 +34,24 @@ void (main_loop)(void)
    playing, free-camera and replay states present the frame (playing only while matchDrawing is 1). */
 int THISCALL (match_frameByState)(Scene *scene)
 {
-	switch (scene->inputState) {
+	switch (scene->matchState) {
 	case 1:
-		return scene->inputState = game_processLoadingMode(scene);
+		return scene->matchState = game_processLoadingMode(scene);
 	case 2:
-		scene->inputState = match_inputState2(scene);
+		scene->matchState = match_playFrame(scene);
 		if (scene->matchDrawing == 1)
 			gfx_swapBuffers();
 		break;
 	case 3:
-		scene->inputState = match_inputState3(scene);
+		scene->matchState = match_freeCamFrame(scene);
 		gfx_swapBuffers();
 		break;
 	case 4:
-		scene->inputState = replay_frame(scene);
+		scene->matchState = replay_frame(scene);
 		gfx_swapBuffers();
 		break;
 	}
-	return scene->inputState;
+	return scene->matchState;
 }
 
 /* x rounded to a double, as the original's fst qword does (for a value read again) */
@@ -80,7 +80,7 @@ void (menu_frame)(void)
 		menu_frameInput();
 		menu_processKeys();
 	}
-	if (g_screen == 300 && g_mainMenuFadingIn && !g_dialogPending) {
+	if (g_screen == 300 && g_replayZoomIn && !g_dialogPending) {
 		g_viewAspect = f32(fsubr_m(fmul_m(fld_m(&g_frameTime), k_0_05f), &g_viewAspect));   /* 0.05 a frame */
 		g_armcCamDistance = fadd_m(fld_m((const float *)ADDR(g_armcCamDistance)), (const float *)ADDR(k_10f));                       /* the camera 10 back */
 		long double zoom = fadd_m(fld_m(&g_introZoom), &g_frameTime);
@@ -97,7 +97,7 @@ void (menu_frame)(void)
 	menu_frameBegin();
 	switch (g_screen) {
 	case 100: menuState100_intro(); break;
-	case 200: menu_drawVersion(); break;
+	case 200: menuState200_title(); break;
 	case 210: menuState210_frame(); break;
 	case 300: menuState300_frame(); break;
 	case 400: menuState400_frame(); break;
@@ -165,12 +165,12 @@ static void count_down(u8 *s, u32 offset, const float *dt)
 
 /* 0x48b200 (thiscall on the scene): the playing state's frame. The match set up first when it is not yet
    (+0x233cc28 0: match_startRound); frameTimer_average (its answer dropped); the frame's time (+0x44) added to the
-   second's fraction (+0x233cc34) and to the FPS window (+0x2340c90); three countdowns (+0x233cc40, +0x2342f02,
-   +0x2340d39). Past a whole second the seconds (+0x233cc30) take it, and the frame and packet counts of the window
+   second's fraction (+0x233cc34) and to the FPS window (+0x2340c90); three countdowns (msgFade, readyTimer,
+   keyGuard). Past a whole second the seconds (+0x233cc30) take it, and the frame and packet counts of the window
    (+0x2340c80 / +0x2340c84) become rates (+0x2340c88 / +0x2340c8c; 0 for an empty window), the window cleared. Then
    the input, the game mode and, in state 2, the HUD pass (through the call site the patch DLL retargets). A quit (+0x23432cf 1) stops the music and answers 0; else
    the state (+0x233cc20) */
-int THISCALL (match_inputState2)(u8 *s)
+int THISCALL (match_playFrame)(u8 *s)
 {
 #define SC ((Scene *)s)
 	const float *dt = &SC->frameTime;
@@ -181,9 +181,9 @@ int THISCALL (match_inputState2)(u8 *s)
 	SC->secondFraction = f32(second);
 	float window = f32(fadd_m(fld_m(&SC->windowTime), dt));
 	SC->windowTime = window;
-	count_down(s, 0x233cc40, dt);
-	count_down(s, 0x2342f02, dt);
-	count_down(s, 0x2340d39, dt);
+	count_down(s, offsetof(Scene, msgFade), dt);
+	count_down(s, offsetof(Scene, readyTimer), dt);
+	count_down(s, offsetof(Scene, keyGuard), dt);
 	if (second > k_1f) {
 		int whole = ftol(second);
 		SC->wholeSeconds += whole;
@@ -197,13 +197,13 @@ int THISCALL (match_inputState2)(u8 *s)
 	}
 	match_combatInput(s);
 	match_frame(s);
-	if (SC->inputState == 2)
+	if (SC->matchState == 2)
 		PATCHED_THISCALL(0x48b386, void, void *)(s);   /* hud_pass; the patch DLL calls its hud_pass_wrap here */
 	if (SC->quitAsked == 1) {
 		music_shutdown();
 		return 0;
 	}
-	return SC->inputState;
+	return SC->matchState;
 #undef SC
 }
 
@@ -242,19 +242,19 @@ static const u32 k_slotKeys[10][2] = { { ADDR(g_dikNumpad1), 1 }, { ADDR(g_dikNu
 /* the radio message keys (+0x2343307 one less than the message; the first six 10 more with the modifier 0x67ef24) */
 static const u32 k_radioKeys[10] = { ADDR(g_dik1), ADDR(g_dik2), ADDR(g_dik3), ADDR(g_dik4), ADDR(g_dik5), ADDR(g_dik6), ADDR(g_dik7), ADDR(g_dik8), ADDR(g_dik9), ADDR(g_dik0) };
 /* the held controls: the binding's two keys and the flag they set */
-static const u32 k_heldKeys[10][2] = { { (OBJ(g_controls) + 0x30), offsetof(Scene, holdAltitude) }, { ADDR(g_keyFreeCam2), offsetof(Scene, holdStepLeft) }, { ADDR(g_keyFreeCam3), offsetof(Scene, holdStepRight) },
-                                       { ADDR(g_keyFreeCam0), offsetof(Scene, holdForward) }, { ADDR(g_keyFreeCam1), offsetof(Scene, holdBackward) }, { (OBJ(g_controls) + 0x40), offsetof(Scene, holdUp) },
+static const u32 k_heldKeys[10][2] = { { (OBJ(g_controls) + 0x30), offsetof(Scene, holdAltitude) }, { ADDR(g_keyStepLeft), offsetof(Scene, holdStepLeft) }, { ADDR(g_keyStepRight), offsetof(Scene, holdStepRight) },
+                                       { ADDR(g_keyForward), offsetof(Scene, holdForward) }, { ADDR(g_keyBackward), offsetof(Scene, holdBackward) }, { (OBJ(g_controls) + 0x40), offsetof(Scene, holdUp) },
                                        { (OBJ(g_controls) + 0x48), offsetof(Scene, holdDown) }, { (OBJ(g_controls) + 0x98), offsetof(Scene, holdZoom) }, { (OBJ(g_controls) + 0xe0), offsetof(Scene, rankingKey) },
                                        { (OBJ(g_controls) + 0x38), offsetof(Scene, holdBooster) } };
-/* the view keys (+0x2343287: the last held wins, else -1) */
-static const u32 k_viewKeys[6] = { (OBJ(g_controls) + 0x78), (OBJ(g_controls) + 0x80), (OBJ(g_controls) + 0x88), (OBJ(g_controls) + 0x90), (OBJ(g_controls) + 0x68), (OBJ(g_controls) + 0x70) };
+/* the weapon slot keys: HAND WEAPON 1 .. 4, R / L SHOULDER (bindings 15 .. 18, 13, 14): the slot of the last held into weaponKey, else -1 */
+static const u32 k_weaponKeys[6] = { (OBJ(g_controls) + 0x78), (OBJ(g_controls) + 0x80), (OBJ(g_controls) + 0x88), (OBJ(g_controls) + 0x90), (OBJ(g_controls) + 0x68), (OBJ(g_controls) + 0x70) };
 
 /* 0x49d290 (thiscall on the game object): the match's input for this frame (match_resetInputState first; nothing
    more before the match runs, +0x233c9e8). In play (no menu +0x2340d35 / +0x2340cf4): with the own view (+0x233c9fc
    0) and alive (+0x2340cf0, or a network game, or the local player's +0x1eccb48), the weapon slot and radio keys,
    else the fire keys only; a spectator's view the fire keys held / pressed; then every held control, the view keys,
-   the mouse look (above 0.2 s of frame time it is still), quitting (Esc keys when the death timer +0x2340d39 is
-   over), the chat keys, the camera mode cycle (+0x233cc10), the scoreboard keys, the message log toggle cycle
+   the mouse look (above 0.2 s of frame time it is still), the game menu (its keys once keyGuard is
+   over), the chat keys, the camera mode cycle (respawnCameraMode), the scoreboard keys, the message log toggle cycle
    (+0x2340ce8 / ce4 with their notices). In the in-match menu (+0x2340cf4 1) the mouse moves the selection (the
    original's +-50 step, or the patch DLL's menu_nav where it replaced that block), and its keys choose. A network
    end (net_matchOver) quits. Its caller ignores the eax it leaves */
@@ -299,10 +299,10 @@ void THISCALL (match_combatInput)(u8 *s)
 		for (int k = 0; k < 10; k++)
 			if (held2(k_heldKeys[k][0], k_heldKeys[k][0] + 4))
 				S(int, k_heldKeys[k][1]) = 1;
-		SC->viewKey = -1;
+		SC->weaponKey = -1;
 		for (int k = 0; k < 6; k++)
-			if (held2(k_viewKeys[k], k_viewKeys[k] + 4))
-				SC->viewKey = k;
+			if (held2(k_weaponKeys[k], k_weaponKeys[k] + 4))
+				SC->weaponKey = k;
 		if (!(SC->frameTime >= k_0_2f)) {
 			SC->mouseX = g_mouseX;
 			SC->mouseY = g_mouseY;
@@ -318,7 +318,7 @@ void THISCALL (match_combatInput)(u8 *s)
 			g_mouseX = gfx_getWidth() / 2;
 			g_mouseY = gfx_getHeight() / 2;
 		}
-		if (pressed2(ADDR(g_keyLoadingSkip), ADDR(g_keyLoadingSkip2)) && !(SC->keyGuard > 0))
+		if (pressed2(ADDR(g_keyGameMenu), ADDR(g_keyGameMenu2)) && !(SC->keyGuard > 0))
 			SC->quitAsked = 1;
 		if (pressed2((OBJ(g_controls) + 0x58), (OBJ(g_controls) + 0x5c)))
 			SC->prevWeaponPressed = 1;
@@ -326,7 +326,7 @@ void THISCALL (match_combatInput)(u8 *s)
 			SC->nextWeaponPressed = 1;
 		if (pressed2((OBJ(g_controls) + 0xf0), (OBJ(g_controls) + 0xf4)))
 			SC->respawnCameraMode = SC->cameraMode == 1 ? 2 : SC->cameraMode == 2 ? 3 : 1;
-		if (pressed2(ADDR(g_keyWatchChat), (OBJ(g_controls) + 0xac)) && !(SC->keyGuard > 0))
+		if (pressed2(ADDR(g_keyChat), (OBJ(g_controls) + 0xac)) && !(SC->keyGuard > 0))
 			SC->talkPressed = 1;
 		else if (pressed2((OBJ(g_controls) + 0xb0), (OBJ(g_controls) + 0xb4)) && !(SC->keyGuard > 0))
 			SC->teamTalkPressed = 1;
@@ -411,10 +411,10 @@ static const u32 k_freeKeys[9][2] = { { 2, offsetof(Scene, holdAltitude) }, { 0x
    left / right turn the camera (+0x233ca28 pitch within +-890, +0x233ca2c heading wrapped at 3600); space resets it;
    Z / X (or shift with them) step the local player's (+0x234240d) parts held by F1 .. F6 down / up through their
    tables (the weapon slot by its item, selected again); the camera is placed behind the actor (camera_setupView);
-   unless replaying (+0x2340ce0) the actors, bullets and particles move and the actor's ammunition is halved; the
+   unless scenePaused (never set) the actors, bullets and particles move and the actor's ammunition is halved; the
    scene is drawn, with a 100 x 150 grid of lines about the actor when +0x2340cd0. Returns 0 once Esc was pressed,
    else 3 (this mode again) */
-u32 THISCALL (match_inputState3)(u8 *s)
+u32 THISCALL (match_freeCamFrame)(u8 *s)
 {
 	u8 *stage = (u8 *)SCENE_STAGE(s);
 	if (SC->modeStarted == 0) {
@@ -433,22 +433,22 @@ u32 THISCALL (match_inputState3)(u8 *s)
 	u8 *player = (u8 *)&SC->playerRecords[act->player];
 	for (int k = 0; k < 9; k++)
 		S(int, k_freeKeys[k][1]) = input_asyncKeyDown(k_freeKeys[k][0]) ? 1 : 0;
-	SC->viewKey = -1;
+	SC->weaponKey = -1;
 	for (int k = 0; k < 6; k++)
 		if (input_asyncKeyDown('1' + k))
-			SC->viewKey = k;
+			SC->weaponKey = k;
 	if (input_asyncKeyDown(0x11)) {
-		SC->arrowUpHeld = input_asyncKeyDown(0x26) ? 1 : 0;
-		SC->arrowDownHeld = input_asyncKeyDown(0x28) ? 1 : 0;
-		SC->arrowUpPlain = 0;
-		SC->arrowDownPlain = 0;
+		SC->zoomInHeld = input_asyncKeyDown(0x26) ? 1 : 0;
+		SC->zoomOutHeld = input_asyncKeyDown(0x28) ? 1 : 0;
+		SC->pitchUpHeld = 0;
+		SC->pitchDownHeld = 0;
 	} else {
-		SC->arrowUpHeld = SC->arrowDownHeld = 0;
-		SC->arrowUpPlain = input_asyncKeyDown(0x26) ? 1 : 0;
-		SC->arrowDownPlain = input_asyncKeyDown(0x28) ? 1 : 0;
+		SC->zoomInHeld = SC->zoomOutHeld = 0;
+		SC->pitchUpHeld = input_asyncKeyDown(0x26) ? 1 : 0;
+		SC->pitchDownHeld = input_asyncKeyDown(0x28) ? 1 : 0;
 	}
-	SC->arrowLeftHeld = input_asyncKeyDown(0x25) ? 1 : 0;
-	SC->arrowRightHeld = input_asyncKeyDown(0x27) ? 1 : 0;
+	SC->turnLeftHeld = input_asyncKeyDown(0x25) ? 1 : 0;
+	SC->turnRightHeld = input_asyncKeyDown(0x27) ? 1 : 0;
 	const int *cursor = input_getCursorPos();
 	SC->mouseX = cursor[0];
 	SC->mouseY = cursor[1];
@@ -460,47 +460,47 @@ u32 THISCALL (match_inputState3)(u8 *s)
 	SC->quitAsked = input_asyncKeyPressed(0x1b) ? 1 : 0;
 	for (int k = 0; k < 6; k++)
 		SC->fKeys[k] = input_asyncKeyDown(0x70 + k) ? 1 : 0;
-	SC->zoomInPressed = input_asyncKeyPressed('Z') || (input_asyncKeyDown(0x10) && input_asyncKeyDown('Z'));
-	SC->zoomOutPressed = input_asyncKeyPressed('X') || (input_asyncKeyDown(0x10) && input_asyncKeyDown('X'));
+	SC->partStepDownPressed = input_asyncKeyPressed('Z') || (input_asyncKeyDown(0x10) && input_asyncKeyDown('Z'));
+	SC->partStepUpPressed = input_asyncKeyPressed('X') || (input_asyncKeyDown(0x10) && input_asyncKeyDown('X'));
 	frameTimer_average(s);
 	float slow = f32(fld_m((const float *)ADDR(k_1f)) - fmul_m(fld_m(&SC->frameTime), k_0_6f));
 	float turn = f32(fmul_m(fld_m(&SC->frameTime), k_750f));
 	long double look = fmul_m(fld_m(&SC->frameTime), (const float *)ADDR(k_100f));
 	float yaw = f32(look * SC->mouseDx), pitch = f32(look * SC->mouseDy);
 	actor_setInput(stage, 0, (*(u32 *)&SC->holdForward), (*(u32 *)&SC->holdBackward), (*(u32 *)&SC->holdStepLeft), (*(u32 *)&SC->holdStepRight), *(u32 *)&pitch, *(u32 *)&yaw,
-	             (*(u32 *)&SC->holdFire), (*(u32 *)&SC->holdAltitude), (*(u32 *)&SC->holdBooster), (*(u32 *)&SC->viewKey), 0, 0);
-	if (SC->arrowUpPlain) {
+	             (*(u32 *)&SC->holdFire), (*(u32 *)&SC->holdAltitude), (*(u32 *)&SC->holdBooster), (*(u32 *)&SC->weaponKey), 0, 0);
+	if (SC->pitchUpHeld) {
 		long double v = fsub_m(fld_m(SC->cameraAngle), &turn);
 		SC->cameraAngle[0] = f32(v);
 		if (!(v >= k_m890f))
 			SC->cameraAngle[0] = -890.0f;   /* -890 */
 	}
-	if (SC->arrowDownPlain) {
+	if (SC->pitchDownHeld) {
 		long double v = fadd_m(fld_m(&turn), SC->cameraAngle);
 		SC->cameraAngle[0] = f32(v);
 		if (v > k_890f)
 			SC->cameraAngle[0] = 890.0f;   /* 890 */
 	}
-	if (SC->arrowLeftHeld) {
+	if (SC->turnLeftHeld) {
 		long double v = fsub_m(fld_m(&SC->cameraAngle[1]), &turn);
 		SC->cameraAngle[1] = f32(v);
 		if (!(v >= 0))
 			SC->cameraAngle[1] = f32(fadd_m(v, (const float *)ADDR(k_3600f)));
 	}
-	if (SC->arrowRightHeld) {
+	if (SC->turnRightHeld) {
 		long double v = fadd_m(fld_m(&turn), &SC->cameraAngle[1]);
 		SC->cameraAngle[1] = f32(v);
 		if (v >= k_3600f)
 			SC->cameraAngle[1] = f32(fsub_m(v, (const float *)ADDR(k_3600f)));
 	}
 	float *zoom = (float *)&SC->cameraSettings[2][SC->cameraMode];
-	if (SC->arrowUpHeld) {
+	if (SC->zoomInHeld) {
 		*zoom = f32(fmul_m(fld_m(&slow), zoom));
 		if (!(*zoom >= k_500f))
 			GAME_VAR(u32, zoom) = 0x43fa0000;   /* 500 */
 	}
 	zoom = (float *)&SC->cameraSettings[2][SC->cameraMode];
-	if (SC->arrowDownHeld) {
+	if (SC->zoomOutHeld) {
 		*zoom = f32(fdiv_m(fld_m(zoom), &slow));
 		if (*zoom > k_10000f)
 			GAME_VAR(u32, zoom) = 0x461c4000;   /* 10000 */
@@ -512,7 +512,7 @@ u32 THISCALL (match_inputState3)(u8 *s)
 		(*(int *)&act->nextPitch) = (*(int *)&act->nextYaw) = 0;
 	}
 	int item = -1;
-	if (SC->zoomInPressed == 1) {
+	if (SC->partStepDownPressed == 1) {
 		for (int k = 0; k < 5; k++)
 			if (S(int, k_partSteps[k][0]) == 1 && GAME_VAR(int, player + k_partSteps[k][1]) > 0)
 				GAME_THISCALL(k_partSteps[k][2], int, void *, int, int)(stage, act->player, GAME_VAR(int, player + k_partSteps[k][1]) - 1);
@@ -521,7 +521,7 @@ u32 THISCALL (match_inputState3)(u8 *s)
 			if (it > 0)
 				item = it - 1;
 		}
-	} else if (SC->zoomOutPressed == 1) {
+	} else if (SC->partStepUpPressed == 1) {
 		for (int k = 0; k < 5; k++)
 			if (S(int, k_partSteps[k][0]) == 1 && GAME_VAR(int, player + k_partSteps[k][1]) < S(int, k_partSteps[k][3]) - 1)
 				GAME_THISCALL(k_partSteps[k][2], int, void *, int, int)(stage, act->player, GAME_VAR(int, player + k_partSteps[k][1]) + 1);
@@ -552,10 +552,10 @@ u32 THISCALL (match_inputState3)(u8 *s)
 	Vec3_rotateAxis(up, 2, ftol(fld_m(&SC->cameraAngle[1])));
 	float far = view_farPlane(), near = view_nearPlane();
 	int h = gfx_getHeight(), w = gfx_getWidth();
-	float fov = game_clock();
+	float fov = view_angle();
 	camera_setupView(stage, cam, dir, up, *(u32 *)&fov, w, h,
 	                                                                                             *(u32 *)&near, *(u32 *)&far, BITS(SC->frameTime));   /* camera_setupView */
-	if (SC->replaying == 0) {
+	if (SC->scenePaused == 0) {
 		actor_updateAll(stage, BITS(SC->frameTime));
 		bullet_updateAll(stage, BITS(SC->frameTime));
 		stage_updateEffects(stage, BITS(SC->frameTime));
@@ -607,7 +607,7 @@ static void start_view(u8 *s)
 	BITS(SC->cameraAngle[1]) = SC->cameraSaved[4];
 }
 
-/* the current camera preset (+0x233cc10) back from its stored one: six fields of ten */
+/* the current camera preset (cameraMode) back from its stored one: six fields of ten */
 static void preset_reset(u8 *s)
 {
 	for (int f = 0; f < 6; f++)
@@ -635,14 +635,14 @@ static u32 rand_below(u32 n)
 static void zoom_view(u8 *s, const float *step)
 {
 	if (SC->holdZoom) {
-		float a = f32(fsub_m((long double)game_clock(), step));
+		float a = f32(fsub_m((long double)view_angle(), step));
 		view_setAngle(BITS(a));
-		if (!(game_clock() >= 10.0f))
+		if (!(view_angle() >= 10.0f))
 			view_setAngle(0x41200000);   /* 10 */
 	} else {
-		float a = f32(fadd_m((long double)game_clock(), step));
+		float a = f32(fadd_m((long double)view_angle(), step));
 		view_setAngle(BITS(a));
-		if (game_clock() > 60.0f)
+		if (view_angle() > 60.0f)
 			view_setAngle(0x42700000);   /* 60 */
 	}
 }
@@ -667,7 +667,7 @@ static int replay_next(u8 *s)
 		scene_resetActors(stage);
 		scene_reset(stage);
 	}
-	SC->inputState = 1;
+	SC->matchState = 1;
 	SC->modeStarted = 0;
 	return 1;
 }
@@ -804,12 +804,12 @@ static void orbit_from(u8 *s, const u8 *t, u32 preset, int eye)
 /* an actor's record (0x8888 bytes from +0x1ecca70) */
 #define ACTOR_AT(i) ((u8 *)&SC->players[i])
 
-/* preset orbiting the followed player (the preset index at +0x233cc10) */
+/* preset orbiting the followed player (the preset index: cameraMode) */
 static void orbit_camera(u8 *s, int i)
 {
 	(void)i;
-	preset_angles(s, ACTOR_AT(SC->watchedPlayer), 0x233cc10);
-	orbit_from(s, ACTOR_AT(SC->watchedPlayer), 0x233cc10, 1);
+	preset_angles(s, ACTOR_AT(SC->watchedPlayer), offsetof(Scene, cameraMode));
+	orbit_from(s, ACTOR_AT(SC->watchedPlayer), offsetof(Scene, cameraMode), 1);
 }
 
 /* preset 1: the followed player and the nearest other live one, the camera on the line through both beyond the
@@ -958,8 +958,8 @@ static int run_down(u8 *s, u32 offset)
 }
 
 /* the free camera / follow keys: held pairs and the flag each sets */
-static const u32 k_replayHeld[7][3] = { { (OBJ(g_controls) + 0x30), (OBJ(g_controls) + 0x34), offsetof(Scene, holdAltitude) }, { ADDR(g_keyFreeCam2), (OBJ(g_controls) + 0x14), offsetof(Scene, holdStepLeft) }, { ADDR(g_keyFreeCam3), (OBJ(g_controls) + 0x1c), offsetof(Scene, holdStepRight) },
-                                        { ADDR(g_keyFreeCam0), (OBJ(g_controls) + 0x4), offsetof(Scene, holdForward) }, { ADDR(g_keyFreeCam1), (OBJ(g_controls) + 0xc), offsetof(Scene, holdBackward) }, { (OBJ(g_controls) + 0x40), (OBJ(g_controls) + 0x44), offsetof(Scene, holdUp) },
+static const u32 k_replayHeld[7][3] = { { (OBJ(g_controls) + 0x30), (OBJ(g_controls) + 0x34), offsetof(Scene, holdAltitude) }, { ADDR(g_keyStepLeft), (OBJ(g_controls) + 0x14), offsetof(Scene, holdStepLeft) }, { ADDR(g_keyStepRight), (OBJ(g_controls) + 0x1c), offsetof(Scene, holdStepRight) },
+                                        { ADDR(g_keyForward), (OBJ(g_controls) + 0x4), offsetof(Scene, holdForward) }, { ADDR(g_keyBackward), (OBJ(g_controls) + 0xc), offsetof(Scene, holdBackward) }, { (OBJ(g_controls) + 0x40), (OBJ(g_controls) + 0x44), offsetof(Scene, holdUp) },
                                         { (OBJ(g_controls) + 0x48), (OBJ(g_controls) + 0x4c), offsetof(Scene, holdDown) } };
 /* the camera preset keys (presets 1 .. 9, 0) */
 static const u32 k_presetKeys[10] = { ADDR(g_dikNumpad1), ADDR(g_dikNumpad2), ADDR(g_dikNumpad3), ADDR(g_dikNumpad4), ADDR(g_dikNumpad5), ADDR(g_dikNumpad6), ADDR(g_dikNumpad7), ADDR(g_dikNumpad8), ADDR(g_dikNumpad9), ADDR(g_dikNumpad0) };
@@ -969,8 +969,8 @@ static const signed char k_star[8][3] = { { 1, 1, 1 }, { -1, -1, -1 }, { 1, -1, 
 /* 0x487f00 (thiscall on the game object): the replay viewer's frame. On its first frame (+0x233cc28 0) the camera
    from the start view and its presets reset, the cursor centred. The keys: the free camera's moves, presets 1 .. 9
    and 0, following a player (the follow keys; the mouse buttons for the next player / preset), slow motion
-   (+0x2340d21), skip (+0x2340d25), the ranking, the HUD modes, quit; the mouse turns the view. Unless paused
-   (+0x2340ce0) the replay file (+0x2340d08) is read up to the replay's time (+0x2340d2d): records of time, sender,
+   (+0x2340d21), skip (+0x2340d25), the ranking, the HUD modes, quit; the mouse turns the view. Unless scenePaused
+   (never set) the replay file (+0x2340d08) is read up to the replay's time (+0x2340d2d): records of time, sender,
    length and packet handed to net_processGamePacket; at its end the next replay starts (returns 1) or the viewer
    quits. Then the scene's frame (clocks, objects, actors, bullets, particles, items), kill messages, the camera
    (free, or one of the presets about the followed player), the scene drawn (with debug markers for the map's
@@ -994,7 +994,7 @@ u32 THISCALL (replay_frame)(u8 *s)
 		timer_getGameTime((u8 *)&SC->timer);
 		int y = gfx_getHeight() / 2;
 		input_setCursorPos(gfx_getWidth() / 2, y);
-		(*(int *)&SC->followTime) = (*(int *)&SC->presetTime) = (*(int *)&SC->screenshotUpload) = 0;
+		(*(int *)&SC->followTime) = (*(int *)&SC->presetTime) = (*(int *)&SC->flagUploadTimer) = 0;
 		SC->wholeSeconds = (*(int *)&SC->secondFraction) = 0;
 		(*(int *)&SC->recordTime) = (*(int *)&SC->replayTime) = 0;
 		events_clear((Scene *)s, 60.0f);
@@ -1068,31 +1068,31 @@ u32 THISCALL (replay_frame)(u8 *s)
 	SC->mouseDx = f32(fmul_m(sens, &SC->mouseDx));
 	g_mouseX = gfx_getWidth() / 2;
 	g_mouseY = gfx_getHeight() / 2;
-	if (pressed2(ADDR(g_keyLoadingSkip), ADDR(g_keyLoadingSkip2)) && !(SC->keyGuard > 0)) {
-		g_mainMenuFadingIn = 0;
+	if (pressed2(ADDR(g_keyGameMenu), ADDR(g_keyGameMenu2)) && !(SC->keyGuard > 0)) {
+		g_replayZoomIn = 0;
 		SC->quitAsked = 1;
 	}
-	if (run_down(s, 0x233cc40))
+	if (run_down(s, offsetof(Scene, msgFade)))
 		SC->msgFade = 0.0f;
-	if (run_down(s, 0x2342f02))
+	if (run_down(s, offsetof(Scene, readyTimer)))
 		SC->readyTimer = 0.0f;
-	if (run_down(s, 0x2342425)) {
-		emblem_uploadAtlas(stage);
-		SC->screenshotUpload = 0.0f;
+	if (run_down(s, offsetof(Scene, flagUploadTimer))) {
+		flag_uploadAtlas(stage);
+		SC->flagUploadTimer = 0.0f;
 	}
 	long double sp = fmul_m(fld_m(&SC->frameTime), &k_2000f);   /* 2000 a second, at most +0x1f4164 */
 	float speed = (float)sp;
-	if (sp > SC->freeCamSpeedMax)
-		BITS(speed) = BITS(SC->freeCamSpeedMax);
-	float turn = f32(fmul_m(fmul_m(fmul_m((long double)game_clock(), &k_0_01666667f), &SC->frameTime), &k_50f));
+	if (sp > SC->spaceMargin)
+		BITS(speed) = BITS(SC->spaceMargin);
+	float turn = f32(fmul_m(fmul_m(fmul_m((long double)view_angle(), &k_0_01666667f), &SC->frameTime), &k_50f));
 	float step = f32(fmul_m(fld_m(&SC->frameTime), &k_180f));
 	/* the zoom keys: the preset's distance by (1 - 0.9 dt) */
-	if (SC->arrowUpHeld == 1) {
+	if (SC->zoomInHeld == 1) {
 		long double m = !(SC->frameTime >= 1.0f) ? fld_m(&SC->frameTime) : fld_m(&k_1f);
 		float *z = (float *)&SC->cameraSettings[2][SC->cameraMode];
 		*z = f32(fmul_m(fsubr_m(fmul_m(m, &k_0_9f), &k_1f), z));
 	}
-	if (SC->arrowDownHeld == 1) {
+	if (SC->zoomOutHeld == 1) {
 		long double m = !(SC->frameTime >= 1.0f) ? fld_m(&SC->frameTime) : fld_m(&k_1f);
 		float *z = (float *)&SC->cameraSettings[2][SC->cameraMode];
 		*z = f32(fdivr_m(fsubr_m(fmul_m(m, &k_0_9f), &k_1f), z));
@@ -1114,7 +1114,7 @@ u32 THISCALL (replay_frame)(u8 *s)
 	else
 		BITS(dt) = BITS(SC->frameTime);
 
-	if (SC->replaying == 0) {
+	if (SC->scenePaused == 0) {
 		if (!(SC->recordTime > SC->replayTime))
 			do {
 				int from, len;
@@ -1176,15 +1176,15 @@ u32 THISCALL (replay_frame)(u8 *s)
 	}
 	float far = view_farPlane(), near = view_nearPlane();
 	int h = gfx_getHeight(), w = gfx_getWidth();
-	float fov = game_clock();
+	float fov = view_angle();
 	camera_setupView(stage, (float *)SC->cameraPos, SC->cameraDir,
 	              SC->cameraUp, BITS(fov), w, h, BITS(near), BITS(far), BITS(SC->frameTime));   /* camera_setupView */
 	SC->modeStarted++;
 
 	/* the scene */
 	tex_clearSetCounters(g_textures);
-	if (SC->fogOn == 1) {
-		glClearColor_stored(SC->fogColour);
+	if (SC->clearOn == 1) {
+		glClearColor_stored(SC->clearColour);
 		glClearDepth(1.0);
 		glClear(0x4100);
 	} else {
@@ -1217,7 +1217,7 @@ u32 THISCALL (replay_frame)(u8 *s)
 				ViewVolume_addSegment(view, (const void *)OBJ(g_packedYellow), p, q, 1);
 			}
 		}
-	if (SC->fogInOverlay == 1) {
+	if (SC->fogOn == 1) {
 		stage_setFog((Stage *)stage, st->glFogColour, st->glFogStart, st->glFogEnd, st->glFogDensity);
 		glEnable(GL_FOG);
 	}
@@ -1381,7 +1381,7 @@ static void local_spawn(u8 *s)
 /* the bots (the stage's map actors, botsWaiting of them) waiting to spawn: placed on a free point */
 static void bot_spawns(u8 *s)
 {
-	for (int j = 0; j < SC->botsWaiting; j++) {
+	for (int j = 0; j < SC->mapActorCount; j++) {
 		const SpawnRecord *rec = &SCENE_STAGE(s)->mapActors[j];
 		int state = SC->players[j].active;
 		if (rec->bot != 1 || !(state == 0 || (state == 1 && SC->players[j].state == 3)))
@@ -1514,7 +1514,7 @@ static int slow_end(u8 *s)
 		return 0;
 	if (!(fsub_m(fld_m(&k_10f), &SC->endTime) < 2.0f))
 		return 0;
-	return SC->roundWinner >= 0 && SC->players[SC->roundWinner].state == 2;
+	return SC->lastDeath >= 0 && SC->players[SC->lastDeath].state == 2;
 }
 
 /* the winning team (+0x23423bd): the side whose team slot has more (team scores +0x2221fb8), -1 for a draw */
@@ -1618,7 +1618,7 @@ void THISCALL (match_frame)(u8 *s)
 		g_matchLogWritten = 1;
 	}
 	if (SC->matchDrawing == 0) {
-		SC->inputState = 1;
+		SC->matchState = 1;
 		SC->modeStarted = 0;
 		return;
 	}
@@ -1674,21 +1674,21 @@ void THISCALL (match_frame)(u8 *s)
 	}
 	/* the local player's starting kills and deaths, its screenshot */
 	if (SC->localPlayer >= 0 && SC->statsTaken == 0) {
-		SC->players[SC->localPlayer].emblem = SC->level;
+		SC->players[SC->localPlayer].grade = SC->level;
 		SC->players[SC->localPlayer].levelShown = SC->level;
 		SC->players[SC->localPlayer].score = SC->levelPoints;
 		SC->players[SC->localPlayer].startPoints = SC->levelPoints;
 		SC->statsTaken = 1;
 	}
-	if (SC->screenshotTaken == 0 && SC->localPlayer >= 0 && SC->sessionMode == 1) {
-		int shot = playerRecord_loadEmblem(stage, SC->localPlayer);
-		SC->playerRecords[SC->localPlayer].emblemChanged = shot;
-		SC->playerRecords[SC->localPlayer].emblemSent = 0;
-		SC->screenshotUpload = 5.0f;   /* 5 */
-		SC->screenshotTaken = 1;
-	} else if (run_down(s, 0x2342425)) {
-		emblem_uploadAtlas(stage);
-		SC->screenshotUpload = 0.0f;
+	if (SC->flagLoaded == 0 && SC->localPlayer >= 0 && SC->sessionMode == 1) {
+		int shot = playerRecord_loadFlag(stage, SC->localPlayer);
+		SC->playerRecords[SC->localPlayer].flagChanged = shot;
+		SC->playerRecords[SC->localPlayer].flagSent = 0;
+		SC->flagUploadTimer = 5.0f;   /* 5 */
+		SC->flagLoaded = 1;
+	} else if (run_down(s, offsetof(Scene, flagUploadTimer))) {
+		flag_uploadAtlas(stage);
+		SC->flagUploadTimer = 0.0f;
 	}
 	/* joining: the network's slot for the local player */
 	if (SC->localPlayer < 0 && net_isClient()) {
@@ -1704,7 +1704,7 @@ void THISCALL (match_frame)(u8 *s)
 	}
 	/* a team chosen (or a menu for it), then the spawn */
 	int me = SC->localPlayer;
-	if (me >= 0 && SC->players[me].active == 0 && SC->matchOver == 0 && SC->playerRecords[me].emblemSent == 0x180
+	if (me >= 0 && SC->players[me].active == 0 && SC->matchOver == 0 && SC->playerRecords[me].flagSent == 0x180
 	    && (SC->firePressed == 1 || SC->teamAsked == 1)) {
 		if (SC->teamGame == 1 && (SC->localTeam < 0 || scene_findTeam((Scene *)s, SC->localTeam) < 0)) {
 			if (SC->chosenTeam >= 0 && SC->sessionMode != 0)
@@ -1733,7 +1733,7 @@ void THISCALL (match_frame)(u8 *s)
 	} else
 		SC->respawnTime = 0.0f;
 	if (SC->teamChanged == 1
-	    || (SC->platoon == 1 && SC->players[SC->localPlayer].state == 3 && SC->players[SC->localPlayer].isPlatoonLeader == 1))
+	    || (SC->platoon == 1 && SC->players[SC->localPlayer].state == 3 && SC->players[SC->localPlayer].isCommander == 1))
 		local_spawn(s);
 	if (SC->sessionMode == 0 && SC->localPlayer >= 0 && SC->players[SC->localPlayer].inPlay == 1 && SC->matchOver == 0)
 		bot_spawns(s);
@@ -1741,9 +1741,9 @@ void THISCALL (match_frame)(u8 *s)
 	/* the keys' rates */
 	long double sp = fmul_m(fld_m(&SC->frameTime), &k_2000f);
 	float speed = (float)sp;
-	if (sp > SC->freeCamSpeedMax)
-		BITS(speed) = BITS(SC->freeCamSpeedMax);
-	float turn = f32(fmul_m(fmul_m(fmul_m((long double)game_clock(), &k_0_01666667f), &SC->frameTime), &k_75f));
+	if (sp > SC->spaceMargin)
+		BITS(speed) = BITS(SC->spaceMargin);
+	float turn = f32(fmul_m(fmul_m(fmul_m((long double)view_angle(), &k_0_01666667f), &SC->frameTime), &k_75f));
 	float step = f32(fmul_m(fld_m(&SC->frameTime), &k_180f));
 	if (SC->actionKey == 1)
 		for (int k = 0; k < 10; k++)
@@ -1768,7 +1768,7 @@ void THISCALL (match_frame)(u8 *s)
 				*v = f32(fsubr_m(fmul_m(fld_m(&turn), &SC->mouseDx), v));
 			}
 			SC->holdFire = 0;
-			SC->viewKey = -1;
+			SC->weaponKey = -1;
 			SC->prevWeaponPressed = 0;
 			SC->nextWeaponPressed = 0;
 		}
@@ -1782,7 +1782,7 @@ void THISCALL (match_frame)(u8 *s)
 		}
 		float pitch = f32(fmul_m(fld_m(&turn), &SC->mouseDy)), yaw = f32(fmul_m(fld_m(&turn), &SC->mouseDx));
 		actor_setInput(stage, (*(u32 *)&SC->localPlayer), (*(u32 *)&SC->holdForward), (*(u32 *)&SC->holdBackward), (*(u32 *)&SC->holdStepLeft), (*(u32 *)&SC->holdStepRight), BITS(pitch),
-		             BITS(yaw), (*(u32 *)&SC->holdFire), (*(u32 *)&SC->holdAltitude), (*(u32 *)&SC->holdBooster), (*(u32 *)&SC->viewKey), (*(u32 *)&SC->prevWeaponPressed), (*(u32 *)&SC->nextWeaponPressed));
+		             BITS(yaw), (*(u32 *)&SC->holdFire), (*(u32 *)&SC->holdAltitude), (*(u32 *)&SC->holdBooster), (*(u32 *)&SC->weaponKey), (*(u32 *)&SC->prevWeaponPressed), (*(u32 *)&SC->nextWeaponPressed));
 	}
 	zoom_view(s, &step);
 	/* the network's packets */
@@ -1798,7 +1798,7 @@ void THISCALL (match_frame)(u8 *s)
 			netq_poll();
 		}
 	}
-	if (SC->inputState == 1)
+	if (SC->matchState == 1)
 		return;
 	/* the scene's frame */
 	float dt;
@@ -1806,7 +1806,7 @@ void THISCALL (match_frame)(u8 *s)
 		dt = f32(fmul_m(fld_m(&SC->frameTime), k_0_05f));
 	else
 		BITS(dt) = BITS(SC->frameTime);
-	if (SC->replaying == 0 && !(SC->escMenuOpen == 1 && SC->sessionMode == 0)) {
+	if (SC->scenePaused == 0 && !(SC->escMenuOpen == 1 && SC->sessionMode == 0)) {
 		if (SC->playing == 0 && SC->cameraSlot == 2 && SC->watchedPlayer >= 0)
 			SC->players[SC->watchedPlayer].viewMarked = 1;
 		else if (SC->playing == 1 && SC->cameraMode == 2 && SC->localPlayer >= 0)
@@ -1924,7 +1924,7 @@ void THISCALL (match_frame)(u8 *s)
 	}
 	if (SC->ladderGame == 1 && SC->localPlayer >= 0) {
 		me = SC->localPlayer;
-		int a = SC->players[me].emblem;
+		int a = SC->players[me].grade;
 		if (a != SC->players[me].levelShown) {
 			SC->players[me].levelShown = a;
 			notice_printCentre((Scene *)s, (const char *)STR(0x4d05ec, "LEVEL UP!"));
@@ -1935,12 +1935,12 @@ void THISCALL (match_frame)(u8 *s)
 		notice_printCentre((Scene *)s, (const char *)SC->centreNotice);
 		(*(u8 *)&SC->centreNotice[0]) = 0;
 	}
-	if (SC->kingChanged == 1 || !(SC->kingTimer > 0)) {
+	if (SC->teamsChanged == 1 || !(SC->kingTimer > 0)) {
 		scene_updateRanking(sc);
 		if (net_playerInUse(SC->localPlayer) == 1 && SC->rank[SC->localPlayer] == 1
 		    && (SC->rankShown > 1 || (SC->kingOfTheHill == 1 && SC->rankShown != 1)))
 			sound_playVolume(0xf, 100);
-		SC->kingChanged = 0;
+		SC->teamsChanged = 0;
 		SC->kingTimer = 5.0f;
 	}
 	if (SC->recording == 1)
@@ -1970,7 +1970,7 @@ void THISCALL (match_frame)(u8 *s)
 				net_sendGamePacket(s, i);
 			if (SC->sendFlags[i][1] == 1)
 				net_sendPlayerInfo(s, i);
-			if (net_playerInUse(i) == 1 && SC->sendTimer > 0.05f && SC->playerRecords[SC->localPlayer].emblemSent < 0x180) {
+			if (net_playerInUse(i) == 1 && SC->sendTimer > 0.05f && SC->playerRecords[SC->localPlayer].flagSent < 0x180) {
 				net_sendColourRing(s, SC->localPlayer);
 				SC->sendTimer = (float)-fld_m(&SC->frameTime);
 			}
@@ -2059,7 +2059,7 @@ void THISCALL (match_frame)(u8 *s)
 						game_setGameTypeFlags((Stage *)stage, SC->nextMode);
 						SC->nextMode = -1;
 					}
-					SC->inputState = 1;
+					SC->matchState = 1;
 					SC->modeStarted = 0;
 				}
 				scene_saveNames(s);
@@ -2147,7 +2147,7 @@ void THISCALL (match_frame)(u8 *s)
 		if (SC->matchOver == 1) {   /* the round's end: the winner, the top player or oneself */
 			SC->cameraMode = 9;
 			if (slow_end(s))
-				t = ACTOR_AT(SC->roundWinner);
+				t = ACTOR_AT(SC->lastDeath);
 			else if (((Player *)scene_topPlayer(sc))->state == 1)
 				t = (const u8 *)scene_topPlayer(sc);
 			else
@@ -2161,17 +2161,17 @@ void THISCALL (match_frame)(u8 *s)
 		else if (SC->cameraSettings[3][SC->cameraMode] != 0)
 			look_at(s, ((const Player *)t)->pos);
 		else {
-			preset_angles(s, t, 0x233cc10);
+			preset_angles(s, t, offsetof(Scene, cameraMode));
 			if (SC->cameraMode == 1)
 				muzzle_camera(s, t);
 			else
-				orbit_from(s, t, 0x233cc10, SC->cameraMode != 9);
+				orbit_from(s, t, offsetof(Scene, cameraMode), SC->cameraMode != 9);
 			turn_view(s);
 		}
 	}
 	float far = view_farPlane(), near = view_nearPlane();
 	int h = gfx_getHeight(), w = gfx_getWidth();
-	float fov = game_clock();
+	float fov = view_angle();
 	camera_setupView(stage, (float *)SC->cameraPos, SC->cameraDir,
 	              SC->cameraUp, BITS(fov), w, h, BITS(near), BITS(far), BITS(SC->frameTime));   /* camera_setupView */
 	view_setDistance(stage, BITS(st->cullMargin));
@@ -2208,7 +2208,7 @@ void THISCALL (match_frame)(u8 *s)
 		if (netq_resends() > 0) {
 			netq_clearResends();
 			SC->resendWarning = 1.0f;
-		} else if (run_down(s, 0x2340c94))
+		} else if (run_down(s, offsetof(Scene, resendWarning)))
 			SC->resendWarning = 0.0f;
 	}
 	/* the match restart count */

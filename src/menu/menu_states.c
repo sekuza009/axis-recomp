@@ -346,7 +346,7 @@ void (replaySelect_ok)(void)
 		if (g_replayList[i].flag == 1) {
 			sound_playMenu(0);
 			g_replayListCount = g_replayFileCount;
-			g_mainMenuFadingIn = 1;
+			g_replayZoomIn = 1;
 			g_mainMenuPicked = 0;
 			return;
 		}

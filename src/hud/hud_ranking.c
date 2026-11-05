@@ -20,7 +20,7 @@ static void ranking_row(Scene *scene, int p, int *y)
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 	if (scene->ladderGame == 1) {
 		x = 0x58;
-		hud_drawEmblem(scene, player->emblem, x, *y);
+		hud_drawEmblem(scene, player->grade, x, *y);
 	}
 	int flagOwner = scene->sessionMode ? p : player->player;
 	if (scene->playerRecords[flagOwner].flagShown == 1) {
@@ -57,7 +57,7 @@ void THISCALL (hud_drawRanking)(Scene *scene)
 					continue;
 				glColor4f(red, 0.0f, blue, p == scene->localPlayer ? 0.5f : 0.2f);
 				ranking_row(scene, p, &y);
-				if (scene->players[p].isPlatoonLeader == 1) {
+				if (scene->players[p].isCommander == 1) {
 					glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 					replay_drawIcon(scene, 0x20c, y, scene->players[p].team + 9);
 				}

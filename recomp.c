@@ -729,7 +729,7 @@ THISCALL void object_deactivate(char *self, int i);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 THISCALL void playerRecord_resetColourGrid(char *self, int p);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-THISCALL void script_pushEvent(char *self, int a, int b, int c, int d);
+THISCALL void script_pushMessage(char *self, int a, int b, int c, int d);
 /* apply each part's material (index/512 = set, %512 = entry) */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 THISCALL void shape_markMaterialsChanged(char *self);
@@ -1564,7 +1564,7 @@ int THISCALL spaceNode_clear(void *self);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 int THISCALL Light_clearCounts(void *self);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-int THISCALL stage_clearScriptEvents(void *self);
+int THISCALL stage_clearMessages(void *self);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void THISCALL ErrorLog_dtor(void *self);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
@@ -2868,11 +2868,11 @@ DWORD room_networkEvents(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 DWORD gfx_initGLState(int width, int height);
 /* 0x456520 (thiscall) tex_upload(name, mode): upload the texture object's RGBA image (with mipmaps if wanted);
-   0x473610 (thiscall) emblem_uploadAtlas: copy each changed player colour block into the shared texture and upload it */
+   0x473610 (thiscall) flag_uploadAtlas: copy each changed player colour block into the shared texture and upload it */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 THISCALL void tex_upload(char *tex, DWORD name, DWORD mode);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-THISCALL void emblem_uploadAtlas(char *scene);
+THISCALL void flag_uploadAtlas(char *scene);
 /* batch 60 (lifted/grp8.c) */
 /* 0x49d150 (thiscall) profile_addMatchScores: add the local player's hits/shots/kills since the last call to the totals
    (0x4de72e..) and remember the new values; without a replay running, send the result (room_keepText) */
@@ -2886,10 +2886,10 @@ int chat_createEdit(int chars);
    defaults if missing) */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void reg_readCharacterSettings(void);
-/* 0x4734d0 (thiscall) playerRecord_loadEmblem(p): load player p's emblem picture (Save\<name>.BMP, at least 23 x 15)
+/* 0x4734d0 (thiscall) playerRecord_loadFlag(p): load player p's emblem picture (Save\<name>.BMP, at least 23 x 15)
    into the player record as 24 x 16 RGBA, black = transparent */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-THISCALL DWORD playerRecord_loadEmblem(char *scene, DWORD p);
+THISCALL DWORD playerRecord_loadFlag(char *scene, DWORD p);
 /* 0x473780 (thiscall) catalogue_loadComponents(path): the actor component catalogue (version 0x1204): six
    sections of part records (0xaa8 .. 0x2e18 bytes each, at most 50), read through the descrambling reader */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
@@ -4990,7 +4990,7 @@ THISCALL void script_processTriggers(char *s);
    run (script_processTriggers), and the game clock (+0x20fcd40 whole seconds, +0x20fcd44 the fraction) moves on */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 THISCALL void actor_updateAll(char *s, DWORD dt);
-/* 0x48a370 match_inputState3() (thiscall on the scene): the free camera / test mode. On its first frame the ten
+/* 0x48a370 match_freeCamFrame() (thiscall on the scene): the free camera / test mode. On its first frame the ten
    cameras reset and the cursor centred; then the keys (movement W/A/S/D/Q/E, speed, camera 1..6, zoom, the F1..F6
    setting cycles with shift, Esc) set the scene's input flags, the cursor's offset moves the view, the local
    player's (+0x234240d) settings step through their tables (0x473b10.. on the scene's 0x1f36c8 part, bounded by
@@ -4999,7 +4999,7 @@ THISCALL void actor_updateAll(char *s, DWORD dt);
    markers). Returns 3 after Esc, else 0. Callees stubbed except the screen / cursor / timer getters and the
    vector rotation */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-THISCALL DWORD match_inputState3(char *s);
+THISCALL DWORD match_freeCamFrame(char *s);
 /* batch 201 (lifted/grp160.c): the profile screen's key handlers, one per page (split out of profile_processInput
    in functions.csv: profile_screenKeys reaches them through its jump table) */
 /* 0x44c600 profileList_keys(): page 1, the profile list: up / down held with key repeat (0x76d37c / 0x680bb4) move
@@ -5038,7 +5038,7 @@ void menu_processKeys(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void app_frame(void);
 /* 0x462050 match_frameByState() (thiscall on the scene): the match's frame by input state +0x233cc20 (1..4: 0x468750,
-   0x48b200, match_inputState3, 0x487f00), each returning the next state; after states 2 (when +0x233c9e8 == 1),
+   0x48b200, match_freeCamFrame, 0x487f00), each returning the next state; after states 2 (when +0x233c9e8 == 1),
    3 and 4 the frame is presented (0x4685d0). Returns the state */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 int THISCALL match_frameByState(void *scene);
@@ -5096,14 +5096,14 @@ void THISCALL hud_drawMain(void *scene);
 void THISCALL hud_drawTeamScores(void *scene);
 /* batch 206 (lifted/grp167.c .. grp170.c): functions whose call sites the patch DLL retargets; those calls are lifted
    with lift.py "@site" (the target read from the live instruction) and the rel32 bytes listed in g_patchOk */
-/* 0x48b200 match_inputState2() (thiscall on the scene): the match's frame: the round start (0x49df10) until
+/* 0x48b200 match_playFrame() (thiscall on the scene): the match's frame: the round start (0x49df10) until
    +0x233cc28, the frame timer (frameTimer_average -> dt at +0x44), the clocks (+0x233cc34 / +0x233cc30 whole seconds,
    +0x2340c90 with the per-second rates +0x2340c88 / +0x2340c8c from the counters +0x2340c80 / +0x2340c84), three
    countdowns (+0x233cc40, +0x2342f02, +0x2340d39); the combat input (match_combatInput), the game mode
    (match_frame), in state 2 the HUD pass (hud_pass: @0x48b386, the patch DLL's hud_pass_wrap); a pending
    quit (+0x23432cf) ends it (0x457310, 0), else the state +0x233cc20 */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-THISCALL DWORD match_inputState2(char *scene);
+THISCALL DWORD match_playFrame(char *scene);
 /* 0x41fa40 menu_frame(): the menus' frame: the cursor blink 0x4dda44, the screen's music (0x41f970), the keys
    (0x445e40, menu_processKeys) unless 0x9da49c is 0x68 / 0x69; on screen 300 the launch fade (0x4e1870, 0x4df02c,
    0x4dda48) into a match (9999); 0x41f820; the screen's frame by 0x76d3e8 (100 .. 900); a dialog (0x4290d0); the
@@ -5199,11 +5199,11 @@ void text_drawCentred(int x0, int y, int x1, const char *text, int size);
 /* 0x4950a0 hud_fillRect(x1, y1, x2, y2): a filled box (gfx_fillRect) scaled from 640 x 480 to the screen */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void hud_fillRect(int x0, int y0, int x1, int y1);
-/* 0x41f8d0 menu_drawVersion(): the title screen's end (0x4df01c counting 0x4e0458 to 19, then screen 210), the
+/* 0x41f8d0 menuState200_title(): the title screen's end (0x4df01c counting 0x4e0458 to 19, then screen 210), the
    menu background (0x441740), the emblem transition (@0x41f903: 0x429170, the patch DLL's trans_wrap), the version
    texts (text_draw5) */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-void menu_drawVersion(void);
+void menuState200_title(void);
 /* batch 212 (lifted/grp177.c): native until now, not changed in memory by the patch DLL (it wraps calls to them) */
 /* 0x491f50 hud_drawLockOn() (thiscall on the scene): for each other player in play with a lock timer
    (+0x2222148, per player) the lock-on square at its screen point, the timer scaling it (textures from the set
@@ -7260,10 +7260,10 @@ ST(object_activate, objects_setup();, (TC(void, 0x490ee0, char *, int)(BUF, g_a[
 ST(object_deactivate, objects_setup();, (TC(void, 0x490f30, char *, int)(BUF, g_a[0]), 0), (object_deactivate(BUF, g_a[0]), 0))
 ST(playerRecord_resetColourGrid, g_a[0] = irnd(0, 7); fill((void *)0xa1f220, 4); fill(BUF + g_a[0] * 0x47fd2 + 0x1561b68 + 0x479c0, 0x620);,
    (TC(void, 0x473470, char *, int)(BUF, g_a[0]), 0), (playerRecord_resetColourGrid(BUF, g_a[0]), 0))
-ST(script_pushEvent, S32(BUF, 0x2148ed0) = irnd(-40, 100); S32(BUF, 0x2148ed4) = irnd(0, 1) ? S32(BUF, 0x2148ed0) - 31 : irnd(-40, 100);
+ST(script_pushMessage, S32(BUF, 0x2148ed0) = irnd(-40, 100); S32(BUF, 0x2148ed4) = irnd(0, 1) ? S32(BUF, 0x2148ed0) - 31 : irnd(-40, 100);
    fill(g_a, 16); fill(BUF + 0x2148c50, 0x280);,
    (TC(void, 0x48fc40, char *, int, int, int, int)(BUF, g_a[0], g_a[1], g_a[2], g_a[3]), 0),
-   (script_pushEvent(BUF, g_a[0], g_a[1], g_a[2], g_a[3]), 0))
+   (script_pushMessage(BUF, g_a[0], g_a[1], g_a[2], g_a[3]), 0))
 static void shape_setup(void)
 {
 	S32(BUF, 0x10) = irnd(-1, 6); S32(BUF, 0x14) = (int)(BUF + 0x3000);
@@ -8119,7 +8119,7 @@ ST(ViewVolume_clear, fill(BUF, 0x9190);, TC(int, 0x483fc0, char *)(BUF + 0x10), 
 ST(TimeSync_clear, fill(BUF, 0x58);, TC(int, 0x487480, char *)(BUF + 0x10), TimeSync_clear(BUF + 0x10))
 ST(spaceNode_clear, fill(BUF, 0x30);, TC(int, 0x480430, char *)(BUF + 0x10), spaceNode_clear(BUF + 0x10))
 ST(Light_clearCounts, fill(BUF + 0xb000, 0x10);, TC(int, 0x483d60, char *)(BUF), Light_clearCounts(BUF))
-ST(stage_clearScriptEvents, fill(BUF + 0x2148ecc, 0x10);, TC(int, 0x48fc30, char *)(BUF), stage_clearScriptEvents(BUF))
+ST(stage_clearMessages, fill(BUF + 0x2148ecc, 0x10);, TC(int, 0x48fc30, char *)(BUF), stage_clearMessages(BUF))
 ST(ErrorLog_dtor, fill(BUF, 0x10);, (TC(void, 0x46c5e0, char *)(BUF + 4), 0), (ErrorLog_dtor((DWORD *)(BUF + 4)), 0))
 ST(TimeSync_dtor, fill(BUF, 0x10);, (TC(void, 0x487470, char *)(BUF + 4), 0), (TimeSync_dtor((DWORD *)(BUF + 4)), 0))
 ST(Scene_dtor, fill(BUF, 0x10);, (TC(void, 0x48b410, char *)(BUF + 4), 0), (Scene_dtor((DWORD *)(BUF + 4)), 0))
@@ -10121,7 +10121,7 @@ static void colourblocks_setup(void)
 		fill(b, 0x600); S32(b, 0x604) = irnd(0, 1); S32(b, 0x608) = irnd(0, 1);
 	}
 }
-ST(emblem_uploadAtlas, colourblocks_setup();, (TC(void, 0x473610, char *)(SCENE), 0), (emblem_uploadAtlas(SCENE), 0))
+ST(flag_uploadAtlas, colourblocks_setup();, (TC(void, 0x473610, char *)(SCENE), 0), (flag_uploadAtlas(SCENE), 0))
 /* batch 60 */
 static void hits_setup(void)
 {
@@ -10147,7 +10147,7 @@ static void emblem_setup(void)
 	g_vfsData = d; g_vfsSize = (DWORD)n; g_vfsOpenFail = !irnd(0, 5);
 	g_paintStacks = 1;
 }
-ST(playerRecord_loadEmblem, emblem_setup();, TC(DWORD, 0x4734d0, char *, int)(SCENE, g_a[0]), playerRecord_loadEmblem(SCENE, (DWORD)g_a[0]))
+ST(playerRecord_loadFlag, emblem_setup();, TC(DWORD, 0x4734d0, char *, int)(SCENE, g_a[0]), playerRecord_loadFlag(SCENE, (DWORD)g_a[0]))
 /* the catalogue: version word (plain), then six sections, each a count (0..3) and its records, scrambled like
    every file the descrambling reader reads (stored byte = ror1(b) ^ 0x59) */
 static void catalogue_setup(void)
@@ -16111,7 +16111,7 @@ static void instate3_setup(void)
 	GF(BUF + 0x44) = (float)irnd(1, 100) / 1000.0f;
 	S32(BUF, 0x2340ce0) = irnd(0, 1); S32(BUF, 0x2340cd0) = irnd(0, 5) ? 0 : 1; S32(BUF, 0x1f1664) = irnd(0, 100);
 }
-ST(match_inputState3, instate3_setup();, TC(DWORD, 0x48a370, char *)(BUF), match_inputState3(BUF))
+ST(match_freeCamFrame, instate3_setup();, TC(DWORD, 0x48a370, char *)(BUF), match_freeCamFrame(BUF))
 /* batch 201 */
 /* the profile pages' keys: profileinput_setup (the page, bindings among a few keys with their latches, repeat
    delays, dialog state); callees real as for profile_processInput */
@@ -16346,7 +16346,7 @@ static void matchstate2_setup(void)
 	S32(BUF, 0x233cc20) = irnd(0, 3); S32(BUF, 0x23432cf) = !irnd(0, 4);
 	if (!irnd(0, 5)) SF(BUF, 0x2340c90) = -1000.0f - csu_fr(0, 150);   /* an empty FPS window: its rates 0 */
 }
-ST(match_inputState2, matchstate2_setup();, TC(DWORD, 0x48b200, char *)(BUF), match_inputState2(BUF))
+ST(match_playFrame, matchstate2_setup();, TC(DWORD, 0x48b200, char *)(BUF), match_playFrame(BUF))
 /* the menus' frame: the screen among its handlers, 9999 and others, the music screen, the key block, the launch fade
    near its ends, the dialog and pointer flags, the brightness mode and value, the FPS switch and frame counts; the
    timer real (mocked counter); every handler and drawing call stubbed */
@@ -16770,7 +16770,7 @@ static void version_setup(void)
 	callee_stubs(g_stubVersion, 0);
 	G32(0x4df01c) = irnd(0, 1); G32(0x4e0458) = irnd(10, 20); G32(0x76d3e8) = irnd(0, 3) * 100; GF(0x9da434) = csu_fr(0, 500);
 }
-ST(menu_drawVersion, version_setup();, CALL_PLAIN(0x41f8d0, 0, 0, 0, 0, 0), (menu_drawVersion(), 0))
+ST(menuState200_title, version_setup();, CALL_PLAIN(0x41f8d0, 0, 0, 0, 0, 0), (menuState200_title(), 0))
 /* batch 212 */
 /* the lock-on squares: each of the 16 players in play or not, its lock timer around 0, screen point on and off
    the screen; the local player; the bind and screen size stubbed */
@@ -17225,7 +17225,7 @@ static const STest g_stests[] = {
 	T(ptx_initQuantTables, 0, 30, 0), T(ptx_initClampTable, 0, 4, 0), T(ptx_initColourTables, 0, 4, 0), T(ErrorLog_ctor, 1, 10, 0),
 	T(net_claimLocalSlot, 1, 40, 0), T(str_dropLast, 1, 4, 1000), T(scene_teamSide, 1, 4, 1000), T(object_setTextureFolder, 1, 4, 500),
 	T(stage_deactivateActors, 0, 4, 300), T(teams_setup, 0, 4, 300), T(escMenu_open, 0, 4, 300), T(object_activate, 0, 4, 600),
-	T(object_deactivate, 0, 4, 600), T(playerRecord_resetColourGrid, 0, 4, 100), T(script_pushEvent, 0, 4, 1000), T(shape_markMaterialsChanged, 0, 4, 300),
+	T(object_deactivate, 0, 4, 600), T(playerRecord_resetColourGrid, 0, 4, 100), T(script_pushMessage, 0, 4, 1000), T(shape_markMaterialsChanged, 0, 4, 300),
 	T(vec3_scaleCopy, 0, 4, 2000), T(vec_rotate, 0, 4, 2000), T(space_transformPoint, 0, 4, 2000),
 	/* batch 8 */
 	T(setupOptions_layout, 0, 8, 0), T(loginDialog_layout, 0, 8, 0), T(arenaNameDialog_layout, 0, 8, 0), T(roomLogin_layout, 0, 8, 0),
@@ -17305,7 +17305,7 @@ static const STest g_stests[] = {
 	T(view_farPlane, 1, 4, 300), T(TextureManager_clear, 1, 4, 300), T(Model_clear, 1, 4, 300), T(ShapeManager_clear, 1, 4, 300),
 	T(SkeletonManager_clear, 1, 4, 300), T(collisionPlane_clear, 1, 4, 300), T(spaceBlock_clear, 1, 4, 300), T(CollisionVolume_clear, 1, 4, 300),
 	T(ViewVolume_clear, 1, 4, 300), T(TimeSync_clear, 1, 4, 300), T(spaceNode_clear, 1, 4, 300), T(Light_clearCounts, 1, 4, 300),
-	T(stage_clearScriptEvents, 1, 4, 300), T(ErrorLog_dtor, 0, 4, 300), T(TimeSync_dtor, 0, 4, 300), T(Scene_dtor, 0, 4, 300),
+	T(stage_clearMessages, 1, 4, 300), T(ErrorLog_dtor, 0, 4, 300), T(TimeSync_dtor, 0, 4, 300), T(Scene_dtor, 0, 4, 300),
 	T(stage_setSilentActor, 1, 4, 300), T(scene_teamSlot, 1, 4, 300), T(ResourceSet_trivialCtor, 1, 4, 300), T(recorder_setPathStub, 1, 4, 300),
 	T(recorder_openStub, 0, 4, 0), T(recorder_noteStub, 0, 4, 0), T(stage_triggerActionNone, 0, 4, 0), T(static_emptyCtorSkelData1, 0, 4, 0),
 	T(static_emptyCtorSkelData2, 0, 4, 0), T(static_emptyCtorSkelData3, 0, 4, 0), T(static_emptyCtorSkelData4, 0, 4, 0), T(static_emptyCtorSkelData5, 0, 4, 0),
@@ -17454,9 +17454,9 @@ static const STest g_stests[] = {
 	T(glWindow_resize, 1, 40, 0), T(image_initBy, 1, 400, 0), T(shapeDat_initBy, 0, 40, 0), T(skelDat_initBy, 0, 40, 0),
 	T(timer_getGameTime, 1, 1000, 0), T(frameTimer_average, 0, 400, 0), T(sys_checkClockTampering, 1, 40, 0), T(profile_deleteFiles, 0, 40, 0),
 	T(reg_writeCharacterSettings, 0, 40, 0), T(room_keepSettings, 0, 40, 0), T(room_networkEvents, 0, 40, 0), T(gfx_initGLState, 0, 40, 0),
-	T(tex_upload, 0, 400, 0), T(emblem_uploadAtlas, 0, 400, 0),
+	T(tex_upload, 0, 400, 0), T(flag_uploadAtlas, 0, 400, 0),
 	/* batch 60 */
-	T(profile_addMatchScores, 0, 400, 0), T(chat_createEdit, 0, 40, 0), T(reg_readCharacterSettings, 0, 1000, 0), T(playerRecord_loadEmblem, 1, 400, 0),
+	T(profile_addMatchScores, 0, 400, 0), T(chat_createEdit, 0, 40, 0), T(reg_readCharacterSettings, 0, 1000, 0), T(playerRecord_loadFlag, 1, 400, 0),
 	T(catalogue_loadComponents, 1, 400, 0),
 	/* batch 61 */
 	T(space_initBy, 0, 400, 0), T(space_setBy, 0, 400, 0), T(scene_initLevelGrid, 0, 40, 0), T(factor_initBy, 0, 400, 0),
@@ -17792,7 +17792,7 @@ static const STest g_stests[] = {
 	/* batch 199 */
 	T(script_processCommandBy, 0, 600, 0), T(script_processTriggers, 0, 400, 0),
 	/* batch 200 */
-	T(actor_updateAll, 0, 400, 0), T(match_inputState3, 1, 600, 0),
+	T(actor_updateAll, 0, 400, 0), T(match_freeCamFrame, 1, 600, 0),
 	/* batch 201 */
 	T(profileList_keys, 0, 400, 0), T(profile_messageKeys, 0, 400, 0), T(profile_deleteKeys, 0, 400, 0), T(profile_secondDialogKeys, 0, 400, 0),
 	T(profile_emblemKeys, 0, 400, 0), T(profile_screenKeys, 0, 400, 0), T(menu_processKeys, 0, 400, 0),
@@ -17805,7 +17805,7 @@ static const STest g_stests[] = {
 	/* batch 205 */
 	T(menuState500_missionSelect, 0, 400, 0), T(main_loop, 0, 400, 0), T(hud_drawRanking, 0, 400, 0), T(hud_drawMain, 0, 400, 0), T(hud_drawTeamScores, 0, 400, 0),
 	/* batch 206 */
-	T(match_inputState2, 1, 400, 0), T(menu_frame, 0, 400, 0), T(Game_ctor, 1, 400, 0), T(hud_pass, 0, 400, 0),
+	T(match_playFrame, 1, 400, 0), T(menu_frame, 0, 400, 0), T(Game_ctor, 1, 400, 0), T(hud_pass, 0, 400, 0),
 	/* batch 208 */
 	T(hud_drawPlayerMarkers, 0, 400, 0), T(match_combatInput, 0, 400, 0),
 	/* batch 209 */
@@ -17816,7 +17816,7 @@ static const STest g_stests[] = {
 	T(text_draw5, 0, 400, 0), T(text_draw8, 0, 400, 0), T(text_draw16, 0, 400, 0), T(text_draw32, 0, 400, 0),
 	T(text_draw8b, 0, 400, 0), T(text_drawBox16, 0, 400, 0), T(text_drawCentred5, 0, 400, 0), T(text_drawCentred32, 0, 400, 0),
 	T(menu_drawCursor, 0, 400, 0), T(text_drawSized, 0, 400, 0), T(text_drawCentred, 0, 400, 0), T(hud_fillRect, 0, 400, 0),
-	T(menu_drawVersion, 0, 400, 0),
+	T(menuState200_title, 0, 400, 0),
 	/* batch 212 */
 	T(hud_drawLockOn, 0, 400, 0), T(menu_titleEmblemTransition, 0, 400, 0), T(hud_drawFps, 0, 400, 0), T(hud_drawChatInput, 0, 400, 0),
 	T(replay_drawMessage, 0, 400, 0),
@@ -17888,7 +17888,7 @@ static const DWORD g_patchOk[][2] = {
 	/* replay_frame (the auto play overlay: ov_icon_left .. ov_rank) */
 	{ 0x48a19d, 4 }, { 0x48a1c1, 4 }, { 0x48a1f8, 4 }, { 0x48a25a, 4 }, { 0x48a29a, 4 }, { 0x48a300, 4 },
 	{ 0x48a30a, 4 }, { 0x48a319, 4 },
-	/* match_inputState2 (hud_pass_wrap) */
+	/* match_playFrame (hud_pass_wrap) */
 	{ 0x48b387, 4 },
 	/* menu_frame (cursor_draw) */
 	{ 0x41fc29, 4 },
@@ -17912,7 +17912,7 @@ static const DWORD g_patchOk[][2] = {
 	{ 0x45c639, 4 },
 	/* match_frame (cat_wrap) */
 	{ 0x498dd9, 4 }, { 0x49a550, 4 },
-	/* the text passes (text_e5 / e8 / e16 / e32), menu_drawCursor (cursor_vtx), menu_drawVersion (trans_wrap) */
+	/* the text passes (text_e5 / e8 / e16 / e32), menu_drawCursor (cursor_vtx), menuState200_title (trans_wrap) */
 	{ 0x4031f2, 4 }, { 0x402721, 4 }, { 0x4029b1, 4 }, { 0x402d91, 4 }, { 0x40288d, 4 }, { 0x402be9, 4 },
 	{ 0x4032e7, 4 }, { 0x402fbe, 4 }, { 0x429cc4, 4 }, { 0x429cf1, 4 }, { 0x41f904, 4 },
 };
@@ -18113,7 +18113,7 @@ static const struct { DWORD addr; void *fn; const char *name; } g_hooks3[] = {
 	{ 0x45e1c0, (void *)stage_deactivateActors, "stage_deactivateActors" }, { 0x4636d0, (void *)teams_setup, "teams_setup" },
 	{ 0x49ca20, (void *)escMenu_open, "escMenu_open" }, { 0x490ee0, (void *)object_activate, "object_activate" },
 	{ 0x490f30, (void *)object_deactivate, "object_deactivate" }, { 0x473470, (void *)playerRecord_resetColourGrid, "playerRecord_resetColourGrid" },
-	{ 0x48fc40, (void *)script_pushEvent, "script_pushEvent" }, { 0x466560, (void *)shape_markMaterialsChanged, "shape_markMaterialsChanged" },
+	{ 0x48fc40, (void *)script_pushMessage, "script_pushMessage" }, { 0x466560, (void *)shape_markMaterialsChanged, "shape_markMaterialsChanged" },
 	{ 0x4803c0, (void *)vec3_scaleCopy, "vec3_scaleCopy" }, { 0x467700, (void *)vec_rotate, "vec_rotate" },
 	{ 0x482a40, (void *)space_transformPoint, "space_transformPoint" },
 	/* batch 8 */
@@ -18236,7 +18236,7 @@ static const struct { DWORD addr; void *fn; const char *name; } g_hooks3[] = {
 	{ 0x4804a0, (void *)spaceBlock_clear, "spaceBlock_clear" }, { 0x4813a0, (void *)CollisionVolume_clear, "CollisionVolume_clear" },
 	{ 0x483fc0, (void *)ViewVolume_clear, "ViewVolume_clear" }, { 0x487480, (void *)TimeSync_clear, "TimeSync_clear" },
 	{ 0x480430, (void *)spaceNode_clear, "spaceNode_clear" }, { 0x483d60, (void *)Light_clearCounts, "Light_clearCounts" },
-	{ 0x48fc30, (void *)stage_clearScriptEvents, "stage_clearScriptEvents" }, { 0x46c5e0, (void *)ErrorLog_dtor, "ErrorLog_dtor" },
+	{ 0x48fc30, (void *)stage_clearMessages, "stage_clearMessages" }, { 0x46c5e0, (void *)ErrorLog_dtor, "ErrorLog_dtor" },
 	{ 0x487470, (void *)TimeSync_dtor, "TimeSync_dtor" }, { 0x48b410, (void *)Scene_dtor, "Scene_dtor" },
 	{ 0x45dfe0, (void *)stage_setSilentActor, "stage_setSilentActor" }, { 0x463780, (void *)scene_teamSlot, "scene_teamSlot" },
 	{ 0x45fff0, (void *)ResourceSet_trivialCtor, "ResourceSet_trivialCtor" }, { 0x48b440, (void *)recorder_setPathStub, "recorder_setPathStub" },
@@ -18490,10 +18490,10 @@ static const struct { DWORD addr; void *fn; const char *name; } g_hooks3[] = {
 	{ 0x43f300, (void *)sys_checkClockTampering, "sys_checkClockTampering" }, { 0x44ba60, (void *)profile_deleteFiles, "profile_deleteFiles" },
 	{ 0x432400, (void *)reg_writeCharacterSettings, "reg_writeCharacterSettings" }, { 0x433640, (void *)room_keepSettings, "room_keepSettings" },
 	{ 0x43e610, (void *)room_networkEvents, "room_networkEvents" }, { 0x42f150, (void *)gfx_initGLState, "gfx_initGLState" },
-	{ 0x456520, (void *)tex_upload, "tex_upload" }, { 0x473610, (void *)emblem_uploadAtlas, "emblem_uploadAtlas" },
+	{ 0x456520, (void *)tex_upload, "tex_upload" }, { 0x473610, (void *)flag_uploadAtlas, "flag_uploadAtlas" },
 	/* batch 60 */
 	{ 0x49d150, (void *)profile_addMatchScores, "profile_addMatchScores" }, { 0x43f460, (void *)chat_createEdit, "chat_createEdit" },
-	{ 0x42bee0, (void *)reg_readCharacterSettings, "reg_readCharacterSettings" }, { 0x4734d0, (void *)playerRecord_loadEmblem, "playerRecord_loadEmblem" },
+	{ 0x42bee0, (void *)reg_readCharacterSettings, "reg_readCharacterSettings" }, { 0x4734d0, (void *)playerRecord_loadFlag, "playerRecord_loadFlag" },
 	{ 0x473780, (void *)catalogue_loadComponents, "catalogue_loadComponents" },
 	/* batch 61 */
 	{ 0x4813e0, (void *)space_initBy, "space_initBy" }, { 0x4819b0, (void *)space_setBy, "space_setBy" },
@@ -18923,7 +18923,7 @@ static const struct { DWORD addr; void *fn; const char *name; } g_hooks3[] = {
 	/* batch 199 */
 	{ 0x483770, (void *)script_processCommandBy, "script_processCommandBy" }, { 0x483640, (void *)script_processTriggers, "script_processTriggers" },
 	/* batch 200 */
-	{ 0x45e0c0, (void *)actor_updateAll, "actor_updateAll" }, { 0x48a370, (void *)match_inputState3, "match_inputState3" },
+	{ 0x45e0c0, (void *)actor_updateAll, "actor_updateAll" }, { 0x48a370, (void *)match_freeCamFrame, "match_freeCamFrame" },
 	/* batch 201 */
 	{ 0x44c600, (void *)profileList_keys, "profileList_keys" }, { 0x44c850, (void *)profile_messageKeys, "profile_messageKeys" },
 	{ 0x44c8c0, (void *)profile_deleteKeys, "profile_deleteKeys" }, { 0x44ca90, (void *)profile_secondDialogKeys, "profile_secondDialogKeys" },
@@ -18939,7 +18939,7 @@ static const struct { DWORD addr; void *fn; const char *name; } g_hooks3[] = {
 	{ 0x44aa40, (void *)menuState500_missionSelect, "menuState500_missionSelect" }, { 0x420280, (void *)main_loop, "main_loop" },
 	{ 0x4926f0, (void *)hud_drawMain, "hud_drawMain" }, { 0x494930, (void *)hud_drawRanking, "hud_drawRanking" }, { 0x496240, (void *)hud_drawTeamScores, "hud_drawTeamScores" },
 	/* batch 206 */
-	{ 0x48b200, (void *)match_inputState2, "match_inputState2" }, { 0x41fa40, (void *)menu_frame, "menu_frame" },
+	{ 0x48b200, (void *)match_playFrame, "match_playFrame" }, { 0x41fa40, (void *)menu_frame, "menu_frame" },
 	{ 0x460570, (void *)Game_ctor, "Game_ctor" }, { 0x4982f0, (void *)hud_pass, "hud_pass" },
 	/* batch 208 */
 	{ 0x4913a0, (void *)hud_drawPlayerMarkers, "hud_drawPlayerMarkers" }, { 0x49d290, (void *)match_combatInput, "match_combatInput" },
@@ -18954,7 +18954,7 @@ static const struct { DWORD addr; void *fn; const char *name; } g_hooks3[] = {
 	{ 0x403210, (void *)text_drawCentred5, "text_drawCentred5" }, { 0x402db0, (void *)text_drawCentred32, "text_drawCentred32" },
 	{ 0x429bc0, (void *)menu_drawCursor, "menu_drawCursor" }, { 0x44ad60, (void *)text_drawSized, "text_drawSized" },
 	{ 0x44ae10, (void *)text_drawCentred, "text_drawCentred" }, { 0x4950a0, (void *)hud_fillRect, "hud_fillRect" },
-	{ 0x41f8d0, (void *)menu_drawVersion, "menu_drawVersion" },
+	{ 0x41f8d0, (void *)menuState200_title, "menuState200_title" },
 	/* batch 212 */
 	{ 0x491f50, (void *)hud_drawLockOn, "hud_drawLockOn" }, { 0x429170, (void *)menu_titleEmblemTransition, "menu_titleEmblemTransition" },
 	{ 0x495510, (void *)hud_drawFps, "hud_drawFps" }, { 0x4953d0, (void *)hud_drawChatInput, "hud_drawChatInput" },

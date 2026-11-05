@@ -197,24 +197,24 @@ void THISCALL (playerRecord_resetColourGrid)(Stage *stage, int p)
 	PlayerRecord *pr = &stage->playerRecords[p];
 	int colour = g_defaultColour;
 	for (int k = 0; k < 16 * 24; k++)
-		FIELD(int, pr->emblem, k * 4) = colour;   /* (the 16 x 24 grid as one run) */
+		FIELD(int, pr->flag, k * 4) = colour;   /* (the 16 x 24 grid as one run) */
 	pr->flagShown = 0;
-	pr->emblemChanged = 0;
-	pr->emblemSent = 0x180;
+	pr->flagChanged = 0;
+	pr->flagSent = 0x180;
 }
-/* 0x48fc40: an event (a, b, c, d, d) put in the stage's script ring of 32 (20 bytes each); when full the oldest is
-   dropped */
-void THISCALL (script_pushEvent)(Stage *stage, int a, int b, int c, int d)
+/* 0x48fc40: a map script's message (command 26: speaker a, text b, colour c, d twice) put in the stage's message ring
+   of 32 (20 bytes each; Scene.msgRing shows them); when full the oldest is dropped */
+void THISCALL (script_pushMessage)(Stage *stage, int a, int b, int c, int d)
 {
-	int *e = stage->scriptEvents[stage->eventHead & 0x1f];
+	int *e = stage->messages[stage->msgWrite & 0x1f];
 	e[0] = a;
 	e[1] = b;
 	e[2] = c;
 	e[3] = d;
 	e[4] = d;
-	int head = ++stage->eventHead;
-	if (((stage->eventTail ^ head) & 0x1f) == 0)
-		stage->eventTail++;
+	int head = ++stage->msgWrite;
+	if (((stage->msgRead ^ head) & 0x1f) == 0)
+		stage->msgRead++;
 }
 /* 0x48fca0: the script's six counters cleared */
 int THISCALL (script_reset)(Stage *stage)
@@ -313,7 +313,7 @@ void THISCALL (match_resetInputState)(Scene *scene)
 {
 	for (int *p = &scene->holdAltitude; p < scene->cleared2343323; p++)   /* holdAltitude .. presetNextAsked */
 		*p = 0;
-	scene->viewKey = -1;
+	scene->weaponKey = -1;
 	scene->radioMessage = -1;
 	memset(scene->cleared2343323, 0, sizeof scene->cleared2343323);
 }

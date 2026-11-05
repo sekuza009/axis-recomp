@@ -159,7 +159,7 @@ typedef struct { u32 vtable; void *banks[6]; i32 count; } TextureManager;   /* t
 #define stage_newRound(stage) GAME_THISFN(stage_newRound, 0x470cb0, void, void *)(stage)
 #define view_setDistance(stage, x) GAME_THISFN(view_setDistance, 0x4722e0, void, void *, u32)(stage, x)
 #define stage_refillFactors(stage) GAME_THISFN(stage_refillFactors, 0x472310, void, void *)(stage)
-#define playerRecord_loadEmblem(stage, p) GAME_THISFN(playerRecord_loadEmblem, 0x4734d0, int, void *, int)(stage, p)
+#define playerRecord_loadFlag(stage, p) GAME_THISFN(playerRecord_loadFlag, 0x4734d0, int, void *, int)(stage, p)
 #define playerRecord_set(stage, p, name, a, b, c, d, e, f, g, h, i, j, k, l, m) GAME_THISFN(playerRecord_set, 0x474210, void, void *, int, \
 	const char *, u32, u32, u32, u32, u32, u32, u32, u32, u32, u32, u32, u32, u32)(stage, p, name, a, b, c, d, e, f, g, h, i, j, k, l, m)
 #define net_sendPlayerInfo(scene, p) GAME_THISFN(net_sendPlayerInfo, 0x48e0f0, void, void *, int)(scene, p)
@@ -175,7 +175,7 @@ typedef struct { u32 vtable; void *banks[6]; i32 count; } TextureManager;   /* t
 	u32, u32, u32)(stage, p, part, a, b, c, d, e, f)   /* (the six as a float's bits) */
 #define view_setAngle(v) GAME_FN(view_setAngle, 0x4686e0, int, u32)(v)   /* the view angle (0x4c4dec) set, a float's bits */
 #define msg_kill(scene, victim, killer) GAME_THISFN(msg_kill, 0x4630c0, void, void *, int, int)(scene, victim, killer)
-#define emblem_uploadAtlas(scene) GAME_THISFN(emblem_uploadAtlas, 0x473610, void, void *)(scene)
+#define flag_uploadAtlas(scene) GAME_THISFN(flag_uploadAtlas, 0x473610, void, void *)(scene)
 #define item_update(s, dt) GAME_THISFN(item_update, 0x48ed90, void, void *, u32)(s, dt)
 #define stage_updateObjects(s, dt) GAME_THISFN(stage_updateObjects, 0x490d40, void, void *, u32)(s, dt)
 #define stage_advanceClocks(stage, dt) GAME_THISFN(stage_advanceClocks, 0x496e40, void, void *, u32)(stage, dt)
@@ -281,7 +281,7 @@ typedef struct { u32 vtable; void *banks[6]; i32 count; } TextureManager;   /* t
 #define stage_triggerActionNone(scene, v) GAME_THISFN(stage_triggerActionNone, 0x483ce0, void, void *, u32)(scene, v)
 #define actor_applySpawnRecord(scene, i, record) GAME_THISFN(actor_applySpawnRecord, 0x45de20, int, void *, int, void *)(scene, i, record)
 #define camera_setTarget(scene, a, b, c) GAME_THISFN(camera_setTarget, 0x45dff0, void, void *, u32, u32, u32)(scene, a, b, c)
-#define script_pushEvent(scene, a, b, c, d) GAME_THISFN(script_pushEvent, 0x48fc40, void, void *, u32, u32, u32, u32)(scene, a, b, c, d)
+#define script_pushMessage(scene, a, b, c, d) GAME_THISFN(script_pushMessage, 0x48fc40, void, void *, u32, u32, u32, u32)(scene, a, b, c, d)
 #define script_runScpFile(scene, name, v) GAME_THISFN(script_runScpFile, 0x48fce0, void, void *, const char *, u32)(scene, name, v)
 #define object_setAnimation(scene, i, name, a, b) GAME_THISFN(object_setAnimation, 0x490df0, void, void *, u32, const char *, u32, u32)(scene, i, name, a, b)
 #define object_activate(scene, i) GAME_THISFN(object_activate, 0x490ee0, void, void *, u32)(scene, i)
@@ -296,7 +296,7 @@ typedef struct { u32 vtable; void *banks[6]; i32 count; } TextureManager;   /* t
 #define stage_clearBullets(scene) GAME_THISFN(stage_clearBullets, 0x47cfd0, void, void *)(scene)
 #define stage_clearProjectiles(scene) GAME_THISFN(stage_clearProjectiles, 0x479a60, void, void *)(scene)
 #define stage_resetMatrixAndPoints(scene) GAME_THISFN(stage_resetMatrixAndPoints, 0x48fe10, void, void *)(scene)
-#define stage_clearScriptEvents(scene) GAME_THISFN(stage_clearScriptEvents, 0x48fc30, void, void *)(scene)
+#define stage_clearMessages(scene) GAME_THISFN(stage_clearMessages, 0x48fc30, void, void *)(scene)
 #define scene_initLevelGrid(scene) GAME_THISFN(scene_initLevelGrid, 0x471010, void, void *)(scene)
 #define texRecord_init(record, name, id, flags, h1, s1, v1, h2, s2, v2) GAME_THISFN(texRecord_init, 0x454e60, void, void *, const char *, int, u32, u32, u32, u32, u32, u32, u32)(record, name, id, flags, h1, s1, v1, h2, s2, v2)   /* a texture record set up */
 #define tex_textureFileExist(tm, name) GAME_THISFN(tex_textureFileExist, 0x4557e0, int, void *, const char *)(tm, name)
@@ -419,8 +419,8 @@ typedef struct { u32 vtable; void *banks[6]; i32 count; } TextureManager;   /* t
 #define gfx_swapBuffers() GAME_FN(gfx_swapBuffers, 0x4685d0, void, void)()
 #define match_frameByState(scene) GAME_THISFN(match_frameByState, 0x462050, int, Scene *)(scene)
 #define game_processLoadingMode(scene) GAME_THISFN(game_processLoadingMode, 0x468750, int, Scene *)(scene)
-#define match_inputState2(scene) GAME_THISFN(match_inputState2, 0x48b200, int, Scene *)(scene)
-#define match_inputState3(scene) GAME_THISFN(match_inputState3, 0x48a370, int, Scene *)(scene)
+#define match_playFrame(scene) GAME_THISFN(match_playFrame, 0x48b200, int, Scene *)(scene)
+#define match_freeCamFrame(scene) GAME_THISFN(match_freeCamFrame, 0x48a370, int, Scene *)(scene)
 #define replay_frame(scene) GAME_THISFN(replay_frame, 0x487f00, int, Scene *)(scene)
 
 /* ---- input ---- */
@@ -447,7 +447,7 @@ typedef struct { u32 vtable; void *banks[6]; i32 count; } TextureManager;   /* t
 #define menu_processKeys() GAME_FN(menu_processKeys, 0x4319d0, void, void)()
 #define menu_frameBegin() GAME_FN(menu_frameBegin, 0x41f820, void, void)()
 #define menuState100_intro() GAME_FN(menuState100_intro, 0x41f540, void, void)()
-#define menu_drawVersion() GAME_FN(menu_drawVersion, 0x41f8d0, void, void)()   /* the title screen (200) */
+#define menuState200_title() GAME_FN(menuState200_title, 0x41f8d0, void, void)()   /* the title screen (200) */
 #define menuState210_frame() GAME_FN(menuState210_frame, 0x44f860, void, void)()
 #define menuState300_frame() GAME_FN(menuState300_frame, 0x443530, void, void)()
 #define menuState400_frame() GAME_FN(menuState400_frame, 0x40d450, void, void)()
@@ -563,7 +563,7 @@ typedef struct { u32 vtable; void *banks[6]; i32 count; } TextureManager;   /* t
 #define hud_drawDigits(x, y, scale, value, digits, flag) GAME_FN(hud_drawDigits, 0x46bdc0, void, int, int, float, int, int, int)(x, y, scale, value, digits, flag)
 #define tex_getIdByName(textures, name, a, b, c, d, e, f, g) GAME_THISFN(tex_getIdByName, 0x456be0, int, void *, const char *, int, int, int, int, int, int, int)(textures, name, a, b, c, d, e, f, g)
 #define vec_rotate(v, angle) GAME_THISFN(vec_rotate, 0x467700, void, float *, int)(v, angle)   /* turns (x, y) by angle (tenths of a degree) */
-#define game_clock() GAME_FN(view_angle, 0x4686d0, float, void)()                          /* view_angle: the float at 0x4c4dec */
+#define view_angle() GAME_FN(view_angle, 0x4686d0, float, void)()                          /* view_angle: the float at 0x4c4dec */
 #define hud_drawPressFire(scene) GAME_THISFN(hud_drawPressFire, 0x495140, void, Scene *)(scene)
 #define hud_drawClock(scene) GAME_THISFN(hud_drawClock, 0x496610, void, Scene *)(scene)
 #define hud_drawMatchResult(scene) GAME_THISFN(hud_drawMatchResult, 0x496a30, void, Scene *)(scene)

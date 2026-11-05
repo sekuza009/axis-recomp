@@ -1489,7 +1489,7 @@ static void THISCALL __attribute__((used)) net_sendPlayerInfo_body(u8 *s, int p,
 	packet[0x14] = (u8)r->team;
 	packet[0x13] = (u8)r->level;
 	packet[0x16] = (u8)p;
-	packet[0x15] = (u8)(sc)->players[p].emblem;
+	packet[0x15] = (u8)(sc)->players[p].grade;
 	for (int k = 0; k < 5; k++)
 		packet[0x17 + k] = (u8)(r->parts[k] + 1);
 	for (int k = 0; k < 6; k++)
@@ -1594,7 +1594,7 @@ static void THISCALL __attribute__((used)) net_sendMatchEvent_body(u8 *s, u8 *pa
 }
 PACKET_ENTRY(net_sendMatchEvent, 0);
 
-/* 0x48e990 (thiscall on the scene): player p's emblem sent in pieces (packet 0xc, p): when it is in the atlas or
+/* 0x48e990 (thiscall on the scene): player p's flag sent in pieces (packet 0xc, p): when it is in the atlas or
    changed (its record's flagShown, emblemChanged) the position reached (emblemSent, as a short) and the 16 pixels from
    there (their RGB, 3 bytes each), the position then 16 on; else 0xffff and the position back to 0x180 (all sent).
    Sent by send_packet. Its caller ignores the eax it leaves */
@@ -1603,15 +1603,15 @@ static void THISCALL __attribute__((used)) net_sendColourRing_body(u8 *s, int p,
 	PlayerRecord *pr = &((Scene *)s)->playerRecords[p];
 	packet[1] = 0xc;
 	packet[2] = (u8)p;
-	if (pr->flagShown == 1 || pr->emblemChanged == 1) {
-		int at = pr->emblemSent;
+	if (pr->flagShown == 1 || pr->flagChanged == 1) {
+		int at = pr->flagSent;
 		memcpy(packet + 3, &at, 2);
 		for (int k = 0; k < 16; k++)
-			memcpy(packet + 5 + k * 3, (u8 *)pr->emblem + (at + k) * 4, 3);
-		pr->emblemSent = at + 16;
+			memcpy(packet + 5 + k * 3, (u8 *)pr->flag + (at + k) * 4, 3);
+		pr->flagSent = at + 16;
 	} else {
 		packet[3] = packet[4] = 0xff;
-		pr->emblemSent = 0x180;
+		pr->flagSent = 0x180;
 	}
 	send_packet(s, packet);
 }
@@ -1881,7 +1881,7 @@ static void match_limit(u8 *g, int state, u32 notice)
    (byte 1): 0 a player's state (position, aim, weapon, lights, the five weapon slots; a player not yet set up is
    asked for); 1 the game state (round, time, map change, the checksums of the part and item tables, scores, items);
    2 a player joining with his mech; 3 the server ending the game; 4 / 5 the frag / time limit; 6 a cheat notice; 7
-   a chat line; 8 a player connecting; 9 one leaving; 10 / 11 team changes; 12 a player's emblem rows; 13 a pause
+   a chat line; 8 a player connecting; 9 one leaving; 10 / 11 team changes; 12 a player's flag rows; 13 a pause
    timer; 14 the items' states. Anything else goes to 0x48b420 (nothing) */
 void THISCALL (net_processGamePacket)(u8 *g, u32 from, int type, const char *pkt)
 {
@@ -1894,7 +1894,7 @@ void THISCALL (net_processGamePacket)(u8 *g, u32 from, int type, const char *pkt
 		file_writeScrambled(&type, 4, 1, f);
 		file_writeScrambled(pkt, 1, type, f);
 	}
-	if (GS->inputState == 1 && pkt[1] != 1)
+	if (GS->matchState == 1 && pkt[1] != 1)
 		return;
 	const u8 *b = (const u8 *)pkt;
 	switch (b[1]) {
@@ -1998,7 +1998,7 @@ void THISCALL (net_processGamePacket)(u8 *g, u32 from, int type, const char *pkt
 					GS->nextMap = pkt[4];
 					GS->nextMode = pkt[6];
 					scene_setTextureFolder((Scene *)g, g_mapNames + g_missionStage * 0x20);
-					GS->inputState = 1;
+					GS->matchState = 1;
 					GS->modeStarted = 0;
 					game_setGameTypeFlags((Stage *)STAGE, pkt[5]);
 					GS->awaitingHostRound = 0;
@@ -2035,7 +2035,7 @@ void THISCALL (net_processGamePacket)(u8 *g, u32 from, int type, const char *pkt
 		if (*(const u32 *)(pkt + 0x19) & 1u << (me & 0x1f))
 			GS->sendFlags[me][1] = 1;
 		if (*(const u32 *)(pkt + 0x1d) & 1u << (me & 0x1f))
-			((PlayerRecord *)PLAYER(me))->emblemSent = 0;
+			((PlayerRecord *)PLAYER(me))->flagSent = 0;
 		((Player *)ACTOR(b[2]))->kills = *(const short *)(pkt + 0x21);
 		((Player *)ACTOR(b[2]))->deaths = *(const short *)(pkt + 0x23);
 		if (b[2] == 0) {
@@ -2072,18 +2072,18 @@ void THISCALL (net_processGamePacket)(u8 *g, u32 from, int type, const char *pkt
 			GAME_THISCALL(setters[k], int, void *, int, int)(STAGE, i, m[0x15 + k] - 1);
 		for (int k = 0; k < 6; k++)
 			actor_setActorTypeItemInfoBy(STAGE, i, k, m[0x1a + k] - 1);   /* actor_setActorTypeItemInfoBy */
-		((Player *)ACTOR(i))->emblem = (signed char)m[0x13];
+		((Player *)ACTOR(i))->grade = (signed char)m[0x13];
 		char *to = ((Player *)ACTOR(i))->name;
 		if (name)
 			strcpy(to, name);
 		else
 			to[0] = 0;
-		((Player *)ACTOR(i))->levelShown = ((Player *)ACTOR(i))->emblem;
+		((Player *)ACTOR(i))->levelShown = ((Player *)ACTOR(i))->grade;
 		const u8 *c = m + 0x2b;
 		/* (the original loads each colour byte into al / cl and pushes the whole register: on the first part the
 		   rest of eax is left from the actor's address and of ecx from its +0xdc; later eax holds the player and ecx what
 		   the call left) */
-		u32 hi_a = (u32)(g + i * 0x8888) & ~0xffu, hi_c = *(u32 *)&((Player *)ACTOR(i))->emblem & ~0xffu;
+		u32 hi_a = (u32)(g + i * 0x8888) & ~0xffu, hi_c = *(u32 *)&((Player *)ACTOR(i))->grade & ~0xffu;
 		for (int k = 0; k < 5; k++, c += 2) {
 			u32 left = thiscall8_ecx(FN_ADDR(actor_applyRemoteColours, 0x474fd0), STAGE, i, k, hi_c | c[-0xb], hi_a | c[-1], hi_c | c[9], hi_a | c[-0xa], hi_c | c[0],
 			                         hi_a | c[0xa]);   /* actor_applyRemoteColours */
@@ -2165,7 +2165,7 @@ void THISCALL (net_processGamePacket)(u8 *g, u32 from, int type, const char *pkt
 			break;
 		PlayerRecord *p = (PlayerRecord *)PLAYER((signed char)pkt[2]);
 		if (row >= 0) {
-			u8 *to = (u8 *)p->emblem + row * 4;   /* (16 pixels from pixel row: the grid as one run) */
+			u8 *to = (u8 *)p->flag + row * 4;   /* (16 pixels from pixel row: the grid as one run) */
 			const u8 *from3 = b + 5;
 			for (int k = 0; k < 16; k++, from3 += 3, to += 4) {
 				to[0] = from3[0];
@@ -2174,15 +2174,15 @@ void THISCALL (net_processGamePacket)(u8 *g, u32 from, int type, const char *pkt
 				to[3] = from3[0] || from3[1] || from3[2] ? 0xff : 0;
 			}
 		}
-		if (p->emblemChanged)
+		if (p->flagChanged)
 			return;
 		PlayerRecord *mine = (PlayerRecord *)PLAYER(GS->localPlayer);
-		if (p->flagShown == 0 && (mine->flagShown == 1 || mine->emblemChanged == 1))
-			mine->emblemSent = 0;
-		GS->screenshotUpload = 5.0f;
+		if (p->flagShown == 0 && (mine->flagShown == 1 || mine->flagChanged == 1))
+			mine->flagSent = 0;
+		GS->flagUploadTimer = 5.0f;
 		if (*(const short *)(pkt + 3) < 0)
 			return;
-		p->emblemChanged = 1;
+		p->flagChanged = 1;
 		return;
 	}
 	case 13:

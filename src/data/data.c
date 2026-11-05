@@ -668,7 +668,7 @@ u8 g_dikRight_v[4] __attribute__((aligned(16)));   /* 0x9db974 */
 u8 g_tunnelPulse_v[4] __attribute__((aligned(16)));   /* 0x9db978 */
 u32 g_timerClocks_v[4] __attribute__((aligned(16)));   /* 0x9db980 */
 u8 g_replayRunning_v[4] __attribute__((aligned(16)));   /* 0x9db990 */
-u8 g_mainMenuFadingIn_v[4] __attribute__((aligned(16)));   /* 0x9db994 */
+u8 g_replayZoomIn_v[4] __attribute__((aligned(16)));   /* 0x9db994 */
 u8 g_skirmishInfo_v[1380] __attribute__((aligned(16)));   /* 0x9db998 */
 u8 g_pixelFormatFilled_v[1] __attribute__((aligned(16)));   /* 0x9dbefc */
 u8 g_timerRepeatCount_v[4] __attribute__((aligned(16)));   /* 0x9dbf00 */
@@ -1838,7 +1838,7 @@ const DataPiece g_splitObjects[] = {
 	{ 0x9db978, g_tunnelPulse_v, 4 },
 	{ 0x9db980, g_timerClocks_v, 16 },
 	{ 0x9db990, g_replayRunning_v, 4 },
-	{ 0x9db994, g_mainMenuFadingIn_v, 4 },
+	{ 0x9db994, g_replayZoomIn_v, 4 },
 	{ 0x9db998, g_skirmishInfo_v, 1380 },
 	{ 0x9dbefc, g_pixelFormatFilled_v, 1 },
 	{ 0x9dbf00, g_timerRepeatCount_v, 4 },

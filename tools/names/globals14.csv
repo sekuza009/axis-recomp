@@ -3,9 +3,9 @@
 0xae2f1c,int,g_cursorPosY
 0x4e1520,int,g_screenCentreX
 0x680394,int,g_screenCentreY
-0x4defc8,int,g_keyLoadingSkip
-0x4defcc,int,g_keyLoadingSkip2
-0x4defa8,int,g_keyWatchChat
+0x4defc8,int,g_keyGameMenu
+0x4defcc,int,g_keyGameMenu2
+0x4defa8,int,g_keyChat
 0x4ddea0,int,g_setupSound3D
 0x4ddea4,int,g_setupStereoReverse
 0x4b42dc,int,g_musicVolumeSetting

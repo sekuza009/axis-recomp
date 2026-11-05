@@ -1200,32 +1200,32 @@ extern struct GameData g_data;
 #define g_keptChat ((char *)g_keptChat_v)
 #undef g_keptChatLine
 #define g_keptChatLine (*(char *)((u8 *)g_keptChat_v + 0x0))
+#undef g_keyBackward
+#define g_keyBackward (*(int *)((u8 *)g_controls_v + 0x8))
+#undef g_keyChat
+#define g_keyChat (*(int *)((u8 *)g_controls_v + 0xa8))
 #undef g_keyEnter
 #define g_keyEnter (*(int *)((u8 *)g_mouseClicked_v + 0x4))
-#undef g_keyFreeCam0
-#define g_keyFreeCam0 (*(int *)((u8 *)g_controls_v + 0x0))
-#undef g_keyFreeCam1
-#define g_keyFreeCam1 (*(int *)((u8 *)g_controls_v + 0x8))
-#undef g_keyFreeCam2
-#define g_keyFreeCam2 (*(int *)((u8 *)g_controls_v + 0x10))
-#undef g_keyFreeCam3
-#define g_keyFreeCam3 (*(int *)((u8 *)g_controls_v + 0x18))
-#undef g_keyLoadingSkip
-#define g_keyLoadingSkip (*(int *)((u8 *)g_controls_v + 0xc8))
-#undef g_keyLoadingSkip2
-#define g_keyLoadingSkip2 (*(int *)((u8 *)g_controls_v + 0xcc))
+#undef g_keyForward
+#define g_keyForward (*(int *)((u8 *)g_controls_v + 0x0))
+#undef g_keyGameMenu
+#define g_keyGameMenu (*(int *)((u8 *)g_controls_v + 0xc8))
+#undef g_keyGameMenu2
+#define g_keyGameMenu2 (*(int *)((u8 *)g_controls_v + 0xcc))
 #undef g_keyNames
 #define g_keyNames ((u32 *)g_keyNames_v)
 #undef g_keySeen
 #define g_keySeen ((int *)g_keySeen_v)
 #undef g_keyState
 #define g_keyState ((u8 *)g_keyState_v)
+#undef g_keyStepLeft
+#define g_keyStepLeft (*(int *)((u8 *)g_controls_v + 0x10))
+#undef g_keyStepRight
+#define g_keyStepRight (*(int *)((u8 *)g_controls_v + 0x18))
 #undef g_keyTable1
 #define g_keyTable1 ((int *)g_keyTable1_v)
 #undef g_keyTable2
 #define g_keyTable2 ((int *)g_keyTable2_v)
-#undef g_keyWatchChat
-#define g_keyWatchChat (*(int *)((u8 *)g_controls_v + 0xa8))
 #undef g_keyboard
 #define g_keyboard (g_data.g_keyboard_)
 #undef g_keyboardActive
@@ -1414,8 +1414,6 @@ extern struct GameData g_data;
 #define g_logoTexture (*(int *)g_logoTexture_v)
 #undef g_mainMenuDepth
 #define g_mainMenuDepth (*(u32 *)g_mainMenuDepth_v)
-#undef g_mainMenuFadingIn
-#define g_mainMenuFadingIn (*(int *)g_mainMenuFadingIn_v)
 #undef g_mainMenuFrames
 #define g_mainMenuFrames (*(int *)g_mainMenuFrames_v)
 #undef g_mainMenuOutlines
@@ -2204,6 +2202,8 @@ extern struct GameData g_data;
 #define g_replaySelectTop (*(int *)g_replaySelectTop_v)
 #undef g_replayWrap
 #define g_replayWrap (*(int *)g_replayWrap_v)
+#undef g_replayZoomIn
+#define g_replayZoomIn (*(int *)g_replayZoomIn_v)
 #undef g_resends
 #define g_resends (*(int *)g_resends_v)
 #undef g_resolutionNames

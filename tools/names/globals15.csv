@@ -35,9 +35,9 @@
 0x9eeab0,int,g_mainMenuFrames
 0x4a9458,u32,k_armcDistanceRoom
 0x4a9454,u32,k_armcDistance
-0x4def00,int,g_keyFreeCam0
-0x4def08,int,g_keyFreeCam1
-0x4def10,int,g_keyFreeCam2
-0x4def18,int,g_keyFreeCam3
+0x4def00,int,g_keyForward
+0x4def08,int,g_keyBackward
+0x4def10,int,g_keyStepLeft
+0x4def18,int,g_keyStepRight
 0x9dd5e8,int,g_pilotScore
 0x9dd250,int,g_pilotScoreKept

@@ -19,7 +19,7 @@
 # sound
 0x4e0c90,int,g_soundVolume
 # the front end
-0x9db994,int,g_mainMenuFadingIn
+0x9db994,int,g_replayZoomIn
 0x9eeac0,int,g_replayRandomOrder
 0x9dcd30,int,g_typedLength
 0x4ddd90,float,g_setupTunnelDepth

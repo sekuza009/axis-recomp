@@ -66,7 +66,7 @@ void THISCALL (hud_drawPlayerMarkers)(Scene *scene)
 			continue;
 		if (player->isKing == 1)
 			marker_big(scene, player, scene->markerTexture, 1.0f, 0.0f, 0.75f, 0.25f, 1.0f);
-		if (player->isPlatoonLeader == 1)
+		if (player->isCommander == 1)
 			marker_big(scene, player, scene->markerTexture, 1.0f, texel256((player->team + 1) * 64), 0.75f,
 			           texel256((player->team + 2) * 64), 1.0f);
 
@@ -117,7 +117,7 @@ void THISCALL (hud_drawPlayerMarkers)(Scene *scene)
 			glColor4f(1.0f, 1.0f, 1.0f, alpha);
 			if (scene->ladderGame == 1) {
 				x -= 0x18;
-				hud_drawEmblem(scene, player->emblem, x, marker_hudY(player->tagTopLeft[1]) - 0x10);
+				hud_drawEmblem(scene, player->grade, x, marker_hudY(player->tagTopLeft[1]) - 0x10);
 			}
 			int flagOwner = scene->sessionMode == 0 ? player->player : i;
 			if (scene->playerRecords[flagOwner].flagShown == 1)

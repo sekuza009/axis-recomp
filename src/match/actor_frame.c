@@ -138,7 +138,7 @@ static void award(u8 *s, int k, int frags, int points)
 	ST->actors[k].kills += frags;
 	ST->actors[k].score += points;
 	if (ST->actors[k].controlledBy == ST->playerActor)
-		ST->actors[k].emblem = actor_levelFromValue(ST->actors[k].score);
+		ST->actors[k].grade = actor_levelFromValue(ST->actors[k].score);
 }
 
 /* armour gone: the burst, the debris, the score */
@@ -175,10 +175,10 @@ static void actor_dies(u8 *s, u8 *a, int i, u32 *fx, float *v28)
 			int frags, points;
 			if (AC->isKing == 1) {   /* the marked one: five times */
 				frags = 5;
-				points = ST->suddenDeath == 1 ? FRAG_POINTS(AC->emblem) * 5 / 2 : FRAG_POINTS(AC->emblem) * 5;
+				points = ST->suddenDeath == 1 ? FRAG_POINTS(AC->grade) * 5 / 2 : FRAG_POINTS(AC->grade) * 5;
 			} else {
 				frags = 1;
-				points = FRAG_POINTS(AC->emblem);
+				points = FRAG_POINTS(AC->grade);
 			}
 			award(s, k, frags, points);
 			if (AC->lastAttacker == ST->playerActor) {
@@ -198,12 +198,12 @@ static void actor_dies(u8 *s, u8 *a, int i, u32 *fx, float *v28)
 			stage_print(s, (const char *)STR(0x4b44b4, "-1 FRAG"));
 		}
 	} else if (ST->platoon == 1) {   /* teams, the leader down: each of the other team gets the team's worth */
-		if (AC->isPlatoonLeader == 1) {
+		if (AC->isCommander == 1) {
 			int n = 0, sum = 0, count = ST->actorCount;
 			for (int j = 0; j < count; j++)
 				if (ST->actors[j].team == AC->team) {
 					n++;
-					sum += FRAG_POINTS(ST->actors[j].emblem);
+					sum += FRAG_POINTS(ST->actors[j].grade);
 				}
 			for (int j = 0; j < ST->actorCount; j++)
 				if (ST->actors[j].team >= 0 && ST->actors[j].team != AC->team)
@@ -223,9 +223,9 @@ static void actor_dies(u8 *s, u8 *a, int i, u32 *fx, float *v28)
 			ST->teamCommanders[AC->team] = -1;
 		}
 	} else if (k != i) {   /* teams */
-		int lv = AC->emblem;
+		int lv = AC->grade;
 		int points = ST->suddenDeath == 1 ? FRAG_POINTS(lv) / 2 : FRAG_POINTS(lv);
-		if (ST->actors[k].emblem > lv + 3)   /* half for a much weaker one */
+		if (ST->actors[k].grade > lv + 3)   /* half for a much weaker one */
 			points /= 2;
 		award(s, k, 1, points);
 		if (AC->lastAttacker == ST->playerActor) {
@@ -300,8 +300,8 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 		actor_nextWeapon(s, i);
 		weapon = (u8 *)&ST->actorInfo[pr->items[AC->slot]];
 	}
-	if (AC->inView >= 0)
-		actor_selectWeapon((Stage *)s, i, AC->inView);
+	if (AC->inWeaponSlot >= 0)
+		actor_selectWeapon((Stage *)s, i, AC->inWeaponSlot);
 	if (AC->inPrevWeapon == 1)
 		actor_prevWeapon(s, i);
 	if (AC->inNextWeapon == 1)

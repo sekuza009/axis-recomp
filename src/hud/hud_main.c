@@ -44,7 +44,7 @@ static float tex255(int n) { return f32((long double)n * (1.0f / 255)); }
    out, turning with the player's heading */
 static void main_ring(Scene *scene, Player *player)
 {
-	int t = ftol((long double)game_clock() * 5.0f);
+	int t = ftol((long double)view_angle() * 5.0f);
 	float trig = g_trig[(t % 3600 + 3600) % 3600];
 	int half = gfx_getHeight() / 2;
 	float radius = f32(half / (long double)trig);
@@ -124,7 +124,7 @@ static void main_score(Scene *scene, Player *player, int p)
 		x = 0x1c;
 	}
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
-	hud_drawEmblem(scene, player->emblem, x, 8);
+	hud_drawEmblem(scene, player->grade, x, 8);
 	x += 0x18;
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 	replay_drawIcon(scene, x, 8, 0);
@@ -490,7 +490,7 @@ static void main_draw(Scene *scene)
 			return;
 		}
 	} else if (scene->platoon == 1) {
-		if (player->isPlatoonLeader == 1) {
+		if (player->isCommander == 1) {
 			int x = gfx_getWidth() - 0x40;
 			glEnable(GL_TEXTURE_2D);
 			main_cornerMark(x, scene->markerTexture, tex256((player->team + 1) * 64), tex256((player->team + 2) * 64));

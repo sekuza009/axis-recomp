@@ -382,7 +382,7 @@ g_itemBonusActiveTime
 g_itemBonusCapacityPerLevel
 g_itemBonusDetectionRange
 g_lobbyConnectionBlock
-g_mainMenuFadingIn
+g_replayZoomIn
 g_mechBoosterEnergy
 g_mechBoosterRecharge
 g_mechMobility

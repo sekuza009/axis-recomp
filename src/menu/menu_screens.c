@@ -26,10 +26,10 @@ void (menuState500_missionSelect)(void)
 		missionsel_frameSettings();
 }
 
-/* 0x41f8d0 (menu_drawVersion): the title screen's frame: after 19 frames of the title the profile screen follows
+/* 0x41f8d0 (menuState200_title): the title screen's frame: after 19 frames of the title the profile screen follows
    (fading in); the background, the emblem and the transition (a call the patch DLL wraps), and the copyright and
    version lines at the bottom (the version right-aligned at 6 units per character) */
-void (menu_drawVersion)(void)
+void (menuState200_title)(void)
 {
 	if (g_titleShown && ++g_titleFrames >= 19) {
 		g_screen = 210;

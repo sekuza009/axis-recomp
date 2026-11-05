@@ -40,7 +40,7 @@ def fields(t):
 	for line in t.split('\n'):
 		if line.startswith('struct '):
 			struct = line.split()[1]
-		m = re.match(r'^(\S+\s+\S+\s+[\w ]+?\b)(\w+)(\[[^\]]*\])?(\s*)(#.*)?(\r?)$', line)
+		m = re.match(r'^(\S+\s+\S+\s+[\w ]+?\b)(\w+)((?:\[[^\]]*\])*)(\s*)(#.*)?(\r?)$', line)   # (any number of dimensions)
 		if m and not line.startswith(('#', 'struct ')):
 			name = m.group(2)
 			for old, new in pairs:

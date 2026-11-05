@@ -156,7 +156,7 @@ void THISCALL (armc_rotateFromCursor)(Scene *scene, const u32 *eye, const u32 *f
 	u8 white[4] = { 0xff, 0xff, 0xff, 0xff }, dim[4] = { 0xf0, 0xc0, 0xc0, 0x60 };
 	frameTimer_average(scene);
 	u32 x44 = BITS(scene->frameTime);
-	float far = view_farPlane(), near = view_nearPlane(), fov = game_clock();
+	float far = view_farPlane(), near = view_nearPlane(), fov = view_angle();
 	camera_setupView(stage, eye, forward, up,
 	                                                                                                       BITS(fov), w, h, BITS(near), BITS(far), x44);   /* camera_setupView */
 	ViewVolume_captureMatrices(vv, 0, scene->modelview);

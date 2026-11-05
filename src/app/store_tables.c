@@ -134,19 +134,19 @@ static const Store k_input_setDefaultKeyBindings[118] = {
 void (input_setDefaultKeyBindings)(void) { apply_stores(k_input_setDefaultKeyBindings, 118); }   /* 0x42fd40 default key bindings */
 
 static const CStore k_input_applyKeyBindings[68] = {
-	{ ADDR(g_keyFreeCam1), ADDR(g_dikS), 1 }, { ADDR(g_keyFreeCam2), ADDR(g_dikA), 1 }, { ADDR(g_keyFreeCam3), ADDR(g_dikD), 1 }, { (OBJ(g_controls) + 0x20), ADDR(g_dikLeft), 1 },
+	{ ADDR(g_keyBackward), ADDR(g_dikS), 1 }, { ADDR(g_keyStepLeft), ADDR(g_dikA), 1 }, { ADDR(g_keyStepRight), ADDR(g_dikD), 1 }, { (OBJ(g_controls) + 0x20), ADDR(g_dikLeft), 1 },
 	{ (OBJ(g_controls) + 0x28), ADDR(g_dikRight), 1 }, { (OBJ(g_controls) + 0x30), ADDR(g_dikMouse2), 1 }, { (OBJ(g_controls) + 0x38), ADDR(g_dikSpace), 1 }, { (OBJ(g_controls) + 0x40), ADDR(g_dikR), 1 },
 	{ (OBJ(g_controls) + 0x48), ADDR(g_dikF), 1 }, { (OBJ(g_controls) + 0x50), ADDR(g_dikMouse1), 1 }, { (OBJ(g_controls) + 0x58), ADDR(g_dikQ), 1 }, { (OBJ(g_controls) + 0x60), ADDR(g_dikE), 1 },
 	{ (OBJ(g_controls) + 0x78), ADDR(g_dik1), 1 }, { (OBJ(g_controls) + 0x80), ADDR(g_dik2), 1 }, { (OBJ(g_controls) + 0x88), ADDR(g_dik3), 1 }, { (OBJ(g_controls) + 0x90), ADDR(g_dik4), 1 },
 	{ (OBJ(g_controls) + 0x68), ADDR(g_dik5), 1 }, { (OBJ(g_controls) + 0x70), ADDR(g_dik6), 1 }, { (OBJ(g_controls) + 0x98), ADDR(g_dikLShift), 1 }, { (OBJ(g_controls) + 0xa0), ADDR(g_dikRCtrl), 1 },
-	{ ADDR(g_keyWatchChat), ADDR(g_dikEnter), 1 }, { (OBJ(g_controls) + 0xb0), ADDR(g_dikC), 1 }, { ADDR(g_keyFreeCam0), ADDR(g_dikW), 1 }, { (OBJ(g_controls) + 0xb8), ADDR(g_dikX), 1 },
+	{ ADDR(g_keyChat), ADDR(g_dikEnter), 1 }, { (OBJ(g_controls) + 0xb0), ADDR(g_dikC), 1 }, { ADDR(g_keyForward), ADDR(g_dikW), 1 }, { (OBJ(g_controls) + 0xb8), ADDR(g_dikX), 1 },
 	{ (OBJ(g_controls) + 0xc0), ADDR(g_dikB), 1 }, { (OBJ(g_controls) + 0x4), ADDR(g_dikNone), 1 }, { (OBJ(g_controls) + 0xc), ADDR(g_dikNone), 1 }, { (OBJ(g_controls) + 0x14), ADDR(g_dikNone), 1 },
 	{ (OBJ(g_controls) + 0x1c), ADDR(g_dikNone), 1 }, { (OBJ(g_controls) + 0x24), ADDR(g_dikNone), 1 }, { (OBJ(g_controls) + 0x2c), ADDR(g_dikNone), 1 }, { (OBJ(g_controls) + 0x34), ADDR(g_dikNone), 1 },
 	{ (OBJ(g_controls) + 0x3c), ADDR(g_dikNone), 1 }, { (OBJ(g_controls) + 0x44), ADDR(g_dikNone), 1 }, { (OBJ(g_controls) + 0x4c), ADDR(g_dikNone), 1 }, { (OBJ(g_controls) + 0x54), ADDR(g_dikNone), 1 },
 	{ (OBJ(g_controls) + 0x5c), ADDR(g_dikNone), 1 }, { (OBJ(g_controls) + 0x64), ADDR(g_dikNone), 1 }, { (OBJ(g_controls) + 0x7c), ADDR(g_dikNone), 1 }, { (OBJ(g_controls) + 0x84), ADDR(g_dikNone), 1 },
 	{ (OBJ(g_controls) + 0x8c), ADDR(g_dikNone), 1 }, { (OBJ(g_controls) + 0x94), ADDR(g_dikNone), 1 }, { (OBJ(g_controls) + 0x6c), ADDR(g_dikNone), 1 }, { (OBJ(g_controls) + 0x74), ADDR(g_dikNone), 1 },
 	{ (OBJ(g_controls) + 0x9c), ADDR(g_dikNone), 1 }, { (OBJ(g_controls) + 0xa4), ADDR(g_dikNone), 1 }, { (OBJ(g_controls) + 0xac), ADDR(g_dikNone), 1 }, { (OBJ(g_controls) + 0xb4), ADDR(g_dikNone), 1 },
-	{ (OBJ(g_controls) + 0xbc), ADDR(g_dikNone), 1 }, { (OBJ(g_controls) + 0xc4), ADDR(g_dikNone), 1 }, { ADDR(g_keyLoadingSkip), ADDR(g_dikEscape_2), 1 }, { ADDR(g_keyLoadingSkip2), ADDR(g_dikNone), 1 },
+	{ (OBJ(g_controls) + 0xbc), ADDR(g_dikNone), 1 }, { (OBJ(g_controls) + 0xc4), ADDR(g_dikNone), 1 }, { ADDR(g_keyGameMenu), ADDR(g_dikEscape_2), 1 }, { ADDR(g_keyGameMenu2), ADDR(g_dikNone), 1 },
 	{ (OBJ(g_controls) + 0xd0), ADDR(g_dikF4), 1 }, { (OBJ(g_controls) + 0xd8), ADDR(g_dikF5), 1 }, { (OBJ(g_controls) + 0xd4), ADDR(g_dikNone), 1 }, { (OBJ(g_controls) + 0xdc), ADDR(g_dikNone), 1 },
 	{ (OBJ(g_controls) + 0xe0), ADDR(g_dikTab), 1 }, { (OBJ(g_controls) + 0xe4), ADDR(g_dikNone), 1 }, { (OBJ(g_controls) + 0xe8), ADDR(g_dikF10), 1 }, { (OBJ(g_controls) + 0xec), ADDR(g_dikNone), 1 },
 	{ (OBJ(g_controls) + 0xf4), ADDR(g_dikNone), 1 }, { (OBJ(g_controls) + 0xfc), ADDR(g_dikNone), 1 }, { (OBJ(g_controls) + 0xf0), ADDR(g_dikV), 1 }, { (OBJ(g_controls) + 0xf8), ADDR(g_excludedKey), 1 },

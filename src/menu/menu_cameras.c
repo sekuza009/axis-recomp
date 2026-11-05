@@ -470,7 +470,7 @@ void (freeCam_keys)(void)
 		input_initKeyboard(g_mainWindow);
 		return;
 	}
-	if (input_justPressed(g_keyWatchChat)) {
+	if (input_justPressed(g_keyChat)) {
 		input_releaseKeyboard();
 		g_textFieldOpen = 1;
 		menu_clearInputBuffer(0x32);
@@ -490,7 +490,7 @@ void (freeCam_keys)(void)
 		game_returnToMainMenu();
 		return;
 	}
-	if (input_isDown(g_keyFreeCam0) == 1) {
+	if (input_isDown(g_keyForward) == 1) {
 		long double a = fmul_m(fmul_m(fld_m(frame), &g_armcLookSin), speed);
 		(*(float *)&g_menuCamX) = f32(fadd_m(a, &(*(float *)&g_menuCamX)));
 		long double b = fmul_m(fmul_m(fld_m(&g_armcLookCos), frame), speed);
@@ -499,7 +499,7 @@ void (freeCam_keys)(void)
 		(*(float *)&g_menuCameraPos) = f32(fadd_m(a, &(*(float *)&g_menuCameraPos)));
 		g_armcCamDistance = f32(fadd_m(fld_m(&bf), &g_armcCamDistance));
 	}
-	if (input_isDown(g_keyFreeCam1) == 1) {
+	if (input_isDown(g_keyBackward) == 1) {
 		long double a = fmul_m(fmul_m(fld_m(frame), &g_armcLookSin), speed);
 		(*(float *)&g_menuCamX) = f32(fld_m(&(*(float *)&g_menuCamX)) - a);
 		float bf = f32(fmul_m(fmul_m(fld_m(&g_armcLookCos), frame), speed));
@@ -507,9 +507,9 @@ void (freeCam_keys)(void)
 		(*(float *)&g_menuCameraPos) = f32(fld_m(&(*(float *)&g_menuCameraPos)) - a);
 		g_armcCamDistance = f32(fsub_m(fld_m(&g_armcCamDistance), &bf));
 	}
-	if (input_isDown(g_keyFreeCam2) == 1)
+	if (input_isDown(g_keyStepLeft) == 1)
 		menuCamera_forward();
-	if (input_isDown(g_keyFreeCam3) == 1)
+	if (input_isDown(g_keyStepRight) == 1)
 		menuCamera_back();
 	g_menuCameraLook = g_menuCamX;
 	(*(u32 *)&g_menuCameraHeight) = g_menuCamZ;

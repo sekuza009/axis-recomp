@@ -96,7 +96,7 @@ void THISCALL (scene_updateRanking)(Scene *scene)
 					mark_notice(scene, i, STR(0x4c4644, "YOU ARE THE NEW KING!"), STR(0x4c4630, "%s IS THE NEW KING!"));
 				p->isKing = 1;
 				player_setTeam(STAGE(scene), i, 0);
-				scene->kingPlayer = i;
+				scene->kingActor = i;
 				if (scene->localPlayer == i)
 					scene->localTeam = 0;
 			} else {
@@ -127,12 +127,12 @@ void THISCALL (scene_updateRanking)(Scene *scene)
 			if (p->team != t)
 				continue;
 			if (i != leader)
-				p->isPlatoonLeader = 0;
-			else if (p->isPlatoonLeader == 0) {
-				p->isPlatoonLeader = 1;
+				p->isCommander = 0;
+			else if (p->isCommander == 0) {
+				p->isCommander = 1;
 				mark_notice(scene, i, STR(0x4c4614, "YOU ARE THE NEW COMMANDER!"), STR(0x4c45f8, "%s IS THE NEW COMMANDER!"));
 			}
 		}
-		scene->teamLeaders[t] = leader;
+		scene->teamCommanders[t] = leader;
 	}
 }

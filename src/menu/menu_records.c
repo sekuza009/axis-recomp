@@ -649,7 +649,7 @@ static int menu_choice(int i, u32 *r)
    was started from the launcher (0x9dae10). Returns what the original leaves in eax */
 u32 (mainmenu_clicks)(void)
 {
-	if (g_mainMenuFadingIn == 1)
+	if (g_replayZoomIn == 1)
 		return 1;
 	if (g_mainMenuPicked)
 		return replaySelect_mouse();   /* replaySelect_mouse: the replay selection dialog */
@@ -678,7 +678,7 @@ u32 (mainmenu_clicks)(void)
 u32 (mainmenu_processKeys)(void)
 {
 	static const u32 key[6] = { ADDR(g_dikK), ADDR(g_dikM), ADDR(g_dikL), ADDR(g_dikS), ADDR(g_dikA), ADDR(g_dikX) };
-	if (g_mainMenuFadingIn == 1)
+	if (g_replayZoomIn == 1)
 		return 1;
 	if (g_mainMenuPicked)
 		return replaySelect_keys();   /* replaySelect_keys */

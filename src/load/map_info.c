@@ -334,7 +334,7 @@ void THISCALL (map_loadActorInfoFrom)(u8 *scene, const char *name)
 	st->clanTexture = tex_getIdByName((*(void **)&g_textures), path, 0, 0, 0, 0, 0, 0, 0);
 	for (int p = 0; p < st->mapPlayerCount; p++) {
 		st->playerRecords[p].flagShown = 1;
-		st->playerRecords[p].emblemSent = 0x180;
+		st->playerRecords[p].flagSent = 0x180;
 	}
 #undef setPartColor
 }

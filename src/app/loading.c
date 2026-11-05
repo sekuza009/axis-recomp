@@ -327,7 +327,7 @@ static void next_stage(u8 *g, int stage, u32 line)
 /* a game mode (+8) with no next stage: a fatal message */
 static void no_next(u8 *g)
 {
-	sys_fatalErrorN((char *)OBJ(g_logConsole), (const char *)STR(0x4c5060, "next submode not defined(W%d:P%d:S%d)..."), GS->sessionMode, GS->inputState,
+	sys_fatalErrorN((char *)OBJ(g_logConsole), (const char *)STR(0x4c5060, "next submode not defined(W%d:P%d:S%d)..."), GS->sessionMode, GS->matchState,
 	                                                             GS->loadStage);
 }
 
@@ -349,7 +349,7 @@ static char *bfd_name(u8 *g, char *out)
    loading lines to the title. By the stage (+0x233cc24): 0 the replay file's header (mode 3: version 0x1201, the
    map, the players' names, the type), the scene reset; 1 the map named (0x9dad94 into 0x907b30: none ends it, 0xa0ea94
    set); 2 waiting for the stage's play information (the network drained into net_processGamePacket; a timeout
-   +0x2342395 against K 0x4a93d0, too many players or the stop keys 0x4defc8 / 0x4defcc stop it); 3 the ground; 4 the
+   +0x2342395 against K 0x4a93d0, too many players or the game menu keys (g_keyGameMenu) stop it); 3 the ground; 4 the
    objects; 5 the collision volume; 6 the crosshair and the play information; 7 the mission and (mode 0) the actors; 8
    the game started (+0x233cc20 by the mode). Each stage adds a line (the next depends on the mode +8); every step but
    the last draws the screen. Returns +0x233cc20, or 0 once Esc or the stop is seen or the map has no name */
@@ -449,7 +449,7 @@ u32 THISCALL (game_processLoadingMode)(u8 *g)
 		}
 		if (netq_resends() >= 0x80)
 			stop = 1;
-		if (input_justPressed(g_keyLoadingSkip) || input_justPressed(g_keyLoadingSkip2))
+		if (input_justPressed(g_keyGameMenu) || input_justPressed(g_keyGameMenu2))
 			stop = 1;
 		break;
 	case 3:
@@ -523,12 +523,12 @@ u32 THISCALL (game_processLoadingMode)(u8 *g)
 		GS->matchDrawing = 1;
 		mode = GS->sessionMode;
 		if (mode >= 0 && mode <= 3)
-			GS->inputState = mode <= 1 ? 2 : mode == 2 ? 3 : 4;
+			GS->matchState = mode <= 1 ? 2 : mode == 2 ? 3 : 4;
 		else
 			no_next(g);
 		GS->modeStarted = 0;
 		(*(int *)&g_logHook) = 0;
-		return ((u32)GS->inputState);
+		return ((u32)GS->matchState);
 	}
 	GS->modeStarted++;
 	glClearColor_stored(((const u32[]){ 0, 0, 0 }));
@@ -542,7 +542,7 @@ u32 THISCALL (game_processLoadingMode)(u8 *g)
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 	for (int k = 0, y = 8; k < GS->loadLineCount; k += 2, y += 16)   /* (every other line from the second, as the original steps) */
 		font_penDraw(0x10, y, 0, GS->loadLines[k + 1]);
-	return stop == 1 ? 0 : ((u32)GS->inputState);
+	return stop == 1 ? 0 : ((u32)GS->matchState);
 }
 #undef GS
 #undef STAGE

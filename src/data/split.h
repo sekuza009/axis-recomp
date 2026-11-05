@@ -3280,9 +3280,9 @@ extern u32 g_timerClocks_v[4];
 extern u8 g_replayRunning_v[4];
 #endif
 #ifdef AXIS_FENCE
-#define g_mainMenuFadingIn_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xa1c000 : g_fence + 0xa1bffc))
+#define g_replayZoomIn_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xa1c000 : g_fence + 0xa1bffc))
 #else
-extern u8 g_mainMenuFadingIn_v[4];
+extern u8 g_replayZoomIn_v[4];
 #endif
 #ifdef AXIS_FENCE
 #define g_skirmishInfo_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xa1e000 : g_fence + 0xa1da9c))
