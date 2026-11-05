@@ -789,11 +789,11 @@ typedef struct {
 	u32 reload;
 } PartKind;
 static const PartKind part_kinds[5] = {
-	{ offsetof(PlayerRecord, parts[0]), offsetof(Stage, headTypeCount), STR(0x4c75f0, "invalid headIndex(%d) - setActorTypeH..."), offsetof(PlayerRecord, headShapes), offsetof(PlayerRecord, headSkels), offsetof(Stage, headTypes), sizeof(HeadType), offsetof(PlayerRecord, partNames[0]), FN_ADDR(actor_updateHead, 0x45e1f0) },     /* head */
-	{ offsetof(PlayerRecord, parts[1]), offsetof(Stage, chestTypeCount), STR(0x4c7624, "invalid chestIndex(%d) - setActorType..."), offsetof(PlayerRecord, chestShapes), offsetof(PlayerRecord, chestSkels), offsetof(Stage, chestTypes), sizeof(ChestType), offsetof(PlayerRecord, partNames[1]), FN_ADDR(actor_updateBody, 0x45e2c0) },    /* chest (actor_updateBody) */
-	{ offsetof(PlayerRecord, parts[2]), offsetof(Stage, armTypeCount), STR(0x4c7658, "invalid armIndex(%d) - setActorTypeAr..."), offsetof(PlayerRecord, armShapes), offsetof(PlayerRecord, armSkels), offsetof(Stage, armTypes), sizeof(ArmType), offsetof(PlayerRecord, partNames[2]), FN_ADDR(actor_updateArms, 0x45e390) },  /* arms */
-	{ offsetof(PlayerRecord, parts[3]), offsetof(Stage, legTypeCount), STR(0x4c7688, "invalid legIndex(%d) - setActorTypeLe..."), offsetof(PlayerRecord, legShapes), offsetof(PlayerRecord, legSkels), offsetof(Stage, legTypes), sizeof(LegType), offsetof(PlayerRecord, partNames[3]), FN_ADDR(actor_updateLegs, 0x45e460) }, /* legs */
-	{ offsetof(PlayerRecord, parts[4]), offsetof(Stage, boosterTypeCount), STR(0x4c76b8, "invalid boosterIndex(%d) - setActorTy..."), offsetof(PlayerRecord, boosterShapes), offsetof(PlayerRecord, boosterSkels), offsetof(Stage, boosterTypes), sizeof(BoosterType), offsetof(PlayerRecord, partNames[4]), FN_ADDR(actor_updateBooster, 0x45e530) }, /* booster */
+	{ offsetof(PlayerRecord, parts[0]), offsetof(Stage, headTypeCount), STR(0x4c75f0, "invalid headIndex(%d) - setActorTypeH..."), offsetof(PlayerRecord, headShapes), offsetof(PlayerRecord, headSkels), offsetof(Stage, headTypes), sizeof(HeadType), offsetof(PlayerRecord, partNames[0]), FN_ADDR(actor_loadHead, 0x45e1f0) },     /* head */
+	{ offsetof(PlayerRecord, parts[1]), offsetof(Stage, chestTypeCount), STR(0x4c7624, "invalid chestIndex(%d) - setActorType..."), offsetof(PlayerRecord, chestShapes), offsetof(PlayerRecord, chestSkels), offsetof(Stage, chestTypes), sizeof(ChestType), offsetof(PlayerRecord, partNames[1]), FN_ADDR(actor_loadBody, 0x45e2c0) },    /* chest (actor_loadBody) */
+	{ offsetof(PlayerRecord, parts[2]), offsetof(Stage, armTypeCount), STR(0x4c7658, "invalid armIndex(%d) - setActorTypeAr..."), offsetof(PlayerRecord, armShapes), offsetof(PlayerRecord, armSkels), offsetof(Stage, armTypes), sizeof(ArmType), offsetof(PlayerRecord, partNames[2]), FN_ADDR(actor_loadArms, 0x45e390) },  /* arms */
+	{ offsetof(PlayerRecord, parts[3]), offsetof(Stage, legTypeCount), STR(0x4c7688, "invalid legIndex(%d) - setActorTypeLe..."), offsetof(PlayerRecord, legShapes), offsetof(PlayerRecord, legSkels), offsetof(Stage, legTypes), sizeof(LegType), offsetof(PlayerRecord, partNames[3]), FN_ADDR(actor_loadLegs, 0x45e460) }, /* legs */
+	{ offsetof(PlayerRecord, parts[4]), offsetof(Stage, boosterTypeCount), STR(0x4c76b8, "invalid boosterIndex(%d) - setActorTy..."), offsetof(PlayerRecord, boosterShapes), offsetof(PlayerRecord, boosterSkels), offsetof(Stage, boosterTypes), sizeof(BoosterType), offsetof(PlayerRecord, partNames[4]), FN_ADDR(actor_loadBooster, 0x45e530) }, /* booster */
 };
 
 /* player p's part of kind k set to type (its record at +0x1561b68, 0x47fd2 bytes each): none for a negative type (0);
@@ -834,7 +834,7 @@ int THISCALL (actor_setActorTypeBoosterInfoBy)(Stage *stage, int p, int type) { 
    each: the item (items[slot]) and its name (itemNames[slot])). Game types 2 .. 11 (+0x20f3ab8) fix the
    first slot (3, 5, 0x24, 0x19, 0x16 by pairs; 10 / 11 the second too, 0x17) and leave the others empty (-1); else
    the item given (negative: empty). An item past the catalogue (+0x1561b64) is a fatal message. Each of the player's
-   actors then has the slot updated (actor_updatePart, with its +0x49c). The callers ignore the eax it leaves */
+   actors then has the slot updated (actor_loadWeapon, with its +0x49c). The callers ignore the eax it leaves */
 void THISCALL (actor_setActorTypeItemInfoBy)(Stage *stage, int p, int slot, int item)
 {
 	u8 *scene = (u8 *)stage;
@@ -853,5 +853,5 @@ void THISCALL (actor_setActorTypeItemInfoBy)(Stage *stage, int p, int slot, int 
 	((PlayerRecord *)type)->items[slot] = item;
 	for (int i = 0; i < st->actorCount; i++)
 		if (st->actors[i].player == p)
-			actor_updatePart(scene, i, slot, st->actors[i].variantLoaded);
+			actor_loadWeapon(scene, i, slot, st->actors[i].variantLoaded);
 }

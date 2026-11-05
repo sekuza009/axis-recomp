@@ -126,10 +126,10 @@ void THISCALL (armc_giveShownActorWeapon)(u8 *game, int slot)
 	ACTOR.nextYaw = f32(fld_m((const float *)&angle1));
 	if (slot > 3) {
 		actor_setWeaponSlot(stage, I, other);
-		actor_updatePart(stage, I, other, ACTOR.variantLoaded);
+		actor_loadWeapon(stage, I, other, ACTOR.variantLoaded);
 	}
 	actor_setWeaponSlot(stage, I, chosen);
-	actor_updatePart(stage, I, chosen, ACTOR.variantLoaded);
+	actor_loadWeapon(stage, I, chosen, ACTOR.variantLoaded);
 #undef I
 #undef ACTOR
 }

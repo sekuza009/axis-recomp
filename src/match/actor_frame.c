@@ -286,11 +286,11 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 	const LegType *legs = &ST->legTypes[pr->parts[3]];
 	const BoosterType *booster = &ST->boosterTypes[pr->parts[4]];
 	if (AC->lowDetail != AC->lowDetailLoaded) {
-		actor_updateHead(s, i);
-		actor_updateBody(s, i);
-		actor_updateArms(s, i);
-		actor_updateLegs(s, i);
-		actor_updateBooster(s, i);
+		actor_loadHead(s, i);
+		actor_loadBody(s, i);
+		actor_loadArms(s, i);
+		actor_loadLegs(s, i);
+		actor_loadBooster(s, i);
 		AC->lowDetailLoaded = AC->lowDetail;
 	}
 	int item = pr->items[AC->slot];
@@ -309,17 +309,17 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 	if (i == ST->selectedActor) {
 		if (AC->variantLoaded != 0) {
 			AC->variantLoaded = 0;
-			actor_updatePart(s, i, AC->slot, 0);
+			actor_loadWeapon(s, i, AC->slot, 0);
 		}
 	} else if (AC->variantLoaded != AC->lowDetail + 1) {
 		AC->variantLoaded = AC->lowDetail + 1;
-		actor_updatePart(s, i, AC->lastWeaponSlot, AC->variantLoaded);
-		actor_updatePart(s, i, 4, AC->variantLoaded);
-		actor_updatePart(s, i, 5, AC->variantLoaded);
+		actor_loadWeapon(s, i, AC->lastWeaponSlot, AC->variantLoaded);
+		actor_loadWeapon(s, i, 4, AC->variantLoaded);
+		actor_loadWeapon(s, i, 5, AC->variantLoaded);
 	}
 	if (AC->controlledBy != ST->playerActor && AC->weaponLowering == 0 && AC->slotLoaded != AC->slot) {
 		AC->slotLoaded = AC->slot;
-		actor_updatePart(s, i, AC->slot, AC->variantLoaded);
+		actor_loadWeapon(s, i, AC->slot, AC->variantLoaded);
 	}
 	u8 *model = AC->slot == 4 ? (u8 *)&AC->weaponModel4 : AC->slot == 5 ? (u8 *)&AC->weaponModel5 : (u8 *)&AC->weaponModel;
 	memcpy(AC->pos, a + (AC->state == 1 ? 0x180 : 0x4e0), 12);
@@ -803,7 +803,7 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 	} else if (AC->weaponLowering == 0) {   /* the next one coming up */
 		if (!(AC->weaponLower > 0)) {
 			actor_setWeaponSlot((Stage *)s, i, AC->slotLoaded);
-			actor_updatePart(s, i, AC->slotLoaded, AC->variantLoaded);
+			actor_loadWeapon(s, i, AC->slotLoaded, AC->variantLoaded);
 			weapon = (u8 *)&ST->actorInfo[pr->items[AC->slot]];
 			model = AC->slot == 4 ? (u8 *)&AC->weaponModel4 : AC->slot == 5 ? (u8 *)&AC->weaponModel5 : (u8 *)&AC->weaponModel;
 			AC->weapon = ((u32)((ActorInfo *)weapon)->ammoSlot);

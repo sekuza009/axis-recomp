@@ -163,3 +163,9 @@ notices_clearAll,net_clearAnnouncements
 stage_refillFactors,stage_refillLights
 item_initTextures,stage_build
 bullet_playImpactSound,actor_takeDamage
+actor_updateHead,actor_loadHead
+actor_updateBody,actor_loadBody
+actor_updateArms,actor_loadArms
+actor_updateLegs,actor_loadLegs
+actor_updateBooster,actor_loadBooster
+actor_updatePart,actor_loadWeapon

@@ -548,9 +548,9 @@ void (armc_easeCamera)(void)
 }
 
 /* 0x45dd80 (thiscall on the stage): actor slot a claimed (stage_setupActorSlot) and made the player's, with weapon slot 0 */
-void THISCALL (stage_claimPlayerActor)(Stage *stage, int a, int x, int y, void *spawn)
+void THISCALL (stage_claimPlayerActor)(Stage *stage, int a, int id, int controlledBy, void *spawn)
 {
-	stage_setupActorSlot(stage, a, x, y, spawn);
+	stage_setupActorSlot(stage, a, id, controlledBy, spawn);
 	stage->playerActor = a;
 	actor_setWeaponSlot(stage, a, 0);
 }

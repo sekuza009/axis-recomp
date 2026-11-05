@@ -277,7 +277,7 @@ void THISCALL (actor_deactivate)(Stage *stage, int i)
 /* 0x45dc00 (thiscall on the scene): actor slot i (at most 99) set up from its parts (actor_setupFromParts): the
    slots up to it are added first (each new one marked free, +0x108), and the first free slot (searched up to and
    including the count, as the original does) kept as the next free (+0x202e8cc). Returns i, or -1 */
-int THISCALL (stage_setupActorSlot)(u8 *scene, int i, u32 x, u32 y, u32 parts)
+int THISCALL (stage_setupActorSlot)(u8 *scene, int i, u32 id, u32 controlledBy, u32 parts)
 {
 #define COUNT STS->actorCount
 #define USED(k) STS->actors[k].active
@@ -293,7 +293,7 @@ int THISCALL (stage_setupActorSlot)(u8 *scene, int i, u32 x, u32 y, u32 parts)
 			((Stage *)scene)->actorFreeHint = k;
 			break;
 		}
-	actor_setupFromParts(scene, i, x, y, parts);
+	actor_setupFromParts(scene, i, id, controlledBy, parts);
 	return i;
 #undef COUNT
 #undef USED
@@ -301,16 +301,16 @@ int THISCALL (stage_setupActorSlot)(u8 *scene, int i, u32 x, u32 y, u32 parts)
 
 /* 0x474fd0: a player's part coloured from the network: six signed bytes, scaled (the first and fourth by 0x4aa41c,
    the others by 0x4aa420), given to actor_setPartColor. Its caller ignores the eax it leaves */
-void THISCALL (actor_applyRemoteColours)(void *scene, int p, int part, int a, int b, int c, int d, int e, int f)
+void THISCALL (actor_applyRemoteColours)(void *scene, int p, int part, int h1, int s1, int v1, int h2, int s2, int v2)
 {
 	long double k1 = k_1_40625f, k2 = k_0_0078125f;
-	actor_setPartColor(scene, p, part, (float)((signed char)a * k1), (float)((signed char)b * k2), (float)((signed char)c * k2),
-	                   (float)((signed char)d * k1), (float)((signed char)e * k2), (float)((signed char)f * k2));
+	actor_setPartColor(scene, p, part, (float)((signed char)h1 * k1), (float)((signed char)s1 * k2), (float)((signed char)v1 * k2),
+	                   (float)((signed char)h2 * k1), (float)((signed char)s2 * k2), (float)((signed char)v2 * k2));
 }
 
-/* The five parts' animations (0x45e1f0 .. 0x45e530): where each part's model and its own fields are. An actor's part
+/* The five parts' models loaded (0x45e1f0 .. 0x45e530): where each part's model and its own fields are. An actor's part
    type (its type record at +0x1561b68, 0x47fd2 bytes each, by the actor's +0x10c) names the part's model (by +model_at
-   in that record); the actor's pose (+0x484) picks the model's frame */
+   in that record); the actor's detail level (lowDetail) picks the model's set of shapes */
 typedef struct {
 	int model_at;      /* the part's type in the player record (parts[k]) */
 	u32 models;        /* the types' table in the stage, */
@@ -345,11 +345,11 @@ static const PartModel g_parts[5] = {
 };
 
 /* (thiscall on the scene; their callers ignore the eax they leave) */
-void THISCALL (actor_updateHead)(u8 *scene, int a) { part_load(scene, a, &g_parts[0]); }
-void THISCALL (actor_updateBody)(u8 *scene, int a) { part_load(scene, a, &g_parts[1]); }
-void THISCALL (actor_updateArms)(u8 *scene, int a) { part_load(scene, a, &g_parts[2]); }
-void THISCALL (actor_updateLegs)(u8 *scene, int a) { part_load(scene, a, &g_parts[3]); }
-void THISCALL (actor_updateBooster)(u8 *scene, int a) { part_load(scene, a, &g_parts[4]); }
+void THISCALL (actor_loadHead)(u8 *scene, int a) { part_load(scene, a, &g_parts[0]); }
+void THISCALL (actor_loadBody)(u8 *scene, int a) { part_load(scene, a, &g_parts[1]); }
+void THISCALL (actor_loadArms)(u8 *scene, int a) { part_load(scene, a, &g_parts[2]); }
+void THISCALL (actor_loadLegs)(u8 *scene, int a) { part_load(scene, a, &g_parts[3]); }
+void THISCALL (actor_loadBooster)(u8 *scene, int a) { part_load(scene, a, &g_parts[4]); }
 
 /* 0x45de20 (thiscall on the scene): actor a spawned from a map record for the player (+0x202e8d4; none: a fatal
    message): set up from its parts (stage_setupActorSlot, with the record's position, angle and parts picked out), then given
@@ -422,11 +422,11 @@ void THISCALL (actor_startingValues)(u8 *scene, int p)
 	}
 }
 
-/* 0x45e600 (thiscall on the scene): actor a's item in slot (its player type record's +0x320 + slot x 4; negative:
+/* 0x45e600 (thiscall on the scene): actor a's weapon model: its item in slot (its player type record's +0x320 + slot x 4; negative:
    none) loaded, in the given variant, into the slot's loader: slots 4 and 5 their own (+0x587c; +0x701c, from the
    item's second set of tables), any other only when it is the selected one (+0x140: +0x40dc, and +0x4cc the item's
    +0x2dc0, -1 without). Without an item the loader is emptied (partList_release). Its callers ignore the eax it leaves */
-void THISCALL (actor_updatePart)(u8 *scene, int a, int slot, int variant)
+void THISCALL (actor_loadWeapon)(u8 *scene, int a, int slot, int variant)
 {
 	u8 *actor = (u8 *)&STS->actors[a];
 	Player *pl = (Player *)actor;
@@ -526,8 +526,8 @@ static u8 *weapon_list(u8 *ac)
    faint tint lights it with +0x20f2f48. The viewing actor (+0x202e8d8), when draw is set, shows only the weapon in
    hand; others, when draw is not 1, all their lists up to the count +0x54c (the fifth unless +0x550; flags 0xd00 skip
    them without flares 0x83a9c8 or when too small on screen; faint ones only with flares); flags 0x100 / 0xc00 add a
-   lit pass. A list that would not draw has them all reloaded (actor_updateHead / actor_updateBody / actor_updateArms /
-   actor_updateLegs / actor_updateBooster / actor_updatePart). Its caller ignores the eax it leaves */
+   lit pass. A list that would not draw has them all reloaded (actor_loadHead / actor_loadBody / actor_loadArms /
+   actor_loadLegs / actor_loadBooster / actor_loadWeapon). Its caller ignores the eax it leaves */
 void THISCALL (actor_drawIntoView)(u8 *s, int a, void *vv, int draw)
 {
 	Stage *st = (Stage *)s;
@@ -618,13 +618,13 @@ void THISCALL (actor_drawIntoView)(u8 *s, int a, void *vv, int draw)
 	AC->viewMarked = 0;
 	if (ok)
 		return;
-	actor_updateHead(s, a);
-	actor_updateBody(s, a);
-	actor_updateArms(s, a);
-	actor_updateLegs(s, a);
-	actor_updateBooster(s, a);
+	actor_loadHead(s, a);
+	actor_loadBody(s, a);
+	actor_loadArms(s, a);
+	actor_loadLegs(s, a);
+	actor_loadBooster(s, a);
 	for (int k = 0; k < 6; k++)
-		actor_updatePart(s, a, k, ((u32)AC->variantLoaded));
+		actor_loadWeapon(s, a, k, ((u32)AC->variantLoaded));
 }
 #undef K
 #undef A
@@ -777,16 +777,16 @@ static void mech_stats(u8 *s, u8 *ac, u8 *p, int check)
 }
 
 /* 0x457330 (thiscall on the scene): actor a built from player *pp's mech (the player record 0x47fd2 bytes from
-   +0x1561b68; its parts +0x30c head, chest, arms, legs, booster; pp: the player, a2, a3 copied, the position +8
+   +0x1561b68; its parts +0x30c head, chest, arms, legs, booster; pp: the player, controlledBy copied, the position +8
    and the heading +0x14). The special items in its six slots (+0x320; kinds 0x1b .. 0x23 with a negative +0x2dc0)
    bend the defaults (+0x404 ..: armour, shields, power, cooling, mobility); then the stats: health and energy (the
    head with the level), the weight against the limit (any items' weight unless the game type is 2 .. 11) giving an
    overload r that slows the legs and booster (speed, turn, jump, gravity, fall), the arms' ammunition, and the
-   fixed values; its id (a2, or the next serial +0x202e8d0), the player's details, the weapon slot (actor_setWeaponSlot),
+   fixed values; its id (id, or the next serial when negative), the player's details, the weapon slot (actor_setWeaponSlot),
    the starting values (actor_startingValues), the position history, timers and flags reset, its lists loaded and parts
-   placed (actor_updateHead .. actor_updateBooster, actor_updatePart; viewed by another than itself +0x49c), and the scene told
+   placed (actor_loadHead .. actor_loadBooster, actor_loadWeapon; viewed by another than itself +0x49c), and the scene told
    an actor joined (+0x202e8ec). Its caller ignores the eax it leaves */
-void THISCALL (actor_setupFromParts)(u8 *s, int a, int id, u32 a3, const u32 *pp)
+void THISCALL (actor_setupFromParts)(u8 *s, int a, int id, u32 controlledBy, const u32 *pp)
 {
 	Stage *st = (Stage *)s;
 	u8 *ac = (u8 *)&st->actors[a];
@@ -798,7 +798,7 @@ void THISCALL (actor_setupFromParts)(u8 *s, int a, int id, u32 a3, const u32 *pp
 	AC->id = id >= 0 ? id : st->actorSerial++;
 	AC->active = 1;
 	AC->player = pp[0];
-	AC->controlledBy = a3;
+	AC->controlledBy = controlledBy;
 	int level = pr->level;
 	AC->level = level >= 0 && level < 9 ? level : 0;
 	AC->team = ((u32)pr->team);
@@ -863,13 +863,13 @@ void THISCALL (actor_setupFromParts)(u8 *s, int a, int id, u32 a3, const u32 *pp
 	fill_dwords(ac + offsetof(Player, onWarp), 3, 0);   /* onWarp .. shieldRegenTime */
 	AC->damageFlash = 1.0f;
 	AC->breakUp = 0;
-	actor_updateHead(s, a);
-	actor_updateBody(s, a);
-	actor_updateArms(s, a);
-	actor_updateLegs(s, a);
-	actor_updateBooster(s, a);
+	actor_loadHead(s, a);
+	actor_loadBody(s, a);
+	actor_loadArms(s, a);
+	actor_loadLegs(s, a);
+	actor_loadBooster(s, a);
 	for (int k = 5; k >= 0; k--)
-		actor_updatePart(s, a, k, ((u32)AC->variantLoaded));
+		actor_loadWeapon(s, a, k, ((u32)AC->variantLoaded));
 	fill_dwords(ac + offsetof(Player, screenPos), 10, 0);   /* screenPos .. tagBottomRight, onScreen */
 	fill_dwords(ac + offsetof(Player, aimTime), 4, 0);   /* aimTime .. botNeeds */
 	AC->target1 = AC->target2 = -1;

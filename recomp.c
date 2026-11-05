@@ -3222,34 +3222,34 @@ THISCALL void map_loadObjectInfoFrom(char *scene, DWORD name, DWORD mode);
 THISCALL void ObjectList_load(char *list, DWORD sc, DWORD kc, DWORD ns, DWORD names, DWORD nk, DWORD knames,
                                   DWORD lit, DWORD fac, DWORD px, DWORD mem, DWORD size);
 /* batch 89 (lifted/grp35.c) */
-/* (thiscall on the scene) actor_updateHead / actor_updateBody / actor_updateArms / actor_updateLegs / actor_updateBooster(actor):
+/* (thiscall on the scene) actor_loadHead / actor_loadBody / actor_loadArms / actor_loadLegs / actor_loadBooster(actor):
    for an active actor (0x8888 bytes at +0x1cd93a8, +0x108), its player's (+0x10c; 0x47fd2 at +0x1561b68) head /
    chest / arm / leg / booster type (player +0x30c..+0x31c) in that part's type table, variant actor +0x484: load
    the part's object list (ObjectList_load) with the player's own shape and skeleton caches, the variant's
    shape names and skeleton names, into the actor's memory (2000 / 2000 / 4000 / 4000 / 3000 bytes) */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-THISCALL void actor_updateHead(char *sc, DWORD a);
+THISCALL void actor_loadHead(char *sc, DWORD a);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-THISCALL void actor_updateBody(char *sc, DWORD a);
+THISCALL void actor_loadBody(char *sc, DWORD a);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-THISCALL void actor_updateArms(char *sc, DWORD a);
+THISCALL void actor_loadArms(char *sc, DWORD a);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-THISCALL void actor_updateLegs(char *sc, DWORD a);
+THISCALL void actor_loadLegs(char *sc, DWORD a);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-THISCALL void actor_updateBooster(char *sc, DWORD a);
-/* 0x45e600 (thiscall) actor_updatePart(actor, slot, variant): the item in the player's slot (+0x320 + slot * 4;
+THISCALL void actor_loadBooster(char *sc, DWORD a);
+/* 0x45e600 (thiscall) actor_loadWeapon(actor, slot, variant): the item in the player's slot (+0x320 + slot * 4;
    0x2e18-byte items at +0x14d1ab4, < 0 none) with the scene's caches (+0x19e188c / +0x1cbe198): slot 4 and 5 their
    own lists (memory +0x58ac / +0x704c), the actor's current slot (+0x140) the weapon list (+0x410c) and its kind
    (item +0x2dc0 -> actor +0x4cc, -1 without an item); no item releases the list */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-THISCALL void actor_updatePart(char *sc, DWORD a, DWORD slot, DWORD var);
+THISCALL void actor_loadWeapon(char *sc, DWORD a, DWORD slot, DWORD var);
 /* batch 90 (lifted/grp36.c) */
 /* (thiscall on the scene) actor_setActorType{Head,Chest,Arm,Leg,Booster}InfoBy(player, type): a negative type
    gives 0; the player count (+0x19e1888) grows to cover the player; the same type as now gives 1; a type past the
    table's count (the dword before each table) is fatal. Otherwise the player's own shape and skeleton caches are
    released, the type's name copied to the player (+0x4c), the type stored (+0x30c..+0x31c), and every actor of the
-   player (count +0x202e8c8) reloads that part (actor_updateHead / actor_updateBody / actor_updateArms / actor_updateLegs /
-   actor_updateBooster); 1 */
+   player (count +0x202e8c8) reloads that part (actor_loadHead / actor_loadBody / actor_loadArms / actor_loadLegs /
+   actor_loadBooster); 1 */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 THISCALL int actor_setActorTypeHeadInfoBy(char *sc, DWORD p, DWORD t);
 THISCALL int actor_setActorTypeChestInfoBy(char *sc, DWORD p, DWORD t);
@@ -3260,7 +3260,7 @@ THISCALL int actor_setActorTypeBoosterInfoBy(char *sc, DWORD p, DWORD t);
    (+0x20f3ab8) 2..11 fixes slot 0's item (3, 5, 0x24, 0x19, 0x16; mode 10/11 also slot 1: 0x17) and empties the
    other slots; otherwise a negative item empties the slot. The item's name goes to the player (+0x18c + slot * 0x40,
    empty for none), an item past the count (+0x1561b64) is fatal, the index is stored (+0x320 + slot * 4) and every
-   actor of the player reloads that slot (actor_updatePart with its variant +0x49c) */
+   actor of the player reloads that slot (actor_loadWeapon with its variant +0x49c) */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 THISCALL void actor_setActorTypeItemInfoBy(char *sc, DWORD p, DWORD slot, DWORD item);
 /* batch 91 (lifted/grp37.c) */
@@ -3407,8 +3407,8 @@ int lobby_announceArena(void);
    camera +0x20f3970..): its tint (+0x4f0: hit flash from +0x120, damage glow from +0x4ec / +0x8854, a cloaked actor's
    fade by flag 0x200), then, for the viewing actor (+0x202e8d8) with draw set or for others, its eight object lists
    relit and drawn through partList_queue (lights +0x20f2f3c.. by flags 0x100 / 0x400 / 0x800; the current weapon +0x140);
-   a list that cannot be drawn is reloaded (actor_updateHead / actor_updateBody / actor_updateArms / actor_updateLegs /
-   actor_updateBooster / actor_updatePart) */
+   a list that cannot be drawn is reloaded (actor_loadHead / actor_loadBody / actor_loadArms / actor_loadLegs /
+   actor_loadBooster / actor_loadWeapon) */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 THISCALL void actor_drawIntoView(char *sc, DWORD a, DWORD vv, DWORD draw);
 /* batch 102 (lifted/grp48.c) */
@@ -3426,7 +3426,7 @@ THISCALL void map_loadActorInfoFrom(char *sc, DWORD name);
 /* 0x457330 (thiscall on the scene) actor_setupFromParts(actor, a, b, &player): build actor's mech from its player's
    (*player) parts: stat defaults, item bonuses for the special items (0x1b..: armour, energy ...) of item
    records with a negative kind (+0x2dc0), the stats summed / scaled from the head, chest, arm, leg and booster
-   records, the part object lists loaded (actor_updateHead .. actor_updateBooster, actor_updatePart), the player's starting
+   records, the part object lists loaded (actor_loadHead .. actor_loadBooster, actor_loadWeapon), the player's starting
    values (actor_startingValues) and the weapon slot (actor_setWeaponSlot) */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 THISCALL void actor_setupFromParts(char *sc, DWORD a, DWORD x, DWORD y, DWORD pp);
@@ -3942,7 +3942,7 @@ void armc_drawStatsPanel(void);
    keep the actor's part slot fields (+0x1eccbf0..+0x1eccc00 of its 0x8888-byte record at +0x1eccbb0; a negative
    slot means the actor's current one, +0x1eccbb0), mark whether it is the local player (+0x1eccf0c against
    +0x2221fa0), rebuild the actor's lists (stage_remakePlayerActor on the scene +0x1f36c8), put the kept fields back, and for
-   slots above 3 first re-apply the stored slot +0x1eccbb4, then the slot (actor_setWeaponSlot, actor_updatePart) */
+   slots above 3 first re-apply the stored slot +0x1eccbb4, then the slot (actor_setWeaponSlot, actor_loadWeapon) */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 THISCALL void armc_giveShownActorWeapon(char *game, DWORD slot);
 /* batch 146 (lifted/grp92.c): the armour screen's part lists */
@@ -11717,12 +11717,12 @@ static void parttype_setup(int k)
 	memset(rec, 0, (size_t)t->stride);
 	part_counts(rec, S32(ac, 0x484), 0x40, t->kcOff, t->maxNames);
 }
-ST(actor_updateHead, parttype_setup(0);, (TC(void, 0x45e1f0, char *, int)(BUF, g_a[0]), 0), (actor_updateHead(BUF, (DWORD)g_a[0]), 0))
-ST(actor_updateBody, parttype_setup(1);, (TC(void, 0x45e2c0, char *, int)(BUF, g_a[0]), 0), (actor_updateBody(BUF, (DWORD)g_a[0]), 0))
-ST(actor_updateArms, parttype_setup(2);, (TC(void, 0x45e390, char *, int)(BUF, g_a[0]), 0), (actor_updateArms(BUF, (DWORD)g_a[0]), 0))
-ST(actor_updateLegs, parttype_setup(3);, (TC(void, 0x45e460, char *, int)(BUF, g_a[0]), 0), (actor_updateLegs(BUF, (DWORD)g_a[0]), 0))
-ST(actor_updateBooster, parttype_setup(4);, (TC(void, 0x45e530, char *, int)(BUF, g_a[0]), 0), (actor_updateBooster(BUF, (DWORD)g_a[0]), 0))
-/* actor_updatePart: slot 0..5 (the actor's current slot sometimes), the player's item there (-1..3), its cleared
+ST(actor_loadHead, parttype_setup(0);, (TC(void, 0x45e1f0, char *, int)(BUF, g_a[0]), 0), (actor_loadHead(BUF, (DWORD)g_a[0]), 0))
+ST(actor_loadBody, parttype_setup(1);, (TC(void, 0x45e2c0, char *, int)(BUF, g_a[0]), 0), (actor_loadBody(BUF, (DWORD)g_a[0]), 0))
+ST(actor_loadArms, parttype_setup(2);, (TC(void, 0x45e390, char *, int)(BUF, g_a[0]), 0), (actor_loadArms(BUF, (DWORD)g_a[0]), 0))
+ST(actor_loadLegs, parttype_setup(3);, (TC(void, 0x45e460, char *, int)(BUF, g_a[0]), 0), (actor_loadLegs(BUF, (DWORD)g_a[0]), 0))
+ST(actor_loadBooster, parttype_setup(4);, (TC(void, 0x45e530, char *, int)(BUF, g_a[0]), 0), (actor_loadBooster(BUF, (DWORD)g_a[0]), 0))
+/* actor_loadWeapon: slot 0..5 (the actor's current slot sometimes), the player's item there (-1..3), its cleared
    record with counts for both lists of the variant (0..3) */
 static void itempart_setup(void)
 {
@@ -11741,8 +11741,8 @@ static void itempart_setup(void)
 	fill(ac + 0x587c, 0x30); fill(ac + 0x701c, 0x30); fill(ac + 0x40dc, 0x30);
 	g_a[1] = slot; g_a[2] = var;
 }
-ST(actor_updatePart, itempart_setup();, (TC(void, 0x45e600, char *, int, int, int)(BUF, g_a[0], g_a[1], g_a[2]), 0),
-   (actor_updatePart(BUF, (DWORD)g_a[0], (DWORD)g_a[1], (DWORD)g_a[2]), 0))
+ST(actor_loadWeapon, itempart_setup();, (TC(void, 0x45e600, char *, int, int, int)(BUF, g_a[0], g_a[1], g_a[2]), 0),
+   (actor_loadWeapon(BUF, (DWORD)g_a[0], (DWORD)g_a[1], (DWORD)g_a[2]), 0))
 /* batch 90 */
 /* 0..6 actors of random players (variants 0..3), the player count 0..8; a type record (the new type, cleared:
    empty shape / skeleton names, see part_counts) with a name of up to 30 characters, every variant's counts set */
@@ -17517,8 +17517,8 @@ static const STest g_stests[] = {
 	/* batch 88 */
 	T(ObjectList_load, 0, 400, 0),
 	/* batch 89 */
-	T(actor_updateHead, 0, 300, 0), T(actor_updateBody, 0, 300, 0), T(actor_updateArms, 0, 300, 0), T(actor_updateLegs, 0, 300, 0),
-	T(actor_updateBooster, 0, 300, 0), T(actor_updatePart, 0, 300, 0),
+	T(actor_loadHead, 0, 300, 0), T(actor_loadBody, 0, 300, 0), T(actor_loadArms, 0, 300, 0), T(actor_loadLegs, 0, 300, 0),
+	T(actor_loadBooster, 0, 300, 0), T(actor_loadWeapon, 0, 300, 0),
 	/* batch 90 */
 	T(actor_setActorTypeHeadInfoBy, 1, 300, 0), T(actor_setActorTypeChestInfoBy, 1, 300, 0), T(actor_setActorTypeArmInfoBy, 1, 300, 0), T(actor_setActorTypeLegInfoBy, 1, 300, 0),
 	T(actor_setActorTypeBoosterInfoBy, 1, 300, 0), T(actor_setActorTypeItemInfoBy, 0, 300, 0),
@@ -18558,9 +18558,9 @@ static const struct { DWORD addr; void *fn; const char *name; } g_hooks3[] = {
 	/* batch 88 */
 	{ 0x46f4e0, (void *)ObjectList_load, "ObjectList_load" },
 	/* batch 89 */
-	{ 0x45e1f0, (void *)actor_updateHead, "actor_updateHead" }, { 0x45e2c0, (void *)actor_updateBody, "actor_updateBody" },
-	{ 0x45e390, (void *)actor_updateArms, "actor_updateArms" }, { 0x45e460, (void *)actor_updateLegs, "actor_updateLegs" },
-	{ 0x45e530, (void *)actor_updateBooster, "actor_updateBooster" }, { 0x45e600, (void *)actor_updatePart, "actor_updatePart" },
+	{ 0x45e1f0, (void *)actor_loadHead, "actor_loadHead" }, { 0x45e2c0, (void *)actor_loadBody, "actor_loadBody" },
+	{ 0x45e390, (void *)actor_loadArms, "actor_loadArms" }, { 0x45e460, (void *)actor_loadLegs, "actor_loadLegs" },
+	{ 0x45e530, (void *)actor_loadBooster, "actor_loadBooster" }, { 0x45e600, (void *)actor_loadWeapon, "actor_loadWeapon" },
 	/* batch 90 */
 	{ 0x473b10, (void *)actor_setActorTypeHeadInfoBy, "actor_setActorTypeHeadInfoBy" }, { 0x473c20, (void *)actor_setActorTypeChestInfoBy, "actor_setActorTypeChestInfoBy" },
 	{ 0x473d30, (void *)actor_setActorTypeArmInfoBy, "actor_setActorTypeArmInfoBy" }, { 0x473e40, (void *)actor_setActorTypeLegInfoBy, "actor_setActorTypeLegInfoBy" },

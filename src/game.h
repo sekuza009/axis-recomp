@@ -235,7 +235,7 @@ typedef struct { u32 vtable; void *banks[6]; i32 count; } TextureManager;   /* t
 #define glTexParameterf_bits(target, pname, bits) IMPORT(0x4a9260, void, u32, u32, u32)(target, pname, bits)   /* (the float as its bits) */
 #define glTexImage2D(target, level, format, w, h, border, layout, type, data) IMPORT(0x4a91e4, void, u32, int, int, int, int, int, u32, u32, const void *)(target, level, format, w, h, border, layout, type, data)
 #define setupSlider_hitTest(x, y) GAME_FN(setupSlider_hitTest, 0x420730, int, int, int)(x, y)   /* the slider's part under the cursor */
-#define actor_updatePart(scene, i, slot, value) GAME_THISFN(actor_updatePart, 0x45e600, void, void *, int, int, u32)(scene, i, slot, value)
+#define actor_loadWeapon(scene, i, slot, value) GAME_THISFN(actor_loadWeapon, 0x45e600, void, void *, int, int, u32)(scene, i, slot, value)
 #define gluBuild2DMipmaps(target, components, w, h, format, type, data) IMPORT(0x4a9044, int, u32, int, int, int, u32, u32, const void *)(target, components, w, h, format, type, data)
 #define crt_tolower(c) GAME_CDECL(0x49fdaf, int, int)(c)
 #define shape_read(shape, f, mem, size) GAME_THISFN(shape_read, 0x466120, void, void *, void *, void *, int)(shape, f, mem, size)
@@ -332,11 +332,11 @@ typedef struct { u32 vtable; void *banks[6]; i32 count; } TextureManager;   /* t
 #define math_segmentSphere(p0, p1, dir, centre, radius, hit, t) GAME_FN(math_segmentSphere, 0x47d9d0, int, const float *, const float *, const float *, const float *, float, float *, float *)(p0, p1, dir, centre, radius, hit, t)   /* 1: the segment meets the sphere */
 #define skel_applyPose(sk, out, bone, t) GAME_THISFN(skel_applyPose, 0x46ab30, void, void *, void *, int, u32)(sk, out, bone, t)
 /* (match/actor_frame.c: an actor's frame) */
-#define actor_updateHead(stage, i) GAME_THISFN(actor_updateHead, 0x45e1f0, void, void *, int)(stage, i)
-#define actor_updateBody(stage, i) GAME_THISFN(actor_updateBody, 0x45e2c0, void, void *, int)(stage, i)
-#define actor_updateArms(stage, i) GAME_THISFN(actor_updateArms, 0x45e390, void, void *, int)(stage, i)
-#define actor_updateLegs(stage, i) GAME_THISFN(actor_updateLegs, 0x45e460, void, void *, int)(stage, i)
-#define actor_updateBooster(stage, i) GAME_THISFN(actor_updateBooster, 0x45e530, void, void *, int)(stage, i)
+#define actor_loadHead(stage, i) GAME_THISFN(actor_loadHead, 0x45e1f0, void, void *, int)(stage, i)
+#define actor_loadBody(stage, i) GAME_THISFN(actor_loadBody, 0x45e2c0, void, void *, int)(stage, i)
+#define actor_loadArms(stage, i) GAME_THISFN(actor_loadArms, 0x45e390, void, void *, int)(stage, i)
+#define actor_loadLegs(stage, i) GAME_THISFN(actor_loadLegs, 0x45e460, void, void *, int)(stage, i)
+#define actor_loadBooster(stage, i) GAME_THISFN(actor_loadBooster, 0x45e530, void, void *, int)(stage, i)
 #define actor_prevWeapon(stage, i) GAME_THISFN(actor_prevWeapon, 0x45e910, void, void *, int)(stage, i)   /* the previous weapon */
 #define actor_nextWeapon(stage, i) GAME_THISFN(actor_nextWeapon, 0x45e9e0, void, void *, int)(stage, i)   /* the next weapon */
 #define actor_clearInput(stage, i) GAME_THISFN(actor_clearInput, 0x45eab0, void, void *, int)(stage, i)   /* the input cleared */
@@ -543,7 +543,7 @@ typedef struct { u32 vtable; void *banks[6]; i32 count; } TextureManager;   /* t
 #define SCENE_STAGE(scene) ((Stage *)((u8 *)(scene) + SCENE_STAGE_AT))   /* the same for a runtime scene pointer (no RELOC) */
 #define stage_drawObjects(stage, view) GAME_THISFN(stage_drawObjects, 0x490da0, void, Stage *, void *)(stage, view)
 #define stage_drawActors(stage, view, pass) GAME_THISFN(stage_drawActors, 0x45e170, void, Stage *, void *, int)(stage, view, pass)
-/* actor i's frame of its parts (actor_updateBody / actor_updatePart), with the view volume and pass */
+/* actor i's frame of its parts (actor_loadBody / actor_loadWeapon), with the view volume and pass */
 #define actor_drawIntoView(stage, i, view, pass) GAME_THISFN(actor_drawIntoView, 0x45d3e0, void, Stage *, int, void *, int)(stage, i, view, pass)
 #define stage_drawBullets(stage, view) GAME_THISFN(stage_drawBullets, 0x47d060, void, void *, void *)(stage, view)
 #define stage_drawProjectiles(stage, view) GAME_THISFN(stage_drawProjectiles, 0x479af0, void, Stage *, void *)(stage, view)
