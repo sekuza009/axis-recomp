@@ -367,24 +367,24 @@ void (profile_drawPilotSelect)(void)
 	/* the chosen one's cell, grown by the reveal: corners at (x, y) less the reveal and 2 x reveal + 85 further */
 	float col = (float)(g_pilot % 3), row = (float)(g_pilot / 3);
 	long double reveal = (long double)g_reveal;
-	float x = f32(fmul_m(col, K(0x4a95ec)) - reveal), y = f32(fmul_m(row, K(0x4a95ec)) - reveal);
+	float x = f32(fmul_m(col, k_86f) - reveal), y = f32(fmul_m(row, k_86f) - reveal);
 	glBegin(GL_QUADS);
-	long double rt = fmul_m(row, K(0x4a95ec)), ct = fmul_m(col, K(0x4a95ec));
+	long double rt = fmul_m(row, k_86f), ct = fmul_m(col, k_86f);
 	float row_t = f32(rt), col_t = f32(ct);
-	float t0 = f32(fmul_m(rt, K(0x4a957c))), s0 = f32(fmul_m(ct, K(0x4a957c)));
+	float t0 = f32(fmul_m(rt, &k_0_00390625f)), s0 = f32(fmul_m(ct, &k_0_00390625f));
 	glTexCoord2f(s0, t0);
 	int y0 = ftol(fadd_m((long double)(Y0 + 0x4c), &y));
 	menu_vertex(ftol(fadd_m((long double)(X0 + 0x20), &x)), y0);
-	float s1 = f32(fmul_m(fadd_m(col_t, K(0x4a95e8)), K(0x4a957c)));
+	float s1 = f32(fmul_m(fadd_m(col_t, k_85f), &k_0_00390625f));
 	glTexCoord2f(s1, t0);
 	y0 = ftol(fadd_m((long double)(Y0 + 0x4c), &y));
-	menu_vertex(ftol(fadd_m(fadd_m((long double)(g_reveal * 2) + (long double)(X0 + 0x20), &x), K(0x4a95e8))), y0);
-	float t1 = f32(fmul_m(fadd_m(row_t, K(0x4a95e8)), K(0x4a957c)));
+	menu_vertex(ftol(fadd_m(fadd_m((long double)(g_reveal * 2) + (long double)(X0 + 0x20), &x), k_85f)), y0);
+	float t1 = f32(fmul_m(fadd_m(row_t, k_85f), &k_0_00390625f));
 	glTexCoord2f(s1, t1);
-	int y1 = ftol(fadd_m(fadd_m((long double)(Y0 + 0x4c) + (long double)(g_reveal * 2), &y), K(0x4a95e8)));
-	menu_vertex(ftol(fadd_m(fadd_m((long double)(X0 + 0x20) + (long double)(g_reveal * 2), &x), K(0x4a95e8))), y1);
+	int y1 = ftol(fadd_m(fadd_m((long double)(Y0 + 0x4c) + (long double)(g_reveal * 2), &y), k_85f));
+	menu_vertex(ftol(fadd_m(fadd_m((long double)(X0 + 0x20) + (long double)(g_reveal * 2), &x), k_85f)), y1);
 	glTexCoord2f(s0, t1);
-	y1 = ftol(fadd_m(fadd_m((long double)(g_reveal * 2) + (long double)(Y0 + 0x4c), &y), K(0x4a95e8)));
+	y1 = ftol(fadd_m(fadd_m((long double)(g_reveal * 2) + (long double)(Y0 + 0x4c), &y), k_85f));
 	menu_vertex(ftol(fadd_m((long double)(X0 + 0x20), &x)), y1);
 	glEnd();
 	glDisable(GL_TEXTURE_2D);
@@ -392,31 +392,31 @@ void (profile_drawPilotSelect)(void)
 	glEnable(GL_TEXTURE_2D);
 	texture = g_fontAsciiLarge;
 	tex_bind(g_textures->managers[texture / 512], texture % 512);
-	glColor4f(1.0f, 1.0f, 1.0f, f32(fsubr_m(fmul_m(fld_m(&g_profileFrameAlpha), K(0x4a9428)), K(0x4a9424))));
+	glColor4f(1.0f, 1.0f, 1.0f, f32(fsubr_m(fmul_m(fld_m(&g_profileFrameAlpha), &k_clockRate), &k_1f)));
 	glBegin(GL_QUADS);
 	glTexCoord2f(0.0f, 0.5f);
-	y0 = ftol(fsub_m(fadd_m((long double)(Y0 + 0x4c), &y), K(0x4a93d0)));
-	menu_vertex(ftol(fsub_m(fadd_m((long double)(X0 + 0x20), &x), K(0x4a93d0))), y0);
+	y0 = ftol(fsub_m(fadd_m((long double)(Y0 + 0x4c), &y), &k_5f));
+	menu_vertex(ftol(fsub_m(fadd_m((long double)(X0 + 0x20), &x), &k_5f)), y0);
 	glTexCoord2f(0.5f, 0.5f);
-	y0 = ftol(fsub_m(fadd_m((long double)(Y0 + 0x4c), &y), K(0x4a93d0)));
-	menu_vertex(ftol(fadd_m(fadd_m((long double)(g_reveal * 2) + (long double)(X0 + 0x20), &x), K(0x4a9550))), y0);
+	y0 = ftol(fsub_m(fadd_m((long double)(Y0 + 0x4c), &y), &k_5f));
+	menu_vertex(ftol(fadd_m(fadd_m((long double)(g_reveal * 2) + (long double)(X0 + 0x20), &x), &k_90f)), y0);
 	glTexCoord2f(0.5f, 1.0f);
-	y1 = ftol(fadd_m(fadd_m((long double)(Y0 + 0x4c) + (long double)(g_reveal * 2), &y), K(0x4a9550)));
-	menu_vertex(ftol(fadd_m(fadd_m((long double)(X0 + 0x20) + (long double)(g_reveal * 2), &x), K(0x4a9550))), y1);
+	y1 = ftol(fadd_m(fadd_m((long double)(Y0 + 0x4c) + (long double)(g_reveal * 2), &y), &k_90f));
+	menu_vertex(ftol(fadd_m(fadd_m((long double)(X0 + 0x20) + (long double)(g_reveal * 2), &x), &k_90f)), y1);
 	glTexCoord2f(0.0f, 1.0f);
-	y1 = ftol(fadd_m(fadd_m((long double)(g_reveal * 2) + (long double)(Y0 + 0x4c), &y), K(0x4a9550)));
-	menu_vertex(ftol(fsub_m(fadd_m((long double)(X0 + 0x20), &x), K(0x4a93d0))), y1);
+	y1 = ftol(fadd_m(fadd_m((long double)(g_reveal * 2) + (long double)(Y0 + 0x4c), &y), &k_90f));
+	menu_vertex(ftol(fsub_m(fadd_m((long double)(X0 + 0x20), &x), &k_5f)), y1);
 	glEnd();
 	long double pulse = fadd_m(fmul_m(fld_m((&g_frameTime)), (const float *)&g_profileFrameStep), &g_profileFrameAlpha);
 	g_profileFrameAlpha = f32(pulse);
-	if (!(pulse > *K(0x4a93fc)))
+	if (!(pulse > *&k_2f))
 		g_profileFrameStep = 0x3f800000;   /* 1 */
-	if (pulse >= *K(0x4a93f8))
+	if (pulse >= *&k_38f)
 		g_profileFrameStep = 0xbf800000;   /* -1 */
 	if (g_reveal < 8) {
 		long double clock = fadd_m(fld_m(&g_revealClock), (&g_frameTime));
 		g_revealClock = f32(clock);
-		if (clock > *K(0x4a9424)) {
+		if (clock > *&k_1f) {
 			g_revealClock = 0;
 			g_reveal++;
 		}
@@ -434,7 +434,7 @@ text_draw8(X0 + 0x184, Y0 + 0x48, PILOT(g_pilot)->name);
 	itoa(PILOT(g_pilot)->level, text, 10);
 	text_draw8(X0 + 0x184, Y0 + 0x87, text);
 	pilot_stats(g_pilot, X0 + 0x192, Y0 + 0x9c, 0x15);
-	stat_bars(X0 + 0x1bc, Y0 + 0x9f, 0x15, K(0x4a95f4), 1.0f);
+	stat_bars(X0 + 0x1bc, Y0 + 0x9f, 0x15, &k_m1f_4a95f4, 1.0f);
 	for (int k = 0; k < 2; k++) {
 		glEnable(GL_TEXTURE_2D);
 		texture = g_buttonTexture;

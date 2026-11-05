@@ -482,7 +482,7 @@ void (armc_drawPanels)(void)
 			panel_resize(p, &g_panelSize2);
 		else if (k == 3)
 			panel_resize(p, &g_panelSize3);
-		float y = f32(fsub_m(fadd_m(fadd_m(fmul_m((long double)k, F(0x4a93d0)), F(OBJ(g_armcCameraBox) + 0x84)), F(0x4a9424)), F(0x4a94b4)));
+		float y = f32(fsub_m(fadd_m(fadd_m(fmul_m((long double)k, &k_5f), F(OBJ(g_armcCameraBox) + 0x84)), &k_1f), &k_105f));
 		glTranslatef_bits(p->x, BITS(y), g_armcPanelDepth);
 		glPushMatrix();
 		gl_rotateXYZ(0, BITS(p->angle), 0);
@@ -497,25 +497,25 @@ void (armc_drawPanels)(void)
 		long double angle = fadd_m(fmul_m(fld_m(&g_frameTime), &p->speed), &p->angle);
 		float stored = f32(angle);
 		p->angle = stored;
-		if (angle > *F(0x4a9460)) {
+		if (angle > *&k_360f) {
 			BITS(p->angle) = 0xc3b40000;   /* -360 */
 			stored = -360.0f;
 		}
-		if (!(stored >= *F(0x4a94b0)))
+		if (!(stored >= *&k_m360f))
 			BITS(p->angle) = 0x43b40000;   /* 360 */
 	}
 	long double size = fadd_m(fld_m(&g_panelRate3), &g_panelSize3);
 	float stored = f32(size);
 	g_panelSize3 = stored;
-	if (size >= *F(0x4a94ac))
-		g_panelRate3 = fmul_m(fld_m(&g_frameTime), F(0x4a94a8));
-	if (!(stored > *F(0x4a93f0)))   /* the stored size (panel 2 below compares the sum itself) */
+	if (size >= *k_600f)
+		g_panelRate3 = fmul_m(fld_m(&g_frameTime), &k_m2f);
+	if (!(stored > *&k_200f))   /* the stored size (panel 2 below compares the sum itself) */
 		g_panelRate3 = (long double)g_frameTime + g_frameTime;
 	size = fadd_m(fld_m(&g_panelRate2), &g_panelSize2);
 	g_panelSize2 = size;
-	if (size >= *F(0x4a94ac))
-		g_panelRate2 = fmul_m(fld_m(&g_frameTime), F(0x4a94a8));
-	if (!(size > *F(0x4a93f0)))
+	if (size >= *k_600f)
+		g_panelRate2 = fmul_m(fld_m(&g_frameTime), &k_m2f);
+	if (!(size > *&k_200f))
 		g_panelRate2 = (long double)g_frameTime + g_frameTime;
 }
 #undef F

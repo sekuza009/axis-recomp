@@ -1162,3 +1162,50 @@
 #define g_lobbyBlinkRate GAME_VAR(float, 0x4ad498)
 #define g_sentChatBlock GAME_VAR(char *, 0x9fd944)
 #define k_26f GAME_VAR(float, 0x4aa27c)
+/* float constants of .rdata named by value (tools/name_constants.py) */
+#define k_180f GAME_VAR(float, 0x4a945c)   /* 180 */
+#define k_m164f GAME_VAR(float, 0x4a9484)   /* -164 */
+#define k_0_002777778f GAME_VAR(float, 0x4a9488)   /* 0.00277777785 */
+#define k_m168f GAME_VAR(float, 0x4a948c)   /* -168 */
+#define k_0_2777778f GAME_VAR(float, 0x4a9490)   /* 0.277777791 */
+#define k_m200f GAME_VAR(float, 0x4a94a0)   /* -200 */
+#define k_m360f GAME_VAR(float, 0x4a94b0)   /* -360 */
+#define k_105f GAME_VAR(float, 0x4a94b4)   /* 105 */
+#define k_0_0051f GAME_VAR(float, 0x4a94d8)   /* 0.00510000018 */
+#define k_0_03f GAME_VAR(float, 0x4a9568)   /* 0.0299999993 */
+#define k_m1f_4a95f4 GAME_VAR(float, 0x4a95f4)   /* -1 */
+#define k_0_333f GAME_VAR(float, 0x4a9704)   /* 0.333000004 */
+#define k_6_66f GAME_VAR(float, 0x4a9714)   /* 6.65999985 */
+#define k_450f GAME_VAR(float, 0x4a9718)   /* 450 */
+#define k_0_001111111f GAME_VAR(float, 0x4a971c)   /* 0.00111111114 */
+#define k_150f GAME_VAR(float, 0x4a9720)   /* 150 */
+#define k_0_0005555556f GAME_VAR(float, 0x4a9724)   /* 0.000555555569 */
+#define k_0_75f GAME_VAR(float, 0x4a9730)   /* 0.75 */
+#define k_900f GAME_VAR(float, 0x4a9734)   /* 900 */
+#define k_572_9578f GAME_VAR(float, 0x4a9738)   /* 572.957764 */
+#define k_9000000f GAME_VAR(float, 0x4a973c)   /* 9000000 */
+#define k_250000f GAME_VAR(float, 0x4a9740)   /* 250000 */
+#define k_170f GAME_VAR(float, 0x4a9748)   /* 170 */
+#define k_0_04f GAME_VAR(float, 0x4aa25c)   /* 0.0400000028 */
+#define k_256f GAME_VAR(float, 0x4aa260)   /* 256 */
+#define k_128f GAME_VAR(float, 0x4aa264)   /* 128 */
+#define k_0_125f GAME_VAR(float, 0x4aa274)   /* 0.125 */
+#define k_0_01666667f GAME_VAR(float, 0x4aa2a8)   /* 0.0166666675 */
+#define k_0_2f_4aa400 GAME_VAR(float, 0x4aa400)   /* 0.200000003 */
+#define k_0_7083333f GAME_VAR(float, 0x4aa414)   /* 0.708333313 */
+#define k_m180f GAME_VAR(float, 0x4aa418)   /* -180 */
+#define k_0_005f_4aa428 GAME_VAR(float, 0x4aa428)   /* 0.00499999989 */
+#define k_4000f GAME_VAR(float, 0x4aa434)   /* 4000 */
+#define k_1_1f GAME_VAR(float, 0x4aa438)   /* 1.10000002 */
+#define k_16f GAME_VAR(float, 0x4aa43c)   /* 16 */
+#define k_300f GAME_VAR(float, 0x4aa440)   /* 300 */
+#define k_200000f GAME_VAR(float, 0x4aa444)   /* 200000 */
+#define k_0_001745329f GAME_VAR(float, 0x4aa44c)   /* 0.00174532935 */
+#define k_0_00125f GAME_VAR(float, 0x4aa450)   /* 0.00124999997 */
+#define k_m0_002f GAME_VAR(float, 0x4aa470)   /* -0.00200000009 */
+#define k_30000f GAME_VAR(float, 0x4aa474)   /* 30000 */
+#define k_0_85f GAME_VAR(float, 0x4aa478)   /* 0.850000024 */
+#define k_14_11765f GAME_VAR(float, 0x4aa48c)   /* 14.1176472 */
+#define k_0_06666667f GAME_VAR(float, 0x4aa490)   /* 0.0666666701 */
+#define k_14_0625f GAME_VAR(float, 0x4aa494)   /* 14.0625 */
+#define k_75f GAME_VAR(float, 0x4aa504)   /* 75 */

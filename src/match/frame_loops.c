@@ -695,8 +695,8 @@ static void particle_aim(u8 *p, int by_size)
 	float len = f32(Vec3_normalize(d));
 	glPushMatrix();
 	glLoadIdentity();
-	float xy = by_size ? f32(fld_m(K(0x4a9424)) / fadd_m(fmul_m(fld_m(&PR->baseSize), K(0x4a9504)), K(0x4a9424))) : 1.0f;
-	float z = f32(fld_m(K(0x4a9424)) / fmul_m(fld_m(&len), K(0x4a9504)));
+	float xy = by_size ? f32(fld_m(&k_1f) / fadd_m(fmul_m(fld_m(&PR->baseSize), k_0_01f_4a9504), &k_1f)) : 1.0f;
+	float z = f32(fld_m(&k_1f) / fmul_m(fld_m(&len), k_0_01f_4a9504));
 	glScalef_bits(*(u32 *)&xy, *(u32 *)&xy, *(u32 *)&z);
 	gluLookAt(PR->pos[0], PR->pos[1], PR->pos[2], PR->target[0], PR->target[1], PR->target[2], 0.0, 1.0, 0.0);
 	float m[16];
@@ -729,7 +729,7 @@ static void particle_beam(u8 *s, u8 *p, u32 colour)
 	float step = f32(len);
 	if (!(len > 0))
 		return;
-	int n = ftol(fmul_m(fld_m(&step), K(0x4aa428)));
+	int n = ftol(fmul_m(fld_m(&step), &k_0_005f_4aa428));
 	u32 rec[13];
 	if (n <= 1) {
 		memset(rec, 0, sizeof rec);
@@ -772,14 +772,14 @@ static void particle_trail(u8 *p, const u8 *desc, u32 margin)
 	static const u8 uv[5] = { 0, 2, 3, 4, 5 };   /* (q[k] gives trailUv[k]; q[1] is not used) */
 	if (!margin) {
 		for (int k = 0; k < 5; k++) {
-			PR->trailUv[uv[k]] = f32(fadd_m(fmul_m(fld_m(&q[uv[k]]), K(0x4aa428)), K(0x4a942c)));
+			PR->trailUv[uv[k]] = f32(fadd_m(fmul_m(fld_m(&q[uv[k]]), &k_0_005f_4aa428), &k_0_5f));
 			if (k == 0)
 				BITS(PR->trailUv[1]) = 0x3f000000;   /* 0.5 */
 		}
 	} else {
 		long double d = fadd_m(fld_m(&PR->baseSize), K(margin));
 		for (int k = 0; k < 5; k++) {
-			PR->trailUv[uv[k]] = f32(fmul_m(fadd_m(fld_m(&q[uv[k]]) / d, K(0x4a9424)), K(0x4a942c)));
+			PR->trailUv[uv[k]] = f32(fmul_m(fadd_m(fld_m(&q[uv[k]]) / d, &k_1f), &k_0_5f));
 			if (k == 0)
 				BITS(PR->trailUv[1]) = 0x3f000000;
 		}

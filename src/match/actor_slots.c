@@ -456,27 +456,26 @@ void THISCALL (actor_updatePart)(u8 *scene, int a, int slot, int variant)
 		pl->weapon = it ? info->ammoSlot : -1;
 }
 
-#define K(address) ((const float *)RELOC(address))
 
 /* a hue as the colour code keeps it: wrapped (angle_wrap of it x 0x4a9418, then x 0x4a93ec), brought down by
    0x4a9460 when over 0x4a945c (*h updated); its byte ((h - 0x4aa418) x 0x4aa414 - 0x4aa264) */
 static u8 hue_byte(float *h)
 {
-	long double v = fmul_m(angle_wrap(f32(fmul_m(fld_m(h), K(0x4a9418)))), K(0x4a93ec));
+	long double v = fmul_m(angle_wrap(f32(fmul_m(fld_m(h), &k_10f))), &k_tenthsToDegrees);
 	*h = f32(v);
-	if (v > *K(0x4a945c))
-		*h = f32(fsub_m(fld_m(h), K(0x4a9460)));
-	return (u8)ftol(fsub_m(fmul_m(fsub_m(fld_m(h), K(0x4aa418)), K(0x4aa414)), K(0x4aa264)));
+	if (v > *&k_180f)
+		*h = f32(fsub_m(fld_m(h), &k_360f));
+	return (u8)ftol(fsub_m(fmul_m(fsub_m(fld_m(h), &k_m180f), &k_0_7083333f), &k_128f));
 }
 
 /* a saturation or value kept to -1 .. 0.999 (a NaN -1; *v updated); its byte (v x 0x4aa264) */
 static u8 level_byte(float *v)
 {
-	if (!(*v >= *K(0x4a9474)))
+	if (!(*v >= *&k_m1f))
 		*(u32 *)RELOC(v) = 0xbf800000;   /* -1.0 */
-	else if (!(*v < *K(0x4a9424)))
+	else if (!(*v < *&k_1f))
 		*(u32 *)RELOC(v) = 0x3f7fbe77;   /* 0.999 */
-	return (u8)ftol(fmul_m(fld_m(v), K(0x4aa264)));
+	return (u8)ftol(fmul_m(fld_m(v), &k_128f));
 }
 
 /* 0x474b50 (thiscall on the scene): player p's part (0 .. 4) coloured: two hue / saturation / value sets kept as
@@ -499,7 +498,6 @@ void THISCALL (actor_setPartColor)(u8 *scene, int p, int part, float h1, float s
 		shape_setTextureDir((u8 *)pr + shapes[part], dir, 2, *(u32 *)&h1, *(u32 *)&s1, *(u32 *)&v1,
 		                    *(u32 *)&h2, *(u32 *)&s2, *(u32 *)&v2);
 }
-#undef K
 
 #define K(address) ((const float *)RELOC(address))
 #define A(type, offset) GAME_VAR(type, ac + (offset))
@@ -549,19 +547,19 @@ void THISCALL (actor_updateAllParts)(u8 *s, int a, void *vv, int draw)
 	if ((((u32)AC->timerFlags) & 0x200) && AC->hackingLevel >= st->actors[local].hackingLevel) {
 		tint[0] = tint[1] = tint[2] = 0xff;
 		tint[3] = a == local ? 0x40 : 0x10;
-	} else if (!(AC->blinkTime > *K(0x4a9534))) {
-		if (!(AC->blinkTime >= *K(0x4a974c)))
-			tint[0] = tint[1] = tint[2] = tint[3] = (u8)ftol(fmul_m(fld_m(&AC->blinkTime), K(0x4a9748)));
+	} else if (!(AC->blinkTime > *&k_3f)) {
+		if (!(AC->blinkTime >= *k_1_5f))
+			tint[0] = tint[1] = tint[2] = tint[3] = (u8)ftol(fmul_m(fld_m(&AC->blinkTime), &k_170f));
 		else {
-			tint[0] = tint[1] = tint[2] = (u8)(0xff - ftol(fmul_m(fsub_m(fld_m(&AC->blinkTime), K(0x4a974c)), K(0x4a9748))));
+			tint[0] = tint[1] = tint[2] = (u8)(0xff - ftol(fmul_m(fsub_m(fld_m(&AC->blinkTime), k_1_5f), &k_170f)));
 			tint[3] = 0xff;
 		}
 	} else if (AC->glow > 0 || AC->hitFlash > 0) {
 		int c[3] = { 0, 0, 0 };
 		if (AC->glow > 0)
-			c[0] = c[1] = c[2] = ftol(fmul_m(fld_m(&AC->glow), K(0x4a9744)));
+			c[0] = c[1] = c[2] = ftol(fmul_m(fld_m(&AC->glow), k_255f));
 		if (AC->hitFlash > 0) {
-			int red = ftol(fmul_m(fld_m(&AC->hitFlash), K(0x4a9744)));
+			int red = ftol(fmul_m(fld_m(&AC->hitFlash), k_255f));
 			c[0] += red;
 			c[1] += red / 2;
 			c[2] += red / 2;
@@ -590,7 +588,7 @@ void THISCALL (actor_updateAllParts)(u8 *s, int a, void *vv, int draw)
 				lists = 0;
 			else {
 				float size = f32(fsub_m(fld_m(&AC->tagBottomRight[0]), &AC->tagTopLeft[0]));
-				if (fmul_m(fld_m(K(0x4a9510)) / (long double)gfx_getWidth(), K(0x4a9414)) > size)
+				if (fmul_m(fld_m(&k_640f) / (long double)gfx_getWidth(), k_40f) > size)
 					lists = 0;
 			}
 		}
@@ -633,7 +631,6 @@ void THISCALL (actor_updateAllParts)(u8 *s, int a, void *vv, int draw)
 #undef AC
 
 #define AC ((Player *)ac)   /* the same by its fields (src/scene.fields) */
-#define K(address) ((const float *)RELOC(address))
 
 /* n dwords from at in the actor set to v */
 static void fill_dwords(u8 *at, int n, u32 v)
@@ -646,7 +643,7 @@ static void fill_dwords(u8 *at, int n, u32 v)
 static long double level_factor(u8 *p, int k)
 {
 	PlayerRecord *pr = (PlayerRecord *)p;
-	return fadd_m(fmul_m((long double)g_profileRecords[pr->level].stats[4 + k], K(0x4a9420)), K(0x4a9424));
+	return fadd_m(fmul_m((long double)g_profileRecords[pr->level].stats[4 + k], &k_0_01f), &k_1f);
 }
 
 /* the mech's stats for actor ac from player record p's parts (the head, chest, arms, legs and booster records, the
@@ -678,28 +675,28 @@ static void mech_stats(u8 *s, u8 *ac, u8 *p, int check)
 		switch (it) {
 		case 0x1b:
 			for (int i = 0; i < 4; i++)
-				AC->ammoFactor[i] = f32(fadd_m(fld_m(AC->ammoFactor + i), K(0x4a94fc)));
+				AC->ammoFactor[i] = f32(fadd_m(fld_m(AC->ammoFactor + i), k_0_3f));
 			break;
 		case 0x1c: AC->ammoBonus[2] += 100; break;
 		case 0x1d: AC->ammoBonus[0] += 100; break;
 		case 0x1e: AC->ammoBonus[1] += 100; break;
 		case 0x1f: AC->ammoBonus[3] += 100; break;
 		case 0x20:
-			AC->rangeBonus = f32(fadd_m(fld_m(&AC->rangeBonus), K(0x4a9708)));
-			AC->lockOnTimeFactor = f32(fsub_m(fld_m(&AC->lockOnTimeFactor), K(0x4a942c)));
-			AC->targetKeepFactor = f32(fadd_m(fld_m(&AC->targetKeepFactor), K(0x4a9424)));
+			AC->rangeBonus = f32(fadd_m(fld_m(&AC->rangeBonus), &k_10000f));
+			AC->lockOnTimeFactor = f32(fsub_m(fld_m(&AC->lockOnTimeFactor), &k_0_5f));
+			AC->targetKeepFactor = f32(fadd_m(fld_m(&AC->targetKeepFactor), &k_1f));
 			AC->hackingBonus += 3;
 			break;
 		case 0x21:
-			AC->boostTimeFactor = f32(fadd_m(fld_m(&AC->boostTimeFactor), K(0x4a942c)));
-			AC->rechargeTimeFactor = f32(fsub_m(fld_m(&AC->rechargeTimeFactor), K(0x4a942c)));
-			AC->restTimeFactor = f32(fsub_m(fld_m(&AC->restTimeFactor), K(0x4a942c)));
+			AC->boostTimeFactor = f32(fadd_m(fld_m(&AC->boostTimeFactor), &k_0_5f));
+			AC->rechargeTimeFactor = f32(fsub_m(fld_m(&AC->rechargeTimeFactor), &k_0_5f));
+			AC->restTimeFactor = f32(fsub_m(fld_m(&AC->restTimeFactor), &k_0_5f));
 			break;
 		case 0x22:
-			AC->loadFactor = f32(fadd_m(fld_m(&AC->loadFactor), K(0x4a94f8)));
+			AC->loadFactor = f32(fadd_m(fld_m(&AC->loadFactor), &k_0_2f));
 			break;
 		case 0x23:
-			AC->shieldFactor = f32(fadd_m(fld_m(&AC->shieldFactor), K(0x4a94fc)));
+			AC->shieldFactor = f32(fadd_m(fld_m(&AC->shieldFactor), k_0_3f));
 			AC->shieldRegen += 4;
 			break;
 		}
@@ -721,40 +718,40 @@ static void mech_stats(u8 *s, u8 *ac, u8 *p, int check)
 				AC->load = f32(fadd_m(fld_m(&st->actorInfo[it].weight), &AC->load));
 		}
 	long double over = AC->load > AC->loadMax
-		? fmul_m(fdiv_m(fsub_m(fld_m(&AC->load), &AC->loadMax), &AC->loadMax), K(0x4a947c))
-		: fld_m(K(0x4a93e8));
-	AC->armorMax = ftol(fadd_m(level_factor(p, 2) * (long double)chest->maxArmor, K(0x4a942c)));
-	AC->shieldMax = ftol(fadd_m(fmul_m(level_factor(p, 2) * (long double)chest->maxShield, &AC->shieldFactor), K(0x4a942c)));
+		? fmul_m(fdiv_m(fsub_m(fld_m(&AC->load), &AC->loadMax), &AC->loadMax), &k_4f)
+		: fld_m(&k_0f);
+	AC->armorMax = ftol(fadd_m(level_factor(p, 2) * (long double)chest->maxArmor, &k_0_5f));
+	AC->shieldMax = ftol(fadd_m(fmul_m(level_factor(p, 2) * (long double)chest->maxShield, &AC->shieldFactor), &k_0_5f));
 	AC->accuracy = arms->stats[0];
 	for (int k = 0; k < 4; k++)
-		AC->ammoMax[k] = ftol(fadd_m(fmul_m((long double)arms->stats[1 + k], AC->ammoFactor + k), K(0x4a942c))) +
+		AC->ammoMax[k] = ftol(fadd_m(fmul_m((long double)arms->stats[1 + k], AC->ammoFactor + k), &k_0_5f)) +
 		                       AC->ammoBonus[k];
-	long double left = fld_m(K(0x4a9424)) - over;
+	long double left = fld_m(&k_1f) - over;
 	long double v = fmul_m(level_factor(p, 0), &legs->stat0) * left;
 	AC->mobility = f32(v);
 	if (!(v >= 0))
 		AC->mobility = 0.0f;
 	if (st->rocketArena == 1)
-		AC->mobility = f32(fmul_m(fld_m(&AC->mobility), K(0x4a9704)));
+		AC->mobility = f32(fmul_m(fld_m(&AC->mobility), &k_0_333f));
 	BITS(AC->leanPitch) = boost->lean;
 	AC->boostTime = f32(fmul_m(fld_m(&boost->activeTime[0]), &AC->boostTimeFactor));
 	AC->rechargeTime = f32(fmul_m(fld_m(&boost->activeTime[1]), &AC->rechargeTimeFactor));
 	AC->restTime = f32(fmul_m(fld_m(&boost->activeTime[2]), &AC->restTimeFactor));
 	/* the legs' factors: the level's second value plus the legs' own, plus 1 */
-#define LEG(f) fadd_m(fadd_m(fmul_m((long double)g_profileRecords[pr->level].stats[5], K(0x4a9420)), &legs->f), K(0x4a9424))
+#define LEG(f) fadd_m(fadd_m(fmul_m((long double)g_profileRecords[pr->level].stats[5], &k_0_01f), &legs->f), &k_1f)
 	v = fmul_m(LEG(speedCorrection), &boost->normalSpeed[0]) * left;
 	AC->speed = f32(v);
-	if (!(v >= *K(0x4a93f4)))
+	if (!(v >= *&k_100f))
 		AC->speed = 100.0f;   /* 100 */
 	v = fmul_m(fld_m(&legs->value2), &AC->speed);
 	AC->moveAccel = f32(v);
 	if (st->rocketArena == 1)   /* (the check scales the stored value) */
-		AC->moveAccel = f32(fmul_m(check ? fld_m(&AC->moveAccel) : v, K(0x4a9704)));
+		AC->moveAccel = f32(fmul_m(check ? fld_m(&AC->moveAccel) : v, &k_0_333f));
 	v = fdiv_m(fmul_m(LEG(bonus1), &boost->normalSpeed[1]), &AC->speed) * left;
 	AC->runTop[0] = f32(v);
 	if (!(v >= 0))
 		AC->runTop[0] = 0.0f;
-	v = fmul_m(fdiv_m(fmul_m(LEG(bonus3), &boost->normalSpeed[2]), &AC->speed) * left, K(0x4a9474));
+	v = fmul_m(fdiv_m(fmul_m(LEG(bonus3), &boost->normalSpeed[2]), &AC->speed) * left, &k_m1f);
 	AC->runTop[1] = f32(v);
 	if (v > 0)
 		AC->runTop[1] = 0.0f;
@@ -896,11 +893,9 @@ void THISCALL (actor_setupFromParts)(u8 *s, int a, int id, u32 a3, const u32 *pp
 	st->teamsChanged = 1;
 }
 #undef AC
-#undef K
 
 #define A(type, offset) GAME_VAR(type, ac + (offset))
 #define AC ((Player *)ac)   /* the same by its fields (src/scene.fields) */
-#define K(address) ((const float *)RELOC(address))
 
 /* the actor's eight part lists (constructed on the stack copy as the original does) */
 static const u16 k_listAt[8] = { offsetof(Player, headModel), offsetof(Player, chestModel), offsetof(Player, armsModel), offsetof(Player, legsModel), offsetof(Player, boosterModel), offsetof(Player, weaponModel), offsetof(Player, weaponModel4), offsetof(Player, weaponModel5) };
@@ -911,7 +906,7 @@ static int close_enough(const float *a, const float *b)
 	long double d = fsub_m(fld_m(a), b);
 	if (!(d >= 0))
 		d = -d;
-	return !(d > *K(0x4a93ec));
+	return !(d > *&k_tenthsToDegrees);
 }
 
 /* whether actor ac's stats agree with mine, worked out again from its player's record (mech_stats in check mode,
@@ -948,12 +943,12 @@ static int totals_agree(u8 *s, u8 *ac, u8 *me)
 	if (!close_enough(&AC->topSpeed, &act->speed))
 		return 0;
 	int d = AC->shieldRegen - act->shieldRegen;
-	if ((long double)(d < 0 ? -d : d) > *K(0x4a93ec))
+	if ((long double)(d < 0 ? -d : d) > *&k_tenthsToDegrees)
 		return 0;
 	if (AC->armor > AC->armorMax + 100 || AC->shield > AC->shieldMax + 100 || AC->ammo[0] > AC->ammoMax[0] ||
 	    AC->ammo[1] > AC->ammoMax[1] || AC->ammo[2] > AC->ammoMax[2] || AC->ammo[3] > AC->ammoMax[3] || AC->shieldRegen > 8)
 		return 0;
-	const float *heat = K(0x4a940c);
+	const float *heat = k_30f;
 	if ((AC->markSolo == 0 && AC->timers[0] > *heat) || AC->timers[1] > *heat || (AC->markSolo == 0 && AC->timers[2] > *heat) ||
 	    AC->timers[3] > *heat)
 		return 0;
@@ -982,4 +977,3 @@ u32 THISCALL (armc_computeTotals)(u8 *s, int a)
 }
 #undef A
 #undef AC
-#undef K

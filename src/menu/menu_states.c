@@ -37,13 +37,12 @@ static void draw_logo(int first)
 	glDisable(GL_TEXTURE_2D);
 }
 
-#define K(addr) ((const float *)RELOC(addr))
 /* v kept within 0 .. 1 (a NaN becomes 0) */
 static float unit(float v)
 {
-	if (!(v >= *K(0x4a93e8)))
+	if (!(v >= *&k_0f))
 		v = 0;
-	if (v > *K(0x4a9424))
+	if (v > *&k_1f)
 		v = 1;
 	return v;
 }
@@ -64,21 +63,21 @@ int (frontEnd_drawProgress)(void)
 	int n = g_loadStep * 16;
 	for (int i = 0; i < n && i < 200; i++) {
 		long double f = (long double)i;
-		float r = f32(fsubr_m(fmul_m(f, K(0x4a9404)), K(0x4a9424)));   /* 1 - i * 0.005 */
-		float b = f32(fmul_m(f, K(0x4a94d8)));                         /* i * 0.0051 */
+		float r = f32(fsubr_m(fmul_m(f, k_0_005f), &k_1f));   /* 1 - i * 0.005 */
+		float b = f32(fmul_m(f, &k_0_0051f));                         /* i * 0.0051 */
 		bar_column(i + 0x14, unit(r), 0.0f, unit(b));
 	}
 	if (n > 200)
 		for (int i = 0; i + 200 < 400 && i + 200 < n; i++) {
-			long double t = fmul_m((long double)i, K(0x4a9404));
+			long double t = fmul_m((long double)i, k_0_005f);
 			float g = f32(t), b = f32(1.0L - t);
 			bar_column(i + 0xdc, 0.0f, unit(g), unit(b));
 		}
 	if (n > 400) {
 		int i = 0;
 		do {
-			long double t = fmul_m((long double)i, K(0x4a9420));      /* i * 0.01 */
-			float r = f32(t), g = f32(fadd_m(t, K(0x4a9424)));
+			long double t = fmul_m((long double)i, &k_0_01f);      /* i * 0.01 */
+			float r = f32(t), g = f32(fadd_m(t, &k_1f));
 			bar_column(i + 0x1a4, unit(r), unit(g), 0.0f);
 			i++;
 		} while (i + 400 < n);
@@ -86,7 +85,6 @@ int (frontEnd_drawProgress)(void)
 	glFinish();
 	return SwapBuffers(g_desktopDC);
 }
-#undef K
 
 /* 0x41f540: the intro: the start-up logo shown once (dimmed), then the loading picture stepped four times (0x4dda34) around the start-up loads, with
    waits of 5 and 2 (1/60 s); then the title screen (200) with the front end's state reset, the pointer at

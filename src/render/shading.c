@@ -26,7 +26,6 @@ typedef struct {
 	float radius;   /* +0x28 */
 } Light;
 
-#define K(addr) ((const float *)RELOC(addr))
 #define MUL(a, b) fmul_m(fld_m(a), b)
 #define LIGHT_COUNT(factors) (((const LightFactors *)(factors))->count)
 
@@ -38,7 +37,7 @@ static int mul(int a, int b) { return (int)((u32)a * (u32)b); }
 /* the factor 1 - dot scaled to 0 .. 256 (none below 0) */
 static int facing(long double dot)
 {
-	int k = ftol(fmul_m(fsubr_m(dot, K(0x4a9424)), K(0x4aa264)));
+	int k = ftol(fmul_m(fsubr_m(dot, &k_1f), &k_128f));
 	return k < 0 ? 0 : k;
 }
 
@@ -131,7 +130,7 @@ void (shape_getShadingColorBufferBy)(u8 *out, int first, const Part *part, const
 				break;
 			}
 			long double rr = MUL(&r, &r);
-			float r2 = f32(rr), inner = f32(fmul_m(rr, K(0x4a94f8)));
+			float r2 = f32(rr), inner = f32(fmul_m(rr, &k_0_2f));
 			float range = f32(fsub_m(fld_m(&r2), &inner));
 			for (int j = 0; j < part->count; j++) {
 				const u8 *b = part->base + j * 4;
@@ -143,7 +142,7 @@ void (shape_getShadingColorBufferBy)(u8 *out, int first, const Part *part, const
 					continue;
 				}
 				if (d2 > inner) {
-					int k = ftol(fmul_m(fsubr_m(fdiv_m(fsub_m(fld_m(&d2), &inner), &range), K(0x4a9424)), K(0x4aa260)));
+					int k = ftol(fmul_m(fsubr_m(fdiv_m(fsub_m(fld_m(&d2), &inner), &range), &k_1f), &k_256f));
 					if (k > 0x100)
 						k = 0x100;
 					if (first == 1)
@@ -167,7 +166,7 @@ void (shape_getShadingColorBufferBy)(u8 *out, int first, const Part *part, const
 				memcpy(p, l->pos, sizeof p);
 			const float r = l->radius;
 			long double rr = MUL(&r, &r);
-			float r2 = f32(rr), inner = f32(fmul_m(rr, K(0x4aa25c)));
+			float r2 = f32(rr), inner = f32(fmul_m(rr, &k_0_04f));
 			for (int j = 0; j < part->count; j++) {
 				const float *n = part->normals + j * 3;
 				const u8 *b = part->base + j * 4;
@@ -179,7 +178,7 @@ void (shape_getShadingColorBufferBy)(u8 *out, int first, const Part *part, const
 					continue;
 				}
 				if (d2 > inner) {
-					int k = ftol(fdiv_m(fmul_m(fld_m(&inner), K(0x4aa260)), &d2));
+					int k = ftol(fdiv_m(fmul_m(fld_m(&inner), &k_256f), &d2));
 					if (k > 0x100)
 						k = 0x100;
 					int cr = mul(k, R) >> 8, cg = mul(k, G) >> 8, cb = mul(k, B) >> 8;
@@ -212,7 +211,7 @@ static void light_mix(u8 *out, const u8 *light, int i, const u8 *base)
 /* the intensity ((1 - d) x 0x4aa264, at least 0) of a light at the cosine d */
 static int light_level(long double d)
 {
-	int i = ftol(fmul_m(fld_m(K(0x4a9424)) - d, K(0x4aa264)));
+	int i = ftol(fmul_m(fld_m(&k_1f) - d, &k_128f));
 	return i < 0 ? 0 : i;
 }
 
@@ -252,7 +251,7 @@ void THISCALL (light_computeLayerLightBy)(u8 *scene, u8 *layer, u8 *cols, int fi
 				light_mix(cols + v * 4, light, i, first == 1 ? NULL : cols + v * 4);
 			}
 		if (gl->lit == 1) {
-			const float *above = gl->kind == 1 ? K(0x4a9474) : K(0x4a9424);
+			const float *above = gl->kind == 1 ? &k_m1f : &k_1f;
 			int i = light_level(MUL(above, &dir[1]));
 			u8 sky[4];
 			light_mix(sky, light, i, first == 1 ? NULL : (const u8 *)gl->boxColours);

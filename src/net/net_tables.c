@@ -1794,7 +1794,6 @@ PACKET_ENTRY(net_sendGamePacket, 1);
 
 #define G(type, offset) GAME_VAR(type, g + (offset))
 #define GS ((Scene *)g)   /* the same by its fields (src/scene.fields) */
-#define K(address) ((const float *)RELOC(address))
 #define STAGE ((u8 *)SCENE_STAGE(g))
 #define ACTOR(i) ((u8 *)&((Scene *)g)->players[i])   /* the stage's actors, from the game object */
 #define PLAYER(i) ((u8 *)&((Scene *)g)->playerRecords[i])
@@ -1815,7 +1814,7 @@ __attribute__((naked)) static u32 thiscall8_ecx(u32 fn, void *self, u32 a1, u32 
 }
 
 /* x 10 (a packed position) */
-static float tens(int v) { return f32(fmul_m((long double)v, K(0x4a9418))); }
+static float tens(int v) { return f32(fmul_m((long double)v, &k_10f)); }
 
 /* a table entry's checksum against the packet's: word w into a table of 'per' columns (count, stride) */
 static int table_ok(u8 *g, u32 base, u32 per, u32 count, int stride, u16 w, u32 sum)
@@ -1901,11 +1900,11 @@ void THISCALL (net_processGamePacket)(u8 *g, u32 from, int type, const char *pkt
 	case 0: {
 		int weapon = (b[4] >> 1) & 7, i = b[4] >> 4;
 		float x = tens(*(const short *)(pkt + 5)), y = tens(*(const short *)(pkt + 7)), z = tens(*(const short *)(pkt + 9));
-		long double h = fmul_m((long double)b[0xb], K(0x4aa494));
+		long double h = fmul_m((long double)b[0xb], &k_14_0625f);
 		float yaw = f32(h);
-		if (h > *K(0x4aa288))
-			yaw = f32(fsub_m(fld_m(&yaw), K(0x4a94c8)));
-		float pitch = f32(fmul_m((long double)b[0xc], K(0x4aa494)));
+		if (h > *&k_1800f)
+			yaw = f32(fsub_m(fld_m(&yaw), &k_3600f));
+		float pitch = f32(fmul_m((long double)b[0xc], &k_14_0625f));
 		if (GAME_VAR(int, PLAYER(i)) == 0) {
 			GS->sendFlags[GS->localPlayer][0] = 1;
 			GS->sendFlags[i][2] = 1;
@@ -1925,7 +1924,7 @@ void THISCALL (net_processGamePacket)(u8 *g, u32 from, int type, const char *pkt
 			msg_newKing(g);   /* msg_newKing */
 		}
 		ac->netFired = 1;
-		ac->armorDeadline = f32(fadd_m(fld_m(&ac->blinkTime), K(0x4a9418)));
+		ac->armorDeadline = f32(fadd_m(fld_m(&ac->blinkTime), &k_10f));
 		BITS(ac->timerFlags) = *(const u16 *)(pkt + 2);
 		if (weapon == 6)
 			ac->statusIcon = 1;
@@ -1940,14 +1939,14 @@ void THISCALL (net_processGamePacket)(u8 *g, u32 from, int type, const char *pkt
 		ac->netPos[2] = z;
 		ac->netPitch = yaw;
 		ac->netYaw = pitch;
-		ac->netMotion[0] = f32(fmul_m((long double)(signed char)b[0xd], K(0x4a955c)));
-		ac->netMotion[1] = f32(fmul_m((long double)(signed char)b[0xe], K(0x4a955c)));
-		ac->netMotion[2] = f32(fmul_m((long double)(b[0xf] >> 4), K(0x4aa490)));
-		ac->netMotion[4] = f32(fmul_m((long double)(b[0xf] & 0xf), K(0x4aa490)));
-		h = fmul_m((long double)b[0x10], K(0x4aa48c));
+		ac->netMotion[0] = f32(fmul_m((long double)(signed char)b[0xd], &k_tenth));
+		ac->netMotion[1] = f32(fmul_m((long double)(signed char)b[0xe], &k_tenth));
+		ac->netMotion[2] = f32(fmul_m((long double)(b[0xf] >> 4), &k_0_06666667f));
+		ac->netMotion[4] = f32(fmul_m((long double)(b[0xf] & 0xf), &k_0_06666667f));
+		h = fmul_m((long double)b[0x10], &k_14_11765f);
 		ac->netMotion[3] = f32(h);
-		if (h > *K(0x4aa288))
-			ac->netMotion[3] = f32(fsub_m(h, K(0x4a94c8)));
+		if (h > *&k_1800f)
+			ac->netMotion[3] = f32(fsub_m(h, &k_3600f));
 		int hurt;
 		if (b[0x11] & 0x80) {
 			ac->lastAttacker = b[0x11] & 0xf;
@@ -2203,7 +2202,7 @@ void THISCALL (net_processGamePacket)(u8 *g, u32 from, int type, const char *pkt
 				it->taken = BITS(it->fade) = 0;
 			else {
 				it->taken = 1;
-				it->fade = f32(fmul_m((long double)n, K(0x4a9418)));
+				it->fade = f32(fmul_m((long double)n, &k_10f));
 			}
 		}
 		GS->itemLevelsTaken = 1;
@@ -2213,7 +2212,6 @@ void THISCALL (net_processGamePacket)(u8 *g, u32 from, int type, const char *pkt
 }
 #undef G
 #undef GS
-#undef K
 #undef STAGE
 #undef ACTOR
 #undef PLAYER

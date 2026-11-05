@@ -2872,18 +2872,40 @@ extern struct GameData g_data;
 #define g_windowClass ((u8 *)g_windowClass_v)
 #undef g_writeMatchLog
 #define g_writeMatchLog (*(int *)g_writeMatchLog_v)
+#undef k_0_00125f
+#define k_0_00125f (g_rdata.k_0_00125f_)
+#undef k_0_001f
+#define k_0_001f (g_rdata.k_0_001f_)
 #undef k_0_00390625f
 #define k_0_00390625f (g_rdata.k_0_00390625f_)
+#undef k_0_0051f
+#define k_0_0051f (g_rdata.k_0_0051f_)
+#undef k_0_005f_4aa428
+#define k_0_005f_4aa428 (g_rdata.k_0_005f_4aa428_)
 #undef k_0_0078125f
 #define k_0_0078125f (g_rdata.k_0_0078125f_)
 #undef k_0_01f
 #define k_0_01f (g_rdata.k_0_01f_)
+#undef k_0_03f
+#define k_0_03f (g_rdata.k_0_03f_)
+#undef k_0_06666667f
+#define k_0_06666667f (g_rdata.k_0_06666667f_)
 #undef k_0_07f
 #define k_0_07f (g_rdata.k_0_07f_)
 #undef k_0_25f
 #define k_0_25f (g_rdata.k_0_25f_)
+#undef k_0_28125f
+#define k_0_28125f (g_rdata.k_0_28125f_)
+#undef k_0_2f_4aa400
+#define k_0_2f_4aa400 (g_rdata.k_0_2f_4aa400_)
 #undef k_0_3
 #define k_0_3 (g_rdata.k_0_3_)
+#undef k_0_333f
+#define k_0_333f (g_rdata.k_0_333f_)
+#undef k_0_7083333f
+#define k_0_7083333f (g_rdata.k_0_7083333f_)
+#undef k_0_75f
+#define k_0_75f (g_rdata.k_0_75f_)
 #undef k_0_95f
 #define k_0_95f (g_rdata.k_0_95f_)
 #undef k_1
@@ -2898,8 +2920,24 @@ extern struct GameData g_data;
 #define k_10f (g_rdata.k_10f_)
 #undef k_120f
 #define k_120f (g_rdata.k_120f_)
+#undef k_128f
+#define k_128f (g_rdata.k_128f_)
+#undef k_14_0625f
+#define k_14_0625f (g_rdata.k_14_0625f_)
+#undef k_1500f
+#define k_1500f (g_rdata.k_1500f_)
+#undef k_1500f_4a9700
+#define k_1500f_4a9700 (g_rdata.k_1500f_4a9700_)
+#undef k_150f
+#define k_150f (g_rdata.k_150f_)
+#undef k_16f
+#define k_16f (g_rdata.k_16f_)
 #undef k_1800f
 #define k_1800f (g_rdata.k_1800f_)
+#undef k_180f
+#define k_180f (g_rdata.k_180f_)
+#undef k_1_1f
+#define k_1_1f (g_rdata.k_1_1f_)
 #undef k_1_4
 #define k_1_4 (g_rdata.k_1_4_)
 #undef k_1_40625f
@@ -2908,6 +2946,8 @@ extern struct GameData g_data;
 #define k_1f (g_rdata.k_1f_)
 #undef k_2000000
 #define k_2000000 (g_rdata.k_2000000_)
+#undef k_200000f
+#define k_200000f (g_rdata.k_200000f_)
 #undef k_2000f
 #define k_2000f (g_rdata.k_2000f_)
 #undef k_200f
@@ -2920,20 +2960,34 @@ extern struct GameData g_data;
 #define k_23 (g_rdata.k_23_)
 #undef k_25
 #define k_25 (g_rdata.k_25_)
+#undef k_256f
+#define k_256f (g_rdata.k_256f_)
 #undef k_2_25f
 #define k_2_25f (g_rdata.k_2_25f_)
+#undef k_30000f
+#define k_30000f (g_rdata.k_30000f_)
 #undef k_3000f
 #define k_3000f (g_rdata.k_3000f_)
+#undef k_300f
+#define k_300f (g_rdata.k_300f_)
 #undef k_38f
 #define k_38f (g_rdata.k_38f_)
 #undef k_3_6f
 #define k_3_6f (g_rdata.k_3_6f_)
+#undef k_4000f
+#define k_4000f (g_rdata.k_4000f_)
+#undef k_400f
+#define k_400f (g_rdata.k_400f_)
+#undef k_450f
+#define k_450f (g_rdata.k_450f_)
 #undef k_45f
 #define k_45f (g_rdata.k_45f_)
 #undef k_49f
 #define k_49f (g_rdata.k_49f_)
 #undef k_4f
 #define k_4f (g_rdata.k_4f_)
+#undef k_5000f
+#define k_5000f (g_rdata.k_5000f_)
 #undef k_500f
 #define k_500f (g_rdata.k_500f_)
 #undef k_50f
@@ -2946,8 +3000,18 @@ extern struct GameData g_data;
 #define k_60f (g_rdata.k_60f_)
 #undef k_69_9
 #define k_69_9 (g_rdata.k_69_9_)
+#undef k_6_66f
+#define k_6_66f (g_rdata.k_6_66f_)
+#undef k_75f
+#define k_75f (g_rdata.k_75f_)
 #undef k_8
 #define k_8 (g_rdata.k_8_)
+#undef k_890f
+#define k_890f (g_rdata.k_890f_)
+#undef k_9000000f
+#define k_9000000f (g_rdata.k_9000000f_)
+#undef k_900f
+#define k_900f (g_rdata.k_900f_)
 #undef k_90f
 #define k_90f (g_rdata.k_90f_)
 #undef k_armcDistance
@@ -2960,6 +3024,8 @@ extern struct GameData g_data;
 #define k_clockRate (g_rdata.k_clockRate_)
 #undef k_m0_001f
 #define k_m0_001f (g_rdata.k_m0_001f_)
+#undef k_m0_002f
+#define k_m0_002f (g_rdata.k_m0_002f_)
 #undef k_m0_5f
 #define k_m0_5f (g_rdata.k_m0_5f_)
 #undef k_m100f
@@ -2970,6 +3036,16 @@ extern struct GameData g_data;
 #define k_m1101f (g_rdata.k_m1101f_)
 #undef k_m1500f
 #define k_m1500f (g_rdata.k_m1500f_)
+#undef k_m164f
+#define k_m164f (g_rdata.k_m164f_)
+#undef k_m168f
+#define k_m168f (g_rdata.k_m168f_)
+#undef k_m180f
+#define k_m180f (g_rdata.k_m180f_)
+#undef k_m1f_4a95f4
+#define k_m1f_4a95f4 (g_rdata.k_m1f_4a95f4_)
+#undef k_m360f
+#define k_m360f (g_rdata.k_m360f_)
 #undef k_m50f
 #define k_m50f (g_rdata.k_m50f_)
 #undef k_m549_99f
@@ -3037,27 +3113,43 @@ extern struct GameData g_data;
 #define k_640f (*(float *)IMG(0x4a9510))
 #undef k_3f
 #define k_3f (*(float *)IMG(0x4a9534))
-#undef k_0_28125f
-#define k_0_28125f (*(float *)IMG(0x4a9564))
-#undef k_890f
-#define k_890f (*(float *)IMG(0x4a972c))
 #undef k_27
 #define k_27 (*(double *)IMG(0x4aa408))
 #undef g_scene
 #define g_scene (*(Scene * *)IMG(0x9087b4))
 #undef g_white
 #define g_white (*(u32 *)IMG(0xa1f23c))
-#undef k_0_001f
-#define k_0_001f (*(float *)IMG(0x4a9480))
-#undef k_1500f
-#define k_1500f (*(float *)IMG(0x4a949c))
-#undef k_1500f_4a9700
-#define k_1500f_4a9700 (*(float *)IMG(0x4a9700))
 #undef k_1_95f
 #define k_1_95f (*(float *)IMG(0x4a9710))
-#undef k_400f
-#define k_400f (*(float *)IMG(0x4aa424))
-#undef k_5000f
-#define k_5000f (*(float *)IMG(0x4aa430))
 #undef k_26f
 #define k_26f (*(float *)IMG(0x4aa27c))
+#undef k_0_002777778f
+#define k_0_002777778f (*(float *)IMG(0x4a9488))
+#undef k_0_2777778f
+#define k_0_2777778f (*(float *)IMG(0x4a9490))
+#undef k_m200f
+#define k_m200f (*(float *)IMG(0x4a94a0))
+#undef k_105f
+#define k_105f (*(float *)IMG(0x4a94b4))
+#undef k_0_001111111f
+#define k_0_001111111f (*(float *)IMG(0x4a971c))
+#undef k_0_0005555556f
+#define k_0_0005555556f (*(float *)IMG(0x4a9724))
+#undef k_572_9578f
+#define k_572_9578f (*(float *)IMG(0x4a9738))
+#undef k_250000f
+#define k_250000f (*(float *)IMG(0x4a9740))
+#undef k_170f
+#define k_170f (*(float *)IMG(0x4a9748))
+#undef k_0_04f
+#define k_0_04f (*(float *)IMG(0x4aa25c))
+#undef k_0_125f
+#define k_0_125f (*(float *)IMG(0x4aa274))
+#undef k_0_01666667f
+#define k_0_01666667f (*(float *)IMG(0x4aa2a8))
+#undef k_0_001745329f
+#define k_0_001745329f (*(float *)IMG(0x4aa44c))
+#undef k_0_85f
+#define k_0_85f (*(float *)IMG(0x4aa478))
+#undef k_14_11765f
+#define k_14_11765f (*(float *)IMG(0x4aa48c))

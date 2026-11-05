@@ -83,14 +83,14 @@ static void object_glow(u8 *s, u8 *obj, float dt)
 	u8 hit[12];
 	if (clip[0] > nw && clip[1] > nw && clip[2] > nw && !(clip[0] >= clip[3]) && !(clip[1] >= clip[3]) &&
 	    !(clip[2] >= clip[3]) && collision_rayTrace(s, ST->cameraPos, p, hit) == 0) {
-		long double g = fadd_m(fmul_m(fld_m(&dt), K(0x4a947c)), &MO->glow);
+		long double g = fadd_m(fmul_m(fld_m(&dt), &k_4f), &MO->glow);
 		MO->glow = f32(g);
-		if (g > *K(0x4a9424))
+		if (g > *&k_1f)
 			BITS(MO->glow) = 0x3f800000;
 	} else {
-		long double g = fld_m(&MO->glow) - fmul_m(fld_m(&dt), K(0x4a947c));
+		long double g = fld_m(&MO->glow) - fmul_m(fld_m(&dt), &k_4f);
 		MO->glow = f32(g);
-		if (!(g >= *K(0x4a93e8)))
+		if (!(g >= *&k_0f))
 			(*(int *)&MO->glow) = 0;
 	}
 }
@@ -114,22 +114,22 @@ void THISCALL (actor_render)(u8 *s, int i, float dt)
 		MO->animTime = t;
 		switch (MO->animMode) {
 		case 1:
-			if (!(t >= *K(0x4a93e8)))
+			if (!(t >= *&k_0f))
 				anim_reset(obj);
-			else if (t > *K(0x4a9424)) {
+			else if (t > *&k_1f) {
 				BITS(MO->animTime) = 0x3f800000;
 				(*(int *)&MO->animRate) = 0;
 			}
 			break;
 		case 2: {
-			long double per = fld_m(K(0x4a9424)) / *&MO->animRate;
-			int now = ftol(fmul_m(fadd_m((long double)ST->clockSeconds, &ST->clockFraction), K(0x4a94bc)));
-			int r = now % ftol(fmul_m(per, K(0x4a94bc)));
-			MO->animTime = f32(fmul_m((long double)r, K(0x4a9480)) / per);
+			long double per = fld_m(&k_1f) / *&MO->animRate;
+			int now = ftol(fmul_m(fadd_m((long double)ST->clockSeconds, &ST->clockFraction), k_1000f));
+			int r = now % ftol(fmul_m(per, k_1000f));
+			MO->animTime = f32(fmul_m((long double)r, &k_0_001f) / per);
 			break;
 		}
 		case 3:
-			if (!(t >= *K(0x4a93e8)) || t > *K(0x4a9424))
+			if (!(t >= *&k_0f) || t > *&k_1f)
 				anim_reset(obj);
 			break;
 		}
@@ -160,10 +160,10 @@ void THISCALL (actor_render)(u8 *s, int i, float dt)
 	}
 	if ((obj[0xc] & 1) && g_items3D == 1) {
 		object_glow(s, obj, dt);
-		if ((obj[0xc] & 1) && g_items3D == 1 && MO->glow > *K(0x4a93e8)) {
+		if ((obj[0xc] & 1) && g_items3D == 1 && MO->glow > *&k_0f) {
 			volatile u32 flare[13];   /* (its eighth dword is never set, as in the original) */
 			flare[0] = 4;
-			flare[1] = ftol(fmul_m(fld_m(&MO->glow), K(0x4a9744)));
+			flare[1] = ftol(fmul_m(fld_m(&MO->glow), k_255f));
 			flare[2] = BITS(MO->place[0]);
 			flare[3] = BITS(MO->place[1]);
 			flare[4] = BITS(MO->place[2]);
@@ -189,7 +189,7 @@ void THISCALL (actor_render)(u8 *s, int i, float dt)
 			if (!(d2 >= nearest))
 				nearest = fld_m(&d2f);
 		}
-		long double r = fmul_m((long double)MO->trigger, K(0x4a93f4));
+		long double r = fmul_m((long double)MO->trigger, &k_100f);
 		if (MO->animRate == 0 || MO->animRate != MO->animRate) {
 			if (!(nearest >= r * r))
 				anim_start(s, i, obj, ADDR(k_0_001f));
@@ -197,7 +197,7 @@ void THISCALL (actor_render)(u8 *s, int i, float dt)
 			anim_start(s, i, obj, ADDR(k_m0_001f));
 	} else if (obj[0xc] & 0x10) {
 		if (MO->animRate == 0 || MO->animRate != MO->animRate) {
-			if (fmul_m((long double)MO->trigger, K(0x4a93f4)) > MO->waitTime) {
+			if (fmul_m((long double)MO->trigger, &k_100f) > MO->waitTime) {
 				MO->waitTime = f32(fadd_m(fld_m(&dt), &MO->waitTime));
 				return;
 			}
@@ -216,8 +216,8 @@ void THISCALL (actor_render)(u8 *s, int i, float dt)
 /* the screen point (the view's width +0x20f3a24 and height +0x20f3a28) of clip x / w and y / w */
 static void to_screen(u8 *s, long double qx, long double qy, float *out)
 {
-	out[0] = f32(fmul_m(fadd_m(qx, K(0x4a9424)) * (long double)ST->viewWidth, K(0x4a942c)));
-	out[1] = f32(fmul_m((fld_m(K(0x4a9424)) - qy) * (long double)ST->viewHeight, K(0x4a942c)));
+	out[0] = f32(fmul_m(fadd_m(qx, &k_1f) * (long double)ST->viewWidth, &k_0_5f));
+	out[1] = f32(fmul_m((fld_m(&k_1f) - qy) * (long double)ST->viewHeight, &k_0_5f));
 }
 
 /* whether the name tag's width on screen (tagTopLeft .. tagBottomRight) is under k (from the width 640 / the screen's) */
@@ -225,7 +225,7 @@ static int tag_narrow(u8 *ac, u32 k)
 {
 	Player *pl = (Player *)ac;
 	float span = f32(fsub_m(fld_m(&pl->tagBottomRight[0]), &pl->tagTopLeft[0]));
-	return fmul_m(fld_m(K(0x4a9510)) / (long double)gfx_getWidth(), K(k)) > span;
+	return fmul_m(fld_m(&k_640f) / (long double)gfx_getWidth(), K(k)) > span;
 }
 
 /* 0x4729b0 (thiscall on the scene): the camera for this frame at pos looking along dir (the last one kept at
@@ -340,7 +340,6 @@ void THISCALL (camera_setupView)(u8 *s, const float *pos, const float *dir, cons
 
 /* ---- 0x476890: a projectile drawn ---- */
 
-#define K(address) ((const float *)RELOC(address))
 #define PR ((Projectile *)p)   /* the same by its fields (src/scene.fields) */
 #define ALPHA(rgba) (((u8 *)&(rgba))[3])   /* an RGBA dword's alpha byte */
 #define TEX(k) (ST->effectTextures[k])   /* the effect textures */
@@ -372,7 +371,7 @@ static const float k_glowUV[4] = { 0.5f, 0.125f, 0.625f, 0.25f }, k_coreUV[4] = 
 static void glow(u8 *s, u8 *p, void *vv, long double a, float big, float small)
 {
 	float ab[4];
-	ALPHA(PR->colour) = clamp255(ftol(fmul_m(a * a, K(0x4aa264))));   /* 128 */
+	ALPHA(PR->colour) = clamp255(ftol(fmul_m(a * a, &k_128f)));   /* 128 */
 	square(ab, PR->owner == ST->selectedActor ? small : big);
 	quad(vv, TEX(0), k_glowUV, 0, p, ab, PR->pos, 2);
 }
@@ -381,13 +380,13 @@ static void glow(u8 *s, u8 *p, void *vv, long double a, float big, float small)
 static void sized_glow(u8 *s, u8 *p, void *vv, long double a, const float *add)
 {
 	float ab[4];
-	ALPHA(PR->colour) = clamp255(ftol(fmul_m(a * a, K(0x4aa264))));
+	ALPHA(PR->colour) = clamp255(ftol(fmul_m(a * a, &k_128f)));
 	long double size = fadd_m(fld_m(&PR->baseSize), add);
 	square(ab, size);
 	if (PR->owner == ST->selectedActor) {
-		ab[0] = f32(fmul_m(fld_m(&ab[0]), K(0x4a942c)));
-		ab[1] = f32(fmul_m(fld_m(&ab[1]), K(0x4a942c)));
-		ab[2] = ab[3] = (float)fmul_m(size, K(0x4a942c));
+		ab[0] = f32(fmul_m(fld_m(&ab[0]), &k_0_5f));
+		ab[1] = f32(fmul_m(fld_m(&ab[1]), &k_0_5f));
+		ab[2] = ab[3] = (float)fmul_m(size, &k_0_5f);
 	}
 	quad(vv, TEX(0), k_glowUV, 0, p, ab, PR->pos, 2);
 }
@@ -396,9 +395,9 @@ static void sized_glow(u8 *s, u8 *p, void *vv, long double a, const float *add)
 static void core(u8 *s, u8 *p, void *vv, const float *t, float h, float big, float small)
 {
 	float ab[4];
-	long double a = fsub_m(fld_m(K(0x4a9424)), t);
+	long double a = fsub_m(fld_m(&k_1f), t);
 	float a_rounded = (float)a;
-	ALPHA(PR->colour) = clamp255(ftol(fmul_m(a * a, K(0x4a9744))));   /* 255 */
+	ALPHA(PR->colour) = clamp255(ftol(fmul_m(a * a, k_255f)));   /* 255 */
 	square(ab, h);
 	quad(vv, TEX(0), k_coreUV, 0, p, ab, PR->pos, 2);
 	glow(s, p, vv, fld_m(&a_rounded), big, small);
@@ -408,14 +407,14 @@ static void core(u8 *s, u8 *p, void *vv, const float *t, float h, float big, flo
 static void flare(u8 *s, u8 *p, void *vv, float *t)
 {
 	float ab[4];
-	long double a = fsub_m(fld_m(K(0x4a9424)), t);
+	long double a = fsub_m(fld_m(&k_1f), t);
 	float a_rounded = (float)a;
 	long double a2 = a * a;
-	ALPHA(PR->colour) = clamp255(ftol(fmul_m(a2, K(0x4aa260))));   /* 256 */
-	*t = f32(fadd_m(fld_m(&PR->baseSize), K(0x4a93f0)));   /* (the original reuses t's slot) */
+	ALPHA(PR->colour) = clamp255(ftol(fmul_m(a2, &k_256f)));   /* 256 */
+	*t = f32(fadd_m(fld_m(&PR->baseSize), &k_200f));   /* (the original reuses t's slot) */
 	square(ab, fmul_m(a2, t));
 	quad(vv, TEX(0), k_coreUV, 200.0f, p, ab, PR->pos, 2);
-	sized_glow(s, p, vv, fld_m(&a_rounded), K(0x4a93d0));
+	sized_glow(s, p, vv, fld_m(&a_rounded), &k_5f);
 }
 
 /* a bolt: one of 8 frames by t on the strip at 0.9375, risen 100 t, +-100 (or the radius + 100), then the radius
@@ -423,45 +422,45 @@ static void flare(u8 *s, u8 *p, void *vv, float *t)
 static void bolt(u8 *s, u8 *p, void *vv, const float *t, int sized)
 {
 	float uv[4], ab[4], at[3];
-	int n = ftol(fmul_m(fld_m(t), K(0x4a94cc)));
+	int n = ftol(fmul_m(fld_m(t), k_8f));
 	if (n > 7)
 		n = 7;
-	uv[0] = f32(fmul_m((long double)(n << 4), K(0x4a957c)));
+	uv[0] = f32(fmul_m((long double)(n << 4), &k_0_00390625f));
 	uv[1] = 0.9375f;
-	uv[2] = f32(fadd_m(fld_m(&uv[0]), K(0x4a958c)));
+	uv[2] = f32(fadd_m(fld_m(&uv[0]), k_0_0625f));
 	uv[3] = 1.0f;
 	ALPHA(PR->colour) = 0xff;
 	memcpy(at, PR->pos, 12);
-	at[1] = f32(fadd_m(fmul_m(fld_m(t), K(0x4a93f4)), &at[1]));
+	at[1] = f32(fadd_m(fmul_m(fld_m(t), &k_100f), &at[1]));
 	if (sized)
-		square(ab, fadd_m(fld_m(&PR->baseSize), K(0x4a93f4)));
+		square(ab, fadd_m(fld_m(&PR->baseSize), &k_100f));
 	else
 		square(ab, 100.0f);
 	quad(vv, TEX(0), uv, 100.0f, p, ab, at, 2);
-	sized_glow(s, p, vv, fsub_m(fld_m(K(0x4a9424)), t), K(0x4a93fc));
+	sized_glow(s, p, vv, fsub_m(fld_m(&k_1f), t), &k_2f);
 }
 
 /* one of 16 frames (4 x 4, a quarter of the texture each) by t */
 static void frame16(float *uv, const float *t)
 {
-	int n = ftol(fmul_m(fld_m(t), K(0x4aa43c)));
+	int n = ftol(fmul_m(fld_m(t), &k_16f));
 	if (n > 15)
 		n = 15;
-	uv[0] = f32(fmul_m((long double)((n % 4) << 6), K(0x4a957c)));
-	uv[1] = f32(fmul_m((long double)((n / 4) << 6), K(0x4a957c)));
-	uv[2] = f32(fadd_m(fld_m(&uv[0]), K(0x4a941c)));
-	uv[3] = f32(fadd_m(fld_m(&uv[1]), K(0x4a941c)));
+	uv[0] = f32(fmul_m((long double)((n % 4) << 6), &k_0_00390625f));
+	uv[1] = f32(fmul_m((long double)((n / 4) << 6), &k_0_00390625f));
+	uv[2] = f32(fadd_m(fld_m(&uv[0]), &k_0_25f));
+	uv[3] = f32(fadd_m(fld_m(&uv[1]), &k_0_25f));
 }
 
 /* one of 16 frames (8 x 2 from the fourth row) by t, turned by the projectile's index (i % 4) */
 static void frame16_turned(float *uv, const float *t, int i)
 {
-	int n = ftol(fmul_m(fld_m(t), K(0x4aa43c)));
+	int n = ftol(fmul_m(fld_m(t), &k_16f));
 	if (n > 15)
 		n = 15;
-	long double u = fmul_m((long double)((n % 8) << 5), K(0x4a957c));
-	float v = f32(fmul_m((long double)((n / 8 + 3) << 5), K(0x4a957c)));
-	float u1 = f32(fadd_m(u, K(0x4aa274))), v1 = f32(fadd_m(fld_m(&v), K(0x4aa274)));
+	long double u = fmul_m((long double)((n % 8) << 5), &k_0_00390625f);
+	float v = f32(fmul_m((long double)((n / 8 + 3) << 5), &k_0_00390625f));
+	float u1 = f32(fadd_m(u, &k_0_125f)), v1 = f32(fadd_m(fld_m(&v), &k_0_125f));
 	switch (i % 4) {
 	case 0: uv[0] = (float)u; uv[1] = v; uv[2] = u1; uv[3] = v1; break;
 	case 1: uv[0] = (float)u; uv[1] = v1; uv[2] = u1; uv[3] = v; break;
@@ -475,8 +474,8 @@ static void frame16_turned(float *uv, const float *t, int i)
 static void smoke(u8 *s, u8 *p, void *vv, int i, float v0, float v1)
 {
 	int tex = TEX(5), phase = i % 8;
-	long double gx = fmul_m(fld_m((&g_vecUnitZXyz[0])), K(0x4a9558)), gy = fmul_m(fld_m((&g_vecUnitZXyz[1])), K(0x4a9558)),
-	            gz = fmul_m(fld_m((&g_vecUnitZXyz[2])), K(0x4a9558));
+	long double gx = fmul_m(fld_m((&g_vecUnitZXyz[0])), &k_m50f), gy = fmul_m(fld_m((&g_vecUnitZXyz[1])), &k_m50f),
+	            gz = fmul_m(fld_m((&g_vecUnitZXyz[2])), &k_m50f);
 	float v[3], at[3], uv[4], ab[4];
 	v[0] = f32((fmul_m(gz, &PR->matrix[8]) + fmul_m(gy, &PR->matrix[4])) + fmul_m(gx, &PR->matrix[0]));
 	v[1] = f32((fmul_m(gz, &PR->matrix[9]) + fmul_m(gy, &PR->matrix[5])) + fmul_m(gx, &PR->matrix[1]));
@@ -490,19 +489,19 @@ static void smoke(u8 *s, u8 *p, void *vv, int i, float v0, float v1)
 	for (int k = 0; k < 3; k++)
 		at[k] = f32(fadd_m(fld_m(&v[k]), &PR->pos[k]));
 	for (int k = 0; k < 10; k++) {
-		uv[0] = f32(fmul_m((long double)(((k + phase) % 8) << 5), K(0x4a957c)));
+		uv[0] = f32(fmul_m((long double)(((k + phase) % 8) << 5), &k_0_00390625f));
 		uv[1] = v0;
-		uv[2] = f32(fadd_m(fld_m(&uv[0]), K(0x4aa274)));
+		uv[2] = f32(fadd_m(fld_m(&uv[0]), &k_0_125f));
 		uv[3] = v1;
-		ALPHA(PR->colour) = (u8)ftol(fmul_m(fmul_m(fsubr_m(fmul_m((long double)k, K(0x4a955c)), K(0x4a9424)), &PR->target[1]), K(0x4a9744)));
+		ALPHA(PR->colour) = (u8)ftol(fmul_m(fmul_m(fsubr_m(fmul_m((long double)k, &k_tenth), &k_1f), &PR->target[1]), k_255f));
 		square(ab, size);
 		quad(vv, tex, uv, 0, p, ab, at, 2);
 		for (int j = 0; j < 3; j++)
-			v[j] = f32(fmul_m(fld_m(&v[j]), K(0x4aa438)));   /* 1.1 */
-		size = fmul_m(fld_m(&last), K(0x4aa438));
+			v[j] = f32(fmul_m(fld_m(&v[j]), &k_1_1f));   /* 1.1 */
+		size = fmul_m(fld_m(&last), &k_1_1f);
 		last = (float)size;
-		long double d0 = fmul_m(fld_m(&v[0]), K(0x4a94fc));   /* 0.3 */
-		float d1 = f32(fmul_m(fld_m(&v[1]), K(0x4a94fc))), d2 = f32(fmul_m(fld_m(&v[2]), K(0x4a94fc)));
+		long double d0 = fmul_m(fld_m(&v[0]), k_0_3f);   /* 0.3 */
+		float d1 = f32(fmul_m(fld_m(&v[1]), k_0_3f)), d2 = f32(fmul_m(fld_m(&v[2]), k_0_3f));
 		at[0] = f32(fadd_m(d0, &at[0]));
 		at[1] = f32(fadd_m(fld_m(&d1), &at[1]));
 		at[2] = f32(fadd_m(fld_m(&at[2]), &d2));
@@ -534,30 +533,30 @@ void THISCALL (projectile_draw)(u8 *s, int i, void *vv)
 		t = 0;
 	switch (type) {
 	case 0: {   /* one of 8 frames by the frame count, growing and fading */
-		uv[0] = f32(fmul_m((long double)((PR->id % 8) << 5), K(0x4a957c)));
+		uv[0] = f32(fmul_m((long double)((PR->id % 8) << 5), &k_0_00390625f));
 		uv[1] = 0;
-		uv[2] = f32(fadd_m(fld_m(&uv[0]), K(0x4aa274)));
+		uv[2] = f32(fadd_m(fld_m(&uv[0]), &k_0_125f));
 		uv[3] = 0.125f;
-		int a = ftol(fmul_m(fsub_m(fld_m(K(0x4a9424)), &t), K(0x4a9744)));
+		int a = ftol(fmul_m(fsub_m(fld_m(&k_1f), &t), k_255f));
 		ALPHA(PR->colour) = (u8)(a > 0xff ? 0xff : a);
-		square(ab, fmul_m(fadd_m(fld_m(&t), K(0x4a9424)), K(0x4a93f4)));
+		square(ab, fmul_m(fadd_m(fld_m(&t), &k_1f), &k_100f));
 		quad(vv, TEX(0), uv, 100.0f, p, ab, at, 2);
 		return;
 	}
 	case 1:
 	case 8: {   /* one of 8 frames by t; 1 rising 300 a second, 8 on the second strip (its own texture with an owner) */
-		int n = ftol(fmul_m(fld_m(&t), K(0x4a94cc)));
+		int n = ftol(fmul_m(fld_m(&t), k_8f));
 		if (n > 7)
 			n = 7;
 		int tex = type == 8 && PR->owner != 0 ? TEX(4) : TEX(0);
 		float pos[3];
-		uv[0] = f32(fmul_m((long double)(n << 5), K(0x4a957c)));
-		uv[2] = f32(fadd_m(fld_m(&uv[0]), K(0x4aa274)));
+		uv[0] = f32(fmul_m((long double)(n << 5), &k_0_00390625f));
+		uv[2] = f32(fadd_m(fld_m(&uv[0]), &k_0_125f));
 		memcpy(pos, at, 12);
 		if (type == 1) {
 			uv[1] = 0;
 			uv[3] = 0.125f;
-			pos[1] = f32(fadd_m(fmul_m(fld_m(&PR->drawAge), K(0x4aa440)), &pos[1]));
+			pos[1] = f32(fadd_m(fmul_m(fld_m(&PR->drawAge), &k_300f), &pos[1]));
 		} else {
 			uv[1] = 0.625f;
 			uv[3] = 0.75f;
@@ -567,15 +566,15 @@ void THISCALL (projectile_draw)(u8 *s, int i, void *vv)
 		return;
 	}
 	case 2:
-		if (!(PR->drawAge >= *K(0x4a9420)))
-			glow(s, p, vv, fsub_m(fld_m(K(0x4a9424)), &t), 600.0f, 300.0f);
+		if (!(PR->drawAge >= *&k_0_01f))
+			glow(s, p, vv, fsub_m(fld_m(&k_1f), &t), 600.0f, 300.0f);
 		frame16_turned(uv, &t, i);
 		square(ab, 300.0f);
 		quad(vv, TEX(0), uv, 300.0f, p, ab, at, 2);
 		return;
 	case 3:
-		if (!(PR->drawAge >= *K(0x4a9420)))
-			glow(s, p, vv, fsub_m(fld_m(K(0x4a9424)), &t), 1600.0f, 800.0f);
+		if (!(PR->drawAge >= *&k_0_01f))
+			glow(s, p, vv, fsub_m(fld_m(&k_1f), &t), 1600.0f, 800.0f);
 		frame16(uv, &t);
 		square(ab, 800.0f);
 		quad(vv, TEX(2), uv, 800.0f, p, ab, at, 2);
@@ -608,7 +607,7 @@ void THISCALL (projectile_draw)(u8 *s, int i, void *vv)
 	case 11:
 	case 18:
 		shape(vv, p, (void *)ST->effectShapes[type == 10 ? 0 : type == 11 ? 2 : 3], 0, 1);   /* shell / rail / blade fire */
-		glow(s, p, vv, fsub_m(fld_m(K(0x4a9424)), &t), 600.0f, 300.0f);
+		glow(s, p, vv, fsub_m(fld_m(&k_1f), &t), 600.0f, 300.0f);
 		return;
 	case 12:
 		core(s, p, vv, &t, 50.0f, 200.0f, 100.0f);
@@ -619,17 +618,17 @@ void THISCALL (projectile_draw)(u8 *s, int i, void *vv)
 		return;
 	case 15:
 	case 16: {   /* a glow and a rising flame (8 frames on the strip at 0.9375) */
-		glow(s, p, vv, fsub_m(fld_m(K(0x4a9424)), &t), 600.0f, 300.0f);
-		int n = ftol(fmul_m(fld_m(&t), K(0x4a94cc)));
+		glow(s, p, vv, fsub_m(fld_m(&k_1f), &t), 600.0f, 300.0f);
+		int n = ftol(fmul_m(fld_m(&t), k_8f));
 		if (n > 7)
 			n = 7;
 		float pos[3];
 		memcpy(pos, at, 12);
-		uv[0] = f32(fmul_m((long double)(n << 4), K(0x4a957c)));
+		uv[0] = f32(fmul_m((long double)(n << 4), &k_0_00390625f));
 		uv[1] = 0.9375f;
-		uv[2] = f32(fadd_m(fld_m(&uv[0]), K(0x4a958c)));
+		uv[2] = f32(fadd_m(fld_m(&uv[0]), k_0_0625f));
 		uv[3] = 1.0f;
-		pos[1] = f32(fadd_m(fmul_m(fld_m(&PR->drawAge), K(0x4a93f4)), &pos[1]));
+		pos[1] = f32(fadd_m(fmul_m(fld_m(&PR->drawAge), &k_100f), &pos[1]));
 		square(ab, 100.0f);
 		quad(vv, TEX(0), uv, 0, p, ab, pos, 2);
 		return;
@@ -642,7 +641,7 @@ void THISCALL (projectile_draw)(u8 *s, int i, void *vv)
 	case 22:
 		if (PR->owner == 1)
 			return;
-		square(ab, fadd_m(fld_m(&PR->baseSize), K(0x4a93f4)));
+		square(ab, fadd_m(fld_m(&PR->baseSize), &k_100f));
 		uv[0] = 0.875f;
 		uv[1] = 0.25f;
 		uv[2] = 1.0f;
@@ -650,8 +649,8 @@ void THISCALL (projectile_draw)(u8 *s, int i, void *vv)
 		quad(vv, TEX(0), uv, 0, p, ab, at, 2);
 		return;
 	case 24: {
-		long double a = fsub_m(fld_m(K(0x4a9424)), &t);
-		ALPHA(PR->colour) = clamp255(ftol(fmul_m(a * a, K(0x4aa260))));
+		long double a = fsub_m(fld_m(&k_1f), &t);
+		ALPHA(PR->colour) = clamp255(ftol(fmul_m(a * a, &k_256f)));
 		shape(vv, p, (*(void * *)&ST->effectShapes[5]), (u8 *)&PR->colour, 0);
 		return;
 	}
@@ -666,7 +665,7 @@ void THISCALL (projectile_draw)(u8 *s, int i, void *vv)
 		if (PR->owner == 1)
 			return;
 		shape(vv, p, (*(void * *)&ST->effectShapes[7]), 0, 1);
-		sized_glow(s, p, vv, fsub_m(fld_m(K(0x4a9424)), &t), K(0x4a9450));
+		sized_glow(s, p, vv, fsub_m(fld_m(&k_1f), &t), &k_500f);
 		return;
 	case 30:
 		bolt(s, p, vv, &t, 0);
@@ -685,22 +684,22 @@ void THISCALL (projectile_draw)(u8 *s, int i, void *vv)
 	case 35:   /* an explosion: 16 frames, the radius + 2000, then the radius glow (+4000) */
 		frame16(uv, &t);
 		ALPHA(PR->colour) = 0xff;
-		square(ab, fadd_m(fld_m(&PR->baseSize), K(0x4a9554)));
+		square(ab, fadd_m(fld_m(&PR->baseSize), &k_2000f));
 		quad(vv, TEX(2), uv, 2000.0f, p, ab, at, 2);
-		sized_glow(s, p, vv, fsub_m(fld_m(K(0x4a9424)), &t), K(0x4aa434));
+		sized_glow(s, p, vv, fsub_m(fld_m(&k_1f), &t), &k_4000f);
 		return;
 	case 36:
 		frame16_turned(uv, &t, i);
 		ALPHA(PR->colour) = 0xff;
 		square(ab, 1000.0f);
 		quad(vv, TEX(0), uv, 1000.0f, p, ab, at, 2);
-		sized_glow(s, p, vv, fsub_m(fld_m(K(0x4a9424)), &t), K(0x4a9554));
+		sized_glow(s, p, vv, fsub_m(fld_m(&k_1f), &t), &k_2000f);
 		return;
 	case 40: case 41: case 42: case 43: case 44: case 45: case 46: case 47: case 48: case 49: {
 		/* a trail's triangle (texture 8), its three colours fading over its last second */
 		int tex = TEX(8);
 		if (PR->drawAge > 1.0f)
-			ALPHA(PR->cornerColours[0]) = ALPHA(PR->cornerColours[1]) = ALPHA(PR->cornerColours[2]) = clamp255(ftol(fmul_m(fsub_m(fld_m(K(0x4a93fc)), &PR->drawAge), K(0x4aa260))));
+			ALPHA(PR->cornerColours[0]) = ALPHA(PR->cornerColours[1]) = ALPHA(PR->cornerColours[2]) = clamp255(ftol(fmul_m(fsub_m(fld_m(&k_2f), &PR->drawAge), &k_256f)));
 		ViewVolume_transformObject(vv, tex, (const u32 *)PR->trailUv, PR->cornerColours, &PR->trailPoints[0][0],
 		                           (*(const float * *)&PR->matrixFrom), 1, 1);
 		return;
@@ -710,7 +709,6 @@ void THISCALL (projectile_draw)(u8 *s, int i, void *vv)
 		return;
 	}
 }
-#undef K
 #undef PR
 #undef ALPHA
 #undef TEX

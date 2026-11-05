@@ -291,9 +291,7 @@ struct GameRdata g_rdata __attribute__((aligned(4096))) = {
 	.k_500f_ = 500.0f,
 	.k_armcDistance_ = 0xc3e10000,
 	.k_armcDistanceRoom_ = 0xc4c1c000,
-	.d_4a945c = {
-		180.0f,
-	},
+	.k_180f_ = 180.0f,
 	.k_360f_ = {
 		360.0f, 0.00625f, 0.05f,
 	},
@@ -303,21 +301,24 @@ struct GameRdata g_rdata __attribute__((aligned(4096))) = {
 		-1.0f, 0.15625f,
 	},
 	.k_4f_ = 4.0f,
-	.k_0_001f_ = {
-		0.001f, -164.0f,
-	},
-	.d_4a9488 = {
-		0x3b360b61,
-	},
-	.d_4a948c = {
-		-168.0f, 0.2777778f, 1300.0f,
+	.k_0_001f_ = 0.001f,
+	.k_m164f_ = -164.0f,
+	.k_0_002777778f_ = 0x3b360b61,
+	.k_m168f_ = -168.0f,
+	.k_0_2777778f_ = {
+		0.2777778f, 1300.0f,
 	},
 	.k_550f_ = 550.0f,
-	.k_1500f_ = {
-		1500.0f, -200.0f, -400.0f,
+	.k_1500f_ = 1500.0f,
+	.k_m200f_ = {
+		-200.0f, -400.0f,
 	},
 	.k_m2f_ = {
-		-2.0f, 600.0f, -360.0f, 105.0f, 0.036f, 1000.0f,
+		-2.0f, 600.0f,
+	},
+	.k_m360f_ = -360.0f,
+	.k_105f_ = {
+		105.0f, 0.036f, 1000.0f,
 	},
 	.k_0_01_ = {
 		2.0f, 1.035f,
@@ -326,9 +327,7 @@ struct GameRdata g_rdata __attribute__((aligned(4096))) = {
 		3600.0f, 8.0f,
 	},
 	.k_60_ = 6e+01,
-	.d_4a94d8 = {
-		0.0051f,
-	},
+	.k_0_0051f_ = 0.0051f,
 	.k_60f_ = 60.0f,
 	.k_1_ = 1.0,
 	.k_45f_ = 45.0f,
@@ -365,9 +364,8 @@ struct GameRdata g_rdata __attribute__((aligned(4096))) = {
 	.k_m50f_ = -50.0f,
 	.k_tenth_ = 0.1f,
 	.k_50f_ = 50.0f,
-	.k_0_28125f_ = {
-		0.28125f, 0.03f,
-	},
+	.k_0_28125f_ = 0.28125f,
+	.k_0_03f_ = 0.03f,
 	.d_4a956c = {
 		FN_ADDR(Texture_deletingDtor, 0x42b150), FN_ADDR(TextureManager_deletingDtor, 0x42b350), 0x3b088889,
 	},
@@ -402,8 +400,9 @@ struct GameRdata g_rdata __attribute__((aligned(4096))) = {
 	},
 	.k_1_4_ = 1.4,
 	.d_4a95e8 = {
-		85.0f, 86.0f, -0.9f, -1.0f,
+		85.0f, 86.0f, -0.9f,
 	},
+	.k_m1f_4a95f4_ = -1.0f,
 	.d_4a95f8 = {
 		0x00000018, 0x00000010, 0x00000002, 0x00000100, 0x00000100, IMG(0x0044f950),
 		0x00000018, 0x00000010, 0x00000002, 0x00000010, 0x00000007, IMG(0x00450950),
@@ -438,37 +437,26 @@ struct GameRdata g_rdata __attribute__((aligned(4096))) = {
 		0x456a6a41, 0x11d4e585, 0x50006296, 0x675b8eda, FN_ADDR(BMPRGBFile_deletingDtor, 0x455a80),
 	},
 	.k_m1500f_ = -1500.0f,
-	.k_1500f_4a9700_ = {
-		1500.0f, 0.333f,
-	},
+	.k_1500f_4a9700_ = 1500.0f,
+	.k_0_333f_ = 0.333f,
 	.k_10000f_ = 10000.0f,
 	.k_2_25f_ = 2.25f,
 	.k_1_95f_ = 0x3ff99999,
-	.d_4a9714 = {
-		6.66f, 450.0f,
-	},
-	.d_4a971c = {
-		0x3a91a2b4,
-	},
-	.d_4a9720 = {
-		150.0f,
-	},
-	.d_4a9724 = {
-		0x3a11a2b4,
-	},
+	.k_6_66f_ = 6.66f,
+	.k_450f_ = 450.0f,
+	.k_0_001111111f_ = 0x3a91a2b4,
+	.k_150f_ = 150.0f,
+	.k_0_0005555556f_ = 0x3a11a2b4,
 	.k_m890f_ = -890.0f,
-	.k_890f_ = {
-		890.0f, 0.75f, 900.0f,
+	.k_890f_ = 890.0f,
+	.k_0_75f_ = 0.75f,
+	.k_900f_ = 900.0f,
+	.k_572_9578f_ = 0x440f3d4c,
+	.k_9000000f_ = 9000000.0f,
+	.k_250000f_ = {
+		250000.0f, 255.0f,
 	},
-	.d_4a9738 = {
-		0x440f3d4c,
-	},
-	.d_4a973c = "@T\tK",
-	.d_4a9741 = "$tH",
-	.d_4a9746 = {
-		0x7f, 0x43,
-	},
-	.d_4a9748 = {
+	.k_170f_ = {
 		170.0f, 1.5f,
 	},
 	.k_27_7778f_ = {
@@ -512,15 +500,15 @@ struct GameRdata g_rdata __attribute__((aligned(4096))) = {
 	.d_4aa138 = "good bye friends",
 	.d_4aa238 = {
 		FN_ADDR(Console_deletingDtor, 0x460c20), FN_ADDR(Stage_deletingDtor, 0x463830), FN_ADDR(SkeletonManager_deletingDtor, 0x4637d0), FN_ADDR(ShapeManager_deletingDtor, 0x463010), FN_ADDR(Light_deletingDtor, 0x462580), FN_ADDR(ViewVolume_deletingDtor, 0x463430),
-		FN_ADDR(Model_deletingDtor, 0x462d10), FN_ADDR(CollisionVolume_deletingDtor, 0x4637b0), FN_ADDR(Scene_deletingDtor, 0x463810), 0x3d23d70b,
+		FN_ADDR(Model_deletingDtor, 0x462d10), FN_ADDR(CollisionVolume_deletingDtor, 0x4637b0), FN_ADDR(Scene_deletingDtor, 0x463810),
 	},
-	.d_4aa260 = {
-		256.0f, 128.0f,
-	},
+	.k_0_04f_ = 0x3d23d70b,
+	.k_256f_ = 256.0f,
+	.k_128f_ = 128.0f,
 	.k_1em8f_ = {
 		0x322bcc77, 0x3d638e39, 0x42652ee0,
 	},
-	.d_4aa274 = {
+	.k_0_125f_ = {
 		0.125f, 14.0f,
 	},
 	.k_26f_ = {
@@ -546,9 +534,7 @@ struct GameRdata g_rdata __attribute__((aligned(4096))) = {
 	.d_4aa2a4 = {
 		0.003921569f,
 	},
-	.d_4aa2a8 = {
-		0x3c888889,
-	},
+	.k_0_01666667f_ = 0x3c888889,
 	.d_4aa2b6 = {
 		0xf0, 0x3f,
 	},
@@ -621,34 +607,31 @@ struct GameRdata g_rdata __attribute__((aligned(4096))) = {
 	},
 	.k_8_ = 8.0,
 	.k_100_ = 1e+02,
-	.d_4aa400 = {
-		0.2f,
-	},
+	.k_0_2f_4aa400_ = 0.2f,
 	.d_4aa40e = {
 		0x3b, 0x40,
 	},
 	.d_4aa410 = {
 		2500.0f,
 	},
-	.d_4aa414 = "UU5?",
-	.d_4aa41a = {
-		0x34, 0xc3,
-	},
+	.k_0_7083333f_ = 0.7083333f,
+	.k_m180f_ = -180.0f,
 	.k_1_40625f_ = 1.40625f,
 	.k_0_0078125f_ = 0.0078125f,
-	.k_400f_ = {
-		400.0f, 0.005f,
-	},
+	.k_400f_ = 400.0f,
+	.k_0_005f_4aa428_ = 0.005f,
 	.k_3000f_ = 3000.0f,
-	.k_5000f_ = {
-		5000.0f, 4000.0f, 1.1f, 16.0f, 300.0f, 200000.0f,
-	},
+	.k_5000f_ = 5000.0f,
+	.k_4000f_ = 4000.0f,
+	.k_1_1f_ = 1.1f,
+	.k_16f_ = 16.0f,
+	.k_300f_ = 300.0f,
+	.k_200000f_ = 200000.0f,
 	.d_4aa448 = {
-		0x37a7c5ad, 0x3ae4c389,
+		0x37a7c5ad,
 	},
-	.d_4aa450 = {
-		0.00125f,
-	},
+	.k_0_001745329f_ = 0x3ae4c389,
+	.k_0_00125f_ = 0.00125f,
 	.d_4aa454 = {
 		0x00000000,
 	},
@@ -659,16 +642,14 @@ struct GameRdata g_rdata __attribute__((aligned(4096))) = {
 	.d_4aa468 = {
 		0xbeaaaaab, FN_ADDR(TimeSync_deletingDtor, 0x487450),
 	},
-	.d_4aa470 = {
-		-0.002f, 30000.0f, 0.85f, 7.0f, 0.02f, 750.0f,
-		0.6f,
+	.k_m0_002f_ = -0.002f,
+	.k_30000f_ = 30000.0f,
+	.k_0_85f_ = {
+		0.85f, 7.0f, 0.02f, 750.0f, 0.6f,
 	},
-	.d_4aa48c = {
-		0x4161e1e2,
-	},
-	.d_4aa490 = {
-		0.06666667f, 14.0625f,
-	},
+	.k_14_11765f_ = 0x4161e1e2,
+	.k_0_06666667f_ = 0.06666667f,
+	.k_14_0625f_ = 14.0625f,
 	.k_clockRate3_ = {
 		15.0f, 0.07111111f,
 	},
@@ -691,8 +672,9 @@ struct GameRdata g_rdata __attribute__((aligned(4096))) = {
 		0x3e2aaaab,
 	},
 	.d_4aa500 = {
-		-1.5f, 75.0f,
+		-1.5f,
 	},
+	.k_75f_ = 75.0f,
 	.d_4aa508 = {
 		0xffffffff, IMG(0x0049fa4d), IMG(0x0049fa61), 0x00000000, 0xffffffff, 0x00000000,
 		IMG(0x0049fcb7), 0x00000000, 0xffffffff, IMG(0x0049fd0b), IMG(0x0049fd15), 0x00000000,

@@ -33,20 +33,20 @@ static void mode_box(void)
 static int turned(int h) { return h >= 0 && h < 180 ? h + 180 : h - 180; }
 static long double turned_f(long double h)
 {
-	return h >= 0 && h < *K(0x4a945c) ? fadd_m(h, K(0x4a945c)) : fsub_m(h, K(0x4a945c));
+	return h >= 0 && h < *&k_180f ? fadd_m(h, &k_180f) : fsub_m(h, &k_180f);
 }
 
 /* a 0 .. 99 percentage */
 static int percent(long double v)
 {
-	int p = ftol(fmul_m(v, K(0x4a93f4)));
+	int p = ftol(fmul_m(v, &k_100f));
 	return p >= 100 ? 99 : p;
 }
 
 /* a -1 .. 1 value as a 0 .. 99 percentage */
 static int half_percent(long double v)
 {
-	int p = ftol(fmul_m(fmul_m(fadd_m(v, K(0x4a9424)), K(0x4a93f4)), K(0x4a942c)));
+	int p = ftol(fmul_m(fmul_m(fadd_m(v, &k_1f), &k_100f), &k_0_5f));
 	return p >= 100 ? 99 : p;
 }
 
@@ -80,7 +80,7 @@ static void bar(float pos, int y)
 	glTexCoord2f(0.0f, 0.9375f);
 	glVertex(X1 - 0xba, y);
 	glTexCoord2f(pos, 0.9375f);
-	int x = ftol(fmul_m(fld_m(&pos), K(0x4a948c)));
+	int x = ftol(fmul_m(fld_m(&pos), &k_m168f));
 	glVertex(X1 - x - 0xba, y);
 	glTexCoord2f(pos, 1.0f);
 	glVertex(X1 - x - 0xba, y + 0x10);
@@ -92,7 +92,7 @@ static void bar(float pos, int y)
 static void marker(float pos, int y)
 {
 	glTexCoord2f(0.0f, 0.8125f);
-	int x = ftol(fmul_m(fld_m(&pos), K(0x4a9484)));
+	int x = ftol(fmul_m(fld_m(&pos), &k_m164f));
 	glVertex(X1 - x - 0xbd, y);
 	glTexCoord2f(0.03125f, 0.8125f);
 	glVertex(X1 - x - 0xb5, y);
@@ -120,10 +120,10 @@ void (armc_drawColourEditor)(void)
 	text_draw8b(X1 - 200, Y0 + 0xe4, X1, (const char *)MSG(492, "SECONDARY COLOR"));
 	for (int k = 0; k < 3; k++) {
 		int y = Y0 + k * 0x30;
-		int v1 = k == 0 ? ftol(fmul_m((long double)turned(ftol(fld_m(&SLOT[0]))), K(0x4a9490)))
+		int v1 = k == 0 ? ftol(fmul_m((long double)turned(ftol(fld_m(&SLOT[0]))), &k_0_2777778f))
 		                : percent(fld_m(&SLOT[k]));
 		value_line(k, y + 0x46, v1);
-		int v2 = k == 0 ? ftol(fmul_m((long double)turned(ftol(fld_m(&SLOT[3]))), K(0x4a9490)))
+		int v2 = k == 0 ? ftol(fmul_m((long double)turned(ftol(fld_m(&SLOT[3]))), &k_0_2777778f))
 		                : half_percent(fld_m(&SLOT[3 + k]));
 		value_line(k, y + 0xf6, v2);
 	}
@@ -174,15 +174,15 @@ void (armc_drawColourEditor)(void)
 		if (k == 0) {
 			long double h1 = turned_f(fld_m(&SLOT[0]));
 			long double h2 = turned_f(fld_m(&SLOT[3]));
-			pos1 = f32(fmul_m(h1, K(0x4a9488)));
-			pos2 = f32(fmul_m(h2, K(0x4a9488)));
+			pos1 = f32(fmul_m(h1, &k_0_002777778f));
+			pos2 = f32(fmul_m(h2, &k_0_002777778f));
 			glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 			glColor4f(1.0f, 1.0f, 1.0f, 0.5f);
 			marker(pos1, Y0 + 0x5a);
 			marker(pos2, Y0 + 0x10a);
 		} else {
 			pos1 = SLOT[k];
-			pos2 = f32(fmul_m(fadd_m(fld_m(&SLOT[3 + k]), K(0x4a9424)), K(0x4a942c)));
+			pos2 = f32(fmul_m(fadd_m(fld_m(&SLOT[3 + k]), &k_1f), &k_0_5f));
 			glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 			glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 			bar(pos1, Y0 + k * 0x30 + 0x5a);

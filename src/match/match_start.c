@@ -273,7 +273,6 @@ void THISCALL (scene_reset)(u8 *s)
 	memset(st->idTable, 0xff, 0x32 * 4);
 }
 
-#define K(address) ((const float *)RELOC(address))
 
 /* a part type's (or the stage's) shape set and skeleton set sized into their blocks */
 static void model_sets(u8 *shapes, const char *dir, int n, int extra, int size, u8 *skels, const char *skel_dir, int sn,
@@ -314,8 +313,8 @@ void THISCALL (item_initTextures)(u8 *s, u32 a1, u32 a2, const char *sky, u32 a4
 	long double root = 1;
 	root = x87_fsqrt(k_27);
 	memset((u8 *)s + offsetof(Stage, clearOn), 0, 14 * 4);   /* clearOn and the next 13 dwords */
-	long double inv = fld_m(K(0x4a9424)) / root;
-	float r = f32(inv), out = f32(fmul_m(inv, K(0x4a9534)));
+	long double inv = fld_m(&k_1f) / root;
+	float r = f32(inv), out = f32(fmul_m(inv, &k_3f));
 	for (int face = 0; face < 6; face++) {
 		st->skyTextures[face] = -1;
 		float *dst = &st->skySphere[face][0][0][0];
@@ -341,12 +340,12 @@ void THISCALL (item_initTextures)(u8 *s, u32 a1, u32 a2, const char *sky, u32 a4
 	st->layerTextures[0] = st->layerTextures[1] = -1;
 	float *dome = &st->layer[0][0][0];
 	for (int i = 0; i <= 6; i++) {
-		int ai = ftol(fmul_m(fsub_m((long double)i, K(0x4a9534)), K(0x4a93f0)));
+		int ai = ftol(fmul_m(fsub_m((long double)i, &k_3f), &k_200f));
 		for (int j = 0; j <= 6; j++, dome += 3) {
 			u32 v[3] = { 0, 0x3f800000, 0 };
 			Vec3_rotateAxis((float *)RELOC(v), 1, ai);
-			Vec3_rotateAxis((float *)RELOC(v), 0, ftol(fmul_m(fsub_m((long double)j, K(0x4a9534)), K(0x4a93f0))));
-			((float *)RELOC(v))[1] = f32(fsub_m(fld_m((float *)&v[1]), K(0x4a942c)));
+			Vec3_rotateAxis((float *)RELOC(v), 0, ftol(fmul_m(fsub_m((long double)j, &k_3f), &k_200f)));
+			((float *)RELOC(v))[1] = f32(fsub_m(fld_m((float *)&v[1]), &k_0_5f));
 			memcpy(dome, v, 12);
 		}
 	}
@@ -367,9 +366,9 @@ void THISCALL (item_initTextures)(u8 *s, u32 a1, u32 a2, const char *sky, u32 a4
 	memset(st->floorTextures, 0xff, 16 * 4);
 	float *grid = &st->floor[0][0][0];
 	for (int i = 0; i <= 10; i++) {
-		float x = f32(fmul_m(fsub_m((long double)i, K(0x4a93d0)), K(0x4aa400)));
+		float x = f32(fmul_m(fsub_m((long double)i, &k_5f), &k_0_2f_4aa400));
 		for (int j = 0; j <= 10; j++, grid += 3) {
-			grid[0] = f32(fmul_m(fsub_m((long double)j, K(0x4a93d0)), K(0x4aa400)));
+			grid[0] = f32(fmul_m(fsub_m((long double)j, &k_5f), &k_0_2f_4aa400));
 			BITS(grid[1]) = 0;
 			grid[2] = x;
 		}
@@ -429,4 +428,3 @@ void THISCALL (item_initTextures)(u8 *s, u32 a1, u32 a2, const char *sky, u32 a4
 	scene_reset(s);
 	st->built = 1;
 }
-#undef K
