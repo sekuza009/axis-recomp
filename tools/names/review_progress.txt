@@ -117,4 +117,4 @@
 [ ] src/globals.h (every global: name vs its uses)
 [ ] src/objects.h
 [ ] src/scene.fields (every field: name vs its uses)
-[ ] src/game.h / calls.h macro parameter names
+[x] src/game.h / calls.h macro parameter names

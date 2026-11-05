@@ -171,8 +171,8 @@ typedef struct { u32 vtable; void *banks[6]; i32 count; } TextureManager;   /* t
 #define crt_fprintf(...) GAME_CDECL(0x49f135, int, void *, const char *, ...)(__VA_ARGS__)
 #define net_localSlot() GAME_FN(net_localSlot, 0x4a86f0, int, void)()   /* the local player's slot */
 #define netq_clearResends() GAME_FN(netq_clearResends, 0x4a8720, void, void)()
-#define actor_setPartColor_bits(stage, p, part, a, b, c, d, e, f) GAME_THISFN(actor_setPartColor, 0x474b50, u32, void *, int, int, u32, u32, u32, \
-	u32, u32, u32)(stage, p, part, a, b, c, d, e, f)   /* (the six as a float's bits) */
+#define actor_setPartColor_bits(stage, p, part, h1, s1, v1, h2, s2, v2) GAME_THISFN(actor_setPartColor, 0x474b50, u32, void *, int, int, u32, u32, u32, \
+	u32, u32, u32)(stage, p, part, h1, s1, v1, h2, s2, v2)   /* (the six as a float's bits) */
 #define view_setAngle(v) GAME_FN(view_setAngle, 0x4686e0, int, u32)(v)   /* the view angle (0x4c4dec) set, a float's bits */
 #define msg_kill(scene, victim, killer) GAME_THISFN(msg_kill, 0x4630c0, void, void *, int, int)(scene, victim, killer)
 #define flag_uploadAtlas(scene) GAME_THISFN(flag_uploadAtlas, 0x473610, void, void *)(scene)
@@ -185,7 +185,7 @@ typedef struct { u32 vtable; void *banks[6]; i32 count; } TextureManager;   /* t
 #define quat_fromMatrix(q, m) GAME_THISFN(quat_fromMatrix, 0x47d0f0, void, float *, const float *)(q, m)   /* a rotation matrix to a quaternion */
 #define quat_toAxisAngle(out, q) GAME_THISFN(quat_toAxisAngle, 0x47d260, void, float *, const float *)(out, q)
 #define factor_addFactorBy(pool, record) GAME_THISFN(factor_addFactorBy, 0x483dd0, void, void *, void *)(pool, record)   /* a 0x2c-byte factor record added */
-#define light_computeLayerLightBy(scene, layer, verts, a, b, c, rows, cols) GAME_THISFN(light_computeLayerLightBy, 0x472400, void, void *, const void *, u32, int, int, int, int, int)(scene, layer, verts, a, b, c, rows, cols)
+#define light_computeLayerLightBy(scene, layer, cols, first, r0, c0, r1, c1) GAME_THISFN(light_computeLayerLightBy, 0x472400, void, void *, const void *, u32, int, int, int, int, int)(scene, layer, cols, first, r0, c0, r1, c1)
 #define bullet_update(scene, slot, dt_bits) GAME_THISFN(bullet_update, 0x47a2d0, void, void *, int, int)(scene, slot, dt_bits)
 #define particle_update(scene, slot, dt) GAME_THISFN(particle_update, 0x476410, void, void *, int, int)(scene, slot, dt)   /* one effect updated */
 #define mapObject_frame(scene, i, dt) GAME_THISFN(mapObject_frame, 0x490440, void, void *, int, int)(scene, i, dt)
@@ -747,7 +747,7 @@ typedef struct { float r, g, b, a; } Colour;
 #define armc_drawTextRight(x, y, text) GAME_FN(armc_drawTextRight, 0x4125f0, void, int, int, const char *)(x, y, text)   /* right-aligned at x */
 #define armc_readMechStats() GAME_FN(armc_readMechStats, 0x41c510, void, void)()
 #define actor_selectWeapon(stage, actor, slot) GAME_THISFN(actor_selectWeapon, 0x45e880, void, Stage *, int, int)(stage, actor, slot)
-#define scene_startSession(scene, a, mode) GAME_THISFN(scene_startSession, 0x460cb0, void, Scene *, int, int)(scene, a, mode)
+#define scene_startSession(scene, client, mode) GAME_THISFN(scene_startSession, 0x460cb0, void, Scene *, int, int)(scene, client, mode)
 
 #define armc_restoreMenuCamera() GAME_FN(armc_restoreMenuCamera, 0x40e670, void, void)()
 #define armc_saveSelection() GAME_FN(armc_saveSelection, 0x40e7a0, void, void)()       /* keep the mech, save the progress */
@@ -955,7 +955,7 @@ typedef struct { float r, g, b, a; } Colour;
 #define ladder_checkAndSendRecord() GAME_FN(ladder_checkAndSendRecord, 0x4327f0, void, void)()
 
 /* ---- start-up objects (app/statics.c) ---- */
-#define ErrorLog_ctor(self, name, b) GAME_THISFN(ErrorLog_ctor, 0x46c5a0, void *, void *, const char *, int)(self, name, b)   /* a named record (vtable 0x4aa2a0) */
+#define ErrorLog_ctor(self, name, cleanupHook) GAME_THISFN(ErrorLog_ctor, 0x46c5a0, void *, void *, const char *, int)(self, name, cleanupHook)   /* a named record (vtable 0x4aa2a0) */
 #define atexit(f) GAME_CDECL(0x49ef9c, int, void (*)(void))(f)
 
 /* ---- small classes (app/classes.c) ---- */

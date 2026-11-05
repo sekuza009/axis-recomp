@@ -190,11 +190,11 @@ DELETING(BMPRGBFile, BMPRGBFile_dtor)
 void THISCALL (ErrorLog_dtor)(u32 *self) { self[0] = VT(ErrorLog, 0x4aa2a0); }
 DELETING(ErrorLog, ErrorLog_dtor)
 void (static_endSoundLog)(void) { ErrorLog_dtor(g_logSound); }
-void *THISCALL (ErrorLog_ctor)(u32 *self, const char *name, int b)
+void *THISCALL (ErrorLog_ctor)(u32 *self, const char *name, int cleanupHook)
 {
 	self[0] = VT(ErrorLog, 0x4aa2a0);
 	self[1] = (u32)name;
-	g_errorCleanupHook = b;
+	g_errorCleanupHook = cleanupHook;
 	return self;
 }
 
@@ -583,18 +583,18 @@ static void zero_dwords(u8 *at, int n)
 		GAME_VAR(u32, at + k * 4) = 0;
 }
 
-/* 0x460cb0 (thiscall on the game object): a session started in mode (+4 client a, +8 sessionMode: 0 solo, 1 network, 2 the ARM CENTER, 3 replays). With no CD found a fatal
+/* 0x460cb0 (thiscall on the game object): a session started in mode (+4 client, +8 sessionMode: 0 solo, 1 network, 2 the ARM CENTER, 3 replays). With no CD found a fatal
    message. Its counters cleared; in mode 3 the names of the replay list's entries flagged +0x40 (0x9dda88, 0x44-byte
    records, 0x9eeab8 of them) copied to +0x1f1cbc (0x40 each, count +0x1f35bc); actors and scene reset; mode 2 also
    clears the armour cache, the view box (+0xbe2fcc: -100000 .. 100000, twice), and sets the game type flags for type
    0; the camera from 0xa0e7a8.. (direction negated), the HUD mode +0x233cc20 (mode 2 -> 3, 3 -> 1, else 2) and its
    defaults, the match state (teams_setup), the notices (net_clearAnnouncements) and the lobby slots (+0x234240d -1 in modes 1
    and 3). Its callers ignore the eax it leaves */
-void THISCALL (scene_startSession)(u8 *g, u32 a, int mode)
+void THISCALL (scene_startSession)(u8 *g, u32 client, int mode)
 {
 	if (!cd_findDrive())
 		sys_fatalErrorN((char *)OBJ(g_logConsole), g_insertCdMessage);
-	GS->client = a;
+	GS->client = client;
 	GS->sessionMode = mode;
 	GS->renderMode = 0;
 	zero_dwords((u8 *)g + offsetof(Scene, rotationCount), 3);   /* rotationCount .. awaitingHostRound */
