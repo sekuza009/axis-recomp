@@ -299,8 +299,8 @@ typedef struct Player {
 	i32 lastHitWeapon;   /* +0x4c4: (by use) the last hit's weapon (an actorInfo index: the kill message names it, "crushed X(SG-18)"; was named mechType) */
 	u8 _pad00004c8[0x4];
 	i32 weapon;   /* +0x4cc: the selected weapon slot */
-	i32 order;   /* +0x4d0: (by use) an order to carry out this frame (-1 none): 0 refill, 1 ammunition, 2 / 3 orderFlag on / off, 4 a death */
-	i32 bigHead;   /* +0x4d4: 1: its head drawn five times larger (order 2 on, 3 off; sent as state bit 0x1000) */
+	i32 cheat;   /* +0x4d0: a cheat code to apply this frame (-1 none): 0 armour and shield refilled, 1 ammunition, 2 / 3 big head on / off, 4 suicide (chat_matchCheatCode; net) */
+	i32 bigHead;   /* +0x4d4: 1: its head drawn five times larger (cheat 2 on, 3 off; sent as state bit 0x1000) */
 	i32 isKing;   /* +0x4d8: 1: the king (King of the Hill: the leader; scene_updateRanking): a mark after its ranking row and over it, five times the points */
 	i32 isCommander;   /* +0x4dc: 1: its team's commander (Platoon: the most time; scene_updateRanking; YOUR COMMANDER .. HAS BEEN KILLED): the team's icon after its ranking row and over it */
 	float deathPos[3];   /* +0x4e0: (by use) where it died (its position while not in play) */
@@ -2116,7 +2116,7 @@ _Static_assert(offsetof(Player, lastHitMode) == 0x4bc && sizeof(((Player *)0)->l
 _Static_assert(offsetof(Player, lastAttacker) == 0x4c0 && sizeof(((Player *)0)->lastAttacker) == 0x4, "scene.fields: Player.lastAttacker");
 _Static_assert(offsetof(Player, lastHitWeapon) == 0x4c4 && sizeof(((Player *)0)->lastHitWeapon) == 0x4, "scene.fields: Player.lastHitWeapon");
 _Static_assert(offsetof(Player, weapon) == 0x4cc && sizeof(((Player *)0)->weapon) == 0x4, "scene.fields: Player.weapon");
-_Static_assert(offsetof(Player, order) == 0x4d0 && sizeof(((Player *)0)->order) == 0x4, "scene.fields: Player.order");
+_Static_assert(offsetof(Player, cheat) == 0x4d0 && sizeof(((Player *)0)->cheat) == 0x4, "scene.fields: Player.cheat");
 _Static_assert(offsetof(Player, bigHead) == 0x4d4 && sizeof(((Player *)0)->bigHead) == 0x4, "scene.fields: Player.bigHead");
 _Static_assert(offsetof(Player, isKing) == 0x4d8 && sizeof(((Player *)0)->isKing) == 0x4, "scene.fields: Player.isKing");
 _Static_assert(offsetof(Player, isCommander) == 0x4dc && sizeof(((Player *)0)->isCommander) == 0x4, "scene.fields: Player.isCommander");

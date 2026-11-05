@@ -38,7 +38,7 @@ void THISCALL (msg_playerConnected)(Scene *scene, int actor)
 }
 
 /* 0x4630c0: a kill: "%s killed himself." when victim == killer, else "%s has crushed %s(%s)." (the killer, the victim,
-   the victim's mech); colour 4 when the local player is one of them, else 0. Nothing for a negative index */
+   the weapon of the victim's last hit, its name past its 5-character prefix); colour 4 when the local player is one of them, else 0. Nothing for a negative index */
 void THISCALL (msg_kill)(Scene *scene, int victim, int killer)
 {
 	if (victim < 0 || killer < 0)
@@ -98,7 +98,7 @@ void THISCALL (msg_playerJoinedTeam)(Scene *scene, int player, int team)
 }
 
 /* 0x462650: is text one of the cheat codes (entries 2 .. 4 of the language's table of 256-byte codes; empty ones
-   skipped)? The actor's cheat (+0x4d0) set to it and returned, else -1 */
+   skipped)? The actor's cheat (2 .. 4) set to it and returned, else -1 */
 int THISCALL (chat_matchCheatCode)(Scene *scene, int actor, const char *text)
 {
 	int language = g_language;
@@ -106,7 +106,7 @@ int THISCALL (chat_matchCheatCode)(Scene *scene, int actor, const char *text)
 		const char *code = language == 1 ? (const char *)(STR(0x4a9a38, "\270\323\270\256\305\253\276\306\300\314") + k * 0x100)
 		                 : language == 2 ? (const char *)(STR(0x4a9f38, "give me a big head") + k * 0x100) : NULL;
 		if (code && code[0] && !strcmp(code, text)) {
-			((Scene *)scene)->players[actor].order = k + 2;
+			((Scene *)scene)->players[actor].cheat = k + 2;
 			return k + 2;
 		}
 	}

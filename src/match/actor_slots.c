@@ -854,7 +854,7 @@ void THISCALL (actor_setupFromParts)(u8 *s, int a, int id, u32 controlledBy, con
 	BITS(AC->energyUsed) = BITS(AC->staminaRest) = 0x3f800000;
 	AC->overheat = AC->warned = 0;
 	fill_dwords(ac + offsetof(Player, lastHitMode), 3, (u32)-1);   /* lastHitMode .. lastHitWeapon */
-	AC->order = -1;
+	AC->cheat = -1;
 	memcpy(AC->deathPos, AC->pos, 12);
 	AC->glow = 0.0f;
 	(*(u8 *)&AC->message[0]) = 0;

@@ -615,7 +615,7 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 		if (AC->bot == 1)
 			AC->inBooster = 1;
 	}
-	switch (AC->order) {   /* a pending order */
+	switch (AC->cheat) {   /* a cheat code to apply */
 	case 0:
 		AC->armor = ((u32)AC->armorMax);
 		AC->shield = ((u32)AC->shieldMax);
@@ -634,7 +634,7 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 		actor_takeDamage(s, i, i, 1, AC->armor, 0, -1);
 		break;
 	}
-	AC->order = -1;
+	AC->cheat = -1;
 	float speed = f32(fmul_m(fld_m(dt), &AC->mobility));
 	if (AC->inBooster == 1)
 		speed = f32(fld_m(&speed) + fld_m(&speed));

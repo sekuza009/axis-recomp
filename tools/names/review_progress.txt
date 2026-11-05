@@ -82,9 +82,9 @@
 [x] src/menu/setup_keys.c 598
 [x] src/menu/setup_pages.c 890
 [x] src/menu/skirmish.c 190
-[ ] src/msg/msg_players.c 132
-[ ] src/msg/msg_print.c 21
-[ ] src/msg/msg_system.c 40
+[x] src/msg/msg_players.c 132
+[x] src/msg/msg_print.c 21
+[x] src/msg/msg_system.c 40
 [ ] src/net/dplay_calls.c 53
 [ ] src/net/dplay_slots.c 202
 [ ] src/net/net_packets.c 129
