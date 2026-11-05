@@ -19,19 +19,19 @@ void (armc_drawPartsPage)(void)
 	}
 }
 
-/* 0x41dfe0: the colour page (its own preview) */
-void (armc_drawColourPage)(void)
+/* 0x41dfe0: the weapons page (its own preview) */
+void (armc_drawWeaponsPage)(void)
 {
 	if (g_armcPreview != 0)
-		armc_updateColourPreview();
+		armc_updateWeaponsPreview();
 	if (g_armcHideInterface == 0) {
 		armc_drawModeTabs();
-		armc_drawBuildScreen();
+		armc_drawWeaponsScreen();
 	}
 }
 
-/* 0x41e010: the third page */
-void (armc_drawThirdPage)(void)
+/* 0x41e010: the colour page */
+void (armc_drawColourPage)(void)
 {
 	if (g_armcPreview != 0)
 		armc_updatePartsPreview();
@@ -60,7 +60,7 @@ void (armc_drawText)(int x, int y, const char *text)
 }
 
 /* 0x4125f0: the same, right-aligned at x (6 or 8 pixels a character) */
-void (armc_drawStatLabel)(int x, int y, const char *text)
+void (armc_drawTextRight)(int x, int y, const char *text)
 {
 	int n = 0;
 	while (text[n] != '\0')
@@ -129,8 +129,8 @@ void (armc_exit)(int confirmed)
 		g_lobbyReply = 0x67;
 }
 
-/* ---- the mech preview of the parts and colour pages: a perspective view turned by the preview's angle (spinning
-   while 0x4dceac is set), the mech posed by armc_rotateFromCursor for the part in view ---- */
+/* ---- the mech preview of the parts and weapons pages: a perspective view turned by the preview's angle (spinning
+   while 0x4dceac is set), the mech drawn by armc_drawPreview3D for the part in view ---- */
 #define g_armcEye ((const u32 *)ADDR(g_vecOrigin))              /* (by use) the preview camera's position */
 
 /* 0x461850: the preview's 3D pass. The camera at eye looking along forward (camera_setupView, as the match's view);
@@ -142,7 +142,7 @@ void (armc_exit)(int confirmed)
    above 640 x 480 the mech turned only part of the way; the patch DLL's fix (wide.h: rotFix; its four changes at
    0x461962, 0x461982, 0x4619bb, 0x4619e1) uses 640 x 480 there. (The original's SEH frame, for unwinding the local
    light set, is not reproduced.) */
-void THISCALL (armc_rotateFromCursor)(Scene *scene, const u32 *eye, const u32 *forward, const u32 *up, int part, int angle,
+void THISCALL (armc_drawPreview3D)(Scene *scene, const u32 *eye, const u32 *forward, const u32 *up, int part, int angle,
                                       int w, int h)
 {
 	static const u32 lists[8] = { offsetof(Player, headModel), offsetof(Player, chestModel), offsetof(Player, armsModel), offsetof(Player, legsModel), offsetof(Player, boosterModel), offsetof(Player, weaponModel), offsetof(Player, weaponModel4), offsetof(Player, weaponModel5) };   /* (in the actor) */
@@ -206,7 +206,7 @@ static void preview(int posed, int part)   /* posed: the mech posed for part */
 	u32 eye[3] = { g_armcEye[0], g_armcEye[1], g_armcEye[2] };
 	u32 forward[3] = { 0, 0, 0xbf800000 }, up[3] = { 0, 0x3f800000, 0 };   /* (0, 0, -1), (0, 1, 0), on the stack as the original's */
 	if (posed)
-		armc_rotateFromCursor(g_scene, eye, forward, up, part, ftol(g_armcAngle), g_screenW, g_screenH);
+		armc_drawPreview3D(g_scene, eye, forward, up, part, ftol(g_armcAngle), g_screenW, g_screenH);
 	if (g_armcSpin) {
 		long double angle = fadd_m(fmul_m(fld_m(&g_frameTime), k_8f), &g_armcAngle);
 		g_armcAngle = angle;
@@ -254,9 +254,9 @@ void (armc_updatePartsPreview)(void)
 	}
 }
 
-/* 0x41d8a0: the colour page's preview: item slot 0 emptied first when asked (0x4dbc80). The second page poses the
+/* 0x41d8a0: the weapons page's preview: item slot 0 emptied first when asked (0x4dbc80). It poses the
    item slot being picked (slots 4 / 5 as 6 / 7, the weapon slots as 5; none when that slot's record is empty) */
-void (armc_updateColourPreview)(void)
+void (armc_updateWeaponsPreview)(void)
 {
 	gfx_setProjection2D3D(1);
 	if (g_emptyItemSlot0 == 1) {
@@ -316,8 +316,8 @@ void (menuState700_armCenter)(void)
 	armc_extraItemBonuses();
 	switch (g_armcMode) {
 	case 1: armc_drawPartsPage(); break;
-	case 2: armc_drawColourPage(); break;
-	case 3: armc_drawThirdPage(); break;
+	case 2: armc_drawWeaponsPage(); break;
+	case 3: armc_drawColourPage(); break;
 	}
 	int box = 1;
 	if (g_armcPreview) {
@@ -401,8 +401,8 @@ u32 (armc_enterParts)(void)
 	g_screen = 700;
 	g_lastScreen = 700;
 	g_nextScreen = 700;
-	armcMain_layout();
-	armcParts_layout();
+	armcPartsPage_layout();
+	armcWeaponsPage_layout();
 	armcColour_layout();
 	armc_buildPartLists();
 	g_armcEntered = 1;
@@ -421,7 +421,7 @@ u32 (armc_enterParts)(void)
 		mech_loadFromProfile();
 	armc_loadSavedMech();
 	armc_initCameraBox();
-	armc_initPartBoxes();
+	armc_initPanels();
 	armc_syncPartCursors();
 	sound_playMenu(4);
 	if (g_armcFrom == 3) {
@@ -579,7 +579,7 @@ void (armc_initCameraBox)(void)
 
 /* 0x40dfa0: the six part panels (g_panels): their corners (+-600), x, angle cleared and turning speeds, and the
    camera's limits (200, 600, 2, -2) */
-void (armc_initPartBoxes)(void)
+void (armc_initPanels)(void)
 {
 	for (Panel *p = g_panels; p < g_panels + 6; p++) {
 		static const signed char corner[] = { -1, -1, -1, 0, 1, -1, -1, 0, 1, -1, 1, 0, -1, -1, 1 };   /* (their pads kept) */
@@ -612,11 +612,11 @@ u32 (armc_mouse)(void)
 	u32 page = (*(u32 *)&g_armcMode) - 1;
 	switch (page) {
 	case 0:
-		return armc_mainPageClicks();
+		return armc_partsPageClicks();
 	case 1:
-		return armc_partScreenClicks();
+		return armc_weaponsPageClicks();
 	case 2:
-		return armc_colourScreenInput();
+		return armc_colourPageClicks();
 	case 3:
 		return armc_rightClickLeave();   /* armc_rightClickLeave (its eax) */
 	}
@@ -643,7 +643,7 @@ void (armc_snapshot)(int i)
 	g_armcChanged = 0;
 }
 
-/* 0x41dab0: the armour screen's weight line at y (0x4dcc94): the label 0x7573a4 right-aligned at 0x27c (8 units a
+/* 0x41dab0: the ARM CENTER's weight line at y (0x4dcc94): the label 0x7573a4 right-aligned at 0x27c (8 units a
    character in mode 1, 0x9dae74, else 14); below it the total weight (the ten parts' weights summed into 0x4dc78c)
    in red when above the most the legs carry (0x4dcb0c), else green, then "/most" in white, both as "%.0f" and
    right-aligned at 0x27e. The original leaves eax to callers that ignore it */
@@ -747,15 +747,15 @@ void (armc_sendSelectionToNet)(void)
 	net_send(0x1b, 0x65);
 }
 
-/* 0x40fb20: the armour centre's main page clicked (armcMain_hitTest's buttons 1 .. 16): 1 / 2 the part and colour pages
-   (armc_openWeaponsPage / armc_showColourPage, unless already there), 3 / 4 the part screen's two sides (armc_exit), 6 .. 11 the mech
+/* 0x40fb20: the ARM CENTER's parts page clicked (armcPartsPage_hitTest's buttons 1 .. 16): 1 / 2 the weapons and colour pages
+   (armc_openWeaponsPage / armc_showColourPage, unless already there), 3 / 4 the screen's two exits (armc_exit), 6 .. 11 the mech
    view 0 .. 5 (0x4dbc6c; its zoom 0x4dcfd8 back to 1), 14 / 15 the view's two turns (armc_stepPart; not in view 5),
    16 the rotation toggle (0x4dceac). Each with its sound. Returns what the original leaves in eax */
-u32 (armc_mainPageClicks)(void)
+u32 (armc_partsPageClicks)(void)
 {
 	if (!g_mouseClick)
 		return 0;
-	u32 button = ((u32)armcMain_hitTest(g_mouseX, g_mouseY));   /* armcMain_hitTest */
+	u32 button = ((u32)armcPartsPage_hitTest(g_mouseX, g_mouseY));   /* armcPartsPage_hitTest */
 	int view = g_armcPartSlot;
 	switch (button) {
 	case 1:
@@ -794,11 +794,11 @@ u32 (armc_mainPageClicks)(void)
 	return button - 1;
 }
 
-/* 0x40ff40: the colour page clicked (armcColour_hitTest's buttons 0 .. 17): 0 .. 2 the part screen, main and colour pages
-   (armc_showPartsPage / armc_openWeaponsPage / armc_showColourPage, unless already there), 3 / 4 the two sides (armc_exit), 5 .. 10 the colour slot
+/* 0x40ff40: the colour page clicked (armcColour_hitTest's buttons 0 .. 17): 0 .. 2 the parts, weapons and colour pages
+   (armc_showPartsPage / armc_openWeaponsPage / armc_showColourPage, unless already there), 3 / 4 the two exits (armc_exit), 5 .. 10 the colour slot
    0 .. 5 (0x4dc4b0; slot 5 also armc_backupColours), 11 .. 16 the slider and swatch buttons (armc_dragPrimaryHue .. armc_dragSecondaryHue), 17 the
    rotation toggle. Returns what the original leaves in eax */
-u32 (armc_colourScreenInput)(void)
+u32 (armc_colourPageClicks)(void)
 {
 	if (!g_mouseClick)
 		return 0;

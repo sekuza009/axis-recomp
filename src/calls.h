@@ -55,7 +55,7 @@
 #define lobbyJoin_draw() GAME_FN(lobbyJoin_draw, 0x40cfd0, u32, void)()
 #define lobbyCreate_draw() GAME_FN(lobbyCreate_draw, 0x40d390, u32, void)()
 #define arena_loadAndQuit() GAME_FN(arena_loadAndQuit, 0x40d840, void, void)()
-#define armcParts_hitTest(x, y) GAME_FN(armcParts_hitTest, 0x40e490, u32, int, int)(x, y)
+#define armcWeaponsPage_hitTest(x, y) GAME_FN(armcWeaponsPage_hitTest, 0x40e490, u32, int, int)(x, y)
 #define armcColour_hitTest(x, y) GAME_FN(armcColour_hitTest, 0x40e4d0, u32, int, int)(x, y)
 #define armc_rightClickLeave() GAME_FN(armc_rightClickLeave, 0x410160, u32, void)()
 #define armc_mouse() GAME_FN(armc_mouse, 0x410190, u32, void)()

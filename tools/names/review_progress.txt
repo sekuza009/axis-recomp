@@ -50,7 +50,7 @@
 [x] src/menu/armc_items.c 207
 [x] src/menu/armc_keys.c 257
 [x] src/menu/armc_mech.c 135
-[ ] src/menu/armc_misc.c 833
+[x] src/menu/armc_misc.c 833
 [x] src/menu/armc_parts.c 266
 [x] src/menu/armc_screens.c 389
 [x] src/menu/armc_state.c 86
@@ -77,7 +77,7 @@
 [x] src/menu/profile_misc.c 702
 [ ] src/menu/room_clicks.c 897
 [ ] src/menu/room_dialogs.c 1200
-[ ] src/menu/screen_enter.c 437
+[x] src/menu/screen_enter.c 437
 [x] src/menu/settings_form.c 304
 [ ] src/menu/setup_keys.c 598
 [ ] src/menu/setup_pages.c 890

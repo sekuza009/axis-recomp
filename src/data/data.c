@@ -174,7 +174,7 @@ u8 g_itemBonusShieldUnread_v[4] __attribute__((aligned(16)));   /* 0x4dbc74 */
 u8 g_itemBonusDetectionRange_v[4] __attribute__((aligned(16)));   /* 0x4dbc78 */
 u8 g_armCursor_v[4] __attribute__((aligned(16)));   /* 0x4dbc7c */
 u8 g_emptyItemSlot0_v[4] __attribute__((aligned(16)));   /* 0x4dbc80 */
-int g_armcPartsRects_v[60] __attribute__((aligned(16)));   /* 0x4dbc88 */
+int g_armcWeaponsPageRects_v[60] __attribute__((aligned(16)));   /* 0x4dbc88 */
 int g_boosterList_v[50] __attribute__((aligned(16)));   /* 0x4dbd7c */
 u8 g_armcSlot_v[4] __attribute__((aligned(16)));   /* 0x4dbe48 */
 u8 g_partRecords_v[896] __attribute__((aligned(16)));   /* 0x4dbe50 */
@@ -188,7 +188,7 @@ u8 g_armcFrom_v[4] __attribute__((aligned(16)));   /* 0x4dc24c */
 char g_armPanelName_v[64] __attribute__((aligned(16)));   /* 0x4dc250 */
 int g_armsStats_v[5] __attribute__((aligned(16)));   /* 0x4dc290 */
 u8 g_armsWeight_v[4] __attribute__((aligned(16)));   /* 0x4dc2a4 */
-int g_armcMainRects_v[68] __attribute__((aligned(16)));   /* 0x4dc2a8 */
+int g_armcPartsPageRects_v[68] __attribute__((aligned(16)));   /* 0x4dc2a8 */
 int g_headList_v[50] __attribute__((aligned(16)));   /* 0x4dc3e8 */
 u8 g_armcColourSlot_v[4] __attribute__((aligned(16)));   /* 0x4dc4b0 */
 u8 g_bestLevelNet_v[4] __attribute__((aligned(16)));   /* 0x4dc4b4 */
@@ -1344,7 +1344,7 @@ const DataPiece g_splitObjects[] = {
 	{ 0x4dbc78, g_itemBonusDetectionRange_v, 4 },
 	{ 0x4dbc7c, g_armCursor_v, 4 },
 	{ 0x4dbc80, g_emptyItemSlot0_v, 4 },
-	{ 0x4dbc88, g_armcPartsRects_v, 240 },
+	{ 0x4dbc88, g_armcWeaponsPageRects_v, 240 },
 	{ 0x4dbd7c, g_boosterList_v, 200 },
 	{ 0x4dbe48, g_armcSlot_v, 4 },
 	{ 0x4dbe50, g_partRecords_v, 896 },
@@ -1358,7 +1358,7 @@ const DataPiece g_splitObjects[] = {
 	{ 0x4dc250, g_armPanelName_v, 64 },
 	{ 0x4dc290, g_armsStats_v, 20 },
 	{ 0x4dc2a4, g_armsWeight_v, 4 },
-	{ 0x4dc2a8, g_armcMainRects_v, 272 },
+	{ 0x4dc2a8, g_armcPartsPageRects_v, 272 },
 	{ 0x4dc3e8, g_headList_v, 200 },
 	{ 0x4dc4b0, g_armcColourSlot_v, 4 },
 	{ 0x4dc4b4, g_bestLevelNet_v, 4 },

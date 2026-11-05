@@ -1,4 +1,4 @@
-/* armc_screens.c: two of the ARM CENTER's screens: the build screen (the part slots, the part box and its stats) and
+/* armc_screens.c: two of the ARM CENTER's pages: the weapons page (the item slots, the item box and its stats) and
    the colour editor (two colours, hue, saturation and value, for each of the slots at 0x4dc4b8, six floats a slot:
    hue 1, saturation 1, value 1, hue 2, then saturation 2 and value 2 in -1 .. 1) */
 #include "../game.h"
@@ -207,7 +207,7 @@ void (armc_drawColourEditor)(void)
 	mode_box();
 }
 
-/* ---- the build screen ---- */
+/* ---- the weapons page ---- */
 #define SLOT_NAME(k) ((const char *)OBJ(g_partRecords) + (k) * 0x80)
 #define PART ((const PartInfo *)OBJ(g_viewedPart))   /* the part looked at (armc_viewedPartRecord) */
 
@@ -238,7 +238,7 @@ static void stat_int(int x, int y, int value, u32 unit)
 	itoa(value, text, 10);
 	if (unit)
 		strcat(text, (const char *)RELOC(unit));
-	armc_drawStatLabel(x, y, text);
+	armc_drawTextRight(x, y, text);
 }
 
 static void stat_float(int x, int y, float value, u32 format, u32 unit)
@@ -246,19 +246,19 @@ static void stat_float(int x, int y, float value, u32 format, u32 unit)
 	char text[50] = { 0 };
 	sprintf(text, (const char *)RELOC(format), (double)value);   /* "%.0f" / "%.1f" */
 	strcat(text, (const char *)RELOC(unit));
-	armc_drawStatLabel(x, y, text);
+	armc_drawTextRight(x, y, text);
 }
 
-/* 0x419160: the build screen: two buttons (0x7517a4; 3 / 4 under the pointer, by armcParts_hitTest, lit), the six part
+/* 0x419160: the weapons page: two buttons (0x7517a4; 3 / 4 under the pointer, by armcWeaponsPage_hitTest, lit), the six part
    slots (the chosen one, 0x4dbe48, bright), a new snapshot of it when asked (0x4dcc64), each slot's picture
    (texture OBJ(g_slotTextures) + 4 k, when it has a name, 0x4dbe50) and label (MSG(291, "HAND-W1($[0] 1)")) with its name (or MSG(319, "EMPTY SLOT")); the part
    box: its picture (0x4dcc88), name (0x4dc150) and type (MSG(711, "HV-PISTOL"), by 0x4dc79c / 0x4dcca4 of 0x4dc77c), or
    MSG(320, "REMOVE WEAPON") without one; its arrows either side of it (0xc / 0xd lit); the mode box; the stats panel: nothing chosen (0x4dc190 = -1: MSG(319, "EMPTY SLOT")), a part type only
    (0x4dc194 = -1: MSG(771, "SPECIAL WEAPON") and its kind MSG(745, "GRAVITY CONTROLLER")), or the 16 stats under their labels (MSG(301, "SLOT TYPE")), the sixth with
    the pilot's (0x9f1818) skill bonus. The original leaves eax to callers that ignore it */
-void (armc_drawBuildScreen)(void)
+void (armc_drawWeaponsScreen)(void)
 {
-	int hovered = ((int)armcParts_hitTest(g_mouseX, g_mouseY));   /* armcParts_hitTest */
+	int hovered = ((int)armcWeaponsPage_hitTest(g_mouseX, g_mouseY));   /* armcWeaponsPage_hitTest */
 	static const u32 yellow[4] = { 0x3f800000, 0x3f800000, 0, 0x3f800000 };
 	static const u32 white[4] = { 0x3f800000, 0x3f800000, 0x3f800000, 0x3f800000 };
 	for (int k = 0; k < 2; k++) {
@@ -352,15 +352,15 @@ void (armc_drawBuildScreen)(void)
 	int vx = x + 0xc0;
 	char text[50] = { 0 };
 	strcpy(text, (const char *)(MSG(321, "HAND") + PART->slotType * 0x80));
-	armc_drawStatLabel(vx, y + 8, text);
+	armc_drawTextRight(vx, y + 8, text);
 	char kind[50] = { 0 };
 	strcpy(kind, (const char *)(MSG(323, "30mm") + PART->ammoSlot * 0x80));
-	armc_drawStatLabel(vx, y + 0x18, kind);
+	armc_drawTextRight(vx, y + 0x18, kind);
 	stat_int(vx, y + 0x28, PART->ammoPerShot, MSG(756, "cell"));
 	stat_int(vx, y + 0x38, PART->burst, MSG(758, "Round"));
 	char name[50] = { 0 };
 	strcpy(name, (const char *)(MSG(327, "IMPACT") + PART->damageMode * 0x80));
-	armc_drawStatLabel(vx, y + 0x48, name);
+	armc_drawTextRight(vx, y + 0x48, name);
 	/* the sixth with the pilot's skill (of the part's kind) in percent of it as a bonus */
 	char value[50] = { 0 }, bonus[16];
 	itoa(PART->damage, value, 10);
@@ -373,7 +373,7 @@ void (armc_drawBuildScreen)(void)
 	else
 		sprintf(bonus, (const char *)STR(0x4b02f8, " %d"), ftol(b));
 	strcat(value, bonus);
-	armc_drawStatLabel(vx, y + 0x58, value);
+	armc_drawTextRight(vx, y + 0x58, value);
 	stat_float(vx, y + 0x68, PART->range, STR(0x4b0354, "%.0f"), MSG(751, "m"));
 	stat_float(vx, y + 0x78, PART->speed, STR(0x4b0354, "%.0f"), MSG(759, "m/s"));
 	stat_float(vx, y + 0x88, PART->spread, STR(0x4b0334, "%.1f"), MSG(752, "'"));

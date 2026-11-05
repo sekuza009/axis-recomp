@@ -28,7 +28,7 @@ typedef struct {
 	int *mouseLatch;                   /* (its latches, 3, for the tests) */
 	const volatile int *cursorClampFix;   /* input_updateMouse (0x445c60): its clamp (0x445cd8) replaced by ... */
 	void (CDECL *cursorClamp)(void);      /* ... this (the pointer over the whole width of a wide screen) */
-	const volatile int *rotFix;        /* armc_rotateFromCursor (0x461850): the cursor's turn in 640 x 480 units */
+	const volatile int *rotFix;        /* armc_drawPreview3D (0x461850): the cursor's turn in 640 x 480 units */
 	volatile int *penDraw;             /* set by font_penDraw (0x46bb00) while it draws: the patch DLL recognised the
 	                                      original by its glVertex2i calls' return addresses */
 	void *(CDECL *callSite)(u32 site);   /* what the game's call at site goes to now (the patch DLL retargets some;

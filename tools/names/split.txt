@@ -718,8 +718,8 @@ g_createArena2Rects
 g_arenaGameListRects
 g_arenaDialogBoxRects
 g_arenaCreateRects
-g_armcPartsRects
-g_armcMainRects
+g_armcWeaponsPageRects
+g_armcPartsPageRects
 g_armcColourRects
 g_setupSoundRects
 g_setupSliderRects

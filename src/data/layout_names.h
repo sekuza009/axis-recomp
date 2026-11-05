@@ -224,8 +224,6 @@ extern struct GameData g_data;
 #define g_armcLookTilt (*(float *)g_armcLookTilt_v)
 #undef g_armcLookYaw
 #define g_armcLookYaw (*(float *)g_armcLookYaw_v)
-#undef g_armcMainRects
-#define g_armcMainRects ((int *)g_armcMainRects_v)
 #undef g_armcMode
 #define g_armcMode (*(int *)g_armcMode_v)
 #undef g_armcMoveEyeX
@@ -248,8 +246,8 @@ extern struct GameData g_data;
 #define g_armcPartSlot (*(int *)g_armcPartSlot_v)
 #undef g_armcParts
 #define g_armcParts ((int *)g_armcParts_v)
-#undef g_armcPartsRects
-#define g_armcPartsRects ((int *)g_armcPartsRects_v)
+#undef g_armcPartsPageRects
+#define g_armcPartsPageRects ((int *)g_armcPartsPageRects_v)
 #undef g_armcPreview
 #define g_armcPreview (*(int *)g_armcPreview_v)
 #undef g_armcSessionDue
@@ -284,6 +282,8 @@ extern struct GameData g_data;
 #define g_armcViewPoint5Y (*(u32 *)((u8 *)g_armcViewPoints_v + 0x54))
 #undef g_armcViewPoints
 #define g_armcViewPoints ((u32 *)g_armcViewPoints_v)
+#undef g_armcWeaponsPageRects
+#define g_armcWeaponsPageRects ((int *)g_armcWeaponsPageRects_v)
 #undef g_armcZoom
 #define g_armcZoom (*(float *)g_armcZoom_v)
 #undef g_armsFcsLevel
@@ -1360,6 +1360,16 @@ extern struct GameData g_data;
 #define g_logHook (*(void * *)g_logHook_v)
 #undef g_logLight
 #define g_logLight ((u32 *)g_logLight_v)
+#undef g_logOutDialogBottom
+#define g_logOutDialogBottom (*(int *)g_logOutDialogBottom_v)
+#undef g_logOutDialogRects
+#define g_logOutDialogRects ((int *)g_logOutDialogRects_v)
+#undef g_logOutDialogRight
+#define g_logOutDialogRight (*(int *)g_logOutDialogRight_v)
+#undef g_logOutDialogX
+#define g_logOutDialogX (*(int *)g_logOutDialogX_v)
+#undef g_logOutDialogY
+#define g_logOutDialogY (*(int *)g_logOutDialogY_v)
 #undef g_logPackedColor
 #define g_logPackedColor ((u32 *)g_logPackedColor_v)
 #undef g_logRealColor
@@ -1962,14 +1972,6 @@ extern struct GameData g_data;
 #define g_profileColour ((u32 *)g_profileColour_v)
 #undef g_profileCount
 #define g_profileCount (*(int *)g_profileCount_v)
-#undef g_logOutDialogBottom
-#define g_logOutDialogBottom (*(int *)g_logOutDialogBottom_v)
-#undef g_logOutDialogRight
-#define g_logOutDialogRight (*(int *)g_logOutDialogRight_v)
-#undef g_logOutDialogX
-#define g_logOutDialogX (*(int *)g_logOutDialogX_v)
-#undef g_logOutDialogY
-#define g_logOutDialogY (*(int *)g_logOutDialogY_v)
 #undef g_profileDialogBottom
 #define g_profileDialogBottom (*(int *)g_profileDialogBottom_v)
 #undef g_profileDialogBox
@@ -2412,8 +2414,6 @@ extern struct GameData g_data;
 #define g_scroll (*(float *)g_scroll_v)
 #undef g_searchResult
 #define g_searchResult (*(int *)g_searchResult_v)
-#undef g_logOutDialogRects
-#define g_logOutDialogRects ((int *)g_logOutDialogRects_v)
 #undef g_selectedPilotLevel
 #define g_selectedPilotLevel (*(int *)((u8 *)g_campaign_v + 0x100))
 #undef g_sensitivitySlider

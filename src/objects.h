@@ -219,8 +219,8 @@
 #define g_arenaGameListRects ((int *)IMG(0x4db720))   /* int[72]; arenaGameList_hitTest's 18 hit rectangles (hit_tests.c) */
 #define g_arenaDialogBoxRects ((int *)IMG(0x4dbad0))   /* int[4]; arenaDialogBox_hitTest's 1 hit rectangles (hit_tests.c) */
 #define g_arenaCreateRects ((int *)IMG(0x4dbb80))   /* int[8]; arenaCreate_hitTest's 2 hit rectangles (hit_tests.c) */
-#define g_armcPartsRects ((int *)IMG(0x4dbc88))   /* int[60]; armcParts_hitTest's 15 hit rectangles (hit_tests.c) */
-#define g_armcMainRects ((int *)IMG(0x4dc2a8))   /* int[68]; armcMain_hitTest's 17 hit rectangles (hit_tests.c) */
+#define g_armcWeaponsPageRects ((int *)IMG(0x4dbc88))   /* int[60]; armcWeaponsPage_hitTest's 15 hit rectangles (hit_tests.c) */
+#define g_armcPartsPageRects ((int *)IMG(0x4dc2a8))   /* int[68]; armcPartsPage_hitTest's 17 hit rectangles (hit_tests.c) */
 #define g_armcColourRects ((int *)IMG(0x4dcb38))   /* int[72]; armcColour_hitTest's 18 hit rectangles (hit_tests.c) */
 #define g_setupSoundRects ((int *)IMG(0x4ddcf0))   /* int[40]; setupSound_hitTest's 10 hit rectangles (hit_tests.c) */
 #define g_setupSliderRects ((int *)IMG(0x4ddd98))   /* int[12]; setupSlider_hitTest's 3 hit rectangles (hit_tests.c) */

@@ -607,7 +607,7 @@ static u32 leave_game(void)
 
 /* main menu choice i (with its sound; 0x4dda44 cleared): 0 the campaign (menuState500_enter), 1 skirmish (next
    screen 400), 2 network play (net_connect, then 0x452170; messages 0x2a / 0x29 when they fail; next screen 800), 3
-   the setup (600), 4 the armour centre (0x40ee20), 5 quit. The original's eax into *r; 1 when a failure ended the
+   the setup (600), 4 the ARM CENTER (0x40ee20), 5 quit. The original's eax into *r; 1 when a failure ended the
    caller there */
 static int menu_choice(int i, u32 *r)
 {
@@ -635,7 +635,7 @@ static int menu_choice(int i, u32 *r)
 		return 0;
 	case 4:
 		g_armcFrom = 1;
-		*r = armc_enterParts();   /* armc_enterParts: the armour centre */
+		*r = armc_enterParts();   /* armc_enterParts: the ARM CENTER */
 		g_enteringMenus = 0;
 		return 0;
 	default:

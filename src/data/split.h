@@ -810,9 +810,9 @@ extern u8 g_armCursor_v[4];
 extern u8 g_emptyItemSlot0_v[4];
 #endif
 #ifdef AXIS_FENCE
-#define g_armcPartsRects_v ((int *)(AXIS_FENCE == 2 ? g_fence + 0x14e000 : g_fence + 0x14df10))
+#define g_armcWeaponsPageRects_v ((int *)(AXIS_FENCE == 2 ? g_fence + 0x14e000 : g_fence + 0x14df10))
 #else
-extern int g_armcPartsRects_v[60];
+extern int g_armcWeaponsPageRects_v[60];
 #endif
 #ifdef AXIS_FENCE
 #define g_boosterList_v ((int *)(AXIS_FENCE == 2 ? g_fence + 0x150000 : g_fence + 0x14ff38))
@@ -880,9 +880,9 @@ extern int g_armsStats_v[5];
 extern u8 g_armsWeight_v[4];
 #endif
 #ifdef AXIS_FENCE
-#define g_armcMainRects_v ((int *)(AXIS_FENCE == 2 ? g_fence + 0x16a000 : g_fence + 0x169ef0))
+#define g_armcPartsPageRects_v ((int *)(AXIS_FENCE == 2 ? g_fence + 0x16a000 : g_fence + 0x169ef0))
 #else
-extern int g_armcMainRects_v[68];
+extern int g_armcPartsPageRects_v[68];
 #endif
 #ifdef AXIS_FENCE
 #define g_headList_v ((int *)(AXIS_FENCE == 2 ? g_fence + 0x16c000 : g_fence + 0x16bf38))

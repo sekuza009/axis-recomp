@@ -180,14 +180,14 @@ void (profilePage_layout)(void)
 		         (int *)((OBJ(g_profilePageRects) + 0x40) + k * 16));
 }
 
-void (armcParts_layout)(void)
+void (armcWeaponsPage_layout)(void)
 {
 	static const RArg c[4] = { RA(AX, 0x10, 0), RA(AY, 0x28, 1), RA(AX, 0xa0, 0), RA(AY, 0x54, 1) };
-	armc_tabs(OBJ(g_armcPartsRects));
-	rect_spec((OBJ(g_armcPartsRects) + 0x60), (OBJ(g_armcPartsRects) + 0xc0), 0x3f, c);
-	rect1((OBJ(g_armcPartsRects) + 0xc0), AX2, -0xea, AY, 0x162, AX2, -0xc2, AY, 0x182);
-	rect1((OBJ(g_armcPartsRects) + 0xd0), AX2, -0x22, AY, 0x162, AX2, 6, AY, 0x182);
-	rect1((OBJ(g_armcPartsRects) + 0xe0), AX2, -0xa0, AY2, -0x20, AX2, 0, AY2, 0);
+	armc_tabs(OBJ(g_armcWeaponsPageRects));
+	rect_spec((OBJ(g_armcWeaponsPageRects) + 0x60), (OBJ(g_armcWeaponsPageRects) + 0xc0), 0x3f, c);
+	rect1((OBJ(g_armcWeaponsPageRects) + 0xc0), AX2, -0xea, AY, 0x162, AX2, -0xc2, AY, 0x182);
+	rect1((OBJ(g_armcWeaponsPageRects) + 0xd0), AX2, -0x22, AY, 0x162, AX2, 6, AY, 0x182);
+	rect1((OBJ(g_armcWeaponsPageRects) + 0xe0), AX2, -0xa0, AY2, -0x20, AX2, 0, AY2, 0);
 }
 
 void (armcColour_layout)(void)
@@ -201,15 +201,15 @@ void (armcColour_layout)(void)
 	rect1((OBJ(g_armcColourRects) + 0x110), AX2, -0xa0, AY2, -0x20, AX2, 0, AY2, 0);
 }
 
-void (armcMain_layout)(void)
+void (armcPartsPage_layout)(void)
 {
 	static const RArg c[4] = { RA(AX, 0x10, 0), RA(AY, 0x40, 1), RA(AX, 0xb0, 0), RA(AY, 0x6c, 1) };
-	armc_tabs(OBJ(g_armcMainRects));
-	rect_spec((OBJ(g_armcMainRects) + 0x60), (OBJ(g_armcMainRects) + 0xc0), 0x30, c);
-	rect1((OBJ(g_armcMainRects) + 0xd0), AX, 0x114, AY2, -0x20, AX, 0x174, AY2, 0);
-	rect1((OBJ(g_armcMainRects) + 0xe0), AX, 0xe4, AY2, -0x1c, AX, 0x114, AY2, -4);
-	rect1((OBJ(g_armcMainRects) + 0xf0), AX, 0x174, AY2, -0x1c, AX, 0x1a4, AY2, -4);
-	rect1((OBJ(g_armcMainRects) + 0x100), AX2, -0xa0, AY2, -0x20, AX2, 0, AY2, 0);
+	armc_tabs(OBJ(g_armcPartsPageRects));
+	rect_spec((OBJ(g_armcPartsPageRects) + 0x60), (OBJ(g_armcPartsPageRects) + 0xc0), 0x30, c);
+	rect1((OBJ(g_armcPartsPageRects) + 0xd0), AX, 0x114, AY2, -0x20, AX, 0x174, AY2, 0);
+	rect1((OBJ(g_armcPartsPageRects) + 0xe0), AX, 0xe4, AY2, -0x1c, AX, 0x114, AY2, -4);
+	rect1((OBJ(g_armcPartsPageRects) + 0xf0), AX, 0x174, AY2, -0x1c, AX, 0x1a4, AY2, -4);
+	rect1((OBJ(g_armcPartsPageRects) + 0x100), AX2, -0xa0, AY2, -0x20, AX2, 0, AY2, 0);
 }
 
 void (replaySelect_layout)(void)

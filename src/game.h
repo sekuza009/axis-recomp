@@ -181,7 +181,7 @@ typedef struct { u32 vtable; void *banks[6]; i32 count; } TextureManager;   /* t
 #define stage_advanceClocks(stage, dt) GAME_THISFN(stage_advanceClocks, 0x496e40, void, void *, u32)(stage, dt)
 #define collision_moveActor(stage, r, pos, vel, step, k, outPos, outVel, outDist, outPlane, axis) GAME_THISFN(collision_moveActor, 0x471400, int, void *, float, const float *, const float *, u32, u32, float *, float *, float *, float *, u32)(stage, r, pos, vel, step, k, outPos, outVel, outDist, outPlane, axis)
 #define teams_setup(scene) GAME_THISFN(teams_setup, 0x4636d0, void, Scene *)(scene)
-#define armcMain_hitTest(x, y) GAME_FN(armcMain_hitTest, 0x40e450, int, int, int)(x, y)   /* the ARM CENTER's item under (x, y), -1 none */
+#define armcPartsPage_hitTest(x, y) GAME_FN(armcPartsPage_hitTest, 0x40e450, int, int, int)(x, y)   /* the ARM CENTER's item under (x, y), -1 none */
 #define quat_fromMatrix(q, m) GAME_THISFN(quat_fromMatrix, 0x47d0f0, void, float *, const float *)(q, m)   /* a rotation matrix to a quaternion */
 #define quat_toAxisAngle(out, q) GAME_THISFN(quat_toAxisAngle, 0x47d260, void, float *, const float *)(out, q)
 #define factor_addFactorBy(pool, record) GAME_THISFN(factor_addFactorBy, 0x483dd0, void, void *, void *)(pool, record)   /* a 0x2c-byte factor record added */
@@ -687,7 +687,7 @@ typedef struct { float r, g, b, a; } Colour;
 
 /* ---- the ARM CENTER (menu/armc_*.c) ---- */
 #define armc_updatePartsPreview() GAME_FN(armc_updatePartsPreview, 0x41d600, void, void)()      /* the mech preview */
-#define armc_updateColourPreview() GAME_FN(armc_updateColourPreview, 0x41d8a0, void, void)()      /* the colour page's preview */
+#define armc_updateWeaponsPreview() GAME_FN(armc_updateWeaponsPreview, 0x41d8a0, void, void)()      /* the weapons page's preview */
 #define armc_drawPreviewTunnel() GAME_FN(armc_drawPreviewTunnel, 0x411ab0, void, void)()      /* the screen's state entered from the room */
 #define armc_drawTunnel() GAME_FN(armc_drawTunnel, 0x411110, void, void)()      /* and from the main menu */
 #define armc_cameraStep() GAME_FN(armc_cameraStep, 0x410b50, void, void)()
@@ -696,12 +696,12 @@ typedef struct { float r, g, b, a; } Colour;
 #define armc_drawPanels() GAME_FN(armc_drawPanels, 0x41b400, void, void)()
 #define armc_extraItemBonuses() GAME_FN(armc_extraItemBonuses, 0x41dcf0, void, void)()
 #define armc_drawPartsPage() GAME_FN(armc_drawPartsPage, 0x41dfb0, void, void)()      /* the pages' draw passes (menu/armc_misc.c) */
-#define armc_drawColourPage() GAME_FN(armc_drawColourPage, 0x41dfe0, void, void)()
-#define armc_drawThirdPage() GAME_FN(armc_drawThirdPage, 0x41e010, void, void)()
+#define armc_drawWeaponsPage() GAME_FN(armc_drawWeaponsPage, 0x41dfe0, void, void)()
+#define armc_drawColourPage() GAME_FN(armc_drawColourPage, 0x41e010, void, void)()
 #define armc_drawWeightLine() GAME_FN(armc_drawWeightLine, 0x41dab0, void, void)()
 #define armc_exit(confirmed) GAME_FN(armc_exit, 0x40f0f0, u32, int)(confirmed)   /* leave the screen (menu/armc_misc.c) */
 #define armc_showPartsPage() GAME_FN(armc_showPartsPage, 0x40f200, void, void)()   /* to the parts page */
-#define armc_showColourPage() GAME_FN(armc_showColourPage, 0x40f320, u32, void)()   /* to the third page */
+#define armc_showColourPage() GAME_FN(armc_showColourPage, 0x40f320, u32, void)()   /* to the colour page */
 #define armc_openWeaponsPage() GAME_FN(armc_openWeaponsPage, 0x40f220, u32, void)()   /* to the weapons page (menu/armc_items.c) */
 #define armc_backupColours() GAME_FN(armc_backupColours, 0x40f590, u32, void)()   /* the colour slot kept for undo (menu/armc_state.c) */
 #define armc_stepPart(part, dir) GAME_FN(armc_stepPart, 0x40f340, u32, u32, int)(part, dir)   /* the part in view stepped (menu/armc_parts.c) */
@@ -710,12 +710,12 @@ typedef struct { float r, g, b, a; } Colour;
 #define armc_applyColourSlot() GAME_FN(armc_applyColourSlot, 0x41cf20, void, void)()
 #define armc_restoreColourUndo() GAME_FN(armc_restoreColourUndo, 0x41ced0, void, void)()   /* the undo buffer into colour slots 0 .. 4 (menu/armc_state.c) */
 #define gl_rotateXYZ(x, y, z) GAME_FN(gl_rotateXYZ, 0x41ef20, void, u32, u32, u32)(x, y, z)   /* turned about x, y, z (degrees as float bits; render/gl_helpers.c) */
-#define armc_rotateFromCursor(scene, eye, forward, up, part, angle, w, h) \
-	GAME_THISFN(armc_rotateFromCursor, 0x461850, void, Scene *, const u32 *, const u32 *, const u32 *, int, int, int, int)(scene, eye, forward, up, part, angle, w, h)
+#define armc_drawPreview3D(scene, eye, forward, up, part, angle, w, h) \
+	GAME_THISFN(armc_drawPreview3D, 0x461850, void, Scene *, const u32 *, const u32 *, const u32 *, int, int, int, int)(scene, eye, forward, up, part, angle, w, h)
 #define armc_resetSeraphimParts() GAME_FN(armc_resetSeraphimParts, 0x40d990, void, void)()      /* the part lists (a no-op in the patched game) */
 #define armc_drawModeTabs() GAME_FN(armc_drawModeTabs, 0x412450, void, void)()      /* the screen's frame */
 #define armc_drawStatsPanel() GAME_FN(armc_drawStatsPanel, 0x412650, void, void)()
-#define armc_drawBuildScreen() GAME_FN(armc_drawBuildScreen, 0x419160, void, void)()
+#define armc_drawWeaponsScreen() GAME_FN(armc_drawWeaponsScreen, 0x419160, void, void)()
 #define armc_drawColourEditor() GAME_FN(armc_drawColourEditor, 0x41a280, void, void)()
 #define g_startPos ((const u32 *)ADDR(g_vecOrigin))          /* (by use) where the player's actor starts (three floats) */
 /* claim actor slot a for the player and make it theirs (thiscall on the stage; spawn: slot, -, position...) */
@@ -731,20 +731,20 @@ typedef struct { float r, g, b, a; } Colour;
 #define armc_takeCursorItem() GAME_FN(armc_takeCursorItem, 0x40f9e0, u32, void)()   /* the item slots given to the mech (menu/armc_items.c) */
 #define armc_colourPartEquipped(i) GAME_FN(armc_colourPartEquipped, 0x40f830, int, int)(i)   /* item list entry i is a colour part already in a slot */
 #define armc_initCameraPoints() GAME_FN(armc_initCameraPoints, 0x40e510, void, void)()
-#define armcMain_layout() GAME_FN(armcMain_layout, 0x40e060, void, void)()   /* the part lists made (heads, chests, arms...) */
-#define armcParts_layout() GAME_FN(armcParts_layout, 0x40e1c0, void, void)()
+#define armcPartsPage_layout() GAME_FN(armcPartsPage_layout, 0x40e060, void, void)()   /* the part lists made (heads, chests, arms...) */
+#define armcWeaponsPage_layout() GAME_FN(armcWeaponsPage_layout, 0x40e1c0, void, void)()
 #define armcColour_layout() GAME_FN(armcColour_layout, 0x40e300, void, void)()
 #define armc_buildPartLists() GAME_FN(armc_buildPartLists, 0x40da40, void, void)()
 #define mech_loadFromProfile() GAME_FN(mech_loadFromProfile, 0x4463a0, u32, void)()   /* the saved mech read (from the profile) */
 #define armc_loadSavedMech() GAME_FN(armc_loadSavedMech, 0x40e6c0, void, void)()
 #define armc_initCameraBox() GAME_FN(armc_initCameraBox, 0x40de80, void, void)()
-#define armc_initPartBoxes() GAME_FN(armc_initPartBoxes, 0x40dfa0, void, void)()
+#define armc_initPanels() GAME_FN(armc_initPanels, 0x40dfa0, void, void)()
 #define armc_syncPartCursors() GAME_FN(armc_syncPartCursors, 0x40ed20, void, void)()
 #define armc_viewedPartRecord(item) GAME_FN(armc_viewedPartRecord, 0x41cca0, void, int)(item)   /* the item shown on the preview */
 #define armc_weaponSlotRecord(slot, item) GAME_FN(armc_weaponSlotRecord, 0x41ca50, void, int, int)(slot, item)
 #define armc_snapshot(which) GAME_FN(armc_snapshot, 0x419000, void, int)(which)
 #define armc_drawText(x, y, s) GAME_FN(armc_drawText, 0x4125c0, void, int, int, const char *)(x, y, s)
-#define armc_drawStatLabel(x, y, s) GAME_FN(armc_drawStatLabel, 0x4125f0, void, int, int, const char *)(x, y, s)   /* right-aligned at x */
+#define armc_drawTextRight(x, y, s) GAME_FN(armc_drawTextRight, 0x4125f0, void, int, int, const char *)(x, y, s)   /* right-aligned at x */
 #define armc_readMechStats() GAME_FN(armc_readMechStats, 0x41c510, void, void)()
 #define actor_selectWeapon(stage, actor, slot) GAME_THISFN(actor_selectWeapon, 0x45e880, void, Stage *, int, int)(stage, actor, slot)
 #define scene_startSession(scene, a, b) GAME_THISFN(scene_startSession, 0x460cb0, void, Scene *, int, int)(scene, a, b)
@@ -1256,9 +1256,9 @@ typedef struct { float r, g, b, a; } Colour;
 #define dplay_send(from, to, flags, data, size) GAME_FN(dplay_send, 0x450bf0, int, u32, u32, u32, const void *, u32)(from, to, flags, data, size)   /* a DirectPlay message sent */
 #define space_setBy(space, lo, hi, nx, ny, nz, a, b, depth) GAME_THISFN(space_setBy, 0x4819b0, u32, void *, void *, void *, int, int, int, int, int, int)(space, lo, hi, nx, ny, nz, a, b, depth)
 #define shape_bindPartTextures(shape) GAME_THISFN(shape_bindPartTextures, 0x466650, u32, void *)(shape)   /* a shape's textures bound */
-#define armc_mainPageClicks() GAME_FN(armc_mainPageClicks, 0x40fb20, u32, void)()
-#define armc_partScreenClicks() GAME_FN(armc_partScreenClicks, 0x40fd30, u32, void)()
-#define armc_colourScreenInput() GAME_FN(armc_colourScreenInput, 0x40ff40, u32, void)()
+#define armc_partsPageClicks() GAME_FN(armc_partsPageClicks, 0x40fb20, u32, void)()
+#define armc_weaponsPageClicks() GAME_FN(armc_weaponsPageClicks, 0x40fd30, u32, void)()
+#define armc_colourPageClicks() GAME_FN(armc_colourPageClicks, 0x40ff40, u32, void)()
 
 #define Mat4_fromAxisAngle(m, rotation) GAME_FN(Mat4_fromAxisAngle, 0x47d9a0, void, float *, const float *)(m, rotation)   /* (angle, axis) -> matrix */
 

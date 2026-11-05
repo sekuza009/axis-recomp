@@ -66,7 +66,7 @@ int wide_carries(u32 addr)
 	case 0x445c60:                  /* input_updateMouse: the mouse read's call retargeted (followed live), the
 	                                   clamp replaced (cursorClampFix): both carried */
 		return 1;
-	case 0x461850:                  /* armc_rotateFromCursor: four instructions of the turn (rotFix) */
+	case 0x461850:                  /* armc_drawPreview3D: four instructions of the turn (rotFix) */
 		return 1;
 	}
 	return 0;

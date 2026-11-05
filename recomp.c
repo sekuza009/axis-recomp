@@ -91,8 +91,8 @@ static int hit_rect(int x, int y, DWORD base, DWORD limit)
 #define HIT_TESTS(X) \
 	X(0x4033e0, 0x4d9360, 0x4d9500, mapList_hitTest) X(0x404460, 0x4db590, 0x4db5f0, arenaNameDialog_hitTest) \
 	X(0x4044a0, 0x4db728, 0x4db848, arenaGameList_hitTest) X(0x4044e0, 0x4dbad8, 0x4dbae8, arenaDialogBox_hitTest) \
-	X(0x4045a0, 0x4dbb88, 0x4dbba8, arenaCreate_hitTest) X(0x40e450, 0x4dc2b0, 0x4dc3c0, armcMain_hitTest) \
-	X(0x40e490, 0x4dbc90, 0x4dbd80, armcParts_hitTest) X(0x40e4d0, 0x4dcb40, 0x4dcc60, armcColour_hitTest) \
+	X(0x4045a0, 0x4dbb88, 0x4dbba8, arenaCreate_hitTest) X(0x40e450, 0x4dc2b0, 0x4dc3c0, armcPartsPage_hitTest) \
+	X(0x40e490, 0x4dbc90, 0x4dbd80, armcWeaponsPage_hitTest) X(0x40e4d0, 0x4dcb40, 0x4dcc60, armcColour_hitTest) \
 	X(0x420670, 0x4ddcf8, 0x4ddd98, setupSound_hitTest) X(0x4206b0, 0x4ddde8, 0x4dde78, setupOptions_hitTest) \
 	X(0x4206f0, 0x4ddeb0, 0x4ddfd0, setupControl_hitTest) X(0x420730, 0x4ddda0, 0x4dddd0, setupSlider_hitTest) \
 	X(0x4321c0, 0x9dd398, 0x9dd3b8, leaveDialog_hitTest) X(0x432200, 0x9dd7e8, 0x9dd838, roomLogin_hitTest) \
@@ -116,9 +116,9 @@ int arenaDialogBox_hitTest(int x, int y);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 int arenaCreate_hitTest(int x, int y);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-int armcMain_hitTest(int x, int y);
+int armcPartsPage_hitTest(int x, int y);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-int armcParts_hitTest(int x, int y);
+int armcWeaponsPage_hitTest(int x, int y);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 int armcColour_hitTest(int x, int y);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
@@ -913,7 +913,7 @@ void menuState300_enter(void);
 void armc_initCameraPoints(void);
 /* six part bounding boxes (+-600) and camera limits */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-void armc_initPartBoxes(void);
+void armc_initPanels(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void room_openDialog4d(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
@@ -1021,11 +1021,11 @@ static void armc_tabs(DWORD rec)                 /* tab row + its second row (bo
 	rect_spec(rec, rec + 0x30, 0x64, a); rect_spec(rec + 0x30, rec + 0x50, 0x64, b);
 }
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-void armcParts_layout(void);
+void armcWeaponsPage_layout(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void armcColour_layout(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-void armcMain_layout(void);
+void armcPartsPage_layout(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void replaySelect_layout(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
@@ -3572,9 +3572,9 @@ THISCALL void stage_build(char *s, DWORD a1, DWORD a2, DWORD a3, DWORD a4, DWORD
 /* 0x4125c0 armc_drawText(x, y, s): text in the language's small font (Korean 2: text_draw5, else text_draw8) */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void armc_drawText(int x, int y, const char *text);
-/* 0x4125f0 armc_drawStatLabel(x, y, s): the same, right-aligned at x (8 / 6 units a character) */
+/* 0x4125f0 armc_drawTextRight(x, y, s): the same, right-aligned at x (8 / 6 units a character) */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-void armc_drawStatLabel(int x, int y, const char *text);
+void armc_drawTextRight(int x, int y, const char *text);
 /* 0x4290d0 menu_drawMessageBox(): the message box: 2D projection, a translucent panel and two lines (0x4df81c, 0x74de24) */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 DWORD menu_drawMessageBox(void);
@@ -3867,7 +3867,7 @@ void room_drawGameSettings(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void armc_drawColourEditor(void);
 /* batch 139 (lifted/grp85.c): the armour build screen */
-/* 0x419160 armc_drawBuildScreen(): the armour build screen: three buttons (0x7517a4; the hovered one, armcParts_hitTest, bright),
+/* 0x419160 armc_drawWeaponsScreen(): the armour build screen: three buttons (0x7517a4; the hovered one, armcWeaponsPage_hitTest, bright),
    six part slots (texture 0x9db0a4, the selected one 0x4dbe48 bright), the snapshot when asked (0x4dcc64:
    armc_snapshot), each named slot's picture (texture 0x4dcc70 + k * 4) and label (0x756fa4) with its name
    (0x4dbe50, 0x80 apart; one character or none: 0x757da4); the part box: name 0x4dc150 and its type (0x7641a4,
@@ -3876,7 +3876,7 @@ void armc_drawColourEditor(void);
    the 16 stats (0x4dc190..0x4dc1cc) with labels 0x7574a4: counts, a pilot-scaled bonus " +%d" / " %d" (skill of
    pilot 0x9f1818 by kind 0x4dc194), "%.0f" / "%.1f" values with units (0x765624..0x7657a4), right-aligned */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-void armc_drawBuildScreen(void);
+void armc_drawWeaponsScreen(void);
 /* batch 140 (lifted/grp86.c): the arena's game list */
 /* 0x40a070 arena_drawGameList(): gameList_draw's game list for the arena (window 0x4db8c8..): frame, a line, title 0x7524a4;
    three tabs (0x752524; the hovered one, arenaGameList_hitTest, bright unless a box is open: 0x4db8b4, 0x907b2c, 0x4db714,
@@ -4183,7 +4183,7 @@ int net_playerInUse(int i);
 void netq_clearResends(void);
 int netq_resends(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-THISCALL void armc_rotateFromCursor(void *scene, const DWORD *eye, const DWORD *forward, const DWORD *up, int part, int angle, int w, int h);
+THISCALL void armc_drawPreview3D(void *scene, const DWORD *eye, const DWORD *forward, const DWORD *up, int part, int angle, int w, int h);
 /* 0x41e760 sound_playMenu(i): with sound (0xa0e80c == 1) the menu sound i (0x4dd4d4) at the sound volume 0x4dd984 */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void sound_playMenu(int id);
@@ -4404,13 +4404,13 @@ void armc_openWeaponsPage(void);
 void armc_exit(int confirmed);
 /* batch 170 (lifted/grp118.c, grp119.c, grp120.c: split so the calls between these go through their native
    addresses, where the tests stub them): the armour centre's states and input */
-/* the armour centre's pages (0x4dc798): 0x40fb20 armc_mainPageClicks(): the mouse on the main page (armcMain_hitTest's buttons:
+/* the armour centre's pages (0x4dc798): 0x40fb20 armc_partsPageClicks(): the mouse on the main page (armcPartsPage_hitTest's buttons:
    parts, colours, the part screen (armc_openWeaponsPage), back (armc_exit) ...); 0x4101e0 armc_partsPageKeys(): the main
    page's keys (one binding after another: parts, colours, the rotation toggle 0x4dceac, back); 0x410500
    armc_weaponsPageKeys(): the part screen's keys (kinds armc_pickSlot, positions 0x4dc77c with armc_showCursorItem, take
    armc_takeCursorItem, back); 0x410810 armc_colourPageKeys(): the colour page's keys (armc_backupColours, back) */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-DWORD armc_mainPageClicks(void);
+DWORD armc_partsPageClicks(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void armc_partsPageKeys(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
@@ -4640,9 +4640,9 @@ DWORD account_checkForm(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 DWORD ranking_clicks(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-DWORD armc_partScreenClicks(void);
+DWORD armc_weaponsPageClicks(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-DWORD armc_colourScreenInput(void);
+DWORD armc_colourPageClicks(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 DWORD room_settingsClicks(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
@@ -4822,19 +4822,19 @@ void armc_cameraStep(void);
 DWORD menuState800_gameRoom(void);
 /* batch 185 (lifted/grp137-139.c: split so the calls among these go through their native addresses, where the
    tests stub them): armc_enterScreen (an armour-centre session: the lobby player made, his parts given, the actor
-   reset), the main page / part screen frames armc_updatePartsPreview / armc_updateColourPreview (the mech turned by the cursor:
-   armc_rotateFromCursor, stubbed: it builds C++ objects under an SEH frame the lifter does not handle yet), their
-   wrappers armc_drawColourPage / armc_drawThirdPage / armc_drawPartsPage and menuState700_armCenter, callees stubbed */
+   reset), the main page / part screen frames armc_updatePartsPreview / armc_updateWeaponsPreview (the mech turned by the cursor:
+   armc_drawPreview3D, stubbed: it builds C++ objects under an SEH frame the lifter does not handle yet), their
+   wrappers armc_drawWeaponsPage / armc_drawColourPage / armc_drawPartsPage and menuState700_armCenter, callees stubbed */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void armc_enterScreen(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void armc_updatePartsPreview(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-void armc_updateColourPreview(void);
+void armc_updateWeaponsPreview(void);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void armc_drawWeaponsPage(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void armc_drawColourPage(void);
-/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-void armc_drawThirdPage(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void armc_drawPartsPage(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
@@ -7488,7 +7488,7 @@ ST(ptx_layoutBlocks, fill(BUF + 0x10000, 0x2800); g_a[0] = irnd(-2, 40); g_a[1] 
 V0(menuState300_enter, 0x440bb0, fill((void *)0x9eea8c, 0x2c); fill((void *)0x4b0704, 16); fill((void *)0x4dda44, 4);
    fill((void *)0x9dda70, 0x14); fill((void *)0x9dd948, 4); fill((void *)0x5ae9c4, 4);)
 V0(armc_initCameraPoints, 0x40e510, fill((void *)0x4dca30, 0x60);)
-V0(armc_initPartBoxes, 0x40dfa0, fill((void *)0x4dc550, 0x218); fill((void *)0x4b0704, 16);)
+V0(armc_initPanels, 0x40dfa0, fill((void *)0x4dc550, 0x218); fill((void *)0x4b0704, 16);)
 V0(room_openDialog4d, 0x4338c0, fill((void *)0x9dd1d0, 0x60); fill((void *)0x9dd6e8, 16); fill((void *)0x9dce50, 0x60); fill((void *)0x9dd834, 4);
    fill((void *)0x90d1c4, 4); fill((void *)0x9dd830, 4); fill((void *)0x9dd38c, 4); fill((void *)0x4e1868, 4); fill((void *)0x68039c, 4);
    fill((void *)0x9dd4a0, 4); fill((void *)0x9dd850, 4);)
@@ -7580,9 +7580,9 @@ ST(player_setName, players_setup(); fill_str(BUF + 0x400, 30, 1, 255); g_a[2] = 
 T0(scene_resetActors, 0x470a70, actors_setup(); fill(BUF + 0x202e8d0, 0x20);)
 
 /* batch 11 */
-V0(armcParts_layout, 0x40e1c0, fill((void *)0x4dbc88, 0xf0); ORIG4(AX, AY, AX2, AY2))
+V0(armcWeaponsPage_layout, 0x40e1c0, fill((void *)0x4dbc88, 0xf0); ORIG4(AX, AY, AX2, AY2))
 V0(armcColour_layout, 0x40e300, fill((void *)0x4dcb38, 0x120); ORIG4(AX, AY, AX2, AY2))
-V0(armcMain_layout, 0x40e060, fill((void *)0x4dc2a8, 0x110); ORIG4(AX, AY, AX2, AY2))
+V0(armcPartsPage_layout, 0x40e060, fill((void *)0x4dc2a8, 0x110); ORIG4(AX, AY, AX2, AY2))
 V0(replaySelect_layout, 0x440a20, fill((void *)0x9dd950, 0x120); ORIG4(0x9dd908, 0x9dd90c, 0x9dd910, 0x9dd914))
 V0(setupControl_layout, 0x420510, fill((void *)0x4ddea8, 0x120); fill((void *)0x4ddd98, 0x30); ORIG4(0x4dde80, 0x4dde84, 0x4dde88, 0x4dde8c))
 V0(setupSound_layout, 0x420300, fill((void *)0x4ddcf0, 0xa0); ORIG4(0x4ddad0, 0x4ddad4, 0x4ddad8, 0x4ddadc))
@@ -12786,7 +12786,7 @@ static void menutext_setup(void)
 	fill((void *)0x76d438, 16); fill((void *)0x9da480, 16);
 }
 ST(armc_drawText, menutext_setup();, CALL_PLAIN(0x4125c0, 0, g_a[0], g_a[1], BUF + 0x400, 0), (armc_drawText((DWORD)(g_a[0]), (DWORD)(g_a[1]), (const char *)(DWORD)(BUF + 0x400)), 0))
-ST(armc_drawStatLabel, menutext_setup();, CALL_PLAIN(0x4125f0, 0, g_a[0], g_a[1], BUF + 0x400, 0), (armc_drawStatLabel((DWORD)(g_a[0]), (DWORD)(g_a[1]), (const char *)(DWORD)(BUF + 0x400)), 0))
+ST(armc_drawTextRight, menutext_setup();, CALL_PLAIN(0x4125f0, 0, g_a[0], g_a[1], BUF + 0x400, 0), (armc_drawTextRight((DWORD)(g_a[0]), (DWORD)(g_a[1]), (const char *)(DWORD)(BUF + 0x400)), 0))
 /* the two message lines (up to 80 characters) */
 static void msgbox_setup(void)
 {
@@ -13588,7 +13588,7 @@ static void armcbuild_setup(void)
 	}
 	G32(0x4ded68) = irnd(0, 640); G32(0x4ded6c) = irnd(0, 480);
 }
-ST(armc_drawBuildScreen, armcbuild_setup();, (CALL_PLAIN(0x419160, 0, 0, 0, 0, 0), 0), (armc_drawBuildScreen(), 0))   /* its callers ignore the eax it leaves (tools/eaxuse.py) */
+ST(armc_drawWeaponsScreen, armcbuild_setup();, (CALL_PLAIN(0x419160, 0, 0, 0, 0, 0), 0), (armc_drawWeaponsScreen(), 0))   /* its callers ignore the eax it leaves (tools/eaxuse.py) */
 /* batch 140 */
 /* the arena's game list: dlgwin_setup's window at 0x4db8c8 (lock icons from its set), the game records as
    gamelist_setup's (maps 0..15, modes 0..4 as kind strings), the list kinds, the box / searching flags, short texts */
@@ -14249,7 +14249,7 @@ static void menuCursor_setup(void)
 	G32(0x4d1fac) = irnd(0, 1); G32(0x4ad17c) = irnd(0, 1);
 }
 ST(input_updateMouse, menuCursor_setup();, (CALL_PLAIN(0x445c60, 0, 0, 0, 0, 0), 0), (input_updateMouse(), 0))
-/* armc_rotateFromCursor: the scene's 3D calls stubbed (the camera, the view volume, posing, the light, the part lists
+/* armc_drawPreview3D: the scene's 3D calls stubbed (the camera, the view volume, posing, the light, the part lists
    with their light set / tint recorded, drawing); the plane and angle getters, Vec3_normalize and the light set's own
    methods real. The right button held or not, the cursor anywhere, any part (-2 .. 8), angle and screen size */
 static const DWORD g_stubRotate[] = { 0x461210, 0 | CS_POP | CS_THIS, 0x4729b0, 9 | CS_POP | CS_THIS, 0x4841f0, 2 | CS_POP | CS_THIS,
@@ -14274,8 +14274,8 @@ static DWORD rotate_orig(void)
 	                 :: "r"(a), "r"(BUF) : "eax", "ecx", "edx", "memory");
 	return 0;
 }
-ST(armc_rotateFromCursor, rotate_setup();, rotate_orig(),
-   (armc_rotateFromCursor(BUF, (const DWORD *)(BUF + 0x200), (const DWORD *)(BUF + 0x20c), (const DWORD *)(BUF + 0x218),
+ST(armc_drawPreview3D, rotate_setup();, rotate_orig(),
+   (armc_drawPreview3D(BUF, (const DWORD *)(BUF + 0x200), (const DWORD *)(BUF + 0x20c), (const DWORD *)(BUF + 0x218),
                           g_a[0], g_a[1], g_a[2], g_a[3]), 0))
 ST(sound_playMenu, menusnd_setup();, CALL_PLAIN(0x41e760, 0, g_a[4], 0, 0, 0), (sound_playMenu((DWORD)(g_a[4])), 0))
 ST(skirmishSettings_leave, menusnd_setup();, CALL_PLAIN(0x443c80, 0, 0, 0, 0, 0), (DWORD)(skirmishSettings_leave()))
@@ -14575,7 +14575,7 @@ static void armcstate_setup(const DWORD *stubs)
 	callee_key(0x401590, irnd(0, 1) ? 0x10 + irnd(0, 17) : -1);
 	callee_ret(0x40e450, (DWORD)irnd(-1, 12));
 }
-ST(armc_mainPageClicks, armcstate_setup(g_stubArmcMouse);, CALL_PLAIN(0x40fb20, 0, 0, 0, 0, 0), (DWORD)(armc_mainPageClicks()))
+ST(armc_partsPageClicks, armcstate_setup(g_stubArmcMouse);, CALL_PLAIN(0x40fb20, 0, 0, 0, 0, 0), (DWORD)(armc_partsPageClicks()))
 ST(armc_partsPageKeys, armcstate_setup(g_stubArmcMainKeys);, (CALL_PLAIN(0x4101e0, 0, 0, 0, 0, 0), 0), (armc_partsPageKeys(), 0))   /* its callers ignore the eax it leaves (tools/eaxuse.py) */
 ST(armc_weaponsPageKeys, armcstate_setup(g_stubArmcPartKeys);, (CALL_PLAIN(0x410500, 0, 0, 0, 0, 0), 0), (armc_weaponsPageKeys(), 0))   /* its callers ignore the eax it leaves (tools/eaxuse.py) */
 ST(armc_colourPageKeys, armcstate_setup(g_stubArmcColourKeys);, (CALL_PLAIN(0x410810, 0, 0, 0, 0, 0), 0), (armc_colourPageKeys(), 0))   /* its callers ignore the eax it leaves (tools/eaxuse.py) */
@@ -14955,11 +14955,11 @@ ST(ranking_clicks, gen_setup(g_gs_436620, g_gi_436620, g_gb_436620);, CALL_PLAIN
 static const DWORD g_gs_40fd30[] = { 0x40e490, 2, 0x40f0f0, 1, 0x40f200, 0, 0x40f320, 0, 0x40f830, 1, 0x40f870, 1, 0x40f950, 0, 0x40f9e0, 0, 0x41e760, 1, 0 };
 static const DWORD g_gi_40fd30[] = { 0x4dbe48, 0x4dc244, 0x4dc77c, 0x4dc798, 0x4dceac, 0x4ded68, 0x4ded6c, 0x4ded88, 0 };
 static const DWORD g_gb_40fd30[] = { 0 };
-ST(armc_partScreenClicks, gen_setup(g_gs_40fd30, g_gi_40fd30, g_gb_40fd30);, CALL_PLAIN(0x40fd30, 0, g_a[0], g_a[1], g_a[2], g_a[3]), (DWORD)(armc_partScreenClicks()))
+ST(armc_weaponsPageClicks, gen_setup(g_gs_40fd30, g_gi_40fd30, g_gb_40fd30);, CALL_PLAIN(0x40fd30, 0, g_a[0], g_a[1], g_a[2], g_a[3]), (DWORD)(armc_weaponsPageClicks()))
 static const DWORD g_gs_40ff40[] = { 0x40e4d0, 2, 0x40f0f0, 1, 0x40f200, 0, 0x40f220, 0, 0x40f320, 0, 0x40f590, 0, 0x40f5d0, 0, 0x40f670, 0, 0x40f6b0, 0, 0x40f6f0, 0, 0x40f790, 0, 0x40f7e0, 0, 0x41e760, 1, 0 };
 static const DWORD g_gi_40ff40[] = { 0x4dc4b0, 0x4dc798, 0x4dceac, 0x4ded68, 0x4ded6c, 0x4ded88, 0 };
 static const DWORD g_gb_40ff40[] = { 0 };
-ST(armc_colourScreenInput, gen_setup(g_gs_40ff40, g_gi_40ff40, g_gb_40ff40);, CALL_PLAIN(0x40ff40, 0, g_a[0], g_a[1], g_a[2], g_a[3]), (DWORD)(armc_colourScreenInput()))
+ST(armc_colourPageClicks, gen_setup(g_gs_40ff40, g_gi_40ff40, g_gb_40ff40);, CALL_PLAIN(0x40ff40, 0, g_a[0], g_a[1], g_a[2], g_a[3]), (DWORD)(armc_colourPageClicks()))
 static const DWORD g_gs_436400[] = { 0x401590, 1, 0x403490, 0, 0x41e760, 1, 0x432380, 2, 0x4339e0, 0, 0x433a80, 0, 0x4351c0, 0, 0x4356f0, 1, 0 };
 static const DWORD g_gi_436400[] = { 0x4df9e9, 0x4df9eb, 0x4df9ec, 0x4df9ed, 0x4ded54, 0x4ded68, 0x4ded6c, 0x4ded88, 0x4ded8c, 0x67ef24, 0x6803a8, 0x90d1c4, 0x9dad8c, 0x9db0ac, 0x9dce48, 0x9dd380, 0x9dd388, 0x9dd568, 0x9dd6a8, 0 };
 static const DWORD g_gb_436400[] = { 0 };
@@ -15469,15 +15469,15 @@ ST(armc_updatePartsPreview, gen_setup(g_gs_41d600, g_gi_41d600, g_gb_41d600);, (
 static const DWORD g_gs_41d8a0[] = { 0x41ca50, 2, 0x41ef20, 3, 0x41ef90, 1, 0x461850, 7 | CS_POP | CS_THIS /* ret 7 */, 0 };
 static const DWORD g_gi_41d8a0[] = { 0x4b071c, 0x4e1870, 0x68038c, 0x4dbc04, 0x4dbc6c, 0x4dbc80, 0x4dbe48, 0x4dc798, 0x4dceac, 0x4e045c, 0x5b1998, 0x9087b4, 0xa0e7a8, 0xa0e7ac, 0xa0e7b0, 0 };
 static const DWORD g_gb_41d8a0[] = { 0 };
-ST(armc_updateColourPreview, gen_setup(g_gs_41d8a0, g_gi_41d8a0, g_gb_41d8a0);, (CALL_PLAIN(0x41d8a0, 0, g_a[0], g_a[1], g_a[2], g_a[3]), 0), (armc_updateColourPreview(), 0))   /* its callers ignore the eax it leaves (tools/eaxuse.py) */
+ST(armc_updateWeaponsPreview, gen_setup(g_gs_41d8a0, g_gi_41d8a0, g_gb_41d8a0);, (CALL_PLAIN(0x41d8a0, 0, g_a[0], g_a[1], g_a[2], g_a[3]), 0), (armc_updateWeaponsPreview(), 0))   /* its callers ignore the eax it leaves (tools/eaxuse.py) */
 static const DWORD g_gs_41dfe0[] = { 0x412450, 0, 0x419160, 0, 0x41d8a0, 0, 0 };
 static const DWORD g_gi_41dfe0[] = { 0x4dbc68, 0x4dd078, 0 };
 static const DWORD g_gb_41dfe0[] = { 0 };
-ST(armc_drawColourPage, gen_setup(g_gs_41dfe0, g_gi_41dfe0, g_gb_41dfe0);, CALL_PLAIN(0x41dfe0, 0, g_a[0], g_a[1], g_a[2], g_a[3]), (armc_drawColourPage(), 0))
+ST(armc_drawWeaponsPage, gen_setup(g_gs_41dfe0, g_gi_41dfe0, g_gb_41dfe0);, CALL_PLAIN(0x41dfe0, 0, g_a[0], g_a[1], g_a[2], g_a[3]), (armc_drawWeaponsPage(), 0))
 static const DWORD g_gs_41e010[] = { 0x412450, 0, 0x41a280, 0, 0x41d600, 0, 0 };
 static const DWORD g_gi_41e010[] = { 0x4dbc68, 0x4dd078, 0 };
 static const DWORD g_gb_41e010[] = { 0 };
-ST(armc_drawThirdPage, gen_setup(g_gs_41e010, g_gi_41e010, g_gb_41e010);, CALL_PLAIN(0x41e010, 0, g_a[0], g_a[1], g_a[2], g_a[3]), (armc_drawThirdPage(), 0))
+ST(armc_drawColourPage, gen_setup(g_gs_41e010, g_gi_41e010, g_gb_41e010);, CALL_PLAIN(0x41e010, 0, g_a[0], g_a[1], g_a[2], g_a[3]), (armc_drawColourPage(), 0))
 static const DWORD g_gs_41dfb0[] = { 0x40d990, 0, 0x412450, 0, 0x412650, 0, 0x41d600, 0, 0 };
 static const DWORD g_gi_41dfb0[] = { 0x4dbc68, 0x4dc24c, 0x4dd078, 0 };
 static const DWORD g_gb_41dfb0[] = { 0 };
@@ -17240,7 +17240,7 @@ static const STest g_stests[] = {
 	/* batch 9 */
 	T(mech_setPilotLevel, 0, 4, 600), T(scene_setLocalTeam, 0, 4, 600), T(hangul_glyphs, 1, 60, 0), T(ptx_readDcDiff, 0, 150, 0),
 	T(ptx_readAcSymbol, 0, 150, 0), T(ptx_toRgb, 0, 4, 300), T(ptx_initYCbCrTables, 0, 4, 0), T(ptx_layoutBlocks, 0, 4, 600),
-	T(menuState300_enter, 0, 4, 0), T(armc_initCameraPoints, 0, 4, 0), T(armc_initPartBoxes, 0, 4, 0), T(room_openDialog4d, 0, 4, 0),
+	T(menuState300_enter, 0, 4, 0), T(armc_initCameraPoints, 0, 4, 0), T(armc_initPanels, 0, 4, 0), T(room_openDialog4d, 0, 4, 0),
 	T(room_enterRoomList, 0, 4, 0), T(missionsel_layout, 0, 8, 0), T(pilotSelect_layout, 0, 8, 0), T(actor_resetSlot, 0, 4, 300),
 	T(bullet_free, 0, 4, 1000), T(stage_resetPlayerRecords, 0, 4, 30), T(actor_nextWeapon, 0, 4, 1000), T(actor_prevWeapon, 0, 4, 1000),
 	T(shape_setTint, 0, 4, 300),
@@ -17251,7 +17251,7 @@ static const STest g_stests[] = {
 	T(shape_setTextureDir, 0, 4, 300), T(image_addColour, 0, 4, 1000), T(stage_resetMatrixAndPoints, 0, 4, 100), T(player_setName, 0, 4, 600),
 	T(scene_resetActors, 0, 4, 20),
 	/* batch 11 */
-	T(armcParts_layout, 0, 8, 0), T(armcColour_layout, 0, 8, 0), T(armcMain_layout, 0, 8, 0), T(replaySelect_layout, 0, 8, 0),
+	T(armcWeaponsPage_layout, 0, 8, 0), T(armcColour_layout, 0, 8, 0), T(armcPartsPage_layout, 0, 8, 0), T(replaySelect_layout, 0, 8, 0),
 	T(setupControl_layout, 0, 8, 0), T(setupSound_layout, 0, 8, 0), T(ranking_layout, 0, 8, 0), T(mapList_init, 0, 20, 0),
 	T(lobby_drawArenaTitle, 0, 40, 0), T(arena_initOptionTexts, 0, 8, 0), T(mech_setName, 0, 4, 400), T(shape_colourPixels, 0, 4, 1000),
 	T(match_resetInputState, 0, 4, 50), T(stage_newRound, 0, 4, 20),
@@ -17577,7 +17577,7 @@ static const STest g_stests[] = {
 	/* batch 115 */
 	T(stage_build, 0, 100, 0),
 	/* batch 116 */
-	T(armc_drawText, 0, 300, 0), T(armc_drawStatLabel, 0, 300, 0), T(menu_drawMessageBox, 0, 200, 0), T(menu_drawInputLine, 0, 300, 0),
+	T(armc_drawText, 0, 300, 0), T(armc_drawTextRight, 0, 300, 0), T(menu_drawMessageBox, 0, 200, 0), T(menu_drawInputLine, 0, 300, 0),
 	T(profileList_drawNames, 0, 200, 0), T(replaySelect_drawNames, 0, 200, 0),
 	/* batch 117 */
 	T(armc_drawModeTabs, 0, 200, 0), T(briefing_typeOut, 0, 300, 0), T(profile_drawMessageWindow, 0, 200, 0), T(arena_drawCustomOption, 0, 200, 0),
@@ -17627,7 +17627,7 @@ static const STest g_stests[] = {
 	/* batch 138 */
 	T(armc_drawColourEditor, 0, 300, 0),
 	/* batch 139 */
-	T(armc_drawBuildScreen, 0, 300, 0),
+	T(armc_drawWeaponsScreen, 0, 300, 0),
 	/* batch 140 */
 	T(arena_drawGameList, 0, 300, 0),
 	/* batch 141 */
@@ -17675,7 +17675,7 @@ static const STest g_stests[] = {
 	/* batch 160 */
 	T(sound_loadWav, 0, 300, 0),
 	/* batch 161 */
-	T(input_keyHeldChecked, 0, 300, 0), T(input_keyHeld, 0, 300, 0), T(input_isDown, 0, 300, 0), T(input_justPressed, 0, 600, 0), T(input_readMouse, 0, 600, 0), T(input_updateMouse, 0, 600, 0), T(armc_rotateFromCursor, 0, 600, 0), T(gfx_setProjectionHud, 0, 600, 0), T(gfx_fillRect, 0, 600, 0), T(hud_drawDigits, 0, 600, 0), T(font_penDraw, 0, 600, 0), T(game_wndProc, 0, 2000, 0), T(crt_vsprintf, 0, 20000, 0), T(crt_atoi, 0, 5000, 0), T(crt_atof, 0, 5000, 0), T(crt_strtok, 0, 3000, 0), T(crt_itoa, 0, 3000, 0), T(crt_tolower, 0, 2000, 0), T(crt_strupr, 0, 2000, 0), T(crt_strstr, 0, 2000, 0), T(crt_strncmp, 0, 2000, 0), T(crt_strnicmp, 0, 2000, 0), T(crt_strncpy, 0, 2000, 0), T(crt_rand, 0, 2000, 0), T(crt_ftol, 0, 10000, 0), T(crt_acos, 0, 5000, 0), T(netq_reset, 0, 300, 0), T(netq_poll, 0, 300, 0), T(net_sendPacketData, 0, 600, 0), T(netq_receive, 0, 3000, 0), T(netq_online, 0, 100, 0), T(net_isClient, 0, 100, 0), T(net_matchOver, 0, 100, 0), T(net_localSlot, 0, 100, 0), T(net_playerInUse, 0, 100, 0), T(netq_clearResends, 0, 100, 0), T(netq_resends, 0, 100, 0), T(sound_playMenu, 0, 200, 0),
+	T(input_keyHeldChecked, 0, 300, 0), T(input_keyHeld, 0, 300, 0), T(input_isDown, 0, 300, 0), T(input_justPressed, 0, 600, 0), T(input_readMouse, 0, 600, 0), T(input_updateMouse, 0, 600, 0), T(armc_drawPreview3D, 0, 600, 0), T(gfx_setProjectionHud, 0, 600, 0), T(gfx_fillRect, 0, 600, 0), T(hud_drawDigits, 0, 600, 0), T(font_penDraw, 0, 600, 0), T(game_wndProc, 0, 2000, 0), T(crt_vsprintf, 0, 20000, 0), T(crt_atoi, 0, 5000, 0), T(crt_atof, 0, 5000, 0), T(crt_strtok, 0, 3000, 0), T(crt_itoa, 0, 3000, 0), T(crt_tolower, 0, 2000, 0), T(crt_strupr, 0, 2000, 0), T(crt_strstr, 0, 2000, 0), T(crt_strncmp, 0, 2000, 0), T(crt_strnicmp, 0, 2000, 0), T(crt_strncpy, 0, 2000, 0), T(crt_rand, 0, 2000, 0), T(crt_ftol, 0, 10000, 0), T(crt_acos, 0, 5000, 0), T(netq_reset, 0, 300, 0), T(netq_poll, 0, 300, 0), T(net_sendPacketData, 0, 600, 0), T(netq_receive, 0, 3000, 0), T(netq_online, 0, 100, 0), T(net_isClient, 0, 100, 0), T(net_matchOver, 0, 100, 0), T(net_localSlot, 0, 100, 0), T(net_playerInUse, 0, 100, 0), T(netq_clearResends, 0, 100, 0), T(netq_resends, 0, 100, 0), T(sound_playMenu, 0, 200, 0),
 	T(skirmishSettings_leave, 0, 200, 0), T(missionSettings_leave, 0, 200, 0), T(mission_chosen, 0, 200, 0),
 	/* batch 162 */
 	T(skirmish_clicks, 0, 300, 0), T(missionsel_clicks, 0, 300, 0), T(mission_choose, 0, 200, 0), T(skirmish_settingsKeys, 0, 300, 0),
@@ -17701,7 +17701,7 @@ static const STest g_stests[] = {
 	T(armc_showCursorItem, 0, 300, 0), T(armc_pickSlot, 0, 300, 0), T(armc_takeCursorItem, 0, 300, 0), T(armc_openWeaponsPage, 0, 300, 0),
 	T(armc_exit, 0, 300, 0),
 	/* batch 170 */
-	T(armc_mainPageClicks, 0, 300, 0), T(armc_partsPageKeys, 0, 400, 0), T(armc_weaponsPageKeys, 0, 400, 0), T(armc_colourPageKeys, 0, 400, 0),
+	T(armc_partsPageClicks, 0, 300, 0), T(armc_partsPageKeys, 0, 400, 0), T(armc_weaponsPageKeys, 0, 400, 0), T(armc_colourPageKeys, 0, 400, 0),
 	T(armc_mouse, 0, 200, 0), T(armc_processInput, 0, 400, 0),
 	/* batch 171 */
 	T(dplay_check, 0, 200, 0), T(input_releaseAll, 0, 200, 0), T(dplaySlot0_host, 0, 200, 0), T(dplaySlot1_host, 0, 200, 0),
@@ -17731,8 +17731,8 @@ static const STest g_stests[] = {
 	T(dplay_closeSession, 0, 100, 0),
 	/* batch 175 */
 	T(menu_returnToMain, 0, 200, 0), T(menu_returnToMainFromRoom, 0, 200, 0), T(dplay_join, 0, 200, 0), T(menu_enterState, 0, 200, 0),
-	T(room_leftClicks, 0, 200, 0), T(account_checkForm, 0, 200, 0), T(ranking_clicks, 0, 200, 0), T(armc_partScreenClicks, 0, 200, 0),
-	T(armc_colourScreenInput, 0, 200, 0), T(room_settingsClicks, 0, 200, 0), T(room_settingsAfterTyping, 0, 200, 0), T(replaySelect_keys, 0, 200, 0),
+	T(room_leftClicks, 0, 200, 0), T(account_checkForm, 0, 200, 0), T(ranking_clicks, 0, 200, 0), T(armc_weaponsPageClicks, 0, 200, 0),
+	T(armc_colourPageClicks, 0, 200, 0), T(room_settingsClicks, 0, 200, 0), T(room_settingsAfterTyping, 0, 200, 0), T(replaySelect_keys, 0, 200, 0),
 	T(setup_graphicTabClicks, 0, 200, 0), T(account_page, 0, 200, 0), T(setup_soundTabClicks, 0, 200, 0), T(setup_controlTabKeys, 0, 200, 0),
 	T(setup_controlTabClicks, 0, 200, 0), T(roomLogin_update, 0, 1000, 0), T(armc_enterParts, 0, 200, 0), T(room_gameListKeys, 0, 1000, 0),
 	T(gameList_mouse, 0, 1000, 0), T(roomLogin_keys, 0, 1000, 0),
@@ -17763,8 +17763,8 @@ static const STest g_stests[] = {
 	T(lobby_clicks, 0, 200, 0), T(menuState400_frame, 0, 200, 0), T(menu_frameInput, 0, 200, 0), T(newIdForm_update, 0, 200, 0),
 	T(armc_cameraStep, 0, 2000, 0), T(menuState800_gameRoom, 0, 200, 0),
 	/* batch 185 */
-	T(armc_enterScreen, 0, 200, 0), T(armc_updatePartsPreview, 0, 1000, 0), T(armc_updateColourPreview, 0, 1000, 0), T(armc_drawColourPage, 0, 200, 0),
-	T(armc_drawThirdPage, 0, 200, 0), T(armc_drawPartsPage, 0, 200, 0), T(menuState700_armCenter, 0, 200, 0),
+	T(armc_enterScreen, 0, 200, 0), T(armc_updatePartsPreview, 0, 1000, 0), T(armc_updateWeaponsPreview, 0, 1000, 0), T(armc_drawWeaponsPage, 0, 200, 0),
+	T(armc_drawColourPage, 0, 200, 0), T(armc_drawPartsPage, 0, 200, 0), T(menuState700_armCenter, 0, 200, 0),
 	/* batch 186 */
 	T(match_startRound, 0, 1500, 0), T(match_escMenu, 0, 1000, 0), T(app_shutdown, 0, 200, 0), T(stage_advanceScenePath, 0, 200, 0),
 	/* batch 187 */
@@ -18141,7 +18141,7 @@ static const struct { DWORD addr; void *fn; const char *name; } g_hooks3[] = {
 	{ 0x46f2a0, (void *)ptx_readAcSymbol, "ptx_readAcSymbol" }, { 0x46e830, (void *)ptx_toRgb, "ptx_toRgb" },
 	{ 0x46efd0, (void *)ptx_initYCbCrTables, "ptx_initYCbCrTables" }, { 0x46ea30, (void *)ptx_layoutBlocks, "ptx_layoutBlocks" },
 	{ 0x440bb0, (void *)menuState300_enter, "menuState300_enter" }, { 0x40e510, (void *)armc_initCameraPoints, "armc_initCameraPoints" },
-	{ 0x40dfa0, (void *)armc_initPartBoxes, "armc_initPartBoxes" }, { 0x4338c0, (void *)room_openDialog4d, "room_openDialog4d" },
+	{ 0x40dfa0, (void *)armc_initPanels, "armc_initPanels" }, { 0x4338c0, (void *)room_openDialog4d, "room_openDialog4d" },
 	{ 0x433800, (void *)room_enterRoomList, "room_enterRoomList" }, { 0x447660, (void *)missionsel_layout, "missionsel_layout" },
 	{ 0x44b1a0, (void *)pilotSelect_layout, "pilotSelect_layout" }, { 0x4743e0, (void *)actor_resetSlot, "actor_resetSlot" },
 	{ 0x47cf10, (void *)bullet_free, "bullet_free" }, { 0x474480, (void *)stage_resetPlayerRecords, "stage_resetPlayerRecords" },
@@ -18158,8 +18158,8 @@ static const struct { DWORD addr; void *fn; const char *name; } g_hooks3[] = {
 	{ 0x48fe10, (void *)stage_resetMatrixAndPoints, "stage_resetMatrixAndPoints" }, { 0x473940, (void *)player_setName, "player_setName" },
 	{ 0x470a70, (void *)scene_resetActors, "scene_resetActors" },
 	/* batch 11 */
-	{ 0x40e1c0, (void *)armcParts_layout, "armcParts_layout" }, { 0x40e300, (void *)armcColour_layout, "armcColour_layout" },
-	{ 0x40e060, (void *)armcMain_layout, "armcMain_layout" }, { 0x440a20, (void *)replaySelect_layout, "replaySelect_layout" },
+	{ 0x40e1c0, (void *)armcWeaponsPage_layout, "armcWeaponsPage_layout" }, { 0x40e300, (void *)armcColour_layout, "armcColour_layout" },
+	{ 0x40e060, (void *)armcPartsPage_layout, "armcPartsPage_layout" }, { 0x440a20, (void *)replaySelect_layout, "replaySelect_layout" },
 	{ 0x420510, (void *)setupControl_layout, "setupControl_layout" }, { 0x420300, (void *)setupSound_layout, "setupSound_layout" },
 	{ 0x432040, (void *)ranking_layout, "ranking_layout" }, { 0x403420, (void *)mapList_init, "mapList_init" },
 	{ 0x404980, (void *)lobby_drawArenaTitle, "lobby_drawArenaTitle" }, { 0x42bc00, (void *)arena_initOptionTexts, "arena_initOptionTexts" },
@@ -18628,7 +18628,7 @@ static const struct { DWORD addr; void *fn; const char *name; } g_hooks3[] = {
 	/* batch 115 */
 	{ 0x4700a0, (void *)stage_build, "stage_build" },
 	/* batch 116 */
-	{ 0x4125c0, (void *)armc_drawText, "armc_drawText" }, { 0x4125f0, (void *)armc_drawStatLabel, "armc_drawStatLabel" },
+	{ 0x4125c0, (void *)armc_drawText, "armc_drawText" }, { 0x4125f0, (void *)armc_drawTextRight, "armc_drawTextRight" },
 	{ 0x4290d0, (void *)menu_drawMessageBox, "menu_drawMessageBox" }, { 0x428940, (void *)menu_drawInputLine, "menu_drawInputLine" },
 	{ 0x44ce90, (void *)profileList_drawNames, "profileList_drawNames" }, { 0x442d10, (void *)replaySelect_drawNames, "replaySelect_drawNames" },
 	/* batch 117 */
@@ -18685,7 +18685,7 @@ static const struct { DWORD addr; void *fn; const char *name; } g_hooks3[] = {
 	/* batch 138 */
 	{ 0x41a280, (void *)armc_drawColourEditor, "armc_drawColourEditor" },
 	/* batch 139 */
-	{ 0x419160, (void *)armc_drawBuildScreen, "armc_drawBuildScreen" },
+	{ 0x419160, (void *)armc_drawWeaponsScreen, "armc_drawWeaponsScreen" },
 	/* batch 140 */
 	{ 0x40a070, (void *)arena_drawGameList, "arena_drawGameList" },
 	/* batch 141 */
@@ -18744,7 +18744,7 @@ static const struct { DWORD addr; void *fn; const char *name; } g_hooks3[] = {
 	/* batch 161 */
 	{ 0x401540, (void *)input_keyHeldChecked, "input_keyHeldChecked" }, { 0x4014f0, (void *)input_keyHeld, "input_keyHeld" },
 	{ 0x401590, (void *)input_isDown, "input_isDown" }, { 0x401600, (void *)input_justPressed, "input_justPressed" }, { 0x401730, (void *)input_readMouse, "input_readMouse" },
-	{ 0x445c60, (void *)input_updateMouse, "input_updateMouse" }, { 0x461850, (void *)armc_rotateFromCursor, "armc_rotateFromCursor" },
+	{ 0x445c60, (void *)input_updateMouse, "input_updateMouse" }, { 0x461850, (void *)armc_drawPreview3D, "armc_drawPreview3D" },
 	{ 0x4685f0, (void *)gfx_setProjectionHud, "gfx_setProjectionHud" }, { 0x46bd60, (void *)gfx_fillRect, "gfx_fillRect" },
 	{ 0x46bdc0, (void *)hud_drawDigits, "hud_drawDigits" }, { 0x46bb00, (void *)font_penDraw, "font_penDraw" },
 	{ 0x440070, (void *)game_wndProc, "game_wndProc" },
@@ -18791,7 +18791,7 @@ static const struct { DWORD addr; void *fn; const char *name; } g_hooks3[] = {
 	{ 0x40f9e0, (void *)armc_takeCursorItem, "armc_takeCursorItem" }, { 0x40f220, (void *)armc_openWeaponsPage, "armc_openWeaponsPage" },
 	{ 0x40f0f0, (void *)armc_exit, "armc_exit" },
 	/* batch 170 */
-	{ 0x40fb20, (void *)armc_mainPageClicks, "armc_mainPageClicks" }, { 0x4101e0, (void *)armc_partsPageKeys, "armc_partsPageKeys" },
+	{ 0x40fb20, (void *)armc_partsPageClicks, "armc_partsPageClicks" }, { 0x4101e0, (void *)armc_partsPageKeys, "armc_partsPageKeys" },
 	{ 0x410500, (void *)armc_weaponsPageKeys, "armc_weaponsPageKeys" }, { 0x410810, (void *)armc_colourPageKeys, "armc_colourPageKeys" },
 	{ 0x410190, (void *)armc_mouse, "armc_mouse" }, { 0x410ab0, (void *)armc_processInput, "armc_processInput" },
 	/* batch 171 */
@@ -18844,8 +18844,8 @@ static const struct { DWORD addr; void *fn; const char *name; } g_hooks3[] = {
 	{ 0x41edc0, (void *)menu_returnToMain, "menu_returnToMain" }, { 0x41ed70, (void *)menu_returnToMainFromRoom, "menu_returnToMainFromRoom" },
 	{ 0x453180, (void *)dplay_join, "dplay_join" }, { 0x41f970, (void *)menu_enterState, "menu_enterState" },
 	{ 0x435b00, (void *)room_leftClicks, "room_leftClicks" }, { 0x4346c0, (void *)account_checkForm, "account_checkForm" },
-	{ 0x436620, (void *)ranking_clicks, "ranking_clicks" }, { 0x40fd30, (void *)armc_partScreenClicks, "armc_partScreenClicks" },
-	{ 0x40ff40, (void *)armc_colourScreenInput, "armc_colourScreenInput" }, { 0x436400, (void *)room_settingsClicks, "room_settingsClicks" },
+	{ 0x436620, (void *)ranking_clicks, "ranking_clicks" }, { 0x40fd30, (void *)armc_weaponsPageClicks, "armc_weaponsPageClicks" },
+	{ 0x40ff40, (void *)armc_colourPageClicks, "armc_colourPageClicks" }, { 0x436400, (void *)room_settingsClicks, "room_settingsClicks" },
 	{ 0x437630, (void *)room_settingsAfterTyping, "room_settingsAfterTyping" }, { 0x441c00, (void *)replaySelect_keys, "replaySelect_keys" },
 	{ 0x422480, (void *)setup_graphicTabClicks, "setup_graphicTabClicks" }, { 0x43e7b0, (void *)account_page, "account_page" },
 	{ 0x4221d0, (void *)setup_soundTabClicks, "setup_soundTabClicks" }, { 0x422e10, (void *)setup_controlTabKeys, "setup_controlTabKeys" },
@@ -18891,8 +18891,8 @@ static const struct { DWORD addr; void *fn; const char *name; } g_hooks3[] = {
 	{ 0x410b50, (void *)armc_cameraStep, "armc_cameraStep" }, { 0x43ef70, (void *)menuState800_gameRoom, "menuState800_gameRoom" },
 	/* batch 185 */
 	{ 0x40e5d0, (void *)armc_enterScreen, "armc_enterScreen" }, { 0x41d600, (void *)armc_updatePartsPreview, "armc_updatePartsPreview" },
-	{ 0x41d8a0, (void *)armc_updateColourPreview, "armc_updateColourPreview" }, { 0x41dfe0, (void *)armc_drawColourPage, "armc_drawColourPage" },
-	{ 0x41e010, (void *)armc_drawThirdPage, "armc_drawThirdPage" }, { 0x41dfb0, (void *)armc_drawPartsPage, "armc_drawPartsPage" },
+	{ 0x41d8a0, (void *)armc_updateWeaponsPreview, "armc_updateWeaponsPreview" }, { 0x41dfe0, (void *)armc_drawWeaponsPage, "armc_drawWeaponsPage" },
+	{ 0x41e010, (void *)armc_drawColourPage, "armc_drawColourPage" }, { 0x41dfb0, (void *)armc_drawPartsPage, "armc_drawPartsPage" },
 	{ 0x41e040, (void *)menuState700_armCenter, "menuState700_armCenter" },
 	/* batch 186 */
 	{ 0x49df10, (void *)match_startRound, "match_startRound" }, { 0x49ca70, (void *)match_escMenu, "match_escMenu" },

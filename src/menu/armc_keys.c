@@ -6,7 +6,7 @@
 /* the keys of slots 0 .. 4 */
 static const u32 slot_keys[5] = { ADDR(g_dikH), ADDR(g_dikE), ADDR(g_dikS), ADDR(g_dikG), ADDR(g_dikB) };
 
-/* 0x4101e0: the parts page: 0x4e1538 / 0x4e1504 to the weapons / third page, 0x4e151c toggles the spin; the part in
+/* 0x4101e0: the parts page: 0x4e1538 / 0x4e1504 to the weapons / colour page, 0x4e151c toggles the spin; the part in
    view picked (slot keys, 0x4e0cd4 the weapons) or stepped (up / down); left / right change that part; OK keeps the
    mech, back or cancel leaves (the original leaves eax to callers that ignore it) */
 void (armc_partsPageKeys)(void)
@@ -84,7 +84,7 @@ void (armc_partsPageKeys)(void)
 }
 
 
-/* 0x410500: the weapons page: cancel / back leave, OK keeps the mech; 0x4e1514 / 0x4e1504 to the parts / third page
+/* 0x410500: the weapons page: cancel / back leave, OK keeps the mech; 0x4e1514 / 0x4e1504 to the parts / colour page
    (slot 0 picked first), 0x4e151c toggles the spin; six keys pick an item slot; right / left move the cursor in its
    list (slot 0's weapons wrap between 1 and the last; slots 4 / 5 skip a colour part already in the other slot),
    up and then down step the slot (the original leaves eax to callers that ignore it) */

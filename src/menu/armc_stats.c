@@ -58,7 +58,7 @@ static void value(Panel *p, int dy)
 		text_draw8(p->left + 0x1a, p->top + dy + 0xf, p->t.line);
 		p->value_len = (int)strlen(p->t.line);
 	} else
-		armc_drawStatLabel(p->left + 0xd8, p->top + dy, p->t.line);
+		armc_drawTextRight(p->left + 0xd8, p->top + dy, p->t.line);
 }
 
 /* Korean: the line drawn after the value, in yellow or in the colour already set */
@@ -387,7 +387,7 @@ static void section_booster(Panel *p)
 		text_draw8(p->left + 0x12, p->top + 0xc6, p->t.line);
 	} else {
 		colour(k_cyan);
-		armc_drawStatLabel(p->left + 0xd8, p->top + ROW(5) + 0x14, p->t.line);
+		armc_drawTextRight(p->left + 0xd8, p->top + ROW(5) + 0x14, p->t.line);
 	}
 	int dy = p->korean ? 0xd8 : ROW(7);
 	label(p, dy, MSG(647, "WEIGHT"));
@@ -440,14 +440,14 @@ static void section_mech(Panel *p)
 
 /* 0x412650: the ARM CENTER's stats panel (0x4dcc90 .. 0x4dcc9c) for the part in slot 0x4dbc6c: the six slot
    buttons (the chosen one brighter) and their labels (MSG(281, "$[0] HEAD") ..; the sixth boxed, MSG(286, "VIEW $[0] ALL")), the part names
-   beside them when 0x4dbc68 is set, two buttons (MSG(115, "$[0] O K"), lit from 3 by armcMain_hitTest), the weight button and its
+   beside them when 0x4dbc68 is set, two buttons (MSG(115, "$[0] O K"), lit from 3 by armcPartsPage_hitTest), the weight button and its
    arrows (14 / 15), the on / off button (MSG(287, "$[0] ROTATE") with 0x751924 + 0x80 x 0x4dceac) and the detail button (MSG(277, "SELECT"));
    then the stats box (taller for Korean, 0x9dae74) and the slot's section. The caller ignores the eax it leaves */
 void (armc_drawStatsPanel)(void)
 {
 	int slot = g_armcPartSlot, korean = g_language == 1;
 	const u32 *bright = g_armcTabColour, *dim = g_armcTabColourDim;
-	int hovered = armcMain_hitTest(g_mouseX, g_mouseY);
+	int hovered = armcPartsPage_hitTest(g_mouseX, g_mouseY);
 	glEnable(GL_TEXTURE_2D);
 	int texture = g_buttonTexture;
 	tex_bind(g_textures->banks[texture / 512], texture % 512);
