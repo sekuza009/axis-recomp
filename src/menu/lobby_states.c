@@ -1047,7 +1047,7 @@ u32 (lobby_pageClicks)(void)
 /* 0x405b80: the arena connection's outcome (0x4ded60; 2 nothing to do). 1 connected: the music stopped, the player
    slot opened (arena_openSession), the arena hosted with the player's record (0x4ded20: name, 0x4dedb0, colours,
    corporation; 0x4dedd0) and its settings taken for the game, 0x4ded54 set; then (as the state stands after) 0
-   closed, 3 closed for a ladder game (0x907b2c), 4 refused (message 0x46): the connection closed (net_451e60) and
+   closed, 3 closed for a ladder game (0x907b2c), 4 refused (message 0x46): the connection closed (net_disconnect) and
    the state back to 2. Returns what the original leaves in eax */
 u32 (arena_connectionOutcome)(void)
 {
@@ -1076,7 +1076,7 @@ u32 (arena_connectionOutcome)(void)
 	}
 	if (state != 0 && state != 3 && state != 4)
 		return state;
-	u32 r = net_disconnect();   /* net_451e60: the connection closed */
+	u32 r = net_disconnect();   /* net_disconnect: the connection closed */
 	g_connectStep = 2;
 	if (state == 3)
 		g_arenaLeaving = 1;
@@ -1090,7 +1090,7 @@ u32 (arena_connectionOutcome)(void)
 /* 0x407e40: the "create arena" page after typing (not while typing or with a message box): a typed field is taken
    (the arena's name into 0x4db528 unless blank (sound 6); the password into 0x4db54e; the two limits as numbers,
    0 .. 250 (else 250), into the bytes 0x4db54c / 0x4db54d; an empty line changes nothing), else the keys: create
-   (0x4e14f4; lobby_4052c0) and join (0x4e1528; 0x405cf0, then the name check) unless connecting, and the two close
+   (0x4e14f4; lobby_hostArenaLan) and join (0x4e1528; lobby_announceArena) unless connecting, and the two close
    keys (the arena left). Returns what the original leaves in eax */
 u32 (lobbyTop_connect)(void)
 {
@@ -1139,7 +1139,7 @@ u32 (lobbyTop_connect)(void)
 	}
 	if (input_justPressed(g_dikI) && !g_arenaGameSetUp) {
 		sound_playMenu(0);
-		return lobby_hostArenaLan();   /* lobby_4052c0: create */
+		return lobby_hostArenaLan();   /* lobby_hostArenaLan: create */
 	}
 	if (input_justPressed(g_dikT) && !g_arenaGameSetUp) {
 		sound_playMenu(0);
@@ -1161,7 +1161,7 @@ u32 (lobbyTop_connect)(void)
 
 /* 0x407410: the "create arena" page clicked (no field being typed, page state 2, no message box; a right click leaves
    the arena). Buttons (createArena_hitTest): 0 / 1 / 6 / 7 type a field (0x404d70, 0x404f90, 0x404e10, 0x404ed0), 2 / 12 /
-   14 the map on and 13 back (lobby_4068d0), 3 the players +2 (to 16, then 2), 4 custom on / off (0x4db54a; the game
+   14 the map on and 13 back (arena_stepMap), 3 the players +2 (to 16, then 2), 4 custom on / off (0x4db54a; the game
    type kept in range), 5 the game type on (with a turn key held back) through 0 .. 13 (0 .. 14 when custom), 8
    create and 9 join (unless connecting), 11 leave, 15 the custom map list (when custom; mapList_startEdit). Returns what
    the original leaves in eax (for the byte settings, its low byte the new value) */
@@ -1195,7 +1195,7 @@ u32 (arena_createClick)(void)
 		sound_playMenu(2);
 		/* fall through */
 	case 12: case 14:
-		return arena_stepMap(1);   /* lobby_4068d0: the next map */
+		return arena_stepMap(1);   /* arena_stepMap: the next map */
 	case 13:
 		return arena_stepMap(0);
 	case 3:
@@ -1233,7 +1233,7 @@ u32 (arena_createClick)(void)
 		if (g_arenaGameSetUp)
 			return 8;
 		sound_playMenu(0);
-		return lobby_hostArenaLan();   /* lobby_4052c0: create */
+		return lobby_hostArenaLan();   /* lobby_hostArenaLan: create */
 	case 9:
 		if (g_arenaGameSetUp)
 			return 9;

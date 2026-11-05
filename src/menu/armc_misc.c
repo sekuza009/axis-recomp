@@ -748,7 +748,7 @@ void (armc_sendSelectionToNet)(void)
 }
 
 /* 0x40fb20: the armour centre's main page clicked (armcMain_hitTest's buttons 1 .. 16): 1 / 2 the part and colour pages
-   (armc_40f220 / 40f320, unless already there), 3 / 4 the part screen's two sides (armc_40f0f0), 6 .. 11 the mech
+   (armc_openWeaponsPage / armc_showColourPage, unless already there), 3 / 4 the part screen's two sides (armc_exit), 6 .. 11 the mech
    view 0 .. 5 (0x4dbc6c; its zoom 0x4dcfd8 back to 1), 14 / 15 the view's two turns (armc_stepPart; not in view 5),
    16 the rotation toggle (0x4dceac). Each with its sound. Returns what the original leaves in eax */
 u32 (armc_mainPageClicks)(void)
@@ -795,8 +795,8 @@ u32 (armc_mainPageClicks)(void)
 }
 
 /* 0x40ff40: the colour page clicked (armcColour_hitTest's buttons 0 .. 17): 0 .. 2 the part screen, main and colour pages
-   (armc_40f200 / 40f220 / 40f320, unless already there), 3 / 4 the two sides (armc_40f0f0), 5 .. 10 the colour slot
-   0 .. 5 (0x4dc4b0; slot 5 also armc_40f590), 11 .. 16 the slider and swatch buttons (armc_40f5d0 .. 40f7e0), 17 the
+   (armc_showPartsPage / armc_openWeaponsPage / armc_showColourPage, unless already there), 3 / 4 the two sides (armc_exit), 5 .. 10 the colour slot
+   0 .. 5 (0x4dc4b0; slot 5 also armc_backupColours), 11 .. 16 the slider and swatch buttons (armc_dragPrimaryHue .. armc_dragSecondaryHue), 17 the
    rotation toggle. Returns what the original leaves in eax */
 u32 (armc_colourScreenInput)(void)
 {

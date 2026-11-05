@@ -547,7 +547,7 @@ static void leave_game(u32 lobby, int disconnect)
 /* the menu cameras placed (both at (0, 0, z), the far one at farZ, the near one at nearZ: float bits), the keys
    blocked as given, 0x4deb48 set (and 0x4e1868 cleared when asked), the menu state cleared and the keyboard taken back if it was let go. Returns
    what the original leaves in eax: input_initKeyboard's, or 0x68039c's value */
-static u32 reset_menus(u32 farZ, u32 nearZ, int blocked, int deb48, int clear_4e1868)
+static u32 reset_menus(u32 farZ, u32 nearZ, int blocked, int entering, int clear_chat_field)
 {
 	u32 typing = (*(u32 *)&g_paused);
 	(*(u32 *)&g_armcCamHeight) = 0;
@@ -564,11 +564,11 @@ static u32 reset_menus(u32 farZ, u32 nearZ, int blocked, int deb48, int clear_4e
 	g_roomSlideNearX = 0;
 	g_roomSlideNearY = 0;
 	g_roomSlideNearZ = nearZ;
-	g_enteringMenus = deb48;
+	g_enteringMenus = entering;
 	g_replayRunning = 0;
 	(*(int *)&g_cursorBlink) = 0;
 	(*(int *)&g_introZoom) = 0;
-	if (clear_4e1868)
+	if (clear_chat_field)
 		g_chatFieldFlag = 0;
 	if (typing != 1)
 		return typing;

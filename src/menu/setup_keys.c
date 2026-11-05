@@ -134,13 +134,13 @@ static void with_page(void (*draw)(void), const int frame[4])
 		menu_drawFrame(frame[0], frame[1], frame[2], frame[3]);
 }
 
-static void page_424810(void) { setup_drawSoundPage(); }
-static void page_425460(void) { setup_drawOptionsDialog(); }
+static void page_sound(void) { setup_drawSoundPage(); }
+static void page_options(void) { setup_drawOptionsDialog(); }
 static void page_crosshair(void) { setup_crosshairScreen(); }
 
-/* 0x427830, 0x427880, 0x4278d0: the screen with the key bindings page, the second page, the crosshair page */
-void (setup_frameSoundPage)(void) { with_page(page_424810, (const int *)ADDR(g_setupSoundLeft)); }
-void (setup_frameOptionsPage)(void) { with_page(page_425460, g_setupOptionsRect); }
+/* 0x427830, 0x427880, 0x4278d0: the screen with the sound page, the options dialog, the crosshair page */
+void (setup_frameSoundPage)(void) { with_page(page_sound, (const int *)ADDR(g_setupSoundLeft)); }
+void (setup_frameOptionsPage)(void) { with_page(page_options, g_setupOptionsRect); }
 void (setup_frameCrosshairPage)(void) { with_page(page_crosshair, (const int *)ADDR(g_setupControlLeft)); }
 
 /* a tab opened: the page state, the setup camera's distance (-1650) and its fade (0.7), no item picked */

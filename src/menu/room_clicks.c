@@ -596,7 +596,7 @@ u32 (ranking_clicks)(void)
 /* 0x436400: the game room's settings page clicked (no field being typed in, room modes other than 0 / 1, no message
    box; a right click closes the page). Buttons (roomSettings_hitTest): 0 / 1 type the room's name or password
    (field_editComment / 433a80), 3 the players +2 (4 .. 16, then 2), 5 the game type on (with a turn key held back) through
-   0 .. 9, 6 / 7 the frag and time limits +5 (up to 50 / 60, then 5), 8 start (room_4351c0; not while connecting),
+   0 .. 9, 6 / 7 the frag and time limits +5 (up to 50 / 60, then 5), 8 start (room_announceGame; not while connecting),
    9 close, 11 / 2, 10, 12 the map back / on (room_stepMap), 13 the map list (mapList_startEdit). Returns what the original
    leaves in eax (for the byte settings, its low byte the new value) */
 u32 (room_settingsClicks)(void)
@@ -664,7 +664,7 @@ u32 (room_settingsClicks)(void)
 		if (g_arenaGameSetUp)
 			return (*(u32 *)&g_arenaGameSetUp);
 		sound_playMenu(0);
-		return room_announceGame();   /* room_4351c0: start */
+		return room_announceGame();   /* room_announceGame: start */
 	case 9:
 		r = sound_playMenu(0);
 		g_roomMode = 0;
@@ -679,7 +679,7 @@ u32 (room_settingsClicks)(void)
 /* 0x437630: the game room's settings page after typing (not while typing or with a message box): a typed field is
    taken (the room's name into 0x4df9c8 unless blank (sound 6); the password into 0x4df9ee; the frag and time limits
    as numbers into the bytes 0x4df9ec / 0x4df9ed; an empty line changes nothing), else the keys: start (0x4e1510;
-   room_4351c0, not while connecting) and the two close keys (0x4e0cdc, 0x76d48c). Returns what the original leaves
+   room_announceGame, not while connecting) and the two close keys (0x4e0cdc, 0x76d48c). Returns what the original leaves
    in eax */
 u32 (room_settingsAfterTyping)(void)
 {
@@ -719,7 +719,7 @@ u32 (room_settingsAfterTyping)(void)
 	}
 	if (input_justPressed(g_dikO) && !g_arenaGameSetUp) {
 		sound_playMenu(0);
-		return room_announceGame();   /* room_4351c0: start */
+		return room_announceGame();   /* room_announceGame: start */
 	}
 	u32 r = 0;
 	static const u32 close[2] = { ADDR(g_dikC), ADDR(g_dikEscape_2) };

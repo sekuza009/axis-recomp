@@ -130,7 +130,7 @@ void (armc_openWeaponsPage)(void)
 }
 
 /* 0x40fd30: the part screen clicked (armcParts_hitTest's buttons 0 .. 14): 0 / 2 the main and colour pages (the slot
-   closed first; unless already there), 3 / 4 the screen's two sides (armc_40f0f0), 6 .. 11 slot 0 .. 5 picked,
+   closed first; unless already there), 3 / 4 the screen's two sides (armc_exit), 6 .. 11 slot 0 .. 5 picked,
    12 / 13 the cursor back / on (weapons wrap past the first entry; for the other items a step the slot cannot take
    (armc_colourPartEquipped) is skipped) with the item shown and taken, 14 the rotation toggle. Each with its sound. Returns
    what the original leaves in eax */

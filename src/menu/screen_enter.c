@@ -294,7 +294,7 @@ int (menuState900_enterSkirmish)(void)
 }
 
 /* 0x447750: the mission select (screen 500): the briefing camera, the window and its colours, the screen's panels
-   (mission_447660), the mission shown (0x9f63b4, 0x9f6328) the campaign's next one (0x9f181c, at most 14), a sound;
+   (missionsel_layout), the mission shown (0x9f63b4, 0x9f6328) the campaign's next one (0x9f181c, at most 14), a sound;
    a newly reached mission (past 0x9f62fc) raises it and the briefing flag 0x9f62e0. Returns the campaign's mission */
 int (menuState500_enter)(void)
 {
@@ -305,7 +305,7 @@ int (menuState500_enter)(void)
 		{ ADDR(g_nextScreen), 500 } };
 	STORE_ALL(briefing_camera);
 	STORE_ALL(setup);
-	missionsel_layout();   /* mission_447660 */
+	missionsel_layout();   /* missionsel_layout */
 	g_missionShowBackground = 1;
 	g_missionBusy = 0;
 	int mission = g_progress < 15 ? g_progress : 14;
