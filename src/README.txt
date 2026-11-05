@@ -47,19 +47,18 @@ address (logged). Data inside .text stays (the DirectInput object formats at 0x4
 standalone.log (next to the exe) lists every function; RECOMP_SKIP=name,... keeps some on the original.
 standalone/play.sh is the play test.
 
-Adding a function
-  1. Read it: the disassembly (python tools/disx.py 0xADDR), Ghidra's pseudo-C (../decomp/out/src) and the lifted
-     version (lifted/grpNN.c) with its notes in recomp.c / README.txt.
-  2. Write it in the subsystem's file, defined as "ret (name)(args)", using scene fields (add them to scene.fields)
-     and named globals / functions (add them to game.h). Keep the original's order of calls and stores to memory
-     the tests can see; write float compares so a NaN takes the original's branch; float-to-int through ftol().
-  3. (hand-written C in recomp.c: python tools/hand2src.py "decl" swaps its definition for the declaration)
-     (python tools/extract_hand.py out.c "header" names... copies a family of them into a new src file first)
-     python tools/tosrc.py "decl;call" (switches recomp.c from the lifted wrapper to it), ../build.sh,
-     bash tools/only.sh name: it must stay bit-exact on every test. coverage.txt says how much of the function
-     the test reaches; a weak test should be strengthened first.
-  4. python tools/srcaudit.py (every src function wired in; every patch-DLL call site inside a rebuilt function
-     followed), commit; play-test (test3.sh) after a few.
+Changing a function
+  1. Read it: the disassembly (python tools/disx.py 0xADDR) and Ghidra's pseudo-C (../decomp/out/src) for what the
+     original does; its comment here gives its address.
+  2. Edit it in its subsystem's file, using scene fields (add them to scene.fields) and named globals / functions
+     (globals.h, game.h). Keep the original's order of calls and stores to memory the tests can see; write float
+     compares so a NaN takes the original's branch; float-to-int through ftol().
+  3. ../build.sh, then its state tests: RECOMP_ONLY=name,... bash ../test3.sh - every test bit-exact (the five
+     functions that carry the patch DLL's fixes never are: menu_vertex, menu_drawRect, input_justPressed,
+     input_updateMenuCursor, armc_rotateFromCursor). coverage.txt says how much of a function its test reaches.
+  4. python tools/srcaudit.py (every function wired in, every patch-DLL call site followed), commit; then
+     bash standalone/build.sh and bash standalone/check3.sh <prefix> (the three builds played: menus, a match,
+     a hosted TCP game).
 
 Widescreen fixes carried by rebuilds: the patch DLL (axisnet) used to fix four functions from outside, by replacing
 them in memory (menu_vertex, menu_drawRect) or by recognising their OpenGL calls' return addresses
@@ -69,60 +68,53 @@ HUD's 16:9 box during a match) and hud/hud_main.c (each HUD part names the scree
 DLL's state comes through wide.h; the test build of the patch DLL (../axisnet_recomp.c) hands it over and reads the
 HUD part. While its menu fix is on, menu_vertex works in single precision as the patch DLL's own version did.
 
-Done so far (1153: every hand-written rebuild, and the lifted ones being rewritten - recomp.c keeps the rest): main_loop, FUN_004202d0, main_462050 | menu_processKeys, menu_44cdd0, menuState500_missionSelect,
-menu_drawVersion, menu_drawCursor, profile_44c850 / 44c8c0 / 44ca90 / 44cc60,
-menu_drawTexQuad_4282f0 / 4284d0 / 4285c0 / 4286b0 / 4287a0, profile_4283e0, menu_drawTexturedRect_427a90 / 427b60 / 428a00 / 428b50, menu_titleEmblemTransition,
-menu_drawBackground3D (the 3D tunnel) |
-edit fields (arena_editTextField_404cd0 / 404d70 / 404f90 / 405010, arena_editNumberField_404e10 / 404ed0, room_4339e0 / 433a80 /
-433b00 / 433bb0 / 434020 / 4340e0 / 4341a0 / 434260 / 434320) | the arena map list (room_403490 / 4034e0 / 403530 / 403560 / 403590 /
-403640), room_435ab0 / 435ce0 / 434da0 / 435f40 / 43df00 (room clicks, fade) |
-the ARM CENTER mech (armc_461320 / 461370, match_4613a0, armc_set{Head,Chest,Arm,Leg,Booster}Index, armc_461510 / 461250), armc_41dfb0 / 41dfe0 / 41e010 / 41b710 / 4125c0,
-armc_drawStatLabel, armc_45ddc0, the item slots (armc_40f870 / 40f950 / 40f9e0 / 40e5d0),
-armc_drawPartScreen, armc_exit, armc_41b300 (the preview camera) | msg: msg_serverEndsGame / userEndsGame / connectionLost /
-networkUnstable / fragLimitReached / timeLimitReached / dataLoss, msg_4629f0 (msg_print), msg_playerLeft,
-msg_cheatUsed, msg_playerConnected, msg_kill, msg_chatLine, msg_playerJoinedTeam | match: scene_findTeam,
-scene_teamSide | setup: setup_drawTab, setup_processTabKeys, setup_topPageKeys / soundTabKeys /
-graphicTabKeys, setup_427830 / 427880 / 4278d0 | profile_41e7a0 (quit with a code), profile_44f850, profile_44b600 / 44b670 /
-44b6e0 / 44f810 | devices and sound: input_reacquireKeyboard / reacquireMouse / releaseKeyboard,
-wnd_401490 / 4014c0 / 467b70, sound_playMenu, dsbuf_play / setVolume, music_shutdown, gfx_swapBuffers | front-end states: menu_drawBackground, mainmenu_4434f0, menuState300_frame,
-menu_443ef0 / 4440f0, mission_4479b0, mission_unlockCheat, menu_447c30 / 447b40 / 447c70 | net: arena_450bc0 (Receive), FUN_00450bf0 (Send), dplay_closeSession, arena_4539f0,
-arena_453260, net_454650 / 454690 / 454740 | app: ViewVolume_dtor and the ViewVolume / Console / Stage deleting destructors,
-the current directory, the message box, mci_pause | FUN_0041ef20 (rotate x, y, z), FUN_00405200, FUN_0041edc0 | sys_messageBox, match_44ac90, FUN_0043f980, menu_436940,
-lobbyJoin_keys, FUN_0041ed70, mainmenu_441770, menuState600_setup | load_4014f0 / load_401540 (a key held), input_createDirectInput, load_401290
-(array constructor) | match_45dd80, FUN_004050a0, match_44aee0 | the 31 rectangle hit tests and arena_404520 (menu/hit_tests.c) | armc_backupColours, armc_41ced0, armc_40ed20, armc_40e670, menu_40e6c0,
-armc_40f830 | app/statics.c: 21 class-name records, 6 global object inits, 26 atexit registrations,
-12 empty functions | app/classes.c: 74 class lifecycles, member clears, getters and setters | app/statics.c: 26 start-up pairs (object or
-class-name record, then atexit), 18 constant colours | app/small.c: 42 one-line pieces (clears, flags, getters,
-setters, list toggles, string lengths) | menu/layouts.c: the 30 screen button layouts | profile scrambling / name checks / colours, the name tables' searches
-(load/names.c), weapon cycling (match/weapons.c), map stepping, the sliding panels | the store-table initialisers
-(app/store_tables.c, 9), the depth sorts (render/depth_sort.c), the glyph quads (text/glyph_quads.c, 8) | the front end's records, list paging and resets (menu/menu_records.c, menu/menu_init.c, app/resets.c), room dialogs
-(menu/room_dialogs.c), setup tabs, menu cameras (menu/menu_cameras.c), ARM CENTER part info (menu/armc_parts.c), font cell tables
-(text/glyph_cells.c), PTX video tables (app/ptx_tables.c), actor slots and pools (match/actor_slots.c), HUD notices
-(match/notices.c), map objects (match/map_objects.c), shape tints (render/shape_colours.c), session tables and merges
-(net/net_tables.c, net/net_sessions.c), scrambled file blocks (load/files.c), frees (app/frees.c) | net: the DirectPlay slots (arena_454940 .. 454d60, 20) and
-arena_453770 | text_draw5 / 8 / 16 / 32,
-text_draw8b, text_drawBox16, hud_403210, hud_402db0, text_drawSized, hud_44ae10 (text/ complete) | hud_pass,
-hud_drawRanking, hud_drawLockOn, hud_496240, hud_4950a0, hud_46bd00, hud_drawFps, hud_4953d0, hud_4955a0,
-hud_drawPressFire, hud_drawReadyStart, hud_drawClock,
-hud_drawMatchResult, hud_drawRecordIndicator, hud_drawNameIcon, hud_drawLeaderIcon,
-hud_drawEscMenu, hud_495ed0,
-hud_drawPlayerMarkers, hud_drawMain, replay_drawIcon | hud_472900 (fog), hud_490b30, hud_490da0, hud_45e170, hud_479af0, hud_48f970 (objects, actors, projectiles, items to the view volume), data_46f7a0, hud_46fd20 (object lists), hud_496f20 (the sky) | replay_drawMessage, replay_drawFollowedName | menu_vertex, menu_drawRect, gfx_setProjection2D3D
-(menu/menu_2d.c) | the ARM CENTER colour sliders (menu/armc_colours.c), rotations, the 2D turn, angle wrap,
-triangle normal and point transform (render/rotations.c), the collision space's pools (load/space_pools.c), the
-no-CD stubs and small methods (app/small.c), the lobby's and room's screens (menu/lobby_states.c), player name and
-team, weapon selection, the volume, cheat codes, the PTX video decoder (app/ptx_decode.c), Johab syllables and chat
-line widths (text/text_codes.c), the session sort, the follow target, the free menu camera's moves, address strings, object animation,
-the texture tints and RGB <-> HSV (render/tex_colours.c), actor / bullet slots freed and player records
-reset, the screens' set-ups (menu/screen_enter.c), key bindings, the setup camera, shape bounds and bullet trails
-(render/trails.c), the view volume's lists and object transform (render/view_volume.c), collision triangles,
-their trace and the triangle / box test (load/collision_tris.c), quaternion <-> axis-angle / matrix, the PTX inverse
-DCT, the stage's mesh records, the ARM CENTER's stats and part panels, the intro camera path | the clock (app/timer.c: timer_init,
-intro_41e730), ptx_error, net_454560, net_452d70, match_4620e0 (match/scores.c), the skirmish list keys and briefing
-(menu/skirmish.c), the map-select keys (the held-key repeat in menu/key_repeat.h), the loading screen (app/loading.c),
-sound_loadWav, glWindow_init, the ARM CENTER's frame, entry, previews and keys (menu/armc_misc.c, menu/armc_keys.c) |
-setup_controlTabKeys, menu_frame (app/main_loop.c), net_connect, the pilot's campaign file (load/files.c: profile_save opens or
-makes it, profile_load starts a new one, profile_saveProgress), the part panels and mech tints, profile_44de00, loading_draw.
-| the start-up screens (menuState100_intro, intro_41f100), the display mode switch and restore, reg_writeCharacterSettings,
-the profile screen's frame and panels, room_434820, the server login dialog, the briefing window, the PTX reader
-(ptx_open / ptx_decode), net_sendLocalInfo.
-Left lifted on purpose for now: armc_buildPartLists and app_init (they run into patch-DLL code mid-function).
+Status: every game function is rebuilt here (all 1368 hooked; the packet layer after the runtime too). recomp.c is
+only the test harness: nothing is lifted any more.
+
+Readable C: the conventions
+  Records     src/scene.fields -> scene.h (tools/mkscene.py): packed structs at the game's offsets, every field's
+              offset and size checked by a _Static_assert; anonymous unions allowed where the game keeps two views
+              of the same bytes (Projectile: fade / trailPoints). Fields are named by use; "(unclear)", "(by use)"
+              and names like valueE8 / cleared2340ca4 / unusedBe2ffc mark what is not understood yet. Scene fields
+              over the Stage region (Scene + 0x1f36c8) alias Stage fields: look at both views before calling a
+              field unused. Indexing past a field is undefined behaviour: use an array field or a byte offset
+              ((u8 *)p + offsetof(T, f)).
+  Objects     objects.h: the arrays and records at fixed addresses (g_sessionList, g_profileRecords ...).
+              tools/names/objects.txt may give a scene.fields record as the type ("0xa05330 RankedPlayer 11
+              g_netPlayerList"); run python tools/mkdatasrc.py after editing it (the standalone build's layout).
+  Globals     globals.h: every fixed-address global by name; the game's float constants by value (k_1f, k_0_5f,
+              k_1500f_4a9700 when the value's name is taken), used as &k_1f.
+  Calls       by name through game.h / calls.h; *_bits variants pass floats as their bits (the original passes
+              them as integers). An inline GAME_FN / IMPORT is left only where a name would be wrong: an OpenGL
+              import whose eax the caller returns, a function the same file rebuilds (a direct call skips the
+              harness's mock at the original address), an argument-count mismatch kept from the original.
+  Pointers    a byte pointer used through one struct gets that type, or a typed alias (Stage *st = (Stage *)s);
+              u32 * locals indexed as words stay.
+  GAME_VAR    left in the helpers that take a global's address from a table of addresses (clears, copies, saves of
+              groups of globals): the original's pattern.
+
+The tools that did it (each keeps the code the same; check: python tools/objcmp.py base build/obj, the base from a
+fresh ../build.sh of the commit before; where an object differs, the harness state tests:
+RECOMP_ONLY=<the files' functions> bash ../test3.sh, all bit-exact; then bash standalone/check3.sh <prefix>)
+  scene_fields.py, struct_fields.py, struct_elems.py, field_ptrs.py, field_addrs.py, offset_names.py
+                      offsets -> struct fields (scene, stage, records; nested arrays; offset tables -> offsetof)
+  retype_field.py, plain_writes.py   field types and stores
+  plain_calls.py      inline game calls -> name(args) (calls.h generated)
+  widen_returns.py    a void macro takes the return type its callers read
+  compatible_calls.py calls that differ from their macro only in 4-byte ints / void * / an int-cast return
+  drop_local_macros.py, drop_unused_macros.py   a file's copies of header macros, and macros nothing uses
+  retype_locals.py    byte-pointer locals -> struct pointers (--alias=Type:name --min=N for typed aliases)
+  reuse_aliases.py    casts that repeat a function's typed alias use the alias
+  index_objects.py    GAME_VAR(T, OBJ(arr) + i * size) -> arr[i]
+  name_constants.py   K(0x4a....) float constants -> &k_<value>f
+  float_stores.py     BITS(x) = 0x43960000; -> x = 300.0f; (where the decimal rounds back to the same bits)
+
+Traps met (see the commits for the stories)
+  - zig's cache hides a cached file's warnings: check warnings with an extra -D on the compile line.
+  - standalone/build.sh can leave build/obj other than build.sh's: take objcmp's base from a fresh build.sh.
+  - RECOMP_ONLY takes a list of up to 32 KB (longer ran every test). Never wrap test3.sh in timeout: it is killed
+    before it restores AxisGL.exe and leaves a hung game holding recomp.log.
+  - A rewrite of address arithmetic must respect precedence: "0x14 - k * 4" is not "(0x14 - k) * 4" (a state test
+    crashed on it). A rewrite of float bits as a float literal converts the value if the target is really an int:
+    objcmp and the state tests catch both.
+  - Dropping a local macro's #undef can also drop the clearing of a header macro of the same name.
