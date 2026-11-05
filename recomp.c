@@ -4730,11 +4730,11 @@ int dplay_initConnection(int kind, const char *address);
    (+0x1eccb54) and deaths (+0x1eccb58) into the tables +0x23428f6 / +0x2342936, a new leader announced */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void THISCALL scene_updateRanking(void *scene);
-/* 0x460000 bullet_playImpactSound(target, attacker, damage, kind, a5, a6) (thiscall on the scene, ret 0x18): an active
+/* 0x460000 actor_takeDamage(target, attacker, damage, kind, a5, a6) (thiscall on the scene, ret 0x18): an active
    target's damage scaled by the attacker's weapon kind (0..9: the player's levels at 0x9f9068) and their flags
    (+0x1cd9798), taken from its shield and armour (+0x1cd94d0 / +0x1cd94d4), the hit recorded, a sound */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-THISCALL void bullet_playImpactSound(char *scene, DWORD t, DWORD a, DWORD d, DWORD k, DWORD a5, DWORD a6);
+THISCALL void actor_takeDamage(char *scene, DWORD t, DWORD a, DWORD d, DWORD k, DWORD a5, DWORD a6);
 /* batch 180 (lifted/grp130.c): menu_drawBackground (the menus' animated background: the list 0x67fb3c's camera,
    the projection, its draw), the arena slots' connect (a fresh DirectPlay for that kind, dplay_initConnection,
    the slot open or released), settingsDialog_clicks, with their callees stubbed (tools/gentests.py); scene_resetScores and
@@ -4891,7 +4891,7 @@ THISCALL void mapObject_frame(char *s, DWORD i, DWORD dt);
 /* 0x47a2d0 bullet_update(slot, dt) (thiscall on the scene, ret 8): bullet slot's flight (0x4e8 bytes from
    +0x202ef34): moved by its weapon's speed (the weapon record at +0x14d1ab4), aged, its homing towards its target,
    its trail particles, its hits found against the actors (math_segmentSphere and Mat4_fromAxisAngle, real) and applied
-   (bullet_playImpactSound, the damage: stubbed), its explosion; the hit sounds */
+   (actor_takeDamage, the damage: stubbed), its explosion; the hit sounds */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 THISCALL void bullet_update(char *s, DWORD slot, DWORD dt);
 /* batch 191 (lifted/grp147.c): the bullets' and particles' frame loops */
@@ -15226,9 +15226,9 @@ static void impact_setup(void)
 	g_a[2] = irnd(0, 2); g_a[3] = irnd(0, 600); if (irnd(0, 1)) g_a[4] = irnd(0, 9);
 	for (int i = 0; i < 16; i++) S32(BUF + i * 0x8888, 0x1cd94c0) = irnd(0, 1);
 }
-ST(bullet_playImpactSound, impact_setup();,
+ST(actor_takeDamage, impact_setup();,
    (TC(void, 0x460000, char *, int, int, int, int, int, int)(BUF, g_a[0], g_a[1], g_a[2], g_a[3], g_a[4], g_a[5]), 0),
-   (bullet_playImpactSound(BUF, g_a[0], g_a[1], g_a[2], g_a[3], g_a[4], g_a[5]), 0))
+   (actor_takeDamage(BUF, g_a[0], g_a[1], g_a[2], g_a[3], g_a[4], g_a[5]), 0))
 /* batch 180: generated tests (tools/gentests.py, gen_setup from batch 172) plus two by hand */
 static const DWORD g_gs_441740[] = { 0x41ef90, 1, 0x429d70, 1, 0x441260, 1, 0 };
 static const DWORD g_gi_441740[] = { 0x67fb3c, 0 };
@@ -17746,7 +17746,7 @@ static const STest g_stests[] = {
 	/* batch 178 */
 	T(game_postMatch, 0, 200, 0), T(dplay_initConnection, 0, 400, 0),
 	/* batch 179 */
-	T(scene_updateRanking, 0, 1000, 0), T(bullet_playImpactSound, 0, 400, 0),
+	T(scene_updateRanking, 0, 1000, 0), T(actor_takeDamage, 0, 400, 0),
 	/* batch 180 */
 	T(menu_drawBackground, 0, 200, 0), T(dplaySlot0_open, 0, 200, 0), T(dplaySlot1_open, 0, 200, 0), T(dplaySlot2_open, 0, 200, 0),
 	T(dplaySlot3_open, 0, 200, 0), T(settingsDialog_clicks, 0, 200, 0), T(scene_resetScores, 0, 200, 0), T(dplay_host, 0, 200, 0),
@@ -18866,7 +18866,7 @@ static const struct { DWORD addr; void *fn; const char *name; } g_hooks3[] = {
 	/* batch 178 */
 	{ 0x420100, (void *)game_postMatch, "game_postMatch" }, { 0x453a90, (void *)dplay_initConnection, "dplay_initConnection" },
 	/* batch 179 */
-	{ 0x462150, (void *)scene_updateRanking, "scene_updateRanking" }, { 0x460000, (void *)bullet_playImpactSound, "bullet_playImpactSound" },
+	{ 0x462150, (void *)scene_updateRanking, "scene_updateRanking" }, { 0x460000, (void *)actor_takeDamage, "actor_takeDamage" },
 	/* batch 180 */
 	{ 0x441740, (void *)menu_drawBackground, "menu_drawBackground" }, { 0x454940, (void *)dplaySlot0_open, "dplaySlot0_open" },
 	{ 0x454a50, (void *)dplaySlot1_open, "dplaySlot1_open" }, { 0x454b70, (void *)dplaySlot2_open, "dplaySlot2_open" },

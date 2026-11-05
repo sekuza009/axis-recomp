@@ -1,4 +1,4 @@
-/* weapons.c: switching an actor's weapon. */
+/* weapons.c: an actor's weapons (switching, picking), the damage a hit does, and the bullets (fired, flying, hitting). */
 #include "../game.h"
 #include <string.h>
 #define ST ((Stage *)s)   /* the stage (s in each function) by its fields (src/scene.fields) */
@@ -76,16 +76,15 @@ void THISCALL (actor_pickRandomWeapon)(Stage *stage, int i)
 	(*(int *)&actor->burstFire) = (*(int *)&actor->botTimes[4]);
 }
 
-/* 0x460000 (thiscall on the scene): actor target (0x8888-byte actors from +0x1cd93a8) hit by actor attacker, when
-   it is in play (+0x14c 1) and not invulnerable (+0x880c 1). The damage: for weapon kinds 0 .. 9 scaled by the
-   attacker's player's level in the kind's group (the 0x4c-byte levels at 0x9f9068: +0, 4, 8, 12; (level + 100) x
-   damage x 0x4a9420, rounded by 0x4a942c; no player: -1), doubled by the attacker's flag 0x100 (+0x3f0) and halved
-   by the target's 0x800. Unless both are on the same team (+0x118) and not the same actor, it comes off (mode 0)
-   the armour (+0x12c), what is left off the energy (+0x128), or (mode 1) the shield, the energy losing 0x4a9758 of
-   it, and once the shield is gone the rest; neither below 0; the hit recorded (+0x4bc mode, +0x4c0 attacker, +0x4c4
-   value, +0x8850 1). The hit flash (+0x8854) 0.5 either way, and a sound when the target is the local player. Its
-   callers ignore the eax it leaves */
-void THISCALL (bullet_playImpactSound)(u8 *scene, int attacker, int target, int mode, int damage, int kind, u32 value)
+/* 0x460000 (thiscall on the scene): actor target hit by actor attacker for damage, when it is in play (state 1) and
+   not invulnerable. For weapon kinds 0 .. 9 the damage is scaled by the attacker's level's stat for the kind's group
+   (g_profileRecords[level].stats[0 .. 3] + 100, per cent, rounded); doubled by the attacker's timer flag 0x100 and
+   halved by the target's 0x800. Unless both are on one team (and not the same actor) it comes off: mode 0 the shield
+   first, the rest off the armour; mode 1 the shield, the armour losing 0.7 of it as well, and once the shield is
+   gone the rest off the armour; neither below 0; the hit recorded (lastHitMode, lastAttacker, lastHitWeapon,
+   hitPending). The hit flash 0.5 either way, and a sound when the target is the local player. Its callers ignore
+   the eax it leaves */
+void THISCALL (actor_takeDamage)(u8 *scene, int attacker, int target, int mode, int damage, int kind, u32 value)
 {
 	Stage *st = (Stage *)scene;
 #define ACTOR(i) ((u8 *)&st->actors[i])
@@ -94,10 +93,10 @@ void THISCALL (bullet_playImpactSound)(u8 *scene, int attacker, int target, int 
 	Player *ac = (Player *)t;
 	if (ac->state != 1 || ac->invulnerable == 1)
 		return;
-	int player = ((Player *)a)->active == 1 ? ((Player *)a)->level : -1;
+	int level = ((Player *)a)->active == 1 ? ((Player *)a)->level : -1;
 	if ((unsigned)kind <= 9) {
-		int level = g_profileRecords[player].stats[group[kind]] + 100;
-		damage = ftol(fadd_m(fmul_m((long double)level * damage, (const float *)ADDR(k_0_01f)), (const float *)ADDR(k_0_5f)));
+		int percent = g_profileRecords[level].stats[group[kind]] + 100;
+		damage = ftol(fadd_m(fmul_m((long double)percent * damage, (const float *)ADDR(k_0_01f)), (const float *)ADDR(k_0_5f)));
 	}
 	if (((u32)((Player *)a)->timerFlags) & 0x100)
 		damage *= 2;
@@ -223,10 +222,10 @@ static u32 next_rand(u32 n)
    spread with the weapon's +0x2dec less the owner's steadiness (+0x24) and are renormalised; mode 3 (+0x2dfc) fires
    into a random cone about the direction (through gluLookAt's inverse); the first step (speed +0x2de4) is traced
    (collision_rayTrace; the hit record +0x6c) and the part of a step used (+0x74) kept from 0 to 10. Then its
-   velocity (+0x2de8 times the direction, or the step), colour, the owner's own tracer end (+0x2e0c), and, unless
+   velocity (+0x2de8 times the direction, or the step), colour, the homing target (homingTarget: a guided round's; the local player's own guided round follows the aim point), and, unless
    quiet, the muzzle flash (particle kind +0x2dfc + 10) and the firing sound (+0x2e00: at full volume for the local
    player +0x202e8d4, else placed). Its callers ignore the eax it leaves */
-void THISCALL (bullet_init)(u8 *s, int slot, int id, int owner, int a4, const u8 *shot, int quiet)
+void THISCALL (bullet_init)(u8 *s, int slot, int id, int owner, int homingTarget, const u8 *shot, int quiet)
 {
 	u8 *b = (u8 *)&ST->bullets[slot];
 	const FiredRound *rd = (const FiredRound *)shot;
@@ -312,8 +311,8 @@ void THISCALL (bullet_init)(u8 *s, int slot, int id, int owner, int a4, const u8
 	memcpy(BU->step, (const void *)ADDR(g_vecZero), 12);
 	BU->hitActor = -1;
 	BU->homeTimer = 0.0f;
-	BU->homingTarget = a4;
-	if (w->guidance > 0 && a4 < 0 && BU->owner == ST->playerActor) {
+	BU->homingTarget = homingTarget;
+	if (w->guidance > 0 && homingTarget < 0 && BU->owner == ST->playerActor) {
 		const float *at = BU->prev;
 		float *tip = BU->tip;
 		long double tx = fmul_m(fld_m(&aim[0]), &k_200000f);
@@ -366,7 +365,7 @@ static void effect(u8 *s, u32 *r, u32 kind, u32 flag, const void *at, const void
 	particle_spawn(s, r);
 }
 
-/* the weapon's effect size (+0x2df0), as the original passes it through the FPU */
+/* the weapon's hit range (hitRange: the impact effect's size), as the original passes it through the FPU */
 static u32 effect_size(const u8 *w)
 {
 	float v = (float)fld_m(&WI->hitRange);
@@ -517,7 +516,7 @@ static void hit_actor(u8 *s, u8 *b, const u8 *w, u32 *r, int weapon)
 {
 	int t = BU->hitActor;
 	if (ST->actors[t].controlledBy == ST->playerActor && ST->actors[t].state == 1)
-		bullet_playImpactSound(s, BU->owner, t, WI->damageMode, WI->damage, WI->shotMode, weapon);
+		actor_takeDamage(s, BU->owner, t, WI->damageMode, WI->damage, WI->shotMode, weapon);
 	t = BU->hitActor;
 	float dir[3];
 	for (int k = 0; k < 3; k++)
@@ -640,7 +639,7 @@ static void splash(u8 *s, u8 *b, const u8 *w)
 			continue;
 		float f = f32(fsubr_m(fmul_m(fdiv_m(len, &WI->splashRadius), &k_0_5f), &k_1f));   /* 1 - len / r / 2 */
 		int damage = ftol(fmul_m((long double)WI->damage, &f));
-		bullet_playImpactSound(s, BU->owner, j, WI->damageMode, damage, WI->shotMode, BU->weapon);
+		actor_takeDamage(s, BU->owner, j, WI->damageMode, damage, WI->shotMode, BU->weapon);
 		if (WI->push > 0) {
 			long double k = fld_m(&WI->push);
 			float x = f32(fmul_m(k, &d[0])), y = f32(fmul_m(k, &d[1]));

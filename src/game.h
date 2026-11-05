@@ -327,7 +327,7 @@ typedef struct { u32 vtable; void *banks[6]; i32 count; } TextureManager;   /* t
 #define particle_spawn(scene, record) GAME_THISFN(particle_spawn, 0x479950, void, void *, const void *)(scene, record)
 /* (match/weapons.c: a bullet's frame) */
 #define sound_play3D(index, pos, listener, side, range) GAME_FN(sound_play3D, 0x456ed0, void, int, const void *, const void *, const void *, u32)(index, pos, listener, side, range)
-#define bullet_playImpactSound(scene, attacker, target, mode, damage, kind, value) GAME_THISFN(bullet_playImpactSound, 0x460000, void, void *, int, int, int, int, int, int)(scene, attacker, target, mode, damage, kind, value)
+#define actor_takeDamage(scene, attacker, target, mode, damage, kind, value) GAME_THISFN(actor_takeDamage, 0x460000, void, void *, int, int, int, int, int, int)(scene, attacker, target, mode, damage, kind, value)
 #define bullet_free(stage, b) GAME_THISFN(bullet_free, 0x47cf10, void, void *, int)(stage, b)
 #define math_segmentSphere(p0, p1, dir, centre, radius, hit, t) GAME_FN(math_segmentSphere, 0x47d9d0, int, const float *, const float *, const float *, const float *, float, float *, float *)(p0, p1, dir, centre, radius, hit, t)   /* 1: the segment meets the sphere */
 #define skel_applyPose(sk, out, bone, t) GAME_THISFN(skel_applyPose, 0x46ab30, void, void *, void *, int, u32)(sk, out, bone, t)

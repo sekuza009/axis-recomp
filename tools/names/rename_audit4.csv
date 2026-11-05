@@ -162,3 +162,4 @@ notice_changedTeam,net_announceChangedTeam
 notices_clearAll,net_clearAnnouncements
 stage_refillFactors,stage_refillLights
 item_initTextures,stage_build
+bullet_playImpactSound,actor_takeDamage

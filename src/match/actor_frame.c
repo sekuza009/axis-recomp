@@ -634,7 +634,7 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 		break;
 	case 4:
 		AC->deaths++;
-		bullet_playImpactSound(s, i, i, 1, AC->armor, 0, -1);
+		actor_takeDamage(s, i, i, 1, AC->armor, 0, -1);
 		break;
 	}
 	AC->order = -1;

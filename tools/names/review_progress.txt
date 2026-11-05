@@ -44,7 +44,7 @@
 [x] src/match/notices.c 126
 [x] src/match/scores.c 138
 [x] src/match/teams.c 83
-[ ] src/match/weapons.c 812
+[x] src/match/weapons.c 812
 [ ] src/menu/arena_maps.c 259
 [ ] src/menu/armc_colours.c 99
 [ ] src/menu/armc_items.c 207
