@@ -10,16 +10,16 @@
 
 #define g_graphicInUse ((u32 *)g_graphicSettings)               /* the graphics settings in use (g_items3D is the third) */
 
-/* 0x422b30: the tab's page (nothing while a dialog is up) */
-void (setup_drawTab)(void)
+/* 0x422b30: the open tab's clicks (nothing while a dialog is up): controls, sound, graphics or the top page */
+void (setup_tabClicks)(void)
 {
 	if (g_dialogOpen != 0)
 		return;
 	switch (g_setupTab) {
-	case TAB_CONTROL: setup_drawControlTab(); break;
-	case TAB_SOUND: setup_drawSoundTab(); break;
-	case TAB_GRAPHIC: setup_drawGraphicTab(); break;
-	case TAB_TOP: setup_drawTopPage(); break;
+	case TAB_CONTROL: setup_controlTabClicks(); break;
+	case TAB_SOUND: setup_soundTabClicks(); break;
+	case TAB_GRAPHIC: setup_graphicTabClicks(); break;
+	case TAB_TOP: setup_topPageClicks(); break;
 	}
 }
 
@@ -136,12 +136,12 @@ static void with_page(void (*draw)(void), const int frame[4])
 
 static void page_sound(void) { setup_drawSoundPage(); }
 static void page_options(void) { setup_drawOptionsDialog(); }
-static void page_crosshair(void) { setup_crosshairScreen(); }
+static void page_controls(void) { setup_drawControlsPage(); }
 
-/* 0x427830, 0x427880, 0x4278d0: the screen with the sound page, the options dialog, the crosshair page */
+/* 0x427830, 0x427880, 0x4278d0: the screen with the sound page, the options dialog, the controls page */
 void (setup_frameSoundPage)(void) { with_page(page_sound, (const int *)ADDR(g_setupSoundLeft)); }
 void (setup_frameOptionsPage)(void) { with_page(page_options, g_setupOptionsRect); }
-void (setup_frameCrosshairPage)(void) { with_page(page_crosshair, (const int *)ADDR(g_setupControlLeft)); }
+void (setup_frameControlsPage)(void) { with_page(page_controls, (const int *)ADDR(g_setupControlLeft)); }
 
 /* a tab opened: the page state, the setup camera's distance (-1650) and its fade (0.7), no item picked */
 static void tab_opened(void)
@@ -221,7 +221,7 @@ void (setup_unbindKey)(int k)
 /* 0x4220c0: the setup screen's top page clicks: a left click on one of its four buttons (outlines at 0x4df918)
    opens the sound, graphics or controls tab or goes back to the main menu; a right click (when 0x9dae10 allows) goes
    back too. Returns what the original leaves in eax */
-u32 (setup_drawTopPage)(void)
+u32 (setup_topPageClicks)(void)
 {
 	if (g_mouseClick) {
 		const Outline *buttons = (const Outline *)OBJ(g_setupTopOutlines);
@@ -261,7 +261,7 @@ u32 (setup_drawTopPage)(void)
    (setupOptions_hitTest): 0 the video mode on (0 .. 7, then 0), 1 .. 5 the colour depth, polygon detail, linear filtering,
    mipmapping and frame counter switched, 6 the simple menu (with 0x9da494), 7 OK (graphics_apply), 8 close. Each
    with its sound. Returns what the original leaves in eax (for a switch, its old or new value) */
-u32 (setup_drawGraphicTab)(void)
+u32 (setup_graphicTabClicks)(void)
 {
 	u32 page = (*(u32 *)&g_setupPage);
 	if (page == 1 || page == 0 || g_dialogOpen)
@@ -331,7 +331,7 @@ static void volume_at_pointer(void)
    blink clock restarted) on the volume's arrows (0 / 1) or slider (2), the sound toggles (5: 0x4dde9c 0 / 100; 6, 7:
    0x4ddea0, 0x4ddea4), OK (8) or close (9); holding the arrows or the slider repeats once the clock passes 1 (and
    restarts it). The original leaves eax to callers that ignore it */
-void (setup_drawSoundTab)(void)
+void (setup_soundTabClicks)(void)
 {
 	if (g_setupPage == 1 || g_setupPage == 0 || g_dialogOpen)
 		return;
@@ -396,7 +396,7 @@ void (setup_controlTabKeys)(void)
 		for (int key = 2; key < 0xde; key++)
 			if (input_justPressed(key)) {
 				sound_playMenu(2);
-				setup_drawKeyBindingRows(key);
+				setup_bindKey(key);
 				g_bindWaiting = 0;
 				return;
 			}
@@ -456,14 +456,14 @@ void (setup_controlTabKeys)(void)
    slider and 10 / 11 step 0x4de1cc (0 .. 7); any other row control with a row selected makes it wait for a key.
    Holding the button on page 3's slider (once the blink clock passes 1) drags it. The original leaves eax to
    callers that ignore it */
-void (setup_drawControlTab)(void)
+void (setup_controlTabClicks)(void)
 {
 	if (g_setupPage == 1 || g_setupPage == 0 || g_dialogOpen)
 		return;
 	int waiting = g_bindWaiting;
 	if (g_keyEnter) {
 		if (waiting) {
-			setup_drawKeyBindingRows(g_dikMouse2);
+			setup_bindKey(g_dikMouse2);
 			g_bindWaiting = 0;
 			return;
 		}
@@ -472,15 +472,15 @@ void (setup_drawControlTab)(void)
 	if (g_mouseWheelTurned && waiting) {
 		int wheel = g_mouseWheel;
 		if (wheel < 0)
-			setup_drawKeyBindingRows(g_dikWheelDown);
+			setup_bindKey(g_dikWheelDown);
 		else if (wheel > 0)
-			setup_drawKeyBindingRows(g_dikWheelUp);
+			setup_bindKey(g_dikWheelUp);
 		g_bindWaiting = 0;
 		return;
 	}
 	if (g_mouseClick) {
 		if (waiting) {
-			setup_drawKeyBindingRows(g_dikMouse1);
+			setup_bindKey(g_dikMouse1);
 			g_bindWaiting = 0;
 			return;
 		}
@@ -505,7 +505,7 @@ void (setup_drawControlTab)(void)
 			sound_playMenu(0);
 			return;
 		} else if ((on == 9 || ((on == 7 || on == 8) && row < 0)) && page == 3) {
-			setup_drawControlSlider();
+			setup_sliderClicks();
 			return;
 		} else if ((on == 10 || on == 11) && g_bindPage == 3) {
 			if (++g_crosshair > 7)
@@ -518,7 +518,7 @@ void (setup_drawControlTab)(void)
 		}
 	}
 	if (g_mouseHeld && g_cursorBlink > k_1f && setupControl_hitTest(g_mouseX, g_mouseY) == 9 && g_bindPage == 3)
-		setup_drawControlSlider();
+		setup_sliderClicks();
 }
 
 /* the binding (two key slots, eight bytes from 0x4de0c0) each row of the three key pages edits; -1: none */
@@ -528,12 +528,12 @@ static const signed char page_bindings[3][11] = {
 	{ 21, 22, 23, 24, 25, 26, 28, 29, 30, 31, -1 },
 };
 
-/* 0x421680 (named setup_drawKeyBindingRows; by use the key pressed for the binding being edited, the page 0x4ddce8's
+/* 0x421680 (by use: the key pressed for the binding being edited, the page 0x4ddce8's
    row 0x4de040): unless it is the excluded key (0x9da440), the key is taken off the other bindings (setup_unbindKey) and
    set in the row's binding: with its second slot set, the key in the first and the second cleared (0x4df8e4: none);
    else into an empty first slot; else, unless the first is this key, into the second. Then the row redrawn. The
    callers ignore the eax it leaves */
-void (setup_drawKeyBindingRows)(int key)
+void (setup_bindKey)(int key)
 {
 	if (key == g_excludedKey)
 		return;
@@ -583,7 +583,7 @@ static void slider_press(void)
 /* 0x4226b0: the slider on the control setup page: a click (0x4ded88), or the button held (0x4ded94) for over a
    second (its timer 0x4dda44 past 0x4a9424), presses the part under the cursor, the timer starting again. Nothing
    uses the eax it leaves */
-void (setup_drawControlSlider)(void)
+void (setup_sliderClicks)(void)
 {
 #define TIMER g_cursorBlink
 	if (g_mouseClick) {

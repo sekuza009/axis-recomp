@@ -159,7 +159,7 @@ typedef struct { u32 vtable; void *managers[6]; i32 count; } TextureSets;   /* t
 #define stage_newRound(stage) GAME_THISFN(stage_newRound, 0x470cb0, void, void *)(stage)
 #define view_setDistance(stage, x) GAME_THISFN(view_setDistance, 0x4722e0, void, void *, u32)(stage, x)
 #define stage_refillFactors(stage) GAME_THISFN(stage_refillFactors, 0x472310, void, void *)(stage)
-#define gfx_saveScreenshot(stage, p) GAME_THISFN(gfx_saveScreenshot, 0x4734d0, int, void *, int)(stage, p)
+#define partType_loadEmblem(stage, p) GAME_THISFN(partType_loadEmblem, 0x4734d0, int, void *, int)(stage, p)
 #define playerRecord_set(stage, p, name, a, b, c, d, e, f, g, h, i, j, k, l, m) GAME_THISFN(playerRecord_set, 0x474210, void, void *, int, \
 	const char *, u32, u32, u32, u32, u32, u32, u32, u32, u32, u32, u32, u32, u32)(stage, p, name, a, b, c, d, e, f, g, h, i, j, k, l, m)
 #define net_sendPlayerInfo(scene, p) GAME_THISFN(net_sendPlayerInfo, 0x48e0f0, void, void *, int)(scene, p)
@@ -430,7 +430,7 @@ typedef struct { u32 vtable; void *managers[6]; i32 count; } TextureSets;   /* t
 #define app_setDataPaths() GAME_FN(app_setDataPaths, 0x43f5a0, void, void)()
 #define data_loadMessages() GAME_FN(data_loadMessages, 0x42b3e0, void, void)()
 #define input_setDefaultKeyBindings() GAME_FN(input_setDefaultKeyBindings, 0x42fd40, void, void)()
-#define cfg_writeDefaultAxisCfg() GAME_FN(cfg_writeDefaultAxisCfg, 0x42eca0, void, void)()
+#define cfg_init() GAME_FN(cfg_init, 0x42eca0, void, void)()
 #define app_screenSizeForMode() GAME_FN(app_screenSizeForMode, 0x43f640, void, void)()
 #define app_registerWindowClassEx(wc) GAME_FN(app_registerWindowClassEx, 0x43f840, int, void *)(wc)   /* the class registered on old Windows */
 #define app_checkCdAndLoad(inst) GAME_FN(app_checkCdAndLoad, 0x430400, int, void *)(inst)
@@ -690,7 +690,7 @@ typedef struct { float r, g, b, a; } Colour;
 #define armc_updateColourPreview() GAME_FN(armc_updateColourPreview, 0x41d8a0, void, void)()      /* the colour page's preview */
 #define armc_drawPreviewTunnel() GAME_FN(armc_drawPreviewTunnel, 0x411ab0, void, void)()      /* the screen's state entered from the room */
 #define armc_drawTunnel() GAME_FN(armc_drawTunnel, 0x411110, void, void)()      /* and from the main menu */
-#define arena_launchFromFile() GAME_FN(arena_launchFromFile, 0x410b50, void, void)()
+#define armc_cameraStep() GAME_FN(armc_cameraStep, 0x410b50, void, void)()
 #define armc_enterScreen() GAME_FN(armc_enterScreen, 0x40e5d0, void, void)()      /* an ARM CENTER session made (menu/armc_items.c) */
 #define armc_setup3DView() GAME_FN(armc_setup3DView, 0x41b710, void, void)()      /* the 3D view set up (menu/armc_misc.c) */
 #define armc_drawPanels() GAME_FN(armc_drawPanels, 0x41b400, void, void)()
@@ -761,13 +761,13 @@ typedef struct { float r, g, b, a; } Colour;
 
 /* ---- the setup screen (menu/setup_keys.c) ---- */
 #define menuCamera_setMove(v) GAME_FN(menuCamera_setMove, 0x441250, u32, int)(v)   /* g_menuCameraMove = v */
-#define setup_drawTopPage() GAME_FN(setup_drawTopPage, 0x4220c0, void, void)()
-#define setup_drawSoundTab() GAME_FN(setup_drawSoundTab, 0x4221d0, void, void)()
-#define setup_drawGraphicTab() GAME_FN(setup_drawGraphicTab, 0x422480, void, void)()
-#define setup_drawControlTab() GAME_FN(setup_drawControlTab, 0x422830, void, void)()
+#define setup_topPageClicks() GAME_FN(setup_topPageClicks, 0x4220c0, void, void)()
+#define setup_soundTabClicks() GAME_FN(setup_soundTabClicks, 0x4221d0, void, void)()
+#define setup_graphicTabClicks() GAME_FN(setup_graphicTabClicks, 0x422480, void, void)()
+#define setup_controlTabClicks() GAME_FN(setup_controlTabClicks, 0x422830, void, void)()
 #define setupSound_hitTest(x, y) GAME_FN(setupSound_hitTest, 0x420670, int, int, int)(x, y)   /* the sound tab's control at (x, y) */
 #define setupControl_hitTest(x, y) GAME_FN(setupControl_hitTest, 0x4206f0, int, int, int)(x, y)   /* the controls tab's control at (x, y) */
-#define setup_drawControlSlider() GAME_FN(setup_drawControlSlider, 0x4226b0, void, void)()   /* the controls tab's slider follows the pointer */
+#define setup_sliderClicks() GAME_FN(setup_sliderClicks, 0x4226b0, void, void)()   /* the controls tab's slider follows the pointer */
 #define setup_topPageKeys() GAME_FN(setup_topPageKeys, 0x422b70, void, void)()
 #define setup_soundTabKeys() GAME_FN(setup_soundTabKeys, 0x422c60, void, void)()
 #define setup_graphicTabKeys() GAME_FN(setup_graphicTabKeys, 0x422d20, void, void)()
@@ -778,7 +778,7 @@ typedef struct { float r, g, b, a; } Colour;
 #define setup_drawTunnel() GAME_FN(setup_drawTunnel, 0x423e50, void, void)()
 #define setup_drawSoundPage() GAME_FN(setup_drawSoundPage, 0x424810, void, void)()
 #define setup_drawOptionsDialog() GAME_FN(setup_drawOptionsDialog, 0x425460, void, void)()
-#define setup_crosshairScreen() GAME_FN(setup_crosshairScreen, 0x425cd0, void, void)()
+#define setup_drawControlsPage() GAME_FN(setup_drawControlsPage, 0x425cd0, void, void)()
 #define cfg_readLines(f) GAME_FN(cfg_readLines, 0x42d7f0, void, void *)(f)          /* axis.cfg's player section read back */
 #define cfg_gameTypeNames(f) GAME_FN(cfg_gameTypeNames, 0x42da70, void, void *)(f)      /* its server section */
 #define cfg_readAudioLines(f) GAME_FN(cfg_readAudioLines, 0x42e080, void, void *)(f)             /* its sound section */
@@ -791,7 +791,7 @@ typedef struct { float r, g, b, a; } Colour;
 #define tunnel_removeLastRing(head) GAME_FN(tunnel_removeLastRing, 0x441190, u32, TunnelRing **)(head)   /* the last ring taken off and freed */
 #define crypt_countingKey(p, key) GAME_FN(crypt_countingKey, 0x42b3c0, int, u8 *, u8)(p, key)   /* a 0x4c-byte record decoded (xor key, key + 1, ...) */
 #define cfg_loadAxisCfg() GAME_FN(cfg_loadAxisCfg, 0x42d730, u32, void)()
-#define setup_drawKeyBindingRows(key) GAME_FN(setup_drawKeyBindingRows, 0x421680, void, int)(key)   /* (by use) the row being bound gets key */
+#define setup_bindKey(key) GAME_FN(setup_bindKey, 0x421680, void, int)(key)   /* (by use) the row being bound gets key */
 #define setup_keepKeyBindings() GAME_FN(setup_keepKeyBindings, 0x420c10, void, void)()   /* the default key bindings */
 #define music_shutdown() GAME_FN(music_shutdown, 0x457310, void, void)()
 
@@ -943,7 +943,7 @@ typedef struct { float r, g, b, a; } Colour;
 #define setup_drawMenu() GAME_FN(setup_drawMenu, 0x423330, void, void)()
 #define setup_frameSoundPage() GAME_FN(setup_frameSoundPage, 0x427830, void, void)()
 #define setup_frameOptionsPage() GAME_FN(setup_frameOptionsPage, 0x427880, void, void)()
-#define setup_frameCrosshairPage() GAME_FN(setup_frameCrosshairPage, 0x4278d0, void, void)()
+#define setup_frameControlsPage() GAME_FN(setup_frameControlsPage, 0x4278d0, void, void)()
 
 /* ---- DirectInput setup (app/devices.c) ---- */
 #define DirectInputCreateA(instance, version, out, outer) IMPORT(0x4a9018, long, void *, u32, void *, void *)(instance, version, out, outer)
@@ -982,7 +982,7 @@ typedef struct { float r, g, b, a; } Colour;
 #define SkeletonManager_dtor(self) GAME_THISFN(SkeletonManager_dtor, 0x46ae60, int, void *)(self)
 #define TimeSync_dtor(self) GAME_THISFN(TimeSync_dtor, 0x487470, void, void *)(self)
 #define Scene_dtor(self) GAME_THISFN(Scene_dtor, 0x48b410, void, void *)(self)
-#define BMPRGBFile_ctor(self) GAME_THISFN(BMPRGBFile_ctor, 0x46ce60, void, void *)(self)
+#define BMPRGBFile_dtor(self) GAME_THISFN(BMPRGBFile_dtor, 0x46ce60, void, void *)(self)
 #define ErrorLog_dtor(self) GAME_THISFN(ErrorLog_dtor, 0x46c5e0, void, void *)(self)
 #define Texture_dtor(self) GAME_THISFN(Texture_dtor, 0x455030, u32, void *)(self)   /* in fact Texture's destructor */
 
@@ -1209,7 +1209,7 @@ typedef struct { float r, g, b, a; } Colour;
 #define sys_checkClockTampering() GAME_FN(sys_checkClockTampering, 0x43f300, void, void)()
 #define glWindow_init(title, w, h, bits, depth, full, hwnd, flag) GAME_FN(glWindow_init, 0x468250, void, const char *, int, int, int, int, int, void *, int)(title, w, h, bits, depth, full, hwnd, flag)
 #define map_fileExists(map) GAME_FN(map_fileExists, 0x41e7c0, int, int)(map)   /* the map's files loaded: 0 failed */
-#define room_fitWindowRects() GAME_FN(room_fitWindowRects, 0x41e390, void, void)()
+#define pilotRecord_syncCopies() GAME_FN(pilotRecord_syncCopies, 0x41e390, void, void)()
 #define scene_setTextureFolder(scene, map) GAME_THISFN(scene_setTextureFolder, 0x461ec0, void, Scene *, const char *)(scene, map)
 #define actor_levelFromValue(points) GAME_FN(actor_levelFromValue, 0x4326f0, int, int)(points)   /* the level (1 ..) the points reach */
 #define net_receiveAll() GAME_FN(net_receiveAll, 0x450a60, u32, void)()

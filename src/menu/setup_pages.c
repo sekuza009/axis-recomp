@@ -168,7 +168,7 @@ void (setup_drawOptionsDialog)(void)
 /* ---- the controls dialog ---- */
 #define glTexCoord2i(s, t) IMPORT(0x4a91d8, void, int, int)(s, t)
 
-/* the binding each key row of the first three tabs shows (as setup_drawKeyBindingRows edits them, setup_keys.c);
+/* the binding each key row of the first three tabs shows (as setup_bindKey edits them, setup_keys.c);
    rows 4 and 9 of the third tab (bindings 25 and 31) are fixed keys */
 static const signed char key_rows[3][11] = {
 	{ 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, -1 },
@@ -277,13 +277,13 @@ static void settings_tab(void)
 #undef Y0
 }
 
-/* 0x425cd0 (named setup_crosshairScreen; by use the controls dialog, 0x4dde80 .. 0x4dde8c): the window, cyan lines,
+/* 0x425cd0 (the controls dialog, 0x4dde80 .. 0x4dde8c): the window, cyan lines,
    the column heads (MSG(206, "KEY FUNCTION") ..), the four tab titles (MSG(202, "$[0] MOVE"), 0x80 apart; dim, the current one, 0x4ddce8, bright
    again). The row under the pointer (setupControl_hitTest: 7 .. 17, kept in 0x4de040; -1 for rows the tab lacks and its fixed
    ones) lit blue, or the row being edited (0x4dddc8) magenta. The tab's rows; three buttons (MSG(209, "$[0] ACCEPT"), lit from 4
    unless editing); the help line (MSG(212, "Press ENTER or CLICK to change") over a row, MSG(213, "Press NEW-KEY to set |Press ESC to ca...") while editing) and the border. The caller ignores
    the eax it leaves */
-void (setup_crosshairScreen)(void)
+void (setup_drawControlsPage)(void)
 {
 #define X0 g_setupControlLeft
 #define Y0 g_setupControlTop

@@ -234,10 +234,10 @@ static void stats_copy(u32 dst, u32 src)
 	d->score = s->score;
 }
 
-/* 0x41e390 (named room_fitWindowRects; by use the pilot's record): the two copies of the pilot's record (the server's,
+/* 0x41e390 (the pilot's record): the two copies of the pilot's record (the server's,
    g_pilotLevel 0x9dd5d8, and the kept one, g_pilotLevelKept 0x9dd240: level, points, ., rating, ., wins, losses) made
    the same when one's wins or points are past the other's, then each limited by the title record's (0x4de71e) */
-void (room_fitWindowRects)(void)
+void (pilotRecord_syncCopies)(void)
 {
 	int c5, a1, b1;   /* the values the original holds in registers where the branches meet */
 	if (g_pilotWins > g_pilotWinsKept || g_pilotPoints > g_pilotPointsKept) {
@@ -479,7 +479,7 @@ u32 (lobby_clicks)(void)
 			return lobby_close();   /* lobby_close */
 		if (g_arenaLeaving)
 			return lobby_quitDialogClicks();   /* lobby_quitDialogClicks */
-		return lobby_connect();       /* lobby_connect */
+		return arenaGames_mouse();       /* arenaGames_mouse */
 	case 2:
 		if (g_arenaLeaving)
 			return create_quitDialogClicks();   /* create_quitDialogClicks */
@@ -756,13 +756,13 @@ u32 (arena_joinSession)(int session)
 	return rec->timeLimit;
 }
 
-/* 0x4062b0 (named app_shutdown; by use the arena join's answer, from WndProc): with the join dialog up (0x4dbb78)
+/* 0x4062b0 (the arena join's answer, from WndProc): with the join dialog up (0x4dbb78)
    message 0x44 and the connection closed; else a pending join (0x4db708) of the game picked (0x4db710: 99999 for
    the one received at 0x4dbbf8, copied into a session record at 0x9dae20, otherwise its row of the list, which
    takes the received id) is answered (dplay_join): joined, the session's settings are taken and the lobby
    connection closed; refused, messages 0x43 (501), 0x42 (502, 503), 0x44 (504), 0x45 (505) and the connection
    closed. The caller ignores the eax it leaves */
-void (app_shutdown)(void)
+void (arena_joinAnswer)(void)
 {
 	if (g_arenaJoinWaiting) {
 		g_arenaSearchTicks = 0;

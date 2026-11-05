@@ -849,14 +849,14 @@ static void lobby_leave(void)
 	g_serverAnswerIn = 1;
 }
 
-/* 0x406c30 (named lobby_connect; by use the arena lobby's list of games, its mouse: in mode 2 of 0x4dbb3c, not
+/* 0x406c30 (the arena lobby's list of games, its mouse: in mode 2 of 0x4dbb3c, not
    while joining, with the "full" box or a message box). A right click (not while searching or connecting) drops the
    connection and the mode. A click (arenaGameList_hitTest) on: 0 search the network (DirectPlay, 0x452ec0), 1 connect to
    the lobby server (lobby_openConnection), 2 the arena's title, 3 join (with games; not while busy), 4 back (a
    refresh in progress ended), 5 leave the lobby (mode 0), 15 / 16 one row up / down, or a row (6 .. 14): selects
    it, or on the selected row again (0x4db71c) joins it. A busy lobby answers sound 6. Holding the button on the
    arrows scrolls once the blink clock reaches 5. The caller ignores the eax it leaves */
-void (lobby_connect)(void)
+void (arenaGames_mouse)(void)
 {
 	int mode = g_arenaLobbyMode;
 	if (mode == 1 || mode == 0 || g_arenaJoining || g_arenaFull || g_dialogOpen)

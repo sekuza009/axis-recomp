@@ -43,7 +43,7 @@ void STDCALL (crt_arrayConstruct)(u8 *first, int size, int count, void (THISCALL
 		construct(first);
 }
 
-/* 0x460c40 (named Console_ctor; by use the Console's destructor): its vtable back (0x4aa238), then its members
+/* 0x460c40: the Console's destructor: its vtable back (0x4aa238), then its members
    destroyed: the stage (+0x1f36c8), the view volume (+0x74) and the time sync (+0xc). The caller ignores the eax it
    leaves */
 void THISCALL (Console_ctor)(u8 *self)

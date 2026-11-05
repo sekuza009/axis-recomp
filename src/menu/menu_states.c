@@ -227,8 +227,8 @@ void (menuState300_frame)(void)
 	}
 }
 
-/* 0x443ef0: the settings page's draw pass (none while a dialog is up) */
-void (settingsPage_draw)(void)
+/* 0x443ef0: the skirmish settings page's clicks (none while a dialog is up): page 10 the settings (skirmish_clicks), 20 their arrows */
+void (skirmishSettings_clicks)(void)
 {
 	if (g_dialogOpen != 0)
 		return;
@@ -257,8 +257,8 @@ void (mission_chosen)(int mission)
 	sound_playMenu(2);
 }
 
-/* 0x447b10: the mission select's draw pass: the briefing or the list */
-void (missionSelect_draw)(void)
+/* 0x447b10: the mission select's clicks (none while a dialog is up or it is busy): the briefing's close, else the list's (missionsel_clicks) */
+void (missionSelect_clicks)(void)
 {
 	if (g_dialogOpen != 0 || g_missionBusy != 0)
 		return;
@@ -477,7 +477,7 @@ void (menuState600_setup)(void)
 {
 	menu_drawBackground();
 	switch (g_setupTab) {
-	case 2: setup_camera(); setup_frameCrosshairPage(); break;
+	case 2: setup_camera(); setup_frameControlsPage(); break;
 	case 0: setup_camera(); setup_frameSoundPage(); break;
 	case 1: setup_camera(); setup_frameOptionsPage(); break;
 	case 0x29a: setup_easePanel(); setup_drawMenu(); break;

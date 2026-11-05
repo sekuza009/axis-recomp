@@ -647,7 +647,7 @@ static int menu_choice(int i, u32 *r)
 /* 0x4419d0: the main menu clicked (not while it is fading in (0x9db994 = 1); the map-select dialog first if open):
    its six buttons (outlines 0x2c bytes apart from 0x4deb80) as menu_choice. A right click quits too when the game
    was started from the launcher (0x9dae10). Returns what the original leaves in eax */
-u32 (mainmenu_startNetGame)(void)
+u32 (mainmenu_clicks)(void)
 {
 	if (g_mainMenuFadingIn == 1)
 		return 1;

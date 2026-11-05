@@ -1229,7 +1229,7 @@ void (cfg_parseKeyNames)(void *f)
 }
 #undef IS_ON
 
-/* 0x42eca0 (named for its second half): axis.cfg read from the data folder (0x9dae7c) when its first line is the
+/* 0x42eca0: axis.cfg read from the data folder (0x9dae7c) when its first line is the
    header (0x4b0f50): the player, server, sound, graphics and key binding sections. Without the file or with another
    header, the defaults (the player PLAYER, the server AXIS ARENA with 8 players, sound at 100 / 100, the switches and
    graphics settings) and the default key bindings, then axis.cfg written with them. The player's name and the
@@ -1238,7 +1238,7 @@ void (cfg_parseKeyNames)(void *f)
    wherever the old bytes end: the original's buffer is followed by the path, so this one is too. (A first line
    starting with a NUL byte makes the original clear the top byte of its caller's saved ebx, which is not
    reproduced) */
-void (cfg_writeDefaultAxisCfg)(void)
+void (cfg_init)(void)
 {
 	struct { char line[0x84]; char path[0x184]; } s;
 	strcpy(s.path, g_dataDir);

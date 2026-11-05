@@ -121,7 +121,7 @@ void (vec_initAxisX)(void) { set3(OBJ(g_vecUnitX), 0x3f800000u, 0, 0); }
 #define DELETING(cls, dtor) \
 	void *THISCALL (cls##_deletingDtor)(void *self, int flags) { dtor(self); if (flags & 1) operator_delete(self); return self; }
 
-/* Texture (vtable 0x4a956c): 0x455030 (named Texture_dtor, in fact its destructor) frees the pixel buffer (+0x10c,
+/* Texture (vtable 0x4a956c): 0x455030 (its destructor) frees the pixel buffer (+0x10c,
    held while +0x108 is not negative) and closes its file (+0x110); the result is what the last call left */
 u32 THISCALL (Texture_dtor)(u32 *self)
 {
@@ -182,9 +182,9 @@ DELETING(ShapeManager, ShapeManager_dtor)
 int THISCALL (SkeletonManager_dtor)(u32 *self) { self[0] = STR(0x4aa240, "\3207F"); return SkeletonManager_release(self); }
 DELETING(SkeletonManager, SkeletonManager_dtor)
 
-/* BMPRGBFile (vtable 0x4a96f8): 0x46ce60 (named BMPRGBFile_ctor, in fact its destructor) closes its file */
-void THISCALL (BMPRGBFile_ctor)(u32 *self) { self[0] = VT(BMPRGBFile, 0x4a96f8); if (self[1]) fclose((void *)RELOC(self[1])); }
-DELETING(BMPRGBFile, BMPRGBFile_ctor)
+/* BMPRGBFile (vtable 0x4a96f8): 0x46ce60  closes its file */
+void THISCALL (BMPRGBFile_dtor)(u32 *self) { self[0] = VT(BMPRGBFile, 0x4a96f8); if (self[1]) fclose((void *)RELOC(self[1])); }
+DELETING(BMPRGBFile, BMPRGBFile_dtor)
 
 /* ErrorLog (vtable 0x4aa2a0): the class-name records */
 void THISCALL (ErrorLog_dtor)(u32 *self) { self[0] = VT(ErrorLog, 0x4aa2a0); }
@@ -330,11 +330,11 @@ void *THISCALL (image_tryOpen)(u8 *image, const char *path)
 	return bmp->file;
 }
 
-/* 0x4734d0 (named gfx_saveScreenshot; by use a part type's emblem loaded): the BMP named after type p (its record at
+/* 0x4734d0 (a part type's emblem loaded): the BMP named after type p (its record at
    +0x1561b68, 0x47fd2 bytes each; the name from +4 by 0x4c74e8) read into a local image; at least 23 x 15 of it: its
    24 x 16 corner copied as RGBA into the record (+0x479c2), black pixels made clear and the rest opaque, and 1
    returned; else 0 */
-int THISCALL (gfx_saveScreenshot)(u8 *scene, int p)
+int THISCALL (partType_loadEmblem)(u8 *scene, int p)
 {
 	u8 *type = (u8 *)&((Stage *)scene)->playerRecords[p];
 	u8 image[0x48];
@@ -353,7 +353,7 @@ int THISCALL (gfx_saveScreenshot)(u8 *scene, int p)
 		}
 		BMPRGBFile_close(image);
 	}
-	BMPRGBFile_ctor(image);   /* (by use its destructor) */
+	BMPRGBFile_dtor(image);   /* (by use its destructor) */
 	return ok;
 }
 

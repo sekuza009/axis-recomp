@@ -247,7 +247,7 @@ int THISCALL (tex_textureFileExist)(u8 *tm, const char *name)
 			}
 		}
 	}
-	BMPRGBFile_ctor(image);   /* (by use its destructor) */
+	BMPRGBFile_dtor(image);   /* (by use its destructor) */
 	return ok;
 }
 
@@ -498,7 +498,7 @@ void THISCALL (tex_loadColorMask)(u8 *m, int i)
 	}
 	}
 	for (int k = 2; k >= 0; k--)
-		BMPRGBFile_ctor(bmp[k]);   /* (the reader's destructor) */
+		BMPRGBFile_dtor(bmp[k]);   /* (the reader's destructor) */
 }
 #undef W
 #undef H

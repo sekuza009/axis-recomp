@@ -1681,7 +1681,7 @@ void THISCALL (match_frame)(u8 *s)
 		SC->statsTaken = 1;
 	}
 	if (SC->screenshotTaken == 0 && SC->localPlayer >= 0 && SC->sessionMode == 1) {
-		int shot = gfx_saveScreenshot(stage, SC->localPlayer);
+		int shot = partType_loadEmblem(stage, SC->localPlayer);
 		SC->playerRecords[SC->localPlayer].emblemChanged = shot;
 		SC->playerRecords[SC->localPlayer].emblemSent = 0;
 		SC->screenshotUpload = 5.0f;   /* 5 */

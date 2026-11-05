@@ -293,7 +293,7 @@ void (menuState700_armCenter)(void)
 		if (g_armcFrom == 1)
 			armc_drawTunnel();
 	}
-	arena_launchFromFile();
+	armc_cameraStep();
 	int state = g_armcState;
 	if (state == 1 || state == 0)
 		return;

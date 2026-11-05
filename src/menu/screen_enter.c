@@ -206,7 +206,7 @@ void (menuState800_enterGameRoom)(void)
 
 /* ---- the front end's per-frame dispatch ---- */
 
-/* 0x445e40: the frame's input (0x445c60), then, unless the game is leaving (0x680370), the message box's keys while
+/* 0x445e40: the frame's input (0x445c60), then, unless the menu camera is moving (g_menuCameraMove), the message box's keys while
    it is shown, else the current screen's (0x76d3e8): 200 the title, 210 profiles, 300 the main menu, 400 the lobby,
    500 missions, 600 setup, 700 the ARM CENTER, 800 the game room, 900 skirmish, 9999 in a match. Returns what the
    handler leaves in eax (or the original's leftover of its compares) */
@@ -221,13 +221,13 @@ u32 (menu_frameInput)(void)
 	switch (state) {
 	case 200: return menu_clickStartFade();
 	case 210: return profile_processInput();   /* profile_processInput */
-	case 300: return mainmenu_startNetGame();
+	case 300: return mainmenu_clicks();
 	case 400: return lobby_clicks();   /* lobby_clicks */
-	case 500: return missionSelect_draw();
-	case 600: return setup_drawTab();
+	case 500: return missionSelect_clicks();
+	case 600: return setup_tabClicks();
 	case 700: return armc_mouse();   /* armc_mouse */
 	case 800: return room_processKeys();   /* room_processKeys */
-	case 900: return settingsPage_draw();
+	case 900: return skirmishSettings_clicks();
 	case 9999: return armc_mouseLook();  /* armc_mouseLook */
 	}
 	/* the original's subtraction chain leaves these */
@@ -255,7 +255,7 @@ u32 (menu_enterState)(void)
 	case 600: menuState600_enterSetup(); break;   /* menuState600_enterSetup */
 	case 800: menuState800_enterGameRoom(); break;   /* menuState800_enterGameRoom */
 	case 900: menuState900_enterSkirmish(); break;   /* menuState900_enterSkirmish */
-	case 9999: console_init(); break;  /* console_init */
+	case 9999: match_enter(); break;  /* match_enter */
 	}
 	g_lastScreen = g_menuState;
 	return (u32)g_menuState;
@@ -379,14 +379,14 @@ static void match_name(const char *name)
 	strcpy(g_matchPlayerName, name);
 }
 
-/* 0x41fd40 (named console_init; by use the match started, state 9999): the menus' tunnel freed; outside the lobby
+/* 0x41fd40 (the match started, state 9999): the menus' tunnel freed; outside the lobby
    (0x76d410) the profile files checked; the display opened (aspect 0x4e1870, glWindow_init); a replay (0x9db990)
    started at once (scene_startSession 0, 3); else the map (0x9dad94) loaded (failing: message 6 and back to state 400 /
    800 for the arena / room). By the kind of match (0x5ae9c4): 1 the arena, 2 the room (the pilots read, the
    player's name taken from the profile / the room, the part lists 0x40d990), 3 a skirmish (the name 0x9f1798),
    started with scene_startSession (a host unless 0x67ef04 is 1; 3: 0, 0); then the map's name announced. The caller
    ignores the eax it leaves */
-void (console_init)(void)
+void (match_enter)(void)
 {
 	while (g_menuTunnel)   /* the menus' tunnel, ring by ring */
 		tunnel_removeLastRing((TunnelRing **)ADDR(g_menuTunnel));
@@ -420,7 +420,7 @@ void (console_init)(void)
 		scene_startSession(scene, g_netRole == 1 ? 0 : 1, 1);
 		break;
 	case 2:
-		room_fitWindowRects();
+		pilotRecord_syncCopies();
 		if (g_pilotLevel != 0x14)
 			armc_resetSeraphimParts();
 		data_loadPilotProfiles();

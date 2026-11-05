@@ -1,0 +1,11 @@
+# names that earlier comments already noted as wrong ("named X; by use ...")
+BMPRGBFile_ctor,BMPRGBFile_dtor
+gfx_saveScreenshot,partType_loadEmblem
+cfg_writeDefaultAxisCfg,cfg_init
+lobby_connect,arenaGames_mouse
+room_fitWindowRects,pilotRecord_syncCopies
+app_shutdown,arena_joinAnswer
+arena_launchFromFile,armc_cameraStep
+console_init,match_enter
+setup_crosshairScreen,setup_drawControlsPage
+setup_frameCrosshairPage,setup_frameControlsPage

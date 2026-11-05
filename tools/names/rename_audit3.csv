@@ -1,0 +1,11 @@
+# verify pass 2026-11-04 (tools/verb_check.py): input handlers named as drawing
+missionSelect_draw,missionSelect_clicks
+settingsPage_draw,skirmishSettings_clicks
+mainmenu_startNetGame,mainmenu_clicks
+setup_drawTab,setup_tabClicks
+setup_drawControlTab,setup_controlTabClicks
+setup_drawSoundTab,setup_soundTabClicks
+setup_drawGraphicTab,setup_graphicTabClicks
+setup_drawTopPage,setup_topPageClicks
+setup_drawControlSlider,setup_sliderClicks
+setup_drawKeyBindingRows,setup_bindKey

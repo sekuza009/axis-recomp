@@ -366,7 +366,7 @@ int (app_init)(void *inst, int show)
 	g_desktopDC = dc;
 	g_desktopDepth = GetDeviceCaps(dc, 12);   /* BITSPIXEL */
 	input_setDefaultKeyBindings();
-	cfg_writeDefaultAxisCfg();
+	cfg_init();
 	app_screenSizeForMode();
 	app_reportStartupProblem(app_setDisplayMode(g_screenW, g_screenH, 4, (g_videoDepth + 1) * 16));   /* CDS_FULLSCREEN */
 	if (!g_startedFromLobby && !files_present())
@@ -623,7 +623,7 @@ u32 STDCALL (game_WinMain)(void *inst, void *prev, const char *cmd, int show)
    - WM_TIMER: 0x29a in the arena's lobby a keep-alive (net_send 0x17), 0x115c in a room another (0x18); 0x378 the
      arena's session search: the sessions listed; after 30 tries the join gives up, else a session found ends it
      (none: try again next time); either way the timer stops and the room closes (app_onClose) or the arena's join
-     is answered (app_shutdown).
+     is answered (arena_joinAnswer).
    - 0x40a, 0x40c (the game server's and the lobby's sockets): closed, both sockets closed and the menus back at
      the main menu (0), unless in a match; else the reply read and the connection's step and search result
      taken from it. */
@@ -779,7 +779,7 @@ long STDCALL (game_wndProc)(void *wnd, u32 msg, u32 w, u32 l)
 			if (g_screen == 800)
 				app_onClose();   /* app_onClose */
 			else
-				app_shutdown();   /* app_shutdown */
+				arena_joinAnswer();   /* arena_joinAnswer */
 		} else if (w == 0x115c) {
 			if (g_roomConnected)
 				net_send(0x18, 0x65);

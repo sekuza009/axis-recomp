@@ -196,7 +196,7 @@ static void menu_camera2(const MenuCam2 *m)
 	(*(int *)&g_cursorBlink) = 0;
 }
 
-/* 0x410b50 (named arena_launchFromFile; by use the arm screen's camera, 0x4dc790: 1 out to the first menu point, 0
+/* 0x410b50 (the arm screen's camera, 0x4dc790: 1 out to the first menu point, 0
    back home, 2 there). Going out it eases there (the view's aspect narrowing) and snaps once its depth passes -1
    (-1101 in network play, 0x4dc24c 3): at (0, -200, 1500; 400 in network play) looking at (0, -200, 0), the dialog
    up. Coming home it eases fast while its depth is past -549 (-1649), else slowly, the aspect widening back, and
@@ -204,7 +204,7 @@ static void menu_camera2(const MenuCam2 *m)
    arena lobby (400; the camera to its saved place, the home moved to (0, 0, -1550) looking at (0, 0, -1650)), 3 the
    game room (800, menuCamera_initPoints); a lobby game with a reply 0x67 (0x9da49c) then leaves (arena_loadAndQuit). The caller
    ignores the eax it leaves */
-void (arena_launchFromFile)(void)
+void (armc_cameraStep)(void)
 {
 	limit_frame_time(ADDR(k_10f));
 	int from = g_armcFrom, network = from == 3;
