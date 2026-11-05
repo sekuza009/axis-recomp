@@ -829,7 +829,7 @@ u32 (profile_makeCurrent)(void)
 	crt_chdir((const char *)STR(0x4b2a80, ".."));
 	u32 r = mech_loadFromProfile();
 	g_progressWentUp = 0;
-	g_missionStarted = 0;
+	g_missionBriefing = 0;
 	g_profileProgressSaved = g_progress;
 	return r;
 }

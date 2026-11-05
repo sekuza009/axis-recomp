@@ -611,7 +611,7 @@ THISCALL void stage_clearBullets(char *self);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 THISCALL void stage_clearMapObjects(char *self);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-THISCALL void view_setDistance(void *self, float v);
+THISCALL void stage_setViewDistance(void *self, float v);
 
 /* small object methods */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
@@ -736,7 +736,7 @@ THISCALL void shape_markMaterialsChanged(char *self);
 
 /* small object methods */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-THISCALL char *object_setTextureFolder(void *self, const char *s);
+THISCALL char *stage_setTextureFolder(void *self, const char *s);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 THISCALL void vec3_scaleCopy(float *v, float *out, float s);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
@@ -990,7 +990,7 @@ int ptx_readBlock(int *blk);
 /* objects */
 /* construct the 8 resource lists */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-THISCALL void *ResourceSet_initLists(char *self);
+THISCALL void *actor_initPartLists(char *self);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 THISCALL void shape_setTextureDir(void *self, const char *name, int flags, DWORD a1, DWORD a2, DWORD a3, DWORD a4, DWORD a5, DWORD a6);
 /* add a colour to RGBA pixels */
@@ -1350,7 +1350,7 @@ void ptx_initTables(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 THISCALL void texRecord_init(void *self, const char *name, int a2, int a3, int a4, int a5, int a6, int a7, int a8, int a9);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-THISCALL void object_setNames(void *self, const char *s1, const char *s2, const char *s3, const char *s4, const char *s5, const char *s6, const char *s7, const char *s8, const char *s9);
+THISCALL void stage_setFolders(void *self, const char *s1, const char *s2, const char *s3, const char *s4, const char *s5, const char *s6, const char *s7, const char *s8, const char *s9);
 /* the options panel shared by the game room and the arena lobby: 8 rows at rec, then (after the screen's own
    middle row) 4 rectangles at rec2 measured from the right edge gx2 */
 static void options_panel(DWORD rec, DWORD rec2, DWORD gx, DWORD gy, DWORD gx2)
@@ -1574,7 +1574,7 @@ void THISCALL Scene_dtor(void *self);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 THISCALL int stage_setSilentActor(void *self, int v);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-int THISCALL scene_teamSlot(void *scene, int i);
+int THISCALL scene_teamIdAt(void *scene, int i);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void *THISCALL ResourceSet_trivialCtor(void *self);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
@@ -2312,9 +2312,9 @@ int ptx_crtlError(int code, const char *format, ...);
 /* 0x454d90 text_findWord: DirectPlay name compare/copy helper */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 const char *text_findWord(const char *text, const char *word, int exact);
-/* 0x42ef30 app_reportStartupProblem: startup checks with message boxes */
+/* 0x42ef30 app_reportDisplayModeError: startup checks with message boxes */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-int app_reportStartupProblem(int code);
+int app_reportDisplayModeError(int code);
 /* 0x42f000 gfx_setPixelFormat: choose and set the pixel format */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 int gfx_setPixelFormat(void *dc);
@@ -2905,9 +2905,9 @@ THISCALL void space_initBy(char *sp, DWORD a, DWORD b, DWORD c, DWORD d, DWORD e
    clear the index table */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 THISCALL void space_setBy(char *sp, DWORD mn, DWORD mx, DWORD nx, DWORD ny, DWORD nz, DWORD a, DWORD b, DWORD depth);
-/* 0x471010 (thiscall) scene_initLevelGrid: the scene's level grid (scene + 0xa10) as one cell over the level bounds */
+/* 0x471010 (thiscall) stage_initSpaceOneCell: the scene's level grid (scene + 0xa10) as one cell over the level bounds */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-THISCALL void scene_initLevelGrid(char *scene);
+THISCALL void stage_initSpaceOneCell(char *scene);
 /* 0x484050 (thiscall) factor_initBy(items, matrices, a, b, c, d, mem, memSize): the view volume's pools (render
    items, matrices and four more lists), memory from mem or allocated, laid out one after the other */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
@@ -3285,14 +3285,14 @@ void THISCALL mech_setItem(void *scene, int slot, int item);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 THISCALL void partList_bindTextures(char *list);
 /* 0x474210 (thiscall) playerRecord_set(player, name, v, team, head, chest, arm, leg, booster, item0..5) /
-   0x4742f0 playerRecord_setFromActorRecord(player, record): set up a player completely (name, +0x44 value, team, the five part types,
-   the six item slots) and mark it used (playerRecord_markUsed); playerRecord_setFromActorRecord takes them from a record (+4 value, +8 name,
+   0x4742f0 playerRecord_setFromMapPlayer(player, record): set up a player completely (name, +0x44 value, team, the five part types,
+   the six item slots) and mark it used (playerRecord_markUsed); playerRecord_setFromMapPlayer takes them from a record (+4 value, +8 name,
    +0x28 team, +0x2c.. parts, +0x40.. items) */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 THISCALL void playerRecord_set(char *eng, DWORD p, DWORD name, DWORD v, DWORD team, DWORD head, DWORD chest, DWORD arm,
                            DWORD leg, DWORD booster, DWORD i0, DWORD i1, DWORD i2, DWORD i3, DWORD i4, DWORD i5);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-THISCALL void playerRecord_setFromActorRecord(char *eng, DWORD p, DWORD rec);
+THISCALL void playerRecord_setFromMapPlayer(char *eng, DWORD p, DWORD rec);
 /* (hud_drawHelp: batch 198, lifted whole in lifted/grp153.c) */
 /* batch 92 (lifted/grp38.c) */
 /* menu_drawTexture / _427b60(x1, y1, x2, y2, tex): with GL_TEXTURE_2D, bind texture tex (set tex / 512
@@ -3417,7 +3417,7 @@ THISCALL void actor_drawIntoView(char *sc, DWORD a, DWORD vv, DWORD draw);
    fourth value, then the scrambled player count (+0x1cd6fb0) and 0x58-byte player records (+0x1cd6a30), the actor
    count (+0x1cd93a4) and 0x5c-byte actor records (+0x1cd6fb4). Every player but the first gets its part colours from
    its colour scheme (record +4, minus 1; actor_setPartColor with the built-in tables), the game mode's fixed items
-   (as actor_setActorTypeItemInfoBy) and is set up from its record (playerRecord_setFromActorRecord); the player count goes to
+   (as actor_setActorTypeItemInfoBy) and is set up from its record (playerRecord_setFromMapPlayer); the player count goes to
    +0x19e1888, the actors after the first are marked active, the clan texture "Stage\<map +0x908>\Clan" is looked up
    (+0x2104fe4) and every player gets two fields set (+0x1561b68 + p * 0x47fd2 + 0x3fc6 / +0x3fce) */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
@@ -3556,7 +3556,7 @@ THISCALL void scene_startSession(char *g, DWORD a, DWORD mode);
 void match_enter(void);
 /* batch 115 (lifted/grp61.c) */
 /* 0x4700a0 (thiscall on the scene) item_initTextures(nine names): misnamed: the scene's whole start-up. The names
-   kept (object_setNames); the space object at +0xa10 sized into its own memory +0xb04 (space_initBy); the ten textures
+   kept (stage_setFolders); the space object at +0xa10 sized into its own memory +0xb04 (space_initBy); the ten textures
    "<name 3>\00".."\09" (+0x9ccfd4, the last two with flags 1); the lights reset (Light_clearCounts, factors_addAmbient with
    the colour 0xa1f23c, stage_resetLights, a grey ambient, factors_addDirectional); fog and sky cleared, the sky-sphere directions
    (+0x9ee080, 6 faces of 7 x 7), the sky layer and side directions, the floor grid (+0x9ef350, 11 x 11), the ground
@@ -4841,16 +4841,16 @@ void armc_drawPartsPage(void);
 void menuState700_armCenter(void);
 /* batch 186 (lifted/grp140.c): match_startRound (a match's start: modes, teams, items, music),
    match_escMenu (the in-match menu's input), wnd_setCursor (in fact the shutdown: the game object deleted, input,
-   music and sounds released, the cursor back), scene_loadPath, with their callees stubbed */
+   music and sounds released, the cursor back), stage_advanceScenePath, with their callees stubbed */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 THISCALL void match_startRound(char *scene);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void THISCALL match_escMenu(void *scene);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 DWORD wnd_setCursor(void);
-/* 0x48fd50 scene_loadPath(path) (thiscall on the scene, ret 4) */
+/* 0x48fd50 stage_advanceScenePath(path) (thiscall on the scene, ret 4) */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-THISCALL void scene_loadPath(char *scene, DWORD path);
+THISCALL void stage_advanceScenePath(char *scene, DWORD path);
 /* batch 187 (lifted/grp141.c, grp142.c: split, they call each other): particles */
 /* the particle system (thiscall: its object, the scene at BUF in the tests): 1000 slots of 0x12c bytes from
    +0x20a99c0 (used flag +4), the next free +0x20f2da4, the highest used +0x20f2da0, a serial +0x20f2da8.
@@ -7156,9 +7156,9 @@ T0(stage_clearBullets, 0x47cfd0, for (int i = 0; i < 400; i++) S32(BUF, 0x202ef3
    fill(BUF + 0x20a99b0, 0x10);)
 T0(stage_clearMapObjects, 0x490d10, for (int i = 0; i < 1000; i++) S32(BUF, 0x131ae48 + i * 0x2cc) = irnd(-3, 3);
    fill(BUF + 0x13016c8, 4); fill(BUF + 0x13c9b20, 0x10);)
-ST(view_setDistance, put_float_or_nan(BUF + 0x20f3a9c); put_float_or_nan(BUF + 0x20f3aac); put_float_or_nan((char *)&g_a[0]);
+ST(stage_setViewDistance, put_float_or_nan(BUF + 0x20f3a9c); put_float_or_nan(BUF + 0x20f3aac); put_float_or_nan((char *)&g_a[0]);
    if (!irnd(0, 9)) fill(&g_a[0], 4);,
-   (TC(void, 0x4722e0, char *, float)(BUF, GF(&g_a[0])), 0), (view_setDistance(BUF, GF(&g_a[0])), 0))
+   (TC(void, 0x4722e0, char *, float)(BUF, GF(&g_a[0])), 0), (stage_setViewDistance(BUF, GF(&g_a[0])), 0))
 ST(ints_set3, fill(BUF + 0xf0, 0x20); for (int k = 0; k < 3; k++) g_a[k] = irnd(-99999, 99999);,
    (TC(void, 0x480210, char *, int, int, int)(BUF + 0x100, g_a[0], g_a[1], g_a[2]), 0),
    (ints_set3((int *)(BUF + 0x100), g_a[0], g_a[1], g_a[2]), 0))
@@ -7276,8 +7276,8 @@ static void shape_setup(void)
 	}
 }
 T0(shape_markMaterialsChanged, 0x466560, shape_setup();)
-ST(object_setTextureFolder, fill_str(BUF + 0x100, 60, 1, 255); fill(BUF + 0x1908, 0x50);,
-   TC(char *, 0x470f80, char *, char *)(BUF + 0x1000, BUF + 0x100), object_setTextureFolder(BUF + 0x1000, BUF + 0x100))
+ST(stage_setTextureFolder, fill_str(BUF + 0x100, 60, 1, 255); fill(BUF + 0x1908, 0x50);,
+   TC(char *, 0x470f80, char *, char *)(BUF + 0x1000, BUF + 0x100), stage_setTextureFolder(BUF + 0x1000, BUF + 0x100))
 ST(vec3_scaleCopy, vec_raw_setup(); fill(BUF + 0x200, 12); put_float_or_nan((char *)&g_a[0]); if (!irnd(0, 9)) fill(&g_a[0], 4);,
    (TC(void, 0x4803c0, char *, char *, float)(BUF + 0x100, BUF + 0x200, GF(&g_a[0])), 0),
    (vec3_scaleCopy((float *)(BUF + 0x100), (float *)(BUF + 0x200), GF(&g_a[0])), 0))
@@ -7563,7 +7563,7 @@ static void block_setup(void)
 	fill(BUF + 0x200, 0x100); fill((void *)0xaa268c, 4);
 }
 ST(ptx_readBlock, block_setup();, CD(int, 0x46f0b0, char *)(BUF + 0x200), ptx_readBlock((int *)(BUF + 0x200)))
-ST(ResourceSet_initLists, fill(BUF, 0x7100);, TC(void *, 0x463a40, char *)(BUF), ResourceSet_initLists(BUF))
+ST(actor_initPartLists, fill(BUF, 0x7100);, TC(void *, 0x463a40, char *)(BUF), actor_initPartLists(BUF))
 ST(shape_setTextureDir, shapes_setup(); fill_str(BUF + 0x400, 40, 1, 255); fill(BUF + 0x130, 0x40); g_a[6] = irnd(0, 7);
    for (int k = 0; k < 6; k++) put_float_or_nan((char *)&g_a[k]);,
    (TC(void, 0x467580, char *, char *, int, int, int, int, int, int, int)(BUF, BUF + 0x400, g_a[6], g_a[0], g_a[1], g_a[2], g_a[3], g_a[4], g_a[5]), 0),
@@ -7758,9 +7758,9 @@ ST(texRecord_init, texrec_setup();,
    (texRecord_init(BUF + 0x1000, BUF + 0x100, g_a[0], g_a[1], g_a[2], g_a[3], g_a[4], g_a[5], g_a[6], g_a[7]), 0))
 static void names9_setup(void) { for (int k = 0; k < 9; k++) fill_str(BUF + 0x100 + k * 0x40, 40, 1, 255); fill(BUF + 0x2000, 0x908); }
 #define N9 BUF + 0x100, BUF + 0x140, BUF + 0x180, BUF + 0x1c0, BUF + 0x200, BUF + 0x240, BUF + 0x280, BUF + 0x2c0, BUF + 0x300
-ST(object_setNames, names9_setup();,
+ST(stage_setFolders, names9_setup();,
    (TC(void, 0x470de0, char *, char *, char *, char *, char *, char *, char *, char *, char *, char *)(BUF + 0x2000, N9), 0),
-   (object_setNames(BUF + 0x2000, N9), 0))
+   (stage_setFolders(BUF + 0x2000, N9), 0))
 V0(roomSettings_layout, 0x431de0, fill((void *)0x9dd6f8, 0xe0); ORIG4(0x9dd1b8, 0x9dd1bc, 0x9dd1c0, 0x9dd1c4))
 static void meshes_setup(void)
 {
@@ -8124,8 +8124,8 @@ ST(ErrorLog_dtor, fill(BUF, 0x10);, (TC(void, 0x46c5e0, char *)(BUF + 4), 0), (E
 ST(TimeSync_dtor, fill(BUF, 0x10);, (TC(void, 0x487470, char *)(BUF + 4), 0), (TimeSync_dtor((DWORD *)(BUF + 4)), 0))
 ST(Scene_dtor, fill(BUF, 0x10);, (TC(void, 0x48b410, char *)(BUF + 4), 0), (Scene_dtor((DWORD *)(BUF + 4)), 0))
 ST(stage_setSilentActor, g_a[0] = (int)rnd32(); fill(BUF + 0x202e8d8, 0x10);, TC(int, 0x45dfe0, char *, int)(BUF, g_a[0]), stage_setSilentActor(BUF, g_a[0]))
-ST(scene_teamSlot, fill(BUF + 0x100, 0x100); g_a[0] = irnd(-8, 56);,
-   TC(int, 0x463780, char *, int)(BUF + 0x180 - 0x2342381, g_a[0]), scene_teamSlot(BUF + 0x180 - 0x2342381, g_a[0]))
+ST(scene_teamIdAt, fill(BUF + 0x100, 0x100); g_a[0] = irnd(-8, 56);,
+   TC(int, 0x463780, char *, int)(BUF + 0x180 - 0x2342381, g_a[0]), scene_teamIdAt(BUF + 0x180 - 0x2342381, g_a[0]))
 ST(ResourceSet_trivialCtor, g_a[0] = (int)rnd32();, TC(void *, 0x45fff0, int)(g_a[0]), ResourceSet_trivialCtor((void *)g_a[0]))
 ST(recorder_setPathStub, g_a[0] = (int)rnd32();, TC(int, 0x48b440, char *, int)(BUF, g_a[0]), recorder_setPathStub(BUF, g_a[0]))
 ST(recorder_openStub, for (int i = 0; i < 4; i++) g_a[i] = (int)rnd32();, (TC(void, 0x48b430, char *, int, int)(BUF, g_a[0], g_a[1]), 0), (recorder_openStub(BUF, g_a[0], g_a[1]), 0))
@@ -9027,7 +9027,7 @@ ST(menu_frameBegin, , CALL_PLAIN(0x41f820, 0, 0, 0, 0, 0), (DWORD)(menu_frameBeg
 ST(app_registerWindowClassEx, fill(BUF + 0x100, 0x40);, CALL_PLAIN(0x43f840, 0, BUF + 0x100, 0, 0, 0), (DWORD)(app_registerWindowClassEx((const DWORD *)(DWORD)(BUF + 0x100))))
 ST(net_addPlayerRecord, strs_setup();, CALL_PLAIN(0x452de0, 0, BUF + 0x100, 0, 0, 0), (DWORD)(net_addPlayerRecord((const void *)(DWORD)(BUF + 0x100))))
 ST(text_findWord, strs_setup(); fill(BUF + 0x300, 0x40); g_a[0] = irnd(0, 40);, CALL_PLAIN(0x454d90, 0, BUF + 0x300, BUF + 0x100, g_a[0], 0), (DWORD)((DWORD)text_findWord((const char *)(DWORD)(BUF + 0x300), (const char *)(DWORD)(BUF + 0x100), (DWORD)(g_a[0]))))
-ST(app_reportStartupProblem, g_a[0] = irnd(-1, 3);, CALL_PLAIN(0x42ef30, 0, g_a[0], 0, 0, 0), (DWORD)(app_reportStartupProblem((DWORD)(g_a[0]))))
+ST(app_reportDisplayModeError, g_a[0] = irnd(-1, 3);, CALL_PLAIN(0x42ef30, 0, g_a[0], 0, 0, 0), (DWORD)(app_reportDisplayModeError((DWORD)(g_a[0]))))
 ST(gfx_setPixelFormat, g_mockPixelFormat = irnd(0, 9);, CALL_PLAIN(0x42f000, 0, 0xdc0, 0, 0, 0), (DWORD)(gfx_setPixelFormat((void *)(DWORD)(0xdc0))))
 ST(autoplay_listFiles, g_mockFindCount = irnd(0, 12);, CALL_PLAIN(0x440c60, 0, 0, 0, 0, 0), (DWORD)(autoplay_listFiles()))
 ST(data_loadMessages, vfs_content(95, 0x2000);, CALL_PLAIN(0x42b3e0, 0, 0, 0, 0, 0), (DWORD)(data_loadMessages()))
@@ -10204,7 +10204,7 @@ static void levelgrid_setup(void)
 	space_make(BUF + 0xa10);
 	for (int i = 0; i < 6; i++) SF(BUF + 0x9ef904, i * 4) = csu_fr(-100000, 100000);
 }
-ST(scene_initLevelGrid, levelgrid_setup();, (TC(void, 0x471010, char *)(BUF), 0), (scene_initLevelGrid(BUF), 0))
+ST(stage_initSpaceOneCell, levelgrid_setup();, (TC(void, 0x471010, char *)(BUF), 0), (stage_initSpaceOneCell(BUF), 0))
 /* a view volume's pool part (BUF + 0x100000) with small pool sizes */
 static void factorinit_setup(void)
 {
@@ -11850,7 +11850,7 @@ static void wholeplayer_setup(void)
 	g_pl[0] = p; g_pl[1] = (DWORD)nm; g_pl[2] = irnd(0, 9); g_pl[3] = irnd(-1, 3);
 	for (int k = 4; k < 9; k++) g_pl[k] = irnd(0, 9) ? irnd(-1, 3) : 4;
 	for (int k = 9; k < 15; k++) g_pl[k] = irnd(-1, 3);
-	char *r = BUF + 0x941000;                    /* playerRecord_setFromActorRecord's record */
+	char *r = BUF + 0x941000;                    /* playerRecord_setFromMapPlayer's record */
 	fill(r, 0x60); strcpy(r + 8, nm);
 	S32(r, 4) = g_pl[2]; S32(r, 0x28) = g_pl[3];
 	for (int k = 0; k < 5; k++) S32(r, 0x2c + k * 4) = g_pl[4 + k];
@@ -11861,8 +11861,8 @@ ST(playerRecord_set, wholeplayer_setup();,
      g_pl[0], g_pl[1], g_pl[2], g_pl[3], g_pl[4], g_pl[5], g_pl[6], g_pl[7], g_pl[8], g_pl[9], g_pl[10], g_pl[11], g_pl[12], g_pl[13], g_pl[14]), 0),
    (playerRecord_set(BUF, g_pl[0], g_pl[1], g_pl[2], g_pl[3], g_pl[4], g_pl[5], g_pl[6], g_pl[7], g_pl[8], g_pl[9], g_pl[10], g_pl[11],
      g_pl[12], g_pl[13], g_pl[14]), 0))
-ST(playerRecord_setFromActorRecord, wholeplayer_setup();, (TC(void, 0x4742f0, char *, int, char *)(BUF, g_pl[0], BUF + 0x941000), 0),
-   (playerRecord_setFromActorRecord(BUF, g_pl[0], (DWORD)(BUF + 0x941000)), 0))
+ST(playerRecord_setFromMapPlayer, wholeplayer_setup();, (TC(void, 0x4742f0, char *, int, char *)(BUF, g_pl[0], BUF + 0x941000), 0),
+   (playerRecord_setFromMapPlayer(BUF, g_pl[0], (DWORD)(BUF + 0x941000)), 0))
 /* batch 92 */
 /* tex_getIdByName's texture set at 0xa0e010 (its test manager in one slot); a texture id there that owns a GL slot
    (just bound) or texture i (loaded from its files); menu coordinates. (A negative id would index outside the set;
@@ -12111,7 +12111,7 @@ ST(room_announceGame, lobbylogin_setup(0x5b1b30, 0x5b1b50, 0xa0b328); reserved_n
 ST(lobby_announceArena, lobbylogin_setup(0x4ded20, 0x4ded40, 0xa0b310); reserved_name((char *)0x4db528);   /* (lobby_keepArenaSettings copies the name from there) */, CD(DWORD, 0x405cf0, void)(),
    (DWORD)lobby_announceArena())
 /* batch 101 */
-/* an actor (0..6) with empty, freshly constructed object lists (ResourceSet_initLists), every part table and item
+/* an actor (0..6) with empty, freshly constructed object lists (actor_initPartLists), every part table and item
    record ready (cleared names, see part_record), and its state at random: alive or not, near the camera or not, hit /
    damaged / cloaked, the viewing actor or not, the current weapon slot */
 static void updateparts_setup(void)
@@ -12130,7 +12130,7 @@ static void updateparts_setup(void)
 	}
 	for (int s = 0; s < 6; s++) S32(BUF + 0x1561b68 + p * 0x47fd2, 0x320 + s * 4) = irnd(-1, 3);
 	char *ac = sc + 0x1cd93a8 + a * 0x8888;
-	ResourceSet_initLists(ac);
+	actor_initPartLists(ac);
 	S32(ac, 0x108) = 1; S32(ac, 0x10c) = p; S32(ac, 8) = irnd(0, 9);
 	S32(ac, 0x14c) = irnd(0, 9) ? 1 : 0; S32(ac, 0x884c) = irnd(0, 9) ? 0 : 1;
 	for (int k = 0; k < 3; k++) { SF(sc + 0x20f3970, k * 4) = (float)irnd(-1000, 1000); SF(ac, 0x154 + k * 4) = SF(sc + 0x20f3970, k * 4) + (float)irnd(-300, 300); }
@@ -12221,7 +12221,7 @@ static void mechsetup_setup(void)
 	}
 	for (int s = 0; s < 6; s++) S32(pl, 0x320 + s * 4) = irnd(0, 2) ? items[irnd(0, 13)] : -1;
 	char *ac = BUF + 0x1cd93a8 + a * 0x8888;
-	ResourceSet_initLists(ac);
+	actor_initPartLists(ac);
 	S32(ac, 0x108) = 1; S32(ac, 0x10c) = p; S32(ac, 0x484) = irnd(0, 3); S32(ac, 0x49c) = irnd(0, 3); S32(ac, 0x140) = irnd(0, 5);
 	fill(ac + 0x3f0, 0x100);
 	S32(BUF, 0x20f3ab8) = irnd(0, 13); S32(BUF, 0x1561b64) = 40;
@@ -12423,7 +12423,7 @@ static void allparts_setup(void)
 	updateparts_setup();
 	for (int a = 0; a < 7; a++) {
 		char *ac = BUF + 0x1cd93a8 + a * 0x8888;
-		if (a != g_a[0]) { ResourceSet_initLists(ac); S32(ac, 0x10c) = irnd(0, 7); S32(ac, 0x14c) = irnd(0, 1); S32(ac, 0x884c) = 0;
+		if (a != g_a[0]) { actor_initPartLists(ac); S32(ac, 0x10c) = irnd(0, 7); S32(ac, 0x14c) = irnd(0, 1); S32(ac, 0x884c) = 0;
 		                   for (int k = 0; k < 3; k++) SF(ac, 0x154 + k * 4) = SF(BUF + 0x20f3970, k * 4) + (float)irnd(-300, 300); }
 		S32(ac, 0x108) = irnd(0, 3) ? 1 : 0;
 	}
@@ -12450,7 +12450,7 @@ static void ownslot_setup(void)
 	slot_setup();
 	S32(BUF, 0x202e8d4) = g_spf;
 	char *ac = BUF + 0x1cd93a8 + g_spf * 0x8888;
-	ResourceSet_initLists(ac); S32(ac, 0x10c) = g_spf; S32(ac, 0x484) = irnd(0, 3); S32(ac, 0x49c) = irnd(0, 3); S32(ac, 0x140) = irnd(0, 5);
+	actor_initPartLists(ac); S32(ac, 0x10c) = g_spf; S32(ac, 0x484) = irnd(0, 3); S32(ac, 0x49c) = irnd(0, 3); S32(ac, 0x140) = irnd(0, 5);
 	fill((void *)0xa0e7a8, 12);
 }
 ST(stage_remakePlayerActor, ownslot_setup();, (TC(void, 0x45ddc0, char *)(BUF), 0), (stage_remakePlayerActor(BUF), 0))
@@ -15487,7 +15487,7 @@ static const DWORD g_gi_41e040[] = { 0x4b071c, 0x4dcfd8, 0x4dbc68, 0x4dc24c, 0x4
 static const DWORD g_gb_41e040[] = { 0x7572a4, 0x757324, 0x76d438, 0x9da480, 0 };
 ST(menuState700_armCenter, gen_setup(g_gs_41e040, g_gi_41e040, g_gb_41e040);, (CALL_PLAIN(0x41e040, 0, g_a[0], g_a[1], g_a[2], g_a[3]), 0), (menuState700_armCenter(), 0))   /* its callers ignore the eax it leaves (tools/eaxuse.py) */
 /* batch 186: match_startRound / match_escMenu generated (tools/gentests.py, thiscall on the game: ecx =
-   BUF, zero apart from what the callees would set), wnd_setCursor and scene_loadPath by hand */
+   BUF, zero apart from what the callees would set), wnd_setCursor and stage_advanceScenePath by hand */
 static const DWORD g_gs_49df10[] = { 0x4326f0, 1, 0x44ace0, 0, 0x456de0, 1, 0x457140, 1, 0x45dfb0, 1 | CS_POP, 0x4613a0, 1 | CS_POP, 0x4620e0, 0, 0x4629c0, 1 | CS_POP, 0x4636d0, 0, 0x4685b0, 0, 0x4685c0, 0, 0x46c710, 3, 0x4732f0, 1 | CS_POP, 0x473940, 2 | CS_POP, 0x4743e0, 1 | CS_POP, 0x487490, 0, 0 };
 static const DWORD g_gi_49df10[] = { 0x4dc878, 0x4dc87c, 0x4dc880, 0x4dc884, 0x4dc888, 0x4dcf18, 0x4dcf1c, 0x4dcf20, 0x4dcf24, 0x4dcf28, 0x4dcf2c, 0x4de722, 0x4de72a, 0x4ded68, 0x4ded6c, 0x4df8e8, 0x4e0c90, 0x4e0c94, 0x5ae9c4, 0x67ef00, 0x68039c, 0x76d368, 0x76d408, 0x9da3e0, 0x9dad94, 0x9f1818, 0x9fd94c, 0xa1efb8, 0 };
 static const DWORD g_gb_49df10[] = { 0x4d0710, 0x4d950c, 0x4dcfe4, 0x4dedd8, 0x9db9ec, 0xa0e778, 0 };
@@ -15537,15 +15537,15 @@ static void escinput_setup(void)
 }
 ST(match_escMenu, escinput_setup();, (TC(void, 0x49ca70, char *)(BUF), 0), (match_escMenu(BUF), 0))   /* its callers ignore the eax it leaves (tools/eaxuse.py) */
 /* the shutdown (wnd_setCursor): the game object 0x9087b4 kept 0 (its deleting destructor would run on the real
-   game), the sounds 0x4dd4d4 .., the cursor; callees stubbed. scene_loadPath(path) (thiscall on the scene): the
+   game), the sounds 0x4dd4d4 .., the cursor; callees stubbed. stage_advanceScenePath(path) (thiscall on the scene): the
    path record at +0x2148ed8 loaded once (+0x2148ee0), the path's name looked up (stubbed), its sound */
 static const DWORD g_stubShutdown[] = { 0x42eed0, 4, 0x4014c0, 0, 0x457310, 0, 0x467d60, 1, 0x456cd0, 0, 0x467b70, 0, 0 };
 static const DWORD g_stubLoadPath[] = { 0x457080, 2, 0x48b430, 2 | CS_POP | CS_THIS, 0x48b440, 1 | CS_POP | CS_THIS, 0 };
 ST(wnd_setCursor, G32(0x9087b4) = 0; fill((void *)0x4dd4d4, 40); fill((void *)0x76d3ec, 4); fill((void *)0x76d430, 4);
    fill((void *)0x67eefc, 4); callee_stubs(g_stubShutdown, 0);, CALL_PLAIN(0x4314e0, 0, 0, 0, 0, 0), wnd_setCursor())
-ST(scene_loadPath, S32(BUF, 0x2149308) = irnd(0, 1); S32(BUF, 0x2148ee0) = irnd(0, 1); fill_str(BUF + 0x100, 30, 'a', 'z');
+ST(stage_advanceScenePath, S32(BUF, 0x2149308) = irnd(0, 1); S32(BUF, 0x2148ee0) = irnd(0, 1); fill_str(BUF + 0x100, 30, 'a', 'z');
    callee_stubs(g_stubLoadPath, (DWORD)irnd(0, 1));,
-   (TC(DWORD, 0x48fd50, char *, char *)(BUF, BUF + 0x100), 0), (scene_loadPath(BUF, (DWORD)(BUF + 0x100)), 0))   /* (its caller ignores eax) */
+   (TC(DWORD, 0x48fd50, char *, char *)(BUF, BUF + 0x100), 0), (stage_advanceScenePath(BUF, (DWORD)(BUF + 0x100)), 0))   /* (its caller ignores eax) */
 /* batch 187 */
 /* particles: the system at BUF (thiscall), its 1000 slots' used flags random (some runs of free ones), the next
    free and highest used slot (sometimes full: 1000), the serial; a descriptor at BUF + 0x100 (kind 0..2 at
@@ -17213,7 +17213,7 @@ static const STest g_stests[] = {
 	T(vec_initOrigin, 0, 4, 0), T(vec_initZero, 0, 4, 0), T(vec_initAxisZ, 0, 4, 0), T(vec_initUp, 0, 4, 0),
 	T(vec_initRest, 0, 4, 0), T(vec_initAxisX, 0, 4, 0), T(stage_clearFrags, 0, 4, 300), T(net_announceServerEnd, 0, 4, 300),
 	T(net_announceFragLimit, 0, 4, 300), T(net_announceTimeLimit, 0, 4, 300), T(ViewVolume_clearDrawCounts, 0, 4, 300), T(stage_clearProjectiles, 0, 4, 300),
-	T(stage_clearBullets, 0, 4, 300), T(stage_clearMapObjects, 0, 4, 300), T(view_setDistance, 0, 4, 2000), T(ints_set3, 0, 4, 300),
+	T(stage_clearBullets, 0, 4, 300), T(stage_clearMapObjects, 0, 4, 300), T(stage_setViewDistance, 0, 4, 2000), T(ints_set3, 0, 4, 300),
 	T(vec3_negate, 0, 4, 2000), T(space_freeNode, 0, 4, 300), T(space_freeBlock, 0, 4, 300), T(space_disableUnit, 0, 4, 300),
 	T(space_enableUnit, 0, 4, 300), T(str_length, 1, 4, 3000), T(array_indexOf, 1, 4, 3000), T(path_normalize, 1, 4, 3000),
 	/* batch 7 */
@@ -17223,7 +17223,7 @@ static const STest g_stests[] = {
 	T(armc_rightClickLeave, 0, 10, 0), T(profile_resetPreview, 0, 6, 0), T(profile_resetSelection, 0, 6, 0), T(profile_resetCamera, 0, 6, 0),
 	T(setup_selectGraphicTab, 0, 6, 0), T(mapList_startEdit, 0, 20, 0), T(skirmish_settingsArrowClick, 0, 40, 0), T(sessionList_sort, 0, 30, 0),
 	T(ptx_initQuantTables, 0, 30, 0), T(ptx_initClampTable, 0, 4, 0), T(ptx_initColourTables, 0, 4, 0), T(ErrorLog_ctor, 1, 10, 0),
-	T(net_claimLocalSlot, 1, 40, 0), T(str_dropLast, 1, 4, 1000), T(scene_teamSide, 1, 4, 1000), T(object_setTextureFolder, 1, 4, 500),
+	T(net_claimLocalSlot, 1, 40, 0), T(str_dropLast, 1, 4, 1000), T(scene_teamSide, 1, 4, 1000), T(stage_setTextureFolder, 1, 4, 500),
 	T(stage_deactivateActors, 0, 4, 300), T(teams_setup, 0, 4, 300), T(escMenu_open, 0, 4, 300), T(object_activate, 0, 4, 600),
 	T(object_deactivate, 0, 4, 600), T(playerRecord_resetColourGrid, 0, 4, 100), T(script_pushMessage, 0, 4, 1000), T(shape_markMaterialsChanged, 0, 4, 300),
 	T(vec3_scaleCopy, 0, 4, 2000), T(vec_rotate, 0, 4, 2000), T(space_transformPoint, 0, 4, 2000),
@@ -17247,7 +17247,7 @@ static const STest g_stests[] = {
 	/* batch 10 */
 	T(gameList_layout, 0, 8, 0), T(arenaGameList_layout, 0, 8, 0), T(profilePage_layout, 0, 8, 0), T(mapList_layout, 0, 4, 0),
 	T(lobby_setSubState1, 0, 4, 0), T(lobby_ladderGameName, 0, 20, 0), T(armc_initCameraBox, 0, 4, 0), T(menu_initColours, 0, 4, 0),
-	T(profile_nameExists, 1, 40, 0), T(ptx_toRgba, 0, 4, 300), T(ptx_readBlock, 1, 150, 0), T(ResourceSet_initLists, 1, 4, 200),
+	T(profile_nameExists, 1, 40, 0), T(ptx_toRgba, 0, 4, 300), T(ptx_readBlock, 1, 150, 0), T(actor_initPartLists, 1, 4, 200),
 	T(shape_setTextureDir, 0, 4, 300), T(image_addColour, 0, 4, 1000), T(stage_resetMatrixAndPoints, 0, 4, 100), T(player_setName, 0, 4, 600),
 	T(scene_resetActors, 0, 4, 20),
 	/* batch 11 */
@@ -17271,7 +17271,7 @@ static const STest g_stests[] = {
 	T(input_applyKeyBindings, 0, 6, 0), T(setup_keepKeyBindings, 0, 6, 0), T(quat_fromAxisAngle, 0, 4, 3000), T(setup_easePanel, 0, 60, 0),
 	T(ptx_initDequantTables, 0, 30, 0), T(math_triangleNormal, 0, 4, 3000), T(pilotRecord_syncCopies, 0, 100, 0),
 	/* batch 17 */
-	T(arena_mergeReceivedSessions, 0, 60, 0), T(ptx_initTables, 0, 4, 0), T(texRecord_init, 0, 4, 2000), T(object_setNames, 0, 4, 300),
+	T(arena_mergeReceivedSessions, 0, 60, 0), T(ptx_initTables, 0, 4, 0), T(texRecord_init, 0, 4, 2000), T(stage_setFolders, 0, 4, 300),
 	T(roomSettings_layout, 0, 8, 0), T(stage_buildMeshDrawRecords, 0, 4, 600),
 	/* batch 18 */
 	T(arenaOptions_layout, 0, 8, 0), T(menuState600_enterSetup, 0, 8, 0), T(menuState800_enterGameRoom, 0, 20, 0),
@@ -17306,7 +17306,7 @@ static const STest g_stests[] = {
 	T(SkeletonManager_clear, 1, 4, 300), T(collisionPlane_clear, 1, 4, 300), T(spaceBlock_clear, 1, 4, 300), T(CollisionVolume_clear, 1, 4, 300),
 	T(ViewVolume_clear, 1, 4, 300), T(TimeSync_clear, 1, 4, 300), T(spaceNode_clear, 1, 4, 300), T(Light_clearCounts, 1, 4, 300),
 	T(stage_clearMessages, 1, 4, 300), T(ErrorLog_dtor, 0, 4, 300), T(TimeSync_dtor, 0, 4, 300), T(Scene_dtor, 0, 4, 300),
-	T(stage_setSilentActor, 1, 4, 300), T(scene_teamSlot, 1, 4, 300), T(ResourceSet_trivialCtor, 1, 4, 300), T(recorder_setPathStub, 1, 4, 300),
+	T(stage_setSilentActor, 1, 4, 300), T(scene_teamIdAt, 1, 4, 300), T(ResourceSet_trivialCtor, 1, 4, 300), T(recorder_setPathStub, 1, 4, 300),
 	T(recorder_openStub, 0, 4, 0), T(recorder_noteStub, 0, 4, 0), T(stage_triggerActionNone, 0, 4, 0), T(static_emptyCtorSkelData1, 0, 4, 0),
 	T(static_emptyCtorSkelData2, 0, 4, 0), T(static_emptyCtorSkelData3, 0, 4, 0), T(static_emptyCtorSkelData4, 0, 4, 0), T(static_emptyCtorSkelData5, 0, 4, 0),
 	T(static_emptyCtorSkelData6, 0, 4, 0), T(static_emptyCtorSkelData7, 0, 4, 0), T(static_emptyCtorSkelData8, 0, 4, 0), T(static_emptyCtorTimeSync1, 0, 4, 0),
@@ -17393,7 +17393,7 @@ static const STest g_stests[] = {
 	T(sys_messageBoxOverActive, 1, 40, 0), T(app_closeWindow, 1, 40, 0), T(menu_vertex, 1, 400, 0), T(mci_pause, 1, 40, 0),
 	T(editField_readTyping, 1, 40, 0), T(sys_messageBox, 1, 40, 0), T(ptx_error, 1, 40, 0), T(ptx_crtlError, 1, 40, 0),
 	T(reg_writeEndMode, 1, 40, 0), T(reg_writeStartMode, 1, 40, 0), T(menu_frameBegin, 1, 40, 0), T(app_registerWindowClassEx, 1, 40, 0),
-	T(net_addPlayerRecord, 1, 40, 0), T(text_findWord, 1, 40, 0), T(app_reportStartupProblem, 1, 40, 0), T(gfx_setPixelFormat, 1, 40, 0),
+	T(net_addPlayerRecord, 1, 40, 0), T(text_findWord, 1, 40, 0), T(app_reportDisplayModeError, 1, 40, 0), T(gfx_setPixelFormat, 1, 40, 0),
 	T(autoplay_listFiles, 1, 40, 0), T(data_loadMessages, 1, 40, 0), T(profile_readHeader, 1, 40, 0), T(data_loadSkirmishInfo, 1, 200, 0),
 	T(data_loadMapInfo, 1, 200, 0), T(data_loadPilotProfiles, 1, 200, 0), T(profile_saveProgress, 1, 40, 0), T(profile_newCampaign, 1, 40, 0),
 	T(profile_makeCurrent, 1, 40, 0), T(timer_now, 1, 2000, 0), T(Stage_deletingDtor, 1, 40, 0), T(dplay_enumSessionsCallback, 1, 400, 0),
@@ -17459,7 +17459,7 @@ static const STest g_stests[] = {
 	T(profile_addMatchScores, 0, 400, 0), T(chat_createEdit, 0, 40, 0), T(reg_readCharacterSettings, 0, 1000, 0), T(playerRecord_loadFlag, 1, 400, 0),
 	T(catalogue_loadComponents, 1, 400, 0),
 	/* batch 61 */
-	T(space_initBy, 0, 400, 0), T(space_setBy, 0, 400, 0), T(scene_initLevelGrid, 0, 40, 0), T(factor_initBy, 0, 400, 0),
+	T(space_initBy, 0, 400, 0), T(space_setBy, 0, 400, 0), T(stage_initSpaceOneCell, 0, 40, 0), T(factor_initBy, 0, 400, 0),
 	T(TextureManager_setBanks, 0, 400, 0), T(skel_loadFromFile, 0, 400, 0),
 	/* batch 62 */
 	T(image_copyTo, 0, 400, 0), T(tex_textureFileExist, 1, 400, 0), T(tex_initBy, 0, 400, 0), T(shape_initBy, 0, 400, 0),
@@ -17525,7 +17525,7 @@ static const STest g_stests[] = {
 	/* batch 91 */
 	T(armc_setHeadIndex, 0, 300, 0), T(armc_setChestIndex, 0, 300, 0), T(armc_setArmIndex, 0, 300, 0), T(armc_setLegIndex, 0, 300, 0),
 	T(armc_setBoosterIndex, 0, 300, 0), T(mech_setItem, 0, 300, 0), T(partList_bindTextures, 0, 300, 0), T(playerRecord_set, 0, 300, 0),
-	T(playerRecord_setFromActorRecord, 0, 300, 0),
+	T(playerRecord_setFromMapPlayer, 0, 300, 0),
 	/* batch 92 */
 	T(menu_drawTexture, 0, 300, 0), T(menu_drawTextureFlipped, 0, 300, 0), T(menu_drawCornerOrnaments, 0, 300, 0), T(menu_drawTopRightOrnament, 0, 300, 0),
 	/* batch 93 */
@@ -17766,7 +17766,7 @@ static const STest g_stests[] = {
 	T(armc_enterScreen, 0, 200, 0), T(armc_updatePartsPreview, 0, 1000, 0), T(armc_updateColourPreview, 0, 1000, 0), T(armc_drawColourPage, 0, 200, 0),
 	T(armc_drawThirdPage, 0, 200, 0), T(armc_drawPartsPage, 0, 200, 0), T(menuState700_armCenter, 0, 200, 0),
 	/* batch 186 */
-	T(match_startRound, 0, 1500, 0), T(match_escMenu, 0, 1000, 0), T(wnd_setCursor, 0, 200, 0), T(scene_loadPath, 0, 200, 0),
+	T(match_startRound, 0, 1500, 0), T(match_escMenu, 0, 1000, 0), T(wnd_setCursor, 0, 200, 0), T(stage_advanceScenePath, 0, 200, 0),
 	/* batch 187 */
 	T(particle_spawn, 0, 300, 0), T(particle_init, 0, 400, 0),
 	/* batch 188 */
@@ -18090,7 +18090,7 @@ static const struct { DWORD addr; void *fn; const char *name; } g_hooks3[] = {
 	{ 0x463690, (void *)net_announceFragLimit, "net_announceFragLimit" }, { 0x4636b0, (void *)net_announceTimeLimit, "net_announceTimeLimit" },
 	{ 0x4841d0, (void *)ViewVolume_clearDrawCounts, "ViewVolume_clearDrawCounts" }, { 0x479a60, (void *)stage_clearProjectiles, "stage_clearProjectiles" },
 	{ 0x47cfd0, (void *)stage_clearBullets, "stage_clearBullets" }, { 0x490d10, (void *)stage_clearMapObjects, "stage_clearMapObjects" },
-	{ 0x4722e0, (void *)view_setDistance, "view_setDistance" }, { 0x480210, (void *)ints_set3, "ints_set3" },
+	{ 0x4722e0, (void *)stage_setViewDistance, "stage_setViewDistance" }, { 0x480210, (void *)ints_set3, "ints_set3" },
 	{ 0x480230, (void *)vec3_negate, "vec3_negate" }, { 0x481730, (void *)space_freeNode, "space_freeNode" },
 	{ 0x481980, (void *)space_freeBlock, "space_freeBlock" }, { 0x480460, (void *)space_disableUnit, "space_disableUnit" },
 	{ 0x480480, (void *)space_enableUnit, "space_enableUnit" }, { 0x44ac50, (void *)str_length, "str_length" },
@@ -18109,7 +18109,7 @@ static const struct { DWORD addr; void *fn; const char *name; } g_hooks3[] = {
 	{ 0x46e9b0, (void *)ptx_initQuantTables, "ptx_initQuantTables" }, { 0x46e320, (void *)ptx_initClampTable, "ptx_initClampTable" },
 	{ 0x46e7c0, (void *)ptx_initColourTables, "ptx_initColourTables" }, { 0x46c5a0, (void *)ErrorLog_ctor, "ErrorLog_ctor" },
 	{ 0x451410, (void *)net_claimLocalSlot, "net_claimLocalSlot" }, { 0x44ac70, (void *)str_dropLast, "str_dropLast" },
-	{ 0x463740, (void *)scene_teamSide, "scene_teamSide" }, { 0x470f80, (void *)object_setTextureFolder, "object_setTextureFolder" },
+	{ 0x463740, (void *)scene_teamSide, "scene_teamSide" }, { 0x470f80, (void *)stage_setTextureFolder, "stage_setTextureFolder" },
 	{ 0x45e1c0, (void *)stage_deactivateActors, "stage_deactivateActors" }, { 0x4636d0, (void *)teams_setup, "teams_setup" },
 	{ 0x49ca20, (void *)escMenu_open, "escMenu_open" }, { 0x490ee0, (void *)object_activate, "object_activate" },
 	{ 0x490f30, (void *)object_deactivate, "object_deactivate" }, { 0x473470, (void *)playerRecord_resetColourGrid, "playerRecord_resetColourGrid" },
@@ -18153,7 +18153,7 @@ static const struct { DWORD addr; void *fn; const char *name; } g_hooks3[] = {
 	{ 0x404b30, (void *)lobby_setSubState1, "lobby_setSubState1" }, { 0x432620, (void *)lobby_ladderGameName, "lobby_ladderGameName" },
 	{ 0x40de80, (void *)armc_initCameraBox, "armc_initCameraBox" }, { 0x430ab0, (void *)menu_initColours, "menu_initColours" },
 	{ 0x44b870, (void *)profile_nameExists, "profile_nameExists" }, { 0x46e8e0, (void *)ptx_toRgba, "ptx_toRgba" },
-	{ 0x46f0b0, (void *)ptx_readBlock, "ptx_readBlock" }, { 0x463a40, (void *)ResourceSet_initLists, "ResourceSet_initLists" },
+	{ 0x46f0b0, (void *)ptx_readBlock, "ptx_readBlock" }, { 0x463a40, (void *)actor_initPartLists, "actor_initPartLists" },
 	{ 0x467580, (void *)shape_setTextureDir, "shape_setTextureDir" }, { 0x464a70, (void *)image_addColour, "image_addColour" },
 	{ 0x48fe10, (void *)stage_resetMatrixAndPoints, "stage_resetMatrixAndPoints" }, { 0x473940, (void *)player_setName, "player_setName" },
 	{ 0x470a70, (void *)scene_resetActors, "scene_resetActors" },
@@ -18188,7 +18188,7 @@ static const struct { DWORD addr; void *fn; const char *name; } g_hooks3[] = {
 	{ 0x41e390, (void *)pilotRecord_syncCopies, "pilotRecord_syncCopies" },
 	/* batch 17 */
 	{ 0x406640, (void *)arena_mergeReceivedSessions, "arena_mergeReceivedSessions" }, { 0x46ea00, (void *)ptx_initTables, "ptx_initTables" },
-	{ 0x454e60, (void *)texRecord_init, "texRecord_init" }, { 0x470de0, (void *)object_setNames, "object_setNames" },
+	{ 0x454e60, (void *)texRecord_init, "texRecord_init" }, { 0x470de0, (void *)stage_setFolders, "stage_setFolders" },
 	{ 0x431de0, (void *)roomSettings_layout, "roomSettings_layout" }, { 0x497a90, (void *)stage_buildMeshDrawRecords, "stage_buildMeshDrawRecords" },
 	/* batch 18 */
 	{ 0x404190, (void *)arenaOptions_layout, "arenaOptions_layout" }, { 0x420770, (void *)menuState600_enterSetup, "menuState600_enterSetup" },
@@ -18238,7 +18238,7 @@ static const struct { DWORD addr; void *fn; const char *name; } g_hooks3[] = {
 	{ 0x480430, (void *)spaceNode_clear, "spaceNode_clear" }, { 0x483d60, (void *)Light_clearCounts, "Light_clearCounts" },
 	{ 0x48fc30, (void *)stage_clearMessages, "stage_clearMessages" }, { 0x46c5e0, (void *)ErrorLog_dtor, "ErrorLog_dtor" },
 	{ 0x487470, (void *)TimeSync_dtor, "TimeSync_dtor" }, { 0x48b410, (void *)Scene_dtor, "Scene_dtor" },
-	{ 0x45dfe0, (void *)stage_setSilentActor, "stage_setSilentActor" }, { 0x463780, (void *)scene_teamSlot, "scene_teamSlot" },
+	{ 0x45dfe0, (void *)stage_setSilentActor, "stage_setSilentActor" }, { 0x463780, (void *)scene_teamIdAt, "scene_teamIdAt" },
 	{ 0x45fff0, (void *)ResourceSet_trivialCtor, "ResourceSet_trivialCtor" }, { 0x48b440, (void *)recorder_setPathStub, "recorder_setPathStub" },
 	{ 0x48b430, (void *)recorder_openStub, "recorder_openStub" }, { 0x48b450, (void *)recorder_noteStub, "recorder_noteStub" },
 	{ 0x483ce0, (void *)stage_triggerActionNone, "stage_triggerActionNone" }, { 0x46b860, (void *)static_emptyCtorSkelData1, "static_emptyCtorSkelData1" },
@@ -18385,7 +18385,7 @@ static const struct { DWORD addr; void *fn; const char *name; } g_hooks3[] = {
 	{ 0x41f880, (void *)reg_writeEndMode, "reg_writeEndMode" }, { 0x43f7f0, (void *)reg_writeStartMode, "reg_writeStartMode" },
 	{ 0x41f820, (void *)menu_frameBegin, "menu_frameBegin" }, { 0x43f840, (void *)app_registerWindowClassEx, "app_registerWindowClassEx" },
 	{ 0x452de0, (void *)net_addPlayerRecord, "net_addPlayerRecord" }, { 0x454d90, (void *)text_findWord, "text_findWord" },
-	{ 0x42ef30, (void *)app_reportStartupProblem, "app_reportStartupProblem" }, { 0x42f000, (void *)gfx_setPixelFormat, "gfx_setPixelFormat" },
+	{ 0x42ef30, (void *)app_reportDisplayModeError, "app_reportDisplayModeError" }, { 0x42f000, (void *)gfx_setPixelFormat, "gfx_setPixelFormat" },
 	{ 0x440c60, (void *)autoplay_listFiles, "autoplay_listFiles" }, { 0x42b3e0, (void *)data_loadMessages, "data_loadMessages" },
 	{ 0x4474a0, (void *)profile_readHeader, "profile_readHeader" }, { 0x42ba40, (void *)data_loadSkirmishInfo, "data_loadSkirmishInfo" },
 	{ 0x42b830, (void *)data_loadMapInfo, "data_loadMapInfo" }, { 0x42b590, (void *)data_loadPilotProfiles, "data_loadPilotProfiles" },
@@ -18497,7 +18497,7 @@ static const struct { DWORD addr; void *fn; const char *name; } g_hooks3[] = {
 	{ 0x473780, (void *)catalogue_loadComponents, "catalogue_loadComponents" },
 	/* batch 61 */
 	{ 0x4813e0, (void *)space_initBy, "space_initBy" }, { 0x4819b0, (void *)space_setBy, "space_setBy" },
-	{ 0x471010, (void *)scene_initLevelGrid, "scene_initLevelGrid" }, { 0x484050, (void *)factor_initBy, "factor_initBy" },
+	{ 0x471010, (void *)stage_initSpaceOneCell, "stage_initSpaceOneCell" }, { 0x484050, (void *)factor_initBy, "factor_initBy" },
 	{ 0x4569d0, (void *)TextureManager_setBanks, "TextureManager_setBanks" }, { 0x46aa10, (void *)skel_loadFromFile, "skel_loadFromFile" },
 	/* batch 62 */
 	{ 0x46ce80, (void *)image_copyTo, "image_copyTo" }, { 0x4557e0, (void *)tex_textureFileExist, "tex_textureFileExist" },
@@ -18570,7 +18570,7 @@ static const struct { DWORD addr; void *fn; const char *name; } g_hooks3[] = {
 	{ 0x461450, (void *)armc_setArmIndex, "armc_setArmIndex" }, { 0x461490, (void *)armc_setLegIndex, "armc_setLegIndex" },
 	{ 0x4614d0, (void *)armc_setBoosterIndex, "armc_setBoosterIndex" }, { 0x461510, (void *)mech_setItem, "mech_setItem" },
 	{ 0x46fed0, (void *)partList_bindTextures, "partList_bindTextures" }, { 0x474210, (void *)playerRecord_set, "playerRecord_set" },
-	{ 0x4742f0, (void *)playerRecord_setFromActorRecord, "playerRecord_setFromActorRecord" },
+	{ 0x4742f0, (void *)playerRecord_setFromMapPlayer, "playerRecord_setFromMapPlayer" },
 	/* batch 92 */
 	{ 0x427a90, (void *)menu_drawTexture, "menu_drawTexture" }, { 0x427b60, (void *)menu_drawTextureFlipped, "menu_drawTextureFlipped" },
 	{ 0x428a00, (void *)menu_drawCornerOrnaments, "menu_drawCornerOrnaments" }, { 0x428b50, (void *)menu_drawTopRightOrnament, "menu_drawTopRightOrnament" },
@@ -18896,7 +18896,7 @@ static const struct { DWORD addr; void *fn; const char *name; } g_hooks3[] = {
 	{ 0x41e040, (void *)menuState700_armCenter, "menuState700_armCenter" },
 	/* batch 186 */
 	{ 0x49df10, (void *)match_startRound, "match_startRound" }, { 0x49ca70, (void *)match_escMenu, "match_escMenu" },
-	{ 0x4314e0, (void *)wnd_setCursor, "wnd_setCursor" }, { 0x48fd50, (void *)scene_loadPath, "scene_loadPath" },
+	{ 0x4314e0, (void *)wnd_setCursor, "wnd_setCursor" }, { 0x48fd50, (void *)stage_advanceScenePath, "stage_advanceScenePath" },
 	/* batch 187 */
 	{ 0x479950, (void *)particle_spawn, "particle_spawn" }, { 0x475070, (void *)particle_init, "particle_init" },
 	/* batch 188 */

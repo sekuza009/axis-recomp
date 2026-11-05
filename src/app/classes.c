@@ -520,7 +520,7 @@ u8 *THISCALL (Game_ctor)(u8 *g)
 	VTABLE((u8 *)&st->partSkeletons, STR(0x4aa240, "\3207F"));
 	SkeletonManager_clear((u8 *)&st->partSkeletons);
 	VECTOR((u8 *)st->mapActors, 0x5c, 0x64);
-	((void (STDCALL *)(void *, int, int, u32, u32))IMG(0x49fd2d))((u8 *)st->actors, 0x8888, 0x64, FN_ADDR(ResourceSet_initLists, 0x463a40), FN_ADDR(actor_destroyPartLists, 0x45ff30));
+	((void (STDCALL *)(void *, int, int, u32, u32))IMG(0x49fd2d))((u8 *)st->actors, 0x8888, 0x64, FN_ADDR(actor_initPartLists, 0x463a40), FN_ADDR(actor_destroyPartLists, 0x45ff30));
 	VECTOR((u8 *)st->bullets, 0x4e8, 0x190);
 	VECTOR((u8 *)st->projectiles, 0x12c, 0x3e8);
 	VECTOR((u8 *)st->points, 0xc, 0xc8);

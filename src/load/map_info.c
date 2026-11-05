@@ -276,7 +276,7 @@ static const u32 k_schemeVal[10][2] = {
    and their 0x58-byte records (+0x1cd6a30), the actor count (+0x1cd93a4) and their 0x5c-byte records (+0x1cd6fb4).
    Every player but the first: its colour scheme (+4, now less one; when not negative) gives all five parts their
    colours, the game type (2 .. 11, by pairs) fixes its first item (3, 5, 0x24, 0x19, 0x16; the last pair the second
-   too, 0x17), the other items but the fifth emptied (-1), and it is set up (playerRecord_setFromActorRecord). The player count also at
+   too, 0x17), the other items but the fifth emptied (-1), and it is set up (playerRecord_setFromMapPlayer). The player count also at
    +0x19e1888, every actor but the first active (+0x18), the clan texture (by 0x4c7724 from +0x908) looked up into
    +0x2104fe4, and each player's type record given +0x47fc6 1 and +0x47fce 0x180. Its caller ignores the eax it
    leaves */
@@ -325,7 +325,7 @@ void THISCALL (map_loadActorInfoFrom)(u8 *scene, const char *name)
 		for (int k = 1; k < 6; k++)
 			if (k != 4)
 				items[k] = -1;
-		playerRecord_setFromActorRecord(scene, p, rec);
+		playerRecord_setFromMapPlayer(scene, p, rec);
 	}
 	st->playerRecordCount = st->mapPlayerCount;
 	for (int i = 1; i < st->mapActorCount; i++)

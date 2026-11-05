@@ -1064,7 +1064,7 @@
 #define g_chatLength GAME_VAR(int, 0x9dbf10)   /* characters in g_chatLine */
 #define g_hChatEdit GAME_VAR(void *, 0x9dd888)   /* the hidden EDIT control typing goes to */
 #define g_missionTop GAME_VAR(int, 0x9f16bc)   /* the first row shown */
-#define g_missionStarted GAME_VAR(int, 0x9f62e0)
+#define g_missionBriefing GAME_VAR(int, 0x9f62e0)   /* 1: a mission's briefing is shown (a click closes it: briefing_clickClose) */
 #define g_missionPage GAME_VAR(int, 0x9f62f8)   /* 0 / 1: no keys; 2: no list refresh */
 #define g_missionBusy GAME_VAR(int, 0x9f6300)
 #define g_missionShowBackground GAME_VAR(int, 0x9f63b8)

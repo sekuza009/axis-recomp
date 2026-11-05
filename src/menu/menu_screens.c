@@ -20,7 +20,7 @@ void (menuState500_missionSelect)(void)
 	}
 	if (g_missionBusy)
 		return;
-	if (g_missionStarted)
+	if (g_missionBriefing)
 		missionsel_frameScreen();
 	else
 		missionsel_frameSettings();

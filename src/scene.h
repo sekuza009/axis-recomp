@@ -1119,7 +1119,7 @@ typedef struct StartPoint {
 	float angle[2];   /* +0xc */
 } StartPoint;
 
-/* a player as the map's actor file gives it (Stage.mapPlayers; playerRecord_setFromActorRecord) */
+/* a player as the map's actor file gives it (Stage.mapPlayers; playerRecord_setFromMapPlayer) */
 typedef struct MapPlayer {
 	u8 _pad0000000[0x4];
 	i32 value;   /* +0x4: (by use) player_setLevel's value; in the map file 1-based, the colour preset for its parts (map_loadActorInfoFrom) */

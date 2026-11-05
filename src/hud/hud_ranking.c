@@ -46,8 +46,8 @@ void THISCALL (hud_drawRanking)(Scene *scene)
 
 	if (scene->teamGame == 1) {
 		/* the leading team's side first (side 0 red, side 1 blue), a gap of 12 after a team with rows */
-		int other = scene_teamSlot(scene, 1);
-		int lead = scene->teamScores[scene_teamSlot(scene, 0)] < scene->teamScores[other];
+		int other = scene_teamIdAt(scene, 1);
+		int lead = scene->teamScores[scene_teamIdAt(scene, 0)] < scene->teamScores[other];
 		for (int pass = 0; pass < 2; pass++) {
 			int side = pass == 0 ? lead : !lead, drawn = 0;
 			float red = side == 0 ? 1.0f : 0.0f, blue = side == 0 ? 0.0f : 1.0f;

@@ -968,7 +968,7 @@ struct StartPoint 0x14                                          # a multiplayer 
 0          0xc        float pos[3]
 0xc        0x8        float angle[2]
 
-struct MapPlayer 0x58                                           # a player as the map's actor file gives it (Stage.mapPlayers; playerRecord_setFromActorRecord)
+struct MapPlayer 0x58                                           # a player as the map's actor file gives it (Stage.mapPlayers; playerRecord_setFromMapPlayer)
 4          4          i32 value                                  # (by use) player_setLevel's value; in the map file 1-based, the colour preset for its parts (map_loadActorInfoFrom)
 8          0x20       char name[0x20]
 0x28       4          i32 team

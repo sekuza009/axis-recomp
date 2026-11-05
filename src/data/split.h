@@ -4170,9 +4170,9 @@ extern u8 g_pilotNoise_v[10000];
 extern u8 g_profileHeader_v[260];
 #endif
 #ifdef AXIS_FENCE
-#define g_missionStarted_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xb93000 : g_fence + 0xb92ffc))
+#define g_missionBriefing_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xb93000 : g_fence + 0xb92ffc))
 #else
-extern u8 g_missionStarted_v[4];
+extern u8 g_missionBriefing_v[4];
 #endif
 #ifdef AXIS_FENCE
 #define g_missionColourDim_v ((u32 *)(AXIS_FENCE == 2 ? g_fence + 0xb95000 : g_fence + 0xb94ff0))

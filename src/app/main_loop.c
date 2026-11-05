@@ -1521,15 +1521,15 @@ static int slow_end(u8 *s)
 /* the winning team (+0x23423bd): the side whose team slot has more (team scores +0x2221fb8), -1 for a draw */
 static void winning_team(u8 *s)
 {
-	int a = scene_teamSlot((Scene *)s, 1), b = scene_teamSlot((Scene *)s, 0);
+	int a = scene_teamIdAt((Scene *)s, 1), b = scene_teamIdAt((Scene *)s, 0);
 	if (SC->teamScores[b] > SC->teamScores[a]) {
-		SC->winnerTeam = scene_teamSlot((Scene *)s, 0);
+		SC->winnerTeam = scene_teamIdAt((Scene *)s, 0);
 		return;
 	}
-	a = scene_teamSlot((Scene *)s, 1);
-	b = scene_teamSlot((Scene *)s, 0);
+	a = scene_teamIdAt((Scene *)s, 1);
+	b = scene_teamIdAt((Scene *)s, 0);
 	if (SC->teamScores[b] < SC->teamScores[a])
-		SC->winnerTeam = scene_teamSlot((Scene *)s, 1);
+		SC->winnerTeam = scene_teamIdAt((Scene *)s, 1);
 	else
 		SC->winnerTeam = -1;
 }
@@ -1821,7 +1821,7 @@ void THISCALL (match_frame)(u8 *s)
 		item_update(stage, BITS(dt));
 		stage_refillFactors(stage);
 		stage_updateObjects(stage, BITS(dt));
-		scene_loadPath(stage, BITS(dt));
+		stage_advanceScenePath(stage, BITS(dt));
 		if (SC->sessionMode == 1) {   /* the server checks the local player's parts every 20 s */
 			long double v = fsub_m(fld_m(&SC->partsCheckTime), &SC->frameTime);
 			SC->partsCheckTime = (float)v;
@@ -2089,8 +2089,8 @@ void THISCALL (match_frame)(u8 *s)
 		int limit = SC->scoreLimit;
 		if (limit > 0) {
 			if (SC->teamGame == 1) {
-				if (SC->teamScores[scene_teamSlot((Scene *)s, 0)] >= SC->scoreLimit
-				    || SC->teamScores[scene_teamSlot((Scene *)s, 1)] >= SC->scoreLimit) {
+				if (SC->teamScores[scene_teamIdAt((Scene *)s, 0)] >= SC->scoreLimit
+				    || SC->teamScores[scene_teamIdAt((Scene *)s, 1)] >= SC->scoreLimit) {
 					winning_team(s);
 					round_over(s, 0);
 					if (SC->sessionMode == 0 && SC->teamScores[SC->localTeam] >= SC->scoreLimit
@@ -2175,7 +2175,7 @@ void THISCALL (match_frame)(u8 *s)
 	float fov = view_angle();
 	camera_setupView(stage, (float *)SC->cameraPos, SC->cameraDir,
 	              SC->cameraUp, BITS(fov), w, h, BITS(near), BITS(far), BITS(SC->frameTime));   /* camera_setupView */
-	view_setDistance(stage, BITS(st->cullMargin));
+	stage_setViewDistance(stage, BITS(st->cullMargin));
 	if (SC->localPlayer >= 0)
 		chat_keys(s);
 	if (SC->chatMode != 0)

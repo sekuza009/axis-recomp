@@ -1612,6 +1612,8 @@ extern struct GameData g_data;
 #define g_misHeader2 (*(int *)((u8 *)g_missionHeader_v + 0x8))
 #undef g_misHeader3
 #define g_misHeader3 (*(int *)((u8 *)g_missionHeader_v + 0xc))
+#undef g_missionBriefing
+#define g_missionBriefing (*(int *)g_missionBriefing_v)
 #undef g_missionBusy
 #define g_missionBusy (*(int *)g_missionBusy_v)
 #undef g_missionChosen
@@ -1644,8 +1646,6 @@ extern struct GameData g_data;
 #define g_missionShown (*(int *)g_missionShown_v)
 #undef g_missionStage
 #define g_missionStage (*(int *)g_missionStage_v)
-#undef g_missionStarted
-#define g_missionStarted (*(int *)g_missionStarted_v)
 #undef g_missionTop
 #define g_missionTop (*(int *)g_missionTop_v)
 #undef g_missions

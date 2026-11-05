@@ -313,9 +313,9 @@ int (menuState500_enter)(void)
 	g_missionChosen = mission;
 	g_missionPreviewDue = 1;
 	sound_playMenu(4);
-	g_missionStarted = 0;
+	g_missionBriefing = 0;
 	if (g_progress > g_profileProgressSaved) {
-		g_missionStarted = 1;
+		g_missionBriefing = 1;
 		g_profileProgressSaved = g_progress;
 	}
 	return g_progress;

@@ -242,7 +242,7 @@ static void identity(u32 *m)
 /* 0x470ad0 (thiscall on the scene): the scene's subsystems reset (stage_resetLights; the 100 dwords at +0x202ea80 and
    +0x202ef30 cleared; the object list, stage_clearBullets, stage_clearProjectiles, stage_resetMatrixAndPoints), the camera at the origin looking down
    -z (+0x20f3970 .. +0x20f399c) with identity matrices (+0x20f39a0, +0x20f39e0), the start and item points none, the
-   id tables (+0x20fce50, +0x1cd6968) all -1, then the scripts (stage_clearMessages, script_reset) and scene_initLevelGrid. Its
+   id tables (+0x20fce50, +0x1cd6968) all -1, then the scripts (stage_clearMessages, script_reset) and stage_initSpaceOneCell. Its
    callers ignore the eax it leaves */
 void THISCALL (scene_reset)(u8 *s)
 {
@@ -269,7 +269,7 @@ void THISCALL (scene_reset)(u8 *s)
 	memset(st->teamCommanders, 0xff, 0x64 * 4);
 	stage_clearMessages(s);
 	script_reset(st);
-	scene_initLevelGrid(s);
+	stage_initSpaceOneCell(s);
 	memset(st->snapshotTex, 0xff, 0x32 * 4);
 }
 
@@ -282,7 +282,7 @@ static void model_sets(u8 *shapes, const char *dir, int n, int extra, int size, 
 	skelSet_setup(skels, skel_dir, sn, 2, sextra, smem, ssize);
 }
 
-/* 0x4700a0 (thiscall on the stage): the stage built (its names passed on to object_setNames): the collision space (in its
+/* 0x4700a0 (thiscall on the stage): the stage built (its names passed on to stage_setFolders): the collision space (in its
    block +0xb04), the ten sky textures (by 0x4c7410 from the third name; the last two flagged), the light factors and
    the default light (grey, from (-1, -1, -1)). The sky box (+0x9ee080: six faces of 7 x 7 points, a cube of side
    1 / sqrt(0x4aa408) turned to each face), the dome (+0x9eee54: 7 x 7 points of the up vector turned by two angles),
@@ -295,7 +295,7 @@ void THISCALL (item_initTextures)(u8 *s, u32 a1, u32 a2, const char *sky, u32 a4
                                   u32 a9)
 {
 	Stage *st = (Stage *)s;
-	object_setNames(s, a1, a2, (u32)sky, a4, (u32)skel_dir, a6, a7, a8, a9);
+	stage_setFolders(s, a1, a2, (u32)sky, a4, (u32)skel_dir, a6, a7, a8, a9);
 	space_initBy((u8 *)&st->space, 0x9c40, 0x27100, 0x3e8, 0x2710, 0x3e8, st->spaceData, sizeof st->spaceData);
 	char name[0x100];
 	for (int i = 0; i < 10; i++) {

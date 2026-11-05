@@ -339,7 +339,7 @@ static int files_present(void)
 /* 0x43fcc0: the game started (inst, show): outside the lobby (0x76d410) the files checked; a 640 x 480 default; the
    directory, data paths and messages; the process made DPI aware when user32 has SetProcessDPIAware (the exe
    patch's cave at 0x4a8e20); the desktop's size, DC and depth (0x67eefc, 0x76d430, 0x76d480, 0x76d3ec); the
-   default keys and axis.cfg, 0x43f640, the display mode set (32 bits) and its answer reported (app_reportStartupProblem); the
+   default keys and axis.cfg, 0x43f640, the display mode set (32 bits) and its answer reported (app_reportDisplayModeError); the
    files checked again. The window class "AXIS" (WndProc 0x440070; app_registerWindowClassEx where GetVersion says
    so, else RegisterClassA; kept at 0x4e0ca8), the window at (0, -1), the screen's size with one more row (the
    patch's cave at 0x4a8f50), three timers, shown. Then the CD and the data (failing: the desktop's mode back, 0);
@@ -368,7 +368,7 @@ int (app_init)(void *inst, int show)
 	input_setDefaultKeyBindings();
 	cfg_init();
 	app_screenSizeForMode();
-	app_reportStartupProblem(app_setDisplayMode(g_screenW, g_screenH, 4, (g_videoDepth + 1) * 16));   /* CDS_FULLSCREEN */
+	app_reportDisplayModeError(app_setDisplayMode(g_screenW, g_screenH, 4, (g_videoDepth + 1) * 16));   /* CDS_FULLSCREEN */
 	if (!g_startedFromLobby && !files_present())
 		return 0;
 

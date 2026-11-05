@@ -56,8 +56,8 @@ void THISCALL (net_announceServerEnd)(Scene *scene) { scene->endEvents[0] = 1; s
 void THISCALL (net_announceFragLimit)(Scene *scene) { scene->endEvents[1] = 1; scene->noticeChanged = 1; }
 void THISCALL (net_announceTimeLimit)(Scene *scene) { scene->endEvents[2] = 1; scene->noticeChanged = 1; }
 /* 0x463780: team slot i's id */
-int THISCALL (scene_teamSlot)(Scene *scene, int i) { return scene->teamIds[i]; }
-/* 0x474390: player record p marked used; 0x4743b0: marked free, its colour grid cleared */
+int THISCALL (scene_teamIdAt)(Scene *scene, int i) { return scene->teamIds[i]; }
+/* 0x474390: player record p marked used; 0x4743b0: marked free, its flag cleared */
 void THISCALL (playerRecord_markUsed)(Stage *stage, int p) { stage->playerRecords[p].used = 1; }
 void THISCALL (playerRecord_markFree)(Stage *stage, int p)
 {
@@ -156,7 +156,7 @@ int (net_connectionAvailable)(u32 i) { return i < 4 && g_dpConnections[i] ? 1 : 
 void (replaySelect_toggle)(int i) { int *f = &g_replayList[i].flag; *f = 1 - *f; }
 void (replaySelect_allIn)(void) { for (int i = 0; i < g_replayFileCount; i++) g_replayList[i].flag = 1; }
 /* 0x447af0: a click closes the mission briefing */
-void (briefing_clickClose)(void) { if (g_dialogOpen == 0 && g_mouseClick != 0) g_missionStarted = 0; }
+void (briefing_clickClose)(void) { if (g_dialogOpen == 0 && g_mouseClick != 0) g_missionBriefing = 0; }
 /* 0x4411e0: the background tunnel's rings made again (tunnel_appendRing) */
 u32 (tunnel_rebuild)(void) { g_tunnelRings = 0; return tunnel_appendRing((void *)ADDR(g_menuTunnel)); }
 /* 0x44ad30: the text colour */
@@ -192,7 +192,8 @@ void THISCALL (tex_clearSetCounters)(void *self)
 		o->counterC = 0;
 	}
 }
-/* 0x473470: player record p's 16 x 24 colour grid filled with the colour at 0xa1f220, its three counters reset */
+/* 0x473470: player record p's flag (16 x 24) filled with the default colour (0xa1f220), its state reset: not in the
+   atlas, unchanged, all sent */
 void THISCALL (playerRecord_resetColourGrid)(Stage *stage, int p)
 {
 	PlayerRecord *pr = &stage->playerRecords[p];
@@ -270,8 +271,9 @@ void (Mat4_transpose)(u32 *d, const u32 *s)
 }
 
 /* ---- objects put to their start ---- */
-/* 0x463a40: a resource set's eight lists, each a UnitPoseInfo (vtable 0x4a9754) with its members cleared */
-void *THISCALL (ResourceSet_initLists)(u8 *self)
+/* 0x463a40: an actor's eight part lists (head .. the hand-held and shoulder weapons), each a UnitPoseInfo (vtable
+   0x4a9754) with its members cleared (the element constructor of the stage's actors) */
+void *THISCALL (actor_initPartLists)(u8 *self)
 {
 	static const int lists[8] = { offsetof(Player, headModel), offsetof(Player, chestModel), offsetof(Player, armsModel), offsetof(Player, legsModel), offsetof(Player, boosterModel), offsetof(Player, weaponModel), offsetof(Player, weaponModel4), offsetof(Player, weaponModel5) };
 	for (int k = 0; k < 8; k++) {
@@ -339,8 +341,8 @@ void THISCALL (stage_triggerActionNone)(void *self, int a) { (void)self; (void)a
 int THISCALL (stage_setSilentActor)(Stage *stage, int v) { stage->silentActor = v; return v; }
 /* 0x468720: the time sync object at 0xa0e948 constructed */
 void *(static_initTimeSync)(void) { return TimeSync_ctor((void *)OBJ(g_loadTimer)); }
-/* 0x470f80: an object's texture folder (+0x908) set, upper-cased with back slashes (returned) */
-char *THISCALL (object_setTextureFolder)(void *self, const char *folder)
+/* 0x470f80: the stage's texture folder (stageName) set, upper-cased with back slashes (returned) */
+char *THISCALL (stage_setTextureFolder)(void *self, const char *folder)
 {
 	strcpy(((Stage *)self)->stageName, folder);
 	return path_normalize(((Stage *)self)->stageName);
@@ -349,7 +351,7 @@ char *THISCALL (object_setTextureFolder)(void *self, const char *folder)
 void THISCALL (scene_setTextureFolder)(Scene *scene, const char *folder)
 {
 	strcpy(scene->mapName, folder);
-	object_setTextureFolder(STAGE(scene), folder);
+	stage_setTextureFolder(STAGE(scene), folder);
 }
 
 /* 0x48fce0: a script file started: the script state reset, its name and mode kept; modes 0 and 2 clear the running
@@ -384,10 +386,10 @@ void THISCALL (anim_setFrame)(u8 *anim, int i, float scale)
 
 /* 0x4722e0: the stage's view distance set (cullMargin, the float's bits copied) and its depth (viewDepth: -v x
    viewProjection[10] + viewProjection[14]) */
-void THISCALL (view_setDistance)(u8 *view, u32 vBits)
+void THISCALL (stage_setViewDistance)(u8 *stage, u32 vBits)
 {
 	float v;
-	Stage *st = (Stage *)view;
+	Stage *st = (Stage *)stage;
 	BITS(st->cullMargin) = vBits;   /* the float's bits copied, never through the FPU (which quiets a signalling NaN) */
 	memcpy(&v, &vBits, 4);
 	volatile long double n = -(long double)v;   /* negated first, as the original's fchs */
@@ -458,8 +460,9 @@ void THISCALL (stage_advanceClocks)(Stage *stage, float dt)
 	}
 }
 
-/* 0x470de0: nine names (+8, 0x100 bytes apart), each upper-cased with back slashes */
-void THISCALL (object_setNames)(u8 *self, const char *s1, const char *s2, const char *s3, const char *s4, const char *s5,
+/* 0x470de0: the stage's nine folder names (+8, 0x100 bytes apart: stage, map, texture, shape, skeleton, actor,
+   bullet, effect, scene), each upper-cased with back slashes */
+void THISCALL (stage_setFolders)(u8 *self, const char *s1, const char *s2, const char *s3, const char *s4, const char *s5,
                             const char *s6, const char *s7, const char *s8, const char *s9)
 {
 	const char *name[9] = { s1, s2, s3, s4, s5, s6, s7, s8, s9 };
@@ -469,10 +472,10 @@ void THISCALL (object_setNames)(u8 *self, const char *s1, const char *s2, const 
 	}
 }
 
-/* 0x471010: the scene's level grid (+0xa10) set up as one cell over the level's bounds (+0x9ef904 .. +0x9ef910) */
-void THISCALL (scene_initLevelGrid)(u8 *scene)
+/* 0x471010: the stage's collision space (+0xa10) set up as one cell over the level's bounds (levelLow .. levelHigh) */
+void THISCALL (stage_initSpaceOneCell)(u8 *stage)
 {
-	Stage *st = (Stage *)scene;
+	Stage *st = (Stage *)stage;
 	space_setBy((u8 *)&st->space, st->levelLow, st->levelHigh, 1, 1, 1, 0, 0, 0);
 }
 
@@ -552,9 +555,9 @@ u32 (chat_keepLastLine)(void)
 	return (u32)input_initKeyboard(g_hWndMain);
 }
 
-/* 0x42ef30: a start-up problem reported: codes 1 and -1 .. -5 each show their message (0x7511a4 ..) in a box titled
+/* 0x42ef30: a display mode change's problem reported (ChangeDisplaySettings' answer): codes 1 and -1 .. -5 each show their message (0x7511a4 ..) in a box titled
    MSG(100, "USERMESSAGE") over the main window; returns the box's answer, or the code itself when it has no message */
-int (app_reportStartupProblem)(int code)
+int (app_reportDisplayModeError)(int code)
 {
 	u32 text;
 	switch (code) {
@@ -646,8 +649,9 @@ void (reg_readCharacterSettings)(void)
 	RegCloseKey(key);
 }
 
-/* 0x42bde0: the server settings read from HKCU\<0x4b1728>: the server name (0xa0b24c, 50 bytes), two more values
-   (0xa055fc, 0xa05634; their size is what the read before left) and the port (0xa055f4, 4 bytes). Without the key a
+/* 0x42bde0: the server settings read from HKCU\SOFTWARE\AxisArena\SelectServer (AxisPlay.exe's choice): TcpDNS and
+   LadderDNS (the game-list and ladder servers, 50 bytes; the second read with the size the first left) and their
+   ports (TcpPort, LadderPort). Without the key a
    message (which one by 0x9dae74), the key's unset handle closed (as the original does) and the main window closed.
    Returns the last call's eax */
 int (reg_readServerSettings)(void)
@@ -717,11 +721,11 @@ int (sys_checkClockTampering)(void)
 	return 1;
 }
 
-/* 0x48fd50 (thiscall on the scene): with a recording on (scriptMode): the scene-path player opened when it is not
+/* 0x48fd50 (thiscall on the stage; its caller passes the frame's time as path): with a map script running (scriptMode): the scene-path player opened when it is not
    yet (recorder_openStub with scriptName and "Scene") and the path given to it (recorder_setPathStub; failing, the
    recording off); with a sound named for it (pathSound) the sound played ("scenePath\\<name>") at volume 100.
    Its caller ignores the eax it leaves */
-void THISCALL (scene_loadPath)(u8 *scene, u32 path)
+void THISCALL (stage_advanceScenePath)(u8 *scene, u32 path)
 {
 	Stage *st = (Stage *)scene;
 	if (!st->scriptMode)
@@ -741,7 +745,7 @@ void THISCALL (scene_loadPath)(u8 *scene, u32 path)
 /* 0x4742f0 (thiscall on the stage): player p set from an actor record: its name (+8), value (+4), team (+0x28), the
    parts (head, chest, arm, leg, booster: +0x2c .. +0x3c), the six items (+0x40 ..), then marked in use. Its caller
    ignores the eax it leaves */
-void THISCALL (playerRecord_setFromActorRecord)(Stage *stage, int p, const u8 *rec)
+void THISCALL (playerRecord_setFromMapPlayer)(Stage *stage, int p, const u8 *rec)
 {
 	const MapPlayer *mp = (const MapPlayer *)rec;
 	player_setName(stage, p, mp->name);
@@ -757,8 +761,8 @@ void THISCALL (playerRecord_setFromActorRecord)(Stage *stage, int p, const u8 *r
 	player_markUsed(stage, p);
 }
 
-/* 0x474210 (thiscall on the stage): player p set from its pieces: name, value, team, the five parts, the six items,
-   then marked in use (as playerRecord_setFromActorRecord does from a record). Its caller ignores the eax it leaves */
+/* 0x474210 (thiscall on the stage): player p set from its pieces: name, level, team, the five parts, the six items,
+   then marked in use (as playerRecord_setFromMapPlayer does from a record). Its caller ignores the eax it leaves */
 void THISCALL (playerRecord_set)(Stage *stage, int p, const char *name, int v, int team, int head, int chest, int arm, int leg,
                              int booster, int i0, int i1, int i2, int i3, int i4, int i5)
 {

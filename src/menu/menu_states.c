@@ -4,7 +4,6 @@
 #include "key_repeat.h"
 
 #define g_missionState g_missionPage   /* (by use) the mission select: 0 and 1 not up */
-#define g_missionBriefing g_missionStarted   /* (by use) a mission's briefing is shown */
 
 /* ---- the start-up screen: the logo (texture 0x76d3f0, on a quad 320 x 256 at (160, 60)) over the clear colour
    0x76d350, blended ---- */

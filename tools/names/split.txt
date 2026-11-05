@@ -858,7 +858,7 @@ g_mapListKept
 g_mapTop
 g_menuKeyGuard
 g_menuVolume
-g_missionStarted
+g_missionBriefing
 g_modeChanged
 g_mouseActive
 g_mouseTaken

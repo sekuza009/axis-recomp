@@ -846,7 +846,7 @@ int g_mouseWasDown_v[3] __attribute__((aligned(16)));   /* 0x9f1704 */
 u8 g_campaign_v[940] __attribute__((aligned(16)));   /* 0x9f1718 */
 u8 g_pilotNoise_v[10000] __attribute__((aligned(16)));   /* 0x9f3ac4 */
 u8 g_profileHeader_v[260] __attribute__((aligned(16)));   /* 0x9f61d8 */
-u8 g_missionStarted_v[4] __attribute__((aligned(16)));   /* 0x9f62e0 */
+u8 g_missionBriefing_v[4] __attribute__((aligned(16)));   /* 0x9f62e0 */
 u32 g_missionColourDim_v[4] __attribute__((aligned(16)));   /* 0x9f62e8 */
 u8 g_missionPage_v[4] __attribute__((aligned(16)));   /* 0x9f62f8 */
 u8 g_profileProgressSaved_v[4] __attribute__((aligned(16)));   /* 0x9f62fc */
@@ -2016,7 +2016,7 @@ const DataPiece g_splitObjects[] = {
 	{ 0x9f1718, g_campaign_v, 940 },
 	{ 0x9f3ac4, g_pilotNoise_v, 10000 },
 	{ 0x9f61d8, g_profileHeader_v, 260 },
-	{ 0x9f62e0, g_missionStarted_v, 4 },
+	{ 0x9f62e0, g_missionBriefing_v, 4 },
 	{ 0x9f62e8, g_missionColourDim_v, 16 },
 	{ 0x9f62f8, g_missionPage_v, 4 },
 	{ 0x9f62fc, g_profileProgressSaved_v, 4 },
