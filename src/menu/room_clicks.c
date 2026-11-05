@@ -352,7 +352,7 @@ u32 (room_hostingStep)(void)
    guid from the session received (0x4dbbf8) and its frag and time limits (0x5b1b54/55) for the join. Joined (0x1f4): the music stopped and the
    player's settings taken from the record for the game; otherwise a message by the result and the arena left.
    Returns what the original leaves in eax */
-u32 (app_onClose)(void)
+u32 (room_joinAnswer)(void)
 {
 	if (g_arenaJoinWaiting) {
 		g_arenaSearchTicks = 0;
@@ -403,7 +403,7 @@ u32 (account_checkForm)(void)
 {
 	account_endTyping();   /* account_endTyping */
 	g_textFieldOpen = 0;
-	g_fieldTabKey = 0;
+	g_fieldStep = 0;
 	const char *name = g_accountName, *password = g_accountPassword;
 	int message, reopen;
 	if (strlen(name) == 0 || name_isBlank(name) == 1)   /* name_isBlank: blank */
@@ -810,13 +810,13 @@ u32 (account_page)(void)
 		GAME_VAR(int, fields[k].editing) = 0;
 		g_inputLineHidden = 0;
 		strcpy((char *)RELOC(fields[k].field), g_chatLine);
-		u32 key = (*(u32 *)&g_fieldTabKey);
+		u32 key = (*(u32 *)&g_fieldStep);
 		u32 next = key == 0xa ? fields[k].back : key == 0x14 ? fields[k].on : 0;
 		if (!next)
 			return key;
 		r = GAME_CDECL(next, u32, void)();
 		if (!(k == 2 && key == 0xa))   /* (the original keeps the key there) */
-			g_fieldTabKey = 0;
+			g_fieldStep = 0;
 		return r;
 	}
 	return r;
@@ -825,7 +825,6 @@ u32 (account_page)(void)
 /* ---- the server login dialog's keys: its text fields (0x74de1c: 0 .. 2), the text cursor placed in the one typed
    into (0x67ef34 / 0x67fb38) ---- */
 #define g_loginField g_dialogChoice
-#define g_tabDirection g_fieldTabKey   /* 20 forward, 10 back (shift) */
 
 /* the cursor into field to at (x, y) */
 static void login_field(int to, int x, int y)
@@ -836,7 +835,7 @@ static void login_field(int to, int x, int y)
 	(*(u32 *)&g_highlightAlpha) = 0x3ecccccd;   /* 0.4 */
 	g_highlightX = x;
 	g_highlightY = y;
-	g_tabDirection = 0;
+	g_fieldStep = 0;
 }
 
 /* OK (button 4 clicked, or the OK key) logs in (account_checkForm), cancel (button 5, or 0x4e0cdc) closes (room_openDialog42);
@@ -873,10 +872,10 @@ void (loginDialog_keys)(void)
 		return;
 	if (input_justPressed(g_dikTab) != 1 || g_textFieldOpen)
 		return;
-	g_tabDirection = 20;
+	g_fieldStep = 20;
 	if (input_isDown(g_dikLShift) == 1 || input_isDown(g_dikRShift) == 1)
-		g_tabDirection = 10;
-	if (g_tabDirection == 20) {
+		g_fieldStep = 10;
+	if (g_fieldStep == 20) {
 		if (g_loginField == 1)
 			login_field(2, g_loginFormLeft + 0x172, g_loginFormBottom - 0x30);
 		else if (g_loginField == 2) {
@@ -893,5 +892,4 @@ void (loginDialog_keys)(void)
 			login_field(1, g_loginFormLeft + 0xaa, g_loginFormBottom - 0x30);
 	}
 }
-#undef g_tabDirection
 #undef g_loginField

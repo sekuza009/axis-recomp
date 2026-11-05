@@ -352,7 +352,6 @@ static void highlight_choice(int choice, int x, int y)
    (0x9dd850), 31 / 32 / 34 a message (31 / 32 / 35), anything else message 42 */
 void (createDialog_draw)(void)
 {
-#define g_editKey g_fieldTabKey
 	if (g_retypePassword) {
 		room_copyJoinedSettings();
 		field_editGamePassword();
@@ -371,16 +370,16 @@ void (createDialog_draw)(void)
 		g_typingGameName = 0;
 		memset((void *)OBJ(g_accountName), 0, 30);
 		strcpy(g_accountName, g_chatLine);
-		if (g_editKey == 10) {
+		if (g_fieldStep == 10) {
 			highlight_choice(3, g_roomLoginLeft + 0x1a2, g_roomLoginBottom - 0x30);
 			g_typingRoomName = 0;
-			g_editKey = 0;
-		} else if (g_editKey == 20) {
+			g_fieldStep = 0;
+		} else if (g_fieldStep == 20) {
 			g_typingRoomName = 0;
 			field_editGamePassword();
 			g_typingRoomPassword = 1;
 			g_inputLineHidden = 1;
-			g_editKey = 0;
+			g_fieldStep = 0;
 		}
 		return;
 	}
@@ -391,16 +390,16 @@ void (createDialog_draw)(void)
 		g_typingGamePassword = 0;
 		strcpy(g_accountPassword, g_chatLine);
 		g_inputLineHidden = 0;
-		if (g_editKey == 10) {
+		if (g_fieldStep == 10) {
 			g_typingRoomName = 1;
 			g_typingRoomPassword = 0;
 			field_editGameName();
-			g_editKey = 0;
-		} else if (g_editKey == 20) {
+			g_fieldStep = 0;
+		} else if (g_fieldStep == 20) {
 			highlight_choice(1, g_roomLoginLeft + 0x62, g_roomLoginBottom - 0x30);
 			g_typingRoomName = 0;
 			g_typingRoomPassword = 0;
-			g_editKey = 0;
+			g_fieldStep = 0;
 		}
 		return;
 	}
@@ -424,7 +423,6 @@ void (createDialog_draw)(void)
 		menu_showMessage(0x2a);
 	g_gameServerAnswer = 0;
 	g_roomLoginDue = 0;
-#undef g_editKey
 }
 
 /* 0x43e290: the login form (its panel at 0x9dd6e8): the name opened when asked (0x9dd4a0); with no message box
@@ -444,7 +442,7 @@ void (loginForm_update)(void)
 	}
 	if (g_dialogPending || g_textFieldOpen)
 		return;
-	int key = g_fieldTabKey;
+	int key = g_fieldStep;
 	if (key == 20 || key == 10) {
 		int k = 0;
 		while (k < 4 && EDITING(k) != 1)
@@ -466,7 +464,7 @@ void (loginForm_update)(void)
 				}
 			}
 		}
-		g_fieldTabKey = 0;
+		g_fieldStep = 0;
 	}
 	if (EDITING(0) == 1) {
 		loginForm_openField(0);
@@ -1098,7 +1096,6 @@ static void creategame_close(void)
    leaves eax to callers that ignore it */
 void (createDialog_keys)(void)
 {
-#define g_editKey g_fieldTabKey
 	int dialogX = g_roomLoginLeft, dialogBottom = g_roomLoginBottom - 0x30;
 	if (g_roomRequestOut || g_roomLoginDue) {
 		if (input_justPressed(g_keyCancel2)) {
@@ -1166,10 +1163,10 @@ void (createDialog_keys)(void)
 	}
 	if (input_justPressed(g_keyToggle) != 1)
 		return;
-	g_editKey = 20;
+	g_fieldStep = 20;
 	int choice = g_dialogChoice;
 	if (input_isDown(g_keyLeftShift) == 1 || input_isDown(g_keyRightShift) == 1) {
-		g_editKey = 10;
+		g_fieldStep = 10;
 		if (choice == 1) {
 			highlight_choice(0, dialogX + 0x180, g_roomLoginTop + 0x88);
 			field_editGamePassword();
@@ -1189,12 +1186,11 @@ void (createDialog_keys)(void)
 		else if (choice == 3) {
 			highlight_choice(3, dialogX + 0x180, g_roomLoginTop + 0x88);
 			field_editGameName();
-			g_editKey = 0;
+			g_fieldStep = 0;
 			g_typingRoomName = 1;
 			return;
 		} else
 			return;
 	}
-	g_editKey = 0;
-#undef g_editKey
+	g_fieldStep = 0;
 }

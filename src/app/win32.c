@@ -214,7 +214,7 @@ int (app_setDisplayMode)(int width, int height, u32 flags, int bits)
 /* 0x4314e0: the game shut down: the object at 0x9087b4 deleted (it stays set), the screen restored (0x42eed0 with
    the desktop's size), the arrow cursor back, 0x4014c0, the music stopped, the ten sounds at 0x4dd4d4 released,
    the sound table released (0x456cd0) and DirectSound ended (0x467b70, whose eax it returns) */
-u32 (wnd_setCursor)(void)
+u32 (app_shutdown)(void)
 {
 	void *object = (*(void **)&g_scene);
 	if (object)
@@ -363,7 +363,7 @@ int (app_init)(void *inst, int show)
 	g_desktopWidth = GetSystemMetrics(0);   /* SM_CXSCREEN */
 	g_desktopHeight = GetSystemMetrics(1);
 	void *dc = GetDC(NULL);   /* GetDC */
-	g_desktopDC = dc;
+	g_windowDC = dc;
 	g_desktopDepth = GetDeviceCaps(dc, 12);   /* BITSPIXEL */
 	input_initDikCodes();
 	cfg_init();
@@ -483,8 +483,8 @@ static void chat_close(void *edit, int sent)
 }
 
 /* 0x440840: the chat edit's window procedure (set by chat_createEdit). Keys: Enter, once the open delay (0x9da434)
-   is not over 0x4a93e8, takes the line and sends it (the fade 0x9dc428 20); Esc drops it; Tab in the room
-   (0x76d3e8 0x320) closes it (sent) and sets the fade by Shift (10 held, else 20); Home and Left are swallowed (0).
+   is not over 0x4a93e8, takes the line and sends it (g_fieldStep 20: the next field); Esc drops it; Tab in the room
+   (0x76d3e8 0x320) closes it (sent) and steps by Shift (g_fieldStep 10 back when held, else 20); Home and Left are swallowed (0).
    Timers: 0x29a, in the lobby (0x4dbbf4 2), and 0x115c, when connected (0x9dd84c), send their keep-alives (0x17 to
    the lobby, 0x18 to the game server). Everything not swallowed goes on to the edit's own procedure (0x9dd868) */
 long STDCALL (chat_editSubclass)(void *wnd, u32 msg, u32 w, u32 l)
@@ -494,7 +494,7 @@ long STDCALL (chat_editSubclass)(void *wnd, u32 msg, u32 w, u32 l)
 		case 0xd:   /* Enter */
 			if (!(g_menuKeyGuard > k_0f)) {
 				chat_close(wnd, 1);
-				g_fieldTabKey = 0x14;
+				g_fieldStep = 0x14;
 			}
 			break;
 		case 0x1b:   /* Esc */
@@ -505,9 +505,9 @@ long STDCALL (chat_editSubclass)(void *wnd, u32 msg, u32 w, u32 l)
 				DestroyWindow(g_hChatEdit);   /* DestroyWindow */
 				SetFocus(g_mainWindow);   /* SetFocus */
 				chat_closeLine(1);   /* chat_closeLine */
-				g_fieldTabKey = 0x14;
+				g_fieldStep = 0x14;
 				g_chatLineDone = 1;
-				g_fieldTabKey = GetKeyState(0x10) < 0 ? 10 : 20;   /* GetKeyState(VK_SHIFT) */
+				g_fieldStep = GetKeyState(0x10) < 0 ? 10 : 20;   /* GetKeyState(VK_SHIFT) */
 			}
 			break;
 		case 0x24: case 0x25:   /* Home, Left */
@@ -599,7 +599,7 @@ u32 STDCALL (game_WinMain)(void *inst, void *prev, const char *cmd, int show)
 
 /* 0x440070: the game window's messages (its class's procedure; the patch DLL subclasses it, see axisnet's input_read).
    Returns 1 for the messages it takes (0 where noted), DefWindowProcA's answer for the rest.
-   - WM_CREATE: the window's DC (g_desktopDC) given a pixel format (failing: the game quits) and a GL context
+   - WM_CREATE: the window's DC (g_windowDC) given a pixel format (failing: the game quits) and a GL context
      (0x9087b8); the GL state for the client size; the pointer at the menus' centre.
    - WM_SIZE: the 3D view for the client size (gfx_setup3DView).
      As the installed exe has both (widefix.py: wrappers at 0x4a8f6a / 0x4a8f87, called from 0x440116 / 0x440186):
@@ -622,7 +622,7 @@ u32 STDCALL (game_WinMain)(void *inst, void *prev, const char *cmd, int show)
      swallowed it), though as the command 0xf120 itself, not as WM_SYSCOMMAND; anything else 1.
    - WM_TIMER: 0x29a in the arena's lobby a keep-alive (net_send 0x17), 0x115c in a room another (0x18); 0x378 the
      arena's session search: the sessions listed; after 30 tries the join gives up, else a session found ends it
-     (none: try again next time); either way the timer stops and the room closes (app_onClose) or the arena's join
+     (none: try again next time); either way the timer stops and the room closes (room_joinAnswer) or the arena's join
      is answered (arena_joinAnswer).
    - 0x40a, 0x40c (the game server's and the lobby's sockets): closed, both sockets closed and the menus back at
      the main menu (0), unless in a match; else the reply read and the connection's step and search result
@@ -645,13 +645,13 @@ long STDCALL (game_wndProc)(void *wnd, u32 msg, u32 w, u32 l)
 	GetLocalTime(now);   /* GetLocalTime (unused) */
 	switch (msg) {
 	case 1:   /* WM_CREATE */
-		g_desktopDC = GetDC(wnd);   /* GetDC */
-		if (!gfx_setPixelFormat(g_desktopDC)) {   /* gfx_setPixelFormat */
+		g_windowDC = GetDC(wnd);   /* GetDC */
+		if (!gfx_setPixelFormat(g_windowDC)) {   /* gfx_setPixelFormat */
 			PostQuitMessage(0);
 			return 1;
 		}
-		g_glContext = wglCreateContext(g_desktopDC);   /* wglCreateContext */
-		wglMakeCurrent(g_desktopDC, g_glContext);   /* wglMakeCurrent */
+		g_glContext = wglCreateContext(g_windowDC);   /* wglCreateContext */
+		wglMakeCurrent(g_windowDC, g_glContext);   /* wglMakeCurrent */
 		GetClientRect(wnd, rect);
 		g_projMode = -1;
 		gfx_initGLState(rect[2], GAME_HEIGHT(rect[3]));   /* gfx_initGLState */
@@ -669,10 +669,10 @@ long STDCALL (game_wndProc)(void *wnd, u32 msg, u32 w, u32 l)
 		gfx_setup3DView(rect[2], GAME_HEIGHT(rect[3]));   /* gfx_setup3DView */
 		return 1;
 	case 0x10:   /* WM_CLOSE */
-		if (g_desktopDC)
-			ReleaseDC(wnd, g_desktopDC);
+		if (g_windowDC)
+			ReleaseDC(wnd, g_windowDC);
 		g_glContext = NULL;
-		g_desktopDC = NULL;
+		g_windowDC = NULL;
 		g_lobbyPending = 1;
 		arena_leaveSession();
 		net_disconnect();
@@ -680,13 +680,13 @@ long STDCALL (game_wndProc)(void *wnd, u32 msg, u32 w, u32 l)
 		KillTimer(g_hWndMain, 0x115c);
 		KillTimer(g_hWndMain, 0x309);
 		g_lobbyPending = 1;
-		wnd_setCursor();   /* wnd_setCursor */
+		app_shutdown();   /* app_shutdown */
 		DestroyWindow(wnd);
 		return 1;
 	case 2:   /* WM_DESTROY */
 		SystemParametersInfoA(0x61, 0, NULL, 0);   /* SystemParametersInfoA: SPI_SETSCREENSAVERRUNNING off */
-		if (g_desktopDC)
-			ReleaseDC(wnd, g_desktopDC);
+		if (g_windowDC)
+			ReleaseDC(wnd, g_windowDC);
 		if (g_hChatEdit)
 			DestroyWindow(g_hChatEdit);
 		ShowCursor(1);
@@ -728,7 +728,7 @@ long STDCALL (game_wndProc)(void *wnd, u32 msg, u32 w, u32 l)
 		ExitProcess(0);
 		return 0;
 	case 0x1c: {   /* WM_ACTIVATEAPP */
-		g_unusedLastWParam = w;
+		g_unusedActive = w;
 		if (w) {
 			while (ShowCursor(0) >= 0)
 				;
@@ -777,7 +777,7 @@ long STDCALL (game_wndProc)(void *wnd, u32 msg, u32 w, u32 l)
 			}
 			KillTimer(wnd, 0x378);
 			if (g_screen == 800)
-				app_onClose();   /* app_onClose */
+				room_joinAnswer();   /* room_joinAnswer */
 			else
 				arena_joinAnswer();   /* arena_joinAnswer */
 		} else if (w == 0x115c) {

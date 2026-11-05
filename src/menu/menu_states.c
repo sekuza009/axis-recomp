@@ -82,7 +82,7 @@ int (frontEnd_drawProgress)(void)
 		} while (i + 400 < n);
 	}
 	glFinish();
-	return SwapBuffers(g_desktopDC);
+	return SwapBuffers(g_windowDC);
 }
 
 /* 0x41f540: the intro: the start-up logo shown once (dimmed), then the loading picture stepped four times (0x4dda34) around the start-up loads, with
@@ -95,7 +95,7 @@ void (menuState100_intro)(void)
 	g_loadStep = 0;
 	draw_logo(1);
 	glFinish();
-	SwapBuffers(g_desktopDC);
+	SwapBuffers(g_windowDC);
 	set_colour_bits(g_textColour, 0x3f800000, 0, 0, 0x3f800000);   /* red text */
 	g_loadStep++;
 	frontEnd_drawProgress();

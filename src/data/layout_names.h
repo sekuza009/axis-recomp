@@ -556,8 +556,6 @@ extern struct GameData g_data;
 #define g_deleteDialogRects ((int *)g_deleteDialogRects_v)
 #undef g_desktopBits
 #define g_desktopBits (*(int *)g_desktopBits_v)
-#undef g_desktopDC
-#define g_desktopDC (*(void * *)g_desktopDC_v)
 #undef g_desktopDepth
 #define g_desktopDepth (*(int *)g_desktopDepth_v)
 #undef g_desktopH
@@ -898,8 +896,8 @@ extern struct GameData g_data;
 #define g_extraListTable ((int *)g_extraListTable_v)
 #undef g_fatalReported
 #define g_fatalReported (*(int *)g_fatalReported_v)
-#undef g_fieldTabKey
-#define g_fieldTabKey (*(int *)g_fieldTabKey_v)
+#undef g_fieldStep
+#define g_fieldStep (*(int *)g_fieldStep_v)
 #undef g_flareSizeA
 #define g_flareSizeA (*(float *)g_flareSizeA_v)
 #undef g_flareSizeB
@@ -2738,6 +2736,8 @@ extern struct GameData g_data;
 #define g_unlockedLevel (*(int *)g_unlockedLevel_v)
 #undef g_unusedAccountWord
 #define g_unusedAccountWord (*(int *)g_unusedAccountWord_v)
+#undef g_unusedActive
+#define g_unusedActive (*(u32 *)g_unusedActive_v)
 #undef g_unusedArenaCamWord
 #define g_unusedArenaCamWord (*(u32 *)g_unusedArenaCamWord_v)
 #undef g_unusedArenaWord
@@ -2776,8 +2776,6 @@ extern struct GameData g_data;
 #define g_unusedKeyTable2Word1 (*(int *)g_unusedKeyTable2Word1_v)
 #undef g_unusedKeyTable2Word2
 #define g_unusedKeyTable2Word2 (*(int *)g_unusedKeyTable2Word2_v)
-#undef g_unusedLastWParam
-#define g_unusedLastWParam (*(u32 *)g_unusedLastWParam_v)
 #undef g_unusedLoginWord
 #define g_unusedLoginWord (*(int *)g_unusedLoginWord_v)
 #undef g_unusedLogoFade
@@ -2870,6 +2868,8 @@ extern struct GameData g_data;
 #define g_weaponListTable ((int *)g_weaponListTable_v)
 #undef g_windowClass
 #define g_windowClass ((u8 *)g_windowClass_v)
+#undef g_windowDC
+#define g_windowDC (*(void * *)g_windowDC_v)
 #undef g_writeMatchLog
 #define g_writeMatchLog (*(int *)g_writeMatchLog_v)
 #undef k_0_00125f

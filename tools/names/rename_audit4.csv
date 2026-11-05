@@ -135,3 +135,5 @@ input_applyKeyBindings,input_setDefaultBindings
 setup_keepKeyBindings,setup_defaultBindings
 timer_getGameTime,TimeSync_frameTime
 frameTimer_average,scene_averageFrameTime
+wnd_setCursor,app_shutdown
+app_onClose,room_joinAnswer

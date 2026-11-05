@@ -595,7 +595,7 @@ char g_joinedTitleNameCopy_v[32] __attribute__((aligned(16)));   /* 0x76d450 */
 u8 g_dikSemicolon_v[4] __attribute__((aligned(16)));   /* 0x76d470 */
 u8 g_unusedStartupWord1_v[4] __attribute__((aligned(16)));   /* 0x76d474 */
 int g_mainMenuTextures_v[2] __attribute__((aligned(16)));   /* 0x76d478 */
-u8 g_desktopDC_v[4] __attribute__((aligned(16)));   /* 0x76d480 */
+u8 g_windowDC_v[4] __attribute__((aligned(16)));   /* 0x76d480 */
 u8 g_searchResult_v[4] __attribute__((aligned(16)));   /* 0x76d484 */
 u8 g_dikEscape_2_v[4] __attribute__((aligned(16)));   /* 0x76d48c */
 u8 g_dikWheelUp_v[4] __attribute__((aligned(16)));   /* 0x76d490 */
@@ -675,7 +675,7 @@ u8 g_timerRepeatCount_v[4] __attribute__((aligned(16)));   /* 0x9dbf00 */
 u8 g_lastCount_v[4] __attribute__((aligned(16)));   /* 0x9dbf08 */
 u8 g_directInputMade_v[4] __attribute__((aligned(16)));   /* 0x9dbf0c */
 u8 g_chatLength_v[4] __attribute__((aligned(16)));   /* 0x9dbf10 */
-u8 g_fieldTabKey_v[4] __attribute__((aligned(16)));   /* 0x9dc428 */
+u8 g_fieldStep_v[4] __attribute__((aligned(16)));   /* 0x9dc428 */
 char g_chatLine_v[1024] __attribute__((aligned(16)));   /* 0x9dc92c */
 u8 g_typedLength_v[4] __attribute__((aligned(16)));   /* 0x9dcd30 */
 u8 g_gameListClickTimer_v[4] __attribute__((aligned(16)));   /* 0x9dcd40 */
@@ -778,7 +778,7 @@ u8 g_roomConnected_v[4] __attribute__((aligned(16)));   /* 0x9dd84c */
 u8 g_roomLeaveDialog_v[4] __attribute__((aligned(16)));   /* 0x9dd850 */
 u8 g_languageId_v[2] __attribute__((aligned(16)));   /* 0x9dd858 */
 u8 g_clockCheckSeconds_v[4] __attribute__((aligned(16)));   /* 0x9dd860 */
-u8 g_unusedLastWParam_v[4] __attribute__((aligned(16)));   /* 0x9dd864 */
+u8 g_unusedActive_v[4] __attribute__((aligned(16)));   /* 0x9dd864 */
 u8 g_editOldProc_v[4] __attribute__((aligned(16)));   /* 0x9dd868 */
 u16 g_clockLastTime_v[8] __attribute__((aligned(16)));   /* 0x9dd878 */
 u8 g_hChatEdit_v[4] __attribute__((aligned(16)));   /* 0x9dd888 */
@@ -1765,7 +1765,7 @@ const DataPiece g_splitObjects[] = {
 	{ 0x76d470, g_dikSemicolon_v, 4 },
 	{ 0x76d474, g_unusedStartupWord1_v, 4 },
 	{ 0x76d478, g_mainMenuTextures_v, 8 },
-	{ 0x76d480, g_desktopDC_v, 4 },
+	{ 0x76d480, g_windowDC_v, 4 },
 	{ 0x76d484, g_searchResult_v, 4 },
 	{ 0x76d48c, g_dikEscape_2_v, 4 },
 	{ 0x76d490, g_dikWheelUp_v, 4 },
@@ -1845,7 +1845,7 @@ const DataPiece g_splitObjects[] = {
 	{ 0x9dbf08, g_lastCount_v, 4 },
 	{ 0x9dbf0c, g_directInputMade_v, 4 },
 	{ 0x9dbf10, g_chatLength_v, 4 },
-	{ 0x9dc428, g_fieldTabKey_v, 4 },
+	{ 0x9dc428, g_fieldStep_v, 4 },
 	{ 0x9dc92c, g_chatLine_v, 1024 },
 	{ 0x9dcd30, g_typedLength_v, 4 },
 	{ 0x9dcd40, g_gameListClickTimer_v, 4 },
@@ -1948,7 +1948,7 @@ const DataPiece g_splitObjects[] = {
 	{ 0x9dd850, g_roomLeaveDialog_v, 4 },
 	{ 0x9dd858, g_languageId_v, 2 },
 	{ 0x9dd860, g_clockCheckSeconds_v, 4 },
-	{ 0x9dd864, g_unusedLastWParam_v, 4 },
+	{ 0x9dd864, g_unusedActive_v, 4 },
 	{ 0x9dd868, g_editOldProc_v, 4 },
 	{ 0x9dd878, g_clockLastTime_v, 16 },
 	{ 0x9dd888, g_hChatEdit_v, 4 },

@@ -4697,11 +4697,11 @@ void freeCam_keys(void);
 int dplaySlot2_host(int a1, int a2, int a3, int a4, int a5, int a6, int a7, int a8);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 int dplaySlot3_host(int a1, int a2, int a3, int a4, int a5, int a6, int a7, int a8);
-/* batch 177 (lifted/grp127.c): app_onClose / arena_joinAnswer (leaving the game: the room / arena left, DirectPlay and
+/* batch 177 (lifted/grp127.c): room_joinAnswer / arena_joinAnswer (leaving the game: the room / arena left, DirectPlay and
    the music shut down) and menuState100_intro (the intro: logo fades, the menu music, then the main menu), with
    their callees stubbed (tools/gentests.py); chat_editSubclass and sound_play3D by hand */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-DWORD app_onClose(void);
+DWORD room_joinAnswer(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void arena_joinAnswer(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
@@ -4840,14 +4840,14 @@ void armc_drawPartsPage(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void menuState700_armCenter(void);
 /* batch 186 (lifted/grp140.c): match_startRound (a match's start: modes, teams, items, music),
-   match_escMenu (the in-match menu's input), wnd_setCursor (in fact the shutdown: the game object deleted, input,
+   match_escMenu (the in-match menu's input), app_shutdown (in fact the shutdown: the game object deleted, input,
    music and sounds released, the cursor back), stage_advanceScenePath, with their callees stubbed */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 THISCALL void match_startRound(char *scene);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void THISCALL match_escMenu(void *scene);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-DWORD wnd_setCursor(void);
+DWORD app_shutdown(void);
 /* 0x48fd50 stage_advanceScenePath(path) (thiscall on the scene, ret 4) */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 THISCALL void stage_advanceScenePath(char *scene, DWORD path);
@@ -15109,7 +15109,7 @@ ST(dplaySlot3_host, small_setup(g_stubHost34); G32(0xa0d7b0) = irnd(0, 1);,
 static const DWORD g_gs_434e70[] = { 0x41ee40, 0, 0x452fe0, 0, 0x453180, 4, 0x457310, 0, 0 };
 static const DWORD g_gi_434e70[] = { 0x5b1b54, 0x5b1b55, 0x4db708, 0x4db710, 0x4db8b4, 0x4dbb10, 0x4dbb78, 0x4dbbf8, 0x4df8e8, 0x67ef04, 0x67ef14, 0x76d368, 0x76d408, 0x9da3e0, 0x9dad94, 0x9dce48, 0 };
 static const DWORD g_gb_434e70[] = { 0x67fb44, 0x9dd570, 0 };
-ST(app_onClose, gen_setup(g_gs_434e70, g_gi_434e70, g_gb_434e70); /* 0x4dbbf8: the session record */ fill(BUF + 0x5000, 0x40); G32(0x4dbbf8) = (int)(BUF + 0x5000);, CALL_PLAIN(0x434e70, 0, g_a[0], g_a[1], g_a[2], g_a[3]), (DWORD)(app_onClose()))
+ST(room_joinAnswer, gen_setup(g_gs_434e70, g_gi_434e70, g_gb_434e70); /* 0x4dbbf8: the session record */ fill(BUF + 0x5000, 0x40); G32(0x4dbbf8) = (int)(BUF + 0x5000);, CALL_PLAIN(0x434e70, 0, g_a[0], g_a[1], g_a[2], g_a[3]), (DWORD)(room_joinAnswer()))
 static const DWORD g_gs_4062b0[] = { 0x41ee40, 1, 0x451e60, 0, 0x452fe0, 0, 0x453180, 4, 0x457310, 0, 0 };
 static const DWORD g_gi_4062b0[] = { 0x4ded44, 0x4ded45, 0x9dae44, 0x9dae45, 0x9dae4c, 0x9dae4d, 0x9dae4e, 0x4db708, 0x4db710, 0x4db8b4, 0x4dbb10, 0x4dbb3c, 0x4dbb78, 0x4dbbf8, 0x4dedd0, 0x4df8e8, 0x67ef04, 0x67ef14, 0x76d368, 0x76d408, 0x9da3e0, 0x9dad94, 0x9dae20, 0 };
 static const DWORD g_gb_4062b0[] = { 0x4dedb0, 0x67fb44, 0x9dae24, 0 };
@@ -15487,7 +15487,7 @@ static const DWORD g_gi_41e040[] = { 0x4b071c, 0x4dcfd8, 0x4dbc68, 0x4dc24c, 0x4
 static const DWORD g_gb_41e040[] = { 0x7572a4, 0x757324, 0x76d438, 0x9da480, 0 };
 ST(menuState700_armCenter, gen_setup(g_gs_41e040, g_gi_41e040, g_gb_41e040);, (CALL_PLAIN(0x41e040, 0, g_a[0], g_a[1], g_a[2], g_a[3]), 0), (menuState700_armCenter(), 0))   /* its callers ignore the eax it leaves (tools/eaxuse.py) */
 /* batch 186: match_startRound / match_escMenu generated (tools/gentests.py, thiscall on the game: ecx =
-   BUF, zero apart from what the callees would set), wnd_setCursor and stage_advanceScenePath by hand */
+   BUF, zero apart from what the callees would set), app_shutdown and stage_advanceScenePath by hand */
 static const DWORD g_gs_49df10[] = { 0x4326f0, 1, 0x44ace0, 0, 0x456de0, 1, 0x457140, 1, 0x45dfb0, 1 | CS_POP, 0x4613a0, 1 | CS_POP, 0x4620e0, 0, 0x4629c0, 1 | CS_POP, 0x4636d0, 0, 0x4685b0, 0, 0x4685c0, 0, 0x46c710, 3, 0x4732f0, 1 | CS_POP, 0x473940, 2 | CS_POP, 0x4743e0, 1 | CS_POP, 0x487490, 0, 0 };
 static const DWORD g_gi_49df10[] = { 0x4dc878, 0x4dc87c, 0x4dc880, 0x4dc884, 0x4dc888, 0x4dcf18, 0x4dcf1c, 0x4dcf20, 0x4dcf24, 0x4dcf28, 0x4dcf2c, 0x4de722, 0x4de72a, 0x4ded68, 0x4ded6c, 0x4df8e8, 0x4e0c90, 0x4e0c94, 0x5ae9c4, 0x67ef00, 0x68039c, 0x76d368, 0x76d408, 0x9da3e0, 0x9dad94, 0x9f1818, 0x9fd94c, 0xa1efb8, 0 };
 static const DWORD g_gb_49df10[] = { 0x4d0710, 0x4d950c, 0x4dcfe4, 0x4dedd8, 0x9db9ec, 0xa0e778, 0 };
@@ -15536,13 +15536,13 @@ static void escinput_setup(void)
 	float f = irnd(0, 4) ? 0.5f : (float)irnd(0, 50) / 100.0f; memcpy(BUF + 0x2340c9c, &f, 4);
 }
 ST(match_escMenu, escinput_setup();, (TC(void, 0x49ca70, char *)(BUF), 0), (match_escMenu(BUF), 0))   /* its callers ignore the eax it leaves (tools/eaxuse.py) */
-/* the shutdown (wnd_setCursor): the game object 0x9087b4 kept 0 (its deleting destructor would run on the real
+/* the shutdown (app_shutdown): the game object 0x9087b4 kept 0 (its deleting destructor would run on the real
    game), the sounds 0x4dd4d4 .., the cursor; callees stubbed. stage_advanceScenePath(path) (thiscall on the scene): the
    path record at +0x2148ed8 loaded once (+0x2148ee0), the path's name looked up (stubbed), its sound */
 static const DWORD g_stubShutdown[] = { 0x42eed0, 4, 0x4014c0, 0, 0x457310, 0, 0x467d60, 1, 0x456cd0, 0, 0x467b70, 0, 0 };
 static const DWORD g_stubLoadPath[] = { 0x457080, 2, 0x48b430, 2 | CS_POP | CS_THIS, 0x48b440, 1 | CS_POP | CS_THIS, 0 };
-ST(wnd_setCursor, G32(0x9087b4) = 0; fill((void *)0x4dd4d4, 40); fill((void *)0x76d3ec, 4); fill((void *)0x76d430, 4);
-   fill((void *)0x67eefc, 4); callee_stubs(g_stubShutdown, 0);, CALL_PLAIN(0x4314e0, 0, 0, 0, 0, 0), wnd_setCursor())
+ST(app_shutdown, G32(0x9087b4) = 0; fill((void *)0x4dd4d4, 40); fill((void *)0x76d3ec, 4); fill((void *)0x76d430, 4);
+   fill((void *)0x67eefc, 4); callee_stubs(g_stubShutdown, 0);, CALL_PLAIN(0x4314e0, 0, 0, 0, 0, 0), app_shutdown())
 ST(stage_advanceScenePath, S32(BUF, 0x2149308) = irnd(0, 1); S32(BUF, 0x2148ee0) = irnd(0, 1); fill_str(BUF + 0x100, 30, 'a', 'z');
    callee_stubs(g_stubLoadPath, (DWORD)irnd(0, 1));,
    (TC(DWORD, 0x48fd50, char *, char *)(BUF, BUF + 0x100), 0), (stage_advanceScenePath(BUF, (DWORD)(BUF + 0x100)), 0))   /* (its caller ignores eax) */
@@ -17741,7 +17741,7 @@ static const STest g_stests[] = {
 	T(loginForm_openField, 0, 200, 0), T(mainmenu_clicks, 0, 200, 0), T(mainmenu_processKeys, 0, 200, 0), T(loginDialog_keys, 0, 200, 0),
 	T(menuTunnel_advance, 0, 200, 0), T(freeCam_keys, 0, 200, 0), T(dplaySlot2_host, 0, 200, 0), T(dplaySlot3_host, 0, 200, 0),
 	/* batch 177 */
-	T(app_onClose, 0, 200, 0), T(arena_joinAnswer, 0, 200, 0), T(menuState100_intro, 0, 200, 0), T(chat_editSubclass, 0, 400, 0),
+	T(room_joinAnswer, 0, 200, 0), T(arena_joinAnswer, 0, 200, 0), T(menuState100_intro, 0, 200, 0), T(chat_editSubclass, 0, 400, 0),
 	T(sound_play3D, 0, 400, 0),
 	/* batch 178 */
 	T(game_postMatch, 0, 200, 0), T(dplay_initConnection, 0, 400, 0),
@@ -17766,7 +17766,7 @@ static const STest g_stests[] = {
 	T(armc_enterScreen, 0, 200, 0), T(armc_updatePartsPreview, 0, 1000, 0), T(armc_updateColourPreview, 0, 1000, 0), T(armc_drawColourPage, 0, 200, 0),
 	T(armc_drawThirdPage, 0, 200, 0), T(armc_drawPartsPage, 0, 200, 0), T(menuState700_armCenter, 0, 200, 0),
 	/* batch 186 */
-	T(match_startRound, 0, 1500, 0), T(match_escMenu, 0, 1000, 0), T(wnd_setCursor, 0, 200, 0), T(stage_advanceScenePath, 0, 200, 0),
+	T(match_startRound, 0, 1500, 0), T(match_escMenu, 0, 1000, 0), T(app_shutdown, 0, 200, 0), T(stage_advanceScenePath, 0, 200, 0),
 	/* batch 187 */
 	T(particle_spawn, 0, 300, 0), T(particle_init, 0, 400, 0),
 	/* batch 188 */
@@ -18860,7 +18860,7 @@ static const struct { DWORD addr; void *fn; const char *name; } g_hooks3[] = {
 	{ 0x441260, (void *)menuTunnel_advance, "menuTunnel_advance" }, { 0x42ada0, (void *)freeCam_keys, "freeCam_keys" },
 	{ 0x454c10, (void *)dplaySlot2_host, "dplaySlot2_host" }, { 0x454d20, (void *)dplaySlot3_host, "dplaySlot3_host" },
 	/* batch 177 */
-	{ 0x434e70, (void *)app_onClose, "app_onClose" }, { 0x4062b0, (void *)arena_joinAnswer, "arena_joinAnswer" },
+	{ 0x434e70, (void *)room_joinAnswer, "room_joinAnswer" }, { 0x4062b0, (void *)arena_joinAnswer, "arena_joinAnswer" },
 	{ 0x41f540, (void *)menuState100_intro, "menuState100_intro" }, { 0x440840, (void *)chat_editSubclass, "chat_editSubclass" },
 	{ 0x456ed0, (void *)sound_play3D, "sound_play3D" },
 	/* batch 178 */
@@ -18896,7 +18896,7 @@ static const struct { DWORD addr; void *fn; const char *name; } g_hooks3[] = {
 	{ 0x41e040, (void *)menuState700_armCenter, "menuState700_armCenter" },
 	/* batch 186 */
 	{ 0x49df10, (void *)match_startRound, "match_startRound" }, { 0x49ca70, (void *)match_escMenu, "match_escMenu" },
-	{ 0x4314e0, (void *)wnd_setCursor, "wnd_setCursor" }, { 0x48fd50, (void *)stage_advanceScenePath, "stage_advanceScenePath" },
+	{ 0x4314e0, (void *)app_shutdown, "app_shutdown" }, { 0x48fd50, (void *)stage_advanceScenePath, "stage_advanceScenePath" },
 	/* batch 187 */
 	{ 0x479950, (void *)particle_spawn, "particle_spawn" }, { 0x475070, (void *)particle_init, "particle_init" },
 	/* batch 188 */

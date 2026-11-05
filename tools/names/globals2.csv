@@ -13,7 +13,7 @@
 0x83a9c4,int,g_videoDepth
 0x67eefc,int,g_desktopWidth
 0x76d430,int,g_desktopHeight
-0x76d480,void *,g_desktopDC
+0x76d480,void *,g_windowDC
 0xa0e810,int,g_glWidth
 0xa0e928,int,g_glHeight
 # sound

@@ -57,7 +57,7 @@
 0x9f8c4c,int,g_profileListTop
 0x9f8c5c,int,g_profileListRow
 0x9f8d74,int,g_pilotChosen
-0x9dc428,int,g_fieldTabKey
+0x9dc428,int,g_fieldStep
 0x4de1c8,int,g_sensitivitySlider
 0x4de740,int,g_menuFramePhase
 0x76d428,int,g_menuFrameCounter

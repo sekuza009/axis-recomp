@@ -2915,9 +2915,9 @@ extern u8 g_unusedStartupWord1_v[4];
 extern int g_mainMenuTextures_v[2];
 #endif
 #ifdef AXIS_FENCE
-#define g_desktopDC_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0x71f000 : g_fence + 0x71effc))
+#define g_windowDC_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0x71f000 : g_fence + 0x71effc))
 #else
-extern u8 g_desktopDC_v[4];
+extern u8 g_windowDC_v[4];
 #endif
 #ifdef AXIS_FENCE
 #define g_searchResult_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0x721000 : g_fence + 0x720ffc))
@@ -3315,9 +3315,9 @@ extern u8 g_directInputMade_v[4];
 extern u8 g_chatLength_v[4];
 #endif
 #ifdef AXIS_FENCE
-#define g_fieldTabKey_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xa2a000 : g_fence + 0xa29ffc))
+#define g_fieldStep_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xa2a000 : g_fence + 0xa29ffc))
 #else
-extern u8 g_fieldTabKey_v[4];
+extern u8 g_fieldStep_v[4];
 #endif
 #ifdef AXIS_FENCE
 #define g_chatLine_v ((char *)(AXIS_FENCE == 2 ? g_fence + 0xa2c000 : g_fence + 0xa2bc00))
@@ -3830,9 +3830,9 @@ extern u8 g_languageId_v[2];
 extern u8 g_clockCheckSeconds_v[4];
 #endif
 #ifdef AXIS_FENCE
-#define g_unusedLastWParam_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xaf8000 : g_fence + 0xaf7ffc))
+#define g_unusedActive_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xaf8000 : g_fence + 0xaf7ffc))
 #else
-extern u8 g_unusedLastWParam_v[4];
+extern u8 g_unusedActive_v[4];
 #endif
 #ifdef AXIS_FENCE
 #define g_editOldProc_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xafa000 : g_fence + 0xaf9ffc))

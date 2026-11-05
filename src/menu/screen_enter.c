@@ -395,7 +395,7 @@ void (match_enter)(void)
 	g_matchRunning = 1;
 	g_viewAspect = f32((long double)g_screenW / (long double)g_screenH);
 	sys_checkClockTampering();
-	glWindow_init((const char *)STR(0x4b04a0, "Axis Console"), g_screenW, g_screenH, g_videoDepth, 0x10, 0, g_hWndMain, (*(int *)&g_desktopDC));
+	glWindow_init((const char *)STR(0x4b04a0, "Axis Console"), g_screenW, g_screenH, g_videoDepth, 0x10, 0, g_hWndMain, (*(int *)&g_windowDC));
 #define scene g_scene   /* read at each use: loading the map makes the match's scene */
 	if (g_replayRunning) {
 		g_matchMode = 0;

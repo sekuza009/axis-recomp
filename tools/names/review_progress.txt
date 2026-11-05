@@ -16,7 +16,7 @@
 [x] src/app/statics.c 155
 [x] src/app/store_tables.c 176
 [x] src/app/timer.c 142
-[ ] src/app/win32.c 841
+[x] src/app/win32.c 841
 [ ] src/crt/crt_atof.c 469
 [ ] src/crt/crt_format.c 100
 [ ] src/hud/hud_clock.c 93

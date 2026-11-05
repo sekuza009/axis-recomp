@@ -86,7 +86,7 @@ g_convertHangul
 g_crosshairTexture
 g_currentStageName
 g_debugValue
-g_desktopDC
+g_windowDC
 g_desktopDepth
 g_desktopWidth
 g_dikDown
@@ -106,7 +106,7 @@ g_enteringMenus
 g_errorCleanupHook
 g_errorLogging
 g_excludedKey
-g_fieldTabKey
+g_fieldStep
 g_fovKeys
 g_fps
 g_fpsFrameClock
@@ -494,7 +494,7 @@ g_typingArenaPassword
 g_typingGamePassword
 g_typingRoomPassword
 g_unusedArmcWord4
-g_unusedLastWParam
+g_unusedActive
 g_unusedLoginWord
 g_unusedRoomWord
 # the menu camera: its position, look-at point and their homes (objects9.csv), whole

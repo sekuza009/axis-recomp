@@ -116,7 +116,7 @@ void (menu_frame)(void)
 		PATCHED_CALL(0x41fc28, void, void)();   /* menu_drawCursor; the patch DLL draws its own cursor here */
 	glDisable(0xbe2);   /* GL_BLEND */
 	glFinish();
-	SwapBuffers(g_desktopDC);
+	SwapBuffers(g_windowDC);
 	switch (g_fovKeys) {
 	case 1:
 		if (g_viewAngle > k_5f)

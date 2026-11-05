@@ -59,7 +59,7 @@
 #define g_timeLimit GAME_VAR(int, 0x76d408)
 #define g_roomListWaiting GAME_VAR(int, 0x76d40c)
 #define g_desktopHeight GAME_VAR(int, 0x76d430)
-#define g_desktopDC GAME_VAR(void *, 0x76d480)
+#define g_windowDC GAME_VAR(void *, 0x76d480)   /* the game window's DC (WM_CREATE; SwapBuffers on it); at start-up briefly the desktop's, for its depth */
 #define g_videoMode GAME_VAR(u32, 0x83a9c0)
 #define g_videoDepth GAME_VAR(int, 0x83a9c4)
 #define g_lastPanel GAME_VAR(int, 0x907b24)
@@ -704,7 +704,7 @@
 #define g_unusedLoginWord GAME_VAR(int, 0x9dd32c)
 #define g_pilotRank GAME_VAR(int, 0x9dd5e0)
 #define g_roomNameSum GAME_VAR(int, 0x9dd840)
-#define g_unusedLastWParam GAME_VAR(u32, 0x9dd864)
+#define g_unusedActive GAME_VAR(u32, 0x9dd864)
 #define g_unusedInitWord GAME_VAR(int, 0x9dd8f8)
 #define g_unusedReplayListWord1 GAME_VAR(int, 0x9dd944)
 #define g_unusedReplayListWord2 GAME_VAR(int, 0x9eea88)
@@ -861,7 +861,7 @@
 #define g_gameListTop GAME_VAR(int, 0x680bb0)
 #define g_menuFrameCounter GAME_VAR(int, 0x76d428)
 #define g_clockNow GAME_VAR(double, 0x9db980)
-#define g_fieldTabKey GAME_VAR(int, 0x9dc428)
+#define g_fieldStep GAME_VAR(int, 0x9dc428)   /* a text field closed by a key: 20 on to the next field (Enter, Tab), 10 back (Shift+Tab), 0 none */
 #define g_roomLoginLeft GAME_VAR(int, 0x9dd358)
 #define g_roomLoginTop GAME_VAR(int, 0x9dd35c)
 #define g_roomLoginBottom GAME_VAR(int, 0x9dd364)
