@@ -2975,9 +2975,9 @@ extern u8 g_lastPanel_v[4];
 extern u8 g_dikDelete_2_v[4];
 #endif
 #ifdef AXIS_FENCE
-#define g_arenaLeaving_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0x8d1000 : g_fence + 0x8d0ffc))
+#define g_arenaUpdateNotice_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0x8d1000 : g_fence + 0x8d0ffc))
 #else
-extern u8 g_arenaLeaving_v[4];
+extern u8 g_arenaUpdateNotice_v[4];
 #endif
 #ifdef AXIS_FENCE
 #define g_mapNames_v ((char *)(AXIS_FENCE == 2 ? g_fence + 0x8d3000 : g_fence + 0x8d2380))
@@ -3555,9 +3555,9 @@ extern u8 g_editingFragLimit_v[4];
 extern u8 g_typingLoginPassword_v[4];
 #endif
 #ifdef AXIS_FENCE
-#define g_leaveDialogRects_v ((int *)(AXIS_FENCE == 2 ? g_fence + 0xa8a000 : g_fence + 0xa89fe0))
+#define g_updateNoticeRects_v ((int *)(AXIS_FENCE == 2 ? g_fence + 0xa8a000 : g_fence + 0xa89fe0))
 #else
-extern int g_leaveDialogRects_v[8];
+extern int g_updateNoticeRects_v[8];
 #endif
 #ifdef AXIS_FENCE
 #define g_rankingHaveList_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xa8c000 : g_fence + 0xa8bffc))
@@ -3565,9 +3565,9 @@ extern int g_leaveDialogRects_v[8];
 extern u8 g_rankingHaveList_v[4];
 #endif
 #ifdef AXIS_FENCE
-#define g_popupRects_v ((int *)(AXIS_FENCE == 2 ? g_fence + 0xa8e000 : g_fence + 0xa8dfe0))
+#define g_newIdConfirmRects_v ((int *)(AXIS_FENCE == 2 ? g_fence + 0xa8e000 : g_fence + 0xa8dfe0))
 #else
-extern int g_popupRects_v[8];
+extern int g_newIdConfirmRects_v[8];
 #endif
 #ifdef AXIS_FENCE
 #define g_typingAccountPassword_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xa90000 : g_fence + 0xa8fffc))
@@ -3720,9 +3720,9 @@ extern u8 g_roomPanelBrightness_v[4];
 extern u8 g_roomListRefreshTimer_v[4];
 #endif
 #ifdef AXIS_FENCE
-#define g_roomPopup_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xacc000 : g_fence + 0xacbffc))
+#define g_newIdConfirmChoice_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xacc000 : g_fence + 0xacbffc))
 #else
-extern u8 g_roomPopup_v[4];
+extern u8 g_newIdConfirmChoice_v[4];
 #endif
 #ifdef AXIS_FENCE
 #define g_typingRoomJoinPassword_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xace000 : g_fence + 0xacdffc))
@@ -3815,9 +3815,9 @@ extern u8 g_unusedRoomCamWord_v[4];
 extern u8 g_roomConnected_v[4];
 #endif
 #ifdef AXIS_FENCE
-#define g_roomLeaveDialog_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xaf2000 : g_fence + 0xaf1ffc))
+#define g_roomUpdateNotice_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xaf2000 : g_fence + 0xaf1ffc))
 #else
-extern u8 g_roomLeaveDialog_v[4];
+extern u8 g_roomUpdateNotice_v[4];
 #endif
 #ifdef AXIS_FENCE
 #define g_languageId_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xaf4000 : g_fence + 0xaf3ffe))

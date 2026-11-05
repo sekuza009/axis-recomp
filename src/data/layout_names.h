@@ -108,8 +108,6 @@ extern struct GameData g_data;
 #define g_arenaKeptLookY (*(int *)g_arenaKeptLookY_v)
 #undef g_arenaKeptLookZ
 #define g_arenaKeptLookZ (*(int *)g_arenaKeptLookZ_v)
-#undef g_arenaLeaving
-#define g_arenaLeaving (*(int *)g_arenaLeaving_v)
 #undef g_arenaListClickArmed
 #define g_arenaListClickArmed (*(int *)g_arenaListClickArmed_v)
 #undef g_arenaListFull
@@ -170,6 +168,8 @@ extern struct GameData g_data;
 #define g_arenaTimeLimitTyped (*(u8 *)((u8 *)g_newArenaName_v + 0x25))
 #undef g_arenaTunnelDepth
 #define g_arenaTunnelDepth (*(u32 *)g_arenaTunnelDepth_v)
+#undef g_arenaUpdateNotice
+#define g_arenaUpdateNotice (*(int *)g_arenaUpdateNotice_v)
 #undef g_argCount
 #define g_argCount (*(int *)g_argCount_v)
 #undef g_armCount
@@ -1268,8 +1268,6 @@ extern struct GameData g_data;
 #define g_launchMessage (*(const char * *)g_launchMessage_v)
 #undef g_launcherCheck
 #define g_launcherCheck ((u8 *)g_launcherCheck_v)
-#undef g_leaveDialogRects
-#define g_leaveDialogRects ((int *)g_leaveDialogRects_v)
 #undef g_legCount
 #define g_legCount (*(int *)g_legCount_v)
 #undef g_legList
@@ -1812,6 +1810,10 @@ extern struct GameData g_data;
 #define g_newArenaPassword4 (*(int *)((u8 *)g_newArenaName_v + 0x2a))
 #undef g_newArenaPlayers
 #define g_newArenaPlayers (*(u8 *)((u8 *)g_newArenaName_v + 0x21))
+#undef g_newIdConfirmChoice
+#define g_newIdConfirmChoice (*(int *)g_newIdConfirmChoice_v)
+#undef g_newIdConfirmRects
+#define g_newIdConfirmRects ((int *)g_newIdConfirmRects_v)
 #undef g_newIdFormBottom
 #define g_newIdFormBottom (*(int *)g_newIdFormBottom_v)
 #undef g_newIdFormLeft
@@ -1980,8 +1982,6 @@ extern struct GameData g_data;
 #define g_playerSex (*(int *)g_playerSex_v)
 #undef g_playerSlotFlags
 #define g_playerSlotFlags ((int *)g_playerSlotFlags_v)
-#undef g_popupRects
-#define g_popupRects ((int *)g_popupRects_v)
 #undef g_primarySoundBuffer
 #define g_primarySoundBuffer (*(void * *)g_primarySoundBuffer_v)
 #undef g_profileColour
@@ -2292,8 +2292,6 @@ extern struct GameData g_data;
 #define g_roomJoinNeedsPassword (*(int *)g_roomJoinNeedsPassword_v)
 #undef g_roomJoined
 #define g_roomJoined (*(int *)g_roomJoined_v)
-#undef g_roomLeaveDialog
-#define g_roomLeaveDialog (*(int *)g_roomLeaveDialog_v)
 #undef g_roomList
 #define g_roomList ((u8 *)g_roomList_v)
 #undef g_roomListCount
@@ -2338,8 +2336,6 @@ extern struct GameData g_data;
 #define g_roomPanelEase (*(float *)g_roomPanelEase_v)
 #undef g_roomPlayers
 #define g_roomPlayers (*(u8 *)((u8 *)g_roomSettingsName_v + 0x21))
-#undef g_roomPopup
-#define g_roomPopup (*(int *)g_roomPopup_v)
 #undef g_roomRecCustom
 #define g_roomRecCustom (*(u8 *)((u8 *)g_roomRecName_v + 0x22))
 #undef g_roomRecFragLimit
@@ -2388,6 +2384,8 @@ extern struct GameData g_data;
 #define g_roomTimeLimit (*(u8 *)((u8 *)g_roomSettingsName_v + 0x25))
 #undef g_roomTunnelDepth
 #define g_roomTunnelDepth (*(u32 *)g_roomTunnelDepth_v)
+#undef g_roomUpdateNotice
+#define g_roomUpdateNotice (*(int *)g_roomUpdateNotice_v)
 #undef g_saveFileNames
 #define g_saveFileNames ((char *)g_data.g_saveFileNames_)
 #undef g_savedColourChoices
@@ -2816,6 +2814,8 @@ extern struct GameData g_data;
 #define g_unusedStartupWord2 (*(u32 *)g_unusedStartupWord2_v)
 #undef g_unusedStartupWord3
 #define g_unusedStartupWord3 (*(int *)g_unusedStartupWord3_v)
+#undef g_updateNoticeRects
+#define g_updateNoticeRects ((int *)g_updateNoticeRects_v)
 #undef g_vecOrigin
 #define g_vecOrigin (*(float *)((u8 *)g_vecOriginXyz_v + 0x0))
 #undef g_vecOriginXyz

@@ -36,7 +36,7 @@ void (lobby_setSubState1)(void)
 {
 	static const u32 cleared[] = { (OBJ(g_camPoints) + 0x14), ADDR(g_serverConnected), ADDR(g_lobbyRefreshing), ADDR(g_arenaSearchStarted), ADDR(g_serverSearching), ADDR(g_lobbyJoinStarted), ADDR(g_lobbyJoinRequest), ADDR(g_lanSearch),
 	                               ADDR(g_lobbySearching), ADDR(g_arenaHaveList), ADDR(g_arenaListFull), ADDR(g_gameCount), ADDR(g_lobbyBlinkClock), ADDR(g_localPlayer), ADDR(g_gameListTop), ADDR(g_lobbyListRow),
-	                               ADDR(g_arenaListClickArmed), ADDR(g_arenaSearchClock), ADDR(g_lobbyPanelsOff), ADDR(g_arenaConfirming), ADDR(g_lobbyConnectionOpen), ADDR(g_arenaLeaving), ADDR(g_arenaListRefreshTimer), ADDR(g_arenaFull) };
+	                               ADDR(g_arenaListClickArmed), ADDR(g_arenaSearchClock), ADDR(g_lobbyPanelsOff), ADDR(g_arenaConfirming), ADDR(g_lobbyConnectionOpen), ADDR(g_arenaUpdateNotice), ADDR(g_arenaListRefreshTimer), ADDR(g_arenaFull) };
 	int z = g_menuCameraHeight;
 	g_camPoint1X = 0x420c0000;   /* 35.0 */
 	g_camPoint1Z = z;
@@ -106,7 +106,7 @@ void (mapList_init)(void)
    list */
 void (lobby_setSubState2)(void)
 {
-	static const u32 cleared[] = { ADDR(g_arenaLobbyState), ADDR(g_connectionAwaited), ADDR(g_lobbyPending), ADDR(g_createQuitDialog), ADDR(g_arenaGameSetUp), ADDR(g_lobbyPanelsOff), ADDR(g_arenaLeaving), ADDR(g_editingNewArenaName),
+	static const u32 cleared[] = { ADDR(g_arenaLobbyState), ADDR(g_connectionAwaited), ADDR(g_lobbyPending), ADDR(g_createQuitDialog), ADDR(g_arenaGameSetUp), ADDR(g_lobbyPanelsOff), ADDR(g_arenaUpdateNotice), ADDR(g_editingNewArenaName),
 	                               ADDR(g_editingNewArenaFragLimit), ADDR(g_editingNewArenaTimeLimit), ADDR(g_typingArenaPassword) };
 	int z = g_menuCameraHeight;
 	g_camPoint2X = 0xc20c0000;   /* -35.0 */
@@ -144,7 +144,7 @@ void (room_loadSettingsRecord)(void)
 /* 0x433790: the create-game page (state 2) entered: the room's settings record, its state cleared, the map list */
 void (room_enterCreatePage)(void)
 {
-	static const u32 cleared[] = { ADDR(g_arenaLobbyState), ADDR(g_connectionAwaited), ADDR(g_lobbyPending), ADDR(g_arenaGameSetUp), ADDR(g_arenaLeaving), ADDR(g_editingRoomName), ADDR(g_editingFragLimit), ADDR(g_editingTimeLimit),
+	static const u32 cleared[] = { ADDR(g_arenaLobbyState), ADDR(g_connectionAwaited), ADDR(g_lobbyPending), ADDR(g_arenaGameSetUp), ADDR(g_arenaUpdateNotice), ADDR(g_editingRoomName), ADDR(g_editingFragLimit), ADDR(g_editingTimeLimit),
 	                               ADDR(g_editingRoomPassword) };
 	room_loadSettingsRecord();
 	g_roomState = 2;
@@ -359,13 +359,13 @@ u32 (lobby_keysBack)(void)
 		return g_dialogOpen;
 	u32 r = input_justPressed(g_dikC);
 	if (r) {
-		g_arenaLeaving = 0;
+		g_arenaUpdateNotice = 0;
 		return r;
 	}
 	r = input_justPressed(g_dikO);
 	if (!r)
 		return 0;
-	g_arenaLeaving = 0;
+	g_arenaUpdateNotice = 0;
 	return app_closeWindow(2);
 }
 
@@ -394,11 +394,11 @@ u32 (lobby_processKeys)(void)
 	case 0:
 		return lobbyPlayer_keys();   /* lobbyPlayer_keys */
 	case 1:
-		if (g_arenaLeaving)
-			return lobbyJoin_keys();   /* lobbyJoin_keys */
+		if (g_arenaUpdateNotice)
+			return arenaUpdateNotice_keys();   /* arenaUpdateNotice_keys */
 		return lobbyJoin_keysChat();       /* lobbyJoin_keysChat */
 	case 2:
-		if (g_arenaLeaving)
+		if (g_arenaUpdateNotice)
 			return lobby_keysBack();   /* lobby_keysBack */
 		if (g_mapListOpen)
 			return room_mapListKeys();   /* the map list */
@@ -418,16 +418,16 @@ u32 (lobby_quitDialogClicks)(void)
 	if (g_dialogOpen)
 		return g_dialogOpen;
 	if (g_rightClick)
-		g_arenaLeaving = 0;
+		g_arenaUpdateNotice = 0;
 	if (!g_mouseClick)
 		return 0;
 	int button = arenaCreate_hitTest(g_mouseX, g_mouseY);   /* the dialog's hit test */
 	if (button == 0) {
-		g_arenaLeaving = 0;
+		g_arenaUpdateNotice = 0;
 		return (u32)app_closeWindow(2);
 	}
 	if (button == 1) {
-		g_arenaLeaving = 0;
+		g_arenaUpdateNotice = 0;
 		return 0;
 	}
 	return (u32)(button - 1);
@@ -478,11 +478,11 @@ u32 (lobby_clicks)(void)
 	case 1:
 		if (g_arenaConfirming)
 			return lobby_close();   /* lobby_close */
-		if (g_arenaLeaving)
+		if (g_arenaUpdateNotice)
 			return lobby_quitDialogClicks();   /* lobby_quitDialogClicks */
 		return arenaGames_mouse();       /* arenaGames_mouse */
 	case 2:
-		if (g_arenaLeaving)
+		if (g_arenaUpdateNotice)
 			return create_quitDialogClicks();   /* create_quitDialogClicks */
 		if (g_mapListOpen)
 			return mapList_mouse();   /* mapList_mouse: the map list */
@@ -555,16 +555,16 @@ u32 (create_quitDialogClicks)(void)
 		if (GAME_VAR(int, panels[k]))
 			return GAME_VAR(u32, panels[k]);
 	if (g_rightClick)
-		g_arenaLeaving = 0;
+		g_arenaUpdateNotice = 0;
 	if (!g_mouseClick)
 		return 0;
 	int button = arenaCreate_hitTest(g_mouseX, g_mouseY);
 	if (button == 0) {
-		g_arenaLeaving = 0;
+		g_arenaUpdateNotice = 0;
 		return (u32)app_closeWindow(2);
 	}
 	if (button == 1) {
-		g_arenaLeaving = 0;
+		g_arenaUpdateNotice = 0;
 		return 0;
 	}
 	return (u32)(button - 1);
@@ -1080,7 +1080,7 @@ u32 (arena_connectionOutcome)(void)
 	u32 r = net_disconnect();   /* net_disconnect: the connection closed */
 	g_connectStep = 2;
 	if (state == 3)
-		g_arenaLeaving = 1;
+		g_arenaUpdateNotice = 1;
 	g_connectionAwaited = 0;
 	g_arenaGameSetUp = 0;
 	if (state == 4)

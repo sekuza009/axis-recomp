@@ -71,7 +71,7 @@ static void armc_tabs(u32 rec)
 
 void (arenaCreate_layout)(void) { rects_column(OBJ(g_arenaCreateRects), OBJ(g_arenaCreateRects) + 2 * 16, 0xb4); }
 
-void (leaveDialog_layout)(void) { rects_column(OBJ(g_leaveDialogRects), OBJ(g_leaveDialogRects) + 2 * 16, 0xb4); }
+void (updateNotice_layout)(void) { rects_column(OBJ(g_updateNoticeRects), OBJ(g_updateNoticeRects) + 2 * 16, 0xb4); }
 
 void (deleteDialog_layout)(void) { rects_row(OBJ(g_deleteDialogRects), OBJ(g_deleteDialogRects) + 2 * 16, ADDR(g_profileDialogX), ADDR(g_profileDialogY), 0x6e, 0xce, 0x3c, 0x5c, 0x78); }
 
@@ -79,7 +79,7 @@ void (logOutDialog_layout)(void) { rects_row(OBJ(g_logOutDialogRects), OBJ(g_log
 
 void (newNameDialog_layout)(void) { rects_row(OBJ(g_newNameDialogRects), OBJ(g_newNameDialogRects) + 2 * 16, ADDR(g_newNameDialogLeft), ADDR(g_newNameDialogTop), 0xa0, 0x100, 0x5a, 0x7a, 0x78); }
 
-void (popup_layout)(void) { rects_row(OBJ(g_popupRects), OBJ(g_popupRects) + 2 * 16, OBJ(g_roomDialogBox), (OBJ(g_roomDialogBox) + 0xc), 0x64, 0xdc, -0x40, -0x20, 0xb4); }
+void (newIdConfirm_layout)(void) { rects_row(OBJ(g_newIdConfirmRects), OBJ(g_newIdConfirmRects) + 2 * 16, OBJ(g_roomDialogBox), (OBJ(g_roomDialogBox) + 0xc), 0x64, 0xdc, -0x40, -0x20, 0xb4); }
 
 void (lobbyTop_layout)(void) { rects_row(OBJ(g_lobbyTopRects), OBJ(g_lobbyTopRects) + 2 * 16, OBJ(g_lobbyTopRect), (OBJ(g_lobbyTopRect) + 0x4), 0x32, 0xe6, 0x64, 0x94, 0xc8); }
 

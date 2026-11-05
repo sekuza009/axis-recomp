@@ -79,7 +79,7 @@ void (menuState400_enter)(void)
 		{ ADDR(g_newArenaFormRight), 0x258 } };
 	static const u32 cleared1[] = { ADDR(g_typingArenaName), ADDR(g_editingNewArenaName), ADDR(g_editingNewArenaFragLimit), ADDR(g_editingNewArenaTimeLimit), ADDR(g_typingArenaPassword), ADDR(g_lanSearch), ADDR(g_lobbySearching), ADDR(g_arenaHaveList),
 	                                ADDR(g_arenaListFull), ADDR(g_gameCount), ADDR(g_lobbyBlinkClock) };
-	static const u32 cleared2[] = { ADDR(g_localPlayer), ADDR(g_gameListTop), ADDR(g_lobbyListRow), ADDR(g_arenaSearchStarted), ADDR(g_serverSearching), OBJ(g_arenaBright), ADDR(g_arenaLeaving), ADDR(g_arenaLobbyState) };
+	static const u32 cleared2[] = { ADDR(g_localPlayer), ADDR(g_gameListTop), ADDR(g_lobbyListRow), ADDR(g_arenaSearchStarted), ADDR(g_serverSearching), OBJ(g_arenaBright), ADDR(g_arenaUpdateNotice), ADDR(g_arenaLobbyState) };
 	static const Store state[] = {
 		{ ADDR(g_arenaCameraMode), 2 }, { ADDR(g_lastPanel), 999 }, { (OBJ(g_arenaBright) + 0x4), ONE }, { (OBJ(g_arenaBright) + 0x8), ONE }, { (OBJ(g_arenaBright) + 0xc), ONE },
 		{ OBJ(g_arenaDim), 0x3e99999a }, { (OBJ(g_arenaDim) + 0x4), 0x3f333333 }, { (OBJ(g_arenaDim) + 0x8), 0x3f333333 }, { (OBJ(g_arenaDim) + 0xc), ONE }, { ADDR(g_unusedArenaWord), 0xf },
@@ -172,7 +172,7 @@ void (menuState800_enterGameRoom)(void)
 		{ (OBJ(g_camPoints) + 0x30), 0xc1a00000 }, { (OBJ(g_camPoints) + 0x34), 0xc1200000 }, { (OBJ(g_camAims) + 0x30), 0x428c0000 }, { (OBJ(g_camAims) + 0x34), 0x425c0000 },
 		{ (OBJ(g_camPoints) + 0x40), 0xc1a00000 }, { (OBJ(g_camPoints) + 0x44), 0 }, { (OBJ(g_camAims) + 0x40), 0x428c0000 }, { (OBJ(g_camAims) + 0x44), 0 } };
 	static const u32 cleared[] = { ADDR(g_roomRequestOut), ADDR(g_roomAnswerAwaited), ADDR(g_unusedRoomWord), ADDR(g_arenaGameSetUp), ADDR(g_roomLoginDue), ADDR(g_rankingRequestPending), ADDR(g_roomConnected), ADDR(g_roomAwaitingServer),
-	                               ADDR(g_roomLeaveDialog) };
+	                               ADDR(g_roomUpdateNotice) };
 	g_matchMode = 2;
 	arena_clearSessionEntry();
 	STORE_ALL(layout);
@@ -182,7 +182,7 @@ void (menuState800_enterGameRoom)(void)
 	gameListStop_layout();
 	roomSettings_layout();
 	ranking_layout();
-	leaveDialog_layout();
+	updateNotice_layout();
 	STORE_ALL(colours_camera);
 	camera_heights(5);
 	g_menuLookAtX = (*(int *)&g_menuCameraLook);
@@ -206,11 +206,11 @@ void (menuState800_enterGameRoom)(void)
 
 /* ---- the front end's per-frame dispatch ---- */
 
-/* 0x445e40: the frame's input (0x445c60), then, unless the menu camera is moving (g_menuCameraMove), the message box's keys while
-   it is shown, else the current screen's (0x76d3e8): 200 the title, 210 profiles, 300 the main menu, 400 the lobby,
+/* 0x445e40: the menus' mouse, once per frame: the mouse read (input_updateMouse), then, unless the menu camera is moving
+   (g_menuCameraMove), the message box's clicks while it is shown, else the current screen's (0x76d3e8): 200 the title, 210 profiles, 300 the main menu, 400 the lobby,
    500 missions, 600 setup, 700 the ARM CENTER, 800 the game room, 900 skirmish, 9999 in a match. Returns what the
    handler leaves in eax (or the original's leftover of its compares) */
-u32 (menu_frameInput)(void)
+u32 (menu_processMouse)(void)
 {
 	input_updateMouse();
 	if (g_menuCameraMove)
@@ -226,7 +226,7 @@ u32 (menu_frameInput)(void)
 	case 500: return missionSelect_clicks();
 	case 600: return setup_tabClicks();
 	case 700: return armc_mouse();   /* armc_mouse */
-	case 800: return room_processKeys();   /* room_processKeys */
+	case 800: return room_clicksByState();
 	case 900: return skirmish_pageClicks();
 	case 9999: return armc_mouseLook();  /* armc_mouseLook */
 	}

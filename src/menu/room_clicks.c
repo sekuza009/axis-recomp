@@ -1,39 +1,40 @@
 /* room_clicks.c: the game room's small handlers: clicks on its popups' buttons, starting the chat line, and the
-   white fade over the screen. Buttons are hit-tested with the pointer (leaveDialog_hitTest and its kind: the index of the
+   white fade over the screen. Buttons are hit-tested with the pointer (updateNotice_hitTest and its kind: the index of the
    button under it, or -1). */
 #include "../game.h"
 #include <string.h>
 
 
-/* 0x435ab0: the "leave" dialog: yes (button 0) closes it and leaves (the game closes with exit code 2), no (button 1) only closes it */
-void (leaveDialog_clicks)(void)
+/* 0x435ab0: the update notice ("THIS PROGRAM HAS BEEN UPDATED"): OK (button 0) closes it and the game (exit code 2, for the
+   launcher to update), CANCEL (button 1) only closes it */
+void (updateNotice_clicks)(void)
 {
 	if (g_dialogOpen != 0 || g_mouseClick == 0)
 		return;
-	switch (leaveDialog_hitTest(g_mouseX, g_mouseY)) {
+	switch (updateNotice_hitTest(g_mouseX, g_mouseY)) {
 	case 0:
-		g_roomLeaveDialog = 0;
+		g_roomUpdateNotice = 0;
 		app_closeWindow(2);
 		break;
 	case 1:
-		g_roomLeaveDialog = 0;
+		g_roomUpdateNotice = 0;
 		break;
 	}
 }
 
-/* 0x435ce0: the popup's two buttons (popup_hitTest) close it with 1 or 2 */
-void (popup_clicks)(void)
+/* 0x435ce0: the new ID confirmation's two buttons (newIdConfirm_hitTest): OK (1) or CANCEL (2) chosen */
+void (newIdConfirm_clicks)(void)
 {
 	if (g_mouseClick == 0)
 		return;
-	switch (popup_hitTest(g_mouseX, g_mouseY)) {
+	switch (newIdConfirm_hitTest(g_mouseX, g_mouseY)) {
 	case 0:
 		sound_playMenu(0);
-		g_roomPopup = 1;
+		g_newIdConfirmChoice = 1;
 		break;
 	case 1:
 		sound_playMenu(0);
-		g_roomPopup = 2;
+		g_newIdConfirmChoice = 2;
 		break;
 	}
 }
@@ -90,9 +91,9 @@ void (arena_askJoinPassword)(void)
 	}
 }
 
-/* 0x436940, 0x407970 (lobbyJoin_keys): the leave question's keys in the room and in the lobby: back closes it, O
-   leaves (the game closes with exit code 2) */
-static void leave_keys(int *question)
+/* 0x436940, 0x407970: the update notice's keys in the room and in the lobby: back closes it, O closes the game
+   (exit code 2) */
+static void update_notice_keys(int *question)
 {
 	if (input_justPressed(g_keyBack)) {
 		*question = 0;
@@ -102,8 +103,8 @@ static void leave_keys(int *question)
 	}
 }
 
-void (leaveDialog_keys)(void) { leave_keys(&g_roomLeaveDialog); }
-void (lobbyJoin_keys)(void) { leave_keys(&g_arenaLeaving); }
+void (roomUpdateNotice_keys)(void) { update_notice_keys(&g_roomUpdateNotice); }
+void (arenaUpdateNotice_keys)(void) { update_notice_keys(&g_arenaUpdateNotice); }
 
 /* 0x443e20: the skirmish mission list's clicks (no dialog open, 0x90d1c4): a right click leaves (skirmish_leave); a
    left click on its buttons (skirmishList_hitTest): rows 0..7 pick that mission (skirmish_clickRow), 8 its briefing
@@ -159,10 +160,10 @@ u32 (room_keys)(void)
 	return 0;
 }
 
-/* 0x435b00: the game room's left clicks (nothing open: 0x9dd1c8, 0x9dd838; no right click) on its buttons
-   (0x432200): 0 / 1 open the room's two lists (0x433b00, 0x433bb0), 2 opens the chat line, 3 leaves for the main
-   menu (the keyboard taken back if it was let go, the connection closed), 4 0x4338c0. Returns the action's eax */
-u32 (room_leftClicks)(void)
+/* 0x435b00: the Ladder login's clicks (nothing pending: 0x9dd1c8, 0x9dd838) on its buttons (roomLogin_hitTest): 0 / 1
+   type the ID / the password (roomLogin_editId / Password), 2 LOG IN (the login due), 3 CANCEL back to the main
+   menu (the keyboard taken back if it was let go, the connection closed), 4 NEW ID (room_openNewIdForm). Returns the action's eax */
+u32 (roomLogin_clicks)(void)
 {
 	u32 open = (*(u32 *)&g_roomLoginDue);
 	if (open)
@@ -192,7 +193,7 @@ u32 (room_leftClicks)(void)
 		sound_playMenu(0);
 		g_loginToSend = 1;
 		g_roomLoginDue = 1;
-		g_roomLeaveDialog = 0;
+		g_roomUpdateNotice = 0;
 		return 1;
 	case 3:
 		if (g_textFieldOpen) {
@@ -331,7 +332,7 @@ u32 (room_hostingStep)(void)
 	}
 	switch (step) {
 	case 3:
-		g_arenaLeaving = 1;
+		g_arenaUpdateNotice = 1;
 		/* fall through */
 	case 0:
 		g_connectionAwaited = 0;

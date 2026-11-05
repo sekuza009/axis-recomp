@@ -28,9 +28,9 @@ static void dialog_opened(int state)
 void (room_openNewIdConfirm)(void)
 {
 	set_box(OBJ(g_roomDialogBox), 0x50, 0x78, 0x230, 0x168);
-	popup_layout();
+	newIdConfirm_layout();
 	dialog_opened(0x58);
-	g_roomPopup = 0;
+	g_newIdConfirmChoice = 0;
 }
 
 /* 0x4338c0: the new-ID form (state 0x4d = 77) opened: its window laid out, the account fields emptied (0x54 bytes) */
@@ -41,7 +41,7 @@ void (room_openNewIdForm)(void)
 	memset((void *)OBJ(g_accountName), 0, 0x54);
 	dialog_opened(0x4d);
 	g_openLoginName = 1;
-	g_roomLeaveDialog = 0;
+	g_roomUpdateNotice = 0;
 }
 
 /* 0x434640: the Ladder login (state 0x42 = 66) opened, its ID field filled from g_ladderId */
@@ -73,32 +73,31 @@ void (room_enterGameList)(void)
 
 #define sound(id) GAME_FN(sound_playMenu, 0x41e760, u32, int)(id)   /* sound_playMenu, its eax */
 
-/* 0x4378e0: the game room's mouse, by state (0x9dd834): 0 .. 2, 4 and 99 while no dialog is open (0x9dd7d8; 2: the map
+/* 0x4378e0: the game room's keys, by state (0x9dd834): 0 .. 2, 4 and 99 while no dialog is open (0x9dd7d8; 2: the map
    list's keys when open), 66 and 88 (a message box 0x9dd850 first), 77. Returns what the handler leaves in eax */
-u32 (room_mouse)(void)
+u32 (room_keysByState)(void)
 {
 	u32 state = (*(u32 *)&g_roomState);
 	int dialog = g_roomDialogOpen;
 	switch (state) {
-	case 0: return dialog ? (u32)dialog : room_readyKeys();   /* room_readyKeys */
+	case 0: return dialog ? (u32)dialog : account_keys();   /* account_keys */
 	case 1: return dialog ? (u32)dialog : room_gameListKeys();
 	case 2:
 		if (dialog)
 			return (u32)dialog;
 		return g_mapListOpen ? room_mapListKeys() : room_settingsAfterTyping();
 	case 4: return dialog ? (u32)dialog : ranking_keys();
-	case 66: return g_roomLeaveDialog == 1 ? leaveDialog_keys() : roomLogin_keys();
+	case 66: return g_roomUpdateNotice == 1 ? roomUpdateNotice_keys() : roomLogin_keys();
 	case 77: return newIdForm_keys();
-	case 88: return g_roomLeaveDialog == 1 ? leaveDialog_keys() : room_leaveKeys();
+	case 88: return g_roomUpdateNotice == 1 ? roomUpdateNotice_keys() : newIdConfirm_keys();
 	case 99: return dialog ? (u32)dialog : room_keys();
 	}
 	return state;
 }
 
-/* 0x437240: the game room's keys (unless typing): with the confirm box up (0x9dd6d4) one key closes it; else the
-   first key starts the game when ready (0x434b90), or plays the refusal sound and shows message 5; two more keys
-   leave the screen (g_roomCameraMode 0: back home). Returns what the original leaves in eax */
-u32 (room_readyKeys)(void)
+/* 0x437240: the account page's keys (unless typing): while the server is awaited (0x9dd6d4) only Esc, leaving; else O
+   sends the account change (account_sendChange; refused: sound 6 and message 5); C or Esc leave the page (g_roomCameraMode 0: back home). Returns what the original leaves in eax */
+u32 (account_keys)(void)
 {
 	if (g_textFieldOpen)
 		return (*(u32 *)&g_textFieldOpen);
@@ -117,24 +116,24 @@ u32 (room_readyKeys)(void)
 	return r;
 }
 
-/* 0x435c20: the game settings dialog's clicks: a right click (or button 5) closes it, buttons 0 .. 3 pick an option
-   page, 4 applies. Returns what the original leaves in eax */
-u32 (settingsDialog_clicks)(void)
+/* 0x435c20: the new-ID form's clicks: a right click (or button 5, CANCEL) back to the login, buttons 0 .. 3 type into
+   that field (newIdForm_openField), 4 (OK) checks the form (newIdForm_check). Returns what the original leaves in eax */
+u32 (newIdForm_clicks)(void)
 {
 	if (g_rightClick) {
 		sound(0);
-		return room_openLogin();   /* closed */
+		return room_openLogin();
 	}
 	if (!g_mouseClick)
 		return 0;
-	u32 button = ((u32)newIdForm_hitTest(g_mouseX, g_mouseY));   /* the dialog's hit test */
+	u32 button = ((u32)newIdForm_hitTest(g_mouseX, g_mouseY));
 	if (button <= 3) {
 		newIdForm_endTyping();
 		return ((u32)newIdForm_openField((int)button));
 	}
 	if (button == 4) {
 		sound(0);
-		return newIdForm_check();   /* applied */
+		return newIdForm_check();
 	}
 	if (button == 5) {
 		sound(0);
@@ -217,14 +216,14 @@ u32 (arena_joinListed)(int i)
 	return timer;
 }
 
-/* 0x436800: the game room's keys, by state (0x9dd834): as room_mouse's mouse, with the room's own handlers (state 1:
-   the join's wait while it runs, 0x4db8b4). Returns what the handler leaves in eax */
-u32 (room_processKeys)(void)
+/* 0x436800: the game room's clicks, by state (0x9dd834), as room_keysByState does the keys (state 1: the stop button
+   while a join is waited for, 0x4db8b4). Returns what the handler leaves in eax */
+u32 (room_clicksByState)(void)
 {
 	u32 state = (*(u32 *)&g_roomState);
 	int dialog = g_roomDialogOpen;
 	switch (state) {
-	case 0: return dialog ? (u32)dialog : room_openClicks();   /* room_openClicks */
+	case 0: return dialog ? (u32)dialog : account_clicks();   /* account_clicks */
 	case 1:
 		if (dialog)
 			return (u32)dialog;
@@ -234,18 +233,18 @@ u32 (room_processKeys)(void)
 			return (u32)dialog;
 		return g_mapListOpen ? mapList_mouse() : room_settingsClicks();
 	case 4: return dialog ? (u32)dialog : ranking_clicks();
-	case 66: return g_roomLeaveDialog ? leaveDialog_clicks() : room_leftClicks();
-	case 77: return settingsDialog_clicks();   /* settingsDialog_clicks */
-	case 88: return g_roomLeaveDialog ? leaveDialog_clicks() : popup_clicks();
+	case 66: return g_roomUpdateNotice ? updateNotice_clicks() : roomLogin_clicks();
+	case 77: return newIdForm_clicks();   /* newIdForm_clicks */
+	case 88: return g_roomUpdateNotice ? updateNotice_clicks() : newIdConfirm_clicks();
 	case 99: return dialog ? (u32)dialog : room_pageClicks();
 	}
 	return state;
 }
 
-/* 0x435e70: the game room's clicks while it is open (g_roomCameraMode 2; no confirm box, dialog or typing): buttons 0 .. 3
-   edit the settings' fields, 4 starts the game when ready (else message 5 and the refusal sound), 5 (or a right click)
-   leaves. Returns what the original leaves in eax */
-u32 (room_openClicks)(void)
+/* 0x435e70: the account page's clicks (g_roomCameraMode 2; not while the server is awaited, a dialog or typing): buttons
+   0 .. 3 edit its fields (the old password, the new one, its repeat, the e-mail), 4 sends the change
+   (account_sendChange; refused: message 5 and the refusal sound), 5 (or a right click) leaves the page. Returns what the original leaves in eax */
+u32 (account_clicks)(void)
 {
 	int mode = g_roomCameraMode;
 	if (mode == 1 || mode == 0 || g_roomAwaitingServer == 1)
@@ -257,7 +256,7 @@ u32 (room_openClicks)(void)
 	if (!g_rightClick) {
 		if (!g_mouseClick)
 			return 0;
-		u32 button = account_hitTest(g_mouseX, g_mouseY);   /* the room's hit test */
+		u32 button = account_hitTest(g_mouseX, g_mouseY);
 		switch (button) {
 		case 0: return account_editOldPassword();
 		case 1: return account_editPassword();
@@ -415,7 +414,7 @@ void (roomLogin_update)(void)
 		reg_writeCharacterSettings();
 		login_takeAccountRecord();
 	} else if (answer == 0x2a)
-		g_roomLeaveDialog = 1;
+		g_roomUpdateNotice = 1;
 	else if (answer == 0x1f || answer == 0x20)
 		menu_showMessage(answer);
 	else if (answer == 0x22)
@@ -482,19 +481,19 @@ void (newIdForm_update)(void)
 #undef EDITING
 }
 
-/* 0x43e610: the new ID's confirmation (state 88): its choice (g_roomPopup: 1 OK registers it, newId_register; 2 back to
+/* 0x43e610: the new ID's confirmation (state 88): its choice (g_newIdConfirmChoice: 1 OK registers it, newId_register; 2 back to
    the form, state 0x4d), then the server's answer (0xa0b37c, when awaited: 0x9dd6a4): 33 accepted (the settings
    written, to state 99), 30 message 0x22, 42 a message box, anything else message 0x2a. Returns what the original leaves in eax */
 u32 (newIdConfirm_update)(void)
 {
-	u32 r = (*(u32 *)&g_roomPopup) - 2;   /* (what the original's compare chain leaves) */
-	if (g_roomPopup == 1) {
+	u32 r = (*(u32 *)&g_newIdConfirmChoice) - 2;   /* (what the original's compare chain leaves) */
+	if (g_newIdConfirmChoice == 1) {
 		r = newId_register();   /* newId_register */
-		g_roomPopup = 0;
-	} else if (g_roomPopup == 2) {
+		g_newIdConfirmChoice = 0;
+	} else if (g_newIdConfirmChoice == 2) {
 		r = 0;
 		g_roomState = 0x4d;
-		g_roomPopup = 0;
+		g_newIdConfirmChoice = 0;
 	}
 	if (!g_roomAnswerAwaited)
 		return r;
@@ -518,7 +517,7 @@ u32 (newIdConfirm_update)(void)
 	case 42:
 		g_roomRequestOut = 0;
 		g_gameServerAnswer15 = 0;
-		g_roomLeaveDialog = 1;
+		g_roomUpdateNotice = 1;
 		return answer;
 	}
 	g_roomRequestOut = 0;
@@ -652,11 +651,11 @@ u32 (newIdForm_draw)(void)
 #undef Y1
 }
 
-/* the confirmation over a room dialog (0x9dd850): the screen dimmed, a box with two lines (0x74dfa4, 0x74e024) and
-   its two buttons (MSG(115, "$[0] O K"); the one under the pointer, by leaveDialog_hitTest, in cyan) */
-static void confirm_box(void)
+/* the update notice over a room dialog (g_roomUpdateNotice): the screen dimmed, a box with two lines (0x74dfa4, 0x74e024) and
+   its two buttons (MSG(115, "$[0] O K"); the one under the pointer, by updateNotice_hitTest, in cyan) */
+static void update_notice(void)
 {
-	int hovered = leaveDialog_hitTest(g_mouseX, g_mouseY);
+	int hovered = updateNotice_hitTest(g_mouseX, g_mouseY);
 	set_colour_bits(g_rectColour, 0x3dcccccd, 0x3dcccccd, 0x3dcccccd, 0x3f000000);   /* 0.1, 0.1, 0.1, 0.5 */
 	menu_drawRect(0, 0, 0x280, 0x1e0, 1);
 	set_colour_bits(g_rectColour, 0x3dcccccd, 0x3dcccccd, 0x3dcccccd, 0x3f4ccccd);   /* 0.1, 0.1, 0.1, 0.8 */
@@ -683,7 +682,7 @@ static void confirm_box(void)
 
 /* 0x439e00: the new ID's confirmation (state 88; 0x9dd1a0 .. 0x9dd1ac; only its frame while a message box is open): the title
    MSG(351, "CREATE NEW ID"), a rule, the new ID (g_accountName) in a green-framed box, the note MSG(352, "NEW ID ON REGISTRATION"), two buttons (MSG(354, "$[0] O K"), 0x80
-   apart; the one under the pointer by popup_hitTest bright), the confirmation (0x9dd850) and the border. Returns the
+   apart; the one under the pointer by newIdConfirm_hitTest bright), the update notice (g_roomUpdateNotice) and the border. Returns the
    frame's or the border's eax */
 u32 (newIdConfirm_draw)(void)
 {
@@ -694,7 +693,7 @@ u32 (newIdConfirm_draw)(void)
 	if (g_dialogOpen)
 		return menu_drawFrame(X0, Y0, X1, Y1);   /* menu_drawFrame */
 	const u32 *bright = g_roomBright, *dim = g_roomDim;
-	int hovered = popup_hitTest(g_mouseX, g_mouseY);
+	int hovered = newIdConfirm_hitTest(g_mouseX, g_mouseY);
 	gfx_setProjection2D3D(2);
 	glLoadIdentity();
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
@@ -723,8 +722,8 @@ u32 (newIdConfirm_draw)(void)
 		set_colour_bits(g_textColour, colour[0], colour[1], colour[2], colour[3]);
 		text_drawBox16(x + 0x64, Y1 - 0x38, x + 0xdc, (const char *)(MSG(354, "$[0] O K") + k * 0x80));
 	}
-	if (g_roomLeaveDialog)
-		confirm_box();
+	if (g_roomUpdateNotice)
+		update_notice();
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 	return GAME_FN(menu_drawTopRightOrnament, 0x428b50, u32, int, int, int, int)(X0, Y0, X1, Y1);   /* the border */
 #undef X0
@@ -737,7 +736,7 @@ u32 (newIdConfirm_draw)(void)
    MSG(331, "LADDER GAME ID MANAGER") and its rule, two labelled dark boxes (MSG(332, "YOUR ID"), 0x80 apart) with the name 0x9dd1d8 and the password
    0x9dd1f6 as stars (each left out while it is being typed in: 0x9dd830 / 0x9dd38c), three buttons (MSG(334, "LOG$[0] IN"); the
    one under the pointer, 2 .. 4 by roomLogin_hitTest, bright unless connecting), while connecting (0x9dd838) a box with
-   two lines (MSG(49, "CHECKING YOUR ID. PLEASE WAIT."), MSG(50, "PRESS ESC-KEY TO CANCEL")), the confirmation (0x9dd850) and the border. Returns the frame's or the border's
+   two lines (MSG(49, "CHECKING YOUR ID. PLEASE WAIT."), MSG(50, "PRESS ESC-KEY TO CANCEL")), the update notice (g_roomUpdateNotice) and the border. Returns the frame's or the border's
    eax */
 u32 (roomLogin_draw)(void)
 {
@@ -792,8 +791,8 @@ u32 (roomLogin_draw)(void)
 		text_drawBox16(0x69, 0xdc, 0x217, (const char *)MSG(49, "CHECKING YOUR ID. PLEASE WAIT."));
 		text_drawBox16(0x69, 0xf4, 0x217, (const char *)MSG(50, "PRESS ESC-KEY TO CANCEL"));
 	}
-	if (g_roomLeaveDialog)
-		confirm_box();
+	if (g_roomUpdateNotice)
+		update_notice();
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 	return menu_drawCornerOrnaments(X0, Y0, X1, Y1);   /* the border */
 #undef X0

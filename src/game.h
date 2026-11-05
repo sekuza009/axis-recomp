@@ -443,7 +443,7 @@ typedef struct { u32 vtable; void *banks[6]; i32 count; } TextureManager;   /* t
 
 /* ---- menus: the screens' frames and key handlers ---- */
 #define menu_frame() GAME_FN(menu_frame, 0x41fa40, void, void)()
-#define menu_frameInput() GAME_FN(menu_frameInput, 0x445e40, void, void)()
+#define menu_processMouse() GAME_FN(menu_processMouse, 0x445e40, void, void)()
 #define menu_processKeys() GAME_FN(menu_processKeys, 0x4319d0, void, void)()
 #define menu_frameBegin() GAME_FN(menu_frameBegin, 0x41f820, void, void)()
 #define menuState100_intro() GAME_FN(menuState100_intro, 0x41f540, void, void)()
@@ -482,7 +482,7 @@ typedef struct { u32 vtable; void *banks[6]; i32 count; } TextureManager;   /* t
 #define missionsel_keys() GAME_FN(missionsel_keys, 0x447c70, void, void)()
 #define setup_processTabKeys() GAME_FN(setup_processTabKeys, 0x4230a0, void, void)()
 #define armc_processInput() GAME_FN(armc_processInput, 0x410ab0, void, void)()
-#define room_mouse() GAME_FN(room_mouse, 0x4378e0, void, void)()
+#define room_keysByState() GAME_FN(room_keysByState, 0x4378e0, void, void)()
 #define skirmish_pageKeys() GAME_FN(skirmish_pageKeys, 0x4440f0, void, void)()
 #define freeCam_keys() GAME_FN(freeCam_keys, 0x42ada0, void, void)()
 #define profileList_keys() GAME_FN(profileList_keys, 0x44c600, void, void)()
@@ -617,8 +617,8 @@ typedef struct { float r, g, b, a; } Colour;
 /* a rectangle in menu units in g_rectColour, filled or outlined (the patch DLL replaces it: kept original) */
 #define menu_drawRect(x0, y0, x1, y1, filled) GAME_FN(menu_drawRect, 0x427970, u32, int, int, int, int, int)(x0, y0, x1, y1, filled)
 /* the room's buttons under (x, y): the index of the button hit, or -1 */
-#define leaveDialog_hitTest(x, y) GAME_FN(leaveDialog_hitTest, 0x4321c0, int, int, int)(x, y)
-#define popup_hitTest(x, y) GAME_FN(popup_hitTest, 0x432280, int, int, int)(x, y)
+#define updateNotice_hitTest(x, y) GAME_FN(updateNotice_hitTest, 0x4321c0, int, int, int)(x, y)
+#define newIdConfirm_hitTest(x, y) GAME_FN(newIdConfirm_hitTest, 0x432280, int, int, int)(x, y)
 #define gameListStop_hitTest(x, y) GAME_FN(gameListStop_hitTest, 0x432340, int, int, int)(x, y)
 #define room_editJoinPassword() GAME_FN(room_editJoinPassword, 0x434320, void, void)()   /* open the message field */
 #define app_closeWindow(code) GAME_FN(app_closeWindow, 0x41e7a0, int, int)(code)   /* quit the game with exit code (app/app_quit.c) */
@@ -1076,7 +1076,7 @@ typedef struct { float r, g, b, a; } Colour;
 #define ptx_toRgba(y, dst, n) GAME_FN(ptx_toRgba, 0x46e8e0, void, const u8 *, u8 *, unsigned)(y, dst, n)
 #define ptx_layoutBlocks(src, dst, w, h, bpp) GAME_FN(ptx_layoutBlocks, 0x46ea30, void, const u8 *, u8 *, int, int, int)(src, dst, w, h, bpp)
 
-#define popup_layout() GAME_FN(popup_layout, 0x431c00, void, void)()
+#define newIdConfirm_layout() GAME_FN(newIdConfirm_layout, 0x431c00, void, void)()
 #define newIdForm_layout() GAME_FN(newIdForm_layout, 0x431b70, void, void)()
 #define tex_recolourMaterial(set, m, h1, c1, v1, h2, c2, v2) GAME_THISFN(tex_recolourMaterial, 0x456860, void, void *, int, u32, u32, u32, u32, u32, u32)(set, m, h1, c1, v1, h2, c2, v2)
 #define image_addColour(px, mode, part, colour) GAME_FN(image_addColour, 0x464a70, void, u8 *, int, const u32 *, const u8 *)(px, mode, part, colour)   /* a colour added to a part's RGBA pixels */
@@ -1244,7 +1244,7 @@ typedef struct { float r, g, b, a; } Colour;
 #define gameListStop_layout() GAME_FN(gameListStop_layout, 0x431db0, void, void)()
 #define roomSettings_layout() GAME_FN(roomSettings_layout, 0x431de0, void, void)()
 #define ranking_layout() GAME_FN(ranking_layout, 0x432040, void, void)()
-#define leaveDialog_layout() GAME_FN(leaveDialog_layout, 0x431aa0, void, void)()
+#define updateNotice_layout() GAME_FN(updateNotice_layout, 0x431aa0, void, void)()
 
 #define viewVolume_addQuad(view, texture, uv0, uv1, colour, points, kind, flag) GAME_THISFN(viewVolume_addQuad, 0x4848e0, void, void *, int, const u32 *, const u32 *, const u32 *, const float *, u32, int)(view, texture, uv0, uv1, colour, points, kind, flag)   /* a textured quad into the view volume */
 

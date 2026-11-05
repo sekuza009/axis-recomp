@@ -256,7 +256,7 @@ g_spiralTextures
 g_searchResult
 # globals whose addresses are only in reviewed tables (tools/names/split_tables_ok.txt), 2026-11-01
 g_arenaJoinNeedsPassword
-g_arenaLeaving
+g_arenaUpdateNotice
 g_arenaListRefreshTimer
 g_arenaSearchClock
 g_briefingEnd
@@ -470,7 +470,7 @@ g_roomGameListLeft
 g_roomGameListRight
 g_roomGameListTop
 g_roomJoined
-g_roomLeaveDialog
+g_roomUpdateNotice
 g_roomListDistanceLimit
 g_rankingPage
 g_roomListPages
@@ -481,7 +481,7 @@ g_roomLoginLeft
 g_roomLoginTop
 g_roomNameSum
 g_roomPanelBrightness
-g_roomPopup
+g_newIdConfirmChoice
 g_roomRefreshing
 g_roomRequestOut
 g_serverConnectionState
@@ -728,8 +728,8 @@ g_setupControlRects
 g_gameListRects
 g_newIdFormRects
 g_gameListStopRects
-g_leaveDialogRects
-g_popupRects
+g_updateNoticeRects
+g_newIdConfirmRects
 g_accountRects
 g_rankingRects
 g_roomSettingsRects

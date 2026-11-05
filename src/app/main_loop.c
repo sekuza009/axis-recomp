@@ -77,7 +77,7 @@ void (menu_frame)(void)
 	if (g_screen != g_lastScreen)
 		menu_enterState();
 	if (g_lobbyReply != 0x69 && g_lobbyReply != 0x68) {
-		menu_frameInput();
+		menu_processMouse();
 		menu_processKeys();
 	}
 	if (g_screen == 300 && g_replayZoomIn && !g_dialogPending) {

@@ -133,7 +133,7 @@ void (arena_drawGameList)(void)
 	menu_drawLine(X0 + 0x10, Y0 + 0x28, X1 - 0x10, Y0 + 0x28);
 	TEXT(bright);
 	text_draw16(X0 + 0x50, Y0 + 0x10, (const char *)MSG(141, "JOIN ARENA"));
-	int boxed = g_arenaConfirming || g_arenaLeaving || g_arenaFull || g_arenaJoinNeedsPassword;
+	int boxed = g_arenaConfirming || g_arenaUpdateNotice || g_arenaFull || g_arenaJoinNeedsPassword;
 	for (int k = 0; k < 3; k++) {
 		bind_buttons();
 		int x = X0 + k * 0xb4;
@@ -160,7 +160,7 @@ void (arena_drawGameList)(void)
 		bind_buttons();
 		int x = X0 + k * 0x96 + 0x5a;
 		int lit = 0;
-		if (hovered == k + 3 && !g_arenaConfirming && !g_arenaLeaving) {
+		if (hovered == k + 3 && !g_arenaConfirming && !g_arenaUpdateNotice) {
 			if (g_searching)
 				lit = k == 1;
 			else
@@ -202,7 +202,7 @@ void (arena_drawGameList)(void)
 		button(on == 0, 0x104, 0x118, 0x17c, 0x138, 0.7f);
 		text_drawBox16(0x104, 0x120, 0x17c, (const char *)MSG(116, "$[0] CANCEL"));
 	}
-	if (g_arenaLeaving) {
+	if (g_arenaUpdateNotice) {
 		arenaCreate_hitTest(g_mouseX, g_mouseY);   /* arenaCreate_hitTest (unused) */
 		RECT(0x3dcccccd, 0x3dcccccd, 0x3dcccccd, 0x3ecccccd);   /* 0.1, 0.1, 0.1, 0.4 */
 		menu_drawRect(0, 0, 0x280, 0x1e0, 1);
@@ -374,7 +374,7 @@ void (gameList_drawPage)(void)
 				g_serverAnswerIn = 0;
 				g_lobbyRefreshing = result == 1;
 				if (result == 3)
-					g_arenaLeaving = 1;
+					g_arenaUpdateNotice = 1;
 				else if (result == 0)
 					menu_showMessage(0x40);
 				else if (result == 4)
@@ -760,7 +760,7 @@ void (lobbyJoin_draw)(void)
 				g_serverAnswerIn = 0;
 				g_lobbyRefreshing = result == 1;
 				if (result == 3)
-					g_arenaLeaving = 1;
+					g_arenaUpdateNotice = 1;
 				else if (result == 0)
 					menu_showMessage(0x40);
 				else if (result == 4)

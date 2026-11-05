@@ -229,8 +229,8 @@
 #define g_gameListRects ((int *)IMG(0x9dcd48))   /* int[60]; gameList_hitTest's 15 hit rectangles (hit_tests.c) */
 #define g_newIdFormRects ((int *)IMG(0x9dce50))   /* int[28]; newIdForm_hitTest's 7 hit rectangles (hit_tests.c) */
 #define g_gameListStopRects ((int *)IMG(0x9dd308))   /* int[4]; gameListStop_hitTest's 1 hit rectangles (hit_tests.c) */
-#define g_leaveDialogRects ((int *)IMG(0x9dd390))   /* int[8]; leaveDialog_hitTest's 2 hit rectangles (hit_tests.c) */
-#define g_popupRects ((int *)IMG(0x9dd3b8))   /* int[8]; popup_hitTest's 2 hit rectangles (hit_tests.c) */
+#define g_updateNoticeRects ((int *)IMG(0x9dd390))   /* int[8]; updateNotice_hitTest's 2 hit rectangles (hit_tests.c) */
+#define g_newIdConfirmRects ((int *)IMG(0x9dd3b8))   /* int[8]; newIdConfirm_hitTest's 2 hit rectangles (hit_tests.c) */
 #define g_accountRects ((int *)IMG(0x9dd400))   /* int[24]; account_hitTest's 6 hit rectangles (hit_tests.c) */
 #define g_rankingRects ((int *)IMG(0x9dd4c0))   /* int[36]; ranking_hitTest's 9 hit rectangles (hit_tests.c) */
 #define g_roomSettingsRects ((int *)IMG(0x9dd6f8))   /* int[56]; roomSettings_hitTest's 14 hit rectangles (hit_tests.c) */
@@ -425,7 +425,7 @@
 #define g_roomJoinPassword (*(int *)g_roomTextAndRows)   /* the typed password (text from here) */
 #define g_roomJoinPassword4 (*(int *)(g_roomTextAndRows + 4))   /* the rows' start (cleared with the text) */
 #define g_rankingRows ((RankRow *)(g_roomTextAndRows + 4))   /* RankRow[10] */
-#define g_roomDialogBox ((int *)IMG(0x9dd1a0))   /* int[4]; the new ID confirmation's box (room_openNewIdConfirm; popup_layout) */
+#define g_roomDialogBox ((int *)IMG(0x9dd1a0))   /* int[4]; the new ID confirmation's box (room_openNewIdConfirm; newIdConfirm_layout) */
 #define g_roomMechKept ((u8 *)IMG(0x9dd260))   /* u8[11]; the room record's mech parts kept (lobby_states) */
 #define g_roomColoursKept ((u8 *)IMG(0x9dd26b))   /* u8[144]; the room record's colours kept */
 #define g_launchArgs ((u32 *)IMG(0x9dd890))   /* u32[14]; the launch line's words (strtok of up to 0x400 bytes: held) */

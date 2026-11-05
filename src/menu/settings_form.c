@@ -193,7 +193,7 @@ void (room_drawGameSettings)(void)
 	static const u32 grey[4] = { 0x3e99999a, 0x3f333333, 0x3f333333, 0x3f800000 };   /* 0.3, 0.7, 0.7, 1 */
 	const Form *f = &form;
 	const u32 *bright = g_roomBright, *dim = g_roomDim;
-	int editing = g_textFieldOpen, open = editing || g_arenaLeaving;
+	int editing = g_textFieldOpen, open = editing || g_arenaUpdateNotice;
 	char text[20];
 	int hovered = roomSettings_hitTest(g_mouseX, g_mouseY);
 	gfx_setProjection2D3D(2);
@@ -245,7 +245,7 @@ void (arena_createDraw)(void)
 	                           0, OBJ(g_arenaOnOff2), 10 };
 	const Form *f = &form;
 	const u32 *bright = g_arenaBright, *dim = g_arenaDim;
-	int editing = g_textFieldOpen, confirming = g_createQuitDialog, leaving = g_arenaLeaving;
+	int editing = g_textFieldOpen, confirming = g_createQuitDialog, leaving = g_arenaUpdateNotice;
 	int open = editing || confirming || leaving, blocked = open || g_mapListOpen;
 	char text[20];
 	int hovered = createArena_hitTest(g_mouseX, g_mouseY);

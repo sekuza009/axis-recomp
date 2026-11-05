@@ -402,20 +402,20 @@ static u32 leave_settings(u32 state)
 u32 (skirmish_leave)(void) { return leave_settings(ADDR(g_skirmishState)); }
 u32 (missionSettings_leave)(void) { return leave_settings(ADDR(g_missionPage)); }
 
-/* 0x4370e0: the room's two keys: the first asks to leave (0x9dd6c4 = 1), the second to go back (2), each with the
-   menu sound. Returns what the original leaves in eax */
-u32 (room_leaveKeys)(void)
+/* 0x4370e0: the new ID confirmation's keys: O chooses OK (g_newIdConfirmChoice 1), C CANCEL (2), each with the menu
+   sound. Returns what the original leaves in eax */
+u32 (newIdConfirm_keys)(void)
 {
 	u32 r = input_justPressed(g_dikO);
 	if (r == 1) {
 		r = sound_playMenu(0);   /* sound_playMenu */
-		g_roomPopup = 1;
+		g_newIdConfirmChoice = 1;
 		return r;
 	}
 	r = input_justPressed(g_dikC);
 	if (r == 1) {
 		r = sound_playMenu(0);
-		g_roomPopup = 2;
+		g_newIdConfirmChoice = 2;
 	}
 	return r;
 }

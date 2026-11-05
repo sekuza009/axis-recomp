@@ -95,8 +95,8 @@ static int hit_rect(int x, int y, DWORD base, DWORD limit)
 	X(0x40e490, 0x4dbc90, 0x4dbd80, armcWeaponsPage_hitTest) X(0x40e4d0, 0x4dcb40, 0x4dcc60, armcColour_hitTest) \
 	X(0x420670, 0x4ddcf8, 0x4ddd98, setupSound_hitTest) X(0x4206b0, 0x4ddde8, 0x4dde78, setupOptions_hitTest) \
 	X(0x4206f0, 0x4ddeb0, 0x4ddfd0, setupControl_hitTest) X(0x420730, 0x4ddda0, 0x4dddd0, setupSlider_hitTest) \
-	X(0x4321c0, 0x9dd398, 0x9dd3b8, leaveDialog_hitTest) X(0x432200, 0x9dd7e8, 0x9dd838, roomLogin_hitTest) \
-	X(0x432240, 0x9dce58, 0x9dcec8, newIdForm_hitTest) X(0x432280, 0x9dd3c0, 0x9dd3e0, popup_hitTest) \
+	X(0x4321c0, 0x9dd398, 0x9dd3b8, updateNotice_hitTest) X(0x432200, 0x9dd7e8, 0x9dd838, roomLogin_hitTest) \
+	X(0x432240, 0x9dce58, 0x9dcec8, newIdForm_hitTest) X(0x432280, 0x9dd3c0, 0x9dd3e0, newIdConfirm_hitTest) \
 	X(0x4322c0, 0x9dd408, 0x9dd468, account_hitTest) X(0x432300, 0x9dcd50, 0x9dce40, gameList_hitTest) \
 	X(0x432340, 0x9dd310, 0x9dd320, gameListStop_hitTest) X(0x432380, 0x9dd700, 0x9dd7e0, roomSettings_hitTest) \
 	X(0x4323c0, 0x9dd4c8, 0x9dd558, ranking_hitTest) X(0x440b70, 0x9dd958, 0x9dda78, replaySelect_hitTest) \
@@ -130,13 +130,13 @@ int setupControl_hitTest(int x, int y);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 int setupSlider_hitTest(int x, int y);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-int leaveDialog_hitTest(int x, int y);
+int updateNotice_hitTest(int x, int y);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 int roomLogin_hitTest(int x, int y);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 int newIdForm_hitTest(int x, int y);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-int popup_hitTest(int x, int y);
+int newIdConfirm_hitTest(int x, int y);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 int account_hitTest(int x, int y);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
@@ -655,7 +655,7 @@ static void rects_column(DWORD rec, DWORD end, int x)   /* records 16 bytes apar
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void arenaCreate_layout(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-void leaveDialog_layout(void);
+void updateNotice_layout(void);
 /* a row of buttons relative to a movable origin (x at ox, y at oy): stride dx, size w x h, offsets x0/y0 */
 static void rects_row(DWORD rec, DWORD end, DWORD ox, DWORD oy, int x0, int x1, int y0, int y1, int dx)
 {
@@ -673,7 +673,7 @@ void profileList_layout(void)       /* a column: 13 rows 0x14 apart */;
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void newNameDialog_layout(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-void popup_layout(void);
+void newIdConfirm_layout(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void lobbyTop_layout(void);
 
@@ -2361,10 +2361,10 @@ void app_quitGame(void);
 /* 0x41e730 timer_waitFrames(double frames): busy-wait until `frames` 1/60 s have passed (timer_now) */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void timer_waitFrames(double frames);
-/* 0x435ab0 leaveDialog_clicks / 0x406bd0 lobby_quitDialogClicks / 0x407270 create_quitDialogClicks: the "leave" dialog's click handlers (button
+/* 0x435ab0 updateNotice_clicks / 0x406bd0 lobby_quitDialogClicks / 0x407270 create_quitDialogClicks: the "leave" dialog's click handlers (button
    0 = yes: close it and post message 2; button 1 = no: close it; the right button closes it in the lobby) */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-void leaveDialog_clicks(void);
+void updateNotice_clicks(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 DWORD lobby_quitDialogClicks(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
@@ -4255,12 +4255,12 @@ void setup_processTabKeys(void);
    0x4db55c */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 DWORD lobby_processKeys(void);
-/* 0x4378e0 room_mouse() / 0x436800 room_processKeys(): the room's mouse / keys by page 0x9dd834 (0..0x63, byte
+/* 0x4378e0 room_keysByState() / 0x436800 room_clicksByState(): the room's mouse / keys by page 0x9dd834 (0..0x63, byte
    table), its sub-mode 0x9dd850, popup 0x9dd7d8 and dialogs 0x4db508 / 0x4db8b4 */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-DWORD room_mouse(void);
+DWORD room_keysByState(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-DWORD room_processKeys(void);
+DWORD room_clicksByState(void);
 /* 0x44f410 profile_frame(): the profile screen: a message timer (0x9f900c, 0x9f8f18 up to 0x4a944c), with a dialog
    its box (0x428c30) and maybe 0x44b600, else 0x44bd20 when 0x9f8d68 and the profile frame 0x44d720 */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
@@ -4449,17 +4449,17 @@ int dplaySlot1_join(int a1, int a2, int a3, int a4);
 void mapList_chooseNone(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void mapList_chooseAll(void);
-/* key pages: cancel (0x4e0cdc) or OK (0x4e1510, sound 2) closes the page: 0x407970 lobbyJoin_keys (0x907b2c),
-   0x436940 leaveDialog_keys (0x9dd850), 0x4080c0 lobby_keysBack (0x907b2c, not with a dialog), 0x4370e0 room_leaveKeys
+/* key pages: cancel (0x4e0cdc) or OK (0x4e1510, sound 2) closes the page: 0x407970 arenaUpdateNotice_keys (0x907b2c),
+   0x436940 roomUpdateNotice_keys (0x9dd850), 0x4080c0 lobby_keysBack (0x907b2c, not with a dialog), 0x4370e0 newIdConfirm_keys
    (0x9dd6c4) */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-void lobbyJoin_keys(void);
+void arenaUpdateNotice_keys(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-void leaveDialog_keys(void);
+void roomUpdateNotice_keys(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 DWORD lobby_keysBack(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-DWORD room_leaveKeys(void);
+DWORD newIdConfirm_keys(void);
 /* 0x44ac90 chat_textField(x, y, len): start typing (keyboard released, input cleared, the edit box at x / y) */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void chat_textField(int x, int y, int maxLength);
@@ -4470,9 +4470,9 @@ DWORD chat_keepLastLine(void);
 /* 0x441770 replaySelect_ok(): the first of the 0x9dd928 entries (0x44 bytes from 0x9ddac8) marked 1 opens its page */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void replaySelect_ok(void);
-/* 0x435ce0 popup_clicks(): a click on the room's close button (popup_hitTest) closes the popup 0x9dd6c4 */
+/* 0x435ce0 newIdConfirm_clicks(): a click on the room's close button (newIdConfirm_hitTest) closes the popup 0x9dd6c4 */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-void popup_clicks(void);
+void newIdConfirm_clicks(void);
 /* batch 172 (lifted/grp122.c): small menu functions tested with their callees stubbed (tools/gentests.py): the
    arena / lobby / room text and number field editors (the field's text into the edit line 0x9dc92c, the edit box
    at the field, typing on: input_releaseKeyboard, input clear, chat_createEdit), room and menu key pages, the sound
@@ -4507,7 +4507,7 @@ void room_editName(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 DWORD sound_loadMenuSounds(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-DWORD room_readyKeys(void);
+DWORD account_keys(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void mapList_stepGameType(int i);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
@@ -4564,7 +4564,7 @@ DWORD room_mapListKeys(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void gameList_stopJoin(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-DWORD room_openClicks(void);
+DWORD account_clicks(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 DWORD chat_closeEdit(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
@@ -4634,7 +4634,7 @@ int dplay_join(int session, int a2, int a3, int a4);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 DWORD menu_enterState(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-DWORD room_leftClicks(void);
+DWORD roomLogin_clicks(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 DWORD newIdForm_check(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
@@ -4737,7 +4737,7 @@ void THISCALL scene_updateRanking(void *scene);
 THISCALL void actor_takeDamage(char *scene, DWORD t, DWORD a, DWORD d, DWORD k, DWORD a5, DWORD a6);
 /* batch 180 (lifted/grp130.c): menu_drawBackground (the menus' animated background: the list 0x67fb3c's camera,
    the projection, its draw), the arena slots' connect (a fresh DirectPlay for that kind, dplay_initConnection,
-   the slot open or released), settingsDialog_clicks, with their callees stubbed (tools/gentests.py); scene_resetScores and
+   the slot open or released), newIdForm_clicks, with their callees stubbed (tools/gentests.py); scene_resetScores and
    dplay_host by hand */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void menu_drawBackground(void);
@@ -4750,7 +4750,7 @@ int dplaySlot2_open(int address);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 int dplaySlot3_open(int address);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-DWORD settingsDialog_clicks(void);
+DWORD newIdForm_clicks(void);
 /* 0x4620e0 scene_resetScores() (thiscall on the scene): every player's scores cleared, the actors reset, the ranking */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void THISCALL scene_resetScores(void *scene);
@@ -4806,14 +4806,14 @@ void gameList_drawPage(void);
 void lobbyJoin_draw(void);
 /* batch 184 (lifted/grp135.c, grp136.c: menuState800_gameRoom on its own so its call to newIdForm_update goes through
    the native address, where the test stubs it): the menu state dispatchers lobby_clicks, menuState400_frame,
-   menu_frameInput, menuState800_gameRoom, the room screen newIdForm_update, armc_cameraStep (a match started
+   menu_processMouse, menuState800_gameRoom, the room screen newIdForm_update, armc_cameraStep (a match started
    from a launch file), with their callees stubbed (tools/gentests.py) */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 DWORD lobby_clicks(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 DWORD menuState400_frame(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-DWORD menu_frameInput(void);
+DWORD menu_processMouse(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void newIdForm_update(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
@@ -7208,13 +7208,13 @@ V0(arenaDialogBox_layout, 0x404120, fill((void *)0x4dbad0, 16);)
 V0(gameListStop_layout, 0x431db0, fill((void *)0x9dd308, 16);)
 V0(profileDialogBox_layout, 0x44b080, fill((void *)0x9f9010, 16);)
 V0(arenaCreate_layout, 0x404150, fill((void *)0x4dbb80, 0x20);)
-V0(leaveDialog_layout, 0x431aa0, fill((void *)0x9dd390, 0x20);)
+V0(updateNotice_layout, 0x431aa0, fill((void *)0x9dd390, 0x20);)
 #define ORIGIN(ox, oy) G32(ox) = irnd(-400, 400); G32(oy) = irnd(-400, 400);
 V0(deleteDialog_layout, 0x44b0b0, fill((void *)0x9f6808, 0x20); ORIGIN(0x9f8f1c, 0x9f8f0c))
 V0(logOutDialog_layout, 0x44b100, fill((void *)0x9f8ee8, 0x20); ORIGIN(0x9f6834, 0x9f683c))
 V0(profileList_layout, 0x44b150, fill((void *)0x9f8d78, 0xd0); ORIGIN(0x9f8e48, 0x9f8e4c))
 V0(newNameDialog_layout, 0x44b030, fill((void *)0x9f9020, 0x20); ORIGIN(0x9f8eac, 0x9f8ea8))
-V0(popup_layout, 0x431c00, fill((void *)0x9dd3b8, 0x20); ORIGIN(0x9dd1a0, 0x9dd1ac))
+V0(newIdConfirm_layout, 0x431c00, fill((void *)0x9dd3b8, 0x20); ORIGIN(0x9dd1a0, 0x9dd1ac))
 V0(lobbyTop_layout, 0x403f30, fill((void *)0x4dbb40, 0x20); ORIGIN(0x4dba70, 0x4dba74))
 ST(text_setColor, fill((void *)0x76d438, 16); fill(g_a, 16);,
    (CD(void, 0x44ad30, int, int, int, int)(g_a[0], g_a[1], g_a[2], g_a[3]), 0), (text_setColor(g_a[0], g_a[1], g_a[2], g_a[3]), 0))
@@ -9134,8 +9134,8 @@ ST(app_quitGame, , (CALL_PLAIN(0x44f850, 0, 0, 0, 0, 0), 0), (app_quitGame(), 0)
 /* the wait in frames as a double (two stack slots); the mocked counter advances by 0x1234567 per read */
 static double g_frames;
 ST(timer_waitFrames, g_frames = irnd(0, 3) ? irnd(-2, 400) / 3.0 : irnd(0, 100000);, CALL_PLAIN(0x41e730, 0, ((DWORD *)&g_frames)[0], ((DWORD *)&g_frames)[1], 0, 0), (timer_waitFrames(g_frames), 0))
-/* leaveDialog_clicks leaves the hit test's result in eax; nobody reads it (tail jumps up to menu_frame, which calls on) */
-ST(leaveDialog_clicks, dlgclick_setup(0x9dd390);, (CALL_PLAIN(0x435ab0, 0, 0, 0, 0, 0), 0), (leaveDialog_clicks(), 0))
+/* updateNotice_clicks leaves the hit test's result in eax; nobody reads it (tail jumps up to menu_frame, which calls on) */
+ST(updateNotice_clicks, dlgclick_setup(0x9dd390);, (CALL_PLAIN(0x435ab0, 0, 0, 0, 0, 0), 0), (updateNotice_clicks(), 0))
 ST(lobby_quitDialogClicks, dlgclick_setup(0x4dbb80);, CALL_PLAIN(0x406bd0, 0, 0, 0, 0, 0), (DWORD)(lobby_quitDialogClicks()))
 ST(create_quitDialogClicks, dlgclick_setup(0x4dbb80);, CALL_PLAIN(0x407270, 0, 0, 0, 0, 0), (DWORD)(create_quitDialogClicks()))
 ST(menu_drawLine, for (int i = 0; i < 4; i++) g_a[i] = irnd(-100, 800);, CALL_PLAIN(0x427a40, 0, g_a[0], g_a[1], g_a[2], g_a[3]), (DWORD)(menu_drawLine((DWORD)(g_a[0]), (DWORD)(g_a[1]), (DWORD)(g_a[2]), (DWORD)(g_a[3]))))
@@ -14355,8 +14355,8 @@ static void disp_state(void)
 ST(setup_tabClicks, disp_state(); callee_stubs(g_stubSetupDraw, 0);, CALL_PLAIN(0x422b30, 0, 0, 0, 0, 0), (setup_tabClicks(), 0))
 ST(setup_processTabKeys, disp_state(); callee_stubs(g_stubSetupKeys, 0);, CALL_PLAIN(0x4230a0, 0, 0, 0, 0, 0), (setup_processTabKeys(), 0))
 ST(lobby_processKeys, disp_state(); callee_stubs(g_stubLobby, 0);, CALL_PLAIN(0x4081f0, 0, 0, 0, 0, 0), (DWORD)(lobby_processKeys()))
-ST(room_mouse, disp_state(); callee_stubs(g_stubRoomMouse, 0);, CALL_PLAIN(0x4378e0, 0, 0, 0, 0, 0), (DWORD)(room_mouse()))
-ST(room_processKeys, disp_state(); callee_stubs(g_stubRoomKeys, 0);, CALL_PLAIN(0x436800, 0, 0, 0, 0, 0), (DWORD)(room_processKeys()))
+ST(room_keysByState, disp_state(); callee_stubs(g_stubRoomMouse, 0);, CALL_PLAIN(0x4378e0, 0, 0, 0, 0, 0), (DWORD)(room_keysByState()))
+ST(room_clicksByState, disp_state(); callee_stubs(g_stubRoomKeys, 0);, CALL_PLAIN(0x436800, 0, 0, 0, 0, 0), (DWORD)(room_clicksByState()))
 ST(profile_frame, disp_state(); callee_stubs(g_stubProfile, 0);, CALL_PLAIN(0x44f410, 0, 0, 0, 0, 0), (DWORD)(profile_frame()))
 ST(room_draw, disp_state(); callee_stubs(g_stubRoomDraw, 0);, CALL_PLAIN(0x43ed20, 0, 0, 0, 0, 0), (DWORD)(room_draw()))
 ST(lobbyCreate_draw, disp_state(); callee_stubs(g_stubCreateDraw, 0);, CALL_PLAIN(0x40d390, 0, 0, 0, 0, 0), (DWORD)(lobbyCreate_draw()))
@@ -14625,14 +14625,14 @@ ST(dplaySlot0_join, small_setup(g_stubJoin);, CALL_PLAIN(0x454a20, 0, g_a[0], g_
 ST(dplaySlot1_join, small_setup(g_stubJoin);, CALL_PLAIN(0x454b40, 0, g_a[0], g_a[1], g_a[2], g_a[3]), (DWORD)dplaySlot1_join((DWORD)(g_a[0]), (DWORD)(g_a[1]), (DWORD)(g_a[2]), (DWORD)(g_a[3])))
 ST(mapList_chooseNone, small_setup(g_stubSound);, CALL_PLAIN(0x403530, 0, 0, 0, 0, 0), (mapList_chooseNone(), 0))
 ST(mapList_chooseAll, small_setup(g_stubSound);, CALL_PLAIN(0x4034e0, 0, 0, 0, 0, 0), (mapList_chooseAll(), 0))
-ST(lobbyJoin_keys, small_setup(g_stubKeyClose);, CALL_PLAIN(0x407970, 0, 0, 0, 0, 0), (lobbyJoin_keys(), 0))
-ST(leaveDialog_keys, small_setup(g_stubKeyClose);, CALL_PLAIN(0x436940, 0, 0, 0, 0, 0), (leaveDialog_keys(), 0))
+ST(arenaUpdateNotice_keys, small_setup(g_stubKeyClose);, CALL_PLAIN(0x407970, 0, 0, 0, 0, 0), (arenaUpdateNotice_keys(), 0))
+ST(roomUpdateNotice_keys, small_setup(g_stubKeyClose);, CALL_PLAIN(0x436940, 0, 0, 0, 0, 0), (roomUpdateNotice_keys(), 0))
 ST(lobby_keysBack, small_setup(g_stubKeyClose);, CALL_PLAIN(0x4080c0, 0, 0, 0, 0, 0), (DWORD)(lobby_keysBack()))
-ST(room_leaveKeys, small_setup(g_stubKeyClose2);, CALL_PLAIN(0x4370e0, 0, 0, 0, 0, 0), (DWORD)(room_leaveKeys()))
+ST(newIdConfirm_keys, small_setup(g_stubKeyClose2);, CALL_PLAIN(0x4370e0, 0, 0, 0, 0, 0), (DWORD)(newIdConfirm_keys()))
 ST(chat_textField, small_setup(g_stubTypeOn);, CALL_PLAIN(0x44ac90, 0, g_a[0], g_a[1], g_a[2], 0), (chat_textField((DWORD)(g_a[0]), (DWORD)(g_a[1]), (DWORD)(g_a[2])), 0))
 ST(chat_keepLastLine, small_setup(g_stubTypeOff);, CALL_PLAIN(0x44ace0, 0, 0, 0, 0, 0), (DWORD)(chat_keepLastLine()))
 ST(replaySelect_ok, small_setup(g_stubSound);, CALL_PLAIN(0x441770, 0, 0, 0, 0, 0), (replaySelect_ok(), 0))
-ST(popup_clicks, small_setup(g_stubRoomClose);, CALL_PLAIN(0x435ce0, 0, 0, 0, 0, 0), (popup_clicks(), 0))
+ST(newIdConfirm_clicks, small_setup(g_stubRoomClose);, CALL_PLAIN(0x435ce0, 0, 0, 0, 0, 0), (newIdConfirm_clicks(), 0))
 /* batch 172 */
 /* generated tests (tools/gentests.py): every callee stubbed (the key tests in key mode for the codes 0..3, the
    others answering 0 or 1), the function's integer globals small values (key bindings among them), its buffer
@@ -14704,7 +14704,7 @@ ST(sound_loadMenuSounds, gen_setup(g_gs_42bd40, g_gi_42bd40, g_gb_42bd40);, CALL
 static const DWORD g_gs_437240[] = { 0x401600, 1, 0x41e760, 1, 0x41ee40, 1, 0x434b90, 0, 0 };
 static const DWORD g_gi_437240[] = { 0x4e0cdc, 0x4e1510, 0x68039c, 0x76d48c, 0x9dce48, 0x9dd6d4, 0 };
 static const DWORD g_gb_437240[] = { 0 };
-ST(room_readyKeys, gen_setup(g_gs_437240, g_gi_437240, g_gb_437240);, CALL_PLAIN(0x437240, 0, g_a[0], g_a[1], g_a[2], g_a[3]), (DWORD)(room_readyKeys()))
+ST(account_keys, gen_setup(g_gs_437240, g_gi_437240, g_gb_437240);, CALL_PLAIN(0x437240, 0, g_a[0], g_a[1], g_a[2], g_a[3]), (DWORD)(account_keys()))
 static const DWORD g_gs_403590[] = { 0x401590, 1, 0 };
 static const DWORD g_gi_403590[] = { 0x67ef24, 0x6803a8, 0x9dad8c, 0x9db0ac, 0 };
 static const DWORD g_gb_403590[] = { 0 };
@@ -14809,7 +14809,7 @@ ST(gameList_stopJoin, gen_setup(g_gs_435f40, g_gi_435f40, g_gb_435f40);, CALL_PL
 static const DWORD g_gs_435e70[] = { 0x41e760, 1, 0x41ee40, 1, 0x4322c0, 2, 0x434020, 0, 0x4340e0, 0, 0x4341a0, 0, 0x434260, 0, 0x434b90, 0, 0 };
 static const DWORD g_gi_435e70[] = { 0x4ded68, 0x4ded6c, 0x4ded88, 0x4ded8c, 0x68039c, 0x90d1c4, 0x9dce48, 0x9dd6d4, 0 };
 static const DWORD g_gb_435e70[] = { 0 };
-ST(room_openClicks, gen_setup(g_gs_435e70, g_gi_435e70, g_gb_435e70);, CALL_PLAIN(0x435e70, 0, g_a[0], g_a[1], g_a[2], g_a[3]), (DWORD)(room_openClicks()))
+ST(account_clicks, gen_setup(g_gs_435e70, g_gi_435e70, g_gb_435e70);, CALL_PLAIN(0x435e70, 0, g_a[0], g_a[1], g_a[2], g_a[3]), (DWORD)(account_clicks()))
 static const DWORD g_gs_433c70[] = { 0x431600, 1, 0 };
 static const DWORD g_gi_433c70[] = { 0x9dd1f6, 0x4ded18, 0x4e1868, 0x9dd1cc, 0x9dd1fa, 0x9dd1fe, 0x9dd6b0, 0x9dd888, 0 };
 static const DWORD g_gb_433c70[] = { 0x9dc92c, 0x9dd1d8, 0 };
@@ -14943,7 +14943,7 @@ ST(menu_enterState, gen_setup(g_gs_41f970, g_gi_41f970, g_gb_41f970);, CALL_PLAI
 static const DWORD g_gs_435b00[] = { 0x401310, 1, 0x41e760, 1, 0x431590, 0, 0x432200, 2, 0x4338c0, 0, 0x433b00, 0, 0x433bb0, 0, 0x433c70, 0, 0x441250, 1, 0x451e60, 0, 0x48b420, 0, 0 };
 static const DWORD g_gi_435b00[] = { 0x4ded18, 0x4ded68, 0x4ded6c, 0x4ded88, 0x4ded8c, 0x4e1868, 0x67ef20, 0x68039c, 0x9dd198, 0x9dd1c8, 0x9dd1cc, 0x9dd6b0, 0x9dd834, 0x9dd838, 0x9dd850, 0 };
 static const DWORD g_gb_435b00[] = { 0 };
-ST(room_leftClicks, gen_setup(g_gs_435b00, g_gi_435b00, g_gb_435b00);, CALL_PLAIN(0x435b00, 0, g_a[0], g_a[1], g_a[2], g_a[3]), (DWORD)(room_leftClicks()))
+ST(roomLogin_clicks, gen_setup(g_gs_435b00, g_gi_435b00, g_gb_435b00);, CALL_PLAIN(0x435b00, 0, g_a[0], g_a[1], g_a[2], g_a[3]), (DWORD)(roomLogin_clicks()))
 static const DWORD g_gs_4346c0[] = { 0x41ee40, 1, 0x433980, 0, 0x433d30, 0, 0x4343b0, 1, 0x434400, 1, 0 };
 static const DWORD g_gi_4346c0[] = { 0x68039c, 0x9dc428, 0x9dd348, 0x9dd3f8, 0x9dd6cc, 0 };
 static const DWORD g_gb_4346c0[] = { 0x9dd1d8, 0x9dd1f6, 0x9dd202, 0x9dd20e, 0 };
@@ -15253,7 +15253,7 @@ ST(dplaySlot3_open, gen_setup(g_gs_454c80, g_gi_454c80, g_gb_454c80);, CALL_PLAI
 static const DWORD g_gs_435c20[] = { 0x41e760, 1, 0x432240, 2, 0x433d30, 0, 0x433e60, 1, 0x434640, 0, 0x4346c0, 0, 0 };
 static const DWORD g_gi_435c20[] = { 0x4ded68, 0x4ded6c, 0x4ded88, 0x4ded8c, 0 };
 static const DWORD g_gb_435c20[] = { 0 };
-ST(settingsDialog_clicks, gen_setup(g_gs_435c20, g_gi_435c20, g_gb_435c20);, CALL_PLAIN(0x435c20, 0, g_a[0], g_a[1], g_a[2], g_a[3]), (DWORD)(settingsDialog_clicks()))
+ST(newIdForm_clicks, gen_setup(g_gs_435c20, g_gi_435c20, g_gb_435c20);, CALL_PLAIN(0x435c20, 0, g_a[0], g_a[1], g_a[2], g_a[3]), (DWORD)(newIdForm_clicks()))
 /* scene_resetScores (thiscall on the scene): the 16 player records' scores cleared (and their team slots in team games,
    +8 == 1), then the actor reset (0x45df90 on the actor table +0x1f36c8) and the ranking (scene_updateRanking), both
    stubbed and thiscall; dplay_host: by connection kind 0xa0b418 (0..3, others) host through that kind's slot
@@ -15415,7 +15415,7 @@ ST(menuState400_frame, gen_setup(g_gs_40d450, g_gi_40d450, g_gb_40d450);, CALL_P
 static const DWORD g_gs_445e40[] = { 0x4076c0, 0, 0x410190, 0, 0x422b30, 0, 0x42ab70, 0, 0x436800, 0, 0x4419d0, 0, 0x443ef0, 0, 0x445c60, 0, 0x445de0, 0, 0x445e10, 0, 0x447b10, 0, 0x44c560, 0, 0 };
 static const DWORD g_gi_445e40[] = { 0x4df900, 0x680370, 0x76d3e8, 0 };
 static const DWORD g_gb_445e40[] = { 0 };
-ST(menu_frameInput, gen_setup(g_gs_445e40, g_gi_445e40, g_gb_445e40);, CALL_PLAIN(0x445e40, 0, g_a[0], g_a[1], g_a[2], g_a[3]), (DWORD)(menu_frameInput()))
+ST(menu_processMouse, gen_setup(g_gs_445e40, g_gi_445e40, g_gb_445e40);, CALL_PLAIN(0x445e40, 0, g_a[0], g_a[1], g_a[2], g_a[3]), (DWORD)(menu_processMouse()))
 static const DWORD g_gs_43e290[] = { 0x433e60, 0, 0 };
 static const DWORD g_gi_43e290[] = { 0x9dd1f6, 0x9dd202, 0x4df900, 0x67ef34, 0x67fb38, 0x68039c, 0x680bc0, 0x74de1c, 0x76d42c, 0x9da4a4, 0x9dc428, 0x9dd1fa, 0x9dd1fe, 0x9dd206, 0x9dd20a, 0x9dd348, 0x9dd3f8, 0x9dd4a0, 0x9dd564, 0x9dd6cc, 0x9dd6e8, 0x9dd6f4, 0 };
 static const DWORD g_gb_43e290[] = { 0x9dc92c, 0x9dd1d8, 0x9dd20e, 0 };
@@ -17218,8 +17218,8 @@ static const STest g_stests[] = {
 	T(space_enableUnit, 0, 4, 300), T(str_length, 1, 4, 3000), T(array_indexOf, 1, 4, 3000), T(path_normalize, 1, 4, 3000),
 	/* batch 7 */
 	T(arenaDialogBox_layout, 0, 8, 0), T(gameListStop_layout, 0, 8, 0), T(profileDialogBox_layout, 0, 8, 0), T(arenaCreate_layout, 0, 8, 0),
-	T(leaveDialog_layout, 0, 8, 0), T(deleteDialog_layout, 0, 8, 0), T(logOutDialog_layout, 0, 8, 0), T(profileList_layout, 0, 8, 0),
-	T(newNameDialog_layout, 0, 8, 0), T(popup_layout, 0, 8, 0), T(lobbyTop_layout, 0, 8, 0), T(text_setColor, 0, 8, 0),
+	T(updateNotice_layout, 0, 8, 0), T(deleteDialog_layout, 0, 8, 0), T(logOutDialog_layout, 0, 8, 0), T(profileList_layout, 0, 8, 0),
+	T(newNameDialog_layout, 0, 8, 0), T(newIdConfirm_layout, 0, 8, 0), T(lobbyTop_layout, 0, 8, 0), T(text_setColor, 0, 8, 0),
 	T(armc_rightClickLeave, 0, 10, 0), T(profile_resetPreview, 0, 6, 0), T(profile_resetSelection, 0, 6, 0), T(profile_resetCamera, 0, 6, 0),
 	T(setup_selectGraphicTab, 0, 6, 0), T(mapList_startEdit, 0, 20, 0), T(skirmish_briefingClicks, 0, 40, 0), T(sessionList_sort, 0, 30, 0),
 	T(ptx_initQuantTables, 0, 30, 0), T(ptx_initClampTable, 0, 4, 0), T(ptx_initColourTables, 0, 4, 0), T(ErrorLog_ctor, 1, 10, 0),
@@ -17398,7 +17398,7 @@ static const STest g_stests[] = {
 	T(data_loadMapInfo, 1, 200, 0), T(data_loadPilotProfiles, 1, 200, 0), T(profile_saveProgress, 1, 40, 0), T(profile_newCampaign, 1, 40, 0),
 	T(profile_makeCurrent, 1, 40, 0), T(timer_now, 1, 2000, 0), T(Stage_deletingDtor, 1, 40, 0), T(dplay_enumSessionsCallback, 1, 400, 0),
 	/* batch 48 */
-	T(app_quitGame, 1, 40, 0), T(timer_waitFrames, 0, 40, 0), T(leaveDialog_clicks, 1, 40, 0), T(lobby_quitDialogClicks, 1, 40, 0),
+	T(app_quitGame, 1, 40, 0), T(timer_waitFrames, 0, 40, 0), T(updateNotice_clicks, 1, 40, 0), T(lobby_quitDialogClicks, 1, 40, 0),
 	T(create_quitDialogClicks, 1, 40, 0), T(menu_drawLine, 1, 40, 0), T(replayList_open, 1, 40, 0), T(timer_init, 0, 40, 0),
 	T(profile_create, 1, 40, 0), T(menu_drawRect, 1, 400, 0), T(menuState210_enter, 1, 40, 0), T(profile_scanSaves, 1, 40, 0),
 	T(autoplay_startRecording, 1, 400, 0), T(dplay_enumConnections, 1, 400, 0),
@@ -17682,8 +17682,8 @@ static const STest g_stests[] = {
 	T(skirmish_listKeys, 0, 400, 0), T(room_editJoinPassword, 0, 200, 0), T(arena_editJoinPassword, 0, 200, 0), T(skirmish_pageClicks, 0, 300, 0),
 	T(skirmish_pageKeys, 0, 300, 0), T(missionSelect_clicks, 0, 300, 0), T(arena_askJoinPassword, 0, 200, 0), T(room_askJoinPassword, 0, 200, 0),
 	/* batch 163 */
-	T(setup_tabClicks, 0, 200, 0), T(setup_processTabKeys, 0, 200, 0), T(lobby_processKeys, 0, 300, 0), T(room_mouse, 0, 400, 0),
-	T(room_processKeys, 0, 400, 0), T(profile_frame, 0, 300, 0), T(room_draw, 0, 300, 0), T(lobbyCreate_draw, 0, 300, 0),
+	T(setup_tabClicks, 0, 200, 0), T(setup_processTabKeys, 0, 200, 0), T(lobby_processKeys, 0, 300, 0), T(room_keysByState, 0, 400, 0),
+	T(room_clicksByState, 0, 400, 0), T(profile_frame, 0, 300, 0), T(room_draw, 0, 300, 0), T(lobbyCreate_draw, 0, 300, 0),
 	/* batch 164 */
 	T(briefing_keys, 0, 300, 0), T(missionList_keys, 0, 400, 0), T(missionsel_keys, 0, 300, 0), T(missionsel_frameScreen, 0, 50, 0),
 	T(skirmish_frameBriefing, 0, 50, 0), T(jmp_net_getLocalAddress, 0, 50, 0),
@@ -17706,13 +17706,13 @@ static const STest g_stests[] = {
 	/* batch 171 */
 	T(dplay_check, 0, 200, 0), T(input_releaseAll, 0, 200, 0), T(dplaySlot0_host, 0, 200, 0), T(dplaySlot1_host, 0, 200, 0),
 	T(dplaySlot0_join, 0, 200, 0), T(dplaySlot1_join, 0, 200, 0), T(mapList_chooseNone, 0, 200, 0), T(mapList_chooseAll, 0, 200, 0),
-	T(lobbyJoin_keys, 0, 200, 0), T(leaveDialog_keys, 0, 200, 0), T(lobby_keysBack, 0, 200, 0), T(room_leaveKeys, 0, 200, 0),
-	T(chat_textField, 0, 200, 0), T(chat_keepLastLine, 0, 200, 0), T(replaySelect_ok, 0, 200, 0), T(popup_clicks, 0, 200, 0),
+	T(arenaUpdateNotice_keys, 0, 200, 0), T(roomUpdateNotice_keys, 0, 200, 0), T(lobby_keysBack, 0, 200, 0), T(newIdConfirm_keys, 0, 200, 0),
+	T(chat_textField, 0, 200, 0), T(chat_keepLastLine, 0, 200, 0), T(replaySelect_ok, 0, 200, 0), T(newIdConfirm_clicks, 0, 200, 0),
 	/* batch 172 */
 	T(arena_editPassword, 0, 200, 0), T(room_editPassword, 0, 200, 0), T(sound_playVolume, 0, 200, 0), T(chat_closeLine, 0, 200, 0),
 	T(messageBox_keyClose, 0, 200, 0), T(mapList_ok, 0, 200, 0), T(net_sendChat, 0, 200, 0), T(arena_editTitle, 0, 200, 0),
 	T(menu_keyStartFade, 0, 200, 0), T(arena_leaveSession, 0, 200, 0), T(arena_editName, 0, 200, 0), T(arena_editComment, 0, 200, 0),
-	T(room_editName, 0, 200, 0), T(sound_loadMenuSounds, 0, 200, 0), T(room_readyKeys, 0, 200, 0), T(mapList_stepGameType, 0, 200, 0),
+	T(room_editName, 0, 200, 0), T(sound_loadMenuSounds, 0, 200, 0), T(account_keys, 0, 200, 0), T(mapList_stepGameType, 0, 200, 0),
 	T(roomLogin_editId, 0, 200, 0), T(arena_editTimeLimit, 0, 200, 0), T(setup_soundTabKeys, 0, 200, 0), T(arena_editFragLimit, 0, 200, 0),
 	T(account_editEmail, 0, 200, 0), T(sound_playFile, 0, 200, 0), T(account_editOldPassword, 0, 200, 0), T(account_editPassword, 0, 200, 0),
 	T(account_editPasswordRepeat, 0, 200, 0), T(roomLogin_editPassword, 0, 200, 0), T(ranking_keys, 0, 200, 0),
@@ -17720,7 +17720,7 @@ static const STest g_stests[] = {
 	T(msg_connectionLost, 0, 200, 0), T(msg_networkUnstable, 0, 200, 0), T(msg_serverEndsGame, 0, 200, 0), T(msg_userEndsGame, 0, 200, 0),
 	T(msg_dataLoss, 0, 200, 0), T(msg_fragLimitReached, 0, 200, 0), T(msg_timeLimitReached, 0, 200, 0), T(dplaySlot2_join, 0, 200, 0),
 	T(dplaySlot3_join, 0, 200, 0), T(dplay_coInit, 0, 200, 0), T(lobby_close, 0, 200, 0), T(room_mapListKeys, 0, 200, 0),
-	T(gameList_stopJoin, 0, 200, 0), T(room_openClicks, 0, 200, 0), T(chat_closeEdit, 0, 200, 0), T(lobby_keysQuit, 0, 200, 0),
+	T(gameList_stopJoin, 0, 200, 0), T(account_clicks, 0, 200, 0), T(chat_closeEdit, 0, 200, 0), T(lobby_keysQuit, 0, 200, 0),
 	T(setup_topPageKeys, 0, 200, 0), T(setup_graphicTabKeys, 0, 200, 0), T(lobbyTop_keys, 0, 200, 0), T(setup_topPageClicks, 0, 200, 0),
 	T(lobby_topPageClicks, 0, 200, 0), T(lobby_pageClicks, 0, 200, 0), T(lobbyPlayer_keys, 0, 200, 0), T(newIdForm_endTyping, 0, 200, 0),
 	T(profile_newNamePage, 0, 200, 0), T(replaySelect_mouse, 0, 200, 0),
@@ -17731,7 +17731,7 @@ static const STest g_stests[] = {
 	T(dplay_closeSession, 0, 100, 0),
 	/* batch 175 */
 	T(menu_returnToMain, 0, 200, 0), T(menu_returnToMainFromRoom, 0, 200, 0), T(dplay_join, 0, 200, 0), T(menu_enterState, 0, 200, 0),
-	T(room_leftClicks, 0, 200, 0), T(newIdForm_check, 0, 200, 0), T(ranking_clicks, 0, 200, 0), T(armc_weaponsPageClicks, 0, 200, 0),
+	T(roomLogin_clicks, 0, 200, 0), T(newIdForm_check, 0, 200, 0), T(ranking_clicks, 0, 200, 0), T(armc_weaponsPageClicks, 0, 200, 0),
 	T(armc_colourPageClicks, 0, 200, 0), T(room_settingsClicks, 0, 200, 0), T(room_settingsAfterTyping, 0, 200, 0), T(replaySelect_keys, 0, 200, 0),
 	T(setup_graphicTabClicks, 0, 200, 0), T(account_page, 0, 200, 0), T(setup_soundTabClicks, 0, 200, 0), T(setup_controlTabKeys, 0, 200, 0),
 	T(setup_controlTabClicks, 0, 200, 0), T(roomLogin_update, 0, 1000, 0), T(armc_enterParts, 0, 200, 0), T(room_gameListKeys, 0, 1000, 0),
@@ -17749,7 +17749,7 @@ static const STest g_stests[] = {
 	T(scene_updateRanking, 0, 1000, 0), T(actor_takeDamage, 0, 400, 0),
 	/* batch 180 */
 	T(menu_drawBackground, 0, 200, 0), T(dplaySlot0_open, 0, 200, 0), T(dplaySlot1_open, 0, 200, 0), T(dplaySlot2_open, 0, 200, 0),
-	T(dplaySlot3_open, 0, 200, 0), T(settingsDialog_clicks, 0, 200, 0), T(scene_resetScores, 0, 200, 0), T(dplay_host, 0, 200, 0),
+	T(dplaySlot3_open, 0, 200, 0), T(newIdForm_clicks, 0, 200, 0), T(scene_resetScores, 0, 200, 0), T(dplay_host, 0, 200, 0),
 	/* batch 181 */
 	T(menuState300_frame, 0, 200, 0), T(menuState600_setup, 0, 200, 0), T(menuState900_skirmishSetup, 0, 200, 0), T(menuState210_frame, 0, 200, 0),
 	T(arena_openSession, 0, 200, 0), T(skirmish_frameList, 0, 50, 0),
@@ -17760,7 +17760,7 @@ static const STest g_stests[] = {
 	T(arena_createClick, 0, 200, 0), T(lobbyTop_connect, 0, 200, 0), T(arena_loadAndQuit, 0, 200, 0), T(gameList_drawPage, 0, 200, 0),
 	T(lobbyJoin_draw, 0, 600, 0),
 	/* batch 184 */
-	T(lobby_clicks, 0, 200, 0), T(menuState400_frame, 0, 200, 0), T(menu_frameInput, 0, 200, 0), T(newIdForm_update, 0, 200, 0),
+	T(lobby_clicks, 0, 200, 0), T(menuState400_frame, 0, 200, 0), T(menu_processMouse, 0, 200, 0), T(newIdForm_update, 0, 200, 0),
 	T(armc_cameraStep, 0, 2000, 0), T(menuState800_gameRoom, 0, 200, 0),
 	/* batch 185 */
 	T(armc_enterScreen, 0, 200, 0), T(armc_updatePartsPreview, 0, 1000, 0), T(armc_updateWeaponsPreview, 0, 1000, 0), T(armc_drawWeaponsPage, 0, 200, 0),
@@ -18098,9 +18098,9 @@ static const struct { DWORD addr; void *fn; const char *name; } g_hooks3[] = {
 	/* batch 7 */
 	{ 0x404120, (void *)arenaDialogBox_layout, "arenaDialogBox_layout" }, { 0x431db0, (void *)gameListStop_layout, "gameListStop_layout" },
 	{ 0x44b080, (void *)profileDialogBox_layout, "profileDialogBox_layout" }, { 0x404150, (void *)arenaCreate_layout, "arenaCreate_layout" },
-	{ 0x431aa0, (void *)leaveDialog_layout, "leaveDialog_layout" }, { 0x44b0b0, (void *)deleteDialog_layout, "deleteDialog_layout" },
+	{ 0x431aa0, (void *)updateNotice_layout, "updateNotice_layout" }, { 0x44b0b0, (void *)deleteDialog_layout, "deleteDialog_layout" },
 	{ 0x44b100, (void *)logOutDialog_layout, "logOutDialog_layout" }, { 0x44b150, (void *)profileList_layout, "profileList_layout" },
-	{ 0x44b030, (void *)newNameDialog_layout, "newNameDialog_layout" }, { 0x431c00, (void *)popup_layout, "popup_layout" },
+	{ 0x44b030, (void *)newNameDialog_layout, "newNameDialog_layout" }, { 0x431c00, (void *)newIdConfirm_layout, "newIdConfirm_layout" },
 	{ 0x403f30, (void *)lobbyTop_layout, "lobbyTop_layout" }, { 0x44ad30, (void *)text_setColor, "text_setColor" },
 	{ 0x410160, (void *)armc_rightClickLeave, "armc_rightClickLeave" }, { 0x44b7a0, (void *)profile_resetPreview, "profile_resetPreview" },
 	{ 0x44b750, (void *)profile_resetSelection, "profile_resetSelection" }, { 0x44bc00, (void *)profile_resetCamera, "profile_resetCamera" },
@@ -18394,7 +18394,7 @@ static const struct { DWORD addr; void *fn; const char *name; } g_hooks3[] = {
 	{ 0x463830, (void *)Stage_deletingDtor, "Stage_deletingDtor" }, { 0x453560, (void *)dplay_enumSessionsCallback, "dplay_enumSessionsCallback" },
 	/* batch 48 */
 	{ 0x44f850, (void *)app_quitGame, "app_quitGame" }, { 0x41e730, (void *)timer_waitFrames, "timer_waitFrames" },
-	{ 0x435ab0, (void *)leaveDialog_clicks, "leaveDialog_clicks" }, { 0x406bd0, (void *)lobby_quitDialogClicks, "lobby_quitDialogClicks" },
+	{ 0x435ab0, (void *)updateNotice_clicks, "updateNotice_clicks" }, { 0x406bd0, (void *)lobby_quitDialogClicks, "lobby_quitDialogClicks" },
 	{ 0x407270, (void *)create_quitDialogClicks, "create_quitDialogClicks" }, { 0x427a40, (void *)menu_drawLine, "menu_drawLine" },
 	{ 0x440d70, (void *)replayList_open, "replayList_open" }, { 0x4302d0, (void *)timer_init, "timer_init" },
 	{ 0x44b990, (void *)profile_create, "profile_create" }, { 0x427970, (void *)menu_drawRect, "menu_drawRect" },
@@ -18765,8 +18765,8 @@ static const struct { DWORD addr; void *fn; const char *name; } g_hooks3[] = {
 	{ 0x405200, (void *)arena_askJoinPassword, "arena_askJoinPassword" }, { 0x434da0, (void *)room_askJoinPassword, "room_askJoinPassword" },
 	/* batch 163 */
 	{ 0x422b30, (void *)setup_tabClicks, "setup_tabClicks" }, { 0x4230a0, (void *)setup_processTabKeys, "setup_processTabKeys" },
-	{ 0x4081f0, (void *)lobby_processKeys, "lobby_processKeys" }, { 0x4378e0, (void *)room_mouse, "room_mouse" },
-	{ 0x436800, (void *)room_processKeys, "room_processKeys" }, { 0x44f410, (void *)profile_frame, "profile_frame" },
+	{ 0x4081f0, (void *)lobby_processKeys, "lobby_processKeys" }, { 0x4378e0, (void *)room_keysByState, "room_keysByState" },
+	{ 0x436800, (void *)room_clicksByState, "room_clicksByState" }, { 0x44f410, (void *)profile_frame, "profile_frame" },
 	{ 0x43ed20, (void *)room_draw, "room_draw" }, { 0x40d390, (void *)lobbyCreate_draw, "lobbyCreate_draw" },
 	/* batch 164 */
 	{ 0x447c30, (void *)briefing_keys, "briefing_keys" }, { 0x447b40, (void *)missionList_keys, "missionList_keys" },
@@ -18799,10 +18799,10 @@ static const struct { DWORD addr; void *fn; const char *name; } g_hooks3[] = {
 	{ 0x4549e0, (void *)dplaySlot0_host, "dplaySlot0_host" }, { 0x454b00, (void *)dplaySlot1_host, "dplaySlot1_host" },
 	{ 0x454a20, (void *)dplaySlot0_join, "dplaySlot0_join" }, { 0x454b40, (void *)dplaySlot1_join, "dplaySlot1_join" },
 	{ 0x403530, (void *)mapList_chooseNone, "mapList_chooseNone" }, { 0x4034e0, (void *)mapList_chooseAll, "mapList_chooseAll" },
-	{ 0x407970, (void *)lobbyJoin_keys, "lobbyJoin_keys" }, { 0x436940, (void *)leaveDialog_keys, "leaveDialog_keys" },
-	{ 0x4080c0, (void *)lobby_keysBack, "lobby_keysBack" }, { 0x4370e0, (void *)room_leaveKeys, "room_leaveKeys" },
+	{ 0x407970, (void *)arenaUpdateNotice_keys, "arenaUpdateNotice_keys" }, { 0x436940, (void *)roomUpdateNotice_keys, "roomUpdateNotice_keys" },
+	{ 0x4080c0, (void *)lobby_keysBack, "lobby_keysBack" }, { 0x4370e0, (void *)newIdConfirm_keys, "newIdConfirm_keys" },
 	{ 0x44ac90, (void *)chat_textField, "chat_textField" }, { 0x44ace0, (void *)chat_keepLastLine, "chat_keepLastLine" },
-	{ 0x441770, (void *)replaySelect_ok, "replaySelect_ok" }, { 0x435ce0, (void *)popup_clicks, "popup_clicks" },
+	{ 0x441770, (void *)replaySelect_ok, "replaySelect_ok" }, { 0x435ce0, (void *)newIdConfirm_clicks, "newIdConfirm_clicks" },
 	/* batch 172 */
 	{ 0x404f90, (void *)arena_editPassword, "arena_editPassword" }, { 0x433a80, (void *)room_editPassword, "room_editPassword" },
 	{ 0x456e50, (void *)sound_playVolume, "sound_playVolume" }, { 0x431600, (void *)chat_closeLine, "chat_closeLine" },
@@ -18811,7 +18811,7 @@ static const struct { DWORD addr; void *fn; const char *name; } g_hooks3[] = {
 	{ 0x4318b0, (void *)menu_keyStartFade, "menu_keyStartFade" }, { 0x452fe0, (void *)arena_leaveSession, "arena_leaveSession" },
 	{ 0x404cd0, (void *)arena_editName, "arena_editName" }, { 0x404d70, (void *)arena_editComment, "arena_editComment" },
 	{ 0x4339e0, (void *)room_editName, "room_editName" }, { 0x42bd40, (void *)sound_loadMenuSounds, "sound_loadMenuSounds" },
-	{ 0x437240, (void *)room_readyKeys, "room_readyKeys" }, { 0x403590, (void *)mapList_stepGameType, "mapList_stepGameType" },
+	{ 0x437240, (void *)account_keys, "account_keys" }, { 0x403590, (void *)mapList_stepGameType, "mapList_stepGameType" },
 	{ 0x433b00, (void *)roomLogin_editId, "roomLogin_editId" }, { 0x404ed0, (void *)arena_editTimeLimit, "arena_editTimeLimit" },
 	{ 0x422c60, (void *)setup_soundTabKeys, "setup_soundTabKeys" }, { 0x404e10, (void *)arena_editFragLimit, "arena_editFragLimit" },
 	{ 0x434260, (void *)account_editEmail, "account_editEmail" }, { 0x457080, (void *)sound_playFile, "sound_playFile" },
@@ -18825,7 +18825,7 @@ static const struct { DWORD addr; void *fn; const char *name; } g_hooks3[] = {
 	{ 0x462fd0, (void *)msg_timeLimitReached, "msg_timeLimitReached" }, { 0x454c50, (void *)dplaySlot2_join, "dplaySlot2_join" },
 	{ 0x454d60, (void *)dplaySlot3_join, "dplaySlot3_join" }, { 0x453720, (void *)dplay_coInit, "dplay_coInit" },
 	{ 0x406b60, (void *)lobby_close, "lobby_close" }, { 0x403870, (void *)room_mapListKeys, "room_mapListKeys" },
-	{ 0x435f40, (void *)gameList_stopJoin, "gameList_stopJoin" }, { 0x435e70, (void *)room_openClicks, "room_openClicks" },
+	{ 0x435f40, (void *)gameList_stopJoin, "gameList_stopJoin" }, { 0x435e70, (void *)account_clicks, "account_clicks" },
 	{ 0x433c70, (void *)chat_closeEdit, "chat_closeEdit" }, { 0x408110, (void *)lobby_keysQuit, "lobby_keysQuit" },
 	{ 0x422b70, (void *)setup_topPageKeys, "setup_topPageKeys" }, { 0x422d20, (void *)setup_graphicTabKeys, "setup_graphicTabKeys" },
 	{ 0x407750, (void *)lobbyTop_keys, "lobbyTop_keys" }, { 0x4220c0, (void *)setup_topPageClicks, "setup_topPageClicks" },
@@ -18843,7 +18843,7 @@ static const struct { DWORD addr; void *fn; const char *name; } g_hooks3[] = {
 	/* batch 175 */
 	{ 0x41edc0, (void *)menu_returnToMain, "menu_returnToMain" }, { 0x41ed70, (void *)menu_returnToMainFromRoom, "menu_returnToMainFromRoom" },
 	{ 0x453180, (void *)dplay_join, "dplay_join" }, { 0x41f970, (void *)menu_enterState, "menu_enterState" },
-	{ 0x435b00, (void *)room_leftClicks, "room_leftClicks" }, { 0x4346c0, (void *)newIdForm_check, "newIdForm_check" },
+	{ 0x435b00, (void *)roomLogin_clicks, "roomLogin_clicks" }, { 0x4346c0, (void *)newIdForm_check, "newIdForm_check" },
 	{ 0x436620, (void *)ranking_clicks, "ranking_clicks" }, { 0x40fd30, (void *)armc_weaponsPageClicks, "armc_weaponsPageClicks" },
 	{ 0x40ff40, (void *)armc_colourPageClicks, "armc_colourPageClicks" }, { 0x436400, (void *)room_settingsClicks, "room_settingsClicks" },
 	{ 0x437630, (void *)room_settingsAfterTyping, "room_settingsAfterTyping" }, { 0x441c00, (void *)replaySelect_keys, "replaySelect_keys" },
@@ -18870,7 +18870,7 @@ static const struct { DWORD addr; void *fn; const char *name; } g_hooks3[] = {
 	/* batch 180 */
 	{ 0x441740, (void *)menu_drawBackground, "menu_drawBackground" }, { 0x454940, (void *)dplaySlot0_open, "dplaySlot0_open" },
 	{ 0x454a50, (void *)dplaySlot1_open, "dplaySlot1_open" }, { 0x454b70, (void *)dplaySlot2_open, "dplaySlot2_open" },
-	{ 0x454c80, (void *)dplaySlot3_open, "dplaySlot3_open" }, { 0x435c20, (void *)settingsDialog_clicks, "settingsDialog_clicks" },
+	{ 0x454c80, (void *)dplaySlot3_open, "dplaySlot3_open" }, { 0x435c20, (void *)newIdForm_clicks, "newIdForm_clicks" },
 	{ 0x4620e0, (void *)scene_resetScores, "scene_resetScores" }, { 0x453090, (void *)dplay_host, "dplay_host" },
 	/* batch 181 */
 	{ 0x443530, (void *)menuState300_frame, "menuState300_frame" }, { 0x427920, (void *)menuState600_setup, "menuState600_setup" },
@@ -18887,7 +18887,7 @@ static const struct { DWORD addr; void *fn; const char *name; } g_hooks3[] = {
 	{ 0x40cfd0, (void *)lobbyJoin_draw, "lobbyJoin_draw" },
 	/* batch 184 */
 	{ 0x4076c0, (void *)lobby_clicks, "lobby_clicks" }, { 0x40d450, (void *)menuState400_frame, "menuState400_frame" },
-	{ 0x445e40, (void *)menu_frameInput, "menu_frameInput" }, { 0x43e290, (void *)newIdForm_update, "newIdForm_update" },
+	{ 0x445e40, (void *)menu_processMouse, "menu_processMouse" }, { 0x43e290, (void *)newIdForm_update, "newIdForm_update" },
 	{ 0x410b50, (void *)armc_cameraStep, "armc_cameraStep" }, { 0x43ef70, (void *)menuState800_gameRoom, "menuState800_gameRoom" },
 	/* batch 185 */
 	{ 0x40e5d0, (void *)armc_enterScreen, "armc_enterScreen" }, { 0x41d600, (void *)armc_updatePartsPreview, "armc_updatePartsPreview" },
