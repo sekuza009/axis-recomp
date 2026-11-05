@@ -291,11 +291,11 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 		AC->lowDetailLoaded = AC->lowDetail;
 	}
 	int item = pr->items[AC->slot];
-	u8 *weapon = item >= 0 ? (u8 *)&ST->actorInfo[item] : NULL;
-	if (AC->controlledBy == ST->playerActor && weapon && AC->ammo[((ActorInfo *)weapon)->ammoSlot] < ((ActorInfo *)weapon)->ammoPerShot
-	    && !(AC->weaponLower < 1.0f)) {   /* out of ammunition: the next weapon */
+	ActorInfo *weapon = (ActorInfo *)(item >= 0 ? (u8 *)&ST->actorInfo[item] : NULL);
+	if (AC->controlledBy == ST->playerActor && ((u8 *)weapon) && AC->ammo[weapon->ammoSlot] < weapon->ammoPerShot
+	    && !(AC->weaponLower < 1.0f)) {   /* out of ammunition: the next ((u8 *)weapon) */
 		actor_nextWeapon(s, i);
-		weapon = (u8 *)&ST->actorInfo[pr->items[AC->slot]];
+		weapon = &ST->actorInfo[pr->items[AC->slot]];
 	}
 	if (AC->inWeaponSlot >= 0)
 		actor_selectWeapon((Stage *)s, i, AC->inWeaponSlot);
@@ -318,7 +318,7 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 		AC->slotLoaded = AC->slot;
 		actor_loadWeapon(s, i, AC->slot, AC->variantLoaded);
 	}
-	u8 *model = AC->slot == 4 ? (u8 *)&AC->weaponModel4 : AC->slot == 5 ? (u8 *)&AC->weaponModel5 : (u8 *)&AC->weaponModel;
+	ObjectList *model = (ObjectList *)(AC->slot == 4 ? (u8 *)&AC->weaponModel4 : AC->slot == 5 ? (u8 *)&AC->weaponModel5 : (u8 *)&AC->weaponModel);
 	memcpy(AC->pos, a + (AC->state == 1 ? 0x180 : 0x4e0), 12);
 	memcpy(a + offsetof(Player, pitch), a + offsetof(Player, nextPitch), 32);   /* pitch .. : the next motion state taken */
 	if (AC->controlledBy == ST->playerActor) {   /* (to chunk N: the local team's actors) */
@@ -346,7 +346,7 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 		/* a bullet of another team aimed at it */
 		int aimed = 0;
 		for (int k = 0; k < ST->bulletSlotsUsed; k++) {
-			Bullet *b = (Bullet *)((u8 *)&ST->bullets[k]);
+			Bullet *b = &ST->bullets[k];
 			if (b->homingTarget != i || ST->actors[b->owner].controlledBy == ST->playerActor)
 				continue;
 			aimed = 1;
@@ -781,15 +781,15 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 		for (int c = 0; c < 5; c++)   /* nextForward..nextRun */
 			AF(offsetof(Player, nextForward) + c * 4) = f32(fadd_m(fmul_m(fsub_m(fld_m(&AC->netMotion[c]), &AF(offsetof(Player, forward) + c * 4)), &k), &AF(offsetof(Player, forward) + c * 4)));
 	}
-	if (AC->fireAnim > 0 && weapon) {   /* the firing cycle, wrapping at 1 */
-		long double v = fadd_m(fdiv_m(fld_m(dt), &((ActorInfo *)weapon)->cycleTime), &AC->fireCycle);
+	if (AC->fireAnim > 0 && ((u8 *)weapon)) {   /* the firing cycle, wrapping at 1 */
+		long double v = fadd_m(fdiv_m(fld_m(dt), &weapon->cycleTime), &AC->fireCycle);
 		AC->fireCycle = (float)v;
 		if (v >= 1.0L)
 			AC->fireCycle = 0;
 	}
 	if (AC->cameraValue != 0)
 		goto tail;   /* 45cdb1 */
-	if (AC->weaponLowering == 1) {   /* the weapon going down (weaponLower from 1 to 0) */
+	if (AC->weaponLowering == 1) {   /* the ((u8 *)weapon) going down (weaponLower from 1 to 0) */
 		if (AC->weaponLower > 0) {
 			if (BITS(AC->weaponLower) == 0x3f800000 && i == ST->playerActor)
 				sound_playVolume(0x14, 0x64);
@@ -801,9 +801,9 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 		if (!(AC->weaponLower > 0)) {
 			actor_setWeaponSlot((Stage *)s, i, AC->slotLoaded);
 			actor_loadWeapon(s, i, AC->slotLoaded, AC->variantLoaded);
-			weapon = (u8 *)&ST->actorInfo[pr->items[AC->slot]];
-			model = AC->slot == 4 ? (u8 *)&AC->weaponModel4 : AC->slot == 5 ? (u8 *)&AC->weaponModel5 : (u8 *)&AC->weaponModel;
-			AC->weapon = ((u32)((ActorInfo *)weapon)->ammoSlot);
+			weapon = &ST->actorInfo[pr->items[AC->slot]];
+			model = (ObjectList *)(AC->slot == 4 ? (u8 *)&AC->weaponModel4 : AC->slot == 5 ? (u8 *)&AC->weaponModel5 : (u8 *)&AC->weaponModel);
+			AC->weapon = ((u32)weapon->ammoSlot);
 		}
 		if (!(AC->weaponLower >= 1.0f)) {
 			int kind = pr->items[AC->slot];
@@ -825,7 +825,7 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 	anim_setFrame((u8 *)&AC->armsModel, 0, BITS(AC->pose[3]));
 	anim_setFrame((u8 *)&AC->legsModel, 0, BITS(AC->pose[4]));
 	anim_setFrame((u8 *)&AC->boosterModel, 0, BITS(AC->pose[5]));
-	anim_setFrame(model, 0, BITS(AC->fireAnim));
+	anim_setFrame(((u8 *)model), 0, BITS(AC->fireAnim));
 	/* the matrices: the body at the actor, turned and leant, the head on its neck, the arms */
 	glPushMatrix();
 	glTranslatef_bits(BITS(AC->pos[0]), BITS(AC->pos[1]), BITS(AC->pos[2]));
@@ -846,24 +846,24 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 	glRotatef(f32(fmul_m(fld_m(&AC->pose[0]), k_0_05f)), 0, 0, 1);
 	glRotatef(f32(fmul_m(fld_m(&AC->pose[1]), &k_tenthsToDegrees)), 1, 0, 0);
 	skel_poseBones((u8 *)&AC->boosterModel, 0);
-	memcpy(grip, &g_vecZero, 12);   /* where the weapon is held, for the local player's view */
+	memcpy(grip, &g_vecZero, 12);   /* where the ((u8 *)weapon) is held, for the local player's view */
 	glLoadMatrixf(part_matrix((u8 *)&AC->armsModel.entries, arms->weaponJoints[0], AC->lowDetail));
-	if (i == ST->selectedActor && weapon && AC->slot <= 3)
-		hold(grip, (const u8 *)((const ActorInfo *)weapon)->sets[0].grip[AC->variantLoaded], 0, &AC->weaponLower);
+	if (i == ST->selectedActor && ((u8 *)weapon) && AC->slot <= 3)
+		hold(grip, (const u8 *)weapon->sets[0].grip[AC->variantLoaded], 0, &AC->weaponLower);
 	skel_poseBones((u8 *)&AC->weaponModel, 0);
 	glLoadMatrixf(part_matrix((u8 *)&AC->armsModel.entries, arms->weaponJoints[1], AC->lowDetail));
-	if (i == ST->selectedActor && weapon && AC->slot == 4)
-		hold(grip, (const u8 *)((const ActorInfo *)weapon)->sets[0].grip[AC->variantLoaded], 0, &AC->weaponLower);
+	if (i == ST->selectedActor && ((u8 *)weapon) && AC->slot == 4)
+		hold(grip, (const u8 *)weapon->sets[0].grip[AC->variantLoaded], 0, &AC->weaponLower);
 	skel_poseBones((u8 *)&AC->weaponModel4, 0);
 	glLoadMatrixf(part_matrix((u8 *)&AC->armsModel.entries, arms->weaponJoints[2], AC->lowDetail));
-	if (i == ST->selectedActor && weapon && AC->slot == 5)
-		hold(grip, (const u8 *)((const ActorInfo *)weapon)->sets[1].grip[AC->variantLoaded], 1, &AC->weaponLower);
+	if (i == ST->selectedActor && ((u8 *)weapon) && AC->slot == 5)
+		hold(grip, (const u8 *)weapon->sets[1].grip[AC->variantLoaded], 1, &AC->weaponLower);
 	skel_poseBones((u8 *)&AC->weaponModel5, 0);
 	glPopMatrix();
 	if (i == ST->playerActor) {   /* the local player's locks (lockHeld per actor), sorted longest first (lockTimes / lockIds) */
 		float *lock = ST->lockHeld;
 		int *count = &ST->lockCount;
-		if (weapon && ((ActorInfo *)weapon)->targetingTime > 0) {
+		if (((u8 *)weapon) && weapon->targetingTime > 0) {
 			for (int j = 0; j < ST->actorCount; j++) {
 				float *seen = &ST->actors[j].lockAnim;
 				if (j == i || ST->actors[j].state != 1) {
@@ -876,7 +876,7 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 					if (!(v >= 0))
 						*seen = 0;
 				}
-				if (!(fmul_m(fld_m(&AC->lockOnTime), &((ActorInfo *)weapon)->targetingTime) >= ST->actors[j].aimTime) && AC->team != ST->actors[j].team) {
+				if (!(fmul_m(fld_m(&AC->lockOnTime), &weapon->targetingTime) >= ST->actors[j].aimTime) && AC->team != ST->actors[j].team) {
 					if (!(lock[j] > 0)) {
 						sound_playVolume(0x12, 0x64);
 						*seen = 0.25f;
@@ -918,13 +918,13 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 	AC->firing = 0;   /* firing this frame */
 	AC->sendNow = 0;
 	if (AC->controlledBy == ST->playerActor) {
-		if (weapon && AC->state == 1) {
+		if (((u8 *)weapon) && AC->state == 1) {
 			if (AC->inFire == 1 && AC->spawnAge > 3.0f && AC->slot >= 0 && !(AC->fireAnim > 0) && AC->weaponLower >= 1.0f && AC->weaponLowering == 0
 			    && AC->armor > 0)
 				AC->firing = 1;
 			int shots = 0;   /* this frame's rounds: whole cycles times the burst, and a burst's rounds left (burstLeft, burstTime) */
-			const float *cycle = &((ActorInfo *)weapon)->cycleTime, *gap = &((ActorInfo *)weapon)->burstGap;
-			int burst = ((ActorInfo *)weapon)->burst;
+			const float *cycle = &weapon->cycleTime, *gap = &weapon->burstGap;
+			int burst = weapon->burst;
 			if (AC->firing == 1) {
 				int n = ftol(fdiv_m(fld_m(dt), cycle));
 				shots = burst * (n + 1) + AC->burstLeft;
@@ -962,8 +962,8 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 					k++;
 				if (k == 5)
 					break;
-				int w = ((ActorInfo *)weapon)->ammoSlot;
-				if (AC->ammo[w] < ((ActorInfo *)weapon)->ammoPerShot && AC->bot != 2) {   /* out of ammunition */
+				int w = weapon->ammoSlot;
+				if (AC->ammo[w] < weapon->ammoPerShot && AC->bot != 2) {   /* out of ammunition */
 					if (i == ST->playerActor) {
 						if (AC->firePrev != 0)
 							break;
@@ -976,8 +976,8 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 					break;
 				}
 				if (w >= 0) {
-					const int *muzzle = (const int *)(weapon + (AC->slot == 5 ? 0x2ca4 : 0x15e8) + AC->variantLoaded * 64);
-					skel_applyPose(*(void **)((ObjectList *)model)->frames, muzzle_m, muzzle[0], 0);
+					const int *muzzle = (const int *)(((u8 *)weapon) + (AC->slot == 5 ? 0x2ca4 : 0x15e8) + AC->variantLoaded * 64);
+					skel_applyPose(*(void **)model->frames, muzzle_m, muzzle[0], 0);
 					Mat4_invert(muzzle_inv, muzzle_m);
 					memset(ungrip, 0, 64);   /* the grip undone: grip_shift = muzzle_inv x ungrip x muzzle_m */
 					BITS(ungrip[0]) = BITS(ungrip[5]) = BITS(ungrip[10]) = BITS(ungrip[15]) = 0x3f800000;
@@ -987,13 +987,13 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 					Mat4_multiply(inv_ungrip, muzzle_inv, ungrip);
 					Mat4_multiply(grip_shift, inv_ungrip, muzzle_m);
 					long double r = (long double)(n % burst);   /* this round's offset along the burst (in scratch) */
-					scratch[0] = f32(fmul_m(r, &((const ActorInfo *)weapon)->burstStep[0]));
-					scratch[1] = f32(fmul_m(r, &((const ActorInfo *)weapon)->burstStep[1]));
-					scratch[2] = f32(fmul_m(r, &((const ActorInfo *)weapon)->burstStep[2]));
+					scratch[0] = f32(fmul_m(r, &weapon->burstStep[0]));
+					scratch[1] = f32(fmul_m(r, &weapon->burstStep[1]));
+					scratch[2] = f32(fmul_m(r, &weapon->burstStep[2]));
 					long double x = ((fmul_m(fld_m(&grip_shift[8]), &scratch[2]) + fmul_m(fld_m(&grip_shift[4]), &scratch[1])) + fmul_m(fld_m(&grip_shift[0]), &scratch[0])) + grip_shift[12];
 					long double y = ((fmul_m(fld_m(&grip_shift[9]), &scratch[2]) + fmul_m(fld_m(&grip_shift[5]), &scratch[1])) + fmul_m(fld_m(&grip_shift[1]), &scratch[0])) + grip_shift[13];
 					long double z = ((fmul_m(fld_m(&grip_shift[10]), &scratch[2]) + fmul_m(fld_m(&grip_shift[6]), &scratch[1])) + fmul_m(fld_m(&grip_shift[2]), &scratch[0])) + grip_shift[14];
-					const float *q = (const float *)(uintptr_t)((u32)((ObjectList *)model)->entries + muzzle[0] * 100 + 0xc);
+					const float *q = (const float *)(uintptr_t)((u32)model->entries + muzzle[0] * 100 + 0xc);
 					shot_at[0] = f32(((fmul_m(z, &q[8]) + fmul_m(y, &q[4])) + fmul_m(x, &q[0])) + q[12]);
 					shot_at[1] = f32(((fmul_m(x, &q[1]) + fmul_m(z, &q[9])) + fmul_m(y, &q[5])) + q[13]);
 					shot_at[2] = f32(((fmul_m(x, &q[2]) + fmul_m(z, &q[10])) + fmul_m(y, &q[6])) + q[14]);
@@ -1021,7 +1021,7 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 						for (int c = 0; c < 3; c++)
 							d[c] = f32(fsub_m(fld_m(&tp[c]), &AC->pos[c]));
 						memcpy(scratch, d, 12);
-						long double R = fld_m(&((ActorInfo *)weapon)->splashRadius);
+						long double R = fld_m(&weapon->splashRadius);
 						long double dd = (fmul_m(fld_m(&d[2]), &d[2]) + fmul_m(fld_m(&d[1]), &d[1])) + fmul_m(fld_m(&d[0]), &d[0]);
 						if (R * R > dd) {
 							if (AC->slot == 0 && pr->items[4] >= 0)
@@ -1047,7 +1047,7 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 					AC->shotBullets[k] = bullet_spawn(s, -1, i, target, rec, n);
 					AC->shots[k].isNew = 1;
 					if (AC->bot != 2)
-						AC->ammo[((ActorInfo *)weapon)->ammoSlot] -= ((ActorInfo *)weapon)->ammoPerShot;
+						AC->ammo[weapon->ammoSlot] -= weapon->ammoPerShot;
 				}
 				AC->fireAnim = 0.0001f;   /* 0.0001: the firing cycle restarts */
 				long double v = fdiv_m(fld_m(dt), cycle);
@@ -1057,7 +1057,7 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 			}
 			AC->firePrev = AC->inFire;
 		}
-	} else if (weapon && AC->netFired == 1) {   /* the others' rounds, as sent */
+	} else if (((u8 *)weapon) && AC->netFired == 1) {   /* the others' rounds, as sent */
 		for (int k = 0; k < 5; k++) {   /* per slot (shots[k]): in use, a new round (its kind, owner, flag, direction) */
 			int *item = &AC->shotBullets[k];
 			u32 *f = (u32 *)&AC->shots[k].isNew;
@@ -1066,8 +1066,8 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 			if (f[0] == 1) {
 				if (*item >= 0)
 					bullet_free(s, *item);
-				const int *muzzle = (const int *)(weapon + (AC->slot == 5 ? 0x2ca4 : 0x15e8) + AC->variantLoaded * 64);
-				skel_applyPose(*(void **)((ObjectList *)model)->frames, muzzle_m, muzzle[0], 0);
+				const int *muzzle = (const int *)(((u8 *)weapon) + (AC->slot == 5 ? 0x2ca4 : 0x15e8) + AC->variantLoaded * 64);
+				skel_applyPose(*(void **)model->frames, muzzle_m, muzzle[0], 0);
 				Mat4_invert(muzzle_inv, muzzle_m);
 				memset(ungrip, 0, 64);
 				BITS(ungrip[0]) = BITS(ungrip[5]) = BITS(ungrip[10]) = BITS(ungrip[15]) = 0x3f800000;
@@ -1080,7 +1080,7 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 				long double x = ((fmul_m(fld_m(&grip_shift[8]), &o[2]) + fmul_m(fld_m(&grip_shift[4]), &o[1])) + fmul_m(fld_m(&grip_shift[0]), &o[0])) + grip_shift[12];
 				long double y = ((fmul_m(fld_m(&grip_shift[9]), &o[2]) + fmul_m(fld_m(&grip_shift[5]), &o[1])) + fmul_m(fld_m(&grip_shift[1]), &o[0])) + grip_shift[13];
 				long double z = ((fmul_m(fld_m(&grip_shift[10]), &o[2]) + fmul_m(fld_m(&grip_shift[6]), &o[1])) + fmul_m(fld_m(&grip_shift[2]), &o[0])) + grip_shift[14];
-				const float *q = (const float *)(uintptr_t)((u32)((ObjectList *)model)->entries + muzzle[0] * 100 + 0xc);
+				const float *q = (const float *)(uintptr_t)((u32)model->entries + muzzle[0] * 100 + 0xc);
 				shot_at[0] = f32(((fmul_m(z, &q[8]) + fmul_m(y, &q[4])) + fmul_m(x, &q[0])) + q[12]);
 				shot_at[1] = f32(((fmul_m(x, &q[1]) + fmul_m(z, &q[9])) + fmul_m(y, &q[5])) + q[13]);
 				shot_at[2] = f32(((fmul_m(x, &q[2]) + fmul_m(z, &q[10])) + fmul_m(y, &q[6])) + q[14]);
@@ -1093,13 +1093,13 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 				rec->muzzle = (u32)(uintptr_t)q;
 				*item = bullet_spawn(s, -1, i, -1, rec, 0);
 				AC->fireAnim = 0.0001f;
-				long double v = fadd_m(fdiv_m(fld_m(dt), &((ActorInfo *)weapon)->cycleTime), &AC->fireCycle);
+				long double v = fadd_m(fdiv_m(fld_m(dt), &weapon->cycleTime), &AC->fireCycle);
 				AC->fireCycle = (float)v;
 				if (v >= 1.0L)
 					AC->fireCycle = 0;
 				f[0] = 0;
 			}
-			Bullet *b = (Bullet *)((u8 *)&ST->bullets[*item]);   /* the round's record, brought up to date */
+			Bullet *b = &ST->bullets[*item];   /* the round's record, brought up to date */
 			if (b->active != 1)
 				continue;
 			b->hitActor = f[1];

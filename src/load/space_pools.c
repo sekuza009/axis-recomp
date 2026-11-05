@@ -293,7 +293,7 @@ int THISCALL (space_collideAt)(u8 *grid, u32 r, const float *pos, const float *v
 	u16 root = sp->cells[(nz * cy + cz) * nx + cx];
 	if (root == 0xffff)
 		return 0;
-	u8 *node = (u8 *)array_recordAt(root, (*(int *)&sp->blocks.records), 0x50);
+	SpaceBlock *node = (SpaceBlock *)((u8 *)array_recordAt(root, (*(int *)&sp->blocks.records), 0x50));
 	float box[6];   /* low x, y, z, then high */
 	float by = f32(fmul_m((long double)cy, size_y)), bz = f32(fmul_m((long double)cz, size_z));
 	box[0] = f32(fadd_m(fmul_m((long double)cx, size_x), &low[0]));
@@ -303,14 +303,14 @@ int THISCALL (space_collideAt)(u8 *grid, u32 r, const float *pos, const float *v
 	box[4] = f32(fadd_m(fld_m(&box[1]), size_y));
 	box[5] = f32(fadd_m(fld_m(&box[2]), size_z));
 	const float *half = (const float *)ADDR(k_0_5f);
-	while (node) {
-		if (!((SpaceBlock *)node)->split)
-			return sp->lastHit = space_collideBlock(node, r, pos, vel, k, outPos, outVel, outDist, outPlane, axis, subs, nsubs);
+	while (((u8 *)node)) {
+		if (!node->split)
+			return sp->lastHit = space_collideBlock(((u8 *)node), r, pos, vel, k, outPos, outVel, outDist, outPlane, axis, subs, nsubs);
 		long double mx = fmul_m(fadd_m(fld_m(&box[3]), &box[0]), half);
 		float my = f32(fmul_m(fadd_m(fld_m(&box[4]), &box[1]), half));
 		float mz = f32(fmul_m(fadd_m(fld_m(&box[5]), &box[2]), half));
 		int xu = !(mx > outPos[0]), yu = outPos[1] >= my, zu = outPos[2] >= mz;
-		node = ((SpaceBlock *)node)->children[xu + zu * 2 + yu * 4];
+		node = (SpaceBlock *)(node->children[xu + zu * 2 + yu * 4]);
 		box[xu ? 0 : 3] = f32(mx);
 		box[yu ? 1 : 4] = my;
 		box[zu ? 2 : 5] = mz;
@@ -882,7 +882,7 @@ u32 THISCALL (collision_rayTrace)(u8 *s, const float *p0, const float *p1, void 
 	Stage *st = (Stage *)s;
 	int n = 0;
 	for (int i = 0; i < st->objectCount; i++) {
-		MapObject *o = (MapObject *)((u8 *)&st->objects[i]);
+		MapObject *o = &st->objects[i];
 		if (o->active != 1 || o->animated != 1 || !((SpaceUnit *)o->unit)->lastNode)
 			continue;
 		const float *m = o->matrixInverse;

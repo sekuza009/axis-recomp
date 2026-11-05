@@ -375,24 +375,24 @@ u8 *THISCALL (skel_getSkeletonPtrBy)(u8 *cache, const char *name)
 	if (key[0] == 0 || key[0] == '.')
 		return NULL;
 	int added, i = tree_lookup(cache, key, (char *)OBJ(g_logSkeletonManager), STR(0x4c5528, "sizeOfSkeletonBuffer is zero-getSkele..."), STR(0x4c54c8, "skeleton overflow(%d)-getSkeletonPtrBy()"), &added);
-	u8 *sk = mg->items + i * 0x24;
+	Skeleton *sk = (Skeleton *)(mg->items + i * 0x24);
 	if (!added)
-		return sk;
+		return ((u8 *)sk);
 	const char *own = (const char *)mg->nodes + i * 0x4c;
 	u8 *mem = mg->data;
 	void *at = mem ? mem + mg->dataUsed : NULL;
 	int room = mem ? mg->dataSize - mg->dataUsed : 0;
 	if (((int)mg->source) == 2)
-		skel_loadFromFile(sk, skelDat_getItemFileBy(key), at, room);
+		skel_loadFromFile(((u8 *)sk), skelDat_getItemFileBy(key), at, room);
 	else {
 		char path[0x100];
 		item_path(path, cache, own, STR(0x4c54f4, "ske"), STR(0x4c54f8, "ase"), (char *)OBJ(g_logSkeletonManager), STR(0x4c54fc, "invalid file format(%s)-getSkeletonPt..."));
-		skel_loadFrom(sk, path, at, room);
+		skel_loadFrom(((u8 *)sk), path, at, room);
 	}
 	if (mem)
-		mg->dataUsed += ((Skeleton *)sk)->blockSize;
+		mg->dataUsed += sk->blockSize;
 	mg->count++;
-	return sk;
+	return ((u8 *)sk);
 }
 
 /* 0x466dc0 (thiscall on a shape cache): the shape named name, as skel_getSkeletonPtrBy does it for skeletons: shape
@@ -642,7 +642,7 @@ void THISCALL (skel_loadAseFrom)(u8 *sk, void *f, u8 *mem, int memSize)
 	int keys = sko->boneCount * 0x70;   /* where the next key list goes, after the bones */
 	crt_fseek(f, 0, 0);
 	int frames = 0, ms = 0x21, ticks = 0xa0, skip = -1, index = -1, at = -0x70;
-	u8 *b = NULL;
+	Bone *b = NULL;
 	while (crt_fgets(line, 0x100, f)) {
 		const char *t = crt_strtok(line, (const char *)STR(0x4c5498, "* \t"));
 		if (!strcmp(t, (const char *)STR(0x4c543c, "SCENE_LASTFRAME")))   /* SCENE_LASTFRAME */
@@ -656,9 +656,9 @@ void THISCALL (skel_loadAseFrom)(u8 *sk, void *f, u8 *mem, int memSize)
 			index++;
 			skip = 0;
 			at += 0x70;
-			b = sko->bones + at;
-			((Bone *)b)->parent = -1;
-			((Bone *)b)->posKeyCount = (*(int *)&((Bone *)b)->posKeys) = ((Bone *)b)->rotKeyCount = (*(int *)&((Bone *)b)->rotKeys) = 0;
+			b = (Bone *)(sko->bones + at);
+			b->parent = -1;
+			b->posKeyCount = (*(int *)&b->posKeys) = b->rotKeyCount = (*(int *)&b->rotKeys) = 0;
 		} else if (!strcmp(t, (const char *)STR(0x4c53f8, "CAMERAOBJECT"))) {   /* CAMERAOBJECT */
 			skip = 1;
 			continue;
@@ -672,57 +672,57 @@ void THISCALL (skel_loadAseFrom)(u8 *sk, void *f, u8 *mem, int memSize)
 			if (at > 0)
 				for (int j = 0; j < index; j++)
 					if (!strcmp((const char *)sko->bones + j * 0x70, parent)) {
-						((Bone *)b)->parent = j;
+						b->parent = j;
 						break;
 					}
-			if (((Bone *)b)->parent < 0)
+			if (b->parent < 0)
 				sys_fatalError((char *)OBJ(g_logSkeleton), (const char *)STR(0x4c53b8, "can't find parent part(%s)-loadAseFor..."), (int)parent);
 		} else if (!strcmp(t, (const char *)STR(0x4c53b0, "TM_POS"))) {   /* TM_POS */
-			((Bone *)b)->pos[0] = ase_float(SPACE, 0);
-			((Bone *)b)->pos[2] = ase_float(SPACE, 1);
-			((Bone *)b)->pos[1] = ase_float(LINE_END, 0);
+			b->pos[0] = ase_float(SPACE, 0);
+			b->pos[2] = ase_float(SPACE, 1);
+			b->pos[1] = ase_float(LINE_END, 0);
 		} else if (!strcmp(t, (const char *)STR(0x4c53a4, "TM_ROTAXIS"))) {   /* TM_ROTAXIS */
-			((Bone *)b)->rotation[1] = ase_float(SPACE, 0);
-			((Bone *)b)->rotation[3] = ase_float(SPACE, 1);
-			((Bone *)b)->rotation[2] = ase_float(LINE_END, 0);
+			b->rotation[1] = ase_float(SPACE, 0);
+			b->rotation[3] = ase_float(SPACE, 1);
+			b->rotation[2] = ase_float(LINE_END, 0);
 		} else if (!strcmp(t, (const char *)STR(0x4c5398, "TM_ROTANGLE")))   /* TM_ROTANGLE */
-			((Bone *)b)->rotation[0] = ase_float(LINE_END, 1);
+			b->rotation[0] = ase_float(LINE_END, 1);
 		else if (!strcmp(t, (const char *)STR(0x4c5388, "CONTROL_POS_TCB")) || !strcmp(t, (const char *)STR(0x4c5374, "CONTROL_POS_BEZIER"))) {   /* CONTROL_POS_TCB / _BEZIER */
-			((Bone *)b)->posKeys = sko->block + keys;
+			b->posKeys = sko->block + keys;
 			while (crt_fgets(line, 0x100, f)) {
 				t = crt_strtok(line, (const char *)STR(0x4c535c, "* \t\n"));
 				if (!strcmp(t, (const char *)STR(0x4c5478, "CONTROL_TCB_POS_KEY")) || !strcmp(t, (const char *)STR(0x4c5460, "CONTROL_BEZIER_POS_KEY"))) {
-					PosKey *k = (PosKey *)(((Bone *)b)->posKeys + ((Bone *)b)->posKeyCount * 0x20);
+					PosKey *k = (PosKey *)(b->posKeys + b->posKeyCount * 0x20);
 					k->frame = ase_time(ticks, ms);
 					k->pos[0] = ase_float(SPACE, 0);
 					k->pos[2] = ase_float(SPACE, 1);
 					k->pos[1] = ase_float(SPACE, 0);
-					((Bone *)b)->posKeyCount++;
+					b->posKeyCount++;
 				} else if (t && t[0] == '}')
 					break;
 			}
-			keys += ((Bone *)b)->posKeyCount * 0x20;
+			keys += b->posKeyCount * 0x20;
 		} else if (!strcmp(t, (const char *)STR(0x4c5364, "CONTROL_ROT_TCB"))) {   /* CONTROL_ROT_TCB */
-			((Bone *)b)->rotKeys = sko->block + keys;
+			b->rotKeys = sko->block + keys;
 			while (crt_fgets(line, 0x100, f)) {
 				t = crt_strtok(line, (const char *)STR(0x4c535c, "* \t\n"));
 				if (!strcmp(t, (const char *)STR(0x4c544c, "CONTROL_TCB_ROT_KEY"))) {
-					u8 *k = ((Bone *)b)->rotKeys + ((Bone *)b)->rotKeyCount * 0x28;
+					u8 *k = b->rotKeys + b->rotKeyCount * 0x28;
 					((RotKey *)k)->frame = ase_time(ticks, ms);
 					((RotKey *)k)->rotation[1] = ase_float(SPACE, 0);
 					((RotKey *)k)->rotation[3] = ase_float(SPACE, 1);
 					((RotKey *)k)->rotation[2] = ase_float(SPACE, 0);
 					((RotKey *)k)->rotation[0] = ase_float(SPACE, 1);
-					if (((Bone *)b)->rotKeyCount > 0) {
+					if (b->rotKeyCount > 0) {
 						float r[4];
 						axisAngle_combine(r, (const float *)(RELOC(k) + 8), (const float *)(RELOC(k) + 8 - 0x28));
 						memcpy(k + 8, r, 16);
 					}
-					((Bone *)b)->rotKeyCount++;
+					b->rotKeyCount++;
 				} else if (t && t[0] == '}')
 					break;
 			}
-			keys += ((Bone *)b)->rotKeyCount * 0x28;
+			keys += b->rotKeyCount * 0x28;
 		}
 	}
 	u8 *all = ((Skeleton *)sk)->bones;
@@ -938,7 +938,7 @@ void THISCALL (model_loadObjFormatFrom)(u8 *sh, void *f, u8 *mem, int memSize)
 		prim[2] = (u32)(md->block + at);
 		at += ((ShapePart *)pt)->vertexCount * 4;
 	}
-	u8 *part = NULL;
+	ShapePart *part = NULL;
 	int flip = 0, poff = 0;
 	float *vp = vs, *np = ns, *tp = ts;
 	crt_fseek(f, 0, 0);
@@ -973,14 +973,14 @@ void THISCALL (model_loadObjFormatFrom)(u8 *sh, void *f, u8 *mem, int memSize)
 				tp[1] = f32(crt_atof(TOK(NULL, LINE_END)));
 				tp += 2;
 			} else if (!strcmp(t, (const char *)STR(0x4c4c64, "usemtl"))) {
-				part = md->parts + poff;
+				part = (ShapePart *)(md->parts + poff);
 				poff += 0x80;
 				for (char *piece = TOK(NULL, STR(0x4c4b04, "_")); piece; piece = TOK(NULL, STR(0x4c4b04, "_")))
 					strcpy(last, piece);
 				char *name = TOK(last, LINE_END);
-				strcpy((char *)part + 4, name);
-				part[(int)strlen(name) + 3] = 0;
-				((ShapePart *)part)->texture = -1;
+				strcpy((char *)((u8 *)part) + 4, name);
+				((u8 *)part)[(int)strlen(name) + 3] = 0;
+				part->texture = -1;
 				next = 0;
 			} else if (!strcmp(t, (const char *)STR(0x4c4c54, "f"))) {
 				strcpy(c[0], face_start(line, f));
@@ -992,14 +992,14 @@ void THISCALL (model_loadObjFormatFrom)(u8 *sh, void *f, u8 *mem, int memSize)
 				else
 					c[3][0] = 0;
 				int b = corner;
-				float *pv = (*(float * *)&((ShapePart *)part)->vertices), *pn;
-				obj_corner(part, b, c[0], vs, ns, ts);
-				obj_corner(part, b + 1, c[1], vs, ns, ts);
-				if (!obj_corner(part, b + 2, c[2], vs, ns, ts)) {
+				float *pv = (*(float * *)&part->vertices), *pn;
+				obj_corner(((u8 *)part), b, c[0], vs, ns, ts);
+				obj_corner(((u8 *)part), b + 1, c[1], vs, ns, ts);
+				if (!obj_corner(((u8 *)part), b + 2, c[2], vs, ns, ts)) {
 					float tmp[3];
-					pv = (*(float * *)&((ShapePart *)part)->vertices);
+					pv = (*(float * *)&part->vertices);
 					const float *nrm = math_triangleNormal(tmp, pv + b * 3, pv + (b + 1) * 3, pv + (b + 2) * 3);
-					pn = (*(float * *)&((ShapePart *)part)->normals);
+					pn = (*(float * *)&part->normals);
 					memcpy(pn + (b + 2) * 3, nrm, 12);
 					memcpy(pn + (b + 1) * 3, pn + (b + 2) * 3, 12);
 					memcpy(pn + b * 3, pn + (b + 2) * 3, 12);
@@ -1013,11 +1013,11 @@ void THISCALL (model_loadObjFormatFrom)(u8 *sh, void *f, u8 *mem, int memSize)
 					memcpy(vs + (b + 5) * 3, vs + b * 3, 12);
 					memcpy(ns + (b + 5) * 3, ns + b * 3, 12);
 					memcpy(ts + (q + 2) * 2, ts + (q - 3) * 2, 8);
-					if (!obj_corner(part, b + 4, c[3], vs, ns, ts)) {
+					if (!obj_corner(((u8 *)part), b + 4, c[3], vs, ns, ts)) {
 						float tmp[3];
-						pv = (*(float * *)&((ShapePart *)part)->vertices);
+						pv = (*(float * *)&part->vertices);
 						const float *nrm = math_triangleNormal(tmp, pv + q * 3, pv + (b + 4) * 3, pv + (b + 5) * 3);
-						pn = (*(float * *)&((ShapePart *)part)->normals);
+						pn = (*(float * *)&part->normals);
 						memcpy(pn + (b + 4) * 3, nrm, 12);
 						memcpy(pn + q * 3, pn + (b + 4) * 3, 12);
 						memcpy(pn + (b + 5) * 3, pn + (b + 4) * 3, 12);

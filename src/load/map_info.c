@@ -63,8 +63,8 @@ int THISCALL (map_loadItemInfoFrom)(u8 *scene, const char *path)
 	fread_scrambled(st->itemTypes, 0x90, *count, f);
 	fclose(f);
 	for (int i = 0; i < *count; i++) {
-		u8 *item = (u8 *)&st->itemTypes[i];
-		((ItemType *)item)->model = (Model *)(item[0] ? shape_getByName((u8 *)&st->partShapes, ((ItemType *)item)->shapeName, 1) : 0);
+		ItemType *item = &st->itemTypes[i];
+		item->model = (Model *)(((u8 *)item)[0] ? shape_getByName((u8 *)&st->partShapes, item->shapeName, 1) : 0);
 	}
 	return 1;
 }
@@ -233,10 +233,10 @@ void THISCALL (map_loadPlayInfoFrom)(u8 *scene, const char *name)
 		} else if (r[0] == 1) {
 			if (st->startCount >= 32)
 				sys_fatalError((char *)OBJ(g_logStage), (const char *)STR(0x4c7c00, "numOfMultiPlayStartPoint overflow(lim..."), 0x20);
-			u8 *start = (u8 *)&st->starts[st->startCount];
-			memcpy(start, &r[4], 12);
-			((StartPoint *)start)->angle[0] = f32(fmul_m(fld_m(&rf[7]), scale));
-			((StartPoint *)start)->angle[1] = f32(fmul_m(fld_m(&rf[8]), scale));
+			StartPoint *start = &st->starts[st->startCount];
+			memcpy(((u8 *)start), &r[4], 12);
+			start->angle[0] = f32(fmul_m(fld_m(&rf[7]), scale));
+			start->angle[1] = f32(fmul_m(fld_m(&rf[8]), scale));
 			st->startCount++;
 		} else if (r[0] == 2) {
 			if (st->itemCount >= 200)

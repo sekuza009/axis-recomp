@@ -345,16 +345,16 @@ int THISCALL (tex_allocIdBy)(u8 *tm, const char *name, u32 flags, u32 h1, u32 s1
 		return -1;
 	int i = 0;
 	for (; i < TM->recordCount; i++) {
-		u8 *rec = (u8 *)&TM->records[i];
-		if (strcmp((const char *)rec, key))
+		TexRecord *rec = &TM->records[i];
+		if (strcmp((const char *)((u8 *)rec), key))
 			continue;
-		const float *c = ((TexRecord *)rec)->colours;
+		const float *c = rec->colours;
 #define SAME(a, k) (!((a) < fld_m((const float *)&colour[k])) && !((a) > fld_m((const float *)&colour[k])))
-		if (((TexRecord *)rec)->flags == flags && SAME(c[0], 0) && SAME(c[2], 2) && SAME(c[1], 1) && SAME(c[3], 3) &&
+		if (rec->flags == flags && SAME(c[0], 0) && SAME(c[2], 2) && SAME(c[1], 1) && SAME(c[3], 3) &&
 		    SAME(c[5], 5) && SAME(c[4], 4))
 			return i;
 #undef SAME
-		((TexRecord *)rec)->flags = flags;
+		rec->flags = flags;
 		tex_recolourMaterial(tm, i, colour[0], colour[1], colour[2], colour[3], colour[4], colour[5]);
 		return i;
 	}

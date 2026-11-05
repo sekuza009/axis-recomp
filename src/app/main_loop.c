@@ -431,7 +431,7 @@ u32 THISCALL (match_freeCamFrame)(u8 *s)
 	}
 	u8 *actor = (u8 *)&SC->players[SC->localPlayer];
 	Player *act = (Player *)actor;
-	u8 *player = (u8 *)&SC->playerRecords[act->player];
+	PlayerRecord *player = &SC->playerRecords[act->player];
 	for (int k = 0; k < 9; k++)
 		S(int, k_freeKeys[k][1]) = input_asyncKeyDown(k_freeKeys[k][0]) ? 1 : 0;
 	SC->weaponKey = -1;
@@ -515,19 +515,19 @@ u32 THISCALL (match_freeCamFrame)(u8 *s)
 	int item = -1;
 	if (SC->partStepDownPressed == 1) {
 		for (int k = 0; k < 5; k++)
-			if (S(int, k_partSteps[k][0]) == 1 && GAME_VAR(int, player + k_partSteps[k][1]) > 0)
-				GAME_THISCALL(k_partSteps[k][2], int, void *, int, int)(stage, act->player, GAME_VAR(int, player + k_partSteps[k][1]) - 1);
+			if (S(int, k_partSteps[k][0]) == 1 && GAME_VAR(int, ((u8 *)player) + k_partSteps[k][1]) > 0)
+				GAME_THISCALL(k_partSteps[k][2], int, void *, int, int)(stage, act->player, GAME_VAR(int, ((u8 *)player) + k_partSteps[k][1]) - 1);
 		if (SC->fKeys[5] == 1) {
-			int it = ((PlayerRecord *)player)->items[act->slot];
+			int it = player->items[act->slot];
 			if (it > 0)
 				item = it - 1;
 		}
 	} else if (SC->partStepUpPressed == 1) {
 		for (int k = 0; k < 5; k++)
-			if (S(int, k_partSteps[k][0]) == 1 && GAME_VAR(int, player + k_partSteps[k][1]) < S(int, k_partSteps[k][3]) - 1)
-				GAME_THISCALL(k_partSteps[k][2], int, void *, int, int)(stage, act->player, GAME_VAR(int, player + k_partSteps[k][1]) + 1);
+			if (S(int, k_partSteps[k][0]) == 1 && GAME_VAR(int, ((u8 *)player) + k_partSteps[k][1]) < S(int, k_partSteps[k][3]) - 1)
+				GAME_THISCALL(k_partSteps[k][2], int, void *, int, int)(stage, act->player, GAME_VAR(int, ((u8 *)player) + k_partSteps[k][1]) + 1);
 		if (SC->fKeys[5] == 1) {
-			int it = ((PlayerRecord *)player)->items[act->slot];
+			int it = player->items[act->slot];
 			if (it < SC->actorInfoCount - 1)
 				item = it + 1;
 		}
@@ -2144,29 +2144,29 @@ void THISCALL (match_frame)(u8 *s)
 			turn_view(s);
 		}
 	} else if (SC->playing == 1) {
-		const u8 *t;
+		const Player *t;
 		if (SC->matchOver == 1) {   /* the round's end: the winner, the top player or oneself */
 			SC->cameraMode = 9;
 			if (slow_end(s))
-				t = ACTOR_AT(SC->lastDeath);
+				t = (Player *)(ACTOR_AT(SC->lastDeath));
 			else if (((Player *)scene_topPlayer(sc))->state == 1)
-				t = (const u8 *)scene_topPlayer(sc);
+				t = (Player *)((const u8 *)scene_topPlayer(sc));
 			else
-				t = ACTOR_AT(SC->localPlayer);
+				t = (Player *)(ACTOR_AT(SC->localPlayer));
 		} else {
 			SC->cameraMode = SC->respawnCameraMode;
-			t = ACTOR_AT(SC->localPlayer);
+			t = (Player *)(ACTOR_AT(SC->localPlayer));
 		}
-		if (((Player *)t)->state != 1 && ((Player *)t)->lastAttacker >= 0)
-			killer_view(s, t);
+		if (t->state != 1 && t->lastAttacker >= 0)
+			killer_view(s, ((u8 *)t));
 		else if (SC->cameraSettings[3][SC->cameraMode] != 0)
-			look_at(s, ((const Player *)t)->pos);
+			look_at(s, t->pos);
 		else {
-			preset_angles(s, t, offsetof(Scene, cameraMode));
+			preset_angles(s, ((u8 *)t), offsetof(Scene, cameraMode));
 			if (SC->cameraMode == 1)
-				muzzle_camera(s, t);
+				muzzle_camera(s, ((u8 *)t));
 			else
-				orbit_from(s, t, offsetof(Scene, cameraMode), SC->cameraMode != 9);
+				orbit_from(s, ((u8 *)t), offsetof(Scene, cameraMode), SC->cameraMode != 9);
 			turn_view(s);
 		}
 	}

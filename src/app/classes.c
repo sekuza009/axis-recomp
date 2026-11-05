@@ -336,16 +336,16 @@ void *THISCALL (image_tryOpen)(u8 *image, const char *path)
    returned; else 0 */
 int THISCALL (playerRecord_loadFlag)(u8 *scene, int p)
 {
-	u8 *record = (u8 *)&((Stage *)scene)->playerRecords[p];
+	PlayerRecord *record = &((Stage *)scene)->playerRecords[p];
 	u8 image[0x48];
 	GAME_VAR(u32, image) = VT(BMPRGBFile, 0x4a96f8);   /* (its vtable) */
 	BITS(((BmpFile *)image)->file) = 0;      /* (no file yet) */
 	char path[0x100];
-	sprintf(path, (const char *)STR(0x4c74e8, "Save\\%s.BMP"), record + 4);
+	sprintf(path, (const char *)STR(0x4c74e8, "Save\\%s.BMP"), ((u8 *)record) + 4);
 	int ok = 0;
 	if (image_tryOpen(image, path)) {
 		if (((BmpFile *)image)->width >= 23 && ((BmpFile *)image)->height >= 15) {
-			u8 *pixel = (u8 *)((PlayerRecord *)record)->flag;
+			u8 *pixel = (u8 *)record->flag;
 			image_copyTo(image, pixel, 24, 16, 4, 0, 0, 0, 0, 24, 16, 0);
 			for (int k = 0; k < 24 * 16; k++, pixel += 4)
 				pixel[3] = pixel[0] == 0 && pixel[1] == 0 && pixel[2] == 0 ? 0 : 0xff;

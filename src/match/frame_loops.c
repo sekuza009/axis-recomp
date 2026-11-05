@@ -377,10 +377,10 @@ void THISCALL (object_initObjectBy)(u8 *s, int i, const u8 *type)
 	identity4((u32 *)mo->animInverse);
 	Mat4_multiply(mo->relMatrix, m, mo->placeInverse);
 	Mat4_invert(mo->relInverse, mo->relMatrix);
-	u8 *shape = (u8 *)shape_getByName((u8 *)&ST->objectShapes, (const char *)RELOC(type), 1);
-	mo->model = (Model *)shape;
+	Model *shape = (Model *)((u8 *)shape_getByName((u8 *)&ST->objectShapes, (const char *)RELOC(type), 1));
+	mo->model = (Model *)((u8 *)shape);
 	for (int r = 0; r < 2; r++) {
-		int need = ST->objectColourCount + ((Model *)shape)->colourCount;
+		int need = ST->objectColourCount + shape->colourCount;
 		if (need > 1000000)
 			sys_fatalErrorN((char *)OBJ(g_logStage), (const char *)STR(0x4c8314, "object(%d) objectShapeElementShadingC..."), i, need, 1000000);
 		mo->colours[r] = (u32)&ST->objectColours[ST->objectColourCount];
@@ -390,8 +390,8 @@ void THISCALL (object_initObjectBy)(u8 *s, int i, const u8 *type)
 	mo->glowSize = ((const ObjectType *)type)->glowSize;
 	mo->glowColour = ((const ObjectType *)type)->glowColour;
 	memset(obj + offsetof(MapObject, unit), 0, 7 * 4);   /* unit .. poseStale */
-	if (shape) {
-		const float *c = ((const Model *)shape)->centre;
+	if (((u8 *)shape)) {
+		const float *c = shape->centre;
 		float *out = mo->pos;
 		out[0] = f32(fadd_m(fmul_m(fld_m(&m[8]), &c[2]) + fmul_m(fld_m(&m[4]), &c[1]) + fmul_m(fld_m(&m[0]), &c[0]), &m[12]));
 		for (int r = 1; r < 3; r++)
@@ -611,10 +611,10 @@ void THISCALL (item_update)(u8 *s, float dt)
 		int type = mi->type;
 		if (type < 0)
 			continue;
-		u8 *t = (u8 *)&ST->itemTypes[type];
+		ItemType *t = &ST->itemTypes[type];
 		if (mi->taken == 1) {
-			if (mi->fade > ((ItemType *)t)->respawnTime) {
-				item_sound(s, ((ItemType *)t)->respawnSound, it);
+			if (mi->fade > t->respawnTime) {
+				item_sound(s, t->respawnSound, it);
 				mi->taken = 0;
 				mi->fade = 0.0f;
 			}
@@ -637,7 +637,7 @@ void THISCALL (item_update)(u8 *s, float dt)
 					near = !(d >= reach);
 				}
 				if (near) {
-					item_pickup(s, ac, it, i, t, type);
+					item_pickup(s, ac, it, i, ((u8 *)t), type);
 					break;
 				}
 			}

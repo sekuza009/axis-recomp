@@ -839,7 +839,7 @@ void THISCALL (actor_setActorTypeItemInfoBy)(Stage *stage, int p, int slot, int 
 {
 	u8 *scene = (u8 *)stage;
 	Stage *st = (Stage *)scene;
-	u8 *type = (u8 *)&st->playerRecords[p];
+	PlayerRecord *type = &st->playerRecords[p];
 	static const int fixed[5] = { 3, 5, 0x24, 0x19, 0x16 };
 	unsigned mode = st->gameType - 2;
 	if (mode <= 9)
@@ -847,10 +847,10 @@ void THISCALL (actor_setActorTypeItemInfoBy)(Stage *stage, int p, int slot, int 
 	if (item >= 0)
 		strcpy(((PlayerRecord *)RELOC(type))->itemNames[slot], (const char *)(u8 *)&st->actorInfo[item]);
 	else
-		((PlayerRecord *)type)->itemNames[slot][0] = 0;
+		type->itemNames[slot][0] = 0;
 	if (item >= st->actorInfoCount)
 		sys_fatalError((char *)OBJ(g_logStage), (const char *)STR(0x4c76f0, "invalid itemIndex(%d) - setActorTypeI..."), item);
-	((PlayerRecord *)type)->items[slot] = item;
+	type->items[slot] = item;
 	for (int i = 0; i < st->actorCount; i++)
 		if (st->actors[i].player == p)
 			actor_loadWeapon(scene, i, slot, st->actors[i].variantLoaded);
