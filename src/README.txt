@@ -112,6 +112,10 @@ RECOMP_ONLY=<the files' functions> bash ../test3.sh, all bit-exact; then bash st
   field_uses.py       every use of a field, with the Scene / Stage view of the same bytes (an alias is often the answer)
   name_audit.py       functions whose name shares no word with their comment, for review (names made before a function
                       was understood; renames with rename.py, mappings in tools/names/rename_audit*.csv)
+  verb_check.py       functions whose name's verb (draw, load, write, send, free ...) the body does not show
+  addr_access.py      every instruction of the original touching an address: read / write / address taken
+  never_read.py       named globals the original never reads in any form; unread_fields.py: fields the C only writes
+  rename_globals.py   globals renamed everywhere (src, tools/names, recomp.c, the Ghidra symbols)
 
 Traps met (see the commits for the stories)
   - zig's cache hides a cached file's warnings: check warnings with an extra -D on the compile line.
