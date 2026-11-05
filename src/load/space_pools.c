@@ -136,10 +136,10 @@ void THISCALL (space_addUnitPlanes)(void *space, u32 id, u8 *owner, u32 part, u3
 
 /* 0x4819b0 (thiscall on the space): the space emptied (planes, nodes, units, blocks) and laid out: its bounds mn / mx
    (+0x5c, +0x68), a grid of nx x ny x nz cells (+0x74 .., +0x58 their number: none, or more than its +0x50 cells, a
-   fatal message), each cell's size (+0x80 .. +0x88: z, x, y over nx, ny, nz, as the original pairs them), a / b (+0x8c,
+   fatal message), each cell's size (+0x80 .. +0x88: z, x, y over nx, ny, nz, as the original pairs them), the margin (a float's bits) and the split count (+0x8c,
    +0x90) and the depth (+0x94; over 8 a fatal message); the cells' table (+0x54, two bytes each) all 0xff. Its callers
    ignore the eax it leaves */
-void THISCALL (space_setBy)(u8 *space, const u32 *mn, const u32 *mx, int nx, int ny, int nz, u32 a, u32 b, int depth)
+void THISCALL (space_setBy)(u8 *space, const u32 *mn, const u32 *mx, int nx, int ny, int nz, u32 margin, u32 splitCount, int depth)
 {
 	Space *sp = (Space *)space;
 #undef FIELD
@@ -162,8 +162,8 @@ void THISCALL (space_setBy)(u8 *space, const u32 *mn, const u32 *mx, int nx, int
 		sys_fatalErrorN((char *)OBJ(g_logCollisionVolume), (const char *)STR(0x4c79f4, "non-zero size required(%dx%dx%d)-setBy()"), nx, ny, nz);
 	else if (cells > SP->cellCapacity)
 		sys_fatalErrorN((char *)OBJ(g_logCollisionVolume), (const char *)STR(0x4c79bc, "blockIndexTable overflow((%dx%dx%d=%d..."), nx, ny, nz, cells, SP->cellCapacity);
-	SP->splitCount = b;
-	SP->margin = a;
+	SP->splitCount = splitCount;
+	SP->margin = margin;
 	SP->depth = depth;
 	SP->cellSize[0] = (float)(((long double)SP->max[2] - SP->min[2]) / SP->nx);
 	SP->cellSize[1] = (float)(((long double)SP->max[0] - SP->min[0]) / SP->ny);

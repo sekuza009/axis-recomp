@@ -597,7 +597,7 @@ static void stars(char *out, int size, const char *password)
    MSG(341, "CREATE NEW ID"), four labelled lines (MSG(342, "INPUT ID"), 0x80 apart) with underlines, the values (the name 0x9dd1d8, the two
    passwords 0x9dd1f6 / 0x9dd202 as stars, 0x9dd20e), each left out while its field is being typed in (0x9dd348 /
    0x9dd3f8 / 0x9dd564 / 0x9dd6cc, with the keys taken), the two buttons (the one under the pointer, 4 / 5 by
-   FUN_00432240, bright) and the border. Returns the frame's or the border's eax */
+   loginForm_hitTest, bright) and the border. Returns the frame's or the border's eax */
 u32 (loginDialog_draw)(void)
 {
 #define X0 g_loginFormLeft

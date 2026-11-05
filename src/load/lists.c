@@ -1,5 +1,5 @@
-/* lists.c: the free lists of the loaders' pools: a node pushed on the front of a doubly linked list whose count
-   goes down (it counts the entries still free). */
+/* lists.c: the free lists of the collision space's pools: a freed node pushed on the front of the doubly linked free
+   list, the pool's count of nodes in use going down. */
 #include "../game.h"
 
 #define FIELD(type, obj, offset) GAME_VAR(type, (u8 *)RELOC(obj) + (offset))
@@ -22,7 +22,7 @@ void THISCALL (space_freeNode)(void *self, u8 *node) { push_front(self, node, 8,
 void THISCALL (space_freeBlock)(void *self, u8 *node) { push_front(self, node, 0x48, 0x48); }
 
 /* 0x441120: a new 0x3538-byte node (malloc'd; prev +0x3530, next +0x3534) appended to the list at *head, and set up
-   by 0x440e20 with the value at 0x9dae10 (returns what that leaves in eax; 0 without memory) */
+   by tunnelRing_build as ring number g_tunnelRings (returns what that leaves in eax; 0 without memory) */
 u32 (tunnel_appendRing)(u8 **head)
 {
 	u8 *first = *head;
@@ -41,5 +41,5 @@ u32 (tunnel_appendRing)(u8 **head)
 		ring->back = last;
 	}
 	ring->next = 0;
-	return FUN_00440e20(node, g_tunnelRings);
+	return tunnelRing_build(node, g_tunnelRings);
 }

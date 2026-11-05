@@ -1343,7 +1343,7 @@ struct TunnelRing 0x3538                                        # a ring of the 
 0x330c     4          float cageSpeed
 0x3310     0x210      Flare flares[6]
 0x3520     4          float alpha                               # the flares' alpha
-0x3524     4          i32 screenHeight                           # (by use) the screen height it was made for (intro_cameraPath); written, never read
+0x3524     4          i32 ringIndex                             # its number in the tunnel (tunnelRing_build's index: its depth -1100 x it); written, never read
 0x3528     4          i32 cells                                 # quads around each band (at most 200)
 0x3530     4          struct TunnelRing *back                   # the ring before
 0x3534     4          struct TunnelRing *next                   # the ring after (none: the last)

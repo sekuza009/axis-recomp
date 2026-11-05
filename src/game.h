@@ -264,8 +264,8 @@ typedef struct { u32 vtable; void *banks[6]; i32 count; } TextureManager;   /* t
 #define space_testSphere(grid, r, pos, vel, step, k, outPos, outVel, outDist, outPlane, axis, subs, nsubs) \
 	GAME_THISFN(space_testSphere, 0x482e30, int, void *, u32, const float *, const float *, u32, u32, u32, u32, u32, u32, u32, void *, int)(grid, r, pos, vel, step, k, outPos, outVel, outDist, outPlane, axis, subs, nsubs)
 #define array_recordAt(i, base, stride) GAME_FN(array_recordAt, 0x46cbc0, int, int, int, int)(i, base, stride)   /* record i of an array (none when negative) */
-#define collision_sphereVsUnit(rec, r, pos, vel, k, outPos, outVel, outDist, outPlane, axis) \
-	GAME_THISFN(collision_sphereVsUnit, 0x47dd90, int, void *, float, const float *, const float *, u32, float *, float *, float *, float *, u32)(rec, r, pos, vel, k, outPos, outVel, outDist, outPlane, axis)
+#define collisionTri_sweepSphere(rec, r, pos, vel, k, outPos, outVel, outDist, outPlane, axis) \
+	GAME_THISFN(collisionTri_sweepSphere, 0x47dd90, int, void *, float, const float *, const float *, u32, float *, float *, float *, float *, u32)(rec, r, pos, vel, k, outPos, outVel, outDist, outPlane, axis)
 #define space_collideUnit(node, r, pos, vel, k, outPos, outVel, outDist, outPlane, axis, subs, nsubs) \
 	GAME_THISFN(space_collideUnit, 0x4804b0, int, void *, u32, const float *, const float *, u32, float *, u32, u32, u32, u32, u32, u32)(node, r, pos, vel, k, outPos, outVel, outDist, outPlane, axis, subs, nsubs)
 #define space_itemMeetsBox(item, low, high, margin) GAME_THISFN(space_itemMeetsBox, 0x47fce0, int, void *, const float *, const float *, u32)(item, low, high, margin)   /* the item meets the box (widened) */
@@ -579,7 +579,7 @@ typedef struct { u32 vtable; void *banks[6]; i32 count; } TextureManager;   /* t
 #define hud_drawCentreNotice(scene) GAME_THISFN(hud_drawCentreNotice, 0x496c20, void, Scene *)(scene)
 
 /* ---- network ---- */
-#define net_playerInUse(i) GAME_FN(net_playerInUse, 0x4a8700, int, int)(i)   /* FUN_004a8700: the player table's slot i is taken */
+#define net_playerInUse(i) GAME_FN(net_playerInUse, 0x4a8700, int, int)(i)   /* the player table's slot i is taken */
 
 /* ---- globals ---- */
 typedef struct { float r, g, b, a; } Colour;
@@ -1165,7 +1165,7 @@ typedef struct { float r, g, b, a; } Colour;
 #define jmp_net_getLocalAddress() GAME_FN(jmp_net_getLocalAddress, 0x4532e0, int, void)()   /* this machine's address (0xa0b43c) */
 #define crt_strtok(s, delimiters) GAME_CDECL(0x49ec3b, char *, char *, const char *)(s, delimiters)   /* the game's CRT strtok */
 #define crt_atoi(s) GAME_CDECL(0x49ec09, int, const char *)(s)
-#define FUN_00440e20(node, value) GAME_FN(intro_cameraPath, 0x440e20, u32, void *, int)(node, value)
+#define tunnelRing_build(node, value) GAME_FN(tunnelRing_build, 0x440e20, u32, void *, int)(node, value)
 #define tex_tintHsv(c, dh, ds, dv) GAME_THISFN(tex_tintHsv, 0x46d950, void, float *, u32, u32, u32)(c, dh, ds, dv)
 #define skel_getSkeletonPtrBy(cache, name) GAME_THISFN(skel_getSkeletonPtrBy, 0x46b1a0, void *, void *, u32)(cache, name)
 #define mech_unpackFromRecord() GAME_FN(mech_unpackFromRecord, 0x40ddb0, void, void)()   /* the mech unpacked */

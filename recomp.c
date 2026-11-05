@@ -1450,7 +1450,7 @@ void armc_mouseLook(void);
 /* intro camera data for screen height h: two 101-point circles (each stored twice), path settings (inherited from
    the linked object at +0x3530 when there is one), box corners, and 6 records with heights stepping down */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-void intro_cameraPath(char *o, int h);
+void tunnelRing_build(char *o, int h);
 
 /* add an object's two points to the view volume list, transformed by the 4x4 matrix at +0x9130 (column-major,
    (x, y, z, w) in record +4.. and +0x14..). flag 1: drop it again when both points are outside the same clip plane.
@@ -1798,7 +1798,7 @@ THISCALL int space_itemMeetsBox(const float *T, const float *P, const float *S, 
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 THISCALL int ViewVolume_addTriangle(char *vv, int id, const DWORD *info6, const DWORD *info3, const float *P, const float *M, int raw, int cull);
 /* batch 37 */
-/* 0x47dd90 (thiscall) collision_sphereVsUnit(r, pos, vel, k, outPos, outVel, outDist, outPlane, axis): the moving
+/* 0x47dd90 (thiscall) collisionTri_sweepSphere(r, pos, vel, k, outPos, outVel, outDist, outPlane, axis): the moving
    sphere (radius r at pos, moving by vel) against collision triangle `this` (collisionTri_setup layout). 0 = no contact;
    1 = contact: outPos = where the sphere stops, outDist = distance travelled, outVel = the slide response (scaled
    by k, along `axis` if given), outPlane = contact plane (normal, distance). Branches: behind/away from the face or
@@ -1806,7 +1806,7 @@ THISCALL int ViewVolume_addTriangle(char *vv, int id, const DWORD *info6, const 
    outside of decides edge or vertex contact, each solving its quadratic and clamping the root to [-1, 1].
    Rebuilt in src/load/collision_tris.c. */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-THISCALL int collision_sphereVsUnit(void *self, DWORD r, DWORD pos, DWORD vel, DWORD k, DWORD outPos,
+THISCALL int collisionTri_sweepSphere(void *self, DWORD r, DWORD pos, DWORD vel, DWORD k, DWORD outPos,
                                      DWORD outVel, DWORD outDist, DWORD outPlane, DWORD axis);
 /* batch 38 */
 /* 0x4804b0 (thiscall) space_collideUnit(r, pos, vel, k, outPos, outVel, outDist, outPlane, axis, subs, nsubs): the
@@ -1815,7 +1815,7 @@ THISCALL int collision_sphereVsUnit(void *self, DWORD r, DWORD pos, DWORD vel, D
    model -> world, matrix world -> model}; pos and vel are taken into the model, the contact back out). Keeps the
    nearest contact (largest outDist), then slides: up to 6 passes, stopping when the step gets short (< r / 10 after
    the first pass) or the response points back into the velocity (then outVel = the 0xa0e7e8 axis, outDist = 0).
-   Returns 1 if anything was hit. Lifted (tools/lift.py) like collision_sphereVsUnit, which it calls; an empty
+   Returns 1 if anything was hit. Lifted (tools/lift.py) like collisionTri_sweepSphere, which it calls; an empty
    sub-model list crashes the original (it follows the null head's next pointer), so the game never passes one. */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 THISCALL int space_collideUnit(void *self, DWORD r, DWORD pos, DWORD vel, DWORD k, DWORD outPos, DWORD outVel,
@@ -5083,7 +5083,7 @@ void main_loop(void);
    scores +0x2221fb8), each team's ranked players (+0x23428f6, +0x2342976 of them, by 0x463740 on their team)
    with name, emblem (0x4922c0 when +0x233c9f0), flag (0x4924d0 by the player's +0x179d1f6), "KILL/DEATH" and
    "TIME mm:ss" and the leader icon (0x496820); else the ranked players the same way; then the players in use
-   (FUN_004a8700) without a team (+0x80 < 0). The local player (+0x234240d) is highlighted */
+   (net_playerInUse) without a team (+0x80 < 0). The local player (+0x234240d) is highlighted */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void THISCALL hud_drawRanking(void *scene);
 /* 0x4926f0 hud_drawMain() (thiscall on the scene): the main HUD of the player the view follows; native until the
@@ -7962,8 +7962,8 @@ static void intro_path_setup(void)
 	fill(BUF + 0x20000 + 0x1930, 4); fill(BUF + 0x20000 + 0x3264, 4);
 	g_a[0] = irnd(0, 9) ? irnd(200, 1200) : irnd(-5000, 5000);
 }
-ST(intro_cameraPath, intro_path_setup();, (CD(void, 0x440e20, char *, int)(BUF + 0x10000, g_a[0]), 0),
-   (intro_cameraPath(BUF + 0x10000, g_a[0]), 0))
+ST(tunnelRing_build, intro_path_setup();, (CD(void, 0x440e20, char *, int)(BUF + 0x10000, g_a[0]), 0),
+   (tunnelRing_build(BUF + 0x10000, g_a[0]), 0))
 static void vvadd_setup(void)
 {
 	S32(BUF, 0x9084) = irnd(0, 10); S32(BUF, 0x908c) = irnd(0, 12); S32(BUF, 0x9088) = (int)(BUF + 0x20000);
@@ -8388,8 +8388,8 @@ static DWORD csu_orig(void)
 	g_csuHits += r == 1;
 	return r;
 }
-ST(collision_sphereVsUnit, csu_setup();, csu_orig(),
-   collision_sphereVsUnit(BUF + 0x10, (DWORD)g_a[0], (DWORD)(BUF + 0x200), (DWORD)(BUF + 0x210), (DWORD)g_a[1],
+ST(collisionTri_sweepSphere, csu_setup();, csu_orig(),
+   collisionTri_sweepSphere(BUF + 0x10, (DWORD)g_a[0], (DWORD)(BUF + 0x200), (DWORD)(BUF + 0x210), (DWORD)g_a[1],
      (DWORD)(BUF + 0x300), (DWORD)(BUF + 0x320), (DWORD)(BUF + 0x340), (DWORD)(BUF + 0x350), g_a[2] ? (DWORD)(BUF + 0x220) : 0))
 /* batch 38: random scenes: up to 8 triangles near the sphere path in the main list, up to 2 sub-models with their own
    matrices (each sub-model list non-empty), occasional QNaN/SNaN positions and velocities */
@@ -17286,7 +17286,7 @@ static const STest g_stests[] = {
 	/* batch 23 */
 	T(shape_computeBounds, 0, 4, 2000), T(setup_camera, 0, 200, 0), T(armc_mouseLook, 0, 200, 0),
 	/* batch 24 */
-	T(intro_cameraPath, 0, 4, 300), T(ViewVolume_addSegment, 0, 4, 3000),
+	T(tunnelRing_build, 0, 4, 300), T(ViewVolume_addSegment, 0, 4, 3000),
 	/* batch 25 */
 	T(Mat4_fromAxisAngle, 0, 4, 2000), T(tex_tintHsv, 0, 4, 3000), T(viewVolume_addQuad, 0, 4, 3000),
 	/* batch 26 */
@@ -17338,7 +17338,7 @@ static const STest g_stests[] = {
 	/* batch 36 */
 	T(ViewVolume_addTriangle, 1, 10, 20000),
 	/* batch 37 */
-	T(collision_sphereVsUnit, 1, 10, 20000),
+	T(collisionTri_sweepSphere, 1, 10, 20000),
 	/* batch 38 */
 	T(space_collideUnit, 1, 10, 20000),
 	/* batch 39 */
@@ -18208,7 +18208,7 @@ static const struct { DWORD addr; void *fn; const char *name; } g_hooks3[] = {
 	{ 0x4666d0, (void *)shape_computeBounds, "shape_computeBounds" }, { 0x4230e0, (void *)setup_camera, "setup_camera" },
 	{ 0x42ab70, (void *)armc_mouseLook, "armc_mouseLook" },
 	/* batch 24 */
-	{ 0x440e20, (void *)intro_cameraPath, "intro_cameraPath" }, { 0x485120, (void *)ViewVolume_addSegment, "ViewVolume_addSegment" },
+	{ 0x440e20, (void *)tunnelRing_build, "tunnelRing_build" }, { 0x485120, (void *)ViewVolume_addSegment, "ViewVolume_addSegment" },
 	/* batch 25 */
 	{ 0x47d9a0, (void *)Mat4_fromAxisAngle, "Mat4_fromAxisAngle" }, { 0x46d950, (void *)tex_tintHsv, "tex_tintHsv" },
 	{ 0x4848e0, (void *)viewVolume_addQuad, "viewVolume_addQuad" },
@@ -18290,7 +18290,7 @@ static const struct { DWORD addr; void *fn; const char *name; } g_hooks3[] = {
 	/* batch 36 */
 	{ 0x4842d0, (void *)ViewVolume_addTriangle, "ViewVolume_addTriangle" },
 	/* batch 37 */
-	{ 0x47dd90, (void *)collision_sphereVsUnit, "collision_sphereVsUnit" },
+	{ 0x47dd90, (void *)collisionTri_sweepSphere, "collisionTri_sweepSphere" },
 	/* batch 38 */
 	{ 0x4804b0, (void *)space_collideUnit, "space_collideUnit" },
 	/* batch 39 */
@@ -19053,7 +19053,7 @@ static DWORD WINAPI worker(LPVOID unused)
 		say("      (render_drawObjects: the original sorted transparent triangles in %d of %d runs)\n", g_drawSorted, g_drawRuns);
 		say("      (map_loadGroundInfoFrom: the original loaded the whole ground in %d tests)\n", g_groundDone);
 		say("      (item_initTextures: the original set the whole scene up in %d tests)\n", g_sceneInitDone);
-		say("      (collision_sphereVsUnit: the original reported a contact in %d tests)\n", g_csuHits);
+		say("      (collisionTri_sweepSphere: the original reported a contact in %d tests)\n", g_csuHits);
 		say("      (space_collideUnit: the original reported a hit in %d tests)\n", g_scuHits);
 		say("      (ray traces: the original hit something in %d / %d / %d tests: node, grid, line of sight)\n", g_traceHits[0], g_traceHits[1], g_traceHits[2]);
 		say("      (actor_pickPathPoint: the original picked a target in %d tests)\n", g_losPicks);

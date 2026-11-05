@@ -29,9 +29,9 @@
 [x] src/hud/hud_overlay.c 98
 [x] src/hud/hud_pass.c 121
 [x] src/hud/hud_ranking.c 96
-[ ] src/load/collision_tris.c 693
+[x] src/load/collision_tris.c 693
 [ ] src/load/files.c 1419
-[ ] src/load/lists.c 45
+[x] src/load/lists.c 45
 [ ] src/load/map_info.c 539
 [ ] src/load/names.c 504
 [ ] src/load/skel_data.c 1083

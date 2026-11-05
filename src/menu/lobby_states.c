@@ -827,7 +827,7 @@ static u32 to_main_menu(void)
 	return r;
 }
 
-/* 0x407750: the lobby's top page keys (no dialog open, not while 0x67ef14 is 1): back (when 0x9dae10 allows) or
+/* 0x407750: the lobby's top page keys (no dialog open, not while 0x67ef14 is 1): back (when a tunnel ring is behind: g_tunnelRings > 0) or
    leave goes to the main menu; the other three pick the lobby's sub-pages 2, 0 and 1. Returns the action's eax */
 u32 (lobbyTop_keys)(void)
 {
@@ -851,8 +851,8 @@ u32 (lobbyTop_keys)(void)
 }
 
 /* 0x406950: the lobby's top page clicks (no dialog open, not while 0x67ef14 is 1): a left click on one of its four
-   buttons (outlines at 0x5b1cf8) picks sub-page 0, 1 or 2 or goes back to the main menu; a right click (when
-   0x9dae10 allows) goes back too. Returns what the original leaves in eax */
+   buttons (outlines at 0x5b1cf8) picks sub-page 0, 1 or 2 or goes back to the main menu; a right click (when a tunnel ring
+   is behind: g_tunnelRings > 0) goes back too. Returns what the original leaves in eax */
 u32 (lobby_topPageClicks)(void)
 {
 	if (g_dialogOpen)

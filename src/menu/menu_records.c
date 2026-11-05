@@ -646,7 +646,7 @@ static int menu_choice(int i, u32 *r)
 
 /* 0x4419d0: the main menu clicked (not while it is fading in (0x9db994 = 1); the replay selection dialog first if open):
    its six buttons (outlines 0x2c bytes apart from 0x4deb80) as menu_choice. A right click quits too when the game
-   was started from the launcher (0x9dae10). Returns what the original leaves in eax */
+   has a tunnel ring behind it (g_tunnelRings > 0). Returns what the original leaves in eax */
 u32 (mainmenu_clicks)(void)
 {
 	if (g_replayZoomIn == 1)
@@ -665,9 +665,9 @@ u32 (mainmenu_clicks)(void)
 	}
 	if (!g_keyEnter)
 		return 0;
-	int launched = g_tunnelRings;
-	if (launched <= 0)
-		return launched;
+	int rings = g_tunnelRings;
+	if (rings <= 0)
+		return rings;
 	g_cursorBlink = 0.0f;
 	return leave_game();
 }

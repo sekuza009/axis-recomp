@@ -215,8 +215,8 @@ u32 (room_leftClicks)(void)
 }
 
 /* 0x435d30: the game room's page clicks (page open, 0x9dce48 not 0 or 1; no dialog): its six buttons (outlines at
-   0x9daf88) open the room's pages, the arm center (0x4dc24c = 3) or leave the game; a right click (when 0x9dae10
-   allows) leaves too. Returns what the original leaves in eax */
+   0x9daf88) open the room's pages, the arm center (0x4dc24c = 3) or leave the game; a right click (when a tunnel ring is behind:
+   g_tunnelRings > 0) leaves too. Returns what the original leaves in eax */
 u32 (room_pageClicks)(void)
 {
 	static const u32 actions[6] = { FN_ADDR(room_requestJoin, 0x4334c0), FN_ADDR(room_start, 0x433590), FN_ADDR(room_enterGameList, 0x433790), 0, FN_ADDR(room_enterRoomList, 0x433800), FN_ADDR(room_leaveGame, 0x435a40) };

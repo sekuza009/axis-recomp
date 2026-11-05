@@ -137,7 +137,7 @@ void (menu_drawBackground)(void)
 }
 
 /* 0x442e10: the replay selection dialog (0x9dd908 .. 0x9dd914): the window, its title 0x74e8a4, the list's frame with
-   its scroll arrows (0 / 1 under the pointer, by FUN_00440b70), two tick boxes (0x4b2a7c: MSG(22, "AUTO REPEAT"), 0x9eeac0:
+   its scroll arrows (0 / 1 under the pointer, by replaySelect_hitTest), two tick boxes (0x4b2a7c: MSG(22, "AUTO REPEAT"), 0x9eeac0:
    MSG(23, "RANDOM PLAY")), two rows of two buttons (MSG(24, "$[0] ALL FILES") lit from 4, MSG(26, "$[0] O K") from 6), the list row under the pointer
    (8 .. 0x11) highlighted, the list (replaySelect_drawNames) and the border. The original leaves eax to callers that
    ignore it */

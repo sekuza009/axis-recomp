@@ -45,7 +45,7 @@ static void leave(void)
 	debug_traceStripped(NULL);
 }
 
-/* 0x422b70: the top page: a tab key opens its tab; the back key (when 0x9dae10 allows) or the leave key goes
+/* 0x422b70: the top page: a tab key opens its tab; the back key (when a tunnel ring is behind: g_tunnelRings > 0) or the leave key goes
    back to the main menu */
 void (setup_topPageKeys)(void)
 {
@@ -219,7 +219,7 @@ void (setup_unbindKey)(int k)
 }
 
 /* 0x4220c0: the setup screen's top page clicks: a left click on one of its four buttons (outlines at 0x4df918)
-   opens the sound, graphics or controls tab or goes back to the main menu; a right click (when 0x9dae10 allows) goes
+   opens the sound, graphics or controls tab or goes back to the main menu; a right click (when a tunnel ring is behind: g_tunnelRings > 0) goes
    back too. Returns what the original leaves in eax */
 u32 (setup_topPageClicks)(void)
 {

@@ -16,9 +16,10 @@ static X mul(X a, const float *m) { return fmul_m(a, m); }
 /* *src copied through the FPU (a signalling NaN comes out quiet) */
 static void copy_through_fpu(float *dst, const float *src) { *dst = (float)fld_m(src); }
 
-/* 0x47db60: triangle (v0, v1, v2) set up in the record, with its id and the map's five values; returns d */
-int THISCALL (collisionTri_setup)(u8 *self, int id, const float *v0, const float *v1, const float *v2, int a, int b, int c, int d,
-                           int e)
+/* 0x47db60: triangle (v0, v1, v2) set up in the record: its id, edges and planes, its map object and shape part and
+   its corners' vertex indices; returns the second index (what the original leaves in eax) */
+int THISCALL (collisionTri_setup)(u8 *self, int id, const float *v0, const float *v1, const float *v2, int object, int part,
+                           int corner0, int corner1, int corner2)
 {
 	CollisionPlane *tp = (CollisionPlane *)self;
 	collisionPlane_clear(self);
@@ -61,12 +62,12 @@ int THISCALL (collisionTri_setup)(u8 *self, int id, const float *v0, const float
 		copy_through_fpu(plane + 2, &p[2]);
 		plane[3] = (float)pd;
 	}
-	tp->object = (i32 *)(uintptr_t)(u32)a;
-	tp->part = b;
-	tp->cornerIndices[0] = c;
-	tp->cornerIndices[1] = d;
-	tp->cornerIndices[2] = e;
-	return d;
+	tp->object = (i32 *)(uintptr_t)(u32)object;
+	tp->part = part;
+	tp->cornerIndices[0] = corner0;
+	tp->cornerIndices[1] = corner1;
+	tp->cornerIndices[2] = corner2;
+	return corner1;
 }
 
 /* 0x47fb80: the segment p0 -> p1 against the triangle: crossing its face plane at a point inside its three edge
@@ -394,7 +395,7 @@ static void respond(float *w, const float *v, const float *d, float k, const flo
    touch, puts the centre there (outPos), its distance from pos + vel (outDist), the response (outVel: the remaining
    move slid along the contact, scaled by k, about axis when there is one) and the contact plane (normal and
    distance). Returns 1 on a contact */
-int THISCALL (collision_sphereVsUnit)(u8 *tri, float r, const float *pos, const float *vel, float k, float *outPos,
+int THISCALL (collisionTri_sweepSphere)(u8 *tri, float r, const float *pos, const float *vel, float k, float *outPos,
                                       float *outVel, float *outDist, float *plane, const float *axis)
 {
 	const float *n = ((const CollisionPlane *)tri)->normal, *dist = &((const CollisionPlane *)tri)->dist;
@@ -553,7 +554,7 @@ static float row_dir(const float *m, const float *p, int i)
    object's list (+0x18: nodes {record, ., ., next +0xc}; records whose first byte has bit 0 set are skipped there)
    and of nsubs sub-models (subs: {list, model-to-world matrix, world-to-model matrix}; pos and vel are taken into
    the model, the contact back out; an empty sub-model list crashes the original, as it would here). The farthest
-   contact along the move wins (collision_sphereVsUnit's outDist), the record that gave it is skipped next time;
+   contact along the move wins (collisionTri_sweepSphere's outDist), the record that gave it is skipped next time;
    then the move slides on: up to 6 passes, ending when a pass's distance is under r / 10, or (contact, outVel the
    0xa0e7e8 axis, outDist 0) when the response turns back against vel. outPos starts as pos + vel. Returns 1 when
    anything was hit */
@@ -585,7 +586,7 @@ int THISCALL (space_collideUnit)(u8 *self, float r, const float *pos, const floa
 					move[i] = row_dir(in, step, i);
 			}
 			if (node != last && (sub >= 0 || !(*RELOC(node)->item & 1))
-			    && collision_sphereVsUnit(RELOC(node)->item, r, at, move, k, hitPos, hitVel, &dist, plane, axis) == 1) {
+			    && collisionTri_sweepSphere(RELOC(node)->item, r, at, move, k, hitPos, hitVel, &dist, plane, axis) == 1) {
 				hit = 1;
 				if (dist > best) {
 					if (sub < 0) {
@@ -634,13 +635,13 @@ static void ground_triangle(u8 *grid, u32 id, const void *a, const void *b, cons
 }
 
 /* 0x471040 (thiscall on the stage): its collision space (+0xa10) set up over the world box (+0x9ef904 low, +0x9ef910
-   high) in cells of the given sizes (z, x, y: the counts of whole cells), with a, b and the depth. Then, with
+   high) in cells of the given sizes (z, x, y: the counts of whole cells), with the margin, split count and depth. Then, with
    +0x9ef30c, the floor (the box's lower face, two triangles, id 0x10); each ground layer (+0xdc0a74 of them, 0x20c
    bytes from +0xdc0244: kind 0 or 1, rows +0x1c, columns +0x20, the (columns + 1) x (rows + 1) points +0x40) as two
    triangles a cell, split one way for kind 0 and the other for kind 1, each row logged; and every object in use
    (+4) that is not flagged 4 (+0xc) as a unit (space_buildUnits with its shape +0x27c and matrix +0xf4: +0x28c),
    every second one logged. Its caller ignores the eax it leaves */
-void THISCALL (collision_initVolume)(u8 *stage, float size_z, float size_x, float size_y, u32 a, u32 b, u32 depth)
+void THISCALL (collision_initVolume)(u8 *stage, float size_z, float size_x, float size_y, u32 margin, u32 splitCount, u32 depth)
 {
 	Stage *st = (Stage *)stage;
 	u8 *grid = (u8 *)&st->space;
@@ -649,7 +650,7 @@ void THISCALL (collision_initVolume)(u8 *stage, float size_z, float size_x, floa
 	int ny = ftol(fdiv_m(fsub_m(fld_m(&high[1]), &low[1]), &size_y));
 	int nx = ftol(fdiv_m(fsub_m(fld_m(&high[0]), &low[0]), &size_x));
 	int nz = ftol(fdiv_m(fsub_m(fld_m(&high[2]), &low[2]), &size_z));
-	space_setBy(grid, (void *)low, (void *)high, nz, nx, ny, a, b, depth);
+	space_setBy(grid, (void *)low, (void *)high, nz, nx, ny, margin, splitCount, depth);
 	log_message((int)stage, 0, 0, (const char *)STR(0x4c747c, "add floor planes"));
 	if (st->floorOn) {
 #define F(v) f32(fld_m(&(v)))

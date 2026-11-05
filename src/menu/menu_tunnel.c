@@ -271,15 +271,15 @@ TunnelRing *(tunnel_addRing)(void)
 	return ring;
 }
 
-/* ---- 0x440e20: an intro camera path node (a tunnel ring) for screen height h: two circles of 101 points (each
+/* ---- 0x440e20: the background tunnel's ring number index (its depth -1100 x index): two circles of 101 points (each
    stored twice, at heights +500 and -500), the spins (taken from the ring before, when there is one), the cage's
    corners (+-50, +-50, +-49), and six flares whose heights step down, with their speeds ---- */
 
-void (intro_cameraPath)(u8 *o, int h)
+void (tunnelRing_build)(u8 *o, int index)
 {
 	TunnelRing *tr = (TunnelRing *)o;
 	typedef long double X;
-	X H = h;
+	X H = index;
 	tr->cleared0 = 0;
 	tr->cleared4 = 0;
 	tr->depth = (float)(H * k_m1000f + H * k_m100f);
@@ -341,7 +341,7 @@ void (intro_cameraPath)(u8 *o, int h)
 		BITS(f->spinSpeed) = speed[j];
 	}
 	tr->alpha = 1.0f;
-	tr->screenHeight = h;
+	tr->ringIndex = index;
 }
 
 /* ---- the menu camera's move along the tunnel: its eye (0x4df024, three floats) and the point it looks at
