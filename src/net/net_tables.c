@@ -136,9 +136,9 @@ u32 (net_addSession)(SessionDesc d)
 }
 
 /* 0x453560 (stdcall; DirectPlay's session enumeration callback): a found session (desc: its GUID at +8, name at
-   +0x30 ..) put into the list (net_addSession, by value) unless its GUID is GUID_NULL (1) or already listed (0, which
+   name ..) put into the list (net_addSession, by value) unless its GUID is GUID_NULL (1) or already listed (0, which
    ends the enumeration). With no description (the enumeration timed out) it stops in modes 0 and 1. The copy's
-   first word is a GlobalAlloc'd block holding the GUID; in mode 0 (+0x74) the session's address as text. 1 */
+   first word is a GlobalAlloc'd block holding the GUID; in mode 0 (address) the session's address as text. 1 */
 int STDCALL (dplay_enumSessionsCallback)(const u8 *desc, void *timeout, u32 flags, void *context)
 {
 	int mode = g_connectionKind;
@@ -1239,7 +1239,7 @@ static void send_buffer(u32 socket, u32 buffer, int size)
 /* 0x4521c0: packet `kind` sent to `to` (100 the lobby, 101 the game server; another value sends only the packet
    itself): its kind word (in g_netKindBuffer; none: nothing at all), then the kind's buffer: 10 .. 12 to the lobby (0x5b
    bytes), 13 the hello (the game list cleared), 23 the name (0x10), 14 / 15 the address request (this machine's
-   address at +0x60), 17 .. 22 and 24 .. 29 to the game server (19 and 21 / 26 after clearing the server or player
+   address at address), 17 .. 22 and 24 .. 29 to the game server (19 and 21 / 26 after clearing the server or player
    tables, 22 with its first byte set). Most kinds are kept as the last request (g_netLastRequest). The callers ignore the
    eax it leaves */
 void (net_send)(int kind, int to)
@@ -1435,8 +1435,8 @@ void (net_recv)(void)
 	        "\taddl $0x40, %esp\n" \
 	        "\tretl $(" #nargs " * 4)\n")
 
-/* a match packet (0x40 bytes) sent and counted (+0x2340c78); while recording (+0x2340d1d 1) the frame (+0x2340d29),
-   the camera's actor (+0x234240d), the packet's size and the packet written to the recording (+0x2340d08) */
+/* a match packet (0x40 bytes) sent and counted (packetsSent); while recording (recording 1) the frame (recordTime),
+   the camera's actor (localPlayer), the packet's size and the packet written to the recording (replayFile) */
 static void send_packet(u8 *s, u8 *packet)
 {
 	Scene *sc = (Scene *)s;
@@ -1451,31 +1451,29 @@ static void send_packet(u8 *s, u8 *packet)
 	}
 }
 
-/* 0x48ead0 (thiscall on the scene): the players' levels sent (a 0x40-byte packet, kind 0xe in its second byte): one
-   nibble each for up to 124 players (+0x22ee4c0, 0x28 bytes each, +0x22f0400 of them; two to a byte from the third,
-   the even one low), a player in the game (+0 not negative, +0x20 1) its level (+0x24) / 10 + 1, at most 15 (each
-   byte cleared at its even player). The frame count (+0x2340c78) goes up; while recording (+0x2340d1d 1) the frame
-   (+0x2340d29), the camera's actor (+0x234240d), the packet's size and the packet written to the recording
-   (+0x2340d08). Its caller ignores the eax it leaves */
-static void THISCALL __attribute__((used)) net_sendPlayerLevels_body(u8 *s, u8 *packet)
+/* 0x48ead0 (thiscall on the scene): the map items' states sent (a 0x40-byte packet, kind 0xe in its second byte): one
+   nibble each for up to 124 items (the stage's items, itemCount of them; two to a byte from the third, the even one
+   low), an item that is there (type not negative) and taken: its fade / 10 + 1, at most 15 (each byte cleared at its
+   even item). Sent by send_packet. Its caller ignores the eax it leaves */
+static void THISCALL __attribute__((used)) net_sendItemStates_body(u8 *s, u8 *packet)
 {
 	packet[1] = 0xe;
 	for (int i = 0; i < SCENE_STAGE(s)->itemCount && i < 0x7c; i++) {
-		const MapItem *player = &SCENE_STAGE(s)->items[i];   /* (an item, its level sent) */
+		const MapItem *it = &SCENE_STAGE(s)->items[i];
 		if (i % 2 == 0)
 			packet[2 + i / 2] = 0;
-		if (player->type < 0 || player->taken != 1)
+		if (it->type < 0 || it->taken != 1)
 			continue;
-		int level = ftol(player->fade) / 10 + 1;
+		int level = ftol(it->fade) / 10 + 1;
 		if (level > 15)
 			level = 15;
 		packet[2 + i / 2] |= (u8)(i % 2 ? level << 4 : level);
 	}
 	send_packet(s, packet);
 }
-PACKET_ENTRY(net_sendPlayerLevels, 0);
+PACKET_ENTRY(net_sendItemStates, 0);
 
-/* 0x48e0f0 (thiscall on the scene): player p's info sent once when flagged (+0x234300a + p x 0x10, cleared): packet
+/* 0x48e0f0 (thiscall on the scene): player p's info sent once when flagged (sendFlags[][1] + p x 0x10, cleared): packet
    2 (64 bytes, its first byte left as it was): from its PlayerRecord the name, then +0x13 its level, +0x14 its
    team, its actor's emblem, p, the five parts and six items (each + 1), the 30 colour bytes (hue, saturation, value). Sent by send_packet. Its caller ignores the eax it
    leaves */
@@ -1537,12 +1535,12 @@ u32 STDCALL (dplay_enumConnections)(const u32 *guid, const void *connection, u32
 }
 
 /* 0x48e680 (thiscall on the scene): the first pending match event (flags at 1, each cleared when taken) sent as its
-   packet (kind in the second byte; 0x6b where it carries nothing): 3, 4, 5 (+0x2343237, +0x234323b, +0x234323f); 6 two
-   bytes (+0x234324f: +0x2343247, +0x234324b); 7 a byte and a line (+0x234319b: +0x234315a, +0x234315e; and byte
-   0x3e from +0x2343197); 8 the same (+0x234314e: +0x234310a, +0x234310e); 9 a byte (+0x2343156: +0x2343152); 10 two
-   bytes and a line (+0x23431e7: +0x234319f, +0x23431a3, +0x23431a7); 11 the camera's actor, a byte and a line
-   (+0x2343233: +0x23431ef, +0x23431f3); 13 (+0x2343243). With none pending any more the events are done
-   (+0x2343106 0). Sent by send_packet (even with nothing pending). Its callers ignore the eax it leaves */
+   packet (kind in the second byte; 0x6b where it carries nothing): 3, 4, 5 (endEvents[0], endEvents[1], endEvents[2]); 6 two
+   bytes (cheatPending: cheatPlayer, cheatCode); 7 a byte and a line (chatPending: chatPlayer, chatLine; and byte
+   0x3e from chatTeam); 8 the same (connectPending: connectPlayer, connectName); 9 a byte (quitPending: quitPlayer); 10 two
+   bytes and a line (joinPending: joinPlayer, joinTeam, joinName); 11 the camera's actor, a byte and a line
+   (changePending: changeTeam, changeName); 13 (restartPending). With none pending any more the events are done
+   (announcePending 0). Sent by send_packet (even with nothing pending). Its callers ignore the eax it leaves */
 static void THISCALL __attribute__((used)) net_sendMatchEvent_body(u8 *s, u8 *packet)
 {
 #define SC ((Scene *)s)
@@ -1631,14 +1629,14 @@ static int angle_byte(const void *v)
 	return ftol(fmul_m(FUN_0046c100_bits(*(const u32 *)RELOC(v)), k_0_0711111f));
 }
 
-/* 0x48e2c0 (thiscall on the game): player p's state sent (packet 0; the actor at +0x1ecca70 + p x 0x8888): its
-   flags word (+0x3f0), a byte of p and its mode (+0x3ec: 0 with +0x140, 1, 2; bit 0 in play +0x14c), the position
-   (+0x180, x k_tenthsToDegrees, words), two angles (+0x18c, +0x190) and two tilts (+0x194, +0x198), two nibbles (+0x19c,
-   +0x1a4), a third angle (+0x1a0); a pending hit (+0x8850: cleared) as 0x80 alive / 0xc0 dead with the attacker
-   (+0x4c0) and value (+0x4c4); then its five shot slots (+0x360, nine bytes each): a slot whose shot (0x4e8 bytes
-   from +0x22225fc) is gone is cleared (-1); else flags (1, 3 for a new one: +0x1fc + slot x 0x20 cleared; 4 aimed
-   at an actor, 8 still flying), the target (+0xb8, or the object's index + 1, or 0) and the position (+0x60 while
-   it flies at an object, else +0x84). Sent by send_packet. Its caller ignores the eax it leaves */
+/* 0x48e2c0 (thiscall on the game): player p's state sent (packet 0; the actor at players + p x 0x8888): its
+   flags word (timerFlags), a byte of p and its mode (chatIcon: 0 with slot, 1, 2; bit 0 in play state), the position
+   (nextPos, x k_tenthsToDegrees, words), two angles (nextPitch, nextYaw) and two tilts (nextForward, nextStrafe), two nibbles (nextClimb,
+   nextRun), a third angle (nextLean); a pending hit (hitPending: cleared) as 0x80 alive / 0xc0 dead with the attacker
+   (lastAttacker) and value (lastHitWeapon); then its five shot slots (shotBullets, nine bytes each): a slot whose shot (0x4e8 bytes
+   from the stage's bullets) is gone is cleared (-1); else flags (1, 3 for a new one: shots[].isNew + slot x 0x20 cleared; 4 aimed
+   at an actor, 8 still flying), the target (hitActor, or the object's index + 1, or 0) and the position (end while
+   it flies at an object, else pos). Sent by send_packet. Its caller ignores the eax it leaves */
 static void THISCALL __attribute__((used)) net_sendPlayerState_body(u8 *g, int p, u8 *packet)
 {
 	u8 *a = (u8 *)&((Scene *)g)->players[p];
@@ -1728,13 +1726,13 @@ static u32 sample(u8 *s, u32 per_row, u32 rows, int row_len, u32 base, u8 *at)
 	return GAME_VAR(u32, s + base + (row * row_len + r % n) * 4);
 }
 
-/* 0x48dbf0 (thiscall on the scene): player p's game packet (1), sent when flagged (+0x2343006 + p x 0x10, cleared):
-   the room's game (its map and modes from +0x1f1668 / +0x1f1cb4 ..; 0xff and 0xffff without one, or once the start
-   countdown +0x234239d is running), the clock (+0x22f0408, +0x22f040c), the player's two scores (+0x1eccb6c,
-   +0x1eccb70 of its actor), which of the players in use (net_playerInUse) were flagged twice (+0x234300e,
-   +0x2343012: cleared, one bit each), the actor's two counts (+0x1eccb54 / 58) and the team scores (+0x2221fb8 /
-   bc), the kill notice (+0x22f0404, set back to -1), then two random checks of the level: one of the five geometry
-   tables in turn (+0x23423c9 counting; its number in byte 0x2b) and the sixth, each a position and the entry there.
+/* 0x48dbf0 (thiscall on the scene): player p's game packet (1), sent when flagged (sendFlags + p x 0x10, cleared):
+   the room's game (its map and modes from rotation / nextMap ..; 0xff and 0xffff without one, or once the end
+   countdown endTime is running), the clock (elapsed, clockFraction), the player's two scores (players[].timePlayed,
+   players[].timeExtra of its actor), which of the players in use (net_playerInUse) were flagged twice (sendFlags[][2],
+   sendFlags[][3]: cleared, one bit each), the actor's two counts (players[].kills / deaths) and the team scores (teamScores[0] /
+   [1]), the last pickup (lastPickup, set back to -1), then two random checks of the level: one of the five geometry
+   tables in turn (geometryCheckTurn counting; its number in byte 0x2b) and the sixth, each a position and the entry there.
    Sent by send_packet. Its caller ignores the eax it leaves */
 static void THISCALL __attribute__((used)) net_sendGamePacket_body(u8 *s, int p, u8 *packet)
 {
@@ -1827,7 +1825,7 @@ static int table_ok(u8 *g, u32 base, u32 per, u32 count, int stride, u16 w, u32 
 	return G(u32, base + (row * stride + (int)w % n) * 4) == sum;
 }
 
-/* a player's name copied into its actor (+0x98) and the slot's own index noted (+0x10c) */
+/* a player's name copied into its actor (name) and the slot's own index noted (player) */
 static void actor_name(u8 *g, int i, const char *name)
 {
 	char *to = ((Player *)ACTOR(i))->name;
@@ -1861,7 +1859,7 @@ static void team_change(u8 *g, int i, const char *pkt, u32 notice)
 }
 
 /* the end of a match's limit (kinds 4 / 5, state 0 frags or 1 time): once, its notice, and the result for team
-   play (the red team's score +0x2221fb8 against the blue +0x2221fbc: 0 red ahead, 1 blue, -1 level) */
+   play (the red team's score teamScores[0] against the blue teamScores[1]: 0 red ahead, 1 blue, -1 level) */
 static void match_limit(u8 *g, int state, u32 notice)
 {
 	if (GS->elapsed <= 0x1e || GS->endedByTime == state)
@@ -1879,7 +1877,7 @@ static void match_limit(u8 *g, int state, u32 notice)
 }
 
 /* 0x48c830 (thiscall on the game object): a network packet (of 0x40 bytes only) from a player. When recording
-   (+0x2340d1d) it goes to the replay file first; while the game is starting (matchState 1) only kind 1. By the kind
+   (recording) it goes to the replay file first; while the game is starting (matchState 1) only kind 1. By the kind
    (byte 1): 0 a player's state (position, aim, weapon, lights, the five weapon slots; a player not yet set up is
    asked for); 1 the game state (round, time, map change, the checksums of the part and item tables, scores, items);
    2 a player joining with his mech; 3 the server ending the game; 4 / 5 the frag / time limit; 6 a cheat notice; 7
@@ -2083,7 +2081,7 @@ void THISCALL (net_processGamePacket)(u8 *g, u32 from, int size, const char *pkt
 		((Player *)ACTOR(i))->levelShown = ((Player *)ACTOR(i))->grade;
 		const u8 *c = m + 0x2b;
 		/* (the original loads each colour byte into al / cl and pushes the whole register: on the first part the
-		   rest of eax is left from the actor's address and of ecx from its +0xdc; later eax holds the player and ecx what
+		   rest of eax is left from the actor's address and of ecx from its grade; later eax holds the player and ecx what
 		   the call left) */
 		u32 hi_a = (u32)(g + i * 0x8888) & ~0xffu, hi_c = *(u32 *)&((Player *)ACTOR(i))->grade & ~0xffu;
 		for (int k = 0; k < 5; k++, c += 2) {
@@ -2139,7 +2137,7 @@ void THISCALL (net_processGamePacket)(u8 *g, u32 from, int size, const char *pkt
 		GS->sendFlags[GS->localPlayer][1] = 1;
 		msg_playerConnected(g, b[2]);
 		if (GS->client == 0)
-			net_sendPlayerLevels(g);   /* net_sendPlayerLevels */
+			net_sendItemStates(g);   /* net_sendItemStates */
 		return;
 	case 9:
 		if (b[2] > 0x10)

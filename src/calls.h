@@ -249,7 +249,7 @@
 #define ViewVolume_clear(self) GAME_THISFN(ViewVolume_clear, 0x483fc0, void, void *)(self)
 #define ViewVolume_initBy(view, entries, matrices, colours, triangles, quads, segments, mem, size) GAME_THISFN(ViewVolume_initBy, 0x484050, void, void *, int, int, int, int, int, int, void *, int)(view, entries, matrices, colours, triangles, quads, segments, mem, size)
 #define map_loadItemInfoFrom(scene, path) GAME_THISFN(map_loadItemInfoFrom, 0x4875d0, int, void *, const char *)(scene, path)
-#define net_sendPlayerLevels(scene) GAME_THISFN(net_sendPlayerLevels, 0x48ead0, void, void *)(scene)
+#define net_sendItemStates(scene) GAME_THISFN(net_sendItemStates, 0x48ead0, void, void *)(scene)
 #define crt_sprintf(out, format) GAME_CDECL(0x49e9dd, int, char *, const char *)(out, format)
 #define crt_exit(a0) GAME_CDECL(0x49edac, void, int)(a0)
 #define crt_fputs(a0, a1) GAME_CDECL(0x49f167, u32, const char *, void *)(a0, a1)

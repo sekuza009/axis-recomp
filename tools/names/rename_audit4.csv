@@ -313,3 +313,4 @@ arenaNameDialog_hitTest,playerSetup_hitTest
 arenaNameDialog_layout,playerSetup_layout
 arena_drawNameDialog,lobby_drawPlayerSetup
 arena_editTitle,arena_editAddress
+net_sendPlayerLevels,net_sendItemStates
