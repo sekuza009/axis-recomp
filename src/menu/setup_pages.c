@@ -777,7 +777,7 @@ void (lobbyTop_drawMenu)(void)
 	Highlight h = { hovered_panel(OBJ(g_lobbyTopOutlines), 4, g_lobbyPanelsOff), white, 1, 0, 0 };
 	Tunnel t = { g_arenaTunnelDepth, OBJ(g_arenaMenuTextures) + 12, 0, 1, 1, 0, FOUR_WALLS };
 	menu_tunnel(&t, &h);
-	if (h.on != -1 && g_arenaLobbyMode == 2 && !g_keysBlocked)
+	if (h.on != -1 && g_arenaLobbyMode == 2 && !g_menuCameraMove)
 		caption(MSG(86, "SETUP PLAYER FOR THE MULTIPLAY|Hotkey..."), h.on);
 }
 
@@ -789,7 +789,7 @@ void (setup_drawMenu)(void)
 	Highlight h = { hovered_panel(OBJ(g_setupTopOutlines), 4, g_setupPanelMoving), white, 1, 0, 0 };
 	Tunnel t = { (*(u32 *)&g_setupTunnelDepth), OBJ(g_ctrlMenuTextures) + 12, 0, 1, 1, 0, FOUR_WALLS };
 	menu_tunnel(&t, &h);
-	if (h.on != -1 && g_setupPage == 2 && !g_keysBlocked)
+	if (h.on != -1 && g_setupPage == 2 && !g_menuCameraMove)
 		caption(MSG(81, "SETUP SOUND SYSTEM|Hotkey is $[5] S"), h.on);
 }
 /* 0x442050: the main menu: the panel under the pointer (six, 0x4deb80; none while the tunnel flies in, 0x9eeaa8, or
@@ -841,9 +841,9 @@ void (menu_mainMenu)(void)
 	Tunnel t = { (*(u32 *)&g_depth), OBJ(g_mainMenuTextures) + 12, 0, 1, 1, 0, SIX_WALLS };
 	menu_tunnel(&t, &h);
 	if (on != -1) {
-		if (!g_keysBlocked)
+		if (!g_menuCameraMove)
 			caption(MSG(71, "SKIRMISH PLAY|Hotkey is $[5] K"), on);
-	} else if (!g_keysBlocked && !g_mainMenuPicked && g_idle > k_120f) {
+	} else if (!g_menuCameraMove && !g_mainMenuPicked && g_idle > k_120f) {
 		long double hint = fadd_m(fmul_m(fld_m((const float *)&g_hintStep), frame), &g_hint);
 		g_hint = f32(hint);
 		if (hint > k_3f) {

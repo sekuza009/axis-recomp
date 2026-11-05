@@ -522,7 +522,7 @@ u32 (missionsel_clicks)(void)
 u32 (chat_closeLine)(int ok)
 {
 	u32 r;
-	g_paused = 0;
+	g_textFieldOpen = 0;
 	if (ok) {
 		input_resetKeys();
 		input_initKeyboard(g_hWndMain);
@@ -598,7 +598,7 @@ u32 (mapSelect_drawNames)(void)
    progress saved and 0x48b420. Returns its eax */
 static u32 leave_game(void)
 {
-	input_setKeysBlocked(4);
+	menuCamera_setMove(4);
 	g_enteringMenus = 1;
 	g_nextScreen = 210;
 	profile_saveProgress();
@@ -629,7 +629,7 @@ static int menu_choice(int i, u32 *r)
 		}
 		/* fall through */
 	case 1: case 3:
-		*r = input_setKeysBlocked(2);   /* input_setKeysBlocked */
+		*r = menuCamera_setMove(2);   /* menuCamera_setMove */
 		g_enteringMenus = 0;
 		g_nextScreen = i == 1 ? 400 : i == 2 ? 800 : 600;
 		return 0;
@@ -690,7 +690,7 @@ u32 (mainmenu_processKeys)(void)
 		}
 	if (input_justPressed(g_dikEscape_2) && g_tunnelRings > 0) {
 		g_cursorBlink = 0.0f;
-		input_setKeysBlocked(4);
+		menuCamera_setMove(4);
 		g_enteringMenus = 1;
 		g_nextScreen = 210;
 		return GAME_FN(debug_traceStripped, 0x48b420, u32, void)();

@@ -343,7 +343,7 @@ static int esc_team(Scene *scene)
 /* page 2, the replay's name: once typing has ended, recording starts under it (if one was typed) */
 static int esc_name(Scene *scene)
 {
-	if (g_paused)
+	if (g_textFieldOpen)
 		return scene->menuKeys[KEY_ESC] == 1;
 	chat_keepLastLine();
 	if (g_keptChatLine)

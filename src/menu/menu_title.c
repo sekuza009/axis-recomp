@@ -79,11 +79,11 @@ void (menu_titleEmblemTransition)(void)
 	if (f >= 1.0)
 		g_logoFade = 1.0f;
 	if (g_logoFade >= 0.2) {
-		/* (unclear) a second fade running twice as fast from 0.2; nothing here reads it */
+		/* a second fade running twice as fast from 0.2: g_unusedLogoFade, never read */
 		long double late = (long double)g_logoFade + g_logoFade - 0.2f;
-		g_logoFadeLate = f32(late);
+		g_unusedLogoFade = f32(late);
 		if (late > 1.0f)
-			g_logoFadeLate = 1.0f;
+			g_unusedLogoFade = 1.0f;
 	}
 	if (!(g_logoFade >= 1.0f)) {
 		glColor4f(1.0f, 1.0f, 1.0f, (float)(1.0f - (long double)g_logoFade));

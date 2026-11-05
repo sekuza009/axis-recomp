@@ -306,7 +306,7 @@ int (app_checkCdAndLoad)(void *instance)
 	(*(u32 *)&g_logoFade) = 0;
 	g_cursorFrame = 0;
 	(*(u32 *)&g_cursorFrameTime) = 0;
-	g_chatFieldFlag = 0;
+	g_inputLineHidden = 0;
 	g_matchMode = 0;
 	g_menuVolume = (g_soundVolume * 5 - 0x1f4) * 4;
 	g_matchRunning = 0;

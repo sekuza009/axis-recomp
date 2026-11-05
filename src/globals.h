@@ -1009,7 +1009,7 @@
 #define g_emblemPulse GAME_VAR(float, 0x4de1d8)   /* its change per time unit (+-0.018) */
 #define g_emblemAlpha GAME_VAR(float, 0x4de1e0)   /* the pulsing layer's alpha (0.2 .. 0.9) */
 #define g_logoFade GAME_VAR(float, 0x4de1e8)   /* the logo fading in, 0 .. 1 */
-#define g_logoFadeLate GAME_VAR(float, 0x4de1ec)   /* (unclear) a faster fade from 0.2, not read here */
+#define g_unusedLogoFade GAME_VAR(float, 0x4de1ec)   /* only written (menu_titleEmblemTransition: a second fade running twice as fast from 0.2) */
 #define g_timerTick GAME_VAR(double, 0x4ded58)   /* seconds per (shifted) tick */
 #define g_mouseX GAME_VAR(int, 0x4ded68)   /* the pointer, 640 x 480 units */
 #define g_mouseY GAME_VAR(int, 0x4ded6c)
@@ -1023,7 +1023,7 @@
 #define g_screenH GAME_VAR(int, 0x4e045c)
 #define g_scroll GAME_VAR(float, 0x4e14fc)   /* runs 0 .. 200 */
 #define g_cursorTexture GAME_VAR(int, 0x4e152c)   /* the pointer's sprite sheet (texture id) */
-#define g_chatFieldFlag GAME_VAR(int, 0x4e1868)   /* (unclear) set for the short fields (passwords, rules), clear for names */
+#define g_inputLineHidden GAME_VAR(int, 0x4e1868)   /* 1: the input line shows as stars (password fields); 0 for names */
 #define g_tunnelTexture GAME_VAR(int, 0x4e186c)
 #define g_viewAspect GAME_VAR(float, 0x4e1870)   /* the 3D view's aspect ratio (gluPerspective), width / height */
 #define g_screenW GAME_VAR(int, 0x5b1998)
@@ -1032,9 +1032,9 @@
 #define g_nextScreen GAME_VAR(int, 0x67ef20)   /* (by use) the front-end screen to go to (300 the main menu) */
 #define g_highlightX GAME_VAR(int, 0x67ef34)
 #define g_highlightY GAME_VAR(int, 0x67fb38)
-#define g_keysBlocked GAME_VAR(int, 0x680370)   /* (unclear) the menus ignore their keys while set */
+#define g_menuCameraMove GAME_VAR(int, 0x680370)   /* the menu camera's move along the tunnel (menu_tunnel.c): 0 still, 1 / 3 moving in / out a ring, 2 / 4 the view swinging up first; the menus ignore keys while not 0 */
 #define g_viewAngle GAME_VAR(float, 0x68038c)   /* the 3D view's vertical angle (degrees) */
-#define g_paused GAME_VAR(int, 0x68039c)   /* (unclear) input off: the window is inactive or a text box has the keys */
+#define g_textFieldOpen GAME_VAR(int, 0x68039c)   /* 1: a text field has the keys (typing a name, password or chat line; edit_fields.c); the other input is off */
 #define g_repeatDown GAME_VAR(float, 0x680bb4)
 #define g_highlightSize GAME_VAR(float, 0x680bc0)
 #define g_dialogChoice GAME_VAR(int, 0x74de1c)   /* 0 the left button, 1 the right one */

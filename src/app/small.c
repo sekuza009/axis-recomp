@@ -546,7 +546,7 @@ u32 (chat_keepLastLine)(void)
 		memcpy((void *)ADDR(g_keptChatLine), (const void *)OBJ(g_chatLine), 0x400);
 		g_chatTyping = 0;
 	}
-	g_paused = 0;
+	g_textFieldOpen = 0;
 	input_resetKeys();   /* input_resetKeys: the key state */
 	return (u32)input_initKeyboard(g_hWndMain);
 }

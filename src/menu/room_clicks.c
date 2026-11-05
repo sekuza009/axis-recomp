@@ -195,16 +195,16 @@ u32 (room_leftClicks)(void)
 		g_roomLeaveDialog = 0;
 		return 1;
 	case 3:
-		if (g_paused) {
-			g_paused = 0;
+		if (g_textFieldOpen) {
+			g_textFieldOpen = 0;
 			input_resetKeys();
 			input_initKeyboard(g_mainWindow);   /* input_initKeyboard */
 		}
 		sound_playMenu(0);
-		input_setKeysBlocked(4);
+		menuCamera_setMove(4);
 		g_roomState = 0x63;
 		g_nextScreen = 300;
-		g_chatFieldFlag = 0;
+		g_inputLineHidden = 0;
 		GAME_FN(debug_traceStripped, 0x48b420, void, void)();          /* debug_traceStripped */
 		return net_disconnect();
 	case 4:
@@ -277,7 +277,7 @@ void (arena_loadMapPreview)(void) { load_map_preview(ADDR(g_newArenaMap)); }
    closed (chat_closeLine); returns that call's eax, or 0 */
 static u32 typing_end(void)
 {
-	if (!g_paused)
+	if (!g_textFieldOpen)
 		return 0;
 	DestroyWindow(g_hChatEdit);   /* DestroyWindow */
 	SetFocus(g_mainWindow);   /* SetFocus */
@@ -402,7 +402,7 @@ u32 (app_onClose)(void)
 u32 (account_checkForm)(void)
 {
 	account_endTyping();   /* account_endTyping */
-	g_paused = 0;
+	g_textFieldOpen = 0;
 	g_fieldTabKey = 0;
 	const char *name = g_accountName, *password = g_accountPassword;
 	int message, reopen;
@@ -523,8 +523,8 @@ u32 (login_send)(void)
 	typing_end();
 	g_typingGameName = 0;
 	g_typingGamePassword = 0;
-	g_chatFieldFlag = 0;
-	g_paused = 0;
+	g_inputLineHidden = 0;
+	g_textFieldOpen = 0;
 	const char *name = g_accountName, *password = g_accountPassword;
 	int bad = room_nameHasBadChar(name) == 1 ? 0x15a
 	        : room_nameHasBadChar(password) == 1 ? 0x15b : 0;   /* room_nameHasBadChar */
@@ -685,7 +685,7 @@ u32 (room_settingsAfterTyping)(void)
 {
 	if (g_dialogOpen)
 		return (*(u32 *)&g_dialogOpen);
-	if (g_paused)
+	if (g_textFieldOpen)
 		return 0;
 	const char *line = g_chatLine;
 	if (g_editingRoomName) {   /* the room's name */
@@ -703,7 +703,7 @@ u32 (room_settingsAfterTyping)(void)
 		GameSettings *rs = (GameSettings *)OBJ(g_roomSettingsName);
 		memset(rs->password, 0, 8);
 		g_editingRoomPassword = 0;
-		g_chatFieldFlag = 0;
+		g_inputLineHidden = 0;
 		strcpy(rs->password, line);
 		return 0;
 	}
@@ -804,11 +804,11 @@ u32 (account_page)(void)
 	for (int k = 0; k < 4; k++) {
 		if (!GAME_VAR(int, fields[k].editing))
 			continue;
-		if (g_paused)
+		if (g_textFieldOpen)
 			return r;
 		memset((void *)RELOC(fields[k].field), 0, fields[k].size);
 		GAME_VAR(int, fields[k].editing) = 0;
-		g_chatFieldFlag = 0;
+		g_inputLineHidden = 0;
 		strcpy((char *)RELOC(fields[k].field), g_chatLine);
 		u32 key = (*(u32 *)&g_fieldTabKey);
 		u32 next = key == 0xa ? fields[k].back : key == 0x14 ? fields[k].on : 0;
@@ -854,7 +854,7 @@ static int login_buttons(void)
 		else
 			return 0;
 	}
-	if (!g_paused) {
+	if (!g_textFieldOpen) {
 		sound_playMenu(0);
 		if (button == 4)
 			account_checkForm();   /* account_checkForm */
@@ -871,7 +871,7 @@ void (loginDialog_keys)(void)
 {
 	if (login_buttons())
 		return;
-	if (input_justPressed(g_dikTab) != 1 || g_paused)
+	if (input_justPressed(g_dikTab) != 1 || g_textFieldOpen)
 		return;
 	g_tabDirection = 20;
 	if (input_isDown(g_dikLShift) == 1 || input_isDown(g_dikRShift) == 1)

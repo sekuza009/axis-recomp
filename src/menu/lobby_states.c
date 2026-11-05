@@ -537,7 +537,7 @@ u32 (room_leaveGame)(void)
 	strcpy(g_netLeaveBuffer, g_joinedTitleName);
 	net_send(0x19, 0x65);   /* net_send */
 	Sleep(500);                   /* Sleep */
-	input_setKeysBlocked(4);
+	menuCamera_setMove(4);
 	g_nextScreen = 300;
 	GAME_FN(debug_traceStripped, 0x48b420, void, void)();                 /* debug_traceStripped */
 	net_disconnect();                 /* net_disconnect */
@@ -575,7 +575,7 @@ u32 (create_quitDialogClicks)(void)
 u32 (arena_editTitle)(void)
 {
 	input_releaseKeyboard();
-	g_paused = 1;
+	g_textFieldOpen = 1;
 	menu_clearInputBuffer(0x14);
 	memset((void *)OBJ(g_chatLine), 0, 0x400);
 	(*(int *)&g_typedArenaName) = 0;
@@ -818,10 +818,10 @@ static int key_hit(u32 binding)
 	sound_playMenu(0);
 	return 1;
 }
-/* back to the main menu; returns input_setKeysBlocked's eax (4) */
+/* back to the main menu; returns menuCamera_setMove's eax (4) */
 static u32 to_main_menu(void)
 {
-	u32 r = input_setKeysBlocked(4);   /* input_setKeysBlocked: keys blocked */
+	u32 r = menuCamera_setMove(4);   /* menuCamera_setMove: keys blocked */
 	g_nextScreen = 300;
 	GAME_FN(debug_traceStripped, 0x48b420, void, void)();          /* debug_traceStripped */
 	return r;
@@ -894,7 +894,7 @@ u32 (lobbyPlayer_keys)(void)
 	if (page == 1 || page == 0 || g_dialogOpen)
 		return page;
 	if (g_typingArenaName) {
-		if (g_paused)
+		if (g_textFieldOpen)
 			return page;
 		const char *typed = g_chatLine;
 		u32 length = strlen(typed);
@@ -1099,7 +1099,7 @@ u32 (lobbyTop_connect)(void)
 		return mode;
 	const char *line = g_chatLine;
 	if (g_editingNewArenaName) {   /* the arena's name */
-		if (g_paused)
+		if (g_textFieldOpen)
 			return mode;
 		if (!strlen(line) || name_isBlank(line) == 1) {   /* name_isBlank: blank */
 			u32 r = strlen(line) ? sound_playMenu(6) : 0;
@@ -1112,11 +1112,11 @@ u32 (lobbyTop_connect)(void)
 		return strlen(line) + 1;
 	}
 	if (g_typingArenaPassword) {   /* the password */
-		if (g_paused)
+		if (g_textFieldOpen)
 			return mode;
 		memset((void *)ADDR(g_newArenaPassword), 0, 8);
 		g_typingArenaPassword = 0;
-		g_chatFieldFlag = 0;
+		g_inputLineHidden = 0;
 		strcpy((char *)ADDR(g_newArenaPassword), line);
 		return 0;
 	}
@@ -1124,7 +1124,7 @@ u32 (lobbyTop_connect)(void)
 	for (int k = 0; k < 2; k++) {
 		if (!GAME_VAR(int, limit[k][0]))
 			continue;
-		if (g_paused)
+		if (g_textFieldOpen)
 			return mode;
 		if (!strlen(line)) {
 			GAME_VAR(int, limit[k][0]) = 0;

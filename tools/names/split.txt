@@ -852,7 +852,7 @@ g_loadGame
 g_loadProgress
 g_loadTexture
 g_logoFade
-g_logoFadeLate
+g_unusedLogoFade
 g_logoTexture
 g_mapListKept
 g_mapTop
@@ -881,7 +881,7 @@ g_timerShift
 g_timerTick
 # promoted globals freed once their IMG uses were written as names, 2026-11-01
 g_cageTexture
-g_chatFieldFlag
+g_inputLineHidden
 g_cursorBlink
 g_cursorFrame
 g_cursorFrameTime
@@ -889,14 +889,14 @@ g_cursorTexture
 g_dialogOpen
 g_highlightShown
 g_highlightSize
-g_keysBlocked
+g_menuCameraMove
 g_lastScreen
 g_lobbySubState
 g_localPlayer
 g_missionStage
 g_missionTop
 g_nextScreen
-g_paused
+g_textFieldOpen
 g_repeatDown
 g_repeatUp
 g_screen

@@ -331,7 +331,7 @@ int g_controlsEdit_v[68] __attribute__((aligned(16)));   /* 0x4de0c0 */
 u8 g_emblemPulse_v[4] __attribute__((aligned(16)));   /* 0x4de1d8 */
 u8 g_emblemAlpha_v[4] __attribute__((aligned(16)));   /* 0x4de1e0 */
 u8 g_logoFade_v[4] __attribute__((aligned(16)));   /* 0x4de1e8 */
-u8 g_logoFadeLate_v[4] __attribute__((aligned(16)));   /* 0x4de1ec */
+u8 g_unusedLogoFade_v[4] __attribute__((aligned(16)));   /* 0x4de1ec */
 u8 g_cursorBlinkTimer_v[4] __attribute__((aligned(16)));   /* 0x4de1f0 */
 u8 g_armcMoveStarted_v[4] __attribute__((aligned(16)));   /* 0x4de340 */
 u8 g_menuCamX_v[4] __attribute__((aligned(16)));   /* 0x4de344 */
@@ -482,7 +482,7 @@ u8 g_dikY_v[4] __attribute__((aligned(16)));   /* 0x4e1540 */
 u8 g_dikZ_v[4] __attribute__((aligned(16)));   /* 0x4e1544 */
 float g_hudLayerALeft_v[100] __attribute__((aligned(16)));   /* 0x4e1548 */
 float g_hudLayerATop_v[100] __attribute__((aligned(16)));   /* 0x4e16d8 */
-u8 g_chatFieldFlag_v[4] __attribute__((aligned(16)));   /* 0x4e1868 */
+u8 g_inputLineHidden_v[4] __attribute__((aligned(16)));   /* 0x4e1868 */
 u8 g_tunnelTexture_v[4] __attribute__((aligned(16)));   /* 0x4e186c */
 u8 g_viewAspect_v[4] __attribute__((aligned(16)));   /* 0x4e1870 */
 u8 g_texture64x64_v[840004] __attribute__((aligned(16)));   /* 0x4e1878 */
@@ -532,14 +532,14 @@ char g_mapTitle_v[32] __attribute__((aligned(16)));   /* 0x67fb44 */
 float g_font8Right_v[256] __attribute__((aligned(16)));   /* 0x67fb64 */
 float g_font8Bottom_v[256] __attribute__((aligned(16)));   /* 0x67ff64 */
 u8 g_dikComma_v[4] __attribute__((aligned(16)));   /* 0x680368 */
-u8 g_keysBlocked_v[4] __attribute__((aligned(16)));   /* 0x680370 */
+u8 g_menuCameraMove_v[4] __attribute__((aligned(16)));   /* 0x680370 */
 float g_menuLook_v[3] __attribute__((aligned(16)));   /* 0x680378 */
 u8 g_dikZ_2_v[4] __attribute__((aligned(16)));   /* 0x680388 */
 u8 g_viewAngle_v[4] __attribute__((aligned(16)));   /* 0x68038c */
 u8 g_dikTab_v[4] __attribute__((aligned(16)));   /* 0x680390 */
 u8 g_screenCentreY_v[4] __attribute__((aligned(16)));   /* 0x680394 */
 u8 g_panelHovered_v[4] __attribute__((aligned(16)));   /* 0x680398 */
-u8 g_paused_v[4] __attribute__((aligned(16)));   /* 0x68039c */
+u8 g_textFieldOpen_v[4] __attribute__((aligned(16)));   /* 0x68039c */
 u8 g_dikEscape_v[4] __attribute__((aligned(16)));   /* 0x6803a0 */
 u8 g_dikNumpadEnter_v[4] __attribute__((aligned(16)));   /* 0x6803a4 */
 u8 g_dikLCtrl_v[4] __attribute__((aligned(16)));   /* 0x6803a8 */
@@ -1501,7 +1501,7 @@ const DataPiece g_splitObjects[] = {
 	{ 0x4de1d8, g_emblemPulse_v, 4 },
 	{ 0x4de1e0, g_emblemAlpha_v, 4 },
 	{ 0x4de1e8, g_logoFade_v, 4 },
-	{ 0x4de1ec, g_logoFadeLate_v, 4 },
+	{ 0x4de1ec, g_unusedLogoFade_v, 4 },
 	{ 0x4de1f0, g_cursorBlinkTimer_v, 4 },
 	{ 0x4de340, g_armcMoveStarted_v, 4 },
 	{ 0x4de344, g_menuCamX_v, 4 },
@@ -1652,7 +1652,7 @@ const DataPiece g_splitObjects[] = {
 	{ 0x4e1544, g_dikZ_v, 4 },
 	{ 0x4e1548, g_hudLayerALeft_v, 400 },
 	{ 0x4e16d8, g_hudLayerATop_v, 400 },
-	{ 0x4e1868, g_chatFieldFlag_v, 4 },
+	{ 0x4e1868, g_inputLineHidden_v, 4 },
 	{ 0x4e186c, g_tunnelTexture_v, 4 },
 	{ 0x4e1870, g_viewAspect_v, 4 },
 	{ 0x4e1878, g_texture64x64_v, 840004 },
@@ -1702,14 +1702,14 @@ const DataPiece g_splitObjects[] = {
 	{ 0x67fb64, g_font8Right_v, 1024 },
 	{ 0x67ff64, g_font8Bottom_v, 1024 },
 	{ 0x680368, g_dikComma_v, 4 },
-	{ 0x680370, g_keysBlocked_v, 4 },
+	{ 0x680370, g_menuCameraMove_v, 4 },
 	{ 0x680378, g_menuLook_v, 12 },
 	{ 0x680388, g_dikZ_2_v, 4 },
 	{ 0x68038c, g_viewAngle_v, 4 },
 	{ 0x680390, g_dikTab_v, 4 },
 	{ 0x680394, g_screenCentreY_v, 4 },
 	{ 0x680398, g_panelHovered_v, 4 },
-	{ 0x68039c, g_paused_v, 4 },
+	{ 0x68039c, g_textFieldOpen_v, 4 },
 	{ 0x6803a0, g_dikEscape_v, 4 },
 	{ 0x6803a4, g_dikNumpadEnter_v, 4 },
 	{ 0x6803a8, g_dikLCtrl_v, 4 },

@@ -412,8 +412,6 @@ extern struct GameData g_data;
 #define g_chatCaretY (*(int *)g_chatCaretY_v)
 #undef g_chatEditLength
 #define g_chatEditLength (*(int *)g_chatEditLength_v)
-#undef g_chatFieldFlag
-#define g_chatFieldFlag (*(int *)g_chatFieldFlag_v)
 #undef g_chatHistory
 #define g_chatHistory ((char *)g_chatHistory_v)
 #undef g_chatLength
@@ -1132,6 +1130,8 @@ extern struct GameData g_data;
 #define g_hudLayerBTop ((float *)g_hudLayerBTop_v)
 #undef g_inputFont
 #define g_inputFont (*(void * *)g_inputFont_v)
+#undef g_inputLineHidden
+#define g_inputLineHidden (*(int *)g_inputLineHidden_v)
 #undef g_insertCdMessage
 #define g_insertCdMessage (*(const char * *)g_insertCdMessage_v)
 #undef g_instanceGuid
@@ -1230,8 +1230,6 @@ extern struct GameData g_data;
 #define g_keyboard (g_data.g_keyboard_)
 #undef g_keyboardActive
 #define g_keyboardActive (*(int *)g_keyboardActive_v)
-#undef g_keysBlocked
-#define g_keysBlocked (*(int *)g_keysBlocked_v)
 #undef g_ladderDns
 #define g_ladderDns ((char *)g_ladderDns_v)
 #undef g_ladderMenuTextures
@@ -1412,8 +1410,6 @@ extern struct GameData g_data;
 #define g_loginToSend (*(int *)g_loginToSend_v)
 #undef g_logoFade
 #define g_logoFade (*(float *)g_logoFade_v)
-#undef g_logoFadeLate
-#define g_logoFadeLate (*(float *)g_logoFadeLate_v)
 #undef g_logoTexture
 #define g_logoTexture (*(int *)g_logoTexture_v)
 #undef g_mainMenuDepth
@@ -1584,6 +1580,8 @@ extern struct GameData g_data;
 #define g_menuCameraLook (*(u32 *)((u8 *)g_menuLook_v + 0x0))
 #undef g_menuCameraLookY
 #define g_menuCameraLookY (*(u32 *)((u8 *)g_menuLook_v + 0x4))
+#undef g_menuCameraMove
+#define g_menuCameraMove (*(int *)g_menuCameraMove_v)
 #undef g_menuCameraPos
 #define g_menuCameraPos (*(u32 *)((u8 *)g_menuEye_v + 0x0))
 #undef g_menuCameraX
@@ -1898,8 +1896,6 @@ extern struct GameData g_data;
 #define g_partBox5Offset (*(u32 *)((u8 *)g_panelBoxes_v + 0x20c))
 #undef g_partRecords
 #define g_partRecords ((u8 *)g_partRecords_v)
-#undef g_paused
-#define g_paused (*(int *)g_paused_v)
 #undef g_penFixedBottomLeft
 #define g_penFixedBottomLeft ((float *)g_penFixedBottomLeft_v)
 #undef g_penFixedBottomRight
@@ -2624,6 +2620,8 @@ extern struct GameData g_data;
 #define g_textEndX (*(int *)g_textEndX_v)
 #undef g_textEndY
 #define g_textEndY (*(int *)g_textEndY_v)
+#undef g_textFieldOpen
+#define g_textFieldOpen (*(int *)g_textFieldOpen_v)
 #undef g_textWrapX
 #define g_textWrapX (*(int *)g_textWrapX_v)
 #undef g_texture128x128
@@ -2782,6 +2780,8 @@ extern struct GameData g_data;
 #define g_unusedLastWParam (*(u32 *)g_unusedLastWParam_v)
 #undef g_unusedLoginWord
 #define g_unusedLoginWord (*(int *)g_unusedLoginWord_v)
+#undef g_unusedLogoFade
+#define g_unusedLogoFade (*(float *)g_unusedLogoFade_v)
 #undef g_unusedMainMenuWord
 #define g_unusedMainMenuWord (*(int *)g_unusedMainMenuWord_v)
 #undef g_unusedMechStat

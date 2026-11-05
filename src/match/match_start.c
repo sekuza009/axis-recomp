@@ -189,7 +189,7 @@ static void later_round(Scene *s)
 	scene_resetScores(s);
 	events_clear(s, 60.0f);
 	s->chatMode = 0;
-	if (g_paused)
+	if (g_textFieldOpen)
 		chat_keepLastLine();
 	(*(int *)&s->keyGuard) = 0;
 	s->matchOver = 0;

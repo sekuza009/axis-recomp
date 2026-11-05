@@ -213,8 +213,8 @@ void (menuState800_enterGameRoom)(void)
 u32 (menu_frameInput)(void)
 {
 	input_updateMenuCursor();
-	if (g_keysBlocked)
-		return (*(u32 *)&g_keysBlocked);
+	if (g_menuCameraMove)
+		return (*(u32 *)&g_menuCameraMove);
 	if (g_dialogPending)
 		return messageBox_clickClose();   /* the message box */
 	int state = g_menuState;

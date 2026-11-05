@@ -454,7 +454,7 @@ void (freeCam_keys)(void)
 {
 	const float *frame = (const float *)ADDR(g_frameTime), *speed = (const float *)ADDR(k_3f);
 	if (g_watchChatOpen) {
-		if (g_paused)
+		if (g_textFieldOpen)
 			return;
 		if (strlen(g_chatLine)) {
 			net_sendChat(g_chatLine);
@@ -465,14 +465,14 @@ void (freeCam_keys)(void)
 			g_watchChatOpen = 0;
 			g_chatLogged = 0;
 		}
-		g_paused = 0;
+		g_textFieldOpen = 0;
 		input_resetKeys();
 		input_initKeyboard(g_mainWindow);
 		return;
 	}
 	if (input_justPressed(g_keyWatchChat)) {
 		input_releaseKeyboard();
-		g_paused = 1;
+		g_textFieldOpen = 1;
 		menu_clearInputBuffer(0x32);
 		g_watchChatOpen = 1;
 		(*(u32 *)&g_menuFade) = 0x41a00000;   /* 20 */

@@ -39,7 +39,7 @@ void (setup_processTabKeys)(void)
 /* back to the main menu */
 static void leave(void)
 {
-	input_setKeysBlocked(4);
+	menuCamera_setMove(4);
 	g_nextScreen = 300;
 	g_cursorBlink = 0.0f;
 	debug_traceStripped(NULL);
@@ -233,7 +233,7 @@ u32 (setup_drawTopPage)(void)
 			case 1: sound_playMenu(0); setup_selectGraphicTab(); break;   /* graphics */
 			case 2: sound_playMenu(0); setup_selectControlTab(); break;   /* controls */
 			case 3:
-				input_setKeysBlocked(4);
+				menuCamera_setMove(4);
 				sound_playMenu(0);
 				g_nextScreen = 300;
 				(*(int *)&g_cursorBlink) = 0;
@@ -250,7 +250,7 @@ u32 (setup_drawTopPage)(void)
 	if (allowed <= 0)
 		return allowed;
 	sound_playMenu(0);
-	u32 r = input_setKeysBlocked(4);   /* input_setKeysBlocked */
+	u32 r = menuCamera_setMove(4);   /* menuCamera_setMove */
 	g_nextScreen = 300;
 	(*(int *)&g_cursorBlink) = 0;
 	GAME_FN(debug_traceStripped, 0x48b420, void, void)();

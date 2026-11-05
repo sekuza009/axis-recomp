@@ -415,7 +415,7 @@ void (gameList_drawPage)(void)
 		room_joinSession(g_localPlayer);
 		return;
 	}
-	if (!g_joinPasswordTyped || g_paused)
+	if (!g_joinPasswordTyped || g_textFieldOpen)
 		return;
 	g_joinPasswordTyped = 0;
 	memset((void *)ADDR(g_roomMessageText), 0, 8);
@@ -439,7 +439,7 @@ static void shadowed(int x, int y, const char *text)
 }
 
 /* 0x409bc0: the arena's name dialog: the window, a cyan frame, the title 0x751fa4, two labels (0x752024, 0x752124)
-   and the name 0x4db560 (hidden while it is typed in, g_paused); without a message (0x4dbbd0) the name or the
+   and the name 0x4db560 (hidden while it is typed in, g_textFieldOpen); without a message (0x4dbbd0) the name or the
    second label under the pointer (arenaNameDialog_hitTest's 0 / 2) shadowed in yellow; three buttons (MSG(135, "$[0] O K"), 0x80 apart;
    3 .. 5, lit under the pointer), the border. The original leaves eax to callers that ignore it */
 void (arena_drawNameDialog)(void)
@@ -459,10 +459,10 @@ void (arena_drawNameDialog)(void)
 	text_draw8(x0 + 0x40, y0 + 0x64, (const char *)MSG(132, "PLAYER NAME :"));
 	text_draw8(x0 + 0x40, y0 + 0x96, (const char *)MSG(134, "MOVE TO ARM-CENTER"));
 	set_colour_bits(g_textColour, 0x3f800000, 0x3f800000, 0x3f800000, 0x3f800000);
-	if (!g_paused)
+	if (!g_textFieldOpen)
 		text_draw8(x0 + 0xc2, y0 + 0x64, g_arenaName);
 	if (!g_typingArenaName) {
-		if (hovered == 0 && !g_paused)
+		if (hovered == 0 && !g_textFieldOpen)
 			shadowed(x0 + 0xc1, y0 + 0x63, g_arenaName);
 		else if (hovered == 2)
 			shadowed(x0 + 0x3f, y0 + 0x95, (const char *)MSG(134, "MOVE TO ARM-CENTER"));
@@ -791,7 +791,7 @@ void (lobbyJoin_draw)(void)
 			arena_joinListed(g_localPlayer);
 			return;
 		}
-		if (!g_editingArenaMessage || g_paused)
+		if (!g_editingArenaMessage || g_textFieldOpen)
 			return;
 		memset((void *)ADDR(g_arenaMessageText), 0, 8);
 		g_editingArenaMessage = 0;
@@ -805,7 +805,7 @@ void (lobbyJoin_draw)(void)
 		return;
 	}
 	if (g_arenaFull) {
-		if (g_paused)
+		if (g_textFieldOpen)
 			return;
 		g_arenaFull = 0;
 		memset((void *)ADDR(g_typedArenaName), 0, 6 * 4);

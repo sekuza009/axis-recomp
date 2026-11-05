@@ -11,7 +11,7 @@
 void (profile_typeNewName)(void)
 {
 	input_releaseKeyboard();
-	g_paused = 1;
+	g_textFieldOpen = 1;
 	menu_clearInputBuffer(0x10);
 	g_chatCaretX = g_newNameDialogLeft + 0x24;
 	g_chatCaretY = g_newNameDialogTop + 0x38;

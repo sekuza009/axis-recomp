@@ -586,7 +586,7 @@ u32 STDCALL (game_WinMain)(void *inst, void *prev, const char *cmd, int show)
 	while (g_gameRunning) {
 		while (PeekMessageA(msg, NULL, 0, 0, 0) == 1)   /* PeekMessageA */
 			if (GetMessageA(msg, NULL, 0, 0)) {   /* GetMessageA */
-				if (g_paused)
+				if (g_textFieldOpen)
 					TranslateMessage(msg);   /* TranslateMessage */
 				DispatchMessageA(msg);       /* DispatchMessageA */
 			}

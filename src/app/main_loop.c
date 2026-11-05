@@ -22,7 +22,7 @@ void (main_loop)(void)
 	}
 	if (g_lastScreen != 9999)
 		menu_enterState();
-	if (!g_paused) {
+	if (!g_textFieldOpen) {
 		input_updateMenuCursor();
 		input_reacquireKeyboard();
 	}
@@ -64,7 +64,7 @@ static inline double f64(long double x)
 
 /* 0x41fa40: the menus' frame: the cursor blink clock (100 past 1e6), the screen's set-up when it changed, its keys
    (unless 0x9da49c is 0x68 / 0x69); a direct start from the main menu zooms in (aspect down to 0.01, the camera
-   back) and starts the match after 100; the screen's frame, the message box, 0x428940 while paused, the cursor
+   back) and starts the match after 100; the screen's frame, the message box, the input line (menu_drawInputLine) while a text field is open, the cursor
    (not over a match or the profile intro), the buffers swapped; the view angle stepped; then the time: the FPS
    counter (frames over each second, 0x4dd980) and the frame time (60 / the frame rate, 1 past 20). The original
    leaves eax to callers that ignore it */
@@ -109,7 +109,7 @@ void (menu_frame)(void)
 	}
 	if (g_dialogPending)
 		menu_drawMessageBox();
-	if (g_paused)
+	if (g_textFieldOpen)
 		menu_drawInputLine(g_chatCaretX, g_chatCaretY);
 	glLoadIdentity();
 	if (g_screen != 9999 && !g_profileIntro)
@@ -1568,7 +1568,7 @@ static void chat_keys(u8 *s)
 		}
 		return;
 	}
-	if ((mode != 1 && mode != 2) || g_paused != 0)
+	if ((mode != 1 && mode != 2) || g_textFieldOpen != 0)
 		return;
 	SC->chatMode = 0;
 	chat_keepLastLine();
@@ -2258,7 +2258,7 @@ void THISCALL (match_frame)(u8 *s)
 				          1, 0);
 			replay_closeRecording(sc);
 			music_shutdown();
-			if (SC->chatMode != 0 && g_paused == 0) {
+			if (SC->chatMode != 0 && g_textFieldOpen == 0) {
 				SC->chatMode = 0;
 				chat_keepLastLine();
 			}

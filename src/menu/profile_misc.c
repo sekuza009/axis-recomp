@@ -198,7 +198,7 @@ u32 (profile_logIn)(void)
 	profile_makeCurrent();   /* profile_makeCurrent */
 	g_menuState = 300;
 	g_nextScreen = 300;
-	g_keysBlocked = 2;
+	g_menuCameraMove = 2;
 	g_unusedMenuReturnWord = 0;
 	crt_strncpy(g_cfgPlayerName,
 	                                                        (const char *)(OBJ(g_profileList) + g_currentProfile * 0x48), 0x20);   /* strncpy */
@@ -392,7 +392,7 @@ u32 (profile_nameEntryStep)(void)
 		                                                     g_newNameDialogRight, g_newNameDialogBottom);
 	if (g_profileMessage)
 		return profile_drawMessageWindow();
-	if (g_paused)
+	if (g_textFieldOpen)
 		return profile_drawNewDialog();
 	if (!strlen(typed)) {
 		g_dialogOpen = 0;
@@ -499,14 +499,14 @@ u32 (profile_newNameDialog)(void)
 		    profile_inDialogBox(g_mouseX, g_mouseY)) {   /* profile_inDialogBox */
 			sound_playMenu(0);
 			g_profileMessage = 0;
-			g_paused = 1;
+			g_textFieldOpen = 1;
 			r = profile_typeNewName();   /* profile_typeNewName: typing starts */
 		}
 		if (!g_keyEnter)
 			return r;
 		g_profileMessage = 0;
 		r = profile_typeNewName();
-		g_paused = 1;
+		g_textFieldOpen = 1;
 		return r;
 	}
 	if (g_mouseClick) {
@@ -521,7 +521,7 @@ u32 (profile_newNameDialog)(void)
 				g_profileMessage = 0;
 				g_profilePage = 1;
 				menu_showMessage(0x81);
-				g_paused = 0;
+				g_textFieldOpen = 0;
 				return keyboard_back();
 			}
 			if (profile_nameExists()) {   /* profile_nameExists: taken */
@@ -530,11 +530,11 @@ u32 (profile_newNameDialog)(void)
 				g_dialogOpen = 1;
 			} else
 				sound_playMenu(0);
-			g_paused = 0;
+			g_textFieldOpen = 0;
 			r = keyboard_back();
 		} else if (button == 1) {
 			sound_playMenu(0);
-			g_paused = 0;
+			g_textFieldOpen = 0;
 			line_wipe();
 			r = keyboard_back();
 		}
@@ -542,7 +542,7 @@ u32 (profile_newNameDialog)(void)
 	if (!g_keyEnter)
 		return r;
 	g_profilePage = 1;
-	g_paused = 0;
+	g_textFieldOpen = 0;
 	line_wipe();
 	return keyboard_back();
 }

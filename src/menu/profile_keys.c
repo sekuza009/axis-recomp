@@ -40,12 +40,12 @@ void (profile_messageKeys)(void)
 		return;
 	if (input_justPressed(g_keyClick) == 1) {
 		g_profileMessage = 0;
-		g_paused = 1;
+		g_textFieldOpen = 1;
 		profile_typeNewName();
 	}
 	if (input_justPressed(g_keyOk) == 1) {
 		g_profileMessage = 0;
-		g_paused = 1;
+		g_textFieldOpen = 1;
 		profile_typeNewName();
 	}
 }

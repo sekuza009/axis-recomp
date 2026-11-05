@@ -45,11 +45,11 @@ static void band_quads(const TunnelRing *ring, const float (*circle)[201][4], fl
 	glEnd();
 }
 
-/* a spin moved on by speed per time unit (five times faster while g_keysBlocked is 1 or 3 when fast) */
+/* a spin moved on by speed per time unit (five times faster while g_menuCameraMove is 1 or 3 when fast) */
 static long double spun(float spin, float speed, int fast)
 {
 	long double d = (long double)g_frameTime * speed;
-	if (fast && (g_keysBlocked == 1 || g_keysBlocked == 3))
+	if (fast && (g_menuCameraMove == 1 || g_menuCameraMove == 3))
 		d = d * 5.0f;
 	return d + spin;
 }
@@ -96,7 +96,7 @@ static void inner_bands(TunnelRing *first)
 			glColor4f_bits(BITS(red), BITS(g_pulse), BITS(g_pulse), 0x3f19999au /* 0.6 */);
 			band_quads(ring, ring->inner, step);
 		}
-		if (g_keysBlocked == 1 || g_keysBlocked == 3)
+		if (g_menuCameraMove == 1 || g_menuCameraMove == 3)
 			ring->spin = f32(spun(ring->spin, ring->spinSpeed, 1));
 		else
 			ring->innerSpin = f32(spun(ring->innerSpin, ring->innerSpeed, 0));
@@ -345,7 +345,7 @@ void (intro_cameraPath)(u8 *o, int h)
 }
 
 /* ---- the menu camera's move along the tunnel: its eye (0x4df024, three floats) and the point it looks at
-   (0x680378), kept at 0x9dd930 / 0x9dd918; the move's state in g_keysBlocked (0 still, 1 / 3 moving in / out a ring,
+   (0x680378), kept at 0x9dd930 / 0x9dd918; the move's state in g_menuCameraMove (0 still, 1 / 3 moving in / out a ring,
    2 / 4 the view swinging up before them) ---- */
 #define EYE ((float *)ADDR(g_menuCameraPos))
 #define LOOK ((float *)ADDR(g_menuCameraLook))
@@ -368,7 +368,7 @@ static void swing(int next)
 	if (angle < k_90f || __builtin_isnan(angle))
 		return;
 	BITS(g_viewAngle) = 0x42b40000;   /* 90 */
-	g_keysBlocked = next;
+	g_menuCameraMove = next;
 	sound_playMenu(4);
 }
 
@@ -407,7 +407,7 @@ void (menuTunnel_advance)(TunnelRing *ring)
 	for (TunnelRing *last = ring; last->next != NULL; last = last->next)
 		r = last;
 	const float *stepF = (const float *)ADDR(g_armcEnterStepF);
-	int state = g_keysBlocked;
+	int state = g_menuCameraMove;
 	switch (state) {
 	case 0:
 		r->alpha = 1.0f;
@@ -450,7 +450,7 @@ void (menuTunnel_advance)(TunnelRing *ring)
 				EYE[2] = f32(fadd_m((long double)ringLength, &EYE_KEPT[2]));
 				LOOK[2] = f32(fadd_m((long double)ringLength, &LOOK_KEPT[2]));
 			}
-			g_keysBlocked = 0;
+			g_menuCameraMove = 0;
 			r->alpha = 1.0f;
 			if (state == 1)
 				tunnel_addRing();

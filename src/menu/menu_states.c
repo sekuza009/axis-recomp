@@ -114,7 +114,7 @@ void (menuState100_intro)(void)
 	frontEnd_drawProgress();
 	g_screen = 200;
 	g_lastScreen = 200;
-	static const u32 cleared[] = { ADDR(g_titleShown), ADDR(g_titleFrames), ADDR(g_keysBlocked), ADDR(g_unusedMenuReturnWord), ADDR(g_cursorFrame), ADDR(g_cursorFrameTime), ADDR(g_scroll), ADDR(g_tunnelPulse), ADDR(g_introZoom) };
+	static const u32 cleared[] = { ADDR(g_titleShown), ADDR(g_titleFrames), ADDR(g_menuCameraMove), ADDR(g_unusedMenuReturnWord), ADDR(g_cursorFrame), ADDR(g_cursorFrameTime), ADDR(g_scroll), ADDR(g_tunnelPulse), ADDR(g_introZoom) };
 	for (unsigned i = 0; i < sizeof cleared / sizeof cleared[0]; i++)
 		GAME_VAR(u32, cleared[i]) = 0;
 	g_menuTunnelSpeed = 0x3f800000;   /* 1.0 */
@@ -221,7 +221,7 @@ void (menuState300_frame)(void)
 	if (g_mainMenuPicked != 0)
 		mainmenu_drawMapSelect();
 	if (g_quitAsked == 1) {
-		input_setKeysBlocked(1);
+		menuCamera_setMove(1);
 		g_nextScreen = 9999;
 		menu_drawDimOverlay();
 	}
@@ -520,7 +520,7 @@ static int menu_slide(u32 flag, u32 eased, u32 slid)
 	}
 	if (!g_quitAsked)
 		return 0;
-	input_setKeysBlocked(1);
+	menuCamera_setMove(1);
 	g_nextScreen = 9999;
 	return 1;
 }
@@ -549,14 +549,14 @@ static void leave_game(u32 lobby, int disconnect)
    what the original leaves in eax: input_initKeyboard's, or 0x68039c's value */
 static u32 reset_menus(u32 farZ, u32 nearZ, int blocked, int entering, int clear_chat_field)
 {
-	u32 typing = (*(u32 *)&g_paused);
+	u32 typing = (*(u32 *)&g_textFieldOpen);
 	(*(u32 *)&g_armcCamHeight) = 0;
 	g_menuCameraPos = 0;
 	(*(u32 *)&g_armcCamDistance) = farZ;
 	g_menuCameraLook = 0;
 	g_menuCameraLookY = 0;
 	(*(u32 *)&g_menuCameraHeight) = nearZ;
-	g_keysBlocked = blocked;
+	g_menuCameraMove = blocked;
 	g_unusedMenuReturnWord = 0;
 	g_roomSlideFarX = 0;
 	g_roomSlideFarY = 0;
@@ -569,10 +569,10 @@ static u32 reset_menus(u32 farZ, u32 nearZ, int blocked, int entering, int clear
 	(*(int *)&g_cursorBlink) = 0;
 	(*(int *)&g_introZoom) = 0;
 	if (clear_chat_field)
-		g_chatFieldFlag = 0;
+		g_inputLineHidden = 0;
 	if (typing != 1)
 		return typing;
-	g_paused = 0;
+	g_textFieldOpen = 0;
 	input_resetKeys();
 	return ((u32)input_initKeyboard(g_mainWindow));   /* input_initKeyboard */
 }
@@ -598,7 +598,7 @@ u32 (game_returnToMainMenu)(void)
 	g_menuState = 300;
 	g_nextScreen = 300;
 	tunnel_rebuild();
-	u32 typing = (*(u32 *)&g_paused);
+	u32 typing = (*(u32 *)&g_textFieldOpen);
 	u32 r = reset_menus(0x43fa0000, 0x43c80000, 2, 1, 1);
 	return typing == 1 ? r : 1;
 }

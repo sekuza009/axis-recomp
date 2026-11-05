@@ -760,7 +760,7 @@ typedef struct { float r, g, b, a; } Colour;
 #define sound_playVolume(id, volume) GAME_FN(sound_playVolume, 0x456e50, void, int, int)(id, volume)   /* volume 0..100 */
 
 /* ---- the setup screen (menu/setup_keys.c) ---- */
-#define input_setKeysBlocked(v) GAME_FN(input_setKeysBlocked, 0x441250, u32, int)(v)   /* g_keysBlocked = v */
+#define menuCamera_setMove(v) GAME_FN(menuCamera_setMove, 0x441250, u32, int)(v)   /* g_menuCameraMove = v */
 #define setup_drawTopPage() GAME_FN(setup_drawTopPage, 0x4220c0, void, void)()
 #define setup_drawSoundTab() GAME_FN(setup_drawSoundTab, 0x4221d0, void, void)()
 #define setup_drawGraphicTab() GAME_FN(setup_drawGraphicTab, 0x422480, void, void)()

@@ -1,6 +1,6 @@
 /* edit_fields.c: opening a text field for typing, on the arena screens and in the game room. Typing goes through a
    hidden EDIT control (chat_createEdit) into the shared line g_chatLine, drawn with a caret at
-   (g_chatCaretX, g_chatCaretY); the menu keys wait meanwhile (g_paused, g_menuFade). Each field starts from its
+   (g_chatCaretX, g_chatCaretY); the menu keys wait meanwhile (g_textFieldOpen, g_menuFade). Each field starts from its
    current text (copied in) or empty, and raises its own "being edited" flag. */
 #include "../game.h"
 
@@ -21,7 +21,7 @@
 static void edit_start(int maxLength)
 {
 	input_releaseKeyboard();
-	g_paused = 1;
+	g_textFieldOpen = 1;
 	menu_clearInputBuffer(maxLength);
 }
 
@@ -64,7 +64,7 @@ void (arena_editName)(void)
 	g_menuFade = 5.0f;
 	g_chatLength = line_length();
 	g_typingArenaName = 1;
-	g_chatFieldFlag = 0;
+	g_inputLineHidden = 0;
 	chat_createEdit(0x10);
 }
 
@@ -77,7 +77,7 @@ void (arena_editComment)(void)
 	g_menuFade = 5.0f;
 	g_chatLength = line_length();
 	g_editingNewArenaName = 1;
-	g_chatFieldFlag = 0;
+	g_inputLineHidden = 0;
 	chat_createEdit(0x1e);
 }
 
@@ -92,7 +92,7 @@ static void edit_limit(int value, int y, int *editing)
 	g_menuFade = 5.0f;
 	g_chatLength = line_length();
 	*editing = 1;
-	g_chatFieldFlag = 0;
+	g_inputLineHidden = 0;
 	chat_createEdit(3);
 }
 
@@ -114,7 +114,7 @@ void (arena_editPassword)(void)
 	g_chatLength = line_length();
 	g_menuFade = 5.0f;
 	g_typingArenaPassword = 1;
-	g_chatFieldFlag = 1;
+	g_inputLineHidden = 1;
 	chat_createEdit(8);
 }
 
@@ -143,7 +143,7 @@ void (field_editComment)(void)
 	g_menuFade = 5.0f;
 	g_chatLength = line_length();
 	g_editingRoomName = 1;
-	g_chatFieldFlag = 0;
+	g_inputLineHidden = 0;
 	chat_createEdit(0x1e);
 }
 
@@ -155,7 +155,7 @@ void (field_editPassword)(void)
 	g_chatLength = line_length();
 	g_menuFade = 5.0f;
 	g_editingRoomPassword = 1;
-	g_chatFieldFlag = 1;
+	g_inputLineHidden = 1;
 	chat_createEdit(8);
 }
 
@@ -170,7 +170,7 @@ void (field_editGameName)(void)
 	g_chatLength = line_length();
 	g_typingGameName = 1;
 	g_typingGamePassword = 0;
-	g_chatFieldFlag = 0;
+	g_inputLineHidden = 0;
 	chat_createEdit(0x10);
 }
 
@@ -186,7 +186,7 @@ void (field_editGamePassword)(void)
 	g_menuFade = 5.0f;
 	g_typingGameName = 0;
 	g_typingGamePassword = 1;
-	g_chatFieldFlag = 1;
+	g_inputLineHidden = 1;
 	chat_createEdit(0xc);
 }
 
@@ -204,7 +204,7 @@ static void edit_rule(int field, const char *text, int y, int maxLength, int fla
 	g_editingAccountPassword = field == 1;
 	g_editingPasswordRepeat = field == 2;
 	g_editingEmail = field == 3;
-	g_chatFieldFlag = flag;
+	g_inputLineHidden = flag;
 	chat_createEdit(maxLength);
 }
 
@@ -233,7 +233,7 @@ void (field_editMessage)(void)
 void (chat_textField)(int x, int y, int maxLength)
 {
 	input_releaseKeyboard();
-	g_paused = 1;
+	g_textFieldOpen = 1;
 	g_chatTyping = 1;
 	menu_clearInputBuffer(maxLength);
 	g_matchChatCaretX = x;
@@ -245,7 +245,7 @@ void (chat_textField)(int x, int y, int maxLength)
 /* 0x43f980: while typing, the line taken from the hidden EDIT control */
 void (editField_readTyping)(void)
 {
-	if (g_paused == 0)
+	if (g_textFieldOpen == 0)
 		return;
 	int n = GetWindowTextLengthA(g_hChatEdit);
 	GetWindowTextA(g_hChatEdit, g_chatLine, n + 1);
@@ -262,19 +262,19 @@ int (loginForm_openField)(int k)
 		{ ADDR(g_typingAccountEmail), OBJ(g_accountEmail), 0x28, 0x28, 0 } };
 	input_releaseKeyboard();
 	line_clear();
-	g_paused = 1;
+	g_textFieldOpen = 1;
 	g_typingAccountName = 0;
 	g_unusedLoginWord = 0;
 	g_typingAccountPassword = 0;
 	g_typingAccountRepeat = 0;
 	g_typingAccountEmail = 0;
-	g_chatFieldFlag = 0;
+	g_inputLineHidden = 0;
 	int row = 0;
 	if ((u32)k <= 3) {
 		menu_clearInputBuffer(field[k].bufferLength);
 		EDITING(field[k].editing) = 1;
 		if (field[k].flag)
-			g_chatFieldFlag = 1;
+			g_inputLineHidden = 1;
 		line_set((const char *)RELOC(field[k].text));
 		chat_createEdit(field[k].maxLength);
 		row = k;

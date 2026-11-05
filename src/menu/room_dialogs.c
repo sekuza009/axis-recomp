@@ -20,8 +20,8 @@ static void dialog_opened(int state)
 	g_dialogOpen = 1;
 	g_typingGameName = 0;
 	g_typingGamePassword = 0;
-	g_chatFieldFlag = 0;
-	g_paused = 0;
+	g_inputLineHidden = 0;
+	g_textFieldOpen = 0;
 }
 
 /* 0x433980: dialog 0x58 */
@@ -47,7 +47,7 @@ void (room_openDialog4d)(void)
 /* 0x434640: dialog 0x42, its name field filled from 0x9dd570 */
 void (room_openDialog42)(void)
 {
-	static const u32 cleared[] = { ADDR(g_typingAccountName), ADDR(g_unusedLoginWord), ADDR(g_typingAccountPassword), ADDR(g_typingAccountRepeat), ADDR(g_typingAccountEmail), ADDR(g_chatFieldFlag), ADDR(g_paused) };
+	static const u32 cleared[] = { ADDR(g_typingAccountName), ADDR(g_unusedLoginWord), ADDR(g_typingAccountPassword), ADDR(g_typingAccountRepeat), ADDR(g_typingAccountEmail), ADDR(g_inputLineHidden), ADDR(g_textFieldOpen) };
 	for (unsigned k = 0; k < sizeof cleared / sizeof cleared[0]; k++)
 		GAME_VAR(int, cleared[k]) = 0;
 	memset((void *)OBJ(g_accountName), 0, 7 * 4 + 2 + 12);
@@ -99,8 +99,8 @@ u32 (room_mouse)(void)
    leave the screen (0x9dce48 = 0). Returns what the original leaves in eax */
 u32 (room_readyKeys)(void)
 {
-	if (g_paused)
-		return (*(u32 *)&g_paused);
+	if (g_textFieldOpen)
+		return (*(u32 *)&g_textFieldOpen);
 	if (g_roomAwaitingServer == 1) {
 		if (!input_justPressed(g_dikEscape_2))
 			return 0;
@@ -251,8 +251,8 @@ u32 (room_openClicks)(void)
 		return (u32)mode;
 	if (g_dialogOpen)
 		return (u32)g_dialogOpen;
-	if (g_paused)
-		return (*(u32 *)&g_paused);
+	if (g_textFieldOpen)
+		return (*(u32 *)&g_textFieldOpen);
 	if (!g_keyEnter) {
 		if (!g_mouseClick)
 			return 0;
@@ -325,7 +325,7 @@ u32 (chat_closeEdit)(void)
 	}
 	if (g_typingRoomPassword == 1) {
 		memset((void *)OBJ(g_accountPassword), 0, 12);
-		g_chatFieldFlag = 0;
+		g_inputLineHidden = 0;
 		strcpy(g_accountPassword, g_chatLine);
 		g_typingRoomPassword = 0;
 		return 0;
@@ -345,7 +345,7 @@ static void highlight_choice(int choice, int x, int y)
 }
 
 /* 0x43df80: the create-game dialog (its panel at 0x9dd358): a password to retype (0x9dced0: the settings back and
-   the password opened again), the login to send (0x9dd198); once typing has ended (g_paused clear), the line taken
+   the password opened again), the login to send (0x9dd198); once typing has ended (g_textFieldOpen clear), the line taken
    into the game's name (0x9dd830; 30 bytes at 0x9dd1d8) or password (0x9dd38c; 12 at 0x9dd1f6) and the key that
    ended it (0x9dc428: 10 back, 20 on) moving to the other field or the dialog's buttons; else the server's answer
    to the request (0xa0b378, awaited: 0x9dd838): 33 accepted (state 99, the settings written and taken), 42 done
@@ -366,7 +366,7 @@ void (createDialog_draw)(void)
 		return;
 	}
 	if (g_typingGameName) {
-		if (g_paused)
+		if (g_textFieldOpen)
 			return;
 		g_typingGameName = 0;
 		memset((void *)OBJ(g_accountName), 0, 30);
@@ -379,18 +379,18 @@ void (createDialog_draw)(void)
 			g_typingRoomName = 0;
 			field_editGamePassword();
 			g_typingRoomPassword = 1;
-			g_chatFieldFlag = 1;
+			g_inputLineHidden = 1;
 			g_editKey = 0;
 		}
 		return;
 	}
 	if (g_typingGamePassword) {
-		if (g_paused)
+		if (g_textFieldOpen)
 			return;
 		memset((void *)OBJ(g_accountPassword), 0, 12);
 		g_typingGamePassword = 0;
 		strcpy(g_accountPassword, g_chatLine);
-		g_chatFieldFlag = 0;
+		g_inputLineHidden = 0;
 		if (g_editKey == 10) {
 			g_typingRoomName = 1;
 			g_typingRoomPassword = 0;
@@ -442,7 +442,7 @@ void (loginForm_update)(void)
 		g_openLoginName = 0;
 		return;
 	}
-	if (g_dialogPending || g_paused)
+	if (g_dialogPending || g_textFieldOpen)
 		return;
 	int key = g_fieldTabKey;
 	if (key == 20 || key == 10) {
@@ -622,17 +622,17 @@ u32 (loginDialog_draw)(void)
 		menu_drawLine(X0 + 0x84, Y0 + k * 0x30 + 0x50, X0 + 0x200, Y0 + k * 0x30 + 0x50);
 	}
 	char hidden[64];   /* (30 bytes cleared, as the original's buffer) */
-	if (!g_typingAccountName || !g_paused)
+	if (!g_typingAccountName || !g_textFieldOpen)
 		text_draw8(X0 + 0x94, Y0 + 0x3c, g_accountName);
-	if (!g_typingAccountPassword || !g_paused) {
+	if (!g_typingAccountPassword || !g_textFieldOpen) {
 		stars(hidden, sizeof hidden, g_accountPassword);
 		text_draw8(X0 + 0x94, Y0 + 0x6c, hidden);
 	}
-	if (!g_typingAccountRepeat || !g_paused) {
+	if (!g_typingAccountRepeat || !g_textFieldOpen) {
 		stars(hidden, sizeof hidden, g_accountPasswordRepeat);
 		text_draw8(X0 + 0x94, Y0 + 0x9c, hidden);
 	}
-	if (!g_typingAccountEmail || !g_paused)
+	if (!g_typingAccountEmail || !g_textFieldOpen)
 		text_draw8(X0 + 0x94, Y0 + 0xcc, g_accountEmail);
 	for (int k = 0; k < 2; k++) {
 		int x = k * 0xc8;
@@ -912,7 +912,7 @@ void (account_drawPanel)(void)
 		glEnable(GL_TEXTURE_2D);
 		texture = g_buttonTexture;
 		tex_bind(g_textures->managers[texture / 512], texture % 512);
-		int lit = hovered == k + 4 && !g_paused;
+		int lit = hovered == k + 4 && !g_textFieldOpen;
 		glColor4f(1.0f, 1.0f, 1.0f, lit ? 1.0f : 0.4f);
 		int x = X0 + k * 0xa0;
 		menu_drawWideButton(x + 0x7d, Y1 - 0x30, x + 0xf5, Y1 - 0x10, 1);
@@ -1083,7 +1083,7 @@ u32 (ranking_drawTable)(void)
 /* the create-game dialog closed, back to the room's page 99 (keys blocked, the room's state 300) */
 static void creategame_close(void)
 {
-	input_setKeysBlocked(4);
+	menuCamera_setMove(4);
 	g_roomState = 99;
 	g_nextScreen = 300;
 	GAME_FN(debug_traceStripped, 0x48b420, void, void)();   /* debug_traceStripped */
@@ -1092,7 +1092,7 @@ static void creategame_close(void)
 /* 0x436990: the create-game dialog's keys. While its request is out (0x9dd838) or the login is due (0x9dd1c8)
    only cancel2 answers, closing the dialog (the answer dropped) and the lobby connection. Otherwise a click on its
    buttons (createDialog_hitTest: 2 send, 3 close and disconnect, 4 room_openDialog4d), 0x4e14f4 send, back close, 0x4e150c
-   room_openDialog4d (none of these while typing, g_paused); the toggle key moves the highlight (g_dialogChoice) on: from
+   room_openDialog4d (none of these while typing, g_textFieldOpen); the toggle key moves the highlight (g_dialogChoice) on: from
    the name (1) to the password field (2), to the OK button (3), then into the name field for typing; with shift,
    back: from OK (3) to the password field, to the name, then into the password field for typing. The original
    leaves eax to callers that ignore it */
@@ -1105,8 +1105,8 @@ void (createDialog_keys)(void)
 			g_roomRequestOut = 0;
 			g_gameServerAnswer = 0;
 			g_roomLoginDue = 0;
-			g_chatFieldFlag = 0;
-			g_paused = 0;
+			g_inputLineHidden = 0;
+			g_textFieldOpen = 0;
 			creategame_close();
 			g_highlightShown = 0;
 			net_disconnect();
@@ -1126,15 +1126,15 @@ void (createDialog_keys)(void)
 		}
 		if (on == 3) {
 			sound_playMenu(0);
-			g_paused = 0;
+			g_textFieldOpen = 0;
 			creategame_close();
-			g_chatFieldFlag = 0;
+			g_inputLineHidden = 0;
 			g_highlightShown = 0;
 			net_disconnect();
 			return;
 		}
 		if (on == 4) {
-			g_paused = 0;
+			g_textFieldOpen = 0;
 			g_highlightShown = 0;
 			sound_playMenu(0);
 			room_openDialog4d();
@@ -1142,7 +1142,7 @@ void (createDialog_keys)(void)
 		}
 	}
 	if (input_justPressed(g_dikI) == 1) {
-		if (g_paused || g_roomLoginDue)
+		if (g_textFieldOpen || g_roomLoginDue)
 			return;
 		sound_playMenu(0);
 		g_loginToSend = 1;
@@ -1150,15 +1150,15 @@ void (createDialog_keys)(void)
 		return;
 	}
 	if (input_justPressed(g_keyBack) == 1) {
-		if (g_paused)
+		if (g_textFieldOpen)
 			return;
-		g_chatFieldFlag = 0;
+		g_inputLineHidden = 0;
 		sound_playMenu(0);
 		creategame_close();
 		return;
 	}
 	if (input_justPressed(g_dikN) == 1) {
-		if (g_paused)
+		if (g_textFieldOpen)
 			return;
 		sound_playMenu(0);
 		room_openDialog4d();
@@ -1174,7 +1174,7 @@ void (createDialog_keys)(void)
 			highlight_choice(0, dialogX + 0x180, g_roomLoginTop + 0x88);
 			field_editGamePassword();
 			g_typingRoomPassword = 1;
-			g_chatFieldFlag = 1;
+			g_inputLineHidden = 1;
 		} else if (choice == 2)
 			highlight_choice(1, dialogX + 0x62, dialogBottom);
 		else if (choice == 3)

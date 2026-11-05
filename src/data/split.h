@@ -1595,9 +1595,9 @@ extern u8 g_emblemAlpha_v[4];
 extern u8 g_logoFade_v[4];
 #endif
 #ifdef AXIS_FENCE
-#define g_logoFadeLate_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0x288000 : g_fence + 0x287ffc))
+#define g_unusedLogoFade_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0x288000 : g_fence + 0x287ffc))
 #else
-extern u8 g_logoFadeLate_v[4];
+extern u8 g_unusedLogoFade_v[4];
 #endif
 #ifdef AXIS_FENCE
 #define g_cursorBlinkTimer_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0x28a000 : g_fence + 0x289ffc))
@@ -2350,9 +2350,9 @@ extern float g_hudLayerALeft_v[100];
 extern float g_hudLayerATop_v[100];
 #endif
 #ifdef AXIS_FENCE
-#define g_chatFieldFlag_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0x3b6000 : g_fence + 0x3b5ffc))
+#define g_inputLineHidden_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0x3b6000 : g_fence + 0x3b5ffc))
 #else
-extern u8 g_chatFieldFlag_v[4];
+extern u8 g_inputLineHidden_v[4];
 #endif
 #ifdef AXIS_FENCE
 #define g_tunnelTexture_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0x3b8000 : g_fence + 0x3b7ffc))
@@ -2600,9 +2600,9 @@ extern float g_font8Bottom_v[256];
 extern u8 g_dikComma_v[4];
 #endif
 #ifdef AXIS_FENCE
-#define g_keysBlocked_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0x5b5000 : g_fence + 0x5b4ffc))
+#define g_menuCameraMove_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0x5b5000 : g_fence + 0x5b4ffc))
 #else
-extern u8 g_keysBlocked_v[4];
+extern u8 g_menuCameraMove_v[4];
 #endif
 #ifdef AXIS_FENCE
 #define g_menuLook_v ((float *)(AXIS_FENCE == 2 ? g_fence + 0x5b7000 : g_fence + 0x5b6ff4))
@@ -2635,9 +2635,9 @@ extern u8 g_screenCentreY_v[4];
 extern u8 g_panelHovered_v[4];
 #endif
 #ifdef AXIS_FENCE
-#define g_paused_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0x5c3000 : g_fence + 0x5c2ffc))
+#define g_textFieldOpen_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0x5c3000 : g_fence + 0x5c2ffc))
 #else
-extern u8 g_paused_v[4];
+extern u8 g_textFieldOpen_v[4];
 #endif
 #ifdef AXIS_FENCE
 #define g_dikEscape_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0x5c5000 : g_fence + 0x5c4ffc))

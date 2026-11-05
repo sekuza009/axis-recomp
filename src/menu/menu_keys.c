@@ -5,10 +5,10 @@
    still fading in; a message box takes them first; else the current screen's handler */
 void (menu_processKeys)(void)
 {
-	if (g_paused)
+	if (g_textFieldOpen)
 		return;
 	input_reacquireKeyboard();
-	if (g_keysBlocked)
+	if (g_menuCameraMove)
 		return;
 	if (g_menuFade > 0.0f)
 		return;
