@@ -1794,6 +1794,7 @@ PACKET_ENTRY(net_sendGamePacket, 1);
 
 #define G(type, offset) GAME_VAR(type, g + (offset))
 #define GS ((Scene *)g)   /* the same by its fields (src/scene.fields) */
+#undef STAGE   /* (game.h's takes the scene; here g's stage as a byte pointer) */
 #define STAGE ((u8 *)SCENE_STAGE(g))
 #define ACTOR(i) ((u8 *)&((Scene *)g)->players[i])   /* the stage's actors, from the game object */
 #define PLAYER(i) ((u8 *)&((Scene *)g)->playerRecords[i])
@@ -2162,7 +2163,7 @@ void THISCALL (net_processGamePacket)(u8 *g, u32 from, int type, const char *pkt
 		short row = *(const short *)(pkt + 3);
 		if (pkt[2] > 0x10 || row > 0x170)
 			break;
-		PlayerRecord *p = (PlayerRecord *)PLAYER(pkt[2]);
+		PlayerRecord *p = (PlayerRecord *)PLAYER((signed char)pkt[2]);
 		if (row >= 0) {
 			u8 *to = (u8 *)p->emblem + row * 4;   /* (16 pixels from pixel row: the grid as one run) */
 			const u8 *from3 = b + 5;

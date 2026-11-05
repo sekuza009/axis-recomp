@@ -14,10 +14,12 @@ python tools/mkhooks.py build/standalone_hooks.c
 python tools/hooktable.py build/fn_syms.h
 mkdir -p build/obj_direct
 # (compiled in parallel, one job a core: zig's cache keeps each file's object by its source and flags)
+# (-Wno-address-of-packed-member: g_rdata / g_data are packed only to pin each member to the game's address; the
+# float constants taken by address, &k_1f, all sit 4-byte aligned as in the original)
 export CC FENCE
 find src -name '*.c' | sort | xargs -P "$(nproc)" -I{} sh -c '
 	f={}; o="build/obj_direct/$(echo "${f#src/}" | tr "/" "_" | sed "s/\.c$/.o/")"
-	$CC -c -O2 -mno-sse -mno-sse2 -mfpmath=387 -fno-builtin -fno-strict-aliasing -Wall -Wno-unused-function -DAXIS_DIRECT ${FENCE:+-DAXIS_FENCE=$FENCE} -Ibuild -o "$o" "$f" || exit 255'
+	$CC -c -O2 -mno-sse -mno-sse2 -mfpmath=387 -fno-builtin -fno-strict-aliasing -Wall -Wno-unused-function -Wno-address-of-packed-member -DAXIS_DIRECT ${FENCE:+-DAXIS_FENCE=$FENCE} -Ibuild -o "$o" "$f" || exit 255'
 python tools/mkgamedata.py build/gamedata.bin
 # (the blob's hash in the source: zig caches objects by their source text, and .incbin's file is not part of it, so a
 # new blob would otherwise link the old one)

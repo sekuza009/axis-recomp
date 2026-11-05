@@ -439,7 +439,7 @@ void THISCALL (tex_loadColorMask)(u8 *m, int i)
 		ptx_decode(tex_getItemFileBy(m, path), mg->image, &bpp, &w, &h);
 		size_check(m, w, h);
 		tex_path(m, path, STR(0x4b405c, "%s\\%s_ALPHA"), STR(0x4b4050, "%s_ALPHA"), name);
-		if (tex_findByName(m, (const u8 *)path) >= 0) {
+		if (tex_findByName(m, path) >= 0) {
 			ptx_decode(tex_getItemFileBy(m, path), mg->alphaImage, &bpp, &w, &h);
 			size_check(m, w, h);
 			alpha_from(m, 1);

@@ -314,6 +314,7 @@ int (app_checkCdAndLoad)(void *instance)
 }
 
 #define GS ((Scene *)g)   /* the same by its fields (src/scene.fields) */
+#undef STAGE   /* (game.h's gives a Stage *; here the byte pointer) */
 #define STAGE(g) ((u8 *)SCENE_STAGE(g))
 
 /* the next stage: its line added to the loading screen (loadLines, loadLineCount) */

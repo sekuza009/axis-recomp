@@ -426,6 +426,7 @@ int (app_init)(void *inst, int show)
 long STDCALL (glWindow_wndProc)(void *wnd, u32 msg, u32 w, u32 l)
 {
 #define g_dc g_hdc
+#undef PostQuitMessage
 #define PostQuitMessage(code) IMPORT(0x4a932c, void, int)(code)
 	u32 rect[4], paint[0x10];
 	switch (msg) {
@@ -629,9 +630,12 @@ u32 STDCALL (game_WinMain)(void *inst, void *prev, const char *cmd, int show)
 long STDCALL (game_wndProc)(void *wnd, u32 msg, u32 w, u32 l)
 {
 #define g_exitMode g_exitCode
+#undef PostQuitMessage
 #define PostQuitMessage(code) IMPORT(0x4a932c, void, int)(code)
+#undef GetClientRect
 #define GetClientRect(wnd, rect) IMPORT(0x4a9310, int, void *, int *)(wnd, rect)
 #define ExitProcess(code) IMPORT(0x4a90f8, void, u32)(code)
+#undef ShellExecuteA
 #define ShellExecuteA(wnd, verb, file, args, dir, show) \
 	IMPORT(0x4a92b0, void *, void *, const char *, const char *, const char *, const char *, int)(wnd, verb, file, args, dir, show)
 #define GAME_HEIGHT(h) ((h) - 1 == g_screenH ? (h) - 1 : (h))   /* widefix.py: the client's extra row taken back */

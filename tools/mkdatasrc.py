@@ -554,7 +554,7 @@ for lo, hi in merged:
 tl += ['', 'const DataPiece g_text_dataPieces[] = {'] + ['\t{ %s, %s, sizeof %s },' % (a, l, l) for a, l in ttable] + ['\t{ 0, 0, 0 }', '};']
 open(os.path.join(R, 'src', 'data', 'text_data.c'), 'w', newline='\n', encoding='latin-1').write('\n'.join(tl) + '\n')
 total.append('text_data: %d pieces' % len(ttable))
-open(os.path.join(R, 'src', 'data', 'data.h'), 'w', newline='\n').write('''/* data.h: a piece of the game's initialised data (src/data/*.c, tools/mkdatasrc.py): its address and bytes */
+open(os.path.join(R, 'src', 'data', 'data.h'), 'w', newline='\n').write('''/* data.h: a piece of the game's initialised data (the .c files of src/data, tools/mkdatasrc.py): its address and bytes */
 #pragma once
 typedef struct { u32 address; const void *bytes; u32 size; } DataPiece;
 extern const DataPiece g_rdataPieces[], g_dataPieces[], g_text_dataPieces[];
