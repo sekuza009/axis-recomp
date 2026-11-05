@@ -143,7 +143,7 @@ u8 g_arenaSearchClock_v[4] __attribute__((aligned(16)));   /* 0x4dbaf8 */
 int g_newArenaForm_v[4] __attribute__((aligned(16)));   /* 0x4dbb00 */
 u8 g_arenaSearchTicks_v[4] __attribute__((aligned(16)));   /* 0x4dbb10 */
 char g_arenaOnOff_v[40] __attribute__((aligned(16)));   /* 0x4dbb14 */
-u8 g_arenaLobbyMode_v[4] __attribute__((aligned(16)));   /* 0x4dbb3c */
+u8 g_arenaCameraMode_v[4] __attribute__((aligned(16)));   /* 0x4dbb3c */
 int g_lobbyTopRects_v[8] __attribute__((aligned(16)));   /* 0x4dbb40 */
 float g_lobbyTopEase_v[1] __attribute__((aligned(16)));   /* 0x4dbb60 */
 u8 g_arenaNameDialogLeft_v[4] __attribute__((aligned(16)));   /* 0x4dbb68 */
@@ -680,7 +680,7 @@ char g_chatLine_v[1024] __attribute__((aligned(16)));   /* 0x9dc92c */
 u8 g_typedLength_v[4] __attribute__((aligned(16)));   /* 0x9dcd30 */
 u8 g_gameListClickTimer_v[4] __attribute__((aligned(16)));   /* 0x9dcd40 */
 int g_gameListRects_v[60] __attribute__((aligned(16)));   /* 0x9dcd48 */
-u8 g_roomMode_v[4] __attribute__((aligned(16)));   /* 0x9dce48 */
+u8 g_roomCameraMode_v[4] __attribute__((aligned(16)));   /* 0x9dce48 */
 int g_newIdFormRects_v[28] __attribute__((aligned(16)));   /* 0x9dce50 */
 u32 g_roomBright_v[4] __attribute__((aligned(16)));   /* 0x9dcec0 */
 u8 g_retypePassword_v[4] __attribute__((aligned(16)));   /* 0x9dced0 */
@@ -1313,7 +1313,7 @@ const DataPiece g_splitObjects[] = {
 	{ 0x4dbb00, g_newArenaForm_v, 16 },
 	{ 0x4dbb10, g_arenaSearchTicks_v, 4 },
 	{ 0x4dbb14, g_arenaOnOff_v, 40 },
-	{ 0x4dbb3c, g_arenaLobbyMode_v, 4 },
+	{ 0x4dbb3c, g_arenaCameraMode_v, 4 },
 	{ 0x4dbb40, g_lobbyTopRects_v, 32 },
 	{ 0x4dbb60, g_lobbyTopEase_v, 4 },
 	{ 0x4dbb68, g_arenaNameDialogLeft_v, 4 },
@@ -1850,7 +1850,7 @@ const DataPiece g_splitObjects[] = {
 	{ 0x9dcd30, g_typedLength_v, 4 },
 	{ 0x9dcd40, g_gameListClickTimer_v, 4 },
 	{ 0x9dcd48, g_gameListRects_v, 240 },
-	{ 0x9dce48, g_roomMode_v, 4 },
+	{ 0x9dce48, g_roomCameraMode_v, 4 },
 	{ 0x9dce50, g_newIdFormRects_v, 112 },
 	{ 0x9dcec0, g_roomBright_v, 16 },
 	{ 0x9dced0, g_retypePassword_v, 4 },

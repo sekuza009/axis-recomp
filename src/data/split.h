@@ -655,9 +655,9 @@ extern u8 g_arenaSearchTicks_v[4];
 extern char g_arenaOnOff_v[40];
 #endif
 #ifdef AXIS_FENCE
-#define g_arenaLobbyMode_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0x110000 : g_fence + 0x10fffc))
+#define g_arenaCameraMode_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0x110000 : g_fence + 0x10fffc))
 #else
-extern u8 g_arenaLobbyMode_v[4];
+extern u8 g_arenaCameraMode_v[4];
 #endif
 #ifdef AXIS_FENCE
 #define g_lobbyTopRects_v ((int *)(AXIS_FENCE == 2 ? g_fence + 0x112000 : g_fence + 0x111fe0))
@@ -3340,9 +3340,9 @@ extern u8 g_gameListClickTimer_v[4];
 extern int g_gameListRects_v[60];
 #endif
 #ifdef AXIS_FENCE
-#define g_roomMode_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xa34000 : g_fence + 0xa33ffc))
+#define g_roomCameraMode_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xa34000 : g_fence + 0xa33ffc))
 #else
-extern u8 g_roomMode_v[4];
+extern u8 g_roomCameraMode_v[4];
 #endif
 #ifdef AXIS_FENCE
 #define g_newIdFormRects_v ((int *)(AXIS_FENCE == 2 ? g_fence + 0xa36000 : g_fence + 0xa35f90))

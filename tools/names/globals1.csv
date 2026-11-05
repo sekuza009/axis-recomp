@@ -14,7 +14,7 @@
 0x9f8c58,int,g_currentProfile
 0x4dedd0,int,g_playerCorporation
 # the arena lobby
-0x4dbb3c,int,g_arenaLobbyMode
+0x4dbb3c,int,g_arenaCameraMode
 0x4dba80,float,g_lobbyBlinkClock
 0x4db858,int,g_lobbySearching
 0x4db8b8,int,g_lobbyRefreshing
@@ -26,7 +26,7 @@
 0x4ded60,int,g_connectStep
 0x5b1914,int,g_listRefreshPeriod
 # the game room
-0x9dce48,int,g_roomMode
+0x9dce48,int,g_roomCameraMode
 0x9dd838,int,g_roomRequestOut
 0x9dd1c8,int,g_roomLoginDue
 0x9dd1cc,int,g_lineToLoginId

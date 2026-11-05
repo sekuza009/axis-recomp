@@ -757,7 +757,7 @@ static int hovered_panel(u32 outlines, int count, int locked)
 }
 
 /* 0x437e00: the game room's menu: the panel under the pointer (six, 0x9daf88; none while 0x9dd7d8), the room's
-   tunnel with that panel glowing, and in mode 2 (0x9dce48) its caption (MSG(91, "SETUP ID|Hotkey is $[5] P"), 0x80 apart) at the bottom. The
+   tunnel with that panel glowing, and with the room camera arrived (g_roomCameraMode 2) its caption (MSG(91, "SETUP ID|Hotkey is $[5] P"), 0x80 apart) at the bottom. The
    original leaves eax to callers that ignore it */
 void (room_drawMenu)(void)
 {
@@ -765,7 +765,7 @@ void (room_drawMenu)(void)
 	Highlight h = { hovered_panel(OBJ(g_roomOutlines), 6, g_roomDialogOpen), glow, 0, 0, 0 };
 	Tunnel t = { g_roomTunnelDepth, OBJ(g_ladderMenuTextures) + 12, 1, 1, 1, 0, SIX_WALLS };
 	menu_tunnel(&t, &h);
-	if (h.on != -1 && g_roomMode == 2)
+	if (h.on != -1 && g_roomCameraMode == 2)
 		caption(MSG(91, "SETUP ID|Hotkey is $[5] P"), h.on);
 }
 
@@ -777,7 +777,7 @@ void (lobbyTop_drawMenu)(void)
 	Highlight h = { hovered_panel(OBJ(g_lobbyTopOutlines), 4, g_lobbyPanelsOff), white, 1, 0, 0 };
 	Tunnel t = { g_arenaTunnelDepth, OBJ(g_arenaMenuTextures) + 12, 0, 1, 1, 0, FOUR_WALLS };
 	menu_tunnel(&t, &h);
-	if (h.on != -1 && g_arenaLobbyMode == 2 && !g_menuCameraMove)
+	if (h.on != -1 && g_arenaCameraMode == 2 && !g_menuCameraMove)
 		caption(MSG(86, "SETUP PLAYER FOR THE MULTIPLAY|Hotkey..."), h.on);
 }
 

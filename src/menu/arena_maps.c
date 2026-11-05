@@ -242,7 +242,7 @@ void (mapList_mouse)(void)
 			g_mapListOpen = 0;
 		}
 	}
-	if (!g_mouseHeld || g_arenaLobbyMode != 2)
+	if (!g_mouseHeld || g_arenaCameraMode != 2)
 		return;
 	int on = mapList_hitTest(g_mouseX, g_mouseY);
 	if (on == 20 && g_cursorBlink >= *repeat) {

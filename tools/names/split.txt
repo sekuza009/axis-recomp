@@ -318,7 +318,7 @@ g_profilePageLeft
 g_profilePageTop
 g_profileScreenReady
 g_rankingPrevRank
-g_roomMode
+g_roomCameraMode
 g_roomSearchAnswerIn
 g_roomSearching
 g_roomState
@@ -537,7 +537,7 @@ g_setupControlRect
 g_soundEdited
 g_newArenaForm
 # freed by the setup / form records (objects11.csv), 2026-11-01
-g_arenaLobbyMode
+g_arenaCameraMode
 g_arenaSearchTicks
 g_setupPressed
 # the room / profile / mission records (objects12.csv), whole

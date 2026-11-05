@@ -669,13 +669,13 @@ u32 (menuState800_gameRoom)(void)
 		menu_drawBackground();
 		return newIdForm_draw();
 	case 88:
-		room_networkEvents();
+		newIdConfirm_update();
 		menu_drawBackground();
-		return serverDialog_draw();
+		return newIdConfirm_draw();
 	case 99:
 		room_slideMenu();
 		menu_drawBackground();
-		if (g_quitAsked == 1 && g_roomMode == 2)
+		if (g_quitAsked == 1 && g_roomCameraMode == 2)
 			return room_drawWhiteFade();
 		return room_drawMenu();
 	}

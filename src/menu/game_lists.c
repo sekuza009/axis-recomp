@@ -341,7 +341,7 @@ void (gameList_draw)(void)
 #undef Y1
 
 /* 0x43ea10: the game room's page of games: the "searching" message's clock (0x9dcd40, while 0x9dd34c; done above 0x4a944c),
-   the tunnel; in room modes other than 0 / 1, and not page 99: a message box (0x90d1c4) alone, else the search's
+   the tunnel; in the room camera arrived (g_roomCameraMode 2), and not page 99: a message box (0x90d1c4) alone, else the search's
    end (0x9dd6a0 searching, 0x9da498 the answer in, 0x76d484 its result: -1 .. 4) and the blinking clock (0x4dba80
    falling, back to 1000 below 0x4a9418); while the list refreshes (0x9dd3fc) its timer (0x9dd6c0 against 0x5b1914:
    the list asked for again, the next in 5) and a stop (0xa0d7a0); then the list, and with a game joined (0x9dd56c)
@@ -359,7 +359,7 @@ void (gameList_drawPage)(void)
 		}
 	}
 	room_drawTunnel();
-	int mode = g_roomMode;
+	int mode = g_roomCameraMode;
 	if (mode == 1 || mode == 0 || g_roomState == 99)
 		return;
 	if (g_dialogOpen) {
@@ -529,13 +529,13 @@ static int games_leave(void)
 	}
 	sound_playMenu(0);
 	g_gameServerState = 0;
-	g_roomMode = 0;
+	g_roomCameraMode = 0;
 	g_gameServerPending = 0;
 	g_netListDone = 1;
 	return 1;
 }
 
-/* 0x435fc0: the game room's list of games, its mouse (in room modes other than 0 / 1; not while joining, 0x9dd6b4,
+/* 0x435fc0: the game room's list of games, its mouse (in the room camera arrived (g_roomCameraMode 2); not while joining, 0x9dd6b4,
    or with a message box): a right click leaves the list (unless searching, 0x9dd6a0). A click (gameList_hitTest) on: 0
    join (not while searching or refreshing, 0x9dd3fc, and only with games; else sound 6), 1 search, 2 stop or
    refresh, 3 leave, 13 / 14 one row up / down, or a row (4 .. 12): selects it, or on the selected row again within
@@ -543,7 +543,7 @@ static int games_leave(void)
    5. The original leaves eax to callers that ignore it */
 void (gameList_mouse)(void)
 {
-	int mode = g_roomMode;
+	int mode = g_roomCameraMode;
 	if (mode == 1 || mode == 0 || g_roomJoinNeedsPassword || g_dialogOpen)
 		return;
 	if (g_rightClick) {
@@ -551,7 +551,7 @@ void (gameList_mouse)(void)
 			return;
 		sound_playMenu(0);
 		g_gameServerState = 0;
-		g_roomMode = 0;
+		g_roomCameraMode = 0;
 		g_gameServerPending = 0;
 		return;
 	}
@@ -702,7 +702,7 @@ void (room_gameListKeys)(void)
 	}
 	if (input_justPressed(g_keyCancel2)) {
 		sound_playMenu(0);
-		g_roomMode = 0;
+		g_roomCameraMode = 0;
 		g_gameServerState = 0;
 	}
 }
@@ -735,7 +735,7 @@ void (lobbyJoin_draw)(void)
 		}
 	}
 	arena_drawTunnel();
-	int mode = g_arenaLobbyMode;
+	int mode = g_arenaCameraMode;
 	if (mode == 1 || mode == 0 || g_lobbySubState == 5)
 		return;
 	if (g_dialogOpen) {
@@ -858,7 +858,7 @@ static void lobby_leave(void)
    arrows scrolls once the blink clock reaches 5. The caller ignores the eax it leaves */
 void (arenaGames_mouse)(void)
 {
-	int mode = g_arenaLobbyMode;
+	int mode = g_arenaCameraMode;
 	if (mode == 1 || mode == 0 || g_arenaJoinNeedsPassword || g_arenaFull || g_dialogOpen)
 		return;
 	if (g_rightClick) {
@@ -868,7 +868,7 @@ void (arenaGames_mouse)(void)
 		arena_leaveSession();
 		net_disconnect();
 		sound_playMenu(0);
-		g_arenaLobbyMode = mode = 0;
+		g_arenaCameraMode = mode = 0;
 	}
 	if (g_mouseClick && mode == 2) {
 		g_cursorBlink = 0.0f;
@@ -957,7 +957,7 @@ void (arenaGames_mouse)(void)
 			lobby_leave();
 			arena_leaveSession();
 			net_disconnect();
-			g_arenaLobbyMode = 0;
+			g_arenaCameraMode = 0;
 			g_netListDone = 1;
 			break;
 		case 15:
@@ -998,7 +998,7 @@ void (arenaGames_mouse)(void)
 			break;
 		}
 	}
-	if (!g_mouseHeld || g_arenaLobbyMode != 2 || g_arenaFull)
+	if (!g_mouseHeld || g_arenaCameraMode != 2 || g_arenaFull)
 		return;
 	int on = arenaGameList_hitTest(g_mouseX, g_mouseY);
 	if ((on != 15 && on != 16) || !(g_cursorBlink >= k_5f))

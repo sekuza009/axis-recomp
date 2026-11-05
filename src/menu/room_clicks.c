@@ -48,11 +48,11 @@ void (room_askJoinPassword)(void)
 	}
 }
 
-/* 0x435f40: in room state 2, the button (gameListStop_hitTest) that stops the arena being set up: its flags off, the
-   arena's connection closed (arena_leaveSession) and its timer (0x378) killed */
-void (room_stopArenaSetup)(void)
+/* 0x435f40: the game list's stop button (gameListStop_hitTest; with the room camera arrived): the join being waited
+   for given up: its flags off, the session left (arena_leaveSession) and its timer (0x378) killed */
+void (gameList_stopJoin)(void)
 {
-	if (g_dialogOpen != 0 || g_mouseClick == 0 || g_roomMode != 2)
+	if (g_dialogOpen != 0 || g_mouseClick == 0 || g_roomCameraMode != 2)
 		return;
 	g_cursorBlink = 0.0f;
 	if (gameListStop_hitTest(g_mouseX, g_mouseY) == 0) {
@@ -214,13 +214,13 @@ u32 (room_leftClicks)(void)
 	return button;
 }
 
-/* 0x435d30: the game room's page clicks (page open, 0x9dce48 not 0 or 1; no dialog): its six buttons (outlines at
+/* 0x435d30: the game room's page clicks (the room camera arrived (g_roomCameraMode 2); no dialog): its six buttons (outlines at
    0x9daf88) open the room's pages, the arm center (0x4dc24c = 3) or leave the game; a right click (when a tunnel ring is behind:
    g_tunnelRings > 0) leaves too. Returns what the original leaves in eax */
 u32 (room_pageClicks)(void)
 {
 	static const u32 actions[6] = { FN_ADDR(room_enterAccountPage, 0x4334c0), FN_ADDR(room_enterGameList, 0x433590), FN_ADDR(room_enterCreatePage, 0x433790), 0, FN_ADDR(ranking_enter, 0x433800), FN_ADDR(room_leaveGame, 0x435a40) };
-	u32 page = (*(u32 *)&g_roomMode);
+	u32 page = (*(u32 *)&g_roomCameraMode);
 	if (page == 1 || page == 0)
 		return page;
 	if (g_dialogOpen)
@@ -269,9 +269,9 @@ static void load_map_preview(u32 selected)
 void (room_loadMapPreview)(void) { load_map_preview(ADDR(g_roomMap)); }
 void (arena_loadMapPreview)(void) { load_map_preview(ADDR(g_newArenaMap)); }
 
-/* 0x433d30: the typed line (0x9dc92c) committed to the room field being edited (when the keyboard was let go for it,
-   0x68039c: the edit window 0x9dd888 destroyed and the focus back on the main window first): the room name
-   (0x9dd1d8, 30 bytes), two short fields (0x9dd1f6, 0x9dd202, 12 bytes) or the comment (0x9dd20e, 50 bytes).
+/* 0x433d30: the typed line (0x9dc92c) committed to the new-ID form's field being edited (when the keyboard was let go for it,
+   0x68039c: the edit window 0x9dd888 destroyed and the focus back on the main window first): the ID
+   (0x9dd1d8, 30 bytes), the password and its repeat (0x9dd1f6, 0x9dd202, 12 bytes) or the e-mail (0x9dd20e, 50 bytes).
    Returns what the original leaves in eax */
 /* typing closed if it was on: the hidden EDIT control destroyed, the focus back to the game window and the line
    closed (chat_closeLine); returns that call's eax, or 0 */
@@ -284,7 +284,7 @@ static u32 typing_end(void)
 	return chat_closeLine(1);   /* chat_closeLine */
 }
 
-u32 (account_endTyping)(void)
+u32 (newIdForm_endTyping)(void)
 {
 	static const struct { u32 editing, field, size; } fields[4] = {
 		{ ADDR(g_typingAccountName), OBJ(g_accountName), 30 }, { ADDR(g_typingAccountPassword), OBJ(g_accountPassword), 12 }, { ADDR(g_typingAccountRepeat), OBJ(g_accountPasswordRepeat), 12 }, { ADDR(g_typingAccountEmail), OBJ(g_accountEmail), 50 } };
@@ -315,7 +315,7 @@ u32 (room_hostingStep)(void)
 		g_quitAsked = 1;
 		g_netRole = 1;
 		music_shutdown();
-		g_roomMode = 0;
+		g_roomCameraMode = 0;
 		GAME_FN(arena_openSession, 0x452ec0, int, int, int)(0, 0);   /* arena_openSession */
 		dplay_host(
 			room, g_ladderId, (signed char)room[0x23], (signed char)room[0x21], (signed char)room[0x23],
@@ -383,7 +383,7 @@ u32 (room_joinAnswer)(void)
 	music_shutdown();
 	g_quitAsked = 1;
 	g_netRole = 2;
-	g_roomMode = 0;
+	g_roomCameraMode = 0;
 	g_arenaSearchTicks = 0;
 	g_arenaJoinPending = 0;
 	g_arenaConfirming = 0;
@@ -396,12 +396,12 @@ u32 (room_joinAnswer)(void)
 	return row * sizeof(SessionEntry);   /* (the original's eax: the entry's offset) */
 }
 
-/* 0x4346c0: the account form checked (name 0x9dd1d8, password 0x9dd1f6 and its repeat 0x9dd202, e-mail 0x9dd20e):
+/* 0x4346c0: the new-ID form checked (name 0x9dd1d8, password 0x9dd1f6 and its repeat 0x9dd202, e-mail 0x9dd20e):
    a blank name, a bad name or password character, a missing or mismatched password and a bad e-mail each give
-   their message and reopen the field; all good, the next dialog (0x433980). Returns that call's eax */
-u32 (account_checkForm)(void)
+   their message and reopen the field; all good, its confirmation (room_openNewIdConfirm). Returns that call's eax */
+u32 (newIdForm_check)(void)
 {
-	account_endTyping();   /* account_endTyping */
+	newIdForm_endTyping();   /* newIdForm_endTyping */
 	g_textFieldOpen = 0;
 	g_fieldStep = 0;
 	const char *name = g_accountName, *password = g_accountPassword;
@@ -419,7 +419,7 @@ u32 (account_checkForm)(void)
 	else if (room_nameHasBadChar(g_accountEmail) == 1)
 		message = 0x81, reopen = ADDR(g_typingAccountEmail);
 	else
-		return room_openDialog58();   /* the next dialog */
+		return room_openNewIdConfirm();
 	u32 r = menu_showMessage(message);
 	GAME_VAR(int, reopen) = 1;
 	return r;
@@ -459,8 +459,8 @@ static u32 call_keeping_ebp(u32 address)
 
 /* 0x43ede0: the ranking page. A request pending (0x9dd350) for sort column 0x9dd1d0: columns 0 .. 2 send their
    code (0x25 / 0x23 / 0x26) with the first rank of page 0x9dd6ac (ranks 0x9dd83c .. 0x9dd7dc) in message 0x15 and
-   start waiting (0x9dd6b8, the blink at 1000); column 3 just clears the request. Then the room's tunnel; in room
-   modes other than 0 / 1 (0x9dce48) and outside page 99: with a message box open (0x90d1c4) only it is drawn (a
+   start waiting (0x9dd6b8, the blink at 1000); column 3 just clears the request. Then the room's tunnel; with
+   the room camera arrived (g_roomCameraMode 2) and outside page 99: with a message box open (0x90d1c4) only it is drawn (a
    request made again once it closes), else while waiting an answer (0x76d40c) fills the list (ranking_fillPage) and
    keeps the column and page, the blink counts down by 0x4b071c * 0x4ad498 (from 1000 again below 0), and the
    table is drawn (ranking_drawTable). Returns what the original leaves in eax */
@@ -486,7 +486,7 @@ u32 (ranking_page)(void)
 		g_rankingWaiting = 1;
 	}
 	room_drawTunnel();   /* room_drawTunnel: the tunnel */
-	int mode = g_roomMode;
+	int mode = g_roomCameraMode;
 	if (mode == 1 || mode == 0 || g_roomState == 99)
 		return mode;
 	if (g_dialogOpen) {
@@ -547,19 +547,19 @@ u32 (login_send)(void)
 	return r;
 }
 
-/* 0x436620: the ranking page's clicks (room modes other than 0 / 1, no message box open; a right click closes the
+/* 0x436620: the ranking page's clicks (the room camera arrived (g_roomCameraMode 2), no message box open; a right click closes the
    page unless waiting for an answer). Not waiting (0x9dd6b8): buttons 0 .. 2 open the room's other pages
    (ranking_prevPage / 4359b0 / 4359f0), 4 closes the page, 5 / 7 / 8 sort by column 0 / 1 / 2 (the old column kept in
    0x9dd300 and a request made, the list's state cleared). While waiting, button 3 cancels it (the column and page
    put back from 0x9dd300 / 0x9dd1b4). Each with the click sound. Returns what the original leaves in eax */
 u32 (ranking_clicks)(void)
 {
-	u32 mode = (*(u32 *)&g_roomMode);
+	u32 mode = (*(u32 *)&g_roomCameraMode);
 	if (mode == 1 || mode == 0 || g_dialogOpen)
 		return mode;
 	int waiting = g_rankingWaiting;
 	if (g_rightClick && !waiting)
-		g_roomMode = 0;
+		g_roomCameraMode = 0;
 	if (!g_mouseClick)
 		return mode;
 	u32 button = ranking_hitTest(g_mouseX, g_mouseY);   /* ranking_hitTest */
@@ -578,7 +578,7 @@ u32 (ranking_clicks)(void)
 		g_rankingSort = g_rankingPrevSort;
 		return (*(u32 *)&g_rankingPage) = (*(u32 *)&g_rankingPrevPage);
 	case 4:
-		g_roomMode = 0;
+		g_roomCameraMode = 0;
 		return r;
 	}
 	column = button == 5 ? 0 : button == 7 ? 1 : 2;   /* 5, 7, 8 */
@@ -593,7 +593,7 @@ u32 (ranking_clicks)(void)
 	return button == 8 ? old : r;
 }
 
-/* 0x436400: the game room's settings page clicked (no field being typed in, room modes other than 0 / 1, no message
+/* 0x436400: the game room's settings page clicked (no field being typed in, the room camera arrived (g_roomCameraMode 2), no message
    box; a right click closes the page). Buttons (roomSettings_hitTest): 0 / 1 type the room's name or password
    (room_editName / 433a80), 3 the players +2 (4 .. 16, then 2), 5 the game type on (with a turn key held back) through
    0 .. 9, 6 / 7 the frag and time limits +5 (up to 50 / 60, then 5), 8 start (room_announceGame; not while connecting),
@@ -605,13 +605,13 @@ u32 (room_settingsClicks)(void)
 	for (int k = 0; k < 4; k++)
 		if (GAME_VAR(int, typing[k]))
 			return GAME_VAR(u32, typing[k]);
-	u32 mode = (*(u32 *)&g_roomMode);
+	u32 mode = (*(u32 *)&g_roomCameraMode);
 	if (mode == 1 || mode == 0)
 		return mode;
 	if (g_dialogOpen)
 		return (*(u32 *)&g_dialogOpen);
 	if (g_rightClick)
-		g_roomMode = 0;
+		g_roomCameraMode = 0;
 	if (!g_mouseClick)
 		return 0;
 	u32 button = ((u32)roomSettings_hitTest(g_mouseX, g_mouseY));   /* roomSettings_hitTest */
@@ -667,7 +667,7 @@ u32 (room_settingsClicks)(void)
 		return room_announceGame();   /* room_announceGame: start */
 	case 9:
 		r = sound_playMenu(0);
-		g_roomMode = 0;
+		g_roomCameraMode = 0;
 		return r;
 	case 13:
 		sound_playMenu(0);
@@ -727,7 +727,7 @@ u32 (room_settingsAfterTyping)(void)
 		r = (u32)input_justPressed(GAME_VAR(int, close[k]));
 		if (r) {
 			r = sound_playMenu(0);
-			g_roomMode = 0;
+			g_roomCameraMode = 0;
 		}
 	}
 	return r;
@@ -779,7 +779,7 @@ static u32 map_preview_box(const int *panel, u32 custom, u32 reload)
 u32 (room_drawCustomOption)(void) { return map_preview_box((const int *)ADDR(g_roomFormTop), ADDR(g_roomCustom), FN_ADDR(room_loadMapPreview, 0x43bcb0)); }
 u32 (arena_drawCustomOption)(void) { return map_preview_box((const int *)ADDR(g_newArenaFormTop), ADDR(g_newArenaKind), FN_ADDR(arena_loadMapPreview, 0x40b420)); }
 
-/* 0x43e7b0: the account page (room page 0; room modes other than 0 / 1, not page 99): with a message box only its
+/* 0x43e7b0: the account page (room page 0; the room camera arrived (g_roomCameraMode 2), not page 99): with a message box only its
    frame; else the page (0x433610 when 0x9dd354, then account_drawPanel) and, once a field's typing has ended, the typed
    line taken into it (the name, password, its repeat (12 bytes each) or the e-mail (50)) and the key that ended it
    (0x9dc428: 0xa back, 0x14 on) opening the field before or after (account_editOldPassword .. 434260). Returns what the
@@ -790,7 +790,7 @@ u32 (account_page)(void)
 		{ ADDR(g_editingOldPassword), OBJ(g_accountOldPassword), 12, 0, FN_ADDR(account_editPassword, 0x4340e0) }, { ADDR(g_editingAccountPassword), OBJ(g_accountPassword), 12, FN_ADDR(account_editOldPassword, 0x434020), FN_ADDR(account_editPasswordRepeat, 0x4341a0) },
 		{ ADDR(g_editingPasswordRepeat), OBJ(g_accountPasswordRepeat), 12, FN_ADDR(account_editPassword, 0x4340e0), FN_ADDR(account_editEmail, 0x434260) }, { ADDR(g_editingEmail), OBJ(g_accountEmail), 50, FN_ADDR(account_editPasswordRepeat, 0x4341a0), 0 } };
 	room_drawTunnel();   /* room_drawTunnel: the tunnel */
-	u32 mode = (*(u32 *)&g_roomMode);
+	u32 mode = (*(u32 *)&g_roomCameraMode);
 	if (mode == 1 || mode == 0 || g_roomState == 99)
 		return mode;
 	if (g_dialogOpen)
@@ -822,7 +822,7 @@ u32 (account_page)(void)
 	return r;
 }
 
-/* ---- the server login dialog's keys: its text fields (0x74de1c: 0 .. 2), the text cursor placed in the one typed
+/* ---- the new-ID form's keys: its text fields (0x74de1c: 0 .. 2), the text cursor placed in the one typed
    into (0x67ef34 / 0x67fb38) ---- */
 #define g_loginField g_dialogChoice
 
@@ -838,9 +838,9 @@ static void login_field(int to, int x, int y)
 	g_fieldStep = 0;
 }
 
-/* OK (button 4 clicked, or the OK key) logs in (account_checkForm), cancel (button 5, or 0x4e0cdc) closes (room_openDialog42);
+/* OK (button 4 clicked, or the OK key) checks the form (newIdForm_check), cancel (button 5, or 0x4e0cdc) closes it, back to the login (room_openLogin);
    neither while a message is up (0x68039c) */
-static int login_buttons(void)
+static int form_buttons(void)
 {
 	int button = -1;
 	if (input_justPressed(g_dikEnter) == 1)
@@ -856,19 +856,19 @@ static int login_buttons(void)
 	if (!g_textFieldOpen) {
 		sound_playMenu(0);
 		if (button == 4)
-			account_checkForm();   /* account_checkForm */
+			newIdForm_check();   /* newIdForm_check */
 		else
-			room_openDialog42();   /* room_openDialog42 */
+			room_openLogin();   /* room_openLogin */
 	}
 	return 1;
 }
 
-/* 0x436e10: the server login dialog's keys: its two buttons, then Tab (0x680390) to the next field, or with shift
+/* 0x436e10: the new-ID form's keys: its two buttons, then Tab (0x680390) to the next field, or with shift
    (0x67ef24 / 0x9db0ac held) the one before (the original's path for "back" from the first field is never taken).
    The original leaves eax to callers that ignore it */
-void (loginDialog_keys)(void)
+void (newIdForm_keys)(void)
 {
-	if (login_buttons())
+	if (form_buttons())
 		return;
 	if (input_justPressed(g_dikTab) != 1 || g_textFieldOpen)
 		return;

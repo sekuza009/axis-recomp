@@ -115,14 +115,14 @@ static void menu_camera(const MenuCam *m)
 /* 0x437a10: the game room's camera */
 void (room_camera)(void)
 {
-	static const MenuCam room = { ADDR(g_roomMode), ADDR(g_roomState), ADDR(g_unusedRoomCamWord), 0x63, 0 };
+	static const MenuCam room = { ADDR(g_roomCameraMode), ADDR(g_roomState), ADDR(g_unusedRoomCamWord), 0x63, 0 };
 	menu_camera(&room);
 }
 
 /* 0x408270: the arena lobby's camera */
 void (arena_camera)(void)
 {
-	static const MenuCam arena = { ADDR(g_arenaLobbyMode), ADDR(g_lobbySubState), ADDR(g_unusedArenaCamWord), 5, 1 };
+	static const MenuCam arena = { ADDR(g_arenaCameraMode), ADDR(g_lobbySubState), ADDR(g_unusedArenaCamWord), 5, 1 };
 	menu_camera(&arena);
 }
 

@@ -28,6 +28,8 @@ extern struct GameData g_data;
 #define g_accountRects ((int *)g_accountRects_v)
 #undef g_arenaBright
 #define g_arenaBright ((u32 *)g_arenaBright_v)
+#undef g_arenaCameraMode
+#define g_arenaCameraMode (*(int *)g_arenaCameraMode_v)
 #undef g_arenaConfirming
 #define g_arenaConfirming (*(int *)g_arenaConfirming_v)
 #undef g_arenaCorporation
@@ -114,8 +116,6 @@ extern struct GameData g_data;
 #define g_arenaListFull (*(int *)g_arenaListFull_v)
 #undef g_arenaListRefreshTimer
 #define g_arenaListRefreshTimer (*(float *)g_arenaListRefreshTimer_v)
-#undef g_arenaLobbyMode
-#define g_arenaLobbyMode (*(int *)g_arenaLobbyMode_v)
 #undef g_arenaLobbyState
 #define g_arenaLobbyState (*(int *)g_arenaLobbyState_v)
 #undef g_arenaLocked
@@ -2246,6 +2246,8 @@ extern struct GameData g_data;
 #define g_roomAwaitingServer (*(int *)g_roomAwaitingServer_v)
 #undef g_roomBright
 #define g_roomBright ((u32 *)g_roomBright_v)
+#undef g_roomCameraMode
+#define g_roomCameraMode (*(int *)g_roomCameraMode_v)
 #undef g_roomColours
 #define g_roomColours ((float *)g_roomColours_v)
 #undef g_roomColoursKept
@@ -2324,8 +2326,6 @@ extern struct GameData g_data;
 #define g_roomMechKept ((u8 *)g_roomMechKept_v)
 #undef g_roomMessageRect
 #define g_roomMessageRect ((int *)g_roomMessageRect_v)
-#undef g_roomMode
-#define g_roomMode (*(int *)g_roomMode_v)
 #undef g_roomNameSum
 #define g_roomNameSum (*(int *)g_roomNameSum_v)
 #undef g_roomOutlines

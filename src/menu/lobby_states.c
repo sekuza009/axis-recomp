@@ -23,7 +23,7 @@ void (lobby_setSubState0)(void)
 	(*(u32 *)&g_camAim0Y) = 0x420c0000;   /* 35.0 */
 	g_camAim0Z = z;
 	arena_loadPlayerSettings();
-	g_arenaLobbyMode = 1;
+	g_arenaCameraMode = 1;
 	g_lobbySubState = 0;
 	g_arenaPanelBrightness = 0x3f333333;
 	g_armcFrom = 0;
@@ -44,7 +44,7 @@ void (lobby_setSubState1)(void)
 	g_camAim1X = 0xc28c0000;   /* -70.0 */
 	g_camAim1Y = 0xc20c0000;   /* -35.0 */
 	g_lobbySubState = 1;
-	g_arenaLobbyMode = 1;
+	g_arenaCameraMode = 1;
 	g_arenaPanelBrightness = 0x3f333333;
 	clear_all(cleared, sizeof cleared / sizeof cleared[0]);
 	g_lastPanel = 999;
@@ -117,7 +117,7 @@ void (lobby_setSubState2)(void)
 	g_camAim2Z = z;
 	lobby_drawArenaTitle();
 	g_lobbySubState = 2;
-	g_arenaLobbyMode = 1;
+	g_arenaCameraMode = 1;
 	g_arenaPanelBrightness = 0x3f333333;
 	clear_all(cleared, sizeof cleared / sizeof cleared[0]);
 	g_arenaTunnelDepth = 0xc4ce4000;
@@ -148,7 +148,7 @@ void (room_enterCreatePage)(void)
 	                               ADDR(g_editingRoomPassword) };
 	room_loadSettingsRecord();
 	g_roomState = 2;
-	g_roomMode = 1;
+	g_roomCameraMode = 1;
 	g_roomPanelBrightness = 0x3f333333;
 	clear_all(cleared, sizeof cleared / sizeof cleared[0]);
 	g_mapPreviewChanged = 1;
@@ -167,7 +167,7 @@ void (ranking_enter)(void)
 		row->level = 1;
 	}
 	clear_all(cleared, sizeof cleared / sizeof cleared[0]);
-	g_roomMode = 1;
+	g_roomCameraMode = 1;
 	g_rankingFirst = 1;
 	g_roomState = 4;
 	g_roomPanelBrightness = 0x3f333333;
@@ -315,11 +315,12 @@ static void default_mech(u8 *mech, u8 *colours)
 		memcpy(colours + k * 0x18, pair, sizeof pair);
 }
 
-/* 0x434820: a new room hosted: the room's names copied as the joined game's, the default mech and colours in both,
-   the window rectangle reset (to 1, 0, ...) in both and the Ladder record (g_ladderName ..) set from it; the room record
-   (0xa0b320: kind 0x18, the three names, the defaults) sent to the server (net_send 0xf, 0x65). Returns net_send's
+/* 0x434820: the new ID registered (its confirmation's OK): the form's ID and e-mail kept as the Ladder login's, the
+   default mech and colours in both copies, the pilot's stats reset (level 1) and the Ladder record (g_ladderName ..)
+   set from them; the account record (0xa0b320: kind 0x18, the ID, password and e-mail, the defaults) sent to the
+   server (net_send 0xf, 0x65). Returns net_send's
    eax */
-u32 (room_host)(void)
+u32 (newId_register)(void)
 {
 	strcpy(g_ladderId, g_accountName);
 	strcpy(g_ladderEmail, g_accountEmail);
@@ -374,7 +375,7 @@ u32 (lobby_keysBack)(void)
 u32 (lobbyPlayer_draw)(void)
 {
 	arena_drawTunnel();   /* arena_drawTunnel: the tunnel */
-	int mode = g_arenaLobbyMode;
+	int mode = g_arenaCameraMode;
 	if (mode == 1 || mode == 0 || g_lobbySubState == 5)
 		return mode;
 	if (!g_dialogOpen)
@@ -444,7 +445,7 @@ u32 (menuState400_frame)(void)
 	case 5:
 		lobbyTop_draw();   /* lobbyTop_draw */
 		menu_drawBackground();
-		if (g_quitAsked == 1 && g_arenaLobbyMode == 2)
+		if (g_quitAsked == 1 && g_arenaCameraMode == 2)
 			return menu_drawDimOverlay();   /* menu_drawDimOverlay */
 		return lobbyTop_drawMenu();       /* lobbyTop_drawMenu */
 	case 0:
@@ -498,7 +499,7 @@ u32 (lobby_close)(void)
 {
 	if (g_dialogOpen)
 		return g_dialogOpen;
-	if (!g_mouseClick || g_arenaLobbyMode != 2)
+	if (!g_mouseClick || g_arenaCameraMode != 2)
 		return g_mouseClick;
 	(*(int *)&g_cursorBlink) = 0;
 	u32 hit = ((u32)arenaDialogBox_hitTest(g_mouseX, g_mouseY));   /* the close button's hit test */
@@ -628,7 +629,7 @@ u32 (room_keepSettings)(void) { return settings_store((GameSettings *)OBJ(g_room
 u32 (lobbyCreate_draw)(void)
 {
 	arena_drawTunnel();   /* arena_drawTunnel: the tunnel */
-	int mode = g_arenaLobbyMode;
+	int mode = g_arenaCameraMode;
 	if (mode == 1 || mode == 0 || g_lobbySubState == 5)
 		return (u32)mode;
 	if (g_dialogOpen)
@@ -676,7 +677,7 @@ u32 (lobby_keysQuit)(void)
 	g_chosenGameMode = (*(signed char *)&g_arenaGameType);
 	(*(u32 *)&g_fragLimit) = limits & 0xff;
 	(*(u32 *)&g_timeLimit) = (limits >> 8) & 0xff;
-	g_arenaLobbyMode = 0;
+	g_arenaCameraMode = 0;
 	g_arenaLobbyState = 1;
 	g_createQuitDialog = 0;
 	return limits;
@@ -687,11 +688,11 @@ u32 (lobby_keysQuit)(void)
    leaves in eax */
 u32 (lobby_playerScreenClicks)(void)
 {
-	int mode = g_arenaLobbyMode;
+	int mode = g_arenaCameraMode;
 	if (mode == 1 || mode == 0 || g_dialogOpen || g_typingArenaName)
 		return (u32)mode;
 	if (g_rightClick) {
-		g_arenaLobbyMode = 0;
+		g_arenaCameraMode = 0;
 		return sound_playMenu(0);
 	}
 	if (!g_mouseClick || mode != 2)
@@ -708,11 +709,11 @@ u32 (lobby_playerScreenClicks)(void)
 	case 3:
 		sound_playMenu(0);
 		r = arena_savePlayerSettings();      /* arena_savePlayerSettings */
-		g_arenaLobbyMode = 0;
+		g_arenaCameraMode = 0;
 		return r;
 	case 4:
 		r = sound_playMenu(0);
-		g_arenaLobbyMode = 0;
+		g_arenaCameraMode = 0;
 		return r;
 	case 5:
 		sound_playMenu(0);
@@ -729,7 +730,7 @@ static void take_session(const SessionEntry *rec)
 	g_missionStage = rec->map;
 	memcpy((void *)OBJ(g_mapTitle), rec->name, 32);
 	g_mapRotation = rec->rotation;
-	g_arenaLobbyMode = 0;
+	g_arenaCameraMode = 0;
 	g_quitAsked = 1;
 	g_netRole = 2;
 	g_chosenGameMode = rec->gameMode;
@@ -890,7 +891,7 @@ u32 (lobby_topPageClicks)(void)
    0x4e0ce0 resets the name to the default, 0x4e0cdc closes it. Returns what the original leaves in eax */
 u32 (lobbyPlayer_keys)(void)
 {
-	u32 page = (*(u32 *)&g_arenaLobbyMode);
+	u32 page = (*(u32 *)&g_arenaCameraMode);
 	if (page == 1 || page == 0 || g_dialogOpen)
 		return page;
 	if (g_typingArenaName) {
@@ -907,12 +908,12 @@ u32 (lobbyPlayer_keys)(void)
 	}
 	if (input_justPressed(g_keyCancel2)) {
 		sound_playMenu(0);
-		g_arenaLobbyMode = 0;
+		g_arenaCameraMode = 0;
 	}
 	if (input_justPressed(g_dikO)) {
 		sound_playMenu(0);
 		arena_savePlayerSettings();
-		g_arenaLobbyMode = 0;
+		g_arenaCameraMode = 0;
 	}
 	if (input_justPressed(g_dikD)) {
 		sound_playMenu(0);
@@ -921,7 +922,7 @@ u32 (lobbyPlayer_keys)(void)
 	if (!input_justPressed(g_keyBack))
 		return 0;
 	u32 r = sound_playMenu(0);      /* sound_playMenu */
-	g_arenaLobbyMode = 0;
+	g_arenaCameraMode = 0;
 	return r;
 }
 
@@ -1038,7 +1039,7 @@ u32 (lobby_pageClicks)(void)
 	g_chosenGameMode = (signed char)g_arenaGameType;
 	g_fragLimit = g_arenaFragLimit;
 	g_timeLimit = g_arenaTimeLimit;
-	g_arenaLobbyMode = 0;
+	g_arenaCameraMode = 0;
 	g_arenaLobbyState = 1;
 	g_createQuitDialog = 0;
 	return (*(u32 *)&g_arenaFragLimit);
@@ -1060,7 +1061,7 @@ u32 (arena_connectionOutcome)(void)
 		g_quitAsked = 1;
 		g_netRole = 1;
 		music_shutdown();
-		g_arenaLobbyMode = 0;
+		g_arenaCameraMode = 0;
 		GAME_FN(arena_openSession, 0x452ec0, void, int, int)(0, 0);   /* arena_openSession */
 		dplay_host(me, (const void *)OBJ(g_cfgPlayerName),
 			(int)(signed char)me[0x22] << 8 | (int)(signed char)me[0x20], (signed char)me[0x21], (signed char)me[0x23],
@@ -1094,7 +1095,7 @@ u32 (arena_connectionOutcome)(void)
    keys (the arena left). Returns what the original leaves in eax */
 u32 (lobbyTop_connect)(void)
 {
-	u32 mode = (*(u32 *)&g_arenaLobbyMode);
+	u32 mode = (*(u32 *)&g_arenaCameraMode);
 	if (mode == 1 || mode == 0 || g_dialogOpen)
 		return mode;
 	const char *line = g_chatLine;
@@ -1152,7 +1153,7 @@ u32 (lobbyTop_connect)(void)
 		r = (u32)input_justPressed(GAME_VAR(int, close[k]));
 		if (r) {
 			arena_leaveSession();   /* arena_leaveSession: the arena left */
-			g_arenaLobbyMode = 0;
+			g_arenaCameraMode = 0;
 			r = sound_playMenu(0);
 		}
 	}
@@ -1171,13 +1172,13 @@ u32 (arena_createClick)(void)
 		return (*(u32 *)&g_editingNewArenaName);
 	if (g_editingNewArenaFragLimit || g_editingNewArenaTimeLimit || g_typingArenaPassword)
 		return 0;
-	u32 mode = (*(u32 *)&g_arenaLobbyMode);
+	u32 mode = (*(u32 *)&g_arenaCameraMode);
 	if (mode == 1 || mode == 0 || g_dialogOpen)
 		return mode;
 	if (g_rightClick) {
 		sound_playMenu(0);
 		u32 r = arena_leaveSession();   /* arena_leaveSession: the arena left */
-		g_arenaLobbyMode = 0;
+		g_arenaCameraMode = 0;
 		return r;
 	}
 	if (!g_mouseClick || mode != 2)
@@ -1242,7 +1243,7 @@ u32 (arena_createClick)(void)
 		return r ? r : lobby_hostArena();   /* lobby_hostArena */
 	case 11:
 		arena_leaveSession();
-		g_arenaLobbyMode = 0;
+		g_arenaCameraMode = 0;
 		return sound_playMenu(0);
 	case 15:
 		if (*custom != 1)
@@ -1265,7 +1266,7 @@ void (lobbyJoin_keysChat)(void)
 #define g_listTop g_gameListTop
 #define g_listRow g_lobbyListRow
 #define busy (g_lanSearch || g_lobbySearching || g_lobbyRefreshing)
-	int mode = g_arenaLobbyMode;
+	int mode = g_arenaCameraMode;
 	if (g_arenaFull || mode == 1 || mode == 0 || g_arenaJoinNeedsPassword || g_dialogOpen)
 		return;
 	if (g_arenaConfirming) {
@@ -1321,7 +1322,7 @@ void (lobbyJoin_keysChat)(void)
 		arena_leaveSession();
 		net_disconnect();
 		g_serverAnswerIn = 1;
-		g_arenaLobbyMode = 0;
+		g_arenaCameraMode = 0;
 		(*(u32 *)&g_lobbyBlinkClock) = 0x3f800000;   /* 1 */
 		return;
 	}
@@ -1349,7 +1350,7 @@ void (lobbyJoin_keysChat)(void)
 		g_serverAnswerIn = 1;
 		arena_leaveSession();
 		net_disconnect();
-		g_arenaLobbyMode = 0;
+		g_arenaCameraMode = 0;
 		return;
 	}
 	if (input_justPressed(g_dikI)) {
@@ -1554,7 +1555,7 @@ void (lobby_hostArenaLan)(void)
 	music_shutdown();
 	g_arenaLobbyState = 1;
 	take_arena();
-	g_arenaLobbyMode = 0;
+	g_arenaCameraMode = 0;
 }
 
 /* 0x4057a0: the arena hosted through DirectPlay (a slot opened, kind 0): the music stopped first, a special room's
@@ -1565,7 +1566,7 @@ void (lobby_hostArena)(void)
 	g_quitAsked = 1;
 	g_netRole = 1;
 	music_shutdown();
-	g_arenaLobbyMode = 0;
+	g_arenaCameraMode = 0;
 	arena_openSession(0, NULL);
 	special_map(g_playerName, (u8 *)ADDR(g_arenaMap));
 	host_arena();

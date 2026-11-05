@@ -425,7 +425,7 @@
 #define g_roomJoinPassword (*(int *)g_roomTextAndRows)   /* the typed password (text from here) */
 #define g_roomJoinPassword4 (*(int *)(g_roomTextAndRows + 4))   /* the rows' start (cleared with the text) */
 #define g_rankingRows ((RankRow *)(g_roomTextAndRows + 4))   /* RankRow[10] */
-#define g_roomDialogBox ((int *)IMG(0x9dd1a0))   /* int[4]; the room's server dialog box (room_openDialog58; popup_layout) */
+#define g_roomDialogBox ((int *)IMG(0x9dd1a0))   /* int[4]; the new ID confirmation's box (room_openNewIdConfirm; popup_layout) */
 #define g_roomMechKept ((u8 *)IMG(0x9dd260))   /* u8[11]; the room record's mech parts kept (lobby_states) */
 #define g_roomColoursKept ((u8 *)IMG(0x9dd26b))   /* u8[144]; the room record's colours kept */
 #define g_launchArgs ((u32 *)IMG(0x9dd890))   /* u32[14]; the launch line's words (strtok of up to 0x400 bytes: held) */
