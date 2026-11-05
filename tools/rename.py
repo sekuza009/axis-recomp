@@ -1,7 +1,7 @@
 r"""rename.py mapping.csv [--dry]: rename functions everywhere they are spelled out.
 
 Each line of the mapping is "old,new" ('#' starts a comment). Whole-word replacement in src/**/*.c, src/**/*.h,
-recomp.c (its declarations, tests and hook table) and ../decomp/symbols.csv (so a Ghidra re-export matches), byte for
+src/scene.fields (its comments), recomp.c (its declarations, tests and hook table) and ../decomp/symbols.csv (so a Ghidra re-export matches), byte for
 byte, so CRLF and LF files keep their line endings. A new name that already appears anywhere, an old name that does
 not, or a name used twice in the mapping stops the whole run before anything is written. A line "old,new,merge" gives
 old a name the mapping's other line for new also gives, or one already in use (a game.h call macro and the definition it calls, merged)."""
@@ -14,7 +14,7 @@ for line in open(sys.argv[1], encoding='utf-8'):
     if line:
         old, new, *flag = [x.strip() for x in line.split(',')]
         pairs.append((old, new, flag == ['merge']))
-files = sorted(glob.glob('src/**/*.c', recursive=True) + glob.glob('src/**/*.h', recursive=True)) + ['recomp.c', 'axisnet_recomp.c']   # (the patch layer calls some by name)
+files = sorted(glob.glob('src/**/*.c', recursive=True) + glob.glob('src/**/*.h', recursive=True)) + ['src/scene.fields', 'recomp.c', 'axisnet_recomp.c']   # (the patch layer calls some by name; scene.fields' comments name functions)
 if os.path.exists('../decomp/symbols.csv'):
     files.append('../decomp/symbols.csv')
 data = {f: open(f, 'rb').read() for f in files}
