@@ -328,43 +328,40 @@ void (skirmish_clickRow)(int row)
 	}
 }
 
-/* ---- the skirmish settings' undo stack: values at 0x9eeadc (depth 0x9f1060), the current one 0x9eeba4; the
-   pending step 0x9ef1f4 and its flag 0x4d7348; each change clears the 400-dword work buffer at 0x9f1064 ---- */
-#define undo_stack (g_undoStack)
-#define undo_value g_briefingStart
-#define undo_step g_briefingShown
-#define undo_pending g_briefingSkipped
+/* ---- the briefing's pages: each page's start offset in the text (g_briefingPageStarts, the page g_briefingPage), the
+   one shown g_briefingStart; the characters shown so far g_briefingShown, and g_briefingSkipped set once the page is
+   full (or the typing skipped); a page turned clears the shown text (g_briefingText, 1600 bytes) ---- */
 
-/* 0x443d80: the pending step pushed (value = the top - 1 + step) */
-void (undo_push)(void)
+/* 0x443d80: the next page (once this one is full): it starts where the shown text ended */
+void (briefing_nextPage)(void)
 {
-	if (undo_pending) {
-		int d = g_undoDepth;
-		g_undoDepth = d + 1;
-		undo_value = undo_stack[d] - 1 + undo_step;
-		undo_step = 0;
-		undo_stack[d + 1] = undo_value;
+	if (g_briefingSkipped) {
+		int d = g_briefingPage;
+		g_briefingPage = d + 1;
+		g_briefingStart = g_briefingPageStarts[d] - 1 + g_briefingShown;
+		g_briefingShown = 0;
+		g_briefingPageStarts[d + 1] = g_briefingStart;
 		memset((void *)OBJ(g_briefingText), 0, 1600);
-		undo_pending = 0;
+		g_briefingSkipped = 0;
 	}
 }
 
-/* 0x443de0: one step undone */
-void (undo_pop)(void)
+/* 0x443de0: the page before */
+void (briefing_prevPage)(void)
 {
-	if (g_undoDepth > 0) {
-		g_undoDepth--;
-		undo_value = undo_stack[g_undoDepth];
+	if (g_briefingPage > 0) {
+		g_briefingPage--;
+		g_briefingStart = g_briefingPageStarts[g_briefingPage];
 		memset((void *)OBJ(g_briefingText), 0, 1600);
-		undo_step = 0;
-		undo_pending = 0;
+		g_briefingShown = 0;
+		g_briefingSkipped = 0;
 		g_briefingDone = 0;
 	}
 }
 
-/* 0x443ea0: a click on the skirmish settings' arrows: 1 marks a change (0x9ef1f8 = 10, as a right click does), 2 adds
-   the pending step, 3 undoes one */
-void (skirmish_settingsArrowClick)(void)
+/* 0x443ea0: the skirmish briefing's clicks (briefing_hitTest): 1 back to the mission list (page 10, as a right click
+   does), 2 the next page, 3 the page before */
+void (skirmish_briefingClicks)(void)
 {
 	if (g_dialogOpen)
 		return;
@@ -375,19 +372,19 @@ void (skirmish_settingsArrowClick)(void)
 		case 1:
 			break;
 		case 2:
-			undo_push();
+			briefing_nextPage();
 			return;
 		case 3:
-			undo_pop();
+			briefing_prevPage();
 			return;
 		default:
 			return;
 		}
 	}
-	g_settingsPage = 10;
+	g_skirmishPage = 10;
 }
 
-/* ---- leaving the skirmish settings (0x443c80) or the mission settings (0x447960): the screen's state cleared, the
+/* ---- leaving the skirmish screen (0x443c80) or the mission settings (0x447960): the screen's state cleared, the
    view squeezed (aspect 0.1) to open out again, the camera to (?, 0, 1600) looking ahead, a sound, the menu camera
    put back. Both return what that leaves in eax ---- */
 #define put_camera_back() GAME_FN(menu_restoreCamera, 0x447910, u32, void)()   /* menu_restoreCamera */
@@ -402,7 +399,7 @@ static u32 leave_settings(u32 state)
 	sound_playMenu(4);
 	return put_camera_back();
 }
-u32 (skirmishSettings_leave)(void) { return leave_settings(ADDR(g_settingsState)); }
+u32 (skirmish_leave)(void) { return leave_settings(ADDR(g_skirmishState)); }
 u32 (missionSettings_leave)(void) { return leave_settings(ADDR(g_missionPage)); }
 
 /* 0x4370e0: the room's two keys: the first asks to leave (0x9dd6c4 = 1), the second to go back (2), each with the
@@ -423,23 +420,23 @@ u32 (room_leaveKeys)(void)
 	return r;
 }
 
-/* 0x445be0: the skirmish settings screen drawn: the background (when 0x9eeba8), the map list unless closing (state
+/* 0x445be0: the skirmish screen drawn: the background (when 0x9eeba8), the map list unless closing (state
    2), the camera; then while open (state past 1) the dialog's frame if one is open, else the screen A (0x9ef1f8 10)
    or B (20). Returns what the original leaves in eax */
 u32 (menuState900_skirmishSetup)(void)
 {
 	if (g_skirmishDrawBackground)
 		menu_drawBackground();
-	if (g_settingsState != 2)
+	if (g_skirmishState != 2)
 		skirmish_drawTunnel();   /* skirmish_drawTunnel */
 	skirmish_camera();       /* skirmish_camera: the camera */
-	int state = g_settingsState;
+	int state = g_skirmishState;
 	if (state == 1 || state == 0)
 		return state;
 	if (g_dialogOpen)
 		return menu_drawFrame(g_briefingX, g_briefingY,
 		                                                     g_briefingRight, g_briefingBottom);   /* menu_drawFrame */
-	int screen = g_settingsPage;
+	int screen = g_skirmishPage;
 	if (screen == 10)
 		return skirmish_frameList();   /* missionList_draw */
 	if (screen == 20)
@@ -447,21 +444,21 @@ u32 (menuState900_skirmishSetup)(void)
 	return screen;
 }
 
-/* 0x444070: the skirmish settings' keys: two keys (and a third) switch to screen A (0x9ef1f8 = 10), two step the
-   settings forward and back. Returns what the original leaves in eax */
-u32 (skirmish_settingsKeys)(void)
+/* 0x444070: the skirmish briefing's keys: A does nothing more, C or Esc back to the mission list (page 10), N / P the
+   next page / the page before. Returns what the original leaves in eax */
+u32 (skirmish_briefingKeys)(void)
 {
 	if (input_justPressed(g_dikA) == 1)
 		return 1;
 	if (input_justPressed(g_dikC) == 1 || input_justPressed(g_dikEscape_2) == 1) {
-		g_settingsPage = 10;
+		g_skirmishPage = 10;
 		return 1;
 	}
 	if (input_justPressed(g_dikN) == 1)
-		return undo_push();   /* undo_push: the pending step pushed */
+		return briefing_nextPage();
 	u32 r = input_justPressed(g_dikP);
 	if (r == 1)
-		return undo_pop();   /* undo_pop: one step undone */
+		return briefing_prevPage();
 	return r;
 }
 

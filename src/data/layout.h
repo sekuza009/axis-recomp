@@ -2157,7 +2157,7 @@ struct __attribute__((packed)) GameData {
 	u8 _gap_9dd6f4[0x19c];
 	u32 g_launchArgs_[14];
 	u8 _gap_9dd8c8[0x11214];
-	int g_undoStack_[50];
+	int g_briefingPageStarts_[50];
 	u8 _gap_9eeba4[0x2f20];
 	char g_saveFileNames_[8192];
 	u8 _gap_9f3ac4[0x5524];
@@ -2215,7 +2215,7 @@ _Static_assert(offsetof(struct GameData, g_ladderEmail_) == 0x5305a6, "g_ladderE
 _Static_assert(offsetof(struct GameData, g_accountOldPassword_) == 0x5306d8, "g_accountOldPassword");
 _Static_assert(offsetof(struct GameData, g_newIdFormRight_) == 0x5306f0, "g_newIdFormRight");
 _Static_assert(offsetof(struct GameData, g_launchArgs_) == 0x530890, "g_launchArgs");
-_Static_assert(offsetof(struct GameData, g_undoStack_) == 0x541adc, "g_undoStack");
+_Static_assert(offsetof(struct GameData, g_briefingPageStarts_) == 0x541adc, "g_briefingPageStarts");
 _Static_assert(offsetof(struct GameData, g_saveFileNames_) == 0x544ac4, "g_saveFileNames");
 _Static_assert(offsetof(struct GameData, g_profileName_) == 0x54bfe8, "g_profileName");
 _Static_assert(offsetof(struct GameData, g_profileRecords_) == 0x54c040, "g_profileRecords");

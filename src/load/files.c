@@ -472,7 +472,7 @@ u32 (mission_loadAxisMis)(void)
 
 /* 0x443af0: mission k's block read from axis.mis (in the data folder): after a 0x1a-byte header, 0xf8 bytes for
    each of the 0x9ef2c0 entries and the blocks before it (their blockSize) into a new buffer
-   0x9ef1ec (the old one freed); its size into 0x9ef200, the settings page's state cleared and the page set to
+   0x9ef1ec (the old one freed); its size into 0x9ef200, the skirmish screen's state cleared and the page set to
    20 (the mission settings). Without the file, message 0xb and its eax; otherwise 0 */
 u32 (mission_loadBriefing)(int k)
 {
@@ -490,7 +490,7 @@ u32 (mission_loadBriefing)(int k)
 	(*(void **)&g_briefingSource) = block;
 	crt_fread(block, mission[k].blockSize, 1, f);
 	fclose(f);
-	memset((void *)OBJ(g_undoStack), 0, 0xc8);
+	memset((void *)OBJ(g_briefingPageStarts), 0, 0xc8);
 	g_unusedBriefingWord = 0;
 	memset((void *)OBJ(g_briefingText), 0, 0x640);
 	memset((void *)OBJ(g_missionClearBuffer), 0, 0x640);
@@ -498,8 +498,8 @@ u32 (mission_loadBriefing)(int k)
 	g_briefingDone = 0;
 	g_briefingStart = 0;
 	g_briefingSkipped = 0;
-	g_undoDepth = 0;
-	g_settingsPage = 20;
+	g_briefingPage = 0;
+	g_skirmishPage = 20;
 	g_briefingEnd = mission[k].blockSize;
 	(*(int *)&g_briefingClock) = 0;
 	return 0;

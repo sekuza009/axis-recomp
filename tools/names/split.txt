@@ -217,7 +217,7 @@ g_timerRepeatCount
 g_tunnelRings
 g_typedLength
 g_typingLoginId
-g_undoDepth
+g_briefingPage
 g_unusedArmcMoveWord
 g_unusedArmcWord1
 g_unusedArmcWord3
@@ -324,8 +324,8 @@ g_roomSearching
 g_roomState
 g_screenCentreX
 g_serverSearching
-g_settingsPage
-g_settingsState
+g_skirmishPage
+g_skirmishState
 g_setupPanelMoving
 g_skirmishDrawBackground
 g_ladderLevel
@@ -735,7 +735,7 @@ g_rankingRects
 g_roomSettingsRects
 g_roomLoginRects
 g_replaySelectRects
-g_skirmishSettingsRects
+g_skirmishListRects
 g_briefingRects
 g_missionselRects
 g_deleteDialogRects
@@ -1091,7 +1091,7 @@ g_mapAbouts
 g_mapNames
 g_joinedSessionRec
 # network buffers, profile bars, chat history, key / mouse tables (objects37.csv); held in place: g_lobbyHost (an
-# unresolved name runs on), g_undoStack (its depth is not bounded), g_ladderEmail (up to 39 bytes into 30)
+# unresolved name runs on), g_briefingPageStarts (its depth is not bounded), g_ladderEmail (up to 39 bytes into 30)
 g_serverList
 g_lobbyReplyCode
 g_gameServerReplyCode

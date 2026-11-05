@@ -236,7 +236,7 @@
 #define g_roomSettingsRects ((int *)IMG(0x9dd6f8))   /* int[56]; roomSettings_hitTest's 14 hit rectangles (hit_tests.c) */
 #define g_roomLoginRects ((int *)IMG(0x9dd7e0))   /* int[20]; roomLogin_hitTest's 5 hit rectangles (hit_tests.c) */
 #define g_replaySelectRects ((int *)IMG(0x9dd950))   /* int[72]; replaySelect_hitTest's 18 hit rectangles (hit_tests.c) */
-#define g_skirmishSettingsRects ((int *)IMG(0x9ef220))   /* int[40]; skirmishSettings_hitTest's 10 hit rectangles (hit_tests.c) */
+#define g_skirmishListRects ((int *)IMG(0x9ef220))   /* int[40]; skirmishList_hitTest's 10 hit rectangles (hit_tests.c) */
 #define g_briefingRects ((int *)IMG(0x9f16c0))   /* int[16]; briefing_hitTest's 4 hit rectangles (hit_tests.c) */
 #define g_missionselRects ((int *)IMG(0x9f6330))   /* int[16]; missionsel_hitTest's 4 hit rectangles (hit_tests.c) */
 #define g_deleteDialogRects ((int *)IMG(0x9f6808))   /* int[8]; deleteDialog_hitTest's 2 hit rectangles (hit_tests.c) */
@@ -252,8 +252,8 @@
 #define g_roomMessageRect ((int *)IMG(0x9dced8))   /* int[4]; the game room's message box window: left */
 #define g_setupColourLit ((u32 *)IMG(0x4de048))   /* u32[4]; setup's text colour */
 #define g_setupColourDim ((u32 *)IMG(0x4ddae0))   /* u32[4]; setup's text colour */
-#define g_skirmishColourLit ((u32 *)IMG(0x9ef208))   /* u32[4]; the skirmish settings' panel colour */
-#define g_skirmishColourDim ((u32 *)IMG(0x9eeac8))   /* u32[4]; the skirmish settings' colour */
+#define g_skirmishColourLit ((u32 *)IMG(0x9ef208))   /* u32[4]; the skirmish screen's panel colour */
+#define g_skirmishColourDim ((u32 *)IMG(0x9eeac8))   /* u32[4]; the skirmish screen's colour */
 #define g_textColours ((Colour *)IMG(0xa1f100))   /* Colour[16]; the 16 message colours (RGBA floats; colour_initTextColours fills them) */
 #define g_keyState ((u8 *)IMG(0x4d1e9c))   /* u8[256]; the keyboard's 256 key bytes (0x80: held; DirectInput's GetDeviceState) */
 #define g_dplaySlots ((int *)IMG(0xa0d7a4))   /* int[4]; four DirectPlay connection slots: 1 while open */
@@ -390,7 +390,7 @@
 #define g_statBarTargets ((float *)IMG(0x9f8ec0))   /* float[9]; the bars' targets (only cleared) */
 #define g_profileDialogBox ((int *)IMG(0x9f9010))   /* int[4]; the profile dialog box (left; top; right; bottom) */
 #define g_chatHistory ((char *)IMG(0x67ef38))   /* char[3072]; the chat line's three-line history of 0x400 bytes; newest first (frontEnd_startUp clears 0x300 dwords) */
-#define g_undoStack ((int *)IMG(0x9eeadc))   /* int[50]; the skirmish settings' undo values (0xc8 bytes cleared; g_briefingStart follows) */
+#define g_briefingPageStarts ((int *)IMG(0x9eeadc))   /* int[50]; the briefing's page start offsets (0xc8 bytes cleared; g_briefingStart follows) */
 #define g_ladderEmail ((char *)IMG(0x9dd5a6))   /* char[30]; the Ladder account's e-mail (the registry's copy) (30 bytes cleared; up to 39 copied in) */
 #define g_keyTable1 ((int *)IMG(0x4d1688))   /* int[256]; a key table only cleared at start-up */
 #define g_mouseState ((int *)IMG(0x4d1a88))   /* int[4]; DIMOUSESTATE: x; y; wheel movement; four button bytes */

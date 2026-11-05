@@ -111,11 +111,11 @@ void (roomLogin_layout)(void)
 	rect_spec(OBJ(g_roomLoginRects), (OBJ(g_roomLoginRects) + 0x20), 0x30, a); rect_spec((OBJ(g_roomLoginRects) + 0x20), (OBJ(g_roomLoginRects) + 0x20) + 3 * 16, 0xa0, b);
 }
 
-void (skirmishSettings_layout)(void)
+void (skirmishList_layout)(void)
 {
 	static const RArg a[4] = { RA(ADDR(g_briefingX), 0x10, 0), RA(ADDR(g_briefingY), 0x44, 1), RA(ADDR(g_briefingX), 0x25d, 0), RA(ADDR(g_briefingY), 0x5c, 1) };
 	static const RArg b[4] = { RA(ADDR(g_briefingRight), -0x12c, 1), RA(ADDR(g_briefingBottom), -0x40, 0), RA(ADDR(g_briefingRight), -0xb4, 1), RA(ADDR(g_briefingBottom), -0x20, 0) };
-	rect_spec(OBJ(g_skirmishSettingsRects), (OBJ(g_skirmishSettingsRects) + 0x80), 0x1a, a); rect_spec((OBJ(g_skirmishSettingsRects) + 0x80), (OBJ(g_skirmishSettingsRects) + 0x80) + 2 * 16, 0x8c, b);
+	rect_spec(OBJ(g_skirmishListRects), (OBJ(g_skirmishListRects) + 0x80), 0x1a, a); rect_spec((OBJ(g_skirmishListRects) + 0x80), (OBJ(g_skirmishListRects) + 0x80) + 2 * 16, 0x8c, b);
 }
 
 void (account_layout)(void)

@@ -1,5 +1,5 @@
 /* menu_states.c: small pieces of the front end's screens: the main menu's frame, the 3D background behind the
-   menus, the skirmish and mission settings pages' dispatch, and the mission select keys. */
+   menus, the skirmish and mission screens' page dispatch, and the mission select keys. */
 #include "../game.h"
 #include "key_repeat.h"
 
@@ -226,26 +226,27 @@ void (menuState300_frame)(void)
 	}
 }
 
-/* 0x443ef0: the skirmish settings page's clicks (none while a dialog is up): page 10 the settings (skirmish_clicks), 20 their arrows */
-void (skirmishSettings_clicks)(void)
+/* 0x443ef0: the skirmish screen's clicks (none while a dialog is up): page 10 the mission list (skirmish_listClicks), 20 the
+   briefing (skirmish_briefingClicks) */
+void (skirmish_pageClicks)(void)
 {
 	if (g_dialogOpen != 0)
 		return;
-	if (g_settingsPage == 10)
-		skirmish_clicks();
-	else if (g_settingsPage == 20)
-		skirmish_settingsArrowClick();
+	if (g_skirmishPage == 10)
+		skirmish_listClicks();
+	else if (g_skirmishPage == 20)
+		skirmish_briefingClicks();
 }
 
-/* 0x4440f0: the settings page's keys */
-void (settingsPage_keys)(void)
+/* 0x4440f0: the skirmish screen's keys, by page (10 the list, 20 the briefing) */
+void (skirmish_pageKeys)(void)
 {
-	if (g_settingsState == 1 || g_settingsState == 0 || g_dialogOpen != 0)
+	if (g_skirmishState == 1 || g_skirmishState == 0 || g_dialogOpen != 0)
 		return;
-	if (g_settingsPage == 10)
-		skirmish_processKeys();
-	else if (g_settingsPage == 20)
-		skirmish_settingsKeys();
+	if (g_skirmishPage == 10)
+		skirmish_listKeys();
+	else if (g_skirmishPage == 20)
+		skirmish_briefingKeys();
 }
 
 /* 0x4479b0: mission chosen (sound 2) */
@@ -318,7 +319,7 @@ void (menu_returnToMain)(void)
 {
 	while (g_menuTunnel != NULL)
 		armc_freeRing(&g_menuTunnel);
-	game_returnToScreen400();
+	game_returnToArenaLobby();
 	g_screen = 300;
 }
 
@@ -483,8 +484,9 @@ void (menuState600_setup)(void)
 	}
 }
 
-/* 0x44aee0: the room's text (0x9dd570) copied to 0x4de700, and profile_checkAndSendRecord when it is not empty */
-void (room_keepText)(void)
+/* 0x44aee0: the Ladder ID (g_ladderId) put into the Ladder record (g_ladderName), and the record checked and sent
+   (ladder_checkAndSendRecord) when it is not empty */
+void (ladder_sendRecord)(void)
 {
 	const char *from = g_ladderId;
 	char *to = g_ladderName;
@@ -493,7 +495,7 @@ void (room_keepText)(void)
 		to[i] = from[i];
 	while (from[i++] != '\0');
 	if (to[0] != '\0')
-		profile_checkAndSendRecord();
+		ladder_checkAndSendRecord();
 }
 
 /* a panel sliding in: while flag is set, eased moves a tenth of the way to the constant at 0x4a9448 per time unit
@@ -578,8 +580,8 @@ static u32 reset_menus(u32 farZ, u32 nearZ, int blocked, int entering, int clear
 #define FAR_BACK 0xc3e10000u    /* -450 */
 #define NEAR_BACK 0xc4098000u   /* -550 */
 
-/* 0x41ec50: to screen 500 */
-u32 (game_returnToScreen500)(void)
+/* 0x41ec50: to the mission select (screen 500) */
+u32 (game_returnToMissions)(void)
 {
 	leave_game(0, 1);
 	g_menuState = 500;
@@ -602,8 +604,8 @@ u32 (game_returnToMainMenu)(void)
 	return typing == 1 ? r : 1;
 }
 
-/* 0x41e9d0: to screen 400, the previous screen 300 */
-u32 (game_returnToScreen400)(void)
+/* 0x41e9d0: to the arena lobby (screen 400), the previous screen the main menu (300) */
+u32 (game_returnToArenaLobby)(void)
 {
 	leave_game(0, 1);
 	g_nextScreen = 400;
@@ -715,7 +717,7 @@ u32 (game_postMatch)(void)
 	switch (g_matchMode) {
 	case 1:
 		send_result();
-		game_returnToScreen400();
+		game_returnToArenaLobby();
 		break;
 	case 2:
 		if (g_isHost) {
@@ -726,7 +728,7 @@ u32 (game_postMatch)(void)
 			net_send(0x16, 0x65);   /* net_send */
 		}
 		if (g_gameServerSocket) {
-			room_keepText();   /* the room's text kept */
+			ladder_sendRecord();
 			game_returnToGameRoom();   /* game_returnToGameRoom: the room */
 		} else
 			game_returnToMainMenu();
@@ -743,7 +745,7 @@ u32 (game_postMatch)(void)
 		}
 		reg_writeEndMode(mission < 15 ? 0 : 1);
 		profile_saveProgress();
-		game_returnToScreen500();         /* game_returnToScreen500 */
+		game_returnToMissions();         /* game_returnToMissions */
 		break;
 	default:
 		game_returnToMainMenu();

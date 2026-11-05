@@ -4045,9 +4045,9 @@ extern u8 g_missionClearBuffer_v[1600];
 extern u8 g_briefingSource_v[4];
 #endif
 #ifdef AXIS_FENCE
-#define g_settingsState_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xb5e000 : g_fence + 0xb5dffc))
+#define g_skirmishState_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xb5e000 : g_fence + 0xb5dffc))
 #else
-extern u8 g_settingsState_v[4];
+extern u8 g_skirmishState_v[4];
 #endif
 #ifdef AXIS_FENCE
 #define g_briefingShown_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xb60000 : g_fence + 0xb5fffc))
@@ -4055,9 +4055,9 @@ extern u8 g_settingsState_v[4];
 extern u8 g_briefingShown_v[4];
 #endif
 #ifdef AXIS_FENCE
-#define g_settingsPage_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xb62000 : g_fence + 0xb61ffc))
+#define g_skirmishPage_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xb62000 : g_fence + 0xb61ffc))
 #else
-extern u8 g_settingsPage_v[4];
+extern u8 g_skirmishPage_v[4];
 #endif
 #ifdef AXIS_FENCE
 #define g_briefingEnd_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xb64000 : g_fence + 0xb63ffc))
@@ -4075,9 +4075,9 @@ extern u32 g_skirmishColourLit_v[4];
 extern u8 g_unusedBriefingWord_v[4];
 #endif
 #ifdef AXIS_FENCE
-#define g_skirmishSettingsRects_v ((int *)(AXIS_FENCE == 2 ? g_fence + 0xb6a000 : g_fence + 0xb69f60))
+#define g_skirmishListRects_v ((int *)(AXIS_FENCE == 2 ? g_fence + 0xb6a000 : g_fence + 0xb69f60))
 #else
-extern int g_skirmishSettingsRects_v[40];
+extern int g_skirmishListRects_v[40];
 #endif
 #ifdef AXIS_FENCE
 #define g_missionHeader_v ((u32 *)(AXIS_FENCE == 2 ? g_fence + 0xb6c000 : g_fence + 0xb6bff0))
@@ -4100,9 +4100,9 @@ extern u8 g_skirmishRow_v[4];
 extern u8 g_briefingDone_v[4];
 #endif
 #ifdef AXIS_FENCE
-#define g_undoDepth_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xb75000 : g_fence + 0xb74ffc))
+#define g_briefingPage_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xb75000 : g_fence + 0xb74ffc))
 #else
-extern u8 g_undoDepth_v[4];
+extern u8 g_briefingPage_v[4];
 #endif
 #ifdef AXIS_FENCE
 #define g_briefingText_v ((char *)(AXIS_FENCE == 2 ? g_fence + 0xb77000 : g_fence + 0xb769c0))

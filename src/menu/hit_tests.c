@@ -37,7 +37,7 @@ int (gameListStop_hitTest)(int x, int y) { return hit(x, y, g_gameListStopRects,
 int (roomSettings_hitTest)(int x, int y) { return hit(x, y, g_roomSettingsRects, 14); }   /* 0x432380 */
 int (ranking_hitTest)(int x, int y) { return hit(x, y, g_rankingRects, 9); }   /* 0x4323c0 */
 int (replaySelect_hitTest)(int x, int y) { return hit(x, y, g_replaySelectRects, 18); }   /* 0x440b70 */
-int (skirmishSettings_hitTest)(int x, int y) { return hit(x, y, g_skirmishSettingsRects, 10); }   /* 0x4438d0 */
+int (skirmishList_hitTest)(int x, int y) { return hit(x, y, g_skirmishListRects, 10); }   /* 0x4438d0 */
 int (briefing_hitTest)(int x, int y) { return hit(x, y, g_briefingRects, 4); }   /* 0x443910 */
 int (missionsel_hitTest)(int x, int y) { return hit(x, y, g_missionselRects, 4); }   /* 0x447710 */
 int (profilePage_hitTest)(int x, int y) { return hit(x, y, g_profilePageRects, 9); }   /* 0x44b260 */

@@ -336,6 +336,10 @@ extern struct GameData g_data;
 #define g_briefingDone (*(int *)g_briefingDone_v)
 #undef g_briefingEnd
 #define g_briefingEnd (*(int *)g_briefingEnd_v)
+#undef g_briefingPage
+#define g_briefingPage (*(int *)g_briefingPage_v)
+#undef g_briefingPageStarts
+#define g_briefingPageStarts ((int *)g_data.g_briefingPageStarts_)
 #undef g_briefingRects
 #define g_briefingRects ((int *)g_briefingRects_v)
 #undef g_briefingRight
@@ -2474,10 +2478,6 @@ extern struct GameData g_data;
 #define g_sessionList ((SessionEntry *)g_sessionList_v)
 #undef g_sessionTable
 #define g_sessionTable ((SessionSlot *)g_sessionTable_v)
-#undef g_settingsPage
-#define g_settingsPage (*(int *)g_settingsPage_v)
-#undef g_settingsState
-#define g_settingsState (*(int *)g_settingsState_v)
 #undef g_setupColourDim
 #define g_setupColourDim ((u32 *)g_setupColourDim_v)
 #undef g_setupColourLit
@@ -2554,10 +2554,14 @@ extern struct GameData g_data;
 #define g_skirmishInfo ((u8 *)g_skirmishInfo_v)
 #undef g_skirmishInfoCount
 #define g_skirmishInfoCount (*(int *)g_skirmishInfoCount_v)
+#undef g_skirmishListRects
+#define g_skirmishListRects ((int *)g_skirmishListRects_v)
+#undef g_skirmishPage
+#define g_skirmishPage (*(int *)g_skirmishPage_v)
 #undef g_skirmishRow
 #define g_skirmishRow (*(int *)g_skirmishRow_v)
-#undef g_skirmishSettingsRects
-#define g_skirmishSettingsRects ((int *)g_skirmishSettingsRects_v)
+#undef g_skirmishState
+#define g_skirmishState (*(int *)g_skirmishState_v)
 #undef g_slotCams
 #define g_slotCams ((float *)g_slotCams_v)
 #undef g_slotTakenFlag
@@ -2722,10 +2726,6 @@ extern struct GameData g_data;
 #define g_typingLoginPassword (*(int *)g_typingLoginPassword_v)
 #undef g_typingRoomJoinPassword
 #define g_typingRoomJoinPassword (*(int *)g_typingRoomJoinPassword_v)
-#undef g_undoDepth
-#define g_undoDepth (*(int *)g_undoDepth_v)
-#undef g_undoStack
-#define g_undoStack ((int *)g_data.g_undoStack_)
 #undef g_unlit
 #define g_unlit (g_data.g_unlit_)
 #undef g_unlockTablesNet

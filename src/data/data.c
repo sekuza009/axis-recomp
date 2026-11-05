@@ -821,18 +821,18 @@ u8 g_briefingStart_v[4] __attribute__((aligned(16)));   /* 0x9eeba4 */
 u8 g_skirmishDrawBackground_v[4] __attribute__((aligned(16)));   /* 0x9eeba8 */
 u8 g_missionClearBuffer_v[1600] __attribute__((aligned(16)));   /* 0x9eebac */
 u8 g_briefingSource_v[4] __attribute__((aligned(16)));   /* 0x9ef1ec */
-u8 g_settingsState_v[4] __attribute__((aligned(16)));   /* 0x9ef1f0 */
+u8 g_skirmishState_v[4] __attribute__((aligned(16)));   /* 0x9ef1f0 */
 u8 g_briefingShown_v[4] __attribute__((aligned(16)));   /* 0x9ef1f4 */
-u8 g_settingsPage_v[4] __attribute__((aligned(16)));   /* 0x9ef1f8 */
+u8 g_skirmishPage_v[4] __attribute__((aligned(16)));   /* 0x9ef1f8 */
 u8 g_briefingEnd_v[4] __attribute__((aligned(16)));   /* 0x9ef200 */
 u32 g_skirmishColourLit_v[4] __attribute__((aligned(16)));   /* 0x9ef208 */
 u8 g_unusedBriefingWord_v[4] __attribute__((aligned(16)));   /* 0x9ef218 */
-int g_skirmishSettingsRects_v[40] __attribute__((aligned(16)));   /* 0x9ef220 */
+int g_skirmishListRects_v[40] __attribute__((aligned(16)));   /* 0x9ef220 */
 u32 g_missionHeader_v[4] __attribute__((aligned(16)));   /* 0x9ef2c0 */
 u8 g_missions_v[7560] __attribute__((aligned(16)));   /* 0x9ef2d0 */
 u8 g_skirmishRow_v[4] __attribute__((aligned(16)));   /* 0x9f1058 */
 u8 g_briefingDone_v[4] __attribute__((aligned(16)));   /* 0x9f105c */
-u8 g_undoDepth_v[4] __attribute__((aligned(16)));   /* 0x9f1060 */
+u8 g_briefingPage_v[4] __attribute__((aligned(16)));   /* 0x9f1060 */
 char g_briefingText_v[1600] __attribute__((aligned(16)));   /* 0x9f1064 */
 u8 g_missionPicked_v[4] __attribute__((aligned(16)));   /* 0x9f16a4 */
 u8 g_briefingX_v[4] __attribute__((aligned(16)));   /* 0x9f16a8 */
@@ -1991,18 +1991,18 @@ const DataPiece g_splitObjects[] = {
 	{ 0x9eeba8, g_skirmishDrawBackground_v, 4 },
 	{ 0x9eebac, g_missionClearBuffer_v, 1600 },
 	{ 0x9ef1ec, g_briefingSource_v, 4 },
-	{ 0x9ef1f0, g_settingsState_v, 4 },
+	{ 0x9ef1f0, g_skirmishState_v, 4 },
 	{ 0x9ef1f4, g_briefingShown_v, 4 },
-	{ 0x9ef1f8, g_settingsPage_v, 4 },
+	{ 0x9ef1f8, g_skirmishPage_v, 4 },
 	{ 0x9ef200, g_briefingEnd_v, 4 },
 	{ 0x9ef208, g_skirmishColourLit_v, 16 },
 	{ 0x9ef218, g_unusedBriefingWord_v, 4 },
-	{ 0x9ef220, g_skirmishSettingsRects_v, 160 },
+	{ 0x9ef220, g_skirmishListRects_v, 160 },
 	{ 0x9ef2c0, g_missionHeader_v, 16 },
 	{ 0x9ef2d0, g_missions_v, 7560 },
 	{ 0x9f1058, g_skirmishRow_v, 4 },
 	{ 0x9f105c, g_briefingDone_v, 4 },
-	{ 0x9f1060, g_undoDepth_v, 4 },
+	{ 0x9f1060, g_briefingPage_v, 4 },
 	{ 0x9f1064, g_briefingText_v, 1600 },
 	{ 0x9f16a4, g_missionPicked_v, 4 },
 	{ 0x9f16a8, g_briefingX_v, 4 },

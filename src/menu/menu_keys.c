@@ -25,7 +25,7 @@ void (menu_processKeys)(void)
 	case 600: setup_processTabKeys(); break;
 	case 700: armc_processInput(); break;        /* armour */
 	case 800: room_mouse(); break;              /* game room */
-	case 900: settingsPage_keys(); break;              /* skirmish */
+	case 900: skirmish_pageKeys(); break;              /* skirmish */
 	case 9999: freeCam_keys(); break;
 	}
 }

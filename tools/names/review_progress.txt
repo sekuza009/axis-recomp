@@ -68,7 +68,7 @@
 [x] src/menu/menu_quads.c 119
 [x] src/menu/menu_records.c 704
 [x] src/menu/menu_screens.c 43
-[ ] src/menu/menu_states.c 759
+[x] src/menu/menu_states.c 759
 [x] src/menu/menu_title.c 93
 [x] src/menu/menu_tunnel.c 482
 [x] src/menu/mission_screens.c 177

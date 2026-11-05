@@ -8,14 +8,14 @@ static void list_down(void) { skirmish_cursorDown(); }
 
 /* 0x443f20: the skirmish list's keys: 0x4e0cd4 or fire reads the chosen mission's block (mission_loadBriefing), back
    or cancel leaves, up / down move the cursor with a key repeat (the original leaves eax to callers that ignore it) */
-void (skirmish_processKeys)(void)
+void (skirmish_listKeys)(void)
 {
 	if (input_justPressed(g_dikA) == 1 || input_justPressed(g_keyClick) == 1) {
 		mission_loadBriefing(g_missionPicked);
 		return;
 	}
 	if (input_justPressed(g_keyBack) == 1 || input_justPressed(g_keyCancel2) == 1) {
-		skirmishSettings_leave();
+		skirmish_leave();
 		return;
 	}
 	if (!key_repeat(g_keyUp, &g_repeatUp, list_up))
@@ -99,11 +99,11 @@ static const int column_x0[4] = { 0x10, 0x159, 0x1b3, 0x20d }, column_x1[4] = { 
 
 /* 0x444f40: the mission list: the window and its title 0x75dda4, a cyan frame and rule, the column heads (0x75de24,
    0x80 apart) on blue bars, up to 8 rows from g_missionTop (the picked one bright), the picked one's description
-   (wrapped at the window's right less 0x38) and two buttons (MSG(517, "RESERVED"); 8 / 9 under the pointer by skirmishSettings_hitTest,
+   (wrapped at the window's right less 0x38) and two buttons (MSG(517, "RESERVED"); 8 / 9 under the pointer by skirmishList_hitTest,
    lit). The original leaves eax to callers that ignore it */
 void (missionList_draw)(void)
 {
-	int hovered = skirmishSettings_hitTest(g_mouseX, g_mouseY);   /* skirmishSettings_hitTest */
+	int hovered = skirmishList_hitTest(g_mouseX, g_mouseY);   /* skirmishList_hitTest */
 	gfx_setProjection2D3D(2);
 	glLoadIdentity();
 	set_colour_bits(g_rectColour, 0x3dcccccd, 0x3e4ccccd, 0x3f000000, 0x3f000000);   /* 0.1, 0.2, 0.5, 0.5 */
@@ -152,8 +152,8 @@ void (missionList_draw)(void)
 
 /* 0x4456b0: the mission briefing: a translucent blue window, its title 0x75e024, a cyan frame and rule, the text
    typed out (briefing_typeOut), two buttons at the right (MSG(521, "$[0] ACCEPT"), 0x80 apart; lit under the pointer: 0 / 1 by
-   briefing_hitTest) and two at the left (MSG(523, "$[0] NEXT"): 2 only once the text is out (0x4d7348), 3 only with something to
-   undo (0x9f1060); greyed otherwise). The original leaves eax to callers that ignore it */
+   briefing_hitTest) and two at the left (MSG(523, "$[0] NEXT"): 2 only once the text is out (0x4d7348), 3 only past the first
+   page (g_briefingPage); greyed otherwise). The original leaves eax to callers that ignore it */
 void (missionBriefing_draw)(void)
 {
 	int hovered = briefing_hitTest(g_mouseX, g_mouseY);
@@ -177,7 +177,7 @@ void (missionBriefing_draw)(void)
 	for (int k = 0; k < 2; k++) {
 		bind_button_texture();
 		int x = BX0 + k * 0x8c;
-		int usable = k == 0 ? g_briefingSkipped != 0 : g_undoDepth > 0;
+		int usable = k == 0 ? g_briefingSkipped != 0 : g_briefingPage > 0;
 		int lit = usable && hovered == k + 2;
 		briefing_button(x + 0x30, x + 0xa8, lit, usable ? (lit ? g_panelColour : g_dimColour) : NULL,
 		                (const char *)(MSG(523, "$[0] NEXT") + k * 0x80));

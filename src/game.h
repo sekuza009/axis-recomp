@@ -221,7 +221,7 @@ typedef struct { u32 vtable; void *banks[6]; i32 count; } TextureManager;   /* t
 #define BMPRGBFile_close(self) GAME_THISFN(BMPRGBFile_close, 0x46ce50, u32, void *)(self)   /* the object's file closed */
 #define map_loadWayPointInfoFrom(scene, f) GAME_THISFN(map_loadWayPointInfoFrom, 0x48b4a0, void, void *, void *)(scene, f)
 #define map_loadTriggerInfoFrom(scene, f) GAME_THISFN(map_loadTriggerInfoFrom, 0x48b530, void, void *, void *)(scene, f)
-#define room_keepText() GAME_FN(room_keepText, 0x44aee0, void, void)()   /* the room's text kept */
+#define ladder_sendRecord() GAME_FN(ladder_sendRecord, 0x44aee0, void, void)()   /* the room's text kept */
 #define log_message(a, b, c, ...) GAME_FN(log_message, 0x470fc0, void, int, int, int, const char *, ...)(a, b, c, __VA_ARGS__)   /* a message to the log hook */
 #define map_readCommands(self, f) GAME_THISFN(map_readCommands, 0x48b460, u32, void *, void *)(self, f)
 #define file_writeScrambled(p, size, count, f) GAME_FN(file_writeScrambled, 0x46cc30, u32, const void *, u32, u32, void *)(p, size, count, f)   /* fwrite, scrambled */
@@ -483,7 +483,7 @@ typedef struct { u32 vtable; void *banks[6]; i32 count; } TextureManager;   /* t
 #define setup_processTabKeys() GAME_FN(setup_processTabKeys, 0x4230a0, void, void)()
 #define armc_processInput() GAME_FN(armc_processInput, 0x410ab0, void, void)()
 #define room_mouse() GAME_FN(room_mouse, 0x4378e0, void, void)()
-#define settingsPage_keys() GAME_FN(settingsPage_keys, 0x4440f0, void, void)()
+#define skirmish_pageKeys() GAME_FN(skirmish_pageKeys, 0x4440f0, void, void)()
 #define freeCam_keys() GAME_FN(freeCam_keys, 0x42ada0, void, void)()
 #define profileList_keys() GAME_FN(profileList_keys, 0x44c600, void, void)()
 #define profile_messageKeys() GAME_FN(profile_messageKeys, 0x44c850, void, void)()
@@ -814,10 +814,10 @@ typedef struct { float r, g, b, a; } Colour;
 #define menu_mainMenu() GAME_FN(menu_mainMenu, 0x442050, void, void)()
 #define replaySelect_drawDialog() GAME_FN(replaySelect_drawDialog, 0x442e10, void, void)()
 #define menu_drawDimOverlay() GAME_FN(menu_drawDimOverlay, 0x40ce70, u32, void)()
-#define skirmish_clicks() GAME_FN(skirmish_clicks, 0x443e20, void, void)()
-#define skirmish_settingsArrowClick() GAME_FN(skirmish_settingsArrowClick, 0x443ea0, void, void)()
-#define skirmish_processKeys() GAME_FN(skirmish_processKeys, 0x443f20, void, void)()
-#define skirmish_settingsKeys() GAME_FN(skirmish_settingsKeys, 0x444070, void, void)()
+#define skirmish_listClicks() GAME_FN(skirmish_listClicks, 0x443e20, void, void)()
+#define skirmish_briefingClicks() GAME_FN(skirmish_briefingClicks, 0x443ea0, void, void)()
+#define skirmish_listKeys() GAME_FN(skirmish_listKeys, 0x443f20, void, void)()
+#define skirmish_briefingKeys() GAME_FN(skirmish_briefingKeys, 0x444070, void, void)()
 #define briefing_clickClose() GAME_FN(briefing_clickClose, 0x447af0, void, void)()
 #define missionsel_clicks() GAME_FN(missionsel_clicks, 0x447a50, void, void)()
 #define mission_choose() GAME_FN(mission_choose, 0x4479d0, u32, void)()
@@ -869,7 +869,7 @@ typedef struct { float r, g, b, a; } Colour;
 #define replaySelect_ok() GAME_FN(replaySelect_ok, 0x441770, void, void)()   /* the replay selection dialog's OK */
 #define net_addPlayerRecord(reply) GAME_FN(net_addPlayerRecord, 0x452de0, void, void *)(reply)   /* the server's accept reply handled */
 #define mission_loadBriefing(k) GAME_FN(mission_loadBriefing, 0x443af0, u32, int)(k)   /* mission k's block read from axis.mis (load/files.c) */
-#define skirmishSettings_leave() GAME_FN(skirmishSettings_leave, 0x443c80, u32, void)()   /* leave the skirmish settings */
+#define skirmish_leave() GAME_FN(skirmish_leave, 0x443c80, u32, void)()   /* leave the skirmish screen */
 #define skirmish_cursorUp() GAME_FN(skirmish_cursorUp, 0x443cd0, void, void)()   /* the skirmish list's cursor up */
 #define skirmish_cursorDown() GAME_FN(skirmish_cursorDown, 0x443d10, void, void)()   /* and down */
 #define briefing_typeOut() GAME_FN(briefing_typeOut, 0x445520, void, void)()   /* the briefing typed out (menu/skirmish.c) */
@@ -927,7 +927,7 @@ typedef struct { float r, g, b, a; } Colour;
 #define glRotatef_bits(angle, x, y, z) IMPORT(0x4a91f8, void, u32, u32, u32, u32)(angle, x, y, z)
 #define arena_editJoinPassword() GAME_FN(arena_editJoinPassword, 0x405010, void, void)()
 #define armc_freeRing(first) GAME_FN(tunnel_removeLastRing, 0x441190, void, void *)(first)   /* frees the last ring of the tunnel whose first is *first */
-#define game_returnToScreen400() GAME_FN(game_returnToScreen400, 0x41e9d0, void, void)()
+#define game_returnToArenaLobby() GAME_FN(game_returnToArenaLobby, 0x41e9d0, void, void)()
 
 /* ---- more front end (menu/menu_states.c, menu/edit_fields.c) ---- */
 #define GetWindowTextLengthA(hwnd) IMPORT(0x4a92e0, int, void *)(hwnd)
@@ -952,7 +952,7 @@ typedef struct { float r, g, b, a; } Colour;
 
 #define stage_setupActorSlot(stage, a, x, y, spawn) GAME_THISFN(stage_setupActorSlot, 0x45dc00, int, Stage *, int, int, int, void *)(stage, a, x, y, spawn)   /* claim actor slot a */
 #define actor_setWeaponSlot(stage, actor, slot) GAME_THISFN(actor_setWeaponSlot, 0x45e810, void, void *, int, int)(stage, actor, slot)   /* select a weapon slot */
-#define profile_checkAndSendRecord() GAME_FN(profile_checkAndSendRecord, 0x4327f0, void, void)()
+#define ladder_checkAndSendRecord() GAME_FN(ladder_checkAndSendRecord, 0x4327f0, void, void)()
 
 /* ---- start-up objects (app/statics.c) ---- */
 #define ErrorLog_ctor(self, name, b) GAME_THISFN(ErrorLog_ctor, 0x46c5a0, void *, void *, const char *, int)(self, name, b)   /* a named record (vtable 0x4aa2a0) */
@@ -1131,9 +1131,9 @@ typedef struct { float r, g, b, a; } Colour;
 #define shape_setTint(model, h1, c1, v1, h2, c2, v2) GAME_THISFN(shape_setTint, 0x467660, void, void *, u32, u32, u32, u32, u32, u32)(model, h1, c1, v1, h2, c2, v2)
 #define model_clearTint(model) GAME_THISFN(model_clearTint, 0x4675f0, void, void *)(model)   /* the model's shapes' own colours back */
 #define script_reset(stage) GAME_THISFN(script_reset, 0x48fca0, int, Stage *)(stage)
-#define briefing_hitTest(x, y) GAME_FN(briefing_hitTest, 0x443910, int, int, int)(x, y)   /* which skirmish settings arrow is at (x, y) */
-#define undo_push() GAME_FN(undo_push, 0x443d80, u32, void)()   /* skirmish settings: the pending step pushed */
-#define undo_pop() GAME_FN(undo_pop, 0x443de0, u32, void)()   /* one step undone */
+#define briefing_hitTest(x, y) GAME_FN(briefing_hitTest, 0x443910, int, int, int)(x, y)   /* which skirmish briefing button is at (x, y) */
+#define briefing_nextPage() GAME_FN(briefing_nextPage, 0x443d80, u32, void)()   /* the briefing's next page */
+#define briefing_prevPage() GAME_FN(briefing_prevPage, 0x443de0, u32, void)()   /* the briefing's page before */
 
 /* ---- the lobby's and room's screens (menu/lobby_states.c) ---- */
 #define arena_loadPlayerSettings() GAME_FN(arena_loadPlayerSettings, 0x404930, void, void)()   /* the player's record from the profile */

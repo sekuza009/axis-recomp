@@ -105,25 +105,25 @@ static void leave_keys(int *question)
 void (leaveDialog_keys)(void) { leave_keys(&g_roomLeaveDialog); }
 void (lobbyJoin_keys)(void) { leave_keys(&g_arenaLeaving); }
 
-/* 0x443e20: the skirmish settings screen's clicks (no dialog open, 0x90d1c4): a right click leaves (0x443c80); a left
-   click on its buttons (skirmishSettings_hitTest): rows 0..7 change that setting (0x443d50), 8 saves (0x443af0 with the
-   selection 0x9f16a4), 9 leaves. Returns the last call's eax */
-int (skirmish_clicks)(void)
+/* 0x443e20: the skirmish mission list's clicks (no dialog open, 0x90d1c4): a right click leaves (skirmish_leave); a
+   left click on its buttons (skirmishList_hitTest): rows 0..7 pick that mission (skirmish_clickRow), 8 its briefing
+   (mission_loadBriefing), 9 leaves. Returns the last call's eax */
+int (skirmish_listClicks)(void)
 {
 	int r = g_dialogOpen;
 	if (r)
 		return r;
 	if (g_rightClick)
-		skirmishSettings_leave();
+		skirmish_leave();
 	if (!g_mouseClick)
 		return 0;
-	int row = skirmishSettings_hitTest(g_mouseX, g_mouseY);   /* skirmishSettings_hitTest */
+	int row = skirmishList_hitTest(g_mouseX, g_mouseY);   /* skirmishList_hitTest */
 	if ((u32)row <= 7)
 		return skirmish_clickRow(row);
 	if (row == 8)
 		return ((int)mission_loadBriefing(g_missionPicked));
 	if (row == 9)
-		return ((int)skirmishSettings_leave());
+		return ((int)skirmish_leave());
 	return row;
 }
 

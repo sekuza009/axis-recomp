@@ -295,7 +295,7 @@ void (armc_cameraStep)(void)
 /* 0x444130: the skirmish screen's camera */
 void (skirmish_camera)(void)
 {
-	static const MenuCam2 skirmish = { ADDR(g_settingsState), ADDR(g_skirmishDrawBackground), ADDR(g_settingsPage), 0 };
+	static const MenuCam2 skirmish = { ADDR(g_skirmishState), ADDR(g_skirmishDrawBackground), ADDR(g_skirmishPage), 0 };
 	menu_camera2(&skirmish);
 }
 

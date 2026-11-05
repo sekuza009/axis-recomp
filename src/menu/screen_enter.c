@@ -227,7 +227,7 @@ u32 (menu_frameInput)(void)
 	case 600: return setup_tabClicks();
 	case 700: return armc_mouse();   /* armc_mouse */
 	case 800: return room_processKeys();   /* room_processKeys */
-	case 900: return skirmishSettings_clicks();
+	case 900: return skirmish_pageClicks();
 	case 9999: return armc_mouseLook();  /* armc_mouseLook */
 	}
 	/* the original's subtraction chain leaves these */
@@ -271,22 +271,22 @@ static const Store briefing_camera[] = {
 	{ ADDR(g_menuLookAtY), 0 }, { ADDR(g_menuLookAtZ), 0xc4098000 } };
 
 /* 0x443950: the skirmish setup (screen 900): the briefing camera, the briefing window and its colours, the page's
-   panels (skirmishSettings_layout, briefing_layout), the page set to 10 (skirmish settings) with a sound, the mission list
+   panels (skirmishList_layout, briefing_layout), the page set to 10 (the mission list) with a sound, the mission list
    loaded (mission_loadAxisMis) and its state cleared. Returns 0 (the original's eax) */
 int (menuState900_enterSkirmish)(void)
 {
 	static const Store setup[] = {
 		{ ADDR(g_briefingX), 0xa }, { ADDR(g_briefingY), 0x14 }, { ADDR(g_briefingRight), 0x276 }, { ADDR(g_briefingBottom), 0x1cc }, { OBJ(g_skirmishColourLit), 0 },
 		{ (OBJ(g_skirmishColourLit) + 0x4), ONE }, { (OBJ(g_skirmishColourLit) + 0x8), ONE }, { (OBJ(g_skirmishColourLit) + 0xc), ONE }, { OBJ(g_skirmishColourDim), 0 }, { (OBJ(g_skirmishColourDim) + 0x4), 0x3f19999a },
-		{ (OBJ(g_skirmishColourDim) + 0x8), 0x3f19999a }, { (OBJ(g_skirmishColourDim) + 0xc), ONE }, { ADDR(g_settingsState), 1 }, { ADDR(g_screen), 900 }, { ADDR(g_lastScreen), 900 },
+		{ (OBJ(g_skirmishColourDim) + 0x8), 0x3f19999a }, { (OBJ(g_skirmishColourDim) + 0xc), ONE }, { ADDR(g_skirmishState), 1 }, { ADDR(g_screen), 900 }, { ADDR(g_lastScreen), 900 },
 		{ ADDR(g_nextScreen), 900 } };
 	static const u32 cleared[] = { ADDR(g_missionTop), ADDR(g_skirmishRow), ADDR(g_missionPicked), ADDR(g_repeatDown), ADDR(g_repeatUp) };
 	STORE_ALL(briefing_camera);
 	STORE_ALL(setup);
-	skirmishSettings_layout();   /* skirmishSettings_layout */
+	skirmishList_layout();   /* skirmishList_layout */
 	briefing_layout();   /* briefing_layout */
 	g_skirmishDrawBackground = 1;
-	g_settingsPage = 10;
+	g_skirmishPage = 10;
 	sound_playMenu(4);
 	mission_loadAxisMis();   /* mission_loadAxisMis */
 	CLEAR_ALL(cleared);
