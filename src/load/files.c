@@ -1278,8 +1278,8 @@ void (cfg_init)(void)
 	memcpy((void *)ADDR(g_arenaMap), server, 6);
 	g_sound3D = 1;
 	g_items3D = 1;
-	(*(int *)&g_textureSetHeight) = 1;
-	(*(int *)&g_textureSetWidth) = 1;
+	(*(int *)&g_cfgMipmaps) = 1;
+	(*(int *)&g_cfgLinearFilter) = 1;
 	input_applyKeyBindings();
 	cfg_loadAxisCfg();
 }

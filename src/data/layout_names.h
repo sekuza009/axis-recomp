@@ -400,6 +400,10 @@ extern struct GameData g_data;
 #define g_campaign ((u8 *)g_campaign_v)
 #undef g_catalogueFile
 #define g_catalogueFile (*(const char * *)g_catalogueFile_v)
+#undef g_cfgLinearFilter
+#define g_cfgLinearFilter (*(u32 *)((u8 *)g_graphicSettings_v + 0xc))
+#undef g_cfgMipmaps
+#define g_cfgMipmaps (*(u32 *)((u8 *)g_graphicSettings_v + 0x10))
 #undef g_cfgPlayerName
 #define g_cfgPlayerName ((char *)g_data.g_cfgPlayerName_)
 #undef g_cfgSimpleMenu
@@ -2638,10 +2642,6 @@ extern struct GameData g_data;
 #define g_texture64x64 ((u8 *)g_texture64x64_v)
 #undef g_textureManager
 #define g_textureManager (*(u32 *)((u8 *)g_textureSets_v + 0x0))
-#undef g_textureSetHeight
-#define g_textureSetHeight (*(u32 *)((u8 *)g_graphicSettings_v + 0x10))
-#undef g_textureSetWidth
-#define g_textureSetWidth (*(u32 *)((u8 *)g_graphicSettings_v + 0xc))
 #undef g_textureSets
 #define g_textureSets ((u32 *)g_textureSets_v)
 #undef g_textures

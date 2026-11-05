@@ -406,7 +406,7 @@ int (app_init)(void *inst, int show)
 		SetTimer(g_hWndMain, timers[k][0], timers[k][1], NULL);   /* SetTimer */
 	ShowWindow(g_hWndMain, show);   /* ShowWindow */
 	UpdateWindow(g_hWndMain);   /* UpdateWindow */
-	if (!app_checkCdAndLoad(inst)) {
+	if (!app_startupLoad(inst)) {
 		app_setDisplayMode(g_desktopWidth, g_desktopHeight, 0, g_desktopDepth);
 		return 0;
 	}

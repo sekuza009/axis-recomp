@@ -105,7 +105,7 @@ void (menuState100_intro)(void)
 	g_loadStep++;
 	frontEnd_drawProgress();
 	timer_waitFrames(2.0);
-	menu_loadIntroTextures();
+	menu_loadTextures();
 	frontEnd_startUp();
 	g_loadStep++;
 	frontEnd_drawProgress();

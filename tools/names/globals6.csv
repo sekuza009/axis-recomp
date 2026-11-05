@@ -28,8 +28,8 @@
 0x4e0c94,int,g_musicVolume
 0x4e0c9c,int,g_stereoReverse
 # texture sets
-0x83a9cc,u32,g_textureSetWidth
-0x83a9d0,u32,g_textureSetHeight
+0x83a9cc,u32,g_cfgLinearFilter
+0x83a9d0,u32,g_cfgMipmaps
 # network packets and objects
 0xa0b398,void *,g_dplayLobby
 0xa0b310,u8 *,g_roomPacket

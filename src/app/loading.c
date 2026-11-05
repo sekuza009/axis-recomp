@@ -71,7 +71,7 @@ static void info_line(int row, const char *text)
 
 /* 0x469320 (progress, as bits): the loading screen: cleared to blue, the backdrop (0xa0e980) on the inside of a
    cylinder of 18 segments, 25133 deep, its texture's v running from the progress to the progress + 10; then in
-   yellow the game's title (game modes 1 / 3), zone, play type (both "on receiving" while +0x1f1cb0 is 1), frag and
+   yellow the game's title (session modes 1 / 3: a network game, replays), zone, play type (both "on receiving" while +0x1f1cb0 is 1), frag and
    time limits, and in grey the status line 0xa0e988 */
 void (loading_draw)(u32 progress)
 {
@@ -109,13 +109,13 @@ void (loading_draw)(u32 progress)
 		info_line(row, line);
 		row = 4;
 	}
-	if (((Scene *)g_loadGame)->rotationOff == 1)
+	if (((Scene *)g_loadGame)->awaitingHostRound == 1)
 		sprintf(line, (const char *)STR(0x4c531c, "ZONE: ON RECEIVING"));
 	else
 		sprintf(line, (const char *)STR(0x4c5310, "ZONE: %s"), (const char *)(OBJ(g_mapNames) + g_missionStage * 32));
 	info_line(row, line);
 	row += 2;
-	if (((Scene *)g_loadGame)->rotationOff == 1)
+	if (((Scene *)g_loadGame)->awaitingHostRound == 1)
 		sprintf(line, (const char *)STR(0x4c52f8, "PLAY TYPE: ON RECEIVING"));
 	else
 		sprintf(line, (const char *)STR(0x4c52e8, "PLAY TYPE: %s"), (const char *)(STR(0x4c7030, "DEATH MATCH") + ((Scene *)g_loadGame)->gameMode * 64));
@@ -154,7 +154,7 @@ static void next_step(void)
    0x5b1978 / 0x4df904), the six spirals (0x9da45c), then "gameconnect" (0x4df450), "option" (0x9db0a4, the
    buttons), "mouse" (0x4e152c), "cylinder" (0x4e186c), "cylinder_menu" (0x76d36c), "menu34" (0x4e0cd0, the tunnel)
    and "character" (0x4dfa00); first a step and a wait of 2 */
-void (menu_loadIntroTextures)(void)
+void (menu_loadTextures)(void)
 {
 	static const u32 intro[8] = { STR(0x4b25dc, "iftex/m_intro1"), STR(0x4b25cc, "iftex/m_intro2"), STR(0x4b25bc, "iftex/m_intro3"), STR(0x4b25ac, "iftex/m_intro4"), STR(0x4b259c, "iftex/m2_intro1"), STR(0x4b258c, "iftex/m2_intro2"), STR(0x4b257c, "iftex/m2_intro3"), STR(0x4b256c, "iftex/m2_intro4") };
 	static const u32 frames[2] = { STR(0x4b2480, "iftex/corner"), STR(0x4b2470, "iftex/boxscreen") };   /* corner, boxscreen */
@@ -197,11 +197,11 @@ void (menu_loadIntroTextures)(void)
 /* 0x430400: the start-up load: the key tables (0x4d1688, 0x4d1a98) cleared, the settings, tables and lists loaded,
    the text area the whole screen, the timer; DirectInput made once (0x9dbf0c; failure: a message box, 0); unless
    0x76d410 the data files checked (failure: the message 0x4b04b0, 0); the sound (0xa0e80c: it works; then the menu
-   sounds); the pointer at 310, 230, the keys' table; the CD (failure: a message box, 0); the six texture banks (the
-   sizes 0x83a9cc / 0x83a9d0) gathered into 0x83a5e0 (g_textures), the font, four textures by name, the shape and
+   sounds); the pointer at 310, 230, the keys' table; the CD (failure: a message box, 0); the six texture banks (with the
+   linear filtering and mipmap settings, 0x83a9cc / 0x83a9d0) gathered into 0x83a5e0 (g_textures), the font, four textures by name, the shape and
    skeleton files, the scene (0x2343acb bytes, constructed; 0 if not had) into 0x9087b4, the sound table, the logo;
    then the camera and menu defaults. Returns 1 (0 on a failure) */
-int (app_checkCdAndLoad)(void *instance)
+int (app_startupLoad)(void *instance)
 {
 	memset((void *)OBJ(g_keyTable1), 0, 0x400);
 	memset((void *)OBJ(g_keySeen), 0, 0x400);
@@ -254,19 +254,19 @@ int (app_checkCdAndLoad)(void *instance)
 		return 0;
 	}
 	const char *dir = (const char *)STR(0x4b1304, ".");
-	u32 w = g_textureSetWidth, h = g_textureSetHeight;
-	tex_initBy((void *)ADDR(g_staticTex64x64), dir, 0x28, 0, 0x40, 0x40, w, h);
-	w = g_textureSetWidth, h = g_textureSetHeight;
-	tex_initBy((void *)ADDR(g_staticTex128x64), dir, 0x28, 0, 0x80, 0x40, w, h);
-	w = g_textureSetWidth, h = g_textureSetHeight;
-	tex_initBy((void *)ADDR(g_staticTex256x64), dir, 0x28, 0, 0x100, 0x40, w, h);
-	w = g_textureSetWidth, h = g_textureSetHeight;
-	tex_initBy((void *)ADDR(g_staticTex128x128), dir, 0x28, 0, 0x80, 0x80, w, h);
-	w = g_textureSetWidth, h = g_textureSetHeight;
-	tex_initBy((void *)ADDR(g_staticTex256x128), dir, 0x50, 0, 0x100, 0x80, w, h);
-	w = g_textureSetWidth, h = g_textureSetHeight;
-	tex_initBy((void *)ADDR(g_staticTex256x256), dir, 0x28, 0, 0x100, 0x100, w, h);
-	texSmall_initBy((void *)ADDR(g_textureManager), (void *)ADDR(g_staticTex64x64), (void *)ADDR(g_staticTex128x64), (void *)ADDR(g_staticTex256x64), (void *)ADDR(g_staticTex128x128),
+	u32 linear = g_cfgLinearFilter, mipmaps = g_cfgMipmaps;
+	tex_initBy((void *)ADDR(g_staticTex64x64), dir, 0x28, 0, 0x40, 0x40, linear, mipmaps);
+	linear = g_cfgLinearFilter, mipmaps = g_cfgMipmaps;
+	tex_initBy((void *)ADDR(g_staticTex128x64), dir, 0x28, 0, 0x80, 0x40, linear, mipmaps);
+	linear = g_cfgLinearFilter, mipmaps = g_cfgMipmaps;
+	tex_initBy((void *)ADDR(g_staticTex256x64), dir, 0x28, 0, 0x100, 0x40, linear, mipmaps);
+	linear = g_cfgLinearFilter, mipmaps = g_cfgMipmaps;
+	tex_initBy((void *)ADDR(g_staticTex128x128), dir, 0x28, 0, 0x80, 0x80, linear, mipmaps);
+	linear = g_cfgLinearFilter, mipmaps = g_cfgMipmaps;
+	tex_initBy((void *)ADDR(g_staticTex256x128), dir, 0x50, 0, 0x100, 0x80, linear, mipmaps);
+	linear = g_cfgLinearFilter, mipmaps = g_cfgMipmaps;
+	tex_initBy((void *)ADDR(g_staticTex256x256), dir, 0x28, 0, 0x100, 0x100, linear, mipmaps);
+	TextureManager_setBanks((void *)ADDR(g_textureManager), (void *)ADDR(g_staticTex64x64), (void *)ADDR(g_staticTex128x64), (void *)ADDR(g_staticTex256x64), (void *)ADDR(g_staticTex128x128),
 	                (void *)ADDR(g_staticTex256x128), (void *)ADDR(g_staticTex256x256));
 	g_textures = (TextureManager *)ADDR(g_textureManager);
 	pen_init((const char *)STR(0x4b2514, "Interface\\PenFont"));
@@ -419,7 +419,7 @@ u32 THISCALL (game_processLoadingMode)(u8 *g)
 	case 2:
 		log_message((int)STAGE(g), 1, 0, (const char *)STR(0x4c51c0, ".receiving stage play information"));
 		keep_alive(g);
-		if (GS->rotationOff == 0) {
+		if (GS->awaitingHostRound == 0) {
 			scene_setTextureFolder((Scene *)g, g_mapNames + g_missionStage * 0x20);
 			mode = GS->sessionMode;
 			if (mode == 0 || mode == 1 || mode == 3)

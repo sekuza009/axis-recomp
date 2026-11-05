@@ -433,7 +433,7 @@ typedef struct { u32 vtable; void *banks[6]; i32 count; } TextureManager;   /* t
 #define cfg_init() GAME_FN(cfg_init, 0x42eca0, void, void)()
 #define app_screenSizeForMode() GAME_FN(app_screenSizeForMode, 0x43f640, void, void)()
 #define app_registerWindowClassEx(wc) GAME_FN(app_registerWindowClassEx, 0x43f840, int, void *)(wc)   /* the class registered on old Windows */
-#define app_checkCdAndLoad(inst) GAME_FN(app_checkCdAndLoad, 0x430400, int, void *)(inst)
+#define app_startupLoad(inst) GAME_FN(app_startupLoad, 0x430400, int, void *)(inst)
 #define app_reportStartupProblem(code) GAME_FN(app_reportStartupProblem, 0x42ef30, int, int)(code)   /* a start-up problem reported */
 #define app_readCurrentDirectory() GAME_FN(app_readCurrentDirectory, 0x43f580, u32, void)()
 #define app_setDisplayMode(w, h, flags, bits) GAME_FN(app_setDisplayMode, 0x42eed0, int, int, int, u32, int)(w, h, flags, bits)   /* the display mode set (src/app/win32.c) */
@@ -846,7 +846,7 @@ typedef struct { float r, g, b, a; } Colour;
 #define frontEnd_drawProgress() GAME_FN(frontEnd_drawProgress, 0x41f100, u32, void)()   /* the loading picture at the next step (0x4dda34) */
 #define tunnel_rebuild() GAME_FN(tunnel_rebuild, 0x4411e0, void, void)()
 #define frontEnd_startUp() GAME_FN(frontEnd_startUp, 0x430bf0, void, void)()
-#define menu_loadIntroTextures() GAME_FN(menu_loadIntroTextures, 0x430ca0, void, void)()
+#define menu_loadTextures() GAME_FN(menu_loadTextures, 0x430ca0, void, void)()
 #define app_quitGame() GAME_FN(app_quitGame, 0x44f850, void, void)()   /* quit (app/app_quit.c) */
 #define net_closeAll(mode) GAME_FN(net_closeAll, 0x451600, void, int)(mode)   /* every socket closed before connecting */
 #define net_send(kind, socket) GAME_FN(net_send, 0x4521c0, u32, int, int)(kind, socket)   /* a packet (0xc room, 0x14 arena...) to the lobby (100) / game server (0x65) */
@@ -892,7 +892,7 @@ typedef struct { float r, g, b, a; } Colour;
 #define GetActiveWindow() IMPORT(0x4a9320, void *, void)()
 #define MessageBoxA(hwnd, text, title, type) IMPORT(0x4a9324, int, void *, const char *, const char *, u32)(hwnd, text, title, type)
 #define sys_messageBox(text) GAME_FN(sys_messageBox, 0x41edf0, int, const char *)(text)   /* (a format, then its arguments) */
-/* the start-up loaders (app_checkCdAndLoad's) */
+/* the start-up loaders (app_startupLoad's) */
 #define net_clearServerSettings() GAME_FN(net_clearServerSettings, 0x4515d0, void, void)()
 #define reg_readServerSettings() GAME_FN(reg_readServerSettings, 0x42bde0, int, void)()
 #define math_initMathFunction() GAME_FN(math_initMathFunction, 0x46c270, int, void)()
@@ -917,7 +917,7 @@ typedef struct { float r, g, b, a; } Colour;
 #define input_clearKeyTable2() GAME_FN(input_clearKeyTable2, 0x401780, void, void)()
 #define cd_findDrive() GAME_FN(cd_findDrive, 0x401000, u32, void)()
 #define tex_initBy(tm, dir, slots, fmt, w, h, a, b) GAME_THISFN(tex_initBy, 0x455080, u32, void *, const char *, int, int, int, int, u32, u32)(tm, dir, slots, fmt, w, h, a, b)
-#define texSmall_initBy(t, a, b, c, d, e, f) GAME_THISFN(texSmall_initBy, 0x4569d0, u32, void *, void *, void *, void *, void *, void *, void *)(t, a, b, c, d, e, f)
+#define TextureManager_setBanks(t, a, b, c, d, e, f) GAME_THISFN(TextureManager_setBanks, 0x4569d0, u32, void *, void *, void *, void *, void *, void *, void *)(t, a, b, c, d, e, f)
 #define pen_init(name) GAME_FN(pen_init, 0x46b950, int, const char *)(name)
 #define shapeDat_initBy() GAME_FN(shapeDat_initBy, 0x466c00, u32, void)()
 #define skelDat_initBy() GAME_FN(skelDat_initBy, 0x46afe0, u32, void)()

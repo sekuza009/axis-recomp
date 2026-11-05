@@ -5,7 +5,7 @@
 [x] src/app/devices.c 344
 [x] src/app/error_log.c 83
 [x] src/app/frees.c 36
-[ ] src/app/loading.c 548
+[x] src/app/loading.c 548
 [ ] src/app/main_loop.c 2275
 [x] src/app/math_tables.c 61
 [x] src/app/objects.c 73

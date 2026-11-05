@@ -1582,7 +1582,7 @@ typedef struct Scene {
 	Round rotation[100];   /* +0x1f1668: the maps played in turn (solo: the 15 stages) */
 	i32 rotationCount;   /* +0x1f1ca8 */
 	i32 rotationAt;   /* +0x1f1cac: the entry being played */
-	i32 rotationOff;   /* +0x1f1cb0: 1: no rotation (a machine that joined) */
+	i32 awaitingHostRound;   /* +0x1f1cb0: 1: the round's map and mode come from the host's game packet (a client, or not a network host): the loading waits on it and shows ON RECEIVING */
 	i32 nextMap;   /* +0x1f1cb4: the next entry's map and mode */
 	i32 nextMode;   /* +0x1f1cb8 */
 	char replayFiles[100][0x40];   /* +0x1f1cbc: (by use) the replay viewer's files (replayCount of them) */
@@ -3132,7 +3132,7 @@ _Static_assert(offsetof(Scene, renderMode) == 0x1f1664 && sizeof(((Scene *)0)->r
 _Static_assert(offsetof(Scene, rotation) == 0x1f1668 && sizeof(((Scene *)0)->rotation) == 0x640, "scene.fields: Scene.rotation");
 _Static_assert(offsetof(Scene, rotationCount) == 0x1f1ca8 && sizeof(((Scene *)0)->rotationCount) == 0x4, "scene.fields: Scene.rotationCount");
 _Static_assert(offsetof(Scene, rotationAt) == 0x1f1cac && sizeof(((Scene *)0)->rotationAt) == 0x4, "scene.fields: Scene.rotationAt");
-_Static_assert(offsetof(Scene, rotationOff) == 0x1f1cb0 && sizeof(((Scene *)0)->rotationOff) == 0x4, "scene.fields: Scene.rotationOff");
+_Static_assert(offsetof(Scene, awaitingHostRound) == 0x1f1cb0 && sizeof(((Scene *)0)->awaitingHostRound) == 0x4, "scene.fields: Scene.awaitingHostRound");
 _Static_assert(offsetof(Scene, nextMap) == 0x1f1cb4 && sizeof(((Scene *)0)->nextMap) == 0x4, "scene.fields: Scene.nextMap");
 _Static_assert(offsetof(Scene, nextMode) == 0x1f1cb8 && sizeof(((Scene *)0)->nextMode) == 0x4, "scene.fields: Scene.nextMode");
 _Static_assert(offsetof(Scene, replayFiles) == 0x1f1cbc && sizeof(((Scene *)0)->replayFiles) == 0x1900, "scene.fields: Scene.replayFiles");

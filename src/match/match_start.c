@@ -31,13 +31,13 @@ static void make_rotation(Scene *s)
 		s->rotationAt = g_mapIndex;
 		s->nextMap = k + 1;   /* (beyond the 15, as the original has it) */
 		s->nextMode = GAME_VAR(int, 0x9dbfa4);   /* "record 16"'s mode (0x9db9e4 + 16 * 0x5c): past g_skirmishInfo's 15, an unnamed gap */
-		s->rotationOff = 0;
+		s->awaitingHostRound = 0;
 		return;
 	}
 	if (s->sessionMode != 1 || s->client) {
 		s->rotationCount = 0;
 		s->rotationAt = 0;
-		s->rotationOff = 1;
+		s->awaitingHostRound = 1;
 		return;
 	}
 	if (g_mapRotation == 1) {
@@ -60,7 +60,7 @@ static void make_rotation(Scene *s)
 	int next = (s->rotationAt + 1) % s->rotationCount;   /* (none in rotation divides by zero, as in the original) */
 	s->nextMap = s->rotation[next].map;
 	s->nextMode = s->rotation[next].mode;
-	s->rotationOff = 0;
+	s->awaitingHostRound = 0;
 }
 
 /* the first round: emblems in the ranking for a room game (0x5ae9c4 2: 300 seconds of them, a game counted at

@@ -3,4 +3,4 @@ g_keyEnter   # its old place written (canary): reached at its old place by addre
 g_lastTime   # its old place written (canary): reached at its old place by address
 g_mouse2Down   # its old place written (canary): reached at its old place by address
 g_mouse3Down   # its old place written (canary): reached at its old place by address
-g_textureSetHeight   # its old place written (canary): reached at its old place by address
+g_cfgMipmaps   # its old place written (canary): reached at its old place by address

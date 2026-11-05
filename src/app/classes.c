@@ -597,7 +597,7 @@ void THISCALL (scene_startSession)(u8 *g, u32 a, int mode)
 	GS->client = a;
 	GS->sessionMode = mode;
 	GS->renderMode = 0;
-	zero_dwords((u8 *)g + offsetof(Scene, rotationCount), 3);   /* rotationCount .. rotationOff */
+	zero_dwords((u8 *)g + offsetof(Scene, rotationCount), 3);   /* rotationCount .. awaitingHostRound */
 	zero_dwords((u8 *)g + offsetof(Scene, matchDrawing), 3);   /* matchDrawing .. ladderGame */
 	GS->replayCount = 0;
 	if (GS->sessionMode == 3)

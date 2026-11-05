@@ -23,3 +23,6 @@ mapSelect_layout,replaySelect_layout
 mapSelect_mouse,replaySelect_mouse
 mapSelect_ok,replaySelect_ok
 mapSelect_toggle,replaySelect_toggle
+menu_loadIntroTextures,menu_loadTextures
+app_checkCdAndLoad,app_startupLoad
+texSmall_initBy,TextureManager_setBanks

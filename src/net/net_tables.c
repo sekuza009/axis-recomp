@@ -1993,7 +1993,7 @@ void THISCALL (net_processGamePacket)(u8 *g, u32 from, int type, const char *pkt
 			BITS(GS->clockFraction) = *(const u32 *)(pkt + 0xd);
 			if (pkt[3] >= 0) {
 				int round = g_missionStage;
-				if (round != pkt[3] && (round < 0 || GS->rotationOff == 1 || GS->elapsed > 0x1e)) {
+				if (round != pkt[3] && (round < 0 || GS->awaitingHostRound == 1 || GS->elapsed > 0x1e)) {
 					g_missionStage = pkt[3];
 					GS->nextMap = pkt[4];
 					GS->nextMode = pkt[6];
@@ -2001,7 +2001,7 @@ void THISCALL (net_processGamePacket)(u8 *g, u32 from, int type, const char *pkt
 					GS->inputState = 1;
 					GS->modeStarted = 0;
 					game_setGameTypeFlags((Stage *)STAGE, pkt[5]);
-					GS->rotationOff = 0;
+					GS->awaitingHostRound = 0;
 					return;
 				}
 				GS->nextMap = pkt[4];

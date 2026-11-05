@@ -2912,10 +2912,10 @@ THISCALL void scene_initLevelGrid(char *scene);
    items, matrices and four more lists), memory from mem or allocated, laid out one after the other */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 THISCALL void factor_initBy(char *vv, DWORD a, DWORD b, DWORD c, DWORD d, DWORD e, DWORD f, DWORD g, DWORD h);
-/* 0x4569d0 (thiscall) texSmall_initBy(t64, t128x64, t256x64, t128, t256x128, t256): keep six texture images,
+/* 0x4569d0 (thiscall) TextureManager_setBanks(t64, t128x64, t256x64, t128, t256x128, t256): keep six texture images,
    each checked for its size (a wrong one is fatal) */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-THISCALL void texSmall_initBy(char *self, DWORD a, DWORD b, DWORD c, DWORD d, DWORD e, DWORD f);
+THISCALL void TextureManager_setBanks(char *self, DWORD a, DWORD b, DWORD c, DWORD d, DWORD e, DWORD f);
 /* 0x46aa10 (thiscall) skel_loadFromFile(f, mem, memSize): an animation: 0x24-byte header into the object
    (size +4, count +0x10), the memory from mem or allocated, then count 0x70-byte tracks, each followed by its
    position keys (0x20 bytes) and rotation keys (0x28 bytes); the track's key pointers are linked in */
@@ -3955,13 +3955,13 @@ THISCALL void armc_giveShownActorWeapon(char *game, DWORD slot);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h); the exe patch's helper (0xb68e80) done in C */
 void armc_buildPartLists(void);
 /* batch 147 (lifted/grp93.c): the menu textures */
-/* 0x430ca0 menu_loadIntroTextures(): the menu's textures by name ("iftex/m_intro1".."4", "m2_intro1".."4", the
+/* 0x430ca0 menu_loadTextures(): the menu's textures by name ("iftex/m_intro1".."4", "m2_intro1".."4", the
    spirals, menu pairs, cursor, option, cylinder, corner, character, boxscreen, gameconnect, ...) into their globals
    (the intro frames, 0x9db0a4 the button texture, 0x4e0cd0 the tunnel, 0x4dfa00 the portraits, 0x76d36c, ...),
    drawing the loading screen (frontEnd_drawProgress, progress 0x4dda34 + 1 each step) between the groups and waiting 2.0
    once (timer_waitFrames) */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-void menu_loadIntroTextures(void);
+void menu_loadTextures(void);
 /* batch 148 (lifted/grp94.c): the intro set-up */
 /* 0x430bf0 frontEnd_startUp(): clear 0xc00 bytes at 0x67ef38, then the intro tables one by one (menu_initColours,
    menu_initMainButtons, menu_initKeyRepeatDefaults, room_initMenuButtons, setupTop_initOutlines, net_clearSlots), each followed by a loading-screen frame
@@ -5055,7 +5055,7 @@ int THISCALL match_frameByState(void *scene);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 DWORD WINAPI game_WinMain(DWORD inst, DWORD prev, DWORD cmd, DWORD show);
 /* batch 204 (lifted/grp163.c): the game's start-up load */
-/* 0x430400 app_checkCdAndLoad(inst): key tables 0x4d1688 / 0x4d1a98 cleared; the loaders (0x4515d0 .. 0x42fb40),
+/* 0x430400 app_startupLoad(inst): key tables 0x4d1688 / 0x4d1a98 cleared; the loaders (0x4515d0 .. 0x42fb40),
    the 640 x 480 cursor range, 0x4302d0; the CD check once (0x401410 with the main window; failure: a message box
    and 0); unless 0x76d410 the five checks (0x41e6d0 .. 0x41e670) each end it with their message; the window's
    GL state (0x467a50 -> 0xa0e80c, then 0x42bd40); the cursor at 310, 230; 0x431680, 0x401780; 0x401000 (failure: a
@@ -5065,7 +5065,7 @@ DWORD WINAPI game_WinMain(DWORD inst, DWORD prev, DWORD cmd, DWORD show);
    allocation failed); 0x456d10; a fifth texture; the camera and menu defaults (two 0x41f0e0 vectors, the fade 5,
    the screen centre from 0x5b1998 / 0x4e045c, 0x4dd984 from 0x4e0c90). SEH frame emulated. Returns 1, or 0 */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-int app_checkCdAndLoad(void *instance);
+int app_startupLoad(void *instance);
 /* batch 205 (lifted/grp164.c .. grp166.c): the mission-select state, the main loop's frame, two HUD panels */
 /* 0x44aa40 menuState500_missionSelect(): the mission-select screen's frame (119 bytes; functions.csv said 4099):
    0x441740 while 0x9f63b8, 0x448140 unless page 0x9f62f8 is 2, the draw (0x447cb0); on pages other than 0 / 1 a
@@ -5245,7 +5245,7 @@ int app_setDisplayMode(int w, int h, DWORD flags, int bits);
    DC, size and depth (0x67eefc, 0x76d430, 0x76d3ec), 0x42fd40 / 0x42eca0 / 0x43f640, the display mode
    (app_setDisplayMode) and 0x42ef30; the checks again; the window class (WndProc, icon, cursor, brush; 0x43f840 on old
    Windows, else RegisterClassA), the window (the cave 0x4a8f50: the size from 0x5b1998 / 0x4e045c), three timers,
-   shown; app_checkCdAndLoad (failure: the mode back, 0); screen 100, the cursor hidden, 0x43f300. Returns 1 */
+   shown; app_startupLoad (failure: the mode back, 0); screen 100, the cursor hidden, 0x43f300. Returns 1 */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h); the exe patch's caves (0x4a8e20, 0x4a8f50) done in C */
 int app_init(void *inst, int show);
 static FILE *g_log;
@@ -5678,7 +5678,7 @@ static int __cdecl mock_atexit(DWORD f) { mock_rec(0x49ef9c, 1, f, 0, 0, 0); ret
 static void __cdecl mock_delete(DWORD p) { mock_rec(0x49ef24, 1, p, 0, 0, 0); }
 static void __cdecl mock_free(DWORD p) { mock_rec(0x49ee81, 1, p, 0, 0, 0); }
 /* g_mockBigAlloc: the answer to an allocation above 256 KB (0: none), for a caller that only stores the pointer and
-   hands it to a stubbed constructor (app_checkCdAndLoad's 37 MB scene) */
+   hands it to a stubbed constructor (app_startupLoad's 37 MB scene) */
 static DWORD g_mockBigAlloc;
 static DWORD __cdecl mock_malloc(DWORD size)
 {
@@ -10227,9 +10227,9 @@ static void texsmall_setup(void)
 		g_a[k] = irnd(0, 5) ? (int)t : 0;
 	}
 }
-ST(texSmall_initBy, texsmall_setup();,
+ST(TextureManager_setBanks, texsmall_setup();,
    (TC(void, 0x4569d0, char *, int, int, int, int, int, int)(BUF + 0x100, g_a[0], g_a[1], g_a[2], g_a[3], g_a[4], g_a[5]), 0),
-   (texSmall_initBy(BUF + 0x100, (DWORD)g_a[0], (DWORD)g_a[1], (DWORD)g_a[2], (DWORD)g_a[3], (DWORD)g_a[4], (DWORD)g_a[5]), 0))
+   (TextureManager_setBanks(BUF + 0x100, (DWORD)g_a[0], (DWORD)g_a[1], (DWORD)g_a[2], (DWORD)g_a[3], (DWORD)g_a[4], (DWORD)g_a[5]), 0))
 /* an animation file: header (size +4 = what the tracks and keys need, count +0x10), tracks with their key counts */
 static void anim_setup(void)
 {
@@ -13841,7 +13841,7 @@ static void introtex_setup(void)
 	g_frames = irnd(0, 3) ? irnd(-2, 400) / 3.0 : irnd(0, 100000);
 	g_vfsOpenFail = 0;
 }
-ST(menu_loadIntroTextures, introtex_setup();, (CALL_PLAIN(0x430ca0, 0, 0, 0, 0, 0), 0), (menu_loadIntroTextures(), 0))   /* its callers ignore the eax it leaves (tools/eaxuse.py) */
+ST(menu_loadTextures, introtex_setup();, (CALL_PLAIN(0x430ca0, 0, 0, 0, 0, 0), 0), (menu_loadTextures(), 0))   /* its callers ignore the eax it leaves (tools/eaxuse.py) */
 /* batch 148 */
 /* the intro set-up: loading_setup's screen (its picture bindable, progress from 0..28 kept low: six more frames),
    the tables' areas random, the wait's frame counter as timer_waitFrames's test sets it */
@@ -16213,7 +16213,7 @@ static void startload_setup(void)
 	G32(0x4e0c90) = irnd(0, 400); G32(0x83a9cc) = irnd(0, 3); G32(0x83a9d0) = irnd(0, 3);
 	G32(0x4ded18) = 0x10010; g_a[0] = 0x400000;
 }
-ST(app_checkCdAndLoad, startload_setup();, CALL_PLAIN(0x430400, 0, g_a[0], 0, 0, 0), (DWORD)(app_checkCdAndLoad((void *)g_a[0])))
+ST(app_startupLoad, startload_setup();, CALL_PLAIN(0x430400, 0, g_a[0], 0, 0, 0), (DWORD)(app_startupLoad((void *)g_a[0])))
 /* batch 205 */
 /* the mission-select frame: its flags, page -1..3 and dialog either way; every callee stubbed */
 static const DWORD g_stubMission[] = { 0x428c30, 4, 0x441740, 0, 0x447cb0, 0, 0x448140, 0, 0x44aa20, 0, 0x44aa30, 0, 0 };
@@ -17460,7 +17460,7 @@ static const STest g_stests[] = {
 	T(catalogue_loadComponents, 1, 400, 0),
 	/* batch 61 */
 	T(space_initBy, 0, 400, 0), T(space_setBy, 0, 400, 0), T(scene_initLevelGrid, 0, 40, 0), T(factor_initBy, 0, 400, 0),
-	T(texSmall_initBy, 0, 400, 0), T(skel_loadFromFile, 0, 400, 0),
+	T(TextureManager_setBanks, 0, 400, 0), T(skel_loadFromFile, 0, 400, 0),
 	/* batch 62 */
 	T(image_copyTo, 0, 400, 0), T(tex_textureFileExist, 1, 400, 0), T(tex_initBy, 0, 400, 0), T(shape_initBy, 0, 400, 0),
 	T(skelSet_setup, 0, 400, 0),
@@ -17643,7 +17643,7 @@ static const STest g_stests[] = {
 	/* batch 146 */
 	T(armc_buildPartLists, 0, 300, 0),
 	/* batch 147 */
-	T(menu_loadIntroTextures, 0, 100, 0),
+	T(menu_loadTextures, 0, 100, 0),
 	/* batch 148 */
 	T(frontEnd_startUp, 0, 200, 0),
 	/* batch 149 */
@@ -17801,7 +17801,7 @@ static const STest g_stests[] = {
 	/* batch 203 */
 	T(game_WinMain, 1, 400, 0),
 	/* batch 204 */
-	T(app_checkCdAndLoad, 1, 400, 0),
+	T(app_startupLoad, 1, 400, 0),
 	/* batch 205 */
 	T(menuState500_missionSelect, 0, 400, 0), T(main_loop, 0, 400, 0), T(hud_drawRanking, 0, 400, 0), T(hud_drawMain, 0, 400, 0), T(hud_drawTeamScores, 0, 400, 0),
 	/* batch 206 */
@@ -18498,7 +18498,7 @@ static const struct { DWORD addr; void *fn; const char *name; } g_hooks3[] = {
 	/* batch 61 */
 	{ 0x4813e0, (void *)space_initBy, "space_initBy" }, { 0x4819b0, (void *)space_setBy, "space_setBy" },
 	{ 0x471010, (void *)scene_initLevelGrid, "scene_initLevelGrid" }, { 0x484050, (void *)factor_initBy, "factor_initBy" },
-	{ 0x4569d0, (void *)texSmall_initBy, "texSmall_initBy" }, { 0x46aa10, (void *)skel_loadFromFile, "skel_loadFromFile" },
+	{ 0x4569d0, (void *)TextureManager_setBanks, "TextureManager_setBanks" }, { 0x46aa10, (void *)skel_loadFromFile, "skel_loadFromFile" },
 	/* batch 62 */
 	{ 0x46ce80, (void *)image_copyTo, "image_copyTo" }, { 0x4557e0, (void *)tex_textureFileExist, "tex_textureFileExist" },
 	{ 0x455080, (void *)tex_initBy, "tex_initBy" }, { 0x466a60, (void *)shape_initBy, "shape_initBy" },
@@ -18701,7 +18701,7 @@ static const struct { DWORD addr; void *fn; const char *name; } g_hooks3[] = {
 	/* batch 146 */
 	{ 0x40da40, (void *)armc_buildPartLists, "armc_buildPartLists" },
 	/* batch 147 */
-	{ 0x430ca0, (void *)menu_loadIntroTextures, "menu_loadIntroTextures" },
+	{ 0x430ca0, (void *)menu_loadTextures, "menu_loadTextures" },
 	/* batch 148 */
 	{ 0x430bf0, (void *)frontEnd_startUp, "frontEnd_startUp" },
 	/* batch 149 */
@@ -18934,7 +18934,7 @@ static const struct { DWORD addr; void *fn; const char *name; } g_hooks3[] = {
 	/* batch 203 */
 	{ 0x43f9d0, (void *)game_WinMain, "game_WinMain" },
 	/* batch 204 */
-	{ 0x430400, (void *)app_checkCdAndLoad, "app_checkCdAndLoad" },
+	{ 0x430400, (void *)app_startupLoad, "app_startupLoad" },
 	/* batch 205 */
 	{ 0x44aa40, (void *)menuState500_missionSelect, "menuState500_missionSelect" }, { 0x420280, (void *)main_loop, "main_loop" },
 	{ 0x4926f0, (void *)hud_drawMain, "hud_drawMain" }, { 0x494930, (void *)hud_drawRanking, "hud_drawRanking" }, { 0x496240, (void *)hud_drawTeamScores, "hud_drawTeamScores" },
