@@ -292,8 +292,8 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 	}
 	int item = pr->items[AC->slot];
 	ActorInfo *weapon = (ActorInfo *)(item >= 0 ? (u8 *)&ST->actorInfo[item] : NULL);
-	if (AC->controlledBy == ST->playerActor && ((u8 *)weapon) && AC->ammo[weapon->ammoSlot] < weapon->ammoPerShot
-	    && !(AC->weaponLower < 1.0f)) {   /* out of ammunition: the next ((u8 *)weapon) */
+	if (AC->controlledBy == ST->playerActor && weapon && AC->ammo[weapon->ammoSlot] < weapon->ammoPerShot
+	    && !(AC->weaponLower < 1.0f)) {   /* out of ammunition: the next weapon */
 		actor_nextWeapon(s, i);
 		weapon = &ST->actorInfo[pr->items[AC->slot]];
 	}
@@ -781,7 +781,7 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 		for (int c = 0; c < 5; c++)   /* nextForward..nextRun */
 			AF(offsetof(Player, nextForward) + c * 4) = f32(fadd_m(fmul_m(fsub_m(fld_m(&AC->netMotion[c]), &AF(offsetof(Player, forward) + c * 4)), &k), &AF(offsetof(Player, forward) + c * 4)));
 	}
-	if (AC->fireAnim > 0 && ((u8 *)weapon)) {   /* the firing cycle, wrapping at 1 */
+	if (AC->fireAnim > 0 && weapon) {   /* the firing cycle, wrapping at 1 */
 		long double v = fadd_m(fdiv_m(fld_m(dt), &weapon->cycleTime), &AC->fireCycle);
 		AC->fireCycle = (float)v;
 		if (v >= 1.0L)
@@ -789,7 +789,7 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 	}
 	if (AC->cameraValue != 0)
 		goto tail;   /* 45cdb1 */
-	if (AC->weaponLowering == 1) {   /* the ((u8 *)weapon) going down (weaponLower from 1 to 0) */
+	if (AC->weaponLowering == 1) {   /* the weapon going down (weaponLower from 1 to 0) */
 		if (AC->weaponLower > 0) {
 			if (BITS(AC->weaponLower) == 0x3f800000 && i == ST->playerActor)
 				sound_playVolume(0x14, 0x64);
@@ -846,24 +846,24 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 	glRotatef(f32(fmul_m(fld_m(&AC->pose[0]), k_0_05f)), 0, 0, 1);
 	glRotatef(f32(fmul_m(fld_m(&AC->pose[1]), &k_tenthsToDegrees)), 1, 0, 0);
 	skel_poseBones((u8 *)&AC->boosterModel, 0);
-	memcpy(grip, &g_vecZero, 12);   /* where the ((u8 *)weapon) is held, for the local player's view */
+	memcpy(grip, &g_vecZero, 12);   /* where the weapon is held, for the local player's view */
 	glLoadMatrixf(part_matrix((u8 *)&AC->armsModel.entries, arms->weaponJoints[0], AC->lowDetail));
-	if (i == ST->selectedActor && ((u8 *)weapon) && AC->slot <= 3)
+	if (i == ST->selectedActor && weapon && AC->slot <= 3)
 		hold(grip, (const u8 *)weapon->sets[0].grip[AC->variantLoaded], 0, &AC->weaponLower);
 	skel_poseBones((u8 *)&AC->weaponModel, 0);
 	glLoadMatrixf(part_matrix((u8 *)&AC->armsModel.entries, arms->weaponJoints[1], AC->lowDetail));
-	if (i == ST->selectedActor && ((u8 *)weapon) && AC->slot == 4)
+	if (i == ST->selectedActor && weapon && AC->slot == 4)
 		hold(grip, (const u8 *)weapon->sets[0].grip[AC->variantLoaded], 0, &AC->weaponLower);
 	skel_poseBones((u8 *)&AC->weaponModel4, 0);
 	glLoadMatrixf(part_matrix((u8 *)&AC->armsModel.entries, arms->weaponJoints[2], AC->lowDetail));
-	if (i == ST->selectedActor && ((u8 *)weapon) && AC->slot == 5)
+	if (i == ST->selectedActor && weapon && AC->slot == 5)
 		hold(grip, (const u8 *)weapon->sets[1].grip[AC->variantLoaded], 1, &AC->weaponLower);
 	skel_poseBones((u8 *)&AC->weaponModel5, 0);
 	glPopMatrix();
 	if (i == ST->playerActor) {   /* the local player's locks (lockHeld per actor), sorted longest first (lockTimes / lockIds) */
 		float *lock = ST->lockHeld;
 		int *count = &ST->lockCount;
-		if (((u8 *)weapon) && weapon->targetingTime > 0) {
+		if (weapon && weapon->targetingTime > 0) {
 			for (int j = 0; j < ST->actorCount; j++) {
 				float *seen = &ST->actors[j].lockAnim;
 				if (j == i || ST->actors[j].state != 1) {
@@ -918,7 +918,7 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 	AC->firing = 0;   /* firing this frame */
 	AC->sendNow = 0;
 	if (AC->controlledBy == ST->playerActor) {
-		if (((u8 *)weapon) && AC->state == 1) {
+		if (weapon && AC->state == 1) {
 			if (AC->inFire == 1 && AC->spawnAge > 3.0f && AC->slot >= 0 && !(AC->fireAnim > 0) && AC->weaponLower >= 1.0f && AC->weaponLowering == 0
 			    && AC->armor > 0)
 				AC->firing = 1;
@@ -1057,7 +1057,7 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 			}
 			AC->firePrev = AC->inFire;
 		}
-	} else if (((u8 *)weapon) && AC->netFired == 1) {   /* the others' rounds, as sent */
+	} else if (weapon && AC->netFired == 1) {   /* the others' rounds, as sent */
 		for (int k = 0; k < 5; k++) {   /* per slot (shots[k]): in use, a new round (its kind, owner, flag, direction) */
 			int *item = &AC->shotBullets[k];
 			u32 *f = (u32 *)&AC->shots[k].isNew;

@@ -4,9 +4,26 @@ through ((Type *)var) casts becomes `Type *var`:
   assignments    var = e;       ->  var = (Type *)(e);
   the casts      ((Type *)var)  ->  var
   any other use  var            ->  ((u8 *)var)   (byte arithmetic, calls taking bytes: unchanged meaning)
-A declarator list (u8 *a = .., *var = ..) or a parameter is refused. Check with tools/objcmp.py: the code is the same."""
+A declarator list (u8 *a = .., *var = ..) is refused. --param: a u8 * / void * parameter instead (its type in the
+signature changed; refused when that would wrap more byte uses than it removes casts, unless --force), or one typed
+already (its casts dropped), or one with a typed alias (the casts use the alias). Comments and string literals are never
+touched. Check with tools/objcmp.py: the code is the same."""
 import os, re, sys
 os.chdir(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..'))
+_re_sub = re.sub
+
+
+def code_sub(pattern, repl, s, flags=0):
+	"""re.sub on the code only: comments and string / char literals kept as they are"""
+	parts = re.split(r'(/\*.*?\*/|//[^\n]*|"(?:\\.|[^"\\\n])*"|\'(?:\\.|[^\'\\\n])*\')', s, flags=re.S)
+	return ''.join(p if i % 2 else _re_sub(pattern, repl, p, flags=flags) for i, p in enumerate(parts))
+
+
+def code_findall(pattern, s):
+	parts = re.split(r'(/\*.*?\*/|//[^\n]*|"(?:\\.|[^"\\\n])*"|\'(?:\\.|[^\'\\\n])*\')', s, flags=re.S)
+	return [x for i, p in enumerate(parts) if not i % 2 for x in re.findall(pattern, p)]
+
+
 path, fn, var, T = sys.argv[1:5]
 dry = '--dry' in sys.argv
 t = open(path, encoding='latin-1', newline='').read()
@@ -23,6 +40,46 @@ for b in range(a, len(t)):
 		break
 body = t[a:b]
 V = re.escape(var)
+if '--param' in sys.argv:
+	# a parameter: its declared type in the signature becomes T * (const kept); casts -> var; other uses as bytes
+	sig_a = t.rfind('(', 0, m.end() - 2)
+	sig_a = m.start() + m.group(0).index(')') + 1
+	sig = t[sig_a:a]
+	pm = re.search(r'(const\s+)?(?:u8|void)\s*\*\s*%s\b' % V, sig)
+	if not pm and re.search(r'\b%s\s*\*\s*%s\b' % (re.escape(T), V), sig):
+		# already a T *: the casts are redundant
+		n = len(re.findall(r'\(\((?:const\s+)?%s\s*\*\)\s*%s\)' % (re.escape(T), V), body))
+		body = code_sub(r'\(\((?:const\s+)?%s\s*\*\)\s*%s\)' % (re.escape(T), V), var, body)
+		print('%s %s: %d redundant casts dropped' % (fn, var, n))
+		if not dry:
+			open(path, 'w', encoding='latin-1', newline='').write((t[:a] + body + t[b:]).replace('\n', nl))
+		sys.exit(0)
+	if not pm:
+		sys.exit('%s is not a u8 * / void * parameter of %s' % (var, fn))
+	if re.search(r'\b\w+\s*\*+\s*%s\s*[=;,\[]' % V, body) or re.search(r'(?:^|[;{]|\n)\s*%s\s*(?:[-+]?=(?!=)|\+\+|--)' % V, body):
+		sys.exit('%s is declared again or assigned in %s: by hand' % (var, fn))
+	al = re.search(r'\n\s*(?:const\s+)?%s\s*\*\s*(\w+)\s*=\s*\((?:const\s+)?%s\s*\*\)\s*%s\s*;' % (re.escape(T), re.escape(T), V), body)
+	if al:
+		# a typed alias of it is there already: the casts use the alias, nothing else changes
+		n = len(re.findall(r'\(\((?:const\s+)?%s\s*\*\)\s*%s\)' % (re.escape(T), V), body[al.end():]))
+		body = body[:al.end()] + code_sub(r'\(\((?:const\s+)?%s\s*\*\)\s*%s\)' % (re.escape(T), V), al.group(1), body[al.end():])
+		print('%s %s: %d casts -> its alias %s' % (fn, var, n, al.group(1)))
+		if not dry:
+			open(path, 'w', encoding='latin-1', newline='').write((t[:a] + body + t[b:]).replace('\n', nl))
+		sys.exit(0)
+	const = pm.group(1) or ''
+	sig = sig[:pm.start()] + '%s%s *%s' % (const, T, var) + sig[pm.end():]
+	n_cast = len(re.findall(r'\(\((?:const\s+)?%s\s*\*\)\s*%s\)' % (re.escape(T), V), body))
+	body = code_sub(r'\(\((?:const\s+)?%s\s*\*\)\s*%s\)' % (re.escape(T), V), '\x01', body)
+	n_bare = len(code_findall(r'(?<![\w.>\x01])%s\b' % V, body))
+	if n_bare > n_cast and '--force' not in sys.argv:
+		sys.exit('%s %s: %d byte uses for %d casts: left' % (fn, var, n_bare, n_cast))
+	body = code_sub(r'(?<![\w.>\x01])%s\b' % V, '((%su8 *)\x01)' % const, body).replace('\x01', var)
+	nt = (t[:sig_a] + sig + body + t[b:]).replace('\n', nl)
+	print('%s %s (parameter): %d casts, %d byte uses wrapped' % (fn, var, n_cast, n_bare))
+	if not dry:
+		open(path, 'w', encoding='latin-1', newline='').write(nt)
+	sys.exit(0)
 if re.search(r',\s*\*\s*%s\b' % V, body) or re.search(r'\bu8\s*\*\s*\w+\s*=[^;]*,\s*\*?\s*%s\b' % V, body):
 	sys.exit('a declarator list holds %s: by hand' % var)
 if not re.search(r'\bu8\s*\*\s*%s\b' % V, body):
@@ -53,7 +110,7 @@ def rhs_end(s, i):
 out, i, n_cast, n_bare = [], 0, 0, 0
 PROT = '\x01'
 # 1. the casts
-body = re.sub(r'\(\(%s\s*\*\)\s*%s\)' % (re.escape(T), V), PROT, body)
+body = code_sub(r'\(\(%s\s*\*\)\s*%s\)' % (re.escape(T), V), PROT, body)
 n_cast = body.count(PROT)
 # 2. declarations and assignments
 res = []
@@ -73,13 +130,13 @@ for mm in re.finditer(r'(\bu8\s*\*\s*%s\b|(?<![\w.>])%s\b)(\s*=(?!=)\s*)' % (V, 
 	pos = end
 res.append(body[pos:])
 body = ''.join(res)
-body = re.sub(r'\bu8\s*\*\s*%s\b' % V, '%s *%s' % (T, PROT + 'V'), body)   # (u8 *var; with no initialiser)
+body = code_sub(r'\bu8\s*\*\s*%s\b' % V, '%s *%s' % (T, PROT + 'V'), body)   # (u8 *var; with no initialiser)
 # 3. other bare uses: as bytes
 def bare(mo):
 	global n_bare
 	n_bare += 1
 	return '((u8 *)' + PROT + 'V)'
-body = re.sub(r'(?<![\w.>\x01])%s\b' % V, bare, body)
+body = code_sub(r'(?<![\w.>\x01])%s\b' % V, bare, body)
 body = body.replace(PROT + 'V', var).replace(PROT, var)
 nt = (t[:a] + body + t[b:]).replace('\n', nl)
 print('%s %s: %d casts, %d byte uses wrapped' % (fn, var, n_cast, n_bare))

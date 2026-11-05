@@ -89,7 +89,7 @@ static int hit_rect(int x, int y, DWORD base, DWORD limit)
 	return -1;
 }
 #define HIT_TESTS(X) \
-	X(0x4033e0, 0x4d9360, 0x4d9500, mapList_hitTest) X(0x404460, 0x4db590, 0x4db5f0, arenaNameDialog_hitTest) \
+	X(0x4033e0, 0x4d9360, 0x4d9500, mapList_hitTest) X(0x404460, 0x4db590, 0x4db5f0, playerSetup_hitTest) \
 	X(0x4044a0, 0x4db728, 0x4db848, arenaGameList_hitTest) X(0x4044e0, 0x4dbad8, 0x4dbae8, arenaDialogBox_hitTest) \
 	X(0x4045a0, 0x4dbb88, 0x4dbba8, arenaCreate_hitTest) X(0x40e450, 0x4dc2b0, 0x4dc3c0, armcPartsPage_hitTest) \
 	X(0x40e490, 0x4dbc90, 0x4dbd80, armcWeaponsPage_hitTest) X(0x40e4d0, 0x4dcb40, 0x4dcc60, armcColour_hitTest) \
@@ -108,7 +108,7 @@ static int hit_rect(int x, int y, DWORD base, DWORD limit)
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 int mapList_hitTest(int x, int y);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-int arenaNameDialog_hitTest(int x, int y);
+int playerSetup_hitTest(int x, int y);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 int arenaGameList_hitTest(int x, int y);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
@@ -763,7 +763,7 @@ void setupGraphic_layout(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void newIdForm_layout(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-void arenaNameDialog_layout(void);
+void playerSetup_layout(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void roomLogin_layout(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
@@ -2422,14 +2422,14 @@ int net_resolveHost(const char *host);
 /* match packet senders (thiscall on the scene): each builds a 64-byte packet, sends it with net_sendPacketData,
    counts it and, while recording an autoplay, writes it to the recording too.
    0x48e990 net_sendFlagPiece(player): packet 0x0c, the player's next 16 3-byte entries of a 0x180 ring (or -1);
-   0x48ead0 net_sendPlayerLevels: packet 0x0e, a 4-bit level (value / 10 + 1, at most 15) per object, two per byte;
+   0x48ead0 net_sendItemStates: packet 0x0e, a 4-bit level (value / 10 + 1, at most 15) per object, two per byte;
    0x48e0f0 net_sendPlayerInfo(player): packet 0x02, the player's name, team, colours and parts, sent once when flagged;
    0x48e680 net_sendMatchEvent: packets 0x03..0x0d for the first pending match event (strings, team and score changes);
    0x48e2c0 net_sendPlayerState(player): the player's state (position, angles, flags) and five shot slots */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 THISCALL void net_sendFlagPiece(char *scene, DWORD p);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-THISCALL void net_sendPlayerLevels(char *scene);
+THISCALL void net_sendItemStates(char *scene);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 THISCALL void net_sendPlayerInfo(char *scene, DWORD p);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
@@ -3641,11 +3641,11 @@ int frontEnd_drawProgress(void);
    0x9dd564 / 0x9dd6cc with 0x68039c), two buttons (the one under the cursor bright) and the border */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 DWORD newIdForm_draw(void);
-/* 0x409bc0 arena_drawNameDialog(): the arena name dialog: frame, a cyan box, title 0x751fa4, two labels and the name
+/* 0x409bc0 lobby_drawPlayerSetup(): the arena name dialog: frame, a cyan box, title 0x751fa4, two labels and the name
    0x4db560 (hidden while edited, 0x68039c); without a message (0x4dbbd0) the label under the cursor gets a shadow
    and a highlight; three buttons (0x7521a4, 0x80 apart), the border */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-void arena_drawNameDialog(void);
+void lobby_drawPlayerSetup(void);
 /* batch 120 (lifted/grp66.c): the room's server dialog and the two skirmish briefing screens */
 /* 0x439e00 newIdConfirm_draw(): the room's server dialog (only its frame while a message is open): title 0x758da4, an
    underline, the server name 0x9dd1d8 in a green-framed box, a note 0x758e24, two buttons (0x758f24, the one under
@@ -3777,7 +3777,7 @@ void setup_drawSoundPage(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void mainmenu_drawReplaySelect(void);
 /* 0x40cf80 lobbyPlayer_draw(): the arena tunnel (arena_drawTunnel), then in modes other than 0 / 1 (0x4dbb3c) and
-   outside sub-state 5 (0x4db51c) the arena name dialog (arena_drawNameDialog) or, while a message is open, its frame */
+   outside sub-state 5 (0x4db51c) the arena name dialog (lobby_drawPlayerSetup) or, while a message is open, its frame */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 DWORD lobbyPlayer_draw(void);
 /* 0x427830 setup_frameSoundPage() / 0x427880 setup_frameGraphicPage(): the setup tunnel (setup_drawTunnel), then in modes other than
@@ -4493,7 +4493,7 @@ void mapList_ok(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 int net_sendChat(const char *text);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-DWORD arena_editTitle(void);
+DWORD arena_editAddress(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 DWORD menu_keyStartFade(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
@@ -7298,7 +7298,7 @@ ST(space_transformPoint, xform_setup();,
 #define ORIG4(a, b, c, d) G32(a) = irnd(-400, 400); G32(b) = irnd(-400, 400); G32(c) = irnd(-400, 400); G32(d) = irnd(-400, 400);
 V0(setupGraphic_layout, 0x420480, fill((void *)0x4ddde0, 0x90); ORIG4(0x4dddd0, 0x4dddd4, 0x4ddddc, 0x4dddd8))
 V0(newIdForm_layout, 0x431b70, fill((void *)0x9dce50, 0x60); ORIG4(0x9dd6e8, 0x9dd6ec, 0x9dd6f4, 0x9dd6f0))
-V0(arenaNameDialog_layout, 0x403f80, fill((void *)0x4db588, 0x60); ORIG4(0x4dbb68, 0x4dbb6c, 0x4dbb70, 0x4dbb64))
+V0(playerSetup_layout, 0x403f80, fill((void *)0x4db588, 0x60); ORIG4(0x4dbb68, 0x4dbb6c, 0x4dbb70, 0x4dbb64))
 V0(roomLogin_layout, 0x431ae0, fill((void *)0x9dd7e0, 0x50); ORIG4(0x9dd358, 0x9dd35c, 0x9dd364, 0x9dd360))
 V0(skirmishList_layout, 0x4437b0, fill((void *)0x9ef220, 0xa0); ORIG4(0x9f16a8, 0x9f16ac, 0x9f16b0, 0x9f16b4))
 V0(account_layout, 0x431c50, fill((void *)0x9dd400, 0x60); ORIG4(0x9dd368, 0x9dd36c, 0x9dd370, 0x9dd374))
@@ -9256,7 +9256,7 @@ static void levels_setup(void)
 		SF(e, 0) = irnd(0, 9) ? (float)irnd(-100, 300) + irnd(0, 99) / 100.0f : (float)irnd(-0x7fffffff, 0x7fffffff);
 	}
 }
-ST(net_sendPlayerLevels, levels_setup();, (TC(void, 0x48ead0, char *)(SCENE), 0), (net_sendPlayerLevels(SCENE), 0))
+ST(net_sendItemStates, levels_setup();, (TC(void, 0x48ead0, char *)(SCENE), 0), (net_sendItemStates(SCENE), 0))
 static void playerinfo_setup(void)
 {
 	sendrec_setup();
@@ -12982,9 +12982,9 @@ static void arenaname_setup(void)
 	for (int k = 0; k < 3; k++) fill_str((char *)0x7521a4 + k * 0x80, 30, 32, 126);
 	G32(0x4dbbd0) = irnd(0, 3) ? 0 : 1;
 	if (irnd(0, 1)) { G32(0x4ded68) = G32(0x4dbb68) + irnd(0x40, 0x120); G32(0x4ded6c) = G32(0x4dbb6c) + irnd(0x60, 0xa0); }
-	pointer_on(0x4db588, 6);   /* arenaNameDialog_hitTest's rectangles */
+	pointer_on(0x4db588, 6);   /* playerSetup_hitTest's rectangles */
 }
-ST(arena_drawNameDialog, arenaname_setup();, (CALL_PLAIN(0x409bc0, 0, 0, 0, 0, 0), 0), (arena_drawNameDialog(), 0))   /* its eax goes up to menu_frame, which ignores it (tools/eaxuse.py) */
+ST(lobby_drawPlayerSetup, arenaname_setup();, (CALL_PLAIN(0x409bc0, 0, 0, 0, 0, 0), 0), (lobby_drawPlayerSetup(), 0))   /* its eax goes up to menu_frame, which ignores it (tools/eaxuse.py) */
 /* batch 120 */
 /* the server dialog: dlgwin_setup's window at 0x9dd1a0, its texts, the confirmation open now and then (the cursor
    then sometimes over one of its buttons) */
@@ -14676,7 +14676,7 @@ ST(net_sendChat, gen_setup(g_gs_4512c0, g_gi_4512c0, g_gb_4512c0);, CALL_PLAIN(0
 static const DWORD g_gs_405230[] = { 0x401460, 0, 0x431560, 1, 0x43f460, 1, 0 };
 static const DWORD g_gi_405230[] = { 0x4db714, 0x4db8c8, 0x4db8cc, 0x4dbbd4, 0x4dbbd8, 0x68039c, 0x9da3d8, 0x9da3dc, 0x9da434, 0x9dbf10, 0 };
 static const DWORD g_gb_405230[] = { 0x9dc92c, 0 };
-ST(arena_editTitle, gen_setup(g_gs_405230, g_gi_405230, g_gb_405230);, CALL_PLAIN(0x405230, 0, g_a[0], g_a[1], g_a[2], g_a[3]), (DWORD)(arena_editTitle()))
+ST(arena_editAddress, gen_setup(g_gs_405230, g_gi_405230, g_gb_405230);, CALL_PLAIN(0x405230, 0, g_a[0], g_a[1], g_a[2], g_a[3]), (DWORD)(arena_editAddress()))
 static const DWORD g_gs_4318b0[] = { 0x401600, 1, 0 };
 static const DWORD g_gi_4318b0[] = { 0x4df01c, 0x4e0458, 0x5b1da8, 0x6803a0, 0x9dae70, 0 };
 static const DWORD g_gb_4318b0[] = { 0 };
@@ -17228,7 +17228,7 @@ static const STest g_stests[] = {
 	T(object_deactivate, 0, 4, 600), T(playerRecord_resetColourGrid, 0, 4, 100), T(script_pushMessage, 0, 4, 1000), T(shape_markMaterialsChanged, 0, 4, 300),
 	T(vec3_scaleCopy, 0, 4, 2000), T(vec_rotate, 0, 4, 2000), T(space_transformPoint, 0, 4, 2000),
 	/* batch 8 */
-	T(setupGraphic_layout, 0, 8, 0), T(newIdForm_layout, 0, 8, 0), T(arenaNameDialog_layout, 0, 8, 0), T(roomLogin_layout, 0, 8, 0),
+	T(setupGraphic_layout, 0, 8, 0), T(newIdForm_layout, 0, 8, 0), T(playerSetup_layout, 0, 8, 0), T(roomLogin_layout, 0, 8, 0),
 	T(skirmishList_layout, 0, 8, 0), T(account_layout, 0, 8, 0), T(briefing_layout, 0, 8, 0), T(setup_selectSoundTab, 0, 6, 0),
 	T(setup_selectControlTab, 0, 6, 0), T(lobby_enterPlayerScreen, 0, 10, 0), T(room_openNewIdConfirm, 0, 6, 0), T(room_enterGameList, 0, 6, 0),
 	T(room_openLogin, 0, 20, 0), T(net_resetState, 0, 4, 0), T(missions_clear, 0, 4, 0), T(arena_stepMap, 0, 200, 0),
@@ -17404,7 +17404,7 @@ static const STest g_stests[] = {
 	T(autoplay_startRecording, 1, 400, 0), T(dplay_enumConnections, 1, 400, 0),
 	/* batch 49 */
 	T(net_inetAddr, 1, 40, 0), T(net_asyncSelect, 1, 40, 0), T(net_getLocalAddress, 1, 40, 0), T(net_closeSockets, 1, 40, 0),
-	T(net_resolveHost, 1, 40, 0), T(net_sendFlagPiece, 0, 400, 0), T(net_sendPlayerLevels, 0, 400, 0), T(net_sendPlayerInfo, 0, 400, 0),
+	T(net_resolveHost, 1, 40, 0), T(net_sendFlagPiece, 0, 400, 0), T(net_sendItemStates, 0, 400, 0), T(net_sendPlayerInfo, 0, 400, 0),
 	T(net_sendMatchEvent, 0, 400, 0), T(net_sendPlayerState, 0, 400, 0),
 	/* batch 50 */
 	T(quat_toAxisAngle, 0, 300, 0), T(skel_poseBones, 0, 400, 0), T(ViewVolume_projectObject, 0, 400, 0),
@@ -17585,7 +17585,7 @@ static const STest g_stests[] = {
 	/* batch 118 */
 	T(profile_drawDeleteQuestion, 0, 200, 0), T(profile_drawLogOutQuestion, 0, 200, 0), T(profile_drawNewDialog, 0, 200, 0), T(armc_drawWeightLine, 0, 300, 0),
 	/* batch 119 */
-	T(frontEnd_drawProgress, 0, 200, 0), T(newIdForm_draw, 0, 200, 0), T(arena_drawNameDialog, 0, 200, 0),
+	T(frontEnd_drawProgress, 0, 200, 0), T(newIdForm_draw, 0, 200, 0), T(lobby_drawPlayerSetup, 0, 200, 0),
 	/* batch 120 */
 	T(newIdConfirm_draw, 0, 200, 0), T(missionBriefing_draw, 0, 200, 0), T(missionList_draw, 0, 200, 0),
 	/* batch 121 */
@@ -17710,7 +17710,7 @@ static const STest g_stests[] = {
 	T(chat_textField, 0, 200, 0), T(chat_keepLastLine, 0, 200, 0), T(replaySelect_ok, 0, 200, 0), T(newIdConfirm_clicks, 0, 200, 0),
 	/* batch 172 */
 	T(arena_editPassword, 0, 200, 0), T(room_editPassword, 0, 200, 0), T(sound_playVolume, 0, 200, 0), T(chat_closeLine, 0, 200, 0),
-	T(messageBox_keyClose, 0, 200, 0), T(mapList_ok, 0, 200, 0), T(net_sendChat, 0, 200, 0), T(arena_editTitle, 0, 200, 0),
+	T(messageBox_keyClose, 0, 200, 0), T(mapList_ok, 0, 200, 0), T(net_sendChat, 0, 200, 0), T(arena_editAddress, 0, 200, 0),
 	T(menu_keyStartFade, 0, 200, 0), T(arena_leaveSession, 0, 200, 0), T(arena_editName, 0, 200, 0), T(arena_editComment, 0, 200, 0),
 	T(room_editName, 0, 200, 0), T(sound_loadMenuSounds, 0, 200, 0), T(account_keys, 0, 200, 0), T(mapList_stepGameType, 0, 200, 0),
 	T(roomLogin_editId, 0, 200, 0), T(arena_editTimeLimit, 0, 200, 0), T(setup_soundTabKeys, 0, 200, 0), T(arena_editFragLimit, 0, 200, 0),
@@ -18118,7 +18118,7 @@ static const struct { DWORD addr; void *fn; const char *name; } g_hooks3[] = {
 	{ 0x482a40, (void *)space_transformPoint, "space_transformPoint" },
 	/* batch 8 */
 	{ 0x420480, (void *)setupGraphic_layout, "setupGraphic_layout" }, { 0x431b70, (void *)newIdForm_layout, "newIdForm_layout" },
-	{ 0x403f80, (void *)arenaNameDialog_layout, "arenaNameDialog_layout" }, { 0x431ae0, (void *)roomLogin_layout, "roomLogin_layout" },
+	{ 0x403f80, (void *)playerSetup_layout, "playerSetup_layout" }, { 0x431ae0, (void *)roomLogin_layout, "roomLogin_layout" },
 	{ 0x4437b0, (void *)skirmishList_layout, "skirmishList_layout" }, { 0x431c50, (void *)account_layout, "account_layout" },
 	{ 0x443840, (void *)briefing_layout, "briefing_layout" }, { 0x420ad0, (void *)setup_selectSoundTab, "setup_selectSoundTab" },
 	{ 0x420ba0, (void *)setup_selectControlTab, "setup_selectControlTab" }, { 0x404ac0, (void *)lobby_enterPlayerScreen, "lobby_enterPlayerScreen" },
@@ -18404,7 +18404,7 @@ static const struct { DWORD addr; void *fn; const char *name; } g_hooks3[] = {
 	{ 0x4547c0, (void *)net_inetAddr, "net_inetAddr" }, { 0x452170, (void *)net_asyncSelect, "net_asyncSelect" },
 	{ 0x454220, (void *)net_getLocalAddress, "net_getLocalAddress" }, { 0x4520e0, (void *)net_closeSockets, "net_closeSockets" },
 	{ 0x4547d0, (void *)net_resolveHost, "net_resolveHost" }, { 0x48e990, (void *)net_sendFlagPiece, "net_sendFlagPiece" },
-	{ 0x48ead0, (void *)net_sendPlayerLevels, "net_sendPlayerLevels" }, { 0x48e0f0, (void *)net_sendPlayerInfo, "net_sendPlayerInfo" },
+	{ 0x48ead0, (void *)net_sendItemStates, "net_sendItemStates" }, { 0x48e0f0, (void *)net_sendPlayerInfo, "net_sendPlayerInfo" },
 	{ 0x48e680, (void *)net_sendMatchEvent, "net_sendMatchEvent" }, { 0x48e2c0, (void *)net_sendPlayerState, "net_sendPlayerState" },
 	/* batch 50 */
 	{ 0x47d260, (void *)quat_toAxisAngle, "quat_toAxisAngle" }, { 0x46f8c0, (void *)skel_poseBones, "skel_poseBones" },
@@ -18640,7 +18640,7 @@ static const struct { DWORD addr; void *fn; const char *name; } g_hooks3[] = {
 	{ 0x44de00, (void *)profile_drawNewDialog, "profile_drawNewDialog" }, { 0x41dab0, (void *)armc_drawWeightLine, "armc_drawWeightLine" },
 	/* batch 119 */
 	{ 0x41f100, (void *)frontEnd_drawProgress, "frontEnd_drawProgress" }, { 0x4399c0, (void *)newIdForm_draw, "newIdForm_draw" },
-	{ 0x409bc0, (void *)arena_drawNameDialog, "arena_drawNameDialog" },
+	{ 0x409bc0, (void *)lobby_drawPlayerSetup, "lobby_drawPlayerSetup" },
 	/* batch 120 */
 	{ 0x439e00, (void *)newIdConfirm_draw, "newIdConfirm_draw" }, { 0x4456b0, (void *)missionBriefing_draw, "missionBriefing_draw" },
 	{ 0x444f40, (void *)missionList_draw, "missionList_draw" },
@@ -18807,7 +18807,7 @@ static const struct { DWORD addr; void *fn; const char *name; } g_hooks3[] = {
 	{ 0x404f90, (void *)arena_editPassword, "arena_editPassword" }, { 0x433a80, (void *)room_editPassword, "room_editPassword" },
 	{ 0x456e50, (void *)sound_playVolume, "sound_playVolume" }, { 0x431600, (void *)chat_closeLine, "chat_closeLine" },
 	{ 0x431950, (void *)messageBox_keyClose, "messageBox_keyClose" }, { 0x403640, (void *)mapList_ok, "mapList_ok" },
-	{ 0x4512c0, (void *)net_sendChat, "net_sendChat" }, { 0x405230, (void *)arena_editTitle, "arena_editTitle" },
+	{ 0x4512c0, (void *)net_sendChat, "net_sendChat" }, { 0x405230, (void *)arena_editAddress, "arena_editAddress" },
 	{ 0x4318b0, (void *)menu_keyStartFade, "menu_keyStartFade" }, { 0x452fe0, (void *)arena_leaveSession, "arena_leaveSession" },
 	{ 0x404cd0, (void *)arena_editName, "arena_editName" }, { 0x404d70, (void *)arena_editComment, "arena_editComment" },
 	{ 0x4339e0, (void *)room_editName, "room_editName" }, { 0x42bd40, (void *)sound_loadMenuSounds, "sound_loadMenuSounds" },

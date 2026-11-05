@@ -390,7 +390,7 @@ void THISCALL (object_initObjectBy)(u8 *s, int i, const u8 *type)
 	mo->glowSize = ((const ObjectType *)type)->glowSize;
 	mo->glowColour = ((const ObjectType *)type)->glowColour;
 	memset(obj + offsetof(MapObject, unit), 0, 7 * 4);   /* unit .. poseStale */
-	if (((u8 *)shape)) {
+	if (shape) {
 		const float *c = shape->centre;
 		float *out = mo->pos;
 		out[0] = f32(fadd_m(fmul_m(fld_m(&m[8]), &c[2]) + fmul_m(fld_m(&m[4]), &c[1]) + fmul_m(fld_m(&m[0]), &c[0]), &m[12]));
