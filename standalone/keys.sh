@@ -21,10 +21,15 @@ set +e
 powershell -NoProfile -Command "Start-Process -FilePath 'C:\Users\Alexander\Desktop\Axis\AxisRC.exe' -WorkingDirectory 'C:\Users\Alexander\Desktop\Axis'"
 sleep 12
 shot menu0
-# the steps: <key> <wait> <shot name> ... (key: a virtual-key code, or "-" for none)
+# the steps: <key> <wait> <shot name> ... (key: a virtual-key code, "-" for none, or "@<command>" for a WinDrive
+# command such as "@click 2060 1140": the window's pixels, twice a 0.5 screenshot's)
 shift
 while [ $# -ge 3 ]; do
-	[ "$1" != "-" ] && "$M/k_rc.sh" - "$2" "$1" || sleep "$2"
+	if [ "${1:0:1}" = "@" ]; then
+		timeout 30 "$O/um.sh" win drive --proc AxisRC focus "${1:1}" >/dev/null; sleep "$2"
+	else
+		[ "$1" != "-" ] && "$M/k_rc.sh" - "$2" "$1" || sleep "$2"
+	fi
 	shot "$3"
 	shift 3
 done
