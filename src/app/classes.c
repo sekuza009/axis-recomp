@@ -136,12 +136,12 @@ u32 THISCALL (Texture_dtor)(u32 *self)
 }
 DELETING(Texture, Texture_dtor)
 /* the six global Texture objects' (the game's class Texture: our TextureBank) destructors at exit */
-u32 (static_destroyTex64x64)(void) { return Texture_dtor((u32 *)ADDR(g_staticTex64x64)); }
-u32 (static_destroyTex128x64)(void) { return Texture_dtor((u32 *)ADDR(g_staticTex128x64)); }
-u32 (static_destroyTex256x64)(void) { return Texture_dtor((u32 *)ADDR(g_staticTex256x64)); }
-u32 (static_destroyTex128x128)(void) { return Texture_dtor((u32 *)ADDR(g_staticTex128x128)); }
-u32 (static_destroyTex256x128)(void) { return Texture_dtor((u32 *)ADDR(g_staticTex256x128)); }
-u32 (static_destroyTex256x256)(void) { return Texture_dtor((u32 *)ADDR(g_staticTex256x256)); }
+u32 (static_destroyTex64x64)(void) { return Texture_dtor((u32 *)OBJ(g_texture64x64)); }
+u32 (static_destroyTex128x64)(void) { return Texture_dtor((u32 *)OBJ(g_texture128x64)); }
+u32 (static_destroyTex256x64)(void) { return Texture_dtor((u32 *)OBJ(g_texture256x64)); }
+u32 (static_destroyTex128x128)(void) { return Texture_dtor((u32 *)OBJ(g_texture128x128)); }
+u32 (static_destroyTex256x128)(void) { return Texture_dtor((u32 *)OBJ(g_texture256x128)); }
+u32 (static_destroyTex256x256)(void) { return Texture_dtor((u32 *)OBJ(g_texture256x256)); }
 
 /* TimeSync (vtable 0x4aa46c) */
 void *THISCALL (TimeSync_ctor)(u32 *self) { self[0] = VT(TimeSync, 0x4aa46c); TimeSync_clear(self); return self; }
@@ -189,7 +189,7 @@ DELETING(BMPRGBFile, BMPRGBFile_dtor)
 /* ErrorLog (vtable 0x4aa2a0): the class-name records */
 void THISCALL (ErrorLog_dtor)(u32 *self) { self[0] = VT(ErrorLog, 0x4aa2a0); }
 DELETING(ErrorLog, ErrorLog_dtor)
-void (static_endSoundRtti)(void) { ErrorLog_dtor(g_logSound); }
+void (static_endSoundLog)(void) { ErrorLog_dtor(g_logSound); }
 void *THISCALL (ErrorLog_ctor)(u32 *self, const char *name, int b)
 {
 	self[0] = VT(ErrorLog, 0x4aa2a0);

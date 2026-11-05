@@ -365,7 +365,7 @@ int (app_init)(void *inst, int show)
 	void *dc = GetDC(NULL);   /* GetDC */
 	g_desktopDC = dc;
 	g_desktopDepth = GetDeviceCaps(dc, 12);   /* BITSPIXEL */
-	input_setDefaultKeyBindings();
+	input_initDikCodes();
 	cfg_init();
 	app_screenSizeForMode();
 	app_reportDisplayModeError(app_setDisplayMode(g_screenW, g_screenH, 4, (g_videoDepth + 1) * 16));   /* CDS_FULLSCREEN */

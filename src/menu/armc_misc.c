@@ -154,7 +154,7 @@ void THISCALL (armc_rotateFromCursor)(Scene *scene, const u32 *eye, const u32 *f
 	light[0] = VT(Light, 0x4aa248);
 	Light_clearCounts(light);
 	u8 white[4] = { 0xff, 0xff, 0xff, 0xff }, dim[4] = { 0xf0, 0xc0, 0xc0, 0x60 };
-	frameTimer_average(scene);
+	scene_averageFrameTime(scene);
 	u32 x44 = BITS(scene->frameTime);
 	float far = view_farPlane(), near = view_nearPlane(), fov = view_angle();
 	camera_setupView(stage, eye, forward, up,

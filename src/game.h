@@ -301,7 +301,7 @@ typedef struct { u32 vtable; void *banks[6]; i32 count; } TextureManager;   /* t
 #define texRecord_init(record, name, id, flags, h1, s1, v1, h2, s2, v2) GAME_THISFN(texRecord_init, 0x454e60, void, void *, const char *, int, u32, u32, u32, u32, u32, u32, u32)(record, name, id, flags, h1, s1, v1, h2, s2, v2)   /* a texture record set up */
 #define tex_textureFileExist(tm, name) GAME_THISFN(tex_textureFileExist, 0x4557e0, int, void *, const char *)(tm, name)
 #define match_startRound(scene) GAME_THISFN(match_startRound, 0x49df10, void, void *)(scene)
-#define frameTimer_average(scene) GAME_THISFN(frameTimer_average, 0x461210, long double, void *)(scene)   /* (answers in ST0) */
+#define scene_averageFrameTime(scene) GAME_THISFN(scene_averageFrameTime, 0x461210, long double, void *)(scene)   /* (answers in ST0) */
 #define match_combatInput(scene) GAME_THISFN(match_combatInput, 0x49d290, void, void *)(scene)
 #define match_frame(scene) GAME_THISFN(match_frame, 0x4988e0, void, void *)(scene)
 #define hud_pass(scene) GAME_THISFN(hud_pass, 0x4982f0, void, void *)(scene)
@@ -429,7 +429,7 @@ typedef struct { u32 vtable; void *banks[6]; i32 count; } TextureManager;   /* t
 #define input_justPressed(key) GAME_FN(input_justPressed, 0x401600, int, int)(key)
 #define app_setDataPaths() GAME_FN(app_setDataPaths, 0x43f5a0, void, void)()
 #define data_loadMessages() GAME_FN(data_loadMessages, 0x42b3e0, void, void)()
-#define input_setDefaultKeyBindings() GAME_FN(input_setDefaultKeyBindings, 0x42fd40, void, void)()
+#define input_initDikCodes() GAME_FN(input_initDikCodes, 0x42fd40, void, void)()
 #define cfg_init() GAME_FN(cfg_init, 0x42eca0, void, void)()
 #define app_screenSizeForMode() GAME_FN(app_screenSizeForMode, 0x43f640, void, void)()
 #define app_registerWindowClassEx(wc) GAME_FN(app_registerWindowClassEx, 0x43f840, int, void *)(wc)   /* the class registered on old Windows */
@@ -784,7 +784,7 @@ typedef struct { float r, g, b, a; } Colour;
 #define cfg_readAudioLines(f) GAME_FN(cfg_readAudioLines, 0x42e080, void, void *)(f)             /* its sound section */
 #define cfg_readGraphics(f) GAME_FN(cfg_readGraphics, 0x42e240, void, void *)(f)     /* its graphics section */
 #define cfg_parseKeyNames(f) GAME_FN(cfg_parseKeyNames, 0x42e730, void, void *)(f)      /* its key bindings */
-#define input_applyKeyBindings() GAME_FN(input_applyKeyBindings, 0x42c410, void, void)()     /* the default key bindings */
+#define input_setDefaultBindings() GAME_FN(input_setDefaultBindings, 0x42c410, void, void)()     /* the default key bindings */
 #define armc_enterParts() GAME_FN(armc_enterParts, 0x40ee20, u32, void)()
 #define dplay_join(session, id, name, colour) GAME_FN(dplay_join, 0x453180, int, int, u32, const char *, int)(session, id, name, colour)   /* a join: 500 joined */
 #define tunnel_addRing() GAME_FN(tunnel_addRing, 0x441200, TunnelRing *, void)()   /* one more tunnel ring */
@@ -792,7 +792,7 @@ typedef struct { float r, g, b, a; } Colour;
 #define crypt_countingKey(p, key) GAME_FN(crypt_countingKey, 0x42b3c0, int, u8 *, u8)(p, key)   /* a 0x4c-byte record decoded (xor key, key + 1, ...) */
 #define cfg_loadAxisCfg() GAME_FN(cfg_loadAxisCfg, 0x42d730, u32, void)()
 #define setup_bindKey(key) GAME_FN(setup_bindKey, 0x421680, void, int)(key)   /* (by use) the row being bound gets key */
-#define setup_keepKeyBindings() GAME_FN(setup_keepKeyBindings, 0x420c10, void, void)()   /* the default key bindings */
+#define setup_defaultBindings() GAME_FN(setup_defaultBindings, 0x420c10, void, void)()   /* the default key bindings */
 #define music_shutdown() GAME_FN(music_shutdown, 0x457310, void, void)()
 
 /* ---- devices and sound (app/devices.c, sound/sound_basic.c) ---- */
@@ -854,7 +854,7 @@ typedef struct { float r, g, b, a; } Colour;
 #define net_disconnect() GAME_FN(net_disconnect, 0x451e60, u32, void)()   /* leaving the network (net/net_tables.c) */
 #define GetModuleHandleA(name) IMPORT(0x4a915c, void *, const char *)(name)
 #define glWindow_resize(w, h) GAME_FN(glWindow_resize, 0x468450, int, int, int)(w, h)   /* app/win32.c */
-#define timer_getGameTime(timer) GAME_THISFN(timer_getGameTime, 0x487490, long double, void *)(timer)   /* seconds since its last call */
+#define TimeSync_frameTime(timer) GAME_THISFN(TimeSync_frameTime, 0x487490, long double, void *)(timer)   /* seconds since its last call */
 #define loading_draw_bits(progress) GAME_FN(loading_draw, 0x469320, void, u32)(progress)   /* the loading screen at progress (float bits) */
 #define replaySelect_allIn() GAME_FN(replaySelect_allIn, 0x4417f0, void, void)()   /* every map of the replay selection list in */
 #define replaySelect_toggle(i) GAME_FN(replaySelect_toggle, 0x4417c0, void, int)(i)   /* map i of the replay selection list in or out */
@@ -987,27 +987,27 @@ typedef struct { float r, g, b, a; } Colour;
 #define Texture_dtor(self) GAME_THISFN(Texture_dtor, 0x455030, u32, void *)(self)   /* in fact Texture's destructor */
 
 /* ---- start-up pieces called by the start-up pairs (app/statics.c) ---- */
-#define BMPRGBFile_rtti() GAME_FN(BMPRGBFile_rtti, 0x46ccb0, void *, void)()
-#define CollisionVolume_rtti() GAME_FN(CollisionVolume_rtti, 0x481340, void *, void)()
-#define Console_rtti() GAME_FN(Console_rtti, 0x460520, void *, void)()
-#define Light_rtti() GAME_FN(Light_rtti, 0x483d00, void *, void)()
-#define PackedColor_rtti() GAME_FN(PackedColor_rtti, 0x46da70, void *, void)()
-#define RealColor_rtti() GAME_FN(RealColor_rtti, 0x46d270, void *, void)()
-#define Scene_rtti() GAME_FN(Scene_rtti, 0x48b3c0, void *, void)()
-#define ShapeManager_rtti() GAME_FN(ShapeManager_rtti, 0x4669c0, void *, void)()
-#define Shape_rtti() GAME_FN(Shape_rtti, 0x463b30, void *, void)()
-#define SkeletonManager_rtti() GAME_FN(SkeletonManager_rtti, 0x46ae10, void *, void)()
-#define Skeleton_rtti() GAME_FN(Skeleton_rtti, 0x469930, void *, void)()
-#define Sound_rtti() GAME_FN(Sound_rtti, 0x456c90, void *, void)()
-#define Stage_rtti() GAME_FN(Stage_rtti, 0x46ff20, void *, void)()
+#define BMPRGBFile_initLog() GAME_FN(BMPRGBFile_initLog, 0x46ccb0, void *, void)()
+#define CollisionVolume_initLog() GAME_FN(CollisionVolume_initLog, 0x481340, void *, void)()
+#define Console_initLog() GAME_FN(Console_initLog, 0x460520, void *, void)()
+#define Light_initLog() GAME_FN(Light_initLog, 0x483d00, void *, void)()
+#define PackedColor_initLog() GAME_FN(PackedColor_initLog, 0x46da70, void *, void)()
+#define RealColor_initLog() GAME_FN(RealColor_initLog, 0x46d270, void *, void)()
+#define Scene_initLog() GAME_FN(Scene_initLog, 0x48b3c0, void *, void)()
+#define ShapeManager_initLog() GAME_FN(ShapeManager_initLog, 0x4669c0, void *, void)()
+#define Shape_initLog() GAME_FN(Shape_initLog, 0x463b30, void *, void)()
+#define SkeletonManager_initLog() GAME_FN(SkeletonManager_initLog, 0x46ae10, void *, void)()
+#define Skeleton_initLog() GAME_FN(Skeleton_initLog, 0x469930, void *, void)()
+#define Sound_initLog() GAME_FN(Sound_initLog, 0x456c90, void *, void)()
+#define Stage_initLog() GAME_FN(Stage_initLog, 0x46ff20, void *, void)()
 #define TextureManager_ctor() GAME_FN(TextureManager_ctor, 0x42b330, int, void)()
-#define TextureManager_rtti() GAME_FN(TextureManager_rtti, 0x456940, void *, void)()
-#define Texture_rtti() GAME_FN(Texture_rtti, 0x454fe0, void *, void)()
-#define TimeSync_rtti() GAME_FN(TimeSync_rtti, 0x4873e0, void *, void)()
-#define UnitPartInfo_rtti() GAME_FN(UnitPartInfo_rtti, 0x46f360, void *, void)()
-#define UnitPoseInfo_rtti() GAME_FN(UnitPoseInfo_rtti, 0x46f3c0, void *, void)()
-#define Unit_rtti() GAME_FN(Unit_rtti, 0x46f420, void *, void)()
-#define ViewVolume_rtti() GAME_FN(ViewVolume_rtti, 0x483f60, void *, void)()
+#define TextureManager_initLog() GAME_FN(TextureManager_initLog, 0x456940, void *, void)()
+#define Texture_initLog() GAME_FN(Texture_initLog, 0x454fe0, void *, void)()
+#define TimeSync_initLog() GAME_FN(TimeSync_initLog, 0x4873e0, void *, void)()
+#define UnitPartInfo_initLog() GAME_FN(UnitPartInfo_initLog, 0x46f360, void *, void)()
+#define UnitPoseInfo_initLog() GAME_FN(UnitPoseInfo_initLog, 0x46f3c0, void *, void)()
+#define Unit_initLog() GAME_FN(Unit_initLog, 0x46f420, void *, void)()
+#define ViewVolume_initLog() GAME_FN(ViewVolume_initLog, 0x483f60, void *, void)()
 #define static_initTimeSync() GAME_FN(static_initTimeSync, 0x468720, void, void)()
 #define static_initTex64x64() GAME_FN(static_initTex64x64, 0x42b130, void, void)()
 #define static_initTex128x64() GAME_FN(static_initTex128x64, 0x42b1a0, void, void)()
@@ -1022,27 +1022,27 @@ typedef struct { float r, g, b, a; } Colour;
 #define static_registerTex256x128Dtor() GAME_FN(static_registerTex256x128Dtor, 0x42b2b0, int, void)()
 #define static_registerTex256x256Dtor() GAME_FN(static_registerTex256x256Dtor, 0x42b300, int, void)()
 #define static_registerTextureManagerDtor() GAME_FN(static_registerTextureManagerDtor, 0x42b370, int, void)()
-#define static_registerTextureRttiDtor() GAME_FN(static_registerTextureRttiDtor, 0x455000, int, void)()
-#define static_registerTextureManagerRttiDtor() GAME_FN(static_registerTextureManagerRttiDtor, 0x456960, int, void)()
-#define static_registerSoundRttiDtor() GAME_FN(static_registerSoundRttiDtor, 0x456cb0, int, void)()
-#define static_registerConsoleRttiDtor() GAME_FN(static_registerConsoleRttiDtor, 0x460540, int, void)()
-#define static_registerShapeRttiDtor() GAME_FN(static_registerShapeRttiDtor, 0x463b50, int, void)()
-#define static_registerShapeManagerRttiDtor() GAME_FN(static_registerShapeManagerRttiDtor, 0x4669e0, int, void)()
+#define static_registerTextureLogDtor() GAME_FN(static_registerTextureLogDtor, 0x455000, int, void)()
+#define static_registerTextureManagerLogDtor() GAME_FN(static_registerTextureManagerLogDtor, 0x456960, int, void)()
+#define static_registerSoundLogDtor() GAME_FN(static_registerSoundLogDtor, 0x456cb0, int, void)()
+#define static_registerConsoleLogDtor() GAME_FN(static_registerConsoleLogDtor, 0x460540, int, void)()
+#define static_registerShapeLogDtor() GAME_FN(static_registerShapeLogDtor, 0x463b50, int, void)()
+#define static_registerShapeManagerLogDtor() GAME_FN(static_registerShapeManagerLogDtor, 0x4669e0, int, void)()
 #define static_registerTimeSyncDtor() GAME_FN(static_registerTimeSyncDtor, 0x468730, int, void)()
-#define static_registerSkeletonRttiDtor() GAME_FN(static_registerSkeletonRttiDtor, 0x469950, int, void)()
-#define static_registerSkeletonManagerRttiDtor() GAME_FN(static_registerSkeletonManagerRttiDtor, 0x46ae30, int, void)()
-#define static_registerBMPRGBFileRttiDtor() GAME_FN(static_registerBMPRGBFileRttiDtor, 0x46ccd0, int, void)()
-#define static_registerRealColorRttiDtor() GAME_FN(static_registerRealColorRttiDtor, 0x46d290, int, void)()
-#define static_registerPackedColorRttiDtor() GAME_FN(static_registerPackedColorRttiDtor, 0x46da90, int, void)()
-#define static_registerUnitPartInfoRttiDtor() GAME_FN(static_registerUnitPartInfoRttiDtor, 0x46f380, int, void)()
-#define static_registerUnitPoseInfoRttiDtor() GAME_FN(static_registerUnitPoseInfoRttiDtor, 0x46f3e0, int, void)()
-#define static_registerUnitRttiDtor() GAME_FN(static_registerUnitRttiDtor, 0x46f440, int, void)()
-#define static_registerStageRttiDtor() GAME_FN(static_registerStageRttiDtor, 0x46ff40, int, void)()
-#define static_registerCollisionVolumeRttiDtor() GAME_FN(static_registerCollisionVolumeRttiDtor, 0x481360, int, void)()
-#define static_registerLightRttiDtor() GAME_FN(static_registerLightRttiDtor, 0x483d20, int, void)()
-#define static_registerViewVolumeRttiDtor() GAME_FN(static_registerViewVolumeRttiDtor, 0x483f80, int, void)()
-#define static_registerTimeSyncRttiDtor() GAME_FN(static_registerTimeSyncRttiDtor, 0x487400, int, void)()
-#define static_registerSceneRttiDtor() GAME_FN(static_registerSceneRttiDtor, 0x48b3e0, int, void)()
+#define static_registerSkeletonLogDtor() GAME_FN(static_registerSkeletonLogDtor, 0x469950, int, void)()
+#define static_registerSkeletonManagerLogDtor() GAME_FN(static_registerSkeletonManagerLogDtor, 0x46ae30, int, void)()
+#define static_registerBMPRGBFileLogDtor() GAME_FN(static_registerBMPRGBFileLogDtor, 0x46ccd0, int, void)()
+#define static_registerRealColorLogDtor() GAME_FN(static_registerRealColorLogDtor, 0x46d290, int, void)()
+#define static_registerPackedColorLogDtor() GAME_FN(static_registerPackedColorLogDtor, 0x46da90, int, void)()
+#define static_registerUnitPartInfoLogDtor() GAME_FN(static_registerUnitPartInfoLogDtor, 0x46f380, int, void)()
+#define static_registerUnitPoseInfoLogDtor() GAME_FN(static_registerUnitPoseInfoLogDtor, 0x46f3e0, int, void)()
+#define static_registerUnitLogDtor() GAME_FN(static_registerUnitLogDtor, 0x46f440, int, void)()
+#define static_registerStageLogDtor() GAME_FN(static_registerStageLogDtor, 0x46ff40, int, void)()
+#define static_registerCollisionVolumeLogDtor() GAME_FN(static_registerCollisionVolumeLogDtor, 0x481360, int, void)()
+#define static_registerLightLogDtor() GAME_FN(static_registerLightLogDtor, 0x483d20, int, void)()
+#define static_registerViewVolumeLogDtor() GAME_FN(static_registerViewVolumeLogDtor, 0x483f80, int, void)()
+#define static_registerTimeSyncLogDtor() GAME_FN(static_registerTimeSyncLogDtor, 0x487400, int, void)()
+#define static_registerSceneLogDtor() GAME_FN(static_registerSceneLogDtor, 0x48b3e0, int, void)()
 
 /* ---- small pieces (app/small.c) ---- */
 #define set_colour_bits(c, r, g, b, a) GAME_FN(Color4_set, 0x41f0e0, void, Colour *, u32, u32, u32, u32)(c, r, g, b, a)   /* Color4_set with float bits */

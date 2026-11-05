@@ -197,12 +197,12 @@
 #define g_serverReply ((u8 *)IMG(0xa052e8))   /* u8[62]; the game server's 62-byte reply (its kind at +0x1e: g_serverReplyKind) */
 #define g_gameServerReply ((u8 *)IMG(0xa0b280))   /* u8[121]; a game server's reply (0x79 bytes; its kind at +0x68: g_gameServerReplyKind) */
 #define g_netRecvRecord ((u8 *)IMG(0xa05638))   /* u8[267]; the receive buffer (cleared as 0x10b bytes; g_netRecvBuffer its start */
-#define g_texture64x64 ((u8 *)IMG(0x4e1878))   /* u8[840004]; the 64 x 64 texture set (a Texture: g_staticTex64x64 its vtable word) */
-#define g_texture128x64 ((u8 *)IMG(0x5b1db8))   /* u8[840004]; the 128 x 64 texture set (g_staticTex128x64 its vtable word) */
-#define g_texture256x64 ((u8 *)IMG(0x680cd8))   /* u8[840004]; the 256 x 64 texture set (g_staticTex256x64 its vtable word) */
-#define g_texture128x128 ((u8 *)IMG(0x76d498))   /* u8[840004]; the 128 x 128 texture set (g_staticTex128x128 its vtable word) */
-#define g_texture256x256 ((u8 *)IMG(0x83a9e0))   /* u8[840004]; the 256 x 256 texture set (g_staticTex256x256 its vtable word) */
-#define g_texture256x128 ((u8 *)IMG(0x90d1e0))   /* u8[840004]; the 256 x 128 texture set (g_staticTex256x128 its vtable word) */
+#define g_texture64x64 ((u8 *)IMG(0x4e1878))   /* u8[840004]; the 64 x 64 texture set (a Texture: g_texture64x64Vtable its vtable word) */
+#define g_texture128x64 ((u8 *)IMG(0x5b1db8))   /* u8[840004]; the 128 x 64 texture set (g_texture128x64Vtable its vtable word) */
+#define g_texture256x64 ((u8 *)IMG(0x680cd8))   /* u8[840004]; the 256 x 64 texture set (g_texture256x64Vtable its vtable word) */
+#define g_texture128x128 ((u8 *)IMG(0x76d498))   /* u8[840004]; the 128 x 128 texture set (g_texture128x128Vtable its vtable word) */
+#define g_texture256x256 ((u8 *)IMG(0x83a9e0))   /* u8[840004]; the 256 x 256 texture set (g_texture256x256Vtable its vtable word) */
+#define g_texture256x128 ((u8 *)IMG(0x90d1e0))   /* u8[840004]; the 256 x 128 texture set (g_texture256x128Vtable its vtable word) */
 #define g_textureSets ((u32 *)IMG(0x83a5e0))   /* u32[8]; the texture manager: its vtable word (g_textureManager), the count, the six sets (TextureManager_clear: 8 words; g_textures points here) */
 #define g_vecOriginXyz ((float *)IMG(0xa0e7a8))   /* float[3]; the origin (0 */
 #define g_vecUnitZXyz ((float *)IMG(0xa0e7c8))   /* float[3]; the unit z axis (0 */
@@ -254,7 +254,7 @@
 #define g_setupColourDim ((u32 *)IMG(0x4ddae0))   /* u32[4]; setup's text colour */
 #define g_skirmishColourLit ((u32 *)IMG(0x9ef208))   /* u32[4]; the skirmish settings' panel colour */
 #define g_skirmishColourDim ((u32 *)IMG(0x9eeac8))   /* u32[4]; the skirmish settings' colour */
-#define g_textColours ((Colour *)IMG(0xa1f100))   /* Colour[16]; the 16 message colours (RGBA floats; color_initTextColours fills them) */
+#define g_textColours ((Colour *)IMG(0xa1f100))   /* Colour[16]; the 16 message colours (RGBA floats; colour_initTextColours fills them) */
 #define g_keyState ((u8 *)IMG(0x4d1e9c))   /* u8[256]; the keyboard's 256 key bytes (0x80: held; DirectInput's GetDeviceState) */
 #define g_dplaySlots ((int *)IMG(0xa0d7a4))   /* int[4]; four DirectPlay connection slots: 1 while open */
 #define g_panelBoxes ((u8 *)IMG(0x4dc550))   /* u8[528]; ARM CENTER's six part panels' boxes (0x58 bytes each: +-600 corners */
@@ -276,7 +276,7 @@
 #define g_setupTopOutlines ((int *)IMG(0x4df918))   /* int[44]; the setup top page's 4 button outlines (copied from the lobby's: setupTop_initOutlines) */
 #define g_outlinesCopy ((int *)IMG(0x9da328))   /* int[44]; a second copy of the lobby's 4 outlines (setupTop_initOutlines; not read elsewhere) */
 #define g_vkTable ((int *)IMG(0x4df054))   /* int[57]; the scan-code row -> virtual key table (input_initVkTable; written only */
-#define g_defaultColours ((u32 *)IMG(0xa1f298))   /* u32[16]; the 16 default packed colours (color_initDefaultColours: RGBA bytes) */
+#define g_defaultColours ((u32 *)IMG(0xa1f298))   /* u32[16]; the 16 default packed colours (colour_initDefaultColours: RGBA bytes) */
 #define g_headList ((int *)IMG(0x4dc3e8))   /* int[50]; the unlocked heads (armc_buildPartLists) */
 #define g_chestList ((int *)IMG(0x4dcd6c))   /* int[50]; the unlocked chests */
 #define g_armList ((int *)IMG(0x4dc964))   /* int[50]; the unlocked arms */

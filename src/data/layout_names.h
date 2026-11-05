@@ -2584,18 +2584,6 @@ extern struct GameData g_data;
 #define g_statBarTargets ((float *)g_statBarTargets_v)
 #undef g_statBars
 #define g_statBars ((float *)g_statBars_v)
-#undef g_staticTex128x128
-#define g_staticTex128x128 (*(u32 *)((u8 *)g_texture128x128_v + 0x0))
-#undef g_staticTex128x64
-#define g_staticTex128x64 (*(u32 *)((u8 *)g_texture128x64_v + 0x0))
-#undef g_staticTex256x128
-#define g_staticTex256x128 (*(u32 *)((u8 *)g_texture256x128_v + 0x0))
-#undef g_staticTex256x256
-#define g_staticTex256x256 (*(u32 *)((u8 *)g_texture256x256_v + 0x0))
-#undef g_staticTex256x64
-#define g_staticTex256x64 (*(u32 *)((u8 *)g_texture256x64_v + 0x0))
-#undef g_staticTex64x64
-#define g_staticTex64x64 (*(u32 *)((u8 *)g_texture64x64_v + 0x0))
 #undef g_statusLine
 #define g_statusLine (g_data.g_statusLine_)
 #undef g_stereoReverse
@@ -2630,16 +2618,28 @@ extern struct GameData g_data;
 #define g_textWrapX (*(int *)g_textWrapX_v)
 #undef g_texture128x128
 #define g_texture128x128 ((u8 *)g_texture128x128_v)
+#undef g_texture128x128Vtable
+#define g_texture128x128Vtable (*(u32 *)((u8 *)g_texture128x128_v + 0x0))
 #undef g_texture128x64
 #define g_texture128x64 ((u8 *)g_texture128x64_v)
+#undef g_texture128x64Vtable
+#define g_texture128x64Vtable (*(u32 *)((u8 *)g_texture128x64_v + 0x0))
 #undef g_texture256x128
 #define g_texture256x128 ((u8 *)g_texture256x128_v)
+#undef g_texture256x128Vtable
+#define g_texture256x128Vtable (*(u32 *)((u8 *)g_texture256x128_v + 0x0))
 #undef g_texture256x256
 #define g_texture256x256 ((u8 *)g_texture256x256_v)
+#undef g_texture256x256Vtable
+#define g_texture256x256Vtable (*(u32 *)((u8 *)g_texture256x256_v + 0x0))
 #undef g_texture256x64
 #define g_texture256x64 ((u8 *)g_texture256x64_v)
+#undef g_texture256x64Vtable
+#define g_texture256x64Vtable (*(u32 *)((u8 *)g_texture256x64_v + 0x0))
 #undef g_texture64x64
 #define g_texture64x64 ((u8 *)g_texture64x64_v)
+#undef g_texture64x64Vtable
+#define g_texture64x64Vtable (*(u32 *)((u8 *)g_texture64x64_v + 0x0))
 #undef g_textureManager
 #define g_textureManager (*(u32 *)((u8 *)g_textureSets_v + 0x0))
 #undef g_textureSets

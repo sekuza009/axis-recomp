@@ -17,7 +17,7 @@ static void fade_frame(int in)
 		glColor4f_bits(0x3f800000, 0x3f800000, 0x3f800000, BITS(g_loadFade));
 	int h = gfx_getHeight();
 	gfx_fillRect(0, 0, gfx_getWidth(), h);
-	g_loadFade = fadd_m(timer_getGameTime(g_loadTimer), &g_loadFade);
+	g_loadFade = fadd_m(TimeSync_frameTime(g_loadTimer), &g_loadFade);
 	gfx_swapBuffers();
 }
 
@@ -27,7 +27,7 @@ static void fade_frame(int in)
 void (loading_drawScreen)(int mode, int unused, const char *text)
 {
 	(void)unused;
-	long double dt = timer_getGameTime(g_loadTimer);
+	long double dt = TimeSync_frameTime(g_loadTimer);
 	if (mode == -2) {
 		g_loadProgress = fadd_m(dt, &g_loadProgress);
 		strcpy(g_loadText, text);
@@ -255,19 +255,19 @@ int (app_startupLoad)(void *instance)
 	}
 	const char *dir = (const char *)STR(0x4b1304, ".");
 	u32 linear = g_cfgLinearFilter, mipmaps = g_cfgMipmaps;
-	tex_initBy((void *)ADDR(g_staticTex64x64), dir, 0x28, 0, 0x40, 0x40, linear, mipmaps);
+	tex_initBy((void *)OBJ(g_texture64x64), dir, 0x28, 0, 0x40, 0x40, linear, mipmaps);
 	linear = g_cfgLinearFilter, mipmaps = g_cfgMipmaps;
-	tex_initBy((void *)ADDR(g_staticTex128x64), dir, 0x28, 0, 0x80, 0x40, linear, mipmaps);
+	tex_initBy((void *)OBJ(g_texture128x64), dir, 0x28, 0, 0x80, 0x40, linear, mipmaps);
 	linear = g_cfgLinearFilter, mipmaps = g_cfgMipmaps;
-	tex_initBy((void *)ADDR(g_staticTex256x64), dir, 0x28, 0, 0x100, 0x40, linear, mipmaps);
+	tex_initBy((void *)OBJ(g_texture256x64), dir, 0x28, 0, 0x100, 0x40, linear, mipmaps);
 	linear = g_cfgLinearFilter, mipmaps = g_cfgMipmaps;
-	tex_initBy((void *)ADDR(g_staticTex128x128), dir, 0x28, 0, 0x80, 0x80, linear, mipmaps);
+	tex_initBy((void *)OBJ(g_texture128x128), dir, 0x28, 0, 0x80, 0x80, linear, mipmaps);
 	linear = g_cfgLinearFilter, mipmaps = g_cfgMipmaps;
-	tex_initBy((void *)ADDR(g_staticTex256x128), dir, 0x50, 0, 0x100, 0x80, linear, mipmaps);
+	tex_initBy((void *)OBJ(g_texture256x128), dir, 0x50, 0, 0x100, 0x80, linear, mipmaps);
 	linear = g_cfgLinearFilter, mipmaps = g_cfgMipmaps;
-	tex_initBy((void *)ADDR(g_staticTex256x256), dir, 0x28, 0, 0x100, 0x100, linear, mipmaps);
-	TextureManager_setBanks((void *)ADDR(g_textureManager), (void *)ADDR(g_staticTex64x64), (void *)ADDR(g_staticTex128x64), (void *)ADDR(g_staticTex256x64), (void *)ADDR(g_staticTex128x128),
-	                (void *)ADDR(g_staticTex256x128), (void *)ADDR(g_staticTex256x256));
+	tex_initBy((void *)OBJ(g_texture256x256), dir, 0x28, 0, 0x100, 0x100, linear, mipmaps);
+	TextureManager_setBanks((void *)ADDR(g_textureManager), (void *)OBJ(g_texture64x64), (void *)OBJ(g_texture128x64), (void *)OBJ(g_texture256x64), (void *)OBJ(g_texture128x128),
+	                (void *)OBJ(g_texture256x128), (void *)OBJ(g_texture256x256));
 	g_textures = (TextureManager *)ADDR(g_textureManager);
 	pen_init((const char *)STR(0x4b2514, "Interface\\PenFont"));
 	g_fontAscii = texture_named((const char *)STR(0x4b24c4, "iftex/english8"));

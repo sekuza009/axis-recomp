@@ -1066,7 +1066,7 @@ static const Store k_color_initDefaultColours[16] = {
 	{ 0xa1f2c0, 0xff859a98 }, { 0xa1f2c4, 0xff000085 }, { 0xa1f2c8, 0xffff000c }, { 0xa1f2cc, 0xffff00d2 }, { 0xa1f2d0, 0xff3a322e },
 	{ 0xa1f2d4, 0xffa2ff00 } };
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-void color_initDefaultColours(void);
+void colour_initDefaultColours(void);
 static const Store k_intro_42f500[44] = {
 	{ 0x5b1d10, 0xe7 }, { 0x5b1d20, 0xe7 }, { 0x5b1d6c, 0xe7 }, { 0x5b1cfc, 0xffffff65 }, { 0x5b1d0c, 0xffffff65 },
 	{ 0x5b1d04, 0xffffff7e }, { 0x5b1d08, 0xfffffef2 }, { 0x5b1d28, 0xfffffef2 }, { 0x5b1d2c, 0xffffff7e }, { 0x5b1d38, 0xfffffef2 },
@@ -1078,7 +1078,7 @@ static const Store k_intro_42f500[44] = {
 	{ 0x5b1d7c, 0x4 }, { 0x5b1d80, 0x82 }, { 0x5b1d94, 0xffffffe2 }, { 0x5b1d88, 0x9b }, { 0x5b1d9c, 0xffffff1a },
 	{ 0x5b1d8c, 0x4b }, { 0x5b1da0, 0xffffff90 }, { 0x5b1d90, 0x82 }, { 0x5b1da4, 0xffffffe2 } };
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-void menu_initKeyRepeatDefaults(void);
+void lobbyTop_initOutlines(void);
 static const Store k_input_initVkTable[57] = {
 	{ 0x4df054, 0x1b }, { 0x4df058, 0x31 }, { 0x4df05c, 0x32 }, { 0x4df060, 0x33 }, { 0x4df064, 0x34 },
 	{ 0x4df068, 0x35 }, { 0x4df06c, 0x36 }, { 0x4df070, 0x37 }, { 0x4df074, 0x38 }, { 0x4df078, 0x39 },
@@ -1109,7 +1109,7 @@ static const Store k_replay_46d4d0[64] = {
 	{ 0xa1f1dc, 0x3f800000 }, { 0xa1f1e0, 0x3e38b8b9 }, { 0xa1f1e4, 0x3e48c8c9 }, { 0xa1f1e8, 0x3e68e8e9 }, { 0xa1f1ec, 0x3f800000 },
 	{ 0xa1f1f0, 0x0 }, { 0xa1f1f4, 0x3f800000 }, { 0xa1f1f8, 0x3f22a2a3 }, { 0xa1f1fc, 0x3f800000 } };
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-void color_initTextColours(void);
+void colour_initTextColours(void);
 static const Store k_intro_42f2b0[66] = {
 	{ 0x4debb0, 0xfffffefc }, { 0x4debbc, 0xfffffefc }, { 0x4debc0, 0xfffffefc }, { 0x4debb4, 0xffffff81 }, { 0x4debb8, 0xffffff81 },
 	{ 0x4deb84, 0xffffff6f }, { 0x4deb94, 0xffffff6f }, { 0x4debe8, 0xffffff6f }, { 0x4deb80, 0x4 }, { 0x4deb98, 0xe8 },
@@ -1170,7 +1170,7 @@ static const Store k_input_setDefaultKeyBindings[118] = {
 	{ 0x76d370, 0xd1 }, { 0x680388, 0x2c }, { 0x67ef2c, 0x1c }, { 0x4de73c, 0xfa }, { 0x76d424, 0xfb },
 	{ 0x680bbc, 0xfc }, { 0x9da490, 0xfd }, { 0x76d490, 0xfe } };
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-void input_setDefaultKeyBindings(void);
+void input_initDikCodes(void);
 
 /* enter the game-room list (sub-state 2) */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
@@ -1305,7 +1305,7 @@ static const CStore k_input_applyKeyBindings[68] = {
 	{ 0x4deff4, 0x4df8e4, 1 }, { 0x4deffc, 0x4df8e4, 1 }, { 0x4deff0, 0x4e1534, 1 }, { 0x4deff8, 0x9da440, 1 },
 	{ 0x4df000, 0x0, 0 }, { 0x4df004, 0x0, 0 }, { 0x4df008, 0x32, 0 }, { 0x4df00c, 0x0, 0 } };
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-void input_applyKeyBindings(void);
+void input_setDefaultBindings(void);
 static const CStore k_setup_controlTabHelper_420c10[68] = {
 	{ 0x4de0c8, 0x4e1524, 1 }, { 0x4de0d0, 0x4e0cd4, 1 }, { 0x4de0d8, 0x4e0ce0, 1 }, { 0x4de0e0, 0x9dae14, 1 },
 	{ 0x4de0e8, 0x9db974, 1 }, { 0x4de0f0, 0x76d424, 1 }, { 0x4de0f8, 0x5b1da8, 1 }, { 0x4de100, 0x4e151c, 1 },
@@ -1325,7 +1325,7 @@ static const CStore k_setup_controlTabHelper_420c10[68] = {
 	{ 0x4de1b4, 0x4df8e4, 1 }, { 0x4de1bc, 0x4df8e4, 1 }, { 0x4de1b0, 0x4e1534, 1 }, { 0x4de1b8, 0x9da440, 1 },
 	{ 0x4de1c0, 0x0, 0 }, { 0x4de1c4, 0x0, 0 }, { 0x4de1c8, 0x32, 0 }, { 0x4de1cc, 0x0, 0 } };
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-void setup_keepKeyBindings(void);
+void setup_defaultBindings(void);
 /* quaternion from {angle, axis x, y, z} */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 THISCALL void quat_fromAxisAngle(float *q, const float *aa);
@@ -1608,68 +1608,68 @@ void static_emptyCtorTimeSync2(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void debug_traceStripped(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-void *Texture_rtti(void);
+void *Texture_initLog(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-void *TextureManager_rtti(void);
+void *TextureManager_initLog(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-void *Sound_rtti(void);
+void *Sound_initLog(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-void *Console_rtti(void);
+void *Console_initLog(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-void *Shape_rtti(void);
+void *Shape_initLog(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-void *ShapeManager_rtti(void);
+void *ShapeManager_initLog(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-void *Skeleton_rtti(void);
+void *Skeleton_initLog(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-void *SkeletonManager_rtti(void);
+void *SkeletonManager_initLog(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-void *BMPRGBFile_rtti(void);
+void *BMPRGBFile_initLog(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-void *RealColor_rtti(void);
+void *RealColor_initLog(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-void *PackedColor_rtti(void);
+void *PackedColor_initLog(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-void *UnitPartInfo_rtti(void);
+void *UnitPartInfo_initLog(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-void *UnitPoseInfo_rtti(void);
+void *UnitPoseInfo_initLog(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-void *Unit_rtti(void);
+void *Unit_initLog(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-void *Stage_rtti(void);
+void *Stage_initLog(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-void *CollisionVolume_rtti(void);
+void *CollisionVolume_initLog(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-void *Light_rtti(void);
+void *Light_initLog(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-void *ViewVolume_rtti(void);
+void *ViewVolume_initLog(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-void *TimeSync_rtti(void);
+void *TimeSync_initLog(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-void *Scene_rtti(void);
+void *Scene_initLog(void);
 /* batch 31: callers unlocked by batch 30 - static-object destructors (atexit, guarded by a bit), ctors, list resets */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-void static_endTextureRtti(void);
-void static_endTextureManagerRtti(void);
-void static_endConsoleRtti(void);
-void static_endShapeRtti(void);
-void static_endShapeManagerRtti(void);
-void static_endSkeletonRtti(void);
-void static_endSkeletonManagerRtti(void);
-void static_endBMPRGBFileRtti(void);
-void static_endRealColorRtti(void);
-void static_endPackedColorRtti(void);
-void static_endUnitPartInfoRtti(void);
-void static_endUnitPoseInfoRtti(void);
-void static_endUnitRtti(void);
-void static_endStageRtti(void);
-void static_endCollisionVolumeRtti(void);
-void static_endLightRtti(void);
-void static_endViewVolumeRtti(void);
-void static_endTimeSyncRtti(void);
-void static_endSceneRtti(void);
+void static_endTextureLog(void);
+void static_endTextureManagerLog(void);
+void static_endConsoleLog(void);
+void static_endShapeLog(void);
+void static_endShapeManagerLog(void);
+void static_endSkeletonLog(void);
+void static_endSkeletonManagerLog(void);
+void static_endBMPRGBFileLog(void);
+void static_endRealColorLog(void);
+void static_endPackedColorLog(void);
+void static_endUnitPartInfoLog(void);
+void static_endUnitPoseInfoLog(void);
+void static_endUnitLog(void);
+void static_endStageLog(void);
+void static_endCollisionVolumeLog(void);
+void static_endLightLog(void);
+void static_endViewVolumeLog(void);
+void static_endTimeSyncLog(void);
+void static_endSceneLog(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-void static_endSoundRtti(void);
+void static_endSoundLog(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void static_endTimeSync(void);
 
@@ -1963,47 +1963,47 @@ int static_registerTex256x256Dtor(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 int static_registerTextureManagerDtor(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-int static_registerTextureRttiDtor(void);
+int static_registerTextureLogDtor(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-int static_registerTextureManagerRttiDtor(void);
+int static_registerTextureManagerLogDtor(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-int static_registerSoundRttiDtor(void);
+int static_registerSoundLogDtor(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-int static_registerConsoleRttiDtor(void);
+int static_registerConsoleLogDtor(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-int static_registerShapeRttiDtor(void);
+int static_registerShapeLogDtor(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-int static_registerShapeManagerRttiDtor(void);
+int static_registerShapeManagerLogDtor(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 int static_registerTimeSyncDtor(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-int static_registerSkeletonRttiDtor(void);
+int static_registerSkeletonLogDtor(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-int static_registerSkeletonManagerRttiDtor(void);
+int static_registerSkeletonManagerLogDtor(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-int static_registerBMPRGBFileRttiDtor(void);
+int static_registerBMPRGBFileLogDtor(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-int static_registerRealColorRttiDtor(void);
+int static_registerRealColorLogDtor(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-int static_registerPackedColorRttiDtor(void);
+int static_registerPackedColorLogDtor(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-int static_registerUnitPartInfoRttiDtor(void);
+int static_registerUnitPartInfoLogDtor(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-int static_registerUnitPoseInfoRttiDtor(void);
+int static_registerUnitPoseInfoLogDtor(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-int static_registerUnitRttiDtor(void);
+int static_registerUnitLogDtor(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-int static_registerStageRttiDtor(void);
+int static_registerStageLogDtor(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-int static_registerCollisionVolumeRttiDtor(void);
+int static_registerCollisionVolumeLogDtor(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-int static_registerLightRttiDtor(void);
+int static_registerLightLogDtor(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-int static_registerViewVolumeRttiDtor(void);
+int static_registerViewVolumeLogDtor(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-int static_registerTimeSyncRttiDtor(void);
+int static_registerTimeSyncLogDtor(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-int static_registerSceneRttiDtor(void);
+int static_registerSceneLogDtor(void);
 /* 0x467d60 mem_free(p): delete p unless null */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 DWORD mem_free(void *p);
@@ -2069,47 +2069,47 @@ int static_startTex256x256(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 int static_startTextureManager(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-int static_startTextureRtti(void);
+int static_startTextureLog(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-int static_startTextureManagerRtti(void);
+int static_startTextureManagerLog(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-int static_startSoundRtti(void);
+int static_startSoundLog(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-int static_startConsoleRtti(void);
+int static_startConsoleLog(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-int static_startShapeRtti(void);
+int static_startShapeLog(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-int static_startShapeManagerRtti(void);
+int static_startShapeManagerLog(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 int static_startTimeSync(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-int static_startSkeletonRtti(void);
+int static_startSkeletonLog(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-int static_startSkeletonManagerRtti(void);
+int static_startSkeletonManagerLog(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-int static_startBMPRGBFileRtti(void);
+int static_startBMPRGBFileLog(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-int static_startRealColorRtti(void);
+int static_startRealColorLog(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-int static_startPackedColorRtti(void);
+int static_startPackedColorLog(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-int static_startUnitPartInfoRtti(void);
+int static_startUnitPartInfoLog(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-int static_startUnitPoseInfoRtti(void);
+int static_startUnitPoseInfoLog(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-int static_startUnitRtti(void);
+int static_startUnitLog(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-int static_startStageRtti(void);
+int static_startStageLog(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-int static_startCollisionVolumeRtti(void);
+int static_startCollisionVolumeLog(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-int static_startLightRtti(void);
+int static_startLightLog(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-int static_startViewVolumeRtti(void);
+int static_startViewVolumeLog(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-int static_startTimeSyncRtti(void);
+int static_startTimeSyncLog(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-int static_startSceneRtti(void);
+int static_startSceneLog(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 int THISCALL Model_dtor(void *self);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
@@ -2843,12 +2843,12 @@ THISCALL DWORD image_initBy(char *img, DWORD path);
 DWORD shapeDat_initBy(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 DWORD skelDat_initBy(void);
-/* 0x487490 (thiscall) timer_getGameTime: frame time from the performance counter (initialised on first use),
-   returned in ST0; 0x461210 (thiscall) frameTimer_average: its average over the last 10 frames */
+/* 0x487490 (thiscall) TimeSync_frameTime: frame time from the performance counter (initialised on first use),
+   returned in ST0; 0x461210 (thiscall) scene_averageFrameTime: its average over the last 10 frames */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-THISCALL long double timer_getGameTime(char *t);
+THISCALL long double TimeSync_frameTime(char *t);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-THISCALL long double frameTimer_average(char *t);
+THISCALL long double scene_averageFrameTime(char *t);
 /* 0x43f300 sys_checkClockTampering: compare the system time with the last one seen; a clock set back ends the
    game with a message */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
@@ -3964,7 +3964,7 @@ void armc_buildPartLists(void);
 void menu_loadTextures(void);
 /* batch 148 (lifted/grp94.c): the intro set-up */
 /* 0x430bf0 frontEnd_startUp(): clear 0xc00 bytes at 0x67ef38, then the intro tables one by one (menu_initColours,
-   menu_initMainButtons, menu_initKeyRepeatDefaults, room_initMenuButtons, setupTop_initOutlines, net_clearSlots), each followed by a loading-screen frame
+   menu_initMainButtons, lobbyTop_initOutlines, room_initMenuButtons, setupTop_initOutlines, net_clearSlots), each followed by a loading-screen frame
    (frontEnd_drawProgress, progress 0x4dda34 + 1) and, but for the last, a wait of 2.0 (timer_waitFrames) */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 DWORD frontEnd_startUp(void);
@@ -5097,7 +5097,7 @@ void THISCALL hud_drawTeamScores(void *scene);
 /* batch 206 (lifted/grp167.c .. grp170.c): functions whose call sites the patch DLL retargets; those calls are lifted
    with lift.py "@site" (the target read from the live instruction) and the rel32 bytes listed in g_patchOk */
 /* 0x48b200 match_playFrame() (thiscall on the scene): the match's frame: the round start (0x49df10) until
-   +0x233cc28, the frame timer (frameTimer_average -> dt at +0x44), the clocks (+0x233cc34 / +0x233cc30 whole seconds,
+   +0x233cc28, the frame timer (scene_averageFrameTime -> dt at +0x44), the clocks (+0x233cc34 / +0x233cc30 whole seconds,
    +0x2340c90 with the per-second rates +0x2340c88 / +0x2340c8c from the counters +0x2340c80 / +0x2340c84), three
    countdowns (+0x233cc40, +0x2342f02, +0x2340d39); the combat input (match_combatInput), the game mode
    (match_frame), in state 2 the HUD pass (hud_pass: @0x48b386, the patch DLL's hud_pass_wrap); a pending
@@ -6664,7 +6664,7 @@ static inline __attribute__((always_inline)) void paint_stacks(void)   /* inline
 	paint_below(0x8000);                        /* last: any call after it would leave its frame in the paint */
 }
 /* run one side of a test; an exit() inside it ends the run. The FPU environment is put back as it was after every
-   run: some originals leave values on the x87 stack (frameTimer_average one per call), and a stack left full turns the next
+   run: some originals leave values on the x87 stack (scene_averageFrameTime one per call), and a stack left full turns the next
    setups' x87 maths into NaNs (a space_insertItem setup once built a different triangle for each side). So is the
    thread's SEH chain (fs:[0]): an exit() longjmps past functions that registered a handler on the stack, which
    stays in the chain pointing into dead stack; a later run paints that stack, and the next exception (even one
@@ -7620,13 +7620,13 @@ T0(stage_newRound, 0x470cb0, actors_setup(); fill(BUF + 0x202e8d0, 0x20); for (i
 
 /* batch 12 */
 static void fill_stores(const Store *s, int n) { for (int k = 0; k < n; k++) fill((void *)s[k].a, 4); }
-V0(color_initDefaultColours, 0x46dc50, fill_stores(k_color_initDefaultColours, 16);)
-V0(menu_initKeyRepeatDefaults, 0x42f500, fill_stores(k_intro_42f500, 44);)
+V0(colour_initDefaultColours, 0x46dc50, fill_stores(k_color_initDefaultColours, 16);)
+V0(lobbyTop_initOutlines, 0x42f500, fill_stores(k_intro_42f500, 44);)
 V0(input_initVkTable, 0x431680, fill_stores(k_input_initVkTable, 57);)
-V0(color_initTextColours, 0x46d4d0, fill_stores(k_replay_46d4d0, 64);)
+V0(colour_initTextColours, 0x46d4d0, fill_stores(k_replay_46d4d0, 64);)
 V0(menu_initMainButtons, 0x42f2b0, fill_stores(k_intro_42f2b0, 66);)
 V0(room_initMenuButtons, 0x42f690, fill_stores(k_intro_42f690, 66);)
-V0(input_setDefaultKeyBindings, 0x42fd40, fill_stores(k_input_setDefaultKeyBindings, 118);)
+V0(input_initDikCodes, 0x42fd40, fill_stores(k_input_setDefaultKeyBindings, 118);)
 
 V0(room_enterGameList, 0x433790, fill((void *)0x9dd834, 4); fill((void *)0x9dce48, 4); fill((void *)0x9dd6bc, 4); fill((void *)0x4dbbf4, 4);
    fill((void *)0x4dba88, 4); fill((void *)0xa0b360, 4); fill((void *)0x4ded54, 4); fill((void *)0x907b2c, 4); fill((void *)0x680cd0, 4);
@@ -7705,8 +7705,8 @@ ST(render_depthSortB, sortarr_setup();, (CD(void, 0x491190, char *, int, int)(BU
 
 /* batch 16 */
 static void fill_cstores(const CStore *s, int n) { for (int k = 0; k < n; k++) { fill((void *)s[k].a, 4); if (s[k].copy) fill((void *)s[k].v, 4); } }
-V0(input_applyKeyBindings, 0x42c410, fill_cstores(k_input_applyKeyBindings, 68);)
-V0(setup_keepKeyBindings, 0x420c10, fill_cstores(k_setup_controlTabHelper_420c10, 68);)
+V0(input_setDefaultBindings, 0x42c410, fill_cstores(k_input_applyKeyBindings, 68);)
+V0(setup_defaultBindings, 0x420c10, fill_cstores(k_setup_controlTabHelper_420c10, 68);)
 static void quat_setup(void)
 {
 	for (int k = 0; k < 4; k++) GF(BUF + 0x100 + k * 4) = rnd();
@@ -8142,40 +8142,40 @@ V0(static_emptyCtorSkelData8, 0x46b940, )
 V0(static_emptyCtorTimeSync1, 0x487b70, )
 V0(static_emptyCtorTimeSync2, 0x487b90, )
 V0(debug_traceStripped, 0x48b420, )
-V0R(Texture_rtti, 0x454fe0, fill((void *)0xa0dff8, 8); fill((void *)0xa1efe8, 4);)
-V0R(TextureManager_rtti, 0x456940, fill((void *)0xa0e000, 8); fill((void *)0xa1efe8, 4);)
-V0R(Sound_rtti, 0x456c90, fill((void *)0xa0e020, 8); fill((void *)0xa1efe8, 4);)
-V0R(Console_rtti, 0x460520, fill((void *)0xa0e778, 8); fill((void *)0xa1efe8, 4);)
-V0R(Shape_rtti, 0x463b30, fill((void *)0xa0e790, 8); fill((void *)0xa1efe8, 4);)
-V0R(ShapeManager_rtti, 0x4669c0, fill((void *)0xa0e788, 8); fill((void *)0xa1efe8, 4);)
-V0R(Skeleton_rtti, 0x469930, fill((void *)0xa0eaa8, 8); fill((void *)0xa1efe8, 4);)
-V0R(SkeletonManager_rtti, 0x46ae10, fill((void *)0xa0eaa0, 8); fill((void *)0xa1efe8, 4);)
-V0R(BMPRGBFile_rtti, 0x46ccb0, fill((void *)0xa1f0f0, 8); fill((void *)0xa1efe8, 4);)
-V0R(RealColor_rtti, 0x46d270, fill((void *)0xa1f290, 8); fill((void *)0xa1efe8, 4);)
-V0R(PackedColor_rtti, 0x46da70, fill((void *)0xa1f250, 8); fill((void *)0xa1efe8, 4);)
-V0R(UnitPartInfo_rtti, 0x46f360, fill((void *)0xae2ea0, 8); fill((void *)0xa1efe8, 4);)
-V0R(UnitPoseInfo_rtti, 0x46f3c0, fill((void *)0xae2ea8, 8); fill((void *)0xa1efe8, 4);)
-V0R(Unit_rtti, 0x46f420, fill((void *)0xae2e98, 8); fill((void *)0xa1efe8, 4);)
-V0R(Stage_rtti, 0x46ff20, fill((void *)0xae2eb8, 8); fill((void *)0xa1efe8, 4);)
-V0R(CollisionVolume_rtti, 0x481340, fill((void *)0xae2ed0, 8); fill((void *)0xa1efe8, 4);)
-V0R(Light_rtti, 0x483d00, fill((void *)0xae2ee8, 8); fill((void *)0xa1efe8, 4);)
-V0R(ViewVolume_rtti, 0x483f60, fill((void *)0xae2ef0, 8); fill((void *)0xa1efe8, 4);)
-V0R(TimeSync_rtti, 0x4873e0, fill((void *)0xae2f00, 8); fill((void *)0xa1efe8, 4);)
-V0R(Scene_rtti, 0x48b3c0, fill((void *)0xae3328, 8); fill((void *)0xa1efe8, 4);)
+V0R(Texture_initLog, 0x454fe0, fill((void *)0xa0dff8, 8); fill((void *)0xa1efe8, 4);)
+V0R(TextureManager_initLog, 0x456940, fill((void *)0xa0e000, 8); fill((void *)0xa1efe8, 4);)
+V0R(Sound_initLog, 0x456c90, fill((void *)0xa0e020, 8); fill((void *)0xa1efe8, 4);)
+V0R(Console_initLog, 0x460520, fill((void *)0xa0e778, 8); fill((void *)0xa1efe8, 4);)
+V0R(Shape_initLog, 0x463b30, fill((void *)0xa0e790, 8); fill((void *)0xa1efe8, 4);)
+V0R(ShapeManager_initLog, 0x4669c0, fill((void *)0xa0e788, 8); fill((void *)0xa1efe8, 4);)
+V0R(Skeleton_initLog, 0x469930, fill((void *)0xa0eaa8, 8); fill((void *)0xa1efe8, 4);)
+V0R(SkeletonManager_initLog, 0x46ae10, fill((void *)0xa0eaa0, 8); fill((void *)0xa1efe8, 4);)
+V0R(BMPRGBFile_initLog, 0x46ccb0, fill((void *)0xa1f0f0, 8); fill((void *)0xa1efe8, 4);)
+V0R(RealColor_initLog, 0x46d270, fill((void *)0xa1f290, 8); fill((void *)0xa1efe8, 4);)
+V0R(PackedColor_initLog, 0x46da70, fill((void *)0xa1f250, 8); fill((void *)0xa1efe8, 4);)
+V0R(UnitPartInfo_initLog, 0x46f360, fill((void *)0xae2ea0, 8); fill((void *)0xa1efe8, 4);)
+V0R(UnitPoseInfo_initLog, 0x46f3c0, fill((void *)0xae2ea8, 8); fill((void *)0xa1efe8, 4);)
+V0R(Unit_initLog, 0x46f420, fill((void *)0xae2e98, 8); fill((void *)0xa1efe8, 4);)
+V0R(Stage_initLog, 0x46ff20, fill((void *)0xae2eb8, 8); fill((void *)0xa1efe8, 4);)
+V0R(CollisionVolume_initLog, 0x481340, fill((void *)0xae2ed0, 8); fill((void *)0xa1efe8, 4);)
+V0R(Light_initLog, 0x483d00, fill((void *)0xae2ee8, 8); fill((void *)0xa1efe8, 4);)
+V0R(ViewVolume_initLog, 0x483f60, fill((void *)0xae2ef0, 8); fill((void *)0xa1efe8, 4);)
+V0R(TimeSync_initLog, 0x4873e0, fill((void *)0xae2f00, 8); fill((void *)0xa1efe8, 4);)
+V0R(Scene_initLog, 0x48b3c0, fill((void *)0xae3328, 8); fill((void *)0xa1efe8, 4);)
 /* batch 31 */
 #define GTEST(name, addr, guard, obj) V0(name, addr, fill((void *)(guard), 1); fill((void *)(obj), 8);)
-GTEST(static_endTextureRtti, 0x455010, 0xa0e009, 0xa0dff8) GTEST(static_endTextureManagerRtti, 0x456970, 0xa0e008, 0xa0e000)
-GTEST(static_endConsoleRtti, 0x460550, 0xa0e780, 0xa0e778) GTEST(static_endShapeRtti, 0x463b60, 0xa0e798, 0xa0e790)
-GTEST(static_endShapeManagerRtti, 0x4669f0, 0xa0e799, 0xa0e788) GTEST(static_endSkeletonRtti, 0x469960, 0xa0eab0, 0xa0eaa8)
-GTEST(static_endSkeletonManagerRtti, 0x46ae40, 0xa0eab1, 0xa0eaa0) GTEST(static_endBMPRGBFileRtti, 0x46cce0, 0xa1f0f8, 0xa1f0f0)
-GTEST(static_endRealColorRtti, 0x46d2a0, 0xa1f2e8, 0xa1f290) GTEST(static_endPackedColorRtti, 0x46daa0, 0xa1f2e9, 0xa1f250)
-GTEST(static_endUnitPartInfoRtti, 0x46f390, 0xae2eb2, 0xae2ea0) GTEST(static_endUnitPoseInfoRtti, 0x46f3f0, 0xae2eb1, 0xae2ea8)
-GTEST(static_endUnitRtti, 0x46f450, 0xae2eb0, 0xae2e98) GTEST(static_endStageRtti, 0x46ff50, 0xae2ec0, 0xae2eb8)
-GTEST(static_endCollisionVolumeRtti, 0x481370, 0xae2ed8, 0xae2ed0) GTEST(static_endLightRtti, 0x483d30, 0xae2ee0, 0xae2ee8)
-GTEST(static_endViewVolumeRtti, 0x483f90, 0xae2ef8, 0xae2ef0) GTEST(static_endTimeSyncRtti, 0x487410, 0xae2f08, 0xae2f00)
-GTEST(static_endSceneRtti, 0x48b3f0, 0xae3330, 0xae3328)
+GTEST(static_endTextureLog, 0x455010, 0xa0e009, 0xa0dff8) GTEST(static_endTextureManagerLog, 0x456970, 0xa0e008, 0xa0e000)
+GTEST(static_endConsoleLog, 0x460550, 0xa0e780, 0xa0e778) GTEST(static_endShapeLog, 0x463b60, 0xa0e798, 0xa0e790)
+GTEST(static_endShapeManagerLog, 0x4669f0, 0xa0e799, 0xa0e788) GTEST(static_endSkeletonLog, 0x469960, 0xa0eab0, 0xa0eaa8)
+GTEST(static_endSkeletonManagerLog, 0x46ae40, 0xa0eab1, 0xa0eaa0) GTEST(static_endBMPRGBFileLog, 0x46cce0, 0xa1f0f8, 0xa1f0f0)
+GTEST(static_endRealColorLog, 0x46d2a0, 0xa1f2e8, 0xa1f290) GTEST(static_endPackedColorLog, 0x46daa0, 0xa1f2e9, 0xa1f250)
+GTEST(static_endUnitPartInfoLog, 0x46f390, 0xae2eb2, 0xae2ea0) GTEST(static_endUnitPoseInfoLog, 0x46f3f0, 0xae2eb1, 0xae2ea8)
+GTEST(static_endUnitLog, 0x46f450, 0xae2eb0, 0xae2e98) GTEST(static_endStageLog, 0x46ff50, 0xae2ec0, 0xae2eb8)
+GTEST(static_endCollisionVolumeLog, 0x481370, 0xae2ed8, 0xae2ed0) GTEST(static_endLightLog, 0x483d30, 0xae2ee0, 0xae2ee8)
+GTEST(static_endViewVolumeLog, 0x483f90, 0xae2ef8, 0xae2ef0) GTEST(static_endTimeSyncLog, 0x487410, 0xae2f08, 0xae2f00)
+GTEST(static_endSceneLog, 0x48b3f0, 0xae3330, 0xae3328)
 #undef GTEST
-V0(static_endSoundRtti, 0x456cc0, fill((void *)0xa0e020, 8);)
+V0(static_endSoundLog, 0x456cc0, fill((void *)0xa0e020, 8);)
 V0(static_endTimeSync, 0x468740, fill((void *)0xa0e948, 8);)
 ST(TextureManager_reset, fill(BUF, 0x40);, TC(int, 0x4569b0, char *)(BUF + 0x10), TextureManager_reset(BUF + 0x10))
 ST(TextureManager_ctor, fill((void *)0x83a5e0, 0x30);, CD(int, 0x42b330, void)(), TextureManager_ctor())
@@ -8700,27 +8700,27 @@ REGDTOR_T(static_registerTex128x128Dtor, 0x42b260)
 REGDTOR_T(static_registerTex256x128Dtor, 0x42b2b0)
 REGDTOR_T(static_registerTex256x256Dtor, 0x42b300)
 REGDTOR_T(static_registerTextureManagerDtor, 0x42b370)
-REGDTOR_T(static_registerTextureRttiDtor, 0x455000)
-REGDTOR_T(static_registerTextureManagerRttiDtor, 0x456960)
-REGDTOR_T(static_registerSoundRttiDtor, 0x456cb0)
-REGDTOR_T(static_registerConsoleRttiDtor, 0x460540)
-REGDTOR_T(static_registerShapeRttiDtor, 0x463b50)
-REGDTOR_T(static_registerShapeManagerRttiDtor, 0x4669e0)
+REGDTOR_T(static_registerTextureLogDtor, 0x455000)
+REGDTOR_T(static_registerTextureManagerLogDtor, 0x456960)
+REGDTOR_T(static_registerSoundLogDtor, 0x456cb0)
+REGDTOR_T(static_registerConsoleLogDtor, 0x460540)
+REGDTOR_T(static_registerShapeLogDtor, 0x463b50)
+REGDTOR_T(static_registerShapeManagerLogDtor, 0x4669e0)
 REGDTOR_T(static_registerTimeSyncDtor, 0x468730)
-REGDTOR_T(static_registerSkeletonRttiDtor, 0x469950)
-REGDTOR_T(static_registerSkeletonManagerRttiDtor, 0x46ae30)
-REGDTOR_T(static_registerBMPRGBFileRttiDtor, 0x46ccd0)
-REGDTOR_T(static_registerRealColorRttiDtor, 0x46d290)
-REGDTOR_T(static_registerPackedColorRttiDtor, 0x46da90)
-REGDTOR_T(static_registerUnitPartInfoRttiDtor, 0x46f380)
-REGDTOR_T(static_registerUnitPoseInfoRttiDtor, 0x46f3e0)
-REGDTOR_T(static_registerUnitRttiDtor, 0x46f440)
-REGDTOR_T(static_registerStageRttiDtor, 0x46ff40)
-REGDTOR_T(static_registerCollisionVolumeRttiDtor, 0x481360)
-REGDTOR_T(static_registerLightRttiDtor, 0x483d20)
-REGDTOR_T(static_registerViewVolumeRttiDtor, 0x483f80)
-REGDTOR_T(static_registerTimeSyncRttiDtor, 0x487400)
-REGDTOR_T(static_registerSceneRttiDtor, 0x48b3e0)
+REGDTOR_T(static_registerSkeletonLogDtor, 0x469950)
+REGDTOR_T(static_registerSkeletonManagerLogDtor, 0x46ae30)
+REGDTOR_T(static_registerBMPRGBFileLogDtor, 0x46ccd0)
+REGDTOR_T(static_registerRealColorLogDtor, 0x46d290)
+REGDTOR_T(static_registerPackedColorLogDtor, 0x46da90)
+REGDTOR_T(static_registerUnitPartInfoLogDtor, 0x46f380)
+REGDTOR_T(static_registerUnitPoseInfoLogDtor, 0x46f3e0)
+REGDTOR_T(static_registerUnitLogDtor, 0x46f440)
+REGDTOR_T(static_registerStageLogDtor, 0x46ff40)
+REGDTOR_T(static_registerCollisionVolumeLogDtor, 0x481360)
+REGDTOR_T(static_registerLightLogDtor, 0x483d20)
+REGDTOR_T(static_registerViewVolumeLogDtor, 0x483f80)
+REGDTOR_T(static_registerTimeSyncLogDtor, 0x487400)
+REGDTOR_T(static_registerSceneLogDtor, 0x48b3e0)
 ST(TextureManager_deletingDtor, fill(BUF, 0x100); g_a[0] = irnd(0, 3);, (DWORD)TC(char *, 0x42b350, char *, DWORD)(BUF + 0x10, (DWORD)g_a[0]), (DWORD)TextureManager_deletingDtor(BUF + 0x10, (DWORD)g_a[0]))
 ST(Light_deletingDtor, fill(BUF, 0x100); g_a[0] = irnd(0, 3);, (DWORD)TC(char *, 0x462580, char *, DWORD)(BUF + 0x10, (DWORD)g_a[0]), (DWORD)Light_deletingDtor(BUF + 0x10, (DWORD)g_a[0]))
 ST(Scene_deletingDtor, fill(BUF, 0x100); g_a[0] = irnd(0, 3);, (DWORD)TC(char *, 0x463810, char *, DWORD)(BUF + 0x10, (DWORD)g_a[0]), (DWORD)Scene_deletingDtor(BUF + 0x10, (DWORD)g_a[0]))
@@ -8779,27 +8779,27 @@ ST(static_startTex128x128, , CD(DWORD, 0x42b230, void)(), static_startTex128x128
 ST(static_startTex256x128, , CD(DWORD, 0x42b280, void)(), static_startTex256x128())
 ST(static_startTex256x256, , CD(DWORD, 0x42b2d0, void)(), static_startTex256x256())
 ST(static_startTextureManager, , CD(DWORD, 0x42b320, void)(), static_startTextureManager())
-ST(static_startTextureRtti, , CD(DWORD, 0x454fd0, void)(), static_startTextureRtti())
-ST(static_startTextureManagerRtti, , CD(DWORD, 0x456930, void)(), static_startTextureManagerRtti())
-ST(static_startSoundRtti, , CD(DWORD, 0x456c80, void)(), static_startSoundRtti())
-ST(static_startConsoleRtti, , CD(DWORD, 0x460510, void)(), static_startConsoleRtti())
-ST(static_startShapeRtti, , CD(DWORD, 0x463b20, void)(), static_startShapeRtti())
-ST(static_startShapeManagerRtti, , CD(DWORD, 0x4669b0, void)(), static_startShapeManagerRtti())
+ST(static_startTextureLog, , CD(DWORD, 0x454fd0, void)(), static_startTextureLog())
+ST(static_startTextureManagerLog, , CD(DWORD, 0x456930, void)(), static_startTextureManagerLog())
+ST(static_startSoundLog, , CD(DWORD, 0x456c80, void)(), static_startSoundLog())
+ST(static_startConsoleLog, , CD(DWORD, 0x460510, void)(), static_startConsoleLog())
+ST(static_startShapeLog, , CD(DWORD, 0x463b20, void)(), static_startShapeLog())
+ST(static_startShapeManagerLog, , CD(DWORD, 0x4669b0, void)(), static_startShapeManagerLog())
 ST(static_startTimeSync, , CD(DWORD, 0x468710, void)(), static_startTimeSync())
-ST(static_startSkeletonRtti, , CD(DWORD, 0x469920, void)(), static_startSkeletonRtti())
-ST(static_startSkeletonManagerRtti, , CD(DWORD, 0x46ae00, void)(), static_startSkeletonManagerRtti())
-ST(static_startBMPRGBFileRtti, , CD(DWORD, 0x46cca0, void)(), static_startBMPRGBFileRtti())
-ST(static_startRealColorRtti, , CD(DWORD, 0x46d260, void)(), static_startRealColorRtti())
-ST(static_startPackedColorRtti, , CD(DWORD, 0x46da60, void)(), static_startPackedColorRtti())
-ST(static_startUnitPartInfoRtti, , CD(DWORD, 0x46f350, void)(), static_startUnitPartInfoRtti())
-ST(static_startUnitPoseInfoRtti, , CD(DWORD, 0x46f3b0, void)(), static_startUnitPoseInfoRtti())
-ST(static_startUnitRtti, , CD(DWORD, 0x46f410, void)(), static_startUnitRtti())
-ST(static_startStageRtti, , CD(DWORD, 0x46ff10, void)(), static_startStageRtti())
-ST(static_startCollisionVolumeRtti, , CD(DWORD, 0x481330, void)(), static_startCollisionVolumeRtti())
-ST(static_startLightRtti, , CD(DWORD, 0x483cf0, void)(), static_startLightRtti())
-ST(static_startViewVolumeRtti, , CD(DWORD, 0x483f50, void)(), static_startViewVolumeRtti())
-ST(static_startTimeSyncRtti, , CD(DWORD, 0x4873d0, void)(), static_startTimeSyncRtti())
-ST(static_startSceneRtti, , CD(DWORD, 0x48b3b0, void)(), static_startSceneRtti())
+ST(static_startSkeletonLog, , CD(DWORD, 0x469920, void)(), static_startSkeletonLog())
+ST(static_startSkeletonManagerLog, , CD(DWORD, 0x46ae00, void)(), static_startSkeletonManagerLog())
+ST(static_startBMPRGBFileLog, , CD(DWORD, 0x46cca0, void)(), static_startBMPRGBFileLog())
+ST(static_startRealColorLog, , CD(DWORD, 0x46d260, void)(), static_startRealColorLog())
+ST(static_startPackedColorLog, , CD(DWORD, 0x46da60, void)(), static_startPackedColorLog())
+ST(static_startUnitPartInfoLog, , CD(DWORD, 0x46f350, void)(), static_startUnitPartInfoLog())
+ST(static_startUnitPoseInfoLog, , CD(DWORD, 0x46f3b0, void)(), static_startUnitPoseInfoLog())
+ST(static_startUnitLog, , CD(DWORD, 0x46f410, void)(), static_startUnitLog())
+ST(static_startStageLog, , CD(DWORD, 0x46ff10, void)(), static_startStageLog())
+ST(static_startCollisionVolumeLog, , CD(DWORD, 0x481330, void)(), static_startCollisionVolumeLog())
+ST(static_startLightLog, , CD(DWORD, 0x483cf0, void)(), static_startLightLog())
+ST(static_startViewVolumeLog, , CD(DWORD, 0x483f50, void)(), static_startViewVolumeLog())
+ST(static_startTimeSyncLog, , CD(DWORD, 0x4873d0, void)(), static_startTimeSyncLog())
+ST(static_startSceneLog, , CD(DWORD, 0x48b3b0, void)(), static_startSceneLog())
 ST(Model_dtor, fill(BUF, 0x300); S32(BUF + 0x10, 0xc) = irnd(0, 2);, TC(int, 0x464ba0, char *)(BUF + 0x10), Model_dtor((DWORD *)(BUF + 0x10)))
 ST(ShapeManager_dtor, fill(BUF, 0x300); S32(BUF + 0x10, 0xc) = irnd(0, 2);, TC(int, 0x466a10, char *)(BUF + 0x10), ShapeManager_dtor((DWORD *)(BUF + 0x10)))
 ST(SkeletonManager_dtor, fill(BUF, 0x300); S32(BUF + 0x10, 0xc) = irnd(0, 2);, TC(int, 0x46ae60, char *)(BUF + 0x10), SkeletonManager_dtor((DWORD *)(BUF + 0x10)))
@@ -10084,8 +10084,8 @@ static void gametimer_setup(void)
 	S32(t, 0x10) = irnd(0, 1); S32(t, 0x18) = irnd(0, 1); S32(t, 0x28) = irnd(0, 1);
 	qpf_setup(); g_mockQpc = (DWORD)irnd(0, 0x7fffffff);
 }
-ST(timer_getGameTime, gametimer_setup();, ld_hash(((long double (THISCALL *)(char *))0x487490)(BUF + 0x100)), ld_hash(timer_getGameTime(BUF + 0x100)))
-ST(frameTimer_average, gametimer_setup();, (TC(void, 0x461210, char *)(BUF + 0x100), 0), (frameTimer_average(BUF + 0x100), 0))
+ST(TimeSync_frameTime, gametimer_setup();, ld_hash(((long double (THISCALL *)(char *))0x487490)(BUF + 0x100)), ld_hash(TimeSync_frameTime(BUF + 0x100)))
+ST(scene_averageFrameTime, gametimer_setup();, (TC(void, 0x461210, char *)(BUF + 0x100), 0), (scene_averageFrameTime(BUF + 0x100), 0))
 /* the stored time (0x9dd880..) and the mocked system time with small random fields */
 static void clock_setup(void)
 {
@@ -16322,7 +16322,7 @@ static void teambox_setup(void)
 }
 ST(hud_drawTeamScores, teambox_setup(); screen_random();, TC(DWORD, 0x496240, char *)(BUF), (hud_drawTeamScores(BUF), 0))
 /* batch 206 */
-/* the scene's frame timer (frameTimer_average on the scene: the timer at +0xc, the ring +0x48, index +0x70, dt into +0x44) */
+/* the scene's frame timer (scene_averageFrameTime on the scene: the timer at +0xc, the ring +0x48, index +0x70, dt into +0x44) */
 static void scenetimer_setup(void)
 {
 	S32(BUF, 0x10) = irnd(0, 1); S32(BUF, 0x70) = irnd(0, 9);
@@ -17256,8 +17256,8 @@ static const STest g_stests[] = {
 	T(lobby_drawArenaTitle, 0, 40, 0), T(arena_initOptionTexts, 0, 8, 0), T(mech_setName, 0, 4, 400), T(shape_colourPixels, 0, 4, 1000),
 	T(match_resetInputState, 0, 4, 50), T(stage_newRound, 0, 4, 20),
 	/* batch 12 */
-	T(color_initDefaultColours, 0, 4, 0), T(menu_initKeyRepeatDefaults, 0, 4, 0), T(input_initVkTable, 0, 4, 0), T(color_initTextColours, 0, 4, 0),
-	T(menu_initMainButtons, 0, 4, 0), T(room_initMenuButtons, 0, 4, 0), T(input_setDefaultKeyBindings, 0, 4, 0),
+	T(colour_initDefaultColours, 0, 4, 0), T(lobbyTop_initOutlines, 0, 4, 0), T(input_initVkTable, 0, 4, 0), T(colour_initTextColours, 0, 4, 0),
+	T(menu_initMainButtons, 0, 4, 0), T(room_initMenuButtons, 0, 4, 0), T(input_initDikCodes, 0, 4, 0),
 	/* batch 12 */
 	T(room_enterGameList, 0, 20, 0), T(lobby_setSubState2, 0, 20, 0), T(menuCamera_initPoints, 0, 6, 0),
 	/* batch 13 */
@@ -17268,7 +17268,7 @@ static const STest g_stests[] = {
 	/* batch 15 */
 	T(render_depthSortA, 0, 60, 0), T(render_depthSortB, 0, 60, 0),
 	/* batch 16 */
-	T(input_applyKeyBindings, 0, 6, 0), T(setup_keepKeyBindings, 0, 6, 0), T(quat_fromAxisAngle, 0, 4, 3000), T(setup_easePanel, 0, 60, 0),
+	T(input_setDefaultBindings, 0, 6, 0), T(setup_defaultBindings, 0, 6, 0), T(quat_fromAxisAngle, 0, 4, 3000), T(setup_easePanel, 0, 60, 0),
 	T(ptx_initDequantTables, 0, 30, 0), T(math_triangleNormal, 0, 4, 3000), T(pilotRecord_syncCopies, 0, 100, 0),
 	/* batch 17 */
 	T(arena_mergeReceivedSessions, 0, 60, 0), T(ptx_initTables, 0, 4, 0), T(texRecord_init, 0, 4, 2000), T(stage_setFolders, 0, 4, 300),
@@ -17310,18 +17310,18 @@ static const STest g_stests[] = {
 	T(recorder_openStub, 0, 4, 0), T(recorder_noteStub, 0, 4, 0), T(stage_triggerActionNone, 0, 4, 0), T(static_emptyCtorSkelData1, 0, 4, 0),
 	T(static_emptyCtorSkelData2, 0, 4, 0), T(static_emptyCtorSkelData3, 0, 4, 0), T(static_emptyCtorSkelData4, 0, 4, 0), T(static_emptyCtorSkelData5, 0, 4, 0),
 	T(static_emptyCtorSkelData6, 0, 4, 0), T(static_emptyCtorSkelData7, 0, 4, 0), T(static_emptyCtorSkelData8, 0, 4, 0), T(static_emptyCtorTimeSync1, 0, 4, 0),
-	T(static_emptyCtorTimeSync2, 0, 4, 0), T(debug_traceStripped, 0, 4, 0), T(Texture_rtti, 1, 4, 0), T(TextureManager_rtti, 1, 4, 0),
-	T(Sound_rtti, 1, 4, 0), T(Console_rtti, 1, 4, 0), T(Shape_rtti, 1, 4, 0), T(ShapeManager_rtti, 1, 4, 0),
-	T(Skeleton_rtti, 1, 4, 0), T(SkeletonManager_rtti, 1, 4, 0), T(BMPRGBFile_rtti, 1, 4, 0), T(RealColor_rtti, 1, 4, 0),
-	T(PackedColor_rtti, 1, 4, 0), T(UnitPartInfo_rtti, 1, 4, 0), T(UnitPoseInfo_rtti, 1, 4, 0), T(Unit_rtti, 1, 4, 0),
-	T(Stage_rtti, 1, 4, 0), T(CollisionVolume_rtti, 1, 4, 0), T(Light_rtti, 1, 4, 0), T(ViewVolume_rtti, 1, 4, 0),
-	T(TimeSync_rtti, 1, 4, 0), T(Scene_rtti, 1, 4, 0),
+	T(static_emptyCtorTimeSync2, 0, 4, 0), T(debug_traceStripped, 0, 4, 0), T(Texture_initLog, 1, 4, 0), T(TextureManager_initLog, 1, 4, 0),
+	T(Sound_initLog, 1, 4, 0), T(Console_initLog, 1, 4, 0), T(Shape_initLog, 1, 4, 0), T(ShapeManager_initLog, 1, 4, 0),
+	T(Skeleton_initLog, 1, 4, 0), T(SkeletonManager_initLog, 1, 4, 0), T(BMPRGBFile_initLog, 1, 4, 0), T(RealColor_initLog, 1, 4, 0),
+	T(PackedColor_initLog, 1, 4, 0), T(UnitPartInfo_initLog, 1, 4, 0), T(UnitPoseInfo_initLog, 1, 4, 0), T(Unit_initLog, 1, 4, 0),
+	T(Stage_initLog, 1, 4, 0), T(CollisionVolume_initLog, 1, 4, 0), T(Light_initLog, 1, 4, 0), T(ViewVolume_initLog, 1, 4, 0),
+	T(TimeSync_initLog, 1, 4, 0), T(Scene_initLog, 1, 4, 0),
 	/* batch 31 */
-	T(static_endTextureRtti, 0, 6, 0), T(static_endTextureManagerRtti, 0, 6, 0), T(static_endConsoleRtti, 0, 6, 0), T(static_endShapeRtti, 0, 6, 0),
-	T(static_endShapeManagerRtti, 0, 6, 0), T(static_endSkeletonRtti, 0, 6, 0), T(static_endSkeletonManagerRtti, 0, 6, 0), T(static_endBMPRGBFileRtti, 0, 6, 0),
-	T(static_endRealColorRtti, 0, 6, 0), T(static_endPackedColorRtti, 0, 6, 0), T(static_endUnitPartInfoRtti, 0, 6, 0), T(static_endUnitPoseInfoRtti, 0, 6, 0),
-	T(static_endUnitRtti, 0, 6, 0), T(static_endStageRtti, 0, 6, 0), T(static_endCollisionVolumeRtti, 0, 6, 0), T(static_endLightRtti, 0, 6, 0),
-	T(static_endViewVolumeRtti, 0, 6, 0), T(static_endTimeSyncRtti, 0, 6, 0), T(static_endSceneRtti, 0, 6, 0), T(static_endSoundRtti, 0, 4, 0),
+	T(static_endTextureLog, 0, 6, 0), T(static_endTextureManagerLog, 0, 6, 0), T(static_endConsoleLog, 0, 6, 0), T(static_endShapeLog, 0, 6, 0),
+	T(static_endShapeManagerLog, 0, 6, 0), T(static_endSkeletonLog, 0, 6, 0), T(static_endSkeletonManagerLog, 0, 6, 0), T(static_endBMPRGBFileLog, 0, 6, 0),
+	T(static_endRealColorLog, 0, 6, 0), T(static_endPackedColorLog, 0, 6, 0), T(static_endUnitPartInfoLog, 0, 6, 0), T(static_endUnitPoseInfoLog, 0, 6, 0),
+	T(static_endUnitLog, 0, 6, 0), T(static_endStageLog, 0, 6, 0), T(static_endCollisionVolumeLog, 0, 6, 0), T(static_endLightLog, 0, 6, 0),
+	T(static_endViewVolumeLog, 0, 6, 0), T(static_endTimeSyncLog, 0, 6, 0), T(static_endSceneLog, 0, 6, 0), T(static_endSoundLog, 0, 4, 0),
 	T(static_endTimeSync, 0, 4, 0), T(TextureManager_reset, 1, 4, 300), T(TextureManager_ctor, 1, 4, 0), T(Light_ctor, 1, 4, 100),
 	T(Model_ctor, 1, 4, 300), T(CollisionVolume_ctor, 1, 4, 300), T(Scene_ctor, 1, 4, 300), T(TimeSync_ctor, 1, 4, 300),
 	T(Light_dtor, 1, 4, 100), T(stage_resetLights, 1, 4, 300), T(ResourceSet_ctor, 1, 4, 20), T(space_resetPlanes, 1, 4, 1000),
@@ -17354,24 +17354,24 @@ static const STest g_stests[] = {
 	T(angle_turn, 1, 4, 10000), T(angle_stepTowards, 1, 4, 10000), T(collision_moveActor, 1, 100, 8000),
 	/* batch 43 */
 	T(static_registerTex64x64Dtor, 1, 2, 0), T(static_registerTex128x64Dtor, 1, 2, 0), T(static_registerTex256x64Dtor, 1, 2, 0), T(static_registerTex128x128Dtor, 1, 2, 0),
-	T(static_registerTex256x128Dtor, 1, 2, 0), T(static_registerTex256x256Dtor, 1, 2, 0), T(static_registerTextureManagerDtor, 1, 2, 0), T(static_registerTextureRttiDtor, 1, 2, 0),
-	T(static_registerTextureManagerRttiDtor, 1, 2, 0), T(static_registerSoundRttiDtor, 1, 2, 0), T(static_registerConsoleRttiDtor, 1, 2, 0), T(static_registerShapeRttiDtor, 1, 2, 0),
-	T(static_registerShapeManagerRttiDtor, 1, 2, 0), T(static_registerTimeSyncDtor, 1, 2, 0), T(static_registerSkeletonRttiDtor, 1, 2, 0), T(static_registerSkeletonManagerRttiDtor, 1, 2, 0),
-	T(static_registerBMPRGBFileRttiDtor, 1, 2, 0), T(static_registerRealColorRttiDtor, 1, 2, 0), T(static_registerPackedColorRttiDtor, 1, 2, 0), T(static_registerUnitPartInfoRttiDtor, 1, 2, 0),
-	T(static_registerUnitPoseInfoRttiDtor, 1, 2, 0), T(static_registerUnitRttiDtor, 1, 2, 0), T(static_registerStageRttiDtor, 1, 2, 0), T(static_registerCollisionVolumeRttiDtor, 1, 2, 0),
-	T(static_registerLightRttiDtor, 1, 2, 0), T(static_registerViewVolumeRttiDtor, 1, 2, 0), T(static_registerTimeSyncRttiDtor, 1, 2, 0), T(static_registerSceneRttiDtor, 1, 2, 0),
+	T(static_registerTex256x128Dtor, 1, 2, 0), T(static_registerTex256x256Dtor, 1, 2, 0), T(static_registerTextureManagerDtor, 1, 2, 0), T(static_registerTextureLogDtor, 1, 2, 0),
+	T(static_registerTextureManagerLogDtor, 1, 2, 0), T(static_registerSoundLogDtor, 1, 2, 0), T(static_registerConsoleLogDtor, 1, 2, 0), T(static_registerShapeLogDtor, 1, 2, 0),
+	T(static_registerShapeManagerLogDtor, 1, 2, 0), T(static_registerTimeSyncDtor, 1, 2, 0), T(static_registerSkeletonLogDtor, 1, 2, 0), T(static_registerSkeletonManagerLogDtor, 1, 2, 0),
+	T(static_registerBMPRGBFileLogDtor, 1, 2, 0), T(static_registerRealColorLogDtor, 1, 2, 0), T(static_registerPackedColorLogDtor, 1, 2, 0), T(static_registerUnitPartInfoLogDtor, 1, 2, 0),
+	T(static_registerUnitPoseInfoLogDtor, 1, 2, 0), T(static_registerUnitLogDtor, 1, 2, 0), T(static_registerStageLogDtor, 1, 2, 0), T(static_registerCollisionVolumeLogDtor, 1, 2, 0),
+	T(static_registerLightLogDtor, 1, 2, 0), T(static_registerViewVolumeLogDtor, 1, 2, 0), T(static_registerTimeSyncLogDtor, 1, 2, 0), T(static_registerSceneLogDtor, 1, 2, 0),
 	T(TextureManager_deletingDtor, 1, 4, 300), T(Light_deletingDtor, 1, 4, 300), T(Scene_deletingDtor, 1, 4, 300), T(ErrorLog_deletingDtor, 1, 4, 300),
 	T(TimeSync_deletingDtor, 1, 4, 300), T(Model_release, 1, 4, 300), T(ShapeManager_release, 1, 4, 300), T(Skeleton_release, 1, 4, 300),
 	T(SkeletonManager_release, 1, 4, 300), T(partList_release, 1, 4, 300), T(CollisionVolume_release, 1, 4, 300), T(net_freeBuffers, 1, 300, 0),
 	T(net_freeSessionList, 1, 300, 0), T(net_addSession, 1, 300, 0), T(tunnel_removeLastRing, 1, 4, 1000), T(tunnel_appendRing, 1, 30, 0),
 	/* batch 44 */
 	T(static_startTex64x64, 1, 2, 0), T(static_startTex128x64, 1, 2, 0), T(static_startTex256x64, 1, 2, 0), T(static_startTex128x128, 1, 2, 0),
-	T(static_startTex256x128, 1, 2, 0), T(static_startTex256x256, 1, 2, 0), T(static_startTextureManager, 1, 2, 0), T(static_startTextureRtti, 1, 2, 0),
-	T(static_startTextureManagerRtti, 1, 2, 0), T(static_startSoundRtti, 1, 2, 0), T(static_startConsoleRtti, 1, 2, 0), T(static_startShapeRtti, 1, 2, 0),
-	T(static_startShapeManagerRtti, 1, 2, 0), T(static_startTimeSync, 1, 2, 0), T(static_startSkeletonRtti, 1, 2, 0), T(static_startSkeletonManagerRtti, 1, 2, 0),
-	T(static_startBMPRGBFileRtti, 1, 2, 0), T(static_startRealColorRtti, 1, 2, 0), T(static_startPackedColorRtti, 1, 2, 0), T(static_startUnitPartInfoRtti, 1, 2, 0),
-	T(static_startUnitPoseInfoRtti, 1, 2, 0), T(static_startUnitRtti, 1, 2, 0), T(static_startStageRtti, 1, 2, 0), T(static_startCollisionVolumeRtti, 1, 2, 0),
-	T(static_startLightRtti, 1, 2, 0), T(static_startViewVolumeRtti, 1, 2, 0), T(static_startTimeSyncRtti, 1, 2, 0), T(static_startSceneRtti, 1, 2, 0),
+	T(static_startTex256x128, 1, 2, 0), T(static_startTex256x256, 1, 2, 0), T(static_startTextureManager, 1, 2, 0), T(static_startTextureLog, 1, 2, 0),
+	T(static_startTextureManagerLog, 1, 2, 0), T(static_startSoundLog, 1, 2, 0), T(static_startConsoleLog, 1, 2, 0), T(static_startShapeLog, 1, 2, 0),
+	T(static_startShapeManagerLog, 1, 2, 0), T(static_startTimeSync, 1, 2, 0), T(static_startSkeletonLog, 1, 2, 0), T(static_startSkeletonManagerLog, 1, 2, 0),
+	T(static_startBMPRGBFileLog, 1, 2, 0), T(static_startRealColorLog, 1, 2, 0), T(static_startPackedColorLog, 1, 2, 0), T(static_startUnitPartInfoLog, 1, 2, 0),
+	T(static_startUnitPoseInfoLog, 1, 2, 0), T(static_startUnitLog, 1, 2, 0), T(static_startStageLog, 1, 2, 0), T(static_startCollisionVolumeLog, 1, 2, 0),
+	T(static_startLightLog, 1, 2, 0), T(static_startViewVolumeLog, 1, 2, 0), T(static_startTimeSyncLog, 1, 2, 0), T(static_startSceneLog, 1, 2, 0),
 	T(Model_dtor, 1, 4, 300), T(ShapeManager_dtor, 1, 4, 300), T(SkeletonManager_dtor, 1, 4, 300), T(UnitPoseInfo_dtor, 1, 4, 300), T(UnitPoseInfo_deletingDtor, 1, 4, 300),
 	T(CollisionVolume_dtor, 1, 4, 300), T(tunnel_rebuild, 1, 30, 0), T(tunnel_addRing, 1, 30, 0), T(ShapeManager_releaseModels, 1, 4, 1000),
 	T(SkeletonManager_releaseSkeletons, 1, 4, 1000),
@@ -17452,7 +17452,7 @@ static const STest g_stests[] = {
 	T(armc_setup3DView, 0, 40, 0), T(menu_drawDimOverlay, 0, 40, 0), T(room_drawWhiteFade, 0, 40, 0), T(menu_drawTextCursor, 0, 40, 0),
 	T(menu_drawFrame, 0, 400, 0), T(glWindow_restoreDisplayMode, 1, 40, 0), T(glWindow_setDisplayModeBy, 1, 40, 0), T(glWindow_setupPixelFormat, 1, 40, 0),
 	T(glWindow_resize, 1, 40, 0), T(image_initBy, 1, 400, 0), T(shapeDat_initBy, 0, 40, 0), T(skelDat_initBy, 0, 40, 0),
-	T(timer_getGameTime, 1, 1000, 0), T(frameTimer_average, 0, 400, 0), T(sys_checkClockTampering, 1, 40, 0), T(profile_deleteFiles, 0, 40, 0),
+	T(TimeSync_frameTime, 1, 1000, 0), T(scene_averageFrameTime, 0, 400, 0), T(sys_checkClockTampering, 1, 40, 0), T(profile_deleteFiles, 0, 40, 0),
 	T(reg_writeCharacterSettings, 0, 40, 0), T(room_keepSettings, 0, 40, 0), T(room_networkEvents, 0, 40, 0), T(gfx_initGLState, 0, 40, 0),
 	T(tex_upload, 0, 400, 0), T(flag_uploadAtlas, 0, 400, 0),
 	/* batch 60 */
@@ -18166,10 +18166,10 @@ static const struct { DWORD addr; void *fn; const char *name; } g_hooks3[] = {
 	{ 0x461320, (void *)mech_setName, "mech_setName" }, { 0x466960, (void *)shape_colourPixels, "shape_colourPixels" },
 	{ 0x461f10, (void *)match_resetInputState, "match_resetInputState" }, { 0x470cb0, (void *)stage_newRound, "stage_newRound" },
 	/* batch 12 */
-	{ 0x46dc50, (void *)color_initDefaultColours, "color_initDefaultColours" }, { 0x42f500, (void *)menu_initKeyRepeatDefaults, "menu_initKeyRepeatDefaults" },
-	{ 0x431680, (void *)input_initVkTable, "input_initVkTable" }, { 0x46d4d0, (void *)color_initTextColours, "color_initTextColours" },
+	{ 0x46dc50, (void *)colour_initDefaultColours, "colour_initDefaultColours" }, { 0x42f500, (void *)lobbyTop_initOutlines, "lobbyTop_initOutlines" },
+	{ 0x431680, (void *)input_initVkTable, "input_initVkTable" }, { 0x46d4d0, (void *)colour_initTextColours, "colour_initTextColours" },
 	{ 0x42f2b0, (void *)menu_initMainButtons, "menu_initMainButtons" }, { 0x42f690, (void *)room_initMenuButtons, "room_initMenuButtons" },
-	{ 0x42fd40, (void *)input_setDefaultKeyBindings, "input_setDefaultKeyBindings" },
+	{ 0x42fd40, (void *)input_initDikCodes, "input_initDikCodes" },
 	/* batch 12 */
 	{ 0x433790, (void *)room_enterGameList, "room_enterGameList" }, { 0x404c20, (void *)lobby_setSubState2, "lobby_setSubState2" },
 	{ 0x433360, (void *)menuCamera_initPoints, "menuCamera_initPoints" },
@@ -18182,7 +18182,7 @@ static const struct { DWORD addr; void *fn; const char *name; } g_hooks3[] = {
 	/* batch 15 */
 	{ 0x490f80, (void *)render_depthSortA, "render_depthSortA" }, { 0x491190, (void *)render_depthSortB, "render_depthSortB" },
 	/* batch 16 */
-	{ 0x42c410, (void *)input_applyKeyBindings, "input_applyKeyBindings" }, { 0x420c10, (void *)setup_keepKeyBindings, "setup_keepKeyBindings" },
+	{ 0x42c410, (void *)input_setDefaultBindings, "input_setDefaultBindings" }, { 0x420c10, (void *)setup_defaultBindings, "setup_defaultBindings" },
 	{ 0x47d0b0, (void *)quat_fromAxisAngle, "quat_fromAxisAngle" }, { 0x4277c0, (void *)setup_easePanel, "setup_easePanel" },
 	{ 0x46e2b0, (void *)ptx_initDequantTables, "ptx_initDequantTables" }, { 0x4679a0, (void *)math_triangleNormal, "math_triangleNormal" },
 	{ 0x41e390, (void *)pilotRecord_syncCopies, "pilotRecord_syncCopies" },
@@ -18247,27 +18247,27 @@ static const struct { DWORD addr; void *fn; const char *name; } g_hooks3[] = {
 	{ 0x46b900, (void *)static_emptyCtorSkelData6, "static_emptyCtorSkelData6" }, { 0x46b920, (void *)static_emptyCtorSkelData7, "static_emptyCtorSkelData7" },
 	{ 0x46b940, (void *)static_emptyCtorSkelData8, "static_emptyCtorSkelData8" }, { 0x487b70, (void *)static_emptyCtorTimeSync1, "static_emptyCtorTimeSync1" },
 	{ 0x487b90, (void *)static_emptyCtorTimeSync2, "static_emptyCtorTimeSync2" }, { 0x48b420, (void *)debug_traceStripped, "debug_traceStripped" },
-	{ 0x454fe0, (void *)Texture_rtti, "Texture_rtti" }, { 0x456940, (void *)TextureManager_rtti, "TextureManager_rtti" },
-	{ 0x456c90, (void *)Sound_rtti, "Sound_rtti" }, { 0x460520, (void *)Console_rtti, "Console_rtti" },
-	{ 0x463b30, (void *)Shape_rtti, "Shape_rtti" }, { 0x4669c0, (void *)ShapeManager_rtti, "ShapeManager_rtti" },
-	{ 0x469930, (void *)Skeleton_rtti, "Skeleton_rtti" }, { 0x46ae10, (void *)SkeletonManager_rtti, "SkeletonManager_rtti" },
-	{ 0x46ccb0, (void *)BMPRGBFile_rtti, "BMPRGBFile_rtti" }, { 0x46d270, (void *)RealColor_rtti, "RealColor_rtti" },
-	{ 0x46da70, (void *)PackedColor_rtti, "PackedColor_rtti" }, { 0x46f360, (void *)UnitPartInfo_rtti, "UnitPartInfo_rtti" },
-	{ 0x46f3c0, (void *)UnitPoseInfo_rtti, "UnitPoseInfo_rtti" }, { 0x46f420, (void *)Unit_rtti, "Unit_rtti" },
-	{ 0x46ff20, (void *)Stage_rtti, "Stage_rtti" }, { 0x481340, (void *)CollisionVolume_rtti, "CollisionVolume_rtti" },
-	{ 0x483d00, (void *)Light_rtti, "Light_rtti" }, { 0x483f60, (void *)ViewVolume_rtti, "ViewVolume_rtti" },
-	{ 0x4873e0, (void *)TimeSync_rtti, "TimeSync_rtti" }, { 0x48b3c0, (void *)Scene_rtti, "Scene_rtti" },
+	{ 0x454fe0, (void *)Texture_initLog, "Texture_initLog" }, { 0x456940, (void *)TextureManager_initLog, "TextureManager_initLog" },
+	{ 0x456c90, (void *)Sound_initLog, "Sound_initLog" }, { 0x460520, (void *)Console_initLog, "Console_initLog" },
+	{ 0x463b30, (void *)Shape_initLog, "Shape_initLog" }, { 0x4669c0, (void *)ShapeManager_initLog, "ShapeManager_initLog" },
+	{ 0x469930, (void *)Skeleton_initLog, "Skeleton_initLog" }, { 0x46ae10, (void *)SkeletonManager_initLog, "SkeletonManager_initLog" },
+	{ 0x46ccb0, (void *)BMPRGBFile_initLog, "BMPRGBFile_initLog" }, { 0x46d270, (void *)RealColor_initLog, "RealColor_initLog" },
+	{ 0x46da70, (void *)PackedColor_initLog, "PackedColor_initLog" }, { 0x46f360, (void *)UnitPartInfo_initLog, "UnitPartInfo_initLog" },
+	{ 0x46f3c0, (void *)UnitPoseInfo_initLog, "UnitPoseInfo_initLog" }, { 0x46f420, (void *)Unit_initLog, "Unit_initLog" },
+	{ 0x46ff20, (void *)Stage_initLog, "Stage_initLog" }, { 0x481340, (void *)CollisionVolume_initLog, "CollisionVolume_initLog" },
+	{ 0x483d00, (void *)Light_initLog, "Light_initLog" }, { 0x483f60, (void *)ViewVolume_initLog, "ViewVolume_initLog" },
+	{ 0x4873e0, (void *)TimeSync_initLog, "TimeSync_initLog" }, { 0x48b3c0, (void *)Scene_initLog, "Scene_initLog" },
 	/* batch 31 */
-	{ 0x455010, (void *)static_endTextureRtti, "static_endTextureRtti" }, { 0x456970, (void *)static_endTextureManagerRtti, "static_endTextureManagerRtti" },
-	{ 0x460550, (void *)static_endConsoleRtti, "static_endConsoleRtti" }, { 0x463b60, (void *)static_endShapeRtti, "static_endShapeRtti" },
-	{ 0x4669f0, (void *)static_endShapeManagerRtti, "static_endShapeManagerRtti" }, { 0x469960, (void *)static_endSkeletonRtti, "static_endSkeletonRtti" },
-	{ 0x46ae40, (void *)static_endSkeletonManagerRtti, "static_endSkeletonManagerRtti" }, { 0x46cce0, (void *)static_endBMPRGBFileRtti, "static_endBMPRGBFileRtti" },
-	{ 0x46d2a0, (void *)static_endRealColorRtti, "static_endRealColorRtti" }, { 0x46daa0, (void *)static_endPackedColorRtti, "static_endPackedColorRtti" },
-	{ 0x46f390, (void *)static_endUnitPartInfoRtti, "static_endUnitPartInfoRtti" }, { 0x46f3f0, (void *)static_endUnitPoseInfoRtti, "static_endUnitPoseInfoRtti" },
-	{ 0x46f450, (void *)static_endUnitRtti, "static_endUnitRtti" }, { 0x46ff50, (void *)static_endStageRtti, "static_endStageRtti" },
-	{ 0x481370, (void *)static_endCollisionVolumeRtti, "static_endCollisionVolumeRtti" }, { 0x483d30, (void *)static_endLightRtti, "static_endLightRtti" },
-	{ 0x483f90, (void *)static_endViewVolumeRtti, "static_endViewVolumeRtti" }, { 0x487410, (void *)static_endTimeSyncRtti, "static_endTimeSyncRtti" },
-	{ 0x48b3f0, (void *)static_endSceneRtti, "static_endSceneRtti" }, { 0x456cc0, (void *)static_endSoundRtti, "static_endSoundRtti" },
+	{ 0x455010, (void *)static_endTextureLog, "static_endTextureLog" }, { 0x456970, (void *)static_endTextureManagerLog, "static_endTextureManagerLog" },
+	{ 0x460550, (void *)static_endConsoleLog, "static_endConsoleLog" }, { 0x463b60, (void *)static_endShapeLog, "static_endShapeLog" },
+	{ 0x4669f0, (void *)static_endShapeManagerLog, "static_endShapeManagerLog" }, { 0x469960, (void *)static_endSkeletonLog, "static_endSkeletonLog" },
+	{ 0x46ae40, (void *)static_endSkeletonManagerLog, "static_endSkeletonManagerLog" }, { 0x46cce0, (void *)static_endBMPRGBFileLog, "static_endBMPRGBFileLog" },
+	{ 0x46d2a0, (void *)static_endRealColorLog, "static_endRealColorLog" }, { 0x46daa0, (void *)static_endPackedColorLog, "static_endPackedColorLog" },
+	{ 0x46f390, (void *)static_endUnitPartInfoLog, "static_endUnitPartInfoLog" }, { 0x46f3f0, (void *)static_endUnitPoseInfoLog, "static_endUnitPoseInfoLog" },
+	{ 0x46f450, (void *)static_endUnitLog, "static_endUnitLog" }, { 0x46ff50, (void *)static_endStageLog, "static_endStageLog" },
+	{ 0x481370, (void *)static_endCollisionVolumeLog, "static_endCollisionVolumeLog" }, { 0x483d30, (void *)static_endLightLog, "static_endLightLog" },
+	{ 0x483f90, (void *)static_endViewVolumeLog, "static_endViewVolumeLog" }, { 0x487410, (void *)static_endTimeSyncLog, "static_endTimeSyncLog" },
+	{ 0x48b3f0, (void *)static_endSceneLog, "static_endSceneLog" }, { 0x456cc0, (void *)static_endSoundLog, "static_endSoundLog" },
 	{ 0x468740, (void *)static_endTimeSync, "static_endTimeSync" }, { 0x4569b0, (void *)TextureManager_reset, "TextureManager_reset" },
 	{ 0x42b330, (void *)TextureManager_ctor, "TextureManager_ctor" }, { 0x462560, (void *)Light_ctor, "Light_ctor" },
 	{ 0x462cf0, (void *)Model_ctor, "Model_ctor" }, { 0x463790, (void *)CollisionVolume_ctor, "CollisionVolume_ctor" },
@@ -18313,17 +18313,17 @@ static const struct { DWORD addr; void *fn; const char *name; } g_hooks3[] = {
 	{ 0x42b170, (void *)static_registerTex64x64Dtor, "static_registerTex64x64Dtor" }, { 0x42b1c0, (void *)static_registerTex128x64Dtor, "static_registerTex128x64Dtor" },
 	{ 0x42b210, (void *)static_registerTex256x64Dtor, "static_registerTex256x64Dtor" }, { 0x42b260, (void *)static_registerTex128x128Dtor, "static_registerTex128x128Dtor" },
 	{ 0x42b2b0, (void *)static_registerTex256x128Dtor, "static_registerTex256x128Dtor" }, { 0x42b300, (void *)static_registerTex256x256Dtor, "static_registerTex256x256Dtor" },
-	{ 0x42b370, (void *)static_registerTextureManagerDtor, "static_registerTextureManagerDtor" }, { 0x455000, (void *)static_registerTextureRttiDtor, "static_registerTextureRttiDtor" },
-	{ 0x456960, (void *)static_registerTextureManagerRttiDtor, "static_registerTextureManagerRttiDtor" }, { 0x456cb0, (void *)static_registerSoundRttiDtor, "static_registerSoundRttiDtor" },
-	{ 0x460540, (void *)static_registerConsoleRttiDtor, "static_registerConsoleRttiDtor" }, { 0x463b50, (void *)static_registerShapeRttiDtor, "static_registerShapeRttiDtor" },
-	{ 0x4669e0, (void *)static_registerShapeManagerRttiDtor, "static_registerShapeManagerRttiDtor" }, { 0x468730, (void *)static_registerTimeSyncDtor, "static_registerTimeSyncDtor" },
-	{ 0x469950, (void *)static_registerSkeletonRttiDtor, "static_registerSkeletonRttiDtor" }, { 0x46ae30, (void *)static_registerSkeletonManagerRttiDtor, "static_registerSkeletonManagerRttiDtor" },
-	{ 0x46ccd0, (void *)static_registerBMPRGBFileRttiDtor, "static_registerBMPRGBFileRttiDtor" }, { 0x46d290, (void *)static_registerRealColorRttiDtor, "static_registerRealColorRttiDtor" },
-	{ 0x46da90, (void *)static_registerPackedColorRttiDtor, "static_registerPackedColorRttiDtor" }, { 0x46f380, (void *)static_registerUnitPartInfoRttiDtor, "static_registerUnitPartInfoRttiDtor" },
-	{ 0x46f3e0, (void *)static_registerUnitPoseInfoRttiDtor, "static_registerUnitPoseInfoRttiDtor" }, { 0x46f440, (void *)static_registerUnitRttiDtor, "static_registerUnitRttiDtor" },
-	{ 0x46ff40, (void *)static_registerStageRttiDtor, "static_registerStageRttiDtor" }, { 0x481360, (void *)static_registerCollisionVolumeRttiDtor, "static_registerCollisionVolumeRttiDtor" },
-	{ 0x483d20, (void *)static_registerLightRttiDtor, "static_registerLightRttiDtor" }, { 0x483f80, (void *)static_registerViewVolumeRttiDtor, "static_registerViewVolumeRttiDtor" },
-	{ 0x487400, (void *)static_registerTimeSyncRttiDtor, "static_registerTimeSyncRttiDtor" }, { 0x48b3e0, (void *)static_registerSceneRttiDtor, "static_registerSceneRttiDtor" },
+	{ 0x42b370, (void *)static_registerTextureManagerDtor, "static_registerTextureManagerDtor" }, { 0x455000, (void *)static_registerTextureLogDtor, "static_registerTextureLogDtor" },
+	{ 0x456960, (void *)static_registerTextureManagerLogDtor, "static_registerTextureManagerLogDtor" }, { 0x456cb0, (void *)static_registerSoundLogDtor, "static_registerSoundLogDtor" },
+	{ 0x460540, (void *)static_registerConsoleLogDtor, "static_registerConsoleLogDtor" }, { 0x463b50, (void *)static_registerShapeLogDtor, "static_registerShapeLogDtor" },
+	{ 0x4669e0, (void *)static_registerShapeManagerLogDtor, "static_registerShapeManagerLogDtor" }, { 0x468730, (void *)static_registerTimeSyncDtor, "static_registerTimeSyncDtor" },
+	{ 0x469950, (void *)static_registerSkeletonLogDtor, "static_registerSkeletonLogDtor" }, { 0x46ae30, (void *)static_registerSkeletonManagerLogDtor, "static_registerSkeletonManagerLogDtor" },
+	{ 0x46ccd0, (void *)static_registerBMPRGBFileLogDtor, "static_registerBMPRGBFileLogDtor" }, { 0x46d290, (void *)static_registerRealColorLogDtor, "static_registerRealColorLogDtor" },
+	{ 0x46da90, (void *)static_registerPackedColorLogDtor, "static_registerPackedColorLogDtor" }, { 0x46f380, (void *)static_registerUnitPartInfoLogDtor, "static_registerUnitPartInfoLogDtor" },
+	{ 0x46f3e0, (void *)static_registerUnitPoseInfoLogDtor, "static_registerUnitPoseInfoLogDtor" }, { 0x46f440, (void *)static_registerUnitLogDtor, "static_registerUnitLogDtor" },
+	{ 0x46ff40, (void *)static_registerStageLogDtor, "static_registerStageLogDtor" }, { 0x481360, (void *)static_registerCollisionVolumeLogDtor, "static_registerCollisionVolumeLogDtor" },
+	{ 0x483d20, (void *)static_registerLightLogDtor, "static_registerLightLogDtor" }, { 0x483f80, (void *)static_registerViewVolumeLogDtor, "static_registerViewVolumeLogDtor" },
+	{ 0x487400, (void *)static_registerTimeSyncLogDtor, "static_registerTimeSyncLogDtor" }, { 0x48b3e0, (void *)static_registerSceneLogDtor, "static_registerSceneLogDtor" },
 	{ 0x42b350, (void *)TextureManager_deletingDtor, "TextureManager_deletingDtor" }, { 0x462580, (void *)Light_deletingDtor, "Light_deletingDtor" },
 	{ 0x463810, (void *)Scene_deletingDtor, "Scene_deletingDtor" }, { 0x46c5c0, (void *)ErrorLog_deletingDtor, "ErrorLog_deletingDtor" },
 	{ 0x487450, (void *)TimeSync_deletingDtor, "TimeSync_deletingDtor" }, { 0x464bc0, (void *)Model_release, "Model_release" },
@@ -18336,17 +18336,17 @@ static const struct { DWORD addr; void *fn; const char *name; } g_hooks3[] = {
 	{ 0x42b120, (void *)static_startTex64x64, "static_startTex64x64" }, { 0x42b190, (void *)static_startTex128x64, "static_startTex128x64" },
 	{ 0x42b1e0, (void *)static_startTex256x64, "static_startTex256x64" }, { 0x42b230, (void *)static_startTex128x128, "static_startTex128x128" },
 	{ 0x42b280, (void *)static_startTex256x128, "static_startTex256x128" }, { 0x42b2d0, (void *)static_startTex256x256, "static_startTex256x256" },
-	{ 0x42b320, (void *)static_startTextureManager, "static_startTextureManager" }, { 0x454fd0, (void *)static_startTextureRtti, "static_startTextureRtti" },
-	{ 0x456930, (void *)static_startTextureManagerRtti, "static_startTextureManagerRtti" }, { 0x456c80, (void *)static_startSoundRtti, "static_startSoundRtti" },
-	{ 0x460510, (void *)static_startConsoleRtti, "static_startConsoleRtti" }, { 0x463b20, (void *)static_startShapeRtti, "static_startShapeRtti" },
-	{ 0x4669b0, (void *)static_startShapeManagerRtti, "static_startShapeManagerRtti" }, { 0x468710, (void *)static_startTimeSync, "static_startTimeSync" },
-	{ 0x469920, (void *)static_startSkeletonRtti, "static_startSkeletonRtti" }, { 0x46ae00, (void *)static_startSkeletonManagerRtti, "static_startSkeletonManagerRtti" },
-	{ 0x46cca0, (void *)static_startBMPRGBFileRtti, "static_startBMPRGBFileRtti" }, { 0x46d260, (void *)static_startRealColorRtti, "static_startRealColorRtti" },
-	{ 0x46da60, (void *)static_startPackedColorRtti, "static_startPackedColorRtti" }, { 0x46f350, (void *)static_startUnitPartInfoRtti, "static_startUnitPartInfoRtti" },
-	{ 0x46f3b0, (void *)static_startUnitPoseInfoRtti, "static_startUnitPoseInfoRtti" }, { 0x46f410, (void *)static_startUnitRtti, "static_startUnitRtti" },
-	{ 0x46ff10, (void *)static_startStageRtti, "static_startStageRtti" }, { 0x481330, (void *)static_startCollisionVolumeRtti, "static_startCollisionVolumeRtti" },
-	{ 0x483cf0, (void *)static_startLightRtti, "static_startLightRtti" }, { 0x483f50, (void *)static_startViewVolumeRtti, "static_startViewVolumeRtti" },
-	{ 0x4873d0, (void *)static_startTimeSyncRtti, "static_startTimeSyncRtti" }, { 0x48b3b0, (void *)static_startSceneRtti, "static_startSceneRtti" },
+	{ 0x42b320, (void *)static_startTextureManager, "static_startTextureManager" }, { 0x454fd0, (void *)static_startTextureLog, "static_startTextureLog" },
+	{ 0x456930, (void *)static_startTextureManagerLog, "static_startTextureManagerLog" }, { 0x456c80, (void *)static_startSoundLog, "static_startSoundLog" },
+	{ 0x460510, (void *)static_startConsoleLog, "static_startConsoleLog" }, { 0x463b20, (void *)static_startShapeLog, "static_startShapeLog" },
+	{ 0x4669b0, (void *)static_startShapeManagerLog, "static_startShapeManagerLog" }, { 0x468710, (void *)static_startTimeSync, "static_startTimeSync" },
+	{ 0x469920, (void *)static_startSkeletonLog, "static_startSkeletonLog" }, { 0x46ae00, (void *)static_startSkeletonManagerLog, "static_startSkeletonManagerLog" },
+	{ 0x46cca0, (void *)static_startBMPRGBFileLog, "static_startBMPRGBFileLog" }, { 0x46d260, (void *)static_startRealColorLog, "static_startRealColorLog" },
+	{ 0x46da60, (void *)static_startPackedColorLog, "static_startPackedColorLog" }, { 0x46f350, (void *)static_startUnitPartInfoLog, "static_startUnitPartInfoLog" },
+	{ 0x46f3b0, (void *)static_startUnitPoseInfoLog, "static_startUnitPoseInfoLog" }, { 0x46f410, (void *)static_startUnitLog, "static_startUnitLog" },
+	{ 0x46ff10, (void *)static_startStageLog, "static_startStageLog" }, { 0x481330, (void *)static_startCollisionVolumeLog, "static_startCollisionVolumeLog" },
+	{ 0x483cf0, (void *)static_startLightLog, "static_startLightLog" }, { 0x483f50, (void *)static_startViewVolumeLog, "static_startViewVolumeLog" },
+	{ 0x4873d0, (void *)static_startTimeSyncLog, "static_startTimeSyncLog" }, { 0x48b3b0, (void *)static_startSceneLog, "static_startSceneLog" },
 	{ 0x464ba0, (void *)Model_dtor, "Model_dtor" }, { 0x466a10, (void *)ShapeManager_dtor, "ShapeManager_dtor" },
 	{ 0x46ae60, (void *)SkeletonManager_dtor, "SkeletonManager_dtor" }, { 0x46f470, (void *)UnitPoseInfo_dtor, "UnitPoseInfo_dtor" }, { 0x45ff10, (void *)UnitPoseInfo_deletingDtor, "UnitPoseInfo_deletingDtor" },
 	{ 0x481390, (void *)CollisionVolume_dtor, "CollisionVolume_dtor" }, { 0x4411e0, (void *)tunnel_rebuild, "tunnel_rebuild" },
@@ -18486,7 +18486,7 @@ static const struct { DWORD addr; void *fn; const char *name; } g_hooks3[] = {
 	{ 0x467f20, (void *)glWindow_setDisplayModeBy, "glWindow_setDisplayModeBy" }, { 0x467e60, (void *)glWindow_setupPixelFormat, "glWindow_setupPixelFormat" },
 	{ 0x468450, (void *)glWindow_resize, "glWindow_resize" }, { 0x46cd00, (void *)image_initBy, "image_initBy" },
 	{ 0x466c00, (void *)shapeDat_initBy, "shapeDat_initBy" }, { 0x46afe0, (void *)skelDat_initBy, "skelDat_initBy" },
-	{ 0x487490, (void *)timer_getGameTime, "timer_getGameTime" }, { 0x461210, (void *)frameTimer_average, "frameTimer_average" },
+	{ 0x487490, (void *)TimeSync_frameTime, "TimeSync_frameTime" }, { 0x461210, (void *)scene_averageFrameTime, "scene_averageFrameTime" },
 	{ 0x43f300, (void *)sys_checkClockTampering, "sys_checkClockTampering" }, { 0x44ba60, (void *)profile_deleteFiles, "profile_deleteFiles" },
 	{ 0x432400, (void *)reg_writeCharacterSettings, "reg_writeCharacterSettings" }, { 0x433640, (void *)room_keepSettings, "room_keepSettings" },
 	{ 0x43e610, (void *)room_networkEvents, "room_networkEvents" }, { 0x42f150, (void *)gfx_initGLState, "gfx_initGLState" },

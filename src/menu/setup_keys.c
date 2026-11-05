@@ -439,7 +439,7 @@ void (setup_controlTabKeys)(void)
 	if (input_justPressed(g_keyBack) != 1) {
 		if (input_justPressed(g_dikD) == 1) {
 			sound_playMenu(0);
-			setup_keepKeyBindings();
+			setup_defaultBindings();
 			return;
 		}
 		if (!input_justPressed(g_keyCancel2))
@@ -498,7 +498,7 @@ void (setup_controlTabClicks)(void)
 			g_setupPage = 0;
 		} else if (on == 6) {
 			sound_playMenu(0);
-			setup_keepKeyBindings();
+			setup_defaultBindings();
 		} else if ((on == 7 || on == 8) && row >= 0 && page == 3) {
 			int *setting = &GAME_VAR(int, on == 7 ? OBJ(g_setupToggles) : (OBJ(g_setupToggles) + 0x4));
 			*setting = 1 - *setting;

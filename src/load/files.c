@@ -1280,7 +1280,7 @@ void (cfg_init)(void)
 	g_items3D = 1;
 	(*(int *)&g_cfgMipmaps) = 1;
 	(*(int *)&g_cfgLinearFilter) = 1;
-	input_applyKeyBindings();
+	input_setDefaultBindings();
 	cfg_loadAxisCfg();
 }
 

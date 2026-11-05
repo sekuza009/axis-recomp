@@ -13,9 +13,9 @@
 [x] src/app/ptx_tables.c 101
 [x] src/app/resets.c 66
 [x] src/app/small.c 852
-[ ] src/app/statics.c 155
-[ ] src/app/store_tables.c 176
-[ ] src/app/timer.c 142
+[x] src/app/statics.c 155
+[x] src/app/store_tables.c 176
+[x] src/app/timer.c 142
 [ ] src/app/win32.c 841
 [ ] src/crt/crt_atof.c 469
 [ ] src/crt/crt_format.c 100

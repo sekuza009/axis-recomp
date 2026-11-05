@@ -25,12 +25,12 @@
 0xa1efd8,u32,g_mciDevice
 0xa0e01c,int,g_musicEndHigh
 # the static textures' objects (their vtable words)
-0x4e1878,u32,g_staticTex64x64
-0x5b1db8,u32,g_staticTex128x64
-0x680cd8,u32,g_staticTex256x64
-0x76d498,u32,g_staticTex128x128
-0x90d1e0,u32,g_staticTex256x128
-0x83a9e0,u32,g_staticTex256x256
+0x4e1878,u32,g_texture64x64Vtable
+0x5b1db8,u32,g_texture128x64Vtable
+0x680cd8,u32,g_texture256x64Vtable
+0x76d498,u32,g_texture128x128Vtable
+0x90d1e0,u32,g_texture256x128Vtable
+0x83a9e0,u32,g_texture256x256Vtable
 # Hangul glyphs (the last one composed)
 0x4d60e0,int,g_hangulLeadGlyph
 0x4d23d4,int,g_hangulVowelGlyph

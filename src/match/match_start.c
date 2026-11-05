@@ -173,7 +173,7 @@ static void later_round(Scene *s)
 	s->watchedPlayer = -1;
 	memset(s->manualPick, 0, sizeof s->manualPick);
 	s->playing = 0;
-	(void)timer_getGameTime((u8 *)&s->timer);
+	(void)TimeSync_frameTime((u8 *)&s->timer);
 	g_mouseX = gfx_getWidth() / 2;
 	g_mouseY = gfx_getHeight() / 2;
 	sound_setVolume(g_soundVolume);

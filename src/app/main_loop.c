@@ -164,7 +164,7 @@ static void count_down(u8 *s, u32 offset, const float *dt)
 }
 
 /* 0x48b200 (thiscall on the scene): the playing state's frame. The match set up first when it is not yet
-   (+0x233cc28 0: match_startRound); frameTimer_average (its answer dropped); the frame's time (+0x44) added to the
+   (+0x233cc28 0: match_startRound); scene_averageFrameTime (its answer dropped); the frame's time (+0x44) added to the
    second's fraction (+0x233cc34) and to the FPS window (+0x2340c90); three countdowns (msgFade, readyTimer,
    keyGuard). Past a whole second the seconds (+0x233cc30) take it, and the frame and packet counts of the window
    (+0x2340c80 / +0x2340c84) become rates (+0x2340c88 / +0x2340c8c; 0 for an empty window), the window cleared. Then
@@ -176,7 +176,7 @@ int THISCALL (match_playFrame)(u8 *s)
 	const float *dt = &SC->frameTime;
 	if (SC->modeStarted == 0)
 		match_startRound(s);
-	(void)frameTimer_average(s);
+	(void)scene_averageFrameTime(s);
 	long double second = fadd_m(fld_m(dt), &SC->secondFraction);
 	SC->secondFraction = f32(second);
 	float window = f32(fadd_m(fld_m(&SC->windowTime), dt));
@@ -425,7 +425,7 @@ u32 THISCALL (match_freeCamFrame)(u8 *s)
 			for (int f = 0; f < 6; f++)
 				SC->cameraSettings[f][SC->cameraMode] = SC->cameraPresets[f][SC->cameraMode];
 		SC->cameraMode = 0;
-		timer_getGameTime((u8 *)&SC->timer);
+		TimeSync_frameTime((u8 *)&SC->timer);
 		int y = gfx_getHeight() / 2;
 		input_setCursorPos(gfx_getWidth() / 2, y);
 	}
@@ -463,7 +463,7 @@ u32 THISCALL (match_freeCamFrame)(u8 *s)
 		SC->fKeys[k] = input_asyncKeyDown(0x70 + k) ? 1 : 0;
 	SC->partStepDownPressed = input_asyncKeyPressed('Z') || (input_asyncKeyDown(0x10) && input_asyncKeyDown('Z'));
 	SC->partStepUpPressed = input_asyncKeyPressed('X') || (input_asyncKeyDown(0x10) && input_asyncKeyDown('X'));
-	frameTimer_average(s);
+	scene_averageFrameTime(s);
 	float slow = f32(fld_m((const float *)ADDR(k_1f)) - fmul_m(fld_m(&SC->frameTime), k_0_6f));
 	float turn = f32(fmul_m(fld_m(&SC->frameTime), k_750f));
 	long double look = fmul_m(fld_m(&SC->frameTime), (const float *)ADDR(k_100f));
@@ -992,7 +992,7 @@ u32 THISCALL (replay_frame)(u8 *s)
 		stage_selectActor((Stage *)stage, -1);
 		SC->watchedPlayer = -1;
 		SC->manualPick[0] = SC->manualPick[1] = SC->manualPick[2] = 0;
-		timer_getGameTime((u8 *)&SC->timer);
+		TimeSync_frameTime((u8 *)&SC->timer);
 		int y = gfx_getHeight() / 2;
 		input_setCursorPos(gfx_getWidth() / 2, y);
 		(*(int *)&SC->followTime) = (*(int *)&SC->presetTime) = (*(int *)&SC->flagUploadTimer) = 0;
@@ -1000,7 +1000,7 @@ u32 THISCALL (replay_frame)(u8 *s)
 		(*(int *)&SC->recordTime) = (*(int *)&SC->replayTime) = 0;
 		events_clear((Scene *)s, 60.0f);
 	}
-	frameTimer_average(s);
+	scene_averageFrameTime(s);
 	/* the replay clock (+0x233cc30 whole seconds, +0x233cc34 the fraction) */
 	long double t = fadd_m(fld_m(&SC->secondFraction), &SC->frameTime);
 	SC->secondFraction = (float)t;

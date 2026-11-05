@@ -83,7 +83,7 @@ long double (timer_now)(void)
    positive. Each call counts the frame (+8), takes the counter's rise (+0x1c) and adds it up (+0x24); once that
    passes a second the frames per second go to +0x2c (0 if the sum is not positive) and the count and sum restart.
    The frame time (+0x30) is the rise over the frequency, at most +0x34; returned as stored */
-long double THISCALL (timer_getGameTime)(u8 *t)
+long double THISCALL (TimeSync_frameTime)(u8 *t)
 {
 	TimeSync *ts = (TimeSync *)t;
 #undef QueryPerformanceCounter
@@ -124,13 +124,13 @@ long double THISCALL (timer_getGameTime)(u8 *t)
 #undef fatal
 }
 
-/* 0x461210 (thiscall on a frame timer): the frame's time (timer_getGameTime of the timer at +0xc) kept in a ring of
+/* 0x461210 (thiscall on the scene): the frame's time (TimeSync_frameTime of its timer, +0xc) kept in a ring of
    ten (+0x48, next at +0x70), their average (the sum times 0x4a955c, 0.1) in +0x44; the average is also left on the
    FPU stack, as the original leaves it (its callers pop it) */
-long double THISCALL (frameTimer_average)(u8 *t)
+long double THISCALL (scene_averageFrameTime)(u8 *t)
 {
 	Scene *sc = (Scene *)t;
-	long double now = timer_getGameTime(t + 0xc);
+	long double now = TimeSync_frameTime(t + 0xc);
 	sc->frameTimes[sc->frameTimeNext] = (float)now;
 	sc->frameTimeNext = (sc->frameTimeNext + 1) % 10;
 	long double sum = k_0f;   /* 0 */

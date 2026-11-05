@@ -15,15 +15,15 @@ static void apply_cstores(const CStore *s, int n)
 	for (int k = 0; k < n; k++) GAME_U32(s[k].a) = val[k];
 }
 
-static const Store k_color_initDefaultColours[16] = {
+static const Store k_defaultColours[16] = {
 	{ OBJ(g_defaultColours), 0xffffffff }, { (OBJ(g_defaultColours) + 0x4), 0xff5454f3 }, { (OBJ(g_defaultColours) + 0xc), 0xfff35466 }, { (OBJ(g_defaultColours) + 0x8), 0xffe7b7fd }, { (OBJ(g_defaultColours) + 0x10), 0xffffcc00 },
 	{ (OBJ(g_defaultColours) + 0x18), 0xffa6ffcc }, { (OBJ(g_defaultColours) + 0x1c), 0xff00f0ff }, { (OBJ(g_defaultColours) + 0x20), 0xffd3c8c8 }, { (OBJ(g_defaultColours) + 0x24), 0xffa09090 }, { (OBJ(g_defaultColours) + 0x14), 0xff23d33c },
 	{ (OBJ(g_defaultColours) + 0x28), 0xff859a98 }, { (OBJ(g_defaultColours) + 0x2c), 0xff000085 }, { (OBJ(g_defaultColours) + 0x30), 0xffff000c }, { (OBJ(g_defaultColours) + 0x34), 0xffff00d2 }, { (OBJ(g_defaultColours) + 0x38), 0xff3a322e },
 	{ (OBJ(g_defaultColours) + 0x3c), 0xffa2ff00 } };
 
-void (color_initDefaultColours)(void) { apply_stores(k_color_initDefaultColours, 16); }   /* 0x46dc50 default RGBA colours (bytes) */
+void (colour_initDefaultColours)(void) { apply_stores(k_defaultColours, 16); }   /* 0x46dc50 default RGBA colours (bytes) */
 
-static const Store k_intro_42f500[44] = {
+static const Store k_lobbyTopOutlines[44] = {
 	{ (OBJ(g_lobbyTopOutlines) + 0x18), 0xe7 }, { (OBJ(g_lobbyTopOutlines) + 0x28), 0xe7 }, { (OBJ(g_lobbyTopOutlines) + 0x74), 0xe7 }, { (OBJ(g_lobbyTopOutlines) + 0x4), 0xffffff65 }, { (OBJ(g_lobbyTopOutlines) + 0x14), 0xffffff65 },
 	{ (OBJ(g_lobbyTopOutlines) + 0xc), 0xffffff7e }, { (OBJ(g_lobbyTopOutlines) + 0x10), 0xfffffef2 }, { (OBJ(g_lobbyTopOutlines) + 0x30), 0xfffffef2 }, { (OBJ(g_lobbyTopOutlines) + 0x34), 0xffffff7e }, { (OBJ(g_lobbyTopOutlines) + 0x40), 0xfffffef2 },
 	{ (OBJ(g_lobbyTopOutlines) + 0x64), 0x10e }, { (OBJ(g_lobbyTopOutlines) + 0x8c), 0x10e }, { (OBJ(g_lobbyTopOutlines) + 0x44), 0xffffffc1 }, { (OBJ(g_lobbyTopOutlines) + 0x54), 0xffffffc1 }, { (OBJ(g_lobbyTopOutlines) + 0xa0), 0xffffffc1 },
@@ -34,7 +34,7 @@ static const Store k_intro_42f500[44] = {
 	{ (OBJ(g_lobbyTopOutlines) + 0x84), 0x4 }, { (OBJ(g_lobbyTopOutlines) + 0x88), 0x82 }, { (OBJ(g_lobbyTopOutlines) + 0x9c), 0xffffffe2 }, { (OBJ(g_lobbyTopOutlines) + 0x90), 0x9b }, { (OBJ(g_lobbyTopOutlines) + 0xa4), 0xffffff1a },
 	{ (OBJ(g_lobbyTopOutlines) + 0x94), 0x4b }, { (OBJ(g_lobbyTopOutlines) + 0xa8), 0xffffff90 }, { (OBJ(g_lobbyTopOutlines) + 0x98), 0x82 }, { (OBJ(g_lobbyTopOutlines) + 0xac), 0xffffffe2 } };
 
-void (menu_initKeyRepeatDefaults)(void) { apply_stores(k_intro_42f500, 44); }   /* 0x42f500 intro table */
+void (lobbyTop_initOutlines)(void) { apply_stores(k_lobbyTopOutlines, 44); }   /* 0x42f500: the lobby top menu's button outlines */
 
 static const Store k_input_initVkTable[57] = {
 	{ OBJ(g_vkTable), 0x1b }, { (OBJ(g_vkTable) + 0x4), 0x31 }, { (OBJ(g_vkTable) + 0x8), 0x32 }, { (OBJ(g_vkTable) + 0xc), 0x33 }, { (OBJ(g_vkTable) + 0x10), 0x34 },
@@ -52,7 +52,7 @@ static const Store k_input_initVkTable[57] = {
 
 void (input_initVkTable)(void) { apply_stores(k_input_initVkTable, 57); }   /* 0x431680 scan-code row -> virtual key table */
 
-static const Store k_replay_46d4d0[64] = {
+static const Store k_textColours[64] = {
 	{ OBJ(g_textColours), 0x3f800000 }, { (OBJ(g_textColours) + 0x4), 0x3f800000 }, { (OBJ(g_textColours) + 0x8), 0x3f800000 }, { (OBJ(g_textColours) + 0xc), 0x3f800000 }, { (OBJ(g_textColours) + 0x10), 0x3f73f3f4 },
 	{ (OBJ(g_textColours) + 0x14), 0x3ea8a8a9 }, { (OBJ(g_textColours) + 0x18), 0x3ea8a8a9 }, { (OBJ(g_textColours) + 0x1c), 0x3f800000 }, { (OBJ(g_textColours) + 0x20), 0x3f7dfdfe }, { (OBJ(g_textColours) + 0x24), 0x3f37b7b8 },
 	{ (OBJ(g_textColours) + 0x28), 0x3f67e7e8 }, { (OBJ(g_textColours) + 0x2c), 0x3f800000 }, { (OBJ(g_textColours) + 0x30), 0x3ecccccd }, { (OBJ(g_textColours) + 0x34), 0x3ea8a8a9 }, { (OBJ(g_textColours) + 0x38), 0x3f73f3f4 },
@@ -67,9 +67,9 @@ static const Store k_replay_46d4d0[64] = {
 	{ (OBJ(g_textColours) + 0xdc), 0x3f800000 }, { (OBJ(g_textColours) + 0xe0), 0x3e38b8b9 }, { (OBJ(g_textColours) + 0xe4), 0x3e48c8c9 }, { (OBJ(g_textColours) + 0xe8), 0x3e68e8e9 }, { (OBJ(g_textColours) + 0xec), 0x3f800000 },
 	{ (OBJ(g_textColours) + 0xf0), 0x0 }, { (OBJ(g_textColours) + 0xf4), 0x3f800000 }, { (OBJ(g_textColours) + 0xf8), 0x3f22a2a3 }, { (OBJ(g_textColours) + 0xfc), 0x3f800000 } };
 
-void (color_initTextColours)(void) { apply_stores(k_replay_46d4d0, 64); }   /* 0x46d4d0 64-entry table */
+void (colour_initTextColours)(void) { apply_stores(k_textColours, 64); }   /* 0x46d4d0: the 16 text colours (four floats each) */
 
-static const Store k_intro_42f2b0[66] = {
+static const Store k_mainMenuOutlines[66] = {
 	{ (OBJ(g_mainMenuOutlines) + 0x30), 0xfffffefc }, { (OBJ(g_mainMenuOutlines) + 0x3c), 0xfffffefc }, { (OBJ(g_mainMenuOutlines) + 0x40), 0xfffffefc }, { (OBJ(g_mainMenuOutlines) + 0x34), 0xffffff81 }, { (OBJ(g_mainMenuOutlines) + 0x38), 0xffffff81 },
 	{ (OBJ(g_mainMenuOutlines) + 0x4), 0xffffff6f }, { (OBJ(g_mainMenuOutlines) + 0x14), 0xffffff6f }, { (OBJ(g_mainMenuOutlines) + 0x68), 0xffffff6f }, { OBJ(g_mainMenuOutlines), 0x4 }, { (OBJ(g_mainMenuOutlines) + 0x18), 0xe8 },
 	{ (OBJ(g_mainMenuOutlines) + 0x28), 0xe8 }, { (OBJ(g_mainMenuOutlines) + 0x2c), 0x4 }, { (OBJ(g_mainMenuOutlines) + 0x58), 0x4 }, { (OBJ(g_mainMenuOutlines) + 0x5c), 0xffffff01 }, { (OBJ(g_mainMenuOutlines) + 0x6c), 0xffffff01 },
@@ -85,9 +85,9 @@ static const Store k_intro_42f2b0[66] = {
 	{ (OBJ(g_mainMenuOutlines) + 0xe4), 0xff }, { (OBJ(g_mainMenuOutlines) + 0xe8), 0x92 }, { (OBJ(g_mainMenuOutlines) + 0xfc), 0xffffff1a }, { (OBJ(g_mainMenuOutlines) + 0x100), 0xffffff91 }, { (OBJ(g_mainMenuOutlines) + 0xf0), 0x78 },
 	{ (OBJ(g_mainMenuOutlines) + 0x104), 0xffffffce } };
 
-void (menu_initMainButtons)(void) { apply_stores(k_intro_42f2b0, 66); }   /* 0x42f2b0 intro table */
+void (menu_initMainButtons)(void) { apply_stores(k_mainMenuOutlines, 66); }   /* 0x42f2b0: the main menu's button outlines */
 
-static const Store k_intro_42f690[66] = {
+static const Store k_roomOutlines[66] = {
 	{ (OBJ(g_roomOutlines) + 0x30), 0xfffffefc }, { (OBJ(g_roomOutlines) + 0x3c), 0xfffffefc }, { (OBJ(g_roomOutlines) + 0x40), 0xfffffefc }, { (OBJ(g_roomOutlines) + 0x34), 0xffffff81 }, { (OBJ(g_roomOutlines) + 0x38), 0xffffff81 },
 	{ (OBJ(g_roomOutlines) + 0x4), 0xffffff6f }, { (OBJ(g_roomOutlines) + 0x14), 0xffffff6f }, { (OBJ(g_roomOutlines) + 0x68), 0xffffff6f }, { OBJ(g_roomOutlines), 0x4 }, { (OBJ(g_roomOutlines) + 0x18), 0xe8 },
 	{ (OBJ(g_roomOutlines) + 0x28), 0xe8 }, { (OBJ(g_roomOutlines) + 0x2c), 0x4 }, { (OBJ(g_roomOutlines) + 0x58), 0x4 }, { (OBJ(g_roomOutlines) + 0x5c), 0xffffff01 }, { (OBJ(g_roomOutlines) + 0x6c), 0xffffff01 },
@@ -103,9 +103,9 @@ static const Store k_intro_42f690[66] = {
 	{ (OBJ(g_roomOutlines) + 0xe4), 0xff }, { (OBJ(g_roomOutlines) + 0xe8), 0x92 }, { (OBJ(g_roomOutlines) + 0xfc), 0xffffff1a }, { (OBJ(g_roomOutlines) + 0x100), 0xffffff91 }, { (OBJ(g_roomOutlines) + 0xf0), 0x78 },
 	{ (OBJ(g_roomOutlines) + 0x104), 0xffffffce } };
 
-void (room_initMenuButtons)(void) { apply_stores(k_intro_42f690, 66); }   /* 0x42f690 intro table */
+void (room_initMenuButtons)(void) { apply_stores(k_roomOutlines, 66); }   /* 0x42f690: the game room's button outlines */
 
-static const Store k_input_setDefaultKeyBindings[118] = {
+static const Store k_dikCodes[118] = {
 	{ ADDR(g_dikNone), 0x0 }, { ADDR(g_dikEscape), 0x1 }, { ADDR(g_dik1), 0x2 }, { ADDR(g_dik2), 0x3 }, { ADDR(g_dik3), 0x4 },
 	{ ADDR(g_dik4), 0x5 }, { ADDR(g_dik5), 0x6 }, { ADDR(g_dik6), 0x7 }, { ADDR(g_dik7), 0x8 }, { ADDR(g_dik8), 0x9 },
 	{ ADDR(g_dik9), 0xa }, { ADDR(g_dik0), 0xb }, { ADDR(g_dikA), 0x1e }, { ADDR(g_dikB), 0x30 }, { ADDR(g_dikC), 0x2e },
@@ -131,9 +131,9 @@ static const Store k_input_setDefaultKeyBindings[118] = {
 	{ ADDR(g_dikPageDown_2), 0xd1 }, { ADDR(g_dikZ_2), 0x2c }, { ADDR(g_dikEnter_2), 0x1c }, { ADDR(g_dikMouse1), 0xfa }, { ADDR(g_dikMouse2), 0xfb },
 	{ ADDR(g_dikMouse3), 0xfc }, { ADDR(g_dikWheelDown), 0xfd }, { ADDR(g_dikWheelUp), 0xfe } };
 
-void (input_setDefaultKeyBindings)(void) { apply_stores(k_input_setDefaultKeyBindings, 118); }   /* 0x42fd40 default key bindings */
+void (input_initDikCodes)(void) { apply_stores(k_dikCodes, 118); }   /* 0x42fd40: the DirectInput key codes (DIK_*) into their globals */
 
-static const CStore k_input_applyKeyBindings[68] = {
+static const CStore k_defaultBindings[68] = {
 	{ ADDR(g_keyBackward), ADDR(g_dikS), 1 }, { ADDR(g_keyStepLeft), ADDR(g_dikA), 1 }, { ADDR(g_keyStepRight), ADDR(g_dikD), 1 }, { (OBJ(g_controls) + 0x20), ADDR(g_dikLeft), 1 },
 	{ (OBJ(g_controls) + 0x28), ADDR(g_dikRight), 1 }, { (OBJ(g_controls) + 0x30), ADDR(g_dikMouse2), 1 }, { (OBJ(g_controls) + 0x38), ADDR(g_dikSpace), 1 }, { (OBJ(g_controls) + 0x40), ADDR(g_dikR), 1 },
 	{ (OBJ(g_controls) + 0x48), ADDR(g_dikF), 1 }, { (OBJ(g_controls) + 0x50), ADDR(g_dikMouse1), 1 }, { (OBJ(g_controls) + 0x58), ADDR(g_dikQ), 1 }, { (OBJ(g_controls) + 0x60), ADDR(g_dikE), 1 },
@@ -152,9 +152,9 @@ static const CStore k_input_applyKeyBindings[68] = {
 	{ (OBJ(g_controls) + 0xf4), ADDR(g_dikNone), 1 }, { (OBJ(g_controls) + 0xfc), ADDR(g_dikNone), 1 }, { (OBJ(g_controls) + 0xf0), ADDR(g_dikV), 1 }, { (OBJ(g_controls) + 0xf8), ADDR(g_excludedKey), 1 },
 	{ ADDR(g_mouseInvert), 0x0, 0 }, { ADDR(g_mouseSmooth), 0x0, 0 }, { ADDR(g_mouseSensitivity), 0x32, 0 }, { ADDR(g_crosshairSetting), 0x0, 0 } };
 
-void (input_applyKeyBindings)(void) { apply_cstores(k_input_applyKeyBindings, 68); }
+void (input_setDefaultBindings)(void) { apply_cstores(k_defaultBindings, 68); }   /* the default key bindings (g_controls) */
 
-static const CStore k_setup_controlTabHelper_420c10[68] = {
+static const CStore k_defaultBindingsEdit[68] = {
 	{ (OBJ(g_controlsEdit) + 0x8), ADDR(g_dikS), 1 }, { (OBJ(g_controlsEdit) + 0x10), ADDR(g_dikA), 1 }, { (OBJ(g_controlsEdit) + 0x18), ADDR(g_dikD), 1 }, { (OBJ(g_controlsEdit) + 0x20), ADDR(g_dikLeft), 1 },
 	{ (OBJ(g_controlsEdit) + 0x28), ADDR(g_dikRight), 1 }, { (OBJ(g_controlsEdit) + 0x30), ADDR(g_dikMouse2), 1 }, { (OBJ(g_controlsEdit) + 0x38), ADDR(g_dikSpace), 1 }, { (OBJ(g_controlsEdit) + 0x40), ADDR(g_dikR), 1 },
 	{ (OBJ(g_controlsEdit) + 0x48), ADDR(g_dikF), 1 }, { (OBJ(g_controlsEdit) + 0x50), ADDR(g_dikMouse1), 1 }, { (OBJ(g_controlsEdit) + 0x58), ADDR(g_dikQ), 1 }, { (OBJ(g_controlsEdit) + 0x60), ADDR(g_dikE), 1 },
@@ -173,4 +173,4 @@ static const CStore k_setup_controlTabHelper_420c10[68] = {
 	{ (OBJ(g_controlsEdit) + 0xf4), ADDR(g_dikNone), 1 }, { (OBJ(g_controlsEdit) + 0xfc), ADDR(g_dikNone), 1 }, { (OBJ(g_controlsEdit) + 0xf0), ADDR(g_dikV), 1 }, { (OBJ(g_controlsEdit) + 0xf8), ADDR(g_excludedKey), 1 },
 	{ OBJ(g_setupToggles), 0x0, 0 }, { (OBJ(g_setupToggles) + 0x4), 0x0, 0 }, { ADDR(g_sensitivitySlider), 0x32, 0 }, { ADDR(g_crosshair), 0x0, 0 } };
 
-void (setup_keepKeyBindings)(void) { apply_cstores(k_setup_controlTabHelper_420c10, 68); }
+void (setup_defaultBindings)(void) { apply_cstores(k_defaultBindingsEdit, 68); }   /* the setup page's DEFAULT: the defaults into its edit copy (g_controlsEdit) */
