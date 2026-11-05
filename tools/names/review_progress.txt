@@ -85,11 +85,11 @@
 [x] src/msg/msg_players.c 132
 [x] src/msg/msg_print.c 21
 [x] src/msg/msg_system.c 40
-[ ] src/net/dplay_calls.c 53
-[ ] src/net/dplay_slots.c 202
-[ ] src/net/net_packets.c 129
-[ ] src/net/net_servers.c 48
-[ ] src/net/net_sessions.c 114
+[x] src/net/dplay_calls.c 53
+[x] src/net/dplay_slots.c 202
+[x] src/net/net_packets.c 129
+[x] src/net/net_servers.c 48
+[x] src/net/net_sessions.c 114
 [ ] src/net/net_tables.c 2218
 [ ] src/render/depth_sort.c 67
 [ ] src/render/factors.c 123

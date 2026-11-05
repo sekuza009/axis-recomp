@@ -291,3 +291,4 @@ setup_frameOptionsPage,setup_frameGraphicPage
 setup_drawOptionsDialog,setup_drawGraphicPage
 setupOptions_hitTest,setupGraphic_hitTest
 setupOptions_layout,setupGraphic_layout
+net_matchOver,net_hostGone

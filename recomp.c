@@ -4177,7 +4177,7 @@ unsigned net_sendPacketData(int size, const void *data);
 int netq_receive(int *from, int *size, void *data);
 int netq_online(void);
 int net_isClient(void);
-int net_matchOver(void);
+int net_hostGone(void);
 int net_localSlot(void);
 int net_playerInUse(int i);
 void netq_clearResends(void);
@@ -17133,7 +17133,7 @@ ST(netq_receive, netq_setup();, CALL_PLAIN(0x4a8450, 0, (int)(BUF + 0x100), (int
    (DWORD)netq_receive((int *)(BUF + 0x100), (int *)(BUF + 0x104), BUF + 0x200))
 ST(netq_online, netq_setup();, CALL_PLAIN(0x4a86c0, 0, 0, 0, 0, 0), (DWORD)netq_online())
 ST(net_isClient, netq_setup();, CALL_PLAIN(0x4a86d0, 0, 0, 0, 0, 0), (DWORD)net_isClient())
-ST(net_matchOver, netq_setup();, CALL_PLAIN(0x4a86e0, 0, 0, 0, 0, 0), (DWORD)net_matchOver())
+ST(net_hostGone, netq_setup();, CALL_PLAIN(0x4a86e0, 0, 0, 0, 0, 0), (DWORD)net_hostGone())
 ST(net_localSlot, netq_setup();, CALL_PLAIN(0x4a86f0, 0, 0, 0, 0, 0), (DWORD)net_localSlot())
 ST(net_playerInUse, netq_setup();, CALL_PLAIN(0x4a8700, 0, g_a[2] & 15, 0, 0, 0), (DWORD)net_playerInUse(g_a[2] & 15))
 ST(netq_clearResends, netq_setup();, (CALL_PLAIN(0x4a8720, 0, 0, 0, 0, 0), 0), (netq_clearResends(), 0))
@@ -17675,7 +17675,7 @@ static const STest g_stests[] = {
 	/* batch 160 */
 	T(sound_loadWav, 0, 300, 0),
 	/* batch 161 */
-	T(input_keyHeldChecked, 0, 300, 0), T(input_keyHeld, 0, 300, 0), T(input_isDown, 0, 300, 0), T(input_justPressed, 0, 600, 0), T(input_readMouse, 0, 600, 0), T(input_updateMouse, 0, 600, 0), T(armc_drawPreview3D, 0, 600, 0), T(gfx_setProjectionHud, 0, 600, 0), T(gfx_fillRect, 0, 600, 0), T(hud_drawDigits, 0, 600, 0), T(font_penDraw, 0, 600, 0), T(game_wndProc, 0, 2000, 0), T(crt_vsprintf, 0, 20000, 0), T(crt_atoi, 0, 5000, 0), T(crt_atof, 0, 5000, 0), T(crt_strtok, 0, 3000, 0), T(crt_itoa, 0, 3000, 0), T(crt_tolower, 0, 2000, 0), T(crt_strupr, 0, 2000, 0), T(crt_strstr, 0, 2000, 0), T(crt_strncmp, 0, 2000, 0), T(crt_strnicmp, 0, 2000, 0), T(crt_strncpy, 0, 2000, 0), T(crt_rand, 0, 2000, 0), T(crt_ftol, 0, 10000, 0), T(crt_acos, 0, 5000, 0), T(netq_reset, 0, 300, 0), T(netq_poll, 0, 300, 0), T(net_sendPacketData, 0, 600, 0), T(netq_receive, 0, 3000, 0), T(netq_online, 0, 100, 0), T(net_isClient, 0, 100, 0), T(net_matchOver, 0, 100, 0), T(net_localSlot, 0, 100, 0), T(net_playerInUse, 0, 100, 0), T(netq_clearResends, 0, 100, 0), T(netq_resends, 0, 100, 0), T(sound_playMenu, 0, 200, 0),
+	T(input_keyHeldChecked, 0, 300, 0), T(input_keyHeld, 0, 300, 0), T(input_isDown, 0, 300, 0), T(input_justPressed, 0, 600, 0), T(input_readMouse, 0, 600, 0), T(input_updateMouse, 0, 600, 0), T(armc_drawPreview3D, 0, 600, 0), T(gfx_setProjectionHud, 0, 600, 0), T(gfx_fillRect, 0, 600, 0), T(hud_drawDigits, 0, 600, 0), T(font_penDraw, 0, 600, 0), T(game_wndProc, 0, 2000, 0), T(crt_vsprintf, 0, 20000, 0), T(crt_atoi, 0, 5000, 0), T(crt_atof, 0, 5000, 0), T(crt_strtok, 0, 3000, 0), T(crt_itoa, 0, 3000, 0), T(crt_tolower, 0, 2000, 0), T(crt_strupr, 0, 2000, 0), T(crt_strstr, 0, 2000, 0), T(crt_strncmp, 0, 2000, 0), T(crt_strnicmp, 0, 2000, 0), T(crt_strncpy, 0, 2000, 0), T(crt_rand, 0, 2000, 0), T(crt_ftol, 0, 10000, 0), T(crt_acos, 0, 5000, 0), T(netq_reset, 0, 300, 0), T(netq_poll, 0, 300, 0), T(net_sendPacketData, 0, 600, 0), T(netq_receive, 0, 3000, 0), T(netq_online, 0, 100, 0), T(net_isClient, 0, 100, 0), T(net_hostGone, 0, 100, 0), T(net_localSlot, 0, 100, 0), T(net_playerInUse, 0, 100, 0), T(netq_clearResends, 0, 100, 0), T(netq_resends, 0, 100, 0), T(sound_playMenu, 0, 200, 0),
 	T(skirmish_leave, 0, 200, 0), T(missionSettings_leave, 0, 200, 0), T(mission_chosen, 0, 200, 0),
 	/* batch 162 */
 	T(skirmish_listClicks, 0, 300, 0), T(missionsel_clicks, 0, 300, 0), T(mission_choose, 0, 200, 0), T(skirmish_briefingKeys, 0, 300, 0),
@@ -18751,7 +18751,7 @@ static const struct { DWORD addr; void *fn; const char *name; } g_hooks3[] = {
 	{ 0x4a8300, (void *)netq_reset, "netq_reset" }, { 0x4a8350, (void *)netq_poll, "netq_poll" },
 	{ 0x4a8360, (void *)net_sendPacketData, "net_sendPacketData" }, { 0x4a8450, (void *)netq_receive, "netq_receive" },
 	{ 0x4a86c0, (void *)netq_online, "netq_online" }, { 0x4a86d0, (void *)net_isClient, "net_isClient" },
-	{ 0x4a86e0, (void *)net_matchOver, "net_matchOver" }, { 0x4a86f0, (void *)net_localSlot, "net_localSlot" },
+	{ 0x4a86e0, (void *)net_hostGone, "net_hostGone" }, { 0x4a86f0, (void *)net_localSlot, "net_localSlot" },
 	{ 0x4a8700, (void *)net_playerInUse, "net_playerInUse" }, { 0x4a8720, (void *)netq_clearResends, "netq_clearResends" },
 	{ 0x4a8730, (void *)netq_resends, "netq_resends" }, { 0x41e760, (void *)sound_playMenu, "sound_playMenu" },
 	{ 0x443c80, (void *)skirmish_leave, "skirmish_leave" }, { 0x447960, (void *)missionSettings_leave, "missionSettings_leave" },

@@ -35,15 +35,15 @@ static int slot_enum(int k)
 	return g_dplaySlots[k] ? dplay_enumSessions() : 0;
 }
 
-static int slot_host(int k, int a1, int a2, int a3, int a4, int a5, int a6, int a7, int a8)
+static int slot_host(int k, int session, int player, int user1, int maxPlayers, int user2, int hi, int lo, int data)
 {
-	return g_dplaySlots[k] ? dplay_hostSession(a1, a2, a3, a4, a5, a6, a7, a8) : 0;
+	return g_dplaySlots[k] ? dplay_hostSession(session, player, user1, maxPlayers, user2, hi, lo, data) : 0;
 }
 
-/* 0x1f4 when the slot is closed */
-static int slot_join(int k, int a1, int a2, int a3, int a4)
+/* 0x1f4 when the slot is closed; the game mode is passed on but dplay_joinSession does not read it */
+static int slot_join(int k, int guid, int player, int data, int gameMode)
 {
-	return g_dplaySlots[k] ? dplay_joinSession(a1, a2, a3, a4) : 0x1f4;
+	return g_dplaySlots[k] ? dplay_joinSession(guid, player, data, gameMode) : 0x1f4;
 }
 
 static int close0(void) { return dplaySlot0_close(); }
@@ -97,16 +97,16 @@ int (dplaySlot2_enum)(void) { return slot_enum(2); }
 int (dplaySlot3_enum)(void) { return slot_enum(3); }
 
 /* host: 0x4549e0, 0x454b00, 0x454c10, 0x454d20 (dplay_hostSession's eight arguments) */
-int (dplaySlot0_host)(int a1, int a2, int a3, int a4, int a5, int a6, int a7, int a8) { return slot_host(0, a1, a2, a3, a4, a5, a6, a7, a8); }
-int (dplaySlot1_host)(int a1, int a2, int a3, int a4, int a5, int a6, int a7, int a8) { return slot_host(1, a1, a2, a3, a4, a5, a6, a7, a8); }
-int (dplaySlot2_host)(int a1, int a2, int a3, int a4, int a5, int a6, int a7, int a8) { return slot_host(2, a1, a2, a3, a4, a5, a6, a7, a8); }
-int (dplaySlot3_host)(int a1, int a2, int a3, int a4, int a5, int a6, int a7, int a8) { return slot_host(3, a1, a2, a3, a4, a5, a6, a7, a8); }
+int (dplaySlot0_host)(int session, int player, int user1, int maxPlayers, int user2, int hi, int lo, int data) { return slot_host(0, session, player, user1, maxPlayers, user2, hi, lo, data); }
+int (dplaySlot1_host)(int session, int player, int user1, int maxPlayers, int user2, int hi, int lo, int data) { return slot_host(1, session, player, user1, maxPlayers, user2, hi, lo, data); }
+int (dplaySlot2_host)(int session, int player, int user1, int maxPlayers, int user2, int hi, int lo, int data) { return slot_host(2, session, player, user1, maxPlayers, user2, hi, lo, data); }
+int (dplaySlot3_host)(int session, int player, int user1, int maxPlayers, int user2, int hi, int lo, int data) { return slot_host(3, session, player, user1, maxPlayers, user2, hi, lo, data); }
 
 /* join: 0x454a20, 0x454b40, 0x454c50, 0x454d60 */
-int (dplaySlot0_join)(int a1, int a2, int a3, int a4) { return slot_join(0, a1, a2, a3, a4); }
-int (dplaySlot1_join)(int a1, int a2, int a3, int a4) { return slot_join(1, a1, a2, a3, a4); }
-int (dplaySlot2_join)(int a1, int a2, int a3, int a4) { return slot_join(2, a1, a2, a3, a4); }
-int (dplaySlot3_join)(int a1, int a2, int a3, int a4) { return slot_join(3, a1, a2, a3, a4); }
+int (dplaySlot0_join)(int guid, int player, int data, int gameMode) { return slot_join(0, guid, player, data, gameMode); }
+int (dplaySlot1_join)(int guid, int player, int data, int gameMode) { return slot_join(1, guid, player, data, gameMode); }
+int (dplaySlot2_join)(int guid, int player, int data, int gameMode) { return slot_join(2, guid, player, data, gameMode); }
+int (dplaySlot3_join)(int guid, int player, int data, int gameMode) { return slot_join(3, guid, player, data, gameMode); }
 
 /* 0x453770: DirectPlay checked once more: net_resetState, then a DirectPlay object made and released again */
 int (dplay_check)(void)
@@ -117,19 +117,19 @@ int (dplay_check)(void)
 	return 0;
 }
 
-/* 0x453090: a session hosted through the slot of connection kind 0xa0b418 (its eight arguments passed on); 0 for an
+/* 0x453090: a session hosted through the slot of connection kind 0xa0b418 (dplay_hostSession's eight arguments passed on); 0 for an
    unknown kind */
-int (dplay_host)(int a1, int a2, int a3, int a4, int a5, int a6, int a7, int a8)
+int (dplay_host)(int session, int player, int user1, int maxPlayers, int user2, int hi, int lo, int data)
 {
 	u32 kind = (*(u32 *)&g_connectionKind);
 	if (kind > 3)
 		return 0;
-	return dplay_slotHost(kind, a1, a2, a3, a4, a5, a6, a7, a8);
+	return dplay_slotHost(kind, session, player, user1, maxPlayers, user2, hi, lo, data);
 }
 
 /* 0x453180: session `session` joined through the slot of connection kind 0xa0b418 (with its game mode); 0x1f7 when
    there is no such session, 0x1f5 when it is full (players == maxPlayers), 0 for an unknown kind */
-int (dplay_join)(int session, int a2, int a3, int a4)
+int (dplay_join)(int session, int guid, int player, int data)
 {
 	const SessionDesc *rec = (const SessionDesc *)net_sessionValue(session);
 	if (!rec)
@@ -139,7 +139,7 @@ int (dplay_join)(int session, int a2, int a3, int a4)
 	u32 kind = (*(u32 *)&g_connectionKind);
 	if (kind > 3)
 		return 0;
-	return dplay_slotJoin(kind, a2, a3, a4, (u8)rec->gameMode);
+	return dplay_slotJoin(kind, guid, player, data, (u8)rec->gameMode);
 }
 
 /* 0x452fe0: the arena session left (when one is open, 0xa0b390 and 0xa0b384): the host tells everyone first

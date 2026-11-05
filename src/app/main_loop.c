@@ -258,7 +258,7 @@ static const u32 k_weaponKeys[6] = { (OBJ(g_controls) + 0x78), (OBJ(g_controls) 
    over), the chat keys, the camera mode cycle (respawnCameraMode), the scoreboard keys, the message log toggle cycle
    (+0x2340ce8 / ce4 with their notices). In the in-match menu (+0x2340cf4 1) the mouse moves the selection (the
    original's +-50 step, or the patch DLL's menu_nav where it replaced that block), and its keys choose. A network
-   end (net_matchOver) quits. Its caller ignores the eax it leaves */
+   end (net_hostGone) quits. Its caller ignores the eax it leaves */
 void THISCALL (match_combatInput)(u8 *s)
 {
 	match_resetInputState(s);
@@ -368,7 +368,7 @@ void THISCALL (match_combatInput)(u8 *s)
 		if (input_justPressed(g_dikEscape))
 			SC->menuKeys[3] = 1;
 	}
-	if (net_matchOver())
+	if (net_hostGone())
 		SC->quitAsked = 1;
 }
 #undef S

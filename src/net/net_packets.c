@@ -122,7 +122,7 @@ int (netq_receive)(int *from, int *size, void *data)
 /* 0x4a86c0 .. 0x4a8730: the layer's flags and counters */
 int (netq_online)(void) { return g_netQueueOnline; }
 int (net_isClient)(void) { return g_netClient; }
-int (net_matchOver)(void) { return g_netHostGone; }
+int (net_hostGone)(void) { return g_netHostGone; }
 int (net_localSlot)(void) { return g_localSlot; }
 int (net_playerInUse)(int i) { return g_netSlots[i].used; }
 void (netq_clearResends)(void) { g_resends = 0; }

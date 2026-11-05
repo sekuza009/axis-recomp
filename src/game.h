@@ -371,7 +371,7 @@ typedef struct { u32 vtable; void *banks[6]; i32 count; } TextureManager;   /* t
 #define font_penDraw(x, y, a, text) GAME_FN(font_penDraw, 0x46bb00, void, int, int, int, const char *)(x, y, a, text)
 #define space_traceNodes(grid, p0, p1, hit, subs, nsubs) GAME_THISFN(space_traceNodes, 0x483060, u32, void *, const float *, const float *, void *, void *, int)(grid, p0, p1, hit, subs, nsubs)
 #define match_resetInputState(scene) GAME_THISFN(match_resetInputState, 0x461f10, void, void *)(scene)
-#define net_matchOver() GAME_FN(net_matchOver, 0x4a86e0, int, void)()   /* the network says the match is over? */
+#define net_hostGone() GAME_FN(net_hostGone, 0x4a86e0, int, void)()   /* the network says the match is over? */
 #define crt_fread(p, size, count, f) GAME_CDECL(0x49e836, u32, void *, u32, u32, void *)(p, size, count, f)
 #define Light_read(lights, f) GAME_THISFN(Light_read, 0x483d70, void, void *, void *)(lights, f)   /* the lights read */
 #define math_triangleNormal(out, a, b, c) GAME_FN(math_triangleNormal, 0x4679a0, float *, float *, const float *, const float *, const float *)(out, a, b, c)   /* a triangle's normal */
@@ -641,9 +641,9 @@ typedef struct { float r, g, b, a; } Colour;
 #define dplay_initConnection(kind, address) GAME_FN(dplay_initConnection, 0x453a90, int, int, int)(kind, address)
 #define dplay_release() GAME_FN(dplay_release, 0x453920, int, void)()
 #define dplay_enumSessions() GAME_FN(dplay_enumSessions, 0x453fd0, int, void)()
-#define dplay_hostSession(a1, a2, a3, a4, a5, a6, a7, a8) GAME_FN(dplay_hostSession, 0x453cf0, int, int, int, int, int, int, int, int, int)\
-	(a1, a2, a3, a4, a5, a6, a7, a8)
-#define dplay_joinSession(a1, a2, a3, a4) GAME_FN(dplay_joinSession, 0x453e60, int, int, int, int, int)(a1, a2, a3, a4)
+#define dplay_hostSession(session, player, user1, maxPlayers, user2, hi, lo, data) GAME_FN(dplay_hostSession, 0x453cf0, int, int, int, int, int, int, int, int, int)\
+	(session, player, user1, maxPlayers, user2, hi, lo, data)
+#define dplay_joinSession(guid, player, data, gameMode) GAME_FN(dplay_joinSession, 0x453e60, int, int, int, int, int)(guid, player, data, gameMode)
 #define dplay_create() GAME_FN(dplay_create, 0x453790, int, void)()
 #define net_resetState() GAME_FN(net_resetState, 0x4509e0, void, void)()
 #define dplaySlot0_close() GAME_FN(dplaySlot0_close, 0x4549a0, int, void)()   /* close slot 0 .. 3 */
@@ -786,7 +786,7 @@ typedef struct { float r, g, b, a; } Colour;
 #define cfg_readKeyBindings(f) GAME_FN(cfg_readKeyBindings, 0x42e730, void, void *)(f)      /* its key bindings */
 #define input_setDefaultBindings() GAME_FN(input_setDefaultBindings, 0x42c410, void, void)()     /* the default key bindings */
 #define armc_enterParts() GAME_FN(armc_enterParts, 0x40ee20, u32, void)()
-#define dplay_join(session, id, name, colour) GAME_FN(dplay_join, 0x453180, int, int, u32, const char *, int)(session, id, name, colour)   /* a join: 500 joined */
+#define dplay_join(session, guid, player, data) GAME_FN(dplay_join, 0x453180, int, int, u32, const char *, int)(session, guid, player, data)   /* a join: 500 joined */
 #define tunnel_addRing() GAME_FN(tunnel_addRing, 0x441200, TunnelRing *, void)()   /* one more tunnel ring */
 #define tunnel_removeLastRing(head) GAME_FN(tunnel_removeLastRing, 0x441190, u32, TunnelRing **)(head)   /* the last ring taken off and freed */
 #define crypt_countingKey(p, key) GAME_FN(crypt_countingKey, 0x42b3c0, int, u8 *, u8)(p, key)   /* a 0x4c-byte record decoded (xor key, key + 1, ...) */
@@ -1195,7 +1195,7 @@ typedef struct { float r, g, b, a; } Colour;
 #define gameList_open() GAME_FN(gameList_open, 0x434d00, int, void)()    /* the search asked for: 1 sent */
 #define roomLogin_hitTest(x, y) GAME_FN(roomLogin_hitTest, 0x432200, int, int, int)(x, y)   /* the Ladder login dialog's button at (x, y) */
 #define room_openNewIdForm() GAME_FN(room_openNewIdForm, 0x4338c0, u32, void)()
-#define dplay_host(name, player, map, a, b, c, d, corp) GAME_FN(dplay_host, 0x453090, int, const void *, const char *, int, int, int, int, int, int)(name, player, map, a, b, c, d, corp)   /* the arena hosted: 0 failed */
+#define dplay_host(session, player, user1, maxPlayers, user2, hi, lo, data) GAME_FN(dplay_host, 0x453090, int, const void *, const char *, int, int, int, int, int, int)(session, player, user1, maxPlayers, user2, hi, lo, data)   /* the arena hosted: 0 failed */
 #define net_asyncSelect(hwnd, socket) GAME_FN(net_asyncSelect, 0x452170, int, void *, int)(hwnd, socket)
 #define lobby_keepArenaSettings() GAME_FN(lobby_keepArenaSettings, 0x405140, u32, void)()   /* the arena's settings kept (0x4db528 into 0x4ded20) */
 #define room_keepSettings() GAME_FN(room_keepSettings, 0x433640, u32, void)()    /* the room's settings kept (0x4df9c8 into 0x5b1b30) */
@@ -1263,8 +1263,8 @@ typedef struct { float r, g, b, a; } Colour;
 #define Mat4_fromAxisAngle(m, rotation) GAME_FN(Mat4_fromAxisAngle, 0x47d9a0, void, float *, const float *)(m, rotation)   /* (angle, axis) -> matrix */
 
 /* the DirectPlay slot functions by connection kind (src/net/dplay_slots.c) */
-#define dplay_slotHost(kind, a1, a2, a3, a4, a5, a6, a7, a8) 	GAME_CDECL(((const u32[4]){ FN_ADDR(dplaySlot0_host, 0x4549e0), FN_ADDR(dplaySlot1_host, 0x454b00), FN_ADDR(dplaySlot2_host, 0x454c10), FN_ADDR(dplaySlot3_host, 0x454d20) })[kind], int, int, int, int, int, int, int, int, int)(a1, a2, a3, a4, a5, a6, a7, a8)
-#define dplay_slotJoin(kind, a1, a2, a3, a4) 	GAME_CDECL(((const u32[4]){ FN_ADDR(dplaySlot0_join, 0x454a20), FN_ADDR(dplaySlot1_join, 0x454b40), FN_ADDR(dplaySlot2_join, 0x454c50), FN_ADDR(dplaySlot3_join, 0x454d60) })[kind], int, int, int, int, int)(a1, a2, a3, a4)
+#define dplay_slotHost(kind, session, player, user1, maxPlayers, user2, hi, lo, data) 	GAME_CDECL(((const u32[4]){ FN_ADDR(dplaySlot0_host, 0x4549e0), FN_ADDR(dplaySlot1_host, 0x454b00), FN_ADDR(dplaySlot2_host, 0x454c10), FN_ADDR(dplaySlot3_host, 0x454d20) })[kind], int, int, int, int, int, int, int, int, int)(session, player, user1, maxPlayers, user2, hi, lo, data)
+#define dplay_slotJoin(kind, guid, player, data, gameMode) 	GAME_CDECL(((const u32[4]){ FN_ADDR(dplaySlot0_join, 0x454a20), FN_ADDR(dplaySlot1_join, 0x454b40), FN_ADDR(dplaySlot2_join, 0x454c50), FN_ADDR(dplaySlot3_join, 0x454d60) })[kind], int, int, int, int, int)(guid, player, data, gameMode)
 
 /* the error reporters (src/app/error_log.c): a message, or a fatal one that ends the game */
 #define sys_errorTerminate(...) GAME_FN(sys_errorTerminate, 0x46c950, void, const char *, ...)(__VA_ARGS__)
