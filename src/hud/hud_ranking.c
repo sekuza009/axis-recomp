@@ -22,7 +22,7 @@ static void ranking_row(Scene *scene, int p, int *y)
 		x = 0x58;
 		hud_drawNameIcon(scene, player->emblem, x, *y);
 	}
-	int flagOwner = scene->network ? p : player->player;
+	int flagOwner = scene->sessionMode ? p : player->player;
 	if (scene->playerRecords[flagOwner].flagShown == 1) {
 		x -= 0x18;
 		hud_drawLeaderIcon(scene, flagOwner, x, *y);
@@ -57,7 +57,7 @@ void THISCALL (hud_drawRanking)(Scene *scene)
 					continue;
 				glColor4f(red, 0.0f, blue, p == scene->localPlayer ? 0.5f : 0.2f);
 				ranking_row(scene, p, &y);
-				if (scene->players[p].markTeam == 1) {
+				if (scene->players[p].isPlatoonLeader == 1) {
 					glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 					replay_drawIcon(scene, 0x20c, y, scene->players[p].team + 9);
 				}
@@ -76,7 +76,7 @@ void THISCALL (hud_drawRanking)(Scene *scene)
 			else
 				glColor4f(1.0f, 1.0f, 1.0f, 0.2f);
 			ranking_row(scene, p, &y);
-			if (scene->players[p].markSolo == 1) {
+			if (scene->players[p].isKing == 1) {
 				glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 				replay_drawIcon(scene, 0x20c, y, 8);
 			}

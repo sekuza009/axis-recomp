@@ -9,7 +9,7 @@ static void clock_setColour(int low, Scene *scene)
 	if (!low)
 		text_setColor(1.0f, 1.0f, 1.0f, 1.0f);
 	else
-		text_setColor(1.0f, 0.0f, 0.0f, scene->timeFraction > 0.5f ? 0.0f : 1.0f);
+		text_setColor(1.0f, 0.0f, 0.0f, scene->clockFraction > 0.5f ? 0.0f : 1.0f);
 }
 
 /* 0x496610: top centre: the points the leader still needs for the score limit (icon 1, right-aligned to 13 units

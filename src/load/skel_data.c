@@ -58,7 +58,7 @@ void THISCALL (skelSet_setup)(u8 *self, const char *dir, int n, u32 a, int extra
 	Manager *mg = (Manager *)self;
 	SkeletonManager_release(self);
 	strcpy(mg->dir, dir ? dir : (const char *)STR(0x4b1304, "."));
-	mg->setupArg = a;
+	mg->source = a;
 	mg->capacity = n;
 	mg->dataSize = extra;
 	mg->blockSize = n * 0x70 + extra;
@@ -87,7 +87,7 @@ void THISCALL (shape_initBy)(u8 *self, const char *dir, int n, u32 a, int extra,
 	else
 		mg->dir[0] = 0;
 	path_normalize(mg->dir);
-	mg->setupArg = a;
+	mg->source = a;
 	mg->capacity = n;
 	mg->dataSize = extra;
 	mg->blockSize = n * 0x98 + extra;
@@ -350,7 +350,7 @@ static void item_path(char *path, u8 *cache, const char *name, u32 ext0, u32 ext
 {
 	Manager *mg = (Manager *)cache;
 	char ext[4];
-	int format = ((int)mg->setupArg);
+	int format = ((int)mg->source);
 	if (format == 0 || format == 1)
 		strcpy(ext, (const char *)(RELOC(format) ? ext1 : ext0));
 	else
@@ -382,7 +382,7 @@ u8 *THISCALL (skel_getSkeletonPtrBy)(u8 *cache, const char *name)
 	u8 *mem = mg->data;
 	void *at = mem ? mem + mg->dataUsed : NULL;
 	int room = mem ? mg->dataSize - mg->dataUsed : 0;
-	if (((int)mg->setupArg) == 2)
+	if (((int)mg->source) == 2)
 		skel_loadFromFile(sk, skelDat_getItemFileBy(key), at, room);
 	else {
 		char path[0x100];
@@ -415,7 +415,7 @@ u8 *THISCALL (shape_getByName)(u8 *cache, const char *name, int bind)
 		u8 *mem = mg->data;
 		void *at = mem ? mem + mg->dataUsed : NULL;
 		int room = mem ? mg->dataSize - mg->dataUsed : 0;
-		if (((int)mg->setupArg) == 2)
+		if (((int)mg->source) == 2)
 			/* (the original's first of its four copies of this pair: the patch DLL retargets all four, for the KYRIE models) */
 			PATCHED_THISCALL(0x466eb8, void, void *, void *, void *, int)(shape, PATCHED_CALL(0x466ea9, void *, const char *)(key), at, room);   /* shape_read (shape_findDatEntry) */
 		else {

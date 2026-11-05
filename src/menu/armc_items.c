@@ -96,7 +96,7 @@ void (armc_takeCursorItem)(void)
    again, the preview on */
 void (armc_enterScreen)(void)
 {
-	app_requireCd(g_scene, 0, 2);
+	scene_startSession(g_scene, 0, 2);
 	set_mech(g_cfgPlayerName);
 	stage_remakePlayerActor(STAGE(g_scene));
 	g_armcPreview = 1;

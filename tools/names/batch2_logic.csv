@@ -88,9 +88,9 @@ match_48e0f0,net_sendPlayerInfo
 match_48e680,net_sendMatchEvent
 match_48e990,net_sendColourRing
 match_48e2c0,net_sendPlayerState
-load_483e90,factors_addConstant
-load_483ec0,factors_addPoint
-match_483f00,factors_addDirected
+load_483e90,factors_addAmbient
+load_483ec0,factors_addDirectional
+match_483f00,factors_addPointLight
 load_4728e0,ground_computeLighting
 load_497a90,stage_buildMeshDrawRecords
 actor_46fed0,partList_bindTextures

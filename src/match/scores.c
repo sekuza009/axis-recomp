@@ -16,7 +16,7 @@ void THISCALL (scene_resetScores)(Scene *scene)
 		p->timePlayed = 0;
 		p->timeExtra = 0.0f;
 		p->team = -1;
-		if (scene->network == 1)
+		if (scene->sessionMode == 1)
 			scene->playerRecords[i].team = -1;
 	}
 	stage_clearActorRefs(STAGE(scene));
@@ -38,9 +38,9 @@ static void mark_notice(Scene *scene, int i, u32 local, u32 other)
 /* 0x462150 (thiscall on the scene): the ranking. The team counts (redTeamCount / blueTeamCount by the team's slot, noTeamCount
    the players flagged at 0x9f9840 without a team), then the players with a team in order of kills (fewer deaths
    first on a tie: ranking[], rank[] their places, ties sharing one), the local player's place. With the king mark
-   (kingOfTheHill): the first player marked (markSolo, with a notice "you are" / "%s is" the new king when it changes)
+   (kingOfTheHill): the first player marked (isKing, with a notice "you are" / "%s is" the new king when it changes)
    and put on team 0, the others on team 1. With the team leaders (platoon): per team the player with the most
-   time (timePlayed + timeExtra) marked (markTeam, with a notice when it changes) */
+   time (timePlayed + timeExtra) marked (isPlatoonLeader, with a notice when it changes) */
 void THISCALL (scene_updateRanking)(Scene *scene)
 {
 	scene->redTeamCount = scene->blueTeamCount = scene->noTeamCount = 0;
@@ -92,15 +92,15 @@ void THISCALL (scene_updateRanking)(Scene *scene)
 			if (p->team < 0)
 				continue;
 			if (i == scene->ranking[0]) {
-				if (p->markSolo == 0)
+				if (p->isKing == 0)
 					mark_notice(scene, i, STR(0x4c4644, "YOU ARE THE NEW KING!"), STR(0x4c4630, "%s IS THE NEW KING!"));
-				p->markSolo = 1;
+				p->isKing = 1;
 				player_setTeam(STAGE(scene), i, 0);
 				scene->kingPlayer = i;
 				if (scene->localPlayer == i)
 					scene->localTeam = 0;
 			} else {
-				p->markSolo = 0;
+				p->isKing = 0;
 				player_setTeam(STAGE(scene), i, 1);
 				if (scene->localPlayer == i)
 					scene->localTeam = 1;
@@ -127,9 +127,9 @@ void THISCALL (scene_updateRanking)(Scene *scene)
 			if (p->team != t)
 				continue;
 			if (i != leader)
-				p->markTeam = 0;
-			else if (p->markTeam == 0) {
-				p->markTeam = 1;
+				p->isPlatoonLeader = 0;
+			else if (p->isPlatoonLeader == 0) {
+				p->isPlatoonLeader = 1;
 				mark_notice(scene, i, STR(0x4c4614, "YOU ARE THE NEW COMMANDER!"), STR(0x4c45f8, "%s IS THE NEW COMMANDER!"));
 			}
 		}

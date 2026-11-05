@@ -315,8 +315,8 @@ typedef struct { u32 vtable; void *managers[6]; i32 count; } TextureSets;   /* t
 #define space_transformPoint(out, m, v) GAME_FN(space_transformPoint, 0x482a40, void, float *, const float *, const float *)(out, m, v)   /* a point through a matrix */
 #define space_traceUnit(node, p0, p1, hit, dist, subs, nsubs) GAME_THISFN(space_traceUnit, 0x4809f0, int, void *, const float *, const float *, u32, float *, u32, u32)(node, p0, p1, hit, dist, subs, nsubs)
 #define Vec3_rotateAxis(v, axis, angle) GAME_THISFN(Vec3_rotateAxis, 0x4677c0, void, float *, int, int)(v, axis, angle)   /* about axis 0 / 1 / 2 by tenths of a degree */
-#define factors_addConstant(self, colour) GAME_THISFN(factors_addConstant, 0x483e90, void, void *, const void *)(self, colour)
-#define factors_addPoint(self, colour, dir) GAME_THISFN(factors_addPoint, 0x483ec0, void, void *, const void *, const void *)(self, colour, dir)
+#define factors_addAmbient(self, colour) GAME_THISFN(factors_addAmbient, 0x483e90, void, void *, const void *)(self, colour)
+#define factors_addDirectional(self, colour, dir) GAME_THISFN(factors_addDirectional, 0x483ec0, void, void *, const void *, const void *)(self, colour, dir)
 #define space_initBy(space, planes, nodes, units, blocks, cells, mem, size) GAME_THISFN(space_initBy, 0x4813e0, void, void *, int, int, int, int, int, void *, int)(space, planes, nodes, units, blocks, cells, mem, size)
 #define shape_initBy(self, dir, n, a, extra, mem, size) GAME_THISFN(shape_initBy, 0x466a60, void, void *, const char *, int, u32, int, void *, int)(self, dir, n, a, extra, mem, size)
 #define skelSet_setup(self, dir, n, a, extra, mem, size) GAME_THISFN(skelSet_setup, 0x46aeb0, void, void *, const char *, int, u32, int, void *, int)(self, dir, n, a, extra, mem, size)
@@ -507,8 +507,8 @@ typedef struct { u32 vtable; void *managers[6]; i32 count; } TextureSets;   /* t
 /* ---- the in-match 2D pass: the scene's view, its stage's overlay parts, the HUD elements ---- */
 #define gfx_setProjectionHud(mode, scale) GAME_FN(gfx_setProjectionHud, 0x4685f0, void, int, float)(mode, scale)
 #define gfx_setProjectionHud_bits(mode, scale) GAME_FN(gfx_setProjectionHud, 0x4685f0, void, int, u32)(mode, scale)   /* (the scale as its bits) */
-#define factors_addDirected(pool, colour, strength, pos) GAME_THISFN(factors_addDirected, 0x483f00, int, void *, u32, float, void *)(pool, colour, strength, pos)   /* a light of strength at pos */
-#define factors_addDirected_bits(pool, colour, strength, pos) GAME_THISFN(factors_addDirected, 0x483f00, int, void *, u32, u32, void *)(pool, colour, strength, pos)   /* (the strength as its bits) */
+#define factors_addPointLight(pool, colour, radius, pos) GAME_THISFN(factors_addPointLight, 0x483f00, int, void *, u32, float, void *)(pool, colour, radius, pos)   /* a light of radius at pos */
+#define factors_addPointLight_bits(pool, colour, strength, pos) GAME_THISFN(factors_addPointLight, 0x483f00, int, void *, u32, u32, void *)(pool, colour, strength, pos)   /* (the strength as its bits) */
 #define view_farPlane() GAME_FN(view_farPlane, 0x468700, float, void)()             /* view_farPlane: a float setting */
 #define tex_clearSetCounters(textures) GAME_THISFN(tex_clearSetCounters, 0x456b50, void, void *)(textures)
 #define ViewVolume_clearDrawCounts(view) GAME_THISFN(ViewVolume_clearDrawCounts, 0x4841d0, void, void *)(view)
@@ -747,7 +747,7 @@ typedef struct { float r, g, b, a; } Colour;
 #define armc_drawStatLabel(x, y, s) GAME_FN(armc_drawStatLabel, 0x4125f0, void, int, int, const char *)(x, y, s)   /* right-aligned at x */
 #define armc_readMechStats() GAME_FN(armc_readMechStats, 0x41c510, void, void)()
 #define actor_selectWeapon(stage, actor, slot) GAME_THISFN(actor_selectWeapon, 0x45e880, void, Stage *, int, int)(stage, actor, slot)
-#define app_requireCd(scene, a, b) GAME_THISFN(app_requireCd, 0x460cb0, void, Scene *, int, int)(scene, a, b)
+#define scene_startSession(scene, a, b) GAME_THISFN(scene_startSession, 0x460cb0, void, Scene *, int, int)(scene, a, b)
 
 #define armc_restoreMenuCamera() GAME_FN(armc_restoreMenuCamera, 0x40e670, void, void)()
 #define armc_saveSelection() GAME_FN(armc_saveSelection, 0x40e7a0, void, void)()       /* keep the mech, save the progress */

@@ -137,7 +137,7 @@ static void award(u8 *s, int k, int frags, int points)
 {
 	ST->actors[k].kills += frags;
 	ST->actors[k].score += points;
-	if (ST->actors[k].pilot == ST->playerActor)
+	if (ST->actors[k].controlledBy == ST->playerActor)
 		ST->actors[k].emblem = actor_levelFromValue(ST->actors[k].score);
 }
 
@@ -173,7 +173,7 @@ static void actor_dies(u8 *s, u8 *a, int i, u32 *fx, float *v28)
 	if (ST->kingOfTheHill == 1) {   /* every one for themselves */
 		if (k != i) {
 			int frags, points;
-			if (AC->markSolo == 1) {   /* the marked one: five times */
+			if (AC->isKing == 1) {   /* the marked one: five times */
 				frags = 5;
 				points = ST->suddenDeath == 1 ? FRAG_POINTS(AC->emblem) * 5 / 2 : FRAG_POINTS(AC->emblem) * 5;
 			} else {
@@ -182,7 +182,7 @@ static void actor_dies(u8 *s, u8 *a, int i, u32 *fx, float *v28)
 			}
 			award(s, k, frags, points);
 			if (AC->lastAttacker == ST->playerActor) {
-				if (AC->markSolo == 1) {
+				if (AC->isKing == 1) {
 					if (ST->showExp == 1)
 						stage_print(s, (const char *)STR(0x4b44f8, "YOU FRAGED KING %s, +1(x%d) FRAGS +%d..."), 5, AC->name, points, 5);
 					else
@@ -198,7 +198,7 @@ static void actor_dies(u8 *s, u8 *a, int i, u32 *fx, float *v28)
 			stage_print(s, (const char *)STR(0x4b44b4, "-1 FRAG"));
 		}
 	} else if (ST->platoon == 1) {   /* teams, the leader down: each of the other team gets the team's worth */
-		if (AC->markTeam == 1) {
+		if (AC->isPlatoonLeader == 1) {
 			int n = 0, sum = 0, count = ST->actorCount;
 			for (int j = 0; j < count; j++)
 				if (ST->actors[j].team == AC->team) {
@@ -273,29 +273,29 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 	u8 *a = (u8 *)&ST->actors[i];
 	u8 *player = (u8 *)&ST->playerRecords[AC->player];
 	PlayerRecord *pr = (PlayerRecord *)player;
-	if (AC->blinkTime > AC->armorDeadline) {   /* the armour gone */
+	if (AC->spawnAge > AC->armorDeadline) {   /* the armour gone */
 		actor_deactivate((Stage *)s, i);
 		if (ST->selectedActor == i)
 			ST->selectedActor = -1;
 		return;
 	}
-	if (AC->pilot != ST->playerActor || AC->bot != 0)
+	if (AC->controlledBy != ST->playerActor || AC->bot != 0)
 		actor_clearInput(s, i);
 	const ChestType *chest = &ST->chestTypes[pr->parts[1]];
 	const ArmType *arms = &ST->armTypes[pr->parts[2]];
 	const LegType *legs = &ST->legTypes[pr->parts[3]];
 	const BoosterType *booster = &ST->boosterTypes[pr->parts[4]];
-	if (AC->detail != AC->detailLoaded) {
+	if (AC->lowDetail != AC->lowDetailLoaded) {
 		actor_updateHead(s, i);
 		actor_updateBody(s, i);
 		actor_updateArms(s, i);
 		actor_updateLegs(s, i);
 		actor_updateBooster(s, i);
-		AC->detailLoaded = AC->detail;
+		AC->lowDetailLoaded = AC->lowDetail;
 	}
 	int item = pr->items[AC->slot];
 	u8 *weapon = item >= 0 ? (u8 *)&ST->actorInfo[item] : NULL;
-	if (AC->pilot == ST->playerActor && weapon && AC->ammo[((ActorInfo *)weapon)->ammoSlot] < ((ActorInfo *)weapon)->ammoPerShot
+	if (AC->controlledBy == ST->playerActor && weapon && AC->ammo[((ActorInfo *)weapon)->ammoSlot] < ((ActorInfo *)weapon)->ammoPerShot
 	    && !(AC->weaponLower < 1.0f)) {   /* out of ammunition: the next weapon */
 		actor_nextWeapon(s, i);
 		weapon = (u8 *)&ST->actorInfo[pr->items[AC->slot]];
@@ -311,22 +311,22 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 			AC->variantLoaded = 0;
 			actor_updatePart(s, i, AC->slot, 0);
 		}
-	} else if (AC->variantLoaded != AC->detail + 1) {
-		AC->variantLoaded = AC->detail + 1;
+	} else if (AC->variantLoaded != AC->lowDetail + 1) {
+		AC->variantLoaded = AC->lowDetail + 1;
 		actor_updatePart(s, i, AC->lastWeaponSlot, AC->variantLoaded);
 		actor_updatePart(s, i, 4, AC->variantLoaded);
 		actor_updatePart(s, i, 5, AC->variantLoaded);
 	}
-	if (AC->pilot != ST->playerActor && AC->weaponLowering == 0 && AC->slotLoaded != AC->slot) {
+	if (AC->controlledBy != ST->playerActor && AC->weaponLowering == 0 && AC->slotLoaded != AC->slot) {
 		AC->slotLoaded = AC->slot;
 		actor_updatePart(s, i, AC->slot, AC->variantLoaded);
 	}
 	u8 *model = AC->slot == 4 ? (u8 *)&AC->weaponModel4 : AC->slot == 5 ? (u8 *)&AC->weaponModel5 : (u8 *)&AC->weaponModel;
 	memcpy(AC->pos, a + (AC->state == 1 ? 0x180 : 0x4e0), 12);
 	memcpy(a + offsetof(Player, pitch), a + offsetof(Player, nextPitch), 32);   /* pitch .. : the next motion state taken */
-	if (AC->pilot == ST->playerActor) {   /* (to chunk N: the local team's actors) */
+	if (AC->controlledBy == ST->playerActor) {   /* (to chunk N: the local team's actors) */
 		if (ST->kingOfTheHill == 1) {
-			if (AC->markSolo == 1)
+			if (AC->isKing == 1)
 				BITS(AC->timers[0]) = BITS(AC->timers[2]) = 0x447a0000;   /* 1000 */
 			else {
 				if (AC->timers[0] > *k_30f)
@@ -350,10 +350,10 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 		int aimed = 0;
 		for (int k = 0; k < ST->bulletSlotsUsed; k++) {
 			Bullet *b = (Bullet *)((u8 *)&ST->bullets[k]);
-			if (b->link != i || ST->actors[b->owner].pilot == ST->playerActor)
+			if (b->homingTarget != i || ST->actors[b->owner].controlledBy == ST->playerActor)
 				continue;
 			aimed = 1;
-			if (AC->alert == 0 && AC->bot != 0 && AC->botTarget < 0) {
+			if (AC->homedOn == 0 && AC->bot != 0 && AC->botTarget < 0) {
 				int t = ST->bullets[k].owner;
 				if (ST->actors[t].team != AC->team && ST->actors[t].state == 1 && (!(ST->actors[t].timerFlags & 0x200) || ST->actors[t].hackingLevel < AC->hackingLevel)) {
 					AC->botTarget = t;
@@ -363,7 +363,7 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 			}
 			break;
 		}
-		AC->alert = aimed;
+		AC->homedOn = aimed;
 		if (i == ST->playerActor) {   /* the warning beep */
 			if (aimed == 1) {
 				long double v = fsub_m(fld_m(&AC->beepTimer), dt);
@@ -627,10 +627,10 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 		memcpy(AC->ammo, AC->ammoMax, 16);
 		break;
 	case 2:
-		AC->orderFlag = 1;
+		AC->bigHead = 1;
 		break;
 	case 3:
-		AC->orderFlag = 0;
+		AC->bigHead = 0;
 		break;
 	case 4:
 		AC->deaths++;
@@ -661,7 +661,7 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 	float step = !(*dt >= 0.05f) ? *dt : 0.05f;   /* at most 0.05 s */
 	for (int c = 0; c < 3; c++)   /* the move this frame */
 		AC->move[c] = f32(fmul_m(fld_m(&step), &AC->velocity[c]));
-	if (AC->pilot == ST->playerActor && AC->state == 1 && AC->hitFlash > 0) {   /* a push, fading with hitFlash squared */
+	if (AC->controlledBy == ST->playerActor && AC->state == 1 && AC->hitFlash > 0) {   /* a push, fading with hitFlash squared */
 		long double px = fmul_m(fld_m(&step), &AC->push[0]);
 		float py = f32(fmul_m(fld_m(&step), &AC->push[1]));
 		float pz = f32(fmul_m(fld_m(&step), &AC->push[2]));
@@ -676,7 +676,7 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 	}
 	if (AC->overheat == 1)
 		AC->inBooster = 0;
-	if (AC->pilot == ST->playerActor && AC->state == 1) {   /* (to 45a5d1) the local team's live actors move */
+	if (AC->controlledBy == ST->playerActor && AC->state == 1) {   /* (to 45a5d1) the local team's live actors move */
 		AC->nextPos[0] = f32(fadd_m(fld_m(&AC->pos[0]), &AC->move[0]));
 		AC->nextPos[1] = f32(fadd_m(fld_m(&AC->move[1]), &AC->pos[1]));
 		AC->nextPos[2] = f32(fadd_m(fld_m(&AC->move[2]), &AC->pos[2]));
@@ -836,29 +836,29 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 	glRotatef(f32(fmul_m(fld_m(&AC->lean), &k_tenthsToDegrees)), 1, 0, 0);
 	glGetFloatv(0xba6, AC->bodyMatrix);
 	skel_poseBones((u8 *)&AC->chestModel, AC->bodyMatrix);
-	glLoadMatrixf((const float *)(uintptr_t)((u32)AC->chestModel.entries + chest->legsJoint[AC->detail] * 100 + 0xc));
+	glLoadMatrixf((const float *)(uintptr_t)((u32)AC->chestModel.entries + chest->legsJoint[AC->lowDetail] * 100 + 0xc));
 	glRotatef(f32(fmul_m(fld_m(&AC->pose[2]), &k_tenthsToDegrees)), 0, 1, 0);
 	skel_poseBones((u8 *)&AC->legsModel, 0);
-	glLoadMatrixf(part_matrix((u8 *)&AC->chestModel.entries, chest->armsJoint, AC->detail));
+	glLoadMatrixf(part_matrix((u8 *)&AC->chestModel.entries, chest->armsJoint, AC->lowDetail));
 	skel_poseBones((u8 *)&AC->armsModel, 0);
-	glLoadMatrixf(part_matrix((u8 *)&AC->chestModel.entries, chest->headJoint, AC->detail));
+	glLoadMatrixf(part_matrix((u8 *)&AC->chestModel.entries, chest->headJoint, AC->lowDetail));
 	if (((u32)AC->timerFlags) & 0x1000)
 		glScalef_bits(0x40a00000, 0x40a00000, 0x40a00000);   /* 5 */
 	skel_poseBones((u8 *)&AC->headModel, 0);
-	glLoadMatrixf(part_matrix((u8 *)&AC->chestModel.entries, chest->boosterJoint, AC->detail));
+	glLoadMatrixf(part_matrix((u8 *)&AC->chestModel.entries, chest->boosterJoint, AC->lowDetail));
 	glRotatef(f32(fmul_m(fld_m(&AC->pose[0]), k_0_05f)), 0, 0, 1);
 	glRotatef(f32(fmul_m(fld_m(&AC->pose[1]), &k_tenthsToDegrees)), 1, 0, 0);
 	skel_poseBones((u8 *)&AC->boosterModel, 0);
 	memcpy(grip, &g_vecZero, 12);   /* where the weapon is held, for the local player's view */
-	glLoadMatrixf(part_matrix((u8 *)&AC->armsModel.entries, arms->weaponJoints[0], AC->detail));
+	glLoadMatrixf(part_matrix((u8 *)&AC->armsModel.entries, arms->weaponJoints[0], AC->lowDetail));
 	if (i == ST->selectedActor && weapon && AC->slot <= 3)
 		hold(grip, (const u8 *)((const ActorInfo *)weapon)->sets[0].grip[AC->variantLoaded], 0, &AC->weaponLower);
 	skel_poseBones((u8 *)&AC->weaponModel, 0);
-	glLoadMatrixf(part_matrix((u8 *)&AC->armsModel.entries, arms->weaponJoints[1], AC->detail));
+	glLoadMatrixf(part_matrix((u8 *)&AC->armsModel.entries, arms->weaponJoints[1], AC->lowDetail));
 	if (i == ST->selectedActor && weapon && AC->slot == 4)
 		hold(grip, (const u8 *)((const ActorInfo *)weapon)->sets[0].grip[AC->variantLoaded], 0, &AC->weaponLower);
 	skel_poseBones((u8 *)&AC->weaponModel4, 0);
-	glLoadMatrixf(part_matrix((u8 *)&AC->armsModel.entries, arms->weaponJoints[2], AC->detail));
+	glLoadMatrixf(part_matrix((u8 *)&AC->armsModel.entries, arms->weaponJoints[2], AC->lowDetail));
 	if (i == ST->selectedActor && weapon && AC->slot == 5)
 		hold(grip, (const u8 *)((const ActorInfo *)weapon)->sets[1].grip[AC->variantLoaded], 1, &AC->weaponLower);
 	skel_poseBones((u8 *)&AC->weaponModel5, 0);
@@ -919,10 +919,10 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 		}
 	}
 	AC->firing = 0;   /* firing this frame */
-	AC->sendFlag = 0;
-	if (AC->pilot == ST->playerActor) {
+	AC->sendNow = 0;
+	if (AC->controlledBy == ST->playerActor) {
 		if (weapon && AC->state == 1) {
-			if (AC->inFire == 1 && AC->blinkTime > 3.0f && AC->slot >= 0 && !(AC->fireAnim > 0) && AC->weaponLower >= 1.0f && AC->weaponLowering == 0
+			if (AC->inFire == 1 && AC->spawnAge > 3.0f && AC->slot >= 0 && !(AC->fireAnim > 0) && AC->weaponLower >= 1.0f && AC->weaponLowering == 0
 			    && AC->armor > 0)
 				AC->firing = 1;
 			int shots = 0;   /* this frame's rounds: whole cycles times the burst, and a burst's rounds left (+0x1f0, +0x1f4) */
@@ -1149,10 +1149,10 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 			BITS(v28[0]) = BITS(AC->effectScale);
 			if ((((u32)AC->timerFlags) & 0x200) && AC->hackingLevel >= ST->actors[ST->playerActor].hackingLevel)
 				v28[1] = 0.0627451f;   /* 1/255 */
-			else if (AC->blinkTime > 3.0f)
+			else if (AC->spawnAge > 3.0f)
 				v28[1] = 1.0f;
 			else
-				v28[1] = f32(fmul_m(fld_m(&AC->blinkTime), k_0_333333f));
+				v28[1] = f32(fmul_m(fld_m(&AC->spawnAge), k_0_333333f));
 			if (i == ST->playerActor)
 				v28[1] = f32(fmul_m(fld_m(&v28[1]), &k_0_5f));
 			emit(s, a, legs->emitters, &legs->emitterCount, (u8 *)&AC->legsModel.entries, booster, v28, fx);
@@ -1176,8 +1176,8 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 	if (AC->state == 1) {
 		if (AC->armor <= 0)
 			actor_dies(s, a, i, fx, v28);
-		else if (AC->pilot == ST->playerActor || AC->bot != 0)   /* the armour's timer kept 10 s ahead */
-			AC->armorDeadline = f32(fadd_m(fadd_m(fld_m(dt), &AC->blinkTime), &k_10f));
+		else if (AC->controlledBy == ST->playerActor || AC->bot != 0)   /* the armour's timer kept 10 s ahead */
+			AC->armorDeadline = f32(fadd_m(fadd_m(fld_m(dt), &AC->spawnAge), &k_10f));
 	} else if (AC->state == 2) {   /* dying: out after 2 s */
 		if (AC->stateTime > 2.0f) {
 			AC->state = 3;
@@ -1186,7 +1186,7 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 				PATCHED_THISCALL(0x45c638, void, void *, u32)(s, g_componentDatPath);
 		}
 	} else if (AC->state == 3)
-		BITS(AC->blinkTime) = BITS(AC->armorDeadline);
+		BITS(AC->spawnAge) = BITS(AC->armorDeadline);
 	AC->glow = 0.0f;   /* the glow: a fresh shot's flash, and speed unless cloaked */
 	if (AC->fireAnim > 0 && !(AC->fireAnim >= 0.5f)) {
 		long double g = fsub_m(fld_m(&k_0_5f), &AC->fireAnim);
@@ -1199,9 +1199,9 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 		AC->glow = f32(fadd_m(fmul_m(fld_m(&AC->effectScale), &k_0_2f), &AC->glow));
 	goto timers;
 tail:   /* 45cdb1: held by the script */
-	AC->armorDeadline = f32(fadd_m(fadd_m(fld_m(dt), &AC->blinkTime), &k_10f));
+	AC->armorDeadline = f32(fadd_m(fadd_m(fld_m(dt), &AC->spawnAge), &k_10f));
 timers:
-	AC->blinkTime = f32(fadd_m(fld_m(dt), &AC->blinkTime));
+	AC->spawnAge = f32(fadd_m(fld_m(dt), &AC->spawnAge));
 	AC->stateTime = f32(fadd_m(fld_m(dt), &AC->stateTime));
 	long double sec = fadd_m(fld_m(dt), &AC->timeExtra);   /* whole seconds into +0xfc */
 	AC->timeExtra = (float)sec;
@@ -1238,7 +1238,7 @@ timers:
 	for (int c = 0; c < 3; c++)   /* this frame's move */
 		AC->move[c] = f32(fsub_m(fld_m(&AC->nextPos[c]), &AC->pos[c]));
 	AC->netFired = 0;
-	if (AC->pilot == ST->playerActor) {   /* the state bits sent with the actor */
+	if (AC->controlledBy == ST->playerActor) {   /* the state bits sent with the actor */
 		u32 f = 0;
 		if (AC->armor >= AC->armorMax)
 			f = 1;
@@ -1254,7 +1254,7 @@ timers:
 		for (int c = 0; c < 4; c++)   /* the power-ups running */
 			if (AC->timers[c] > 0)
 				f |= 0x100 << c;
-		if (AC->orderFlag == 1)
+		if (AC->bigHead == 1)
 			f |= 0x1000;
 		if (AC->shield <= 0)
 			f |= 0x2000;

@@ -31,7 +31,7 @@ void (main_loop)(void)
 }
 
 /* 0x462050 (match_frameByState): the match's frame by its state; each state's handler answers the next state. The
-   playing, free-camera and replay states present the frame (playing only while frameFlag is 1). */
+   playing, free-camera and replay states present the frame (playing only while matchDrawing is 1). */
 int THISCALL (match_frameByState)(Scene *scene)
 {
 	switch (scene->inputState) {
@@ -39,7 +39,7 @@ int THISCALL (match_frameByState)(Scene *scene)
 		return scene->inputState = game_processLoadingMode(scene);
 	case 2:
 		scene->inputState = match_inputState2(scene);
-		if (scene->frameFlag == 1)
+		if (scene->matchDrawing == 1)
 			gfx_swapBuffers();
 		break;
 	case 3:
@@ -261,11 +261,11 @@ static const u32 k_viewKeys[6] = { (OBJ(g_controls) + 0x78), (OBJ(g_controls) + 
 void THISCALL (match_combatInput)(u8 *s)
 {
 	match_resetInputState(s);
-	if (!SC->frameFlag)
+	if (!SC->matchDrawing)
 		return;
 	if (SC->chatMode == 0 && SC->escMenuOpen == 0) {
 		if (SC->playing == 0) {
-			if (SC->localAlive == 0 || (SC->network == 0 && SC->players[SC->localPlayer].inPlay == 0)) {
+			if (SC->localAlive == 0 || (SC->sessionMode == 0 && SC->players[SC->localPlayer].inPlay == 0)) {
 				if (pressed2((OBJ(g_controls) + 0x50), (OBJ(g_controls) + 0x54)))
 					SC->quitAsked = 1;
 			} else {
@@ -589,7 +589,7 @@ u32 THISCALL (match_inputState3)(u8 *s)
 	stage_drawActors((Stage *)stage, SC->view, -1);
 	stage_drawBullets(stage, SC->view);
 	stage_drawProjectiles((Stage *)stage, SC->view);
-	render_drawObjects(SC->view, SC->objectsMode, 0.0f);
+	render_drawObjects(SC->view, SC->renderMode, 0.0f);
 	gfx_setProjectionHud(0, 1.0f);
 	return SC->quitAsked == 1 ? 0 : 3;
 }
@@ -1205,12 +1205,12 @@ u32 THISCALL (replay_frame)(u8 *s)
 	stage_drawProjectiles((Stage *)stage, view);
 	stage_drawItems(stage, view);
 	if (SC->debugPoints == 1)
-		for (int i = 0; i < SCENE_STAGE(s)->mapLights.count; i++) {   /* (the map's lights: each a yellow star at its direction) */
+		for (int i = 0; i < SCENE_STAGE(s)->mapLights.count; i++) {   /* (the map's lights: each a yellow star at its position) */
 			const Factor *r = &SCENE_STAGE(s)->mapLights.records[i];
 			if (r->used != 1)
 				continue;
 			float p[3], q[3];
-			memcpy(p, r->dir, 12);
+			memcpy(p, r->pos, 12);
 			for (int l = 0; l < 8; l++) {
 				for (int k = 0; k < 3; k++)
 					q[k] = f32(k_star[l][k] > 0 ? fadd_m(fld_m(&p[k]), &k_100f) : fsub_m(fld_m(&p[k]), &k_100f));
@@ -1221,7 +1221,7 @@ u32 THISCALL (replay_frame)(u8 *s)
 		stage_setFog((Stage *)stage, st->glFogColour, st->glFogStart, st->glFogEnd, st->glFogDensity);
 		glEnable(GL_FOG);
 	}
-	render_drawObjects(view, SC->objectsMode, SC->timeFraction);
+	render_drawObjects(view, SC->renderMode, SC->clockFraction);
 	glDisable(GL_FOG);
 	gfx_setProjectionHud(0, 1.0f);
 
@@ -1463,13 +1463,13 @@ static void muzzle_camera(u8 *s, const u8 *t)
 	int bone;
 	if (slot == 4) {
 		v = item->sets[0].muzzle[act->variantLoaded];
-		bone = arms->weaponJoints[1][act->detail];
+		bone = arms->weaponJoints[1][act->lowDetail];
 	} else if (slot == 5) {
 		v = item->sets[1].muzzle[act->variantLoaded];
-		bone = arms->weaponJoints[2][act->detail];
+		bone = arms->weaponJoints[2][act->lowDetail];
 	} else {
 		v = item->sets[0].muzzle[act->variantLoaded];
-		bone = arms->weaponJoints[0][act->detail];
+		bone = arms->weaponJoints[0][act->lowDetail];
 	}
 	m = (const float *)((u8 *)act->armsModel.entries + bone * 100 + 0xc);
 	if (slot == 4) {
@@ -1560,11 +1560,11 @@ static void chat_keys(u8 *s)
 		if (SC->talkPressed == 1) {
 			SC->chatMode = 1;
 			chat_textField(0, 0, 0x38);
-			SC->players[SC->localPlayer].statusIcon = 1;
+			SC->players[SC->localPlayer].chatIcon = 1;
 		} else if (SC->teamTalkPressed == 1) {
 			SC->chatMode = 2;
 			chat_textField(0, 0, 0x38);
-			SC->players[SC->localPlayer].statusIcon = 2;
+			SC->players[SC->localPlayer].chatIcon = 2;
 		}
 		return;
 	}
@@ -1591,7 +1591,7 @@ static void chat_keys(u8 *s)
 			}
 		}
 	}
-	SC->players[SC->localPlayer].statusIcon = 0;
+	SC->players[SC->localPlayer].chatIcon = 0;
 }
 
 /* 0x4988e0 (thiscall on the game object): the match's frame. The log of the last match written when asked
@@ -1617,7 +1617,7 @@ void THISCALL (game_processGameMode)(u8 *s)
 		g_writeMatchLog = 0;
 		g_matchLogWritten = 1;
 	}
-	if (SC->frameFlag == 0) {
+	if (SC->matchDrawing == 0) {
 		SC->inputState = 1;
 		SC->modeStarted = 0;
 		return;
@@ -1636,7 +1636,7 @@ void THISCALL (game_processGameMode)(u8 *s)
 	else if (SC->quitAsked == 1) {
 		if (SC->matchLeaving == 0) {
 			sound_playVolume(9, 100);
-			if (SC->localAlive == 0 || (SC->network == 0 && SC->teamAsked == 1 && SC->players[SC->localPlayer].inPlay == 0)) {
+			if (SC->localAlive == 0 || (SC->sessionMode == 0 && SC->teamAsked == 1 && SC->players[SC->localPlayer].inPlay == 0)) {
 				SC->rankingShown = 0;
 				SC->localAlive = 1;
 			}
@@ -1651,7 +1651,7 @@ void THISCALL (game_processGameMode)(u8 *s)
 				SC->matchLeaving = 1;
 				SC->quitDelay = 3.0f;
 				music_shutdown();
-				if (SC->network == 0) {
+				if (SC->sessionMode == 0) {
 					msg_userEndsGame(s);
 					g_matchEndedByUser = 1;
 				} else {
@@ -1680,7 +1680,7 @@ void THISCALL (game_processGameMode)(u8 *s)
 		SC->players[SC->localPlayer].startPoints = SC->levelPoints;
 		SC->statsTaken = 1;
 	}
-	if (SC->screenshotTaken == 0 && SC->localPlayer >= 0 && SC->network == 1) {
+	if (SC->screenshotTaken == 0 && SC->localPlayer >= 0 && SC->sessionMode == 1) {
 		int shot = gfx_saveScreenshot(stage, SC->localPlayer);
 		SC->playerRecords[SC->localPlayer].emblemChanged = shot;
 		SC->playerRecords[SC->localPlayer].emblemSent = 0;
@@ -1707,7 +1707,7 @@ void THISCALL (game_processGameMode)(u8 *s)
 	if (me >= 0 && SC->players[me].active == 0 && SC->matchOver == 0 && SC->playerRecords[me].emblemSent == 0x180
 	    && (SC->firePressed == 1 || SC->teamAsked == 1)) {
 		if (SC->teamGame == 1 && (SC->localTeam < 0 || scene_findTeam((Scene *)s, SC->localTeam) < 0)) {
-			if (SC->chosenTeam >= 0 && SC->network != 0)
+			if (SC->chosenTeam >= 0 && SC->sessionMode != 0)
 				escMenu_open((Scene *)s, 1, scene_teamSide((Scene *)s, SC->chosenTeam) == 0 ? 0 : 1);
 			else
 				escMenu_open((Scene *)s, 1, SC->redTeamCount > SC->blueTeamCount ? 1 : 0);
@@ -1733,9 +1733,9 @@ void THISCALL (game_processGameMode)(u8 *s)
 	} else
 		SC->respawnTime = 0.0f;
 	if (SC->teamChanged == 1
-	    || (SC->platoon == 1 && SC->players[SC->localPlayer].state == 3 && SC->players[SC->localPlayer].markTeam == 1))
+	    || (SC->platoon == 1 && SC->players[SC->localPlayer].state == 3 && SC->players[SC->localPlayer].isPlatoonLeader == 1))
 		local_spawn(s);
-	if (SC->network == 0 && SC->localPlayer >= 0 && SC->players[SC->localPlayer].inPlay == 1 && SC->matchOver == 0)
+	if (SC->sessionMode == 0 && SC->localPlayer >= 0 && SC->players[SC->localPlayer].inPlay == 1 && SC->matchOver == 0)
 		bot_spawns(s);
 	stage_selectActor((Stage *)stage, SC->playing == 1 && SC->cameraMode == 1 ? SC->localPlayer : -1);
 	/* the keys' rates */
@@ -1759,7 +1759,7 @@ void THISCALL (game_processGameMode)(u8 *s)
 			}
 		} else
 			free_keys(s, mv, &speed, &turn);
-	} else if (SC->playing == 1 && (SC->network == 0 || net_isClient())) {
+	} else if (SC->playing == 1 && (SC->sessionMode == 0 || net_isClient())) {
 		if (SC->matchOver == 1 || SC->matchLeaving == 1) {
 			if (SC->matchOver == 1 && SC->ranking[0] != SC->localPlayer) {   /* the round's end: the camera turns */
 				float *v = (float *)&SC->cameraSettings[0][SC->cameraMode];
@@ -1806,7 +1806,7 @@ void THISCALL (game_processGameMode)(u8 *s)
 		dt = f32(fmul_m(fld_m(&SC->frameTime), k_0_05f));
 	else
 		BITS(dt) = BITS(SC->frameTime);
-	if (SC->replaying == 0 && !(SC->escMenuOpen == 1 && SC->network == 0)) {
+	if (SC->replaying == 0 && !(SC->escMenuOpen == 1 && SC->sessionMode == 0)) {
 		if (SC->playing == 0 && SC->cameraSlot == 2 && SC->watchedPlayer >= 0)
 			SC->players[SC->watchedPlayer].viewMarked = 1;
 		else if (SC->playing == 1 && SC->cameraMode == 2 && SC->localPlayer >= 0)
@@ -1821,7 +1821,7 @@ void THISCALL (game_processGameMode)(u8 *s)
 		stage_refillFactors(stage);
 		stage_updateObjects(stage, BITS(dt));
 		scene_loadPath(stage, BITS(dt));
-		if (SC->network == 1) {   /* the server checks the local player's parts every 20 s */
+		if (SC->sessionMode == 1) {   /* the server checks the local player's parts every 20 s */
 			long double v = fsub_m(fld_m(&SC->partsCheckTime), &SC->frameTime);
 			SC->partsCheckTime = (float)v;
 			if (!(v >= 0) && SC->localPlayer >= 0 && SC->players[SC->localPlayer].state == 1) {
@@ -1974,10 +1974,10 @@ void THISCALL (game_processGameMode)(u8 *s)
 				net_sendColourRing(s, SC->localPlayer);
 				SC->sendTimer = (float)-fld_m(&SC->frameTime);
 			}
-			if (net_playerInUse(i) == 1 && SC->players[i].active == 1 && SC->players[i].pilot == SC->localPlayer
+			if (net_playerInUse(i) == 1 && SC->players[i].active == 1 && SC->players[i].controlledBy == SC->localPlayer
 			    && (SC->sendTimer > 0.05f || SC->players[i].firing == 1
 			        || (!(SC->players[i].messageTime < 0) && !(SC->players[i].messageTime > 0))
-			        || SC->players[i].sendFlag == 1)) {
+			        || SC->players[i].sendNow == 1)) {
 				net_sendPlayerState(s, i);
 				SC->sendTimer = (float)-fld_m(&SC->frameTime);
 			}
@@ -1987,7 +1987,7 @@ void THISCALL (game_processGameMode)(u8 *s)
 	/* the round's end */
 	if (SC->endTime > 0) {
 		PATCHED_THISCALL(0x49a54f, u32, void *, const char *)(stage, g_catalogueFile);   /* catalogue_loadComponents */
-		if (SC->network == 1 && SC->client == 0) {   /* the server's end notices, every half second */
+		if (SC->sessionMode == 1 && SC->client == 0) {   /* the server's end notices, every half second */
 			if (SC->endNoticeTime > 0.5f) {
 				SC->endNoticeTime = 0.0f;
 				int k = SC->endedByTime;
@@ -2018,7 +2018,7 @@ void THISCALL (game_processGameMode)(u8 *s)
 			stage_deactivateActors(stage);
 			SC->cameraSettings[0][SC->cameraMode] = 0;
 			SC->cameraSettings[1][SC->cameraMode] = 0;
-			if (SC->network == 0 && SC->stageCleared == 1 && g_missionStage == 14) {
+			if (SC->sessionMode == 0 && SC->stageCleared == 1 && g_missionStage == 14) {
 				SC->lastMissionWon = 1;   /* the last mission won */
 				SC->matchLeaving = 1;
 				SC->quitDelay = 0.0f;
@@ -2032,7 +2032,7 @@ void THISCALL (game_processGameMode)(u8 *s)
 				SC->rankShown = -1;
 				events_clear((Scene *)s, 60.0f);
 				notices_clearAll(s);
-				if (SC->network == 0) {
+				if (SC->sessionMode == 0) {
 					teams_setup(sc);
 					scene_setLocalTeam((Scene *)s, -1);
 					if (SC->stageCleared == 0)
@@ -2043,7 +2043,7 @@ void THISCALL (game_processGameMode)(u8 *s)
 					return;
 				}
 				if (g_mapRotation == 0) {
-					SC->elapsed = (*(int *)&SC->timeFraction) = 0;
+					SC->elapsed = (*(int *)&SC->clockFraction) = 0;
 					start_view(s);
 					music_playMatch(sc);
 				} else {
@@ -2092,13 +2092,13 @@ void THISCALL (game_processGameMode)(u8 *s)
 				    || SC->teamScores[scene_teamSlot((Scene *)s, 1)] >= SC->scoreLimit) {
 					winning_team(s);
 					round_over(s, 0);
-					if (SC->network == 0 && SC->teamScores[SC->localTeam] >= SC->scoreLimit
+					if (SC->sessionMode == 0 && SC->teamScores[SC->localTeam] >= SC->scoreLimit
 					    && g_missionStage == g_progress)
 						SC->stageCleared = 1;
 				}
 			} else if (SC->rankCount > 0 && SC->players[SC->ranking[0]].kills >= limit) {
 				round_over(s, 0);
-				if (SC->network == 0 && SC->players[SC->localPlayer].kills >= SC->scoreLimit
+				if (SC->sessionMode == 0 && SC->players[SC->localPlayer].kills >= SC->scoreLimit
 				    && g_missionStage == g_progress)
 					SC->stageCleared = 1;
 			}
@@ -2186,7 +2186,7 @@ void THISCALL (game_processGameMode)(u8 *s)
 			profile_addMatchScores(sc);
 	}
 	/* the connection (a client's) */
-	if (SC->network == 1) {
+	if (SC->sessionMode == 1) {
 		if (SC->matchLeaving == 0) {
 			if (net_isClient() == 0) {
 				if (SC->lostTime > 5.0f) {
@@ -2239,7 +2239,7 @@ void THISCALL (game_processGameMode)(u8 *s)
 			SC->rankShown = -1;
 			events_clear((Scene *)s, 60.0f);
 			notices_clearAll(s);
-			SC->elapsed = (*(int *)&SC->timeFraction) = 0;
+			SC->elapsed = (*(int *)&SC->clockFraction) = 0;
 			SC->players[SC->localPlayer].killsCounted = 0;
 			SC->players[SC->localPlayer].kills = 0;
 			SC->players[SC->localPlayer].deathsCounted = 0;

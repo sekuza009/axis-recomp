@@ -102,10 +102,10 @@ void THISCALL (actor_resetSlot)(Stage *stage, int i)
 	for (int k = 0; k < 11; k++)
 		FIELD(int, a, offsetof(Player, inPlay) + k * 4) = 0;   /* inPlay .. (11 words) */
 	a->state = 0;
-	a->orderFlag = 0;
+	a->bigHead = 0;
 	a->viewMarked = 0;
-	a->markSolo = 0;
-	a->markTeam = 0;
+	a->isKing = 0;
+	a->isPlatoonLeader = 0;
 }
 
 /* 0x47d060: every bullet in use drawn (its trail, bullet_drawTrail) */
@@ -236,7 +236,7 @@ void THISCALL (stage_newRound)(Stage *stage)
 	stage_clearActorSlots(stage);
 	static const short cleared[] = { offsetof(Player, inPlay), offsetof(Player, kills), offsetof(Player, deaths), offsetof(Player, killsCounted),
 	                                 offsetof(Player, deathsCounted), offsetof(Player, timePlayed), offsetof(Player, timeExtra), offsetof(Player, state),
-	                                 offsetof(Player, orderFlag), offsetof(Player, markSolo), offsetof(Player, markTeam) };
+	                                 offsetof(Player, bigHead), offsetof(Player, isKing), offsetof(Player, isPlatoonLeader) };
 	for (int i = 0; i < 100; i++) {
 		Player *ac = &stage->actors[i];
 		ac->team = -1;
@@ -329,7 +329,7 @@ static void part_load(u8 *scene, int a, const PartModel *m)
 		return;
 	u8 *type = (u8 *)&STS->playerRecords[act->player];
 	u8 *model = scene + m->models + GAME_VAR(int, type + m->model_at) * m->model_size;
-	int pose = act->detail;
+	int pose = act->lowDetail;
 	ObjectList_load(actor + m->self, type + m->data, type + m->skels, GAME_VAR(u32, model + m->shapes_n + pose * 4),
 	                     model + m->names + pose * m->name_size, GAME_VAR(u32, model + m->skels_n + pose * 4),
 	                     model + m->knames + pose * 0x80, 0, 0, 0, actor + m->self + sizeof(ObjectList), m->limit);
@@ -547,11 +547,11 @@ void THISCALL (actor_updateAllParts)(u8 *s, int a, void *vv, int draw)
 	if ((((u32)AC->timerFlags) & 0x200) && AC->hackingLevel >= st->actors[local].hackingLevel) {
 		tint[0] = tint[1] = tint[2] = 0xff;
 		tint[3] = a == local ? 0x40 : 0x10;
-	} else if (!(AC->blinkTime > *&k_3f)) {
-		if (!(AC->blinkTime >= *k_1_5f))
-			tint[0] = tint[1] = tint[2] = tint[3] = (u8)ftol(fmul_m(fld_m(&AC->blinkTime), &k_170f));
+	} else if (!(AC->spawnAge > *&k_3f)) {
+		if (!(AC->spawnAge >= *k_1_5f))
+			tint[0] = tint[1] = tint[2] = tint[3] = (u8)ftol(fmul_m(fld_m(&AC->spawnAge), &k_170f));
 		else {
-			tint[0] = tint[1] = tint[2] = (u8)(0xff - ftol(fmul_m(fsub_m(fld_m(&AC->blinkTime), k_1_5f), &k_170f)));
+			tint[0] = tint[1] = tint[2] = (u8)(0xff - ftol(fmul_m(fsub_m(fld_m(&AC->spawnAge), k_1_5f), &k_170f)));
 			tint[3] = 0xff;
 		}
 	} else if (AC->glow > 0 || AC->hitFlash > 0) {
@@ -798,12 +798,12 @@ void THISCALL (actor_setupFromParts)(u8 *s, int a, int id, u32 a3, const u32 *pp
 	AC->id = id >= 0 ? id : st->actorSerial++;
 	AC->active = 1;
 	AC->player = pp[0];
-	AC->pilot = a3;
+	AC->controlledBy = a3;
 	int level = pr->level;
 	AC->level = level >= 0 && level < 9 ? level : 0;
 	AC->team = ((u32)pr->team);
 	AC->bot = pp[1];
-	AC->blinkTime = 0.0f;
+	AC->spawnAge = 0.0f;
 	AC->armorDeadline = 1.0f;
 	AC->armor = ((u32)AC->armorMax);
 	AC->shield = ((u32)AC->shieldMax);
@@ -837,11 +837,11 @@ void THISCALL (actor_setupFromParts)(u8 *s, int a, int id, u32 a3, const u32 *pp
 		AC->shots[k].isNew = 0;
 		AC->shotBullets[k] = -1;
 	}
-	AC->sendFlag = 0;
+	AC->sendNow = 0;
 	memcpy(AC->velocity, (const void *)ADDR(g_vecZero), 12);
 	memcpy(AC->move, (const void *)ADDR(g_vecZero), 12);
 	AC->radius = 500.0f;   /* 500 */
-	AC->statusIcon = 0;
+	AC->chatIcon = 0;
 	AC->timerFlags = AC->id % 2 == 1 ? 0x4000 : 0;
 	fill_dwords(ac + offsetof(Player, timers), 4, 0);   /* timers */
 	fill_dwords(ac + offsetof(Player, inForward), 11, 0);   /* inForward .. inBooster */
@@ -888,7 +888,7 @@ void THISCALL (actor_setupFromParts)(u8 *s, int a, int id, u32 a3, const u32 *pp
 	AC->stuckTime = 1.0f;
 	AC->stuckPath = -1;
 	memcpy(AC->stuckMove, (const void *)ADDR(g_vecZero), 12);
-	AC->alert = (*(int *)&AC->beepTimer) = 0;
+	AC->homedOn = (*(int *)&AC->beepTimer) = 0;
 	(*(int *)&st->lockWarnings[a]) = 0;
 	st->teamsChanged = 1;
 }
@@ -949,7 +949,7 @@ static int totals_agree(u8 *s, u8 *ac, u8 *me)
 	    AC->ammo[1] > AC->ammoMax[1] || AC->ammo[2] > AC->ammoMax[2] || AC->ammo[3] > AC->ammoMax[3] || AC->shieldRegen > 8)
 		return 0;
 	const float *heat = k_30f;
-	if ((AC->markSolo == 0 && AC->timers[0] > *heat) || AC->timers[1] > *heat || (AC->markSolo == 0 && AC->timers[2] > *heat) ||
+	if ((AC->isKing == 0 && AC->timers[0] > *heat) || AC->timers[1] > *heat || (AC->isKing == 0 && AC->timers[2] > *heat) ||
 	    AC->timers[3] > *heat)
 		return 0;
 	return 1;

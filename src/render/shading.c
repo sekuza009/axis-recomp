@@ -15,7 +15,7 @@ typedef struct {
 	float min[3], max[3];   /* +0x68 */
 } Part;
 
-/* a light factor (0x2c bytes): kind 0 ambient, 1 directional, 2 a point light fading over its radius, 3 a point
+/* a light factor (0x2c bytes, scene.fields' Factor): kind 0 ambient, 1 directional, 2 a point light fading over its radius, 3 a point
    light falling off with the square of the distance */
 typedef struct {
 	u32 _00, _04;
@@ -235,7 +235,7 @@ void THISCALL (light_computeLayerLightBy)(u8 *scene, u8 *layer, u8 *cols, int fi
 	for (int li = 0; li < lights->count; li++) {
 		const Factor *fc = &lights->records[li];
 		const u8 *light = (const u8 *)&fc->kind;   /* (light_mix takes the factor from its kind on) */
-		const float *dir = (const float *)fc->point;   /* (a kind 1 light's direction) */
+		const float *dir = (const float *)fc->dir;   /* (a kind 1 light's direction) */
 		int kind = fc->kind;
 		if (kind == 0 || kind == 2)
 			continue;

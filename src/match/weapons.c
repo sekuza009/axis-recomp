@@ -312,7 +312,7 @@ void THISCALL (bullet_init)(u8 *s, int slot, int id, int owner, int a4, const u8
 	memcpy(BU->step, (const void *)ADDR(g_vecZero), 12);
 	BU->hitActor = -1;
 	BU->homeTimer = 0.0f;
-	BU->link = a4;
+	BU->homingTarget = a4;
 	if (w->guidance > 0 && a4 < 0 && BU->owner == ST->playerActor) {
 		const float *at = BU->prev;
 		float *tip = BU->tip;
@@ -516,7 +516,7 @@ static void draw_shot(u8 *s, u8 *b, const u8 *w, u32 *r, int flying)
 static void hit_actor(u8 *s, u8 *b, const u8 *w, u32 *r, int weapon)
 {
 	int t = BU->hitActor;
-	if (ST->actors[t].pilot == ST->playerActor && ST->actors[t].state == 1)
+	if (ST->actors[t].controlledBy == ST->playerActor && ST->actors[t].state == 1)
 		bullet_playImpactSound(s, BU->owner, t, WI->damageMode, WI->damage, WI->shotMode, weapon);
 	t = BU->hitActor;
 	float dir[3];
@@ -629,7 +629,7 @@ static void splash(u8 *s, u8 *b, const u8 *w)
 	if (BU->hitWorld != 1 || !(WI->splashRadius > 0))
 		return;
 	for (int j = 0; j < ST->actorCount; j++) {
-		if (ST->actors[j].state != 1 || !(ST->actors[j].blinkTime > 3.0f) || ST->actors[j].pilot != ST->playerActor || BU->hitActor == j
+		if (ST->actors[j].state != 1 || !(ST->actors[j].spawnAge > 3.0f) || ST->actors[j].controlledBy != ST->playerActor || BU->hitActor == j
 		    || ST->actors[j].cameraValue == 1)
 			continue;
 		float d[3];
@@ -670,7 +670,7 @@ static void home(u8 *s, u8 *b, const u8 *w)
 		long double y = fadd_m(fld_m(&BU->age), &k_1f);
 		rate = f32(fdivr_m((y * y) * y, &WI->guidance));
 	}
-	int tg = BU->link;
+	int tg = BU->homingTarget;
 	for (int k = 0; k < 3; k++)
 		T[k] = f32(fsub_m(fld_m(tg >= 0 ? &ST->actors[tg].nextPos[k] : BU->tip + k), &prev[k]));
 	Vec3_normalize(T);
@@ -728,7 +728,7 @@ static void fly_local(u8 *s, u8 *b, const u8 *w, const float *dt)
 	Vec3_normalize(dir);
 	BITS(best) = 0x7f7fffff;
 	for (int j = 0; j < ST->actorCount; j++) {
-		if (ST->actors[j].state != 1 || !(ST->actors[j].blinkTime > 3.0f) || j == BU->owner || ST->actors[j].cameraValue != 0)
+		if (ST->actors[j].state != 1 || !(ST->actors[j].spawnAge > 3.0f) || j == BU->owner || ST->actors[j].cameraValue != 0)
 			continue;
 		float radius = f32(fadd_m(fld_m(&ST->actors[j].radius), &WI->hitRange));
 		if (math_segmentSphere(prev, cur, dir, ST->actors[j].nextPos, radius, hit, &t) == 1 && !(t >= best)) {
@@ -779,7 +779,7 @@ void THISCALL (bullet_update)(u8 *s, int slot, u32 dt_bits)
 		hit_actor(s, b, w, r, weapon);
 	if (!(BU->age > BU->life)) {
 		memcpy(prev, cur, 12);
-		if (ST->actors[BU->owner].pilot == ST->playerActor)
+		if (ST->actors[BU->owner].controlledBy == ST->playerActor)
 			fly_local(s, b, w, dt);
 		else if (BU->moved == 1) {
 			memcpy(cur, BU->netPoint, 12);
@@ -794,11 +794,11 @@ void THISCALL (bullet_update)(u8 *s, int slot, u32 dt_bits)
 		long double age = fadd_m(fld_m(dt), &BU->age);
 		BU->age = (float)age;
 		if (age > BU->life)
-			ST->actors[BU->owner].sendFlag = 1;
+			ST->actors[BU->owner].sendNow = 1;
 		BU->moved = 0;
 		return;
 	}
-	if (ST->actors[BU->owner].pilot != ST->playerActor) {
+	if (ST->actors[BU->owner].controlledBy != ST->playerActor) {
 		memcpy(cur, BU->netPoint, 12);
 		for (int k = 0; k < 3; k++)
 			step[k] = f32(fsub_m(fld_m(&cur[k]), &prev[k]));

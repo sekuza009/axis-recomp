@@ -34,7 +34,7 @@ int THISCALL (scene_teamSide)(Scene *scene, int id)
 /* 0x4636d0: the team slots at the start of a match: all free in a local team game, else teams 0 .. 4 */
 void THISCALL (teams_setup)(Scene *scene)
 {
-	if (scene->network == 0 && scene->teamGame == 1)
+	if (scene->sessionMode == 0 && scene->teamGame == 1)
 		for (int k = 0; k < 5; k++)
 			scene->teamIds[k] = -1;
 	else
@@ -72,12 +72,12 @@ void THISCALL (stage_refillFactors)(Stage *stage)
 		Player *a = (Player *)((u8 *)&stage->actors[i]);
 		if (stage->actors[i].active == 1) {
 			float value = f32(fmul_m(fadd_m(fld_m(&a->glow), (const float *)ADDR(k_1f)), k_2500f));
-			factors_addDirected(pool, OBJ(g_packedWhite), value, a->pos);   /* factors_addDirected */
+			factors_addPointLight(pool, OBJ(g_packedWhite), value, a->pos);   /* factors_addPointLight */
 		}
 	}
 	for (int i = 0; i < stage->projectileCount; i++) {
 		Projectile *p = &stage->projectiles[i];
 		if (p->active == 1 && p->size > k_0f)
-			factors_addDirected_bits(pool, OBJ(g_packedWhite), BITS(p->size), p->pos);
+			factors_addPointLight_bits(pool, OBJ(g_packedWhite), BITS(p->size), p->pos);
 	}
 }

@@ -182,7 +182,7 @@ void THISCALL (armc_rotateFromCursor)(Scene *scene, const u32 *eye, const u32 *f
 	Light_clearCounts(light);
 	u32 dir[3] = { forward[0], forward[1], forward[2] };
 	Vec3_normalize((float *)RELOC(dir));
-	factors_addPoint(light, (const void *)OBJ(g_packedWhite), dir);
+	factors_addDirectional(light, (const void *)OBJ(g_packedWhite), dir);
 	for (int k = 0; k < 8; k++) {
 		u8 *list = (u8 *)&scene->players[scene->localPlayer] + lists[k];
 		if (part < 0)

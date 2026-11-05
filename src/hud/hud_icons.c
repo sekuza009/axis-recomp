@@ -43,13 +43,13 @@ void THISCALL (hud_drawNameIcon)(Scene *scene, int emblem, int x, int y)
 }
 
 /* 0x4924d0: player's flag: four cells per row from the flag texture (128 x 64 texels); in the mode
-   scene->network, from the GL texture scene->flagGlTexture instead of the texture manager */
+   scene->sessionMode, from the GL texture scene->flagGlTexture instead of the texture manager */
 void THISCALL (hud_drawLeaderIcon)(Scene *scene, int player, int x, int y)
 {
 	int sx = hud_toScreenX(x), sy = hud_toScreenY(y);
 	int w = hud_scaleX(24.0f), h = hud_scaleY(16.0f);
 	glEnable(GL_TEXTURE_2D);
-	if (scene->network == 0)
+	if (scene->sessionMode == 0)
 		tex_bind(g_textures->managers[scene->flagTexture / 512], scene->flagTexture % 512);
 	else
 		glBindTexture(GL_TEXTURE_2D, scene->flagGlTexture);

@@ -1,42 +1,42 @@
 /* factors.c: the factor pool's records built and added (factor_addFactorBy): a 0x2c-byte record of which only the
-   kind, the value and the kind's own fields are set (Factor); the rest is left as the stack holds it, as the
+   kind, the colour and the kind's own fields are set (Factor); the rest is left as the stack holds it, as the
    originals leave it (they add the whole record). Also a layer's lighting. */
 #include "../game.h"
 
 typedef struct { u8 bytes[0x2c]; } FactorRecord;
 
-/* 0x483e90 (thiscall on the pool): a kind 0 factor of the value *a. Its callers ignore the eax it leaves */
-void THISCALL (factors_addConstant)(void *pool, const u32 *a)
+/* 0x483e90 (thiscall on the pool): an ambient light (kind 0) of the colour *a. Its callers ignore the eax it leaves */
+void THISCALL (factors_addAmbient)(void *pool, const u32 *a)
 {
 	Factor r;
 	__asm__("" : "=m"(r));   /* (left as the stack holds it) */
 	r.kind = 0;
-	r.value = *a;
+	r.colour = *a;
 	factor_addFactorBy(pool, &r);
 }
 
-/* 0x483ec0: a kind 1 factor of the value *a at the point p */
-void THISCALL (factors_addPoint)(void *pool, const u32 *a, const u32 *p)
+/* 0x483ec0: a directional light (kind 1) of the colour *a along the direction p */
+void THISCALL (factors_addDirectional)(void *pool, const u32 *a, const u32 *p)
 {
 	Factor r;
 	__asm__("" : "=m"(r));
 	r.kind = 1;
-	r.value = *a;
+	r.colour = *a;
 	for (int i = 0; i < 3; i++)
-		r.point[i] = p[i];
+		r.dir[i] = p[i];
 	factor_addFactorBy(pool, &r);
 }
 
-/* 0x483f00: a kind 2 factor of the value *a towards p with x (spread) */
-void THISCALL (factors_addDirected)(void *pool, const u32 *a, u32 x, const u32 *p)
+/* 0x483f00: a point light (kind 2) of the colour *a at p, reaching the radius x */
+void THISCALL (factors_addPointLight)(void *pool, const u32 *a, u32 x, const u32 *p)
 {
 	Factor r;
 	__asm__("" : "=m"(r));
 	r.kind = 2;
-	r.value = *a;
+	r.colour = *a;
 	for (int i = 0; i < 3; i++)
-		r.dir[i] = p[i];
-	r.spread = x;
+		r.pos[i] = p[i];
+	r.radius = x;
 	factor_addFactorBy(pool, &r);
 }
 

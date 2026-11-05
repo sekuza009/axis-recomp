@@ -71,7 +71,7 @@ void THISCALL (hud_drawEscMenu)(Scene *scene)
 
 	switch (scene->escPage) {
 	case 0: {
-		int net = scene->network;
+		int net = scene->sessionMode;
 		int y = net != 0 || scene->localTeam < 0 ? 0xb4 : 0xc8;
 		if (net == 1 && scene->teamGame == 1 && scene->localTeam >= 0)
 			y -= 0x14;
@@ -79,17 +79,17 @@ void THISCALL (hud_drawEscMenu)(Scene *scene)
 			y -= 0x14;
 		esc_title(scene, alpha, alpha, y, "MENU");
 		y += 0x28;
-		if (scene->network != 0 || scene->localTeam < 0) {
-			const char *label = scene->localTeam >= 0 ? "SPECTATOR" : scene->network == 0 ? "START" : "JOIN";
+		if (scene->sessionMode != 0 || scene->localTeam < 0) {
+			const char *label = scene->localTeam >= 0 ? "SPECTATOR" : scene->sessionMode == 0 ? "START" : "JOIN";
 			esc_item(scene, alpha, y, label, 0);
 			y += 0x28;
 		}
-		if (scene->network == 1) {
+		if (scene->sessionMode == 1) {
 			if (scene->teamGame == 1 && scene->localTeam >= 0) {
 				esc_item(scene, alpha, y, "TEAM", 1);
 				y += 0x28;
 			}
-			if (scene->network == 1) {
+			if (scene->sessionMode == 1) {
 				esc_item(scene, alpha, y, scene->recording ? "STOP RECORDING" : "RECORD", 2);
 				y += 0x28;
 			}
@@ -211,7 +211,7 @@ enum { KEY_UP, KEY_DOWN, KEY_ENTER, KEY_ESC };
 static void esc_mainCursor(Scene *scene, int down)
 {
 	int sel = scene->escCursor, teamItem = scene->teamGame == 1 && scene->localTeam >= 0;
-	if (!scene->network) {
+	if (!scene->sessionMode) {
 		static const int up[5] = { 4, 4, 4, -1, 3 }, dn[5] = { 3, 4, 4, 4, -1 };
 		int to = (u32)sel <= 4 ? (down ? dn : up)[sel] : 4;
 		if (to < 0)   /* past the hidden item 0 */
@@ -258,10 +258,10 @@ static int esc_main(Scene *scene)
 	case 0:
 		if (scene->localTeam >= 0) {   /* SPECTATOR: the actor taken out, watching from now on */
 			actor_deactivate(STAGE(scene), scene->localPlayer);
-			if (scene->network)
+			if (scene->sessionMode)
 				scene->localTeam = -1;
 			scene->playing = 0;
-			if (scene->network == 1) {
+			if (scene->sessionMode == 1) {
 				scene_setLocalTeam(scene, -1);
 				scene->players[scene->localPlayer].team = -1;
 				esc_resetScore(scene);
@@ -277,7 +277,7 @@ static int esc_main(Scene *scene)
 			scene->teamAsked = 1;
 			return 1;
 		}
-		if (scene->chosenTeam >= 0 && scene->network)   /* JOIN: the team page, on the team asked for before */
+		if (scene->chosenTeam >= 0 && scene->sessionMode)   /* JOIN: the team page, on the team asked for before */
 			escMenu_open(scene, 1, scene_teamSide(scene, scene->chosenTeam) != 0);
 		else
 			escMenu_open(scene, 1, scene->redTeamCount > scene->blueTeamCount);
@@ -311,7 +311,7 @@ static int esc_team(Scene *scene)
 	esc_pairCursor(scene);
 	if (keys[KEY_ENTER] != 1)
 		return keys[KEY_ESC] == 1;
-	if (!scene->network) {
+	if (!scene->sessionMode) {
 		scene->localTeam = 0;
 		scene->teamAsked = 1;
 		scene->chosenTeam = 0;
@@ -363,7 +363,7 @@ static int esc_retry(Scene *scene)
 	}
 	scene->botsHoldFire = 0;
 	scene->elapsed = 0;
-	scene->timeFraction = 0.0f;
+	scene->clockFraction = 0.0f;
 	memcpy(scene->cameraPos, scene->cameraSaved, sizeof scene->cameraPos);
 	memcpy(scene->cameraAngle, scene->cameraSaved + 3, sizeof scene->cameraAngle);
 	music_playMatch(scene);

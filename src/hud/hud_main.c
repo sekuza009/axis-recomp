@@ -50,7 +50,7 @@ static void main_ring(Scene *scene, Player *player)
 	float radius = f32(half / (long double)trig);
 	glBegin(GL_QUAD_STRIP);
 	for (int angle = 0; angle <= 3600; angle += 100) {
-		if (player->alert == 1 && scene->network == 1)
+		if (player->homedOn == 1 && scene->sessionMode == 1)
 			glColor4f(1.0f, 0.0f, 0.0f, 0.25f);
 		else
 			glColor4f(0.0f, 1.0f, 0.0f, 0.25f);
@@ -59,7 +59,7 @@ static void main_ring(Scene *scene, Player *player)
 		vec_rotate(v, angle);
 		for (int pass = 0; pass < 2; pass++) {
 			if (pass == 1) {
-				if (player->alert == 1)
+				if (player->homedOn == 1)
 					glColor4f(1.0f, 0.0f, 0.0f, 0.0f);
 				else
 					glColor4f(0.0f, 1.0f, 0.0f, 0.0f);
@@ -361,7 +361,7 @@ static void main_energy(Player *player)
 
 	if (player->timers[2] > 0.0f)
 		glColor4f(0.0f, 0.0f, 1.0f, 1.0f);
-	else if (player->overheat == 1 || (player->warned == 1 && ftol(player->blinkTime * 4.0f) % 2 != 0))
+	else if (player->overheat == 1 || (player->warned == 1 && ftol(player->spawnAge * 4.0f) % 2 != 0))
 		glColor4f(1.0f, 0.0f, 0.0f, 0.75f);
 	else
 		glColor4f(1.0f, 1.0f, 1.0f, 0.75f);
@@ -449,7 +449,7 @@ static void main_draw(Scene *scene)
 		int h = gfx_getHeight();
 		gfx_fillRect(0, 0, gfx_getWidth(), h);
 	}
-	if (scene->playing == 1 && (player->alert == 1
+	if (scene->playing == 1 && (player->homedOn == 1
 	    || (player->actorType >= 0 && scene->actorInfo[player->actorType].targetingTime > 0.0f))) {
 		part(HUD_PIXELS);
 		main_ring(scene, player);
@@ -471,7 +471,7 @@ static void main_draw(Scene *scene)
 	part(HUD_RIGHT);
 	if (scene->playing == 1)
 		main_timers(scene, player);
-	if ((scene->playing == 1 && scene->cockpitPlayer != p) || (scene->playing == 0 && scene->cameraSlot == 2))
+	if ((scene->playing == 1 && scene->selectedActor != p) || (scene->playing == 0 && scene->cameraSlot == 2))
 		main_snapshot(scene, player);
 	part(HUD_LEFT);
 	if (scene->playing == 1)
@@ -483,14 +483,14 @@ static void main_draw(Scene *scene)
 	/* top right: the solo mark, the team mark, the leader mark (rank 1 with kills), else "rank/count" */
 	part(HUD_CORNER);
 	if (scene->kingOfTheHill == 1) {
-		if (player->markSolo == 1) {
+		if (player->isKing == 1) {
 			int x = gfx_getWidth() - 0x40;
 			glEnable(GL_TEXTURE_2D);
 			main_cornerMark(x, scene->markerTexture, 0.0f, 0.25f);
 			return;
 		}
 	} else if (scene->platoon == 1) {
-		if (player->markTeam == 1) {
+		if (player->isPlatoonLeader == 1) {
 			int x = gfx_getWidth() - 0x40;
 			glEnable(GL_TEXTURE_2D);
 			main_cornerMark(x, scene->markerTexture, tex256((player->team + 1) * 64), tex256((player->team + 2) * 64));

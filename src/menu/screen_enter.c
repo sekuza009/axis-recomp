@@ -381,10 +381,10 @@ static void match_name(const char *name)
 
 /* 0x41fd40 (named console_init; by use the match started, state 9999): the menus' tunnel freed; outside the lobby
    (0x76d410) the profile files checked; the display opened (aspect 0x4e1870, glWindow_init); a replay (0x9db990)
-   started at once (app_requireCd 0, 3); else the map (0x9dad94) loaded (failing: message 6 and back to state 400 /
+   started at once (scene_startSession 0, 3); else the map (0x9dad94) loaded (failing: message 6 and back to state 400 /
    800 for the arena / room). By the kind of match (0x5ae9c4): 1 the arena, 2 the room (the pilots read, the
    player's name taken from the profile / the room, the part lists 0x40d990), 3 a skirmish (the name 0x9f1798),
-   started with app_requireCd (a host unless 0x67ef04 is 1; 3: 0, 0); then the map's name announced. The caller
+   started with scene_startSession (a host unless 0x67ef04 is 1; 3: 0, 0); then the map's name announced. The caller
    ignores the eax it leaves */
 void (console_init)(void)
 {
@@ -399,7 +399,7 @@ void (console_init)(void)
 #define scene g_scene   /* read at each use: loading the map makes the match's scene */
 	if (g_replayRunning) {
 		g_matchMode = 0;
-		app_requireCd(scene, 0, 3);
+		scene_startSession(scene, 0, 3);
 		return;
 	}
 	int loaded = console_loadFile(g_missionStage);
@@ -417,7 +417,7 @@ void (console_init)(void)
 		data_loadPilotProfiles();
 		match_name(g_cfgPlayerName);
 		armc_resetSeraphimParts();
-		app_requireCd(scene, g_netRole == 1 ? 0 : 1, 1);
+		scene_startSession(scene, g_netRole == 1 ? 0 : 1, 1);
 		break;
 	case 2:
 		room_fitWindowRects();
@@ -425,11 +425,11 @@ void (console_init)(void)
 			armc_resetSeraphimParts();
 		data_loadPilotProfiles();
 		match_name(g_joinedTitleName);
-		app_requireCd(scene, g_netRole == 1 ? 0 : 1, 1);
+		scene_startSession(scene, g_netRole == 1 ? 0 : 1, 1);
 		break;
 	case 3:
 		match_name((const char *)(OBJ(g_campaign) + 0x80));
-		app_requireCd(scene, 0, 0);
+		scene_startSession(scene, 0, 0);
 		break;
 	}
 	scene_setTextureFolder(scene, (const char *)(OBJ(g_mapNames) + g_missionStage * 0x20));   /* (the original also builds "%s" with the name on its stack, unused) */

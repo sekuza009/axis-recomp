@@ -555,7 +555,7 @@ static void item_pickup(u8 *s, u8 *ac, u8 *it, int i, u8 *t, int type)
 		case 7: timer = &BITS(AC->timers[3]); text = STR(0x4c8188, "GRAVITY ARMOR"); break;   /* GRAVITY ARMOR */
 		case 4: {
 			int warped = 0;
-			if (AC->pilot == ST->playerActor && !(AC->warpWait > 0) && AC->lastWarp != i) {
+			if (AC->controlledBy == ST->playerActor && !(AC->warpWait > 0) && AC->lastWarp != i) {
 				MapItem *to = &ST->items[mi->warpTo];
 				memcpy(AC->nextPos, to->pos, 12);
 				AC->nextPitch = f32(fmul_m((long double)to->warpPitch, (const float *)ADDR(k_10f)));
@@ -784,7 +784,7 @@ static void particle_trail(u8 *p, const u8 *desc, u32 margin)
 				PR->trailUv[1] = 0.5f;
 		}
 	}
-	PR->cornerColours[0] = PR->cornerColours[1] = PR->cornerColours[2] = g_white;
+	PR->trailColours[0] = PR->trailColours[1] = PR->trailColours[2] = g_white;
 }
 
 /* 0x475070 (thiscall on the scene): particle slot (0x12c bytes from +0x20a99c0) set up from its descriptor: a

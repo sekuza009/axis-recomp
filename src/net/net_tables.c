@@ -1644,7 +1644,7 @@ static void THISCALL __attribute__((used)) net_sendPlayerState_body(u8 *g, int p
 	u16 w;
 	packet[1] = 0;
 	memcpy(packet + 2, &pl->timerFlags, 2);
-	switch (pl->statusIcon) {
+	switch (pl->chatIcon) {
 	case 0: packet[4] = (u8)((((u8)p << 3) | (u8)pl->slot) << 1); break;
 	case 1: packet[4] = (u8)(p << 4 | 0xc); break;
 	case 2: packet[4] = (u8)(p << 4 | 0xe); break;
@@ -1756,7 +1756,7 @@ static void THISCALL __attribute__((used)) net_sendGamePacket_body(u8 *s, int p,
 	} else
 		memset(packet + 3, 0xff, 6);
 	memcpy(packet + 9, &sc->elapsed, 4);
-	float clock = f32(fld_m(&sc->timeFraction));
+	float clock = f32(fld_m(&sc->clockFraction));
 	memcpy(packet + 0xd, &clock, 4);
 	u32 turn = ((u32)(sc)->geometryCheckTurn);
 	packet[0x2b] = (u8)(turn % 5);
@@ -1925,14 +1925,14 @@ void THISCALL (net_processGamePacket)(u8 *g, u32 from, int type, const char *pkt
 			scene_updateRanking(g);   /* scene_updateRanking */
 		}
 		ac->netFired = 1;
-		ac->armorDeadline = f32(fadd_m(fld_m(&ac->blinkTime), &k_10f));
+		ac->armorDeadline = f32(fadd_m(fld_m(&ac->spawnAge), &k_10f));
 		BITS(ac->timerFlags) = *(const u16 *)(pkt + 2);
 		if (weapon == 6)
-			ac->statusIcon = 1;
+			ac->chatIcon = 1;
 		else if (weapon == 7)
-			ac->statusIcon = 2;
+			ac->chatIcon = 2;
 		else {
-			ac->statusIcon = 0;
+			ac->chatIcon = 0;
 			actor_setWeaponSlot(STAGE, i, weapon);   /* actor_setWeaponSlot */
 		}
 		ac->netPos[0] = x;
@@ -1990,7 +1990,7 @@ void THISCALL (net_processGamePacket)(u8 *g, u32 from, int type, const char *pkt
 			break;
 		if (b[2] == 0) {
 			GS->elapsed = *(const u32 *)(pkt + 9);
-			BITS(GS->timeFraction) = *(const u32 *)(pkt + 0xd);
+			BITS(GS->clockFraction) = *(const u32 *)(pkt + 0xd);
 			if (pkt[3] >= 0) {
 				int round = g_missionStage;
 				if (round != pkt[3] && (round < 0 || GS->rotationOff == 1 || GS->elapsed > 0x1e)) {
@@ -2043,11 +2043,11 @@ void THISCALL (net_processGamePacket)(u8 *g, u32 from, int type, const char *pkt
 			GS->teamScores[1] = *(const short *)(pkt + 0x27);
 		}
 		short item = *(const short *)(pkt + 0x29);
-		if ((GS->network != 3 || GS->replayVersion > 0x1201) && item >= 0 && SCENE_STAGE(g)->items[item].taken == 0) {
+		if ((GS->sessionMode != 3 || GS->replayVersion > 0x1201) && item >= 0 && SCENE_STAGE(g)->items[item].taken == 0) {
 			SCENE_STAGE(g)->items[item].taken = 1;
 			BITS(SCENE_STAGE(g)->items[item].fade) = 0;
 		}
-		if (GS->network == 3 && GS->replayVersion >= 0x1202)
+		if (GS->sessionMode == 3 && GS->replayVersion >= 0x1202)
 			scene_updateRanking(g);   /* scene_updateRanking */
 		return;
 	}

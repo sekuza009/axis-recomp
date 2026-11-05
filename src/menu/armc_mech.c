@@ -117,7 +117,7 @@ void THISCALL (armc_giveShownActorWeapon)(u8 *game, int slot)
 	u32 angle0 = BITS(ACTOR.nextPitch), angle1 = BITS(ACTOR.nextYaw);   /* (copied as dwords, put back through the FPU) */
 	int other = ACTOR.lastWeaponSlot;
 	int chosen = slot >= 0 ? slot : ACTOR.slot;
-	ACTOR.variantLoaded = I != sc->cockpitPlayer;
+	ACTOR.variantLoaded = I != sc->selectedActor;
 	Stage *stage = SCENE_STAGE(game);
 	stage_remakePlayerActor(stage);
 	for (int k = 0; k < 3; k++)

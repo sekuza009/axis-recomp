@@ -151,7 +151,7 @@ struct Player 0x8888                                            # a player's rec
 0xe0       4          i32 levelShown                             # (by use) the level last announced ("LEVEL UP!" when the emblem's passes it)
 0xf8       4          i32 startPoints                            # the level points it started the match with (then the score already added to the
                                                                  # title's points: profile_addMatchScores)
-0x374      4          i32 sendFlag                               # (unclear) cleared each frame; 1: its state is sent (net_sendPlayerState)
+0x374      4          i32 sendNow                               # 1: its state is sent this frame (one of its rounds ran out of life; net_sendPlayerState); cleared each frame
 0x8868     4          i32 killPending                            # (by use) 1: it died; the kill is reported (msg_kill with lastAttacker) and this cleared
 0x538      4          i32 lastWarp                               # (by use) the warp zone (item) it came through last (-1 none: not kept off it)
 0x53c      4          i32 onWarp                                 # 1: touching a warp zone this frame
@@ -176,10 +176,10 @@ struct Player 0x8888                                            # a player's rec
 0x4f0      4          u8 tint[4]                                 # (by use) its tint (r g b a: a cloaked actor's; alpha <= 0x10 also lights it faintly)
 0x4f4      0x40       char message[0x40]                         # (by use) a message for the local player ("OUT OF AMMO!")
 0x534      4          float messageTime                          # its time shown (-10000: none)
-0x124      4          float armorDeadline                        # (by use) blinkTime + 10 while in play (the local and bots'); past it: the armour is gone
+0x124      4          float armorDeadline                        # (by use) spawnAge + 10 while in play (the local and bots'); past it: the armour is gone
 0x4a4      4          float effectScale                          # (by use) the emitters' scale by the speed (0.5 .. 3)
 0x4d0      4          i32 order                                  # (by use) an order to carry out this frame (-1 none): 0 refill, 1 ammunition, 2 / 3 orderFlag on / off, 4 a death
-0x4d4      4          i32 orderFlag                              # (unclear) sent as state bit 0x1000
+0x4d4      4          i32 bigHead                               # 1: its head drawn five times larger (order 2 on, 3 off; sent as state bit 0x1000)
 0x8800     4          i32 pathReverse                            # (by use) 1: the path is followed backwards
 0x8804     4          float botWait                              # (by use) seconds a bot stays put
 0x8808     4          i32 botWaitTrigger                         # (by use) a trigger a bot waits for (-1 none)
@@ -246,12 +246,12 @@ struct Player 0x8888                                            # a player's rec
 0x104      4          i32 id                                     # (by use) its id (the next serial, or the network's)
 0x114      4          i32 level                                  # (by use) its player's level (0 .. 8)
 0x164      4          float yaw                                  # (by use) the heading (with pitch: the look)
-0x484      4          i32 detail                                 # (unclear) the parts' variant wanted: they are reloaded when it differs from detailLoaded
-0x488      4          i32 detailLoaded
+0x484      4          i32 lowDetail                             # 1: far away (its name tag under 30 px wide at 640): the parts' low-detail models and joints; they are reloaded when it differs from lowDetailLoaded
+0x488      4          i32 lowDetailLoaded
 0x498      4          i32 slotLoaded                             # (by use) the slot whose item was loaded last (another player's actor)
 0x49c      4          i32 variantLoaded                          # (by use) the parts' variant loaded (0 for the selected actor, else detail + 1)
 0x4c0      4          i32 lastAttacker                           # (by use) the actor that hit it last (credited with the kill)
-0x110      4          i32 pilot                                  # (unclear) compared with the stage's local actor slot: its own actor when equal
+0x110      4          i32 controlledBy                          # the player slot whose machine runs it (actor_setupFromParts' a3): the local machine's actors are those equal to Stage.playerActor
 0x11c      4          i32 bot                                    # (by use) not 0: run by the game (targets, following)
 0x154      0xc        float pos[3]                               # (by use) its position (ray traces start there)
 0x160      4          float pitch                                # (by use) the look's pitch, within +-89 degrees with the input's
@@ -294,7 +294,7 @@ struct Player 0x8888                                            # a player's rec
 4          4          float detectionAngle                      # (by use, the ARM CENTER's DETECTION ANGLE) tenths of a degree: the head's by level (the alert ring shows it)
 0xec       4          i32 score                                 # shown top left
 0x108      4          i32 active                                # 1: the slot is in use (0 for the local player's: "press fire" may be shown)
-0x120      4          float blinkTime                           # (unclear) the energy bar blinks 4 times a second by it while warned
+0x120      4          float spawnAge                            # seconds since it spawned: the first 3 s it fades in and cannot fire or be hit; the armour deadline is 10 s on from it
 0x128      4          i32 armor                                 # (by use) shown bottom left (ARMOR)
 0x12c      4          i32 shield                                # shown bottom left (SHIELD)
 0x130      0x10       i32 ammo[4]                               # per weapon slot
@@ -311,7 +311,7 @@ struct Player 0x8888                                            # a player's rec
 0x4cc      4          i32 weapon                                # the selected weapon slot
 0x548      4          float damageFlash                         # > 0: a white flash over the screen at this alpha
 0x8854     4          float hitFlash                            # > 0: a red flash at half this alpha
-0x8880     4          i32 alert                                 # (unclear) 1: the alert ring (red in network games)
+0x8880     4          i32 homedOn                               # 1: a guided round of another machine's (Bullet.link) is homing on it: the HUD's alert ring and beep; a bot without a target turns on the shooter
 0x98       0x40       char name[0x40]
 0xdc       4          i32 emblem                                # emblem shown in the ranking
 0xd8       4          i32 inPlay                                # 1: the slot holds a fielded mech (actor_setupFromParts); 0 when reset, cleared with the scores or a spectator. Spectating follows only these; bots spawn while the local player is
@@ -332,19 +332,19 @@ struct Player 0x8888                                            # a player's rec
 0x87e8     4          float lockedOn                            # > 0: locked on by the local player
 0x87ec     4          float lockSize                            # how far the lock-on box still has to close
 0x87f0     4          float labelFade                           # > 0: the name label is up (alpha labelFade / 3)
-0x3ec      4          i32 statusIcon                            # (unclear) 1 / 2: an icon over the player
-0x4d8      4          i32 markSolo                              # (unclear) 1: a mark (icon 8) after the player's ranking row and over the player, games without teams
+0x3ec      4          i32 chatIcon                              # a chat icon over the player while it types: 1 to all, 2 to its team (sent)
+0x4d8      4          i32 isKing                                # 1: the king (King of the Hill: the leader; scene_updateRanking): a mark after its ranking row and over it, five times the points
 0x550      4          i32 viewMarked                            # set by hud_pass for the player the view follows
-0x4dc      4          i32 markTeam                              # (unclear) 1: a mark (the team's icon) after the player's ranking row and over the player, team games
+0x4dc      4          i32 isPlatoonLeader                       # 1: its team's leader (Platoon: the most time; scene_updateRanking): the team's icon after its ranking row and over it
 
-struct Factor 0x2c                                              # a light factor (LightFactors.records; factors.c builds them)
+struct Factor 0x2c                                              # a light (LightFactors.records; factors.c builds them; shading.c's Light reads them)
 0          4          i32 index                                  # its slot (factor_addFactorBy)
 4          4          i32 used                                   # 1: in use
-8          4          i32 kind                                   # 0 a constant, 1 a point, 2 a directed one
-0xc        4          u32 value                                  # (a float's bits)
-0x10       0xc        u32 dir[3]                                 # kind 2: towards (floats' bits)
-0x1c       0xc        u32 point[3]                               # kind 1: at (floats' bits)
-0x28       4          u32 spread                                 # (unclear) kind 2's x
+8          4          i32 kind                                   # 0 ambient, 1 directional, 2 a point light fading out over its radius, 3 a point light falling off with the distance squared
+0xc        4          u32 colour                                 # packed RGBA
+0x10       0xc        u32 pos[3]                                 # a point light's position (floats' bits)
+0x1c       0xc        u32 dir[3]                                 # a directional light's direction (floats' bits)
+0x28       4          u32 radius                                 # a point light's radius (a float's bits)
 
 struct LightFactors 0xb010                                      # (by use) the light factors shape_shadeParts takes (the size is unknown)
 4          0xb000     Factor records[0x400]                         # (by use) its factors
@@ -433,7 +433,7 @@ struct Projectile 0x12c                                         # a particle or 
 0x84       0x24       union { float fade; float trailPoints[3][3]; }   # fade: (kind 9, a falling spark) the wait to its next puff (0.1 s);
                                                                  # trailPoints: (trails, kinds 40 .. 49) their triangle's three points
 0xb4       0x18       float trailUv[6]                           # (trails) the three points' texture coordinates (u, v)
-0xd4       0xc        u32 cornerColours[3]                      # (unclear) white at the start
+0xd4       0xc        u32 trailColours[3]                       # the trail's three points' colours (white; their alpha fades with drawAge)
 0xe4       4          i32 quadTexture                            # (by use) kind 50, a quad: its texture, two texture corners, colour, points
 0xe8       8          u32 quadUv0[2]
 0xf0       8          u32 quadUv1[2]
@@ -464,7 +464,7 @@ struct Bullet 0x4e8                                             # a bullet in fl
 0xa0       0xc        float vel[3]
 0xac       0xc        float step[3]                             # this frame's direction of move
 0xb8       4          i32 hitActor                              # an actor it hit (-1 none), which takes it first
-0xbc       4          i32 link                                  # (unclear) the caller's fourth argument; < 0 for the tracer
+0xbc       4          i32 homingTarget                          # the actor a guided round homes on (bullet_init's fourth argument; < 0 none: the local player's own round follows the aim point)
 0xc4       0xc        float tip[3]                              # the local player's tracer end
 
 struct SpacePool 0x10                                           # one of the collision space's pools (space_pools.c): an array of records and its free list
@@ -815,7 +815,7 @@ struct Manager 0x24c                                            # a shape manage
 8          4          u8 *block                                 # the name nodes, then the items, then the data memory
 0xc        4          i32 ownsBlock                             # 1: allocated here
 0x10       0x100      char dir[0x100]                           # where the items' files are
-0x110      4          u32 setupArg                              # (unclear) the a given to setup
+0x110      4          u32 source                                # where its items load from: 0 / 1 loose files with the first / second extension, 2 the packed data file (the skeleton sets)
 0x114      4          i32 capacity                              # items it has room for
 0x118      4          u8 *nodes                                 # the name tree: one 0x4c-byte TreeNode per item
 0x11c      4          u8 *items                                 # the items (skeletons 0x24 bytes, shapes 0x4c)
@@ -832,7 +832,7 @@ struct SkelManager 0x130                                        # a skeleton man
 8          4          u8 *block                                 # the name nodes, then the items, then the data memory
 0xc        4          i32 ownsBlock                             # 1: allocated here
 0x10       0x100      char dir[0x100]                           # where the items' files are
-0x110      4          u32 setupArg                              # (unclear) the a given to setup
+0x110      4          u32 source                                # where its items load from: 0 / 1 loose files with the first / second extension, 2 the packed data file (the skeleton sets)
 0x114      4          i32 capacity                              # items it has room for
 0x118      4          u8 *nodes                                 # the name tree: one 0x4c-byte TreeNode per item
 0x11c      4          u8 *items                                 # the items (skeletons 0x24 bytes, shapes 0x4c)
@@ -929,7 +929,7 @@ struct GroundLayer 0x20c                                        # a layer of the
 0x24       4          float cellSize
 0x28       4          float heightScale
 0x2c       4          float texScale                            # texture coordinates: x / texScale, z / texScale
-0x30       4          i32 lit                                   # (unclear) 1: lit (its normals take the lights)
+0x30       4          i32 lit                                   # 1: lit (its normals take the lights: ground_computeLighting; 4 primitives a cell)
 0x34       4          u32 texture                               # its Ground<n>Map texture
 0x38       4          u8 *heights                               # one byte a point (the map image's grey)
 0x3c       4          u8 *flat                                  # one byte a cell: all four corners present
@@ -1146,7 +1146,7 @@ struct Stage 0x2150443                                          # the stage: the
 0x1301800  0x9c40     u8 objectSkeletonData[0x9c40]              # objectSkeletons' block (skelSet_setup)
 0x19e1ad8  0x2dc6c0   u8 partShapeData[0x2dc6c0]                 # partShapes' block
 0x1cbe2c8  0x186a0    u8 partSkeletonData[0x186a0]               # partSkeletons' block
-0x1cd6968  0xc8       i32 idTable[50]                            # (unclear) an id table set to -1 with the stage (stage_reset)
+0x1cd6968  0xc8       i32 snapshotTex[50]                       # = Scene.snapshotTex (the same words): each actor type's snapshot texture id, -1 (not loaded) at stage_reset
 0x908      0x100      char stageName[0x100]                      # (by use) the stage's name (its clan texture: Stage\\<name>\\Clan)
 0x9ee030   4          i32 clearOn                                # (by use) the clear colour read from the ground info: on
 0x9ee034   0x10       u32 clearColour[4]                         # r g b a (floats' bits)
@@ -1159,7 +1159,7 @@ struct Stage 0x2150443                                          # the stage: the
                                                                 # 0x1f36c8 lie inside it too: Scene.players is Stage.actors)
 # the mech part types (PlayerRecord.parts indexes them; actor_setActorType*InfoBy loads them): 50 of each kind
 0x9ccffc   0xb010     LightFactors mapLights                     # (by use) the map's lights (Light_read from the map file): they shade the map objects
-0x9d800c   4          i32 dynamicLightsSet                       # (unclear) cleared with dynamicLights (stage_resetLights)
+0x9d800c   4          i32 dynamicLightsSet                      # 1 once stage_refillFactors filled dynamicLights, 0 with stage_resetLights; never read
 0x9d8010   0xb010     LightFactors dynamicLights                 # (by use) the lights cleared each frame (stage_resetLights); the objects' second colours
 0x9e3020   0xb010     LightFactors actorLights                   # (by use) the actors' light: a grey ambient one and one from above (actor_slots.c)
 0x20f3adc  4          i32 itemTypeCount                          # (by use) itemTypes in use
@@ -1360,11 +1360,11 @@ struct Scene 0x2343b0b                                          # the scene: the
 0x2342409  4          float previewTurn                          # (by use) the ARM CENTER preview's turn by the cursor (armc_rotateFromCursor)
 0x1f35c4   4          i32 replayVersion                          # (by use) the replay file's version (0x1201)
 0x1f35c8   0x100      char mapName[0x100]                        # the map's file name (bfd_name: name.bfd)
-0xbe2ffc   4          float unusedBe2ffc                         # (by use) only written: 1.0 by app_requireCd (network 2)
+0xbe2ffc   4          float unusedBe2ffc                         # (by use) only written: 1.0 by scene_startSession (network 2)
 0xbe3004   4          i32 musicKind                              # (by use) the match music by kind 1 .. 4 (music_playMatch; = Stage.musicKind)
 0xbe3000   4          i32 missionNumber                          # (by use) the mission loaded (its number sent and compared in the network packets)
-0x233ca00  4          i32 unused233ca00                          # (by use) only written: 0 by app_requireCd
-0x233cc44  4          i32 unused233cc44                          # (by use) only written: 0 by app_requireCd
+0x233ca00  4          i32 unused233ca00                          # (by use) only written: 0 by scene_startSession
+0x233cc44  4          i32 unused233cc44                          # (by use) only written: 0 by scene_startSession
 0x233cc24  4          i32 loadStage                              # (by use) game_processLoadingMode's stage (0 .. 8)
 0x233cc2c  4          i32 loadStep                              # set 0 with each loading stage, never read
 0x233cc60  0x4000     char loadLines[64][0x100]                  # the loading screen's lines (loadLineCount of them)
@@ -1499,16 +1499,16 @@ struct Scene 0x2343b0b                                          # the scene: the
 0x2340d39  4          float keyGuard                               # (by use) > 0: the quit / talk keys are ignored (0.1 s)
 0x234239d  4          float endTime                                # (by use) seconds left of a round's end (10 from the result)
 0x23423a5  4          float quitDelay                              # (by use) seconds before leaving after the round is over (3)
-8          4          i32 network                                # (by use) 1: a network game (3: (unclear) another mode, no team marks) (JOIN, RECORD and TEAM in the menu; the ranking shows each player's own flag, from flagGlTexture)
+8          4          i32 sessionMode                           # the session (scene_startSession): 0 solo, 1 a network game, 2 the ARM CENTER's preview, 3 replays played (AutoPlay; no team marks, the watched player's tag)
 0x74       4          u8 view[4]                                 # the camera's view volume object starts here (passed by address)
 0x44       4          float frameTime                            # (by use) the last frame's time, seconds (the Esc menu fades in by it)
 0x22ee228  0x14       u32 cameraSaved[5]                         # (by use) the camera a retry restarts from: position into cameraPos, pitch / heading into cameraAngle
-0x233ca04  0xc        u32 cameraPos[3]                           # (by use) the camera's position (app_requireCd: the origin)
+0x233ca04  0xc        u32 cameraPos[3]                           # (by use) the camera's position (scene_startSession: the origin)
 0x233ca10  0xc        float cameraDir[3]                         # its direction (-Z)
 0x233ca1c  0xc        float cameraUp[3]                          # its up (Y)
 0x233ca28  8          float cameraAngle[2]                       # its pitch (within +-890) and heading (wrapped at 3600; the free camera)
-0x22f0514  4          i32 kingPlayer                             # (by use) the player marked first (markSolo)
-0x22f0518  8          i32 teamLeaders[2]                         # (by use) each team's leader (markTeam; -1 none)
+0x22f0514  4          i32 kingPlayer                             # (by use) the player marked first (isKing)
+0x22f0518  8          i32 teamLeaders[2]                         # (by use) each team's leader (isPlatoonLeader; -1 none)
 0x22f0410  4          i32 botsHoldFire                          # = Stage.botsHoldFire (the same word): 1 at the round's end (round_over); 0 again on a retry
 0x2340d00  4          i32 teamChanged                            # (by use) 1 once the team page has been answered
 0x2342415  4          i32 teamAsked                              # (by use) 1: the local player asked to play (START), the team to be given
@@ -1518,7 +1518,7 @@ struct Scene 0x2343b0b                                          # the scene: the
 0x16c517c  0x900b0    ActorInfo actorInfo[50]                    # (the stage's item types)
 0x175522c  4          i32 actorInfoCount
 0x1755230  0x47fd20   PlayerRecord playerRecords[16]
-0x1eca030  0x100      i32 snapshotTex[64]                        # texture id of each actor type's snapshot (< 0: not loaded; count unclear)
+0x1eca030  0x100      i32 snapshotTex[64]                       # texture id of each actor type's snapshot (< 0: not loaded; 50 of them: Stage.snapshotTex, the same words)
 0xbc06a8   4          i32 hudBarTexture                          # texture id of the counters' plate and weapon slots
 0xbc06ac   4          i32 markerTexture                          # texture id of the solo / team marks over players
 0xbc06b0   4          i32 emblemTexture                          # texture id (manager * 512 + slot): emblems, 10 a row from texel 224
@@ -1529,29 +1529,29 @@ struct Scene 0x2343b0b                                          # the scene: the
 0xbe1710   0x10       u8 fogVolume[0x10]
 0xbe1720   0xc        u32 fogVolumeArgs[3]                       # (floats, passed on unchanged)
 0x91e4     0x1e8480   u8 viewMemory[2000000]                     # the view volume's buffers (game_loadAllData: factor_initBy's memory), right after it
-0x1f1664   4          i32 objectsMode                            # (unclear) render_drawObjects' mode
+0x1f1664   4          i32 renderMode                            # render_drawObjects' mode: 0 normal, 1 wireframe, 2 untextured (always 0 in the game)
 0xbc06a0   4          i32 hudTexture                             # texture id of the HUD marks (lock-on boxes)
 0x1ecca70  0x88880    Player players[16]
 0x2222148  0x40       float lockTimers[16]                       # per player: the lock-on building up (> 0)
-0x2221fa0  4          i32 cockpitPlayer                          # (unclear) no snapshot panel while it is the viewed player
+0x2221fa0  4          i32 selectedActor                         # = Stage.selectedActor (the same word): no snapshot panel for it; the ARM CENTER's mech is drawn in full detail
 0x2221fb8  0x10       i32 teamScores[4]                          # by team slot (this_get_0x2342381_463780 gives a team's slot)
 0x22e7068  0x40       float modelview[16]                        # the view matrix the overlay parts are drawn with (ViewVolume_captureMatrices)
 0x22e70fc  0x40       float projection[16]                       # and its projection (hud_pass)
 0x22e717c  4          i32 showExp                               # = Stage.showExp (the same word): 1 in a Ladder game (first_round)
 0x22f0408  4          i32 elapsed                                # the match's time in seconds
-0x22f040c  4          float timeFraction                         # (unclear) a 0..1 time value: render_drawObjects' float; the clock blinks red by it
+0x22f040c  4          float clockFraction                       # = Stage.clockFraction (the same word): the part of a second; the clock's colon blinks by it, render_drawObjects scrolls textures by it
 0x22f06a8  4          u32 flagGlTexture                          # GL texture of the flags, used while network
 0x22f86ac  4          i32 flagTexture                            # texture id of the flags (4 a row)
 0x22e7180  4          i32 gameMode                               # index into g_gameModeNames
 0x22e7184  4          i32 teamGame                               # 1: teams
-0x22e719c  4          i32 kingOfTheHill                         # = Stage.kingOfTheHill (the same word, game type 12): the first player is the king (markSolo); no team mate arrows or leader marks
-0x22e71a0  4          i32 platoon                               # = Stage.platoon (the same word, game type 13): each team's leader (markTeam, the most time) replaces the leader mark / rank
+0x22e719c  4          i32 kingOfTheHill                         # = Stage.kingOfTheHill (the same word, game type 12): the first player is the king (isKing); no team mate arrows or leader marks
+0x22e71a0  4          i32 platoon                               # = Stage.platoon (the same word, game type 13): each team's leader (isPlatoonLeader, the most time) replaces the leader mark / rank
 0x22fbbd8  0x4200     char msgText[0x40][0x108]                  # message texts: four lines of 0x41 bytes per block
 0x233c318  0x280      MessageSlot msgRing[32]                    # messages waiting to be shown (ring of 32)
 0x233c598  4          u32 msgWrite                               # next slot msgRing gets written to
 0x233c59c  4          u32 msgRead                                # next slot replay_drawMessage shows
 0x233c9d0  4          i32 viewMode                               # 0 normal; 1 no overlay parts; 2 depth cleared again
-0x233c9e8  4          i32 frameFlag                              # (unclear) 1: state 2 presents its own frame
+0x233c9e8  4          i32 matchDrawing                          # 1: a match is loaded and drawn (set at the loading's end): the frame is presented and the 2D pass drawn
 0x233c9f8  4          i32 crosshairTexture
 0x233c9fc  4          i32 playing                                # 1: the local player plays; 0: watching watchedPlayer
 0x233c9f0  4          i32 ladderGame                            # 1: a Ladder (ranked) game (g_matchMode 2, the game room): emblems in the ranking, the level from the title's points, the scores committed every 300 s

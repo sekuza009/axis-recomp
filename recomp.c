@@ -2723,16 +2723,16 @@ THISCALL void map_loadWayPointInfoFrom(char *scene, DWORD f);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 THISCALL void map_loadTriggerInfoFrom(char *scene, DWORD f);
 /* 0x483dd0 (thiscall) factor_addFactorBy(rec): put a 0x2c-byte record into the factor pool's next free slot (at
-   most 1024) and find the next free one; 0x483e90 factors_addConstant(a) / 0x483ec0 factors_addPoint(a, pos) /
-   0x483f00 factors_addDirected(a, value, pos): build such a record and add it */
+   most 1024) and find the next free one; 0x483e90 factors_addAmbient(a) / 0x483ec0 factors_addDirectional(a, pos) /
+   0x483f00 factors_addPointLight(a, value, pos): build such a record and add it */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 THISCALL void factor_addFactorBy(char *pool, DWORD rec);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-THISCALL void factors_addConstant(char *pool, DWORD a);
+THISCALL void factors_addAmbient(char *pool, DWORD a);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-THISCALL void factors_addPoint(char *pool, DWORD a, DWORD p);
+THISCALL void factors_addDirectional(char *pool, DWORD a, DWORD p);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-THISCALL void factors_addDirected(char *pool, DWORD a, DWORD x, DWORD p);
+THISCALL void factors_addPointLight(char *pool, DWORD a, DWORD x, DWORD p);
 /* 0x472310 (thiscall) stage_refillFactors: reset the factor pool and add every active player and live effect */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 THISCALL void stage_refillFactors(char *scene);
@@ -3536,7 +3536,7 @@ LRESULT WINAPI glWindow_wndProc(DWORD wnd, DWORD msg, DWORD w, DWORD l);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void *glWindow_init(const char *title, int width, int height, int colourBits, int depthBits, int fullscreen, void *window, void *other);
 /* batch 113 (lifted/grp59.c) */
-/* 0x460cb0 (thiscall on the game) app_requireCd(a, mode): misnamed (the CD check is only its first step; the no-CD
+/* 0x460cb0 (thiscall on the game) scene_startSession(a, mode): misnamed (the CD check is only its first step; the no-CD
    build's cd_findDrive always finds one): start a session of mode (+8; a kept at +4): counters cleared, in mode 3
    the names of the map list entries flagged +0x40 (0x9dda88, 0x44-byte records, count 0x9eeab8) copied to
    +0x1f1cbc (0x40 each, count +0x1f35bc); actors and scene reset; mode 2 also clears the armour cache, the view box
@@ -3544,12 +3544,12 @@ void *glWindow_init(const char *title, int width, int height, int colourBits, in
    (2 -> 3, 3 -> 1, else 2) and its defaults, the match state (teams_setup), the notices (notices_clearAll) and the
    lobby slots (+0x234240d -1 in modes 1 and 3) */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-THISCALL void app_requireCd(char *g, DWORD a, DWORD mode);
+THISCALL void scene_startSession(char *g, DWORD a, DWORD mode);
 /* batch 114 (lifted/grp60.c) */
 /* 0x41fd40 console_init: the console's start: pending node list freed (0x67fb3c, tunnel_removeLastRing), the five profile
    files checked unless skipped (0x76d410; a missing one: "Run AxisPlay.exe" and exit), the aspect ratio, the clock
    check, the window ("Axis Console", glWindow_init, parent 0x4ded18); a direct start (0x9db990) starts mode 3
-   (app_requireCd on the game 0x9087b4); else the round's console file (console_loadFile, round 0x9dad94): none
+   (scene_startSession on the game 0x9087b4); else the round's console file (console_loadFile, round 0x9dad94): none
    sends the menu to 400 / 800 by start mode 0x5ae9c4; with it, mode 1 clamps the selections 0x4dc878.. and loads
    the pilot profiles, modes 1 / 3 start a session, and the round's name (0x907b30) goes to scene_setTextureFolder */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
@@ -3557,8 +3557,8 @@ void console_init(void);
 /* batch 115 (lifted/grp61.c) */
 /* 0x4700a0 (thiscall on the scene) item_initTextures(nine names): misnamed: the scene's whole start-up. The names
    kept (object_setNames); the space object at +0xa10 sized into its own memory +0xb04 (space_initBy); the ten textures
-   "<name 3>\00".."\09" (+0x9ccfd4, the last two with flags 1); the lights reset (Light_clearCounts, factors_addConstant with
-   the colour 0xa1f23c, stage_resetLights, a grey ambient, factors_addPoint); fog and sky cleared, the sky-sphere directions
+   "<name 3>\00".."\09" (+0x9ccfd4, the last two with flags 1); the lights reset (Light_clearCounts, factors_addAmbient with
+   the colour 0xa1f23c, stage_resetLights, a grey ambient, factors_addDirectional); fog and sky cleared, the sky-sphere directions
    (+0x9ee080, 6 faces of 7 x 7), the sky layer and side directions, the floor grid (+0x9ef350, 11 x 11), the ground
    bounds (+-100000) and layer count; the mesh headers; the shape caches and skeleton pools (the scene's at +0xe3c93c
    / +0x13016d0, five per player, the effect cache +0x19e188c and its skeletons) laid out in their own memory; the
@@ -9926,11 +9926,11 @@ static void factor_setup(void)
 	g_paintStacks = 1;   /* the builders fill only part of their 0x2c-byte stack record and add all of it */
 }
 ST(factor_addFactorBy, factor_setup();, (TC(void, 0x483dd0, char *, char *)(BUF + 0x9d8010, BUF + 0x700), 0), (factor_addFactorBy(BUF + 0x9d8010, (DWORD)(BUF + 0x700)), 0))
-ST(factors_addConstant, factor_setup();, (TC(void, 0x483e90, char *, char *)(BUF + 0x9d8010, BUF + 0x700), 0), (factors_addConstant(BUF + 0x9d8010, (DWORD)(BUF + 0x700)), 0))
-ST(factors_addPoint, factor_setup();, (TC(void, 0x483ec0, char *, char *, char *)(BUF + 0x9d8010, BUF + 0x700, BUF + 0x740), 0),
-   (factors_addPoint(BUF + 0x9d8010, (DWORD)(BUF + 0x700), (DWORD)(BUF + 0x740)), 0))
-ST(factors_addDirected, factor_setup();, (TC(void, 0x483f00, char *, char *, int, char *)(BUF + 0x9d8010, BUF + 0x700, g_a[0], BUF + 0x740), 0),
-   (factors_addDirected(BUF + 0x9d8010, (DWORD)(BUF + 0x700), (DWORD)g_a[0], (DWORD)(BUF + 0x740)), 0))
+ST(factors_addAmbient, factor_setup();, (TC(void, 0x483e90, char *, char *)(BUF + 0x9d8010, BUF + 0x700), 0), (factors_addAmbient(BUF + 0x9d8010, (DWORD)(BUF + 0x700)), 0))
+ST(factors_addDirectional, factor_setup();, (TC(void, 0x483ec0, char *, char *, char *)(BUF + 0x9d8010, BUF + 0x700, BUF + 0x740), 0),
+   (factors_addDirectional(BUF + 0x9d8010, (DWORD)(BUF + 0x700), (DWORD)(BUF + 0x740)), 0))
+ST(factors_addPointLight, factor_setup();, (TC(void, 0x483f00, char *, char *, int, char *)(BUF + 0x9d8010, BUF + 0x700, g_a[0], BUF + 0x740), 0),
+   (factors_addPointLight(BUF + 0x9d8010, (DWORD)(BUF + 0x700), (DWORD)g_a[0], (DWORD)(BUF + 0x740)), 0))
 /* the scene at the scratch area: up to 8 players (active flag, a float), up to 12 effects (flag, value) */
 static void factorscene_setup(void)
 {
@@ -12642,11 +12642,11 @@ static void session_setup(void)
 	static const DWORD cd[] = { 0x401000, 0, 0x470ad0, 0, 0 };
 	callee_stubs(cd, irnd(0, 4) ? 1 : 0);
 }
-ST(app_requireCd, session_setup();, (TC(void, 0x460cb0, char *, int, int)(BUF, g_a[0], g_a[1]), 0), (app_requireCd(BUF, (DWORD)g_a[0], (DWORD)g_a[1]), 0))
+ST(scene_startSession, session_setup();, (TC(void, 0x460cb0, char *, int, int)(BUF, g_a[0], g_a[1]), 0), (scene_startSession(BUF, (DWORD)g_a[0], (DWORD)g_a[1]), 0))
 /* batch 114 */
 /* the profile checks skipped or passing (a failing one exits), the window set up fresh or already (message), a
    direct start or not, the round's console file present or not (console_loadFile's content), start modes 0..4,
-   the selections at their limits now and then; the game object at BUF as app_requireCd's test sets it up */
+   the selections at their limits now and then; the game object at BUF as scene_startSession's test sets it up */
 static void consoleinit_setup(void)
 {
 	session_setup(); clock_setup(); rects3_setup();
@@ -17442,7 +17442,7 @@ static const STest g_stests[] = {
 	T(text_ascii32Pass, 0, 40, 0), T(text_hanCho, 0, 40, 0), T(text_hanJungJong, 0, 40, 0), T(text_drawHangul31, 0, 40, 0),
 	T(text_drawHangul31b, 0, 40, 0), T(tex_getItemFileBy, 1, 400, 0), T(space_getNextFreePlanePtr, 1, 40, 0), T(space_getNextFreeNodePtr, 1, 40, 0),
 	T(space_getNextFreeUnitPtr, 1, 40, 0), T(space_getNextFreeBlockPtrBy, 1, 400, 0), T(map_loadWayPointInfoFrom, 0, 400, 0), T(map_loadTriggerInfoFrom, 0, 400, 0),
-	T(factor_addFactorBy, 0, 400, 0), T(factors_addConstant, 0, 400, 0), T(factors_addPoint, 0, 400, 0), T(factors_addDirected, 0, 400, 0),
+	T(factor_addFactorBy, 0, 400, 0), T(factors_addAmbient, 0, 400, 0), T(factors_addDirectional, 0, 400, 0), T(factors_addPointLight, 0, 400, 0),
 	T(stage_refillFactors, 0, 40, 0),
 	/* batch 58 */
 	T(net_send, 0, 400, 0), T(gameList_open, 1, 40, 0), T(room_requestJoin, 0, 40, 0), T(account_sendChange, 1, 40, 0),
@@ -17571,7 +17571,7 @@ static const STest g_stests[] = {
 	/* batch 112 */
 	T(glWindow_wndProc, 1, 300, 0), T(glWindow_init, 1, 300, 0),
 	/* batch 113 */
-	T(app_requireCd, 0, 400, 0),
+	T(scene_startSession, 0, 400, 0),
 	/* batch 114 */
 	T(console_init, 0, 200, 0),
 	/* batch 115 */
@@ -18469,8 +18469,8 @@ static const struct { DWORD addr; void *fn; const char *name; } g_hooks3[] = {
 	{ 0x4815c0, (void *)space_getNextFreePlanePtr, "space_getNextFreePlanePtr" }, { 0x4816c0, (void *)space_getNextFreeNodePtr, "space_getNextFreeNodePtr" },
 	{ 0x4817f0, (void *)space_getNextFreeUnitPtr, "space_getNextFreeUnitPtr" }, { 0x4818e0, (void *)space_getNextFreeBlockPtrBy, "space_getNextFreeBlockPtrBy" },
 	{ 0x48b4a0, (void *)map_loadWayPointInfoFrom, "map_loadWayPointInfoFrom" }, { 0x48b530, (void *)map_loadTriggerInfoFrom, "map_loadTriggerInfoFrom" },
-	{ 0x483dd0, (void *)factor_addFactorBy, "factor_addFactorBy" }, { 0x483e90, (void *)factors_addConstant, "factors_addConstant" },
-	{ 0x483ec0, (void *)factors_addPoint, "factors_addPoint" }, { 0x483f00, (void *)factors_addDirected, "factors_addDirected" },
+	{ 0x483dd0, (void *)factor_addFactorBy, "factor_addFactorBy" }, { 0x483e90, (void *)factors_addAmbient, "factors_addAmbient" },
+	{ 0x483ec0, (void *)factors_addDirectional, "factors_addDirectional" }, { 0x483f00, (void *)factors_addPointLight, "factors_addPointLight" },
 	{ 0x472310, (void *)stage_refillFactors, "stage_refillFactors" },
 	/* batch 58 */
 	{ 0x4521c0, (void *)net_send, "net_send" }, { 0x434d00, (void *)gameList_open, "gameList_open" },
@@ -18622,7 +18622,7 @@ static const struct { DWORD addr; void *fn; const char *name; } g_hooks3[] = {
 	/* batch 112 */
 	{ 0x4680d0, (void *)glWindow_wndProc, "glWindow_wndProc" }, { 0x468250, (void *)glWindow_init, "glWindow_init" },
 	/* batch 113 */
-	{ 0x460cb0, (void *)app_requireCd, "app_requireCd" },
+	{ 0x460cb0, (void *)scene_startSession, "scene_startSession" },
 	/* batch 114 */
 	{ 0x41fd40, (void *)console_init, "console_init" },
 	/* batch 115 */

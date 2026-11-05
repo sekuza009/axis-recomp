@@ -4,11 +4,11 @@
 #include "../game.h"
 
 
-/* 0x4982f0: the 2D pass (only while scene->frameFlag) */
+/* 0x4982f0: the 2D pass (only while scene->matchDrawing) */
 void THISCALL (hud_pass)(Scene *scene)
 {
 	char text[256];
-	if (!scene->frameFlag)
+	if (!scene->matchDrawing)
 		return;
 	tex_clearSetCounters(g_textures);
 	ViewVolume_clearDrawCounts(&scene->view);
@@ -43,13 +43,13 @@ void THISCALL (hud_pass)(Scene *scene)
 			stage_setFog(STAGE(scene), &scene->fogVolume, scene->fogVolumeArgs[0], scene->fogVolumeArgs[1], scene->fogVolumeArgs[2]);
 			glEnable(GL_FOG);
 		}
-		render_drawObjects(&scene->view, scene->objectsMode, scene->timeFraction);
+		render_drawObjects(&scene->view, scene->renderMode, scene->clockFraction);
 		glDisable(GL_FOG);
 	}
 	glClear(GL_DEPTH_BUFFER_BIT);
 	ViewVolume_reset(&scene->view);
 	stage_drawActors(STAGE(scene), &scene->view, 1);
-	render_drawObjects(&scene->view, scene->objectsMode, scene->timeFraction);
+	render_drawObjects(&scene->view, scene->renderMode, scene->clockFraction);
 	if (scene->viewMode != 0) {
 		if (scene->viewMode == 2) {
 			glClearDepth(1.0);

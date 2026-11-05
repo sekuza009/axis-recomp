@@ -308,7 +308,7 @@ void THISCALL (camera_setupView)(u8 *s, const float *pos, const float *dir, cons
 		long double w3 = fadd_m(fmul_m(x, &pr[3]) + fmul_m(z, &pr[11]) + fmul_m(y, &pr[7]), &pr[15]);
 		to_screen(s, fld_m(&c0f) / w3, fld_m(&c1f) / w3, AC->tagBottomRight);
 		AC->tagBottomRight[2] = f32(fld_m(&e[2]));
-		AC->detail = tag_narrow(ac, OBJ(k_30f));
+		AC->lowDetail = tag_narrow(ac, OBJ(k_30f));
 		u8 *me = (u8 *)&ST->actors[ST->playerActor];
 		Player *act = (Player *)me;
 		if ((((u32)AC->timerFlags) & 0x200) && AC->hackingLevel >= act->hackingLevel) {
@@ -699,8 +699,8 @@ void THISCALL (projectile_draw)(u8 *s, int i, void *vv)
 		/* a trail's triangle (texture 8), its three colours fading over its last second */
 		int tex = TEX(8);
 		if (PR->drawAge > 1.0f)
-			ALPHA(PR->cornerColours[0]) = ALPHA(PR->cornerColours[1]) = ALPHA(PR->cornerColours[2]) = clamp255(ftol(fmul_m(fsub_m(fld_m(&k_2f), &PR->drawAge), &k_256f)));
-		ViewVolume_transformObject(vv, tex, (const u32 *)PR->trailUv, PR->cornerColours, &PR->trailPoints[0][0],
+			ALPHA(PR->trailColours[0]) = ALPHA(PR->trailColours[1]) = ALPHA(PR->trailColours[2]) = clamp255(ftol(fmul_m(fsub_m(fld_m(&k_2f), &PR->drawAge), &k_256f)));
+		ViewVolume_transformObject(vv, tex, (const u32 *)PR->trailUv, PR->trailColours, &PR->trailPoints[0][0],
 		                           (*(const float * *)&PR->matrixFrom), 1, 1);
 		return;
 	}

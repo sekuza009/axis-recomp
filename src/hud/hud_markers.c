@@ -51,12 +51,12 @@ static void marker_big(Scene *scene, Player *player, int texture, float alpha, f
 }
 
 /* 0x4913a0: for every other player in play and on screen:
-   - the solo mark (markSolo) and the team mark in the player's team's cell (markTeam), from the marker texture;
+   - the king mark (isKing) and the platoon leader mark in the player's team's cell (isPlatoonLeader), from the marker texture;
    - the rest only while the name label is up (labelFade > 0), or always for a spectator (playing == 0) or in
      network mode 3, its alpha labelFade / 3 while playing (1 otherwise):
      an arrow over team mates (unless kingOfTheHill), the leader mark (rank 1, with the player's kills > 0),
      the name label in the team's colour with emblem and flag (not for the player a spectator follows), and the
-     player's status icon (statusIcon 1 or 2, always opaque) */
+     player's chat icon (chatIcon 1 or 2, always opaque) */
 void THISCALL (hud_drawPlayerMarkers)(Scene *scene)
 {
 	char name[256];
@@ -64,21 +64,21 @@ void THISCALL (hud_drawPlayerMarkers)(Scene *scene)
 		Player *player = &scene->players[i];
 		if (i == scene->localPlayer || player->state != 1 || player->onScreen != 1)
 			continue;
-		if (player->markSolo == 1)
+		if (player->isKing == 1)
 			marker_big(scene, player, scene->markerTexture, 1.0f, 0.0f, 0.75f, 0.25f, 1.0f);
-		if (player->markTeam == 1)
+		if (player->isPlatoonLeader == 1)
 			marker_big(scene, player, scene->markerTexture, 1.0f, texel256((player->team + 1) * 64), 0.75f,
 			           texel256((player->team + 2) * 64), 1.0f);
 
 		float alpha;
-		if (!(player->labelFade > 0.0f) && scene->playing != 0 && scene->network != 3)
+		if (!(player->labelFade > 0.0f) && scene->playing != 0 && scene->sessionMode != 3)
 			goto status;
-		if (scene->playing == 0 || scene->network == 3)
+		if (scene->playing == 0 || scene->sessionMode == 3)
 			alpha = 1.0f;
 		else
 			alpha = player->labelFade * (1.0f / 3);
 
-		if (player->team == scene->players[scene->localPlayer].team && scene->network != 3 && scene->kingOfTheHill == 0) {
+		if (player->team == scene->players[scene->localPlayer].team && scene->sessionMode != 3 && scene->kingOfTheHill == 0) {
 			/* the team mate arrow: 32 units, standing 16 units above the point */
 			int w = hud_scaleX(32.0f), h = hud_scaleY(32.0f), lift = hud_scaleY(16.0f);
 			int y = ftol(player->tagTopLeft[1]) - lift - h;
@@ -89,7 +89,7 @@ void THISCALL (hud_drawPlayerMarkers)(Scene *scene)
 			marker_big(scene, player, scene->hudTexture, alpha, 0.0f, 0.75f, 0.25f, 1.0f);
 
 		if ((scene->playing == 0 && scene->cameraSlot >= 0 && i == scene->watchedPlayer)
-		    || (scene->network == 3 && i == scene->watchedPlayer))
+		    || (scene->sessionMode == 3 && i == scene->watchedPlayer))
 			goto status;
 		if (scene->teamGame == 0)
 			text_setColor(1.0f, 1.0f, 1.0f, alpha);
@@ -119,18 +119,18 @@ void THISCALL (hud_drawPlayerMarkers)(Scene *scene)
 				x -= 0x18;
 				hud_drawNameIcon(scene, player->emblem, x, marker_hudY(player->tagTopLeft[1]) - 0x10);
 			}
-			int flagOwner = scene->network == 0 ? player->player : i;
+			int flagOwner = scene->sessionMode == 0 ? player->player : i;
 			if (scene->playerRecords[flagOwner].flagShown == 1)
 				hud_drawLeaderIcon(scene, flagOwner, x - 0x18, marker_hudY(player->tagTopLeft[1]) - 0x10);
 		}
 
 	status:
-		if (player->statusIcon != 0) {
+		if (player->chatIcon != 0) {
 			/* 64 units, standing 16 units above the point; texture rows 128 (status 1) or 160 */
 			int w = hud_scaleX(64.0f), h = hud_scaleY(64.0f), lift = hud_scaleY(16.0f);
 			int y = ftol(player->tagTopLeft[1]) - lift - h;
 			int x = ftol(player->screenPos[0]) - w / 2;
-			int row = player->statusIcon == 1 ? 0x80 : 0xa0;
+			int row = player->chatIcon == 1 ? 0x80 : 0xa0;
 			marker_quad(scene->hudTexture, 1.0f, x, y, w, h, 0.0f, texel256(row), 0.125f, texel256(row + 0x20));
 		}
 	}

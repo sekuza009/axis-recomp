@@ -21,7 +21,7 @@ static void set_round(Round *r, int map, int mode, int score, int time)
    without rotation (0x9da3e0), the chosen map only, from the first; a machine that joined, none */
 static void make_rotation(Scene *s)
 {
-	if (s->network == 0) {
+	if (s->sessionMode == 0) {
 		s->rotationCount = 0;
 		int k;
 		for (k = 0; k < 15; k++) {
@@ -34,7 +34,7 @@ static void make_rotation(Scene *s)
 		s->rotationOff = 0;
 		return;
 	}
-	if (s->network != 1 || s->client) {
+	if (s->sessionMode != 1 || s->client) {
 		s->rotationCount = 0;
 		s->rotationAt = 0;
 		s->rotationOff = 1;
@@ -104,7 +104,7 @@ static void first_round(Scene *s)
 			BITS(s->mechColours[t][i][0]) = GAME_VAR(u32, OBJ(g_savedColourChoices) + i * 0x18 + t * 4);
 			BITS(s->mechColours[t][i][1]) = GAME_VAR(u32, OBJ(g_savedColourChoices) + 0xc + i * 0x18 + t * 4);
 		}
-	if (s->network == 1) {
+	if (s->sessionMode == 1) {
 		if (!s->client) {
 			netq_reset(1);
 			s->localPlayer = 0;
@@ -200,11 +200,11 @@ static void later_round(Scene *s)
 	BITS(s->msgFade) = 0;
 }
 
-/* 0x49df10 (thiscall on the scene): the round started, the first (frameFlag clear) or a later one. Its caller
+/* 0x49df10 (thiscall on the scene): the round started, the first (matchDrawing clear) or a later one. Its caller
    ignores the eax it leaves */
 void THISCALL (game_processGameModeInit)(Scene *s)
 {
-	if (s->frameFlag)
+	if (s->matchDrawing)
 		later_round(s);
 	else
 		first_round(s);
@@ -270,7 +270,7 @@ void THISCALL (scene_reset)(u8 *s)
 	stage_clearScriptEvents(s);
 	script_reset(st);
 	scene_initLevelGrid(s);
-	memset(st->idTable, 0xff, 0x32 * 4);
+	memset(st->snapshotTex, 0xff, 0x32 * 4);
 }
 
 
@@ -303,13 +303,13 @@ void THISCALL (item_initTextures)(u8 *s, u32 a1, u32 a2, const char *sky, u32 a4
 		st->effectTextures[i] = tex_getIdByName((*(void **)&g_textures), name, i > 7, 0, 0, 0, 0, 0, 0);
 	}
 	Light_clearCounts((u8 *)&st->mapLights);
-	factors_addConstant((u8 *)&st->mapLights, (const void *)OBJ(g_packedWhite));
+	factors_addAmbient((u8 *)&st->mapLights, (const void *)OBJ(g_packedWhite));
 	stage_resetLights(s);
 	Light_clearCounts((u8 *)&st->actorLights);
 	u8 grey[4] = { 0x40, 0x40, 0x40, 0xff };
-	factors_addConstant((u8 *)&st->actorLights, grey);
+	factors_addAmbient((u8 *)&st->actorLights, grey);
 	u32 down[3] = { 0xbf800000, 0xbf800000, 0xbf800000 };
-	factors_addPoint((u8 *)&st->actorLights, (const void *)OBJ(g_packedWhite), down);
+	factors_addDirectional((u8 *)&st->actorLights, (const void *)OBJ(g_packedWhite), down);
 	long double root = 1;
 	root = x87_fsqrt(k_27);
 	memset((u8 *)s + offsetof(Stage, clearOn), 0, 14 * 4);   /* clearOn and the next 13 dwords */

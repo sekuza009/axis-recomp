@@ -531,7 +531,7 @@ u8 *THISCALL (game_loadAllData)(u8 *g)
 	VTABLE(s, STR(0x4aa23c, "08F"));
 	st->built = 0;
 	VTABLE(g, VT(Console, 0x4aa238));
-	GS->client = GS->network = -1;
+	GS->client = GS->sessionMode = -1;
 	TimeSync_clear((u8 *)&GS->timer);
 	for (int k = 0; k < 10; k++)
 		BITS(GS->frameTimes[k]) = 0x3d088889;   /* 1/30 */
@@ -583,24 +583,24 @@ static void zero_dwords(u8 *at, int n)
 		GAME_VAR(u32, at + k * 4) = 0;
 }
 
-/* 0x460cb0 (thiscall on the game object): a session started in mode (+4 a, +8 mode). With no CD found a fatal
+/* 0x460cb0 (thiscall on the game object): a session started in mode (+4 client a, +8 sessionMode: 0 solo, 1 network, 2 the ARM CENTER, 3 replays). With no CD found a fatal
    message. Its counters cleared; in mode 3 the names of the map list entries flagged +0x40 (0x9dda88, 0x44-byte
    records, 0x9eeab8 of them) copied to +0x1f1cbc (0x40 each, count +0x1f35bc); actors and scene reset; mode 2 also
    clears the armour cache, the view box (+0xbe2fcc: -100000 .. 100000, twice), and sets the game type flags for type
    0; the camera from 0xa0e7a8.. (direction negated), the HUD mode +0x233cc20 (mode 2 -> 3, 3 -> 1, else 2) and its
    defaults, the match state (teams_setup), the notices (notices_clearAll) and the lobby slots (+0x234240d -1 in modes 1
    and 3). Its callers ignore the eax it leaves */
-void THISCALL (app_requireCd)(u8 *g, u32 a, int mode)
+void THISCALL (scene_startSession)(u8 *g, u32 a, int mode)
 {
 	if (!cd_findDrive())
 		sys_fatalErrorN((char *)OBJ(g_logConsole), g_insertCdMessage);
 	GS->client = a;
-	GS->network = mode;
-	GS->objectsMode = 0;
+	GS->sessionMode = mode;
+	GS->renderMode = 0;
 	zero_dwords((u8 *)g + offsetof(Scene, rotationCount), 3);   /* rotationCount .. rotationOff */
-	zero_dwords((u8 *)g + offsetof(Scene, frameFlag), 3);   /* frameFlag .. ladderGame */
+	zero_dwords((u8 *)g + offsetof(Scene, matchDrawing), 3);   /* matchDrawing .. ladderGame */
 	GS->replayCount = 0;
-	if (GS->network == 3)
+	if (GS->sessionMode == 3)
 		for (int k = 0; k < g_mapListFlaggedCount; k++) {
 			const char *e = g_fileList[k].name;
 			if (g_fileList[k].flag == 1)
@@ -611,7 +611,7 @@ void THISCALL (app_requireCd)(u8 *g, u32 a, int mode)
 	GS->replayIndex = GS->replayVersion = 0;
 	scene_resetActors(s);
 	scene_reset(s);
-	if (GS->network == 2) {
+	if (GS->sessionMode == 2) {
 		stage_setSilentActor(s, 0);   /* stage_setSilentActor */
 		GS->playerActor = 0;
 		for (int k = 0; k < 3; k++) {
@@ -629,7 +629,7 @@ void THISCALL (app_requireCd)(u8 *g, u32 a, int mode)
 		GS->cameraDir[k] = f32(-fld_m((const float *)ADDR(g_vecUnitZ) + k));
 	memcpy(GS->cameraUp, (const void *)OBJ(g_vecUnitY), 12);
 	(*(int *)&GS->cameraAngle[0]) = (*(int *)&GS->cameraAngle[1]) = 0;
-	GS->inputState = GS->network == 2 ? 3 : GS->network == 3 ? 1 : 2;
+	GS->inputState = GS->sessionMode == 2 ? 3 : GS->sessionMode == 3 ? 1 : 2;
 	GS->modeStarted = GS->wholeSeconds = (*(int *)&GS->secondFraction) = 0;
 	(*(int *)&GS->msgFade) = GS->unused233cc44 = 0;
 	BITS(GS->scoreCommitTimer) = 0x43960000;   /* 300, 3, 5, 15 */
@@ -650,7 +650,7 @@ void THISCALL (app_requireCd)(u8 *g, u32 a, int mode)
 	zero_dwords((u8 *)g + offsetof(Scene, holdZoom), 31);   /* holdZoom .. helpPressed */
 	zero_dwords((u8 *)g + offsetof(Scene, menuKeys), 4);   /* menuKeys */
 	notices_clearAll(g);
-	GS->localPlayer = GS->network == 1 || GS->network == 3 ? -1 : 0;
+	GS->localPlayer = GS->sessionMode == 1 || GS->sessionMode == 3 ? -1 : 0;
 	zero_dwords((u8 *)g + offsetof(Scene, localRecordSet), 3);   /* localRecordSet .. statsTaken */
 	GS->chosenTeam = -1;
 	GS->screenshotTaken = 0;
