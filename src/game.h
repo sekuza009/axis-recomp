@@ -1077,7 +1077,7 @@ typedef struct { float r, g, b, a; } Colour;
 #define ptx_layoutBlocks(src, dst, w, h, bpp) GAME_FN(ptx_layoutBlocks, 0x46ea30, void, const u8 *, u8 *, int, int, int)(src, dst, w, h, bpp)
 
 #define popup_layout() GAME_FN(popup_layout, 0x431c00, void, void)()
-#define loginDialog_layout() GAME_FN(loginDialog_layout, 0x431b70, void, void)()
+#define newIdForm_layout() GAME_FN(newIdForm_layout, 0x431b70, void, void)()
 #define tex_recolourMaterial(set, m, h1, c1, v1, h2, c2, v2) GAME_THISFN(tex_recolourMaterial, 0x456860, void, void *, int, u32, u32, u32, u32, u32, u32)(set, m, h1, c1, v1, h2, c2, v2)
 #define image_addColour(px, mode, part, colour) GAME_FN(image_addColour, 0x464a70, void, u8 *, int, const u32 *, const u8 *)(px, mode, part, colour)   /* a colour added to a part's RGBA pixels */
 #define spaceSlot_clear(slot) GAME_THISFN(spaceSlot_clear, 0x480440, void, int *)(slot)

@@ -441,9 +441,9 @@ u32 (menuState900_skirmishSetup)(void)
 		                                                     g_briefingRight, g_briefingBottom);   /* menu_drawFrame */
 	int screen = g_settingsPage;
 	if (screen == 10)
-		return skirmish_frameScreenA();   /* missionList_draw */
+		return skirmish_frameList();   /* missionList_draw */
 	if (screen == 20)
-		return skirmish_frameScreenB();   /* missionBriefing_draw */
+		return skirmish_frameBriefing();   /* missionBriefing_draw */
 	return screen;
 }
 

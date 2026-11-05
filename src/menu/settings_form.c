@@ -6,14 +6,14 @@
 #include <string.h>
 
 /* where a form keeps its parts: the window (left, top, right, bottom), the record, the four "being edited" flags
-   (name, password, the two limits: each hides its value), the mode names (0x80 apart), and the text of the fifth row:
-   fixed (row5) or the kind's name (kinds, 20 apart) */
+   (name, password, the two limits: each hides its value), the mode names (0x80 apart), and the text of the fifth row (the
+   settings' kind): fixed (kindFixed: the room's "DO NOT USE") or the kind's name (kindNames, 20 apart: the arena's) */
 typedef struct {
 	u32 window;
 	GameSettings *s;
 	u32 edited[4];
 	u32 modes;
-	u32 row5, kinds;
+	u32 kindFixed, kindNames;
 	int stars;   /* the password's star buffer: 20 bytes (the room) or 10 (the arena) */
 } Form;
 
@@ -66,9 +66,9 @@ static const char *stars(const Form *f, char *out)
 
 static const char *map_name(const Form *f) { return (const char *)(OBJ(g_mapAbouts) + f->s->map * 0x50); }
 static const char *mode_name(const Form *f) { return (const char *)(RELOC(f->modes) + f->s->mode * 0x80); }
-static const char *row5_text(const Form *f)
+static const char *kind_text(const Form *f)
 {
-	return f->kinds ? (const char *)(RELOC(f->kinds) + f->s->kind * 20) : (const char *)RELOC(f->row5);
+	return f->kindNames ? (const char *)(RELOC(f->kindNames) + f->s->kind * 20) : (const char *)RELOC(f->kindFixed);
 }
 
 /* the eight rows' values in their boxes (white text); a value being edited is left out */
@@ -92,7 +92,7 @@ static void draw_values(const Form *f, char *text)
 	text_draw8(X0 + 0xa4, Y0 + 0x98, text);
 	field_box(X0 + 0x9f, Y0 + 0xb7, X0 + 0xef, Y0 + 0xcd);
 	white();
-	text_draw8(X0 + 0xa4, Y0 + 0xba, row5_text(f));
+	text_draw8(X0 + 0xa4, Y0 + 0xba, kind_text(f));
 	field_box(X0 + 0x9f, Y0 + 0xd9, X0 + 0x18f, Y0 + 0xef);
 	white();
 	text_draw8(X0 + 0xa4, Y0 + 0xdc, mode_name(f));
@@ -114,7 +114,7 @@ static void draw_values(const Form *f, char *text)
 static void draw_hover(const Form *f, int hovered, char *text)
 {
 	const GameSettings *s = f->s;
-	int arena = f->kinds != 0;
+	int arena = f->kindNames != 0;
 	switch (hovered) {
 	case 0:
 		hover_text(X0 + 0xa4, Y0 + 0x32, s->name);
@@ -132,7 +132,7 @@ static void draw_hover(const Form *f, int hovered, char *text)
 		break;
 	case 4:
 		if (arena)
-			hover_text(X0 + 0xa4, Y0 + 0xba, row5_text(f));
+			hover_text(X0 + 0xa4, Y0 + 0xba, kind_text(f));
 		break;
 	case 5:
 		if (!arena || !s->kind)

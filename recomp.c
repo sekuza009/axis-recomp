@@ -761,17 +761,17 @@ static void rect_spec(DWORD rec, DWORD end, int step, const RArg *a)
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void setupOptions_layout(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-void loginDialog_layout(void);
+void newIdForm_layout(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void arenaNameDialog_layout(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void roomLogin_layout(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-void skirmish_layout(void);
+void skirmishSettings_layout(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void account_layout(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-void skirmishButtons_layout(void);
+void briefing_layout(void);
 
 /* settings screen tabs (g_setupTab 0x4ddac8) */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
@@ -4285,12 +4285,12 @@ void missionList_keys(void);
    screen's keys (0x9f62e0) or the settings keys */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void missionsel_keys(void);
-/* jump stubs: 0x44aa30 missionsel_frameScreen -> missionsel_drawScreen, 0x445bd0 skirmish_frameScreenB ->
+/* jump stubs: 0x44aa30 missionsel_frameScreen -> missionsel_drawScreen, 0x445bd0 skirmish_frameBriefing ->
    missionBriefing_draw, 0x4532e0 jmp_net_getLocalAddress -> net_getLocalAddress */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void missionsel_frameScreen(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-void skirmish_frameScreenB(void);
+void skirmish_frameBriefing(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 int jmp_net_getLocalAddress(void);
 /* batch 165 (lifted/grp111.c): profile screen dialogs and mouse handlers */
@@ -4770,9 +4770,9 @@ DWORD menuState900_skirmishSetup(void);
 void menuState210_frame(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 int arena_openSession(DWORD kind, const char *host);
-/* 0x445bc0 skirmish_frameScreenA: jump to missionList_draw (a 5-byte stub missing from functions.csv, added) */
+/* 0x445bc0 skirmish_frameList: jump to missionList_draw (a 5-byte stub missing from functions.csv, added) */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-void skirmish_frameScreenA(void);
+void skirmish_frameList(void);
 /* batch 182 (lifted/grp133.c): connecting from the room and the arena (room_joinSession, arena_joinListed), the lobby's
    room-name and reserved-name checks, arenaGames_mouse, lobbyJoin_keysChat, room_hostingStep, arena_connectionOutcome (the room /
    arena settings checked and the game hosted or joined), with their callees stubbed (tools/gentests.py) */
@@ -7297,12 +7297,12 @@ ST(space_transformPoint, xform_setup();,
 /* batch 8 */
 #define ORIG4(a, b, c, d) G32(a) = irnd(-400, 400); G32(b) = irnd(-400, 400); G32(c) = irnd(-400, 400); G32(d) = irnd(-400, 400);
 V0(setupOptions_layout, 0x420480, fill((void *)0x4ddde0, 0x90); ORIG4(0x4dddd0, 0x4dddd4, 0x4ddddc, 0x4dddd8))
-V0(loginDialog_layout, 0x431b70, fill((void *)0x9dce50, 0x60); ORIG4(0x9dd6e8, 0x9dd6ec, 0x9dd6f4, 0x9dd6f0))
+V0(newIdForm_layout, 0x431b70, fill((void *)0x9dce50, 0x60); ORIG4(0x9dd6e8, 0x9dd6ec, 0x9dd6f4, 0x9dd6f0))
 V0(arenaNameDialog_layout, 0x403f80, fill((void *)0x4db588, 0x60); ORIG4(0x4dbb68, 0x4dbb6c, 0x4dbb70, 0x4dbb64))
 V0(roomLogin_layout, 0x431ae0, fill((void *)0x9dd7e0, 0x50); ORIG4(0x9dd358, 0x9dd35c, 0x9dd364, 0x9dd360))
-V0(skirmish_layout, 0x4437b0, fill((void *)0x9ef220, 0xa0); ORIG4(0x9f16a8, 0x9f16ac, 0x9f16b0, 0x9f16b4))
+V0(skirmishSettings_layout, 0x4437b0, fill((void *)0x9ef220, 0xa0); ORIG4(0x9f16a8, 0x9f16ac, 0x9f16b0, 0x9f16b4))
 V0(account_layout, 0x431c50, fill((void *)0x9dd400, 0x60); ORIG4(0x9dd368, 0x9dd36c, 0x9dd370, 0x9dd374))
-V0(skirmishButtons_layout, 0x443840, fill((void *)0x9f16c0, 0x40); ORIG4(0x9f16a8, 0x9f16ac, 0x9f16b0, 0x9f16b4))
+V0(briefing_layout, 0x443840, fill((void *)0x9f16c0, 0x40); ORIG4(0x9f16a8, 0x9f16ac, 0x9f16b0, 0x9f16b4))
 #define SETUP_VARS fill((void *)0x4dda60, 4); fill((void *)0x4ddac8, 4); fill((void *)0x4ddb98, 4); fill((void *)0x4ddce8, 8); \
 	fill((void *)0x4ddd90, 4); fill((void *)0x4dddc8, 4); fill((void *)0x4dde90, 0x18); fill((void *)0x4de038, 0xc); \
 	fill((void *)0x4b04f8, 4); fill((void *)0x4e0c90, 16); fill((void *)0x4def00, 0x110); fill((void *)0x4de0c0, 0x110);
@@ -14382,7 +14382,7 @@ ST(briefing_keys, missionkeys_setup();, CALL_PLAIN(0x447c30, 0, 0, 0, 0, 0), (br
 ST(missionList_keys, missionkeys_setup();, CALL_PLAIN(0x447b40, 0, 0, 0, 0, 0), (missionList_keys(), 0))
 ST(missionsel_keys, missionkeys_setup();, CALL_PLAIN(0x447c70, 0, 0, 0, 0, 0), (missionsel_keys(), 0))
 ST(missionsel_frameScreen, callee_stubs(g_stubMissionDraw, 0);, (CALL_PLAIN(0x44aa30, 0, 0, 0, 0, 0), 0), (missionsel_frameScreen(), 0))   /* its eax goes up to menu_frame, which ignores it (tools/eaxuse.py) */
-ST(skirmish_frameScreenB, callee_stubs(g_stubSkirmishDraw, 0);, (CALL_PLAIN(0x445bd0, 0, 0, 0, 0, 0), 0), (skirmish_frameScreenB(), 0))   /* its eax goes up to menu_frame, which ignores it (tools/eaxuse.py) */
+ST(skirmish_frameBriefing, callee_stubs(g_stubSkirmishDraw, 0);, (CALL_PLAIN(0x445bd0, 0, 0, 0, 0, 0), 0), (skirmish_frameBriefing(), 0))   /* its eax goes up to menu_frame, which ignores it (tools/eaxuse.py) */
 ST(jmp_net_getLocalAddress, callee_stubs(g_stubLocalAddr, 0);, CALL_PLAIN(0x4532e0, 0, 0, 0, 0, 0), (DWORD)jmp_net_getLocalAddress())
 /* batch 165 */
 /* the profile screen: its variables (PROFILE_VARS), saves to load and delete (selectload_setup), the keyboard and
@@ -15287,9 +15287,9 @@ static const DWORD g_gs_452ec0[] = { 0x4515a0, 0, 0x452fe0, 0, 0x4547d0, 1, 0x45
 static const DWORD g_gi_452ec0[] = { 0xa0b384, 0xa0b388, 0xa0b390, 0xa0b418, 0xa0b41c, 0xa0b420, 0xa0b424, 0xa0b428, 0 };
 static const DWORD g_gb_452ec0[] = { 0xa0d320, 0 };
 ST(arena_openSession, gen_setup(g_gs_452ec0, g_gi_452ec0, g_gb_452ec0); /* the stored address 0xa0d320 is copied into a 16-byte buffer (an IP address fits) */ fill_str((char *)0xa0d320, 15, '0', '9');, CALL_PLAIN(0x452ec0, 0, g_a[0], g_a[1], g_a[2], g_a[3]), (DWORD)(arena_openSession((DWORD)(g_a[0]), (const char *)(DWORD)(g_a[1]))))
-/* skirmish_frameScreenA: a jump stub (to missionList_draw), its target stubbed */
+/* skirmish_frameList: a jump stub (to missionList_draw), its target stubbed */
 static const DWORD g_stubSkirmishA[] = { 0x444f40, 0, 0 };
-ST(skirmish_frameScreenA, callee_stubs(g_stubSkirmishA, 0);, (CALL_PLAIN(0x445bc0, 0, 0, 0, 0, 0), 0), (skirmish_frameScreenA(), 0))   /* its eax goes up to menu_frame, which ignores it (tools/eaxuse.py) */
+ST(skirmish_frameList, callee_stubs(g_stubSkirmishA, 0);, (CALL_PLAIN(0x445bc0, 0, 0, 0, 0, 0), 0), (skirmish_frameList(), 0))   /* its eax goes up to menu_frame, which ignores it (tools/eaxuse.py) */
 /* batch 182: generated tests (tools/gentests.py, gen_setup from batch 172) */
 static const DWORD g_gs_434dd0[] = { 0x41ee40, 1, 0x452ec0, 1, 0x452fe0, 0, 0x453260, 0, 0 };
 static const DWORD g_gi_434dd0[] = { 0x4db708, 0x4db710, 0x4db8b4, 0x4dbb10, 0x4dbb78, 0x4ded18, 0x9dd56c, 0xa0bad0, 0 };
@@ -17228,8 +17228,8 @@ static const STest g_stests[] = {
 	T(object_deactivate, 0, 4, 600), T(playerRecord_resetColourGrid, 0, 4, 100), T(script_pushMessage, 0, 4, 1000), T(shape_markMaterialsChanged, 0, 4, 300),
 	T(vec3_scaleCopy, 0, 4, 2000), T(vec_rotate, 0, 4, 2000), T(space_transformPoint, 0, 4, 2000),
 	/* batch 8 */
-	T(setupOptions_layout, 0, 8, 0), T(loginDialog_layout, 0, 8, 0), T(arenaNameDialog_layout, 0, 8, 0), T(roomLogin_layout, 0, 8, 0),
-	T(skirmish_layout, 0, 8, 0), T(account_layout, 0, 8, 0), T(skirmishButtons_layout, 0, 8, 0), T(setup_selectSoundTab, 0, 6, 0),
+	T(setupOptions_layout, 0, 8, 0), T(newIdForm_layout, 0, 8, 0), T(arenaNameDialog_layout, 0, 8, 0), T(roomLogin_layout, 0, 8, 0),
+	T(skirmishSettings_layout, 0, 8, 0), T(account_layout, 0, 8, 0), T(briefing_layout, 0, 8, 0), T(setup_selectSoundTab, 0, 6, 0),
 	T(setup_selectControlTab, 0, 6, 0), T(lobby_setSubState0, 0, 10, 0), T(room_openDialog58, 0, 6, 0), T(room_start, 0, 6, 0),
 	T(room_openDialog42, 0, 20, 0), T(net_resetState, 0, 4, 0), T(missions_clear, 0, 4, 0), T(arena_stepMap, 0, 200, 0),
 	T(room_stepMap, 0, 200, 0), T(net_freeSlotsOf, 2, 40, 0), T(ptx_readBits, 1, 60, 0), T(actor_pickRandomWeapon, 0, 40, 0),
@@ -17686,7 +17686,7 @@ static const STest g_stests[] = {
 	T(room_processKeys, 0, 400, 0), T(profile_frame, 0, 300, 0), T(room_draw, 0, 300, 0), T(lobbyCreate_draw, 0, 300, 0),
 	/* batch 164 */
 	T(briefing_keys, 0, 300, 0), T(missionList_keys, 0, 400, 0), T(missionsel_keys, 0, 300, 0), T(missionsel_frameScreen, 0, 50, 0),
-	T(skirmish_frameScreenB, 0, 50, 0), T(jmp_net_getLocalAddress, 0, 50, 0),
+	T(skirmish_frameBriefing, 0, 50, 0), T(jmp_net_getLocalAddress, 0, 50, 0),
 	/* batch 165 */
 	T(profile_typeNewName, 0, 200, 0), T(profile_askDelete, 0, 200, 0), T(profile_askSecond, 0, 200, 0), T(profile_openDeleteQuestion, 0, 300, 0),
 	T(profile_secondDialogClicks, 0, 300, 0), T(profileList_clicks, 0, 400, 0),
@@ -17752,7 +17752,7 @@ static const STest g_stests[] = {
 	T(dplaySlot3_open, 0, 200, 0), T(settingsDialog_clicks, 0, 200, 0), T(scene_resetScores, 0, 200, 0), T(dplay_host, 0, 200, 0),
 	/* batch 181 */
 	T(menuState300_frame, 0, 200, 0), T(menuState600_setup, 0, 200, 0), T(menuState900_skirmishSetup, 0, 200, 0), T(menuState210_frame, 0, 200, 0),
-	T(arena_openSession, 0, 200, 0), T(skirmish_frameScreenA, 0, 50, 0),
+	T(arena_openSession, 0, 200, 0), T(skirmish_frameList, 0, 50, 0),
 	/* batch 182 */
 	T(room_joinSession, 0, 200, 0), T(arena_joinListed, 0, 200, 0), T(lobby_hostArenaLan, 0, 200, 0), T(lobby_hostArena, 0, 200, 0),
 	T(arenaGames_mouse, 0, 2000, 0), T(lobbyJoin_keysChat, 0, 1000, 0), T(room_hostingStep, 0, 200, 0), T(arena_connectionOutcome, 0, 200, 0),
@@ -18117,10 +18117,10 @@ static const struct { DWORD addr; void *fn; const char *name; } g_hooks3[] = {
 	{ 0x4803c0, (void *)vec3_scaleCopy, "vec3_scaleCopy" }, { 0x467700, (void *)vec_rotate, "vec_rotate" },
 	{ 0x482a40, (void *)space_transformPoint, "space_transformPoint" },
 	/* batch 8 */
-	{ 0x420480, (void *)setupOptions_layout, "setupOptions_layout" }, { 0x431b70, (void *)loginDialog_layout, "loginDialog_layout" },
+	{ 0x420480, (void *)setupOptions_layout, "setupOptions_layout" }, { 0x431b70, (void *)newIdForm_layout, "newIdForm_layout" },
 	{ 0x403f80, (void *)arenaNameDialog_layout, "arenaNameDialog_layout" }, { 0x431ae0, (void *)roomLogin_layout, "roomLogin_layout" },
-	{ 0x4437b0, (void *)skirmish_layout, "skirmish_layout" }, { 0x431c50, (void *)account_layout, "account_layout" },
-	{ 0x443840, (void *)skirmishButtons_layout, "skirmishButtons_layout" }, { 0x420ad0, (void *)setup_selectSoundTab, "setup_selectSoundTab" },
+	{ 0x4437b0, (void *)skirmishSettings_layout, "skirmishSettings_layout" }, { 0x431c50, (void *)account_layout, "account_layout" },
+	{ 0x443840, (void *)briefing_layout, "briefing_layout" }, { 0x420ad0, (void *)setup_selectSoundTab, "setup_selectSoundTab" },
 	{ 0x420ba0, (void *)setup_selectControlTab, "setup_selectControlTab" }, { 0x404ac0, (void *)lobby_setSubState0, "lobby_setSubState0" },
 	{ 0x433980, (void *)room_openDialog58, "room_openDialog58" }, { 0x433590, (void *)room_start, "room_start" },
 	{ 0x434640, (void *)room_openDialog42, "room_openDialog42" }, { 0x4509e0, (void *)net_resetState, "net_resetState" },
@@ -18771,7 +18771,7 @@ static const struct { DWORD addr; void *fn; const char *name; } g_hooks3[] = {
 	/* batch 164 */
 	{ 0x447c30, (void *)briefing_keys, "briefing_keys" }, { 0x447b40, (void *)missionList_keys, "missionList_keys" },
 	{ 0x447c70, (void *)missionsel_keys, "missionsel_keys" }, { 0x44aa30, (void *)missionsel_frameScreen, "missionsel_frameScreen" },
-	{ 0x445bd0, (void *)skirmish_frameScreenB, "skirmish_frameScreenB" }, { 0x4532e0, (void *)jmp_net_getLocalAddress, "jmp_net_getLocalAddress" },
+	{ 0x445bd0, (void *)skirmish_frameBriefing, "skirmish_frameBriefing" }, { 0x4532e0, (void *)jmp_net_getLocalAddress, "jmp_net_getLocalAddress" },
 	/* batch 165 */
 	{ 0x44b600, (void *)profile_typeNewName, "profile_typeNewName" }, { 0x44b670, (void *)profile_askDelete, "profile_askDelete" },
 	{ 0x44b6e0, (void *)profile_askSecond, "profile_askSecond" }, { 0x44c390, (void *)profile_openDeleteQuestion, "profile_openDeleteQuestion" },
@@ -18875,7 +18875,7 @@ static const struct { DWORD addr; void *fn; const char *name; } g_hooks3[] = {
 	/* batch 181 */
 	{ 0x443530, (void *)menuState300_frame, "menuState300_frame" }, { 0x427920, (void *)menuState600_setup, "menuState600_setup" },
 	{ 0x445be0, (void *)menuState900_skirmishSetup, "menuState900_skirmishSetup" }, { 0x44f860, (void *)menuState210_frame, "menuState210_frame" },
-	{ 0x452ec0, (void *)arena_openSession, "arena_openSession" }, { 0x445bc0, (void *)skirmish_frameScreenA, "skirmish_frameScreenA" },
+	{ 0x452ec0, (void *)arena_openSession, "arena_openSession" }, { 0x445bc0, (void *)skirmish_frameList, "skirmish_frameList" },
 	/* batch 182 */
 	{ 0x434dd0, (void *)room_joinSession, "room_joinSession" }, { 0x406200, (void *)arena_joinListed, "arena_joinListed" },
 	{ 0x4052c0, (void *)lobby_hostArenaLan, "lobby_hostArenaLan" }, { 0x4057a0, (void *)lobby_hostArena, "lobby_hostArena" },

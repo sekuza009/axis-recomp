@@ -90,7 +90,7 @@ void (setupOptions_layout)(void)
 	rect_spec(OBJ(g_setupOptionsRects), (OBJ(g_setupOptionsRects) + 0x70), 0x28, a); rect_spec((OBJ(g_setupOptionsRects) + 0x70), OBJ(g_setupOptionsRects) + 9 * 16, 0x8c, b);
 }
 
-void (loginDialog_layout)(void)
+void (newIdForm_layout)(void)
 {
 	static const RArg a[4] = { RA(ADDR(g_newIdFormLeft), 0x30, 0), RA(ADDR(g_newIdFormTop), 0x30, 1), RA(ADDR(g_newIdFormLeft), 0x210, 0), RA(ADDR(g_newIdFormTop), 0x58, 1) };
 	static const RArg b[4] = { RA(ADDR(g_newIdFormLeft), 0x5a, 1), RA(ADDR(g_newIdFormBottom), -0x40, 0), RA(ADDR(g_newIdFormLeft), 0xfa, 1), RA(ADDR(g_newIdFormBottom), -0x20, 0) };
@@ -111,7 +111,7 @@ void (roomLogin_layout)(void)
 	rect_spec(OBJ(g_roomLoginRects), (OBJ(g_roomLoginRects) + 0x20), 0x30, a); rect_spec((OBJ(g_roomLoginRects) + 0x20), (OBJ(g_roomLoginRects) + 0x20) + 3 * 16, 0xa0, b);
 }
 
-void (skirmish_layout)(void)
+void (skirmishSettings_layout)(void)
 {
 	static const RArg a[4] = { RA(ADDR(g_briefingX), 0x10, 0), RA(ADDR(g_briefingY), 0x44, 1), RA(ADDR(g_briefingX), 0x25d, 0), RA(ADDR(g_briefingY), 0x5c, 1) };
 	static const RArg b[4] = { RA(ADDR(g_briefingRight), -0x12c, 1), RA(ADDR(g_briefingBottom), -0x40, 0), RA(ADDR(g_briefingRight), -0xb4, 1), RA(ADDR(g_briefingBottom), -0x20, 0) };
@@ -125,7 +125,7 @@ void (account_layout)(void)
 	rect_spec(OBJ(g_accountRects), (OBJ(g_accountRects) + 0x40), 0x1c, a); rect_spec((OBJ(g_accountRects) + 0x40), OBJ(g_accountRects) + 6 * 16, 0xa0, b);
 }
 
-void (skirmishButtons_layout)(void)
+void (briefing_layout)(void)
 {
 	static const RArg a[4] = { RA(ADDR(g_briefingRight), -0x12c, 1), RA(ADDR(g_briefingBottom), -0x30, 0), RA(ADDR(g_briefingRight), -0xb4, 1), RA(ADDR(g_briefingBottom), -0x10, 0) };
 	static const RArg b[4] = { RA(ADDR(g_briefingX), 0x40, 1), RA(ADDR(g_briefingBottom), -0x30, 0), RA(ADDR(g_briefingX), 0xb8, 1), RA(ADDR(g_briefingBottom), -0x10, 0) };
@@ -263,7 +263,7 @@ void (roomSettings_layout)(void)
 	options_panel(0, (OBJ(g_roomSettingsRects) + 0xa0), ADDR(g_roomFormLeft), ADDR(g_roomFormTop), ADDR(g_roomFormRight));
 }
 
-/* ---- batch 18: arena options layout, entering the setup screen and the game room --------------- */
+/* ---- the arena options, the profile list and the map list ---- */
 void (arenaOptions_layout)(void)
 {
 	static const RArg a[4] = { RA(ADDR(g_newArenaFormLeft), 0x3c, 1), RA(ADDR(g_newArenaFormBottom), -0x5a, 0), RA(ADDR(g_newArenaFormLeft), 0x104, 1), RA(ADDR(g_newArenaFormBottom), -0x3a, 0) };

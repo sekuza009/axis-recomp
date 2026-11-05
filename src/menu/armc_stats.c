@@ -222,7 +222,7 @@ static void speed_change(char *out, X v, float f, int korean, int last)
 #define ROW(r) row(p, r)
 
 /* slot 0, the head: its six lines, with the pilot's skill 3 */
-static void section0(Panel *p)
+static void section_head(Panel *p)
 {
 	label(p, ROW(0), MSG(601, "DETECTION RANGE"));
 	sprintf(p->t.line, FMT(STR(0x4b0354, "%.0f")), (double)g_headDetectionRange);
@@ -245,7 +245,7 @@ static void section0(Panel *p)
 }
 
 /* slot 1, the chest: a figure with skill 4's bonus (Korean: yellow even when none), two counts rounded with skill 2 */
-static void section1(Panel *p)
+static void section_chest(Panel *p)
 {
 	label(p, ROW(0), MSG(611, "WEIGHT LIMIT"));
 	sprintf(p->t.line, FMT(STR(0x4b0334, "%.1f")), (double)g_chestWeightLimit);
@@ -259,7 +259,7 @@ static void section1(Panel *p)
 }
 
 /* slot 2, the arms: a level, four levels each raised by its own figure (count x 0x4dbc70 + base, from 1 shown), a figure */
-static void section2(Panel *p)
+static void section_arms(Panel *p)
 {
 	static const u32 levels[4][3] = { { MSG(622, "CAPACITY FOR 30MM"), (OBJ(g_armsStats) + 0x4), ADDR(g_itemBonus30mm) }, { MSG(623, "CAPACITY FOR 60MM"), (OBJ(g_armsStats) + 0x8), ADDR(g_itemBonus60mm) },
 	                                  { MSG(624, "CAPACITY FOR E-PAK"), (OBJ(g_armsStats) + 0xc), ADDR(g_itemBonusEpak) }, { MSG(625, "CAPACITY FOR MISSLE"), (OBJ(g_armsStats) + 0x10), ADDR(g_itemBonusMissile) } };
@@ -287,7 +287,7 @@ static void section2(Panel *p)
 }
 
 /* slot 3, the legs: two figures with skill 0 less the wear, four signed figures, a figure */
-static void section3(Panel *p)
+static void section_legs(Panel *p)
 {
 	for (int k = 0; k < 2; k++) {
 		u32 f = OBJ(g_legsStats) + k * 4;
@@ -310,7 +310,7 @@ static void section3(Panel *p)
 
 /* slot 4, the booster: the type's name, two figures, a third, the speed with skill 1 less the wear, the three speeds
    and their changes, the weight */
-static void section4(Panel *p)
+static void section_booster(Panel *p)
 {
 	label(p, ROW(0), MSG(641, "THRUST TYPE"));
 	append(p->t.line, (const char *)(MSG(651, "PLASMA THRUST ENGINE") + g_boosterThrustType * 0x80));
@@ -396,7 +396,7 @@ static void section4(Panel *p)
 }
 
 /* slot 5, the whole mech: ten plain lines */
-static void section5(Panel *p)
+static void section_mech(Panel *p)
 {
 	label(p, ROW(0), MSG(671, "DETECTION RANGE"));
 	sprintf(p->t.line, FMT(STR(0x4b0274, "%.1f(m)")), (double)g_mechDetectionRange);
@@ -503,7 +503,7 @@ void (armc_drawStatsPanel)(void)
 	colour(bright);
 	text_drawBox16(PANEL_X0 + 0x114, PANEL_Y1 - 0x18, PANEL_X0 + 0x174, (const char *)MSG(277, "SELECT"));
 
-	static void (*const sections[6])(Panel *) = { section0, section1, section2, section3, section4, section5 };
+	static void (*const sections[6])(Panel *) = { section_head, section_chest, section_arms, section_legs, section_booster, section_mech };
 	if ((u32)slot < 6)
 		sections[slot](p);
 }

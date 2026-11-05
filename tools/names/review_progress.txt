@@ -54,34 +54,34 @@
 [x] src/menu/armc_parts.c 266
 [x] src/menu/armc_screens.c 389
 [x] src/menu/armc_state.c 86
-[ ] src/menu/armc_stats.c 509
+[x] src/menu/armc_stats.c 509
 [x] src/menu/edit_fields.c 286
 [ ] src/menu/game_lists.c 1011
 [x] src/menu/hit_tests.c 75
-[ ] src/menu/layouts.c 299
+[x] src/menu/layouts.c 299
 [ ] src/menu/lobby_states.c 1646
 [x] src/menu/menu_2d.c 341
-[ ] src/menu/menu_cameras.c 536
+[x] src/menu/menu_cameras.c 536
 [x] src/menu/menu_cursor.c 38
-[ ] src/menu/menu_init.c 155
-[ ] src/menu/menu_keys.c 55
-[ ] src/menu/menu_quads.c 119
+[x] src/menu/menu_init.c 155
+[x] src/menu/menu_keys.c 55
+[x] src/menu/menu_quads.c 119
 [ ] src/menu/menu_records.c 704
-[ ] src/menu/menu_screens.c 43
+[x] src/menu/menu_screens.c 43
 [ ] src/menu/menu_states.c 759
-[ ] src/menu/menu_title.c 93
+[x] src/menu/menu_title.c 93
 [ ] src/menu/menu_tunnel.c 482
-[ ] src/menu/mission_screens.c 177
+[x] src/menu/mission_screens.c 177
 [ ] src/menu/profile_dialogs.c 506
 [ ] src/menu/profile_keys.c 148
 [ ] src/menu/profile_misc.c 702
 [ ] src/menu/room_clicks.c 897
 [ ] src/menu/room_dialogs.c 1200
 [ ] src/menu/screen_enter.c 437
-[ ] src/menu/settings_form.c 304
+[x] src/menu/settings_form.c 304
 [ ] src/menu/setup_keys.c 598
 [ ] src/menu/setup_pages.c 890
-[ ] src/menu/skirmish.c 190
+[x] src/menu/skirmish.c 190
 [ ] src/msg/msg_players.c 132
 [ ] src/msg/msg_print.c 21
 [ ] src/msg/msg_system.c 40

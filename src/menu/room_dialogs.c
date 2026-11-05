@@ -37,7 +37,7 @@ void (room_openDialog58)(void)
 void (room_openDialog4d)(void)
 {
 	set_box(ADDR(g_newIdFormLeft), 0x1e, 0x32, 0x262, 0x1ae);
-	loginDialog_layout();
+	newIdForm_layout();
 	memset((void *)OBJ(g_accountName), 0, 0x54);
 	dialog_opened(0x4d);
 	g_openLoginName = 1;

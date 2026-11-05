@@ -271,7 +271,7 @@ static const Store briefing_camera[] = {
 	{ ADDR(g_menuLookAtY), 0 }, { ADDR(g_menuLookAtZ), 0xc4098000 } };
 
 /* 0x443950: the skirmish setup (screen 900): the briefing camera, the briefing window and its colours, the page's
-   panels (skirmish_layout, skirmishButtons_layout), the page set to 10 (skirmish settings) with a sound, the mission list
+   panels (skirmishSettings_layout, briefing_layout), the page set to 10 (skirmish settings) with a sound, the mission list
    loaded (mission_loadAxisMis) and its state cleared. Returns 0 (the original's eax) */
 int (menuState900_enterSkirmish)(void)
 {
@@ -283,8 +283,8 @@ int (menuState900_enterSkirmish)(void)
 	static const u32 cleared[] = { ADDR(g_missionTop), ADDR(g_skirmishRow), ADDR(g_missionPicked), ADDR(g_repeatDown), ADDR(g_repeatUp) };
 	STORE_ALL(briefing_camera);
 	STORE_ALL(setup);
-	skirmish_layout();   /* skirmish_layout */
-	skirmishButtons_layout();   /* skirmishButtons_layout */
+	skirmishSettings_layout();   /* skirmishSettings_layout */
+	briefing_layout();   /* briefing_layout */
 	g_skirmishDrawBackground = 1;
 	g_settingsPage = 10;
 	sound_playMenu(4);

@@ -186,5 +186,5 @@ void (missionBriefing_draw)(void)
 
 /* 0x445bc0, 0x445bd0: jumps to missionList_draw and missionBriefing_draw (the skirmish setup's states'
    frames; their callers ignore eax) */
-void (skirmish_frameScreenA)(void) { missionList_draw(); }
-void (skirmish_frameScreenB)(void) { missionBriefing_draw(); }
+void (skirmish_frameList)(void) { missionList_draw(); }
+void (skirmish_frameBriefing)(void) { missionBriefing_draw(); }
