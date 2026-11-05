@@ -231,24 +231,24 @@ int THISCALL (space_testSphere)(void *grid, u32 r, const float *pos, const float
 	memcpy(dir, vel, sizeof dir);
 	int n = ftol(fdiv_m(Vec3_normalize(dir), &step));
 	for (int c = 0; c < 3; c++)
-		d[c] = f32(fmul_m(fld_m(&dir[c]), &step));
+		d[c] = f32(FMUL(dir[c], step));
 	for (int i = 0; i < n; i++) {
 		long double li = i;
 		float x = f32(fld_m(&d[0]) * li), y = f32(fld_m(&d[1]) * li);
-		p[0] = f32(fadd_m(fld_m(&x), &pos[0]));
-		p[1] = f32(fadd_m(fld_m(&y), &pos[1]));
+		p[0] = f32(FADD(x, pos[0]));
+		p[1] = f32(FADD(y, pos[1]));
 		p[2] = f32(fadd_m(fmul_m(li, &d[2]), &pos[2]));
 		if (space_collideAt(grid, r, p, d, k, outPos, outVel, outDist, outPlane, axis, subs, nsubs) == 1)
 			return 1;
 	}
 	long double ln = n;
 	float x = f32(fmul_m(ln, &d[0])), y = f32(fld_m(&d[1]) * ln);
-	p[0] = f32(fadd_m(fld_m(&x), &pos[0]));
-	p[1] = f32(fadd_m(fld_m(&y), &pos[1]));
+	p[0] = f32(FADD(x, pos[0]));
+	p[1] = f32(FADD(y, pos[1]));
 	p[2] = f32(fadd_m(fmul_m(ln, &d[2]), &pos[2]));
 	float rest[3];
-	rest[0] = f32(fsub_m(fld_m(&vel[0]), &x));
-	rest[1] = f32(fsub_m(fld_m(&vel[1]), &y));
+	rest[0] = f32(FSUB(vel[0], x));
+	rest[1] = f32(FSUB(vel[1], y));
 	rest[2] = f32(fld_m(&vel[2]) - fmul_m(ln, &d[2]));
 	return space_collideAt(grid, r, p, rest, k, outPos, outVel, outDist, outPlane, axis, subs, nsubs) == 1;
 }
@@ -269,7 +269,7 @@ int THISCALL (space_collideAt)(u8 *grid, u32 r, const float *pos, const float *v
 		return 0;
 	float to[3];
 	for (int c = 0; c < 3; c++)
-		to[c] = f32(fadd_m(fld_m(&pos[c]), &vel[c]));
+		to[c] = f32(FADD(pos[c], vel[c]));
 	memcpy(outPos, to, sizeof to);
 	const float *low = sp->min, *high = sp->max;
 	const float *margin = (const float *)&sp->margin;
@@ -281,13 +281,13 @@ int THISCALL (space_collideAt)(u8 *grid, u32 r, const float *pos, const float *v
 		if (!(fadd_m(fld_m(&high[c]), margin) > outPos[c]))
 			return 0;
 	int nz = sp->nx, nx = sp->ny, ny = sp->nz;
-	int cz = ftol(fdiv_m(fsub_m(fld_m(&outPos[2]), &low[2]), size_z));
+	int cz = ftol(fdiv_m(FSUB(outPos[2], low[2]), size_z));
 	if (cz > nz - 1)
 		cz = nz - 1;
-	int cx = ftol(fdiv_m(fsub_m(fld_m(&outPos[0]), &low[0]), size_x));
+	int cx = ftol(fdiv_m(FSUB(outPos[0], low[0]), size_x));
 	if (cx > nx - 1)
 		cx = nx - 1;
-	int cy = ftol(fdiv_m(fsub_m(fld_m(&outPos[1]), &low[1]), size_y));
+	int cy = ftol(fdiv_m(FSUB(outPos[1], low[1]), size_y));
 	if (cy > ny - 1)
 		cy = ny - 1;
 	u16 root = sp->cells[(nz * cy + cz) * nx + cx];
@@ -297,8 +297,8 @@ int THISCALL (space_collideAt)(u8 *grid, u32 r, const float *pos, const float *v
 	float box[6];   /* low x, y, z, then high */
 	float by = f32(fmul_m((long double)cy, size_y)), bz = f32(fmul_m((long double)cz, size_z));
 	box[0] = f32(fadd_m(fmul_m((long double)cx, size_x), &low[0]));
-	box[1] = f32(fadd_m(fld_m(&by), &low[1]));
-	box[2] = f32(fadd_m(fld_m(&bz), &low[2]));
+	box[1] = f32(FADD(by, low[1]));
+	box[2] = f32(FADD(bz, low[2]));
 	box[3] = f32(fadd_m(fld_m(&box[0]), size_x));
 	box[4] = f32(fadd_m(fld_m(&box[1]), size_y));
 	box[5] = f32(fadd_m(fld_m(&box[2]), size_z));
@@ -306,9 +306,9 @@ int THISCALL (space_collideAt)(u8 *grid, u32 r, const float *pos, const float *v
 	while (node) {
 		if (!node->split)
 			return sp->lastHit = space_collideBlock((u8 *)node, r, pos, vel, k, outPos, outVel, outDist, outPlane, axis, subs, nsubs);
-		long double mx = fmul_m(fadd_m(fld_m(&box[3]), &box[0]), half);
-		float my = f32(fmul_m(fadd_m(fld_m(&box[4]), &box[1]), half));
-		float mz = f32(fmul_m(fadd_m(fld_m(&box[5]), &box[2]), half));
+		long double mx = fmul_m(FADD(box[3], box[0]), half);
+		float my = f32(fmul_m(FADD(box[4], box[1]), half));
+		float mz = f32(fmul_m(FADD(box[5], box[2]), half));
 		int xu = !(mx > outPos[0]), yu = outPos[1] >= my, zu = outPos[2] >= mz;
 		node = (SpaceBlock *)(node->children[xu + zu * 2 + yu * 4]);
 		box[xu ? 0 : 3] = f32(mx);
@@ -325,15 +325,15 @@ static u8 *make_octant(u8 *space, const float *low, const float *high, int i)
 	const float *half = (const float *)ADDR(k_0_5f);
 	int bx = i % 2, by = i / 4, bz = i / 2 % 2;
 	float box[6];
-	box[0] = f32(fadd_m(fmul_m(fsub_m(fld_m(&high[0]), &low[0]) * bx, half), &low[0]));
-	box[1] = f32(fadd_m(fmul_m(fsub_m(fld_m(&high[1]), &low[1]) * by, half), &low[1]));
-	box[2] = f32(fadd_m(fmul_m(fsub_m(fld_m(&high[2]), &low[2]) * bz, half), &low[2]));
-	long double dx = fsub_m(fld_m(&high[0]), &low[0]);
-	float dy = f32(fsub_m(fld_m(&high[1]), &low[1])), dz = f32(fsub_m(fld_m(&high[2]), &low[2]));
+	box[0] = f32(fadd_m(fmul_m(FSUB(high[0], low[0]) * bx, half), &low[0]));
+	box[1] = f32(fadd_m(fmul_m(FSUB(high[1], low[1]) * by, half), &low[1]));
+	box[2] = f32(fadd_m(fmul_m(FSUB(high[2], low[2]) * bz, half), &low[2]));
+	long double dx = FSUB(high[0], low[0]);
+	float dy = f32(FSUB(high[1], low[1])), dz = f32(FSUB(high[2], low[2]));
 	float hy = f32(fmul_m(fld_m(&dy), half)), hz = f32(fmul_m(fld_m(&dz), half));
 	box[3] = f32(fadd_m(fmul_m(dx, half), &box[0]));
-	box[4] = f32(fadd_m(fld_m(&box[1]), &hy));
-	box[5] = f32(fadd_m(fld_m(&box[2]), &hz));
+	box[4] = f32(FADD(box[1], hy));
+	box[5] = f32(FADD(box[2], hz));
 	return space_getNextFreeBlockPtrBy(space, box, box + 3);
 }
 
@@ -617,7 +617,7 @@ int THISCALL (space_traceNodes)(u8 *space, const float *p0, const float *p1, u32
 	int step_y = y0 > y1 ? -1 : 1, step_z = z0 > z1 ? -1 : 1, step_x = x0 > x1 ? -1 : 1;
 	float d[3];
 	for (int c = 0; c < 3; c++)
-		d[c] = f32(fsub_m(fld_m(&p1[c]), &p0[c]));
+		d[c] = f32(FSUB(p1[c], p0[c]));
 	for (int cy = y0;; cy += step_y) {
 		float a[3], e[3], da[3];   /* the y slab's part of the segment */
 		for (int end = 0; end < 2; end++) {
@@ -627,13 +627,13 @@ int THISCALL (space_traceNodes)(u8 *space, const float *p0, const float *p1, u32
 			else {
 				long double b = cell_edge((step_y > 0) == end ? cy + 1 : cy, size_y, &low[1]);
 				float t = f32(fdiv_m(fsub_m(b, &p0[1]), &d[1]));
-				q[0] = f32(fadd_m(fmul_m(fld_m(&d[0]), &t), &p0[0]));
+				q[0] = f32(fadd_m(FMUL(d[0], t), &p0[0]));
 				q[1] = f32(b);
-				q[2] = f32(fadd_m(fmul_m(fld_m(&d[2]), &t), &p0[2]));
+				q[2] = f32(fadd_m(FMUL(d[2], t), &p0[2]));
 			}
 		}
 		for (int c = 0; c < 3; c++)
-			da[c] = f32(fsub_m(fld_m(&e[c]), &a[c]));
+			da[c] = f32(FSUB(e[c], a[c]));
 		for (int cz = z0;; cz += step_z) {
 			float a2[3], e2[3], db[3];   /* the z slab's part of that */
 			for (int end = 0; end < 2; end++) {
@@ -649,7 +649,7 @@ int THISCALL (space_traceNodes)(u8 *space, const float *p0, const float *p1, u32
 				}
 			}
 			for (int c = 0; c < 3; c++)
-				db[c] = f32(fsub_m(fld_m(&e2[c]), &a2[c]));
+				db[c] = f32(FSUB(e2[c], a2[c]));
 			for (int cx = x0;; cx += step_x) {
 				float a3[3], e3[3], dist;   /* the cell's part */
 				for (int end = 0; end < 2; end++) {
@@ -660,8 +660,8 @@ int THISCALL (space_traceNodes)(u8 *space, const float *p0, const float *p1, u32
 						long double b = cell_edge((step_x > 0) == end ? cx + 1 : cx, size_x, &low[0]);
 						float t = f32(fdiv_m(fsub_m(b, &a2[0]), &db[0]));
 						q[0] = f32(b);
-						q[1] = f32(fadd_m(fmul_m(fld_m(&db[1]), &t), &a2[1]));
-						q[2] = f32(fadd_m(fmul_m(fld_m(&db[2]), &t), &a2[2]));
+						q[1] = f32(fadd_m(FMUL(db[1], t), &a2[1]));
+						q[2] = f32(fadd_m(FMUL(db[2], t), &a2[2]));
 					}
 				}
 				u16 root = sp->cells[(cy * sp->nx + cz) * sp->ny + cx];
@@ -697,7 +697,7 @@ static void cut_at(float *out, const float *from, const float *d, int n, const f
 	float tf = f32(t);
 	for (int a = 0; a < 3; a++)
 		if (a != axis)
-			out[a] = f32(fadd_m(round_t ? fmul_m(fld_m(&d[a]), &tf) : fld_m(&d[a]) * t, &from[a]));
+			out[a] = f32(fadd_m(round_t ? FMUL(d[a], tf) : fld_m(&d[a]) * t, &from[a]));
 	out[axis] = f32(plane);
 }
 
@@ -706,7 +706,7 @@ static void cut_at(float *out, const float *from, const float *d, int n, const f
 static void through_m(float *out, const float *m, const float *p, int yx)
 {
 	for (int r = 0; r < 3; r++) {
-		long double tx = fmul_m(fld_m(&m[r]), &p[0]), ty = fmul_m(fld_m(&m[4 + r]), &p[1]), tz = fmul_m(fld_m(&m[8 + r]), &p[2]);
+		long double tx = FMUL(m[r], p[0]), ty = FMUL(m[4 + r], p[1]), tz = FMUL(m[8 + r], p[2]);
 		out[r] = f32(fadd_m(yx && r ? (ty + tx) + tz : (ty + tz) + tx, &m[12 + r]));
 	}
 }
@@ -724,14 +724,14 @@ u32 THISCALL (space_traceBlock)(SpaceBlock *block, const float *from, const floa
 	if (block->split == 1) {
 		float half[3], d[3];
 		for (int a = 0; a < 3; a++) {
-			float ext = f32(fsub_m(fld_m(&low[3 + a]), &low[a]));
+			float ext = f32(FSUB(low[3 + a], low[a]));
 			half[a] = f32(fmul_m(fld_m(&ext), k));
 		}
 		int z0 = half_of(&from[2], &low[2], &half[2]), x0 = half_of(&from[0], &low[0], &half[0]), y0 = half_of(&from[1], &low[1], &half[1]);
 		int z1 = half_of(&to[2], &low[2], &half[2]), x1 = half_of(&to[0], &low[0], &half[0]), y1 = half_of(&to[1], &low[1], &half[1]);
 		int sy = y0 > y1 ? -1 : 1, sz = z0 > z1 ? -1 : 1, sx = x0 > x1 ? -1 : 1;
 		for (int a = 0; a < 3; a++)
-			d[a] = f32(fsub_m(fld_m(&to[a]), &from[a]));
+			d[a] = f32(FSUB(to[a], from[a]));
 		for (int y = y0;; y += sy) {
 			float p0[3], p1[3], dp[3];
 			if (y == y0)
@@ -743,7 +743,7 @@ u32 THISCALL (space_traceBlock)(SpaceBlock *block, const float *from, const floa
 			else
 				cut_at(p1, from, d, sy > 0 ? y + 1 : y, &half[1], &low[1], 1, 1);
 			for (int a = 0; a < 3; a++)
-				dp[a] = f32(fsub_m(fld_m(&p1[a]), &p0[a]));
+				dp[a] = f32(FSUB(p1[a], p0[a]));
 			for (int z = z0;; z += sz) {
 				float q0[3], q1[3], dq[3];
 				if (z == z0)
@@ -755,7 +755,7 @@ u32 THISCALL (space_traceBlock)(SpaceBlock *block, const float *from, const floa
 				else
 					cut_at(q1, p0, dp, sz > 0 ? z + 1 : z, &half[0], &low[2], 2, 0);
 				for (int a = 0; a < 3; a++)
-					dq[a] = f32(fsub_m(fld_m(&q1[a]), &q0[a]));
+					dq[a] = f32(FSUB(q1[a], q0[a]));
 				for (int x = x0;; x += sx) {
 					float r0[3], r1[3];
 					if (x == x0)
@@ -801,8 +801,8 @@ u32 THISCALL (space_traceBlock)(SpaceBlock *block, const float *from, const floa
 				else {
 					const float *m = (const float *)RELOC(sub[1]);
 					for (int r = 0; r < 3; r++)
-						hit[r] = f32(fadd_m(fmul_m(fld_m(&at[2]), &m[8 + r]) + fmul_m(fld_m(&at[1]), &m[4 + r]) +
-						                    fmul_m(fld_m(&at[0]), &m[r]), &m[12 + r]));
+						hit[r] = f32(fadd_m(FMUL(at[2], m[8 + r]) + FMUL(at[1], m[4 + r]) +
+						                    FMUL(at[0], m[r]), &m[12 + r]));
 				}
 				*dist = tt;
 				found = (u32)node->item;
@@ -830,7 +830,7 @@ static u32 side(float v, float lo, float hi, u32 bit)
 static void direction(float *d, const float *a, const float *b)
 {
 	for (int k = 0; k < 3; k++)
-		d[k] = f32(fsub_m(fld_m(&b[k]), &a[k]));
+		d[k] = f32(FSUB(b[k], a[k]));
 }
 
 /* the segment's start a moved along d onto the plane at *plane across axis k (0 or 1): its x and y as
@@ -839,12 +839,12 @@ static void clip_start(float *a, const float *b, float *d, const float *plane, i
 {
 	long double t = fsub_m(fld_m(plane), &a[k]);
 	float e0 = f32(fmul_m(t, &d[0])), e1 = f32(fmul_m(t, &d[1]));
-	float n0 = f32(fdiv_m(fld_m(&e0), &d[k])), n1 = f32(fdiv_m(fld_m(&e1), &d[k]));
+	float n0 = f32(FDIV(e0, d[k])), n1 = f32(FDIV(e1, d[k]));
 	long double z = fdiv_m(fmul_m(t, &d[2]), &d[k]);
 	if (round_z)
 		z = f32(z);
-	a[0] = f32(fadd_m(fld_m(&n0), &a[0]));
-	a[1] = f32(fadd_m(fld_m(&n1), &a[1]));
+	a[0] = f32(FADD(n0, a[0]));
+	a[1] = f32(FADD(n1, a[1]));
 	a[2] = f32(fadd_m(z, &a[2]));
 	direction(d, a, b);
 }
@@ -857,17 +857,17 @@ static void clip_end(const float *a, float *b, float *d, const float *plane, int
 	float v[3], w[3];
 	for (int i = 0; i < 2; i++) {
 		v[i] = f32(fmul_m(t, &d[i]));
-		w[i] = f32(fdiv_m(fld_m(&v[i]), &d[k]));
+		w[i] = f32(FDIV(v[i], d[k]));
 	}
 	if (inline_z)
 		b[2] = f32(fld_m(&b[2]) - fdiv_m(fmul_m(t, &d[2]), &d[k]));
 	else {
 		v[2] = f32(fmul_m(t, &d[2]));
-		w[2] = f32(fdiv_m(fld_m(&v[2]), &d[k]));
-		b[2] = f32(fsub_m(fld_m(&b[2]), &w[2]));
+		w[2] = f32(FDIV(v[2], d[k]));
+		b[2] = f32(FSUB(b[2], w[2]));
 	}
-	b[0] = f32(fsub_m(fld_m(&b[0]), &w[0]));
-	b[1] = f32(fsub_m(fld_m(&b[1]), &w[1]));
+	b[0] = f32(FSUB(b[0], w[0]));
+	b[1] = f32(FSUB(b[1], w[1]));
 	(void)a;
 }
 
@@ -889,14 +889,14 @@ u32 THISCALL (collision_rayTrace)(u8 *s, const float *p0, const float *p1, void 
 		const float *lo = o->model->low, *hi = o->model->high;
 		float a[3], b[3], d[3];
 		for (int r = 0; r < 3; r++)
-			a[r] = f32(fadd_m(fmul_m(fld_m(&p0[2]), &m[8 + r]) + fmul_m(fld_m(&p0[r ? 1 : 0]), &m[r ? 4 + r : 0]) +
-			                  fmul_m(fld_m(&p0[r ? 0 : 1]), &m[r ? r : 4]), &m[12 + r]));
-		b[0] = f32(fadd_m(fmul_m(fld_m(&p1[0]), &m[0]) + fmul_m(fld_m(&p1[1]), &m[4]) + fmul_m(fld_m(&m[8]), &p1[2]), &m[12]));
-		b[1] = f32(fadd_m(fmul_m(fld_m(&p1[1]), &m[5]) + fmul_m(fld_m(&p1[0]), &m[1]) + fmul_m(fld_m(&m[9]), &p1[2]), &m[13]));
-		long double b2 = fadd_m(fmul_m(fld_m(&p1[1]), &m[6]) + fmul_m(fld_m(&p1[0]), &m[2]) + fmul_m(fld_m(&m[10]), &p1[2]), &m[14]);
+			a[r] = f32(fadd_m(FMUL(p0[2], m[8 + r]) + FMUL(p0[r ? 1 : 0], m[r ? 4 + r : 0]) +
+			                  FMUL(p0[r ? 0 : 1], m[r ? r : 4]), &m[12 + r]));
+		b[0] = f32(fadd_m(FMUL(p1[0], m[0]) + FMUL(p1[1], m[4]) + FMUL(m[8], p1[2]), &m[12]));
+		b[1] = f32(fadd_m(FMUL(p1[1], m[5]) + FMUL(p1[0], m[1]) + FMUL(m[9], p1[2]), &m[13]));
+		long double b2 = fadd_m(FMUL(p1[1], m[6]) + FMUL(p1[0], m[2]) + FMUL(m[10], p1[2]), &m[14]);
 		b[2] = f32(b2);
-		d[0] = f32(fsub_m(fld_m(&b[0]), &a[0]));
-		d[1] = f32(fsub_m(fld_m(&b[1]), &a[1]));
+		d[0] = f32(FSUB(b[0], a[0]));
+		d[1] = f32(FSUB(b[1], a[1]));
 		d[2] = f32(fsub_m(b2, &a[2]));
 		u32 ca = side(a[0], lo[0], hi[0], 1) | side(a[1], lo[1], hi[1], 0x100) | side(a[2], lo[2], hi[2], 0x10000);
 		u32 cb = side(b[0], lo[0], hi[0], 1) | side(b[1], lo[1], hi[1], 0x100) | side(b[2], lo[2], hi[2], 0x10000);

@@ -528,8 +528,8 @@ void (setup_drawTunnel)(void)
 				float u0 = f32(fadd_m(pk, &t0));
 				float z0 = f32(fsub_m(fld_m(k_m40f), &x)), z1 = f32(fadd_m(fld_m(&x), k_40f));
 				float wx = f32(fsubr_m(fmul_m((long double)layer, (const float *)ADDR(k_tenthsToDegrees)), k_30f));
-				float s1 = f32(fadd_m(fld_m(&s_far), &ds));
-				float u1 = f32(fadd_m(fld_m(&ta), &t1));
+				float s1 = f32(FADD(s_far, ds));
+				float u1 = f32(FADD(ta, t1));
 				glTexCoord2f(ds, u0);
 				glVertex3f(wx, top, z0);
 				glTexCoord2f(s1, u0);
@@ -666,8 +666,8 @@ static void menu_tunnel(const Tunnel *t, const Highlight *h)
 				float u0 = f32(fadd_m(pk, &t0));
 				float z0 = f32(fsub_m(fld_m(k_m40f), &x)), z1 = f32(fadd_m(fld_m(&x), k_40f));
 				float wx = f32(fsubr_m(fmul_m((long double)layer, (const float *)ADDR(k_tenthsToDegrees)), k_30f));
-				float s1 = f32(fadd_m(fld_m(&s_far), &ds));
-				float u1 = f32(fadd_m(fld_m(&ta), &t1));
+				float s1 = f32(FADD(s_far, ds));
+				float u1 = f32(FADD(ta, t1));
 				glTexCoord2f(ds, u0);
 				glVertex3f(wx, top, z0);
 				glTexCoord2f(s1, u0);

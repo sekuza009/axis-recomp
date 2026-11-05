@@ -393,9 +393,9 @@ void THISCALL (object_initObjectBy)(Stage *s, int i, const ObjectType *type)
 	if (shape) {
 		const float *c = shape->centre;
 		float *out = mo->pos;
-		out[0] = f32(fadd_m(fmul_m(fld_m(&m[8]), &c[2]) + fmul_m(fld_m(&m[4]), &c[1]) + fmul_m(fld_m(&m[0]), &c[0]), &m[12]));
+		out[0] = f32(fadd_m(FMUL(m[8], c[2]) + FMUL(m[4], c[1]) + FMUL(m[0], c[0]), &m[12]));
 		for (int r = 1; r < 3; r++)
-			out[r] = f32(fadd_m(fmul_m(fld_m(&m[8 + r]), &c[2]) + fmul_m(fld_m(&m[r]), &c[0]) + fmul_m(fld_m(&m[4 + r]), &c[1]), &m[12 + r]));
+			out[r] = f32(fadd_m(FMUL(m[8 + r], c[2]) + FMUL(m[r], c[0]) + FMUL(m[4 + r], c[1]), &m[12 + r]));
 	} else
 		memcpy(mo->pos, mo->place, 12);
 	BITS(mo->glow) = 0;
@@ -422,11 +422,11 @@ static void spark(u8 *s, u8 *p, float dt)
 	Particle *pr = (Particle *)p;
 	float *pos = pr->pos;
 	const float *v = pr->target, *k = (const float *)ADDR(k_2000f);
-	float dy = f32(fmul_m(fld_m(&dt), &v[1])), dz = f32(fmul_m(fld_m(&dt), &v[2]));
+	float dy = f32(FMUL(dt, v[1])), dz = f32(FMUL(dt, v[2]));
 	float hit[3], below[3];
-	hit[0] = f32(fadd_m(fmul_m(fld_m(&dt), &v[0]), &pos[0]));
-	hit[1] = f32(fadd_m(fld_m(&dy), &pos[1]));
-	hit[2] = f32(fadd_m(fld_m(&dz), &pos[2]));
+	hit[0] = f32(fadd_m(FMUL(dt, v[0]), &pos[0]));
+	hit[1] = f32(FADD(dy, pos[1]));
+	hit[2] = f32(FADD(dz, pos[2]));
 	below[0] = hit[0];
 	below[1] = f32(fld_m(&hit[1]) - fmul_m(fld_m(&dt), k));
 	below[2] = hit[2];
@@ -443,7 +443,7 @@ static void spark(u8 *s, u8 *p, float dt)
 	glRotatef(f32(fmul_m(fld_m(&pr->drawAge), (const float *)ADDR(k_3600f))), 0.0f, 0.0f, 1.0f);
 	glGetFloatv(0xba6, pr->matrix);
 	glPopMatrix();
-	long double wait = fsub_m(fld_m(&pr->fade), &dt);
+	long double wait = FSUB(pr->fade, dt);
 	pr->fade = f32(wait);
 	if (wait > 0)
 		return;
@@ -470,7 +470,7 @@ void THISCALL (particle_update)(u8 *s, int slot, float dt)
 		stage_freeParticle(s, slot);
 		return;
 	}
-	float t = pr->life > 0 ? f32(fdiv_m(fld_m(&age), &pr->life)) : 0.0f;
+	float t = pr->life > 0 ? f32(FDIV(age, pr->life)) : 0.0f;
 	int k = pr->kind;
 	u32 size = 0;   /* where the size constant is */
 	switch (k / 5) {
@@ -495,7 +495,7 @@ void THISCALL (particle_update)(u8 *s, int slot, float dt)
 		long double u = fsub_m(fld_m((const float *)ADDR(k_1f)), &t);
 		pr->size = f32(fmul_m(u * u, (const float *)RELOC(size)));
 	}
-	pr->age = f32(fadd_m(fld_m(&dt), &pr->age));
+	pr->age = f32(FADD(dt, pr->age));
 }
 
 #define A(type, offset) GAME_VAR(type, ac + (offset))
@@ -642,7 +642,7 @@ void THISCALL (item_update)(u8 *s, float dt)
 				}
 			}
 		}
-		mi->fade = f32(fadd_m(fld_m(&dt), &mi->fade));
+		mi->fade = f32(FADD(dt, mi->fade));
 	}
 	for (int k = 0; k < ST->actorCount; k++) {
 		u8 *ac = (u8 *)&ST->actors[k];
@@ -669,7 +669,7 @@ static void particle_heading(u8 *p)
 {
 	const float *m = PR->matrix, *v = (const float *)ADDR(g_vecOrigin);
 	for (int r = 0; r < 3; r++)
-		PR->pos[r] = f32(fadd_m(fmul_m(fld_m(&v[2]), &m[8 + r]) + fmul_m(fld_m(&v[1]), &m[4 + r]) + fmul_m(fld_m(&v[0]), &m[r]),
+		PR->pos[r] = f32(fadd_m(FMUL(v[2], m[8 + r]) + FMUL(v[1], m[4 + r]) + FMUL(v[0], m[r]),
 		                                    &m[12 + r]));
 }
 
@@ -724,12 +724,12 @@ static void particle_beam(u8 *s, u8 *p, u32 colour)
 		return;
 	float d[3];
 	for (int k = 0; k < 3; k++)
-		d[k] = f32(fsub_m(fld_m(&from[k]), &at[k]));
+		d[k] = f32(FSUB(from[k], at[k]));
 	long double len = Vec3_normalize(d);
 	float step = f32(len);
 	if (!(len > 0))
 		return;
-	int n = ftol(fmul_m(fld_m(&step), &k_0_005f_4aa428));
+	int n = ftol(FMUL(step, k_0_005f_4aa428));
 	u32 rec[13];
 	if (n <= 1) {
 		memset(rec, 0, sizeof rec);
@@ -742,11 +742,11 @@ static void particle_beam(u8 *s, u8 *p, u32 colour)
 	}
 	step = f32(fld_m(&step) / (long double)n);
 	for (int k = 0; k < n; k++) {
-		long double sx = fmul_m(fld_m(&d[0]), &step);
-		float sy = f32(fmul_m(fld_m(&d[1]), &step)), sz = f32(fmul_m(fld_m(&d[2]), &step));
+		long double sx = FMUL(d[0], step);
+		float sy = f32(FMUL(d[1], step)), sz = f32(FMUL(d[2], step));
 		float kf = f32((long double)k);
-		float y = f32(fmul_m(fld_m(&sy), &kf)), z = f32(fmul_m(fld_m(&sz), &kf));
-		float pos[3] = { f32(fadd_m(fmul_m(sx, &kf), &at[0])), f32(fadd_m(fld_m(&y), &at[1])), f32(fadd_m(fld_m(&z), &at[2])) };
+		float y = f32(FMUL(sy, kf)), z = f32(FMUL(sz, kf));
+		float pos[3] = { f32(fadd_m(fmul_m(sx, &kf), &at[0])), f32(FADD(y, at[1])), f32(FADD(z, at[2])) };
 		rec[0] = rec[1] = 0;
 		memcpy(&rec[2], pos, 12);
 		memcpy(&rec[5], (const void *)OBJ(g_vecZero2), 12);
@@ -772,7 +772,7 @@ static void particle_trail(u8 *p, const u8 *desc, u32 margin)
 	static const u8 uv[5] = { 0, 2, 3, 4, 5 };   /* (q[k] gives trailUv[k]; q[1] is not used) */
 	if (!margin) {
 		for (int k = 0; k < 5; k++) {
-			PR->trailUv[uv[k]] = f32(fadd_m(fmul_m(fld_m(&q[uv[k]]), &k_0_005f_4aa428), &k_0_5f));
+			PR->trailUv[uv[k]] = f32(fadd_m(FMUL(q[uv[k]], k_0_005f_4aa428), &k_0_5f));
 			if (k == 0)
 				PR->trailUv[1] = 0.5f;
 		}

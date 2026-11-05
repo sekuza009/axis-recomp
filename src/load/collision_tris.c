@@ -31,7 +31,7 @@ int THISCALL (collisionTri_setup)(u8 *self, int id, const float *v0, const float
 		int j = (i + 1) % 3;
 		float *edge = tp->edges[i];
 		for (int k = 0; k < 3; k++)
-			edge[k] = (float)fsub_m(fld_m(&tp->cornerPoints[j][k]), &tp->cornerPoints[i][k]);
+			edge[k] = (float)FSUB(tp->cornerPoints[j][k], tp->cornerPoints[i][k]);
 		Vec3_normalize(edge);
 	}
 	/* the face normal: (-edge 0) x edge 1 */
@@ -118,7 +118,7 @@ static int edges_cross(const float *T, const float *at, int a, int b, int c, con
 			continue;
 		if (y >= *hib)
 			continue;
-		X z = fadd_m(fmul_m(fld_m(&tf), &e[c]), &v[c]);
+		X z = fadd_m(FMUL(tf, e[c]), &v[c]);
 		if (!(z > *loc))
 			continue;
 		if (!(z >= *hic))
@@ -131,7 +131,7 @@ int THISCALL (space_itemMeetsBox)(const float *T, const float *P, const float *S
 {
 	float lo[3];
 	for (int a = 0; a < 3; a++)
-		lo[a] = f32(fsub_m(fld_m(&P[a]), &r));
+		lo[a] = f32(FSUB(P[a], r));
 	unsigned all = 0x111111, any = 0;
 	for (int i = 0; i < 3; i++) {
 		const float *v = T + 1 + i * 3;
@@ -139,7 +139,7 @@ int THISCALL (space_itemMeetsBox)(const float *T, const float *P, const float *S
 		for (int a = 0; a < 3; a++) {
 			if (!(v[a] > lo[a]))
 				code |= 1u << (a * 8);
-			else if (!(fadd_m(fld_m(&r), &S[a]) > v[a]))
+			else if (!(FADD(r, S[a]) > v[a]))
 				code |= 0x10u << (a * 8);
 		}
 		all &= code;
@@ -151,15 +151,15 @@ int THISCALL (space_itemMeetsBox)(const float *T, const float *P, const float *S
 		return 1;
 	float hi[3];
 	for (int a = 0; a < 3; a++)
-		hi[a] = f32(fadd_m(fld_m(&r), &S[a]));
+		hi[a] = f32(FADD(r, S[a]));
 	const float corner[8][3] = { { lo[0], lo[1], lo[2] }, { hi[0], lo[1], lo[2] }, { lo[0], lo[1], hi[2] },
 	                             { hi[0], lo[1], hi[2] }, { lo[0], hi[1], lo[2] }, { hi[0], hi[1], lo[2] },
 	                             { lo[0], hi[1], hi[2] }, { hi[0], hi[1], hi[2] } };
 	X zero = k_0f;
 	int side = -1;
 	for (int k = 0; ; k++) {   /* the corners against the face plane */
-		X d = fmul_m(fld_m(&corner[k][2]), &T[0x15]) + fmul_m(fld_m(&corner[k][0]), &T[0x13]);
-		d = d + fmul_m(fld_m(&corner[k][1]), &T[0x14]);
+		X d = FMUL(corner[k][2], T[0x15]) + FMUL(corner[k][0], T[0x13]);
+		d = d + FMUL(corner[k][1], T[0x14]);
 		d = fsub_m(d, &T[0x16]);
 		if (d > zero) {
 			if (side == 1)
@@ -184,18 +184,18 @@ int THISCALL (space_itemMeetsBox)(const float *T, const float *P, const float *S
 		return 1;
 	for (int k = 0; k < 8; k++) {   /* a corner inside the three edge planes */
 		const float *c = corner[k];
-		X d = fmul_m(fld_m(&T[0x19]), &c[2]) + fmul_m(fld_m(&c[1]), &T[0x18]);
-		d = d + fmul_m(fld_m(&T[0x17]), &c[0]);
+		X d = FMUL(T[0x19], c[2]) + FMUL(c[1], T[0x18]);
+		d = d + FMUL(T[0x17], c[0]);
 		d = fsub_m(d, &T[0x1a]);
 		if (d > zero)
 			continue;
-		d = fmul_m(fld_m(&T[0x1c]), &c[1]) + fmul_m(fld_m(&T[0x1d]), &c[2]);
-		d = d + fmul_m(fld_m(&T[0x1b]), &c[0]);
+		d = FMUL(T[0x1c], c[1]) + FMUL(T[0x1d], c[2]);
+		d = d + FMUL(T[0x1b], c[0]);
 		d = fsub_m(d, &T[0x1e]);
 		if (d > zero)
 			continue;
-		d = fmul_m(fld_m(&T[0x20]), &c[1]) + fmul_m(fld_m(&T[0x21]), &c[2]);
-		d = d + fmul_m(fld_m(&T[0x1f]), &c[0]);
+		d = FMUL(T[0x20], c[1]) + FMUL(T[0x21], c[2]);
+		d = d + FMUL(T[0x1f], c[0]);
 		d = fsub_m(d, &T[0x22]);
 		if (!(d > zero))
 			return 1;
@@ -229,9 +229,9 @@ int THISCALL (collision_moveActor)(u8 *stage, float r, const float *pos, const f
 {
 	Stage *st = (Stage *)stage;
 	float to[3], d[3];
-	to[0] = f32(fadd_m(fld_m(&pos[0]), &vel[0]));
-	to[1] = f32(fadd_m(fld_m(&vel[1]), &pos[1]));
-	to[2] = f32(fadd_m(fld_m(&vel[2]), &pos[2]));
+	to[0] = f32(FADD(pos[0], vel[0]));
+	to[1] = f32(FADD(vel[1], pos[1]));
+	to[2] = f32(FADD(vel[2], pos[2]));
 	memcpy(outPos, to, sizeof to);
 	const float *low = st->worldLow, *high = st->worldHigh;
 	int clamped = clamp_to(&outPos[0], &low[0], &high[0]);
@@ -239,7 +239,7 @@ int THISCALL (collision_moveActor)(u8 *stage, float r, const float *pos, const f
 	clamped |= clamp_to(&outPos[2], &low[2], &high[2]);
 	if (clamped)
 		for (int c = 0; c < 3; c++)
-			d[c] = f32(fsub_m(fld_m(&outPos[c]), &pos[c]));
+			d[c] = f32(FSUB(outPos[c], pos[c]));
 	else
 		memcpy(d, vel, sizeof d);
 	int count = 0;
@@ -299,7 +299,7 @@ static int small(X x, float f) { return !((!(x >= 0) ? -fld_m(&f) : fld_m(&f)) >
 /* a - b rounded, componentwise */
 static void vsub(float *o, const float *a, const float *b)
 {
-	vset(o, f32(fsub_m(fld_m(&a[0]), &b[0])), f32(fsub_m(fld_m(&a[1]), &b[1])), f32(fsub_m(fld_m(&a[2]), &b[2])));
+	vset(o, f32(FSUB(a[0], b[0])), f32(FSUB(a[1], b[1])), f32(FSUB(a[2], b[2])));
 }
 static X len2(const float *u) { return mul(fld_m(&u[0]), &u[0]) + mul(fld_m(&u[1]), &u[1]) + mul(fld_m(&u[2]), &u[2]); }
 
@@ -319,7 +319,7 @@ static void contact_centre(float *c, const float *p, const float *v, X t)
 {
 	float s[3];
 	vset(s, f32(fmul_m(t, &v[0])), f32(fmul_m(t, &v[1])), f32(fmul_m(t, &v[2])));
-	vset(c, f32(fadd_m(fld_m(&s[0]), &p[0])), f32(fadd_m(fld_m(&p[1]), &s[1])), f32(fadd_m(fld_m(&p[2]), &s[2])));
+	vset(c, f32(FADD(s[0], p[0])), f32(FADD(p[1], s[1])), f32(FADD(p[2], s[2])));
 }
 
 /* the response along y (normalised by the game's Vec3_normalize; 0 when that is too short): y scaled by its dot
@@ -335,10 +335,10 @@ static int slide_inline(float *outVel, float *y, const float *d, float k, int ke
 	X z = fmul_m(dd, &y[2]);
 	y[2] = (float)z;
 	float zv[3], q[3];
-	vset(zv, f32(fsub_m(fld_m(&y[0]), &d[0])), f32(fsub_m(fld_m(&y[1]), &d[1])),
-	     f32(keep_z ? fsub_m(z, &d[2]) : fsub_m(fld_m(&y[2]), &d[2])));
-	vset(q, f32(fmul_m(fld_m(&zv[0]), &k)), f32(fmul_m(fld_m(&zv[1]), &k)), f32(fmul_m(fld_m(&zv[2]), &k)));
-	vset(outVel, f32(fadd_m(fld_m(&q[0]), &y[0])), f32(fadd_m(fld_m(&q[1]), &y[1])), f32(fadd_m(fld_m(&q[2]), &y[2])));
+	vset(zv, f32(FSUB(y[0], d[0])), f32(FSUB(y[1], d[1])),
+	     f32(keep_z ? fsub_m(z, &d[2]) : FSUB(y[2], d[2])));
+	vset(q, f32(FMUL(zv[0], k)), f32(FMUL(zv[1], k)), f32(FMUL(zv[2], k)));
+	vset(outVel, f32(FADD(q[0], y[0])), f32(FADD(q[1], y[1])), f32(FADD(q[2], y[2])));
 	return 1;
 }
 
@@ -349,11 +349,11 @@ static int slide_helpers(float *outVel, float *y, const float *d, float k)
 		return 0;
 	float s = (float)dot_zyx(d, y), zv[3], q[3];
 	for (int i = 0; i < 3; i++)
-		y[i] = f32(fmul_m(fld_m(&s), &y[i]));
+		y[i] = f32(FMUL(s, y[i]));
 	vsub(zv, y, d);
 	for (int i = 0; i < 3; i++)
-		q[i] = f32(fmul_m(fld_m(&k), &zv[i]));
-	vset(outVel, f32(fadd_m(fld_m(&q[0]), &y[0])), f32(fadd_m(fld_m(&q[1]), &y[1])), f32(fadd_m(fld_m(&q[2]), &y[2])));
+		q[i] = f32(FMUL(k, zv[i]));
+	vset(outVel, f32(FADD(q[0], y[0])), f32(FADD(q[1], y[1])), f32(FADD(q[2], y[2])));
 	return 1;
 }
 
@@ -401,7 +401,7 @@ int THISCALL (collisionTri_sweepSphere)(CollisionPlane *tri, float r, const floa
 	const float *n = tri->normal, *dist = &tri->dist;
 	float *o = outPos, edge[3], p[3], v[3], c[3], d[3], w[3], u[3], pv[3], r2, a;
 	for (int i = 0; i < 3; i++)
-		o[i] = f32(fadd_m(fld_m(&pos[i]), &vel[i]));
+		o[i] = f32(FADD(pos[i], vel[i]));
 	if (mul(fld_m(&vel[2]), &n[2]) + mul(fld_m(&vel[1]), &n[1]) + mul(fld_m(&n[0]), &vel[0]) > *TINY)
 		return 0;
 	if (absx(fsub_m(mul(fld_m(&o[2]), &n[2]) + mul(fld_m(&o[1]), &n[1]) + mul(fld_m(&o[0]), &n[0]), dist)) >= r)
@@ -419,10 +419,10 @@ int THISCALL (collisionTri_sweepSphere)(CollisionPlane *tri, float r, const floa
 		X nx = -fld_m(&n[0]);
 		v[1] = f32(-fld_m(&n[1]));
 		v[2] = f32(-fld_m(&n[2]));
-		vset(o, f32(fadd_m(nx, &pos[0])), f32(fadd_m(fld_m(&v[1]), &pos[1])), f32(fadd_m(fld_m(&v[2]), &pos[2])));
+		vset(o, f32(fadd_m(nx, &pos[0])), f32(FADD(v[1], pos[1])), f32(FADD(v[2], pos[2])));
 		v[0] = f32(fmul_m(nx, &r));
-		v[1] = f32(fmul_m(fld_m(&v[1]), &r));
-		v[2] = f32(fmul_m(fld_m(&v[2]), &r));
+		v[1] = f32(FMUL(v[1], r));
+		v[2] = f32(FMUL(v[2], r));
 	}
 	int i = 0;
 	while (i < 3 && !(edge[i] > 0))
@@ -435,8 +435,8 @@ int THISCALL (collisionTri_sweepSphere)(CollisionPlane *tri, float r, const floa
 		float dvf = (float)dv;
 		if (small(dv, dvf))
 			return 0;
-		X t1 = -(fadd_m(fld_m(&a), &r) / fld_m(&dvf));
-		t = f32(-(fsub_m(fld_m(&a), &r) / fld_m(&dvf)));
+		X t1 = -(FADD(a, r) / fld_m(&dvf));
+		t = f32(-(FSUB(a, r) / fld_m(&dvf)));
 		if (!(absx(t1) >= absx(fld_m(&t))))
 			t = (float)t1;
 		if (t > *ONE)
@@ -444,8 +444,8 @@ int THISCALL (collisionTri_sweepSphere)(CollisionPlane *tri, float r, const floa
 		else if (!(t >= *MINUS_ONE))
 			FIELD(u32, &t, 0) = 0xbf800000;
 		for (int j = 0; j < 3; j++)
-			u[j] = f32(fmul_m(fld_m(&t), &v[j]));
-		vset(c, f32(fadd_m(fld_m(&u[0]), &p[0])), f32(fadd_m(fld_m(&u[1]), &p[1])), f32(fadd_m(fld_m(&u[2]), &p[2])));
+			u[j] = f32(FMUL(t, v[j]));
+		vset(c, f32(FADD(u[0], p[0])), f32(FADD(u[1], p[1])), f32(FADD(u[2], p[2])));
 		vsub(d, o, c);
 		*outDist = (float)x87_fsqrt(len2(d));
 		memcpy(o, c, 12);
@@ -473,7 +473,7 @@ int THISCALL (collisionTri_sweepSphere)(CollisionPlane *tri, float r, const floa
 	const float *e = tri->edges[i];
 	vsub(u, o, vi);
 	if (!(dot_zyx(e, u) >= 0)) {   /* before the edge's start: that corner */
-		r2 = f32(fmul_m(fld_m(&r), &r));
+		r2 = f32(FMUL(r, r));
 		vsub(u, o, vi);
 		if (!(len2(u) < r2))
 			return 0;
@@ -490,7 +490,7 @@ int THISCALL (collisionTri_sweepSphere)(CollisionPlane *tri, float r, const floa
 		contact_centre(c, p, v, nearer_root(f32(fdiv_m(s - b, &a)), fdiv_m(-b - s, &a)));
 		vsub(d, o, c);
 	} else {
-		r2 = f32(fmul_m(fld_m(&r), &r));
+		r2 = f32(FMUL(r, r));
 		vsub(u, o, vj);
 		if (dot_zyx(e, u) > 0) {   /* past the edge's end: the next corner */
 			vsub(u, o, vj);
@@ -563,7 +563,7 @@ int THISCALL (space_collideBlock)(SpaceBlock *self, float r, const float *pos, c
 {
 	float at[3], move[3], from[3], step[3], hitPos[3], hitVel[3], plane[4], dist, best;
 	for (int c = 0; c < 3; c++)
-		outPos[c] = f32(fadd_m(fld_m(&pos[c]), &vel[c]));
+		outPos[c] = f32(FADD(pos[c], vel[c]));
 	memcpy(step, vel, 12);
 	memcpy(from, pos, 12);
 	int result = 0;
@@ -647,9 +647,9 @@ void THISCALL (collision_initVolume)(u8 *stage, float size_z, float size_x, floa
 	u8 *grid = (u8 *)&st->space;
 	const float *low = st->levelLow, *high = st->levelHigh;
 	log_message((int)stage, 0, 0, (const char *)STR(0x4c7490, "init. collision volume"));
-	int ny = ftol(fdiv_m(fsub_m(fld_m(&high[1]), &low[1]), &size_y));
-	int nx = ftol(fdiv_m(fsub_m(fld_m(&high[0]), &low[0]), &size_x));
-	int nz = ftol(fdiv_m(fsub_m(fld_m(&high[2]), &low[2]), &size_z));
+	int ny = ftol(fdiv_m(FSUB(high[1], low[1]), &size_y));
+	int nx = ftol(fdiv_m(FSUB(high[0], low[0]), &size_x));
+	int nz = ftol(fdiv_m(FSUB(high[2], low[2]), &size_z));
 	space_setBy(grid, (void *)low, (void *)high, nz, nx, ny, margin, splitCount, depth);
 	log_message((int)stage, 0, 0, (const char *)STR(0x4c747c, "add floor planes"));
 	if (st->floorOn) {

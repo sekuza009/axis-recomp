@@ -80,7 +80,7 @@ static void bar(float pos, int y)
 	glTexCoord2f(0.0f, 0.9375f);
 	glVertex(X1 - 0xba, y);
 	glTexCoord2f(pos, 0.9375f);
-	int x = ftol(fmul_m(fld_m(&pos), &k_m168f));
+	int x = ftol(FMUL(pos, k_m168f));
 	glVertex(X1 - x - 0xba, y);
 	glTexCoord2f(pos, 1.0f);
 	glVertex(X1 - x - 0xba, y + 0x10);
@@ -92,7 +92,7 @@ static void bar(float pos, int y)
 static void marker(float pos, int y)
 {
 	glTexCoord2f(0.0f, 0.8125f);
-	int x = ftol(fmul_m(fld_m(&pos), &k_m164f));
+	int x = ftol(FMUL(pos, k_m164f));
 	glVertex(X1 - x - 0xbd, y);
 	glTexCoord2f(0.03125f, 0.8125f);
 	glVertex(X1 - x - 0xb5, y);
@@ -182,7 +182,7 @@ void (armc_drawColourEditor)(void)
 			marker(pos2, Y0 + 0x10a);
 		} else {
 			pos1 = SLOT[k];
-			pos2 = f32(fmul_m(fadd_m(fld_m(&SLOT[3 + k]), &k_1f), &k_0_5f));
+			pos2 = f32(fmul_m(FADD(SLOT[3 + k], k_1f), &k_0_5f));
 			glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 			glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 			bar(pos1, Y0 + k * 0x30 + 0x5a);

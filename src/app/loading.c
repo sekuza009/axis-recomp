@@ -12,7 +12,7 @@ static void fade_frame(int in)
 {
 	loading_draw_bits(BITS(g_loadProgress));
 	if (in)
-		glColor4f(1.0f, 1.0f, 1.0f, fsub_m(fld_m(&ONE), &g_loadFade));
+		glColor4f(1.0f, 1.0f, 1.0f, FSUB(ONE, g_loadFade));
 	else
 		glColor4f_bits(0x3f800000, 0x3f800000, 0x3f800000, BITS(g_loadFade));
 	int h = gfx_getHeight();
@@ -442,7 +442,7 @@ u32 THISCALL (game_processLoadingMode)(u8 *g)
 			}
 		}
 		if (net_isClient() == 0) {
-			long double t = fadd_m(fld_m(&GS->frameTime), &GS->lostTime);
+			long double t = FADD(GS->frameTime, GS->lostTime);
 			GS->lostTime = f32(t);
 			if (t > k_5f)
 				stop = 1;

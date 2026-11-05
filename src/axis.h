@@ -83,6 +83,12 @@ static inline long double fsub_m(long double x, const float *m) { __asm__("fsubs
 static inline long double fsubr_m(long double x, const float *m) { __asm__("fsubrs %1" : "+t"(x) : "m"(*m)); return x; }
 static inline long double fdiv_m(long double x, const float *m) { __asm__("fdivs %1" : "+t"(x) : "m"(*m)); return x; }
 static inline long double fdivr_m(long double x, const float *m) { __asm__("fdivrs %1" : "+t"(x) : "m"(*m)); return x; }
+/* the common two-instruction forms, a and b both floats in memory: flds a, then fmuls / fadds / fsubs / fdivs b (the
+   result on the FPU, unrounded; f32() rounds it to a float) */
+#define FMUL(a, b) fmul_m(fld_m(&(a)), &(b))
+#define FADD(a, b) fadd_m(fld_m(&(a)), &(b))
+#define FSUB(a, b) fsub_m(fld_m(&(a)), &(b))
+#define FDIV(a, b) fdiv_m(fld_m(&(a)), &(b))
 
 /* a float in memory as its 32 bits (also assignable): for values the original only copies, never loading them into
    the FPU (which would quiet a signalling NaN) */

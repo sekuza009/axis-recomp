@@ -377,7 +377,7 @@ static void lower_view(const float *rate)
 {
 	if (g_viewAngle > k_45f)
 		g_viewAngle = rate ? f32(fsubr_m(fmul_m(fld_m(&g_frameTime), rate), &g_viewAngle))
-		                   : f32(fsub_m(fld_m(&g_viewAngle), &g_frameTime));
+		                   : f32(FSUB(g_viewAngle, g_frameTime));
 }
 
 /* 0x441260: one frame of the tunnel camera's move, worked on the ring before the last of the chain at ring. The

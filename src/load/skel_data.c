@@ -302,7 +302,7 @@ void THISCALL (skel_applyPose)(u8 *sk, u32 *out, int bone, float t)
 		int length = key->length;
 		float f = length > 0 ? f32((long double)(frame - key->frame) / length) : 0;
 		rotate(fmul_m(fld_m(&key->rotation[0]), unit), &key->rotation[1]);
-		rotate(fmul_m(fmul_m(fld_m(&f), &key->step[0]), unit), &key->step[1]);
+		rotate(fmul_m(FMUL(f, key->step[0]), unit), &key->step[1]);
 	} else
 		rotate(fmul_m(fld_m(&bn->rotation[0]), unit), &bn->rotation[1]);
 	glGetFloatv(0xba6, (float *)out);
@@ -555,7 +555,7 @@ void THISCALL (skel_poseBones)(u8 *pose, const float *base)
 			int length = key->length;
 			float f = length > 0 ? f32((long double)(at - key->frame) / length) : 0;
 			rotate(fmul_m(fld_m(&key->rotation[0]), unit), &key->rotation[1]);
-			rotate(fmul_m(fmul_m(fld_m(&f), &key->step[0]), unit), &key->step[1]);
+			rotate(fmul_m(FMUL(f, key->step[0]), unit), &key->step[1]);
 		} else
 			rotate(fmul_m(fld_m(&bn->rotation[0]), unit), &bn->rotation[1]);
 		float *m = out->matrix;
@@ -565,8 +565,8 @@ void THISCALL (skel_poseBones)(u8 *pose, const float *base)
 		if (own) {
 			for (int r = 0; r < 3; r++)   /* (here the z, x, y terms in that order for the y and z rows) */
 				out->centre[r] = r == 0
-					? f32(fadd_m(fmul_m(fld_m(&m[8]), &own->centre[2]) + fmul_m(fld_m(&m[4]), &own->centre[1]) + fmul_m(fld_m(&m[0]), &own->centre[0]), &m[12]))
-					: f32(fadd_m(fmul_m(fld_m(&m[8 + r]), &own->centre[2]) + fmul_m(fld_m(&m[r]), &own->centre[0]) + fmul_m(fld_m(&m[4 + r]), &own->centre[1]), &m[12 + r]));
+					? f32(fadd_m(FMUL(m[8], own->centre[2]) + FMUL(m[4], own->centre[1]) + FMUL(m[0], own->centre[0]), &m[12]))
+					: f32(fadd_m(FMUL(m[8 + r], own->centre[2]) + FMUL(m[r], own->centre[0]) + FMUL(m[4 + r], own->centre[1]), &m[12 + r]));
 		} else
 			memcpy(out->centre, out->pos, 12);
 	}
@@ -751,7 +751,7 @@ void THISCALL (skel_loadAseFrom)(u8 *sk, void *f, u8 *mem, int memSize)
 			u8 *key = ((Bone *)bone)->posKeys + k * 0x20;
 			((PosKey *)key)->length = ((PosKey *)key)[1].frame - ((PosKey *)key)->frame;
 			for (int c = 0; c < 3; c++)
-				((PosKey *)key)->delta[c] = f32(fsub_m(fld_m(&((PosKey *)key)[1].pos[c]), &((PosKey *)key)->pos[c]));
+				((PosKey *)key)->delta[c] = f32(FSUB(((PosKey *)key)[1].pos[c], ((PosKey *)key)->pos[c]));
 		}
 		if (((Bone *)bone)->posKeyCount > 0) {
 			u8 *last = ((Bone *)bone)->posKeys + (((Bone *)bone)->posKeyCount - 1) * 0x20;

@@ -325,7 +325,7 @@ void THISCALL (stage_build)(u8 *s, u32 stageDir, u32 mapDir, const char *texture
 				v[0] = out;
 				float fc = f32(c - 3);
 				v[1] = f32(fld_m(&r) * fld_m(&fr));
-				v[2] = f32(fmul_m(fld_m(&r), &fc));
+				v[2] = f32(FMUL(r, fc));
 				if (face == 0)
 					Vec3_rotateAxis(v, 0, 900);
 				else if (face <= 4)

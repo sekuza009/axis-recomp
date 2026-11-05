@@ -230,15 +230,15 @@ void (sound_play3D)(int index, const float *pos, const float *listener, const fl
 	if (!(range > 0.0f))
 		return;
 	int base = g_soundBaseVolume + 10000;
-	int volume = ftol(fsubr_m(fdiv_m(fld_m(&distance), &range), (const float *)ADDR(k_1f)) * (long double)base) - 10000;
+	int volume = ftol(fsubr_m(FDIV(distance, range), (const float *)ADDR(k_1f)) * (long double)base) - 10000;
 	if (volume > 0)
 		volume = 0;
-	c[0] = f32(fmul_m(fld_m(&d[1]), &up[2]) - fmul_m(fld_m(&d[2]), &up[1]));
-	c[1] = f32(fmul_m(fld_m(&d[2]), &up[0]) - fmul_m(fld_m(&up[2]), &d[0]));
-	c[2] = f32(fmul_m(fld_m(&up[1]), &d[0]) - fmul_m(fld_m(&d[1]), &up[0]));
+	c[0] = f32(FMUL(d[1], up[2]) - FMUL(d[2], up[1]));
+	c[1] = f32(FMUL(d[2], up[0]) - FMUL(up[2], d[0]));
+	c[2] = f32(FMUL(up[1], d[0]) - FMUL(d[1], up[0]));
 	Vec3_normalize(c);
-	long double across = fmul_m(fld_m(&c[1]), &side[1]) + fmul_m(fld_m(&c[2]), &side[2]);
-	across = across + fmul_m(fld_m(&c[0]), &side[0]);
+	long double across = FMUL(c[1], side[1]) + FMUL(c[2], side[2]);
+	across = across + FMUL(c[0], side[0]);
 	int pan = ftol(fmul_m(across, (const float *)(g_stereoReverse ? ADDR(k_m1500f) : ADDR(k_1500f_4a9700))));
 	GAME_FN(dsbuf_setVolume, 0x467db0, void, void *, int)(GAME_VAR(void *, OBJ(g_soundTable) + index * 4), volume);   /* dsbuf_setVolume */
 	sound_playNextBuffer(GAME_VAR(void *, OBJ(g_soundTable) + index * 4), (pan > 0) + 1, pan);

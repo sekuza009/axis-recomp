@@ -1904,7 +1904,7 @@ void THISCALL (net_processGamePacket)(u8 *g, u32 from, int size, const char *pkt
 		long double h = fmul_m((long double)b[0xb], &k_14_0625f);
 		float yaw = f32(h);
 		if (h > *&k_1800f)
-			yaw = f32(fsub_m(fld_m(&yaw), &k_3600f));
+			yaw = f32(FSUB(yaw, k_3600f));
 		float pitch = f32(fmul_m((long double)b[0xc], &k_14_0625f));
 		if (GAME_VAR(int, PLAYER(i)) == 0) {
 			GS->sendFlags[GS->localPlayer][0] = 1;
@@ -1925,7 +1925,7 @@ void THISCALL (net_processGamePacket)(u8 *g, u32 from, int size, const char *pkt
 			scene_updateRanking(g);   /* scene_updateRanking */
 		}
 		ac->netFired = 1;
-		ac->armorDeadline = f32(fadd_m(fld_m(&ac->spawnAge), &k_10f));
+		ac->armorDeadline = f32(FADD(ac->spawnAge, k_10f));
 		BITS(ac->timerFlags) = *(const u16 *)(pkt + 2);
 		if (weapon == 6)
 			ac->chatIcon = 1;

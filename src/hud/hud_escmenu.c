@@ -395,5 +395,5 @@ void THISCALL (match_escMenu)(Scene *scene)
 		if (keys[KEY_UP] | keys[KEY_DOWN] | keys[KEY_ENTER] | keys[KEY_ESC])
 			sound_playVolume(9, 100);
 	}
-	scene->escTimer = f32(fadd_m(fld_m(&scene->frameTime), &scene->escTimer));
+	scene->escTimer = f32(FADD(scene->frameTime, scene->escTimer));
 }

@@ -34,7 +34,7 @@ void (briefing_typeOut)(void)
 	if (!text)
 		return;
 	if (!g_briefingDone && !g_briefingSkipped) {
-		long double clock = fadd_m(fld_m(&g_frameTime), &g_briefingClock);
+		long double clock = FADD(g_frameTime, g_briefingClock);
 		g_briefingClock = clock;
 		if (clock > k_1_4) {
 			int n = ++g_briefingShown;

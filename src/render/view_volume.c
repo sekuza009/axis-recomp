@@ -729,7 +729,7 @@ void THISCALL (ViewVolume_draw)(u8 *vv, int mode, float b)
 		if (((ViewTriangle *)r)->kind != 2)
 			continue;
 		((u8 **)VV->triangleOrder)[VV->triangleOrderCount * 2] = r;
-		X z = fadd_m(fadd_m(fld_m(&((ViewTriangle *)r)->points[2][2]), &((ViewTriangle *)r)->points[1][2]), &((ViewTriangle *)r)->points[0][2]);
+		X z = fadd_m(FADD(((ViewTriangle *)r)->points[2][2], ((ViewTriangle *)r)->points[1][2]), &((ViewTriangle *)r)->points[0][2]);
 		((float *)VV->triangleOrder)[VV->triangleOrderCount * 2 + 1] = (float)fmul_m(z, &k_third);
 		VV->triangleOrderCount++;
 	}
@@ -741,7 +741,7 @@ void THISCALL (ViewVolume_draw)(u8 *vv, int mode, float b)
 		if (!list)
 			continue;
 		FIELD(u8 **, vv, list)[FIELD(int, vv, list + 4) * 2] = r;
-		X z = fadd_m(fld_m(&((ViewQuad *)r)->points[1][2]), &((ViewQuad *)r)->points[0][2]);
+		X z = FADD(((ViewQuad *)r)->points[1][2], ((ViewQuad *)r)->points[0][2]);
 		FIELD(float *, vv, list)[FIELD(int, vv, list + 4) * 2 + 1] = (float)fmul_m(z, &k_half);
 		FIELD(int, vv, list + 4)++;
 	}

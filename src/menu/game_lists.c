@@ -351,7 +351,7 @@ void (gameList_drawPage)(void)
 {
 	const float *step = (const float *)ADDR(g_lobbyBlinkRate), *blinkFloor = (const float *)ADDR(k_10f);
 	if (g_gameListClickArmed) {
-		long double t = fadd_m(fld_m(&g_frameTime), &g_gameListClickTimer);
+		long double t = FADD(g_frameTime, g_gameListClickTimer);
 		g_gameListClickTimer = f32(t);
 		if (t > k_20f) {
 			g_gameListClickArmed = 0;
@@ -390,7 +390,7 @@ void (gameList_drawPage)(void)
 			(*(u32 *)&g_lobbyBlinkClock) = 0x447a0000;   /* 1000 */
 	}
 	if (g_roomRefreshing) {
-		long double t = fadd_m(fld_m(&g_roomListRefreshTimer), &g_frameTime);
+		long double t = FADD(g_roomListRefreshTimer, g_frameTime);
 		g_roomListRefreshTimer = f32(t);
 		if (t > (long double)g_listRefreshPeriod) {
 			room_mergeReceivedSessions();
@@ -727,7 +727,7 @@ static void blink_down(void)
 void (arena_drawGamesPage)(void)
 {
 	if (g_arenaListClickArmed) {
-		long double t = fadd_m(fld_m(&g_frameTime), &g_arenaSearchClock);
+		long double t = FADD(g_frameTime, g_arenaSearchClock);
 		g_arenaSearchClock = f32(t);
 		if (t > k_20f) {
 			g_arenaListClickArmed = 0;
@@ -770,7 +770,7 @@ void (arena_drawGamesPage)(void)
 		blink_down();
 	}
 	if (g_lobbyRefreshing) {
-		long double t = fadd_m(fld_m(&g_arenaListRefreshTimer), &g_frameTime);
+		long double t = FADD(g_arenaListRefreshTimer, g_frameTime);
 		g_arenaListRefreshTimer = f32(t);
 		if (t > (long double)g_listRefreshPeriod) {
 			arena_mergeReceivedSessions();

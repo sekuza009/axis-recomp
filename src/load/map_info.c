@@ -500,7 +500,7 @@ int THISCALL (map_loadGroundInfoFrom)(u8 *s, const char *name)
 				memcpy(n4, math_triangleNormal(t, down, p, left), 12);
 				float *out = (float *)(((u8 *)(gl)->normals) + (w * r + c) * 12);
 				for (int k = 0; k < 3; k++)
-					out[k] = f32(fadd_m(fadd_m(fadd_m(fld_m(&n4[k]), &n3[k]), &n2[k]), &n1[k]));
+					out[k] = f32(fadd_m(fadd_m(FADD(n4[k], n3[k]), &n2[k]), &n1[k]));
 				if (GAME_VAR(int, l) == 1)
 					for (int k = 0; k < 3; k++)
 						out[k] = f32(-fld_m(&out[k]));
@@ -516,8 +516,8 @@ int THISCALL (map_loadGroundInfoFrom)(u8 *s, const char *name)
 			for (int c = 0; c <= gl->cols; c++) {
 				int at = (gl->cols + 1) * r + c;
 				const float *p = ((const float *)(gl)->points) + at * 3;
-				long double tz = fdiv_m(fld_m(&p[2]), &gl->texScale);
-				uv[at * 2] = f32(fdiv_m(fld_m(&p[0]), &gl->texScale));
+				long double tz = FDIV(p[2], gl->texScale);
+				uv[at * 2] = f32(FDIV(p[0], gl->texScale));
 				uv[at * 2 + 1] = f32(tz);
 			}
 		st->poolUsed += size;

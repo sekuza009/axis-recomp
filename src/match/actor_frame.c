@@ -26,7 +26,7 @@ static void aim_at(u8 *a, const float *p)
 {
 	float d[3];
 	for (int c = 0; c < 3; c++)
-		d[c] = f32(fsub_m(fld_m(&p[c]), &AC->pos[c]));
+		d[c] = f32(FSUB(p[c], AC->pos[c]));
 	long double x = fld_m(&d[0]), z = fld_m(&d[2]);
 	AC->botLookPitch = f32(fmul_m(x87_fpatan(-fld_m(&d[1]), x87_fsqrt(x * x + z * z)), &k_572_9578f));
 	AC->botLookYaw = f32(fmul_m(x87_fpatan(fld_m(&d[0]), fld_m(&d[2])), &k_572_9578f));
@@ -393,10 +393,10 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 						float d[3];
 						const float *at = &ST->actors[j].pos[0];
 						for (int c = 0; c < 3; c++)
-							d[c] = f32(fsub_m(fld_m(&at[c]), &AC->pos[c]));
+							d[c] = f32(FSUB(at[c], AC->pos[c]));
 						memcpy(scratch, d, 12);
-						long double dist = fmul_m(fld_m(&d[0]), &d[0]) + fmul_m(fld_m(&d[2]), &d[2]);
-						dist = dist + fmul_m(fld_m(&d[1]), &d[1]);
+						long double dist = FMUL(d[0], d[0]) + FMUL(d[2], d[2]);
+						dist = dist + FMUL(d[1], d[1]);
 						if (!(dist > AC->radiusSq) && collision_rayTrace(s, &AC->pos[0], at, scratch) == 0) {
 							AC->botTarget = j;
 							break;
@@ -442,7 +442,7 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 		/* the path: stuck (moved under 500 in a second) */
 		AC->stuckTime = f32(fsub_m(fld_m(&AC->stuckTime), dt));
 		for (int c = 0; c < 3; c++)
-			AC->stuckMove[c] = f32(fadd_m(fld_m(&AC->move[c]), &AC->stuckMove[c]));
+			AC->stuckMove[c] = f32(FADD(AC->move[c], AC->stuckMove[c]));
 		if (!(AC->stuckTime > 0)) {
 			if (AC->target1 >= 0) {
 				long double x = fld_m(&AC->stuckMove[0]), y = fld_m(&AC->stuckMove[1]), z = fld_m(&AC->stuckMove[2]);
@@ -467,10 +467,10 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 			const float *pt = PATH_POINT(AC->target1, AC->target2);
 			float d[3];
 			for (int c = 0; c < 3; c++)
-				d[c] = f32(fsub_m(fld_m(&pt[c]), &AC->pos[c]));
+				d[c] = f32(FSUB(pt[c], AC->pos[c]));
 			memcpy(scratch, d, 12);
-			long double dist = fmul_m(fld_m(&d[0]), &d[0]) + fmul_m(fld_m(&d[2]), &d[2]);
-			if (!(dist + fmul_m(fld_m(&d[1]), &d[1]) >= *&k_1000000f)) {
+			long double dist = FMUL(d[0], d[0]) + FMUL(d[2], d[2]);
+			if (!(dist + FMUL(d[1], d[1]) >= *&k_1000000f)) {
 				script_processCommandBy(s, i, AC->target1, AC->target2);
 				int at = AC->target2;
 				if (AC->pathReverse == 0) {   /* forwards, or backwards */
@@ -495,18 +495,18 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 				const float *at = &ST->actors[AC->followTarget].pos[0];
 				float d[3];
 				for (int c = 0; c < 3; c++)
-					d[c] = f32(fsub_m(fld_m(&at[c]), &AC->pos[c]));
+					d[c] = f32(FSUB(at[c], AC->pos[c]));
 				memcpy(scratch, d, 12);
-				long double dist = fmul_m(fld_m(&d[0]), &d[0]) + fmul_m(fld_m(&d[2]), &d[2]);
-				memcpy(AC->botGoal, dist + fmul_m(fld_m(&d[1]), &d[1]) > *&k_9000000f ? (const void *)RELOC(at) : (const void *)AC->pos, 12);
+				long double dist = FMUL(d[0], d[0]) + FMUL(d[2], d[2]);
+				memcpy(AC->botGoal, dist + FMUL(d[1], d[1]) > *&k_9000000f ? (const void *)RELOC(at) : (const void *)AC->pos, 12);
 			} else if (AC->target1 >= 0) {   /* its path's point while over 1000 away */
 				const float *pt = PATH_POINT(AC->target1, AC->target2);
 				float d[3];
 				for (int c = 0; c < 3; c++)
-					d[c] = f32(fsub_m(fld_m(&pt[c]), &AC->pos[c]));
+					d[c] = f32(FSUB(pt[c], AC->pos[c]));
 				memcpy(scratch, d, 12);
-				long double dist = fmul_m(fld_m(&d[2]), &d[2]) + fmul_m(fld_m(&d[1]), &d[1]);
-				memcpy(AC->botGoal, dist + fmul_m(fld_m(&d[0]), &d[0]) > *&k_1000000f ? (const void *)PATH_POINT(AC->target1, AC->target2) : (const void *)AC->pos, 12);
+				long double dist = FMUL(d[2], d[2]) + FMUL(d[1], d[1]);
+				memcpy(AC->botGoal, dist + FMUL(d[0], d[0]) > *&k_1000000f ? (const void *)PATH_POINT(AC->target1, AC->target2) : (const void *)AC->pos, 12);
 			} else if (AC->botTarget >= 0) {   /* about its target: sideways by a random amount, now and then */
 				long double v = fsub_m(fld_m(&AC->dodgeTime), dt);
 				AC->dodgeTime = (float)v;
@@ -514,25 +514,25 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 					int t = AC->botTarget;
 					float d[3], tmp[3];
 					for (int c = 0; c < 3; c++)
-						tmp[c] = f32(fsub_m(fld_m(&AC->pos[c]), &ST->actors[t].pos[c]));
+						tmp[c] = f32(FSUB(AC->pos[c], ST->actors[t].pos[c]));
 					memcpy(d, tmp, 12);
 					Vec3_normalize(d);
-					d[0] = f32(fmul_m(fld_m(&d[0]), &AC->botTimes[2]));
+					d[0] = f32(FMUL(d[0], AC->botTimes[2]));
 					d[1] = 0;
-					long double z = fmul_m(fld_m(&d[2]), &AC->botTimes[2]);
+					long double z = FMUL(d[2], AC->botTimes[2]);
 					d[2] = (float)z;
 					scratch[0] = f32(-fmul_m(z, &g_vecUnitY[1]));   /* (d x the unit Y vector) */
-					scratch[1] = f32(fmul_m(fld_m(&d[2]), &g_vecUnitY[0]) - fmul_m(fld_m(&d[0]), &g_vecUnitY[2]));
-					scratch[2] = f32(fmul_m(fld_m(&d[0]), &g_vecUnitY[1]));
+					scratch[1] = f32(FMUL(d[2], g_vecUnitY[0]) - FMUL(d[0], g_vecUnitY[2]));
+					scratch[2] = f32(FMUL(d[0], g_vecUnitY[1]));
 					Vec3_normalize(scratch);
 					int n = ftol(fld_m(&AC->dodgeSpread)) * 2;
 					int r = n > 0 ? (int)rand_below(n) : 0;
 					long double o = fsub_m((long double)r, &AC->dodgeSpread);
 					scratch[0] = f32(fmul_m(o, &scratch[0]));
 					scratch[2] = f32(fmul_m(o, &scratch[2]));
-					AC->botGoal[0] = f32(fadd_m(fadd_m(fld_m(&scratch[0]), &ST->actors[AC->botTarget].pos[0]), &d[0]));
+					AC->botGoal[0] = f32(fadd_m(FADD(scratch[0], ST->actors[AC->botTarget].pos[0]), &d[0]));
 					BITS(AC->dodgeTime) = BITS(AC->botTimes[0]);
-					AC->botGoal[2] = f32(fadd_m(fadd_m(fld_m(&scratch[2]), &ST->actors[AC->botTarget].pos[2]), &d[2]));
+					AC->botGoal[2] = f32(fadd_m(FADD(scratch[2], ST->actors[AC->botTarget].pos[2]), &d[2]));
 				}
 				v = fsub_m(fld_m(&AC->heightTime), dt);
 				AC->heightTime = (float)v;
@@ -566,10 +566,10 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 			/* the movement keys towards the goal, in the actor's own frame: forward / back / right / left (inForward ..),
 			   or up / down (inAltitude with forward or back) when that is the larger way, beyond 500 */
 			for (int c = 0; c < 3; c++)
-				scratch[c] = f32(fsub_m(fld_m(&AC->botGoal[c]), &AC->pos[c]));
+				scratch[c] = f32(FSUB(AC->botGoal[c], AC->pos[c]));
 			Vec3_rotateAxis(scratch, 2, -ftol(fld_m(&AC->yaw)));
 			Vec3_rotateAxis(scratch, 1, -ftol(fld_m(&AC->pitch)));
-			long double len = x87_fsqrt((fmul_m(fld_m(&scratch[0]), &scratch[0]) + fmul_m(fld_m(&scratch[2]), &scratch[2])) + fmul_m(fld_m(&scratch[1]), &scratch[1]));
+			long double len = x87_fsqrt((FMUL(scratch[0], scratch[0]) + FMUL(scratch[2], scratch[2])) + FMUL(scratch[1], scratch[1]));
 			if (len > 500.0f) {
 				long double G = fld_m(&scratch[0]), Y = fld_m(&scratch[1]), Z = fld_m(&scratch[2]);
 				long double ay = !(Y >= 0) ? -Y : Y;
@@ -641,57 +641,57 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 	float accel = f32(fmul_m(fld_m(dt), &AC->moveAccel));
 	float want[3];   /* the wanted velocity from the keys, turned to the actor's facing */
 	want[2] = 0;
-	want[0] = f32(fmul_m(fld_m(&AC->strafe), &AC->speed));
-	want[1] = f32(fmul_m(fld_m(&AC->forward), &AC->speed));
-	Vec3_rotateAxis(want, 1, ftol(fsub_m(fld_m(&k_1f), &AC->climb) * fadd_m(fld_m(&AC->pitch), &k_900f)));
+	want[0] = f32(FMUL(AC->strafe, AC->speed));
+	want[1] = f32(FMUL(AC->forward, AC->speed));
+	Vec3_rotateAxis(want, 1, ftol(FSUB(k_1f, AC->climb) * FADD(AC->pitch, k_900f)));
 	Vec3_rotateAxis(want, 2, ftol(fld_m(&AC->yaw)));
 	float neg = f32(-fld_m(&accel));
 	for (int c = 0; c < 3; c++) {   /* the velocity towards it by at most accel */
-		long double v = fsub_m(fld_m(&AC->velocity[c]), &want[c]);
+		long double v = FSUB(AC->velocity[c], want[c]);
 		if (!(v >= neg))
-			AC->velocity[c] = f32(fadd_m(fld_m(&accel), &AC->velocity[c]));
+			AC->velocity[c] = f32(FADD(accel, AC->velocity[c]));
 		else if (v > accel)
-			AC->velocity[c] = f32(fsub_m(fld_m(&AC->velocity[c]), &accel));
+			AC->velocity[c] = f32(FSUB(AC->velocity[c], accel));
 		else
 			BITS(AC->velocity[c]) = BITS(want[c]);
 	}
 	float step = !(*dt >= 0.05f) ? *dt : 0.05f;   /* at most 0.05 s */
 	for (int c = 0; c < 3; c++)   /* the move this frame */
-		AC->move[c] = f32(fmul_m(fld_m(&step), &AC->velocity[c]));
+		AC->move[c] = f32(FMUL(step, AC->velocity[c]));
 	if (AC->controlledBy == ST->playerActor && AC->state == 1 && AC->hitFlash > 0) {   /* a push, fading with hitFlash squared */
-		long double px = fmul_m(fld_m(&step), &AC->push[0]);
-		float py = f32(fmul_m(fld_m(&step), &AC->push[1]));
-		float pz = f32(fmul_m(fld_m(&step), &AC->push[2]));
+		long double px = FMUL(step, AC->push[0]);
+		float py = f32(FMUL(step, AC->push[1]));
+		float pz = f32(FMUL(step, AC->push[2]));
 		long double f = fld_m(&AC->hitFlash);
 		float sq = f32(f * f);
 		px = fmul_m(px, &sq);
-		py = f32(fmul_m(fld_m(&py), &sq));
-		pz = f32(fmul_m(fld_m(&pz), &sq));
+		py = f32(FMUL(py, sq));
+		pz = f32(FMUL(pz, sq));
 		AC->move[0] = f32(fadd_m(px, &AC->move[0]));
-		AC->move[1] = f32(fadd_m(fld_m(&py), &AC->move[1]));
-		AC->move[2] = f32(fadd_m(fld_m(&pz), &AC->move[2]));
+		AC->move[1] = f32(FADD(py, AC->move[1]));
+		AC->move[2] = f32(FADD(pz, AC->move[2]));
 	}
 	if (AC->overheat == 1)
 		AC->inBooster = 0;
 	if (AC->controlledBy == ST->playerActor && AC->state == 1) {   /* (to 45a5d1) the local team's live actors move */
-		AC->nextPos[0] = f32(fadd_m(fld_m(&AC->pos[0]), &AC->move[0]));
-		AC->nextPos[1] = f32(fadd_m(fld_m(&AC->move[1]), &AC->pos[1]));
-		AC->nextPos[2] = f32(fadd_m(fld_m(&AC->move[2]), &AC->pos[2]));
+		AC->nextPos[0] = f32(FADD(AC->pos[0], AC->move[0]));
+		AC->nextPos[1] = f32(FADD(AC->move[1], AC->pos[1]));
+		AC->nextPos[2] = f32(FADD(AC->move[2], AC->pos[2]));
 		memcpy(dir, AC->move, 12);
 		moveLeft = f32(Vec3_normalize(dir));
 		for (int j = 0; j < ST->actorCount; j++) {   /* slide around the other live actors */
 			if (ST->actors[j].state != 1 || j == i || ST->actors[j].cameraValue != 0)
 				continue;
-			float r = f32(fmul_m(fadd_m(fld_m(&ST->actors[j].radius), &AC->radius), &k_0_75f));
+			float r = f32(fmul_m(FADD(ST->actors[j].radius, AC->radius), &k_0_75f));
 			if (math_segmentSphere(AC->pos, AC->nextPos, dir, &ST->actors[j].pos[0], r, hit, hit_t) != 1)
 				continue;
 			memcpy(AC->nextPos, hit, 12);
 			for (int c = 0; c < 3; c++)
-				AC->move[c] = f32(fsub_m(fld_m(&AC->nextPos[c]), &AC->pos[c]));
+				AC->move[c] = f32(FSUB(AC->nextPos[c], AC->pos[c]));
 			long double X = fld_m(&AC->move[0]), Y = fld_m(&AC->move[1]), Z = fld_m(&AC->move[2]);
 			moveLeft = f32(fsubr_m(x87_fsqrt((X * X + Y * Y) + Z * Z), &moveLeft));
 			const float *o = &ST->actors[j].pos[0];
-			long double d0 = fsub_m(fld_m(&hit[0]), &o[0]), d1 = fsub_m(fld_m(&hit[1]), &o[1]), d2 = fsub_m(fld_m(&hit[2]), &o[2]);
+			long double d0 = FSUB(hit[0], o[0]), d1 = FSUB(hit[1], o[1]), d2 = FSUB(hit[2], o[2]);
 			float c0 = f32(fmul_m(d2, &dir[1]) - fmul_m(d1, &dir[2]));
 			float c1 = f32(fmul_m(d0, &dir[2]) - fmul_m(d2, &dir[0]));
 			long double c2 = fmul_m(d1, &dir[0]) - fmul_m(d0, &dir[1]);
@@ -701,11 +701,11 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 			slide[2] = f32(fmul_m(d0, &c1) - fmul_m(d1, &c0));
 			Vec3_normalize(slide);
 			for (int c = 0; c < 3; c++)
-				slide[c] = f32(fmul_m(fld_m(&slide[c]), &moveLeft));
+				slide[c] = f32(FMUL(slide[c], moveLeft));
 			for (int c = 0; c < 3; c++)
-				AC->nextPos[c] = f32(fadd_m(fld_m(&slide[c]), &AC->nextPos[c]));
+				AC->nextPos[c] = f32(FADD(slide[c], AC->nextPos[c]));
 			for (int c = 0; c < 3; c++)
-				dir[c] = AC->move[c] = f32(fsub_m(fld_m(&AC->nextPos[c]), &AC->pos[c]));
+				dir[c] = AC->move[c] = f32(FSUB(AC->nextPos[c], AC->pos[c]));
 			moveLeft = f32(Vec3_normalize(dir));
 		}
 		float r = AC->radius;
@@ -713,7 +713,7 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 		memcpy(AC->nextPos, mv_pos, 12);
 		if (moved == 1)
 			for (int c = 0; c < 3; c++)
-				AC->nextPos[c] = f32(fadd_m(fld_m(&slide[c]), &AC->nextPos[c]));
+				AC->nextPos[c] = f32(FADD(slide[c], AC->nextPos[c]));
 		for (int c = 0; c < 3; c++) {   /* inside the world box */
 			const float *lo = &ST->levelLow[c], *hi = &ST->levelHigh[c];
 			if (!(AC->nextPos[c] >= *lo))
@@ -721,13 +721,13 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 			else if (AC->nextPos[c] > *hi)
 				BITS(AC->nextPos[c]) = BITS(*hi);
 		}
-		long double v = fadd_m(fld_m(&AC->inPitch), &AC->pitch);   /* the pitch, within +-89 degrees */
+		long double v = FADD(AC->inPitch, AC->pitch);   /* the pitch, within +-89 degrees */
 		AC->nextPitch = (float)v;
 		if (v > *&k_890f)
 			AC->nextPitch = 890.0f;   /* 890 */
 		if (!(AC->nextPitch >= *&k_m890f))
 			AC->nextPitch = -890.0f;
-		AC->nextYaw = f32(fadd_m(fld_m(&AC->inYaw), &AC->yaw));
+		AC->nextYaw = f32(FADD(AC->inYaw, AC->yaw));
 		float fwd, back, right, lft;   /* the top speeds: 1 / -1 walking, runTop running */
 		if (AC->inBooster == 0) {
 			fwd = 1.0f;
@@ -752,34 +752,34 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 			AC->nextLean = (float)w;
 		} else if (!(AC->nextPitch >= 0)) {
 			m = !(AC->nextForward >= 1.0f) ? fld_m(&AC->nextForward) : 1.0L;
-			w = fmul_m(fmul_m(fadd_m(fld_m(&AC->nextPitch), &k_900f), &k_0_001111111f) * m, &k_450f);
+			w = fmul_m(fmul_m(FADD(AC->nextPitch, k_900f), &k_0_001111111f) * m, &k_450f);
 			AC->nextLean = (float)w;
 		} else {
 			m = !(AC->nextForward >= 1.0f) ? fld_m(&AC->nextForward) : 1.0L;
 			w = fmul_m(m, &k_450f);
 			AC->nextLean = (float)w;
 			if (AC->nextForward > 1.0f)
-				AC->nextLean = (float)(fmul_m(fsub_m(fld_m(&AC->nextForward), &k_1f), &AC->nextPitch) / fsub_m(fld_m(&AC->runTop[0]), &k_1f) + w);
+				AC->nextLean = (float)(fmul_m(FSUB(AC->nextForward, k_1f), &AC->nextPitch) / FSUB(AC->runTop[0], k_1f) + w);
 		}
-		AC->nextLean = f32(fmul_m(fmul_m(fadd_m(fld_m(&AC->nextRun), &k_1f), &k_0_5f) * fsub_m(fld_m(&k_1f), &AC->climb), &AC->nextLean));
+		AC->nextLean = f32(fmul_m(fmul_m(FADD(AC->nextRun, k_1f), &k_0_5f) * FSUB(k_1f, AC->climb), &AC->nextLean));
 	} else {   /* the others: towards their sent state at 6.66 a second */
 		long double f = fmul_m(fld_m(dt), &k_6_66f);
 		float k = (float)f;
 		if (f > 1.0L)
 			k = 1.0f;
-		long double x = fsub_m(fld_m(&AC->netPos[0]), &AC->pos[0]);
-		float y = f32(fsub_m(fld_m(&AC->netPos[1]), &AC->pos[1]));
-		float z = f32(fsub_m(fld_m(&AC->netPos[2]), &AC->pos[2]));
+		long double x = FSUB(AC->netPos[0], AC->pos[0]);
+		float y = f32(FSUB(AC->netPos[1], AC->pos[1]));
+		float z = f32(FSUB(AC->netPos[2], AC->pos[2]));
 		x = fmul_m(x, &k);
-		y = f32(fmul_m(fld_m(&k), &y));
-		z = f32(fmul_m(fld_m(&k), &z));
+		y = f32(FMUL(k, y));
+		z = f32(FMUL(k, z));
 		AC->nextPos[0] = f32(fadd_m(x, &AC->pos[0]));
-		AC->nextPos[1] = f32(fadd_m(fld_m(&y), &AC->pos[1]));
-		AC->nextPos[2] = f32(fadd_m(fld_m(&z), &AC->pos[2]));
-		AC->nextPitch = f32(fadd_m(fmul_m(fsub_m(fld_m(&AC->netPitch), &AC->pitch), &k), &AC->pitch));
+		AC->nextPos[1] = f32(FADD(y, AC->pos[1]));
+		AC->nextPos[2] = f32(FADD(z, AC->pos[2]));
+		AC->nextPitch = f32(fadd_m(fmul_m(FSUB(AC->netPitch, AC->pitch), &k), &AC->pitch));
 		AC->nextYaw = f32(angle_stepTowards(BITS(AC->nextYaw), BITS(AC->netYaw), BITS(k)));
 		for (int c = 0; c < 5; c++)   /* nextForward..nextRun */
-			AF(offsetof(Player, nextForward) + c * 4) = f32(fadd_m(fmul_m(fsub_m(fld_m(&AC->netMotion[c]), &AF(offsetof(Player, forward) + c * 4)), &k), &AF(offsetof(Player, forward) + c * 4)));
+			AF(offsetof(Player, nextForward) + c * 4) = f32(fadd_m(fmul_m(FSUB(AC->netMotion[c], AF(offsetof(Player, forward) + c * 4)), &k), &AF(offsetof(Player, forward) + c * 4)));
 	}
 	if (AC->fireAnim > 0 && weapon) {   /* the firing cycle, wrapping at 1 */
 		long double v = fadd_m(fdiv_m(fld_m(dt), &weapon->cycleTime), &AC->fireCycle);
@@ -813,12 +813,12 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 		}
 	}
 	/* the body's pose: the swing, lean and head turn, and its animation frames */
-	clamp450(&AC->pose[0], fmul_m(fld_m(&AC->strafe), &k_m200f));
-	AC->pose[1] = f32(fmul_m(fmul_m(fsub_m(fld_m(&k_1f), &AC->climb) * fadd_m(fld_m(&AC->pitch), &k_900f), &AC->leanPitch), &k_0_0005555556f));
-	clamp450(&AC->pose[2], fmul_m(fld_m(&AC->strafe), &k_200f));
-	AC->pose[3] = f32(fmul_m(fadd_m(fsub_m(fld_m(&AC->pitch), &AC->lean), &k_900f), &k_0_0005555556f));
+	clamp450(&AC->pose[0], FMUL(AC->strafe, k_m200f));
+	AC->pose[1] = f32(fmul_m(fmul_m(FSUB(k_1f, AC->climb) * FADD(AC->pitch, k_900f), &AC->leanPitch), &k_0_0005555556f));
+	clamp450(&AC->pose[2], FMUL(AC->strafe, k_200f));
+	AC->pose[3] = f32(fmul_m(fadd_m(FSUB(AC->pitch, AC->lean), &k_900f), &k_0_0005555556f));
 	long double side = !(AC->forward >= -1.0f) ? -1.0L : AC->forward > 1.0f ? 1.0L : fld_m(&AC->forward);
-	AC->pose[4] = f32(fmul_m(fsubr_m(fmul_m(fadd_m(fld_m(&AC->run), &k_1f), &k_0_5f) * fsub_m(fld_m(&k_1f), &AC->climb) * side, &k_1f), &k_0_5f));
+	AC->pose[4] = f32(fmul_m(fsubr_m(fmul_m(FADD(AC->run, k_1f), &k_0_5f) * FSUB(k_1f, AC->climb) * side, &k_1f), &k_0_5f));
 	BITS(AC->pose[5]) = BITS(AC->run);
 	anim_setFrame((u8 *)&AC->headModel, 0, BITS(AC->pose[3]));
 	anim_setFrame((u8 *)&AC->chestModel, 0, BITS(AC->pose[3]));
@@ -829,12 +829,12 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 	/* the matrices: the body at the actor, turned and leant, the head on its neck, the arms */
 	glPushMatrix();
 	glTranslatef_bits(BITS(AC->pos[0]), BITS(AC->pos[1]), BITS(AC->pos[2]));
-	glRotatef(f32(fmul_m(fld_m(&AC->yaw), &k_tenthsToDegrees)), 0, 1, 0);
-	glRotatef(f32(fmul_m(fld_m(&AC->lean), &k_tenthsToDegrees)), 1, 0, 0);
+	glRotatef(f32(FMUL(AC->yaw, k_tenthsToDegrees)), 0, 1, 0);
+	glRotatef(f32(FMUL(AC->lean, k_tenthsToDegrees)), 1, 0, 0);
 	glGetFloatv(0xba6, AC->bodyMatrix);
 	skel_poseBones((u8 *)&AC->chestModel, AC->bodyMatrix);
 	glLoadMatrixf((const float *)(uintptr_t)((u32)AC->chestModel.entries + chest->legsJoint[AC->lowDetail] * 100 + 0xc));
-	glRotatef(f32(fmul_m(fld_m(&AC->pose[2]), &k_tenthsToDegrees)), 0, 1, 0);
+	glRotatef(f32(FMUL(AC->pose[2], k_tenthsToDegrees)), 0, 1, 0);
 	skel_poseBones((u8 *)&AC->legsModel, 0);
 	glLoadMatrixf(part_matrix((u8 *)&AC->chestModel.entries, chest->armsJoint, AC->lowDetail));
 	skel_poseBones((u8 *)&AC->armsModel, 0);
@@ -844,7 +844,7 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 	skel_poseBones((u8 *)&AC->headModel, 0);
 	glLoadMatrixf(part_matrix((u8 *)&AC->chestModel.entries, chest->boosterJoint, AC->lowDetail));
 	glRotatef(f32(fmul_m(fld_m(&AC->pose[0]), k_0_05f)), 0, 0, 1);
-	glRotatef(f32(fmul_m(fld_m(&AC->pose[1]), &k_tenthsToDegrees)), 1, 0, 0);
+	glRotatef(f32(FMUL(AC->pose[1], k_tenthsToDegrees)), 1, 0, 0);
 	skel_poseBones((u8 *)&AC->boosterModel, 0);
 	memcpy(grip, &g_vecZero, 12);   /* where the weapon is held, for the local player's view */
 	glLoadMatrixf(part_matrix((u8 *)&AC->armsModel.entries, arms->weaponJoints[0], AC->lowDetail));
@@ -876,7 +876,7 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 					if (!(v >= 0))
 						*seen = 0;
 				}
-				if (!(fmul_m(fld_m(&AC->lockOnTime), &weapon->targetingTime) >= ST->actors[j].aimTime) && AC->team != ST->actors[j].team) {
+				if (!(FMUL(AC->lockOnTime, weapon->targetingTime) >= ST->actors[j].aimTime) && AC->team != ST->actors[j].team) {
 					if (!(lock[j] > 0)) {
 						sound_playVolume(0x12, 0x64);
 						*seen = 0.25f;
@@ -990,9 +990,9 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 					scratch[0] = f32(fmul_m(r, &weapon->burstStep[0]));
 					scratch[1] = f32(fmul_m(r, &weapon->burstStep[1]));
 					scratch[2] = f32(fmul_m(r, &weapon->burstStep[2]));
-					long double x = ((fmul_m(fld_m(&grip_shift[8]), &scratch[2]) + fmul_m(fld_m(&grip_shift[4]), &scratch[1])) + fmul_m(fld_m(&grip_shift[0]), &scratch[0])) + grip_shift[12];
-					long double y = ((fmul_m(fld_m(&grip_shift[9]), &scratch[2]) + fmul_m(fld_m(&grip_shift[5]), &scratch[1])) + fmul_m(fld_m(&grip_shift[1]), &scratch[0])) + grip_shift[13];
-					long double z = ((fmul_m(fld_m(&grip_shift[10]), &scratch[2]) + fmul_m(fld_m(&grip_shift[6]), &scratch[1])) + fmul_m(fld_m(&grip_shift[2]), &scratch[0])) + grip_shift[14];
+					long double x = ((FMUL(grip_shift[8], scratch[2]) + FMUL(grip_shift[4], scratch[1])) + FMUL(grip_shift[0], scratch[0])) + grip_shift[12];
+					long double y = ((FMUL(grip_shift[9], scratch[2]) + FMUL(grip_shift[5], scratch[1])) + FMUL(grip_shift[1], scratch[0])) + grip_shift[13];
+					long double z = ((FMUL(grip_shift[10], scratch[2]) + FMUL(grip_shift[6], scratch[1])) + FMUL(grip_shift[2], scratch[0])) + grip_shift[14];
 					const float *q = (const float *)(uintptr_t)((u32)model->entries + muzzle[0] * 100 + 0xc);
 					shot_at[0] = f32(((fmul_m(z, &q[8]) + fmul_m(y, &q[4])) + fmul_m(x, &q[0])) + q[12]);
 					shot_at[1] = f32(((fmul_m(x, &q[1]) + fmul_m(z, &q[9])) + fmul_m(y, &q[5])) + q[13]);
@@ -1019,10 +1019,10 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 							continue;
 						float d[3];
 						for (int c = 0; c < 3; c++)
-							d[c] = f32(fsub_m(fld_m(&tp[c]), &AC->pos[c]));
+							d[c] = f32(FSUB(tp[c], AC->pos[c]));
 						memcpy(scratch, d, 12);
 						long double R = fld_m(&weapon->splashRadius);
-						long double dd = (fmul_m(fld_m(&d[2]), &d[2]) + fmul_m(fld_m(&d[1]), &d[1])) + fmul_m(fld_m(&d[0]), &d[0]);
+						long double dd = (FMUL(d[2], d[2]) + FMUL(d[1], d[1])) + FMUL(d[0], d[0]);
 						if (R * R > dd) {
 							if (AC->slot == 0 && pr->items[4] >= 0)
 								actor_selectWeapon((Stage *)s, i, 4);
@@ -1077,9 +1077,9 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 				Mat4_multiply(inv_ungrip, muzzle_inv, ungrip);
 				Mat4_multiply(grip_shift, inv_ungrip, muzzle_m);
 				const float *o = &g_vecOrigin;
-				long double x = ((fmul_m(fld_m(&grip_shift[8]), &o[2]) + fmul_m(fld_m(&grip_shift[4]), &o[1])) + fmul_m(fld_m(&grip_shift[0]), &o[0])) + grip_shift[12];
-				long double y = ((fmul_m(fld_m(&grip_shift[9]), &o[2]) + fmul_m(fld_m(&grip_shift[5]), &o[1])) + fmul_m(fld_m(&grip_shift[1]), &o[0])) + grip_shift[13];
-				long double z = ((fmul_m(fld_m(&grip_shift[10]), &o[2]) + fmul_m(fld_m(&grip_shift[6]), &o[1])) + fmul_m(fld_m(&grip_shift[2]), &o[0])) + grip_shift[14];
+				long double x = ((FMUL(grip_shift[8], o[2]) + FMUL(grip_shift[4], o[1])) + FMUL(grip_shift[0], o[0])) + grip_shift[12];
+				long double y = ((FMUL(grip_shift[9], o[2]) + FMUL(grip_shift[5], o[1])) + FMUL(grip_shift[1], o[0])) + grip_shift[13];
+				long double z = ((FMUL(grip_shift[10], o[2]) + FMUL(grip_shift[6], o[1])) + FMUL(grip_shift[2], o[0])) + grip_shift[14];
 				const float *q = (const float *)(uintptr_t)((u32)model->entries + muzzle[0] * 100 + 0xc);
 				shot_at[0] = f32(((fmul_m(z, &q[8]) + fmul_m(y, &q[4])) + fmul_m(x, &q[0])) + q[12]);
 				shot_at[1] = f32(((fmul_m(x, &q[1]) + fmul_m(z, &q[9])) + fmul_m(y, &q[5])) + q[13]);
@@ -1151,7 +1151,7 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 			else
 				scratch[1] = f32(fmul_m(fld_m(&AC->spawnAge), k_0_333333f));
 			if (i == ST->playerActor)
-				scratch[1] = f32(fmul_m(fld_m(&scratch[1]), &k_0_5f));
+				scratch[1] = f32(FMUL(scratch[1], k_0_5f));
 			emit(s, a, legs->emitters, &legs->emitterCount, (u8 *)&AC->legsModel.entries, booster, scratch, fx);
 			emit(s, a, booster->emitters, &booster->emitterCount, (u8 *)&AC->boosterModel.entries, booster, scratch, fx);
 		}
@@ -1186,14 +1186,14 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 		BITS(AC->spawnAge) = BITS(AC->armorDeadline);
 	AC->glow = 0.0f;   /* the glow: a fresh shot's flash, and speed unless cloaked */
 	if (AC->fireAnim > 0 && !(AC->fireAnim >= 0.5f)) {
-		long double g = fsub_m(fld_m(&k_0_5f), &AC->fireAnim);
+		long double g = FSUB(k_0_5f, AC->fireAnim);
 		AC->glow = (float)(g + g);
 	}
 	if ((((u32)AC->timerFlags) & 0x200) && AC->hackingLevel >= ST->actors[ST->playerActor].hackingLevel) {
 		if (AC->effectScale > 1.0f)
-			AC->glow = f32(fadd_m(fmul_m(fsub_m(fld_m(&AC->effectScale), &k_1f), &k_0_2f), &AC->glow));
+			AC->glow = f32(fadd_m(fmul_m(FSUB(AC->effectScale, k_1f), &k_0_2f), &AC->glow));
 	} else
-		AC->glow = f32(fadd_m(fmul_m(fld_m(&AC->effectScale), &k_0_2f), &AC->glow));
+		AC->glow = f32(fadd_m(FMUL(AC->effectScale, k_0_2f), &AC->glow));
 	goto timers;
 tail:   /* 45cdb1: held by the script */
 	AC->armorDeadline = f32(fadd_m(fadd_m(fld_m(dt), &AC->spawnAge), &k_10f));
@@ -1233,7 +1233,7 @@ timers:
 	countdown(&AC->timers[2], dt);
 	countdown(&AC->timers[3], dt);
 	for (int c = 0; c < 3; c++)   /* this frame's move */
-		AC->move[c] = f32(fsub_m(fld_m(&AC->nextPos[c]), &AC->pos[c]));
+		AC->move[c] = f32(FSUB(AC->nextPos[c], AC->pos[c]));
 	AC->netFired = 0;
 	if (AC->controlledBy == ST->playerActor) {   /* the state bits sent with the actor */
 		u32 f = 0;

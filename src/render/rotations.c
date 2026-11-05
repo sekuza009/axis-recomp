@@ -81,13 +81,13 @@ long double (angle_turn)(u32 a, u32 b)
 {
 	float B = (float)FUN_0046c100_bits(b), A = (float)FUN_0046c100_bits(a);
 	if (B > A) {
-		X d = fsub_m(fld_m(&B), &A);
+		X d = FSUB(B, A);
 		if (d > HALF_TURN)
 			return fsubr_m(fadd_m(fld_m(&A), TURN), &B);
 		return d;
 	}
 	X b2 = fld_m(&B);
-	if (fsub_m(fld_m(&A), &B) > HALF_TURN)
+	if (FSUB(A, B) > HALF_TURN)
 		b2 = fadd_m(b2, TURN);
 	return fsub_m(b2, &A);
 }

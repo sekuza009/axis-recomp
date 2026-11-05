@@ -44,9 +44,9 @@ static int facing(long double dot)
 /* a vertex's offset from a light at p: the vector into d, its squared length returned unrounded */
 static long double offset(const float *v, const float *p, float *d)
 {
-	d[0] = f32(fsub_m(fld_m(&v[0]), &p[0]));
-	d[1] = f32(fsub_m(fld_m(&v[1]), &p[1]));
-	d[2] = f32(fsub_m(fld_m(&v[2]), &p[2]));
+	d[0] = f32(FSUB(v[0], p[0]));
+	d[1] = f32(FSUB(v[1], p[1]));
+	d[2] = f32(FSUB(v[2], p[2]));
 	return (MUL(&d[2], &d[2]) + MUL(&d[1], &d[1])) + MUL(&d[0], &d[0]);
 }
 
@@ -122,7 +122,7 @@ void (shape_getShadingColorBufferBy)(u8 *out, int first, const Part *part, const
 			const float r = l->radius;
 			int reaches = 1;
 			for (int a = 0; a < 3; a++)
-				if (!(fadd_m(fld_m(&p[a]), &r) > part->min[a]) || fsub_m(fld_m(&p[a]), &r) >= part->max[a])
+				if (!(FADD(p[a], r) > part->min[a]) || FSUB(p[a], r) >= part->max[a])
 					reaches = 0;
 			if (!reaches) {
 				if (first == 1)
@@ -131,7 +131,7 @@ void (shape_getShadingColorBufferBy)(u8 *out, int first, const Part *part, const
 			}
 			long double rr = MUL(&r, &r);
 			float r2 = f32(rr), inner = f32(fmul_m(rr, &k_0_2f));
-			float range = f32(fsub_m(fld_m(&r2), &inner));
+			float range = f32(FSUB(r2, inner));
 			for (int j = 0; j < part->count; j++) {
 				const u8 *b = part->base + j * 4;
 				long double dd = offset(part->verts + j * 3, p, d);
@@ -142,7 +142,7 @@ void (shape_getShadingColorBufferBy)(u8 *out, int first, const Part *part, const
 					continue;
 				}
 				if (d2 > inner) {
-					int k = ftol(fmul_m(fsubr_m(fdiv_m(fsub_m(fld_m(&d2), &inner), &range), &k_1f), &k_256f));
+					int k = ftol(fmul_m(fsubr_m(fdiv_m(FSUB(d2, inner), &range), &k_1f), &k_256f));
 					if (k > 0x100)
 						k = 0x100;
 					if (first == 1)
@@ -178,7 +178,7 @@ void (shape_getShadingColorBufferBy)(u8 *out, int first, const Part *part, const
 					continue;
 				}
 				if (d2 > inner) {
-					int k = ftol(fdiv_m(fmul_m(fld_m(&inner), &k_256f), &d2));
+					int k = ftol(fdiv_m(FMUL(inner, k_256f), &d2));
 					if (k > 0x100)
 						k = 0x100;
 					int cr = mul(k, R) >> 8, cg = mul(k, G) >> 8, cb = mul(k, B) >> 8;
@@ -283,12 +283,12 @@ static void water_point(u8 *scene, u8 *layer, u8 *part, int at, int tex_at, floa
 	ShapePart *sp = (ShapePart *)part;
 	Stage *st = (Stage *)scene;
 	Vec3_rotateAxis(v, 2, angle);
-	v[0] = f32(fadd_m(fld_m(&v[0]), &st->cameraPos[0]));
-	v[2] = f32(fadd_m(fld_m(&v[2]), &st->cameraPos[2]));
+	v[0] = f32(FADD(v[0], st->cameraPos[0]));
+	v[2] = f32(FADD(v[2], st->cameraPos[2]));
 	memcpy(sp->vertices + at, v, 12);
 	float *t = (float *)(((u8 *)(sp)->texCoords) + tex_at);
-	t[0] = f32(fdiv_m(fld_m(&v[0]), &gl->texScale));
-	t[1] = f32(fdiv_m(fld_m(&v[2]), &gl->texScale));
+	t[0] = f32(FDIV(v[0], gl->texScale));
+	t[1] = f32(FDIV(v[2], gl->texScale));
 }
 
 /* 0x497d20 (thiscall on the scene): the ground's drawing lists for this frame. For each layer (0x20c bytes from
@@ -312,8 +312,8 @@ void THISCALL (ground_buildDrawLists)(u8 *s, void *view, float h)
 		u8 *water = st->layerBoxModel.parts + i * 0x80;
 		ShapePart *sp = (ShapePart *)water;
 		const float *size = &gl->cellSize, *origin = (const float *)(layer + 4);
-		int c0 = !(origin[0] >= min_x) ? ftol(fdiv_m(fsub_m(fld_m(&min_x), &origin[0]), size)) : 0;
-		int r0 = !(origin[2] >= min_z) ? ftol(fdiv_m(fsub_m(fld_m(&min_z), &origin[2]), size)) : 0;
+		int c0 = !(origin[0] >= min_x) ? ftol(fdiv_m(FSUB(min_x, origin[0]), size)) : 0;
+		int r0 = !(origin[2] >= min_z) ? ftol(fdiv_m(FSUB(min_z, origin[2]), size)) : 0;
 		int cols = gl->cols, rows = gl->rows;
 		long double e = fadd_m(fmul_m((long double)cols, size), &origin[0]);
 		int c1 = (e > max_x ? cols - ftol(fdiv_m(fsub_m(e, &max_x), size)) : cols) - 1;

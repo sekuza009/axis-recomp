@@ -497,15 +497,15 @@ void (freeCam_keys)(void)
 		float bf = f32(b);
 		(*(float *)&g_menuCamZ) = f32(fadd_m(b, &(*(float *)&g_menuCamZ)));
 		(*(float *)&g_menuCameraPos) = f32(fadd_m(a, &(*(float *)&g_menuCameraPos)));
-		g_armcCamDistance = f32(fadd_m(fld_m(&bf), &g_armcCamDistance));
+		g_armcCamDistance = f32(FADD(bf, g_armcCamDistance));
 	}
 	if (input_isDown(g_keyBackward) == 1) {
 		long double a = fmul_m(fmul_m(fld_m(frame), &g_armcLookSin), speed);
 		(*(float *)&g_menuCamX) = f32(fld_m(&(*(float *)&g_menuCamX)) - a);
 		float bf = f32(fmul_m(fmul_m(fld_m(&g_armcLookCos), frame), speed));
-		(*(float *)&g_menuCamZ) = f32(fsub_m(fld_m(&(*(float *)&g_menuCamZ)), &bf));
+		(*(float *)&g_menuCamZ) = f32(FSUB((*(float *)&g_menuCamZ), bf));
 		(*(float *)&g_menuCameraPos) = f32(fld_m(&(*(float *)&g_menuCameraPos)) - a);
-		g_armcCamDistance = f32(fsub_m(fld_m(&g_armcCamDistance), &bf));
+		g_armcCamDistance = f32(FSUB(g_armcCamDistance, bf));
 	}
 	if (input_isDown(g_keyStepLeft) == 1)
 		menuCamera_forward();
@@ -520,7 +520,7 @@ void (freeCam_keys)(void)
 	slot[1] = (*(u32 *)&g_freeCamHeight);
 	slot[2] = g_menuCamZ;
 	g_armcCamDistance = f32(fsubr_m(fmul_m(fld_m(&g_armcLookCos), (const float *)ADDR(k_50f)), &(*(float *)&g_menuCamZ)));
-	(*(float *)&g_menuCameraLookY) = f32(fadd_m(fld_m(&g_armcLookTilt), &g_freeCamHeight));
+	(*(float *)&g_menuCameraLookY) = f32(FADD(g_armcLookTilt, g_freeCamHeight));
 	if (input_justPressed(g_dikZ_2) == 1)
 		g_fovKeys = g_fovKeys == 1 ? 2 : 1;
 	if (input_justPressed(g_dik1) == 1)

@@ -494,7 +494,7 @@ void (armc_drawPanels)(void)
 		}
 		glEnd();
 		glPopMatrix();
-		long double angle = fadd_m(fmul_m(fld_m(&g_frameTime), &p->speed), &p->angle);
+		long double angle = fadd_m(FMUL(g_frameTime, p->speed), &p->angle);
 		float stored = f32(angle);
 		p->angle = stored;
 		if (angle > *&k_360f) {
@@ -504,17 +504,17 @@ void (armc_drawPanels)(void)
 		if (!(stored >= *&k_m360f))
 			BITS(p->angle) = 0x43b40000;   /* 360 */
 	}
-	long double size = fadd_m(fld_m(&g_panelRate3), &g_panelSize3);
+	long double size = FADD(g_panelRate3, g_panelSize3);
 	float stored = f32(size);
 	g_panelSize3 = stored;
 	if (size >= *k_600f)
-		g_panelRate3 = fmul_m(fld_m(&g_frameTime), &k_m2f);
+		g_panelRate3 = FMUL(g_frameTime, k_m2f);
 	if (!(stored > *&k_200f))   /* the stored size (panel 2 below compares the sum itself) */
 		g_panelRate3 = (long double)g_frameTime + g_frameTime;
-	size = fadd_m(fld_m(&g_panelRate2), &g_panelSize2);
+	size = FADD(g_panelRate2, g_panelSize2);
 	g_panelSize2 = size;
 	if (size >= *k_600f)
-		g_panelRate2 = fmul_m(fld_m(&g_frameTime), &k_m2f);
+		g_panelRate2 = FMUL(g_frameTime, k_m2f);
 	if (!(size > *&k_200f))
 		g_panelRate2 = (long double)g_frameTime + g_frameTime;
 }

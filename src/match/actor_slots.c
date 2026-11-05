@@ -534,13 +534,13 @@ void THISCALL (actor_drawIntoView)(u8 *s, int a, void *vv, int draw)
 	u8 *ac = (u8 *)&st->actors[a];
 	if (AC->state != 1 || AC->cameraValue == 1)
 		return;
-	float r = f32(fadd_m(fld_m(&st->cullMargin), &AC->radius));
+	float r = f32(FADD(st->cullMargin, AC->radius));
 	const float *cam = (const float *)st->cameraPos, *at = AC->pos;
 	for (int k = 0; k < 3; k++)
-		if (fsub_m(fld_m(&cam[k]), &r) > at[k])
+		if (FSUB(cam[k], r) > at[k])
 			return;
 	for (int k = 0; k < 3; k++)
-		if (!(fadd_m(fld_m(&r), &cam[k]) >= at[k]))
+		if (!(FADD(r, cam[k]) >= at[k]))
 			return;
 	u8 *tint = AC->tint;
 	int local = st->playerActor;
@@ -549,7 +549,7 @@ void THISCALL (actor_drawIntoView)(u8 *s, int a, void *vv, int draw)
 		tint[3] = a == local ? 0x40 : 0x10;
 	} else if (!(AC->spawnAge > *&k_3f)) {
 		if (!(AC->spawnAge >= *k_1_5f))
-			tint[0] = tint[1] = tint[2] = tint[3] = (u8)ftol(fmul_m(fld_m(&AC->spawnAge), &k_170f));
+			tint[0] = tint[1] = tint[2] = tint[3] = (u8)ftol(FMUL(AC->spawnAge, k_170f));
 		else {
 			tint[0] = tint[1] = tint[2] = (u8)(0xff - ftol(fmul_m(fsub_m(fld_m(&AC->spawnAge), k_1_5f), &k_170f)));
 			tint[3] = 0xff;
@@ -587,7 +587,7 @@ void THISCALL (actor_drawIntoView)(u8 *s, int a, void *vv, int draw)
 			if (g_highDetail == 0)
 				lists = 0;
 			else {
-				float size = f32(fsub_m(fld_m(&AC->tagBottomRight[0]), &AC->tagTopLeft[0]));
+				float size = f32(FSUB(AC->tagBottomRight[0], AC->tagTopLeft[0]));
 				if (fmul_m(fld_m(&k_640f) / (long double)gfx_getWidth(), k_40f) > size)
 					lists = 0;
 			}
@@ -682,18 +682,18 @@ static void mech_stats(u8 *s, u8 *ac, u8 *p, int check)
 		case 0x1e: AC->ammoBonus[1] += 100; break;
 		case 0x1f: AC->ammoBonus[3] += 100; break;
 		case 0x20:
-			AC->rangeBonus = f32(fadd_m(fld_m(&AC->rangeBonus), &k_10000f));
-			AC->lockOnTimeFactor = f32(fsub_m(fld_m(&AC->lockOnTimeFactor), &k_0_5f));
-			AC->targetKeepFactor = f32(fadd_m(fld_m(&AC->targetKeepFactor), &k_1f));
+			AC->rangeBonus = f32(FADD(AC->rangeBonus, k_10000f));
+			AC->lockOnTimeFactor = f32(FSUB(AC->lockOnTimeFactor, k_0_5f));
+			AC->targetKeepFactor = f32(FADD(AC->targetKeepFactor, k_1f));
 			AC->hackingBonus += 3;
 			break;
 		case 0x21:
-			AC->boostTimeFactor = f32(fadd_m(fld_m(&AC->boostTimeFactor), &k_0_5f));
-			AC->rechargeTimeFactor = f32(fsub_m(fld_m(&AC->rechargeTimeFactor), &k_0_5f));
-			AC->restTimeFactor = f32(fsub_m(fld_m(&AC->restTimeFactor), &k_0_5f));
+			AC->boostTimeFactor = f32(FADD(AC->boostTimeFactor, k_0_5f));
+			AC->rechargeTimeFactor = f32(FSUB(AC->rechargeTimeFactor, k_0_5f));
+			AC->restTimeFactor = f32(FSUB(AC->restTimeFactor, k_0_5f));
 			break;
 		case 0x22:
-			AC->loadFactor = f32(fadd_m(fld_m(&AC->loadFactor), &k_0_2f));
+			AC->loadFactor = f32(FADD(AC->loadFactor, k_0_2f));
 			break;
 		case 0x23:
 			AC->shieldFactor = f32(fadd_m(fld_m(&AC->shieldFactor), k_0_3f));
@@ -705,20 +705,20 @@ static void mech_stats(u8 *s, u8 *ac, u8 *p, int check)
 	AC->radiusSq = f32(hp * hp);
 	AC->detectionAngle = f32(fmul_m(level_factor(p, 3), &head->detectionAngle));
 	AC->hackingLevel = head->hackingLevel + AC->hackingBonus;
-	AC->lockOnTime = f32(fmul_m(fld_m(&head->lockOnTime), &AC->lockOnTimeFactor));
-	AC->targetKeepTime = f32(fmul_m(fld_m(&head->targetKeepTime), &AC->targetKeepFactor));
+	AC->lockOnTime = f32(FMUL(head->lockOnTime, AC->lockOnTimeFactor));
+	AC->targetKeepTime = f32(FMUL(head->targetKeepTime, AC->targetKeepFactor));
 	AC->loadMax = f32(fmul_m(fmul_m(level_factor(p, 4), &chest->weightLimit), &AC->loadFactor));
-	AC->load = f32(fadd_m(fadd_m(fadd_m(fld_m(&boost->weight), &legs->weight),
+	AC->load = f32(fadd_m(fadd_m(FADD(boost->weight, legs->weight),
 	                                   &arms->weight), &head->weight));
 	int type = st->gameType;
 	if (type < 2 || type > 0xb)
 		for (int k = 0; k < 6; k++) {
 			int it = pr->items[k];
 			if (it >= 0)
-				AC->load = f32(fadd_m(fld_m(&st->actorInfo[it].weight), &AC->load));
+				AC->load = f32(FADD(st->actorInfo[it].weight, AC->load));
 		}
 	long double over = AC->load > AC->loadMax
-		? fmul_m(fdiv_m(fsub_m(fld_m(&AC->load), &AC->loadMax), &AC->loadMax), &k_4f)
+		? fmul_m(fdiv_m(FSUB(AC->load, AC->loadMax), &AC->loadMax), &k_4f)
 		: fld_m(&k_0f);
 	AC->armorMax = ftol(fadd_m(level_factor(p, 2) * (long double)chest->maxArmor, &k_0_5f));
 	AC->shieldMax = ftol(fadd_m(fmul_m(level_factor(p, 2) * (long double)chest->maxShield, &AC->shieldFactor), &k_0_5f));
@@ -732,18 +732,18 @@ static void mech_stats(u8 *s, u8 *ac, u8 *p, int check)
 	if (!(v >= 0))
 		AC->mobility = 0.0f;
 	if (st->rocketArena == 1)
-		AC->mobility = f32(fmul_m(fld_m(&AC->mobility), &k_0_333f));
+		AC->mobility = f32(FMUL(AC->mobility, k_0_333f));
 	BITS(AC->leanPitch) = boost->lean;
-	AC->boostTime = f32(fmul_m(fld_m(&boost->activeTime[0]), &AC->boostTimeFactor));
-	AC->rechargeTime = f32(fmul_m(fld_m(&boost->activeTime[1]), &AC->rechargeTimeFactor));
-	AC->restTime = f32(fmul_m(fld_m(&boost->activeTime[2]), &AC->restTimeFactor));
+	AC->boostTime = f32(FMUL(boost->activeTime[0], AC->boostTimeFactor));
+	AC->rechargeTime = f32(FMUL(boost->activeTime[1], AC->rechargeTimeFactor));
+	AC->restTime = f32(FMUL(boost->activeTime[2], AC->restTimeFactor));
 	/* the legs' factors: the level's second value plus the legs' own, plus 1 */
 #define LEG(f) fadd_m(fadd_m(fmul_m((long double)g_profileRecords[pr->level].stats[5], &k_0_01f), &legs->f), &k_1f)
 	v = fmul_m(LEG(speedCorrection), &boost->normalSpeed[0]) * left;
 	AC->speed = f32(v);
 	if (!(v >= *&k_100f))
 		AC->speed = 100.0f;   /* 100 */
-	v = fmul_m(fld_m(&legs->inertia), &AC->speed);
+	v = FMUL(legs->inertia, AC->speed);
 	AC->moveAccel = f32(v);
 	if (st->rocketArena == 1)   /* (the check scales the stored value) */
 		AC->moveAccel = f32(fmul_m(check ? fld_m(&AC->moveAccel) : v, &k_0_333f));

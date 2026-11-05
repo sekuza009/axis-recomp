@@ -303,7 +303,7 @@ static void stat_bars(int x, int y, int step, const float *scale, float grey)
 	for (int k = 0; k < 9; k++) {
 		glBegin(GL_QUADS);
 		glColor4f(grey, grey, grey, 1.0f);
-		long double eased = fadd_m(fmul_m(fmul_m(fsub_m(fld_m(&target[k]), &bar[k]), frame), (const float *)ADDR(k_tenthsToDegrees)), &bar[k]);
+		long double eased = fadd_m(fmul_m(fmul_m(FSUB(target[k], bar[k]), frame), (const float *)ADDR(k_tenthsToDegrees)), &bar[k]);
 		bar[k] = f32(eased);
 		long double end = fadd_m(fmul_m(eased, (const float *)ADDR(k_0_01f)), k_0_05f);
 		float s = f32(end);
@@ -391,7 +391,7 @@ void (profile_drawPilotSelect)(void)
 	glEnable(GL_TEXTURE_2D);
 	texture = g_fontAsciiLarge;
 	tex_bind(g_textures->banks[texture / 512], texture % 512);
-	glColor4f(1.0f, 1.0f, 1.0f, f32(fsubr_m(fmul_m(fld_m(&g_profileFrameAlpha), &k_clockRate), &k_1f)));
+	glColor4f(1.0f, 1.0f, 1.0f, f32(fsubr_m(FMUL(g_profileFrameAlpha, k_clockRate), &k_1f)));
 	glBegin(GL_QUADS);
 	glTexCoord2f(0.0f, 0.5f);
 	y0 = ftol(fsub_m(fadd_m((long double)(Y0 + 0x4c), &y), &k_5f));

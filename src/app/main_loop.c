@@ -70,7 +70,7 @@ static inline double f64(long double x)
    leaves eax to callers that ignore it */
 void (menu_frame)(void)
 {
-	long double blink = fadd_m(fld_m(&g_frameTime), &g_cursorBlink);
+	long double blink = FADD(g_frameTime, g_cursorBlink);
 	g_cursorBlink = blink;
 	if (blink > k_1000000f)
 		g_cursorBlink = 100.0f;
@@ -83,7 +83,7 @@ void (menu_frame)(void)
 	if (g_screen == 300 && g_replayZoomIn && !g_dialogPending) {
 		g_viewAspect = f32(fsubr_m(fmul_m(fld_m(&g_frameTime), k_0_05f), &g_viewAspect));   /* 0.05 a frame */
 		g_armcCamDistance = fadd_m(fld_m((const float *)ADDR(g_armcCamDistance)), (const float *)ADDR(k_10f));                       /* the camera 10 back */
-		long double zoom = fadd_m(fld_m(&g_introZoom), &g_frameTime);
+		long double zoom = FADD(g_introZoom, g_frameTime);
 		g_introZoom = zoom;
 		if (!(g_viewAspect >= k_0_01f))
 			g_viewAspect = 0.01f;
@@ -392,7 +392,7 @@ static void far_point(float *v, int pitch, int yaw)
 static void about(float *out, const float *v, const u8 *actor)
 {
 	for (int k = 0; k < 3; k++)
-		out[k] = f32(fadd_m(fld_m(&v[k]), &((const Player *)actor)->pos[k]));
+		out[k] = f32(FADD(v[k], ((const Player *)actor)->pos[k]));
 }
 
 /* the free-camera part steps: the flag (F1 .. F5 held), the player's part field, the setter, the table size */
@@ -483,13 +483,13 @@ u32 THISCALL (match_freeCamFrame)(u8 *s)
 			SC->cameraAngle[0] = 890.0f;   /* 890 */
 	}
 	if (SC->turnLeftHeld) {
-		long double v = fsub_m(fld_m(&SC->cameraAngle[1]), &turn);
+		long double v = FSUB(SC->cameraAngle[1], turn);
 		SC->cameraAngle[1] = f32(v);
 		if (!(v >= 0))
 			SC->cameraAngle[1] = f32(fadd_m(v, (const float *)ADDR(k_3600f)));
 	}
 	if (SC->turnRightHeld) {
-		long double v = fadd_m(fld_m(&turn), &SC->cameraAngle[1]);
+		long double v = FADD(turn, SC->cameraAngle[1]);
 		SC->cameraAngle[1] = f32(v);
 		if (v >= k_3600f)
 			SC->cameraAngle[1] = f32(fsub_m(v, (const float *)ADDR(k_3600f)));
@@ -543,9 +543,9 @@ u32 THISCALL (match_freeCamFrame)(u8 *s)
 	Vec3_rotateAxis(cam, 1, ftol(fld_m(SC->cameraAngle)));
 	Vec3_rotateAxis(cam, 2, ftol(fld_m(&SC->cameraAngle[1])));
 	for (int k = 0; k < 3; k++)
-		cam[k] = f32(fadd_m(fld_m(&act->nextPos[k]), &cam[k]));
+		cam[k] = f32(FADD(act->nextPos[k], cam[k]));
 	for (int k = 0; k < 3; k++)
-		dir[k] = f32(fsub_m(fld_m(&act->nextPos[k]), &cam[k]));
+		dir[k] = f32(FSUB(act->nextPos[k], cam[k]));
 	up[0] = 0;
 	GAME_VAR(u32, &up[1]) = 0x3f800000;
 	up[2] = 0;
@@ -734,9 +734,9 @@ static void free_camera(u8 *s, const float *mv, u32 filter, Move *m)
 	int hit = collision_moveActor((u8 *)SCENE_STAGE(s), 500.0f, cam, mv, 0x43fa0000, 0, out, delta, &m->dist, m->plane, filter);
 	memcpy(cam, out, 12);
 	if (hit == 1) {
-		cam[0] = f32(fadd_m(fld_m(&delta[0]), &cam[0]));
-		cam[2] = f32(fadd_m(fld_m(&delta[2]), &cam[2]));
-		cam[1] = f32(fadd_m(fld_m(&delta[1]), &cam[1]));
+		cam[0] = f32(FADD(delta[0], cam[0]));
+		cam[2] = f32(FADD(delta[2], cam[2]));
+		cam[1] = f32(FADD(delta[1], cam[1]));
 	}
 	for (int k = 0; k < 3; k++) {
 		if (!(cam[k] >= SCENE_STAGE(s)->levelLow[k]))
@@ -773,7 +773,7 @@ static void orbit_from(u8 *s, const u8 *t, u32 preset, int eye)
 {
 	float *cam = (float *)SC->cameraPos, a[3] = { 0, 0, 0 }, b[3], to[3], d[3];
 	if (eye) {
-		a[1] = f32(fmul_m(fld_m(&((const Player *)t)->radius), &k_0_85f));   /* 0.85 */
+		a[1] = f32(FMUL(((const Player *)t)->radius, k_0_85f));   /* 0.85 */
 		Vec3_rotateAxis(a, 1, ftol(fld_m(SC->cameraAngle)));
 		Vec3_rotateAxis(a, 2, ftol(fld_m(&SC->cameraAngle[1])));
 	}
@@ -782,20 +782,20 @@ static void orbit_from(u8 *s, const u8 *t, u32 preset, int eye)
 	Vec3_rotateAxis(b, 1, ftol(fld_m(SC->cameraAngle)));
 	Vec3_rotateAxis(b, 2, ftol(fld_m(&SC->cameraAngle[1])));
 	for (int k = 0; k < 3; k++)
-		a[k] = f32(fadd_m(fld_m(&a[k]), &((const Player *)t)->pos[k]));
-	to[0] = f32(fadd_m(fld_m(&b[0]), &a[0]));
-	to[1] = f32(fadd_m(fld_m(&a[1]), &b[1]));
-	to[2] = f32(fadd_m(fld_m(&a[2]), &b[2]));
+		a[k] = f32(FADD(a[k], ((const Player *)t)->pos[k]));
+	to[0] = f32(FADD(b[0], a[0]));
+	to[1] = f32(FADD(a[1], b[1]));
+	to[2] = f32(FADD(a[2], b[2]));
 	if (collision_rayTrace((u8 *)SCENE_STAGE(s), a, to, cam) == 0)
 		memcpy(cam, to, 12);
 	for (int k = 0; k < 3; k++)
-		d[k] = f32(fsub_m(fld_m(&cam[k]), &a[k]));
+		d[k] = f32(FSUB(cam[k], a[k]));
 	if (Vec3_normalize(d) > 300.0f) {
-		long double dx = fmul_m(fld_m(&d[0]), &k_300f);
-		float dy = f32(fmul_m(fld_m(&d[1]), &k_300f)), dz = f32(fmul_m(fld_m(&d[2]), &k_300f));
+		long double dx = FMUL(d[0], k_300f);
+		float dy = f32(FMUL(d[1], k_300f)), dz = f32(FMUL(d[2], k_300f));
 		cam[0] = f32(fld_m(&cam[0]) - dx);
-		cam[1] = f32(fsub_m(fld_m(&cam[1]), &dy));
-		cam[2] = f32(fsub_m(fld_m(&cam[2]), &dz));
+		cam[1] = f32(FSUB(cam[1], dy));
+		cam[2] = f32(FSUB(cam[2], dz));
 	}
 	float *dir = SC->cameraDir;
 	dir[0] = dir[1] = 0;
@@ -824,38 +824,38 @@ static void pair_camera(u8 *s)
 	for (int j = 0; j < n; j++)
 		if (SC->players[j].active == 1 && j != me) {
 			for (int k = 0; k < 3; k++)
-				d[k] = f32(fsub_m(fld_m(&SC->players[me].pos[k]), &SC->players[j].pos[k]));
-			long double dist = fmul_m(fld_m(&d[2]), &d[2]) + fmul_m(fld_m(&d[1]), &d[1]);
-			dist = dist + fmul_m(fld_m(&d[0]), &d[0]);
+				d[k] = f32(FSUB(SC->players[me].pos[k], SC->players[j].pos[k]));
+			long double dist = FMUL(d[2], d[2]) + FMUL(d[1], d[1]);
+			dist = dist + FMUL(d[0], d[0]);
 			if (!(dist >= nearest)) {
 				nearest = (float)dist;
 				best = j;
 			}
 		}
 	if (best >= 0) {
-		long double x = fadd_m(fld_m(&SC->players[best].pos[0]), &SC->players[me].pos[0]);
-		float y = f32(fadd_m(fld_m(&SC->players[best].pos[1]), &SC->players[me].pos[1])), z = f32(fadd_m(fld_m(&SC->players[best].pos[2]), &SC->players[me].pos[2]));
+		long double x = FADD(SC->players[best].pos[0], SC->players[me].pos[0]);
+		float y = f32(FADD(SC->players[best].pos[1], SC->players[me].pos[1])), z = f32(FADD(SC->players[best].pos[2], SC->players[me].pos[2]));
 		mid[0] = f32(fmul_m(x, &k_0_5f));
-		mid[1] = f32(fmul_m(fld_m(&y), &k_0_5f));
-		mid[2] = f32(fmul_m(fld_m(&z), &k_0_5f));
+		mid[1] = f32(FMUL(y, k_0_5f));
+		mid[2] = f32(FMUL(z, k_0_5f));
 	} else {
-		float e[3] = { 0, 0, f32(fmul_m(fld_m(&SC->players[me].radius), &k_5f)) };   /* 5 heights */
+		float e[3] = { 0, 0, f32(FMUL(SC->players[me].radius, k_5f)) };   /* 5 heights */
 		Vec3_rotateAxis(e, 2, 100 - ftol(fld_m(&SC->players[me].yaw)));
 		me = SC->watchedPlayer;
 		for (int k = 0; k < 3; k++)
-			mid[k] = f32(fadd_m(fld_m(&e[k]), &SC->players[me].pos[k]));
+			mid[k] = f32(FADD(e[k], SC->players[me].pos[k]));
 	}
 	for (int k = 0; k < 3; k++)
-		t[k] = dir[k] = f32(fsub_m(fld_m(&SC->players[me].pos[k]), &mid[k]));
+		t[k] = dir[k] = f32(FSUB(SC->players[me].pos[k], mid[k]));
 	long double len = Vec3_normalize(dir);
-	long double three = fmul_m(fld_m(&SC->players[SC->watchedPlayer].radius), &k_3f);
+	long double three = FMUL(SC->players[SC->watchedPlayer].radius, k_3f);
 	for (int k = 0; k < 3; k++)
 		dir[k] = f32(fmul_m(three, &dir[k]));
 	for (int k = 0; k < 3; k++)
-		t[k] = f32(fadd_m(fld_m(&t[k]), &dir[k]));
+		t[k] = f32(FADD(t[k], dir[k]));
 	Vec3_rotateAxis(t, 2, ftol(fmul_m(fsub_m(len, &k_30000f), &k_m0_002f)));   /* (len - 30000) * -0.002 */
 	for (int k = 0; k < 3; k++)
-		cam[k] = f32(fadd_m(fld_m(&t[k]), &mid[k]));
+		cam[k] = f32(FADD(t[k], mid[k]));
 }
 
 /* the other presets: the look point (cameraTarget) moved half way to the followed player; when the view to it is
@@ -864,13 +864,13 @@ static void pair_camera(u8 *s)
 static void look_toward(u8 *s, const float *p)
 {
 	float *mid = SC->cameraTarget;
-	long double dx = fsub_m(fld_m(&p[0]), &mid[0]);
-	float dy = f32(fsub_m(fld_m(&p[1]), &mid[1])), dz = f32(fsub_m(fld_m(&p[2]), &mid[2]));
+	long double dx = FSUB(p[0], mid[0]);
+	float dy = f32(FSUB(p[1], mid[1])), dz = f32(FSUB(p[2], mid[2]));
 	long double hx = fmul_m(dx, &k_0_5f);
-	float hy = f32(fmul_m(fld_m(&dy), &k_0_5f)), hz = f32(fmul_m(fld_m(&dz), &k_0_5f));
+	float hy = f32(FMUL(dy, k_0_5f)), hz = f32(FMUL(dz, k_0_5f));
 	mid[0] = f32(fadd_m(hx, &mid[0]));
-	mid[1] = f32(fadd_m(fld_m(&hy), &mid[1]));
-	mid[2] = f32(fadd_m(fld_m(&hz), &mid[2]));
+	mid[1] = f32(FADD(hy, mid[1]));
+	mid[2] = f32(FADD(hz, mid[2]));
 }
 
 static void watch_camera(u8 *s)
@@ -886,7 +886,7 @@ static void watch_camera(u8 *s)
 		Vec3_rotateAxis(e, 2, ftol(fld_m(&SC->players[me].yaw)));
 		me = SC->watchedPlayer;
 		for (int k = 0; k < 3; k++)
-			cam[k] = f32(fadd_m(fld_m(&e[k]), &SC->players[me].pos[k]));
+			cam[k] = f32(FADD(e[k], SC->players[me].pos[k]));
 	}
 }
 
@@ -933,7 +933,7 @@ static void free_keys(u8 *s, float *mv, const float *speed, const float *turn)
 		mv[1] = f32(fsub_m(fld_m(&mv[1]), speed));
 	if (SC->holdBooster)
 		for (int k = 0; k < 3; k++)
-			mv[k] = f32(fmul_m(fld_m(&mv[k]), &k_3f));
+			mv[k] = f32(FMUL(mv[k], k_3f));
 	long double v = fsubr_m(fmul_m(fld_m(turn), &SC->mouseDy), SC->cameraAngle);
 	SC->cameraAngle[0] = (float)v;
 	if (v > 890.0f)
@@ -945,7 +945,7 @@ static void free_keys(u8 *s, float *mv, const float *speed, const float *turn)
 	if (v >= 3600.0f)
 		SC->cameraAngle[1] = f32(fsub_m(v, &k_3600f));
 	if (!(SC->cameraAngle[1] >= 0))
-		SC->cameraAngle[1] = f32(fadd_m(fld_m(&SC->cameraAngle[1]), &k_3600f));
+		SC->cameraAngle[1] = f32(FADD(SC->cameraAngle[1], k_3600f));
 }
 
 /* a count-down (seconds at +offset) by dt when running; 1 when it ran out this frame */
@@ -1002,7 +1002,7 @@ u32 THISCALL (replay_frame)(u8 *s)
 	}
 	scene_averageFrameTime(s);
 	/* the replay clock (wholeSeconds whole seconds, secondFraction the fraction) */
-	long double t = fadd_m(fld_m(&SC->secondFraction), &SC->frameTime);
+	long double t = FADD(SC->secondFraction, SC->frameTime);
 	SC->secondFraction = (float)t;
 	if (t > 1.0f) {
 		SC->wholeSeconds += ftol(t);
@@ -1081,12 +1081,12 @@ u32 THISCALL (replay_frame)(u8 *s)
 		flag_uploadAtlas(stage);
 		SC->flagUploadTimer = 0.0f;
 	}
-	long double sp = fmul_m(fld_m(&SC->frameTime), &k_2000f);   /* 2000 a second, at most spaceMargin */
+	long double sp = FMUL(SC->frameTime, k_2000f);   /* 2000 a second, at most spaceMargin */
 	float speed = (float)sp;
 	if (sp > SC->spaceMargin)
 		BITS(speed) = BITS(SC->spaceMargin);
 	float turn = f32(fmul_m(fmul_m(fmul_m((long double)view_angle(), &k_0_01666667f), &SC->frameTime), &k_50f));
-	float step = f32(fmul_m(fld_m(&SC->frameTime), &k_180f));
+	float step = f32(FMUL(SC->frameTime, k_180f));
 	/* the zoom keys: the preset's distance by (1 - 0.9 dt) */
 	if (SC->zoomInHeld == 1) {
 		long double m = !(SC->frameTime >= 1.0f) ? fld_m(&SC->frameTime) : fld_m(&k_1f);
@@ -1138,10 +1138,10 @@ u32 THISCALL (replay_frame)(u8 *s)
 		item_update(stage, BITS(dt));
 		choose_followed(s, follow);
 		if (SC->manualPick[0] == 0)
-			SC->followTime = f32(fadd_m(fld_m(&dt), &SC->followTime));
+			SC->followTime = f32(FADD(dt, SC->followTime));
 		if (SC->manualPick[1] == 0)
-			SC->presetTime = f32(fadd_m(fld_m(&dt), &SC->presetTime));
-		SC->replayTime = f32(fadd_m(fld_m(&dt), &SC->replayTime));
+			SC->presetTime = f32(FADD(dt, SC->presetTime));
+		SC->replayTime = f32(FADD(dt, SC->replayTime));
 	}
 	for (int i = 0; i < SC->playerCount; i++)
 		if (SC->players[i].killPending == 1) {
@@ -1214,7 +1214,7 @@ u32 THISCALL (replay_frame)(u8 *s)
 			memcpy(p, r->pos, 12);
 			for (int l = 0; l < 8; l++) {
 				for (int k = 0; k < 3; k++)
-					q[k] = f32(k_star[l][k] > 0 ? fadd_m(fld_m(&p[k]), &k_100f) : fsub_m(fld_m(&p[k]), &k_100f));
+					q[k] = f32(k_star[l][k] > 0 ? FADD(p[k], k_100f) : FSUB(p[k], k_100f));
 				ViewVolume_addSegment(view, (const void *)OBJ(g_packedYellow), p, q, 1);
 			}
 		}
@@ -1308,10 +1308,10 @@ static const u8 *spawn_point(u8 *s, int doubled)
 			const float *pos = ((Player *)ACTOR_AT(j))->pos, *at = SC->spawnPoints[r].pos;
 			float d[3];
 			for (int k = 0; k < 3; k++)
-				d[k] = f32(fsub_m(fld_m(&pos[k]), &at[k]));
-			long double reach = doubled ? fld_m(&((Player *)ACTOR_AT(j))->radius) * 2 : fmul_m(fld_m(&((Player *)ACTOR_AT(j))->radius), &k_5f);
-			long double dist = fmul_m(fld_m(&d[2]), &d[2]) + fmul_m(fld_m(&d[1]), &d[1]);
-			dist = dist + fmul_m(fld_m(&d[0]), &d[0]);
+				d[k] = f32(FSUB(pos[k], at[k]));
+			long double reach = doubled ? fld_m(&((Player *)ACTOR_AT(j))->radius) * 2 : FMUL(((Player *)ACTOR_AT(j))->radius, k_5f);
+			long double dist = FMUL(d[2], d[2]) + FMUL(d[1], d[1]);
+			dist = dist + FMUL(d[0], d[0]);
 			if (reach * reach > dist) {
 				taken = 1;
 				break;
@@ -1407,23 +1407,23 @@ static void killer_view(u8 *s, const u8 *t)
 	float *cam = (float *)SC->cameraPos, *head = (float *)((const Player *)t)->deathPos, d[3], p[3];
 	int k = act->lastAttacker;
 	for (int j = 0; j < 3; j++)
-		d[j] = f32(fsub_m(fld_m(&((Player *)ACTOR_AT(k))->pos[j]), &head[j]));
+		d[j] = f32(FSUB(((Player *)ACTOR_AT(k))->pos[j], head[j]));
 	Vec3_normalize(d);
-	long double r = fmul_m(fld_m(&((const Player *)t)->radius), &k_m2f);   /* -2 heights */
+	long double r = FMUL(((const Player *)t)->radius, k_m2f);   /* -2 heights */
 	for (int j = 0; j < 3; j++)
 		p[j] = f32(fmul_m(r, &d[j]));
 	for (int j = 0; j < 3; j++)
-		p[j] = f32(fadd_m(fld_m(&p[j]), &head[j]));
+		p[j] = f32(FADD(p[j], head[j]));
 	if (collision_rayTrace((u8 *)SCENE_STAGE(s), head, p, cam) == 0)
 		memcpy(cam, p, 12);
 	for (int j = 0; j < 3; j++)
-		d[j] = f32(fsub_m(fld_m(&cam[j]), &head[j]));
+		d[j] = f32(FSUB(cam[j], head[j]));
 	if (Vec3_normalize(d) > 300.0f) {
-		long double dx = fmul_m(fld_m(&d[0]), &k_300f);
-		float dy = f32(fmul_m(fld_m(&d[1]), &k_300f)), dz = f32(fmul_m(fld_m(&d[2]), &k_300f));
+		long double dx = FMUL(d[0], k_300f);
+		float dy = f32(FMUL(d[1], k_300f)), dz = f32(FMUL(d[2], k_300f));
 		cam[0] = f32(fld_m(&cam[0]) - dx);
-		cam[1] = f32(fsub_m(fld_m(&cam[1]), &dy));
-		cam[2] = f32(fsub_m(fld_m(&cam[2]), &dz));
+		cam[1] = f32(FSUB(cam[1], dy));
+		cam[2] = f32(FSUB(cam[2], dz));
 	}
 	look_toward(s, ((Player *)ACTOR_AT(act->lastAttacker))->pos);
 	for (int j = 0; j < 3; j++)
@@ -1446,8 +1446,8 @@ static void look_at(u8 *s, const float *p)
 /* ((m[a] * v[ia] + m[b] * v[ib]) + m[c] * v[ic]) + m[t], rounded */
 static float mrow(const float *m, const float *v, int a, int ia, int b, int ib, int c, int ic, int t)
 {
-	long double x = fmul_m(fld_m(&m[a]), &v[ia]) + fmul_m(fld_m(&m[b]), &v[ib]);
-	return f32(fadd_m(x + fmul_m(fld_m(&m[c]), &v[ic]), &m[t]));
+	long double x = FMUL(m[a], v[ia]) + FMUL(m[b], v[ib]);
+	return f32(fadd_m(x + FMUL(m[c], v[ic]), &m[t]));
 }
 
 /* preset 1 of the local player's camera: at the selected weapon's muzzle (its part's bone matrix, armsModel.entries), a
@@ -1490,17 +1490,17 @@ static void muzzle_camera(u8 *s, const u8 *t)
 	Vec3_rotateAxis(E, 1, ftol(fld_m(SC->cameraAngle)));
 	Vec3_rotateAxis(E, 2, ftol(fld_m(&SC->cameraAngle[1])));
 	for (int k = 0; k < 3; k++)
-		E[k] = f32(fadd_m(fld_m(&E[k]), &act->pos[k]));
+		E[k] = f32(FADD(E[k], act->pos[k]));
 	float f;
 	BITS(f) = BITS(act->weaponLower);
-	long double dx = fsub_m(fld_m(&P[0]), &E[0]);
-	float dy = f32(fsub_m(fld_m(&P[1]), &E[1])), dz = f32(fsub_m(fld_m(&P[2]), &E[2]));
+	long double dx = FSUB(P[0], E[0]);
+	float dy = f32(FSUB(P[1], E[1])), dz = f32(FSUB(P[2], E[2]));
 	long double hx = fmul_m(dx, &f);
-	float hy = f32(fmul_m(fld_m(&dy), &f)), hz = f32(fmul_m(fld_m(&dz), &f));
+	float hy = f32(FMUL(dy, f)), hz = f32(FMUL(dz, f));
 	float *cam = (float *)SC->cameraPos, *dir = SC->cameraDir;
 	cam[0] = f32(fadd_m(hx, &E[0]));
-	cam[1] = f32(fadd_m(fld_m(&hy), &E[1]));
-	cam[2] = f32(fadd_m(fld_m(&hz), &E[2]));
+	cam[1] = f32(FADD(hy, E[1]));
+	cam[2] = f32(FADD(hz, E[2]));
 	dir[0] = dir[1] = 0;
 	dir[2] = 1.0f;
 }
@@ -1513,7 +1513,7 @@ static int slow_end(u8 *s)
 		return 0;
 	if (SC->timeLimit > 0 && SC->elapsed >= SC->timeLimit * 60)
 		return 0;
-	if (!(fsub_m(fld_m(&k_10f), &SC->endTime) < 2.0f))
+	if (!(FSUB(k_10f, SC->endTime) < 2.0f))
 		return 0;
 	return SC->lastDeath >= 0 && SC->players[SC->lastDeath].state == 2;
 }
@@ -1725,7 +1725,7 @@ void THISCALL (match_frame)(u8 *s)
 	me = SC->localPlayer;
 	if (me >= 0 && SC->localTeam >= 0 && SC->players[me].active == 0 && SC->chatMode == 0 && SC->matchOver == 0
 	    && SC->matchLeaving == 0) {
-		long double v = fadd_m(fld_m(&SC->frameTime), &SC->respawnTime);
+		long double v = FADD(SC->frameTime, SC->respawnTime);
 		SC->respawnTime = (float)v;
 		if (!(v < 10.0f)) {   /* respawn after 10 s */
 			SC->respawnTime = 0.0f;
@@ -1740,12 +1740,12 @@ void THISCALL (match_frame)(u8 *s)
 		bot_spawns(s);
 	stage_selectActor((Stage *)stage, SC->playing == 1 && SC->cameraMode == 1 ? SC->localPlayer : -1);
 	/* the keys' rates */
-	long double sp = fmul_m(fld_m(&SC->frameTime), &k_2000f);
+	long double sp = FMUL(SC->frameTime, k_2000f);
 	float speed = (float)sp;
 	if (sp > SC->spaceMargin)
 		BITS(speed) = BITS(SC->spaceMargin);
 	float turn = f32(fmul_m(fmul_m(fmul_m((long double)view_angle(), &k_0_01666667f), &SC->frameTime), &k_75f));
-	float step = f32(fmul_m(fld_m(&SC->frameTime), &k_180f));
+	float step = f32(FMUL(SC->frameTime, k_180f));
 	if (SC->actionKey == 1)
 		for (int k = 0; k < 10; k++)
 			for (int f = 0; f < 6; f++)
@@ -1764,9 +1764,9 @@ void THISCALL (match_frame)(u8 *s)
 		if (SC->matchOver == 1 || SC->matchLeaving == 1) {
 			if (SC->matchOver == 1 && SC->ranking[0] != SC->localPlayer) {   /* the round's end: the camera turns */
 				float *v = (float *)&SC->cameraSettings[0][SC->cameraMode];
-				*v = f32(fsubr_m(fmul_m(fld_m(&turn), &SC->mouseDy), v));
+				*v = f32(fsubr_m(FMUL(turn, SC->mouseDy), v));
 				v = (float *)&SC->cameraSettings[1][SC->cameraMode];
-				*v = f32(fsubr_m(fmul_m(fld_m(&turn), &SC->mouseDx), v));
+				*v = f32(fsubr_m(FMUL(turn, SC->mouseDx), v));
 			}
 			SC->holdFire = 0;
 			SC->weaponKey = -1;
@@ -1781,7 +1781,7 @@ void THISCALL (match_frame)(u8 *s)
 			SC->holdAltitude = SC->holdBackward = 1;
 			SC->holdForward = 0;
 		}
-		float pitch = f32(fmul_m(fld_m(&turn), &SC->mouseDy)), yaw = f32(fmul_m(fld_m(&turn), &SC->mouseDx));
+		float pitch = f32(FMUL(turn, SC->mouseDy)), yaw = f32(FMUL(turn, SC->mouseDx));
 		actor_setInput(stage, (*(u32 *)&SC->localPlayer), (*(u32 *)&SC->holdForward), (*(u32 *)&SC->holdBackward), (*(u32 *)&SC->holdStepLeft), (*(u32 *)&SC->holdStepRight), BITS(pitch),
 		             BITS(yaw), (*(u32 *)&SC->holdFire), (*(u32 *)&SC->holdAltitude), (*(u32 *)&SC->holdBooster), (*(u32 *)&SC->weaponKey), (*(u32 *)&SC->prevWeaponPressed), (*(u32 *)&SC->nextWeaponPressed));
 	}
@@ -1823,7 +1823,7 @@ void THISCALL (match_frame)(u8 *s)
 		stage_updateObjects(stage, BITS(dt));
 		stage_advanceScenePath(stage, BITS(dt));
 		if (SC->sessionMode == 1) {   /* the server checks the local player's parts every 20 s */
-			long double v = fsub_m(fld_m(&SC->partsCheckTime), &SC->frameTime);
+			long double v = FSUB(SC->partsCheckTime, SC->frameTime);
 			SC->partsCheckTime = (float)v;
 			if (!(v >= 0) && SC->localPlayer >= 0 && SC->players[SC->localPlayer].state == 1) {
 				if (actor_checkDataLoss(stage, SC->localPlayer) == 0) {
@@ -1885,9 +1885,9 @@ void THISCALL (match_frame)(u8 *s)
 				}
 			}
 			if (SC->manualPick[0] == 0)
-				SC->followTime = f32(fadd_m(fld_m(&SC->followTime), &SC->frameTime));
+				SC->followTime = f32(FADD(SC->followTime, SC->frameTime));
 			if (SC->manualPick[1] == 0)
-				SC->presetTime = f32(fadd_m(fld_m(&SC->frameTime), &SC->presetTime));
+				SC->presetTime = f32(FADD(SC->frameTime, SC->presetTime));
 		}
 	}
 	for (int i = 0; i < SC->playerCount; i++)
@@ -1903,7 +1903,7 @@ void THISCALL (match_frame)(u8 *s)
 		notice_printCentre((Scene *)s, ((Player *)ACTOR_AT(me))->message);   /* (its own text as the format) */
 	/* the start count (3, 2, 1, go) */
 	if (SC->startCount > 0) {
-		long double v = fsub_m(fld_m(&SC->startCount), &SC->frameTime);
+		long double v = FSUB(SC->startCount, SC->frameTime);
 		SC->startCount = (float)v;
 		if (!(v >= 0)) {
 			SC->startCount = 0.0f;
@@ -1945,17 +1945,17 @@ void THISCALL (match_frame)(u8 *s)
 		SC->rankingTimer = 5.0f;
 	}
 	if (SC->recording == 1)
-		SC->recordTime = f32(fadd_m(fld_m(&SC->frameTime), &SC->recordTime));
+		SC->recordTime = f32(FADD(SC->frameTime, SC->recordTime));
 	/* the network's per-player updates */
 	if (SC->localPlayer >= 0) {
-		long double v = fsub_m(fld_m(&SC->stateSendTimer), &SC->frameTime);
+		long double v = FSUB(SC->stateSendTimer, SC->frameTime);
 		SC->stateSendTimer = (float)v;
 		if (!(v > 0)) {
 			SC->sendFlags[SC->localPlayer][0] = 1;
 			SC->stateSendTimer = 3.0f;
 		}
 		if (SC->players[SC->localPlayer].team >= 0) {
-			v = fsub_m(fld_m(&SC->infoSendTimer), &SC->frameTime);
+			v = FSUB(SC->infoSendTimer, SC->frameTime);
 			SC->infoSendTimer = (float)v;
 			if (!(v > 0)) {
 				SC->sendFlags[SC->localPlayer][1] = 1;
@@ -1983,7 +1983,7 @@ void THISCALL (match_frame)(u8 *s)
 				SC->sendTimer = (float)-fld_m(&SC->frameTime);
 			}
 		}
-		SC->sendTimer = f32(fadd_m(fld_m(&SC->sendTimer), &SC->frameTime));
+		SC->sendTimer = f32(FADD(SC->sendTimer, SC->frameTime));
 	}
 	/* the round's end */
 	if (SC->endTime > 0) {
@@ -1999,9 +1999,9 @@ void THISCALL (match_frame)(u8 *s)
 				else if (k == 2)
 					net_announceServerEnd(s);
 			} else
-				SC->endNoticeTime = f32(fadd_m(fld_m(&SC->frameTime), &SC->endNoticeTime));
+				SC->endNoticeTime = f32(FADD(SC->frameTime, SC->endNoticeTime));
 		}
-		long double v = fsub_m(fld_m(&SC->endTime), &SC->frameTime);
+		long double v = FSUB(SC->endTime, SC->frameTime);
 		SC->endTime = (float)v;
 		if (!(v >= 0)) {
 			if (g_startedFromLobby != 0) {
@@ -2181,7 +2181,7 @@ void THISCALL (match_frame)(u8 *s)
 	if (SC->chatMode != 0)
 		SC->keyGuard = 0.1f;   /* 0.1 */
 	if (SC->ladderGame == 1) {
-		long double v = fsub_m(fld_m(&SC->scoreCommitTimer), &SC->frameTime);
+		long double v = FSUB(SC->scoreCommitTimer, SC->frameTime);
 		SC->scoreCommitTimer = (float)v;
 		if (!(v >= 0))
 			profile_addMatchScores(sc);
@@ -2196,7 +2196,7 @@ void THISCALL (match_frame)(u8 *s)
 					SC->quitDelay = 3.0f;
 					music_shutdown();
 				} else
-					SC->lostTime = f32(fadd_m(fld_m(&SC->lostTime), &SC->frameTime));
+					SC->lostTime = f32(FADD(SC->lostTime, SC->frameTime));
 			}
 			if (SC->matchLeaving == 0 && netq_resends() >= 0x80) {
 				netq_clearResends();
@@ -2214,7 +2214,7 @@ void THISCALL (match_frame)(u8 *s)
 	}
 	/* the match restart count */
 	if (SC->restartTimer > 0) {
-		long double v = fsub_m(fld_m(&SC->restartTimer), &SC->frameTime);
+		long double v = FSUB(SC->restartTimer, SC->frameTime);
 		SC->restartTimer = (float)v;
 		if (v > 0) {
 			if (ftol(fadd_m(v, &SC->frameTime)) != ftol(v))
@@ -2251,7 +2251,7 @@ void THISCALL (match_frame)(u8 *s)
 	}
 	/* the match's end: the log, back to the menu */
 	if (SC->matchLeaving == 1) {
-		long double v = fsub_m(fld_m(&SC->quitDelay), &SC->frameTime);
+		long double v = FSUB(SC->quitDelay, SC->frameTime);
 		SC->quitDelay = (float)v;
 		if (!(v > 0)) {
 			if (g_matchLogWritten == 0 && g_startedFromLobby != 0)
