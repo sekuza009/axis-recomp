@@ -410,7 +410,7 @@ typedef struct { u32 vtable; void *banks[6]; i32 count; } TextureManager;   /* t
 #define scene_findTeam(scene, team) GAME_THISFN(scene_findTeam, 0x463710, int, Scene *, int)(scene, team)   /* the team's slot or -1 */
 #define hud_drawEmblem(scene, emblem, x, y) GAME_THISFN(hud_drawEmblem, 0x4922c0, void, Scene *, int, int, int)(scene, emblem, x, y)
 #define hud_drawFlag(scene, player, x, y) GAME_THISFN(hud_drawFlag, 0x4924d0, void, Scene *, int, int, int)(scene, player, x, y)
-#define replay_drawIcon(scene, x, y, icon) GAME_THISFN(replay_drawIcon, 0x496820, void, Scene *, int, int, int)(scene, x, y, icon)
+#define hud_drawIcon(scene, x, y, icon) GAME_THISFN(hud_drawIcon, 0x496820, void, Scene *, int, int, int)(scene, x, y, icon)
 
 /* ---- main loop and match ---- */
 #define main_loop() GAME_FN(main_loop, 0x420280, void, void)()

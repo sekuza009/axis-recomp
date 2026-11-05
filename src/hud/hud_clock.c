@@ -29,7 +29,7 @@ void THISCALL (hud_drawClock)(Scene *scene)
 		sprintf(text, "%d", scene->scoreLimit - best);
 		text_drawSized((0x15 - (int)strlen(text)) * 13, 8, text, 16);
 		glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
-		replay_drawIcon(scene, 0xf9 - (int)strlen(text) * 13, 8, 1);
+		hud_drawIcon(scene, 0xf9 - (int)strlen(text) * 13, 8, 1);
 	}
 	if (scene->timeLimit > 0) {
 		int left = scene->timeLimit * 60;
@@ -39,7 +39,7 @@ void THISCALL (hud_drawClock)(Scene *scene)
 		sprintf(text, "%02d:%02d", left / 60, left % 60);
 		text_drawSized(0x187, 8, text, 16);
 		glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
-		replay_drawIcon(scene, 0x16f, 8, 2);
+		hud_drawIcon(scene, 0x16f, 8, 2);
 	}
 }
 
@@ -81,7 +81,7 @@ void THISCALL (hud_drawRecordIndicator)(Scene *scene)
 	int whole = ftol(scene->recordTime);
 	if (!((long double)scene->recordTime - whole >= 0.5f)) {        /* also taken for NaN, as the original */
 		glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
-		replay_drawIcon(scene, 0x10a, 0x140, 4);
+		hud_drawIcon(scene, 0x10a, 0x140, 4);
 		text_setColor(1.0f, 1.0f, 1.0f, 1.0f);
 		int seconds = ftol(scene->recordTime);
 		sprintf(text, "%02d:%02d", seconds / 60, seconds % 60);

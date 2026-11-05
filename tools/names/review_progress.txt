@@ -17,11 +17,11 @@
 [x] src/app/store_tables.c 176
 [x] src/app/timer.c 142
 [x] src/app/win32.c 841
-[ ] src/crt/crt_atof.c 469
-[ ] src/crt/crt_format.c 100
-[ ] src/hud/hud_clock.c 93
+[x] src/crt/crt_atof.c 469
+[x] src/crt/crt_format.c 100
+[x] src/hud/hud_clock.c 93
 [ ] src/hud/hud_escmenu.c 398
-[ ] src/hud/hud_icons.c 73
+[x] src/hud/hud_icons.c 73
 [ ] src/hud/hud_lockon.c 53
 [ ] src/hud/hud_main.c 517
 [ ] src/hud/hud_markers.c 137

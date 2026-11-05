@@ -127,7 +127,7 @@ static void main_score(Scene *scene, Player *player, int p)
 	hud_drawEmblem(scene, player->grade, x, 8);
 	x += 0x18;
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
-	replay_drawIcon(scene, x, 8, 0);
+	hud_drawIcon(scene, x, 8, 0);
 	text_setColor(1.0f, 1.0f, 1.0f, 1.0f);
 	sprintf(text, "%d", player->score);
 	text_drawSized(x + 0x18, 8, text, 16);
@@ -231,7 +231,7 @@ static void main_timers(Scene *scene, Player *player)
 		w = f32(w - wx(8.0f));
 		int x = ftol(w - wx(32.0f));
 		glEnable(GL_TEXTURE_2D);
-		tex_bind(g_textures->banks[scene->emblemTexture / 512], scene->emblemTexture % 512);
+		tex_bind(g_textures->banks[scene->iconTexture / 512], scene->iconTexture % 512);
 		glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 		glBegin(GL_QUADS);
 		float s0 = tex255(k * 32);

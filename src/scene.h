@@ -1597,7 +1597,7 @@ typedef struct Scene {
 	u8 _pad0bc06a4[0x4];
 	i32 hudBarTexture;   /* +0xbc06a8: texture id of the counters' plate and weapon slots (= Stage.effectTextures[3]) */
 	i32 markerTexture;   /* +0xbc06ac: texture id of the solo / team marks over players (= Stage.effectTextures[4]) */
-	i32 emblemTexture;   /* +0xbc06b0: texture id (manager * 512 + slot): emblems, 10 a row from texel 224 (= Stage.effectTextures[5]) */
+	i32 iconTexture;   /* +0xbc06b0: texture id (bank * 512 + slot) of the HUD's icon atlas: the grade badges (10 a row from texel 224; hud_drawEmblem), the counter and timer icons (8 a row from 96; hud_drawIcon) (= Stage.effectTextures[5]) */
 	i32 menuBoxTexture;   /* +0xbc06b4: texture id of the menu box cells (= Stage.effectTextures[6]) */
 	u8 _pad0bc06b8[0x21040];
 	i32 clearOn;   /* +0xbe16f8: = Stage.clearOn (the same word): 1: the screen is cleared to clearColour (the map\'s ground info) */
@@ -3145,7 +3145,7 @@ _Static_assert(offsetof(Scene, spaceMargin) == 0x1f4164 && sizeof(((Scene *)0)->
 _Static_assert(offsetof(Scene, hudTexture) == 0xbc06a0 && sizeof(((Scene *)0)->hudTexture) == 0x4, "scene.fields: Scene.hudTexture");
 _Static_assert(offsetof(Scene, hudBarTexture) == 0xbc06a8 && sizeof(((Scene *)0)->hudBarTexture) == 0x4, "scene.fields: Scene.hudBarTexture");
 _Static_assert(offsetof(Scene, markerTexture) == 0xbc06ac && sizeof(((Scene *)0)->markerTexture) == 0x4, "scene.fields: Scene.markerTexture");
-_Static_assert(offsetof(Scene, emblemTexture) == 0xbc06b0 && sizeof(((Scene *)0)->emblemTexture) == 0x4, "scene.fields: Scene.emblemTexture");
+_Static_assert(offsetof(Scene, iconTexture) == 0xbc06b0 && sizeof(((Scene *)0)->iconTexture) == 0x4, "scene.fields: Scene.iconTexture");
 _Static_assert(offsetof(Scene, menuBoxTexture) == 0xbc06b4 && sizeof(((Scene *)0)->menuBoxTexture) == 0x4, "scene.fields: Scene.menuBoxTexture");
 _Static_assert(offsetof(Scene, clearOn) == 0xbe16f8 && sizeof(((Scene *)0)->clearOn) == 0x4, "scene.fields: Scene.clearOn");
 _Static_assert(offsetof(Scene, clearColour) == 0xbe16fc && sizeof(((Scene *)0)->clearColour) == 0xc, "scene.fields: Scene.clearColour");

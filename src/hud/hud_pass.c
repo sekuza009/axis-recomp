@@ -96,7 +96,7 @@ void THISCALL (hud_pass)(Scene *scene)
 				replay_drawFollowedName(scene);
 				if (scene->playing == 0 && scene->cameraSlot >= 0 && scene->watchedPlayer >= 0) {
 					glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
-					replay_drawIcon(scene, 0x10, 0x10, 6);
+					hud_drawIcon(scene, 0x10, 0x10, 6);
 					text_setColor(1.0f, 1.0f, 1.0f, 1.0f);
 					int slot = scene->cameraSlot;
 					sprintf(text, "%d", slot > 0 ? slot : slot + 10);

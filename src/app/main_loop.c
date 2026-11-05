@@ -1235,7 +1235,7 @@ u32 THISCALL (replay_frame)(u8 *s)
 			PATCHED_THISCALL(0x48a1c0, void, void *)(s);                             /* replay_drawMessage */
 		if (SC->watchedPlayer >= 0) {
 			glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
-			PATCHED_THISCALL(0x48a1f7, void, void *, int, int, int)(s, 0x10, 0x10, 6);   /* replay_drawIcon */
+			PATCHED_THISCALL(0x48a1f7, void, void *, int, int, int)(s, 0x10, 0x10, 6);   /* hud_drawIcon */
 			text_setColor(1.0f, 1.0f, 1.0f, 1.0f);
 			int n = SC->cameraMode;
 			sprintf(text, (const char *)STR(0x4b0320, "%d"), n > 0 ? n : n + 10);
@@ -1243,7 +1243,7 @@ u32 THISCALL (replay_frame)(u8 *s)
 		}
 		if (!(SC->secondFraction >= 0.5f)) {
 			glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
-			PATCHED_THISCALL(0x48a299, void, void *, int, int, int)(s, 0x20e, 0x10, 5);   /* replay_drawIcon */
+			PATCHED_THISCALL(0x48a299, void, void *, int, int, int)(s, 0x20e, 0x10, 5);   /* hud_drawIcon */
 			text_setColor(1.0f, 1.0f, 1.0f, 1.0f);
 			sprintf(text, (const char *)STR(0x4c7cd8, "%02d:%02d"), SC->wholeSeconds / 60, SC->wholeSeconds % 60);
 			PATCHED_CALL(0x48a2ff, void, int, int, const char *, int)(0x226, 0x10, text, 0x10);   /* text_drawSized */

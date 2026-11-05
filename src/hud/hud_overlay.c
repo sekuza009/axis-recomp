@@ -27,7 +27,7 @@ void THISCALL (hud_drawFps)(Scene *scene)
 {
 	char text[256];
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
-	replay_drawIcon(scene, 0x1d9, 8, 3);
+	hud_drawIcon(scene, 0x1d9, 8, 3);
 	text_setColor(1.0f, 1.0f, 1.0f, 1.0f);
 	sprintf(text, "%4.1f", (double)scene->timer.fps);
 	text_drawSized(0x1f1, 8, text, 16);

@@ -59,7 +59,7 @@ void THISCALL (hud_drawRanking)(Scene *scene)
 				ranking_row(scene, p, &y);
 				if (scene->players[p].isCommander == 1) {
 					glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
-					replay_drawIcon(scene, 0x20c, y, scene->players[p].team + 9);
+					hud_drawIcon(scene, 0x20c, y, scene->players[p].team + 9);
 				}
 				y += 0x10;
 				drawn = 1;
@@ -78,7 +78,7 @@ void THISCALL (hud_drawRanking)(Scene *scene)
 			ranking_row(scene, p, &y);
 			if (scene->players[p].isKing == 1) {
 				glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
-				replay_drawIcon(scene, 0x20c, y, 8);
+				hud_drawIcon(scene, 0x20c, y, 8);
 			}
 			y += 0x10;
 		}

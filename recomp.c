@@ -3308,7 +3308,7 @@ void menu_drawCornerOrnaments(int x0, int y0, int x1, int y1);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void menu_drawTopRightOrnament(int x0, int y0, int x1);
 /* batch 93 (lifted/grp39.c) */
-/* (thiscall) hud_drawEmblem(n, x, y) / hud_drawFlag(i, x, y) / replay_drawIcon(x, y, i): a 2D icon from a HUD
+/* (thiscall) hud_drawEmblem(n, x, y) / hud_drawFlag(i, x, y) / hud_drawIcon(x, y, i): a 2D icon from a HUD
    texture atlas at a screen position scaled to the window (gfx_getWidth / gfx_getHeight): the name icon n (1..;
    10 per row; texture +0xbc06b0), the leader icon i (texture +0x22f86ac, or the GL texture +0x22f06a8 when +8 is
    set), the replay icon i (8 per row, white; texture +0xbc06b0) */
@@ -3317,7 +3317,7 @@ void THISCALL hud_drawEmblem(void *scene, int emblem, int x, int y);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void THISCALL hud_drawFlag(void *scene, int player, int x, int y);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-void THISCALL replay_drawIcon(void *scene, int x, int y, int icon);
+void THISCALL hud_drawIcon(void *scene, int x, int y, int icon);
 /* (lifted/grp39.c also holds hud_drawDigits, 0x46bdc0, not used: the patch DLL rewrites it in memory at start-up -
    texture corners half a texel into each digit cell (0x46be96) and the digit height for wide screens - so a copy of
    the code on disk would undo both fixes) */
@@ -3992,7 +3992,7 @@ void setup_frameControlsPage(void);
 /* 0x496610 (thiscall on the game) hud_drawClock(): with a score limit (+0x23423ad) the points still needed (team
    mode +0x22e7184 == 1: the better of +0x2221fbc / +0x2221fb8, else the leading player's +0x1eccb54 of record
    +0x23428f6 when there are any, +0x2342976), blinking red at 1 (by +0x22f040c), "%d" right-aligned with its icon
-   (replay_drawIcon 1); with a time limit (+0x23423b1 minutes) the time left (against +0x22f0408 seconds) as
+   (hud_drawIcon 1); with a time limit (+0x23423b1 minutes) the time left (against +0x22f0408 seconds) as
    "%02d:%02d", blinking red under 11 s, with icon 2. Text through text_drawSized (patched: native) */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void THISCALL hud_drawClock(void *scene);
@@ -4005,7 +4005,7 @@ void THISCALL hud_drawPressFire(void *scene);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void THISCALL hud_drawReadyStart(void *scene);
 /* 0x496d10 (thiscall on the game) hud_drawRecordIndicator(): while recording, blinking by the time +0x2340d29: the
-   record icon (replay_drawIcon 4), the time as "%02d:%02d" and "[AutoPlay %s]" with the file name +0x2340d0c */
+   record icon (hud_drawIcon 4), the time as "%02d:%02d" and "[AutoPlay %s]" with the file name +0x2340d0c */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void THISCALL hud_drawRecordIndicator(void *scene);
 /* 0x496a30 (thiscall on the game) hud_drawMatchResult(): team games (+0x22e7184 == 1): a band and "RED TEAM WIN!" /
@@ -11897,8 +11897,8 @@ ST(hud_drawEmblem, hudicon_setup(); screen_random();, (TC(void, 0x4922c0, char *
    (hud_drawEmblem(BUF, (DWORD)g_a[0], (DWORD)g_a[1], (DWORD)g_a[2]), 0))
 ST(hud_drawFlag, hudicon_setup(); S32(BUF, 8) = irnd(0, 1); screen_random();, (TC(void, 0x4924d0, char *, int, int, int)(BUF, g_a[0], g_a[1], g_a[2]), 0),
    (hud_drawFlag(BUF, (DWORD)g_a[0], (DWORD)g_a[1], (DWORD)g_a[2]), 0))
-ST(replay_drawIcon, hudicon_setup();, (TC(void, 0x496820, char *, int, int, int)(BUF, g_a[1], g_a[2], g_a[0]), 0),
-   (replay_drawIcon(BUF, (DWORD)g_a[1], (DWORD)g_a[2], (DWORD)g_a[0]), 0))
+ST(hud_drawIcon, hudicon_setup();, (TC(void, 0x496820, char *, int, int, int)(BUF, g_a[1], g_a[2], g_a[0]), 0),
+   (hud_drawIcon(BUF, (DWORD)g_a[1], (DWORD)g_a[2], (DWORD)g_a[0]), 0))
 /* batch 94 */
 /* shape_getByName's test cache at +0x19e188c with nothing set up to fail (as effect_initShapes' clean case), and
    the item file as the second VFS content ("Items.dat"): version 0x1201 (rarely not), 0..12 records (the count
@@ -17529,7 +17529,7 @@ static const STest g_stests[] = {
 	/* batch 92 */
 	T(menu_drawTexture, 0, 300, 0), T(menu_drawTextureFlipped, 0, 300, 0), T(menu_drawCornerOrnaments, 0, 300, 0), T(menu_drawTopRightOrnament, 0, 300, 0),
 	/* batch 93 */
-	T(hud_drawEmblem, 0, 300, 0), T(hud_drawFlag, 0, 300, 0), T(replay_drawIcon, 0, 300, 0),
+	T(hud_drawEmblem, 0, 300, 0), T(hud_drawFlag, 0, 300, 0), T(hud_drawIcon, 0, 300, 0),
 	/* batch 94 */
 	T(map_loadItemInfoFrom, 1, 300, 0),
 	/* batch 95 */
@@ -18576,7 +18576,7 @@ static const struct { DWORD addr; void *fn; const char *name; } g_hooks3[] = {
 	{ 0x428a00, (void *)menu_drawCornerOrnaments, "menu_drawCornerOrnaments" }, { 0x428b50, (void *)menu_drawTopRightOrnament, "menu_drawTopRightOrnament" },
 	/* batch 93 */
 	{ 0x4922c0, (void *)hud_drawEmblem, "hud_drawEmblem" }, { 0x4924d0, (void *)hud_drawFlag, "hud_drawFlag" },
-	{ 0x496820, (void *)replay_drawIcon, "replay_drawIcon" },
+	{ 0x496820, (void *)hud_drawIcon, "hud_drawIcon" },
 	/* batch 94 */
 	{ 0x4875d0, (void *)map_loadItemInfoFrom, "map_loadItemInfoFrom" },
 	/* batch 95 */

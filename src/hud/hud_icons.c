@@ -1,4 +1,4 @@
-/* hud_icons.c: the ranking table's small icons: a player's emblem and a player's flag, each one cell of 24 x 16
+/* hud_icons.c: the HUD's small icons: a player's grade badge and flag (the ranking table's), each one cell of 24 x 16
    texels from an atlas, drawn 24 x 16 HUD units with its top left at (x, y). */
 #include "../game.h"
 #include "hud.h"
@@ -26,24 +26,24 @@ static float texel(int n, float perTexel)
 	return (float)((long double)n * perTexel);
 }
 
-/* 0x4922c0: emblem number emblem (1 up; 0 or less draws nothing) from the emblem texture (scene->emblemTexture,
+/* 0x4922c0: the badge of grade `grade` (1 up; 0 or less draws nothing) from the HUD's icon atlas (scene->iconTexture,
    256 texels wide): ten cells per row, the rows starting 224 texels down */
-void THISCALL (hud_drawEmblem)(Scene *scene, int emblem, int x, int y)
+void THISCALL (hud_drawEmblem)(Scene *scene, int grade, int x, int y)
 {
-	if (emblem <= 0)
+	if (grade <= 0)
 		return;
-	int cell = emblem - 1;
+	int cell = grade - 1;
 	int sx = hud_toScreenX(x), sy = hud_toScreenY(y);
 	int w = hud_scaleX(24.0f), h = hud_scaleY(16.0f);
 	glEnable(GL_TEXTURE_2D);
-	tex_bind(g_textures->banks[scene->emblemTexture / 512], scene->emblemTexture % 512);
+	tex_bind(g_textures->banks[scene->iconTexture / 512], scene->iconTexture % 512);
 	int row = cell / 10, col = cell % 10;
 	icon_quad(sx, sy, w, h, texel(col * 24, 1.0f / 256), texel((row + 14) * 16, 1.0f / 256),
 	          texel(col * 24 + 24, 1.0f / 256), texel((row + 15) * 16, 1.0f / 256));
 }
 
-/* 0x4924d0: player's flag: four cells per row from the flag texture (128 x 64 texels); in the mode
-   scene->sessionMode, from the GL texture scene->flagGlTexture instead of the texture bank */
+/* 0x4924d0: player's flag: four cells per row (128 x 64 texels): in a solo game (sessionMode 0) from the map's flag
+   texture (scene->flagTexture), else from the players' own flags' atlas (scene->flagGlTexture) */
 void THISCALL (hud_drawFlag)(Scene *scene, int player, int x, int y)
 {
 	int sx = hud_toScreenX(x), sy = hud_toScreenY(y);
@@ -58,15 +58,15 @@ void THISCALL (hud_drawFlag)(Scene *scene, int player, int x, int y)
 	          texel(col * 24 + 24, 1.0f / 128), texel((row + 1) * 16, 1.0f / 64));
 }
 
-/* 0x496820: icon number icon from the emblem texture (scene->emblemTexture, 256 texels wide): eight 32-texel cells
+/* 0x496820: icon number icon from the HUD's icon atlas (scene->iconTexture, 256 texels wide): eight 32-texel cells
    per row, the rows starting 96 texels down; drawn 32 x 32 HUD units, white, with its top left at (x, y - 8) */
-void THISCALL (replay_drawIcon)(Scene *scene, int x, int y, int icon)
+void THISCALL (hud_drawIcon)(Scene *scene, int x, int y, int icon)
 {
 	float s0 = texel(icon % 8 * 32, 1.0f / 256), t0 = texel((icon / 8 + 3) * 32, 1.0f / 256);
 	int sy = hud_toScreenY(y - 8), sx = hud_toScreenX(x);
 	int w = hud_scaleX(32.0f), h = hud_scaleY(32.0f);
 	glEnable(GL_TEXTURE_2D);
-	tex_bind(g_textures->banks[scene->emblemTexture / 512], scene->emblemTexture % 512);
+	tex_bind(g_textures->banks[scene->iconTexture / 512], scene->iconTexture % 512);
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 	float s1 = s0 + 0.125f, t1 = t0 + 0.125f;
 	icon_quad(sx, sy, w, h, s0, t0, s1, t1);

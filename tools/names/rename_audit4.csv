@@ -137,3 +137,4 @@ timer_getGameTime,TimeSync_frameTime
 frameTimer_average,scene_averageFrameTime
 wnd_setCursor,app_shutdown
 app_onClose,room_joinAnswer
+replay_drawIcon,hud_drawIcon
