@@ -476,7 +476,7 @@ void (armc_drawPanels)(void)
 		glScalef_bits(0x3f4ccccd, 0x3f4ccccd, 0x3f4ccccd);   /* 0.8 */
 		glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 		int texture = GAME_VAR(int, OBJ(g_spiralTextures) + 0x14 - k * 4);   /* (spirals 5 .. 1) */
-		tex_bind(g_textures->managers[texture / 512], texture % 512);
+		tex_bind(g_textures->banks[texture / 512], texture % 512);
 		Panel *p = &g_panels[k];
 		if (k == 2)
 			panel_resize(p, &g_panelSize2);
@@ -684,7 +684,7 @@ int (armc_drawModeTabs)(void)
 	glEnable(GL_TEXTURE_2D);
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 	int texture = g_buttonTexture;
-	tex_bind(g_textures->managers[texture / 512], texture % 512);
+	tex_bind(g_textures->banks[texture / 512], texture % 512);
 	for (int i = 0; i < 3; i++) {
 		glColor4f(1.0f, 1.0f, 1.0f, g_armcMode == i + 1 ? 0.8f : 0.4f);
 		int x = g_armcStatsPanelLeft, y = g_armcStatsPanelTop;

@@ -127,7 +127,7 @@ u32 (hud_drawDigits)(int x, int y, float scale, int value, int count, int padded
 		negative = 1;
 	}
 	glEnable(GL_TEXTURE_2D);
-	tex_bind(g_textures->managers[g_penFontTexture / 512], g_penFontTexture % 512);
+	tex_bind(g_textures->banks[g_penFontTexture / 512], g_penFontTexture % 512);
 	glBegin(GL_QUADS);
 	void (STDCALL *tc)(u32, u32) = *texCoord;
 	int place = 10;
@@ -191,7 +191,7 @@ u32 (font_penDraw)(int x, int y, int font, const char *format, ...)
 	}
 	int left = x;
 	glEnable(GL_TEXTURE_2D);
-	tex_bind(g_textures->managers[g_penFontTexture / 512], g_penFontTexture % 512);
+	tex_bind(g_textures->banks[g_penFontTexture / 512], g_penFontTexture % 512);
 	glBegin(GL_QUADS);
 	*g_wide->penDraw = 1;
 	for (const char *p = text; *p; p++) {

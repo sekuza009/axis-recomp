@@ -4,7 +4,7 @@
 
 static void bind(int texture)
 {
-	tex_bind(g_textures->managers[texture / 512], texture % 512);
+	tex_bind(g_textures->banks[texture / 512], texture % 512);
 }
 
 /* a whole texture on the rectangle (x0, y0) - (x1, y1) in menu units */

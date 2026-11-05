@@ -119,18 +119,18 @@ void (menuCamera_initPoints)(void)
    from 0x9dda88) cleared, the layout and the replay files listed. Returns the listing's eax */
 u32 (replayList_open)(void)
 {
-	g_mapSelectCount = 0;
-	g_mapSelectFirst = 0;
+	g_replayFileCount = 0;
+	g_replaySelectFirst = 0;
 	g_unusedReplayListWord1 = 0;
 	g_unusedReplayListWord2 = 0;
 	g_dialogOpen = 1;
-	g_mapSelectLeft = 0x50;
-	g_mapSelectTop = 0x28;
-	g_mapSelectRight = 0x230;
-	g_mapSelectBottom = 0x1b8;
-	for (FileEntry *r = g_fileList; r < g_fileList + 1024; r++)
+	g_replaySelectLeft = 0x50;
+	g_replaySelectTop = 0x28;
+	g_replaySelectRight = 0x230;
+	g_replaySelectBottom = 0x1b8;
+	for (FileEntry *r = g_replayList; r < g_replayList + 1024; r++)
 		memset(r, 0, sizeof *r);
-	mapSelect_layout();          /* mapSelect_layout: the layout */
+	replaySelect_layout();          /* replaySelect_layout: the layout */
 	return autoplay_listFiles();    /* autoplay_listFiles */
 }
 

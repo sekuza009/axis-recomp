@@ -23,7 +23,7 @@ static void draw_logo(int first)
 	glEnable(GL_TEXTURE_2D);
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 	int texture = g_logoTexture;
-	tex_bind(g_textures->managers[texture / 512], texture % 512);
+	tex_bind(g_textures->banks[texture / 512], texture % 512);
 	glBegin(GL_QUADS);
 	glTexCoord2d(0.0, 0.0);
 	menu_vertex(0xa0, 0x3c);
@@ -137,19 +137,19 @@ void (menu_drawBackground)(void)
 	menu_drawBackground3D(g_menuTunnel);
 }
 
-/* 0x442e10: the map-select dialog (0x9dd908 .. 0x9dd914): the window, its title 0x74e8a4, the list's frame with
+/* 0x442e10: the replay selection dialog (0x9dd908 .. 0x9dd914): the window, its title 0x74e8a4, the list's frame with
    its scroll arrows (0 / 1 under the pointer, by FUN_00440b70), two tick boxes (0x4b2a7c: MSG(22, "AUTO REPEAT"), 0x9eeac0:
    MSG(23, "RANDOM PLAY")), two rows of two buttons (MSG(24, "$[0] ALL FILES") lit from 4, MSG(26, "$[0] O K") from 6), the list row under the pointer
-   (8 .. 0x11) highlighted, the list (mapSelect_drawNames) and the border. The original leaves eax to callers that
+   (8 .. 0x11) highlighted, the list (replaySelect_drawNames) and the border. The original leaves eax to callers that
    ignore it */
-void (mapSelect_drawDialog)(void)
+void (replaySelect_drawDialog)(void)
 {
-#define X0 g_mapSelectLeft
-#define Y0 g_mapSelectTop
-#define X1 g_mapSelectRight
-#define Y1 g_mapSelectBottom
-	const u32 *bright = (const u32 *)ADDR(g_mapSelectLitR), *dim = (const u32 *)ADDR(g_mapSelectDimR);
-	int hovered = mapSelect_hitTest(g_mouseX, g_mouseY);
+#define X0 g_replaySelectLeft
+#define Y0 g_replaySelectTop
+#define X1 g_replaySelectRight
+#define Y1 g_replaySelectBottom
+	const u32 *bright = (const u32 *)ADDR(g_replaySelectLitR), *dim = (const u32 *)ADDR(g_replaySelectDimR);
+	int hovered = replaySelect_hitTest(g_mouseX, g_mouseY);
 	gfx_setProjection2D3D(2);
 	glLoadIdentity();
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
@@ -160,7 +160,7 @@ void (mapSelect_drawDialog)(void)
 	menu_drawRect(X0 + 0x10, Y0 + 0x28, X1 - 0x40, Y0 + 0xf5, 0);
 	glEnable(GL_TEXTURE_2D);
 	int texture = g_buttonTexture;
-	tex_bind(g_textures->managers[texture / 512], texture % 512);
+	tex_bind(g_textures->banks[texture / 512], texture % 512);
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 	menu_drawSmallButton3(X1 - 0x32, Y0 + 0x48, X1 - 0x12, Y0 + 0x88, hovered == 0);
 	menu_drawSmallButton4(X1 - 0x32, Y0 + 0xac, X1 - 0x12, Y0 + 0xec, hovered != 0 && hovered == 1);
@@ -181,7 +181,7 @@ void (mapSelect_drawDialog)(void)
 		for (int k = 0; k < 2; k++) {
 			glEnable(GL_TEXTURE_2D);
 			texture = g_buttonTexture;
-			tex_bind(g_textures->managers[texture / 512], texture % 512);
+			tex_bind(g_textures->banks[texture / 512], texture % 512);
 			int lit = hovered == 4 + row * 2 + k;
 			glColor4f(1.0f, 1.0f, 1.0f, lit ? 1.0f : 0.4f);
 			int x = X0 + k * 0xa0, y = Y1 - 0x5c + row * 0x28;
@@ -194,7 +194,7 @@ void (mapSelect_drawDialog)(void)
 		set_colour_bits(g_rectColour, 0x3dcccccd, 0x3e99999a, 0x3f800000, 0x3e99999a);   /* 0.1, 0.3, 1, 0.3 */
 		menu_drawRect(X0 + 0x20, Y0 + hovered * 20 - 0x75, X1 - 0x50, Y0 + hovered * 20 - 0x63, 1);
 	}
-	mapSelect_drawNames();
+	replaySelect_drawNames();
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 	menu_drawCornerOrnaments(X0, Y0, X1, Y1);
 #undef X0
@@ -203,23 +203,23 @@ void (mapSelect_drawDialog)(void)
 #undef Y1
 }
 
-/* 0x4434f0: the map-select dialog of the main menu (only its frame while a dialog is up) */
-void (mainmenu_drawMapSelect)(void)
+/* 0x4434f0: the replay selection dialog of the main menu (only its frame while a dialog is up) */
+void (mainmenu_drawReplaySelect)(void)
 {
 	if (g_dialogOpen != 0)
-		menu_drawFrame(g_mapSelectLeft, g_mapSelectTop, g_mapSelectRight, g_mapSelectBottom);
+		menu_drawFrame(g_replaySelectLeft, g_replaySelectTop, g_replaySelectRight, g_replaySelectBottom);
 	else
-		mapSelect_drawDialog();
+		replaySelect_drawDialog();
 }
 
-/* 0x443530: the main menu's frame: background, menu, the map-select dialog when open, and while the quit question
+/* 0x443530: the main menu's frame: background, menu, the replay selection dialog when open, and while the quit question
    is up the keys are held (state 1), the next screen set to 9999 and the screen dimmed */
 void (menuState300_frame)(void)
 {
 	menu_drawBackground();
 	menu_mainMenu();
 	if (g_mainMenuPicked != 0)
-		mainmenu_drawMapSelect();
+		mainmenu_drawReplaySelect();
 	if (g_quitAsked == 1) {
 		menuCamera_setMove(1);
 		g_nextScreen = 9999;
@@ -337,41 +337,41 @@ void (menu_returnToMainFromRoom)(void)
 	g_screen = 300;
 }
 
-/* 0x441770: the map-select dialog's OK: if a map is chosen (0x44-byte entries from 0x9ddac8), the dialog closes and
+/* 0x441770: the replay selection dialog's OK: if a replay is chosen (0x44-byte entries from 0x9ddac8), the dialog closes and
    the choice is kept */
-void (mapSelect_ok)(void)
+void (replaySelect_ok)(void)
 {
-	int count = g_mapSelectCount;
+	int count = g_replayFileCount;
 	for (int i = 0; i < count; i++)
-		if (g_fileList[i].flag == 1) {
+		if (g_replayList[i].flag == 1) {
 			sound_playMenu(0);
-			g_mapListFlaggedCount = g_mapSelectCount;
+			g_replayListCount = g_replayFileCount;
 			g_mainMenuFadingIn = 1;
 			g_mainMenuPicked = 0;
 			return;
 		}
 }
 
-/* ---- the map-select dialog's list: 10 rows shown from map 0x9dd92c of the 0x9dd928 ---- */
+/* ---- the replay selection dialog's list: 10 rows shown from replay 0x9dd92c of the 0x9dd928 ---- */
 static void maps_up(void)
 {
-	if (g_mapSelectFirst > 0) {
-		g_mapSelectFirst--;
+	if (g_replaySelectFirst > 0) {
+		g_replaySelectFirst--;
 		sound_playMenu(2);
 	}
 }
 static void maps_down(void)
 {
-	if (g_mapSelectFirst + 10 < g_mapSelectCount) {
-		g_mapSelectFirst++;
+	if (g_replaySelectFirst + 10 < g_replayFileCount) {
+		g_replaySelectFirst++;
 		sound_playMenu(2);
 	}
 }
 
-/* 0x441c00: the map-select dialog's keys: cancel or back closes it (0x9eeab4), OK takes the choice (mapSelect_ok),
-   0x4e151c toggles 0x9eeac0, 0x4e0ce0 / 0x4e0cd4 take every map out / in, up / down scroll the list with a key
+/* 0x441c00: the replay selection dialog's keys: cancel or back closes it (0x9eeab4), OK takes the choice (replaySelect_ok),
+   0x4e151c toggles 0x9eeac0, 0x4e0ce0 / 0x4e0cd4 take every replay out / in, up / down scroll the list with a key
    repeat (the original leaves eax to callers that ignore it) */
-void (mapSelect_keys)(void)
+void (replaySelect_keys)(void)
 {
 	if (input_justPressed(g_keyCancel2) == 1) {
 		sound_playMenu(0);
@@ -379,7 +379,7 @@ void (mapSelect_keys)(void)
 		return;
 	}
 	if (input_justPressed(g_keyOk) == 1) {
-		mapSelect_ok();
+		replaySelect_ok();
 		return;
 	}
 	if (input_justPressed(g_keyBack) == 1) {
@@ -394,27 +394,27 @@ void (mapSelect_keys)(void)
 	}
 	if (input_justPressed(g_dikD) == 1) {
 		sound_playMenu(0);
-		mapSelect_allOut();
+		replaySelect_allOut();
 		return;
 	}
 	if (input_justPressed(g_dikA) == 1) {
 		sound_playMenu(0);
-		mapSelect_allIn();
+		replaySelect_allIn();
 		return;
 	}
 	if (!key_repeat(g_keyUp, &g_repeatUp, maps_up))
 		key_repeat(g_keyDown, &g_repeatDown, maps_down);
 }
 
-/* 0x441810: the map-select dialog's mouse: a click (the blink clock restarted) on the arrows (0 / 1), the two
-   toggles (0x4b2a7c, 0x9eeac0), every map in or out, OK, cancel (7), or a row's map (8 .. 17); holding an arrow
+/* 0x441810: the replay selection dialog's mouse: a click (the blink clock restarted) on the arrows (0 / 1), the two
+   toggles (0x4b2a7c, 0x9eeac0), every replay in or out, OK, cancel (7), or a row's replay (8 .. 17); holding an arrow
    scrolls once the clock reaches 5 (0x4a93d0), restarting it. The original leaves eax to callers that ignore it */
-void (mapSelect_mouse)(void)
+void (replaySelect_mouse)(void)
 {
 	const float *repeat = (const float *)ADDR(k_5f);
 	if (g_mouseClick) {
 		g_cursorBlink = 0.0f;
-		int on = mapSelect_hitTest(g_mouseX, g_mouseY);
+		int on = replaySelect_hitTest(g_mouseX, g_mouseY);
 		if (on == 0)
 			maps_up();
 		else if (on == 1)
@@ -424,21 +424,21 @@ void (mapSelect_mouse)(void)
 		else if (on == 3)
 			g_replayRandomOrder = 1 - g_replayRandomOrder;
 		else if (on == 4)
-			mapSelect_allIn();
+			replaySelect_allIn();
 		else if (on == 5)
-			mapSelect_allOut();
+			replaySelect_allOut();
 		else if (on == 6)
-			mapSelect_ok();
+			replaySelect_ok();
 		else if (on == 7)
 			g_mainMenuPicked = 0;
 		else if (on >= 8 && on < 18) {
 			sound_playMenu(2);
-			mapSelect_toggle(g_mapSelectFirst + on - 8);
+			replaySelect_toggle(g_replaySelectFirst + on - 8);
 		}
 	}
 	if (!g_mouseHeld)
 		return;
-	int on = mapSelect_hitTest(g_mouseX, g_mouseY);
+	int on = replaySelect_hitTest(g_mouseX, g_mouseY);
 	if ((on == 0 || on == 1) && g_cursorBlink >= *repeat) {
 		if (on == 0)
 			maps_up();

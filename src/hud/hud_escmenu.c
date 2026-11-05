@@ -170,7 +170,7 @@ void THISCALL (hud_drawMenuBox)(Scene *scene, int x0, int y0, int x1, int y1)
 		}
 	}
 	glEnable(GL_TEXTURE_2D);
-	tex_bind(g_textures->managers[scene->menuBoxTexture / 512], scene->menuBoxTexture % 512);
+	tex_bind(g_textures->banks[scene->menuBoxTexture / 512], scene->menuBoxTexture % 512);
 	glBegin(GL_QUADS);
 	for (int k = 0; k < 9; k++) {
 		int row = k / 3, col = k % 3;

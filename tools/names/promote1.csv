@@ -26,7 +26,7 @@
 0x907b2c,int,g_leaving,src/menu/game_lists.c,g_arenaLeaving
 0x4dda34,int,g_loadStep,src/app/loading.c,g_loadStep
 0x67ef00,int,g_mapCount,src/menu/arena_maps.c,g_arenaMapCount
-0x9dd92c,int,g_mapFirst,src/menu/menu_states.c,g_mapSelectFirst
+0x9dd92c,int,g_mapFirst,src/menu/menu_states.c,g_replaySelectFirst
 0x4db508,int,g_mapListOpen,src/menu/arena_maps.c,g_mapListOpen
 0x680bac,float,g_menuScaleX,src/menu/menu_2d.c,g_menuScaleX
 0x4df014,float,g_menuScaleY,src/menu/menu_2d.c,g_menuScaleY

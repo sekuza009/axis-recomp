@@ -752,7 +752,7 @@ static u32 map_preview_box(const int *panel, u32 custom, u32 reload)
 	} else {
 		glEnable(GL_TEXTURE_2D);
 		int texture = g_mapPreviewTexture;
-		tex_bind(g_textures->managers[texture / 512], texture % 512);
+		tex_bind(g_textures->banks[texture / 512], texture % 512);
 		glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 		glBegin(7);   /* GL_QUADS */
 		glTexCoord2f(0.0f, 0.0f);

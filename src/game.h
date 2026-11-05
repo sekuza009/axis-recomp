@@ -104,7 +104,7 @@
 /* the 3D background (menu_tunnel.c) */
 #define g_flareTextures ((const int *)(OBJ(g_spiralTextures) + 0x14))     /* flare k's texture is g_flareTextures[-k] */
 /* ---- textures ---- */
-typedef struct { u32 vtable; void *managers[6]; i32 count; } TextureSets;   /* the texture sets object (0x83a5e0, "TextureManager" class): a texture id names managers[id / 512], slot id % 512 */
+typedef struct { u32 vtable; void *banks[6]; i32 count; } TextureManager;   /* the game's TextureManager (0x83a5e0): six texture banks (the game's class Texture, one per size: TextureBank); a texture id names banks[id / 512], slot id % 512 */
 #define tex_bind(manager, slot) GAME_THISFN(tex_bind, 0x4566c0, void, void *, int)(manager, slot)
 #define gfx_getWidth() GAME_FN(gfx_getWidth, 0x4685b0, int, void)()
 #define gfx_getHeight() GAME_FN(gfx_getHeight, 0x4685c0, int, void)()
@@ -159,7 +159,7 @@ typedef struct { u32 vtable; void *managers[6]; i32 count; } TextureSets;   /* t
 #define stage_newRound(stage) GAME_THISFN(stage_newRound, 0x470cb0, void, void *)(stage)
 #define view_setDistance(stage, x) GAME_THISFN(view_setDistance, 0x4722e0, void, void *, u32)(stage, x)
 #define stage_refillFactors(stage) GAME_THISFN(stage_refillFactors, 0x472310, void, void *)(stage)
-#define partType_loadEmblem(stage, p) GAME_THISFN(partType_loadEmblem, 0x4734d0, int, void *, int)(stage, p)
+#define playerRecord_loadEmblem(stage, p) GAME_THISFN(playerRecord_loadEmblem, 0x4734d0, int, void *, int)(stage, p)
 #define playerRecord_set(stage, p, name, a, b, c, d, e, f, g, h, i, j, k, l, m) GAME_THISFN(playerRecord_set, 0x474210, void, void *, int, \
 	const char *, u32, u32, u32, u32, u32, u32, u32, u32, u32, u32, u32, u32, u32)(stage, p, name, a, b, c, d, e, f, g, h, i, j, k, l, m)
 #define net_sendPlayerInfo(scene, p) GAME_THISFN(net_sendPlayerInfo, 0x48e0f0, void, void *, int)(scene, p)
@@ -175,7 +175,7 @@ typedef struct { u32 vtable; void *managers[6]; i32 count; } TextureSets;   /* t
 	u32, u32, u32)(stage, p, part, a, b, c, d, e, f)   /* (the six as a float's bits) */
 #define view_setAngle(v) GAME_FN(view_setAngle, 0x4686e0, int, u32)(v)   /* the view angle (0x4c4dec) set, a float's bits */
 #define msg_kill(scene, victim, killer) GAME_THISFN(msg_kill, 0x4630c0, void, void *, int, int)(scene, victim, killer)
-#define tex_upload2(scene) GAME_THISFN(tex_upload2, 0x473610, void, void *)(scene)
+#define emblem_uploadAtlas(scene) GAME_THISFN(emblem_uploadAtlas, 0x473610, void, void *)(scene)
 #define item_update(s, dt) GAME_THISFN(item_update, 0x48ed90, void, void *, u32)(s, dt)
 #define stage_updateObjects(s, dt) GAME_THISFN(stage_updateObjects, 0x490d40, void, void *, u32)(s, dt)
 #define stage_advanceClocks(stage, dt) GAME_THISFN(stage_advanceClocks, 0x496e40, void, void *, u32)(stage, dt)
@@ -425,7 +425,7 @@ typedef struct { u32 vtable; void *managers[6]; i32 count; } TextureSets;   /* t
 
 /* ---- input ---- */
 #define input_reacquireKeyboard() GAME_FN(input_reacquireKeyboard, 0x4012c0, void, void)()
-#define input_updateMenuCursor() GAME_FN(input_updateMenuCursor, 0x445c60, void, void)()
+#define input_updateMouse() GAME_FN(input_updateMouse, 0x445c60, void, void)()
 #define input_justPressed(key) GAME_FN(input_justPressed, 0x401600, int, int)(key)
 #define app_setDataPaths() GAME_FN(app_setDataPaths, 0x43f5a0, void, void)()
 #define data_loadMessages() GAME_FN(data_loadMessages, 0x42b3e0, void, void)()
@@ -809,10 +809,10 @@ typedef struct { float r, g, b, a; } Colour;
 #define menuTunnel_advance(tunnel) GAME_FN(menuTunnel_advance, 0x441260, void, void *)(tunnel)   /* moves the background tunnel on */
 #define menu_drawBackground3D(tunnel) GAME_FN(menu_drawBackground3D, 0x429d70, void, void *)(tunnel)
 #define mission_chosen(m) GAME_FN(mission_chosen, 0x4479b0, u32, int)(m)
-#define mainmenu_drawMapSelect() GAME_FN(mainmenu_drawMapSelect, 0x4434f0, void, void)()
-#define mapSelect_drawNames() GAME_FN(mapSelect_drawNames, 0x442d10, u32, void)()   /* the map-select dialog's list */
+#define mainmenu_drawReplaySelect() GAME_FN(mainmenu_drawReplaySelect, 0x4434f0, void, void)()
+#define replaySelect_drawNames() GAME_FN(replaySelect_drawNames, 0x442d10, u32, void)()   /* the replay selection dialog's list */
 #define menu_mainMenu() GAME_FN(menu_mainMenu, 0x442050, void, void)()
-#define mapSelect_drawDialog() GAME_FN(mapSelect_drawDialog, 0x442e10, void, void)()
+#define replaySelect_drawDialog() GAME_FN(replaySelect_drawDialog, 0x442e10, void, void)()
 #define menu_drawDimOverlay() GAME_FN(menu_drawDimOverlay, 0x40ce70, u32, void)()
 #define skirmish_clicks() GAME_FN(skirmish_clicks, 0x443e20, void, void)()
 #define skirmish_settingsArrowClick() GAME_FN(skirmish_settingsArrowClick, 0x443ea0, void, void)()
@@ -856,17 +856,17 @@ typedef struct { float r, g, b, a; } Colour;
 #define glWindow_resize(w, h) GAME_FN(glWindow_resize, 0x468450, int, int, int)(w, h)   /* app/win32.c */
 #define timer_getGameTime(timer) GAME_THISFN(timer_getGameTime, 0x487490, long double, void *)(timer)   /* seconds since its last call */
 #define loading_draw_bits(progress) GAME_FN(loading_draw, 0x469320, void, u32)(progress)   /* the loading screen at progress (float bits) */
-#define mapSelect_allIn() GAME_FN(mapSelect_allIn, 0x4417f0, void, void)()   /* every map of the map-select list in */
-#define mapSelect_toggle(i) GAME_FN(mapSelect_toggle, 0x4417c0, void, int)(i)   /* map i of the map-select list in or out */
-#define mapSelect_hitTest(x, y) GAME_FN(mapSelect_hitTest, 0x440b70, int, int, int)(x, y)   /* the map-select control at (x, y), -1: none */
+#define replaySelect_allIn() GAME_FN(replaySelect_allIn, 0x4417f0, void, void)()   /* every map of the replay selection list in */
+#define replaySelect_toggle(i) GAME_FN(replaySelect_toggle, 0x4417c0, void, int)(i)   /* map i of the replay selection list in or out */
+#define replaySelect_hitTest(x, y) GAME_FN(replaySelect_hitTest, 0x440b70, int, int, int)(x, y)   /* the replay selection control at (x, y), -1: none */
 #define mapList_hitTest(x, y) GAME_FN(mapList_hitTest, 0x4033e0, int, int, int)(x, y)   /* the arena map list's control at (x, y) */
 #define mapList_toggle(i) GAME_FN(mapList_toggle, 0x403560, void, int)(i)     /* the arena list: map i in or out */
 #define mapList_stepGameType(i) GAME_FN(mapList_stepGameType, 0x403590, void, int)(i)     /* map i's game type stepped */
 #define mapList_chooseNone() GAME_FN(mapList_chooseNone, 0x403530, u32, void)()      /* no map chosen */
 #define mapList_chooseAll() GAME_FN(mapList_chooseAll, 0x4034e0, u32, void)()      /* every map chosen */
 #define mapList_ok() GAME_FN(mapList_ok, 0x403640, u32, void)()      /* the list kept */
-#define mapSelect_allOut() GAME_FN(mapSelect_allOut, 0x440df0, void, void)()   /* and out */
-#define mapSelect_ok() GAME_FN(mapSelect_ok, 0x441770, void, void)()   /* the map-select dialog's OK */
+#define replaySelect_allOut() GAME_FN(replaySelect_allOut, 0x440df0, void, void)()   /* and out */
+#define replaySelect_ok() GAME_FN(replaySelect_ok, 0x441770, void, void)()   /* the replay selection dialog's OK */
 #define net_addPlayerRecord(reply) GAME_FN(net_addPlayerRecord, 0x452de0, void, void *)(reply)   /* the server's accept reply handled */
 #define mission_saveAxisMis(k) GAME_FN(mission_saveAxisMis, 0x443af0, u32, int)(k)   /* mission k's block read from axis.mis (load/files.c) */
 #define skirmishSettings_leave() GAME_FN(skirmishSettings_leave, 0x443c80, u32, void)()   /* leave the skirmish settings */

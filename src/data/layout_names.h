@@ -896,8 +896,6 @@ extern struct GameData g_data;
 #define g_fatalReported (*(int *)g_fatalReported_v)
 #undef g_fieldTabKey
 #define g_fieldTabKey (*(int *)g_fieldTabKey_v)
-#undef g_fileList
-#define g_fileList ((FileEntry *)g_fileList_v)
 #undef g_flareSizeA
 #define g_flareSizeA (*(float *)g_flareSizeA_v)
 #undef g_flareSizeB
@@ -1438,8 +1436,6 @@ extern struct GameData g_data;
 #define g_mapEntry24On (*(int *)((u8 *)g_mapChoiceKeptTable_v + 0xc0))
 #undef g_mapInfoDir
 #define g_mapInfoDir ((char *)g_mapInfoDir_v)
-#undef g_mapListFlaggedCount
-#define g_mapListFlaggedCount (*(int *)g_mapListFlaggedCount_v)
 #undef g_mapListKept
 #define g_mapListKept (*(int *)g_mapListKept_v)
 #undef g_mapListMade
@@ -1458,40 +1454,6 @@ extern struct GameData g_data;
 #define g_mapPreviewTexture (*(int *)g_mapPreviewTexture_v)
 #undef g_mapRotation
 #define g_mapRotation (*(int *)g_mapRotation_v)
-#undef g_mapSelectBottom
-#define g_mapSelectBottom (*(int *)g_mapSelectBottom_v)
-#undef g_mapSelectCount
-#define g_mapSelectCount (*(int *)g_mapSelectCount_v)
-#undef g_mapSelectDim
-#define g_mapSelectDim ((u32 *)g_mapSelectDim_v)
-#undef g_mapSelectDimA
-#define g_mapSelectDimA (*(u32 *)((u8 *)g_mapSelectDim_v + 0xc))
-#undef g_mapSelectDimB
-#define g_mapSelectDimB (*(u32 *)((u8 *)g_mapSelectDim_v + 0x8))
-#undef g_mapSelectDimG
-#define g_mapSelectDimG (*(u32 *)((u8 *)g_mapSelectDim_v + 0x4))
-#undef g_mapSelectDimR
-#define g_mapSelectDimR (*(u32 *)((u8 *)g_mapSelectDim_v + 0x0))
-#undef g_mapSelectFirst
-#define g_mapSelectFirst (*(int *)g_mapSelectFirst_v)
-#undef g_mapSelectLeft
-#define g_mapSelectLeft (*(int *)g_mapSelectLeft_v)
-#undef g_mapSelectLit
-#define g_mapSelectLit ((u32 *)g_mapSelectLit_v)
-#undef g_mapSelectLitA
-#define g_mapSelectLitA (*(u32 *)((u8 *)g_mapSelectLit_v + 0xc))
-#undef g_mapSelectLitB
-#define g_mapSelectLitB (*(u32 *)((u8 *)g_mapSelectLit_v + 0x8))
-#undef g_mapSelectLitG
-#define g_mapSelectLitG (*(u32 *)((u8 *)g_mapSelectLit_v + 0x4))
-#undef g_mapSelectLitR
-#define g_mapSelectLitR (*(int *)((u8 *)g_mapSelectLit_v + 0x0))
-#undef g_mapSelectRects
-#define g_mapSelectRects ((int *)g_mapSelectRects_v)
-#undef g_mapSelectRight
-#define g_mapSelectRight (*(int *)g_mapSelectRight_v)
-#undef g_mapSelectTop
-#define g_mapSelectTop (*(int *)g_mapSelectTop_v)
 #undef g_mapTitle
 #define g_mapTitle ((char *)g_mapTitle_v)
 #undef g_mapTop
@@ -1592,8 +1554,6 @@ extern struct GameData g_data;
 #define g_menuEye ((float *)g_menuEye_v)
 #undef g_menuEyeHome
 #define g_menuEyeHome ((float *)g_menuEyeHome_v)
-#undef g_menuKeyGuard
-#define g_menuKeyGuard (*(float *)g_menuKeyGuard_v)
 #undef g_menuFrameCount
 #define g_menuFrameCount (*(int *)g_menuFrameCount_v)
 #undef g_menuFrameCounter
@@ -1608,6 +1568,8 @@ extern struct GameData g_data;
 #define g_menuHintStep (*(u32 *)g_menuHintStep_v)
 #undef g_menuIdleTime
 #define g_menuIdleTime (*(int *)g_menuIdleTime_v)
+#undef g_menuKeyGuard
+#define g_menuKeyGuard (*(float *)g_menuKeyGuard_v)
 #undef g_menuLook
 #define g_menuLook ((float *)g_menuLook_v)
 #undef g_menuLookAtX
@@ -1744,6 +1706,8 @@ extern struct GameData g_data;
 #define g_netAccountBuffer (*(char * *)g_netAccountBuffer_v)
 #undef g_netBlockSize
 #define g_netBlockSize (*(u32 *)g_netBlockSize_v)
+#undef g_netByteBuffer
+#define g_netByteBuffer (*(char * *)g_netByteBuffer_v)
 #undef g_netChatMessageKind
 #define g_netChatMessageKind (*(int *)g_netChatMessageKind_v)
 #undef g_netChatMessageText
@@ -1778,8 +1742,6 @@ extern struct GameData g_data;
 #define g_netNoticeIn (*(int *)g_netNoticeIn_v)
 #undef g_netNoticeRecord
 #define g_netNoticeRecord ((u8 *)g_netNoticeRecord_v)
-#undef g_netByteBuffer
-#define g_netByteBuffer (*(char * *)g_netByteBuffer_v)
 #undef g_netPacketMessageKind
 #define g_netPacketMessageKind (*(int *)((u8 *)g_netSendPacket_v + 0x0))
 #undef g_netPlayerList
@@ -2126,6 +2088,8 @@ extern struct GameData g_data;
 #define g_ptxDequant ((float *)g_ptxDequant_v)
 #undef g_ptxDequantBase
 #define g_ptxDequantBase ((float *)g_ptxDequantBase_v)
+#undef g_ptxHuffSet
+#define g_ptxHuffSet (*(int *)g_ptxHuffSet_v)
 #undef g_ptxLastDc
 #define g_ptxLastDc (*(int *)g_ptxLastDc_v)
 #undef g_ptxPixels
@@ -2136,8 +2100,6 @@ extern struct GameData g_data;
 #define g_ptxQuant ((int *)g_ptxQuant_v)
 #undef g_ptxQuantBase
 #define g_ptxQuantBase ((int *)g_ptxQuantBase_v)
-#undef g_ptxHuffSet
-#define g_ptxHuffSet (*(int *)g_ptxHuffSet_v)
 #undef g_ptxTablesReady
 #define g_ptxTablesReady (*(int *)g_ptxTablesReady_v)
 #undef g_ptxYCbCrTables
@@ -2194,10 +2156,48 @@ extern struct GameData g_data;
 #define g_repeatDown (*(float *)g_repeatDown_v)
 #undef g_repeatUp
 #define g_repeatUp (*(float *)g_repeatUp_v)
+#undef g_replayFileCount
+#define g_replayFileCount (*(int *)g_replayFileCount_v)
+#undef g_replayList
+#define g_replayList ((FileEntry *)g_replayList_v)
+#undef g_replayListCount
+#define g_replayListCount (*(int *)g_replayListCount_v)
 #undef g_replayRandomOrder
 #define g_replayRandomOrder (*(int *)g_replayRandomOrder_v)
 #undef g_replayRunning
 #define g_replayRunning (*(int *)g_replayRunning_v)
+#undef g_replaySelectBottom
+#define g_replaySelectBottom (*(int *)g_replaySelectBottom_v)
+#undef g_replaySelectDim
+#define g_replaySelectDim ((u32 *)g_replaySelectDim_v)
+#undef g_replaySelectDimA
+#define g_replaySelectDimA (*(u32 *)((u8 *)g_replaySelectDim_v + 0xc))
+#undef g_replaySelectDimB
+#define g_replaySelectDimB (*(u32 *)((u8 *)g_replaySelectDim_v + 0x8))
+#undef g_replaySelectDimG
+#define g_replaySelectDimG (*(u32 *)((u8 *)g_replaySelectDim_v + 0x4))
+#undef g_replaySelectDimR
+#define g_replaySelectDimR (*(u32 *)((u8 *)g_replaySelectDim_v + 0x0))
+#undef g_replaySelectFirst
+#define g_replaySelectFirst (*(int *)g_replaySelectFirst_v)
+#undef g_replaySelectLeft
+#define g_replaySelectLeft (*(int *)g_replaySelectLeft_v)
+#undef g_replaySelectLit
+#define g_replaySelectLit ((u32 *)g_replaySelectLit_v)
+#undef g_replaySelectLitA
+#define g_replaySelectLitA (*(u32 *)((u8 *)g_replaySelectLit_v + 0xc))
+#undef g_replaySelectLitB
+#define g_replaySelectLitB (*(u32 *)((u8 *)g_replaySelectLit_v + 0x8))
+#undef g_replaySelectLitG
+#define g_replaySelectLitG (*(u32 *)((u8 *)g_replaySelectLit_v + 0x4))
+#undef g_replaySelectLitR
+#define g_replaySelectLitR (*(int *)((u8 *)g_replaySelectLit_v + 0x0))
+#undef g_replaySelectRects
+#define g_replaySelectRects ((int *)g_replaySelectRects_v)
+#undef g_replaySelectRight
+#define g_replaySelectRight (*(int *)g_replaySelectRight_v)
+#undef g_replaySelectTop
+#define g_replaySelectTop (*(int *)g_replaySelectTop_v)
 #undef g_replayWrap
 #define g_replayWrap (*(int *)g_replayWrap_v)
 #undef g_resends
@@ -2645,7 +2645,7 @@ extern struct GameData g_data;
 #undef g_textureSets
 #define g_textureSets ((u32 *)g_textureSets_v)
 #undef g_textures
-#define g_textures (*(TextureSets * *)g_textures_v)
+#define g_textures (*(TextureManager * *)g_textures_v)
 #undef g_texturesOff
 #define g_texturesOff (*(int *)g_texturesOff_v)
 #undef g_timeLimit

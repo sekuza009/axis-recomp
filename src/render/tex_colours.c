@@ -105,7 +105,7 @@ static int same(u32 a, u32 b)
    2) and changed (+0x84) when any value differs */
 void THISCALL (tex_recolourMaterial)(u8 *self, int m, u32 h1, u32 c1, u32 v1, u32 h2, u32 c2, u32 v2)
 {
-	TexRecord *rec = &((TextureManager *)self)->records[m];
+	TexRecord *rec = &((TextureBank *)self)->records[m];
 	u32 flags = rec->flags | 2;
 	if (flags == 0 || !same(BITS(rec->colours[0]), h1) || !same(BITS(rec->colours[1]), c1) ||
 	    !same(BITS(rec->colours[2]), v1) || !same(BITS(rec->colours[3]), h2) ||
@@ -125,20 +125,20 @@ void THISCALL (tex_recolourMaterial)(u8 *self, int m, u32 h1, u32 c1, u32 v1, u3
    if the slot is tinted. Returns what the original leaves in eax */
 int THISCALL (tex_applyTintMask)(u8 *tex, int i)
 {
-	TexRecord *rec = &((TextureManager *)tex)->records[i];
+	TexRecord *rec = &((TextureBank *)tex)->records[i];
 	u8 flags = (*(u8 *)&rec->flags);
 	if (!(flags & 2))
 		return (int)(((u32)i & 0xffffff00u) | flags);
-	for (int y = 0; y < ((TextureManager *)tex)->height; y++)
-		for (int x = 0; x < ((TextureManager *)tex)->width; x++) {
-			int k = ((TextureManager *)tex)->width * y + x;
+	for (int y = 0; y < ((TextureBank *)tex)->height; y++)
+		for (int x = 0; x < ((TextureBank *)tex)->width; x++) {
+			int k = ((TextureBank *)tex)->width * y + x;
 			u8 *px = tex + k * 4 + 0x114, *mask = tex + k * 4 + 0x80114;
 			if (mask[0] >= 200)
 				tex_tintRgba(px, BITS(rec->colours[0]), BITS(rec->colours[1]), BITS(rec->colours[2]));
 			else if (mask[1] >= 200)
 				tex_tintRgba(px, BITS(rec->colours[3]), BITS(rec->colours[4]), BITS(rec->colours[5]));
 		}
-	return ((TextureManager *)tex)->height;
+	return ((TextureBank *)tex)->height;
 }
 
 /* 0x454e60: a texture record: its name, eight parameters, and its animation from the name's suffix: "_ANI" 1,

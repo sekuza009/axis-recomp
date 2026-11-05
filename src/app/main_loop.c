@@ -23,7 +23,7 @@ void (main_loop)(void)
 	if (g_lastScreen != 9999)
 		menu_enterState();
 	if (!g_textFieldOpen) {
-		input_updateMenuCursor();
+		input_updateMouse();
 		input_reacquireKeyboard();
 	}
 	if (match_frameByState(g_scene) == 0)
@@ -1077,7 +1077,7 @@ u32 THISCALL (replay_frame)(u8 *s)
 	if (run_down(s, 0x2342f02))
 		SC->readyTimer = 0.0f;
 	if (run_down(s, 0x2342425)) {
-		tex_upload2(stage);
+		emblem_uploadAtlas(stage);
 		SC->screenshotUpload = 0.0f;
 	}
 	long double sp = fmul_m(fld_m(&SC->frameTime), &k_2000f);   /* 2000 a second, at most +0x1f4164 */
@@ -1681,13 +1681,13 @@ void THISCALL (match_frame)(u8 *s)
 		SC->statsTaken = 1;
 	}
 	if (SC->screenshotTaken == 0 && SC->localPlayer >= 0 && SC->sessionMode == 1) {
-		int shot = partType_loadEmblem(stage, SC->localPlayer);
+		int shot = playerRecord_loadEmblem(stage, SC->localPlayer);
 		SC->playerRecords[SC->localPlayer].emblemChanged = shot;
 		SC->playerRecords[SC->localPlayer].emblemSent = 0;
 		SC->screenshotUpload = 5.0f;   /* 5 */
 		SC->screenshotTaken = 1;
 	} else if (run_down(s, 0x2342425)) {
-		tex_upload2(stage);
+		emblem_uploadAtlas(stage);
 		SC->screenshotUpload = 0.0f;
 	}
 	/* joining: the network's slot for the local player */

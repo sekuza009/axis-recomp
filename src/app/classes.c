@@ -16,7 +16,7 @@ static int clear(void *p, int dwords)
 
 
 /* ---- member blocks cleared, each the size of its class ---- */
-int THISCALL (TextureManager_clear)(void *self) { return clear(self, 0x8); }       /* TextureManager */
+int THISCALL (TextureManager_clear)(void *self) { return clear(self, 0x8); }       /* TextureBank */
 int THISCALL (Model_clear)(void *self) { return clear(self, 0x13); }      /* Model */
 int THISCALL (ShapeManager_clear)(void *self) { return clear(self, 0x93); }       /* ShapeManager */
 int THISCALL (SkeletonManager_clear)(void *self) { return clear(self, 0x4c); }       /* SkeletonManager */
@@ -59,12 +59,11 @@ void THISCALL (ints_set3)(int *p, int a, int b, int c)
 	p[2] = c;
 }
 
-/* 0x4569b0: the texture sets' members cleared (TextureManager_clear: the six managers), and its count (the class at
-   0x83a5e0 is TextureSets, not a TextureManager) */
+/* 0x4569b0: the texture manager's members cleared (TextureManager_clear: the six banks) and its count */
 int THISCALL (TextureManager_reset)(void *self)
 {
 	TextureManager_clear(self);
-	((TextureSets *)RELOC(self))->count = 0;
+	((TextureManager *)RELOC(self))->count = 0;
 	return 0;
 }
 
@@ -136,7 +135,7 @@ u32 THISCALL (Texture_dtor)(u32 *self)
 	return r;
 }
 DELETING(Texture, Texture_dtor)
-/* the six global Texture objects' destructors at exit */
+/* the six global Texture objects' (the game's class Texture: our TextureBank) destructors at exit */
 u32 (static_destroyTex64x64)(void) { return Texture_dtor((u32 *)ADDR(g_staticTex64x64)); }
 u32 (static_destroyTex128x64)(void) { return Texture_dtor((u32 *)ADDR(g_staticTex128x64)); }
 u32 (static_destroyTex256x64)(void) { return Texture_dtor((u32 *)ADDR(g_staticTex256x64)); }
@@ -150,13 +149,14 @@ void THISCALL (TimeSync_dtor)(u32 *self) { self[0] = VT(TimeSync, 0x4aa46c); }
 DELETING(TimeSync, TimeSync_dtor)
 void (static_endTimeSync)(void) { TimeSync_dtor((u32 *)OBJ(g_loadTimer)); }
 
-/* TextureManager (vtable 0x4a9570; the global one at 0x83a5e0) */
+/* the game's class TextureManager (vtable 0x4a9570; the global one at 0x83a5e0): our TextureManager */
 int (TextureManager_ctor)(void) { g_textureManager = STR(0x4a9570, "P\263B"); return TextureManager_clear((void *)ADDR(g_textureManager)); }
 int THISCALL (TextureManager_dtor)(u32 *self) { self[0] = STR(0x4a9570, "P\263B"); return TextureManager_reset(self); }
 DELETING(TextureManager, TextureManager_dtor)
 void (static_endTextureManager)(void) { TextureManager_dtor((u32 *)ADDR(g_textureManager)); }
 
-/* Scene (vtable 0x4aa258) */
+/* the game's class Scene (vtable 0x4aa258): our ScenePath (Stage.scenePath), not our Scene - that one is the game's
+   class Console (Console_dtor). The class functions here keep the game's class names. */
 void *THISCALL (Scene_ctor)(u32 *self) { self[0] = VT(Scene, 0x4aa258); debug_traceStripped(NULL); return self; }
 void THISCALL (Scene_dtor)(u32 *self) { self[0] = VT(Scene, 0x4aa258); }
 DELETING(Scene, Scene_dtor)
@@ -330,22 +330,22 @@ void *THISCALL (image_tryOpen)(u8 *image, const char *path)
 	return bmp->file;
 }
 
-/* 0x4734d0 (a part type's emblem loaded): the BMP named after type p (its record at
+/* 0x4734d0: player p's emblem loaded: Save\<its name>.BMP (its player record at
    +0x1561b68, 0x47fd2 bytes each; the name from +4 by 0x4c74e8) read into a local image; at least 23 x 15 of it: its
    24 x 16 corner copied as RGBA into the record (+0x479c2), black pixels made clear and the rest opaque, and 1
    returned; else 0 */
-int THISCALL (partType_loadEmblem)(u8 *scene, int p)
+int THISCALL (playerRecord_loadEmblem)(u8 *scene, int p)
 {
-	u8 *type = (u8 *)&((Stage *)scene)->playerRecords[p];
+	u8 *record = (u8 *)&((Stage *)scene)->playerRecords[p];
 	u8 image[0x48];
 	GAME_VAR(u32, image) = VT(BMPRGBFile, 0x4a96f8);   /* (its vtable) */
 	BITS(((BmpFile *)image)->file) = 0;      /* (no file yet) */
 	char path[0x100];
-	sprintf(path, (const char *)STR(0x4c74e8, "Save\\%s.BMP"), type + 4);
+	sprintf(path, (const char *)STR(0x4c74e8, "Save\\%s.BMP"), record + 4);
 	int ok = 0;
 	if (image_tryOpen(image, path)) {
 		if (((BmpFile *)image)->width >= 23 && ((BmpFile *)image)->height >= 15) {
-			u8 *pixel = (u8 *)((PlayerRecord *)type)->emblem;
+			u8 *pixel = (u8 *)((PlayerRecord *)record)->emblem;
 			image_copyTo(image, pixel, 24, 16, 4, 0, 0, 0, 0, 24, 16, 0);
 			for (int k = 0; k < 24 * 16; k++, pixel += 4)
 				pixel[3] = pixel[0] == 0 && pixel[1] == 0 && pixel[2] == 0 ? 0 : 0xff;
@@ -357,11 +357,11 @@ int THISCALL (partType_loadEmblem)(u8 *scene, int p)
 	return ok;
 }
 
-/* 0x473610 (thiscall on the scene): the sixteen part types' emblems (24 x 16 RGBA each, +0x479c2 in a type's record)
+/* 0x473610 (thiscall on the scene): the sixteen players' emblems (24 x 16 RGBA each, +0x479c2 in a player record)
    that changed (+0x608 1) copied into the emblem atlas (+0x20fcfe4, 128 x 64, four to a row) and marked done; when one
    of them was new (+0x604 0, now 1) the atlas is uploaded to its GL texture (+0x20fcfe0). Its callers ignore the eax
    it leaves */
-void THISCALL (tex_upload2)(u8 *scene)
+void THISCALL (emblem_uploadAtlas)(u8 *scene)
 {
 	Stage *st = (Stage *)scene;
 	int uploaded = 0;
@@ -584,7 +584,7 @@ static void zero_dwords(u8 *at, int n)
 }
 
 /* 0x460cb0 (thiscall on the game object): a session started in mode (+4 client a, +8 sessionMode: 0 solo, 1 network, 2 the ARM CENTER, 3 replays). With no CD found a fatal
-   message. Its counters cleared; in mode 3 the names of the map list entries flagged +0x40 (0x9dda88, 0x44-byte
+   message. Its counters cleared; in mode 3 the names of the replay list's entries flagged +0x40 (0x9dda88, 0x44-byte
    records, 0x9eeab8 of them) copied to +0x1f1cbc (0x40 each, count +0x1f35bc); actors and scene reset; mode 2 also
    clears the armour cache, the view box (+0xbe2fcc: -100000 .. 100000, twice), and sets the game type flags for type
    0; the camera from 0xa0e7a8.. (direction negated), the HUD mode +0x233cc20 (mode 2 -> 3, 3 -> 1, else 2) and its
@@ -601,9 +601,9 @@ void THISCALL (scene_startSession)(u8 *g, u32 a, int mode)
 	zero_dwords((u8 *)g + offsetof(Scene, matchDrawing), 3);   /* matchDrawing .. ladderGame */
 	GS->replayCount = 0;
 	if (GS->sessionMode == 3)
-		for (int k = 0; k < g_mapListFlaggedCount; k++) {
-			const char *e = g_fileList[k].name;
-			if (g_fileList[k].flag == 1)
+		for (int k = 0; k < g_replayListCount; k++) {
+			const char *e = g_replayList[k].name;
+			if (g_replayList[k].flag == 1)
 				strcpy(GS->replayFiles[GS->replayCount++], e);
 		}
 	u8 *s = (u8 *)SCENE_STAGE(g);

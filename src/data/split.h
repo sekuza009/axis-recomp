@@ -3900,24 +3900,24 @@ extern u8 g_chatLineDone_v[4];
 extern u8 g_clockCheckClosed_v[4];
 #endif
 #ifdef AXIS_FENCE
-#define g_mapSelectLeft_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xb14000 : g_fence + 0xb13ffc))
+#define g_replaySelectLeft_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xb14000 : g_fence + 0xb13ffc))
 #else
-extern u8 g_mapSelectLeft_v[4];
+extern u8 g_replaySelectLeft_v[4];
 #endif
 #ifdef AXIS_FENCE
-#define g_mapSelectTop_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xb16000 : g_fence + 0xb15ffc))
+#define g_replaySelectTop_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xb16000 : g_fence + 0xb15ffc))
 #else
-extern u8 g_mapSelectTop_v[4];
+extern u8 g_replaySelectTop_v[4];
 #endif
 #ifdef AXIS_FENCE
-#define g_mapSelectRight_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xb18000 : g_fence + 0xb17ffc))
+#define g_replaySelectRight_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xb18000 : g_fence + 0xb17ffc))
 #else
-extern u8 g_mapSelectRight_v[4];
+extern u8 g_replaySelectRight_v[4];
 #endif
 #ifdef AXIS_FENCE
-#define g_mapSelectBottom_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xb1a000 : g_fence + 0xb19ffc))
+#define g_replaySelectBottom_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xb1a000 : g_fence + 0xb19ffc))
 #else
-extern u8 g_mapSelectBottom_v[4];
+extern u8 g_replaySelectBottom_v[4];
 #endif
 #ifdef AXIS_FENCE
 #define g_roomLookKept_v ((float *)(AXIS_FENCE == 2 ? g_fence + 0xb1c000 : g_fence + 0xb1bff4))
@@ -3925,14 +3925,14 @@ extern u8 g_mapSelectBottom_v[4];
 extern float g_roomLookKept_v[3];
 #endif
 #ifdef AXIS_FENCE
-#define g_mapSelectCount_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xb1e000 : g_fence + 0xb1dffc))
+#define g_replayFileCount_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xb1e000 : g_fence + 0xb1dffc))
 #else
-extern u8 g_mapSelectCount_v[4];
+extern u8 g_replayFileCount_v[4];
 #endif
 #ifdef AXIS_FENCE
-#define g_mapSelectFirst_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xb20000 : g_fence + 0xb1fffc))
+#define g_replaySelectFirst_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xb20000 : g_fence + 0xb1fffc))
 #else
-extern u8 g_mapSelectFirst_v[4];
+extern u8 g_replaySelectFirst_v[4];
 #endif
 #ifdef AXIS_FENCE
 #define g_roomEyeKept_v ((float *)(AXIS_FENCE == 2 ? g_fence + 0xb22000 : g_fence + 0xb21ff4))
@@ -3950,14 +3950,14 @@ extern u8 g_unusedReplayListWord1_v[4];
 extern u8 g_menuHintStep_v[4];
 #endif
 #ifdef AXIS_FENCE
-#define g_mapSelectRects_v ((int *)(AXIS_FENCE == 2 ? g_fence + 0xb28000 : g_fence + 0xb27ee0))
+#define g_replaySelectRects_v ((int *)(AXIS_FENCE == 2 ? g_fence + 0xb28000 : g_fence + 0xb27ee0))
 #else
-extern int g_mapSelectRects_v[72];
+extern int g_replaySelectRects_v[72];
 #endif
 #ifdef AXIS_FENCE
-#define g_mapSelectDim_v ((u32 *)(AXIS_FENCE == 2 ? g_fence + 0xb2a000 : g_fence + 0xb29ff0))
+#define g_replaySelectDim_v ((u32 *)(AXIS_FENCE == 2 ? g_fence + 0xb2a000 : g_fence + 0xb29ff0))
 #else
-extern u32 g_mapSelectDim_v[4];
+extern u32 g_replaySelectDim_v[4];
 #endif
 #ifdef AXIS_FENCE
 #define g_menuIdleTime_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xb2c000 : g_fence + 0xb2bffc))
@@ -3965,9 +3965,9 @@ extern u32 g_mapSelectDim_v[4];
 extern u8 g_menuIdleTime_v[4];
 #endif
 #ifdef AXIS_FENCE
-#define g_fileList_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xb2e000 : g_fence + 0xb2d000))
+#define g_replayList_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xb2e000 : g_fence + 0xb2d000))
 #else
-extern u8 g_fileList_v[69632];
+extern u8 g_replayList_v[69632];
 #endif
 #ifdef AXIS_FENCE
 #define g_unusedReplayListWord2_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xb40000 : g_fence + 0xb3fffc))
@@ -3985,9 +3985,9 @@ extern u8 g_menuHintClock_v[4];
 extern u8 g_mainMenuDepth_v[4];
 #endif
 #ifdef AXIS_FENCE
-#define g_mapSelectLit_v ((u32 *)(AXIS_FENCE == 2 ? g_fence + 0xb46000 : g_fence + 0xb45ff0))
+#define g_replaySelectLit_v ((u32 *)(AXIS_FENCE == 2 ? g_fence + 0xb46000 : g_fence + 0xb45ff0))
 #else
-extern u32 g_mapSelectLit_v[4];
+extern u32 g_replaySelectLit_v[4];
 #endif
 #ifdef AXIS_FENCE
 #define g_tunnelFlyingIn_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xb48000 : g_fence + 0xb47ffc))
@@ -4005,9 +4005,9 @@ extern u8 g_mainMenuFrames_v[4];
 extern u8 g_mainMenuPicked_v[4];
 #endif
 #ifdef AXIS_FENCE
-#define g_mapListFlaggedCount_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xb4e000 : g_fence + 0xb4dffc))
+#define g_replayListCount_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xb4e000 : g_fence + 0xb4dffc))
 #else
-extern u8 g_mapListFlaggedCount_v[4];
+extern u8 g_replayListCount_v[4];
 #endif
 #ifdef AXIS_FENCE
 #define g_unusedMainMenuWord_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xb50000 : g_fence + 0xb4fffc))

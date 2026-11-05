@@ -1,7 +1,7 @@
 /* names.c: looking resources up by name in the managers' sorted name tables (0x44-byte entries), and file names. */
 #include "../game.h"
 
-#define TM ((TextureManager *)tm)   /* the texture manager (tm in each function) by its fields (src/scene.fields) */
+#define TM ((TextureBank *)tm)   /* the texture bank (tm in each function) by its fields (src/scene.fields) */
 #include <string.h>
 
 /* binary search of name in the table at *table (count at *count; the search starts with hi = count); -1 when not
@@ -41,14 +41,14 @@ void (path_stripExtension)(const char *src, char *dst)
 	strcpy(dst, buf);
 }
 
-/* 0x4554c0: a texture manager's name, by binary search of its sorted 0x44-byte records (+0x10c, count +0x108): the
+/* 0x4554c0: a texture bank's name, by binary search of its sorted 0x44-byte records (+0x10c, count +0x108): the
    index or -1. The upper bound starts at the count, not count - 1, as in the original */
 int THISCALL (tex_findByName)(u8 *self, const u8 *name)
 {
-	int hi = ((TextureManager *)self)->indexCount, lo = 0;
+	int hi = ((TextureBank *)self)->indexCount, lo = 0;
 	if (hi <= 0)
 		return -1;
-	const u8 *records = ((TextureManager *)self)->index;
+	const u8 *records = ((TextureBank *)self)->index;
 	while (lo <= hi) {
 		int mid = (lo + hi) / 2;
 		const u8 *a = name, *b = records + mid * 0x44;
@@ -65,7 +65,7 @@ int THISCALL (tex_findByName)(u8 *self, const u8 *name)
 	return -1;
 }
 
-/* 0x455550 (thiscall on a texture manager): the item named, its file (+0x110) moved to where the item starts (its
+/* 0x455550 (thiscall on a texture bank): the item named, its file (+0x110) moved to where the item starts (its
    0x44-byte record at +0x10c, +0x40); returns the file, or 0 after a fatal message when there is no such item */
 void *THISCALL (tex_getItemFileBy)(u8 *manager, const char *name)
 {
@@ -74,16 +74,16 @@ void *THISCALL (tex_getItemFileBy)(u8 *manager, const char *name)
 		sys_fatalError((char *)OBJ(g_logTexture), (const char *)STR(0x4b3f80, "can't find item(%s) - getItemFileBy()"), (int)name);
 		return 0;
 	}
-	crt_fseek(((TextureManager *)manager)->file, GAME_VAR(long, ((TextureManager *)manager)->index + i * 0x44 + 0x40), 0);   /* (the index entry's offset, after its 0x40-byte name) */
-	return ((TextureManager *)manager)->file;
+	crt_fseek(((TextureBank *)manager)->file, GAME_VAR(long, ((TextureBank *)manager)->index + i * 0x44 + 0x40), 0);   /* (the index entry's offset, after its 0x40-byte name) */
+	return ((TextureBank *)manager)->file;
 }
 
-/* 0x456be0 (thiscall on the texture sets): a texture's id by name: each of the six managers (+4 ..) asked in turn
+/* 0x456be0 (thiscall on the texture manager): a texture's id by name: each of the six banks (+4 ..) asked in turn
    (tex_allocIdBy, with the rest of the arguments); the first answer k x 512 + its index. None: a fatal message, -1 */
 int THISCALL (tex_getIdByName)(u8 *sets, const char *name, u32 a, u32 b, u32 c, u32 d, u32 e, u32 f, u32 g)
 {
 	for (int k = 0; k < 6; k++) {
-		void *manager = ((TextureSets *)sets)->managers[k];
+		void *manager = ((TextureManager *)sets)->banks[k];
 		if (!manager)
 			continue;
 		int i = tex_allocIdBy(manager, (u32)name, a, b, c, d, e, f, g);
@@ -95,7 +95,7 @@ int THISCALL (tex_getIdByName)(u8 *sets, const char *name, u32 a, u32 b, u32 c, 
 }
 
 /* 0x466430 (thiscall on a shape): each of its parts (0x80 bytes from +0x14, +0x10 of them) given its texture (+0x44:
-   tex_getIdByName on the game's texture sets, 0xa0e010, by the part's name at +4, the rest of the arguments passed on);
+   tex_getIdByName on the game's texture manager, 0xa0e010, by the part's name at +4, the rest of the arguments passed on);
    with a suffix the name gets 0x4b12f4 and the suffix appended first (too long for the 0x40 bytes: a fatal message
    first). Its callers ignore the eax it leaves */
 void THISCALL (shape_bindTextureBy)(u8 *shape, const char *suffix, int flags, int a, int b, int c, int d, int e, int f)
@@ -115,7 +115,7 @@ void THISCALL (shape_bindTextureBy)(u8 *shape, const char *suffix, int flags, in
 	}
 }
 
-/* 0x4566c0 (thiscall on a texture manager): texture i bound, through the cache of GL textures (0x14-byte slots from
+/* 0x4566c0 (thiscall on a texture bank): texture i bound, through the cache of GL textures (0x14-byte slots from
    +0xcd12c: their index, the texture in them, the GL id, next and previous in a ring, +0xcd134 the oldest). Not in the
    cache (its slot, +0xc0168 in its 0x68-byte record, negative): the oldest slot taken and the texture loaded into it
    (tinted when its flags, +0xc016c, have 2; mipmapped unless they have 1; +0xcd138 counts the loads); in it but changed
@@ -123,7 +123,7 @@ void THISCALL (shape_bindTextureBy)(u8 *shape, const char *suffix, int flags, in
    (and that one's texture loses its slot), else it moves to just before the oldest. Its callers ignore the eax it leaves */
 void THISCALL (tex_bind)(u8 *tm, int i)
 {
-	TextureManager *mg = (TextureManager *)tm;
+	TextureBank *mg = (TextureBank *)tm;
 	TexRecord *texture = &mg->records[i];
 	TexSlot *slot;
 #define OLDEST ((TexSlot *)mg->oldest)
@@ -166,26 +166,26 @@ void THISCALL (tex_bind)(u8 *tm, int i)
 #undef SLOT
 }
 
-/* 0x4569d0 (thiscall on the texture sets): the six managers kept (+4 .. +0x18), each (when given) checked for its
+/* 0x4569d0 (thiscall on the texture manager): the six banks kept (+4 .. +0x18), each (when given) checked for its
    size: 64 x 64, 128 x 64, 256 x 64, 128 x 128, 256 x 128, 256 x 256 (its +0xc0118 / +0xc011c), a fatal message
    with the size found otherwise. Its caller ignores the eax it leaves */
 void THISCALL (texSmall_initBy)(u8 *sets, u8 *a, u8 *b, u8 *c, u8 *d, u8 *e, u8 *f)
 {
 	static const u32 sizes[6][3] = { { 64, 64, STR(0x4b4278, "texture image size mismatch (64x64 !=...") }, { 128, 64, STR(0x4b423c, "texture image size mismatch (128x64 !...") }, { 256, 64, STR(0x4b4200, "texture image size mismatch (256x64 !...") },
 	                                 { 128, 128, STR(0x4b41c4, "texture image size mismatch (128x128 ...") }, { 256, 128, STR(0x4b4188, "texture image size mismatch (256x128 ...") }, { 256, 256, STR(0x4b414c, "texture image size mismatch (256x256 ...") } };
-	u8 *managers[6] = { a, b, c, d, e, f };
+	u8 *banks[6] = { a, b, c, d, e, f };
 	TextureManager_reset(sets);
 	for (int k = 0; k < 6; k++) {
-		u8 *m = managers[k];
-		TextureManager *mg = (TextureManager *)m;
+		u8 *m = banks[k];
+		TextureBank *mg = (TextureBank *)m;
 		if (m && (mg->width != sizes[k][0] || mg->height != sizes[k][1]))
 			sys_fatalErrorN((char *)OBJ(g_logTextureManager), (const char *)RELOC(sizes[k][2]), mg->width, mg->height);
 	}
 	for (int k = 0; k < 6; k++)
-		((TextureSets *)sets)->managers[k] = managers[k];
+		((TextureManager *)sets)->banks[k] = banks[k];
 }
 
-/* 0x456520 (thiscall on a texture manager): its pixels (+0x114, +0xc0118 x +0xc011c) uploaded to GL texture id: wrapped
+/* 0x456520 (thiscall on a texture bank): its pixels (+0x114, +0xc0118 x +0xc011c) uploaded to GL texture id: wrapped
    (mode 1: repeat, else clamp), filtered linearly or not (+0xc0124 1), with mipmaps (+0xc0120 1: built by
    gluBuild2DMipmaps after the first level) or without. Its callers ignore the eax it leaves */
 void THISCALL (tex_upload)(u8 *tm, u32 id, int mode)
@@ -204,7 +204,7 @@ void THISCALL (tex_upload)(u8 *tm, u32 id, int mode)
 		gluBuild2DMipmaps(0xde1, 4, TM->width, TM->height, 0x1908, 0x1401, TM->image);
 }
 
-/* 0x4557e0 (thiscall on a texture manager): is the texture name (up to a '*') there in the manager's format (+0xc0114,
+/* 0x4557e0 (thiscall on a texture bank): is the texture name (up to a '*') there in the manager's format (+0xc0114,
    under its directory +8 when it has one) at its size (+0xc0118 x +0xc011c)? 0: in the dat index (tex_findByName); 1: a
    BMP of that size; 2: a RAW whose header (at 6, two shorts in 8-pixel units) gives it; else a fatal message. 1 or
    0, the local image (a BMPRGBFile) closed either way */
@@ -251,7 +251,7 @@ int THISCALL (tex_textureFileExist)(u8 *tm, const char *name)
 	return ok;
 }
 
-/* 0x455080 (thiscall on a texture manager): set up (twice is a fatal message): its directory (+8, upper-cased; none or
+/* 0x455080 (thiscall on a texture bank): set up (twice is a fatal message): its directory (+8, upper-cased; none or
    0x4b1304 empty), format, size and filtering (+0xc0114 .. +0xc0124). The dat format (0) opens its image file for
    the size (Data\Image64.dat ..., by 0x4b3f20 for another size; none a fatal message: kept open at +0x110) and reads
    its index (a count +0x108, then that many 0x44-byte entries at +0x10c; no memory a fatal message). Then up to 0x200
@@ -324,7 +324,7 @@ void THISCALL (tex_initBy)(u8 *tm, const char *dir, int slots, int format, int w
 #undef fatal
 }
 
-/* 0x4555b0 (thiscall on a texture manager): the record for texture name (upper-cased; empty: -1) with flags and two
+/* 0x4555b0 (thiscall on a texture bank): the record for texture name (upper-cased; empty: -1) with flags and two
    colours (h1 s1 v1, h2 s2 v2): among the +0xcd128 records (0x68 bytes from +0xc0128: the name, flags +0x44, the
    colours +0x48 ..) a hit keeps it as it is when flags and colours match (a NaN matches anything, as fcom has it),
    else takes them and is recoloured (tex_recolourMaterial). A miss whose file is there (tex_textureFileExist; else
@@ -371,13 +371,13 @@ int THISCALL (tex_allocIdBy)(u8 *tm, const char *name, u32 flags, u32 h1, u32 s1
 	return i;
 }
 
-#define W(m) (((TextureManager *)RELOC(m))->width)
-#define H(m) (((TextureManager *)RELOC(m))->height)
+#define W(m) (((TextureBank *)RELOC(m))->width)
+#define H(m) (((TextureBank *)RELOC(m))->height)
 
 /* path: the texture name in the given format, under the manager's directory when it has one */
 static void tex_path(u8 *m, char *path, u32 with_dir, u32 plain, const char *name)
 {
-	const TextureManager *tm = (const TextureManager *)m;
+	const TextureBank *tm = (const TextureBank *)m;
 	if (tm->dir[0])
 		sprintf(path, (const char *)RELOC(with_dir), tm->dir, name);
 	else
@@ -394,7 +394,7 @@ static void size_check(u8 *m, int w, int h)
 /* the image's alpha (each pixel's 4th byte): the grey of the ALPHA image, or opaque */
 static void alpha_from(u8 *m, int have)
 {
-	TextureManager *tm = (TextureManager *)m;
+	TextureBank *tm = (TextureBank *)m;
 	for (int y = 0; y < H(m); y++)
 		for (int x = 0; x < W(m); x++) {
 			int i = (y * W(m) + x) * 4;
@@ -405,13 +405,13 @@ static void alpha_from(u8 *m, int have)
 /* no colour mask: every pixel of the mask the colour at 0xa1f238 */
 static void colour_fill(u8 *m)
 {
-	TextureManager *tm = (TextureManager *)m;
+	TextureBank *tm = (TextureBank *)m;
 	for (int y = 0; y < H(m); y++)
 		for (int x = 0; x < W(m); x++)
 			((u32 *)tm->colourMask)[y * W(m) + x] = g_colourMaskRed;
 }
 
-/* 0x455aa0 (thiscall on the texture manager): texture i's image (its name +0xc0128 + i * 0x68 cut at '*') loaded at
+/* 0x455aa0 (thiscall on the texture bank): texture i's image (its name +0xc0128 + i * 0x68 cut at '*') loaded at
    +0x114, its alpha (alpha_from) and its colour mask at +0x80114 (or colour_fill), by the manager's format +0xc0114:
    0 items of the texture dat (name, name_ALPHA, name_COLOR: tex_findByName / tex_getItemFileBy, the decoder's tables set
    up on first use, 0xa0e00c), 1 BMP files (name.BMP must open), 2 PTX files (name.RAW, name_ALPHA.RAW,
@@ -419,7 +419,7 @@ static void colour_fill(u8 *m)
    objects, is not reproduced.) Its callers ignore the eax it leaves */
 void THISCALL (tex_loadColorMask)(u8 *m, int i)
 {
-	TextureManager *mg = (TextureManager *)m;
+	TextureBank *mg = (TextureBank *)m;
 	u32 bmp[3][0x12];   /* BMP reader objects (vtable 0x4a96f8) for the image, the alpha, the mask */
 	for (int k = 0; k < 3; k++) {
 		bmp[k][0] = VT(BMPRGBFile, 0x4a96f8);

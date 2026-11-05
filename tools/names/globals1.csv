@@ -7,7 +7,7 @@
 0x76d368,int,g_chosenGameMode
 0x5ae9c4,int,g_matchMode
 0x9da3e0,int,g_mapRotation
-0x9dd928,int,g_mapSelectCount
+0x9dd928,int,g_replayFileCount
 0x4deb48,int,g_enteringMenus
 0x680ccc,float,g_panelGlow
 0xa0e66c,int,g_soundBaseVolume

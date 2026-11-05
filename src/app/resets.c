@@ -1,5 +1,5 @@
 /* resets.c: input and screen state put back to its start: the key tables, the chat line's mode, the network
-   buffers, the map-select list, the message box. */
+   buffers, the replay selection list, the message box. */
 #include "../game.h"
 #include <string.h>
 
@@ -31,10 +31,10 @@ void (net_clearServerSettings)(void)
 	g_ladderPort = 0;
 }
 
-/* 0x440df0: every map of the map-select list out (g_fileList's flags) */
-void (mapSelect_allOut)(void)
+/* 0x440df0: every replay of the replay selection list out (g_replayList's flags) */
+void (replaySelect_allOut)(void)
 {
-	for (FileEntry *p = g_fileList; p < g_fileList + 1024; p++)
+	for (FileEntry *p = g_replayList; p < g_replayList + 1024; p++)
 		p->flag = 0;
 	g_replayWrap = 1;
 	g_unusedMainMenuWord = 0;

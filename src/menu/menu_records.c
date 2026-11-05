@@ -572,24 +572,24 @@ u32 (menu_keyStartFade)(void)
 	return r;
 }
 
-/* 0x442d10: the map list's visible names: up to 10 rows, 20 pixels apart, from the first shown (0x9dd92c) of the
-   0x9dd928 maps (0x44-byte records from 0x9dda88): a flagged one (+0x40) on a red bar with yellow text, the others
+/* 0x442d10: the replay list's visible names: up to 10 rows, 20 pixels apart, from the first shown (0x9dd92c) of the
+   0x9dd928 replays (0x44-byte records from 0x9dda88): a flagged one (+0x40) on a red bar with yellow text, the others
    pale blue. Returns the last text_draw8's eax (0 with no rows) */
-u32 (mapSelect_drawNames)(void)
+u32 (replaySelect_drawNames)(void)
 {
 	u32 r = 0;
-	for (int i = 0, dy = 0; i < g_mapSelectCount && dy < 200; i++, dy += 20) {
+	for (int i = 0, dy = 0; i < g_replayFileCount && dy < 200; i++, dy += 20) {
 		set_colour_bits(g_textColour, 0x3f4ccccd, 0x3f4ccccd, 0x3f800000, 0x3f800000);   /* (0.8, 0.8, 1, 1) */
-		int map = g_mapSelectFirst + i;
-		if (g_fileList[map].flag) {
+		int replay = g_replaySelectFirst + i;
+		if (g_replayList[replay].flag) {
 			set_colour_bits(g_rectColour, 0x3f800000, 0x3dcccccd, 0x3e99999a, 0x3f000000);   /* (1, 0.1, 0.3, 0.5) */
-			menu_drawRect(g_mapSelectLeft + 0x20, g_mapSelectTop + dy + 0x2b, g_mapSelectRight - 0x50,
-			              g_mapSelectTop + dy + 0x3d, 1);
+			menu_drawRect(g_replaySelectLeft + 0x20, g_replaySelectTop + dy + 0x2b, g_replaySelectRight - 0x50,
+			              g_replaySelectTop + dy + 0x3d, 1);
 			set_colour_bits(g_textColour, 0x3f800000, 0x3f800000, 0, 0x3f800000);   /* yellow */
 		}
-		map = g_mapSelectFirst + i;
-		r = text_draw8(g_mapSelectLeft + 0x28, g_mapSelectTop + dy + 0x2c,
-		                                                      g_fileList[map].name);   /* text_draw8 */
+		replay = g_replaySelectFirst + i;
+		r = text_draw8(g_replaySelectLeft + 0x28, g_replaySelectTop + dy + 0x2c,
+		                                                      g_replayList[replay].name);   /* text_draw8 */
 	}
 	return r;
 }
@@ -644,7 +644,7 @@ static int menu_choice(int i, u32 *r)
 	}
 }
 
-/* 0x4419d0: the main menu clicked (not while it is fading in (0x9db994 = 1); the map-select dialog first if open):
+/* 0x4419d0: the main menu clicked (not while it is fading in (0x9db994 = 1); the replay selection dialog first if open):
    its six buttons (outlines 0x2c bytes apart from 0x4deb80) as menu_choice. A right click quits too when the game
    was started from the launcher (0x9dae10). Returns what the original leaves in eax */
 u32 (mainmenu_clicks)(void)
@@ -652,7 +652,7 @@ u32 (mainmenu_clicks)(void)
 	if (g_mainMenuFadingIn == 1)
 		return 1;
 	if (g_mainMenuPicked)
-		return mapSelect_mouse();   /* mapSelect_mouse: the map-select dialog */
+		return replaySelect_mouse();   /* replaySelect_mouse: the replay selection dialog */
 	if (g_mouseClick) {
 		g_cursorBlink = 0.0f;
 		const Outline *buttons = (const Outline *)OBJ(g_mainMenuOutlines);
@@ -672,16 +672,16 @@ u32 (mainmenu_clicks)(void)
 	return leave_game();
 }
 
-/* 0x441e00: the main menu's keys (not while fading in; the map-select dialog's keys (mapSelect_keys) when open):
+/* 0x441e00: the main menu's keys (not while fading in; the replay selection dialog's keys (replaySelect_keys) when open):
    the six choices' keys as menu_choice, the back key quitting (without saving) when started from the launcher, and
-   the map-select key (0x440d70, the dialog opened). Returns what the original leaves in eax */
+   the replay selection key (0x440d70, the dialog opened). Returns what the original leaves in eax */
 u32 (mainmenu_processKeys)(void)
 {
 	static const u32 key[6] = { ADDR(g_dikK), ADDR(g_dikM), ADDR(g_dikL), ADDR(g_dikS), ADDR(g_dikA), ADDR(g_dikX) };
 	if (g_mainMenuFadingIn == 1)
 		return 1;
 	if (g_mainMenuPicked)
-		return mapSelect_keys();   /* mapSelect_keys */
+		return replaySelect_keys();   /* replaySelect_keys */
 	for (int i = 0; i < 6; i++)
 		if (input_justPressed(GAME_VAR(int, key[i])) == 1) {
 			u32 r;

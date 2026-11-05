@@ -212,15 +212,15 @@ void (armcMain_layout)(void)
 	rect1((OBJ(g_armcMainRects) + 0x100), AX2, -0xa0, AY2, -0x20, AX2, 0, AY2, 0);
 }
 
-void (mapSelect_layout)(void)
+void (replaySelect_layout)(void)
 {
-	static const RArg a[4] = { RA(ADDR(g_mapSelectRight), -0x32, 0), RA(ADDR(g_mapSelectTop), 0x48, 1), RA(ADDR(g_mapSelectRight), -0x12, 0), RA(ADDR(g_mapSelectTop), 0x88, 1) };
-	static const RArg b[4] = { RA(ADDR(g_mapSelectLeft), 0x10, 0), RA(ADDR(g_mapSelectTop), 0xfe, 1), RA(ADDR(g_mapSelectLeft), 0xd8, 0), RA(ADDR(g_mapSelectTop), 0x10e, 1) };
-	static const RArg c[4] = { RA(ADDR(g_mapSelectLeft), 0x64, 1), RA(ADDR(g_mapSelectBottom), -0x5c, 0), RA(ADDR(g_mapSelectLeft), 0xdc, 1), RA(ADDR(g_mapSelectBottom), -0x3c, 0) };
-	static const RArg d[4] = { RA(ADDR(g_mapSelectLeft), 0x64, 1), RA(ADDR(g_mapSelectBottom), -0x34, 0), RA(ADDR(g_mapSelectLeft), 0xdc, 1), RA(ADDR(g_mapSelectBottom), -0x14, 0) };
-	static const RArg e[4] = { RA(ADDR(g_mapSelectLeft), 0x28, 0), RA(ADDR(g_mapSelectTop), 0x2c, 1), RA(ADDR(g_mapSelectRight), -0x50, 0), RA(ADDR(g_mapSelectTop), 0x3c, 1) };
-	rect_spec(OBJ(g_mapSelectRects), (OBJ(g_mapSelectRects) + 0x20), 0x64, a); rect_spec((OBJ(g_mapSelectRects) + 0x20), (OBJ(g_mapSelectRects) + 0x40), 0x1e, b); rect_spec((OBJ(g_mapSelectRects) + 0x40), (OBJ(g_mapSelectRects) + 0x60), 0xa0, c);
-	rect_spec((OBJ(g_mapSelectRects) + 0x60), (OBJ(g_mapSelectRects) + 0x80), 0xa0, d); rect_spec((OBJ(g_mapSelectRects) + 0x80), (OBJ(g_mapSelectRects) + 0x80) + 10 * 16, 0x14, e);
+	static const RArg a[4] = { RA(ADDR(g_replaySelectRight), -0x32, 0), RA(ADDR(g_replaySelectTop), 0x48, 1), RA(ADDR(g_replaySelectRight), -0x12, 0), RA(ADDR(g_replaySelectTop), 0x88, 1) };
+	static const RArg b[4] = { RA(ADDR(g_replaySelectLeft), 0x10, 0), RA(ADDR(g_replaySelectTop), 0xfe, 1), RA(ADDR(g_replaySelectLeft), 0xd8, 0), RA(ADDR(g_replaySelectTop), 0x10e, 1) };
+	static const RArg c[4] = { RA(ADDR(g_replaySelectLeft), 0x64, 1), RA(ADDR(g_replaySelectBottom), -0x5c, 0), RA(ADDR(g_replaySelectLeft), 0xdc, 1), RA(ADDR(g_replaySelectBottom), -0x3c, 0) };
+	static const RArg d[4] = { RA(ADDR(g_replaySelectLeft), 0x64, 1), RA(ADDR(g_replaySelectBottom), -0x34, 0), RA(ADDR(g_replaySelectLeft), 0xdc, 1), RA(ADDR(g_replaySelectBottom), -0x14, 0) };
+	static const RArg e[4] = { RA(ADDR(g_replaySelectLeft), 0x28, 0), RA(ADDR(g_replaySelectTop), 0x2c, 1), RA(ADDR(g_replaySelectRight), -0x50, 0), RA(ADDR(g_replaySelectTop), 0x3c, 1) };
+	rect_spec(OBJ(g_replaySelectRects), (OBJ(g_replaySelectRects) + 0x20), 0x64, a); rect_spec((OBJ(g_replaySelectRects) + 0x20), (OBJ(g_replaySelectRects) + 0x40), 0x1e, b); rect_spec((OBJ(g_replaySelectRects) + 0x40), (OBJ(g_replaySelectRects) + 0x60), 0xa0, c);
+	rect_spec((OBJ(g_replaySelectRects) + 0x60), (OBJ(g_replaySelectRects) + 0x80), 0xa0, d); rect_spec((OBJ(g_replaySelectRects) + 0x80), (OBJ(g_replaySelectRects) + 0x80) + 10 * 16, 0x14, e);
 }
 
 void (setupControl_layout)(void)

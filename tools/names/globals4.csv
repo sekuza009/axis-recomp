@@ -39,7 +39,7 @@
 0xa0b390,int,g_arenaSessionOpen
 0xa0bf1c,void *,g_pingStopEvent
 0xa0bac8,int,g_serviceProviderCount
-0x9eeab8,int,g_mapListFlaggedCount
+0x9eeab8,int,g_replayListCount
 0x4d23d0,int,g_convertHangul
 0x9dbf0c,int,g_directInputMade
 0x4df000,int,g_mouseInvert

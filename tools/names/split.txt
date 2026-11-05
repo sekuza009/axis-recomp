@@ -24,7 +24,7 @@ g_ptxClampTable
 g_ptxPlanes
 g_ptxDequant
 g_ptxQuant
-g_fileList
+g_replayList
 # named globals reached only by their name (tools/split_candidates.py), split 2026-10-31
 g_arenaConfirming
 g_arenaFull
@@ -299,10 +299,10 @@ g_lobbyListRow
 g_lobbyRefreshing
 g_lobbyReply
 g_lobbySearching
-g_mapSelectBottom
-g_mapSelectLeft
-g_mapSelectRight
-g_mapSelectTop
+g_replaySelectBottom
+g_replaySelectLeft
+g_replaySelectRight
+g_replaySelectTop
 g_matchRunning
 g_mechHackingLevel
 g_menuFramePhase
@@ -546,8 +546,8 @@ g_pilotStatsKept
 g_roomForm
 g_roomLookKept
 g_roomEyeKept
-g_mapSelectDim
-g_mapSelectLit
+g_replaySelectDim
+g_replaySelectLit
 g_missionSelectRect
 g_missionColourLit
 g_missionColourDim
@@ -577,10 +577,10 @@ g_lanSearch
 g_lobbyBlinkClock
 g_mainMenuFrames
 g_mainMenuPicked
-g_mapListFlaggedCount
+g_replayListCount
 g_mapRotation
-g_mapSelectCount
-g_mapSelectFirst
+g_replayFileCount
+g_replaySelectFirst
 g_matchMode
 g_menuFrameCounter
 g_menuHintStep
@@ -734,7 +734,7 @@ g_accountRects
 g_rankingRects
 g_roomSettingsRects
 g_createDialogRects
-g_mapSelectRects
+g_replaySelectRects
 g_skirmishSettingsRects
 g_briefingRects
 g_missionselRects

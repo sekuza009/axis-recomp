@@ -640,7 +640,7 @@ struct SessionEntry 0x4a                                         # a game of the
 0x3f       8          char password[8]
 0x47       1          u8 locked                                  # a password is asked for (the lock shown)
 
-struct FileEntry 0x44                                            # a file of the map-select / replay list (g_fileList, 1024)
+struct FileEntry 0x44                                            # a file of the replay selection / replay list (g_replayList, 1024)
 0          0x40       char name[0x40]
 0x40       4          i32 flag                                   # 1: picked (in the map rotation / the replays shown)
 
@@ -883,22 +883,22 @@ struct TreeNode 0x4c                                            # a manager's na
 0x44       4          u8 *left
 0x48       4          u8 *right
 
-struct TexRecord 0x68                                           # a texture manager's material: a texture by name, its flags and colours (tex_allocIdBy)
+struct TexRecord 0x68                                           # a texture bank's material: a texture by name, its flags and colours (tex_allocIdBy)
 0          0x40       char name[0x40]                            # upper-cased
-0x40       4          i32 slot                                   # (by use) its slot in the GL texture cache (TextureManager.slots; -1: not cached)
+0x40       4          i32 slot                                   # (by use) its slot in the GL texture cache (TextureBank.slots; -1: not cached)
 0x44       4          u32 flags
 0x48       0x18       float colours[6]                          # two hue / saturation / value sets
 0x60       4          i32 animation                              # (by use) the name's suffix: "_ANI" 1, "_ANI0" .. "_ANI3" 1 .. 4, else 0; written, never read
 0x64       4          i32 changed                                # 1: recoloured (tex_recolourMaterial; its image made again)
 
-struct TexSlot 0x14                                             # a slot of a texture manager's GL texture cache (names.c tex_bind)
+struct TexSlot 0x14                                             # a slot of a texture bank's GL texture cache (names.c tex_bind)
 0          4          i32 index                                  # its own index
 4          4          i32 record                                 # the record (texture) in it
 8          4          u32 glTexture                              # its GL texture id
 0xc        4          u8 *next                                   # the ring: the next slot (from the oldest on)
 0x10       4          u8 *prev
 
-struct TextureManager 0xcd144                                   # a texture manager (names.c; TextureSets.managers): up to 512 materials and their GL texture slots
+struct TextureBank 0xcd144                                   # a texture bank (the game's class Texture, one per image size; names.c; TextureManager.banks): up to 512 materials and their GL texture slots
 4          4          i32 ready                                 # 1: set up (tex_initBy)
 8          0x100      char dir[0x100]
 0x108      4          i32 indexCount                            # the image file's name index: indexCount entries of 0x44 bytes

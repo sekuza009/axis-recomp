@@ -40,7 +40,7 @@ void (setup_drawSoundPage)(void)
 	set_colour_bits(g_textColour, bright[0], bright[1], bright[2], bright[3]);
 	text_draw16(X0 + 0x50, Y0 + 0x10, (const char *)MSG(171, "SETUP SOUND"));
 	int texture = g_buttonTexture;
-	tex_bind(g_textures->managers[texture / 512], texture % 512);
+	tex_bind(g_textures->banks[texture / 512], texture % 512);
 	glEnable(GL_TEXTURE_2D);
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 	tex_quad(0.0f, 0.25f, 0.25f, 0.375f, X0 + 0x50, Y0 + 0x50, X0 + 0x90, Y0 + 0x70);      /* the arrows */
@@ -87,7 +87,7 @@ void (setup_drawSoundPage)(void)
 	for (int k = 0; k < 2; k++) {
 		glEnable(GL_TEXTURE_2D);
 		texture = g_buttonTexture;
-		tex_bind(g_textures->managers[texture / 512], texture % 512);
+		tex_bind(g_textures->banks[texture / 512], texture % 512);
 		int lit = hovered == k + 8;
 		glColor4f(1.0f, 1.0f, 1.0f, lit ? 1.0f : 0.4f);
 		int bx = X0 + k * 0x8c;
@@ -126,7 +126,7 @@ void (setup_drawOptionsDialog)(void)
 	text_draw16(X0 + 0x50, Y0 + 0x10, (const char *)MSG(181, "SETUP GRAPHIC"));
 	glEnable(GL_TEXTURE_2D);
 	int texture = g_buttonTexture;
-	tex_bind(g_textures->managers[texture / 512], texture % 512);
+	tex_bind(g_textures->banks[texture / 512], texture % 512);
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 	for (int k = 0; k < 7; k++)
 		text_draw8(X0 + 0x50, Y0 + 0x44 + k * 0x28, (const char *)(MSG(182, "VIDEO MODE") + k * 0x80));
@@ -148,7 +148,7 @@ void (setup_drawOptionsDialog)(void)
 	for (int k = 0; k < 2; k++) {
 		glEnable(GL_TEXTURE_2D);
 		texture = g_buttonTexture;
-		tex_bind(g_textures->managers[texture / 512], texture % 512);
+		tex_bind(g_textures->banks[texture / 512], texture % 512);
 		int lit = hovered == k + 7;
 		glColor4f(1.0f, 1.0f, 1.0f, lit ? 1.0f : 0.4f);
 		int bx = X0 + k * 0x8c;
@@ -229,7 +229,7 @@ static void settings_tab(void)
 	for (int k = 0; k < 2; k++)
 		text_draw8(X0 + 0xc8, Y0 + 0x5c + k * 0x18, (const char *)(GAME_VAR(int, OBJ(g_setupToggles) + k * 4) == 1 ? MSG(119, "ON") : MSG(118, "OFF")));
 	int texture = g_buttonTexture;
-	tex_bind(g_textures->managers[texture / 512], texture % 512);
+	tex_bind(g_textures->banks[texture / 512], texture % 512);
 	glEnable(GL_TEXTURE_2D);
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 	menu_drawSmallButton1(X0 + 0xc8, Y0 + 0x88, X0 + 0x108, Y0 + 0xa0, 0);   /* the arrows */
@@ -255,7 +255,7 @@ static void settings_tab(void)
 	}
 	glEnable(GL_TEXTURE_2D);
 	texture = g_crosshairTexture;
-	tex_bind(g_textures->managers[texture / 512], texture % 512);
+	tex_bind(g_textures->banks[texture / 512], texture % 512);
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 	glBegin(GL_QUADS);
 	glTexCoord2i(0, 0);
@@ -328,7 +328,7 @@ void (setup_drawControlsPage)(void)
 	for (int k = 0; k < 3; k++) {
 		glEnable(GL_TEXTURE_2D);
 		int texture = g_buttonTexture;
-		tex_bind(g_textures->managers[texture / 512], texture % 512);
+		tex_bind(g_textures->banks[texture / 512], texture % 512);
 		int lit = hovered == k + 4 && !editing;
 		glColor4f(1.0f, 1.0f, 1.0f, lit ? 1.0f : 0.4f);
 		int bx = X0 + 0x50 + k * 0x8c;
@@ -470,7 +470,7 @@ void (setup_drawTunnel)(void)
 			texture = GAME_VAR(int, OBJ(g_ctrlMenuTextures) + 12 - layer * 4);
 		} else
 			continue;
-		tex_bind(g_textures->managers[texture / 512], texture % 512);
+		tex_bind(g_textures->banks[texture / 512], texture % 512);
 		for (int wall = 0; wall < 4; wall++) {
 			int parity = wall % 2, far = wall >= 2;
 			gfx_setMenuCamera();
@@ -584,7 +584,7 @@ static void menu_tunnel(const Tunnel *t, const Highlight *h)
 		if (layer > 1)
 			s0 = 0.5f, ds = 0, t0 = t->t0, t1 = t->t1, s_far = 1.0f;
 		int texture = layer < 2 ? g_menuTunnelTexture : GAME_VAR(int, t->textures - layer * 4);
-		tex_bind(g_textures->managers[texture / 512], texture % 512);
+		tex_bind(g_textures->banks[texture / 512], texture % 512);
 		for (int wall = 0; wall < t->walls; wall++) {
 			int place = wall % places, far = wall >= places;
 			gfx_setMenuCamera();

@@ -36,21 +36,21 @@ void THISCALL (hud_drawEmblem)(Scene *scene, int emblem, int x, int y)
 	int sx = hud_toScreenX(x), sy = hud_toScreenY(y);
 	int w = hud_scaleX(24.0f), h = hud_scaleY(16.0f);
 	glEnable(GL_TEXTURE_2D);
-	tex_bind(g_textures->managers[scene->emblemTexture / 512], scene->emblemTexture % 512);
+	tex_bind(g_textures->banks[scene->emblemTexture / 512], scene->emblemTexture % 512);
 	int row = cell / 10, col = cell % 10;
 	icon_quad(sx, sy, w, h, texel(col * 24, 1.0f / 256), texel((row + 14) * 16, 1.0f / 256),
 	          texel(col * 24 + 24, 1.0f / 256), texel((row + 15) * 16, 1.0f / 256));
 }
 
 /* 0x4924d0: player's flag: four cells per row from the flag texture (128 x 64 texels); in the mode
-   scene->sessionMode, from the GL texture scene->flagGlTexture instead of the texture manager */
+   scene->sessionMode, from the GL texture scene->flagGlTexture instead of the texture bank */
 void THISCALL (hud_drawFlag)(Scene *scene, int player, int x, int y)
 {
 	int sx = hud_toScreenX(x), sy = hud_toScreenY(y);
 	int w = hud_scaleX(24.0f), h = hud_scaleY(16.0f);
 	glEnable(GL_TEXTURE_2D);
 	if (scene->sessionMode == 0)
-		tex_bind(g_textures->managers[scene->flagTexture / 512], scene->flagTexture % 512);
+		tex_bind(g_textures->banks[scene->flagTexture / 512], scene->flagTexture % 512);
 	else
 		glBindTexture(GL_TEXTURE_2D, scene->flagGlTexture);
 	int row = player / 4, col = player % 4;
@@ -66,7 +66,7 @@ void THISCALL (replay_drawIcon)(Scene *scene, int x, int y, int icon)
 	int sy = hud_toScreenY(y - 8), sx = hud_toScreenX(x);
 	int w = hud_scaleX(32.0f), h = hud_scaleY(32.0f);
 	glEnable(GL_TEXTURE_2D);
-	tex_bind(g_textures->managers[scene->emblemTexture / 512], scene->emblemTexture % 512);
+	tex_bind(g_textures->banks[scene->emblemTexture / 512], scene->emblemTexture % 512);
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 	float s1 = s0 + 0.125f, t1 = t0 + 0.125f;
 	icon_quad(sx, sy, w, h, s0, t0, s1, t1);

@@ -1029,7 +1029,7 @@ State harness (functions that use game memory): the worker suspends every other 
   Batch 174 (12, lifted/grp124.c): game_returnToMenus_41ec50 / _41e8b0 / _41e9d0 / _41eb00, room_4036c0,
   menuState900_enterSkirmish, menuState500_enter, room_434490 (generated; its 0xa0b320 is a packet buffer:
   netstate_setup after gen_setup), and by hand msg_playerConnected / msg_chatLine (thiscall on the game, ret 4 /
-  ret 0xc), music_playMatch (thiscall), dplay_closeSession (a fake COM object). input_updateMenuCursor is native:
+  ret 0xc), music_playMatch (thiscall), dplay_closeSession (a fake COM object). input_updateMouse is native:
   the patch DLL redirects its call to input_readMouse (0x445c69) to its own input_read (button masks, cursor
   speed), so the rebuild, lifted from the file, differed (11 of 200).
   tools/stubargs.py: a callee that never reads [esp + x] / [ebp + x] and does not ret N gets 0 arguments (a push
@@ -1242,7 +1242,7 @@ State harness (functions that use game memory): the worker suspends every other 
   the emblem transition to trans_wrap: @ calls. text_drawSized, hud_44ae10 and hud_4950a0 are not changed at all.
   The four-argument passes take (x1, y, x2, text). Still native: font_penDraw (the DLL's glVertex2i hook tests its
   own return address for 0x46bb00..0x46bcf2, which a lifted caller cannot give), movie_playEnding and
-  input_justPressed (entries replaced), hud_drawDigits / armc_rotateFromCursor / input_updateMenuCursor (operands
+  input_justPressed (entries replaced), hud_drawDigits / armc_rotateFromCursor / input_updateMouse (operands
   or blocks with DLL addresses as data), hud_drawMain and the functions jumping into code caves on disk (gfx_*,
   FUN_0042eed0, input_readMouse, app_init, WndProc); hud_drawLockOn, menu_titleEmblemTransition, hud_drawFps,
   hud_4953d0, replay_drawMessage (no change in memory) are next.

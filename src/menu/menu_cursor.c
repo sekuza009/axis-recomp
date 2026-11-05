@@ -12,7 +12,7 @@ void (menu_drawCursor)(void)
 	gfx_setProjection2D3D(2);
 	glEnable(GL_TEXTURE_2D);
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
-	tex_bind(g_textures->managers[g_cursorTexture / 512], g_cursorTexture % 512);
+	tex_bind(g_textures->banks[g_cursorTexture / 512], g_cursorTexture % 512);
 	glBegin(GL_QUADS);
 	float left = (float)column, top = (float)row;
 	float s0 = left * 0.25f, t0 = top * 0.25f;

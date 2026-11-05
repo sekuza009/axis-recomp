@@ -638,7 +638,7 @@ u32 (loginDialog_draw)(void)
 		int x = k * 0xc8;
 		glEnable(GL_TEXTURE_2D);
 		int texture = g_buttonTexture;
-		tex_bind(g_textures->managers[texture / 512], texture % 512);
+		tex_bind(g_textures->banks[texture / 512], texture % 512);
 		const u32 *colour = hovered == k + 4 ? bright : dim;
 		glColor4f(1.0f, 1.0f, 1.0f, hovered == k + 4 ? 1.0f : 0.4f);
 		profile_drawButton(X0 + x + 0x5a, Y1 - 0x40, X0 + x + 0xfa, Y1 - 0x20, 1);
@@ -670,7 +670,7 @@ static void confirm_box(void)
 	for (int k = 0; k < 2; k++) {
 		glEnable(GL_TEXTURE_2D);
 		int texture = g_buttonTexture;
-		tex_bind(g_textures->managers[texture / 512], texture % 512);
+		tex_bind(g_textures->banks[texture / 512], texture % 512);
 		int x = 0xb4 + k * 0xa0;
 		glColor4f(1.0f, 1.0f, 1.0f, hovered == k ? 1.0f : 0.4f);
 		menu_drawWideButton(x, 0x104, x + 0x78, 0x124, 1);
@@ -716,7 +716,7 @@ u32 (serverDialog_draw)(void)
 	for (int k = 0; k < 2; k++) {
 		glEnable(GL_TEXTURE_2D);
 		int texture = g_buttonTexture;
-		tex_bind(g_textures->managers[texture / 512], texture % 512);
+		tex_bind(g_textures->banks[texture / 512], texture % 512);
 		glColor4f(1.0f, 1.0f, 1.0f, hovered == k ? 1.0f : 0.4f);
 		int x = X0 + k * 0xb4;
 		menu_drawWideButton(x + 0x64, Y1 - 0x40, x + 0xdc, Y1 - 0x20, 1);
@@ -777,7 +777,7 @@ u32 (roomLogin_draw)(void)
 	for (int k = 0; k < 3; k++) {
 		glEnable(GL_TEXTURE_2D);
 		int texture = g_buttonTexture;
-		tex_bind(g_textures->managers[texture / 512], texture % 512);
+		tex_bind(g_textures->banks[texture / 512], texture % 512);
 		int lit = hovered == k + 2 && !g_roomRequestOut;
 		glColor4f(1.0f, 1.0f, 1.0f, lit ? 1.0f : 0.4f);
 		int x = X0 + k * 0xa0;
@@ -886,7 +886,7 @@ void (account_drawPanel)(void)
 	/* the rank badge */
 	glEnable(GL_TEXTURE_2D);
 	int texture = g_fontAscii;
-	tex_bind(g_textures->managers[texture / 512], texture % 512);
+	tex_bind(g_textures->banks[texture / 512], texture % 512);
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 	rank_badge(g_pilotLevel, X0 + 0xc0, Y0 + 0xbe);
 	glDisable(GL_TEXTURE_2D);
@@ -911,7 +911,7 @@ void (account_drawPanel)(void)
 	for (int k = 0; k < 2; k++) {
 		glEnable(GL_TEXTURE_2D);
 		texture = g_buttonTexture;
-		tex_bind(g_textures->managers[texture / 512], texture % 512);
+		tex_bind(g_textures->banks[texture / 512], texture % 512);
 		int lit = hovered == k + 4 && !g_textFieldOpen;
 		glColor4f(1.0f, 1.0f, 1.0f, lit ? 1.0f : 0.4f);
 		int x = X0 + k * 0xa0;
@@ -958,7 +958,7 @@ u32 (ranking_drawTable)(void)
 	text_draw16(X0 + 0x10, Y0 + 0x10, (const char *)MSG(411, "LADDER GAME RANKING"));
 	glEnable(GL_TEXTURE_2D);
 	int texture = g_buttonTexture;
-	tex_bind(g_textures->managers[texture / 512], texture % 512);
+	tex_bind(g_textures->banks[texture / 512], texture % 512);
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 	menu_drawSmallButton1(X0 + 0xb0, Y0 + 0x26, X0 + 0xe4, Y0 + 0x3e, hovered == 0);
 	menu_drawSmallButton2(X0 + 0x146, Y0 + 0x26, X0 + 0x17a, Y0 + 0x3e, hovered != 0 && hovered == 1);
@@ -976,7 +976,7 @@ u32 (ranking_drawTable)(void)
 	text_drawBox16(X1 - 0x78, Y0 + 0x10, X1 - 0x14, (const char *)MSG(412, "OPTION"));
 	glEnable(GL_TEXTURE_2D);
 	texture = g_buttonTexture;
-	tex_bind(g_textures->managers[texture / 512], texture % 512);
+	tex_bind(g_textures->banks[texture / 512], texture % 512);
 	glColor4f(1.0f, 1.0f, 1.0f, hovered == 2 ? 1.0f : 0.6f);
 	menu_drawWideButton(X1 - 0x78, Y0 + 0x24, X1 - 0x14, Y0 + 0x40, 1);
 	TEXT(yellow);
@@ -1019,7 +1019,7 @@ u32 (ranking_drawTable)(void)
 			text_draw8(X0 + 0x48, y, row->name);
 			glEnable(GL_TEXTURE_2D);
 			texture = g_fontAscii;
-			tex_bind(g_textures->managers[texture / 512], texture % 512);
+			tex_bind(g_textures->banks[texture / 512], texture % 512);
 			rank_badge(row->level, X0 + 0xd2, y);
 			glDisable(GL_TEXTURE_2D);
 			set_colour_bits(g_rectColour, 0x3f800000, 0x3f800000, 0, 0x3e99999a);   /* 1, 1, 0, 0.3 */
@@ -1054,7 +1054,7 @@ u32 (ranking_drawTable)(void)
 	for (int k = 0; k < 2; k++) {
 		glEnable(GL_TEXTURE_2D);
 		texture = g_buttonTexture;
-		tex_bind(g_textures->managers[texture / 512], texture % 512);
+		tex_bind(g_textures->banks[texture / 512], texture % 512);
 		int lit = hovered == k + 3 && !(hovered == 3 && !g_rankingWaiting);
 		glColor4f(1.0f, 1.0f, 1.0f, lit ? 1.0f : 0.4f);
 		int x = X0 + k * 0xc8;

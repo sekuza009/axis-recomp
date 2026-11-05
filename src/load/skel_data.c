@@ -397,7 +397,7 @@ u8 *THISCALL (skel_getSkeletonPtrBy)(u8 *cache, const char *name)
 
 /* 0x466dc0 (thiscall on a shape cache): the shape named name, as skel_getSkeletonPtrBy does it for skeletons: shape
    i (0x4c bytes each from +0x11c) loaded from the shape dat (shape_findDatEntry, shape_read) or a "shp" / "obj" file
-   (model_loadFrom), its textures looked up (shape_bindTextureBy with the cache's texture sets +0x130 and seven values
+   (model_loadFrom), its textures looked up (shape_bindTextureBy with the cache's texture manager +0x130 and seven values
    +0x230 ..); bound (shape_bindPartTextures) when bind is 1, found or added */
 u8 *THISCALL (shape_getByName)(u8 *cache, const char *name, int bind)
 {

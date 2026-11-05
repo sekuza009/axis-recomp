@@ -1,8 +1,8 @@
 # Line-by-line name review (started 2026-11-04). [x] = reviewed and fixed; commit noted.
 # Per file: function names vs bodies, static helpers, params, locals, globals and fields touched, comments.
 [x] src/app/app_quit.c 17
-[ ] src/app/classes.c 658
-[ ] src/app/devices.c 344
+[x] src/app/classes.c 658
+[x] src/app/devices.c 344
 [x] src/app/error_log.c 83
 [x] src/app/frees.c 36
 [ ] src/app/loading.c 548

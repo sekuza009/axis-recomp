@@ -335,7 +335,7 @@ int (map_fileExists)(int k)
 #define crt_findnext(handle, data) GAME_CDECL(0x49f75e, int, int, void *)(handle, data)
 #define crt_findclose(handle) GAME_CDECL(0x49f823, int, int)(handle)
 
-/* 0x440c60: the autoplay folder's files (0x4b2a8c, pattern 0x4b2a84) appended to the map list (0x44-byte records
+/* 0x440c60: the autoplay folder's files (0x4b2a8c, pattern 0x4b2a84) appended to the replay list (0x44-byte records
    from 0x9dda88, count 0x9dd928, at most 1023), then back to the parent folder (0x4b2a80). Returns the last chdir's
    eax */
 int (autoplay_listFiles)(void)
@@ -347,11 +347,11 @@ int (autoplay_listFiles)(void)
 	int search = crt_findfirst((const char *)STR(0x4b2a84, "*.ape"), &found);
 	if (search < 0)
 		return crt_chdir((const char *)STR(0x4b2a80, ".."));
-	strcpy(g_fileList[g_mapSelectCount].name, found.name);
-	g_mapSelectCount++;
+	strcpy(g_replayList[g_replayFileCount].name, found.name);
+	g_replayFileCount++;
 	while (!crt_findnext(search, &found)) {
-		strcpy(g_fileList[g_mapSelectCount].name, found.name);
-		if (++g_mapSelectCount > 0x3fe)
+		strcpy(g_replayList[g_replayFileCount].name, found.name);
+		if (++g_replayFileCount > 0x3fe)
 			break;
 	}
 	crt_findclose(search);

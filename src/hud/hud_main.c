@@ -84,7 +84,7 @@ static void main_counters(Scene *scene, Player *player)
 	float w8 = f32(wx(8.0f));
 	int x = ftol(wx(8.0f) + w8);
 	glEnable(GL_TEXTURE_2D);
-	tex_bind(g_textures->managers[scene->hudBarTexture / 512], scene->hudBarTexture % 512);
+	tex_bind(g_textures->banks[scene->hudBarTexture / 512], scene->hudBarTexture % 512);
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 	glBegin(GL_QUADS);
 	glTexCoord2f(0.0f, 0.7109375f);
@@ -146,7 +146,7 @@ static void main_weapons(Scene *scene, Player *player)
 		int x = ftol(wx(acrossf) + left);
 		int other = player->weapon != i;
 		glEnable(GL_TEXTURE_2D);
-		tex_bind(g_textures->managers[scene->hudBarTexture / 512], scene->hudBarTexture % 512);
+		tex_bind(g_textures->banks[scene->hudBarTexture / 512], scene->hudBarTexture % 512);
 		glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 		glBegin(GL_QUADS);
 		float t0 = tex256(other * 39 + 48);
@@ -192,7 +192,7 @@ static void main_gauge(Scene *scene, Player *player)
 	float centre = f32(gfx_getWidth() / 2);
 	int x = ftol(centre - wx(32.0f));
 	glEnable(GL_TEXTURE_2D);
-	tex_bind(g_textures->managers[scene->menuBoxTexture / 512], scene->menuBoxTexture % 512);
+	tex_bind(g_textures->banks[scene->menuBoxTexture / 512], scene->menuBoxTexture % 512);
 	float gauge = player->gauge;
 	glColor4f(1.0f, 1.0f, 1.0f, gauge > 1.0f ? 1.0f : gauge);
 	glBegin(GL_QUADS);
@@ -231,7 +231,7 @@ static void main_timers(Scene *scene, Player *player)
 		w = f32(w - wx(8.0f));
 		int x = ftol(w - wx(32.0f));
 		glEnable(GL_TEXTURE_2D);
-		tex_bind(g_textures->managers[scene->emblemTexture / 512], scene->emblemTexture % 512);
+		tex_bind(g_textures->banks[scene->emblemTexture / 512], scene->emblemTexture % 512);
 		glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 		glBegin(GL_QUADS);
 		float s0 = tex255(k * 32);
@@ -294,7 +294,7 @@ static void main_snapshot(Scene *scene, Player *player)
 		scene->snapshotTex[player->actorType] = tex_getIdByName(g_textures, name, 0, 0, 0, 0, 0, 0, 0);
 	}
 	int id = scene->snapshotTex[player->actorType];
-	tex_bind(g_textures->managers[id / 512], id % 512);
+	tex_bind(g_textures->banks[id / 512], id % 512);
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 	glBegin(GL_QUADS);
 	glTexCoord2f(0.0f, 0.0f);
@@ -393,7 +393,7 @@ static void main_crosshair(Scene *scene, Player *player)
 	int top = gfx_getHeight() / 2 - h / 2;
 	int left = gfx_getWidth() / 2 - w / 2;
 	glEnable(GL_TEXTURE_2D);
-	tex_bind(g_textures->managers[scene->crosshairTexture / 512], scene->crosshairTexture % 512);
+	tex_bind(g_textures->banks[scene->crosshairTexture / 512], scene->crosshairTexture % 512);
 	glColor4f(1.0f, 1.0f, 1.0f, player->fireAnim > 0.0f ? 0.75f : 1.0f);
 	glBegin(GL_QUADS);
 	glTexCoord2f(0.0f, 0.0f);
@@ -411,7 +411,7 @@ static void main_crosshair(Scene *scene, Player *player)
 /* a 64-pixel mark in the top right corner, one cell of a 256-texel texture */
 static void main_cornerMark(int x, int texture, float s0, float s1)
 {
-	tex_bind(g_textures->managers[texture / 512], texture % 512);
+	tex_bind(g_textures->banks[texture / 512], texture % 512);
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 	glBegin(GL_QUADS);
 	glTexCoord2f(s0, 0.75f);

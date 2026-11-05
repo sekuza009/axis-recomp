@@ -59,14 +59,14 @@ void (menuState300_enter)(void)
 	g_menuHintStep = 0x3d4ccccd;   /* 0.05 */
 	g_menuHintClock = 0;
 	g_mainMenuPicked = 0;
-	g_mapSelectLitR = 0;
-	g_mapSelectLitG = ONE;
-	g_mapSelectLitB = ONE;
-	g_mapSelectLitA = ONE;
-	g_mapSelectDimR = 0x3e99999a;   /* (0.3, 0.7, 0.7, 1) */
-	g_mapSelectDimG = 0x3f333333;
-	g_mapSelectDimB = 0x3f333333;
-	g_mapSelectDimA = ONE;
+	g_replaySelectLitR = 0;
+	g_replaySelectLitG = ONE;
+	g_replaySelectLitB = ONE;
+	g_replaySelectLitA = ONE;
+	g_replaySelectDimR = 0x3e99999a;   /* (0.3, 0.7, 0.7, 1) */
+	g_replaySelectDimG = 0x3f333333;
+	g_replaySelectDimB = 0x3f333333;
+	g_replaySelectDimA = ONE;
 	g_matchMode = 0;
 }
 
@@ -212,7 +212,7 @@ void (menuState800_enterGameRoom)(void)
    handler leaves in eax (or the original's leftover of its compares) */
 u32 (menu_frameInput)(void)
 {
-	input_updateMenuCursor();
+	input_updateMouse();
 	if (g_menuCameraMove)
 		return (*(u32 *)&g_menuCameraMove);
 	if (g_dialogPending)

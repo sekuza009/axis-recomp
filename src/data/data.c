@@ -792,28 +792,28 @@ u8 g_clockCheckTickSeconds_v[4] __attribute__((aligned(16)));   /* 0x9dd8ec */
 u8 g_unusedInitWord_v[4] __attribute__((aligned(16)));   /* 0x9dd8f8 */
 u8 g_chatLineDone_v[4] __attribute__((aligned(16)));   /* 0x9dd900 */
 u8 g_clockCheckClosed_v[4] __attribute__((aligned(16)));   /* 0x9dd904 */
-u8 g_mapSelectLeft_v[4] __attribute__((aligned(16)));   /* 0x9dd908 */
-u8 g_mapSelectTop_v[4] __attribute__((aligned(16)));   /* 0x9dd90c */
-u8 g_mapSelectRight_v[4] __attribute__((aligned(16)));   /* 0x9dd910 */
-u8 g_mapSelectBottom_v[4] __attribute__((aligned(16)));   /* 0x9dd914 */
+u8 g_replaySelectLeft_v[4] __attribute__((aligned(16)));   /* 0x9dd908 */
+u8 g_replaySelectTop_v[4] __attribute__((aligned(16)));   /* 0x9dd90c */
+u8 g_replaySelectRight_v[4] __attribute__((aligned(16)));   /* 0x9dd910 */
+u8 g_replaySelectBottom_v[4] __attribute__((aligned(16)));   /* 0x9dd914 */
 float g_roomLookKept_v[3] __attribute__((aligned(16)));   /* 0x9dd918 */
-u8 g_mapSelectCount_v[4] __attribute__((aligned(16)));   /* 0x9dd928 */
-u8 g_mapSelectFirst_v[4] __attribute__((aligned(16)));   /* 0x9dd92c */
+u8 g_replayFileCount_v[4] __attribute__((aligned(16)));   /* 0x9dd928 */
+u8 g_replaySelectFirst_v[4] __attribute__((aligned(16)));   /* 0x9dd92c */
 float g_roomEyeKept_v[3] __attribute__((aligned(16)));   /* 0x9dd930 */
 u8 g_unusedReplayListWord1_v[4] __attribute__((aligned(16)));   /* 0x9dd944 */
 u8 g_menuHintStep_v[4] __attribute__((aligned(16)));   /* 0x9dd948 */
-int g_mapSelectRects_v[72] __attribute__((aligned(16)));   /* 0x9dd950 */
-u32 g_mapSelectDim_v[4] __attribute__((aligned(16)));   /* 0x9dda70 */
+int g_replaySelectRects_v[72] __attribute__((aligned(16)));   /* 0x9dd950 */
+u32 g_replaySelectDim_v[4] __attribute__((aligned(16)));   /* 0x9dda70 */
 u8 g_menuIdleTime_v[4] __attribute__((aligned(16)));   /* 0x9dda80 */
-u8 g_fileList_v[69632] __attribute__((aligned(16)));   /* 0x9dda88 */
+u8 g_replayList_v[69632] __attribute__((aligned(16)));   /* 0x9dda88 */
 u8 g_unusedReplayListWord2_v[4] __attribute__((aligned(16)));   /* 0x9eea88 */
 u8 g_menuHintClock_v[4] __attribute__((aligned(16)));   /* 0x9eea8c */
 u8 g_mainMenuDepth_v[4] __attribute__((aligned(16)));   /* 0x9eea90 */
-u32 g_mapSelectLit_v[4] __attribute__((aligned(16)));   /* 0x9eea98 */
+u32 g_replaySelectLit_v[4] __attribute__((aligned(16)));   /* 0x9eea98 */
 u8 g_tunnelFlyingIn_v[4] __attribute__((aligned(16)));   /* 0x9eeaa8 */
 u8 g_mainMenuFrames_v[4] __attribute__((aligned(16)));   /* 0x9eeab0 */
 u8 g_mainMenuPicked_v[4] __attribute__((aligned(16)));   /* 0x9eeab4 */
-u8 g_mapListFlaggedCount_v[4] __attribute__((aligned(16)));   /* 0x9eeab8 */
+u8 g_replayListCount_v[4] __attribute__((aligned(16)));   /* 0x9eeab8 */
 u8 g_unusedMainMenuWord_v[4] __attribute__((aligned(16)));   /* 0x9eeabc */
 u8 g_replayRandomOrder_v[4] __attribute__((aligned(16)));   /* 0x9eeac0 */
 u32 g_skirmishColourDim_v[4] __attribute__((aligned(16)));   /* 0x9eeac8 */
@@ -1962,28 +1962,28 @@ const DataPiece g_splitObjects[] = {
 	{ 0x9dd8f8, g_unusedInitWord_v, 4 },
 	{ 0x9dd900, g_chatLineDone_v, 4 },
 	{ 0x9dd904, g_clockCheckClosed_v, 4 },
-	{ 0x9dd908, g_mapSelectLeft_v, 4 },
-	{ 0x9dd90c, g_mapSelectTop_v, 4 },
-	{ 0x9dd910, g_mapSelectRight_v, 4 },
-	{ 0x9dd914, g_mapSelectBottom_v, 4 },
+	{ 0x9dd908, g_replaySelectLeft_v, 4 },
+	{ 0x9dd90c, g_replaySelectTop_v, 4 },
+	{ 0x9dd910, g_replaySelectRight_v, 4 },
+	{ 0x9dd914, g_replaySelectBottom_v, 4 },
 	{ 0x9dd918, g_roomLookKept_v, 12 },
-	{ 0x9dd928, g_mapSelectCount_v, 4 },
-	{ 0x9dd92c, g_mapSelectFirst_v, 4 },
+	{ 0x9dd928, g_replayFileCount_v, 4 },
+	{ 0x9dd92c, g_replaySelectFirst_v, 4 },
 	{ 0x9dd930, g_roomEyeKept_v, 12 },
 	{ 0x9dd944, g_unusedReplayListWord1_v, 4 },
 	{ 0x9dd948, g_menuHintStep_v, 4 },
-	{ 0x9dd950, g_mapSelectRects_v, 288 },
-	{ 0x9dda70, g_mapSelectDim_v, 16 },
+	{ 0x9dd950, g_replaySelectRects_v, 288 },
+	{ 0x9dda70, g_replaySelectDim_v, 16 },
 	{ 0x9dda80, g_menuIdleTime_v, 4 },
-	{ 0x9dda88, g_fileList_v, 69632 },
+	{ 0x9dda88, g_replayList_v, 69632 },
 	{ 0x9eea88, g_unusedReplayListWord2_v, 4 },
 	{ 0x9eea8c, g_menuHintClock_v, 4 },
 	{ 0x9eea90, g_mainMenuDepth_v, 4 },
-	{ 0x9eea98, g_mapSelectLit_v, 16 },
+	{ 0x9eea98, g_replaySelectLit_v, 16 },
 	{ 0x9eeaa8, g_tunnelFlyingIn_v, 4 },
 	{ 0x9eeab0, g_mainMenuFrames_v, 4 },
 	{ 0x9eeab4, g_mainMenuPicked_v, 4 },
-	{ 0x9eeab8, g_mapListFlaggedCount_v, 4 },
+	{ 0x9eeab8, g_replayListCount_v, 4 },
 	{ 0x9eeabc, g_unusedMainMenuWord_v, 4 },
 	{ 0x9eeac0, g_replayRandomOrder_v, 4 },
 	{ 0x9eeac8, g_skirmishColourDim_v, 16 },

@@ -131,7 +131,7 @@
 #define g_ptxPlanes ((u8 *)IMG(0xa6228c))   /* u8[262144]; the decoded planes: 64 KB each */
 #define g_ptxDequant ((float *)IMG(0xaa2a90))   /* float[128]; the two 64-entry dequantisation tables */
 #define g_ptxQuant ((int *)IMG(0xaa2c94))   /* int[128]; the two 64-entry quantisation tables */
-#define g_fileList ((FileEntry *)IMG(0x9dda88))   /* FileEntry[1024]; the file dialog's names (the reset runs 0x9ddac8 .. 0x9eeac8) */
+#define g_replayList ((FileEntry *)IMG(0x9dda88))   /* FileEntry[1024]; the file dialog's names (the reset runs 0x9ddac8 .. 0x9eeac8) */
 #define g_introTextures ((int *)IMG(0x9dad6c))   /* int[8]; the intro frames (m_intro1 .. 4 */
 #define g_mainMenuTextures ((int *)IMG(0x76d478))   /* int[2]; mainmenu01 / 02 (the main */
 #define g_arenaMenuTextures ((int *)IMG(0x4df040))   /* int[2]; arenamenu01 / 02 (the arena lobby's tunnel) */
@@ -177,8 +177,8 @@
 #define g_roomForm ((int *)IMG(0x9dd1b8))   /* int[4]; the game room settings form's window: left (g_roomFormLeft) */
 #define g_roomLookKept ((float *)IMG(0x9dd918))   /* float[3]; the room camera's look-at point kept for the slide (g_roomSlideNearX .. Z; menu_tunnel's LOOK_KEPT) */
 #define g_roomEyeKept ((float *)IMG(0x9dd930))   /* float[3]; the room camera's position kept for the slide (g_roomSlideFarX .. Z; menu_tunnel's EYE_KEPT) */
-#define g_mapSelectDim ((u32 *)IMG(0x9dda70))   /* u32[4]; the map list's colour */
-#define g_mapSelectLit ((u32 *)IMG(0x9eea98))   /* u32[4]; the map list's colour */
+#define g_replaySelectDim ((u32 *)IMG(0x9dda70))   /* u32[4]; the map list's colour */
+#define g_replaySelectLit ((u32 *)IMG(0x9eea98))   /* u32[4]; the map list's colour */
 #define g_missionSelectRect ((int *)IMG(0x9f6308))   /* int[4]; the mission select dialog's window: left (g_missionSelectLeft) */
 #define g_missionColourLit ((u32 *)IMG(0x9f6318))   /* u32[4]; the mission list's colour */
 #define g_missionColourDim ((u32 *)IMG(0x9f62e8))   /* u32[4]; the mission list's colour */
@@ -235,7 +235,7 @@
 #define g_rankingRects ((int *)IMG(0x9dd4c0))   /* int[36]; ranking_hitTest's 9 hit rectangles (hit_tests.c) */
 #define g_roomSettingsRects ((int *)IMG(0x9dd6f8))   /* int[56]; roomSettings_hitTest's 14 hit rectangles (hit_tests.c) */
 #define g_createDialogRects ((int *)IMG(0x9dd7e0))   /* int[20]; createDialog_hitTest's 5 hit rectangles (hit_tests.c) */
-#define g_mapSelectRects ((int *)IMG(0x9dd950))   /* int[72]; mapSelect_hitTest's 18 hit rectangles (hit_tests.c) */
+#define g_replaySelectRects ((int *)IMG(0x9dd950))   /* int[72]; replaySelect_hitTest's 18 hit rectangles (hit_tests.c) */
 #define g_skirmishSettingsRects ((int *)IMG(0x9ef220))   /* int[40]; skirmishSettings_hitTest's 10 hit rectangles (hit_tests.c) */
 #define g_briefingRects ((int *)IMG(0x9f16c0))   /* int[16]; briefing_hitTest's 4 hit rectangles (hit_tests.c) */
 #define g_missionselRects ((int *)IMG(0x9f6330))   /* int[16]; missionsel_hitTest's 4 hit rectangles (hit_tests.c) */

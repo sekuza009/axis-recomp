@@ -51,7 +51,7 @@ static const u32 k_white[4] = { 0x3f800000, 0x3f800000, 0x3f800000, 0x3f800000 }
 static void bind_buttons(void)
 {
 	int texture = g_buttonTexture;
-	tex_bind(g_textures->managers[texture / 512], texture % 512);
+	tex_bind(g_textures->banks[texture / 512], texture % 512);
 }
 
 /* the password as stars into out (cleared first, f->stars bytes) */

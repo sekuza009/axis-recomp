@@ -55,7 +55,7 @@ Changing a function
      compares so a NaN takes the original's branch; float-to-int through ftol().
   3. ../build.sh, then its state tests: RECOMP_ONLY=name,... bash ../test3.sh - every test bit-exact (the five
      functions that carry the patch DLL's fixes never are: menu_vertex, menu_drawRect, input_justPressed,
-     input_updateMenuCursor, armc_rotateFromCursor). coverage.txt says how much of a function its test reaches.
+     input_updateMouse, armc_rotateFromCursor). coverage.txt says how much of a function its test reaches.
   4. python tools/srcaudit.py (every function wired in, every patch-DLL call site followed), commit; then
      bash standalone/build.sh and bash standalone/check3.sh <prefix> (the three builds played: menus, a match,
      a hosted TCP game).

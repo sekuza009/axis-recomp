@@ -63,7 +63,7 @@ int wide_carries(u32 addr)
 		return wide_menuFix() && entryJumps;
 	case 0x401600:                  /* input_justPressed: its entry jumps to the mouse-button latch */
 		return *g_wide->pressedFix && entryJumps;
-	case 0x445c60:                  /* input_updateMenuCursor: the mouse read's call retargeted (followed live), the
+	case 0x445c60:                  /* input_updateMouse: the mouse read's call retargeted (followed live), the
 	                                   clamp replaced (cursorClampFix): both carried */
 		return 1;
 	case 0x461850:                  /* armc_rotateFromCursor: four instructions of the turn (rotFix) */

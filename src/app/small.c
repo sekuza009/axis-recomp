@@ -151,9 +151,9 @@ void (net_clearSlots)(void) { for (NetSlot *p = g_netSlots; p < g_netSlots + 16;
 /* ---- front end ---- */
 /* 0x453a30: 1 if connection kind i (0 .. 3) is available */
 int (net_connectionAvailable)(u32 i) { return i < 4 && g_dpConnections[i] ? 1 : 0; }
-/* 0x4417c0: map i of the map-select dialog in or out; 0x4417f0: all in (0x44-byte entries from 0x9ddac8) */
-void (mapSelect_toggle)(int i) { int *f = &g_fileList[i].flag; *f = 1 - *f; }
-void (mapSelect_allIn)(void) { for (int i = 0; i < g_mapSelectCount; i++) g_fileList[i].flag = 1; }
+/* 0x4417c0: replay i of the replay selection dialog in or out; 0x4417f0: all in (0x44-byte entries from 0x9ddac8) */
+void (replaySelect_toggle)(int i) { int *f = &g_replayList[i].flag; *f = 1 - *f; }
+void (replaySelect_allIn)(void) { for (int i = 0; i < g_replayFileCount; i++) g_replayList[i].flag = 1; }
 /* 0x447af0: a click closes the mission briefing */
 void (briefing_clickClose)(void) { if (g_dialogOpen == 0 && g_mouseClick != 0) g_missionStarted = 0; }
 /* 0x4411e0: the background tunnel's rings made again (tunnel_appendRing) */
@@ -174,18 +174,18 @@ void THISCALL (stage_selectActor)(Stage *stage, int i)
    original's guard, flags | 2, is always true) */
 void THISCALL (tex_markMaterialChanged)(void *self, int m)
 {
-	TexRecord *r = &((TextureManager *)self)->records[m];
+	TexRecord *r = &((TextureBank *)self)->records[m];
 	u32 f = r->flags;
 	if ((f | 2) != 0) {
 		r->flags = f & 0x11111113;
 		r->changed = 1;
 	}
 }
-/* 0x456b50: the three counters of each of the six texture managers cleared */
+/* 0x456b50: the three counters of each of the six texture banks cleared */
 void THISCALL (tex_clearSetCounters)(void *self)
 {
 	for (int k = 1; k <= 6; k++) {
-		TextureManager *o = (TextureManager *)((TextureSets *)self)->managers[k - 1];
+		TextureBank *o = (TextureBank *)((TextureManager *)self)->banks[k - 1];
 		o->loadCount = 0;
 		o->counterB = 0;
 		o->counterC = 0;
@@ -825,7 +825,7 @@ int THISCALL (actor_setActorTypeArmInfoBy)(Stage *stage, int p, int type) { retu
 int THISCALL (actor_setActorTypeLegInfoBy)(Stage *stage, int p, int type) { return set_part((u8 *)stage, p, type, &part_kinds[3]); }
 int THISCALL (actor_setActorTypeBoosterInfoBy)(Stage *stage, int p, int type) { return set_part((u8 *)stage, p, type, &part_kinds[4]); }
 
-/* 0x474060 (thiscall on the stage): player p's item in slot set (its part type record at +0x1561b68, 0x47fd2 bytes
+/* 0x474060 (thiscall on the stage): player p's item in slot set (its player record at +0x1561b68, 0x47fd2 bytes
    each: the item (items[slot]) and its name (itemNames[slot])). Game types 2 .. 11 (+0x20f3ab8) fix the
    first slot (3, 5, 0x24, 0x19, 0x16 by pairs; 10 / 11 the second too, 0x17) and leave the others empty (-1); else
    the item given (negative: empty). An item past the catalogue (+0x1561b64) is a fatal message. Each of the player's

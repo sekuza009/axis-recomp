@@ -25,10 +25,10 @@
 0x9dd374,int,g_accountPanelBottom
 0x9dd6e8,int,g_loginFormLeft
 0x9dd6f4,int,g_loginFormBottom
-0x9dd908,int,g_mapSelectLeft
-0x9dd90c,int,g_mapSelectTop
-0x9dd910,int,g_mapSelectRight
-0x9dd914,int,g_mapSelectBottom
+0x9dd908,int,g_replaySelectLeft
+0x9dd90c,int,g_replaySelectTop
+0x9dd910,int,g_replaySelectRight
+0x9dd914,int,g_replaySelectBottom
 0x9f16b0,int,g_briefingRight
 0x9f16b4,int,g_briefingBottom
 0x9f6308,int,g_missionSelectLeft

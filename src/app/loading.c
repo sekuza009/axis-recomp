@@ -81,7 +81,7 @@ void (loading_draw)(u32 progress)
 	gfx_setProjectionHud_bits(1, 0x3f800000);   /* gfx_setProjectionHud(1, 1.0) */
 	glEnable(GL_TEXTURE_2D);
 	int texture = g_loadTexture;
-	tex_bind(g_textures->managers[texture / 512], texture % 512);
+	tex_bind(g_textures->banks[texture / 512], texture % 512);
 	glColor4f(0.5f, 0.5f, 1.0f, 0.5f);
 	float far = f32(fadd_m(fld_m((const float *)&progress), (const float *)ADDR(k_10f)));   /* progress + 10 */
 	for (int angle = 0, j = 0; angle < 0xfd20; angle += 0xe10, j++) {
@@ -197,7 +197,7 @@ void (menu_loadIntroTextures)(void)
 /* 0x430400: the start-up load: the key tables (0x4d1688, 0x4d1a98) cleared, the settings, tables and lists loaded,
    the text area the whole screen, the timer; DirectInput made once (0x9dbf0c; failure: a message box, 0); unless
    0x76d410 the data files checked (failure: the message 0x4b04b0, 0); the sound (0xa0e80c: it works; then the menu
-   sounds); the pointer at 310, 230, the keys' table; the CD (failure: a message box, 0); the six texture sets (the
+   sounds); the pointer at 310, 230, the keys' table; the CD (failure: a message box, 0); the six texture banks (the
    sizes 0x83a9cc / 0x83a9d0) gathered into 0x83a5e0 (g_textures), the font, four textures by name, the shape and
    skeleton files, the scene (0x2343acb bytes, constructed; 0 if not had) into 0x9087b4, the sound table, the logo;
    then the camera and menu defaults. Returns 1 (0 on a failure) */
@@ -268,7 +268,7 @@ int (app_checkCdAndLoad)(void *instance)
 	tex_initBy((void *)ADDR(g_staticTex256x256), dir, 0x28, 0, 0x100, 0x100, w, h);
 	texSmall_initBy((void *)ADDR(g_textureManager), (void *)ADDR(g_staticTex64x64), (void *)ADDR(g_staticTex128x64), (void *)ADDR(g_staticTex256x64), (void *)ADDR(g_staticTex128x128),
 	                (void *)ADDR(g_staticTex256x128), (void *)ADDR(g_staticTex256x256));
-	g_textures = (TextureSets *)ADDR(g_textureManager);
+	g_textures = (TextureManager *)ADDR(g_textureManager);
 	pen_init((const char *)STR(0x4b2514, "Interface\\PenFont"));
 	g_fontAscii = texture_named((const char *)STR(0x4b24c4, "iftex/english8"));
 	g_fontAsciiLarge = texture_named((const char *)STR(0x4b24b4, "iftex/english16"));

@@ -146,13 +146,13 @@ clear:
 	return 0;
 }
 
-/* 0x445c60: the frame's mouse input. The mouse is taken again and read (input_readMouse; the patch DLL retargets
+/* 0x445c60: the frame's mouse input, on every screen. The mouse is taken again and read (input_readMouse; the patch DLL retargets
    this call to its own read around it: buttons after alt-tab, the menu cursor's speed); the pointer moves by the
    read's movement, the wheel gives g_mouseWheel (one notch of 120 = 1, down positive) and 0x4ded70 (turned at all).
    Outside a match (screen 0x270f) the pointer is kept to 0..630 x 0..474, or by the patch DLL's clamp (it replaces the block at 0x445cd8), which lets it
    reach the whole width of a wide screen (wide.h: cursorClampFix). Each button gives its held state (0 / 0x80) and
    a click pulse (OBJ(g_mouseClicked) + i * 4) on the frame it went down (OBJ(g_mouseWasDown) + i * 4: down last frame). */
-void (input_updateMenuCursor)(void)
+void (input_updateMouse)(void)
 {
 	const int *state = g_mouseState;   /* DIMOUSESTATE: x, y, wheel, buttons */
 	input_reacquireMouse();          /* input_reacquireMouse */
