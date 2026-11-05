@@ -401,7 +401,7 @@
 #define g_viewNear GAME_VAR(float, 0x4c4df0)
 #define g_viewFar GAME_VAR(float, 0x4c4df4)
 #define g_catalogueFile GAME_VAR(const char *, 0x4d05a4)
-#define g_createQuitDialog GAME_VAR(int, 0x4db55c)
+#define g_hostErrorBox GAME_VAR(int, 0x4db55c)
 #define g_editingNewArenaName GAME_VAR(int, 0x4dbab0)
 #define g_arenaSearchTicks GAME_VAR(int, 0x4dbb10)
 #define g_armcUnusedFlag GAME_VAR(int, 0x4dc788)

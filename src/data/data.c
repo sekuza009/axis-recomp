@@ -90,7 +90,7 @@ u8 g_mapListMade_v[4] __attribute__((aligned(16)));   /* 0x4db510 */
 u8 g_editingNewArenaTimeLimit_v[4] __attribute__((aligned(16)));   /* 0x4db518 */
 u8 g_lobbySubState_v[4] __attribute__((aligned(16)));   /* 0x4db51c */
 char g_newArenaName_v[48] __attribute__((aligned(16)));   /* 0x4db528 */
-u8 g_createQuitDialog_v[4] __attribute__((aligned(16)));   /* 0x4db55c */
+u8 g_hostErrorBox_v[4] __attribute__((aligned(16)));   /* 0x4db55c */
 u8 g_arenaCorporation_v[4] __attribute__((aligned(16)));   /* 0x4db580 */
 u8 g_arenaSex_v[4] __attribute__((aligned(16)));   /* 0x4db584 */
 int g_arenaNameDialogRects_v[24] __attribute__((aligned(16)));   /* 0x4db588 */
@@ -1260,7 +1260,7 @@ const DataPiece g_splitObjects[] = {
 	{ 0x4db518, g_editingNewArenaTimeLimit_v, 4 },
 	{ 0x4db51c, g_lobbySubState_v, 4 },
 	{ 0x4db528, g_newArenaName_v, 48 },
-	{ 0x4db55c, g_createQuitDialog_v, 4 },
+	{ 0x4db55c, g_hostErrorBox_v, 4 },
 	{ 0x4db580, g_arenaCorporation_v, 4 },
 	{ 0x4db584, g_arenaSex_v, 4 },
 	{ 0x4db588, g_arenaNameDialogRects_v, 96 },

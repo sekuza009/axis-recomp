@@ -506,8 +506,6 @@ extern struct GameData g_data;
 #define g_createArena2Rects ((int *)g_createArena2Rects_v)
 #undef g_createArenaRects
 #define g_createArenaRects ((int *)g_createArenaRects_v)
-#undef g_createQuitDialog
-#define g_createQuitDialog (*(int *)g_createQuitDialog_v)
 #undef g_crosshair
 #define g_crosshair (*(int *)((u8 *)g_controlsEdit_v + 0x10c))
 #undef g_crosshairName
@@ -1102,6 +1100,8 @@ extern struct GameData g_data;
 #define g_highlightY (*(int *)g_highlightY_v)
 #undef g_hostAddressBlock
 #define g_hostAddressBlock (*(void * *)g_hostAddressBlock_v)
+#undef g_hostErrorBox
+#define g_hostErrorBox (*(int *)g_hostErrorBox_v)
 #undef g_hostResultFlag
 #define g_hostResultFlag (*(int *)((u8 *)g_resultMsg_v + 0x4))
 #undef g_hudFontBottom

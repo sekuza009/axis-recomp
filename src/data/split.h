@@ -390,9 +390,9 @@ extern u8 g_lobbySubState_v[4];
 extern char g_newArenaName_v[48];
 #endif
 #ifdef AXIS_FENCE
-#define g_createQuitDialog_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xa6000 : g_fence + 0xa5ffc))
+#define g_hostErrorBox_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xa6000 : g_fence + 0xa5ffc))
 #else
-extern u8 g_createQuitDialog_v[4];
+extern u8 g_hostErrorBox_v[4];
 #endif
 #ifdef AXIS_FENCE
 #define g_arenaCorporation_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xa8000 : g_fence + 0xa7ffc))

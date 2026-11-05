@@ -202,7 +202,7 @@ static void menu_camera2(const MenuCam2 *m)
    up. Coming home it eases fast while its depth is past -549 (-1649), else slowly, the aspect widening back, and
    snaps home once within 0.01 of -550 (-1650); then on to where it came from (0x4dc24c): 1 the main menu (300), 2 the
    arena lobby (400; the camera to its saved place, the home moved to (0, 0, -1550) looking at (0, 0, -1650)), 3 the
-   game room (800, menuCamera_initPoints); a lobby game with a reply 0x67 (0x9da49c) then leaves (arena_loadAndQuit). The caller
+   game room (800, menuCamera_initPoints); a launcher-started game (reply 0x67, 0x9da49c) then starts (arena_startFromLauncher). The caller
    ignores the eax it leaves */
 void (armc_cameraStep)(void)
 {
@@ -289,7 +289,7 @@ void (armc_cameraStep)(void)
 			menuCamera_initPoints();   /* menuCamera_initPoints */
 	}
 	if (g_startedFromLobby == 1 && g_lobbyReply == 0x67)
-		arena_loadAndQuit();   /* arena_loadAndQuit */
+		arena_startFromLauncher();
 }
 
 /* 0x444130: the skirmish screen's camera */

@@ -424,7 +424,7 @@ g_briefingRight
 g_characterTexture
 g_clockCheckSeconds
 g_connectStep
-g_createQuitDialog
+g_hostErrorBox
 g_dikRAlt
 g_dplayLobby
 g_dplaySessionList

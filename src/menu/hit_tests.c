@@ -47,10 +47,10 @@ int (logOutDialog_hitTest)(int x, int y) { return hit(x, y, g_logOutDialogRects,
 int (profileList_hitTest)(int x, int y) { return hit(x, y, g_profileListRects, 13); }   /* 0x44b3a0 */
 int (pilotSelect_hitTest)(int x, int y) { return hit(x, y, g_pilotSelectRects, 11); }   /* 0x44b3e0 */
 
-/* 0x404520: the create-arena screen: its second set of buttons (numbered from 16) while 0x4db55c is set */
+/* 0x404520: the create-arena screen: the error box's buttons (numbered from 16) while it is up (g_hostErrorBox) */
 int (createArena_hitTest)(int x, int y)
 {
-	if (g_createQuitDialog != 0) {
+	if (g_hostErrorBox != 0) {
 		int i = hit(x, y, g_createArena2Rects, 2);
 		return i < 0 ? -1 : i + 16;
 	}

@@ -81,11 +81,11 @@ u32 (room_keysByState)(void)
 	int dialog = g_roomDialogOpen;
 	switch (state) {
 	case 0: return dialog ? (u32)dialog : account_keys();   /* account_keys */
-	case 1: return dialog ? (u32)dialog : room_gameListKeys();
+	case 1: return dialog ? (u32)dialog : gameList_keys();
 	case 2:
 		if (dialog)
 			return (u32)dialog;
-		return g_mapListOpen ? room_mapListKeys() : room_settingsAfterTyping();
+		return g_mapListOpen ? mapList_keys() : room_settingsAfterTyping();
 	case 4: return dialog ? (u32)dialog : ranking_keys();
 	case 66: return g_roomUpdateNotice == 1 ? roomUpdateNotice_keys() : roomLogin_keys();
 	case 77: return newIdForm_keys();
@@ -504,7 +504,7 @@ u32 (newIdConfirm_update)(void)
 	case 33:
 		g_roomState = 0x63;
 		g_roomRequestOut = 0;
-		lobby_ladderGameName();   /* lobby_ladderGameName */
+		room_setLadderDefaults();
 		r = reg_writeCharacterSettings();   /* reg_writeCharacterSettings */
 		g_gameServerAnswer15 = 0;
 		g_roomConnected = 1;

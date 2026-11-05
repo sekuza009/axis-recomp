@@ -341,7 +341,7 @@ void (gameList_draw)(void)
 #undef Y1
 
 /* 0x43ea10: the game room's page of games: the "searching" message's clock (0x9dcd40, while 0x9dd34c; done above 0x4a944c),
-   the tunnel; in the room camera arrived (g_roomCameraMode 2), and not page 99: a message box (0x90d1c4) alone, else the search's
+   the tunnel; with the room camera arrived (g_roomCameraMode 2), and not page 99: a message box (0x90d1c4) alone, else the search's
    end (0x9dd6a0 searching, 0x9da498 the answer in, 0x76d484 its result: -1 .. 4) and the blinking clock (0x4dba80
    falling, back to 1000 below 0x4a9418); while the list refreshes (0x9dd3fc) its timer (0x9dd6c0 against 0x5b1914:
    the list asked for again, the next in 5) and a stop (0xa0d7a0); then the list, and with a game joined (0x9dd56c)
@@ -535,7 +535,7 @@ static int games_leave(void)
 	return 1;
 }
 
-/* 0x435fc0: the game room's list of games, its mouse (in the room camera arrived (g_roomCameraMode 2); not while joining, 0x9dd6b4,
+/* 0x435fc0: the game room's list of games, its mouse (with the room camera arrived, g_roomCameraMode 2; not while joining, 0x9dd6b4,
    or with a message box): a right click leaves the list (unless searching, 0x9dd6a0). A click (gameList_hitTest) on: 0
    join (not while searching or refreshing, 0x9dd3fc, and only with games; else sound 6), 1 search, 2 stop or
    refresh, 3 leave, 13 / 14 one row up / down, or a row (4 .. 12): selects it, or on the selected row again within
@@ -635,7 +635,7 @@ void (gameList_mouse)(void)
    refreshing, and only with games: else sound 6); 0x4e151c searches; 0x4e1524 stops; back leaves the list; up / down
    held move the selection (once the blink clock reaches 5, restarting it); cancel2 leaves the room's lists. The
    original leaves eax to callers that ignore it */
-void (room_gameListKeys)(void)
+void (gameList_keys)(void)
 {
 	if (g_roomJoinNeedsPassword)
 		return;
@@ -717,14 +717,14 @@ static void blink_down(void)
 }
 
 /* 0x40cfd0: the arena lobby's page of games: the "searching" message's clock (0x4dbaf8, while 0x4db71c), the
-   arena tunnel; in lobby modes other than 0 / 1 and not on sub-screen 5: a message box (0x90d1c4) alone, else the
+   arena tunnel; with the arena camera arrived (g_arenaCameraMode 2) and not on sub-screen 5: a message box (0x90d1c4) alone, else the
    local network search (0x4dba90: DirectPlay polled ten times, ended once its clock 0x4dba80 runs out), the server
    search's end (0x4db858 searching, 0x4df018 the answer in, 0x76d484 its result -1 .. 4: messages 0x40 / 0x46,
    0x4db8b8 the list to fetch, 0x907b2c) and blink, the list's refresh (0x4db8b8: its timer 0x4dbaf0 against 0x5b1914,
    a stop 0xa0d7a0); then the list; then a join (0x4dbbec: once typed, the password, 0x4db520, checked against the
    game's, message 0x27 when wrong; or the join sent, 0x4db8bc clear), a typed game address (0x4db714: joined as
    99999 when not empty) or a join confirmed (0x4dbbf0). The original leaves eax to callers that ignore it */
-void (lobbyJoin_draw)(void)
+void (arena_drawGamesPage)(void)
 {
 	if (g_arenaListClickArmed) {
 		long double t = fadd_m(fld_m(&g_frameTime), &g_arenaSearchClock);
@@ -825,8 +825,8 @@ static int lobby_busy(void)
 	return g_lanSearch || g_lobbySearching || g_lobbyRefreshing;
 }
 
-/* the selected game joined: connected to the server (0x4dbaac) its chat line opened (0x4dbbec), else the join
-   asked of the lobby (0x4dbbf0) */
+/* the selected game joined: connected to the server (0x4dbaac), its join password asked for when it is locked
+   (arena_askJoinPassword; 0x4dbbec), else the join asked of the lobby (0x4dbbf0) */
 static void lobby_join(void)
 {
 	sound_playMenu(0);
@@ -849,7 +849,7 @@ static void lobby_leave(void)
 	g_serverAnswerIn = 1;
 }
 
-/* 0x406c30 (the arena lobby's list of games, its mouse: in mode 2 of 0x4dbb3c, not
+/* 0x406c30 (the arena lobby's list of games, its mouse: with the arena camera arrived (g_arenaCameraMode 2), not
    while joining, with the "full" box or a message box). A right click (not while searching or connecting) drops the
    connection and the mode. A click (arenaGameList_hitTest) on: 0 search the network (DirectPlay, 0x452ec0), 1 connect to
    the lobby server (lobby_openConnection), 2 the arena's title, 3 join (with games; not while busy), 4 back (a

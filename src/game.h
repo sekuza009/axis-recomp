@@ -1138,7 +1138,7 @@ typedef struct { float r, g, b, a; } Colour;
 /* ---- the lobby's and room's screens (menu/lobby_states.c) ---- */
 #define arena_loadPlayerSettings() GAME_FN(arena_loadPlayerSettings, 0x404930, void, void)()   /* the player's record from the profile */
 #define mapList_layout() GAME_FN(mapList_layout, 0x403300, void, void)()   /* the map list laid out */
-#define lobby_drawArenaTitle() GAME_FN(lobby_drawArenaTitle, 0x404980, void, void)()
+#define lobby_loadArenaSettings() GAME_FN(lobby_loadArenaSettings, 0x404980, void, void)()
 #define mapList_init() GAME_FN(mapList_init, 0x403420, void, void)()   /* the map on/off list reset */
 #define room_loadSettingsRecord() GAME_FN(room_loadSettingsRecord, 0x433700, void, void)()   /* the room settings copied */
 

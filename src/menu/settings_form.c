@@ -245,8 +245,8 @@ void (arena_createDraw)(void)
 	                           0, OBJ(g_arenaOnOff2), 10 };
 	const Form *f = &form;
 	const u32 *bright = g_arenaBright, *dim = g_arenaDim;
-	int editing = g_textFieldOpen, confirming = g_createQuitDialog, leaving = g_arenaUpdateNotice;
-	int open = editing || confirming || leaving, blocked = open || g_mapListOpen;
+	int editing = g_textFieldOpen, hostError = g_hostErrorBox, updateNotice = g_arenaUpdateNotice;
+	int open = editing || hostError || updateNotice, blocked = open || g_mapListOpen;
 	char text[20];
 	int hovered = createArena_hitTest(g_mouseX, g_mouseY);
 	gfx_setProjection2D3D(2);
@@ -272,7 +272,7 @@ void (arena_createDraw)(void)
 	       dim, MSG(168, "$[0] CANCEL"));
 	arena_drawCustomOption(f->s->map);
 	preview_controls(f, hovered == 13 && !blocked, hovered == 14 && !open, f->s->kind == 1 && !blocked, dim);
-	if (confirming) {
+	if (hostError) {
 		glColor4f(0.7f, 0.0f, 1.0f, 1.0f);
 		menu_drawTextureFlipped(0x64, 0xb4, 0x21c, 0x140, g_dialogFrameTexture);
 		white();
@@ -282,7 +282,7 @@ void (arena_createDraw)(void)
 		glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 		GAME_FN(menu_drawTopRightOrnament, 0x428b50, void, int, int, int, int)(0x64, 0xb4, 0x21c, 0x140);   /* menu_drawTopRightOrnament */
 	}
-	if (leaving) {
+	if (updateNotice) {
 		int choice = arenaCreate_hitTest(g_mouseX, g_mouseY);
 		set_colour_bits(g_rectColour, 0x3dcccccd, 0x3dcccccd, 0x3dcccccd, 0x3ecccccd);   /* 0.1, 0.4: the screen dimmed */
 		menu_drawRect(0, 0, 0x280, 0x1e0, 1);

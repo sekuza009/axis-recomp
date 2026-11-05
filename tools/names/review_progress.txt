@@ -56,10 +56,10 @@
 [x] src/menu/armc_state.c 86
 [x] src/menu/armc_stats.c 509
 [x] src/menu/edit_fields.c 286
-[ ] src/menu/game_lists.c 1011
+[x] src/menu/game_lists.c 1011
 [x] src/menu/hit_tests.c 75
 [x] src/menu/layouts.c 299
-[ ] src/menu/lobby_states.c 1646
+[x] src/menu/lobby_states.c 1646
 [x] src/menu/menu_2d.c 341
 [x] src/menu/menu_cameras.c 536
 [x] src/menu/menu_cursor.c 38
