@@ -104,20 +104,20 @@ void (setup_drawSoundPage)(void)
 #undef Y1
 }
 
-/* 0x425460: the options dialog (0x4dddd0 .. 0x4ddddc): the window, the title 0x7538a4, seven labels (0x753924, 0x80
+/* 0x425460: the graphics page ("SETUP GRAPHIC"; 0x4dddd0 .. 0x4ddddc): the window, the title 0x7538a4, seven labels (0x753924, 0x80
    apart) and their values: the screen size (the names at 0x4b04cc by 0x4ddba0) and six choices, each from its own
-   table of 0x32-byte names (by 0x4ddba4 .. 0x4ddbb8); the value under the pointer (0 .. 6, by setupOptions_hitTest) drawn
+   table of 0x32-byte names (by 0x4ddba4 .. 0x4ddbb8); the value under the pointer (0 .. 6, by setupGraphic_hitTest) drawn
    again with a shadow, in yellow; two buttons (MSG(189, "$[0] ACCEPT"), lit from 7) and the border. The caller ignores the eax it
    leaves */
-void (setup_drawOptionsDialog)(void)
+void (setup_drawGraphicPage)(void)
 {
-#define X0 (g_setupOptionsRect[0])
-#define Y0 g_setupOptionsTop
-#define X1 (g_setupOptionsRect[2])
-#define Y1 (g_setupOptionsRect[3])
+#define X0 (g_setupGraphicRect[0])
+#define Y0 g_setupGraphicTop
+#define X1 (g_setupGraphicRect[2])
+#define Y1 (g_setupGraphicRect[3])
 	static const u32 names[6] = { OBJ(g_colourDepthTexts), OBJ(g_fxStatusTexts), OBJ(g_linearFilterTexts), OBJ(g_mipMapTexts), OBJ(g_viewFpsTexts), OBJ(g_simpleMenuTexts) };
 	const u32 *bright = g_setupColourLit, *dim = g_setupColourDim;
-	int hovered = setupOptions_hitTest(g_mouseX, g_mouseY);
+	int hovered = setupGraphic_hitTest(g_mouseX, g_mouseY);
 	gfx_setProjection2D3D(2);
 	glLoadIdentity();
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
@@ -165,7 +165,7 @@ void (setup_drawOptionsDialog)(void)
 #undef Y1
 }
 
-/* ---- the controls dialog ---- */
+/* ---- the controls page ---- */
 #define glTexCoord2i(s, t) IMPORT(0x4a91d8, void, int, int)(s, t)
 
 /* the binding each key row of the first three tabs shows (as setup_bindKey edits them, setup_keys.c);
@@ -277,7 +277,7 @@ static void settings_tab(void)
 #undef Y0
 }
 
-/* 0x425cd0 (the controls dialog, 0x4dde80 .. 0x4dde8c): the window, cyan lines,
+/* 0x425cd0 (the controls page, 0x4dde80 .. 0x4dde8c): the window, cyan lines,
    the column heads (MSG(206, "KEY FUNCTION") ..), the four tab titles (MSG(202, "$[0] MOVE"), 0x80 apart; dim, the current one, 0x4ddce8, bright
    again). The row under the pointer (setupControl_hitTest: 7 .. 17, kept in 0x4de040; -1 for rows the tab lacks and its fixed
    ones) lit blue, or the row being edited (0x4dddc8) magenta. The tab's rows; three buttons (MSG(209, "$[0] ACCEPT"), lit from 4

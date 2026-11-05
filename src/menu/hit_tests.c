@@ -24,7 +24,7 @@ int (armcPartsPage_hitTest)(int x, int y) { return hit(x, y, g_armcPartsPageRect
 int (armcWeaponsPage_hitTest)(int x, int y) { return hit(x, y, g_armcWeaponsPageRects, 15); }   /* 0x40e490 */
 int (armcColour_hitTest)(int x, int y) { return hit(x, y, g_armcColourRects, 18); }   /* 0x40e4d0 */
 int (setupSound_hitTest)(int x, int y) { return hit(x, y, g_setupSoundRects, 10); }   /* 0x420670 */
-int (setupOptions_hitTest)(int x, int y) { return hit(x, y, g_setupOptionsRects, 9); }   /* 0x4206b0 */
+int (setupGraphic_hitTest)(int x, int y) { return hit(x, y, g_setupGraphicRects, 9); }   /* 0x4206b0 */
 int (setupControl_hitTest)(int x, int y) { return hit(x, y, g_setupControlRects, 18); }   /* 0x4206f0 */
 int (setupSlider_hitTest)(int x, int y) { return hit(x, y, g_setupSliderRects, 3); }   /* 0x420730 */
 int (updateNotice_hitTest)(int x, int y) { return hit(x, y, g_updateNoticeRects, 2); }   /* 0x4321c0 */

@@ -1520,14 +1520,14 @@ extern int g_setupSliderRects_v[12];
 extern u8 g_bindWaiting_v[4];
 #endif
 #ifdef AXIS_FENCE
-#define g_setupOptionsRect_v ((int *)(AXIS_FENCE == 2 ? g_fence + 0x26a000 : g_fence + 0x269ff0))
+#define g_setupGraphicRect_v ((int *)(AXIS_FENCE == 2 ? g_fence + 0x26a000 : g_fence + 0x269ff0))
 #else
-extern int g_setupOptionsRect_v[4];
+extern int g_setupGraphicRect_v[4];
 #endif
 #ifdef AXIS_FENCE
-#define g_setupOptionsRects_v ((int *)(AXIS_FENCE == 2 ? g_fence + 0x26c000 : g_fence + 0x26bf70))
+#define g_setupGraphicRects_v ((int *)(AXIS_FENCE == 2 ? g_fence + 0x26c000 : g_fence + 0x26bf70))
 #else
-extern int g_setupOptionsRects_v[36];
+extern int g_setupGraphicRects_v[36];
 #endif
 #ifdef AXIS_FENCE
 #define g_setupControlRect_v ((int *)(AXIS_FENCE == 2 ? g_fence + 0x26e000 : g_fence + 0x26dff0))

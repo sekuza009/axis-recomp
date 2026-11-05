@@ -479,7 +479,7 @@ void (menuState600_setup)(void)
 	switch (g_setupTab) {
 	case 2: setup_camera(); setup_frameControlsPage(); break;
 	case 0: setup_camera(); setup_frameSoundPage(); break;
-	case 1: setup_camera(); setup_frameOptionsPage(); break;
+	case 1: setup_camera(); setup_frameGraphicPage(); break;
 	case 0x29a: setup_easePanel(); setup_drawMenu(); break;
 	}
 }

@@ -2490,12 +2490,12 @@ extern struct GameData g_data;
 #define g_setupControlRight (*(int *)((u8 *)g_setupControlRect_v + 0x8))
 #undef g_setupControlTop
 #define g_setupControlTop (*(int *)((u8 *)g_setupControlRect_v + 0x4))
-#undef g_setupOptionsRect
-#define g_setupOptionsRect ((int *)g_setupOptionsRect_v)
-#undef g_setupOptionsRects
-#define g_setupOptionsRects ((int *)g_setupOptionsRects_v)
-#undef g_setupOptionsTop
-#define g_setupOptionsTop (*(int *)((u8 *)g_setupOptionsRect_v + 0x4))
+#undef g_setupGraphicRect
+#define g_setupGraphicRect ((int *)g_setupGraphicRect_v)
+#undef g_setupGraphicRects
+#define g_setupGraphicRects ((int *)g_setupGraphicRects_v)
+#undef g_setupGraphicTop
+#define g_setupGraphicTop (*(int *)((u8 *)g_setupGraphicRect_v + 0x4))
 #undef g_setupPage
 #define g_setupPage (*(int *)g_setupPage_v)
 #undef g_setupPanelMoving

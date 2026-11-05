@@ -119,13 +119,13 @@ void (menuState600_enterSetup)(void)
 {
 	static const Store layout[] = {
 		{ ADDR(g_setupTab), 0x29a }, { ADDR(g_setupTunnelDepth), 0xc4af0000 }, { ADDR(g_setupPanelMoving), 1 }, { ADDR(g_setupPanelPos), 0 }, { ADDR(g_setupPage), 2 },
-		{ ADDR(g_setupSoundLeft), 0x32 }, { (OBJ(g_setupSoundRect) + 0x4), 0x3c }, { (OBJ(g_setupSoundRect) + 0xc), 0x1a4 }, { OBJ(g_setupOptionsRect), 0x64 }, { (OBJ(g_setupOptionsRect) + 0x8), 0x21c },
-		{ (OBJ(g_setupOptionsRect) + 0xc), 0x1c2 }, { ADDR(g_setupControlLeft), 0x28 }, { (OBJ(g_setupControlRect) + 0xc), 0x1b8 } };
+		{ ADDR(g_setupSoundLeft), 0x32 }, { (OBJ(g_setupSoundRect) + 0x4), 0x3c }, { (OBJ(g_setupSoundRect) + 0xc), 0x1a4 }, { OBJ(g_setupGraphicRect), 0x64 }, { (OBJ(g_setupGraphicRect) + 0x8), 0x21c },
+		{ (OBJ(g_setupGraphicRect) + 0xc), 0x1c2 }, { ADDR(g_setupControlLeft), 0x28 }, { (OBJ(g_setupControlRect) + 0xc), 0x1b8 } };
 	static const Store colours[] = {
 		{ OBJ(g_setupColourLit), 0 }, { (OBJ(g_setupColourLit) + 0x4), ONE }, { (OBJ(g_setupColourLit) + 0x8), ONE }, { (OBJ(g_setupColourLit) + 0xc), ONE }, { OBJ(g_setupColourDim), 0 },
 		{ (OBJ(g_setupColourDim) + 0x4), 0x3f19999a }, { (OBJ(g_setupColourDim) + 0x8), 0x3f19999a }, { (OBJ(g_setupColourDim) + 0xc), ONE }, { ADDR(g_scroll), 0 }, { ADDR(g_menuTunnelSpeed), ONE },
 		{ ADDR(g_tunnelPulse), 0 }, { ADDR(g_tunnelPulseStep), ONE } };
-	g_setupOptionsTop = 0x1e;
+	g_setupGraphicTop = 0x1e;
 	g_setupControlTop = 0x1e;
 	g_setupSoundRight = 0x24e;
 	g_setupControlRight = 0x24e;
@@ -137,7 +137,7 @@ void (menuState600_enterSetup)(void)
 	g_menuLookAtY = ly;
 	g_menuLookAtZ = lz;
 	setupSound_layout();
-	setupOptions_layout();
+	setupGraphic_layout();
 	setupControl_layout();
 	STORE_ALL(colours);
 	for (int k = 0; k < 2; k++) {
@@ -293,7 +293,7 @@ int (menuState900_enterSkirmish)(void)
 	return 0;
 }
 
-/* 0x447750: the mission select (screen 500): the briefing camera, the window and its colours, the screen's panels
+/* 0x447750: the mission select (screen 500; the main menu's SKIRMISH PLAY): the briefing camera, the window and its colours, the screen's panels
    (missionsel_layout), the mission shown (0x9f63b4, 0x9f6328) the campaign's next one (0x9f181c, at most 14), a sound;
    a newly reached mission (past 0x9f62fc) raises it and the briefing flag 0x9f62e0. Returns the campaign's mission */
 int (menuState500_enter)(void)

@@ -135,12 +135,12 @@ static void with_page(void (*draw)(void), const int frame[4])
 }
 
 static void page_sound(void) { setup_drawSoundPage(); }
-static void page_options(void) { setup_drawOptionsDialog(); }
+static void page_graphic(void) { setup_drawGraphicPage(); }
 static void page_controls(void) { setup_drawControlsPage(); }
 
-/* 0x427830, 0x427880, 0x4278d0: the screen with the sound page, the options dialog, the controls page */
+/* 0x427830, 0x427880, 0x4278d0: the screen with the sound page, the graphics page, the controls page */
 void (setup_frameSoundPage)(void) { with_page(page_sound, (const int *)ADDR(g_setupSoundLeft)); }
-void (setup_frameOptionsPage)(void) { with_page(page_options, g_setupOptionsRect); }
+void (setup_frameGraphicPage)(void) { with_page(page_graphic, g_setupGraphicRect); }
 void (setup_frameControlsPage)(void) { with_page(page_controls, (const int *)ADDR(g_setupControlLeft)); }
 
 /* a tab opened: the page state, the setup camera's distance (-1650) and its fade (0.7), no item picked */
@@ -258,7 +258,7 @@ u32 (setup_topPageClicks)(void)
 }
 
 /* 0x422480: the graphics tab clicked (the page open, no message box; a right click closes it). Buttons
-   (setupOptions_hitTest): 0 the video mode on (0 .. 7, then 0), 1 .. 5 the colour depth, polygon detail, linear filtering,
+   (setupGraphic_hitTest): 0 the video mode on (0 .. 7, then 0), 1 .. 5 the colour depth, polygon detail, linear filtering,
    mipmapping and frame counter switched, 6 the simple menu (with 0x9da494), 7 OK (graphics_apply), 8 close. Each
    with its sound. Returns what the original leaves in eax (for a switch, its old or new value) */
 u32 (setup_graphicTabClicks)(void)
@@ -270,7 +270,7 @@ u32 (setup_graphicTabClicks)(void)
 		g_setupPage = 0;
 	if (!g_mouseClick)
 		return page;
-	u32 button = ((u32)setupOptions_hitTest(g_mouseX, g_mouseY));   /* setupOptions_hitTest */
+	u32 button = ((u32)setupGraphic_hitTest(g_mouseX, g_mouseY));   /* setupGraphic_hitTest */
 	u32 *edited = (u32 *)g_graphicEdited, old, mode;
 	switch (button) {
 	case 0:
@@ -372,7 +372,7 @@ void (setup_soundTabClicks)(void)
 /* ---- the controls tab: four pages of bindings (0x4ddce8), a row selected on the page (0x4de040, -1 none) ---- */
 #define g_bindToggle (g_setupToggles[0])          /* row 10's setting (on / off) */
 
-/* 0x422e10: the controls tab's keys. 0x9da440 only gives a sound. While a row waits: cancel stops waiting, any
+/* 0x422e10: the controls tab's keys. F1 (g_dikF1) only gives a sound. While a row waits: cancel stops waiting, any
    other key (codes 2 .. 0xdd) is bound to it. Otherwise: fire selects (row 10 toggles), up / down move along the
    page's rows, four keys pick the page, OK takes the bindings (the copy at 0x4de0c0 into 0x4def00, axis.cfg read)
    and closes, back or cancel closes, 0x4e0ce0 puts the defaults back (the original leaves eax to callers that
@@ -529,7 +529,7 @@ static const signed char page_bindings[3][11] = {
 };
 
 /* 0x421680 (by use: the key pressed for the binding being edited, the page 0x4ddce8's
-   row 0x4de040): unless it is the excluded key (0x9da440), the key is taken off the other bindings (setup_unbindKey) and
+   row 0x4de040): unless it is F1 (g_dikF1, never bound), the key is taken off the other bindings (setup_unbindKey) and
    set in the row's binding: with its second slot set, the key in the first and the second cleared (0x4df8e4: none);
    else into an empty first slot; else, unless the first is this key, into the second. Then the row redrawn. The
    callers ignore the eax it leaves */

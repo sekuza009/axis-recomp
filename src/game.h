@@ -390,7 +390,7 @@ typedef struct { u32 vtable; void *banks[6]; i32 count; } TextureManager;   /* t
 #define bullet_updateAll(stage, dt) GAME_THISFN(bullet_updateAll, 0x47d000, void, void *, u32)(stage, dt)
 #define stage_updateEffects(stage, dt) GAME_THISFN(stage_updateEffects, 0x479a90, void, void *, u32)(stage, dt)
 #define ViewVolume_addSegment(view, colour, p0, p1, a) GAME_THISFN(ViewVolume_addSegment, 0x485120, void, void *, const void *, const float *, const float *, int)(view, colour, p0, p1, a)   /* a line */
-#define setupOptions_hitTest(x, y) GAME_FN(setupOptions_hitTest, 0x4206b0, int, int, int)(x, y)   /* the options dialog's item under (x, y), -1 none */
+#define setupGraphic_hitTest(x, y) GAME_FN(setupGraphic_hitTest, 0x4206b0, int, int, int)(x, y)   /* the graphics page's item under (x, y), -1 none */
 #define text_draw16(x, y, s) GAME_FN(text_draw16, 0x4028b0, void, int, int, const char *)(x, y, s)
 #define text_draw32(x, y, s) GAME_FN(text_draw32, 0x402c90, void, int, int, const char *)(x, y, s)
 /* the box passes: text centred between x0 and x1 */
@@ -777,7 +777,7 @@ typedef struct { float r, g, b, a; } Colour;
 #define setup_selectControlTab() GAME_FN(setup_selectControlTab, 0x420ba0, void, void)()
 #define setup_drawTunnel() GAME_FN(setup_drawTunnel, 0x423e50, void, void)()
 #define setup_drawSoundPage() GAME_FN(setup_drawSoundPage, 0x424810, void, void)()
-#define setup_drawOptionsDialog() GAME_FN(setup_drawOptionsDialog, 0x425460, void, void)()
+#define setup_drawGraphicPage() GAME_FN(setup_drawGraphicPage, 0x425460, void, void)()
 #define setup_drawControlsPage() GAME_FN(setup_drawControlsPage, 0x425cd0, void, void)()
 #define cfg_readPlayer(f) GAME_FN(cfg_readPlayer, 0x42d7f0, void, void *)(f)          /* axis.cfg's player section read back */
 #define cfg_readServer(f) GAME_FN(cfg_readServer, 0x42da70, void, void *)(f)      /* its server section */
@@ -942,7 +942,7 @@ typedef struct { float r, g, b, a; } Colour;
 #define setup_easePanel() GAME_FN(setup_easePanel, 0x4277c0, void, void)()
 #define setup_drawMenu() GAME_FN(setup_drawMenu, 0x423330, void, void)()
 #define setup_frameSoundPage() GAME_FN(setup_frameSoundPage, 0x427830, void, void)()
-#define setup_frameOptionsPage() GAME_FN(setup_frameOptionsPage, 0x427880, void, void)()
+#define setup_frameGraphicPage() GAME_FN(setup_frameGraphicPage, 0x427880, void, void)()
 #define setup_frameControlsPage() GAME_FN(setup_frameControlsPage, 0x4278d0, void, void)()
 
 /* ---- DirectInput setup (app/devices.c) ---- */
@@ -1236,7 +1236,7 @@ typedef struct { float r, g, b, a; } Colour;
 #define arenaOptions_layout() GAME_FN(arenaOptions_layout, 0x404190, void, void)()
 #define arenaCreate_layout() GAME_FN(arenaCreate_layout, 0x404150, void, void)()
 #define setupSound_layout() GAME_FN(setupSound_layout, 0x420300, void, void)()
-#define setupOptions_layout() GAME_FN(setupOptions_layout, 0x420480, void, void)()
+#define setupGraphic_layout() GAME_FN(setupGraphic_layout, 0x420480, void, void)()
 #define setupControl_layout() GAME_FN(setupControl_layout, 0x420510, void, void)()
 #define roomLogin_layout() GAME_FN(roomLogin_layout, 0x431ae0, void, void)()
 #define account_layout() GAME_FN(account_layout, 0x431c50, void, void)()

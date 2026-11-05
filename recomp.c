@@ -93,7 +93,7 @@ static int hit_rect(int x, int y, DWORD base, DWORD limit)
 	X(0x4044a0, 0x4db728, 0x4db848, arenaGameList_hitTest) X(0x4044e0, 0x4dbad8, 0x4dbae8, arenaDialogBox_hitTest) \
 	X(0x4045a0, 0x4dbb88, 0x4dbba8, arenaCreate_hitTest) X(0x40e450, 0x4dc2b0, 0x4dc3c0, armcPartsPage_hitTest) \
 	X(0x40e490, 0x4dbc90, 0x4dbd80, armcWeaponsPage_hitTest) X(0x40e4d0, 0x4dcb40, 0x4dcc60, armcColour_hitTest) \
-	X(0x420670, 0x4ddcf8, 0x4ddd98, setupSound_hitTest) X(0x4206b0, 0x4ddde8, 0x4dde78, setupOptions_hitTest) \
+	X(0x420670, 0x4ddcf8, 0x4ddd98, setupSound_hitTest) X(0x4206b0, 0x4ddde8, 0x4dde78, setupGraphic_hitTest) \
 	X(0x4206f0, 0x4ddeb0, 0x4ddfd0, setupControl_hitTest) X(0x420730, 0x4ddda0, 0x4dddd0, setupSlider_hitTest) \
 	X(0x4321c0, 0x9dd398, 0x9dd3b8, updateNotice_hitTest) X(0x432200, 0x9dd7e8, 0x9dd838, roomLogin_hitTest) \
 	X(0x432240, 0x9dce58, 0x9dcec8, newIdForm_hitTest) X(0x432280, 0x9dd3c0, 0x9dd3e0, newIdConfirm_hitTest) \
@@ -124,7 +124,7 @@ int armcColour_hitTest(int x, int y);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 int setupSound_hitTest(int x, int y);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-int setupOptions_hitTest(int x, int y);
+int setupGraphic_hitTest(int x, int y);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 int setupControl_hitTest(int x, int y);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
@@ -759,7 +759,7 @@ static void rect_spec(DWORD rec, DWORD end, int step, const RArg *a)
 }
 #define RA(g, c, d) { g, c, d }
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-void setupOptions_layout(void);
+void setupGraphic_layout(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void newIdForm_layout(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
@@ -3691,13 +3691,13 @@ DWORD roomLogin_draw(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void profile_drawChosenPilot(void);
 /* batch 123 (lifted/grp69.c): the video / sound options dialog */
-/* 0x425460 setup_drawOptionsDialog(): the options dialog (window 0x4dddd0..): frame, title 0x7538a4, seven labels (0x753924,
+/* 0x425460 setup_drawGraphicPage(): the options dialog (window 0x4dddd0..): frame, title 0x7538a4, seven labels (0x753924,
    0x80 apart) and the current values: the resolution name (0x4b04cc table by 0x4ddba0; the patch's eight modes)
    and six choices from 0x32-byte string tables (0x4ddbbc, 0x4dda64, 0x4ddc84, 0x4de058, 0x4ddc20, 0x4ddaf0 by
-   0x4ddba4..0x4ddbb8); the value under the cursor (setupOptions_hitTest) gets a shadow and a highlight; two buttons
+   0x4ddba4..0x4ddbb8); the value under the cursor (setupGraphic_hitTest) gets a shadow and a highlight; two buttons
    (0x753ca4); the border */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-void setup_drawOptionsDialog(void);
+void setup_drawGraphicPage(void);
 /* batch 124 (lifted/grp70.c): the setup screens' 3D tunnel */
 /* 0x423e50 setup_drawTunnel(): the tunnel behind the setup screens (3D projection): its alpha 0x4de038 eases to 0.3
    (mode 0x4ddcec 1) or 0.5 (mode 0); four layers of walls (camera gfx_setMenuCamera, pushed back 0x4ddd90, turned
@@ -3780,13 +3780,13 @@ void mainmenu_drawReplaySelect(void);
    outside sub-state 5 (0x4db51c) the arena name dialog (arena_drawNameDialog) or, while a message is open, its frame */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 DWORD lobbyPlayer_draw(void);
-/* 0x427830 setup_frameSoundPage() / 0x427880 setup_frameOptionsPage(): the setup tunnel (setup_drawTunnel), then in modes other than
-   0 / 1 (0x4ddcec) and not on tab 0x29a (0x4ddac8) the sound (setup_drawSoundPage) / options (setup_drawOptionsDialog) dialog or,
+/* 0x427830 setup_frameSoundPage() / 0x427880 setup_frameGraphicPage(): the setup tunnel (setup_drawTunnel), then in modes other than
+   0 / 1 (0x4ddcec) and not on tab 0x29a (0x4ddac8) the sound (setup_drawSoundPage) / options (setup_drawGraphicPage) dialog or,
    while a message is open, its frame */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void setup_frameSoundPage(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-void setup_frameOptionsPage(void);
+void setup_frameGraphicPage(void);
 /* 0x44f5f0 profile_deletePage() / 0x44f740 profile_logOutPage(): while the cursor glides (0x76d42c) it moves a share of
    the way to (0x67ef34, 0x67fb38) by 0x4b071c and the glide time 0x680bc0 runs down (then ends); the profile
    screen (profile_drawManagementWindow), then the two-button dialog (profile_drawDeleteQuestion / profile_drawLogOutQuestion) or, while a message
@@ -7296,7 +7296,7 @@ ST(space_transformPoint, xform_setup();,
 
 /* batch 8 */
 #define ORIG4(a, b, c, d) G32(a) = irnd(-400, 400); G32(b) = irnd(-400, 400); G32(c) = irnd(-400, 400); G32(d) = irnd(-400, 400);
-V0(setupOptions_layout, 0x420480, fill((void *)0x4ddde0, 0x90); ORIG4(0x4dddd0, 0x4dddd4, 0x4ddddc, 0x4dddd8))
+V0(setupGraphic_layout, 0x420480, fill((void *)0x4ddde0, 0x90); ORIG4(0x4dddd0, 0x4dddd4, 0x4ddddc, 0x4dddd8))
 V0(newIdForm_layout, 0x431b70, fill((void *)0x9dce50, 0x60); ORIG4(0x9dd6e8, 0x9dd6ec, 0x9dd6f4, 0x9dd6f0))
 V0(arenaNameDialog_layout, 0x403f80, fill((void *)0x4db588, 0x60); ORIG4(0x4dbb68, 0x4dbb6c, 0x4dbb70, 0x4dbb64))
 V0(roomLogin_layout, 0x431ae0, fill((void *)0x9dd7e0, 0x50); ORIG4(0x9dd358, 0x9dd35c, 0x9dd364, 0x9dd360))
@@ -13134,7 +13134,7 @@ static void options_setup(void)
 	G32(0x4ddba0) = irnd(0, 7);
 	if (irnd(0, 1)) { G32(0x4ded68) = G32(0x4dddd0) + irnd(0xe0, 0x160); G32(0x4ded6c) = G32(0x4dddd4) + 0x40 + irnd(0, 6) * 0x28 + irnd(0, 12); }
 }
-static void options_hover_setup(void)   /* the hit test (setupOptions_hitTest, its own test) stubbed: each row, both buttons or none */
+static void options_hover_setup(void)   /* the hit test (setupGraphic_hitTest, its own test) stubbed: each row, both buttons or none */
 {
 	options_setup();
 	static const DWORD hit[] = { 0x4206b0, 2, 0 };
@@ -13142,7 +13142,7 @@ static void options_hover_setup(void)   /* the hit test (setupOptions_hitTest, i
 	callee_ret(0x4206b0, (DWORD)irnd(-1, 9));
 }
 /* its caller ignores the eax it leaves (tools/eaxuse.py) */
-ST(setup_drawOptionsDialog, options_hover_setup();, (CALL_PLAIN(0x425460, 0, 0, 0, 0, 0), 0), (setup_drawOptionsDialog(), 0))
+ST(setup_drawGraphicPage, options_hover_setup();, (CALL_PLAIN(0x425460, 0, 0, 0, 0, 0), 0), (setup_drawGraphicPage(), 0))
 /* batch 124 */
 /* the tunnel: menutex_setup's set with every texture it binds bindable (0x4e0cd0, 0x5b197c, 0x5b1978), modes 0..3,
    the animation values anywhere in (and now and then at the edges of) their ranges, the step 0x4b071c */
@@ -13319,7 +13319,7 @@ static void setupdlg_setup(int sound)
 	G32(0x4ddac8) = irnd(0, 3) ? irnd(0, 0x300) : 0x29a; G32(0x90d1c4) = irnd(0, 3) ? 0 : 1;
 }
 ST(setup_frameSoundPage, setupdlg_setup(1);, CALL_PLAIN(0x427830, 0, 0, 0, 0, 0), (setup_frameSoundPage(), 0))
-ST(setup_frameOptionsPage, setupdlg_setup(0);, CALL_PLAIN(0x427880, 0, 0, 0, 0, 0), (setup_frameOptionsPage(), 0))
+ST(setup_frameGraphicPage, setupdlg_setup(0);, CALL_PLAIN(0x427880, 0, 0, 0, 0, 0), (setup_frameGraphicPage(), 0))
 /* the profile screen with a dialog: profscreen_setup and the dialog's window (profdlg_setup), the glide on or off
    with a target and time left */
 static void profglide_setup(DWORD xo, DWORD yo, DWORD xe, DWORD ye)
@@ -17228,7 +17228,7 @@ static const STest g_stests[] = {
 	T(object_deactivate, 0, 4, 600), T(playerRecord_resetColourGrid, 0, 4, 100), T(script_pushMessage, 0, 4, 1000), T(shape_markMaterialsChanged, 0, 4, 300),
 	T(vec3_scaleCopy, 0, 4, 2000), T(vec_rotate, 0, 4, 2000), T(space_transformPoint, 0, 4, 2000),
 	/* batch 8 */
-	T(setupOptions_layout, 0, 8, 0), T(newIdForm_layout, 0, 8, 0), T(arenaNameDialog_layout, 0, 8, 0), T(roomLogin_layout, 0, 8, 0),
+	T(setupGraphic_layout, 0, 8, 0), T(newIdForm_layout, 0, 8, 0), T(arenaNameDialog_layout, 0, 8, 0), T(roomLogin_layout, 0, 8, 0),
 	T(skirmishList_layout, 0, 8, 0), T(account_layout, 0, 8, 0), T(briefing_layout, 0, 8, 0), T(setup_selectSoundTab, 0, 6, 0),
 	T(setup_selectControlTab, 0, 6, 0), T(lobby_enterPlayerScreen, 0, 10, 0), T(room_openNewIdConfirm, 0, 6, 0), T(room_enterGameList, 0, 6, 0),
 	T(room_openLogin, 0, 20, 0), T(net_resetState, 0, 4, 0), T(missions_clear, 0, 4, 0), T(arena_stepMap, 0, 200, 0),
@@ -17593,7 +17593,7 @@ static const STest g_stests[] = {
 	/* batch 122 */
 	T(roomLogin_draw, 0, 200, 0), T(profile_drawChosenPilot, 0, 200, 0),
 	/* batch 123 */
-	T(setup_drawOptionsDialog, 0, 600, 0),
+	T(setup_drawGraphicPage, 0, 600, 0),
 	/* batch 124 */
 	T(setup_drawTunnel, 0, 200, 0), T(setup_drawMenu, 0, 200, 0),
 	/* batch 125 */
@@ -17610,7 +17610,7 @@ static const STest g_stests[] = {
 	/* batch 130 */
 	T(setup_drawSoundPage, 0, 300, 0),
 	/* batch 131 */
-	T(mainmenu_drawReplaySelect, 0, 150, 0), T(lobbyPlayer_draw, 0, 150, 0), T(setup_frameSoundPage, 0, 150, 0), T(setup_frameOptionsPage, 0, 150, 0),
+	T(mainmenu_drawReplaySelect, 0, 150, 0), T(lobbyPlayer_draw, 0, 150, 0), T(setup_frameSoundPage, 0, 150, 0), T(setup_frameGraphicPage, 0, 150, 0),
 	T(profile_deletePage, 0, 150, 0), T(profile_logOutPage, 0, 150, 0),
 	/* batch 132 */
 	T(menu_mainMenu, 0, 300, 0),
@@ -18117,7 +18117,7 @@ static const struct { DWORD addr; void *fn; const char *name; } g_hooks3[] = {
 	{ 0x4803c0, (void *)vec3_scaleCopy, "vec3_scaleCopy" }, { 0x467700, (void *)vec_rotate, "vec_rotate" },
 	{ 0x482a40, (void *)space_transformPoint, "space_transformPoint" },
 	/* batch 8 */
-	{ 0x420480, (void *)setupOptions_layout, "setupOptions_layout" }, { 0x431b70, (void *)newIdForm_layout, "newIdForm_layout" },
+	{ 0x420480, (void *)setupGraphic_layout, "setupGraphic_layout" }, { 0x431b70, (void *)newIdForm_layout, "newIdForm_layout" },
 	{ 0x403f80, (void *)arenaNameDialog_layout, "arenaNameDialog_layout" }, { 0x431ae0, (void *)roomLogin_layout, "roomLogin_layout" },
 	{ 0x4437b0, (void *)skirmishList_layout, "skirmishList_layout" }, { 0x431c50, (void *)account_layout, "account_layout" },
 	{ 0x443840, (void *)briefing_layout, "briefing_layout" }, { 0x420ad0, (void *)setup_selectSoundTab, "setup_selectSoundTab" },
@@ -18649,7 +18649,7 @@ static const struct { DWORD addr; void *fn; const char *name; } g_hooks3[] = {
 	/* batch 122 */
 	{ 0x4392c0, (void *)roomLogin_draw, "roomLogin_draw" }, { 0x44cf70, (void *)profile_drawChosenPilot, "profile_drawChosenPilot" },
 	/* batch 123 */
-	{ 0x425460, (void *)setup_drawOptionsDialog, "setup_drawOptionsDialog" },
+	{ 0x425460, (void *)setup_drawGraphicPage, "setup_drawGraphicPage" },
 	/* batch 124 */
 	{ 0x423e50, (void *)setup_drawTunnel, "setup_drawTunnel" }, { 0x423330, (void *)setup_drawMenu, "setup_drawMenu" },
 	/* batch 125 */
@@ -18668,7 +18668,7 @@ static const struct { DWORD addr; void *fn; const char *name; } g_hooks3[] = {
 	{ 0x424810, (void *)setup_drawSoundPage, "setup_drawSoundPage" },
 	/* batch 131 */
 	{ 0x4434f0, (void *)mainmenu_drawReplaySelect, "mainmenu_drawReplaySelect" }, { 0x40cf80, (void *)lobbyPlayer_draw, "lobbyPlayer_draw" },
-	{ 0x427830, (void *)setup_frameSoundPage, "setup_frameSoundPage" }, { 0x427880, (void *)setup_frameOptionsPage, "setup_frameOptionsPage" },
+	{ 0x427830, (void *)setup_frameSoundPage, "setup_frameSoundPage" }, { 0x427880, (void *)setup_frameGraphicPage, "setup_frameGraphicPage" },
 	{ 0x44f5f0, (void *)profile_deletePage, "profile_deletePage" }, { 0x44f740, (void *)profile_logOutPage, "profile_logOutPage" },
 	/* batch 132 */
 	{ 0x442050, (void *)menu_mainMenu, "menu_mainMenu" },

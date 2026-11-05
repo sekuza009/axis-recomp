@@ -602,9 +602,10 @@ static u32 to_pilot_screen(void)
 	return GAME_FN(debug_traceStripped, 0x48b420, u32, void)();
 }
 
-/* main menu choice i (with its sound; 0x4dda44 cleared): 0 the missions (menuState500_enter), 1 the arena lobby
-   (next screen 400), 2 the Ladder game room (net_connect, then net_asyncSelect; messages 0x2a / 0x29 when they fail;
-   next screen 800), 3 the setup (600), 4 the ARM CENTER (armc_enterParts), 5 back to the pilot screen. The original's eax into *r; 1 when a failure ended the
+/* main menu choice i (with its sound; 0x4dda44 cleared): 0 SKIRMISH PLAY (menuState500_enter), 1 MULTIPLAY VIA
+   INTERNET (the arena lobby, next screen 400), 2 LADDER GAME (net_connect, then net_asyncSelect; messages 0x2a / 0x29
+   when they fail; the game room, next screen 800), 3 the setup (600), 4 TO CUSTOMIZE (the ARM CENTER,
+   armc_enterParts), 5 EXIT (back to the pilot screen). The original's eax into *r; 1 when a failure ended the
    caller there */
 static int menu_choice(int i, u32 *r)
 {

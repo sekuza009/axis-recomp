@@ -83,11 +83,11 @@ void (newIdConfirm_layout)(void) { rects_row(OBJ(g_newIdConfirmRects), OBJ(g_new
 
 void (lobbyTop_layout)(void) { rects_row(OBJ(g_lobbyTopRects), OBJ(g_lobbyTopRects) + 2 * 16, OBJ(g_lobbyTopRect), (OBJ(g_lobbyTopRect) + 0x4), 0x32, 0xe6, 0x64, 0x94, 0xc8); }
 
-void (setupOptions_layout)(void)
+void (setupGraphic_layout)(void)
 {
-	static const RArg a[4] = { RA(OBJ(g_setupOptionsRect), 0xa, 0), RA(ADDR(g_setupOptionsTop), 0x3c, 1), RA(OBJ(g_setupOptionsRect), 0x186, 0), RA(ADDR(g_setupOptionsTop), 0x5c, 1) };
-	static const RArg b[4] = { RA(OBJ(g_setupOptionsRect), 0x64, 1), RA((OBJ(g_setupOptionsRect) + 0xc), -0x40, 0), RA(OBJ(g_setupOptionsRect), 0xdc, 1), RA((OBJ(g_setupOptionsRect) + 0xc), -0x20, 0) };
-	rect_spec(OBJ(g_setupOptionsRects), (OBJ(g_setupOptionsRects) + 0x70), 0x28, a); rect_spec((OBJ(g_setupOptionsRects) + 0x70), OBJ(g_setupOptionsRects) + 9 * 16, 0x8c, b);
+	static const RArg a[4] = { RA(OBJ(g_setupGraphicRect), 0xa, 0), RA(ADDR(g_setupGraphicTop), 0x3c, 1), RA(OBJ(g_setupGraphicRect), 0x186, 0), RA(ADDR(g_setupGraphicTop), 0x5c, 1) };
+	static const RArg b[4] = { RA(OBJ(g_setupGraphicRect), 0x64, 1), RA((OBJ(g_setupGraphicRect) + 0xc), -0x40, 0), RA(OBJ(g_setupGraphicRect), 0xdc, 1), RA((OBJ(g_setupGraphicRect) + 0xc), -0x20, 0) };
+	rect_spec(OBJ(g_setupGraphicRects), (OBJ(g_setupGraphicRects) + 0x70), 0x28, a); rect_spec((OBJ(g_setupGraphicRects) + 0x70), OBJ(g_setupGraphicRects) + 9 * 16, 0x8c, b);
 }
 
 void (newIdForm_layout)(void)

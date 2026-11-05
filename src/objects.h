@@ -224,7 +224,7 @@
 #define g_armcColourRects ((int *)IMG(0x4dcb38))   /* int[72]; armcColour_hitTest's 18 hit rectangles (hit_tests.c) */
 #define g_setupSoundRects ((int *)IMG(0x4ddcf0))   /* int[40]; setupSound_hitTest's 10 hit rectangles (hit_tests.c) */
 #define g_setupSliderRects ((int *)IMG(0x4ddd98))   /* int[12]; setupSlider_hitTest's 3 hit rectangles (hit_tests.c) */
-#define g_setupOptionsRects ((int *)IMG(0x4ddde0))   /* int[36]; setupOptions_hitTest's 9 hit rectangles (hit_tests.c) */
+#define g_setupGraphicRects ((int *)IMG(0x4ddde0))   /* int[36]; setupGraphic_hitTest's 9 hit rectangles (hit_tests.c) */
 #define g_setupControlRects ((int *)IMG(0x4ddea8))   /* int[72]; setupControl_hitTest's 18 hit rectangles (hit_tests.c) */
 #define g_gameListRects ((int *)IMG(0x9dcd48))   /* int[60]; gameList_hitTest's 15 hit rectangles (hit_tests.c) */
 #define g_newIdFormRects ((int *)IMG(0x9dce50))   /* int[28]; newIdForm_hitTest's 7 hit rectangles (hit_tests.c) */
@@ -247,7 +247,7 @@
 #define g_newNameDialogRects ((int *)IMG(0x9f9020))   /* int[8]; newNameDialog_hitTest's 2 hit rectangles (hit_tests.c) */
 #define g_mousePos ((int *)IMG(0x4ded68))   /* int[2]; the mouse pointer in 640 x 480 units (g_mouseX */
 #define g_bindRows ((int *)IMG(0x4b04ec))   /* int[4]; the rows of each controls page (move */
-#define g_setupOptionsRect ((int *)IMG(0x4dddd0))   /* int[4]; the setup options panel's window: left */
+#define g_setupGraphicRect ((int *)IMG(0x4dddd0))   /* int[4]; the setup options panel's window: left */
 #define g_lobbyTopRect ((int *)IMG(0x4dba70))   /* int[4]; the lobby top menu's window: left */
 #define g_roomMessageRect ((int *)IMG(0x9dced8))   /* int[4]; the game room's message box window: left */
 #define g_setupColourLit ((u32 *)IMG(0x4de048))   /* u32[4]; setup's text colour */

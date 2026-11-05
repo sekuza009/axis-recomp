@@ -316,8 +316,8 @@ int g_setupSoundRects_v[40] __attribute__((aligned(16)));   /* 0x4ddcf0 */
 u8 g_setupTunnelDepth_v[4] __attribute__((aligned(16)));   /* 0x4ddd90 */
 int g_setupSliderRects_v[12] __attribute__((aligned(16)));   /* 0x4ddd98 */
 u8 g_bindWaiting_v[4] __attribute__((aligned(16)));   /* 0x4dddc8 */
-int g_setupOptionsRect_v[4] __attribute__((aligned(16)));   /* 0x4dddd0 */
-int g_setupOptionsRects_v[36] __attribute__((aligned(16)));   /* 0x4ddde0 */
+int g_setupGraphicRect_v[4] __attribute__((aligned(16)));   /* 0x4dddd0 */
+int g_setupGraphicRects_v[36] __attribute__((aligned(16)));   /* 0x4ddde0 */
 int g_setupControlRect_v[4] __attribute__((aligned(16)));   /* 0x4dde80 */
 u8 g_setupPressed_v[4] __attribute__((aligned(16)));   /* 0x4dde90 */
 int g_soundEdited_v[4] __attribute__((aligned(16)));   /* 0x4dde98 */
@@ -1486,8 +1486,8 @@ const DataPiece g_splitObjects[] = {
 	{ 0x4ddd90, g_setupTunnelDepth_v, 4 },
 	{ 0x4ddd98, g_setupSliderRects_v, 48 },
 	{ 0x4dddc8, g_bindWaiting_v, 4 },
-	{ 0x4dddd0, g_setupOptionsRect_v, 16 },
-	{ 0x4ddde0, g_setupOptionsRects_v, 144 },
+	{ 0x4dddd0, g_setupGraphicRect_v, 16 },
+	{ 0x4ddde0, g_setupGraphicRects_v, 144 },
 	{ 0x4dde80, g_setupControlRect_v, 16 },
 	{ 0x4dde90, g_setupPressed_v, 4 },
 	{ 0x4dde98, g_soundEdited_v, 16 },

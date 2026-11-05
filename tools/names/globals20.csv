@@ -12,7 +12,7 @@
 0x4dcc9c,int,g_armcStatsPanelBottom
 0x4ddad0,int,g_setupSoundLeft
 0x4ddad8,int,g_setupSoundRight
-0x4dddd4,int,g_setupOptionsTop
+0x4dddd4,int,g_setupGraphicTop
 0x4dde80,int,g_setupControlLeft
 0x4dde84,int,g_setupControlTop
 0x4dde88,int,g_setupControlRight

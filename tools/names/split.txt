@@ -723,7 +723,7 @@ g_armcPartsPageRects
 g_armcColourRects
 g_setupSoundRects
 g_setupSliderRects
-g_setupOptionsRects
+g_setupGraphicRects
 g_setupControlRects
 g_gameListRects
 g_newIdFormRects
@@ -913,9 +913,9 @@ g_viewAngle
 g_viewAspect
 # the mouse pointer pair (objects21.csv), whole: g_mouseY split alone had the game room highlight move y at its old place
 g_mousePos
-# setup tables read whole (objects22.csv): g_lastCrosshair / g_setupOptionsTop were split alone
+# setup tables read whole (objects22.csv): g_lastCrosshair / g_setupGraphicTop were split alone
 g_bindRows
-g_setupOptionsRect
+g_setupGraphicRect
 # screen panels' windows and colours (objects23.csv), whole
 g_lobbyTopRect
 g_roomMessageRect
