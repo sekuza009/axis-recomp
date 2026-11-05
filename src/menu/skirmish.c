@@ -101,7 +101,7 @@ static const int column_x0[4] = { 0x10, 0x159, 0x1b3, 0x20d }, column_x1[4] = { 
    0x80 apart) on blue bars, up to 8 rows from g_missionTop (the picked one bright), the picked one's description
    (wrapped at the window's right less 0x38) and two buttons (MSG(517, "RESERVED"); 8 / 9 under the pointer by skirmishSettings_hitTest,
    lit). The original leaves eax to callers that ignore it */
-void (skirmish_drawScreenA)(void)
+void (missionList_draw)(void)
 {
 	int hovered = skirmishSettings_hitTest(g_mouseX, g_mouseY);   /* skirmishSettings_hitTest */
 	gfx_setProjection2D3D(2);
@@ -154,7 +154,7 @@ void (skirmish_drawScreenA)(void)
    typed out (briefing_typeOut), two buttons at the right (MSG(521, "$[0] ACCEPT"), 0x80 apart; lit under the pointer: 0 / 1 by
    briefing_hitTest) and two at the left (MSG(523, "$[0] NEXT"): 2 only once the text is out (0x4d7348), 3 only with something to
    undo (0x9f1060); greyed otherwise). The original leaves eax to callers that ignore it */
-void (skirmish_drawScreenB)(void)
+void (missionBriefing_draw)(void)
 {
 	int hovered = briefing_hitTest(g_mouseX, g_mouseY);
 	gfx_setProjection2D3D(2);
@@ -184,7 +184,7 @@ void (skirmish_drawScreenB)(void)
 	}
 }
 
-/* 0x445bc0, 0x445bd0: jumps to skirmish_drawScreenA and skirmish_drawScreenB (the skirmish setup's states'
+/* 0x445bc0, 0x445bd0: jumps to missionList_draw and missionBriefing_draw (the skirmish setup's states'
    frames; their callers ignore eax) */
-void (skirmish_frameScreenA)(void) { skirmish_drawScreenA(); }
-void (skirmish_frameScreenB)(void) { skirmish_drawScreenB(); }
+void (skirmish_frameScreenA)(void) { missionList_draw(); }
+void (skirmish_frameScreenB)(void) { missionBriefing_draw(); }

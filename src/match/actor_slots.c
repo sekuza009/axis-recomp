@@ -528,7 +528,7 @@ static u8 *weapon_list(u8 *ac)
    them without flares 0x83a9c8 or when too small on screen; faint ones only with flares); flags 0x100 / 0xc00 add a
    lit pass. A list that would not draw has them all reloaded (actor_updateHead / actor_updateBody / actor_updateArms /
    actor_updateLegs / actor_updateBooster / actor_updatePart). Its caller ignores the eax it leaves */
-void THISCALL (actor_updateAllParts)(u8 *s, int a, void *vv, int draw)
+void THISCALL (actor_drawIntoView)(u8 *s, int a, void *vv, int draw)
 {
 	Stage *st = (Stage *)s;
 	u8 *ac = (u8 *)&st->actors[a];

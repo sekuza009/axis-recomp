@@ -117,11 +117,11 @@ void THISCALL (hud_drawPlayerMarkers)(Scene *scene)
 			glColor4f(1.0f, 1.0f, 1.0f, alpha);
 			if (scene->ladderGame == 1) {
 				x -= 0x18;
-				hud_drawNameIcon(scene, player->emblem, x, marker_hudY(player->tagTopLeft[1]) - 0x10);
+				hud_drawEmblem(scene, player->emblem, x, marker_hudY(player->tagTopLeft[1]) - 0x10);
 			}
 			int flagOwner = scene->sessionMode == 0 ? player->player : i;
 			if (scene->playerRecords[flagOwner].flagShown == 1)
-				hud_drawLeaderIcon(scene, flagOwner, x - 0x18, marker_hudY(player->tagTopLeft[1]) - 0x10);
+				hud_drawFlag(scene, flagOwner, x - 0x18, marker_hudY(player->tagTopLeft[1]) - 0x10);
 		}
 
 	status:

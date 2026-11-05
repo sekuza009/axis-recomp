@@ -195,7 +195,7 @@ u32 (profile_logIn)(void)
 	g_lobbyReply = 0;
 	if (g_startedFromLobby == 1)
 		g_lobbyReply = 0x65;
-	profile_save();   /* profile_save */
+	profile_makeCurrent();   /* profile_makeCurrent */
 	g_menuState = 300;
 	g_nextScreen = 300;
 	g_keysBlocked = 2;
@@ -298,7 +298,7 @@ int (profileList_clicks)(void)
 #define mkdir_(path) GAME_CDECL(0x49f94a, int, const char *)(path)
 
 /* 0x44b990: a new profile made from the typed name: it goes into the next slot (with the chosen pilot, 0x9f8d30), the
-   save folder is made if missing, the list scrolls to show it (13 rows), it is saved (profile_load) and the screen
+   save folder is made if missing, the list scrolls to show it (13 rows), it is saved (profile_newCampaign) and the screen
    updated. Returns what that leaves in eax */
 u32 (profile_selectAndLoad)(void)
 {
@@ -320,7 +320,7 @@ u32 (profile_selectAndLoad)(void)
 		g_profileListTop = count - 0xd;
 		g_pilotChosen = count - 1;
 	}
-	profile_load();         /* profile_load (it writes the profile) */
+	profile_newCampaign();         /* profile_newCampaign (it writes the profile) */
 	return profile_resetPreview();  /* profile_resetPreview */
 }
 
@@ -427,7 +427,7 @@ u32 (profile_nameEntryStep)(void)
 
 /* 0x44ba60: the current profile (0x9f8d74) deleted: its save file ("save\<name>.axs") removed (DeleteFileA, tried
    twice), the later profiles moved down a slot and the freed last slot cleared (colour -1), the count lowered.
-   With none left everything is reset and the list written (profile_delete); otherwise, if the current one was the
+   With none left everything is reset and the list written (profile_writeFile); otherwise, if the current one was the
    last, the selection steps back (the scrolled row 0x9f8c5c, else the list's top 0x9f8c4c), then the list is
    written and shown again (profile_resetPreview). Returns the last call's eax */
 u32 (profile_deleteFiles)(void)
@@ -457,7 +457,7 @@ u32 (profile_deleteFiles)(void)
 			g_profileListTop = 0;
 			g_pilotChosen = 0;
 			g_profileCount = 0;
-			return profile_delete();   /* profile_delete: the list written */
+			return profile_writeFile();   /* profile_writeFile: the list written */
 		}
 		if (g_profileListRow > 0)
 			g_profileListRow--;
@@ -465,7 +465,7 @@ u32 (profile_deleteFiles)(void)
 			g_profileListTop--;
 		g_pilotChosen = g_profileListTop + g_profileListRow;
 	}
-	profile_delete();
+	profile_writeFile();
 	return profile_resetPreview();   /* profile_resetPreview */
 }
 

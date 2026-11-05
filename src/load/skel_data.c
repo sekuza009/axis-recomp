@@ -440,7 +440,7 @@ u8 *THISCALL (shape_getByName)(u8 *cache, const char *name, int bind)
    take_block). The 0x80-byte parts (+0x14) at the block's start, then each part's tables after them: vertices,
    normals (12 bytes each), colours (4), texture coordinates (8) for its +0x4c vertices, and its +0x60 primitives
    (12 bytes; one slot more is left past them), each with its index list (+4 of them). An old file is relocated
-   (shape_relocate). The shape's box (+0x34 low, +0x40 high) from the point +0x20 and every part's box (+0x68 ..). Its
+   (shape_computeBounds). The shape's box (+0x34 low, +0x40 high) from the point +0x20 and every part's box (+0x68 ..). Its
    callers ignore the eax it leaves */
 void THISCALL (shape_read)(u8 *shape, void *f, void *mem, int size)
 {
@@ -486,7 +486,7 @@ void THISCALL (shape_read)(u8 *shape, void *f, void *mem, int size)
 		}
 	}
 	if (!current)
-		shape_relocate(shape);
+		shape_computeBounds(shape);
 	memcpy(md->low, md->centre, 12);
 	memcpy(md->high, md->centre, 12);
 	float *low = md->low, *high = md->high;
@@ -827,7 +827,7 @@ static int obj_corner(u8 *part, int i, char *corner, const float *vs, const floa
    out its arrays and its one triangle list; pass 3 reads the values, names the parts after the last "_" piece of
    the material (its last character cut) and expands the faces into corners (bare positions get a flat normal). A
    "3DS" comment flips y / z (the original's loop over that never moves on: a part with corners hangs it). Then the
-   colours, the temporaries freed, the parts' bounds (shape_relocate) and the shape's. As the original, a quad's
+   colours, the temporaries freed, the parts' bounds (shape_computeBounds) and the shape's. As the original, a quad's
    second triangle copies its corners into the temporary arrays rather than the part's. Its caller ignores the eax
    it leaves */
 void THISCALL (model_loadObjFormatFrom)(u8 *sh, void *f, u8 *mem, int memSize)
@@ -1062,7 +1062,7 @@ void THISCALL (model_loadObjFormatFrom)(u8 *sh, void *f, u8 *mem, int memSize)
 		if (nvt > 0)
 			operator_delete(ts);
 	}
-	shape_relocate(sh);
+	shape_computeBounds(sh);
 	memcpy(md->low, md->centre, 12);
 	memcpy(md->high, md->centre, 12);
 	for (int k = 0; k < md->partCount; k++) {

@@ -273,8 +273,8 @@
 #define g_lobbyTopOutlines ((int *)IMG(0x5b1cf8))   /* int[44]; the lobby top menu's 4 button outlines (lobby_states / setup_pages' hovered_panel) */
 #define g_mainMenuOutlines ((int *)IMG(0x4deb80))   /* int[66]; the main menu's 6 button outlines (menu_records' menu_choice) */
 #define g_roomOutlines ((int *)IMG(0x9daf88))   /* int[66]; the game room's 6 button outlines (room_clicks) */
-#define g_setupTopOutlines ((int *)IMG(0x4df918))   /* int[44]; the setup top page's 4 button outlines (copied from the lobby's: menu_initKeyRepeat) */
-#define g_outlinesCopy ((int *)IMG(0x9da328))   /* int[44]; a second copy of the lobby's 4 outlines (menu_initKeyRepeat; not read elsewhere) */
+#define g_setupTopOutlines ((int *)IMG(0x4df918))   /* int[44]; the setup top page's 4 button outlines (copied from the lobby's: setupTop_initOutlines) */
+#define g_outlinesCopy ((int *)IMG(0x9da328))   /* int[44]; a second copy of the lobby's 4 outlines (setupTop_initOutlines; not read elsewhere) */
 #define g_vkTable ((int *)IMG(0x4df054))   /* int[57]; the scan-code row -> virtual key table (input_initVkTable; written only */
 #define g_defaultColours ((u32 *)IMG(0xa1f298))   /* u32[16]; the 16 default packed colours (color_initDefaultColours: RGBA bytes) */
 #define g_headList ((int *)IMG(0x4dc3e8))   /* int[50]; the unlocked heads (armc_buildPartLists) */

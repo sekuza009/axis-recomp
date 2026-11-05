@@ -155,7 +155,7 @@ static X row(X a, const float *ma, X b, const float *mb, X c, const float *mc, c
    id, six words of info (when id >= 0), three more, raw, M; raw 1 keeps the untransformed points (w = 1) instead.
    Every sum in the original's operand order. Returns what the original leaves in eax: the count when full or culled,
    count + 1 for a null list, else raw, or p2.z's bits when raw is 1 */
-int THISCALL (ViewVolume_transformObject)(u8 *vv, int id, const u32 *info6, const u32 *info3, const float *P,
+int THISCALL (ViewVolume_addTriangle)(u8 *vv, int id, const u32 *info6, const u32 *info3, const float *P,
                                          const float *M, int raw, int cull)
 {
 	int n = VV->triangleCount;
@@ -579,9 +579,9 @@ static void draw_transparent(u8 *vv, const u32 *it, const u8 *mesh, const u32 *c
 			for (int k = 0; k < 3; k++)
 				through(P + 3 * k, M, ((const float *)((const ShapePart *)mesh)->vertices) + idx[k] * 3, order + 9 * k);
 			if (id > 0)
-				ViewVolume_transformObject(vv, id - 1, (const u32 *)uv, c, P, NULL, 2, 1);
+				ViewVolume_addTriangle(vv, id - 1, (const u32 *)uv, c, P, NULL, 2, 1);
 			else
-				ViewVolume_transformObject(vv, 0, NULL, c, P, NULL, 2, 1);
+				ViewVolume_addTriangle(vv, 0, NULL, c, P, NULL, 2, 1);
 		}
 	}
 }

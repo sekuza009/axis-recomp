@@ -28,7 +28,7 @@ static float texel(int n, float perTexel)
 
 /* 0x4922c0: emblem number emblem (1 up; 0 or less draws nothing) from the emblem texture (scene->emblemTexture,
    256 texels wide): ten cells per row, the rows starting 224 texels down */
-void THISCALL (hud_drawNameIcon)(Scene *scene, int emblem, int x, int y)
+void THISCALL (hud_drawEmblem)(Scene *scene, int emblem, int x, int y)
 {
 	if (emblem <= 0)
 		return;
@@ -44,7 +44,7 @@ void THISCALL (hud_drawNameIcon)(Scene *scene, int emblem, int x, int y)
 
 /* 0x4924d0: player's flag: four cells per row from the flag texture (128 x 64 texels); in the mode
    scene->sessionMode, from the GL texture scene->flagGlTexture instead of the texture manager */
-void THISCALL (hud_drawLeaderIcon)(Scene *scene, int player, int x, int y)
+void THISCALL (hud_drawFlag)(Scene *scene, int player, int x, int y)
 {
 	int sx = hud_toScreenX(x), sy = hud_toScreenY(y);
 	int w = hud_scaleX(24.0f), h = hud_scaleY(16.0f);

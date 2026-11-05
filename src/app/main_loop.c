@@ -77,7 +77,7 @@ void (menu_frame)(void)
 	if (g_screen != g_lastScreen)
 		menu_enterState();
 	if (g_lobbyReply != 0x69 && g_lobbyReply != 0x68) {
-		menu_onStateChange();
+		menu_frameInput();
 		menu_processKeys();
 	}
 	if (g_screen == 300 && g_mainMenuFadingIn && !g_dialogPending) {
@@ -164,7 +164,7 @@ static void count_down(u8 *s, u32 offset, const float *dt)
 }
 
 /* 0x48b200 (thiscall on the scene): the playing state's frame. The match set up first when it is not yet
-   (+0x233cc28 0: game_processGameModeInit); frameTimer_average (its answer dropped); the frame's time (+0x44) added to the
+   (+0x233cc28 0: match_startRound); frameTimer_average (its answer dropped); the frame's time (+0x44) added to the
    second's fraction (+0x233cc34) and to the FPS window (+0x2340c90); three countdowns (+0x233cc40, +0x2342f02,
    +0x2340d39). Past a whole second the seconds (+0x233cc30) take it, and the frame and packet counts of the window
    (+0x2340c80 / +0x2340c84) become rates (+0x2340c88 / +0x2340c8c; 0 for an empty window), the window cleared. Then
@@ -175,7 +175,7 @@ int THISCALL (match_inputState2)(u8 *s)
 #define SC ((Scene *)s)
 	const float *dt = &SC->frameTime;
 	if (SC->modeStarted == 0)
-		game_processGameModeInit(s);
+		match_startRound(s);
 	(void)frameTimer_average(s);
 	long double second = fadd_m(fld_m(dt), &SC->secondFraction);
 	SC->secondFraction = f32(second);
@@ -1198,7 +1198,7 @@ u32 THISCALL (replay_frame)(u8 *s)
 	if (SC->playing == 1 && SC->cameraMode == 2 && SC->watchedPlayer >= 0)
 		SC->players[SC->watchedPlayer].viewMarked = 1;   /* (the followed player seen from inside) */
 	sky_draw((Stage *)stage, view_farPlane());
-	render_processRenderingBy(stage, view, view_farPlane());
+	ground_buildDrawLists(stage, view, view_farPlane());
 	stage_drawObjects((Stage *)stage, view);
 	stage_drawActors((Stage *)stage, view, -1);
 	stage_drawBullets(stage, view);

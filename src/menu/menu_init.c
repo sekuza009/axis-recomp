@@ -34,7 +34,7 @@ void (arena_initOptionTexts)(void)
 }
 
 /* 0x443570: the mission list's 30 entries (g_missions) emptied (valueF0 -1) */
-void (skirmish_clearPlayerRows)(void)
+void (missions_clear)(void)
 {
 	g_missionCount = 0;
 	g_misHeader1 = 0;
@@ -74,7 +74,7 @@ void (net_resetState)(void)
 
 /* 0x42f8e0: the setup top page's four button outlines (g_setupTopOutlines) and a second copy (g_outlinesCopy) from
    the lobby top menu's (g_lobbyTopOutlines): each 4 points, then its five x and five y */
-void (menu_initKeyRepeat)(void)
+void (setupTop_initOutlines)(void)
 {
 	for (int o = 0; o < 0xb0; o += 0x2c) {
 		GAME_VAR(int, OBJ(g_setupTopOutlines) + o) = 4;
@@ -139,7 +139,7 @@ u32 (replayList_open)(void)
    wait. Returns the last progress drawing's eax */
 u32 (frontEnd_startUp)(void)
 {
-	static const u32 steps[5] = { FN_ADDR(menu_initMainButtons, 0x42f2b0), FN_ADDR(menu_initKeyRepeatDefaults, 0x42f500), FN_ADDR(room_initMenuButtons, 0x42f690), FN_ADDR(menu_initKeyRepeat, 0x42f8e0), FN_ADDR(net_clearSlots, 0x430bd0) };
+	static const u32 steps[5] = { FN_ADDR(menu_initMainButtons, 0x42f2b0), FN_ADDR(menu_initKeyRepeatDefaults, 0x42f500), FN_ADDR(room_initMenuButtons, 0x42f690), FN_ADDR(setupTop_initOutlines, 0x42f8e0), FN_ADDR(net_clearSlots, 0x430bd0) };
 	memset((void *)OBJ(g_chatHistory), 0, 0x300 * 4);
 	menu_initColours();   /* menu_initColours: the colours */
 	u32 r = 0;

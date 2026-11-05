@@ -450,7 +450,7 @@ void (setup_camera)(void)
    look-at 0x4df024 ..) and the camera's position is kept in the watched slot (0x4dfa1c, 0x58 bytes, by 0x9fd954);
    0x680388 toggles 0x4e0464 between 1 and 2, and four keys step 0x4de6e0 by 1 / 10 (not below 1). The original
    leaves eax to callers that ignore it */
-void (match_debugHandler)(void)
+void (freeCam_keys)(void)
 {
 	const float *frame = (const float *)ADDR(g_frameTime), *speed = (const float *)ADDR(k_3f);
 	if (g_watchChatOpen) {

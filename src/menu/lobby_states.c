@@ -446,7 +446,7 @@ u32 (menuState400_frame)(void)
 		menu_drawBackground();
 		if (g_quitAsked == 1 && g_arenaLobbyMode == 2)
 			return menu_drawDimOverlay();   /* menu_drawDimOverlay */
-		return lobbyTop_drawTitle();       /* lobbyTop_drawTitle */
+		return lobbyTop_drawMenu();       /* lobbyTop_drawMenu */
 	case 0:
 		menu_drawBackground();
 		arena_camera();              /* arena_camera: the lobby's camera */
@@ -466,7 +466,7 @@ u32 (menuState400_frame)(void)
 /* 0x4076c0: the lobby's clicks: the top (lobby_topPageClicks), the player (lobby_playerScreenClicks), the arena list (its close button
    while closing, the quit dialog while open, else connecting), creating an arena (the list's dialog, the map list,
    else the quit dialog if open, then the screen's clicks) */
-u32 (lobby_onStateChange)(void)
+u32 (lobby_clicks)(void)
 {
 	u32 screen = (*(u32 *)&g_lobbySubState);
 	switch (screen) {
@@ -1002,7 +1002,7 @@ u32 (arena_loadAndQuit)(void)
 	g_arenaTimeLimit = (*(u8 *)&g_cmdTimeLimit);
 	menuState400_enter();
 	lobby_setSubState1();
-	u32 r = lobby_checkReservedName();   /* lobby_checkReservedName */
+	u32 r = lobby_hostArena();   /* lobby_hostArena */
 	g_lobbyReply = 0x68;
 	return r;
 }
@@ -1144,7 +1144,7 @@ u32 (lobbyTop_connect)(void)
 	if (input_justPressed(g_dikT) && !g_arenaGameSetUp) {
 		sound_playMenu(0);
 		u32 r = lobby_checkReservedName2();
-		return r ? r : lobby_checkReservedName();   /* lobby_checkReservedName */
+		return r ? r : lobby_hostArena();   /* lobby_hostArena */
 	}
 	u32 r = 0;
 	static const u32 close[2] = { ADDR(g_dikC), ADDR(g_dikEscape_2) };
@@ -1239,7 +1239,7 @@ u32 (arena_createClick)(void)
 			return 9;
 		sound_playMenu(0);
 		r = lobby_checkReservedName2();
-		return r ? r : lobby_checkReservedName();   /* lobby_checkReservedName */
+		return r ? r : lobby_hostArena();   /* lobby_hostArena */
 	case 11:
 		arena_leaveSession();
 		g_arenaLobbyMode = 0;
@@ -1559,7 +1559,7 @@ void (lobby_roomNameCheck)(void)
 
 /* 0x4057a0: the arena hosted through DirectPlay (a slot opened, kind 0): the music stopped first, a special room's
    map, the arena hosted and its settings taken whatever the answer. The callers ignore the eax it leaves */
-void (lobby_checkReservedName)(void)
+void (lobby_hostArena)(void)
 {
 	g_arenaLobbyState = 2;
 	g_quitAsked = 1;

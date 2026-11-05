@@ -210,7 +210,7 @@ void (menuState800_enterGameRoom)(void)
    it is shown, else the current screen's (0x76d3e8): 200 the title, 210 profiles, 300 the main menu, 400 the lobby,
    500 missions, 600 setup, 700 the ARM CENTER, 800 the game room, 900 skirmish, 9999 in a match. Returns what the
    handler leaves in eax (or the original's leftover of its compares) */
-u32 (menu_onStateChange)(void)
+u32 (menu_frameInput)(void)
 {
 	input_updateMenuCursor();
 	if (g_keysBlocked)
@@ -222,8 +222,8 @@ u32 (menu_onStateChange)(void)
 	case 200: return menu_clickStartFade();
 	case 210: return profile_processInput();   /* profile_processInput */
 	case 300: return mainmenu_startNetGame();
-	case 400: return lobby_onStateChange();   /* lobby_onStateChange */
-	case 500: return mission_unlockCheat();
+	case 400: return lobby_clicks();   /* lobby_clicks */
+	case 500: return missionSelect_draw();
 	case 600: return setup_drawTab();
 	case 700: return armc_onStateEnter();   /* armc_onStateEnter */
 	case 800: return room_processKeys();   /* room_processKeys */
@@ -321,7 +321,7 @@ int (menuState500_enter)(void)
 	return g_progress;
 }
 
-/* 0x44b420: the pilot screen (state 210): its panels laid out, the profiles' header read back (profile_create) with
+/* 0x44b420: the pilot screen (state 210): its panels laid out, the profiles' header read back (profile_readHeader) with
    the current one selected and scrolled into the 13 visible rows, the new-pilot dialog up when there are none, the
    message box and the screen's rectangles (profilePage_layout, 44b030 .. 44b1a0), its colours, then the list shown
    (profile_resetPreview). Returns that call's eax */
@@ -341,7 +341,7 @@ u32 (menuState210_enter)(void)
 	static const u32 rects[7] = { FN_ADDR(profilePage_layout, 0x44af30), FN_ADDR(newNameDialog_layout, 0x44b030), FN_ADDR(profileDialogBox_layout, 0x44b080), FN_ADDR(deleteDialog_layout, 0x44b0b0), FN_ADDR(secondDialog_layout, 0x44b100), FN_ADDR(profileList_layout, 0x44b150), FN_ADDR(pilotSelect_layout, 0x44b1a0) };
 	STORE_ALL(layout);
 	CLEAR_ALL(cleared);
-	profile_create();   /* profile_create: the header read back */
+	profile_readHeader();   /* profile_readHeader: the header read back */
 	int current = g_currentProfile;
 	g_pilotChosen = current;
 	g_profileListRow = current;

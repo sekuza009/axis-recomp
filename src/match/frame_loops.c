@@ -36,7 +36,7 @@ void THISCALL (stage_updateObjects)(void *s, int dt)
 		return;
 	for (int i = 0; i < ST->objectCount; i++)
 		if (ST->objects[i].active == 1)
-			actor_render(s, i, dt);
+			mapObject_frame(s, i, dt);
 }
 
 /* 0x479950 (thiscall on the scene): an effect started in the next free slot (+0x20f2da4; at most 999): a slot added
@@ -201,7 +201,7 @@ void THISCALL (profile_addMatchScores)(u8 *s)
 /* 0x48ec20 (thiscall on the scene): the effects' shapes looked up in the shape cache (+0x19e188c): three sets of eight
    numbered ones (+0x20f2dac, +0x20f2dcc, +0x20f2dec; named by 0x4c8170, 0x4c815c, 0x4c8144) and eight single ones
    (+0x20f2e74 ..); +0x20f2f3c cleared first. Its caller ignores the eax it leaves */
-void THISCALL (effect_initTextures)(u8 *s)
+void THISCALL (effect_initShapes)(u8 *s)
 {
 	static const u32 sets[3] = { STR(0x4c8170, "Effect\\PlasmaThrust-%d"), STR(0x4c815c, "Effect\\IonThrust-%d"), STR(0x4c8144, "Effect\\GravityThrust-%d") };
 	static const u32 singles[8] = { STR(0x4c8130, "Effect\\Shell-Fire"), STR(0x4c811c, "Effect\\Shell-Bullet"), STR(0x4c8108, "Effect\\Rail-Fire"), STR(0x4c80f4, "Effect\\Blade-Fire"), STR(0x4c80e0, "Effect\\Rail-Bullet"), STR(0x4c80c8, "Effect\\Lightning-Bullet"), STR(0x4c80b0, "Effect\\Missile-Bullet"), STR(0x4c8098, "Effect\\Homing-Bullet") };

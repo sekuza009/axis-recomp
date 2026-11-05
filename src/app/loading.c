@@ -24,7 +24,7 @@ static void fade_frame(int in)
 /* 0x469730 (mode, unused, text): the loading screen. -1: the progress reset, the text set, the backdrop looked up,
    then a fade from black over one second of game time; -2: the progress advanced by the time since the last call,
    the text set, then a fade to black; any other mode: the progress advanced (the text set when 1) and one frame */
-void (loading_drawCylinder)(int mode, int unused, const char *text)
+void (loading_drawScreen)(int mode, int unused, const char *text)
 {
 	(void)unused;
 	long double dt = timer_getGameTime(g_loadTimer);
@@ -387,7 +387,7 @@ u32 THISCALL (game_processLoadingMode)(u8 *g)
 			fread_scrambled((void *)ADDR(g_timeLimit), 4, 1, GS->replayFile);
 			game_setGameTypeFlags((Stage *)STAGE(g), g_chosenGameMode);
 		}
-		(*(u32 *)&g_logHook) = FN_ADDR(loading_drawCylinder, 0x469730);
+		(*(u32 *)&g_logHook) = FN_ADDR(loading_drawScreen, 0x469730);
 		log_message((int)STAGE(g), -1, 0, (const char *)STR(0x4c521c, ".start loading process"));
 		scene_reset(STAGE(g));
 		mode = GS->sessionMode;

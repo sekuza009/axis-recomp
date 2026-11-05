@@ -7,7 +7,7 @@
 #define FIELD(type, obj, offset) GAME_VAR(type, (u8 *)RELOC(obj) + (offset))
 
 /* 0x48b460: the stage's command count and that many 0x30-byte commands */
-u32 THISCALL (map_readMissionRecords)(u8 *self, void *f)
+u32 THISCALL (map_readCommands)(u8 *self, void *f)
 {
 	Stage *st = (Stage *)self;
 	fread_scrambled(&st->commandCount, 4, 1, f);
@@ -412,7 +412,7 @@ static u32 profiles_write(void *f)
 
 /* 0x445f70: the file written with `count` profiles and the three header words cleared. Returns fclose's eax (0
    without the file) */
-u32 (profile_loadList)(int count)
+u32 (profile_writeCleared)(int count)
 {
 	void *f = profiles_create();
 	if (!f)
@@ -426,7 +426,7 @@ u32 (profile_loadList)(int count)
 
 /* 0x447320: the file written as the profiles stand, the name 0x9f8fe8 being the current profile's. Returns
    fclose's eax (0 without the file) */
-u32 (profile_delete)(void)
+u32 (profile_writeFile)(void)
 {
 	void *f = profiles_create();
 	if (!f)
@@ -446,7 +446,7 @@ static void *mis_open(void)
 	return crt_fopen(path, (const char *)STR(0x4ad170, "rb"));
 }
 
-/* 0x4435f0: the mission list read from axis.mis: the list cleared first (skirmish_clearPlayerRows), four header words (the
+/* 0x4435f0: the mission list read from axis.mis: the list cleared first (missions_clear), four header words (the
    count 0x9ef2c0, then 0x9ef2c4 .. 0x9ef2cc), each mission's entry (g_missions: all but its block size, field by
    field) and then all their block sizes. Without the file, message
    0xb and its eax; otherwise fclose's */
@@ -455,7 +455,7 @@ u32 (mission_loadAxisMis)(void)
 	void *f = mis_open();
 	if (!f)
 		return menu_showMessage(0xb);
-	skirmish_clearPlayerRows();   /* skirmish_clearPlayerRows */
+	missions_clear();   /* missions_clear */
 	for (int k = 0; k < 4; k++)
 		crt_fread((void *)(ADDR(g_missionCount) + k * 4), 4, 1, f);
 	static const struct { int offset, size; } part[8] = {
@@ -761,7 +761,7 @@ static void campaign_new(void)
 /* 0x446590: a new campaign for the chosen pilot: axisuser.dat written (no file: nothing more), the profile's record
    gathered (mech_storeToProfile), then a new record made and the pilot's file written with it. Returns the last chdir's
    eax */
-int (profile_load)(void)
+int (profile_newCampaign)(void)
 {
 	void *f = profiles_create();
 	if (!f)
@@ -798,7 +798,7 @@ static int campaign_signed(const char *path)
 /* 0x446a10: the chosen pilot made current: axisuser.dat written (no file: nothing more); the pilot's file read
    into 0x9f1718 (its name from the list at +0x80) when it is there and signed, else a new record made and written;
    then the mech read, 0x4dcf34 / 0x9f62e0 cleared, 0x9f62fc = the progress. Returns mech_loadFromProfile's eax */
-u32 (profile_save)(void)
+u32 (profile_makeCurrent)(void)
 {
 	set_current_name();
 	void *f = profiles_create();
@@ -838,7 +838,7 @@ u32 (profile_save)(void)
    the last pilot's name 0x9f8fe8; no file or a wrong magic word: no profiles), the save folder made if it cannot be
    entered ("save " then "save"), and the current profile set to the one with that name, if any. Returns fclose's
    eax (0 without the file) */
-u32 (profile_create)(void)
+u32 (profile_readHeader)(void)
 {
 	char path[0x184];
 	profiles_path(path);
@@ -1176,7 +1176,7 @@ void (cfg_gameTypeNames)(void *f)
 /* 0x42e240: the graphics section read back: the screen size (1280x720 1, 1600x900 2, 1920x1080 3, 2560x1440 4,
    3840x2160 5, 1024x768 6, DESKTOP 7, else 0; 0x83a9c0), 32 bits (0x83a9c4), HIGH (0x83a9c8) and four switches (ON;
    0x83a9cc .. 0x83a9d8); then one more line */
-void (cfg_videoModeNames)(void *f)
+void (cfg_readGraphics)(void *f)
 {
 	static const u32 sizes[7] = { STR(0x4ac858, "1280x720"), STR(0x4ac87c, "1600x900"), STR(0x4ac8a0, "1920x1080"), STR(0x4ac8c4, "2560x1440"), STR(0x4ac8e8, "3840x2160"), STR(0x4ac90c, "1024x768"), STR(0x4ac92c, "DESKTOP") };
 	CfgBuf b;
@@ -1256,7 +1256,7 @@ void (cfg_writeDefaultAxisCfg)(void)
 			cfg_readLines(f);
 			cfg_gameTypeNames(f);
 			cfg_readAudioLines(f);
-			cfg_videoModeNames(f);
+			cfg_readGraphics(f);
 			cfg_parseKeyNames(f);
 			fclose(f);
 			return;
@@ -1287,7 +1287,7 @@ void (cfg_writeDefaultAxisCfg)(void)
 /* 0x4460d0: the pilot profiles found in the save folder ("save"; made when missing: then "axisuser.dat" deleted and
    back up, nothing found): each *.axs file's name (0x9f1ac4, 0x40 apart) and its header (0x104 bytes at 20000,
    unscrambled, into 0x9f61d8); one with the right header (0x4b0fa0) becomes the next profile (0x48 bytes from
-   0x9f6848: its number, its name less ".axs" and its pilot, the header's last word), any other file is deleted. Then back up, profile_create, the list loaded (profile_loadList) and the
+   0x9f6848: its number, its name less ".axs" and its pilot, the header's last word), any other file is deleted. Then back up, profile_readHeader, the list loaded (profile_writeCleared) and the
    profile named 0x9f8fe8 (among as many as there were files) chosen into 0x9f8c58. The original leaves eax to
    callers that ignore it */
 void (profile_scanSaves)(void)
@@ -1302,7 +1302,7 @@ void (profile_scanSaves)(void)
 	int search = crt_findfirst((const char *)STR(0x4b2ac4, "*.axs"), &found);   /* "*.axs" */
 	if (search < 0) {
 		crt_chdir((const char *)STR(0x4b2a80, ".."));
-		profile_loadList(0);
+		profile_writeCleared(0);
 		return;
 	}
 	char (*files)[0x40] = (char (*)[0x40])OBJ(g_saveFileNames);
@@ -1332,8 +1332,8 @@ void (profile_scanSaves)(void)
 		*(int *)profile = valid++;
 	}
 	crt_chdir((const char *)STR(0x4b2a80, ".."));
-	profile_create();
-	profile_loadList(valid);
+	profile_readHeader();
+	profile_writeCleared(valid);
 	for (int i = 0; i < count; i++)
 		if (!strcmp(g_profileList + i * 0x48, g_profileName)) {
 			g_currentProfile = i;

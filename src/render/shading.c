@@ -299,7 +299,7 @@ static void water_point(u8 *scene, u8 *layer, u8 *part, int at, int tex_at, floa
    model's part (+0xdc0cd8) its surface around the camera at its height (+8): rings of four and of eight (the second
    h x 0x4aa500 out) with texture coordinates; otherwise that part has none. Both models then go to the view volume's
    queue (ViewVolume_projectObject). Its callers ignore the eax it leaves */
-void THISCALL (render_processRenderingBy)(u8 *s, void *view, float h)
+void THISCALL (ground_buildDrawLists)(u8 *s, void *view, float h)
 {
 	Stage *st = (Stage *)s;
 	const float *range = &st->cullMargin, *cam = st->cameraPos;

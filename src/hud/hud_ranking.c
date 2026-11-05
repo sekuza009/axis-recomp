@@ -20,12 +20,12 @@ static void ranking_row(Scene *scene, int p, int *y)
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 	if (scene->ladderGame == 1) {
 		x = 0x58;
-		hud_drawNameIcon(scene, player->emblem, x, *y);
+		hud_drawEmblem(scene, player->emblem, x, *y);
 	}
 	int flagOwner = scene->sessionMode ? p : player->player;
 	if (scene->playerRecords[flagOwner].flagShown == 1) {
 		x -= 0x18;
-		hud_drawLeaderIcon(scene, flagOwner, x, *y);
+		hud_drawFlag(scene, flagOwner, x, *y);
 	}
 	sprintf(score, "KILL/DEATH %3d/%3d", player->kills, player->deaths);
 	text_drawSized(0xfc, *y, score, 8);

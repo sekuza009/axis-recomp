@@ -33,7 +33,7 @@ void THISCALL (hud_pass)(Scene *scene)
 			scene->players[scene->localPlayer].viewMarked = 1;
 		}
 		sky_draw(STAGE(scene), view_farPlane());
-		render_processRenderingBy(STAGE(scene), &scene->view, view_farPlane());
+		ground_buildDrawLists(STAGE(scene), &scene->view, view_farPlane());
 		stage_drawObjects(STAGE(scene), &scene->view);
 		stage_drawActors(STAGE(scene), &scene->view, 0);
 		stage_drawBullets(STAGE(scene), &scene->view);

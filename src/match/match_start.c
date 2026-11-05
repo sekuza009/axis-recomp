@@ -202,7 +202,7 @@ static void later_round(Scene *s)
 
 /* 0x49df10 (thiscall on the scene): the round started, the first (matchDrawing clear) or a later one. Its caller
    ignores the eax it leaves */
-void THISCALL (game_processGameModeInit)(Scene *s)
+void THISCALL (match_startRound)(Scene *s)
 {
 	if (s->matchDrawing)
 		later_round(s);
@@ -409,7 +409,7 @@ void THISCALL (item_initTextures)(u8 *s, u32 a1, u32 a2, const char *sky, u32 a4
 	shape_initBy((u8 *)&st->partShapes, dir, 0x258, 2, 0x2c6280, st->partShapeData, sizeof st->partShapeData);
 	skelSet_setup((u8 *)&st->partSkeletons, skel_dir, 0x64, 2, 0x15ae0, st->partSkeletonData, sizeof st->partSkeletonData);
 	debug_traceStripped((Scene *)s);
-	effect_initTextures(s);
+	effect_initShapes(s);
 	static const u32 names[3] = { STR(0x4c73f4, "Texture\\Item_damagemap_ani0"), STR(0x4c73d8, "Texture\\Item_booster_ani0"), STR(0x4c73bc, "Texture\\Item_shield_ani0") };
 	for (int k = 0; k < 3; k++) {
 		sprintf(name, (const char *)RELOC(names[k]));

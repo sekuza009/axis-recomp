@@ -13,7 +13,7 @@ static float as_float(u32 bits) { float f; memcpy(&f, &bits, 4); return f; }
 /* 0x4666d0: a shape's bounds: each part's box (min +0x68, max +0x74) from its vertices, the box of all of them (which
    always holds the origin), its centre (+0x20) and the radius around it (+0x2c) holding every vertex. Bounds are
    copied as raw bits. With no parts, centre and radius are 0 */
-void THISCALL (shape_relocate)(u8 *shape)
+void THISCALL (shape_computeBounds)(u8 *shape)
 {
 	Model *md = (Model *)shape;
 	if (!md->partCount) {

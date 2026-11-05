@@ -14,7 +14,7 @@ void (armc_partsPageKeys)(void)
 	if (input_justPressed(g_dikW)) {
 		if (g_armcMode != 2) {
 			sound_playMenu(2);
-			armc_drawPartScreen();
+			armc_openWeaponsPage();
 		}
 		return;
 	}
@@ -192,7 +192,7 @@ void (armc_colourPageKeys)(void)
 	if (input_justPressed(g_dikW)) {
 		if (g_armcMode != 2) {
 			sound_playMenu(2);
-			armc_drawPartScreen();
+			armc_openWeaponsPage();
 		}
 		return;
 	}

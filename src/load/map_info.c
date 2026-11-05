@@ -91,7 +91,7 @@ void THISCALL (map_loadMissionInfoFrom)(u8 *scene, const char *name)
 	}
 	fread_scrambled(&skip, 4, 1, f);
 	log_message((int)scene, 0, 0, (const char *)STR(0x4c7ddc, "load command"));
-	map_readMissionRecords(scene, f);
+	map_readCommands(scene, f);
 	log_message((int)scene, 0, 0, (const char *)STR(0x4c7dcc, "load way point"));
 	map_loadWayPointInfoFrom(scene, f);
 	log_message((int)scene, 0, 0, (const char *)STR(0x4c7dbc, "load trigger"));

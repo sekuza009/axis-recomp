@@ -762,7 +762,7 @@ u32 (armc_mainPageClicks)(void)
 		if (g_armcMode == 2)
 			return 2;
 		sound_playMenu(2);
-		return armc_drawPartScreen();
+		return armc_openWeaponsPage();
 	case 2:
 		if (g_armcMode == 3)
 			return 1;
@@ -803,7 +803,7 @@ u32 (armc_colourScreenInput)(void)
 	if (!g_mouseClick)
 		return 0;
 	u32 button = armcColour_hitTest(g_mouseX, g_mouseY);   /* armcColour_hitTest */
-	static const u32 page[3] = { FN_ADDR(armc_showPartsPage, 0x40f200), FN_ADDR(armc_drawPartScreen, 0x40f220), FN_ADDR(armc_showColourPage, 0x40f320) };
+	static const u32 page[3] = { FN_ADDR(armc_showPartsPage, 0x40f200), FN_ADDR(armc_openWeaponsPage, 0x40f220), FN_ADDR(armc_showColourPage, 0x40f320) };
 	static const u32 control[6] = { FN_ADDR(armc_dragPrimaryHue, 0x40f5d0), FN_ADDR(armc_dragPrimaryChroma, 0x40f670), FN_ADDR(armc_dragPrimaryValue, 0x40f6b0), FN_ADDR(armc_dragSecondaryHue, 0x40f6f0), FN_ADDR(armc_dragSecondaryChroma, 0x40f790), FN_ADDR(armc_dragSecondaryValue, 0x40f7e0) };
 	u32 r;
 	switch (button) {

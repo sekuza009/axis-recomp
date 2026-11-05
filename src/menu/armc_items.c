@@ -106,7 +106,7 @@ void (armc_enterScreen)(void)
 
 /* 0x40f220: the weapons page: every slot's item handed to the parts list, the cursor on slot 0's weapon (its first
    place in the list, else 0), all seven snapshots of the mech taken, then slot 0 picked and the camera moved */
-void (armc_drawPartScreen)(void)
+void (armc_openWeaponsPage)(void)
 {
 	g_armcMode = 2;
 	g_armcSlot = 0;

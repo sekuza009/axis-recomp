@@ -39,7 +39,7 @@ void THISCALL (stage_drawActors)(Stage *stage, void *view, int pass)
 {
 	for (int i = 0; i < stage->actorCount; i++)
 		if (stage->actors[i].active == 1)
-			actor_updateAllParts(stage, i, view, pass);
+			actor_drawIntoView(stage, i, view, pass);
 }
 
 /* 0x479af0 (stage_drawProjectiles): every active projectile */
@@ -105,7 +105,7 @@ static void object_glow(u8 *s, u8 *obj, float dt)
    spawns a flare (particle kind 4). A proximity object (flag 8) starts its animation forwards when an actor in play
    comes within its radius (+0x10) or backwards when they all leave; a timed one (flag 0x10) after +0x10 seconds.
    Its caller ignores the eax it leaves */
-void THISCALL (actor_render)(u8 *s, int i, float dt)
+void THISCALL (mapObject_frame)(u8 *s, int i, float dt)
 {
 	Stage *st = (Stage *)s;
 	u8 *obj = (u8 *)&ST->objects[i];
@@ -512,7 +512,7 @@ static void smoke(u8 *s, u8 *p, void *vv, int i, float v0, float v1)
    +0xc, position +0x10, matrix +0x2c, timer +0x6c of +0x70, colour +0x78 with its alpha +0x7b, radius +0x80).
    Below type 50 it must lie in the box of +0xa08 about the camera (+0x20f3970). By type: billboards from the effect
    textures (+0x9ccfd4..) by the fraction t of the timer gone, the effect shapes (+0x20f2e74..; the owner's part
-   shapes for debris), a trail (types 40-49: triangles through ViewVolume_transformObject) or a quad (type 50) */
+   shapes for debris), a trail (types 40-49: triangles through ViewVolume_addTriangle) or a quad (type 50) */
 void THISCALL (projectile_draw)(u8 *s, int i, void *vv)
 {
 	u8 *p = (u8 *)&ST->projectiles[i];
@@ -700,7 +700,7 @@ void THISCALL (projectile_draw)(u8 *s, int i, void *vv)
 		int tex = TEX(8);
 		if (PR->drawAge > 1.0f)
 			ALPHA(PR->trailColours[0]) = ALPHA(PR->trailColours[1]) = ALPHA(PR->trailColours[2]) = clamp255(ftol(fmul_m(fsub_m(fld_m(&k_2f), &PR->drawAge), &k_256f)));
-		ViewVolume_transformObject(vv, tex, (const u32 *)PR->trailUv, PR->trailColours, &PR->trailPoints[0][0],
+		ViewVolume_addTriangle(vv, tex, (const u32 *)PR->trailUv, PR->trailColours, &PR->trailPoints[0][0],
 		                           (*(const float * *)&PR->matrixFrom), 1, 1);
 		return;
 	}

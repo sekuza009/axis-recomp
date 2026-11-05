@@ -103,7 +103,7 @@ int (net_parseAddress)(void)
 }
 
 /* 0x454390: the address as "a.b.c.d" (bytes high to low) into 0xa0b460; returns its length + 1 */
-int (dplay_formatSessionEntry)(u32 address)
+int (net_formatAddress)(u32 address)
 {
 	char text[16], part[4];
 	itoa((int)(address >> 24), part, 10);
@@ -166,7 +166,7 @@ int STDCALL (dplay_enumSessionsCallback)(const u8 *desc, void *timeout, u32 flag
 	d.fragLimit = (u8)(dd->user3 >> 8);
 	d.timeLimit = (u8)dd->user3;
 	if (g_connectionKind == 0) {
-		dplay_formatSessionEntry(dd->user4);   /* dplay_formatSessionEntry */
+		net_formatAddress(dd->user4);   /* net_formatAddress */
 		crt_strncpy(d.address, g_dottedAddress, 0x10);
 	}
 	net_addSession(d);

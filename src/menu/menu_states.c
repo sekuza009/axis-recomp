@@ -258,7 +258,7 @@ void (mission_chosen)(int mission)
 }
 
 /* 0x447b10: the mission select's draw pass: the briefing or the list */
-void (mission_unlockCheat)(void)
+void (missionSelect_draw)(void)
 {
 	if (g_dialogOpen != 0 || g_missionBusy != 0)
 		return;

@@ -772,7 +772,7 @@ void (room_drawMenu)(void)
 /* 0x408680: the arena lobby's top menu: the panel under the pointer (four, 0x5b1cf8; none while 0x4db85c), the
    arena tunnel (as deep as 0x4dba68) with that panel lit, and in mode 2 (0x4dbb3c) its caption (MSG(86, "SETUP PLAYER FOR THE MULTIPLAY|Hotkey...")) unless
    0x680370. The original leaves eax to callers that ignore it */
-void (lobbyTop_drawTitle)(void)
+void (lobbyTop_drawMenu)(void)
 {
 	Highlight h = { hovered_panel(OBJ(g_lobbyTopOutlines), 4, g_lobbyPanelsOff), white, 1, 0, 0 };
 	Tunnel t = { g_arenaTunnelDepth, OBJ(g_arenaMenuTextures) + 12, 0, 1, 1, 0, FOUR_WALLS };
