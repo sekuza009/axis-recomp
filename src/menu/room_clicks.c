@@ -114,7 +114,7 @@ int (skirmish_saveSettings)(void)
 	if (r)
 		return r;
 	if (g_keyEnter)
-		((int)skirmishSettings_leave());
+		skirmishSettings_leave();
 	if (!g_mouseClick)
 		return 0;
 	int row = skirmishSettings_hitTest(g_mouseX, g_mouseY);   /* skirmishSettings_hitTest */

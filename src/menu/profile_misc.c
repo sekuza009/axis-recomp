@@ -440,7 +440,7 @@ u32 (profile_deleteFiles)(void)
 		strcpy(path, (const char *)(records + current * 0x48 + 4));
 		strcat(path, (const char *)STR(0x4b2afc, ".axs"));
 		if (!((int)DeleteFileA(path)))   /* DeleteFileA */
-			((int)DeleteFileA(path));
+			DeleteFileA(path);
 		crt_chdir((const char *)STR(0x4b2a80, ".."));   /* chdir("..") */
 	}
 	int count = g_profileCount - 1, last = current;

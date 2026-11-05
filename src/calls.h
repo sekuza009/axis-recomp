@@ -252,7 +252,6 @@
 #define net_sendPlayerLevels(a0) GAME_THISFN(net_sendPlayerLevels, 0x48ead0, void, void *)(a0)
 #define crt_sprintf(out, format) GAME_CDECL(0x49e9dd, int, char *, const char *)(out, format)
 #define crt_exit(a0) GAME_CDECL(0x49edac, void, int)(a0)
-#define crt_fprintf(a0, a1) GAME_CDECL(0x49f135, u32, void *, const char *)(a0, a1)
 #define crt_fputs(a0, a1) GAME_CDECL(0x49f167, u32, const char *, void *)(a0, a1)
 #define crt_chdir(a0) GAME_CDECL(0x49f8a6, int, const char *)(a0)
 #define crt_mkdir(a0) GAME_CDECL(0x49f94a, int, const char *)(a0)

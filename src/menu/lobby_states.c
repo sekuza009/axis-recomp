@@ -962,7 +962,7 @@ int (lobby_openConnection)(void)
 	g_gameListTop = 0;
 	g_lobbyListRow = 0;
 	*g_netLobbyMessage = 0x180001;   /* the message to send */
-	((int)net_send(0xd, 100));   /* net_send */
+	net_send(0xd, 100);   /* net_send */
 	g_arenaConfirming = 0;
 	g_listRefreshPeriod = 30;
 	return 1;

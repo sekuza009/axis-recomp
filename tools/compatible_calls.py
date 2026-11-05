@@ -84,7 +84,8 @@ for path in files:
 			continue
 		if not all(compatible_arg(c, a) for c, a in zip(cargs, margs_)):
 			continue
-		if ret == mret or ret == 'void':
+		statement = re.search(r'(^|[;{}])\s*$', t[:m.start()]) and t[aend + 1:aend + 2] == ';'   # (its value unused)
+		if ret == mret or ret == 'void' or statement:
 			new = '%s(%s)' % (name, args)
 		elif ret in INT4 and mret in INT4:
 			new = '((%s)%s(%s))' % (ret, name, args)

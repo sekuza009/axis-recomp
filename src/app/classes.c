@@ -258,7 +258,7 @@ u32 THISCALL (ResourceSet_dtor)(u8 *self)
 	static const u32 shapes[5] = { offsetof(PlayerRecord, boosterShapes), offsetof(PlayerRecord, legShapes), offsetof(PlayerRecord, armShapes), offsetof(PlayerRecord, chestShapes), offsetof(PlayerRecord, headShapes) };
 	u32 r = 0;
 	for (int k = 0; k < 5; k++)
-		((u32)SkeletonManager_dtor(self + skeletons[k]));   /* SkeletonManager_dtor */
+		SkeletonManager_dtor(self + skeletons[k]);   /* SkeletonManager_dtor */
 	for (int k = 0; k < 5; k++)
 		r = ((u32)ShapeManager_dtor(self + shapes[k]));  /* ShapeManager_dtor */
 	return r;
