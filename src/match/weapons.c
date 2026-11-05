@@ -89,20 +89,19 @@ void THISCALL (actor_takeDamage)(u8 *scene, int attacker, int target, int mode, 
 	Stage *st = (Stage *)scene;
 #define ACTOR(i) ((u8 *)&st->actors[i])
 	static const u8 group[10] = { 0, 0, 1, 1, 1, 2, 2, 1, 3, 3 };   /* (the stat by weapon kind) */
-	u8 *t = ACTOR(target), *a = ACTOR(attacker);
-	Player *ac = (Player *)t;
+	Player *ac = (Player *)ACTOR(target), *atk = (Player *)ACTOR(attacker);
 	if (ac->state != 1 || ac->invulnerable == 1)
 		return;
-	int level = ((Player *)a)->active == 1 ? ((Player *)a)->level : -1;
+	int level = atk->active == 1 ? atk->level : -1;
 	if ((unsigned)kind <= 9) {
 		int percent = g_profileRecords[level].stats[group[kind]] + 100;
 		damage = ftol(fadd_m(fmul_m((long double)percent * damage, (const float *)ADDR(k_0_01f)), (const float *)ADDR(k_0_5f)));
 	}
-	if (((u32)((Player *)a)->timerFlags) & 0x100)
+	if (((u32)atk->timerFlags) & 0x100)
 		damage *= 2;
 	if (((u32)ac->timerFlags) & 0x800)
 		damage /= 2;
-	if (ac->team != ((Player *)a)->team || target == attacker) {
+	if (ac->team != atk->team || target == attacker) {
 		if (mode == 0) {
 			if ((ac->shield -= damage) < 0) {
 				ac->armor += ac->shield;

@@ -707,16 +707,16 @@ void THISCALL (skel_loadAseFrom)(u8 *sk, void *f, u8 *mem, int memSize)
 			while (crt_fgets(line, 0x100, f)) {
 				t = crt_strtok(line, (const char *)STR(0x4c535c, "* \t\n"));
 				if (!strcmp(t, (const char *)STR(0x4c544c, "CONTROL_TCB_ROT_KEY"))) {
-					u8 *k = b->rotKeys + b->rotKeyCount * 0x28;
-					((RotKey *)k)->frame = ase_time(ticks, ms);
-					((RotKey *)k)->rotation[1] = ase_float(SPACE, 0);
-					((RotKey *)k)->rotation[3] = ase_float(SPACE, 1);
-					((RotKey *)k)->rotation[2] = ase_float(SPACE, 0);
-					((RotKey *)k)->rotation[0] = ase_float(SPACE, 1);
+					RotKey *rk = (RotKey *)(b->rotKeys + b->rotKeyCount * 0x28);
+					rk->frame = ase_time(ticks, ms);
+					rk->rotation[1] = ase_float(SPACE, 0);
+					rk->rotation[3] = ase_float(SPACE, 1);
+					rk->rotation[2] = ase_float(SPACE, 0);
+					rk->rotation[0] = ase_float(SPACE, 1);
 					if (b->rotKeyCount > 0) {
 						float r[4];
-						axisAngle_combine(r, (const float *)(RELOC(k) + 8), (const float *)(RELOC(k) + 8 - 0x28));
-						memcpy(k + 8, r, 16);
+						axisAngle_combine(r, (const float *)((u8 *)RELOC(rk) + 8), (const float *)((u8 *)RELOC(rk) + 8 - 0x28));
+						memcpy((u8 *)rk + 8, r, 16);
 					}
 					b->rotKeyCount++;
 				} else if (t && t[0] == '}')
@@ -918,25 +918,26 @@ void THISCALL (model_loadObjFormatFrom)(u8 *sh, void *f, u8 *mem, int memSize)
 	}
 	int corner = 0;
 	for (int k = 0; k < md->partCount; k++) {
-		u8 *pt = md->parts + k * 0x80, *data = md->block;
-		int n = ((ShapePart *)pt)->vertexCount;
-		((ShapePart *)pt)->vertices = data + at;
+		ShapePart *pt = (ShapePart *)(md->parts + k * 0x80);
+		u8 *data = md->block;
+		int n = pt->vertexCount;
+		pt->vertices = data + at;
 		at += n * 12;
-		((ShapePart *)pt)->normals = data + at;
+		pt->normals = data + at;
 		at += n * 12;
-		((ShapePart *)pt)->colours = data + at;
+		pt->colours = data + at;
 		at += n * 4;
-		((ShapePart *)pt)->colourBase = corner;
+		pt->colourBase = corner;
 		corner += n;
-		(*(u8 * *)&((ShapePart *)pt)->texCoords) = data + at;
+		(*(u8 * *)&pt->texCoords) = data + at;
 		at += n * 8;
-		((ShapePart *)pt)->primCount = 1;
-		u32 *prim = (*(u32 * *)&((ShapePart *)pt)->prims) = (u32 *)(data + at);
+		pt->primCount = 1;
+		u32 *prim = (*(u32 * *)&pt->prims) = (u32 *)(data + at);
 		at += 0xc;
 		prim[0] = 4;
-		prim[1] = ((u32)((ShapePart *)pt)->vertexCount);
+		prim[1] = ((u32)pt->vertexCount);
 		prim[2] = (u32)(md->block + at);
-		at += ((ShapePart *)pt)->vertexCount * 4;
+		at += pt->vertexCount * 4;
 	}
 	ShapePart *part = NULL;
 	int flip = 0, poff = 0;

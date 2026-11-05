@@ -211,9 +211,9 @@ void THISCALL (tex_upload)(u8 *tm, u32 id, int mode)
 int THISCALL (tex_textureFileExist)(u8 *tm, const char *name)
 {
 	static const u32 formats[3][2] = { { STR(0x4b3fdc, "%s\\%s"), STR(0x4b3fd8, "%s") }, { STR(0x4b3fec, "%s\\%s.BMP"), STR(0x4b3fe4, "%s.BMP") }, { STR(0x4b4000, "%s\\%s.RAW"), STR(0x4b3ff8, "%s.RAW") } };   /* "%s\%s" "%s", .BMP, .RAW */
-	u8 image[0x48];
-	((BmpFile *)image)->vtable = VT(BMPRGBFile, 0x4a96f8);   /* (its vtable) */
-	BITS(((BmpFile *)image)->file) = 0;          /* (no file yet) */
+	BmpFile image;
+	image.vtable = VT(BMPRGBFile, 0x4a96f8);   /* (its vtable) */
+	BITS(image.file) = 0;          /* (no file yet) */
 	char base[0x100], path[0x100];
 	strcpy(base, name);
 	crt_strtok(base, (const char *)STR(0x4b12f4, "*"));   /* "*" */
@@ -230,9 +230,9 @@ int THISCALL (tex_textureFileExist)(u8 *tm, const char *name)
 			ok = tex_findByName(tm, path) >= 0;
 		else if (format == 1) {
 			if (file_existsf(path)) {
-				image_initBy(image, path);
-				int w = ((BmpFile *)image)->width, h = ((BmpFile *)image)->height;
-				BMPRGBFile_close(image);
+				image_initBy((u8 *)&image, path);
+				int w = image.width, h = image.height;
+				BMPRGBFile_close((u8 *)&image);
 				ok = w == TM->width && h == TM->height;
 			}
 		} else {
@@ -247,7 +247,7 @@ int THISCALL (tex_textureFileExist)(u8 *tm, const char *name)
 			}
 		}
 	}
-	BMPRGBFile_dtor(image);   /* (by use its destructor) */
+	BMPRGBFile_dtor((u8 *)&image);   /* (by use its destructor) */
 	return ok;
 }
 

@@ -284,9 +284,9 @@ u32 THISCALL (Stage_dtor)(u8 *self)
 	ShapeManager_dtor((u8 *)&stage->objectShapes);
 	Model_dtor((u8 *)&stage->layerBoxModel);
 	Model_dtor((u8 *)&stage->layerModel);
-	Light_dtor((u8 *)&((Stage *)self)->actorLights);
-	Light_dtor((u8 *)&((Stage *)self)->dynamicLights);
-	Light_dtor((u8 *)&((Stage *)self)->mapLights);
+	Light_dtor((u8 *)&stage->actorLights);
+	Light_dtor((u8 *)&stage->dynamicLights);
+	Light_dtor((u8 *)&stage->mapLights);
 	return ((u32)CollisionVolume_dtor((u8 *)&stage->space));
 }
 
@@ -337,23 +337,23 @@ void *THISCALL (image_tryOpen)(u8 *image, const char *path)
 int THISCALL (playerRecord_loadFlag)(Stage *scene, int p)
 {
 	PlayerRecord *record = &scene->playerRecords[p];
-	u8 image[0x48];
-	GAME_VAR(u32, image) = VT(BMPRGBFile, 0x4a96f8);   /* (its vtable) */
-	BITS(((BmpFile *)image)->file) = 0;      /* (no file yet) */
+	BmpFile image;
+	image.vtable = VT(BMPRGBFile, 0x4a96f8);   /* (its vtable) */
+	BITS(image.file) = 0;      /* (no file yet) */
 	char path[0x100];
 	sprintf(path, (const char *)STR(0x4c74e8, "Save\\%s.BMP"), ((u8 *)record) + 4);
 	int ok = 0;
-	if (image_tryOpen(image, path)) {
-		if (((BmpFile *)image)->width >= 23 && ((BmpFile *)image)->height >= 15) {
+	if (image_tryOpen((u8 *)&image, path)) {
+		if (image.width >= 23 && image.height >= 15) {
 			u8 *pixel = (u8 *)record->flag;
-			image_copyTo(image, pixel, 24, 16, 4, 0, 0, 0, 0, 24, 16, 0);
+			image_copyTo((u8 *)&image, pixel, 24, 16, 4, 0, 0, 0, 0, 24, 16, 0);
 			for (int k = 0; k < 24 * 16; k++, pixel += 4)
 				pixel[3] = pixel[0] == 0 && pixel[1] == 0 && pixel[2] == 0 ? 0 : 0xff;
 			ok = 1;
 		}
-		BMPRGBFile_close(image);
+		BMPRGBFile_close((u8 *)&image);
 	}
-	BMPRGBFile_dtor(image);   /* (by use its destructor) */
+	BMPRGBFile_dtor((u8 *)&image);   /* (by use its destructor) */
 	return ok;
 }
 
