@@ -2803,11 +2803,11 @@ void ladder_checkAndSendRecord(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void armc_sendSelectionToNet(void);
 /* 0x451e60 net_disconnect: tell the lobby/room that this player leaves, wait a moment, close the sockets;
-   0x451600 net_closeAll(reconnect): close everything and (optionally) resolve the server again */
+   0x451600 net_resetConnection(reconnect): close everything and (optionally) resolve the server again */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 DWORD net_disconnect(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-void net_closeAll(int kind);
+void net_resetConnection(int kind);
 /* batch 59 (lifted/grp7.c): menu frame/overlay drawing (calling the patched projection switch natively), GL window
    and display mode, dat/image file opening, the game timer, the clock check, profile deletion, the character
    settings in the registry and their room users, GL state, texture uploads */
@@ -3365,7 +3365,7 @@ int net_startThread(void);
 /* readable rebuilds in src/ (their own translation unit, see src/axis.h) */
 void net_receiveLobbyReply(void);
 void net_receiveGameServerReply(void);
-/* 0x451b80 net_connect(mode): close everything (net_closeAll), then 100: the lobby socket (0xa055f8), 0x65: the
+/* 0x451b80 net_connect(mode): close everything (net_resetConnection), then 100: the lobby socket (0xa055f8), 0x65: the
    game-server socket (0xa05630): Winsock 2.2, a TCP socket bound to any address, connected to the host 0xa055e4 (a
    dotted address, else resolved by name) at port 0xa05326. 1 connected (+ 0xa0b380 = 200 for the lobby), 2 refused
    (10061), 0 any failure (Winsock cleaned up, net_disconnect); other modes just 1 */
@@ -4352,14 +4352,14 @@ int net_logMessage(DWORD from, const char *text, char **out);
    (byte +4: 0x9f9840 + 0x410 * slot) claimed or updated with up to 0x40 bytes of its data (+5 size, +9 data) */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 DWORD net_handleMessage(const void *message, DWORD size, DWORD from);
-/* 0x450c20 net_sendLocalInfo(sysmsg): DirectPlay system messages: 5 (create player): the host's slot (0x451530),
+/* 0x450c20 net_handleSystemMessage(sysmsg): DirectPlay system messages: 5 (create player): the host's slot (0x451530),
    and when hosting over TCP/IP the room or arena info sent to the newcomer (by 0xa0b380: 200 room, 201 arena; the
    packets 0xa0b310 / 0xa0b314 or 0xa0b328 / 0xa0b32c, net_send); 3 (destroy player): its slot freed (0x451450,
    net_sendMessage with 0x9f9420) and the info sent again */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-void net_sendLocalInfo(const void *msg);
+void net_handleSystemMessage(const void *msg);
 /* 0x450a60 net_receiveAll(): every waiting DirectPlay message: the buffer (a global block of 0x9fd940 bytes) grown when
-   too small, system messages (sender 0) to net_sendLocalInfo, a type 7 of more than 0x49 bytes ends the loop, others
+   too small, system messages (sender 0) to net_handleSystemMessage, a type 7 of more than 0x49 bytes ends the loop, others
    to net_handleMessage; ends at DPERR_NOMESSAGES / DPERR_GENERIC-like 0x887703e8 or any other failure (size 0) */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 DWORD net_receiveAll(void);
@@ -10024,7 +10024,7 @@ static void bestrecord_setup(void)
 ST(ladder_checkAndSendRecord, bestrecord_setup();, (CALL_PLAIN(0x4327f0, 0, 0, 0, 0, 0), 0), (ladder_checkAndSendRecord(), 0))   /* its eax reaches callers that ignore it (tools/eaxuse.py) */
 ST(armc_sendSelectionToNet, netstate_setup(); fill((void *)0x4dc4b8, 0x90); fill((void *)0x4dc760, 20); fill((void *)0x4dcb18, 24);   /* any bits: NaNs too */ G32(0x9dd5d8) = irnd(0, 2) ? irnd(0, 30) : 0x14;   /* 0x14: the selection kept as it is */, (CALL_PLAIN(0x40e930, 0, 0, 0, 0, 0), 0), (armc_sendSelectionToNet(), 0))   /* its callers ignore the eax it leaves (tools/eaxuse.py) */
 ST(net_disconnect, netstate_setup();, CALL_PLAIN(0x451e60, 0, 0, 0, 0, 0), (DWORD)(net_disconnect()))
-ST(net_closeAll, netstate_setup(); g_a[0] = irnd(0, 3) ? 100 + irnd(0, 1) : irnd(0, 2);   /* the lobby (100) or game server (101) */, (CALL_PLAIN(0x451600, 0, g_a[0], 0, 0, 0), 0), (net_closeAll(g_a[0]), 0))   /* its caller ignores the eax it leaves (tools/eaxuse.py) */
+ST(net_resetConnection, netstate_setup(); g_a[0] = irnd(0, 3) ? 100 + irnd(0, 1) : irnd(0, 2);   /* the lobby (100) or game server (101) */, (CALL_PLAIN(0x451600, 0, g_a[0], 0, 0, 0), 0), (net_resetConnection(g_a[0]), 0))   /* its caller ignores the eax it leaves (tools/eaxuse.py) */
 /* batch 59 */
 ST(armc_setup3DView, lookat_setup();, CALL_PLAIN(0x41b710, 0, 0, 0, 0, 0), (armc_setup3DView(), 0))
 ST(menu_drawDimOverlay, GF(0x4deb74) = csu_fr(-50, 120);, CALL_PLAIN(0x40ce70, 0, 0, 0, 0, 0), (DWORD)(menu_drawDimOverlay()))
@@ -14501,7 +14501,7 @@ ST(dplay_send, dpmsg_setup(); if (!irnd(0, 7)) G32(0xa0b404) = 0;,
 ST(net_sendMessage, dpmsg_setup();, CALL_PLAIN(0x451270, 0, BUF + 0x3800, g_a[0], g_a[4], 0), (DWORD)(net_sendMessage((const int *)(DWORD)(BUF + 0x3800), (DWORD)(g_a[0]), (DWORD)(g_a[4]))))
 ST(net_logMessage, dpmsg_setup();, CALL_PLAIN(0x451350, 0, g_a[5], BUF + 0x3900, BUF + 0x3a00, 0), (DWORD)(net_logMessage((DWORD)(g_a[5]), (const char *)(DWORD)(BUF + 0x3900), (char **)(DWORD)(BUF + 0x3a00))))
 ST(net_handleMessage, dpmsg_setup();, CALL_PLAIN(0x451090, 0, BUF + 0x3800, g_a[4], g_a[5], 0), (DWORD)(net_handleMessage(BUF + 0x3800, g_a[4], g_a[5])))
-ST(net_sendLocalInfo, dpmsg_setup();, (CALL_PLAIN(0x450c20, 0, BUF + 0x3800, 0, 0, 0), 0), (net_sendLocalInfo((const void *)(DWORD)(BUF + 0x3800)), 0))   /* its callers ignore the eax it leaves (tools/eaxuse.py) */
+ST(net_handleSystemMessage, dpmsg_setup();, (CALL_PLAIN(0x450c20, 0, BUF + 0x3800, 0, 0, 0), 0), (net_handleSystemMessage((const void *)(DWORD)(BUF + 0x3800)), 0))   /* its callers ignore the eax it leaves (tools/eaxuse.py) */
 ST(net_receiveAll, dpmsg_setup();, CALL_PLAIN(0x450a60, 0, 0, 0, 0, 0), (DWORD)(net_receiveAll()))
 ST(jmp_net_receiveAll, dpmsg_setup();, CALL_PLAIN(0x450bb0, 0, 0, 0, 0, 0), (DWORD)jmp_net_receiveAll())
 /* batch 168 */
@@ -17447,7 +17447,7 @@ static const STest g_stests[] = {
 	/* batch 58 */
 	T(net_send, 0, 400, 0), T(gameList_open, 1, 40, 0), T(room_enterAccountPage, 0, 40, 0), T(account_sendChange, 1, 40, 0),
 	T(newId_register, 0, 40, 0), T(room_leaveGame, 0, 40, 0), T(ladder_sendRecord, 0, 40, 0), T(ladder_checkAndSendRecord, 0, 400, 0),
-	T(armc_sendSelectionToNet, 0, 200, 0), T(net_disconnect, 0, 40, 0), T(net_closeAll, 0, 200, 0),
+	T(armc_sendSelectionToNet, 0, 200, 0), T(net_disconnect, 0, 40, 0), T(net_resetConnection, 0, 200, 0),
 	/* batch 59 */
 	T(armc_setup3DView, 0, 40, 0), T(menu_drawDimOverlay, 0, 40, 0), T(room_drawWhiteFade, 0, 40, 0), T(menu_drawTextCursor, 0, 40, 0),
 	T(menu_drawFrame, 0, 400, 0), T(glWindow_restoreDisplayMode, 1, 40, 0), T(glWindow_setDisplayModeBy, 1, 40, 0), T(glWindow_setupPixelFormat, 1, 40, 0),
@@ -17694,7 +17694,7 @@ static const STest g_stests[] = {
 	T(profileList_mouse, 0, 400, 0), T(profile_newNameDialog, 0, 400, 0), T(profile_processInput, 0, 500, 0),
 	/* batch 167 */
 	T(dplay_receive, 0, 300, 0), T(dplay_send, 0, 300, 0), T(net_sendMessage, 0, 300, 0), T(net_logMessage, 0, 300, 0),
-	T(net_handleMessage, 0, 400, 0), T(net_sendLocalInfo, 0, 400, 0), T(net_receiveAll, 0, 400, 0), T(jmp_net_receiveAll, 0, 100, 0),
+	T(net_handleMessage, 0, 400, 0), T(net_handleSystemMessage, 0, 400, 0), T(net_receiveAll, 0, 400, 0), T(jmp_net_receiveAll, 0, 100, 0),
 	/* batch 168 */
 	T(missionsel_drawSettingsScreen, 0, 300, 0), T(missionsel_frameSettings, 0, 50, 0),
 	/* batch 169 */
@@ -18478,7 +18478,7 @@ static const struct { DWORD addr; void *fn; const char *name; } g_hooks3[] = {
 	{ 0x434820, (void *)newId_register, "newId_register" }, { 0x435a40, (void *)room_leaveGame, "room_leaveGame" },
 	{ 0x44aee0, (void *)ladder_sendRecord, "ladder_sendRecord" }, { 0x4327f0, (void *)ladder_checkAndSendRecord, "ladder_checkAndSendRecord" },
 	{ 0x40e930, (void *)armc_sendSelectionToNet, "armc_sendSelectionToNet" }, { 0x451e60, (void *)net_disconnect, "net_disconnect" },
-	{ 0x451600, (void *)net_closeAll, "net_closeAll" },
+	{ 0x451600, (void *)net_resetConnection, "net_resetConnection" },
 	/* batch 59 */
 	{ 0x41b710, (void *)armc_setup3DView, "armc_setup3DView" }, { 0x40ce70, (void *)menu_drawDimOverlay, "menu_drawDimOverlay" },
 	{ 0x43df00, (void *)room_drawWhiteFade, "room_drawWhiteFade" }, { 0x428890, (void *)menu_drawTextCursor, "menu_drawTextCursor" },
@@ -18782,7 +18782,7 @@ static const struct { DWORD addr; void *fn; const char *name; } g_hooks3[] = {
 	/* batch 167 */
 	{ 0x450bc0, (void *)dplay_receive, "dplay_receive" }, { 0x450bf0, (void *)dplay_send, "dplay_send" },
 	{ 0x451270, (void *)net_sendMessage, "net_sendMessage" }, { 0x451350, (void *)net_logMessage, "net_logMessage" },
-	{ 0x451090, (void *)net_handleMessage, "net_handleMessage" }, { 0x450c20, (void *)net_sendLocalInfo, "net_sendLocalInfo" },
+	{ 0x451090, (void *)net_handleMessage, "net_handleMessage" }, { 0x450c20, (void *)net_handleSystemMessage, "net_handleSystemMessage" },
 	{ 0x450a60, (void *)net_receiveAll, "net_receiveAll" }, { 0x450bb0, (void *)jmp_net_receiveAll, "jmp_net_receiveAll" },
 	/* batch 168 */
 	{ 0x448ac0, (void *)missionsel_drawSettingsScreen, "missionsel_drawSettingsScreen" }, { 0x44aa20, (void *)missionsel_frameSettings, "missionsel_frameSettings" },

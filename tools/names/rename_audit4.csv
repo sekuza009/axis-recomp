@@ -292,3 +292,5 @@ setup_drawOptionsDialog,setup_drawGraphicPage
 setupOptions_hitTest,setupGraphic_hitTest
 setupOptions_layout,setupGraphic_layout
 net_matchOver,net_hostGone
+net_sendLocalInfo,net_handleSystemMessage
+net_closeAll,net_resetConnection

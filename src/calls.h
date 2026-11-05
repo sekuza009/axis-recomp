@@ -201,7 +201,7 @@
 #define profile_drawNewDialog() GAME_FN(profile_drawNewDialog, 0x44de00, u32, void)()
 #define jmp_net_receiveAll() GAME_FN(jmp_net_receiveAll, 0x450bb0, u32, void)()
 #define dplay_receive(from, to, flags, data, size) GAME_FN(dplay_receive, 0x450bc0, u32, u32 *, u32 *, int, void *, u32 *)(from, to, flags, data, size)
-#define net_sendLocalInfo(msg) GAME_FN(net_sendLocalInfo, 0x450c20, void, void *)(msg)
+#define net_handleSystemMessage(msg) GAME_FN(net_handleSystemMessage, 0x450c20, void, void *)(msg)
 #define net_handleMessage(message, size, from) GAME_FN(net_handleMessage, 0x451090, u32, void *, u32, u32)(message, size, from)
 #define net_logMessage(from, text, out) GAME_FN(net_logMessage, 0x451350, int, u32, const void *, char **)(from, text, out)
 #define net_claimLocalSlot() GAME_FN(net_claimLocalSlot, 0x451410, void, void)()

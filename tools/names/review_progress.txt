@@ -90,7 +90,7 @@
 [x] src/net/net_packets.c 129
 [x] src/net/net_servers.c 48
 [x] src/net/net_sessions.c 114
-[ ] src/net/net_tables.c 2218
+[x] src/net/net_tables.c 2218
 [ ] src/render/depth_sort.c 67
 [ ] src/render/factors.c 123
 [ ] src/render/fog.c 19

@@ -1541,7 +1541,7 @@ struct Scene 0x2343b0b                                          # the scene: the
 0x22e717c  4          i32 showExp                               # = Stage.showExp (the same word): 1 in a Ladder game (first_round)
 0x22f0408  4          i32 elapsed                                # the match's time in seconds (= Stage.clockSeconds)
 0x22f040c  4          float clockFraction                       # = Stage.clockFraction (the same word): the part of a second; the clock's colon blinks by it, render_drawObjects scrolls textures by it
-0x22f06a8  4          u32 flagGlTexture                          # GL texture of the flags, used while network (= Stage.emblemTexture (the players' flag atlas))
+0x22f06a8  4          u32 flagGlTexture                          # GL texture of the flags, used in network games (= Stage.flagGlTexture, the players' flag atlas)
 0x22f86ac  4          i32 flagTexture                            # texture id of the flags (4 a row) (= Stage.clanTexture (Stage\<map>\Clan))
 0x22e7180  4          i32 gameMode                               # index into g_gameModeNames (= Stage.gameType)
 0x22e7184  4          i32 teamGame                               # 1: teams

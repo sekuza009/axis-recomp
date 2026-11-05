@@ -1662,7 +1662,7 @@ typedef struct Scene {
 	i32 kingActor;   /* +0x22f0514: = Stage.kingActor (the same word): the king (isKing; -1 none) */
 	i32 teamCommanders[2];   /* +0x22f0518: = Stage.teamCommanders (the same words): each team's commander (isCommander; -1 none) */
 	u8 _pad22f0520[0x188];
-	u32 flagGlTexture;   /* +0x22f06a8: GL texture of the flags, used while network (= Stage.emblemTexture (the players' flag atlas)) */
+	u32 flagGlTexture;   /* +0x22f06a8: GL texture of the flags, used in network games (= Stage.flagGlTexture, the players' flag atlas) */
 	u8 _pad22f06ac[0x8000];
 	i32 flagTexture;   /* +0x22f86ac: texture id of the flags (4 a row) (= Stage.clanTexture (Stage\<map>\Clan)) */
 	u8 _pad22f86b0[0x3528];

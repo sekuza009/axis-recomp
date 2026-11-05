@@ -848,7 +848,7 @@ typedef struct { float r, g, b, a; } Colour;
 #define frontEnd_startUp() GAME_FN(frontEnd_startUp, 0x430bf0, void, void)()
 #define menu_loadTextures() GAME_FN(menu_loadTextures, 0x430ca0, void, void)()
 #define app_quitGame() GAME_FN(app_quitGame, 0x44f850, void, void)()   /* quit (app/app_quit.c) */
-#define net_closeAll(mode) GAME_FN(net_closeAll, 0x451600, void, int)(mode)   /* every socket closed before connecting */
+#define net_resetConnection(mode) GAME_FN(net_resetConnection, 0x451600, void, int)(mode)   /* every socket closed before connecting */
 #define net_send(kind, socket) GAME_FN(net_send, 0x4521c0, u32, int, int)(kind, socket)   /* a packet (0xc room, 0x14 arena...) to the lobby (100) / game server (0x65) */
 #define net_connect(mode) GAME_FN(net_connect, 0x451b80, int, int)(mode)   /* 100 the lobby, 0x65 the game server (net/net_tables.c) */
 #define net_disconnect() GAME_FN(net_disconnect, 0x451e60, u32, void)()   /* leaving the network (net/net_tables.c) */

@@ -309,7 +309,7 @@ static void *alloc_clear(u32 n)
    both sockets closed (a blocking call cancelled, sending shut down; net_freeBuffers after each), the server's address
    taken (its host name, or what net_resolveHost made of it, into 0xa055e4) with its port (0xa05326); then every
    network table cleared and the packet buffers allocated anew, cleared. The caller ignores the eax it leaves */
-void (net_closeAll)(int kind)
+void (net_resetConnection)(int kind)
 {
 	net_clearServers();
 	static const u32 sockets[2] = { ADDR(g_lobbySocket), ADDR(g_gameServerSocket) };
@@ -751,7 +751,7 @@ u32 (net_receiveAll)(void)
 		if (r != 0 || g_netBlockSize < 4)
 			break;
 		if (!from) {
-			net_sendLocalInfo(buf);   /* a system message */
+			net_handleSystemMessage(buf);
 			continue;
 		}
 		if (*(u32 *)buf == 7 && g_netBlockSize > 0x49)
@@ -1084,25 +1084,27 @@ static void arena_info(u8 *dst, u8 first, u8 count)
 	net_send(0x14, 0x65);
 }
 
-/* 0x450c20 (DirectPlay system message): 5, a player created: its slot taken by the host (net_freeSlotsOf, unless
-   0x9fd94c), then the info sent with the count less one; 3, a player gone: a slot freed (net_claimPlayerSlot into
-   0x9f9424, net_sendMessage), the message's count kept and the info sent (an arena's then starts with 1). Only while
+/* 0x450c20 (a DirectPlay system message): 5 (DPSYS_DESTROYPLAYERORGROUP), a player gone: its slots freed
+   (net_freeSlotsOf, unless the host is gone), then the info sent with the count less one; 3
+   (DPSYS_CREATEPLAYERORGROUP), a player joined (the host only): a slot claimed for it (net_claimPlayerSlot into
+   0x9f9424) and sent to it (net_sendMessage), the message's count kept and the info sent (an arena's then starts
+   with 1). Only while
    hosting (0xa0baf8) over TCP/IP (0xa0b418 = 0) with the right socket open (200: the room on the lobby's, 201: the
    arena on the game server's) and nothing pending (0xa0b360 / 0xa0b364). The original leaves eax to callers that
    ignore it */
-void (net_sendLocalInfo)(const u32 *msg)
+void (net_handleSystemMessage)(const u32 *msg)
 {
-	int gone;
+	int joined;
 	if (msg[0] == 5) {
 		if (!g_netHostGone)
 			net_freeSlotsOf(msg[2]);   /* net_freeSlotsOf */
-		gone = 0;
+		joined = 0;
 	} else if (msg[0] == 3) {
 		if (!g_isHost)
 			return;
 		(*(u8 *)&g_netClaimedSlot) = net_claimPlayerSlot();
 		net_sendMessage((void *)ADDR(g_netSlotMessageKind), msg[2], 0);
-		gone = 1;
+		joined = 1;
 	} else
 		return;
 	if (!g_isHost || g_connectionKind)
@@ -1111,11 +1113,11 @@ void (net_sendLocalInfo)(const u32 *msg)
 	case 201:
 		if (g_gameServerPending || !g_gameServerSocket)
 			return;
-		if (gone)
+		if (joined)
 			g_playerCount = msg[3];
 		if (!g_arenaInfoPacket)
 			return;
-		if (gone)
+		if (joined)
 			arena_info(g_arenaInfoPacket, 1, (u8)g_playerCount);
 		else
 			arena_info(g_arenaInfoPacket, (*(const u8 **)&g_arenaPacket)[0], (u8)(g_playerCount - 1));
@@ -1123,11 +1125,11 @@ void (net_sendLocalInfo)(const u32 *msg)
 	case 200:
 		if (g_lobbyPending || !(*(int *)&g_lobbySocket))
 			return;
-		if (gone)
+		if (joined)
 			g_playerCount = msg[3];
 		if (!g_netInfoPacket)
 			return;
-		room_info(g_netInfoPacket, (*(const u8 **)&g_roomPacket)[0], (u8)(g_playerCount - !gone));
+		room_info(g_netInfoPacket, (*(const u8 **)&g_roomPacket)[0], (u8)(g_playerCount - !joined));
 		break;
 	}
 }
@@ -1183,7 +1185,7 @@ static int connect_socket(int *sock, int status)
    server's (0xa05630, status 201); any other mode just 1 */
 int (net_connect)(int mode)
 {
-	net_closeAll(mode);
+	net_resetConnection(mode);
 	g_netConnected = 1;
 	if (mode == 100)
 		return connect_socket((int *)ADDR(g_lobbySocket), 200);
@@ -1595,7 +1597,7 @@ static void THISCALL __attribute__((used)) net_sendMatchEvent_body(u8 *s, u8 *pa
 PACKET_ENTRY(net_sendMatchEvent, 0);
 
 /* 0x48e990 (thiscall on the scene): player p's flag sent in pieces (packet 0xc, p): when it is in the atlas or
-   changed (its record's flagShown, emblemChanged) the position reached (emblemSent, as a short) and the 16 pixels from
+   changed (its record's flagShown, flagChanged) the position reached (flagSent, as a short) and the 16 pixels from
    there (their RGB, 3 bytes each), the position then 16 on; else 0xffff and the position back to 0x180 (all sent).
    Sent by send_packet. Its caller ignores the eax it leaves */
 static void THISCALL __attribute__((used)) net_sendFlagPiece_body(u8 *s, int p, u8 *packet)
@@ -1876,23 +1878,23 @@ static void match_limit(u8 *g, int state, u32 notice)
 	GS->endTime = 10.0f;   /* 10 s */
 }
 
-/* 0x48c830 (thiscall on the game object): a network packet (type 0x40 only) from a player. When recording
+/* 0x48c830 (thiscall on the game object): a network packet (of 0x40 bytes only) from a player. When recording
    (+0x2340d1d) it goes to the replay file first; while the game is starting (+0x233cc20 1) only kind 1. By the kind
    (byte 1): 0 a player's state (position, aim, weapon, lights, the five weapon slots; a player not yet set up is
    asked for); 1 the game state (round, time, map change, the checksums of the part and item tables, scores, items);
    2 a player joining with his mech; 3 the server ending the game; 4 / 5 the frag / time limit; 6 a cheat notice; 7
    a chat line; 8 a player connecting; 9 one leaving; 10 / 11 team changes; 12 a player's flag rows; 13 a pause
    timer; 14 the items' states. Anything else goes to 0x48b420 (nothing) */
-void THISCALL (net_processGamePacket)(u8 *g, u32 from, int type, const char *pkt)
+void THISCALL (net_processGamePacket)(u8 *g, u32 from, int size, const char *pkt)
 {
-	if (type != 0x40)
+	if (size != 0x40)
 		return;
 	if (GS->recording == 1) {
 		void *f = GS->replayFile;
 		file_writeScrambled((u8 *)&GS->recordTime, 4, 1, f);
 		file_writeScrambled(&from, 4, 1, f);
-		file_writeScrambled(&type, 4, 1, f);
-		file_writeScrambled(pkt, 1, type, f);
+		file_writeScrambled(&size, 4, 1, f);
+		file_writeScrambled(pkt, 1, size, f);
 	}
 	if (GS->matchState == 1 && pkt[1] != 1)
 		return;
@@ -2011,7 +2013,7 @@ void THISCALL (net_processGamePacket)(u8 *g, u32 from, int type, const char *pkt
 					GS->dataLossCode = 1;
 				}
 			}
-			static const u32 parts[5][4] = {   /* each part kind's type table, its entries a row, its count, its record in dwords */
+			static const u32 parts[5][4] = {   /* each part kind's size table, its entries a row, its count, its record in dwords */
 				{ SCENE_STAGE_AT + offsetof(Stage, headTypes), offsetof(Scene, geometryPerRow[0]), offsetof(Scene, headCount), sizeof(HeadType) / 4 },
 				{ SCENE_STAGE_AT + offsetof(Stage, chestTypes), offsetof(Scene, geometryPerRow[1]), offsetof(Scene, chestCount), sizeof(ChestType) / 4 },
 				{ SCENE_STAGE_AT + offsetof(Stage, armTypes), offsetof(Scene, geometryPerRow[2]), offsetof(Scene, armCount), sizeof(ArmType) / 4 },
