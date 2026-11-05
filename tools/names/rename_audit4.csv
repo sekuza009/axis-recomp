@@ -309,3 +309,7 @@ text_hanCho,text_hangul13Pass
 text_hanJungJong,text_hangul13LayeredPass
 text_drawHangul31,text_hangul31Pass
 text_drawHangul31b,text_hangul31LayeredPass
+arenaNameDialog_hitTest,playerSetup_hitTest
+arenaNameDialog_layout,playerSetup_layout
+arena_drawNameDialog,lobby_drawPlayerSetup
+arena_editTitle,arena_editAddress

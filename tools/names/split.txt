@@ -27,7 +27,7 @@ g_ptxQuant
 g_replayList
 # named globals reached only by their name (tools/split_candidates.py), split 2026-10-31
 g_arenaConfirming
-g_arenaFull
+g_typingArenaAddress
 g_arenaJoinPending
 g_arenaJoinRow
 g_arenaJoinTimer
@@ -410,10 +410,10 @@ g_arenaHaveList
 g_arenaJoinWaiting
 g_arenaKeptLookZ
 g_arenaLobbyState
-g_arenaNameDialogBottom
-g_arenaNameDialogLeft
-g_arenaNameDialogRight
-g_arenaNameDialogTop
+g_playerSetupBottom
+g_playerSetupLeft
+g_playerSetupRight
+g_playerSetupTop
 g_arenaPanelBrightness
 g_arenaSessionOpen
 g_arenaSex
@@ -707,12 +707,12 @@ g_serverPingCount
 g_partRecords
 # the resolution names, the typed arena address (objects18.csv) and the grown joined-title record, whole
 g_resolutionNames
-g_typedArenaNameText
+g_typedArenaAddressText
 g_ladderId
 # freed by the resolution names record, 2026-11-01
 # the screens' hit-test rectangles (objects20.csv), whole, 2026-11-01
 g_mapListRects
-g_arenaNameDialogRects
+g_playerSetupRects
 g_createArenaRects
 g_createArena2Rects
 g_arenaGameListRects

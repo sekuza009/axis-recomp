@@ -48,7 +48,7 @@
 #define hostError_keys() GAME_FN(hostError_keys, 0x408110, u32, void)()
 #define arena_camera() GAME_FN(arena_camera, 0x408270, u32, void)()
 #define lobbyTop_drawMenu() GAME_FN(lobbyTop_drawMenu, 0x408680, u32, void)()
-#define arena_drawNameDialog() GAME_FN(arena_drawNameDialog, 0x409bc0, u32, void)()
+#define lobby_drawPlayerSetup() GAME_FN(lobby_drawPlayerSetup, 0x409bc0, u32, void)()
 #define arena_createDraw() GAME_FN(arena_createDraw, 0x40b750, u32, void)()
 #define lobbyTop_draw() GAME_FN(lobbyTop_draw, 0x40cef0, u32, void)()
 #define lobbyPlayer_draw() GAME_FN(lobbyPlayer_draw, 0x40cf80, u32, void)()

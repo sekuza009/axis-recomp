@@ -66,8 +66,8 @@
 0x4d95b8,int,g_mapEntry22On
 0x4d95c0,int,g_mapEntry23On
 0x4d95c8,int,g_mapEntry24On
-0x4dbbd4,char,g_typedArenaName
-0x4dbbd8,int,g_typedArenaName4
+0x4dbbd4,char,g_typedArenaAddress
+0x4dbbd8,int,g_typedArenaAddress4
 0x4dba8c,int,g_arenaNameSum
 0x9dd840,int,g_roomNameSum
 0x4ded46,u32,g_arenaPassword

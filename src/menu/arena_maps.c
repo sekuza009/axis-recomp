@@ -160,7 +160,7 @@ static void map_buttons(int hovered, int first, int y, int label)
 	}
 }
 
-/* 0x4038e0: the map list over a dimmed screen: two column heads (0x75d924, 0x75d9a4), up to 10 rows from g_mapTop
+/* 0x4038e0: the map list over a dimmed screen: two column heads (MSG(502, "MAP"), MSG(503, "TYPE")), up to 10 rows from g_mapTop
    (22 .. 24 left out): the number, the name (g_mapNames, 0x20 apart) and the game type's name (g_gameTypeNames, 20 apart),
    the row under the pointer (by mapList_hitTest) highlighted; the scroll arrows (0x14 / 0x15) and two rows of buttons
    (MSG(506, "$[0] DEFAULT") from 0x16, MSG(504, "$[0] O K") from 0x18). The original leaves eax to callers that ignore it */

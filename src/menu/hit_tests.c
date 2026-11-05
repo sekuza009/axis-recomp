@@ -16,7 +16,7 @@ static int hit(int x, int y, const int *table, int count)
 }
 
 int (mapList_hitTest)(int x, int y) { return hit(x, y, g_mapListRects, 26); }   /* 0x4033e0 */
-int (arenaNameDialog_hitTest)(int x, int y) { return hit(x, y, g_arenaNameDialogRects, 6); }   /* 0x404460 */
+int (playerSetup_hitTest)(int x, int y) { return hit(x, y, g_playerSetupRects, 6); }   /* 0x404460 */
 int (arenaGameList_hitTest)(int x, int y) { return hit(x, y, g_arenaGameListRects, 18); }   /* 0x4044a0 */
 int (arenaDialogBox_hitTest)(int x, int y) { return hit(x, y, g_arenaDialogBoxRects, 1); }   /* 0x4044e0 */
 int (arenaCreate_hitTest)(int x, int y) { return hit(x, y, g_arenaCreateRects, 2); }   /* 0x4045a0 */

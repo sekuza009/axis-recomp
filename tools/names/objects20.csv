@@ -1,6 +1,6 @@
 # the screens' hit-test rectangles (step 3b): x0 y0 x1 y1 a rect, as many as each hit test checks (hit(x, y, base, n))
 0x4d9358,int,104,g_mapListRects,mapList_hitTest's 26 hit rectangles (hit_tests.c)
-0x4db588,int,24,g_arenaNameDialogRects,arenaNameDialog_hitTest's 6 hit rectangles (hit_tests.c)
+0x4db588,int,24,g_playerSetupRects,arenaNameDialog_hitTest's 6 hit rectangles (hit_tests.c)
 0x4db5e8,int,64,g_createArenaRects,createArena_hitTest's 16 hit rectangles (hit_tests.c)
 0x4db6e8,int,8,g_createArena2Rects,createArena_hitTest's 2 hit rectangles (hit_tests.c)
 0x4db720,int,72,g_arenaGameListRects,arenaGameList_hitTest's 18 hit rectangles (hit_tests.c)

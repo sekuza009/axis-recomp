@@ -16,7 +16,7 @@
 static const u32 *const bright = g_armcTabColour, *const dim = g_armcTabColourDim;
 #define TEXT(c) set_colour_bits(g_textColour, (c)[0], (c)[1], (c)[2], (c)[3])
 
-/* the box at the bottom right: "<0x756da4> <the name of g_armcSpin (0x751924)>" (the texture bound) */
+/* the box at the bottom right: "<MSG(287, "$[0] ROTATE")> <the name of g_armcSpin (MSG(118, "OFF"))>" (the texture bound) */
 static void mode_box(void)
 {
 	glColor4f(1.0f, 1.0f, 1.0f, 0.7f);
@@ -102,7 +102,7 @@ static void marker(float pos, int y)
 	glVertex(X1 - x - 0xbd, y + 0x10);
 }
 
-/* 0x41a280: the colour editor: two boxes (0x75d3a4 / 0x75d424) of three lines each, the current slot's hue
+/* 0x41a280: the colour editor: two boxes (MSG(491, "PRIMARY COLOR") / MSG(492, "SECONDARY COLOR")) of three lines each, the current slot's hue
    (turned half round, as 0 .. 50 by 0.278) and saturation and value (percent; the second colour's from -1 .. 1);
    the six slot buttons (the current one, g_armcColourSlot, bright; the sixth MSG(286, "VIEW $[0] ALL")) with the parts' names beside them
    when g_armcPreview is set; the sliders' tracks, bars and hue markers; two buttons (MSG(115, "$[0] O K"); 3 / 4 under the pointer,
@@ -249,7 +249,7 @@ static void stat_float(int x, int y, float value, u32 format, u32 unit)
 	armc_drawTextRight(x, y, text);
 }
 
-/* 0x419160: the weapons page: two buttons (0x7517a4; 3 / 4 under the pointer, by armcWeaponsPage_hitTest, lit), the six part
+/* 0x419160: the weapons page: two buttons (MSG(115, "$[0] O K"); 3 / 4 under the pointer, by armcWeaponsPage_hitTest, lit), the six part
    slots (the chosen one, g_armcSlot, bright), a new snapshot of it when asked (g_armcChanged), each slot's picture
    (texture OBJ(g_slotTextures) + 4 k, when it has a name, g_partRecords) and label (MSG(291, "HAND-W1($[0] 1)")) with its name (or MSG(319, "EMPTY SLOT")); the part
    box: its picture (g_armcBuildTexture), name (0x4dc150) and type (MSG(711, "HV-PISTOL"), by g_weaponListTable / g_extraListTable of g_armcCursor), or

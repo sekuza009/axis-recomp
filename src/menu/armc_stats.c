@@ -441,7 +441,7 @@ static void section_mech(Panel *p)
 /* 0x412650: the ARM CENTER's stats panel (0x4dcc90 .. 0x4dcc9c) for the part in slot g_armcPartSlot: the six slot
    buttons (the chosen one brighter) and their labels (MSG(281, "$[0] HEAD") ..; the sixth boxed, MSG(286, "VIEW $[0] ALL")), the part names
    beside them when g_armcPreview is set, two buttons (MSG(115, "$[0] O K"), lit from 3 by armcPartsPage_hitTest), the weight button and its
-   arrows (14 / 15), the on / off button (MSG(287, "$[0] ROTATE") with 0x751924 + 0x80 x g_armcSpin) and the detail button (MSG(277, "SELECT"));
+   arrows (14 / 15), the on / off button (MSG(287, "$[0] ROTATE") with MSG(118, "OFF") + 0x80 x g_armcSpin) and the detail button (MSG(277, "SELECT"));
    then the stats box (taller for Korean, g_language) and the slot's section. The caller ignores the eax it leaves */
 void (armc_drawStatsPanel)(void)
 {

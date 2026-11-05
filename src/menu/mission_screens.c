@@ -47,7 +47,7 @@ static void mission_screen(int hovered)
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 	menu_drawTexture(X0, Y0, X1, Y1, g_dialogFrameTexture);
 	set_colour_bits(g_textColour, bright[0], bright[1], bright[2], bright[3]);
-	/* "<n>ST <0x75f1a4>  [ <map> ]" */
+	/* "<n>ST <MSG(551, "ROUND")>  [ <map> ]" */
 	char title[256];
 	itoa(g_missionShown + 1, title, 10);
 	static const u32 suffix[4] = { STR(0x4b2b20, "ST "), STR(0x4b2b24, "ND "), STR(0x4b2b28, "RD "), STR(0x4b2b2c, "TH ") };

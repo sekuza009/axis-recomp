@@ -93,13 +93,13 @@ char g_newArenaName_v[48] __attribute__((aligned(16)));   /* 0x4db528 */
 u8 g_hostErrorBox_v[4] __attribute__((aligned(16)));   /* 0x4db55c */
 u8 g_arenaCorporation_v[4] __attribute__((aligned(16)));   /* 0x4db580 */
 u8 g_arenaSex_v[4] __attribute__((aligned(16)));   /* 0x4db584 */
-int g_arenaNameDialogRects_v[24] __attribute__((aligned(16)));   /* 0x4db588 */
+int g_playerSetupRects_v[24] __attribute__((aligned(16)));   /* 0x4db588 */
 int g_createArenaRects_v[64] __attribute__((aligned(16)));   /* 0x4db5e8 */
 int g_createArena2Rects_v[8] __attribute__((aligned(16)));   /* 0x4db6e8 */
 u8 g_arenaJoinPending_v[4] __attribute__((aligned(16)));   /* 0x4db708 */
 u8 g_typingArenaJoinPassword_v[4] __attribute__((aligned(16)));   /* 0x4db70c */
 u8 g_arenaJoinRow_v[4] __attribute__((aligned(16)));   /* 0x4db710 */
-u8 g_arenaFull_v[4] __attribute__((aligned(16)));   /* 0x4db714 */
+u8 g_typingArenaAddress_v[4] __attribute__((aligned(16)));   /* 0x4db714 */
 u8 g_lobbyConnectionOpen_v[4] __attribute__((aligned(16)));   /* 0x4db718 */
 u8 g_arenaListClickArmed_v[4] __attribute__((aligned(16)));   /* 0x4db71c */
 int g_arenaGameListRects_v[72] __attribute__((aligned(16)));   /* 0x4db720 */
@@ -146,16 +146,16 @@ char g_arenaOnOff_v[40] __attribute__((aligned(16)));   /* 0x4dbb14 */
 u8 g_arenaCameraMode_v[4] __attribute__((aligned(16)));   /* 0x4dbb3c */
 int g_lobbyTopRects_v[8] __attribute__((aligned(16)));   /* 0x4dbb40 */
 float g_lobbyTopEase_v[1] __attribute__((aligned(16)));   /* 0x4dbb60 */
-u8 g_arenaNameDialogLeft_v[4] __attribute__((aligned(16)));   /* 0x4dbb68 */
-u8 g_arenaNameDialogTop_v[4] __attribute__((aligned(16)));   /* 0x4dbb6c */
-u8 g_arenaNameDialogRight_v[4] __attribute__((aligned(16)));   /* 0x4dbb70 */
-u8 g_arenaNameDialogBottom_v[4] __attribute__((aligned(16)));   /* 0x4dbb74 */
+u8 g_playerSetupLeft_v[4] __attribute__((aligned(16)));   /* 0x4dbb68 */
+u8 g_playerSetupTop_v[4] __attribute__((aligned(16)));   /* 0x4dbb6c */
+u8 g_playerSetupRight_v[4] __attribute__((aligned(16)));   /* 0x4dbb70 */
+u8 g_playerSetupBottom_v[4] __attribute__((aligned(16)));   /* 0x4dbb74 */
 u8 g_arenaJoinWaiting_v[4] __attribute__((aligned(16)));   /* 0x4dbb78 */
 int g_arenaCreateRects_v[8] __attribute__((aligned(16)));   /* 0x4dbb80 */
 u8 g_arenaPanelBrightness_v[4] __attribute__((aligned(16)));   /* 0x4dbba0 */
 char g_arenaOnOff2_v[40] __attribute__((aligned(16)));   /* 0x4dbba4 */
 u8 g_typingArenaName_v[4] __attribute__((aligned(16)));   /* 0x4dbbd0 */
-char g_typedArenaNameText_v[24] __attribute__((aligned(16)));   /* 0x4dbbd4 */
+char g_typedArenaAddressText_v[24] __attribute__((aligned(16)));   /* 0x4dbbd4 */
 u8 g_lobbyJoinStarted_v[4] __attribute__((aligned(16)));   /* 0x4dbbec */
 u8 g_lobbyJoinRequest_v[4] __attribute__((aligned(16)));   /* 0x4dbbf0 */
 u8 g_arenaLobbyState_v[4] __attribute__((aligned(16)));   /* 0x4dbbf4 */
@@ -1263,13 +1263,13 @@ const DataPiece g_splitObjects[] = {
 	{ 0x4db55c, g_hostErrorBox_v, 4 },
 	{ 0x4db580, g_arenaCorporation_v, 4 },
 	{ 0x4db584, g_arenaSex_v, 4 },
-	{ 0x4db588, g_arenaNameDialogRects_v, 96 },
+	{ 0x4db588, g_playerSetupRects_v, 96 },
 	{ 0x4db5e8, g_createArenaRects_v, 256 },
 	{ 0x4db6e8, g_createArena2Rects_v, 32 },
 	{ 0x4db708, g_arenaJoinPending_v, 4 },
 	{ 0x4db70c, g_typingArenaJoinPassword_v, 4 },
 	{ 0x4db710, g_arenaJoinRow_v, 4 },
-	{ 0x4db714, g_arenaFull_v, 4 },
+	{ 0x4db714, g_typingArenaAddress_v, 4 },
 	{ 0x4db718, g_lobbyConnectionOpen_v, 4 },
 	{ 0x4db71c, g_arenaListClickArmed_v, 4 },
 	{ 0x4db720, g_arenaGameListRects_v, 288 },
@@ -1316,16 +1316,16 @@ const DataPiece g_splitObjects[] = {
 	{ 0x4dbb3c, g_arenaCameraMode_v, 4 },
 	{ 0x4dbb40, g_lobbyTopRects_v, 32 },
 	{ 0x4dbb60, g_lobbyTopEase_v, 4 },
-	{ 0x4dbb68, g_arenaNameDialogLeft_v, 4 },
-	{ 0x4dbb6c, g_arenaNameDialogTop_v, 4 },
-	{ 0x4dbb70, g_arenaNameDialogRight_v, 4 },
-	{ 0x4dbb74, g_arenaNameDialogBottom_v, 4 },
+	{ 0x4dbb68, g_playerSetupLeft_v, 4 },
+	{ 0x4dbb6c, g_playerSetupTop_v, 4 },
+	{ 0x4dbb70, g_playerSetupRight_v, 4 },
+	{ 0x4dbb74, g_playerSetupBottom_v, 4 },
 	{ 0x4dbb78, g_arenaJoinWaiting_v, 4 },
 	{ 0x4dbb80, g_arenaCreateRects_v, 32 },
 	{ 0x4dbba0, g_arenaPanelBrightness_v, 4 },
 	{ 0x4dbba4, g_arenaOnOff2_v, 40 },
 	{ 0x4dbbd0, g_typingArenaName_v, 4 },
-	{ 0x4dbbd4, g_typedArenaNameText_v, 24 },
+	{ 0x4dbbd4, g_typedArenaAddressText_v, 24 },
 	{ 0x4dbbec, g_lobbyJoinStarted_v, 4 },
 	{ 0x4dbbf0, g_lobbyJoinRequest_v, 4 },
 	{ 0x4dbbf4, g_arenaLobbyState_v, 4 },

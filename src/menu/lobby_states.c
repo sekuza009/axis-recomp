@@ -37,7 +37,7 @@ void (lobby_enterArenaList)(void)
 {
 	static const u32 cleared[] = { (OBJ(g_camPoints) + 0x14), ADDR(g_serverConnected), ADDR(g_lobbyRefreshing), ADDR(g_arenaSearchStarted), ADDR(g_serverSearching), ADDR(g_lobbyJoinStarted), ADDR(g_lobbyJoinRequest), ADDR(g_lanSearch),
 	                               ADDR(g_lobbySearching), ADDR(g_arenaHaveList), ADDR(g_arenaListFull), ADDR(g_gameCount), ADDR(g_lobbyBlinkClock), ADDR(g_localPlayer), ADDR(g_gameListTop), ADDR(g_lobbyListRow),
-	                               ADDR(g_arenaListClickArmed), ADDR(g_arenaSearchClock), ADDR(g_lobbyPanelsOff), ADDR(g_arenaConfirming), ADDR(g_lobbyConnectionOpen), ADDR(g_arenaUpdateNotice), ADDR(g_arenaListRefreshTimer), ADDR(g_arenaFull) };
+	                               ADDR(g_arenaListClickArmed), ADDR(g_arenaSearchClock), ADDR(g_lobbyPanelsOff), ADDR(g_arenaConfirming), ADDR(g_lobbyConnectionOpen), ADDR(g_arenaUpdateNotice), ADDR(g_arenaListRefreshTimer), ADDR(g_typingArenaAddress) };
 	int z = g_menuCameraHeight;
 	g_camPoint1X = 0x420c0000;   /* 35.0 */
 	g_camPoint1Z = z;
@@ -371,7 +371,7 @@ u32 (lobby_keysBack)(void)
 }
 
 /* 0x40cf80: the lobby's player screen: the arena tunnel, then in modes other than 0 and 1 (g_arenaCameraMode) and not on
-   sub-screen 5, the player panel (arena_drawNameDialog), or with a dialog open just its frame. Returns what the original
+   sub-screen 5, the player panel (lobby_drawPlayerSetup), or with a dialog open just its frame. Returns what the original
    leaves in eax */
 u32 (lobbyPlayer_draw)(void)
 {
@@ -380,9 +380,9 @@ u32 (lobbyPlayer_draw)(void)
 	if (mode == 1 || mode == 0 || g_lobbySubState == 5)
 		return mode;
 	if (!g_dialogOpen)
-		return arena_drawNameDialog();   /* arena_drawNameDialog */
-	return menu_drawFrame(g_arenaNameDialogLeft, g_arenaNameDialogTop,
-	                                                     g_arenaNameDialogRight, g_arenaNameDialogBottom);   /* menu_drawFrame */
+		return lobby_drawPlayerSetup();   /* lobby_drawPlayerSetup */
+	return menu_drawFrame(g_playerSetupLeft, g_playerSetupTop,
+	                                                     g_playerSetupRight, g_playerSetupBottom);   /* menu_drawFrame */
 }
 
 /* 0x4081f0: the lobby's keys, by sub-screen (g_lobbySubState): 0 the player's record, 1 the arena list (or its chat line
@@ -571,25 +571,25 @@ u32 (createUpdateNotice_clicks)(void)
 	return (u32)(button - 1);
 }
 
-/* 0x405230: the arena title's edit field opened: the keyboard released for typing, the input line emptied (20
+/* 0x405230: the IP address field opened (a game joined by its address, arena_joinListed(99999)): the keyboard released for typing, the input line emptied (20
    characters at most), placed at the panel's origin + (0xd8, 0xd0), the fade timer 5, the Windows edit control made.
    Returns what that leaves in eax */
-u32 (arena_editTitle)(void)
+u32 (arena_editAddress)(void)
 {
 	input_releaseKeyboard();
 	g_textFieldOpen = 1;
 	menu_clearInputBuffer(0x14);
 	memset((void *)OBJ(g_chatLine), 0, 0x400);
-	(*(int *)&g_typedArenaName) = 0;
+	(*(int *)&g_typedArenaAddress) = 0;
 	g_chatCaretX = g_arenaGameListLeft + 0xd8;
 	g_chatCaretY = g_arenaGameListTop + 0xd0;
 	g_chatLength = (int)strlen(g_chatLine);
-	g_typedArenaName4 = 0;
+	g_typedArenaAddress4 = 0;
 	(*(u32 *)&g_menuKeyGuard) = 0x40a00000;   /* 5 */
 	/* chat_createEdit(20); the original also leaves the 20 it gave menu_clearInputBuffer on the stack as a second
 	   argument */
 	u32 r = GAME_FN(chat_createEdit, 0x43f460, u32, int, int)(0x14, 0x14);
-	g_arenaFull = 1;
+	g_typingArenaAddress = 1;
 	return r;
 }
 
@@ -698,7 +698,7 @@ u32 (lobby_playerScreenClicks)(void)
 	}
 	if (!g_mouseClick || mode != 2)
 		return (u32)mode;
-	u32 button = ((u32)arenaNameDialog_hitTest(g_mouseX, g_mouseY));   /* the screen's hit test */
+	u32 button = ((u32)playerSetup_hitTest(g_mouseX, g_mouseY));   /* the screen's hit test */
 	u32 r;
 	switch (button) {
 	case 0:
@@ -974,15 +974,15 @@ int (lobby_openConnection)(void)
    (arena_loadSettings; none: quit) as the arena record (the name g_arenaGameName into g_playerName, the optional password
    g_arenaFilePassword, the limits, game type, map and players), then the lobby's arena list and the arena hosted
    (lobby_hostArena; reply 0x68). Otherwise the lobby's arena list and the server address given (g_serverAddressArg,
-   into g_typedArenaName) joined (arena_joinListed(99999); reply 0x69).
+   into g_typedArenaAddress) joined (arena_joinListed(99999); reply 0x69).
    Returns the last call's eax */
 u32 (arena_startFromLauncher)(void)
 {
 	if (g_startedByLauncher != 1) {
 		menuState400_enter();   /* menuState400_enter */
 		lobby_enterArenaList();   /* lobby_enterArenaList */
-		memset((void *)ADDR(g_typedArenaName), 0, 24);
-		strcpy((char *)ADDR(g_typedArenaName), g_serverAddressArg);
+		memset((void *)ADDR(g_typedArenaAddress), 0, 24);
+		strcpy((char *)ADDR(g_typedArenaAddress), g_serverAddressArg);
 		u32 r = arena_joinListed(99999);   /* arena_joinListed */
 		g_lobbyReply = 0x69;
 		return r;
@@ -1256,20 +1256,20 @@ u32 (arena_createClick)(void)
 	return button;
 }
 
-/* 0x4079c0: the arena lobby's game list keys (none while the "full" or "joining" box, a message box, or before the
+/* 0x4079c0: the arena lobby's game list keys (none while the address or password box, a message box, or before the
    arena camera has arrived, g_arenaCameraMode 2). With the join confirmation up only back answers it (the timer 0x378 killed). Up / down held
    move along the list of games (once the blink clock reaches 5, restarting it; nine rows shown from g_gameListTop, the
    selection in g_localPlayer); while no search runs (g_lanSearch, g_lobbySearching, the result box g_lobbyRefreshing) the click key or fire
    joins the selected game (g_lobbyJoinStarted; its join password asked for when connected, g_serverConnected) or asks the lobby to
    join (g_lobbyJoinRequest); cancel2 and back leave (to mode 0), g_dikS cancels the search; g_dikI searches the local network
-   (a slot opened, g_lobbyBlinkClock 150), g_dikT the lobby server; g_dikP edits the arena's title */
+   (a slot opened, g_lobbyBlinkClock 150), g_dikT the lobby server; g_dikP types a game's IP address (arena_editAddress) */
 void (arenaGames_keys)(void)
 {
 #define g_listTop g_gameListTop
 #define g_listRow g_lobbyListRow
 #define busy (g_lanSearch || g_lobbySearching || g_lobbyRefreshing)
 	int mode = g_arenaCameraMode;
-	if (g_arenaFull || mode == 1 || mode == 0 || g_arenaJoinNeedsPassword || g_dialogOpen)
+	if (g_typingArenaAddress || mode == 1 || mode == 0 || g_arenaJoinNeedsPassword || g_dialogOpen)
 		return;
 	if (g_arenaConfirming) {
 		if (input_justPressed(g_keyBack)) {
@@ -1391,9 +1391,9 @@ void (arenaGames_keys)(void)
 		}
 		return;
 	}
-	if (input_justPressed(g_dikP) && !g_arenaFull) {
+	if (input_justPressed(g_dikP) && !g_typingArenaAddress) {
 		sound_playMenu(0);
-		arena_editTitle();
+		arena_editAddress();
 	}
 #undef g_listTop
 #undef g_listRow

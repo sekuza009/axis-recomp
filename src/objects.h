@@ -209,11 +209,11 @@
 #define g_vecZeroXyz ((float *)IMG(0xa0e7e8))   /* float[3]; the rest vector (0 */
 #define g_musicDuration ((u32 *)IMG(0xa0e018))   /* u32[2]; the music's duration (GetDuration's 64-bit time: g_musicLength the low word */
 #define g_resolutionNames ((u32 *)IMG(0x4b04cc))   /* u32[8]; the setup screen's screen size names (by g_setupResolution) */
-#define g_typedArenaNameText ((char *)IMG(0x4dbbd4))   /* char[24]; the arena address typed (cleared as 24 bytes; its edit takes 20 characters; g_typedArenaName its first word) */
+#define g_typedArenaAddressText ((char *)IMG(0x4dbbd4))   /* char[24]; the arena address typed (cleared as 24 bytes; its edit takes 20 characters; g_typedArenaAddress its first word) */
 #define g_partRecords ((u8 *)IMG(0x4dbe50))   /* u8[896]; ARM CENTER's part records: six slots then the part looked at */
 #define g_viewedPart (g_partRecords + 6 * 0x80)   /* u8[0x80]; the part being looked at: the seventh of g_partRecords (g_viewedPartKind +0x44, index +0x48) */
 #define g_mapListRects ((int *)IMG(0x4d9358))   /* int[104]; mapList_hitTest's 26 hit rectangles (hit_tests.c) */
-#define g_arenaNameDialogRects ((int *)IMG(0x4db588))   /* int[24]; arenaNameDialog_hitTest's 6 hit rectangles (hit_tests.c) */
+#define g_playerSetupRects ((int *)IMG(0x4db588))   /* int[24]; playerSetup_hitTest's 6 hit rectangles (hit_tests.c) */
 #define g_createArenaRects ((int *)IMG(0x4db5e8))   /* int[64]; createArena_hitTest's 16 hit rectangles (hit_tests.c) */
 #define g_createArena2Rects ((int *)IMG(0x4db6e8))   /* int[8]; createArena_hitTest's 2 hit rectangles (hit_tests.c) */
 #define g_arenaGameListRects ((int *)IMG(0x4db720))   /* int[72]; arenaGameList_hitTest's 18 hit rectangles (hit_tests.c) */

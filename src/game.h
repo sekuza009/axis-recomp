@@ -1218,19 +1218,19 @@ typedef struct { float r, g, b, a; } Colour;
 #define missionsel_drawScreen() GAME_FN(missionsel_drawScreen, 0x449a50, void, void)()
 #define missionList_draw() GAME_FN(missionList_draw, 0x444f40, void, void)()
 #define missionBriefing_draw() GAME_FN(missionBriefing_draw, 0x4456b0, void, void)()
-#define arenaNameDialog_hitTest(x, y) GAME_FN(arenaNameDialog_hitTest, 0x404460, int, int, int)(x, y)   /* the arena name dialog's control at (x, y) */
+#define playerSetup_hitTest(x, y) GAME_FN(playerSetup_hitTest, 0x404460, int, int, int)(x, y)   /* the SETUP PLAYER dialog's control at (x, y) */
 #define arena_openSession(kind, host) GAME_FN(arena_openSession, 0x452ec0, int, u32, const char *)(kind, host)   /* a DirectPlay slot opened */
 #define lobby_openConnection() GAME_FN(lobby_openConnection, 0x4060f0, int, void)()   /* the lobby server connection opened: 1 done */
 #define arenaGameList_hitTest(x, y) GAME_FN(arenaGameList_hitTest, 0x4044a0, int, int, int)(x, y)   /* the arena lobby's button under (x, y), -1 none */
 #define arena_askJoinPassword() GAME_FN(arena_askJoinPassword, 0x405200, void, void)()   /* the arena screen's chat line opened */
-#define arena_editTitle() GAME_FN(arena_editTitle, 0x405230, void, void)()   /* the arena title's edit field opened */
+#define arena_editAddress() GAME_FN(arena_editAddress, 0x405230, void, void)()   /* the IP address field opened (a game joined by address) */
 #define menu_showMessage(i) GAME_FN(menu_showMessage, 0x41ee40, u32, int)(i)   /* message i in the message box */
 #define reg_writeCharacterSettings() GAME_FN(reg_writeCharacterSettings, 0x432400, u32, void)()
 
 /* ---- the screens' set-ups (menu/screen_enter.c): rectangle builders and resets ---- */
 #define arena_clearSessionEntry() GAME_FN(arena_clearSessionEntry, 0x4045e0, void, void)()
 #define lobbyTop_layout() GAME_FN(lobbyTop_layout, 0x403f30, void, void)()
-#define arenaNameDialog_layout() GAME_FN(arenaNameDialog_layout, 0x403f80, void, void)()
+#define playerSetup_layout() GAME_FN(playerSetup_layout, 0x403f80, void, void)()
 #define arenaGameList_layout() GAME_FN(arenaGameList_layout, 0x404010, void, void)()
 #define arenaDialogBox_layout() GAME_FN(arenaDialogBox_layout, 0x404120, void, void)()
 #define arenaOptions_layout() GAME_FN(arenaOptions_layout, 0x404190, void, void)()

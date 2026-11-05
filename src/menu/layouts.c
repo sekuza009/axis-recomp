@@ -97,11 +97,11 @@ void (newIdForm_layout)(void)
 	rect_spec(OBJ(g_newIdFormRects), (OBJ(g_newIdFormRects) + 0x40), 0x30, a); rect_spec((OBJ(g_newIdFormRects) + 0x40), (OBJ(g_newIdFormRects) + 0x60), 0xc8, b);
 }
 
-void (arenaNameDialog_layout)(void)
+void (playerSetup_layout)(void)
 {
-	static const RArg a[4] = { RA(ADDR(g_arenaNameDialogLeft), 0x30, 0), RA(ADDR(g_arenaNameDialogTop), 0x60, 1), RA(ADDR(g_arenaNameDialogLeft), 0x188, 0), RA(ADDR(g_arenaNameDialogTop), 0x78, 1) };
-	static const RArg b[4] = { RA(ADDR(g_arenaNameDialogLeft), 0x32, 1), RA(ADDR(g_arenaNameDialogTop), 0xdc, 0), RA(ADDR(g_arenaNameDialogLeft), 0x96, 1), RA(ADDR(g_arenaNameDialogTop), 0xfc, 0) };
-	rect_spec(OBJ(g_arenaNameDialogRects), (OBJ(g_arenaNameDialogRects) + 0x30), 0x19, a); rect_spec((OBJ(g_arenaNameDialogRects) + 0x30), OBJ(g_arenaNameDialogRects) + 6 * 16, 0x78, b);
+	static const RArg a[4] = { RA(ADDR(g_playerSetupLeft), 0x30, 0), RA(ADDR(g_playerSetupTop), 0x60, 1), RA(ADDR(g_playerSetupLeft), 0x188, 0), RA(ADDR(g_playerSetupTop), 0x78, 1) };
+	static const RArg b[4] = { RA(ADDR(g_playerSetupLeft), 0x32, 1), RA(ADDR(g_playerSetupTop), 0xdc, 0), RA(ADDR(g_playerSetupLeft), 0x96, 1), RA(ADDR(g_playerSetupTop), 0xfc, 0) };
+	rect_spec(OBJ(g_playerSetupRects), (OBJ(g_playerSetupRects) + 0x30), 0x19, a); rect_spec((OBJ(g_playerSetupRects) + 0x30), OBJ(g_playerSetupRects) + 6 * 16, 0x78, b);
 }
 
 void (roomLogin_layout)(void)

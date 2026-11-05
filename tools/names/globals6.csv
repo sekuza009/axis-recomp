@@ -41,7 +41,7 @@
 0x4dbba0,u32,g_arenaPanelBrightness
 0x9dd6bc,u32,g_roomPanelBrightness
 0x9dd384,u32,g_roomListDistanceLimit
-0x4dbb6c,int,g_arenaNameDialogTop
+0x4dbb6c,int,g_playerSetupTop
 0x680bb8,int,g_lobbyListPage
 0x4db708,int,g_arenaJoinPending
 0x9eeab4,int,g_mainMenuPicked

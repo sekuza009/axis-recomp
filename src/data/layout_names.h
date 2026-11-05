@@ -60,8 +60,6 @@ extern struct GameData g_data;
 #define g_arenaFragLimit (*(u8 *)((u8 *)g_playerName_v + 0x24))
 #undef g_arenaFragLimitTyped
 #define g_arenaFragLimitTyped (*(u8 *)((u8 *)g_newArenaName_v + 0x24))
-#undef g_arenaFull
-#define g_arenaFull (*(int *)g_arenaFull_v)
 #undef g_arenaGameListBottom
 #define g_arenaGameListBottom (*(int *)g_arenaGameListBottom_v)
 #undef g_arenaGameListLeft
@@ -124,16 +122,6 @@ extern struct GameData g_data;
 #define g_arenaMapCount (*(int *)g_arenaMapCount_v)
 #undef g_arenaMenuTextures
 #define g_arenaMenuTextures ((int *)g_arenaMenuTextures_v)
-#undef g_arenaNameDialogBottom
-#define g_arenaNameDialogBottom (*(int *)g_arenaNameDialogBottom_v)
-#undef g_arenaNameDialogLeft
-#define g_arenaNameDialogLeft (*(int *)g_arenaNameDialogLeft_v)
-#undef g_arenaNameDialogRects
-#define g_arenaNameDialogRects ((int *)g_arenaNameDialogRects_v)
-#undef g_arenaNameDialogRight
-#define g_arenaNameDialogRight (*(int *)g_arenaNameDialogRight_v)
-#undef g_arenaNameDialogTop
-#define g_arenaNameDialogTop (*(int *)g_arenaNameDialogTop_v)
 #undef g_arenaNameSum
 #define g_arenaNameSum (*(int *)g_arenaNameSum_v)
 #undef g_arenaOnOff
@@ -1980,6 +1968,16 @@ extern struct GameData g_data;
 #define g_playerListDone (*(int *)g_playerListDone_v)
 #undef g_playerName
 #define g_playerName ((char *)g_playerName_v)
+#undef g_playerSetupBottom
+#define g_playerSetupBottom (*(int *)g_playerSetupBottom_v)
+#undef g_playerSetupLeft
+#define g_playerSetupLeft (*(int *)g_playerSetupLeft_v)
+#undef g_playerSetupRects
+#define g_playerSetupRects ((int *)g_playerSetupRects_v)
+#undef g_playerSetupRight
+#define g_playerSetupRight (*(int *)g_playerSetupRight_v)
+#undef g_playerSetupTop
+#define g_playerSetupTop (*(int *)g_playerSetupTop_v)
 #undef g_playerSex
 #define g_playerSex (*(int *)g_playerSex_v)
 #undef g_playerSlotFlags
@@ -2696,12 +2694,12 @@ extern struct GameData g_data;
 #define g_tunnelRings (*(int *)g_tunnelRings_v)
 #undef g_tunnelTexture
 #define g_tunnelTexture (*(int *)g_tunnelTexture_v)
-#undef g_typedArenaName
-#define g_typedArenaName (*(char *)((u8 *)g_typedArenaNameText_v + 0x0))
-#undef g_typedArenaName4
-#define g_typedArenaName4 (*(int *)((u8 *)g_typedArenaNameText_v + 0x4))
-#undef g_typedArenaNameText
-#define g_typedArenaNameText ((char *)g_typedArenaNameText_v)
+#undef g_typedArenaAddress
+#define g_typedArenaAddress (*(char *)((u8 *)g_typedArenaAddressText_v + 0x0))
+#undef g_typedArenaAddress4
+#define g_typedArenaAddress4 (*(int *)((u8 *)g_typedArenaAddressText_v + 0x4))
+#undef g_typedArenaAddressText
+#define g_typedArenaAddressText ((char *)g_typedArenaAddressText_v)
 #undef g_typedLength
 #define g_typedLength (*(int *)g_typedLength_v)
 #undef g_typingAccountEmail
@@ -2712,6 +2710,8 @@ extern struct GameData g_data;
 #define g_typingAccountPassword (*(int *)g_typingAccountPassword_v)
 #undef g_typingAccountRepeat
 #define g_typingAccountRepeat (*(int *)g_typingAccountRepeat_v)
+#undef g_typingArenaAddress
+#define g_typingArenaAddress (*(int *)g_typingArenaAddress_v)
 #undef g_typingArenaJoinPassword
 #define g_typingArenaJoinPassword (*(int *)g_typingArenaJoinPassword_v)
 #undef g_typingArenaName

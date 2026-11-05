@@ -1,3 +1,3 @@
 # records (step 3b; --records)
 0x4b04cc,u32,8,g_resolutionNames,the setup screen's screen size names (by g_setupResolution)
-0x4dbbd4,char,24,g_typedArenaNameText,the arena address typed (cleared as 24 bytes; its edit takes 20 characters; g_typedArenaName its first word)
+0x4dbbd4,char,24,g_typedArenaAddressText,the arena address typed (cleared as 24 bytes; its edit takes 20 characters; g_typedArenaAddress its first word)

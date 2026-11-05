@@ -97,7 +97,7 @@ static void bind_button_texture(void)
 /* the columns' left (and right) x from the window's left */
 static const int column_x0[4] = { 0x10, 0x159, 0x1b3, 0x20d }, column_x1[4] = { 0x154, 0x1ae, 0x208, 0x25d };
 
-/* 0x444f40: the mission list: the window and its title 0x75dda4, a cyan frame and rule, the column heads (0x75de24,
+/* 0x444f40: the mission list: the window and its title MSG(511, "DON'T"), a cyan frame and rule, the column heads (MSG(512, "SUCCEED"),
    0x80 apart) on blue bars, up to 8 rows from g_missionTop (the picked one bright), the picked one's description
    (wrapped at the window's right less 0x38) and two buttons (MSG(517, "RESERVED"); 8 / 9 under the pointer by skirmishList_hitTest,
    lit). The original leaves eax to callers that ignore it */
@@ -150,7 +150,7 @@ void (missionList_draw)(void)
 }
 #undef mission
 
-/* 0x4456b0: the mission briefing: a translucent blue window, its title 0x75e024, a cyan frame and rule, the text
+/* 0x4456b0: the mission briefing: a translucent blue window, its title MSG(516, "MISSION BRIEFING"), a cyan frame and rule, the text
    typed out (briefing_typeOut), two buttons at the right (MSG(521, "$[0] ACCEPT"), 0x80 apart; lit under the pointer: 0 / 1 by
    briefing_hitTest) and two at the left (MSG(523, "$[0] NEXT"): 2 only once the text is out (g_briefingSkipped), 3 only past the first
    page (g_briefingPage); greyed otherwise). The original leaves eax to callers that ignore it */

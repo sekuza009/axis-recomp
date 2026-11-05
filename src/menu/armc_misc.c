@@ -643,7 +643,7 @@ void (armc_snapshot)(int i)
 	g_armcChanged = 0;
 }
 
-/* 0x41dab0: the ARM CENTER's weight line at y (g_armcStatsPanelTop): the label 0x7573a4 right-aligned at 0x27c (8 units a
+/* 0x41dab0: the ARM CENTER's weight line at y (g_armcStatsPanelTop): the label MSG(299, "WEIGHT") right-aligned at 0x27c (8 units a
    character in mode 1, g_language, else 14); below it the total weight (the ten parts' weights summed into g_totalWeight)
    in red when above the most the legs carry (g_legsMaxWeight), else green, then "/most" in white, both as "%.0f" and
    right-aligned at 0x27e. The original leaves eax to callers that ignore it */

@@ -405,9 +405,9 @@ extern u8 g_arenaCorporation_v[4];
 extern u8 g_arenaSex_v[4];
 #endif
 #ifdef AXIS_FENCE
-#define g_arenaNameDialogRects_v ((int *)(AXIS_FENCE == 2 ? g_fence + 0xac000 : g_fence + 0xabfa0))
+#define g_playerSetupRects_v ((int *)(AXIS_FENCE == 2 ? g_fence + 0xac000 : g_fence + 0xabfa0))
 #else
-extern int g_arenaNameDialogRects_v[24];
+extern int g_playerSetupRects_v[24];
 #endif
 #ifdef AXIS_FENCE
 #define g_createArenaRects_v ((int *)(AXIS_FENCE == 2 ? g_fence + 0xae000 : g_fence + 0xadf00))
@@ -435,9 +435,9 @@ extern u8 g_typingArenaJoinPassword_v[4];
 extern u8 g_arenaJoinRow_v[4];
 #endif
 #ifdef AXIS_FENCE
-#define g_arenaFull_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xb8000 : g_fence + 0xb7ffc))
+#define g_typingArenaAddress_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xb8000 : g_fence + 0xb7ffc))
 #else
-extern u8 g_arenaFull_v[4];
+extern u8 g_typingArenaAddress_v[4];
 #endif
 #ifdef AXIS_FENCE
 #define g_lobbyConnectionOpen_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xba000 : g_fence + 0xb9ffc))
@@ -670,24 +670,24 @@ extern int g_lobbyTopRects_v[8];
 extern float g_lobbyTopEase_v[1];
 #endif
 #ifdef AXIS_FENCE
-#define g_arenaNameDialogLeft_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0x116000 : g_fence + 0x115ffc))
+#define g_playerSetupLeft_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0x116000 : g_fence + 0x115ffc))
 #else
-extern u8 g_arenaNameDialogLeft_v[4];
+extern u8 g_playerSetupLeft_v[4];
 #endif
 #ifdef AXIS_FENCE
-#define g_arenaNameDialogTop_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0x118000 : g_fence + 0x117ffc))
+#define g_playerSetupTop_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0x118000 : g_fence + 0x117ffc))
 #else
-extern u8 g_arenaNameDialogTop_v[4];
+extern u8 g_playerSetupTop_v[4];
 #endif
 #ifdef AXIS_FENCE
-#define g_arenaNameDialogRight_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0x11a000 : g_fence + 0x119ffc))
+#define g_playerSetupRight_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0x11a000 : g_fence + 0x119ffc))
 #else
-extern u8 g_arenaNameDialogRight_v[4];
+extern u8 g_playerSetupRight_v[4];
 #endif
 #ifdef AXIS_FENCE
-#define g_arenaNameDialogBottom_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0x11c000 : g_fence + 0x11bffc))
+#define g_playerSetupBottom_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0x11c000 : g_fence + 0x11bffc))
 #else
-extern u8 g_arenaNameDialogBottom_v[4];
+extern u8 g_playerSetupBottom_v[4];
 #endif
 #ifdef AXIS_FENCE
 #define g_arenaJoinWaiting_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0x11e000 : g_fence + 0x11dffc))
@@ -715,9 +715,9 @@ extern char g_arenaOnOff2_v[40];
 extern u8 g_typingArenaName_v[4];
 #endif
 #ifdef AXIS_FENCE
-#define g_typedArenaNameText_v ((char *)(AXIS_FENCE == 2 ? g_fence + 0x128000 : g_fence + 0x127fe8))
+#define g_typedArenaAddressText_v ((char *)(AXIS_FENCE == 2 ? g_fence + 0x128000 : g_fence + 0x127fe8))
 #else
-extern char g_typedArenaNameText_v[24];
+extern char g_typedArenaAddressText_v[24];
 #endif
 #ifdef AXIS_FENCE
 #define g_lobbyJoinStarted_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0x12a000 : g_fence + 0x129ffc))

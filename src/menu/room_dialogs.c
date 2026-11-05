@@ -191,7 +191,7 @@ int (gameList_open)(void)
 	return 1;
 }
 
-/* 0x406200: joining arena i of the list (99999: the one typed in, g_typedArenaName): the search stopped first if it runs,
+/* 0x406200: joining arena i of the list (99999: the one typed in, g_typedArenaAddress): the search stopped first if it runs,
    the connection made (arena_openSession; message 0x3f and the search stopped on a failure), the join (dplay_listSessions, not
    checked), the join's wait (timer 0x378, 2 s). Returns what the original leaves in eax */
 u32 (arena_joinListed)(int i)
@@ -200,7 +200,7 @@ u32 (arena_joinListed)(int i)
 	g_lobbyJoinRequest = 0;
 	if (g_arenaSearchStarted)
 		arena_leaveSession();
-	void *session = i == 99999 ? (void *)ADDR(g_typedArenaName) : (void *)g_sessionList[i].address;
+	void *session = i == 99999 ? (void *)ADDR(g_typedArenaAddress) : (void *)g_sessionList[i].address;
 	if (!arena_openSession(0, session)) {
 		menu_showMessage(0x3f);
 		return arena_leaveSession();
@@ -651,7 +651,7 @@ u32 (newIdForm_draw)(void)
 #undef Y1
 }
 
-/* the update notice over a room dialog (g_roomUpdateNotice): the screen dimmed, a box with two lines (0x74dfa4, 0x74e024) and
+/* the update notice over a room dialog (g_roomUpdateNotice): the screen dimmed, a box with two lines (MSG(3, "THIS PROGRAM HAS BEEN UPDATED"), MSG(4, "DO DOWNLOAD A NEW VERSION")) and
    its two buttons (MSG(115, "$[0] O K"); the one under the pointer, by updateNotice_hitTest, in cyan) */
 static void update_notice(void)
 {
@@ -929,7 +929,7 @@ void (account_drawPanel)(void)
 #undef Y1
 }
 
-/* 0x43d060: the ranking table (0x9dced8 .. 0x9dcee4): the title 0x75aba4; the page arrows (0 / 1 under the pointer,
+/* 0x43d060: the ranking table (0x9dced8 .. 0x9dcee4): the title MSG(411, "LADDER GAME RANKING"); the page arrows (0 / 1 under the pointer,
    by ranking_hitTest, lit) about "first ~ last" of page g_rankingPage (stored in g_rankingFirst / g_rankingLast); the sort button
    (MSG(412, "OPTION"); 2) with the sorted column's name; two rules and the column heads (MSG(413, "RANK") .., the sorted one in
    yellow); when there is a list (g_rankingHaveList) up to ten rows (g_rankingRows) until an

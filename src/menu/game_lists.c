@@ -99,8 +99,8 @@ static void game_page(int x1, int y, int pages_count)
 #define X1 g_arenaGameListRight
 #define Y1 g_arenaGameListBottom
 
-/* a box over the list with a line (0x74f124 joining / 0x74f624 full) and a dark field (with the arena's name, g_arenaJoinPassword,
-   when joining) */
+/* a box over the list with a line (MSG(38, "TYPE GAME PASSWORD") for a locked game / MSG(48, "INPUT IP-ADDRESS") for a game
+   joined by address) and a dark field (with the typed password, g_arenaJoinPassword, for the first) */
 static void info_box(u32 line, int named)
 {
 	RECT(0x3e4ccccd, 0x3e4ccccd, 0x3f333333, 0x3f333333);   /* 0.2, 0.2, 0.7, 0.7 */
@@ -115,11 +115,11 @@ static void info_box(u32 line, int named)
 		text_draw16(X0 + 0xd8, Y0 + 0xd0, (const char *)ADDR(g_arenaJoinPassword));
 }
 
-/* 0x40a070: the arena's game list: the window, its title 0x7524a4, three tabs (0x752524; the one under the pointer,
+/* 0x40a070: the arena's game list: the window, its title MSG(141, "JOIN ARENA"), three tabs (MSG(142, "SEARCH $[0] IPX"); the one under the pointer,
    by arenaGameList_hitTest, lit unless a box is up), five column heads; the rows and page when there is a list (g_arenaHaveList,
    or the full one g_arenaListFull); three buttons (MSG(149, "$[0] JOIN"): join needs a game, and while searching only the second
-   lights; all dimmed under the full / joining boxes); the scroll arrows (15 / 16); the blinking MSG(152, "SEARCHING FOR THE GAME SERVER") while
-   searching or g_lobbyRefreshing; the joining and full boxes, the join confirmation (MSG(153, "CONNECTING TO THE GAME SERVER") / MSG(154, "PLEASE WAIT"), its button
+   lights; all dimmed under the address / password boxes); the scroll arrows (15 / 16); the blinking MSG(152, "SEARCHING FOR THE GAME SERVER") while
+   searching or g_lobbyRefreshing; the password and address boxes, the join confirmation (MSG(153, "CONNECTING TO THE GAME SERVER") / MSG(154, "PLEASE WAIT"), its button
    MSG(116, "$[0] CANCEL") by arenaDialogBox_hitTest) and the "leave?" box (the original asks arenaCreate_hitTest but lights its buttons by the
    list's own pointer test); the border. The original leaves eax to callers that ignore it */
 void (arena_drawGameList)(void)
@@ -133,7 +133,7 @@ void (arena_drawGameList)(void)
 	menu_drawLine(X0 + 0x10, Y0 + 0x28, X1 - 0x10, Y0 + 0x28);
 	TEXT(bright);
 	text_draw16(X0 + 0x50, Y0 + 0x10, (const char *)MSG(141, "JOIN ARENA"));
-	int boxed = g_arenaConfirming || g_arenaUpdateNotice || g_arenaFull || g_arenaJoinNeedsPassword;
+	int boxed = g_arenaConfirming || g_arenaUpdateNotice || g_typingArenaAddress || g_arenaJoinNeedsPassword;
 	for (int k = 0; k < 3; k++) {
 		bind_buttons();
 		int x = X0 + k * 0xb4;
@@ -167,7 +167,7 @@ void (arena_drawGameList)(void)
 				lit = k != 0 || g_gameCount != 0;
 		}
 		button(lit, x, Y1 - 0x2c, x + 0x78, Y1 - 0xc, 0.4f);
-		if (g_arenaFull || g_arenaJoinNeedsPassword)
+		if (g_typingArenaAddress || g_arenaJoinNeedsPassword)
 			button(0, x, Y1 - 0x2c, x + 0x78, Y1 - 0xc, 0.4f);
 		text_drawBox16(x, Y1 - 0x24, x + 0x78, (const char *)(MSG(149, "$[0] JOIN") + k * 0x80));
 	}
@@ -186,7 +186,7 @@ void (arena_drawGameList)(void)
 	glDisable(GL_TEXTURE_2D);
 	if (g_arenaJoinNeedsPassword)
 		info_box(MSG(38, "TYPE GAME PASSWORD"), 1);
-	if (g_arenaFull)
+	if (g_typingArenaAddress)
 		info_box(MSG(48, "INPUT IP-ADDRESS"), 0);
 	if (g_arenaConfirming) {
 		int on = arenaDialogBox_hitTest(g_mouseX, g_mouseY);   /* arenaDialogBox_hitTest */
@@ -247,7 +247,7 @@ static void room_button(int lit, int x0, int y0, int x1, int y1, float dim_alpha
 		TEXT(room_dim);
 }
 
-/* 0x43adc0: the game room's list of games: the window, its title 0x759ca4, five column heads (0x759d24, 0x80
+/* 0x43adc0: the game room's list of games: the window, its title MSG(381, "AXIS LADDER GAME"), five column heads (MSG(382, "TITLE"), 0x80
    apart), rules; with a list (g_gameListLoaded) of games, the rows and "page / pages" (g_roomListCount); four buttons (MSG(387, "$[0] JOIN");
    the one under the pointer, by gameList_hitTest, lit: the first only with games, and while searching (g_roomSearching) only
    the third; all dimmed while joining, g_roomJoinNeedsPassword); the scroll arrows (13 / 14); the blinking MSG(391, "SEARCHING FOR THE GAME SERVER") while
@@ -427,7 +427,7 @@ void (gameList_drawPage)(void)
 	g_roomJoinNeedsPassword = 0;
 }
 
-/* ---- the arena's name dialog (its window at 0x4dbb68 .. 0x4dbb74) ---- */
+/* ---- the SETUP PLAYER dialog (the lobby's player record; its window at 0x4dbb68 .. 0x4dbb74) ---- */
 
 /* text with a near-black shadow one down and right, then in yellow */
 static void shadowed(int x, int y, const char *text)
@@ -438,20 +438,20 @@ static void shadowed(int x, int y, const char *text)
 	text_draw8(x, y, text);
 }
 
-/* 0x409bc0: the arena's name dialog: the window, a cyan frame, the title 0x751fa4, two labels (0x752024, 0x752124)
+/* 0x409bc0: the SETUP PLAYER dialog: the window, a cyan frame, the title MSG(131, "SETUP PLAYER"), two labels (MSG(132, "PLAYER NAME :"), MSG(134, "MOVE TO ARM-CENTER"))
    and the name g_arenaPlayerName (hidden while it is typed in, g_textFieldOpen); without a message (g_typingArenaName) the name or the
-   second label under the pointer (arenaNameDialog_hitTest's 0 / 2) shadowed in yellow; three buttons (MSG(135, "$[0] O K"), 0x80 apart;
+   second label under the pointer (playerSetup_hitTest's 0 / 2) shadowed in yellow; three buttons (MSG(135, "$[0] O K"), 0x80 apart;
    3 .. 5, lit under the pointer), the border. The original leaves eax to callers that ignore it */
-void (arena_drawNameDialog)(void)
+void (lobby_drawPlayerSetup)(void)
 {
-	int x0 = g_arenaNameDialogLeft, y0 = g_arenaNameDialogTop;
-	int hovered = arenaNameDialog_hitTest(g_mouseX, g_mouseY);
+	int x0 = g_playerSetupLeft, y0 = g_playerSetupTop;
+	int hovered = playerSetup_hitTest(g_mouseX, g_mouseY);
 	gfx_setProjection2D3D(2);
 	glLoadIdentity();
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
-	menu_drawTexture(x0, y0, g_arenaNameDialogRight, g_arenaNameDialogBottom, g_dialogFrameTexture);
+	menu_drawTexture(x0, y0, g_playerSetupRight, g_playerSetupBottom, g_dialogFrameTexture);
 	RECT(0, 0x3f800000, 0x3f800000, 0x3f800000);
-	menu_drawRect(x0 + 0x20, y0 + 0x30, g_arenaNameDialogRight - 0x20, g_arenaNameDialogBottom - 0x20, 0);
+	menu_drawRect(x0 + 0x20, y0 + 0x30, g_playerSetupRight - 0x20, g_playerSetupBottom - 0x20, 0);
 	TEXT(bright);
 	text_draw16(x0 + 0x50, y0 + 0x10, (const char *)MSG(131, "SETUP PLAYER"));
 	bind_buttons();
@@ -468,14 +468,14 @@ void (arena_drawNameDialog)(void)
 			shadowed(x0 + 0x3f, y0 + 0x95, (const char *)MSG(134, "MOVE TO ARM-CENTER"));
 	}
 	for (int k = 0; k < 3; k++) {
-		int x = g_arenaNameDialogLeft + k * 0x78, y = g_arenaNameDialogTop;
+		int x = g_playerSetupLeft + k * 0x78, y = g_playerSetupTop;
 		bind_buttons();
 		glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 		button(hovered == k + 3 && !g_typingArenaName, x + 0x32, y + 0xdc, x + 0x96, y + 0xfc, 0.4f);
-		text_drawBox16(x + 0x32, g_arenaNameDialogTop + 0xe4, x + 0x96, (const char *)(MSG(135, "$[0] O K") + k * 0x80));
+		text_drawBox16(x + 0x32, g_playerSetupTop + 0xe4, x + 0x96, (const char *)(MSG(135, "$[0] O K") + k * 0x80));
 	}
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
-	menu_drawCornerOrnaments(g_arenaNameDialogLeft, g_arenaNameDialogTop, g_arenaNameDialogRight, g_arenaNameDialogBottom);
+	menu_drawCornerOrnaments(g_playerSetupLeft, g_playerSetupTop, g_playerSetupRight, g_playerSetupBottom);
 }
 
 /* ---- the game room's list of games: its mouse ---- */
@@ -722,7 +722,7 @@ static void blink_down(void)
    search's end (g_lobbySearching searching, g_serverAnswerIn the answer in, g_searchResult its result -1 .. 4: messages 0x40 / 0x46,
    g_lobbyRefreshing the list to fetch, g_arenaUpdateNotice) and blink, the list's refresh (g_lobbyRefreshing: its timer g_arenaListRefreshTimer against g_listRefreshPeriod,
    a stop g_netListDone); then the list; then a join (g_lobbyJoinStarted: once typed, the password, g_arenaJoinPassword, checked against the
-   game's, message 0x27 when wrong; or the join sent, g_arenaJoinNeedsPassword clear), a typed game address (g_arenaFull: joined as
+   game's, message 0x27 when wrong; or the join sent, g_arenaJoinNeedsPassword clear), a typed game address (g_typingArenaAddress: joined as
    99999 when not empty) or a join confirmed (g_lobbyJoinRequest). The original leaves eax to callers that ignore it */
 void (arena_drawGamesPage)(void)
 {
@@ -804,13 +804,13 @@ void (arena_drawGamesPage)(void)
 			menu_showMessage(0x27);
 		return;
 	}
-	if (g_arenaFull) {
+	if (g_typingArenaAddress) {
 		if (g_textFieldOpen)
 			return;
-		g_arenaFull = 0;
-		memset((void *)ADDR(g_typedArenaName), 0, 6 * 4);
-		strcpy((char *)ADDR(g_typedArenaName), g_chatLine);
-		if (g_typedArenaName)
+		g_typingArenaAddress = 0;
+		memset((void *)ADDR(g_typedArenaAddress), 0, 6 * 4);
+		strcpy((char *)ADDR(g_typedArenaAddress), g_chatLine);
+		if (g_typedArenaAddress)
 			arena_joinListed(99999);
 	}
 	if (g_lobbyJoinRequest)
@@ -850,16 +850,16 @@ static void lobby_leave(void)
 }
 
 /* 0x406c30 (the arena lobby's list of games, its mouse: with the arena camera arrived (g_arenaCameraMode 2), not
-   while joining, with the "full" box or a message box). A right click (not while searching or connecting) drops the
+   while joining, with the address box or a message box). A right click (not while searching or connecting) drops the
    connection and the mode. A click (arenaGameList_hitTest) on: 0 search the network (DirectPlay, arena_openSession), 1 connect to
-   the lobby server (lobby_openConnection), 2 the arena's title, 3 join (with games; not while busy), 4 back (a
+   the lobby server (lobby_openConnection), 2 a game's IP address typed (arena_editAddress), 3 join (with games; not while busy), 4 back (a
    refresh in progress ended), 5 leave the lobby (mode 0), 15 / 16 one row up / down, or a row (6 .. 14): selects
    it, or on the selected row again (g_arenaListClickArmed) joins it. A busy lobby answers sound 6. Holding the button on the
    arrows scrolls once the blink clock reaches 5. The caller ignores the eax it leaves */
 void (arenaGames_mouse)(void)
 {
 	int mode = g_arenaCameraMode;
-	if (mode == 1 || mode == 0 || g_arenaJoinNeedsPassword || g_arenaFull || g_dialogOpen)
+	if (mode == 1 || mode == 0 || g_arenaJoinNeedsPassword || g_typingArenaAddress || g_dialogOpen)
 		return;
 	if (g_rightClick) {
 		if (g_lobbySearching || g_lanSearch)
@@ -880,7 +880,7 @@ void (arenaGames_mouse)(void)
 				sound_playMenu(6);
 				return;
 			}
-			if (g_arenaFull)
+			if (g_typingArenaAddress)
 				return;
 			sound_playMenu(0);
 			if (on == 0) {
@@ -914,17 +914,17 @@ void (arenaGames_mouse)(void)
 			}
 			break;
 		case 2:
-			if (g_arenaFull)
+			if (g_typingArenaAddress)
 				return;
 			sound_playMenu(0);
-			arena_editTitle();
+			arena_editAddress();
 			break;
 		case 3:
 			if (lobby_busy()) {
 				sound_playMenu(6);
 				return;
 			}
-			if (g_arenaFull)
+			if (g_typingArenaAddress)
 				return;
 			if (g_gameCount <= 0) {
 				sound_playMenu(6);
@@ -933,7 +933,7 @@ void (arenaGames_mouse)(void)
 			lobby_join();
 			break;
 		case 4:
-			if (g_arenaFull)
+			if (g_typingArenaAddress)
 				return;
 			lobby_leave();
 			g_searchResult = -1;
@@ -952,7 +952,7 @@ void (arenaGames_mouse)(void)
 				sound_playMenu(6);
 				return;
 			}
-			if (g_arenaFull)
+			if (g_typingArenaAddress)
 				return;
 			lobby_leave();
 			arena_leaveSession();
@@ -961,12 +961,12 @@ void (arenaGames_mouse)(void)
 			g_netListDone = 1;
 			break;
 		case 15:
-			if (g_arenaFull)
+			if (g_typingArenaAddress)
 				return;
 			games_up();
 			break;
 		case 16:
-			if (g_arenaFull)
+			if (g_typingArenaAddress)
 				return;
 			if (!games_down())
 				return;
@@ -974,7 +974,7 @@ void (arenaGames_mouse)(void)
 		default:
 			if (on < 6 || on > 14)
 				break;
-			if (g_arenaFull)
+			if (g_typingArenaAddress)
 				return;
 			int row = on - 6;
 			if (g_listTop + row >= g_gameCount)
@@ -998,7 +998,7 @@ void (arenaGames_mouse)(void)
 			break;
 		}
 	}
-	if (!g_mouseHeld || g_arenaCameraMode != 2 || g_arenaFull)
+	if (!g_mouseHeld || g_arenaCameraMode != 2 || g_typingArenaAddress)
 		return;
 	int on = arenaGameList_hitTest(g_mouseX, g_mouseY);
 	if ((on != 15 && on != 16) || !(g_cursorBlink >= k_5f))

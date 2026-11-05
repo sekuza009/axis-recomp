@@ -125,7 +125,7 @@ static u32 two_buttons(const TwoButtons *d)
 #undef Y1
 }
 
-/* 0x44e180: the delete question (deleteDialog_hitTest, question 0x751da4); profile_drawLogOutQuestion: the log-out question (logOutDialog_hitTest,
+/* 0x44e180: the delete question (deleteDialog_hitTest, question MSG(127, "ARE YOU SURE?")); profile_drawLogOutQuestion: the log-out question (logOutDialog_hitTest,
    question MSG(128, "ARE YOU SURE?")) */
 u32 (profile_drawDeleteQuestion)(void)
 {
@@ -138,7 +138,7 @@ u32 (profile_drawLogOutQuestion)(void)
 	return two_buttons(&d);
 }
 
-/* 0x44de00: the new-profile dialog (g_newNameDialogLeft, 0x9f8ea8 .. 0x9f8f20, g_newNameDialogBottom): the frame, the title 0x751ca4, the
+/* 0x44de00: the new-profile dialog (g_newNameDialogLeft, 0x9f8ea8 .. 0x9f8f20, g_newNameDialogBottom): the frame, the title MSG(125, "REGISTRY PROFILE"), the
    name field, the two buttons side by side (the hovered one, by newNameDialog_hitTest, bright; OK dimmed while no name has
    been typed, g_chatLine) and the border. Returns the border call's eax */
 u32 (profile_drawNewDialog)(void)
@@ -322,7 +322,7 @@ static void stat_bars(int x, int y, int step, const float *scale, float grey)
 	glDisable(GL_TEXTURE_2D);
 }
 
-/* 0x44e640: the pilot-select dialog (g_pilotSelectLeft, 0x9f8c50 .. 0x9f6830, g_pilotSelectBottom): the window, its title 0x75e7a4 and
+/* 0x44e640: the pilot-select dialog (g_pilotSelectLeft, 0x9f8c50 .. 0x9f6830, g_pilotSelectBottom): the window, its title MSG(531, "CHARACTER SELECT") and
    rule; the portraits (texture g_characterTexture) and over them the chosen pilot's (g_emblemCursor: cell % 3, / 3 of 86 texels)
    growing by 2 a reveal step (g_profileReveal, up to 8, one a 1.0 of g_profileRevealClock) under a pulsing frame (g_fontAsciiLarge; its alpha
    by g_profileFrameAlpha, which bounces between 2 and 38 at g_profileFrameStep a frame); the details: 13 labels (MSG(532, "NAME :")), the pilot's

@@ -18,7 +18,7 @@
 0xa0b404,void *,g_dplay,src/net/dplay_calls.c,g_dplay
 0x4e0464,int,g_fovKeys,src/app/main_loop.c,g_fovKeys
 0x9f8c48,u32,g_frameStep,src/menu/profile_dialogs.c,g_profileFrameStep
-0x4db714,int,g_full,src/menu/game_lists.c,g_arenaFull
+0x4db714,int,g_full,src/menu/game_lists.c,g_typingArenaAddress
 0x4dda48,float,g_introZoom,src/app/main_loop.c,g_introZoom
 0x9dd56c,int,g_joined,src/menu/game_lists.c,g_roomJoined
 0x4db8bc,int,g_joining,src/menu/game_lists.c,g_arenaJoinNeedsPassword

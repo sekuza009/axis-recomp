@@ -8,7 +8,7 @@
 #define PANEL_X(addr) GAME_VAR(int, addr)
 #define PANEL_Y(addr) GAME_VAR(int, (addr) + 4)
 #define ARENA_SETUP ADDR(g_newArenaFormLeft)      /* the arena settings (name, password, limits) */
-#define ARENA_CREATE ADDR(g_arenaNameDialogLeft)     /* "create arena" */
+#define ARENA_CREATE ADDR(g_playerSetupLeft)     /* "create arena" */
 #define ARENA_JOIN ADDR(g_arenaGameListLeft)    /* the game list (the join password) */
 #define ROOM_TOP ADDR(g_roomFormLeft)
 #define ROOM_LOGIN ADDR(g_roomLoginLeft)     /* the Ladder login (ID, password) */

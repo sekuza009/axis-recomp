@@ -555,7 +555,7 @@ u32 (chat_keepLastLine)(void)
 	return (u32)input_initKeyboard(g_hWndMain);
 }
 
-/* 0x42ef30: a display mode change's problem reported (ChangeDisplaySettings' answer): codes 1 and -1 .. -5 each show their message (0x7511a4 ..) in a box titled
+/* 0x42ef30: a display mode change's problem reported (ChangeDisplaySettings' answer): codes 1 and -1 .. -5 each show their message (MSG(103, "SYSTEM MODE CHANGE RESTART") ..) in a box titled
    MSG(100, "USERMESSAGE") over the main window; returns the box's answer, or the code itself when it has no message */
 int (app_reportDisplayModeError)(int code)
 {

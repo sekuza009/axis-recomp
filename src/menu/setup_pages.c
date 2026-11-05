@@ -17,10 +17,10 @@ static void tex_quad(float s0, float t0, float s1, float t1, int x0, int y0, int
 	glEnd();
 }
 
-/* 0x424810: the sound page (0x4ddad0 .. 0x4ddadc): the window, a cyan frame, the title 0x7533a4; the volume slider
+/* 0x424810: the sound page (0x4ddad0 .. 0x4ddadc): the window, a cyan frame, the title MSG(171, "SETUP SOUND"); the volume slider
    from the button texture (g_buttonTexture): the two arrows, the track and the bar (the volume g_volumeSetting long); while
    g_setupPressedClock runs down (by g_frameTime, then -1 into g_setupPressed) the arrow pressed (g_setupPressed: 0 / 1, or 2 / 3 a row lower)
-   lit; the label MSG(172, "EFFECT SOUND") and three switches (MSG(173, "BGM"), 0x80 apart) with their on / off names (0x753624 + 0x80 x:
+   lit; the label MSG(172, "EFFECT SOUND") and three switches (MSG(173, "BGM"), 0x80 apart) with their on / off names (MSG(176, "OFF") + 0x80 x:
    the volume on, g_setupSound3D, g_setupStereoReverse), the one under the pointer (5 .. 7, by setupSound_hitTest) yellow with a shadow; two
    buttons (MSG(178, "$[0] ACCEPT"), lit from 8) and the border. The original leaves eax to callers that ignore it */
 void (setup_drawSoundPage)(void)
@@ -104,7 +104,7 @@ void (setup_drawSoundPage)(void)
 #undef Y1
 }
 
-/* 0x425460: the graphics page ("SETUP GRAPHIC"; 0x4dddd0 .. 0x4ddddc): the window, the title 0x7538a4, seven labels (0x753924, 0x80
+/* 0x425460: the graphics page ("SETUP GRAPHIC"; 0x4dddd0 .. 0x4ddddc): the window, the title MSG(181, "SETUP GRAPHIC"), seven labels (MSG(182, "VIDEO MODE"), 0x80
    apart) and their values: the screen size (the names at g_resolutionNames by g_setupResolution) and six choices, each from its own
    table of 0x32-byte names (by 0x4ddba4 .. 0x4ddbb8); the value under the pointer (0 .. 6, by setupGraphic_hitTest) drawn
    again with a shadow, in yellow; two buttons (MSG(189, "$[0] ACCEPT"), lit from 7) and the border. The caller ignores the eax it
@@ -212,7 +212,7 @@ static void key_tab(int tab)
 #undef Y0
 }
 
-/* the fourth tab: its title, labels (0x7560a4, and 0x756224 lower), the two switches (0x4de1c0 / 0x4de1c4: on
+/* the fourth tab: its title, labels (MSG(261, "INVERT MOUSE"), and MSG(264, "CROSSHAIRS") lower), the two switches (0x4de1c0 / 0x4de1c4: on
    MSG(119, "ON"), off MSG(118, "OFF")), the sensitivity slider (g_sensitivitySlider, its arrows lit while g_setupPressedClock runs down: g_setupPressed 0 /
    1) and the crosshair g_crosshair: when it changed (from g_lastCrosshair) its texture looked up again (0 .. 7: the path
    "texture/crosshair/crosshair<n>"; others keep the path in g_crosshairName) into g_crosshairTexture, drawn in a box */

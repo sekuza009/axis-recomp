@@ -180,7 +180,7 @@ static void preview_controls(const Form *f, int left, int right, int custom, con
 	text_drawBox16(X1 - 0x96, Y0 + 0xfb, X1 - 0x16, (const char *)MSG(501, "ADVANCED"));
 }
 
-/* 0x43bfe0: the game room's settings form (0x9dd1b8 .. 0x9dd1c4) for g_roomSettingsName: the title 0x75a424, a cyan line, the
+/* 0x43bfe0: the game room's settings form (0x9dd1b8 .. 0x9dd1c4) for g_roomSettingsName: the title MSG(396, "CREATE LADDER GAME"), a cyan line, the
    labels (MSG(397, "TITLE"), 0x80 apart), the values (the fifth row's text MSG(17, "DO NOT USE"), the modes at MSG(791, "DEATH MATCH"); hidden while
    edited: g_editingRoomName, g_editingRoomPassword, g_editingFragLimit, g_editingTimeLimit). Unless a field is being edited (g_textFieldOpen) or the "leave?" box is up
    (g_arenaUpdateNotice), the value under the pointer (roomSettings_hitTest) highlighted. Two buttons (MSG(405, "$[0] O K"), lit from 8 unless
@@ -221,7 +221,7 @@ void (room_drawGameSettings)(void)
 	menu_drawCornerOrnaments(X0, Y0, X1, Y1);
 }
 
-/* two buttons (0x7517a4, 0x80 apart) in a box over the arena form; the button lit is lit_from + its index */
+/* two buttons (MSG(115, "$[0] O K"), 0x80 apart) in a box over the arena form; the button lit is lit_from + its index */
 static void box_buttons(int hovered, int lit_from)
 {
 	const u32 *bright = g_arenaBright, *dim = g_arenaDim;
@@ -231,7 +231,7 @@ static void box_buttons(int hovered, int lit_from)
 	}
 }
 
-/* 0x40b750: the arena screen's form for a new arena (0x4dbb00 .. 0x4dbb0c) for g_newArenaName: the title 0x752c24, the
+/* 0x40b750: the arena screen's form for a new arena (0x4dbb00 .. 0x4dbb0c) for g_newArenaName: the title MSG(156, "CREATE ARENA"), the
    labels (MSG(157, "GAME NAME")), the values (the kind's name from g_arenaOnOff2, the modes at MSG(471, "DEATH MATCH"); hidden while edited: g_editingNewArenaName,
    g_typingArenaPassword, g_editingNewArenaFragLimit, g_editingNewArenaTimeLimit). Unless a field is being edited, the confirmation (g_hostErrorBox) or "leave?" box (g_arenaUpdateNotice)
    or the map list (g_mapListOpen) is up, the value under the pointer (createArena_hitTest) highlighted. Two buttons (MSG(165, "$[0] IPX GAME"), lit

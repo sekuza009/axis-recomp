@@ -25,9 +25,9 @@
 0x4dbac8,int,g_arenaHaveList
 0x4dbaa8,int,g_arenaListFull
 0x4dbaf8,float,g_arenaSearchClock
-0x4dbb68,int,g_arenaNameDialogLeft
-0x4dbb70,int,g_arenaNameDialogRight
-0x4dbb74,int,g_arenaNameDialogBottom
+0x4dbb68,int,g_playerSetupLeft
+0x4dbb70,int,g_playerSetupRight
+0x4dbb74,int,g_playerSetupBottom
 # game room
 0x9dced0,int,g_retypePassword
 0x9dd1b4,int,g_rankingPrevPage

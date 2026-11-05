@@ -75,7 +75,7 @@ void (menuState400_enter)(void)
 {
 	static const Store layout[] = {
 		{ OBJ(g_lobbyTopEase), 0 }, { ADDR(g_lobbySubState), 5 }, { OBJ(g_lobbyTopRect), 0x50 }, { (OBJ(g_lobbyTopRect) + 0x4), 0x96 }, { (OBJ(g_lobbyTopRect) + 0x8), 0x230 }, { (OBJ(g_lobbyTopRect) + 0xc), 0x15e },
-		{ ADDR(g_arenaNameDialogRight), 0x21c }, { ADDR(g_arenaNameDialogBottom), 0x190 }, { ADDR(g_arenaGameListRight), 0x262 }, { ADDR(g_newArenaFormLeft), 0x28 }, { ADDR(g_newArenaFormTop), 0x1e },
+		{ ADDR(g_playerSetupRight), 0x21c }, { ADDR(g_playerSetupBottom), 0x190 }, { ADDR(g_arenaGameListRight), 0x262 }, { ADDR(g_newArenaFormLeft), 0x28 }, { ADDR(g_newArenaFormTop), 0x1e },
 		{ ADDR(g_newArenaFormRight), 0x258 } };
 	static const u32 cleared1[] = { ADDR(g_typingArenaName), ADDR(g_editingNewArenaName), ADDR(g_editingNewArenaFragLimit), ADDR(g_editingNewArenaTimeLimit), ADDR(g_typingArenaPassword), ADDR(g_lanSearch), ADDR(g_lobbySearching), ADDR(g_arenaHaveList),
 	                                ADDR(g_arenaListFull), ADDR(g_gameCount), ADDR(g_lobbyBlinkClock) };
@@ -86,8 +86,8 @@ void (menuState400_enter)(void)
 		{ ADDR(g_armcFrom), 1 } };
 	g_matchMode = 1;
 	arena_clearSessionEntry();
-	g_arenaNameDialogLeft = 0x64;
-	g_arenaNameDialogTop = 0x64;
+	g_playerSetupLeft = 0x64;
+	g_playerSetupTop = 0x64;
 	(*(int *)&g_cursorBlink) = 0;
 	g_arenaGameListLeft = 0x14;
 	g_arenaGameListTop = 0x14;
@@ -104,7 +104,7 @@ void (menuState400_enter)(void)
 	g_menuLookAtZ = lz;
 	CLEAR_ALL(cleared1);
 	lobbyTop_layout();
-	arenaNameDialog_layout();
+	playerSetup_layout();
 	arenaGameList_layout();
 	arenaDialogBox_layout();
 	arenaOptions_layout();
