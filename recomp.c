@@ -3134,18 +3134,18 @@ int ptx_open(const char *path, char *out, int *fmt, int *width, int *height);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 int ptx_decode(void *f, char *out, int *fmt, int *width, int *height);
 /* batch 80 (lifted/grp26.c) */
-/* 0x455aa0 (thiscall) tex_loadColorMask(i): load texture i's image (name +0xc0128 + i * 0x68, cut at '*', under the
+/* 0x455aa0 (thiscall) tex_loadImage(i): load texture i's image (name +0xc0128 + i * 0x68, cut at '*', under the
    dir +8 if any) at +0x114, its alpha into the image's 4th bytes (the average of the ALPHA image's RGB at +0x40114,
    or 0xff without one) and its colour mask at +0x80114 (or the colour at 0xa1f238 in every pixel), by the manager's
    format +0xc0114: 0 PTX items of the texture dat (name, name_ALPHA, name_COLOR; tables set up on first use),
    1 BMP files (name.BMP must open), 2 PTX files (name.RAW, name_ALPHA.RAW, name_COLOR.RAW); a PTX of another size
    than +0xc0118 x +0xc011c is fatal */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-THISCALL void tex_loadColorMask(char *tm, DWORD i);
+THISCALL void tex_loadImage(char *tm, DWORD i);
 /* batch 81 (lifted/grp27.c) */
 /* 0x4566c0 (thiscall) tex_bind(i): bind texture i through the cache of GL texture slots (0x14 bytes: slot number,
    owner texture, GL name, next, prev; a ring at +0xcd12c, +0xcd134 the slot reused next). A texture without a slot
-   (+0xc0168 < 0) takes that one: loaded (tex_loadColorMask), tinted (flag 2), uploaded (flag 1: no mipmaps), the
+   (+0xc0168 < 0) takes that one: loaded (tex_loadImage), tinted (flag 2), uploaded (flag 1: no mipmaps), the
    upload count +0xcd138 counted; one with a slot is reloaded the same way when flagged (+0xc018c), else just bound.
    The slot then becomes the newest: moved before the next-reused one, or, if it was that one, the ring advances and
    the new next-reused slot's owner loses it */
@@ -11196,9 +11196,9 @@ static void texmask_setup(void)
 	fill((void *)0xa1f238, 4); G32(0xa0e00c) = irnd(0, 1);
 	g_a[0] = i;
 }
-ST(tex_loadColorMask, texmask_setup();, (TC(void, 0x455aa0, char *, int)(BUF, g_a[0]), 0), (tex_loadColorMask(BUF, (DWORD)g_a[0]), 0))
+ST(tex_loadImage, texmask_setup();, (TC(void, 0x455aa0, char *, int)(BUF, g_a[0]), 0), (tex_loadImage(BUF, (DWORD)g_a[0]), 0))
 /* batch 81 */
-/* tex_loadColorMask's test manager with 21 texture records (flags 0..3, tint colours, reload flag) and a ring of
+/* tex_loadImage's test manager with 21 texture records (flags 0..3, tint colours, reload flag) and a ring of
    1..6 GL slots owned by distinct textures (texture i among them half the time) */
 static void texbind_setup(void)
 {
@@ -17499,7 +17499,7 @@ static const STest g_stests[] = {
 	/* batch 79 */
 	T(ptx_open, 0, 200, 0), T(ptx_decode, 0, 200, 0),
 	/* batch 80 */
-	T(tex_loadColorMask, 0, 400, 0),
+	T(tex_loadImage, 0, 400, 0),
 	/* batch 81 */
 	T(tex_bind, 0, 300, 0),
 	/* batch 82 */
@@ -17874,7 +17874,7 @@ static void run_state_tests(void)
 
 /* Was this function changed in memory since the exe was loaded? The patch DLL (axisnet) rewrites some functions at
    start-up: call sites redirected to its own code (shape_getByName's Shape.dat lookups for the custom mechs,
-   tex_loadColorMask's mask lookup, menu_vertex calls), entries detoured (menu_drawRect), constants and texture
+   tex_loadImage's mask lookup, menu_vertex calls), entries detoured (menu_drawRect), constants and texture
    coordinates (hud_drawDigits). The rebuilds come from the code on disk, so hooking such a function would undo the
    patch whenever the tests do not reach the patched case. The function's bytes (size from fnsizes.h) are compared
    with the running exe's file; hooks installed earlier in this pass are in other functions, so they do not count. */
@@ -17896,7 +17896,7 @@ static const DWORD g_patchOk[][2] = {
 	{ 0x460921, 4 },
 	/* hud_pass (markers_wrap, lockon_wrap, mainhud_wrap, rank_wrap, fps_wrap) */
 	{ 0x498581, 4 }, { 0x4985c5, 4 }, { 0x498655, 4 }, { 0x4986a1, 4 }, { 0x498863, 4 },
-	/* tex_loadColorMask (maskfind_wrap) */
+	/* tex_loadImage (maskfind_wrap) */
 	{ 0x45636f, 4 },
 	/* shape_getByName (mk_find, shpread_wrap) */
 	{ 0x466eaa, 4 }, { 0x466eb9, 4 }, { 0x466ee1, 4 }, { 0x466ef0, 4 }, { 0x4671f7, 4 }, { 0x467215, 4 },
@@ -18540,7 +18540,7 @@ static const struct { DWORD addr; void *fn; const char *name; } g_hooks3[] = {
 	/* batch 79 */
 	{ 0x46eb00, (void *)ptx_open, "ptx_open" }, { 0x46ed80, (void *)ptx_decode, "ptx_decode" },
 	/* batch 80 */
-	{ 0x455aa0, (void *)tex_loadColorMask, "tex_loadColorMask" },
+	{ 0x455aa0, (void *)tex_loadImage, "tex_loadImage" },
 	/* batch 81 */
 	{ 0x4566c0, (void *)tex_bind, "tex_bind" },
 	/* batch 82 */

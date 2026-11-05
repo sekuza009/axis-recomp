@@ -79,14 +79,14 @@ void *THISCALL (tex_getItemFileBy)(u8 *manager, const char *name)
 }
 
 /* 0x456be0 (thiscall on the texture manager): a texture's id by name: each of the six banks (+4 ..) asked in turn
-   (tex_allocIdBy, with the rest of the arguments); the first answer k x 512 + its index. None: a fatal message, -1 */
-int THISCALL (tex_getIdByName)(u8 *sets, const char *name, u32 a, u32 b, u32 c, u32 d, u32 e, u32 f, u32 g)
+   (tex_allocIdBy, with the flags and the two colours' hue, saturation, value); the first answer k x 512 + its index. None: a fatal message, -1 */
+int THISCALL (tex_getIdByName)(u8 *manager, const char *name, u32 flags, u32 h1, u32 s1, u32 v1, u32 h2, u32 s2, u32 v2)
 {
 	for (int k = 0; k < 6; k++) {
-		void *manager = ((TextureManager *)sets)->banks[k];
-		if (!manager)
+		void *bank = ((TextureManager *)manager)->banks[k];
+		if (!bank)
 			continue;
-		int i = tex_allocIdBy(manager, (u32)name, a, b, c, d, e, f, g);
+		int i = tex_allocIdBy(bank, (u32)name, flags, h1, s1, v1, h2, s2, v2);
 		if (i >= 0)
 			return k * 512 + i;
 	}
@@ -95,10 +95,10 @@ int THISCALL (tex_getIdByName)(u8 *sets, const char *name, u32 a, u32 b, u32 c, 
 }
 
 /* 0x466430 (thiscall on a shape): each of its parts (0x80 bytes from +0x14, +0x10 of them) given its texture (+0x44:
-   tex_getIdByName on the game's texture manager, 0xa0e010, by the part's name at +4, the rest of the arguments passed on);
+   tex_getIdByName on the game's texture manager, 0xa0e010, by the part's name at +4, with the flags and two colours given);
    with a suffix the name gets 0x4b12f4 and the suffix appended first (too long for the 0x40 bytes: a fatal message
    first). Its callers ignore the eax it leaves */
-void THISCALL (shape_bindTextureBy)(u8 *shape, const char *suffix, int flags, int a, int b, int c, int d, int e, int f)
+void THISCALL (shape_bindTextureBy)(u8 *shape, const char *suffix, int flags, int h1, int s1, int v1, int h2, int s2, int v2)
 {
 	Model *md = (Model *)shape;
 	for (int i = 0; i < md->partCount; i++) {
@@ -111,7 +111,7 @@ void THISCALL (shape_bindTextureBy)(u8 *shape, const char *suffix, int flags, in
 			strcat(name, (const char *)STR(0x4b12f4, "*"));
 			strcat(name, suffix);
 		}
-		sp->texture = tex_getIdByName((*(void **)&g_textures), name, flags, a, b, c, d, e, f);
+		sp->texture = tex_getIdByName((*(void **)&g_textures), name, flags, h1, s1, v1, h2, s2, v2);
 	}
 }
 
@@ -131,7 +131,7 @@ void THISCALL (tex_bind)(u8 *tm, int i)
 	if (texture->slot < 0) {
 		slot = OLDEST;
 		slot->record = i;
-		tex_loadColorMask(tm, i);
+		tex_loadImage(tm, i);
 		if (*(u8 *)&texture->flags & 2)
 			tex_applyTintMask(tm, i);
 		tex_upload(tm, slot->glTexture, *(u8 *)&texture->flags & 1 ? 0 : 1);
@@ -139,7 +139,7 @@ void THISCALL (tex_bind)(u8 *tm, int i)
 	} else {
 		slot = (TexSlot *)mg->slots + texture->slot;
 		if (texture->changed == 1) {
-			tex_loadColorMask(tm, i);
+			tex_loadImage(tm, i);
 			if (*(u8 *)&texture->flags & 2)
 				tex_applyTintMask(tm, i);
 			tex_upload(tm, slot->glTexture, *(u8 *)&texture->flags & 1 ? 0 : 1);
@@ -417,7 +417,7 @@ static void colour_fill(u8 *m)
    up on first use, 0xa0e00c), 1 BMP files (name.BMP must open), 2 PTX files (name.RAW, name_ALPHA.RAW,
    name_COLOR.RAW); a PTX of another size than +0xc0118 x +0xc011c is fatal. (The original's SEH frame, for its BMP
    objects, is not reproduced.) Its callers ignore the eax it leaves */
-void THISCALL (tex_loadColorMask)(u8 *m, int i)
+void THISCALL (tex_loadImage)(u8 *m, int i)
 {
 	TextureBank *mg = (TextureBank *)m;
 	u32 bmp[3][0x12];   /* BMP reader objects (vtable 0x4a96f8) for the image, the alpha, the mask */

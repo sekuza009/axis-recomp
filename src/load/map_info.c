@@ -71,7 +71,7 @@ int THISCALL (map_loadItemInfoFrom)(u8 *scene, const char *path)
 
 /* 0x48b5c0 (thiscall on the scene): the map's mission file (its name from +0x108 and name by 0x4c77f0; none: a fatal
    message): its version (0x1201, else a fatal message), two sections skipped (each a scrambled size, then that many
-   bytes), a third size read, then the sections read in turn, each announced to the log first: 0x48b460's, the way
+   bytes), a third size read, then the sections read in turn, each announced to the log first: the commands (map_readCommands), the way
    points and the triggers. Its caller ignores the eax it leaves */
 void THISCALL (map_loadMissionInfoFrom)(u8 *scene, const char *name)
 {

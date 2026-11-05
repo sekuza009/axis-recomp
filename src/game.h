@@ -228,7 +228,7 @@ typedef struct { u32 vtable; void *banks[6]; i32 count; } TextureManager;   /* t
 #define net_sendPacketData(size, data) GAME_FN(net_sendPacketData, 0x4a8360, u32, int, void *)(size, data)
 #define glWindow_setupPixelFormat(dc) GAME_FN(glWindow_setupPixelFormat, 0x467e60, int, void *)(dc)
 #define glWindow_restoreDisplayMode() GAME_FN(glWindow_restoreDisplayMode, 0x468050, void, void)()
-#define tex_loadColorMask(textures, i) GAME_THISFN(tex_loadColorMask, 0x455aa0, void, void *, int)(textures, i)
+#define tex_loadImage(textures, i) GAME_THISFN(tex_loadImage, 0x455aa0, void, void *, int)(textures, i)
 #define tex_applyTintMask(textures, i) GAME_THISFN(tex_applyTintMask, 0x456470, void, void *, int)(textures, i)
 #define tex_upload(textures, id, mode) GAME_THISFN(tex_upload, 0x456520, void, void *, u32, int)(textures, id, mode)
 #define glPixelStorei(pname, v) IMPORT(0x4a9268, void, u32, int)(pname, v)

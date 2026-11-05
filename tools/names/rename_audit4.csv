@@ -151,3 +151,4 @@ cfg_readLines,cfg_readPlayer
 cfg_gameTypeNames,cfg_readServer
 cfg_readAudioLines,cfg_readSound
 cfg_parseKeyNames,cfg_readKeyBindings
+tex_loadColorMask,tex_loadImage
