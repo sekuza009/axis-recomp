@@ -211,7 +211,7 @@ int (app_startupLoad)(void *instance)
 	math_initMathFunction();
 	reg_readCharacterSettings();
 	mech_setEmpty();
-	data_loadPilotProfiles();
+	data_loadCharacterProfiles();
 	data_loadMapInfo();
 	data_loadSkirmishInfo();
 	arena_initOptionTexts();

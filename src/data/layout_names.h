@@ -396,6 +396,8 @@ extern struct GameData g_data;
 #define g_cfgPlayerName ((char *)g_data.g_cfgPlayerName_)
 #undef g_cfgSimpleMenu
 #define g_cfgSimpleMenu (*(int *)((u8 *)g_graphicSettings_v + 0x18))
+#undef g_characterProfiles
+#define g_characterProfiles ((CharacterProfile *)g_data.g_characterProfiles_)
 #undef g_characterTexture
 #define g_characterTexture (*(int *)g_characterTexture_v)
 #undef g_chatCaretX
@@ -2060,8 +2062,6 @@ extern struct GameData g_data;
 #define g_profilePageTop (*(int *)g_profilePageTop_v)
 #undef g_profileProgressSaved
 #define g_profileProgressSaved (*(int *)g_profileProgressSaved_v)
-#undef g_profileRecords
-#define g_profileRecords ((PilotProfile *)g_data.g_profileRecords_)
 #undef g_profileReveal
 #define g_profileReveal (*(int *)g_profileReveal_v)
 #undef g_profileRevealClock
@@ -2422,8 +2422,8 @@ extern struct GameData g_data;
 #define g_screenW (*(int *)g_screenW_v)
 #undef g_searchResult
 #define g_searchResult (*(int *)g_searchResult_v)
-#undef g_selectedPilotLevel
-#define g_selectedPilotLevel (*(int *)((u8 *)g_campaign_v + 0x100))
+#undef g_selectedCharacter
+#define g_selectedCharacter (*(int *)((u8 *)g_campaign_v + 0x100))
 #undef g_sensitivitySlider
 #define g_sensitivitySlider (*(int *)((u8 *)g_controlsEdit_v + 0x108))
 #undef g_sentChatBlock

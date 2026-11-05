@@ -274,7 +274,7 @@ static const u32 k_schemeVal[10][2] = {
 /* 0x474550 (thiscall on the scene): the map's players and actors (file by 0x4c77f0 from mapDir and name; none, or a
    version other than 0x1201, a fatal message): three sections skipped, a dword, then the player count (mapPlayerCount)
    and their 0x58-byte records (mapPlayers), the actor count (mapActorCount) and their 0x5c-byte records (mapActors).
-   Every player but the first: its colour scheme (+4, now less one; when not negative) gives all five parts their
+   Every player but the first: its character (+4, now less one), when not negative also the colour scheme giving all five parts their
    colours, the game type (2 .. 11, by pairs) fixes its first item (3, 5, 0x24, 0x19, 0x16; the last pair the second
    too, 0x17), the other items but the fifth emptied (-1), and it is set up (playerRecord_setFromMapPlayer). The player count also at
    playerRecordCount, every actor but the first run by the game (bot), the clan texture (by 0x4c7724 from stageName) looked up into
@@ -310,9 +310,9 @@ void THISCALL (map_loadActorInfoFrom)(u8 *scene, const char *name)
 	fclose(f);
 	for (int p = 1; p < st->mapPlayerCount; p++) {
 		MapPlayer *rec = &st->mapPlayers[p];
-		if (--rec->value >= 0)
+		if (--rec->character >= 0)   /* (1-based in the file; also its colour preset) */
 			for (int part = 0; part < 5; part++)
-				setPartColor(p, part, rec->value);
+				setPartColor(p, part, rec->character);
 		int *items = rec->items;
 		unsigned mode = st->gameType - 2;
 		if (mode <= 9) {

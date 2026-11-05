@@ -85,7 +85,7 @@ void THISCALL (scene_updateRanking)(Scene *scene)
 		scene->rank[scene->ranking[j]] = place + 1;
 	}
 	if (scene->localPlayer >= 0)
-		scene->rankShown = scene->rank[scene->localPlayer];
+		scene->localRank = scene->rank[scene->localPlayer];
 	if (scene->kingOfTheHill == 1)
 		for (int i = 0; i < 16; i++) {
 			Player *p = &scene->players[i];

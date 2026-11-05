@@ -201,7 +201,7 @@ typedef struct Player {
 	i32 active;   /* +0x108: 1: the slot is in use (0 for the local player's: "press fire" may be shown) */
 	i32 player;   /* +0x10c: (by use) the player record it belongs to (stride 0x47fd2; -1 none); the ranking shows that player's flag (unless Scene.network) */
 	i32 controlledBy;   /* +0x110: the player slot whose machine runs it (actor_setupFromParts' a3): the local machine's actors are those equal to Stage.playerActor */
-	i32 level;   /* +0x114: (by use) its player's level (0 .. 8) */
+	i32 character;   /* +0x114: its player's pilot character (0 .. 8: CHARACTER SELECT's; its CharacterProfile's stats give bonuses) */
 	i32 team;   /* +0x118: 0 / 1 in team games */
 	i32 bot;   /* +0x11c: (by use) not 0: run by the game (targets, following) */
 	float spawnAge;   /* +0x120: seconds since it spawned: the first 3 s it fades in and cannot fire or be hit; the armour deadline is 10 s on from it */
@@ -794,14 +794,14 @@ typedef struct RankRow {
 	u8 _pad0000042[0x2];
 } RankRow;
 
-/* a pilot level's profile (g_profileRecords: the character profile data file's records, */
-typedef struct PilotProfile {
+/* a pilot character (g_characterProfiles: the character profile data file's records, */
+typedef struct CharacterProfile {
 	char name[16];   /* +0x0 */
-	char title[16];   /* +0x10 */
-	i32 rank;   /* +0x20: its class (a MSG(545) string) */
-	i32 level;   /* +0x24 */
+	char corporation[16];   /* +0x10 */
+	i32 sex;   /* +0x20: MSG(545) + it: 1 MALE, 2 FEMALE (the SEX row) */
+	i32 age;   /* +0x24: the AGE row */
 	i32 stats[9];   /* +0x28: percentages: [0] .. [3] the weapon groups' damage, [4] .. the skills (actor and */
-} PilotProfile;
+} CharacterProfile;
 
 /* match packet kind 1, a player's game state (net_sendGamePacket; read by net_processGamePacket) */
 typedef struct GamePacket {
@@ -1012,7 +1012,7 @@ typedef struct SkelManager {
 typedef struct PlayerRecord {
 	i32 used;   /* +0x0: (by use) 1: in use (playerRecord_markUsed / markFree) */
 	char name[0x40];   /* +0x4: (by use) its name (its screenshot: Save\\<name>.BMP) */
-	i32 level;   /* +0x44: (by use) its level (the profile's factors by it) */
+	i32 character;   /* +0x44: its pilot character (g_characterProfiles: the skills and damage factors by it) */
 	i32 team;   /* +0x48 */
 	char partNames[5][0x40];   /* +0x4c: its parts' type names (head, chest, arms, legs, booster: set_part) */
 	char itemNames[6][0x40];   /* +0x18c: its items' names (actor_setItem: the ActorInfo's name) */
@@ -1160,7 +1160,7 @@ typedef struct StartPoint {
 /* a player as the map's actor file gives it (Stage.mapPlayers; playerRecord_setFromMapPlayer) */
 typedef struct MapPlayer {
 	u8 _pad0000000[0x4];
-	i32 value;   /* +0x4: (by use) player_setLevel's value; in the map file 1-based, the colour preset for its parts (map_loadActorInfoFrom) */
+	i32 character;   /* +0x4: (by use) player_setCharacter's value; in the map file 1-based, the colour preset for its parts (map_loadActorInfoFrom) */
 	char name[0x20];   /* +0x8 */
 	i32 team;   /* +0x28 */
 	i32 parts[5];   /* +0x2c: head, chest, arms, legs, booster */
@@ -1796,8 +1796,8 @@ typedef struct Scene {
 	i32 endedByTime;   /* +0x23423b5: (by use) the match ended on its time limit (else its score limit) */
 	float endNoticeTime;   /* +0x23423b9: (by use) the server's end notices every half second */
 	i32 winnerTeam;   /* +0x23423bd */
-	float startCount;   /* +0x23423c1: (by use) "PREPARE THE BATTLE": seconds before the start (3) */
-	i32 startCountShown;   /* +0x23423c5: (by use) the count last shown (-1 none) */
+	float startCountdown;   /* +0x23423c1: (by use) "PREPARE THE BATTLE": seconds before the start (3), counted down */
+	i32 startCountdownShown;   /* +0x23423c5: (by use) the countdown's second last shown (-1 none) */
 	i32 geometryCheckTurn;   /* +0x23423c9: (by use) the geometry table the next game packet checks (net_sendGamePacket: this % 5, then one on; 0 at a later round) */
 	i32 geometryPickUnread[6];   /* +0x23423cd: a random dword in each of the six part / item tables, picked each round; never read */
 	i32 geometryPerRow[6];   /* +0x23423e5: (by use) the six geometry tables' entries per row (6 3 6 7 10 0x18: Game_ctor; net_sendGamePacket's checks) */
@@ -1813,7 +1813,7 @@ typedef struct Scene {
 	i32 flagLoaded;   /* +0x2342421: 1: the local player's flag has been loaded (Save\<name>.BMP, network games; once a match) */
 	float flagUploadTimer;   /* +0x2342425: seconds to the flag atlas's upload (5 after a flag was loaded or received; flag_uploadAtlas) */
 	char mechName[0x11];   /* +0x2342429: the ARM CENTER's mech being edited (menu/armc_mech.c) */
-	i32 pilotLevel;   /* +0x234243a: the local pilot's level (g_selectedPilotLevel: the profile's factors by it; PlayerRecord.level) */
+	i32 character;   /* +0x234243a: the local pilot's character (g_selectedCharacter: CHARACTER SELECT's; PlayerRecord.character) */
 	i32 localTeam;   /* +0x234243e: the local player's team; < 0: only watching (no "press fire", START / JOIN) */
 	i32 level;   /* +0x2342442: the room game's level (1 .. 20, from levelPoints) */
 	i32 levelPoints;   /* +0x2342446 */
@@ -1826,7 +1826,7 @@ typedef struct Scene {
 	i32 ranking[16];   /* +0x23428f6: players in rank order */
 	i32 rank[16];   /* +0x2342936: each player's place (1: first; the HUD shows rank/rankCount) */
 	i32 rankCount;   /* +0x2342976 */
-	i32 rankShown;   /* +0x234297a: (by use) the local player's place */
+	i32 localRank;   /* +0x234297a: the local player's place (scene_updateRanking; -1 at a new round). The lead sound's check right after the update compares it with the place it was just set to, so the sound never plays (as the original) */
 	i32 redTeamCount;   /* +0x234297e: the players on the red side (scene_updateRanking; the HUD's three counts, red / green / blue) */
 	i32 blueTeamCount;   /* +0x2342982: the players on the blue side */
 	i32 noTeamCount;   /* +0x2342986: the players in the game without a team (watching) */
@@ -2058,7 +2058,7 @@ _Static_assert(offsetof(Player, id) == 0x104 && sizeof(((Player *)0)->id) == 0x4
 _Static_assert(offsetof(Player, active) == 0x108 && sizeof(((Player *)0)->active) == 0x4, "scene.fields: Player.active");
 _Static_assert(offsetof(Player, player) == 0x10c && sizeof(((Player *)0)->player) == 0x4, "scene.fields: Player.player");
 _Static_assert(offsetof(Player, controlledBy) == 0x110 && sizeof(((Player *)0)->controlledBy) == 0x4, "scene.fields: Player.controlledBy");
-_Static_assert(offsetof(Player, level) == 0x114 && sizeof(((Player *)0)->level) == 0x4, "scene.fields: Player.level");
+_Static_assert(offsetof(Player, character) == 0x114 && sizeof(((Player *)0)->character) == 0x4, "scene.fields: Player.character");
 _Static_assert(offsetof(Player, team) == 0x118 && sizeof(((Player *)0)->team) == 0x4, "scene.fields: Player.team");
 _Static_assert(offsetof(Player, bot) == 0x11c && sizeof(((Player *)0)->bot) == 0x4, "scene.fields: Player.bot");
 _Static_assert(offsetof(Player, spawnAge) == 0x120 && sizeof(((Player *)0)->spawnAge) == 0x4, "scene.fields: Player.spawnAge");
@@ -2546,12 +2546,12 @@ _Static_assert(offsetof(RankRow, rate) == 0x36 && sizeof(((RankRow *)0)->rate) =
 _Static_assert(offsetof(RankRow, level) == 0x3a && sizeof(((RankRow *)0)->level) == 0x4, "scene.fields: RankRow.level");
 _Static_assert(offsetof(RankRow, power) == 0x3e && sizeof(((RankRow *)0)->power) == 0x4, "scene.fields: RankRow.power");
 _Static_assert(sizeof(RankRow) == 0x44, "scene.fields: size of RankRow");
-_Static_assert(offsetof(PilotProfile, name) == 0x0 && sizeof(((PilotProfile *)0)->name) == 0x10, "scene.fields: PilotProfile.name");
-_Static_assert(offsetof(PilotProfile, title) == 0x10 && sizeof(((PilotProfile *)0)->title) == 0x10, "scene.fields: PilotProfile.title");
-_Static_assert(offsetof(PilotProfile, rank) == 0x20 && sizeof(((PilotProfile *)0)->rank) == 0x4, "scene.fields: PilotProfile.rank");
-_Static_assert(offsetof(PilotProfile, level) == 0x24 && sizeof(((PilotProfile *)0)->level) == 0x4, "scene.fields: PilotProfile.level");
-_Static_assert(offsetof(PilotProfile, stats) == 0x28 && sizeof(((PilotProfile *)0)->stats) == 0x24, "scene.fields: PilotProfile.stats");
-_Static_assert(sizeof(PilotProfile) == 0x4c, "scene.fields: size of PilotProfile");
+_Static_assert(offsetof(CharacterProfile, name) == 0x0 && sizeof(((CharacterProfile *)0)->name) == 0x10, "scene.fields: CharacterProfile.name");
+_Static_assert(offsetof(CharacterProfile, corporation) == 0x10 && sizeof(((CharacterProfile *)0)->corporation) == 0x10, "scene.fields: CharacterProfile.corporation");
+_Static_assert(offsetof(CharacterProfile, sex) == 0x20 && sizeof(((CharacterProfile *)0)->sex) == 0x4, "scene.fields: CharacterProfile.sex");
+_Static_assert(offsetof(CharacterProfile, age) == 0x24 && sizeof(((CharacterProfile *)0)->age) == 0x4, "scene.fields: CharacterProfile.age");
+_Static_assert(offsetof(CharacterProfile, stats) == 0x28 && sizeof(((CharacterProfile *)0)->stats) == 0x24, "scene.fields: CharacterProfile.stats");
+_Static_assert(sizeof(CharacterProfile) == 0x4c, "scene.fields: size of CharacterProfile");
 _Static_assert(offsetof(GamePacket, number) == 0x0 && sizeof(((GamePacket *)0)->number) == 0x1, "scene.fields: GamePacket.number");
 _Static_assert(offsetof(GamePacket, kind) == 0x1 && sizeof(((GamePacket *)0)->kind) == 0x1, "scene.fields: GamePacket.kind");
 _Static_assert(offsetof(GamePacket, player) == 0x2 && sizeof(((GamePacket *)0)->player) == 0x1, "scene.fields: GamePacket.player");
@@ -2710,7 +2710,7 @@ _Static_assert(offsetof(SkelManager, dataUsed) == 0x12c && sizeof(((SkelManager 
 _Static_assert(sizeof(SkelManager) == 0x130, "scene.fields: size of SkelManager");
 _Static_assert(offsetof(PlayerRecord, used) == 0x0 && sizeof(((PlayerRecord *)0)->used) == 0x4, "scene.fields: PlayerRecord.used");
 _Static_assert(offsetof(PlayerRecord, name) == 0x4 && sizeof(((PlayerRecord *)0)->name) == 0x40, "scene.fields: PlayerRecord.name");
-_Static_assert(offsetof(PlayerRecord, level) == 0x44 && sizeof(((PlayerRecord *)0)->level) == 0x4, "scene.fields: PlayerRecord.level");
+_Static_assert(offsetof(PlayerRecord, character) == 0x44 && sizeof(((PlayerRecord *)0)->character) == 0x4, "scene.fields: PlayerRecord.character");
 _Static_assert(offsetof(PlayerRecord, team) == 0x48 && sizeof(((PlayerRecord *)0)->team) == 0x4, "scene.fields: PlayerRecord.team");
 _Static_assert(offsetof(PlayerRecord, partNames) == 0x4c && sizeof(((PlayerRecord *)0)->partNames) == 0x140, "scene.fields: PlayerRecord.partNames");
 _Static_assert(offsetof(PlayerRecord, itemNames) == 0x18c && sizeof(((PlayerRecord *)0)->itemNames) == 0x180, "scene.fields: PlayerRecord.itemNames");
@@ -2826,7 +2826,7 @@ _Static_assert(sizeof(Trigger) == 0x1c, "scene.fields: size of Trigger");
 _Static_assert(offsetof(StartPoint, pos) == 0x0 && sizeof(((StartPoint *)0)->pos) == 0xc, "scene.fields: StartPoint.pos");
 _Static_assert(offsetof(StartPoint, angle) == 0xc && sizeof(((StartPoint *)0)->angle) == 0x8, "scene.fields: StartPoint.angle");
 _Static_assert(sizeof(StartPoint) == 0x14, "scene.fields: size of StartPoint");
-_Static_assert(offsetof(MapPlayer, value) == 0x4 && sizeof(((MapPlayer *)0)->value) == 0x4, "scene.fields: MapPlayer.value");
+_Static_assert(offsetof(MapPlayer, character) == 0x4 && sizeof(((MapPlayer *)0)->character) == 0x4, "scene.fields: MapPlayer.character");
 _Static_assert(offsetof(MapPlayer, name) == 0x8 && sizeof(((MapPlayer *)0)->name) == 0x20, "scene.fields: MapPlayer.name");
 _Static_assert(offsetof(MapPlayer, team) == 0x28 && sizeof(((MapPlayer *)0)->team) == 0x4, "scene.fields: MapPlayer.team");
 _Static_assert(offsetof(MapPlayer, parts) == 0x2c && sizeof(((MapPlayer *)0)->parts) == 0x14, "scene.fields: MapPlayer.parts");
@@ -3344,8 +3344,8 @@ _Static_assert(offsetof(Scene, timeLimit) == 0x23423b1 && sizeof(((Scene *)0)->t
 _Static_assert(offsetof(Scene, endedByTime) == 0x23423b5 && sizeof(((Scene *)0)->endedByTime) == 0x4, "scene.fields: Scene.endedByTime");
 _Static_assert(offsetof(Scene, endNoticeTime) == 0x23423b9 && sizeof(((Scene *)0)->endNoticeTime) == 0x4, "scene.fields: Scene.endNoticeTime");
 _Static_assert(offsetof(Scene, winnerTeam) == 0x23423bd && sizeof(((Scene *)0)->winnerTeam) == 0x4, "scene.fields: Scene.winnerTeam");
-_Static_assert(offsetof(Scene, startCount) == 0x23423c1 && sizeof(((Scene *)0)->startCount) == 0x4, "scene.fields: Scene.startCount");
-_Static_assert(offsetof(Scene, startCountShown) == 0x23423c5 && sizeof(((Scene *)0)->startCountShown) == 0x4, "scene.fields: Scene.startCountShown");
+_Static_assert(offsetof(Scene, startCountdown) == 0x23423c1 && sizeof(((Scene *)0)->startCountdown) == 0x4, "scene.fields: Scene.startCountdown");
+_Static_assert(offsetof(Scene, startCountdownShown) == 0x23423c5 && sizeof(((Scene *)0)->startCountdownShown) == 0x4, "scene.fields: Scene.startCountdownShown");
 _Static_assert(offsetof(Scene, geometryCheckTurn) == 0x23423c9 && sizeof(((Scene *)0)->geometryCheckTurn) == 0x4, "scene.fields: Scene.geometryCheckTurn");
 _Static_assert(offsetof(Scene, geometryPickUnread) == 0x23423cd && sizeof(((Scene *)0)->geometryPickUnread) == 0x18, "scene.fields: Scene.geometryPickUnread");
 _Static_assert(offsetof(Scene, geometryPerRow) == 0x23423e5 && sizeof(((Scene *)0)->geometryPerRow) == 0x18, "scene.fields: Scene.geometryPerRow");
@@ -3361,7 +3361,7 @@ _Static_assert(offsetof(Scene, chosenTeam) == 0x234241d && sizeof(((Scene *)0)->
 _Static_assert(offsetof(Scene, flagLoaded) == 0x2342421 && sizeof(((Scene *)0)->flagLoaded) == 0x4, "scene.fields: Scene.flagLoaded");
 _Static_assert(offsetof(Scene, flagUploadTimer) == 0x2342425 && sizeof(((Scene *)0)->flagUploadTimer) == 0x4, "scene.fields: Scene.flagUploadTimer");
 _Static_assert(offsetof(Scene, mechName) == 0x2342429 && sizeof(((Scene *)0)->mechName) == 0x11, "scene.fields: Scene.mechName");
-_Static_assert(offsetof(Scene, pilotLevel) == 0x234243a && sizeof(((Scene *)0)->pilotLevel) == 0x4, "scene.fields: Scene.pilotLevel");
+_Static_assert(offsetof(Scene, character) == 0x234243a && sizeof(((Scene *)0)->character) == 0x4, "scene.fields: Scene.character");
 _Static_assert(offsetof(Scene, localTeam) == 0x234243e && sizeof(((Scene *)0)->localTeam) == 0x4, "scene.fields: Scene.localTeam");
 _Static_assert(offsetof(Scene, level) == 0x2342442 && sizeof(((Scene *)0)->level) == 0x4, "scene.fields: Scene.level");
 _Static_assert(offsetof(Scene, levelPoints) == 0x2342446 && sizeof(((Scene *)0)->levelPoints) == 0x4, "scene.fields: Scene.levelPoints");
@@ -3374,7 +3374,7 @@ _Static_assert(offsetof(Scene, playerNames) == 0x23424f6 && sizeof(((Scene *)0)-
 _Static_assert(offsetof(Scene, ranking) == 0x23428f6 && sizeof(((Scene *)0)->ranking) == 0x40, "scene.fields: Scene.ranking");
 _Static_assert(offsetof(Scene, rank) == 0x2342936 && sizeof(((Scene *)0)->rank) == 0x40, "scene.fields: Scene.rank");
 _Static_assert(offsetof(Scene, rankCount) == 0x2342976 && sizeof(((Scene *)0)->rankCount) == 0x4, "scene.fields: Scene.rankCount");
-_Static_assert(offsetof(Scene, rankShown) == 0x234297a && sizeof(((Scene *)0)->rankShown) == 0x4, "scene.fields: Scene.rankShown");
+_Static_assert(offsetof(Scene, localRank) == 0x234297a && sizeof(((Scene *)0)->localRank) == 0x4, "scene.fields: Scene.localRank");
 _Static_assert(offsetof(Scene, redTeamCount) == 0x234297e && sizeof(((Scene *)0)->redTeamCount) == 0x4, "scene.fields: Scene.redTeamCount");
 _Static_assert(offsetof(Scene, blueTeamCount) == 0x2342982 && sizeof(((Scene *)0)->blueTeamCount) == 0x4, "scene.fields: Scene.blueTeamCount");
 _Static_assert(offsetof(Scene, noTeamCount) == 0x2342986 && sizeof(((Scene *)0)->noTeamCount) == 0x4, "scene.fields: Scene.noTeamCount");

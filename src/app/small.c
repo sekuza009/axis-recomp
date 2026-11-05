@@ -234,14 +234,14 @@ static void player_seen(Stage *stage, int p)
 		*seen = p + 1;
 }
 
-/* 0x473a10: player record p's level set, and that of every actor of player p */
-void THISCALL (player_setLevel)(Stage *stage, int p, int v)
+/* 0x473a10: player record p's pilot character set, and that of every actor of player p */
+void THISCALL (player_setCharacter)(Stage *stage, int p, int v)
 {
 	player_seen(stage, p);
-	stage->playerRecords[p].level = v;
+	stage->playerRecords[p].character = v;
 	for (int i = 0; i < stage->actorCount; i++)
 		if (stage->actors[i].player == p)
-			stage->actors[i].level = v;
+			stage->actors[i].character = v;
 }
 /* 0x48fe10: the stage's identity matrix, 200 points at the origin (g_vecOrigin), the colour at g_defaultColour */
 void THISCALL (stage_resetMatrixAndPoints)(Stage *stage)
@@ -742,14 +742,14 @@ void THISCALL (stage_advanceScenePath)(u8 *scene, u32 path)
 	}
 }
 
-/* 0x4742f0 (thiscall on the stage): player p set from an actor record: its name (+8), value (+4), team (team), the
+/* 0x4742f0 (thiscall on the stage): player p set from an actor record: its name (+8), character (+4), team (team), the
    parts (head, chest, arm, leg, booster: parts .. parts[4]), the six items (items ..), then marked in use. Its caller
    ignores the eax it leaves */
 void THISCALL (playerRecord_setFromMapPlayer)(Stage *stage, int p, const u8 *rec)
 {
 	const MapPlayer *mp = (const MapPlayer *)rec;
 	player_setName(stage, p, mp->name);
-	player_setLevel(stage, p, mp->value);
+	player_setCharacter(stage, p, mp->character);
 	player_setTeam(stage, p, mp->team);
 	actor_setActorTypeHeadInfoBy(stage, p, mp->parts[0]);
 	actor_setActorTypeChestInfoBy(stage, p, mp->parts[1]);
@@ -761,13 +761,13 @@ void THISCALL (playerRecord_setFromMapPlayer)(Stage *stage, int p, const u8 *rec
 	player_markUsed(stage, p);
 }
 
-/* 0x474210 (thiscall on the stage): player p set from its pieces: name, level, team, the five parts, the six items,
+/* 0x474210 (thiscall on the stage): player p set from its pieces: name, character, team, the five parts, the six items,
    then marked in use (as playerRecord_setFromMapPlayer does from a record). Its caller ignores the eax it leaves */
-void THISCALL (playerRecord_set)(Stage *stage, int p, const char *name, int v, int team, int head, int chest, int arm, int leg,
+void THISCALL (playerRecord_set)(Stage *stage, int p, const char *name, int character, int team, int head, int chest, int arm, int leg,
                              int booster, int i0, int i1, int i2, int i3, int i4, int i5)
 {
 	player_setName(stage, p, name);
-	player_setLevel(stage, p, v);
+	player_setCharacter(stage, p, character);
 	player_setTeam(stage, p, team);
 	actor_setActorTypeHeadInfoBy(stage, p, head);
 	actor_setActorTypeChestInfoBy(stage, p, chest);

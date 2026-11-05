@@ -324,3 +324,8 @@ g_arenaInfoPacket,g_roomInfoPacket
 g_roomRecordPacket,g_roomLeavePacket
 g_armcEnterStep,g_tunnelStep
 g_armcEnterStepF,g_tunnelStepF
+player_setLevel,player_setCharacter
+mech_setPilotLevel,mech_setCharacter
+data_loadPilotProfiles,data_loadCharacterProfiles
+g_selectedPilotLevel,g_selectedCharacter
+g_profileRecords,g_characterProfiles

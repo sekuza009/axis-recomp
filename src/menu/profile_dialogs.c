@@ -270,8 +270,8 @@ void (profile_drawManagementWindow)(void)
 #undef PAGE
 }
 
-/* ---- a pilot's details (g_profileRecords: name, title, class, level, nine stats) ---- */
-#define PILOT(n) (&g_profileRecords[n])
+/* ---- a pilot's details (g_characterProfiles: name, corporation, sex, age, nine stats) ---- */
+#define PILOT(n) (&g_characterProfiles[n])
 
 /* the nine stats, right-aligned (by their digits and sign) from x, step apart from y, each with 0x4b3e2c */
 static void pilot_stats(int pilot, int x, int y, int step)
@@ -326,7 +326,7 @@ static void stat_bars(int x, int y, int step, const float *scale, float grey)
    rule; the portraits (texture g_characterTexture) and over them the chosen pilot's (g_emblemCursor: cell % 3, / 3 of 86 texels)
    growing by 2 a reveal step (g_profileReveal, up to 8, one a 1.0 of g_profileRevealClock) under a pulsing frame (g_fontAsciiLarge; its alpha
    by g_profileFrameAlpha, which bounces between 2 and 38 at g_profileFrameStep a frame); the details: 13 labels (MSG(532, "NAME :")), the pilot's
-   name, title, class (MSG(545, "RESERVED")), level and nine stats (right-aligned, with 0x4b3e2c) beside their bars (g_statBars,
+   name, corporation, sex (MSG(545, "RESERVED") + it: MALE / FEMALE), age and nine stats (right-aligned, with 0x4b3e2c) beside their bars (g_statBars,
    easing to g_statBarTargets); two buttons (MSG(115, "$[0] O K"); 9 / 10 under the pointer by pilotSelect_hitTest, bright) and the border.
    The original leaves eax to callers that ignore it */
 void (profile_drawPilotSelect)(void)
@@ -427,10 +427,10 @@ void (profile_drawPilotSelect)(void)
 		text_draw8(X0 + 0x138, Y0 + k * 0x15 + 0x48, (const char *)(MSG(532, "NAME :") + k * 0x80));
 	set_colour_bits(g_textColour, 0x3f800000, 0x3f800000, 0x3f800000, 0x3f800000);
 text_draw8(X0 + 0x184, Y0 + 0x48, PILOT(g_pilot)->name);
-	text_draw8(X0 + 0x184, Y0 + 0x5d, PILOT(g_pilot)->title);
-	text_draw8(X0 + 0x184, Y0 + 0x72, (const char *)(MSG(545, "RESERVED") + PILOT(g_pilot)->rank * 0x80));
+	text_draw8(X0 + 0x184, Y0 + 0x5d, PILOT(g_pilot)->corporation);
+	text_draw8(X0 + 0x184, Y0 + 0x72, (const char *)(MSG(545, "RESERVED") + PILOT(g_pilot)->sex * 0x80));
 	char text[20];
-	itoa(PILOT(g_pilot)->level, text, 10);
+	itoa(PILOT(g_pilot)->age, text, 10);
 	text_draw8(X0 + 0x184, Y0 + 0x87, text);
 	pilot_stats(g_pilot, X0 + 0x192, Y0 + 0x9c, 0x15);
 	stat_bars(X0 + 0x1bc, Y0 + 0x9f, 0x15, &k_m1f_4a95f4, 1.0f);
@@ -460,7 +460,7 @@ text_draw8(X0 + 0x184, Y0 + 0x48, PILOT(g_pilot)->name);
 
 /* 0x44cf70: the chosen profile's pilot (0x9f688c, 0x48 bytes a profile, of g_pilotChosen, into g_chosenPilot) beside the
    profile list, when there are profiles (g_profileCount): 13 labels (MSG(532, "NAME :")), the portrait in a yellow frame, the name,
-   title and class (the original places these two by the panel's x, g_profilePageLeft, not its y), the level, the nine
+   corporation and sex (the original places these two by the panel's x, g_profilePageLeft, not its y), the age, the nine
    stats and their bars; all at half brightness while the list does not have the focus (g_profilePage) */
 void (profile_drawChosenPilot)(void)
 {
@@ -494,10 +494,10 @@ void (profile_drawChosenPilot)(void)
 	u32 text_grey = focus ? 0x3f800000 : 0x3f000000;
 	set_colour_bits(g_textColour, text_grey, text_grey, text_grey, 0x3f800000);
 	text_draw8(X0 + 0x14e, Y0 + 0x24, PILOT(g_chosenPilot)->name);
-	text_draw8(X0 + 0x14e, X0 + 0x38, PILOT(g_chosenPilot)->title);
-	text_draw8(X0 + 0x14e, X0 + 0x4c, (const char *)(MSG(545, "RESERVED") + PILOT(g_chosenPilot)->rank * 0x80));
+	text_draw8(X0 + 0x14e, X0 + 0x38, PILOT(g_chosenPilot)->corporation);
+	text_draw8(X0 + 0x14e, X0 + 0x4c, (const char *)(MSG(545, "RESERVED") + PILOT(g_chosenPilot)->sex * 0x80));
 	char text[20];
-	itoa(PILOT(g_chosenPilot)->level, text, 10);
+	itoa(PILOT(g_chosenPilot)->age, text, 10);
 	text_draw8(X0 + 0x14e, Y0 + 0x60, text);
 	pilot_stats(g_chosenPilot, X0 + 0x166, Y0 + 0x74, 0x14);
 	stat_bars(X0 + 0x18a, Y0 + 0x78, 0x14, k_m0_9f, grey);

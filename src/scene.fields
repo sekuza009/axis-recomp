@@ -245,7 +245,7 @@ struct Player 0x8888                                            # a player's rec
 0x8858     4          float botTargetTime                        # (by use) seconds left on the bot's target (10.5)
 0x8884     4          float beepTimer                            # (by use) the warning beep while aimed at (0.5 s)
 0x104      4          i32 id                                     # (by use) its id (the next serial, or the network's)
-0x114      4          i32 level                                  # (by use) its player's level (0 .. 8)
+0x114      4          i32 character                              # its player's pilot character (0 .. 8: CHARACTER SELECT's; its CharacterProfile's stats give bonuses)
 0x164      4          float yaw                                  # (by use) the heading (with pitch: the look)
 0x484      4          i32 lowDetail                             # 1: far away (its name tag under 30 px wide at 640): the parts' low-detail models and joints; they are reloaded when it differs from lowDetailLoaded
 0x488      4          i32 lowDetailLoaded
@@ -697,12 +697,12 @@ struct RankRow 0x44                                              # a row of the 
 0x3a       4          i32 level                                  # the rank badge (1 when the row is cleared)
 0x3e       4          float power                                # (sort 0; not cleared with the rest)
 
-struct PilotProfile 0x4c                                         # a pilot level's profile (g_profileRecords: the character profile data file's records,
-                                                                 # 103 of them, indexed by a player's level; the table overlaps g_netSlots)
+struct CharacterProfile 0x4c                                     # a pilot character (g_characterProfiles: the character profile data file's records,
+                                                                 # 103 of them, indexed by a player's character; the table overlaps g_netSlots)
 0          0x10       char name[16]
-0x10       0x10       char title[16]
-0x20       4          i32 rank                                   # its class (a MSG(545) string)
-0x24       4          i32 level
+0x10       0x10       char corporation[16]
+0x20       4          i32 sex                                    # MSG(545) + it: 1 MALE, 2 FEMALE (the SEX row)
+0x24       4          i32 age                                    # the AGE row
 0x28       0x24       i32 stats[9]                               # percentages: [0] .. [3] the weapon groups' damage, [4] .. the skills (actor and
                                                                  # ARM CENTER factors x 0.01), [5] the legs'; [7] at most 50, the others 30
 
@@ -883,7 +883,7 @@ struct PlayerRecord 0x47fd2                                      # a player of t
 0x47fca    4          i32 flagChanged                          # 1: to be copied into the flag atlas (flagShown: it is there)
 0x47fce    4          i32 flagSent                             # (by use) its flag's pixels sent so far (0x180 = 24 x 16: all; the map's players start with all)
 4          0x40       char name[0x40]                            # (by use) its name (its screenshot: Save\\<name>.BMP)
-0x44       4          i32 level                                  # (by use) its level (the profile's factors by it)
+0x44       4          i32 character                              # its pilot character (g_characterProfiles: the skills and damage factors by it)
 0x48       4          i32 team
 0x4c       0x140      char partNames[5][0x40]                    # its parts' type names (head, chest, arms, legs, booster: set_part)
 0x18c      0x180      char itemNames[6][0x40]                    # its items' names (actor_setItem: the ActorInfo's name)
@@ -1002,7 +1002,7 @@ struct StartPoint 0x14                                          # a multiplayer 
 0xc        0x8        float angle[2]
 
 struct MapPlayer 0x58                                           # a player as the map's actor file gives it (Stage.mapPlayers; playerRecord_setFromMapPlayer)
-4          4          i32 value                                  # (by use) player_setLevel's value; in the map file 1-based, the colour preset for its parts (map_loadActorInfoFrom)
+4          4          i32 character                              # (by use) player_setCharacter's value; in the map file 1-based, the colour preset for its parts (map_loadActorInfoFrom)
 8          0x20       char name[0x20]
 0x28       4          i32 team
 0x2c       0x14       i32 parts[5]                               # head, chest, arms, legs, booster
@@ -1468,8 +1468,8 @@ struct Scene 0x2343b0b                                          # the scene: the
 0x2221fb0  4          i32 lastDeath                             # = Stage.lastDeath (the same word): the actor that died last; the round ends slowed while it is down
 0x1ecca6c  4          i32 mapActorCount                         # = Stage.mapActorCount (the same word): the map's actor records (Stage.mapActors), the bots spawned from them
 0x23423b5  4          i32 endedByTime                            # (by use) the match ended on its time limit (else its score limit)
-0x23423c1  4          float startCount                           # (by use) "PREPARE THE BATTLE": seconds before the start (3)
-0x23423c5  4          i32 startCountShown                        # (by use) the count last shown (-1 none)
+0x23423c1  4          float startCountdown                       # (by use) "PREPARE THE BATTLE": seconds before the start (3), counted down
+0x23423c5  4          i32 startCountdownShown                    # (by use) the countdown's second last shown (-1 none)
 0x233c9ec  4          i32 lastMissionWon                         # (by use) the last mission was won; written, never read
 0x2343257  4          i32 mouseX                                 # (by use) the cursor this frame (g_mouseX), screen pixels
 0x234325b  4          i32 mouseY
@@ -1618,7 +1618,7 @@ struct Scene 0x2343b0b                                          # the scene: the
 0x23423a1  4          i32 matchLeaving                          # 1: the match is being left: back to the menu when quitDelay runs out (quit, data loss, lost connection, unstable network, the last mission won); the HUD hides
 0x234240d  4          i32 localPlayer                            # the player at this machine (index into players)
 0x2342429  0x11       char mechName[0x11]                        # the ARM CENTER's mech being edited (menu/armc_mech.c)
-0x234243a  4          i32 pilotLevel                            # the local pilot's level (g_selectedPilotLevel: the profile's factors by it; PlayerRecord.level)
+0x234243a  4          i32 character                             # the local pilot's character (g_selectedCharacter: CHARACTER SELECT's; PlayerRecord.character)
 0x234244a  0x14       i32 mechParts[5]                           # head, chest, arm, leg, booster
 0x234245e  0x18       i32 mechItems[6]
 0x2342476  0x78       float mechColours[3][5][2]                 # the local mech's part colours (match_start, from g_savedColourChoices): [hue,
@@ -1633,7 +1633,7 @@ struct Scene 0x2343b0b                                          # the scene: the
 0x23428f6  0x40       i32 ranking[16]                            # players in rank order
 0x2342936  0x40       i32 rank[16]                               # each player's place (1: first; the HUD shows rank/rankCount)
 0x2342976  4          i32 rankCount
-0x234297a  4          i32 rankShown                              # (by use) the local player's place
+0x234297a  4          i32 localRank                              # the local player's place (scene_updateRanking; -1 at a new round). The lead sound's check right after the update compares it with the place it was just set to, so the sound never plays (as the original)
 0x234297e  4          i32 redTeamCount                          # the players on the red side (scene_updateRanking; the HUD's three counts, red / green / blue)
 0x2342982  4          i32 blueTeamCount                         # the players on the blue side
 0x2342986  4          i32 noTeamCount                           # the players in the game without a team (watching)

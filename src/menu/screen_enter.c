@@ -414,7 +414,7 @@ void (match_enter)(void)
 	}
 	switch (kind) {
 	case 1:   /* (the selection's range checks are jumped over in the patched game) */
-		data_loadPilotProfiles();
+		data_loadCharacterProfiles();
 		match_name(g_cfgPlayerName);
 		armc_resetSeraphimParts();
 		scene_startSession(scene, g_netRole == 1 ? 0 : 1, 1);
@@ -423,7 +423,7 @@ void (match_enter)(void)
 		pilotRecord_syncCopies();
 		if (g_pilotLevel != 0x14)
 			armc_resetSeraphimParts();
-		data_loadPilotProfiles();
+		data_loadCharacterProfiles();
 		match_name(g_ladderId);
 		scene_startSession(scene, g_netRole == 1 ? 0 : 1, 1);
 		break;

@@ -4,7 +4,7 @@
 #pragma once
 #define g_chatLine ((char *)IMG(0x9dc92c))   /* char[1024]; the chat line being typed (memset 0x400) */
 #define g_ladderId ((char *)IMG(0x9dd570))   /* char[54]; the Ladder login: the ID (30 bytes; the registry's "Name", default "AxisPlayer"), then its password at +0x1e (g_ladderPassword; 12 at most), up to the registry's e-mail copy at 0x9dd5a6 */
-#define g_ladderName ((char *)IMG(0x4de700))   /* char[30]; the logged-in pilot's Ladder record: the ID, then from +0x1e its level, exp, power, games, kills and losses (g_ladderLevel ..) */
+#define g_ladderName ((char *)IMG(0x4de700))   /* char[30]; the logged-in pilot's Ladder record: the ID, then from +0x1e its level, exp, power, games, kills and deaths (g_ladderLevel ..) */
 #define g_accountForm ((u8 *)IMG(0x9dd1d8))   /* u8[94]; the account / Ladder login / new-ID forms' fields: the name (+0; 30); the password (+0x1e; 12); its repeat (+0x2a; 12); the e-mail (+0x36; 40). One clear of 0x54 bytes spans the fields and copies run on from the name: one record */
 #define g_accountName ((char *)(g_accountForm + 0))
 #define g_accountPassword ((char *)(g_accountForm + 0x1e))
@@ -99,7 +99,7 @@
 #define g_tanTable ((float *)IMG(0xa146f8))   /* float[3600]; by tenths of a degree (to the cos table) */
 #define g_cosTable ((float *)IMG(0xa17f38))   /* float[3600]; (to the sin table) */
 #define g_sinTable ((float *)IMG(0xa1b778))   /* float[3600] */
-#define g_netSlots ((NetSlot *)IMG(0x9f9840))   /* NetSlot[16] (net_clearSlots runs to 0x9fd940); overlapped by g_profileRecords' 103 records at start-up */
+#define g_netSlots ((NetSlot *)IMG(0x9f9840))   /* NetSlot[16] (net_clearSlots runs to 0x9fd940); overlapped by g_characterProfiles' 103 records at start-up */
 #define g_netPlayerList ((RankedPlayer *)IMG(0xa05330))   /* RankedPlayer[11]; (net_clearPlayerList) */
 #define g_keySeen ((int *)IMG(0x4d1a98))   /* int[256]; a key's press seen until released (0x400 bytes) */
 #define g_briefingText ((char *)IMG(0x9f1064))   /* char[1600]; the briefing's text (memset 0x640) */
@@ -115,7 +115,7 @@
 #define g_arenaDim ((u32 *)IMG(0x4db8a0))   /* u32[4]; the arena lobby's dim colour */
 #define g_profileDim ((u32 *)IMG(0x9f8d58))   /* u32[4]; the profile screen's dim colour */
 #define g_mapNames ((char *)IMG(0x907b30))   /* char[100][0x20]; a map's name (100 maps: up to 0x9087b0, like the descriptions g_mapAbouts) */
-#define g_profileRecords ((PilotProfile *)IMG(0x9f9040))   /* PilotProfile[1]: 0x4c bytes a record; the stats check reads 103 records (to 0x9fafb4), so the table overlaps g_netSlots (the original's aliasing) */
+#define g_characterProfiles ((CharacterProfile *)IMG(0x9f9040))   /* CharacterProfile[1]: 0x4c bytes a record; the stats check reads 103 records (to 0x9fafb4), so the table overlaps g_netSlots (the original's aliasing) */
 #define g_messages ((char *)IMG(0x74de24))   /* char[128256]; the message table: 0x80 bytes a line from msgeng.dat (data_loadMessages) */
 #define g_ptxPixels ((u8 *)IMG(0xa21708))   /* u8[262144]; the image decoder's output (RGB(A) */
 #define g_ptxData ((u8 *)IMG(0xaa2e98))   /* u8[262144]; the image decoder's input */

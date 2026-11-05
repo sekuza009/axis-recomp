@@ -464,8 +464,8 @@ void (menuState210_frame)(void)
 	static const signed char stats[9] = { 0, 2, 3, 1, 5, 4, 6, 8, 7 };   /* in the order checked */
 	for (int p = 0; p < 9; p++)   /* (the first nine profiles: any value past its limit reloads them all) */
 		for (int f = 0; f < 9; f++)
-			if (g_profileRecords[p].stats[stats[f]] > (stats[f] == 7 ? 50 : 30))
-				data_loadPilotProfiles();
+			if (g_characterProfiles[p].stats[stats[f]] > (stats[f] == 7 ? 50 : 30))
+				data_loadCharacterProfiles();
 	static const u32 pages[6] = { FN_ADDR(profile_frame, 0x44f410), FN_ADDR(profile_newNamePage, 0x44f4b0), FN_ADDR(profile_deletePage, 0x44f5f0), FN_ADDR(profile_logIn, 0x44f6c0), FN_ADDR(profile_logOutPage, 0x44f740), FN_ADDR(profile_drawScreen, 0x44f810) };
 	u32 page = (*(u32 *)&g_profilePage) - 1;
 	if (page <= 5)

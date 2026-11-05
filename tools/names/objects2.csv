@@ -90,4 +90,4 @@
 0x907b30,char,0x20,g_mapNames,0x20 bytes a map (extent unknown: the first)
 0x9f684c,char,0x48,g_profileList,0x48 bytes a profile (extent unknown: the first)
 0x9087c4,u8,0x4a,g_gameList,0x4a bytes a game (extent unknown: the first)
-0x9f9040,u8,0x4c,g_profileRecords,0x4c bytes a record (extent unknown: the first)
+0x9f9040,u8,0x4c,g_characterProfiles,0x4c bytes a record (extent unknown: the first)

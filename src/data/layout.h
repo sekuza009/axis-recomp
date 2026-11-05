@@ -2163,7 +2163,7 @@ struct __attribute__((packed)) GameData {
 	u8 _gap_9f3ac4[0x5524];
 	char g_profileName_[32];
 	u8 _gap_9f9008[0x38];
-	u8 g_profileRecords_[76];
+	u8 g_characterProfiles_[76];
 	u8 _gap_9f908c[0x7b4];
 	u8 g_netSlots_[16640];
 	u8 _gap_9fd940[0x7ca4];
@@ -2218,7 +2218,7 @@ _Static_assert(offsetof(struct GameData, g_launchArgs_) == 0x530890, "g_launchAr
 _Static_assert(offsetof(struct GameData, g_briefingPageStarts_) == 0x541adc, "g_briefingPageStarts");
 _Static_assert(offsetof(struct GameData, g_saveFileNames_) == 0x544ac4, "g_saveFileNames");
 _Static_assert(offsetof(struct GameData, g_profileName_) == 0x54bfe8, "g_profileName");
-_Static_assert(offsetof(struct GameData, g_profileRecords_) == 0x54c040, "g_profileRecords");
+_Static_assert(offsetof(struct GameData, g_characterProfiles_) == 0x54c040, "g_characterProfiles");
 _Static_assert(offsetof(struct GameData, g_netSlots_) == 0x54c840, "g_netSlots");
 _Static_assert(offsetof(struct GameData, g_lobbyHost_) == 0x5585e4, "g_lobbyHost");
 _Static_assert(offsetof(struct GameData, g_glDepthBits_) == 0x561924, "g_glDepthBits");

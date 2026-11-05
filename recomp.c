@@ -860,7 +860,7 @@ void THISCALL playerRecord_markFree(void *stage, int p);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 THISCALL void scene_setTextureFolder(void *self, const char *s);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-THISCALL void player_setLevel(char *self, int p, int v);
+THISCALL void player_setCharacter(char *self, int p, int v);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 THISCALL void player_setTeam(void *self, int p, int team);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
@@ -880,7 +880,7 @@ THISCALL void space_resetUnits(char *self);
 /* ---- batch 9: menu resets, PTX video decoding helpers, weapon cycling ------------------------- */
 
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-void THISCALL mech_setPilotLevel(void *scene, int v);
+void THISCALL mech_setCharacter(void *scene, int v);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void THISCALL scene_setLocalTeam(void *scene, int team);
 
@@ -2333,9 +2333,9 @@ DWORD data_loadSkirmishInfo(void);
 /* 0x42b830 data_loadMapInfo: load the map info file */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 DWORD data_loadMapInfo(void);
-/* 0x42b590 data_loadPilotProfiles: load the pilot profiles file */
+/* 0x42b590 data_loadCharacterProfiles: load the pilot profiles file */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-void data_loadPilotProfiles(void);
+void data_loadCharacterProfiles(void);
 /* 0x447010 profile_saveProgress: save the campaign progress */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 int profile_saveProgress(void);
@@ -3387,7 +3387,7 @@ int lobby_openConnection(void);
 void net_recv(void);
 /* batch 100 (lifted/grp46.c) */
 /* 0x461250 (thiscall on the scene) mech_setAll(name, v, team, head, chest, arm, leg, booster, item0..5): the
-   arm-customise screen's whole mech at once (mech_setName / mech_setPilotLevel / scene_setLocalTeam, the five part pickers, the six
+   arm-customise screen's whole mech at once (mech_setName / mech_setCharacter / scene_setLocalTeam, the five part pickers, the six
    item slots), and the edited player marked used (playerRecord_markUsed) */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void THISCALL mech_setAll(void *scene, const char *name, int v, int team, int head, int chest, int arm, int leg, int booster, int item0,
@@ -7397,7 +7397,7 @@ static void players_setup(void)
 	for (int a = 0; a < 17; a++) S32(BUF, 0x1cd94b4 + a * 0x8888) = irnd(-1, 8);
 	fill(BUF + g_a[0] * 0x47fd2 + 0x1561b68 + 0x44, 8); fill(BUF + 0x202e8ec, 4);
 }
-ST(player_setLevel, players_setup();, (TC(void, 0x473a10, char *, int, int)(BUF, g_a[0], g_a[1]), 0), (player_setLevel(BUF, g_a[0], g_a[1]), 0))
+ST(player_setCharacter, players_setup();, (TC(void, 0x473a10, char *, int, int)(BUF, g_a[0], g_a[1]), 0), (player_setCharacter(BUF, g_a[0], g_a[1]), 0))
 ST(player_setTeam, players_setup();, (TC(void, 0x473a80, char *, int, int)(BUF, g_a[0], g_a[1]), 0), (player_setTeam(BUF, g_a[0], g_a[1]), 0))
 static void effects_setup(void)
 {
@@ -7454,7 +7454,7 @@ static void scene_players_setup(void)
 	S32(SCENE, 0x234240d) = irnd(-2, 7); fill(SCENE + 0x234243a, 8); g_a[1] = irnd(-3, 5);
 	fill(BUF + (S32(SCENE, 0x234240d) & 7) * 0x47fd2 + 0x1561b68 + 0x44, 8);
 }
-ST(mech_setPilotLevel, scene_players_setup();, (TC(void, 0x461370, char *, int)(SCENE, g_a[1]), 0), (mech_setPilotLevel(SCENE, g_a[1]), 0))
+ST(mech_setCharacter, scene_players_setup();, (TC(void, 0x461370, char *, int)(SCENE, g_a[1]), 0), (mech_setCharacter(SCENE, g_a[1]), 0))
 ST(scene_setLocalTeam, scene_players_setup();, (TC(void, 0x4613a0, char *, int)(SCENE, g_a[1]), 0), (scene_setLocalTeam(SCENE, g_a[1]), 0))
 ST(hangul_glyphs, fill(g_a, 8); fill((void *)0x4d60e0, 4); fill((void *)0x4d23d4, 12);,
    CD(int, 0x4017d0, int, int)(g_a[0], g_a[1]), hangul_glyphs(g_a[0], g_a[1]))
@@ -9077,7 +9077,7 @@ static void pilotfile_setup(void)
 	*(int *)(d + 0x80 + 0x1046a) = n; *(int *)(d + 0x80 + 0x1046a + 4) = irnd(0, 9) ? 0x115c + 0x67 : irnd(0, 0x2000);
 	g_vfsData = d; g_vfsSize = irnd(0, 9) ? size : irnd(0x80, 9999);
 }
-ST(data_loadPilotProfiles, pilotfile_setup();, (CALL_PLAIN(0x42b590, 0, 0, 0, 0, 0), 0), (data_loadPilotProfiles(), 0))   /* its callers ignore the eax it leaves (tools/eaxuse.py) */
+ST(data_loadCharacterProfiles, pilotfile_setup();, (CALL_PLAIN(0x42b590, 0, 0, 0, 0, 0), 0), (data_loadCharacterProfiles(), 0))   /* its callers ignore the eax it leaves (tools/eaxuse.py) */
 ST(profile_saveProgress, vfs_content(0, 0); g_mockMkdirFail = !irnd(0, 4);, CALL_PLAIN(0x447010, 0, 0, 0, 0, 0), (DWORD)(profile_saveProgress()))
 ST(profile_newCampaign, vfs_content(0, 0); g_mockMkdirFail = !irnd(0, 4);, CALL_PLAIN(0x446590, 0, 0, 0, 0, 0), (DWORD)(profile_newCampaign()))
 ST(profile_makeCurrent, vfs_content(0, 0x2000); g_mockMkdirFail = !irnd(0, 4);, CALL_PLAIN(0x446a10, 0, 0, 0, 0, 0), (DWORD)(profile_makeCurrent()))
@@ -12668,7 +12668,7 @@ static void consoleinit_setup(void)
 	/* a failed open in the profile checks would exit: files fail only when they are skipped, or after them */
 	g_vfsFailMask = irnd(0, 2) ? 0 : 1u << irnd(G32(0x76d410) ? 0 : 5, 8);
 	g_paintStacks = 1;
-	/* session_setup's stubs and data_loadPilotProfiles (its own test: with random files it ends the game) */
+	/* session_setup's stubs and data_loadCharacterProfiles (its own test: with random files it ends the game) */
 	static const DWORD stubs[] = { 0x401000, 0, 0x470ad0, 0, 0x42b590, 0, 0 };
 	callee_stubs(stubs, irnd(0, 4) ? 1 : 0);
 }
@@ -17235,10 +17235,10 @@ static const STest g_stests[] = {
 	T(room_stepMap, 0, 200, 0), T(net_freeSlotsOf, 2, 40, 0), T(ptx_readBits, 1, 60, 0), T(actor_pickRandomWeapon, 0, 40, 0),
 	T(menu_pointInPolygon, 1, 4, 3000), T(shape_findByName, 1, 4, 2000), T(skelDat_findByName, 1, 4, 2000), T(path_stripExtension, 0, 4, 2000),
 	T(text_printableLength, 1, 4, 3000), T(Mat4_copy, 0, 4, 300), T(Mat4_transpose, 0, 4, 300), T(playerRecord_markFree, 0, 4, 100),
-	T(scene_setTextureFolder, 0, 4, 300), T(player_setLevel, 0, 4, 600), T(player_setTeam, 0, 4, 600), T(stage_freeParticle, 0, 4, 1000),
+	T(scene_setTextureFolder, 0, 4, 300), T(player_setCharacter, 0, 4, 600), T(player_setTeam, 0, 4, 600), T(stage_freeParticle, 0, 4, 1000),
 	T(model_clearTint, 0, 4, 300), T(shape_recolourMaterials, 0, 4, 300), T(ViewVolume_reset, 0, 4, 50), T(space_resetUnits, 0, 4, 500),
 	/* batch 9 */
-	T(mech_setPilotLevel, 0, 4, 600), T(scene_setLocalTeam, 0, 4, 600), T(hangul_glyphs, 1, 60, 0), T(ptx_readDcDiff, 0, 150, 0),
+	T(mech_setCharacter, 0, 4, 600), T(scene_setLocalTeam, 0, 4, 600), T(hangul_glyphs, 1, 60, 0), T(ptx_readDcDiff, 0, 150, 0),
 	T(ptx_readAcSymbol, 0, 150, 0), T(ptx_toRgb, 0, 4, 300), T(ptx_initYCbCrTables, 0, 4, 0), T(ptx_layoutBlocks, 0, 4, 600),
 	T(menuState300_enter, 0, 4, 0), T(armc_initCameraPoints, 0, 4, 0), T(armc_initPanels, 0, 4, 0), T(room_openNewIdForm, 0, 4, 0),
 	T(ranking_enter, 0, 4, 0), T(missionsel_layout, 0, 8, 0), T(pilotSelect_layout, 0, 8, 0), T(actor_resetSlot, 0, 4, 300),
@@ -17395,7 +17395,7 @@ static const STest g_stests[] = {
 	T(reg_writeEndMode, 1, 40, 0), T(reg_writeStartMode, 1, 40, 0), T(menu_frameBegin, 1, 40, 0), T(app_registerWindowClassEx, 1, 40, 0),
 	T(net_addPlayerRecord, 1, 40, 0), T(text_findWord, 1, 40, 0), T(app_reportDisplayModeError, 1, 40, 0), T(gfx_setPixelFormat, 1, 40, 0),
 	T(autoplay_listFiles, 1, 40, 0), T(data_loadMessages, 1, 40, 0), T(profile_readHeader, 1, 40, 0), T(data_loadSkirmishInfo, 1, 200, 0),
-	T(data_loadMapInfo, 1, 200, 0), T(data_loadPilotProfiles, 1, 200, 0), T(profile_saveProgress, 1, 40, 0), T(profile_newCampaign, 1, 40, 0),
+	T(data_loadMapInfo, 1, 200, 0), T(data_loadCharacterProfiles, 1, 200, 0), T(profile_saveProgress, 1, 40, 0), T(profile_newCampaign, 1, 40, 0),
 	T(profile_makeCurrent, 1, 40, 0), T(timer_now, 1, 2000, 0), T(Stage_deletingDtor, 1, 40, 0), T(dplay_enumSessionsCallback, 1, 400, 0),
 	/* batch 48 */
 	T(app_quitGame, 1, 40, 0), T(timer_waitFrames, 0, 40, 0), T(updateNotice_clicks, 1, 40, 0), T(arenaUpdateNotice_clicks, 1, 40, 0),
@@ -18131,12 +18131,12 @@ static const struct { DWORD addr; void *fn; const char *name; } g_hooks3[] = {
 	{ 0x46b0c0, (void *)skelDat_findByName, "skelDat_findByName" }, { 0x46cad0, (void *)path_stripExtension, "path_stripExtension" },
 	{ 0x402590, (void *)text_printableLength, "text_printableLength" }, { 0x47d5a0, (void *)Mat4_copy, "Mat4_copy" },
 	{ 0x47d830, (void *)Mat4_transpose, "Mat4_transpose" }, { 0x4743b0, (void *)playerRecord_markFree, "playerRecord_markFree" },
-	{ 0x461ec0, (void *)scene_setTextureFolder, "scene_setTextureFolder" }, { 0x473a10, (void *)player_setLevel, "player_setLevel" },
+	{ 0x461ec0, (void *)scene_setTextureFolder, "scene_setTextureFolder" }, { 0x473a10, (void *)player_setCharacter, "player_setCharacter" },
 	{ 0x473a80, (void *)player_setTeam, "player_setTeam" }, { 0x4799f0, (void *)stage_freeParticle, "stage_freeParticle" },
 	{ 0x4675f0, (void *)model_clearTint, "model_clearTint" }, { 0x4665c0, (void *)shape_recolourMaterials, "shape_recolourMaterials" },
 	{ 0x484260, (void *)ViewVolume_reset, "ViewVolume_reset" }, { 0x481760, (void *)space_resetUnits, "space_resetUnits" },
 	/* batch 9 */
-	{ 0x461370, (void *)mech_setPilotLevel, "mech_setPilotLevel" }, { 0x4613a0, (void *)scene_setLocalTeam, "scene_setLocalTeam" },
+	{ 0x461370, (void *)mech_setCharacter, "mech_setCharacter" }, { 0x4613a0, (void *)scene_setLocalTeam, "scene_setLocalTeam" },
 	{ 0x4017d0, (void *)hangul_glyphs, "hangul_glyphs" }, { 0x46f190, (void *)ptx_readDcDiff, "ptx_readDcDiff" },
 	{ 0x46f2a0, (void *)ptx_readAcSymbol, "ptx_readAcSymbol" }, { 0x46e830, (void *)ptx_toRgb, "ptx_toRgb" },
 	{ 0x46efd0, (void *)ptx_initYCbCrTables, "ptx_initYCbCrTables" }, { 0x46ea30, (void *)ptx_layoutBlocks, "ptx_layoutBlocks" },
@@ -18388,7 +18388,7 @@ static const struct { DWORD addr; void *fn; const char *name; } g_hooks3[] = {
 	{ 0x42ef30, (void *)app_reportDisplayModeError, "app_reportDisplayModeError" }, { 0x42f000, (void *)gfx_setPixelFormat, "gfx_setPixelFormat" },
 	{ 0x440c60, (void *)autoplay_listFiles, "autoplay_listFiles" }, { 0x42b3e0, (void *)data_loadMessages, "data_loadMessages" },
 	{ 0x4474a0, (void *)profile_readHeader, "profile_readHeader" }, { 0x42ba40, (void *)data_loadSkirmishInfo, "data_loadSkirmishInfo" },
-	{ 0x42b830, (void *)data_loadMapInfo, "data_loadMapInfo" }, { 0x42b590, (void *)data_loadPilotProfiles, "data_loadPilotProfiles" },
+	{ 0x42b830, (void *)data_loadMapInfo, "data_loadMapInfo" }, { 0x42b590, (void *)data_loadCharacterProfiles, "data_loadCharacterProfiles" },
 	{ 0x447010, (void *)profile_saveProgress, "profile_saveProgress" }, { 0x446590, (void *)profile_newCampaign, "profile_newCampaign" },
 	{ 0x446a10, (void *)profile_makeCurrent, "profile_makeCurrent" }, { 0x4301e0, (void *)timer_now, "timer_now" },
 	{ 0x463830, (void *)Stage_deletingDtor, "Stage_deletingDtor" }, { 0x453560, (void *)dplay_enumSessionsCallback, "dplay_enumSessionsCallback" },

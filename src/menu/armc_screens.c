@@ -255,7 +255,7 @@ static void stat_float(int x, int y, float value, u32 format, u32 unit)
    box: its picture (g_armcBuildTexture), name (0x4dc150) and type (MSG(711, "HV-PISTOL"), by g_weaponListTable / g_extraListTable of g_armcCursor), or
    MSG(320, "REMOVE WEAPON") without one; its arrows either side of it (0xc / 0xd lit); the mode box; the stats panel: nothing chosen (0x4dc190 = -1: MSG(319, "EMPTY SLOT")), a part type only
    (g_viewedPartKind = -1: MSG(771, "SPECIAL WEAPON") and its kind MSG(745, "GRAVITY CONTROLLER")), or the 16 stats under their labels (MSG(301, "SLOT TYPE")), the sixth with
-   the pilot's (g_selectedPilotLevel) skill bonus. The original leaves eax to callers that ignore it */
+   the pilot's (g_selectedCharacter) skill bonus. The original leaves eax to callers that ignore it */
 void (armc_drawWeaponsScreen)(void)
 {
 	int hovered = ((int)armcWeaponsPage_hitTest(g_mouseX, g_mouseY));   /* armcWeaponsPage_hitTest */
@@ -366,7 +366,7 @@ void (armc_drawWeaponsScreen)(void)
 	itoa(PART->damage, value, 10);
 	static const u8 skill[5] = { 0, 0, 1, 2, 3 };   /* the profile's stat by kind; above 3 the last */
 	int kind_of = (unsigned)PART->ammoSlot <= 3 ? PART->ammoSlot : 4;
-	long double b = fmul_m((long double)g_profileRecords[g_selectedPilotLevel].stats[skill[kind_of]], (const float *)ADDR(k_0_01f));
+	long double b = fmul_m((long double)g_characterProfiles[g_selectedCharacter].stats[skill[kind_of]], (const float *)ADDR(k_0_01f));
 	b *= (long double)PART->damage;
 	if (b >= k_0f)
 		sprintf(bonus, (const char *)STR(0x4b02f0, " +%d"), ftol(b));

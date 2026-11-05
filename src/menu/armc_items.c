@@ -14,7 +14,7 @@ static int *slot_item(int slot)
 /* the whole mech handed to the scene, with name */
 static void set_mech(const char *name)
 {
-	mech_setAll(g_scene, name, g_selectedPilotLevel, 0, g_armcParts[0], g_armcParts[1], g_armcParts[2], g_armcParts[3],
+	mech_setAll(g_scene, name, g_selectedCharacter, 0, g_armcParts[0], g_armcParts[1], g_armcParts[2], g_armcParts[3],
 	            g_armcParts[4], *slot_item(0), *slot_item(1), *slot_item(2), *slot_item(3), *slot_item(4),
 	            *slot_item(5));
 }

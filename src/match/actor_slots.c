@@ -97,7 +97,7 @@ void THISCALL (actor_resetSlot)(Stage *stage, int i)
 	Player *a = &stage->actors[i];
 	a->name[0] = '\0';
 	a->player = -1;
-	a->level = 0;
+	a->character = 0;
 	a->team = -1;
 	for (int k = 0; k < 11; k++)
 		FIELD(int, a, offsetof(Player, inPlay) + k * 4) = 0;   /* inPlay .. (11 words) */
@@ -180,7 +180,7 @@ void THISCALL (bullet_free)(Stage *stage, int b)
 	} while (n > 0);
 }
 
-/* a player record's per-match state cleared (e = the record + 0x44, its level): its name kept or not by the caller;
+/* a player record's per-match state cleared (e = the record + 0x44, its character): its name kept or not by the caller;
    the five part names and parts, the six item names and items, the 5 x 2 colour grid's three layers */
 static void player_clear(u8 *e)
 {
@@ -206,10 +206,10 @@ void THISCALL (stage_resetPlayerRecords)(Stage *stage)
 {
 	for (int p = 0; p < 16; p++) {
 		PlayerRecord *pr = &stage->playerRecords[p];
-		u8 *e = (u8 *)&pr->level;
+		u8 *e = (u8 *)&pr->character;
 		pr->used = 0;
 		pr->name[0] = 0;
-		pr->level = 0;
+		pr->character = 0;
 		pr->team = -1;
 		player_clear(e);
 		playerRecord_resetColourGrid(stage, p);
@@ -227,7 +227,7 @@ void THISCALL (stage_newRound)(Stage *stage)
 	stage_clearFrags(stage);
 	for (int p = 0; p < 16; p++) {
 		PlayerRecord *pr = &stage->playerRecords[p];
-		u8 *e = (u8 *)&pr->level;
+		u8 *e = (u8 *)&pr->character;
 		pr->used = 0;
 		pr->team = -1;
 		player_clear(e);
@@ -639,15 +639,15 @@ static void fill_dwords(u8 *at, int n, u32 v)
 		GAME_VAR(u32, at + k * 4) = v;
 }
 
-/* the pilot level's factor k (its profile's stats[4 + k], by the player's level) as value x 0.01 + 1 */
-static long double level_factor(u8 *p, int k)
+/* the pilot character's factor k (its profile's stats[4 + k]) as value x 0.01 + 1 */
+static long double character_factor(u8 *p, int k)
 {
 	PlayerRecord *pr = (PlayerRecord *)p;
-	return fadd_m(fmul_m((long double)g_profileRecords[pr->level].stats[4 + k], &k_0_01f), &k_1f);
+	return fadd_m(fmul_m((long double)g_characterProfiles[pr->character].stats[4 + k], &k_0_01f), &k_1f);
 }
 
 /* the mech's stats for actor ac from player record p's parts (the head, chest, arms, legs and booster records, the
-   pilot level, the special items' bonuses at ammoFactor .., the weight against the limit and the overload r slowing the
+   pilot character's skills, the special items' bonuses at ammoFactor .., the weight against the limit and the overload r slowing the
    legs and booster) and the fixed values, +0 .. +0x94. check: actor_checkDataLoss' copy, which rounds two of them
    differently */
 static void mech_stats(u8 *s, u8 *ac, u8 *p, int check)
@@ -701,13 +701,13 @@ static void mech_stats(u8 *s, u8 *ac, u8 *p, int check)
 			break;
 		}
 	}
-	long double hp = fadd_m(fmul_m(level_factor(p, 3), &head->detectionRange), &AC->rangeBonus);
+	long double hp = fadd_m(fmul_m(character_factor(p, 3), &head->detectionRange), &AC->rangeBonus);
 	AC->radiusSq = f32(hp * hp);
-	AC->detectionAngle = f32(fmul_m(level_factor(p, 3), &head->detectionAngle));
+	AC->detectionAngle = f32(fmul_m(character_factor(p, 3), &head->detectionAngle));
 	AC->hackingLevel = head->hackingLevel + AC->hackingBonus;
 	AC->lockOnTime = f32(FMUL(head->lockOnTime, AC->lockOnTimeFactor));
 	AC->targetKeepTime = f32(FMUL(head->targetKeepTime, AC->targetKeepFactor));
-	AC->loadMax = f32(fmul_m(fmul_m(level_factor(p, 4), &chest->weightLimit), &AC->loadFactor));
+	AC->loadMax = f32(fmul_m(fmul_m(character_factor(p, 4), &chest->weightLimit), &AC->loadFactor));
 	AC->load = f32(fadd_m(fadd_m(FADD(boost->weight, legs->weight),
 	                                   &arms->weight), &head->weight));
 	int type = st->gameType;
@@ -720,14 +720,14 @@ static void mech_stats(u8 *s, u8 *ac, u8 *p, int check)
 	long double over = AC->load > AC->loadMax
 		? fmul_m(fdiv_m(FSUB(AC->load, AC->loadMax), &AC->loadMax), &k_4f)
 		: fld_m(&k_0f);
-	AC->armorMax = ftol(fadd_m(level_factor(p, 2) * (long double)chest->maxArmor, &k_0_5f));
-	AC->shieldMax = ftol(fadd_m(fmul_m(level_factor(p, 2) * (long double)chest->maxShield, &AC->shieldFactor), &k_0_5f));
+	AC->armorMax = ftol(fadd_m(character_factor(p, 2) * (long double)chest->maxArmor, &k_0_5f));
+	AC->shieldMax = ftol(fadd_m(fmul_m(character_factor(p, 2) * (long double)chest->maxShield, &AC->shieldFactor), &k_0_5f));
 	AC->accuracy = arms->stats[0];
 	for (int k = 0; k < 4; k++)
 		AC->ammoMax[k] = ftol(fadd_m(fmul_m((long double)arms->stats[1 + k], AC->ammoFactor + k), &k_0_5f)) +
 		                       AC->ammoBonus[k];
 	long double left = fld_m(&k_1f) - over;
-	long double v = fmul_m(level_factor(p, 0), &legs->agility) * left;
+	long double v = fmul_m(character_factor(p, 0), &legs->agility) * left;
 	AC->mobility = f32(v);
 	if (!(v >= 0))
 		AC->mobility = 0.0f;
@@ -738,7 +738,7 @@ static void mech_stats(u8 *s, u8 *ac, u8 *p, int check)
 	AC->rechargeTime = f32(FMUL(boost->activeTime[1], AC->rechargeTimeFactor));
 	AC->restTime = f32(FMUL(boost->activeTime[2], AC->restTimeFactor));
 	/* the legs' factors: the level's second value plus the legs' own, plus 1 */
-#define LEG(f) fadd_m(fadd_m(fmul_m((long double)g_profileRecords[pr->level].stats[5], &k_0_01f), &legs->f), &k_1f)
+#define LEG(f) fadd_m(fadd_m(fmul_m((long double)g_characterProfiles[pr->character].stats[5], &k_0_01f), &legs->f), &k_1f)
 	v = fmul_m(LEG(speedCorrection), &boost->normalSpeed[0]) * left;
 	AC->speed = f32(v);
 	if (!(v >= *&k_100f))
@@ -799,8 +799,8 @@ void THISCALL (actor_setupFromParts)(u8 *s, int a, int id, u32 controlledBy, con
 	AC->active = 1;
 	AC->player = pp[0];
 	AC->controlledBy = controlledBy;
-	int level = pr->level;
-	AC->level = level >= 0 && level < 9 ? level : 0;
+	int character = pr->character;
+	AC->character = character >= 0 && character < 9 ? character : 0;
 	AC->team = ((u32)pr->team);
 	AC->bot = pp[1];
 	AC->spawnAge = 0.0f;

@@ -47,7 +47,7 @@ static void load_colour(int i)
 	g_emblemMoved = 0;
 	for (int k = 0; k < 9; k++)
 		g_statBarTargets[k] =
-			(float)((long double)g_profileRecords[i].stats[k] + k_50f);
+			(float)((long double)g_characterProfiles[i].stats[k] + k_50f);
 }
 
 /* 0x44bc50: the selected profile's colours; profile_loadCursorColours: those of the pilot under the list cursor */

@@ -705,7 +705,7 @@ static void pilot_write(void *f)
 }
 
 /* 0x447010: the campaign progress saved: axisuser.dat written (no file: nothing more), then the pilot's file with
-   the profile's record (gathered by mech_storeToProfile); g_selectedPilotLevel = the pilot's value. Returns the last chdir's eax */
+   the profile's record (gathered by mech_storeToProfile); g_selectedCharacter = the profile's pilot character. Returns the last chdir's eax */
 int (profile_saveProgress)(void)
 {
 	void *f = profiles_create();
@@ -718,7 +718,7 @@ int (profile_saveProgress)(void)
 	char path[0x80];
 	pilot_path(path);
 	f = crt_fopen(path, (const char *)STR(0x4b2ab0, "wb"));
-	(*(u32 *)&g_selectedPilotLevel) = GAME_VAR(u32, OBJ(g_profileList) + 0x40 + g_pilot * 0x48);
+	(*(u32 *)&g_selectedCharacter) = GAME_VAR(u32, OBJ(g_profileList) + 0x40 + g_pilot * 0x48);
 	if (f)
 		pilot_write(f);
 	fclose(f);
@@ -733,7 +733,7 @@ static void campaign_new(void)
 	strcpy((char *)g_campaign, (const char *)STR(0x4b0fa0, "AXIS USER PROFILE DATA Master ver 1.0..."));
 	memset((void *)(OBJ(g_campaign) + 0x80), 0, 0x80);
 	memcpy((void *)(OBJ(g_campaign) + 0x80), pilot_name(g_pilot), 0x80);
-	(*(u32 *)&g_selectedPilotLevel) = GAME_VAR(u32, OBJ(g_profileList) + 0x40 + g_pilot * 0x48);
+	(*(u32 *)&g_selectedCharacter) = GAME_VAR(u32, OBJ(g_profileList) + 0x40 + g_pilot * 0x48);
 	g_progress = 0;
 	memset((void *)(OBJ(g_campaign) + 0x108), 0, 0x190);
 	memset((void *)(OBJ(g_campaign) + 0x298), 0, 0x40);
@@ -900,9 +900,9 @@ u32 (data_loadSkirmishInfo)(void)
 /* 0x42b590: the pilots read from profkor.dat or profeng.dat (by the language g_language; in the data folder): at least
    10000 bytes starting with "AXIS CHARACTER PROFILE DATA FILE" (0x80 bytes), else the game ends ("... Not Found");
    0x1046a bytes on the record count and a version word (0x115c + 0x67, else the game ends: "wrong version", the file
-   left open), then the 0x4c-byte records, each decoded with its own key ('a', 'b', ...) into g_profileRecords. Then the 0x67
+   left open), then the 0x4c-byte records, each decoded with its own key ('a', 'b', ...) into g_characterProfiles. Then the 0x67
    records' stats are checked: eight above 30 and one (+0x44) above 50 become 0. The callers ignore the eax it leaves */
-void (data_loadPilotProfiles)(void)
+void (data_loadCharacterProfiles)(void)
 {
 	void *f = data_open(OBJ(g_dataDir), g_language == 1 ? STR(0x4b14b4, "profkor.dat") : STR(0x4b14a8, "profeng.dat"), STR(0x4ad170, "rb"),
 	                    STR(0x4b1480, "Character Profile Data File Not Found"));
@@ -930,11 +930,11 @@ void (data_loadPilotProfiles)(void)
 		u8 record[0x4c];
 		crt_fread(record, 0x4c, 1, f);
 		crypt_countingKey(record, key++);
-		memcpy(&g_profileRecords[i], record, 0x4c);
+		memcpy(&g_characterProfiles[i], record, 0x4c);
 	}
 	fclose(f);
 	for (int i = 0; i < version; i++) {
-		int *stats = g_profileRecords[i].stats;
+		int *stats = g_characterProfiles[i].stats;
 		static const u8 limited[8] = { 0, 2, 3, 1, 5, 4, 6, 8 };   /* (the original's order) */
 		for (int k = 0; k < 8; k++)
 			if (stats[limited[k]] > 30)

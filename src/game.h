@@ -653,7 +653,7 @@ typedef struct { float r, g, b, a; } Colour;
 
 /* ---- the stage's player records (thiscall on the stage; p: the player) ---- */
 #define player_setName(stage, p, name) GAME_THISFN(player_setName, 0x473940, void, void *, int, const char *)(stage, p, name)
-#define player_setLevel(stage, p, v) GAME_THISFN(player_setLevel, 0x473a10, void, void *, int, int)(stage, p, v)   /* player_setLevel */
+#define player_setCharacter(stage, p, v) GAME_THISFN(player_setCharacter, 0x473a10, void, void *, int, int)(stage, p, v)   /* player_setCharacter */
 #define player_setTeam(stage, p, team) GAME_THISFN(player_setTeam, 0x473a80, void, void *, int, int)(stage, p, team)
 #define actor_setActorTypeHeadInfoBy(stage, p, type) GAME_THISFN(actor_setActorTypeHeadInfoBy, 0x473b10, int, Stage *, int, int)(stage, p, type)
 #define actor_setActorTypeChestInfoBy(stage, p, type) GAME_THISFN(actor_setActorTypeChestInfoBy, 0x473c20, int, Stage *, int, int)(stage, p, type)
@@ -664,7 +664,7 @@ typedef struct { float r, g, b, a; } Colour;
 #define player_markUsed(stage, p) GAME_THISFN(playerRecord_markUsed, 0x474390, void, void *, int)(stage, p)   /* playerRecord_markUsed */
 /* the ARM CENTER's mech setters (menu/armc_mech.c), thiscall on the scene */
 #define mech_setName(scene, name) GAME_THISFN(mech_setName, 0x461320, void, Scene *, const char *)(scene, name)
-#define mech_setPilotLevel(scene, level) GAME_THISFN(mech_setPilotLevel, 0x461370, void, Scene *, int)(scene, level)
+#define mech_setCharacter(scene, character) GAME_THISFN(mech_setCharacter, 0x461370, void, Scene *, int)(scene, character)
 #define scene_setLocalTeam(scene, team) GAME_THISFN(scene_setLocalTeam, 0x4613a0, void, Scene *, int)(scene, team)
 #define escMenu_open(scene, page, item) GAME_THISFN(escMenu_open, 0x49ca20, void, Scene *, int, int)(scene, page, item)   /* the Esc menu opened on page */
 #define profile_addMatchScores(scene) GAME_THISFN(profile_addMatchScores, 0x49d150, void, Scene *)(scene)
@@ -721,8 +721,8 @@ typedef struct { float r, g, b, a; } Colour;
 /* claim actor slot a for the player and make it theirs (thiscall on the stage; spawn: slot, -, position...) */
 #define stage_claimPlayerActor(stage, a, id, controlledBy, spawn) GAME_THISFN(stage_claimPlayerActor, 0x45dd80, void, Stage *, int, int, int, void *)(stage, a, id, controlledBy, spawn)
 
-#define mech_setAll(scene, name, pilotLevel, team, head, chest, arm, leg, booster, item0, item1, item2, item3, item4, item5) GAME_THISFN(mech_setAll, 0x461250, void, \
-	Scene *, const char *, int, int, int, int, int, int, int, int, int, int, int, int, int)(scene, name, pilotLevel, team, head, chest, arm, leg, \
+#define mech_setAll(scene, name, character, team, head, chest, arm, leg, booster, item0, item1, item2, item3, item4, item5) GAME_THISFN(mech_setAll, 0x461250, void, \
+	Scene *, const char *, int, int, int, int, int, int, int, int, int, int, int, int, int)(scene, name, character, team, head, chest, arm, leg, \
 	booster, item0, item1, item2, item3, item4, item5)
 #define stage_remakePlayerActor(stage) GAME_THISFN(stage_remakePlayerActor, 0x45ddc0, void, Stage *)(stage)
 #define armc_giveShownActorWeapon(game, slot) GAME_THISFN(armc_giveShownActorWeapon, 0x461540, void, Scene *, int)(game, slot)   /* re-equip the preview mech */
@@ -840,7 +840,7 @@ typedef struct { float r, g, b, a; } Colour;
 #define WaitForMultipleObjects(n, handles, all, ms) IMPORT(0x4a917c, u32, u32, void *const *, int, u32)(n, handles, all, ms)
 #define ExitThread(code) IMPORT(0x4a9180, void, u32)(code)
 #define GetTickCount() IMPORT(0x4a9184, u32, void)()
-#define data_loadPilotProfiles() GAME_FN(data_loadPilotProfiles, 0x42b590, void, void)()
+#define data_loadCharacterProfiles() GAME_FN(data_loadCharacterProfiles, 0x42b590, void, void)()
 #define menu_drawLine(x0, y0, x1, y1) GAME_FN(menu_drawLine, 0x427a40, void, int, int, int, int)(x0, y0, x1, y1)   /* a line in the menu colour */
 #define timer_waitFrames(frames) GAME_FN(timer_waitFrames, 0x41e730, void, double)(frames)   /* wait frames 1/60 s (app/timer.c) */
 #define frontEnd_drawProgress() GAME_FN(frontEnd_drawProgress, 0x41f100, u32, void)()   /* the loading picture at the next step (0x4dda34) */

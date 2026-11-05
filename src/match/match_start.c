@@ -82,7 +82,7 @@ static void first_round(Scene *s)
 	s->scoreLimit = g_fragLimit;
 	s->timeLimit = g_timeLimit;
 	strcpy(s->mechName, g_matchPlayerName);
-	s->pilotLevel = g_selectedPilotLevel;
+	s->character = g_selectedCharacter;
 	if (s->ladderGame == 1) {
 		s->levelPoints = g_ladderExp;
 		s->level = actor_levelFromValue(s->levelPoints);
@@ -185,7 +185,7 @@ static void later_round(Scene *s)
 	scene_setLocalTeam(s, -1);
 	s->respawnCameraMode = s->cameraMode;
 	s->cameraSlot = -1;   /* (the -1 still in a register since dataLossCode) */
-	s->rankShown = -1;
+	s->localRank = -1;
 	scene_resetScores(s);
 	events_clear(s, 60.0f);
 	s->chatMode = 0;

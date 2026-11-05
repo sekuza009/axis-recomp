@@ -976,7 +976,7 @@ static const signed char k_star[8][3] = { { 1, 1, 1 }, { -1, -1, -1 }, { 1, -1, 
    quits. Then the scene's frame (clocks, objects, actors, bullets, particles, items), kill messages, the camera
    (free, or one of the presets about the followed player), the scene drawn (with debug markers for the map's
    points when debugPoints) and the overlay: icons for the followed player's preset and the replay clock, names,
-   the ranking, the start count. Returns 0 when the viewer quits (the file closed, the music stopped), else 4 */
+   the ranking, the start countdown. Returns 0 when the viewer quits (the file closed, the music stopped), else 4 */
 u32 THISCALL (replay_frame)(u8 *s)
 {
 	u8 *stage = (u8 *)SCENE_STAGE(s);
@@ -1339,7 +1339,7 @@ static void team_colours(u8 *s, int p, int team)
 static void local_spawn(u8 *s)
 {
 	if (SC->localRecordSet == 0) {
-		playerRecord_set((u8 *)SCENE_STAGE(s), SC->localPlayer, (const char *)SC->mechName, (*(u32 *)&SC->pilotLevel), (*(u32 *)&SC->localTeam), (*(u32 *)&SC->mechParts[0]),
+		playerRecord_set((u8 *)SCENE_STAGE(s), SC->localPlayer, (const char *)SC->mechName, (*(u32 *)&SC->character), (*(u32 *)&SC->localTeam), (*(u32 *)&SC->mechParts[0]),
 		             (*(u32 *)&SC->mechParts[1]), (*(u32 *)&SC->mechParts[2]), (*(u32 *)&SC->mechParts[3]), (*(u32 *)&SC->mechParts[4]), (*(u32 *)&SC->mechItems[0]), (*(u32 *)&SC->mechItems[1]),
 		             (*(u32 *)&SC->mechItems[2]), (*(u32 *)&SC->mechItems[3]), (*(u32 *)&SC->mechItems[4]), (*(u32 *)&SC->mechItems[5]));
 		SC->localRecordSet = 1;
@@ -1372,8 +1372,8 @@ static void local_spawn(u8 *s)
 		SC->sendFlags[SC->localPlayer][1] = 1;
 	SC->playing = 1;
 	notice_printCentre((Scene *)s, (const char *)STR(0x4d0618, "PREPARE THE BATTLE"));
-	SC->startCount = 3.0f;   /* 3 */
-	SC->startCountShown = -1;
+	SC->startCountdown = 3.0f;   /* 3 */
+	SC->startCountdownShown = -1;
 	scene_updateRanking((Scene *)s);
 	SC->actionKey = 1;
 	SC->spawnPending = 0;
@@ -1901,18 +1901,18 @@ void THISCALL (match_frame)(u8 *s)
 	me = SC->localPlayer;
 	if (me >= 0 && SC->players[me].state == 1 && !(((Player *)ACTOR_AT(me))->messageTime < 0) && !(((Player *)ACTOR_AT(me))->messageTime > 0))
 		notice_printCentre((Scene *)s, ((Player *)ACTOR_AT(me))->message);   /* (its own text as the format) */
-	/* the start count (3, 2, 1, go) */
-	if (SC->startCount > 0) {
-		long double v = FSUB(SC->startCount, SC->frameTime);
-		SC->startCount = (float)v;
+	/* the start countdown (3, 2, 1, go) */
+	if (SC->startCountdown > 0) {
+		long double v = FSUB(SC->startCountdown, SC->frameTime);
+		SC->startCountdown = (float)v;
 		if (!(v >= 0)) {
-			SC->startCount = 0.0f;
+			SC->startCountdown = 0.0f;
 			notice_printCentre((Scene *)s, (const char *)STR(0x4d0610, "FIGHT!"));
 			sound_playVolume(0x17, 100);
 		} else {
 			int n = ftol(v);
-			if (SC->startCountShown != n) {
-				SC->startCountShown = n;
+			if (SC->startCountdownShown != n) {
+				SC->startCountdownShown = n;
 				if (n == 0)
 					notice_printCentre((Scene *)s, (const char *)STR(0x4d05f8, "HANA!"));
 				else if (n == 1)
@@ -1939,8 +1939,8 @@ void THISCALL (match_frame)(u8 *s)
 	if (SC->teamsChanged == 1 || !(SC->rankingTimer > 0)) {
 		scene_updateRanking(sc);
 		if (net_playerInUse(SC->localPlayer) == 1 && SC->rank[SC->localPlayer] == 1
-		    && (SC->rankShown > 1 || (SC->kingOfTheHill == 1 && SC->rankShown != 1)))
-			sound_playVolume(0xf, 100);
+		    && (SC->localRank > 1 || (SC->kingOfTheHill == 1 && SC->localRank != 1)))
+			sound_playVolume(0xf, 100);   /* (never: the update just set localRank to the place; as the original) */
 		SC->teamsChanged = 0;
 		SC->rankingTimer = 5.0f;
 	}
@@ -2030,7 +2030,7 @@ void THISCALL (match_frame)(u8 *s)
 					profile_addMatchScores(sc);
 				}
 				scene_resetScores(sc);
-				SC->rankShown = -1;
+				SC->localRank = -1;
 				events_clear((Scene *)s, 60.0f);
 				net_clearAnnouncements(s);
 				if (SC->sessionMode == 0) {
@@ -2237,7 +2237,7 @@ void THISCALL (match_frame)(u8 *s)
 			}
 			stage_clearFrags(st);
 			scene_updateRanking(sc);
-			SC->rankShown = -1;
+			SC->localRank = -1;
 			events_clear((Scene *)s, 60.0f);
 			net_clearAnnouncements(s);
 			SC->elapsed = (*(int *)&SC->clockFraction) = 0;

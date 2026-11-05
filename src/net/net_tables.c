@@ -1474,7 +1474,7 @@ static void THISCALL __attribute__((used)) net_sendItemStates_body(u8 *s, u8 *pa
 PACKET_ENTRY(net_sendItemStates, 0);
 
 /* 0x48e0f0 (thiscall on the scene): player p's info sent once when flagged (sendFlags[][1] + p x 0x10, cleared): packet
-   2 (64 bytes, its first byte left as it was): from its PlayerRecord the name, then +0x13 its level, +0x14 its
+   2 (64 bytes, its first byte left as it was): from its PlayerRecord the name, then +0x13 its character, +0x14 its
    team, its actor's emblem, p, the five parts and six items (each + 1), the 30 colour bytes (hue, saturation, value). Sent by send_packet. Its caller ignores the eax it
    leaves */
 static void THISCALL __attribute__((used)) net_sendPlayerInfo_body(u8 *s, int p, u8 *packet)
@@ -1487,7 +1487,7 @@ static void THISCALL __attribute__((used)) net_sendPlayerInfo_body(u8 *s, int p,
 	packet[1] = 2;
 	strcpy((char *)packet + 2, r->name);
 	packet[0x14] = (u8)r->team;
-	packet[0x13] = (u8)r->level;
+	packet[0x13] = (u8)r->character;
 	packet[0x16] = (u8)p;
 	packet[0x15] = (u8)(sc)->players[p].grade;
 	for (int k = 0; k < 5; k++)
@@ -2065,7 +2065,7 @@ void THISCALL (net_processGamePacket)(u8 *g, u32 from, int size, const char *pkt
 			break;
 		((Player *)ACTOR(i))->player = i;
 		player_setName(STAGE, i, name);   /* player_setName */
-		player_setLevel(STAGE, i, (signed char)m[0x11]);
+		player_setCharacter(STAGE, i, (signed char)m[0x11]);
 		player_setTeam(STAGE, i, (signed char)m[0x12]);   /* player_setTeam */
 		static const u32 setters[5] = { FN_ADDR(actor_setActorTypeHeadInfoBy, 0x473b10), FN_ADDR(actor_setActorTypeChestInfoBy, 0x473c20), FN_ADDR(actor_setActorTypeArmInfoBy, 0x473d30), FN_ADDR(actor_setActorTypeLegInfoBy, 0x473e40), FN_ADDR(actor_setActorTypeBoosterInfoBy, 0x473f50) };   /* head .. booster */
 		for (int k = 0; k < 5; k++)

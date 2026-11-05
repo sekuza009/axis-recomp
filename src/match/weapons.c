@@ -77,8 +77,8 @@ void THISCALL (actor_pickRandomWeapon)(Stage *stage, int i)
 }
 
 /* 0x460000 (thiscall on the scene): actor target hit by actor attacker for damage, when it is in play (state 1) and
-   not invulnerable. For weapon kinds 0 .. 9 the damage is scaled by the attacker's level's stat for the kind's group
-   (g_profileRecords[level].stats[0 .. 3] + 100, per cent, rounded); doubled by the attacker's timer flag 0x100 and
+   not invulnerable. For weapon kinds 0 .. 9 the damage is scaled by the attacker's pilot character's stat for the kind's group
+   (g_characterProfiles[character].stats[0 .. 3] + 100, per cent, rounded); doubled by the attacker's timer flag 0x100 and
    halved by the target's 0x800. Unless both are on one team (and not the same actor) it comes off: mode 0 the shield
    first, the rest off the armour; mode 1 the shield, the armour losing 0.7 of it as well, and once the shield is
    gone the rest off the armour; neither below 0; the hit recorded (lastHitMode, lastAttacker, lastHitWeapon,
@@ -92,9 +92,9 @@ void THISCALL (actor_takeDamage)(u8 *scene, int attacker, int target, int mode, 
 	Player *ac = (Player *)ACTOR(target), *atk = (Player *)ACTOR(attacker);
 	if (ac->state != 1 || ac->invulnerable == 1)
 		return;
-	int level = atk->active == 1 ? atk->level : -1;
+	int character = atk->active == 1 ? atk->character : -1;
 	if ((unsigned)kind <= 9) {
-		int percent = g_profileRecords[level].stats[group[kind]] + 100;
+		int percent = g_characterProfiles[character].stats[group[kind]] + 100;
 		damage = ftol(fadd_m(fmul_m((long double)percent * damage, (const float *)ADDR(k_0_01f)), (const float *)ADDR(k_0_5f)));
 	}
 	if (((u32)atk->timerFlags) & 0x100)
