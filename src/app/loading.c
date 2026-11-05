@@ -537,7 +537,7 @@ u32 THISCALL (game_processLoadingMode)(u8 *g)
 	gfx_setProjectionHud(1, 1.0f);
 	ViewVolume_captureMatrices((u8 *)GS->view, 0, (u8 *)GS->modelview);
 	ViewVolume_reset((u8 *)GS->view);
-	render_drawObjects((u8 *)GS->view, GS->renderMode, 0.0f);
+	ViewVolume_draw((u8 *)GS->view, GS->renderMode, 0.0f);
 	gfx_setProjectionHud(0, 1.0f);
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 	for (int k = 0, y = 8; k < GS->loadLineCount; k += 2, y += 16)   /* (every other line from the second, as the original steps) */

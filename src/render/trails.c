@@ -100,7 +100,7 @@ void THISCALL (bullet_drawTrail)(Stage *stage, int b, void *view)
 				memcpy(pts + 9, centre, 12);
 				memcpy(pts + 3, ring + (cur * 4 + k - 1) * 3, 12);
 				memcpy(pts + 6, ring + (cur * 4 + k % 4) * 3, 12);
-				viewVolume_addQuad(view, texture, uv0, uv1, &colour, pts, 2, 1);
+				ViewVolume_addQuad(view, texture, uv0, uv1, &colour, pts, 2, 1);
 			}
 			return;
 		}
@@ -109,7 +109,7 @@ void THISCALL (bullet_drawTrail)(Stage *stage, int b, void *view)
 			memcpy(pts + 3, ring + (cur * 4 + k - 1) * 3, 12);
 			memcpy(pts + 6, ring + (cur * 4 + k % 4) * 3, 12);
 			memcpy(pts + 9, ring + (prev * 4 + k % 4) * 3, 12);
-			viewVolume_addQuad(view, texture, uv0, uv1, &colour, pts, 2, 1);
+			ViewVolume_addQuad(view, texture, uv0, uv1, &colour, pts, 2, 1);
 		}
 		if (--i <= 0)
 			return;

@@ -346,10 +346,10 @@ void THISCALL (camera_setupView)(u8 *s, const float *pos, const float *dir, cons
 
 static u8 clamp255(int a) { return a < 0 ? 0 : a > 255 ? 255 : (u8)a; }
 
-/* a camera-facing quad (viewVolume_addBillboard): texture corners uv (two pairs), offsets ab (two pairs), its colour +0x78 */
+/* a camera-facing quad (ViewVolume_addBillboard): texture corners uv (two pairs), offsets ab (two pairs), its colour +0x78 */
 static void quad(void *vv, int tex, const float *uv, float dz, u8 *p, const float *ab, const float *at, int kind)
 {
-	viewVolume_addBillboard(vv, tex, uv, uv + 2, dz, (u8 *)&PR->colour, ab, ab + 2, at, kind, 1);
+	ViewVolume_addBillboard(vv, tex, uv, uv + 2, dz, (u8 *)&PR->colour, ab, ab + 2, at, kind, 1);
 }
 
 /* offsets +-h, each corner rounded */
@@ -705,7 +705,7 @@ void THISCALL (particle_draw)(u8 *s, int i, void *vv)
 		return;
 	}
 	case 50:
-		viewVolume_addQuad(vv, PR->quadTexture, PR->quadUv0, PR->quadUv1, &PR->quadColour, &PR->quadPoints[0][0], 2, 1);
+		ViewVolume_addQuad(vv, PR->quadTexture, PR->quadUv0, PR->quadUv1, &PR->quadColour, &PR->quadPoints[0][0], 2, 1);
 		return;
 	}
 }

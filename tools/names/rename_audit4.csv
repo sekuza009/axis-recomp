@@ -299,3 +299,6 @@ stage_drawProjectiles,stage_drawParticles
 projectile_draw,particle_draw
 stage_freeProjectile,stage_freeParticle
 stage_clearProjectiles,stage_clearParticles
+viewVolume_addQuad,ViewVolume_addQuad
+viewVolume_addBillboard,ViewVolume_addBillboard
+render_drawObjects,ViewVolume_draw

@@ -1470,7 +1470,7 @@ THISCALL void tex_tintHsv(float *rgb, float dh, float ds, float dv);
 /* add a quad (4 points) to the view volume's polygon list (92-byte records): transformed points at +0x18..+0x54;
    flag 1 drops it again when all 4 points are outside one clip plane; then id, two uv pairs, a texture and a value */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-THISCALL void viewVolume_addQuad(char *vv, int id, const DWORD *uv0, const DWORD *uv1, const DWORD *tex, const float *p, DWORD extra, int flag);
+THISCALL void ViewVolume_addQuad(char *vv, int id, const DWORD *uv0, const DWORD *uv1, const DWORD *tex, const float *p, DWORD extra, int flag);
 
 /* ---- batch 26: room / arena menu camera (ease to a menu point, back home, snap) -------------------- */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
@@ -1498,9 +1498,9 @@ THISCALL void bullet_drawTrail(void *self, int b, void *vv);
 /* camera-facing quad at point p: p goes to camera space with the matrix at +0x90f0 (x, y rounded to float, z kept),
    corners (x+A.x, y+A.y), (x+B.x, y+A.y), (x+B.x, y+B.y), (x+A.x, y+B.y) at depth z+dz are projected with the matrix
    at +0x90b0. Corners 0 and 3 are rounded to float before projecting, corners 1 and 2 are not (as in the original).
-   Same list, clip test and record layout as viewVolume_addQuad. */
+   Same list, clip test and record layout as ViewVolume_addQuad. */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-THISCALL void viewVolume_addBillboard(char *vv, int id, const DWORD *uv0, const DWORD *uv1, float dz, const DWORD *tex, const float *A, const float *B, const float *p, DWORD extra, int flag);
+THISCALL void ViewVolume_addBillboard(char *vv, int id, const DWORD *uv0, const DWORD *uv1, float dz, const DWORD *tex, const float *A, const float *B, const float *p, DWORD extra, int flag);
 
 /* ---- batch 29: draw every live bullet's trail ---- */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
@@ -3436,7 +3436,7 @@ THISCALL void actor_setupFromParts(char *sc, DWORD a, DWORD x, DWORD y, DWORD pp
    camera (+0x20f3970..): in 3D mode (0x83a9c8 == 1, and always for type 34) the type's shape (+0x20f3ae0 + type *
    0x90, +0x8c) projected at the item's place and turn (ViewVolume_projectObject; faded items with a white colour of
    alpha 255 * fade), else a 300-unit billboard cut from the item atlas (8 icons per row, 32 px each) through the
-   billboard object (+0x9ccff8, viewVolume_addBillboard) */
+   billboard object (+0x9ccff8, ViewVolume_addBillboard) */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void THISCALL stage_drawItems(void *stage, void *view);
 /* batch 105 (lifted/grp51.c) */
@@ -3462,7 +3462,7 @@ void THISCALL sky_draw(void *stage, DWORD scale);
    (gfx_getWidth / gfx_getHeight), drawn as nine textured quads (texture +0xbc06b4) */
 void THISCALL hud_drawMenuBox(void *scene, int x0, int y0, int x1, int y1);
 /* batch 108 (lifted/grp54.c) */
-/* 0x485af0 (thiscall on a view volume) render_drawObjects(mode, b): draw what ViewVolume_projectObject queued. The
+/* 0x485af0 (thiscall on a view volume) ViewVolume_draw(mode, b): draw what ViewVolume_projectObject queued. The
    projection / modelview are loaded from +0x90b0 / +0x90f0 and fog follows GL's fog state (glGetBooleanv; the
    fog range then maps through the projection, +0x90d8..). Per material (count +0x3024, ids +0x20; 0 none, else the
    texture id + 1 bound unless mode 2) its item chain (+0x3028 + id * 4; mesh, colours, factors, flag, matrix, -,
@@ -3473,7 +3473,7 @@ void THISCALL hud_drawMenuBox(void *scene, int x0, int y0, int x1, int y1);
    the transparent triangles (+0x9058, count +0x905c) and billboards (+0x906c, count +0x9070) are depth-sorted
    (+0x9060 / +0x9074 / +0x907c) and drawn back to front; the counters +0x90a4.. are updated */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-THISCALL void render_drawObjects(char *vv, DWORD mode, DWORD b);
+THISCALL void ViewVolume_draw(char *vv, DWORD mode, DWORD b);
 /* batch 109 (lifted/grp55.c) */
 /* 0x45e170 (thiscall on the scene) stage_drawActors(vv, draw): actor_drawIntoView for every active actor
    (+0x1cd94b0 == 1, count +0x202e8c8) */
@@ -3499,7 +3499,7 @@ THISCALL void actor_applySpawnRecord(char *sc, DWORD a, DWORD rec);
 /* 0x476890 (thiscall on the scene) particle_draw(i, vv): draw particle i (0x12c-byte records at +0x20a99c0: frame,
    active, type, owner, position, ..., timer +0x6c / length +0x70): unless the type is 50 or more it must lie within
    the range +0xa08 of the camera; then by type (bullets, missiles, beams, explosions, shields, trails, ...) as
-   billboards cut from the item atlas (textures +0x9ccfd4..; viewVolume_addBillboard / viewVolume_addQuad), transformed triangles
+   billboards cut from the item atlas (textures +0x9ccfd4..; ViewVolume_addBillboard / ViewVolume_addQuad), transformed triangles
    (ViewVolume_addTriangle) or the effect shapes (+0x20f2e74..; ViewVolume_projectObject), sized and faded by
    the timer, smaller for the viewing actor's own (+0x202e8d8). 0x479af0 stage_drawParticles(vv): every active particle
    (count +0x20f2da0) */
@@ -5991,7 +5991,7 @@ static LONG WINAPI mstub_CallWindowProcA(DWORD proc, DWORD w, DWORD m, DWORD wp,
 }
 static int WINAPI mstub_GetCursorPos(DWORD *pt) { mock_rec(0x4a9300, 0, 0, 0, 0, 0); pt[0] = g_mockCursor[0]; pt[1] = g_mockCursor[1]; return 1; }
 static void WINAPI mstub_glLoadIdentity(void) { mock_rec(0x4a9218, 0, 0, 0, 0, 0); }
-/* vertex arrays and the vector forms (render_drawObjects): pointers are logged as the bytes they point to where the
+/* vertex arrays and the vector forms (ViewVolume_draw): pointers are logged as the bytes they point to where the
    size is known, array pointers by address (the arrays are read by glDrawElements, logged as its index hash) */
 static void WINAPI mstub_glTexCoordPointer(int n, DWORD type, int stride, DWORD p) { mock_rec(0x4a9234, 4, (DWORD)n, type, (DWORD)stride, p); }
 static void WINAPI mstub_glColorPointer(int n, DWORD type, int stride, DWORD p) { mock_rec(0x4a9244, 4, (DWORD)n, type, (DWORD)stride, p); }
@@ -8003,9 +8003,9 @@ static void vvquad_setup(void)
 	if (!irnd(0, 20)) G32(BUF + 0x100 + irnd(0, 11) * 4) = 0x7fc00000;
 	fill(BUF + 0x300, 0x14); g_a[0] = irnd(-2, 5); fill(&g_a[1], 4); g_a[2] = irnd(0, 2);
 }
-ST(viewVolume_addQuad, vvquad_setup();,
+ST(ViewVolume_addQuad, vvquad_setup();,
    (TC(void, 0x4848e0, char *, int, char *, char *, char *, char *, int, int)(BUF, g_a[0], BUF + 0x300, BUF + 0x308, BUF + 0x310, BUF + 0x100, g_a[1], g_a[2]), 0),
-   (viewVolume_addQuad(BUF, g_a[0], (DWORD *)(BUF + 0x300), (DWORD *)(BUF + 0x308), (DWORD *)(BUF + 0x310), (float *)(BUF + 0x100), g_a[1], g_a[2]), 0))
+   (ViewVolume_addQuad(BUF, g_a[0], (DWORD *)(BUF + 0x300), (DWORD *)(BUF + 0x308), (DWORD *)(BUF + 0x310), (float *)(BUF + 0x100), g_a[1], g_a[2]), 0))
 
 /* batch 26 */
 static void menucam_setup(DWORD modev, DWORD idxv, DWORD v150)
@@ -8074,9 +8074,9 @@ static void billboard_setup(void)
 	fill(BUF + 0x300, 0x14); g_a[0] = irnd(-2, 5); fill(&g_a[1], 4); g_a[2] = irnd(0, 2);
 	GF(&g_a[3]) = (float)irnd(-100, 100) / 10.0f;
 }
-ST(viewVolume_addBillboard, billboard_setup();,
+ST(ViewVolume_addBillboard, billboard_setup();,
    (TC(void, 0x484ca0, char *, int, char *, char *, float, char *, char *, char *, char *, int, int)(BUF, g_a[0], BUF + 0x300, BUF + 0x308, GF(&g_a[3]), BUF + 0x310, BUF + 0x110, BUF + 0x118, BUF + 0x100, g_a[1], g_a[2]), 0),
-   (viewVolume_addBillboard(BUF, g_a[0], (DWORD *)(BUF + 0x300), (DWORD *)(BUF + 0x308), GF(&g_a[3]), (DWORD *)(BUF + 0x310), (float *)(BUF + 0x110), (float *)(BUF + 0x118), (float *)(BUF + 0x100), g_a[1], g_a[2]), 0))
+   (ViewVolume_addBillboard(BUF, g_a[0], (DWORD *)(BUF + 0x300), (DWORD *)(BUF + 0x308), GF(&g_a[3]), (DWORD *)(BUF + 0x310), (float *)(BUF + 0x110), (float *)(BUF + 0x118), (float *)(BUF + 0x100), g_a[1], g_a[2]), 0))
 
 /* batch 29 */
 static void trails_setup(void)
@@ -12391,7 +12391,7 @@ static void drawobj_setup(void)
 	for (int i = 0; i < 32; i++) SF(vv, 0x90b0 + 4 * i) = unit_rnd() * 2.0f;
 	SF(vv, 0x90bc) = 0; SF(vv, 0x90cc) = 0; SF(vv, 0x90dc) = -1.0f; SF(vv, 0x90ec) = 0.5f + unit_rnd();
 	S32(vv, 0x9088) = (int)(BUF + 0x1c0000); S32(vv, 0x908c) = irnd(0, 4); fill(BUF + 0x1c0000, 0x1000); fill(vv + 0x90a4, 12);   /* the line list */
-	/* 0..4 billboards queued the game's way (viewVolume_addQuad, rebuilt and bit-exact): types 2 / 3 (the two depth lists)
+	/* 0..4 billboards queued the game's way (ViewVolume_addQuad, rebuilt and bit-exact): types 2 / 3 (the two depth lists)
 	   or another, a GL slot owner's texture or none (-1), a colour, four points near the view */
 	S32(vv, 0x9068) = 8; S32(vv, 0x9070) = 0;
 	for (int q = irnd(0, 4); q > 0; q--) {
@@ -12399,7 +12399,7 @@ static void drawobj_setup(void)
 		for (int m = irnd(0, 5); m; m--) sl = (char *)S32(sl, 0xc);
 		fill(uv0, 8); fill(uv1, 8); fill(&col, 4);
 		for (int c = 0; c < 12; c++) pts[c] = (float)irnd(-500, 500) / 1000.0f;
-		viewVolume_addQuad(vv, irnd(0, 3) ? k + S32(sl, 4) : -1, uv0, uv1, &col, pts, irnd(0, 4) ? irnd(2, 3) : 1, irnd(0, 1));
+		ViewVolume_addQuad(vv, irnd(0, 3) ? k + S32(sl, 4) : -1, uv0, uv1, &col, pts, irnd(0, 4) ? irnd(2, 3) : 1, irnd(0, 1));
 	}
 	g_mockGlBool = irnd(0, 1);
 	for (int i = 0; i < 16; i++) g_glFloats[i] = (DWORD)irnd(-0x3f800000, 0x3f800000) & 0xbfffffffu;
@@ -12413,8 +12413,8 @@ static DWORD drawobj_orig(void)   /* counts runs whose transparent pass had tria
 	g_drawRuns++; g_drawSorted += S32(BUF + 0x100000, 0x9064) > 0;
 	return 0;
 }
-ST(render_drawObjects, drawobj_setup();, drawobj_orig(),
-   (render_drawObjects(BUF + 0x100000, (DWORD)g_a[0], (DWORD)g_a[1]), 0))
+ST(ViewVolume_draw, drawobj_setup();, drawobj_orig(),
+   (ViewVolume_draw(BUF + 0x100000, (DWORD)g_a[0], (DWORD)g_a[1]), 0))
 /* batch 109 */
 /* every actor (0..6) with fresh empty object lists, active or not, positions near the camera; then as
    updateparts_setup (part tables, items, one actor's state) */
@@ -17288,13 +17288,13 @@ static const STest g_stests[] = {
 	/* batch 24 */
 	T(tunnelRing_build, 0, 4, 300), T(ViewVolume_addSegment, 0, 4, 3000),
 	/* batch 25 */
-	T(Mat4_fromAxisAngle, 0, 4, 2000), T(tex_tintHsv, 0, 4, 3000), T(viewVolume_addQuad, 0, 4, 3000),
+	T(Mat4_fromAxisAngle, 0, 4, 2000), T(tex_tintHsv, 0, 4, 3000), T(ViewVolume_addQuad, 0, 4, 3000),
 	/* batch 26 */
 	T(room_camera, 0, 250, 0), T(arena_camera, 0, 250, 0), T(skirmish_camera, 0, 250, 0), T(missionsel_camera, 0, 250, 0),
 	/* batch 27 */
 	T(bullet_drawTrail, 0, 4, 1500),
 	/* batch 28 */
-	T(viewVolume_addBillboard, 0, 4, 3000),
+	T(ViewVolume_addBillboard, 0, 4, 3000),
 	/* batch 29 */
 	T(stage_drawBullets, 0, 4, 600),
 	/* batch 30 */
@@ -17560,7 +17560,7 @@ static const STest g_stests[] = {
 	/* batch 107 */
 	T(hud_drawMenuBox, 0, 300, 0),
 	/* batch 108 */
-	T(render_drawObjects, 0, 1000, 0),
+	T(ViewVolume_draw, 0, 1000, 0),
 	/* batch 109 */
 	T(stage_drawActors, 0, 300, 0), T(stage_setupActorSlot, 1, 300, 0), T(stage_claimPlayerActor, 0, 300, 0), T(stage_remakePlayerActor, 0, 300, 0),
 	T(actor_applySpawnRecord, 0, 300, 0),
@@ -18211,14 +18211,14 @@ static const struct { DWORD addr; void *fn; const char *name; } g_hooks3[] = {
 	{ 0x440e20, (void *)tunnelRing_build, "tunnelRing_build" }, { 0x485120, (void *)ViewVolume_addSegment, "ViewVolume_addSegment" },
 	/* batch 25 */
 	{ 0x47d9a0, (void *)Mat4_fromAxisAngle, "Mat4_fromAxisAngle" }, { 0x46d950, (void *)tex_tintHsv, "tex_tintHsv" },
-	{ 0x4848e0, (void *)viewVolume_addQuad, "viewVolume_addQuad" },
+	{ 0x4848e0, (void *)ViewVolume_addQuad, "ViewVolume_addQuad" },
 	/* batch 26 */
 	{ 0x437a10, (void *)room_camera, "room_camera" }, { 0x408270, (void *)arena_camera, "arena_camera" },
 	{ 0x444130, (void *)skirmish_camera, "skirmish_camera" }, { 0x447cb0, (void *)missionsel_camera, "missionsel_camera" },
 	/* batch 27 */
 	{ 0x47ca70, (void *)bullet_drawTrail, "bullet_drawTrail" },
 	/* batch 28 */
-	{ 0x484ca0, (void *)viewVolume_addBillboard, "viewVolume_addBillboard" },
+	{ 0x484ca0, (void *)ViewVolume_addBillboard, "ViewVolume_addBillboard" },
 	/* batch 29 */
 	{ 0x47d060, (void *)stage_drawBullets, "stage_drawBullets" },
 	/* batch 30 */
@@ -18610,7 +18610,7 @@ static const struct { DWORD addr; void *fn; const char *name; } g_hooks3[] = {
 	/* batch 107 */
 	{ 0x495ed0, (void *)hud_drawMenuBox, "hud_drawMenuBox" },
 	/* batch 108 */
-	{ 0x485af0, (void *)render_drawObjects, "render_drawObjects" },
+	{ 0x485af0, (void *)ViewVolume_draw, "ViewVolume_draw" },
 	/* batch 109 */
 	{ 0x45e170, (void *)stage_drawActors, "stage_drawActors" }, { 0x45dc00, (void *)stage_setupActorSlot, "stage_setupActorSlot" },
 	{ 0x45dd80, (void *)stage_claimPlayerActor, "stage_claimPlayerActor" }, { 0x45ddc0, (void *)stage_remakePlayerActor, "stage_remakePlayerActor" },
@@ -19050,7 +19050,7 @@ static DWORD WINAPI worker(LPVOID unused)
 		say("      (map_loadObjectInfoFrom: the original loaded every object in %d tests)\n", g_mapObjDone);
 		say("      (arena_loadMapPreview: the original found the preview texture in %d tests)\n", g_previewFound);
 		say("      (map_loadActorInfoFrom: the original set up every player in %d tests)\n", g_actorFileDone);
-		say("      (render_drawObjects: the original sorted transparent triangles in %d of %d runs)\n", g_drawSorted, g_drawRuns);
+		say("      (ViewVolume_draw: the original sorted transparent triangles in %d of %d runs)\n", g_drawSorted, g_drawRuns);
 		say("      (map_loadGroundInfoFrom: the original loaded the whole ground in %d tests)\n", g_groundDone);
 		say("      (stage_build: the original set the whole scene up in %d tests)\n", g_sceneInitDone);
 		say("      (collisionTri_sweepSphere: the original reported a contact in %d tests)\n", g_csuHits);

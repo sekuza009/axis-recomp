@@ -43,13 +43,13 @@ void THISCALL (hud_pass)(Scene *scene)
 			stage_setFog(STAGE(scene), &scene->fogColour, scene->fogParams[0], scene->fogParams[1], scene->fogParams[2]);
 			glEnable(GL_FOG);
 		}
-		render_drawObjects(&scene->view, scene->renderMode, scene->clockFraction);
+		ViewVolume_draw(&scene->view, scene->renderMode, scene->clockFraction);
 		glDisable(GL_FOG);
 	}
 	glClear(GL_DEPTH_BUFFER_BIT);
 	ViewVolume_reset(&scene->view);
 	stage_drawActors(STAGE(scene), &scene->view, 1);
-	render_drawObjects(&scene->view, scene->renderMode, scene->clockFraction);
+	ViewVolume_draw(&scene->view, scene->renderMode, scene->clockFraction);
 	if (scene->scriptMode != 0) {
 		if (scene->scriptMode == 2) {
 			glClearDepth(1.0);

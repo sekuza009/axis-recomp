@@ -590,7 +590,7 @@ u32 THISCALL (match_freeCamFrame)(u8 *s)
 	stage_drawActors((Stage *)stage, SC->view, -1);
 	stage_drawBullets(stage, SC->view);
 	stage_drawParticles((Stage *)stage, SC->view);
-	render_drawObjects(SC->view, SC->renderMode, 0.0f);
+	ViewVolume_draw(SC->view, SC->renderMode, 0.0f);
 	gfx_setProjectionHud(0, 1.0f);
 	return SC->quitAsked == 1 ? 0 : 3;
 }
@@ -1222,7 +1222,7 @@ u32 THISCALL (replay_frame)(u8 *s)
 		stage_setFog((Stage *)stage, st->glFogColour, st->glFogStart, st->glFogEnd, st->glFogDensity);
 		glEnable(GL_FOG);
 	}
-	render_drawObjects(view, SC->renderMode, SC->clockFraction);
+	ViewVolume_draw(view, SC->renderMode, SC->clockFraction);
 	glDisable(GL_FOG);
 	gfx_setProjectionHud(0, 1.0f);
 

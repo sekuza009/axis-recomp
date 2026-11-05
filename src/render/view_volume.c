@@ -86,7 +86,7 @@ static int quad_outside(const float *r)
 }
 
 /* 0x4848e0: a quad of four points p (into the 92-byte records of the list at +0x9070) */
-void THISCALL (viewVolume_addQuad)(u8 *vv, int id, const u32 *uv0, const u32 *uv1, const u32 *colour, const float *p, u32 extra,
+void THISCALL (ViewVolume_addQuad)(u8 *vv, int id, const u32 *uv0, const u32 *uv1, const u32 *colour, const float *p, u32 extra,
                            int flag)
 {
 	float *r = next_record(vv, 0x9070, 0x909c, 92);
@@ -110,7 +110,7 @@ void THISCALL (viewVolume_addQuad)(u8 *vv, int id, const u32 *uv0, const u32 *uv
 /* 0x484ca0: a camera-facing quad at p: p to camera space (the matrix at +0x90f0; x and y rounded, z not), its corners
    (x + A.x, y + A.y), (x + B.x, y + A.y), (x + B.x, y + B.y), (x + A.x, y + B.y) at depth z + dz projected by the
    matrix at +0x90b0. Corners 0 and 3 are rounded to floats first, 1 and 2 are not, as in the original */
-void THISCALL (viewVolume_addBillboard)(u8 *vv, int id, const u32 *uv0, const u32 *uv1, float dz, const u32 *colour, const float *A,
+void THISCALL (ViewVolume_addBillboard)(u8 *vv, int id, const u32 *uv0, const u32 *uv1, float dz, const u32 *colour, const float *A,
                            const float *B, const float *p, u32 extra, int flag)
 {
 	float *r = next_record(vv, 0x9070, 0x909c, 92);
@@ -261,9 +261,10 @@ static void corner(float *out, const float *m, const float *px, long double y, l
    of the clip volume (through the projection +0x9130 times the matrix) is left out. Each queued part goes to the end
    of its material's list (material, or the part's +0x44; plus one; the volume's 0x1c-byte entries +0x9034, +0x9038
    used of +0x9030: full sets +0x9090; a material's first entry is listed at +0x20, +0x3024 of them; heads +0x3028,
-   tails +0x602c): the part, its colours (from extra, by the part's +0x48), a4, the colour, the matrix, a8 */
-void THISCALL (ViewVolume_projectObject)(u8 *view, u8 *model, u32 *extra, const float *matrix, u32 a4, u32 colour, int cull,
-                                         int material, u32 a8)
+   tails +0x602c): the part, its colours (from extra, by the part's +0x48), the light factors, the colour (a tint added), the matrix,
+   an extra matrix (multiplied after it; 0 none) */
+void THISCALL (ViewVolume_projectObject)(u8 *view, u8 *model, u32 *extra, const float *matrix, u32 factors, u32 colour, int cull,
+                                         int material, u32 extraMatrix)
 {
 	Model *md = (Model *)model;
 	ViewVolume *vw = (ViewVolume *)view;
@@ -334,10 +335,10 @@ void THISCALL (ViewVolume_projectObject)(u8 *view, u8 *model, u32 *extra, const 
 		vw->materialTails[list] = (u8 *)e;
 		e[0] = (u32)part;
 		e[1] = extra ? (u32)(extra + sp->colourBase) : 0;
-		e[2] = a4;
+		e[2] = factors;
 		e[3] = colour;
 		e[4] = (u32)m;
-		e[5] = a8;
+		e[5] = extraMatrix;
 		e[6] = 0;
 	}
 }
@@ -632,7 +633,7 @@ static const float k_third = -0.33333334f, k_half = -0.5f;   /* the depth keys: 
    merged back to front with the billboards (kind 2), billboards of kind 3 last; the fog range mapped through the
    projection (+0x90d8..) for the identity-matrix passes. A mesh too big for the colour buffer is retried forever,
    as the original does */
-void THISCALL (render_drawObjects)(u8 *vv, int mode, float b)
+void THISCALL (ViewVolume_draw)(u8 *vv, int mode, float b)
 {
 	float projection[16], modelview[16], mapped[2] = { 0, 0 };
 	float range[17] = { 0, 0 };   /* the fog range; as in the original's frame, a whole matrix fits after each value */

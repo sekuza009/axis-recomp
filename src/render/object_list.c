@@ -43,9 +43,9 @@ void THISCALL (ObjectList_relight)(ObjectList *list, const LightFactors *factors
 /* 0x46fd20 (partList_queue): the list into the view volume, when it has frames and the current one is set (returns 1;
    else 0 and nothing done). A pre-lit list (preLit == 1) is relit here (factors only while factors->enabled when
    there are no point lights) and drawn with its own colours; any other list hands the factors and lights on. cull,
-   material and a8 go to ViewVolume_projectObject. */
+   material and the extra matrix go to ViewVolume_projectObject. */
 int THISCALL (partList_queue)(ObjectList *list, void *view, const LightFactors *factors, const void *lights, int cull,
-                          int material, int a8)
+                          int material, int extraMatrix)
 {
 	if (list->frameCount <= 0 || list->count <= 0 || list->frames[list->frame] == 0)
 		return 0;
@@ -56,9 +56,9 @@ int THISCALL (partList_queue)(ObjectList *list, void *view, const LightFactors *
 		if (list->preLit == 1) {
 			if (lights != NULL || factors == NULL || factors->enabled == 1)
 				relight(e, factors, lights);
-			ViewVolume_projectObject(view, e->shape, (u32)e->colours, e->matrix, 0, NULL, cull, material, a8);
+			ViewVolume_projectObject(view, e->shape, (u32)e->colours, e->matrix, 0, NULL, cull, material, extraMatrix);
 		} else {
-			ViewVolume_projectObject(view, e->shape, 0, e->matrix, (int)factors, lights, cull, material, a8);
+			ViewVolume_projectObject(view, e->shape, 0, e->matrix, (int)factors, lights, cull, material, extraMatrix);
 		}
 	}
 	return 1;

@@ -190,7 +190,7 @@ void THISCALL (armc_drawPreview3D)(Scene *scene, const u32 *eye, const u32 *forw
 		else
 			partList_queue(list, vv, NULL, k == part ? white : dim, 1, (u32)-1, 0);
 	}
-	render_drawObjects(vv, 0, 0.0f);
+	ViewVolume_draw(vv, 0, 0.0f);
 	Light_dtor(light);
 }
 

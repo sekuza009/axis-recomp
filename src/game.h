@@ -349,7 +349,7 @@ typedef struct { u32 vtable; void *banks[6]; i32 count; } TextureManager;   /* t
 #define partList_bindTextures(part) GAME_THISFN(partList_bindTextures, 0x46fed0, void, void *)(part)
 #define bullet_spawn(stage, slot, owner, target, rec, n) GAME_THISFN(bullet_spawn, 0x47ce50, int, void *, int, int, int, void *, int)(stage, slot, owner, target, rec, n)
 #define collisionTri_traceSegment(rec, p0, p1, hit, t) GAME_THISFN(collisionTri_traceSegment, 0x47fb80, int, void *, const float *, const float *, float *, float *)(rec, p0, p1, hit, t)
-#define partList_queue(list, vv, lights, tint, a4, a5, a6) GAME_THISFN(partList_queue, 0x46fd20, int, void *, void *, void *, u8 *, int, u32, u32)(list, vv, lights, tint, a4, a5, a6)
+#define partList_queue(list, vv, factors, lights, cull, material, extraMatrix) GAME_THISFN(partList_queue, 0x46fd20, int, void *, void *, void *, u8 *, int, u32, u32)(list, vv, factors, lights, cull, material, extraMatrix)
 #define tex_getItemFileBy(manager, name) GAME_THISFN(tex_getItemFileBy, 0x455550, void *, void *, const char *)(manager, name)   /* the dat file at the item's data */
 #define ptx_initTables() GAME_FN(ptx_initTables, 0x46ea00, void, void)()
 #define ptx_open(path, out, bpp, w, h) GAME_FN(ptx_open, 0x46eb00, int, const char *, void *, int *, int *, int *)(path, out, bpp, w, h)
@@ -532,9 +532,9 @@ typedef struct { u32 vtable; void *banks[6]; i32 count; } TextureManager;   /* t
 /* queue every mesh of model for drawing (see recomp.c): extra, matrix (none: the current modelview), a4, colour (4 bytes,
    or none), cull (1: skip meshes outside a clip plane),
    material (< 0: the mesh's own), a8 */
-#define ViewVolume_projectObject(view, model, extra, matrix, a4, colour, cull, material, a8) GAME_THISFN(ViewVolume_projectObject, 0x4853c0, void, void *, \
-	void *, u32, const float *, int, const void *, int, int, int)(view, model, extra, matrix, a4, colour, cull, material, a8)
-#define render_drawObjects(view, mode, alpha) GAME_THISFN(render_drawObjects, 0x485af0, void, void *, int, float)(view, mode, alpha)
+#define ViewVolume_projectObject(view, model, extra, matrix, factors, colour, cull, material, extraMatrix) GAME_THISFN(ViewVolume_projectObject, 0x4853c0, void, void *, \
+	void *, u32, const float *, int, const void *, int, int, int)(view, model, extra, matrix, factors, colour, cull, material, extraMatrix)
+#define ViewVolume_draw(view, mode, alpha) GAME_THISFN(ViewVolume_draw, 0x485af0, void, void *, int, float)(view, mode, alpha)
 #define sky_draw(stage, scale) GAME_THISFN(sky_draw, 0x496f20, void, Stage *, float)(stage, scale)   /* the sky (render/sky.c) */
 #define ground_buildDrawLists(stage, view, scale) GAME_THISFN(ground_buildDrawLists, 0x497d20, void, void *, void *, float)(stage, view, scale)
 /* the stage, the scene's own object (scene.fields: Stage) */
@@ -550,7 +550,7 @@ typedef struct { u32 vtable; void *banks[6]; i32 count; } TextureManager;   /* t
 /* particle i drawn (or queued) in the view volume */
 /* a camera-facing quad at p into the view volume's billboard list id: corners p + a .. p + b, depth + dz, texture
    coordinates uv0 .. uv1, colour (4 bytes) */
-#define viewVolume_addBillboard(view, id, uv0, uv1, dz, colour, a, b, p, extra, flag) GAME_THISFN(viewVolume_addBillboard, 0x484ca0, void, void *, int, const float *, \
+#define ViewVolume_addBillboard(view, id, uv0, uv1, dz, colour, a, b, p, extra, flag) GAME_THISFN(ViewVolume_addBillboard, 0x484ca0, void, void *, int, const float *, \
 	const float *, float, const void *, const float *, const float *, const float *, int, int)(view, id, uv0, uv1, dz, colour, a, b, p, extra, flag)
 #define g_highDetail (g_graphicSettings[2])            /* the polygon detail setting (HIGH 1): 1 draws map items as models */
 #define particle_draw(stage, i, view) GAME_THISFN(particle_draw, 0x476890, void, Stage *, int, void *)(stage, i, view)
@@ -1246,7 +1246,7 @@ typedef struct { float r, g, b, a; } Colour;
 #define ranking_layout() GAME_FN(ranking_layout, 0x432040, void, void)()
 #define updateNotice_layout() GAME_FN(updateNotice_layout, 0x431aa0, void, void)()
 
-#define viewVolume_addQuad(view, texture, uv0, uv1, colour, points, kind, flag) GAME_THISFN(viewVolume_addQuad, 0x4848e0, void, void *, int, const u32 *, const u32 *, const u32 *, const float *, u32, int)(view, texture, uv0, uv1, colour, points, kind, flag)   /* a textured quad into the view volume */
+#define ViewVolume_addQuad(view, texture, uv0, uv1, colour, points, kind, flag) GAME_THISFN(ViewVolume_addQuad, 0x4848e0, void, void *, int, const u32 *, const u32 *, const u32 *, const float *, u32, int)(view, texture, uv0, uv1, colour, points, kind, flag)   /* a textured quad into the view volume */
 
 #define net_findFreeSession() GAME_FN(net_findFreeSession, 0x454110, int, void)()   /* the first free session slot, or -1 */
 

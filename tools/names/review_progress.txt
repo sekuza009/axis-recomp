@@ -105,7 +105,7 @@
 [x] src/render/tex_colours.c 174
 [x] src/render/trails.c 118
 [x] src/render/vecmath.c 255
-[ ] src/render/view_volume.c 829
+[x] src/render/view_volume.c 829
 [ ] src/replay/replay_message.c 55
 [ ] src/sound/sound_basic.c 428
 [ ] src/text/glyph_cells.c 220
