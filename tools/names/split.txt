@@ -189,7 +189,7 @@ g_profileProgressSaved
 g_projMode
 g_ptxBitPos
 g_ptxLastDc
-g_ptxTable
+g_ptxHuffSet
 g_ptxTablesReady
 g_randPos
 g_rankingLast
@@ -661,7 +661,7 @@ g_netAccountBuffer
 g_netConnected
 g_netInfoPacket
 g_netJoinMessage
-g_netKindWord
+g_netKindBuffer
 g_netLastRequest
 g_netLobbyMessage
 g_netNoticeIn
@@ -698,7 +698,7 @@ g_netLeaveBuffer
 g_netListDone
 g_netPlayerRecordPacket
 g_netRankingBuffer
-g_netRequestWord
+g_netRequestBuffer
 g_pingThread
 g_pingThreadId
 g_pingTime
@@ -856,7 +856,7 @@ g_unusedLogoFade
 g_logoTexture
 g_mapListKept
 g_mapTop
-g_menuFade
+g_menuKeyGuard
 g_menuVolume
 g_missionStarted
 g_modeChanged
@@ -1160,7 +1160,7 @@ g_unusedClock3
 g_unusedArenaWord
 g_gameConnectTexture
 g_lobbyLeavePacket
-g_netOneByte
+g_netByteBuffer
 g_unlockTablesSolo
 g_unlockTablesNet
 g_setupWallTurns

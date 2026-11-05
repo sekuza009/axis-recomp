@@ -33,7 +33,7 @@ void (menu_drawVersion)(void)
 {
 	if (g_titleShown && ++g_titleFrames >= 19) {
 		g_screen = 210;
-		g_menuFade = 5.0f;
+		g_menuKeyGuard = 5.0f;
 	}
 	menu_drawBackground();
 	PATCHED_CALL(0x41f903, void, void)();        /* menu_titleEmblemTransition */

@@ -621,7 +621,7 @@ int g_outlinesCopy_v[44] __attribute__((aligned(16)));   /* 0x9da328 */
 u8 g_chatCaretX_v[4] __attribute__((aligned(16)));   /* 0x9da3d8 */
 u8 g_chatCaretY_v[4] __attribute__((aligned(16)));   /* 0x9da3dc */
 u8 g_mapRotation_v[4] __attribute__((aligned(16)));   /* 0x9da3e0 */
-u8 g_menuFade_v[4] __attribute__((aligned(16)));   /* 0x9da434 */
+u8 g_menuKeyGuard_v[4] __attribute__((aligned(16)));   /* 0x9da434 */
 u8 g_excludedKey_v[4] __attribute__((aligned(16)));   /* 0x9da440 */
 u8 g_dikF3_v[4] __attribute__((aligned(16)));   /* 0x9da448 */
 u8 g_dikF2_v[4] __attribute__((aligned(16)));   /* 0x9da44c */
@@ -942,7 +942,7 @@ u8 g_chatLogged_v[4] __attribute__((aligned(16)));   /* 0x9fd95c */
 u8 g_roomList_v[30976] __attribute__((aligned(16)));   /* 0x9fd960 */
 u8 g_lobbyReplyRecord_v[91] __attribute__((aligned(16)));   /* 0xa05260 */
 u8 g_netNoticeRecord_v[34] __attribute__((aligned(16)));   /* 0xa052c0 */
-u8 g_netOneByte_v[4] __attribute__((aligned(16)));   /* 0xa052e4 */
+u8 g_netByteBuffer_v[4] __attribute__((aligned(16)));   /* 0xa052e4 */
 u8 g_serverReply_v[62] __attribute__((aligned(16)));   /* 0xa052e8 */
 u8 g_serverPort_v[2] __attribute__((aligned(16)));   /* 0xa05326 */
 u8 g_unusedNetCloseWord_v[4] __attribute__((aligned(16)));   /* 0xa05328 */
@@ -963,7 +963,7 @@ u8 g_netConnected_v[4] __attribute__((aligned(16)));   /* 0xa0b2fc */
 u8 g_netLastRequest_v[4] __attribute__((aligned(16)));   /* 0xa0b300 */
 u8 g_netSendName_v[4] __attribute__((aligned(16)));   /* 0xa0b304 */
 u8 g_netSendBuffer_v[4] __attribute__((aligned(16)));   /* 0xa0b308 */
-u8 g_netKindWord_v[4] __attribute__((aligned(16)));   /* 0xa0b30c */
+u8 g_netKindBuffer_v[4] __attribute__((aligned(16)));   /* 0xa0b30c */
 u8 g_roomPacket_v[4] __attribute__((aligned(16)));   /* 0xa0b310 */
 u8 g_netInfoPacket_v[4] __attribute__((aligned(16)));   /* 0xa0b314 */
 u8 g_lobbyLeavePacket_v[4] __attribute__((aligned(16)));   /* 0xa0b318 */
@@ -973,7 +973,7 @@ u8 g_netRankingBuffer_v[4] __attribute__((aligned(16)));   /* 0xa0b324 */
 u8 g_arenaPacket_v[4] __attribute__((aligned(16)));   /* 0xa0b328 */
 u8 g_arenaInfoPacket_v[4] __attribute__((aligned(16)));   /* 0xa0b32c */
 u8 g_roomRecordPacket_v[4] __attribute__((aligned(16)));   /* 0xa0b330 */
-u8 g_netRequestWord_v[4] __attribute__((aligned(16)));   /* 0xa0b334 */
+u8 g_netRequestBuffer_v[4] __attribute__((aligned(16)));   /* 0xa0b334 */
 u8 g_netPlayerRecordPacket_v[4] __attribute__((aligned(16)));   /* 0xa0b338 */
 u8 g_netLeaveBuffer_v[4] __attribute__((aligned(16)));   /* 0xa0b33c */
 u8 g_netSelectionPacket_v[4] __attribute__((aligned(16)));   /* 0xa0b340 */
@@ -1144,7 +1144,7 @@ u8 g_ptxLastDc_v[4] __attribute__((aligned(16)));   /* 0xaa268c */
 int g_ptxCrGreen_v[256] __attribute__((aligned(16)));   /* 0xaa2690 */
 float g_ptxDequant_v[128] __attribute__((aligned(16)));   /* 0xaa2a90 */
 int g_ptxQuant_v[128] __attribute__((aligned(16)));   /* 0xaa2c94 */
-u8 g_ptxTable_v[4] __attribute__((aligned(16)));   /* 0xaa2e94 */
+u8 g_ptxHuffSet_v[4] __attribute__((aligned(16)));   /* 0xaa2e94 */
 u8 g_ptxData_v[262144] __attribute__((aligned(16)));   /* 0xaa2e98 */
 u32 g_logUnit_v[2] __attribute__((aligned(16)));   /* 0xae2e98 */
 u32 g_logUnitPartInfo_v[2] __attribute__((aligned(16)));   /* 0xae2ea0 */
@@ -1791,7 +1791,7 @@ const DataPiece g_splitObjects[] = {
 	{ 0x9da3d8, g_chatCaretX_v, 4 },
 	{ 0x9da3dc, g_chatCaretY_v, 4 },
 	{ 0x9da3e0, g_mapRotation_v, 4 },
-	{ 0x9da434, g_menuFade_v, 4 },
+	{ 0x9da434, g_menuKeyGuard_v, 4 },
 	{ 0x9da440, g_excludedKey_v, 4 },
 	{ 0x9da448, g_dikF3_v, 4 },
 	{ 0x9da44c, g_dikF2_v, 4 },
@@ -2112,7 +2112,7 @@ const DataPiece g_splitObjects[] = {
 	{ 0x9fd960, g_roomList_v, 30976 },
 	{ 0xa05260, g_lobbyReplyRecord_v, 91 },
 	{ 0xa052c0, g_netNoticeRecord_v, 34 },
-	{ 0xa052e4, g_netOneByte_v, 4 },
+	{ 0xa052e4, g_netByteBuffer_v, 4 },
 	{ 0xa052e8, g_serverReply_v, 62 },
 	{ 0xa05326, g_serverPort_v, 2 },
 	{ 0xa05328, g_unusedNetCloseWord_v, 4 },
@@ -2133,7 +2133,7 @@ const DataPiece g_splitObjects[] = {
 	{ 0xa0b300, g_netLastRequest_v, 4 },
 	{ 0xa0b304, g_netSendName_v, 4 },
 	{ 0xa0b308, g_netSendBuffer_v, 4 },
-	{ 0xa0b30c, g_netKindWord_v, 4 },
+	{ 0xa0b30c, g_netKindBuffer_v, 4 },
 	{ 0xa0b310, g_roomPacket_v, 4 },
 	{ 0xa0b314, g_netInfoPacket_v, 4 },
 	{ 0xa0b318, g_lobbyLeavePacket_v, 4 },
@@ -2143,7 +2143,7 @@ const DataPiece g_splitObjects[] = {
 	{ 0xa0b328, g_arenaPacket_v, 4 },
 	{ 0xa0b32c, g_arenaInfoPacket_v, 4 },
 	{ 0xa0b330, g_roomRecordPacket_v, 4 },
-	{ 0xa0b334, g_netRequestWord_v, 4 },
+	{ 0xa0b334, g_netRequestBuffer_v, 4 },
 	{ 0xa0b338, g_netPlayerRecordPacket_v, 4 },
 	{ 0xa0b33c, g_netLeaveBuffer_v, 4 },
 	{ 0xa0b340, g_netSelectionPacket_v, 4 },
@@ -2314,7 +2314,7 @@ const DataPiece g_splitObjects[] = {
 	{ 0xaa2690, g_ptxCrGreen_v, 1024 },
 	{ 0xaa2a90, g_ptxDequant_v, 512 },
 	{ 0xaa2c94, g_ptxQuant_v, 512 },
-	{ 0xaa2e94, g_ptxTable_v, 4 },
+	{ 0xaa2e94, g_ptxHuffSet_v, 4 },
 	{ 0xaa2e98, g_ptxData_v, 262144 },
 	{ 0xae2e98, g_logUnit_v, 8 },
 	{ 0xae2ea0, g_logUnitPartInfo_v, 8 },

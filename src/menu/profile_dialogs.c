@@ -15,7 +15,7 @@ void (profile_typeNewName)(void)
 	menu_clearInputBuffer(0x10);
 	g_chatCaretX = g_newNameDialogLeft + 0x24;
 	g_chatCaretY = g_newNameDialogTop + 0x38;
-	g_menuFade = 5.0f;
+	g_menuKeyGuard = 5.0f;
 	g_profileDialog = 2;
 	g_dialogOpen = 1;
 	g_profileMessage = 0;

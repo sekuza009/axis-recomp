@@ -13,4 +13,4 @@
 0x9fd958,int,g_unusedArenaWord
 0x4df450,int,g_gameConnectTexture
 0xa0b318,u8 *,g_lobbyLeavePacket
-0xa052e4,char *,g_netOneByte
+0xa052e4,char *,g_netByteBuffer

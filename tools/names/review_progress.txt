@@ -1,0 +1,120 @@
+# Line-by-line name review (started 2026-11-04). [x] = reviewed and fixed; commit noted.
+# Per file: function names vs bodies, static helpers, params, locals, globals and fields touched, comments.
+[x] src/app/app_quit.c 17
+[ ] src/app/classes.c 658
+[ ] src/app/devices.c 344
+[x] src/app/error_log.c 83
+[x] src/app/frees.c 36
+[ ] src/app/loading.c 548
+[ ] src/app/main_loop.c 2275
+[x] src/app/math_tables.c 61
+[x] src/app/objects.c 73
+[x] src/app/ptx_decode.c 314
+[x] src/app/ptx_tables.c 101
+[x] src/app/resets.c 66
+[ ] src/app/small.c 852
+[ ] src/app/statics.c 155
+[ ] src/app/store_tables.c 176
+[ ] src/app/timer.c 142
+[ ] src/app/win32.c 841
+[ ] src/crt/crt_atof.c 469
+[ ] src/crt/crt_format.c 100
+[ ] src/hud/hud_clock.c 93
+[ ] src/hud/hud_escmenu.c 398
+[ ] src/hud/hud_icons.c 73
+[ ] src/hud/hud_lockon.c 53
+[ ] src/hud/hud_main.c 517
+[ ] src/hud/hud_markers.c 137
+[ ] src/hud/hud_messages.c 67
+[ ] src/hud/hud_overlay.c 98
+[ ] src/hud/hud_pass.c 121
+[ ] src/hud/hud_ranking.c 96
+[ ] src/load/collision_tris.c 693
+[ ] src/load/files.c 1419
+[ ] src/load/lists.c 45
+[ ] src/load/map_info.c 539
+[ ] src/load/names.c 504
+[ ] src/load/skel_data.c 1083
+[ ] src/load/space_pools.c 937
+[ ] src/match/actor_frame.c 1271
+[ ] src/match/actor_slots.c 979
+[ ] src/match/frame_loops.c 874
+[ ] src/match/map_objects.c 65
+[ ] src/match/match_start.c 430
+[ ] src/match/notices.c 126
+[ ] src/match/scores.c 138
+[ ] src/match/teams.c 83
+[ ] src/match/weapons.c 812
+[ ] src/menu/arena_maps.c 259
+[ ] src/menu/armc_colours.c 99
+[ ] src/menu/armc_items.c 207
+[ ] src/menu/armc_keys.c 257
+[ ] src/menu/armc_mech.c 135
+[ ] src/menu/armc_misc.c 833
+[ ] src/menu/armc_parts.c 266
+[ ] src/menu/armc_screens.c 389
+[ ] src/menu/armc_state.c 86
+[ ] src/menu/armc_stats.c 509
+[ ] src/menu/edit_fields.c 286
+[ ] src/menu/game_lists.c 1011
+[ ] src/menu/hit_tests.c 75
+[ ] src/menu/layouts.c 299
+[ ] src/menu/lobby_states.c 1646
+[ ] src/menu/menu_2d.c 341
+[ ] src/menu/menu_cameras.c 536
+[ ] src/menu/menu_cursor.c 38
+[ ] src/menu/menu_init.c 155
+[ ] src/menu/menu_keys.c 55
+[ ] src/menu/menu_quads.c 119
+[ ] src/menu/menu_records.c 704
+[ ] src/menu/menu_screens.c 43
+[ ] src/menu/menu_states.c 759
+[ ] src/menu/menu_title.c 93
+[ ] src/menu/menu_tunnel.c 482
+[ ] src/menu/mission_screens.c 177
+[ ] src/menu/profile_dialogs.c 506
+[ ] src/menu/profile_keys.c 148
+[ ] src/menu/profile_misc.c 702
+[ ] src/menu/room_clicks.c 897
+[ ] src/menu/room_dialogs.c 1200
+[ ] src/menu/screen_enter.c 437
+[ ] src/menu/settings_form.c 304
+[ ] src/menu/setup_keys.c 598
+[ ] src/menu/setup_pages.c 890
+[ ] src/menu/skirmish.c 190
+[ ] src/msg/msg_players.c 132
+[ ] src/msg/msg_print.c 21
+[ ] src/msg/msg_system.c 40
+[ ] src/net/dplay_calls.c 53
+[ ] src/net/dplay_slots.c 202
+[ ] src/net/net_packets.c 129
+[ ] src/net/net_servers.c 48
+[ ] src/net/net_sessions.c 114
+[ ] src/net/net_tables.c 2218
+[ ] src/render/depth_sort.c 67
+[ ] src/render/factors.c 123
+[ ] src/render/fog.c 19
+[ ] src/render/gl_helpers.c 122
+[ ] src/render/items.c 61
+[ ] src/render/object_list.c 148
+[ ] src/render/objects.c 714
+[ ] src/render/rotations.c 258
+[ ] src/render/shading.c 381
+[ ] src/render/shape_colours.c 113
+[ ] src/render/sky.c 196
+[ ] src/render/tex_colours.c 174
+[ ] src/render/trails.c 118
+[ ] src/render/vecmath.c 255
+[ ] src/render/view_volume.c 829
+[ ] src/replay/replay_message.c 55
+[ ] src/sound/sound_basic.c 428
+[ ] src/text/glyph_cells.c 220
+[ ] src/text/glyph_quads.c 39
+[ ] src/text/text_codes.c 256
+[ ] src/text/text_passes.c 178
+[ ] src/text/text_size.c 25
+[ ] src/wide.c 92
+[ ] src/globals.h (every global: name vs its uses)
+[ ] src/objects.h
+[ ] src/scene.fields (every field: name vs its uses)
+[ ] src/game.h / calls.h macro parameter names

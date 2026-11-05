@@ -475,7 +475,7 @@ void (freeCam_keys)(void)
 		g_textFieldOpen = 1;
 		menu_clearInputBuffer(0x32);
 		g_watchChatOpen = 1;
-		(*(u32 *)&g_menuFade) = 0x41a00000;   /* 20 */
+		(*(u32 *)&g_menuKeyGuard) = 0x41a00000;   /* 20 */
 		g_chatCaretX = 0x32;
 		g_chatCaretY = 0x1cc;
 		return;

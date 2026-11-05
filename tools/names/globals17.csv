@@ -89,7 +89,7 @@
 0x9dd1b0,int,g_unusedRoomWord
 0x9f6800,int,g_unusedProfileCameraWord
 0x9f8d70,int,g_profileScreenReady
-0xa0b334,u32,g_netRequestWord
+0xa0b334,u32,g_netRequestBuffer
 0x4ddba0,int,g_setupResolution
 0xa0b420,int,g_unusedSessionWord
 0xa0bf14,int,g_unusedPingWord1

@@ -492,7 +492,7 @@ long STDCALL (chat_editSubclass)(void *wnd, u32 msg, u32 w, u32 l)
 	if (msg == 0x100) {   /* WM_KEYDOWN */
 		switch (w) {
 		case 0xd:   /* Enter */
-			if (!(g_menuFade > k_0f)) {
+			if (!(g_menuKeyGuard > k_0f)) {
 				chat_close(wnd, 1);
 				g_fieldTabKey = 0x14;
 			}

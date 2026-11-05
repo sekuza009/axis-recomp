@@ -554,7 +554,7 @@
 #define g_gameServerReplyKind GAME_VAR(u32, 0xa0b2e8)
 #define g_netSendName GAME_VAR(char *, 0xa0b304)
 #define g_netSendBuffer GAME_VAR(char *, 0xa0b308)
-#define g_netKindWord GAME_VAR(u32 *, 0xa0b30c)
+#define g_netKindBuffer GAME_VAR(u32 *, 0xa0b30c)
 #define g_netInfoPacket GAME_VAR(u8 *, 0xa0b314)
 #define g_netLobbyMessage GAME_VAR(u32 *, 0xa0b31c)
 #define g_netRankingBuffer GAME_VAR(int *, 0xa0b324)
@@ -727,7 +727,7 @@
 #define g_lobbyTcpPort GAME_VAR(int, 0xa055f4)
 #define g_ladderPort GAME_VAR(int, 0xa05634)
 #define g_netRecvBuffer GAME_VAR(int, 0xa05638)
-#define g_netRequestWord GAME_VAR(u32, 0xa0b334)
+#define g_netRequestBuffer GAME_VAR(u32, 0xa0b334)
 #define g_unusedSessionWord GAME_VAR(int, 0xa0b420)
 #define g_unusedDplayWord1 GAME_VAR(int, 0xa0b42c)
 #define g_unusedDplayWord2 GAME_VAR(int, 0xa0b430)
@@ -903,7 +903,7 @@
 #define g_newNameDialogLeft GAME_VAR(int, 0x9f8eac)
 #define g_newNameDialogRight GAME_VAR(int, 0x9f8f20)
 #define g_newNameDialogBottom GAME_VAR(int, 0x9f8f24)
-#define g_ptxTable GAME_VAR(int, 0xaa2e94)
+#define g_ptxHuffSet GAME_VAR(int, 0xaa2e94)
 #define g_dikNumpad4 GAME_VAR(int, 0x4deb58)
 #define g_dikNumpad3 GAME_VAR(int, 0x4deb5c)
 #define g_dikNumpad6 GAME_VAR(int, 0x4deb60)
@@ -1052,7 +1052,7 @@
 #define g_dialogOpen GAME_VAR(int, 0x90d1c4)   /* a dialog of the current screen is open */
 #define g_chatCaretX GAME_VAR(int, 0x9da3d8)   /* where the line being typed is drawn (menu units) */
 #define g_chatCaretY GAME_VAR(int, 0x9da3dc)
-#define g_menuFade GAME_VAR(float, 0x9da434)   /* the menus' fade-in: the keys wait for it to reach 0 */
+#define g_menuKeyGuard GAME_VAR(float, 0x9da434)   /* the menus' fade-in: the keys wait for it to reach 0 */
 #define g_texturesOff GAME_VAR(int, 0x9da494)   /* (by use) set: the menus' 3D background is drawn untextured (left out) */
 #define g_highlightAlpha GAME_VAR(float, 0x9da4a4)
 #define g_fontAsciiLarge GAME_VAR(int, 0x9dad90)   /* ASCII, 16- and 32-unit fonts */
@@ -1143,7 +1143,7 @@
 #define g_loginFormTop GAME_VAR(int, 0x9dd6ec)
 #define g_unusedRoomCamWord GAME_VAR(u32, 0x9dd848)
 #define g_unusedArenaWord GAME_VAR(int, 0x9fd958)
-#define g_netOneByte GAME_VAR(char *, 0xa052e4)
+#define g_netByteBuffer GAME_VAR(char *, 0xa052e4)
 #define g_lobbyLeavePacket GAME_VAR(u8 *, 0xa0b318)
 #define g_errorReported GAME_VAR(int, 0xa1efe0)
 #define g_fatalReported GAME_VAR(int, 0xa1efe4)

@@ -3,12 +3,12 @@
 #include "../game.h"
 #include <string.h>
 
-/* 0x4202d0 (app_frame): the frame: the music, the menus' fade-in counted down, then main_loop */
+/* 0x4202d0 (app_frame): the frame: the music, the menus' key guard counted down, then main_loop */
 void (app_frame)(void)
 {
 	music_loopIfEnded();
-	if (g_menuFade > 0.0f)
-		g_menuFade = g_menuFade - g_frameTime;
+	if (g_menuKeyGuard > 0.0f)
+		g_menuKeyGuard = g_menuKeyGuard - g_frameTime;
 	main_loop();
 }
 

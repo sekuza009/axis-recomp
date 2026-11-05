@@ -1592,8 +1592,8 @@ extern struct GameData g_data;
 #define g_menuEye ((float *)g_menuEye_v)
 #undef g_menuEyeHome
 #define g_menuEyeHome ((float *)g_menuEyeHome_v)
-#undef g_menuFade
-#define g_menuFade (*(float *)g_menuFade_v)
+#undef g_menuKeyGuard
+#define g_menuKeyGuard (*(float *)g_menuKeyGuard_v)
 #undef g_menuFrameCount
 #define g_menuFrameCount (*(int *)g_menuFrameCount_v)
 #undef g_menuFrameCounter
@@ -1762,8 +1762,8 @@ extern struct GameData g_data;
 #define g_netInfoPacket (*(u8 * *)g_netInfoPacket_v)
 #undef g_netJoinMessage
 #define g_netJoinMessage (*(char * *)g_netJoinMessage_v)
-#undef g_netKindWord
-#define g_netKindWord (*(u32 * *)g_netKindWord_v)
+#undef g_netKindBuffer
+#define g_netKindBuffer (*(u32 * *)g_netKindBuffer_v)
 #undef g_netLastRequest
 #define g_netLastRequest (*(int *)g_netLastRequest_v)
 #undef g_netLeaveBuffer
@@ -1778,8 +1778,8 @@ extern struct GameData g_data;
 #define g_netNoticeIn (*(int *)g_netNoticeIn_v)
 #undef g_netNoticeRecord
 #define g_netNoticeRecord ((u8 *)g_netNoticeRecord_v)
-#undef g_netOneByte
-#define g_netOneByte (*(char * *)g_netOneByte_v)
+#undef g_netByteBuffer
+#define g_netByteBuffer (*(char * *)g_netByteBuffer_v)
 #undef g_netPacketMessageKind
 #define g_netPacketMessageKind (*(int *)((u8 *)g_netSendPacket_v + 0x0))
 #undef g_netPlayerList
@@ -1794,8 +1794,8 @@ extern struct GameData g_data;
 #define g_netRecvBuffer (*(int *)((u8 *)g_netRecvRecord_v + 0x0))
 #undef g_netRecvRecord
 #define g_netRecvRecord ((u8 *)g_netRecvRecord_v)
-#undef g_netRequestWord
-#define g_netRequestWord (*(u32 *)g_netRequestWord_v)
+#undef g_netRequestBuffer
+#define g_netRequestBuffer (*(u32 *)g_netRequestBuffer_v)
 #undef g_netRole
 #define g_netRole (*(int *)g_netRole_v)
 #undef g_netSelectionPacket
@@ -2136,8 +2136,8 @@ extern struct GameData g_data;
 #define g_ptxQuant ((int *)g_ptxQuant_v)
 #undef g_ptxQuantBase
 #define g_ptxQuantBase ((int *)g_ptxQuantBase_v)
-#undef g_ptxTable
-#define g_ptxTable (*(int *)g_ptxTable_v)
+#undef g_ptxHuffSet
+#define g_ptxHuffSet (*(int *)g_ptxHuffSet_v)
 #undef g_ptxTablesReady
 #define g_ptxTablesReady (*(int *)g_ptxTablesReady_v)
 #undef g_ptxYCbCrTables

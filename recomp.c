@@ -526,7 +526,7 @@ void input_resetKeys(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void input_clearKeyTable2(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-void net_clearBuffers(void);
+void net_clearServerSettings(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void mapSelect_allOut(void);
 
@@ -2031,10 +2031,10 @@ int THISCALL SkeletonManager_release(void *self);
 int THISCALL partList_release(void *self);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 int THISCALL CollisionVolume_release(void *self);
-/* 0x4519b0 arena_freeBuffers(): free the arena's 19 allocated buffers (in the original's order) and null the pointers;
+/* 0x4519b0 net_freeBuffers(): free the arena's 19 allocated buffers (in the original's order) and null the pointers;
    EAX = free's return for the last one, or 0 when it was null */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-DWORD arena_freeBuffers(void);
+DWORD net_freeBuffers(void);
 /* 0x454130 net_freeSessionList(): with a session list (0xa0b384), free every used session record (8-byte slots at 0xa0b470:
    used, malloc'd copy) and empty the list (count 0xa0b41c). EAX as the original leaves it: the count, or 0 */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
@@ -3969,11 +3969,11 @@ void menu_loadIntroTextures(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 DWORD frontEnd_startUp(void);
 /* batch 149 (lifted/grp95.c): the console's destructor */
-/* 0x460c40 (thiscall) Console_ctor(): misnamed: the console's destructor: an SEH frame, the vtable 0x4aa238, then
+/* 0x460c40 (thiscall) Console_dtor(): the console's destructor: an SEH frame, the vtable 0x4aa238, then
    the members in reverse: the stage at +0x1f36c8 (Stage_dtor), the view volume at +0x74 (ViewVolume_dtor), the
    time sync at +0xc (TimeSync_dtor) */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-THISCALL void Console_ctor(char *self);
+THISCALL void Console_dtor(char *self);
 /* 0x460c20 (thiscall) Console_deletingDtor(flags): the destructor, then delete when flags bit 0; returns this */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void *THISCALL Console_deletingDtor(void *console, int flags);
@@ -7124,7 +7124,7 @@ V0(net_clearRoomList, 0x452e80, fill((void *)0x9fd960, 0x1e40 * 4);)
 V0(net_clearPlayerList, 0x452ea0, fill((void *)0xa05330, 0x9b * 4 + 8);)
 V0(input_resetKeys, 0x431590, fill((void *)0x4d1a98, 0x404); fill((void *)0x9da434, 4); fill((void *)0x9dcd30, 4); fill((void *)0x9dbf10, 4);)
 V0(input_clearKeyTable2, 0x401780, fill((void *)0x4d1fb0, 0x418);)
-V0(net_clearBuffers, 0x4515d0, fill((void *)0xa0b24c, 0x38); fill((void *)0xa055f4, 0x48);)
+V0(net_clearServerSettings, 0x4515d0, fill((void *)0xa0b24c, 0x38); fill((void *)0xa055f4, 0x48);)
 V0(mapSelect_allOut, 0x440df0, for (DWORD p = 0x9ddac8; p < 0x9eeac8; p += 0x44) G32(p) = irnd(-3, 3);
    fill((void *)0x4b2a7c, 4); fill((void *)0x9eeabc, 8);)
 V0(armc_showPartsPage, 0x40f200, fill((void *)0x4dc798, 4); fill((void *)0x4dc788, 4);)
@@ -8738,7 +8738,7 @@ static void arenabufs_setup(void)
 	                             0xa0b334, 0xa0b324, 0xa0b308, 0xa0b340, 0xa0b344, 0xa0b338, 0xa052e4, 0xa0b33c, 0xa055e0 };
 	for (int i = 0; i < 19; i++) G32(k[i]) = irnd(0, 2) ? (int)(BUF + 0x1000 + i * 0x40) : 0;
 }
-ST(arena_freeBuffers, arenabufs_setup();, CD(DWORD, 0x4519b0, void)(), arena_freeBuffers())
+ST(net_freeBuffers, arenabufs_setup();, CD(DWORD, 0x4519b0, void)(), net_freeBuffers())
 static void sessions_setup(void)
 {
 	G32(0xa0b384) = irnd(0, 4) ? 1 : 0; G32(0xa0b41c) = irnd(-1, 20);
@@ -13864,7 +13864,7 @@ static void console_dtor_setup(void)
 	fill(vv, 0x40); S32(vv, 0xc) = irnd(0, 1); S32(vv, 8) = (int)(BUF + 0x3000);
 	g_mockGlExt = (DWORD)irnd(0, 2); g_a[0] = irnd(0, 3);
 }
-ST(Console_ctor, console_dtor_setup();, (TC(void, 0x460c40, char *)(BUF), 0), (Console_ctor(BUF), 0))
+ST(Console_dtor, console_dtor_setup();, (TC(void, 0x460c40, char *)(BUF), 0), (Console_dtor(BUF), 0))
 ST(Console_deletingDtor, console_dtor_setup();, TC(DWORD, 0x460c20, char *, int)(BUF, g_a[0]), (DWORD)Console_deletingDtor(BUF, (DWORD)g_a[0]))
 /* batch 150 */
 /* the receive thread: net_pingAllServers's state as ping_setup sets it, the two event handles, 0..5 data events (now and
@@ -17204,7 +17204,7 @@ static const STest g_stests[] = {
 	T(notice_playerQuit, 0, 4, 200), T(notice_chatLine, 0, 4, 300), T(notice_joinedTeam, 0, 4, 300), T(notice_changedTeam, 0, 4, 300),
 	/* batch 6 */
 	T(net_clearServerList, 0, 4, 0), T(net_clearRoomList, 0, 4, 0), T(net_clearPlayerList, 0, 4, 0), T(input_resetKeys, 0, 4, 0),
-	T(input_clearKeyTable2, 0, 4, 0), T(net_clearBuffers, 0, 4, 0), T(mapSelect_allOut, 0, 4, 0), T(armc_showPartsPage, 0, 4, 0),
+	T(input_clearKeyTable2, 0, 4, 0), T(net_clearServerSettings, 0, 4, 0), T(mapSelect_allOut, 0, 4, 0), T(armc_showPartsPage, 0, 4, 0),
 	T(armc_showColourPage, 0, 4, 0), T(ptx_startBitReader, 0, 8, 0), T(messageBox_clickClose, 0, 8, 0), T(account_takeRank, 0, 8, 0),
 	T(colour_initPackedBlue, 0, 4, 0), T(colour_initPackedGrey, 0, 4, 0), T(colour_initPackedYellow, 0, 4, 0), T(colour_initPackedClear, 0, 4, 0),
 	T(colour_initPackedRed, 0, 4, 0), T(colour_initPackedWhite, 0, 4, 0), T(colour_initPackedBlack, 0, 4, 0), T(colour_initPackedGreen, 0, 4, 0),
@@ -17362,7 +17362,7 @@ static const STest g_stests[] = {
 	T(static_registerLightRttiDtor, 1, 2, 0), T(static_registerViewVolumeRttiDtor, 1, 2, 0), T(static_registerTimeSyncRttiDtor, 1, 2, 0), T(static_registerSceneRttiDtor, 1, 2, 0),
 	T(TextureManager_deletingDtor, 1, 4, 300), T(Light_deletingDtor, 1, 4, 300), T(Scene_deletingDtor, 1, 4, 300), T(ErrorLog_deletingDtor, 1, 4, 300),
 	T(TimeSync_deletingDtor, 1, 4, 300), T(Model_release, 1, 4, 300), T(ShapeManager_release, 1, 4, 300), T(Skeleton_release, 1, 4, 300),
-	T(SkeletonManager_release, 1, 4, 300), T(partList_release, 1, 4, 300), T(CollisionVolume_release, 1, 4, 300), T(arena_freeBuffers, 1, 300, 0),
+	T(SkeletonManager_release, 1, 4, 300), T(partList_release, 1, 4, 300), T(CollisionVolume_release, 1, 4, 300), T(net_freeBuffers, 1, 300, 0),
 	T(net_freeSessionList, 1, 300, 0), T(net_addSession, 1, 300, 0), T(tunnel_removeLastRing, 1, 4, 1000), T(tunnel_appendRing, 1, 30, 0),
 	/* batch 44 */
 	T(static_startTex64x64, 1, 2, 0), T(static_startTex128x64, 1, 2, 0), T(static_startTex256x64, 1, 2, 0), T(static_startTex128x128, 1, 2, 0),
@@ -17647,7 +17647,7 @@ static const STest g_stests[] = {
 	/* batch 148 */
 	T(frontEnd_startUp, 0, 200, 0),
 	/* batch 149 */
-	T(Console_ctor, 0, 200, 0), T(Console_deletingDtor, 1, 200, 0),
+	T(Console_dtor, 0, 200, 0), T(Console_deletingDtor, 1, 200, 0),
 	/* batch 150 */
 	T(net_pingThreadProc, 0, 200, 0),
 	/* batch 151 */
@@ -18071,7 +18071,7 @@ static const struct { DWORD addr; void *fn; const char *name; } g_hooks3[] = {
 	/* batch 6 */
 	{ 0x452e60, (void *)net_clearServerList, "net_clearServerList" }, { 0x452e80, (void *)net_clearRoomList, "net_clearRoomList" },
 	{ 0x452ea0, (void *)net_clearPlayerList, "net_clearPlayerList" }, { 0x431590, (void *)input_resetKeys, "input_resetKeys" },
-	{ 0x401780, (void *)input_clearKeyTable2, "input_clearKeyTable2" }, { 0x4515d0, (void *)net_clearBuffers, "net_clearBuffers" },
+	{ 0x401780, (void *)input_clearKeyTable2, "input_clearKeyTable2" }, { 0x4515d0, (void *)net_clearServerSettings, "net_clearServerSettings" },
 	{ 0x440df0, (void *)mapSelect_allOut, "mapSelect_allOut" }, { 0x40f200, (void *)armc_showPartsPage, "armc_showPartsPage" },
 	{ 0x40f320, (void *)armc_showColourPage, "armc_showColourPage" }, { 0x46f090, (void *)ptx_startBitReader, "ptx_startBitReader" },
 	{ 0x445e10, (void *)messageBox_clickClose, "messageBox_clickClose" }, { 0x433610, (void *)account_takeRank, "account_takeRank" },
@@ -18329,7 +18329,7 @@ static const struct { DWORD addr; void *fn; const char *name; } g_hooks3[] = {
 	{ 0x487450, (void *)TimeSync_deletingDtor, "TimeSync_deletingDtor" }, { 0x464bc0, (void *)Model_release, "Model_release" },
 	{ 0x466a30, (void *)ShapeManager_release, "ShapeManager_release" }, { 0x4699a0, (void *)Skeleton_release, "Skeleton_release" },
 	{ 0x46ae80, (void *)SkeletonManager_release, "SkeletonManager_release" }, { 0x46f4b0, (void *)partList_release, "partList_release" },
-	{ 0x4813b0, (void *)CollisionVolume_release, "CollisionVolume_release" }, { 0x4519b0, (void *)arena_freeBuffers, "arena_freeBuffers" },
+	{ 0x4813b0, (void *)CollisionVolume_release, "CollisionVolume_release" }, { 0x4519b0, (void *)net_freeBuffers, "net_freeBuffers" },
 	{ 0x454130, (void *)net_freeSessionList, "net_freeSessionList" }, { 0x4540b0, (void *)net_addSession, "net_addSession" },
 	{ 0x441190, (void *)tunnel_removeLastRing, "tunnel_removeLastRing" }, { 0x441120, (void *)tunnel_appendRing, "tunnel_appendRing" },
 	/* batch 44 */
@@ -18705,7 +18705,7 @@ static const struct { DWORD addr; void *fn; const char *name; } g_hooks3[] = {
 	/* batch 148 */
 	{ 0x430bf0, (void *)frontEnd_startUp, "frontEnd_startUp" },
 	/* batch 149 */
-	{ 0x460c40, (void *)Console_ctor, "Console_ctor" }, { 0x460c20, (void *)Console_deletingDtor, "Console_deletingDtor" },
+	{ 0x460c40, (void *)Console_dtor, "Console_dtor" }, { 0x460c20, (void *)Console_deletingDtor, "Console_deletingDtor" },
 	/* batch 150 */
 	{ 0x454560, (void *)net_pingThreadProc, "net_pingThreadProc" },
 	/* batch 151 */

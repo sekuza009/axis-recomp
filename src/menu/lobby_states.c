@@ -583,7 +583,7 @@ u32 (arena_editTitle)(void)
 	g_chatCaretY = g_arenaGameListTop + 0xd0;
 	g_chatLength = (int)strlen(g_chatLine);
 	g_typedArenaName4 = 0;
-	(*(u32 *)&g_menuFade) = 0x40a00000;   /* 5 */
+	(*(u32 *)&g_menuKeyGuard) = 0x40a00000;   /* 5 */
 	/* chat_createEdit(20); the original also leaves the 20 it gave menu_clearInputBuffer on the stack as a second
 	   argument */
 	u32 r = GAME_FN(chat_createEdit, 0x43f460, u32, int, int)(0x14, 0x14);

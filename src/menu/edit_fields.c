@@ -1,6 +1,6 @@
 /* edit_fields.c: opening a text field for typing, on the arena screens and in the game room. Typing goes through a
    hidden EDIT control (chat_createEdit) into the shared line g_chatLine, drawn with a caret at
-   (g_chatCaretX, g_chatCaretY); the menu keys wait meanwhile (g_textFieldOpen, g_menuFade). Each field starts from its
+   (g_chatCaretX, g_chatCaretY); the menu keys wait meanwhile (g_textFieldOpen, g_menuKeyGuard). Each field starts from its
    current text (copied in) or empty, and raises its own "being edited" flag. */
 #include "../game.h"
 
@@ -61,7 +61,7 @@ void (arena_editName)(void)
 	edit_start(0x10);
 	line_set(g_arenaName);
 	caret(PANEL_X(ARENA_CREATE) + 0xc2, PANEL_Y(ARENA_CREATE) + 100);
-	g_menuFade = 5.0f;
+	g_menuKeyGuard = 5.0f;
 	g_chatLength = line_length();
 	g_typingArenaName = 1;
 	g_inputLineHidden = 0;
@@ -74,7 +74,7 @@ void (arena_editComment)(void)
 	edit_start(0x1e);
 	line_set(g_newArenaName);
 	caret(PANEL_X(ARENA_SETUP) + 0xa4, PANEL_Y(ARENA_SETUP) + 0x32);
-	g_menuFade = 5.0f;
+	g_menuKeyGuard = 5.0f;
 	g_chatLength = line_length();
 	g_editingNewArenaName = 1;
 	g_inputLineHidden = 0;
@@ -89,7 +89,7 @@ static void edit_limit(int value, int y, int *editing)
 	itoa(value, digits, 10);
 	line_set(digits);
 	caret(PANEL_X(ARENA_SETUP) + 0xa4, PANEL_Y(ARENA_SETUP) + y);
-	g_menuFade = 5.0f;
+	g_menuKeyGuard = 5.0f;
 	g_chatLength = line_length();
 	*editing = 1;
 	g_inputLineHidden = 0;
@@ -112,7 +112,7 @@ void (arena_editPassword)(void)
 	edit_start(8);
 	caret(PANEL_X(ARENA_SETUP) + 0xa4, PANEL_Y(ARENA_SETUP) + 0x54);
 	g_chatLength = line_length();
-	g_menuFade = 5.0f;
+	g_menuKeyGuard = 5.0f;
 	g_typingArenaPassword = 1;
 	g_inputLineHidden = 1;
 	chat_createEdit(8);
@@ -127,7 +127,7 @@ void (arena_editMessage)(void)
 	caret(PANEL_X(ARENA_MESSAGE) + 0xd8, PANEL_Y(ARENA_MESSAGE) + 0xd0);
 	g_chatLength = line_length();
 	g_arenaMessageText4 = 0;
-	g_menuFade = 5.0f;
+	g_menuKeyGuard = 5.0f;
 	g_editingArenaMessage = 1;
 	chat_createEdit(8);
 }
@@ -140,7 +140,7 @@ void (field_editComment)(void)
 	edit_start(0x1e);
 	line_set(g_roomSettingsName);
 	caret(PANEL_X(ROOM_TOP) + 0xa4, PANEL_Y(ROOM_TOP) + 0x32);
-	g_menuFade = 5.0f;
+	g_menuKeyGuard = 5.0f;
 	g_chatLength = line_length();
 	g_editingRoomName = 1;
 	g_inputLineHidden = 0;
@@ -153,7 +153,7 @@ void (field_editPassword)(void)
 	edit_start(8);
 	caret(PANEL_X(ROOM_TOP) + 0xa4, PANEL_Y(ROOM_TOP) + 0x54);
 	g_chatLength = line_length();
-	g_menuFade = 5.0f;
+	g_menuKeyGuard = 5.0f;
 	g_editingRoomPassword = 1;
 	g_inputLineHidden = 1;
 	chat_createEdit(8);
@@ -166,7 +166,7 @@ void (field_editGameName)(void)
 	line_clear();
 	line_set(g_accountName);
 	caret(PANEL_X(ROOM_GAME) + 200, PANEL_Y(ROOM_GAME) + 0x58);
-	g_menuFade = 5.0f;
+	g_menuKeyGuard = 5.0f;
 	g_chatLength = line_length();
 	g_typingGameName = 1;
 	g_typingGamePassword = 0;
@@ -183,7 +183,7 @@ void (field_editGamePassword)(void)
 		line_set(g_accountPassword);
 	caret(PANEL_X(ROOM_GAME) + 200, PANEL_Y(ROOM_GAME) + 0x88);
 	g_chatLength = line_length();
-	g_menuFade = 5.0f;
+	g_menuKeyGuard = 5.0f;
 	g_typingGameName = 0;
 	g_typingGamePassword = 1;
 	g_inputLineHidden = 1;
@@ -198,7 +198,7 @@ static void edit_rule(int field, const char *text, int y, int maxLength, int fla
 	line_clear();
 	line_set(text);
 	caret(PANEL_X(ROOM_RULES) + 0x98, PANEL_Y(ROOM_RULES) + y);
-	g_menuFade = 5.0f;
+	g_menuKeyGuard = 5.0f;
 	g_chatLength = line_length();
 	g_editingOldPassword = field == 0;
 	g_editingAccountPassword = field == 1;
@@ -222,7 +222,7 @@ void (field_editMessage)(void)
 	caret(PANEL_X(ROOM_MESSAGE) + 0xd8, PANEL_Y(ROOM_MESSAGE) + 0xd0);
 	g_chatLength = line_length();
 	g_roomMessageText4 = 0;
-	g_menuFade = 5.0f;
+	g_menuKeyGuard = 5.0f;
 	g_joinPasswordTyped = 1;
 	chat_createEdit(8);
 }
@@ -238,7 +238,7 @@ void (chat_textField)(int x, int y, int maxLength)
 	menu_clearInputBuffer(maxLength);
 	g_matchChatCaretX = x;
 	g_matchChatCaretY = y;
-	g_menuFade = 20.0f;
+	g_menuKeyGuard = 20.0f;
 	chat_createEdit(maxLength);
 }
 
@@ -280,7 +280,7 @@ int (loginForm_openField)(int k)
 		row = k;
 	}
 	caret(g_loginFormLeft + 0x94, PANEL_Y(ADDR(g_loginFormLeft)) + row * 0x30 + 0x3c);
-	g_menuFade = 5.0f;
+	g_menuKeyGuard = 5.0f;
 	g_chatLength = line_length();
 	return 0;
 }

@@ -535,7 +535,7 @@ u32 (chat_closeLine)(int ok)
 	}
 	g_typedLength = 0;
 	g_chatLength = 0;
-	(*(u32 *)&g_menuFade) = 0x41200000;   /* 10 */
+	(*(u32 *)&g_menuKeyGuard) = 0x41200000;   /* 10 */
 	return r;
 }
 

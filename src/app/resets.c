@@ -3,11 +3,11 @@
 #include "../game.h"
 #include <string.h>
 
-/* 0x431590: no key down (the 256 key states at 0x4d1a98), the key repeat delay 5, no input line */
+/* 0x431590: no key down (the 256 key states at 0x4d1a98), the menu keys held off (g_menuKeyGuard 5), no input line */
 void (input_resetKeys)(void)
 {
 	memset((void *)OBJ(g_keySeen), 0, 0x100 * 4);
-	(*(u32 *)&g_menuFade) = 0x40a00000;   /* 5.0 */
+	(*(u32 *)&g_menuKeyGuard) = 0x40a00000;   /* 5.0 */
 	g_typedLength = 0;
 	g_chatLength = 0;
 }
@@ -22,8 +22,8 @@ void (input_clearKeyTable2)(void)
 	g_unusedKeyTable2Word2 = 0;
 }
 
-/* 0x4515d0: the two 50-byte network buffers and their lengths cleared */
-void (net_clearBuffers)(void)
+/* 0x4515d0: the server settings cleared: the game-list and ladder servers' names (50 bytes each) and ports */
+void (net_clearServerSettings)(void)
 {
 	memset((void *)OBJ(g_tcpDns), 0, 0xc * 4 + 2);
 	memset((void *)OBJ(g_ladderDns), 0, 0xc * 4 + 2);
@@ -41,7 +41,7 @@ void (mapSelect_allOut)(void)
 	g_replayRandomOrder = 0;
 }
 
-/* 0x445e10: a click (either button) closes the message box */
+/* 0x445e10: Enter or a click closes the message box */
 void (messageBox_clickClose)(void)
 {
 	if (g_keyEnter) {

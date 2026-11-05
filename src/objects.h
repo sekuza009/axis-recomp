@@ -383,7 +383,7 @@
 #define g_lobbyReplyCode ((int *)IMG(0xa055dc))   /* int[1]; the lobby's 4-byte status reply (request 12) */
 #define g_gameServerReplyCode ((int *)IMG(0xa0b248))   /* int[1]; the game server's 4-byte status reply (request 18) */
 #define g_lobbyHost ((char *)IMG(0xa055e4))   /* char[16]; the lobby server's address as text (a name that does not resolve is copied whole: runs on in the original) */
-#define g_ladderDns ((char *)IMG(0xa055fc))   /* char[50]; HKCU SelectServer LadderDNS (50 bytes cleared by net_clearBuffers) */
+#define g_ladderDns ((char *)IMG(0xa055fc))   /* char[50]; HKCU SelectServer LadderDNS (50 bytes cleared by net_clearServerSettings) */
 #define g_tcpDns ((char *)IMG(0xa0b24c))   /* char[50]; HKCU SelectServer TcpDNS (50 bytes) */
 #define g_noAddress ((char *)IMG(0xa0bb0c))   /* char[4]; the empty address DirectPlay's TCP connection gets without one (never written) */
 #define g_statBars ((float *)IMG(0x9f8d34))   /* float[9]; the profile screen's nine stat bars as drawn (eased a tenth a frame) */

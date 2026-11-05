@@ -1,4 +1,4 @@
-/* ptx_tables.c: the lookup tables of the PTX video decoder (the intro films): the clamp table, the colour space
+/* ptx_tables.c: the lookup tables of the PTX image decoder (the compressed textures): the clamp table, the colour space
    conversions (16.16 fixed point) and the quantisation tables for a quality. */
 #include "../game.h"
 #include <string.h>
@@ -92,7 +92,7 @@ void (ptx_initDequantTables)(int q)
 /* 0x46ea00: every table, for quality 100 */
 void (ptx_initTables)(void)
 {
-	g_ptxTable = 0;
+	g_ptxHuffSet = 0;
 	ptx_initClampTable();
 	ptx_initYCbCrTables();
 	ptx_initDequantTables(100);

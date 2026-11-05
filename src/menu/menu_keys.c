@@ -10,7 +10,7 @@ void (menu_processKeys)(void)
 	input_reacquireKeyboard();
 	if (g_menuCameraMove)
 		return;
-	if (g_menuFade > 0.0f)
+	if (g_menuKeyGuard > 0.0f)
 		return;
 	if (g_dialogPending) {
 		messageBox_keyClose();

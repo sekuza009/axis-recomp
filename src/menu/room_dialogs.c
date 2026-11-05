@@ -184,7 +184,7 @@ int (gameList_open)(void)
 	g_gameListTop = 0;
 	g_lobbyListRow = 0;
 	arena_clearSessionEntry();   /* arena_clearSessionEntry */
-	GAME_VAR(u32, g_netRequestWord) = 0x180001;
+	GAME_VAR(u32, g_netRequestBuffer) = 0x180001;
 	net_send(0x13, 0x65);   /* net_send */
 	g_roomNameSum = 0;
 	g_listRefreshPeriod = 0x1e;

@@ -1,4 +1,5 @@
-/* ptx_decode.c: the PTX video decoder (the intro films), JPEG-style: a bit stream read most significant bit first,
+/* ptx_decode.c: the PTX image decoder (the game's compressed textures: name.RAW, name_ALPHA.RAW, name_COLOR.RAW in
+   the texture archives; tex loading in load/names.c), JPEG-style: a bit stream read most significant bit first,
    Huffman-coded DC differences and AC run / size symbols for each 8 x 8 block of coefficients in zigzag order, then
    the decoded planes (Y, Cb, Cr and alpha, 0x10000 bytes apart) turned into RGB(A) through the tables of
    ptx_tables.c, and the 8 x 8 blocks laid out as image rows. */
@@ -6,7 +7,7 @@
 #include "../game.h"
 #include <string.h>
 
-#define g_table g_ptxTable           /* the Huffman table set in use */
+#define g_table g_ptxHuffSet           /* the Huffman table set in use: 0 luma, 1 chroma */
 #define g_zigzag (g_ptxZigzag)
 
 /* 0x46f230: *out = the next n bits; returns the new position */
@@ -202,7 +203,7 @@ void (ptx_inverseDct)(const int *in, u8 *out)
 	}
 }
 
-/* 0x46e1e0: a video decoder error: "<name of the current stage (0xaef35c)>" and the message (when there is one) to
+/* 0x46e1e0: a decoder error (the C runtime's): "<name of the current stage (0xaef35c)>" and the message (when there is one) to
    stderr; a non-zero code exits with it. Returns the code */
 int (ptx_crtlError)(int code, const char *format, ...)
 {
@@ -221,7 +222,7 @@ int (ptx_crtlError)(int code, const char *format, ...)
 	return code;
 }
 
-/* 0x46e260: a video error: "<header>" and the message to stderr; a non-zero code exits with it. Returns the code */
+/* 0x46e260: a decoder error: "<header>" and the message to stderr; a non-zero code exits with it. Returns the code */
 int (ptx_error)(int code, const char *format, ...)
 {
 	void *err = (void *)OBJ(g_crtStderr);   /* stderr */

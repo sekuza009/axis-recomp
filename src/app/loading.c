@@ -206,7 +206,7 @@ int (app_checkCdAndLoad)(void *instance)
 	memset((void *)OBJ(g_keyTable1), 0, 0x400);
 	memset((void *)OBJ(g_keySeen), 0, 0x400);
 	g_roomConnected = 0;
-	net_clearBuffers();
+	net_clearServerSettings();
 	reg_readServerSettings();
 	math_initMathFunction();
 	reg_readCharacterSettings();
@@ -292,7 +292,7 @@ int (app_checkCdAndLoad)(void *instance)
 	set_colour_bits(g_textColour, 0, 0x3f800000, 0, 0x3f800000);
 	set_colour_bits(g_clearColour, 0, 0, 0, 0x3f800000);
 	int width = g_screenW, height = g_screenH;
-	(*(u32 *)&g_menuFade) = 0x40a00000;   /* 5 */
+	(*(u32 *)&g_menuKeyGuard) = 0x40a00000;   /* 5 */
 	g_menuScaleX = f32(fmul_m((long double)width, k_0_0015625f));
 	g_screenCentreX = width / 2;
 	g_unusedStartupWord1 = 0;

@@ -884,7 +884,7 @@ typedef struct { float r, g, b, a; } Colour;
 /* ---- objects, Win32, GL helpers (app/objects.c, app/win32.c, render/gl_helpers.c) ---- */
 #define gfx_initVertexArrayExt(view) GAME_THISFN(gfx_initVertexArrayExt, 0x483fd0, int, void *)(view)   /* frees the view's vertex buffer, finds GL_EXT_vertex_array */
 #define ViewVolume_dtor(view) GAME_THISFN(ViewVolume_dtor, 0x483fb0, int, void *)(view)
-#define Console_dtor(console) GAME_THISFN(Console_ctor, 0x460c40, void, void *)(console)   /* named Console_ctor in symbols.csv */
+#define Console_dtor(console) GAME_THISFN(Console_dtor, 0x460c40, void, void *)(console)
 #define Stage_dtor(stage) GAME_THISFN(Stage_dtor, 0x46ff70, void, Stage *)(stage)
 #define operator_delete(p) GAME_CDECL(0x49ef24, void, void *)(p)
 #define operator_new(size) GAME_CDECL(0x49f1aa, void *, u32)(size)
@@ -893,7 +893,7 @@ typedef struct { float r, g, b, a; } Colour;
 #define MessageBoxA(hwnd, text, title, type) IMPORT(0x4a9324, int, void *, const char *, const char *, u32)(hwnd, text, title, type)
 #define sys_messageBox(text) GAME_FN(sys_messageBox, 0x41edf0, int, const char *)(text)   /* (a format, then its arguments) */
 /* the start-up loaders (app_checkCdAndLoad's) */
-#define net_clearBuffers() GAME_FN(net_clearBuffers, 0x4515d0, void, void)()
+#define net_clearServerSettings() GAME_FN(net_clearServerSettings, 0x4515d0, void, void)()
 #define reg_readServerSettings() GAME_FN(reg_readServerSettings, 0x42bde0, int, void)()
 #define math_initMathFunction() GAME_FN(math_initMathFunction, 0x46c270, int, void)()
 #define reg_readCharacterSettings() GAME_FN(reg_readCharacterSettings, 0x42bee0, void, void)()
@@ -1155,7 +1155,7 @@ typedef struct { float r, g, b, a; } Colour;
 #define crt_malloc(size) GAME_CDECL(0x49eeb0, void *, u32)(size)
 #define net_clearServers() GAME_FN(net_clearServers, 0x454690, void, void)()                  /* the server table cleared */
 #define net_resolveHost(host) GAME_FN(net_resolveHost, 0x4547d0, int, const char *)(host)   /* 1: resolved (into 0xa0d320) */
-#define arena_freeBuffers() GAME_FN(arena_freeBuffers, 0x4519b0, u32, void)()
+#define net_freeBuffers() GAME_FN(net_freeBuffers, 0x4519b0, u32, void)()
 #define net_clearServerList() GAME_FN(net_clearServerList, 0x452e60, void, void)()   /* the game list table cleared */
 #define net_receiveLobbyReply() GAME_FN(net_receiveLobbyReply, 0x452a30, void, void)()   /* the list of games received */
 #define net_receiveGameServerReply() GAME_FN(net_receiveGameServerReply, 0x452bd0, void, void)()   /* the server list received */

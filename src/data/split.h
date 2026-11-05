@@ -3045,9 +3045,9 @@ extern u8 g_chatCaretY_v[4];
 extern u8 g_mapRotation_v[4];
 #endif
 #ifdef AXIS_FENCE
-#define g_menuFade_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0x9be000 : g_fence + 0x9bdffc))
+#define g_menuKeyGuard_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0x9be000 : g_fence + 0x9bdffc))
 #else
-extern u8 g_menuFade_v[4];
+extern u8 g_menuKeyGuard_v[4];
 #endif
 #ifdef AXIS_FENCE
 #define g_excludedKey_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0x9c0000 : g_fence + 0x9bfffc))
@@ -4650,9 +4650,9 @@ extern u8 g_lobbyReplyRecord_v[91];
 extern u8 g_netNoticeRecord_v[34];
 #endif
 #ifdef AXIS_FENCE
-#define g_netOneByte_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xc5c000 : g_fence + 0xc5bffc))
+#define g_netByteBuffer_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xc5c000 : g_fence + 0xc5bffc))
 #else
-extern u8 g_netOneByte_v[4];
+extern u8 g_netByteBuffer_v[4];
 #endif
 #ifdef AXIS_FENCE
 #define g_serverReply_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xc5e000 : g_fence + 0xc5dfc2))
@@ -4755,9 +4755,9 @@ extern u8 g_netSendName_v[4];
 extern u8 g_netSendBuffer_v[4];
 #endif
 #ifdef AXIS_FENCE
-#define g_netKindWord_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xc8b000 : g_fence + 0xc8affc))
+#define g_netKindBuffer_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xc8b000 : g_fence + 0xc8affc))
 #else
-extern u8 g_netKindWord_v[4];
+extern u8 g_netKindBuffer_v[4];
 #endif
 #ifdef AXIS_FENCE
 #define g_roomPacket_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xc8d000 : g_fence + 0xc8cffc))
@@ -4805,9 +4805,9 @@ extern u8 g_arenaInfoPacket_v[4];
 extern u8 g_roomRecordPacket_v[4];
 #endif
 #ifdef AXIS_FENCE
-#define g_netRequestWord_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xc9f000 : g_fence + 0xc9effc))
+#define g_netRequestBuffer_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xc9f000 : g_fence + 0xc9effc))
 #else
-extern u8 g_netRequestWord_v[4];
+extern u8 g_netRequestBuffer_v[4];
 #endif
 #ifdef AXIS_FENCE
 #define g_netPlayerRecordPacket_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xca1000 : g_fence + 0xca0ffc))
@@ -5660,9 +5660,9 @@ extern float g_ptxDequant_v[128];
 extern int g_ptxQuant_v[128];
 #endif
 #ifdef AXIS_FENCE
-#define g_ptxTable_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xe81000 : g_fence + 0xe80ffc))
+#define g_ptxHuffSet_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xe81000 : g_fence + 0xe80ffc))
 #else
-extern u8 g_ptxTable_v[4];
+extern u8 g_ptxHuffSet_v[4];
 #endif
 #ifdef AXIS_FENCE
 #define g_ptxData_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xe83000 : g_fence + 0xe82000))

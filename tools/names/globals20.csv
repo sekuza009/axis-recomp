@@ -66,4 +66,4 @@
 0x9dda80,int,g_menuIdleTime
 0x9eea8c,int,g_menuHintClock
 0x9eea90,u32,g_mainMenuDepth
-0xaa2e94,int,g_ptxTable
+0xaa2e94,int,g_ptxHuffSet

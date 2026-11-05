@@ -276,7 +276,7 @@ void (net_receiveServerReply)(void)
 }
 
 /* 0x4520e0: both sockets (0xa055f8, 0xa05630) closed: a blocking call cancelled, sending shut down, the socket closed,
-   the connection's state reset (arena_freeBuffers); then the connection flags cleared. Returns what the original leaves
+   the connection's state reset (net_freeBuffers); then the connection flags cleared. Returns what the original leaves
    in eax */
 u32 (net_closeSockets)(void)
 {
@@ -290,7 +290,7 @@ u32 (net_closeSockets)(void)
 		IMPORT(WS_SHUTDOWN, int, u32, int)(GAME_VAR(u32, sockets[k]), 1);   /* shutdown(SD_SEND) */
 		IMPORT(WS_CLOSESOCKET, int, u32)(GAME_VAR(u32, sockets[k]));           /* closesocket */
 		GAME_VAR(u32, sockets[k]) = 0;
-		r = arena_freeBuffers();
+		r = net_freeBuffers();
 	}
 	g_netLastRequest = 0;
 	g_lobbyConnectStatus = 0;
@@ -306,7 +306,7 @@ static void *alloc_clear(u32 n)
 }
 
 /* 0x451600: the connection to `kind` (100 the lobby, 101 the game server) started afresh: the server table cleared,
-   both sockets closed (a blocking call cancelled, sending shut down; arena_freeBuffers after each), the server's address
+   both sockets closed (a blocking call cancelled, sending shut down; net_freeBuffers after each), the server's address
    taken (its host name, or what net_resolveHost made of it, into 0xa055e4) with its port (0xa05326); then every
    network table cleared and the packet buffers allocated anew, cleared. The caller ignores the eax it leaves */
 void (net_closeAll)(int kind)
@@ -320,7 +320,7 @@ void (net_closeAll)(int kind)
 		IMPORT(WS_SHUTDOWN, int, u32, int)(GAME_VAR(u32, sockets[k]), 1);   /* shutdown(SD_SEND) */
 		IMPORT(WS_CLOSESOCKET, int, u32)(GAME_VAR(u32, sockets[k]));           /* closesocket */
 		GAME_VAR(u32, sockets[k]) = 0;
-		arena_freeBuffers();
+		net_freeBuffers();
 	}
 	if (kind == 100 || kind == 101) {
 		const char *host = (const char *)(RELOC(kind) == 100 ? OBJ(g_tcpDns) : OBJ(g_ladderDns));
@@ -332,8 +332,8 @@ void (net_closeAll)(int kind)
 	memset((void *)OBJ(g_netPlayerList), 0, 0x2aa);
 	static const struct { u32 at, size; } buffers[] = {
 		{ ADDR(g_roomPacket), 0x5b }, { ADDR(g_netInfoPacket), 0x5b }, { ADDR(g_lobbyLeavePacket), 0x5b }, { ADDR(g_netLobbyMessage), 4 }, { ADDR(g_netSendName), 0x10 }, { ADDR(g_accountPacket), 0x10b },
-		{ ADDR(g_netRankingBuffer), 8 }, { ADDR(g_arenaPacket), 0x79 }, { ADDR(g_arenaInfoPacket), 0x79 }, { ADDR(g_roomRecordPacket), 0x79 }, { ADDR(g_netRequestWord), 4 }, { ADDR(g_netKindWord), 4 },
-		{ ADDR(g_netSendBuffer), 0x10 }, { ADDR(g_netSelectionPacket), 0xb9 }, { ADDR(g_netAccountBuffer), 0x5c }, { ADDR(g_netPlayerRecordPacket), 0x36 }, { ADDR(g_netOneByte), 1 }, { ADDR(g_netJoinMessage), 0x1e } };
+		{ ADDR(g_netRankingBuffer), 8 }, { ADDR(g_arenaPacket), 0x79 }, { ADDR(g_arenaInfoPacket), 0x79 }, { ADDR(g_roomRecordPacket), 0x79 }, { ADDR(g_netRequestBuffer), 4 }, { ADDR(g_netKindBuffer), 4 },
+		{ ADDR(g_netSendBuffer), 0x10 }, { ADDR(g_netSelectionPacket), 0xb9 }, { ADDR(g_netAccountBuffer), 0x5c }, { ADDR(g_netPlayerRecordPacket), 0x36 }, { ADDR(g_netByteBuffer), 1 }, { ADDR(g_netJoinMessage), 0x1e } };
 	for (unsigned k = 0; k < sizeof buffers / sizeof *buffers; k++)
 		GAME_VAR(void *, buffers[k].at) = alloc_clear(buffers[k].size);
 	memset((void *)ADDR(g_netNotice), 0, 0x22);
@@ -1018,7 +1018,7 @@ static u32 socket_close(u32 socket)
 	IMPORT(WS_SHUTDOWN, int, int, int)(GAME_VAR(int, socket), 1);      /* shutdown(SD_SEND) */
 	IMPORT(WS_CLOSESOCKET, int, int)(GAME_VAR(int, socket));              /* closesocket */
 	GAME_VAR(int, socket) = 0;
-	return arena_freeBuffers();
+	return net_freeBuffers();
 }
 
 /* the leaving player's record (from *from into *to): the leave flag (+0) and the flagged byte, the bytes listed
@@ -1242,14 +1242,14 @@ static void send_buffer(u32 socket, u32 buffer, int size)
    eax it leaves */
 void (net_send)(int kind, int to)
 {
-	u32 *word = g_netKindWord;
+	u32 *word = g_netKindBuffer;
 	if (to == 100 || to == 101) {
 		if (!word)
 			return;
 		*word = (u32)kind;
 		u32 socket = to == 100 ? ADDR(g_lobbySocket) : ADDR(g_gameServerSocket);
 		if (GAME_VAR(u32, socket))
-			ws_send(GAME_VAR(u32, socket), (*(void **)&g_netKindWord), 4, 0);
+			ws_send(GAME_VAR(u32, socket), (*(void **)&g_netKindBuffer), 4, 0);
 	}
 	static const struct { u32 buffer; int size, lobby; } plain[30] = {
 		[10] = { ADDR(g_roomPacket), 0x5b, 1 }, [11] = { ADDR(g_lobbyLeavePacket), 0x5b, 1 }, [12] = { ADDR(g_netInfoPacket), 0x5b, 1 },
@@ -1288,14 +1288,14 @@ void (net_send)(int kind, int to)
 		net_clearServers();
 		net_clearRoomList();
 		g_netLastRequest = 0x13;
-		send_buffer(ADDR(g_gameServerSocket), ADDR(g_netRequestWord), 4);
+		send_buffer(ADDR(g_gameServerSocket), ADDR(g_netRequestBuffer), 4);
 		return;
 	case 21:
 	case 26:
 		net_clearPlayerList();
 		if (kind == 21)
 			g_netLastRequest = 0x15;
-		send_buffer(ADDR(g_gameServerSocket), kind == 21 ? ADDR(g_netRankingBuffer) : ADDR(g_netOneByte), kind == 21 ? 8 : 1);
+		send_buffer(ADDR(g_gameServerSocket), kind == 21 ? ADDR(g_netRankingBuffer) : ADDR(g_netByteBuffer), kind == 21 ? 8 : 1);
 		return;
 	case 22:
 		g_netLastRequest = 0x16;

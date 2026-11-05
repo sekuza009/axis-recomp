@@ -59,7 +59,7 @@
 # the network: buffers, replies, DirectPlay caps
 0xa0b33c,char *,g_netLeaveBuffer
 0xa0b314,u8 *,g_netInfoPacket
-0xa0b30c,u32 *,g_netKindWord
+0xa0b30c,u32 *,g_netKindBuffer
 0xa0b308,char *,g_netSendBuffer
 0xa0b304,char *,g_netSendName
 0xa0b31c,u32 *,g_netLobbyMessage
