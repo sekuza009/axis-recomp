@@ -139,7 +139,7 @@ typedef struct ListedObject {
 	float centre[3];   /* +0x58: its shape's centre placed (pos without a shape) */
 } ListedObject;
 
-/* shapes placed by their own matrices (data_46f7a0, hud_46fd20; the size is unknown) */
+/* shapes placed by their own matrices (ObjectList_relight, partList_queue; the size is unknown) */
 typedef struct ObjectList {
 	u8 _pad0000000[0x4];
 	i32 blockSize;   /* +0x4: (by use) its block: the entries (100 bytes each), their colours when preLit, the skeletons */
@@ -1379,7 +1379,7 @@ typedef struct Stage {
 	u8 spaceData[0x9c95f0];   /* +0xb04: (by use) the collision space's block (space_initBy on +0xa10) */
 	u32 nearObjects[1000][3];   /* +0x9ca0f4: (by use) the map objects near a moving sphere (collision_moveActor): each its unit's planes (SpaceUnit.lastNode), relMatrix and relInverse - space_testSphere's sub-models */
 	i32 effectTextures[9];   /* +0x9ccfd4: (by use; seen running) the effects' textures "<dir>\00" .. "08" (stage_build; objects.c TEX(k)); "09" is billboards */
-	i32 billboards;   /* +0x9ccff8: (by use; seen running) the billboard list map items are drawn with (hud_484ca0's id) */
+	i32 billboards;   /* +0x9ccff8: (by use; seen running) the billboard list map items are drawn with (ViewVolume_addBillboard's id) */
 	LightFactors mapLights;   /* +0x9ccffc: (by use; seen running) the map's lights (Light_read from the map file): they shade the map objects */
 	i32 dynamicLightsSet;   /* +0x9d800c: 1 once stage_refillLights filled dynamicLights, 0 with stage_resetLights; never read */
 	LightFactors dynamicLights;   /* +0x9d8010: (by use; seen running) the lights cleared each frame (stage_resetLights); the objects' second colours */
@@ -1387,7 +1387,7 @@ typedef struct Stage {
 	i32 clearOn;   /* +0x9ee030: (by use; seen running) the clear colour read from the ground info: on */
 	u32 clearColour[4];   /* +0x9ee034: r g b a (floats' bits) */
 	i32 fogOn;   /* +0x9ee044: (by use) the fog read from the ground info: on (then glFogColour ..) */
-	u32 glFogColour[4];   /* +0x9ee048: the fog OpenGL draws with (hud_472900): r, g, b, a (floats, kept as bits) */
+	u32 glFogColour[4];   /* +0x9ee048: the fog OpenGL draws with (stage_setFog): r, g, b, a (floats, kept as bits) */
 	u32 glFogStart;   /* +0x9ee058: (floats, kept as bits) */
 	u32 glFogEnd;   /* +0x9ee05c */
 	u32 glFogDensity;   /* +0x9ee060 */
@@ -1404,7 +1404,7 @@ typedef struct Stage {
 	float sides[6][8][3];   /* +0x9ef0cc: per wall eight points; the first four give x and z (scaled 8000) */
 	i32 floorOn;   /* +0x9ef30c: 1: the animated floor under the sky */
 	i32 floorTextures[16];   /* +0x9ef310: its animation frames */
-	float floor[11][11][3];   /* +0x9ef350: its grid (times the scale hud_496f20 gets) */
+	float floor[11][11][3];   /* +0x9ef350: its grid (times the scale sky_draw gets) */
 	i32 floorFrame;   /* +0x9ef8fc */
 	float floorClock;   /* +0x9ef900: (by use) the floor's animation clock (floorFrame steps at each turn) */
 	float levelLow[3];   /* +0x9ef904: (by use; seen running) the level's bounds (the level grid over them; the actors kept inside) */
@@ -1821,7 +1821,7 @@ typedef struct Scene {
 	float mechColours[3][5][2];   /* +0x2342476: the local mech's part colours (match_start, from g_savedColourChoices): [hue, */
 	i32 respawnCameraMode;   /* +0x23424ee: the camera mode the local player respawns with (the view key cycles 1, 2, 3; the mode at the match's start) */
 	i32 cameraSlot;   /* +0x23424f2: the spectator camera's number (0 shows as 10) */
-	char playerNames[16][0x40];   /* +0x23424f6: the players' names kept apart (match_4616e0 / match_461730) */
+	char playerNames[16][0x40];   /* +0x23424f6: the players' names kept apart (scene_saveNames / scene_restoreNames) */
 	i32 ranking[16];   /* +0x23428f6: players in rank order */
 	i32 rank[16];   /* +0x2342936: each player's place (1: first; the HUD shows rank/rankCount) */
 	i32 rankCount;   /* +0x2342976 */
