@@ -39,8 +39,8 @@ static void mark_notice(Scene *scene, int i, u32 local, u32 other)
    the players flagged at 0x9f9840 without a team), then the players with a team in order of kills (fewer deaths
    first on a tie: ranking[], rank[] their places, ties sharing one), the local player's place. With the king mark
    (kingOfTheHill): the first player marked (isKing, with a notice "you are" / "%s is" the new king when it changes)
-   and put on team 0, the others on team 1. With the team leaders (platoon): per team the player with the most
-   time (timePlayed + timeExtra) marked (isPlatoonLeader, with a notice when it changes) */
+   and put on team 0, the others on team 1. With commanders (platoon): per team the player with the most
+   time (timePlayed + timeExtra) marked (isCommander, with a notice when it changes) */
 void THISCALL (scene_updateRanking)(Scene *scene)
 {
 	scene->redTeamCount = scene->blueTeamCount = scene->noTeamCount = 0;

@@ -267,7 +267,7 @@ static int esc_main(Scene *scene)
 				scene->players[scene->localPlayer].team = -1;
 				esc_resetScore(scene);
 				msg_playerChangedTeam(scene, scene->localPlayer, -1);
-				notice_changedTeam(scene, scene->localPlayer, -1, scene->mechName);
+				net_announceChangedTeam(scene, scene->localPlayer, -1, scene->mechName);
 				scene_updateRanking(scene);
 				scene->watchedPlayer = -1;
 			}
@@ -330,10 +330,10 @@ static int esc_team(Scene *scene)
 	}
 	if (TEAM_NOW < 0) {
 		msg_playerJoinedTeam(scene, scene->localPlayer, scene->localTeam);
-		notice_joinedTeam(scene, scene->localPlayer, scene->localTeam, scene->mechName);
+		net_announceJoinedTeam(scene, scene->localPlayer, scene->localTeam, scene->mechName);
 	} else if (TEAM_NOW != scene->localTeam) {
 		msg_playerChangedTeam(scene, scene->localPlayer, scene->localTeam);
-		notice_changedTeam(scene, scene->localPlayer, scene->localTeam, scene->mechName);
+		net_announceChangedTeam(scene, scene->localPlayer, scene->localTeam, scene->mechName);
 	}
 #undef TEAM_NOW
 	scene_setLocalTeam(scene, scene->localTeam);

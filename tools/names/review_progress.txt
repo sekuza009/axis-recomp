@@ -39,11 +39,11 @@
 [ ] src/match/actor_frame.c 1271
 [ ] src/match/actor_slots.c 979
 [ ] src/match/frame_loops.c 874
-[ ] src/match/map_objects.c 65
-[ ] src/match/match_start.c 430
-[ ] src/match/notices.c 126
-[ ] src/match/scores.c 138
-[ ] src/match/teams.c 83
+[x] src/match/map_objects.c 65
+[x] src/match/match_start.c 430
+[x] src/match/notices.c 126
+[x] src/match/scores.c 138
+[x] src/match/teams.c 83
 [ ] src/match/weapons.c 812
 [ ] src/menu/arena_maps.c 259
 [ ] src/menu/armc_colours.c 99

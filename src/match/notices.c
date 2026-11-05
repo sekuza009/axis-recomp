@@ -1,6 +1,6 @@
-/* notices.c: the scene's name table and its HUD notices: the requests the match code raises for the HUD (each
-   with its own "shown" flag, all with the common "something changed" flag noticeChanged), and the event list
-   reset. */
+/* notices.c: the scene's name table, the announcements queued for the other players (each with its own pending
+   flag, all with the common announcePending; net_sendMatchEvent sends them), the centred notice and the event
+   list. */
 #include "../game.h"
 #include <string.h>
 #include <stdarg.h>
@@ -25,7 +25,7 @@ void THISCALL (scene_restoreNames)(Scene *scene)
 	}
 }
 
-/* 0x4629c0: the event list emptied, new lines stamped with time; the message box and "ready" faded out */
+/* 0x4629c0: the event list emptied, new lines stamped with time; the message box and the centred notice faded out */
 void THISCALL (events_clear)(Scene *scene, u32 time)
 {
 	scene->eventCount = 0;
@@ -35,11 +35,11 @@ void THISCALL (events_clear)(Scene *scene, u32 time)
 	BITS(scene->noticeTimer) = 0;
 }
 
-/* 0x463480: every notice cleared */
-void THISCALL (notices_clearAll)(Scene *scene)
+/* 0x463480: every queued announcement dropped */
+void THISCALL (net_clearAnnouncements)(Scene *scene)
 {
 	memset(scene->sendFlags, 0, sizeof scene->sendFlags);
-	scene->noticeChanged = 0;
+	scene->announcePending = 0;
 	scene->connectPending = 0;
 	scene->quitPending = 0;
 	scene->chatPending = 0;
@@ -49,47 +49,48 @@ void THISCALL (notices_clearAll)(Scene *scene)
 	scene->cheatPending = 0;
 }
 
-/* 0x4634e0, 0x463530, 0x463550, 0x4635b0, 0x463610: one notice raised, with its values and text */
-void THISCALL (notice_playerConnected)(Scene *scene, int a, const char *text)
+/* 0x4634e0, 0x463530, 0x463550, 0x4635b0, 0x463610: an announcement queued for the other players (net_sendMatchEvent
+   sends it: packet kinds 8 connected, 9 quit, 7 a chat line, 10 joined a team, 11 changed team), with its values */
+void THISCALL (net_announcePlayerConnected)(Scene *scene, int player, const char *text)
 {
-	scene->connectPlayer = a;
+	scene->connectPlayer = player;
 	scene->connectPending = 1;
 	strcpy(scene->connectName, text);
-	scene->noticeChanged = 1;
+	scene->announcePending = 1;
 }
 
-void THISCALL (notice_playerQuit)(Scene *scene, int a)
+void THISCALL (net_announcePlayerQuit)(Scene *scene, int player)
 {
 	scene->quitPending = 1;
-	scene->quitPlayer = a;
-	scene->noticeChanged = 1;
+	scene->quitPlayer = player;
+	scene->announcePending = 1;
 }
 
-void THISCALL (notice_chatLine)(Scene *scene, int a, const char *text, int b)
+void THISCALL (net_announceChatLine)(Scene *scene, int player, const char *text, int team)
 {
-	scene->chatPlayer = a;
+	scene->chatPlayer = player;
 	scene->chatPending = 1;
 	strcpy(scene->chatLine, text);
-	scene->chatTeam = b;
-	scene->noticeChanged = 1;
+	scene->chatTeam = team;
+	scene->announcePending = 1;
 }
 
-void THISCALL (notice_joinedTeam)(Scene *scene, int a, int b, const char *text)
+void THISCALL (net_announceJoinedTeam)(Scene *scene, int player, int team, const char *text)
 {
-	scene->joinPlayer = a;
-	scene->joinTeam = b;
+	scene->joinPlayer = player;
+	scene->joinTeam = team;
 	scene->joinPending = 1;
 	strcpy(scene->joinName, text);
-	scene->noticeChanged = 1;
+	scene->announcePending = 1;
 }
 
-void THISCALL (notice_changedTeam)(Scene *scene, int a, int b, const char *text)
+void THISCALL (net_announceChangedTeam)(Scene *scene, int player, int team, const char *text)
 {
-	scene->changePlayer = a;
-	scene->changeTeam = b;
+	scene->changePlayer = player;
+	scene->changeTeam = team;
 	scene->changePending = 1;
 	strcpy(scene->changeName, text);
-	scene->noticeChanged = 1;
+	scene->announcePending = 1;
 }
 
 /* 0x463450: the centre-screen notice printed (shown for 2 seconds); vsprintf's count */

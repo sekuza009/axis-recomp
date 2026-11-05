@@ -1801,7 +1801,7 @@ typedef struct Scene {
 	char noticeText[0x40];   /* +0x2342f06: the centred notice (notice_printCentre: PREPARE THE BATTLE, FIGHT!, LEVEL UP! ..), shown while no restart counts down */
 	u8 _pad2342f46[0xc0];
 	i32 sendFlags[16][4];   /* +0x2343006: (by use) per player: what is to be sent ([0] its state, [1] its team, ...; notices_clearAll clears them) */
-	i32 noticeChanged;   /* +0x2343106: 1: a HUD notice was raised (match/notices.c) */
+	i32 announcePending;   /* +0x2343106: 1: an announcement is queued for the other players (the *Pending flags; net_sendMatchEvent sends them one at a time) */
 	i32 connectPlayer;   /* +0x234310a: kind 8: a player connected (notice_playerConnected) */
 	char connectName[0x40];   /* +0x234310e */
 	i32 connectPending;   /* +0x234314e */
@@ -3316,7 +3316,7 @@ _Static_assert(offsetof(Scene, eventTime) == 0x2342efe && sizeof(((Scene *)0)->e
 _Static_assert(offsetof(Scene, noticeTimer) == 0x2342f02 && sizeof(((Scene *)0)->noticeTimer) == 0x4, "scene.fields: Scene.noticeTimer");
 _Static_assert(offsetof(Scene, noticeText) == 0x2342f06 && sizeof(((Scene *)0)->noticeText) == 0x40, "scene.fields: Scene.noticeText");
 _Static_assert(offsetof(Scene, sendFlags) == 0x2343006 && sizeof(((Scene *)0)->sendFlags) == 0x100, "scene.fields: Scene.sendFlags");
-_Static_assert(offsetof(Scene, noticeChanged) == 0x2343106 && sizeof(((Scene *)0)->noticeChanged) == 0x4, "scene.fields: Scene.noticeChanged");
+_Static_assert(offsetof(Scene, announcePending) == 0x2343106 && sizeof(((Scene *)0)->announcePending) == 0x4, "scene.fields: Scene.announcePending");
 _Static_assert(offsetof(Scene, connectPlayer) == 0x234310a && sizeof(((Scene *)0)->connectPlayer) == 0x4, "scene.fields: Scene.connectPlayer");
 _Static_assert(offsetof(Scene, connectName) == 0x234310e && sizeof(((Scene *)0)->connectName) == 0x40, "scene.fields: Scene.connectName");
 _Static_assert(offsetof(Scene, connectPending) == 0x234314e && sizeof(((Scene *)0)->connectPending) == 0x4, "scene.fields: Scene.connectPending");

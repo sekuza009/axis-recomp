@@ -1586,7 +1586,7 @@ static void THISCALL __attribute__((used)) net_sendMatchEvent_body(u8 *s, u8 *pa
 	for (int k = 0; k < 10; k++)
 		pending |= FLAG(flags[k]) != 0;
 	if (!pending)
-		SC->noticeChanged = 0;
+		SC->announcePending = 0;
 	send_packet(s, packet);
 #undef FLAG
 #undef TAKE

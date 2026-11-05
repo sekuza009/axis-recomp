@@ -52,9 +52,9 @@ int (str_dropLast)(char *s)
 /* ---- the scene's and stage's flags and lists ---- */
 /* 0x463670, 0x463690, 0x4636b0: an end notice queued for the other players (endEvents: the server ends the game,
    the frag limit, the time limit; packet kinds 3 .. 5) and the "something to send" flag */
-void THISCALL (net_announceServerEnd)(Scene *scene) { scene->endEvents[0] = 1; scene->noticeChanged = 1; }
-void THISCALL (net_announceFragLimit)(Scene *scene) { scene->endEvents[1] = 1; scene->noticeChanged = 1; }
-void THISCALL (net_announceTimeLimit)(Scene *scene) { scene->endEvents[2] = 1; scene->noticeChanged = 1; }
+void THISCALL (net_announceServerEnd)(Scene *scene) { scene->endEvents[0] = 1; scene->announcePending = 1; }
+void THISCALL (net_announceFragLimit)(Scene *scene) { scene->endEvents[1] = 1; scene->announcePending = 1; }
+void THISCALL (net_announceTimeLimit)(Scene *scene) { scene->endEvents[2] = 1; scene->announcePending = 1; }
 /* 0x463780: team slot i's id */
 int THISCALL (scene_teamIdAt)(Scene *scene, int i) { return scene->teamIds[i]; }
 /* 0x474390: player record p marked used; 0x4743b0: marked free, its flag cleared */

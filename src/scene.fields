@@ -1614,4 +1614,4 @@ struct Scene 0x2343b0b                                          # the scene: the
 0x2342efa  4          u32 eventFirst                             # first event still shown
 0x2342efe  4          u32 eventTime                              # (by use) stamped on each new event line
 0x23424f6  0x400      char playerNames[16][0x40]                 # the players' names kept apart (match_4616e0 / match_461730)
-0x2343106  4          i32 noticeChanged                          # 1: a HUD notice was raised (match/notices.c)
+0x2343106  4          i32 announcePending                       # 1: an announcement is queued for the other players (the *Pending flags; net_sendMatchEvent sends them one at a time)

@@ -63,7 +63,7 @@ static void make_rotation(Scene *s)
 	s->awaitingHostRound = 0;
 }
 
-/* the first round: emblems in the ranking for a room game (0x5ae9c4 2: 300 seconds of them, a game counted at
+/* the first round: a Ladder game (the game room's: g_matchMode 2; the scores committed every 300 s, a game counted at
    0x4de72a), the rotation, the limits, the mech (its name 0x4dedd8, value, parts, items and the five colour sets),
    the room's level (from its points 0x4de722; outside 1 .. 20 fatal); then a network host makes its player 0, a
    machine that joined has none yet, and a solo game makes player 0 with rotation on (0x9da3e0) */
@@ -242,7 +242,7 @@ static void identity(u32 *m)
 /* 0x470ad0 (thiscall on the scene): the scene's subsystems reset (stage_resetLights; the 100 dwords at +0x202ea80 and
    +0x202ef30 cleared; the object list, stage_clearBullets, stage_clearProjectiles, stage_resetMatrixAndPoints), the camera at the origin looking down
    -z (+0x20f3970 .. +0x20f399c) with identity matrices (+0x20f39a0, +0x20f39e0), the start and item points none, the
-   id tables (+0x20fce50, +0x1cd6968) all -1, then the scripts (stage_clearMessages, script_reset) and stage_initSpaceOneCell. Its
+   team commanders (+0x20fce50) and snapshot textures (+0x1cd6968) all -1, then the scripts (stage_clearMessages, script_reset) and stage_initSpaceOneCell. Its
    callers ignore the eax it leaves */
 void THISCALL (scene_reset)(u8 *s)
 {
@@ -274,7 +274,7 @@ void THISCALL (scene_reset)(u8 *s)
 }
 
 
-/* a part type's (or the stage's) shape set and skeleton set sized into their blocks */
+/* a player record's part (or the stage's) shape set and skeleton set sized into their blocks */
 static void model_sets(u8 *shapes, const char *dir, int n, int extra, int size, u8 *skels, const char *skel_dir, int sn,
                        int sextra, u8 *smem, int ssize)
 {
@@ -287,15 +287,15 @@ static void model_sets(u8 *shapes, const char *dir, int n, int extra, int size, 
    the default light (grey, from (-1, -1, -1)). The sky box (+0x9ee080: six faces of 7 x 7 points, a cube of side
    1 / sqrt(0x4aa408) turned to each face), the dome (+0x9eee54: 7 x 7 points of the up vector turned by two angles),
    six 4-point rings top and bottom (+0x9ef0cc), an 11 x 11 ground grid (+0x9ef350); the world box (+-100000), the
-   layer lists cleared; the shape and skeleton sets of the stage, of each of the 16 part types (five parts each) and
+   layer lists cleared; the shape and skeleton sets of the stage, of each of the 16 player records (five parts each) and
    of the map; the effects and three textures (0x4c73f4 ..), an identity and a 1.1 scale matrix, the flag atlas
    (a texture, filled with 0xa1f220); the game type 0, the actors and the scene reset; built (+4 1). Its caller
    ignores the eax it leaves */
-void THISCALL (item_initTextures)(u8 *s, u32 a1, u32 a2, const char *sky, u32 a4, const char *skel_dir, u32 a6, u32 a7, u32 a8,
-                                  u32 a9)
+void THISCALL (stage_build)(u8 *s, u32 stageDir, u32 mapDir, const char *sky, u32 shapeDir, const char *skel_dir, u32 actorDir,
+                                  u32 bulletDir, u32 effectDir, u32 sceneDir)
 {
 	Stage *st = (Stage *)s;
-	stage_setFolders(s, a1, a2, (u32)sky, a4, (u32)skel_dir, a6, a7, a8, a9);
+	stage_setFolders(s, stageDir, mapDir, (u32)sky, shapeDir, (u32)skel_dir, actorDir, bulletDir, effectDir, sceneDir);
 	space_initBy((u8 *)&st->space, 0x9c40, 0x27100, 0x3e8, 0x2710, 0x3e8, st->spaceData, sizeof st->spaceData);
 	char name[0x100];
 	for (int i = 0; i < 10; i++) {

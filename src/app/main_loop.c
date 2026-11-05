@@ -1588,7 +1588,7 @@ static void chat_keys(u8 *s)
 				int team = mode == 1 ? -1 : SC->localTeam;
 				msg_chatLine(s, SC->localPlayer, line, team);
 				team = mode == 1 ? -1 : SC->localTeam;
-				notice_chatLine(s, SC->localPlayer, line, team);
+				net_announceChatLine(s, SC->localPlayer, line, team);
 			}
 		}
 	}
@@ -1668,7 +1668,7 @@ void THISCALL (match_frame)(u8 *s)
 			SC->quitDelay = 0.0f;
 			music_shutdown();
 			if (SC->localPlayer >= 0)
-				notice_playerQuit(s, SC->localPlayer);
+				net_announcePlayerQuit(s, SC->localPlayer);
 			g_matchEndedByUser = 0;
 		}
 		SC->quitAsked = 0;
@@ -1700,7 +1700,7 @@ void THISCALL (match_frame)(u8 *s)
 		strcpy(((Player *)ACTOR_AT(SC->localPlayer))->name, (const char *)SC->mechName);
 		SC->players[SC->localPlayer].player = SC->localPlayer;
 		msg_playerConnected(s, SC->localPlayer);
-		notice_playerConnected(s, SC->localPlayer, (u8 *)&SC->playerRecords[SC->localPlayer] + 4);
+		net_announcePlayerConnected(s, SC->localPlayer, (u8 *)&SC->playerRecords[SC->localPlayer] + 4);
 		net_sendMatchEvent(s);
 	}
 	/* a team chosen (or a menu for it), then the spawn */
@@ -1716,7 +1716,7 @@ void THISCALL (match_frame)(u8 *s)
 			if (SC->localTeam < 0) {
 				scene_setLocalTeam((Scene *)s, SC->localPlayer);
 				msg_playerJoinedTeam((Scene *)s, SC->localPlayer, SC->localTeam);
-				notice_joinedTeam((Scene *)s, SC->localPlayer, SC->localTeam, (const char *)SC->mechName);
+				net_announceJoinedTeam((Scene *)s, SC->localPlayer, SC->localTeam, (const char *)SC->mechName);
 			}
 			SC->spawnPending = 1;
 		}
@@ -1819,7 +1819,7 @@ void THISCALL (match_frame)(u8 *s)
 		bullet_updateAll(stage, BITS(dt));
 		stage_updateEffects(stage, BITS(dt));
 		item_update(stage, BITS(dt));
-		stage_refillFactors(stage);
+		stage_refillLights(stage);
 		stage_updateObjects(stage, BITS(dt));
 		stage_advanceScenePath(stage, BITS(dt));
 		if (SC->sessionMode == 1) {   /* the server checks the local player's parts every 20 s */
@@ -1962,10 +1962,10 @@ void THISCALL (match_frame)(u8 *s)
 				SC->infoSendTimer = 15.0f;   /* 15 */
 			}
 		}
-		if (SC->noticeChanged == 1)
+		if (SC->announcePending == 1)
 			do
 				net_sendMatchEvent(s);
-			while (SC->noticeChanged == 1);
+			while (SC->announcePending == 1);
 		for (int i = 0; i < 16; i++) {
 			if (SC->sendFlags[i][0] == 1)
 				net_sendGamePacket(s, i);
@@ -2032,7 +2032,7 @@ void THISCALL (match_frame)(u8 *s)
 				scene_resetScores(sc);
 				SC->rankShown = -1;
 				events_clear((Scene *)s, 60.0f);
-				notices_clearAll(s);
+				net_clearAnnouncements(s);
 				if (SC->sessionMode == 0) {
 					teams_setup(sc);
 					scene_setLocalTeam((Scene *)s, -1);
@@ -2239,7 +2239,7 @@ void THISCALL (match_frame)(u8 *s)
 			scene_updateRanking(sc);
 			SC->rankShown = -1;
 			events_clear((Scene *)s, 60.0f);
-			notices_clearAll(s);
+			net_clearAnnouncements(s);
 			SC->elapsed = (*(int *)&SC->clockFraction) = 0;
 			SC->players[SC->localPlayer].killsCounted = 0;
 			SC->players[SC->localPlayer].kills = 0;

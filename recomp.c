@@ -498,17 +498,17 @@ THISCALL void events_age(char *self, float dt);
 
 /* HUD notices (+0x2343006..): 0x463480 clears them, the others set one notice and raise the "changed" flag +0x2343106 */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-THISCALL void notices_clearAll(char *self);
+THISCALL void net_clearAnnouncements(char *self);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-THISCALL void notice_playerConnected(char *self, int a, const char *s);
+THISCALL void net_announcePlayerConnected(char *self, int a, const char *s);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-THISCALL void notice_playerQuit(char *self, int a);
+THISCALL void net_announcePlayerQuit(char *self, int a);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-THISCALL void notice_chatLine(char *self, int a, const char *s, int b);
+THISCALL void net_announceChatLine(char *self, int a, const char *s, int b);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-THISCALL void notice_joinedTeam(char *self, int a, int b, const char *s);
+THISCALL void net_announceJoinedTeam(char *self, int a, int b, const char *s);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-THISCALL void notice_changedTeam(char *self, int a, int b, const char *s);
+THISCALL void net_announceChangedTeam(char *self, int a, int b, const char *s);
 
 /* ---- comparison harness -------------------------------------------------------------------- */
 
@@ -2733,9 +2733,9 @@ THISCALL void factors_addAmbient(char *pool, DWORD a);
 THISCALL void factors_addDirectional(char *pool, DWORD a, DWORD p);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 THISCALL void factors_addPointLight(char *pool, DWORD a, DWORD x, DWORD p);
-/* 0x472310 (thiscall) stage_refillFactors: reset the factor pool and add every active player and live effect */
+/* 0x472310 (thiscall) stage_refillLights: reset the factor pool and add every active player and live effect */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-THISCALL void stage_refillFactors(char *scene);
+THISCALL void stage_refillLights(char *scene);
 /* 0x43f8b0 app_spoilDataFiles: reset the three data files' progress word and delete the saved game */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 DWORD app_spoilDataFiles(void);
@@ -3541,7 +3541,7 @@ void *glWindow_init(const char *title, int width, int height, int colourBits, in
    the names of the map list entries flagged +0x40 (0x9dda88, 0x44-byte records, count 0x9eeab8) copied to
    +0x1f1cbc (0x40 each, count +0x1f35bc); actors and scene reset; mode 2 also clears the armour cache, the view box
    and sets the game type flags for type 0; the camera from 0xa0e7a8.. (direction negated), the HUD mode +0x233cc20
-   (2 -> 3, 3 -> 1, else 2) and its defaults, the match state (teams_setup), the notices (notices_clearAll) and the
+   (2 -> 3, 3 -> 1, else 2) and its defaults, the match state (teams_setup), the notices (net_clearAnnouncements) and the
    lobby slots (+0x234240d -1 in modes 1 and 3) */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 THISCALL void scene_startSession(char *g, DWORD a, DWORD mode);
@@ -3555,7 +3555,7 @@ THISCALL void scene_startSession(char *g, DWORD a, DWORD mode);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void match_enter(void);
 /* batch 115 (lifted/grp61.c) */
-/* 0x4700a0 (thiscall on the scene) item_initTextures(nine names): misnamed: the scene's whole start-up. The names
+/* 0x4700a0 (thiscall on the scene) stage_build(nine names): misnamed: the scene's whole start-up. The names
    kept (stage_setFolders); the space object at +0xa10 sized into its own memory +0xb04 (space_initBy); the ten textures
    "<name 3>\00".."\09" (+0x9ccfd4, the last two with flags 1); the lights reset (Light_clearCounts, factors_addAmbient with
    the colour 0xa1f23c, stage_resetLights, a grey ambient, factors_addDirectional); fog and sky cleared, the sky-sphere directions
@@ -3566,7 +3566,7 @@ void match_enter(void);
    item matrices; a GL texture name +0x20fcfe0 and a 128 x 64 image of 0xa1f220; the game type flags for type 0;
    actors and scene reset; +4 = 1 */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-THISCALL void item_initTextures(char *s, DWORD a1, DWORD a2, DWORD a3, DWORD a4, DWORD a5, DWORD a6, DWORD a7, DWORD a8, DWORD a9);
+THISCALL void stage_build(char *s, DWORD a1, DWORD a2, DWORD a3, DWORD a4, DWORD a5, DWORD a6, DWORD a7, DWORD a8, DWORD a9);
 /* batch 116 (lifted/grp62.c): menu text callers; text_draw8/5/drawBox16, gfx_setProjection2D3D and menu_drawRect
    run natively (the patch DLL rewrites them in memory, so they stay the originals) */
 /* 0x4125c0 armc_drawText(x, y, s): text in the language's small font (Korean 2: text_draw5, else text_draw8) */
@@ -7105,16 +7105,16 @@ static void notice_setup(void)
 	fill(BUF + 0x2343000, 0x260); fill_str(BUF + 0x80000, 50, 33, 126);
 	g_a[0] = irnd(-999, 999); g_a[1] = irnd(-999, 999);
 }
-ST(notices_clearAll, notice_setup();, (TC(void, 0x463480, char *)(BUF), 0), (notices_clearAll(BUF), 0))
-ST(notice_playerConnected, notice_setup();, (TC(void, 0x4634e0, char *, int, char *)(BUF, g_a[0], BUF + 0x80000), 0),
-   (notice_playerConnected(BUF, g_a[0], BUF + 0x80000), 0))
-ST(notice_playerQuit, notice_setup();, (TC(void, 0x463530, char *, int)(BUF, g_a[0]), 0), (notice_playerQuit(BUF, g_a[0]), 0))
-ST(notice_chatLine, notice_setup();, (TC(void, 0x463550, char *, int, char *, int)(BUF, g_a[0], BUF + 0x80000, g_a[1]), 0),
-   (notice_chatLine(BUF, g_a[0], BUF + 0x80000, g_a[1]), 0))
-ST(notice_joinedTeam, notice_setup();, (TC(void, 0x4635b0, char *, int, int, char *)(BUF, g_a[0], g_a[1], BUF + 0x80000), 0),
-   (notice_joinedTeam(BUF, g_a[0], g_a[1], BUF + 0x80000), 0))
-ST(notice_changedTeam, notice_setup();, (TC(void, 0x463610, char *, int, int, char *)(BUF, g_a[0], g_a[1], BUF + 0x80000), 0),
-   (notice_changedTeam(BUF, g_a[0], g_a[1], BUF + 0x80000), 0))
+ST(net_clearAnnouncements, notice_setup();, (TC(void, 0x463480, char *)(BUF), 0), (net_clearAnnouncements(BUF), 0))
+ST(net_announcePlayerConnected, notice_setup();, (TC(void, 0x4634e0, char *, int, char *)(BUF, g_a[0], BUF + 0x80000), 0),
+   (net_announcePlayerConnected(BUF, g_a[0], BUF + 0x80000), 0))
+ST(net_announcePlayerQuit, notice_setup();, (TC(void, 0x463530, char *, int)(BUF, g_a[0]), 0), (net_announcePlayerQuit(BUF, g_a[0]), 0))
+ST(net_announceChatLine, notice_setup();, (TC(void, 0x463550, char *, int, char *, int)(BUF, g_a[0], BUF + 0x80000, g_a[1]), 0),
+   (net_announceChatLine(BUF, g_a[0], BUF + 0x80000, g_a[1]), 0))
+ST(net_announceJoinedTeam, notice_setup();, (TC(void, 0x4635b0, char *, int, int, char *)(BUF, g_a[0], g_a[1], BUF + 0x80000), 0),
+   (net_announceJoinedTeam(BUF, g_a[0], g_a[1], BUF + 0x80000), 0))
+ST(net_announceChangedTeam, notice_setup();, (TC(void, 0x463610, char *, int, int, char *)(BUF, g_a[0], g_a[1], BUF + 0x80000), 0),
+   (net_announceChangedTeam(BUF, g_a[0], g_a[1], BUF + 0x80000), 0))
 
 /* batch 6: setups fill the memory a function writes, so a missing or wrong store shows */
 #define V0(name, addr, SETUP) ST(name, SETUP, (CD(void, addr, void)(), 0), (name(), 0))
@@ -9941,7 +9941,7 @@ static void factorscene_setup(void)
 	for (int i = 0; i < 8; i++) { char *p = BUF + 0x1cd94fc + i * 0x8888; S32(p, -0x4c) = irnd(0, 2) ? 1 : 0; SF(p, 0x398) = csu_fr(-100, 300); }
 	for (int i = 0; i < 12; i++) { char *e = BUF + 0x20a9a3c + i * 300; S32(e, -0x78) = irnd(0, 2) ? 1 : 0; SF(e, 0) = csu_fr(-100, 10000); }
 }
-ST(stage_refillFactors, factorscene_setup();, (TC(void, 0x472310, char *)(BUF), 0), (stage_refillFactors(BUF), 0))
+ST(stage_refillLights, factorscene_setup();, (TC(void, 0x472310, char *)(BUF), 0), (stage_refillLights(BUF), 0))
 ST(app_spoilDataFiles, vfs_content(0, 0x1000); g_vfsOpenFail = 0; g_mockDeleteOk = irnd(0, 1);, CALL_PLAIN(0x43f8b0, 0, 0, 0, 0, 0), (DWORD)(app_spoilDataFiles()))
 /* a received record: strings at +1, +0x33, +0x53 and the byte fields; the slot index 0..9 */
 static void netrec_setup(void)
@@ -12622,7 +12622,7 @@ static void glwinit_setup(void)
 ST(glWindow_init, glwinit_setup();, CD(DWORD, 0x468250, char *, int, int, int, int, int, int, int)((char *)g_a[0], g_a[1], g_a[2], g_a[3], g_a[4], g_a[5], g_a[6], g_a[7]),
    (DWORD)glWindow_init((const char *)g_a[0], g_a[1], g_a[2], g_a[3], g_a[4], g_a[5], (void *)g_a[6], (void *)g_a[7]))
 /* batch 113 */
-/* the game object as scene_reset's, scene_resetActors' and notices_clearAll's tests set it up; 0..12 map list entries
+/* the game object as scene_reset's, scene_resetActors' and net_clearAnnouncements's tests set it up; 0..12 map list entries
    (names up to 60 characters, some flagged); the camera globals random; modes -1..4 */
 static void session_setup(void)
 {
@@ -12674,12 +12674,12 @@ static void consoleinit_setup(void)
 }
 ST(match_enter, consoleinit_setup();, (CD(void, 0x41fd40, void)(), 0), (match_enter(), 0))
 /* batch 115 */
-/* the scene at BUF, as scene_reset's and scene_resetActors' tests set it up (item_initTextures lays out the rest).
+/* the scene at BUF, as scene_reset's and scene_resetActors' tests set it up (stage_build lays out the rest).
    Everything else lives in the gap after the scene's last fields (BUF + 0x2150000 ..): a texture manager whose
    records are every texture asked for (the ten numbered ones, the three item textures; flags and colours as
    asked, so each lookup is a plain hit), one sometimes left out (fatal); the nine name arguments; the shape dat
    (index of the 32 effect names, one sometimes left out, every item at offset 0 of shape_read's test file, part
-   textures among the records) for the effect cache, which item_initTextures empties first */
+   textures among the records) for the effect cache, which stage_build empties first */
 static void sceneinit_scrub(void);
 static void sceneinit_setup(void)
 {
@@ -12774,8 +12774,8 @@ static DWORD sceneinit_orig(void)
 	g_sceneInitDone++;
 	return 0;
 }
-ST(item_initTextures, sceneinit_setup();, sceneinit_orig(),
-   (item_initTextures(BUF, (DWORD)g_a[0], (DWORD)g_a[1], (DWORD)g_a[2], (DWORD)g_a[3], (DWORD)g_a[4], (DWORD)g_a[5], (DWORD)g_a[6], (DWORD)g_a[7], (DWORD)(g_a[7] + 0x40)), 0))
+ST(stage_build, sceneinit_setup();, sceneinit_orig(),
+   (stage_build(BUF, (DWORD)g_a[0], (DWORD)g_a[1], (DWORD)g_a[2], (DWORD)g_a[3], (DWORD)g_a[4], (DWORD)g_a[5], (DWORD)g_a[6], (DWORD)g_a[7], (DWORD)(g_a[7] + 0x40)), 0))
 /* batch 116 */
 /* the text passes' globals as textpass_setup sets them (game state, screen size), a random text at BUF + 0x400, the
    language English / Korean */
@@ -17200,8 +17200,8 @@ static const STest g_stests[] = {
 	T(actor_deactivate, 0, 4, 600), T(camera_setTarget, 0, 4, 600), T(stage_clearActorSlots, 0, 4, 60),
 	T(actor_setWeaponSlot, 0, 4, 600), T(actor_selectWeapon, 0, 4, 600), T(actor_clearInput, 0, 4, 200), T(actor_setInput, 0, 4, 200),
 	T(scene_saveNames, 0, 4, 100), T(scene_restoreNames, 0, 4, 100), T(scene_followedActor, 1, 4, 1000), T(chat_matchCheatCode, 1, 10, 1000),
-	T(events_clear, 0, 4, 200), T(events_age, 0, 4, 2000), T(notices_clearAll, 0, 4, 200), T(notice_playerConnected, 0, 4, 300),
-	T(notice_playerQuit, 0, 4, 200), T(notice_chatLine, 0, 4, 300), T(notice_joinedTeam, 0, 4, 300), T(notice_changedTeam, 0, 4, 300),
+	T(events_clear, 0, 4, 200), T(events_age, 0, 4, 2000), T(net_clearAnnouncements, 0, 4, 200), T(net_announcePlayerConnected, 0, 4, 300),
+	T(net_announcePlayerQuit, 0, 4, 200), T(net_announceChatLine, 0, 4, 300), T(net_announceJoinedTeam, 0, 4, 300), T(net_announceChangedTeam, 0, 4, 300),
 	/* batch 6 */
 	T(net_clearServerList, 0, 4, 0), T(net_clearRoomList, 0, 4, 0), T(net_clearPlayerList, 0, 4, 0), T(input_resetKeys, 0, 4, 0),
 	T(input_clearKeyTable2, 0, 4, 0), T(net_clearServerSettings, 0, 4, 0), T(replaySelect_allOut, 0, 4, 0), T(armc_showPartsPage, 0, 4, 0),
@@ -17443,7 +17443,7 @@ static const STest g_stests[] = {
 	T(text_drawHangul31b, 0, 40, 0), T(tex_getItemFileBy, 1, 400, 0), T(space_getNextFreePlanePtr, 1, 40, 0), T(space_getNextFreeNodePtr, 1, 40, 0),
 	T(space_getNextFreeUnitPtr, 1, 40, 0), T(space_getNextFreeBlockPtrBy, 1, 400, 0), T(map_loadWayPointInfoFrom, 0, 400, 0), T(map_loadTriggerInfoFrom, 0, 400, 0),
 	T(factor_addFactorBy, 0, 400, 0), T(factors_addAmbient, 0, 400, 0), T(factors_addDirectional, 0, 400, 0), T(factors_addPointLight, 0, 400, 0),
-	T(stage_refillFactors, 0, 40, 0),
+	T(stage_refillLights, 0, 40, 0),
 	/* batch 58 */
 	T(net_send, 0, 400, 0), T(gameList_open, 1, 40, 0), T(room_requestJoin, 0, 40, 0), T(account_sendChange, 1, 40, 0),
 	T(room_host, 0, 40, 0), T(room_leaveGame, 0, 40, 0), T(room_keepText, 0, 40, 0), T(profile_checkAndSendRecord, 0, 400, 0),
@@ -17575,7 +17575,7 @@ static const STest g_stests[] = {
 	/* batch 114 */
 	T(match_enter, 0, 200, 0),
 	/* batch 115 */
-	T(item_initTextures, 0, 100, 0),
+	T(stage_build, 0, 100, 0),
 	/* batch 116 */
 	T(armc_drawText, 0, 300, 0), T(armc_drawStatLabel, 0, 300, 0), T(menu_drawMessageBox, 0, 200, 0), T(menu_drawInputLine, 0, 300, 0),
 	T(profileList_drawNames, 0, 200, 0), T(replaySelect_drawNames, 0, 200, 0),
@@ -17832,7 +17832,7 @@ static const struct { DWORD addr, base, limit; int (__cdecl *fn)(int, int); cons
 
 /* harness self-check: a deliberately wrong rebuild (one extra scratch write far from the inputs, one off-by-one
    in .data) must be caught in fast and full mode; otherwise every result of this run is meaningless */
-static THISCALL void wrong_match_463530(char *self, int a) { notice_playerQuit(self, a); S32(self, 0x1000000) = 1; }
+static THISCALL void wrong_match_463530(char *self, int a) { net_announcePlayerQuit(self, a); S32(self, 0x1000000) = 1; }
 static void wrong_menu_clearInputBuffer(int mode) { menu_clearInputBuffer(mode + 1); }
 ST(selfcheck_scratch, notice_setup();, (TC(void, 0x463530, char *, int)(BUF, g_a[0]), 0), (wrong_match_463530(BUF, g_a[0]), 0))
 ST(selfcheck_data, g_a[0] = irnd(-5, 5);, (CD(void, 0x431560, int)(g_a[0]), 0), (wrong_menu_clearInputBuffer(g_a[0]), 0))
@@ -18065,9 +18065,9 @@ static const struct { DWORD addr; void *fn; const char *name; } g_hooks3[] = {
 	{ 0x4616e0, (void *)scene_saveNames, "scene_saveNames" }, { 0x461730, (void *)scene_restoreNames, "scene_restoreNames" },
 	{ 0x4625a0, (void *)scene_followedActor, "scene_followedActor" }, { 0x462650, (void *)chat_matchCheatCode, "chat_matchCheatCode" },
 	{ 0x4629c0, (void *)events_clear, "events_clear" }, { 0x462ac0, (void *)events_age, "events_age" },
-	{ 0x463480, (void *)notices_clearAll, "notices_clearAll" }, { 0x4634e0, (void *)notice_playerConnected, "notice_playerConnected" },
-	{ 0x463530, (void *)notice_playerQuit, "notice_playerQuit" }, { 0x463550, (void *)notice_chatLine, "notice_chatLine" },
-	{ 0x4635b0, (void *)notice_joinedTeam, "notice_joinedTeam" }, { 0x463610, (void *)notice_changedTeam, "notice_changedTeam" },
+	{ 0x463480, (void *)net_clearAnnouncements, "net_clearAnnouncements" }, { 0x4634e0, (void *)net_announcePlayerConnected, "net_announcePlayerConnected" },
+	{ 0x463530, (void *)net_announcePlayerQuit, "net_announcePlayerQuit" }, { 0x463550, (void *)net_announceChatLine, "net_announceChatLine" },
+	{ 0x4635b0, (void *)net_announceJoinedTeam, "net_announceJoinedTeam" }, { 0x463610, (void *)net_announceChangedTeam, "net_announceChangedTeam" },
 	/* batch 6 */
 	{ 0x452e60, (void *)net_clearServerList, "net_clearServerList" }, { 0x452e80, (void *)net_clearRoomList, "net_clearRoomList" },
 	{ 0x452ea0, (void *)net_clearPlayerList, "net_clearPlayerList" }, { 0x431590, (void *)input_resetKeys, "input_resetKeys" },
@@ -18471,7 +18471,7 @@ static const struct { DWORD addr; void *fn; const char *name; } g_hooks3[] = {
 	{ 0x48b4a0, (void *)map_loadWayPointInfoFrom, "map_loadWayPointInfoFrom" }, { 0x48b530, (void *)map_loadTriggerInfoFrom, "map_loadTriggerInfoFrom" },
 	{ 0x483dd0, (void *)factor_addFactorBy, "factor_addFactorBy" }, { 0x483e90, (void *)factors_addAmbient, "factors_addAmbient" },
 	{ 0x483ec0, (void *)factors_addDirectional, "factors_addDirectional" }, { 0x483f00, (void *)factors_addPointLight, "factors_addPointLight" },
-	{ 0x472310, (void *)stage_refillFactors, "stage_refillFactors" },
+	{ 0x472310, (void *)stage_refillLights, "stage_refillLights" },
 	/* batch 58 */
 	{ 0x4521c0, (void *)net_send, "net_send" }, { 0x434d00, (void *)gameList_open, "gameList_open" },
 	{ 0x4334c0, (void *)room_requestJoin, "room_requestJoin" }, { 0x434b90, (void *)account_sendChange, "account_sendChange" },
@@ -18626,7 +18626,7 @@ static const struct { DWORD addr; void *fn; const char *name; } g_hooks3[] = {
 	/* batch 114 */
 	{ 0x41fd40, (void *)match_enter, "match_enter" },
 	/* batch 115 */
-	{ 0x4700a0, (void *)item_initTextures, "item_initTextures" },
+	{ 0x4700a0, (void *)stage_build, "stage_build" },
 	/* batch 116 */
 	{ 0x4125c0, (void *)armc_drawText, "armc_drawText" }, { 0x4125f0, (void *)armc_drawStatLabel, "armc_drawStatLabel" },
 	{ 0x4290d0, (void *)menu_drawMessageBox, "menu_drawMessageBox" }, { 0x428940, (void *)menu_drawInputLine, "menu_drawInputLine" },
@@ -19052,7 +19052,7 @@ static DWORD WINAPI worker(LPVOID unused)
 		say("      (map_loadActorInfoFrom: the original set up every player in %d tests)\n", g_actorFileDone);
 		say("      (render_drawObjects: the original sorted transparent triangles in %d of %d runs)\n", g_drawSorted, g_drawRuns);
 		say("      (map_loadGroundInfoFrom: the original loaded the whole ground in %d tests)\n", g_groundDone);
-		say("      (item_initTextures: the original set the whole scene up in %d tests)\n", g_sceneInitDone);
+		say("      (stage_build: the original set the whole scene up in %d tests)\n", g_sceneInitDone);
 		say("      (collisionTri_sweepSphere: the original reported a contact in %d tests)\n", g_csuHits);
 		say("      (space_collideBlock: the original reported a hit in %d tests)\n", g_scuHits);
 		say("      (ray traces: the original hit something in %d / %d / %d tests: node, grid, line of sight)\n", g_traceHits[0], g_traceHits[1], g_traceHits[2]);

@@ -477,7 +477,7 @@ static const u32 k_cameraPresets[6][10] = {
 /* 0x460570 (thiscall: the game object's constructor): its clock (TimeSync_ctor at +0xc), view volume (+0x74) and the
    stage (+0x1f36c8) with all its member arrays built (the CRT's vector constructors 0x401290 / 0x49fd2d with their
    element constructors) and vtables set; the factor tables sized (factor_initBy into the block at +0x91e4); the
-   parts (item_initTextures with nine names), the component catalogue and the items loaded (failing: a fatal
+   parts (stage_build with nine names), the component catalogue and the items loaded (failing: a fatal
    message); the ten camera presets, the stage's player slots reset (stage_selectActor -1), the geometry check sizes; the
    help text (Help.txt: 30 lines of 63 characters into consoleLines) read, each with its line end cut (an empty one
    cuts the byte before it), and the chat macros loaded (chat_loadMacros). (The original's SEH frame, for
@@ -538,8 +538,8 @@ u8 *THISCALL (Game_ctor)(u8 *g)
 	GS->frameTimeNext = 0;
 	factor_initBy((u8 *)GS->view, 10000, 1000, 20000, 4000, 400, 10000,
 	                                                                                GS->viewMemory, sizeof GS->viewMemory);   /* factor_initBy */
-	item_initTextures(s, STR(0x4c45a8, "Stage"), STR(0x4b1784, "Map"), STR(0x4c45b0, "Texture"), STR(0x4c45b8, "Shape"),
-	                                                                                  STR(0x4c45c0, "Skeleton"), STR(0x4c45cc, "Actor"), STR(0x4c45d4, "Bullet"), STR(0x4c45dc, "Effect"), STR(0x4c45e4, "Scene"));   /* item_initTextures */
+	stage_build(s, STR(0x4c45a8, "Stage"), STR(0x4b1784, "Map"), STR(0x4c45b0, "Texture"), STR(0x4c45b8, "Shape"),
+	                                                                                  STR(0x4c45c0, "Skeleton"), STR(0x4c45cc, "Actor"), STR(0x4c45d4, "Bullet"), STR(0x4c45dc, "Effect"), STR(0x4c45e4, "Scene"));   /* stage_build */
 	if (!PATCHED_THISCALL(0x460920, int, void *, const char *)(s, (const char *)STR(0x4b4418, "Data/Component.dat")))   /* catalogue_loadComponents (the patch DLL adds the KYRIE parts here) */
 		sys_fatalErrorN((char *)OBJ(g_logConsole), (const char *)STR(0x4c4598, "file damaged!"));
 	if (!map_loadItemInfoFrom(s, (const char *)STR(0x4c4588, "Data/Item.dat")))   /* map_loadItemInfoFrom */
@@ -588,7 +588,7 @@ static void zero_dwords(u8 *at, int n)
    records, 0x9eeab8 of them) copied to +0x1f1cbc (0x40 each, count +0x1f35bc); actors and scene reset; mode 2 also
    clears the armour cache, the view box (+0xbe2fcc: -100000 .. 100000, twice), and sets the game type flags for type
    0; the camera from 0xa0e7a8.. (direction negated), the HUD mode +0x233cc20 (mode 2 -> 3, 3 -> 1, else 2) and its
-   defaults, the match state (teams_setup), the notices (notices_clearAll) and the lobby slots (+0x234240d -1 in modes 1
+   defaults, the match state (teams_setup), the notices (net_clearAnnouncements) and the lobby slots (+0x234240d -1 in modes 1
    and 3). Its callers ignore the eax it leaves */
 void THISCALL (scene_startSession)(u8 *g, u32 a, int mode)
 {
@@ -649,7 +649,7 @@ void THISCALL (scene_startSession)(u8 *g, u32 a, int mode)
 	GS->weaponKey = -1;
 	zero_dwords((u8 *)g + offsetof(Scene, holdZoom), 31);   /* holdZoom .. helpPressed */
 	zero_dwords((u8 *)g + offsetof(Scene, menuKeys), 4);   /* menuKeys */
-	notices_clearAll(g);
+	net_clearAnnouncements(g);
 	GS->localPlayer = GS->sessionMode == 1 || GS->sessionMode == 3 ? -1 : 0;
 	zero_dwords((u8 *)g + offsetof(Scene, localRecordSet), 3);   /* localRecordSet .. statsTaken */
 	GS->chosenTeam = -1;

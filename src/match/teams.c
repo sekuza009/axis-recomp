@@ -63,7 +63,7 @@ void *THISCALL (scene_followedActor)(Scene *scene)
 /* 0x472310: the dynamic lights refilled: flagged (dynamicLightsSet), emptied (0x483d60), then a white light for
    each active actor, of (its glow + 1) * 2500 at its position, and for each active projectile whose size is above
    0, of that at its position */
-void THISCALL (stage_refillFactors)(Stage *stage)
+void THISCALL (stage_refillLights)(Stage *stage)
 {
 	u8 *pool = (u8 *)&((Stage *)stage)->dynamicLights;
 	stage->dynamicLightsSet = 1;

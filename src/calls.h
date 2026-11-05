@@ -242,7 +242,7 @@
 #define math_makeMathFunctionTableFile() GAME_FN(math_makeMathFunctionTableFile, 0x46c340, u32, void)()
 #define sys_errorMessageNoName(format) GAME_FN(sys_errorMessageNoName, 0x46c840, int, const char *)(format)
 #define UnitPoseInfo_dtor(self) GAME_THISFN(UnitPoseInfo_dtor, 0x46f470, u32, void *)(self)
-#define item_initTextures(s, a1, a2, sky, a4, skel_dir, a6, a7, a8, a9) GAME_THISFN(item_initTextures, 0x4700a0, void, void *, u32, u32, u32, u32, u32, u32, u32, u32, u32)(s, a1, a2, sky, a4, skel_dir, a6, a7, a8, a9)
+#define stage_build(s, a1, a2, sky, a4, skel_dir, a6, a7, a8, a9) GAME_THISFN(stage_build, 0x4700a0, void, void *, u32, u32, u32, u32, u32, u32, u32, u32, u32)(s, a1, a2, sky, a4, skel_dir, a6, a7, a8, a9)
 #define camera_setupView(s, pos, dir, up, fov, w, h, nr, fr, dt) GAME_THISFN(camera_setupView, 0x4729b0, void, void *, const void *, const void *, const void *, u32, int, int, u32, u32, u32)(s, pos, dir, up, fov, w, h, nr, fr, dt)
 #define playerRecord_markFree(stage, p) GAME_THISFN(playerRecord_markFree, 0x4743b0, void, void *, int)(stage, p)
 #define stage_freeProjectile(stage, i) GAME_THISFN(stage_freeProjectile, 0x4799f0, void, void *, int)(stage, i)
