@@ -14,12 +14,12 @@ void THISCALL (mech_setName)(Scene *scene, const char *name)
 		player_setName(STAGE(scene), scene->localPlayer, scene->mechName);
 }
 
-/* 0x461370: (unclear) a value kept with the player (its record's +0x44 and its actors') */
-void THISCALL (mech_setValue)(Scene *scene, int v)
+/* 0x461370: the local pilot's level set: the scene's pilotLevel and, with a local player, its record's and actors' level */
+void THISCALL (mech_setPilotLevel)(Scene *scene, int v)
 {
-	scene->mechValue = v;
+	scene->pilotLevel = v;
 	if (scene->localPlayer >= 0)
-		player_setValue(STAGE(scene), scene->localPlayer, v);
+		player_setLevel(STAGE(scene), scene->localPlayer, v);
 }
 
 /* 0x4613a0: the team */
@@ -85,7 +85,7 @@ void THISCALL (mech_setAll)(Scene *scene, const char *name, int v, int team, int
                             int booster, int item0, int item1, int item2, int item3, int item4, int item5)
 {
 	mech_setName(scene, name);
-	mech_setValue(scene, v);
+	mech_setPilotLevel(scene, v);
 	scene_setLocalTeam(scene, team);
 	armc_setHeadIndex(scene, head);
 	armc_setChestIndex(scene, chest);

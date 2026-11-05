@@ -550,7 +550,7 @@ u8 *THISCALL (game_loadAllData)(u8 *g)
 	GS->geometryPerRow[0] = 6;
 	GS->geometryPerRow[2] = 6;
 	GS->watchedPlayer = -1;
-	GS->watchClear[0] = GS->watchClear[1] = GS->watchClear[2] = 0;
+	GS->manualPick[0] = GS->manualPick[1] = GS->manualPick[2] = 0;
 	GS->geometryPerRow[1] = 3;
 	GS->geometryPerRow[3] = 7;
 	GS->geometryPerRow[4] = 10;
@@ -598,7 +598,7 @@ void THISCALL (app_requireCd)(u8 *g, u32 a, int mode)
 	GS->network = mode;
 	GS->objectsMode = 0;
 	zero_dwords((u8 *)g + offsetof(Scene, rotationCount), 3);   /* rotationCount .. rotationOff */
-	zero_dwords((u8 *)g + offsetof(Scene, frameFlag), 3);   /* frameFlag .. showEmblems */
+	zero_dwords((u8 *)g + offsetof(Scene, frameFlag), 3);   /* frameFlag .. ladderGame */
 	GS->replayCount = 0;
 	if (GS->network == 3)
 		for (int k = 0; k < g_mapListFlaggedCount; k++) {
@@ -613,7 +613,7 @@ void THISCALL (app_requireCd)(u8 *g, u32 a, int mode)
 	scene_reset(s);
 	if (GS->network == 2) {
 		stage_setSilentActor(s, 0);   /* stage_setSilentActor */
-		GS->soloClear = 0;
+		GS->playerActor = 0;
 		for (int k = 0; k < 3; k++) {
 			st->levelLow[k] = -100000.0f;
 			st->levelHigh[k] = 100000.0f;
@@ -632,8 +632,8 @@ void THISCALL (app_requireCd)(u8 *g, u32 a, int mode)
 	GS->inputState = GS->network == 2 ? 3 : GS->network == 3 ? 1 : 2;
 	GS->modeStarted = GS->wholeSeconds = (*(int *)&GS->secondFraction) = 0;
 	(*(int *)&GS->msgFade) = GS->unused233cc44 = 0;
-	BITS(GS->emblemTime) = 0x43960000;   /* 300, 3, 5, 15 */
-	GS->roundTimer = 3.0f;
+	BITS(GS->scoreCommitTimer) = 0x43960000;   /* 300, 3, 5, 15 */
+	GS->stateSendTimer = 3.0f;
 	GS->kingTimer = 5.0f;
 	GS->teamSyncTime = 15.0f;
 	zero_dwords((u8 *)GS->cleared2340ca4, 11);
@@ -643,15 +643,15 @@ void THISCALL (app_requireCd)(u8 *g, u32 a, int mode)
 	teams_setup((Scene *)g);
 	zero_dwords((u8 *)g + offsetof(Scene, lostTime), 8);   /* lostTime .. timeLimit */
 	GS->endedByTime = -1;
-	zero_dwords((u8 *)g + offsetof(Scene, geometryCheckTurn), 7);   /* geometryCheckTurn .. geometryPick */
-	GS->roundClear2 = (*(int *)&GS->previewTurn) = 0;
+	zero_dwords((u8 *)g + offsetof(Scene, geometryCheckTurn), 7);   /* geometryCheckTurn .. geometryPickUnread */
+	GS->dataLossPending = (*(int *)&GS->previewTurn) = 0;
 	zero_dwords((u8 *)g + offsetof(Scene, holdAltitude), 10);   /* holdAltitude .. holdBooster */
 	GS->viewKey = -1;
 	zero_dwords((u8 *)g + offsetof(Scene, holdZoom), 31);   /* holdZoom .. helpPressed */
 	zero_dwords((u8 *)g + offsetof(Scene, menuKeys), 4);   /* menuKeys */
 	notices_clearAll(g);
 	GS->localPlayer = GS->network == 1 || GS->network == 3 ? -1 : 0;
-	zero_dwords((u8 *)g + offsetof(Scene, roundClear4), 3);   /* roundClear4 .. statsTaken */
+	zero_dwords((u8 *)g + offsetof(Scene, localRecordSet), 3);   /* localRecordSet .. statsTaken */
 	GS->chosenTeam = -1;
 	GS->screenshotTaken = 0;
 	GS->itemLevelsTaken = 0;

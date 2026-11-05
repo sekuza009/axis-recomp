@@ -179,9 +179,9 @@ void THISCALL (script_processTriggers)(u8 *s)
 
 /* 0x49d150 (thiscall on the scene): the local player (none when negative): its kills, deaths and score since they
    were last counted (killsCounted, deathsCounted, startPoints) added to the title's wins, losses and points, and
-   counted; outside the menus' text mode (+0x23423a1 0) the
-   room's text kept (room_keepText); the view distance (+0x233cc50) 300. Its callers ignore the eax it leaves */
-void THISCALL (sound_updateListener)(u8 *s)
+   counted; while the match is not being left (matchLeaving 0) the
+   room's text kept (room_keepText); scoreCommitTimer 300. Its callers ignore the eax it leaves */
+void THISCALL (profile_addMatchScores)(u8 *s)
 {
 	Scene *sc = (Scene *)s;
 	if (sc->localPlayer >= 0) {
@@ -193,9 +193,9 @@ void THISCALL (sound_updateListener)(u8 *s)
 		me->deathsCounted = me->deaths;
 		me->startPoints = me->score;
 	}
-	if (!sc->roundOver)
+	if (!sc->matchLeaving)
 		room_keepText();
-	BITS(sc->emblemTime) = 0x43960000;   /* 300.0f */
+	BITS(sc->scoreCommitTimer) = 0x43960000;   /* 300.0f */
 }
 
 /* 0x48ec20 (thiscall on the scene): the effects' shapes looked up in the shape cache (+0x19e188c): three sets of eight

@@ -63,32 +63,32 @@ void THISCALL (hud_pass)(Scene *scene)
 	if (scene->hudHidden == 0) {
 		if (scene->viewMode == 0) {
 			int local = scene->localPlayer;
-			if (local >= 0 && !scene->matchOver && !scene->roundOver)
+			if (local >= 0 && !scene->matchOver && !scene->matchLeaving)
 				PATCHED_THISCALL(0x498580, void, Scene *)(scene);                 /* hud_drawPlayerMarkers */
-			if (local >= 0 && scene->players[local].state == 1 && !scene->matchOver && !scene->roundOver)
+			if (local >= 0 && scene->players[local].state == 1 && !scene->matchOver && !scene->matchLeaving)
 				PATCHED_THISCALL(0x4985c4, void, Scene *)(scene);                 /* hud_drawLockOn */
 			if (!scene->escMenuOpen && !scene->consoleOpen) {
 				/* the main HUD of the player the view follows: the local one while playing, else the watched one */
 				if (scene->localPlayer >= 0) {
 					int shown = scene->playing == 1 ? scene->players[scene->localPlayer].state == 1
 					          : scene->playing == 0 && scene->players[scene->watchedPlayer].state == 1;
-					if (shown && !scene->matchOver && !scene->roundOver)
+					if (shown && !scene->matchOver && !scene->matchLeaving)
 						PATCHED_THISCALL(0x498654, void, Scene *)(scene);             /* hud_drawMain */
 				}
 				if (scene->rankingKey == 1 || scene->rankingShown == 1
 				    || (scene->localPlayer >= 0 && scene->players[scene->localPlayer].state == 2)
-				    || scene->matchOver == 1 || scene->roundOver == 1)
+				    || scene->matchOver == 1 || scene->matchLeaving == 1)
 					PATCHED_THISCALL(0x4986a0, void, Scene *)(scene);             /* hud_drawRanking */
 				if (scene->localPlayer >= 0 && scene->localTeam >= 0
 				    && scene->players[scene->localPlayer].active == 0 && scene->chatMode == 0
-				    && !scene->matchOver && !scene->roundOver)
+				    && !scene->matchOver && !scene->matchLeaving)
 					hud_drawPressFire(scene);
 			}
 			if (scene->messagesHidden == 0 && scene->msgFade > 0.0f)
 				replay_drawMessage(scene);
 			if (scene->chatMode != 0)
 				hud_drawChatInput(scene);
-			if (!scene->matchOver && !scene->roundOver)
+			if (!scene->matchOver && !scene->matchLeaving)
 				hud_drawClock(scene);
 			if (scene->matchOver == 1 && scene->players[scene->ranking[0]].state == 1)
 				hud_drawMatchResult(scene);

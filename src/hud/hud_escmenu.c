@@ -237,8 +237,8 @@ static void esc_pairCursor(Scene *scene)
 /* the local player's ranking record reset for a team change (the emblems redrawn first) */
 static void esc_resetScore(Scene *scene)
 {
-	if (scene->showEmblems == 1)
-		sound_updateListener(scene);
+	if (scene->ladderGame == 1)
+		profile_addMatchScores(scene);
 	scene->players[scene->localPlayer].killsCounted = 0;
 	scene->players[scene->localPlayer].kills = 0;
 	scene->players[scene->localPlayer].deaths++;
@@ -267,7 +267,7 @@ static int esc_main(Scene *scene)
 				esc_resetScore(scene);
 				msg_playerChangedTeam(scene, scene->localPlayer, -1);
 				notice_changedTeam(scene, scene->localPlayer, -1, scene->mechName);
-				msg_newKing(scene);
+				scene_updateRanking(scene);
 				scene->watchedPlayer = -1;
 			}
 			notice_printCentre(scene, (const char *)STR(0x4d06f4, "YOU ARE A SPECTATOR NOW."));
@@ -280,10 +280,10 @@ static int esc_main(Scene *scene)
 		if (scene->chosenTeam >= 0 && scene->network)   /* JOIN: the team page, on the team asked for before */
 			escMenu_open(scene, 1, scene_teamSide(scene, scene->chosenTeam) != 0);
 		else
-			escMenu_open(scene, 1, scene->counterRed > scene->counterBlue);
+			escMenu_open(scene, 1, scene->redTeamCount > scene->blueTeamCount);
 		return 0;
 	case 1:
-		escMenu_open(scene, 1, scene->counterRed > scene->counterBlue);
+		escMenu_open(scene, 1, scene->redTeamCount > scene->blueTeamCount);
 		return 0;
 	case 2:
 		if (scene->recording) {
@@ -325,7 +325,7 @@ static int esc_team(Scene *scene)
 		return 1;
 	if (TEAM_NOW >= 0) {
 		esc_resetScore(scene);
-		msg_newKing(scene);
+		scene_updateRanking(scene);
 	}
 	if (TEAM_NOW < 0) {
 		msg_playerJoinedTeam(scene, scene->localPlayer, scene->localTeam);
@@ -361,7 +361,7 @@ static int esc_retry(Scene *scene)
 		scene->quitAsked = 1;
 		return 1;
 	}
-	scene->clockExtra = 0;
+	scene->botsHoldFire = 0;
 	scene->elapsed = 0;
 	scene->timeFraction = 0.0f;
 	memcpy(scene->cameraPos, scene->cameraSaved, sizeof scene->cameraPos);

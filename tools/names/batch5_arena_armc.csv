@@ -68,7 +68,7 @@ armc_4101e0,armc_partsPageKeys
 armc_410500,armc_weaponsPageKeys
 armc_410810,armc_colourPageKeys
 armc_461320,mech_setName
-armc_461370,mech_setValue
+armc_461370,mech_setPilotLevel
 armc_461510,mech_setItem
 armc_461250,mech_setAll
 armc_461540,armc_giveShownActorWeapon

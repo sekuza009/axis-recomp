@@ -54,7 +54,7 @@ static void marker_big(Scene *scene, Player *player, int texture, float alpha, f
    - the solo mark (markSolo) and the team mark in the player's team's cell (markTeam), from the marker texture;
    - the rest only while the name label is up (labelFade > 0), or always for a spectator (playing == 0) or in
      network mode 3, its alpha labelFade / 3 while playing (1 otherwise):
-     an arrow over team mates (unless markersOff), the leader mark (rank 1, with the player's kills > 0),
+     an arrow over team mates (unless kingOfTheHill), the leader mark (rank 1, with the player's kills > 0),
      the name label in the team's colour with emblem and flag (not for the player a spectator follows), and the
      player's status icon (statusIcon 1 or 2, always opaque) */
 void THISCALL (hud_drawPlayerMarkers)(Scene *scene)
@@ -78,14 +78,14 @@ void THISCALL (hud_drawPlayerMarkers)(Scene *scene)
 		else
 			alpha = player->labelFade * (1.0f / 3);
 
-		if (player->team == scene->players[scene->localPlayer].team && scene->network != 3 && scene->markersOff == 0) {
+		if (player->team == scene->players[scene->localPlayer].team && scene->network != 3 && scene->kingOfTheHill == 0) {
 			/* the team mate arrow: 32 units, standing 16 units above the point */
 			int w = hud_scaleX(32.0f), h = hud_scaleY(32.0f), lift = hud_scaleY(16.0f);
 			int y = ftol(player->tagTopLeft[1]) - lift - h;
 			int x = ftol(player->screenPos[0]) - w / 2;
 			marker_quad(scene->hudTexture, alpha, x, y, w, h, 0.125f, 0.625f, 0.25f, 0.75f);
 		}
-		if (scene->rank[i] == 1 && scene->markersOff == 0 && scene->leaderMarkOff == 0 && player->kills > 0)
+		if (scene->rank[i] == 1 && scene->kingOfTheHill == 0 && scene->platoon == 0 && player->kills > 0)
 			marker_big(scene, player, scene->hudTexture, alpha, 0.0f, 0.75f, 0.25f, 1.0f);
 
 		if ((scene->playing == 0 && scene->cameraSlot >= 0 && i == scene->watchedPlayer)
@@ -115,7 +115,7 @@ void THISCALL (hud_drawPlayerMarkers)(Scene *scene)
 				half = (int)(strlen(name) >> 1) * 8;                                  /* 8 units per character */
 			int x = centre - half;
 			glColor4f(1.0f, 1.0f, 1.0f, alpha);
-			if (scene->showEmblems == 1) {
+			if (scene->ladderGame == 1) {
 				x -= 0x18;
 				hud_drawNameIcon(scene, player->emblem, x, marker_hudY(player->tagTopLeft[1]) - 0x10);
 			}

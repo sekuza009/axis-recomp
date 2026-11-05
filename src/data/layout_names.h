@@ -268,8 +268,6 @@ extern struct GameData g_data;
 #define g_armcTabColourDim ((u32 *)g_armcTabColourDim_v)
 #undef g_armcUnusedFlag
 #define g_armcUnusedFlag (*(int *)g_armcUnusedFlag_v)
-#undef g_armcValue
-#define g_armcValue (*(int *)((u8 *)g_campaign_v + 0x100))
 #undef g_armcViewPoint0Y
 #define g_armcViewPoint0Y (*(u32 *)((u8 *)g_armcViewPoints_v + 0x4))
 #undef g_armcViewPoint3Y
@@ -2414,6 +2412,8 @@ extern struct GameData g_data;
 #define g_searchResult (*(int *)g_searchResult_v)
 #undef g_secondDialogRects
 #define g_secondDialogRects ((int *)g_secondDialogRects_v)
+#undef g_selectedPilotLevel
+#define g_selectedPilotLevel (*(int *)((u8 *)g_campaign_v + 0x100))
 #undef g_sensitivitySlider
 #define g_sensitivitySlider (*(int *)((u8 *)g_controlsEdit_v + 0x108))
 #undef g_sentChatBlock

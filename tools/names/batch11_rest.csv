@@ -21,7 +21,7 @@ FUN_00468700,view_farPlane,merge
 set_a61708_46f090,ptx_startBitReader
 set_4b42dc_457140,music_setVolumeSetting
 this_get_0x2342381_463780,scene_teamSlot,merge
-FUN_00473a10,player_setValue,merge
+FUN_00473a10,player_setLevel,merge
 match_4613a0,scene_setLocalTeam
 # the recorder's empty methods (one empty function each, shared by every caller)
 match_48b430,recorder_openStub

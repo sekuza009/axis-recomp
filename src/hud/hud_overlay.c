@@ -87,12 +87,12 @@ void THISCALL (hud_drawTeamScores)(Scene *scene)
 	glColor4f(1.0f, 1.0f, 1.0f, 0.2f);
 	gfx_fillRect(bandLeft, bandTop, bandWidth + bandLeft + bandWidth * 2, bandHeight + bandTop - 1);
 	text_setColor(1.0f, 0.0f, 0.0f, 1.0f);
-	sprintf(text, "%d", scene->counterRed);
+	sprintf(text, "%d", scene->redTeamCount);
 	text_drawCentred(0x119, 0x1b, 0x133, text, 16);
 	text_setColor(0.0f, 1.0f, 0.0f, 1.0f);
-	sprintf(text, "%d", scene->counterGreen);
+	sprintf(text, "%d", scene->noTeamCount);
 	text_drawCentred(0x133, 0x1b, 0x14d, text, 16);
 	text_setColor(0.0f, 0.0f, 1.0f, 1.0f);
-	sprintf(text, "%d", scene->counterBlue);
+	sprintf(text, "%d", scene->blueTeamCount);
 	text_drawCentred(0x14d, 0x1b, 0x167, text, 16);
 }

@@ -18,7 +18,7 @@ static void ranking_row(Scene *scene, int p, int *y)
 	text_drawSized(0xf4 - (int)strlen(name) * 8, *y, name, 8);
 	int x = 0x70;
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
-	if (scene->showEmblems == 1) {
+	if (scene->ladderGame == 1) {
 		x = 0x58;
 		hud_drawNameIcon(scene, player->emblem, x, *y);
 	}

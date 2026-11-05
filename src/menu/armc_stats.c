@@ -10,7 +10,7 @@ typedef long double X;
 #define I(a) GAME_VAR(int, a)
 #define FMT(a) ((const char *)RELOC(a))
 /* the pilot's skill k (its level's profile stats[4 + k]) */
-#define SKILL(k) ((X)g_profileRecords[g_armcValue].stats[4 + (k)])
+#define SKILL(k) ((X)g_profileRecords[g_selectedPilotLevel].stats[4 + (k)])
 #define HUNDREDTH F(0x4a9420)   /* 0.01 */
 #define THOUSANDTH F(0x4a9480)  /* 0.001 */
 #define HUNDRED F(0x4a93f4)

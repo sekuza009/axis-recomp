@@ -1546,15 +1546,15 @@ static void THISCALL __attribute__((used)) net_sendMatchEvent_body(u8 *s, u8 *pa
 #define SC ((Scene *)s)
 #define FLAG(offset) GAME_VAR(int, s + (offset))
 #define TAKE(f) ((f) == 1 && ((f) = 0, 1))   /* a pending event taken */
-	static const u32 flags[10] = { offsetof(Scene, chatPending), offsetof(Scene, connectPending), offsetof(Scene, quitPending), offsetof(Scene, joinPending), offsetof(Scene, changePending), offsetof(Scene, endEvents[0]), offsetof(Scene, endEvents[1]), offsetof(Scene, endEvents[2]), offsetof(Scene, event6Pending), offsetof(Scene, event13Pending) };
+	static const u32 flags[10] = { offsetof(Scene, chatPending), offsetof(Scene, connectPending), offsetof(Scene, quitPending), offsetof(Scene, joinPending), offsetof(Scene, changePending), offsetof(Scene, endEvents[0]), offsetof(Scene, endEvents[1]), offsetof(Scene, endEvents[2]), offsetof(Scene, cheatPending), offsetof(Scene, startTimerPending) };
 	if (TAKE(SC->endEvents[0]))
 		packet[1] = 3, packet[2] = 0x6b;
 	else if (TAKE(SC->endEvents[1]))
 		packet[1] = 4, packet[2] = 0x6b;
 	else if (TAKE(SC->endEvents[2]))
 		packet[1] = 5, packet[2] = 0x6b;
-	else if (TAKE(SC->event6Pending))
-		packet[1] = 6, packet[2] = (u8)SC->event6A, packet[3] = (u8)SC->event6B;
+	else if (TAKE(SC->cheatPending))
+		packet[1] = 6, packet[2] = (u8)SC->cheatPlayer, packet[3] = (u8)SC->cheatCode;
 	else if (SC->chatPending == 1) {
 		packet[1] = 7;
 		packet[2] = (u8)SC->chatPlayer;
@@ -1580,7 +1580,7 @@ static void THISCALL __attribute__((used)) net_sendMatchEvent_body(u8 *s, u8 *pa
 		packet[3] = (u8)SC->changeTeam;
 		strcpy((char *)packet + 4, (const char *)SC->changeName);
 		SC->changePending = 0;
-	} else if (TAKE(SC->event13Pending))
+	} else if (TAKE(SC->startTimerPending))
 		packet[1] = 13, packet[2] = 0x6b;
 	int pending = 0;
 	for (int k = 0; k < 10; k++)
@@ -1922,7 +1922,7 @@ void THISCALL (net_processGamePacket)(u8 *g, u32 from, int type, const char *pkt
 			memcpy(&rec[5], &yaw, 4);
 			memcpy(&rec[6], &pitch, 4);
 			stage_setupActorSlot((Stage *)STAGE, i, -1, from, rec);
-			msg_newKing(g);   /* msg_newKing */
+			scene_updateRanking(g);   /* scene_updateRanking */
 		}
 		ac->netFired = 1;
 		ac->armorDeadline = f32(fadd_m(fld_m(&ac->blinkTime), &k_10f));
@@ -2007,7 +2007,7 @@ void THISCALL (net_processGamePacket)(u8 *g, u32 from, int type, const char *pkt
 				GS->nextMap = pkt[4];
 				GS->nextMode = pkt[6];
 				if (g_missionStage == pkt[3] && GS->missionNumber != *(const short *)(pkt + 7)) {
-					GS->roundClear2 = 1;
+					GS->dataLossPending = 1;
 					GS->dataLossCode = 1;
 				}
 			}
@@ -2020,11 +2020,11 @@ void THISCALL (net_processGamePacket)(u8 *g, u32 from, int type, const char *pkt
 			u16 w = *(const u16 *)(pkt + 0x2c);
 			int part = b[0x2b];
 			if (part <= 4 && !table_ok(g, parts[part][0], parts[part][1], parts[part][2], parts[part][3], w, *(const u32 *)(pkt + 0x2e))) {
-				GS->roundClear2 = 1;
+				GS->dataLossPending = 1;
 				GS->dataLossCode = 2;
 			}
 			if (!table_ok(g, offsetof(Scene, actorInfo), offsetof(Scene, geometryPerRow[5]), offsetof(Scene, actorInfoCount), sizeof(ActorInfo) / 4, *(const u16 *)(pkt + 0x32), *(const u32 *)(pkt + 0x34))) {
-				GS->roundClear2 = 1;
+				GS->dataLossPending = 1;
 				GS->dataLossCode = 3;
 			}
 		}
@@ -2048,7 +2048,7 @@ void THISCALL (net_processGamePacket)(u8 *g, u32 from, int type, const char *pkt
 			BITS(SCENE_STAGE(g)->items[item].fade) = 0;
 		}
 		if (GS->network == 3 && GS->replayVersion >= 0x1202)
-			msg_newKing(g);   /* msg_newKing */
+			scene_updateRanking(g);   /* scene_updateRanking */
 		return;
 	}
 	case 2: {
@@ -2065,7 +2065,7 @@ void THISCALL (net_processGamePacket)(u8 *g, u32 from, int type, const char *pkt
 			break;
 		((Player *)ACTOR(i))->player = i;
 		player_setName(STAGE, i, name);   /* player_setName */
-		player_setValue(STAGE, i, (signed char)m[0x11]);
+		player_setLevel(STAGE, i, (signed char)m[0x11]);
 		player_setTeam(STAGE, i, (signed char)m[0x12]);   /* player_setTeam */
 		static const u32 setters[5] = { FN_ADDR(actor_setActorTypeHeadInfoBy, 0x473b10), FN_ADDR(actor_setActorTypeChestInfoBy, 0x473c20), FN_ADDR(actor_setActorTypeArmInfoBy, 0x473d30), FN_ADDR(actor_setActorTypeLegInfoBy, 0x473e40), FN_ADDR(actor_setActorTypeBoosterInfoBy, 0x473f50) };   /* head .. booster */
 		for (int k = 0; k < 5; k++)
@@ -2101,9 +2101,9 @@ void THISCALL (net_processGamePacket)(u8 *g, u32 from, int type, const char *pkt
 			return;
 		GS->endedByTime = 2;
 		msg_serverEndsGame(g);
-		if (GS->roundOver)
+		if (GS->matchLeaving)
 			return;
-		GS->roundOver = 1;
+		GS->matchLeaving = 1;
 		GS->quitDelay = 3.0f;
 		g_matchEndedByServer = 1;
 		return;

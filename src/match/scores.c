@@ -20,7 +20,7 @@ void THISCALL (scene_resetScores)(Scene *scene)
 			scene->playerRecords[i].team = -1;
 	}
 	stage_clearActorRefs(STAGE(scene));
-	msg_newKing(scene);
+	scene_updateRanking(scene);
 }
 
 /* a mark taken by player i: the notice (local, or with the player's name) and its sound */
@@ -35,24 +35,24 @@ static void mark_notice(Scene *scene, int i, u32 local, u32 other)
 	}
 }
 
-/* 0x462150 (thiscall on the scene): the ranking. The team counts (counterRed / Blue by the team's slot, counterGreen
+/* 0x462150 (thiscall on the scene): the ranking. The team counts (redTeamCount / blueTeamCount by the team's slot, noTeamCount
    the players flagged at 0x9f9840 without a team), then the players with a team in order of kills (fewer deaths
    first on a tie: ranking[], rank[] their places, ties sharing one), the local player's place. With the king mark
-   (0x22e719c): the first player marked (markSolo, with a notice "you are" / "%s is" the new king when it changes)
-   and put on team 0, the others on team 1. With the team leaders (0x22e71a0): per team the player with the most
+   (kingOfTheHill): the first player marked (markSolo, with a notice "you are" / "%s is" the new king when it changes)
+   and put on team 0, the others on team 1. With the team leaders (platoon): per team the player with the most
    time (timePlayed + timeExtra) marked (markTeam, with a notice when it changes) */
-void THISCALL (msg_newKing)(Scene *scene)
+void THISCALL (scene_updateRanking)(Scene *scene)
 {
-	scene->counterRed = scene->counterBlue = scene->counterGreen = 0;
+	scene->redTeamCount = scene->blueTeamCount = scene->noTeamCount = 0;
 	for (int i = 0; i < 16; i++) {
 		Player *p = &scene->players[i];
 		if (p->team >= 0) {
 			if (scene_teamSide(scene, p->team) == 0)
-				scene->counterRed++;
+				scene->redTeamCount++;
 			else if (scene_teamSide(scene, p->team) == 1)
-				scene->counterBlue++;
+				scene->blueTeamCount++;
 		} else if (net_playerInUse(i) == 1 && p->team < 0)   /* the player's 0x9f9840 flag */
-			scene->counterGreen++;
+			scene->noTeamCount++;
 	}
 	for (int k = 0; k < 16; k++)
 		scene->ranking[k] = scene->rank[k] = -1;
@@ -86,7 +86,7 @@ void THISCALL (msg_newKing)(Scene *scene)
 	}
 	if (scene->localPlayer >= 0)
 		scene->rankShown = scene->rank[scene->localPlayer];
-	if (scene->markersOff == 1)
+	if (scene->kingOfTheHill == 1)
 		for (int i = 0; i < 16; i++) {
 			Player *p = &scene->players[i];
 			if (p->team < 0)
@@ -106,7 +106,7 @@ void THISCALL (msg_newKing)(Scene *scene)
 					scene->localTeam = 1;
 			}
 		}
-	if (scene->leaderMarkOff != 1)
+	if (scene->platoon != 1)
 		return;
 	for (int t = 0; t < 2; t++) {
 		int leader = -1;

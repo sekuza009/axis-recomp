@@ -325,7 +325,7 @@
 #define g_briefingEnd GAME_VAR(int, 0x9ef200)
 #define g_briefingDone GAME_VAR(int, 0x9f105c)
 #define g_undoDepth GAME_VAR(int, 0x9f1060)
-#define g_armcValue GAME_VAR(int, 0x9f1818)
+#define g_selectedPilotLevel GAME_VAR(int, 0x9f1818)
 #define g_profileFrameStep GAME_VAR(u32, 0x9f8c48)
 #define g_profileCount GAME_VAR(int, 0x9f9008)
 #define g_dplay GAME_VAR(void *, 0xa0b404)

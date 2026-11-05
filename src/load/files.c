@@ -718,7 +718,7 @@ int (profile_saveProgress)(void)
 	char path[0x80];
 	pilot_path(path);
 	f = crt_fopen(path, (const char *)STR(0x4b2ab0, "wb"));
-	(*(u32 *)&g_armcValue) = GAME_VAR(u32, OBJ(g_profileList) + 0x40 + g_pilot * 0x48);
+	(*(u32 *)&g_selectedPilotLevel) = GAME_VAR(u32, OBJ(g_profileList) + 0x40 + g_pilot * 0x48);
 	if (f)
 		pilot_write(f);
 	fclose(f);
@@ -733,7 +733,7 @@ static void campaign_new(void)
 	strcpy((char *)g_campaign, (const char *)STR(0x4b0fa0, "AXIS USER PROFILE DATA Master ver 1.0..."));
 	memset((void *)(OBJ(g_campaign) + 0x80), 0, 0x80);
 	memcpy((void *)(OBJ(g_campaign) + 0x80), pilot_name(g_pilot), 0x80);
-	(*(u32 *)&g_armcValue) = GAME_VAR(u32, OBJ(g_profileList) + 0x40 + g_pilot * 0x48);
+	(*(u32 *)&g_selectedPilotLevel) = GAME_VAR(u32, OBJ(g_profileList) + 0x40 + g_pilot * 0x48);
 	g_progress = 0;
 	memset((void *)(OBJ(g_campaign) + 0x108), 0, 0x190);
 	memset((void *)(OBJ(g_campaign) + 0x298), 0, 0x40);

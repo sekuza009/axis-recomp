@@ -150,7 +150,7 @@ struct Player 0x8888                                            # a player's rec
 0x4a0      4          i32 firePrev                               # (by use) the fire key the frame before (a held key fires one round)
 0xe0       4          i32 levelShown                             # (by use) the level last announced ("LEVEL UP!" when the emblem's passes it)
 0xf8       4          i32 startPoints                            # the level points it started the match with (then the score already added to the
-                                                                 # title's points: sound_updateListener)
+                                                                 # title's points: profile_addMatchScores)
 0x374      4          i32 sendFlag                               # (unclear) cleared each frame; 1: its state is sent (net_sendPlayerState)
 0x8868     4          i32 killPending                            # (by use) 1: it died; the kill is reported (msg_kill with lastAttacker) and this cleared
 0x538      4          i32 lastWarp                               # (by use) the warp zone (item) it came through last (-1 none: not kept off it)
@@ -317,7 +317,7 @@ struct Player 0x8888                                            # a player's rec
 0xd8       4          i32 inPlay                                # 1: the slot holds a fielded mech (actor_setupFromParts); 0 when reset, cleared with the scores or a spectator. Spectating follows only these; bots spawn while the local player is
 0xe4       4          i32 kills
 0xe8       4          i32 deaths
-0xf0       4          i32 killsCounted                           # kills already added to the title's wins (sound_updateListener); cleared with the scores
+0xf0       4          i32 killsCounted                           # kills already added to the title's wins (profile_addMatchScores); cleared with the scores
 0xf4       4          i32 deathsCounted                          # deaths already added to the title's losses
 0xfc       4          i32 timePlayed                            # seconds
 0x100      4          float timeExtra                           # (by use) added to timePlayed when a team's leader is picked; cleared with the scores
@@ -968,7 +968,7 @@ struct StartPoint 0x14                                          # a multiplayer 
 0xc        0x8        float angle[2]
 
 struct MapPlayer 0x58                                           # a player as the map's actor file gives it (Stage.mapPlayers; playerRecord_setFromActorRecord)
-4          4          i32 value                                  # (by use) player_setValue's value; in the map file 1-based, the colour preset for its parts (map_loadActorInfoFrom)
+4          4          i32 value                                  # (by use) player_setLevel's value; in the map file 1-based, the colour preset for its parts (map_loadActorInfoFrom)
 8          0x20       char name[0x20]
 0x28       4          i32 team
 0x2c       0x14       i32 parts[5]                               # head, chest, arms, legs, booster
@@ -1167,7 +1167,7 @@ struct Stage 0x2150443                                          # the stage: the
 0xdc0240   4          i32 poolUsed                               # its bytes taken
 0x9ccfd4   0x24       i32 effectTextures[9]                      # (by use) the effects' textures "<dir>\00" .. "08" (item_initTextures; objects.c TEX(k)); "09" is billboards
 0x20fce50  0x190      i32 teamCommanders[100]                    # (by use) each team's commander actor (-1 none: "YOUR COMMANDER .. HAS BEEN KILLED!")
-0x20fcd48  4          i32 holdFire                               # (unclear) not 0: the bots do not fire (cleared with the clock; no setter found in C)
+0x20fcd48  4          i32 botsHoldFire                          # not 0: the bots do not fire (set at the round's end: Scene.botsHoldFire; cleared with the clock)
 0x202ec10  0x190      float lockTimes[100]                       # (by use) the locked-on actors' lock times, longest first (actor_frame.c)
 0x202eda0  0x190      i32 lockIds[100]                           # and which actors they are
 0x202e8e8  4          i32 lastDeath                              # (by use) the actor that died last
@@ -1366,7 +1366,7 @@ struct Scene 0x2343b0b                                          # the scene: the
 0x233ca00  4          i32 unused233ca00                          # (by use) only written: 0 by app_requireCd
 0x233cc44  4          i32 unused233cc44                          # (by use) only written: 0 by app_requireCd
 0x233cc24  4          i32 loadStage                              # (by use) game_processLoadingMode's stage (0 .. 8)
-0x233cc2c  4          i32 loadStep                               # (unclear) cleared at each stage, not read in C
+0x233cc2c  4          i32 loadStep                              # set 0 with each loading stage, never read
 0x233cc60  0x4000     char loadLines[64][0x100]                  # the loading screen's lines (loadLineCount of them)
 0x2340c60  4          i32 loadLineCount
 0xc        0x38       TimeSync timer                             # (by use) its frame timer (timer_getGameTime; timer.fps is shown by hud_drawFps)
@@ -1391,10 +1391,10 @@ struct Scene 0x2343b0b                                          # the scene: the
 0x23431f3  0x40       char changeName[0x40]
 0x2343233  4          i32 changePending
 0x2343237  0xc        i32 endEvents[3]                           # kinds 3 .. 5: the round's end (event_raise3 .. 5: by the way it ended)
-0x2343243  4          i32 event13Pending                         # (unclear) kind 13 to send
-0x2343247  4          i32 event6A                                # (unclear) kind 6: two values (their low bytes sent)
-0x234324b  4          i32 event6B
-0x234324f  4          i32 event6Pending
+0x2343243  4          i32 startTimerPending                     # 1: packet kind 13 to send (the receiver's startTimer 5 s); never set in the game
+0x2343247  4          i32 cheatPlayer                           # see cheatPending (its low byte sent)
+0x234324b  4          i32 cheatCode                             # see cheatPending (its low byte sent)
+0x234324f  4          i32 cheatPending                          # 1: a cheat-used notice (packet kind 6: cheatPlayer, cheatCode; msg_cheatUsed on the other side) to send; never set in the game
 0x1f1cbc   0x1900     char replayFiles[100][0x40]                # (by use) the replay viewer's files (replayCount of them)
 0x1f35bc   4          i32 replayCount                            # (by use) replays in the viewer's list
 0x1f35c0   4          i32 replayIndex                            # the one playing (random or in order)
@@ -1471,7 +1471,7 @@ struct Scene 0x2343b0b                                          # the scene: the
 0x1f1cb0   4          i32 rotationOff                            # 1: no rotation (a machine that joined)
 0x1f1cb4   4          i32 nextMap                                # the next entry's map and mode
 0x1f1cb8   4          i32 nextMode
-0x233cc50  4          float emblemTime                           # (unclear) 300 with showEmblems
+0x233cc50  4          float scoreCommitTimer                    # a Ladder game's seconds to the next commit of the scores to the title (300; profile_addMatchScores)
 0x2342442  4          i32 level                                  # the room game's level (1 .. 20, from levelPoints)
 0x2342446  4          i32 levelPoints
 0x2340c74  4          float sendTimer                            # (by use) seconds since the local player's state was sent (again past 0.05)
@@ -1484,18 +1484,18 @@ struct Scene 0x2343b0b                                          # the scene: the
 0x2340c90  4          float windowTime                           # the window's seconds
 0x2340c94  4          float resendWarning                        # 1 when packets had to be sent again, running down
 0x2342395  4          float lostTime                               # (by use) a client's seconds without the server (over 5: the connection lost)
-0x2221f9c  4          i32 soloClear                              # (unclear) cleared at the first round of a solo game
+0x2221f9c  4          i32 playerActor                           # = Stage.playerActor (the same word): the local player's actor slot; 0 at a solo game's first round
 0x23423c9  4          i32 geometryCheckTurn                           # (by use) the geometry table the next game packet checks (net_sendGamePacket: this % 5, then one on; 0 at a later round)
-0x23423cd  0x18       i32 geometryPick[6]                        # (unclear) a random position in each of the six geometry tables
+0x23423cd  0x18       i32 geometryPickUnread[6]                 # a random dword in each of the six part / item tables, picked each round; never read
 0x23423e5  0x18       i32 geometryPerRow[6]                      # (by use) the six geometry tables' entries per row (6 3 6 7 10 0x18: game_loadAllData; net_sendGamePacket's checks)
-0x23423fd  4          i32 roundClear2                            # (unclear)
+0x23423fd  4          i32 dataLossPending                       # 1: a data mismatch found (the server's parts check every 20 s, or a packet's map / part tables; dataLossCode says which): the next frame shows the data loss notice and leaves
 0x233cc30  4          i32 wholeSeconds                           # (by use) the seconds counted (match_inputState2: the fraction carried over)
-0x233cc54  4          float roundTimer                           # (unclear) 3 at a later round
+0x233cc54  4          float stateSendTimer                      # seconds to the local player's next full state send (sendFlags[local][0]; every 3 s)
 0x233ca30  0xf0       u32 cameraPresets[6][10]                   # (by use) the camera presets: six fields by ten camera modes (classes.c k_cameraPresets), copied into cameraSettings
 0x233cb20  0xf0       u32 cameraSettings[6][10]                  # the working set (the free camera, each later round)
-0x2340c68  0xc        i32 watchClear[3]                          # (unclear) cleared with watchedPlayer
-0x2342411  4          i32 roundClear4                            # (unclear)
-0x23424ee  4          i32 startCameraMode                        # (unclear) the camera mode a round starts with
+0x2340c68  0xc        i32 manualPick[3]                         # picked by hand while watching: [0] the followed player (followTime stops), [1] the camera preset (presetTime stops), [2] no one: the free camera
+0x2342411  4          i32 localRecordSet                        # 1: the local player's record is set this match (local_spawn does it once; cleared at a new match / team change)
+0x23424ee  4          i32 respawnCameraMode                     # the camera mode the local player respawns with (the view key cycles 1, 2, 3; the mode at the match's start)
 0x2340d39  4          float keyGuard                               # (by use) > 0: the quit / talk keys are ignored (0.1 s)
 0x234239d  4          float endTime                                # (by use) seconds left of a round's end (10 from the result)
 0x23423a5  4          float quitDelay                              # (by use) seconds before leaving after the round is over (3)
@@ -1509,7 +1509,7 @@ struct Scene 0x2343b0b                                          # the scene: the
 0x233ca28  8          float cameraAngle[2]                       # its pitch (within +-890) and heading (wrapped at 3600; the free camera)
 0x22f0514  4          i32 kingPlayer                             # (by use) the player marked first (markSolo)
 0x22f0518  8          i32 teamLeaders[2]                         # (by use) each team's leader (markTeam; -1 none)
-0x22f0410  4          i32 clockExtra                             # (unclear) cleared with the clock on a retry
+0x22f0410  4          i32 botsHoldFire                          # = Stage.botsHoldFire (the same word): 1 at the round's end (round_over); 0 again on a retry
 0x2340d00  4          i32 teamChanged                            # (by use) 1 once the team page has been answered
 0x2342415  4          i32 teamAsked                              # (by use) 1: the local player asked to play (START), the team to be given
 0x234241d  4          i32 chosenTeam                             # (by use) the team asked for (< 0: none)
@@ -1537,15 +1537,15 @@ struct Scene 0x2343b0b                                          # the scene: the
 0x2221fb8  0x10       i32 teamScores[4]                          # by team slot (this_get_0x2342381_463780 gives a team's slot)
 0x22e7068  0x40       float modelview[16]                        # the view matrix the overlay parts are drawn with (ViewVolume_captureMatrices)
 0x22e70fc  0x40       float projection[16]                       # and its projection (hud_pass)
-0x22e717c  4          i32 emblemMatch                            # (by use) 1: the match started with emblems shown (first_round); not read
+0x22e717c  4          i32 showExp                               # = Stage.showExp (the same word): 1 in a Ladder game (first_round)
 0x22f0408  4          i32 elapsed                                # the match's time in seconds
 0x22f040c  4          float timeFraction                         # (unclear) a 0..1 time value: render_drawObjects' float; the clock blinks red by it
 0x22f06a8  4          u32 flagGlTexture                          # GL texture of the flags, used while network
 0x22f86ac  4          i32 flagTexture                            # texture id of the flags (4 a row)
 0x22e7180  4          i32 gameMode                               # index into g_gameModeNames
 0x22e7184  4          i32 teamGame                               # 1: teams
-0x22e719c  4          i32 markersOff                             # (unclear) no team mate arrows or leader marks
-0x22e71a0  4          i32 leaderMarkOff                          # (unclear) the team mark replaces the leader mark / rank
+0x22e719c  4          i32 kingOfTheHill                         # = Stage.kingOfTheHill (the same word, game type 12): the first player is the king (markSolo); no team mate arrows or leader marks
+0x22e71a0  4          i32 platoon                               # = Stage.platoon (the same word, game type 13): each team's leader (markTeam, the most time) replaces the leader mark / rank
 0x22fbbd8  0x4200     char msgText[0x40][0x108]                  # message texts: four lines of 0x41 bytes per block
 0x233c318  0x280      MessageSlot msgRing[32]                    # messages waiting to be shown (ring of 32)
 0x233c598  4          u32 msgWrite                               # next slot msgRing gets written to
@@ -1554,7 +1554,7 @@ struct Scene 0x2343b0b                                          # the scene: the
 0x233c9e8  4          i32 frameFlag                              # (unclear) 1: state 2 presents its own frame
 0x233c9f8  4          i32 crosshairTexture
 0x233c9fc  4          i32 playing                                # 1: the local player plays; 0: watching watchedPlayer
-0x233c9f0  4          i32 showEmblems                            # 1: emblems in the ranking
+0x233c9f0  4          i32 ladderGame                            # 1: a Ladder (ranked) game (g_matchMode 2, the game room): emblems in the ranking, the level from the title's points, the scores committed every 300 s
 0x233cc10  4          i32 cameraMode
 0x233cc14  0xc        float cameraTarget[3]                      # (by use) the point the camera looks at (the camera path's mid point; cameraDir = it - cameraPos)
 0x233cc20  4          i32 inputState                             # the match's state: 1 loading, 2 playing, 3 free camera, 4 replay
@@ -1575,16 +1575,16 @@ struct Scene 0x2343b0b                                          # the scene: the
 0x2340d29  4          float recordTime                           # seconds recorded
 0x2340d35  4          i32 chatMode                               # 0 closed, 1 / 2 typing (team / all)
 0x2342399  4          i32 matchOver                              # (by use) 1: the result is shown
-0x23423a9  4          i32 stageCleared                           # (unclear) 0 with g_missionStage == g_missionProgress: "MISSION FAILED, RETRY"
+0x23423a9  4          i32 stageCleared                          # 1: the local player (or team) reached the score limit on the campaign's current stage (g_missionStage == g_progress): the progress moves on; 0: MISSION FAILED, RETRY
 0x2342381  0x14       i32 teamIds[5]                             # the teams by slot (free: < 0; match/teams.c)
 0x23423ad  4          i32 scoreLimit                             # > 0: the points still needed are shown
 0x23423b1  4          i32 timeLimit                              # minutes; > 0: the time left is shown
 0x2342401  4          i32 dataLossCode                           # shown when a game ends for lost data
 0x23423bd  4          i32 winnerTeam
-0x23423a1  4          i32 roundOver                              # (unclear)
+0x23423a1  4          i32 matchLeaving                          # 1: the match is being left: back to the menu when quitDelay runs out (quit, data loss, lost connection, unstable network, the last mission won); the HUD hides
 0x234240d  4          i32 localPlayer                            # the player at this machine (index into players)
 0x2342429  0x11       char mechName[0x11]                        # the ARM CENTER's mech being edited (menu/armc_mech.c)
-0x234243a  4          i32 mechValue                              # (unclear) kept with the player (record +0x44)
+0x234243a  4          i32 pilotLevel                            # the local pilot's level (g_selectedPilotLevel: the profile's factors by it; PlayerRecord.level)
 0x234244a  0x14       i32 mechParts[5]                           # head, chest, arm, leg, booster
 0x234245e  0x18       i32 mechItems[6]
 0x2342476  0x78       float mechColours[3][5][2]                 # the local mech's part colours (match_start, from g_savedColourChoices): [hue,
@@ -1600,9 +1600,9 @@ struct Scene 0x2343b0b                                          # the scene: the
 0x2342936  0x40       i32 rank[16]                               # each player's place (1: first; the HUD shows rank/rankCount)
 0x2342976  4          i32 rankCount
 0x234297a  4          i32 rankShown                              # (by use) the local player's place
-0x234297e  4          i32 counterRed                             # (unclear) three counts shown under the team box
-0x2342982  4          i32 counterBlue
-0x2342986  4          i32 counterGreen
+0x234297e  4          i32 redTeamCount                          # the players on the red side (scene_updateRanking; the HUD's three counts, red / green / blue)
+0x2342982  4          i32 blueTeamCount                         # the players on the blue side
+0x2342986  4          i32 noTeamCount                           # the players in the game without a team (watching)
 0x2342f02  4          float readyTimer                           # > 0: "ready" shown
 0x2342f06  0x40       char readyText[0x40]                       # shown while no countdown runs
 0x2343323  0x28       i32 cleared2343323[10]                     # (by use) only cleared (match_resetInputState)

@@ -51,7 +51,7 @@ match_470cb0,stage_newRound
 actor_45ebc0,actor_startingValues
 match_479a90,stage_updateEffects
 match_490d40,stage_updateObjects
-match_49d150,sound_updateListener
+match_49d150,profile_addMatchScores
 match_476410,particle_update
 match_4616e0,scene_saveNames
 match_461730,scene_restoreNames

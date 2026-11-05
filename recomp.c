@@ -860,7 +860,7 @@ void THISCALL playerRecord_markFree(void *stage, int p);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 THISCALL void scene_setTextureFolder(void *self, const char *s);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-THISCALL void player_setValue(char *self, int p, int v);
+THISCALL void player_setLevel(char *self, int p, int v);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 THISCALL void player_setTeam(void *self, int p, int team);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
@@ -880,7 +880,7 @@ THISCALL void space_resetUnits(char *self);
 /* ---- batch 9: menu resets, PTX video decoding helpers, weapon cycling ------------------------- */
 
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-void THISCALL mech_setValue(void *scene, int v);
+void THISCALL mech_setPilotLevel(void *scene, int v);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void THISCALL scene_setLocalTeam(void *scene, int team);
 
@@ -2874,10 +2874,10 @@ THISCALL void tex_upload(char *tex, DWORD name, DWORD mode);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 THISCALL void tex_upload2(char *scene);
 /* batch 60 (lifted/grp8.c) */
-/* 0x49d150 (thiscall) sound_updateListener: add the local player's hits/shots/kills since the last call to the totals
+/* 0x49d150 (thiscall) profile_addMatchScores: add the local player's hits/shots/kills since the last call to the totals
    (0x4de72e..) and remember the new values; without a replay running, send the result (room_keepText) */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-THISCALL void sound_updateListener(char *scene);
+THISCALL void profile_addMatchScores(char *scene);
 /* 0x43f460 chat_createEdit(parent): the chat input box: a font (12 px, charset by language), an edit control,
    its window procedure replaced, focus */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
@@ -3387,7 +3387,7 @@ int lobby_openConnection(void);
 void net_recv(void);
 /* batch 100 (lifted/grp46.c) */
 /* 0x461250 (thiscall on the scene) mech_setAll(name, v, team, head, chest, arm, leg, booster, item0..5): the
-   arm-customise screen's whole mech at once (mech_setName / mech_setValue / scene_setLocalTeam, the five part pickers, the six
+   arm-customise screen's whole mech at once (mech_setName / mech_setPilotLevel / scene_setLocalTeam, the five part pickers, the six
    item slots), and the edited player marked used (playerRecord_markUsed) */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void THISCALL mech_setAll(void *scene, const char *name, int v, int team, int head, int chest, int arm, int leg, int booster, int item0,
@@ -4725,11 +4725,11 @@ DWORD game_postMatch(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 int dplay_initConnection(int kind, const char *address);
 /* batch 179 (lifted/grp129.c): the king-of-the-hill ranking and a bullet's damage, both on the scene's actor records */
-/* 0x462150 msg_newKing() (thiscall on the scene, BUF in the tests): the teams' counts from the 16 player records
+/* 0x462150 scene_updateRanking() (thiscall on the scene, BUF in the tests): the teams' counts from the 16 player records
    (+0x1eccb88, stride 0x8888; empty slots by the player table 0x9f9840), the ranking of the players by frags
    (+0x1eccb54) and deaths (+0x1eccb58) into the tables +0x23428f6 / +0x2342936, a new leader announced */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-void THISCALL msg_newKing(void *scene);
+void THISCALL scene_updateRanking(void *scene);
 /* 0x460000 bullet_playImpactSound(target, attacker, damage, kind, a5, a6) (thiscall on the scene, ret 0x18): an active
    target's damage scaled by the attacker's weapon kind (0..9: the player's levels at 0x9f9068) and their flags
    (+0x1cd9798), taken from its shield and armour (+0x1cd94d0 / +0x1cd94d4), the hit recorded, a sound */
@@ -7397,7 +7397,7 @@ static void players_setup(void)
 	for (int a = 0; a < 17; a++) S32(BUF, 0x1cd94b4 + a * 0x8888) = irnd(-1, 8);
 	fill(BUF + g_a[0] * 0x47fd2 + 0x1561b68 + 0x44, 8); fill(BUF + 0x202e8ec, 4);
 }
-ST(player_setValue, players_setup();, (TC(void, 0x473a10, char *, int, int)(BUF, g_a[0], g_a[1]), 0), (player_setValue(BUF, g_a[0], g_a[1]), 0))
+ST(player_setLevel, players_setup();, (TC(void, 0x473a10, char *, int, int)(BUF, g_a[0], g_a[1]), 0), (player_setLevel(BUF, g_a[0], g_a[1]), 0))
 ST(player_setTeam, players_setup();, (TC(void, 0x473a80, char *, int, int)(BUF, g_a[0], g_a[1]), 0), (player_setTeam(BUF, g_a[0], g_a[1]), 0))
 static void effects_setup(void)
 {
@@ -7454,7 +7454,7 @@ static void scene_players_setup(void)
 	S32(SCENE, 0x234240d) = irnd(-2, 7); fill(SCENE + 0x234243a, 8); g_a[1] = irnd(-3, 5);
 	fill(BUF + (S32(SCENE, 0x234240d) & 7) * 0x47fd2 + 0x1561b68 + 0x44, 8);
 }
-ST(mech_setValue, scene_players_setup();, (TC(void, 0x461370, char *, int)(SCENE, g_a[1]), 0), (mech_setValue(SCENE, g_a[1]), 0))
+ST(mech_setPilotLevel, scene_players_setup();, (TC(void, 0x461370, char *, int)(SCENE, g_a[1]), 0), (mech_setPilotLevel(SCENE, g_a[1]), 0))
 ST(scene_setLocalTeam, scene_players_setup();, (TC(void, 0x4613a0, char *, int)(SCENE, g_a[1]), 0), (scene_setLocalTeam(SCENE, g_a[1]), 0))
 ST(hangul_glyphs, fill(g_a, 8); fill((void *)0x4d60e0, 4); fill((void *)0x4d23d4, 12);,
    CD(int, 0x4017d0, int, int)(g_a[0], g_a[1]), hangul_glyphs(g_a[0], g_a[1]))
@@ -10130,7 +10130,7 @@ static void hits_setup(void)
 	for (int i = 0; i < 8; i++) for (int k = 0; k < 6; k++) S32(SCENE + i * 0x8888, 0x1eccb54 + k * 4) = irnd(0, 500);
 	netstate_setup();
 }
-ST(sound_updateListener, hits_setup();, (TC(void, 0x49d150, char *)(SCENE), 0), (sound_updateListener(SCENE), 0))
+ST(profile_addMatchScores, hits_setup();, (TC(void, 0x49d150, char *)(SCENE), 0), (profile_addMatchScores(SCENE), 0))
 ST(chat_createEdit, G32(0x9dae74) = irnd(0, 2);, CALL_PLAIN(0x43f460, 0, 0x10010, 0, 0, 0), (DWORD)(chat_createEdit((DWORD)(0x10010))))
 /* its caller ignores the eax it leaves (tools/eaxuse.py) */
 ST(reg_readCharacterSettings, g_mockRegFail = !irnd(0, 4); g_paintStacks = 1; g_mockRegDisp = irnd(0, 2) ? 2 : 1; g_mockQueryFail = irnd(0, 1) ? rnd32() : 0;   /* values missing now and then */, (CALL_PLAIN(0x42bee0, 0, 0, 0, 0, 0), 0), (reg_readCharacterSettings(), 0))
@@ -15218,7 +15218,7 @@ static void newking_setup(void)
 	}
 	callee_ret(0x463740, (DWORD)irnd(0, 2));
 }
-ST(msg_newKing, newking_setup();, (TC(void, 0x462150, char *)(BUF), 0), (msg_newKing(BUF), 0))
+ST(scene_updateRanking, newking_setup();, (TC(void, 0x462150, char *)(BUF), 0), (scene_updateRanking(BUF), 0))
 /* the damage modes (0, 1, another), weapon kinds 0 .. 9 half the time, damage up to 600 and both teams */
 static void impact_setup(void)
 {
@@ -15255,7 +15255,7 @@ static const DWORD g_gi_435c20[] = { 0x4ded68, 0x4ded6c, 0x4ded88, 0x4ded8c, 0 }
 static const DWORD g_gb_435c20[] = { 0 };
 ST(settingsDialog_clicks, gen_setup(g_gs_435c20, g_gi_435c20, g_gb_435c20);, CALL_PLAIN(0x435c20, 0, g_a[0], g_a[1], g_a[2], g_a[3]), (DWORD)(settingsDialog_clicks()))
 /* scene_resetScores (thiscall on the scene): the 16 player records' scores cleared (and their team slots in team games,
-   +8 == 1), then the actor reset (0x45df90 on the actor table +0x1f36c8) and the ranking (msg_newKing), both
+   +8 == 1), then the actor reset (0x45df90 on the actor table +0x1f36c8) and the ranking (scene_updateRanking), both
    stubbed and thiscall; dplay_host: by connection kind 0xa0b418 (0..3, others) host through that kind's slot
    (8 arguments passed on) */
 static const DWORD g_stubResetScores[] = { 0x45df90, 0 | CS_THIS, 0x462150, 0 | CS_THIS, 0 };
@@ -17235,10 +17235,10 @@ static const STest g_stests[] = {
 	T(room_stepMap, 0, 200, 0), T(net_freeSlotsOf, 2, 40, 0), T(ptx_readBits, 1, 60, 0), T(actor_pickRandomWeapon, 0, 40, 0),
 	T(menu_pointInPolygon, 1, 4, 3000), T(shape_findByName, 1, 4, 2000), T(skelDat_findByName, 1, 4, 2000), T(path_stripExtension, 0, 4, 2000),
 	T(text_printableLength, 1, 4, 3000), T(Mat4_copy, 0, 4, 300), T(Mat4_transpose, 0, 4, 300), T(playerRecord_markFree, 0, 4, 100),
-	T(scene_setTextureFolder, 0, 4, 300), T(player_setValue, 0, 4, 600), T(player_setTeam, 0, 4, 600), T(stage_freeProjectile, 0, 4, 1000),
+	T(scene_setTextureFolder, 0, 4, 300), T(player_setLevel, 0, 4, 600), T(player_setTeam, 0, 4, 600), T(stage_freeProjectile, 0, 4, 1000),
 	T(model_clearTint, 0, 4, 300), T(shape_recolourMaterials, 0, 4, 300), T(ViewVolume_reset, 0, 4, 50), T(space_resetUnits, 0, 4, 500),
 	/* batch 9 */
-	T(mech_setValue, 0, 4, 600), T(scene_setLocalTeam, 0, 4, 600), T(hangul_glyphs, 1, 60, 0), T(ptx_readDcDiff, 0, 150, 0),
+	T(mech_setPilotLevel, 0, 4, 600), T(scene_setLocalTeam, 0, 4, 600), T(hangul_glyphs, 1, 60, 0), T(ptx_readDcDiff, 0, 150, 0),
 	T(ptx_readAcSymbol, 0, 150, 0), T(ptx_toRgb, 0, 4, 300), T(ptx_initYCbCrTables, 0, 4, 0), T(ptx_layoutBlocks, 0, 4, 600),
 	T(menuState300_enter, 0, 4, 0), T(armc_initCameraPoints, 0, 4, 0), T(armc_initPartBoxes, 0, 4, 0), T(room_openDialog4d, 0, 4, 0),
 	T(room_enterRoomList, 0, 4, 0), T(missionsel_layout, 0, 8, 0), T(pilotSelect_layout, 0, 8, 0), T(actor_resetSlot, 0, 4, 300),
@@ -17456,7 +17456,7 @@ static const STest g_stests[] = {
 	T(reg_writeCharacterSettings, 0, 40, 0), T(room_keepSettings, 0, 40, 0), T(room_networkEvents, 0, 40, 0), T(gfx_initGLState, 0, 40, 0),
 	T(tex_upload, 0, 400, 0), T(tex_upload2, 0, 400, 0),
 	/* batch 60 */
-	T(sound_updateListener, 0, 400, 0), T(chat_createEdit, 0, 40, 0), T(reg_readCharacterSettings, 0, 1000, 0), T(gfx_saveScreenshot, 1, 400, 0),
+	T(profile_addMatchScores, 0, 400, 0), T(chat_createEdit, 0, 40, 0), T(reg_readCharacterSettings, 0, 1000, 0), T(gfx_saveScreenshot, 1, 400, 0),
 	T(catalogue_loadComponents, 1, 400, 0),
 	/* batch 61 */
 	T(space_initBy, 0, 400, 0), T(space_setBy, 0, 400, 0), T(scene_initLevelGrid, 0, 40, 0), T(factor_initBy, 0, 400, 0),
@@ -17746,7 +17746,7 @@ static const STest g_stests[] = {
 	/* batch 178 */
 	T(game_postMatch, 0, 200, 0), T(dplay_initConnection, 0, 400, 0),
 	/* batch 179 */
-	T(msg_newKing, 0, 1000, 0), T(bullet_playImpactSound, 0, 400, 0),
+	T(scene_updateRanking, 0, 1000, 0), T(bullet_playImpactSound, 0, 400, 0),
 	/* batch 180 */
 	T(menu_drawBackground, 0, 200, 0), T(dplaySlot0_open, 0, 200, 0), T(dplaySlot1_open, 0, 200, 0), T(dplaySlot2_open, 0, 200, 0),
 	T(dplaySlot3_open, 0, 200, 0), T(settingsDialog_clicks, 0, 200, 0), T(scene_resetScores, 0, 200, 0), T(dplay_host, 0, 200, 0),
@@ -18131,12 +18131,12 @@ static const struct { DWORD addr; void *fn; const char *name; } g_hooks3[] = {
 	{ 0x46b0c0, (void *)skelDat_findByName, "skelDat_findByName" }, { 0x46cad0, (void *)path_stripExtension, "path_stripExtension" },
 	{ 0x402590, (void *)text_printableLength, "text_printableLength" }, { 0x47d5a0, (void *)Mat4_copy, "Mat4_copy" },
 	{ 0x47d830, (void *)Mat4_transpose, "Mat4_transpose" }, { 0x4743b0, (void *)playerRecord_markFree, "playerRecord_markFree" },
-	{ 0x461ec0, (void *)scene_setTextureFolder, "scene_setTextureFolder" }, { 0x473a10, (void *)player_setValue, "player_setValue" },
+	{ 0x461ec0, (void *)scene_setTextureFolder, "scene_setTextureFolder" }, { 0x473a10, (void *)player_setLevel, "player_setLevel" },
 	{ 0x473a80, (void *)player_setTeam, "player_setTeam" }, { 0x4799f0, (void *)stage_freeProjectile, "stage_freeProjectile" },
 	{ 0x4675f0, (void *)model_clearTint, "model_clearTint" }, { 0x4665c0, (void *)shape_recolourMaterials, "shape_recolourMaterials" },
 	{ 0x484260, (void *)ViewVolume_reset, "ViewVolume_reset" }, { 0x481760, (void *)space_resetUnits, "space_resetUnits" },
 	/* batch 9 */
-	{ 0x461370, (void *)mech_setValue, "mech_setValue" }, { 0x4613a0, (void *)scene_setLocalTeam, "scene_setLocalTeam" },
+	{ 0x461370, (void *)mech_setPilotLevel, "mech_setPilotLevel" }, { 0x4613a0, (void *)scene_setLocalTeam, "scene_setLocalTeam" },
 	{ 0x4017d0, (void *)hangul_glyphs, "hangul_glyphs" }, { 0x46f190, (void *)ptx_readDcDiff, "ptx_readDcDiff" },
 	{ 0x46f2a0, (void *)ptx_readAcSymbol, "ptx_readAcSymbol" }, { 0x46e830, (void *)ptx_toRgb, "ptx_toRgb" },
 	{ 0x46efd0, (void *)ptx_initYCbCrTables, "ptx_initYCbCrTables" }, { 0x46ea30, (void *)ptx_layoutBlocks, "ptx_layoutBlocks" },
@@ -18492,7 +18492,7 @@ static const struct { DWORD addr; void *fn; const char *name; } g_hooks3[] = {
 	{ 0x43e610, (void *)room_networkEvents, "room_networkEvents" }, { 0x42f150, (void *)gfx_initGLState, "gfx_initGLState" },
 	{ 0x456520, (void *)tex_upload, "tex_upload" }, { 0x473610, (void *)tex_upload2, "tex_upload2" },
 	/* batch 60 */
-	{ 0x49d150, (void *)sound_updateListener, "sound_updateListener" }, { 0x43f460, (void *)chat_createEdit, "chat_createEdit" },
+	{ 0x49d150, (void *)profile_addMatchScores, "profile_addMatchScores" }, { 0x43f460, (void *)chat_createEdit, "chat_createEdit" },
 	{ 0x42bee0, (void *)reg_readCharacterSettings, "reg_readCharacterSettings" }, { 0x4734d0, (void *)gfx_saveScreenshot, "gfx_saveScreenshot" },
 	{ 0x473780, (void *)catalogue_loadComponents, "catalogue_loadComponents" },
 	/* batch 61 */
@@ -18866,7 +18866,7 @@ static const struct { DWORD addr; void *fn; const char *name; } g_hooks3[] = {
 	/* batch 178 */
 	{ 0x420100, (void *)game_postMatch, "game_postMatch" }, { 0x453a90, (void *)dplay_initConnection, "dplay_initConnection" },
 	/* batch 179 */
-	{ 0x462150, (void *)msg_newKing, "msg_newKing" }, { 0x460000, (void *)bullet_playImpactSound, "bullet_playImpactSound" },
+	{ 0x462150, (void *)scene_updateRanking, "scene_updateRanking" }, { 0x460000, (void *)bullet_playImpactSound, "bullet_playImpactSound" },
 	/* batch 180 */
 	{ 0x441740, (void *)menu_drawBackground, "menu_drawBackground" }, { 0x454940, (void *)dplaySlot0_open, "dplaySlot0_open" },
 	{ 0x454a50, (void *)dplaySlot1_open, "dplaySlot1_open" }, { 0x454b70, (void *)dplaySlot2_open, "dplaySlot2_open" },

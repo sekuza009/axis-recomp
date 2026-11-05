@@ -46,7 +46,7 @@ void THISCALL (notices_clearAll)(Scene *scene)
 	scene->joinPending = 0;
 	scene->changePending = 0;
 	scene->endEvents[0] = scene->endEvents[1] = scene->endEvents[2] = 0;
-	scene->event6Pending = 0;
+	scene->cheatPending = 0;
 }
 
 /* 0x4634e0, 0x463530, 0x463550, 0x4635b0, 0x463610: one notice raised, with its values and text */

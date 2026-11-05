@@ -459,7 +459,7 @@ static void main_draw(Scene *scene)
 		main_counters(scene, player);
 	if (scene->playing == 1) {
 		part(HUD_CENTRE);
-		if (scene->showEmblems == 1)
+		if (scene->ladderGame == 1)
 			main_score(scene, player, p);
 		part(HUD_RIGHT);
 		if (scene->playing == 1)
@@ -482,14 +482,14 @@ static void main_draw(Scene *scene)
 
 	/* top right: the solo mark, the team mark, the leader mark (rank 1 with kills), else "rank/count" */
 	part(HUD_CORNER);
-	if (scene->markersOff == 1) {
+	if (scene->kingOfTheHill == 1) {
 		if (player->markSolo == 1) {
 			int x = gfx_getWidth() - 0x40;
 			glEnable(GL_TEXTURE_2D);
 			main_cornerMark(x, scene->markerTexture, 0.0f, 0.25f);
 			return;
 		}
-	} else if (scene->leaderMarkOff == 1) {
+	} else if (scene->platoon == 1) {
 		if (player->markTeam == 1) {
 			int x = gfx_getWidth() - 0x40;
 			glEnable(GL_TEXTURE_2D);

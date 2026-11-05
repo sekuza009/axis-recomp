@@ -3,7 +3,7 @@
 0x4dbc68,int,g_armcPreview,src/menu/armc_misc.c,g_armcPreview
 0x4dc54c,int,g_armcSessionMade,src/menu/armc_misc.c,g_armcSessionMade
 0x4dc790,int,g_armcState,src/menu/armc_misc.c,g_armcState
-0x9f1818,int,g_armcValue,src/menu/armc_items.c,g_armcValue
+0x9f1818,int,g_selectedPilotLevel,src/menu/armc_items.c,g_selectedPilotLevel
 0x4ddce8,int,g_bindPage,src/menu/setup_keys.c,g_bindPage
 0x4dddc8,int,g_bindWaiting,src/menu/setup_keys.c,g_bindWaiting
 0xa21704,int,g_bitPos,src/app/ptx_decode.c,g_ptxBitPos

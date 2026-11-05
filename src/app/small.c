@@ -232,8 +232,8 @@ static void player_seen(Stage *stage, int p)
 		*seen = p + 1;
 }
 
-/* 0x473a10: player record p's value +0x44 set, and that of every actor of player p (+0x114) */
-void THISCALL (player_setValue)(Stage *stage, int p, int v)
+/* 0x473a10: player record p's level set, and that of every actor of player p */
+void THISCALL (player_setLevel)(Stage *stage, int p, int v)
 {
 	player_seen(stage, p);
 	stage->playerRecords[p].level = v;
@@ -744,7 +744,7 @@ void THISCALL (playerRecord_setFromActorRecord)(Stage *stage, int p, const u8 *r
 {
 	const MapPlayer *mp = (const MapPlayer *)rec;
 	player_setName(stage, p, mp->name);
-	player_setValue(stage, p, mp->value);
+	player_setLevel(stage, p, mp->value);
 	player_setTeam(stage, p, mp->team);
 	actor_setActorTypeHeadInfoBy(stage, p, mp->parts[0]);
 	actor_setActorTypeChestInfoBy(stage, p, mp->parts[1]);
@@ -762,7 +762,7 @@ void THISCALL (playerRecord_set)(Stage *stage, int p, const char *name, int v, i
                              int booster, int i0, int i1, int i2, int i3, int i4, int i5)
 {
 	player_setName(stage, p, name);
-	player_setValue(stage, p, v);
+	player_setLevel(stage, p, v);
 	player_setTeam(stage, p, team);
 	actor_setActorTypeHeadInfoBy(stage, p, head);
 	actor_setActorTypeChestInfoBy(stage, p, chest);

@@ -428,7 +428,7 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 				}
 				AC->scanTime = 0.5f;   /* 0.5 */
 			}
-			if (AC->botTarget >= 0 && ST->holdFire == 0) {   /* fire in bursts */
+			if (AC->botTarget >= 0 && ST->botsHoldFire == 0) {   /* fire in bursts */
 				v = fsub_m(fld_m(&AC->burstPause), dt);
 				AC->burstPause = (float)v;
 				if (!(v > 0)) {

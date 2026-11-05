@@ -653,7 +653,7 @@ typedef struct { float r, g, b, a; } Colour;
 
 /* ---- the stage's player records (thiscall on the stage; p: the player) ---- */
 #define player_setName(stage, p, name) GAME_THISFN(player_setName, 0x473940, void, void *, int, const char *)(stage, p, name)
-#define player_setValue(stage, p, v) GAME_THISFN(player_setValue, 0x473a10, void, void *, int, int)(stage, p, v)   /* player_setValue */
+#define player_setLevel(stage, p, v) GAME_THISFN(player_setLevel, 0x473a10, void, void *, int, int)(stage, p, v)   /* player_setLevel */
 #define player_setTeam(stage, p, team) GAME_THISFN(player_setTeam, 0x473a80, void, void *, int, int)(stage, p, team)
 #define actor_setActorTypeHeadInfoBy(stage, p, i) GAME_THISFN(actor_setActorTypeHeadInfoBy, 0x473b10, int, Stage *, int, int)(stage, p, i)
 #define actor_setActorTypeChestInfoBy(stage, p, i) GAME_THISFN(actor_setActorTypeChestInfoBy, 0x473c20, int, Stage *, int, int)(stage, p, i)
@@ -664,10 +664,10 @@ typedef struct { float r, g, b, a; } Colour;
 #define player_markUsed(stage, p) GAME_THISFN(playerRecord_markUsed, 0x474390, void, void *, int)(stage, p)   /* playerRecord_markUsed */
 /* the ARM CENTER's mech setters (menu/armc_mech.c), thiscall on the scene */
 #define mech_setName(scene, name) GAME_THISFN(mech_setName, 0x461320, void, Scene *, const char *)(scene, name)
-#define mech_setValue(scene, v) GAME_THISFN(mech_setValue, 0x461370, void, Scene *, int)(scene, v)
+#define mech_setPilotLevel(scene, v) GAME_THISFN(mech_setPilotLevel, 0x461370, void, Scene *, int)(scene, v)
 #define scene_setLocalTeam(scene, team) GAME_THISFN(scene_setLocalTeam, 0x4613a0, void, Scene *, int)(scene, team)
 #define escMenu_open(scene, page, item) GAME_THISFN(escMenu_open, 0x49ca20, void, Scene *, int, int)(scene, page, item)   /* the Esc menu opened on page */
-#define sound_updateListener(scene) GAME_THISFN(sound_updateListener, 0x49d150, void, Scene *)(scene)
+#define profile_addMatchScores(scene) GAME_THISFN(profile_addMatchScores, 0x49d150, void, Scene *)(scene)
 #define msg_playerChangedTeam(scene, player, team) GAME_THISFN(msg_playerChangedTeam, 0x462e30, void, Scene *, int, int)(scene, player, team)
 #define msg_playerJoinedTeam(scene, player, team) GAME_THISFN(msg_playerJoinedTeam, 0x462d30, void, Scene *, int, int)(scene, player, team)
 #define notice_changedTeam(scene, a, b, text) GAME_THISFN(notice_changedTeam, 0x463610, void, Scene *, int, int, const char *)(scene, a, b, text)
@@ -877,7 +877,7 @@ typedef struct { float r, g, b, a; } Colour;
 #define text_setBottom(v) GAME_FN(text_setBottom, 0x4017c0, int, int)(v)   /* the text's bottom (0x4ad494) */
 #define timer_now() GAME_FN(timer_now, 0x4301e0, long double, void)()   /* the time in ticks of the shifted performance counter, 80-bit */
 #define QueryPerformanceFrequency(out) IMPORT(0x4a913c, int, u64 *)(out)
-#define msg_newKing(scene) GAME_THISFN(msg_newKing, 0x462150, void, void *)(scene)   /* the ranking and its "new king" message */
+#define scene_updateRanking(scene) GAME_THISFN(scene_updateRanking, 0x462150, void, void *)(scene)   /* the ranking and its "new king" message */
 #define ResetEvent(event) IMPORT(0x4a9168, int, void *)(event)
 #define SetEvent(event) IMPORT(0x4a9178, int, void *)(event)
 

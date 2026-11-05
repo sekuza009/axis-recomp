@@ -69,21 +69,21 @@ static void make_rotation(Scene *s)
    machine that joined has none yet, and a solo game makes player 0 with rotation on (0x9da3e0) */
 static void first_round(Scene *s)
 {
-	s->showEmblems = g_matchMode == 2;
-	if (s->showEmblems == 1) {
-		BITS(s->emblemTime) = 0x43960000;   /* 300 */
+	s->ladderGame = g_matchMode == 2;
+	if (s->ladderGame == 1) {
+		BITS(s->scoreCommitTimer) = 0x43960000;   /* 300 */
 		g_titleScore++;
-		s->emblemMatch = 1;
+		s->showExp = 1;
 	} else
-		s->emblemMatch = 0;
+		s->showExp = 0;
 	make_rotation(s);
 	if (s->rotationCount > 0)
 		game_setGameTypeFlags(STAGE(s), s->rotation[s->rotationAt].mode);
 	s->scoreLimit = g_fragLimit;
 	s->timeLimit = g_timeLimit;
 	strcpy(s->mechName, g_matchPlayerName);
-	s->mechValue = g_armcValue;
-	if (s->showEmblems == 1) {
+	s->pilotLevel = g_selectedPilotLevel;
+	if (s->ladderGame == 1) {
 		s->levelPoints = g_titlePoints;
 		s->level = actor_levelFromValue(s->levelPoints);
 		if (s->level < 1 || s->level > 20)
@@ -125,7 +125,7 @@ static void first_round(Scene *s)
 		g_netHostGone = 0;
 		s->localPlayer = 0;
 		player_setName(STAGE(s), 0, s->mechName);
-		s->soloClear = 0;
+		s->playerActor = 0;
 		g_mapRotation = 1;
 		s->rankingShown = 0;
 	}
@@ -155,12 +155,12 @@ static void later_round(Scene *s)
 	static const u32 rows[6] = { sizeof(HeadType) / 4, sizeof(ChestType) / 4, sizeof(ArmType) / 4, sizeof(LegType) / 4, sizeof(BoosterType) / 4, sizeof(ActorInfo) / 4 };   /* (the records in dwords) */
 	s->geometryCheckTurn = 0;
 	for (int k = 0; k < 6; k++)
-		s->geometryPick[k] = random_below(((u32)*counts[k] * rows[k] * 4) >> 2);
-	s->roundClear2 = 0;
+		s->geometryPickUnread[k] = random_below(((u32)*counts[k] * rows[k] * 4) >> 2);
+	s->dataLossPending = 0;
 	s->dataLossCode = -1;
 	s->wholeSeconds = 0;
 	BITS(s->secondFraction) = 0;
-	s->roundTimer = 3.0f;
+	s->stateSendTimer = 3.0f;
 	for (int k = 0; k < 3; k++)
 		s->cameraPos[k] = s->cameraSaved[k];
 	BITS(s->cameraAngle[0]) = s->cameraSaved[3];
@@ -171,19 +171,19 @@ static void later_round(Scene *s)
 	s->cameraMode = 1;
 	stage_selectActor(STAGE(s), -1);
 	s->watchedPlayer = -1;
-	memset(s->watchClear, 0, sizeof s->watchClear);
+	memset(s->manualPick, 0, sizeof s->manualPick);
 	s->playing = 0;
 	(void)timer_getGameTime((u8 *)&s->timer);
 	g_mouseX = gfx_getWidth() / 2;
 	g_mouseY = gfx_getHeight() / 2;
 	sound_setVolume(g_soundVolume);
 	music_setVolumeSetting(g_musicVolume);
-	s->roundClear4 = 0;
+	s->localRecordSet = 0;
 	s->teamAsked = 0;
 	if (s->localPlayer >= 0)
 		s->players[s->localPlayer].inPlay = 0;
 	scene_setLocalTeam(s, -1);
-	s->startCameraMode = s->cameraMode;
+	s->respawnCameraMode = s->cameraMode;
 	s->cameraSlot = -1;   /* (the -1 still in a register since dataLossCode) */
 	s->rankShown = -1;
 	scene_resetScores(s);
@@ -194,7 +194,7 @@ static void later_round(Scene *s)
 	(*(int *)&s->keyGuard) = 0;
 	s->matchOver = 0;
 	(*(int *)&s->endTime) = 0;
-	s->roundOver = 0;
+	s->matchLeaving = 0;
 	(*(int *)&s->quitDelay) = 0;
 	teams_setup(s);
 	BITS(s->msgFade) = 0;
@@ -263,7 +263,7 @@ void THISCALL (scene_reset)(u8 *s)
 	st->startCount = 0;
 	st->itemCount = 0;
 	st->lastPickup = -1;
-	st->clockSeconds = (*(int *)&st->clockFraction) = st->holdFire = 0;
+	st->clockSeconds = (*(int *)&st->clockFraction) = st->botsHoldFire = 0;
 	s[0x20fcd4c] = 0;
 	st->kingActor = -1;
 	memset(st->teamCommanders, 0xff, 0x64 * 4);
