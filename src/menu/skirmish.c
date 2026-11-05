@@ -6,12 +6,12 @@
 static void list_up(void) { skirmish_cursorUp(); }
 static void list_down(void) { skirmish_cursorDown(); }
 
-/* 0x443f20: the skirmish list's keys: 0x4e0cd4 or fire reads the chosen mission's block (mission_saveAxisMis), back
+/* 0x443f20: the skirmish list's keys: 0x4e0cd4 or fire reads the chosen mission's block (mission_loadBriefing), back
    or cancel leaves, up / down move the cursor with a key repeat (the original leaves eax to callers that ignore it) */
 void (skirmish_processKeys)(void)
 {
 	if (input_justPressed(g_dikA) == 1 || input_justPressed(g_keyClick) == 1) {
-		mission_saveAxisMis(g_missionPicked);
+		mission_loadBriefing(g_missionPicked);
 		return;
 	}
 	if (input_justPressed(g_keyBack) == 1 || input_justPressed(g_keyCancel2) == 1) {
@@ -22,7 +22,7 @@ void (skirmish_processKeys)(void)
 		key_repeat(g_keyDown, &g_repeatDown, list_down);
 }
 
-/* ---- the briefing: the text block 0x9ef1ec (read by mission_saveAxisMis), from offset 0x9eeba4 up to 0x9ef200;
+/* ---- the briefing: the text block 0x9ef1ec (read by mission_loadBriefing), from offset 0x9eeba4 up to 0x9ef200;
    0x9ef1f4 characters of it shown so far, copied to 0x9f1064 ---- */
 
 /* 0x445520: the briefing typed out: while not done or skipped, every 1.4 of the clock (frame times added) shows one

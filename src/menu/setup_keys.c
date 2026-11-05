@@ -8,7 +8,7 @@
 #define TAB_CONTROL 2
 #define TAB_TOP 0x29a
 
-#define g_graphicInUse ((u32 *)g_graphicSettings)               /* the graphics settings in use (g_items3D is the third) */
+#define g_graphicInUse ((u32 *)g_graphicSettings)               /* the graphics settings in use (g_highDetail is the third) */
 
 /* 0x422b30: the open tab's clicks (nothing while a dialog is up): controls, sound, graphics or the top page */
 void (setup_tabClicks)(void)
@@ -77,7 +77,7 @@ static void sound_ok(void)
 	g_soundSettings[3] = g_soundEdited[3];
 	g_menuVolume = (volume * 5 - 500) * 4;
 	sound_playMenu(0);
-	cfg_loadAxisCfg();
+	cfg_writeAxisCfg();
 	g_setupPage = 0;
 	music_shutdown();
 	music_play((const char *)STR(0x4b01cc, "music/Netsphere.mp3"));
@@ -104,7 +104,7 @@ static u32 graphics_apply(void)
 	sound_playMenu(0);
 	for (int i = 0; i < 7; i++)
 		g_graphicInUse[i] = g_graphicEdited[i];
-	u32 r = cfg_loadAxisCfg();   /* cfg_loadAxisCfg */
+	u32 r = cfg_writeAxisCfg();   /* cfg_writeAxisCfg */
 	if (!same)
 		return ((u32)app_closeWindow(1));   /* app_closeWindow */
 	g_setupPage = 0;
@@ -432,7 +432,7 @@ void (setup_controlTabKeys)(void)
 	if (input_justPressed(g_dikA) == 1) {
 		sound_playMenu(0);
 		memcpy((void *)OBJ(g_controls), (const void *)OBJ(g_controlsEdit), 0x44 * 4);
-		cfg_loadAxisCfg();
+		cfg_writeAxisCfg();
 		g_setupPage = 0;
 		return;
 	}
@@ -491,7 +491,7 @@ void (setup_controlTabClicks)(void)
 		} else if (on == 4) {
 			sound_playMenu(0);
 			memcpy((void *)OBJ(g_controls), (const void *)OBJ(g_controlsEdit), 0x110);
-			cfg_loadAxisCfg();
+			cfg_writeAxisCfg();
 			g_setupPage = 0;
 		} else if (on == 5) {
 			sound_playMenu(0);

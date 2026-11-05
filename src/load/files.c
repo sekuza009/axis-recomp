@@ -171,7 +171,7 @@ u32 (cfg_writePlayer)(void *f)
 /* 0x42cba0: the key bindings' section of axis.cfg: a "set_key <action><1|2> " line for each binding (0x4def00, 64
    of them, written in the menu's order) with its key's name (0x4b0750), then the mouse: convert and smooth (ON / OFF:
    0x4df000, 0x4df004), the sensitivity (0x4df008) and the crosshairs (0x4df00c). Returns the last fputs */
-u32 (cfg_keyBindings)(void *f)
+u32 (cfg_writeKeyBindings)(void *f)
 {
 #define FPUTS(s) GAME_CDECL(0x49f167, u32, const char *, void *)((const char *)RELOC(s), f)
 	static const struct { u32 line; u8 binding; } keys[64] = {
@@ -233,7 +233,7 @@ u32 (cfg_keyBindings)(void *f)
 
 /* 0x42d730: axis.cfg written in the data folder (0x9dae7c): its header, then the player, server, sound, graphics and
    key binding sections (the original does not check that the file opened). Returns fclose's eax */
-u32 (cfg_loadAxisCfg)(void)
+u32 (cfg_writeAxisCfg)(void)
 {
 	char path[0x184];
 	strcpy(path, g_dataDir);
@@ -241,7 +241,7 @@ u32 (cfg_loadAxisCfg)(void)
 	void *f = crt_fopen(path, (const char *)STR(0x4b21a4, "wt"));
 	crt_fputs((const char *)STR(0x4b0f50, "AXIS CONFIGURATION FILE Master ver 1...."), f);   /* fputs */
 	crt_fputs((const char *)STR(0x4b182c, "\n"), f);
-	static const u32 sections[5] = { FN_ADDR(cfg_writePlayer, 0x42c650), FN_ADDR(cfg_writeServer, 0x42c6f0), FN_ADDR(cfg_writeSound, 0x42c910), FN_ADDR(cfg_writeGraphic, 0x42c9f0), FN_ADDR(cfg_keyBindings, 0x42cba0) };   /* player .. key bindings */
+	static const u32 sections[5] = { FN_ADDR(cfg_writePlayer, 0x42c650), FN_ADDR(cfg_writeServer, 0x42c6f0), FN_ADDR(cfg_writeSound, 0x42c910), FN_ADDR(cfg_writeGraphic, 0x42c9f0), FN_ADDR(cfg_writeKeyBindings, 0x42cba0) };   /* player .. key bindings */
 	for (int k = 0; k < 5; k++)
 		GAME_CDECL(sections[k], u32, void *)(f);
 	return fclose(f);
@@ -249,7 +249,7 @@ u32 (cfg_loadAxisCfg)(void)
 
 /* 0x43f8b0: the data files spoilt: a marker word (0xa1a2a3a4, 0xb1b2b3b4, 0xc1c2c3c4) written at offset 2000 of
    three files, then two more deleted. Returns the last DeleteFileA's eax */
-u32 (app_deleteDataFiles)(void)
+u32 (app_spoilDataFiles)(void)
 {
 	static const u32 files[3] = { STR(0x4b03c4, "initdata\\profeng.dat"), STR(0x4b03dc, "initdata\\profkor.dat"), STR(0x4b03f4, "initdata\\skirmish.dat") };
 	static const u32 marks[3] = { 0xa1a2a3a4, 0xb1b2b3b4, 0xc1c2c3c4 };
@@ -360,7 +360,7 @@ int (autoplay_listFiles)(void)
 
 /* 0x41e260: eight check bytes read from the launcher's file (0x4b03b4; each at its own offset) into 0x4dd988 (12
    bytes cleared first). 1, or 0 when the file is missing */
-int (app_checkLauncherRunning)(void)
+int (app_readLauncherCheck)(void)
 {
 	static const u16 offsets[8] = { 0x1a2b, 0x1a2c, 0x2dbf, 0x2dc0, 0x38a4, 0x38a5, 0x55f1, 0x55f2 };
 	memset((void *)OBJ(g_launcherCheck), 0, 12);
@@ -474,7 +474,7 @@ u32 (mission_loadAxisMis)(void)
    each of the 0x9ef2c0 entries and the blocks before it (their blockSize) into a new buffer
    0x9ef1ec (the old one freed); its size into 0x9ef200, the settings page's state cleared and the page set to
    20 (the mission settings). Without the file, message 0xb and its eax; otherwise 0 */
-u32 (mission_saveAxisMis)(int k)
+u32 (mission_loadBriefing)(int k)
 {
 	void *f = mis_open();
 	if (!f)
@@ -491,7 +491,7 @@ u32 (mission_saveAxisMis)(int k)
 	crt_fread(block, mission[k].blockSize, 1, f);
 	fclose(f);
 	memset((void *)OBJ(g_undoStack), 0, 0xc8);
-	g_unusedMissionSaveWord = 0;
+	g_unusedBriefingWord = 0;
 	memset((void *)OBJ(g_briefingText), 0, 0x640);
 	memset((void *)OBJ(g_missionClearBuffer), 0, 0x640);
 	g_briefingShown = 0;
@@ -520,7 +520,7 @@ u32 (cfg_writeGraphic)(void *f)
 	FPUTS(STR(0x4b1b00, "set_graphic colordepth "));
 	FPUTS(g_videoDepth ? STR(0x4b1af8, "32\n") : STR(0x4b1afc, "16\n"));
 	FPUTS(STR(0x4b1adc, "set_graphic polygondetail "));
-	FPUTS(g_items3D ? STR(0x4b1acc, "HIGH\n") : STR(0x4b1ad4, "LOW\n"));
+	FPUTS(g_highDetail ? STR(0x4b1acc, "HIGH\n") : STR(0x4b1ad4, "LOW\n"));
 	for (int i = 0; i < 4; i++) {
 		FPUTS(switches[i]);
 		FPUTS(GAME_VAR(int, OBJ(g_cfgSwitches) + i * 4) == 1 ? STR(0x4b17e4, "ON\n") : STR(0x4b17dc, "OFF\n"));
@@ -1062,7 +1062,7 @@ static void skip_line(void *f)
    spaces, then cut once more by str_dropLast, into 0x4dedb0), the corporation (RED 0, BLUE 1, YELLOW 2, else 0;
    0x4dedd0) and the sex (ON: 1; 0x4dedd4); then one more line. The original leaves fgets's eax to callers that
    ignore it */
-void (cfg_readLines)(void *f)
+void (cfg_readPlayer)(void *f)
 {
 	char value[0x84];
 	read_value(f, value, 1);
@@ -1080,9 +1080,10 @@ void (cfg_readLines)(void *f)
 	skip_line(f);
 }
 
-/* 0x42e080: four lines read back: two numbers (0x4e0c90, 0x4e0c94) and two switches (ON: 1; 0x4e0c98, 0x4e0c9c),
+/* 0x42e080: the sound section read back: the two volumes (0x4e0c90, 0x4e0c94) and two switches (ON: 1; 3D sound,
+   stereo reverse),
    then one more line. The original leaves fgets's eax to callers that ignore it */
-void (cfg_readAudioLines)(void *f)
+void (cfg_readSound)(void *f)
 {
 	char value[0x84];
 	read_value(f, value, 0);
@@ -1134,7 +1135,7 @@ static int named(const char *value, const u32 *names, int count)
    the map (0 .. 21, else 0; 0x4ded40), the players (0 .. 16, else 8; 0x4ded41), a switch (ON; 0x4ded42), the game
    type (TEAM DEATH MATCH 1 .. ACCEPT ADVANCED MODE 14, else 0; 0x4ded43), two limits (above 250: 30; 0x4ded44 /
    0x4ded45); then one more line */
-void (cfg_gameTypeNames)(void *f)
+void (cfg_readServer)(void *f)
 {
 	static const u32 types[14] = { STR(0x4b22b8, "TEAM DEATH MATCH"), STR(0x4b22a8, "SUDDEN DEATH"), STR(0x4b2294, "TEAM SUDDEN DEATH"), STR(0x4b2284, "SHOTGUN ARENA"), STR(0x4b2270, "TEAM SHOTGUN ARENA"), STR(0x4b2260, "IONCANNON ARENA"), STR(0x4b2248, "TEAM IONCANNON ARENA"), STR(0x4b2238, "ROCKET ARENA"),
 	                               STR(0x4b2224, "TEAM ROCKET ARENA"), STR(0x4b2214, "GLADIATOR ARENA"), STR(0x4b21fc, "TEAM GLADIATOR ARENA"), STR(0x4b21e8, "KING ON THE HILL"), STR(0x4b21d8, "PLATOON MODE"), STR(0x4b21c0, "ACCEPT ADVANCED MODE") };
@@ -1188,14 +1189,14 @@ void (cfg_readGraphics)(void *f)
 		else if (n == 1)
 			g_videoDepth = !strcmp(b.value, (const char *)STR(0x4b22d4, "32"));
 		else if (n == 2)
-			g_items3D = !strcmp(b.value, (const char *)STR(0x4b22cc, "HIGH"));
+			g_highDetail = !strcmp(b.value, (const char *)STR(0x4b22cc, "HIGH"));
 		else
 			GAME_VAR(int, OBJ(g_cfgSwitches) + (n - 3) * 4) = IS_ON(b.value);
 	}
 	crt_fgets(b.line, 0x50, f);
 }
 
-/* the binding a key line is read into: the lines run in the menu's order (cfg_keyBindings' table), and the last
+/* the binding a key line is read into: the lines run in the menu's order (cfg_writeKeyBindings' table), and the last
    line (help, second key) goes to the binding before it, 62, so binding 63 is never read back */
 static int read_binding(int line)
 {
@@ -1209,7 +1210,7 @@ static int read_binding(int line)
 /* 0x42e730: the key bindings read back: 64 lines of key names (each looked up among the 256 at 0x4b0750, the last
    match kept; none leaves the binding as it was) into the bindings (0x4def00), then the mouse: convert and smooth
    (ON; 0x4df000, 0x4df004), the sensitivity and the crosshairs (0x4df008, 0x4df00c); then one more line */
-void (cfg_parseKeyNames)(void *f)
+void (cfg_readKeyBindings)(void *f)
 {
 	const char *const *key_name = (const char *const *)OBJ(g_keyNames);
 	CfgBuf b;
@@ -1253,11 +1254,11 @@ void (cfg_init)(void)
 		if (length)
 			((char *)&s)[length - 1] = '\0';
 		if (!strcmp(s.line, (const char *)STR(0x4b0f50, "AXIS CONFIGURATION FILE Master ver 1...."))) {
-			cfg_readLines(f);
-			cfg_gameTypeNames(f);
-			cfg_readAudioLines(f);
+			cfg_readPlayer(f);
+			cfg_readServer(f);
+			cfg_readSound(f);
 			cfg_readGraphics(f);
-			cfg_parseKeyNames(f);
+			cfg_readKeyBindings(f);
 			fclose(f);
 			return;
 		}
@@ -1277,11 +1278,11 @@ void (cfg_init)(void)
 	static const u8 server[6] = { 0, 8, 0, 0, 0, 0 };   /* 0x4ded40: (by use) 8 players */
 	memcpy((void *)ADDR(g_arenaMap), server, 6);
 	g_sound3D = 1;
-	g_items3D = 1;
+	g_highDetail = 1;
 	(*(int *)&g_cfgMipmaps) = 1;
 	(*(int *)&g_cfgLinearFilter) = 1;
 	input_setDefaultBindings();
-	cfg_loadAxisCfg();
+	cfg_writeAxisCfg();
 }
 
 /* 0x4460d0: the pilot profiles found in the save folder ("save"; made when missing: then "axisuser.dat" deleted and
@@ -1387,7 +1388,7 @@ void THISCALL (autoplay_startRecording)(u8 *s, const char *name)
 		for (;; i++) {
 			sprintf(kept, (const char *)STR(0x4c7cb8, "AutoPlay%03d"), i);
 			sprintf(path, (const char *)STR(0x4c7cc8, "AutoPlay\\%s.ape"), kept);
-			if (!file_exists_46ca70(path))
+			if (!file_existsf(path))
 				break;
 			if (i == 999)
 				return;

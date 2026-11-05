@@ -289,7 +289,7 @@
 #define g_armPanelName ((char *)IMG(0x4dc250))   /* char[64]; the arm panel's part name */
 #define g_legPanelName ((char *)IMG(0x4dc1e8))   /* char[64]; the leg panel's part name */
 #define g_boosterPanelName ((char *)IMG(0x4dce40))   /* char[64]; the booster panel's part name */
-#define g_launcherCheck ((u8 *)IMG(0x4dd988))   /* u8[12]; the launcher's eight check bytes (app_checkLauncherRunning: 12 cleared) */
+#define g_launcherCheck ((u8 *)IMG(0x4dd988))   /* u8[12]; the launcher's eight check bytes (app_readLauncherCheck: 12 cleared) */
 #define g_missionClearBuffer ((u8 *)IMG(0x9eebac))   /* u8[1600]; cleared on a mission's load (0x640) and otherwise unused */
 #define g_serverAddressArg ((char *)IMG(0x4de748))   /* char[1024]; "-ip x <server>": the server's address (0x400 cleared) */
 #define g_arenaGameName ((char *)IMG(0x5b191c))   /* char[32]; the arena file's gamename value (32 cleared) */

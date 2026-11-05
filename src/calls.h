@@ -146,7 +146,7 @@
 #define room_draw() GAME_FN(room_draw, 0x43ed20, u32, void)()
 #define ranking_page() GAME_FN(ranking_page, 0x43ede0, u32, void)()
 #define reg_writeStartMode(value) GAME_FN(reg_writeStartMode, 0x43f7f0, u32, u32)(value)
-#define app_deleteDataFiles() GAME_FN(app_deleteDataFiles, 0x43f8b0, u32, void)()
+#define app_spoilDataFiles() GAME_FN(app_spoilDataFiles, 0x43f8b0, u32, void)()
 #define replaySelect_layout() GAME_FN(replaySelect_layout, 0x440a20, void, void)()
 #define menuState300_enter() GAME_FN(menuState300_enter, 0x440bb0, u32, void)()
 #define autoplay_listFiles() GAME_FN(autoplay_listFiles, 0x440c60, u32, void)()

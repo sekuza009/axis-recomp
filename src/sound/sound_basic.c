@@ -402,7 +402,7 @@ int (music_play)(const char *name)
 	}
 	if (g_music)
 		music_shutdown();
-	if (!file_exists_46ca70(name)) {   /* the file exists */
+	if (!file_existsf(name)) {   /* the file exists */
 		if (g_music)
 			music_shutdown();
 		return 1;

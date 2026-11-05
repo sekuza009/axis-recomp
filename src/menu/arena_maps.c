@@ -98,7 +98,7 @@ void (arena_saveSettings)(void)
 		kept[i] = name[i];
 	while (name[i++] != '\0');
 	g_playerCorporation = g_arenaCorporation;
-	cfg_loadAxisCfg();
+	cfg_writeAxisCfg();
 }
 
 /* a map choice moved one on (dir > 0) or back, round the g_arenaMapCount maps, skipping 22 .. 24; nothing while the

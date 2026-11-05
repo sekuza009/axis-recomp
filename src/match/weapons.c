@@ -614,7 +614,7 @@ static void hit_surface(u8 *s, u8 *b, const u8 *w, u32 *r)
 		memcpy(P, p, 36);
 	}
 	effect(s, r, WI->shotMode + 0x1e, 0, (u8 *)BU->end, N, 0, 0, 0, effect_size(w), 0);
-	if (!(*(*(const u8 * *)&BU->hit) & 0x10) && g_items3D == 1)
+	if (!(*(*(const u8 * *)&BU->hit) & 0x10) && g_highDetail == 1)
 		decal(s, b, w, r, (*(const u8 * *)&BU->hit), N, P);
 	if (WI->hitSound >= 0)
 		sound_play3D(WI->hitSound, ST->cameraPos, (u8 *)BU->end, ST->viewDir, 0x47435000);

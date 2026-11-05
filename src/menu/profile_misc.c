@@ -202,7 +202,7 @@ u32 (profile_logIn)(void)
 	g_unusedMenuReturnWord = 0;
 	crt_strncpy(g_cfgPlayerName,
 	                                                        (const char *)(OBJ(g_profileList) + g_currentProfile * 0x48), 0x20);   /* strncpy */
-	return cfg_loadAxisCfg();   /* cfg_loadAxisCfg */
+	return cfg_writeAxisCfg();   /* cfg_writeAxisCfg */
 }
 
 #define CALL(addr) GAME_CDECL(addr, u32, void)()

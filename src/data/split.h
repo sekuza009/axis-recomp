@@ -4070,9 +4070,9 @@ extern u8 g_briefingEnd_v[4];
 extern u32 g_skirmishColourLit_v[4];
 #endif
 #ifdef AXIS_FENCE
-#define g_unusedMissionSaveWord_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xb68000 : g_fence + 0xb67ffc))
+#define g_unusedBriefingWord_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xb68000 : g_fence + 0xb67ffc))
 #else
-extern u8 g_unusedMissionSaveWord_v[4];
+extern u8 g_unusedBriefingWord_v[4];
 #endif
 #ifdef AXIS_FENCE
 #define g_skirmishSettingsRects_v ((int *)(AXIS_FENCE == 2 ? g_fence + 0xb6a000 : g_fence + 0xb69f60))

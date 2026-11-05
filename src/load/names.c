@@ -229,7 +229,7 @@ int THISCALL (tex_textureFileExist)(u8 *tm, const char *name)
 		if (format == 0)
 			ok = tex_findByName(tm, path) >= 0;
 		else if (format == 1) {
-			if (file_exists_46ca70(path)) {
+			if (file_existsf(path)) {
 				image_initBy(image, path);
 				int w = ((BmpFile *)image)->width, h = ((BmpFile *)image)->height;
 				BMPRGBFile_close(image);

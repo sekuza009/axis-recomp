@@ -562,7 +562,7 @@ u32 STDCALL (game_WinMain)(void *inst, void *prev, const char *cmd, int show)
 	}
 	sys_checkClockTampering();
 	if (!g_startedFromLobby) {
-		if (!app_checkLauncherRunning()) {
+		if (!app_readLauncherCheck()) {
 			sys_messageBox(g_launchMessage);
 			return 0;
 		}
@@ -694,7 +694,7 @@ long STDCALL (game_wndProc)(void *wnd, u32 msg, u32 w, u32 l)
 		switch (g_exitMode) {
 		case 0:
 			reg_writeStartMode(0);   /* reg_writeStartMode */
-			app_deleteDataFiles();   /* app_deleteDataFiles */
+			app_spoilDataFiles();   /* app_spoilDataFiles */
 			g_gameRunning = 0;
 			ExitProcess(0);
 			return 0;
@@ -705,18 +705,18 @@ long STDCALL (game_wndProc)(void *wnd, u32 msg, u32 w, u32 l)
 			return 0;
 		case 2:
 			reg_writeStartMode(0);
-			app_deleteDataFiles();
+			app_spoilDataFiles();
 			ShellExecuteA(NULL, (const char *)STR(0x4b2a5c, "open"), (const char *)STR(0x4b2a44, "axispatch.exe"), (const char *)STR(0x4b2a54, "nstower"), NULL, 10);
 			ExitProcess(0);
 			return 0;
 		case 3:
 			reg_writeStartMode(0);
-			app_deleteDataFiles();
+			app_spoilDataFiles();
 			ShellExecuteA(NULL, (const char *)STR(0x4b2a5c, "open"), (const char *)STR(0x4b2a38, "DServer.exe"), (const char *)STR(0x4b13ec, "1"), NULL, 10);
 			ExitProcess(0);
 			return 0;
 		case 99:
-			app_deleteDataFiles();
+			app_spoilDataFiles();
 #ifdef AXIS_DIRECT
 			if (g_wide->playEnding)   /* (AxisRC.exe: the patch layer's player, which replaces movie_playEnding) */
 				g_wide->playEnding(NULL, (const char *)STR(0x4b2a24, "initdata/battle.sra"), g_desktopWidth, g_desktopHeight);

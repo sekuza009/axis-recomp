@@ -244,7 +244,7 @@ typedef struct { u32 vtable; void *banks[6]; i32 count; } TextureManager;   /* t
 #define skel_loadAseFrom(sk, f, mem, size) GAME_THISFN(skel_loadAseFrom, 0x469b90, void, void *, void *, void *, int)(sk, f, mem, size)
 #define crt_strupr(s) GAME_CDECL(0x49fab5, char *, char *)(s)
 #define text_findWord(text, word, exact) GAME_FN(text_findWord, 0x454d90, const char *, const char *, const char *, int)(text, word, exact)
-#define file_exists_46ca70(path) GAME_FN(file_existsf, 0x46ca70, int, const char *)(path)
+#define file_existsf(path) GAME_FN(file_existsf, 0x46ca70, int, const char *)(path)
 #define space_collideAt(grid, r, pos, vel, k, outPos, outVel, outDist, outPlane, axis, subs, nsubs) \
 	GAME_THISFN(space_collideAt, 0x482aa0, int, void *, u32, float *, float *, u32, u32, u32, u32, u32, u32, u32, u32)(grid, r, pos, vel, k, outPos, outVel, outDist, outPlane, axis, subs, nsubs)
 #define image_initBy(image, path) GAME_THISFN(image_initBy, 0x46cd00, void *, void *, const char *)(image, path)   /* a 24-bit BMP opened */
@@ -256,7 +256,7 @@ typedef struct { u32 vtable; void *banks[6]; i32 count; } TextureManager;   /* t
 #define ObjectList_relight(list, factors, lights) GAME_THISFN(ObjectList_relight, 0x46f7a0, void, void *, u32, u32)(list, factors, lights)
 #define glTranslatef(x, y, z) IMPORT(0x4a9214, void, float, float, float)(x, y, z)
 #define app_parseCommandLine(cmd) GAME_FN(app_parseCommandLine, 0x43f160, void, const char *)(cmd)
-#define app_checkLauncherRunning() GAME_FN(app_checkLauncherRunning, 0x41e260, u32, void)()
+#define app_readLauncherCheck() GAME_FN(app_readLauncherCheck, 0x41e260, u32, void)()
 #define reg_readStartMode() GAME_FN(reg_readStartMode, 0x43f770, u32, void)()
 #define editField_readTyping() GAME_FN(editField_readTyping, 0x43f980, void, void)()   /* a frame */
 #define app_frame() GAME_FN(app_frame, 0x4202d0, void, void)()   /* the fade step */
@@ -552,7 +552,7 @@ typedef struct { u32 vtable; void *banks[6]; i32 count; } TextureManager;   /* t
    coordinates uv0 .. uv1, colour (4 bytes) */
 #define viewVolume_addBillboard(view, id, uv0, uv1, dz, colour, a, b, p, extra, flag) GAME_THISFN(viewVolume_addBillboard, 0x484ca0, void, void *, int, const float *, \
 	const float *, float, const void *, const float *, const float *, const float *, int, int)(view, id, uv0, uv1, dz, colour, a, b, p, extra, flag)
-#define g_items3D (g_graphicSettings[2])            /* the polygon detail setting (HIGH 1): 1 draws map items as models */
+#define g_highDetail (g_graphicSettings[2])            /* the polygon detail setting (HIGH 1): 1 draws map items as models */
 #define projectile_draw(stage, i, view) GAME_THISFN(projectile_draw, 0x476890, void, Stage *, int, void *)(stage, i, view)
 #define stage_drawItems(stage, view) GAME_THISFN(stage_drawItems, 0x48f970, void, void *, void *)(stage, view)
 #define stage_setFog(stage, colour, start, end, density) GAME_THISFN(stage_setFog, 0x472900, void, Stage *, const void *, u32, u32, u32)(stage, colour, start, end, density)
@@ -779,18 +779,18 @@ typedef struct { float r, g, b, a; } Colour;
 #define setup_drawSoundPage() GAME_FN(setup_drawSoundPage, 0x424810, void, void)()
 #define setup_drawOptionsDialog() GAME_FN(setup_drawOptionsDialog, 0x425460, void, void)()
 #define setup_drawControlsPage() GAME_FN(setup_drawControlsPage, 0x425cd0, void, void)()
-#define cfg_readLines(f) GAME_FN(cfg_readLines, 0x42d7f0, void, void *)(f)          /* axis.cfg's player section read back */
-#define cfg_gameTypeNames(f) GAME_FN(cfg_gameTypeNames, 0x42da70, void, void *)(f)      /* its server section */
-#define cfg_readAudioLines(f) GAME_FN(cfg_readAudioLines, 0x42e080, void, void *)(f)             /* its sound section */
+#define cfg_readPlayer(f) GAME_FN(cfg_readPlayer, 0x42d7f0, void, void *)(f)          /* axis.cfg's player section read back */
+#define cfg_readServer(f) GAME_FN(cfg_readServer, 0x42da70, void, void *)(f)      /* its server section */
+#define cfg_readSound(f) GAME_FN(cfg_readSound, 0x42e080, void, void *)(f)             /* its sound section */
 #define cfg_readGraphics(f) GAME_FN(cfg_readGraphics, 0x42e240, void, void *)(f)     /* its graphics section */
-#define cfg_parseKeyNames(f) GAME_FN(cfg_parseKeyNames, 0x42e730, void, void *)(f)      /* its key bindings */
+#define cfg_readKeyBindings(f) GAME_FN(cfg_readKeyBindings, 0x42e730, void, void *)(f)      /* its key bindings */
 #define input_setDefaultBindings() GAME_FN(input_setDefaultBindings, 0x42c410, void, void)()     /* the default key bindings */
 #define armc_enterParts() GAME_FN(armc_enterParts, 0x40ee20, u32, void)()
 #define dplay_join(session, id, name, colour) GAME_FN(dplay_join, 0x453180, int, int, u32, const char *, int)(session, id, name, colour)   /* a join: 500 joined */
 #define tunnel_addRing() GAME_FN(tunnel_addRing, 0x441200, TunnelRing *, void)()   /* one more tunnel ring */
 #define tunnel_removeLastRing(head) GAME_FN(tunnel_removeLastRing, 0x441190, u32, TunnelRing **)(head)   /* the last ring taken off and freed */
 #define crypt_countingKey(p, key) GAME_FN(crypt_countingKey, 0x42b3c0, int, u8 *, u8)(p, key)   /* a 0x4c-byte record decoded (xor key, key + 1, ...) */
-#define cfg_loadAxisCfg() GAME_FN(cfg_loadAxisCfg, 0x42d730, u32, void)()
+#define cfg_writeAxisCfg() GAME_FN(cfg_writeAxisCfg, 0x42d730, u32, void)()
 #define setup_bindKey(key) GAME_FN(setup_bindKey, 0x421680, void, int)(key)   /* (by use) the row being bound gets key */
 #define setup_defaultBindings() GAME_FN(setup_defaultBindings, 0x420c10, void, void)()   /* the default key bindings */
 #define music_shutdown() GAME_FN(music_shutdown, 0x457310, void, void)()
@@ -868,7 +868,7 @@ typedef struct { float r, g, b, a; } Colour;
 #define replaySelect_allOut() GAME_FN(replaySelect_allOut, 0x440df0, void, void)()   /* and out */
 #define replaySelect_ok() GAME_FN(replaySelect_ok, 0x441770, void, void)()   /* the replay selection dialog's OK */
 #define net_addPlayerRecord(reply) GAME_FN(net_addPlayerRecord, 0x452de0, void, void *)(reply)   /* the server's accept reply handled */
-#define mission_saveAxisMis(k) GAME_FN(mission_saveAxisMis, 0x443af0, u32, int)(k)   /* mission k's block read from axis.mis (load/files.c) */
+#define mission_loadBriefing(k) GAME_FN(mission_loadBriefing, 0x443af0, u32, int)(k)   /* mission k's block read from axis.mis (load/files.c) */
 #define skirmishSettings_leave() GAME_FN(skirmishSettings_leave, 0x443c80, u32, void)()   /* leave the skirmish settings */
 #define skirmish_cursorUp() GAME_FN(skirmish_cursorUp, 0x443cd0, void, void)()   /* the skirmish list's cursor up */
 #define skirmish_cursorDown() GAME_FN(skirmish_cursorDown, 0x443d10, void, void)()   /* and down */

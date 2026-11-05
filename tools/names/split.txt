@@ -336,7 +336,7 @@ g_titleScore
 g_titleWins
 g_typingArenaName
 g_unusedMenuReturnWord
-g_unusedMissionSaveWord
+g_unusedBriefingWord
 # arrays and records the code indexes (objects6.csv; records split whole, their named globals offsets in them), 2026-11-01
 g_graphicSettings
 g_armcParts

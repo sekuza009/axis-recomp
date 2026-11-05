@@ -2173,33 +2173,33 @@ DWORD cfg_writeSound(void *f);
 /* 0x41e7c0 map_fileExists: load console script k (names at 0x907b30). Lifted */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 int map_fileExists(int k);
-/* 0x41e260 app_checkLauncherRunning: read 8 check bytes from axisplay.exe. Lifted */
+/* 0x41e260 app_readLauncherCheck: read 8 check bytes from axisplay.exe. Lifted */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-int app_checkLauncherRunning(void);
+int app_readLauncherCheck(void);
 /* 0x445f70 profile_writeCleared: (re)write axisuser.dat. Lifted */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 DWORD profile_writeCleared(int count);
 /* 0x447320 profile_writeFile: delete the current profile from the list file. Lifted */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 DWORD profile_writeFile(void);
-/* 0x443af0 mission_saveAxisMis: load mission k's block from the .mis file. Lifted */
+/* 0x443af0 mission_loadBriefing: load mission k's block from the .mis file. Lifted */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-DWORD mission_saveAxisMis(int k);
+DWORD mission_loadBriefing(int k);
 /* 0x43f160 app_parseCommandLine: parse the launcher command line, write axiswl.dat. Lifted */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 DWORD app_parseCommandLine(char *line);
 /* 0x4435f0 mission_loadAxisMis: read the mission list file. Lifted */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 DWORD mission_loadAxisMis(void);
-/* 0x42d7f0 cfg_readLines: read axis.cfg lines (fgets/strtok) into the settings. Lifted */
+/* 0x42d7f0 cfg_readPlayer: read axis.cfg lines (fgets/strtok) into the settings. Lifted */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-void cfg_readLines(void *f);
+void cfg_readPlayer(void *f);
 /* 0x40d4e0 arena_loadSettings: read an arena settings file (fgets/strtok/atoi). Lifted */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 int arena_loadSettings(const char *path);
-/* 0x42cba0 cfg_keyBindings: write the key bindings section of axis.cfg. Lifted */
+/* 0x42cba0 cfg_writeKeyBindings: write the key bindings section of axis.cfg. Lifted */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-DWORD cfg_keyBindings(void *f);
+DWORD cfg_writeKeyBindings(void *f);
 /* 0x46cdc0 (thiscall) image_tryOpen(name): open a 24-bit BMP (file kept at +4), read its headers; the file, or 0. Lifted */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 THISCALL int image_tryOpen(char *self, DWORD name);
@@ -2518,13 +2518,13 @@ void THISCALL stage_drawObjects(void *scene, void *view);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 THISCALL void game_setGameTypeFlags(char *scene, DWORD type);
 /* 0x42c9f0 cfg_writeGraphic(f) / 0x42c6f0 cfg_writeServer(f): write the graphic / server settings to axis.cfg;
-   0x42e080 cfg_readAudioLines(f): read the key bindings section */
+   0x42e080 cfg_readSound(f): read the key bindings section */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 DWORD cfg_writeGraphic(void *f);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 DWORD cfg_writeServer(void *f);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-void cfg_readAudioLines(void *f);
+void cfg_readSound(void *f);
 /* 0x40e7a0 armc_saveSelection: keep the customised parts and colours, save the progress */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 DWORD armc_saveSelection(void);
@@ -2541,9 +2541,9 @@ DWORD armc_stepPart(DWORD part, int dir);
 /* 0x401000 cd_findDrive: patched (no-CD build) to return 1 at once */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 DWORD cd_findDrive(void);
-/* 0x42d730 cfg_loadAxisCfg: write axis.cfg (header, player, server, sound, graphic and key sections) */
+/* 0x42d730 cfg_writeAxisCfg: write axis.cfg (header, player, server, sound, graphic and key sections) */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-DWORD cfg_loadAxisCfg(void);
+DWORD cfg_writeAxisCfg(void);
 /* 0x4050a0 arena_saveSettings / 0x405140 lobby_keepArenaSettings: take the lobby's player/server settings and write axis.cfg */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void arena_saveSettings(void);
@@ -2556,14 +2556,14 @@ DWORD profile_logIn(void);
 /* 0x41dcf0 armc_extraItemBonuses: reset the customise screen's state and set the camera for the current page */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void armc_extraItemBonuses(void);
-/* 0x42e730 cfg_parseKeyNames(f) / 0x42e240 cfg_readGraphics(f) / 0x42da70 cfg_gameTypeNames(f): read a fixed
+/* 0x42e730 cfg_readKeyBindings(f) / 0x42e240 cfg_readGraphics(f) / 0x42da70 cfg_readServer(f): read a fixed
    number of axis.cfg lines (68 / 7 / 7) and take the values named in them */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-void cfg_parseKeyNames(void *f);
+void cfg_readKeyBindings(void *f);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void cfg_readGraphics(void *f);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-void cfg_gameTypeNames(void *f);
+void cfg_readServer(void *f);
 /* 0x48dbf0 (thiscall) net_sendGamePacket(p): player p's state packet, with samples of the level geometry tables
    (index from a rolling counter) and the pending event bits */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
@@ -2590,7 +2590,7 @@ THISCALL DWORD space_traceNodes(char *grid, DWORD p0, DWORD p1, DWORD hit, DWORD
 THISCALL DWORD collision_rayTrace(char *scene, DWORD p0, DWORD p1, DWORD hit);
 /* batch 54 (lifted/grp3.c) */
 /* 0x42eca0 cfg_init: read axis.cfg (key names, video modes, game types, key bindings and the rest)
-   and apply the key bindings; without the file write the defaults (cfg_loadAxisCfg) */
+   and apply the key bindings; without the file write the defaults (cfg_writeAxisCfg) */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void cfg_init(void);
 /* 0x460270 (thiscall) actor_pickPathPoint(p): for player p (range +0x8848), every listed point (lists of 0x14-byte
@@ -2736,9 +2736,9 @@ THISCALL void factors_addPointLight(char *pool, DWORD a, DWORD x, DWORD p);
 /* 0x472310 (thiscall) stage_refillFactors: reset the factor pool and add every active player and live effect */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 THISCALL void stage_refillFactors(char *scene);
-/* 0x43f8b0 app_deleteDataFiles: reset the three data files' progress word and delete the saved game */
+/* 0x43f8b0 app_spoilDataFiles: reset the three data files' progress word and delete the saved game */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-DWORD app_deleteDataFiles(void);
+DWORD app_spoilDataFiles(void);
 /* 0x452af0 net_addServerRecord(rec) / 0x452c80 net_addRoomRecord(rec): copy a received server/room record into the list slot */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 int net_addServerRecord(const void *rec);
@@ -4199,7 +4199,7 @@ DWORD missionSettings_leave(void);
 void mission_chosen(int mission);
 /* batch 162 (lifted/grp108.c): skirmish / mission settings input, the room and arena text fields */
 /* 0x443e20 skirmish_clicks(): no dialog open: a right click leaves (skirmishSettings_leave); a left click on the
-   settings screen's buttons (skirmishSettings_hitTest, 0x9ef228): rows 0..7 skirmish_clickRow(row), 8 save (mission_saveAxisMis
+   settings screen's buttons (skirmishSettings_hitTest, 0x9ef228): rows 0..7 skirmish_clickRow(row), 8 save (mission_loadBriefing
    with the selection 0x9f16a4), 9 leave */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 int skirmish_clicks(void);
@@ -4215,7 +4215,7 @@ DWORD mission_choose(void);
    to page 10, undo / redo (0x4e150c / 0x4e1514: undo_push / undo_pop) */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 DWORD skirmish_settingsKeys(void);
-/* 0x443f20 skirmish_processKeys(): back / enter save (mission_saveAxisMis), cancel leaves, up / down held
+/* 0x443f20 skirmish_processKeys(): back / enter save (mission_loadBriefing), cancel leaves, up / down held
    (0x9db0a0 / 0x76d330) repeat after a delay (0x76d37c / 0x680bb4: 4 frames, then the key repeat 0x4b071c) moving
    the selection (skirmish_cursorUp / 443d10) */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
@@ -8874,13 +8874,13 @@ ST(cfg_writePlayer, G32(0x4dedd0) = irnd(-1, 3); G32(0x4dedd4) = irnd(0, 2);, CA
    cfg_writePlayer((void *)VFS_FILE(0)))
 ST(cfg_writeSound, , CALL_PLAIN(0x42c910, 0, VFS_FILE(0), 0, 0, 0),
    cfg_writeSound((void *)VFS_FILE(0)))
-ST(cfg_keyBindings, , CALL_PLAIN(0x42cba0, 0, VFS_FILE(1), 0, 0, 0),
-   cfg_keyBindings((void *)VFS_FILE(1)))
+ST(cfg_writeKeyBindings, , CALL_PLAIN(0x42cba0, 0, VFS_FILE(1), 0, 0, 0),
+   cfg_writeKeyBindings((void *)VFS_FILE(1)))
 ST(map_fileExists, vfs_content(90, 0x2000); g_a[0] = irnd(0, 7);, CALL_PLAIN(0x41e7c0, 0, g_a[0], 0, 0, 0), (DWORD)(map_fileExists((DWORD)(g_a[0]))))
-ST(app_checkLauncherRunning, vfs_content(0, 0x6000);, CALL_PLAIN(0x41e260, 0, 0, 0, 0, 0), (DWORD)(app_checkLauncherRunning()))
+ST(app_readLauncherCheck, vfs_content(0, 0x6000);, CALL_PLAIN(0x41e260, 0, 0, 0, 0, 0), (DWORD)(app_readLauncherCheck()))
 ST(profile_writeCleared, vfs_content(0, 0); g_a[0] = irnd(0, 10);, CALL_PLAIN(0x445f70, 0, g_a[0], 0, 0, 0), (DWORD)(profile_writeCleared((DWORD)(g_a[0]))))
 ST(profile_writeFile, vfs_content(0, 0);, CALL_PLAIN(0x447320, 0, 0, 0, 0, 0), (DWORD)(profile_writeFile()))
-ST(mission_saveAxisMis, vfs_content(0, 0x8000); g_a[0] = irnd(-1, 14);, CALL_PLAIN(0x443af0, 0, g_a[0], 0, 0, 0), (DWORD)(mission_saveAxisMis(g_a[0])))
+ST(mission_loadBriefing, vfs_content(0, 0x8000); g_a[0] = irnd(-1, 14);, CALL_PLAIN(0x443af0, 0, g_a[0], 0, 0, 0), (DWORD)(mission_loadBriefing(g_a[0])))
 /* a launcher command line of 0..6 tokens */
 static void cmdline_setup(void)
 {
@@ -8901,7 +8901,7 @@ static void mislist_setup(void)
 	for (DWORD o = 16; o + 4 <= g_vfsSize; o += 0x64) S32(BUF + 0x200000, o) = irnd(0, 6);
 }
 ST(mission_loadAxisMis, mislist_setup();, CALL_PLAIN(0x4435f0, 0, 0, 0, 0, 0), (DWORD)(mission_loadAxisMis()))
-ST(cfg_readLines, vfs_content(95, 0x1000);, (CALL_PLAIN(0x42d7f0, 0, VFS_FILE(0), 0, 0, 0), 0), (cfg_readLines((void *)VFS_FILE(0)), 0))   /* its callers ignore the eax it leaves (tools/eaxuse.py) */
+ST(cfg_readPlayer, vfs_content(95, 0x1000);, (CALL_PLAIN(0x42d7f0, 0, VFS_FILE(0), 0, 0, 0), 0), (cfg_readPlayer((void *)VFS_FILE(0)), 0))   /* its callers ignore the eax it leaves (tools/eaxuse.py) */
 /* axiswl.dat-like settings: lines of space/tab separated tokens where every keyword has a value after it, at least one
    token per line, short lines, some "//" comments. The original dereferences NULL on a line without tokens or with a
    keyword as its last token (strtok returns NULL), so real files never have those */
@@ -9482,7 +9482,7 @@ ST(cfg_writeGraphic, cfgw_setup();, CALL_PLAIN(0x42c9f0, 0, VFS_FILE(0), 0, 0, 0
 ST(cfg_writeServer, cfgw_setup();, CALL_PLAIN(0x42c6f0, 0, VFS_FILE(0), 0, 0, 0), cfg_writeServer((void *)VFS_FILE(0)))
 /* four lines of key bindings (words of the config vocabulary); at the end of the file fgets leaves the stack
    buffer as it was, so the stack is painted */
-ST(cfg_readAudioLines, vfs_content(95, 0x200); for (int k = 0; k < 5; k++) ((char *)g_vfsData)[g_vfsSize++] = '\n'; g_vfsOpenFail = 0; g_paintStacks = 1;,   /* (five lines at least: a value line past the end leaves the painted buffer unended, and strcat runs it over the stack) */ (CALL_PLAIN(0x42e080, 0, VFS_FILE(0), 0, 0, 0), 0), (cfg_readAudioLines((void *)VFS_FILE(0)), 0))   /* its callers ignore the eax it leaves (tools/eaxuse.py) */
+ST(cfg_readSound, vfs_content(95, 0x200); for (int k = 0; k < 5; k++) ((char *)g_vfsData)[g_vfsSize++] = '\n'; g_vfsOpenFail = 0; g_paintStacks = 1;,   /* (five lines at least: a value line past the end leaves the painted buffer unended, and strcat runs it over the stack) */ (CALL_PLAIN(0x42e080, 0, VFS_FILE(0), 0, 0, 0), 0), (cfg_readSound((void *)VFS_FILE(0)), 0))   /* its callers ignore the eax it leaves (tools/eaxuse.py) */
 ST(armc_saveSelection, vfs_content(0, 0); g_mockMkdirFail = !irnd(0, 4); G32(0x4dc760) = irnd(0, 0x14); G32(0x4dc76c) = irnd(0, 0x14);, CALL_PLAIN(0x40e7a0, 0, 0, 0, 0, 0), (DWORD)(armc_saveSelection()))
 ST(actor_startingValues, g_a[0] = irnd(0, 7); S32(SCENE, 0x1cd94b0 + g_a[0] * 0x8888) = irnd(0, 2) ? 1 : 0; S32(SCENE, 0x20f3ab8) = irnd(-1, 14);,
    (TC(void, 0x45ebc0, char *, int)(SCENE, g_a[0]), 0), (actor_startingValues(SCENE, (DWORD)g_a[0]), 0))
@@ -9502,7 +9502,7 @@ ST(armc_stepPart, g_a[0] = irnd(-1, 8); g_a[1] = irnd(0, 2);, CALL_PLAIN(0x40f34
 /* batch 52 */
 ST(cd_findDrive, , ((DWORD (__cdecl *)(void))0x401000)(), cd_findDrive())
 static void axiscfg_setup(void) { vfs_content(0, 0); g_vfsOpenFail = !irnd(0, 5); g_mockMkdirFail = !irnd(0, 4); }
-ST(cfg_loadAxisCfg, axiscfg_setup();, CALL_PLAIN(0x42d730, 0, 0, 0, 0, 0), (DWORD)(cfg_loadAxisCfg()))
+ST(cfg_writeAxisCfg, axiscfg_setup();, CALL_PLAIN(0x42d730, 0, 0, 0, 0, 0), (DWORD)(cfg_writeAxisCfg()))
 ST(arena_saveSettings, axiscfg_setup(); fill_str((char *)0x4db560, 30, 32, 126);, CALL_PLAIN(0x4050a0, 0, 0, 0, 0, 0), (arena_saveSettings(), 0))
 ST(lobby_keepArenaSettings, axiscfg_setup(); fill_str((char *)0x4db528, 30, 32, 126); fill_str((char *)0x4db54e, 8, 32, 126);, CALL_PLAIN(0x405140, 0, 0, 0, 0, 0), (DWORD)(lobby_keepArenaSettings()))
 ST(profile_logIn, axiscfg_setup(); G32(0x9f6840) = irnd(0, 2) ? 1 : 0; G32(0x76d410) = irnd(0, 2); G32(0x9f8c58) = irnd(0, 13);, CALL_PLAIN(0x44f6c0, 0, 0, 0, 0, 0), (DWORD)(profile_logIn()))
@@ -9558,11 +9558,11 @@ static const char *const k_cfgGameTypes[] = { "ON", "OFF", "TEAM DEATH MATCH", "
 	"TEAM ROCKET ARENA", "GLADIATOR ARENA", "TEAM GLADIATOR ARENA", "KING ON THE HILL", "PLATOON MODE",
 	"ACCEPT ADVANCED MODE", "15", "30" };
 /* its caller ignores the eax it leaves */
-ST(cfg_parseKeyNames, cfglines_setup(68, k_cfgOnOff, 4, 1);, (CALL_PLAIN(0x42e730, 0, VFS_FILE(0), 0, 0, 0), 0), (cfg_parseKeyNames((void *)VFS_FILE(0)), 0))
+ST(cfg_readKeyBindings, cfglines_setup(68, k_cfgOnOff, 4, 1);, (CALL_PLAIN(0x42e730, 0, VFS_FILE(0), 0, 0, 0), 0), (cfg_readKeyBindings((void *)VFS_FILE(0)), 0))
 /* its caller ignores the eax it leaves */
 ST(cfg_readGraphics, cfglines_setup(7, k_cfgVideo, 14, 0);, (CALL_PLAIN(0x42e240, 0, VFS_FILE(0), 0, 0, 0), 0), (cfg_readGraphics((void *)VFS_FILE(0)), 0))
 /* its caller ignores the eax it leaves */
-ST(cfg_gameTypeNames, cfglines_setup(7, k_cfgGameTypes, 19, 0);, (CALL_PLAIN(0x42da70, 0, VFS_FILE(0), 0, 0, 0), 0), (cfg_gameTypeNames((void *)VFS_FILE(0)), 0))
+ST(cfg_readServer, cfglines_setup(7, k_cfgGameTypes, 19, 0);, (CALL_PLAIN(0x42da70, 0, VFS_FILE(0), 0, 0, 0), 0), (cfg_readServer((void *)VFS_FILE(0)), 0))
 /* the scene at the scratch area (fields from +0x1f1668 on): six geometry tables, each "count" rows of "stride"
    dwords with a sampling divisor (kept within a row) and a row count, the event flags, the recording */
 static void gamepkt_setup(void)
@@ -9942,7 +9942,7 @@ static void factorscene_setup(void)
 	for (int i = 0; i < 12; i++) { char *e = BUF + 0x20a9a3c + i * 300; S32(e, -0x78) = irnd(0, 2) ? 1 : 0; SF(e, 0) = csu_fr(-100, 10000); }
 }
 ST(stage_refillFactors, factorscene_setup();, (TC(void, 0x472310, char *)(BUF), 0), (stage_refillFactors(BUF), 0))
-ST(app_deleteDataFiles, vfs_content(0, 0x1000); g_vfsOpenFail = 0; g_mockDeleteOk = irnd(0, 1);, CALL_PLAIN(0x43f8b0, 0, 0, 0, 0, 0), (DWORD)(app_deleteDataFiles()))
+ST(app_spoilDataFiles, vfs_content(0, 0x1000); g_vfsOpenFail = 0; g_mockDeleteOk = irnd(0, 1);, CALL_PLAIN(0x43f8b0, 0, 0, 0, 0, 0), (DWORD)(app_spoilDataFiles()))
 /* a received record: strings at +1, +0x33, +0x53 and the byte fields; the slot index 0..9 */
 static void netrec_setup(void)
 {
@@ -17378,9 +17378,9 @@ static const STest g_stests[] = {
 	/* batch 45 */
 	T(BMPRGBFile_close, 1, 4, 300), T(BMPRGBFile_dtor, 0, 4, 300), T(replay_closeRecording, 1, 4, 300), T(chat_saveMacros, 1, 4, 300),
 	T(Texture_dtor, 1, 4, 300), T(file_existsf, 1, 4, 300), T(file_readScrambled, 1, 4, 1000), T(file_writeScrambled, 1, 4, 1000),
-	T(cfg_writePlayer, 1, 60, 0), T(cfg_writeSound, 1, 60, 0), T(cfg_keyBindings, 1, 60, 0), T(map_fileExists, 1, 100, 0),
-	T(app_checkLauncherRunning, 1, 100, 0), T(profile_writeCleared, 1, 100, 0), T(profile_writeFile, 1, 100, 0), T(mission_saveAxisMis, 1, 100, 0),
-	T(app_parseCommandLine, 1, 100, 0), T(mission_loadAxisMis, 1, 100, 0), T(cfg_readLines, 1, 150, 0), T(arena_loadSettings, 1, 150, 0),
+	T(cfg_writePlayer, 1, 60, 0), T(cfg_writeSound, 1, 60, 0), T(cfg_writeKeyBindings, 1, 60, 0), T(map_fileExists, 1, 100, 0),
+	T(app_readLauncherCheck, 1, 100, 0), T(profile_writeCleared, 1, 100, 0), T(profile_writeFile, 1, 100, 0), T(mission_loadBriefing, 1, 100, 0),
+	T(app_parseCommandLine, 1, 100, 0), T(mission_loadAxisMis, 1, 100, 0), T(cfg_readPlayer, 1, 150, 0), T(arena_loadSettings, 1, 150, 0),
 	T(image_tryOpen, 1, 4, 1000), T(mem_free, 1, 4, 300),
 	/* batch 46 */
 	T(Texture_deletingDtor, 1, 4, 300), T(BMPRGBFile_deletingDtor, 1, 4, 300), T(Model_deletingDtor, 1, 4, 300), T(ShapeManager_deletingDtor, 1, 4, 300),
@@ -17414,12 +17414,12 @@ static const STest g_stests[] = {
 	T(input_setCursorPos, 1, 40, 0), T(input_asyncKeyDown, 1, 40, 0), T(input_getCursorPos, 1, 40, 0), T(net_ping, 1, 40, 0),
 	T(net_pingServer, 1, 40, 0), T(net_pingAllServers, 1, 40, 0), T(gfx_setMenuCamera, 1, 40, 0), T(armc_easeCamera, 1, 40, 0),
 	T(app_screenSizeForMode, 1, 40, 0), T(stage_drawObject, 0, 300, 0), T(stage_drawObjects, 0, 300, 0), T(game_setGameTypeFlags, 0, 400, 0),
-	T(cfg_writeGraphic, 1, 40, 0), T(cfg_writeServer, 1, 40, 0), T(cfg_readAudioLines, 1, 40, 0), T(armc_saveSelection, 1, 40, 0),
+	T(cfg_writeGraphic, 1, 40, 0), T(cfg_writeServer, 1, 40, 0), T(cfg_readSound, 1, 40, 0), T(armc_saveSelection, 1, 40, 0),
 	T(actor_startingValues, 0, 400, 0), T(roomList_fillPage, 1, 200, 0), T(armc_stepPart, 1, 40, 0),
 	/* batch 52 */
-	T(cd_findDrive, 1, 40, 0), T(cfg_loadAxisCfg, 1, 40, 0), T(arena_saveSettings, 1, 40, 0), T(lobby_keepArenaSettings, 1, 40, 0),
-	T(profile_logIn, 1, 40, 0), T(armc_extraItemBonuses, 1, 400, 0), T(cfg_parseKeyNames, 1, 1000, 0), T(cfg_readGraphics, 1, 1000, 0),
-	T(cfg_gameTypeNames, 1, 1000, 0), T(net_sendGamePacket, 0, 300, 0), T(setup_bindKey, 1, 3000, 0),
+	T(cd_findDrive, 1, 40, 0), T(cfg_writeAxisCfg, 1, 40, 0), T(arena_saveSettings, 1, 40, 0), T(lobby_keepArenaSettings, 1, 40, 0),
+	T(profile_logIn, 1, 40, 0), T(armc_extraItemBonuses, 1, 400, 0), T(cfg_readKeyBindings, 1, 1000, 0), T(cfg_readGraphics, 1, 1000, 0),
+	T(cfg_readServer, 1, 1000, 0), T(net_sendGamePacket, 0, 300, 0), T(setup_bindKey, 1, 3000, 0),
 	/* batch 53 */
 	T(space_traceUnit, 1, 600, 0), T(space_traceNodes, 1, 600, 0), T(collision_rayTrace, 0, 600, 0),
 	/* batch 54 */
@@ -17436,7 +17436,7 @@ static const STest g_stests[] = {
 	T(sys_errorTerminate, 0, 40, 0), T(sys_fatalError, 0, 40, 0), T(ViewVolume_captureMatrices, 0, 400, 0), T(gfx_initVertexArrayExt, 0, 40, 0),
 	T(ViewVolume_dtor, 0, 40, 0), T(ViewVolume_deletingDtor, 0, 40, 0), T(stage_setFog, 0, 40, 0), T(crt_arrayConstruct, 0, 40, 0),
 	/* batch 57 */
-	T(shape_findDatEntry, 1, 40, 0), T(skelDat_getItemFileBy, 1, 40, 0), T(app_deleteDataFiles, 0, 40, 0), T(net_addServerRecord, 0, 40, 0),
+	T(shape_findDatEntry, 1, 40, 0), T(skelDat_getItemFileBy, 1, 40, 0), T(app_spoilDataFiles, 0, 40, 0), T(net_addServerRecord, 0, 40, 0),
 	T(net_addRoomRecord, 0, 40, 0), T(math_makeMathFunctionTableFile, 0, 40, 0), T(math_initMathFunction, 0, 40, 0), T(gfx_resetState, 0, 40, 0),
 	T(reg_readServerSettings, 0, 40, 0), T(text_ascii5Pass, 0, 40, 0), T(text_ascii8Pass, 0, 40, 0), T(text_ascii16Pass, 0, 40, 0),
 	T(text_ascii32Pass, 0, 40, 0), T(text_hanCho, 0, 40, 0), T(text_hanJungJong, 0, 40, 0), T(text_drawHangul31, 0, 40, 0),
@@ -18358,11 +18358,11 @@ static const struct { DWORD addr; void *fn; const char *name; } g_hooks3[] = {
 	{ 0x455030, (void *)Texture_dtor, "Texture_dtor" }, { 0x46ca70, (void *)file_existsf, "file_existsf" },
 	{ 0x46cbe0, (void *)file_readScrambled, "file_readScrambled" }, { 0x46cc30, (void *)file_writeScrambled, "file_writeScrambled" },
 	{ 0x42c650, (void *)cfg_writePlayer, "cfg_writePlayer" }, { 0x42c910, (void *)cfg_writeSound, "cfg_writeSound" },
-	{ 0x42cba0, (void *)cfg_keyBindings, "cfg_keyBindings" }, { 0x41e7c0, (void *)map_fileExists, "map_fileExists" },
-	{ 0x41e260, (void *)app_checkLauncherRunning, "app_checkLauncherRunning" }, { 0x445f70, (void *)profile_writeCleared, "profile_writeCleared" },
-	{ 0x447320, (void *)profile_writeFile, "profile_writeFile" }, { 0x443af0, (void *)mission_saveAxisMis, "mission_saveAxisMis" },
+	{ 0x42cba0, (void *)cfg_writeKeyBindings, "cfg_writeKeyBindings" }, { 0x41e7c0, (void *)map_fileExists, "map_fileExists" },
+	{ 0x41e260, (void *)app_readLauncherCheck, "app_readLauncherCheck" }, { 0x445f70, (void *)profile_writeCleared, "profile_writeCleared" },
+	{ 0x447320, (void *)profile_writeFile, "profile_writeFile" }, { 0x443af0, (void *)mission_loadBriefing, "mission_loadBriefing" },
 	{ 0x43f160, (void *)app_parseCommandLine, "app_parseCommandLine" }, { 0x4435f0, (void *)mission_loadAxisMis, "mission_loadAxisMis" },
-	{ 0x42d7f0, (void *)cfg_readLines, "cfg_readLines" }, { 0x40d4e0, (void *)arena_loadSettings, "arena_loadSettings" },
+	{ 0x42d7f0, (void *)cfg_readPlayer, "cfg_readPlayer" }, { 0x40d4e0, (void *)arena_loadSettings, "arena_loadSettings" },
 	{ 0x46cdc0, (void *)image_tryOpen, "image_tryOpen" }, { 0x467d60, (void *)mem_free, "mem_free" },
 	/* batch 46 */
 	{ 0x42b150, (void *)Texture_deletingDtor, "Texture_deletingDtor" }, { 0x455a80, (void *)BMPRGBFile_deletingDtor, "BMPRGBFile_deletingDtor" },
@@ -18421,15 +18421,15 @@ static const struct { DWORD addr; void *fn; const char *name; } g_hooks3[] = {
 	{ 0x43f640, (void *)app_screenSizeForMode, "app_screenSizeForMode" }, { 0x490b30, (void *)stage_drawObject, "stage_drawObject" },
 	{ 0x490da0, (void *)stage_drawObjects, "stage_drawObjects" }, { 0x4732f0, (void *)game_setGameTypeFlags, "game_setGameTypeFlags" },
 	{ 0x42c9f0, (void *)cfg_writeGraphic, "cfg_writeGraphic" }, { 0x42c6f0, (void *)cfg_writeServer, "cfg_writeServer" },
-	{ 0x42e080, (void *)cfg_readAudioLines, "cfg_readAudioLines" }, { 0x40e7a0, (void *)armc_saveSelection, "armc_saveSelection" },
+	{ 0x42e080, (void *)cfg_readSound, "cfg_readSound" }, { 0x40e7a0, (void *)armc_saveSelection, "armc_saveSelection" },
 	{ 0x45ebc0, (void *)actor_startingValues, "actor_startingValues" }, { 0x435770, (void *)roomList_fillPage, "roomList_fillPage" },
 	{ 0x40f340, (void *)armc_stepPart, "armc_stepPart" },
 	/* batch 52 */
-	{ 0x401000, (void *)cd_findDrive, "cd_findDrive" }, { 0x42d730, (void *)cfg_loadAxisCfg, "cfg_loadAxisCfg" },
+	{ 0x401000, (void *)cd_findDrive, "cd_findDrive" }, { 0x42d730, (void *)cfg_writeAxisCfg, "cfg_writeAxisCfg" },
 	{ 0x4050a0, (void *)arena_saveSettings, "arena_saveSettings" }, { 0x405140, (void *)lobby_keepArenaSettings, "lobby_keepArenaSettings" },
 	{ 0x44f6c0, (void *)profile_logIn, "profile_logIn" }, { 0x41dcf0, (void *)armc_extraItemBonuses, "armc_extraItemBonuses" },
-	{ 0x42e730, (void *)cfg_parseKeyNames, "cfg_parseKeyNames" }, { 0x42e240, (void *)cfg_readGraphics, "cfg_readGraphics" },
-	{ 0x42da70, (void *)cfg_gameTypeNames, "cfg_gameTypeNames" }, { 0x48dbf0, (void *)net_sendGamePacket, "net_sendGamePacket" },
+	{ 0x42e730, (void *)cfg_readKeyBindings, "cfg_readKeyBindings" }, { 0x42e240, (void *)cfg_readGraphics, "cfg_readGraphics" },
+	{ 0x42da70, (void *)cfg_readServer, "cfg_readServer" }, { 0x48dbf0, (void *)net_sendGamePacket, "net_sendGamePacket" },
 	{ 0x421680, (void *)setup_bindKey, "setup_bindKey" },
 	/* batch 53 */
 	{ 0x4809f0, (void *)space_traceUnit, "space_traceUnit" }, { 0x483060, (void *)space_traceNodes, "space_traceNodes" },
@@ -18458,7 +18458,7 @@ static const struct { DWORD addr; void *fn; const char *name; } g_hooks3[] = {
 	{ 0x472900, (void *)stage_setFog, "stage_setFog" }, { 0x401290, (void *)crt_arrayConstruct, "crt_arrayConstruct" },
 	/* batch 57 */
 	{ 0x466d60, (void *)shape_findDatEntry, "shape_findDatEntry" }, { 0x46b140, (void *)skelDat_getItemFileBy, "skelDat_getItemFileBy" },
-	{ 0x43f8b0, (void *)app_deleteDataFiles, "app_deleteDataFiles" }, { 0x452af0, (void *)net_addServerRecord, "net_addServerRecord" },
+	{ 0x43f8b0, (void *)app_spoilDataFiles, "app_spoilDataFiles" }, { 0x452af0, (void *)net_addServerRecord, "net_addServerRecord" },
 	{ 0x452c80, (void *)net_addRoomRecord, "net_addRoomRecord" }, { 0x46c340, (void *)math_makeMathFunctionTableFile, "math_makeMathFunctionTableFile" },
 	{ 0x46c270, (void *)math_initMathFunction, "math_initMathFunction" }, { 0x4684c0, (void *)gfx_resetState, "gfx_resetState" },
 	{ 0x42bde0, (void *)reg_readServerSettings, "reg_readServerSettings" }, { 0x403060, (void *)text_ascii5Pass, "text_ascii5Pass" },

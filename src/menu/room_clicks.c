@@ -121,7 +121,7 @@ int (skirmish_clicks)(void)
 	if ((u32)row <= 7)
 		return skirmish_clickRow(row);
 	if (row == 8)
-		return ((int)mission_saveAxisMis(g_missionPicked));
+		return ((int)mission_loadBriefing(g_missionPicked));
 	if (row == 9)
 		return ((int)skirmishSettings_leave());
 	return row;

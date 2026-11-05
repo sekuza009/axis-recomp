@@ -8,7 +8,7 @@ static float texel(int n, float perTexel)
 }
 
 /* 0x48f970 (stage_drawItems): every item that is not taken and lies within stage->cullMargin of the camera on each axis.
-   In 3D (g_items3D, and always for type 34) its type's model at the item's place and turn; otherwise a 300-unit
+   In 3D (g_highDetail, and always for type 34) its type's model at the item's place and turn; otherwise a 300-unit
    billboard with its 32-texel icon from the item atlas (eight a row). Items fading in or out (fade below 1, or NaN)
    are drawn white with alpha 255 * fade; whole billboards take g_white, whole models their own colours. */
 void THISCALL (stage_drawItems)(Stage *stage, void *view)
@@ -30,7 +30,7 @@ void THISCALL (stage_drawItems)(Stage *stage, void *view)
 			continue;
 
 		u8 colour[4];
-		if (g_items3D == 1 || type == 34) {
+		if (g_highDetail == 1 || type == 34) {
 			const u8 *tint = NULL;
 			if (!(item->fade >= 1.0f)) {
 				colour[0] = colour[1] = colour[2] = 0xff;

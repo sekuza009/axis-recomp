@@ -158,9 +158,9 @@ void THISCALL (mapObject_frame)(u8 *s, int i, float dt)
 		shape_shadeParts((*(u32 * *)&MO->colours[1]), 0, (Model *)((u8 *)MO->model), (const LightFactors *)&st->dynamicLights,
 		                 MO->matrixInverse);
 	}
-	if ((obj[0xc] & 1) && g_items3D == 1) {
+	if ((obj[0xc] & 1) && g_highDetail == 1) {
 		object_glow(s, obj, dt);
-		if ((obj[0xc] & 1) && g_items3D == 1 && MO->glow > *&k_0f) {
+		if ((obj[0xc] & 1) && g_highDetail == 1 && MO->glow > *&k_0f) {
 			volatile u32 flare[13];   /* (its eighth dword is never set, as in the original) */
 			flare[0] = 4;
 			flare[1] = ftol(fmul_m(fld_m(&MO->glow), k_255f));

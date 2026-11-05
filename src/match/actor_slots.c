@@ -584,7 +584,7 @@ void THISCALL (actor_drawIntoView)(u8 *s, int a, void *vv, int draw)
 		f = ((u32)AC->timerFlags);
 		int lists = 1;
 		if (f & 0xd00) {
-			if (g_items3D == 0)
+			if (g_highDetail == 0)
 				lists = 0;
 			else {
 				float size = f32(fsub_m(fld_m(&AC->tagBottomRight[0]), &AC->tagTopLeft[0]));
@@ -592,7 +592,7 @@ void THISCALL (actor_drawIntoView)(u8 *s, int a, void *vv, int draw)
 					lists = 0;
 			}
 		}
-		if (lists && g_items3D != 1 && tint && tint[3] <= 0x10)
+		if (lists && g_highDetail != 1 && tint && tint[3] <= 0x10)
 			lists = 0;
 		if (lists) {
 			int n = AC->breakUp;

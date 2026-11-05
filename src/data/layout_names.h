@@ -2752,6 +2752,8 @@ extern struct GameData g_data;
 #define g_unusedArmcWord3 (*(int *)g_unusedArmcWord3_v)
 #undef g_unusedArmcWord4
 #define g_unusedArmcWord4 (*(int *)g_unusedArmcWord4_v)
+#undef g_unusedBriefingWord
+#define g_unusedBriefingWord (*(int *)g_unusedBriefingWord_v)
 #undef g_unusedClock1
 #define g_unusedClock1 (*(double *)g_unusedClock1_v)
 #undef g_unusedClock2
@@ -2786,8 +2788,6 @@ extern struct GameData g_data;
 #define g_unusedMechStat (*(int *)g_unusedMechStat_v)
 #undef g_unusedMenuReturnWord
 #define g_unusedMenuReturnWord (*(int *)g_unusedMenuReturnWord_v)
-#undef g_unusedMissionSaveWord
-#define g_unusedMissionSaveWord (*(int *)g_unusedMissionSaveWord_v)
 #undef g_unusedNetCloseWord
 #define g_unusedNetCloseWord (*(int *)g_unusedNetCloseWord_v)
 #undef g_unusedPingWord1

@@ -24,7 +24,7 @@
 0x9dd8f8,int,g_unusedInitWord
 0x9dd864,u32,g_unusedActive
 0x4df004,int,g_mouseSmooth
-0x9ef218,int,g_unusedMissionSaveWord
+0x9ef218,int,g_unusedBriefingWord
 0x5b193c,u32,g_arenaFilePassword
 0x5b1940,u32,g_arenaFilePassword4
 0xa1f238,u32,g_colourMaskRed

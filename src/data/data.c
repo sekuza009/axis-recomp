@@ -826,7 +826,7 @@ u8 g_briefingShown_v[4] __attribute__((aligned(16)));   /* 0x9ef1f4 */
 u8 g_settingsPage_v[4] __attribute__((aligned(16)));   /* 0x9ef1f8 */
 u8 g_briefingEnd_v[4] __attribute__((aligned(16)));   /* 0x9ef200 */
 u32 g_skirmishColourLit_v[4] __attribute__((aligned(16)));   /* 0x9ef208 */
-u8 g_unusedMissionSaveWord_v[4] __attribute__((aligned(16)));   /* 0x9ef218 */
+u8 g_unusedBriefingWord_v[4] __attribute__((aligned(16)));   /* 0x9ef218 */
 int g_skirmishSettingsRects_v[40] __attribute__((aligned(16)));   /* 0x9ef220 */
 u32 g_missionHeader_v[4] __attribute__((aligned(16)));   /* 0x9ef2c0 */
 u8 g_missions_v[7560] __attribute__((aligned(16)));   /* 0x9ef2d0 */
@@ -1996,7 +1996,7 @@ const DataPiece g_splitObjects[] = {
 	{ 0x9ef1f8, g_settingsPage_v, 4 },
 	{ 0x9ef200, g_briefingEnd_v, 4 },
 	{ 0x9ef208, g_skirmishColourLit_v, 16 },
-	{ 0x9ef218, g_unusedMissionSaveWord_v, 4 },
+	{ 0x9ef218, g_unusedBriefingWord_v, 4 },
 	{ 0x9ef220, g_skirmishSettingsRects_v, 160 },
 	{ 0x9ef2c0, g_missionHeader_v, 16 },
 	{ 0x9ef2d0, g_missions_v, 7560 },

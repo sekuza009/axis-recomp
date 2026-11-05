@@ -617,7 +617,7 @@ static u32 settings_store(GameSettings *from, GameSettings *to, u32 then)
 	return GAME_CDECL(then, u32, void)();
 }
 /* 0x405140: the arena being created kept as the arena settings (0x4ded20), then axis.cfg loaded again */
-u32 (lobby_keepArenaSettings)(void) { return settings_store((GameSettings *)OBJ(g_newArenaName), (GameSettings *)OBJ(g_playerName), FN_ADDR(cfg_loadAxisCfg, 0x42d730)); }
+u32 (lobby_keepArenaSettings)(void) { return settings_store((GameSettings *)OBJ(g_newArenaName), (GameSettings *)OBJ(g_playerName), FN_ADDR(cfg_writeAxisCfg, 0x42d730)); }
 /* 0x433640: the room's settings kept (0x5b1b30) and written to the registry (reg_writeCharacterSettings) */
 u32 (room_keepSettings)(void) { return settings_store((GameSettings *)OBJ(g_roomSettingsName), (GameSettings *)OBJ(g_roomRecName), FN_ADDR(reg_writeCharacterSettings, 0x432400)); }
 
