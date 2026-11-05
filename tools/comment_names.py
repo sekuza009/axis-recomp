@@ -5,7 +5,7 @@
   array element / member inside one) -> the field path
 A name the comment already mentions is not put in again (the number stays). --apply writes; else a dry run."""
 import os, re, glob, sys
-os.chdir(r'C:\Users\Alexander\Desktop\Axis\recomp')
+os.chdir(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..'))
 apply = '--apply' in sys.argv
 verbose = '-v' in sys.argv
 

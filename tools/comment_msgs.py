@@ -1,6 +1,6 @@
 """Message-table addresses in comments (0x74de24 + n * 0x80) -> MSG(n, "text") as the code writes them."""
 import os, re, glob, subprocess, sys
-os.chdir(r'C:\Users\Alexander\Desktop\Axis\recomp')
+os.chdir(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..'))
 BASE, END = 0x74de24, 0x74de24 + 128256
 apply = '--apply' in sys.argv
 cache = {}
