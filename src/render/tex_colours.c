@@ -103,9 +103,9 @@ static int same(u32 a, u32 b)
 
 /* 0x456860: slot m's tints (first h, s, v, then the second's; copied as raw bits) set, the slot marked tinted (flag
    2) and changed (+0x84) when any value differs */
-void THISCALL (tex_recolourMaterial)(u8 *self, int m, u32 h1, u32 s1, u32 v1, u32 h2, u32 s2, u32 v2)
+void THISCALL (tex_recolourMaterial)(TextureBank *self, int m, u32 h1, u32 s1, u32 v1, u32 h2, u32 s2, u32 v2)
 {
-	TexRecord *rec = &((TextureBank *)self)->records[m];
+	TexRecord *rec = &self->records[m];
 	u32 flags = rec->flags | 2;
 	if (flags == 0 || !same(BITS(rec->colours[0]), h1) || !same(BITS(rec->colours[1]), s1) ||
 	    !same(BITS(rec->colours[2]), v1) || !same(BITS(rec->colours[3]), h2) ||
@@ -123,22 +123,22 @@ void THISCALL (tex_recolourMaterial)(u8 *self, int m, u32 h1, u32 s1, u32 v1, u3
 
 /* 0x456470: texture slot i's tints applied where its mask asks (red >= 200: the first, else green >= 200: the second),
    if the slot is tinted. Returns what the original leaves in eax */
-int THISCALL (tex_applyTintMask)(u8 *tex, int i)
+int THISCALL (tex_applyTintMask)(TextureBank *tex, int i)
 {
-	TexRecord *rec = &((TextureBank *)tex)->records[i];
+	TexRecord *rec = &tex->records[i];
 	u8 flags = (*(u8 *)&rec->flags);
 	if (!(flags & 2))
 		return (int)(((u32)i & 0xffffff00u) | flags);
-	for (int y = 0; y < ((TextureBank *)tex)->height; y++)
-		for (int x = 0; x < ((TextureBank *)tex)->width; x++) {
-			int k = ((TextureBank *)tex)->width * y + x;
-			u8 *px = tex + k * 4 + 0x114, *mask = tex + k * 4 + 0x80114;
+	for (int y = 0; y < tex->height; y++)
+		for (int x = 0; x < tex->width; x++) {
+			int k = tex->width * y + x;
+			u8 *px = (u8 *)tex + k * 4 + 0x114, *mask = (u8 *)tex + k * 4 + 0x80114;
 			if (mask[0] >= 200)
 				tex_tintRgba(px, BITS(rec->colours[0]), BITS(rec->colours[1]), BITS(rec->colours[2]));
 			else if (mask[1] >= 200)
 				tex_tintRgba(px, BITS(rec->colours[3]), BITS(rec->colours[4]), BITS(rec->colours[5]));
 		}
-	return ((TextureBank *)tex)->height;
+	return tex->height;
 }
 
 /* 0x454e60: a texture record: its name, slot, flags and two colours (h, s, v each), and its animation from the name's suffix: "_ANI" 1,

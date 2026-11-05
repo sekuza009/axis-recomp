@@ -42,20 +42,20 @@ void THISCALL (factors_addPointLight)(void *pool, const u32 *a, u32 x, const u32
 
 /* 0x4728e0 (thiscall on the scene): the layer's lighting computed into its colours over its rows and
    columns. Its caller ignores the eax it leaves */
-void THISCALL (ground_computeLighting)(void *scene, const u8 *layer)
+void THISCALL (ground_computeLighting)(void *scene, const GroundLayer *layer)
 {
-	light_computeLayerLightBy(scene, layer, (u32)((const GroundLayer *)layer)->colours, 1, 0, 0, ((const GroundLayer *)layer)->rows, ((const GroundLayer *)layer)->cols);
+	light_computeLayerLightBy(scene, (const u8 *)layer, (u32)layer->colours, 1, 0, 0, layer->rows, layer->cols);
 }
 
 /* 0x483dd0 (thiscall on the pool): the record copied into the next free slot (nextFree; 0x2c-byte slots from +4,
    count of them, a slot added when that is the count; from 0x400 on a fatal message), given its index (+0) and
    marked used (+4); the next free one after it found; the pool marked in use (enabled). Its callers ignore the eax
    it leaves */
-void THISCALL (factor_addFactorBy)(u8 *pool, const u32 *record)
+void THISCALL (factor_addFactorBy)(LightFactors *pool, const u32 *record)
 {
-#define COUNT (((LightFactors *)pool)->count)
-#define NEXT (((LightFactors *)pool)->nextFree)
-#define SLOT(k) ((u32 *)&((LightFactors *)pool)->records[k])
+#define COUNT (pool->count)
+#define NEXT (pool->nextFree)
+#define SLOT(k) ((u32 *)&pool->records[k])
 	if (NEXT >= 0x400)
 		sys_fatalError((char *)OBJ(g_logLight), (const char *)STR(0x4c7ae0, "factorPool overflow(%d) - addFactorBy()"), NEXT);
 	if (NEXT == COUNT) {
@@ -72,7 +72,7 @@ void THISCALL (factor_addFactorBy)(u8 *pool, const u32 *record)
 			NEXT = k;
 			break;
 		}
-	((LightFactors *)pool)->enabled = 1;
+	pool->enabled = 1;
 #undef COUNT
 #undef NEXT
 #undef SLOT

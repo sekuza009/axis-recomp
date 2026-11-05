@@ -2158,15 +2158,15 @@ void THISCALL (match_frame)(u8 *s)
 			t = (Player *)(ACTOR_AT(SC->localPlayer));
 		}
 		if (t->state != 1 && t->lastAttacker >= 0)
-			killer_view(s, ((u8 *)t));
+			killer_view(s, (u8 *)t);
 		else if (SC->cameraSettings[3][SC->cameraMode] != 0)
 			look_at(s, t->pos);
 		else {
-			preset_angles(s, ((u8 *)t), offsetof(Scene, cameraMode));
+			preset_angles(s, (u8 *)t, offsetof(Scene, cameraMode));
 			if (SC->cameraMode == 1)
-				muzzle_camera(s, ((u8 *)t));
+				muzzle_camera(s, (u8 *)t);
 			else
-				orbit_from(s, ((u8 *)t), offsetof(Scene, cameraMode), SC->cameraMode != 9);
+				orbit_from(s, (u8 *)t, offsetof(Scene, cameraMode), SC->cameraMode != 9);
 			turn_view(s);
 		}
 	}

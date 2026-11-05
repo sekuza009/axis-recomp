@@ -43,12 +43,12 @@ void (path_stripExtension)(const char *src, char *dst)
 
 /* 0x4554c0: a texture bank's name, by binary search of its sorted 0x44-byte records (index, count indexCount): the
    index or -1. The upper bound starts at the count, not count - 1, as in the original */
-int THISCALL (tex_findByName)(u8 *self, const u8 *name)
+int THISCALL (tex_findByName)(TextureBank *self, const u8 *name)
 {
-	int hi = ((TextureBank *)self)->indexCount, lo = 0;
+	int hi = self->indexCount, lo = 0;
 	if (hi <= 0)
 		return -1;
-	const u8 *records = ((TextureBank *)self)->index;
+	const u8 *records = self->index;
 	while (lo <= hi) {
 		int mid = (lo + hi) / 2;
 		const u8 *a = name, *b = records + mid * 0x44;
@@ -67,23 +67,23 @@ int THISCALL (tex_findByName)(u8 *self, const u8 *name)
 
 /* 0x455550 (thiscall on a texture bank): the item named, its file (file) moved to where the item starts (its
    0x44-byte record at index, +0x40); returns the file, or 0 after a fatal message when there is no such item */
-void *THISCALL (tex_getItemFileBy)(u8 *manager, const char *name)
+void *THISCALL (tex_getItemFileBy)(TextureBank *manager, const char *name)
 {
-	int i = tex_findByName(manager, name);
+	int i = tex_findByName((u8 *)manager, name);
 	if (i < 0) {
 		sys_fatalError((char *)OBJ(g_logTexture), (const char *)STR(0x4b3f80, "can't find item(%s) - getItemFileBy()"), (int)name);
 		return 0;
 	}
-	crt_fseek(((TextureBank *)manager)->file, GAME_VAR(long, ((TextureBank *)manager)->index + i * 0x44 + 0x40), 0);   /* (the index entry's offset, after its 0x40-byte name) */
-	return ((TextureBank *)manager)->file;
+	crt_fseek(manager->file, GAME_VAR(long, manager->index + i * 0x44 + 0x40), 0);   /* (the index entry's offset, after its 0x40-byte name) */
+	return manager->file;
 }
 
 /* 0x456be0 (thiscall on the texture manager): a texture's id by name: each of the six banks (+4 ..) asked in turn
    (tex_allocIdBy, with the flags and the two colours' hue, saturation, value); the first answer k x 512 + its index. None: a fatal message, -1 */
-int THISCALL (tex_getIdByName)(u8 *manager, const char *name, u32 flags, u32 h1, u32 s1, u32 v1, u32 h2, u32 s2, u32 v2)
+int THISCALL (tex_getIdByName)(TextureManager *manager, const char *name, u32 flags, u32 h1, u32 s1, u32 v1, u32 h2, u32 s2, u32 v2)
 {
 	for (int k = 0; k < 6; k++) {
-		void *bank = ((TextureManager *)manager)->banks[k];
+		void *bank = manager->banks[k];
 		if (!bank)
 			continue;
 		int i = tex_allocIdBy(bank, (u32)name, flags, h1, s1, v1, h2, s2, v2);
@@ -169,12 +169,12 @@ void THISCALL (tex_bind)(u8 *tm, int i)
 /* 0x4569d0 (thiscall on the texture manager): the six banks kept (+4 .. banks[5]), each (when given) checked for its
    size: 64 x 64, 128 x 64, 256 x 64, 128 x 128, 256 x 128, 256 x 256 (its width / height), a fatal message
    with the size found otherwise. Its caller ignores the eax it leaves */
-void THISCALL (TextureManager_setBanks)(u8 *manager, u8 *bank64x64, u8 *bank128x64, u8 *bank256x64, u8 *bank128x128, u8 *bank256x128, u8 *bank256x256)
+void THISCALL (TextureManager_setBanks)(TextureManager *manager, u8 *bank64x64, u8 *bank128x64, u8 *bank256x64, u8 *bank128x128, u8 *bank256x128, u8 *bank256x256)
 {
 	static const u32 sizes[6][3] = { { 64, 64, STR(0x4b4278, "texture image size mismatch (64x64 !=...") }, { 128, 64, STR(0x4b423c, "texture image size mismatch (128x64 !...") }, { 256, 64, STR(0x4b4200, "texture image size mismatch (256x64 !...") },
 	                                 { 128, 128, STR(0x4b41c4, "texture image size mismatch (128x128 ...") }, { 256, 128, STR(0x4b4188, "texture image size mismatch (256x128 ...") }, { 256, 256, STR(0x4b414c, "texture image size mismatch (256x256 ...") } };
 	u8 *banks[6] = { bank64x64, bank128x64, bank256x64, bank128x128, bank256x128, bank256x256 };
-	TextureManager_reset(manager);
+	TextureManager_reset((u8 *)manager);
 	for (int k = 0; k < 6; k++) {
 		u8 *m = banks[k];
 		TextureBank *mg = (TextureBank *)m;
@@ -182,7 +182,7 @@ void THISCALL (TextureManager_setBanks)(u8 *manager, u8 *bank64x64, u8 *bank128x
 			sys_fatalErrorN((char *)OBJ(g_logTextureManager), (const char *)RELOC(sizes[k][2]), mg->width, mg->height);
 	}
 	for (int k = 0; k < 6; k++)
-		((TextureManager *)manager)->banks[k] = banks[k];
+		manager->banks[k] = banks[k];
 }
 
 /* 0x456520 (thiscall on a texture bank): its pixels (image, width x height) uploaded to GL texture id: wrapped

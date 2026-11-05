@@ -825,7 +825,7 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 	anim_setFrame((u8 *)&AC->armsModel, 0, BITS(AC->pose[3]));
 	anim_setFrame((u8 *)&AC->legsModel, 0, BITS(AC->pose[4]));
 	anim_setFrame((u8 *)&AC->boosterModel, 0, BITS(AC->pose[5]));
-	anim_setFrame(((u8 *)model), 0, BITS(AC->fireAnim));
+	anim_setFrame((u8 *)model, 0, BITS(AC->fireAnim));
 	/* the matrices: the body at the actor, turned and leant, the head on its neck, the arms */
 	glPushMatrix();
 	glTranslatef_bits(BITS(AC->pos[0]), BITS(AC->pos[1]), BITS(AC->pos[2]));

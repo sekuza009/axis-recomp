@@ -146,7 +146,7 @@ void THISCALL (armc_drawPreview3D)(Scene *scene, const u32 *eye, const u32 *forw
                                       int w, int h)
 {
 	static const u32 lists[8] = { offsetof(Player, headModel), offsetof(Player, chestModel), offsetof(Player, armsModel), offsetof(Player, legsModel), offsetof(Player, boosterModel), offsetof(Player, weaponModel), offsetof(Player, weaponModel4), offsetof(Player, weaponModel5) };   /* (in the actor) */
-	Scene *s = (Scene *)((u8 *)scene), *stage = (u8 *)SCENE_STAGE(((u8 *)s)), *vv = scene->view;
+	u8 *s = (u8 *)scene, *stage = (u8 *)SCENE_STAGE(s), *vv = scene->view;
 	u32 light[0xb010 / 4];   /* a Light: vtable, 0x400 entries of 0x2c bytes, two counts, the changed flag (+0xb00c:
 	                            factor_addFactorBy sets it; one word short, it landed on the white tint) */
 	for (int i = 0; i < 0x400; i++)
@@ -173,7 +173,7 @@ void THISCALL (armc_drawPreview3D)(Scene *scene, const u32 *eye, const u32 *forw
 		scene->previewTurn = (float)(turn - (long double)((angle % 3600 + 3600) % 3600));
 	}
 	int a = scene->localPlayer;
-	u8 *actor = (u8 *)&s->players[a];
+	u8 *actor = (u8 *)&scene->players[a];
 	Player *pl = (Player *)actor;
 	pl->nextPitch = (float)fmul_m(fld_m(&scene->mouseDy) / (long double)(H / 2),
 	                                               (const float *)ADDR(k_890f));   /* 890: tenths of a degree */

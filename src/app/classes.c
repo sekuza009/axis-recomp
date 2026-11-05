@@ -28,27 +28,27 @@ int THISCALL (TimeSync_clear)(void *self) { return clear(self, 0xe); }        /*
 int THISCALL (spaceNode_clear)(void *self) { return clear(self, 0x4); }
 
 /* 0x483d60: Light's two counters cleared */
-int THISCALL (Light_clearCounts)(void *self)
+int THISCALL (Light_clearCounts)(LightFactors *self)
 {
-	((LightFactors *)self)->count = 0;
-	((LightFactors *)self)->nextFree = 0;
+	self->count = 0;
+	self->nextFree = 0;
 	return 0;
 }
 
 /* 0x48fc30: the stage's message ring emptied (its write and read counts) */
-int THISCALL (stage_clearMessages)(void *self)
+int THISCALL (stage_clearMessages)(Stage *self)
 {
-	((Stage *)self)->msgWrite = 0;
-	((Stage *)self)->msgRead = 0;
+	self->msgWrite = 0;
+	self->msgRead = 0;
 	return 0;
 }
 
 /* 0x4841d0: a view volume's three draw counters cleared */
-void THISCALL (ViewVolume_clearDrawCounts)(void *view)
+void THISCALL (ViewVolume_clearDrawCounts)(ViewVolume *view)
 {
-	((ViewVolume *)view)->trianglesDrawn = 0;
-	((ViewVolume *)view)->meshesDrawn = 0;
-	((ViewVolume *)view)->textureBinds = 0;
+	view->trianglesDrawn = 0;
+	view->meshesDrawn = 0;
+	view->textureBinds = 0;
 }
 
 /* 0x480210: three ints set */
@@ -334,9 +334,9 @@ void *THISCALL (image_tryOpen)(u8 *image, const char *path)
    playerRecords, 0x47fd2 bytes each; the name from +4 by 0x4c74e8) read into a local image; at least 23 x 15 of it: its
    24 x 16 corner copied as RGBA into the record (flag), black pixels made clear and the rest opaque, and 1
    returned; else 0 */
-int THISCALL (playerRecord_loadFlag)(u8 *scene, int p)
+int THISCALL (playerRecord_loadFlag)(Stage *scene, int p)
 {
-	PlayerRecord *record = &((Stage *)scene)->playerRecords[p];
+	PlayerRecord *record = &scene->playerRecords[p];
 	u8 image[0x48];
 	GAME_VAR(u32, image) = VT(BMPRGBFile, 0x4a96f8);   /* (its vtable) */
 	BITS(((BmpFile *)image)->file) = 0;      /* (no file yet) */

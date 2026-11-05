@@ -106,7 +106,7 @@ int THISCALL (chat_matchCheatCode)(Scene *scene, int actor, const char *text)
 		const char *code = language == 1 ? (const char *)(STR(0x4a9a38, "\270\323\270\256\305\253\276\306\300\314") + k * 0x100)
 		                 : language == 2 ? (const char *)(STR(0x4a9f38, "give me a big head") + k * 0x100) : NULL;
 		if (code && code[0] && !strcmp(code, text)) {
-			((Scene *)scene)->players[actor].cheat = k + 2;
+			scene->players[actor].cheat = k + 2;
 			return k + 2;
 		}
 	}

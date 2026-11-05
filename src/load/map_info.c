@@ -234,7 +234,7 @@ void THISCALL (map_loadPlayInfoFrom)(u8 *scene, const char *name)
 			if (st->startCount >= 32)
 				sys_fatalError((char *)OBJ(g_logStage), (const char *)STR(0x4c7c00, "numOfMultiPlayStartPoint overflow(lim..."), 0x20);
 			StartPoint *start = &st->starts[st->startCount];
-			memcpy(((u8 *)start), &r[4], 12);
+			memcpy((u8 *)start, &r[4], 12);
 			start->angle[0] = f32(fmul_m(fld_m(&rf[7]), scale));
 			start->angle[1] = f32(fmul_m(fld_m(&rf[8]), scale));
 			st->startCount++;

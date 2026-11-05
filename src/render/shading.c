@@ -222,7 +222,7 @@ static int light_level(long double d)
    layer (water 1) gets the light from straight above (from below, -1, for a layer of kind 1) in its 12 box colours
    (boxColours) too. A kind-2 layer only clears its light map (colours) and box colours. Its caller ignores the
    eax it leaves */
-void THISCALL (light_computeLayerLightBy)(u8 *scene, u8 *layer, u8 *cols, int first, int r0, int c0, int r1, int c1)
+void THISCALL (light_computeLayerLightBy)(Stage *scene, u8 *layer, u8 *cols, int first, int r0, int c0, int r1, int c1)
 {
 	GroundLayer *gl = (GroundLayer *)layer;
 	if (gl->kind == 2) {
@@ -231,7 +231,7 @@ void THISCALL (light_computeLayerLightBy)(u8 *scene, u8 *layer, u8 *cols, int fi
 			memset(gl->boxColours, 0xff, 12 * 4);
 		return;
 	}
-	const LightFactors *lights = &((Stage *)scene)->mapLights;
+	const LightFactors *lights = &scene->mapLights;
 	for (int li = 0; li < lights->count; li++) {
 		const Factor *fc = &lights->records[li];
 		const u8 *light = (const u8 *)&fc->kind;   /* (light_mix takes the factor from its kind on) */

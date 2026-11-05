@@ -383,11 +383,11 @@ u8 *THISCALL (skel_getSkeletonPtrBy)(u8 *cache, const char *name)
 	void *at = mem ? mem + mg->dataUsed : NULL;
 	int room = mem ? mg->dataSize - mg->dataUsed : 0;
 	if (((int)mg->source) == 2)
-		skel_loadFromFile(((u8 *)sk), skelDat_getItemFileBy(key), at, room);
+		skel_loadFromFile((u8 *)sk, skelDat_getItemFileBy(key), at, room);
 	else {
 		char path[0x100];
 		item_path(path, cache, own, STR(0x4c54f4, "ske"), STR(0x4c54f8, "ase"), (char *)OBJ(g_logSkeletonManager), STR(0x4c54fc, "invalid file format(%s)-getSkeletonPt..."));
-		skel_loadFrom(((u8 *)sk), path, at, room);
+		skel_loadFrom((u8 *)sk, path, at, room);
 	}
 	if (mem)
 		mg->dataUsed += sk->blockSize;
@@ -993,9 +993,9 @@ void THISCALL (model_loadObjFormatFrom)(u8 *sh, void *f, u8 *mem, int memSize)
 					c[3][0] = 0;
 				int b = corner;
 				float *pv = (*(float * *)&part->vertices), *pn;
-				obj_corner(((u8 *)part), b, c[0], vs, ns, ts);
-				obj_corner(((u8 *)part), b + 1, c[1], vs, ns, ts);
-				if (!obj_corner(((u8 *)part), b + 2, c[2], vs, ns, ts)) {
+				obj_corner((u8 *)part, b, c[0], vs, ns, ts);
+				obj_corner((u8 *)part, b + 1, c[1], vs, ns, ts);
+				if (!obj_corner((u8 *)part, b + 2, c[2], vs, ns, ts)) {
 					float tmp[3];
 					pv = (*(float * *)&part->vertices);
 					const float *nrm = math_triangleNormal(tmp, pv + b * 3, pv + (b + 1) * 3, pv + (b + 2) * 3);
@@ -1013,7 +1013,7 @@ void THISCALL (model_loadObjFormatFrom)(u8 *sh, void *f, u8 *mem, int memSize)
 					memcpy(vs + (b + 5) * 3, vs + b * 3, 12);
 					memcpy(ns + (b + 5) * 3, ns + b * 3, 12);
 					memcpy(ts + (q + 2) * 2, ts + (q - 3) * 2, 8);
-					if (!obj_corner(((u8 *)part), b + 4, c[3], vs, ns, ts)) {
+					if (!obj_corner((u8 *)part, b + 4, c[3], vs, ns, ts)) {
 						float tmp[3];
 						pv = (*(float * *)&part->vertices);
 						const float *nrm = math_triangleNormal(tmp, pv + q * 3, pv + (b + 4) * 3, pv + (b + 5) * 3);

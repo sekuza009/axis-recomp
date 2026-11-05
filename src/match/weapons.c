@@ -33,14 +33,14 @@ void THISCALL (actor_prevWeapon)(Stage *stage, int i) { weapon_cycle(stage, i, 5
    weapon its player record holds there */
 void THISCALL (actor_setWeaponSlot)(Stage *stage, int i, int slot)
 {
-	u8 *actor = (u8 *)(u8 *)&((Stage *)stage)->actors[i];
+	u8 *actor = (u8 *)(u8 *)&stage->actors[i];
 	Player *ac = (Player *)actor;
 	int player = ac->player;
 	if (ac->slot != slot) {
 		ac->slot = slot;
 		if (slot < 4)
 			ac->lastWeaponSlot = slot;
-		ac->actorType = ((Stage *)stage)->playerRecords[player].items[slot];
+		ac->actorType = stage->playerRecords[player].items[slot];
 	}
 }
 
@@ -48,10 +48,10 @@ void THISCALL (actor_setWeaponSlot)(Stage *stage, int i, int slot)
    holds a weapon there of a known type */
 void THISCALL (actor_selectWeapon)(Stage *stage, int i, int slot)
 {
-	Player *actor = (Player *)((u8 *)(u8 *)&((Stage *)stage)->actors[i]);
+	Player *actor = (&stage->actors[i]);
 	if (actor->slot == slot)
 		return;
-	int weapon = ((Stage *)stage)->playerRecords[actor->player].items[slot];
+	int weapon = stage->playerRecords[actor->player].items[slot];
 	if (weapon > -1 && stage->actorInfo[weapon].ammoSlot > -1) {
 		actor->weaponLowering = 1;
 		actor->slotLoaded = slot;
@@ -63,7 +63,7 @@ void THISCALL (actor_selectWeapon)(Stage *stage, int i, int slot)
    (g_randTable, 4096 values, position g_randPos), and its aim is set back to its own point */
 void THISCALL (actor_pickRandomWeapon)(Stage *stage, int i)
 {
-	Player *actor = (Player *)((u8 *)(u8 *)&((Stage *)stage)->actors[i]);
+	Player *actor = (&stage->actors[i]);
 	if (actor->state != 1)
 		return;
 	u32 r = g_randPos;

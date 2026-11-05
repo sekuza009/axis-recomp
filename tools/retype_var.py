@@ -80,7 +80,8 @@ if '--param' in sys.argv:
 	if not dry:
 		open(path, 'w', encoding='latin-1', newline='').write(nt)
 	sys.exit(0)
-if re.search(r',\s*\*\s*%s\b' % V, body) or re.search(r'\bu8\s*\*\s*\w+\s*=[^;]*,\s*\*?\s*%s\b' % V, body):
+if re.search(r',\s*\*\s*%s\b' % V, body) or re.search(r'\bu8\s*\*\s*\w+\s*=[^;]*,\s*\*?\s*%s\b' % V, body) \
+		or re.search(r'\bu8\s*\*\s*%s\s*(?:=[^;]*)?,\s*\*' % V, body):
 	sys.exit('a declarator list holds %s: by hand' % var)
 if not re.search(r'\bu8\s*\*\s*%s\b' % V, body):
 	sys.exit('%s is not a u8 * local of %s' % (var, fn))

@@ -72,9 +72,9 @@ int THISCALL (collisionTri_setup)(u8 *self, int id, const float *v0, const float
 
 /* 0x47fb80: the segment p0 -> p1 against the triangle: crossing its face plane at a point inside its three edge
    planes. On a hit: the point in *hit, its distance to p1 in *dist, returns 1 */
-int THISCALL (collisionTri_traceSegment)(const u8 *self, const float *p0, const float *p1, float *hit, float *dist)
+int THISCALL (collisionTri_traceSegment)(const CollisionPlane *self, const float *p0, const float *p1, float *hit, float *dist)
 {
-	const float *n = ((const CollisionPlane *)self)->normal;
+	const float *n = self->normal;
 	X zero = k_0f;
 	X d0 = (X)n[1] * p0[1] + (X)p0[2] * n[2] + (X)n[0] * p0[0] - n[3];
 	X d1 = (X)p1[2] * n[2] + (X)n[0] * p1[0] + (X)n[1] * p1[1] - n[3];
@@ -87,7 +87,7 @@ int THISCALL (collisionTri_traceSegment)(const u8 *self, const float *p0, const 
 	float h[3] = { (float)(dx * t + p0[0]), (float)((X)ey + p0[1]), (float)((X)ez + p0[2]) };
 	memcpy(hit, h, 12);
 	for (int k = 0; k < 3; k++) {
-		const float *e = ((const CollisionPlane *)self)->edgePlanes[k];
+		const float *e = self->edgePlanes[k];
 		if ((X)e[0] * hit[0] + (X)e[1] * hit[1] + (X)e[2] * hit[2] - e[3] >= zero)
 			return 0;
 	}
@@ -395,10 +395,10 @@ static void respond(float *w, const float *v, const float *d, float k, const flo
    touch, puts the centre there (outPos), its distance from pos + vel (outDist), the response (outVel: the remaining
    move slid along the contact, scaled by k, about axis when there is one) and the contact plane (normal and
    distance). Returns 1 on a contact */
-int THISCALL (collisionTri_sweepSphere)(u8 *tri, float r, const float *pos, const float *vel, float k, float *outPos,
+int THISCALL (collisionTri_sweepSphere)(CollisionPlane *tri, float r, const float *pos, const float *vel, float k, float *outPos,
                                       float *outVel, float *outDist, float *plane, const float *axis)
 {
-	const float *n = ((const CollisionPlane *)tri)->normal, *dist = &((const CollisionPlane *)tri)->dist;
+	const float *n = tri->normal, *dist = &tri->dist;
 	float *o = outPos, edge[3], p[3], v[3], c[3], d[3], w[3], u[3], pv[3], r2, a;
 	for (int i = 0; i < 3; i++)
 		o[i] = f32(fadd_m(fld_m(&pos[i]), &vel[i]));
@@ -407,7 +407,7 @@ int THISCALL (collisionTri_sweepSphere)(u8 *tri, float r, const float *pos, cons
 	if (absx(fsub_m(mul(fld_m(&o[2]), &n[2]) + mul(fld_m(&o[1]), &n[1]) + mul(fld_m(&o[0]), &n[0]), dist)) >= r)
 		return 0;
 	for (int i = 0; i < 3; i++) {
-		const float *e = ((const CollisionPlane *)tri)->edgePlanes[i];
+		const float *e = tri->edgePlanes[i];
 		X s = fsub_m(mul(fld_m(&e[0]), &o[0]) + mul(fld_m(&e[1]), &o[1]) + mul(fld_m(&e[2]), &o[2]), &e[3]);
 		edge[i] = (float)s;
 		if (s >= r)
@@ -469,8 +469,8 @@ int THISCALL (collisionTri_sweepSphere)(u8 *tri, float r, const float *pos, cons
 		return 1;
 	}
 	int j = (i + 1) % 3, corner = 1;
-	const float *vi = (const float *)(tri + 4 + i * 12), *vj = (const float *)(tri + 4 + j * 12);
-	const float *e = ((const CollisionPlane *)tri)->edges[i];
+	const float *vi = (const float *)((u8 *)tri->cornerPoints + i * 12), *vj = (const float *)((u8 *)tri->cornerPoints + j * 12);
+	const float *e = tri->edges[i];
 	vsub(u, o, vi);
 	if (!(dot_zyx(e, u) >= 0)) {   /* before the edge's start: that corner */
 		r2 = f32(fmul_m(fld_m(&r), &r));
@@ -558,7 +558,7 @@ static float row_dir(const float *m, const float *p, int i)
    then the move slides on: up to 6 passes, ending when a pass's distance is under r / 10, or (contact, outVel the
    g_vecZero axis, outDist 0) when the response turns back against vel. outPos starts as pos + vel. Returns 1 when
    anything was hit */
-int THISCALL (space_collideBlock)(u8 *self, float r, const float *pos, const float *vel, u32 k, float *outPos,
+int THISCALL (space_collideBlock)(SpaceBlock *self, float r, const float *pos, const float *vel, u32 k, float *outPos,
                                  float *outVel, float *outDist, float *outPlane, u32 axis, const u32 *subs, int nsubs)
 {
 	float at[3], move[3], from[3], step[3], hitPos[3], hitVel[3], plane[4], dist, best;
@@ -570,7 +570,7 @@ int THISCALL (space_collideBlock)(u8 *self, float r, const float *pos, const flo
 	SpaceNode *last = 0;
 	for (int pass = 0;; pass++) {
 		memcpy(at, from, 12);
-		SpaceNode *node = ((SpaceBlock *)self)->items;
+		SpaceNode *node = self->items;
 		int sub = -1, hit = 0;
 		BITS(best) = 0xff7fffff;   /* -FLT_MAX */
 		memcpy(move, step, 12);

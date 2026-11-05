@@ -124,10 +124,10 @@ void THISCALL (stage_buildMeshDrawRecords)(u8 *stage)
 
 /* 0x46fed0: the textures of every shape in an object list bound (count count, 100-byte entries from *(entries), the
    shape first) */
-void THISCALL (partList_bindTextures)(u8 *list)
+void THISCALL (partList_bindTextures)(ObjectList *list)
 {
-	for (int i = 0; i < ((ObjectList *)list)->count; i++) {
-		void *shape = ((ObjectList *)list)->entries[i].shape;
+	for (int i = 0; i < list->count; i++) {
+		void *shape = list->entries[i].shape;
 		if (shape)
 			shape_bindPartTextures(shape);
 	}

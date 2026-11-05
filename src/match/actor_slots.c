@@ -277,7 +277,7 @@ void THISCALL (actor_deactivate)(Stage *stage, int i)
 /* 0x45dc00 (thiscall on the scene): actor slot i (at most 99) set up from its parts (actor_setupFromParts): the
    slots up to it are added first (each new one marked free, active), and the first free slot (searched up to and
    including the count, as the original does) kept as the next free (actorFreeHint). Returns i, or -1 */
-int THISCALL (stage_setupActorSlot)(u8 *scene, int i, u32 id, u32 controlledBy, u32 parts)
+int THISCALL (stage_setupActorSlot)(Stage *scene, int i, u32 id, u32 controlledBy, u32 parts)
 {
 #define COUNT STS->actorCount
 #define USED(k) STS->actors[k].active
@@ -290,10 +290,10 @@ int THISCALL (stage_setupActorSlot)(u8 *scene, int i, u32 id, u32 controlledBy, 
 	}
 	for (int k = 0; k <= COUNT; k++)
 		if (USED(k) == 0) {
-			((Stage *)scene)->actorFreeHint = k;
+			scene->actorFreeHint = k;
 			break;
 		}
-	actor_setupFromParts(scene, i, id, controlledBy, parts);
+	actor_setupFromParts((u8 *)scene, i, id, controlledBy, parts);
 	return i;
 #undef COUNT
 #undef USED
@@ -482,10 +482,10 @@ static u8 level_byte(float *v)
    bytes in the part type record's colour table (partHue + part x 2: hue, partSaturation saturation, partValue value; the second
    set one byte on), then the part's shape cache (headShapes ..) given textures from the player's
    directory (by 0x4c77f8) tinted with them (shape_setTextureDir). Its callers ignore the eax it leaves */
-void THISCALL (actor_setPartColor)(u8 *scene, int p, int part, float h1, float s1, float v1, float h2, float s2, float v2)
+void THISCALL (actor_setPartColor)(Stage *scene, int p, int part, float h1, float s1, float v1, float h2, float s2, float v2)
 {
 	static const u32 shapes[5] = { offsetof(PlayerRecord, headShapes), offsetof(PlayerRecord, chestShapes), offsetof(PlayerRecord, armShapes), offsetof(PlayerRecord, legShapes), offsetof(PlayerRecord, boosterShapes) };
-	PlayerRecord *pr = &((Stage *)scene)->playerRecords[p];
+	PlayerRecord *pr = &scene->playerRecords[p];
 	pr->partHue[part][0] = hue_byte(&h1);
 	pr->partSaturation[part][0] = level_byte(&s1);
 	pr->partValue[part][0] = level_byte(&v1);

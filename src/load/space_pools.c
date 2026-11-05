@@ -305,7 +305,7 @@ int THISCALL (space_collideAt)(u8 *grid, u32 r, const float *pos, const float *v
 	const float *half = (const float *)ADDR(k_0_5f);
 	while (node) {
 		if (!node->split)
-			return sp->lastHit = space_collideBlock(((u8 *)node), r, pos, vel, k, outPos, outVel, outDist, outPlane, axis, subs, nsubs);
+			return sp->lastHit = space_collideBlock((u8 *)node, r, pos, vel, k, outPos, outVel, outDist, outPlane, axis, subs, nsubs);
 		long double mx = fmul_m(fadd_m(fld_m(&box[3]), &box[0]), half);
 		float my = f32(fmul_m(fadd_m(fld_m(&box[4]), &box[1]), half));
 		float mz = f32(fmul_m(fadd_m(fld_m(&box[5]), &box[2]), half));
@@ -718,10 +718,10 @@ static void through_m(float *out, const float *m, const float *p, int yx)
    on cubes), and returns the first child's hit. A leaf traces its list (items; nodes: record +0, next next; records
    flagged 1 skipped) and then each of nsubs sub-model lists (subs: 3 dwords each, the list, the matrix out, the
    matrix in; the segment taken in, a hit taken back out). Returns the hit record or 0 */
-u32 THISCALL (space_traceBlock)(u8 *block, const float *from, const float *to, float *hit, float *dist, const u32 *subs, int nsubs)
+u32 THISCALL (space_traceBlock)(SpaceBlock *block, const float *from, const float *to, float *hit, float *dist, const u32 *subs, int nsubs)
 {
 	const float *low = (const float *)RELOC(block), *k = (const float *)ADDR(k_0_5f);
-	if (((SpaceBlock *)block)->split == 1) {
+	if (block->split == 1) {
 		float half[3], d[3];
 		for (int a = 0; a < 3; a++) {
 			float ext = f32(fsub_m(fld_m(&low[3 + a]), &low[a]));
@@ -766,7 +766,7 @@ u32 THISCALL (space_traceBlock)(u8 *block, const float *from, const float *to, f
 						memcpy(r1, q1, 12);
 					else
 						cut_at(r1, q0, dq, sx > 0 ? x + 1 : x, &half[2], &low[0], 0, 1);
-					u8 *child = ((SpaceBlock *)block)->children[x + 2 * z + 4 * y];
+					u8 *child = block->children[x + 2 * z + 4 * y];
 					if (child) {
 						u32 r = space_traceBlock(child, r0, r1, (u32)hit, dist, (u32)subs, (u32)nsubs);
 						if (r)
@@ -782,7 +782,7 @@ u32 THISCALL (space_traceBlock)(u8 *block, const float *from, const float *to, f
 				return 0;
 		}
 	}
-	SpaceNode *node = ((SpaceBlock *)block)->items;
+	SpaceNode *node = block->items;
 	if (!node)
 		return 0;
 	GAME_VAR(u32, dist) = 0xff7fffff;

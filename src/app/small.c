@@ -76,7 +76,7 @@ void THISCALL (stage_deactivateActors)(Stage *stage)
 int THISCALL (stage_resetLights)(Stage *stage)
 {
 	stage->dynamicLightsSet = 0;
-	return Light_clearCounts((u8 *)&((Stage *)stage)->dynamicLights);
+	return Light_clearCounts((u8 *)&stage->dynamicLights);
 }
 
 /* ---- small objects ---- */
@@ -173,9 +173,9 @@ void THISCALL (stage_selectActor)(Stage *stage, int i)
 }
 /* 0x456820: material m (the manager's record m) marked changed, its flags kept to the bits 0x11111113 (the
    original's guard, flags | 2, is always true) */
-void THISCALL (tex_markMaterialChanged)(void *self, int m)
+void THISCALL (tex_markMaterialChanged)(TextureBank *self, int m)
 {
-	TexRecord *r = &((TextureBank *)self)->records[m];
+	TexRecord *r = &self->records[m];
 	u32 f = r->flags;
 	if ((f | 2) != 0) {
 		r->flags = f & 0x11111113;
@@ -183,10 +183,10 @@ void THISCALL (tex_markMaterialChanged)(void *self, int m)
 	}
 }
 /* 0x456b50: the three counters of each of the six texture banks cleared */
-void THISCALL (tex_clearSetCounters)(void *self)
+void THISCALL (tex_clearSetCounters)(TextureManager *self)
 {
 	for (int k = 1; k <= 6; k++) {
-		TextureBank *o = (TextureBank *)((TextureManager *)self)->banks[k - 1];
+		TextureBank *o = (TextureBank *)self->banks[k - 1];
 		o->loadCount = 0;
 		o->counterB = 0;
 		o->counterC = 0;
@@ -342,10 +342,10 @@ int THISCALL (stage_setSilentActor)(Stage *stage, int v) { stage->silentActor = 
 /* 0x468720: the time sync object at g_loadTimer constructed */
 void *(static_initTimeSync)(void) { return TimeSync_ctor((void *)OBJ(g_loadTimer)); }
 /* 0x470f80: the stage's texture folder (stageName) set, upper-cased with back slashes (returned) */
-char *THISCALL (stage_setTextureFolder)(void *self, const char *folder)
+char *THISCALL (stage_setTextureFolder)(Stage *self, const char *folder)
 {
-	strcpy(((Stage *)self)->stageName, folder);
-	return path_normalize(((Stage *)self)->stageName);
+	strcpy(self->stageName, folder);
+	return path_normalize(self->stageName);
 }
 /* 0x461ec0: the scene's texture folder (mapName) and its stage's */
 void THISCALL (scene_setTextureFolder)(Scene *scene, const char *folder)

@@ -38,27 +38,27 @@ void THISCALL (shape_recolourMaterials)(void *shape, u32 h1, u32 s1, u32 v1, u32
 }
 
 /* 0x467660: the model tinted, every shape with it */
-void THISCALL (shape_setTint)(void *model, u32 h1, u32 s1, u32 v1, u32 h2, u32 s2, u32 v2)
+void THISCALL (shape_setTint)(Manager *model, u32 h1, u32 s1, u32 v1, u32 h2, u32 s2, u32 v2)
 {
-	((Manager *)model)->tint[0] = h1;
-	((Manager *)model)->bindFlags |= 2;
-	((Manager *)model)->tint[3] = h2;
-	((Manager *)model)->tint[1] = s1;
-	((Manager *)model)->tint[2] = v1;
-	((Manager *)model)->tint[4] = s2;
-	((Manager *)model)->tint[5] = v2;
-	for (int i = 0; i < SHAPE_COUNT(model); i++)
-		shape_recolourMaterials(SHAPE(model, i), h1, s1, v1, h2, s2, v2);
+	model->tint[0] = h1;
+	model->bindFlags |= 2;
+	model->tint[3] = h2;
+	model->tint[1] = s1;
+	model->tint[2] = v1;
+	model->tint[4] = s2;
+	model->tint[5] = v2;
+	for (int i = 0; i < SHAPE_COUNT((u8 *)model); i++)
+		shape_recolourMaterials(SHAPE((u8 *)model, i), h1, s1, v1, h2, s2, v2);
 }
 
 /* 0x4675f0: the tint taken off */
-void THISCALL (model_clearTint)(void *model)
+void THISCALL (model_clearTint)(Manager *model)
 {
-	((Manager *)model)->bindFlags &= ~2;
+	model->bindFlags &= ~2;
 	for (int k = 0; k < 6; k++)
-		((Manager *)model)->tint[k] = 0;
-	for (int i = 0; i < SHAPE_COUNT(model); i++)
-		shape_markMaterialsChanged(SHAPE(model, i));
+		model->tint[k] = 0;
+	for (int i = 0; i < SHAPE_COUNT((u8 *)model); i++)
+		shape_markMaterialsChanged(SHAPE((u8 *)model, i));
 }
 
 /* 0x466960: every part's pixels coloured (image_addColour on the part's place in px) */
@@ -72,15 +72,15 @@ void (shape_colourPixels)(u8 *px, int mode, const void *shape, const u8 *colour)
 
 /* 0x467580: a model's texture folder (textureDir) and flags (bindFlags) set; with flag 2 its tint (two HSV colours), else
    its shapes' own colours */
-void THISCALL (shape_setTextureDir)(void *model, const char *folder, int flags, u32 h1, u32 s1, u32 v1, u32 h2, u32 s2,
+void THISCALL (shape_setTextureDir)(Manager *model, const char *folder, int flags, u32 h1, u32 s1, u32 v1, u32 h2, u32 s2,
                                     u32 v2)
 {
-	strcpy(((Manager *)model)->textureDir, folder);
-	((Manager *)model)->bindFlags = flags;
+	strcpy(model->textureDir, folder);
+	model->bindFlags = flags;
 	if (flags & 2)
-		shape_setTint(model, h1, s1, v1, h2, s2, v2);
+		shape_setTint((u8 *)model, h1, s1, v1, h2, s2, v2);
 	else
-		model_clearTint(model);
+		model_clearTint((u8 *)model);
 }
 
 /* 0x46de20: an RGBA byte colour tinted: to floats (/ 255), tex_tintHsv, back to bytes (* 255, all four channels,
@@ -106,7 +106,7 @@ int (shape_shadingColours)(float *out, int first, u8 *shape, void *factors, int 
 	Model *md = (Model *)shape;
 	for (int i = 0; i < md->partCount; i++) {
 		ShapePart *part = (ShapePart *)(md->parts + i * 0x80);
-		GAME_FN(shape_getShadingColorBufferBy, 0x463b80, void, float *, int, void *, void *, int)(out + part->colourBase, first, ((u8 *)part), factors,
+		GAME_FN(shape_getShadingColorBufferBy, 0x463b80, void, float *, int, void *, void *, int)(out + part->colourBase, first, (u8 *)part, factors,
 		                                                                matrix);   /* shape_getShadingColorBufferBy */
 	}
 	return md->partCount;

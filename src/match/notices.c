@@ -105,11 +105,11 @@ int (notice_printCentre)(Scene *scene, const char *format, ...)
 }
 
 /* 0x473450: printed into the stage's text buffer (printText) */
-int (stage_printText)(u8 *obj, const char *format, ...)
+int (stage_printText)(Stage *obj, const char *format, ...)
 {
 	va_list args;
 	va_start(args, format);
-	int n = vsprintf(((Stage *)obj)->printText, format, args);
+	int n = vsprintf(obj->printText, format, args);
 	va_end(args);
 	return n;
 }

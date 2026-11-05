@@ -65,7 +65,7 @@ void *THISCALL (scene_followedActor)(Scene *scene)
    0, of that at its position */
 void THISCALL (stage_refillLights)(Stage *stage)
 {
-	u8 *pool = (u8 *)&((Stage *)stage)->dynamicLights;
+	u8 *pool = (u8 *)&stage->dynamicLights;
 	stage->dynamicLightsSet = 1;
 	Light_clearCounts(pool);
 	for (int i = 0; i < stage->actorCount; i++) {
