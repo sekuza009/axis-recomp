@@ -3,7 +3,7 @@
 0x9087c0,u8,18944,g_sessionList,256 records of 0x4a (to 0x90d1c0): +0 the DirectPlay id; +4 the name (g_gameList); +0x24 players; +0x2b the session; +0x3b the title
 0x9f6848,u8,9216,g_profiles,128 records of 0x48 (to 0x9f8c48): +0 the number; +4 the name (g_profileList); +0x44 the pilot
 0x9f1ac4,char,8192,g_saveFileNames,profile_scanSaves' *.axs names (0x40 apart; strcpy of any count: held)
-0x9dcee8,u8,684,g_roomTextAndRows,the typed room password text and the room list's ten 0x44-byte rows from +4 (overlapping; edited by hand)
+0x9dcee8,u8,684,g_joinPasswordAndRanking,the typed room password text and the room list's ten 0x44-byte rows from +4 (overlapping; edited by hand)
 0x9dd1a0,int,4,g_roomDialogBox,the room's server dialog box (room_openDialog58; popup_layout)
 0x9dd260,u8,11,g_roomMechKept,the room record's mech parts kept (lobby_states)
 0x9dd26b,u8,144,g_roomColoursKept,the room record's colours kept

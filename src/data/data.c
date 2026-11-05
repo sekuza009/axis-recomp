@@ -461,7 +461,7 @@ u8 g_dikG_v[4] __attribute__((aligned(16)));   /* 0x4e14ec */
 u8 g_dikH_v[4] __attribute__((aligned(16)));   /* 0x4e14f0 */
 u8 g_dikI_v[4] __attribute__((aligned(16)));   /* 0x4e14f4 */
 u8 g_dikJ_v[4] __attribute__((aligned(16)));   /* 0x4e14f8 */
-u8 g_scroll_v[4] __attribute__((aligned(16)));   /* 0x4e14fc */
+u8 g_setupStripeScroll_v[4] __attribute__((aligned(16)));   /* 0x4e14fc */
 u8 g_dikK_v[4] __attribute__((aligned(16)));   /* 0x4e1500 */
 u8 g_dikL_v[4] __attribute__((aligned(16)));   /* 0x4e1504 */
 u8 g_dikM_v[4] __attribute__((aligned(16)));   /* 0x4e1508 */
@@ -685,7 +685,7 @@ int g_newIdFormRects_v[28] __attribute__((aligned(16)));   /* 0x9dce50 */
 u32 g_roomBright_v[4] __attribute__((aligned(16)));   /* 0x9dcec0 */
 u8 g_retypePassword_v[4] __attribute__((aligned(16)));   /* 0x9dced0 */
 int g_roomMessageRect_v[4] __attribute__((aligned(16)));   /* 0x9dced8 */
-u8 g_roomTextAndRows_v[684] __attribute__((aligned(16)));   /* 0x9dcee8 */
+u8 g_joinPasswordAndRanking_v[684] __attribute__((aligned(16)));   /* 0x9dcee8 */
 u8 g_loginToSend_v[4] __attribute__((aligned(16)));   /* 0x9dd198 */
 int g_roomDialogBox_v[4] __attribute__((aligned(16)));   /* 0x9dd1a0 */
 u8 g_unusedRoomWord_v[4] __attribute__((aligned(16)));   /* 0x9dd1b0 */
@@ -948,7 +948,7 @@ u8 g_serverPort_v[2] __attribute__((aligned(16)));   /* 0xa05326 */
 u8 g_unusedNetCloseWord_v[4] __attribute__((aligned(16)));   /* 0xa05328 */
 u8 g_netPlayerList_v[682] __attribute__((aligned(16)));   /* 0xa05330 */
 int g_lobbyReplyCode_v[1] __attribute__((aligned(16)));   /* 0xa055dc */
-u8 g_netJoinMessage_v[4] __attribute__((aligned(16)));   /* 0xa055e0 */
+u8 g_netAccountRequest_v[4] __attribute__((aligned(16)));   /* 0xa055e0 */
 u8 g_lobbyTcpPort_v[4] __attribute__((aligned(16)));   /* 0xa055f4 */
 u8 g_lobbySocket_v[4] __attribute__((aligned(16)));   /* 0xa055f8 */
 char g_ladderDns_v[50] __attribute__((aligned(16)));   /* 0xa055fc */
@@ -1162,7 +1162,7 @@ u8 g_sortState_v[49176] __attribute__((aligned(16)));   /* 0xae3338 */
 u8 g_currentStageName_v[4] __attribute__((aligned(16)));   /* 0xaef35c */
 u8 g_packetQueue_v[139328] __attribute__((aligned(16)));   /* 0xaef660 */
 int g_nextNumber_v[16] __attribute__((aligned(16)));   /* 0xb116a0 */
-u8 g_cursor_v[4] __attribute__((aligned(16)));   /* 0xb116e0 */
+u8 g_netqCursor_v[4] __attribute__((aligned(16)));   /* 0xb116e0 */
 u8 g_resends_v[4] __attribute__((aligned(16)));   /* 0xb116e4 */
 u8 g_displayModeChanged_v[1] __attribute__((aligned(16)));   /* 0xb12a80 */
 u8 g_displayModeLeft_v[1] __attribute__((aligned(16)));   /* 0xb12a81 */
@@ -1631,7 +1631,7 @@ const DataPiece g_splitObjects[] = {
 	{ 0x4e14f0, g_dikH_v, 4 },
 	{ 0x4e14f4, g_dikI_v, 4 },
 	{ 0x4e14f8, g_dikJ_v, 4 },
-	{ 0x4e14fc, g_scroll_v, 4 },
+	{ 0x4e14fc, g_setupStripeScroll_v, 4 },
 	{ 0x4e1500, g_dikK_v, 4 },
 	{ 0x4e1504, g_dikL_v, 4 },
 	{ 0x4e1508, g_dikM_v, 4 },
@@ -1855,7 +1855,7 @@ const DataPiece g_splitObjects[] = {
 	{ 0x9dcec0, g_roomBright_v, 16 },
 	{ 0x9dced0, g_retypePassword_v, 4 },
 	{ 0x9dced8, g_roomMessageRect_v, 16 },
-	{ 0x9dcee8, g_roomTextAndRows_v, 684 },
+	{ 0x9dcee8, g_joinPasswordAndRanking_v, 684 },
 	{ 0x9dd198, g_loginToSend_v, 4 },
 	{ 0x9dd1a0, g_roomDialogBox_v, 16 },
 	{ 0x9dd1b0, g_unusedRoomWord_v, 4 },
@@ -2118,7 +2118,7 @@ const DataPiece g_splitObjects[] = {
 	{ 0xa05328, g_unusedNetCloseWord_v, 4 },
 	{ 0xa05330, g_netPlayerList_v, 682 },
 	{ 0xa055dc, g_lobbyReplyCode_v, 4 },
-	{ 0xa055e0, g_netJoinMessage_v, 4 },
+	{ 0xa055e0, g_netAccountRequest_v, 4 },
 	{ 0xa055f4, g_lobbyTcpPort_v, 4 },
 	{ 0xa055f8, g_lobbySocket_v, 4 },
 	{ 0xa055fc, g_ladderDns_v, 50 },
@@ -2332,7 +2332,7 @@ const DataPiece g_splitObjects[] = {
 	{ 0xaef35c, g_currentStageName_v, 4 },
 	{ 0xaef660, g_packetQueue_v, 139328 },
 	{ 0xb116a0, g_nextNumber_v, 64 },
-	{ 0xb116e0, g_cursor_v, 4 },
+	{ 0xb116e0, g_netqCursor_v, 4 },
 	{ 0xb116e4, g_resends_v, 4 },
 	{ 0xb12a80, g_displayModeChanged_v, 1 },
 	{ 0xb12a81, g_displayModeLeft_v, 1 },

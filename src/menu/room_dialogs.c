@@ -575,7 +575,7 @@ u32 (room_enterAccountPage)(void)
 	static const u32 cleared2[] = { ADDR(g_editingOldPassword), ADDR(g_editingAccountPassword), ADDR(g_editingPasswordRepeat), ADDR(g_editingEmail), ADDR(g_unusedAccountWord), (OBJ(g_accountPassword) + 0x8), (OBJ(g_accountOldPassword) + 0x8) };
 	for (unsigned k = 0; k < sizeof cleared2 / sizeof cleared2[0]; k++)
 		GAME_VAR(int, cleared2[k]) = 0;
-	char *message = g_netJoinMessage;
+	char *message = g_netAccountRequest;
 	memset(message, 0, 30);
 	strcpy(message, g_ladderId);
 	u32 r = net_send(0x1d, 0x65);

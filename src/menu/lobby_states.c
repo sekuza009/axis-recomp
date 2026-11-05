@@ -532,7 +532,7 @@ u32 (mapList_keys)(void)
 	return r;
 }
 
-/* 0x435a40: leaving the game room: the room's name sent to the others (message 0x19, 0x65 bytes), a pause of half a
+/* 0x435a40: leaving the game room: the Ladder ID sent to the game server (packet 0x19: logging out), a pause of half a
    second, back to the main menu (state 300), the connection closed, the mech reloaded from the profile */
 u32 (room_leaveGame)(void)
 {

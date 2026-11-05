@@ -358,9 +358,9 @@ void (setup_drawControlsPage)(void)
    side of the moving seam z = 40 - 0.4 scroll */
 static void stripes(int right, float h)
 {
-#define SEAM f32(fsubr_m(fmul_m(fld_m(&g_scroll), k_0_4f), k_40f))
-#define S_LEFT f32(fsubr_m(fmul_m(fld_m(&g_scroll), k_0_005f), (const float *)ADDR(k_1f)))   /* 1 - 0.005 scroll */
-#define S_RIGHT f32(fmul_m(fld_m(&g_scroll), k_0_005f))                                    /* 0.005 scroll */
+#define SEAM f32(fsubr_m(fmul_m(fld_m(&g_setupStripeScroll), k_0_4f), k_40f))
+#define S_LEFT f32(fsubr_m(fmul_m(fld_m(&g_setupStripeScroll), k_0_005f), (const float *)ADDR(k_1f)))   /* 1 - 0.005 scroll */
+#define S_RIGHT f32(fmul_m(fld_m(&g_setupStripeScroll), k_0_005f))                                    /* 0.005 scroll */
 	if (!right) {
 		glBegin(GL_QUADS);
 		glTexCoord2f(0.0f, 0.0f);
@@ -428,10 +428,10 @@ static void tunnel_advance(int turn_only)
 		g_tunnelPulse = 100.0f;
 		g_tunnelPulseStep = 0xbf800000;   /* -1 */
 	}
-	long double scroll = fadd_m(fmul_m(fld_m((const float *)ADDR(g_menuTunnelSpeed)), frame), &g_scroll);
-	g_scroll = f32(scroll);
+	long double scroll = fadd_m(fmul_m(fld_m((const float *)ADDR(g_menuTunnelSpeed)), frame), &g_setupStripeScroll);
+	g_setupStripeScroll = f32(scroll);
 	if (scroll >= k_200f)
-		g_scroll = 0;
+		g_setupStripeScroll = 0;
 }
 
 /* 0x423e50: the tunnel behind the setup pages (3D projection): its alpha (0x4de038) eases to 0.3 (mode 0x4ddcec 1)
@@ -868,7 +868,7 @@ void (menu_mainMenu)(void)
 }
 #undef SIX_WALLS
 #undef FOUR_WALLS
-#undef g_scroll
+#undef g_setupStripeScroll
 #undef g_tunnelPulse
 
 /* 0x4277c0: the setup panel eased in (0x4dda60 while it moves): its position (0x4de03c) moves the rest of the

@@ -660,7 +660,7 @@ g_lobbyTcpPort
 g_netAccountBuffer
 g_netConnected
 g_netInfoPacket
-g_netJoinMessage
+g_netAccountRequest
 g_netKindBuffer
 g_netLastRequest
 g_netLobbyMessage
@@ -818,7 +818,7 @@ g_chatCaretY
 g_chatLength
 g_clamp
 g_context
-g_cursor
+g_netqCursor
 g_desktopBits
 g_desktopH
 g_desktopW
@@ -902,7 +902,7 @@ g_repeatUp
 g_screen
 g_screenH
 g_screenW
-g_scroll
+g_setupStripeScroll
 g_setupTab
 g_textures
 g_titleFrames
@@ -1136,7 +1136,7 @@ g_itemBonusMissile
 g_itemBonusShieldUnread
 g_sessionList
 g_profiles
-g_roomTextAndRows
+g_joinPasswordAndRanking
 g_roomDialogBox
 g_roomMechKept
 g_roomColoursKept

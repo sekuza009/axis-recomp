@@ -67,7 +67,7 @@
 0xa0b340,u8 *,g_netSelectionPacket
 0xa0b344,char *,g_netAccountBuffer
 0xa0b324,int *,g_netRankingBuffer
-0xa055e0,char *,g_netJoinMessage
+0xa055e0,char *,g_netAccountRequest
 0xa05306,int,g_serverReplyKind
 0xa052aa,u32,g_lobbyReplyKind
 0xa0b2e8,u32,g_gameServerReplyKind

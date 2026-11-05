@@ -2245,9 +2245,9 @@ extern u8 g_dikI_v[4];
 extern u8 g_dikJ_v[4];
 #endif
 #ifdef AXIS_FENCE
-#define g_scroll_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0x38c000 : g_fence + 0x38bffc))
+#define g_setupStripeScroll_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0x38c000 : g_fence + 0x38bffc))
 #else
-extern u8 g_scroll_v[4];
+extern u8 g_setupStripeScroll_v[4];
 #endif
 #ifdef AXIS_FENCE
 #define g_dikK_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0x38e000 : g_fence + 0x38dffc))
@@ -3365,9 +3365,9 @@ extern u8 g_retypePassword_v[4];
 extern int g_roomMessageRect_v[4];
 #endif
 #ifdef AXIS_FENCE
-#define g_roomTextAndRows_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xa3e000 : g_fence + 0xa3dd54))
+#define g_joinPasswordAndRanking_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xa3e000 : g_fence + 0xa3dd54))
 #else
-extern u8 g_roomTextAndRows_v[684];
+extern u8 g_joinPasswordAndRanking_v[684];
 #endif
 #ifdef AXIS_FENCE
 #define g_loginToSend_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xa40000 : g_fence + 0xa3fffc))
@@ -4680,9 +4680,9 @@ extern u8 g_netPlayerList_v[682];
 extern int g_lobbyReplyCode_v[1];
 #endif
 #ifdef AXIS_FENCE
-#define g_netJoinMessage_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xc68000 : g_fence + 0xc67ffc))
+#define g_netAccountRequest_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xc68000 : g_fence + 0xc67ffc))
 #else
-extern u8 g_netJoinMessage_v[4];
+extern u8 g_netAccountRequest_v[4];
 #endif
 #ifdef AXIS_FENCE
 #define g_lobbyTcpPort_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xc6a000 : g_fence + 0xc69ffc))
@@ -5750,9 +5750,9 @@ extern u8 g_packetQueue_v[139328];
 extern int g_nextNumber_v[16];
 #endif
 #ifdef AXIS_FENCE
-#define g_cursor_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xf12000 : g_fence + 0xf11ffc))
+#define g_netqCursor_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xf12000 : g_fence + 0xf11ffc))
 #else
-extern u8 g_cursor_v[4];
+extern u8 g_netqCursor_v[4];
 #endif
 #ifdef AXIS_FENCE
 #define g_resends_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xf14000 : g_fence + 0xf13ffc))

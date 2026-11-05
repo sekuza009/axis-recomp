@@ -17,7 +17,7 @@ u32 (netq_reset)(int host)
 	memset(g_ahead, 0, 0x800 * 4);
 	memset(g_unused16, 0, 0x10 * 4);
 	memset(g_nextNumber, 0xff, 0x10 * 4);
-	g_cursor = 0;
+	g_netqCursor = 0;
 	g_resends = 0;
 	return 0xffffffff;
 }
@@ -68,30 +68,30 @@ int (netq_receive)(int *from, int *size, void *data)
 {
 	if (!netq_online())
 		return 0;
-	int start = g_cursor;
+	int start = g_netqCursor;
 	for (;;) {
-		int p = g_cursor;
-		if (net_playerInUse(p) && g_netSlots[g_cursor].waiting == 1)
+		int p = g_netqCursor;
+		if (net_playerInUse(p) && g_netSlots[g_netqCursor].waiting == 1)
 			break;
-		p = g_cursor;
+		p = g_netqCursor;
 		if (g_ahead[(p << 7) + g_nextNumber[p]] == 1) {   /* the one due arrived earlier */
 			*from = p;
 			*size = 0x40;
-			memcpy(data, g_history + ((g_cursor << 7) + g_nextNumber[g_cursor]) * 0x40, 0x40);
-			p = g_cursor;
+			memcpy(data, g_history + ((g_netqCursor << 7) + g_nextNumber[g_netqCursor]) * 0x40, 0x40);
+			p = g_netqCursor;
 			g_netSlots[p].waiting = 0;
 			taken(p);
 			return 1;
 		}
-		g_cursor = (p + 1) % 16;
-		if (start == g_cursor)
+		g_netqCursor = (p + 1) % 16;
+		if (start == g_netqCursor)
 			return 0;
 	}
-	*from = g_cursor;
+	*from = g_netqCursor;
 	*size = 0x40;
-	int p = g_cursor;
+	int p = g_netqCursor;
 	memcpy(data, g_netSlots[p].packet, 0x40);
-	p = g_cursor;
+	p = g_netqCursor;
 	int due = g_nextNumber[p];
 	g_netSlots[p].waiting = 0;
 	u8 head = g_netSlots[p].packet[0];

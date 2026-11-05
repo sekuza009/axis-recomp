@@ -113,7 +113,7 @@ void (menuState100_intro)(void)
 	frontEnd_drawProgress();
 	g_screen = 200;
 	g_lastScreen = 200;
-	static const u32 cleared[] = { ADDR(g_titleShown), ADDR(g_titleFrames), ADDR(g_menuCameraMove), ADDR(g_unusedMenuReturnWord), ADDR(g_cursorFrame), ADDR(g_cursorFrameTime), ADDR(g_scroll), ADDR(g_tunnelPulse), ADDR(g_introZoom) };
+	static const u32 cleared[] = { ADDR(g_titleShown), ADDR(g_titleFrames), ADDR(g_menuCameraMove), ADDR(g_unusedMenuReturnWord), ADDR(g_cursorFrame), ADDR(g_cursorFrameTime), ADDR(g_setupStripeScroll), ADDR(g_tunnelPulse), ADDR(g_introZoom) };
 	for (unsigned i = 0; i < sizeof cleared / sizeof cleared[0]; i++)
 		GAME_VAR(u32, cleared[i]) = 0;
 	g_menuTunnelSpeed = 0x3f800000;   /* 1.0 */

@@ -550,7 +550,7 @@
 #define g_netClaimedSlot GAME_VAR(int, 0x9f9424)
 #define g_lobbyReplyKind GAME_VAR(u32, 0xa052aa)
 #define g_serverReplyKind GAME_VAR(int, 0xa05306)
-#define g_netJoinMessage GAME_VAR(char *, 0xa055e0)
+#define g_netAccountRequest GAME_VAR(char *, 0xa055e0)
 #define g_gameServerReplyKind GAME_VAR(u32, 0xa0b2e8)
 #define g_netSendName GAME_VAR(char *, 0xa0b304)
 #define g_netSendBuffer GAME_VAR(char *, 0xa0b308)
@@ -1021,7 +1021,7 @@
 #define g_cursorFrameTime GAME_VAR(float, 0x4df910)   /* frame time collected towards the next frame (5 units) */
 #define g_titleFrames GAME_VAR(int, 0x4e0458)   /* frames the title has been shown */
 #define g_screenH GAME_VAR(int, 0x4e045c)
-#define g_scroll GAME_VAR(float, 0x4e14fc)   /* runs 0 .. 200 */
+#define g_setupStripeScroll GAME_VAR(float, 0x4e14fc)   /* the setup tunnel's stripes' scroll: runs 0 .. 200 */
 #define g_cursorTexture GAME_VAR(int, 0x4e152c)   /* the pointer's sprite sheet (texture id) */
 #define g_inputLineHidden GAME_VAR(int, 0x4e1868)   /* 1: the input line shows as stars (password fields); 0 for names */
 #define g_tunnelTexture GAME_VAR(int, 0x4e186c)
@@ -1101,7 +1101,7 @@
 #define g_white GAME_VAR(u32, 0xa1f23c)   /* four bytes 0xff: an opaque white colour */
 #define g_unlit GAME_VAR(u32, 0xa1f278)   /* the colour of a vertex out of a light's reach */
 #define g_clamp GAME_VAR(const u8 *, 0xa1f300)
-#define g_cursor GAME_VAR(int, 0xb116e0)   /* the player looked at first by netq_receive (turns 0..15) */
+#define g_netqCursor GAME_VAR(int, 0xb116e0)   /* the player netq_receive looks at first (turns 0..15) */
 #define g_resends GAME_VAR(int, 0xb116e4)   /* out-of-turn packets seen: the caller re-syncs at 0x80 */
 #define g_roomLoginRight GAME_VAR(int, 0x9dd360)
 #define g_roomPanelEase GAME_VAR(float, 0x9dd560)

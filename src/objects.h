@@ -177,8 +177,8 @@
 #define g_roomForm ((int *)IMG(0x9dd1b8))   /* int[4]; the game room settings form's window: left (g_roomFormLeft) */
 #define g_roomLookKept ((float *)IMG(0x9dd918))   /* float[3]; the room camera's look-at point kept for the slide (g_roomSlideNearX .. Z; menu_tunnel's LOOK_KEPT) */
 #define g_roomEyeKept ((float *)IMG(0x9dd930))   /* float[3]; the room camera's position kept for the slide (g_roomSlideFarX .. Z; menu_tunnel's EYE_KEPT) */
-#define g_replaySelectDim ((u32 *)IMG(0x9dda70))   /* u32[4]; the map list's colour */
-#define g_replaySelectLit ((u32 *)IMG(0x9eea98))   /* u32[4]; the map list's colour */
+#define g_replaySelectDim ((u32 *)IMG(0x9dda70))   /* u32[4]; the replay selection dialog's dim colour */
+#define g_replaySelectLit ((u32 *)IMG(0x9eea98))   /* u32[4]; the replay selection dialog's lit colour */
 #define g_missionSelectRect ((int *)IMG(0x9f6308))   /* int[4]; the mission select dialog's window: left (g_missionSelectLeft) */
 #define g_missionColourLit ((u32 *)IMG(0x9f6318))   /* u32[4]; the mission list's colour */
 #define g_missionColourDim ((u32 *)IMG(0x9f62e8))   /* u32[4]; the mission list's colour */
@@ -421,10 +421,10 @@
 #define g_profiles ((u8 *)IMG(0x9f6848))   /* u8[9216]; 128 records of 0x48 (to 0x9f8c48): +0 the number; +4 the name (g_profileList); +0x44 the pilot */
 #define g_profileList ((char *)(g_profiles + 4))   /* a profile's name: +4 in g_profiles' records (0x48 apart) */
 #define g_saveFileNames ((char *)IMG(0x9f1ac4))   /* char[8192]; profile_scanSaves' *.axs names (0x40 apart; strcpy of any count: held) */
-#define g_roomTextAndRows ((u8 *)IMG(0x9dcee8))   /* u8[684]; the room's typed password text (+0; 8 bytes cleared; a strcpy of the chat line) and the room list's ten 0x44-byte rows from +4 (to 0x9dd194): the two overlap in the original */
-#define g_roomJoinPassword (*(int *)g_roomTextAndRows)   /* the typed password (text from here) */
-#define g_roomJoinPassword4 (*(int *)(g_roomTextAndRows + 4))   /* the rows' start (cleared with the text) */
-#define g_rankingRows ((RankRow *)(g_roomTextAndRows + 4))   /* RankRow[10] */
+#define g_joinPasswordAndRanking ((u8 *)IMG(0x9dcee8))   /* u8[684]; the room's typed password text (+0; 8 bytes cleared; a strcpy of the chat line) and the ranking's ten 0x44-byte rows from +4 (to 0x9dd194): the two overlap in the original */
+#define g_roomJoinPassword (*(int *)g_joinPasswordAndRanking)   /* the typed password (text from here) */
+#define g_roomJoinPassword4 (*(int *)(g_joinPasswordAndRanking + 4))   /* the typed password's second dword, also the ranking rows' start */
+#define g_rankingRows ((RankRow *)(g_joinPasswordAndRanking + 4))   /* RankRow[10] */
 #define g_roomDialogBox ((int *)IMG(0x9dd1a0))   /* int[4]; the new ID confirmation's box (room_openNewIdConfirm; newIdConfirm_layout) */
 #define g_roomMechKept ((u8 *)IMG(0x9dd260))   /* u8[11]; the room record's mech parts kept (lobby_states) */
 #define g_roomColoursKept ((u8 *)IMG(0x9dd26b))   /* u8[144]; the room record's colours kept */

@@ -526,8 +526,6 @@ extern struct GameData g_data;
 #define g_currentProfile (*(int *)g_currentProfile_v)
 #undef g_currentStageName
 #define g_currentStageName (*(int *)g_currentStageName_v)
-#undef g_cursor
-#define g_cursor (*(int *)g_cursor_v)
 #undef g_cursorBlink
 #define g_cursorBlink (*(float *)g_cursorBlink_v)
 #undef g_cursorBlinkTimer
@@ -1176,6 +1174,8 @@ extern struct GameData g_data;
 #define g_itemSlot4 (*(int *)((u8 *)g_mechSettings_v + 0x0))
 #undef g_itemSlot5
 #define g_itemSlot5 (*(int *)((u8 *)g_mechSettings_v + 0x4))
+#undef g_joinPasswordAndRanking
+#define g_joinPasswordAndRanking ((u8 *)g_joinPasswordAndRanking_v)
 #undef g_joinedSessionRec
 #define g_joinedSessionRec ((SessionEntry *)g_joinedSessionRec_v)
 #undef g_keepCameraAsked
@@ -1716,6 +1716,8 @@ extern struct GameData g_data;
 #define g_musicVolumeSetting (*(int *)g_musicVolumeSetting_v)
 #undef g_netAccountBuffer
 #define g_netAccountBuffer (*(char * *)g_netAccountBuffer_v)
+#undef g_netAccountRequest
+#define g_netAccountRequest (*(char * *)g_netAccountRequest_v)
 #undef g_netBlockSize
 #define g_netBlockSize (*(u32 *)g_netBlockSize_v)
 #undef g_netByteBuffer
@@ -1736,8 +1738,6 @@ extern struct GameData g_data;
 #define g_netHostGone (*(int *)g_netHostGone_v)
 #undef g_netInfoPacket
 #define g_netInfoPacket (*(u8 * *)g_netInfoPacket_v)
-#undef g_netJoinMessage
-#define g_netJoinMessage (*(char * *)g_netJoinMessage_v)
 #undef g_netKindBuffer
 #define g_netKindBuffer (*(u32 * *)g_netKindBuffer_v)
 #undef g_netLastRequest
@@ -1786,6 +1786,8 @@ extern struct GameData g_data;
 #define g_netSlotMsg ((u32 *)g_netSlotMsg_v)
 #undef g_netSlots
 #define g_netSlots ((NetSlot *)g_data.g_netSlots_)
+#undef g_netqCursor
+#define g_netqCursor (*(int *)g_netqCursor_v)
 #undef g_newArenaForm
 #define g_newArenaForm ((int *)g_newArenaForm_v)
 #undef g_newArenaFormBottom
@@ -2378,8 +2380,6 @@ extern struct GameData g_data;
 #define g_roomSlideNearZ (*(u32 *)((u8 *)g_roomLookKept_v + 0x8))
 #undef g_roomState
 #define g_roomState (*(int *)g_roomState_v)
-#undef g_roomTextAndRows
-#define g_roomTextAndRows ((u8 *)g_roomTextAndRows_v)
 #undef g_roomTimeLimit
 #define g_roomTimeLimit (*(u8 *)((u8 *)g_roomSettingsName_v + 0x25))
 #undef g_roomTunnelDepth
@@ -2426,8 +2426,6 @@ extern struct GameData g_data;
 #define g_screenH (*(int *)g_screenH_v)
 #undef g_screenW
 #define g_screenW (*(int *)g_screenW_v)
-#undef g_scroll
-#define g_scroll (*(float *)g_scroll_v)
 #undef g_searchResult
 #define g_searchResult (*(int *)g_searchResult_v)
 #undef g_selectedPilotLevel
@@ -2522,6 +2520,8 @@ extern struct GameData g_data;
 #define g_setupSoundRight (*(int *)((u8 *)g_setupSoundRect_v + 0x8))
 #undef g_setupStereoReverse
 #define g_setupStereoReverse (*(int *)((u8 *)g_soundEdited_v + 0xc))
+#undef g_setupStripeScroll
+#define g_setupStripeScroll (*(float *)g_setupStripeScroll_v)
 #undef g_setupTab
 #define g_setupTab (*(int *)g_setupTab_v)
 #undef g_setupTopOutlines

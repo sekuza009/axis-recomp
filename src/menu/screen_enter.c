@@ -123,7 +123,7 @@ void (menuState600_enterSetup)(void)
 		{ (OBJ(g_setupGraphicRect) + 0xc), 0x1c2 }, { ADDR(g_setupControlLeft), 0x28 }, { (OBJ(g_setupControlRect) + 0xc), 0x1b8 } };
 	static const Store colours[] = {
 		{ OBJ(g_setupColourLit), 0 }, { (OBJ(g_setupColourLit) + 0x4), ONE }, { (OBJ(g_setupColourLit) + 0x8), ONE }, { (OBJ(g_setupColourLit) + 0xc), ONE }, { OBJ(g_setupColourDim), 0 },
-		{ (OBJ(g_setupColourDim) + 0x4), 0x3f19999a }, { (OBJ(g_setupColourDim) + 0x8), 0x3f19999a }, { (OBJ(g_setupColourDim) + 0xc), ONE }, { ADDR(g_scroll), 0 }, { ADDR(g_menuTunnelSpeed), ONE },
+		{ (OBJ(g_setupColourDim) + 0x4), 0x3f19999a }, { (OBJ(g_setupColourDim) + 0x8), 0x3f19999a }, { (OBJ(g_setupColourDim) + 0xc), ONE }, { ADDR(g_setupStripeScroll), 0 }, { ADDR(g_menuTunnelSpeed), ONE },
 		{ ADDR(g_tunnelPulse), 0 }, { ADDR(g_tunnelPulseStep), ONE } };
 	g_setupGraphicTop = 0x1e;
 	g_setupControlTop = 0x1e;
