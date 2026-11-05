@@ -11,7 +11,7 @@
 static void draw_logo(int first)
 {
 	const u32 *clear = (const u32 *)OBJ(g_clearColour);
-	IMPORT(0x4a91e0, void, u32, u32, u32, u32)(clear[0], clear[1], clear[2], clear[3]);   /* glClearColor */
+	glClearColor_bits(clear[0], clear[1], clear[2], clear[3]);   /* glClearColor */
 	glClear(0x4100);
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 	glEnable(0xbe2);   /* GL_BLEND */

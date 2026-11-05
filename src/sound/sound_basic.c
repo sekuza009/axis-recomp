@@ -248,9 +248,11 @@ void (sound_play3D)(int index, const float *pos, const float *listener, const fl
 #define DS_DUPLICATESOUNDBUFFER 0x14
 #define DSB_LOCK 0x2c
 #define DSB_UNLOCK 0x4c
+#undef CreateFileA
 #define CreateFileA(name, access, share, security, how, attributes, tmpl) \
 	IMPORT(0x4a91b4, void *, const char *, u32, u32, void *, u32, u32, void *)(name, access, share, security, how, attributes, tmpl)
 #define ReadFile(file, out, size, done, overlapped) IMPORT(0x4a9068, int, void *, void *, u32, u32 *, void *)(file, out, size, done, overlapped)
+#undef CloseHandle
 #define CloseHandle(handle) IMPORT(0x4a91b0, int, void *)(handle)
 
 /* the buffer's format and description as the original lays them out on its stack: the description starts where

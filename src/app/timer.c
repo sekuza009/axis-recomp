@@ -86,6 +86,7 @@ long double (timer_now)(void)
 long double THISCALL (timer_getGameTime)(u8 *t)
 {
 	TimeSync *ts = (TimeSync *)t;
+#undef QueryPerformanceCounter
 #define QueryPerformanceCounter(out) IMPORT(0x4a9140, int, u64 *)(out)
 #define fatal() sys_fatalErrorN((char *)OBJ(g_logTimeSync), (const char *)STR(0x4c7b80, "invalid system time"))
 	if (ts->started == 0) {

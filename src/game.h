@@ -27,6 +27,8 @@
 #define glClearDepth(depth) IMPORT(0x4a91dc, void, double)(depth)
 /* a clear colour kept in memory (three floats), passed on bit for bit, alpha 1 */
 #define glClearColor_stored(c) IMPORT(0x4a91e0, void, u32, u32, u32, u32)((c)[0], (c)[1], (c)[2], 0x3f800000u)
+#define glClearColor(r, g, b, a) IMPORT(0x4a91e0, void, float, float, float, float)(r, g, b, a)
+#define glClearColor_bits(r, g, b, a) IMPORT(0x4a91e0, void, u32, u32, u32, u32)(r, g, b, a)   /* (the floats as their bits) */
 #define GL_QUADS 7
 #define GL_LINE_LOOP 2
 #define GL_QUAD_STRIP 8
@@ -504,6 +506,9 @@ typedef struct { u32 vtable; void *managers[6]; i32 count; } TextureSets;   /* t
 
 /* ---- the in-match 2D pass: the scene's view, its stage's overlay parts, the HUD elements ---- */
 #define gfx_setProjectionHud(mode, scale) GAME_FN(gfx_setProjectionHud, 0x4685f0, void, int, float)(mode, scale)
+#define gfx_setProjectionHud_bits(mode, scale) GAME_FN(gfx_setProjectionHud, 0x4685f0, void, int, u32)(mode, scale)   /* (the scale as its bits) */
+#define factors_addDirected(pool, colour, strength, pos) GAME_THISFN(factors_addDirected, 0x483f00, int, void *, u32, float, void *)(pool, colour, strength, pos)   /* a light of strength at pos */
+#define factors_addDirected_bits(pool, colour, strength, pos) GAME_THISFN(factors_addDirected, 0x483f00, int, void *, u32, u32, void *)(pool, colour, strength, pos)   /* (the strength as its bits) */
 #define view_farPlane() GAME_FN(view_farPlane, 0x468700, float, void)()             /* view_farPlane: a float setting */
 #define tex_clearSetCounters(textures) GAME_THISFN(tex_clearSetCounters, 0x456b50, void, void *)(textures)
 #define ViewVolume_clearDrawCounts(view) GAME_THISFN(ViewVolume_clearDrawCounts, 0x4841d0, void, void *)(view)

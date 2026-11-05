@@ -72,12 +72,12 @@ void THISCALL (stage_refillFactors)(Stage *stage)
 		Player *a = (Player *)((u8 *)&stage->actors[i]);
 		if (stage->actors[i].active == 1) {
 			float value = f32(fmul_m(fadd_m(fld_m(&a->glow), (const float *)ADDR(k_1f)), k_2500f));
-			GAME_THISFN(factors_addDirected, 0x483f00, int, void *, u32, float, void *)(pool, OBJ(g_packedWhite), value, a->pos);   /* factors_addDirected */
+			factors_addDirected(pool, OBJ(g_packedWhite), value, a->pos);   /* factors_addDirected */
 		}
 	}
 	for (int i = 0; i < stage->projectileCount; i++) {
 		Projectile *p = &stage->projectiles[i];
 		if (p->active == 1 && p->size > k_0f)
-			GAME_THISFN(factors_addDirected, 0x483f00, int, void *, u32, u32, void *)(pool, OBJ(g_packedWhite), BITS(p->size), p->pos);
+			factors_addDirected_bits(pool, OBJ(g_packedWhite), BITS(p->size), p->pos);
 	}
 }

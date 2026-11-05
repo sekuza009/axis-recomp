@@ -75,10 +75,10 @@ static void info_line(int row, const char *text)
    time limits, and in grey the status line 0xa0e988 */
 void (loading_draw)(u32 progress)
 {
-	IMPORT(0x4a91e0, void, u32, u32, u32, u32)(0x3f000000, 0x3f000000, 0x3f800000, 0x3f800000);   /* glClearColor(0.5, 0.5, 1, 1) */
+	glClearColor_bits(0x3f000000, 0x3f000000, 0x3f800000, 0x3f800000);   /* glClearColor(0.5, 0.5, 1, 1) */
 	glClearDepth(1.0);
 	glClear(0x4100);   /* GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT */
-	GAME_FN(gfx_setProjectionHud, 0x4685f0, void, int, u32)(1, 0x3f800000);   /* gfx_setProjectionHud(1, 1.0) */
+	gfx_setProjectionHud_bits(1, 0x3f800000);   /* gfx_setProjectionHud(1, 1.0) */
 	glEnable(GL_TEXTURE_2D);
 	int texture = g_loadTexture;
 	tex_bind(g_textures->managers[texture / 512], texture % 512);
@@ -99,7 +99,7 @@ void (loading_draw)(u32 progress)
 		glEnd();
 	}
 	glDisable(GL_TEXTURE_2D);
-	GAME_FN(gfx_setProjectionHud, 0x4685f0, void, int, u32)(0, 0x3f800000);
+	gfx_setProjectionHud_bits(0, 0x3f800000);
 	text_setColor(1.0f, 1.0f, 0.0f, 1.0f);
 	char line[0x100];
 	int row = 2;

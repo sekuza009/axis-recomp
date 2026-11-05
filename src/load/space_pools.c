@@ -142,6 +142,7 @@ void THISCALL (space_addUnitPlanes)(void *space, u32 id, u8 *owner, u32 part, u3
 void THISCALL (space_setBy)(u8 *space, const u32 *mn, const u32 *mx, int nx, int ny, int nz, u32 a, u32 b, int depth)
 {
 	Space *sp = (Space *)space;
+#undef FIELD
 #define FIELD(type, offset) GAME_VAR(type, space + (offset))
 #define SP sp   /* the same by its fields (src/scene.fields) */
 	space_resetPlanes(space);

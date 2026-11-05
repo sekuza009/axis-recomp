@@ -149,7 +149,7 @@ u32 (gfx_setup3DView)(int w, int h)
    glBlendFunc's eax */
 u32 (menu_frameBegin)(void)
 {
-	IMPORT(0x4a91e0, void, float, float, float, float)(0, 0, 0, 0);   /* glClearColor */
+	glClearColor(0, 0, 0, 0);   /* glClearColor */
 	glClearDepth(1.0);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
@@ -178,7 +178,7 @@ u32 (gfx_setMenuCamera)(void)
 {
 	float z = (float)-fld_m((const float *)ADDR(g_armcCamDistance)), y = (float)-fld_m((const float *)ADDR(g_armcCamHeight)),
 	      x = (float)-fld_m((const float *)ADDR(g_menuCameraPos));
-	IMPORT(0x4a9214, void, float, float, float)(x, y, z);   /* glTranslatef */
+	glTranslatef(x, y, z);   /* glTranslatef */
 	glLoadIdentity();
 	const float *eye = (const float *)ADDR(g_menuCameraPos), *at = (const float *)ADDR(g_menuCameraLook);
 	return IMPORT(0x4a904c, u32, double, double, double, double, double, double, double, double, double)(
