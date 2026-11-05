@@ -969,7 +969,7 @@ int (lobby_openConnection)(void)
 }
 
 /* 0x40d840: the arena screen entered. Started by the launcher (0x76d364 = 1): its settings (axiswl.dat,
-   arena_loadSettings; none: quit) give the player (name 0x5b191c into 0x4ded20, the optional clan 0x5b193c, the
+   arena_loadSettings; none: quit) give the player (name 0x5b191c into 0x4ded20, the optional password 0x5b193c, the
    colours and corporation bytes 0x4ded40..45), then the lobby's sub-page 1 and the name check (screen 0x68).
    Otherwise the lobby page with the server name (0x4de748 into 0x4dbbd4) and 0x406200(99999) (screen 0x69).
    Returns the last call's eax */
@@ -988,12 +988,12 @@ u32 (arena_loadAndQuit)(void)
 		return PostQuitMessage(0);                               /* PostQuitMessage */
 	memset((void *)OBJ(g_playerName), 0, 32);
 	strcpy(g_playerName, g_arenaGameName);
-	u8 clan = (*(u8 *)&g_cmdSecret);
-	g_unusedPlayerRecord26 = 0;
-	g_playerHasClan = clan;
-	g_unusedPlayerRecord2a = 0;
-	if (clan == 1)
-		strcpy((char *)ADDR(g_unusedPlayerRecord26), (const char *)ADDR(g_arenaFileClan));
+	u8 secret = (*(u8 *)&g_arenaFileSecret);   /* (1: a password game) */
+	g_arenaPassword = 0;
+	g_arenaLocked = secret;
+	g_arenaPassword4 = 0;
+	if (secret == 1)
+		strcpy((char *)ADDR(g_arenaPassword), (const char *)ADDR(g_arenaFilePassword));
 	g_arenaFragLimit = g_arenaFileFragLimit;
 	g_arenaGameType = g_arenaFileGameType;
 	g_arenaCustomize = 0;
@@ -1602,8 +1602,8 @@ int (lobby_announceArena)(void)
 	packet->players = 1;
 	packet->map = g_arenaMap;
 	packet->maxPlayers = g_arenaPlayers;
-	packet->locked = g_playerHasClan;
-	lstrcpyA(packet->password, (const char *)ADDR(g_unusedPlayerRecord26));
+	packet->locked = g_arenaLocked;
+	lstrcpyA(packet->password, (const char *)ADDR(g_arenaPassword));
 	lstrcpyA(((ServerRecord *)g_roomPacket)->name, g_playerName);
 	jmp_net_getLocalAddress();
 	lstrcpyA(((ServerRecord *)g_roomPacket)->address, g_localAddress);

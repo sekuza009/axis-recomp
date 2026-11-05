@@ -25,8 +25,8 @@
 0x9dd864,u32,g_unusedLastWParam
 0x4df004,int,g_mouseSmooth
 0x9ef218,int,g_unusedMissionSaveWord
-0x5b193c,u32,g_arenaFileClan
-0x5b1940,u32,g_arenaFileClan4
+0x5b193c,u32,g_arenaFilePassword
+0x5b1940,u32,g_arenaFilePassword4
 0xa1f238,u32,g_colourMaskRed
 0xa0e7e8,float,g_vecZero
 0xa0e7a8,float,g_vecOrigin
@@ -70,9 +70,9 @@
 0x4dbbd8,int,g_typedArenaName4
 0x4dba8c,int,g_arenaNameSum
 0x9dd840,int,g_roomNameSum
-0x4ded46,u32,g_unusedPlayerRecord26
-0x4ded4a,u32,g_unusedPlayerRecord2a
-0x4ded4e,u8,g_playerHasClan
+0x4ded46,u32,g_arenaPassword
+0x4ded4a,u32,g_arenaPassword4
+0x4ded4e,u8,g_arenaLocked
 0x90d1cc,float,g_armcLookYaw
 0x4de6f0,u32,g_unusedArmcMoveWord
 0x4de348,float,g_freeCamHeight

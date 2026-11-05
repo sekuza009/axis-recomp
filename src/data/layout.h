@@ -2129,8 +2129,8 @@ struct __attribute__((packed)) GameData {
 	u8 _gap_4de71e[0x692];
 	char g_cfgPlayerName_[32];
 	u8 _gap_4dedd0[0xd2b6c];
-	u32 g_arenaFileClan_;
-	u32 g_arenaFileClan4_;
+	u32 g_arenaFilePassword_;
+	u32 g_arenaFilePassword4_;
 	u8 g_arenaFileMap_;
 	u8 _gap_5b1945[0x3];
 	u8 g_arenaFilePlayers_;
@@ -2140,7 +2140,7 @@ struct __attribute__((packed)) GameData {
 	u8 g_arenaFileFragLimit_;
 	u8 _gap_5b1951[0x3];
 	int g_cmdTimeLimit_;
-	int g_cmdSecret_;
+	int g_arenaFileSecret_;
 	u8 _gap_5b195c[0x18];
 	int g_dikSlash_;
 	u8 _gap_5b1978[0x356e3c];
@@ -2199,14 +2199,14 @@ _Static_assert(offsetof(struct GameData, g_hasItemShield_) == 0x2ff30, "g_hasIte
 _Static_assert(offsetof(struct GameData, g_messageBoxText_) == 0x300d0, "g_messageBoxText");
 _Static_assert(offsetof(struct GameData, g_titleName_) == 0x31700, "g_titleName");
 _Static_assert(offsetof(struct GameData, g_cfgPlayerName_) == 0x31db0, "g_cfgPlayerName");
-_Static_assert(offsetof(struct GameData, g_arenaFileClan_) == 0x10493c, "g_arenaFileClan");
-_Static_assert(offsetof(struct GameData, g_arenaFileClan4_) == 0x104940, "g_arenaFileClan4");
+_Static_assert(offsetof(struct GameData, g_arenaFilePassword_) == 0x10493c, "g_arenaFilePassword");
+_Static_assert(offsetof(struct GameData, g_arenaFilePassword4_) == 0x104940, "g_arenaFilePassword4");
 _Static_assert(offsetof(struct GameData, g_arenaFileMap_) == 0x104944, "g_arenaFileMap");
 _Static_assert(offsetof(struct GameData, g_arenaFilePlayers_) == 0x104948, "g_arenaFilePlayers");
 _Static_assert(offsetof(struct GameData, g_arenaFileGameType_) == 0x10494c, "g_arenaFileGameType");
 _Static_assert(offsetof(struct GameData, g_arenaFileFragLimit_) == 0x104950, "g_arenaFileFragLimit");
 _Static_assert(offsetof(struct GameData, g_cmdTimeLimit_) == 0x104954, "g_cmdTimeLimit");
-_Static_assert(offsetof(struct GameData, g_cmdSecret_) == 0x104958, "g_cmdSecret");
+_Static_assert(offsetof(struct GameData, g_arenaFileSecret_) == 0x104958, "g_arenaFileSecret");
 _Static_assert(offsetof(struct GameData, g_dikSlash_) == 0x104974, "g_dikSlash");
 _Static_assert(offsetof(struct GameData, g_scene_) == 0x45b7b4, "g_scene");
 _Static_assert(offsetof(struct GameData, g_glContext_) == 0x45b7b8, "g_glContext");

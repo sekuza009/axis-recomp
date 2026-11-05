@@ -538,9 +538,9 @@ struct Mission 0xfc                                              # one of the 30
 0x44       0x20       char title[32]                             # its second
 0x64       0x80       char briefing[128]                         # (shown under the list for the one picked)
 0xe4       4          i32 number                                 # the third column
-0xe8       4          i32 valueE8
+0xe8       4          i32 unusedE8                              # read from axis.mis with the entry, cleared with the list; nothing reads it
 0xec       4          i32 result                                 # the fourth: a message (MSG(511) + result * 0x80)
-0xf0       4          i32 valueF0                                # (-1 when the list is cleared)
+0xf0       4          i32 unusedF0                              # read from axis.mis with the entry, -1 when the list is cleared; nothing reads it
 0xf4       4          i32 blockSize                              # its block in axis.mis (read after all the entries)
 
 struct NetPacketMessage 0x40c                                    # a DirectPlay message carrying slot data (kinds 6 and 7: net_handleMessage; the match's
@@ -677,7 +677,7 @@ struct RankedPlayer 0x3e                                         # a player of t
                                                                  # kept in g_netPlayerList, eleven of them, by net_addPlayerRecord)
 0          0x1e       char name[30]
 0x1e       4          i32 kind                                   # the reply's kind: 0 a player (added), 1 refused
-0x22       4          i32 value22                                # (not shown; copied to RankRow.value2a)
+0x22       4          i32 value22                               # not shown, only copied to RankRow.value2a; DServer (axis_server.py) sends it as its account's 'a' (1)
 0x26       4          i32 kills                                  # the columns of the ranking table (RankRow)
 0x2a       4          i32 deaths
 0x2e       4          i32 exp
@@ -689,7 +689,7 @@ struct RankRow 0x44                                              # a row of the 
 4          4          i32 rank                                   # its place (the row before's when its sorted value is the same)
 8          0x1e       char name[30]                              # (empty: past the list's end)
 0x26       4          i32 exp                                    # (sort 2)
-0x2a       4          i32 value2a                                # (RankedPlayer.value22; not shown)
+0x2a       4          i32 value2a                               # RankedPlayer.value22 (not shown)
 0x2e       4          i32 kills                                  # (sort 1)
 0x32       4          i32 deaths
 0x36       4          float rate                                 # (sort 3)

@@ -8,7 +8,7 @@
 0x4a9440,double,k_setupPanelEnd
 0x4a93d8,double,k_cameraSnapDistance
 0x9dd868,u32,g_editOldProc
-0x5b1958,int,g_cmdSecret
+0x5b1958,int,g_arenaFileSecret
 0x5b1954,int,g_cmdTimeLimit
 0x4dcb0c,float,g_legsMaxWeight
 0x4dc784,int,g_unlockedLevel

@@ -33,7 +33,7 @@ void (arena_initOptionTexts)(void)
 		strcpy((char *)RELOC(d), (const char *)RELOC(s));
 }
 
-/* 0x443570: the mission list's 30 entries (g_missions) emptied (valueF0 -1) */
+/* 0x443570: the mission list's 30 entries (g_missions) emptied (unusedF0 -1) */
 void (missions_clear)(void)
 {
 	g_missionCount = 0;
@@ -45,8 +45,8 @@ void (missions_clear)(void)
 		memset((u8 *)e + offsetof(Mission, title), 0, sizeof e->title + sizeof e->briefing);
 		e->id = 0;
 		e->number = 0;
-		e->valueE8 = 0;
-		e->valueF0 = -1;
+		e->unusedE8 = 0;
+		e->unusedF0 = -1;
 		e->result = 0;
 		e->blockSize = 0;
 	}

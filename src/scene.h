@@ -605,9 +605,9 @@ typedef struct Mission {
 	char title[32];   /* +0x44: its second */
 	char briefing[128];   /* +0x64: (shown under the list for the one picked) */
 	i32 number;   /* +0xe4: the third column */
-	i32 valueE8;   /* +0xe8 */
+	i32 unusedE8;   /* +0xe8: read from axis.mis with the entry, cleared with the list; nothing reads it */
 	i32 result;   /* +0xec: the fourth: a message (MSG(511) + result * 0x80) */
-	i32 valueF0;   /* +0xf0: (-1 when the list is cleared) */
+	i32 unusedF0;   /* +0xf0: read from axis.mis with the entry, -1 when the list is cleared; nothing reads it */
 	i32 blockSize;   /* +0xf4: its block in axis.mis (read after all the entries) */
 	u8 _pad00000f8[0x4];
 } Mission;
@@ -770,7 +770,7 @@ typedef struct GameSettings {
 typedef struct RankedPlayer {
 	char name[30];   /* +0x0 */
 	i32 kind;   /* +0x1e: the reply's kind: 0 a player (added), 1 refused */
-	i32 value22;   /* +0x22: (not shown; copied to RankRow.value2a) */
+	i32 value22;   /* +0x22: not shown, only copied to RankRow.value2a; DServer (axis_server.py) sends it as its account's 'a' (1) */
 	i32 kills;   /* +0x26: the columns of the ranking table (RankRow) */
 	i32 deaths;   /* +0x2a */
 	i32 exp;   /* +0x2e */
@@ -785,7 +785,7 @@ typedef struct RankRow {
 	i32 rank;   /* +0x4: its place (the row before's when its sorted value is the same) */
 	char name[30];   /* +0x8: (empty: past the list's end) */
 	i32 exp;   /* +0x26: (sort 2) */
-	i32 value2a;   /* +0x2a: (RankedPlayer.value22; not shown) */
+	i32 value2a;   /* +0x2a: RankedPlayer.value22 (not shown) */
 	i32 kills;   /* +0x2e: (sort 1) */
 	i32 deaths;   /* +0x32 */
 	float rate;   /* +0x36: (sort 3) */
@@ -2372,9 +2372,9 @@ _Static_assert(offsetof(Mission, name) == 0x4 && sizeof(((Mission *)0)->name) ==
 _Static_assert(offsetof(Mission, title) == 0x44 && sizeof(((Mission *)0)->title) == 0x20, "scene.fields: Mission.title");
 _Static_assert(offsetof(Mission, briefing) == 0x64 && sizeof(((Mission *)0)->briefing) == 0x80, "scene.fields: Mission.briefing");
 _Static_assert(offsetof(Mission, number) == 0xe4 && sizeof(((Mission *)0)->number) == 0x4, "scene.fields: Mission.number");
-_Static_assert(offsetof(Mission, valueE8) == 0xe8 && sizeof(((Mission *)0)->valueE8) == 0x4, "scene.fields: Mission.valueE8");
+_Static_assert(offsetof(Mission, unusedE8) == 0xe8 && sizeof(((Mission *)0)->unusedE8) == 0x4, "scene.fields: Mission.unusedE8");
 _Static_assert(offsetof(Mission, result) == 0xec && sizeof(((Mission *)0)->result) == 0x4, "scene.fields: Mission.result");
-_Static_assert(offsetof(Mission, valueF0) == 0xf0 && sizeof(((Mission *)0)->valueF0) == 0x4, "scene.fields: Mission.valueF0");
+_Static_assert(offsetof(Mission, unusedF0) == 0xf0 && sizeof(((Mission *)0)->unusedF0) == 0x4, "scene.fields: Mission.unusedF0");
 _Static_assert(offsetof(Mission, blockSize) == 0xf4 && sizeof(((Mission *)0)->blockSize) == 0x4, "scene.fields: Mission.blockSize");
 _Static_assert(sizeof(Mission) == 0xfc, "scene.fields: size of Mission");
 _Static_assert(offsetof(NetPacketMessage, kind) == 0x0 && sizeof(((NetPacketMessage *)0)->kind) == 0x4, "scene.fields: NetPacketMessage.kind");

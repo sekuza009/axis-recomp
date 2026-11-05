@@ -40,18 +40,20 @@ extern struct GameData g_data;
 #define g_arenaDialogBoxRects ((int *)g_arenaDialogBoxRects_v)
 #undef g_arenaDim
 #define g_arenaDim ((u32 *)g_arenaDim_v)
-#undef g_arenaFileClan
-#define g_arenaFileClan (g_data.g_arenaFileClan_)
-#undef g_arenaFileClan4
-#define g_arenaFileClan4 (g_data.g_arenaFileClan4_)
 #undef g_arenaFileFragLimit
 #define g_arenaFileFragLimit (g_data.g_arenaFileFragLimit_)
 #undef g_arenaFileGameType
 #define g_arenaFileGameType (g_data.g_arenaFileGameType_)
 #undef g_arenaFileMap
 #define g_arenaFileMap (g_data.g_arenaFileMap_)
+#undef g_arenaFilePassword
+#define g_arenaFilePassword (g_data.g_arenaFilePassword_)
+#undef g_arenaFilePassword4
+#define g_arenaFilePassword4 (g_data.g_arenaFilePassword4_)
 #undef g_arenaFilePlayers
 #define g_arenaFilePlayers (g_data.g_arenaFilePlayers_)
+#undef g_arenaFileSecret
+#define g_arenaFileSecret (g_data.g_arenaFileSecret_)
 #undef g_arenaFragLimit
 #define g_arenaFragLimit (*(u8 *)((u8 *)g_playerName_v + 0x24))
 #undef g_arenaFragLimitTyped
@@ -112,6 +114,8 @@ extern struct GameData g_data;
 #define g_arenaLobbyMode (*(int *)g_arenaLobbyMode_v)
 #undef g_arenaLobbyState
 #define g_arenaLobbyState (*(int *)g_arenaLobbyState_v)
+#undef g_arenaLocked
+#define g_arenaLocked (*(u8 *)((u8 *)g_playerName_v + 0x2e))
 #undef g_arenaMap
 #define g_arenaMap (*(signed char *)((u8 *)g_playerName_v + 0x20))
 #undef g_arenaMapCount
@@ -144,6 +148,10 @@ extern struct GameData g_data;
 #define g_arenaPacket (*(u8 * *)g_arenaPacket_v)
 #undef g_arenaPanelBrightness
 #define g_arenaPanelBrightness (*(u32 *)g_arenaPanelBrightness_v)
+#undef g_arenaPassword
+#define g_arenaPassword (*(u32 *)((u8 *)g_playerName_v + 0x26))
+#undef g_arenaPassword4
+#define g_arenaPassword4 (*(u32 *)((u8 *)g_playerName_v + 0x2a))
 #undef g_arenaPlayers
 #define g_arenaPlayers (*(u8 *)((u8 *)g_playerName_v + 0x21))
 #undef g_arenaSearchClock
@@ -456,8 +464,6 @@ extern struct GameData g_data;
 #define g_clockNow (*(double *)((u8 *)g_timerClocks_v + 0x0))
 #undef g_clockNowTime
 #define g_clockNowTime ((u16 *)g_clockNowTime_v)
-#undef g_cmdSecret
-#define g_cmdSecret (g_data.g_cmdSecret_)
 #undef g_cmdTimeLimit
 #define g_cmdTimeLimit (g_data.g_cmdTimeLimit_)
 #undef g_codeColours
@@ -1982,8 +1988,6 @@ extern struct GameData g_data;
 #define g_playerCorporation (*(int *)g_playerCorporation_v)
 #undef g_playerCount
 #define g_playerCount (*(int *)g_playerCount_v)
-#undef g_playerHasClan
-#define g_playerHasClan (*(u8 *)((u8 *)g_playerName_v + 0x2e))
 #undef g_playerListCount
 #define g_playerListCount (*(int *)g_playerListCount_v)
 #undef g_playerListRefused
@@ -2792,10 +2796,6 @@ extern struct GameData g_data;
 #define g_unusedPingWord1 (*(int *)g_unusedPingWord1_v)
 #undef g_unusedPingWord2
 #define g_unusedPingWord2 (*(int *)g_unusedPingWord2_v)
-#undef g_unusedPlayerRecord26
-#define g_unusedPlayerRecord26 (*(u32 *)((u8 *)g_playerName_v + 0x26))
-#undef g_unusedPlayerRecord2a
-#define g_unusedPlayerRecord2a (*(u32 *)((u8 *)g_playerName_v + 0x2a))
 #undef g_unusedPostMatchFlag
 #define g_unusedPostMatchFlag (*(int *)g_unusedPostMatchFlag_v)
 #undef g_unusedProfileCameraWord

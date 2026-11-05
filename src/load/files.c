@@ -460,7 +460,7 @@ u32 (mission_loadAxisMis)(void)
 		crt_fread((void *)(ADDR(g_missionCount) + k * 4), 4, 1, f);
 	static const struct { int offset, size; } part[8] = {
 		{ offsetof(Mission, id), 4 }, { offsetof(Mission, name), 0x40 }, { offsetof(Mission, title), 0x20 }, { offsetof(Mission, briefing), 0x80 },
-		{ offsetof(Mission, number), 4 }, { offsetof(Mission, valueE8), 4 }, { offsetof(Mission, result), 4 }, { offsetof(Mission, valueF0), 4 } };
+		{ offsetof(Mission, number), 4 }, { offsetof(Mission, unusedE8), 4 }, { offsetof(Mission, result), 4 }, { offsetof(Mission, unusedF0), 4 } };
 	Mission *mission = g_missions;
 	for (int i = 0; i < g_missionCount; i++)
 		for (int k = 0; k < 8; k++)
@@ -1011,13 +1011,13 @@ int (arena_loadSettings)(const char *path)
 			}
 			if (!strcmp(word, (const char *)STR(0x4ad5c8, "secret"))) {   /* secret */
 				word = crt_strtok(NULL, gaps);
-				g_cmdSecret = crt_atoi(word);
+				g_arenaFileSecret = crt_atoi(word);
 			}
 			if (!strcmp(word, (const char *)STR(0x4ad5bc, "password"))) {   /* password */
 				word = crt_strtok(NULL, gaps);
-				g_arenaFileClan = 0;
-				g_arenaFileClan4 = 0;
-				strcpy((char *)ADDR(g_arenaFileClan), word);
+				g_arenaFilePassword = 0;
+				g_arenaFilePassword4 = 0;
+				strcpy((char *)ADDR(g_arenaFilePassword), word);
 			}
 			for (int k = 0; k < 4; k++)
 				if (!strcmp(word, (const char *)numbers[k].key)) {
