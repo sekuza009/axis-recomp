@@ -1752,7 +1752,7 @@ static void THISCALL __attribute__((used)) net_sendGamePacket_body(u8 *s, int p,
 		packet[4] = s[0x1f1cb4];
 		packet[5] = s[0x1f166c + k];
 		packet[6] = s[0x1f1cb8];
-		memcpy(packet + 7, &sc->missionNumber, 2);
+		memcpy(packet + 7, &sc->mapNumber, 2);
 	} else
 		memset(packet + 3, 0xff, 6);
 	memcpy(packet + 9, &sc->elapsed, 4);
@@ -2006,7 +2006,7 @@ void THISCALL (net_processGamePacket)(u8 *g, u32 from, int size, const char *pkt
 				}
 				GS->nextMap = pkt[4];
 				GS->nextMode = pkt[6];
-				if (g_mapIndex == pkt[3] && GS->missionNumber != *(const short *)(pkt + 7)) {
+				if (g_mapIndex == pkt[3] && GS->mapNumber != *(const short *)(pkt + 7)) {
 					GS->dataLossPending = 1;
 					GS->dataLossCode = 1;
 				}

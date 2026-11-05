@@ -115,7 +115,7 @@ void THISCALL (map_loadObjectInfoFrom)(u8 *scene, const char *name, int mode)
 	ShapeManager_releaseModels((u8 *)&st->objectShapes);
 	SkeletonManager_releaseSkeletons((u8 *)&st->objectSkeletons);
 	stage_clearMapObjects(scene);
-	st->mapShaded = 0;
+	st->shadingCached = 0;
 	if (mode == 0) {
 		path_stripExtension(name, base);
 		sprintf(path, (const char *)STR(0x4c7e90, "%s/Temp-%s-objectShadingInfo.dat"), st->mapDir, base);
@@ -126,7 +126,7 @@ void THISCALL (map_loadObjectInfoFrom)(u8 *scene, const char *name, int mode)
 			fread_scrambled(st->objectColours, 4, ((u32)st->objectColourCount), f);
 			fclose(f);
 			st->objectColourCount = 0;
-			st->mapShaded = 1;
+			st->shadingCached = 1;
 		}
 	}
 	sprintf(path, (const char *)STR(0x4c77f0, "%s/%s"), st->mapDir, name);
@@ -152,7 +152,7 @@ void THISCALL (map_loadObjectInfoFrom)(u8 *scene, const char *name, int mode)
 	fclose(f);
 	path_stripExtension(name, base);
 	sprintf(path, (const char *)STR(0x4c7e90, "%s/Temp-%s-objectShadingInfo.dat"), st->mapDir, base);
-	if (mode == 1 && st->mapShaded == 0) {
+	if (mode == 1 && st->shadingCached == 0) {
 		f = crt_fopen(path, (const char *)STR(0x4b2ab0, "wb"));
 		if (f) {
 			log_message((int)scene, 0, 0, (const char *)STR(0x4c7e1c, "save object shading data"));
@@ -432,7 +432,7 @@ int THISCALL (map_loadGroundInfoFrom)(u8 *s, const char *name)
 		for (int k = 0; k < 16; k++)
 			st->floorTextures[k] = (i32) ground_tex(dir, STR(0x4c7f14, "%s/FloorAni%02d"), k + 1, tex);   /* FloorAni<nn> */
 	log_message((int)s, 0, 0, (const char *)STR(0x4c7f04, "load area limit"));
-	void *limits[7] = { st->levelLow, st->levelHigh, st->worldLow, st->worldHigh, &st->areaValue, &st->missionNumber, &st->musicKind };
+	void *limits[7] = { st->levelLow, st->levelHigh, st->worldLow, st->worldHigh, &st->areaValue, &st->mapNumber, &st->musicKind };
 	static const u8 sizes[7] = { 0xc, 0xc, 0xc, 0xc, 4, 4, 4 };
 	for (int k = 0; k < 7; k++)
 		fread_scrambled(limits[k], sizes[k], 1, f);

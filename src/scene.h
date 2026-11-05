@@ -139,7 +139,7 @@ typedef struct ListedObject {
 	float centre[3];   /* +0x58: its shape's centre placed (pos without a shape) */
 } ListedObject;
 
-/* shapes placed by their own matrices (ObjectList_relight, partList_queue; the size is unknown) */
+/* shapes placed by their own matrices (ObjectList_relight, partList_queue): the game's UnitPoseInfo class (vtable */
 typedef struct ObjectList {
 	u8 _pad0000000[0x4];
 	i32 blockSize;   /* +0x4: (by use) its block: the entries (100 bytes each), their colours when preLit, the skeletons */
@@ -383,7 +383,7 @@ typedef struct Factor {
 	u32 radius;   /* +0x28: a point light's radius (a float's bits) */
 } Factor;
 
-/* (by use) the light factors shape_shadeParts takes (the size is unknown) */
+/* (by use) the light factors shape_shadeParts takes: vtable, 0x400 records, two counts, enabled (0xb010 bytes: the */
 typedef struct LightFactors {
 	u8 _pad0000000[0x4];
 	Factor records[0x400];   /* +0x4: (by use) its factors */
@@ -1412,7 +1412,7 @@ typedef struct Stage {
 	float worldLow[3];   /* +0x9ef91c: the world box moves are kept inside (collision_tris.c) */
 	float worldHigh[3];   /* +0x9ef928 */
 	float areaValue;   /* +0x9ef934: (by use; seen running) read with the ground file's area limits (1.0 by default: scene_reset); not read */
-	i32 missionNumber;   /* +0x9ef938: read with them too: the mission's number (Scene.missionNumber) */
+	i32 mapNumber;   /* +0x9ef938: read with them too: the map's own number, its index in the map list (loading: not g_mapIndex is "file damaged!"; Scene.mapNumber) */
 	i32 musicKind;   /* +0x9ef93c: read with them too: the match music's kind (Scene.musicKind) */
 	u8 pool[0x3d0900];   /* +0x9ef940: (by use) the ground layers' tables are taken from it (pool_take: map_info.c) */
 	i32 poolUsed;   /* +0xdc0240: its bytes taken */
@@ -1433,7 +1433,7 @@ typedef struct Stage {
 	u8 objectShapeData[0xf4240];   /* +0xe3cb88: (by use) objectShapes' block (shape_initBy) */
 	u32 objectColours[1000000];   /* +0xf30dc8: (by use) the map objects' shading colours (each object's run: MapObject +0x280) */
 	i32 objectColourCount;   /* +0x13016c8: dwords of it used (over 1000000: a fatal message) */
-	i32 mapShaded;   /* +0x13016cc: (by use) 1: the map brings its objects' shading (not worked out) */
+	i32 shadingCached;   /* +0x13016cc: 1: the objects' shading was read from the map's cache file (<mapDir>/Temp-<map>-objectShadingInfo.dat), so the objects are not shaded again at load (object_initObjectBy); 0: worked out, and written to that file when loading in mode 1 */
 	SkelManager objectSkeletons;   /* +0x13016d0: their skeletons (SkeletonManager) */
 	u8 objectSkeletonData[0x9c40];   /* +0x1301800: objectSkeletons' block (skelSet_setup) */
 	char objectNames[1000][0x40];   /* +0x130b440: (by use; seen running) the map objects' type names */
@@ -1536,8 +1536,8 @@ typedef struct Stage {
 	float clockFraction;   /* +0x20fcd44: and the part of a second */
 	i32 botsHoldFire;   /* +0x20fcd48: not 0: the bots do not fire (set at the round's end: Scene.botsHoldFire; cleared with the clock) */
 	char printText[0x100];   /* +0x20fcd4c: (by use) stage_printText's buffer */
-	i32 kingActor;   /* +0x20fce4c: (by use) the king (-1 none; dropped when fragged) */
-	i32 teamCommanders[100];   /* +0x20fce50: (by use) each team's commander actor (-1 none: "YOUR COMMANDER .. HAS BEEN KILLED!") */
+	i32 kingActor;   /* +0x20fce4c: (by use; seen running) the king (-1 none; dropped when fragged) */
+	i32 teamCommanders[100];   /* +0x20fce50: (by use; seen running) each team's commander actor (-1 none: "YOUR COMMANDER .. HAS BEEN KILLED!") */
 	u32 flagGlTexture;   /* +0x20fcfe0: (by use; seen running) the flag atlas's GL texture (= Scene.flagGlTexture) */
 	u32 flagAtlas[64][128];   /* +0x20fcfe4: the players' flags, four to a row */
 	i32 clanTexture;   /* +0x2104fe4: (by use; seen running) the map's clan texture (Stage\<map>\Clan) */
@@ -1645,7 +1645,7 @@ typedef struct Scene {
 	u32 fogParams[3];   /* +0xbe1720: = Stage.glFogStart, glFogEnd, glFogDensity */
 	u8 _pad0be172c[0x18d0];
 	float unusedBe2ffc;   /* +0xbe2ffc: (= Stage.areaValue) read with the ground file's limits (1.0 by default, 1.3 on one map); never read */
-	i32 missionNumber;   /* +0xbe3000: (by use; seen running) the mission loaded (its number sent and compared in the network packets) */
+	i32 mapNumber;   /* +0xbe3000: (by use; seen running) the map's own number from its ground section (= Stage.mapNumber): checked against g_mapIndex while loading ("file damaged!") and sent in the game packets, where a client with another for the same map has data loss */
 	i32 musicKind;   /* +0xbe3004: (by use; seen running) the match music by kind 1 .. 4 (music_playMatch; = Stage.musicKind) */
 	u8 _pad0be3008[0x9fb6c0];
 	i32 headCount;   /* +0x15de6c8: parts of each kind (the pickers wrap around them) (= Stage.headTypeCount) */
@@ -1793,7 +1793,7 @@ typedef struct Scene {
 	i32 scoreLimit;   /* +0x23423ad: > 0: the points still needed are shown */
 	i32 timeLimit;   /* +0x23423b1: minutes; > 0: the time left is shown */
 	i32 endReason;   /* +0x23423b5: how the round ended: -1 not over, 0 its frag limit, 1 its time limit, 2 the server ended it (the server's end notices by it) */
-	float endNoticeTime;   /* +0x23423b9: (by use) the server's end notices every half second */
+	float endNoticeTime;   /* +0x23423b9: (by use; seen running) the server's end notices every half second */
 	i32 winnerTeam;   /* +0x23423bd */
 	float startCountdown;   /* +0x23423c1: (by use; seen running) "PREPARE THE BATTLE": seconds before the start (3), counted down */
 	i32 startCountdownShown;   /* +0x23423c5: (by use; seen running) the countdown's second last shown (-1 none) */
@@ -3017,7 +3017,7 @@ _Static_assert(offsetof(Stage, levelHigh) == 0x9ef910 && sizeof(((Stage *)0)->le
 _Static_assert(offsetof(Stage, worldLow) == 0x9ef91c && sizeof(((Stage *)0)->worldLow) == 0xc, "scene.fields: Stage.worldLow");
 _Static_assert(offsetof(Stage, worldHigh) == 0x9ef928 && sizeof(((Stage *)0)->worldHigh) == 0xc, "scene.fields: Stage.worldHigh");
 _Static_assert(offsetof(Stage, areaValue) == 0x9ef934 && sizeof(((Stage *)0)->areaValue) == 0x4, "scene.fields: Stage.areaValue");
-_Static_assert(offsetof(Stage, missionNumber) == 0x9ef938 && sizeof(((Stage *)0)->missionNumber) == 0x4, "scene.fields: Stage.missionNumber");
+_Static_assert(offsetof(Stage, mapNumber) == 0x9ef938 && sizeof(((Stage *)0)->mapNumber) == 0x4, "scene.fields: Stage.mapNumber");
 _Static_assert(offsetof(Stage, musicKind) == 0x9ef93c && sizeof(((Stage *)0)->musicKind) == 0x4, "scene.fields: Stage.musicKind");
 _Static_assert(offsetof(Stage, pool) == 0x9ef940 && sizeof(((Stage *)0)->pool) == 0x3d0900, "scene.fields: Stage.pool");
 _Static_assert(offsetof(Stage, poolUsed) == 0xdc0240 && sizeof(((Stage *)0)->poolUsed) == 0x4, "scene.fields: Stage.poolUsed");
@@ -3038,7 +3038,7 @@ _Static_assert(offsetof(Stage, objectShapes) == 0xe3c93c && sizeof(((Stage *)0)-
 _Static_assert(offsetof(Stage, objectShapeData) == 0xe3cb88 && sizeof(((Stage *)0)->objectShapeData) == 0xf4240, "scene.fields: Stage.objectShapeData");
 _Static_assert(offsetof(Stage, objectColours) == 0xf30dc8 && sizeof(((Stage *)0)->objectColours) == 0x3d0900, "scene.fields: Stage.objectColours");
 _Static_assert(offsetof(Stage, objectColourCount) == 0x13016c8 && sizeof(((Stage *)0)->objectColourCount) == 0x4, "scene.fields: Stage.objectColourCount");
-_Static_assert(offsetof(Stage, mapShaded) == 0x13016cc && sizeof(((Stage *)0)->mapShaded) == 0x4, "scene.fields: Stage.mapShaded");
+_Static_assert(offsetof(Stage, shadingCached) == 0x13016cc && sizeof(((Stage *)0)->shadingCached) == 0x4, "scene.fields: Stage.shadingCached");
 _Static_assert(offsetof(Stage, objectSkeletons) == 0x13016d0 && sizeof(((Stage *)0)->objectSkeletons) == 0x130, "scene.fields: Stage.objectSkeletons");
 _Static_assert(offsetof(Stage, objectSkeletonData) == 0x1301800 && sizeof(((Stage *)0)->objectSkeletonData) == 0x9c40, "scene.fields: Stage.objectSkeletonData");
 _Static_assert(offsetof(Stage, objectNames) == 0x130b440 && sizeof(((Stage *)0)->objectNames) == 0xfa00, "scene.fields: Stage.objectNames");
@@ -3221,7 +3221,7 @@ _Static_assert(offsetof(Scene, fogOn) == 0xbe170c && sizeof(((Scene *)0)->fogOn)
 _Static_assert(offsetof(Scene, fogColour) == 0xbe1710 && sizeof(((Scene *)0)->fogColour) == 0x10, "scene.fields: Scene.fogColour");
 _Static_assert(offsetof(Scene, fogParams) == 0xbe1720 && sizeof(((Scene *)0)->fogParams) == 0xc, "scene.fields: Scene.fogParams");
 _Static_assert(offsetof(Scene, unusedBe2ffc) == 0xbe2ffc && sizeof(((Scene *)0)->unusedBe2ffc) == 0x4, "scene.fields: Scene.unusedBe2ffc");
-_Static_assert(offsetof(Scene, missionNumber) == 0xbe3000 && sizeof(((Scene *)0)->missionNumber) == 0x4, "scene.fields: Scene.missionNumber");
+_Static_assert(offsetof(Scene, mapNumber) == 0xbe3000 && sizeof(((Scene *)0)->mapNumber) == 0x4, "scene.fields: Scene.mapNumber");
 _Static_assert(offsetof(Scene, musicKind) == 0xbe3004 && sizeof(((Scene *)0)->musicKind) == 0x4, "scene.fields: Scene.musicKind");
 _Static_assert(offsetof(Scene, headCount) == 0x15de6c8 && sizeof(((Scene *)0)->headCount) == 0x4, "scene.fields: Scene.headCount");
 _Static_assert(offsetof(Scene, chestCount) == 0x15fff84 && sizeof(((Scene *)0)->chestCount) == 0x4, "scene.fields: Scene.chestCount");

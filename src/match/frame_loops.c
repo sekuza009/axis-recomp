@@ -400,7 +400,7 @@ void THISCALL (object_initObjectBy)(Stage *s, int i, const ObjectType *type)
 		memcpy(mo->pos, mo->place, 12);
 	BITS(mo->glow) = 0;
 	BITS(mo->waitTime) = 0;
-	if (ST->mapShaded == 0)
+	if (ST->shadingCached == 0)
 		shape_shadeParts((*(u32 * *)&mo->colours[0]), 1, mo->model, (const LightFactors *)&s->mapLights,
 		                 mo->matrixInverse);
 }

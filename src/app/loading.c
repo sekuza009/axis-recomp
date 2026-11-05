@@ -457,7 +457,7 @@ u32 THISCALL (game_processLoadingMode)(u8 *g)
 		keep_alive(g);
 		if (!map_loadGroundInfoFrom(STAGE(g), bfd_name(g, path)))
 			sys_fatalErrorN((char *)OBJ(g_logConsole), (const char *)STR(0x4c4598, "file damaged!"));
-		if (g_mapIndex != GS->missionNumber)
+		if (g_mapIndex != GS->mapNumber)
 			sys_fatalErrorN((char *)OBJ(g_logConsole), (const char *)STR(0x4c4598, "file damaged!"));
 		mode = GS->sessionMode;
 		if (mode == 0 || mode == 1 || mode == 3)
