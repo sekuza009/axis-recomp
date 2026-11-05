@@ -1,6 +1,6 @@
 /* collision_tris.c: the collision space's triangles. A triangle record (0xa0 bytes) holds its id, its three corners
-   (+4), its three edges normalised (+0x28), its face plane (normal +0x4c, distance +0x58), three edge planes (+0x5c,
-   16 bytes each: the normal pointing inwards, the distance) and five values of the map's (+0x8c). The arithmetic is
+   (+4), its three edges normalised (edges), its face plane (normal normal, distance dist), three edge planes (edgePlanes,
+   16 bytes each: the normal pointing inwards, the distance) and five values of the map's (object). The arithmetic is
    the original's: extended precision, rounded where it stores a float, and float operands taken straight from
    memory (fld_m / fmul_m, so a signalling NaN behaves as there). */
 #include "../game.h"
@@ -220,10 +220,10 @@ static int clamp_to(float *v, const float *low, const float *high)
 
 /* 0x471400 (thiscall on the stage): an actor's move (radius r from pos along vel) for this frame. outPos is pos + vel
    kept inside the world box (worldLow low, worldHigh high); when it had to be, the move is cut to match. The map
-   objects (objectCount of them, 0x2cc bytes from +0x131ae48: active, solid +0x28c, triangles +0x288's +8, a box
-   +0x278, the world-to-model matrix +0x130) with pos inside their box widened by r + the move's length become the
-   sub-models (nearObjects: triangles and the two matrices +0x1f0 / +0x230), and space_testSphere runs on the stage's
-   grid (+0xa10) with them. Returns what it finds */
+   objects (objectCount of them, objects: active, animated, the triangles of its unit, the box of its model, the
+   world-to-model matrix matrixInverse) with pos inside their box widened by r + the move's length become the
+   sub-models (nearObjects: triangles and the two matrices relMatrix / relInverse), and space_testSphere runs on the stage's
+   grid (space) with them. Returns what it finds */
 int THISCALL (collision_moveActor)(u8 *stage, float r, const float *pos, const float *vel, u32 step, u32 k, float *outPos,
                                    u32 outVel, u32 outDist, u32 outPlane, u32 axis)
 {
@@ -551,7 +551,7 @@ static float row_dir(const float *m, const float *p, int i)
 }
 
 /* 0x4804b0 (thiscall on a leaf block of the octree): the sphere of radius r moving from pos by vel against the triangles of the
-   block's item list (+0x18: nodes {record, ., ., next +0xc}; records whose first byte has bit 0 set are skipped there)
+   block's item list (items: nodes {record, ., ., next next}; records whose first byte has bit 0 set are skipped there)
    and of nsubs sub-models (subs: {list, model-to-world matrix, world-to-model matrix}; pos and vel are taken into
    the model, the contact back out; an empty sub-model list crashes the original, as it would here). The farthest
    contact along the move wins (collisionTri_sweepSphere's outDist), the record that gave it is skipped next time;
@@ -634,12 +634,12 @@ static void ground_triangle(u8 *grid, u32 id, const void *a, const void *b, cons
 	space_insertTriangle(grid, id, (u32)a, (u32)b, (u32)c, 0, -1, -1, -1, -1);
 }
 
-/* 0x471040 (thiscall on the stage): its collision space (+0xa10) set up over the world box (levelLow low, levelHigh
+/* 0x471040 (thiscall on the stage): its collision space (space) set up over the world box (levelLow low, levelHigh
    high) in cells of the given sizes (z, x, y: the counts of whole cells), with the margin, split count and depth. Then, with
    floorOn, the floor (the box's lower face, two triangles, id 0x10); each ground layer (groundLayerCount of them, 0x20c
-   bytes from groundLayers: kind 0 or 1, rows +0x1c, columns +0x20, the (columns + 1) x (rows + 1) points +0x40) as two
+   bytes from groundLayers: kind 0 or 1, rows rows, columns cols, the (columns + 1) x (rows + 1) points points) as two
    triangles a cell, split one way for kind 0 and the other for kind 1, each row logged; and every object in use
-   (+4) that is not flagged 4 (+0xc) as a unit (space_buildUnits with its shape +0x27c and matrix +0xf4: +0x28c),
+   (+4) that is not flagged 4 (flags) as a unit (space_buildUnits with its shape model and matrix matrix: unit),
    every second one logged. Its caller ignores the eax it leaves */
 void THISCALL (collision_initVolume)(u8 *stage, float size_z, float size_x, float size_y, u32 margin, u32 splitCount, u32 depth)
 {

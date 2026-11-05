@@ -109,7 +109,7 @@ void THISCALL (stage_buildMeshDrawRecords)(u8 *stage)
 		A->colours = (u8 *)gl->boxColours;
 		A->vertexCount = 0xc;
 		A->texCoords = &gl->boxUv[0][0];
-		A->primCount = gl->lit == 1 ? 4 : 0;
+		A->primCount = gl->water == 1 ? 4 : 0;
 		A->prims = (u8 *)gl->boxPrims;
 		for (int f = 0; f < 4; f++) {
 			gl->boxPrims[f].kind = 6;   /* (a fan) */

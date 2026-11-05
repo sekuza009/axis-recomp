@@ -17,9 +17,9 @@ static void unit_parts_flag(void *unit, int set)
 void THISCALL (space_disableUnit)(void *unit) { unit_parts_flag(unit, 1); }
 void THISCALL (space_enableUnit)(void *unit) { unit_parts_flag(unit, 0); }
 
-/* an object's collision unit (+0x28c), used while +0x290 is 1 */
+/* an object's collision unit, switched with it only while it animates (animated 1) */
 #define OBJECT_UNIT(o) (((MapObject *)RELOC(o))->unit)
-#define OBJECT_HAS_UNIT(o) (((MapObject *)RELOC(o))->animated)
+#define OBJECT_ANIMATED(o) (((MapObject *)RELOC(o))->animated)
 
 /* 0x490ee0, 0x490f30: map object i switched on / off (when it was not already), its unit with it */
 void THISCALL (object_activate)(Stage *stage, int i)
@@ -28,7 +28,7 @@ void THISCALL (object_activate)(Stage *stage, int i)
 	if (o->active)
 		return;
 	o->active = 1;
-	if (OBJECT_HAS_UNIT(o) == 1 && OBJECT_UNIT(o))
+	if (OBJECT_ANIMATED(o) == 1 && OBJECT_UNIT(o))
 		space_enableUnit(OBJECT_UNIT(o));
 }
 
@@ -38,7 +38,7 @@ void THISCALL (object_deactivate)(Stage *stage, int i)
 	if (o->active != 1)
 		return;
 	o->active = 0;
-	if (OBJECT_HAS_UNIT(o) == 1 && OBJECT_UNIT(o))
+	if (OBJECT_ANIMATED(o) == 1 && OBJECT_UNIT(o))
 		space_disableUnit(OBJECT_UNIT(o));
 }
 

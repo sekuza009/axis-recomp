@@ -930,7 +930,7 @@ struct GroundLayer 0x20c                                        # a layer of the
 0x24       4          float cellSize
 0x28       4          float heightScale
 0x2c       4          float texScale                            # texture coordinates: x / texScale, z / texScale
-0x30       4          i32 lit                                   # 1: lit (its normals take the lights: ground_computeLighting; 4 primitives a cell)
+0x30       4          i32 water                                 # 1: a water layer: a surface drawn around the camera (layerBoxModel: boxPrims, boxColours lit from above, or for kind 1 from below)
 0x34       4          u32 texture                               # its Ground<n>Map texture
 0x38       4          u8 *heights                               # one byte a point (the map image's grey)
 0x3c       4          u8 *flat                                  # one byte a cell: all four corners present
@@ -948,7 +948,7 @@ struct GroundLayer 0x20c                                        # a layer of the
 0xfc       0x30       u32 boxColours[12]
 0x12c      0x60       float boxUv[12][2]
 0x18c      0x50       i32 boxIndices[4][5]                       # its box's four side faces, a five-point fan each (stage_buildMeshDrawRecords)
-0x1dc      0x30       ShapePrim boxPrims[4]                      # the four fans (drawn only when lit)
+0x1dc      0x30       ShapePrim boxPrims[4]                      # the four fans (drawn only for a water layer)
 
 struct WayPoint 0x14                                            # a way point (Trigger.wayPoints): a place on the trigger's path, with the actor commands run there (map_info.c, script_processCommandBy)
 0          0xc        float pos[3]                               # (by use) where it is (a trigger's first one: the player within its radius fires it; bots walk the path)

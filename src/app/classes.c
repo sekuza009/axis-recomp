@@ -120,8 +120,8 @@ void (vec_initAxisX)(void) { set3(OBJ(g_vecUnitX), 0x3f800000u, 0, 0); }
 #define DELETING(cls, dtor) \
 	void *THISCALL (cls##_deletingDtor)(void *self, int flags) { dtor(self); if (flags & 1) operator_delete(self); return self; }
 
-/* Texture (vtable 0x4a956c): Texture_dtor (its destructor) frees the pixel buffer (+0x10c,
-   held while +0x108 is not negative) and closes its file (+0x110); the result is what the last call left */
+/* Texture (vtable 0x4a956c): Texture_dtor (its destructor) frees the pixel buffer (index,
+   held while indexCount is not negative) and closes its file (file); the result is what the last call left */
 u32 THISCALL (Texture_dtor)(u32 *self)
 {
 	u32 r = self[0x42];
@@ -239,7 +239,7 @@ int THISCALL (ShapeManager_releaseModels)(u8 *self) { return release_all(self, 0
 /* 0x46b7f0: a skeleton manager's skeletons (0x24 bytes) */
 int THISCALL (SkeletonManager_releaseSkeletons)(u8 *self) { return release_all(self, 0x24, release_skeleton); }
 
-/* 0x45ff30: an object's eight member lists destroyed (UnitPoseInfo_dtor, the last member first: +0x701c .. +0x554).
+/* 0x45ff30: an object's eight member lists destroyed (UnitPoseInfo_dtor, the last member first: weaponModel5 .. headModel).
    Returns the last call's eax */
 u32 THISCALL (actor_destroyPartLists)(u8 *self)
 {
@@ -267,9 +267,9 @@ u32 THISCALL (ResourceSet_dtor)(u8 *self)
 #define eh_vector_destructor(array, size, count, dtor) \
 	((void (STDCALL *)(void *, u32, int, u32))IMG(0x49fc4f))(array, size, count, dtor)   /* `eh vector destructor iterator' (stdcall) */
 
-/* 0x46ff70: the stage destroyed, its members last first: Scene_dtor (scenePath), the 100 actors (+0x1cd93a8,
+/* 0x46ff70: the stage destroyed, its members last first: Scene_dtor (scenePath), the 100 actors (actors,
    0x8888 bytes each, actor_destroyPartLists), the skeleton and shape managers, the 16 resource sets (playerRecords, 0x47fd2 bytes
-   each, ResourceSet_dtor), two more managers, two Model_dtor tables, the three factor pools and +0xa10.
+   each, ResourceSet_dtor), two more managers, two Model_dtor tables, the three factor pools and space.
    Returns the last destructor's eax */
 u32 THISCALL (Stage_dtor)(u8 *self)
 {
@@ -291,8 +291,8 @@ u32 THISCALL (Stage_dtor)(u8 *self)
 }
 
 /* 0x46cd00 (thiscall on an image): a 24-bit BMP opened (the last one closed first): its file header (14 bytes, +8)
-   and info header (0x28 bytes, +0x16) read, each missing a fatal message, and anything but 24 bits uncompressed one
-   too; its width and height kept (+0x3e, +0x42). Returns the file, or 0 when it can't be opened */
+   and info header (0x28 bytes, infoSize) read, each missing a fatal message, and anything but 24 bits uncompressed one
+   too; its width and height kept (width, height). Returns the file, or 0 when it can't be opened */
 void *THISCALL (image_initBy)(u8 *image, const char *path)
 {
 	BmpFile *bmp = (BmpFile *)image;
@@ -332,7 +332,7 @@ void *THISCALL (image_tryOpen)(u8 *image, const char *path)
 
 /* 0x4734d0: player p's flag loaded: Save\<its name>.BMP (its player record at
    playerRecords, 0x47fd2 bytes each; the name from +4 by 0x4c74e8) read into a local image; at least 23 x 15 of it: its
-   24 x 16 corner copied as RGBA into the record (+0x479c2), black pixels made clear and the rest opaque, and 1
+   24 x 16 corner copied as RGBA into the record (flag), black pixels made clear and the rest opaque, and 1
    returned; else 0 */
 int THISCALL (playerRecord_loadFlag)(u8 *scene, int p)
 {
@@ -357,7 +357,7 @@ int THISCALL (playerRecord_loadFlag)(u8 *scene, int p)
 	return ok;
 }
 
-/* 0x473610 (thiscall on the scene): the sixteen players' flags (24 x 16 RGBA each, +0x479c2 in a player record)
+/* 0x473610 (thiscall on the scene): the sixteen players' flags (24 x 16 RGBA each, flag in a player record)
    that changed (+0x608 1) copied into the flag atlas (flagAtlas, 128 x 64, four to a row) and marked done; when one
    of them was new (+0x604 0, now 1) the atlas is uploaded to its GL texture (flagGlTexture). Its callers ignore the eax
    it leaves */
@@ -391,8 +391,8 @@ void THISCALL (flag_uploadAtlas)(u8 *scene)
 	glTexImage2D(0xde1, 0, 4, 0x80, 0x40, 0, 0x1908, 0x1401, (u8 *)(st)->flagAtlas);   /* RGBA, unsigned bytes */
 }
 
-/* 0x46ce80 (thiscall on an image): a w x h block of the open 24-bit BMP (its file +4, pixel data at +0x12, size +0x3e
-   x +0x42, rows stored bottom-up) from (sx, sy) copied into the dw x dh buffer dst at (dx, dy), both clipped (nothing
+/* 0x46ce80 (thiscall on an image): a w x h block of the open 24-bit BMP (its file +4, pixel data at dataOffset, size width
+   x height, rows stored bottom-up) from (sx, sy) copied into the dw x dh buffer dst at (dx, dy), both clipped (nothing
    left: nothing; wider than 0x400 a fatal message): BGR to RGB (depth 3) or RGBA with alpha 0xff (depth 4; another
    depth a fatal message per row), the rows placed top-down when topDown, else bottom-up. Its callers ignore the eax
    it leaves */
@@ -465,7 +465,7 @@ void THISCALL (image_copyTo)(u8 *image, u8 *dst, int dw, int dh, int depth, int 
 	}
 }
 
-/* the scene's camera presets (+0x233ca30: six tables of ten, as float bits or ints) */
+/* the scene's camera presets (cameraPresets: six tables of ten, as float bits or ints) */
 static const u32 k_cameraPresets[6][10] = {
 	{ 0, 0, 0, 0, 0, 0, 0x42480000, 0, 0, 0 },
 	{ 0, 0, 0, 0, 0x44610000, 0xc4610000, 0x43960000, 0xc2c80000, 0x44e10000, 0 },
@@ -474,9 +474,9 @@ static const u32 k_cameraPresets[6][10] = {
 	{ 0, 0, 0, 0, 1, 1, 0, 0, 1, 1 },
 	{ 0, 0, 0, 0, 0, 0, 0, 0, 0, 1 } };
 
-/* 0x460570 (thiscall: the game object's constructor): its clock (TimeSync_ctor at +0xc), view volume (+0x74) and the
+/* 0x460570 (thiscall: the game object's constructor): its clock (TimeSync_ctor at timer), view volume (view) and the
    stage (+0x1f36c8) with all its member arrays built (the CRT's vector constructors crt_arrayConstruct / 0x49fd2d with their
-   element constructors) and vtables set; the factor tables sized (ViewVolume_initBy into the block at +0x91e4); the
+   element constructors) and vtables set; the factor tables sized (ViewVolume_initBy into the block at viewMemory); the
    parts (stage_build with nine names), the component catalogue and the items loaded (failing: a fatal
    message); the ten camera presets, the stage's player slots reset (stage_selectActor -1), the geometry check sizes; the
    help text (Help.txt: 30 lines of 63 characters into consoleLines) read, each with its line end cut (an empty one
@@ -584,9 +584,9 @@ static void zero_dwords(u8 *at, int n)
 }
 
 /* 0x460cb0 (thiscall on the game object): a session started in mode (+4 client, +8 sessionMode: 0 solo, 1 network, 2 the ARM CENTER, 3 replays). With no CD found a fatal
-   message. Its counters cleared; in mode 3 the names of the replay list's entries flagged +0x40 (g_replayList, 0x44-byte
+   message. Its counters cleared; in mode 3 the names of the replay list's entries flagged flag (g_replayList, 0x44-byte
    records, g_replayListCount of them) copied to replayFiles (0x40 each, count replayCount); actors and scene reset; mode 2 also
-   clears the armour cache, the view box (+0xbe2fcc: -100000 .. 100000, twice), and sets the game type flags for type
+   clears the armour cache, the view box (the stage's levelLow .. levelHigh: -100000 .. 100000, twice), and sets the game type flags for type
    0; the camera from 0xa0e7a8.. (direction negated), the HUD mode matchState (mode 2 -> 3, 3 -> 1, else 2) and its
    defaults, the match state (teams_setup), the notices (net_clearAnnouncements) and the lobby slots (localPlayer -1 in modes 1
    and 3). Its callers ignore the eax it leaves */

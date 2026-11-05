@@ -1,0 +1,21 @@
+0 index
+1 indexCount
+2 file
+3 weaponModel5
+4 headModel
+5 actors
+6 space
+7 infoSize
+8 width
+9 height
+10 flag
+11 flag
+14 dataOffset
+15 width
+16 height
+17 cameraPresets
+18 timer
+19 view
+21 viewMemory
+22 flag
+23 the stage's levelLow .. levelHigh

@@ -65,7 +65,7 @@ static void put(u8 *o, int first, int r, int g, int b)
 	}
 }
 
-/* 0x463b80: the part's vertex colours (out, 4 bytes each) under the factors (count +0xb004, records from +4), the
+/* 0x463b80: the part's vertex colours (out, 4 bytes each) under the factors (count count, records from +4), the
    lights' positions and directions through the matrix when one is given. first = 1 writes the first factor (then
    it is 0), the others are added. No factors (when first) give black, an unlit part white; a point light (2) whose
    reach misses the part's box blackens it when first; an unknown kind is fatal. The original leaves eax to callers
@@ -216,18 +216,18 @@ static int light_level(long double d)
 }
 
 /* 0x472400 (thiscall on the scene): a ground layer's vertex colours (RGBA into cols) over rows r0 .. r1 and columns
-   c0 .. c1 of its grid (+0x20 + 1 wide; normals at +0x44): for each directional light (the scene's 0x2c-byte light
+   c0 .. c1 of its grid (cols + 1 wide; normals at normals): for each directional light (the scene's 0x2c-byte light
    records from mapLights.records[].kind, mapLights.count of them: kind 1; 0 and 2 are skipped, another kind is a fatal message) the
-   intensity from the normal against its direction (+0x14), the first written (first == 1), the rest added; a layer
-   with sky colours (+0x30 1) gets the light from straight above (1 for a layer of kind 1, else k_1f) in its 12
-   colours at +0xfc too. A kind-2 layer only clears its light map (+0x48) and sky colours. Its caller ignores the
+   intensity from the normal against its direction (dir), the first written (first == 1), the rest added; a water
+   layer (water 1) gets the light from straight above (from below, -1, for a layer of kind 1) in its 12 box colours
+   (boxColours) too. A kind-2 layer only clears its light map (colours) and box colours. Its caller ignores the
    eax it leaves */
 void THISCALL (light_computeLayerLightBy)(u8 *scene, u8 *layer, u8 *cols, int first, int r0, int c0, int r1, int c1)
 {
 	GroundLayer *gl = (GroundLayer *)layer;
 	if (gl->kind == 2) {
 		memset(((void *)(gl)->colours), 0xff, (gl->cols + 1) * (gl->rows + 1) * 4);
-		if (gl->lit == 1)
+		if (gl->water == 1)
 			memset(gl->boxColours, 0xff, 12 * 4);
 		return;
 	}
@@ -250,7 +250,7 @@ void THISCALL (light_computeLayerLightBy)(u8 *scene, u8 *layer, u8 *cols, int fi
 				int i = light_level(MUL(&n[1], &dir[1]) + MUL(&n[2], &dir[2]) + MUL(&dir[0], &n[0]));
 				light_mix(cols + v * 4, light, i, first == 1 ? NULL : cols + v * 4);
 			}
-		if (gl->lit == 1) {
+		if (gl->water == 1) {
 			const float *above = gl->kind == 1 ? &k_m1f : &k_1f;
 			int i = light_level(MUL(above, &dir[1]));
 			u8 sky[4];
@@ -262,8 +262,8 @@ void THISCALL (light_computeLayerLightBy)(u8 *scene, u8 *layer, u8 *cols, int fi
 	}
 }
 
-/* the two indices of column c's edge between rows r and r + 1 added to the open strip (the layer's index heap +0x58,
-   +0x5c used, at most +0x54: past it a fatal message) */
+/* the two indices of column c's edge between rows r and r + 1 added to the open strip (the layer's index heap indices,
+   indexCount used, at most indexCapacity: past it a fatal message) */
 static void strip_pair(u8 *layer, u32 *idx, int *n, int r, int c, int w)
 {
 	GroundLayer *gl = (GroundLayer *)layer;
@@ -276,7 +276,7 @@ static void strip_pair(u8 *layer, u32 *idx, int *n, int r, int c, int w)
 }
 
 /* a water vertex: v turned about the vertical by angle, moved to the camera, stored with its texture coordinates (its
-   x and z over the layer's texture size +0x2c) */
+   x and z over the layer's texture size texScale) */
 static void water_point(u8 *scene, u8 *layer, u8 *part, int at, int tex_at, float *v, int angle)
 {
 	GroundLayer *gl = (GroundLayer *)layer;
@@ -292,10 +292,10 @@ static void water_point(u8 *scene, u8 *layer, u8 *part, int at, int tex_at, floa
 }
 
 /* 0x497d20 (thiscall on the scene): the ground's drawing lists for this frame. For each layer (0x20c bytes from
-   groundLayers, groundLayerCount of them: origin +4, rows +0x1c, columns +0x20, cell size +0x24, cell bitmap +0x3c) the cells
-   (bit 0 set) within the view range (+0xa08) of the camera (cameraPos / 78) become triangle strips (type 5, from the
-   layer's primitive heap +0x64, +0x68 of them, at most +0x60: a fatal message) of grid indices, into the part of the
-   first terrain model (layerModel.parts, 0x80 bytes a layer: its +0x58, +0x60). A water layer (+0x30 1) gives the second
+   groundLayers, groundLayerCount of them: origin +4, rows rows, columns cols, cell size cellSize, cell bitmap flat) the cells
+   (bit 0 set) within the view range (cullMargin) of the camera (cameraPos / 78) become triangle strips (type 5, from the
+   layer's primitive heap strips, stripCount of them, at most stripCapacity: a fatal message) of grid indices, into the part of the
+   first terrain model (layerModel.parts, 0x80 bytes a layer: its colours, primCount). A water layer (water 1) gives the second
    model's part (layerBoxModel.parts) its surface around the camera at its height (+8): rings of four and of eight (the second
    h x k_m1_5f out) with texture coordinates; otherwise that part has none. Both models then go to the view volume's
    queue (ViewVolume_projectObject). Its callers ignore the eax it leaves */
@@ -352,7 +352,7 @@ void THISCALL (ground_buildDrawLists)(u8 *s, void *view, float h)
 			}
 		}
 		part->primCount = gl->stripCount;
-		if (gl->lit != 1) {
+		if (gl->water != 1) {
 			sp->primCount = 0;
 			continue;
 		}

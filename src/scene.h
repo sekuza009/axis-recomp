@@ -1073,7 +1073,7 @@ typedef struct GroundLayer {
 	float cellSize;   /* +0x24 */
 	float heightScale;   /* +0x28 */
 	float texScale;   /* +0x2c: texture coordinates: x / texScale, z / texScale */
-	i32 lit;   /* +0x30: 1: lit (its normals take the lights: ground_computeLighting; 4 primitives a cell) */
+	i32 water;   /* +0x30: 1: a water layer: a surface drawn around the camera (layerBoxModel: boxPrims, boxColours lit from above, or for kind 1 from below) */
 	u32 texture;   /* +0x34: its Ground<n>Map texture */
 	u8 *heights;   /* +0x38: one byte a point (the map image's grey) */
 	u8 *flat;   /* +0x3c: one byte a cell: all four corners present */
@@ -1092,7 +1092,7 @@ typedef struct GroundLayer {
 	u32 boxColours[12];   /* +0xfc */
 	float boxUv[12][2];   /* +0x12c */
 	i32 boxIndices[4][5];   /* +0x18c: its box's four side faces, a five-point fan each (stage_buildMeshDrawRecords) */
-	ShapePrim boxPrims[4];   /* +0x1dc: the four fans (drawn only when lit) */
+	ShapePrim boxPrims[4];   /* +0x1dc: the four fans (drawn only for a water layer) */
 } GroundLayer;
 
 /* a way point (Trigger.wayPoints): a place on the trigger's path, with the actor commands run there (map_info.c, script_processCommandBy) */
@@ -2722,7 +2722,7 @@ _Static_assert(offsetof(GroundLayer, cols) == 0x20 && sizeof(((GroundLayer *)0)-
 _Static_assert(offsetof(GroundLayer, cellSize) == 0x24 && sizeof(((GroundLayer *)0)->cellSize) == 0x4, "scene.fields: GroundLayer.cellSize");
 _Static_assert(offsetof(GroundLayer, heightScale) == 0x28 && sizeof(((GroundLayer *)0)->heightScale) == 0x4, "scene.fields: GroundLayer.heightScale");
 _Static_assert(offsetof(GroundLayer, texScale) == 0x2c && sizeof(((GroundLayer *)0)->texScale) == 0x4, "scene.fields: GroundLayer.texScale");
-_Static_assert(offsetof(GroundLayer, lit) == 0x30 && sizeof(((GroundLayer *)0)->lit) == 0x4, "scene.fields: GroundLayer.lit");
+_Static_assert(offsetof(GroundLayer, water) == 0x30 && sizeof(((GroundLayer *)0)->water) == 0x4, "scene.fields: GroundLayer.water");
 _Static_assert(offsetof(GroundLayer, texture) == 0x34 && sizeof(((GroundLayer *)0)->texture) == 0x4, "scene.fields: GroundLayer.texture");
 _Static_assert(offsetof(GroundLayer, heights) == 0x38 && sizeof(((GroundLayer *)0)->heights) == 0x4, "scene.fields: GroundLayer.heights");
 _Static_assert(offsetof(GroundLayer, flat) == 0x3c && sizeof(((GroundLayer *)0)->flat) == 0x4, "scene.fields: GroundLayer.flat");
