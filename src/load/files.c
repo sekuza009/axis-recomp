@@ -472,7 +472,7 @@ u32 (mission_loadAxisMis)(void)
 
 /* 0x443af0: mission k's block read from axis.mis (in the data folder): after a 0x1a-byte header, 0xf8 bytes for
    each of the g_missionCount entries and the blocks before it (their blockSize) into a new buffer
-   g_briefingSource (the old one freed); its size into g_briefingEnd, the skirmish screen's state cleared and the page set to
+   g_briefingSource (the old one freed); its size into g_briefingEnd, the mission list's state cleared and the page set to
    20 (the mission settings). Without the file, message 0xb and its eax; otherwise 0 */
 u32 (mission_loadBriefing)(int k)
 {
@@ -499,7 +499,7 @@ u32 (mission_loadBriefing)(int k)
 	g_briefingStart = 0;
 	g_briefingSkipped = 0;
 	g_briefingPage = 0;
-	g_skirmishPage = 20;
+	g_missionsPage = 20;
 	g_briefingEnd = mission[k].blockSize;
 	(*(int *)&g_briefingClock) = 0;
 	return 0;
@@ -797,7 +797,7 @@ static int campaign_signed(const char *path)
 
 /* 0x446a10: the chosen pilot made current: axisuser.dat written (no file: nothing more); the pilot's file read
    into g_campaign (its name from the list at +0x80) when it is there and signed, else a new record made and written;
-   then the mech read, g_progressWentUp / g_missionBriefing cleared, g_profileProgressSaved = the progress. Returns mech_loadFromProfile's eax */
+   then the mech read, g_progressWentUp / g_skirmishBriefing cleared, g_profileProgressSaved = the progress. Returns mech_loadFromProfile's eax */
 u32 (profile_makeCurrent)(void)
 {
 	set_current_name();
@@ -829,7 +829,7 @@ u32 (profile_makeCurrent)(void)
 	crt_chdir((const char *)STR(0x4b2a80, ".."));
 	u32 r = mech_loadFromProfile();
 	g_progressWentUp = 0;
-	g_missionBriefing = 0;
+	g_skirmishBriefing = 0;
 	g_profileProgressSaved = g_progress;
 	return r;
 }
@@ -1370,7 +1370,7 @@ u32 THISCALL (catalogue_loadComponents)(u8 *scene, const char *path)
 /* 0x487cb0 (thiscall on the scene): a recording started (one going is stopped first: replay_closeRecording): the file
    AutoPlay\name.ape, or without a name the first of AutoPlay000 .. AutoPlay999 not there yet (the name kept at
    recordName; none free, or the file not made: nothing more). Recording (recording 1, the clock recordTime 0), the
-   header written: version 0x1201, the settings (g_matchMode, g_missionStage, the 32 bytes at g_mapTitle, g_mapRotation), the map
+   header written: version 0x1201, the settings (g_matchMode, g_mapIndex, the 32 bytes at g_mapTitle, g_mapRotation), the map
    (gameMode), g_fragLimit and g_timeLimit. Every player in use (net_playerInUse) is flagged to be sent (sendFlags[][2],
    sendFlags[][3]), the shown one (localPlayer) too (sendFlags[][1], sendFlags, its playerRecords[].flagSent cleared). Its caller ignores
    the eax it leaves */
@@ -1402,7 +1402,7 @@ void THISCALL (autoplay_startRecording)(u8 *s, const char *name)
 	int value = 0x1201;
 	file_writeScrambled(&value, 4, 1, sc->replayFile);
 	file_writeScrambled((void *)ADDR(g_matchMode), 4, 1, sc->replayFile);
-	file_writeScrambled((void *)ADDR(g_missionStage), 4, 1, sc->replayFile);
+	file_writeScrambled((void *)ADDR(g_mapIndex), 4, 1, sc->replayFile);
 	file_writeScrambled((void *)OBJ(g_mapTitle), 1, 0x20, sc->replayFile);
 	file_writeScrambled((void *)ADDR(g_mapRotation), 4, 1, sc->replayFile);
 	value = sc->gameMode;

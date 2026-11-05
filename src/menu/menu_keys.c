@@ -21,11 +21,11 @@ void (menu_processKeys)(void)
 	case 210: profile_screenKeys(); break;              /* profiles */
 	case 300: mainmenu_processKeys(); break;
 	case 400: lobby_processKeys(); break;
-	case 500: missionsel_keys(); break;              /* missions */
+	case 500: skirmish_keys(); break;              /* skirmish */
 	case 600: setup_processTabKeys(); break;
 	case 700: armc_processInput(); break;        /* armour */
 	case 800: room_keysByState(); break;       /* game room */
-	case 900: skirmish_pageKeys(); break;              /* skirmish */
+	case 900: missions_pageKeys(); break;              /* the mission list */
 	case 9999: freeCam_keys(); break;
 	}
 }

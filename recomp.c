@@ -100,8 +100,8 @@ static int hit_rect(int x, int y, DWORD base, DWORD limit)
 	X(0x4322c0, 0x9dd408, 0x9dd468, account_hitTest) X(0x432300, 0x9dcd50, 0x9dce40, gameList_hitTest) \
 	X(0x432340, 0x9dd310, 0x9dd320, gameListStop_hitTest) X(0x432380, 0x9dd700, 0x9dd7e0, roomSettings_hitTest) \
 	X(0x4323c0, 0x9dd4c8, 0x9dd558, ranking_hitTest) X(0x440b70, 0x9dd958, 0x9dda78, replaySelect_hitTest) \
-	X(0x4438d0, 0x9ef228, 0x9ef2c8, skirmishList_hitTest) X(0x443910, 0x9f16c8, 0x9f1708, briefing_hitTest) \
-	X(0x447710, 0x9f6338, 0x9f6378, missionsel_hitTest) X(0x44b260, 0x9f8c68, 0x9f8cf8, profilePage_hitTest) \
+	X(0x4438d0, 0x9ef228, 0x9ef2c8, missionList_hitTest) X(0x443910, 0x9f16c8, 0x9f1708, briefing_hitTest) \
+	X(0x447710, 0x9f6338, 0x9f6378, skirmish_hitTest) X(0x44b260, 0x9f8c68, 0x9f8cf8, profilePage_hitTest) \
 	X(0x44b2a0, 0x9f9028, 0x9f9048, newNameDialog_hitTest) X(0x44b320, 0x9f6810, 0x9f6830, deleteDialog_hitTest) \
 	X(0x44b360, 0x9f8ef0, 0x9f8f10, logOutDialog_hitTest) X(0x44b3a0, 0x9f8d80, 0x9f8e50, profileList_hitTest) \
 	X(0x44b3e0, 0x9f8f40, 0x9f8ff0, pilotSelect_hitTest)
@@ -150,11 +150,11 @@ int ranking_hitTest(int x, int y);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 int replaySelect_hitTest(int x, int y);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-int skirmishList_hitTest(int x, int y);
+int missionList_hitTest(int x, int y);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 int briefing_hitTest(int x, int y);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-int missionsel_hitTest(int x, int y);
+int skirmish_hitTest(int x, int y);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 int profilePage_hitTest(int x, int y);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
@@ -356,19 +356,19 @@ void replaySelect_toggle(int i);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void replaySelect_allIn(void);
 
-/* skirmish map list: scroll offset 0x9f16bc, cursor row 0x9f1058 (0..7), selection 0x9f16a4 = offset + row,
+/* the mission list (screen 900): scroll offset 0x9f16bc, cursor row 0x9f1058 (0..7), selection 0x9f16a4 = offset + row,
    number of maps 0x9ef2c0 */
 #define sk_top G32(0x9f16bc)
 #define sk_row G32(0x9f1058)
 #define sk_sel G32(0x9f16a4)
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-void skirmish_cursorUp(void);
+void missions_cursorUp(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-void skirmish_cursorDown(void);
+void missions_cursorDown(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-void skirmish_clickRow(int row);
+void missions_clickRow(int row);
 
-/* 0x443d80 / 0x443de0: skirmish undo stack of values at 0x9eeadc (depth 0x9f1060); clear the 400-dword buffer at 0x9f1064 */
+/* 0x443d80 / 0x443de0: the mission list's undo stack of values at 0x9eeadc (depth 0x9f1060); clear the 400-dword buffer at 0x9f1064 */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void briefing_nextPage(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
@@ -696,7 +696,7 @@ void setup_selectGraphicTab(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void mapList_startEdit(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-void skirmish_briefingClicks(void);
+void missions_briefingClicks(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 int net_claimLocalSlot(void);
 /* bubble sort of the 0x4a-byte records at 0x9087c0 by their int at +0x28 */
@@ -767,7 +767,7 @@ void playerSetup_layout(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void roomLogin_layout(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-void skirmishList_layout(void);
+void missionList_layout(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void account_layout(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
@@ -788,7 +788,7 @@ void room_enterGameList(void);
 void room_openLogin(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void net_resetState(void);
-/* clear the 32 skirmish player rows (0xfc bytes each) */
+/* clear the mission list's 30 entries (0xfc bytes each) */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void missions_clear(void);
 /* map list cursor (signed byte at sel, lock byte): +1/-1 skipping entries 0x16..0x18, wrapping at the map count */
@@ -919,7 +919,7 @@ void room_openNewIdForm(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void ranking_enter(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-void missionsel_layout(void);
+void skirmish_layout(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void pilotSelect_layout(void)        /* 3 x 3 grid, then a row of two */;
 
@@ -1478,13 +1478,13 @@ void room_camera(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void arena_camera(void);
 
-/* skirmish / mission-select camera: mode 1 flies to the fixed menu point and counts the fade value (0x4e1870) down,
+/* the mission list's / skirmish screen's camera: mode 1 flies to the fixed menu point and counts the fade value (0x4e1870) down,
    then snaps to the launch view; mode 0 flies home (fast or slow depending on height), counts the fade up towards
    the ratio 0x5b1998 / 0x4e045c, and when low enough snaps home and returns to the main menu (state 300) */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-void skirmish_camera(void);
+void missions_camera(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-void missionsel_camera(void);
+void skirmish_camera(void);
 
 /* ---- batch 27: bullet trail ribbon (quads into the view volume) -------------------------------------------------- */
 /* bullet b's trail: a ring of 20 slots (4 points each, 0x30 bytes from +0xd4 of the bullet record) with a time per
@@ -3714,24 +3714,24 @@ void setup_drawTunnel(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void setup_drawMenu(void);
 /* batch 125 (lifted/grp71.c): the mission-select tunnel and the profile screen */
-/* 0x448140 missionsel_drawTunnel(): the mission-select backdrop: the setup tunnel's layers (setup_drawTunnel) with three
+/* 0x448140 skirmish_drawTunnel(): the mission-select backdrop: the setup tunnel's layers (setup_drawTunnel) with three
    panels a side (at -40 / 0 / 40, pushed back 550), textures 0x4e0cd0 and 0x76d47c / 0x76d478, the hovered panel's
    glow (0x680398, 0x680ccc) and the pulse / scroll advancing as there */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-void missionsel_drawTunnel(void);
+void skirmish_drawTunnel(void);
 /* 0x44d720 profile_drawManagementWindow(): the profile screen: frame and the two panels (bright when focused, 0x9f8f10),
    title 0x751a24, four buttons (0x751aa4; the hovered one, profilePage_hitTest, bright; out of focus the focused
    button 0x9f8f10 - 2), the profile list (profileList_drawNames) and its scroll arrows, the pilot panel
    (profile_drawChosenPilot), the border and "Axis v1.03" */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void profile_drawManagementWindow(void);
-/* batch 126 (lifted/grp72.c): five more screens' tunnel backdrops (missionsel_drawTunnel's layout) */
-/* 0x411110 armc_drawTunnel() / 0x4445a0 skirmish_drawTunnel(): the armour and skirmish screens' tunnel, as
-   missionsel_drawTunnel's (depth 550, textures 0x4e0cd0 and 0x76d47c / 0x76d478) */
+/* batch 126 (lifted/grp72.c): five more screens' tunnel backdrops (skirmish_drawTunnel's layout) */
+/* 0x411110 armc_drawTunnel() / 0x4445a0 missions_drawTunnel(): the armour and skirmish screens' tunnel, as
+   skirmish_drawTunnel's (depth 550, textures 0x4e0cd0 and 0x76d47c / 0x76d478) */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void armc_drawTunnel(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-void skirmish_drawTunnel(void);
+void missions_drawTunnel(void);
 /* 0x411ab0 armc_drawPreviewTunnel(): the same deeper (depth 1650), textures 0x4df908 / 0x4df904, dimmer stripes */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void armc_drawPreviewTunnel(void);
@@ -3800,12 +3800,12 @@ DWORD profile_logOutPage(void);
    panels (0x4deb80, 11 dwords each): a hit (unless locked, 0x9eeab4) lights the panel (0x680398, glow restarted
    when it changes, 0x907b24) and resets the idle time 0x9dda80 and the hint fade (0x9eea8c, 0x9dd948); no hit
    adds to the idle time. Flying in counts frames (0x9eeab0) and eases the depth 0x9eea90 to -550. The tunnel
-   (missionsel_drawTunnel's layout at depth 0x9eea90), then the hovered panel's caption (0x7501a4, 0x80 apart) or,
+   (skirmish_drawTunnel's layout at depth 0x9eea90), then the hovered panel's caption (0x7501a4, 0x80 apart) or,
    idle for long enough and nothing else open (0x680370, 0x9eeab4), the "AUTOPLAY-F1" hint fading in and out */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void menu_mainMenu(void);
 /* batch 133 (lifted/grp79.c): the mission-select screen */
-/* 0x449a50 missionsel_drawScreen(): the mission-select screen for mission 0x9f63b4 (no direct callers: reached
+/* 0x449a50 skirmish_drawScreen(): the mission-select screen for mission 0x9f63b4 (no direct callers: reached
    through a screen table): frame (window 0x9f6308..), the title "<n>ST / ND / RD / TH <0x75f1a4>  [ <map> ]" (map
    names 0x907b30, 0x20 apart); the map preview, looked up first ("<0x680bc4><map>/<map>", tex_getIdByName into
    0x9da324) when 0x9f63b0 asks for it, in a yellow frame with arrows; three lines "<label> : <value>" from the
@@ -3814,7 +3814,7 @@ void menu_mainMenu(void);
    count, +4 portraits; outside 0..8 "???") in framed rows; two buttons (0x75f6a4); the border; then a dimmed
    screen with the message 0x75f7a4 / 0x74de24 */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-void missionsel_drawScreen(void);
+void skirmish_drawScreen(void);
 /* batch 134 (lifted/grp80.c): the pilot-select dialog */
 /* 0x44e640 profile_drawPilotSelect(): the pilot-select dialog (window 0x9f8c54, 0x9f8c50 .. 0x9f6830, 0x9f682c): frame,
    title 0x75e7a4, a line; the portrait atlas (0x4dfa00) and the chosen pilot's cell (0x9f8d30: % 3, / 3 of 86
@@ -4187,39 +4187,39 @@ THISCALL void armc_drawPreview3D(void *scene, const DWORD *eye, const DWORD *for
 /* 0x41e760 sound_playMenu(i): with sound (0xa0e80c == 1) the menu sound i (0x4dd4d4) at the sound volume 0x4dd984 */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void sound_playMenu(int id);
-/* 0x443c80 skirmish_leave() / 0x447960 missionSettings_leave(): leave the skirmish / mission settings (state 0x9ef1f0 /
+/* 0x443c80 missions_leave() / 0x447960 skirmish_leave(): leave the skirmish / mission settings (state 0x9ef1f0 /
    0x9f62f8 = 0), the camera back (0x4e1870, 0x4df028 / 0x4df02c, 0x68037c / 0x680380), menu sound 4 and the saved
    camera (menu_restoreCamera) */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+DWORD missions_leave(void);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 DWORD skirmish_leave(void);
+/* 0x4479b0 skirmish_roundChosen(m): the mission m chosen (0x9f6328, 0x9f63b0 = 1), menu sound 2 */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-DWORD missionSettings_leave(void);
-/* 0x4479b0 mission_chosen(m): the mission m chosen (0x9f6328, 0x9f63b0 = 1), menu sound 2 */
-/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-void mission_chosen(int mission);
+void skirmish_roundChosen(int mission);
 /* batch 162 (lifted/grp108.c): skirmish / mission settings input, the room and arena text fields */
-/* 0x443e20 skirmish_listClicks(): no dialog open: a right click leaves (skirmish_leave); a left click on the
-   settings screen's buttons (skirmishList_hitTest, 0x9ef228): rows 0..7 skirmish_clickRow(row), 8 save (mission_loadBriefing
+/* 0x443e20 missions_listClicks(): no dialog open: a right click leaves (missions_leave); a left click on the
+   settings screen's buttons (missionList_hitTest, 0x9ef228): rows 0..7 missions_clickRow(row), 8 save (mission_loadBriefing
    with the selection 0x9f16a4), 9 leave */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-int skirmish_listClicks(void);
-/* 0x447a50 missionsel_clicks(): the mission settings the same way (missionsel_hitTest, 0x9f6338): 0 start
-   (mission_choose), 1 leave, 2 / 3 the mission 0x9f63b4 down / up within the unlocked 0x9f181c and 0..14 */
+int missions_listClicks(void);
+/* 0x447a50 skirmish_clicks(): the mission settings the same way (skirmish_hitTest, 0x9f6338): 0 start
+   (skirmish_startRound), 1 leave, 2 / 3 the mission 0x9f63b4 down / up within the unlocked 0x9f181c and 0..14 */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-DWORD missionsel_clicks(void);
-/* 0x4479d0 mission_choose(): mission 0x9f63b4 as the stage (0x9dad94), its map name (0x907b30) as the title
+DWORD skirmish_clicks(void);
+/* 0x4479d0 skirmish_startRound(): mission 0x9f63b4 as the stage (0x9dad94), its map name (0x907b30) as the title
    0x67fb44, its limits (0x9db9e4 + 0x5c * m: 0x76d368, 0x4df8e8 frag, 0x76d408 time), leave the settings, state 3 */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-DWORD mission_choose(void);
-/* 0x444070 skirmish_briefingKeys(): keys on the skirmish undo screen: back (0x4e0cd4) nothing, cancel (0x4e0cdc / 0x76d48c)
+DWORD skirmish_startRound(void);
+/* 0x444070 missions_briefingKeys(): keys on the skirmish undo screen: back (0x4e0cd4) nothing, cancel (0x4e0cdc / 0x76d48c)
    to page 10, undo / redo (0x4e150c / 0x4e1514: briefing_nextPage / briefing_prevPage) */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-DWORD skirmish_briefingKeys(void);
-/* 0x443f20 skirmish_listKeys(): back / enter save (mission_loadBriefing), cancel leaves, up / down held
+DWORD missions_briefingKeys(void);
+/* 0x443f20 missions_listKeys(): back / enter save (mission_loadBriefing), cancel leaves, up / down held
    (0x9db0a0 / 0x76d330) repeat after a delay (0x76d37c / 0x680bb4: 4 frames, then the key repeat 0x4b071c) moving
-   the selection (skirmish_cursorUp / 443d10) */
+   the selection (missions_cursorUp / 443d10) */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-void skirmish_listKeys(void);
+void missions_listKeys(void);
 /* 0x434320 room_editJoinPassword() / 0x405010 arena_editJoinPassword(): start typing in the chat line: keyboard
    released, the input buffer cleared, an empty line at 0x9dc92c, the edit box placed by the room / arena chat
    position (0x9dd4a8 / 0x4db8c8 + 0xd8, + 0xd0), typing on (0x9dd6c8 / 0x4db70c) and the edit window created */
@@ -4227,16 +4227,16 @@ void skirmish_listKeys(void);
 void room_editJoinPassword(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void arena_editJoinPassword(void);
-/* 0x443ef0 skirmish_pageClicks() / 0x4440f0 skirmish_pageKeys(): no dialog open: the skirmish settings (page 0x9ef1f8 10) or undo
+/* 0x443ef0 missions_pageClicks() / 0x4440f0 missions_pageKeys(): no dialog open: the skirmish settings (page 0x9ef1f8 10) or undo
    screen (0x14) mouse / keys (0x4440f0 only while 0x9ef1f0 is past 1) */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-void skirmish_pageClicks(void);
+void missions_pageClicks(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-void skirmish_pageKeys(void);
-/* 0x447b10 missionSelect_clicks(): no dialog, not busy (0x9f6300): the unlock screen 0x9f62e0 (briefing_clickClose) or
-   the mission settings mouse (missionsel_clicks) */
+void missions_pageKeys(void);
+/* 0x447b10 skirmish_screenClicks(): no dialog, not busy (0x9f6300): the unlock screen 0x9f62e0 (briefing_clickClose) or
+   the mission settings mouse (skirmish_clicks) */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-void missionSelect_clicks(void);
+void skirmish_screenClicks(void);
 /* 0x405200 arena_askJoinPassword() / 0x434da0 room_askJoinPassword(): typing allowed (0x908807 + 0x4a * the player 0x76d41c): start
    the arena / room chat line (flag 0x4db8bc / 0x9dd6b4) */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
@@ -4276,21 +4276,21 @@ DWORD lobbyCreate_draw(void);
 /* 0x447c30 briefing_keys(): on the unlock screen, cancel (0x76d48c) or back (0x9dae70) closes it (0x9f62e0 = 0) */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void briefing_keys(void);
-/* 0x447b40 missionList_keys(): the mission settings keys: cancel / 0x4e0cdc leave (missionSettings_leave), 0x4e1510 start
-   (mission_choose), 0x9dae14 / 0x9db974 the mission down / up within the unlocked count 0x9f181c and 0..14
-   (mission_chosen); holding 0x6803a8 and 0x4df9fc and pressing 0x4df90c unlocks all 16 (the cheat) */
+/* 0x447b40 skirmish_roundKeys(): the mission settings keys: cancel / 0x4e0cdc leave (skirmish_leave), 0x4e1510 start
+   (skirmish_startRound), 0x9dae14 / 0x9db974 the mission down / up within the unlocked count 0x9f181c and 0..14
+   (skirmish_roundChosen); holding 0x6803a8 and 0x4df9fc and pressing 0x4df90c unlocks all 16 (the cheat) */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-void missionList_keys(void);
-/* 0x447c70 missionsel_keys(): in the mission settings (0x9f62f8 past 1), no dialog, not busy (0x9f6300): the unlock
+void skirmish_roundKeys(void);
+/* 0x447c70 skirmish_keys(): in the mission settings (0x9f62f8 past 1), no dialog, not busy (0x9f6300): the unlock
    screen's keys (0x9f62e0) or the settings keys */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-void missionsel_keys(void);
-/* jump stubs: 0x44aa30 missionsel_frameScreen -> missionsel_drawScreen, 0x445bd0 skirmish_frameBriefing ->
+void skirmish_keys(void);
+/* jump stubs: 0x44aa30 skirmish_frameScreen -> skirmish_drawScreen, 0x445bd0 missions_frameBriefing ->
    missionBriefing_draw, 0x4532e0 jmp_net_getLocalAddress -> net_getLocalAddress */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-void missionsel_frameScreen(void);
+void skirmish_frameScreen(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-void skirmish_frameBriefing(void);
+void missions_frameBriefing(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 int jmp_net_getLocalAddress(void);
 /* batch 165 (lifted/grp111.c): profile screen dialogs and mouse handlers */
@@ -4367,15 +4367,15 @@ DWORD net_receiveAll(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 DWORD jmp_net_receiveAll(void);
 /* batch 168 (lifted/grp114.c): the mission settings screen */
-/* 0x448ac0 missionsel_drawSettingsScreen(): the mission settings screen (the mission select's sibling): the frame and panels,
+/* 0x448ac0 skirmish_drawSettingsScreen(): the mission settings screen (the mission select's sibling): the frame and panels,
    the chosen mission's name, preview and texts (the strings at 0x75bfa4 .. 0x75f6a4), its record (0x9db99c +
    0x5c * mission: allies and enemies with portraits, kind, values), the mission number with the arrows (greyed
-   at 0 and at the unlocked count 0x9f181c), the buttons (missionsel_hitTest) lit under the cursor */
+   at 0 and at the unlocked count 0x9f181c), the buttons (skirmish_hitTest) lit under the cursor */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-void missionsel_drawSettingsScreen(void);
-/* 0x44aa20 missionsel_frameSettings: jump to missionsel_drawSettingsScreen */
+void skirmish_drawSettingsScreen(void);
+/* 0x44aa20 skirmish_frameSettings: jump to skirmish_drawSettingsScreen */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-void missionsel_frameSettings(void);
+void skirmish_frameSettings(void);
 /* batch 169 (lifted/grp115.c, grp116.c, grp117.c: split so that the calls between these go through their native
    addresses, where the tests stub them): the armour centre's part selection */
 /* the armour centre: the part kind being chosen 0x4dbe48 (0..3 armour parts from the list 0x4dc79c (count
@@ -4594,7 +4594,7 @@ void replaySelect_mouse(void);
    sent), with their callees stubbed (tools/gentests.py); the in-match player messages (thiscall on the game),
    music_playMatch, dplay_closeSession */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-DWORD game_returnToMissions(void);
+DWORD game_returnToSkirmish(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 DWORD game_returnToMainMenu(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
@@ -4604,11 +4604,11 @@ DWORD game_returnToGameRoom(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void mapList_mouse(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-int menuState900_enterSkirmish(void);
+int menuState900_enterMissions(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 DWORD login_send(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-int menuState500_enter(void);
+int menuState500_enterSkirmish(void);
 /* 0x462b50 msg_playerConnected(game, player) / 0x462c30 msg_chatLine(game, player, text, from): the message
    by mode 0x9dae74 (a chat line only from someone else, 0x234243e) and a sound */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
@@ -4758,21 +4758,21 @@ void THISCALL scene_resetScores(void *scene);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 int dplay_host(int a1, int a2, int a3, int a4, int a5, int a6, int a7, int a8);
 /* batch 181 (lifted/grp131.c): the menu state frames that draw the background (menuState300_frame, menuState600_setup,
-   menuState900_skirmishSetup, menuState210_frame) and arena_openSession (connect by kind: the host
+   menuState900_missions, menuState210_frame) and arena_openSession (connect by kind: the host
    address resolved, that kind's slot connected, the player id), with their callees stubbed (tools/gentests.py) */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void menuState300_frame(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void menuState600_setup(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-DWORD menuState900_skirmishSetup(void);
+DWORD menuState900_missions(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void menuState210_frame(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 int arena_openSession(DWORD kind, const char *host);
-/* 0x445bc0 skirmish_frameList: jump to missionList_draw (a 5-byte stub missing from functions.csv, added) */
+/* 0x445bc0 missions_frameList: jump to missionList_draw (a 5-byte stub missing from functions.csv, added) */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-void skirmish_frameList(void);
+void missions_frameList(void);
 /* batch 182 (lifted/grp133.c): connecting from the room and the arena (room_joinSession, arena_joinListed), the lobby's
    room-name and reserved-name checks, arenaGames_mouse, arenaGames_keys, room_hostingStep, arena_connectionOutcome (the room /
    arena settings checked and the game hosted or joined), with their callees stubbed (tools/gentests.py) */
@@ -5067,12 +5067,12 @@ DWORD WINAPI game_WinMain(DWORD inst, DWORD prev, DWORD cmd, DWORD show);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 int app_startupLoad(void *instance);
 /* batch 205 (lifted/grp164.c .. grp166.c): the mission-select state, the main loop's frame, two HUD panels */
-/* 0x44aa40 menuState500_missionSelect(): the mission-select screen's frame (119 bytes; functions.csv said 4099):
+/* 0x44aa40 menuState500_skirmish(): the mission-select screen's frame (119 bytes; functions.csv said 4099):
    0x441740 while 0x9f63b8, 0x448140 unless page 0x9f62f8 is 2, the draw (0x447cb0); on pages other than 0 / 1 a
    dialog (0x90d1c4) draws its box (0x428c30 with 0x9f6308 .. 0x9f6314), else unless 0x9f6300 the input
    (0x44aa30 with 0x9f62e0, else 0x44aa20) by tail call */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-void menuState500_missionSelect(void);
+void menuState500_skirmish(void);
 /* 0x420280 main_loop(): one frame: in a match (screen 0x76d3e8 == 9999) 0x41f970 unless 0x67ef0c is 9999 too,
    the input (0x445c60, 0x4012c0) unless 0x68039c, the match frame (match_frameByState on the scene 0x9087b4); its 0 ends
    the match (game_postMatch by tail call); outside a match the menus' frame (menu_frame by tail call) */
@@ -6964,9 +6964,9 @@ static void menu_flags(void) { for (int i = 0; i < 17; i++) G32(0x9ddac8 + i * 0
 ST(replaySelect_toggle, menu_flags(); g_a[0] = irnd(0, 16);, (CD(void, 0x4417c0, int)(g_a[0]), 0), (replaySelect_toggle(g_a[0]), 0))
 ST(replaySelect_allIn, menu_flags(); G32(0x9dd928) = irnd(-1, 17);, (CD(void, 0x4417f0, void)(), 0), (replaySelect_allIn(), 0))
 static void sk_setup(void) { sk_top = irnd(0, 20); sk_row = irnd(0, 8); G32(0x9ef2c0) = irnd(0, 30); sk_sel = irnd(0, 40); g_a[0] = irnd(0, 9); }
-ST(skirmish_cursorUp, sk_setup();, (CD(void, 0x443cd0, void)(), 0), (skirmish_cursorUp(), 0))
-ST(skirmish_cursorDown, sk_setup();, (CD(void, 0x443d10, void)(), 0), (skirmish_cursorDown(), 0))
-ST(skirmish_clickRow, sk_setup();, (CD(void, 0x443d50, int)(g_a[0]), 0), (skirmish_clickRow(g_a[0]), 0))
+ST(missions_cursorUp, sk_setup();, (CD(void, 0x443cd0, void)(), 0), (missions_cursorUp(), 0))
+ST(missions_cursorDown, sk_setup();, (CD(void, 0x443d10, void)(), 0), (missions_cursorDown(), 0))
+ST(missions_clickRow, sk_setup();, (CD(void, 0x443d50, int)(g_a[0]), 0), (missions_clickRow(g_a[0]), 0))
 static void undo_setup(void)
 {
 	G32(0x4d7348) = irnd(0, 1); G32(0x9f1060) = irnd(-1, 20); G32(0x9ef1f4) = irnd(-5, 5);
@@ -7232,7 +7232,7 @@ V0(setup_selectGraphicTab, 0x420b40, fill((void *)0x83a9c0, 28); fill((void *)0x
    fill((void *)0x4de038, 4); fill((void *)0x4ddb98, 4); fill((void *)0x4dde90, 4); fill((void *)0x4dda60, 4); fill((void *)0x4ddd90, 4);)
 V0(mapList_startEdit, 0x403490, G32(0x67ef00) = irnd(-2, 22); fill((void *)0x4d9508, 22 * 8); fill((void *)0x4d7358, 22 * 8);
    fill((void *)0x4d7408, 0x14); fill((void *)0x4db508, 4);)
-V0(skirmish_briefingClicks, 0x443ea0, g_menuDialogOpen = !irnd(0, 4); g_mouseClick1 = irnd(0, 1); g_mouseClick2 = !irnd(0, 3);
+V0(missions_briefingClicks, 0x443ea0, g_menuDialogOpen = !irnd(0, 4); g_mouseClick1 = irnd(0, 1); g_mouseClick2 = !irnd(0, 3);
    if (irnd(0, 1)) rect_table(0x9f16c8, 0x9f1708); point_in_table(0x9f16c8, 0x9f1708);
    G32(0x4ded68) = g_a[0]; G32(0x4ded6c) = g_a[1]; fill((void *)0x9ef1f8, 4);)
 ST(net_claimLocalSlot, su_net_claimPlayerSlot(); G32(0xa0baf8) = irnd(0, 3) ? 1 : 0; fill((void *)0xa0b424, 4); fill((void *)0x9fd954, 1);
@@ -7300,7 +7300,7 @@ V0(setupGraphic_layout, 0x420480, fill((void *)0x4ddde0, 0x90); ORIG4(0x4dddd0, 
 V0(newIdForm_layout, 0x431b70, fill((void *)0x9dce50, 0x60); ORIG4(0x9dd6e8, 0x9dd6ec, 0x9dd6f4, 0x9dd6f0))
 V0(playerSetup_layout, 0x403f80, fill((void *)0x4db588, 0x60); ORIG4(0x4dbb68, 0x4dbb6c, 0x4dbb70, 0x4dbb64))
 V0(roomLogin_layout, 0x431ae0, fill((void *)0x9dd7e0, 0x50); ORIG4(0x9dd358, 0x9dd35c, 0x9dd364, 0x9dd360))
-V0(skirmishList_layout, 0x4437b0, fill((void *)0x9ef220, 0xa0); ORIG4(0x9f16a8, 0x9f16ac, 0x9f16b0, 0x9f16b4))
+V0(missionList_layout, 0x4437b0, fill((void *)0x9ef220, 0xa0); ORIG4(0x9f16a8, 0x9f16ac, 0x9f16b0, 0x9f16b4))
 V0(account_layout, 0x431c50, fill((void *)0x9dd400, 0x60); ORIG4(0x9dd368, 0x9dd36c, 0x9dd370, 0x9dd374))
 V0(briefing_layout, 0x443840, fill((void *)0x9f16c0, 0x40); ORIG4(0x9f16a8, 0x9f16ac, 0x9f16b0, 0x9f16b4))
 #define SETUP_VARS fill((void *)0x4dda60, 4); fill((void *)0x4ddac8, 4); fill((void *)0x4ddb98, 4); fill((void *)0x4ddce8, 8); \
@@ -7496,7 +7496,7 @@ V0(ranking_enter, 0x433800, fill((void *)0x9dcef0, 0x2b0); fill((void *)0x9dd6ac
    fill((void *)0x9dd3b0, 4); fill((void *)0xa0b350, 0x10); fill((void *)0x9dd1b4, 4); fill((void *)0x9dd1d0, 4); fill((void *)0x9dd300, 4);
    fill((void *)0x9dd328, 4); fill((void *)0x9dce48, 4); fill((void *)0x9dd83c, 4); fill((void *)0x9dd834, 4); fill((void *)0x9dd7dc, 4);
    fill((void *)0x9dd384, 4); fill((void *)0x9dd4b8, 4);)
-V0(missionsel_layout, 0x447660, fill((void *)0x9f6330, 0x40); ORIG4(0x9f6308, 0x9f630c, 0x9f6310, 0x9f6314))
+V0(skirmish_layout, 0x447660, fill((void *)0x9f6330, 0x40); ORIG4(0x9f6308, 0x9f630c, 0x9f6310, 0x9f6314))
 V0(pilotSelect_layout, 0x44b1a0, fill((void *)0x9f8f38, 0xb0); ORIG4(0x9f8c50, 0x9f8c54, 0x9f682c, 0x9f6830))
 ST(actor_resetSlot, actors_setup(); fill(BUF + ACTOR(g_a[0]), 0x560);,
    (TC(void, 0x4743e0, char *, int)(BUF, g_a[0]), 0), (actor_resetSlot(BUF, g_a[0]), 0))
@@ -8035,8 +8035,8 @@ static void menucam2_setup(DWORD modev, DWORD flagv, DWORD minus1)
 	fill((void *)flagv, 4); fill((void *)minus1, 4); fill((void *)0x67ef0c, 4); fill((void *)0x67ef20, 4); fill((void *)0x4dda44, 4);
 	G32(0x76d3e8) = 400;
 }
-V0(skirmish_camera, 0x444130, menucam2_setup(0x9ef1f0, 0x9eeba8, 0x9ef1f8);)
-V0(missionsel_camera, 0x447cb0, menucam2_setup(0x9f62f8, 0x9f63b8, 0x9f6300);)
+V0(missions_camera, 0x444130, menucam2_setup(0x9ef1f0, 0x9eeba8, 0x9ef1f8);)
+V0(skirmish_camera, 0x447cb0, menucam2_setup(0x9f62f8, 0x9f63b8, 0x9f6300);)
 
 /* batch 27 */
 static void trail_setup(void)
@@ -13185,7 +13185,7 @@ static void missionbg_setup(void)
 	G32(0x76d47c) = G32(0x4e0cd0); G32(0x76d478) = G32(0x4e0cd0); G32(0x76d480) = irnd(0, 1) ? 0xdc0 : 0;
 	G32(0x680398) = irnd(0, 1); GF(0x680ccc) = (float)irnd(0, 400) / 10.0f; GF(0x4df454) = irnd(0, 1) ? 1.0f : -1.0f;
 }
-ST(missionsel_drawTunnel, missionbg_setup();, (CALL_PLAIN(0x448140, 0, 0, 0, 0, 0), 0), (missionsel_drawTunnel(), 0))   /* its callers ignore the eax it leaves (tools/eaxuse.py) */
+ST(skirmish_drawTunnel, missionbg_setup();, (CALL_PLAIN(0x448140, 0, 0, 0, 0, 0), 0), (skirmish_drawTunnel(), 0))   /* its callers ignore the eax it leaves (tools/eaxuse.py) */
 /* the profile screen: pilotpanel_setup's panel and proflist_setup's list (positions shared), every text short (the
    screen draws the list, the panel, four buttons and labels: about ten logged calls a character), the window
    0x9f8e48..0x9f8ea4, focus 0..3, the cursor sometimes on a button */
@@ -13217,7 +13217,7 @@ static void tunnels_setup(void)
 	GF(0x9dd698) = (float)irnd(-20000, 0) / 10.0f; GF(0x4dba68) = (float)irnd(-20000, 0) / 10.0f;
 }
 ST(armc_drawTunnel, tunnels_setup();, (CALL_PLAIN(0x411110, 0, 0, 0, 0, 0), 0), (armc_drawTunnel(), 0))   /* its callers ignore the eax it leaves (tools/eaxuse.py) */
-ST(skirmish_drawTunnel, tunnels_setup();, (CALL_PLAIN(0x4445a0, 0, 0, 0, 0, 0), 0), (skirmish_drawTunnel(), 0))   /* its callers ignore the eax it leaves (tools/eaxuse.py) */
+ST(missions_drawTunnel, tunnels_setup();, (CALL_PLAIN(0x4445a0, 0, 0, 0, 0, 0), 0), (missions_drawTunnel(), 0))   /* its callers ignore the eax it leaves (tools/eaxuse.py) */
 ST(armc_drawPreviewTunnel, tunnels_setup();, (CALL_PLAIN(0x411ab0, 0, 0, 0, 0, 0), 0), (armc_drawPreviewTunnel(), 0))   /* its callers ignore the eax it leaves (tools/eaxuse.py) */
 ST(room_drawTunnel, tunnels_setup();, (CALL_PLAIN(0x4388e0, 0, 0, 0, 0, 0), 0), (room_drawTunnel(), 0))   /* its callers ignore the eax it leaves (tools/eaxuse.py) */
 ST(arena_drawTunnel, tunnels_setup();, (CALL_PLAIN(0x4091b0, 0, 0, 0, 0, 0), 0), (arena_drawTunnel(), 0))   /* its callers ignore the eax it leaves (tools/eaxuse.py) */
@@ -13394,7 +13394,7 @@ static void missionscreen_setup(void)
 	G32(0x4ded68) = irnd(0, 640); G32(0x4ded6c) = irnd(0, 480);
 	g_paintStacks = 1;
 }
-ST(missionsel_drawScreen, missionscreen_setup();, (CALL_PLAIN(0x449a50, 0, 0, 0, 0, 0), 0), (missionsel_drawScreen(), 0))   /* its callers ignore the eax it leaves (tools/eaxuse.py) */
+ST(skirmish_drawScreen, missionscreen_setup();, (CALL_PLAIN(0x449a50, 0, 0, 0, 0, 0), 0), (skirmish_drawScreen(), 0))   /* its callers ignore the eax it leaves (tools/eaxuse.py) */
 /* batch 134 */
 /* the pilot-select dialog: pilotpanel_setup's pilots, labels and textures (every texture this dialog binds from
    the same set), the chosen pilot 0..8, the dialog window, the highlight pulse and reveal timers anywhere in their
@@ -14278,9 +14278,9 @@ ST(armc_drawPreview3D, rotate_setup();, rotate_orig(),
    (armc_drawPreview3D(BUF, (const DWORD *)(BUF + 0x200), (const DWORD *)(BUF + 0x20c), (const DWORD *)(BUF + 0x218),
                           g_a[0], g_a[1], g_a[2], g_a[3]), 0))
 ST(sound_playMenu, menusnd_setup();, CALL_PLAIN(0x41e760, 0, g_a[4], 0, 0, 0), (sound_playMenu((DWORD)(g_a[4])), 0))
-ST(skirmish_leave, menusnd_setup();, CALL_PLAIN(0x443c80, 0, 0, 0, 0, 0), (DWORD)(skirmish_leave()))
-ST(missionSettings_leave, menusnd_setup();, CALL_PLAIN(0x447960, 0, 0, 0, 0, 0), (DWORD)(missionSettings_leave()))
-ST(mission_chosen, menusnd_setup();, CALL_PLAIN(0x4479b0, 0, g_a[3], 0, 0, 0), (mission_chosen((DWORD)(g_a[3])), 0))
+ST(missions_leave, menusnd_setup();, CALL_PLAIN(0x443c80, 0, 0, 0, 0, 0), (DWORD)(missions_leave()))
+ST(skirmish_leave, menusnd_setup();, CALL_PLAIN(0x447960, 0, 0, 0, 0, 0), (DWORD)(skirmish_leave()))
+ST(skirmish_roundChosen, menusnd_setup();, CALL_PLAIN(0x4479b0, 0, g_a[3], 0, 0, 0), (skirmish_roundChosen((DWORD)(g_a[3])), 0))
 /* batch 162 */
 /* the settings screens: the skirmish lists (sk_setup), keyboard (keys_setup) and menu sounds (menusnd_setup), the
    save file, the undo history; dialog open or not, clicks; the skirmish and mission button tables with the cursor
@@ -14311,16 +14311,16 @@ static void menudisp_setup(void)
 	G32(0x9dae74) = irnd(0, 2);
 	fill((void *)0x9dc92c, 0x400);
 }
-ST(skirmish_listClicks, menudisp_setup();, CALL_PLAIN(0x443e20, 0, 0, 0, 0, 0), (DWORD)(skirmish_listClicks()))
-ST(missionsel_clicks, menudisp_setup();, CALL_PLAIN(0x447a50, 0, 0, 0, 0, 0), (DWORD)(missionsel_clicks()))
-ST(mission_choose, menudisp_setup();, CALL_PLAIN(0x4479d0, 0, 0, 0, 0, 0), (DWORD)(mission_choose()))
-ST(skirmish_briefingKeys, menudisp_setup();, CALL_PLAIN(0x444070, 0, 0, 0, 0, 0), (DWORD)(skirmish_briefingKeys()))
-ST(skirmish_listKeys, menudisp_setup();, (CALL_PLAIN(0x443f20, 0, 0, 0, 0, 0), 0), (skirmish_listKeys(), 0))   /* its callers ignore the eax it leaves (tools/eaxuse.py) */
+ST(missions_listClicks, menudisp_setup();, CALL_PLAIN(0x443e20, 0, 0, 0, 0, 0), (DWORD)(missions_listClicks()))
+ST(skirmish_clicks, menudisp_setup();, CALL_PLAIN(0x447a50, 0, 0, 0, 0, 0), (DWORD)(skirmish_clicks()))
+ST(skirmish_startRound, menudisp_setup();, CALL_PLAIN(0x4479d0, 0, 0, 0, 0, 0), (DWORD)(skirmish_startRound()))
+ST(missions_briefingKeys, menudisp_setup();, CALL_PLAIN(0x444070, 0, 0, 0, 0, 0), (DWORD)(missions_briefingKeys()))
+ST(missions_listKeys, menudisp_setup();, (CALL_PLAIN(0x443f20, 0, 0, 0, 0, 0), 0), (missions_listKeys(), 0))   /* its callers ignore the eax it leaves (tools/eaxuse.py) */
 ST(room_editJoinPassword, menudisp_setup();, CALL_PLAIN(0x434320, 0, 0, 0, 0, 0), (room_editJoinPassword(), 0))
 ST(arena_editJoinPassword, menudisp_setup();, CALL_PLAIN(0x405010, 0, 0, 0, 0, 0), (arena_editJoinPassword(), 0))
-ST(skirmish_pageClicks, menudisp_setup();, CALL_PLAIN(0x443ef0, 0, 0, 0, 0, 0), (skirmish_pageClicks(), 0))
-ST(skirmish_pageKeys, menudisp_setup();, CALL_PLAIN(0x4440f0, 0, 0, 0, 0, 0), (skirmish_pageKeys(), 0))
-ST(missionSelect_clicks, menudisp_setup();, CALL_PLAIN(0x447b10, 0, 0, 0, 0, 0), (missionSelect_clicks(), 0))
+ST(missions_pageClicks, menudisp_setup();, CALL_PLAIN(0x443ef0, 0, 0, 0, 0, 0), (missions_pageClicks(), 0))
+ST(missions_pageKeys, menudisp_setup();, CALL_PLAIN(0x4440f0, 0, 0, 0, 0, 0), (missions_pageKeys(), 0))
+ST(skirmish_screenClicks, menudisp_setup();, CALL_PLAIN(0x447b10, 0, 0, 0, 0, 0), (skirmish_screenClicks(), 0))
 ST(arena_askJoinPassword, menudisp_setup();, CALL_PLAIN(0x405200, 0, 0, 0, 0, 0), (arena_askJoinPassword(), 0))
 ST(room_askJoinPassword, menudisp_setup();, CALL_PLAIN(0x434da0, 0, 0, 0, 0, 0), (room_askJoinPassword(), 0))
 /* batch 163 */
@@ -14379,10 +14379,10 @@ static const DWORD g_stubMissionDraw[] = { 0x449a50, 0, 0 };
 static const DWORD g_stubSkirmishDraw[] = { 0x4456b0, 0, 0 };
 static const DWORD g_stubLocalAddr[] = { 0x454220, 0, 0 };
 ST(briefing_keys, missionkeys_setup();, CALL_PLAIN(0x447c30, 0, 0, 0, 0, 0), (briefing_keys(), 0))
-ST(missionList_keys, missionkeys_setup();, CALL_PLAIN(0x447b40, 0, 0, 0, 0, 0), (missionList_keys(), 0))
-ST(missionsel_keys, missionkeys_setup();, CALL_PLAIN(0x447c70, 0, 0, 0, 0, 0), (missionsel_keys(), 0))
-ST(missionsel_frameScreen, callee_stubs(g_stubMissionDraw, 0);, (CALL_PLAIN(0x44aa30, 0, 0, 0, 0, 0), 0), (missionsel_frameScreen(), 0))   /* its eax goes up to menu_frame, which ignores it (tools/eaxuse.py) */
-ST(skirmish_frameBriefing, callee_stubs(g_stubSkirmishDraw, 0);, (CALL_PLAIN(0x445bd0, 0, 0, 0, 0, 0), 0), (skirmish_frameBriefing(), 0))   /* its eax goes up to menu_frame, which ignores it (tools/eaxuse.py) */
+ST(skirmish_roundKeys, missionkeys_setup();, CALL_PLAIN(0x447b40, 0, 0, 0, 0, 0), (skirmish_roundKeys(), 0))
+ST(skirmish_keys, missionkeys_setup();, CALL_PLAIN(0x447c70, 0, 0, 0, 0, 0), (skirmish_keys(), 0))
+ST(skirmish_frameScreen, callee_stubs(g_stubMissionDraw, 0);, (CALL_PLAIN(0x44aa30, 0, 0, 0, 0, 0), 0), (skirmish_frameScreen(), 0))   /* its eax goes up to menu_frame, which ignores it (tools/eaxuse.py) */
+ST(missions_frameBriefing, callee_stubs(g_stubSkirmishDraw, 0);, (CALL_PLAIN(0x445bd0, 0, 0, 0, 0, 0), 0), (missions_frameBriefing(), 0))   /* its eax goes up to menu_frame, which ignores it (tools/eaxuse.py) */
 ST(jmp_net_getLocalAddress, callee_stubs(g_stubLocalAddr, 0);, CALL_PLAIN(0x4532e0, 0, 0, 0, 0, 0), (DWORD)jmp_net_getLocalAddress())
 /* batch 165 */
 /* the profile screen: its variables (PROFILE_VARS), saves to load and delete (selectload_setup), the keyboard and
@@ -14514,8 +14514,8 @@ static void missionsettings_setup(void)
 	rect_table(0x9f6338, 0x9f6378);
 	if (irnd(0, 1)) { point_in_table(0x9f6338, 0x9f6378); G32(0x4ded68) = g_a[0]; G32(0x4ded6c) = g_a[1]; }
 }
-ST(missionsel_drawSettingsScreen, missionsettings_setup();, (CALL_PLAIN(0x448ac0, 0, 0, 0, 0, 0), 0), (missionsel_drawSettingsScreen(), 0))   /* its callers ignore the eax it leaves (tools/eaxuse.py) */
-ST(missionsel_frameSettings, missionsettings_setup();, (CALL_PLAIN(0x44aa20, 0, 0, 0, 0, 0), 0), (missionsel_frameSettings(), 0))   /* its eax goes up to menu_frame, which ignores it (tools/eaxuse.py) */
+ST(skirmish_drawSettingsScreen, missionsettings_setup();, (CALL_PLAIN(0x448ac0, 0, 0, 0, 0, 0), 0), (skirmish_drawSettingsScreen(), 0))   /* its callers ignore the eax it leaves (tools/eaxuse.py) */
+ST(skirmish_frameSettings, missionsettings_setup();, (CALL_PLAIN(0x44aa20, 0, 0, 0, 0, 0), 0), (skirmish_frameSettings(), 0))   /* its eax goes up to menu_frame, which ignores it (tools/eaxuse.py) */
 /* batch 169 */
 /* the armour centre's part selection with every heavy callee stubbed (callee_stubs: the scene / actor ones are
    thiscall: CS_THIS records the object, CS_POP pops as they do): kinds -1..6, positions inside and outside the
@@ -14862,7 +14862,7 @@ ST(replaySelect_mouse, gen_setup(g_gs_441810, g_gi_441810, g_gb_441810); callee_
 static const DWORD g_gs_41ec50[] = { 0x401310, 1, 0x431590, 0, 0x4411e0, 0, 0x441200, 0, 0x451e60, 0, 0x452fe0, 0, 0 };
 static const DWORD g_gi_41ec50[] = { 0x4dbbf4, 0x4dda44, 0x4dda48, 0x4deb48, 0x4ded18, 0x4df024, 0x4df028, 0x4df02c, 0x4df8e0, 0x5ae9c4, 0x67ef14, 0x67ef20, 0x680370, 0x680378, 0x68037c, 0x680380, 0x68039c, 0x76d3e8, 0x9db990, 0x9dd918, 0x9dd91c, 0x9dd920, 0x9dd930, 0x9dd934, 0x9dd938, 0 };
 static const DWORD g_gb_41ec50[] = { 0x9f9844, 0 };
-ST(game_returnToMissions, gen_setup(g_gs_41ec50, g_gi_41ec50, g_gb_41ec50);, CALL_PLAIN(0x41ec50, 0, g_a[0], g_a[1], g_a[2], g_a[3]), (DWORD)(game_returnToMissions()))
+ST(game_returnToSkirmish, gen_setup(g_gs_41ec50, g_gi_41ec50, g_gb_41ec50);, CALL_PLAIN(0x41ec50, 0, g_a[0], g_a[1], g_a[2], g_a[3]), (DWORD)(game_returnToSkirmish()))
 static const DWORD g_gs_41e8b0[] = { 0x401310, 1, 0x431590, 0, 0x4411e0, 0, 0x451e60, 0, 0x452fe0, 0, 0 };
 static const DWORD g_gi_41e8b0[] = { 0x4dbbf4, 0x4dda44, 0x4dda48, 0x4deb48, 0x4ded18, 0x4df024, 0x4df028, 0x4df02c, 0x4df8e0, 0x4e1868, 0x5ae9c4, 0x67ef14, 0x67ef20, 0x680370, 0x680378, 0x68037c, 0x680380, 0x68039c, 0x76d3e8, 0x9db990, 0x9dd918, 0x9dd91c, 0x9dd920, 0x9dd930, 0x9dd934, 0x9dd938, 0 };
 static const DWORD g_gb_41e8b0[] = { 0x9f9844, 0 };
@@ -14882,7 +14882,7 @@ ST(mapList_mouse, gen_setup(g_gs_4036c0, g_gi_4036c0, g_gb_4036c0); callee_ret(0
 static const DWORD g_gs_443950[] = { 0x41e760, 1, 0x4435f0, 0, 0x4437b0, 0, 0x443840, 0, 0 };
 static const DWORD g_gi_443950[] = { 0x4df024, 0x4df028, 0x4df02c, 0x4df870, 0x4df874, 0x4df878, 0x67ef0c, 0x67ef20, 0x680378, 0x68037c, 0x680380, 0x680bb4, 0x76d37c, 0x76d388, 0x76d38c, 0x76d390, 0x76d3e8, 0x76d3f8, 0x76d3fc, 0x76d400, 0x9db090, 0x9db094, 0x9db098, 0x9eeac8, 0x9eeacc, 0x9eead0, 0x9eead4, 0x9eeba8, 0x9ef1f0, 0x9ef1f8, 0x9ef208, 0x9ef20c, 0x9ef210, 0x9ef214, 0x9f1058, 0x9f16a4, 0x9f16a8, 0x9f16ac, 0x9f16b0, 0x9f16b4, 0x9f16bc, 0 };
 static const DWORD g_gb_443950[] = { 0 };
-ST(menuState900_enterSkirmish, gen_setup(g_gs_443950, g_gi_443950, g_gb_443950);, CALL_PLAIN(0x443950, 0, g_a[0], g_a[1], g_a[2], g_a[3]), (DWORD)(menuState900_enterSkirmish()))
+ST(menuState900_enterMissions, gen_setup(g_gs_443950, g_gi_443950, g_gb_443950);, CALL_PLAIN(0x443950, 0, g_a[0], g_a[1], g_a[2], g_a[3]), (DWORD)(menuState900_enterMissions()))
 static const DWORD g_gs_434490[] = { 0x41ee40, 1, 0x431600, 1, 0x434400, 1, 0x4521c0, 2, 0 };
 static const DWORD g_gi_434490[] = { 0x9dd58e, 0x4ded18, 0x4e1868, 0x68039c, 0x9dd1c8, 0x9dd38c, 0x9dd592, 0x9dd596, 0x9dd830, 0x9dd838, 0x9dd888, 0xa0b320, 0 };
 static const DWORD g_gb_434490[] = { 0x9dd1d8, 0x9dd1f6, 0x9dd570, 0 };
@@ -14890,7 +14890,7 @@ ST(login_send, gen_setup(g_gs_434490, g_gi_434490, g_gb_434490); netstate_setup(
 static const DWORD g_gs_447750[] = { 0x41e760, 1, 0x447660, 0, 0 };
 static const DWORD g_gi_447750[] = { 0x4df024, 0x4df028, 0x4df02c, 0x4df870, 0x4df874, 0x4df878, 0x67ef0c, 0x67ef20, 0x680378, 0x68037c, 0x680380, 0x76d388, 0x76d38c, 0x76d390, 0x76d3e8, 0x76d3f8, 0x76d3fc, 0x76d400, 0x9db090, 0x9db094, 0x9db098, 0x9f181c, 0x9f62e0, 0x9f62e8, 0x9f62ec, 0x9f62f0, 0x9f62f4, 0x9f62f8, 0x9f62fc, 0x9f6300, 0x9f6308, 0x9f630c, 0x9f6310, 0x9f6314, 0x9f6318, 0x9f631c, 0x9f6320, 0x9f6324, 0x9f6328, 0x9f63b0, 0x9f63b4, 0x9f63b8, 0 };
 static const DWORD g_gb_447750[] = { 0 };
-ST(menuState500_enter, gen_setup(g_gs_447750, g_gi_447750, g_gb_447750);, CALL_PLAIN(0x447750, 0, g_a[0], g_a[1], g_a[2], g_a[3]), (DWORD)(menuState500_enter()))
+ST(menuState500_enterSkirmish, gen_setup(g_gs_447750, g_gi_447750, g_gb_447750);, CALL_PLAIN(0x447750, 0, g_a[0], g_a[1], g_a[2], g_a[3]), (DWORD)(menuState500_enterSkirmish()))
 /* the in-match messages with a player: thiscall on the game (ecx = BUF; the player record is only an address for
    the stubbed message call), the player index, the chat text, the sender; the match music by the map's kind
    (BUF + 0xbe3004, 1..4, and the shuffled choice 0xa1efb8 in the table 0xa106f8); a DirectPlay object closed
@@ -15278,7 +15278,7 @@ ST(menuState600_setup, gen_setup(g_gs_427920, g_gi_427920, g_gb_427920);, CALL_P
 static const DWORD g_gs_445be0[] = { 0x428c30, 4, 0x441740, 0, 0x444130, 0, 0x4445a0, 0, 0x445bc0, 0, 0x445bd0, 0, 0 };
 static const DWORD g_gi_445be0[] = { 0x90d1c4, 0x9eeba8, 0x9ef1f0, 0x9ef1f8, 0x9f16a8, 0x9f16ac, 0x9f16b0, 0x9f16b4, 0 };
 static const DWORD g_gb_445be0[] = { 0 };
-ST(menuState900_skirmishSetup, gen_setup(g_gs_445be0, g_gi_445be0, g_gb_445be0);, CALL_PLAIN(0x445be0, 0, g_a[0], g_a[1], g_a[2], g_a[3]), (DWORD)(menuState900_skirmishSetup()))
+ST(menuState900_missions, gen_setup(g_gs_445be0, g_gi_445be0, g_gb_445be0);, CALL_PLAIN(0x445be0, 0, g_a[0], g_a[1], g_a[2], g_a[3]), (DWORD)(menuState900_missions()))
 static const DWORD g_gs_44f860[] = { 0x42b590, 0, 0x441740, 0, 0x44f410, 0, 0x44f4b0, 0, 0x44f5f0, 0, 0x44f6c0, 0, 0x44f740, 0, 0x44f810, 0, 0x44f850, 0, 0 };
 static const DWORD g_gi_44f860[] = { 0x4dda48, 0x9f6838, 0x9f8f10, 0 };
 static const DWORD g_gb_44f860[] = { 0x9f9070, 0 };
@@ -15287,9 +15287,9 @@ static const DWORD g_gs_452ec0[] = { 0x4515a0, 0, 0x452fe0, 0, 0x4547d0, 1, 0x45
 static const DWORD g_gi_452ec0[] = { 0xa0b384, 0xa0b388, 0xa0b390, 0xa0b418, 0xa0b41c, 0xa0b420, 0xa0b424, 0xa0b428, 0 };
 static const DWORD g_gb_452ec0[] = { 0xa0d320, 0 };
 ST(arena_openSession, gen_setup(g_gs_452ec0, g_gi_452ec0, g_gb_452ec0); /* the stored address 0xa0d320 is copied into a 16-byte buffer (an IP address fits) */ fill_str((char *)0xa0d320, 15, '0', '9');, CALL_PLAIN(0x452ec0, 0, g_a[0], g_a[1], g_a[2], g_a[3]), (DWORD)(arena_openSession((DWORD)(g_a[0]), (const char *)(DWORD)(g_a[1]))))
-/* skirmish_frameList: a jump stub (to missionList_draw), its target stubbed */
+/* missions_frameList: a jump stub (to missionList_draw), its target stubbed */
 static const DWORD g_stubSkirmishA[] = { 0x444f40, 0, 0 };
-ST(skirmish_frameList, callee_stubs(g_stubSkirmishA, 0);, (CALL_PLAIN(0x445bc0, 0, 0, 0, 0, 0), 0), (skirmish_frameList(), 0))   /* its eax goes up to menu_frame, which ignores it (tools/eaxuse.py) */
+ST(missions_frameList, callee_stubs(g_stubSkirmishA, 0);, (CALL_PLAIN(0x445bc0, 0, 0, 0, 0, 0), 0), (missions_frameList(), 0))   /* its eax goes up to menu_frame, which ignores it (tools/eaxuse.py) */
 /* batch 182: generated tests (tools/gentests.py, gen_setup from batch 172) */
 static const DWORD g_gs_434dd0[] = { 0x41ee40, 1, 0x452ec0, 1, 0x452fe0, 0, 0x453260, 0, 0 };
 static const DWORD g_gi_434dd0[] = { 0x4db708, 0x4db710, 0x4db8b4, 0x4dbb10, 0x4dbb78, 0x4ded18, 0x9dd56c, 0xa0bad0, 0 };
@@ -16223,7 +16223,7 @@ static void missionframe_setup(void)
 	G32(0x9f63b8) = irnd(0, 1); G32(0x9f62f8) = irnd(-1, 3); G32(0x90d1c4) = irnd(0, 1); G32(0x9f6300) = !irnd(0, 3);
 	G32(0x9f62e0) = irnd(0, 1); for (int k = 0; k < 4; k++) G32(0x9f6308 + 4 * k) = irnd(0, 640);
 }
-ST(menuState500_missionSelect, missionframe_setup();, CALL_PLAIN(0x44aa40, 0, 0, 0, 0, 0), (menuState500_missionSelect(), 0))
+ST(menuState500_skirmish, missionframe_setup();, CALL_PLAIN(0x44aa40, 0, 0, 0, 0, 0), (menuState500_skirmish(), 0))
 /* the main loop's frame: the screen in a match or not, 0x67ef0c, 0x68039c, the match frame's answer; every callee
    stubbed */
 static const DWORD g_stubMainLoop[] = { 0x4012c0, 0, 0x41f970, 0, 0x41fa40, 0, 0x420100, 0, 0x445c60, 0, 0x462050, 0 | CS_THIS, 0 };
@@ -17190,7 +17190,7 @@ static const STest g_stests[] = {
 	T(crypt_record104, 0, 4, 500), T(crypt_record80, 0, 4, 500), T(room_nameHasBadChar, 1, 4, 3000), T(profile_nameHasBadChar, 1, 4, 3000),
 	T(ranking_prevPage, 0, 40, 0), T(ranking_nextPage, 0, 40, 0), T(ranking_cycleSort, 0, 30, 0), T(app_setDataPaths, 0, 10, 0),
 	T(replaySelect_toggle, 0, 30, 0), T(replaySelect_allIn, 0, 30, 0),
-	T(skirmish_cursorUp, 0, 40, 0), T(skirmish_cursorDown, 0, 40, 0), T(skirmish_clickRow, 0, 40, 0),
+	T(missions_cursorUp, 0, 40, 0), T(missions_cursorDown, 0, 40, 0), T(missions_clickRow, 0, 40, 0),
 	T(briefing_nextPage, 0, 40, 0), T(briefing_prevPage, 0, 40, 0), T(menu_clickStartFade, 0, 30, 0), T(briefing_clickClose, 0, 30, 0),
 	T(mech_loadFromProfile, 0, 60, 0), T(mech_storeToProfile, 0, 20, 0), T(menu_restoreCamera, 0, 20, 0), T(profile_inDialogBox, 1, 4, 3000),
 	T(net_claimPlayerSlot, 2, 40, 0), T(net_takePlayerSlot, 0, 30, 0), T(net_freeAllSlots, 0, 20, 0), T(net_sessionValue, 1, 4, 3000),
@@ -17221,7 +17221,7 @@ static const STest g_stests[] = {
 	T(updateNotice_layout, 0, 8, 0), T(deleteDialog_layout, 0, 8, 0), T(logOutDialog_layout, 0, 8, 0), T(profileList_layout, 0, 8, 0),
 	T(newNameDialog_layout, 0, 8, 0), T(newIdConfirm_layout, 0, 8, 0), T(lobbyTop_layout, 0, 8, 0), T(text_setColor, 0, 8, 0),
 	T(armc_rightClickLeave, 0, 10, 0), T(profile_resetPreview, 0, 6, 0), T(profile_resetSelection, 0, 6, 0), T(profile_resetCamera, 0, 6, 0),
-	T(setup_selectGraphicTab, 0, 6, 0), T(mapList_startEdit, 0, 20, 0), T(skirmish_briefingClicks, 0, 40, 0), T(sessionList_sort, 0, 30, 0),
+	T(setup_selectGraphicTab, 0, 6, 0), T(mapList_startEdit, 0, 20, 0), T(missions_briefingClicks, 0, 40, 0), T(sessionList_sort, 0, 30, 0),
 	T(ptx_initQuantTables, 0, 30, 0), T(ptx_initClampTable, 0, 4, 0), T(ptx_initColourTables, 0, 4, 0), T(ErrorLog_ctor, 1, 10, 0),
 	T(net_claimLocalSlot, 1, 40, 0), T(str_dropLast, 1, 4, 1000), T(scene_teamSide, 1, 4, 1000), T(stage_setTextureFolder, 1, 4, 500),
 	T(stage_deactivateActors, 0, 4, 300), T(teams_setup, 0, 4, 300), T(escMenu_open, 0, 4, 300), T(object_activate, 0, 4, 600),
@@ -17229,7 +17229,7 @@ static const STest g_stests[] = {
 	T(vec3_scaleCopy, 0, 4, 2000), T(vec_rotate, 0, 4, 2000), T(space_transformPoint, 0, 4, 2000),
 	/* batch 8 */
 	T(setupGraphic_layout, 0, 8, 0), T(newIdForm_layout, 0, 8, 0), T(playerSetup_layout, 0, 8, 0), T(roomLogin_layout, 0, 8, 0),
-	T(skirmishList_layout, 0, 8, 0), T(account_layout, 0, 8, 0), T(briefing_layout, 0, 8, 0), T(setup_selectSoundTab, 0, 6, 0),
+	T(missionList_layout, 0, 8, 0), T(account_layout, 0, 8, 0), T(briefing_layout, 0, 8, 0), T(setup_selectSoundTab, 0, 6, 0),
 	T(setup_selectControlTab, 0, 6, 0), T(lobby_enterPlayerScreen, 0, 10, 0), T(room_openNewIdConfirm, 0, 6, 0), T(room_enterGameList, 0, 6, 0),
 	T(room_openLogin, 0, 20, 0), T(net_resetState, 0, 4, 0), T(missions_clear, 0, 4, 0), T(arena_stepMap, 0, 200, 0),
 	T(room_stepMap, 0, 200, 0), T(net_freeSlotsOf, 2, 40, 0), T(ptx_readBits, 1, 60, 0), T(actor_pickRandomWeapon, 0, 40, 0),
@@ -17241,7 +17241,7 @@ static const STest g_stests[] = {
 	T(mech_setCharacter, 0, 4, 600), T(scene_setLocalTeam, 0, 4, 600), T(hangul_glyphs, 1, 60, 0), T(ptx_readDcDiff, 0, 150, 0),
 	T(ptx_readAcSymbol, 0, 150, 0), T(ptx_toRgb, 0, 4, 300), T(ptx_initYCbCrTables, 0, 4, 0), T(ptx_layoutBlocks, 0, 4, 600),
 	T(menuState300_enter, 0, 4, 0), T(armc_initCameraPoints, 0, 4, 0), T(armc_initPanels, 0, 4, 0), T(room_openNewIdForm, 0, 4, 0),
-	T(ranking_enter, 0, 4, 0), T(missionsel_layout, 0, 8, 0), T(pilotSelect_layout, 0, 8, 0), T(actor_resetSlot, 0, 4, 300),
+	T(ranking_enter, 0, 4, 0), T(skirmish_layout, 0, 8, 0), T(pilotSelect_layout, 0, 8, 0), T(actor_resetSlot, 0, 4, 300),
 	T(bullet_free, 0, 4, 1000), T(stage_resetPlayerRecords, 0, 4, 30), T(actor_nextWeapon, 0, 4, 1000), T(actor_prevWeapon, 0, 4, 1000),
 	T(shape_setTint, 0, 4, 300),
 	/* batch 10 */
@@ -17290,7 +17290,7 @@ static const STest g_stests[] = {
 	/* batch 25 */
 	T(Mat4_fromAxisAngle, 0, 4, 2000), T(tex_tintHsv, 0, 4, 3000), T(ViewVolume_addQuad, 0, 4, 3000),
 	/* batch 26 */
-	T(room_camera, 0, 250, 0), T(arena_camera, 0, 250, 0), T(skirmish_camera, 0, 250, 0), T(missionsel_camera, 0, 250, 0),
+	T(room_camera, 0, 250, 0), T(arena_camera, 0, 250, 0), T(missions_camera, 0, 250, 0), T(skirmish_camera, 0, 250, 0),
 	/* batch 27 */
 	T(bullet_drawTrail, 0, 4, 1500),
 	/* batch 28 */
@@ -17597,9 +17597,9 @@ static const STest g_stests[] = {
 	/* batch 124 */
 	T(setup_drawTunnel, 0, 200, 0), T(setup_drawMenu, 0, 200, 0),
 	/* batch 125 */
-	T(missionsel_drawTunnel, 0, 200, 0), T(profile_drawManagementWindow, 0, 300, 0),
+	T(skirmish_drawTunnel, 0, 200, 0), T(profile_drawManagementWindow, 0, 300, 0),
 	/* batch 126 */
-	T(armc_drawTunnel, 0, 150, 0), T(skirmish_drawTunnel, 0, 150, 0), T(armc_drawPreviewTunnel, 0, 150, 0), T(room_drawTunnel, 0, 150, 0),
+	T(armc_drawTunnel, 0, 150, 0), T(missions_drawTunnel, 0, 150, 0), T(armc_drawPreviewTunnel, 0, 150, 0), T(room_drawTunnel, 0, 150, 0),
 	T(arena_drawTunnel, 0, 150, 0),
 	/* batch 127 */
 	T(account_drawPanel, 0, 300, 0),
@@ -17615,7 +17615,7 @@ static const STest g_stests[] = {
 	/* batch 132 */
 	T(menu_mainMenu, 0, 300, 0),
 	/* batch 133 */
-	T(missionsel_drawScreen, 0, 300, 0),
+	T(skirmish_drawScreen, 0, 300, 0),
 	/* batch 134 */
 	T(profile_drawPilotSelect, 0, 300, 0),
 	/* batch 135 */
@@ -17676,17 +17676,17 @@ static const STest g_stests[] = {
 	T(sound_loadWav, 0, 300, 0),
 	/* batch 161 */
 	T(input_keyHeldChecked, 0, 300, 0), T(input_keyHeld, 0, 300, 0), T(input_isDown, 0, 300, 0), T(input_justPressed, 0, 600, 0), T(input_readMouse, 0, 600, 0), T(input_updateMouse, 0, 600, 0), T(armc_drawPreview3D, 0, 600, 0), T(gfx_setProjectionHud, 0, 600, 0), T(gfx_fillRect, 0, 600, 0), T(hud_drawDigits, 0, 600, 0), T(font_penDraw, 0, 600, 0), T(game_wndProc, 0, 2000, 0), T(crt_vsprintf, 0, 20000, 0), T(crt_atoi, 0, 5000, 0), T(crt_atof, 0, 5000, 0), T(crt_strtok, 0, 3000, 0), T(crt_itoa, 0, 3000, 0), T(crt_tolower, 0, 2000, 0), T(crt_strupr, 0, 2000, 0), T(crt_strstr, 0, 2000, 0), T(crt_strncmp, 0, 2000, 0), T(crt_strnicmp, 0, 2000, 0), T(crt_strncpy, 0, 2000, 0), T(crt_rand, 0, 2000, 0), T(crt_ftol, 0, 10000, 0), T(crt_acos, 0, 5000, 0), T(netq_reset, 0, 300, 0), T(netq_poll, 0, 300, 0), T(net_sendPacketData, 0, 600, 0), T(netq_receive, 0, 3000, 0), T(netq_online, 0, 100, 0), T(net_isClient, 0, 100, 0), T(net_hostGone, 0, 100, 0), T(net_localSlot, 0, 100, 0), T(net_playerInUse, 0, 100, 0), T(netq_clearResends, 0, 100, 0), T(netq_resends, 0, 100, 0), T(sound_playMenu, 0, 200, 0),
-	T(skirmish_leave, 0, 200, 0), T(missionSettings_leave, 0, 200, 0), T(mission_chosen, 0, 200, 0),
+	T(missions_leave, 0, 200, 0), T(skirmish_leave, 0, 200, 0), T(skirmish_roundChosen, 0, 200, 0),
 	/* batch 162 */
-	T(skirmish_listClicks, 0, 300, 0), T(missionsel_clicks, 0, 300, 0), T(mission_choose, 0, 200, 0), T(skirmish_briefingKeys, 0, 300, 0),
-	T(skirmish_listKeys, 0, 400, 0), T(room_editJoinPassword, 0, 200, 0), T(arena_editJoinPassword, 0, 200, 0), T(skirmish_pageClicks, 0, 300, 0),
-	T(skirmish_pageKeys, 0, 300, 0), T(missionSelect_clicks, 0, 300, 0), T(arena_askJoinPassword, 0, 200, 0), T(room_askJoinPassword, 0, 200, 0),
+	T(missions_listClicks, 0, 300, 0), T(skirmish_clicks, 0, 300, 0), T(skirmish_startRound, 0, 200, 0), T(missions_briefingKeys, 0, 300, 0),
+	T(missions_listKeys, 0, 400, 0), T(room_editJoinPassword, 0, 200, 0), T(arena_editJoinPassword, 0, 200, 0), T(missions_pageClicks, 0, 300, 0),
+	T(missions_pageKeys, 0, 300, 0), T(skirmish_screenClicks, 0, 300, 0), T(arena_askJoinPassword, 0, 200, 0), T(room_askJoinPassword, 0, 200, 0),
 	/* batch 163 */
 	T(setup_tabClicks, 0, 200, 0), T(setup_processTabKeys, 0, 200, 0), T(lobby_processKeys, 0, 300, 0), T(room_keysByState, 0, 400, 0),
 	T(room_clicksByState, 0, 400, 0), T(profile_frame, 0, 300, 0), T(room_draw, 0, 300, 0), T(lobbyCreate_draw, 0, 300, 0),
 	/* batch 164 */
-	T(briefing_keys, 0, 300, 0), T(missionList_keys, 0, 400, 0), T(missionsel_keys, 0, 300, 0), T(missionsel_frameScreen, 0, 50, 0),
-	T(skirmish_frameBriefing, 0, 50, 0), T(jmp_net_getLocalAddress, 0, 50, 0),
+	T(briefing_keys, 0, 300, 0), T(skirmish_roundKeys, 0, 400, 0), T(skirmish_keys, 0, 300, 0), T(skirmish_frameScreen, 0, 50, 0),
+	T(missions_frameBriefing, 0, 50, 0), T(jmp_net_getLocalAddress, 0, 50, 0),
 	/* batch 165 */
 	T(profile_typeNewName, 0, 200, 0), T(profile_askDelete, 0, 200, 0), T(profile_askLogOut, 0, 200, 0), T(profile_deleteClicks, 0, 300, 0),
 	T(profile_logOutClicks, 0, 300, 0), T(pilotSelect_clicks, 0, 400, 0),
@@ -17696,7 +17696,7 @@ static const STest g_stests[] = {
 	T(dplay_receive, 0, 300, 0), T(dplay_send, 0, 300, 0), T(net_sendMessage, 0, 300, 0), T(net_logMessage, 0, 300, 0),
 	T(net_handleMessage, 0, 400, 0), T(net_handleSystemMessage, 0, 400, 0), T(net_receiveAll, 0, 400, 0), T(jmp_net_receiveAll, 0, 100, 0),
 	/* batch 168 */
-	T(missionsel_drawSettingsScreen, 0, 300, 0), T(missionsel_frameSettings, 0, 50, 0),
+	T(skirmish_drawSettingsScreen, 0, 300, 0), T(skirmish_frameSettings, 0, 50, 0),
 	/* batch 169 */
 	T(armc_showCursorItem, 0, 300, 0), T(armc_pickSlot, 0, 300, 0), T(armc_takeCursorItem, 0, 300, 0), T(armc_openWeaponsPage, 0, 300, 0),
 	T(armc_exit, 0, 300, 0),
@@ -17725,9 +17725,9 @@ static const STest g_stests[] = {
 	T(lobby_topPageClicks, 0, 200, 0), T(hostError_clicks, 0, 200, 0), T(lobbyPlayer_keys, 0, 200, 0), T(newIdForm_endTyping, 0, 200, 0),
 	T(profile_newNamePage, 0, 200, 0), T(replaySelect_mouse, 0, 200, 0),
 	/* batch 174 */
-	T(game_returnToMissions, 0, 200, 0), T(game_returnToMainMenu, 0, 200, 0), T(game_returnToArenaLobby, 0, 200, 0), T(game_returnToGameRoom, 0, 200, 0),
-	T(mapList_mouse, 0, 1000, 0), T(menuState900_enterSkirmish, 0, 200, 0), T(login_send, 0, 200, 0),
-	T(menuState500_enter, 0, 200, 0), T(msg_playerConnected, 0, 200, 0), T(msg_chatLine, 0, 300, 0), T(music_playMatch, 0, 300, 0),
+	T(game_returnToSkirmish, 0, 200, 0), T(game_returnToMainMenu, 0, 200, 0), T(game_returnToArenaLobby, 0, 200, 0), T(game_returnToGameRoom, 0, 200, 0),
+	T(mapList_mouse, 0, 1000, 0), T(menuState900_enterMissions, 0, 200, 0), T(login_send, 0, 200, 0),
+	T(menuState500_enterSkirmish, 0, 200, 0), T(msg_playerConnected, 0, 200, 0), T(msg_chatLine, 0, 300, 0), T(music_playMatch, 0, 300, 0),
 	T(dplay_closeSession, 0, 100, 0),
 	/* batch 175 */
 	T(menu_returnToMain, 0, 200, 0), T(menu_returnToMainFromRoom, 0, 200, 0), T(dplay_join, 0, 200, 0), T(menu_enterState, 0, 200, 0),
@@ -17751,8 +17751,8 @@ static const STest g_stests[] = {
 	T(menu_drawBackground, 0, 200, 0), T(dplaySlot0_open, 0, 200, 0), T(dplaySlot1_open, 0, 200, 0), T(dplaySlot2_open, 0, 200, 0),
 	T(dplaySlot3_open, 0, 200, 0), T(newIdForm_clicks, 0, 200, 0), T(scene_resetScores, 0, 200, 0), T(dplay_host, 0, 200, 0),
 	/* batch 181 */
-	T(menuState300_frame, 0, 200, 0), T(menuState600_setup, 0, 200, 0), T(menuState900_skirmishSetup, 0, 200, 0), T(menuState210_frame, 0, 200, 0),
-	T(arena_openSession, 0, 200, 0), T(skirmish_frameList, 0, 50, 0),
+	T(menuState300_frame, 0, 200, 0), T(menuState600_setup, 0, 200, 0), T(menuState900_missions, 0, 200, 0), T(menuState210_frame, 0, 200, 0),
+	T(arena_openSession, 0, 200, 0), T(missions_frameList, 0, 50, 0),
 	/* batch 182 */
 	T(room_joinSession, 0, 200, 0), T(arena_joinListed, 0, 200, 0), T(lobby_hostArenaLan, 0, 200, 0), T(lobby_hostArena, 0, 200, 0),
 	T(arenaGames_mouse, 0, 2000, 0), T(arenaGames_keys, 0, 1000, 0), T(room_hostingStep, 0, 200, 0), T(arena_connectionOutcome, 0, 200, 0),
@@ -17803,7 +17803,7 @@ static const STest g_stests[] = {
 	/* batch 204 */
 	T(app_startupLoad, 1, 400, 0),
 	/* batch 205 */
-	T(menuState500_missionSelect, 0, 400, 0), T(main_loop, 0, 400, 0), T(hud_drawRanking, 0, 400, 0), T(hud_drawMain, 0, 400, 0), T(hud_drawTeamScores, 0, 400, 0),
+	T(menuState500_skirmish, 0, 400, 0), T(main_loop, 0, 400, 0), T(hud_drawRanking, 0, 400, 0), T(hud_drawMain, 0, 400, 0), T(hud_drawTeamScores, 0, 400, 0),
 	/* batch 206 */
 	T(match_playFrame, 1, 400, 0), T(menu_frame, 0, 400, 0), T(Game_ctor, 1, 400, 0), T(hud_pass, 0, 400, 0),
 	/* batch 208 */
@@ -18047,8 +18047,8 @@ static const struct { DWORD addr; void *fn; const char *name; } g_hooks3[] = {
 	{ 0x435970, (void *)ranking_prevPage, "ranking_prevPage" }, { 0x4359b0, (void *)ranking_nextPage, "ranking_nextPage" },
 	{ 0x4359f0, (void *)ranking_cycleSort, "ranking_cycleSort" }, { 0x43f5a0, (void *)app_setDataPaths, "app_setDataPaths" },
 	{ 0x4417c0, (void *)replaySelect_toggle, "replaySelect_toggle" }, { 0x4417f0, (void *)replaySelect_allIn, "replaySelect_allIn" },
-	{ 0x443cd0, (void *)skirmish_cursorUp, "skirmish_cursorUp" }, { 0x443d10, (void *)skirmish_cursorDown, "skirmish_cursorDown" },
-	{ 0x443d50, (void *)skirmish_clickRow, "skirmish_clickRow" }, { 0x443d80, (void *)briefing_nextPage, "briefing_nextPage" },
+	{ 0x443cd0, (void *)missions_cursorUp, "missions_cursorUp" }, { 0x443d10, (void *)missions_cursorDown, "missions_cursorDown" },
+	{ 0x443d50, (void *)missions_clickRow, "missions_clickRow" }, { 0x443d80, (void *)briefing_nextPage, "briefing_nextPage" },
 	{ 0x443de0, (void *)briefing_prevPage, "briefing_prevPage" }, { 0x445de0, (void *)menu_clickStartFade, "menu_clickStartFade" },
 	{ 0x447af0, (void *)briefing_clickClose, "briefing_clickClose" }, { 0x4463a0, (void *)mech_loadFromProfile, "mech_loadFromProfile" },
 	{ 0x4464b0, (void *)mech_storeToProfile, "mech_storeToProfile" }, { 0x447910, (void *)menu_restoreCamera, "menu_restoreCamera" },
@@ -18105,7 +18105,7 @@ static const struct { DWORD addr; void *fn; const char *name; } g_hooks3[] = {
 	{ 0x410160, (void *)armc_rightClickLeave, "armc_rightClickLeave" }, { 0x44b7a0, (void *)profile_resetPreview, "profile_resetPreview" },
 	{ 0x44b750, (void *)profile_resetSelection, "profile_resetSelection" }, { 0x44bc00, (void *)profile_resetCamera, "profile_resetCamera" },
 	{ 0x420b40, (void *)setup_selectGraphicTab, "setup_selectGraphicTab" }, { 0x403490, (void *)mapList_startEdit, "mapList_startEdit" },
-	{ 0x443ea0, (void *)skirmish_briefingClicks, "skirmish_briefingClicks" }, { 0x4065e0, (void *)sessionList_sort, "sessionList_sort" },
+	{ 0x443ea0, (void *)missions_briefingClicks, "missions_briefingClicks" }, { 0x4065e0, (void *)sessionList_sort, "sessionList_sort" },
 	{ 0x46e9b0, (void *)ptx_initQuantTables, "ptx_initQuantTables" }, { 0x46e320, (void *)ptx_initClampTable, "ptx_initClampTable" },
 	{ 0x46e7c0, (void *)ptx_initColourTables, "ptx_initColourTables" }, { 0x46c5a0, (void *)ErrorLog_ctor, "ErrorLog_ctor" },
 	{ 0x451410, (void *)net_claimLocalSlot, "net_claimLocalSlot" }, { 0x44ac70, (void *)str_dropLast, "str_dropLast" },
@@ -18119,7 +18119,7 @@ static const struct { DWORD addr; void *fn; const char *name; } g_hooks3[] = {
 	/* batch 8 */
 	{ 0x420480, (void *)setupGraphic_layout, "setupGraphic_layout" }, { 0x431b70, (void *)newIdForm_layout, "newIdForm_layout" },
 	{ 0x403f80, (void *)playerSetup_layout, "playerSetup_layout" }, { 0x431ae0, (void *)roomLogin_layout, "roomLogin_layout" },
-	{ 0x4437b0, (void *)skirmishList_layout, "skirmishList_layout" }, { 0x431c50, (void *)account_layout, "account_layout" },
+	{ 0x4437b0, (void *)missionList_layout, "missionList_layout" }, { 0x431c50, (void *)account_layout, "account_layout" },
 	{ 0x443840, (void *)briefing_layout, "briefing_layout" }, { 0x420ad0, (void *)setup_selectSoundTab, "setup_selectSoundTab" },
 	{ 0x420ba0, (void *)setup_selectControlTab, "setup_selectControlTab" }, { 0x404ac0, (void *)lobby_enterPlayerScreen, "lobby_enterPlayerScreen" },
 	{ 0x433980, (void *)room_openNewIdConfirm, "room_openNewIdConfirm" }, { 0x433590, (void *)room_enterGameList, "room_enterGameList" },
@@ -18142,7 +18142,7 @@ static const struct { DWORD addr; void *fn; const char *name; } g_hooks3[] = {
 	{ 0x46efd0, (void *)ptx_initYCbCrTables, "ptx_initYCbCrTables" }, { 0x46ea30, (void *)ptx_layoutBlocks, "ptx_layoutBlocks" },
 	{ 0x440bb0, (void *)menuState300_enter, "menuState300_enter" }, { 0x40e510, (void *)armc_initCameraPoints, "armc_initCameraPoints" },
 	{ 0x40dfa0, (void *)armc_initPanels, "armc_initPanels" }, { 0x4338c0, (void *)room_openNewIdForm, "room_openNewIdForm" },
-	{ 0x433800, (void *)ranking_enter, "ranking_enter" }, { 0x447660, (void *)missionsel_layout, "missionsel_layout" },
+	{ 0x433800, (void *)ranking_enter, "ranking_enter" }, { 0x447660, (void *)skirmish_layout, "skirmish_layout" },
 	{ 0x44b1a0, (void *)pilotSelect_layout, "pilotSelect_layout" }, { 0x4743e0, (void *)actor_resetSlot, "actor_resetSlot" },
 	{ 0x47cf10, (void *)bullet_free, "bullet_free" }, { 0x474480, (void *)stage_resetPlayerRecords, "stage_resetPlayerRecords" },
 	{ 0x45e9e0, (void *)actor_nextWeapon, "actor_nextWeapon" }, { 0x45e910, (void *)actor_prevWeapon, "actor_prevWeapon" },
@@ -18214,7 +18214,7 @@ static const struct { DWORD addr; void *fn; const char *name; } g_hooks3[] = {
 	{ 0x4848e0, (void *)ViewVolume_addQuad, "ViewVolume_addQuad" },
 	/* batch 26 */
 	{ 0x437a10, (void *)room_camera, "room_camera" }, { 0x408270, (void *)arena_camera, "arena_camera" },
-	{ 0x444130, (void *)skirmish_camera, "skirmish_camera" }, { 0x447cb0, (void *)missionsel_camera, "missionsel_camera" },
+	{ 0x444130, (void *)missions_camera, "missions_camera" }, { 0x447cb0, (void *)skirmish_camera, "skirmish_camera" },
 	/* batch 27 */
 	{ 0x47ca70, (void *)bullet_drawTrail, "bullet_drawTrail" },
 	/* batch 28 */
@@ -18653,9 +18653,9 @@ static const struct { DWORD addr; void *fn; const char *name; } g_hooks3[] = {
 	/* batch 124 */
 	{ 0x423e50, (void *)setup_drawTunnel, "setup_drawTunnel" }, { 0x423330, (void *)setup_drawMenu, "setup_drawMenu" },
 	/* batch 125 */
-	{ 0x448140, (void *)missionsel_drawTunnel, "missionsel_drawTunnel" }, { 0x44d720, (void *)profile_drawManagementWindow, "profile_drawManagementWindow" },
+	{ 0x448140, (void *)skirmish_drawTunnel, "skirmish_drawTunnel" }, { 0x44d720, (void *)profile_drawManagementWindow, "profile_drawManagementWindow" },
 	/* batch 126 */
-	{ 0x411110, (void *)armc_drawTunnel, "armc_drawTunnel" }, { 0x4445a0, (void *)skirmish_drawTunnel, "skirmish_drawTunnel" },
+	{ 0x411110, (void *)armc_drawTunnel, "armc_drawTunnel" }, { 0x4445a0, (void *)missions_drawTunnel, "missions_drawTunnel" },
 	{ 0x411ab0, (void *)armc_drawPreviewTunnel, "armc_drawPreviewTunnel" }, { 0x4388e0, (void *)room_drawTunnel, "room_drawTunnel" },
 	{ 0x4091b0, (void *)arena_drawTunnel, "arena_drawTunnel" },
 	/* batch 127 */
@@ -18673,7 +18673,7 @@ static const struct { DWORD addr; void *fn; const char *name; } g_hooks3[] = {
 	/* batch 132 */
 	{ 0x442050, (void *)menu_mainMenu, "menu_mainMenu" },
 	/* batch 133 */
-	{ 0x449a50, (void *)missionsel_drawScreen, "missionsel_drawScreen" },
+	{ 0x449a50, (void *)skirmish_drawScreen, "skirmish_drawScreen" },
 	/* batch 134 */
 	{ 0x44e640, (void *)profile_drawPilotSelect, "profile_drawPilotSelect" },
 	/* batch 135 */
@@ -18754,14 +18754,14 @@ static const struct { DWORD addr; void *fn; const char *name; } g_hooks3[] = {
 	{ 0x4a86e0, (void *)net_hostGone, "net_hostGone" }, { 0x4a86f0, (void *)net_localSlot, "net_localSlot" },
 	{ 0x4a8700, (void *)net_playerInUse, "net_playerInUse" }, { 0x4a8720, (void *)netq_clearResends, "netq_clearResends" },
 	{ 0x4a8730, (void *)netq_resends, "netq_resends" }, { 0x41e760, (void *)sound_playMenu, "sound_playMenu" },
-	{ 0x443c80, (void *)skirmish_leave, "skirmish_leave" }, { 0x447960, (void *)missionSettings_leave, "missionSettings_leave" },
-	{ 0x4479b0, (void *)mission_chosen, "mission_chosen" },
+	{ 0x443c80, (void *)missions_leave, "missions_leave" }, { 0x447960, (void *)skirmish_leave, "skirmish_leave" },
+	{ 0x4479b0, (void *)skirmish_roundChosen, "skirmish_roundChosen" },
 	/* batch 162 */
-	{ 0x443e20, (void *)skirmish_listClicks, "skirmish_listClicks" }, { 0x447a50, (void *)missionsel_clicks, "missionsel_clicks" },
-	{ 0x4479d0, (void *)mission_choose, "mission_choose" }, { 0x444070, (void *)skirmish_briefingKeys, "skirmish_briefingKeys" },
-	{ 0x443f20, (void *)skirmish_listKeys, "skirmish_listKeys" }, { 0x434320, (void *)room_editJoinPassword, "room_editJoinPassword" },
-	{ 0x405010, (void *)arena_editJoinPassword, "arena_editJoinPassword" }, { 0x443ef0, (void *)skirmish_pageClicks, "skirmish_pageClicks" },
-	{ 0x4440f0, (void *)skirmish_pageKeys, "skirmish_pageKeys" }, { 0x447b10, (void *)missionSelect_clicks, "missionSelect_clicks" },
+	{ 0x443e20, (void *)missions_listClicks, "missions_listClicks" }, { 0x447a50, (void *)skirmish_clicks, "skirmish_clicks" },
+	{ 0x4479d0, (void *)skirmish_startRound, "skirmish_startRound" }, { 0x444070, (void *)missions_briefingKeys, "missions_briefingKeys" },
+	{ 0x443f20, (void *)missions_listKeys, "missions_listKeys" }, { 0x434320, (void *)room_editJoinPassword, "room_editJoinPassword" },
+	{ 0x405010, (void *)arena_editJoinPassword, "arena_editJoinPassword" }, { 0x443ef0, (void *)missions_pageClicks, "missions_pageClicks" },
+	{ 0x4440f0, (void *)missions_pageKeys, "missions_pageKeys" }, { 0x447b10, (void *)skirmish_screenClicks, "skirmish_screenClicks" },
 	{ 0x405200, (void *)arena_askJoinPassword, "arena_askJoinPassword" }, { 0x434da0, (void *)room_askJoinPassword, "room_askJoinPassword" },
 	/* batch 163 */
 	{ 0x422b30, (void *)setup_tabClicks, "setup_tabClicks" }, { 0x4230a0, (void *)setup_processTabKeys, "setup_processTabKeys" },
@@ -18769,9 +18769,9 @@ static const struct { DWORD addr; void *fn; const char *name; } g_hooks3[] = {
 	{ 0x436800, (void *)room_clicksByState, "room_clicksByState" }, { 0x44f410, (void *)profile_frame, "profile_frame" },
 	{ 0x43ed20, (void *)room_draw, "room_draw" }, { 0x40d390, (void *)lobbyCreate_draw, "lobbyCreate_draw" },
 	/* batch 164 */
-	{ 0x447c30, (void *)briefing_keys, "briefing_keys" }, { 0x447b40, (void *)missionList_keys, "missionList_keys" },
-	{ 0x447c70, (void *)missionsel_keys, "missionsel_keys" }, { 0x44aa30, (void *)missionsel_frameScreen, "missionsel_frameScreen" },
-	{ 0x445bd0, (void *)skirmish_frameBriefing, "skirmish_frameBriefing" }, { 0x4532e0, (void *)jmp_net_getLocalAddress, "jmp_net_getLocalAddress" },
+	{ 0x447c30, (void *)briefing_keys, "briefing_keys" }, { 0x447b40, (void *)skirmish_roundKeys, "skirmish_roundKeys" },
+	{ 0x447c70, (void *)skirmish_keys, "skirmish_keys" }, { 0x44aa30, (void *)skirmish_frameScreen, "skirmish_frameScreen" },
+	{ 0x445bd0, (void *)missions_frameBriefing, "missions_frameBriefing" }, { 0x4532e0, (void *)jmp_net_getLocalAddress, "jmp_net_getLocalAddress" },
 	/* batch 165 */
 	{ 0x44b600, (void *)profile_typeNewName, "profile_typeNewName" }, { 0x44b670, (void *)profile_askDelete, "profile_askDelete" },
 	{ 0x44b6e0, (void *)profile_askLogOut, "profile_askLogOut" }, { 0x44c390, (void *)profile_deleteClicks, "profile_deleteClicks" },
@@ -18785,7 +18785,7 @@ static const struct { DWORD addr; void *fn; const char *name; } g_hooks3[] = {
 	{ 0x451090, (void *)net_handleMessage, "net_handleMessage" }, { 0x450c20, (void *)net_handleSystemMessage, "net_handleSystemMessage" },
 	{ 0x450a60, (void *)net_receiveAll, "net_receiveAll" }, { 0x450bb0, (void *)jmp_net_receiveAll, "jmp_net_receiveAll" },
 	/* batch 168 */
-	{ 0x448ac0, (void *)missionsel_drawSettingsScreen, "missionsel_drawSettingsScreen" }, { 0x44aa20, (void *)missionsel_frameSettings, "missionsel_frameSettings" },
+	{ 0x448ac0, (void *)skirmish_drawSettingsScreen, "skirmish_drawSettingsScreen" }, { 0x44aa20, (void *)skirmish_frameSettings, "skirmish_frameSettings" },
 	/* batch 169 */
 	{ 0x40f950, (void *)armc_showCursorItem, "armc_showCursorItem" }, { 0x40f870, (void *)armc_pickSlot, "armc_pickSlot" },
 	{ 0x40f9e0, (void *)armc_takeCursorItem, "armc_takeCursorItem" }, { 0x40f220, (void *)armc_openWeaponsPage, "armc_openWeaponsPage" },
@@ -18833,11 +18833,11 @@ static const struct { DWORD addr; void *fn; const char *name; } g_hooks3[] = {
 	{ 0x407840, (void *)lobbyPlayer_keys, "lobbyPlayer_keys" }, { 0x433d30, (void *)newIdForm_endTyping, "newIdForm_endTyping" },
 	{ 0x44f4b0, (void *)profile_newNamePage, "profile_newNamePage" }, { 0x441810, (void *)replaySelect_mouse, "replaySelect_mouse" },
 	/* batch 174 */
-	{ 0x41ec50, (void *)game_returnToMissions, "game_returnToMissions" }, { 0x41e8b0, (void *)game_returnToMainMenu, "game_returnToMainMenu" },
+	{ 0x41ec50, (void *)game_returnToSkirmish, "game_returnToSkirmish" }, { 0x41e8b0, (void *)game_returnToMainMenu, "game_returnToMainMenu" },
 	{ 0x41e9d0, (void *)game_returnToArenaLobby, "game_returnToArenaLobby" }, { 0x41eb00, (void *)game_returnToGameRoom, "game_returnToGameRoom" },
 	{ 0x4036c0, (void *)mapList_mouse, "mapList_mouse" }, 
-	{ 0x443950, (void *)menuState900_enterSkirmish, "menuState900_enterSkirmish" }, { 0x434490, (void *)login_send, "login_send" },
-	{ 0x447750, (void *)menuState500_enter, "menuState500_enter" }, { 0x462b50, (void *)msg_playerConnected, "msg_playerConnected" },
+	{ 0x443950, (void *)menuState900_enterMissions, "menuState900_enterMissions" }, { 0x434490, (void *)login_send, "login_send" },
+	{ 0x447750, (void *)menuState500_enterSkirmish, "menuState500_enterSkirmish" }, { 0x462b50, (void *)msg_playerConnected, "msg_playerConnected" },
 	{ 0x462c30, (void *)msg_chatLine, "msg_chatLine" }, { 0x462850, (void *)music_playMatch, "music_playMatch" },
 	{ 0x453a10, (void *)dplay_closeSession, "dplay_closeSession" },
 	/* batch 175 */
@@ -18874,8 +18874,8 @@ static const struct { DWORD addr; void *fn; const char *name; } g_hooks3[] = {
 	{ 0x4620e0, (void *)scene_resetScores, "scene_resetScores" }, { 0x453090, (void *)dplay_host, "dplay_host" },
 	/* batch 181 */
 	{ 0x443530, (void *)menuState300_frame, "menuState300_frame" }, { 0x427920, (void *)menuState600_setup, "menuState600_setup" },
-	{ 0x445be0, (void *)menuState900_skirmishSetup, "menuState900_skirmishSetup" }, { 0x44f860, (void *)menuState210_frame, "menuState210_frame" },
-	{ 0x452ec0, (void *)arena_openSession, "arena_openSession" }, { 0x445bc0, (void *)skirmish_frameList, "skirmish_frameList" },
+	{ 0x445be0, (void *)menuState900_missions, "menuState900_missions" }, { 0x44f860, (void *)menuState210_frame, "menuState210_frame" },
+	{ 0x452ec0, (void *)arena_openSession, "arena_openSession" }, { 0x445bc0, (void *)missions_frameList, "missions_frameList" },
 	/* batch 182 */
 	{ 0x434dd0, (void *)room_joinSession, "room_joinSession" }, { 0x406200, (void *)arena_joinListed, "arena_joinListed" },
 	{ 0x4052c0, (void *)lobby_hostArenaLan, "lobby_hostArenaLan" }, { 0x4057a0, (void *)lobby_hostArena, "lobby_hostArena" },
@@ -18936,7 +18936,7 @@ static const struct { DWORD addr; void *fn; const char *name; } g_hooks3[] = {
 	/* batch 204 */
 	{ 0x430400, (void *)app_startupLoad, "app_startupLoad" },
 	/* batch 205 */
-	{ 0x44aa40, (void *)menuState500_missionSelect, "menuState500_missionSelect" }, { 0x420280, (void *)main_loop, "main_loop" },
+	{ 0x44aa40, (void *)menuState500_skirmish, "menuState500_skirmish" }, { 0x420280, (void *)main_loop, "main_loop" },
 	{ 0x4926f0, (void *)hud_drawMain, "hud_drawMain" }, { 0x494930, (void *)hud_drawRanking, "hud_drawRanking" }, { 0x496240, (void *)hud_drawTeamScores, "hud_drawTeamScores" },
 	/* batch 206 */
 	{ 0x48b200, (void *)match_playFrame, "match_playFrame" }, { 0x41fa40, (void *)menu_frame, "menu_frame" },

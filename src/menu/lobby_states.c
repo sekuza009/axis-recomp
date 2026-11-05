@@ -673,7 +673,7 @@ u32 (hostError_keys)(void)
 	music_shutdown();   /* music_shutdown */
 	u32 limits = (*(u32 *)&g_arenaFragLimit);
 	g_mapRotation = (*(signed char *)&g_arenaRotation);
-	g_missionStage = g_arenaMap;
+	g_mapIndex = g_arenaMap;
 	memcpy((void *)OBJ(g_mapTitle), (const void *)OBJ(g_playerName), 32);
 	g_chosenGameMode = (*(signed char *)&g_arenaGameType);
 	(*(u32 *)&g_fragLimit) = limits & 0xff;
@@ -728,7 +728,7 @@ u32 (lobby_playerScreenClicks)(void)
 static void take_session(const SessionEntry *rec)
 {
 	music_shutdown();
-	g_missionStage = rec->map;
+	g_mapIndex = rec->map;
 	memcpy((void *)OBJ(g_mapTitle), rec->name, 32);
 	g_mapRotation = rec->rotation;
 	g_arenaCameraMode = 0;
@@ -1036,7 +1036,7 @@ u32 (hostError_clicks)(void)
 	g_netRole = 1;
 	music_shutdown();
 	g_mapRotation = (signed char)g_arenaRotation;
-	g_missionStage = (signed char)(*(u8 *)&g_arenaMap);
+	g_mapIndex = (signed char)(*(u8 *)&g_arenaMap);
 	memcpy((void *)OBJ(g_mapTitle), (const void *)OBJ(g_playerName), 32);
 	g_chosenGameMode = (signed char)g_arenaGameType;
 	g_fragLimit = g_arenaFragLimit;
@@ -1068,7 +1068,7 @@ u32 (arena_connectionOutcome)(void)
 		dplay_host(me, (const void *)OBJ(g_cfgPlayerName),
 			(int)(signed char)me[0x22] << 8 | (int)(signed char)me[0x20], (signed char)me[0x21], (signed char)me[0x23],
 			me[0x24], me[0x25], (*(u32 *)&g_playerCorporation));   /* dplay_host: host */
-		g_missionStage = (signed char)me[0x20];
+		g_mapIndex = (signed char)me[0x20];
 		memcpy((void *)OBJ(g_mapTitle), me, 32);
 		g_mapRotation = (signed char)me[0x22];
 		g_chosenGameMode = (signed char)me[0x23];
@@ -1524,7 +1524,7 @@ static int host_arena(void)
 /* the hosted arena's settings taken for the match */
 static void take_arena(void)
 {
-	g_missionStage = g_arenaMap;
+	g_mapIndex = g_arenaMap;
 	memcpy((void *)OBJ(g_mapTitle), (const void *)OBJ(g_playerName), 32);
 	g_mapRotation = (signed char)g_arenaRotation;
 	g_chosenGameMode = (signed char)g_arenaGameType;

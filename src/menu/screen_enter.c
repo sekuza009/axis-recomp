@@ -208,7 +208,7 @@ void (menuState800_enterGameRoom)(void)
 
 /* 0x445e40: the menus' mouse, once per frame: the mouse read (input_updateMouse), then, unless the menu camera is moving
    (g_menuCameraMove), the message box's clicks while it is shown, else the current screen's (g_screen): 200 the title, 210 profiles, 300 the main menu, 400 the lobby,
-   500 missions, 600 setup, 700 the ARM CENTER, 800 the game room, 900 skirmish, 9999 in a match. Returns what the
+   500 skirmish, 600 setup, 700 the ARM CENTER, 800 the game room, 900 the mission list, 9999 in a match. Returns what the
    handler leaves in eax (or the original's leftover of its compares) */
 u32 (menu_processMouse)(void)
 {
@@ -223,11 +223,11 @@ u32 (menu_processMouse)(void)
 	case 210: return profile_processInput();   /* profile_processInput */
 	case 300: return mainmenu_clicks();
 	case 400: return lobby_clicks();   /* lobby_clicks */
-	case 500: return missionSelect_clicks();
+	case 500: return skirmish_screenClicks();
 	case 600: return setup_tabClicks();
 	case 700: return armc_mouse();   /* armc_mouse */
 	case 800: return room_clicksByState();
-	case 900: return skirmish_pageClicks();
+	case 900: return missions_pageClicks();
 	case 9999: return armc_mouseLook();  /* armc_mouseLook */
 	}
 	/* the original's subtraction chain leaves these */
@@ -251,10 +251,10 @@ u32 (menu_enterState)(void)
 		menuState300_enter();                 /* menuState300_enter */
 		break;
 	case 400: menuState400_enter(); break;   /* menuState400_enter */
-	case 500: menuState500_enter(); break;   /* menuState500_enter */
+	case 500: menuState500_enterSkirmish(); break;   /* menuState500_enterSkirmish */
 	case 600: menuState600_enterSetup(); break;   /* menuState600_enterSetup */
 	case 800: menuState800_enterGameRoom(); break;   /* menuState800_enterGameRoom */
-	case 900: menuState900_enterSkirmish(); break;   /* menuState900_enterSkirmish */
+	case 900: menuState900_enterMissions(); break;   /* menuState900_enterMissions */
 	case 9999: match_enter(); break;  /* match_enter */
 	}
 	g_lastScreen = g_menuState;
@@ -270,52 +270,52 @@ static const Store briefing_camera[] = {
 	{ ADDR(g_camAim0Y), 0 }, { ADDR(g_camAim0Z), 0 }, { ADDR(g_menuCameraX), 0 }, { ADDR(g_menuCameraY), 0 }, { ADDR(g_menuCameraZ), 0xc3e10000 }, { ADDR(g_menuLookAtX), 0 },
 	{ ADDR(g_menuLookAtY), 0 }, { ADDR(g_menuLookAtZ), 0xc4098000 } };
 
-/* 0x443950: the skirmish setup (screen 900): the briefing camera, the briefing window and its colours, the page's
-   panels (skirmishList_layout, briefing_layout), the page set to 10 (the mission list) with a sound, the mission list
+/* 0x443950: the mission list (screen 900, axis.mis; nothing in the menus opens it): the briefing camera, the briefing window and its colours, the page's
+   panels (missionList_layout, briefing_layout), the page set to 10 (the mission list) with a sound, the mission list
    loaded (mission_loadAxisMis) and its state cleared. Returns 0 (the original's eax) */
-int (menuState900_enterSkirmish)(void)
+int (menuState900_enterMissions)(void)
 {
 	static const Store setup[] = {
-		{ ADDR(g_briefingX), 0xa }, { ADDR(g_briefingY), 0x14 }, { ADDR(g_briefingRight), 0x276 }, { ADDR(g_briefingBottom), 0x1cc }, { OBJ(g_skirmishColourLit), 0 },
-		{ (OBJ(g_skirmishColourLit) + 0x4), ONE }, { (OBJ(g_skirmishColourLit) + 0x8), ONE }, { (OBJ(g_skirmishColourLit) + 0xc), ONE }, { OBJ(g_skirmishColourDim), 0 }, { (OBJ(g_skirmishColourDim) + 0x4), 0x3f19999a },
-		{ (OBJ(g_skirmishColourDim) + 0x8), 0x3f19999a }, { (OBJ(g_skirmishColourDim) + 0xc), ONE }, { ADDR(g_skirmishState), 1 }, { ADDR(g_screen), 900 }, { ADDR(g_lastScreen), 900 },
+		{ ADDR(g_briefingX), 0xa }, { ADDR(g_briefingY), 0x14 }, { ADDR(g_briefingRight), 0x276 }, { ADDR(g_briefingBottom), 0x1cc }, { OBJ(g_missionsColourLit), 0 },
+		{ (OBJ(g_missionsColourLit) + 0x4), ONE }, { (OBJ(g_missionsColourLit) + 0x8), ONE }, { (OBJ(g_missionsColourLit) + 0xc), ONE }, { OBJ(g_missionsColourDim), 0 }, { (OBJ(g_missionsColourDim) + 0x4), 0x3f19999a },
+		{ (OBJ(g_missionsColourDim) + 0x8), 0x3f19999a }, { (OBJ(g_missionsColourDim) + 0xc), ONE }, { ADDR(g_missionsState), 1 }, { ADDR(g_screen), 900 }, { ADDR(g_lastScreen), 900 },
 		{ ADDR(g_nextScreen), 900 } };
-	static const u32 cleared[] = { ADDR(g_missionTop), ADDR(g_skirmishRow), ADDR(g_missionPicked), ADDR(g_repeatDown), ADDR(g_repeatUp) };
+	static const u32 cleared[] = { ADDR(g_missionTop), ADDR(g_missionRow), ADDR(g_missionPicked), ADDR(g_repeatDown), ADDR(g_repeatUp) };
 	STORE_ALL(briefing_camera);
 	STORE_ALL(setup);
-	skirmishList_layout();   /* skirmishList_layout */
+	missionList_layout();   /* missionList_layout */
 	briefing_layout();   /* briefing_layout */
-	g_skirmishDrawBackground = 1;
-	g_skirmishPage = 10;
+	g_missionsDrawBackground = 1;
+	g_missionsPage = 10;
 	sound_playMenu(4);
 	mission_loadAxisMis();   /* mission_loadAxisMis */
 	CLEAR_ALL(cleared);
 	return 0;
 }
 
-/* 0x447750: the mission select (screen 500; the main menu's SKIRMISH PLAY): the briefing camera, the window and its colours, the screen's panels
-   (missionsel_layout), the mission shown (g_missionShown, g_missionChosen) the campaign's next one (0x9f181c, at most 14), a sound;
-   a newly reached mission (past g_profileProgressSaved) raises it and the briefing flag g_missionBriefing. Returns the campaign's mission */
-int (menuState500_enter)(void)
+/* 0x447750: the skirmish screen (screen 500; the main menu's SKIRMISH PLAY, rounds from skirmish.dat): the briefing camera, the window and its colours, the screen's panels
+   (skirmish_layout), the round shown (g_skirmishShown, g_skirmishChosen) the campaign's next one (0x9f181c, at most 14), a sound;
+   a newly reached round (past g_profileProgressSaved) raises it and the briefing flag g_skirmishBriefing. Returns the campaign's mission */
+int (menuState500_enterSkirmish)(void)
 {
 	static const Store setup[] = {
-		{ ADDR(g_missionSelectLeft), 0x28 }, { ADDR(g_missionSelectTop), 0xa }, { (OBJ(g_missionSelectRect) + 0x8), 0x258 }, { (OBJ(g_missionSelectRect) + 0xc), 0x1cc }, { OBJ(g_missionColourLit), 0 },
-		{ (OBJ(g_missionColourLit) + 0x4), ONE }, { (OBJ(g_missionColourLit) + 0x8), ONE }, { (OBJ(g_missionColourLit) + 0xc), ONE }, { OBJ(g_missionColourDim), 0 }, { (OBJ(g_missionColourDim) + 0x4), 0x3f19999a },
-		{ (OBJ(g_missionColourDim) + 0x8), 0x3f19999a }, { (OBJ(g_missionColourDim) + 0xc), ONE }, { ADDR(g_missionPage), 1 }, { ADDR(g_screen), 500 }, { ADDR(g_lastScreen), 500 },
+		{ ADDR(g_skirmishRectLeft), 0x28 }, { ADDR(g_skirmishRectTop), 0xa }, { (OBJ(g_skirmishRect) + 0x8), 0x258 }, { (OBJ(g_skirmishRect) + 0xc), 0x1cc }, { OBJ(g_skirmishColourLit), 0 },
+		{ (OBJ(g_skirmishColourLit) + 0x4), ONE }, { (OBJ(g_skirmishColourLit) + 0x8), ONE }, { (OBJ(g_skirmishColourLit) + 0xc), ONE }, { OBJ(g_skirmishColourDim), 0 }, { (OBJ(g_skirmishColourDim) + 0x4), 0x3f19999a },
+		{ (OBJ(g_skirmishColourDim) + 0x8), 0x3f19999a }, { (OBJ(g_skirmishColourDim) + 0xc), ONE }, { ADDR(g_skirmishPage), 1 }, { ADDR(g_screen), 500 }, { ADDR(g_lastScreen), 500 },
 		{ ADDR(g_nextScreen), 500 } };
 	STORE_ALL(briefing_camera);
 	STORE_ALL(setup);
-	missionsel_layout();   /* missionsel_layout */
-	g_missionShowBackground = 1;
-	g_missionBusy = 0;
+	skirmish_layout();   /* skirmish_layout */
+	g_skirmishShowBackground = 1;
+	g_skirmishBusy = 0;
 	int mission = g_progress < 15 ? g_progress : 14;
-	g_missionShown = mission;
-	g_missionChosen = mission;
-	g_missionPreviewDue = 1;
+	g_skirmishShown = mission;
+	g_skirmishChosen = mission;
+	g_skirmishPreviewDue = 1;
 	sound_playMenu(4);
-	g_missionBriefing = 0;
+	g_skirmishBriefing = 0;
 	if (g_progress > g_profileProgressSaved) {
-		g_missionBriefing = 1;
+		g_skirmishBriefing = 1;
 		g_profileProgressSaved = g_progress;
 	}
 	return g_progress;
@@ -381,7 +381,7 @@ static void match_name(const char *name)
 
 /* 0x41fd40 (the match started, state 9999): the menus' tunnel freed; outside the lobby
    (g_startedFromLobby) the profile files checked; the display opened (aspect g_viewAspect, glWindow_init); a replay (g_replayRunning)
-   started at once (scene_startSession 0, 3); else the map (g_missionStage) loaded (failing: message 6 and back to state 400 /
+   started at once (scene_startSession 0, 3); else the map (g_mapIndex) loaded (failing: message 6 and back to state 400 /
    800 for the arena / room). By the kind of match (g_matchMode): 1 the arena, 2 the room (the pilots read, the
    player's name taken from the profile / the room, the part lists armc_resetSeraphimParts), 3 a skirmish (the name 0x9f1798),
    started with scene_startSession (a host unless g_netRole is 1; 3: 0, 0); then the map's name announced. The caller
@@ -402,7 +402,7 @@ void (match_enter)(void)
 		scene_startSession(scene, 0, 3);
 		return;
 	}
-	int loaded = map_fileExists(g_missionStage);
+	int loaded = map_fileExists(g_mapIndex);
 	int kind = g_matchMode;   /* (after the load, as the original reads it) */
 	if (!loaded) {
 		if (kind == 1)
@@ -432,6 +432,6 @@ void (match_enter)(void)
 		scene_startSession(scene, 0, 0);
 		break;
 	}
-	scene_setTextureFolder(scene, (const char *)(OBJ(g_mapNames) + g_missionStage * 0x20));   /* (the original also builds "%s" with the name on its stack, unused) */
+	scene_setTextureFolder(scene, (const char *)(OBJ(g_mapNames) + g_mapIndex * 0x20));   /* (the original also builds "%s" with the name on its stack, unused) */
 #undef scene
 }

@@ -451,11 +451,11 @@ typedef struct { u32 vtable; void *banks[6]; i32 count; } TextureManager;   /* t
 #define menuState210_frame() GAME_FN(menuState210_frame, 0x44f860, void, void)()
 #define menuState300_frame() GAME_FN(menuState300_frame, 0x443530, void, void)()
 #define menuState400_frame() GAME_FN(menuState400_frame, 0x40d450, void, void)()
-#define menuState500_missionSelect() GAME_FN(menuState500_missionSelect, 0x44aa40, void, void)()
+#define menuState500_skirmish() GAME_FN(menuState500_skirmish, 0x44aa40, void, void)()
 #define menuState600_setup() GAME_FN(menuState600_setup, 0x427920, void, void)()
 #define menuState700_armCenter() GAME_FN(menuState700_armCenter, 0x41e040, void, void)()
 #define menuState800_gameRoom() GAME_FN(menuState800_gameRoom, 0x43ef70, void, void)()
-#define menuState900_skirmishSetup() GAME_FN(menuState900_skirmishSetup, 0x445be0, void, void)()
+#define menuState900_missions() GAME_FN(menuState900_missions, 0x445be0, void, void)()
 #define menu_drawMessageBox() GAME_FN(menu_drawMessageBox, 0x4290d0, void, void)()   /* the message box */
 #define menu_drawInputLine(x, y) GAME_FN(menu_drawInputLine, 0x428940, void, int, int)(x, y)
 #define menu_drawCursor() GAME_FN(menu_drawCursor, 0x429bc0, void, void)()
@@ -479,21 +479,21 @@ typedef struct { u32 vtable; void *banks[6]; i32 count; } TextureManager;   /* t
 #define profile_screenKeys() GAME_FN(profile_screenKeys, 0x44cdd0, void, void)()
 #define mainmenu_processKeys() GAME_FN(mainmenu_processKeys, 0x441e00, void, void)()
 #define lobby_processKeys() GAME_FN(lobby_processKeys, 0x4081f0, void, void)()
-#define missionsel_keys() GAME_FN(missionsel_keys, 0x447c70, void, void)()
+#define skirmish_keys() GAME_FN(skirmish_keys, 0x447c70, void, void)()
 #define setup_processTabKeys() GAME_FN(setup_processTabKeys, 0x4230a0, void, void)()
 #define armc_processInput() GAME_FN(armc_processInput, 0x410ab0, void, void)()
 #define room_keysByState() GAME_FN(room_keysByState, 0x4378e0, void, void)()
-#define skirmish_pageKeys() GAME_FN(skirmish_pageKeys, 0x4440f0, void, void)()
+#define missions_pageKeys() GAME_FN(missions_pageKeys, 0x4440f0, void, void)()
 #define freeCam_keys() GAME_FN(freeCam_keys, 0x42ada0, void, void)()
 #define profileList_keys() GAME_FN(profileList_keys, 0x44c600, void, void)()
 #define profile_messageKeys() GAME_FN(profile_messageKeys, 0x44c850, void, void)()
 #define profile_deleteKeys() GAME_FN(profile_deleteKeys, 0x44c8c0, void, void)()
 #define profile_logOutKeys() GAME_FN(profile_logOutKeys, 0x44ca90, void, void)()
 #define pilotSelect_keys() GAME_FN(pilotSelect_keys, 0x44cc60, void, void)()
-#define missionsel_camera() GAME_FN(missionsel_camera, 0x447cb0, void, void)()
-#define missionsel_drawTunnel() GAME_FN(missionsel_drawTunnel, 0x448140, void, void)()
-#define missionsel_frameSettings() GAME_FN(missionsel_frameSettings, 0x44aa20, void, void)()
-#define missionsel_frameScreen() GAME_FN(missionsel_frameScreen, 0x44aa30, void, void)()
+#define skirmish_camera() GAME_FN(skirmish_camera, 0x447cb0, void, void)()
+#define skirmish_drawTunnel() GAME_FN(skirmish_drawTunnel, 0x448140, void, void)()
+#define skirmish_frameSettings() GAME_FN(skirmish_frameSettings, 0x44aa20, void, void)()
+#define skirmish_frameScreen() GAME_FN(skirmish_frameScreen, 0x44aa30, void, void)()
 #define sound_playMenu(id) GAME_FN(sound_playMenu, 0x41e760, u32, int)(id)          /* 0 confirm / back, 2 move */
 #define profile_typeNewName() GAME_FN(profile_typeNewName, 0x44b600, u32, void)()
 #define profile_resetCamera() GAME_FN(profile_resetCamera, 0x44bc00, void, void)()
@@ -628,8 +628,8 @@ typedef struct { float r, g, b, a; } Colour;
 #define arena_leaveSession() GAME_FN(arena_leaveSession, 0x452fe0, u32, void)()
 /* two-button dialogs: the highlighted choice and its marker */
 /* the profile screen's pages */
-/* the mission-select screen */
-#define g_missionBox ((const int *)ADDR(g_missionSelectLeft))         /* the dialog frame: x0, y0, x1, y1 */
+/* the skirmish screen (screen 500) */
+#define g_skirmishBox ((const int *)ADDR(g_skirmishRectLeft))         /* the dialog frame: x0, y0, x1, y1 */
 /* exe strings passed to the text passes (the address itself is what the callee gets) */
 #define STR_COPYRIGHT ((const char *)STR(0x4b0474, "AXIS by Jamie System Development"))
 #define STR_2D ((const char *)STR(0x4d03e0, "%2d"))
@@ -808,22 +808,22 @@ typedef struct { float r, g, b, a; } Colour;
 #define g_progress (*(int *)(g_campaign + 0x104))            /* rounds beaten (missions unlocked) */
 #define menuTunnel_advance(ring) GAME_FN(menuTunnel_advance, 0x441260, void, void *)(ring)   /* moves the background tunnel on */
 #define menu_drawBackground3D(first) GAME_FN(menu_drawBackground3D, 0x429d70, void, void *)(first)
-#define mission_chosen(mission) GAME_FN(mission_chosen, 0x4479b0, u32, int)(mission)
+#define skirmish_roundChosen(mission) GAME_FN(skirmish_roundChosen, 0x4479b0, u32, int)(mission)
 #define mainmenu_drawReplaySelect() GAME_FN(mainmenu_drawReplaySelect, 0x4434f0, void, void)()
 #define replaySelect_drawNames() GAME_FN(replaySelect_drawNames, 0x442d10, u32, void)()   /* the replay selection dialog's list */
 #define menu_mainMenu() GAME_FN(menu_mainMenu, 0x442050, void, void)()
 #define replaySelect_drawDialog() GAME_FN(replaySelect_drawDialog, 0x442e10, void, void)()
 #define menu_drawDimOverlay() GAME_FN(menu_drawDimOverlay, 0x40ce70, u32, void)()
-#define skirmish_listClicks() GAME_FN(skirmish_listClicks, 0x443e20, void, void)()
-#define skirmish_briefingClicks() GAME_FN(skirmish_briefingClicks, 0x443ea0, void, void)()
-#define skirmish_listKeys() GAME_FN(skirmish_listKeys, 0x443f20, void, void)()
-#define skirmish_briefingKeys() GAME_FN(skirmish_briefingKeys, 0x444070, void, void)()
+#define missions_listClicks() GAME_FN(missions_listClicks, 0x443e20, void, void)()
+#define missions_briefingClicks() GAME_FN(missions_briefingClicks, 0x443ea0, void, void)()
+#define missions_listKeys() GAME_FN(missions_listKeys, 0x443f20, void, void)()
+#define missions_briefingKeys() GAME_FN(missions_briefingKeys, 0x444070, void, void)()
 #define briefing_clickClose() GAME_FN(briefing_clickClose, 0x447af0, void, void)()
-#define missionsel_clicks() GAME_FN(missionsel_clicks, 0x447a50, void, void)()
-#define mission_choose() GAME_FN(mission_choose, 0x4479d0, u32, void)()
-#define missionSettings_leave() GAME_FN(missionSettings_leave, 0x447960, u32, void)()
+#define skirmish_clicks() GAME_FN(skirmish_clicks, 0x447a50, void, void)()
+#define skirmish_startRound() GAME_FN(skirmish_startRound, 0x4479d0, u32, void)()
+#define skirmish_leave() GAME_FN(skirmish_leave, 0x447960, u32, void)()
 #define briefing_keys() GAME_FN(briefing_keys, 0x447c30, void, void)()
-#define missionList_keys() GAME_FN(missionList_keys, 0x447b40, void, void)()
+#define skirmish_roundKeys() GAME_FN(skirmish_roundKeys, 0x447b40, void, void)()
 
 /* ---- DirectPlay calls (net/dplay_calls.c) ---- */
 #define CoCreateInstance(clsid, outer, context, iid, out) IMPORT(0x4a93b4, long, const void *, void *, u32, const void *, void **)(clsid, outer, context, iid, out)
@@ -869,10 +869,10 @@ typedef struct { float r, g, b, a; } Colour;
 #define replaySelect_ok() GAME_FN(replaySelect_ok, 0x441770, void, void)()   /* the replay selection dialog's OK */
 #define net_addPlayerRecord(rec) GAME_FN(net_addPlayerRecord, 0x452de0, void, void *)(rec)   /* the server's accept reply handled */
 #define mission_loadBriefing(k) GAME_FN(mission_loadBriefing, 0x443af0, u32, int)(k)   /* mission k's block read from axis.mis (load/files.c) */
-#define skirmish_leave() GAME_FN(skirmish_leave, 0x443c80, u32, void)()   /* leave the skirmish screen */
-#define skirmish_cursorUp() GAME_FN(skirmish_cursorUp, 0x443cd0, void, void)()   /* the skirmish list's cursor up */
-#define skirmish_cursorDown() GAME_FN(skirmish_cursorDown, 0x443d10, void, void)()   /* and down */
-#define briefing_typeOut() GAME_FN(briefing_typeOut, 0x445520, void, void)()   /* the briefing typed out (menu/skirmish.c) */
+#define missions_leave() GAME_FN(missions_leave, 0x443c80, u32, void)()   /* leave the mission list (screen 900) */
+#define missions_cursorUp() GAME_FN(missions_cursorUp, 0x443cd0, void, void)()   /* the mission list's cursor up */
+#define missions_cursorDown() GAME_FN(missions_cursorDown, 0x443d10, void, void)()   /* and down */
+#define briefing_typeOut() GAME_FN(briefing_typeOut, 0x445520, void, void)()   /* the briefing typed out (menu/mission_list.c) */
 #define text_setWrapX(v) GAME_FN(text_setWrapX, 0x4017b0, int, int)(v)   /* the text wrap x (g_textWrapX) */
 #define text_setBottom(v) GAME_FN(text_setBottom, 0x4017c0, int, int)(v)   /* the text's bottom (g_textBottom) */
 #define timer_now() GAME_FN(timer_now, 0x4301e0, long double, void)()   /* the time in ticks of the shifted performance counter, 80-bit */
@@ -1214,8 +1214,8 @@ typedef struct { float r, g, b, a; } Colour;
 #define actor_levelFromValue(points) GAME_FN(actor_levelFromValue, 0x4326f0, int, int)(points)   /* the level (1 ..) the points reach */
 #define net_receiveAll() GAME_FN(net_receiveAll, 0x450a60, u32, void)()
 #define net_getLocalAddress() GAME_FN(net_getLocalAddress, 0x454220, int, void)()   /* this machine's address as text (0xa0b43c) */
-#define missionsel_drawSettingsScreen() GAME_FN(missionsel_drawSettingsScreen, 0x448ac0, void, void)()
-#define missionsel_drawScreen() GAME_FN(missionsel_drawScreen, 0x449a50, void, void)()
+#define skirmish_drawSettingsScreen() GAME_FN(skirmish_drawSettingsScreen, 0x448ac0, void, void)()
+#define skirmish_drawScreen() GAME_FN(skirmish_drawScreen, 0x449a50, void, void)()
 #define missionList_draw() GAME_FN(missionList_draw, 0x444f40, void, void)()
 #define missionBriefing_draw() GAME_FN(missionBriefing_draw, 0x4456b0, void, void)()
 #define playerSetup_hitTest(x, y) GAME_FN(playerSetup_hitTest, 0x404460, int, int, int)(x, y)   /* the SETUP PLAYER dialog's control at (x, y) */

@@ -1,6 +1,6 @@
 /* menu_records.c: the front end's small records: the lobby player name, the data paths, the chat input line and
    its history, the message box line, the session records of the arena list, the saved mech, and the paged lists
-   of the room and skirmish screens. */
+   of the room screen and the mission list (screen 900). */
 #include "../game.h"
 #include <string.h>
 
@@ -288,14 +288,14 @@ void (ranking_fillPage)(void)
 	g_rankingPrevRank = rows[i - 1].rank;
 }
 
-/* ---- the skirmish list: eight rows shown from entry top, the cursor on row; sel = top + row ---- */
+/* ---- the mission list (screen 900): eight rows shown from entry top, the cursor on row; sel = top + row ---- */
 #define sk_top g_missionTop
-#define sk_row g_skirmishRow
+#define sk_row g_missionRow
 #define sk_sel g_missionPicked
 #define sk_count g_missionCount
 
 /* 0x443cd0: cursor up (the list scrolls at the top row) */
-void (skirmish_cursorUp)(void)
+void (missions_cursorUp)(void)
 {
 	if (sk_row > 0) {
 		sk_row--;
@@ -308,7 +308,7 @@ void (skirmish_cursorUp)(void)
 }
 
 /* 0x443d10: cursor down (the list scrolls at the bottom row) */
-void (skirmish_cursorDown)(void)
+void (missions_cursorDown)(void)
 {
 	if (sk_top + sk_row < sk_count - 1) {
 		if (sk_row < 7)
@@ -320,7 +320,7 @@ void (skirmish_cursorDown)(void)
 }
 
 /* 0x443d50: a click on row */
-void (skirmish_clickRow)(int row)
+void (missions_clickRow)(int row)
 {
 	if (sk_top + row < sk_count) {
 		sk_row = row;
@@ -359,9 +359,9 @@ void (briefing_prevPage)(void)
 	}
 }
 
-/* 0x443ea0: the skirmish briefing's clicks (briefing_hitTest): 1 back to the mission list (page 10, as a right click
+/* 0x443ea0: the mission list's briefing clicks (briefing_hitTest): 1 back to the mission list (page 10, as a right click
    does), 2 the next page, 3 the page before */
-void (skirmish_briefingClicks)(void)
+void (missions_briefingClicks)(void)
 {
 	if (g_dialogOpen)
 		return;
@@ -381,10 +381,10 @@ void (skirmish_briefingClicks)(void)
 			return;
 		}
 	}
-	g_skirmishPage = 10;
+	g_missionsPage = 10;
 }
 
-/* ---- leaving the skirmish screen (skirmish_leave) or the mission settings (missionSettings_leave): the screen's state cleared, the
+/* ---- leaving the mission list (missions_leave) or the skirmish screen (skirmish_leave): the screen's state cleared, the
    view squeezed (aspect 0.1) to open out again, the camera to (?, 0, 1600) looking ahead, a sound, the menu camera
    put back. Both return what that leaves in eax ---- */
 #define put_camera_back() GAME_FN(menu_restoreCamera, 0x447910, u32, void)()   /* menu_restoreCamera */
@@ -399,8 +399,8 @@ static u32 leave_settings(u32 state)
 	sound_playMenu(4);
 	return put_camera_back();
 }
-u32 (skirmish_leave)(void) { return leave_settings(ADDR(g_skirmishState)); }
-u32 (missionSettings_leave)(void) { return leave_settings(ADDR(g_missionPage)); }
+u32 (missions_leave)(void) { return leave_settings(ADDR(g_missionsState)); }
+u32 (skirmish_leave)(void) { return leave_settings(ADDR(g_skirmishPage)); }
 
 /* 0x4370e0: the new ID confirmation's keys: O chooses OK (g_newIdConfirmChoice 1), C CANCEL (2), each with the menu
    sound. Returns what the original leaves in eax */
@@ -420,38 +420,38 @@ u32 (newIdConfirm_keys)(void)
 	return r;
 }
 
-/* 0x445be0: the skirmish screen drawn: the background (when g_skirmishDrawBackground), the map list unless closing (state
-   2), the camera; then while open (state past 1) the dialog's frame if one is open, else the screen A (g_skirmishPage 10)
+/* 0x445be0: the mission list (screen 900) drawn: the background (when g_missionsDrawBackground), the map list unless closing (state
+   2), the camera; then while open (state past 1) the dialog's frame if one is open, else the screen A (g_missionsPage 10)
    or B (20). Returns what the original leaves in eax */
-u32 (menuState900_skirmishSetup)(void)
+u32 (menuState900_missions)(void)
 {
-	if (g_skirmishDrawBackground)
+	if (g_missionsDrawBackground)
 		menu_drawBackground();
-	if (g_skirmishState != 2)
-		skirmish_drawTunnel();   /* skirmish_drawTunnel */
-	skirmish_camera();       /* skirmish_camera: the camera */
-	int state = g_skirmishState;
+	if (g_missionsState != 2)
+		missions_drawTunnel();   /* missions_drawTunnel */
+	missions_camera();       /* missions_camera: the camera */
+	int state = g_missionsState;
 	if (state == 1 || state == 0)
 		return state;
 	if (g_dialogOpen)
 		return menu_drawFrame(g_briefingX, g_briefingY,
 		                                                     g_briefingRight, g_briefingBottom);   /* menu_drawFrame */
-	int screen = g_skirmishPage;
+	int screen = g_missionsPage;
 	if (screen == 10)
-		return skirmish_frameList();   /* missionList_draw */
+		return missions_frameList();   /* missionList_draw */
 	if (screen == 20)
-		return skirmish_frameBriefing();   /* missionBriefing_draw */
+		return missions_frameBriefing();   /* missionBriefing_draw */
 	return screen;
 }
 
-/* 0x444070: the skirmish briefing's keys: A does nothing more, C or Esc back to the mission list (page 10), N / P the
+/* 0x444070: the mission list's briefing keys: A does nothing more, C or Esc back to the mission list (page 10), N / P the
    next page / the page before. Returns what the original leaves in eax */
-u32 (skirmish_briefingKeys)(void)
+u32 (missions_briefingKeys)(void)
 {
 	if (input_justPressed(g_dikA) == 1)
 		return 1;
 	if (input_justPressed(g_dikC) == 1 || input_justPressed(g_dikEscape_2) == 1) {
-		g_skirmishPage = 10;
+		g_missionsPage = 10;
 		return 1;
 	}
 	if (input_justPressed(g_dikN) == 1)
@@ -462,14 +462,14 @@ u32 (skirmish_briefingKeys)(void)
 	return r;
 }
 
-/* ---- the mission select (selection g_missionShown) ---- */
-/* 0x4479d0: mission sel chosen: its 32-byte record (g_mapNames) as the current one (g_mapTitle), its three values from the
-   0x5c-byte records of g_skirmishInfo (gameMode ..), the settings left, mission mode (g_quitAsked = 1, g_matchMode = 3) */
-u32 (mission_choose)(void)
+/* ---- the skirmish screen (screen 500; the round shown g_skirmishShown) ---- */
+/* 0x4479d0: the round shown started: its 32-byte record (g_mapNames) as the current one (g_mapTitle), its three values from the
+   0x5c-byte records of g_skirmishInfo (gameMode ..), the screen left, the campaign's match mode (g_quitAsked = 1, g_matchMode = 3) */
+u32 (skirmish_startRound)(void)
 {
-	int sel = g_missionShown;
+	int sel = g_skirmishShown;
 	u32 t = (u32)sel * 0x5c;
-	g_missionStage = sel;
+	g_mapIndex = sel;
 	memcpy((void *)OBJ(g_mapTitle), (const void *)(OBJ(g_mapNames) + sel * 32), 32);
 	const SkirmishInfo *rec = (const SkirmishInfo *)(OBJ(g_skirmishInfo) + t);
 	int a = rec->gameMode, b = rec->fragLimit, c = rec->timeLimit;
@@ -477,39 +477,39 @@ u32 (mission_choose)(void)
 	g_chosenGameMode = a;
 	g_fragLimit = b;
 	g_timeLimit = c;
-	u32 r = missionSettings_leave();   /* missionSettings_leave: the settings left */
+	u32 r = skirmish_leave();   /* skirmish_leave: the settings left */
 	g_quitAsked = 1;
 	g_matchMode = 3;
 	return r;
 }
 
-/* 0x447a50: the mission select's clicks (no dialog open): a right click leaves; buttons 0 choose, 1 leave, 2 and 3
+/* 0x447a50: the skirmish screen's clicks (no dialog open): a right click leaves; buttons 0 choose, 1 leave, 2 and 3
    step the selection down and up (within 0 .. the count 0x9f181c and 14). Returns what the original leaves in eax */
-u32 (missionsel_clicks)(void)
+u32 (skirmish_clicks)(void)
 {
 	if (g_dialogOpen)
 		return g_dialogOpen;
 	if (g_rightClick)
-		missionSettings_leave();
+		skirmish_leave();
 	if (!g_mouseClick)
 		return 0;
-	u32 button = ((u32)missionsel_hitTest(g_mouseX, g_mouseY));   /* the screen's hit test */
-	int sel = g_missionShown;
+	u32 button = ((u32)skirmish_hitTest(g_mouseX, g_mouseY));   /* the screen's hit test */
+	int sel = g_skirmishShown;
 	switch (button) {
 	case 0:
-		return mission_choose();   /* mission_choose */
+		return skirmish_startRound();   /* skirmish_startRound */
 	case 1:
-		return missionSettings_leave();
+		return skirmish_leave();
 	case 2:
 		if (sel <= 0)
 			return (u32)sel;
-		g_missionShown = --sel;
-		return mission_chosen(sel);   /* mission_chosen */
+		g_skirmishShown = --sel;
+		return skirmish_roundChosen(sel);   /* skirmish_roundChosen */
 	case 3:
 		if (sel >= g_progress || sel >= 0xe)
 			return (u32)sel;
-		g_missionShown = ++sel;
-		return mission_chosen(sel);
+		g_skirmishShown = ++sel;
+		return skirmish_roundChosen(sel);
 	}
 	return button;
 }
@@ -602,7 +602,7 @@ static u32 to_pilot_screen(void)
 	return GAME_FN(debug_traceStripped, 0x48b420, u32, void)();
 }
 
-/* main menu choice i (with its sound; g_cursorBlink cleared): 0 SKIRMISH PLAY (menuState500_enter), 1 MULTIPLAY VIA
+/* main menu choice i (with its sound; g_cursorBlink cleared): 0 SKIRMISH PLAY (menuState500_enterSkirmish), 1 MULTIPLAY VIA
    INTERNET (the arena lobby, next screen 400), 2 LADDER GAME (net_connect, then net_asyncSelect; messages 0x2a / 0x29
    when they fail; the game room, next screen 800), 3 the setup (600), 4 TO CUSTOMIZE (the ARM CENTER,
    armc_enterParts), 5 EXIT (back to the pilot screen). The original's eax into *r; 1 when a failure ended the
@@ -615,7 +615,7 @@ static int menu_choice(int i, u32 *r)
 	int result;
 	switch (i) {
 	case 0:
-		*r = menuState500_enter();   /* menuState500_enter */
+		*r = menuState500_enterSkirmish();   /* menuState500_enterSkirmish */
 		g_enteringMenus = 0;
 		return 0;
 	case 2:

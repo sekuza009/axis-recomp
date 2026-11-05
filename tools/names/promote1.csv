@@ -38,8 +38,8 @@
 0x4deb74,float,g_roomFade,src/menu/room_clicks.c,g_roomFade
 0x9dd6c4,int,g_newIdConfirmChoice,src/menu/room_clicks.c,g_newIdConfirmChoice
 0x9dd834,int,g_roomState,src/menu/room_dialogs.c,g_roomState
-0x9ef1f8,int,g_skirmishPage,src/menu/menu_states.c,g_skirmishPage
-0x9ef1f0,int,g_skirmishState,src/menu/menu_states.c,g_skirmishState
+0x9ef1f8,int,g_missionsPage,src/menu/menu_states.c,g_missionsPage
+0x9ef1f0,int,g_missionsState,src/menu/menu_states.c,g_missionsState
 0x4ddcec,int,g_setupPage,src/menu/setup_keys.c,g_setupPage
 0x9dd1d0,int,g_sort,src/menu/room_dialogs.c,g_rankingSort
 0xa0e80c,int,g_soundOn,src/sound/sound_basic.c,g_soundOn

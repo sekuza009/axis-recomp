@@ -598,7 +598,7 @@ typedef struct PartInfo {
 	float weight;   /* +0x7c */
 } PartInfo;
 
-/* one of the 30 missions of axis.mis (g_missions: mission_loadAxisMis; the skirmish list) */
+/* one of the 30 missions of axis.mis (g_missions: mission_loadAxisMis; screen 900's list, which nothing in the menus opens) */
 typedef struct Mission {
 	i32 id;   /* +0x0: (the file's first word) */
 	char name[64];   /* +0x4: the list's first column */
@@ -1789,7 +1789,7 @@ typedef struct Scene {
 	float endTime;   /* +0x234239d: (by use; seen running) seconds left of a round's end (10 from the result) */
 	i32 matchLeaving;   /* +0x23423a1: 1: the match is being left: back to the menu when quitDelay runs out (quit, data loss, lost connection, unstable network, the last mission won); the HUD hides */
 	float quitDelay;   /* +0x23423a5: (by use; seen running) seconds before leaving after the round is over (3) */
-	i32 stageCleared;   /* +0x23423a9: 1: the local player (or team) reached the score limit on the campaign's current stage (g_missionStage == g_progress): the progress moves on; 0: MISSION FAILED, RETRY */
+	i32 stageCleared;   /* +0x23423a9: 1: the local player (or team) reached the score limit on the campaign's current stage (g_mapIndex == g_progress): the progress moves on; 0: MISSION FAILED, RETRY */
 	i32 scoreLimit;   /* +0x23423ad: > 0: the points still needed are shown */
 	i32 timeLimit;   /* +0x23423b1: minutes; > 0: the time left is shown */
 	i32 endReason;   /* +0x23423b5: how the round ended: -1 not over, 0 its frag limit, 1 its time limit, 2 the server ended it (the server's end notices by it) */

@@ -320,8 +320,8 @@
 #define g_roomState GAME_VAR(int, 0x9dd834)
 #define g_roomUpdateNotice GAME_VAR(int, 0x9dd850)
 #define g_replaySelectFirst GAME_VAR(int, 0x9dd92c)
-#define g_skirmishState GAME_VAR(int, 0x9ef1f0)
-#define g_skirmishPage GAME_VAR(int, 0x9ef1f8)
+#define g_missionsState GAME_VAR(int, 0x9ef1f0)
+#define g_missionsPage GAME_VAR(int, 0x9ef1f8)
 #define g_briefingEnd GAME_VAR(int, 0x9ef200)
 #define g_briefingDone GAME_VAR(int, 0x9f105c)
 #define g_briefingPage GAME_VAR(int, 0x9f1060)
@@ -419,7 +419,7 @@
 #define g_pilotExp GAME_VAR(int, 0x9dd5dc)
 #define g_pilotKills GAME_VAR(int, 0x9dd5ec)
 #define g_roomAwaitingServer GAME_VAR(int, 0x9dd6d4)
-#define g_missionPreviewDue GAME_VAR(int, 0x9f63b0)
+#define g_skirmishPreviewDue GAME_VAR(int, 0x9f63b0)
 #define g_chatTyping GAME_VAR(int, 0x9f67e8)
 #define g_matchLogWritten GAME_VAR(int, 0x9f67f0)
 #define g_matchEndedByUser GAME_VAR(int, 0x9f67f4)
@@ -546,7 +546,7 @@
 #define g_clockCheckTick GAME_VAR(u32, 0x9dd8e0)
 #define g_clockCheckTickSeconds GAME_VAR(u32, 0x9dd8ec)
 #define g_profileProgressSaved GAME_VAR(int, 0x9f62fc)
-#define g_missionChosen GAME_VAR(int, 0x9f6328)
+#define g_skirmishChosen GAME_VAR(int, 0x9f6328)
 #define g_netClaimedSlot GAME_VAR(int, 0x9f9424)
 #define g_lobbyReplyKind GAME_VAR(u32, 0xa052aa)
 #define g_serverReplyKind GAME_VAR(int, 0xa05306)
@@ -635,7 +635,7 @@
 #define g_briefingX GAME_VAR(int, 0x9f16a8)
 #define g_briefingY GAME_VAR(int, 0x9f16ac)
 #define g_briefingClock GAME_VAR(float, 0x9f16b8)
-#define g_missionShown GAME_VAR(int, 0x9f63b4)
+#define g_skirmishShown GAME_VAR(int, 0x9f63b4)
 #define g_profileFrameAlpha GAME_VAR(float, 0x9f8f08)
 #define g_netQueueOnline GAME_VAR(int, 0xa0b388)
 #define g_bitStream GAME_VAR(const u8 *, 0xa61708)
@@ -709,7 +709,7 @@
 #define g_unusedReplayListWord1 GAME_VAR(int, 0x9dd944)
 #define g_unusedReplayListWord2 GAME_VAR(int, 0x9eea88)
 #define g_unusedMainMenuWord GAME_VAR(int, 0x9eeabc)
-#define g_skirmishDrawBackground GAME_VAR(int, 0x9eeba8)
+#define g_missionsDrawBackground GAME_VAR(int, 0x9eeba8)
 #define g_unusedBriefingWord GAME_VAR(int, 0x9ef218)
 #define g_misHeader1 GAME_VAR(int, 0x9ef2c4)
 #define g_misHeader2 GAME_VAR(int, 0x9ef2c8)
@@ -886,8 +886,8 @@
 #define g_mainMenuDepth GAME_VAR(u32, 0x9eea90)
 #define g_briefingRight GAME_VAR(int, 0x9f16b0)
 #define g_briefingBottom GAME_VAR(int, 0x9f16b4)
-#define g_missionSelectLeft GAME_VAR(int, 0x9f6308)
-#define g_missionSelectTop GAME_VAR(int, 0x9f630c)
+#define g_skirmishRectLeft GAME_VAR(int, 0x9f6308)
+#define g_skirmishRectTop GAME_VAR(int, 0x9f630c)
 #define g_pilotSelectBottom GAME_VAR(int, 0x9f682c)
 #define g_pilotSelectRight GAME_VAR(int, 0x9f6830)
 #define g_profileListTop GAME_VAR(int, 0x9f8c4c)
@@ -1042,7 +1042,8 @@
 #define g_cageTexture GAME_VAR(int, 0x76d36c)
 #define g_repeatUp GAME_VAR(float, 0x76d37c)   /* frames until a held up / down key steps again */
 #define g_screen GAME_VAR(int, 0x76d3e8)   /* the front end's screen: 100 intro, 200 title, 210 profile, 300 main menu, 400 lobby,
-                                                         500 missions, 600 setup, 700 armour, 800 game room, 900 skirmish, 9999 in a match */
+                                                         500 skirmish, 600 setup, 700 armour, 800 game room, 900 the mission list (axis.mis; never
+                                                         entered), 9999 in a match */
 #define g_logoTexture GAME_VAR(int, 0x76d3f0)
 #define g_localPlayer GAME_VAR(int, 0x76d41c)   /* (by use) the local player's index in the room's lists */
 #define g_highlightShown GAME_VAR(int, 0x76d42c)
@@ -1056,7 +1057,7 @@
 #define g_texturesOff GAME_VAR(int, 0x9da494)   /* (by use) set: the menus' 3D background is drawn untextured (left out) */
 #define g_highlightAlpha GAME_VAR(float, 0x9da4a4)
 #define g_fontAsciiLarge GAME_VAR(int, 0x9dad90)   /* ASCII, 16- and 32-unit fonts */
-#define g_missionStage GAME_VAR(int, 0x9dad94)   /* the mission stage being played */
+#define g_mapIndex GAME_VAR(int, 0x9dad94)   /* the mission stage being played */
 #define g_fontHanCho GAME_VAR(int, 0x9dae1c)   /* font textures (ids): Hangul initial consonants */
 #define g_language GAME_VAR(int, 0x9dae74)   /* 2: the small font for labels */
 #define g_tunnelPulse GAME_VAR(float, 0x9db978)   /* bounces 0 .. 100 */
@@ -1064,10 +1065,10 @@
 #define g_chatLength GAME_VAR(int, 0x9dbf10)   /* characters in g_chatLine */
 #define g_hChatEdit GAME_VAR(void *, 0x9dd888)   /* the hidden EDIT control typing goes to */
 #define g_missionTop GAME_VAR(int, 0x9f16bc)   /* the first row shown */
-#define g_missionBriefing GAME_VAR(int, 0x9f62e0)   /* 1: a mission's briefing is shown (a click closes it: briefing_clickClose) */
-#define g_missionPage GAME_VAR(int, 0x9f62f8)   /* 0 / 1: no keys; 2: no list refresh */
-#define g_missionBusy GAME_VAR(int, 0x9f6300)
-#define g_missionShowBackground GAME_VAR(int, 0x9f63b8)
+#define g_skirmishBriefing GAME_VAR(int, 0x9f62e0)   /* 1: a mission's briefing is shown (a click closes it: briefing_clickClose) */
+#define g_skirmishPage GAME_VAR(int, 0x9f62f8)   /* 0 / 1: no keys; 2: no list refresh */
+#define g_skirmishBusy GAME_VAR(int, 0x9f6300)
+#define g_skirmishShowBackground GAME_VAR(int, 0x9f63b8)
 #define g_profileReveal GAME_VAR(int, 0x9f6828)   /* the pilot portrait's cell under the cursor grown by this (pixels a side, one more each tick of g_profileRevealClock); 0 when the emblem cursor moves */
 #define g_logOutDialogX GAME_VAR(int, 0x9f6834)   /* page 5's dialog frame */
 #define g_profileIntro GAME_VAR(int, 0x9f6838)   /* the profile screen's intro animation runs */
@@ -1105,7 +1106,7 @@
 #define g_resends GAME_VAR(int, 0xb116e4)   /* out-of-turn packets seen: the caller re-syncs at 0x80 */
 #define g_roomLoginRight GAME_VAR(int, 0x9dd360)
 #define g_roomPanelEase GAME_VAR(float, 0x9dd560)
-#define g_skirmishRow GAME_VAR(int, 0x9f1058)
+#define g_missionRow GAME_VAR(int, 0x9f1058)
 #define g_profileDialogBottom GAME_VAR(int, 0x9f8f28)
 #define g_profileDialogRight GAME_VAR(int, 0x9f8f2c)
 #define g_logOutDialogRight GAME_VAR(int, 0x9f93bc)

@@ -545,7 +545,7 @@ void (setup_drawTunnel)(void)
 	glDisable(GL_TEXTURE_2D);
 	tunnel_advance(0);
 }
-/* the menus' tunnel (mission select, skirmish, ARM CENTER): four layers of six walls (each under the menu camera,
+/* the menus' tunnel (the skirmish screen, the mission list, ARM CENTER): four layers of six walls (each under the menu camera,
    pushed back 550 and turned by -40 / 0 / 40, the far three the other way): layer 0 the panels (texture g_menuTunnelTexture,
    10 high, dimmed from 0.5 as the pulse rises), layer 1 the stripes (the same texture, in the colour 1, 1, 10,
    0.4), layer 2 nothing (its texture 0x76d47c bound, the walls' turns still made), layer 3 a strip of g_mainMenuTextures a
@@ -701,15 +701,15 @@ static void menu_tunnel(const Tunnel *t, const Highlight *h)
 	tunnel_advance(t->turn_only);
 }
 
-/* 0x448140: the mission-select screen's tunnel; skirmish_drawTunnel / armc_drawTunnel: the skirmish and ARM CENTER screens' (the glow
+/* 0x448140: the skirmish screen's tunnel; missions_drawTunnel / armc_drawTunnel: the mission list's and ARM CENTER's (the glow
    clamped); armc_drawPreviewTunnel: the ARM CENTER's deep one (1650 back, its pulse only turned round); room_drawTunnel: the game room's
    (as deep as g_roomTunnelDepth). The originals leave eax to callers that ignore it */
 static const Highlight none = { -1, NULL, 0, 0, 0 };
 static const float white[3] = { 1.0f, 1.0f, 1.0f };
 #define SIX_WALLS 6, (const float *)ADDR(k_10f), k_0_15625f, 0.46875f, 0.625f
 #define FOUR_WALLS 4, k_12f, (const float *)ADDR(k_0_25f), 0.5f, 0.75f
-void (missionsel_drawTunnel)(void) { static const Tunnel t = { 0xc4098000, OBJ(g_mainMenuTextures) + 12, 0, 0, 0, 0, SIX_WALLS }; menu_tunnel(&t, &none); }
-void (skirmish_drawTunnel)(void) { static const Tunnel t = { 0xc4098000, OBJ(g_mainMenuTextures) + 12, 0, 0, 1, 0, SIX_WALLS }; menu_tunnel(&t, &none); }
+void (skirmish_drawTunnel)(void) { static const Tunnel t = { 0xc4098000, OBJ(g_mainMenuTextures) + 12, 0, 0, 0, 0, SIX_WALLS }; menu_tunnel(&t, &none); }
+void (missions_drawTunnel)(void) { static const Tunnel t = { 0xc4098000, OBJ(g_mainMenuTextures) + 12, 0, 0, 1, 0, SIX_WALLS }; menu_tunnel(&t, &none); }
 void (armc_drawTunnel)(void) { static const Tunnel t = { 0xc4098000, OBJ(g_mainMenuTextures) + 12, 0, 0, 1, 0, SIX_WALLS }; menu_tunnel(&t, &none); }
 void (armc_drawPreviewTunnel)(void) { static const Tunnel t = { 0xc4ce4000, OBJ(g_ladderMenuTextures) + 12, 1, 1, 0, 1, SIX_WALLS }; menu_tunnel(&t, &none); }
 void (room_drawTunnel)(void)

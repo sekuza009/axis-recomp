@@ -2,28 +2,28 @@
 #include "../game.h"
 #include <string.h>
 
-/* 0x44aa40 (menuState500_missionSelect): the mission-select screen: the background, the mission list (refreshed
+/* 0x44aa40 (menuState500_skirmish): the skirmish screen: the background, the tunnel (refreshed
    except on page 2), the screen itself; on its pages from 2 on an open dialog draws its frame, else the screen's
-   input (two handlers: before and after a mission is started) */
-void (menuState500_missionSelect)(void)
+   input (two handlers: the briefing and the round's screen) */
+void (menuState500_skirmish)(void)
 {
-	if (g_missionShowBackground)
+	if (g_skirmishShowBackground)
 		menu_drawBackground();
-	if (g_missionPage != 2)
-		missionsel_drawTunnel();
-	missionsel_camera();
-	if (g_missionPage == 1 || g_missionPage == 0)
+	if (g_skirmishPage != 2)
+		skirmish_drawTunnel();
+	skirmish_camera();
+	if (g_skirmishPage == 1 || g_skirmishPage == 0)
 		return;
 	if (g_dialogOpen) {
-		menu_drawFrame(g_missionBox[0], g_missionBox[1], g_missionBox[2], g_missionBox[3]);
+		menu_drawFrame(g_skirmishBox[0], g_skirmishBox[1], g_skirmishBox[2], g_skirmishBox[3]);
 		return;
 	}
-	if (g_missionBusy)
+	if (g_skirmishBusy)
 		return;
-	if (g_missionBriefing)
-		missionsel_frameScreen();
+	if (g_skirmishBriefing)
+		skirmish_frameScreen();
 	else
-		missionsel_frameSettings();
+		skirmish_frameSettings();
 }
 
 /* 0x41f8d0 (menuState200_title): the title screen's frame: after 19 frames of the title the profile screen follows

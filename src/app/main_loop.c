@@ -101,11 +101,11 @@ void (menu_frame)(void)
 	case 210: menuState210_frame(); break;
 	case 300: menuState300_frame(); break;
 	case 400: menuState400_frame(); break;
-	case 500: menuState500_missionSelect(); break;
+	case 500: menuState500_skirmish(); break;
 	case 600: menuState600_setup(); break;
 	case 700: menuState700_armCenter(); break;
 	case 800: menuState800_gameRoom(); break;
-	case 900: menuState900_skirmishSetup(); break;
+	case 900: menuState900_missions(); break;
 	}
 	if (g_dialogPending)
 		menu_drawMessageBox();
@@ -1278,7 +1278,7 @@ static void write_log(u8 *s, const char *format, int own_time, int stack_time)
 {
 	static const char *const k_teams[3] = { (const char *)STR(0x4b21b8, "RED"), (const char *)STR(0x4b21b0, "BLUE"), (const char *)STR(0x4d06ec, "NOTEAM") };   /* NOTEAM */
 	void *f = crt_fopen((const char *)STR(0x4d06e0, "axiswl.log"), (const char *)STR(0x4b21a4, "wt"));
-	crt_fprintf(f, format, g_mapTitle, g_missionStage, g_fragLimit, g_timeLimit, g_matchPlayerName);
+	crt_fprintf(f, format, g_mapTitle, g_mapIndex, g_fragLimit, g_timeLimit, g_matchPlayerName);
 	for (int k = 0; k < SC->rankCount; k++) {
 		int e = SC->ranking[k];
 		int team = team_game() ? SC->players[e].team : 2;
@@ -2019,7 +2019,7 @@ void THISCALL (match_frame)(u8 *s)
 			stage_deactivateActors(stage);
 			SC->cameraSettings[0][SC->cameraMode] = 0;
 			SC->cameraSettings[1][SC->cameraMode] = 0;
-			if (SC->sessionMode == 0 && SC->stageCleared == 1 && g_missionStage == 14) {
+			if (SC->sessionMode == 0 && SC->stageCleared == 1 && g_mapIndex == 14) {
 				SC->lastMissionWon = 1;   /* the last mission won */
 				SC->matchLeaving = 1;
 				SC->quitDelay = 0.0f;
@@ -2050,12 +2050,12 @@ void THISCALL (match_frame)(u8 *s)
 				} else {
 					if (SC->rotationCount > 0) {   /* the server's map rotation (rotation: map, mode) */
 						SC->rotationAt = (SC->rotationAt + 1) % SC->rotationCount;
-						g_missionStage = SC->rotation[SC->rotationAt].map;
+						g_mapIndex = SC->rotation[SC->rotationAt].map;
 						SC->nextMap = SC->rotation[(SC->rotationAt + 1) % SC->rotationCount].map;
 						SC->nextMode = SC->rotation[(SC->rotationAt + 1) % SC->rotationCount].mode;
 						game_setGameTypeFlags((Stage *)stage, SC->rotation[SC->rotationAt].mode);
 					} else {
-						g_missionStage = SC->nextMap;
+						g_mapIndex = SC->nextMap;
 						SC->nextMap = -1;
 						game_setGameTypeFlags((Stage *)stage, SC->nextMode);
 						SC->nextMode = -1;
@@ -2094,13 +2094,13 @@ void THISCALL (match_frame)(u8 *s)
 					winning_team(s);
 					round_over(s, 0);
 					if (SC->sessionMode == 0 && SC->teamScores[SC->localTeam] >= SC->scoreLimit
-					    && g_missionStage == g_progress)
+					    && g_mapIndex == g_progress)
 						SC->stageCleared = 1;
 				}
 			} else if (SC->rankCount > 0 && SC->players[SC->ranking[0]].kills >= limit) {
 				round_over(s, 0);
 				if (SC->sessionMode == 0 && SC->players[SC->localPlayer].kills >= SC->scoreLimit
-				    && g_missionStage == g_progress)
+				    && g_mapIndex == g_progress)
 					SC->stageCleared = 1;
 			}
 		}
@@ -2110,7 +2110,7 @@ void THISCALL (match_frame)(u8 *s)
 			round_over(s, 1);
 		}
 	}
-	if (SC->stageCleared == 1 && g_missionStage == g_progress) {   /* the campaign's progress */
+	if (SC->stageCleared == 1 && g_mapIndex == g_progress) {   /* the campaign's progress */
 		g_progress++;
 		profile_saveProgress();
 	}

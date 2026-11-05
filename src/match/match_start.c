@@ -5,7 +5,6 @@
 
 #define FIELD(type, obj, offset) GAME_VAR(type, (u8 *)RELOC(obj) + (offset))
 
-#define g_mapIndex g_missionStage
 
 static void set_round(Round *r, int map, int mode, int score, int time)
 {
@@ -16,7 +15,7 @@ static void set_round(Round *r, int map, int mode, int score, int time)
 }
 
 /* the first round's map rotation: solo, the 15 stages (0x5c-byte records of g_skirmishInfo from gameMode: the mode, the time and the
-   score limits) from the stage chosen (g_missionStage); a network host, the arena maps in rotation (g_arenaMapCount of them, 8
+   score limits) from the stage chosen (g_mapIndex); a network host, the arena maps in rotation (g_arenaMapCount of them, 8
    bytes each from g_mapChoiceKeptTable: in rotation, the map's own mode, used when the chosen mode g_chosenGameMode is 14 or more) or,
    without rotation (g_mapRotation), the chosen map only, from the first; a machine that joined, none */
 static void make_rotation(Scene *s)

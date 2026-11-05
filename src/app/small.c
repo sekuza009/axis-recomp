@@ -156,7 +156,7 @@ int (net_connectionAvailable)(u32 i) { return i < 4 && g_dpConnections[i] ? 1 : 
 void (replaySelect_toggle)(int i) { int *f = &g_replayList[i].flag; *f = 1 - *f; }
 void (replaySelect_allIn)(void) { for (int i = 0; i < g_replayFileCount; i++) g_replayList[i].flag = 1; }
 /* 0x447af0: a click closes the mission briefing */
-void (briefing_clickClose)(void) { if (g_dialogOpen == 0 && g_mouseClick != 0) g_missionBriefing = 0; }
+void (briefing_clickClose)(void) { if (g_dialogOpen == 0 && g_mouseClick != 0) g_skirmishBriefing = 0; }
 /* 0x4411e0: the background tunnel's rings made again (tunnel_appendRing) */
 u32 (tunnel_rebuild)(void) { g_tunnelRings = 0; return tunnel_appendRing((void *)ADDR(g_menuTunnel)); }
 /* 0x44ad30: the text colour */

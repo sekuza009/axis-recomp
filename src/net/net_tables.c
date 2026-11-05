@@ -1992,12 +1992,12 @@ void THISCALL (net_processGamePacket)(u8 *g, u32 from, int size, const char *pkt
 			GS->elapsed = ((const GamePacket *)pkt)->elapsed;
 			BITS(GS->clockFraction) = BITS(((const GamePacket *)pkt)->clockFraction);
 			if (pkt[3] >= 0) {
-				int round = g_missionStage;
+				int round = g_mapIndex;
 				if (round != pkt[3] && (round < 0 || GS->awaitingHostRound == 1 || GS->elapsed > 0x1e)) {
-					g_missionStage = pkt[3];
+					g_mapIndex = pkt[3];
 					GS->nextMap = pkt[4];
 					GS->nextMode = pkt[6];
-					scene_setTextureFolder((Scene *)g, g_mapNames + g_missionStage * 0x20);
+					scene_setTextureFolder((Scene *)g, g_mapNames + g_mapIndex * 0x20);
 					GS->matchState = 1;
 					GS->stateFrames = 0;
 					game_setGameTypeFlags((Stage *)STAGE, pkt[5]);
@@ -2006,7 +2006,7 @@ void THISCALL (net_processGamePacket)(u8 *g, u32 from, int size, const char *pkt
 				}
 				GS->nextMap = pkt[4];
 				GS->nextMode = pkt[6];
-				if (g_missionStage == pkt[3] && GS->missionNumber != *(const short *)(pkt + 7)) {
+				if (g_mapIndex == pkt[3] && GS->missionNumber != *(const short *)(pkt + 7)) {
 					GS->dataLossPending = 1;
 					GS->dataLossCode = 1;
 				}

@@ -24,7 +24,7 @@ Layout (by subsystem; each file's first comment says what it holds)
                 weapons, bullets and damage (weapons.c), the per-frame passes over bullets / particles / objects /
                 items / triggers and the script (frame_loops.c), map objects, teams, scores, the announcements
   menu/         the front end: screens entered and dispatched (screen_enter.c, menu_states.c, menu_keys.c), the main
-                menu, the pilot (profile) screen, the setup screen, the skirmish and mission screens, the ARM CENTER
+                menu, the pilot (profile) screen, the setup screen, the skirmish screen (skirmish.c) and the unused axis.mis mission list (mission_list.c), the ARM CENTER
                 (armc_*), the arena lobby (lobby_states.c, game_lists.c) and the Ladder game room (room_*: the login,
                 the new-ID form, the account page, the game list, the create page, the ranking), 2D drawing, cameras
                 and the background tunnel, text fields, button layouts and hit tests

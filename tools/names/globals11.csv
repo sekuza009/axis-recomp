@@ -30,7 +30,7 @@
 0x5b1dac,int,g_matchRunning
 0x4b2790,int,g_gameRunning
 0x4dcf10,int,g_armcLeaving
-0x9f63b0,int,g_missionPreviewDue
+0x9f63b0,int,g_skirmishPreviewDue
 0x4dc788,int,g_armcUnusedFlag
 0x9f67e8,int,g_chatTyping
 0x83a9d8,int,g_cfgSimpleMenu

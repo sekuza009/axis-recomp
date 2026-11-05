@@ -106,25 +106,25 @@ static void update_notice_keys(int *question)
 void (roomUpdateNotice_keys)(void) { update_notice_keys(&g_roomUpdateNotice); }
 void (arenaUpdateNotice_keys)(void) { update_notice_keys(&g_arenaUpdateNotice); }
 
-/* 0x443e20: the skirmish mission list's clicks (no dialog open, g_dialogOpen): a right click leaves (skirmish_leave); a
-   left click on its buttons (skirmishList_hitTest): rows 0..7 pick that mission (skirmish_clickRow), 8 its briefing
+/* 0x443e20: the mission list's clicks (screen 900) (no dialog open, g_dialogOpen): a right click leaves (missions_leave); a
+   left click on its buttons (missionList_hitTest): rows 0..7 pick that mission (missions_clickRow), 8 its briefing
    (mission_loadBriefing), 9 leaves. Returns the last call's eax */
-int (skirmish_listClicks)(void)
+int (missions_listClicks)(void)
 {
 	int r = g_dialogOpen;
 	if (r)
 		return r;
 	if (g_rightClick)
-		skirmish_leave();
+		missions_leave();
 	if (!g_mouseClick)
 		return 0;
-	int row = skirmishList_hitTest(g_mouseX, g_mouseY);   /* skirmishList_hitTest */
+	int row = missionList_hitTest(g_mouseX, g_mouseY);   /* missionList_hitTest */
 	if ((u32)row <= 7)
-		return skirmish_clickRow(row);
+		return missions_clickRow(row);
 	if (row == 8)
 		return ((int)mission_loadBriefing(g_missionPicked));
 	if (row == 9)
-		return ((int)skirmish_leave());
+		return ((int)missions_leave());
 	return row;
 }
 
@@ -321,7 +321,7 @@ u32 (room_hostingStep)(void)
 		dplay_host(
 			room, g_ladderId, (signed char)room[0x23], (signed char)room[0x21], (signed char)room[0x23],
 			room[0x24], room[0x25], 0);   /* dplay_host: host */
-		g_missionStage = (signed char)room[0x20];
+		g_mapIndex = (signed char)room[0x20];
 		g_chosenGameMode = (signed char)room[0x23];
 		memcpy((void *)OBJ(g_mapTitle), room, 32);
 		g_mapRotation = (signed char)room[0x22];
@@ -388,7 +388,7 @@ u32 (room_joinAnswer)(void)
 	g_arenaSearchTicks = 0;
 	g_arenaJoinPending = 0;
 	g_arenaConfirming = 0;
-	g_missionStage = game->map;
+	g_mapIndex = game->map;
 	memcpy((void *)OBJ(g_mapTitle), game->name, 32);
 	g_mapRotation = game->rotation;
 	g_chosenGameMode = game->gameMode;

@@ -4,5 +4,5 @@
 0x9f8f28,int,g_profileDialogBottom
 0x9f93bc,int,g_logOutDialogRight
 0x9f93c0,int,g_logOutDialogBottom
-0x9f1058,int,g_skirmishRow
+0x9f1058,int,g_missionRow
 0x9dd560,float,g_roomPanelEase

@@ -179,9 +179,9 @@
 #define g_roomEyeKept ((float *)IMG(0x9dd930))   /* float[3]; the room camera's position kept for the slide (g_roomSlideFarX .. Z; menu_tunnel's EYE_KEPT) */
 #define g_replaySelectDim ((u32 *)IMG(0x9dda70))   /* u32[4]; the replay selection dialog's dim colour */
 #define g_replaySelectLit ((u32 *)IMG(0x9eea98))   /* u32[4]; the replay selection dialog's lit colour */
-#define g_missionSelectRect ((int *)IMG(0x9f6308))   /* int[4]; the mission select dialog's window: left (g_missionSelectLeft) */
-#define g_missionColourLit ((u32 *)IMG(0x9f6318))   /* u32[4]; the mission list's colour */
-#define g_missionColourDim ((u32 *)IMG(0x9f62e8))   /* u32[4]; the mission list's colour */
+#define g_skirmishRect ((int *)IMG(0x9f6308))   /* int[4]; the skirmish screen's window: left (g_skirmishRectLeft) */
+#define g_skirmishColourLit ((u32 *)IMG(0x9f6318))   /* u32[4]; the skirmish screen's colour */
+#define g_skirmishColourDim ((u32 *)IMG(0x9f62e8))   /* u32[4]; the skirmish screen's colour */
 #define g_keptChat ((char *)IMG(0x9f63e4))   /* char[1024]; the chat line kept (copied whole from g_chatLine */
 #define g_netSendPacket ((NetPacketMessage *)IMG(0x9f9428))   /* NetPacketMessage[1]; the packet message being sent (cleared as 0x103 words): kind (g_netPacketMessageKind) */
 #define g_campaign ((u8 *)IMG(0x9f1718))   /* u8[940]; the pilot's save record (0x3ac bytes */
@@ -236,9 +236,9 @@
 #define g_roomSettingsRects ((int *)IMG(0x9dd6f8))   /* int[56]; roomSettings_hitTest's 14 hit rectangles (hit_tests.c) */
 #define g_roomLoginRects ((int *)IMG(0x9dd7e0))   /* int[20]; roomLogin_hitTest's 5 hit rectangles (hit_tests.c) */
 #define g_replaySelectRects ((int *)IMG(0x9dd950))   /* int[72]; replaySelect_hitTest's 18 hit rectangles (hit_tests.c) */
-#define g_skirmishListRects ((int *)IMG(0x9ef220))   /* int[40]; skirmishList_hitTest's 10 hit rectangles (hit_tests.c) */
+#define g_missionListRects ((int *)IMG(0x9ef220))   /* int[40]; missionList_hitTest's 10 hit rectangles (hit_tests.c) */
 #define g_briefingRects ((int *)IMG(0x9f16c0))   /* int[16]; briefing_hitTest's 4 hit rectangles (hit_tests.c) */
-#define g_missionselRects ((int *)IMG(0x9f6330))   /* int[16]; missionsel_hitTest's 4 hit rectangles (hit_tests.c) */
+#define g_skirmishRects ((int *)IMG(0x9f6330))   /* int[16]; skirmish_hitTest's 4 hit rectangles (hit_tests.c) */
 #define g_deleteDialogRects ((int *)IMG(0x9f6808))   /* int[8]; deleteDialog_hitTest's 2 hit rectangles (hit_tests.c) */
 #define g_profilePageRects ((int *)IMG(0x9f8c60))   /* int[36]; profilePage_hitTest's 9 hit rectangles (hit_tests.c) */
 #define g_profileListRects ((int *)IMG(0x9f8d78))   /* int[52]; profileList_hitTest's 13 hit rectangles (hit_tests.c) */
@@ -252,8 +252,8 @@
 #define g_roomMessageRect ((int *)IMG(0x9dced8))   /* int[4]; the game room's message box window: left */
 #define g_setupColourLit ((u32 *)IMG(0x4de048))   /* u32[4]; setup's text colour */
 #define g_setupColourDim ((u32 *)IMG(0x4ddae0))   /* u32[4]; setup's text colour */
-#define g_skirmishColourLit ((u32 *)IMG(0x9ef208))   /* u32[4]; the skirmish screen's panel colour */
-#define g_skirmishColourDim ((u32 *)IMG(0x9eeac8))   /* u32[4]; the skirmish screen's colour */
+#define g_missionsColourLit ((u32 *)IMG(0x9ef208))   /* u32[4]; the mission list's panel colour */
+#define g_missionsColourDim ((u32 *)IMG(0x9eeac8))   /* u32[4]; the mission list's colour */
 #define g_textColours ((Colour *)IMG(0xa1f100))   /* Colour[16]; the 16 message colours (RGBA floats; colour_initTextColours fills them) */
 #define g_keyState ((u8 *)IMG(0x4d1e9c))   /* u8[256]; the keyboard's 256 key bytes (0x80: held; DirectInput's GetDeviceState) */
 #define g_dplaySlots ((int *)IMG(0xa0d7a4))   /* int[4]; four DirectPlay connection slots: 1 while open */

@@ -126,11 +126,11 @@ void (arena_camera)(void)
 	menu_camera(&arena);
 }
 
-/* ---- the skirmish and mission-select camera: to the first menu point and on to (0, -200, 1500), or home and
+/* ---- the mission list's and skirmish screen's camera: to the first menu point and on to (0, -200, 1500), or home and
    back to the main menu (state 300) ---- */
 typedef struct {
 	u32 mode, flag, minus1;
-	int mission;   /* the mission select: its state set before the rest */
+	int mission;   /* the skirmish screen: its state set before the rest */
 } MenuCam2;
 
 static const u32 point0[6] = { ADDR(g_camPoint0X), ADDR(g_camPoint0Y), ADDR(g_camPoint0Z), ADDR(g_camAim0X), ADDR(g_camAim0Y), ADDR(g_camAim0Z) };
@@ -292,17 +292,17 @@ void (armc_cameraStep)(void)
 		arena_startFromLauncher();
 }
 
-/* 0x444130: the skirmish screen's camera */
-void (skirmish_camera)(void)
+/* 0x444130: the mission list's camera (screen 900) */
+void (missions_camera)(void)
 {
-	static const MenuCam2 skirmish = { ADDR(g_skirmishState), ADDR(g_skirmishDrawBackground), ADDR(g_skirmishPage), 0 };
+	static const MenuCam2 skirmish = { ADDR(g_missionsState), ADDR(g_missionsDrawBackground), ADDR(g_missionsPage), 0 };
 	menu_camera2(&skirmish);
 }
 
-/* 0x447cb0: the mission select's camera */
-void (missionsel_camera)(void)
+/* 0x447cb0: the skirmish screen's camera (screen 500) */
+void (skirmish_camera)(void)
 {
-	static const MenuCam2 mission = { ADDR(g_missionPage), ADDR(g_missionShowBackground), ADDR(g_missionBusy), 1 };
+	static const MenuCam2 mission = { ADDR(g_skirmishPage), ADDR(g_skirmishShowBackground), ADDR(g_skirmishBusy), 1 };
 	menu_camera2(&mission);
 }
 

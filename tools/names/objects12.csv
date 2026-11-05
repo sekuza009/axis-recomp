@@ -6,8 +6,8 @@
 0x9dd930,float,3,g_roomEyeKept,the room camera's position kept for the slide (g_roomSlideFarX .. Z; menu_tunnel's EYE_KEPT)
 0x9dda70,u32,4,g_replaySelectDim,the map list's colour, not chosen (RGBA: g_replaySelectDimR ..)
 0x9eea98,u32,4,g_replaySelectLit,the map list's colour, chosen (RGBA: g_replaySelectLitR ..)
-0x9f6308,int,4,g_missionSelectRect,the mission select dialog's window: left (g_missionSelectLeft), top, right, bottom (game.h's g_missionBox)
-0x9f6318,u32,4,g_missionColourLit,the mission list's colour, chosen (RGBA)
-0x9f62e8,u32,4,g_missionColourDim,the mission list's colour, not chosen (RGBA)
+0x9f6308,int,4,g_skirmishRect,the mission select dialog's window: left (g_skirmishRectLeft), top, right, bottom (game.h's g_skirmishBox)
+0x9f6318,u32,4,g_skirmishColourLit,the mission list's colour, chosen (RGBA)
+0x9f62e8,u32,4,g_skirmishColourDim,the mission list's colour, not chosen (RGBA)
 0x9f63e4,char,1024,g_keptChat,the chat line kept (copied whole from g_chatLine, 0x400 bytes; g_keptChatLine its start)
 0x9f9428,u32,259,g_netSendPacket,the message being sent (cleared as 0x103 words): kind (g_netPacketMessageKind), +4 the slot, +5 the size, +9 the packet

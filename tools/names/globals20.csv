@@ -31,8 +31,8 @@
 0x9dd914,int,g_replaySelectBottom
 0x9f16b0,int,g_briefingRight
 0x9f16b4,int,g_briefingBottom
-0x9f6308,int,g_missionSelectLeft
-0x9f630c,int,g_missionSelectTop
+0x9f6308,int,g_skirmishRectLeft
+0x9f630c,int,g_skirmishRectTop
 0x9f8c54,int,g_pilotSelectLeft
 0x9f8c50,int,g_pilotSelectTop
 0x9f6830,int,g_pilotSelectRight

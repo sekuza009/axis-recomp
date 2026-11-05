@@ -124,7 +124,7 @@ void THISCALL (hud_drawEscMenu)(Scene *scene)
 		break;
 	case 3:
 		esc_title(scene, 0.5f, alpha, 0xc8,
-		          scene->stageCleared == 0 && g_missionStage == g_missionProgress ? "MISSION FAILED, RETRY" : "RETRY");
+		          scene->stageCleared == 0 && g_mapIndex == g_missionProgress ? "MISSION FAILED, RETRY" : "RETRY");
 		esc_yesNo(scene, alpha);
 		break;
 	case 4:

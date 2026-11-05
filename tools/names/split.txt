@@ -158,8 +158,8 @@ g_menuCamZ
 g_menuFrameCount
 g_menuTunnelTexture
 g_messageBoxArgs
-g_missionPreviewDue
-g_missionShown
+g_skirmishPreviewDue
+g_skirmishShown
 g_musicVolumeSetting
 g_netBlockSize
 g_netChatMessageKind
@@ -324,10 +324,10 @@ g_roomSearching
 g_roomState
 g_screenCentreX
 g_serverSearching
-g_skirmishPage
-g_skirmishState
+g_missionsPage
+g_missionsState
 g_setupPanelMoving
-g_skirmishDrawBackground
+g_missionsDrawBackground
 g_ladderLevel
 g_ladderDeaths
 g_ladderExp
@@ -548,9 +548,9 @@ g_roomLookKept
 g_roomEyeKept
 g_replaySelectDim
 g_replaySelectLit
-g_missionSelectRect
-g_missionColourLit
-g_missionColourDim
+g_skirmishRect
+g_skirmishColourLit
+g_skirmishColourDim
 g_keptChat
 g_netSendPacket
 # freed by the room / profile / mission records and single-value uses (an FPU operand, a 4-byte file read / write), 2026-11-01
@@ -585,7 +585,7 @@ g_matchMode
 g_menuFrameCounter
 g_menuHintStep
 g_menuTunnelSpeed
-g_missionChosen
+g_skirmishChosen
 g_netRole
 g_newNameDialogBottom
 g_newNameDialogRight
@@ -735,9 +735,9 @@ g_rankingRects
 g_roomSettingsRects
 g_roomLoginRects
 g_replaySelectRects
-g_skirmishListRects
+g_missionListRects
 g_briefingRects
-g_missionselRects
+g_skirmishRects
 g_deleteDialogRects
 g_profilePageRects
 g_profileListRects
@@ -858,7 +858,7 @@ g_mapListKept
 g_mapTop
 g_menuKeyGuard
 g_menuVolume
-g_missionBriefing
+g_skirmishBriefing
 g_modeChanged
 g_mouseActive
 g_mouseTaken
@@ -893,7 +893,7 @@ g_menuCameraMove
 g_lastScreen
 g_lobbySubState
 g_localPlayer
-g_missionStage
+g_mapIndex
 g_missionTop
 g_nextScreen
 g_textFieldOpen
@@ -921,8 +921,8 @@ g_lobbyTopRect
 g_roomMessageRect
 g_setupColourLit
 g_setupColourDim
-g_skirmishColourLit
-g_skirmishColourDim
+g_missionsColourLit
+g_missionsColourDim
 # the screen windows' remaining edges and two values (globals22.csv), 2026-11-01
 g_logOutDialogBottom
 g_logOutDialogRight
@@ -935,7 +935,7 @@ g_profileDialogY
 g_profileIntro
 g_roomLoginRight
 g_roomPanelEase
-g_skirmishRow
+g_missionRow
 # freed by reviewing the numpad key tables, ARM CENTER extra_len, the mission MenuCam2, 2026-11-01
 g_dikNumLock
 g_dikNumpad0
@@ -949,9 +949,9 @@ g_dikNumpad7
 g_dikNumpad8
 g_dikNumpad9
 g_extraCount
-g_missionBusy
-g_missionPage
-g_missionShowBackground
+g_skirmishBusy
+g_skirmishPage
+g_skirmishShowBackground
 g_weaponCount
 # the text colours (objects24.csv), whole
 g_textColours

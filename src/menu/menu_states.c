@@ -1,9 +1,9 @@
 /* menu_states.c: small pieces of the front end's screens: the main menu's frame, the 3D background behind the
-   menus, the skirmish and mission screens' page dispatch, and the mission select keys. */
+   menus, the mission list's and skirmish screen's page dispatch, and the skirmish screen's keys. */
 #include "../game.h"
 #include "key_repeat.h"
 
-#define g_missionState g_missionPage   /* (by use) the mission select: 0 and 1 not up */
+#define g_skirmishState g_skirmishPage   /* (by use) the skirmish screen: 0 and 1 not up */
 
 /* ---- the start-up screen: the logo (texture g_logoTexture, on a quad 320 x 256 at (160, 60)) over the clear colour
    g_clearColour, blended ---- */
@@ -226,91 +226,91 @@ void (menuState300_frame)(void)
 	}
 }
 
-/* 0x443ef0: the skirmish screen's clicks (none while a dialog is up): page 10 the mission list (skirmish_listClicks), 20 the
-   briefing (skirmish_briefingClicks) */
-void (skirmish_pageClicks)(void)
+/* 0x443ef0: the mission list's clicks (screen 900; none while a dialog is up): page 10 the list (missions_listClicks), 20 the
+   briefing (missions_briefingClicks) */
+void (missions_pageClicks)(void)
 {
 	if (g_dialogOpen != 0)
 		return;
-	if (g_skirmishPage == 10)
-		skirmish_listClicks();
-	else if (g_skirmishPage == 20)
-		skirmish_briefingClicks();
+	if (g_missionsPage == 10)
+		missions_listClicks();
+	else if (g_missionsPage == 20)
+		missions_briefingClicks();
 }
 
-/* 0x4440f0: the skirmish screen's keys, by page (10 the list, 20 the briefing) */
-void (skirmish_pageKeys)(void)
+/* 0x4440f0: the mission list's keys (screen 900), by page (10 the list, 20 the briefing) */
+void (missions_pageKeys)(void)
 {
-	if (g_skirmishState == 1 || g_skirmishState == 0 || g_dialogOpen != 0)
+	if (g_missionsState == 1 || g_missionsState == 0 || g_dialogOpen != 0)
 		return;
-	if (g_skirmishPage == 10)
-		skirmish_listKeys();
-	else if (g_skirmishPage == 20)
-		skirmish_briefingKeys();
+	if (g_missionsPage == 10)
+		missions_listKeys();
+	else if (g_missionsPage == 20)
+		missions_briefingKeys();
 }
 
 /* 0x4479b0: mission chosen (sound 2) */
-void (mission_chosen)(int mission)
+void (skirmish_roundChosen)(int mission)
 {
-	g_missionChosen = mission;
-	g_missionPreviewDue = 1;
+	g_skirmishChosen = mission;
+	g_skirmishPreviewDue = 1;
 	sound_playMenu(2);
 }
 
-/* 0x447b10: the mission select's clicks (none while a dialog is up or it is busy): the briefing's close, else the list's (missionsel_clicks) */
-void (missionSelect_clicks)(void)
+/* 0x447b10: the skirmish screen's clicks (none while a dialog is up or it is busy): the briefing's close, else the list's (skirmish_clicks) */
+void (skirmish_screenClicks)(void)
 {
-	if (g_dialogOpen != 0 || g_missionBusy != 0)
+	if (g_dialogOpen != 0 || g_skirmishBusy != 0)
 		return;
-	if (g_missionBriefing != 0)
+	if (g_skirmishBriefing != 0)
 		briefing_clickClose();
 	else
-		missionsel_clicks();
+		skirmish_clicks();
 }
 
 /* 0x447c30: the briefing's keys: Esc or Enter closes it */
 void (briefing_keys)(void)
 {
 	if (input_justPressed(g_keyCancel2) == 1 || input_justPressed(g_keyClick) == 1)
-		g_missionBriefing = 0;
+		g_skirmishBriefing = 0;
 }
 
 /* 0x447b40: the list's keys: Esc or back leaves, O starts the mission, left / right step through the missions
    unlocked so far (g_progress), and Left Ctrl + Right Alt + Page Up unlocks them all */
-void (missionList_keys)(void)
+void (skirmish_roundKeys)(void)
 {
 	if (input_justPressed(g_keyCancel2) == 1) {
-		missionSettings_leave();
+		skirmish_leave();
 		return;
 	}
 	if (input_justPressed(g_keyOk) == 1) {
-		mission_choose();
+		skirmish_startRound();
 		return;
 	}
 	if (input_justPressed(g_keyBack) == 1) {
-		missionSettings_leave();
+		skirmish_leave();
 		return;
 	}
-	if (input_justPressed(g_keyLeft) == 1 && g_missionShown > 0)
-		mission_chosen(--g_missionShown);
-	if (input_justPressed(g_keyRight) == 1 && g_missionShown < g_progress) {
-		if (g_missionShown >= 14)
+	if (input_justPressed(g_keyLeft) == 1 && g_skirmishShown > 0)
+		skirmish_roundChosen(--g_skirmishShown);
+	if (input_justPressed(g_keyRight) == 1 && g_skirmishShown < g_progress) {
+		if (g_skirmishShown >= 14)
 			return;
-		mission_chosen(++g_missionShown);
+		skirmish_roundChosen(++g_skirmishShown);
 	}
 	if (input_isDown(g_keyLeftCtrl) && input_isDown(g_dikRAlt) && input_justPressed(g_dikPageUp))
 		g_progress = 16;
 }
 
-/* 0x447c70: the mission select's keys (not while a dialog is up) */
-void (missionsel_keys)(void)
+/* 0x447c70: the skirmish screen's keys (not while a dialog is up) */
+void (skirmish_keys)(void)
 {
-	if (g_missionState == 1 || g_missionState == 0 || g_dialogOpen != 0 || g_missionBusy != 0)
+	if (g_skirmishState == 1 || g_skirmishState == 0 || g_dialogOpen != 0 || g_skirmishBusy != 0)
 		return;
-	if (g_missionBriefing != 0)
+	if (g_skirmishBriefing != 0)
 		briefing_keys();
 	else
-		missionList_keys();
+		skirmish_roundKeys();
 }
 
 /* 0x41edc0 (menu_returnToMain): back to the main menu: the background tunnel freed ring by ring (last first), the menus
@@ -580,8 +580,8 @@ static u32 reset_menus(u32 farZ, u32 nearZ, int blocked, int entering, int clear
 #define FAR_BACK 0xc3e10000u    /* -450 */
 #define NEAR_BACK 0xc4098000u   /* -550 */
 
-/* 0x41ec50: to the mission select (screen 500) */
-u32 (game_returnToMissions)(void)
+/* 0x41ec50: back to the skirmish screen (screen 500) */
+u32 (game_returnToSkirmish)(void)
 {
 	leave_game(0, 1);
 	g_menuState = 500;
@@ -745,7 +745,7 @@ u32 (game_postMatch)(void)
 		}
 		reg_writeEndMode(mission < 15 ? 0 : 1);
 		profile_saveProgress();
-		game_returnToMissions();         /* game_returnToMissions */
+		game_returnToSkirmish();         /* game_returnToSkirmish */
 		break;
 	default:
 		game_returnToMainMenu();

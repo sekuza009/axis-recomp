@@ -84,7 +84,7 @@
 0x9ef2cc,int,g_misHeader3
 0x9dd944,int,g_unusedReplayListWord1
 0x9eea88,int,g_unusedReplayListWord2
-0x9eeba8,int,g_skirmishDrawBackground
+0x9eeba8,int,g_missionsDrawBackground
 0x4deda8,u32,g_menuTunnelSpeed
 0x9dd1b0,int,g_unusedRoomWord
 0x9f6800,int,g_unusedProfileCameraWord

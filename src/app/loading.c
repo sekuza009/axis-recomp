@@ -112,7 +112,7 @@ void (loading_draw)(u32 progress)
 	if (((Scene *)g_loadGame)->awaitingHostRound == 1)
 		sprintf(line, (const char *)STR(0x4c531c, "ZONE: ON RECEIVING"));
 	else
-		sprintf(line, (const char *)STR(0x4c5310, "ZONE: %s"), (const char *)(OBJ(g_mapNames) + g_missionStage * 32));
+		sprintf(line, (const char *)STR(0x4c5310, "ZONE: %s"), (const char *)(OBJ(g_mapNames) + g_mapIndex * 32));
 	info_line(row, line);
 	row += 2;
 	if (((Scene *)g_loadGame)->awaitingHostRound == 1)
@@ -347,7 +347,7 @@ static char *bfd_name(u8 *g, char *out)
 
 /* 0x468750 (thiscall on the game object): one step of loading per call. The first (stateFrames 0) resets the
    loading lines to the title. By the stage (loadStage): 0 the replay file's header (mode 3: version 0x1201, the
-   map, the players' names, the type), the scene reset; 1 the map named (g_missionStage into g_mapNames: none ends it, g_mapMissing
+   map, the players' names, the type), the scene reset; 1 the map named (g_mapIndex into g_mapNames: none ends it, g_mapMissing
    set); 2 waiting for the stage's play information (the network drained into net_processGamePacket; a timeout
    lostTime against K k_5f, too many players or the game menu keys (g_keyGameMenu) stop it); 3 the ground; 4 the
    objects; 5 the collision volume; 6 the crosshair and the play information; 7 the mission and (mode 0) the actors; 8
@@ -379,7 +379,7 @@ u32 THISCALL (game_processLoadingMode)(u8 *g)
 			if (GS->replayVersion != 0x1201)
 				sys_fatalError((char *)OBJ(g_logConsole), (const char *)STR(0x4c5234, "incorrect file version, remove the fi..."), (int)path);
 			fread_scrambled((void *)ADDR(g_matchMode), 4, 1, GS->replayFile);
-			fread_scrambled((void *)ADDR(g_missionStage), 4, 1, GS->replayFile);
+			fread_scrambled((void *)ADDR(g_mapIndex), 4, 1, GS->replayFile);
 			fread_scrambled((void *)OBJ(g_mapTitle), 1, 0x20, GS->replayFile);
 			fread_scrambled((void *)ADDR(g_mapRotation), 4, 1, GS->replayFile);
 			fread_scrambled((void *)ADDR(g_chosenGameMode), 4, 1, GS->replayFile);
@@ -402,7 +402,7 @@ u32 THISCALL (game_processLoadingMode)(u8 *g)
 	case 1: {
 		log_message((int)STAGE(g), 1, 0, (const char *)STR(0x4c51f4, ".load auto-play file"));
 		g_mapMissing = 0;
-		const char *map = g_mapNames + g_missionStage * 0x20;
+		const char *map = g_mapNames + g_mapIndex * 0x20;
 		if (!map[0]) {
 			g_mapMissing = 1;
 			return 0;
@@ -420,7 +420,7 @@ u32 THISCALL (game_processLoadingMode)(u8 *g)
 		log_message((int)STAGE(g), 1, 0, (const char *)STR(0x4c51c0, ".receiving stage play information"));
 		keep_alive(g);
 		if (GS->awaitingHostRound == 0) {
-			scene_setTextureFolder((Scene *)g, g_mapNames + g_missionStage * 0x20);
+			scene_setTextureFolder((Scene *)g, g_mapNames + g_mapIndex * 0x20);
 			mode = GS->sessionMode;
 			if (mode == 0 || mode == 1 || mode == 3)
 				next_stage(g, 3, STR(0x4c51b0, ".LOAD GROUND"));   /* .LOAD GROUND */
@@ -457,7 +457,7 @@ u32 THISCALL (game_processLoadingMode)(u8 *g)
 		keep_alive(g);
 		if (!map_loadGroundInfoFrom(STAGE(g), bfd_name(g, path)))
 			sys_fatalErrorN((char *)OBJ(g_logConsole), (const char *)STR(0x4c4598, "file damaged!"));
-		if (g_missionStage != GS->missionNumber)
+		if (g_mapIndex != GS->missionNumber)
 			sys_fatalErrorN((char *)OBJ(g_logConsole), (const char *)STR(0x4c4598, "file damaged!"));
 		mode = GS->sessionMode;
 		if (mode == 0 || mode == 1 || mode == 3)

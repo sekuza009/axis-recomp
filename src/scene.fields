@@ -533,7 +533,7 @@ struct PartInfo 0x80                                            # an ARM CENTER 
 0x78       4          float targetingTime                       # x 1000: "ms" (TARGETING TIME)
 0x7c       4          float weight
 
-struct Mission 0xfc                                              # one of the 30 missions of axis.mis (g_missions: mission_loadAxisMis; the skirmish list)
+struct Mission 0xfc                                              # one of the 30 missions of axis.mis (g_missions: mission_loadAxisMis; screen 900's list, which nothing in the menus opens)
 0          4          i32 id                                     # (the file's first word)
 4          0x40       char name[64]                              # the list's first column
 0x44       0x20       char title[32]                             # its second
@@ -1609,7 +1609,7 @@ struct Scene 0x2343b0b                                          # the scene: the
 0x2340d29  4          float recordTime                           # seconds recorded
 0x2340d35  4          i32 chatMode                               # 0 closed, 1 / 2 typing (team / all)
 0x2342399  4          i32 matchOver                              # (by use; seen running) 1: the result is shown
-0x23423a9  4          i32 stageCleared                          # 1: the local player (or team) reached the score limit on the campaign's current stage (g_missionStage == g_progress): the progress moves on; 0: MISSION FAILED, RETRY
+0x23423a9  4          i32 stageCleared                          # 1: the local player (or team) reached the score limit on the campaign's current stage (g_mapIndex == g_progress): the progress moves on; 0: MISSION FAILED, RETRY
 0x2342381  0x14       i32 teamIds[5]                             # the teams by slot (free: < 0; match/teams.c)
 0x23423ad  4          i32 scoreLimit                             # > 0: the points still needed are shown
 0x23423b1  4          i32 timeLimit                              # minutes; > 0: the time left is shown

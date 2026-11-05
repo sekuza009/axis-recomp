@@ -32,8 +32,8 @@
 0x9f16a8,int,g_briefingX,src/menu/skirmish.c,g_briefingX
 0x9f16ac,int,g_briefingY,src/menu/skirmish.c,g_briefingY
 0x9f16b8,float,g_briefingClock,src/menu/skirmish.c,g_briefingClock
-0x9f63b4,int,g_mission,src/menu/menu_states.c,g_missionShown
-0x9f63b4,int,g_mission,src/menu/mission_screens.c,g_missionShown
+0x9f63b4,int,g_mission,src/menu/menu_states.c,g_skirmishShown
+0x9f63b4,int,g_mission,src/menu/mission_screens.c,g_skirmishShown
 0x9f8f08,float,g_frameAlpha,src/menu/profile_dialogs.c,g_profileFrameAlpha
 0xa0b388,int,g_netOnline,src/net/net_packets.c,g_netQueueOnline
 0xa61708,const u8 *,g_bitStream,src/app/ptx_decode.c,g_bitStream

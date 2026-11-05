@@ -3,5 +3,5 @@
 0x9dced8,int,4,g_roomMessageRect,the game room's message box window: left, top, right, bottom (room_dialogs' X0 .. Y1, room_clicks' box)
 0x4de048,u32,4,g_setupColourLit,setup's text colour, lit (RGBA: 0, 1, 1, 1)
 0x4ddae0,u32,4,g_setupColourDim,setup's text colour, not lit (RGBA: 0, 0.6, 0.6, 1)
-0x9ef208,u32,4,g_skirmishColourLit,the skirmish settings' panel colour, lit (RGBA; skirmish.c's g_panelColour)
-0x9eeac8,u32,4,g_skirmishColourDim,the skirmish settings' colour, not lit (RGBA; skirmish.c's g_dimColour)
+0x9ef208,u32,4,g_missionsColourLit,the skirmish settings' panel colour, lit (RGBA; skirmish.c's g_panelColour)
+0x9eeac8,u32,4,g_missionsColourDim,the skirmish settings' colour, not lit (RGBA; skirmish.c's g_dimColour)

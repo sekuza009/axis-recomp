@@ -84,6 +84,6 @@
 0x4b2a74,int,g_tunnelStep
 0x4b2a78,float,g_tunnelStepF
 0x9f62fc,int,g_profileProgressSaved
-0x9f6328,int,g_missionChosen
+0x9f6328,int,g_skirmishChosen
 0x90d1d8,int,g_skirmishInfoCount
 0x9dd4bc,int,g_gameListJoinClicked

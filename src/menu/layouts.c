@@ -111,11 +111,11 @@ void (roomLogin_layout)(void)
 	rect_spec(OBJ(g_roomLoginRects), (OBJ(g_roomLoginRects) + 0x20), 0x30, a); rect_spec((OBJ(g_roomLoginRects) + 0x20), (OBJ(g_roomLoginRects) + 0x20) + 3 * 16, 0xa0, b);
 }
 
-void (skirmishList_layout)(void)
+void (missionList_layout)(void)
 {
 	static const RArg a[4] = { RA(ADDR(g_briefingX), 0x10, 0), RA(ADDR(g_briefingY), 0x44, 1), RA(ADDR(g_briefingX), 0x25d, 0), RA(ADDR(g_briefingY), 0x5c, 1) };
 	static const RArg b[4] = { RA(ADDR(g_briefingRight), -0x12c, 1), RA(ADDR(g_briefingBottom), -0x40, 0), RA(ADDR(g_briefingRight), -0xb4, 1), RA(ADDR(g_briefingBottom), -0x20, 0) };
-	rect_spec(OBJ(g_skirmishListRects), (OBJ(g_skirmishListRects) + 0x80), 0x1a, a); rect_spec((OBJ(g_skirmishListRects) + 0x80), (OBJ(g_skirmishListRects) + 0x80) + 2 * 16, 0x8c, b);
+	rect_spec(OBJ(g_missionListRects), (OBJ(g_missionListRects) + 0x80), 0x1a, a); rect_spec((OBJ(g_missionListRects) + 0x80), (OBJ(g_missionListRects) + 0x80) + 2 * 16, 0x8c, b);
 }
 
 void (account_layout)(void)
@@ -132,12 +132,12 @@ void (briefing_layout)(void)
 	rect_spec(OBJ(g_briefingRects), (OBJ(g_briefingRects) + 0x20), 0x8c, a); rect_spec((OBJ(g_briefingRects) + 0x20), OBJ(g_briefingRects) + 4 * 16, 0x8c, b);
 }
 
-void (missionsel_layout)(void)
+void (skirmish_layout)(void)
 {
-	static const RArg a[4] = { RA(ADDR(g_missionSelectLeft), 0x96, 1), RA((OBJ(g_missionSelectRect) + 0xc), -0x30, 0), RA(ADDR(g_missionSelectLeft), 0x10e, 1), RA((OBJ(g_missionSelectRect) + 0xc), -0x10, 0) };
-	rect_spec(OBJ(g_missionselRects), (OBJ(g_missionselRects) + 0x20), 0x8c, a);
-	set4ints(g_missionSelectLeft + 0x98, g_missionSelectTop + 0x4c, g_missionSelectLeft + 0xd0, g_missionSelectTop + 0x74, (int *)(OBJ(g_missionselRects) + 0x20));
-	set4ints(g_missionSelectLeft + 0x160, g_missionSelectTop + 0x4c, g_missionSelectLeft + 0x198, g_missionSelectTop + 0x74, (int *)(OBJ(g_missionselRects) + 0x30));
+	static const RArg a[4] = { RA(ADDR(g_skirmishRectLeft), 0x96, 1), RA((OBJ(g_skirmishRect) + 0xc), -0x30, 0), RA(ADDR(g_skirmishRectLeft), 0x10e, 1), RA((OBJ(g_skirmishRect) + 0xc), -0x10, 0) };
+	rect_spec(OBJ(g_skirmishRects), (OBJ(g_skirmishRects) + 0x20), 0x8c, a);
+	set4ints(g_skirmishRectLeft + 0x98, g_skirmishRectTop + 0x4c, g_skirmishRectLeft + 0xd0, g_skirmishRectTop + 0x74, (int *)(OBJ(g_skirmishRects) + 0x20));
+	set4ints(g_skirmishRectLeft + 0x160, g_skirmishRectTop + 0x4c, g_skirmishRectLeft + 0x198, g_skirmishRectTop + 0x74, (int *)(OBJ(g_skirmishRects) + 0x30));
 }
 
 void (pilotSelect_layout)(void)        /* 3 x 3 grid, then a row of two */

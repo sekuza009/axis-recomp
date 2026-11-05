@@ -1426,6 +1426,8 @@ extern struct GameData g_data;
 #define g_mapEntry23On (*(int *)((u8 *)g_mapChoiceKeptTable_v + 0xb8))
 #undef g_mapEntry24On
 #define g_mapEntry24On (*(int *)((u8 *)g_mapChoiceKeptTable_v + 0xc0))
+#undef g_mapIndex
+#define g_mapIndex (*(int *)g_mapIndex_v)
 #undef g_mapInfoDir
 #define g_mapInfoDir ((char *)g_mapInfoDir_v)
 #undef g_mapListKept
@@ -1602,46 +1604,32 @@ extern struct GameData g_data;
 #define g_misHeader2 (*(int *)((u8 *)g_missionHeader_v + 0x8))
 #undef g_misHeader3
 #define g_misHeader3 (*(int *)((u8 *)g_missionHeader_v + 0xc))
-#undef g_missionBriefing
-#define g_missionBriefing (*(int *)g_missionBriefing_v)
-#undef g_missionBusy
-#define g_missionBusy (*(int *)g_missionBusy_v)
-#undef g_missionChosen
-#define g_missionChosen (*(int *)g_missionChosen_v)
 #undef g_missionClearBuffer
 #define g_missionClearBuffer ((u8 *)g_missionClearBuffer_v)
-#undef g_missionColourDim
-#define g_missionColourDim ((u32 *)g_missionColourDim_v)
-#undef g_missionColourLit
-#define g_missionColourLit ((u32 *)g_missionColourLit_v)
 #undef g_missionCount
 #define g_missionCount (*(int *)((u8 *)g_missionHeader_v + 0x0))
 #undef g_missionHeader
 #define g_missionHeader ((u32 *)g_missionHeader_v)
-#undef g_missionPage
-#define g_missionPage (*(int *)g_missionPage_v)
+#undef g_missionListRects
+#define g_missionListRects ((int *)g_missionListRects_v)
 #undef g_missionPicked
 #define g_missionPicked (*(int *)g_missionPicked_v)
-#undef g_missionPreviewDue
-#define g_missionPreviewDue (*(int *)g_missionPreviewDue_v)
-#undef g_missionSelectLeft
-#define g_missionSelectLeft (*(int *)((u8 *)g_missionSelectRect_v + 0x0))
-#undef g_missionSelectRect
-#define g_missionSelectRect ((int *)g_missionSelectRect_v)
-#undef g_missionSelectTop
-#define g_missionSelectTop (*(int *)((u8 *)g_missionSelectRect_v + 0x4))
-#undef g_missionShowBackground
-#define g_missionShowBackground (*(int *)g_missionShowBackground_v)
-#undef g_missionShown
-#define g_missionShown (*(int *)g_missionShown_v)
-#undef g_missionStage
-#define g_missionStage (*(int *)g_missionStage_v)
+#undef g_missionRow
+#define g_missionRow (*(int *)g_missionRow_v)
 #undef g_missionTop
 #define g_missionTop (*(int *)g_missionTop_v)
 #undef g_missions
 #define g_missions ((Mission *)g_missions_v)
-#undef g_missionselRects
-#define g_missionselRects ((int *)g_missionselRects_v)
+#undef g_missionsColourDim
+#define g_missionsColourDim ((u32 *)g_missionsColourDim_v)
+#undef g_missionsColourLit
+#define g_missionsColourLit ((u32 *)g_missionsColourLit_v)
+#undef g_missionsDrawBackground
+#define g_missionsDrawBackground (*(int *)g_missionsDrawBackground_v)
+#undef g_missionsPage
+#define g_missionsPage (*(int *)g_missionsPage_v)
+#undef g_missionsState
+#define g_missionsState (*(int *)g_missionsState_v)
 #undef g_modeChanged
 #define g_modeChanged (*(int *)g_modeChanged_v)
 #undef g_modemProviderGuid
@@ -2534,24 +2522,36 @@ extern struct GameData g_data;
 #define g_sinTable ((float *)g_sinTable_v)
 #undef g_skelDat
 #define g_skelDat ((u32 *)g_skelDat_v)
+#undef g_skirmishBriefing
+#define g_skirmishBriefing (*(int *)g_skirmishBriefing_v)
+#undef g_skirmishBusy
+#define g_skirmishBusy (*(int *)g_skirmishBusy_v)
+#undef g_skirmishChosen
+#define g_skirmishChosen (*(int *)g_skirmishChosen_v)
 #undef g_skirmishColourDim
 #define g_skirmishColourDim ((u32 *)g_skirmishColourDim_v)
 #undef g_skirmishColourLit
 #define g_skirmishColourLit ((u32 *)g_skirmishColourLit_v)
-#undef g_skirmishDrawBackground
-#define g_skirmishDrawBackground (*(int *)g_skirmishDrawBackground_v)
 #undef g_skirmishInfo
 #define g_skirmishInfo ((u8 *)g_skirmishInfo_v)
 #undef g_skirmishInfoCount
 #define g_skirmishInfoCount (*(int *)g_skirmishInfoCount_v)
-#undef g_skirmishListRects
-#define g_skirmishListRects ((int *)g_skirmishListRects_v)
 #undef g_skirmishPage
 #define g_skirmishPage (*(int *)g_skirmishPage_v)
-#undef g_skirmishRow
-#define g_skirmishRow (*(int *)g_skirmishRow_v)
-#undef g_skirmishState
-#define g_skirmishState (*(int *)g_skirmishState_v)
+#undef g_skirmishPreviewDue
+#define g_skirmishPreviewDue (*(int *)g_skirmishPreviewDue_v)
+#undef g_skirmishRect
+#define g_skirmishRect ((int *)g_skirmishRect_v)
+#undef g_skirmishRectLeft
+#define g_skirmishRectLeft (*(int *)((u8 *)g_skirmishRect_v + 0x0))
+#undef g_skirmishRectTop
+#define g_skirmishRectTop (*(int *)((u8 *)g_skirmishRect_v + 0x4))
+#undef g_skirmishRects
+#define g_skirmishRects ((int *)g_skirmishRects_v)
+#undef g_skirmishShowBackground
+#define g_skirmishShowBackground (*(int *)g_skirmishShowBackground_v)
+#undef g_skirmishShown
+#define g_skirmishShown (*(int *)g_skirmishShown_v)
 #undef g_slotCams
 #define g_slotCams ((float *)g_slotCams_v)
 #undef g_slotTakenFlag
