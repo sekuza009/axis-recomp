@@ -589,7 +589,7 @@ u32 THISCALL (match_freeCamFrame)(u8 *s)
 			}
 	stage_drawActors((Stage *)stage, SC->view, -1);
 	stage_drawBullets(stage, SC->view);
-	stage_drawProjectiles((Stage *)stage, SC->view);
+	stage_drawParticles((Stage *)stage, SC->view);
 	render_drawObjects(SC->view, SC->renderMode, 0.0f);
 	gfx_setProjectionHud(0, 1.0f);
 	return SC->quitAsked == 1 ? 0 : 3;
@@ -1203,7 +1203,7 @@ u32 THISCALL (replay_frame)(u8 *s)
 	stage_drawObjects((Stage *)stage, view);
 	stage_drawActors((Stage *)stage, view, -1);
 	stage_drawBullets(stage, view);
-	stage_drawProjectiles((Stage *)stage, view);
+	stage_drawParticles((Stage *)stage, view);
 	stage_drawItems(stage, view);
 	if (SC->debugPoints == 1)
 		for (int i = 0; i < SCENE_STAGE(s)->mapLights.count; i++) {   /* (the map's lights: each a yellow star at its position) */

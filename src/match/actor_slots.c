@@ -1,5 +1,5 @@
 /* actor_slots.c: the stage's actor slots: selecting one, the camera's target, an actor's input record, and the
-   stage's pools of map objects, projectiles and bullets emptied. */
+   stage's pools of map objects, particles and bullets emptied. */
 #include "../game.h"
 #include <string.h>
 #define STS ((Stage *)scene)   /* the stage (named scene in these functions) by its fields */
@@ -54,31 +54,31 @@ void THISCALL (stage_clearMapObjects)(Stage *stage)
 		stage->objects[i].active = 0;
 }
 
-/* 0x479a60: the 1000 projectiles */
-void THISCALL (stage_clearProjectiles)(Stage *stage)
+/* 0x479a60: the 1000 particles */
+void THISCALL (stage_clearParticles)(Stage *stage)
 {
-	stage->projectileCount = 0;
-	stage->projectileFreeHint = 0;
-	stage->projectileSerial = 0;
+	stage->particleCount = 0;
+	stage->particleFreeHint = 0;
+	stage->particleSerial = 0;
 	for (int i = 0; i < 1000; i++)
-		stage->projectiles[i].active = 0;
+		stage->particles[i].active = 0;
 }
 
-/* 0x4799f0: projectile slot i freed: the first-free hint (+0x20f2da4) moved down to it, and when it was the last
-   in use the used range (projectileCount) shrinks past every free slot at its end */
-void THISCALL (stage_freeProjectile)(Stage *stage, int i)
+/* 0x4799f0: particle slot i freed: the first-free hint (+0x20f2da4) moved down to it, and when it was the last
+   in use the used range (particleCount) shrinks past every free slot at its end */
+void THISCALL (stage_freeParticle)(Stage *stage, int i)
 {
-	if (!stage->projectiles[i].active)
+	if (!stage->particles[i].active)
 		return;
-	stage->projectiles[i].active = 0;
-	if (i < stage->projectileFreeHint)
-		stage->projectileFreeHint = i;
-	if (i != stage->projectileCount - 1 || stage->projectileCount <= 0)
+	stage->particles[i].active = 0;
+	if (i < stage->particleFreeHint)
+		stage->particleFreeHint = i;
+	if (i != stage->particleCount - 1 || stage->particleCount <= 0)
 		return;
 	do {
-		if (stage->projectiles[stage->projectileCount - 1].active)
+		if (stage->particles[stage->particleCount - 1].active)
 			return;
-	} while (--stage->projectileCount > 0);
+	} while (--stage->particleCount > 0);
 }
 
 /* 0x47cfd0: the 400 bullets (0x4e8-byte records from 0x202ef34) */

@@ -605,7 +605,7 @@ void THISCALL net_announceTimeLimit(void *scene);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void THISCALL ViewVolume_clearDrawCounts(void *view);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-THISCALL void stage_clearProjectiles(char *self);
+THISCALL void stage_clearParticles(char *self);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 THISCALL void stage_clearBullets(char *self);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
@@ -864,7 +864,7 @@ THISCALL void player_setLevel(char *self, int p, int v);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 THISCALL void player_setTeam(void *self, int p, int team);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-THISCALL void stage_freeProjectile(char *self, int i);
+THISCALL void stage_freeParticle(char *self, int i);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 THISCALL void actor_pickRandomWeapon(void *self, int i);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
@@ -3496,17 +3496,17 @@ void THISCALL stage_remakePlayerActor(void *stage);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 THISCALL void actor_applySpawnRecord(char *sc, DWORD a, DWORD rec);
 /* batch 110 (lifted/grp56.c) */
-/* 0x476890 (thiscall on the scene) projectile_draw(i, vv): draw projectile i (0x12c-byte records at +0x20a99c0: frame,
+/* 0x476890 (thiscall on the scene) particle_draw(i, vv): draw particle i (0x12c-byte records at +0x20a99c0: frame,
    active, type, owner, position, ..., timer +0x6c / length +0x70): unless the type is 50 or more it must lie within
    the range +0xa08 of the camera; then by type (bullets, missiles, beams, explosions, shields, trails, ...) as
    billboards cut from the item atlas (textures +0x9ccfd4..; viewVolume_addBillboard / viewVolume_addQuad), transformed triangles
    (ViewVolume_addTriangle) or the effect shapes (+0x20f2e74..; ViewVolume_projectObject), sized and faded by
-   the timer, smaller for the viewing actor's own (+0x202e8d8). 0x479af0 stage_drawProjectiles(vv): every active projectile
+   the timer, smaller for the viewing actor's own (+0x202e8d8). 0x479af0 stage_drawParticles(vv): every active particle
    (count +0x20f2da0) */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-THISCALL void projectile_draw(char *sc, DWORD i, DWORD vv);
+THISCALL void particle_draw(char *sc, DWORD i, DWORD vv);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-void THISCALL stage_drawProjectiles(void *stage, void *view);
+void THISCALL stage_drawParticles(void *stage, void *view);
 /* batch 111 (lifted/grp57.c) */
 /* 0x48b9d0 (thiscall on the scene) map_loadGroundInfoFrom(name): the map's ground from "dir/name" (dir +0x108; no
    file or a version other than 0x1201 is fatal), all scrambled after the version: four blocks skipped, the map's
@@ -7150,7 +7150,7 @@ T0(net_announceServerEnd, 0x463670, fill(BUF + 0x2343100, 0x150);)
 T0(net_announceFragLimit, 0x463690, fill(BUF + 0x2343100, 0x150);)
 T0(net_announceTimeLimit, 0x4636b0, fill(BUF + 0x2343100, 0x150);)
 T0(ViewVolume_clearDrawCounts, 0x4841d0, fill(BUF + 0x90a0, 0x10);)
-T0(stage_clearProjectiles, 0x479a60, for (int i = 0; i < 1000; i++) S32(BUF, 0x20a99c4 + i * 0x12c) = irnd(-3, 3);
+T0(stage_clearParticles, 0x479a60, for (int i = 0; i < 1000; i++) S32(BUF, 0x20a99c4 + i * 0x12c) = irnd(-3, 3);
    fill(BUF + 0x20f2d9c, 0x10);)
 T0(stage_clearBullets, 0x47cfd0, for (int i = 0; i < 400; i++) S32(BUF, 0x202ef38 + i * 0x4e8) = irnd(-3, 3);
    fill(BUF + 0x20a99b0, 0x10);)
@@ -7407,7 +7407,7 @@ static void effects_setup(void)
 	g_a[0] = irnd(0, 3) ? n - 1 : irnd(0, 40);
 	if (g_a[0] < 0) g_a[0] = 0;
 }
-ST(stage_freeProjectile, effects_setup();, (TC(void, 0x4799f0, char *, int)(BUF, g_a[0]), 0), (stage_freeProjectile(BUF, g_a[0]), 0))
+ST(stage_freeParticle, effects_setup();, (TC(void, 0x4799f0, char *, int)(BUF, g_a[0]), 0), (stage_freeParticle(BUF, g_a[0]), 0))
 ST(actor_pickRandomWeapon, actors_setup(); fill((void *)0xa1efb8, 4); fill(BUF + ACTOR(g_a[0]) + 0x8828, 0x10);,
    (TC(void, 0x45edb0, char *, int)(BUF, g_a[0]), 0), (actor_pickRandomWeapon(BUF, g_a[0]), 0))
 static void shapes_setup(void)
@@ -12469,7 +12469,7 @@ ST(actor_applySpawnRecord, spawnrec_setup();, (TC(void, 0x45de20, char *, int, i
    (actor_applySpawnRecord(BUF, (DWORD)g_a[0], (DWORD)g_a[1]), 0))
 /* batch 110 */
 /* vv_setup's view volume (BUF + 0x100000, its test object as every effect shape and part-debris shape) made ready for billboards and
-   triangles too (lists, capacities, matrices), the item atlas ids, the camera; 1..6 projectiles of any type 0..75
+   triangles too (lists, capacities, matrices), the item atlas ids, the camera; 1..6 particles of any type 0..75
    (all fields floats of -1000..1000 except frame, active, type, owner; timers 0..10; positions near the camera or
    not), the viewing actor one of their owners now and then */
 static void projvv_setup(void)
@@ -12510,9 +12510,9 @@ static void projvv_setup(void)
 	g_a[0] = irnd(0, n - 1); g_a[1] = (int)vv;
 	g_paintStacks = 1;
 }
-ST(projectile_draw, projvv_setup();, (TC(void, 0x476890, char *, int, char *)(BUF, g_a[0], (char *)g_a[1]), 0),
-   (projectile_draw(BUF, (DWORD)g_a[0], (DWORD)g_a[1]), 0))
-ST(stage_drawProjectiles, projvv_setup();, (TC(void, 0x479af0, char *, char *)(BUF, (char *)g_a[1]), 0), (stage_drawProjectiles(BUF, (void *)g_a[1]), 0))
+ST(particle_draw, projvv_setup();, (TC(void, 0x476890, char *, int, char *)(BUF, g_a[0], (char *)g_a[1]), 0),
+   (particle_draw(BUF, (DWORD)g_a[0], (DWORD)g_a[1]), 0))
+ST(stage_drawParticles, projvv_setup();, (TC(void, 0x479af0, char *, char *)(BUF, (char *)g_a[1]), 0), (stage_drawParticles(BUF, (void *)g_a[1]), 0))
 /* batch 111 */
 /* the ground file (second VFS content "G1.gnd", built at BUF + 0x2200000, scrambled after the version): random sky
    modes, 0..3 lights of types 0..2, 0..3 layers of 1..12 x 1..12 cells (grey heights mostly), a full 256-row height
@@ -17212,7 +17212,7 @@ static const STest g_stests[] = {
 	T(colour_initRealRed, 0, 4, 0), T(colour_initRealBlack, 0, 4, 0), T(colour_initRealYellow, 0, 4, 0), T(colour_initRealGrey, 0, 4, 0),
 	T(vec_initOrigin, 0, 4, 0), T(vec_initZero, 0, 4, 0), T(vec_initAxisZ, 0, 4, 0), T(vec_initUp, 0, 4, 0),
 	T(vec_initRest, 0, 4, 0), T(vec_initAxisX, 0, 4, 0), T(stage_clearFrags, 0, 4, 300), T(net_announceServerEnd, 0, 4, 300),
-	T(net_announceFragLimit, 0, 4, 300), T(net_announceTimeLimit, 0, 4, 300), T(ViewVolume_clearDrawCounts, 0, 4, 300), T(stage_clearProjectiles, 0, 4, 300),
+	T(net_announceFragLimit, 0, 4, 300), T(net_announceTimeLimit, 0, 4, 300), T(ViewVolume_clearDrawCounts, 0, 4, 300), T(stage_clearParticles, 0, 4, 300),
 	T(stage_clearBullets, 0, 4, 300), T(stage_clearMapObjects, 0, 4, 300), T(stage_setViewDistance, 0, 4, 2000), T(ints_set3, 0, 4, 300),
 	T(vec3_negate, 0, 4, 2000), T(space_freeNode, 0, 4, 300), T(space_freeBlock, 0, 4, 300), T(space_disableUnit, 0, 4, 300),
 	T(space_enableUnit, 0, 4, 300), T(str_length, 1, 4, 3000), T(array_indexOf, 1, 4, 3000), T(path_normalize, 1, 4, 3000),
@@ -17235,7 +17235,7 @@ static const STest g_stests[] = {
 	T(room_stepMap, 0, 200, 0), T(net_freeSlotsOf, 2, 40, 0), T(ptx_readBits, 1, 60, 0), T(actor_pickRandomWeapon, 0, 40, 0),
 	T(menu_pointInPolygon, 1, 4, 3000), T(shape_findByName, 1, 4, 2000), T(skelDat_findByName, 1, 4, 2000), T(path_stripExtension, 0, 4, 2000),
 	T(text_printableLength, 1, 4, 3000), T(Mat4_copy, 0, 4, 300), T(Mat4_transpose, 0, 4, 300), T(playerRecord_markFree, 0, 4, 100),
-	T(scene_setTextureFolder, 0, 4, 300), T(player_setLevel, 0, 4, 600), T(player_setTeam, 0, 4, 600), T(stage_freeProjectile, 0, 4, 1000),
+	T(scene_setTextureFolder, 0, 4, 300), T(player_setLevel, 0, 4, 600), T(player_setTeam, 0, 4, 600), T(stage_freeParticle, 0, 4, 1000),
 	T(model_clearTint, 0, 4, 300), T(shape_recolourMaterials, 0, 4, 300), T(ViewVolume_reset, 0, 4, 50), T(space_resetUnits, 0, 4, 500),
 	/* batch 9 */
 	T(mech_setPilotLevel, 0, 4, 600), T(scene_setLocalTeam, 0, 4, 600), T(hangul_glyphs, 1, 60, 0), T(ptx_readDcDiff, 0, 150, 0),
@@ -17565,7 +17565,7 @@ static const STest g_stests[] = {
 	T(stage_drawActors, 0, 300, 0), T(stage_setupActorSlot, 1, 300, 0), T(stage_claimPlayerActor, 0, 300, 0), T(stage_remakePlayerActor, 0, 300, 0),
 	T(actor_applySpawnRecord, 0, 300, 0),
 	/* batch 110 */
-	T(projectile_draw, 0, 300, 0), T(stage_drawProjectiles, 0, 300, 0),
+	T(particle_draw, 0, 300, 0), T(stage_drawParticles, 0, 300, 0),
 	/* batch 111 */
 	T(map_loadGroundInfoFrom, 0, 100, 0),
 	/* batch 112 */
@@ -18088,7 +18088,7 @@ static const struct { DWORD addr; void *fn; const char *name; } g_hooks3[] = {
 	{ 0x4678c0, (void *)vec_initRest, "vec_initRest" }, { 0x467920, (void *)vec_initAxisX, "vec_initAxisX" },
 	{ 0x45df90, (void *)stage_clearFrags, "stage_clearFrags" }, { 0x463670, (void *)net_announceServerEnd, "net_announceServerEnd" },
 	{ 0x463690, (void *)net_announceFragLimit, "net_announceFragLimit" }, { 0x4636b0, (void *)net_announceTimeLimit, "net_announceTimeLimit" },
-	{ 0x4841d0, (void *)ViewVolume_clearDrawCounts, "ViewVolume_clearDrawCounts" }, { 0x479a60, (void *)stage_clearProjectiles, "stage_clearProjectiles" },
+	{ 0x4841d0, (void *)ViewVolume_clearDrawCounts, "ViewVolume_clearDrawCounts" }, { 0x479a60, (void *)stage_clearParticles, "stage_clearParticles" },
 	{ 0x47cfd0, (void *)stage_clearBullets, "stage_clearBullets" }, { 0x490d10, (void *)stage_clearMapObjects, "stage_clearMapObjects" },
 	{ 0x4722e0, (void *)stage_setViewDistance, "stage_setViewDistance" }, { 0x480210, (void *)ints_set3, "ints_set3" },
 	{ 0x480230, (void *)vec3_negate, "vec3_negate" }, { 0x481730, (void *)space_freeNode, "space_freeNode" },
@@ -18132,7 +18132,7 @@ static const struct { DWORD addr; void *fn; const char *name; } g_hooks3[] = {
 	{ 0x402590, (void *)text_printableLength, "text_printableLength" }, { 0x47d5a0, (void *)Mat4_copy, "Mat4_copy" },
 	{ 0x47d830, (void *)Mat4_transpose, "Mat4_transpose" }, { 0x4743b0, (void *)playerRecord_markFree, "playerRecord_markFree" },
 	{ 0x461ec0, (void *)scene_setTextureFolder, "scene_setTextureFolder" }, { 0x473a10, (void *)player_setLevel, "player_setLevel" },
-	{ 0x473a80, (void *)player_setTeam, "player_setTeam" }, { 0x4799f0, (void *)stage_freeProjectile, "stage_freeProjectile" },
+	{ 0x473a80, (void *)player_setTeam, "player_setTeam" }, { 0x4799f0, (void *)stage_freeParticle, "stage_freeParticle" },
 	{ 0x4675f0, (void *)model_clearTint, "model_clearTint" }, { 0x4665c0, (void *)shape_recolourMaterials, "shape_recolourMaterials" },
 	{ 0x484260, (void *)ViewVolume_reset, "ViewVolume_reset" }, { 0x481760, (void *)space_resetUnits, "space_resetUnits" },
 	/* batch 9 */
@@ -18616,7 +18616,7 @@ static const struct { DWORD addr; void *fn; const char *name; } g_hooks3[] = {
 	{ 0x45dd80, (void *)stage_claimPlayerActor, "stage_claimPlayerActor" }, { 0x45ddc0, (void *)stage_remakePlayerActor, "stage_remakePlayerActor" },
 	{ 0x45de20, (void *)actor_applySpawnRecord, "actor_applySpawnRecord" },
 	/* batch 110 */
-	{ 0x476890, (void *)projectile_draw, "projectile_draw" }, { 0x479af0, (void *)stage_drawProjectiles, "stage_drawProjectiles" },
+	{ 0x476890, (void *)particle_draw, "particle_draw" }, { 0x479af0, (void *)stage_drawParticles, "stage_drawParticles" },
 	/* batch 111 */
 	{ 0x48b9d0, (void *)map_loadGroundInfoFrom, "map_loadGroundInfoFrom" },
 	/* batch 112 */

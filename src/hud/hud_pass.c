@@ -37,7 +37,7 @@ void THISCALL (hud_pass)(Scene *scene)
 		stage_drawObjects(STAGE(scene), &scene->view);
 		stage_drawActors(STAGE(scene), &scene->view, 0);
 		stage_drawBullets(STAGE(scene), &scene->view);
-		stage_drawProjectiles(STAGE(scene), &scene->view);
+		stage_drawParticles(STAGE(scene), &scene->view);
 		stage_drawItems(STAGE(scene), &scene->view);
 		if (scene->fogOn == 1) {
 			stage_setFog(STAGE(scene), &scene->fogColour, scene->fogParams[0], scene->fogParams[1], scene->fogParams[2]);

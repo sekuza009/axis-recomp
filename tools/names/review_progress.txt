@@ -97,14 +97,14 @@
 [x] src/render/gl_helpers.c 122
 [x] src/render/items.c 61
 [x] src/render/object_list.c 148
-[ ] src/render/objects.c 714
-[ ] src/render/rotations.c 258
-[ ] src/render/shading.c 381
+[x] src/render/objects.c 714
+[x] src/render/rotations.c 258
+[x] src/render/shading.c 381
 [x] src/render/shape_colours.c 113
-[ ] src/render/sky.c 196
-[ ] src/render/tex_colours.c 174
+[x] src/render/sky.c 196
+[x] src/render/tex_colours.c 174
 [x] src/render/trails.c 118
-[ ] src/render/vecmath.c 255
+[x] src/render/vecmath.c 255
 [ ] src/render/view_volume.c 829
 [ ] src/replay/replay_message.c 55
 [ ] src/sound/sound_basic.c 428

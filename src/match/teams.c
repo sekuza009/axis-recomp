@@ -61,7 +61,7 @@ void *THISCALL (scene_followedActor)(Scene *scene)
 }
 
 /* 0x472310: the dynamic lights refilled: flagged (dynamicLightsSet), emptied (0x483d60), then a white light for
-   each active actor, of (its glow + 1) * 2500 at its position, and for each active projectile whose size is above
+   each active actor, of (its glow + 1) * 2500 at its position, and for each active particle whose size is above
    0, of that at its position */
 void THISCALL (stage_refillLights)(Stage *stage)
 {
@@ -75,8 +75,8 @@ void THISCALL (stage_refillLights)(Stage *stage)
 			factors_addPointLight(pool, OBJ(g_packedWhite), value, a->pos);   /* factors_addPointLight */
 		}
 	}
-	for (int i = 0; i < stage->projectileCount; i++) {
-		Projectile *p = &stage->projectiles[i];
+	for (int i = 0; i < stage->particleCount; i++) {
+		Particle *p = &stage->particles[i];
 		if (p->active == 1 && p->size > k_0f)
 			factors_addPointLight_bits(pool, OBJ(g_packedWhite), BITS(p->size), p->pos);
 	}

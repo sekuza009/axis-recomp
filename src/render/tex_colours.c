@@ -101,21 +101,21 @@ static int same(u32 a, u32 b)
 	return EQ_OR_NAN(x, y);
 }
 
-/* 0x456860: slot m's tints (first h, c, v, then the second's; copied as raw bits) set, the slot marked tinted (flag
+/* 0x456860: slot m's tints (first h, s, v, then the second's; copied as raw bits) set, the slot marked tinted (flag
    2) and changed (+0x84) when any value differs */
-void THISCALL (tex_recolourMaterial)(u8 *self, int m, u32 h1, u32 c1, u32 v1, u32 h2, u32 c2, u32 v2)
+void THISCALL (tex_recolourMaterial)(u8 *self, int m, u32 h1, u32 s1, u32 v1, u32 h2, u32 s2, u32 v2)
 {
 	TexRecord *rec = &((TextureBank *)self)->records[m];
 	u32 flags = rec->flags | 2;
-	if (flags == 0 || !same(BITS(rec->colours[0]), h1) || !same(BITS(rec->colours[1]), c1) ||
+	if (flags == 0 || !same(BITS(rec->colours[0]), h1) || !same(BITS(rec->colours[1]), s1) ||
 	    !same(BITS(rec->colours[2]), v1) || !same(BITS(rec->colours[3]), h2) ||
-	    !same(BITS(rec->colours[4]), c2) || !same(BITS(rec->colours[5]), v2)) {
+	    !same(BITS(rec->colours[4]), s2) || !same(BITS(rec->colours[5]), v2)) {
 		rec->flags = flags;
 		BITS(rec->colours[0]) = h1;
-		BITS(rec->colours[1]) = c1;
+		BITS(rec->colours[1]) = s1;
 		BITS(rec->colours[2]) = v1;
 		BITS(rec->colours[3]) = h2;
-		BITS(rec->colours[4]) = c2;
+		BITS(rec->colours[4]) = s2;
 		BITS(rec->colours[5]) = v2;
 		rec->changed = 1;
 	}
@@ -141,21 +141,21 @@ int THISCALL (tex_applyTintMask)(u8 *tex, int i)
 	return ((TextureBank *)tex)->height;
 }
 
-/* 0x454e60: a texture record: its name, eight parameters, and its animation from the name's suffix: "_ANI" 1,
+/* 0x454e60: a texture record: its name, slot, flags and two colours (h, s, v each), and its animation from the name's suffix: "_ANI" 1,
    "_ANI0" .. "_ANI3" 1 .. 4 (another digit leaves +0x60 as it was), anything else 0. (The original also makes an
    upper-cased copy of the name it never uses; the suffix test is case-sensitive.) */
-void THISCALL (texRecord_init)(u8 *self, const char *name, int a2, int a3, int a4, int a5, int a6, int a7, int a8, int a9)
+void THISCALL (texRecord_init)(u8 *self, const char *name, int slot, int flags, int h1, int s1, int v1, int h2, int s2, int v2)
 {
 	TexRecord *tr = (TexRecord *)self;
 	strcpy((char *)self, name);
-	tr->flags = a3;
-	tr->slot = a2;
-	(*(int *)&tr->colours[0]) = a4;
-	(*(int *)&tr->colours[1]) = a5;
-	(*(int *)&tr->colours[2]) = a6;
-	(*(int *)&tr->colours[3]) = a7;
-	(*(int *)&tr->colours[4]) = a8;
-	(*(int *)&tr->colours[5]) = a9;
+	tr->flags = flags;
+	tr->slot = slot;
+	(*(int *)&tr->colours[0]) = h1;
+	(*(int *)&tr->colours[1]) = s1;
+	(*(int *)&tr->colours[2]) = v1;
+	(*(int *)&tr->colours[3]) = h2;
+	(*(int *)&tr->colours[4]) = s2;
+	(*(int *)&tr->colours[5]) = v2;
 	int n = (int)strlen((char *)self);
 	if (n > 4 && !memcmp(self + n - 4, "_ANI", 4)) {
 		tr->animation = 1;

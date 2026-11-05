@@ -1,4 +1,4 @@
-/* objects.c: the stage's map objects (animated scenery), actors and projectiles handed to the view volume, once
+/* objects.c: the stage's map objects (animated scenery), actors and particles handed to the view volume, once
    per pass. Each list is walked up to its count, read again after every entry. */
 #include "../game.h"
 #include <string.h>
@@ -42,12 +42,12 @@ void THISCALL (stage_drawActors)(Stage *stage, void *view, int pass)
 			actor_drawIntoView(stage, i, view, pass);
 }
 
-/* 0x479af0 (stage_drawProjectiles): every active projectile */
-void THISCALL (stage_drawProjectiles)(Stage *stage, void *view)
+/* 0x479af0 (stage_drawParticles): every active particle */
+void THISCALL (stage_drawParticles)(Stage *stage, void *view)
 {
-	for (int i = 0; i < stage->projectileCount; i++)
-		if (stage->projectiles[i].active == 1)
-			projectile_draw(stage, i, view);
+	for (int i = 0; i < stage->particleCount; i++)
+		if (stage->particles[i].active == 1)
+			particle_draw(stage, i, view);
 }
 
 #define K(address) ((const float *)RELOC(address))
@@ -338,9 +338,9 @@ void THISCALL (camera_setupView)(u8 *s, const float *pos, const float *dir, cons
 #undef K
 #undef AC
 
-/* ---- 0x476890: a projectile drawn ---- */
+/* ---- 0x476890: a particle drawn ---- */
 
-#define PR ((Projectile *)p)   /* the same by its fields (src/scene.fields) */
+#define PR ((Particle *)p)   /* the same by its fields (src/scene.fields) */
 #define ALPHA(rgba) (((u8 *)&(rgba))[3])   /* an RGBA dword's alpha byte */
 #define TEX(k) (ST->effectTextures[k])   /* the effect textures */
 
@@ -359,7 +359,7 @@ static void square(float *ab, long double h)
 	ab[2] = ab[3] = (float)h;
 }
 
-/* one of the effect shapes about the projectile's matrix (+0x2c) */
+/* one of the effect shapes about the particle's matrix (+0x2c) */
 static void shape(void *vv, u8 *p, void *model, const void *colour, int cull)
 {
 	ViewVolume_projectObject(vv, model, 0, PR->matrix, 0, colour, cull, -1, 0);
@@ -376,7 +376,7 @@ static void glow(u8 *s, u8 *p, void *vv, long double a, float big, float small)
 	quad(vv, TEX(0), k_glowUV, 0, p, ab, PR->pos, 2);
 }
 
-/* the glow sized by the projectile's radius (+0x80) plus add, halved for the viewing actor's own */
+/* the glow sized by the particle's radius (+0x80) plus add, halved for the viewing actor's own */
 static void sized_glow(u8 *s, u8 *p, void *vv, long double a, const float *add)
 {
 	float ab[4];
@@ -452,7 +452,7 @@ static void frame16(float *uv, const float *t)
 	uv[3] = f32(fadd_m(fld_m(&uv[1]), &k_0_25f));
 }
 
-/* one of 16 frames (8 x 2 from the fourth row) by t, turned by the projectile's index (i % 4) */
+/* one of 16 frames (8 x 2 from the fourth row) by t, turned by the particle's index (i % 4) */
 static void frame16_turned(float *uv, const float *t, int i)
 {
 	int n = ftol(fmul_m(fld_m(t), &k_16f));
@@ -469,7 +469,7 @@ static void frame16_turned(float *uv, const float *t, int i)
 	}
 }
 
-/* smoke (texture 5, the row v0..v1): ten puffs along the projectile's backward direction (its matrix's rows by the
+/* smoke (texture 5, the row v0..v1): ten puffs along the particle's backward direction (its matrix's rows by the
    world's 0xa0e7c8 * -50, scaled by +0x1c), each 1.1 times the last and farther out, fading by +0x20 */
 static void smoke(u8 *s, u8 *p, void *vv, int i, float v0, float v1)
 {
@@ -508,14 +508,14 @@ static void smoke(u8 *s, u8 *p, void *vv, int i, float v0, float v1)
 	}
 }
 
-/* 0x476890 (thiscall on the scene): projectile i (0x12c-byte records from +0x20a99c0: frame +0, type +8, owner
+/* 0x476890 (thiscall on the scene): particle i (0x12c-byte records from +0x20a99c0: frame +0, type +8, owner
    +0xc, position +0x10, matrix +0x2c, timer +0x6c of +0x70, colour +0x78 with its alpha +0x7b, radius +0x80).
    Below type 50 it must lie in the box of +0xa08 about the camera (+0x20f3970). By type: billboards from the effect
    textures (+0x9ccfd4..) by the fraction t of the timer gone, the effect shapes (+0x20f2e74..; the owner's part
    shapes for debris), a trail (types 40-49: triangles through ViewVolume_addTriangle) or a quad (type 50) */
-void THISCALL (projectile_draw)(u8 *s, int i, void *vv)
+void THISCALL (particle_draw)(u8 *s, int i, void *vv)
 {
-	u8 *p = (u8 *)&ST->projectiles[i];
+	u8 *p = (u8 *)&ST->particles[i];
 	const float *at = PR->pos, *cam = ST->cameraPos, *range = &ST->cullMargin;
 	int type = PR->kind;
 	float uv[4], ab[4], t;

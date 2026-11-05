@@ -294,11 +294,11 @@ typedef struct { u32 vtable; void *banks[6]; i32 count; } TextureManager;   /* t
 #define shape_bindTextureBy(shape, textures, a, b, c, d, e, f, g) GAME_THISFN(shape_bindTextureBy, 0x466430, void, void *, void *, u32, u32, u32, u32, u32, u32, u32)(shape, textures, a, b, c, d, e, f, g)
 #define stage_resetLights(scene) GAME_THISFN(stage_resetLights, 0x4723e0, void, void *)(scene)
 #define stage_clearBullets(scene) GAME_THISFN(stage_clearBullets, 0x47cfd0, void, void *)(scene)
-#define stage_clearProjectiles(scene) GAME_THISFN(stage_clearProjectiles, 0x479a60, void, void *)(scene)
+#define stage_clearParticles(scene) GAME_THISFN(stage_clearParticles, 0x479a60, void, void *)(scene)
 #define stage_resetMatrixAndPoints(scene) GAME_THISFN(stage_resetMatrixAndPoints, 0x48fe10, void, void *)(scene)
 #define stage_clearMessages(scene) GAME_THISFN(stage_clearMessages, 0x48fc30, void, void *)(scene)
 #define stage_initSpaceOneCell(scene) GAME_THISFN(stage_initSpaceOneCell, 0x471010, void, void *)(scene)
-#define texRecord_init(record, name, id, flags, h1, s1, v1, h2, s2, v2) GAME_THISFN(texRecord_init, 0x454e60, void, void *, const char *, int, u32, u32, u32, u32, u32, u32, u32)(record, name, id, flags, h1, s1, v1, h2, s2, v2)   /* a texture record set up */
+#define texRecord_init(record, name, slot, flags, h1, s1, v1, h2, s2, v2) GAME_THISFN(texRecord_init, 0x454e60, void, void *, const char *, int, u32, u32, u32, u32, u32, u32, u32)(record, name, slot, flags, h1, s1, v1, h2, s2, v2)   /* a texture record set up */
 #define tex_textureFileExist(tm, name) GAME_THISFN(tex_textureFileExist, 0x4557e0, int, void *, const char *)(tm, name)
 #define match_startRound(scene) GAME_THISFN(match_startRound, 0x49df10, void, void *)(scene)
 #define scene_averageFrameTime(scene) GAME_THISFN(scene_averageFrameTime, 0x461210, long double, void *)(scene)   /* (answers in ST0) */
@@ -546,14 +546,14 @@ typedef struct { u32 vtable; void *banks[6]; i32 count; } TextureManager;   /* t
 /* actor i's frame of its parts (actor_loadBody / actor_loadWeapon), with the view volume and pass */
 #define actor_drawIntoView(stage, i, view, pass) GAME_THISFN(actor_drawIntoView, 0x45d3e0, void, Stage *, int, void *, int)(stage, i, view, pass)
 #define stage_drawBullets(stage, view) GAME_THISFN(stage_drawBullets, 0x47d060, void, void *, void *)(stage, view)
-#define stage_drawProjectiles(stage, view) GAME_THISFN(stage_drawProjectiles, 0x479af0, void, Stage *, void *)(stage, view)
-/* projectile i drawn (or queued) in the view volume */
+#define stage_drawParticles(stage, view) GAME_THISFN(stage_drawParticles, 0x479af0, void, Stage *, void *)(stage, view)
+/* particle i drawn (or queued) in the view volume */
 /* a camera-facing quad at p into the view volume's billboard list id: corners p + a .. p + b, depth + dz, texture
    coordinates uv0 .. uv1, colour (4 bytes) */
 #define viewVolume_addBillboard(view, id, uv0, uv1, dz, colour, a, b, p, extra, flag) GAME_THISFN(viewVolume_addBillboard, 0x484ca0, void, void *, int, const float *, \
 	const float *, float, const void *, const float *, const float *, const float *, int, int)(view, id, uv0, uv1, dz, colour, a, b, p, extra, flag)
 #define g_highDetail (g_graphicSettings[2])            /* the polygon detail setting (HIGH 1): 1 draws map items as models */
-#define projectile_draw(stage, i, view) GAME_THISFN(projectile_draw, 0x476890, void, Stage *, int, void *)(stage, i, view)
+#define particle_draw(stage, i, view) GAME_THISFN(particle_draw, 0x476890, void, Stage *, int, void *)(stage, i, view)
 #define stage_drawItems(stage, view) GAME_THISFN(stage_drawItems, 0x48f970, void, void *, void *)(stage, view)
 #define stage_setFog(stage, colour, start, end, density) GAME_THISFN(stage_setFog, 0x472900, void, Stage *, const void *, u32, u32, u32)(stage, colour, start, end, density)
 #define script_notifyObject(stage, x0, y0, x1, y1) GAME_THISFN(script_notifyObject, 0x48fde0, void, void *, int, int, int, int)(stage, x0, y0, x1, y1)
@@ -1078,7 +1078,7 @@ typedef struct { float r, g, b, a; } Colour;
 
 #define newIdConfirm_layout() GAME_FN(newIdConfirm_layout, 0x431c00, void, void)()
 #define newIdForm_layout() GAME_FN(newIdForm_layout, 0x431b70, void, void)()
-#define tex_recolourMaterial(set, m, h1, c1, v1, h2, c2, v2) GAME_THISFN(tex_recolourMaterial, 0x456860, void, void *, int, u32, u32, u32, u32, u32, u32)(set, m, h1, c1, v1, h2, c2, v2)
+#define tex_recolourMaterial(bank, m, h1, s1, v1, h2, s2, v2) GAME_THISFN(tex_recolourMaterial, 0x456860, void, void *, int, u32, u32, u32, u32, u32, u32)(bank, m, h1, s1, v1, h2, s2, v2)
 #define image_addColour(px, mode, part, colour) GAME_FN(image_addColour, 0x464a70, void, u8 *, int, const u32 *, const u8 *)(px, mode, part, colour)   /* a colour added to a part's RGBA pixels */
 #define spaceSlot_clear(slot) GAME_THISFN(spaceSlot_clear, 0x480440, void, int *)(slot)
 #define shape_markMaterialsChanged(shape) GAME_THISFN(shape_markMaterialsChanged, 0x466560, void, void *)(shape)

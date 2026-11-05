@@ -295,3 +295,7 @@ net_matchOver,net_hostGone
 net_sendLocalInfo,net_handleSystemMessage
 net_closeAll,net_resetConnection
 factor_initBy,ViewVolume_initBy
+stage_drawProjectiles,stage_drawParticles
+projectile_draw,particle_draw
+stage_freeProjectile,stage_freeParticle
+stage_clearProjectiles,stage_clearParticles

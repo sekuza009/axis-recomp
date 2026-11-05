@@ -465,8 +465,8 @@ typedef struct MapItem {
 	float fade;   /* +0x24: below 1: drawn faded (alpha 255 * fade) */
 } MapItem;
 
-/* a particle or effect (Stage.projectiles: particle_init / particle_update): flashes, sparks, beams, trails, explosions... */
-typedef struct Projectile {
+/* a particle or effect (Stage.particles: particle_init / particle_update): flashes, sparks, beams, trails, explosions... */
+typedef struct Particle {
 	i32 id;   /* +0x0: a serial (Stage +0x20f2da8) */
 	i32 active;   /* +0x4: 1: in use */
 	i32 kind;   /* +0x8: what it is: 2 / 3 explosions, 9 sparks, 25 / 26 beams, 40 .. 49 trails, 50 a scripted effect ... */
@@ -492,7 +492,7 @@ typedef struct Projectile {
 	u32 quadUv1[2];   /* +0xf0 */
 	u32 quadColour;   /* +0xf8 */
 	float quadPoints[4][3];   /* +0xfc */
-} Projectile;
+} Particle;
 
 /* a bullet in flight (Stage.bullets: bullet_init, bullet_update) */
 typedef struct Bullet {
@@ -1309,7 +1309,7 @@ typedef struct ParticleDesc {
 	const float *trailSizes;   /* +0x28: and its ends' sizes */
 	u32 size;   /* +0x2c: a float's bits */
 	i32 isQuad;   /* +0x30: 1: a kind 50 quad, from the fields below */
-	u8 quad[0x18];   /* +0x34: its texture, two texture corners, colour (Projectile.quadTexture ..) */
+	u8 quad[0x18];   /* +0x34: its texture, two texture corners, colour (Particle.quadTexture ..) */
 	float quadPoints[4][3];   /* +0x4c */
 } ParticleDesc;
 
@@ -1447,10 +1447,10 @@ typedef struct Stage {
 	i32 bulletSlotsUsed;   /* +0x20a99b4: (by use) bullet slots up to the highest in use */
 	i32 bulletFreeHint;   /* +0x20a99b8: the lowest free bullet slot */
 	i32 bulletSerial;   /* +0x20a99bc: the next bullet's id */
-	Projectile projectiles[1000];   /* +0x20a99c0 */
-	i32 projectileCount;   /* +0x20f2da0: slots in use */
-	i32 projectileFreeHint;   /* +0x20f2da4: (by use) the lowest free particle slot */
-	i32 projectileSerial;   /* +0x20f2da8: the next particle's id */
+	Particle particles[1000];   /* +0x20a99c0 */
+	i32 particleCount;   /* +0x20f2da0: slots in use */
+	i32 particleFreeHint;   /* +0x20f2da4: (by use) the lowest free particle slot */
+	i32 particleSerial;   /* +0x20f2da8: the next particle's id */
 	u32 thrustShapes[3][8];   /* +0x20f2dac: (by use) the thrust effects' shapes: plasma, ion, gravity (eight frames each) */
 	u8 _pad20f2e0c[0x68];
 	u32 effectShapes[8];   /* +0x20f2e74: Effect\Shell-Fire, Shell-Bullet, Rail-Fire, Blade-Fire, Rail-Bullet, Lightning-, Missile-, Homing-Bullet */
@@ -2261,30 +2261,30 @@ _Static_assert(offsetof(MapItem, angle) == 0x1c && sizeof(((MapItem *)0)->angle)
 _Static_assert(offsetof(MapItem, taken) == 0x20 && sizeof(((MapItem *)0)->taken) == 0x4, "scene.fields: MapItem.taken");
 _Static_assert(offsetof(MapItem, fade) == 0x24 && sizeof(((MapItem *)0)->fade) == 0x4, "scene.fields: MapItem.fade");
 _Static_assert(sizeof(MapItem) == 0x28, "scene.fields: size of MapItem");
-_Static_assert(offsetof(Projectile, id) == 0x0 && sizeof(((Projectile *)0)->id) == 0x4, "scene.fields: Projectile.id");
-_Static_assert(offsetof(Projectile, active) == 0x4 && sizeof(((Projectile *)0)->active) == 0x4, "scene.fields: Projectile.active");
-_Static_assert(offsetof(Projectile, kind) == 0x8 && sizeof(((Projectile *)0)->kind) == 0x4, "scene.fields: Projectile.kind");
-_Static_assert(offsetof(Projectile, owner) == 0xc && sizeof(((Projectile *)0)->owner) == 0x4, "scene.fields: Projectile.owner");
-_Static_assert(offsetof(Projectile, pos) == 0x10 && sizeof(((Projectile *)0)->pos) == 0xc, "scene.fields: Projectile.pos");
-_Static_assert(offsetof(Projectile, target) == 0x1c && sizeof(((Projectile *)0)->target) == 0xc, "scene.fields: Projectile.target");
-_Static_assert(offsetof(Projectile, matrixFrom) == 0x28 && sizeof(((Projectile *)0)->matrixFrom) == 0x4, "scene.fields: Projectile.matrixFrom");
-_Static_assert(offsetof(Projectile, matrix) == 0x2c && sizeof(((Projectile *)0)->matrix) == 0x40, "scene.fields: Projectile.matrix");
-_Static_assert(offsetof(Projectile, drawAge) == 0x6c && sizeof(((Projectile *)0)->drawAge) == 0x4, "scene.fields: Projectile.drawAge");
-_Static_assert(offsetof(Projectile, life) == 0x70 && sizeof(((Projectile *)0)->life) == 0x4, "scene.fields: Projectile.life");
-_Static_assert(offsetof(Projectile, age) == 0x74 && sizeof(((Projectile *)0)->age) == 0x4, "scene.fields: Projectile.age");
-_Static_assert(offsetof(Projectile, colour) == 0x78 && sizeof(((Projectile *)0)->colour) == 0x4, "scene.fields: Projectile.colour");
-_Static_assert(offsetof(Projectile, size) == 0x7c && sizeof(((Projectile *)0)->size) == 0x4, "scene.fields: Projectile.size");
-_Static_assert(offsetof(Projectile, baseSize) == 0x80 && sizeof(((Projectile *)0)->baseSize) == 0x4, "scene.fields: Projectile.baseSize");
-_Static_assert(offsetof(Projectile, fade) == 0x84 && sizeof(((Projectile *)0)->fade) <= 0x24, "scene.fields: Projectile.fade");
-_Static_assert(offsetof(Projectile, trailPoints) == 0x84 && sizeof(((Projectile *)0)->trailPoints) <= 0x24, "scene.fields: Projectile.trailPoints");
-_Static_assert(offsetof(Projectile, trailUv) == 0xb4 && sizeof(((Projectile *)0)->trailUv) == 0x18, "scene.fields: Projectile.trailUv");
-_Static_assert(offsetof(Projectile, trailColours) == 0xd4 && sizeof(((Projectile *)0)->trailColours) == 0xc, "scene.fields: Projectile.trailColours");
-_Static_assert(offsetof(Projectile, quadTexture) == 0xe4 && sizeof(((Projectile *)0)->quadTexture) == 0x4, "scene.fields: Projectile.quadTexture");
-_Static_assert(offsetof(Projectile, quadUv0) == 0xe8 && sizeof(((Projectile *)0)->quadUv0) == 0x8, "scene.fields: Projectile.quadUv0");
-_Static_assert(offsetof(Projectile, quadUv1) == 0xf0 && sizeof(((Projectile *)0)->quadUv1) == 0x8, "scene.fields: Projectile.quadUv1");
-_Static_assert(offsetof(Projectile, quadColour) == 0xf8 && sizeof(((Projectile *)0)->quadColour) == 0x4, "scene.fields: Projectile.quadColour");
-_Static_assert(offsetof(Projectile, quadPoints) == 0xfc && sizeof(((Projectile *)0)->quadPoints) == 0x30, "scene.fields: Projectile.quadPoints");
-_Static_assert(sizeof(Projectile) == 0x12c, "scene.fields: size of Projectile");
+_Static_assert(offsetof(Particle, id) == 0x0 && sizeof(((Particle *)0)->id) == 0x4, "scene.fields: Particle.id");
+_Static_assert(offsetof(Particle, active) == 0x4 && sizeof(((Particle *)0)->active) == 0x4, "scene.fields: Particle.active");
+_Static_assert(offsetof(Particle, kind) == 0x8 && sizeof(((Particle *)0)->kind) == 0x4, "scene.fields: Particle.kind");
+_Static_assert(offsetof(Particle, owner) == 0xc && sizeof(((Particle *)0)->owner) == 0x4, "scene.fields: Particle.owner");
+_Static_assert(offsetof(Particle, pos) == 0x10 && sizeof(((Particle *)0)->pos) == 0xc, "scene.fields: Particle.pos");
+_Static_assert(offsetof(Particle, target) == 0x1c && sizeof(((Particle *)0)->target) == 0xc, "scene.fields: Particle.target");
+_Static_assert(offsetof(Particle, matrixFrom) == 0x28 && sizeof(((Particle *)0)->matrixFrom) == 0x4, "scene.fields: Particle.matrixFrom");
+_Static_assert(offsetof(Particle, matrix) == 0x2c && sizeof(((Particle *)0)->matrix) == 0x40, "scene.fields: Particle.matrix");
+_Static_assert(offsetof(Particle, drawAge) == 0x6c && sizeof(((Particle *)0)->drawAge) == 0x4, "scene.fields: Particle.drawAge");
+_Static_assert(offsetof(Particle, life) == 0x70 && sizeof(((Particle *)0)->life) == 0x4, "scene.fields: Particle.life");
+_Static_assert(offsetof(Particle, age) == 0x74 && sizeof(((Particle *)0)->age) == 0x4, "scene.fields: Particle.age");
+_Static_assert(offsetof(Particle, colour) == 0x78 && sizeof(((Particle *)0)->colour) == 0x4, "scene.fields: Particle.colour");
+_Static_assert(offsetof(Particle, size) == 0x7c && sizeof(((Particle *)0)->size) == 0x4, "scene.fields: Particle.size");
+_Static_assert(offsetof(Particle, baseSize) == 0x80 && sizeof(((Particle *)0)->baseSize) == 0x4, "scene.fields: Particle.baseSize");
+_Static_assert(offsetof(Particle, fade) == 0x84 && sizeof(((Particle *)0)->fade) <= 0x24, "scene.fields: Particle.fade");
+_Static_assert(offsetof(Particle, trailPoints) == 0x84 && sizeof(((Particle *)0)->trailPoints) <= 0x24, "scene.fields: Particle.trailPoints");
+_Static_assert(offsetof(Particle, trailUv) == 0xb4 && sizeof(((Particle *)0)->trailUv) == 0x18, "scene.fields: Particle.trailUv");
+_Static_assert(offsetof(Particle, trailColours) == 0xd4 && sizeof(((Particle *)0)->trailColours) == 0xc, "scene.fields: Particle.trailColours");
+_Static_assert(offsetof(Particle, quadTexture) == 0xe4 && sizeof(((Particle *)0)->quadTexture) == 0x4, "scene.fields: Particle.quadTexture");
+_Static_assert(offsetof(Particle, quadUv0) == 0xe8 && sizeof(((Particle *)0)->quadUv0) == 0x8, "scene.fields: Particle.quadUv0");
+_Static_assert(offsetof(Particle, quadUv1) == 0xf0 && sizeof(((Particle *)0)->quadUv1) == 0x8, "scene.fields: Particle.quadUv1");
+_Static_assert(offsetof(Particle, quadColour) == 0xf8 && sizeof(((Particle *)0)->quadColour) == 0x4, "scene.fields: Particle.quadColour");
+_Static_assert(offsetof(Particle, quadPoints) == 0xfc && sizeof(((Particle *)0)->quadPoints) == 0x30, "scene.fields: Particle.quadPoints");
+_Static_assert(sizeof(Particle) == 0x12c, "scene.fields: size of Particle");
 _Static_assert(offsetof(Bullet, id) == 0x0 && sizeof(((Bullet *)0)->id) == 0x4, "scene.fields: Bullet.id");
 _Static_assert(offsetof(Bullet, active) == 0x4 && sizeof(((Bullet *)0)->active) == 0x4, "scene.fields: Bullet.active");
 _Static_assert(offsetof(Bullet, weapon) == 0x8 && sizeof(((Bullet *)0)->weapon) == 0x4, "scene.fields: Bullet.weapon");
@@ -3022,10 +3022,10 @@ _Static_assert(offsetof(Stage, bullets) == 0x202ef34 && sizeof(((Stage *)0)->bul
 _Static_assert(offsetof(Stage, bulletSlotsUsed) == 0x20a99b4 && sizeof(((Stage *)0)->bulletSlotsUsed) == 0x4, "scene.fields: Stage.bulletSlotsUsed");
 _Static_assert(offsetof(Stage, bulletFreeHint) == 0x20a99b8 && sizeof(((Stage *)0)->bulletFreeHint) == 0x4, "scene.fields: Stage.bulletFreeHint");
 _Static_assert(offsetof(Stage, bulletSerial) == 0x20a99bc && sizeof(((Stage *)0)->bulletSerial) == 0x4, "scene.fields: Stage.bulletSerial");
-_Static_assert(offsetof(Stage, projectiles) == 0x20a99c0 && sizeof(((Stage *)0)->projectiles) == 0x493e0, "scene.fields: Stage.projectiles");
-_Static_assert(offsetof(Stage, projectileCount) == 0x20f2da0 && sizeof(((Stage *)0)->projectileCount) == 0x4, "scene.fields: Stage.projectileCount");
-_Static_assert(offsetof(Stage, projectileFreeHint) == 0x20f2da4 && sizeof(((Stage *)0)->projectileFreeHint) == 0x4, "scene.fields: Stage.projectileFreeHint");
-_Static_assert(offsetof(Stage, projectileSerial) == 0x20f2da8 && sizeof(((Stage *)0)->projectileSerial) == 0x4, "scene.fields: Stage.projectileSerial");
+_Static_assert(offsetof(Stage, particles) == 0x20a99c0 && sizeof(((Stage *)0)->particles) == 0x493e0, "scene.fields: Stage.particles");
+_Static_assert(offsetof(Stage, particleCount) == 0x20f2da0 && sizeof(((Stage *)0)->particleCount) == 0x4, "scene.fields: Stage.particleCount");
+_Static_assert(offsetof(Stage, particleFreeHint) == 0x20f2da4 && sizeof(((Stage *)0)->particleFreeHint) == 0x4, "scene.fields: Stage.particleFreeHint");
+_Static_assert(offsetof(Stage, particleSerial) == 0x20f2da8 && sizeof(((Stage *)0)->particleSerial) == 0x4, "scene.fields: Stage.particleSerial");
 _Static_assert(offsetof(Stage, thrustShapes) == 0x20f2dac && sizeof(((Stage *)0)->thrustShapes) == 0x60, "scene.fields: Stage.thrustShapes");
 _Static_assert(offsetof(Stage, effectShapes) == 0x20f2e74 && sizeof(((Stage *)0)->effectShapes) == 0x20, "scene.fields: Stage.effectShapes");
 _Static_assert(offsetof(Stage, itemTextures) == 0x20f2f3c && sizeof(((Stage *)0)->itemTextures) == 0xc, "scene.fields: Stage.itemTextures");

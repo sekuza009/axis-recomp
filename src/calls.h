@@ -245,7 +245,7 @@
 #define stage_build(s, a1, a2, sky, a4, skel_dir, a6, a7, a8, a9) GAME_THISFN(stage_build, 0x4700a0, void, void *, u32, u32, u32, u32, u32, u32, u32, u32, u32)(s, a1, a2, sky, a4, skel_dir, a6, a7, a8, a9)
 #define camera_setupView(s, pos, dir, up, fov, w, h, nr, fr, dt) GAME_THISFN(camera_setupView, 0x4729b0, void, void *, const void *, const void *, const void *, u32, int, int, u32, u32, u32)(s, pos, dir, up, fov, w, h, nr, fr, dt)
 #define playerRecord_markFree(stage, p) GAME_THISFN(playerRecord_markFree, 0x4743b0, void, void *, int)(stage, p)
-#define stage_freeProjectile(stage, i) GAME_THISFN(stage_freeProjectile, 0x4799f0, void, void *, int)(stage, i)
+#define stage_freeParticle(stage, i) GAME_THISFN(stage_freeParticle, 0x4799f0, void, void *, int)(stage, i)
 #define ViewVolume_clear(self) GAME_THISFN(ViewVolume_clear, 0x483fc0, void, void *)(self)
 #define ViewVolume_initBy(view, entries, matrices, colours, triangles, quads, segments, mem, size) GAME_THISFN(ViewVolume_initBy, 0x484050, void, void *, int, int, int, int, int, int, void *, int)(view, entries, matrices, colours, triangles, quads, segments, mem, size)
 #define map_loadItemInfoFrom(scene, path) GAME_THISFN(map_loadItemInfoFrom, 0x4875d0, int, void *, const char *)(scene, path)

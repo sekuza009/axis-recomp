@@ -24,8 +24,8 @@ void THISCALL (stage_updateEffects)(void *s, int dt)
 {
 	if (paused(s))
 		return;
-	for (int i = 0; i < ST->projectileCount; i++)
-		if (ST->projectiles[i].active == 1)
+	for (int i = 0; i < ST->particleCount; i++)
+		if (ST->particles[i].active == 1)
 			particle_update(s, i, dt);
 }
 
@@ -44,17 +44,17 @@ void THISCALL (stage_updateObjects)(void *s, int dt)
    then the effect set up (particle_init). Returns its slot, or -1 */
 int THISCALL (particle_spawn)(u8 *s, u32 desc)
 {
-#define COUNT ST->projectileCount
-#define NEXT ST->projectileFreeHint
+#define COUNT ST->particleCount
+#define NEXT ST->particleFreeHint
 	if (NEXT >= 1000)
 		return -1;
 	if (NEXT == COUNT) {
 		COUNT++;
-		ST->projectiles[COUNT].active = 0;
+		ST->particles[COUNT].active = 0;
 	}
 	int slot = NEXT;
 	for (int k = slot + 1; k <= COUNT; k++)
-		if (ST->projectiles[k].active == 0) {
+		if (ST->particles[k].active == 0) {
 			NEXT = k;
 			break;
 		}
@@ -419,7 +419,7 @@ static void spawn_at(u8 *s, u32 kind, const float *p)
    its age; every tenth of a second a trail particle (kind 2 one time in ten, which also ends it, else kind 0) */
 static void spark(u8 *s, u8 *p, float dt)
 {
-	Projectile *pr = (Projectile *)p;
+	Particle *pr = (Particle *)p;
 	float *pos = pr->pos;
 	const float *v = pr->target, *k = (const float *)ADDR(k_2000f);
 	float dy = f32(fmul_m(fld_m(&dt), &v[1])), dz = f32(fmul_m(fld_m(&dt), &v[2]));
@@ -462,12 +462,12 @@ static void spark(u8 *s, u8 *p, float dt)
    ignores the eax it leaves */
 void THISCALL (particle_update)(u8 *s, int slot, float dt)
 {
-	u8 *p = (u8 *)&ST->projectiles[slot];
-	Projectile *pr = (Projectile *)p;
+	u8 *p = (u8 *)&ST->particles[slot];
+	Particle *pr = (Particle *)p;
 	float age = pr->age;
 	pr->drawAge = age;
 	if (age > pr->life) {
-		stage_freeProjectile(s, slot);
+		stage_freeParticle(s, slot);
 		return;
 	}
 	float t = pr->life > 0 ? f32(fdiv_m(fld_m(&age), &pr->life)) : 0.0f;
@@ -652,7 +652,7 @@ void THISCALL (item_update)(u8 *s, float dt)
 }
 #undef A
 
-#define PR ((Projectile *)p)   /* the same by its fields (src/scene.fields) */
+#define PR ((Particle *)p)   /* the same by its fields (src/scene.fields) */
 #define K(address) ((const float *)RELOC(address))
 
 /* the next of the game's random numbers (its table 0xa106f8 by the counter 0xa1efb8) below n */
@@ -795,8 +795,8 @@ static void particle_trail(u8 *p, const u8 *desc, u32 margin)
 void THISCALL (particle_init)(u8 *s, int slot, const u8 *desc)
 {
 	const ParticleDesc *pd = (const ParticleDesc *)desc;
-	u8 *p = (u8 *)&ST->projectiles[slot];
-	PR->id = ST->projectileSerial++;
+	u8 *p = (u8 *)&ST->particles[slot];
+	PR->id = ST->particleSerial++;
 	PR->active = 1;
 	if (pd->isQuad == 1) {
 		PR->kind = 0x32;

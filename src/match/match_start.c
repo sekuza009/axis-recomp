@@ -240,7 +240,7 @@ static void identity(u32 *m)
 }
 
 /* 0x470ad0 (thiscall on the scene): the scene's subsystems reset (stage_resetLights; the 100 dwords at +0x202ea80 and
-   +0x202ef30 cleared; the object list, stage_clearBullets, stage_clearProjectiles, stage_resetMatrixAndPoints), the camera at the origin looking down
+   +0x202ef30 cleared; the object list, stage_clearBullets, stage_clearParticles, stage_resetMatrixAndPoints), the camera at the origin looking down
    -z (+0x20f3970 .. +0x20f399c) with identity matrices (+0x20f39a0, +0x20f39e0), the start and item points none, the
    team commanders (+0x20fce50) and snapshot textures (+0x1cd6968) all -1, then the scripts (stage_clearMessages, script_reset) and stage_initSpaceOneCell. Its
    callers ignore the eax it leaves */
@@ -252,7 +252,7 @@ void THISCALL (scene_reset)(u8 *s)
 	st->lockCount = 0;
 	stage_clearMapObjects(s);
 	stage_clearBullets(s);
-	stage_clearProjectiles(s);
+	stage_clearParticles(s);
 	stage_resetMatrixAndPoints(s);
 	static const u32 camera[9] = { 0, 0, 0, 0, 0, 0xbf800000, 0, 0x3f800000, 0 };   /* position, forward -z, up y */
 	memcpy(st->cameraPos, camera, sizeof camera);
