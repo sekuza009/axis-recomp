@@ -1147,7 +1147,7 @@ static CallSite g_sites[] = {
     {0x466eb8, 0x466120}, {0x466eef, 0x466120}, {0x467214, 0x466120}, {0x467267, 0x466120},   /* shape_read */
     {0x48a19c, 0x4913a0}, {0x498580, 0x4913a0},   /* hud_drawPlayerMarkers */
     {0x48a1c0, 0x495190},   /* replay_drawMessage */
-    {0x48a1f7, 0x496820}, {0x48a299, 0x496820},   /* replay_drawIcon */
+    {0x48a1f7, 0x496820}, {0x48a299, 0x496820},   /* hud_drawIcon */
     {0x48a259, 0x44ad60}, {0x48a2ff, 0x44ad60},   /* text_drawSized */
     {0x48a309, 0x496b80},   /* replay_drawFollowedName */
     {0x48a318, 0x494930}, {0x4986a0, 0x494930},   /* hud_drawRanking */
@@ -1461,9 +1461,9 @@ int g_ov_area __asm__("axis_ov_area") __attribute__((used));
                          "movl $" fn ", %eax\n\tcall *%eax\n\tpushl %eax\n\tcall axis_ov_end\n\t" \
                          "decl axis_inhud\n\tmovl axis_ov_area, %eax\n\tmovl %eax, axis_area\n\t" \
                          "popl %eax\n\tpushl axis_ov_ret\n\tret"); }
-OV_WRAP(ov_icon_left, 6, GAMEFN_ASM(replay_drawIcon, 0x496820))
+OV_WRAP(ov_icon_left, 6, GAMEFN_ASM(hud_drawIcon, 0x496820))
 OV_WRAP(ov_text_left, 6, GAMEFN_ASM(text_drawSized, 0x44ad60))
-OV_WRAP(ov_icon_right, 7, GAMEFN_ASM(replay_drawIcon, 0x496820))
+OV_WRAP(ov_icon_right, 7, GAMEFN_ASM(hud_drawIcon, 0x496820))
 OV_WRAP(ov_text_right, 7, GAMEFN_ASM(text_drawSized, 0x44ad60))
 OV_WRAP(ov_message, 8, GAMEFN_ASM(replay_drawMessage, 0x495190))
 OV_WRAP(ov_name, 8, GAMEFN_ASM(replay_drawFollowedName, 0x496b80))
