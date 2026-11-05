@@ -38,7 +38,7 @@
 [x] src/load/space_pools.c 937
 [ ] src/match/actor_frame.c 1271
 [ ] src/match/actor_slots.c 979
-[ ] src/match/frame_loops.c 874
+[x] src/match/frame_loops.c 874
 [x] src/match/map_objects.c 65
 [x] src/match/match_start.c 430
 [x] src/match/notices.c 126

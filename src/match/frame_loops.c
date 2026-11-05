@@ -84,14 +84,14 @@ void THISCALL (actor_updateAll)(u8 *s, float dt)
 	}
 }
 
-/* 0x47ce50 (thiscall on the scene): a bullet fired (a4 the FiredRound: none when its weapon is negative) into the next free slot
+/* 0x47ce50 (thiscall on the scene): a bullet fired (shot the FiredRound: none when its weapon is negative) into the next free slot
    (+0x20a99b8; at most 399; a slot added when that is the count, +0x20a99b4), the next free one after it found, then
    the bullet set up (bullet_init). Returns its slot, or -1 */
-int THISCALL (bullet_spawn)(u8 *s, u32 a1, u32 a2, u32 a3, const u8 *a4, u32 a5)
+int THISCALL (bullet_spawn)(u8 *s, u32 id, u32 owner, u32 homingTarget, const u8 *shot, u32 quiet)
 {
 #define COUNT ST->bulletSlotsUsed
 #define NEXT ST->bulletFreeHint
-	if (((const FiredRound *)RELOC(a4))->weapon < 0 || NEXT >= 400)
+	if (((const FiredRound *)RELOC(shot))->weapon < 0 || NEXT >= 400)
 		return -1;
 	if (NEXT == COUNT) {
 		COUNT++;
@@ -103,7 +103,7 @@ int THISCALL (bullet_spawn)(u8 *s, u32 a1, u32 a2, u32 a3, const u8 *a4, u32 a5)
 			NEXT = k;
 			break;
 		}
-	bullet_init(s, slot, a1, a2, a3, (u32)a4, a5);
+	bullet_init(s, slot, id, owner, homingTarget, (u32)shot, quiet);
 	return slot;
 #undef COUNT
 #undef NEXT
@@ -218,13 +218,13 @@ void THISCALL (effect_initShapes)(u8 *s)
 
 /* 0x483770 (thiscall on the scene): entry `entry` of trigger trig's script (the triggers' 0x1c-byte records from
    +0xe3b03c, +0 their entry list; an entry 0x14 bytes: +0xc its command count, +0x10 the 0x30-byte commands) run for
-   actor a (none when negative; actors are 0x8888 bytes from +0x1cd93a8). Each command by its type: triggers on / off
+   actor actorIndex (none when negative; actors are 0x8888 bytes from +0x1cd93a8). Each command by its type: triggers on / off
    (+4) and armed (+0x14); the actor's orders, targets, speed and flags; actors spawned, reset or deactivated; the
    camera's target; events; .scp files, animations and sounds by formatted names; objects (de)activated. Its callers
    ignore the eax it leaves */
-void THISCALL (script_processCommandBy)(u8 *s, int a, int trig, int entry)
+void THISCALL (script_processCommandBy)(u8 *s, int actorIndex, int trig, int entry)
 {
-	u8 *actor = a >= 0 ? (u8 *)&ST->actors[a] : NULL;
+	u8 *actor = actorIndex >= 0 ? (u8 *)&ST->actors[actorIndex] : NULL;
 	Player *ac = (Player *)actor;
 	WayPoint *e = (WayPoint *)(ST->triggers[trig].wayPoints + entry * 0x14);
 	char name[0x100];
@@ -281,7 +281,7 @@ void THISCALL (script_processCommandBy)(u8 *s, int a, int trig, int entry)
 			if (actor) {
 				for (int k = 0; k < 6; k++)
 					if ((u32)ST->playerRecords[ac->player].items[k] == c[1])
-						actor_selectWeapon((Stage *)s, a, k);
+						actor_selectWeapon((Stage *)s, actorIndex, k);
 				ac->inFire = 1;
 			}
 			break;
