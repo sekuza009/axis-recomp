@@ -1700,11 +1700,11 @@ typedef struct Scene {
 	float msgFade;   /* +0x233cc40: message box fade, seconds (1 or more: opaque) */
 	i32 unused233cc44;   /* +0x233cc44: (by use) only written: 0 by scene_startSession */
 	float respawnTime;   /* +0x233cc48: (by use) the local player's wait to respawn (10 s) */
-	float startTimer;   /* +0x233cc4c: > 0: "start" shown */
+	float restartTimer;   /* +0x233cc4c: > 0: the match restarts when it runs out (5 s; packet kind 13): a beep each second, then the scores, frags and items reset and the local player spawns */
 	float scoreCommitTimer;   /* +0x233cc50: a Ladder game's seconds to the next commit of the scores to the title (300; profile_addMatchScores) */
 	float stateSendTimer;   /* +0x233cc54: seconds to the local player's next full state send (sendFlags[local][0]; every 3 s) */
-	float kingTimer;   /* +0x233cc58: (by use) the king message again after 5 s */
-	float teamSyncTime;   /* +0x233cc5c: (by use) the local player's team sent again every 15 s */
+	float rankingTimer;   /* +0x233cc58: the ranking made again (scene_updateRanking) when it runs out or teamsChanged; 5 s, but nothing counts it down (only teamsChanged does it) */
+	float infoSendTimer;   /* +0x233cc5c: the local player's info (net_sendPlayerInfo, sendFlags[local][1]) sent again every 15 s while it has a team */
 	char loadLines[64][0x100];   /* +0x233cc60: the loading screen's lines (loadLineCount of them) */
 	i32 loadLineCount;   /* +0x2340c60 */
 	i32 watchedPlayer;   /* +0x2340c64: the player a spectator watches */
@@ -1728,12 +1728,12 @@ typedef struct Scene {
 	i32 scenePaused;   /* +0x2340ce0: never set (only cleared): 1 would hold the scene (no actor / bullet / particle updates; the replay file not read) */
 	i32 hudHidden;   /* +0x2340ce4: 1: no HUD at all */
 	i32 messagesHidden;   /* +0x2340ce8 */
-	i32 consoleOpen;   /* +0x2340cec: (by use) 1: the full-screen text list (hud_4955a0) */
+	i32 helpOpen;   /* +0x2340cec: 1: the help screen over the whole screen (the HELP key toggles it; hud_drawHelp) */
 	i32 localAlive;   /* +0x2340cf0: (by use) the local player's actor is alive */
 	i32 escMenuOpen;   /* +0x2340cf4 */
 	i32 escPage;   /* +0x2340cf8: 0 main, 1 team, 2 file name, 3 retry?, 4 quit? */
 	i32 escCursor;   /* +0x2340cfc: the item under the cursor */
-	i32 teamChanged;   /* +0x2340d00: (by use) 1 once the team page has been answered */
+	i32 spawnPending;   /* +0x2340d00: 1: the local player spawns (a team chosen, the team page answered, or 10 s after its death; local_spawn clears it) */
 	i32 rankingShown;   /* +0x2340d04 */
 	void *replayFile;   /* +0x2340d08: (by use) the replay file being read */
 	char recordName[0x11];   /* +0x2340d0c: the replay being recorded ("AutoPlay\%s") */
@@ -1819,8 +1819,8 @@ typedef struct Scene {
 	i32 changeTeam;   /* +0x23431ef */
 	char changeName[0x40];   /* +0x23431f3 */
 	i32 changePending;   /* +0x2343233 */
-	i32 endEvents[3];   /* +0x2343237: kinds 3 .. 5: the round's end (event_raise3 .. 5: by the way it ended) */
-	i32 startTimerPending;   /* +0x2343243: 1: packet kind 13 to send (the receiver's startTimer 5 s); never set in the game */
+	i32 endEvents[3];   /* +0x2343237: end notices to send: [0] the server ends the game (packet kind 3), [1] the frag limit (4), [2] the time limit (5) */
+	i32 restartPending;   /* +0x2343243: 1: packet kind 13 to send (the receivers' match restart, restartTimer 5 s); never set in the game */
 	i32 cheatPlayer;   /* +0x2343247: see cheatPending (its low byte sent) */
 	i32 cheatCode;   /* +0x234324b: see cheatPending (its low byte sent) */
 	i32 cheatPending;   /* +0x234324f: 1: a cheat-used notice (packet kind 6: cheatPlayer, cheatCode; msg_cheatUsed on the other side) to send; never set in the game */
@@ -1860,12 +1860,12 @@ typedef struct Scene {
 	i32 talkPressed;   /* +0x23432fb: (by use) pressed this frame: talk */
 	i32 teamTalkPressed;   /* +0x23432ff: team-talk */
 	i32 helpPressed;   /* +0x2343303: help */
-	i32 radioMessage;   /* +0x2343307: (by use) the radio message asked for, one less than its number */
+	i32 followKey;   /* +0x2343307: the number key pressed while spectating, one less than its player (1 .. 10; shift with 1 .. 6: 11 .. 16): the player to follow; -1 none */
 	i32 menuKeys[4];   /* +0x234330b: (by use) the Esc menu's keys this frame: up, down, enter, escape (1: pressed) */
 	i32 followNextAsked;   /* +0x234331b: (by use) the replay viewer asks for the next live player */
 	i32 presetNextAsked;   /* +0x234331f: (by use) ... and for the next camera preset */
 	i32 cleared2343323[10];   /* +0x2343323: (by use) only cleared (match_resetInputState) */
-	char consoleLines[30][0x40];   /* +0x234334b: the full-screen text list (hud_4955a0) */
+	char helpLines[30][0x40];   /* +0x234334b: the help screen's 30 lines (Help.txt, read with the game object) */
 	u8 _pad2343acb[0x40];
 } Scene;
 #pragma pack(pop)
@@ -3221,11 +3221,11 @@ _Static_assert(offsetof(Scene, presetTime) == 0x233cc3c && sizeof(((Scene *)0)->
 _Static_assert(offsetof(Scene, msgFade) == 0x233cc40 && sizeof(((Scene *)0)->msgFade) == 0x4, "scene.fields: Scene.msgFade");
 _Static_assert(offsetof(Scene, unused233cc44) == 0x233cc44 && sizeof(((Scene *)0)->unused233cc44) == 0x4, "scene.fields: Scene.unused233cc44");
 _Static_assert(offsetof(Scene, respawnTime) == 0x233cc48 && sizeof(((Scene *)0)->respawnTime) == 0x4, "scene.fields: Scene.respawnTime");
-_Static_assert(offsetof(Scene, startTimer) == 0x233cc4c && sizeof(((Scene *)0)->startTimer) == 0x4, "scene.fields: Scene.startTimer");
+_Static_assert(offsetof(Scene, restartTimer) == 0x233cc4c && sizeof(((Scene *)0)->restartTimer) == 0x4, "scene.fields: Scene.restartTimer");
 _Static_assert(offsetof(Scene, scoreCommitTimer) == 0x233cc50 && sizeof(((Scene *)0)->scoreCommitTimer) == 0x4, "scene.fields: Scene.scoreCommitTimer");
 _Static_assert(offsetof(Scene, stateSendTimer) == 0x233cc54 && sizeof(((Scene *)0)->stateSendTimer) == 0x4, "scene.fields: Scene.stateSendTimer");
-_Static_assert(offsetof(Scene, kingTimer) == 0x233cc58 && sizeof(((Scene *)0)->kingTimer) == 0x4, "scene.fields: Scene.kingTimer");
-_Static_assert(offsetof(Scene, teamSyncTime) == 0x233cc5c && sizeof(((Scene *)0)->teamSyncTime) == 0x4, "scene.fields: Scene.teamSyncTime");
+_Static_assert(offsetof(Scene, rankingTimer) == 0x233cc58 && sizeof(((Scene *)0)->rankingTimer) == 0x4, "scene.fields: Scene.rankingTimer");
+_Static_assert(offsetof(Scene, infoSendTimer) == 0x233cc5c && sizeof(((Scene *)0)->infoSendTimer) == 0x4, "scene.fields: Scene.infoSendTimer");
 _Static_assert(offsetof(Scene, loadLines) == 0x233cc60 && sizeof(((Scene *)0)->loadLines) == 0x4000, "scene.fields: Scene.loadLines");
 _Static_assert(offsetof(Scene, loadLineCount) == 0x2340c60 && sizeof(((Scene *)0)->loadLineCount) == 0x4, "scene.fields: Scene.loadLineCount");
 _Static_assert(offsetof(Scene, watchedPlayer) == 0x2340c64 && sizeof(((Scene *)0)->watchedPlayer) == 0x4, "scene.fields: Scene.watchedPlayer");
@@ -3246,12 +3246,12 @@ _Static_assert(offsetof(Scene, debugPoints) == 0x2340cd4 && sizeof(((Scene *)0)-
 _Static_assert(offsetof(Scene, scenePaused) == 0x2340ce0 && sizeof(((Scene *)0)->scenePaused) == 0x4, "scene.fields: Scene.scenePaused");
 _Static_assert(offsetof(Scene, hudHidden) == 0x2340ce4 && sizeof(((Scene *)0)->hudHidden) == 0x4, "scene.fields: Scene.hudHidden");
 _Static_assert(offsetof(Scene, messagesHidden) == 0x2340ce8 && sizeof(((Scene *)0)->messagesHidden) == 0x4, "scene.fields: Scene.messagesHidden");
-_Static_assert(offsetof(Scene, consoleOpen) == 0x2340cec && sizeof(((Scene *)0)->consoleOpen) == 0x4, "scene.fields: Scene.consoleOpen");
+_Static_assert(offsetof(Scene, helpOpen) == 0x2340cec && sizeof(((Scene *)0)->helpOpen) == 0x4, "scene.fields: Scene.helpOpen");
 _Static_assert(offsetof(Scene, localAlive) == 0x2340cf0 && sizeof(((Scene *)0)->localAlive) == 0x4, "scene.fields: Scene.localAlive");
 _Static_assert(offsetof(Scene, escMenuOpen) == 0x2340cf4 && sizeof(((Scene *)0)->escMenuOpen) == 0x4, "scene.fields: Scene.escMenuOpen");
 _Static_assert(offsetof(Scene, escPage) == 0x2340cf8 && sizeof(((Scene *)0)->escPage) == 0x4, "scene.fields: Scene.escPage");
 _Static_assert(offsetof(Scene, escCursor) == 0x2340cfc && sizeof(((Scene *)0)->escCursor) == 0x4, "scene.fields: Scene.escCursor");
-_Static_assert(offsetof(Scene, teamChanged) == 0x2340d00 && sizeof(((Scene *)0)->teamChanged) == 0x4, "scene.fields: Scene.teamChanged");
+_Static_assert(offsetof(Scene, spawnPending) == 0x2340d00 && sizeof(((Scene *)0)->spawnPending) == 0x4, "scene.fields: Scene.spawnPending");
 _Static_assert(offsetof(Scene, rankingShown) == 0x2340d04 && sizeof(((Scene *)0)->rankingShown) == 0x4, "scene.fields: Scene.rankingShown");
 _Static_assert(offsetof(Scene, replayFile) == 0x2340d08 && sizeof(((Scene *)0)->replayFile) == 0x4, "scene.fields: Scene.replayFile");
 _Static_assert(offsetof(Scene, recordName) == 0x2340d0c && sizeof(((Scene *)0)->recordName) == 0x11, "scene.fields: Scene.recordName");
@@ -3335,7 +3335,7 @@ _Static_assert(offsetof(Scene, changeTeam) == 0x23431ef && sizeof(((Scene *)0)->
 _Static_assert(offsetof(Scene, changeName) == 0x23431f3 && sizeof(((Scene *)0)->changeName) == 0x40, "scene.fields: Scene.changeName");
 _Static_assert(offsetof(Scene, changePending) == 0x2343233 && sizeof(((Scene *)0)->changePending) == 0x4, "scene.fields: Scene.changePending");
 _Static_assert(offsetof(Scene, endEvents) == 0x2343237 && sizeof(((Scene *)0)->endEvents) == 0xc, "scene.fields: Scene.endEvents");
-_Static_assert(offsetof(Scene, startTimerPending) == 0x2343243 && sizeof(((Scene *)0)->startTimerPending) == 0x4, "scene.fields: Scene.startTimerPending");
+_Static_assert(offsetof(Scene, restartPending) == 0x2343243 && sizeof(((Scene *)0)->restartPending) == 0x4, "scene.fields: Scene.restartPending");
 _Static_assert(offsetof(Scene, cheatPlayer) == 0x2343247 && sizeof(((Scene *)0)->cheatPlayer) == 0x4, "scene.fields: Scene.cheatPlayer");
 _Static_assert(offsetof(Scene, cheatCode) == 0x234324b && sizeof(((Scene *)0)->cheatCode) == 0x4, "scene.fields: Scene.cheatCode");
 _Static_assert(offsetof(Scene, cheatPending) == 0x234324f && sizeof(((Scene *)0)->cheatPending) == 0x4, "scene.fields: Scene.cheatPending");
@@ -3373,12 +3373,12 @@ _Static_assert(offsetof(Scene, partStepUpPressed) == 0x23432f7 && sizeof(((Scene
 _Static_assert(offsetof(Scene, talkPressed) == 0x23432fb && sizeof(((Scene *)0)->talkPressed) == 0x4, "scene.fields: Scene.talkPressed");
 _Static_assert(offsetof(Scene, teamTalkPressed) == 0x23432ff && sizeof(((Scene *)0)->teamTalkPressed) == 0x4, "scene.fields: Scene.teamTalkPressed");
 _Static_assert(offsetof(Scene, helpPressed) == 0x2343303 && sizeof(((Scene *)0)->helpPressed) == 0x4, "scene.fields: Scene.helpPressed");
-_Static_assert(offsetof(Scene, radioMessage) == 0x2343307 && sizeof(((Scene *)0)->radioMessage) == 0x4, "scene.fields: Scene.radioMessage");
+_Static_assert(offsetof(Scene, followKey) == 0x2343307 && sizeof(((Scene *)0)->followKey) == 0x4, "scene.fields: Scene.followKey");
 _Static_assert(offsetof(Scene, menuKeys) == 0x234330b && sizeof(((Scene *)0)->menuKeys) == 0x10, "scene.fields: Scene.menuKeys");
 _Static_assert(offsetof(Scene, followNextAsked) == 0x234331b && sizeof(((Scene *)0)->followNextAsked) == 0x4, "scene.fields: Scene.followNextAsked");
 _Static_assert(offsetof(Scene, presetNextAsked) == 0x234331f && sizeof(((Scene *)0)->presetNextAsked) == 0x4, "scene.fields: Scene.presetNextAsked");
 _Static_assert(offsetof(Scene, cleared2343323) == 0x2343323 && sizeof(((Scene *)0)->cleared2343323) == 0x28, "scene.fields: Scene.cleared2343323");
-_Static_assert(offsetof(Scene, consoleLines) == 0x234334b && sizeof(((Scene *)0)->consoleLines) == 0x780, "scene.fields: Scene.consoleLines");
+_Static_assert(offsetof(Scene, helpLines) == 0x234334b && sizeof(((Scene *)0)->helpLines) == 0x780, "scene.fields: Scene.helpLines");
 _Static_assert(sizeof(Scene) == 0x2343b0b, "scene.fields: size of Scene");
 
 #endif

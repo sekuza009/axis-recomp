@@ -1391,8 +1391,8 @@ struct Scene 0x2343b0b                                          # the scene: the
 0x23431ef  4          i32 changeTeam
 0x23431f3  0x40       char changeName[0x40]
 0x2343233  4          i32 changePending
-0x2343237  0xc        i32 endEvents[3]                           # kinds 3 .. 5: the round's end (event_raise3 .. 5: by the way it ended)
-0x2343243  4          i32 startTimerPending                     # 1: packet kind 13 to send (the receiver's startTimer 5 s); never set in the game
+0x2343237  0xc        i32 endEvents[3]                          # end notices to send: [0] the server ends the game (packet kind 3), [1] the frag limit (4), [2] the time limit (5)
+0x2343243  4          i32 restartPending                        # 1: packet kind 13 to send (the receivers' match restart, restartTimer 5 s); never set in the game
 0x2343247  4          i32 cheatPlayer                           # see cheatPending (its low byte sent)
 0x234324b  4          i32 cheatCode                             # see cheatPending (its low byte sent)
 0x234324f  4          i32 cheatPending                          # 1: a cheat-used notice (packet kind 6: cheatPlayer, cheatCode; msg_cheatUsed on the other side) to send; never set in the game
@@ -1403,8 +1403,8 @@ struct Scene 0x2343b0b                                          # the scene: the
 0x2221fb4  4          i32 teamsChanged                          # = Stage.teamsChanged (the same word): 1: an actor joined or changed team: the ranking made again (scene_updateRanking)
 0x22f0414  0x100      char centreNotice[0x100]                   # (by use) a text shown in the centre once (cleared after) (= Stage.printText (stage_printText fills it))
 0x233cc48  4          float respawnTime                          # (by use) the local player's wait to respawn (10 s)
-0x233cc58  4          float kingTimer                            # (by use) the king message again after 5 s
-0x233cc5c  4          float teamSyncTime                         # (by use) the local player's team sent again every 15 s
+0x233cc58  4          float rankingTimer                        # the ranking made again (scene_updateRanking) when it runs out or teamsChanged; 5 s, but nothing counts it down (only teamsChanged does it)
+0x233cc5c  4          float infoSendTimer                       # the local player's info (net_sendPlayerInfo, sendFlags[local][1]) sent again every 15 s while it has a team
 0x2340ca4  0x2c       i32 cleared2340ca4[11]                     # (by use) only zeroed (game_loadAllData); nothing else uses them
 0x2340cd0  4          i32 debugGrid                              # (by use) 1: a 100 x 150 grid of lines about the actor
 0x2340cd4  4          i32 debugPoints                            # (by use) 1: the map's points marked
@@ -1449,7 +1449,7 @@ struct Scene 0x2343b0b                                          # the scene: the
 0x234326f  4          i32 holdStepRight                          # (D)
 0x234327b  4          i32 holdFire                               # (left button)
 0x2343287  4          i32 weaponKey                             # the weapon slot whose key (HAND WEAPON 1 .. 4, R / L SHOULDER) is held, the last of them (-1 none): Player.inWeaponSlot
-0x2343307  4          i32 radioMessage                           # (by use) the radio message asked for, one less than its number
+0x2343307  4          i32 followKey                             # the number key pressed while spectating, one less than its player (1 .. 10; shift with 1 .. 6: 11 .. 16): the player to follow; -1 none
 0x23432ab  4          i32 zoomInHeld                            # Ctrl + up held (the free camera, the replay viewer): the camera preset's distance shrinks
 0x23432af  4          i32 zoomOutHeld                           # Ctrl + down held: the distance grows
 0x23432cb  4          i32 actionKey                              # (by use) a key of the mode pressed this frame: a weapon slot key in play, Space in the replay viewer
@@ -1511,7 +1511,7 @@ struct Scene 0x2343b0b                                          # the scene: the
 0x22f0514  4          i32 kingActor                             # = Stage.kingActor (the same word): the king (isKing; -1 none)
 0x22f0518  8          i32 teamCommanders[2]                     # = Stage.teamCommanders (the same words): each team's commander (isCommander; -1 none)
 0x22f0410  4          i32 botsHoldFire                          # = Stage.botsHoldFire (the same word): 1 at the round's end (round_over); 0 again on a retry
-0x2340d00  4          i32 teamChanged                            # (by use) 1 once the team page has been answered
+0x2340d00  4          i32 spawnPending                          # 1: the local player spawns (a team chosen, the team page answered, or 10 s after its death; local_spawn clears it)
 0x2342415  4          i32 teamAsked                              # (by use) 1: the local player asked to play (START), the team to be given
 0x234241d  4          i32 chosenTeam                             # (by use) the team asked for (< 0: none)
 0x23432cf  4          i32 quitAsked                              # (by use) 1: the match is to be left (QUIT / no retry)
@@ -1560,12 +1560,12 @@ struct Scene 0x2343b0b                                          # the scene: the
 0x233cc14  0xc        float cameraTarget[3]                      # (by use) the point the camera looks at (the camera path's mid point; cameraDir = it - cameraPos)
 0x233cc20  4          i32 matchState                             # the match's state: 1 loading, 2 playing, 3 free camera, 4 replay
 0x233cc34  4          float secondFraction                       # the second's fraction so far (the chat cursor blinks by it)
-0x233cc4c  4          float startTimer                           # > 0: "start" shown
+0x233cc4c  4          float restartTimer                        # > 0: the match restarts when it runs out (5 s; packet kind 13): a beep each second, then the scores, frags and items reset and the local player spawns
 0x233cc40  4          float msgFade                              # message box fade, seconds (1 or more: opaque)
 0x2340c64  4          i32 watchedPlayer                          # the player a spectator watches
 0x2340ce4  4          i32 hudHidden                              # 1: no HUD at all
 0x2340ce8  4          i32 messagesHidden
-0x2340cec  4          i32 consoleOpen                            # (by use) 1: the full-screen text list (hud_4955a0)
+0x2340cec  4          i32 helpOpen                              # 1: the help screen over the whole screen (the HELP key toggles it; hud_drawHelp)
 0x2340c9c  4          float escTimer                             # time the in-match menu has been open (fades in over 0.25 s)
 0x2340cf4  4          i32 escMenuOpen
 0x2340cf8  4          i32 escPage                                # 0 main, 1 team, 2 file name, 3 retry?, 4 quit?
@@ -1607,7 +1607,7 @@ struct Scene 0x2343b0b                                          # the scene: the
 0x2342f02  4          float readyTimer                           # > 0: "ready" shown
 0x2342f06  0x40       char readyText[0x40]                       # shown while no countdown runs
 0x2343323  0x28       i32 cleared2343323[10]                     # (by use) only cleared (match_resetInputState)
-0x234334b  0x780      char consoleLines[30][0x40]                # the full-screen text list (hud_4955a0)
+0x234334b  0x780      char helpLines[30][0x40]                  # the help screen's 30 lines (Help.txt, read with the game object)
 0x234328f  4          i32 rankingKey                             # 1: the ranking key is held
 0x23429ce  0x528      EventLine events[5]                        # the last five events (ring of 5)
 0x2342ef6  4          u32 eventCount                             # events written so far

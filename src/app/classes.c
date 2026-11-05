@@ -556,18 +556,18 @@ u8 *THISCALL (Game_ctor)(u8 *g)
 	GS->geometryPerRow[4] = 10;
 	GS->geometryPerRow[5] = 0x18;
 	for (int k = 0; k < 30; k++)
-		GS->consoleLines[k][0] = 0;
+		GS->helpLines[k][0] = 0;
 	void *f = crt_fopen((const char *)STR(0x4c457c, "Help.txt"), (const char *)STR(0x4ad5e0, "rt"));
 	if (f) {
 #define crt_fgets(line, n, f) GAME_CDECL(0x49ecd7, char *, char *, int, void *)(line, n, f)
-		if (crt_fgets(GS->consoleLines[0], 0x3f, f))
-			for (int k = 1; k < 30 && crt_fgets(GS->consoleLines[k], 0x3f, f); k++)
+		if (crt_fgets(GS->helpLines[0], 0x3f, f))
+			for (int k = 1; k < 30 && crt_fgets(GS->helpLines[k], 0x3f, f); k++)
 				;
 #undef crt_fgets
 		fclose(f);
 	}
 	for (int k = 0; k < 30; k++) {
-		char *m = GS->consoleLines[k];   /* (the help text's lines, from Help.txt) */
+		char *m = GS->helpLines[k];   /* (the help text's lines, from Help.txt) */
 		m[(int)strlen(m) - 1] = 0;
 	}
 	chat_loadMacros(g);   /* chat_loadMacros */
@@ -634,8 +634,8 @@ void THISCALL (scene_startSession)(u8 *g, u32 a, int mode)
 	(*(int *)&GS->msgFade) = GS->unused233cc44 = 0;
 	BITS(GS->scoreCommitTimer) = 0x43960000;   /* 300, 3, 5, 15 */
 	GS->stateSendTimer = 3.0f;
-	GS->kingTimer = 5.0f;
-	GS->teamSyncTime = 15.0f;
+	GS->rankingTimer = 5.0f;
+	GS->infoSendTimer = 15.0f;
 	zero_dwords((u8 *)GS->cleared2340ca4, 11);
 	GS->debugGrid = 1;
 	zero_dwords((u8 *)g + offsetof(Scene, debugPoints), 13);   /* debugPoints .. rankingShown */

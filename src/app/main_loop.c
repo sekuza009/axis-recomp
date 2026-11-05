@@ -236,11 +236,11 @@ static void mouse_offset(u8 *s, int steer)
 	g_mouseY = gfx_getHeight() / 2;
 }
 
-/* the weapon slot keys: slot 1 .. 9, 0 (+0x23424f2), each also asking for the switch (+0x2340c6c, +0x23432cb) */
-static const u32 k_slotKeys[10][2] = { { ADDR(g_dikNumpad1), 1 }, { ADDR(g_dikNumpad2), 2 }, { ADDR(g_dikNumpad3), 3 }, { ADDR(g_dikNumpad4), 4 }, { ADDR(g_dikNumpad5), 5 },
+/* the spectator's camera preset keys: numpad 1 .. 9, 0 (into cameraSlot), each also a manual pick and an action */
+static const u32 k_spectatePresetKeys[10][2] = { { ADDR(g_dikNumpad1), 1 }, { ADDR(g_dikNumpad2), 2 }, { ADDR(g_dikNumpad3), 3 }, { ADDR(g_dikNumpad4), 4 }, { ADDR(g_dikNumpad5), 5 },
                                        { ADDR(g_dikNumpad6), 6 }, { ADDR(g_dikNumpad7), 7 }, { ADDR(g_dikNumpad8), 8 }, { ADDR(g_dikNumpad9), 9 }, { ADDR(g_dikNumpad0), 0 } };
-/* the radio message keys (+0x2343307 one less than the message; the first six 10 more with the modifier 0x67ef24) */
-static const u32 k_radioKeys[10] = { ADDR(g_dik1), ADDR(g_dik2), ADDR(g_dik3), ADDR(g_dik4), ADDR(g_dik5), ADDR(g_dik6), ADDR(g_dik7), ADDR(g_dik8), ADDR(g_dik9), ADDR(g_dik0) };
+/* the follow keys, 1 .. 9, 0 (into followKey, one less than the player; the first six 10 more with left shift) */
+static const u32 k_followKeys[10] = { ADDR(g_dik1), ADDR(g_dik2), ADDR(g_dik3), ADDR(g_dik4), ADDR(g_dik5), ADDR(g_dik6), ADDR(g_dik7), ADDR(g_dik8), ADDR(g_dik9), ADDR(g_dik0) };
 /* the held controls: the binding's two keys and the flag they set */
 static const u32 k_heldKeys[10][2] = { { (OBJ(g_controls) + 0x30), offsetof(Scene, holdAltitude) }, { ADDR(g_keyStepLeft), offsetof(Scene, holdStepLeft) }, { ADDR(g_keyStepRight), offsetof(Scene, holdStepRight) },
                                        { ADDR(g_keyForward), offsetof(Scene, holdForward) }, { ADDR(g_keyBackward), offsetof(Scene, holdBackward) }, { (OBJ(g_controls) + 0x40), offsetof(Scene, holdUp) },
@@ -250,9 +250,10 @@ static const u32 k_heldKeys[10][2] = { { (OBJ(g_controls) + 0x30), offsetof(Scen
 static const u32 k_weaponKeys[6] = { (OBJ(g_controls) + 0x78), (OBJ(g_controls) + 0x80), (OBJ(g_controls) + 0x88), (OBJ(g_controls) + 0x90), (OBJ(g_controls) + 0x68), (OBJ(g_controls) + 0x70) };
 
 /* 0x49d290 (thiscall on the game object): the match's input for this frame (match_resetInputState first; nothing
-   more before the match runs, +0x233c9e8). In play (no menu +0x2340d35 / +0x2340cf4): with the own view (+0x233c9fc
-   0) and alive (+0x2340cf0, or a network game, or the local player's +0x1eccb48), the weapon slot and radio keys,
-   else the fire keys only; a spectator's view the fire keys held / pressed; then every held control, the view keys,
+   more before the match is drawn, matchDrawing). With no chat line or menu open: spectating (playing 0) and out
+   of the match (localAlive 0, or a solo game without a mech in play) the fire keys leave it; spectating otherwise
+   a click follows the next player, Enter the next preset, the numpad picks the preset (cameraSlot) and the number
+   keys the player to follow (followKey); playing, the fire keys held / pressed; then every held control, the weapon keys,
    the mouse look (above 0.2 s of frame time it is still), the game menu (its keys once keyGuard is
    over), the chat keys, the camera mode cycle (respawnCameraMode), the scoreboard keys, the message log toggle cycle
    (+0x2340ce8 / ce4 with their notices). In the in-match menu (+0x2340cf4 1) the mouse moves the selection (the
@@ -279,16 +280,16 @@ void THISCALL (match_combatInput)(u8 *s)
 					SC->actionKey = 1;
 				}
 				for (int k = 0; k < 10; k++)
-					if (input_justPressed(KEY(k_slotKeys[k][0]))) {
-						SC->cameraSlot = k_slotKeys[k][1];
+					if (input_justPressed(KEY(k_spectatePresetKeys[k][0]))) {
+						SC->cameraSlot = k_spectatePresetKeys[k][1];
 						SC->manualPick[1] = 1;
 						SC->actionKey = 1;
 					}
-				SC->radioMessage = 0;
+				SC->followKey = 0;
 				for (int k = 0; k < 10; k++)
-					if (input_justPressed(KEY(k_radioKeys[k])))
-						SC->radioMessage = k < 6 ? (input_justPressed(g_dikLShift) ? 10 : 0) + k + 1 : k + 1;
-				SC->radioMessage--;
+					if (input_justPressed(KEY(k_followKeys[k])))
+						SC->followKey = k < 6 ? (input_justPressed(g_dikLShift) ? 10 : 0) + k + 1 : k + 1;
+				SC->followKey--;
 			}
 		} else {
 			if (held2((OBJ(g_controls) + 0x50), (OBJ(g_controls) + 0x54)))
@@ -1375,10 +1376,10 @@ static void local_spawn(u8 *s)
 	SC->startCountShown = -1;
 	scene_updateRanking((Scene *)s);
 	SC->actionKey = 1;
-	SC->teamChanged = 0;
+	SC->spawnPending = 0;
 }
 
-/* the bots (the stage's map actors, botsWaiting of them) waiting to spawn: placed on a free point */
+/* the bots (the map's actors that are bots, mapActorCount records) waiting to spawn: placed on a free point */
 static void bot_spawns(u8 *s)
 {
 	for (int j = 0; j < SC->mapActorCount; j++) {
@@ -1504,7 +1505,7 @@ static void muzzle_camera(u8 *s, const u8 *t)
 	dir[2] = 1.0f;
 }
 
-/* the round's slow motion: the last two seconds of a won round's end (+0x2342399) when the winner (+0x2221fb0) is
+/* the round's slow motion: the last two seconds of a won round's end (+0x2342399) when the last to die (lastDeath) is
    down (state 2), unless the time ran out */
 static int slow_end(u8 *s)
 {
@@ -1623,12 +1624,12 @@ void THISCALL (match_frame)(u8 *s)
 		return;
 	}
 	if (SC->helpPressed == 1)
-		SC->consoleOpen ^= 1;
+		SC->helpOpen ^= 1;
 	if (SC->quitAsked == 1) {
-		if (SC->consoleOpen == 1)
-			SC->consoleOpen = SC->quitAsked = 0;
-	} else if (SC->consoleOpen == 1 && SC->firePressed == 1)
-		SC->consoleOpen = 0;
+		if (SC->helpOpen == 1)
+			SC->helpOpen = SC->quitAsked = 0;
+	} else if (SC->helpOpen == 1 && SC->firePressed == 1)
+		SC->helpOpen = 0;
 	/* the Esc menu, quitting */
 	int quit_check = 1;
 	if (SC->escMenuOpen == 1)
@@ -1656,7 +1657,7 @@ void THISCALL (match_frame)(u8 *s)
 					g_matchEndedByUser = 1;
 				} else {
 					msg_serverEndsGame(s);
-					event_raise3(s);
+					net_announceServerEnd(s);
 					SC->endedByTime = 2;
 					SC->endNoticeTime = 0.0f;
 					g_matchEndedByUser = 1;
@@ -1672,7 +1673,7 @@ void THISCALL (match_frame)(u8 *s)
 		}
 		SC->quitAsked = 0;
 	}
-	/* the local player's starting kills and deaths, its screenshot */
+	/* the local player's starting grade and score; its flag loaded (network games) */
 	if (SC->localPlayer >= 0 && SC->statsTaken == 0) {
 		SC->players[SC->localPlayer].grade = SC->level;
 		SC->players[SC->localPlayer].levelShown = SC->level;
@@ -1681,8 +1682,8 @@ void THISCALL (match_frame)(u8 *s)
 		SC->statsTaken = 1;
 	}
 	if (SC->flagLoaded == 0 && SC->localPlayer >= 0 && SC->sessionMode == 1) {
-		int shot = playerRecord_loadFlag(stage, SC->localPlayer);
-		SC->playerRecords[SC->localPlayer].flagChanged = shot;
+		int loaded = playerRecord_loadFlag(stage, SC->localPlayer);
+		SC->playerRecords[SC->localPlayer].flagChanged = loaded;
 		SC->playerRecords[SC->localPlayer].flagSent = 0;
 		SC->flagUploadTimer = 5.0f;   /* 5 */
 		SC->flagLoaded = 1;
@@ -1717,7 +1718,7 @@ void THISCALL (match_frame)(u8 *s)
 				msg_playerJoinedTeam((Scene *)s, SC->localPlayer, SC->localTeam);
 				notice_joinedTeam((Scene *)s, SC->localPlayer, SC->localTeam, (const char *)SC->mechName);
 			}
-			SC->teamChanged = 1;
+			SC->spawnPending = 1;
 		}
 		SC->teamAsked = 0;
 	}
@@ -1728,11 +1729,11 @@ void THISCALL (match_frame)(u8 *s)
 		SC->respawnTime = (float)v;
 		if (!(v < 10.0f)) {   /* respawn after 10 s */
 			SC->respawnTime = 0.0f;
-			SC->teamChanged = 1;
+			SC->spawnPending = 1;
 		}
 	} else
 		SC->respawnTime = 0.0f;
-	if (SC->teamChanged == 1
+	if (SC->spawnPending == 1
 	    || (SC->platoon == 1 && SC->players[SC->localPlayer].state == 3 && SC->players[SC->localPlayer].isCommander == 1))
 		local_spawn(s);
 	if (SC->sessionMode == 0 && SC->localPlayer >= 0 && SC->players[SC->localPlayer].inPlay == 1 && SC->matchOver == 0)
@@ -1842,7 +1843,7 @@ void THISCALL (match_frame)(u8 *s)
 		if (SC->playing == 0) {   /* spectating: the followed player */
 			if (SC->watchedPlayer >= 0 && SC->players[SC->watchedPlayer].team < 0)
 				SC->watchedPlayer = -1;
-			int f = SC->radioMessage, n = SC->playerCount;
+			int f = SC->followKey, n = SC->playerCount;
 			if (f >= 0) {
 				if (SC->players[f].team >= 0) {
 					if (SC->cameraSlot < 0)
@@ -1935,13 +1936,13 @@ void THISCALL (match_frame)(u8 *s)
 		notice_printCentre((Scene *)s, (const char *)SC->centreNotice);
 		(*(u8 *)&SC->centreNotice[0]) = 0;
 	}
-	if (SC->teamsChanged == 1 || !(SC->kingTimer > 0)) {
+	if (SC->teamsChanged == 1 || !(SC->rankingTimer > 0)) {
 		scene_updateRanking(sc);
 		if (net_playerInUse(SC->localPlayer) == 1 && SC->rank[SC->localPlayer] == 1
 		    && (SC->rankShown > 1 || (SC->kingOfTheHill == 1 && SC->rankShown != 1)))
 			sound_playVolume(0xf, 100);
 		SC->teamsChanged = 0;
-		SC->kingTimer = 5.0f;
+		SC->rankingTimer = 5.0f;
 	}
 	if (SC->recording == 1)
 		SC->recordTime = f32(fadd_m(fld_m(&SC->frameTime), &SC->recordTime));
@@ -1954,11 +1955,11 @@ void THISCALL (match_frame)(u8 *s)
 			SC->stateSendTimer = 3.0f;
 		}
 		if (SC->players[SC->localPlayer].team >= 0) {
-			v = fsub_m(fld_m(&SC->teamSyncTime), &SC->frameTime);
-			SC->teamSyncTime = (float)v;
+			v = fsub_m(fld_m(&SC->infoSendTimer), &SC->frameTime);
+			SC->infoSendTimer = (float)v;
 			if (!(v > 0)) {
 				SC->sendFlags[SC->localPlayer][1] = 1;
-				SC->teamSyncTime = 15.0f;   /* 15 */
+				SC->infoSendTimer = 15.0f;   /* 15 */
 			}
 		}
 		if (SC->noticeChanged == 1)
@@ -1971,7 +1972,7 @@ void THISCALL (match_frame)(u8 *s)
 			if (SC->sendFlags[i][1] == 1)
 				net_sendPlayerInfo(s, i);
 			if (net_playerInUse(i) == 1 && SC->sendTimer > 0.05f && SC->playerRecords[SC->localPlayer].flagSent < 0x180) {
-				net_sendColourRing(s, SC->localPlayer);
+				net_sendFlagPiece(s, SC->localPlayer);
 				SC->sendTimer = (float)-fld_m(&SC->frameTime);
 			}
 			if (net_playerInUse(i) == 1 && SC->players[i].active == 1 && SC->players[i].controlledBy == SC->localPlayer
@@ -1992,11 +1993,11 @@ void THISCALL (match_frame)(u8 *s)
 				SC->endNoticeTime = 0.0f;
 				int k = SC->endedByTime;
 				if (k == 0)
-					event_raise4(s);
+					net_announceFragLimit(s);
 				else if (k == 1)
-					event_raise5(s);
+					net_announceTimeLimit(s);
 				else if (k == 2)
-					event_raise3(s);
+					net_announceServerEnd(s);
 			} else
 				SC->endNoticeTime = f32(fadd_m(fld_m(&SC->frameTime), &SC->endNoticeTime));
 		}
@@ -2212,15 +2213,15 @@ void THISCALL (match_frame)(u8 *s)
 			SC->resendWarning = 0.0f;
 	}
 	/* the match restart count */
-	if (SC->startTimer > 0) {
-		long double v = fsub_m(fld_m(&SC->startTimer), &SC->frameTime);
-		SC->startTimer = (float)v;
+	if (SC->restartTimer > 0) {
+		long double v = fsub_m(fld_m(&SC->restartTimer), &SC->frameTime);
+		SC->restartTimer = (float)v;
 		if (v > 0) {
 			if (ftol(fadd_m(v, &SC->frameTime)) != ftol(v))
 				sound_playVolume(9, 100);
 		} else {
 			if (SC->localPlayer >= 0 && SC->players[SC->localPlayer].team >= 0)
-				SC->teamChanged = 1;
+				SC->spawnPending = 1;
 			SC->endTime = 0.0f;
 			SC->matchOver = 0;
 			replay_closeRecording(sc);
@@ -2244,7 +2245,7 @@ void THISCALL (match_frame)(u8 *s)
 			SC->players[SC->localPlayer].kills = 0;
 			SC->players[SC->localPlayer].deathsCounted = 0;
 			SC->players[SC->localPlayer].deaths = 0;
-			SC->startTimer = 0.0f;
+			SC->restartTimer = 0.0f;
 			sound_playVolume(0x18, 100);
 		}
 	}

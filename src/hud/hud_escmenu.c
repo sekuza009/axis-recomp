@@ -294,7 +294,7 @@ static int esc_main(Scene *scene)
 		chat_textField(0, 0, 16);
 		return 0;
 	case 3:
-		scene->consoleOpen = 1;
+		scene->helpOpen = 1;
 		return 1;
 	case 4:
 		escMenu_open(scene, 4, 0);
@@ -336,7 +336,7 @@ static int esc_team(Scene *scene)
 	}
 #undef TEAM_NOW
 	scene_setLocalTeam(scene, scene->localTeam);
-	scene->teamChanged = 1;
+	scene->spawnPending = 1;
 	return 1;
 }
 

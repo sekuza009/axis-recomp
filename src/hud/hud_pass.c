@@ -67,7 +67,7 @@ void THISCALL (hud_pass)(Scene *scene)
 				PATCHED_THISCALL(0x498580, void, Scene *)(scene);                 /* hud_drawPlayerMarkers */
 			if (local >= 0 && scene->players[local].state == 1 && !scene->matchOver && !scene->matchLeaving)
 				PATCHED_THISCALL(0x4985c4, void, Scene *)(scene);                 /* hud_drawLockOn */
-			if (!scene->escMenuOpen && !scene->consoleOpen) {
+			if (!scene->escMenuOpen && !scene->helpOpen) {
 				/* the main HUD of the player the view follows: the local one while playing, else the watched one */
 				if (scene->localPlayer >= 0) {
 					int shown = scene->playing == 1 ? scene->players[scene->localPlayer].state == 1
@@ -109,13 +109,13 @@ void THISCALL (hud_pass)(Scene *scene)
 		debug_traceStripped(scene);
 		if (g_showFps == 1)
 			PATCHED_THISCALL(0x498862, void, Scene *)(scene);                     /* hud_drawFps */
-		if (scene->consoleOpen == 1)
-			hud_drawConsole(scene);
+		if (scene->helpOpen == 1)
+			hud_drawHelp(scene);
 		if (scene->escMenuOpen == 1)
 			hud_drawEscMenu(scene);
 		if (scene->recording == 1)
 			hud_drawRecordIndicator(scene);
 	}
-	if ((scene->readyTimer > 0.0f && !scene->matchOver) || scene->startTimer > 0.0f)
+	if ((scene->readyTimer > 0.0f && !scene->matchOver) || scene->restartTimer > 0.0f)
 		hud_drawReadyStart(scene);
 }

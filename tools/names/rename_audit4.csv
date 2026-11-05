@@ -33,3 +33,8 @@ script_pushEvent,script_pushMessage
 stage_clearScriptEvents,stage_clearMessages
 playerRecord_loadEmblem,playerRecord_loadFlag
 emblem_uploadAtlas,flag_uploadAtlas
+hud_drawConsole,hud_drawHelp
+event_raise3,net_announceServerEnd
+event_raise4,net_announceFragLimit
+event_raise5,net_announceTimeLimit
+net_sendColourRing,net_sendFlagPiece

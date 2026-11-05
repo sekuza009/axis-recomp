@@ -28,10 +28,10 @@ void THISCALL (replay_drawFollowedName)(Scene *scene)
 void THISCALL (hud_drawReadyStart)(Scene *scene)
 {
 	char text[256];
-	if (scene->startTimer > 0.0f) {
-		if (scene->startTimer >= 1.0f) {
+	if (scene->restartTimer > 0.0f) {
+		if (scene->restartTimer >= 1.0f) {
 			text_setColor(1.0f, 1.0f, 0.0f, 1.0f);
-			sprintf(text, "READY %d", ftol(scene->startTimer));
+			sprintf(text, "READY %d", ftol(scene->restartTimer));
 		} else {
 			text_setColor(1.0f, 0.0f, 0.0f, 1.0f);
 			sprintf(text, "START!");
@@ -43,15 +43,15 @@ void THISCALL (hud_drawReadyStart)(Scene *scene)
 	}
 }
 
-/* 0x4955a0 (hud_drawConsole): the text list over the whole screen, darkened: 30 lines of scene->consoleLines */
-void THISCALL (hud_drawConsole)(Scene *scene)
+/* 0x4955a0 (hud_drawHelp): the text list over the whole screen, darkened: 30 lines of scene->helpLines */
+void THISCALL (hud_drawHelp)(Scene *scene)
 {
 	glColor4f(0.0f, 0.0f, 0.0f, 0.5f);
 	int height = gfx_getHeight();
 	gfx_fillRect(0, 0, gfx_getWidth(), height);
 	text_setColor(1.0f, 1.0f, 1.0f, 1.0f);
 	for (int line = 0; line < 30; line++)
-		text_drawSized(0xc0, line * 0x10, scene->consoleLines[line], 8);
+		text_drawSized(0xc0, line * 0x10, scene->helpLines[line], 8);
 }
 
 /* 0x46bd00 (hud_drawRectOutline): the outline of a rectangle (screen pixels, y down; its right and bottom edges one pixel

@@ -597,11 +597,11 @@ void vec_initAxisX(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void THISCALL stage_clearFrags(void *stage);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-void THISCALL event_raise3(void *scene);
+void THISCALL net_announceServerEnd(void *scene);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-void THISCALL event_raise4(void *scene);
+void THISCALL net_announceFragLimit(void *scene);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-void THISCALL event_raise5(void *scene);
+void THISCALL net_announceTimeLimit(void *scene);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void THISCALL ViewVolume_clearDrawCounts(void *view);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
@@ -2421,13 +2421,13 @@ DWORD net_closeSockets(void);
 int net_resolveHost(const char *host);
 /* match packet senders (thiscall on the scene): each builds a 64-byte packet, sends it with net_sendPacketData,
    counts it and, while recording an autoplay, writes it to the recording too.
-   0x48e990 net_sendColourRing(player): packet 0x0c, the player's next 16 3-byte entries of a 0x180 ring (or -1);
+   0x48e990 net_sendFlagPiece(player): packet 0x0c, the player's next 16 3-byte entries of a 0x180 ring (or -1);
    0x48ead0 net_sendPlayerLevels: packet 0x0e, a 4-bit level (value / 10 + 1, at most 15) per object, two per byte;
    0x48e0f0 net_sendPlayerInfo(player): packet 0x02, the player's name, team, colours and parts, sent once when flagged;
    0x48e680 net_sendMatchEvent: packets 0x03..0x0d for the first pending match event (strings, team and score changes);
    0x48e2c0 net_sendPlayerState(player): the player's state (position, angles, flags) and five shot slots */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-THISCALL void net_sendColourRing(char *scene, DWORD p);
+THISCALL void net_sendFlagPiece(char *scene, DWORD p);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 THISCALL void net_sendPlayerLevels(char *scene);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
@@ -3293,7 +3293,7 @@ THISCALL void playerRecord_set(char *eng, DWORD p, DWORD name, DWORD v, DWORD te
                            DWORD leg, DWORD booster, DWORD i0, DWORD i1, DWORD i2, DWORD i3, DWORD i4, DWORD i5);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 THISCALL void playerRecord_setFromActorRecord(char *eng, DWORD p, DWORD rec);
-/* (hud_drawConsole: batch 198, lifted whole in lifted/grp153.c) */
+/* (hud_drawHelp: batch 198, lifted whole in lifted/grp153.c) */
 /* batch 92 (lifted/grp38.c) */
 /* menu_drawTexture / _427b60(x1, y1, x2, y2, tex): with GL_TEXTURE_2D, bind texture tex (set tex / 512
    of the global texture set 0xa0e010, index tex % 512; tex_bind) and draw the quad x1,y1 - x2,y2 through
@@ -4957,11 +4957,11 @@ THISCALL DWORD game_processLoadingMode(char *s);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 THISCALL DWORD replay_frame(char *s);
 /* batch 198 (lifted/grp153.c): the help screen, the loading screen's cylinder */
-/* 0x4955a0 hud_drawConsole() (thiscall on the scene; with "help_draw" at 0x4955c0, which functions.csv listed apart: the
+/* 0x4955a0 hud_drawHelp() (thiscall on the scene; with "help_draw" at 0x4955c0, which functions.csv listed apart: the
    head runs straight into it): a half-transparent black quad over the screen (0x46bd60), then the 30 help lines
    (0x40 bytes each from +0x234334b) in white at x 0xc0, y 0, 0x10 ... 0x1d0 (0x44ad60) */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-void THISCALL hud_drawConsole(void *scene);
+void THISCALL hud_drawHelp(void *scene);
 /* 0x469730 loading_drawScreen(mode, unused, text): the loading screen (0x469320, at the progress 0xa0ea88) with
    its text (copied to 0xa0e988). Mode -1: the progress reset, the backdrop texture looked up, then a fade from
    black over one second of game time (timer 0xa0e948, a full-screen quad 0x46bd60 each frame, swapped by 0x4685d0);
@@ -7146,9 +7146,9 @@ V0(colour_initRealGrey, 0x46d350, COLOURS)
 V0(vec_initOrigin, 0x4678f0, AXES) V0(vec_initZero, 0x467890, AXES) V0(vec_initAxisZ, 0x467980, AXES)
 V0(vec_initUp, 0x467950, AXES) V0(vec_initRest, 0x4678c0, AXES) V0(vec_initAxisX, 0x467920, AXES)
 T0(stage_clearFrags, 0x45df90, fill(BUF + 0x202e8e0, 0x1b0);)
-T0(event_raise3, 0x463670, fill(BUF + 0x2343100, 0x150);)
-T0(event_raise4, 0x463690, fill(BUF + 0x2343100, 0x150);)
-T0(event_raise5, 0x4636b0, fill(BUF + 0x2343100, 0x150);)
+T0(net_announceServerEnd, 0x463670, fill(BUF + 0x2343100, 0x150);)
+T0(net_announceFragLimit, 0x463690, fill(BUF + 0x2343100, 0x150);)
+T0(net_announceTimeLimit, 0x4636b0, fill(BUF + 0x2343100, 0x150);)
 T0(ViewVolume_clearDrawCounts, 0x4841d0, fill(BUF + 0x90a0, 0x10);)
 T0(stage_clearProjectiles, 0x479a60, for (int i = 0; i < 1000; i++) S32(BUF, 0x20a99c4 + i * 0x12c) = irnd(-3, 3);
    fill(BUF + 0x20f2d9c, 0x10);)
@@ -9243,7 +9243,7 @@ static void ring_setup(void)
 	S32(r, 0x179d1fe) = irnd(0, 0x180);
 	fill(r + 0x179cbf0, 0x700);
 }
-ST(net_sendColourRing, ring_setup();, (TC(void, 0x48e990, char *, int)(SCENE, g_a[0]), 0), (net_sendColourRing(SCENE, (DWORD)g_a[0]), 0))
+ST(net_sendFlagPiece, ring_setup();, (TC(void, 0x48e990, char *, int)(SCENE, g_a[0]), 0), (net_sendFlagPiece(SCENE, (DWORD)g_a[0]), 0))
 /* up to 130 objects (only the first 124 are sent): id (-1 = none), active flag and a float value */
 static void levels_setup(void)
 {
@@ -15980,7 +15980,7 @@ static void help_setup(void)
 	callee_stubs(g_stubHelp, 0);
 	for (int i = 0; i < 30; i++) fill_str(BUF + 0x234334b + i * 0x40, 20, ' ', 'z');
 }
-ST(hud_drawConsole, help_setup(); screen_random();, (TC(void, 0x4955a0, char *)(BUF), 0), (hud_drawConsole(BUF), 0))
+ST(hud_drawHelp, help_setup(); screen_random();, (TC(void, 0x4955a0, char *)(BUF), 0), (hud_drawHelp(BUF), 0))
 /* the loading cylinder: mode -2, -1, 1 or another, a short text, the progress so far; the timer real (the
    performance counter mock moves on each call, so the fades end), the screen, quad, swap and texture lookup stubbed */
 static const DWORD g_stubCyl[] = { 0x469320, 1, 0x4685d0, 0, 0x46bd60, 4, 0x456be0, 8 | CS_POP | CS_THIS, 0 };
@@ -17211,8 +17211,8 @@ static const STest g_stests[] = {
 	T(colour_initRealClear, 0, 4, 0), T(colour_initRealBlue, 0, 4, 0), T(colour_initRealWhite, 0, 4, 0), T(colour_initRealGreen, 0, 4, 0),
 	T(colour_initRealRed, 0, 4, 0), T(colour_initRealBlack, 0, 4, 0), T(colour_initRealYellow, 0, 4, 0), T(colour_initRealGrey, 0, 4, 0),
 	T(vec_initOrigin, 0, 4, 0), T(vec_initZero, 0, 4, 0), T(vec_initAxisZ, 0, 4, 0), T(vec_initUp, 0, 4, 0),
-	T(vec_initRest, 0, 4, 0), T(vec_initAxisX, 0, 4, 0), T(stage_clearFrags, 0, 4, 300), T(event_raise3, 0, 4, 300),
-	T(event_raise4, 0, 4, 300), T(event_raise5, 0, 4, 300), T(ViewVolume_clearDrawCounts, 0, 4, 300), T(stage_clearProjectiles, 0, 4, 300),
+	T(vec_initRest, 0, 4, 0), T(vec_initAxisX, 0, 4, 0), T(stage_clearFrags, 0, 4, 300), T(net_announceServerEnd, 0, 4, 300),
+	T(net_announceFragLimit, 0, 4, 300), T(net_announceTimeLimit, 0, 4, 300), T(ViewVolume_clearDrawCounts, 0, 4, 300), T(stage_clearProjectiles, 0, 4, 300),
 	T(stage_clearBullets, 0, 4, 300), T(stage_clearMapObjects, 0, 4, 300), T(view_setDistance, 0, 4, 2000), T(ints_set3, 0, 4, 300),
 	T(vec3_negate, 0, 4, 2000), T(space_freeNode, 0, 4, 300), T(space_freeBlock, 0, 4, 300), T(space_disableUnit, 0, 4, 300),
 	T(space_enableUnit, 0, 4, 300), T(str_length, 1, 4, 3000), T(array_indexOf, 1, 4, 3000), T(path_normalize, 1, 4, 3000),
@@ -17404,7 +17404,7 @@ static const STest g_stests[] = {
 	T(autoplay_startRecording, 1, 400, 0), T(dplay_enumConnections, 1, 400, 0),
 	/* batch 49 */
 	T(net_inetAddr, 1, 40, 0), T(net_asyncSelect, 1, 40, 0), T(net_getLocalAddress, 1, 40, 0), T(net_closeSockets, 1, 40, 0),
-	T(net_resolveHost, 1, 40, 0), T(net_sendColourRing, 0, 400, 0), T(net_sendPlayerLevels, 0, 400, 0), T(net_sendPlayerInfo, 0, 400, 0),
+	T(net_resolveHost, 1, 40, 0), T(net_sendFlagPiece, 0, 400, 0), T(net_sendPlayerLevels, 0, 400, 0), T(net_sendPlayerInfo, 0, 400, 0),
 	T(net_sendMatchEvent, 0, 400, 0), T(net_sendPlayerState, 0, 400, 0),
 	/* batch 50 */
 	T(quat_toAxisAngle, 0, 300, 0), T(skel_poseBones, 0, 400, 0), T(ViewVolume_projectObject, 0, 400, 0),
@@ -17788,7 +17788,7 @@ static const STest g_stests[] = {
 	/* batch 196 */
 	T(replay_frame, 1, 600, 0),
 	/* batch 198 */
-	T(hud_drawConsole, 0, 200, 0), T(loading_drawScreen, 0, 200, 0),
+	T(hud_drawHelp, 0, 200, 0), T(loading_drawScreen, 0, 200, 0),
 	/* batch 199 */
 	T(script_processCommandBy, 0, 600, 0), T(script_processTriggers, 0, 400, 0),
 	/* batch 200 */
@@ -18086,8 +18086,8 @@ static const struct { DWORD addr; void *fn; const char *name; } g_hooks3[] = {
 	{ 0x4678f0, (void *)vec_initOrigin, "vec_initOrigin" }, { 0x467890, (void *)vec_initZero, "vec_initZero" },
 	{ 0x467980, (void *)vec_initAxisZ, "vec_initAxisZ" }, { 0x467950, (void *)vec_initUp, "vec_initUp" },
 	{ 0x4678c0, (void *)vec_initRest, "vec_initRest" }, { 0x467920, (void *)vec_initAxisX, "vec_initAxisX" },
-	{ 0x45df90, (void *)stage_clearFrags, "stage_clearFrags" }, { 0x463670, (void *)event_raise3, "event_raise3" },
-	{ 0x463690, (void *)event_raise4, "event_raise4" }, { 0x4636b0, (void *)event_raise5, "event_raise5" },
+	{ 0x45df90, (void *)stage_clearFrags, "stage_clearFrags" }, { 0x463670, (void *)net_announceServerEnd, "net_announceServerEnd" },
+	{ 0x463690, (void *)net_announceFragLimit, "net_announceFragLimit" }, { 0x4636b0, (void *)net_announceTimeLimit, "net_announceTimeLimit" },
 	{ 0x4841d0, (void *)ViewVolume_clearDrawCounts, "ViewVolume_clearDrawCounts" }, { 0x479a60, (void *)stage_clearProjectiles, "stage_clearProjectiles" },
 	{ 0x47cfd0, (void *)stage_clearBullets, "stage_clearBullets" }, { 0x490d10, (void *)stage_clearMapObjects, "stage_clearMapObjects" },
 	{ 0x4722e0, (void *)view_setDistance, "view_setDistance" }, { 0x480210, (void *)ints_set3, "ints_set3" },
@@ -18403,7 +18403,7 @@ static const struct { DWORD addr; void *fn; const char *name; } g_hooks3[] = {
 	/* batch 49 */
 	{ 0x4547c0, (void *)net_inetAddr, "net_inetAddr" }, { 0x452170, (void *)net_asyncSelect, "net_asyncSelect" },
 	{ 0x454220, (void *)net_getLocalAddress, "net_getLocalAddress" }, { 0x4520e0, (void *)net_closeSockets, "net_closeSockets" },
-	{ 0x4547d0, (void *)net_resolveHost, "net_resolveHost" }, { 0x48e990, (void *)net_sendColourRing, "net_sendColourRing" },
+	{ 0x4547d0, (void *)net_resolveHost, "net_resolveHost" }, { 0x48e990, (void *)net_sendFlagPiece, "net_sendFlagPiece" },
 	{ 0x48ead0, (void *)net_sendPlayerLevels, "net_sendPlayerLevels" }, { 0x48e0f0, (void *)net_sendPlayerInfo, "net_sendPlayerInfo" },
 	{ 0x48e680, (void *)net_sendMatchEvent, "net_sendMatchEvent" }, { 0x48e2c0, (void *)net_sendPlayerState, "net_sendPlayerState" },
 	/* batch 50 */
@@ -18919,7 +18919,7 @@ static const struct { DWORD addr; void *fn; const char *name; } g_hooks3[] = {
 	/* batch 196 */
 	{ 0x487f00, (void *)replay_frame, "replay_frame" },
 	/* batch 198 */
-	{ 0x4955a0, (void *)hud_drawConsole, "hud_drawConsole" }, { 0x469730, (void *)loading_drawScreen, "loading_drawScreen" },
+	{ 0x4955a0, (void *)hud_drawHelp, "hud_drawHelp" }, { 0x469730, (void *)loading_drawScreen, "loading_drawScreen" },
 	/* batch 199 */
 	{ 0x483770, (void *)script_processCommandBy, "script_processCommandBy" }, { 0x483640, (void *)script_processTriggers, "script_processTriggers" },
 	/* batch 200 */

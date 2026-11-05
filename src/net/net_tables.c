@@ -1546,7 +1546,7 @@ static void THISCALL __attribute__((used)) net_sendMatchEvent_body(u8 *s, u8 *pa
 #define SC ((Scene *)s)
 #define FLAG(offset) GAME_VAR(int, s + (offset))
 #define TAKE(f) ((f) == 1 && ((f) = 0, 1))   /* a pending event taken */
-	static const u32 flags[10] = { offsetof(Scene, chatPending), offsetof(Scene, connectPending), offsetof(Scene, quitPending), offsetof(Scene, joinPending), offsetof(Scene, changePending), offsetof(Scene, endEvents[0]), offsetof(Scene, endEvents[1]), offsetof(Scene, endEvents[2]), offsetof(Scene, cheatPending), offsetof(Scene, startTimerPending) };
+	static const u32 flags[10] = { offsetof(Scene, chatPending), offsetof(Scene, connectPending), offsetof(Scene, quitPending), offsetof(Scene, joinPending), offsetof(Scene, changePending), offsetof(Scene, endEvents[0]), offsetof(Scene, endEvents[1]), offsetof(Scene, endEvents[2]), offsetof(Scene, cheatPending), offsetof(Scene, restartPending) };
 	if (TAKE(SC->endEvents[0]))
 		packet[1] = 3, packet[2] = 0x6b;
 	else if (TAKE(SC->endEvents[1]))
@@ -1580,7 +1580,7 @@ static void THISCALL __attribute__((used)) net_sendMatchEvent_body(u8 *s, u8 *pa
 		packet[3] = (u8)SC->changeTeam;
 		strcpy((char *)packet + 4, (const char *)SC->changeName);
 		SC->changePending = 0;
-	} else if (TAKE(SC->startTimerPending))
+	} else if (TAKE(SC->restartPending))
 		packet[1] = 13, packet[2] = 0x6b;
 	int pending = 0;
 	for (int k = 0; k < 10; k++)
@@ -1598,7 +1598,7 @@ PACKET_ENTRY(net_sendMatchEvent, 0);
    changed (its record's flagShown, emblemChanged) the position reached (emblemSent, as a short) and the 16 pixels from
    there (their RGB, 3 bytes each), the position then 16 on; else 0xffff and the position back to 0x180 (all sent).
    Sent by send_packet. Its caller ignores the eax it leaves */
-static void THISCALL __attribute__((used)) net_sendColourRing_body(u8 *s, int p, u8 *packet)
+static void THISCALL __attribute__((used)) net_sendFlagPiece_body(u8 *s, int p, u8 *packet)
 {
 	PlayerRecord *pr = &((Scene *)s)->playerRecords[p];
 	packet[1] = 0xc;
@@ -1615,7 +1615,7 @@ static void THISCALL __attribute__((used)) net_sendColourRing_body(u8 *s, int p,
 	}
 	send_packet(s, packet);
 }
-PACKET_ENTRY(net_sendColourRing, 1);
+PACKET_ENTRY(net_sendFlagPiece, 1);
 
 /* a float in memory times a constant, truncated (the original's __ftol) */
 static int scaled(const void *v, u32 k)
@@ -2188,7 +2188,7 @@ void THISCALL (net_processGamePacket)(u8 *g, u32 from, int type, const char *pkt
 	case 13:
 		if (pkt[2] != 'k')
 			break;
-		GS->startTimer = 5.0f;
+		GS->restartTimer = 5.0f;
 		return;
 	case 14:
 		if (GS->itemLevelsTaken == 1)
