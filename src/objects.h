@@ -3,8 +3,8 @@
    OBJ(name) is its address as a number (src/axis.h). Element type, count: the extent known (see the note) */
 #pragma once
 #define g_chatLine ((char *)IMG(0x9dc92c))   /* char[1024]; the chat line being typed (memset 0x400) */
-#define g_joinedTitleName ((char *)IMG(0x9dd570))   /* char[54]; the joined game's title record (laid out as 0x4de700): the name, then the level / points / rating words from +0x1e (g_joinedTitleLevel ..; a password strcpy'd over them, 12 at most), up to the registry's next copy at 0x9dd5a6 */
-#define g_titleName ((char *)IMG(0x4de700))   /* char[30]; the title record's name (+0x1e the level: g_titleLevel) */
+#define g_ladderId ((char *)IMG(0x9dd570))   /* char[54]; the Ladder login: the ID (30 bytes; the registry's "Name", default "AxisPlayer"), then its password at +0x1e (g_ladderPassword; 12 at most), up to the registry's e-mail copy at 0x9dd5a6 */
+#define g_ladderName ((char *)IMG(0x4de700))   /* char[30]; the logged-in pilot's Ladder record: the ID, then from +0x1e its level, points, rating, score, wins and losses (g_ladderLevel ..) */
 #define g_accountForm ((u8 *)IMG(0x9dd1d8))   /* u8[94]; the account / Ladder login / new-ID forms' fields: the name (+0; 30); the password (+0x1e; 12); its repeat (+0x2a; 12); the e-mail (+0x36; 40). One clear of 0x54 bytes spans the fields and copies run on from the name: one record */
 #define g_accountName ((char *)(g_accountForm + 0))
 #define g_accountPassword ((char *)(g_accountForm + 0x1e))
@@ -17,7 +17,7 @@
 #define g_newArenaName ((char *)IMG(0x4db528))   /* char[48]; the new arena's settings record (GameSettings, the create-arena form): the name, then +0x20: g_newArenaMap .., the password (+0x26) */
 #define g_mapTitle ((char *)IMG(0x67fb44))   /* char[32]; the map's title (TITLE: %s) */
 #define g_profileName ((char *)IMG(0x9f8fe8))   /* char[32]; the profile's name (written 0x20 bytes) */
-#define g_arenaName ((char *)IMG(0x4db560))   /* char[32]; (0x20 bytes) */
+#define g_arenaPlayerName ((char *)IMG(0x4db560))   /* char[32]; the lobby player's name (edited; axis.cfg's g_cfgPlayerName kept) */
 #define g_localAddress ((char *)IMG(0xa0b43c))   /* char[16]; the local IP address text (memset 16) */
 #define g_dataDir ((char *)IMG(0x9dae7c))   /* char[0x105]; the data folder's path (app_setDataPaths clears 0x105 bytes; 0x9daf88 next) */
 #define g_savedColourChoices ((u8 *)IMG(0x4dcfe0))   /* u8[144]; the ARM CENTER's colour choices kept (memcpy 0x90) */
@@ -391,7 +391,7 @@
 #define g_profileDialogBox ((int *)IMG(0x9f9010))   /* int[4]; the profile dialog box (left; top; right; bottom) */
 #define g_chatHistory ((char *)IMG(0x67ef38))   /* char[3072]; the chat line's three-line history of 0x400 bytes; newest first (frontEnd_startUp clears 0x300 dwords) */
 #define g_undoStack ((int *)IMG(0x9eeadc))   /* int[50]; the skirmish settings' undo values (0xc8 bytes cleared; g_briefingStart follows) */
-#define g_joinedTitleEmail ((char *)IMG(0x9dd5a6))   /* char[30]; the registry's copy of the account e-mail (30 bytes cleared; up to 39 copied in) */
+#define g_ladderEmail ((char *)IMG(0x9dd5a6))   /* char[30]; the Ladder account's e-mail (the registry's copy) (30 bytes cleared; up to 39 copied in) */
 #define g_keyTable1 ((int *)IMG(0x4d1688))   /* int[256]; a key table only cleared at start-up */
 #define g_mouseState ((int *)IMG(0x4d1a88))   /* int[4]; DIMOUSESTATE: x; y; wheel movement; four button bytes */
 #define g_keyTable2 ((int *)IMG(0x4d1fc4))   /* int[256]; the second key table (only cleared) */
@@ -412,7 +412,7 @@
 #define g_crosshairName ((char *)IMG(0x4ddb58))   /* char[32]; the crosshair texture's name (texture/crosshair/crosshair<n>: 0x20-byte strings) */
 #define g_messageBoxLine ((char *)IMG(0x4df81c))   /* char[80]; the front end's message box line (0x50 bytes cleared) */
 #define g_clearColour ((Colour *)IMG(0x76d350))   /* Colour[1]; the start-up screen's clear colour (black) */
-#define g_joinedTitleNameCopy ((char *)IMG(0x76d450))   /* char[32]; the registry's copy of the joined title name (up to 0x76d470) */
+#define g_ladderIdCopy ((char *)IMG(0x76d450))   /* char[32]; the registry's copy of the Ladder ID (up to 0x76d470) */
 #define g_windowClass ((u8 *)IMG(0x4e0ca8))   /* u8[40]; the WNDCLASS the window was registered with (a copy) */
 #define g_glTitle ((char *)IMG(0xa0e81c))   /* char[256]; the window's title (also the window class's; icon's and menu's name; up to 0xa0e91c) */
 #define g_musicFile ((char *)IMG(0xa0e674))   /* char[260]; the music file's name (MAX_PATH; up to 0xa0e778) */
@@ -424,7 +424,7 @@
 #define g_roomTextAndRows ((u8 *)IMG(0x9dcee8))   /* u8[684]; the room's typed password text (+0; 8 bytes cleared; a strcpy of the chat line) and the room list's ten 0x44-byte rows from +4 (to 0x9dd194): the two overlap in the original */
 #define g_roomJoinPassword (*(int *)g_roomTextAndRows)   /* the typed password (text from here) */
 #define g_roomJoinPassword4 (*(int *)(g_roomTextAndRows + 4))   /* the rows' start (cleared with the text) */
-#define g_roomListRows ((RankRow *)(g_roomTextAndRows + 4))   /* RankRow[10] */
+#define g_rankingRows ((RankRow *)(g_roomTextAndRows + 4))   /* RankRow[10] */
 #define g_roomDialogBox ((int *)IMG(0x9dd1a0))   /* int[4]; the room's server dialog box (room_openDialog58; popup_layout) */
 #define g_roomMechKept ((u8 *)IMG(0x9dd260))   /* u8[11]; the room record's mech parts kept (lobby_states) */
 #define g_roomColoursKept ((u8 *)IMG(0x9dd26b))   /* u8[144]; the room record's colours kept */

@@ -1,8 +1,8 @@
 # the ErrorLog records of the classes (a vtable and the name): ErrorLog_ctor in app/statics.c
 # texts and records
 0x9dc92c,char,0x400,g_chatLine,the chat line being typed (memset 0x400)
-0x9dd570,char,0x1e,g_joinedTitleName,the joined game's title record: the name (laid out as 0x4de700)
-0x4de700,char,0x1e,g_titleName,the title record's name (+0x1e the level: g_titleLevel)
+0x9dd570,char,0x1e,g_ladderId,the joined game's title record: the name (laid out as 0x4de700)
+0x4de700,char,0x1e,g_ladderName,the title record's name (+0x1e the level: g_ladderLevel)
 0x9dd1d8,char,0x1e,g_accountName,the login form's name (30 bytes)
 0x9dd1f6,char,0xc,g_accountPassword,(12 bytes)
 0x9dd202,char,0xc,g_accountPasswordRepeat,(12 bytes)
@@ -14,7 +14,7 @@
 0x4db528,char,0x20,g_newArenaName,the new arena's settings record: its name
 0x67fb44,char,0x20,g_mapTitle,the map's title (TITLE: %s)
 0x9f8fe8,char,0x20,g_profileName,the profile's name (written 0x20 bytes)
-0x4db560,char,0x20,g_arenaName,(0x20 bytes)
+0x4db560,char,0x20,g_arenaPlayerName,(0x20 bytes)
 0xa0b43c,char,0x10,g_localAddress,the local IP address text (memset 16)
 0x9dae7c,char,1,g_dataDir,the data folder's path (extent unknown)
 0x4dcfe0,u8,0x90,g_savedColourChoices,the ARM CENTER's colour choices kept (memcpy 0x90)

@@ -9,7 +9,7 @@
 0x4ddb58,char,32,g_crosshairName,the crosshair texture's name (texture/crosshair/crosshair<n>: 0x20-byte strings)
 0x4df81c,char,80,g_messageBoxLine,the front end's message box line (0x50 bytes cleared)
 0x76d350,Colour,1,g_clearColour,the start-up screen's clear colour (black)
-0x76d450,char,32,g_joinedTitleNameCopy,the registry's copy of the joined title name (up to 0x76d470)
+0x76d450,char,32,g_ladderIdCopy,the registry's copy of the joined title name (up to 0x76d470)
 0x4e0ca8,u8,40,g_windowClass,the WNDCLASS the window was registered with (a copy)
 0xa0e81c,char,256,g_glTitle,the window's title (also the window class's; icon's and menu's name; up to 0xa0e91c)
 0xa0e674,char,260,g_musicFile,the music file's name (MAX_PATH; up to 0xa0e778)

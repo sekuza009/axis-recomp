@@ -59,7 +59,7 @@ static void caret(int x, int y)
 void (arena_editName)(void)
 {
 	edit_start(0x10);
-	line_set(g_arenaName);
+	line_set(g_arenaPlayerName);
 	caret(PANEL_X(ARENA_CREATE) + 0xc2, PANEL_Y(ARENA_CREATE) + 100);
 	g_menuKeyGuard = 5.0f;
 	g_chatLength = line_length();

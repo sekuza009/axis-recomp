@@ -11,20 +11,20 @@ static void copy_name(u32 dst, int clear_bytes, const char *src)
 	strcpy((char *)RELOC(dst), src);
 }
 
-/* ---- the lobby player record (0x4db560: name, two fields) ---- */
-/* 0x4050f0: "PLAYER" (0x4ad4b0) and both fields 0 */
-void (cfg_defaultPlayerName)(void)
+/* ---- the lobby player record (g_arenaPlayerName, its corporation and sex) ---- */
+/* 0x4050f0: "PLAYER" (0x4ad4b0), corporation and sex 0 */
+void (arena_defaultPlayer)(void)
 {
-	copy_name(OBJ(g_arenaName), 32, (const char *)STR(0x4ad4b0, "PLAYER"));
+	copy_name(OBJ(g_arenaPlayerName), 32, (const char *)STR(0x4ad4b0, "PLAYER"));
 	g_arenaCorporation = 0;
 	g_arenaSex = 0;
 }
 
-/* 0x404930: the profile's name and fields (0x4dedb0) */
-void (arena_copyProfile)(void)
+/* 0x404930: axis.cfg's player name, corporation and sex (g_cfgPlayerName ..) */
+void (arena_loadPlayerSettings)(void)
 {
 	g_arenaSex = g_playerSex;
-	copy_name(OBJ(g_arenaName), 32, g_cfgPlayerName);
+	copy_name(OBJ(g_arenaPlayerName), 32, g_cfgPlayerName);
 	g_arenaCorporation = g_playerCorporation;
 }
 
@@ -173,50 +173,50 @@ void (menu_restoreCamera)(void)
 /* 0x445de0: a click (either button) starts the menu fade, once */
 void (menu_clickStartFade)(void)
 {
-	if ((g_mouseClick || g_keyEnter) && !g_titleShown) {
+	if ((g_mouseClick || g_rightClick) && !g_titleShown) {
 		g_titleShown = 1;
 		g_titleFrames = 0;
 	}
 }
 
-/* ---- the room list's pages: page 0x9dd6ac of 0x9dd4b8 (at most 99), the page before in 0x9dd1b4 ---- */
+/* ---- the ranking's pages: page 0x9dd6ac of 0x9dd4b8 (at most 99), the page before in 0x9dd1b4 ---- */
 static void room_pageChanged(void)
 {
 	g_rankingRequestPending = 1;
 	g_rankingHaveList = 0;
-	g_roomListWaiting = 0;
-	g_playerListRefused = 0;
+	g_rankingListIn = 0;
+	g_playerListDone = 0;
 	g_playerListCount = 0;
 }
 
 /* 0x435970, 0x4359b0: the previous and the next page */
-void (roomList_prevPage)(void)
+void (ranking_prevPage)(void)
 {
-	int *page = &g_roomListPage;
+	int *page = &g_rankingPage;
 	if (*page > 0) {
-		g_roomListPrevPage = *page;
+		g_rankingPrevPage = *page;
 		(*page)--;
 		room_pageChanged();
 	}
 }
 
-void (roomList_nextPage)(void)
+void (ranking_nextPage)(void)
 {
-	int *page = &g_roomListPage;
+	int *page = &g_rankingPage;
 	if (*page < g_roomListPages && *page < 99) {
-		g_roomListPrevPage = *page;
+		g_rankingPrevPage = *page;
 		(*page)++;
 		room_pageChanged();
 	}
 }
 
 /* 0x4359f0: the list's mode cycled 0 .. 2 (the one before kept in 0x9dd300), its distance limit back to 10,000,000 */
-void (roomList_cycleMode)(void)
+void (ranking_cycleSort)(void)
 {
 	int mode = g_rankingSort;
-	g_roomListPrev = mode;
+	g_rankingPrevSort = mode;
 	room_pageChanged();
-	g_roomListPrevRank = 0;
+	g_rankingPrevRank = 0;
 	g_roomListDistanceLimit = 0x4b189680;   /* 10000000.0f */
 	g_rankingSort = (mode + 1) % 3;
 }
@@ -238,13 +238,13 @@ static int rank_value(const RankRow *row, int mode, long double *value)
 	return 1;
 }
 
-/* 0x435770: the room list's page of ten rows (0x44 bytes from 0x9dceec) filled from the players received (62-byte
+/* 0x435770: the ranking's page of ten rows (0x44 bytes from 0x9dceec) filled from the players received (62-byte
    records from 0xa05330, up to the first without a name): each row its rank (page 0x9dd6ac * 10 + its place) or,
    when its value (rank_value) equals the row's before, that row's rank; the page before's last value and rank
    (0x9dd384, 0x9dd328) start the comparison, and this page's are kept there for the next */
-void (roomList_fillPage)(void)
+void (ranking_fillPage)(void)
 {
-	RankRow *rows = g_roomListRows;
+	RankRow *rows = g_rankingRows;
 	for (int i = 0; i < 10; i++) {
 		RankRow *row = &rows[i];
 		row->rank = 0;
@@ -261,7 +261,7 @@ void (roomList_fillPage)(void)
 		if (!player->name[0])
 			break;
 		RankRow *row = &rows[i];
-		row->rank = i + g_roomListPage * 10 + 1;
+		row->rank = i + g_rankingPage * 10 + 1;
 		strcpy(row->name, player->name);
 		row->exp = player->exp;
 		BITS(row->power) = BITS(player->power);
@@ -273,7 +273,7 @@ void (roomList_fillPage)(void)
 		int mode = g_rankingSort, rank;
 		if (i == 0) {
 			before = (*(float *)&g_roomListDistanceLimit);
-			rank = g_roomListPrevRank;
+			rank = g_rankingPrevRank;
 		} else {
 			long double v;
 			rank = row[-1].rank;
@@ -285,7 +285,7 @@ void (roomList_fillPage)(void)
 			row->rank = rank;
 	}
 	(*(float *)&g_roomListDistanceLimit) = f32(value);
-	g_roomListPrevRank = rows[i - 1].rank;
+	g_rankingPrevRank = rows[i - 1].rank;
 }
 
 /* ---- the skirmish list: eight rows shown from entry top, the cursor on row; sel = top + row ---- */
@@ -368,7 +368,7 @@ void (skirmish_settingsArrowClick)(void)
 {
 	if (g_dialogOpen)
 		return;
-	if (!g_keyEnter) {
+	if (!g_rightClick) {
 		if (!g_mouseClick)
 			return;
 		switch (briefing_hitTest(g_mouseX, g_mouseY)) {
@@ -492,7 +492,7 @@ u32 (missionsel_clicks)(void)
 {
 	if (g_dialogOpen)
 		return g_dialogOpen;
-	if (g_keyEnter)
+	if (g_rightClick)
 		missionSettings_leave();
 	if (!g_mouseClick)
 		return 0;
@@ -594,9 +594,9 @@ u32 (replaySelect_drawNames)(void)
 	return r;
 }
 
-/* the game left for the launcher: the keys held (4), the camera pulled back (0x4deb48, next screen 210), the
-   progress saved and 0x48b420. Returns its eax */
-static u32 leave_game(void)
+/* back to the pilot screen (main menu choice 5, EXIT): the camera pulled back (move 4; g_enteringMenus, next screen
+   210), the progress saved and debug_traceStripped. Returns its eax */
+static u32 to_pilot_screen(void)
 {
 	menuCamera_setMove(4);
 	g_enteringMenus = 1;
@@ -605,9 +605,9 @@ static u32 leave_game(void)
 	return GAME_FN(debug_traceStripped, 0x48b420, u32, void)();
 }
 
-/* main menu choice i (with its sound; 0x4dda44 cleared): 0 the campaign (menuState500_enter), 1 skirmish (next
-   screen 400), 2 network play (net_connect, then 0x452170; messages 0x2a / 0x29 when they fail; next screen 800), 3
-   the setup (600), 4 the ARM CENTER (0x40ee20), 5 quit. The original's eax into *r; 1 when a failure ended the
+/* main menu choice i (with its sound; 0x4dda44 cleared): 0 the missions (menuState500_enter), 1 the arena lobby
+   (next screen 400), 2 the Ladder game room (net_connect, then net_asyncSelect; messages 0x2a / 0x29 when they fail;
+   next screen 800), 3 the setup (600), 4 the ARM CENTER (armc_enterParts), 5 back to the pilot screen. The original's eax into *r; 1 when a failure ended the
    caller there */
 static int menu_choice(int i, u32 *r)
 {
@@ -639,14 +639,14 @@ static int menu_choice(int i, u32 *r)
 		g_enteringMenus = 0;
 		return 0;
 	default:
-		*r = leave_game();
+		*r = to_pilot_screen();
 		return 0;
 	}
 }
 
 /* 0x4419d0: the main menu clicked (not while it is fading in (0x9db994 = 1); the replay selection dialog first if open):
-   its six buttons (outlines 0x2c bytes apart from 0x4deb80) as menu_choice. A right click quits too when the game
-   has a tunnel ring behind it (g_tunnelRings > 0). Returns what the original leaves in eax */
+   its six buttons (outlines 0x2c bytes apart from 0x4deb80) as menu_choice. A right click goes back to the pilot screen too when
+   there are tunnel rings (g_tunnelRings > 0). Returns what the original leaves in eax */
 u32 (mainmenu_clicks)(void)
 {
 	if (g_replayZoomIn == 1)
@@ -663,13 +663,13 @@ u32 (mainmenu_clicks)(void)
 		if (i < 6 && menu_choice(i, &r))
 			return r;
 	}
-	if (!g_keyEnter)
+	if (!g_rightClick)
 		return 0;
 	int rings = g_tunnelRings;
 	if (rings <= 0)
 		return rings;
 	g_cursorBlink = 0.0f;
-	return leave_game();
+	return to_pilot_screen();
 }
 
 /* 0x441e00: the main menu's keys (not while fading in; the replay selection dialog's keys (replaySelect_keys) when open):
@@ -695,7 +695,7 @@ u32 (mainmenu_processKeys)(void)
 		g_nextScreen = 210;
 		return GAME_FN(debug_traceStripped, 0x48b420, u32, void)();
 	}
-	u32 r = (u32)input_justPressed(g_excludedKey);
+	u32 r = (u32)input_justPressed(g_dikF1);
 	if (r != 1)
 		return r;
 	r = replayList_open();

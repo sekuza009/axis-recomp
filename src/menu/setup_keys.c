@@ -243,7 +243,7 @@ u32 (setup_topPageClicks)(void)
 			break;
 		}
 	}
-	int right = g_keyEnter;
+	int right = g_rightClick;
 	if (!right)
 		return 0;
 	int allowed = g_tunnelRings;
@@ -266,7 +266,7 @@ u32 (setup_graphicTabClicks)(void)
 	u32 page = (*(u32 *)&g_setupPage);
 	if (page == 1 || page == 0 || g_dialogOpen)
 		return page;
-	if (g_keyEnter)
+	if (g_rightClick)
 		g_setupPage = 0;
 	if (!g_mouseClick)
 		return page;
@@ -335,7 +335,7 @@ void (setup_soundTabClicks)(void)
 {
 	if (g_setupPage == 1 || g_setupPage == 0 || g_dialogOpen)
 		return;
-	if (g_keyEnter)
+	if (g_rightClick)
 		g_setupPage = 0;
 	if (g_mouseClick) {
 		g_cursorBlink = 0.0f;
@@ -379,12 +379,12 @@ void (setup_soundTabClicks)(void)
    ignore it) */
 void (setup_controlTabKeys)(void)
 {
-	if (input_justPressed(g_excludedKey)) {
+	if (input_justPressed(g_dikF1)) {
 		sound_playMenu(6);
 		return;
 	}
 	if (g_bindWaiting) {
-		if (input_justPressed(g_excludedKey)) {
+		if (input_justPressed(g_dikF1)) {
 			sound_playMenu(6);
 			return;
 		}
@@ -461,7 +461,7 @@ void (setup_controlTabClicks)(void)
 	if (g_setupPage == 1 || g_setupPage == 0 || g_dialogOpen)
 		return;
 	int waiting = g_bindWaiting;
-	if (g_keyEnter) {
+	if (g_rightClick) {
 		if (waiting) {
 			setup_bindKey(g_dikMouse2);
 			g_bindWaiting = 0;
@@ -535,7 +535,7 @@ static const signed char page_bindings[3][11] = {
    callers ignore the eax it leaves */
 void (setup_bindKey)(int key)
 {
-	if (key == g_excludedKey)
+	if (key == g_dikF1)
 		return;
 	setup_unbindKey(key);
 	int page = g_bindPage, row = g_bindRow;

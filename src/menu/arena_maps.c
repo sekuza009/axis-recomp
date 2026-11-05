@@ -87,11 +87,11 @@ void (mapList_ok)(void)
 	g_mapListKept = 1;
 }
 
-/* 0x4050a0 (arena_saveSettings): the arena's name and two settings kept (0x4dedb0 ..) and the configuration written */
-void (arena_saveSettings)(void)
+/* 0x4050a0: the lobby player's name, sex and corporation kept as axis.cfg's (g_cfgPlayerName ..) and the configuration written */
+void (arena_savePlayerSettings)(void)
 {
 	g_playerSex = g_arenaSex;
-	const char *name = g_arenaName;
+	const char *name = g_arenaPlayerName;
 	char *kept = g_cfgPlayerName;
 	int i = 0;
 	do

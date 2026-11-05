@@ -22,7 +22,7 @@
 0x4df9ed,u8,g_roomTimeLimit
 0x9dd83c,int,g_rankingFirst
 0x9dd4b8,int,g_roomListPages
-0x9dd328,int,g_roomListPrevRank
+0x9dd328,int,g_rankingPrevRank
 0x9dd6a4,int,g_roomAnswerAwaited
 0x9da908,int,g_frameCounter40
 0x9fd948,int,g_chatLog

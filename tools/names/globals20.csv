@@ -46,11 +46,11 @@
 0x9f8f20,int,g_newNameDialogRight
 0x9f8f24,int,g_newNameDialogBottom
 # the title record (0x4de700: the name, +0x1e level, then these)
-0x4de722,int,g_titlePoints
-0x4de726,int,g_titleRating
-0x4de72a,int,g_titleScore
-0x4de72e,int,g_titleWins
-0x4de732,int,g_titleLosses
+0x4de722,int,g_ladderPoints
+0x4de726,int,g_ladderRating
+0x4de72a,int,g_ladderScore
+0x4de72e,int,g_ladderWins
+0x4de732,int,g_ladderLosses
 # lists, the rest
 0x4df818,int,g_lobbyListRow
 0x680bb0,int,g_gameListTop

@@ -68,9 +68,9 @@
 0x9dda78,u32,g_replaySelectDimB
 0x9dda7c,u32,g_replaySelectDimA
 # the joined game's copy of its host's title record (0x9dd570, laid out as 0x4de700)
-0x9dd58e,int,g_joinedTitleLevel
-0x9dd592,int,g_joinedTitlePoints
-0x9dd596,int,g_joinedTitleRating
+0x9dd58e,int,g_ladderPassword
+0x9dd592,int,g_ladderPassword4
+0x9dd596,int,g_ladderPassword8
 # chat, the network
 0x9f63e4,char,g_keptChatLine
 0xa052c0,u8,g_netNotice

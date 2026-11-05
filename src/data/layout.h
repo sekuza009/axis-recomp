@@ -2103,7 +2103,7 @@ struct __attribute__((packed)) GameData {
 	int g_arenaJoinPassword_;
 	int g_arenaJoinPassword4_;
 	u8 _gap_4db528[0x38];
-	char g_arenaName_[32];
+	char g_arenaPlayerName_[32];
 	u8 _gap_4db580[0x6d4];
 	int g_hasItem60mm_;
 	u8 _gap_4dbc58[0x120];
@@ -2125,7 +2125,7 @@ struct __attribute__((packed)) GameData {
 	u8 _gap_4dcf34[0x19c];
 	char g_messageBoxText_[1024];
 	u8 _gap_4dd4d0[0x1230];
-	char g_titleName_[30];
+	char g_ladderName_[30];
 	u8 _gap_4de71e[0x692];
 	char g_cfgPlayerName_[32];
 	u8 _gap_4dedd0[0xd2b6c];
@@ -2149,7 +2149,7 @@ struct __attribute__((packed)) GameData {
 	u8 _gap_9087bc[0xd25e4];
 	u8 g_codeColours_[112];
 	u8 _gap_9dae10[0x2796];
-	char g_joinedTitleEmail_[30];
+	char g_ladderEmail_[30];
 	u8 _gap_9dd5c4[0x114];
 	char g_accountOldPassword_[12];
 	u8 _gap_9dd6e4[0xc];
@@ -2186,7 +2186,7 @@ _Static_assert(offsetof(struct GameData, g_keyboard_) == 0x24fa0, "g_keyboard");
 _Static_assert(offsetof(struct GameData, g_mouse_) == 0x24fa4, "g_mouse");
 _Static_assert(offsetof(struct GameData, g_arenaJoinPassword_) == 0x2e520, "g_arenaJoinPassword");
 _Static_assert(offsetof(struct GameData, g_arenaJoinPassword4_) == 0x2e524, "g_arenaJoinPassword4");
-_Static_assert(offsetof(struct GameData, g_arenaName_) == 0x2e560, "g_arenaName");
+_Static_assert(offsetof(struct GameData, g_arenaPlayerName_) == 0x2e560, "g_arenaPlayerName");
 _Static_assert(offsetof(struct GameData, g_hasItem60mm_) == 0x2ec54, "g_hasItem60mm");
 _Static_assert(offsetof(struct GameData, g_hasItemBooster_) == 0x2ed78, "g_hasItemBooster");
 _Static_assert(offsetof(struct GameData, g_hasItemMissile_) == 0x2ee44, "g_hasItemMissile");
@@ -2197,7 +2197,7 @@ _Static_assert(offsetof(struct GameData, g_hasItem30mm_) == 0x2fc5c, "g_hasItem3
 _Static_assert(offsetof(struct GameData, g_hasItemEpak_) == 0x2fea8, "g_hasItemEpak");
 _Static_assert(offsetof(struct GameData, g_hasItemShield_) == 0x2ff30, "g_hasItemShield");
 _Static_assert(offsetof(struct GameData, g_messageBoxText_) == 0x300d0, "g_messageBoxText");
-_Static_assert(offsetof(struct GameData, g_titleName_) == 0x31700, "g_titleName");
+_Static_assert(offsetof(struct GameData, g_ladderName_) == 0x31700, "g_ladderName");
 _Static_assert(offsetof(struct GameData, g_cfgPlayerName_) == 0x31db0, "g_cfgPlayerName");
 _Static_assert(offsetof(struct GameData, g_arenaFilePassword_) == 0x10493c, "g_arenaFilePassword");
 _Static_assert(offsetof(struct GameData, g_arenaFilePassword4_) == 0x104940, "g_arenaFilePassword4");
@@ -2211,7 +2211,7 @@ _Static_assert(offsetof(struct GameData, g_dikSlash_) == 0x104974, "g_dikSlash")
 _Static_assert(offsetof(struct GameData, g_scene_) == 0x45b7b4, "g_scene");
 _Static_assert(offsetof(struct GameData, g_glContext_) == 0x45b7b8, "g_glContext");
 _Static_assert(offsetof(struct GameData, g_codeColours_) == 0x52dda0, "g_codeColours");
-_Static_assert(offsetof(struct GameData, g_joinedTitleEmail_) == 0x5305a6, "g_joinedTitleEmail");
+_Static_assert(offsetof(struct GameData, g_ladderEmail_) == 0x5305a6, "g_ladderEmail");
 _Static_assert(offsetof(struct GameData, g_accountOldPassword_) == 0x5306d8, "g_accountOldPassword");
 _Static_assert(offsetof(struct GameData, g_newIdFormRight_) == 0x5306f0, "g_newIdFormRight");
 _Static_assert(offsetof(struct GameData, g_launchArgs_) == 0x530890, "g_launchArgs");

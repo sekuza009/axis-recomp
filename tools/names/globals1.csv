@@ -2,7 +2,7 @@
 0xa1efb8,u32,g_randPos
 0x9db0a4,int,g_buttonTexture
 0x4deb50,int,g_dialogFrameTexture
-0x4ded8c,int,g_keyEnter
+0x4ded8c,int,g_rightClick
 0x76d410,int,g_startedFromLobby
 0x76d368,int,g_chosenGameMode
 0x5ae9c4,int,g_matchMode
@@ -30,7 +30,7 @@
 0x9dd838,int,g_roomRequestOut
 0x9dd1c8,int,g_roomLoginDue
 0x9dd1cc,int,g_lineToLoginId
-0x9dd6ac,int,g_roomListPage
+0x9dd6ac,int,g_rankingPage
 # the network
 0xa0b300,int,g_netLastRequest
 0xa0b424,u32,g_localPlayerId

@@ -113,7 +113,7 @@ int (skirmish_clicks)(void)
 	int r = g_dialogOpen;
 	if (r)
 		return r;
-	if (g_keyEnter)
+	if (g_rightClick)
 		skirmishSettings_leave();
 	if (!g_mouseClick)
 		return 0;
@@ -143,13 +143,13 @@ u32 (room_keys)(void)
 	if (key_hit(ADDR(g_dikEscape_2)))
 		return room_leaveGame();   /* room_leaveGame */
 	if (key_hit(ADDR(g_dikP)))
-		return room_requestJoin();   /* room_requestJoin */
+		return room_enterAccountPage();   /* room_enterAccountPage */
 	if (key_hit(ADDR(g_dikJ)))
-		return room_start();   /* room_start */
-	if (key_hit(ADDR(g_dikC)))
 		return room_enterGameList();   /* room_enterGameList */
+	if (key_hit(ADDR(g_dikC)))
+		return room_enterCreatePage();   /* room_enterCreatePage */
 	if (key_hit(ADDR(g_dikR)))
-		return room_enterRoomList();   /* room_enterRoomList */
+		return ranking_enter();   /* ranking_enter */
 	if (key_hit(ADDR(g_dikA))) {
 		g_armcFrom = 3;
 		return armc_enterParts();
@@ -169,7 +169,7 @@ u32 (room_leftClicks)(void)
 		return open;
 	if ((open = (*(u32 *)&g_roomRequestOut)))
 		return open;
-	if ((open = (*(u32 *)&g_keyEnter)))
+	if ((open = (*(u32 *)&g_rightClick)))
 		return open;
 	if (!g_mouseClick)
 		return 0;
@@ -209,7 +209,7 @@ u32 (room_leftClicks)(void)
 		return net_disconnect();
 	case 4:
 		sound_playMenu(0);
-		return room_openDialog4d();    /* room_openDialog4d */
+		return room_openNewIdForm();    /* room_openNewIdForm */
 	}
 	return button;
 }
@@ -219,7 +219,7 @@ u32 (room_leftClicks)(void)
    g_tunnelRings > 0) leaves too. Returns what the original leaves in eax */
 u32 (room_pageClicks)(void)
 {
-	static const u32 actions[6] = { FN_ADDR(room_requestJoin, 0x4334c0), FN_ADDR(room_start, 0x433590), FN_ADDR(room_enterGameList, 0x433790), 0, FN_ADDR(room_enterRoomList, 0x433800), FN_ADDR(room_leaveGame, 0x435a40) };
+	static const u32 actions[6] = { FN_ADDR(room_enterAccountPage, 0x4334c0), FN_ADDR(room_enterGameList, 0x433590), FN_ADDR(room_enterCreatePage, 0x433790), 0, FN_ADDR(ranking_enter, 0x433800), FN_ADDR(room_leaveGame, 0x435a40) };
 	u32 page = (*(u32 *)&g_roomMode);
 	if (page == 1 || page == 0)
 		return page;
@@ -240,7 +240,7 @@ u32 (room_pageClicks)(void)
 			break;
 		}
 	}
-	int right = g_keyEnter;
+	int right = g_rightClick;
 	if (!right)
 		return 0;
 	int allowed = g_tunnelRings;
@@ -318,7 +318,7 @@ u32 (room_hostingStep)(void)
 		g_roomMode = 0;
 		GAME_FN(arena_openSession, 0x452ec0, int, int, int)(0, 0);   /* arena_openSession */
 		dplay_host(
-			room, g_joinedTitleName, (signed char)room[0x23], (signed char)room[0x21], (signed char)room[0x23],
+			room, g_ladderId, (signed char)room[0x23], (signed char)room[0x21], (signed char)room[0x23],
 			room[0x24], room[0x25], 0);   /* dplay_host: host */
 		g_missionStage = (signed char)room[0x20];
 		g_chosenGameMode = (signed char)room[0x23];
@@ -369,7 +369,7 @@ u32 (room_joinAnswer)(void)
 	game->guid = ((const SessionDesc *)g_receivedSession)->guid;
 	g_roomRecFragLimit = game->fragLimit;
 	g_roomRecTimeLimit = game->timeLimit;
-	int r = dplay_join(0, (int)game->guid, (void *)OBJ(g_joinedTitleName), 0);   /* dplay_join */
+	int r = dplay_join(0, (int)game->guid, (void *)OBJ(g_ladderId), 0);   /* dplay_join */
 	if (r != 0x1f4) {
 		static const u8 message[5] = { 0x43, 0x42, 0x42, 0x44, 0x45 };
 		if ((u32)(r - 0x1f5) <= 4)
@@ -430,7 +430,7 @@ u32 (account_checkForm)(void)
    1 when sent */
 int (account_sendChange)(void)
 {
-	if (strcmp((const char *)ADDR(g_joinedTitleLevel), g_accountOldPassword) || strcmp(g_accountPassword, g_accountPasswordRepeat))
+	if (strcmp((const char *)ADDR(g_ladderPassword), g_accountOldPassword) || strcmp(g_accountPassword, g_accountPasswordRepeat))
 		return 0;
 	static const u32 fields[4] = { OBJ(g_accountOldPassword), OBJ(g_accountPassword), OBJ(g_accountPasswordRepeat), OBJ(g_accountEmail) };
 	for (int i = 0; i < 4; i++)
@@ -461,7 +461,7 @@ static u32 call_keeping_ebp(u32 address)
    code (0x25 / 0x23 / 0x26) with the first rank of page 0x9dd6ac (ranks 0x9dd83c .. 0x9dd7dc) in message 0x15 and
    start waiting (0x9dd6b8, the blink at 1000); column 3 just clears the request. Then the room's tunnel; in room
    modes other than 0 / 1 (0x9dce48) and outside page 99: with a message box open (0x90d1c4) only it is drawn (a
-   request made again once it closes), else while waiting an answer (0x76d40c) fills the list (roomList_fillPage) and
+   request made again once it closes), else while waiting an answer (0x76d40c) fills the list (ranking_fillPage) and
    keeps the column and page, the blink counts down by 0x4b071c * 0x4ad498 (from 1000 again below 0), and the
    table is drawn (ranking_drawTable). Returns what the original leaves in eax */
 u32 (ranking_page)(void)
@@ -476,7 +476,7 @@ u32 (ranking_page)(void)
 		int *out = g_netRankingBuffer;
 		if (column < 3)
 			out[0] = code[column];
-		int page = g_roomListPage;
+		int page = g_rankingPage;
 		g_rankingFirst = page * 10 + 1;
 		g_rankingLast = page * 10 + 10;
 		out[1] = page * 10 + 1;
@@ -498,13 +498,13 @@ u32 (ranking_page)(void)
 		return 0;
 	}
 	if (g_rankingWaiting) {
-		if (g_roomListWaiting) {
-			roomList_fillPage();   /* roomList_fillPage: the list filled */
+		if (g_rankingListIn) {
+			ranking_fillPage();   /* ranking_fillPage: the list filled */
 			g_rankingWaiting = 0;
 			g_rankingHaveList = 1;
-			g_roomListWaiting = 0;
-			g_roomListPrev = g_rankingSort;
-			g_roomListPrevPage = g_roomListPage;
+			g_rankingListIn = 0;
+			g_rankingPrevSort = g_rankingSort;
+			g_rankingPrevPage = g_rankingPage;
 		}
 		long double blink = fld_m((const float *)ADDR(g_lobbyBlinkClock)) - fmul_m(fld_m((const float *)ADDR(g_frameTime)), (const float *)ADDR(g_lobbyBlinkRate));
 		g_lobbyBlinkClock = f32(blink);
@@ -533,9 +533,9 @@ u32 (login_send)(void)
 		g_roomLoginDue = 0;
 		return r;
 	}
-	memset((void *)OBJ(g_joinedTitleName), 0, 30 + 12);
-	strcpy(g_joinedTitleName, name);
-	strcpy((char *)ADDR(g_joinedTitleLevel), password);
+	memset((void *)OBJ(g_ladderId), 0, 30 + 12);
+	strcpy(g_ladderId, name);
+	strcpy((char *)ADDR(g_ladderPassword), password);
 	AccountPacket *account = (*(AccountPacket **)&g_accountPacket);
 	memset(account->name, 0, 30);
 	memset(account->password, 0, 12);
@@ -549,7 +549,7 @@ u32 (login_send)(void)
 
 /* 0x436620: the ranking page's clicks (room modes other than 0 / 1, no message box open; a right click closes the
    page unless waiting for an answer). Not waiting (0x9dd6b8): buttons 0 .. 2 open the room's other pages
-   (roomList_prevPage / 4359b0 / 4359f0), 4 closes the page, 5 / 7 / 8 sort by column 0 / 1 / 2 (the old column kept in
+   (ranking_prevPage / 4359b0 / 4359f0), 4 closes the page, 5 / 7 / 8 sort by column 0 / 1 / 2 (the old column kept in
    0x9dd300 and a request made, the list's state cleared). While waiting, button 3 cancels it (the column and page
    put back from 0x9dd300 / 0x9dd1b4). Each with the click sound. Returns what the original leaves in eax */
 u32 (ranking_clicks)(void)
@@ -558,7 +558,7 @@ u32 (ranking_clicks)(void)
 	if (mode == 1 || mode == 0 || g_dialogOpen)
 		return mode;
 	int waiting = g_rankingWaiting;
-	if (g_keyEnter && !waiting)
+	if (g_rightClick && !waiting)
 		g_roomMode = 0;
 	if (!g_mouseClick)
 		return mode;
@@ -566,7 +566,7 @@ u32 (ranking_clicks)(void)
 	if (button > 8 || button == 6 || (button == 3 ? !g_rankingWaiting : g_rankingWaiting != 0))
 		return button;
 	u32 r = sound_playMenu(0);   /* the click sound */
-	static const u32 page[3] = { FN_ADDR(roomList_prevPage, 0x435970), FN_ADDR(roomList_nextPage, 0x4359b0), FN_ADDR(roomList_cycleMode, 0x4359f0) };
+	static const u32 page[3] = { FN_ADDR(ranking_prevPage, 0x435970), FN_ADDR(ranking_nextPage, 0x4359b0), FN_ADDR(ranking_cycleSort, 0x4359f0) };
 	int column;
 	switch (button) {
 	case 0: case 1: case 2:
@@ -574,21 +574,21 @@ u32 (ranking_clicks)(void)
 	case 3:
 		g_rankingHaveList = 1;
 		g_rankingWaiting = 0;
-		g_roomListWaiting = 0;
-		g_rankingSort = g_roomListPrev;
-		return (*(u32 *)&g_roomListPage) = (*(u32 *)&g_roomListPrevPage);
+		g_rankingListIn = 0;
+		g_rankingSort = g_rankingPrevSort;
+		return (*(u32 *)&g_rankingPage) = (*(u32 *)&g_rankingPrevPage);
 	case 4:
 		g_roomMode = 0;
 		return r;
 	}
 	column = button == 5 ? 0 : button == 7 ? 1 : 2;   /* 5, 7, 8 */
 	u32 old = (*(u32 *)&g_rankingSort);
-	(*(u32 *)&g_roomListPrev) = old;
+	(*(u32 *)&g_rankingPrevSort) = old;
 	g_rankingSort = column;
 	g_rankingRequestPending = 1;
 	g_rankingHaveList = 0;
-	g_roomListWaiting = 0;
-	g_playerListRefused = 0;
+	g_rankingListIn = 0;
+	g_playerListDone = 0;
 	g_playerListCount = 0;
 	return button == 8 ? old : r;
 }
@@ -610,7 +610,7 @@ u32 (room_settingsClicks)(void)
 		return mode;
 	if (g_dialogOpen)
 		return (*(u32 *)&g_dialogOpen);
-	if (g_keyEnter)
+	if (g_rightClick)
 		g_roomMode = 0;
 	if (!g_mouseClick)
 		return 0;

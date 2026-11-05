@@ -460,10 +460,10 @@ void (arena_drawNameDialog)(void)
 	text_draw8(x0 + 0x40, y0 + 0x96, (const char *)MSG(134, "MOVE TO ARM-CENTER"));
 	set_colour_bits(g_textColour, 0x3f800000, 0x3f800000, 0x3f800000, 0x3f800000);
 	if (!g_textFieldOpen)
-		text_draw8(x0 + 0xc2, y0 + 0x64, g_arenaName);
+		text_draw8(x0 + 0xc2, y0 + 0x64, g_arenaPlayerName);
 	if (!g_typingArenaName) {
 		if (hovered == 0 && !g_textFieldOpen)
-			shadowed(x0 + 0xc1, y0 + 0x63, g_arenaName);
+			shadowed(x0 + 0xc1, y0 + 0x63, g_arenaPlayerName);
 		else if (hovered == 2)
 			shadowed(x0 + 0x3f, y0 + 0x95, (const char *)MSG(134, "MOVE TO ARM-CENTER"));
 	}
@@ -546,7 +546,7 @@ void (gameList_mouse)(void)
 	int mode = g_roomMode;
 	if (mode == 1 || mode == 0 || g_roomJoinNeedsPassword || g_dialogOpen)
 		return;
-	if (g_keyEnter) {
+	if (g_rightClick) {
 		if (g_roomSearching)
 			return;
 		sound_playMenu(0);
@@ -861,7 +861,7 @@ void (arenaGames_mouse)(void)
 	int mode = g_arenaLobbyMode;
 	if (mode == 1 || mode == 0 || g_arenaJoinNeedsPassword || g_arenaFull || g_dialogOpen)
 		return;
-	if (g_keyEnter) {
+	if (g_rightClick) {
 		if (g_lobbySearching || g_lanSearch)
 			return;
 		g_serverConnectionState = 0;

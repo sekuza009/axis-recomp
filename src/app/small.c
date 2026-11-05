@@ -515,15 +515,15 @@ static u32 reg_write(u32 value, const char *name)
    even when it could not be opened) */
 u32 (reg_writeCharacterSettings)(void)
 {
-	strcpy(g_joinedTitleName, g_accountName);
-	strcpy(g_joinedTitleEmail, g_accountEmail);
-	strcpy(g_joinedTitleNameCopy, g_joinedTitleName);
+	strcpy(g_ladderId, g_accountName);
+	strcpy(g_ladderEmail, g_accountEmail);
+	strcpy(g_ladderIdCopy, g_ladderId);
 	strcpy(g_roomRecName, g_roomSettingsName);
 	memcpy((void *)ADDR(g_roomRecMap), (const void *)ADDR(g_roomMap), 6);
 	u32 key;
 	__asm__("" : "=m"(key));   /* left as the stack has it: a failed open leaves it so, and the original closes it anyway */
 	if (!RegOpenKeyExA(0x80000001, (const char *)STR(0x4b179c, "SOFTWARE\\AxisArena\\Character"), 0, 0xf003f, &key)) {
-		RegSetValueExA(key, (const char *)STR(0x4b1794, "Name"), 0, 1, (const void *)OBJ(g_joinedTitleName), 0x1e);   /* REG_SZ */
+		RegSetValueExA(key, (const char *)STR(0x4b1794, "Name"), 0, 1, (const void *)OBJ(g_ladderId), 0x1e);   /* REG_SZ */
 		RegSetValueExA(key, (const char *)STR(0x4b1788, "GameName"), 0, 1, (const void *)OBJ(g_roomRecName), 0x20);
 		const signed char *choice = (const signed char *)ADDR(g_roomRecMap);
 		static const u32 names[6] = { STR(0x4b1784, "Map"), STR(0x4b1778, "PlayerNum"), STR(0x4b176c, "GameType"), STR(0x4b1760, "FlagLimit"), STR(0x4b1754, "TimeLimit"), STR(0x4b1748, "Customize") };
@@ -604,7 +604,7 @@ static void read_string(u32 key, const char *name, char *dest, u32 size, u32 *ty
    the eax it leaves */
 void (reg_readCharacterSettings)(void)
 {
-	strcpy(g_joinedTitleName, (const char *)STR(0x4b17d0, "AxisPlayer"));
+	strcpy(g_ladderId, (const char *)STR(0x4b17d0, "AxisPlayer"));
 	strcpy(g_roomRecName, (const char *)STR(0x4b17bc, "Axis Ladder Game"));
 	static const u8 defaults[6] = { 0, 8, 0, 0, 10, 10 };
 	memcpy((void *)ADDR(g_roomRecMap), defaults, 6);
@@ -615,14 +615,14 @@ void (reg_readCharacterSettings)(void)
 		(0x80000001, (const char *)STR(0x4b179c, "SOFTWARE\\AxisArena\\Character"), 0, NULL, 0, 0xf003f, NULL, &key, &disposition);   /* RegCreateKeyExA */
 	signed char *choice = (signed char *)ADDR(g_roomRecMap);
 	if (disposition == 1) {   /* REG_CREATED_NEW_KEY */
-		RegSetValueExA(key, (const char *)STR(0x4b1794, "Name"), 0, 1, (const void *)OBJ(g_joinedTitleName), 0x1e);
+		RegSetValueExA(key, (const char *)STR(0x4b1794, "Name"), 0, 1, (const void *)OBJ(g_ladderId), 0x1e);
 		RegSetValueExA(key, (const char *)STR(0x4b1788, "GameName"), 0, 1, (const void *)OBJ(g_roomRecName), 0x20);
 		for (int i = 0; i < 6; i++) {
 			value = choice_dword(choice_order[i]);
 			RegSetValueExA(key, (const char *)RELOC(choice_names[i]), 0, 4, &value, 4);
 		}
 	} else if (disposition == 2) {   /* REG_OPENED_EXISTING_KEY */
-		read_string(key, (const char *)STR(0x4b1794, "Name"), g_joinedTitleName, 0x1e, &type, buf);
+		read_string(key, (const char *)STR(0x4b1794, "Name"), g_ladderId, 0x1e, &type, buf);
 		read_string(key, (const char *)STR(0x4b1788, "GameName"), g_roomRecName, 0x20, &type, buf);
 		u32 size = 4;   /* set once: each read leaves the size it found for the next (as in the original) */
 		value = 0;

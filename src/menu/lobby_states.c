@@ -1,6 +1,6 @@
 /* lobby_states.c: the arena lobby's and the game room's screens set up as they are entered: the camera's target point
    for the screen (and its look-at point), the screen's state cleared, the panel brightness (0x3f333333 = 0.7), the
-   message box hidden (0x4dba68 / 0x9dd6bc), and for the lists the map list or the room list reset. The lobby's
+   message box hidden (0x4dba68 / 0x9dd6bc), and for the lists the map list or the ranking reset. The lobby's
    three sub-screens are 0 (the player's own record), 1 (the arena list) and 2 (creating an arena). */
 #include "../game.h"
 #include <string.h>
@@ -22,7 +22,7 @@ void (lobby_setSubState0)(void)
 	(*(u32 *)&g_camAim0X) = 0xc28c0000;   /* -70.0 */
 	(*(u32 *)&g_camAim0Y) = 0x420c0000;   /* 35.0 */
 	g_camAim0Z = z;
-	arena_copyProfile();
+	arena_loadPlayerSettings();
 	g_arenaLobbyMode = 1;
 	g_lobbySubState = 0;
 	g_arenaPanelBrightness = 0x3f333333;
@@ -141,8 +141,8 @@ void (room_loadSettingsRecord)(void)
 	g_roomTimeLimit = g_roomRecTimeLimit;
 }
 
-/* 0x433790: the game room's list (state 2) entered: the room's settings, its state cleared, the map list */
-void (room_enterGameList)(void)
+/* 0x433790: the create-game page (state 2) entered: the room's settings record, its state cleared, the map list */
+void (room_enterCreatePage)(void)
 {
 	static const u32 cleared[] = { ADDR(g_arenaLobbyState), ADDR(g_connectionAwaited), ADDR(g_lobbyPending), ADDR(g_arenaGameSetUp), ADDR(g_arenaLeaving), ADDR(g_editingRoomName), ADDR(g_editingFragLimit), ADDR(g_editingTimeLimit),
 	                               ADDR(g_editingRoomPassword) };
@@ -156,13 +156,13 @@ void (room_enterGameList)(void)
 	mapList_init();
 }
 
-/* 0x433800: the room list (state 4) entered: its ten 0x44-byte rows cleared (each marked empty), the paging and
+/* 0x433800: the ranking page (state 4) entered: its ten 0x44-byte rows cleared (each marked empty), the paging and
    selection cleared, the distance limit 10,000,000, 999 rooms */
-void (room_enterRoomList)(void)
+void (ranking_enter)(void)
 {
-	static const u32 cleared[] = { ADDR(g_roomListPage), ADDR(g_rankingRequestPending), ADDR(g_roomListWaiting), ADDR(g_rankingWaiting), ADDR(g_rankingHaveList), ADDR(g_playerListRefused), ADDR(g_playerListCount), ADDR(g_roomListPrevPage),
-	                               ADDR(g_rankingSort), ADDR(g_roomListPrev), ADDR(g_roomListPrevRank) };
-	for (RankRow *row = g_roomListRows; row < g_roomListRows + 10; row++) {
+	static const u32 cleared[] = { ADDR(g_rankingPage), ADDR(g_rankingRequestPending), ADDR(g_rankingListIn), ADDR(g_rankingWaiting), ADDR(g_rankingHaveList), ADDR(g_playerListDone), ADDR(g_playerListCount), ADDR(g_rankingPrevPage),
+	                               ADDR(g_rankingSort), ADDR(g_rankingPrevSort), ADDR(g_rankingPrevRank) };
+	for (RankRow *row = g_rankingRows; row < g_rankingRows + 10; row++) {
 		memset(&row->rank, 0, offsetof(RankRow, level) - offsetof(RankRow, rank));
 		row->level = 1;
 	}
@@ -183,7 +183,7 @@ void (lobby_ladderGameName)(void)
 	strcpy(g_roomSettingsName, (const char *)STR(0x4b17bc, "Axis Ladder Game"));
 	(*(char *)&g_roomPlayers) = 8;
 	(*(char *)&g_roomGameMode) = 0;
-	strcpy(g_joinedTitleNameCopy, g_joinedTitleName);
+	strcpy(g_ladderIdCopy, g_ladderId);
 	(*(char *)&g_roomMap) = 0;
 	(*(char *)&g_roomFragLimit) = 10;
 	(*(char *)&g_roomTimeLimit) = 10;
@@ -202,8 +202,8 @@ void (lobby_ladderGameName)(void)
    window rectangles) copied into the room screen's */
 void (room_copyJoinedSettings)(void)
 {
-	strcpy(g_accountName, g_joinedTitleName);
-	strcpy(g_accountEmail, g_joinedTitleEmail);
+	strcpy(g_accountName, g_ladderId);
+	strcpy(g_accountEmail, g_ladderEmail);
 	u8 map = g_roomRecPlayers;
 	strcpy(g_roomSettingsName, g_roomRecName);
 	g_roomPlayers = map;
@@ -236,7 +236,7 @@ static void stats_copy(u32 dst, u32 src)
 
 /* 0x41e390 (the pilot's record): the two copies of the pilot's record (the server's,
    g_pilotLevel 0x9dd5d8, and the kept one, g_pilotLevelKept 0x9dd240: level, points, ., rating, ., wins, losses) made
-   the same when one's wins or points are past the other's, then each limited by the title record's (0x4de71e) */
+   the same when one's wins or points are past the other's, then each limited by the Ladder record's (g_ladderLevel) */
 void (pilotRecord_syncCopies)(void)
 {
 	int c5, a1, b1;   /* the values the original holds in registers where the branches meet */
@@ -253,8 +253,8 @@ void (pilotRecord_syncCopies)(void)
 			b1 = a1;
 		}
 	}
-	int e0 = g_titleLevel, e1 = g_titlePoints, e3 = g_titleRating,
-	    e4 = g_titleScore, e5 = g_titleWins, e6 = g_titleLosses;
+	int e0 = g_ladderLevel, e1 = g_ladderPoints, e3 = g_ladderRating,
+	    e4 = g_ladderScore, e5 = g_ladderWins, e6 = g_ladderLosses;
 	if (c5 > e5 || a1 > e1) {
 		g_pilotLevel = e0;
 		g_pilotPoints = e1;
@@ -273,13 +273,13 @@ void (pilotRecord_syncCopies)(void)
 	}
 }
 
-/* 0x432db0: a received game's settings (0xa0563c) into the room: its names, the 11 mech bytes, the six colour pairs
-   (a negative or NaN saturation or value becomes 0), the window rectangle; then the room screen, the lobby's title
-   record and the mech */
-void (room_takeReceivedSettings)(void)
+/* 0x432db0: the login accepted (answer 0x21): the account record the server sent (g_netRecvRecord) taken: the ID and
+   e-mail, the 11 mech bytes, the six colour pairs (a negative or NaN saturation or value becomes 0), the pilot's
+   stats; then the room's settings, the Ladder record (g_ladderName ..) and the mech */
+void (login_takeAccountRecord)(void)
 {
-	strcpy(g_joinedTitleName, (const char *)(OBJ(g_netRecvRecord) + 0x4));
-	strcpy(g_joinedTitleEmail, (const char *)(OBJ(g_netRecvRecord) + 0x22));
+	strcpy(g_ladderId, (const char *)(OBJ(g_netRecvRecord) + 0x4));
+	strcpy(g_ladderEmail, (const char *)(OBJ(g_netRecvRecord) + 0x22));
 	memcpy((void *)OBJ(g_roomMech), (void *)(OBJ(g_netRecvRecord) + 0x54), 11);
 	for (int k = 0; k < 6; k++) {
 		memcpy((void *)(OBJ(g_roomColours) + k * 0x18), (void *)((OBJ(g_netRecvRecord) + 0x5f) + k * 0x18), 0x18);
@@ -294,10 +294,10 @@ void (room_takeReceivedSettings)(void)
 	for (int k = 0; k < 7; k++)
 		GAME_VAR(int, rect[k][0]) = GAME_VAR(int, rect[k][1]);
 	room_copyJoinedSettings();
-	memset((void *)OBJ(g_titleName), 0, 7 * 4 + 2);
-	strcpy(g_titleName, g_joinedTitleName);
-	static const u32 title[6][2] = { { ADDR(g_titleLevel), ADDR(g_pilotLevel) }, { ADDR(g_titlePoints), ADDR(g_pilotPoints) }, { ADDR(g_titleWins), ADDR(g_pilotWins) },
-	                                 { ADDR(g_titleLosses), ADDR(g_pilotLosses) }, { ADDR(g_titleScore), ADDR(g_pilotScore) }, { ADDR(g_titleRating), ADDR(g_pilotRating) } };
+	memset((void *)OBJ(g_ladderName), 0, 7 * 4 + 2);
+	strcpy(g_ladderName, g_ladderId);
+	static const u32 title[6][2] = { { ADDR(g_ladderLevel), ADDR(g_pilotLevel) }, { ADDR(g_ladderPoints), ADDR(g_pilotPoints) }, { ADDR(g_ladderWins), ADDR(g_pilotWins) },
+	                                 { ADDR(g_ladderLosses), ADDR(g_pilotLosses) }, { ADDR(g_ladderScore), ADDR(g_pilotScore) }, { ADDR(g_ladderRating), ADDR(g_pilotRating) } };
 	for (int k = 0; k < 6; k++)
 		GAME_VAR(int, title[k][0]) = GAME_VAR(int, title[k][1]);
 	mech_unpackFromRecord();
@@ -316,26 +316,26 @@ static void default_mech(u8 *mech, u8 *colours)
 }
 
 /* 0x434820: a new room hosted: the room's names copied as the joined game's, the default mech and colours in both,
-   the window rectangle reset (to 1, 0, ...) in both and the title record (0x4de700) set from it; the room record
+   the window rectangle reset (to 1, 0, ...) in both and the Ladder record (g_ladderName ..) set from it; the room record
    (0xa0b320: kind 0x18, the three names, the defaults) sent to the server (net_send 0xf, 0x65). Returns net_send's
    eax */
 u32 (room_host)(void)
 {
-	strcpy(g_joinedTitleName, g_accountName);
-	strcpy(g_joinedTitleEmail, g_accountEmail);
+	strcpy(g_ladderId, g_accountName);
+	strcpy(g_ladderEmail, g_accountEmail);
 	default_mech(g_roomMechKept, g_roomColoursKept);
 	default_mech(g_roomMech, (u8 *)OBJ(g_roomColours));
 	g_pilotLevelKept = 1;
 	g_pilotLevel = 1;
-	memset((void *)OBJ(g_titleName), 0, 7 * 4 + 2);
+	memset((void *)OBJ(g_ladderName), 0, 7 * 4 + 2);
 	static const u32 zero[] = { ADDR(g_pilotPoints), ADDR(g_pilotWins), ADDR(g_pilotLosses), ADDR(g_pilotScore), ADDR(g_pilotWinRate), ADDR(g_pilotPointsKept), ADDR(g_pilotWinsKept), ADDR(g_pilotLossesKept),
 	                            ADDR(g_pilotScoreKept), (OBJ(g_pilotStatsKept) + 0x1c) };
 	for (unsigned k = 0; k < sizeof zero / sizeof zero[0]; k++)
 		GAME_VAR(int, zero[k]) = 0;
-	strcpy(g_titleName, g_joinedTitleName);
-	g_titleRating = g_pilotRating;
-	g_titleLevel = 1;
-	static const u32 zero2[] = { ADDR(g_titlePoints), ADDR(g_titleWins), ADDR(g_titleLosses), ADDR(g_titleScore) };
+	strcpy(g_ladderName, g_ladderId);
+	g_ladderRating = g_pilotRating;
+	g_ladderLevel = 1;
+	static const u32 zero2[] = { ADDR(g_ladderPoints), ADDR(g_ladderWins), ADDR(g_ladderLosses), ADDR(g_ladderScore) };
 	for (int k = 0; k < 4; k++)
 		GAME_VAR(int, zero2[k]) = 0;
 	AccountPacket *record = (*(AccountPacket **)&g_accountPacket);
@@ -416,7 +416,7 @@ u32 (lobby_quitDialogClicks)(void)
 {
 	if (g_dialogOpen)
 		return g_dialogOpen;
-	if (g_keyEnter)
+	if (g_rightClick)
 		g_arenaLeaving = 0;
 	if (!g_mouseClick)
 		return 0;
@@ -534,7 +534,7 @@ u32 (room_mapListKeys)(void)
    second, back to the main menu (state 300), the connection closed, the mech reloaded from the profile */
 u32 (room_leaveGame)(void)
 {
-	strcpy(g_netLeaveBuffer, g_joinedTitleName);
+	strcpy(g_netLeaveBuffer, g_ladderId);
 	net_send(0x19, 0x65);   /* net_send */
 	Sleep(500);                   /* Sleep */
 	menuCamera_setMove(4);
@@ -553,7 +553,7 @@ u32 (create_quitDialogClicks)(void)
 	for (int k = 0; k < 5; k++)
 		if (GAME_VAR(int, panels[k]))
 			return GAME_VAR(u32, panels[k]);
-	if (g_keyEnter)
+	if (g_rightClick)
 		g_arenaLeaving = 0;
 	if (!g_mouseClick)
 		return 0;
@@ -690,7 +690,7 @@ u32 (lobby_playerScreenClicks)(void)
 	int mode = g_arenaLobbyMode;
 	if (mode == 1 || mode == 0 || g_dialogOpen || g_typingArenaName)
 		return (u32)mode;
-	if (g_keyEnter) {
+	if (g_rightClick) {
 		g_arenaLobbyMode = 0;
 		return sound_playMenu(0);
 	}
@@ -707,7 +707,7 @@ u32 (lobby_playerScreenClicks)(void)
 		return armc_enterParts();   /* armc_enterParts: the ARM CENTER */
 	case 3:
 		sound_playMenu(0);
-		r = arena_saveSettings();      /* arena_saveSettings */
+		r = arena_savePlayerSettings();      /* arena_savePlayerSettings */
 		g_arenaLobbyMode = 0;
 		return r;
 	case 4:
@@ -716,7 +716,7 @@ u32 (lobby_playerScreenClicks)(void)
 		return r;
 	case 5:
 		sound_playMenu(0);
-		return cfg_defaultPlayerName();   /* cfg_defaultPlayerName */
+		return arena_defaultPlayer();   /* arena_defaultPlayer */
 	}
 	return button;
 }
@@ -874,7 +874,7 @@ u32 (lobby_topPageClicks)(void)
 			break;
 		}
 	}
-	int right = g_keyEnter;
+	int right = g_rightClick;
 	if (!right)
 		return 0;
 	int allowed = g_tunnelRings;
@@ -901,8 +901,8 @@ u32 (lobbyPlayer_keys)(void)
 		g_typingArenaName = 0;
 		if (!length)
 			return 0;
-		memset((void *)OBJ(g_arenaName), 0, 32);
-		strcpy(g_arenaName, typed);
+		memset((void *)OBJ(g_arenaPlayerName), 0, 32);
+		strcpy(g_arenaPlayerName, typed);
 		return length + 1;
 	}
 	if (input_justPressed(g_keyCancel2)) {
@@ -911,12 +911,12 @@ u32 (lobbyPlayer_keys)(void)
 	}
 	if (input_justPressed(g_dikO)) {
 		sound_playMenu(0);
-		arena_saveSettings();
+		arena_savePlayerSettings();
 		g_arenaLobbyMode = 0;
 	}
 	if (input_justPressed(g_dikD)) {
 		sound_playMenu(0);
-		return cfg_defaultPlayerName();   /* cfg_defaultPlayerName */
+		return arena_defaultPlayer();   /* arena_defaultPlayer */
 	}
 	if (!input_justPressed(g_keyBack))
 		return 0;
@@ -1016,7 +1016,7 @@ u32 (lobby_pageClicks)(void)
 	u32 busy = (*(u32 *)&g_editingNewArenaName);
 	if (busy || g_editingNewArenaFragLimit || g_editingNewArenaTimeLimit || g_typingArenaPassword || g_dialogOpen)
 		return busy;
-	if (g_keyEnter) {
+	if (g_rightClick) {
 		g_createQuitDialog = 0;
 		return 0;
 	}
@@ -1174,7 +1174,7 @@ u32 (arena_createClick)(void)
 	u32 mode = (*(u32 *)&g_arenaLobbyMode);
 	if (mode == 1 || mode == 0 || g_dialogOpen)
 		return mode;
-	if (g_keyEnter) {
+	if (g_rightClick) {
 		sound_playMenu(0);
 		u32 r = arena_leaveSession();   /* arena_leaveSession: the arena left */
 		g_arenaLobbyMode = 0;
@@ -1400,11 +1400,11 @@ void (lobbyJoin_keysChat)(void)
 /* ---- the player's record (from 0x4de700: the name, +0x1e the level, +0x22 points, +0x26 rating, +0x2a 0x4de72a,
    +0x2e wins, +0x32 losses) and its two kept copies (0x9dd5d8 and 0x9dd240: +0 level, +4 points, +0xc rating,
    +0x10 0x4de72a's value, +0x14 wins, +0x18 losses, +0x1c the win rate) ---- */
-#define R_POINTS g_titlePoints
-#define R_RATING (*(float *)&g_titleRating)
-#define R_OTHER g_titleScore
-#define R_WINS g_titleWins
-#define R_LOSSES g_titleLosses
+#define R_POINTS g_ladderPoints
+#define R_RATING (*(float *)&g_ladderRating)
+#define R_OTHER g_ladderScore
+#define R_WINS g_ladderWins
+#define R_LOSSES g_ladderLosses
 
 /* the win rate in percent (as its float bits): 0 without games (and, when checked, with a total not above 0) */
 static u32 win_rate(int wins, int losses, int checked)
@@ -1447,7 +1447,7 @@ static void record_send(u32 rate, int name)
 {
 	u8 *packet = g_netPlayerRecordPacket;
 	if (name)
-		strcpy((char *)packet, g_titleName);
+		strcpy((char *)packet, g_ladderName);
 	*(int *)(packet + 0x1e) = R_OTHER;
 	*(int *)(packet + 0x22) = R_WINS;
 	*(int *)(packet + 0x26) = R_LOSSES;
@@ -1622,7 +1622,7 @@ void (room_announceGame)(void)
 	room_keepSettings();
 	special_map(g_roomRecName, (u8 *)ADDR(g_roomRecMap));
 	RoomRecord *packet = (RoomRecord *)g_arenaPacket;
-	GAME_CDECL(0x49ea80, char *, char *, const char *, int)(packet->hostName, g_joinedTitleName, 0x1e);   /* strncpy */
+	GAME_CDECL(0x49ea80, char *, char *, const char *, int)(packet->hostName, g_ladderId, 0x1e);   /* strncpy */
 	packet = (RoomRecord *)g_arenaPacket;
 	const GameSettings *room = (const GameSettings *)OBJ(g_roomRecName);
 	packet->kind = 0x18;

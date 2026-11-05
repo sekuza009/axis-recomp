@@ -486,8 +486,8 @@ void (menuState600_setup)(void)
 /* 0x44aee0: the room's text (0x9dd570) copied to 0x4de700, and profile_checkAndSendRecord when it is not empty */
 void (room_keepText)(void)
 {
-	const char *from = g_joinedTitleName;
-	char *to = g_titleName;
+	const char *from = g_ladderId;
+	char *to = g_ladderName;
 	int i = 0;
 	do
 		to[i] = from[i];

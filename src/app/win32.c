@@ -824,8 +824,8 @@ long STDCALL (game_wndProc)(void *wnd, u32 msg, u32 w, u32 l)
 		case 0xca: g_roomSearchAnswerIn = 1; g_searchResult = 1; break;
 		case 0xcb: g_roomSearchAnswerIn = 1; g_searchResult = 3; break;
 		}
-		if (g_playerListRefused)
-			g_roomListWaiting = 1;
+		if (g_playerListDone)
+			g_rankingListIn = 1;
 		if (g_netNoticeIn)
 			g_accountNotice = 1;
 		return 1;

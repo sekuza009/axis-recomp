@@ -105,7 +105,7 @@ g_typingArenaJoinPassword
 g_enteringMenus
 g_errorCleanupHook
 g_errorLogging
-g_excludedKey
+g_dikF1
 g_fieldStep
 g_fovKeys
 g_fps
@@ -195,7 +195,7 @@ g_randPos
 g_rankingLast
 g_retypePassword
 g_roomDialogOpen
-g_roomListPrev
+g_rankingPrevSort
 g_roomTunnelDepth
 g_serviceProviderCount
 g_setupPage
@@ -317,7 +317,7 @@ g_profilePageBottom
 g_profilePageLeft
 g_profilePageTop
 g_profileScreenReady
-g_roomListPrevRank
+g_rankingPrevRank
 g_roomMode
 g_roomSearchAnswerIn
 g_roomSearching
@@ -328,12 +328,12 @@ g_settingsPage
 g_settingsState
 g_setupPanelMoving
 g_skirmishDrawBackground
-g_titleLevel
-g_titleLosses
-g_titlePoints
-g_titleRating
-g_titleScore
-g_titleWins
+g_ladderLevel
+g_ladderLosses
+g_ladderPoints
+g_ladderRating
+g_ladderScore
+g_ladderWins
 g_typingArenaName
 g_unusedMenuReturnWord
 g_unusedBriefingWord
@@ -472,9 +472,9 @@ g_roomGameListTop
 g_roomJoined
 g_roomLeaveDialog
 g_roomListDistanceLimit
-g_roomListPage
+g_rankingPage
 g_roomListPages
-g_roomListPrevPage
+g_rankingPrevPage
 g_roomListRefreshTimer
 g_roomLoginBottom
 g_roomLoginLeft
@@ -601,7 +601,7 @@ g_profileMessageTime
 g_profileRowClicked
 g_quitAsked
 g_rankingSort
-g_roomListWaiting
+g_rankingListIn
 g_roomLoginDue
 g_serverConnected
 g_skirmishInfoCount
@@ -669,7 +669,7 @@ g_netSelectionPacket
 g_netSendBuffer
 g_netSendName
 g_playerListCount
-g_playerListRefused
+g_playerListDone
 g_roomListCount
 g_roomPacket
 g_serverPort
@@ -708,7 +708,7 @@ g_partRecords
 # the resolution names, the typed arena address (objects18.csv) and the grown joined-title record, whole
 g_resolutionNames
 g_typedArenaNameText
-g_joinedTitleName
+g_ladderId
 # freed by the resolution names record, 2026-11-01
 # the screens' hit-test rectangles (objects20.csv), whole, 2026-11-01
 g_mapListRects
@@ -1091,7 +1091,7 @@ g_mapAbouts
 g_mapNames
 g_joinedSessionRec
 # network buffers, profile bars, chat history, key / mouse tables (objects37.csv); held in place: g_lobbyHost (an
-# unresolved name runs on), g_undoStack (its depth is not bounded), g_joinedTitleEmail (up to 39 bytes into 30)
+# unresolved name runs on), g_undoStack (its depth is not bounded), g_ladderEmail (up to 39 bytes into 30)
 g_serverList
 g_lobbyReplyCode
 g_gameServerReplyCode
@@ -1124,7 +1124,7 @@ g_simpleMenuTexts
 g_crosshairName
 g_messageBoxLine
 g_clearColour
-g_joinedTitleNameCopy
+g_ladderIdCopy
 g_windowClass
 g_glTitle
 g_musicFile

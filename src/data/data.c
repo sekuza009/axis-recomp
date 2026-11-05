@@ -350,12 +350,12 @@ u8 g_debugValue_v[4] __attribute__((aligned(16)));   /* 0x4de6e0 */
 u8 g_unusedArmcMoveWord_v[4] __attribute__((aligned(16)));   /* 0x4de6f0 */
 u8 g_unusedPostMatchFlag_v[4] __attribute__((aligned(16)));   /* 0x4de6f8 */
 u8 g_watchChatOpen_v[4] __attribute__((aligned(16)));   /* 0x4de6fc */
-u8 g_titleLevel_v[4] __attribute__((aligned(16)));   /* 0x4de71e */
-u8 g_titlePoints_v[4] __attribute__((aligned(16)));   /* 0x4de722 */
-u8 g_titleRating_v[4] __attribute__((aligned(16)));   /* 0x4de726 */
-u8 g_titleScore_v[4] __attribute__((aligned(16)));   /* 0x4de72a */
-u8 g_titleWins_v[4] __attribute__((aligned(16)));   /* 0x4de72e */
-u8 g_titleLosses_v[4] __attribute__((aligned(16)));   /* 0x4de732 */
+u8 g_ladderLevel_v[4] __attribute__((aligned(16)));   /* 0x4de71e */
+u8 g_ladderPoints_v[4] __attribute__((aligned(16)));   /* 0x4de722 */
+u8 g_ladderRating_v[4] __attribute__((aligned(16)));   /* 0x4de726 */
+u8 g_ladderScore_v[4] __attribute__((aligned(16)));   /* 0x4de72a */
+u8 g_ladderWins_v[4] __attribute__((aligned(16)));   /* 0x4de72e */
+u8 g_ladderLosses_v[4] __attribute__((aligned(16)));   /* 0x4de732 */
 u8 g_dikMouse1_v[4] __attribute__((aligned(16)));   /* 0x4de73c */
 u8 g_menuFramePhase_v[4] __attribute__((aligned(16)));   /* 0x4de740 */
 char g_serverAddressArg_v[1024] __attribute__((aligned(16)));   /* 0x4de748 */
@@ -579,7 +579,7 @@ u8 g_logoTexture_v[4] __attribute__((aligned(16)));   /* 0x76d3f0 */
 u8 g_dikNumpadMinus_v[4] __attribute__((aligned(16)));   /* 0x76d3f4 */
 float g_menuLookHome_v[3] __attribute__((aligned(16)));   /* 0x76d3f8 */
 u8 g_timeLimit_v[4] __attribute__((aligned(16)));   /* 0x76d408 */
-u8 g_roomListWaiting_v[4] __attribute__((aligned(16)));   /* 0x76d40c */
+u8 g_rankingListIn_v[4] __attribute__((aligned(16)));   /* 0x76d40c */
 u8 g_startedFromLobby_v[4] __attribute__((aligned(16)));   /* 0x76d410 */
 u8 g_dikDelete_v[4] __attribute__((aligned(16)));   /* 0x76d414 */
 u8 g_chatEditLength_v[4] __attribute__((aligned(16)));   /* 0x76d418 */
@@ -591,7 +591,7 @@ u8 g_highlightShown_v[4] __attribute__((aligned(16)));   /* 0x76d42c */
 u8 g_desktopHeight_v[4] __attribute__((aligned(16)));   /* 0x76d430 */
 u8 g_textColour_v[16] __attribute__((aligned(16)));   /* 0x76d438 */
 u8 g_fontAscii_v[4] __attribute__((aligned(16)));   /* 0x76d448 */
-char g_joinedTitleNameCopy_v[32] __attribute__((aligned(16)));   /* 0x76d450 */
+char g_ladderIdCopy_v[32] __attribute__((aligned(16)));   /* 0x76d450 */
 u8 g_dikSemicolon_v[4] __attribute__((aligned(16)));   /* 0x76d470 */
 u8 g_unusedStartupWord1_v[4] __attribute__((aligned(16)));   /* 0x76d474 */
 int g_mainMenuTextures_v[2] __attribute__((aligned(16)));   /* 0x76d478 */
@@ -622,7 +622,7 @@ u8 g_chatCaretX_v[4] __attribute__((aligned(16)));   /* 0x9da3d8 */
 u8 g_chatCaretY_v[4] __attribute__((aligned(16)));   /* 0x9da3dc */
 u8 g_mapRotation_v[4] __attribute__((aligned(16)));   /* 0x9da3e0 */
 u8 g_menuKeyGuard_v[4] __attribute__((aligned(16)));   /* 0x9da434 */
-u8 g_excludedKey_v[4] __attribute__((aligned(16)));   /* 0x9da440 */
+u8 g_dikF1_v[4] __attribute__((aligned(16)));   /* 0x9da440 */
 u8 g_dikF3_v[4] __attribute__((aligned(16)));   /* 0x9da448 */
 u8 g_dikF2_v[4] __attribute__((aligned(16)));   /* 0x9da44c */
 u8 g_dikF5_v[4] __attribute__((aligned(16)));   /* 0x9da450 */
@@ -689,7 +689,7 @@ u8 g_roomTextAndRows_v[684] __attribute__((aligned(16)));   /* 0x9dcee8 */
 u8 g_loginToSend_v[4] __attribute__((aligned(16)));   /* 0x9dd198 */
 int g_roomDialogBox_v[4] __attribute__((aligned(16)));   /* 0x9dd1a0 */
 u8 g_unusedRoomWord_v[4] __attribute__((aligned(16)));   /* 0x9dd1b0 */
-u8 g_roomListPrevPage_v[4] __attribute__((aligned(16)));   /* 0x9dd1b4 */
+u8 g_rankingPrevPage_v[4] __attribute__((aligned(16)));   /* 0x9dd1b4 */
 int g_roomForm_v[4] __attribute__((aligned(16)));   /* 0x9dd1b8 */
 u8 g_roomLoginDue_v[4] __attribute__((aligned(16)));   /* 0x9dd1c8 */
 u8 g_lineToLoginId_v[4] __attribute__((aligned(16)));   /* 0x9dd1cc */
@@ -698,10 +698,10 @@ u8 g_accountForm_v[94] __attribute__((aligned(16)));   /* 0x9dd1d8 */
 int g_pilotStatsKept_v[8] __attribute__((aligned(16)));   /* 0x9dd240 */
 u8 g_roomMechKept_v[11] __attribute__((aligned(16)));   /* 0x9dd260 */
 u8 g_roomColoursKept_v[144] __attribute__((aligned(16)));   /* 0x9dd26b */
-u8 g_roomListPrev_v[4] __attribute__((aligned(16)));   /* 0x9dd300 */
+u8 g_rankingPrevSort_v[4] __attribute__((aligned(16)));   /* 0x9dd300 */
 u8 g_editingEmail_v[4] __attribute__((aligned(16)));   /* 0x9dd304 */
 int g_gameListStopRects_v[4] __attribute__((aligned(16)));   /* 0x9dd308 */
-u8 g_roomListPrevRank_v[4] __attribute__((aligned(16)));   /* 0x9dd328 */
+u8 g_rankingPrevRank_v[4] __attribute__((aligned(16)));   /* 0x9dd328 */
 u8 g_unusedLoginWord_v[4] __attribute__((aligned(16)));   /* 0x9dd32c */
 u8 g_gameListLoaded_v[4] __attribute__((aligned(16)));   /* 0x9dd330 */
 u32 g_roomDim_v[4] __attribute__((aligned(16)));   /* 0x9dd338 */
@@ -741,7 +741,7 @@ u8 g_roomPanelEase_v[4] __attribute__((aligned(16)));   /* 0x9dd560 */
 u8 g_typingAccountRepeat_v[4] __attribute__((aligned(16)));   /* 0x9dd564 */
 u8 g_editingTimeLimit_v[4] __attribute__((aligned(16)));   /* 0x9dd568 */
 u8 g_roomJoined_v[4] __attribute__((aligned(16)));   /* 0x9dd56c */
-char g_joinedTitleName_v[54] __attribute__((aligned(16)));   /* 0x9dd570 */
+char g_ladderId_v[54] __attribute__((aligned(16)));   /* 0x9dd570 */
 int g_pilotStats_v[8] __attribute__((aligned(16)));   /* 0x9dd5d8 */
 u8 g_roomMech_v[11] __attribute__((aligned(16)));   /* 0x9dd5f8 */
 float g_roomColours_v[36] __attribute__((aligned(16)));   /* 0x9dd603 */
@@ -750,7 +750,7 @@ u8 g_editingOldPassword_v[4] __attribute__((aligned(16)));   /* 0x9dd69c */
 u8 g_roomSearching_v[4] __attribute__((aligned(16)));   /* 0x9dd6a0 */
 u8 g_roomAnswerAwaited_v[4] __attribute__((aligned(16)));   /* 0x9dd6a4 */
 u8 g_editingRoomPassword_v[4] __attribute__((aligned(16)));   /* 0x9dd6a8 */
-u8 g_roomListPage_v[4] __attribute__((aligned(16)));   /* 0x9dd6ac */
+u8 g_rankingPage_v[4] __attribute__((aligned(16)));   /* 0x9dd6ac */
 u8 g_lineToLoginPassword_v[4] __attribute__((aligned(16)));   /* 0x9dd6b0 */
 u8 g_roomJoinNeedsPassword_v[4] __attribute__((aligned(16)));   /* 0x9dd6b4 */
 u8 g_rankingWaiting_v[4] __attribute__((aligned(16)));   /* 0x9dd6b8 */
@@ -979,7 +979,7 @@ u8 g_netLeaveBuffer_v[4] __attribute__((aligned(16)));   /* 0xa0b33c */
 u8 g_netSelectionPacket_v[4] __attribute__((aligned(16)));   /* 0xa0b340 */
 u8 g_netAccountBuffer_v[4] __attribute__((aligned(16)));   /* 0xa0b344 */
 u8 g_gameServerState_v[4] __attribute__((aligned(16)));   /* 0xa0b34c */
-u8 g_playerListRefused_v[4] __attribute__((aligned(16)));   /* 0xa0b350 */
+u8 g_playerListDone_v[4] __attribute__((aligned(16)));   /* 0xa0b350 */
 u8 g_netNoticeIn_v[4] __attribute__((aligned(16)));   /* 0xa0b354 */
 u8 g_roomListCount_v[4] __attribute__((aligned(16)));   /* 0xa0b358 */
 u8 g_playerListCount_v[4] __attribute__((aligned(16)));   /* 0xa0b35c */
@@ -1520,12 +1520,12 @@ const DataPiece g_splitObjects[] = {
 	{ 0x4de6f0, g_unusedArmcMoveWord_v, 4 },
 	{ 0x4de6f8, g_unusedPostMatchFlag_v, 4 },
 	{ 0x4de6fc, g_watchChatOpen_v, 4 },
-	{ 0x4de71e, g_titleLevel_v, 4 },
-	{ 0x4de722, g_titlePoints_v, 4 },
-	{ 0x4de726, g_titleRating_v, 4 },
-	{ 0x4de72a, g_titleScore_v, 4 },
-	{ 0x4de72e, g_titleWins_v, 4 },
-	{ 0x4de732, g_titleLosses_v, 4 },
+	{ 0x4de71e, g_ladderLevel_v, 4 },
+	{ 0x4de722, g_ladderPoints_v, 4 },
+	{ 0x4de726, g_ladderRating_v, 4 },
+	{ 0x4de72a, g_ladderScore_v, 4 },
+	{ 0x4de72e, g_ladderWins_v, 4 },
+	{ 0x4de732, g_ladderLosses_v, 4 },
 	{ 0x4de73c, g_dikMouse1_v, 4 },
 	{ 0x4de740, g_menuFramePhase_v, 4 },
 	{ 0x4de748, g_serverAddressArg_v, 1024 },
@@ -1749,7 +1749,7 @@ const DataPiece g_splitObjects[] = {
 	{ 0x76d3f4, g_dikNumpadMinus_v, 4 },
 	{ 0x76d3f8, g_menuLookHome_v, 12 },
 	{ 0x76d408, g_timeLimit_v, 4 },
-	{ 0x76d40c, g_roomListWaiting_v, 4 },
+	{ 0x76d40c, g_rankingListIn_v, 4 },
 	{ 0x76d410, g_startedFromLobby_v, 4 },
 	{ 0x76d414, g_dikDelete_v, 4 },
 	{ 0x76d418, g_chatEditLength_v, 4 },
@@ -1761,7 +1761,7 @@ const DataPiece g_splitObjects[] = {
 	{ 0x76d430, g_desktopHeight_v, 4 },
 	{ 0x76d438, g_textColour_v, 16 },
 	{ 0x76d448, g_fontAscii_v, 4 },
-	{ 0x76d450, g_joinedTitleNameCopy_v, 32 },
+	{ 0x76d450, g_ladderIdCopy_v, 32 },
 	{ 0x76d470, g_dikSemicolon_v, 4 },
 	{ 0x76d474, g_unusedStartupWord1_v, 4 },
 	{ 0x76d478, g_mainMenuTextures_v, 8 },
@@ -1792,7 +1792,7 @@ const DataPiece g_splitObjects[] = {
 	{ 0x9da3dc, g_chatCaretY_v, 4 },
 	{ 0x9da3e0, g_mapRotation_v, 4 },
 	{ 0x9da434, g_menuKeyGuard_v, 4 },
-	{ 0x9da440, g_excludedKey_v, 4 },
+	{ 0x9da440, g_dikF1_v, 4 },
 	{ 0x9da448, g_dikF3_v, 4 },
 	{ 0x9da44c, g_dikF2_v, 4 },
 	{ 0x9da450, g_dikF5_v, 4 },
@@ -1859,7 +1859,7 @@ const DataPiece g_splitObjects[] = {
 	{ 0x9dd198, g_loginToSend_v, 4 },
 	{ 0x9dd1a0, g_roomDialogBox_v, 16 },
 	{ 0x9dd1b0, g_unusedRoomWord_v, 4 },
-	{ 0x9dd1b4, g_roomListPrevPage_v, 4 },
+	{ 0x9dd1b4, g_rankingPrevPage_v, 4 },
 	{ 0x9dd1b8, g_roomForm_v, 16 },
 	{ 0x9dd1c8, g_roomLoginDue_v, 4 },
 	{ 0x9dd1cc, g_lineToLoginId_v, 4 },
@@ -1868,10 +1868,10 @@ const DataPiece g_splitObjects[] = {
 	{ 0x9dd240, g_pilotStatsKept_v, 32 },
 	{ 0x9dd260, g_roomMechKept_v, 11 },
 	{ 0x9dd26b, g_roomColoursKept_v, 144 },
-	{ 0x9dd300, g_roomListPrev_v, 4 },
+	{ 0x9dd300, g_rankingPrevSort_v, 4 },
 	{ 0x9dd304, g_editingEmail_v, 4 },
 	{ 0x9dd308, g_gameListStopRects_v, 16 },
-	{ 0x9dd328, g_roomListPrevRank_v, 4 },
+	{ 0x9dd328, g_rankingPrevRank_v, 4 },
 	{ 0x9dd32c, g_unusedLoginWord_v, 4 },
 	{ 0x9dd330, g_gameListLoaded_v, 4 },
 	{ 0x9dd338, g_roomDim_v, 16 },
@@ -1911,7 +1911,7 @@ const DataPiece g_splitObjects[] = {
 	{ 0x9dd564, g_typingAccountRepeat_v, 4 },
 	{ 0x9dd568, g_editingTimeLimit_v, 4 },
 	{ 0x9dd56c, g_roomJoined_v, 4 },
-	{ 0x9dd570, g_joinedTitleName_v, 54 },
+	{ 0x9dd570, g_ladderId_v, 54 },
 	{ 0x9dd5d8, g_pilotStats_v, 32 },
 	{ 0x9dd5f8, g_roomMech_v, 11 },
 	{ 0x9dd603, g_roomColours_v, 144 },
@@ -1920,7 +1920,7 @@ const DataPiece g_splitObjects[] = {
 	{ 0x9dd6a0, g_roomSearching_v, 4 },
 	{ 0x9dd6a4, g_roomAnswerAwaited_v, 4 },
 	{ 0x9dd6a8, g_editingRoomPassword_v, 4 },
-	{ 0x9dd6ac, g_roomListPage_v, 4 },
+	{ 0x9dd6ac, g_rankingPage_v, 4 },
 	{ 0x9dd6b0, g_lineToLoginPassword_v, 4 },
 	{ 0x9dd6b4, g_roomJoinNeedsPassword_v, 4 },
 	{ 0x9dd6b8, g_rankingWaiting_v, 4 },
@@ -2149,7 +2149,7 @@ const DataPiece g_splitObjects[] = {
 	{ 0xa0b340, g_netSelectionPacket_v, 4 },
 	{ 0xa0b344, g_netAccountBuffer_v, 4 },
 	{ 0xa0b34c, g_gameServerState_v, 4 },
-	{ 0xa0b350, g_playerListRefused_v, 4 },
+	{ 0xa0b350, g_playerListDone_v, 4 },
 	{ 0xa0b354, g_netNoticeIn_v, 4 },
 	{ 0xa0b358, g_roomListCount_v, 4 },
 	{ 0xa0b35c, g_playerListCount_v, 4 },

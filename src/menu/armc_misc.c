@@ -558,7 +558,7 @@ void THISCALL (stage_claimPlayerActor)(Stage *stage, int a, int id, int controll
 /* 0x410160: a right click leaves the ARM CENTER's page, the menu camera put back */
 void (armc_rightClickLeave)(void)
 {
-	if (g_keyEnter) {
+	if (g_rightClick) {
 		armc_restoreMenuCamera();
 		g_armcState = 0;
 		BITS(g_viewAspect) = 0;
@@ -741,7 +741,7 @@ void (armc_sendSelectionToNet)(void)
 	for (int i = 0; i < 5; i++)
 		room[i] = (u8)parts[i];
 	u8 *packet = g_netSelectionPacket;
-	strcpy((char *)packet, g_joinedTitleName);
+	strcpy((char *)packet, g_ladderId);
 	memcpy(packet + 0x1e, room, 11);
 	memcpy(packet + 0x29, (const void *)OBJ(g_roomColours), 0x90);
 	net_send(0x1b, 0x65);

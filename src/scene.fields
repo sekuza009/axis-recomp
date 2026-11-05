@@ -595,7 +595,7 @@ struct RoomRecord 0x79                                           # a game room a
 0          1          u8 kind
 1          0x32       char name[0x32]
 0x33       0x10       char address[16]
-0x43       0x1e       char hostName[30]                          # the player who made it (g_joinedTitleName)
+0x43       0x1e       char hostName[30]                          # the player who made it (g_ladderId)
 0x61       1          signed char map
 0x62       1          signed char maxPlayers
 0x63       1          signed char players
@@ -686,7 +686,7 @@ struct RankedPlayer 0x3e                                         # a player of t
 0x36       4          float power
 0x3a       4          float rate
 
-struct RankRow 0x44                                              # a row of the ranking table (g_roomListRows, ten: roomList_fillPage from g_netPlayerList)
+struct RankRow 0x44                                              # a row of the ranking table (g_rankingRows, ten: roomList_fillPage from g_netPlayerList)
 4          4          i32 rank                                   # its place (the row before's when its sorted value is the same)
 8          0x1e       char name[30]                              # (empty: past the list's end)
 0x26       4          i32 exp                                    # (sort 2)

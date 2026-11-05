@@ -186,9 +186,9 @@ void THISCALL (profile_addMatchScores)(u8 *s)
 	Scene *sc = (Scene *)s;
 	if (sc->localPlayer >= 0) {
 		Player *me = &sc->players[sc->localPlayer];
-		g_titleWins += me->kills - me->killsCounted;
-		g_titleLosses += me->deaths - me->deathsCounted;
-		g_titlePoints += me->score - me->startPoints;
+		g_ladderWins += me->kills - me->killsCounted;
+		g_ladderLosses += me->deaths - me->deathsCounted;
+		g_ladderPoints += me->score - me->startPoints;
 		me->killsCounted = me->kills;
 		me->deathsCounted = me->deaths;
 		me->startPoints = me->score;

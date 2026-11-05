@@ -72,7 +72,7 @@ static void first_round(Scene *s)
 	s->ladderGame = g_matchMode == 2;
 	if (s->ladderGame == 1) {
 		BITS(s->scoreCommitTimer) = 0x43960000;   /* 300 */
-		g_titleScore++;
+		g_ladderScore++;
 		s->showExp = 1;
 	} else
 		s->showExp = 0;
@@ -84,7 +84,7 @@ static void first_round(Scene *s)
 	strcpy(s->mechName, g_matchPlayerName);
 	s->pilotLevel = g_selectedPilotLevel;
 	if (s->ladderGame == 1) {
-		s->levelPoints = g_titlePoints;
+		s->levelPoints = g_ladderPoints;
 		s->level = actor_levelFromValue(s->levelPoints);
 		if (s->level < 1 || s->level > 20)
 			sys_fatalError((char *)OBJ(g_logConsole), (const char *)STR(0x4d0710, "incorrect level(%d) - processGameMode..."), s->level);

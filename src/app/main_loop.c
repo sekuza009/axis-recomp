@@ -252,7 +252,7 @@ static const u32 k_weaponKeys[6] = { (OBJ(g_controls) + 0x78), (OBJ(g_controls) 
 /* 0x49d290 (thiscall on the game object): the match's input for this frame (match_resetInputState first; nothing
    more before the match is drawn, matchDrawing). With no chat line or menu open: spectating (playing 0) and out
    of the match (localAlive 0, or a solo game without a mech in play) the fire keys leave it; spectating otherwise
-   a click follows the next player, Enter the next preset, the numpad picks the preset (cameraSlot) and the number
+   a click follows the next player, a right click the next preset, the numpad picks the preset (cameraSlot) and the number
    keys the player to follow (followKey); playing, the fire keys held / pressed; then every held control, the weapon keys,
    the mouse look (above 0.2 s of frame time it is still), the game menu (its keys once keyGuard is
    over), the chat keys, the camera mode cycle (respawnCameraMode), the scoreboard keys, the message log toggle cycle
@@ -274,7 +274,7 @@ void THISCALL (match_combatInput)(u8 *s)
 					SC->followNextAsked = 1;
 					SC->manualPick[0] = 1;
 				}
-				if (SC->cameraSlot >= 0 && g_keyEnter) {
+				if (SC->cameraSlot >= 0 && g_rightClick) {
 					SC->presetNextAsked = 1;
 					SC->manualPick[1] = 1;
 					SC->actionKey = 1;
@@ -1017,7 +1017,7 @@ u32 THISCALL (replay_frame)(u8 *s)
 		SC->followNextAsked = 1;
 		SC->manualPick[0] = 1;
 	}
-	if (g_keyEnter) {
+	if (g_rightClick) {
 		SC->presetNextAsked = 1;
 		SC->manualPick[1] = 1;
 		SC->actionKey = 1;
@@ -2026,7 +2026,7 @@ void THISCALL (match_frame)(u8 *s)
 			} else {
 				/* the next round */
 				if (SC->ladderGame == 1) {
-					g_titleScore++;
+					g_ladderScore++;
 					profile_addMatchScores(sc);
 				}
 				scene_resetScores(sc);
@@ -2226,7 +2226,7 @@ void THISCALL (match_frame)(u8 *s)
 			SC->matchOver = 0;
 			replay_closeRecording(sc);
 			if (SC->ladderGame == 1) {
-				g_titleScore++;
+				g_ladderScore++;
 				profile_addMatchScores(sc);
 			}
 			for (int i = 0; i < SCENE_STAGE(s)->itemCount; i++)

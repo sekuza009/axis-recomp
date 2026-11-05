@@ -161,9 +161,9 @@ int (profile_deleteClicks)(void)
 			g_profilePage = 1;
 		}
 	}
-	if (g_keyEnter)
+	if (g_rightClick)
 		g_profilePage = 1;
-	return g_keyEnter;
+	return g_rightClick;
 }
 
 /* 0x44c400: the log-out question: its first button runs profile_resetCamera, the second closes it (and clears 0x76d42c) */
@@ -181,9 +181,9 @@ int (profile_logOutClicks)(void)
 			g_highlightShown = 0;
 		}
 	}
-	if (g_keyEnter)
+	if (g_rightClick)
 		g_profilePage = 1;
-	return g_keyEnter;
+	return g_rightClick;
 }
 
 /* 0x44f6c0: logging in with the selected profile (when 0x9f6840): the profile saved, the main menu (state 300), the
@@ -241,7 +241,7 @@ u32 (profile_processInput)(void)
 {
 	int intro = g_profileIntro;
 	if (intro && g_profileIntroState != 5) {
-		u32 r = g_mouseClick ? (u32)g_mouseClick : (*(u32 *)&g_keyEnter);
+		u32 r = g_mouseClick ? (u32)g_mouseClick : (*(u32 *)&g_rightClick);
 		if (r) {
 			g_profileIntroState = 5;
 			g_profileIntroTime = 0;
@@ -289,9 +289,9 @@ int (pilotSelect_clicks)(void)
 			g_highlightShown = 0;
 		}
 	}
-	if (g_keyEnter)
+	if (g_rightClick)
 		g_profilePage = 1;
-	return g_keyEnter;
+	return g_rightClick;
 }
 
 #define chdir_(path) GAME_CDECL(0x49f8a6, int, const char *)(path)
@@ -486,9 +486,9 @@ static void line_wipe(void)
 }
 
 /* 0x44c190: the new pilot's name dialog. Before typing (0x9f8f34): a click on the name field (profile_inDialogBox) or
-   Enter starts it (profile_typeNewName). While typing: OK (button 0) refuses a blank name (sound 6), refuses a bad one
+   a right click starts it (profile_typeNewName). While typing: OK (button 0) refuses a blank name (sound 6), refuses a bad one
    (message 0x81, the dialog shut) or takes it (profile_nameExists; when that fails the dialog stays for another go),
-   cancel (1) empties the line; Enter (0x4ded8c) leaves typing with the line emptied. Returns what the original
+   cancel (1) empties the line; a right click (g_rightClick) leaves typing with the line emptied. Returns what the original
    leaves in eax */
 u32 (profile_newNameDialog)(void)
 {
@@ -503,7 +503,7 @@ u32 (profile_newNameDialog)(void)
 			g_textFieldOpen = 1;
 			r = profile_typeNewName();   /* profile_typeNewName: typing starts */
 		}
-		if (!g_keyEnter)
+		if (!g_rightClick)
 			return r;
 		g_profileMessage = 0;
 		r = profile_typeNewName();
@@ -540,7 +540,7 @@ u32 (profile_newNameDialog)(void)
 			r = keyboard_back();
 		}
 	}
-	if (!g_keyEnter)
+	if (!g_rightClick)
 		return r;
 	g_profilePage = 1;
 	g_textFieldOpen = 0;
@@ -590,7 +590,7 @@ static void key_up(void) { list_up(); }
 static void key_down(void) { list_down(); }
 
 /* 0x44c600: the profile list's keys: up / down held (with the menu's key repeat) move the cursor, scrolling the list
-   at its ends (sound 2); Enter (0x4e150c) starts a new profile (profile_typeNewName); 0x4e0ce0 / 0x76d414 delete it
+   at its ends (sound 2); N starts a new profile (profile_typeNewName); 0x4e0ce0 / 0x76d414 delete it
    (profile_askDelete) when there is one; 0x4e14f4 logs in (the pilot grid: 0x9f6840, page 4), or starts a new
    profile when there are none; OK / the second cancel key ask to log out (profile_askLogOut). The original leaves eax to
    callers that ignore it */

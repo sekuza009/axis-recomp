@@ -188,10 +188,10 @@ void (menuState800_enterGameRoom)(void)
 	g_menuLookAtX = (*(int *)&g_menuCameraLook);
 	g_menuLookAtY = (*(int *)&g_menuCameraLookY);
 	g_menuLookAtZ = g_menuCameraHeight;
-	memset((void *)OBJ(g_joinedTitleEmail), 0, 7 * 4 + 2);
-	g_joinedTitleLevel = 0;
-	g_joinedTitlePoints = 0;
-	g_joinedTitleRating = 0;
+	memset((void *)OBJ(g_ladderEmail), 0, 7 * 4 + 2);
+	g_ladderPassword = 0;
+	g_ladderPassword4 = 0;
+	g_ladderPassword8 = 0;
 	g_typingLoginId = 0;
 	g_typingLoginPassword = 1;
 	memset((void *)OBJ(g_roomMech), 0, 5);
@@ -424,7 +424,7 @@ void (match_enter)(void)
 		if (g_pilotLevel != 0x14)
 			armc_resetSeraphimParts();
 		data_loadPilotProfiles();
-		match_name(g_joinedTitleName);
+		match_name(g_ladderId);
 		scene_startSession(scene, g_netRole == 1 ? 0 : 1, 1);
 		break;
 	case 3:

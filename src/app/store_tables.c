@@ -118,7 +118,7 @@ static const Store k_dikCodes[118] = {
 	{ ADDR(g_dikSemicolon), 0x27 }, { ADDR(g_dikGrave), 0x29 }, { ADDR(g_dikBackslash), 0x2b }, { ADDR(g_dikComma), 0x33 }, { ADDR(g_dikPeriod), 0x34 },
 	{ ADDR(g_dikSlash), 0x35 }, { ADDR(g_dikApostrophe), 0x28 }, { ADDR(g_dikRCtrl), 0x9d }, { ADDR(g_dikLCtrl), 0x1d }, { ADDR(g_dikLShift), 0x2a },
 	{ ADDR(g_dikRShift), 0x36 }, { ADDR(g_dikLAlt), 0x38 }, { ADDR(g_dikRAlt), 0xb8 }, { ADDR(g_dikSpace), 0x39 }, { ADDR(g_dikCapsLock), 0x3a },
-	{ ADDR(g_excludedKey), 0x3b }, { ADDR(g_dikF2), 0x3c }, { ADDR(g_dikF3), 0x3d }, { ADDR(g_dikF4), 0x3e }, { ADDR(g_dikF5), 0x3f },
+	{ ADDR(g_dikF1), 0x3b }, { ADDR(g_dikF2), 0x3c }, { ADDR(g_dikF3), 0x3d }, { ADDR(g_dikF4), 0x3e }, { ADDR(g_dikF5), 0x3f },
 	{ ADDR(g_dikF6), 0x40 }, { ADDR(g_dikF7), 0x41 }, { ADDR(g_dikF8), 0x42 }, { ADDR(g_dikF9), 0x43 }, { ADDR(g_dikF10), 0x44 },
 	{ ADDR(g_dikF11), 0x57 }, { ADDR(g_dikF12), 0x58 }, { ADDR(g_dikNumLock), 0x45 }, { ADDR(g_dikScrollLock), 0x46 }, { ADDR(g_dikPrintScreen), 0xb7 },
 	{ ADDR(g_dikNumpad1), 0x4f }, { ADDR(g_dikNumpad2), 0x50 }, { ADDR(g_dikNumpad3), 0x51 }, { ADDR(g_dikNumpad4), 0x4b }, { ADDR(g_dikNumpad5), 0x4c },
@@ -149,7 +149,7 @@ static const CStore k_defaultBindings[68] = {
 	{ (OBJ(g_controls) + 0xbc), ADDR(g_dikNone), 1 }, { (OBJ(g_controls) + 0xc4), ADDR(g_dikNone), 1 }, { ADDR(g_keyGameMenu), ADDR(g_dikEscape_2), 1 }, { ADDR(g_keyGameMenu2), ADDR(g_dikNone), 1 },
 	{ (OBJ(g_controls) + 0xd0), ADDR(g_dikF4), 1 }, { (OBJ(g_controls) + 0xd8), ADDR(g_dikF5), 1 }, { (OBJ(g_controls) + 0xd4), ADDR(g_dikNone), 1 }, { (OBJ(g_controls) + 0xdc), ADDR(g_dikNone), 1 },
 	{ (OBJ(g_controls) + 0xe0), ADDR(g_dikTab), 1 }, { (OBJ(g_controls) + 0xe4), ADDR(g_dikNone), 1 }, { (OBJ(g_controls) + 0xe8), ADDR(g_dikF10), 1 }, { (OBJ(g_controls) + 0xec), ADDR(g_dikNone), 1 },
-	{ (OBJ(g_controls) + 0xf4), ADDR(g_dikNone), 1 }, { (OBJ(g_controls) + 0xfc), ADDR(g_dikNone), 1 }, { (OBJ(g_controls) + 0xf0), ADDR(g_dikV), 1 }, { (OBJ(g_controls) + 0xf8), ADDR(g_excludedKey), 1 },
+	{ (OBJ(g_controls) + 0xf4), ADDR(g_dikNone), 1 }, { (OBJ(g_controls) + 0xfc), ADDR(g_dikNone), 1 }, { (OBJ(g_controls) + 0xf0), ADDR(g_dikV), 1 }, { (OBJ(g_controls) + 0xf8), ADDR(g_dikF1), 1 },
 	{ ADDR(g_mouseInvert), 0x0, 0 }, { ADDR(g_mouseSmooth), 0x0, 0 }, { ADDR(g_mouseSensitivity), 0x32, 0 }, { ADDR(g_crosshairSetting), 0x0, 0 } };
 
 void (input_setDefaultBindings)(void) { apply_cstores(k_defaultBindings, 68); }   /* the default key bindings (g_controls) */
@@ -170,7 +170,7 @@ static const CStore k_defaultBindingsEdit[68] = {
 	{ (OBJ(g_controlsEdit) + 0xbc), ADDR(g_dikNone), 1 }, { (OBJ(g_controlsEdit) + 0xc4), ADDR(g_dikNone), 1 }, { (OBJ(g_controlsEdit) + 0xc8), ADDR(g_dikEscape_2), 1 }, { (OBJ(g_controlsEdit) + 0xcc), ADDR(g_dikNone), 1 },
 	{ (OBJ(g_controlsEdit) + 0xd0), ADDR(g_dikF4), 1 }, { (OBJ(g_controlsEdit) + 0xd8), ADDR(g_dikF5), 1 }, { (OBJ(g_controlsEdit) + 0xd4), ADDR(g_dikNone), 1 }, { (OBJ(g_controlsEdit) + 0xdc), ADDR(g_dikNone), 1 },
 	{ (OBJ(g_controlsEdit) + 0xe0), ADDR(g_dikTab), 1 }, { (OBJ(g_controlsEdit) + 0xe4), ADDR(g_dikNone), 1 }, { (OBJ(g_controlsEdit) + 0xe8), ADDR(g_dikF10), 1 }, { (OBJ(g_controlsEdit) + 0xec), ADDR(g_dikNone), 1 },
-	{ (OBJ(g_controlsEdit) + 0xf4), ADDR(g_dikNone), 1 }, { (OBJ(g_controlsEdit) + 0xfc), ADDR(g_dikNone), 1 }, { (OBJ(g_controlsEdit) + 0xf0), ADDR(g_dikV), 1 }, { (OBJ(g_controlsEdit) + 0xf8), ADDR(g_excludedKey), 1 },
+	{ (OBJ(g_controlsEdit) + 0xf4), ADDR(g_dikNone), 1 }, { (OBJ(g_controlsEdit) + 0xfc), ADDR(g_dikNone), 1 }, { (OBJ(g_controlsEdit) + 0xf0), ADDR(g_dikV), 1 }, { (OBJ(g_controlsEdit) + 0xf8), ADDR(g_dikF1), 1 },
 	{ OBJ(g_setupToggles), 0x0, 0 }, { (OBJ(g_setupToggles) + 0x4), 0x0, 0 }, { ADDR(g_sensitivitySlider), 0x32, 0 }, { ADDR(g_crosshair), 0x0, 0 } };
 
 void (setup_defaultBindings)(void) { apply_cstores(k_defaultBindingsEdit, 68); }   /* the setup page's DEFAULT: the defaults into its edit copy (g_controlsEdit) */

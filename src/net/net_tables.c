@@ -269,7 +269,7 @@ void (net_receiveServerReply)(void)
 		net_addPlayerRecord(reply);
 		break;
 	case 1:
-		g_playerListRefused = 1;
+		g_playerListDone = 1;
 		g_netLastRequest = 0;
 		break;
 	}
@@ -1406,7 +1406,7 @@ void (net_recv)(void)
 		break;
 	case 26:
 		net_clearPlayerList();
-		g_playerListRefused = 1;
+		g_playerListDone = 1;
 		g_netLastRequest = 0;
 		break;
 	case 29:

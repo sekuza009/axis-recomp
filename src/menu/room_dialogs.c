@@ -33,8 +33,8 @@ void (room_openDialog58)(void)
 	g_roomPopup = 0;
 }
 
-/* 0x4338c0: dialog 0x4d, its two 0x2a-byte name buffers emptied */
-void (room_openDialog4d)(void)
+/* 0x4338c0: the new-ID form (state 0x4d = 77) opened: its window laid out, the account fields emptied (0x54 bytes) */
+void (room_openNewIdForm)(void)
 {
 	set_box(ADDR(g_newIdFormLeft), 0x1e, 0x32, 0x262, 0x1ae);
 	newIdForm_layout();
@@ -53,11 +53,12 @@ void (room_openDialog42)(void)
 	memset((void *)OBJ(g_accountName), 0, 7 * 4 + 2 + 12);
 	g_roomState = 0x42;
 	g_retypePassword = 1;
-	strcpy(g_accountName, g_joinedTitleName);
+	strcpy(g_accountName, g_ladderId);
 }
 
-/* 0x433590: the room screen's start: state 1, fade 0.7, 30 (0x5b1914), 999 (0x907b24), the rest cleared */
-void (room_start)(void)
+/* 0x433590: the game list page (state 1) entered: brightness 0.7, the list refreshed every 30 s, no panel (999), the
+   rest cleared */
+void (room_enterGameList)(void)
 {
 	static const u32 cleared[] = { ADDR(g_roomRefreshing), ADDR(g_roomSearching), ADDR(g_gameListLoaded), ADDR(g_roomSearchAnswerIn), ADDR(g_gameCount), ADDR(g_lobbyBlinkClock), ADDR(g_localPlayer), ADDR(g_gameListTop),
 	                               ADDR(g_lobbyListRow), ADDR(g_gameListJoinClicked), ADDR(g_roomJoined), ADDR(g_roomListRefreshTimer), ADDR(g_gameListClickArmed), ADDR(g_gameListClickTimer), ADDR(g_roomNameSum) };
@@ -85,7 +86,7 @@ u32 (room_mouse)(void)
 		if (dialog)
 			return (u32)dialog;
 		return g_mapListOpen ? room_mapListKeys() : room_settingsAfterTyping();
-	case 4: return dialog ? (u32)dialog : roomList_passwordKeys();
+	case 4: return dialog ? (u32)dialog : ranking_keys();
 	case 66: return g_roomLeaveDialog == 1 ? leaveDialog_keys() : roomLogin_keys();
 	case 77: return loginDialog_keys();
 	case 88: return g_roomLeaveDialog == 1 ? leaveDialog_keys() : room_leaveKeys();
@@ -120,7 +121,7 @@ u32 (room_readyKeys)(void)
    page, 4 applies. Returns what the original leaves in eax */
 u32 (settingsDialog_clicks)(void)
 {
-	if (g_keyEnter) {
+	if (g_rightClick) {
 		sound(0);
 		return room_openDialog42();   /* closed */
 	}
@@ -253,7 +254,7 @@ u32 (room_openClicks)(void)
 		return (u32)g_dialogOpen;
 	if (g_textFieldOpen)
 		return (*(u32 *)&g_textFieldOpen);
-	if (!g_keyEnter) {
+	if (!g_rightClick) {
 		if (!g_mouseClick)
 			return 0;
 		u32 button = account_hitTest(g_mouseX, g_mouseY);   /* the room's hit test */
@@ -412,7 +413,7 @@ void (roomLogin_update)(void)
 	if (answer == 0x21) {
 		g_roomState = 99;
 		reg_writeCharacterSettings();
-		room_takeReceivedSettings();
+		login_takeAccountRecord();
 	} else if (answer == 0x2a)
 		g_roomLeaveDialog = 1;
 	else if (answer == 0x1f || answer == 0x20)
@@ -526,10 +527,10 @@ u32 (room_networkEvents)(void)
 	return r;
 }
 
-/* 0x437810: the room list's keys while its password box is up (0x9dd6b8): one key cancels it (the list's page and
-   mode put back), another cancels it or, without it, leaves the screen; a third leaves the screen. Returns what the
+/* 0x437810: the ranking page's keys: S cancels the request out (g_rankingWaiting; the page and
+   sort put back); C, with no request out, closes the page (g_roomMode 0); Esc, with none out, leaves the screen. Returns what the
    original leaves in eax */
-u32 (roomList_passwordKeys)(void)
+u32 (ranking_keys)(void)
 {
 	u32 r;
 	if (input_justPressed(g_dikS)) {
@@ -537,9 +538,9 @@ u32 (roomList_passwordKeys)(void)
 			return 0;
 		r = sound(0);
 		g_rankingWaiting = 0;
-		g_roomListWaiting = 0;
-		g_roomListPage = g_roomListPrevPage;
-		g_rankingSort = g_roomListPrev;
+		g_rankingListIn = 0;
+		g_rankingPage = g_rankingPrevPage;
+		g_rankingSort = g_rankingPrevSort;
 		g_rankingHaveList = 1;
 		return r;
 	}
@@ -549,7 +550,7 @@ u32 (roomList_passwordKeys)(void)
 		r = sound(0);
 		g_rankingWaiting = 0;
 		g_rankingHaveList = 0;
-		g_roomListWaiting = 0;
+		g_rankingListIn = 0;
 		g_roomMode = 0;
 		return r;
 	}
@@ -562,10 +563,10 @@ u32 (roomList_passwordKeys)(void)
 	return r;
 }
 
-/* 0x4334c0: the request to join the selected room sent: the room's password and state cleared, the room screen at
-   state 0 (open, brightness 0.7), the room's name (0x9dd570, 30 bytes) as message 0x1d; then the confirm box up.
+/* 0x4334c0: the account page (state 0) entered: the account fields and their flags cleared (brightness 0.7), and the
+   account's details asked for: the logged-in ID (g_ladderId, 30 bytes) as message 0x1d, the server awaited.
    Returns net_send's eax */
-u32 (room_requestJoin)(void)
+u32 (room_enterAccountPage)(void)
 {
 	static const u32 cleared[] = { OBJ(g_accountPasswordRepeat), OBJ(g_accountPassword), (OBJ(g_accountPasswordRepeat) + 0x4), OBJ(g_accountOldPassword), (OBJ(g_accountPassword) + 0x4), (OBJ(g_accountPasswordRepeat) + 0x8), (OBJ(g_accountOldPassword) + 0x4), ADDR(g_roomState) };
 	for (unsigned k = 0; k < sizeof cleared / sizeof cleared[0]; k++)
@@ -577,7 +578,7 @@ u32 (room_requestJoin)(void)
 		GAME_VAR(int, cleared2[k]) = 0;
 	char *message = g_netJoinMessage;
 	memset(message, 0, 30);
-	strcpy(message, g_joinedTitleName);
+	strcpy(message, g_ladderId);
 	u32 r = net_send(0x1d, 0x65);
 	g_accountNotice = 0;
 	g_roomAwaitingServer = 1;
@@ -932,7 +933,7 @@ void (account_drawPanel)(void)
 /* 0x43d060: the ranking table (0x9dced8 .. 0x9dcee4): the title 0x75aba4; the page arrows (0 / 1 under the pointer,
    by ranking_hitTest, lit) about "first ~ last" of page 0x9dd6ac (stored in 0x9dd83c / 0x9dd7dc); the sort button
    (MSG(412, "OPTION"); 2) with the sorted column's name; two rules and the column heads (MSG(413, "RANK") .., the sorted one in
-   yellow); when there is a list (0x9dd3b0) up to ten rows (g_roomListRows) until an
+   yellow); when there is a list (0x9dd3b0) up to ten rows (g_rankingRows) until an
    empty name (which stores the page in 0x9dd4b8): rank, name, rank badge (level) in a yellow frame, power "%8.1f",
    rate "%3.2f" and three counts (kills, deaths, exp), the sorted value in yellow; a rule, two buttons
    (MSG(421, "$[0] STOP"); 3 / 4, the first dead until the list is loaded, 0x9dd6b8); while loading the blinking MSG(423, "DOWNLOADING RANKING DATA"); the
@@ -962,9 +963,9 @@ u32 (ranking_drawTable)(void)
 	menu_drawSmallButton2(X0 + 0x146, Y0 + 0x26, X0 + 0x17a, Y0 + 0x3e, hovered != 0 && hovered == 1);
 	glColor4f(1.0f, 1.0f, 1.0f, 0.7f);
 	char page[64], last[64];
-	int first = g_roomListPage * 10 + 1;
+	int first = g_rankingPage * 10 + 1;
 	g_rankingFirst = first;
-	g_rankingLast = (g_roomListPage * 5 + 5) * 2;
+	g_rankingLast = (g_rankingPage * 5 + 5) * 2;
 	itoa(first, page, 10);
 	itoa(g_rankingLast, last, 10);
 	strcat(page, (const char *)STR(0x4b278c, " ~ "));
@@ -1005,9 +1006,9 @@ u32 (ranking_drawTable)(void)
 	if (g_rankingHaveList) {
 		char text[64];
 		for (int i = 0; i < 10; i++) {
-			const RankRow *row = &g_roomListRows[i];
+			const RankRow *row = &g_rankingRows[i];
 			if (!row->name[0]) {
-				g_roomListPages = g_roomListPage;
+				g_roomListPages = g_rankingPage;
 				break;
 			}
 			int y = Y0 + i * 0x16 + 0x78;
@@ -1089,8 +1090,8 @@ static void creategame_close(void)
 
 /* 0x436990: the Ladder login dialog's keys. While its request is out (0x9dd838) or the login is due (0x9dd1c8)
    only cancel2 answers, closing the dialog (the answer dropped) and the lobby connection. Otherwise a click on its
-   buttons (roomLogin_hitTest: 2 send, 3 close and disconnect, 4 room_openDialog4d), 0x4e14f4 send, back close, 0x4e150c
-   room_openDialog4d (none of these while typing, g_textFieldOpen); the toggle key moves the highlight (g_dialogChoice) on: from
+   buttons (roomLogin_hitTest: 2 send, 3 close and disconnect, 4 room_openNewIdForm), 0x4e14f4 send, back close, 0x4e150c
+   room_openNewIdForm (none of these while typing, g_textFieldOpen); the toggle key moves the highlight (g_dialogChoice) on: from
    the name (1) to the password field (2), to the OK button (3), then into the name field for typing; with shift,
    back: from OK (3) to the password field, to the name, then into the password field for typing. The original
    leaves eax to callers that ignore it */
@@ -1134,7 +1135,7 @@ void (roomLogin_keys)(void)
 			g_textFieldOpen = 0;
 			g_highlightShown = 0;
 			sound_playMenu(0);
-			room_openDialog4d();
+			room_openNewIdForm();
 			return;
 		}
 	}
@@ -1158,7 +1159,7 @@ void (roomLogin_keys)(void)
 		if (g_textFieldOpen)
 			return;
 		sound_playMenu(0);
-		room_openDialog4d();
+		room_openNewIdForm();
 		return;
 	}
 	if (input_justPressed(g_keyToggle) != 1)

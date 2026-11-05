@@ -41,10 +41,10 @@ void (replaySelect_allOut)(void)
 	g_replayRandomOrder = 0;
 }
 
-/* 0x445e10: Enter or a click closes the message box */
+/* 0x445e10: a right or left click closes the message box */
 void (messageBox_clickClose)(void)
 {
-	if (g_keyEnter) {
+	if (g_rightClick) {
 		(*(int *)&g_cursorBlink) = 0;
 		g_dialogPending = 0;
 	}

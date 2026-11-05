@@ -669,7 +669,7 @@ typedef struct RoomRecord {
 	u8 kind;   /* +0x0 */
 	char name[0x32];   /* +0x1 */
 	char address[16];   /* +0x33 */
-	char hostName[30];   /* +0x43: the player who made it (g_joinedTitleName) */
+	char hostName[30];   /* +0x43: the player who made it (g_ladderId) */
 	signed char map;   /* +0x61 */
 	signed char maxPlayers;   /* +0x62 */
 	signed char players;   /* +0x63 */
@@ -779,7 +779,7 @@ typedef struct RankedPlayer {
 	float rate;   /* +0x3a */
 } RankedPlayer;
 
-/* a row of the ranking table (g_roomListRows, ten: roomList_fillPage from g_netPlayerList) */
+/* a row of the ranking table (g_rankingRows, ten: roomList_fillPage from g_netPlayerList) */
 typedef struct RankRow {
 	u8 _pad0000000[0x4];
 	i32 rank;   /* +0x4: its place (the row before's when its sorted value is the same) */

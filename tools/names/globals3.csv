@@ -10,7 +10,7 @@
 0x680398,int,g_panelHovered
 0x9eeaa8,int,g_tunnelFlyingIn
 0x4dda60,int,g_setupPanelMoving
-0x9da440,int,g_excludedKey
+0x9da440,int,g_dikF1
 0x4df024,u32,g_menuCameraPos
 0x9db990,int,g_replayRunning
 0x4b2a7c,int,g_replayWrap
@@ -30,8 +30,8 @@
 0x4dbb74,int,g_arenaNameDialogBottom
 # game room
 0x9dced0,int,g_retypePassword
-0x9dd1b4,int,g_roomListPrevPage
-0x9dd300,int,g_roomListPrev
+0x9dd1b4,int,g_rankingPrevPage
+0x9dd300,int,g_rankingPrevSort
 0x9dd198,int,g_loginToSend
 0x9dd830,int,g_typingLoginId
 0x9dd38c,int,g_typingLoginPassword
@@ -42,7 +42,7 @@
 0xa05630,int,g_gameServerSocket
 0xa0b35c,int,g_playerListCount
 0xa0b358,int,g_roomListCount
-0xa0b350,int,g_playerListRefused
+0xa0b350,int,g_playerListDone
 0xa0b364,int,g_gameServerPending
 0xa0b380,int,g_lobbyConnectStatus
 0xa0b428,u32,g_localPlayerData

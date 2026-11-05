@@ -1136,7 +1136,7 @@ typedef struct { float r, g, b, a; } Colour;
 #define undo_pop() GAME_FN(undo_pop, 0x443de0, u32, void)()   /* one step undone */
 
 /* ---- the lobby's and room's screens (menu/lobby_states.c) ---- */
-#define arena_copyProfile() GAME_FN(arena_copyProfile, 0x404930, void, void)()   /* the player's record from the profile */
+#define arena_loadPlayerSettings() GAME_FN(arena_loadPlayerSettings, 0x404930, void, void)()   /* the player's record from the profile */
 #define mapList_layout() GAME_FN(mapList_layout, 0x403300, void, void)()   /* the map list laid out */
 #define lobby_drawArenaTitle() GAME_FN(lobby_drawArenaTitle, 0x404980, void, void)()
 #define mapList_init() GAME_FN(mapList_init, 0x403420, void, void)()   /* the map on/off list reset */
@@ -1180,7 +1180,7 @@ typedef struct { float r, g, b, a; } Colour;
 #define net_sessionValue(i) GAME_FN(net_sessionValue, 0x4532b0, int, int)(i)   /* session i's record */
 
 #define room_copyJoinedSettings() GAME_FN(room_copyJoinedSettings, 0x432be0, void, void)()   /* the joined game's settings into the room screen */
-#define room_takeReceivedSettings() GAME_FN(room_takeReceivedSettings, 0x432db0, void, void)()   /* a received game's settings into the room */
+#define login_takeAccountRecord() GAME_FN(login_takeAccountRecord, 0x432db0, void, void)()   /* a received game's settings into the room */
 #define roomLogin_editId() GAME_FN(roomLogin_editId, 0x433b00, u32, void)()   /* the game's name opened for typing */
 #define roomLogin_editPassword() GAME_FN(roomLogin_editPassword, 0x433bb0, u32, void)()   /* the game's password opened for typing */
 #define chat_closeEdit() GAME_FN(chat_closeEdit, 0x433c70, void, void)()   /* the chat edit control closed, the line taken */
@@ -1194,7 +1194,7 @@ typedef struct { float r, g, b, a; } Colour;
 #define room_askJoinPassword() GAME_FN(room_askJoinPassword, 0x434da0, void, void)()   /* the selected game joined */
 #define gameList_open() GAME_FN(gameList_open, 0x434d00, int, void)()    /* the search asked for: 1 sent */
 #define roomLogin_hitTest(x, y) GAME_FN(roomLogin_hitTest, 0x432200, int, int, int)(x, y)   /* the Ladder login dialog's button at (x, y) */
-#define room_openDialog4d() GAME_FN(room_openDialog4d, 0x4338c0, u32, void)()
+#define room_openNewIdForm() GAME_FN(room_openNewIdForm, 0x4338c0, u32, void)()
 #define dplay_host(name, player, map, a, b, c, d, corp) GAME_FN(dplay_host, 0x453090, int, const void *, const char *, int, int, int, int, int, int)(name, player, map, a, b, c, d, corp)   /* the arena hosted: 0 failed */
 #define net_asyncSelect(hwnd, socket) GAME_FN(net_asyncSelect, 0x452170, int, void *, int)(hwnd, socket)
 #define lobby_keepArenaSettings() GAME_FN(lobby_keepArenaSettings, 0x405140, u32, void)()   /* the arena's settings kept (0x4db528 into 0x4ded20) */
