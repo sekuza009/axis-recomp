@@ -1232,7 +1232,7 @@ u32 THISCALL (replay_frame)(u8 *s)
 		/* (the patch DLL retargets these calls for wide screens) */
 		PATCHED_THISCALL(0x48a19c, void, void *)(s);                                 /* hud_drawPlayerMarkers */
 		if (SC->messagesHidden == 0 && SC->msgFade > 0)
-			PATCHED_THISCALL(0x48a1c0, void, void *)(s);                             /* replay_drawMessage */
+			PATCHED_THISCALL(0x48a1c0, void, void *)(s);                             /* hud_drawMessageBox */
 		if (SC->watchedPlayer >= 0) {
 			glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 			PATCHED_THISCALL(0x48a1f7, void, void *, int, int, int)(s, 0x10, 0x10, 6);   /* hud_drawIcon */

@@ -119,7 +119,7 @@ void (missionList_draw)(void)
 	set_colour_bits(g_textColour, 0x3f800000, 0x3f800000, 0x3f800000, 0x3f800000);
 	text_draw8(BX0 + 0x18, BY0 + 0x28, (const char *)MSG(512, "SUCCEED"));
 	for (int c = 1; c < 4; c++)
-		text_draw8b(BX0 + column_x0[c], BY0 + 0x28, BX0 + column_x1[c], (const char *)(MSG(512, "SUCCEED") + c * 0x80));
+		text_drawCentred8(BX0 + column_x0[c], BY0 + 0x28, BX0 + column_x1[c], (const char *)(MSG(512, "SUCCEED") + c * 0x80));
 	text_draw8(BX0 + 0xf0, BY1 - 0x9e, (const char *)MSG(516, "MISSION BRIEFING"));
 	char number[12];
 	for (int i = 0; i < g_missionCount && i < 8; i++) {
@@ -128,10 +128,10 @@ void (missionList_draw)(void)
 		int y = BY0 + i * 0x1a + 0x48;
 		const Mission *m = &g_missions[g_missionTop + i];
 		text_draw8(BX0 + 0x18, y, m->name);
-		text_draw8b(BX0 + column_x0[1], y, BX0 + column_x1[1], m->title);
+		text_drawCentred8(BX0 + column_x0[1], y, BX0 + column_x1[1], m->title);
 		itoa(m->number, number, 10);
-		text_draw8b(BX0 + column_x0[2], y, BX0 + column_x1[2], number);
-		text_draw8b(BX0 + column_x0[3], y, BX0 + column_x1[3],
+		text_drawCentred8(BX0 + column_x0[2], y, BX0 + column_x1[2], number);
+		text_drawCentred8(BX0 + column_x0[3], y, BX0 + column_x1[3],
 		            (const char *)(MSG(511, "DON'T") + m->result * 0x80));
 	}
 	text_setWrapX(BX1 - 0x38);

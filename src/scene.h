@@ -1670,7 +1670,7 @@ typedef struct Scene {
 	u8 _pad22ffdd8[0x3c540];
 	MessageSlot msgRing[32];   /* +0x233c318: messages waiting to be shown (ring of 32) */
 	u32 msgWrite;   /* +0x233c598: next slot msgRing gets written to */
-	u32 msgRead;   /* +0x233c59c: next slot replay_drawMessage shows */
+	u32 msgRead;   /* +0x233c59c: next slot hud_drawMessageBox shows */
 	u8 _pad233c5a0[0x430];
 	i32 scriptMode;   /* +0x233c9d0: = Stage.scriptMode (the same word): a map script's mode, 0 normal; 1 no overlay parts; 2 depth cleared again */
 	u8 _pad233c9d4[0x14];

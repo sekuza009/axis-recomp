@@ -2768,13 +2768,13 @@ DWORD text_ascii16Pass(int x, int y, const char *s);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 DWORD text_ascii32Pass(int x, int y, const char *s);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-DWORD text_hanCho(int x, int y, const char *s);
+DWORD text_hangul13Pass(int x, int y, const char *s);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-DWORD text_hanJungJong(int x, int y, const char *s);
+DWORD text_hangul13LayeredPass(int x, int y, const char *s);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-DWORD text_drawHangul31(int x, int y, const char *s);
+DWORD text_hangul31Pass(int x, int y, const char *s);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-DWORD text_drawHangul31b(int x, int y, const char *s);
+DWORD text_hangul31LayeredPass(int x, int y, const char *s);
 /* batch 58: the lobby / room network senders (lifted/net2.c); Winsock send and Sleep are mocked in the tests */
 /* 0x4521c0 net_send(msg, socket): send the 4-byte message code on socket 100 (lobby) / 101 (room), then the
    message's own packet (0x5b-byte player / room records and the like, from the packet buffers at 0xa0b304..) */
@@ -5164,8 +5164,8 @@ THISCALL void actor_processFrame(char *s, DWORD i, DWORD dt);
 THISCALL void match_frame(char *s);
 /* batch 211 (lifted/grp175.c, grp176.c): native until now; their only in-memory change is a call the patch DLL
    retargets (lift.py "@site", g_patchOk), or none */
-/* 0x403170 text_draw5 / 0x402620 text_draw8 / 0x4028b0 text_draw16 / 0x402c90 text_draw32 / 0x402740 text_draw8b /
-   0x4029d0 text_drawBox16 / 0x403210 text_drawCentred5 / 0x402db0 text_drawCentred32 (x, y, text[, w]): the text passes: the 2D
+/* 0x403170 text_draw5 / 0x402620 text_draw8 / 0x4028b0 text_draw16 / 0x402c90 text_draw32 / 0x402740 text_drawCentred8 /
+   0x4029d0 text_drawBox16 / 0x403210 text_drawCentred5 / 0x402db0 text_drawBox32 (x, y, text[, w]): the text passes: the 2D
    projection (0x41ef90), the colour 0x76d438.., per font texture (ids 0x9dae1c, 0x76d360, 0x76d448, set 0xa0e010)
    its glyph pass; the last pass of each (@0x4031f1, 0x402720, 0x4029b0, 0x402d90, 0x40288c, 0x402be8, 0x4032e6,
    0x402fbd) goes through the patch DLL's text_e5 / e8 / e16 / e32 (nearest-texel sampling) */
@@ -5178,13 +5178,13 @@ void text_draw16(int x, int y, const char *text);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void text_draw32(int x, int y, const char *text);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-void text_draw8b(int x0, int y, int x1, const char *text);
+void text_drawCentred8(int x0, int y, int x1, const char *text);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void text_drawBox16(int x0, int y, int x1, const char *text);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void text_drawCentred5(int x0, int y, int x1, const char *text);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-void text_drawCentred32(int x0, int y, int x1, const char *text);
+void text_drawBox32(int x0, int y, int x1, const char *text);
 /* 0x429bc0 menu_drawCursor(): the menu pointer at 0x4ded68 / 0x4ded6c (blinking by 0x4df910, the click flash
    0x4df03c), a 47-unit sprite through menu_vertex; its right-hand corners (@0x429cc3, @0x429cf0) go through the
    patch DLL's cursor_vtx */
@@ -5193,7 +5193,7 @@ void menu_drawCursor(void);
 /* 0x44ad60 text_drawSized(x, y, text, size): text_draw5 / 8 / 16 / 32 by the size */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void text_drawSized(int x, int y, const char *text, int size);
-/* 0x44ae10 text_drawCentred(x1, y, x2, text, size): text_draw8b / text_drawBox16 / text_drawCentred32 / text_drawCentred5 by the size */
+/* 0x44ae10 text_drawCentred(x1, y, x2, text, size): text_drawCentred8 / text_drawBox16 / text_drawBox32 / text_drawCentred5 by the size */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void text_drawCentred(int x0, int y, int x1, const char *text, int size);
 /* 0x4950a0 hud_fillRect(x1, y1, x2, y2): a filled box (gfx_fillRect) scaled from 640 x 480 to the screen */
@@ -5221,12 +5221,12 @@ void THISCALL hud_drawFps(void *scene);
    (hud_fillRect) and the line typed (0x9dc92c), with a "_" cursor blinking by +0x233cc34 */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void THISCALL hud_drawChatInput(void *scene);
-/* 0x495190 replay_drawMessage() (thiscall on the scene): the message box (fading by +0x233cc40): the next message
+/* 0x495190 hud_drawMessageBox() (thiscall on the scene): the message box (fading by +0x233cc40): the next message
    of the ring at +0x233c318 (32 x 20 bytes, read +0x233c59c / written +0x233c598) in its colour (0xa1f100 table)
    as four 0x41-byte lines of its text block (+0x22fbbd8, 0x108 each), else the last five events of the ring at
    +0x23429ce (0x108 each, coloured by their type 0..5) */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-void THISCALL replay_drawMessage(void *scene);
+void THISCALL hud_drawMessageBox(void *scene);
 /* batch 213 (lifted/grp178.c .. grp180.c): functions that jump into code caves of the installed exe (0x4a8e20.. at
    the end of .text): lift.py "&lo-hi" lifts each cave as part of the function that reaches it */
 /* 0x41ef90 gfx_setProjection2D3D(mode): unless already in it (0x5ae9bc), the viewport (the cave 0x4a8fa4: in 2D a
@@ -9980,10 +9980,10 @@ ST(text_ascii5Pass, textpass_setup();, CALL_PLAIN(0x403060, 0, g_a[0], g_a[1], B
 ST(text_ascii8Pass, textpass_setup();, CALL_PLAIN(0x402010, 0, g_a[0], g_a[1], BUF + 0x400, 0), (DWORD)(text_ascii8Pass(g_a[0], g_a[1], BUF + 0x400)))
 ST(text_ascii16Pass, textpass_setup();, CALL_PLAIN(0x402210, 0, g_a[0], g_a[1], BUF + 0x400, 0), (DWORD)(text_ascii16Pass(g_a[0], g_a[1], BUF + 0x400)))
 ST(text_ascii32Pass, textpass_setup();, CALL_PLAIN(0x402420, 0, g_a[0], g_a[1], BUF + 0x400, 0), (DWORD)(text_ascii32Pass(g_a[0], g_a[1], BUF + 0x400)))
-ST(text_hanCho, textpass_setup();, CALL_PLAIN(0x401870, 0, g_a[0], g_a[1], BUF + 0x400, 0), (DWORD)(text_hanCho(g_a[0], g_a[1], BUF + 0x400)))
-ST(text_hanJungJong, textpass_setup();, CALL_PLAIN(0x401aa0, 0, g_a[0], g_a[1], BUF + 0x400, 0), (DWORD)(text_hanJungJong(g_a[0], g_a[1], BUF + 0x400)))
-ST(text_drawHangul31, textpass_setup();, CALL_PLAIN(0x401ce0, 0, g_a[0], g_a[1], BUF + 0x400, 0), (DWORD)(text_drawHangul31(g_a[0], g_a[1], BUF + 0x400)))
-ST(text_drawHangul31b, textpass_setup();, CALL_PLAIN(0x401e70, 0, g_a[0], g_a[1], BUF + 0x400, 0), (DWORD)(text_drawHangul31b(g_a[0], g_a[1], BUF + 0x400)))
+ST(text_hangul13Pass, textpass_setup();, CALL_PLAIN(0x401870, 0, g_a[0], g_a[1], BUF + 0x400, 0), (DWORD)(text_hangul13Pass(g_a[0], g_a[1], BUF + 0x400)))
+ST(text_hangul13LayeredPass, textpass_setup();, CALL_PLAIN(0x401aa0, 0, g_a[0], g_a[1], BUF + 0x400, 0), (DWORD)(text_hangul13LayeredPass(g_a[0], g_a[1], BUF + 0x400)))
+ST(text_hangul31Pass, textpass_setup();, CALL_PLAIN(0x401ce0, 0, g_a[0], g_a[1], BUF + 0x400, 0), (DWORD)(text_hangul31Pass(g_a[0], g_a[1], BUF + 0x400)))
+ST(text_hangul31LayeredPass, textpass_setup();, CALL_PLAIN(0x401e70, 0, g_a[0], g_a[1], BUF + 0x400, 0), (DWORD)(text_hangul31LayeredPass(g_a[0], g_a[1], BUF + 0x400)))
 /* batch 58: the network state: the packet buffers (0xa0b304..0xa0b344) point into the scratch area (never
    null: gameList_open writes one unchecked), sockets set or 0, the connection flags varied; strings the senders copy are short and terminated */
 static void netstate_setup(void)
@@ -16720,10 +16720,10 @@ ST(text_draw5, txtpass_setup(g_stubTxt5);, CALL_PLAIN(0x403170, 0, g_a[0], g_a[1
 ST(text_draw8, txtpass_setup(g_stubTxt8);, CALL_PLAIN(0x402620, 0, g_a[0], g_a[1], g_a[2], g_a[3]), (text_draw8((DWORD)(g_a[0]), (DWORD)(g_a[1]), (const char *)(DWORD)(g_a[2])), 0))
 ST(text_draw16, txtpass_setup(g_stubTxt16);, CALL_PLAIN(0x4028b0, 0, g_a[0], g_a[1], g_a[2], g_a[3]), (text_draw16((DWORD)(g_a[0]), (DWORD)(g_a[1]), (const char *)(DWORD)(g_a[2])), 0))
 ST(text_draw32, txtpass_setup(g_stubTxt32);, CALL_PLAIN(0x402c90, 0, g_a[0], g_a[1], g_a[2], g_a[3]), (text_draw32((DWORD)(g_a[0]), (DWORD)(g_a[1]), (const char *)(DWORD)(g_a[2])), 0))
-ST(text_draw8b, txtbox_setup(g_stubTxt8);, CALL_PLAIN(0x402740, 0, g_a[0], g_a[1], g_a[2], g_a[3]), (text_draw8b((DWORD)(g_a[0]), (DWORD)(g_a[1]), (DWORD)(g_a[2]), (const char *)(DWORD)(g_a[3])), 0))
+ST(text_drawCentred8, txtbox_setup(g_stubTxt8);, CALL_PLAIN(0x402740, 0, g_a[0], g_a[1], g_a[2], g_a[3]), (text_drawCentred8((DWORD)(g_a[0]), (DWORD)(g_a[1]), (DWORD)(g_a[2]), (const char *)(DWORD)(g_a[3])), 0))
 ST(text_drawBox16, txtbox_setup(g_stubBox16);, CALL_PLAIN(0x4029d0, 0, g_a[0], g_a[1], g_a[2], g_a[3]), (text_drawBox16((DWORD)(g_a[0]), (DWORD)(g_a[1]), (DWORD)(g_a[2]), (const char *)(DWORD)(g_a[3])), 0))
 ST(text_drawCentred5, txtbox_setup(g_stubTxt5);, CALL_PLAIN(0x403210, 0, g_a[0], g_a[1], g_a[2], g_a[3]), (text_drawCentred5((DWORD)(g_a[0]), (DWORD)(g_a[1]), (DWORD)(g_a[2]), (const char *)(DWORD)(g_a[3])), 0))
-ST(text_drawCentred32, txtbox_setup(g_stubBox32);, CALL_PLAIN(0x402db0, 0, g_a[0], g_a[1], g_a[2], g_a[3]), (text_drawCentred32((DWORD)(g_a[0]), (DWORD)(g_a[1]), (DWORD)(g_a[2]), (const char *)(DWORD)(g_a[3])), 0))
+ST(text_drawBox32, txtbox_setup(g_stubBox32);, CALL_PLAIN(0x402db0, 0, g_a[0], g_a[1], g_a[2], g_a[3]), (text_drawBox32((DWORD)(g_a[0]), (DWORD)(g_a[1]), (DWORD)(g_a[2]), (const char *)(DWORD)(g_a[3])), 0))
 /* the menu pointer: on or off the screen, blink and click flash states, the frame time; the vertex helper, the
    projection and the bind stubbed (the right-hand corners go through the patch DLL's cursor_vtx when installed) */
 static const DWORD g_stubCursor[] = { 0x41ef60, 2, 0x41ef90, 1, 0x4566c0, 1 | CS_POP | CS_THIS, 0 };
@@ -16830,7 +16830,7 @@ static void replaymsg_setup(void)
 	int e = irnd(0, 20); S32(BUF, 0x2342efa) = e; S32(BUF, 0x2342ef6) = e + irnd(0, 6);
 	for (int k = 0; k < 5; k++) { char *v = BUF + 0x23429ce + k * 0x108; S32(v, 0) = irnd(0, 6); fill_str(v + 4, 40, 32, 126); }
 }
-ST(replay_drawMessage, replaymsg_setup(); screen_random();, TC(DWORD, 0x495190, char *)(BUF), (replay_drawMessage(BUF), 0))
+ST(hud_drawMessageBox, replaymsg_setup(); screen_random();, TC(DWORD, 0x495190, char *)(BUF), (hud_drawMessageBox(BUF), 0))
 /* batch 213 */
 /* the projection switch: the current and wanted modes 0..2, screen sizes 4:3 .. 21:9, the view's angle and depth;
    GL and GLU mocked (the cave's box rewritten by the patch DLL when menu43 is on) */
@@ -17439,8 +17439,8 @@ static const STest g_stests[] = {
 	T(shape_findDatEntry, 1, 40, 0), T(skelDat_getItemFileBy, 1, 40, 0), T(app_spoilDataFiles, 0, 40, 0), T(net_addServerRecord, 0, 40, 0),
 	T(net_addRoomRecord, 0, 40, 0), T(math_makeMathFunctionTableFile, 0, 40, 0), T(math_initMathFunction, 0, 40, 0), T(gfx_resetState, 0, 40, 0),
 	T(reg_readServerSettings, 0, 40, 0), T(text_ascii5Pass, 0, 40, 0), T(text_ascii8Pass, 0, 40, 0), T(text_ascii16Pass, 0, 40, 0),
-	T(text_ascii32Pass, 0, 40, 0), T(text_hanCho, 0, 40, 0), T(text_hanJungJong, 0, 40, 0), T(text_drawHangul31, 0, 40, 0),
-	T(text_drawHangul31b, 0, 40, 0), T(tex_getItemFileBy, 1, 400, 0), T(space_getNextFreePlanePtr, 1, 40, 0), T(space_getNextFreeNodePtr, 1, 40, 0),
+	T(text_ascii32Pass, 0, 40, 0), T(text_hangul13Pass, 0, 40, 0), T(text_hangul13LayeredPass, 0, 40, 0), T(text_hangul31Pass, 0, 40, 0),
+	T(text_hangul31LayeredPass, 0, 40, 0), T(tex_getItemFileBy, 1, 400, 0), T(space_getNextFreePlanePtr, 1, 40, 0), T(space_getNextFreeNodePtr, 1, 40, 0),
 	T(space_getNextFreeUnitPtr, 1, 40, 0), T(space_getNextFreeBlockPtrBy, 1, 400, 0), T(map_loadWayPointInfoFrom, 0, 400, 0), T(map_loadTriggerInfoFrom, 0, 400, 0),
 	T(factor_addFactorBy, 0, 400, 0), T(factors_addAmbient, 0, 400, 0), T(factors_addDirectional, 0, 400, 0), T(factors_addPointLight, 0, 400, 0),
 	T(stage_refillLights, 0, 40, 0),
@@ -17814,12 +17814,12 @@ static const STest g_stests[] = {
 	T(match_frame, 0, 3000, 0),
 	/* batch 211 */
 	T(text_draw5, 0, 400, 0), T(text_draw8, 0, 400, 0), T(text_draw16, 0, 400, 0), T(text_draw32, 0, 400, 0),
-	T(text_draw8b, 0, 400, 0), T(text_drawBox16, 0, 400, 0), T(text_drawCentred5, 0, 400, 0), T(text_drawCentred32, 0, 400, 0),
+	T(text_drawCentred8, 0, 400, 0), T(text_drawBox16, 0, 400, 0), T(text_drawCentred5, 0, 400, 0), T(text_drawBox32, 0, 400, 0),
 	T(menu_drawCursor, 0, 400, 0), T(text_drawSized, 0, 400, 0), T(text_drawCentred, 0, 400, 0), T(hud_fillRect, 0, 400, 0),
 	T(menuState200_title, 0, 400, 0),
 	/* batch 212 */
 	T(hud_drawLockOn, 0, 400, 0), T(menu_titleEmblemTransition, 0, 400, 0), T(hud_drawFps, 0, 400, 0), T(hud_drawChatInput, 0, 400, 0),
-	T(replay_drawMessage, 0, 400, 0),
+	T(hud_drawMessageBox, 0, 400, 0),
 	/* batch 213 */
 	T(gfx_setProjection2D3D, 0, 400, 0), T(app_setDisplayMode, 0, 400, 0), T(app_init, 1, 400, 0),
 };
@@ -18463,9 +18463,9 @@ static const struct { DWORD addr; void *fn; const char *name; } g_hooks3[] = {
 	{ 0x46c270, (void *)math_initMathFunction, "math_initMathFunction" }, { 0x4684c0, (void *)gfx_resetState, "gfx_resetState" },
 	{ 0x42bde0, (void *)reg_readServerSettings, "reg_readServerSettings" }, { 0x403060, (void *)text_ascii5Pass, "text_ascii5Pass" },
 	{ 0x402010, (void *)text_ascii8Pass, "text_ascii8Pass" }, { 0x402210, (void *)text_ascii16Pass, "text_ascii16Pass" },
-	{ 0x402420, (void *)text_ascii32Pass, "text_ascii32Pass" }, { 0x401870, (void *)text_hanCho, "text_hanCho" },
-	{ 0x401aa0, (void *)text_hanJungJong, "text_hanJungJong" }, { 0x401ce0, (void *)text_drawHangul31, "text_drawHangul31" },
-	{ 0x401e70, (void *)text_drawHangul31b, "text_drawHangul31b" }, { 0x455550, (void *)tex_getItemFileBy, "tex_getItemFileBy" },
+	{ 0x402420, (void *)text_ascii32Pass, "text_ascii32Pass" }, { 0x401870, (void *)text_hangul13Pass, "text_hangul13Pass" },
+	{ 0x401aa0, (void *)text_hangul13LayeredPass, "text_hangul13LayeredPass" }, { 0x401ce0, (void *)text_hangul31Pass, "text_hangul31Pass" },
+	{ 0x401e70, (void *)text_hangul31LayeredPass, "text_hangul31LayeredPass" }, { 0x455550, (void *)tex_getItemFileBy, "tex_getItemFileBy" },
 	{ 0x4815c0, (void *)space_getNextFreePlanePtr, "space_getNextFreePlanePtr" }, { 0x4816c0, (void *)space_getNextFreeNodePtr, "space_getNextFreeNodePtr" },
 	{ 0x4817f0, (void *)space_getNextFreeUnitPtr, "space_getNextFreeUnitPtr" }, { 0x4818e0, (void *)space_getNextFreeBlockPtrBy, "space_getNextFreeBlockPtrBy" },
 	{ 0x48b4a0, (void *)map_loadWayPointInfoFrom, "map_loadWayPointInfoFrom" }, { 0x48b530, (void *)map_loadTriggerInfoFrom, "map_loadTriggerInfoFrom" },
@@ -18950,15 +18950,15 @@ static const struct { DWORD addr; void *fn; const char *name; } g_hooks3[] = {
 	/* batch 211 */
 	{ 0x403170, (void *)text_draw5, "text_draw5" }, { 0x402620, (void *)text_draw8, "text_draw8" },
 	{ 0x4028b0, (void *)text_draw16, "text_draw16" }, { 0x402c90, (void *)text_draw32, "text_draw32" },
-	{ 0x402740, (void *)text_draw8b, "text_draw8b" }, { 0x4029d0, (void *)text_drawBox16, "text_drawBox16" },
-	{ 0x403210, (void *)text_drawCentred5, "text_drawCentred5" }, { 0x402db0, (void *)text_drawCentred32, "text_drawCentred32" },
+	{ 0x402740, (void *)text_drawCentred8, "text_drawCentred8" }, { 0x4029d0, (void *)text_drawBox16, "text_drawBox16" },
+	{ 0x403210, (void *)text_drawCentred5, "text_drawCentred5" }, { 0x402db0, (void *)text_drawBox32, "text_drawBox32" },
 	{ 0x429bc0, (void *)menu_drawCursor, "menu_drawCursor" }, { 0x44ad60, (void *)text_drawSized, "text_drawSized" },
 	{ 0x44ae10, (void *)text_drawCentred, "text_drawCentred" }, { 0x4950a0, (void *)hud_fillRect, "hud_fillRect" },
 	{ 0x41f8d0, (void *)menuState200_title, "menuState200_title" },
 	/* batch 212 */
 	{ 0x491f50, (void *)hud_drawLockOn, "hud_drawLockOn" }, { 0x429170, (void *)menu_titleEmblemTransition, "menu_titleEmblemTransition" },
 	{ 0x495510, (void *)hud_drawFps, "hud_drawFps" }, { 0x4953d0, (void *)hud_drawChatInput, "hud_drawChatInput" },
-	{ 0x495190, (void *)replay_drawMessage, "replay_drawMessage" },
+	{ 0x495190, (void *)hud_drawMessageBox, "hud_drawMessageBox" },
 	/* batch 213 */
 	{ 0x41ef90, (void *)gfx_setProjection2D3D, "gfx_setProjection2D3D" }, { 0x42eed0, (void *)app_setDisplayMode, "app_setDisplayMode" },
 	{ 0x43fcc0, (void *)app_init, "app_init" },

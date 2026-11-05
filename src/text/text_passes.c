@@ -30,13 +30,13 @@ static int text_visibleLength(const char *text)
 	return length - codes * 5;
 }
 
-/* the 8-unit font's three passes (also text_draw8b's) */
+/* the 8-unit font's three passes (also text_drawCentred8's) */
 static void text_passes8(int x, int y, const char *text, u32 asciiCallSite)
 {
 	text_bindFont(g_fontHanCho);
-	text_hanCho(x, y, text);
+	text_hangul13Pass(x, y, text);
 	text_bindFont(g_fontHanJungJong);
-	text_hanJungJong(x, y, text);
+	text_hangul13LayeredPass(x, y, text);
 	text_bindFont(g_fontAscii);
 	PATCHED_CALL(asciiCallSite, void, int, int, const char *)(x, y, text);   /* text_ascii8Pass */
 }
@@ -63,9 +63,9 @@ void (text_draw16)(int x, int y, const char *text)
 {
 	text_begin(13);
 	text_bindFont(g_fontHanCho);
-	text_hanCho(x, y, text);
+	text_hangul13Pass(x, y, text);
 	text_bindFont(g_fontHanJungJong);
-	text_hanJungJong(x, y, text);
+	text_hangul13LayeredPass(x, y, text);
 	text_bindFont(g_fontAsciiLarge);
 	PATCHED_CALL(0x4029b0, void, int, int, const char *)(x, y, text);   /* text_ascii16Pass */
 	glDisable(GL_TEXTURE_2D);
@@ -85,7 +85,7 @@ void (text_draw32)(int x, int y, const char *text)
 }
 
 /* 0x402740: text in the 8-unit font centred between x0 and x1 (8 units per character) */
-void (text_draw8b)(int x0, int y, int x1, const char *text)
+void (text_drawCentred8)(int x0, int y, int x1, const char *text)
 {
 	int x = x0 + (x1 - x0) / 2 - text_visibleLength(text) * 4;
 	text_begin(8);
@@ -106,7 +106,7 @@ void (text_drawCentred5)(int x0, int y, int x1, const char *text)
 /* the width correction of a line for the special characters it holds (counted by text_printableLength), in units of 3 */
 #define text_specialCount(s) GAME_FN(text_printableLength, 0x402590, int, const char *)(s)
 
-/* text_drawBox16 / text_drawCentred32: text centred between x0 and x1, broken into lines at each "|" ("||" is a plain
+/* text_drawBox16 / text_drawBox32: text centred between x0 and x1, broken into lines at each "|" ("||" is a plain
    "|"; in a match no line breaks), one line under the other */
 static void text_drawBoxLines(int x0, int y, int x1, const char *text, int large)
 {
@@ -142,9 +142,9 @@ static void text_drawBoxLines(int x0, int y, int x1, const char *text, int large
 			text_begin(13);
 			int x = centre - visible * 4 - special * 3;
 			text_bindFont(g_fontHanCho);
-			text_hanCho(x, y, line);
+			text_hangul13Pass(x, y, line);
 			text_bindFont(g_fontHanJungJong);
-			text_hanJungJong(x, y, line);
+			text_hangul13LayeredPass(x, y, line);
 			text_bindFont(g_fontAsciiLarge);
 			PATCHED_CALL(0x402be8, void, int, int, const char *)(x, y, line);   /* text_ascii16Pass */
 			y += 0x11;
@@ -171,8 +171,8 @@ void (text_drawBox16)(int x0, int y, int x1, const char *text)
 	text_drawBoxLines(x0, y, x1, text, 0);
 }
 
-/* 0x402db0 (text_drawCentred32): the same in the 32-unit font (18 units per character, 0x21 apart) */
-void (text_drawCentred32)(int x0, int y, int x1, const char *text)
+/* 0x402db0: the same in the 32-unit font (18 units per character, 0x21 apart) */
+void (text_drawBox32)(int x0, int y, int x1, const char *text)
 {
 	text_drawBoxLines(x0, y, x1, text, 1);
 }

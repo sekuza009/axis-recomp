@@ -1146,7 +1146,7 @@ static CallSite g_sites[] = {
     {0x466ea9, 0x466d60}, {0x466ee0, 0x466d60}, {0x4671f6, 0x466d60}, {0x467249, 0x466d60},   /* shape_findDatEntry */
     {0x466eb8, 0x466120}, {0x466eef, 0x466120}, {0x467214, 0x466120}, {0x467267, 0x466120},   /* shape_read */
     {0x48a19c, 0x4913a0}, {0x498580, 0x4913a0},   /* hud_drawPlayerMarkers */
-    {0x48a1c0, 0x495190},   /* replay_drawMessage */
+    {0x48a1c0, 0x495190},   /* hud_drawMessageBox */
     {0x48a1f7, 0x496820}, {0x48a299, 0x496820},   /* hud_drawIcon */
     {0x48a259, 0x44ad60}, {0x48a2ff, 0x44ad60},   /* text_drawSized */
     {0x48a309, 0x496b80},   /* hud_drawWatchedName */
@@ -1465,7 +1465,7 @@ OV_WRAP(ov_icon_left, 6, GAMEFN_ASM(hud_drawIcon, 0x496820))
 OV_WRAP(ov_text_left, 6, GAMEFN_ASM(text_drawSized, 0x44ad60))
 OV_WRAP(ov_icon_right, 7, GAMEFN_ASM(hud_drawIcon, 0x496820))
 OV_WRAP(ov_text_right, 7, GAMEFN_ASM(text_drawSized, 0x44ad60))
-OV_WRAP(ov_message, 8, GAMEFN_ASM(replay_drawMessage, 0x495190))
+OV_WRAP(ov_message, 8, GAMEFN_ASM(hud_drawMessageBox, 0x495190))
 OV_WRAP(ov_name, 8, GAMEFN_ASM(hud_drawWatchedName, 0x496b80))
 OV_WRAP(ov_rank, 4, GAMEFN_ASM(hud_drawRanking, 0x494930))
 #define AXGL_W (*(volatile int *)IMG(0xa0e810))   /* render width / height the HUD scales by */

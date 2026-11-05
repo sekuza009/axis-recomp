@@ -85,7 +85,7 @@ void THISCALL (hud_pass)(Scene *scene)
 					hud_drawPressFire(scene);
 			}
 			if (scene->messagesHidden == 0 && scene->msgFade > 0.0f)
-				replay_drawMessage(scene);
+				hud_drawMessageBox(scene);
 			if (scene->chatMode != 0)
 				hud_drawChatInput(scene);
 			if (!scene->matchOver && !scene->matchLeaving)

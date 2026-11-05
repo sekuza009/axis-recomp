@@ -16,8 +16,8 @@ static void event_setColour(u32 type, float alpha)
 	}                                                           /* others keep the current colour */
 }
 
-/* 0x495190: the message box */
-void THISCALL (replay_drawMessage)(Scene *scene)
+/* 0x495190: the message box (drawn by the HUD in matches and replays) */
+void THISCALL (hud_drawMessageBox)(Scene *scene)
 {
 	char line[256];
 	float alpha;

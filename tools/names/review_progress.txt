@@ -106,14 +106,14 @@
 [x] src/render/trails.c 118
 [x] src/render/vecmath.c 255
 [x] src/render/view_volume.c 829
-[ ] src/replay/replay_message.c 55
-[ ] src/sound/sound_basic.c 428
-[ ] src/text/glyph_cells.c 220
-[ ] src/text/glyph_quads.c 39
-[ ] src/text/text_codes.c 256
-[ ] src/text/text_passes.c 178
-[ ] src/text/text_size.c 25
-[ ] src/wide.c 92
+[x] src/replay/replay_message.c 55
+[x] src/sound/sound_basic.c 428
+[x] src/text/glyph_cells.c 220
+[x] src/text/glyph_quads.c 39
+[x] src/text/text_codes.c 256
+[x] src/text/text_passes.c 178
+[x] src/text/text_size.c 25
+[x] src/wide.c 92
 [ ] src/globals.h (every global: name vs its uses)
 [ ] src/objects.h
 [ ] src/scene.fields (every field: name vs its uses)

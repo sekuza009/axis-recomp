@@ -116,8 +116,8 @@ void (armc_drawColourEditor)(void)
 		menu_drawRect(X1 - 200, Y0 + 0x30 + box * 0xb0, X1, Y0 + 0xd0 + box * 0xb0, 1);
 	}
 	TEXT(bright);
-	text_draw8b(X1 - 200, Y0 + 0x34, X1, (const char *)MSG(491, "PRIMARY COLOR"));
-	text_draw8b(X1 - 200, Y0 + 0xe4, X1, (const char *)MSG(492, "SECONDARY COLOR"));
+	text_drawCentred8(X1 - 200, Y0 + 0x34, X1, (const char *)MSG(491, "PRIMARY COLOR"));
+	text_drawCentred8(X1 - 200, Y0 + 0xe4, X1, (const char *)MSG(492, "SECONDARY COLOR"));
 	for (int k = 0; k < 3; k++) {
 		int y = Y0 + k * 0x30;
 		int v1 = k == 0 ? ftol(fmul_m((long double)turned(ftol(fld_m(&SLOT[0]))), &k_0_2777778f))
@@ -294,7 +294,7 @@ void (armc_drawWeaponsScreen)(void)
 		text_draw8(X0 + 0x14, Y0 + k * 0x3f + 0x19, (const char *)(MSG(291, "HAND-W1($[0] 1)") + k * 0x80));
 		TEXT(yellow);
 		if (strlen(SLOT_NAME(k)) <= 1)
-			text_draw8b(X0 + 0x10, Y0 + k * 0x3f + 0x36, X0 + 0xa0, (const char *)MSG(319, "EMPTY SLOT"));
+			text_drawCentred8(X0 + 0x10, Y0 + k * 0x3f + 0x36, X0 + 0xa0, (const char *)MSG(319, "EMPTY SLOT"));
 		else
 			text_draw5(X0 + 0x18, Y0 + k * 0x3f + 0x2d, SLOT_NAME(k));
 	}
@@ -307,7 +307,7 @@ void (armc_drawWeaponsScreen)(void)
 	menu_drawRect(x, y + 0x118, x + 0xa0, y + 0x17c, 0);
 	if (strlen((const char *)OBJ(g_viewedPart)) <= 1) {
 		TEXT(yellow);
-		text_draw8b(x, y + 0x142, x + 0xa0, (const char *)MSG(320, "REMOVE WEAPON"));
+		text_drawCentred8(x, y + 0x142, x + 0xa0, (const char *)MSG(320, "REMOVE WEAPON"));
 	} else {
 		glEnable(GL_TEXTURE_2D);
 		glColor4f(1.0f, 1.0f, 1.0f, 1.0f);

@@ -970,7 +970,7 @@ u32 (ranking_drawTable)(void)
 	strcat(page, (const char *)STR(0x4b278c, " ~ "));
 	strcat(page, last);
 	menu_drawWideButton(X0 + 0xe6, Y0 + 0x24, X0 + 0x146, Y0 + 0x40, 1);
-	text_draw8b(X0 + 0xe6, Y0 + 0x2a, X0 + 0x146, page);
+	text_drawCentred8(X0 + 0xe6, Y0 + 0x2a, X0 + 0x146, page);
 	text_drawBox16(X1 - 0x78, Y0 + 0x10, X1 - 0x14, (const char *)MSG(412, "OPTION"));
 	glEnable(GL_TEXTURE_2D);
 	texture = g_buttonTexture;
@@ -980,7 +980,7 @@ u32 (ranking_drawTable)(void)
 	TEXT(yellow);
 	static const u32 sorted_by[4] = { MSG(416, "POWER"), MSG(418, "KILL"), MSG(420, "EXP"), MSG(417, "RATE") };
 	if ((unsigned)g_rankingSort <= 3)
-		text_draw8b(X1 - 0x78, Y0 + 0x2a, X1 - 0x14, (const char *)RELOC(sorted_by[g_rankingSort]));
+		text_drawCentred8(X1 - 0x78, Y0 + 0x2a, X1 - 0x14, (const char *)RELOC(sorted_by[g_rankingSort]));
 	set_colour_bits(g_rectColour, 0, 0x3f800000, 0x3f800000, 0x3f800000);
 	menu_drawLine(X0 + 0x10, Y0 + 0x4a, X1 - 0x10, Y0 + 0x4a);
 	menu_drawLine(X0 + 0x10, Y0 + 0x6e, X1 - 0x10, Y0 + 0x6e);

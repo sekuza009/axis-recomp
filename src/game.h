@@ -395,9 +395,9 @@ typedef struct { u32 vtable; void *banks[6]; i32 count; } TextureManager;   /* t
 #define text_draw32(x, y, s) GAME_FN(text_draw32, 0x402c90, void, int, int, const char *)(x, y, s)
 /* the box passes: text centred between x0 and x1 */
 #define text_drawCentred5(x0, y, x1, s) GAME_FN(text_drawCentred5, 0x403210, void, int, int, int, const char *)(x0, y, x1, s)
-#define text_draw8b(x0, y, x1, s) GAME_FN(text_draw8b, 0x402740, void, int, int, int, const char *)(x0, y, x1, s)
+#define text_drawCentred8(x0, y, x1, s) GAME_FN(text_drawCentred8, 0x402740, void, int, int, int, const char *)(x0, y, x1, s)
 #define text_drawBox16(x0, y, x1, s) GAME_FN(text_drawBox16, 0x4029d0, u32, int, int, int, const char *)(x0, y, x1, s)
-#define text_drawCentred32(x0, y, x1, s) GAME_FN(text_drawCentred32, 0x402db0, void, int, int, int, const char *)(x0, y, x1, s)
+#define text_drawBox32(x0, y, x1, s) GAME_FN(text_drawBox32, 0x402db0, void, int, int, int, const char *)(x0, y, x1, s)
 #define text_drawCentred(x0, y, x1, s, size) GAME_FN(text_drawCentred, 0x44ae10, void, int, int, int, const char *, int)(x0, y, x1, s, size)
 #define text_drawSized(x, y, s, size) GAME_FN(text_drawSized, 0x44ad60, void, int, int, const char *, int)(x, y, s, size)
 
@@ -568,7 +568,7 @@ typedef struct { u32 vtable; void *banks[6]; i32 count; } TextureManager;   /* t
 #define hud_drawClock(scene) GAME_THISFN(hud_drawClock, 0x496610, void, Scene *)(scene)
 #define hud_drawMatchResult(scene) GAME_THISFN(hud_drawMatchResult, 0x496a30, void, Scene *)(scene)
 #define hud_drawWatchedName(scene) GAME_THISFN(hud_drawWatchedName, 0x496b80, void, Scene *)(scene)
-#define replay_drawMessage(scene) GAME_THISFN(replay_drawMessage, 0x495190, void, Scene *)(scene)
+#define hud_drawMessageBox(scene) GAME_THISFN(hud_drawMessageBox, 0x495190, void, Scene *)(scene)
 #define hud_drawChatInput(scene) GAME_THISFN(hud_drawChatInput, 0x4953d0, void, Scene *)(scene)
 #define hud_drawTeamScores(scene) GAME_THISFN(hud_drawTeamScores, 0x496240, void, Scene *)(scene)
 #define debug_traceStripped(scene) GAME_THISFN(debug_traceStripped, 0x48b420, void, Scene *)(scene)
@@ -1274,10 +1274,10 @@ typedef struct { int n, x[5], y[5]; } Outline;
 #define point_in_outline(x, y, outline) GAME_FN(menu_pointInPolygon, 0x41eea0, int, int, int, Outline)(x, y, outline)   /* menu_pointInPolygon */
 
 /* the Korean text passes (text/text_codes.c): the lead glyphs, and the vowel and tail glyphs, at 13 and 31 units */
-#define text_hanCho(x, y, s) GAME_FN(text_hanCho, 0x401870, void, int, int, const char *)(x, y, s)
-#define text_hanJungJong(x, y, s) GAME_FN(text_hanJungJong, 0x401aa0, void, int, int, const char *)(x, y, s)
-#define text_hanCho32(x, y, s) GAME_FN(text_drawHangul31, 0x401ce0, void, int, int, const char *)(x, y, s)
-#define text_hanJungJong32(x, y, s) GAME_FN(text_drawHangul31b, 0x401e70, void, int, int, const char *)(x, y, s)
+#define text_hangul13Pass(x, y, s) GAME_FN(text_hangul13Pass, 0x401870, void, int, int, const char *)(x, y, s)
+#define text_hangul13LayeredPass(x, y, s) GAME_FN(text_hangul13LayeredPass, 0x401aa0, void, int, int, const char *)(x, y, s)
+#define text_hanCho32(x, y, s) GAME_FN(text_hangul31Pass, 0x401ce0, void, int, int, const char *)(x, y, s)
+#define text_hanJungJong32(x, y, s) GAME_FN(text_hangul31LayeredPass, 0x401e70, void, int, int, const char *)(x, y, s)
 
 /* strcmp as the original inlines it: -1 / 0 / 1, the bytes compared unsigned */
 static inline int str_order(const char *a, const char *b)

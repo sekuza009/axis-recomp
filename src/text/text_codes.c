@@ -211,10 +211,10 @@ u32 (text_ascii16Pass)(int x, int y, const u8 *s) { return text_pass(x, y, s, &a
 u32 (text_ascii32Pass)(int x, int y, const u8 *s) { return text_pass(x, y, s, &ascii32); }
 /* 0x401870, 0x401aa0: Korean at 13 units, the lead glyphs and the vowel and tail glyphs; 0x401ce0, 0x401e70: the
    same at 31 units */
-u32 (text_hanCho)(int x, int y, const u8 *s) { return text_pass(x, y, s, &han13); }
-u32 (text_hanJungJong)(int x, int y, const u8 *s) { return text_pass(x, y, s, &han13b); }
-u32 (text_drawHangul31)(int x, int y, const u8 *s) { return text_pass(x, y, s, &han31); }
-u32 (text_drawHangul31b)(int x, int y, const u8 *s) { return text_pass(x, y, s, &han31b); }
+u32 (text_hangul13Pass)(int x, int y, const u8 *s) { return text_pass(x, y, s, &han13); }
+u32 (text_hangul13LayeredPass)(int x, int y, const u8 *s) { return text_pass(x, y, s, &han13b); }
+u32 (text_hangul31Pass)(int x, int y, const u8 *s) { return text_pass(x, y, s, &han31); }
+u32 (text_hangul31LayeredPass)(int x, int y, const u8 *s) { return text_pass(x, y, s, &han31b); }
 
 /* a pair of KS X 1001 rows (first, first + 1, ...) to a Johab lead byte (from base) and trail byte */
 static int ks_row(int hi, int lo, int base, int first)
