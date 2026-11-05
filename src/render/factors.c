@@ -78,22 +78,22 @@ void THISCALL (factor_addFactorBy)(u8 *pool, const u32 *record)
 #undef SLOT
 }
 
-/* 0x484050 (thiscall on a view volume): sized for its six tables (a x 0x1c, b x 0x40, c x 4, d x 0x68, e x 0x64,
-   f x 0x24 bytes; the counts at +0x9030, +0x903c, +0x9048, +0x9054, +0x9068, +0x9084) in one block (+8, its size +4;
+/* 0x484050 (thiscall on a view volume): sized for its six tables (entries x 0x1c, matrices x 0x40, colours x 4,
+   triangles x 0x68, quads x 0x64, segments x 0x24 bytes; the counts at +0x9030, +0x903c, +0x9048, +0x9054, +0x9068, +0x9084) in one block (+8, its size +4;
    allocated and owned, +0xc 1, without memory given, else the memory given, the caller's size checked: fatal
-   messages), the tables' starts laid out (+0x9034 ..; d's and e's each in parts), then reset (ViewVolume_clearDrawCounts). Its
+   messages), the tables' starts laid out (+0x9034 ..; the triangles' and quads' each in parts), then reset (ViewVolume_clearDrawCounts). Its
    caller ignores the eax it leaves */
-void THISCALL (factor_initBy)(u8 *view, int a, int b, int c, int d, int e, int f, void *mem, int size)
+void THISCALL (ViewVolume_initBy)(u8 *view, int entries, int matrices, int colours, int triangles, int quads, int segments, void *mem, int size)
 {
 #define VV ((ViewVolume *)view)   /* the same by its fields (src/scene.fields) */
 	gfx_initVertexArrayExt(view);
-	VV->colourLimit = c;
-	VV->entryLimit = a;
-	VV->matrixLimit = b;
-	VV->triangleLimit = d;
-	VV->quadLimit = e;
-	VV->segmentLimit = f;
-	int need = VV->blockSize = a * 0x1c + b * 0x40 + c * 4 + d * 0x68 + e * 0x64 + f * 0x24;
+	VV->colourLimit = colours;
+	VV->entryLimit = entries;
+	VV->matrixLimit = matrices;
+	VV->triangleLimit = triangles;
+	VV->quadLimit = quads;
+	VV->segmentLimit = segments;
+	int need = VV->blockSize = entries * 0x1c + matrices * 0x40 + colours * 4 + triangles * 0x68 + quads * 0x64 + segments * 0x24;
 	if (!mem) {
 		VV->block = operator_new(need);
 		if (!VV->block)

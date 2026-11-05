@@ -294,3 +294,4 @@ setupOptions_layout,setupGraphic_layout
 net_matchOver,net_hostGone
 net_sendLocalInfo,net_handleSystemMessage
 net_closeAll,net_resetConnection
+factor_initBy,ViewVolume_initBy

@@ -476,7 +476,7 @@ static const u32 k_cameraPresets[6][10] = {
 
 /* 0x460570 (thiscall: the game object's constructor): its clock (TimeSync_ctor at +0xc), view volume (+0x74) and the
    stage (+0x1f36c8) with all its member arrays built (the CRT's vector constructors 0x401290 / 0x49fd2d with their
-   element constructors) and vtables set; the factor tables sized (factor_initBy into the block at +0x91e4); the
+   element constructors) and vtables set; the factor tables sized (ViewVolume_initBy into the block at +0x91e4); the
    parts (stage_build with nine names), the component catalogue and the items loaded (failing: a fatal
    message); the ten camera presets, the stage's player slots reset (stage_selectActor -1), the geometry check sizes; the
    help text (Help.txt: 30 lines of 63 characters into consoleLines) read, each with its line end cut (an empty one
@@ -536,8 +536,8 @@ u8 *THISCALL (Game_ctor)(u8 *g)
 	for (int k = 0; k < 10; k++)
 		BITS(GS->frameTimes[k]) = 0x3d088889;   /* 1/30 */
 	GS->frameTimeNext = 0;
-	factor_initBy((u8 *)GS->view, 10000, 1000, 20000, 4000, 400, 10000,
-	                                                                                GS->viewMemory, sizeof GS->viewMemory);   /* factor_initBy */
+	ViewVolume_initBy((u8 *)GS->view, 10000, 1000, 20000, 4000, 400, 10000,
+	                                                                                GS->viewMemory, sizeof GS->viewMemory);   /* ViewVolume_initBy */
 	stage_build(s, STR(0x4c45a8, "Stage"), STR(0x4b1784, "Map"), STR(0x4c45b0, "Texture"), STR(0x4c45b8, "Shape"),
 	                                                                                  STR(0x4c45c0, "Skeleton"), STR(0x4c45cc, "Actor"), STR(0x4c45d4, "Bullet"), STR(0x4c45dc, "Effect"), STR(0x4c45e4, "Scene"));   /* stage_build */
 	if (!PATCHED_THISCALL(0x460920, int, void *, const char *)(s, (const char *)STR(0x4b4418, "Data/Component.dat")))   /* catalogue_loadComponents (the patch DLL adds the KYRIE parts here) */

@@ -27,28 +27,28 @@ void THISCALL (shape_markMaterialsChanged)(void *shape)
 }
 
 /* 0x4665c0: each part's material recoloured (two hue, saturation, value triples) */
-void THISCALL (shape_recolourMaterials)(void *shape, u32 h1, u32 c1, u32 v1, u32 h2, u32 c2, u32 v2)
+void THISCALL (shape_recolourMaterials)(void *shape, u32 h1, u32 s1, u32 v1, u32 h2, u32 s2, u32 v2)
 {
 	for (int i = 0; i < PART_COUNT(shape); i++) {
 		int m = PART(shape, i)->texture;
 		if (m < 0)
 			continue;
-		tex_recolourMaterial(MATERIAL_SET(m), m % 512, h1, c1, v1, h2, c2, v2);
+		tex_recolourMaterial(MATERIAL_SET(m), m % 512, h1, s1, v1, h2, s2, v2);
 	}
 }
 
 /* 0x467660: the model tinted, every shape with it */
-void THISCALL (shape_setTint)(void *model, u32 h1, u32 c1, u32 v1, u32 h2, u32 c2, u32 v2)
+void THISCALL (shape_setTint)(void *model, u32 h1, u32 s1, u32 v1, u32 h2, u32 s2, u32 v2)
 {
 	((Manager *)model)->tint[0] = h1;
 	((Manager *)model)->bindFlags |= 2;
 	((Manager *)model)->tint[3] = h2;
-	((Manager *)model)->tint[1] = c1;
+	((Manager *)model)->tint[1] = s1;
 	((Manager *)model)->tint[2] = v1;
-	((Manager *)model)->tint[4] = c2;
+	((Manager *)model)->tint[4] = s2;
 	((Manager *)model)->tint[5] = v2;
 	for (int i = 0; i < SHAPE_COUNT(model); i++)
-		shape_recolourMaterials(SHAPE(model, i), h1, c1, v1, h2, c2, v2);
+		shape_recolourMaterials(SHAPE(model, i), h1, s1, v1, h2, s2, v2);
 }
 
 /* 0x4675f0: the tint taken off */
@@ -72,13 +72,13 @@ void (shape_colourPixels)(u8 *px, int mode, const void *shape, const u8 *colour)
 
 /* 0x467580: a model's texture folder (+0x130) and flags (+0x230) set; with flag 2 its tint (two HSV colours), else
    its shapes' own colours */
-void THISCALL (shape_setTextureDir)(void *model, const char *folder, int flags, u32 h1, u32 c1, u32 v1, u32 h2, u32 c2,
+void THISCALL (shape_setTextureDir)(void *model, const char *folder, int flags, u32 h1, u32 s1, u32 v1, u32 h2, u32 s2,
                                     u32 v2)
 {
 	strcpy(((Manager *)model)->textureDir, folder);
 	((Manager *)model)->bindFlags = flags;
 	if (flags & 2)
-		shape_setTint(model, h1, c1, v1, h2, c2, v2);
+		shape_setTint(model, h1, s1, v1, h2, s2, v2);
 	else
 		model_clearTint(model);
 }

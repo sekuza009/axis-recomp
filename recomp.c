@@ -2908,10 +2908,10 @@ THISCALL void space_setBy(char *sp, DWORD mn, DWORD mx, DWORD nx, DWORD ny, DWOR
 /* 0x471010 (thiscall) stage_initSpaceOneCell: the scene's level grid (scene + 0xa10) as one cell over the level bounds */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 THISCALL void stage_initSpaceOneCell(char *scene);
-/* 0x484050 (thiscall) factor_initBy(items, matrices, a, b, c, d, mem, memSize): the view volume's pools (render
+/* 0x484050 (thiscall) ViewVolume_initBy(items, matrices, a, b, c, d, mem, memSize): the view volume's pools (render
    items, matrices and four more lists), memory from mem or allocated, laid out one after the other */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-THISCALL void factor_initBy(char *vv, DWORD a, DWORD b, DWORD c, DWORD d, DWORD e, DWORD f, DWORD g, DWORD h);
+THISCALL void ViewVolume_initBy(char *vv, DWORD a, DWORD b, DWORD c, DWORD d, DWORD e, DWORD f, DWORD g, DWORD h);
 /* 0x4569d0 (thiscall) TextureManager_setBanks(t64, t128x64, t256x64, t128, t256x128, t256): keep six texture images,
    each checked for its size (a wrong one is fatal) */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
@@ -10213,9 +10213,9 @@ static void factorinit_setup(void)
 	g_a[6] = irnd(0, 1) ? (int)(BUF + 0x400000) : 0; g_a[7] = irnd(0, 4) ? 0x40000 : irnd(0, 0x400);
 	g_mockGlExt = (DWORD)irnd(0, 2); g_mockMallocFail = !irnd(0, 8);
 }
-ST(factor_initBy, factorinit_setup();,
+ST(ViewVolume_initBy, factorinit_setup();,
    (TC(void, 0x484050, char *, int, int, int, int, int, int, int, int)(BUF + 0x100000, g_a[0], g_a[1], g_a[2], g_a[3], g_a[4], g_a[5], g_a[6], g_a[7]), 0),
-   (factor_initBy(BUF + 0x100000, (DWORD)g_a[0], (DWORD)g_a[1], (DWORD)g_a[2], (DWORD)g_a[3], (DWORD)g_a[4], (DWORD)g_a[5], (DWORD)g_a[6], (DWORD)g_a[7]), 0))
+   (ViewVolume_initBy(BUF + 0x100000, (DWORD)g_a[0], (DWORD)g_a[1], (DWORD)g_a[2], (DWORD)g_a[3], (DWORD)g_a[4], (DWORD)g_a[5], (DWORD)g_a[6], (DWORD)g_a[7]), 0))
 /* six texture objects (only their size fields at +0xc0118 matter), mostly the expected sizes, sometimes absent or wrong */
 static void texsmall_setup(void)
 {
@@ -17459,7 +17459,7 @@ static const STest g_stests[] = {
 	T(profile_addMatchScores, 0, 400, 0), T(chat_createEdit, 0, 40, 0), T(reg_readCharacterSettings, 0, 1000, 0), T(playerRecord_loadFlag, 1, 400, 0),
 	T(catalogue_loadComponents, 1, 400, 0),
 	/* batch 61 */
-	T(space_initBy, 0, 400, 0), T(space_setBy, 0, 400, 0), T(stage_initSpaceOneCell, 0, 40, 0), T(factor_initBy, 0, 400, 0),
+	T(space_initBy, 0, 400, 0), T(space_setBy, 0, 400, 0), T(stage_initSpaceOneCell, 0, 40, 0), T(ViewVolume_initBy, 0, 400, 0),
 	T(TextureManager_setBanks, 0, 400, 0), T(skel_loadFromFile, 0, 400, 0),
 	/* batch 62 */
 	T(image_copyTo, 0, 400, 0), T(tex_textureFileExist, 1, 400, 0), T(tex_initBy, 0, 400, 0), T(shape_initBy, 0, 400, 0),
@@ -18497,7 +18497,7 @@ static const struct { DWORD addr; void *fn; const char *name; } g_hooks3[] = {
 	{ 0x473780, (void *)catalogue_loadComponents, "catalogue_loadComponents" },
 	/* batch 61 */
 	{ 0x4813e0, (void *)space_initBy, "space_initBy" }, { 0x4819b0, (void *)space_setBy, "space_setBy" },
-	{ 0x471010, (void *)stage_initSpaceOneCell, "stage_initSpaceOneCell" }, { 0x484050, (void *)factor_initBy, "factor_initBy" },
+	{ 0x471010, (void *)stage_initSpaceOneCell, "stage_initSpaceOneCell" }, { 0x484050, (void *)ViewVolume_initBy, "ViewVolume_initBy" },
 	{ 0x4569d0, (void *)TextureManager_setBanks, "TextureManager_setBanks" }, { 0x46aa10, (void *)skel_loadFromFile, "skel_loadFromFile" },
 	/* batch 62 */
 	{ 0x46ce80, (void *)image_copyTo, "image_copyTo" }, { 0x4557e0, (void *)tex_textureFileExist, "tex_textureFileExist" },

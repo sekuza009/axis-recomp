@@ -247,7 +247,7 @@
 #define playerRecord_markFree(stage, p) GAME_THISFN(playerRecord_markFree, 0x4743b0, void, void *, int)(stage, p)
 #define stage_freeProjectile(stage, i) GAME_THISFN(stage_freeProjectile, 0x4799f0, void, void *, int)(stage, i)
 #define ViewVolume_clear(self) GAME_THISFN(ViewVolume_clear, 0x483fc0, void, void *)(self)
-#define factor_initBy(view, a, b, c, d, e, f, mem, size) GAME_THISFN(factor_initBy, 0x484050, void, void *, int, int, int, int, int, int, void *, int)(view, a, b, c, d, e, f, mem, size)
+#define ViewVolume_initBy(view, entries, matrices, colours, triangles, quads, segments, mem, size) GAME_THISFN(ViewVolume_initBy, 0x484050, void, void *, int, int, int, int, int, int, void *, int)(view, entries, matrices, colours, triangles, quads, segments, mem, size)
 #define map_loadItemInfoFrom(scene, path) GAME_THISFN(map_loadItemInfoFrom, 0x4875d0, int, void *, const char *)(scene, path)
 #define net_sendPlayerLevels(a0) GAME_THISFN(net_sendPlayerLevels, 0x48ead0, void, void *)(a0)
 #define crt_sprintf(out, format) GAME_CDECL(0x49e9dd, int, char *, const char *)(out, format)

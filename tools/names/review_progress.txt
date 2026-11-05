@@ -91,19 +91,19 @@
 [x] src/net/net_servers.c 48
 [x] src/net/net_sessions.c 114
 [x] src/net/net_tables.c 2218
-[ ] src/render/depth_sort.c 67
-[ ] src/render/factors.c 123
-[ ] src/render/fog.c 19
-[ ] src/render/gl_helpers.c 122
-[ ] src/render/items.c 61
-[ ] src/render/object_list.c 148
+[x] src/render/depth_sort.c 67
+[x] src/render/factors.c 123
+[x] src/render/fog.c 19
+[x] src/render/gl_helpers.c 122
+[x] src/render/items.c 61
+[x] src/render/object_list.c 148
 [ ] src/render/objects.c 714
 [ ] src/render/rotations.c 258
 [ ] src/render/shading.c 381
-[ ] src/render/shape_colours.c 113
+[x] src/render/shape_colours.c 113
 [ ] src/render/sky.c 196
 [ ] src/render/tex_colours.c 174
-[ ] src/render/trails.c 118
+[x] src/render/trails.c 118
 [ ] src/render/vecmath.c 255
 [ ] src/render/view_volume.c 829
 [ ] src/replay/replay_message.c 55

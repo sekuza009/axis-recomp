@@ -1082,7 +1082,7 @@ typedef struct { float r, g, b, a; } Colour;
 #define image_addColour(px, mode, part, colour) GAME_FN(image_addColour, 0x464a70, void, u8 *, int, const u32 *, const u8 *)(px, mode, part, colour)   /* a colour added to a part's RGBA pixels */
 #define spaceSlot_clear(slot) GAME_THISFN(spaceSlot_clear, 0x480440, void, int *)(slot)
 #define shape_markMaterialsChanged(shape) GAME_THISFN(shape_markMaterialsChanged, 0x466560, void, void *)(shape)
-#define shape_recolourMaterials(shape, h1, c1, v1, h2, c2, v2) GAME_THISFN(shape_recolourMaterials, 0x4665c0, void, void *, u32, u32, u32, u32, u32, u32)(shape, h1, c1, v1, h2, c2, v2)
+#define shape_recolourMaterials(shape, h1, s1, v1, h2, s2, v2) GAME_THISFN(shape_recolourMaterials, 0x4665c0, void, void *, u32, u32, u32, u32, u32, u32)(shape, h1, s1, v1, h2, s2, v2)
 
 #define crt_free(p) GAME_CDECL(0x49ee81, u32, void *)(p)
 #define crt_fopen(name, mode) GAME_CDECL(0x49e9ca, void *, const char *, const char *)(name, mode)
@@ -1128,7 +1128,7 @@ typedef struct { float r, g, b, a; } Colour;
 #define Mat4_fromQuat(m, q) GAME_FN(Mat4_fromQuat, 0x47d8a0, void, float *, const float *)(m, q)   /* quaternion -> matrix */
 
 /* ---- (render/shape_colours.c, app/small.c, menu/menu_records.c callers) ---- */
-#define shape_setTint(model, h1, c1, v1, h2, c2, v2) GAME_THISFN(shape_setTint, 0x467660, void, void *, u32, u32, u32, u32, u32, u32)(model, h1, c1, v1, h2, c2, v2)
+#define shape_setTint(model, h1, s1, v1, h2, s2, v2) GAME_THISFN(shape_setTint, 0x467660, void, void *, u32, u32, u32, u32, u32, u32)(model, h1, s1, v1, h2, s2, v2)
 #define model_clearTint(model) GAME_THISFN(model_clearTint, 0x4675f0, void, void *)(model)   /* the model's shapes' own colours back */
 #define script_reset(stage) GAME_THISFN(script_reset, 0x48fca0, int, Stage *)(stage)
 #define briefing_hitTest(x, y) GAME_FN(briefing_hitTest, 0x443910, int, int, int)(x, y)   /* which skirmish briefing button is at (x, y) */
