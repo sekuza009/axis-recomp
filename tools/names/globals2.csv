@@ -36,7 +36,7 @@
 0x9dd350,int,g_rankingRequestPending
 0x9dd3b0,int,g_rankingHaveList
 0x76d40c,int,g_roomListWaiting
-0x9dd6b0,int,g_typingRoomPassword
+0x9dd6b0,int,g_lineToLoginPassword
 0x9dd84c,int,g_roomConnected
 0x9f8d6c,int,g_chosenPilot
 # the network

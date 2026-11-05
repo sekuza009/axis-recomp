@@ -57,10 +57,10 @@
 0x4dcb24,u32,g_mechItem3
 0x4dcb28,u32,g_mechItem4
 0x4dcb2c,u32,g_mechItem5
-0x4db520,int,g_arenaMessageText
-0x4db524,int,g_arenaMessageText4
-0x9dcee8,int,g_roomMessageText
-0x9dceec,int,g_roomMessageText4
+0x4db520,int,g_arenaJoinPassword
+0x4db524,int,g_arenaJoinPassword4
+0x9dcee8,int,g_roomJoinPassword
+0x9dceec,int,g_roomJoinPassword4
 0x9dd32c,int,g_unusedLoginWord
 0x4db552,int,g_newArenaPassword4
 0x4d95b8,int,g_mapEntry22On

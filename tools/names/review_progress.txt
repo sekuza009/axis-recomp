@@ -45,24 +45,24 @@
 [x] src/match/scores.c 138
 [x] src/match/teams.c 83
 [x] src/match/weapons.c 812
-[ ] src/menu/arena_maps.c 259
-[ ] src/menu/armc_colours.c 99
-[ ] src/menu/armc_items.c 207
-[ ] src/menu/armc_keys.c 257
-[ ] src/menu/armc_mech.c 135
+[x] src/menu/arena_maps.c 259
+[x] src/menu/armc_colours.c 99
+[x] src/menu/armc_items.c 207
+[x] src/menu/armc_keys.c 257
+[x] src/menu/armc_mech.c 135
 [ ] src/menu/armc_misc.c 833
-[ ] src/menu/armc_parts.c 266
-[ ] src/menu/armc_screens.c 389
-[ ] src/menu/armc_state.c 86
+[x] src/menu/armc_parts.c 266
+[x] src/menu/armc_screens.c 389
+[x] src/menu/armc_state.c 86
 [ ] src/menu/armc_stats.c 509
-[ ] src/menu/edit_fields.c 286
+[x] src/menu/edit_fields.c 286
 [ ] src/menu/game_lists.c 1011
-[ ] src/menu/hit_tests.c 75
+[x] src/menu/hit_tests.c 75
 [ ] src/menu/layouts.c 299
 [ ] src/menu/lobby_states.c 1646
-[ ] src/menu/menu_2d.c 341
+[x] src/menu/menu_2d.c 341
 [ ] src/menu/menu_cameras.c 536
-[ ] src/menu/menu_cursor.c 38
+[x] src/menu/menu_cursor.c 38
 [ ] src/menu/menu_init.c 155
 [ ] src/menu/menu_keys.c 55
 [ ] src/menu/menu_quads.c 119

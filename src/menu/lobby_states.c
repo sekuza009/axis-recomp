@@ -274,7 +274,7 @@ void (pilotRecord_syncCopies)(void)
 }
 
 /* 0x432db0: a received game's settings (0xa0563c) into the room: its names, the 11 mech bytes, the six colour pairs
-   (a negative or NaN chroma or value becomes 0), the window rectangle; then the room screen, the lobby's title
+   (a negative or NaN saturation or value becomes 0), the window rectangle; then the room screen, the lobby's title
    record and the mech */
 void (room_takeReceivedSettings)(void)
 {
@@ -305,7 +305,7 @@ void (room_takeReceivedSettings)(void)
 	g_roomConnected = 1;
 }
 
-/* the default mech settings (11 bytes) and six colour pairs (hue 0, chroma 1, value 0.6) at mech, colours */
+/* the default mech settings (11 bytes) and six colour pairs (hue 0, saturation 1, value 0.6) at mech, colours */
 static void default_mech(u8 *mech, u8 *colours)
 {
 	static const u8 bytes[11] = { 0, 0, 0, 0, 0, 0xff, 0x11, 0, 2, 8, 0xff };
@@ -1266,7 +1266,7 @@ void (lobbyJoin_keysChat)(void)
 #define g_listRow g_lobbyListRow
 #define busy (g_lanSearch || g_lobbySearching || g_lobbyRefreshing)
 	int mode = g_arenaLobbyMode;
-	if (g_arenaFull || mode == 1 || mode == 0 || g_arenaJoining || g_dialogOpen)
+	if (g_arenaFull || mode == 1 || mode == 0 || g_arenaJoinNeedsPassword || g_dialogOpen)
 		return;
 	if (g_arenaConfirming) {
 		if (input_justPressed(g_keyBack)) {
@@ -1309,7 +1309,7 @@ void (lobbyJoin_keysChat)(void)
 		if (g_serverConnected) {
 			g_lobbyJoinStarted = 1;
 			g_lobbyJoinRequest = 0;
-			arena_chatLine();
+			arena_askJoinPassword();
 		} else {
 			g_lobbyJoinRequest = 1;
 			g_lobbyJoinStarted = 0;

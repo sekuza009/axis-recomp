@@ -18,8 +18,8 @@ static void dialog_opened(int state)
 {
 	g_roomState = state;
 	g_dialogOpen = 1;
-	g_typingGameName = 0;
-	g_typingGamePassword = 0;
+	g_typingLoginId = 0;
+	g_typingLoginPassword = 0;
 	g_inputLineHidden = 0;
 	g_textFieldOpen = 0;
 }
@@ -36,7 +36,7 @@ void (room_openDialog58)(void)
 /* 0x4338c0: dialog 0x4d, its two 0x2a-byte name buffers emptied */
 void (room_openDialog4d)(void)
 {
-	set_box(ADDR(g_loginFormLeft), 0x1e, 0x32, 0x262, 0x1ae);
+	set_box(ADDR(g_newIdFormLeft), 0x1e, 0x32, 0x262, 0x1ae);
 	loginDialog_layout();
 	memset((void *)OBJ(g_accountName), 0, 0x54);
 	dialog_opened(0x4d);
@@ -86,7 +86,7 @@ u32 (room_mouse)(void)
 			return (u32)dialog;
 		return g_mapListOpen ? room_mapListKeys() : room_settingsAfterTyping();
 	case 4: return dialog ? (u32)dialog : roomList_passwordKeys();
-	case 66: return g_roomLeaveDialog == 1 ? leaveDialog_keys() : createDialog_keys();
+	case 66: return g_roomLeaveDialog == 1 ? leaveDialog_keys() : roomLogin_keys();
 	case 77: return loginDialog_keys();
 	case 88: return g_roomLeaveDialog == 1 ? leaveDialog_keys() : room_leaveKeys();
 	case 99: return dialog ? (u32)dialog : room_keys();
@@ -126,10 +126,10 @@ u32 (settingsDialog_clicks)(void)
 	}
 	if (!g_mouseClick)
 		return 0;
-	u32 button = ((u32)loginForm_hitTest(g_mouseX, g_mouseY));   /* the dialog's hit test */
+	u32 button = ((u32)newIdForm_hitTest(g_mouseX, g_mouseY));   /* the dialog's hit test */
 	if (button <= 3) {
 		account_endTyping();
-		return ((u32)loginForm_openField((int)button));
+		return ((u32)newIdForm_openField((int)button));
 	}
 	if (button == 4) {
 		sound(0);
@@ -309,28 +309,28 @@ u32 (room_draw)(void)
 	return room_hostingStep();   /* room_hostingStep */
 }
 
-/* 0x433c70: the chat edit control closed (the window focused again, the line sent): typed into the room's name
-   (0x9dd1cc set: up to 30 bytes at 0x9dd1d8) or its password (0x9dd6b0: 12 bytes at 0x9dd1f6, the stars off).
+/* 0x433c70: the chat edit control closed (the window focused again, the line sent): typed into the login's ID
+   (g_lineToLoginId: up to 30 bytes at 0x9dd1d8) or its password (0x9dd6b0: 12 bytes at 0x9dd1f6, the stars off).
    Returns what the original leaves in eax */
 u32 (chat_closeEdit)(void)
 {
 	DestroyWindow(g_hChatEdit);   /* DestroyWindow */
 	SetFocus(g_hWndMain);               /* SetFocus */
 	chat_closeLine(1);                           /* chat_closeLine: the line sent */
-	if (g_typingRoomName == 1) {
+	if (g_lineToLoginId == 1) {
 		memset((void *)OBJ(g_accountName), 0, 30);
-		g_typingRoomName = 0;
+		g_lineToLoginId = 0;
 		strcpy(g_accountName, g_chatLine);
 		return 0;
 	}
-	if (g_typingRoomPassword == 1) {
+	if (g_lineToLoginPassword == 1) {
 		memset((void *)OBJ(g_accountPassword), 0, 12);
 		g_inputLineHidden = 0;
 		strcpy(g_accountPassword, g_chatLine);
-		g_typingRoomPassword = 0;
+		g_lineToLoginPassword = 0;
 		return 0;
 	}
-	return (*(u32 *)&g_typingRoomName);
+	return (*(u32 *)&g_lineToLoginId);
 }
 
 /* the dialog's button choice (g_dialogChoice) highlighted at (x, y) */
@@ -344,17 +344,17 @@ static void highlight_choice(int choice, int x, int y)
 	g_highlightY = y;
 }
 
-/* 0x43df80: the create-game dialog (its panel at 0x9dd358): a password to retype (0x9dced0: the settings back and
+/* 0x43df80: the Ladder login dialog's update (its panel at 0x9dd358): a password to retype (0x9dced0: the settings back and
    the password opened again), the login to send (0x9dd198); once typing has ended (g_textFieldOpen clear), the line taken
-   into the game's name (0x9dd830; 30 bytes at 0x9dd1d8) or password (0x9dd38c; 12 at 0x9dd1f6) and the key that
+   into the ID (0x9dd830; 30 bytes at 0x9dd1d8) or password (0x9dd38c; 12 at 0x9dd1f6) and the key that
    ended it (0x9dc428: 10 back, 20 on) moving to the other field or the dialog's buttons; else the server's answer
    to the request (0xa0b378, awaited: 0x9dd838): 33 accepted (state 99, the settings written and taken), 42 done
    (0x9dd850), 31 / 32 / 34 a message (31 / 32 / 35), anything else message 42 */
-void (createDialog_draw)(void)
+void (roomLogin_update)(void)
 {
 	if (g_retypePassword) {
 		room_copyJoinedSettings();
-		field_editGamePassword();
+		roomLogin_editPassword();
 		g_retypePassword = 0;
 		return;
 	}
@@ -364,41 +364,41 @@ void (createDialog_draw)(void)
 		g_loginToSend = 0;
 		return;
 	}
-	if (g_typingGameName) {
+	if (g_typingLoginId) {
 		if (g_textFieldOpen)
 			return;
-		g_typingGameName = 0;
+		g_typingLoginId = 0;
 		memset((void *)OBJ(g_accountName), 0, 30);
 		strcpy(g_accountName, g_chatLine);
 		if (g_fieldStep == 10) {
 			highlight_choice(3, g_roomLoginLeft + 0x1a2, g_roomLoginBottom - 0x30);
-			g_typingRoomName = 0;
+			g_lineToLoginId = 0;
 			g_fieldStep = 0;
 		} else if (g_fieldStep == 20) {
-			g_typingRoomName = 0;
-			field_editGamePassword();
-			g_typingRoomPassword = 1;
+			g_lineToLoginId = 0;
+			roomLogin_editPassword();
+			g_lineToLoginPassword = 1;
 			g_inputLineHidden = 1;
 			g_fieldStep = 0;
 		}
 		return;
 	}
-	if (g_typingGamePassword) {
+	if (g_typingLoginPassword) {
 		if (g_textFieldOpen)
 			return;
 		memset((void *)OBJ(g_accountPassword), 0, 12);
-		g_typingGamePassword = 0;
+		g_typingLoginPassword = 0;
 		strcpy(g_accountPassword, g_chatLine);
 		g_inputLineHidden = 0;
 		if (g_fieldStep == 10) {
-			g_typingRoomName = 1;
-			g_typingRoomPassword = 0;
-			field_editGameName();
+			g_lineToLoginId = 1;
+			g_lineToLoginPassword = 0;
+			roomLogin_editId();
 			g_fieldStep = 0;
 		} else if (g_fieldStep == 20) {
 			highlight_choice(1, g_roomLoginLeft + 0x62, g_roomLoginBottom - 0x30);
-			g_typingRoomName = 0;
-			g_typingRoomPassword = 0;
+			g_lineToLoginId = 0;
+			g_lineToLoginPassword = 0;
 			g_fieldStep = 0;
 		}
 		return;
@@ -425,18 +425,18 @@ void (createDialog_draw)(void)
 	g_roomLoginDue = 0;
 }
 
-/* 0x43e290: the login form (its panel at 0x9dd6e8): the name opened when asked (0x9dd4a0); with no message box
+/* 0x43e290: the new-ID form ("CREATE NEW ID"; its panel at 0x9dd6e8): the name opened when asked (0x9dd4a0); with no message box
    (0x4df900) and typing ended, the line taken into the field being typed in (the first of the four flagged 1) and
    the key that ended it (0x9dc428: 20 on, 10 back) moving to the next or previous field; on from the e-mail
    highlights the right button, back from the name the left one (the name's flag left set). Then the flagged field
    opened again for typing (the password's before the repeat's) */
-void (loginForm_update)(void)
+void (newIdForm_update)(void)
 {
 	static const struct { u32 editing, text; int size; } field[4] = {
 		{ ADDR(g_typingAccountName), OBJ(g_accountName), 30 }, { ADDR(g_typingAccountPassword), OBJ(g_accountPassword), 12 }, { ADDR(g_typingAccountRepeat), OBJ(g_accountPasswordRepeat), 12 }, { ADDR(g_typingAccountEmail), OBJ(g_accountEmail), 50 } };
 #define EDITING(k) GAME_VAR(int, field[k].editing)
 	if (g_openLoginName) {
-		loginForm_openField(0);
+		newIdForm_openField(0);
 		g_openLoginName = 0;
 		return;
 	}
@@ -451,7 +451,7 @@ void (loginForm_update)(void)
 			memset((void *)RELOC(field[k].text), 0, field[k].size);
 			strcpy((char *)RELOC(field[k].text), g_chatLine);
 			if (key == 10 && k == 0)
-				highlight_choice(2, g_loginFormLeft + 0x172, g_loginFormBottom - 0x2c);
+				highlight_choice(2, g_newIdFormLeft + 0x172, g_newIdFormBottom - 0x2c);
 			else {
 				EDITING(k) = 0;
 				if (key == 10)
@@ -460,24 +460,24 @@ void (loginForm_update)(void)
 					EDITING(k + 1) = 1;
 				else {
 					EDITING(0) = 0;
-					highlight_choice(1, g_loginFormLeft + 0xaa, g_loginFormBottom - 0x2c);
+					highlight_choice(1, g_newIdFormLeft + 0xaa, g_newIdFormBottom - 0x2c);
 				}
 			}
 		}
 		g_fieldStep = 0;
 	}
 	if (EDITING(0) == 1) {
-		loginForm_openField(0);
+		newIdForm_openField(0);
 		return;
 	}
 	if (EDITING(1) == 1)
-		loginForm_openField(1);
+		newIdForm_openField(1);
 	if (EDITING(2) == 1) {
-		loginForm_openField(2);
+		newIdForm_openField(2);
 		return;
 	}
 	if (EDITING(3) == 1)
-		loginForm_openField(3);
+		newIdForm_openField(3);
 #undef EDITING
 }
 
@@ -597,17 +597,17 @@ static void stars(char *out, int size, const char *password)
    MSG(341, "CREATE NEW ID"), four labelled lines (MSG(342, "INPUT ID"), 0x80 apart) with underlines, the values (the name 0x9dd1d8, the two
    passwords 0x9dd1f6 / 0x9dd202 as stars, 0x9dd20e), each left out while its field is being typed in (0x9dd348 /
    0x9dd3f8 / 0x9dd564 / 0x9dd6cc, with the keys taken), the two buttons (the one under the pointer, 4 / 5 by
-   loginForm_hitTest, bright) and the border. Returns the frame's or the border's eax */
-u32 (loginDialog_draw)(void)
+   newIdForm_hitTest, bright) and the border. Returns the frame's or the border's eax */
+u32 (newIdForm_draw)(void)
 {
-#define X0 g_loginFormLeft
-#define Y0 g_loginFormTop
-#define X1 g_loginFormRight
-#define Y1 g_loginFormBottom
+#define X0 g_newIdFormLeft
+#define Y0 g_newIdFormTop
+#define X1 g_newIdFormRight
+#define Y1 g_newIdFormBottom
 	if (g_dialogOpen)
 		return menu_drawFrame(X0, Y0, X1, Y1);   /* the frame */
 	const u32 *bright = g_roomBright, *dim = g_roomDim;
-	int hovered = loginForm_hitTest(g_mouseX, g_mouseY);
+	int hovered = newIdForm_hitTest(g_mouseX, g_mouseY);
 	gfx_setProjection2D3D(2);
 	glLoadIdentity();
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
@@ -735,7 +735,7 @@ u32 (serverDialog_draw)(void)
 /* 0x4392c0: the room login dialog (0x9dd358 .. 0x9dd364; only its frame while a message box is open): the title
    MSG(331, "LADDER GAME ID MANAGER") and its rule, two labelled dark boxes (MSG(332, "YOUR ID"), 0x80 apart) with the name 0x9dd1d8 and the password
    0x9dd1f6 as stars (each left out while it is being typed in: 0x9dd830 / 0x9dd38c), three buttons (MSG(334, "LOG$[0] IN"); the
-   one under the pointer, 2 .. 4 by createDialog_hitTest, bright unless connecting), while connecting (0x9dd838) a box with
+   one under the pointer, 2 .. 4 by roomLogin_hitTest, bright unless connecting), while connecting (0x9dd838) a box with
    two lines (MSG(49, "CHECKING YOUR ID. PLEASE WAIT."), MSG(50, "PRESS ESC-KEY TO CANCEL")), the confirmation (0x9dd850) and the border. Returns the frame's or the border's
    eax */
 u32 (roomLogin_draw)(void)
@@ -747,7 +747,7 @@ u32 (roomLogin_draw)(void)
 	if (g_dialogOpen)
 		return menu_drawFrame(X0, Y0, X1, Y1);   /* menu_drawFrame */
 	const u32 *bright = g_roomBright, *dim = g_roomDim;
-	int hovered = createDialog_hitTest(g_mouseX, g_mouseY);
+	int hovered = roomLogin_hitTest(g_mouseX, g_mouseY);
 	gfx_setProjection2D3D(2);
 	glLoadIdentity();
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
@@ -765,9 +765,9 @@ u32 (roomLogin_draw)(void)
 		menu_drawRect(X0 + 0xb8, y + 0x50, X0 + 0x1a8, y + 0x70, 0);
 	}
 	set_colour_bits(g_textColour, 0x3f800000, 0x3f800000, 0x3f800000, 0x3f800000);
-	if (!g_typingGameName)
+	if (!g_typingLoginId)
 		text_draw8(X0 + 0xc8, Y0 + 0x58, g_accountName);
-	if (!g_typingGamePassword) {
+	if (!g_typingLoginPassword) {
 		char hidden[30];
 		stars(hidden, sizeof hidden, g_accountPassword);
 		text_draw8(X0 + 0xc8, Y0 + 0x88, hidden);
@@ -1078,7 +1078,7 @@ u32 (ranking_drawTable)(void)
 #undef Y1
 }
 
-/* the create-game dialog closed, back to the room's page 99 (keys blocked, the room's state 300) */
+/* the Ladder login dialog closed, back to the room's page 99 (keys blocked, the room's state 300) */
 static void creategame_close(void)
 {
 	menuCamera_setMove(4);
@@ -1087,14 +1087,14 @@ static void creategame_close(void)
 	GAME_FN(debug_traceStripped, 0x48b420, void, void)();   /* debug_traceStripped */
 }
 
-/* 0x436990: the create-game dialog's keys. While its request is out (0x9dd838) or the login is due (0x9dd1c8)
+/* 0x436990: the Ladder login dialog's keys. While its request is out (0x9dd838) or the login is due (0x9dd1c8)
    only cancel2 answers, closing the dialog (the answer dropped) and the lobby connection. Otherwise a click on its
-   buttons (createDialog_hitTest: 2 send, 3 close and disconnect, 4 room_openDialog4d), 0x4e14f4 send, back close, 0x4e150c
+   buttons (roomLogin_hitTest: 2 send, 3 close and disconnect, 4 room_openDialog4d), 0x4e14f4 send, back close, 0x4e150c
    room_openDialog4d (none of these while typing, g_textFieldOpen); the toggle key moves the highlight (g_dialogChoice) on: from
    the name (1) to the password field (2), to the OK button (3), then into the name field for typing; with shift,
    back: from OK (3) to the password field, to the name, then into the password field for typing. The original
    leaves eax to callers that ignore it */
-void (createDialog_keys)(void)
+void (roomLogin_keys)(void)
 {
 	int dialogX = g_roomLoginLeft, dialogBottom = g_roomLoginBottom - 0x30;
 	if (g_roomRequestOut || g_roomLoginDue) {
@@ -1111,7 +1111,7 @@ void (createDialog_keys)(void)
 		return;
 	}
 	if (input_justPressed(g_keyClick) == 1) {
-		int on = createDialog_hitTest(g_mouseX, g_mouseY);
+		int on = roomLogin_hitTest(g_mouseX, g_mouseY);
 		if (on == 2) {
 			if (g_roomLoginDue)
 				return;
@@ -1169,8 +1169,8 @@ void (createDialog_keys)(void)
 		g_fieldStep = 10;
 		if (choice == 1) {
 			highlight_choice(0, dialogX + 0x180, g_roomLoginTop + 0x88);
-			field_editGamePassword();
-			g_typingRoomPassword = 1;
+			roomLogin_editPassword();
+			g_lineToLoginPassword = 1;
 			g_inputLineHidden = 1;
 		} else if (choice == 2)
 			highlight_choice(1, dialogX + 0x62, dialogBottom);
@@ -1185,9 +1185,9 @@ void (createDialog_keys)(void)
 			highlight_choice(3, dialogX + 0x1a2, dialogBottom);
 		else if (choice == 3) {
 			highlight_choice(3, dialogX + 0x180, g_roomLoginTop + 0x88);
-			field_editGameName();
+			roomLogin_editId();
 			g_fieldStep = 0;
-			g_typingRoomName = 1;
+			g_lineToLoginId = 1;
 			return;
 		} else
 			return;

@@ -659,13 +659,13 @@ u32 (menuState800_gameRoom)(void)
 		default: return ranking_page();
 		}
 	case 66:
-		createDialog_draw();
+		roomLogin_update();
 		menu_drawBackground();
 		return roomLogin_draw();
 	case 77:
-		loginForm_update();
+		newIdForm_update();
 		menu_drawBackground();
-		return loginDialog_draw();
+		return newIdForm_draw();
 	case 88:
 		room_networkEvents();
 		menu_drawBackground();

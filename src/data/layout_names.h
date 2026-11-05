@@ -80,6 +80,12 @@ extern struct GameData g_data;
 #define g_arenaHaveList (*(int *)g_arenaHaveList_v)
 #undef g_arenaInfoPacket
 #define g_arenaInfoPacket (*(u8 * *)g_arenaInfoPacket_v)
+#undef g_arenaJoinNeedsPassword
+#define g_arenaJoinNeedsPassword (*(int *)g_arenaJoinNeedsPassword_v)
+#undef g_arenaJoinPassword
+#define g_arenaJoinPassword (g_data.g_arenaJoinPassword_)
+#undef g_arenaJoinPassword4
+#define g_arenaJoinPassword4 (g_data.g_arenaJoinPassword4_)
 #undef g_arenaJoinPending
 #define g_arenaJoinPending (*(int *)g_arenaJoinPending_v)
 #undef g_arenaJoinRow
@@ -88,8 +94,6 @@ extern struct GameData g_data;
 #define g_arenaJoinTimer (*(u32 *)g_arenaJoinTimer_v)
 #undef g_arenaJoinWaiting
 #define g_arenaJoinWaiting (*(int *)g_arenaJoinWaiting_v)
-#undef g_arenaJoining
-#define g_arenaJoining (*(int *)g_arenaJoining_v)
 #undef g_arenaKeptCamX
 #define g_arenaKeptCamX (*(float *)g_arenaKeptCamX_v)
 #undef g_arenaKeptCamY
@@ -122,10 +126,6 @@ extern struct GameData g_data;
 #define g_arenaMapCount (*(int *)g_arenaMapCount_v)
 #undef g_arenaMenuTextures
 #define g_arenaMenuTextures ((int *)g_arenaMenuTextures_v)
-#undef g_arenaMessageText
-#define g_arenaMessageText (g_data.g_arenaMessageText_)
-#undef g_arenaMessageText4
-#define g_arenaMessageText4 (g_data.g_arenaMessageText4_)
 #undef g_arenaName
 #define g_arenaName ((char *)g_data.g_arenaName_)
 #undef g_arenaNameDialogBottom
@@ -502,8 +502,6 @@ extern struct GameData g_data;
 #define g_createArena2Rects ((int *)g_createArena2Rects_v)
 #undef g_createArenaRects
 #define g_createArenaRects ((int *)g_createArenaRects_v)
-#undef g_createDialogRects
-#define g_createDialogRects ((int *)g_createDialogRects_v)
 #undef g_createQuitDialog
 #define g_createQuitDialog (*(int *)g_createQuitDialog_v)
 #undef g_crosshair
@@ -842,8 +840,6 @@ extern struct GameData g_data;
 #define g_editOldProc (*(u32 *)g_editOldProc_v)
 #undef g_editingAccountPassword
 #define g_editingAccountPassword (*(int *)g_editingAccountPassword_v)
-#undef g_editingArenaMessage
-#define g_editingArenaMessage (*(int *)g_editingArenaMessage_v)
 #undef g_editingEmail
 #define g_editingEmail (*(int *)g_editingEmail_v)
 #undef g_editingFragLimit
@@ -1176,8 +1172,6 @@ extern struct GameData g_data;
 #define g_itemSlot4 (*(int *)((u8 *)g_mechSettings_v + 0x0))
 #undef g_itemSlot5
 #define g_itemSlot5 (*(int *)((u8 *)g_mechSettings_v + 0x4))
-#undef g_joinPasswordTyped
-#define g_joinPasswordTyped (*(int *)g_joinPasswordTyped_v)
 #undef g_joinedSessionRec
 #define g_joinedSessionRec ((SessionEntry *)g_joinedSessionRec_v)
 #undef g_joinedTitleEmail
@@ -1274,6 +1268,10 @@ extern struct GameData g_data;
 #define g_legsStats ((float *)g_legsStats_v)
 #undef g_legsWeight
 #define g_legsWeight (*(float *)((u8 *)g_legsStats_v + 0x18))
+#undef g_lineToLoginId
+#define g_lineToLoginId (*(int *)g_lineToLoginId_v)
+#undef g_lineToLoginPassword
+#define g_lineToLoginPassword (*(int *)g_lineToLoginPassword_v)
 #undef g_linearFilterTexts
 #define g_linearFilterTexts ((char *)g_linearFilterTexts_v)
 #undef g_listRefreshPeriod
@@ -1394,16 +1392,6 @@ extern struct GameData g_data;
 #define g_logUnitPoseInfo ((u32 *)g_logUnitPoseInfo_v)
 #undef g_logViewVolume
 #define g_logViewVolume ((u32 *)g_logViewVolume_v)
-#undef g_loginFormBottom
-#define g_loginFormBottom (*(int *)g_loginFormBottom_v)
-#undef g_loginFormLeft
-#define g_loginFormLeft (*(int *)g_loginFormLeft_v)
-#undef g_loginFormRects
-#define g_loginFormRects ((int *)g_loginFormRects_v)
-#undef g_loginFormRight
-#define g_loginFormRight (g_data.g_loginFormRight_)
-#undef g_loginFormTop
-#define g_loginFormTop (*(int *)g_loginFormTop_v)
 #undef g_loginToSend
 #define g_loginToSend (*(int *)g_loginToSend_v)
 #undef g_logoFade
@@ -1798,6 +1786,16 @@ extern struct GameData g_data;
 #define g_newArenaPassword4 (*(int *)((u8 *)g_newArenaName_v + 0x2a))
 #undef g_newArenaPlayers
 #define g_newArenaPlayers (*(u8 *)((u8 *)g_newArenaName_v + 0x21))
+#undef g_newIdFormBottom
+#define g_newIdFormBottom (*(int *)g_newIdFormBottom_v)
+#undef g_newIdFormLeft
+#define g_newIdFormLeft (*(int *)g_newIdFormLeft_v)
+#undef g_newIdFormRects
+#define g_newIdFormRects ((int *)g_newIdFormRects_v)
+#undef g_newIdFormRight
+#define g_newIdFormRight (g_data.g_newIdFormRight_)
+#undef g_newIdFormTop
+#define g_newIdFormTop (*(int *)g_newIdFormTop_v)
 #undef g_newNameDialogBottom
 #define g_newNameDialogBottom (*(int *)g_newNameDialogBottom_v)
 #undef g_newNameDialogLeft
@@ -2218,8 +2216,6 @@ extern struct GameData g_data;
 #define g_roomAwaitingServer (*(int *)g_roomAwaitingServer_v)
 #undef g_roomBright
 #define g_roomBright ((u32 *)g_roomBright_v)
-#undef g_roomChatting
-#define g_roomChatting (*(int *)g_roomChatting_v)
 #undef g_roomColours
 #define g_roomColours ((float *)g_roomColours_v)
 #undef g_roomColoursKept
@@ -2260,6 +2256,8 @@ extern struct GameData g_data;
 #define g_roomGameListTop (*(int *)g_roomGameListTop_v)
 #undef g_roomGameMode
 #define g_roomGameMode (*(u8 *)((u8 *)g_roomSettingsName_v + 0x23))
+#undef g_roomJoinNeedsPassword
+#define g_roomJoinNeedsPassword (*(int *)g_roomJoinNeedsPassword_v)
 #undef g_roomJoined
 #define g_roomJoined (*(int *)g_roomJoined_v)
 #undef g_roomLeaveDialog
@@ -2290,6 +2288,8 @@ extern struct GameData g_data;
 #define g_roomLoginDue (*(int *)g_roomLoginDue_v)
 #undef g_roomLoginLeft
 #define g_roomLoginLeft (*(int *)g_roomLoginLeft_v)
+#undef g_roomLoginRects
+#define g_roomLoginRects ((int *)g_roomLoginRects_v)
 #undef g_roomLoginRight
 #define g_roomLoginRight (*(int *)g_roomLoginRight_v)
 #undef g_roomLoginTop
@@ -2710,18 +2710,18 @@ extern struct GameData g_data;
 #define g_typingAccountPassword (*(int *)g_typingAccountPassword_v)
 #undef g_typingAccountRepeat
 #define g_typingAccountRepeat (*(int *)g_typingAccountRepeat_v)
+#undef g_typingArenaJoinPassword
+#define g_typingArenaJoinPassword (*(int *)g_typingArenaJoinPassword_v)
 #undef g_typingArenaName
 #define g_typingArenaName (*(int *)g_typingArenaName_v)
 #undef g_typingArenaPassword
 #define g_typingArenaPassword (*(int *)g_typingArenaPassword_v)
-#undef g_typingGameName
-#define g_typingGameName (*(int *)g_typingGameName_v)
-#undef g_typingGamePassword
-#define g_typingGamePassword (*(int *)g_typingGamePassword_v)
-#undef g_typingRoomName
-#define g_typingRoomName (*(int *)g_typingRoomName_v)
-#undef g_typingRoomPassword
-#define g_typingRoomPassword (*(int *)g_typingRoomPassword_v)
+#undef g_typingLoginId
+#define g_typingLoginId (*(int *)g_typingLoginId_v)
+#undef g_typingLoginPassword
+#define g_typingLoginPassword (*(int *)g_typingLoginPassword_v)
+#undef g_typingRoomJoinPassword
+#define g_typingRoomJoinPassword (*(int *)g_typingRoomJoinPassword_v)
 #undef g_undoDepth
 #define g_undoDepth (*(int *)g_undoDepth_v)
 #undef g_undoStack

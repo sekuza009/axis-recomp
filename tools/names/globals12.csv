@@ -1,7 +1,7 @@
 # text fields being typed in (edit_fields.c)
 0x4db850,int,g_editingNewArenaFragLimit
 0x4db518,int,g_editingNewArenaTimeLimit
-0x4db70c,int,g_editingArenaMessage
+0x4db70c,int,g_typingArenaJoinPassword
 0x9dd69c,int,g_editingOldPassword
 0x9dd37c,int,g_editingAccountPassword
 0x9dd378,int,g_editingPasswordRepeat

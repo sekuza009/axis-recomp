@@ -29,7 +29,7 @@
 0x9dce48,int,g_roomMode
 0x9dd838,int,g_roomRequestOut
 0x9dd1c8,int,g_roomLoginDue
-0x9dd1cc,int,g_typingRoomName
+0x9dd1cc,int,g_lineToLoginId
 0x9dd6ac,int,g_roomListPage
 # the network
 0xa0b300,int,g_netLastRequest

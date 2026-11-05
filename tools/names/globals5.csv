@@ -13,7 +13,7 @@
 0x4dcb0c,float,g_legsMaxWeight
 0x4dc784,int,g_unlockedLevel
 0x9dd330,int,g_gameListLoaded
-0x9dd6c8,int,g_joinPasswordTyped
+0x9dd6c8,int,g_typingRoomJoinPassword
 0x9dd240,int,g_pilotLevelKept
 0x4de1f0,float,g_cursorBlinkTimer
 0x4de344,u32,g_menuCamX

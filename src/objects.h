@@ -5,7 +5,7 @@
 #define g_chatLine ((char *)IMG(0x9dc92c))   /* char[1024]; the chat line being typed (memset 0x400) */
 #define g_joinedTitleName ((char *)IMG(0x9dd570))   /* char[54]; the joined game's title record (laid out as 0x4de700): the name, then the level / points / rating words from +0x1e (g_joinedTitleLevel ..; a password strcpy'd over them, 12 at most), up to the registry's next copy at 0x9dd5a6 */
 #define g_titleName ((char *)IMG(0x4de700))   /* char[30]; the title record's name (+0x1e the level: g_titleLevel) */
-#define g_accountForm ((u8 *)IMG(0x9dd1d8))   /* u8[94]; the account / login form: the name (+0; 30); the password (+0x1e; 12); its repeat (+0x2a; 12); the e-mail (+0x36; 40). One clear of 0x54 bytes spans the fields and copies run on from the name: one record */
+#define g_accountForm ((u8 *)IMG(0x9dd1d8))   /* u8[94]; the account / Ladder login / new-ID forms' fields: the name (+0; 30); the password (+0x1e; 12); its repeat (+0x2a; 12); the e-mail (+0x36; 40). One clear of 0x54 bytes spans the fields and copies run on from the name: one record */
 #define g_accountName ((char *)(g_accountForm + 0))
 #define g_accountPassword ((char *)(g_accountForm + 0x1e))
 #define g_accountPasswordRepeat ((char *)(g_accountForm + 0x2a))
@@ -227,14 +227,14 @@
 #define g_setupOptionsRects ((int *)IMG(0x4ddde0))   /* int[36]; setupOptions_hitTest's 9 hit rectangles (hit_tests.c) */
 #define g_setupControlRects ((int *)IMG(0x4ddea8))   /* int[72]; setupControl_hitTest's 18 hit rectangles (hit_tests.c) */
 #define g_gameListRects ((int *)IMG(0x9dcd48))   /* int[60]; gameList_hitTest's 15 hit rectangles (hit_tests.c) */
-#define g_loginFormRects ((int *)IMG(0x9dce50))   /* int[28]; loginForm_hitTest's 7 hit rectangles (hit_tests.c) */
+#define g_newIdFormRects ((int *)IMG(0x9dce50))   /* int[28]; newIdForm_hitTest's 7 hit rectangles (hit_tests.c) */
 #define g_gameListStopRects ((int *)IMG(0x9dd308))   /* int[4]; gameListStop_hitTest's 1 hit rectangles (hit_tests.c) */
 #define g_leaveDialogRects ((int *)IMG(0x9dd390))   /* int[8]; leaveDialog_hitTest's 2 hit rectangles (hit_tests.c) */
 #define g_popupRects ((int *)IMG(0x9dd3b8))   /* int[8]; popup_hitTest's 2 hit rectangles (hit_tests.c) */
 #define g_accountRects ((int *)IMG(0x9dd400))   /* int[24]; account_hitTest's 6 hit rectangles (hit_tests.c) */
 #define g_rankingRects ((int *)IMG(0x9dd4c0))   /* int[36]; ranking_hitTest's 9 hit rectangles (hit_tests.c) */
 #define g_roomSettingsRects ((int *)IMG(0x9dd6f8))   /* int[56]; roomSettings_hitTest's 14 hit rectangles (hit_tests.c) */
-#define g_createDialogRects ((int *)IMG(0x9dd7e0))   /* int[20]; createDialog_hitTest's 5 hit rectangles (hit_tests.c) */
+#define g_roomLoginRects ((int *)IMG(0x9dd7e0))   /* int[20]; roomLogin_hitTest's 5 hit rectangles (hit_tests.c) */
 #define g_replaySelectRects ((int *)IMG(0x9dd950))   /* int[72]; replaySelect_hitTest's 18 hit rectangles (hit_tests.c) */
 #define g_skirmishSettingsRects ((int *)IMG(0x9ef220))   /* int[40]; skirmishSettings_hitTest's 10 hit rectangles (hit_tests.c) */
 #define g_briefingRects ((int *)IMG(0x9f16c0))   /* int[16]; briefing_hitTest's 4 hit rectangles (hit_tests.c) */
@@ -422,8 +422,8 @@
 #define g_profileList ((char *)(g_profiles + 4))   /* a profile's name: +4 in g_profiles' records (0x48 apart) */
 #define g_saveFileNames ((char *)IMG(0x9f1ac4))   /* char[8192]; profile_scanSaves' *.axs names (0x40 apart; strcpy of any count: held) */
 #define g_roomTextAndRows ((u8 *)IMG(0x9dcee8))   /* u8[684]; the room's typed password text (+0; 8 bytes cleared; a strcpy of the chat line) and the room list's ten 0x44-byte rows from +4 (to 0x9dd194): the two overlap in the original */
-#define g_roomMessageText (*(int *)g_roomTextAndRows)   /* the typed password (text from here) */
-#define g_roomMessageText4 (*(int *)(g_roomTextAndRows + 4))   /* the rows' start (cleared with the text) */
+#define g_roomJoinPassword (*(int *)g_roomTextAndRows)   /* the typed password (text from here) */
+#define g_roomJoinPassword4 (*(int *)(g_roomTextAndRows + 4))   /* the rows' start (cleared with the text) */
 #define g_roomListRows ((RankRow *)(g_roomTextAndRows + 4))   /* RankRow[10] */
 #define g_roomDialogBox ((int *)IMG(0x9dd1a0))   /* int[4]; the room's server dialog box (room_openDialog58; popup_layout) */
 #define g_roomMechKept ((u8 *)IMG(0x9dd260))   /* u8[11]; the room record's mech parts kept (lobby_states) */

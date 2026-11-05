@@ -4,7 +4,7 @@
 0x9dd388,int,g_editingFragLimit
 0x9dd568,int,g_editingTimeLimit
 0x9dd6d0,int,g_unusedAccountWord
-0x9dd6ec,int,g_loginFormTop
+0x9dd6ec,int,g_newIdFormTop
 0x4dbaf4,u32,g_unusedArenaCamWord
 0x9dd848,u32,g_unusedRoomCamWord
 0x4dd560,double,g_unusedClock1

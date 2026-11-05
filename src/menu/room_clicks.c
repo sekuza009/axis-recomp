@@ -38,13 +38,13 @@ void (popup_clicks)(void)
 	}
 }
 
-/* 0x434da0: start the chat line (the password typed) when the game picked (g_localPlayer) is locked */
-void (room_startChat)(void)
+/* 0x434da0: the join password asked for (room_editJoinPassword) when the game picked (g_localPlayer) is locked */
+void (room_askJoinPassword)(void)
 {
-	g_roomChatting = 0;
+	g_roomJoinNeedsPassword = 0;
 	if (g_sessionList[g_localPlayer].locked != 0) {
-		g_roomChatting = 1;
-		field_editMessage();
+		g_roomJoinNeedsPassword = 1;
+		room_editJoinPassword();
 	}
 }
 
@@ -80,13 +80,13 @@ void (room_drawWhiteFade)(void)
 	menu_drawRect(0, 0, g_screenW, g_screenH, 1);
 }
 
-/* 0x405200 (arena_chatLine): the arena screen's chat line, the same way (flag 0x4db8bc, its message field) */
-void (arena_chatLine)(void)
+/* 0x405200 (arena_askJoinPassword): the arena screen's chat line, the same way (flag 0x4db8bc, its message field) */
+void (arena_askJoinPassword)(void)
 {
-	g_arenaJoining = 0;
+	g_arenaJoinNeedsPassword = 0;
 	if (g_sessionList[g_localPlayer].locked != 0) {
-		g_arenaJoining = 1;
-		arena_editMessage();
+		g_arenaJoinNeedsPassword = 1;
+		arena_editJoinPassword();
 	}
 }
 
@@ -173,18 +173,18 @@ u32 (room_leftClicks)(void)
 		return open;
 	if (!g_mouseClick)
 		return 0;
-	u32 button = ((u32)createDialog_hitTest(g_mouseX, g_mouseY));
+	u32 button = ((u32)roomLogin_hitTest(g_mouseX, g_mouseY));
 	u32 r;
 	switch (button) {
 	case 0:
 		chat_closeEdit();
-		r = field_editGameName();       /* field_editGameName */
-		g_typingRoomName = 1;
+		r = roomLogin_editId();       /* roomLogin_editId */
+		g_lineToLoginId = 1;
 		return r;
 	case 1:
 		chat_closeEdit();
-		r = field_editGamePassword();       /* field_editGamePassword */
-		g_typingRoomPassword = 1;
+		r = roomLogin_editPassword();       /* roomLogin_editPassword */
+		g_lineToLoginPassword = 1;
 		return r;
 	case 2:
 		if ((open = (*(u32 *)&g_roomLoginDue)))
@@ -521,8 +521,8 @@ u32 (ranking_page)(void)
 u32 (login_send)(void)
 {
 	typing_end();
-	g_typingGameName = 0;
-	g_typingGamePassword = 0;
+	g_typingLoginId = 0;
+	g_typingLoginPassword = 0;
 	g_inputLineHidden = 0;
 	g_textFieldOpen = 0;
 	const char *name = g_accountName, *password = g_accountPassword;
@@ -595,7 +595,7 @@ u32 (ranking_clicks)(void)
 
 /* 0x436400: the game room's settings page clicked (no field being typed in, room modes other than 0 / 1, no message
    box; a right click closes the page). Buttons (roomSettings_hitTest): 0 / 1 type the room's name or password
-   (field_editComment / 433a80), 3 the players +2 (4 .. 16, then 2), 5 the game type on (with a turn key held back) through
+   (room_editName / 433a80), 3 the players +2 (4 .. 16, then 2), 5 the game type on (with a turn key held back) through
    0 .. 9, 6 / 7 the frag and time limits +5 (up to 50 / 60, then 5), 8 start (room_announceGame; not while connecting),
    9 close, 11 / 2, 10, 12 the map back / on (room_stepMap), 13 the map list (mapList_startEdit). Returns what the original
    leaves in eax (for the byte settings, its low byte the new value) */
@@ -619,9 +619,9 @@ u32 (room_settingsClicks)(void)
 	u32 r;
 	switch (button) {
 	case 0:
-		return field_editComment();   /* field_editComment */
+		return room_editName();   /* room_editName */
 	case 1:
-		return field_editPassword();   /* field_editPassword */
+		return room_editPassword();   /* room_editPassword */
 	case 2: case 10: case 12:
 		return room_stepMap(1);   /* room_stepMap: the next map */
 	case 11:
@@ -844,7 +844,7 @@ static int login_buttons(void)
 {
 	int button = -1;
 	if (input_justPressed(g_dikEnter) == 1)
-		button = loginForm_hitTest(g_mouseX, g_mouseY);   /* loginForm_hitTest */
+		button = newIdForm_hitTest(g_mouseX, g_mouseY);   /* newIdForm_hitTest */
 	if (button != 4 && button != 5) {
 		if (input_justPressed(g_keyOk) == 1)
 			button = 4;
@@ -877,7 +877,7 @@ void (loginDialog_keys)(void)
 		g_fieldStep = 10;
 	if (g_fieldStep == 20) {
 		if (g_loginField == 1)
-			login_field(2, g_loginFormLeft + 0x172, g_loginFormBottom - 0x30);
+			login_field(2, g_newIdFormLeft + 0x172, g_newIdFormBottom - 0x30);
 		else if (g_loginField == 2) {
 			g_typingAccountName = 1;
 			g_typingAccountPassword = 0;
@@ -889,7 +889,7 @@ void (loginDialog_keys)(void)
 			g_typingAccountEmail = 1;
 			login_field(0, g_roomLoginLeft + 0x15c, g_roomLoginTop + 0xd4);
 		} else if (g_loginField == 2)
-			login_field(1, g_loginFormLeft + 0xaa, g_loginFormBottom - 0x30);
+			login_field(1, g_newIdFormLeft + 0xaa, g_newIdFormBottom - 0x30);
 	}
 }
 #undef g_loginField

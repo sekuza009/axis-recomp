@@ -97,7 +97,7 @@ int g_arenaNameDialogRects_v[24] __attribute__((aligned(16)));   /* 0x4db588 */
 int g_createArenaRects_v[64] __attribute__((aligned(16)));   /* 0x4db5e8 */
 int g_createArena2Rects_v[8] __attribute__((aligned(16)));   /* 0x4db6e8 */
 u8 g_arenaJoinPending_v[4] __attribute__((aligned(16)));   /* 0x4db708 */
-u8 g_editingArenaMessage_v[4] __attribute__((aligned(16)));   /* 0x4db70c */
+u8 g_typingArenaJoinPassword_v[4] __attribute__((aligned(16)));   /* 0x4db70c */
 u8 g_arenaJoinRow_v[4] __attribute__((aligned(16)));   /* 0x4db710 */
 u8 g_arenaFull_v[4] __attribute__((aligned(16)));   /* 0x4db714 */
 u8 g_lobbyConnectionOpen_v[4] __attribute__((aligned(16)));   /* 0x4db718 */
@@ -114,7 +114,7 @@ char g_teamNames_v[60] __attribute__((aligned(16)));   /* 0x4db860 */
 u32 g_arenaDim_v[4] __attribute__((aligned(16)));   /* 0x4db8a0 */
 u8 g_arenaConfirming_v[4] __attribute__((aligned(16)));   /* 0x4db8b4 */
 u8 g_lobbyRefreshing_v[4] __attribute__((aligned(16)));   /* 0x4db8b8 */
-u8 g_arenaJoining_v[4] __attribute__((aligned(16)));   /* 0x4db8bc */
+u8 g_arenaJoinNeedsPassword_v[4] __attribute__((aligned(16)));   /* 0x4db8bc */
 u8 g_arenaGameListLeft_v[4] __attribute__((aligned(16)));   /* 0x4db8c8 */
 u8 g_arenaGameListTop_v[4] __attribute__((aligned(16)));   /* 0x4db8cc */
 u8 g_arenaGameListRight_v[4] __attribute__((aligned(16)));   /* 0x4db8d0 */
@@ -681,7 +681,7 @@ u8 g_typedLength_v[4] __attribute__((aligned(16)));   /* 0x9dcd30 */
 u8 g_gameListClickTimer_v[4] __attribute__((aligned(16)));   /* 0x9dcd40 */
 int g_gameListRects_v[60] __attribute__((aligned(16)));   /* 0x9dcd48 */
 u8 g_roomMode_v[4] __attribute__((aligned(16)));   /* 0x9dce48 */
-int g_loginFormRects_v[28] __attribute__((aligned(16)));   /* 0x9dce50 */
+int g_newIdFormRects_v[28] __attribute__((aligned(16)));   /* 0x9dce50 */
 u32 g_roomBright_v[4] __attribute__((aligned(16)));   /* 0x9dcec0 */
 u8 g_retypePassword_v[4] __attribute__((aligned(16)));   /* 0x9dced0 */
 int g_roomMessageRect_v[4] __attribute__((aligned(16)));   /* 0x9dced8 */
@@ -692,7 +692,7 @@ u8 g_unusedRoomWord_v[4] __attribute__((aligned(16)));   /* 0x9dd1b0 */
 u8 g_roomListPrevPage_v[4] __attribute__((aligned(16)));   /* 0x9dd1b4 */
 int g_roomForm_v[4] __attribute__((aligned(16)));   /* 0x9dd1b8 */
 u8 g_roomLoginDue_v[4] __attribute__((aligned(16)));   /* 0x9dd1c8 */
-u8 g_typingRoomName_v[4] __attribute__((aligned(16)));   /* 0x9dd1cc */
+u8 g_lineToLoginId_v[4] __attribute__((aligned(16)));   /* 0x9dd1cc */
 u8 g_rankingSort_v[4] __attribute__((aligned(16)));   /* 0x9dd1d0 */
 u8 g_accountForm_v[94] __attribute__((aligned(16)));   /* 0x9dd1d8 */
 int g_pilotStatsKept_v[8] __attribute__((aligned(16)));   /* 0x9dd240 */
@@ -722,7 +722,7 @@ u8 g_editingAccountPassword_v[4] __attribute__((aligned(16)));   /* 0x9dd37c */
 u8 g_editingRoomName_v[4] __attribute__((aligned(16)));   /* 0x9dd380 */
 u8 g_roomListDistanceLimit_v[4] __attribute__((aligned(16)));   /* 0x9dd384 */
 u8 g_editingFragLimit_v[4] __attribute__((aligned(16)));   /* 0x9dd388 */
-u8 g_typingGamePassword_v[4] __attribute__((aligned(16)));   /* 0x9dd38c */
+u8 g_typingLoginPassword_v[4] __attribute__((aligned(16)));   /* 0x9dd38c */
 int g_leaveDialogRects_v[8] __attribute__((aligned(16)));   /* 0x9dd390 */
 u8 g_rankingHaveList_v[4] __attribute__((aligned(16)));   /* 0x9dd3b0 */
 int g_popupRects_v[8] __attribute__((aligned(16)));   /* 0x9dd3b8 */
@@ -751,24 +751,24 @@ u8 g_roomSearching_v[4] __attribute__((aligned(16)));   /* 0x9dd6a0 */
 u8 g_roomAnswerAwaited_v[4] __attribute__((aligned(16)));   /* 0x9dd6a4 */
 u8 g_editingRoomPassword_v[4] __attribute__((aligned(16)));   /* 0x9dd6a8 */
 u8 g_roomListPage_v[4] __attribute__((aligned(16)));   /* 0x9dd6ac */
-u8 g_typingRoomPassword_v[4] __attribute__((aligned(16)));   /* 0x9dd6b0 */
-u8 g_roomChatting_v[4] __attribute__((aligned(16)));   /* 0x9dd6b4 */
+u8 g_lineToLoginPassword_v[4] __attribute__((aligned(16)));   /* 0x9dd6b0 */
+u8 g_roomJoinNeedsPassword_v[4] __attribute__((aligned(16)));   /* 0x9dd6b4 */
 u8 g_rankingWaiting_v[4] __attribute__((aligned(16)));   /* 0x9dd6b8 */
 u8 g_roomPanelBrightness_v[4] __attribute__((aligned(16)));   /* 0x9dd6bc */
 u8 g_roomListRefreshTimer_v[4] __attribute__((aligned(16)));   /* 0x9dd6c0 */
 u8 g_roomPopup_v[4] __attribute__((aligned(16)));   /* 0x9dd6c4 */
-u8 g_joinPasswordTyped_v[4] __attribute__((aligned(16)));   /* 0x9dd6c8 */
+u8 g_typingRoomJoinPassword_v[4] __attribute__((aligned(16)));   /* 0x9dd6c8 */
 u8 g_typingAccountEmail_v[4] __attribute__((aligned(16)));   /* 0x9dd6cc */
 u8 g_unusedAccountWord_v[4] __attribute__((aligned(16)));   /* 0x9dd6d0 */
 u8 g_roomAwaitingServer_v[4] __attribute__((aligned(16)));   /* 0x9dd6d4 */
-u8 g_loginFormLeft_v[4] __attribute__((aligned(16)));   /* 0x9dd6e8 */
-u8 g_loginFormTop_v[4] __attribute__((aligned(16)));   /* 0x9dd6ec */
-u8 g_loginFormBottom_v[4] __attribute__((aligned(16)));   /* 0x9dd6f4 */
+u8 g_newIdFormLeft_v[4] __attribute__((aligned(16)));   /* 0x9dd6e8 */
+u8 g_newIdFormTop_v[4] __attribute__((aligned(16)));   /* 0x9dd6ec */
+u8 g_newIdFormBottom_v[4] __attribute__((aligned(16)));   /* 0x9dd6f4 */
 int g_roomSettingsRects_v[56] __attribute__((aligned(16)));   /* 0x9dd6f8 */
 u8 g_roomDialogOpen_v[4] __attribute__((aligned(16)));   /* 0x9dd7d8 */
 u8 g_rankingLast_v[4] __attribute__((aligned(16)));   /* 0x9dd7dc */
-int g_createDialogRects_v[20] __attribute__((aligned(16)));   /* 0x9dd7e0 */
-u8 g_typingGameName_v[4] __attribute__((aligned(16)));   /* 0x9dd830 */
+int g_roomLoginRects_v[20] __attribute__((aligned(16)));   /* 0x9dd7e0 */
+u8 g_typingLoginId_v[4] __attribute__((aligned(16)));   /* 0x9dd830 */
 u8 g_roomState_v[4] __attribute__((aligned(16)));   /* 0x9dd834 */
 u8 g_roomRequestOut_v[4] __attribute__((aligned(16)));   /* 0x9dd838 */
 u8 g_rankingFirst_v[4] __attribute__((aligned(16)));   /* 0x9dd83c */
@@ -1267,7 +1267,7 @@ const DataPiece g_splitObjects[] = {
 	{ 0x4db5e8, g_createArenaRects_v, 256 },
 	{ 0x4db6e8, g_createArena2Rects_v, 32 },
 	{ 0x4db708, g_arenaJoinPending_v, 4 },
-	{ 0x4db70c, g_editingArenaMessage_v, 4 },
+	{ 0x4db70c, g_typingArenaJoinPassword_v, 4 },
 	{ 0x4db710, g_arenaJoinRow_v, 4 },
 	{ 0x4db714, g_arenaFull_v, 4 },
 	{ 0x4db718, g_lobbyConnectionOpen_v, 4 },
@@ -1284,7 +1284,7 @@ const DataPiece g_splitObjects[] = {
 	{ 0x4db8a0, g_arenaDim_v, 16 },
 	{ 0x4db8b4, g_arenaConfirming_v, 4 },
 	{ 0x4db8b8, g_lobbyRefreshing_v, 4 },
-	{ 0x4db8bc, g_arenaJoining_v, 4 },
+	{ 0x4db8bc, g_arenaJoinNeedsPassword_v, 4 },
 	{ 0x4db8c8, g_arenaGameListLeft_v, 4 },
 	{ 0x4db8cc, g_arenaGameListTop_v, 4 },
 	{ 0x4db8d0, g_arenaGameListRight_v, 4 },
@@ -1851,7 +1851,7 @@ const DataPiece g_splitObjects[] = {
 	{ 0x9dcd40, g_gameListClickTimer_v, 4 },
 	{ 0x9dcd48, g_gameListRects_v, 240 },
 	{ 0x9dce48, g_roomMode_v, 4 },
-	{ 0x9dce50, g_loginFormRects_v, 112 },
+	{ 0x9dce50, g_newIdFormRects_v, 112 },
 	{ 0x9dcec0, g_roomBright_v, 16 },
 	{ 0x9dced0, g_retypePassword_v, 4 },
 	{ 0x9dced8, g_roomMessageRect_v, 16 },
@@ -1862,7 +1862,7 @@ const DataPiece g_splitObjects[] = {
 	{ 0x9dd1b4, g_roomListPrevPage_v, 4 },
 	{ 0x9dd1b8, g_roomForm_v, 16 },
 	{ 0x9dd1c8, g_roomLoginDue_v, 4 },
-	{ 0x9dd1cc, g_typingRoomName_v, 4 },
+	{ 0x9dd1cc, g_lineToLoginId_v, 4 },
 	{ 0x9dd1d0, g_rankingSort_v, 4 },
 	{ 0x9dd1d8, g_accountForm_v, 94 },
 	{ 0x9dd240, g_pilotStatsKept_v, 32 },
@@ -1892,7 +1892,7 @@ const DataPiece g_splitObjects[] = {
 	{ 0x9dd380, g_editingRoomName_v, 4 },
 	{ 0x9dd384, g_roomListDistanceLimit_v, 4 },
 	{ 0x9dd388, g_editingFragLimit_v, 4 },
-	{ 0x9dd38c, g_typingGamePassword_v, 4 },
+	{ 0x9dd38c, g_typingLoginPassword_v, 4 },
 	{ 0x9dd390, g_leaveDialogRects_v, 32 },
 	{ 0x9dd3b0, g_rankingHaveList_v, 4 },
 	{ 0x9dd3b8, g_popupRects_v, 32 },
@@ -1921,24 +1921,24 @@ const DataPiece g_splitObjects[] = {
 	{ 0x9dd6a4, g_roomAnswerAwaited_v, 4 },
 	{ 0x9dd6a8, g_editingRoomPassword_v, 4 },
 	{ 0x9dd6ac, g_roomListPage_v, 4 },
-	{ 0x9dd6b0, g_typingRoomPassword_v, 4 },
-	{ 0x9dd6b4, g_roomChatting_v, 4 },
+	{ 0x9dd6b0, g_lineToLoginPassword_v, 4 },
+	{ 0x9dd6b4, g_roomJoinNeedsPassword_v, 4 },
 	{ 0x9dd6b8, g_rankingWaiting_v, 4 },
 	{ 0x9dd6bc, g_roomPanelBrightness_v, 4 },
 	{ 0x9dd6c0, g_roomListRefreshTimer_v, 4 },
 	{ 0x9dd6c4, g_roomPopup_v, 4 },
-	{ 0x9dd6c8, g_joinPasswordTyped_v, 4 },
+	{ 0x9dd6c8, g_typingRoomJoinPassword_v, 4 },
 	{ 0x9dd6cc, g_typingAccountEmail_v, 4 },
 	{ 0x9dd6d0, g_unusedAccountWord_v, 4 },
 	{ 0x9dd6d4, g_roomAwaitingServer_v, 4 },
-	{ 0x9dd6e8, g_loginFormLeft_v, 4 },
-	{ 0x9dd6ec, g_loginFormTop_v, 4 },
-	{ 0x9dd6f4, g_loginFormBottom_v, 4 },
+	{ 0x9dd6e8, g_newIdFormLeft_v, 4 },
+	{ 0x9dd6ec, g_newIdFormTop_v, 4 },
+	{ 0x9dd6f4, g_newIdFormBottom_v, 4 },
 	{ 0x9dd6f8, g_roomSettingsRects_v, 224 },
 	{ 0x9dd7d8, g_roomDialogOpen_v, 4 },
 	{ 0x9dd7dc, g_rankingLast_v, 4 },
-	{ 0x9dd7e0, g_createDialogRects_v, 80 },
-	{ 0x9dd830, g_typingGameName_v, 4 },
+	{ 0x9dd7e0, g_roomLoginRects_v, 80 },
+	{ 0x9dd830, g_typingLoginId_v, 4 },
 	{ 0x9dd834, g_roomState_v, 4 },
 	{ 0x9dd838, g_roomRequestOut_v, 4 },
 	{ 0x9dd83c, g_rankingFirst_v, 4 },

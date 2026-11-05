@@ -620,7 +620,7 @@ typedef struct { float r, g, b, a; } Colour;
 #define leaveDialog_hitTest(x, y) GAME_FN(leaveDialog_hitTest, 0x4321c0, int, int, int)(x, y)
 #define popup_hitTest(x, y) GAME_FN(popup_hitTest, 0x432280, int, int, int)(x, y)
 #define gameListStop_hitTest(x, y) GAME_FN(gameListStop_hitTest, 0x432340, int, int, int)(x, y)
-#define field_editMessage() GAME_FN(field_editMessage, 0x434320, void, void)()   /* open the message field */
+#define room_editJoinPassword() GAME_FN(room_editJoinPassword, 0x434320, void, void)()   /* open the message field */
 #define app_closeWindow(code) GAME_FN(app_closeWindow, 0x41e7a0, int, int)(code)   /* quit the game with exit code (app/app_quit.c) */
 #define PostMessageA(hwnd, msg, w, l) IMPORT(0x4a9328, int, void *, u32, u32, u32)(hwnd, msg, w, l)
 #define profile_loadSelectedColours() GAME_FN(profile_loadSelectedColours, 0x44bc50, void, void)()
@@ -925,7 +925,7 @@ typedef struct { float r, g, b, a; } Colour;
 #define sound_initSoundTable(file, volume) GAME_FN(sound_initSoundTable, 0x456d10, int, const char *, int)(file, volume)
 #define mciSendCommandA(device, msg, flags, params) IMPORT(0x4a9368, u32, u32, u32, u32, void *)(device, msg, flags, params)
 #define glRotatef_bits(angle, x, y, z) IMPORT(0x4a91f8, void, u32, u32, u32, u32)(angle, x, y, z)
-#define arena_editMessage() GAME_FN(arena_editMessage, 0x405010, void, void)()
+#define arena_editJoinPassword() GAME_FN(arena_editJoinPassword, 0x405010, void, void)()
 #define armc_freeRing(first) GAME_FN(tunnel_removeLastRing, 0x441190, void, void *)(first)   /* frees the last ring of the tunnel whose first is *first */
 #define game_returnToScreen400() GAME_FN(game_returnToScreen400, 0x41e9d0, void, void)()
 
@@ -1181,19 +1181,19 @@ typedef struct { float r, g, b, a; } Colour;
 
 #define room_copyJoinedSettings() GAME_FN(room_copyJoinedSettings, 0x432be0, void, void)()   /* the joined game's settings into the room screen */
 #define room_takeReceivedSettings() GAME_FN(room_takeReceivedSettings, 0x432db0, void, void)()   /* a received game's settings into the room */
-#define field_editGameName() GAME_FN(field_editGameName, 0x433b00, u32, void)()   /* the game's name opened for typing */
-#define field_editGamePassword() GAME_FN(field_editGamePassword, 0x433bb0, u32, void)()   /* the game's password opened for typing */
+#define roomLogin_editId() GAME_FN(roomLogin_editId, 0x433b00, u32, void)()   /* the game's name opened for typing */
+#define roomLogin_editPassword() GAME_FN(roomLogin_editPassword, 0x433bb0, u32, void)()   /* the game's password opened for typing */
 #define chat_closeEdit() GAME_FN(chat_closeEdit, 0x433c70, void, void)()   /* the chat edit control closed, the line taken */
 #define login_send() GAME_FN(login_send, 0x434490, void, void)()   /* the login sent */
-#define loginForm_openField(k) GAME_FN(loginForm_openField, 0x433e60, int, int)(k)   /* the login form's field k opened for typing */
+#define newIdForm_openField(k) GAME_FN(newIdForm_openField, 0x433e60, int, int)(k)   /* the new-ID form's field k opened for typing */
 #define room_drawTunnel() GAME_FN(room_drawTunnel, 0x4388e0, void, void)()   /* the game room's tunnel */
 #define room_mergeReceivedSessions() GAME_FN(room_mergeReceivedSessions, 0x434ff0, void, void)()   /* the list of games asked for again */
 #define gameList_draw() GAME_FN(gameList_draw, 0x43adc0, void, void)()   /* the game room's list of games drawn */
 #define room_joinSession(i) GAME_FN(room_joinSession, 0x434dd0, u32, int)(i)   /* game i of the list joined */
 #define gameList_hitTest(x, y) GAME_FN(gameList_hitTest, 0x432300, int, int, int)(x, y)   /* the game list's control at (x, y) */
-#define room_startChat() GAME_FN(room_startChat, 0x434da0, void, void)()   /* the selected game joined */
+#define room_askJoinPassword() GAME_FN(room_askJoinPassword, 0x434da0, void, void)()   /* the selected game joined */
 #define gameList_open() GAME_FN(gameList_open, 0x434d00, int, void)()    /* the search asked for: 1 sent */
-#define createDialog_hitTest(x, y) GAME_FN(createDialog_hitTest, 0x432200, int, int, int)(x, y)   /* the create-game dialog's button at (x, y) */
+#define roomLogin_hitTest(x, y) GAME_FN(roomLogin_hitTest, 0x432200, int, int, int)(x, y)   /* the Ladder login dialog's button at (x, y) */
 #define room_openDialog4d() GAME_FN(room_openDialog4d, 0x4338c0, u32, void)()
 #define dplay_host(name, player, map, a, b, c, d, corp) GAME_FN(dplay_host, 0x453090, int, const void *, const char *, int, int, int, int, int, int)(name, player, map, a, b, c, d, corp)   /* the arena hosted: 0 failed */
 #define net_asyncSelect(hwnd, socket) GAME_FN(net_asyncSelect, 0x452170, int, void *, int)(hwnd, socket)
@@ -1222,7 +1222,7 @@ typedef struct { float r, g, b, a; } Colour;
 #define arena_openSession(kind, host) GAME_FN(arena_openSession, 0x452ec0, int, u32, const char *)(kind, host)   /* a DirectPlay slot opened */
 #define lobby_openConnection() GAME_FN(lobby_openConnection, 0x4060f0, int, void)()   /* the lobby server connection opened: 1 done */
 #define arenaGameList_hitTest(x, y) GAME_FN(arenaGameList_hitTest, 0x4044a0, int, int, int)(x, y)   /* the arena lobby's button under (x, y), -1 none */
-#define arena_chatLine() GAME_FN(arena_chatLine, 0x405200, void, void)()   /* the arena screen's chat line opened */
+#define arena_askJoinPassword() GAME_FN(arena_askJoinPassword, 0x405200, void, void)()   /* the arena screen's chat line opened */
 #define arena_editTitle() GAME_FN(arena_editTitle, 0x405230, void, void)()   /* the arena title's edit field opened */
 #define menu_showMessage(i) GAME_FN(menu_showMessage, 0x41ee40, u32, int)(i)   /* message i in the message box */
 #define reg_writeCharacterSettings() GAME_FN(reg_writeCharacterSettings, 0x432400, u32, void)()

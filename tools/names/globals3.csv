@@ -33,8 +33,8 @@
 0x9dd1b4,int,g_roomListPrevPage
 0x9dd300,int,g_roomListPrev
 0x9dd198,int,g_loginToSend
-0x9dd830,int,g_typingGameName
-0x9dd38c,int,g_typingGamePassword
+0x9dd830,int,g_typingLoginId
+0x9dd38c,int,g_typingLoginPassword
 0x9dd7dc,int,g_rankingLast
 0x9f900c,int,g_profileRowClicked
 # network

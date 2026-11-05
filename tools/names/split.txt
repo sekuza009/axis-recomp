@@ -101,7 +101,7 @@ g_displayModeChanged
 g_displayModeLeft
 g_dplay
 g_dplaySessionCount
-g_editingArenaMessage
+g_typingArenaJoinPassword
 g_enteringMenus
 g_errorCleanupHook
 g_errorLogging
@@ -216,7 +216,7 @@ g_timerFirstCall
 g_timerRepeatCount
 g_tunnelRings
 g_typedLength
-g_typingGameName
+g_typingLoginId
 g_undoDepth
 g_unusedArmcMoveWord
 g_unusedArmcWord1
@@ -255,7 +255,7 @@ g_ladderMenuTextures
 g_spiralTextures
 g_searchResult
 # globals whose addresses are only in reviewed tables (tools/names/split_tables_ok.txt), 2026-11-01
-g_arenaJoining
+g_arenaJoinNeedsPassword
 g_arenaLeaving
 g_arenaListRefreshTimer
 g_arenaSearchClock
@@ -443,7 +443,7 @@ g_gameServerStatus
 g_itemBonusLockOn
 g_itemBonusRechargeTime
 g_itemBonusTargetKeep
-g_joinPasswordTyped
+g_typingRoomJoinPassword
 g_languageId
 g_lobbyConnectStatus
 g_lobbyJoinRequest
@@ -451,8 +451,8 @@ g_lobbyJoinStarted
 g_lobbyPanelsOff
 g_lobbyPending
 g_lobbyStatus
-g_loginFormBottom
-g_loginFormLeft
+g_newIdFormBottom
+g_newIdFormLeft
 g_mouseWheel
 g_mouseWheelTurned
 g_netQueueOnline
@@ -463,7 +463,7 @@ g_rankingWaiting
 g_receivedSession
 g_roomAnswerAwaited
 g_roomAwaitingServer
-g_roomChatting
+g_roomJoinNeedsPassword
 g_roomConnected
 g_roomGameListBottom
 g_roomGameListLeft
@@ -491,8 +491,8 @@ g_typingAccountName
 g_typingAccountPassword
 g_typingAccountRepeat
 g_typingArenaPassword
-g_typingGamePassword
-g_typingRoomPassword
+g_typingLoginPassword
+g_lineToLoginPassword
 g_unusedArmcWord4
 g_unusedActive
 g_unusedLoginWord
@@ -609,7 +609,7 @@ g_startedFromLobby
 g_timeLimit
 g_timerHigh
 g_tunnelFlyingIn
-g_typingRoomName
+g_lineToLoginId
 g_unusedMainMenuWord
 g_unusedReplayListWord1
 # the pilot save record, ARM CENTER view points, menu frame textures (objects13.csv), whole
@@ -726,14 +726,14 @@ g_setupSliderRects
 g_setupOptionsRects
 g_setupControlRects
 g_gameListRects
-g_loginFormRects
+g_newIdFormRects
 g_gameListStopRects
 g_leaveDialogRects
 g_popupRects
 g_accountRects
 g_rankingRects
 g_roomSettingsRects
-g_createDialogRects
+g_roomLoginRects
 g_replaySelectRects
 g_skirmishSettingsRects
 g_briefingRects
@@ -1151,7 +1151,7 @@ g_fatalReported
 g_editingFragLimit
 g_editingTimeLimit
 g_unusedAccountWord
-g_loginFormTop
+g_newIdFormTop
 g_unusedArenaCamWord
 g_unusedRoomCamWord
 g_unusedClock1

@@ -804,7 +804,7 @@ u32 (armc_colourScreenInput)(void)
 		return 0;
 	u32 button = armcColour_hitTest(g_mouseX, g_mouseY);   /* armcColour_hitTest */
 	static const u32 page[3] = { FN_ADDR(armc_showPartsPage, 0x40f200), FN_ADDR(armc_openWeaponsPage, 0x40f220), FN_ADDR(armc_showColourPage, 0x40f320) };
-	static const u32 control[6] = { FN_ADDR(armc_dragPrimaryHue, 0x40f5d0), FN_ADDR(armc_dragPrimaryChroma, 0x40f670), FN_ADDR(armc_dragPrimaryValue, 0x40f6b0), FN_ADDR(armc_dragSecondaryHue, 0x40f6f0), FN_ADDR(armc_dragSecondaryChroma, 0x40f790), FN_ADDR(armc_dragSecondaryValue, 0x40f7e0) };
+	static const u32 control[6] = { FN_ADDR(armc_dragPrimaryHue, 0x40f5d0), FN_ADDR(armc_dragPrimarySaturation, 0x40f670), FN_ADDR(armc_dragPrimaryValue, 0x40f6b0), FN_ADDR(armc_dragSecondaryHue, 0x40f6f0), FN_ADDR(armc_dragSecondarySaturation, 0x40f790), FN_ADDR(armc_dragSecondaryValue, 0x40f7e0) };
 	u32 r;
 	switch (button) {
 	case 0: case 1: case 2:

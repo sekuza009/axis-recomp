@@ -23,8 +23,8 @@
 0x9dd36c,int,g_accountPanelTop
 0x9dd370,int,g_accountPanelRight
 0x9dd374,int,g_accountPanelBottom
-0x9dd6e8,int,g_loginFormLeft
-0x9dd6f4,int,g_loginFormBottom
+0x9dd6e8,int,g_newIdFormLeft
+0x9dd6f4,int,g_newIdFormBottom
 0x9dd908,int,g_replaySelectLeft
 0x9dd90c,int,g_replaySelectTop
 0x9dd910,int,g_replaySelectRight

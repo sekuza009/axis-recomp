@@ -425,9 +425,9 @@ extern int g_createArena2Rects_v[8];
 extern u8 g_arenaJoinPending_v[4];
 #endif
 #ifdef AXIS_FENCE
-#define g_editingArenaMessage_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xb4000 : g_fence + 0xb3ffc))
+#define g_typingArenaJoinPassword_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xb4000 : g_fence + 0xb3ffc))
 #else
-extern u8 g_editingArenaMessage_v[4];
+extern u8 g_typingArenaJoinPassword_v[4];
 #endif
 #ifdef AXIS_FENCE
 #define g_arenaJoinRow_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xb6000 : g_fence + 0xb5ffc))
@@ -510,9 +510,9 @@ extern u8 g_arenaConfirming_v[4];
 extern u8 g_lobbyRefreshing_v[4];
 #endif
 #ifdef AXIS_FENCE
-#define g_arenaJoining_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xd6000 : g_fence + 0xd5ffc))
+#define g_arenaJoinNeedsPassword_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xd6000 : g_fence + 0xd5ffc))
 #else
-extern u8 g_arenaJoining_v[4];
+extern u8 g_arenaJoinNeedsPassword_v[4];
 #endif
 #ifdef AXIS_FENCE
 #define g_arenaGameListLeft_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xd8000 : g_fence + 0xd7ffc))
@@ -3345,9 +3345,9 @@ extern int g_gameListRects_v[60];
 extern u8 g_roomMode_v[4];
 #endif
 #ifdef AXIS_FENCE
-#define g_loginFormRects_v ((int *)(AXIS_FENCE == 2 ? g_fence + 0xa36000 : g_fence + 0xa35f90))
+#define g_newIdFormRects_v ((int *)(AXIS_FENCE == 2 ? g_fence + 0xa36000 : g_fence + 0xa35f90))
 #else
-extern int g_loginFormRects_v[28];
+extern int g_newIdFormRects_v[28];
 #endif
 #ifdef AXIS_FENCE
 #define g_roomBright_v ((u32 *)(AXIS_FENCE == 2 ? g_fence + 0xa38000 : g_fence + 0xa37ff0))
@@ -3400,9 +3400,9 @@ extern int g_roomForm_v[4];
 extern u8 g_roomLoginDue_v[4];
 #endif
 #ifdef AXIS_FENCE
-#define g_typingRoomName_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xa4c000 : g_fence + 0xa4bffc))
+#define g_lineToLoginId_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xa4c000 : g_fence + 0xa4bffc))
 #else
-extern u8 g_typingRoomName_v[4];
+extern u8 g_lineToLoginId_v[4];
 #endif
 #ifdef AXIS_FENCE
 #define g_rankingSort_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xa4e000 : g_fence + 0xa4dffc))
@@ -3550,9 +3550,9 @@ extern u8 g_roomListDistanceLimit_v[4];
 extern u8 g_editingFragLimit_v[4];
 #endif
 #ifdef AXIS_FENCE
-#define g_typingGamePassword_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xa88000 : g_fence + 0xa87ffc))
+#define g_typingLoginPassword_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xa88000 : g_fence + 0xa87ffc))
 #else
-extern u8 g_typingGamePassword_v[4];
+extern u8 g_typingLoginPassword_v[4];
 #endif
 #ifdef AXIS_FENCE
 #define g_leaveDialogRects_v ((int *)(AXIS_FENCE == 2 ? g_fence + 0xa8a000 : g_fence + 0xa89fe0))
@@ -3695,14 +3695,14 @@ extern u8 g_editingRoomPassword_v[4];
 extern u8 g_roomListPage_v[4];
 #endif
 #ifdef AXIS_FENCE
-#define g_typingRoomPassword_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xac2000 : g_fence + 0xac1ffc))
+#define g_lineToLoginPassword_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xac2000 : g_fence + 0xac1ffc))
 #else
-extern u8 g_typingRoomPassword_v[4];
+extern u8 g_lineToLoginPassword_v[4];
 #endif
 #ifdef AXIS_FENCE
-#define g_roomChatting_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xac4000 : g_fence + 0xac3ffc))
+#define g_roomJoinNeedsPassword_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xac4000 : g_fence + 0xac3ffc))
 #else
-extern u8 g_roomChatting_v[4];
+extern u8 g_roomJoinNeedsPassword_v[4];
 #endif
 #ifdef AXIS_FENCE
 #define g_rankingWaiting_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xac6000 : g_fence + 0xac5ffc))
@@ -3725,9 +3725,9 @@ extern u8 g_roomListRefreshTimer_v[4];
 extern u8 g_roomPopup_v[4];
 #endif
 #ifdef AXIS_FENCE
-#define g_joinPasswordTyped_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xace000 : g_fence + 0xacdffc))
+#define g_typingRoomJoinPassword_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xace000 : g_fence + 0xacdffc))
 #else
-extern u8 g_joinPasswordTyped_v[4];
+extern u8 g_typingRoomJoinPassword_v[4];
 #endif
 #ifdef AXIS_FENCE
 #define g_typingAccountEmail_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xad0000 : g_fence + 0xacfffc))
@@ -3745,19 +3745,19 @@ extern u8 g_unusedAccountWord_v[4];
 extern u8 g_roomAwaitingServer_v[4];
 #endif
 #ifdef AXIS_FENCE
-#define g_loginFormLeft_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xad6000 : g_fence + 0xad5ffc))
+#define g_newIdFormLeft_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xad6000 : g_fence + 0xad5ffc))
 #else
-extern u8 g_loginFormLeft_v[4];
+extern u8 g_newIdFormLeft_v[4];
 #endif
 #ifdef AXIS_FENCE
-#define g_loginFormTop_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xad8000 : g_fence + 0xad7ffc))
+#define g_newIdFormTop_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xad8000 : g_fence + 0xad7ffc))
 #else
-extern u8 g_loginFormTop_v[4];
+extern u8 g_newIdFormTop_v[4];
 #endif
 #ifdef AXIS_FENCE
-#define g_loginFormBottom_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xada000 : g_fence + 0xad9ffc))
+#define g_newIdFormBottom_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xada000 : g_fence + 0xad9ffc))
 #else
-extern u8 g_loginFormBottom_v[4];
+extern u8 g_newIdFormBottom_v[4];
 #endif
 #ifdef AXIS_FENCE
 #define g_roomSettingsRects_v ((int *)(AXIS_FENCE == 2 ? g_fence + 0xadc000 : g_fence + 0xadbf20))
@@ -3775,14 +3775,14 @@ extern u8 g_roomDialogOpen_v[4];
 extern u8 g_rankingLast_v[4];
 #endif
 #ifdef AXIS_FENCE
-#define g_createDialogRects_v ((int *)(AXIS_FENCE == 2 ? g_fence + 0xae2000 : g_fence + 0xae1fb0))
+#define g_roomLoginRects_v ((int *)(AXIS_FENCE == 2 ? g_fence + 0xae2000 : g_fence + 0xae1fb0))
 #else
-extern int g_createDialogRects_v[20];
+extern int g_roomLoginRects_v[20];
 #endif
 #ifdef AXIS_FENCE
-#define g_typingGameName_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xae4000 : g_fence + 0xae3ffc))
+#define g_typingLoginId_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xae4000 : g_fence + 0xae3ffc))
 #else
-extern u8 g_typingGameName_v[4];
+extern u8 g_typingLoginId_v[4];
 #endif
 #ifdef AXIS_FENCE
 #define g_roomState_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xae6000 : g_fence + 0xae5ffc))

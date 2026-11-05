@@ -119,7 +119,7 @@ void (mech_unpackFromRecord)(void)
 }
 
 /* 0x4463a0: the mech loaded from the profile record (0x9f19f8 ..): the parts, the weapons, the six colour pairs (a
-   negative or NaN chroma or value becomes 0 in the record first) */
+   negative or NaN saturation or value becomes 0 in the record first) */
 void (mech_loadFromProfile)(void)
 {
 	g_savedMechChest = g_profileMechChest;

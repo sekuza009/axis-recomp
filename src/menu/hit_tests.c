@@ -28,8 +28,8 @@ int (setupOptions_hitTest)(int x, int y) { return hit(x, y, g_setupOptionsRects,
 int (setupControl_hitTest)(int x, int y) { return hit(x, y, g_setupControlRects, 18); }   /* 0x4206f0 */
 int (setupSlider_hitTest)(int x, int y) { return hit(x, y, g_setupSliderRects, 3); }   /* 0x420730 */
 int (leaveDialog_hitTest)(int x, int y) { return hit(x, y, g_leaveDialogRects, 2); }   /* 0x4321c0 */
-int (createDialog_hitTest)(int x, int y) { return hit(x, y, g_createDialogRects, 5); }   /* 0x432200 */
-int (loginForm_hitTest)(int x, int y) { return hit(x, y, g_loginFormRects, 7); }   /* 0x432240 */
+int (roomLogin_hitTest)(int x, int y) { return hit(x, y, g_roomLoginRects, 5); }   /* 0x432200 */
+int (newIdForm_hitTest)(int x, int y) { return hit(x, y, g_newIdFormRects, 7); }   /* 0x432240 */
 int (popup_hitTest)(int x, int y) { return hit(x, y, g_popupRects, 2); }   /* 0x432280 */
 int (account_hitTest)(int x, int y) { return hit(x, y, g_accountRects, 6); }   /* 0x4322c0 */
 int (gameList_hitTest)(int x, int y) { return hit(x, y, g_gameListRects, 15); }   /* 0x432300 */

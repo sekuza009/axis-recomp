@@ -26,7 +26,7 @@ void THISCALL (shape_markMaterialsChanged)(void *shape)
 	}
 }
 
-/* 0x4665c0: each part's material recoloured (two hue, chroma, value triples) */
+/* 0x4665c0: each part's material recoloured (two hue, saturation, value triples) */
 void THISCALL (shape_recolourMaterials)(void *shape, u32 h1, u32 c1, u32 v1, u32 h2, u32 c2, u32 v2)
 {
 	for (int i = 0; i < PART_COUNT(shape); i++) {

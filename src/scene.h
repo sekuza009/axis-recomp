@@ -743,7 +743,7 @@ typedef struct AccountPacket {
 	char email[0x32];   /* +0x2e */
 	char address[16];   /* +0x60: this machine's (net_tables: request 26) */
 	u8 mech[11];   /* +0x70: the default mech settings (lobby_states default_mech) */
-	u8 colours[6][0x18];   /* +0x7b: six colour pairs (hue, chroma, value twice) */
+	u8 colours[6][0x18];   /* +0x7b: six colour pairs (hue, saturation, value twice) */
 } AccountPacket;
 
 /* the account form's fields as sent (g_netAccountBuffer: message 0x1c) */
@@ -950,7 +950,7 @@ typedef struct Manager {
 	i32 dataUsed;   /* +0x12c */
 	char textureDir[0x100];   /* +0x130: (shapes) the textures' place, given with bindArgs to shape_bindTextureBy */
 	u32 bindFlags;   /* +0x230: (shapes) given to shape_bindTextureBy with the tint; bit 1: tinted (shape_setTint) */
-	u32 tint[6];   /* +0x234: two hue / chroma / value triples (floats' bits) */
+	u32 tint[6];   /* +0x234: two hue / saturation / value triples (floats' bits) */
 } Manager;
 
 /* a skeleton manager (skel_data.c: skelSet_setup): Manager's first 0x130 bytes, without the textures and tint */

@@ -192,11 +192,11 @@ void (menuState800_enterGameRoom)(void)
 	g_joinedTitleLevel = 0;
 	g_joinedTitlePoints = 0;
 	g_joinedTitleRating = 0;
-	g_typingGameName = 0;
-	g_typingGamePassword = 1;
+	g_typingLoginId = 0;
+	g_typingLoginPassword = 1;
 	memset((void *)OBJ(g_roomMech), 0, 5);
-	g_typingRoomPassword = 1;
-	g_typingRoomName = 0;
+	g_lineToLoginPassword = 1;
+	g_lineToLoginId = 0;
 	g_loginToSend = 0;
 	room_copyJoinedSettings();
 	g_retypePassword = 1;

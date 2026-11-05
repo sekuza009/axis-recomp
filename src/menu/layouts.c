@@ -92,9 +92,9 @@ void (setupOptions_layout)(void)
 
 void (loginDialog_layout)(void)
 {
-	static const RArg a[4] = { RA(ADDR(g_loginFormLeft), 0x30, 0), RA(ADDR(g_loginFormTop), 0x30, 1), RA(ADDR(g_loginFormLeft), 0x210, 0), RA(ADDR(g_loginFormTop), 0x58, 1) };
-	static const RArg b[4] = { RA(ADDR(g_loginFormLeft), 0x5a, 1), RA(ADDR(g_loginFormBottom), -0x40, 0), RA(ADDR(g_loginFormLeft), 0xfa, 1), RA(ADDR(g_loginFormBottom), -0x20, 0) };
-	rect_spec(OBJ(g_loginFormRects), (OBJ(g_loginFormRects) + 0x40), 0x30, a); rect_spec((OBJ(g_loginFormRects) + 0x40), (OBJ(g_loginFormRects) + 0x60), 0xc8, b);
+	static const RArg a[4] = { RA(ADDR(g_newIdFormLeft), 0x30, 0), RA(ADDR(g_newIdFormTop), 0x30, 1), RA(ADDR(g_newIdFormLeft), 0x210, 0), RA(ADDR(g_newIdFormTop), 0x58, 1) };
+	static const RArg b[4] = { RA(ADDR(g_newIdFormLeft), 0x5a, 1), RA(ADDR(g_newIdFormBottom), -0x40, 0), RA(ADDR(g_newIdFormLeft), 0xfa, 1), RA(ADDR(g_newIdFormBottom), -0x20, 0) };
+	rect_spec(OBJ(g_newIdFormRects), (OBJ(g_newIdFormRects) + 0x40), 0x30, a); rect_spec((OBJ(g_newIdFormRects) + 0x40), (OBJ(g_newIdFormRects) + 0x60), 0xc8, b);
 }
 
 void (arenaNameDialog_layout)(void)
@@ -108,7 +108,7 @@ void (roomLogin_layout)(void)
 {
 	static const RArg a[4] = { RA(ADDR(g_roomLoginLeft), 0xb8, 0), RA(ADDR(g_roomLoginTop), 0x50, 1), RA(ADDR(g_roomLoginLeft), 0x1a8, 0), RA(ADDR(g_roomLoginTop), 0x70, 1) };
 	static const RArg b[4] = { RA(ADDR(g_roomLoginLeft), 0x30, 1), RA(ADDR(g_roomLoginBottom), -0x40, 0), RA(ADDR(g_roomLoginLeft), 0xa8, 1), RA(ADDR(g_roomLoginBottom), -0x18, 0) };
-	rect_spec(OBJ(g_createDialogRects), (OBJ(g_createDialogRects) + 0x20), 0x30, a); rect_spec((OBJ(g_createDialogRects) + 0x20), (OBJ(g_createDialogRects) + 0x20) + 3 * 16, 0xa0, b);
+	rect_spec(OBJ(g_roomLoginRects), (OBJ(g_roomLoginRects) + 0x20), 0x30, a); rect_spec((OBJ(g_roomLoginRects) + 0x20), (OBJ(g_roomLoginRects) + 0x20) + 3 * 16, 0xa0, b);
 }
 
 void (skirmish_layout)(void)
