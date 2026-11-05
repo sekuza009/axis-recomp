@@ -1405,7 +1405,7 @@ void (arenaGames_keys)(void)
    +0x10 g_ladderScore's value, +0x14 wins, +0x18 losses, +0x1c the win rate) ---- */
 #define R_POINTS g_ladderPoints
 #define R_RATING (*(float *)&g_ladderRating)
-#define R_OTHER g_ladderScore
+#define R_SCORE g_ladderScore
 #define R_WINS g_ladderWins
 #define R_LOSSES g_ladderLosses
 
@@ -1437,35 +1437,35 @@ static u32 take_back(u32 kept, u32 rate)
 		return rate;
 	R_POINTS = k->points;
 	R_LOSSES = k->losses;
-	R_OTHER = k->score;
+	R_SCORE = k->score;
 	R_WINS = k->wins;
 	rate = win_rate(R_WINS, R_LOSSES, 0);
 	rate_points(rate);
 	return rate;
 }
 
-/* the record into the packet (g_netPlayerRecordPacket: the name when asked, then the same fields from +0x1e) and both kept
+/* the record into the packet (g_netPlayerRecordPacket, a PlayerRecordPacket: the name when asked) and both kept
    copies, and sent to the game server (kind 0x11) */
 static void record_send(u32 rate, int name)
 {
-	u8 *packet = g_netPlayerRecordPacket;
+	PlayerRecordPacket *packet = (PlayerRecordPacket *)g_netPlayerRecordPacket;
 	if (name)
-		strcpy((char *)packet, g_ladderName);
-	*(int *)(packet + 0x1e) = R_OTHER;
-	*(int *)(packet + 0x22) = R_WINS;
-	*(int *)(packet + 0x26) = R_LOSSES;
-	*(int *)(packet + 0x2a) = R_POINTS;
-	*(float *)(packet + 0x32) = f32(fld_m(&R_RATING));
-	*(int *)(packet + 0x2e) = actor_levelFromValue(R_POINTS);
+		strcpy(packet->name, g_ladderName);
+	packet->score = R_SCORE;
+	packet->wins = R_WINS;
+	packet->losses = R_LOSSES;
+	packet->points = R_POINTS;
+	packet->rating = f32(fld_m(&R_RATING));
+	packet->level = actor_levelFromValue(R_POINTS);
 	static const u32 kept[2] = { ADDR(g_pilotLevel), ADDR(g_pilotLevelKept) };
 	for (int k = 0; k < 2; k++) {
-		GAME_VAR(int, kept[k] + 0x10) = R_OTHER;
-		GAME_VAR(int, kept[k] + 0x14) = R_WINS;
-		GAME_VAR(int, kept[k] + 0x18) = R_LOSSES;
-		GAME_VAR(int, kept[k] + 4) = R_POINTS;
-		GAME_VAR(int, kept[k]) = (signed char)actor_levelFromValue(R_POINTS);
-		GAME_VAR(u32, kept[k] + 0x1c) = rate;
-		GAME_VAR(u32, kept[k] + 0xc) = (*(u32 *)&R_RATING);
+		GAME_VAR(int, kept[k] + offsetof(PilotStats, score)) = R_SCORE;
+		GAME_VAR(int, kept[k] + offsetof(PilotStats, wins)) = R_WINS;
+		GAME_VAR(int, kept[k] + offsetof(PilotStats, losses)) = R_LOSSES;
+		GAME_VAR(int, kept[k] + offsetof(PilotStats, points)) = R_POINTS;
+		GAME_VAR(int, kept[k] + offsetof(PilotStats, level)) = (signed char)actor_levelFromValue(R_POINTS);
+		GAME_VAR(u32, kept[k] + offsetof(PilotStats, winRate)) = rate;
+		GAME_VAR(u32, kept[k] + offsetof(PilotStats, rating)) = (*(u32 *)&R_RATING);
 	}
 	net_send(0x11, 0x65);
 }
@@ -1490,7 +1490,7 @@ void (ladder_checkAndSendRecord)(void)
 }
 #undef R_POINTS
 #undef R_RATING
-#undef R_OTHER
+#undef R_SCORE
 #undef R_WINS
 #undef R_LOSSES
 

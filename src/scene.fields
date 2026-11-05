@@ -706,6 +706,39 @@ struct PilotProfile 0x4c                                         # a pilot level
 0x28       0x24       i32 stats[9]                               # percentages: [0] .. [3] the weapon groups' damage, [4] .. the skills (actor and
                                                                  # ARM CENTER factors x 0.01), [5] the legs'; [7] at most 50, the others 30
 
+struct GamePacket 0x40                                          # match packet kind 1, a player's game state (net_sendGamePacket; read by net_processGamePacket)
+0          1          u8 number                                  # the packet layer's number
+1          1          u8 kind                                    # 1
+2          1          u8 player
+3          1          signed char map                            # the rotation's map and mode, now and next (0xff: none)
+4          1          signed char nextMap
+5          1          signed char mode
+6          1          signed char nextMode
+7          2          u16 mission
+9          4          i32 elapsed                                # the match clock (Scene.elapsed, clockFraction)
+0xd        4          float clockFraction
+0x11       4          i32 timePlayed                             # the player's (Player.timePlayed, timeExtra)
+0x15       4          float timeExtra
+0x19       8          u32 sendTwice[2]                           # per player, a bit: its sendFlags [2] / [3] were raised
+0x21       2          short kills
+0x23       2          short deaths
+0x25       4          short teamScores[2]
+0x29       2          short lastPickup                             # the stage's (-1 none)
+0x2b       1          u8 checkTable                              # the geometry table checked (0 .. 4) and a sampled entry, its row and value
+0x2c       2          u16 checkRow
+0x2e       4          u32 checkValue
+0x32       2          u16 checkRow2                              # the same for the actor types' table
+0x34       4          u32 checkValue2
+
+struct PlayerRecordPacket 0x36                                  # the player's Ladder record sent to the game server (g_netPlayerRecordPacket, packet 0x11: lobby_states.c record_send)
+0          0x1e       char name[0x1e]                            # the Ladder name (written only when asked)
+0x1e       4          i32 score
+0x22       4          i32 wins
+0x26       4          i32 losses
+0x2a       4          i32 points
+0x2e       4          i32 level                                  # actor_levelFromValue(points)
+0x32       4          float rating
+
 struct PilotStats 0x20                                          # a pilot's standing (g_pilotLevel .., kept as g_pilotLevelKept ..: lobby_states.c take_back)
 0          4          i32 level
 4          4          i32 points

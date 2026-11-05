@@ -803,6 +803,44 @@ typedef struct PilotProfile {
 	i32 stats[9];   /* +0x28: percentages: [0] .. [3] the weapon groups' damage, [4] .. the skills (actor and */
 } PilotProfile;
 
+/* match packet kind 1, a player's game state (net_sendGamePacket; read by net_processGamePacket) */
+typedef struct GamePacket {
+	u8 number;   /* +0x0: the packet layer's number */
+	u8 kind;   /* +0x1: 1 */
+	u8 player;   /* +0x2 */
+	signed char map;   /* +0x3: the rotation's map and mode, now and next (0xff: none) */
+	signed char nextMap;   /* +0x4 */
+	signed char mode;   /* +0x5 */
+	signed char nextMode;   /* +0x6 */
+	u16 mission;   /* +0x7 */
+	i32 elapsed;   /* +0x9: the match clock (Scene.elapsed, clockFraction) */
+	float clockFraction;   /* +0xd */
+	i32 timePlayed;   /* +0x11: the player's (Player.timePlayed, timeExtra) */
+	float timeExtra;   /* +0x15 */
+	u32 sendTwice[2];   /* +0x19: per player, a bit: its sendFlags [2] / [3] were raised */
+	short kills;   /* +0x21 */
+	short deaths;   /* +0x23 */
+	short teamScores[2];   /* +0x25 */
+	short lastPickup;   /* +0x29: the stage's (-1 none) */
+	u8 checkTable;   /* +0x2b: the geometry table checked (0 .. 4) and a sampled entry, its row and value */
+	u16 checkRow;   /* +0x2c */
+	u32 checkValue;   /* +0x2e */
+	u16 checkRow2;   /* +0x32: the same for the actor types' table */
+	u32 checkValue2;   /* +0x34 */
+	u8 _pad0000038[0x8];
+} GamePacket;
+
+/* the player's Ladder record sent to the game server (g_netPlayerRecordPacket, packet 0x11: lobby_states.c record_send) */
+typedef struct PlayerRecordPacket {
+	char name[0x1e];   /* +0x0: the Ladder name (written only when asked) */
+	i32 score;   /* +0x1e */
+	i32 wins;   /* +0x22 */
+	i32 losses;   /* +0x26 */
+	i32 points;   /* +0x2a */
+	i32 level;   /* +0x2e: actor_levelFromValue(points) */
+	float rating;   /* +0x32 */
+} PlayerRecordPacket;
+
 /* a pilot's standing (g_pilotLevel .., kept as g_pilotLevelKept ..: lobby_states.c take_back) */
 typedef struct PilotStats {
 	i32 level;   /* +0x0 */
@@ -2514,6 +2552,37 @@ _Static_assert(offsetof(PilotProfile, rank) == 0x20 && sizeof(((PilotProfile *)0
 _Static_assert(offsetof(PilotProfile, level) == 0x24 && sizeof(((PilotProfile *)0)->level) == 0x4, "scene.fields: PilotProfile.level");
 _Static_assert(offsetof(PilotProfile, stats) == 0x28 && sizeof(((PilotProfile *)0)->stats) == 0x24, "scene.fields: PilotProfile.stats");
 _Static_assert(sizeof(PilotProfile) == 0x4c, "scene.fields: size of PilotProfile");
+_Static_assert(offsetof(GamePacket, number) == 0x0 && sizeof(((GamePacket *)0)->number) == 0x1, "scene.fields: GamePacket.number");
+_Static_assert(offsetof(GamePacket, kind) == 0x1 && sizeof(((GamePacket *)0)->kind) == 0x1, "scene.fields: GamePacket.kind");
+_Static_assert(offsetof(GamePacket, player) == 0x2 && sizeof(((GamePacket *)0)->player) == 0x1, "scene.fields: GamePacket.player");
+_Static_assert(offsetof(GamePacket, map) == 0x3 && sizeof(((GamePacket *)0)->map) == 0x1, "scene.fields: GamePacket.map");
+_Static_assert(offsetof(GamePacket, nextMap) == 0x4 && sizeof(((GamePacket *)0)->nextMap) == 0x1, "scene.fields: GamePacket.nextMap");
+_Static_assert(offsetof(GamePacket, mode) == 0x5 && sizeof(((GamePacket *)0)->mode) == 0x1, "scene.fields: GamePacket.mode");
+_Static_assert(offsetof(GamePacket, nextMode) == 0x6 && sizeof(((GamePacket *)0)->nextMode) == 0x1, "scene.fields: GamePacket.nextMode");
+_Static_assert(offsetof(GamePacket, mission) == 0x7 && sizeof(((GamePacket *)0)->mission) == 0x2, "scene.fields: GamePacket.mission");
+_Static_assert(offsetof(GamePacket, elapsed) == 0x9 && sizeof(((GamePacket *)0)->elapsed) == 0x4, "scene.fields: GamePacket.elapsed");
+_Static_assert(offsetof(GamePacket, clockFraction) == 0xd && sizeof(((GamePacket *)0)->clockFraction) == 0x4, "scene.fields: GamePacket.clockFraction");
+_Static_assert(offsetof(GamePacket, timePlayed) == 0x11 && sizeof(((GamePacket *)0)->timePlayed) == 0x4, "scene.fields: GamePacket.timePlayed");
+_Static_assert(offsetof(GamePacket, timeExtra) == 0x15 && sizeof(((GamePacket *)0)->timeExtra) == 0x4, "scene.fields: GamePacket.timeExtra");
+_Static_assert(offsetof(GamePacket, sendTwice) == 0x19 && sizeof(((GamePacket *)0)->sendTwice) == 0x8, "scene.fields: GamePacket.sendTwice");
+_Static_assert(offsetof(GamePacket, kills) == 0x21 && sizeof(((GamePacket *)0)->kills) == 0x2, "scene.fields: GamePacket.kills");
+_Static_assert(offsetof(GamePacket, deaths) == 0x23 && sizeof(((GamePacket *)0)->deaths) == 0x2, "scene.fields: GamePacket.deaths");
+_Static_assert(offsetof(GamePacket, teamScores) == 0x25 && sizeof(((GamePacket *)0)->teamScores) == 0x4, "scene.fields: GamePacket.teamScores");
+_Static_assert(offsetof(GamePacket, lastPickup) == 0x29 && sizeof(((GamePacket *)0)->lastPickup) == 0x2, "scene.fields: GamePacket.lastPickup");
+_Static_assert(offsetof(GamePacket, checkTable) == 0x2b && sizeof(((GamePacket *)0)->checkTable) == 0x1, "scene.fields: GamePacket.checkTable");
+_Static_assert(offsetof(GamePacket, checkRow) == 0x2c && sizeof(((GamePacket *)0)->checkRow) == 0x2, "scene.fields: GamePacket.checkRow");
+_Static_assert(offsetof(GamePacket, checkValue) == 0x2e && sizeof(((GamePacket *)0)->checkValue) == 0x4, "scene.fields: GamePacket.checkValue");
+_Static_assert(offsetof(GamePacket, checkRow2) == 0x32 && sizeof(((GamePacket *)0)->checkRow2) == 0x2, "scene.fields: GamePacket.checkRow2");
+_Static_assert(offsetof(GamePacket, checkValue2) == 0x34 && sizeof(((GamePacket *)0)->checkValue2) == 0x4, "scene.fields: GamePacket.checkValue2");
+_Static_assert(sizeof(GamePacket) == 0x40, "scene.fields: size of GamePacket");
+_Static_assert(offsetof(PlayerRecordPacket, name) == 0x0 && sizeof(((PlayerRecordPacket *)0)->name) == 0x1e, "scene.fields: PlayerRecordPacket.name");
+_Static_assert(offsetof(PlayerRecordPacket, score) == 0x1e && sizeof(((PlayerRecordPacket *)0)->score) == 0x4, "scene.fields: PlayerRecordPacket.score");
+_Static_assert(offsetof(PlayerRecordPacket, wins) == 0x22 && sizeof(((PlayerRecordPacket *)0)->wins) == 0x4, "scene.fields: PlayerRecordPacket.wins");
+_Static_assert(offsetof(PlayerRecordPacket, losses) == 0x26 && sizeof(((PlayerRecordPacket *)0)->losses) == 0x4, "scene.fields: PlayerRecordPacket.losses");
+_Static_assert(offsetof(PlayerRecordPacket, points) == 0x2a && sizeof(((PlayerRecordPacket *)0)->points) == 0x4, "scene.fields: PlayerRecordPacket.points");
+_Static_assert(offsetof(PlayerRecordPacket, level) == 0x2e && sizeof(((PlayerRecordPacket *)0)->level) == 0x4, "scene.fields: PlayerRecordPacket.level");
+_Static_assert(offsetof(PlayerRecordPacket, rating) == 0x32 && sizeof(((PlayerRecordPacket *)0)->rating) == 0x4, "scene.fields: PlayerRecordPacket.rating");
+_Static_assert(sizeof(PlayerRecordPacket) == 0x36, "scene.fields: size of PlayerRecordPacket");
 _Static_assert(offsetof(PilotStats, level) == 0x0 && sizeof(((PilotStats *)0)->level) == 0x4, "scene.fields: PilotStats.level");
 _Static_assert(offsetof(PilotStats, points) == 0x4 && sizeof(((PilotStats *)0)->points) == 0x4, "scene.fields: PilotStats.points");
 _Static_assert(offsetof(PilotStats, rank) == 0x8 && sizeof(((PilotStats *)0)->rank) == 0x4, "scene.fields: PilotStats.rank");

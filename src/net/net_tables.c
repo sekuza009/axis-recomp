@@ -1989,8 +1989,8 @@ void THISCALL (net_processGamePacket)(u8 *g, u32 from, int size, const char *pkt
 		if (b[2] > 0x10 || pkt[3] < -1 || pkt[4] < -1 || pkt[5] < -1 || pkt[6] < -1)
 			break;
 		if (b[2] == 0) {
-			GS->elapsed = *(const u32 *)(pkt + 9);
-			BITS(GS->clockFraction) = *(const u32 *)(pkt + 0xd);
+			GS->elapsed = ((const GamePacket *)pkt)->elapsed;
+			BITS(GS->clockFraction) = BITS(((const GamePacket *)pkt)->clockFraction);
 			if (pkt[3] >= 0) {
 				int round = g_missionStage;
 				if (round != pkt[3] && (round < 0 || GS->awaitingHostRound == 1 || GS->elapsed > 0x1e)) {
@@ -2017,32 +2017,32 @@ void THISCALL (net_processGamePacket)(u8 *g, u32 from, int size, const char *pkt
 				{ SCENE_STAGE_AT + offsetof(Stage, armTypes), offsetof(Scene, geometryPerRow[2]), offsetof(Scene, armCount), sizeof(ArmType) / 4 },
 				{ SCENE_STAGE_AT + offsetof(Stage, legTypes), offsetof(Scene, geometryPerRow[3]), offsetof(Scene, legCount), sizeof(LegType) / 4 },
 				{ SCENE_STAGE_AT + offsetof(Stage, boosterTypes), offsetof(Scene, geometryPerRow[4]), offsetof(Scene, boosterCount), sizeof(BoosterType) / 4 } };
-			u16 w = *(const u16 *)(pkt + 0x2c);
+			u16 w = ((const GamePacket *)pkt)->checkRow;
 			int part = b[0x2b];
-			if (part <= 4 && !table_ok(g, parts[part][0], parts[part][1], parts[part][2], parts[part][3], w, *(const u32 *)(pkt + 0x2e))) {
+			if (part <= 4 && !table_ok(g, parts[part][0], parts[part][1], parts[part][2], parts[part][3], w, ((const GamePacket *)pkt)->checkValue)) {
 				GS->dataLossPending = 1;
 				GS->dataLossCode = 2;
 			}
-			if (!table_ok(g, offsetof(Scene, actorInfo), offsetof(Scene, geometryPerRow[5]), offsetof(Scene, actorInfoCount), sizeof(ActorInfo) / 4, *(const u16 *)(pkt + 0x32), *(const u32 *)(pkt + 0x34))) {
+			if (!table_ok(g, offsetof(Scene, actorInfo), offsetof(Scene, geometryPerRow[5]), offsetof(Scene, actorInfoCount), sizeof(ActorInfo) / 4, ((const GamePacket *)pkt)->checkRow2, ((const GamePacket *)pkt)->checkValue2)) {
 				GS->dataLossPending = 1;
 				GS->dataLossCode = 3;
 			}
 		}
 		Player *ac = (Player *)(ACTOR(b[2]));
-		ac->timePlayed = *(const u32 *)(pkt + 0x11);
-		BITS(ac->timeExtra) = *(const u32 *)(pkt + 0x15);
+		ac->timePlayed = ((const GamePacket *)pkt)->timePlayed;
+		BITS(ac->timeExtra) = BITS(((const GamePacket *)pkt)->timeExtra);
 		int me = GS->localPlayer;
-		if (*(const u32 *)(pkt + 0x19) & 1u << (me & 0x1f))
+		if (((const GamePacket *)pkt)->sendTwice[0] & 1u << (me & 0x1f))
 			GS->sendFlags[me][1] = 1;
-		if (*(const u32 *)(pkt + 0x1d) & 1u << (me & 0x1f))
+		if (((const GamePacket *)pkt)->sendTwice[1] & 1u << (me & 0x1f))
 			((PlayerRecord *)PLAYER(me))->flagSent = 0;
-		((Player *)ACTOR(b[2]))->kills = *(const short *)(pkt + 0x21);
-		((Player *)ACTOR(b[2]))->deaths = *(const short *)(pkt + 0x23);
+		((Player *)ACTOR(b[2]))->kills = ((const GamePacket *)pkt)->kills;
+		((Player *)ACTOR(b[2]))->deaths = ((const GamePacket *)pkt)->deaths;
 		if (b[2] == 0) {
-			GS->teamScores[0] = *(const short *)(pkt + 0x25);
-			GS->teamScores[1] = *(const short *)(pkt + 0x27);
+			GS->teamScores[0] = ((const GamePacket *)pkt)->teamScores[0];
+			GS->teamScores[1] = ((const GamePacket *)pkt)->teamScores[1];
 		}
-		short item = *(const short *)(pkt + 0x29);
+		short item = ((const GamePacket *)pkt)->lastPickup;
 		if ((GS->sessionMode != 3 || GS->replayVersion > 0x1201) && item >= 0 && SCENE_STAGE(g)->items[item].taken == 0) {
 			SCENE_STAGE(g)->items[item].taken = 1;
 			BITS(SCENE_STAGE(g)->items[item].fade) = 0;
