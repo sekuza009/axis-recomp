@@ -462,10 +462,10 @@ void THISCALL (stage_advanceClocks)(Stage *stage, float dt)
 
 /* 0x470de0: the stage's nine folder names (+8, 0x100 bytes apart: stage, map, texture, shape, skeleton, actor,
    bullet, effect, scene), each upper-cased with back slashes */
-void THISCALL (stage_setFolders)(u8 *self, const char *s1, const char *s2, const char *s3, const char *s4, const char *s5,
-                            const char *s6, const char *s7, const char *s8, const char *s9)
+void THISCALL (stage_setFolders)(u8 *self, const char *stageDir, const char *mapDir, const char *textureDir, const char *shapeDir, const char *skeletonDir,
+                            const char *actorDir, const char *bulletDir, const char *effectDir, const char *sceneDir)
 {
-	const char *name[9] = { s1, s2, s3, s4, s5, s6, s7, s8, s9 };
+	const char *name[9] = { stageDir, mapDir, textureDir, shapeDir, skeletonDir, actorDir, bulletDir, effectDir, sceneDir };
 	for (int k = 0; k < 9; k++) {
 		strcpy((char *)self + 8 + k * 0x100, name[k]);
 		path_normalize((char *)self + 8 + k * 0x100);

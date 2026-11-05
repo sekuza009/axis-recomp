@@ -169,12 +169,12 @@ void THISCALL (tex_bind)(u8 *tm, int i)
 /* 0x4569d0 (thiscall on the texture manager): the six banks kept (+4 .. +0x18), each (when given) checked for its
    size: 64 x 64, 128 x 64, 256 x 64, 128 x 128, 256 x 128, 256 x 256 (its +0xc0118 / +0xc011c), a fatal message
    with the size found otherwise. Its caller ignores the eax it leaves */
-void THISCALL (TextureManager_setBanks)(u8 *sets, u8 *a, u8 *b, u8 *c, u8 *d, u8 *e, u8 *f)
+void THISCALL (TextureManager_setBanks)(u8 *manager, u8 *bank64x64, u8 *bank128x64, u8 *bank256x64, u8 *bank128x128, u8 *bank256x128, u8 *bank256x256)
 {
 	static const u32 sizes[6][3] = { { 64, 64, STR(0x4b4278, "texture image size mismatch (64x64 !=...") }, { 128, 64, STR(0x4b423c, "texture image size mismatch (128x64 !...") }, { 256, 64, STR(0x4b4200, "texture image size mismatch (256x64 !...") },
 	                                 { 128, 128, STR(0x4b41c4, "texture image size mismatch (128x128 ...") }, { 256, 128, STR(0x4b4188, "texture image size mismatch (256x128 ...") }, { 256, 256, STR(0x4b414c, "texture image size mismatch (256x256 ...") } };
-	u8 *banks[6] = { a, b, c, d, e, f };
-	TextureManager_reset(sets);
+	u8 *banks[6] = { bank64x64, bank128x64, bank256x64, bank128x128, bank256x128, bank256x256 };
+	TextureManager_reset(manager);
 	for (int k = 0; k < 6; k++) {
 		u8 *m = banks[k];
 		TextureBank *mg = (TextureBank *)m;
@@ -182,7 +182,7 @@ void THISCALL (TextureManager_setBanks)(u8 *sets, u8 *a, u8 *b, u8 *c, u8 *d, u8
 			sys_fatalErrorN((char *)OBJ(g_logTextureManager), (const char *)RELOC(sizes[k][2]), mg->width, mg->height);
 	}
 	for (int k = 0; k < 6; k++)
-		((TextureManager *)sets)->banks[k] = banks[k];
+		((TextureManager *)manager)->banks[k] = banks[k];
 }
 
 /* 0x456520 (thiscall on a texture bank): its pixels (+0x114, +0xc0118 x +0xc011c) uploaded to GL texture id: wrapped

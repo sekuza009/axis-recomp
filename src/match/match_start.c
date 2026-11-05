@@ -291,15 +291,15 @@ static void model_sets(u8 *shapes, const char *dir, int n, int extra, int size, 
    of the map; the effects and three textures (0x4c73f4 ..), an identity and a 1.1 scale matrix, the flag atlas
    (a texture, filled with 0xa1f220); the game type 0, the actors and the scene reset; built (+4 1). Its caller
    ignores the eax it leaves */
-void THISCALL (stage_build)(u8 *s, u32 stageDir, u32 mapDir, const char *sky, u32 shapeDir, const char *skel_dir, u32 actorDir,
+void THISCALL (stage_build)(u8 *s, u32 stageDir, u32 mapDir, const char *textureDir, u32 shapeDir, const char *skeletonDir, u32 actorDir,
                                   u32 bulletDir, u32 effectDir, u32 sceneDir)
 {
 	Stage *st = (Stage *)s;
-	stage_setFolders(s, stageDir, mapDir, (u32)sky, shapeDir, (u32)skel_dir, actorDir, bulletDir, effectDir, sceneDir);
+	stage_setFolders(s, stageDir, mapDir, (u32)textureDir, shapeDir, (u32)skeletonDir, actorDir, bulletDir, effectDir, sceneDir);
 	space_initBy((u8 *)&st->space, 0x9c40, 0x27100, 0x3e8, 0x2710, 0x3e8, st->spaceData, sizeof st->spaceData);
 	char name[0x100];
 	for (int i = 0; i < 10; i++) {
-		sprintf(name, (const char *)STR(0x4c7410, "%s\\%02d"), sky, i);
+		sprintf(name, (const char *)STR(0x4c7410, "%s\\%02d"), textureDir, i);
 		st->effectTextures[i] = tex_getIdByName((*(void **)&g_textures), name, i > 7, 0, 0, 0, 0, 0, 0);
 	}
 	Light_clearCounts((u8 *)&st->mapLights);
@@ -403,11 +403,11 @@ void THISCALL (stage_build)(u8 *s, u32 stageDir, u32 mapDir, const char *sky, u3
 	for (int t = 0; t < 16; t++) {
 		u8 *type = (u8 *)&st->playerRecords[t];
 		for (int k = 0; k < 5; k++)
-			model_sets(type + parts[k].shapes, dir, parts[k].n, parts[k].extra, parts[k].size, type + parts[k].skels, skel_dir, 2,
+			model_sets(type + parts[k].shapes, dir, parts[k].n, parts[k].extra, parts[k].size, type + parts[k].skels, skeletonDir, 2,
 			           parts[k].sextra, type + parts[k].smem, parts[k].ssize);
 	}
 	shape_initBy((u8 *)&st->partShapes, dir, 0x258, 2, 0x2c6280, st->partShapeData, sizeof st->partShapeData);
-	skelSet_setup((u8 *)&st->partSkeletons, skel_dir, 0x64, 2, 0x15ae0, st->partSkeletonData, sizeof st->partSkeletonData);
+	skelSet_setup((u8 *)&st->partSkeletons, skeletonDir, 0x64, 2, 0x15ae0, st->partSkeletonData, sizeof st->partSkeletonData);
 	debug_traceStripped((Scene *)s);
 	effect_initShapes(s);
 	static const u32 names[3] = { STR(0x4c73f4, "Texture\\Item_damagemap_ani0"), STR(0x4c73d8, "Texture\\Item_booster_ani0"), STR(0x4c73bc, "Texture\\Item_shield_ani0") };
