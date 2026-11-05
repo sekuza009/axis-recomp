@@ -864,7 +864,7 @@ g_mouseActive
 g_mouseTaken
 g_music
 g_playerCount
-g_profile9f6828
+g_profileReveal
 g_profileIntroSpeed
 g_profileIntroState
 g_profileIntroTime
@@ -995,10 +995,10 @@ g_mechLockOnTime
 g_mechTargetKeepTime
 g_mechLegsInertia
 g_mechLegsSpeedCorrection
-g_mechLegsBonus1
-g_mechLegsBonus2
-g_mechLegsBonus3
-g_mechBoosterValue3
+g_mechLegsForwardBoost
+g_mechLegsSideBoost
+g_mechLegsBackBoost
+g_mechBoosterRestTime
 g_headCursor
 g_chestCursor
 g_armCursor
@@ -1216,6 +1216,6 @@ g_logViewVolume
 g_logTimeSync
 g_logScene
 g_frameTime
-g_profile9f8ee4
+g_profileRevealClock
 g_loginToSend
 g_accountForm

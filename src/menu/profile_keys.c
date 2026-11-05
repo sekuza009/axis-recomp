@@ -139,8 +139,8 @@ void (profile_emblemKeys)(void)
 		}
 		g_emblemMoved = 1;
 		sound_playMenu(2);
-		g_profile9f8ee4 = 0;
-		g_profile9f6828 = 0;
+		g_profileRevealClock = 0;
+		g_profileReveal = 0;
 		return;
 	}
 	g_profilePage = 1;

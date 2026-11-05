@@ -1090,19 +1090,19 @@ extern u8 g_mechLegsInertia_v[4];
 extern u8 g_mechLegsSpeedCorrection_v[4];
 #endif
 #ifdef AXIS_FENCE
-#define g_mechLegsBonus1_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0x1be000 : g_fence + 0x1bdffc))
+#define g_mechLegsForwardBoost_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0x1be000 : g_fence + 0x1bdffc))
 #else
-extern u8 g_mechLegsBonus1_v[4];
+extern u8 g_mechLegsForwardBoost_v[4];
 #endif
 #ifdef AXIS_FENCE
-#define g_mechLegsBonus2_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0x1c0000 : g_fence + 0x1bfffc))
+#define g_mechLegsSideBoost_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0x1c0000 : g_fence + 0x1bfffc))
 #else
-extern u8 g_mechLegsBonus2_v[4];
+extern u8 g_mechLegsSideBoost_v[4];
 #endif
 #ifdef AXIS_FENCE
-#define g_mechLegsBonus3_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0x1c2000 : g_fence + 0x1c1ffc))
+#define g_mechLegsBackBoost_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0x1c2000 : g_fence + 0x1c1ffc))
 #else
-extern u8 g_mechLegsBonus3_v[4];
+extern u8 g_mechLegsBackBoost_v[4];
 #endif
 #ifdef AXIS_FENCE
 #define g_unusedMechStat_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0x1c4000 : g_fence + 0x1c3ffc))
@@ -1120,9 +1120,9 @@ extern u8 g_mechBoosterEnergy_v[4];
 extern u8 g_mechBoosterRecharge_v[4];
 #endif
 #ifdef AXIS_FENCE
-#define g_mechBoosterValue3_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0x1ca000 : g_fence + 0x1c9ffc))
+#define g_mechBoosterRestTime_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0x1ca000 : g_fence + 0x1c9ffc))
 #else
-extern u8 g_mechBoosterValue3_v[4];
+extern u8 g_mechBoosterRestTime_v[4];
 #endif
 #ifdef AXIS_FENCE
 #define g_mechSpeeds_v ((float *)(AXIS_FENCE == 2 ? g_fence + 0x1cc000 : g_fence + 0x1cbfe8))
@@ -4280,9 +4280,9 @@ extern u8 g_unusedProfileCameraWord_v[4];
 extern int g_deleteDialogRects_v[8];
 #endif
 #ifdef AXIS_FENCE
-#define g_profile9f6828_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xbbf000 : g_fence + 0xbbeffc))
+#define g_profileReveal_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xbbf000 : g_fence + 0xbbeffc))
 #else
-extern u8 g_profile9f6828_v[4];
+extern u8 g_profileReveal_v[4];
 #endif
 #ifdef AXIS_FENCE
 #define g_pilotSelectBottom_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xbc1000 : g_fence + 0xbc0ffc))
@@ -4445,9 +4445,9 @@ extern u32 g_profileColour_v[4];
 extern float g_statBarTargets_v[9];
 #endif
 #ifdef AXIS_FENCE
-#define g_profile9f8ee4_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xc03000 : g_fence + 0xc02ffc))
+#define g_profileRevealClock_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xc03000 : g_fence + 0xc02ffc))
 #else
-extern u8 g_profile9f8ee4_v[4];
+extern u8 g_profileRevealClock_v[4];
 #endif
 #ifdef AXIS_FENCE
 #define g_secondDialogRects_v ((int *)(AXIS_FENCE == 2 ? g_fence + 0xc05000 : g_fence + 0xc04fe0))

@@ -107,8 +107,8 @@ void (profile_resetSelection)(void)
 {
 	profile_resetPreview();
 	g_emblemCursor = 0;
-	g_profile9f8ee4 = 0;
-	g_profile9f6828 = 0;
+	g_profileRevealClock = 0;
+	g_profileReveal = 0;
 }
 
 /* 0x44bc00: the profile screen's camera put to its start (distance 80, speed 0.1) */
@@ -276,8 +276,8 @@ int (profileList_clicks)(void)
 				(*(u32 *)&g_emblemCursor) = row;
 				g_emblemMoved = 1;
 				sound_playMenu(2);
-				g_profile9f8ee4 = 0;
-				g_profile9f6828 = 0;
+				g_profileRevealClock = 0;
+				g_profileReveal = 0;
 			}
 		} else if (row == 9) {
 			sound_playMenu(0);

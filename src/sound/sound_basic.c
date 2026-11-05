@@ -239,7 +239,7 @@ void (sound_play3D)(int index, const float *pos, const float *listener, const fl
 	Vec3_normalize(c);
 	long double across = fmul_m(fld_m(&c[1]), &side[1]) + fmul_m(fld_m(&c[2]), &side[2]);
 	across = across + fmul_m(fld_m(&c[0]), &side[0]);
-	int pan = ftol(fmul_m(across, (const float *)(g_sound3D ? ADDR(k_m1500f) : ADDR(k_1500f_4a9700))));
+	int pan = ftol(fmul_m(across, (const float *)(g_stereoReverse ? ADDR(k_m1500f) : ADDR(k_1500f_4a9700))));
 	GAME_FN(dsbuf_setVolume, 0x467db0, void, void *, int)(GAME_VAR(void *, OBJ(g_soundTable) + index * 4), volume);   /* dsbuf_setVolume */
 	sound_playNextBuffer(GAME_VAR(void *, OBJ(g_soundTable) + index * 4), (pan > 0) + 1, pan);
 }

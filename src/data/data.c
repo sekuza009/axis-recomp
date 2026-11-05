@@ -230,13 +230,13 @@ int g_mechPartStats_v[7] __attribute__((aligned(16)));   /* 0x4dcab4 */
 u8 g_mechMobility_v[4] __attribute__((aligned(16)));   /* 0x4dcad0 */
 u8 g_mechLegsInertia_v[4] __attribute__((aligned(16)));   /* 0x4dcad4 */
 u8 g_mechLegsSpeedCorrection_v[4] __attribute__((aligned(16)));   /* 0x4dcad8 */
-u8 g_mechLegsBonus1_v[4] __attribute__((aligned(16)));   /* 0x4dcadc */
-u8 g_mechLegsBonus2_v[4] __attribute__((aligned(16)));   /* 0x4dcae0 */
-u8 g_mechLegsBonus3_v[4] __attribute__((aligned(16)));   /* 0x4dcae4 */
+u8 g_mechLegsForwardBoost_v[4] __attribute__((aligned(16)));   /* 0x4dcadc */
+u8 g_mechLegsSideBoost_v[4] __attribute__((aligned(16)));   /* 0x4dcae0 */
+u8 g_mechLegsBackBoost_v[4] __attribute__((aligned(16)));   /* 0x4dcae4 */
 u8 g_unusedMechStat_v[4] __attribute__((aligned(16)));   /* 0x4dcae8 */
 u8 g_mechBoosterEnergy_v[4] __attribute__((aligned(16)));   /* 0x4dcaec */
 u8 g_mechBoosterRecharge_v[4] __attribute__((aligned(16)));   /* 0x4dcaf0 */
-u8 g_mechBoosterValue3_v[4] __attribute__((aligned(16)));   /* 0x4dcaf4 */
+u8 g_mechBoosterRestTime_v[4] __attribute__((aligned(16)));   /* 0x4dcaf4 */
 float g_mechSpeeds_v[6] __attribute__((aligned(16)));   /* 0x4dcaf8 */
 int g_mechSettings_v[6] __attribute__((aligned(16)));   /* 0x4dcb18 */
 u8 g_boosterCursor_v[4] __attribute__((aligned(16)));   /* 0x4dcb30 */
@@ -868,7 +868,7 @@ u8 g_matchEndedByUser_v[4] __attribute__((aligned(16)));   /* 0x9f67f4 */
 u8 g_matchEndedByServer_v[4] __attribute__((aligned(16)));   /* 0x9f67f8 */
 u8 g_unusedProfileCameraWord_v[4] __attribute__((aligned(16)));   /* 0x9f6800 */
 int g_deleteDialogRects_v[8] __attribute__((aligned(16)));   /* 0x9f6808 */
-u8 g_profile9f6828_v[4] __attribute__((aligned(16)));   /* 0x9f6828 */
+u8 g_profileReveal_v[4] __attribute__((aligned(16)));   /* 0x9f6828 */
 u8 g_pilotSelectBottom_v[4] __attribute__((aligned(16)));   /* 0x9f682c */
 u8 g_pilotSelectRight_v[4] __attribute__((aligned(16)));   /* 0x9f6830 */
 u8 g_profileDialog2X_v[4] __attribute__((aligned(16)));   /* 0x9f6834 */
@@ -901,7 +901,7 @@ u8 g_newNameDialogTop_v[4] __attribute__((aligned(16)));   /* 0x9f8ea8 */
 u8 g_newNameDialogLeft_v[4] __attribute__((aligned(16)));   /* 0x9f8eac */
 u32 g_profileColour_v[4] __attribute__((aligned(16)));   /* 0x9f8eb0 */
 float g_statBarTargets_v[9] __attribute__((aligned(16)));   /* 0x9f8ec0 */
-u8 g_profile9f8ee4_v[4] __attribute__((aligned(16)));   /* 0x9f8ee4 */
+u8 g_profileRevealClock_v[4] __attribute__((aligned(16)));   /* 0x9f8ee4 */
 int g_secondDialogRects_v[8] __attribute__((aligned(16)));   /* 0x9f8ee8 */
 u8 g_profileFrameAlpha_v[4] __attribute__((aligned(16)));   /* 0x9f8f08 */
 u8 g_profileDialogY_v[4] __attribute__((aligned(16)));   /* 0x9f8f0c */
@@ -1400,13 +1400,13 @@ const DataPiece g_splitObjects[] = {
 	{ 0x4dcad0, g_mechMobility_v, 4 },
 	{ 0x4dcad4, g_mechLegsInertia_v, 4 },
 	{ 0x4dcad8, g_mechLegsSpeedCorrection_v, 4 },
-	{ 0x4dcadc, g_mechLegsBonus1_v, 4 },
-	{ 0x4dcae0, g_mechLegsBonus2_v, 4 },
-	{ 0x4dcae4, g_mechLegsBonus3_v, 4 },
+	{ 0x4dcadc, g_mechLegsForwardBoost_v, 4 },
+	{ 0x4dcae0, g_mechLegsSideBoost_v, 4 },
+	{ 0x4dcae4, g_mechLegsBackBoost_v, 4 },
 	{ 0x4dcae8, g_unusedMechStat_v, 4 },
 	{ 0x4dcaec, g_mechBoosterEnergy_v, 4 },
 	{ 0x4dcaf0, g_mechBoosterRecharge_v, 4 },
-	{ 0x4dcaf4, g_mechBoosterValue3_v, 4 },
+	{ 0x4dcaf4, g_mechBoosterRestTime_v, 4 },
 	{ 0x4dcaf8, g_mechSpeeds_v, 24 },
 	{ 0x4dcb18, g_mechSettings_v, 24 },
 	{ 0x4dcb30, g_boosterCursor_v, 4 },
@@ -2038,7 +2038,7 @@ const DataPiece g_splitObjects[] = {
 	{ 0x9f67f8, g_matchEndedByServer_v, 4 },
 	{ 0x9f6800, g_unusedProfileCameraWord_v, 4 },
 	{ 0x9f6808, g_deleteDialogRects_v, 32 },
-	{ 0x9f6828, g_profile9f6828_v, 4 },
+	{ 0x9f6828, g_profileReveal_v, 4 },
 	{ 0x9f682c, g_pilotSelectBottom_v, 4 },
 	{ 0x9f6830, g_pilotSelectRight_v, 4 },
 	{ 0x9f6834, g_profileDialog2X_v, 4 },
@@ -2071,7 +2071,7 @@ const DataPiece g_splitObjects[] = {
 	{ 0x9f8eac, g_newNameDialogLeft_v, 4 },
 	{ 0x9f8eb0, g_profileColour_v, 16 },
 	{ 0x9f8ec0, g_statBarTargets_v, 36 },
-	{ 0x9f8ee4, g_profile9f8ee4_v, 4 },
+	{ 0x9f8ee4, g_profileRevealClock_v, 4 },
 	{ 0x9f8ee8, g_secondDialogRects_v, 32 },
 	{ 0x9f8f08, g_profileFrameAlpha_v, 4 },
 	{ 0x9f8f0c, g_profileDialogY_v, 4 },

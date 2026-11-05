@@ -337,8 +337,7 @@ void (profile_drawPilotSelect)(void)
 #define Y1 g_pilotSelectBottom
 #define K(addr) ((const float *)RELOC(addr))
 #define g_pilot g_emblemCursor
-#define g_reveal g_profile9f6828
-#define g_revealClock (*(float *)&g_profile9f8ee4)
+#define g_revealClock (*(float *)&g_profileRevealClock)
 	const u32 *panel = g_profileColour, *dim = g_profileDim;
 	gfx_setProjection2D3D(2);
 	glLoadIdentity();
@@ -366,7 +365,7 @@ void (profile_drawPilotSelect)(void)
 	glEnd();
 	/* the chosen one's cell, grown by the reveal: corners at (x, y) less the reveal and 2 x reveal + 85 further */
 	float col = (float)(g_pilot % 3), row = (float)(g_pilot / 3);
-	long double reveal = (long double)g_reveal;
+	long double reveal = (long double)g_profileReveal;
 	float x = f32(fmul_m(col, k_86f) - reveal), y = f32(fmul_m(row, k_86f) - reveal);
 	glBegin(GL_QUADS);
 	long double rt = fmul_m(row, k_86f), ct = fmul_m(col, k_86f);
@@ -378,13 +377,13 @@ void (profile_drawPilotSelect)(void)
 	float s1 = f32(fmul_m(fadd_m(col_t, k_85f), &k_0_00390625f));
 	glTexCoord2f(s1, t0);
 	y0 = ftol(fadd_m((long double)(Y0 + 0x4c), &y));
-	menu_vertex(ftol(fadd_m(fadd_m((long double)(g_reveal * 2) + (long double)(X0 + 0x20), &x), k_85f)), y0);
+	menu_vertex(ftol(fadd_m(fadd_m((long double)(g_profileReveal * 2) + (long double)(X0 + 0x20), &x), k_85f)), y0);
 	float t1 = f32(fmul_m(fadd_m(row_t, k_85f), &k_0_00390625f));
 	glTexCoord2f(s1, t1);
-	int y1 = ftol(fadd_m(fadd_m((long double)(Y0 + 0x4c) + (long double)(g_reveal * 2), &y), k_85f));
-	menu_vertex(ftol(fadd_m(fadd_m((long double)(X0 + 0x20) + (long double)(g_reveal * 2), &x), k_85f)), y1);
+	int y1 = ftol(fadd_m(fadd_m((long double)(Y0 + 0x4c) + (long double)(g_profileReveal * 2), &y), k_85f));
+	menu_vertex(ftol(fadd_m(fadd_m((long double)(X0 + 0x20) + (long double)(g_profileReveal * 2), &x), k_85f)), y1);
 	glTexCoord2f(s0, t1);
-	y1 = ftol(fadd_m(fadd_m((long double)(g_reveal * 2) + (long double)(Y0 + 0x4c), &y), k_85f));
+	y1 = ftol(fadd_m(fadd_m((long double)(g_profileReveal * 2) + (long double)(Y0 + 0x4c), &y), k_85f));
 	menu_vertex(ftol(fadd_m((long double)(X0 + 0x20), &x)), y1);
 	glEnd();
 	glDisable(GL_TEXTURE_2D);
@@ -399,12 +398,12 @@ void (profile_drawPilotSelect)(void)
 	menu_vertex(ftol(fsub_m(fadd_m((long double)(X0 + 0x20), &x), &k_5f)), y0);
 	glTexCoord2f(0.5f, 0.5f);
 	y0 = ftol(fsub_m(fadd_m((long double)(Y0 + 0x4c), &y), &k_5f));
-	menu_vertex(ftol(fadd_m(fadd_m((long double)(g_reveal * 2) + (long double)(X0 + 0x20), &x), &k_90f)), y0);
+	menu_vertex(ftol(fadd_m(fadd_m((long double)(g_profileReveal * 2) + (long double)(X0 + 0x20), &x), &k_90f)), y0);
 	glTexCoord2f(0.5f, 1.0f);
-	y1 = ftol(fadd_m(fadd_m((long double)(Y0 + 0x4c) + (long double)(g_reveal * 2), &y), &k_90f));
-	menu_vertex(ftol(fadd_m(fadd_m((long double)(X0 + 0x20) + (long double)(g_reveal * 2), &x), &k_90f)), y1);
+	y1 = ftol(fadd_m(fadd_m((long double)(Y0 + 0x4c) + (long double)(g_profileReveal * 2), &y), &k_90f));
+	menu_vertex(ftol(fadd_m(fadd_m((long double)(X0 + 0x20) + (long double)(g_profileReveal * 2), &x), &k_90f)), y1);
 	glTexCoord2f(0.0f, 1.0f);
-	y1 = ftol(fadd_m(fadd_m((long double)(g_reveal * 2) + (long double)(Y0 + 0x4c), &y), &k_90f));
+	y1 = ftol(fadd_m(fadd_m((long double)(g_profileReveal * 2) + (long double)(Y0 + 0x4c), &y), &k_90f));
 	menu_vertex(ftol(fsub_m(fadd_m((long double)(X0 + 0x20), &x), &k_5f)), y1);
 	glEnd();
 	long double pulse = fadd_m(fmul_m(fld_m((&g_frameTime)), (const float *)&g_profileFrameStep), &g_profileFrameAlpha);
@@ -413,12 +412,12 @@ void (profile_drawPilotSelect)(void)
 		g_profileFrameStep = 0x3f800000;   /* 1 */
 	if (pulse >= *&k_38f)
 		g_profileFrameStep = 0xbf800000;   /* -1 */
-	if (g_reveal < 8) {
+	if (g_profileReveal < 8) {
 		long double clock = fadd_m(fld_m(&g_revealClock), (&g_frameTime));
 		g_revealClock = f32(clock);
 		if (clock > *&k_1f) {
 			g_revealClock = 0;
-			g_reveal++;
+			g_profileReveal++;
 		}
 	}
 	/* the details */
@@ -451,7 +450,6 @@ text_draw8(X0 + 0x184, Y0 + 0x48, PILOT(g_pilot)->name);
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 	menu_drawCornerOrnaments(X0, Y0, X1, Y1);
 #undef g_revealClock
-#undef g_reveal
 #undef g_pilot
 #undef K
 #undef X0

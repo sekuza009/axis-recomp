@@ -153,7 +153,7 @@
 #define g_roomMap GAME_VAR(u8, 0x4df9e8)
 #define g_roomFragLimit GAME_VAR(u8, 0x4df9ec)
 #define g_roomTimeLimit GAME_VAR(u8, 0x4df9ed)
-#define g_soundSwitch1 GAME_VAR(int, 0x4e0c98)
+#define g_sound3D GAME_VAR(int, 0x4e0c98)   /* axis.cfg's "3dsound": only the setup page and axis.cfg use it (3D SOUND does nothing) */
 #define g_menuTunnelTexture GAME_VAR(int, 0x4e0cd0)
 #define g_desktopDepth GAME_VAR(int, 0x76d3ec)
 #define g_frameCounter40 GAME_VAR(int, 0x9da908)
@@ -249,7 +249,7 @@
 #define g_debugValue GAME_VAR(int, 0x4de6e0)
 #define g_mouseWheel GAME_VAR(int, 0x4ded7c)
 #define g_musicVolume GAME_VAR(int, 0x4e0c94)
-#define g_sound3D GAME_VAR(int, 0x4e0c9c)
+#define g_stereoReverse GAME_VAR(int, 0x4e0c9c)   /* axis.cfg's "stereoreverse": sound_play3D pans the other way */
 #define g_roomRecMap GAME_VAR(signed char, 0x5b1b50)
 #define g_roomRecPlayers GAME_VAR(u8, 0x5b1b51)
 #define g_roomRecFragLimit GAME_VAR(u8, 0x5b1b54)
@@ -508,8 +508,8 @@
 #define g_armcLevel GAME_VAR(int, 0x4dc870)
 #define g_armcLastPart GAME_VAR(int, 0x4dc890)
 #define g_messageBoxArgs GAME_VAR(va_list, 0x4dd0b4)
-#define g_soundToggle6 GAME_VAR(int, 0x4ddea0)
-#define g_soundToggle7 GAME_VAR(int, 0x4ddea4)
+#define g_setupSound3D GAME_VAR(int, 0x4ddea0)
+#define g_setupStereoReverse GAME_VAR(int, 0x4ddea4)
 #define g_showCmd GAME_VAR(int, 0x4deb54)
 #define g_mouse3Down GAME_VAR(int, 0x4ded9c)
 #define g_keyWatchChat GAME_VAR(int, 0x4defa8)
@@ -1068,7 +1068,7 @@
 #define g_missionPage GAME_VAR(int, 0x9f62f8)   /* 0 / 1: no keys; 2: no list refresh */
 #define g_missionBusy GAME_VAR(int, 0x9f6300)
 #define g_missionShowBackground GAME_VAR(int, 0x9f63b8)
-#define g_profile9f6828 GAME_VAR(int, 0x9f6828)   /* (unclear) the same */
+#define g_profileReveal GAME_VAR(int, 0x9f6828)   /* the chosen emblem's cell grown by this (pixels a side, one more each tick of g_profileRevealClock); 0 when the emblem cursor moves */
 #define g_profileDialog2X GAME_VAR(int, 0x9f6834)   /* page 5's dialog frame */
 #define g_profileIntro GAME_VAR(int, 0x9f6838)   /* the profile screen's intro animation runs */
 #define g_profileDialog2Y GAME_VAR(int, 0x9f683c)
@@ -1076,7 +1076,7 @@
 #define g_emblemMoved GAME_VAR(int, 0x9f8d68)
 #define g_profileIntroSpeed GAME_VAR(float, 0x9f8e50)
 #define g_profileIntroState GAME_VAR(int, 0x9f8e54)   /* 5: finished */
-#define g_profile9f8ee4 GAME_VAR(int, 0x9f8ee4)   /* (unclear) cleared when the emblem cursor moves */
+#define g_profileRevealClock GAME_VAR(int, 0x9f8ee4)   /* a float: the time to the next step of g_profileReveal; cleared when the emblem cursor moves */
 #define g_profileDialogY GAME_VAR(int, 0x9f8f0c)
 #define g_profilePage GAME_VAR(int, 0x9f8f10)   /* 1 list, 2 info, 3 / 5 name forms, 6 emblem; 4 has no keys */
 #define g_profileIntroZoom GAME_VAR(float, 0x9f8f14)
@@ -1119,10 +1119,10 @@
 #define g_mechTargetKeepTime GAME_VAR(float, 0x4dcab0)
 #define g_mechLegsInertia GAME_VAR(float, 0x4dcad4)
 #define g_mechLegsSpeedCorrection GAME_VAR(float, 0x4dcad8)
-#define g_mechLegsBonus1 GAME_VAR(float, 0x4dcadc)
-#define g_mechLegsBonus2 GAME_VAR(float, 0x4dcae0)
-#define g_mechLegsBonus3 GAME_VAR(float, 0x4dcae4)
-#define g_mechBoosterValue3 GAME_VAR(float, 0x4dcaf4)
+#define g_mechLegsForwardBoost GAME_VAR(float, 0x4dcadc)
+#define g_mechLegsSideBoost GAME_VAR(float, 0x4dcae0)
+#define g_mechLegsBackBoost GAME_VAR(float, 0x4dcae4)
+#define g_mechBoosterRestTime GAME_VAR(float, 0x4dcaf4)
 #define g_boosterCursor GAME_VAR(int, 0x4dcb30)
 #define g_chestCount GAME_VAR(int, 0x4dcc60)
 #define g_headCursor GAME_VAR(int, 0x4dcc8c)

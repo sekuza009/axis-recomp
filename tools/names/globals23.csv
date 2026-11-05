@@ -5,10 +5,10 @@
 0x4dcab0,float,g_mechTargetKeepTime
 0x4dcad4,float,g_mechLegsInertia
 0x4dcad8,float,g_mechLegsSpeedCorrection
-0x4dcadc,float,g_mechLegsBonus1
-0x4dcae0,float,g_mechLegsBonus2
-0x4dcae4,float,g_mechLegsBonus3
-0x4dcaf4,float,g_mechBoosterValue3
+0x4dcadc,float,g_mechLegsForwardBoost
+0x4dcae0,float,g_mechLegsSideBoost
+0x4dcae4,float,g_mechLegsBackBoost
+0x4dcaf4,float,g_mechBoosterRestTime
 0x4dcc8c,int,g_headCursor
 0x4dcf3c,int,g_chestCursor
 0x4dbc7c,int,g_armCursor

@@ -26,7 +26,7 @@
 0x4db584,int,g_arenaSex
 # sound settings
 0x4e0c94,int,g_musicVolume
-0x4e0c9c,int,g_sound3D
+0x4e0c9c,int,g_stereoReverse
 # texture sets
 0x83a9cc,u32,g_textureSetWidth
 0x83a9d0,u32,g_textureSetHeight

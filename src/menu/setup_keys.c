@@ -346,11 +346,11 @@ void (setup_drawSoundTab)(void)
 		case 5: g_effectsVolume = g_effectsVolume >= 50 ? 0 : 100; break;
 		case 6:
 			sound_playMenu(2);
-			g_soundToggle6 = 1 - g_soundToggle6;
+			g_setupSound3D = 1 - g_setupSound3D;
 			break;
 		case 7:
 			sound_playMenu(2);
-			g_soundToggle7 = 1 - g_soundToggle7;
+			g_setupStereoReverse = 1 - g_setupStereoReverse;
 			break;
 		case 8: sound_ok(); break;
 		case 9:

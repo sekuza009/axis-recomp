@@ -84,13 +84,13 @@ u8 *(armc_readMechStats)(void)
 	const LegType *leg = &st->legTypes[player->parts[3]];
 	copyf(ADDR(g_mechLegsInertia), &leg->inertia);
 	mulf(ADDR(g_mechLegsSpeedCorrection), &leg->speedCorrection, (const float *)ADDR(k_100f));
-	mulf(ADDR(g_mechLegsBonus1), &leg->forwardBoostCorrection, (const float *)ADDR(k_100f));
-	mulf(ADDR(g_mechLegsBonus2), &leg->sideBoostCorrection, (const float *)ADDR(k_100f));
-	mulf(ADDR(g_mechLegsBonus3), &leg->backBoostCorrection, (const float *)ADDR(k_100f));
+	mulf(ADDR(g_mechLegsForwardBoost), &leg->forwardBoostCorrection, (const float *)ADDR(k_100f));
+	mulf(ADDR(g_mechLegsSideBoost), &leg->sideBoostCorrection, (const float *)ADDR(k_100f));
+	mulf(ADDR(g_mechLegsBackBoost), &leg->backBoostCorrection, (const float *)ADDR(k_100f));
 	g_unusedMechStat = st->boosterTypes[player->parts[4]].thrustType;
 	mulf(ADDR(g_mechBoosterEnergy), &A->boostTime, k_1000f);
 	mulf(ADDR(g_mechBoosterRecharge), &A->rechargeTime, k_1000f);
-	mulf(ADDR(g_mechBoosterValue3), &A->restTime, k_1000f);
+	mulf(ADDR(g_mechBoosterRestTime), &A->restTime, k_1000f);
 	mulf(ADDR(g_mechNormalSpeed), &A->speed, k_0_036f);
 	mulf((OBJ(g_mechSpeeds) + 0x4), (const float *)ADDR(g_mechNormalSpeed), &A->runTop[0]);
 	g_mechMaxSpeedBwd = (float)-fmul_m(fld_m((const float *)ADDR(g_mechNormalSpeed)), &A->runTop[1]);

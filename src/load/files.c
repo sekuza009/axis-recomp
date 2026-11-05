@@ -305,9 +305,9 @@ u32 (cfg_writeSound)(void *f)
 	FPUTS(number);
 	FPUTS(STR(0x4b182c, "\n"));
 	FPUTS(STR(0x4b1a20, "set_sound 3dsound "));
-	FPUTS(g_soundSwitch1 == 1 ? STR(0x4b17e4, "ON\n") : STR(0x4b17dc, "OFF\n"));
-	FPUTS(STR(0x4b1a04, "set_sound stereoreverse "));
 	FPUTS(g_sound3D == 1 ? STR(0x4b17e4, "ON\n") : STR(0x4b17dc, "OFF\n"));
+	FPUTS(STR(0x4b1a04, "set_sound stereoreverse "));
+	FPUTS(g_stereoReverse == 1 ? STR(0x4b17e4, "ON\n") : STR(0x4b17dc, "OFF\n"));
 	return FPUTS(STR(0x4b182c, "\n"));
 #undef FPUTS
 }
@@ -1090,9 +1090,9 @@ void (cfg_readAudioLines)(void *f)
 	read_value(f, value, 0);
 	g_musicVolume = crt_atoi(value);
 	read_value(f, value, 0);
-	g_soundSwitch1 = !strcmp(value, (const char *)STR(0x4b21bc, "ON"));   /* ON */
+	g_sound3D = !strcmp(value, (const char *)STR(0x4b21bc, "ON"));   /* ON */
 	read_value(f, value, 0);
-	g_sound3D = !strcmp(value, (const char *)STR(0x4b21bc, "ON"));
+	g_stereoReverse = !strcmp(value, (const char *)STR(0x4b21bc, "ON"));
 	skip_line(f);
 }
 
@@ -1263,7 +1263,7 @@ void (cfg_writeDefaultAxisCfg)(void)
 		}
 		fclose(f);
 	}
-	g_sound3D = 0;
+	g_stereoReverse = 0;
 	g_videoDepth = 0;
 	(*(int *)&g_videoMode) = 0;
 	g_showFps = 0;
@@ -1276,7 +1276,7 @@ void (cfg_writeDefaultAxisCfg)(void)
 	g_musicVolume = 100;
 	static const u8 server[6] = { 0, 8, 0, 0, 0, 0 };   /* 0x4ded40: (by use) 8 players */
 	memcpy((void *)ADDR(g_arenaMap), server, 6);
-	g_soundSwitch1 = 1;
+	g_sound3D = 1;
 	g_items3D = 1;
 	(*(int *)&g_textureSetHeight) = 1;
 	(*(int *)&g_textureSetWidth) = 1;

@@ -7,7 +7,7 @@
 0xa0e924,u8,g_glDepthBits
 0xb12a80,u8,g_displayModeChanged
 0x76d3ec,int,g_desktopDepth
-0x4e0c98,int,g_soundSwitch1
+0x4e0c98,int,g_sound3D
 0x4dd074,int,g_colourChanged
 0x4dc78c,float,g_totalWeight
 0x4dcb18,int,g_itemSlot4

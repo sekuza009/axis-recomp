@@ -71,7 +71,7 @@ void (setup_drawSoundPage)(void)
 		text_draw8(X0 + 0x8c, Y0 + 0x9c + k * 0x28, (const char *)(MSG(173, "BGM") + k * 0x80));
 	int on = g_effectsVolume > 0;
 	for (int k = 0; k < 3; k++) {
-		int value = k == 0 ? on : GAME_VAR(int, k == 1 ? ADDR(g_soundToggle6) : ADDR(g_soundToggle7));
+		int value = k == 0 ? on : GAME_VAR(int, k == 1 ? ADDR(g_setupSound3D) : ADDR(g_setupStereoReverse));
 		const char *name = (const char *)(MSG(176, "OFF") + value * 0x80);
 		int y = Y0 + 0x9c + k * 0x28;
 		if (hovered == 5 + k) {

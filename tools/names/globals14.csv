@@ -6,8 +6,8 @@
 0x4defc8,int,g_keyLoadingSkip
 0x4defcc,int,g_keyLoadingSkip2
 0x4defa8,int,g_keyWatchChat
-0x4ddea0,int,g_soundToggle6
-0x4ddea4,int,g_soundToggle7
+0x4ddea0,int,g_setupSound3D
+0x4ddea4,int,g_setupStereoReverse
 0x4b42dc,int,g_musicVolumeSetting
 0x76d418,int,g_chatEditLength
 0x4deb54,int,g_showCmd

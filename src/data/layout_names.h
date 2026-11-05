@@ -1530,8 +1530,8 @@ extern struct GameData g_data;
 #define g_mechBoosterEnergy (*(float *)g_mechBoosterEnergy_v)
 #undef g_mechBoosterRecharge
 #define g_mechBoosterRecharge (*(float *)g_mechBoosterRecharge_v)
-#undef g_mechBoosterValue3
-#define g_mechBoosterValue3 (*(float *)g_mechBoosterValue3_v)
+#undef g_mechBoosterRestTime
+#define g_mechBoosterRestTime (*(float *)g_mechBoosterRestTime_v)
 #undef g_mechChanged
 #define g_mechChanged (*(int *)g_mechChanged_v)
 #undef g_mechDetectionAngle
@@ -1548,14 +1548,14 @@ extern struct GameData g_data;
 #define g_mechItem4 (*(u32 *)((u8 *)g_mechSettings_v + 0x10))
 #undef g_mechItem5
 #define g_mechItem5 (*(u32 *)((u8 *)g_mechSettings_v + 0x14))
-#undef g_mechLegsBonus1
-#define g_mechLegsBonus1 (*(float *)g_mechLegsBonus1_v)
-#undef g_mechLegsBonus2
-#define g_mechLegsBonus2 (*(float *)g_mechLegsBonus2_v)
-#undef g_mechLegsBonus3
-#define g_mechLegsBonus3 (*(float *)g_mechLegsBonus3_v)
+#undef g_mechLegsBackBoost
+#define g_mechLegsBackBoost (*(float *)g_mechLegsBackBoost_v)
+#undef g_mechLegsForwardBoost
+#define g_mechLegsForwardBoost (*(float *)g_mechLegsForwardBoost_v)
 #undef g_mechLegsInertia
 #define g_mechLegsInertia (*(float *)g_mechLegsInertia_v)
+#undef g_mechLegsSideBoost
+#define g_mechLegsSideBoost (*(float *)g_mechLegsSideBoost_v)
 #undef g_mechLegsSpeedCorrection
 #define g_mechLegsSpeedCorrection (*(float *)g_mechLegsSpeedCorrection_v)
 #undef g_mechLockOnTime
@@ -2002,10 +2002,6 @@ extern struct GameData g_data;
 #define g_popupRects ((int *)g_popupRects_v)
 #undef g_primarySoundBuffer
 #define g_primarySoundBuffer (*(void * *)g_primarySoundBuffer_v)
-#undef g_profile9f6828
-#define g_profile9f6828 (*(int *)g_profile9f6828_v)
-#undef g_profile9f8ee4
-#define g_profile9f8ee4 (*(int *)g_profile9f8ee4_v)
 #undef g_profileColour
 #define g_profileColour ((u32 *)g_profileColour_v)
 #undef g_profileCount
@@ -2098,6 +2094,10 @@ extern struct GameData g_data;
 #define g_profileProgressSaved (*(int *)g_profileProgressSaved_v)
 #undef g_profileRecords
 #define g_profileRecords ((PilotProfile *)g_data.g_profileRecords_)
+#undef g_profileReveal
+#define g_profileReveal (*(int *)g_profileReveal_v)
+#undef g_profileRevealClock
+#define g_profileRevealClock (*(int *)g_profileRevealClock_v)
 #undef g_profileRowClicked
 #define g_profileRowClicked (*(int *)g_profileRowClicked_v)
 #undef g_profileScreenReady
@@ -2500,6 +2500,8 @@ extern struct GameData g_data;
 #define g_setupResolution (*(int *)((u8 *)g_graphicEdited_v + 0x0))
 #undef g_setupSliderRects
 #define g_setupSliderRects ((int *)g_setupSliderRects_v)
+#undef g_setupSound3D
+#define g_setupSound3D (*(int *)((u8 *)g_soundEdited_v + 0x8))
 #undef g_setupSoundLeft
 #define g_setupSoundLeft (*(int *)((u8 *)g_setupSoundRect_v + 0x0))
 #undef g_setupSoundRect
@@ -2508,6 +2510,8 @@ extern struct GameData g_data;
 #define g_setupSoundRects ((int *)g_setupSoundRects_v)
 #undef g_setupSoundRight
 #define g_setupSoundRight (*(int *)((u8 *)g_setupSoundRect_v + 0x8))
+#undef g_setupStereoReverse
+#define g_setupStereoReverse (*(int *)((u8 *)g_soundEdited_v + 0xc))
 #undef g_setupTab
 #define g_setupTab (*(int *)g_setupTab_v)
 #undef g_setupTopOutlines
@@ -2553,7 +2557,7 @@ extern struct GameData g_data;
 #undef g_sortState
 #define g_sortState ((u8 *)g_sortState_v)
 #undef g_sound3D
-#define g_sound3D (*(int *)((u8 *)g_soundSettings_v + 0xc))
+#define g_sound3D (*(int *)((u8 *)g_soundSettings_v + 0x8))
 #undef g_soundBaseVolume
 #define g_soundBaseVolume (*(int *)g_soundBaseVolume_v)
 #undef g_soundEdited
@@ -2562,14 +2566,8 @@ extern struct GameData g_data;
 #define g_soundOn (*(int *)g_soundOn_v)
 #undef g_soundSettings
 #define g_soundSettings ((int *)g_soundSettings_v)
-#undef g_soundSwitch1
-#define g_soundSwitch1 (*(int *)((u8 *)g_soundSettings_v + 0x8))
 #undef g_soundTable
 #define g_soundTable ((u32 *)g_soundTable_v)
-#undef g_soundToggle6
-#define g_soundToggle6 (*(int *)((u8 *)g_soundEdited_v + 0x8))
-#undef g_soundToggle7
-#define g_soundToggle7 (*(int *)((u8 *)g_soundEdited_v + 0xc))
 #undef g_soundVolume
 #define g_soundVolume (*(int *)((u8 *)g_soundSettings_v + 0x0))
 #undef g_spiralTextures
@@ -2600,6 +2598,8 @@ extern struct GameData g_data;
 #define g_staticTex64x64 (*(u32 *)((u8 *)g_texture64x64_v + 0x0))
 #undef g_statusLine
 #define g_statusLine (g_data.g_statusLine_)
+#undef g_stereoReverse
+#define g_stereoReverse (*(int *)((u8 *)g_soundSettings_v + 0xc))
 #undef g_storedConnection
 #define g_storedConnection (*(void * *)g_storedConnection_v)
 #undef g_tan10Table
