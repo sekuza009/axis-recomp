@@ -6,7 +6,7 @@ import glob, os, re, sys
 
 os.chdir(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..'))
 pairs = [a.split('=', 1) for a in sys.argv[1:]]
-files = [f for f in glob.glob('src/**/*.[ch]', recursive=True) + ['src/scene.fields', 'recomp.c', '../decomp/symbols.csv']
+files = [f for f in glob.glob('src/**/*.[ch]', recursive=True) + ['src/scene.fields', 'recomp.c', 'axisnet_recomp.c', '../decomp/symbols.csv']
          + glob.glob('tools/names/*') if os.path.isfile(f)]
 texts = {f: open(f, encoding='latin-1', newline='').read() for f in files}
 bad = 0

@@ -14,7 +14,7 @@ for line in open(sys.argv[1], encoding='utf-8'):
     if line:
         old, new, *flag = [x.strip() for x in line.split(',')]
         pairs.append((old, new, flag == ['merge']))
-files = sorted(glob.glob('src/**/*.c', recursive=True) + glob.glob('src/**/*.h', recursive=True)) + ['recomp.c']
+files = sorted(glob.glob('src/**/*.c', recursive=True) + glob.glob('src/**/*.h', recursive=True)) + ['recomp.c', 'axisnet_recomp.c']   # (the patch layer calls some by name)
 if os.path.exists('../decomp/symbols.csv'):
     files.append('../decomp/symbols.csv')
 data = {f: open(f, 'rb').read() for f in files}
