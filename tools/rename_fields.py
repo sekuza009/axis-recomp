@@ -1,7 +1,8 @@
 r"""rename_fields.py old=new... [--comment=new:text]...: struct fields renamed in src (the .c and .h files but the
 generated scene.h) and in src/scene.fields; then run tools/mkscene.py. Names are replaced only as members: after
 -> or ., as offsetof(T, name), and as the declared name in scene.fields (so a word also used in comments or as a
-local stays). --comment=new:text sets that field's comment in scene.fields (every struct declaring it).
+local stays). --comment=new:text sets that field's comment in scene.fields (every struct declaring it;
+--comment=Struct.new:text only that struct's).
 The code is the same (check: tools/objcmp.py)."""
 import glob, os, re, sys
 
@@ -35,7 +36,10 @@ for f in glob.glob('src/**/*.[ch]', recursive=True):
 
 def fields(t):
 	out = []
+	struct = ''
 	for line in t.split('\n'):
+		if line.startswith('struct '):
+			struct = line.split()[1]
 		m = re.match(r'^(\S+\s+\S+\s+[\w ]+?\b)(\w+)(\[[^\]]*\])?(\s*)(#.*)?(\r?)$', line)
 		if m and not line.startswith(('#', 'struct ')):
 			name = m.group(2)
@@ -43,11 +47,12 @@ def fields(t):
 				if name == old:
 					name = new
 			pre, arr, sp, com, cr = m.group(1), m.group(3) or '', m.group(4), m.group(5), m.group(6)
-			if name in comments:
+			text = comments.get(struct + '.' + name, comments.get(name))   # (Struct.name: that struct's only)
+			if text is not None:
 				decl = pre + name + arr
-				com = '# ' + comments[name]
+				com = '# ' + text
 				sp = ' ' * max(1, 64 - len(decl)) if len(decl) < 64 else ' '
-			if name != m.group(2) or name in comments:
+			if name != m.group(2) or text is not None:
 				line = pre + name + arr + (sp + com if com else '') + cr
 		out.append(line)
 	return '\n'.join(out)

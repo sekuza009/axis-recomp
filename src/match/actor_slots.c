@@ -377,7 +377,7 @@ void THISCALL (actor_applySpawnRecord)(u8 *scene, int a, const u8 *rec)
 	AC->armor = SR->armor;
 	AC->shield = SR->shield;
 	AC->topSpeed = AC->speed = (float)(SR->speed * (long double)k_27_7778f);
-	AC->accel = (float)(SR->accel * (long double)k_10f);
+	AC->turnRate = (float)(SR->turnRate * (long double)k_10f);
 	long double radius = SR->range;
 	AC->radiusSq = (float)(radius * radius * k_10000f);
 	AC->unused34 = SR->unused34;
@@ -763,7 +763,7 @@ static void mech_stats(u8 *s, u8 *ac, u8 *p, int check)
 	AC->runTop[3] = f32(-fld_m(&AC->runTop[2]));
 	AC->unused1c = 100;
 	BITS(AC->topSpeed) = BITS(AC->speed);
-	AC->accel = 900.0f;   /* 900 */
+	AC->turnRate = 900.0f;   /* 900 */
 	AC->unused34 = 0x40400000;   /* 3 */
 	AC->aimError = 10;
 	AC->scriptFlag = 0;

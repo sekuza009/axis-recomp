@@ -62,7 +62,7 @@ typedef struct ActorInfo {
 	i32 ammoSlot;   /* +0x2dc0: (by use, a weapon's) the ammunition slot it uses (Player.ammo) */
 	i32 ammoPerShot;   /* +0x2dc4: ammunition one shot takes */
 	i32 burst;   /* +0x2dc8: rounds a burst */
-	float burstGap;   /* +0x2dcc: (unclear) the time between bursts */
+	float burstGap;   /* +0x2dcc: seconds between a burst's rounds (0: all at once; actor_processFrame) */
 	float burstStep[3];   /* +0x2dd0: (by use) a burst's round n placed n x this along the muzzle (actor_processFrame) */
 	i32 damageMode;   /* +0x2ddc: (by use, a weapon's) 0: its damage off the armour first, 1: off the shield */
 	i32 damage;   /* +0x2de0: a hit's damage */
@@ -70,7 +70,7 @@ typedef struct ActorInfo {
 	float velocity;   /* +0x2de8: its speed (0: it arrives at once) */
 	float spread;   /* +0x2dec: aimed shots spread by it, less the owner's steadiness */
 	float hitRange;   /* +0x2df0: HIT RANGE (ARM CENTER, message 310): a round's hit box half-size, also its impact particle's size */
-	float splashRadius;   /* +0x2df4: (unclear) */
+	float splashRadius;   /* +0x2df4: SPLASH DAMAGE RANGE (message 311): a world hit's damage reaches this far, falling to half at the border (weapons.c) */
 	i32 splashBorderDamage;   /* +0x2df8: SPLASH BORDER DAMAGE (ARM CENTER, message 312); only shown: the splash damage is half at the border (weapons.c) */
 	i32 shotMode;   /* +0x2dfc: 3: fired into a random cone; its muzzle flash is particle kind shotMode + 10 */
 	i32 sound;   /* +0x2e00: its firing sound (< 0 none) */
@@ -174,11 +174,11 @@ typedef struct Player {
 	float boostTime;   /* +0x44: (by use) seconds of running the energy lasts */
 	float rechargeTime;   /* +0x48: seconds the energy takes to refill */
 	float restTime;   /* +0x4c: seconds of rest after running */
-	float speed;   /* +0x50: (unclear) the spawn record's speed x 27.7778, kept twice (also topSpeed) */
+	float speed;   /* +0x50: the speed now (km/h x 27.7778: cm/s; the spawn record's or the legs and booster's); trigger commands may change it, command 12 puts topSpeed back */
 	float runTop[4];   /* +0x54: (by use) the top speeds running: forward, back, right, left */
 	u32 unused1c;   /* +0x64: copied with the spawn record (+0x1c to the actor's +0x64; 100 for a player's mech); not read */
-	float topSpeed;   /* +0x68: (unclear) see speed */
-	float accel;   /* +0x6c: (unclear) the spawn record's +0x2c x 10 */
+	float topSpeed;   /* +0x68: the speed it started with (see speed) */
+	float turnRate;   /* +0x6c: the most pitch / yaw turn toward the view a second (actor_processFrame); the spawn record's +0x2c x 10 (900 for a player's mech) */
 	u32 unused34;   /* +0x70: copied with the spawn record (+0x34 to the actor's +0x70; 3.0 for a player's mech); not read */
 	i32 aimError;   /* +0x74: the bots' aim wanders by +- this about pitch and yaw (actor_processFrame); the spawn record's +0x38 x 10, whole */
 	u32 scriptFlag;   /* +0x78: copied with the spawn record (+0x3c to the actor's +0x78); set 0 / 1 by trigger commands 10 / 11; not read */
@@ -1140,7 +1140,7 @@ typedef struct SpawnRecord {
 	i32 armor;   /* +0x20: the armour and shield it starts with (and their maximum) */
 	i32 shield;   /* +0x24 */
 	float speed;   /* +0x28: x 27.7778: the actor's speed and top speed */
-	float accel;   /* +0x2c: x 10 */
+	float turnRate;   /* +0x2c: x 10: the actor's turnRate */
 	float range;   /* +0x30: its sight range (squared, x 10000: radiusSq) */
 	u32 unused34;   /* +0x34: copied with the spawn record (+0x34 to the actor's +0x70; 3.0 for a player's mech); not read */
 	float aimError;   /* +0x38: the bots' aim wanders by +- this about pitch and yaw (actor_processFrame); the spawn record's +0x38 x 10, whole */
@@ -1996,7 +1996,7 @@ _Static_assert(offsetof(Player, speed) == 0x50 && sizeof(((Player *)0)->speed) =
 _Static_assert(offsetof(Player, runTop) == 0x54 && sizeof(((Player *)0)->runTop) == 0x10, "scene.fields: Player.runTop");
 _Static_assert(offsetof(Player, unused1c) == 0x64 && sizeof(((Player *)0)->unused1c) == 0x4, "scene.fields: Player.unused1c");
 _Static_assert(offsetof(Player, topSpeed) == 0x68 && sizeof(((Player *)0)->topSpeed) == 0x4, "scene.fields: Player.topSpeed");
-_Static_assert(offsetof(Player, accel) == 0x6c && sizeof(((Player *)0)->accel) == 0x4, "scene.fields: Player.accel");
+_Static_assert(offsetof(Player, turnRate) == 0x6c && sizeof(((Player *)0)->turnRate) == 0x4, "scene.fields: Player.turnRate");
 _Static_assert(offsetof(Player, unused34) == 0x70 && sizeof(((Player *)0)->unused34) == 0x4, "scene.fields: Player.unused34");
 _Static_assert(offsetof(Player, aimError) == 0x74 && sizeof(((Player *)0)->aimError) == 0x4, "scene.fields: Player.aimError");
 _Static_assert(offsetof(Player, scriptFlag) == 0x78 && sizeof(((Player *)0)->scriptFlag) == 0x4, "scene.fields: Player.scriptFlag");
@@ -2771,7 +2771,7 @@ _Static_assert(offsetof(SpawnRecord, unused1c) == 0x1c && sizeof(((SpawnRecord *
 _Static_assert(offsetof(SpawnRecord, armor) == 0x20 && sizeof(((SpawnRecord *)0)->armor) == 0x4, "scene.fields: SpawnRecord.armor");
 _Static_assert(offsetof(SpawnRecord, shield) == 0x24 && sizeof(((SpawnRecord *)0)->shield) == 0x4, "scene.fields: SpawnRecord.shield");
 _Static_assert(offsetof(SpawnRecord, speed) == 0x28 && sizeof(((SpawnRecord *)0)->speed) == 0x4, "scene.fields: SpawnRecord.speed");
-_Static_assert(offsetof(SpawnRecord, accel) == 0x2c && sizeof(((SpawnRecord *)0)->accel) == 0x4, "scene.fields: SpawnRecord.accel");
+_Static_assert(offsetof(SpawnRecord, turnRate) == 0x2c && sizeof(((SpawnRecord *)0)->turnRate) == 0x4, "scene.fields: SpawnRecord.turnRate");
 _Static_assert(offsetof(SpawnRecord, range) == 0x30 && sizeof(((SpawnRecord *)0)->range) == 0x4, "scene.fields: SpawnRecord.range");
 _Static_assert(offsetof(SpawnRecord, unused34) == 0x34 && sizeof(((SpawnRecord *)0)->unused34) == 0x4, "scene.fields: SpawnRecord.unused34");
 _Static_assert(offsetof(SpawnRecord, aimError) == 0x38 && sizeof(((SpawnRecord *)0)->aimError) == 0x4, "scene.fields: SpawnRecord.aimError");

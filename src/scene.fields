@@ -48,12 +48,12 @@ struct ActorInfo 0x2e18                                         # an actor type'
 0x2dc0     4          i32 ammoSlot                              # (by use, a weapon's) the ammunition slot it uses (Player.ammo)
 0x2dc4     4          i32 ammoPerShot                           # ammunition one shot takes
 0x2dc8     4          i32 burst                                 # rounds a burst
-0x2dcc     4          float burstGap                            # (unclear) the time between bursts
+0x2dcc     4          float burstGap                            # seconds between a burst's rounds (0: all at once; actor_processFrame)
 0x2de4     4          float stepLength                          # a shot's first step (traced)
 0x2de8     4          float velocity                            # its speed (0: it arrives at once)
 0x2dec     4          float spread                              # aimed shots spread by it, less the owner's steadiness
 0x2df0     4          float hitRange                            # HIT RANGE (ARM CENTER, message 310): a round's hit box half-size, also its impact particle's size
-0x2df4     4          float splashRadius                        # (unclear)
+0x2df4     4          float splashRadius                        # SPLASH DAMAGE RANGE (message 311): a world hit's damage reaches this far, falling to half at the border (weapons.c)
 0x2dfc     4          i32 shotMode                              # 3: fired into a random cone; its muzzle flash is particle kind shotMode + 10
 0x2e00     4          i32 sound                                 # its firing sound (< 0 none)
 0x2e08     4          float cycleTime                           # seconds a firing cycle
@@ -266,10 +266,10 @@ struct Player 0x8888                                            # a player's rec
 0x1c       4          i32 armorMax                              # (by use) the armor it starts with (actor_startingValues)
 0x20       4          i32 shieldMax                             # the shield it starts with
 0x28       0x10       i32 ammoMax[4]                            # (by use) per weapon slot: the full load (ammo starts at half)
-0x50       4          float speed                               # (unclear) the spawn record's speed x 27.7778, kept twice (also topSpeed)
+0x50       4          float speed                               # the speed now (km/h x 27.7778: cm/s; the spawn record's or the legs and booster's); trigger commands may change it, command 12 puts topSpeed back
 0x64       4          u32 unused1c                              # copied with the spawn record (+0x1c to the actor's +0x64; 100 for a player's mech); not read
-0x68       4          float topSpeed                            # (unclear) see speed
-0x6c       4          float accel                               # (unclear) the spawn record's +0x2c x 10
+0x68       4          float topSpeed                            # the speed it started with (see speed)
+0x6c       4          float turnRate                            # the most pitch / yaw turn toward the view a second (actor_processFrame); the spawn record's +0x2c x 10 (900 for a player's mech)
 0x70       4          u32 unused34                              # copied with the spawn record (+0x34 to the actor's +0x70; 3.0 for a player's mech); not read
 0x74       4          i32 aimError                              # the bots' aim wanders by +- this about pitch and yaw (actor_processFrame); the spawn record's +0x38 x 10, whole
 0x78       4          u32 scriptFlag                            # copied with the spawn record (+0x3c to the actor's +0x78); set 0 / 1 by trigger commands 10 / 11; not read
@@ -984,7 +984,7 @@ struct SpawnRecord 0x5c                                         # an actor's spa
 0x20       4          i32 armor                                  # the armour and shield it starts with (and their maximum)
 0x24       4          i32 shield
 0x28       4          float speed                                # x 27.7778: the actor's speed and top speed
-0x2c       4          float accel                                # x 10
+0x2c       4          float turnRate                            # x 10: the actor's turnRate
 0x30       4          float range                                # its sight range (squared, x 10000: radiusSq)
 0x34       4          u32 unused34                              # copied with the spawn record (+0x34 to the actor's +0x70; 3.0 for a player's mech); not read
 0x38       4          float aimError                            # the bots' aim wanders by +- this about pitch and yaw (actor_processFrame); the spawn record's +0x38 x 10, whole

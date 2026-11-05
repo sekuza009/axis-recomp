@@ -604,7 +604,7 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 				}
 			}
 			/* the turns towards the view, at most the turn rate (+0x6c) a second */
-			float rate = f32(fmul_m(fld_m(dt), &AC->accel));
+			float rate = f32(fmul_m(fld_m(dt), &AC->turnRate));
 			for (int c = 0; c < 2; c++) {
 				long double r = angle_turn(AU(offsetof(Player, pitch) + c * 4), AU(offsetof(Player, botLookPitch) + c * 4));
 				float rr = (float)r;
