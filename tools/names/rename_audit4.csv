@@ -152,3 +152,5 @@ cfg_gameTypeNames,cfg_readServer
 cfg_readAudioLines,cfg_readSound
 cfg_parseKeyNames,cfg_readKeyBindings
 tex_loadColorMask,tex_loadImage
+space_traceUnit,space_traceBlock
+space_collideUnit,space_collideBlock

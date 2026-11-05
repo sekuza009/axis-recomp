@@ -266,8 +266,8 @@ typedef struct { u32 vtable; void *banks[6]; i32 count; } TextureManager;   /* t
 #define array_recordAt(i, base, stride) GAME_FN(array_recordAt, 0x46cbc0, int, int, int, int)(i, base, stride)   /* record i of an array (none when negative) */
 #define collisionTri_sweepSphere(rec, r, pos, vel, k, outPos, outVel, outDist, outPlane, axis) \
 	GAME_THISFN(collisionTri_sweepSphere, 0x47dd90, int, void *, float, const float *, const float *, u32, float *, float *, float *, float *, u32)(rec, r, pos, vel, k, outPos, outVel, outDist, outPlane, axis)
-#define space_collideUnit(node, r, pos, vel, k, outPos, outVel, outDist, outPlane, axis, subs, nsubs) \
-	GAME_THISFN(space_collideUnit, 0x4804b0, int, void *, u32, const float *, const float *, u32, float *, u32, u32, u32, u32, u32, u32)(node, r, pos, vel, k, outPos, outVel, outDist, outPlane, axis, subs, nsubs)
+#define space_collideBlock(node, r, pos, vel, k, outPos, outVel, outDist, outPlane, axis, subs, nsubs) \
+	GAME_THISFN(space_collideBlock, 0x4804b0, int, void *, u32, const float *, const float *, u32, float *, u32, u32, u32, u32, u32, u32)(node, r, pos, vel, k, outPos, outVel, outDist, outPlane, axis, subs, nsubs)
 #define space_itemMeetsBox(item, low, high, margin) GAME_THISFN(space_itemMeetsBox, 0x47fce0, int, void *, const float *, const float *, u32)(item, low, high, margin)   /* the item meets the box (widened) */
 #define space_getNextFreeBlockPtrBy(space, low, high) GAME_THISFN(space_getNextFreeBlockPtrBy, 0x4818e0, u8 *, void *, const float *, const float *)(space, low, high)
 #define space_freeNode(space, node) GAME_THISFN(space_freeNode, 0x481730, void, void *, void *)(space, node)   /* a node back to the free list */
@@ -313,7 +313,7 @@ typedef struct { u32 vtable; void *banks[6]; i32 count; } TextureManager;   /* t
 #define space_getNextFreeUnitPtr(space) GAME_THISFN(space_getNextFreeUnitPtr, 0x4817f0, u32 *, void *)(space)
 #define space_addUnitPlanes(space, id, unit, part, i0, i1, i2, v0, v1, v2) GAME_THISFN(space_addUnitPlanes, 0x482320, void, void *, u32, void *, u32, u32, u32, u32, const float *, const float *, const float *)(space, id, unit, part, i0, i1, i2, v0, v1, v2)
 #define space_transformPoint(out, m, v) GAME_FN(space_transformPoint, 0x482a40, void, float *, const float *, const float *)(out, m, v)   /* a point through a matrix */
-#define space_traceUnit(node, p0, p1, hit, dist, subs, nsubs) GAME_THISFN(space_traceUnit, 0x4809f0, int, void *, const float *, const float *, u32, float *, u32, u32)(node, p0, p1, hit, dist, subs, nsubs)
+#define space_traceBlock(node, p0, p1, hit, dist, subs, nsubs) GAME_THISFN(space_traceBlock, 0x4809f0, int, void *, const float *, const float *, u32, float *, u32, u32)(node, p0, p1, hit, dist, subs, nsubs)
 #define Vec3_rotateAxis(v, axis, angle) GAME_THISFN(Vec3_rotateAxis, 0x4677c0, void, float *, int, int)(v, axis, angle)   /* about axis 0 / 1 / 2 by tenths of a degree */
 #define factors_addAmbient(self, colour) GAME_THISFN(factors_addAmbient, 0x483e90, void, void *, const void *)(self, colour)
 #define factors_addDirectional(self, colour, dir) GAME_THISFN(factors_addDirectional, 0x483ec0, void, void *, const void *, const void *)(self, colour, dir)

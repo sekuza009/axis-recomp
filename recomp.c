@@ -1809,7 +1809,7 @@ THISCALL int ViewVolume_addTriangle(char *vv, int id, const DWORD *info6, const 
 THISCALL int collisionTri_sweepSphere(void *self, DWORD r, DWORD pos, DWORD vel, DWORD k, DWORD outPos,
                                      DWORD outVel, DWORD outDist, DWORD outPlane, DWORD axis);
 /* batch 38 */
-/* 0x4804b0 (thiscall) space_collideUnit(r, pos, vel, k, outPos, outVel, outDist, outPlane, axis, subs, nsubs): the
+/* 0x4804b0 (thiscall) space_collideBlock(r, pos, vel, k, outPos, outVel, outDist, outPlane, axis, subs, nsubs): the
    moving sphere against every triangle of the space object's list (this+0x18; nodes {record, ., ., next at +0xc};
    a record whose id has bit 0 set is skipped there) and of nsubs sub-models (12-byte entries {list head, matrix
    model -> world, matrix world -> model}; pos and vel are taken into the model, the contact back out). Keeps the
@@ -1818,7 +1818,7 @@ THISCALL int collisionTri_sweepSphere(void *self, DWORD r, DWORD pos, DWORD vel,
    Returns 1 if anything was hit. Lifted (tools/lift.py) like collisionTri_sweepSphere, which it calls; an empty
    sub-model list crashes the original (it follows the null head's next pointer), so the game never passes one. */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-THISCALL int space_collideUnit(void *self, DWORD r, DWORD pos, DWORD vel, DWORD k, DWORD outPos, DWORD outVel,
+THISCALL int space_collideBlock(void *self, DWORD r, DWORD pos, DWORD vel, DWORD k, DWORD outPos, DWORD outVel,
                                  DWORD outDist, DWORD outPlane, DWORD axis, DWORD subs, DWORD nsubs);
 /* batch 39: game functions that call the MSVC CRT (library code, called at its own addresses: pure functions only
    here - vsprintf 0x49ed2e, __ftol 0x49ec14, strtok 0x49ec3b, atoi 0x49ec09, _itoa 0x49fb53) */
@@ -1869,7 +1869,7 @@ int net_formatAddress(DWORD addr);
    its bounds widened by the margin (+0x8c), the cell (__ftol of the offsets / cell sizes, clamped to the last cell)
    names a root node (short at +0x54 table; -1 = none; array_recordAt -> node array +0x44, 0x50-byte nodes); the walk
    goes down the octree by comparing with each node box's midpoints to a leaf (+0x24 == 0) and runs
-   space_collideUnit on it; the result is kept at +0x98. Lifted (tools/lift.py) */
+   space_collideBlock on it; the result is kept at +0x98. Lifted (tools/lift.py) */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 THISCALL int space_collideAt(void *self, DWORD r, DWORD pos, DWORD vel, DWORD k, DWORD outPos, DWORD outVel,
                                    DWORD outDist, DWORD outPlane, DWORD axis, DWORD subs, DWORD nsubs);
@@ -2572,13 +2572,13 @@ THISCALL void net_sendGamePacket(char *scene, DWORD p);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void setup_bindKey(int key);
 /* batch 53: the ray trace chain (lifted/trace.c) */
-/* 0x4809f0 (thiscall) space_traceUnit(p0, p1, hit, dist, subs, nsubs): the segment p0 -> p1 through octree
+/* 0x4809f0 (thiscall) space_traceBlock(p0, p1, hit, dist, subs, nsubs): the segment p0 -> p1 through octree
    node `this` (0x50 bytes: box, list +0x18, inner flag +0x24, 8 children +0x28): an inner node splits the segment
    at the box midpoints and recurses into the children in the order the segment meets them, stopping at the first
    hit; a leaf traces its triangle list (collisionTri_traceSegment; records flagged 1 are skipped) and every sub-model
    list (the segment taken into the model, the hit back out), keeping the nearest. Returns the hit record or 0 */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-THISCALL DWORD space_traceUnit(char *node, DWORD p0, DWORD p1, DWORD hit, DWORD dist, DWORD subs, DWORD nsubs);
+THISCALL DWORD space_traceBlock(char *node, DWORD p0, DWORD p1, DWORD hit, DWORD dist, DWORD subs, DWORD nsubs);
 /* 0x483060 (thiscall) space_traceNodes(p0, p1, hit, subs, nsubs): the segment through the grid's cells (3D DDA over
    the cells it crosses, nearest first), tracing the octree of each cell that has one; the first hit wins */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
@@ -8446,7 +8446,7 @@ static DWORD scu_orig(void)
 	g_scuHits += r == 1;
 	return r;
 }
-ST(space_collideUnit, scu_setup();, scu_orig(), SCU_ARGS(space_collideUnit, DWORD))
+ST(space_collideBlock, scu_setup();, scu_orig(), SCU_ARGS(space_collideBlock, DWORD))
 #undef RND
 #undef MAKE_TRI
 /* batch 39 */
@@ -8649,7 +8649,7 @@ ST(angle_stepTowards, ang_setup();, ld_hash(CD(long double, 0x46c1c0, DWORD, DWO
    ld_hash(angle_stepTowards((DWORD)g_a[0], (DWORD)g_a[1], (DWORD)g_a[2])))
 /* collision_moveActor: a stage object at S = BUF + 0x10000 whose grid (+0xa10) is the walk scene's grid (the walk
    scene is built at S + 0xa10 - 0x7000); a world box around pos; up to 3 map objects, each with the scene's
-   triangle list (inactive when that list is empty - an empty sub-model list crashes space_collideUnit), a
+   triangle list (inactive when that list is empty - an empty sub-model list crashes space_collideBlock), a
    translation matrix, a box around the object, and the two sub-model matrices */
 #define STAGE (BUF + 0x10000)
 static void stage_setup(void)
@@ -9652,8 +9652,8 @@ static int ray_orig(void)
 	g_traceHits[2] += GF(BUF + 0x206100) != -7.0f;   /* returns nothing: count tests where it wrote a hit point */
 	return r;
 }
-ST(space_traceUnit, trace_build(BUF);, tru_orig(),
-   space_traceUnit(BUF + 0x7800, (DWORD)(BUF + 0x6200), (DWORD)(BUF + 0x6210), (DWORD)(BUF + 0x6100), (DWORD)(BUF + 0x6110), (DWORD)(BUF + 0x400), (DWORD)g_traceSubs))
+ST(space_traceBlock, trace_build(BUF);, tru_orig(),
+   space_traceBlock(BUF + 0x7800, (DWORD)(BUF + 0x6200), (DWORD)(BUF + 0x6210), (DWORD)(BUF + 0x6100), (DWORD)(BUF + 0x6110), (DWORD)(BUF + 0x400), (DWORD)g_traceSubs))
 ST(space_traceNodes, trace_build(BUF);, trn_orig(),
    space_traceNodes(BUF + 0x7000, (DWORD)(BUF + 0x6200), (DWORD)(BUF + 0x6210), (DWORD)(BUF + 0x6100), (DWORD)(BUF + 0x400), (DWORD)g_traceSubs))
 /* the scene at the scratch area: the level grid copied to +0xa10 (its octree and triangles built at +0x200000), up to
@@ -17340,7 +17340,7 @@ static const STest g_stests[] = {
 	/* batch 37 */
 	T(collisionTri_sweepSphere, 1, 10, 20000),
 	/* batch 38 */
-	T(space_collideUnit, 1, 10, 20000),
+	T(space_collideBlock, 1, 10, 20000),
 	/* batch 39 */
 	T(stage_printText, 1, 4, 2000), T(notice_printCentre, 1, 4, 2000), T(msg_print, 1, 4, 2000), T(anim_setFrame, 0, 4, 2000),
 	T(tex_tintRgba, 1, 4, 3000), T(net_parseAddress, 1, 300, 0), T(net_formatAddress, 1, 300, 0),
@@ -17421,7 +17421,7 @@ static const STest g_stests[] = {
 	T(profile_logIn, 1, 40, 0), T(armc_extraItemBonuses, 1, 400, 0), T(cfg_readKeyBindings, 1, 1000, 0), T(cfg_readGraphics, 1, 1000, 0),
 	T(cfg_readServer, 1, 1000, 0), T(net_sendGamePacket, 0, 300, 0), T(setup_bindKey, 1, 3000, 0),
 	/* batch 53 */
-	T(space_traceUnit, 1, 600, 0), T(space_traceNodes, 1, 600, 0), T(collision_rayTrace, 0, 600, 0),
+	T(space_traceBlock, 1, 600, 0), T(space_traceNodes, 1, 600, 0), T(collision_rayTrace, 0, 600, 0),
 	/* batch 54 */
 	T(cfg_init, 1, 200, 0), T(actor_pickPathPoint, 0, 400, 0), T(armc_applyColourSlot, 1, 300, 0), T(armc_retintParts, 1, 300, 0),
 	/* batch 55 */
@@ -18292,7 +18292,7 @@ static const struct { DWORD addr; void *fn; const char *name; } g_hooks3[] = {
 	/* batch 37 */
 	{ 0x47dd90, (void *)collisionTri_sweepSphere, "collisionTri_sweepSphere" },
 	/* batch 38 */
-	{ 0x4804b0, (void *)space_collideUnit, "space_collideUnit" },
+	{ 0x4804b0, (void *)space_collideBlock, "space_collideBlock" },
 	/* batch 39 */
 	{ 0x473450, (void *)stage_printText, "stage_printText" }, { 0x463450, (void *)notice_printCentre, "notice_printCentre" },
 	{ 0x4629f0, (void *)msg_print, "msg_print" }, { 0x46f770, (void *)anim_setFrame, "anim_setFrame" },
@@ -18432,7 +18432,7 @@ static const struct { DWORD addr; void *fn; const char *name; } g_hooks3[] = {
 	{ 0x42da70, (void *)cfg_readServer, "cfg_readServer" }, { 0x48dbf0, (void *)net_sendGamePacket, "net_sendGamePacket" },
 	{ 0x421680, (void *)setup_bindKey, "setup_bindKey" },
 	/* batch 53 */
-	{ 0x4809f0, (void *)space_traceUnit, "space_traceUnit" }, { 0x483060, (void *)space_traceNodes, "space_traceNodes" },
+	{ 0x4809f0, (void *)space_traceBlock, "space_traceBlock" }, { 0x483060, (void *)space_traceNodes, "space_traceNodes" },
 	{ 0x471740, (void *)collision_rayTrace, "collision_rayTrace" },
 	/* batch 54 */
 	{ 0x42eca0, (void *)cfg_init, "cfg_init" }, { 0x460270, (void *)actor_pickPathPoint, "actor_pickPathPoint" },
@@ -19054,7 +19054,7 @@ static DWORD WINAPI worker(LPVOID unused)
 		say("      (map_loadGroundInfoFrom: the original loaded the whole ground in %d tests)\n", g_groundDone);
 		say("      (item_initTextures: the original set the whole scene up in %d tests)\n", g_sceneInitDone);
 		say("      (collisionTri_sweepSphere: the original reported a contact in %d tests)\n", g_csuHits);
-		say("      (space_collideUnit: the original reported a hit in %d tests)\n", g_scuHits);
+		say("      (space_collideBlock: the original reported a hit in %d tests)\n", g_scuHits);
 		say("      (ray traces: the original hit something in %d / %d / %d tests: node, grid, line of sight)\n", g_traceHits[0], g_traceHits[1], g_traceHits[2]);
 		say("      (actor_pickPathPoint: the original picked a target in %d tests)\n", g_losPicks);
 	}

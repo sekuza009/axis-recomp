@@ -34,8 +34,8 @@
 [x] src/load/lists.c 45
 [x] src/load/map_info.c 539
 [x] src/load/names.c 504
-[ ] src/load/skel_data.c 1083
-[ ] src/load/space_pools.c 937
+[x] src/load/skel_data.c 1083
+[x] src/load/space_pools.c 937
 [ ] src/match/actor_frame.c 1271
 [ ] src/match/actor_slots.c 979
 [ ] src/match/frame_loops.c 874

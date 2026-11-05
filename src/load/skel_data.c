@@ -53,12 +53,12 @@ void THISCALL (skel_loadFromFile)(u8 *self, void *f, void *mem, int size)
    +0x110, n at +0x114, extra bytes (+0x124) after them: the block (+8, its size n x 0x70 + extra at +4) holds the
    skeletons' 0x4c-byte records (+0x118), then their 0x24-byte skeletons (+0x11c, each created and released), then the
    rest (+0x128). Its callers ignore the eax it leaves */
-void THISCALL (skelSet_setup)(u8 *self, const char *dir, int n, u32 a, int extra, void *mem, int size)
+void THISCALL (skelSet_setup)(u8 *self, const char *dir, int n, u32 source, int extra, void *mem, int size)
 {
 	Manager *mg = (Manager *)self;
 	SkeletonManager_release(self);
 	strcpy(mg->dir, dir ? dir : (const char *)STR(0x4b1304, "."));
-	mg->source = a;
+	mg->source = source;
 	mg->capacity = n;
 	mg->dataSize = extra;
 	mg->blockSize = n * 0x70 + extra;
@@ -74,11 +74,11 @@ void THISCALL (skelSet_setup)(u8 *self, const char *dir, int n, u32 a, int extra
 }
 
 /* 0x466a60 (thiscall on a shape set): set up for n shapes from the directory dir (+0x10, upper-cased; none or
-   0x4b1304: empty), a at +0x110, n at +0x114, extra bytes (+0x124) after them: the block (+8, its size n x 0x98 +
+   0x4b1304: empty), the source (where the items load from: 0 / 1 loose files, 2 the packed file) at +0x110, n at +0x114, extra bytes (+0x124) after them: the block (+8, its size n x 0x98 +
    extra at +4) holds the shapes' 0x4c-byte records (+0x118), then their 0x4c-byte shapes (+0x11c, each created and
    released), then the rest (+0x128); the name (+0x130) and seven counts (+0x230 ..) cleared. Its callers ignore the
    eax it leaves */
-void THISCALL (shape_initBy)(u8 *self, const char *dir, int n, u32 a, int extra, void *mem, int size)
+void THISCALL (shape_initBy)(u8 *self, const char *dir, int n, u32 source, int extra, void *mem, int size)
 {
 	Manager *mg = (Manager *)self;
 	ShapeManager_release(self);
@@ -87,7 +87,7 @@ void THISCALL (shape_initBy)(u8 *self, const char *dir, int n, u32 a, int extra,
 	else
 		mg->dir[0] = 0;
 	path_normalize(mg->dir);
-	mg->source = a;
+	mg->source = source;
 	mg->capacity = n;
 	mg->dataSize = extra;
 	mg->blockSize = n * 0x98 + extra;

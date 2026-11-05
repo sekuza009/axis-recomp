@@ -550,15 +550,15 @@ static float row_dir(const float *m, const float *p, int i)
 	return f32(mul(fld_m(&p[2]), &m[8 + i]) + mul(fld_m(&p[1]), &m[4 + i]) + mul(fld_m(&p[0]), &m[i]));
 }
 
-/* 0x4804b0 (thiscall on a space object): the sphere of radius r moving from pos by vel against the triangles of the
-   object's list (+0x18: nodes {record, ., ., next +0xc}; records whose first byte has bit 0 set are skipped there)
+/* 0x4804b0 (thiscall on a leaf block of the octree): the sphere of radius r moving from pos by vel against the triangles of the
+   block's item list (+0x18: nodes {record, ., ., next +0xc}; records whose first byte has bit 0 set are skipped there)
    and of nsubs sub-models (subs: {list, model-to-world matrix, world-to-model matrix}; pos and vel are taken into
    the model, the contact back out; an empty sub-model list crashes the original, as it would here). The farthest
    contact along the move wins (collisionTri_sweepSphere's outDist), the record that gave it is skipped next time;
    then the move slides on: up to 6 passes, ending when a pass's distance is under r / 10, or (contact, outVel the
    0xa0e7e8 axis, outDist 0) when the response turns back against vel. outPos starts as pos + vel. Returns 1 when
    anything was hit */
-int THISCALL (space_collideUnit)(u8 *self, float r, const float *pos, const float *vel, u32 k, float *outPos,
+int THISCALL (space_collideBlock)(u8 *self, float r, const float *pos, const float *vel, u32 k, float *outPos,
                                  float *outVel, float *outDist, float *outPlane, u32 axis, const u32 *subs, int nsubs)
 {
 	float at[3], move[3], from[3], step[3], hitPos[3], hitVel[3], plane[4], dist, best;
