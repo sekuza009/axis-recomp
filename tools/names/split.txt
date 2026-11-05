@@ -741,7 +741,7 @@ g_missionselRects
 g_deleteDialogRects
 g_profilePageRects
 g_profileListRects
-g_secondDialogRects
+g_logOutDialogRects
 g_pilotSelectRects
 g_newNameDialogRects
 # the DirectInput key code globals (globals21_keys.csv), 2026-11-01
@@ -924,10 +924,10 @@ g_setupColourDim
 g_skirmishColourLit
 g_skirmishColourDim
 # the screen windows' remaining edges and two values (globals22.csv), 2026-11-01
-g_profileDialog2Bottom
-g_profileDialog2Right
-g_profileDialog2X
-g_profileDialog2Y
+g_logOutDialogBottom
+g_logOutDialogRight
+g_logOutDialogX
+g_logOutDialogY
 g_profileDialogBottom
 g_profileDialogRight
 g_profileDialogX

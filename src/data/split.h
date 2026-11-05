@@ -4295,9 +4295,9 @@ extern u8 g_pilotSelectBottom_v[4];
 extern u8 g_pilotSelectRight_v[4];
 #endif
 #ifdef AXIS_FENCE
-#define g_profileDialog2X_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xbc5000 : g_fence + 0xbc4ffc))
+#define g_logOutDialogX_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xbc5000 : g_fence + 0xbc4ffc))
 #else
-extern u8 g_profileDialog2X_v[4];
+extern u8 g_logOutDialogX_v[4];
 #endif
 #ifdef AXIS_FENCE
 #define g_profileIntro_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xbc7000 : g_fence + 0xbc6ffc))
@@ -4305,9 +4305,9 @@ extern u8 g_profileDialog2X_v[4];
 extern u8 g_profileIntro_v[4];
 #endif
 #ifdef AXIS_FENCE
-#define g_profileDialog2Y_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xbc9000 : g_fence + 0xbc8ffc))
+#define g_logOutDialogY_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xbc9000 : g_fence + 0xbc8ffc))
 #else
-extern u8 g_profileDialog2Y_v[4];
+extern u8 g_logOutDialogY_v[4];
 #endif
 #ifdef AXIS_FENCE
 #define g_profileDialogOpen_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xbcb000 : g_fence + 0xbcaffc))
@@ -4450,9 +4450,9 @@ extern float g_statBarTargets_v[9];
 extern u8 g_profileRevealClock_v[4];
 #endif
 #ifdef AXIS_FENCE
-#define g_secondDialogRects_v ((int *)(AXIS_FENCE == 2 ? g_fence + 0xc05000 : g_fence + 0xc04fe0))
+#define g_logOutDialogRects_v ((int *)(AXIS_FENCE == 2 ? g_fence + 0xc05000 : g_fence + 0xc04fe0))
 #else
-extern int g_secondDialogRects_v[8];
+extern int g_logOutDialogRects_v[8];
 #endif
 #ifdef AXIS_FENCE
 #define g_profileFrameAlpha_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xc07000 : g_fence + 0xc06ffc))
@@ -4540,14 +4540,14 @@ extern int g_profileDialogBox_v[4];
 extern int g_newNameDialogRects_v[8];
 #endif
 #ifdef AXIS_FENCE
-#define g_profileDialog2Right_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xc29000 : g_fence + 0xc28ffc))
+#define g_logOutDialogRight_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xc29000 : g_fence + 0xc28ffc))
 #else
-extern u8 g_profileDialog2Right_v[4];
+extern u8 g_logOutDialogRight_v[4];
 #endif
 #ifdef AXIS_FENCE
-#define g_profileDialog2Bottom_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xc2b000 : g_fence + 0xc2affc))
+#define g_logOutDialogBottom_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xc2b000 : g_fence + 0xc2affc))
 #else
-extern u8 g_profileDialog2Bottom_v[4];
+extern u8 g_logOutDialogBottom_v[4];
 #endif
 #ifdef AXIS_FENCE
 #define g_netChatMessageKind_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xc2d000 : g_fence + 0xc2cffc))

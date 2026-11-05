@@ -79,9 +79,9 @@ void (profile_deleteKeys)(void)
 	dialog_keys(g_profileDialogX, g_profileDialogY);
 }
 
-/* 0x44ca90 (profile_secondDialogKeys): page 5, the second two-button dialog: OK or a click on the left button confirms
+/* 0x44ca90 (profile_logOutKeys): page 5, "log out, are you sure?": OK or a click on the left button confirms
    (profile_resetCamera), the right button or a cancel key goes back to the list */
-void (profile_secondDialogKeys)(void)
+void (profile_logOutKeys)(void)
 {
 	g_cursorBlink = 0.0f;
 	if (input_justPressed(g_keyOk) == 1) {
@@ -91,7 +91,7 @@ void (profile_secondDialogKeys)(void)
 	}
 	int button = -1;
 	if (input_justPressed(g_keyClick) == 1) {
-		button = secondDialog_hitTest(g_mouseX, g_mouseY);
+		button = logOutDialog_hitTest(g_mouseX, g_mouseY);
 		if (button == 0) {
 			sound_playMenu(0);
 			profile_resetCamera();
@@ -104,17 +104,17 @@ void (profile_secondDialogKeys)(void)
 		g_profilePage = 1;
 		return;
 	}
-	dialog_keys(g_profileDialog2X, g_profileDialog2Y);
+	dialog_keys(g_logOutDialogX, g_logOutDialogY);
 }
 
-/* 0x44cc60 (profile_emblemKeys): page 6, the emblem grid: OK takes the profile (profile_selectAndLoad), back or
+/* 0x44cc60 (profile_emblemKeys): page 6, the pilot grid: OK makes the profile with the pilot chosen (profile_create), back or
    cancel leaves; either way back to the list. The arrows move the cursor (0..8) and wrap within its row or column */
 void (profile_emblemKeys)(void)
 {
 	g_cursorBlink = 0.0f;
 	if (input_justPressed(g_keyOk) == 1) {
 		sound_playMenu(0);
-		profile_selectAndLoad();
+		profile_create();
 	} else if (input_justPressed(g_keyBack) == 1 || input_justPressed(g_keyCancel) == 1) {
 		sound_playMenu(0);
 	} else {

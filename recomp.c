@@ -103,7 +103,7 @@ static int hit_rect(int x, int y, DWORD base, DWORD limit)
 	X(0x4438d0, 0x9ef228, 0x9ef2c8, skirmishSettings_hitTest) X(0x443910, 0x9f16c8, 0x9f1708, briefing_hitTest) \
 	X(0x447710, 0x9f6338, 0x9f6378, missionsel_hitTest) X(0x44b260, 0x9f8c68, 0x9f8cf8, profilePage_hitTest) \
 	X(0x44b2a0, 0x9f9028, 0x9f9048, newNameDialog_hitTest) X(0x44b320, 0x9f6810, 0x9f6830, deleteDialog_hitTest) \
-	X(0x44b360, 0x9f8ef0, 0x9f8f10, secondDialog_hitTest) X(0x44b3a0, 0x9f8d80, 0x9f8e50, profileList_hitTest) \
+	X(0x44b360, 0x9f8ef0, 0x9f8f10, logOutDialog_hitTest) X(0x44b3a0, 0x9f8d80, 0x9f8e50, profileList_hitTest) \
 	X(0x44b3e0, 0x9f8f40, 0x9f8ff0, pilotSelect_hitTest)
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 int mapList_hitTest(int x, int y);
@@ -162,7 +162,7 @@ int newNameDialog_hitTest(int x, int y);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 int deleteDialog_hitTest(int x, int y);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-int secondDialog_hitTest(int x, int y);
+int logOutDialog_hitTest(int x, int y);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 int profileList_hitTest(int x, int y);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
@@ -667,7 +667,7 @@ static void rects_row(DWORD rec, DWORD end, DWORD ox, DWORD oy, int x0, int x1, 
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void deleteDialog_layout(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-void secondDialog_layout(void);
+void logOutDialog_layout(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void profileList_layout(void)       /* a column: 13 rows 0x14 apart */;
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
@@ -2379,10 +2379,10 @@ DWORD replayList_open(void);
    the tick length 1 / f */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void timer_init(void);
-/* 0x44b990 profile_selectAndLoad: copy the entered name into the selected profile slot, make the save directory
+/* 0x44b990 profile_create: copy the entered name into the selected profile slot, make the save directory
    and load the profile */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-DWORD profile_selectAndLoad(void);
+DWORD profile_create(void);
 /* 0x427970 menu_drawRect(x0, y0, x1, y1, filled): a filled quad or an outline in the menu colour */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void menu_drawRect(int x0, int y0, int x1, int y1, int filled);
@@ -3613,13 +3613,13 @@ DWORD arena_drawCustomOption(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 DWORD room_drawCustomOption(void);
 /* batch 118 (lifted/grp64.c): profile dialogs and the armour weight line */
-/* 0x44e180 profile_drawDeleteQuestion() / 0x44e3e0 profile_drawSecondDialog(): two-button profile dialogs (window 0x9f8f1c.. /
+/* 0x44e180 profile_drawDeleteQuestion() / 0x44e3e0 profile_drawLogOutQuestion(): two-button profile dialogs (window 0x9f8f1c.. /
    0x9f6834..; titles 0x751da4 / 0x751e24): frame, title, two textured buttons (texture 0x9db0a4) labelled 0x7517a4 /
-   0x751824, the one under the cursor (deleteDialog_hitTest / secondDialog_hitTest) bright, the frame's border */
+   0x751824, the one under the cursor (deleteDialog_hitTest / logOutDialog_hitTest) bright, the frame's border */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 DWORD profile_drawDeleteQuestion(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-DWORD profile_drawSecondDialog(void);
+DWORD profile_drawLogOutQuestion(void);
 /* 0x44de00 profile_drawNewDialog(): the new-profile dialog: frame, title 0x751ca4, the name field (profile_drawButton), two
    buttons (the first dimmed while the name 0x9dc92c is empty), the border */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
@@ -3719,12 +3719,12 @@ void setup_drawMenu(void);
    glow (0x680398, 0x680ccc) and the pulse / scroll advancing as there */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void missionsel_drawTunnel(void);
-/* 0x44d720 mainmenu_drawScreen(): the profile screen: frame and the two panels (bright when focused, 0x9f8f10),
+/* 0x44d720 profile_drawManagementWindow(): the profile screen: frame and the two panels (bright when focused, 0x9f8f10),
    title 0x751a24, four buttons (0x751aa4; the hovered one, profilePage_hitTest, bright; out of focus the focused
    button 0x9f8f10 - 2), the profile list (profileList_drawNames) and its scroll arrows, the pilot panel
    (profile_drawChosenPilot), the border and "Axis v1.03" */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-void mainmenu_drawScreen(void);
+void profile_drawManagementWindow(void);
 /* batch 126 (lifted/grp72.c): five more screens' tunnel backdrops (missionsel_drawTunnel's layout) */
 /* 0x411110 armc_drawTunnel() / 0x4445a0 skirmish_drawTunnel(): the armour and skirmish screens' tunnel, as
    missionsel_drawTunnel's (depth 550, textures 0x4e0cd0 and 0x76d47c / 0x76d478) */
@@ -3787,14 +3787,14 @@ DWORD lobbyPlayer_draw(void);
 void setup_frameSoundPage(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void setup_frameOptionsPage(void);
-/* 0x44f5f0 profile_pilotPanelPage() / 0x44f740 profile_secondPanelPage(): while the cursor glides (0x76d42c) it moves a share of
+/* 0x44f5f0 profile_deletePage() / 0x44f740 profile_logOutPage(): while the cursor glides (0x76d42c) it moves a share of
    the way to (0x67ef34, 0x67fb38) by 0x4b071c and the glide time 0x680bc0 runs down (then ends); the profile
-   screen (mainmenu_drawScreen), then the two-button dialog (profile_drawDeleteQuestion / profile_drawSecondDialog) or, while a message
+   screen (profile_drawManagementWindow), then the two-button dialog (profile_drawDeleteQuestion / profile_drawLogOutQuestion) or, while a message
    is open, its frame */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-DWORD profile_pilotPanelPage(void);
+DWORD profile_deletePage(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-DWORD profile_secondPanelPage(void);
+DWORD profile_logOutPage(void);
 /* batch 132 (lifted/grp78.c): the main menu */
 /* 0x442050 menu_mainMenu(): the main menu: unless it is flying in (0x9eeaa8) the cursor is tested against six
    panels (0x4deb80, 11 dwords each): a hit (unless locked, 0x9eeab4) lights the panel (0x680398, glow restarted
@@ -4298,27 +4298,27 @@ int jmp_net_getLocalAddress(void);
    name field (0x9f8ea8 + 0x38, 0x9f8eac + 0x24), page 2, a dialog open, the edit window created */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void profile_typeNewName(void);
-/* 0x44b670 profile_askDelete() / 0x44b6e0 profile_askSecond(): open the delete (page 3, box at 0x9f8f0c / 0x9f8f1c) or
+/* 0x44b670 profile_askDelete() / 0x44b6e0 profile_askLogOut(): open the delete (page 3, box at 0x9f8f0c / 0x9f8f1c) or
    load (page 5, box at 0x9f683c / 0x9f6834) confirmation: menu sound 0, a dialog open, its pop-in animation */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void profile_askDelete(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-void profile_askSecond(void);
+void profile_askLogOut(void);
 /* the profile pages' mouse (a left click on the page's buttons, a right click back to page 1):
-   0x44c390 profile_openDeleteQuestion(): delete confirmation (0x44b320): yes deletes (profile_deleteFiles), no;
-   0x44c400 profile_secondDialogClicks(): load confirmation (0x44b360): yes loads (profile_resetCamera), no;
-   0x44c480 profileList_clicks(): the profile list (0x44b3e0, 11 buttons): a profile row selects it (sound 2), load
-   (profile_selectAndLoad), back */
+   0x44c390 profile_deleteClicks(): delete confirmation (0x44b320): yes deletes (profile_deleteFiles), no;
+   0x44c400 profile_logOutClicks(): load confirmation (0x44b360): yes loads (profile_resetCamera), no;
+   0x44c480 pilotSelect_clicks(): the profile list (0x44b3e0, 11 buttons): a profile row selects it (sound 2), load
+   (profile_create), back */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-int profile_openDeleteQuestion(void);
+int profile_deleteClicks(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-int profile_secondDialogClicks(void);
+int profile_logOutClicks(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-int profileList_clicks(void);
+int pilotSelect_clicks(void);
 /* batch 166 (lifted/grp112.c): the profile screen's input */
 /* 0x44be00 profileList_mouse(): the profile list page's mouse: a left click on the list (profileList_hitTest, 7 kinds:
    a profile, scroll, new / delete / load / back ...) or the bottom buttons (profilePage_hitTest), sounds; opens the name
-   edit (profile_typeNewName) or the delete / load confirmations (profile_askDelete / profile_askSecond) */
+   edit (profile_typeNewName) or the delete / load confirmations (profile_askDelete / profile_askLogOut) */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void profileList_mouse(void);
 /* 0x44c190 profile_newNameDialog(): the name edit page: OK / cancel buttons (newNameDialog_hitTest, profile_inDialogBox) and Enter:
@@ -4328,7 +4328,7 @@ void profileList_mouse(void);
 DWORD profile_newNameDialog(void);
 /* 0x44c560 profile_processInput(): the profile screen: a click skips the intro animation (0x9f6838, state
    0x9f8e54); else, no dialog: by page 0x9f8f10 (1..6) the page's mouse handler (profileList_mouse, profile_newNameDialog,
-   profile_openDeleteQuestion, profile_secondDialogClicks, profileList_clicks) and its keys: up / down held with key repeat (0x76d37c /
+   profile_deleteClicks, profile_logOutClicks, pilotSelect_clicks) and its keys: up / down held with key repeat (0x76d37c /
    0x680bb4), Enter / Esc, and on the list the arrows move the cursor 0x9f8d30 over the 3 x 3 grid (sound 2) */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 DWORD profile_processInput(void);
@@ -4535,7 +4535,7 @@ DWORD roomList_passwordKeys(void);
 /* batch 173 (lifted/grp123.c): small functions tested with their callees stubbed (tools/gentests.py): the
    in-match messages (connection lost, network unstable, server / user ends the game, data loss, frag / time
    limit: a message by mode 0x9dae74 and a sound), the arena slots 3 / 4 join wrappers, dplay_coInit,
-   lobby_close, the room / lobby / setup key and mouse pages, setup_topPageClicks, profile_nameEntryStep,
+   lobby_close, the room / lobby / setup key and mouse pages, setup_topPageClicks, profile_newNamePage,
    replaySelect_mouse */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void THISCALL msg_connectionLost(void *scene);
@@ -4586,7 +4586,7 @@ DWORD lobbyPlayer_keys(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 DWORD account_endTyping(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-DWORD profile_nameEntryStep(void);
+DWORD profile_newNamePage(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void replaySelect_mouse(void);
 /* batch 174 (lifted/grp124.c): returning from a match to the menus (four variants: state, camera, DirectPlay
@@ -5004,7 +5004,7 @@ THISCALL DWORD match_freeCamFrame(char *s);
    in functions.csv: profile_screenKeys reaches them through its jump table) */
 /* 0x44c600 profileList_keys(): page 1, the profile list: up / down held with key repeat (0x76d37c / 0x680bb4) move
    the cursor 0x9f8d30 over the 3 x 3 grid (sound 2), Enter picks (profile_typeNewName), the delete / copy keys
-   (profile_askDelete, profile_askSecond) */
+   (profile_askDelete, profile_askLogOut) */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void profileList_keys(void);
 /* 0x44c850 profile_messageKeys(): page 2: Enter or Esc back to the list (profile_typeNewName) */
@@ -5014,9 +5014,9 @@ void profile_messageKeys(void);
    (deleteDialog_hitTest) and takes it, up / down move between the fields (sound 2) */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void profile_deleteKeys(void);
-/* 0x44ca90 profile_secondDialogKeys(): page 4, as page 3 for the second form (secondDialog_hitTest, profile_resetCamera) */
+/* 0x44ca90 profile_logOutKeys(): page 4, as page 3 for the second form (logOutDialog_hitTest, profile_resetCamera) */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-void profile_secondDialogKeys(void);
+void profile_logOutKeys(void);
 /* 0x44cc60 profile_emblemKeys(): page 5, the 3 x 3 emblem grid: Esc (profile_44b990), the arrows wrap the cursor
    0x9f8d30 by rows and columns (sound 2) */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
@@ -7211,7 +7211,7 @@ V0(arenaCreate_layout, 0x404150, fill((void *)0x4dbb80, 0x20);)
 V0(leaveDialog_layout, 0x431aa0, fill((void *)0x9dd390, 0x20);)
 #define ORIGIN(ox, oy) G32(ox) = irnd(-400, 400); G32(oy) = irnd(-400, 400);
 V0(deleteDialog_layout, 0x44b0b0, fill((void *)0x9f6808, 0x20); ORIGIN(0x9f8f1c, 0x9f8f0c))
-V0(secondDialog_layout, 0x44b100, fill((void *)0x9f8ee8, 0x20); ORIGIN(0x9f6834, 0x9f683c))
+V0(logOutDialog_layout, 0x44b100, fill((void *)0x9f8ee8, 0x20); ORIGIN(0x9f6834, 0x9f683c))
 V0(profileList_layout, 0x44b150, fill((void *)0x9f8d78, 0xd0); ORIGIN(0x9f8e48, 0x9f8e4c))
 V0(newNameDialog_layout, 0x44b030, fill((void *)0x9f9020, 0x20); ORIGIN(0x9f8eac, 0x9f8ea8))
 V0(popup_layout, 0x431c00, fill((void *)0x9dd3b8, 0x20); ORIGIN(0x9dd1a0, 0x9dd1ac))
@@ -9154,7 +9154,7 @@ ST(timer_init, qpf_setup();, CALL_PLAIN(0x4302d0, 0, 0, 0, 0, 0), (timer_init(),
    the original then saved ~21000 records, reading past the end of the image (it crashed the full suite once the
    random order gave it a 33..40-character name) */
 static void selectload_setup(void) { fill_str((char *)0x9dc92c, 31, 32, 126); G32(0x9f9008) = irnd(0, 13); G32(0x9f8c4c) = irnd(0, 3); vfs_content(0, 0x2000); g_mockMkdirFail = !irnd(0, 4); g_paintStacks = 1; }
-ST(profile_selectAndLoad, selectload_setup();, CALL_PLAIN(0x44b990, 0, 0, 0, 0, 0), (DWORD)(profile_selectAndLoad()))
+ST(profile_create, selectload_setup();, CALL_PLAIN(0x44b990, 0, 0, 0, 0, 0), (DWORD)(profile_create()))
 /* a third of the rectangles cover the whole 640 x 480 (drawn full screen with the patch DLL's menu fix) */
 ST(menu_drawRect, for (int i = 0; i < 4; i++) g_a[i] = irnd(-100, 800); g_a[4] = irnd(0, 1) ? 0 : irnd(-3, 3);
    if (!irnd(0, 2)) { g_a[0] = irnd(-100, 0); g_a[1] = irnd(-100, 0); g_a[2] = irnd(640, 800); g_a[3] = irnd(480, 600); },
@@ -12909,7 +12909,7 @@ static void profdlg_setup(DWORD xo, DWORD yo, DWORD xe, DWORD ye)
 	if (irnd(0, 2)) fill_str((char *)0x9dc92c, 20, 32, 126); else *(char *)0x9dc92c = 0;
 }
 ST(profile_drawDeleteQuestion, profdlg_setup(0x9f8f1c, 0x9f8f0c, 0x9f8f2c, 0x9f8f28);, CALL_PLAIN(0x44e180, 0, 0, 0, 0, 0), (DWORD)(profile_drawDeleteQuestion()))
-ST(profile_drawSecondDialog, profdlg_setup(0x9f6834, 0x9f683c, 0x9f93bc, 0x9f93c0);, CALL_PLAIN(0x44e3e0, 0, 0, 0, 0, 0), (DWORD)(profile_drawSecondDialog()))
+ST(profile_drawLogOutQuestion, profdlg_setup(0x9f6834, 0x9f683c, 0x9f93bc, 0x9f93c0);, CALL_PLAIN(0x44e3e0, 0, 0, 0, 0, 0), (DWORD)(profile_drawLogOutQuestion()))
 ST(profile_drawNewDialog, profdlg_setup(0x9f8eac, 0x9f8ea8, 0x9f8f20, 0x9f8f24);, CALL_PLAIN(0x44de00, 0, 0, 0, 0, 0), (DWORD)(profile_drawNewDialog()))
 /* the weight line: ten part weights and a limit (whole and fractional, below a million: "%.0f" goes into 20
    bytes), the language, the label */
@@ -13205,7 +13205,7 @@ static void profscreen_setup(void)
 	G32(0x4ded68) = irnd(0, 640); G32(0x4ded6c) = irnd(0, 480);
 	if (irnd(0, 1)) { G32(0x4ded68) = G32(0x9f8e48) + 0x28 + irnd(0, 3) * 0x72 + irnd(0, 0x60); G32(0x4ded6c) = G32(0x9f8ea4) - irnd(0x10, 0x30); }
 }
-ST(mainmenu_drawScreen, profscreen_setup();, (CALL_PLAIN(0x44d720, 0, 0, 0, 0, 0), 0), (mainmenu_drawScreen(), 0))   /* its callers ignore the eax it leaves (tools/eaxuse.py) */
+ST(profile_drawManagementWindow, profscreen_setup();, (CALL_PLAIN(0x44d720, 0, 0, 0, 0, 0), 0), (profile_drawManagementWindow(), 0))   /* its callers ignore the eax it leaves (tools/eaxuse.py) */
 /* batch 126 */
 /* missionbg_setup's tunnel, every texture slot these screens bind bindable (0x4df900..0x4df910, 0x4df03c..
    0x4df04c), the room's and the arena's depths */
@@ -13332,8 +13332,8 @@ static void profglide_setup(DWORD xo, DWORD yo, DWORD xe, DWORD ye)
 	G32(0x76d42c) = irnd(0, 1); G32(0x67ef34) = irnd(0, 640); G32(0x67fb38) = irnd(0, 480);
 	GF(0x680bc0) = (float)irnd(-10, 100) / 10.0f; G32(0x90d1c4) = irnd(0, 3) ? 0 : 1;
 }
-ST(profile_pilotPanelPage, profglide_setup(0x9f8f1c, 0x9f8f0c, 0x9f8f2c, 0x9f8f28);, CALL_PLAIN(0x44f5f0, 0, 0, 0, 0, 0), (DWORD)(profile_pilotPanelPage()))
-ST(profile_secondPanelPage, profglide_setup(0x9f6834, 0x9f683c, 0x9f93bc, 0x9f93c0);, CALL_PLAIN(0x44f740, 0, 0, 0, 0, 0), (DWORD)(profile_secondPanelPage()))
+ST(profile_deletePage, profglide_setup(0x9f8f1c, 0x9f8f0c, 0x9f8f2c, 0x9f8f28);, CALL_PLAIN(0x44f5f0, 0, 0, 0, 0, 0), (DWORD)(profile_deletePage()))
+ST(profile_logOutPage, profglide_setup(0x9f6834, 0x9f683c, 0x9f93bc, 0x9f93c0);, CALL_PLAIN(0x44f740, 0, 0, 0, 0, 0), (DWORD)(profile_logOutPage()))
 /* batch 132 */
 /* the main menu: tunnels_setup's tunnel and textures, six panel quads (run-time data at 0x4deb80) with the cursor
    often at a panel's centre, flying in or not (depth near or at -550), locked now and then, the idle time below and
@@ -14403,10 +14403,10 @@ static void profilepage_setup(void)
 }
 ST(profile_typeNewName, profilepage_setup();, CALL_PLAIN(0x44b600, 0, 0, 0, 0, 0), (profile_typeNewName(), 0))
 ST(profile_askDelete, profilepage_setup();, CALL_PLAIN(0x44b670, 0, 0, 0, 0, 0), (profile_askDelete(), 0))
-ST(profile_askSecond, profilepage_setup();, CALL_PLAIN(0x44b6e0, 0, 0, 0, 0, 0), (profile_askSecond(), 0))
-ST(profile_openDeleteQuestion, profilepage_setup();, CALL_PLAIN(0x44c390, 0, 0, 0, 0, 0), (DWORD)(profile_openDeleteQuestion()))
-ST(profile_secondDialogClicks, profilepage_setup();, CALL_PLAIN(0x44c400, 0, 0, 0, 0, 0), (DWORD)(profile_secondDialogClicks()))
-ST(profileList_clicks, profilepage_setup();, CALL_PLAIN(0x44c480, 0, 0, 0, 0, 0), (DWORD)(profileList_clicks()))
+ST(profile_askLogOut, profilepage_setup();, CALL_PLAIN(0x44b6e0, 0, 0, 0, 0, 0), (profile_askLogOut(), 0))
+ST(profile_deleteClicks, profilepage_setup();, CALL_PLAIN(0x44c390, 0, 0, 0, 0, 0), (DWORD)(profile_deleteClicks()))
+ST(profile_logOutClicks, profilepage_setup();, CALL_PLAIN(0x44c400, 0, 0, 0, 0, 0), (DWORD)(profile_logOutClicks()))
+ST(pilotSelect_clicks, profilepage_setup();, CALL_PLAIN(0x44c480, 0, 0, 0, 0, 0), (DWORD)(pilotSelect_clicks()))
 /* batch 166 */
 /* the profile screen's input: profilepage_setup's state, the profile list (profiles_setup), all six button tables
    and the name page's OK rectangle with the cursor often on a button, key bindings among a few keys or the wheel
@@ -14853,7 +14853,7 @@ ST(account_endTyping, gen_setup(g_gs_433d30, g_gi_433d30, g_gb_433d30);, CALL_PL
 static const DWORD g_gs_44f4b0[] = { 0x41e760, 1, 0x41ee40, 1, 0x428c30, 4, 0x4343b0, 1, 0x44b750, 0, 0x44b7e0, 1, 0x44b870, 0, 0x44d720, 0, 0x44dc60, 0, 0x44de00, 0, 0 };
 static const DWORD g_gi_44f4b0[] = { 0x68039c, 0x90d1c4, 0x9f8ea8, 0x9f8eac, 0x9f8f10, 0x9f8f20, 0x9f8f24, 0x9f8f34, 0 };
 static const DWORD g_gb_44f4b0[] = { 0x9dc92c, 0 };
-ST(profile_nameEntryStep, gen_setup(g_gs_44f4b0, g_gi_44f4b0, g_gb_44f4b0);, CALL_PLAIN(0x44f4b0, 0, g_a[0], g_a[1], g_a[2], g_a[3]), (DWORD)(profile_nameEntryStep()))
+ST(profile_newNamePage, gen_setup(g_gs_44f4b0, g_gi_44f4b0, g_gb_44f4b0);, CALL_PLAIN(0x44f4b0, 0, g_a[0], g_a[1], g_a[2], g_a[3]), (DWORD)(profile_newNamePage()))
 static const DWORD g_gs_441810[] = { 0x41e760, 1, 0x440b70, 2, 0x440df0, 0, 0x441770, 0, 0x4417c0, 1, 0x4417f0, 0, 0 };
 static const DWORD g_gi_441810[] = { 0x4dda44, 0x4b2a7c, 0x4ded68, 0x4ded6c, 0x4ded88, 0x4ded94, 0x9dd928, 0x9dd92c, 0x9eeab4, 0x9eeac0, 0 };
 static const DWORD g_gb_441810[] = { 0 };
@@ -16118,7 +16118,7 @@ ST(match_freeCamFrame, instate3_setup();, TC(DWORD, 0x48a370, char *)(BUF), matc
 ST(profileList_keys, profileinput_setup(); G32(0x9f8d30) = irnd(0, 8);, (CALL_PLAIN(0x44c600, 0, 0, 0, 0, 0), 0), (profileList_keys(), 0))   /* its callers ignore the eax it leaves (tools/eaxuse.py) */
 ST(profile_messageKeys, profileinput_setup();, CALL_PLAIN(0x44c850, 0, 0, 0, 0, 0), (profile_messageKeys(), 0))
 ST(profile_deleteKeys, profileinput_setup();, CALL_PLAIN(0x44c8c0, 0, 0, 0, 0, 0), (profile_deleteKeys(), 0))
-ST(profile_secondDialogKeys, profileinput_setup();, CALL_PLAIN(0x44ca90, 0, 0, 0, 0, 0), (profile_secondDialogKeys(), 0))
+ST(profile_logOutKeys, profileinput_setup();, CALL_PLAIN(0x44ca90, 0, 0, 0, 0, 0), (profile_logOutKeys(), 0))
 ST(profile_emblemKeys, profileinput_setup(); G32(0x9f8d30) = irnd(0, 8);, CALL_PLAIN(0x44cc60, 0, 0, 0, 0, 0), (profile_emblemKeys(), 0))
 /* the profile screen's key dispatch: profileinput_setup, the dialog flag 0x90d1c4 and Enter's second binding
    0x6803a0 among the same keys; the page handlers stubbed */
@@ -17218,7 +17218,7 @@ static const STest g_stests[] = {
 	T(space_enableUnit, 0, 4, 300), T(str_length, 1, 4, 3000), T(array_indexOf, 1, 4, 3000), T(path_normalize, 1, 4, 3000),
 	/* batch 7 */
 	T(arenaDialogBox_layout, 0, 8, 0), T(gameListStop_layout, 0, 8, 0), T(profileDialogBox_layout, 0, 8, 0), T(arenaCreate_layout, 0, 8, 0),
-	T(leaveDialog_layout, 0, 8, 0), T(deleteDialog_layout, 0, 8, 0), T(secondDialog_layout, 0, 8, 0), T(profileList_layout, 0, 8, 0),
+	T(leaveDialog_layout, 0, 8, 0), T(deleteDialog_layout, 0, 8, 0), T(logOutDialog_layout, 0, 8, 0), T(profileList_layout, 0, 8, 0),
 	T(newNameDialog_layout, 0, 8, 0), T(popup_layout, 0, 8, 0), T(lobbyTop_layout, 0, 8, 0), T(text_setColor, 0, 8, 0),
 	T(armc_rightClickLeave, 0, 10, 0), T(profile_resetPreview, 0, 6, 0), T(profile_resetSelection, 0, 6, 0), T(profile_resetCamera, 0, 6, 0),
 	T(setup_selectGraphicTab, 0, 6, 0), T(mapList_startEdit, 0, 20, 0), T(skirmish_settingsArrowClick, 0, 40, 0), T(sessionList_sort, 0, 30, 0),
@@ -17400,7 +17400,7 @@ static const STest g_stests[] = {
 	/* batch 48 */
 	T(app_quitGame, 1, 40, 0), T(timer_waitFrames, 0, 40, 0), T(leaveDialog_clicks, 1, 40, 0), T(lobby_quitDialogClicks, 1, 40, 0),
 	T(create_quitDialogClicks, 1, 40, 0), T(menu_drawLine, 1, 40, 0), T(replayList_open, 1, 40, 0), T(timer_init, 0, 40, 0),
-	T(profile_selectAndLoad, 1, 40, 0), T(menu_drawRect, 1, 400, 0), T(menuState210_enter, 1, 40, 0), T(profile_scanSaves, 1, 40, 0),
+	T(profile_create, 1, 40, 0), T(menu_drawRect, 1, 400, 0), T(menuState210_enter, 1, 40, 0), T(profile_scanSaves, 1, 40, 0),
 	T(autoplay_startRecording, 1, 400, 0), T(dplay_enumConnections, 1, 400, 0),
 	/* batch 49 */
 	T(net_inetAddr, 1, 40, 0), T(net_asyncSelect, 1, 40, 0), T(net_getLocalAddress, 1, 40, 0), T(net_closeSockets, 1, 40, 0),
@@ -17583,7 +17583,7 @@ static const STest g_stests[] = {
 	T(armc_drawModeTabs, 0, 200, 0), T(briefing_typeOut, 0, 300, 0), T(profile_drawMessageWindow, 0, 200, 0), T(arena_drawCustomOption, 0, 200, 0),
 	T(room_drawCustomOption, 0, 200, 0),
 	/* batch 118 */
-	T(profile_drawDeleteQuestion, 0, 200, 0), T(profile_drawSecondDialog, 0, 200, 0), T(profile_drawNewDialog, 0, 200, 0), T(armc_drawWeightLine, 0, 300, 0),
+	T(profile_drawDeleteQuestion, 0, 200, 0), T(profile_drawLogOutQuestion, 0, 200, 0), T(profile_drawNewDialog, 0, 200, 0), T(armc_drawWeightLine, 0, 300, 0),
 	/* batch 119 */
 	T(frontEnd_drawProgress, 0, 200, 0), T(newIdForm_draw, 0, 200, 0), T(arena_drawNameDialog, 0, 200, 0),
 	/* batch 120 */
@@ -17597,7 +17597,7 @@ static const STest g_stests[] = {
 	/* batch 124 */
 	T(setup_drawTunnel, 0, 200, 0), T(setup_drawMenu, 0, 200, 0),
 	/* batch 125 */
-	T(missionsel_drawTunnel, 0, 200, 0), T(mainmenu_drawScreen, 0, 300, 0),
+	T(missionsel_drawTunnel, 0, 200, 0), T(profile_drawManagementWindow, 0, 300, 0),
 	/* batch 126 */
 	T(armc_drawTunnel, 0, 150, 0), T(skirmish_drawTunnel, 0, 150, 0), T(armc_drawPreviewTunnel, 0, 150, 0), T(room_drawTunnel, 0, 150, 0),
 	T(arena_drawTunnel, 0, 150, 0),
@@ -17611,7 +17611,7 @@ static const STest g_stests[] = {
 	T(setup_drawSoundPage, 0, 300, 0),
 	/* batch 131 */
 	T(mainmenu_drawReplaySelect, 0, 150, 0), T(lobbyPlayer_draw, 0, 150, 0), T(setup_frameSoundPage, 0, 150, 0), T(setup_frameOptionsPage, 0, 150, 0),
-	T(profile_pilotPanelPage, 0, 150, 0), T(profile_secondPanelPage, 0, 150, 0),
+	T(profile_deletePage, 0, 150, 0), T(profile_logOutPage, 0, 150, 0),
 	/* batch 132 */
 	T(menu_mainMenu, 0, 300, 0),
 	/* batch 133 */
@@ -17688,8 +17688,8 @@ static const STest g_stests[] = {
 	T(briefing_keys, 0, 300, 0), T(missionList_keys, 0, 400, 0), T(missionsel_keys, 0, 300, 0), T(missionsel_frameScreen, 0, 50, 0),
 	T(skirmish_frameBriefing, 0, 50, 0), T(jmp_net_getLocalAddress, 0, 50, 0),
 	/* batch 165 */
-	T(profile_typeNewName, 0, 200, 0), T(profile_askDelete, 0, 200, 0), T(profile_askSecond, 0, 200, 0), T(profile_openDeleteQuestion, 0, 300, 0),
-	T(profile_secondDialogClicks, 0, 300, 0), T(profileList_clicks, 0, 400, 0),
+	T(profile_typeNewName, 0, 200, 0), T(profile_askDelete, 0, 200, 0), T(profile_askLogOut, 0, 200, 0), T(profile_deleteClicks, 0, 300, 0),
+	T(profile_logOutClicks, 0, 300, 0), T(pilotSelect_clicks, 0, 400, 0),
 	/* batch 166 */
 	T(profileList_mouse, 0, 400, 0), T(profile_newNameDialog, 0, 400, 0), T(profile_processInput, 0, 500, 0),
 	/* batch 167 */
@@ -17723,7 +17723,7 @@ static const STest g_stests[] = {
 	T(room_stopArenaSetup, 0, 200, 0), T(room_openClicks, 0, 200, 0), T(chat_closeEdit, 0, 200, 0), T(lobby_keysQuit, 0, 200, 0),
 	T(setup_topPageKeys, 0, 200, 0), T(setup_graphicTabKeys, 0, 200, 0), T(lobbyTop_keys, 0, 200, 0), T(setup_topPageClicks, 0, 200, 0),
 	T(lobby_topPageClicks, 0, 200, 0), T(lobby_pageClicks, 0, 200, 0), T(lobbyPlayer_keys, 0, 200, 0), T(account_endTyping, 0, 200, 0),
-	T(profile_nameEntryStep, 0, 200, 0), T(replaySelect_mouse, 0, 200, 0),
+	T(profile_newNamePage, 0, 200, 0), T(replaySelect_mouse, 0, 200, 0),
 	/* batch 174 */
 	T(game_returnToScreen500, 0, 200, 0), T(game_returnToMainMenu, 0, 200, 0), T(game_returnToScreen400, 0, 200, 0), T(game_returnToGameRoom, 0, 200, 0),
 	T(mapList_mouse, 0, 1000, 0), T(menuState900_enterSkirmish, 0, 200, 0), T(login_send, 0, 200, 0),
@@ -17794,7 +17794,7 @@ static const STest g_stests[] = {
 	/* batch 200 */
 	T(actor_updateAll, 0, 400, 0), T(match_freeCamFrame, 1, 600, 0),
 	/* batch 201 */
-	T(profileList_keys, 0, 400, 0), T(profile_messageKeys, 0, 400, 0), T(profile_deleteKeys, 0, 400, 0), T(profile_secondDialogKeys, 0, 400, 0),
+	T(profileList_keys, 0, 400, 0), T(profile_messageKeys, 0, 400, 0), T(profile_deleteKeys, 0, 400, 0), T(profile_logOutKeys, 0, 400, 0),
 	T(profile_emblemKeys, 0, 400, 0), T(profile_screenKeys, 0, 400, 0), T(menu_processKeys, 0, 400, 0),
 	/* batch 202 */
 	T(app_frame, 0, 400, 0), T(match_frameByState, 1, 400, 0),
@@ -18099,7 +18099,7 @@ static const struct { DWORD addr; void *fn; const char *name; } g_hooks3[] = {
 	{ 0x404120, (void *)arenaDialogBox_layout, "arenaDialogBox_layout" }, { 0x431db0, (void *)gameListStop_layout, "gameListStop_layout" },
 	{ 0x44b080, (void *)profileDialogBox_layout, "profileDialogBox_layout" }, { 0x404150, (void *)arenaCreate_layout, "arenaCreate_layout" },
 	{ 0x431aa0, (void *)leaveDialog_layout, "leaveDialog_layout" }, { 0x44b0b0, (void *)deleteDialog_layout, "deleteDialog_layout" },
-	{ 0x44b100, (void *)secondDialog_layout, "secondDialog_layout" }, { 0x44b150, (void *)profileList_layout, "profileList_layout" },
+	{ 0x44b100, (void *)logOutDialog_layout, "logOutDialog_layout" }, { 0x44b150, (void *)profileList_layout, "profileList_layout" },
 	{ 0x44b030, (void *)newNameDialog_layout, "newNameDialog_layout" }, { 0x431c00, (void *)popup_layout, "popup_layout" },
 	{ 0x403f30, (void *)lobbyTop_layout, "lobbyTop_layout" }, { 0x44ad30, (void *)text_setColor, "text_setColor" },
 	{ 0x410160, (void *)armc_rightClickLeave, "armc_rightClickLeave" }, { 0x44b7a0, (void *)profile_resetPreview, "profile_resetPreview" },
@@ -18397,7 +18397,7 @@ static const struct { DWORD addr; void *fn; const char *name; } g_hooks3[] = {
 	{ 0x435ab0, (void *)leaveDialog_clicks, "leaveDialog_clicks" }, { 0x406bd0, (void *)lobby_quitDialogClicks, "lobby_quitDialogClicks" },
 	{ 0x407270, (void *)create_quitDialogClicks, "create_quitDialogClicks" }, { 0x427a40, (void *)menu_drawLine, "menu_drawLine" },
 	{ 0x440d70, (void *)replayList_open, "replayList_open" }, { 0x4302d0, (void *)timer_init, "timer_init" },
-	{ 0x44b990, (void *)profile_selectAndLoad, "profile_selectAndLoad" }, { 0x427970, (void *)menu_drawRect, "menu_drawRect" },
+	{ 0x44b990, (void *)profile_create, "profile_create" }, { 0x427970, (void *)menu_drawRect, "menu_drawRect" },
 	{ 0x44b420, (void *)menuState210_enter, "menuState210_enter" }, { 0x4460d0, (void *)profile_scanSaves, "profile_scanSaves" },
 	{ 0x487cb0, (void *)autoplay_startRecording, "autoplay_startRecording" }, { 0x4532f0, (void *)dplay_enumConnections, "dplay_enumConnections" },
 	/* batch 49 */
@@ -18636,7 +18636,7 @@ static const struct { DWORD addr; void *fn; const char *name; } g_hooks3[] = {
 	{ 0x44dc60, (void *)profile_drawMessageWindow, "profile_drawMessageWindow" }, { 0x40b550, (void *)arena_drawCustomOption, "arena_drawCustomOption" },
 	{ 0x43bde0, (void *)room_drawCustomOption, "room_drawCustomOption" },
 	/* batch 118 */
-	{ 0x44e180, (void *)profile_drawDeleteQuestion, "profile_drawDeleteQuestion" }, { 0x44e3e0, (void *)profile_drawSecondDialog, "profile_drawSecondDialog" },
+	{ 0x44e180, (void *)profile_drawDeleteQuestion, "profile_drawDeleteQuestion" }, { 0x44e3e0, (void *)profile_drawLogOutQuestion, "profile_drawLogOutQuestion" },
 	{ 0x44de00, (void *)profile_drawNewDialog, "profile_drawNewDialog" }, { 0x41dab0, (void *)armc_drawWeightLine, "armc_drawWeightLine" },
 	/* batch 119 */
 	{ 0x41f100, (void *)frontEnd_drawProgress, "frontEnd_drawProgress" }, { 0x4399c0, (void *)newIdForm_draw, "newIdForm_draw" },
@@ -18653,7 +18653,7 @@ static const struct { DWORD addr; void *fn; const char *name; } g_hooks3[] = {
 	/* batch 124 */
 	{ 0x423e50, (void *)setup_drawTunnel, "setup_drawTunnel" }, { 0x423330, (void *)setup_drawMenu, "setup_drawMenu" },
 	/* batch 125 */
-	{ 0x448140, (void *)missionsel_drawTunnel, "missionsel_drawTunnel" }, { 0x44d720, (void *)mainmenu_drawScreen, "mainmenu_drawScreen" },
+	{ 0x448140, (void *)missionsel_drawTunnel, "missionsel_drawTunnel" }, { 0x44d720, (void *)profile_drawManagementWindow, "profile_drawManagementWindow" },
 	/* batch 126 */
 	{ 0x411110, (void *)armc_drawTunnel, "armc_drawTunnel" }, { 0x4445a0, (void *)skirmish_drawTunnel, "skirmish_drawTunnel" },
 	{ 0x411ab0, (void *)armc_drawPreviewTunnel, "armc_drawPreviewTunnel" }, { 0x4388e0, (void *)room_drawTunnel, "room_drawTunnel" },
@@ -18669,7 +18669,7 @@ static const struct { DWORD addr; void *fn; const char *name; } g_hooks3[] = {
 	/* batch 131 */
 	{ 0x4434f0, (void *)mainmenu_drawReplaySelect, "mainmenu_drawReplaySelect" }, { 0x40cf80, (void *)lobbyPlayer_draw, "lobbyPlayer_draw" },
 	{ 0x427830, (void *)setup_frameSoundPage, "setup_frameSoundPage" }, { 0x427880, (void *)setup_frameOptionsPage, "setup_frameOptionsPage" },
-	{ 0x44f5f0, (void *)profile_pilotPanelPage, "profile_pilotPanelPage" }, { 0x44f740, (void *)profile_secondPanelPage, "profile_secondPanelPage" },
+	{ 0x44f5f0, (void *)profile_deletePage, "profile_deletePage" }, { 0x44f740, (void *)profile_logOutPage, "profile_logOutPage" },
 	/* batch 132 */
 	{ 0x442050, (void *)menu_mainMenu, "menu_mainMenu" },
 	/* batch 133 */
@@ -18774,8 +18774,8 @@ static const struct { DWORD addr; void *fn; const char *name; } g_hooks3[] = {
 	{ 0x445bd0, (void *)skirmish_frameBriefing, "skirmish_frameBriefing" }, { 0x4532e0, (void *)jmp_net_getLocalAddress, "jmp_net_getLocalAddress" },
 	/* batch 165 */
 	{ 0x44b600, (void *)profile_typeNewName, "profile_typeNewName" }, { 0x44b670, (void *)profile_askDelete, "profile_askDelete" },
-	{ 0x44b6e0, (void *)profile_askSecond, "profile_askSecond" }, { 0x44c390, (void *)profile_openDeleteQuestion, "profile_openDeleteQuestion" },
-	{ 0x44c400, (void *)profile_secondDialogClicks, "profile_secondDialogClicks" }, { 0x44c480, (void *)profileList_clicks, "profileList_clicks" },
+	{ 0x44b6e0, (void *)profile_askLogOut, "profile_askLogOut" }, { 0x44c390, (void *)profile_deleteClicks, "profile_deleteClicks" },
+	{ 0x44c400, (void *)profile_logOutClicks, "profile_logOutClicks" }, { 0x44c480, (void *)pilotSelect_clicks, "pilotSelect_clicks" },
 	/* batch 166 */
 	{ 0x44be00, (void *)profileList_mouse, "profileList_mouse" }, { 0x44c190, (void *)profile_newNameDialog, "profile_newNameDialog" },
 	{ 0x44c560, (void *)profile_processInput, "profile_processInput" },
@@ -18831,7 +18831,7 @@ static const struct { DWORD addr; void *fn; const char *name; } g_hooks3[] = {
 	{ 0x407750, (void *)lobbyTop_keys, "lobbyTop_keys" }, { 0x4220c0, (void *)setup_topPageClicks, "setup_topPageClicks" },
 	{ 0x406950, (void *)lobby_topPageClicks, "lobby_topPageClicks" }, { 0x407300, (void *)lobby_pageClicks, "lobby_pageClicks" },
 	{ 0x407840, (void *)lobbyPlayer_keys, "lobbyPlayer_keys" }, { 0x433d30, (void *)account_endTyping, "account_endTyping" },
-	{ 0x44f4b0, (void *)profile_nameEntryStep, "profile_nameEntryStep" }, { 0x441810, (void *)replaySelect_mouse, "replaySelect_mouse" },
+	{ 0x44f4b0, (void *)profile_newNamePage, "profile_newNamePage" }, { 0x441810, (void *)replaySelect_mouse, "replaySelect_mouse" },
 	/* batch 174 */
 	{ 0x41ec50, (void *)game_returnToScreen500, "game_returnToScreen500" }, { 0x41e8b0, (void *)game_returnToMainMenu, "game_returnToMainMenu" },
 	{ 0x41e9d0, (void *)game_returnToScreen400, "game_returnToScreen400" }, { 0x41eb00, (void *)game_returnToGameRoom, "game_returnToGameRoom" },
@@ -18926,7 +18926,7 @@ static const struct { DWORD addr; void *fn; const char *name; } g_hooks3[] = {
 	{ 0x45e0c0, (void *)actor_updateAll, "actor_updateAll" }, { 0x48a370, (void *)match_freeCamFrame, "match_freeCamFrame" },
 	/* batch 201 */
 	{ 0x44c600, (void *)profileList_keys, "profileList_keys" }, { 0x44c850, (void *)profile_messageKeys, "profile_messageKeys" },
-	{ 0x44c8c0, (void *)profile_deleteKeys, "profile_deleteKeys" }, { 0x44ca90, (void *)profile_secondDialogKeys, "profile_secondDialogKeys" },
+	{ 0x44c8c0, (void *)profile_deleteKeys, "profile_deleteKeys" }, { 0x44ca90, (void *)profile_logOutKeys, "profile_logOutKeys" },
 	{ 0x44cc60, (void *)profile_emblemKeys, "profile_emblemKeys" }, { 0x44cdd0, (void *)profile_screenKeys, "profile_screenKeys" },
 	{ 0x4319d0, (void *)menu_processKeys, "menu_processKeys" },
 	/* batch 202 */

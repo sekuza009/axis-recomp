@@ -488,7 +488,7 @@ typedef struct { u32 vtable; void *banks[6]; i32 count; } TextureManager;   /* t
 #define profileList_keys() GAME_FN(profileList_keys, 0x44c600, void, void)()
 #define profile_messageKeys() GAME_FN(profile_messageKeys, 0x44c850, void, void)()
 #define profile_deleteKeys() GAME_FN(profile_deleteKeys, 0x44c8c0, void, void)()
-#define profile_secondDialogKeys() GAME_FN(profile_secondDialogKeys, 0x44ca90, void, void)()
+#define profile_logOutKeys() GAME_FN(profile_logOutKeys, 0x44ca90, void, void)()
 #define profile_emblemKeys() GAME_FN(profile_emblemKeys, 0x44cc60, void, void)()
 #define missionsel_camera() GAME_FN(missionsel_camera, 0x447cb0, void, void)()
 #define missionsel_drawTunnel() GAME_FN(missionsel_drawTunnel, 0x448140, void, void)()
@@ -498,9 +498,9 @@ typedef struct { u32 vtable; void *banks[6]; i32 count; } TextureManager;   /* t
 #define profile_typeNewName() GAME_FN(profile_typeNewName, 0x44b600, u32, void)()
 #define profile_resetCamera() GAME_FN(profile_resetCamera, 0x44bc00, void, void)()
 #define profile_deleteFiles() GAME_FN(profile_deleteFiles, 0x44ba60, void, void)()
-#define profile_selectAndLoad() GAME_FN(profile_selectAndLoad, 0x44b990, void, void)()
+#define profile_create() GAME_FN(profile_create, 0x44b990, void, void)()
 #define deleteDialog_hitTest(x, y) GAME_FN(deleteDialog_hitTest, 0x44b320, int, int, int)(x, y)  /* the button at (x, y): 0 left, 1 right */
-#define secondDialog_hitTest(x, y) GAME_FN(secondDialog_hitTest, 0x44b360, int, int, int)(x, y)
+#define logOutDialog_hitTest(x, y) GAME_FN(logOutDialog_hitTest, 0x44b360, int, int, int)(x, y)
 #define Color4_set(dst, r, g, b, a) GAME_FN(Color4_set, 0x41f0e0, void, Colour *, float, float, float, float)(dst, r, g, b, a)
 #define Color4_set_bits(dst, r, g, b, a) GAME_FN(Color4_set, 0x41f0e0, void, void *, u32, u32, u32, u32)(dst, r, g, b, a)   /* (the floats as their bits) */
 

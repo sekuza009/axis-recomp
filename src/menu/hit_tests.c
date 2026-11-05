@@ -43,7 +43,7 @@ int (missionsel_hitTest)(int x, int y) { return hit(x, y, g_missionselRects, 4);
 int (profilePage_hitTest)(int x, int y) { return hit(x, y, g_profilePageRects, 9); }   /* 0x44b260 */
 int (newNameDialog_hitTest)(int x, int y) { return hit(x, y, g_newNameDialogRects, 2); }   /* 0x44b2a0 */
 int (deleteDialog_hitTest)(int x, int y) { return hit(x, y, g_deleteDialogRects, 2); }   /* 0x44b320 */
-int (secondDialog_hitTest)(int x, int y) { return hit(x, y, g_secondDialogRects, 2); }   /* 0x44b360 */
+int (logOutDialog_hitTest)(int x, int y) { return hit(x, y, g_logOutDialogRects, 2); }   /* 0x44b360 */
 int (profileList_hitTest)(int x, int y) { return hit(x, y, g_profileListRects, 13); }   /* 0x44b3a0 */
 int (pilotSelect_hitTest)(int x, int y) { return hit(x, y, g_pilotSelectRects, 11); }   /* 0x44b3e0 */
 

@@ -29,6 +29,6 @@
 0x9f6808,int,8,g_deleteDialogRects,deleteDialog_hitTest's 2 hit rectangles (hit_tests.c)
 0x9f8c60,int,36,g_profilePageRects,profilePage_hitTest's 9 hit rectangles (hit_tests.c)
 0x9f8d78,int,52,g_profileListRects,profileList_hitTest's 13 hit rectangles (hit_tests.c)
-0x9f8ee8,int,8,g_secondDialogRects,secondDialog_hitTest's 2 hit rectangles (hit_tests.c)
+0x9f8ee8,int,8,g_logOutDialogRects,secondDialog_hitTest's 2 hit rectangles (hit_tests.c)
 0x9f8f38,int,44,g_pilotSelectRects,pilotSelect_hitTest's 11 hit rectangles (hit_tests.c)
 0x9f9020,int,8,g_newNameDialogRects,newNameDialog_hitTest's 2 hit rectangles (hit_tests.c)

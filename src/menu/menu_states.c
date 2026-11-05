@@ -465,7 +465,7 @@ void (menuState210_frame)(void)
 		for (int f = 0; f < 9; f++)
 			if (g_profileRecords[p].stats[stats[f]] > (stats[f] == 7 ? 50 : 30))
 				data_loadPilotProfiles();
-	static const u32 pages[6] = { FN_ADDR(profile_frame, 0x44f410), FN_ADDR(profile_nameEntryStep, 0x44f4b0), FN_ADDR(profile_pilotPanelPage, 0x44f5f0), FN_ADDR(profile_logIn, 0x44f6c0), FN_ADDR(profile_secondPanelPage, 0x44f740), FN_ADDR(profile_drawScreen, 0x44f810) };
+	static const u32 pages[6] = { FN_ADDR(profile_frame, 0x44f410), FN_ADDR(profile_newNamePage, 0x44f4b0), FN_ADDR(profile_deletePage, 0x44f5f0), FN_ADDR(profile_logIn, 0x44f6c0), FN_ADDR(profile_logOutPage, 0x44f740), FN_ADDR(profile_drawScreen, 0x44f810) };
 	u32 page = (*(u32 *)&g_profilePage) - 1;
 	if (page <= 5)
 		GAME_CDECL(pages[page], void, void)();   /* profile_frame .. profile_drawScreen */

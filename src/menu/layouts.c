@@ -75,7 +75,7 @@ void (leaveDialog_layout)(void) { rects_column(OBJ(g_leaveDialogRects), OBJ(g_le
 
 void (deleteDialog_layout)(void) { rects_row(OBJ(g_deleteDialogRects), OBJ(g_deleteDialogRects) + 2 * 16, ADDR(g_profileDialogX), ADDR(g_profileDialogY), 0x6e, 0xce, 0x3c, 0x5c, 0x78); }
 
-void (secondDialog_layout)(void) { rects_row(OBJ(g_secondDialogRects), OBJ(g_secondDialogRects) + 2 * 16, ADDR(g_profileDialog2X), ADDR(g_profileDialog2Y), 0x6e, 0xce, 0x3c, 0x5c, 0x78); }
+void (logOutDialog_layout)(void) { rects_row(OBJ(g_logOutDialogRects), OBJ(g_logOutDialogRects) + 2 * 16, ADDR(g_logOutDialogX), ADDR(g_logOutDialogY), 0x6e, 0xce, 0x3c, 0x5c, 0x78); }
 
 void (newNameDialog_layout)(void) { rects_row(OBJ(g_newNameDialogRects), OBJ(g_newNameDialogRects) + 2 * 16, ADDR(g_newNameDialogLeft), ADDR(g_newNameDialogTop), 0xa0, 0x100, 0x5a, 0x7a, 0x78); }
 

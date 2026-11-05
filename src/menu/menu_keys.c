@@ -49,7 +49,7 @@ void (profile_screenKeys)(void)
 	case 1: profileList_keys(); break;             /* the profile list */
 	case 2: profile_messageKeys(); break;
 	case 3: profile_deleteKeys(); break;
-	case 5: profile_secondDialogKeys(); break;
+	case 5: profile_logOutKeys(); break;
 	case 6: profile_emblemKeys(); break;             /* the emblem grid */
 	}
 }

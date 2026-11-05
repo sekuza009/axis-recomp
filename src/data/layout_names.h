@@ -1962,14 +1962,14 @@ extern struct GameData g_data;
 #define g_profileColour ((u32 *)g_profileColour_v)
 #undef g_profileCount
 #define g_profileCount (*(int *)g_profileCount_v)
-#undef g_profileDialog2Bottom
-#define g_profileDialog2Bottom (*(int *)g_profileDialog2Bottom_v)
-#undef g_profileDialog2Right
-#define g_profileDialog2Right (*(int *)g_profileDialog2Right_v)
-#undef g_profileDialog2X
-#define g_profileDialog2X (*(int *)g_profileDialog2X_v)
-#undef g_profileDialog2Y
-#define g_profileDialog2Y (*(int *)g_profileDialog2Y_v)
+#undef g_logOutDialogBottom
+#define g_logOutDialogBottom (*(int *)g_logOutDialogBottom_v)
+#undef g_logOutDialogRight
+#define g_logOutDialogRight (*(int *)g_logOutDialogRight_v)
+#undef g_logOutDialogX
+#define g_logOutDialogX (*(int *)g_logOutDialogX_v)
+#undef g_logOutDialogY
+#define g_logOutDialogY (*(int *)g_logOutDialogY_v)
 #undef g_profileDialogBottom
 #define g_profileDialogBottom (*(int *)g_profileDialogBottom_v)
 #undef g_profileDialogBox
@@ -2412,8 +2412,8 @@ extern struct GameData g_data;
 #define g_scroll (*(float *)g_scroll_v)
 #undef g_searchResult
 #define g_searchResult (*(int *)g_searchResult_v)
-#undef g_secondDialogRects
-#define g_secondDialogRects ((int *)g_secondDialogRects_v)
+#undef g_logOutDialogRects
+#define g_logOutDialogRects ((int *)g_logOutDialogRects_v)
 #undef g_selectedPilotLevel
 #define g_selectedPilotLevel (*(int *)((u8 *)g_campaign_v + 0x100))
 #undef g_sensitivitySlider

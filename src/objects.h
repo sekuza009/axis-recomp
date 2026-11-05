@@ -242,7 +242,7 @@
 #define g_deleteDialogRects ((int *)IMG(0x9f6808))   /* int[8]; deleteDialog_hitTest's 2 hit rectangles (hit_tests.c) */
 #define g_profilePageRects ((int *)IMG(0x9f8c60))   /* int[36]; profilePage_hitTest's 9 hit rectangles (hit_tests.c) */
 #define g_profileListRects ((int *)IMG(0x9f8d78))   /* int[52]; profileList_hitTest's 13 hit rectangles (hit_tests.c) */
-#define g_secondDialogRects ((int *)IMG(0x9f8ee8))   /* int[8]; secondDialog_hitTest's 2 hit rectangles (hit_tests.c) */
+#define g_logOutDialogRects ((int *)IMG(0x9f8ee8))   /* int[8]; logOutDialog_hitTest's 2 hit rectangles (hit_tests.c) */
 #define g_pilotSelectRects ((int *)IMG(0x9f8f38))   /* int[44]; pilotSelect_hitTest's 11 hit rectangles (hit_tests.c) */
 #define g_newNameDialogRects ((int *)IMG(0x9f9020))   /* int[8]; newNameDialog_hitTest's 2 hit rectangles (hit_tests.c) */
 #define g_mousePos ((int *)IMG(0x4ded68))   /* int[2]; the mouse pointer in 640 x 480 units (g_mouseX */

@@ -37,9 +37,9 @@ static void ask(int kind, int x, int y)
 	g_questionY = y + 0x4a;
 }
 
-/* 0x44b670, 0x44b6e0: question 3 over the pilot panel, question 5 over the second panel */
+/* 0x44b670, 0x44b6e0: question 3 over the pilot panel, question 5 (log out) over its own panel */
 void (profile_askDelete)(void) { ask(3, g_profileDialogX, g_profileDialogY); }
-void (profile_askSecond)(void) { ask(5, g_profileDialog2X, g_profileDialog2Y); }
+void (profile_askLogOut)(void) { ask(5, g_logOutDialogX, g_logOutDialogY); }
 
 /* 0x44f810: the profile screen: only its frame while a dialog is up, else the pilot preview (when shown) and the
    screen */
@@ -125,16 +125,16 @@ static u32 two_buttons(const TwoButtons *d)
 #undef Y1
 }
 
-/* 0x44e180: the delete question (deleteDialog_hitTest, question 0x751da4); 0x44e3e0: the second dialog (secondDialog_hitTest,
+/* 0x44e180: the delete question (deleteDialog_hitTest, question 0x751da4); 0x44e3e0: the log-out question (logOutDialog_hitTest,
    question MSG(128, "ARE YOU SURE?")) */
 u32 (profile_drawDeleteQuestion)(void)
 {
 	static const TwoButtons d = { ADDR(g_profileDialogX), ADDR(g_profileDialogY), ADDR(g_profileDialogRight), ADDR(g_profileDialogBottom), FN_ADDR(deleteDialog_hitTest, 0x44b320), MSG(127, "ARE YOU SURE?") };
 	return two_buttons(&d);
 }
-u32 (profile_drawSecondDialog)(void)
+u32 (profile_drawLogOutQuestion)(void)
 {
-	static const TwoButtons d = { ADDR(g_profileDialog2X), ADDR(g_profileDialog2Y), ADDR(g_profileDialog2Right), ADDR(g_profileDialog2Bottom), FN_ADDR(secondDialog_hitTest, 0x44b360), MSG(128, "ARE YOU SURE?") };
+	static const TwoButtons d = { ADDR(g_logOutDialogX), ADDR(g_logOutDialogY), ADDR(g_logOutDialogRight), ADDR(g_logOutDialogBottom), FN_ADDR(logOutDialog_hitTest, 0x44b360), MSG(128, "ARE YOU SURE?") };
 	return two_buttons(&d);
 }
 
@@ -186,13 +186,13 @@ u32 (profile_drawNewDialog)(void)
 #undef Y1
 }
 
-/* 0x44d720: the profile screen (0x9f8e48 .. 0x9f8ea4): the window (brighter while the pilot list has the focus,
+/* 0x44d720: the profile management window (0x9f8e48 .. 0x9f8ea4): the window (brighter while the pilot list has the focus,
    page 0x9f8f10 = 1), the list's and the details' frames, the title MSG(120, "PROFILE MANAGEMENT"), four buttons (MSG(121, "$[0] NEW"), 0x80 apart:
    on the list page the one under the pointer, by profilePage_hitTest, lit; on page k + 2 button k lit, in the panel
    colour less 0.2 in green and blue), the pilot list (profileList_drawNames), its scroll arrows (5 / 6 under the
    pointer), the details (profile_drawChosenPilot), the border and the version string 0x4b0384 right-aligned at the bottom.
    The original leaves eax to callers that ignore it */
-void (mainmenu_drawScreen)(void)
+void (profile_drawManagementWindow)(void)
 {
 #define X0 g_profilePageLeft
 #define Y0 g_profilePageTop

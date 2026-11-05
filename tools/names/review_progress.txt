@@ -70,11 +70,11 @@
 [x] src/menu/menu_screens.c 43
 [ ] src/menu/menu_states.c 759
 [x] src/menu/menu_title.c 93
-[ ] src/menu/menu_tunnel.c 482
+[x] src/menu/menu_tunnel.c 482
 [x] src/menu/mission_screens.c 177
-[ ] src/menu/profile_dialogs.c 506
-[ ] src/menu/profile_keys.c 148
-[ ] src/menu/profile_misc.c 702
+[x] src/menu/profile_dialogs.c 506
+[x] src/menu/profile_keys.c 148
+[x] src/menu/profile_misc.c 702
 [ ] src/menu/room_clicks.c 897
 [ ] src/menu/room_dialogs.c 1200
 [ ] src/menu/screen_enter.c 437

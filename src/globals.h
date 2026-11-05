@@ -1069,9 +1069,9 @@
 #define g_missionBusy GAME_VAR(int, 0x9f6300)
 #define g_missionShowBackground GAME_VAR(int, 0x9f63b8)
 #define g_profileReveal GAME_VAR(int, 0x9f6828)   /* the chosen emblem's cell grown by this (pixels a side, one more each tick of g_profileRevealClock); 0 when the emblem cursor moves */
-#define g_profileDialog2X GAME_VAR(int, 0x9f6834)   /* page 5's dialog frame */
+#define g_logOutDialogX GAME_VAR(int, 0x9f6834)   /* page 5's dialog frame */
 #define g_profileIntro GAME_VAR(int, 0x9f6838)   /* the profile screen's intro animation runs */
-#define g_profileDialog2Y GAME_VAR(int, 0x9f683c)
+#define g_logOutDialogY GAME_VAR(int, 0x9f683c)
 #define g_emblemCursor GAME_VAR(int, 0x9f8d30)   /* page 6: 0..8, row by row */
 #define g_emblemMoved GAME_VAR(int, 0x9f8d68)
 #define g_profileIntroSpeed GAME_VAR(float, 0x9f8e50)
@@ -1108,8 +1108,8 @@
 #define g_skirmishRow GAME_VAR(int, 0x9f1058)
 #define g_profileDialogBottom GAME_VAR(int, 0x9f8f28)
 #define g_profileDialogRight GAME_VAR(int, 0x9f8f2c)
-#define g_profileDialog2Right GAME_VAR(int, 0x9f93bc)
-#define g_profileDialog2Bottom GAME_VAR(int, 0x9f93c0)
+#define g_logOutDialogRight GAME_VAR(int, 0x9f93bc)
+#define g_logOutDialogBottom GAME_VAR(int, 0x9f93c0)
 #define g_armCursor GAME_VAR(int, 0x4dbc7c)
 #define g_headCount GAME_VAR(int, 0x4dc780)
 #define g_armCount GAME_VAR(int, 0x4dca90)

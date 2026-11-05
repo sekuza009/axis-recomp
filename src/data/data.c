@@ -871,9 +871,9 @@ int g_deleteDialogRects_v[8] __attribute__((aligned(16)));   /* 0x9f6808 */
 u8 g_profileReveal_v[4] __attribute__((aligned(16)));   /* 0x9f6828 */
 u8 g_pilotSelectBottom_v[4] __attribute__((aligned(16)));   /* 0x9f682c */
 u8 g_pilotSelectRight_v[4] __attribute__((aligned(16)));   /* 0x9f6830 */
-u8 g_profileDialog2X_v[4] __attribute__((aligned(16)));   /* 0x9f6834 */
+u8 g_logOutDialogX_v[4] __attribute__((aligned(16)));   /* 0x9f6834 */
 u8 g_profileIntro_v[4] __attribute__((aligned(16)));   /* 0x9f6838 */
-u8 g_profileDialog2Y_v[4] __attribute__((aligned(16)));   /* 0x9f683c */
+u8 g_logOutDialogY_v[4] __attribute__((aligned(16)));   /* 0x9f683c */
 u8 g_profileDialogOpen_v[4] __attribute__((aligned(16)));   /* 0x9f6840 */
 u8 g_profiles_v[9216] __attribute__((aligned(16)));   /* 0x9f6848 */
 u8 g_profileFrameStep_v[4] __attribute__((aligned(16)));   /* 0x9f8c48 */
@@ -902,7 +902,7 @@ u8 g_newNameDialogLeft_v[4] __attribute__((aligned(16)));   /* 0x9f8eac */
 u32 g_profileColour_v[4] __attribute__((aligned(16)));   /* 0x9f8eb0 */
 float g_statBarTargets_v[9] __attribute__((aligned(16)));   /* 0x9f8ec0 */
 u8 g_profileRevealClock_v[4] __attribute__((aligned(16)));   /* 0x9f8ee4 */
-int g_secondDialogRects_v[8] __attribute__((aligned(16)));   /* 0x9f8ee8 */
+int g_logOutDialogRects_v[8] __attribute__((aligned(16)));   /* 0x9f8ee8 */
 u8 g_profileFrameAlpha_v[4] __attribute__((aligned(16)));   /* 0x9f8f08 */
 u8 g_profileDialogY_v[4] __attribute__((aligned(16)));   /* 0x9f8f0c */
 u8 g_profilePage_v[4] __attribute__((aligned(16)));   /* 0x9f8f10 */
@@ -920,8 +920,8 @@ u8 g_profileCount_v[4] __attribute__((aligned(16)));   /* 0x9f9008 */
 u8 g_profileRowClicked_v[4] __attribute__((aligned(16)));   /* 0x9f900c */
 int g_profileDialogBox_v[4] __attribute__((aligned(16)));   /* 0x9f9010 */
 int g_newNameDialogRects_v[8] __attribute__((aligned(16)));   /* 0x9f9020 */
-u8 g_profileDialog2Right_v[4] __attribute__((aligned(16)));   /* 0x9f93bc */
-u8 g_profileDialog2Bottom_v[4] __attribute__((aligned(16)));   /* 0x9f93c0 */
+u8 g_logOutDialogRight_v[4] __attribute__((aligned(16)));   /* 0x9f93bc */
+u8 g_logOutDialogBottom_v[4] __attribute__((aligned(16)));   /* 0x9f93c0 */
 u8 g_netChatMessageKind_v[4] __attribute__((aligned(16)));   /* 0x9f93c8 */
 u8 g_netChatMessageWord1_v[4] __attribute__((aligned(16)));   /* 0x9f93cc */
 u8 g_netChatMessageWord2_v[4] __attribute__((aligned(16)));   /* 0x9f93d0 */
@@ -2041,9 +2041,9 @@ const DataPiece g_splitObjects[] = {
 	{ 0x9f6828, g_profileReveal_v, 4 },
 	{ 0x9f682c, g_pilotSelectBottom_v, 4 },
 	{ 0x9f6830, g_pilotSelectRight_v, 4 },
-	{ 0x9f6834, g_profileDialog2X_v, 4 },
+	{ 0x9f6834, g_logOutDialogX_v, 4 },
 	{ 0x9f6838, g_profileIntro_v, 4 },
-	{ 0x9f683c, g_profileDialog2Y_v, 4 },
+	{ 0x9f683c, g_logOutDialogY_v, 4 },
 	{ 0x9f6840, g_profileDialogOpen_v, 4 },
 	{ 0x9f6848, g_profiles_v, 9216 },
 	{ 0x9f8c48, g_profileFrameStep_v, 4 },
@@ -2072,7 +2072,7 @@ const DataPiece g_splitObjects[] = {
 	{ 0x9f8eb0, g_profileColour_v, 16 },
 	{ 0x9f8ec0, g_statBarTargets_v, 36 },
 	{ 0x9f8ee4, g_profileRevealClock_v, 4 },
-	{ 0x9f8ee8, g_secondDialogRects_v, 32 },
+	{ 0x9f8ee8, g_logOutDialogRects_v, 32 },
 	{ 0x9f8f08, g_profileFrameAlpha_v, 4 },
 	{ 0x9f8f0c, g_profileDialogY_v, 4 },
 	{ 0x9f8f10, g_profilePage_v, 4 },
@@ -2090,8 +2090,8 @@ const DataPiece g_splitObjects[] = {
 	{ 0x9f900c, g_profileRowClicked_v, 4 },
 	{ 0x9f9010, g_profileDialogBox_v, 16 },
 	{ 0x9f9020, g_newNameDialogRects_v, 32 },
-	{ 0x9f93bc, g_profileDialog2Right_v, 4 },
-	{ 0x9f93c0, g_profileDialog2Bottom_v, 4 },
+	{ 0x9f93bc, g_logOutDialogRight_v, 4 },
+	{ 0x9f93c0, g_logOutDialogBottom_v, 4 },
 	{ 0x9f93c8, g_netChatMessageKind_v, 4 },
 	{ 0x9f93cc, g_netChatMessageWord1_v, 4 },
 	{ 0x9f93d0, g_netChatMessageWord2_v, 4 },
