@@ -114,16 +114,16 @@ int (skirmish_saveSettings)(void)
 	if (r)
 		return r;
 	if (g_keyEnter)
-		GAME_FN(skirmishSettings_leave, 0x443c80, int, void)();
+		((int)skirmishSettings_leave());
 	if (!g_mouseClick)
 		return 0;
 	int row = skirmishSettings_hitTest(g_mouseX, g_mouseY);   /* skirmishSettings_hitTest */
 	if ((u32)row <= 7)
 		return skirmish_clickRow(row);
 	if (row == 8)
-		return GAME_FN(mission_saveAxisMis, 0x443af0, int, int)(g_missionPicked);
+		return ((int)mission_saveAxisMis(g_missionPicked));
 	if (row == 9)
-		return GAME_FN(skirmishSettings_leave, 0x443c80, int, void)();
+		return ((int)skirmishSettings_leave());
 	return row;
 }
 
@@ -173,7 +173,7 @@ u32 (room_leftClicks)(void)
 		return open;
 	if (!g_mouseClick)
 		return 0;
-	u32 button = GAME_FN(createDialog_hitTest, 0x432200, u32, int, int)(g_mouseX, g_mouseY);
+	u32 button = ((u32)createDialog_hitTest(g_mouseX, g_mouseY));
 	u32 r;
 	switch (button) {
 	case 0:
@@ -369,7 +369,7 @@ u32 (app_onClose)(void)
 	game->guid = ((const SessionDesc *)g_receivedSession)->guid;
 	g_roomRecFragLimit = game->fragLimit;
 	g_roomRecTimeLimit = game->timeLimit;
-	int r = GAME_FN(dplay_join, 0x453180, int, int, int, void *, int)(0, (int)game->guid, (void *)OBJ(g_joinedTitleName), 0);   /* dplay_join */
+	int r = dplay_join(0, (int)game->guid, (void *)OBJ(g_joinedTitleName), 0);   /* dplay_join */
 	if (r != 0x1f4) {
 		static const u8 message[5] = { 0x43, 0x42, 0x42, 0x44, 0x45 };
 		if ((u32)(r - 0x1f5) <= 4)
@@ -614,7 +614,7 @@ u32 (room_settingsClicks)(void)
 		g_roomMode = 0;
 	if (!g_mouseClick)
 		return 0;
-	u32 button = GAME_FN(roomSettings_hitTest, 0x432380, u32, int, int)(g_mouseX, g_mouseY);   /* roomSettings_hitTest */
+	u32 button = ((u32)roomSettings_hitTest(g_mouseX, g_mouseY));   /* roomSettings_hitTest */
 	u8 *players = (u8 *)ADDR(g_roomPlayers), *type = (u8 *)ADDR(g_roomGameMode), *frags = (u8 *)ADDR(g_roomFragLimit), *time = (u8 *)ADDR(g_roomTimeLimit);
 	u32 r;
 	switch (button) {

@@ -755,7 +755,7 @@ u32 (armc_mainPageClicks)(void)
 {
 	if (!g_mouseClick)
 		return 0;
-	u32 button = GAME_FN(armcMain_hitTest, 0x40e450, u32, int, int)(g_mouseX, g_mouseY);   /* armcMain_hitTest */
+	u32 button = ((u32)armcMain_hitTest(g_mouseX, g_mouseY));   /* armcMain_hitTest */
 	int view = g_armcPartSlot;
 	switch (button) {
 	case 1:
@@ -784,7 +784,7 @@ u32 (armc_mainPageClicks)(void)
 		if (view == 5)
 			return button - 1;
 		sound_playMenu(8);
-		return GAME_FN(armc_stepPart, 0x40f340, u32, int, int)(g_armcPartSlot, button == 14 ? 1 : 2);
+		return armc_stepPart(g_armcPartSlot, button == 14 ? 1 : 2);
 	case 16:
 		sound_playMenu(2);
 		view = g_armcSpin;

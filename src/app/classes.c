@@ -258,9 +258,9 @@ u32 THISCALL (ResourceSet_dtor)(u8 *self)
 	static const u32 shapes[5] = { offsetof(PlayerRecord, boosterShapes), offsetof(PlayerRecord, legShapes), offsetof(PlayerRecord, armShapes), offsetof(PlayerRecord, chestShapes), offsetof(PlayerRecord, headShapes) };
 	u32 r = 0;
 	for (int k = 0; k < 5; k++)
-		GAME_THISFN(SkeletonManager_dtor, 0x46ae60, u32, void *)(self + skeletons[k]);   /* SkeletonManager_dtor */
+		((u32)SkeletonManager_dtor(self + skeletons[k]));   /* SkeletonManager_dtor */
 	for (int k = 0; k < 5; k++)
-		r = GAME_THISFN(ShapeManager_dtor, 0x466a10, u32, void *)(self + shapes[k]);  /* ShapeManager_dtor */
+		r = ((u32)ShapeManager_dtor(self + shapes[k]));  /* ShapeManager_dtor */
 	return r;
 }
 
@@ -278,7 +278,7 @@ u32 THISCALL (Stage_dtor)(u8 *self)
 	Scene_dtor((u8 *)&stage->scenePath);
 	eh_vector_destructor((u8 *)stage->actors, 0x8888, 100, FN_ADDR(actor_destroyPartLists, 0x45ff30));
 	SkeletonManager_dtor((u8 *)&stage->partSkeletons);   /* SkeletonManager_dtor */
-	GAME_THISFN(ShapeManager_dtor, 0x466a10, void, void *)((u8 *)&stage->partShapes);   /* ShapeManager_dtor */
+	ShapeManager_dtor((u8 *)&stage->partShapes);   /* ShapeManager_dtor */
 	eh_vector_destructor((u8 *)stage->playerRecords, 0x47fd2, 16, FN_ADDR(ResourceSet_dtor, 0x463960));
 	SkeletonManager_dtor((u8 *)&stage->objectSkeletons);
 	ShapeManager_dtor((u8 *)&stage->objectShapes);
@@ -287,7 +287,7 @@ u32 THISCALL (Stage_dtor)(u8 *self)
 	Light_dtor((u8 *)&((Stage *)self)->actorLights);
 	Light_dtor((u8 *)&((Stage *)self)->dynamicLights);
 	Light_dtor((u8 *)&((Stage *)self)->mapLights);
-	return GAME_THISFN(CollisionVolume_dtor, 0x481390, u32, void *)((u8 *)&stage->space);
+	return ((u32)CollisionVolume_dtor((u8 *)&stage->space));
 }
 
 /* 0x46cd00 (thiscall on an image): a 24-bit BMP opened (the last one closed first): its file header (14 bytes, +8)

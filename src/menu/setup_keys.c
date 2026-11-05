@@ -106,7 +106,7 @@ static u32 graphics_apply(void)
 		g_graphicInUse[i] = g_graphicEdited[i];
 	u32 r = cfg_loadAxisCfg();   /* cfg_loadAxisCfg */
 	if (!same)
-		return GAME_FN(app_closeWindow, 0x41e7a0, u32, int)(1);   /* app_closeWindow */
+		return ((u32)app_closeWindow(1));   /* app_closeWindow */
 	g_setupPage = 0;
 	return r;
 }
@@ -270,7 +270,7 @@ u32 (setup_drawGraphicTab)(void)
 		g_setupPage = 0;
 	if (!g_mouseClick)
 		return page;
-	u32 button = GAME_FN(setupOptions_hitTest, 0x4206b0, u32, int, int)(g_mouseX, g_mouseY);   /* setupOptions_hitTest */
+	u32 button = ((u32)setupOptions_hitTest(g_mouseX, g_mouseY));   /* setupOptions_hitTest */
 	u32 *edited = (u32 *)g_graphicEdited, old, mode;
 	switch (button) {
 	case 0:

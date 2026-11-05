@@ -539,7 +539,7 @@ static void leave_game(u32 lobby, int disconnect)
 	(*(u32 *)&g_matchMode) = lobby;
 	arena_leaveSession();
 	if (disconnect)
-		GAME_FN(net_disconnect, 0x451e60, void, void)();   /* net_disconnect */
+		net_disconnect();   /* net_disconnect */
 	g_arenaLobbyState = 0;
 	for (NetSlot *p = g_netSlots; p < g_netSlots + 16; p++) {
 		p->used = 0;
@@ -576,7 +576,7 @@ static u32 reset_menus(u32 farZ, u32 nearZ, int blocked, int deb48, int clear_4e
 		return typing;
 	g_paused = 0;
 	input_resetKeys();
-	return GAME_FN(input_initKeyboard, 0x401310, u32, void *)(g_mainWindow);   /* input_initKeyboard */
+	return ((u32)input_initKeyboard(g_mainWindow));   /* input_initKeyboard */
 }
 #define FAR_BACK 0xc3e10000u    /* -450 */
 #define NEAR_BACK 0xc4098000u   /* -550 */
@@ -707,7 +707,7 @@ u32 (game_postMatch)(void)
 	g_unusedPostMatchFlag = 1;
 	g_matchRunning = 0;
 	if (g_startedFromLobby == 1) {
-		u32 r = GAME_FN(app_closeWindow, 0x41e7a0, u32, int)(0);   /* app_closeWindow: quit */
+		u32 r = ((u32)app_closeWindow(0));   /* app_closeWindow: quit */
 		g_menuState = -1;
 		return r;
 	}
@@ -741,7 +741,7 @@ u32 (game_postMatch)(void)
 			profile_saveProgress();
 			reg_writeEndMode(1);      /* reg_writeEndMode */
 			music_shutdown();
-			r = GAME_FN(app_closeWindow, 0x41e7a0, u32, int)(0x63);
+			r = ((u32)app_closeWindow(0x63));
 			goto message;
 		}
 		reg_writeEndMode(mission < 15 ? 0 : 1);

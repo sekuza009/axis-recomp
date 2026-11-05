@@ -574,7 +574,7 @@ int (net_sendChat)(const char *text)
 	*(u32 *)RELOC(message) = 1;
 	*(u32 *)(RELOC(message) + 8) = g_localPlayerId;
 	lstrcpyA((char *)RELOC(message) + 0xc, text);
-	return GAME_FN(dplay_send, 0x450bf0, int, u32, u32, u32, void *, int)(g_localPlayerId, 0, 0, message, size) >= 0;
+	return dplay_send(g_localPlayerId, 0, 0, message, size) >= 0;
 }
 
 /* 0x4548b0: host ip pinged (ICMP echo, waiting up to timeout ms). Returns the round trip time, kept in 0xa0d798:
@@ -1889,10 +1889,10 @@ void THISCALL (net_processGamePacket)(u8 *g, u32 from, int type, const char *pkt
 		return;
 	if (GS->recording == 1) {
 		void *f = GS->replayFile;
-		GAME_FN(file_writeScrambled, 0x46cc30, void, const void *, int, int, void *)((u8 *)&GS->recordTime, 4, 1, f);
-		GAME_FN(file_writeScrambled, 0x46cc30, void, const void *, int, int, void *)(&from, 4, 1, f);
-		GAME_FN(file_writeScrambled, 0x46cc30, void, const void *, int, int, void *)(&type, 4, 1, f);
-		GAME_FN(file_writeScrambled, 0x46cc30, void, const void *, int, int, void *)(pkt, 1, type, f);
+		file_writeScrambled((u8 *)&GS->recordTime, 4, 1, f);
+		file_writeScrambled(&from, 4, 1, f);
+		file_writeScrambled(&type, 4, 1, f);
+		file_writeScrambled(pkt, 1, type, f);
 	}
 	if (GS->inputState == 1 && pkt[1] != 1)
 		return;
@@ -1921,7 +1921,7 @@ void THISCALL (net_processGamePacket)(u8 *g, u32 from, int type, const char *pkt
 			memcpy(&rec[4], &z, 4);
 			memcpy(&rec[5], &yaw, 4);
 			memcpy(&rec[6], &pitch, 4);
-			GAME_THISFN(stage_setupActorSlot, 0x45dc00, void, void *, int, int, u32, u32 *)(STAGE, i, -1, from, rec);
+			stage_setupActorSlot((Stage *)STAGE, i, -1, from, rec);
 			msg_newKing(g);   /* msg_newKing */
 		}
 		ac->netFired = 1;

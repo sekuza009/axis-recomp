@@ -879,7 +879,7 @@ u32 (data_loadSkirmishInfo)(void)
 {
 	void *f = data_open(OBJ(g_dataDir), STR(0x4b1554, "skirmish.dat"), STR(0x4ad170, "rb"), STR(0x4b1534, "Skirmish Data File Not Found"));
 	crt_fseek(f, 0, 2);
-	if (GAME_CDECL(0x49efdd, int, void *)(f) < 10000) {   /* ftell */
+	if (((int)crt_ftell(f)) < 10000) {   /* ftell */
 		fclose(f);
 		data_missing(STR(0x4b1534, "Skirmish Data File Not Found"));
 	}
@@ -907,7 +907,7 @@ void (data_loadPilotProfiles)(void)
 	void *f = data_open(OBJ(g_dataDir), g_language == 1 ? STR(0x4b14b4, "profkor.dat") : STR(0x4b14a8, "profeng.dat"), STR(0x4ad170, "rb"),
 	                    STR(0x4b1480, "Character Profile Data File Not Found"));
 	crt_fseek(f, 0, 2);
-	if (GAME_CDECL(0x49efdd, int, void *)(f) < 10000) {   /* ftell */
+	if (((int)crt_ftell(f)) < 10000) {   /* ftell */
 		fclose(f);
 		data_missing(STR(0x4b1480, "Character Profile Data File Not Found"));
 	}

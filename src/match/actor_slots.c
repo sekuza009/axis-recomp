@@ -977,7 +977,7 @@ u32 THISCALL (armc_computeTotals)(u8 *s, int a)
 	u8 *ac = (u8 *)&st->actors[a];
 	int ok = AC->state != 1 || totals_agree(s, ac, me);
 	for (int k = 7; k >= 0; k--)
-		GAME_THISFN(UnitPoseInfo_dtor, 0x46f470, void, void *)(me + k_listAt[k]);   /* UnitPoseInfo_dtor: a part list released */
+		UnitPoseInfo_dtor(me + k_listAt[k]);   /* UnitPoseInfo_dtor: a part list released */
 	return ok;
 }
 #undef A

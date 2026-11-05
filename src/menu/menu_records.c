@@ -496,7 +496,7 @@ u32 (missionsel_clicks)(void)
 		missionSettings_leave();
 	if (!g_mouseClick)
 		return 0;
-	u32 button = GAME_FN(missionsel_hitTest, 0x447710, u32, int, int)(g_mouseX, g_mouseY);   /* the screen's hit test */
+	u32 button = ((u32)missionsel_hitTest(g_mouseX, g_mouseY));   /* the screen's hit test */
 	int sel = g_missionShown;
 	switch (button) {
 	case 0:

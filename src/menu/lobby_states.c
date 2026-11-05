@@ -501,14 +501,14 @@ u32 (lobby_close)(void)
 	if (!g_mouseClick || g_arenaLobbyMode != 2)
 		return g_mouseClick;
 	(*(int *)&g_cursorBlink) = 0;
-	u32 hit = GAME_FN(arenaDialogBox_hitTest, 0x4044e0, u32, int, int)(g_mouseX, g_mouseY);   /* the close button's hit test */
+	u32 hit = ((u32)arenaDialogBox_hitTest(g_mouseX, g_mouseY));   /* the close button's hit test */
 	if (hit)
 		return hit;
 	g_arenaSearchTicks = 0;
 	g_arenaJoinWaiting = 0;
 	arena_leaveSession();   /* arena_leaveSession */
 	g_arenaConfirming = 0;
-	return IMPORT(0x4a9330, u32, void *, u32)(g_hWndMain, 0x378);   /* KillTimer */
+	return ((u32)KillTimer(g_hWndMain, 0x378));   /* KillTimer */
 }
 
 /* 0x403870: the map list's keys: the first key toggles the map (mapList_ok) - or, read a second time, closes the
@@ -540,7 +540,7 @@ u32 (room_leaveGame)(void)
 	input_setKeysBlocked(4);
 	g_nextScreen = 300;
 	GAME_FN(debug_traceStripped, 0x48b420, void, void)();                 /* debug_traceStripped */
-	GAME_FN(net_disconnect, 0x451e60, void, void)();                 /* net_disconnect */
+	net_disconnect();                 /* net_disconnect */
 	g_roomConnected = 0;
 	return mech_loadFromProfile();
 }
@@ -696,7 +696,7 @@ u32 (lobby_playerScreenClicks)(void)
 	}
 	if (!g_mouseClick || mode != 2)
 		return (u32)mode;
-	u32 button = GAME_FN(arenaNameDialog_hitTest, 0x404460, u32, int, int)(g_mouseX, g_mouseY);   /* the screen's hit test */
+	u32 button = ((u32)arenaNameDialog_hitTest(g_mouseX, g_mouseY));   /* the screen's hit test */
 	u32 r;
 	switch (button) {
 	case 0:
@@ -866,9 +866,9 @@ u32 (lobby_topPageClicks)(void)
 				continue;
 			sound_playMenu(0);
 			switch (i) {
-			case 0: GAME_FN(lobby_setSubState0, 0x404ac0, void, void)(); break;   /* lobby_setSubState0 */
+			case 0: lobby_setSubState0(); break;   /* lobby_setSubState0 */
 			case 1: lobby_setSubState1(); break;   /* lobby_setSubState1 */
-			case 2: GAME_FN(lobby_setSubState2, 0x404c20, void, void)(); break;   /* lobby_setSubState2 */
+			case 2: lobby_setSubState2(); break;   /* lobby_setSubState2 */
 			case 3: to_main_menu(); break;
 			}
 			break;
@@ -962,7 +962,7 @@ int (lobby_openConnection)(void)
 	g_gameListTop = 0;
 	g_lobbyListRow = 0;
 	*g_netLobbyMessage = 0x180001;   /* the message to send */
-	GAME_FN(net_send, 0x4521c0, int, int, int)(0xd, 100);   /* net_send */
+	((int)net_send(0xd, 100));   /* net_send */
 	g_arenaConfirming = 0;
 	g_listRefreshPeriod = 30;
 	return 1;
@@ -1062,7 +1062,7 @@ u32 (arena_connectionOutcome)(void)
 		music_shutdown();
 		g_arenaLobbyMode = 0;
 		GAME_FN(arena_openSession, 0x452ec0, void, int, int)(0, 0);   /* arena_openSession */
-		GAME_FN(dplay_host, 0x453090, void, const void *, const void *, int, int, int, int, int, u32)(me, (const void *)OBJ(g_cfgPlayerName),
+		dplay_host(me, (const void *)OBJ(g_cfgPlayerName),
 			(int)(signed char)me[0x22] << 8 | (int)(signed char)me[0x20], (signed char)me[0x21], (signed char)me[0x23],
 			me[0x24], me[0x25], (*(u32 *)&g_playerCorporation));   /* dplay_host: host */
 		g_missionStage = (signed char)me[0x20];
@@ -1182,7 +1182,7 @@ u32 (arena_createClick)(void)
 	}
 	if (!g_mouseClick || mode != 2)
 		return mode;
-	u32 button = GAME_FN(createArena_hitTest, 0x404520, u32, int, int)(g_mouseX, g_mouseY);   /* createArena_hitTest */
+	u32 button = ((u32)createArena_hitTest(g_mouseX, g_mouseY));   /* createArena_hitTest */
 	u8 *players = (u8 *)ADDR(g_newArenaPlayers), *custom = (u8 *)ADDR(g_newArenaKind), *type = (u8 *)ADDR(g_newArenaMode);
 	u32 r;
 	u8 old;

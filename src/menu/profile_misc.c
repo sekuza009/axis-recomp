@@ -200,7 +200,7 @@ u32 (profile_logIn)(void)
 	g_nextScreen = 300;
 	g_keysBlocked = 2;
 	g_unusedMenuReturnWord = 0;
-	GAME_CDECL(0x49ea80, char *, char *, const char *, u32)(g_cfgPlayerName,
+	crt_strncpy(g_cfgPlayerName,
 	                                                        (const char *)(OBJ(g_profileList) + g_currentProfile * 0x48), 0x20);   /* strncpy */
 	return cfg_loadAxisCfg();   /* cfg_loadAxisCfg */
 }
@@ -270,7 +270,7 @@ int (profileList_clicks)(void)
 {
 	(*(int *)&g_cursorBlink) = 0;
 	if (g_mouseClick) {
-		u32 row = GAME_FN(pilotSelect_hitTest, 0x44b3e0, u32, int, int)(g_mouseX, g_mouseY);   /* the list's hit test */
+		u32 row = ((u32)pilotSelect_hitTest(g_mouseX, g_mouseY));   /* the list's hit test */
 		if (row <= 8) {
 			if ((*(u32 *)&g_emblemCursor) != row) {
 				(*(u32 *)&g_emblemCursor) = row;
@@ -439,8 +439,8 @@ u32 (profile_deleteFiles)(void)
 		memset(path, 0, sizeof path);
 		strcpy(path, (const char *)(records + current * 0x48 + 4));
 		strcat(path, (const char *)STR(0x4b2afc, ".axs"));
-		if (!IMPORT(0x4a9104, int, const char *)(path))   /* DeleteFileA */
-			IMPORT(0x4a9104, int, const char *)(path);
+		if (!((int)DeleteFileA(path)))   /* DeleteFileA */
+			((int)DeleteFileA(path));
 		crt_chdir((const char *)STR(0x4b2a80, ".."));   /* chdir("..") */
 	}
 	int count = g_profileCount - 1, last = current;
@@ -473,7 +473,7 @@ u32 (profile_deleteFiles)(void)
 static u32 keyboard_back(void)
 {
 	input_resetKeys();
-	return GAME_FN(input_initKeyboard, 0x401310, u32, void *)(g_mainWindow);   /* input_initKeyboard */
+	return ((u32)input_initKeyboard(g_mainWindow));   /* input_initKeyboard */
 }
 
 /* the typed line emptied (its length 0x9dcd30) */
@@ -510,7 +510,7 @@ u32 (profile_newNameDialog)(void)
 		return r;
 	}
 	if (g_mouseClick) {
-		u32 button = GAME_FN(newNameDialog_hitTest, 0x44b2a0, u32, int, int)(g_mouseX, g_mouseY);   /* newNameDialog_hitTest */
+		u32 button = ((u32)newNameDialog_hitTest(g_mouseX, g_mouseY));   /* newNameDialog_hitTest */
 		r = button - 1;
 		if (button == 0) {
 			if (name_isBlank(typed) == 1)   /* name_isBlank: blank */

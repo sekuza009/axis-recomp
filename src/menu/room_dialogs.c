@@ -126,10 +126,10 @@ u32 (settingsDialog_clicks)(void)
 	}
 	if (!g_mouseClick)
 		return 0;
-	u32 button = GAME_FN(loginForm_hitTest, 0x432240, u32, int, int)(g_mouseX, g_mouseY);   /* the dialog's hit test */
+	u32 button = ((u32)loginForm_hitTest(g_mouseX, g_mouseY));   /* the dialog's hit test */
 	if (button <= 3) {
 		account_endTyping();
-		return GAME_FN(loginForm_openField, 0x433e60, u32, int)((int)button);
+		return ((u32)loginForm_openField((int)button));
 	}
 	if (button == 4) {
 		sound(0);
@@ -148,7 +148,7 @@ u32 (settingsDialog_clicks)(void)
 u32 (room_joinSession)(int i)
 {
 	g_roomJoined = 0;
-	if (!GAME_FN(arena_openSession, 0x452ec0, int, int, void *)(0, g_sessionList[i].address)) {
+	if (!arena_openSession(0, g_sessionList[i].address)) {
 		menu_showMessage(0x3f);
 		return arena_leaveSession();   /* arena_leaveSession */
 	}
@@ -201,7 +201,7 @@ u32 (arena_joinListed)(int i)
 	if (g_arenaSearchStarted)
 		arena_leaveSession();
 	void *session = i == 99999 ? (void *)ADDR(g_typedArenaName) : (void *)g_sessionList[i].address;
-	if (!GAME_FN(arena_openSession, 0x452ec0, int, int, void *)(0, session)) {
+	if (!arena_openSession(0, session)) {
 		menu_showMessage(0x3f);
 		return arena_leaveSession();
 	}
@@ -841,7 +841,7 @@ void (account_drawPanel)(void)
 #define Y1 g_accountPanelBottom
 #define K(addr) ((const float *)RELOC(addr))
 	const u32 *bright = g_roomBright, *dim = g_roomDim;
-	int hovered = GAME_FN(account_hitTest, 0x4322c0, int, int, int)(g_mouseX, g_mouseY);   /* account_hitTest */
+	int hovered = ((int)account_hitTest(g_mouseX, g_mouseY));   /* account_hitTest */
 	gfx_setProjection2D3D(2);
 	glLoadIdentity();
 	if (g_roomAwaitingServer == 1) {
@@ -949,7 +949,7 @@ u32 (ranking_drawTable)(void)
 	const u32 *bright = g_roomBright, *dim = g_roomDim;
 	static const u32 white[4] = { 0x3f800000, 0x3f800000, 0x3f800000, 0x3f800000 };
 	static const u32 yellow[4] = { 0x3f800000, 0x3f800000, 0, 0x3f800000 };
-	int hovered = GAME_FN(ranking_hitTest, 0x4323c0, int, int, int)(g_mouseX, g_mouseY);   /* ranking_hitTest */
+	int hovered = ((int)ranking_hitTest(g_mouseX, g_mouseY));   /* ranking_hitTest */
 	gfx_setProjection2D3D(2);
 	glLoadIdentity();
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
