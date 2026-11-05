@@ -1,5 +1,5 @@
 /* tex_colours.c: colouring textures. A texture manager keeps per slot (0x68-byte records from +0xc0108) two HSV
-   tints and their flags; a texture's pixels (RGBA at +0x114) are tinted where its colour mask (+0x80114) is strong
+   tints and their flags; a texture's pixels (RGBA at image) are tinted where its colour mask (colourMask) is strong
    in red (the first tint) or green (the second). A tint replaces the hue and offsets saturation and value.
    Also: a colour added to RGBA pixels, RGB -> HSV, and a texture record set up from its name. */
 #include "../game.h"
@@ -142,7 +142,7 @@ int THISCALL (tex_applyTintMask)(u8 *tex, int i)
 }
 
 /* 0x454e60: a texture record: its name, slot, flags and two colours (h, s, v each), and its animation from the name's suffix: "_ANI" 1,
-   "_ANI0" .. "_ANI3" 1 .. 4 (another digit leaves +0x60 as it was), anything else 0. (The original also makes an
+   "_ANI0" .. "_ANI3" 1 .. 4 (another digit leaves animation as it was), anything else 0. (The original also makes an
    upper-cased copy of the name it never uses; the suffix test is case-sensitive.) */
 void THISCALL (texRecord_init)(u8 *self, const char *name, int slot, int flags, int h1, int s1, int v1, int h2, int s2, int v2)
 {

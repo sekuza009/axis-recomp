@@ -15,7 +15,7 @@ static void set_round(Round *r, int map, int mode, int score, int time)
 	r->timeLimit = time;
 }
 
-/* the first round's map rotation: solo, the 15 stages (0x5c-byte records of g_skirmishInfo from +0x4c: the mode, the time and the
+/* the first round's map rotation: solo, the 15 stages (0x5c-byte records of g_skirmishInfo from gameMode: the mode, the time and the
    score limits) from the stage chosen (g_missionStage); a network host, the arena maps in rotation (g_arenaMapCount of them, 8
    bytes each from g_mapChoiceKeptTable: in rotation, the map's own mode, used when the chosen mode g_chosenGameMode is 14 or more) or,
    without rotation (g_mapRotation), the chosen map only, from the first; a machine that joined, none */
@@ -144,7 +144,7 @@ static int random_below(u32 n)
 	return (int)(r % n);
 }
 
-/* a later round: a random position in each of the six geometry tables (their counts at +0x15de6c8 .., rows of
+/* a later round: a random position in each of the six geometry tables (their counts at headCount .., rows of
    0x2aa .. 0xb86 dwords), the restart point, the round's tables copied (cameraMode counting through them, as in the
    original), the camera back to mode 1, nobody watched, the pointer centred, the volumes (g_soundVolume, g_musicVolume) set
    again, the local player's inPlay cleared, the teams (scene_setLocalTeam), the camera and its slot, a typed chat line
@@ -283,9 +283,9 @@ static void model_sets(u8 *shapes, const char *dir, int n, int extra, int size, 
 }
 
 /* 0x4700a0 (thiscall on the stage): the stage built (its names passed on to stage_setFolders): the collision space (in its
-   block +0xb04), the ten sky textures (by 0x4c7410 from the third name; the last two flagged), the light factors and
+   block spaceData), the ten sky textures (by 0x4c7410 from the third name; the last two flagged), the light factors and
    the default light (grey, from (-1, -1, -1)). The sky box (skySphere: six faces of 7 x 7 points, a cube of side
-   1 / sqrt(k_27) turned to each face), the dome (+0x9eee54: 7 x 7 points of the up vector turned by two angles),
+   1 / sqrt(k_27) turned to each face), the dome (layer: 7 x 7 points of the up vector turned by two angles),
    six 4-point rings top and bottom (sides), an 11 x 11 ground grid (floor); the world box (+-100000), the
    layer lists cleared; the shape and skeleton sets of the stage, of each of the 16 player records (five parts each) and
    of the map; the effects and three textures (0x4c73f4 ..), an identity and a 1.1 scale matrix, the flag atlas

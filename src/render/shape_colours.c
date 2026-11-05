@@ -70,7 +70,7 @@ void (shape_colourPixels)(u8 *px, int mode, const void *shape, const u8 *colour)
 	}
 }
 
-/* 0x467580: a model's texture folder (+0x130) and flags (+0x230) set; with flag 2 its tint (two HSV colours), else
+/* 0x467580: a model's texture folder (textureDir) and flags (bindFlags) set; with flag 2 its tint (two HSV colours), else
    its shapes' own colours */
 void THISCALL (shape_setTextureDir)(void *model, const char *folder, int flags, u32 h1, u32 s1, u32 v1, u32 h2, u32 s2,
                                     u32 v2)
@@ -99,7 +99,7 @@ int THISCALL (tex_tintRgba)(u8 *rgba, u32 dh, u32 ds, u32 dv)
 	return r;
 }
 
-/* 0x466910: every part's shading colours (shape_getShadingColorBufferBy) into out at the part's index (+0x48),
+/* 0x466910: every part's shading colours (shape_getShadingColorBufferBy) into out at the part's index (colourBase),
    with the factors and the matrix. Returns the part count */
 int (shape_shadingColours)(float *out, int first, u8 *shape, void *factors, int matrix)
 {

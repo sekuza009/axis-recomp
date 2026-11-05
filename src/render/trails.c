@@ -10,8 +10,8 @@ typedef long double X;
 
 static float as_float(u32 bits) { float f; memcpy(&f, &bits, 4); return f; }
 
-/* 0x4666d0: a shape's bounds: each part's box (min +0x68, max +0x74) from its vertices, the box of all of them (which
-   always holds the origin), its centre (+0x20) and the radius around it (+0x2c) holding every vertex. Bounds are
+/* 0x4666d0: a shape's bounds: each part's box (min box, max box[3]) from its vertices, the box of all of them (which
+   always holds the origin), its centre (centre) and the radius around it (radius) holding every vertex. Bounds are
    copied as raw bits. With no parts, centre and radius are 0 */
 void THISCALL (shape_computeBounds)(u8 *shape)
 {
@@ -62,10 +62,10 @@ void THISCALL (shape_computeBounds)(u8 *shape)
 	md->version = 0x71110300;
 }
 
-/* 0x47ca70: bullet b's trail: a ring of 20 slots (four points each, 0x30 bytes from the bullet's +0xd4) with each
-   slot's time at +0x494. Newest first, each live slot adds four quads joining it to the slot before; the first
+/* 0x47ca70: bullet b's trail: a ring of 20 slots (four points each, 0x30 bytes from the bullet's trail) with each
+   slot's time at trailAge. Newest first, each live slot adds four quads joining it to the slot before; the first
    expired one (or one 18 behind) adds an end cap fanning to the previous slot's centre, and the trail ends. Only for
-   bullets of weapon type 3 whose box (+0x78) is within the view's distance (+0xa08) of the camera (cameraPos) */
+   bullets of weapon type 3 whose box (+0x78) is within the view's distance (cullMargin) of the camera (cameraPos) */
 void THISCALL (bullet_drawTrail)(Stage *stage, int b, void *view)
 {
 	u8 *bullet = (u8 *)(u8 *)&((Stage *)stage)->bullets[b];

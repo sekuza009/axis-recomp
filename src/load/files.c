@@ -1369,10 +1369,10 @@ u32 THISCALL (catalogue_loadComponents)(u8 *scene, const char *path)
 
 /* 0x487cb0 (thiscall on the scene): a recording started (one going is stopped first: replay_closeRecording): the file
    AutoPlay\name.ape, or without a name the first of AutoPlay000 .. AutoPlay999 not there yet (the name kept at
-   recordName; none free, or the file not made: nothing more). Recording (+0x2340d1d 1, the clock recordTime 0), the
+   recordName; none free, or the file not made: nothing more). Recording (recording 1, the clock recordTime 0), the
    header written: version 0x1201, the settings (g_matchMode, g_missionStage, the 32 bytes at g_mapTitle, g_mapRotation), the map
-   (gameMode), g_fragLimit and g_timeLimit. Every player in use (net_playerInUse) is flagged to be sent (+0x234300e,
-   +0x2343012), the shown one (localPlayer) too (+0x234300a, sendFlags, its playerRecords[].flagSent cleared). Its caller ignores
+   (gameMode), g_fragLimit and g_timeLimit. Every player in use (net_playerInUse) is flagged to be sent (sendFlags[][2],
+   sendFlags[][3]), the shown one (localPlayer) too (sendFlags[][1], sendFlags, its playerRecords[].flagSent cleared). Its caller ignores
    the eax it leaves */
 void THISCALL (autoplay_startRecording)(u8 *s, const char *name)
 {

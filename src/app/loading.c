@@ -71,7 +71,7 @@ static void info_line(int row, const char *text)
 
 /* 0x469320 (progress, as bits): the loading screen: cleared to blue, the backdrop (g_loadTexture) on the inside of a
    cylinder of 18 segments, 25133 deep, its texture's v running from the progress to the progress + 10; then in
-   yellow the game's title (session modes 1 / 3: a network game, replays), zone, play type (both "on receiving" while +0x1f1cb0 is 1), frag and
+   yellow the game's title (session modes 1 / 3: a network game, replays), zone, play type (both "on receiving" while awaitingHostRound is 1), frag and
    time limits, and in grey the status line g_statusLine */
 void (loading_draw)(u32 progress)
 {

@@ -12,7 +12,7 @@ static const short copied[6][2] = { { offsetof(PartInfo, slotType), offsetof(Act
 static const struct { short dst, src; u32 scale; } scaled[8] = {
 	{ offsetof(PartInfo, range), offsetof(ActorInfo, stepLength), ADDR(k_0_01f) }, { offsetof(PartInfo, speed), offsetof(ActorInfo, velocity), ADDR(k_0_01f) }, { offsetof(PartInfo, spread), offsetof(ActorInfo, spread), ADDR(k_tenthsToDegrees) }, { offsetof(PartInfo, hitRange), offsetof(ActorInfo, hitRange), ADDR(k_0_01f) }, { offsetof(PartInfo, splashRadius), offsetof(ActorInfo, splashRadius), ADDR(k_0_01f) }, { offsetof(PartInfo, cycleTime), offsetof(ActorInfo, cycleTime), OBJ(k_1000f) }, { offsetof(PartInfo, guidance), offsetof(ActorInfo, guidance), ADDR(k_tenthsToDegrees) }, { offsetof(PartInfo, targetingTime), offsetof(ActorInfo, targetingTime), OBJ(k_1000f) } };
 
-/* record rec for actor type idx; idx -1: the record emptied (its +0x40 -1) */
+/* record rec for actor type idx; idx -1: the record emptied (its slotType -1) */
 static void part_info(u8 *rec, int idx)
 {
 	if (idx == -1) {
@@ -120,7 +120,7 @@ static void panel_name(u32 dst, const char *name)
 }
 
 /* 0x41b750: the ARM CENTER's part panels for the local player's mech: for its head, chest, arm, leg and weapon (the
-   player record's indices +0x175553c ..) the part's name and stats, some scaled by the game's constants. Returns the
+   player record's indices playerRecords[].parts ..) the part's name and stats, some scaled by the game's constants. Returns the
    weapon's index */
 int (armc_drawPartPanels)(void)
 {

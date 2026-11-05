@@ -122,7 +122,7 @@ void THISCALL (stage_buildMeshDrawRecords)(u8 *stage)
 	}
 }
 
-/* 0x46fed0: the textures of every shape in an object list bound (count +0x10, 100-byte entries from *(+0x14), the
+/* 0x46fed0: the textures of every shape in an object list bound (count count, 100-byte entries from *(entries), the
    shape first) */
 void THISCALL (partList_bindTextures)(u8 *list)
 {
@@ -133,7 +133,7 @@ void THISCALL (partList_bindTextures)(u8 *list)
 	}
 }
 
-/* 0x466650: the textures of a shape's parts (their texture id at +0x44, none when negative) bound in turn, with
+/* 0x466650: the textures of a shape's parts (their texture id at texture, none when negative) bound in turn, with
    texturing on during it */
 void THISCALL (shape_bindPartTextures)(u8 *shape)
 {

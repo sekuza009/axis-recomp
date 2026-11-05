@@ -44,7 +44,7 @@ void STDCALL (crt_arrayConstruct)(u8 *first, int size, int count, void (THISCALL
 }
 
 /* 0x460c40: the game's class Console's destructor (the Console is our Scene, the game object): its vtable back (0x4aa238), then its members
-   destroyed: the stage (+0x1f36c8), the view volume (+0x74) and the time sync (+0xc). The caller ignores the eax it
+   destroyed: the stage (+0x1f36c8), the view volume (view) and the time sync (timer). The caller ignores the eax it
    leaves */
 void THISCALL (Console_dtor)(u8 *self)
 {
@@ -55,8 +55,8 @@ void THISCALL (Console_dtor)(u8 *self)
 	TimeSync_dtor((u8 *)&sc->timer);
 }
 
-/* 0x4841f0 (thiscall on a view volume): its projection (+0x90b0) and view (+0x90f0) matrices copied from those
-   given, or each read from OpenGL when none is given, and their product kept (+0x9130) */
+/* 0x4841f0 (thiscall on a view volume): its projection (projection) and view (modelview) matrices copied from those
+   given, or each read from OpenGL when none is given, and their product kept (clip) */
 void THISCALL (ViewVolume_captureMatrices)(u8 *view, const float *projection, const float *modelview)
 {
 	ViewVolume *vw = (ViewVolume *)view;

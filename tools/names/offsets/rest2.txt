@@ -1,0 +1,13 @@
+69 textureDir
+70 bindFlags
+71 colourBase
+73 image
+74 colourMask
+76 animation
+77 box
+78 box[3]
+79 centre
+80 radius
+81 trail
+82 trailAge
+84 cullMargin

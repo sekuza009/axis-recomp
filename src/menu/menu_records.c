@@ -464,7 +464,7 @@ u32 (skirmish_briefingKeys)(void)
 
 /* ---- the mission select (selection g_missionShown) ---- */
 /* 0x4479d0: mission sel chosen: its 32-byte record (g_mapNames) as the current one (g_mapTitle), its three values from the
-   0x5c-byte records of g_skirmishInfo (+0x4c ..), the settings left, mission mode (g_quitAsked = 1, g_matchMode = 3) */
+   0x5c-byte records of g_skirmishInfo (gameMode ..), the settings left, mission mode (g_quitAsked = 1, g_matchMode = 3) */
 u32 (mission_choose)(void)
 {
 	int sel = g_missionShown;
@@ -570,7 +570,7 @@ u32 (menu_keyStartFade)(void)
 }
 
 /* 0x442d10: the replay list's visible names: up to 10 rows, 20 pixels apart, from the first shown (g_replaySelectFirst) of the
-   g_replayFileCount replays (0x44-byte records from g_replayList): a flagged one (+0x40) on a red bar with yellow text, the others
+   g_replayFileCount replays (0x44-byte records from g_replayList): a flagged one (flag) on a red bar with yellow text, the others
    pale blue. Returns the last text_draw8's eax (0 with no rows) */
 u32 (replaySelect_drawNames)(void)
 {

@@ -21,7 +21,7 @@ static u32 rand_below(u32 n)
 	return r;
 }
 
-/* the view (+0x1e0 pitch, +0x1e4 heading, tenths of a degree) at point p */
+/* the view (botLookPitch pitch, botLookYaw heading, tenths of a degree) at point p */
 static void aim_at(u8 *a, const float *p)
 {
 	float d[3];
@@ -600,7 +600,7 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 						AC->inAltitude = AC->inBackward = 1;
 				}
 			}
-			/* the turns towards the view, at most the turn rate (+0x6c) a second */
+			/* the turns towards the view, at most the turn rate (turnRate) a second */
 			float rate = f32(fmul_m(fld_m(dt), &AC->turnRate));
 			for (int c = 0; c < 2; c++) {
 				long double r = angle_turn(AU(offsetof(Player, pitch) + c * 4), AU(offsetof(Player, botLookPitch) + c * 4));
@@ -778,7 +778,7 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 		AC->nextPos[2] = f32(fadd_m(fld_m(&z), &AC->pos[2]));
 		AC->nextPitch = f32(fadd_m(fmul_m(fsub_m(fld_m(&AC->netPitch), &AC->pitch), &k), &AC->pitch));
 		AC->nextYaw = f32(angle_stepTowards(BITS(AC->nextYaw), BITS(AC->netYaw), BITS(k)));
-		for (int c = 0; c < 5; c++)   /* +0x194..+0x1a4 */
+		for (int c = 0; c < 5; c++)   /* nextForward..nextRun */
 			AF(offsetof(Player, nextForward) + c * 4) = f32(fadd_m(fmul_m(fsub_m(fld_m(&AC->netMotion[c]), &AF(offsetof(Player, forward) + c * 4)), &k), &AF(offsetof(Player, forward) + c * 4)));
 	}
 	if (AC->fireAnim > 0 && weapon) {   /* the firing cycle, wrapping at 1 */
@@ -922,7 +922,7 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 			if (AC->inFire == 1 && AC->spawnAge > 3.0f && AC->slot >= 0 && !(AC->fireAnim > 0) && AC->weaponLower >= 1.0f && AC->weaponLowering == 0
 			    && AC->armor > 0)
 				AC->firing = 1;
-			int shots = 0;   /* this frame's rounds: whole cycles times the burst, and a burst's rounds left (+0x1f0, +0x1f4) */
+			int shots = 0;   /* this frame's rounds: whole cycles times the burst, and a burst's rounds left (burstLeft, burstTime) */
 			const float *cycle = &((ActorInfo *)weapon)->cycleTime, *gap = &((ActorInfo *)weapon)->burstGap;
 			int burst = ((ActorInfo *)weapon)->burst;
 			if (AC->firing == 1) {
@@ -1001,7 +1001,7 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 					if (AC->bot == 0) {
 						Vec3_rotateAxis(shot_dir, 1, ftol(fld_m(&AC->pitch)));
 						Vec3_rotateAxis(shot_dir, 2, ftol(fld_m(&AC->yaw)));
-					} else {   /* a bot's aim wanders by +-(+0x74) */
+					} else {   /* a bot's aim wanders by +-(aimError) */
 						u32 sp = (u32)(AC->aimError * 2);
 						int r1 = (int)sp > 0 ? (int)rand_below(sp) : 0;
 						Vec3_rotateAxis(shot_dir, 1, ftol(fld_m(&AC->pitch)) - AC->aimError + r1);
@@ -1111,7 +1111,7 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 			b->moved = 1;
 		}
 	}
-	/* stamina (+0x4ac): spent running, back after a rest (+0x4b0 the rest) */
+	/* stamina (energyUsed): spent running, back after a rest (staminaRest the rest) */
 	if (!(((u32)AC->timerFlags) & 0x400) && AC->inBooster == 1 && (AC->inForward == 1 || AC->inBackward == 1 || AC->inStepLeft == 1 || AC->inStepRight == 1)) {
 		long double v = fsubr_m(fdiv_m(fld_m(dt), &AC->boostTime), &AC->energyUsed);
 		AC->energyUsed = (float)v;
@@ -1200,7 +1200,7 @@ tail:   /* 45cdb1: held by the script */
 timers:
 	AC->spawnAge = f32(fadd_m(fld_m(dt), &AC->spawnAge));
 	AC->stateTime = f32(fadd_m(fld_m(dt), &AC->stateTime));
-	long double sec = fadd_m(fld_m(dt), &AC->timeExtra);   /* whole seconds into +0xfc */
+	long double sec = fadd_m(fld_m(dt), &AC->timeExtra);   /* whole seconds into timePlayed */
 	AC->timeExtra = (float)sec;
 	if (sec > 1.0L) {
 		AC->timePlayed += ftol(sec);
@@ -1212,7 +1212,7 @@ timers:
 	countdown(&AC->gauge, dt);
 	AC->messageTime = f32(fsub_m(fld_m(&AC->messageTime), dt));
 	countdown(&AC->warpWait, dt);
-	if (AC->shield < AC->shieldMax && AC->shieldRegen > 0) {   /* the energy (+0x12c) back by +0x448 a second up to +0x20 */
+	if (AC->shield < AC->shieldMax && AC->shieldRegen > 0) {   /* the shield back by shieldRegen a second up to shieldMax */
 		long double v = fadd_m(fld_m(dt), &AC->shieldRegenTime);
 		AC->shieldRegenTime = (float)v;
 		if (v >= 1.0L) {

@@ -78,11 +78,11 @@ long double (timer_now)(void)
 #undef g_lastCount
 }
 
-/* 0x487490 (thiscall on a frame timer): the frame time in seconds. On first use the counter's frequency (+0xc) and
-   start (+0x14) are read (a fatal message if either fails) and the longest frame (+0x34) set to 1/15 s unless
-   positive. Each call counts the frame (+8), takes the counter's rise (+0x1c) and adds it up (+0x24); once that
-   passes a second the frames per second go to +0x2c (0 if the sum is not positive) and the count and sum restart.
-   The frame time (+0x30) is the rise over the frequency, at most +0x34; returned as stored */
+/* 0x487490 (thiscall on a frame timer): the frame time in seconds. On first use the counter's frequency (frequency) and
+   start (lastCount) are read (a fatal message if either fails) and the longest frame (maxFrame) set to 1/15 s unless
+   positive. Each call counts the frame (+8), takes the counter's rise (rise) and adds it up (riseSum); once that
+   passes a second the frames per second go to fps (0 if the sum is not positive) and the count and sum restart.
+   The frame time (frameTime) is the rise over the frequency, at most maxFrame; returned as stored */
 long double THISCALL (TimeSync_frameTime)(u8 *t)
 {
 	TimeSync *ts = (TimeSync *)t;
@@ -124,8 +124,8 @@ long double THISCALL (TimeSync_frameTime)(u8 *t)
 #undef fatal
 }
 
-/* 0x461210 (thiscall on the scene): the frame's time (TimeSync_frameTime of its timer, +0xc) kept in a ring of
-   ten (+0x48, next at +0x70), their average (the sum times k_tenth, 0.1) in +0x44; the average is also left on the
+/* 0x461210 (thiscall on the scene): the frame's time (TimeSync_frameTime of its timer, timer) kept in a ring of
+   ten (frameTimes, next at frameTimeNext), their average (the sum times k_tenth, 0.1) in frameTime; the average is also left on the
    FPU stack, as the original leaves it (its callers pop it) */
 long double THISCALL (scene_averageFrameTime)(u8 *t)
 {

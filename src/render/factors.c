@@ -47,9 +47,9 @@ void THISCALL (ground_computeLighting)(void *scene, const u8 *layer)
 	light_computeLayerLightBy(scene, layer, (u32)((const GroundLayer *)layer)->colours, 1, 0, 0, ((const GroundLayer *)layer)->rows, ((const GroundLayer *)layer)->cols);
 }
 
-/* 0x483dd0 (thiscall on the pool): the record copied into the next free slot (+0xb008; 0x2c-byte slots from +4,
-   +0xb004 of them, a slot added when that is the count; from 0x400 on a fatal message), given its index (+0) and
-   marked used (+4); the next free one after it found; the pool marked changed (+0xb00c). Its callers ignore the eax
+/* 0x483dd0 (thiscall on the pool): the record copied into the next free slot (nextFree; 0x2c-byte slots from +4,
+   count of them, a slot added when that is the count; from 0x400 on a fatal message), given its index (+0) and
+   marked used (+4); the next free one after it found; the pool marked in use (enabled). Its callers ignore the eax
    it leaves */
 void THISCALL (factor_addFactorBy)(u8 *pool, const u32 *record)
 {
@@ -79,9 +79,9 @@ void THISCALL (factor_addFactorBy)(u8 *pool, const u32 *record)
 }
 
 /* 0x484050 (thiscall on a view volume): sized for its six tables (entries x 0x1c, matrices x 0x40, colours x 4,
-   triangles x 0x68, quads x 0x64, segments x 0x24 bytes; the counts at +0x9030, +0x903c, +0x9048, +0x9054, +0x9068, +0x9084) in one block (+8, its size +4;
-   allocated and owned, +0xc 1, without memory given, else the memory given, the caller's size checked: fatal
-   messages), the tables' starts laid out (+0x9034 ..; the triangles' and quads' each in parts), then reset (ViewVolume_clearDrawCounts). Its
+   triangles x 0x68, quads x 0x64, segments x 0x24 bytes; the counts at entryLimit, matrixLimit, colourLimit, triangleLimit, quadLimit, segmentLimit) in one block (+8, its size +4;
+   allocated and owned, ownsBlock 1, without memory given, else the memory given, the caller's size checked: fatal
+   messages), the tables' starts laid out (entries ..; the triangles' and quads' each in parts), then reset (ViewVolume_clearDrawCounts). Its
    caller ignores the eax it leaves */
 void THISCALL (ViewVolume_initBy)(u8 *view, int entries, int matrices, int colours, int triangles, int quads, int segments, void *mem, int size)
 {

@@ -372,7 +372,7 @@ int THISCALL (script_runScpFile)(Stage *stage, const char *name, int mode)
 	return mode - 2;
 }
 
-/* 0x46f770: an animation's frame i chosen (when it has a frame table, +0x20, and i is below the count +0x1c), and its
+/* 0x46f770: an animation's frame i chosen (when it has a frame table, frames, and i is below the count frameCount), and its
    length (the frame's int at +0x20) times scale */
 void THISCALL (anim_setFrame)(u8 *anim, int i, float scale)
 {
@@ -396,7 +396,7 @@ void THISCALL (stage_setViewDistance)(u8 *stage, u32 vBits)
 	st->viewDepth = (float)(n * st->viewProjection[10] + st->viewProjection[14]);
 }
 
-/* 0x473940: player p's name set (empty for none), and that of every actor of player p (+0x98) */
+/* 0x473940: player p's name set (empty for none), and that of every actor of player p (name) */
 void THISCALL (player_setName)(Stage *stage, int p, const char *name)
 {
 	player_seen(stage, p);
@@ -417,7 +417,7 @@ void THISCALL (player_setName)(Stage *stage, int p, const char *name)
 }
 
 /* 0x473a80: player p's team set, and that of every actor of player p (one leaving the teams, team < 0, also loses
-   +0x14c); the teams changed (teamsChanged) */
+   state); the teams changed (teamsChanged) */
 void THISCALL (player_setTeam)(Stage *stage, int p, int team)
 {
 	player_seen(stage, p);
@@ -472,7 +472,7 @@ void THISCALL (stage_setFolders)(u8 *self, const char *stageDir, const char *map
 	}
 }
 
-/* 0x471010: the stage's collision space (+0xa10) set up as one cell over the level's bounds (levelLow .. levelHigh) */
+/* 0x471010: the stage's collision space (space) set up as one cell over the level's bounds (levelLow .. levelHigh) */
 void THISCALL (stage_initSpaceOneCell)(u8 *stage)
 {
 	Stage *st = (Stage *)stage;
@@ -742,8 +742,8 @@ void THISCALL (stage_advanceScenePath)(u8 *scene, u32 path)
 	}
 }
 
-/* 0x4742f0 (thiscall on the stage): player p set from an actor record: its name (+8), value (+4), team (+0x28), the
-   parts (head, chest, arm, leg, booster: +0x2c .. +0x3c), the six items (+0x40 ..), then marked in use. Its caller
+/* 0x4742f0 (thiscall on the stage): player p set from an actor record: its name (+8), value (+4), team (team), the
+   parts (head, chest, arm, leg, booster: parts .. parts[4]), the six items (items ..), then marked in use. Its caller
    ignores the eax it leaves */
 void THISCALL (playerRecord_setFromMapPlayer)(Stage *stage, int p, const u8 *rec)
 {
@@ -796,8 +796,8 @@ static const PartKind part_kinds[5] = {
 	{ offsetof(PlayerRecord, parts[4]), offsetof(Stage, boosterTypeCount), STR(0x4c76b8, "invalid boosterIndex(%d) - setActorTy..."), offsetof(PlayerRecord, boosterShapes), offsetof(PlayerRecord, boosterSkels), offsetof(Stage, boosterTypes), sizeof(BoosterType), offsetof(PlayerRecord, partNames[4]), FN_ADDR(actor_loadBooster, 0x45e530) }, /* booster */
 };
 
-/* player p's part of kind k set to type (its record at +0x1561b68, 0x47fd2 bytes each): none for a negative type (0);
-   the player count (+0x19e1888) grows to cover p; the same type again is 1 at once. A type past the count is a fatal
+/* player p's part of kind k set to type (its record at playerRecords, 0x47fd2 bytes each): none for a negative type (0);
+   the player count (playerRecordCount) grows to cover p; the same type again is 1 at once. A type past the count is a fatal
    message (the game exits); then the player's caches emptied, the type's name copied, the type
    stored, and each of the player's actors reloads the part; 1 */
 static int set_part(u8 *scene, int p, int type, const PartKind *k)
@@ -834,7 +834,7 @@ int THISCALL (actor_setActorTypeBoosterInfoBy)(Stage *stage, int p, int type) { 
    each: the item (items[slot]) and its name (itemNames[slot])). Game types 2 .. 11 (gameType) fix the
    first slot (3, 5, 0x24, 0x19, 0x16 by pairs; 10 / 11 the second too, 0x17) and leave the others empty (-1); else
    the item given (negative: empty). An item past the catalogue (actorInfoCount) is a fatal message. Each of the player's
-   actors then has the slot updated (actor_loadWeapon, with its +0x49c). The callers ignore the eax it leaves */
+   actors then has the slot updated (actor_loadWeapon, with its variantLoaded). The callers ignore the eax it leaves */
 void THISCALL (actor_setActorTypeItemInfoBy)(Stage *stage, int p, int slot, int item)
 {
 	u8 *scene = (u8 *)stage;
