@@ -43,7 +43,7 @@ void THISCALL (object_deactivate)(Stage *stage, int i)
 }
 
 /* 0x490df0: script command 0x1c: object i's animation: none (no name, or mode 0) stops it; otherwise its skeleton
-   from the stage's cache (+0x13016d0), its collision unit out of the collisions, the rate 1 / period (+-1 for a
+   from the stage's cache (objectSkeletons), its collision unit out of the collisions, the rate 1 / period (+-1 for a
    period within 1e-8 of 0, -1 also for a NaN) */
 void THISCALL (object_setAnimation)(Stage *stage, int i, u32 name, float period, int mode)
 {

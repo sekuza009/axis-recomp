@@ -139,8 +139,8 @@ void (ptx_layoutBlocks)(const u8 *src, u8 *dst, int w, int h, int bpp)
 	}
 }
 
-/* ---- 0x46e380: one 8 x 8 block of coefficients to 8 x 8 bytes: libjpeg's jpeg_idct_ifast (AAN, 8-bit fixed point
-   multiplies as (x * c) >> 8 in wrapping 32-bit ints, no rounding), with the quantisation table at 0xaa2c94 and the
+/* ---- ptx_inverseDct: one 8 x 8 block of coefficients to 8 x 8 bytes: libjpeg's jpeg_idct_ifast (AAN, 8-bit fixed point
+   multiplies as (x * c) >> 8 in wrapping 32-bit ints, no rounding), with the quantisation table at g_ptxQuant and the
    range limit table at the clamp table + 0x80 ---- */
 static int idct_mul(int x, int c) { return (int)((u32)x * (u32)c) >> 8; }
 #define Q(i) ((u32)(i))
@@ -203,7 +203,7 @@ void (ptx_inverseDct)(const int *in, u8 *out)
 	}
 }
 
-/* 0x46e1e0: a decoder error (the C runtime's): "<name of the current stage (0xaef35c)>" and the message (when there is one) to
+/* 0x46e1e0: a decoder error (the C runtime's): "<name of the current stage (g_currentStageName)>" and the message (when there is one) to
    stderr; a non-zero code exits with it. Returns the code */
 int (ptx_crtlError)(int code, const char *format, ...)
 {
@@ -239,8 +239,8 @@ int (ptx_error)(int code, const char *format, ...)
 
 /* ---- a PTX image: a 16-byte header ("PTX\0", version 0x100, width / 8, height / 8, type 0x81 = YCbCr (3 planes,
    fmt 2) or 0x82 = YCbCrA (4 planes, fmt 3), quality), then up to 64 KB of Huffman-coded 8 x 8 DCT blocks, each plane
-   byte-aligned (planes 1 and 2 use the second table pair, 0xaa2e94); the planes decoded into 0xa6228c (64 KB
-   each), converted to RGB(A) at 0xa21708 and laid out as rows in out. A bad header is fatal (ptx_error) ---- */
+   byte-aligned (planes 1 and 2 use the second table pair, g_ptxHuffSet); the planes decoded into g_ptxPlanes (64 KB
+   each), converted to RGB(A) at g_ptxPixels and laid out as rows in out. A bad header is fatal (ptx_error) ---- */
 #define ptx_fread(p, size, count, f) GAME_CDECL(0x49e836, u32, void *, u32, u32, void *)(p, size, count, f)
 
 static int ptx_read(void *f, u8 *out, int *fmt, int *width, int *height, int close)

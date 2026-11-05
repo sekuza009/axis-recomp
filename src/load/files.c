@@ -168,9 +168,9 @@ u32 (cfg_writePlayer)(void *f)
 #undef FPUTS
 }
 
-/* 0x42cba0: the key bindings' section of axis.cfg: a "set_key <action><1|2> " line for each binding (0x4def00, 64
-   of them, written in the menu's order) with its key's name (0x4b0750), then the mouse: convert and smooth (ON / OFF:
-   0x4df000, 0x4df004), the sensitivity (0x4df008) and the crosshairs (0x4df00c). Returns the last fputs */
+/* 0x42cba0: the key bindings' section of axis.cfg: a "set_key <action><1|2> " line for each binding (g_keyForward, 64
+   of them, written in the menu's order) with its key's name (g_keyNames), then the mouse: convert and smooth (ON / OFF:
+   g_mouseInvert, g_mouseSmooth), the sensitivity (g_mouseSensitivity) and the crosshairs (g_crosshairSetting). Returns the last fputs */
 u32 (cfg_writeKeyBindings)(void *f)
 {
 #define FPUTS(s) GAME_CDECL(0x49f167, u32, const char *, void *)((const char *)RELOC(s), f)
@@ -231,7 +231,7 @@ u32 (cfg_writeKeyBindings)(void *f)
 #undef FPUTS
 }
 
-/* 0x42d730: axis.cfg written in the data folder (0x9dae7c): its header, then the player, server, sound, graphics and
+/* 0x42d730: axis.cfg written in the data folder (g_dataDir): its header, then the player, server, sound, graphics and
    key binding sections (the original does not check that the file opened). Returns fclose's eax */
 u32 (cfg_writeAxisCfg)(void)
 {
@@ -286,12 +286,12 @@ static u32 dat_open(u32 count, const char *format, void *log)
 	return crt_fread(GAME_VAR(void *, table), 0x44, GAME_VAR(int, count),
 	                                                          GAME_VAR(void *, file));
 }
-/* 0x466c00: Shape.dat; 0x46afe0: the skeleton archive */
+/* 0x466c00: Shape.dat; skelDat_initBy: the skeleton archive */
 u32 (shapeDat_initBy)(void) { return dat_open(OBJ(g_shapeDat), (const char *)STR(0x4c4d20, "Data\\Shape.dat"), (void *)OBJ(g_logShapeManager)); }
 u32 (skelDat_initBy)(void) { return dat_open(OBJ(g_skelDat), (const char *)STR(0x4c54b4, "Data\\Skeleton.dat"), (void *)OBJ(g_logSkeletonManager)); }
 
-/* 0x42c910: the sound section of axis.cfg written: the two volumes (0x4e0c90, 0x4e0c94) as numbers, then two on/off
-   switches (0x4e0c98, 0x4e0c9c; 1 is on), each after its keyword. Returns the last fputs */
+/* 0x42c910: the sound section of axis.cfg written: the two volumes (g_soundVolume, g_musicVolume) as numbers, then two on/off
+   switches (g_sound3D, g_stereoReverse; 1 is on), each after its keyword. Returns the last fputs */
 u32 (cfg_writeSound)(void *f)
 {
 #define FPUTS(s) GAME_CDECL(0x49f167, u32, const char *, void *)((const char *)RELOC(s), f)
@@ -312,7 +312,7 @@ u32 (cfg_writeSound)(void *f)
 #undef FPUTS
 }
 
-/* 0x41e7c0: does map k's file exist ("map/" + its name (32 bytes a slot at 0x907b30) + ".bfd")? 1 when it opens, 0
+/* 0x41e7c0: does map k's file exist ("map/" + its name (32 bytes a slot at g_mapNames) + ".bfd")? 1 when it opens, 0
    when not or when the name is shorter than 2 letters */
 int (map_fileExists)(int k)
 {
@@ -336,7 +336,7 @@ int (map_fileExists)(int k)
 #define crt_findclose(handle) GAME_CDECL(0x49f823, int, int)(handle)
 
 /* 0x440c60: the autoplay folder's files (0x4b2a8c, pattern 0x4b2a84) appended to the replay list (0x44-byte records
-   from 0x9dda88, count 0x9dd928, at most 1023), then back to the parent folder (0x4b2a80). Returns the last chdir's
+   from g_replayList, count g_replayFileCount, at most 1023), then back to the parent folder (0x4b2a80). Returns the last chdir's
    eax */
 int (autoplay_listFiles)(void)
 {
@@ -358,7 +358,7 @@ int (autoplay_listFiles)(void)
 	return crt_chdir((const char *)STR(0x4b2a80, ".."));
 }
 
-/* 0x41e260: eight check bytes read from the launcher's file (0x4b03b4; each at its own offset) into 0x4dd988 (12
+/* 0x41e260: eight check bytes read from the launcher's file (0x4b03b4; each at its own offset) into g_launcherCheck (12
    bytes cleared first). 1, or 0 when the file is missing */
 int (app_readLauncherCheck)(void)
 {
@@ -375,9 +375,9 @@ int (app_readLauncherCheck)(void)
 	return 1;
 }
 
-/* ---- axisuser.dat (in the data folder 0x9dae7c), written afresh: a magic word (0xfefefef7), the count (0x9f9008),
-   the current profile (0x9f8c58, first set from 0x9f8d74), 0x9f8c4c, 0x9f8c5c, the 32-byte name 0x9f8fe8 and the
-   0x48-byte profile records from 0x9f6848. Without the file the count is 0 ---- */
+/* ---- axisuser.dat (in the data folder g_dataDir), written afresh: a magic word (0xfefefef7), the count (g_profileCount),
+   the current profile (g_currentProfile, first set from g_pilotChosen), g_profileListTop, g_profileListRow, the 32-byte name g_profileName and the
+   0x48-byte profile records from g_profiles. Without the file the count is 0 ---- */
 static void profiles_path(char *path)
 {
 	strcpy(path, g_dataDir);
@@ -424,7 +424,7 @@ u32 (profile_writeCleared)(int count)
 	return profiles_write(f);
 }
 
-/* 0x447320: the file written as the profiles stand, the name 0x9f8fe8 being the current profile's. Returns
+/* 0x447320: the file written as the profiles stand, the name g_profileName being the current profile's. Returns
    fclose's eax (0 without the file) */
 u32 (profile_writeFile)(void)
 {
@@ -447,7 +447,7 @@ static void *mis_open(void)
 }
 
 /* 0x4435f0: the mission list read from axis.mis: the list cleared first (missions_clear), four header words (the
-   count 0x9ef2c0, then 0x9ef2c4 .. 0x9ef2cc), each mission's entry (g_missions: all but its block size, field by
+   count g_missionCount, then 0x9ef2c4 .. 0x9ef2cc), each mission's entry (g_missions: all but its block size, field by
    field) and then all their block sizes. Without the file, message
    0xb and its eax; otherwise fclose's */
 u32 (mission_loadAxisMis)(void)
@@ -471,8 +471,8 @@ u32 (mission_loadAxisMis)(void)
 }
 
 /* 0x443af0: mission k's block read from axis.mis (in the data folder): after a 0x1a-byte header, 0xf8 bytes for
-   each of the 0x9ef2c0 entries and the blocks before it (their blockSize) into a new buffer
-   0x9ef1ec (the old one freed); its size into 0x9ef200, the skirmish screen's state cleared and the page set to
+   each of the g_missionCount entries and the blocks before it (their blockSize) into a new buffer
+   g_briefingSource (the old one freed); its size into g_briefingEnd, the skirmish screen's state cleared and the page set to
    20 (the mission settings). Without the file, message 0xb and its eax; otherwise 0 */
 u32 (mission_loadBriefing)(int k)
 {
@@ -505,8 +505,8 @@ u32 (mission_loadBriefing)(int k)
 	return 0;
 }
 
-/* 0x42c9f0: the graphic section of axis.cfg written: the video mode by its number 0x83a9c0 (0 .. 7: 640x480 and
-   the added wide modes, 1024x768, DESKTOP; nothing for another), the colour depth (0x83a9c4: 16 or 32), polygon
+/* 0x42c9f0: the graphic section of axis.cfg written: the video mode by its number g_videoMode (0 .. 7: 640x480 and
+   the added wide modes, 1024x768, DESKTOP; nothing for another), the colour depth (g_videoDepth: 16 or 32), polygon
    detail (0x83a9c8: LOW or HIGH), then four on/off switches (0x83a9cc .. 0x83a9d8; 1 is on): linear filtering,
    mipmapping, the frame counter and the simple menu, each line after its keyword. Returns the last fputs */
 u32 (cfg_writeGraphic)(void *f)
@@ -529,9 +529,9 @@ u32 (cfg_writeGraphic)(void *f)
 #undef FPUTS
 }
 
-/* 0x42c6f0: the server section of axis.cfg written from the player's record (0x4ded20): the name (with an extra
-   line break by fprintf), the map and player count (signed bytes 0x4ded40 / 41), customize on/off (0x4ded42), the
-   game type (0x4ded43: 1 .. 14 by name, any other DEATH MATCH) and the game and time flags (bytes 0x4ded44 / 45).
+/* 0x42c6f0: the server section of axis.cfg written from the player's record (g_playerName): the name (with an extra
+   line break by fprintf), the map and player count (signed bytes g_arenaMap / 41), customize on/off (g_arenaCustomize), the
+   game type (g_arenaGameType: 1 .. 14 by name, any other DEATH MATCH) and the game and time flags (bytes g_arenaFragLimit / 45).
    Returns the last fputs */
 u32 (cfg_writeServer)(void *f)
 {
@@ -567,9 +567,9 @@ u32 (cfg_writeServer)(void *f)
 #undef FPUTS
 }
 
-/* 0x43f160: the command line the launcher started the game with, split at spaces into 0x9dd890 (the count in
-   0x9dd88c). "-net" alone: started for a network game when axiswl.dat is there (0x76d410 and 0x76d364 set);
-   "-ip x <server>": the server's address into 0x4de748 (0x76d410 set). Empty or longer than 0x400: nothing.
+/* 0x43f160: the command line the launcher started the game with, split at spaces into g_launchArgs (the count in
+   g_argCount). "-net" alone: started for a network game when axiswl.dat is there (g_startedFromLobby and g_startedByLauncher set);
+   "-ip x <server>": the server's address into g_serverAddressArg (g_startedFromLobby set). Empty or longer than 0x400: nothing.
    Returns what the original leaves in eax (the count, the comparison, fclose's or strcpy's length) */
 u32 (app_parseCommandLine)(char *line)
 {
@@ -622,7 +622,7 @@ static void data_missing(u32 message)
 
 #define crt_fgets(line, size, f) GAME_CDECL(0x49ecd7, char *, char *, int, void *)(line, size, f)
 
-/* a data file (in folder, the data folder 0x9dae7c or the maps' 0x4dedf8) opened with mode; without it the game
+/* a data file (in folder, the data folder g_dataDir or the maps' g_mapInfoDir) opened with mode; without it the game
    ends with a message box */
 static void *data_open(u32 folder, u32 name, u32 mode, u32 missing)
 {
@@ -636,7 +636,7 @@ static void *data_open(u32 folder, u32 name, u32 mode, u32 missing)
 	return f;
 }
 
-/* 0x42b3e0: the game's messages read from msgkor.dat or msgeng.dat (by the language 0x9dae74; in the data folder),
+/* 0x42b3e0: the game's messages read from msgkor.dat or msgeng.dat (by the language g_language; in the data folder),
    one line each into 0x80-byte slots from MSG(0, "PRESS ENTER OR CLICK MOUSE") with the line break cut off; "//" comment lines and empty lines
    skipped. Without the file a message box and the game ends. Returns fclose's eax */
 u32 (data_loadMessages)(void)
@@ -660,7 +660,7 @@ u32 (data_loadMessages)(void)
 	return fclose(f);
 }
 
-/* ---- the pilot's campaign file (in the save folder: the pilot's name + 0x4b2afc): the 0x3ac-byte record 0x9f1718
+/* ---- the pilot's campaign file (in the save folder: the pilot's name + 0x4b2afc): the 0x3ac-byte record g_campaign
    (a signature 0x4b0fa0 first, the pilot's name at +0x80, its value at +0x100) between blocks of noise, 20000 bytes
    before it and 24999 after (the same 10000 random bytes below 0xfe each time), scrambled with key 0x7e ---- */
 #define g_pilot g_pilotChosen               /* the pilot chosen in the list */
@@ -705,7 +705,7 @@ static void pilot_write(void *f)
 }
 
 /* 0x447010: the campaign progress saved: axisuser.dat written (no file: nothing more), then the pilot's file with
-   the profile's record (gathered by mech_storeToProfile); 0x9f1818 = the pilot's value. Returns the last chdir's eax */
+   the profile's record (gathered by mech_storeToProfile); g_selectedPilotLevel = the pilot's value. Returns the last chdir's eax */
 int (profile_saveProgress)(void)
 {
 	void *f = profiles_create();
@@ -796,8 +796,8 @@ static int campaign_signed(const char *path)
 }
 
 /* 0x446a10: the chosen pilot made current: axisuser.dat written (no file: nothing more); the pilot's file read
-   into 0x9f1718 (its name from the list at +0x80) when it is there and signed, else a new record made and written;
-   then the mech read, 0x4dcf34 / 0x9f62e0 cleared, 0x9f62fc = the progress. Returns mech_loadFromProfile's eax */
+   into g_campaign (its name from the list at +0x80) when it is there and signed, else a new record made and written;
+   then the mech read, g_progressWentUp / g_missionBriefing cleared, g_profileProgressSaved = the progress. Returns mech_loadFromProfile's eax */
 u32 (profile_makeCurrent)(void)
 {
 	set_current_name();
@@ -834,8 +834,8 @@ u32 (profile_makeCurrent)(void)
 	return r;
 }
 
-/* 0x4474a0: axisuser.dat's header read back (the magic word, the count, the current profile, 0x9f8c4c, 0x9f8c5c and
-   the last pilot's name 0x9f8fe8; no file or a wrong magic word: no profiles), the save folder made if it cannot be
+/* 0x4474a0: axisuser.dat's header read back (the magic word, the count, the current profile, g_profileListTop, g_profileListRow and
+   the last pilot's name g_profileName; no file or a wrong magic word: no profiles), the save folder made if it cannot be
    entered ("save " then "save"), and the current profile set to the one with that name, if any. Returns fclose's
    eax (0 without the file) */
 u32 (profile_readHeader)(void)
@@ -873,8 +873,8 @@ u32 (profile_readHeader)(void)
 }
 
 /* 0x42ba40: skirmish.dat read: at least 10000 bytes and starting with "AXIS SKIRMISH INFOMATION DATA FILE" (0x80
-   bytes), else the game ends with "Skirmish Data File Not Found"; from 25000 on the count (0x90d1d8) and that many
-   0x5c-byte entries into 0x9db998. Returns fclose's eax */
+   bytes), else the game ends with "Skirmish Data File Not Found"; from 25000 on the count (g_skirmishInfoCount) and that many
+   0x5c-byte entries into g_skirmishInfo. Returns fclose's eax */
 u32 (data_loadSkirmishInfo)(void)
 {
 	void *f = data_open(OBJ(g_dataDir), STR(0x4b1554, "skirmish.dat"), STR(0x4ad170, "rb"), STR(0x4b1534, "Skirmish Data File Not Found"));
@@ -897,10 +897,10 @@ u32 (data_loadSkirmishInfo)(void)
 	return fclose(f);
 }
 
-/* 0x42b590: the pilots read from profkor.dat or profeng.dat (by the language 0x9dae74; in the data folder): at least
+/* 0x42b590: the pilots read from profkor.dat or profeng.dat (by the language g_language; in the data folder): at least
    10000 bytes starting with "AXIS CHARACTER PROFILE DATA FILE" (0x80 bytes), else the game ends ("... Not Found");
    0x1046a bytes on the record count and a version word (0x115c + 0x67, else the game ends: "wrong version", the file
-   left open), then the 0x4c-byte records, each decoded with its own key ('a', 'b', ...) into 0x9f9040. Then the 0x67
+   left open), then the 0x4c-byte records, each decoded with its own key ('a', 'b', ...) into g_profileRecords. Then the 0x67
    records' stats are checked: eight above 30 and one (+0x44) above 50 become 0. The callers ignore the eax it leaves */
 void (data_loadPilotProfiles)(void)
 {
@@ -944,9 +944,9 @@ void (data_loadPilotProfiles)(void)
 	}
 }
 
-/* 0x42b830: mapinfo.dat read (from the maps' folder 0x4dedf8): its header must start with "AXIS MAP INFOMATION DATA
+/* 0x42b830: mapinfo.dat read (from the maps' folder g_mapInfoDir): its header must start with "AXIS MAP INFOMATION DATA
    FILE" and have 0x1a at +0x32, else the game ends with "Map Infomation Data File Not Found"; then the map count
-   (0x67ef00) and for each map its 32-byte name (0x907b30) and 0x50-byte description (0x5ae9d0), both decoded
+   (g_arenaMapCount) and for each map its 32-byte name (g_mapNames) and 0x50-byte description (g_mapAbouts), both decoded
    (str_invert), and the names' trailing spaces cut. Returns 0, or the count when there are none */
 u32 (data_loadMapInfo)(void)
 {
@@ -982,9 +982,9 @@ u32 (data_loadMapInfo)(void)
 }
 
 /* 0x40d4e0: an arena's settings file read (text, "rt"): each line (but // comments) split at spaces and tabs, a
-   keyword taking the next word as its value: gamename (into 0x5b191c, 32 bytes), secret (0x5b1958), password
-   (0x5b193c, 8 bytes), gametype (0x5b194c), maxplayer (0x5b1948), map (0x5b1944), fraglimit (0x5b1950), timelimit
-   (0x5b1954; the original then reads on from the keyword, not the value). Each test sees the word the one before
+   keyword taking the next word as its value: gamename (into g_arenaGameName, 32 bytes), secret (g_arenaFileSecret), password
+   (g_arenaFilePassword, 8 bytes), gametype (g_arenaFileGameType), maxplayer (g_arenaFilePlayers), map (g_arenaFileMap), fraglimit (g_arenaFileFragLimit), timelimit
+   (g_cmdTimeLimit; the original then reads on from the keyword, not the value). Each test sees the word the one before
    left. Returns 1, or 0 when the file does not open */
 int (arena_loadSettings)(const char *path)
 {
@@ -1059,8 +1059,8 @@ static void skip_line(void *f)
 }
 
 /* 0x42d7f0: the player's section read back (the lines cfg_writePlayer writes): the name (its words joined by
-   spaces, then cut once more by str_dropLast, into 0x4dedb0), the corporation (RED 0, BLUE 1, YELLOW 2, else 0;
-   0x4dedd0) and the sex (ON: 1; 0x4dedd4); then one more line. The original leaves fgets's eax to callers that
+   spaces, then cut once more by str_dropLast, into g_cfgPlayerName), the corporation (RED 0, BLUE 1, YELLOW 2, else 0;
+   g_playerCorporation) and the sex (ON: 1; g_playerSex); then one more line. The original leaves fgets's eax to callers that
    ignore it */
 void (cfg_readPlayer)(void *f)
 {
@@ -1080,7 +1080,7 @@ void (cfg_readPlayer)(void *f)
 	skip_line(f);
 }
 
-/* 0x42e080: the sound section read back: the two volumes (0x4e0c90, 0x4e0c94) and two switches (ON: 1; 3D sound,
+/* 0x42e080: the sound section read back: the two volumes (g_soundVolume, g_musicVolume) and two switches (ON: 1; 3D sound,
    stereo reverse),
    then one more line. The original leaves fgets's eax to callers that ignore it */
 void (cfg_readSound)(void *f)
@@ -1131,10 +1131,10 @@ static int named(const char *value, const u32 *names, int count)
 
 #define IS_ON(value) (!strcmp((value), (const char *)STR(0x4b21bc, "ON")))
 
-/* 0x42da70: the server section read back: the server's name (words joined by spaces, cut once more; 0x4ded20),
-   the map (0 .. 21, else 0; 0x4ded40), the players (0 .. 16, else 8; 0x4ded41), a switch (ON; 0x4ded42), the game
-   type (TEAM DEATH MATCH 1 .. ACCEPT ADVANCED MODE 14, else 0; 0x4ded43), two limits (above 250: 30; 0x4ded44 /
-   0x4ded45); then one more line */
+/* 0x42da70: the server section read back: the server's name (words joined by spaces, cut once more; g_playerName),
+   the map (0 .. 21, else 0; g_arenaMap), the players (0 .. 16, else 8; g_arenaPlayers), a switch (ON; g_arenaCustomize), the game
+   type (TEAM DEATH MATCH 1 .. ACCEPT ADVANCED MODE 14, else 0; g_arenaGameType), two limits (above 250: 30; g_arenaFragLimit /
+   g_arenaTimeLimit); then one more line */
 void (cfg_readServer)(void *f)
 {
 	static const u32 types[14] = { STR(0x4b22b8, "TEAM DEATH MATCH"), STR(0x4b22a8, "SUDDEN DEATH"), STR(0x4b2294, "TEAM SUDDEN DEATH"), STR(0x4b2284, "SHOTGUN ARENA"), STR(0x4b2270, "TEAM SHOTGUN ARENA"), STR(0x4b2260, "IONCANNON ARENA"), STR(0x4b2248, "TEAM IONCANNON ARENA"), STR(0x4b2238, "ROCKET ARENA"),
@@ -1175,7 +1175,7 @@ void (cfg_readServer)(void *f)
 }
 
 /* 0x42e240: the graphics section read back: the screen size (1280x720 1, 1600x900 2, 1920x1080 3, 2560x1440 4,
-   3840x2160 5, 1024x768 6, DESKTOP 7, else 0; 0x83a9c0), 32 bits (0x83a9c4), HIGH (0x83a9c8) and four switches (ON;
+   3840x2160 5, 1024x768 6, DESKTOP 7, else 0; g_videoMode), 32 bits (g_videoDepth), HIGH (0x83a9c8) and four switches (ON;
    0x83a9cc .. 0x83a9d8); then one more line */
 void (cfg_readGraphics)(void *f)
 {
@@ -1207,9 +1207,9 @@ static int read_binding(int line)
 	return line == 63 ? 62 : line;
 }
 
-/* 0x42e730: the key bindings read back: 64 lines of key names (each looked up among the 256 at 0x4b0750, the last
-   match kept; none leaves the binding as it was) into the bindings (0x4def00), then the mouse: convert and smooth
-   (ON; 0x4df000, 0x4df004), the sensitivity and the crosshairs (0x4df008, 0x4df00c); then one more line */
+/* 0x42e730: the key bindings read back: 64 lines of key names (each looked up among the 256 at g_keyNames, the last
+   match kept; none leaves the binding as it was) into the bindings (g_keyForward), then the mouse: convert and smooth
+   (ON; g_mouseInvert, g_mouseSmooth), the sensitivity and the crosshairs (g_mouseSensitivity, g_crosshairSetting); then one more line */
 void (cfg_readKeyBindings)(void *f)
 {
 	const char *const *key_name = (const char *const *)OBJ(g_keyNames);
@@ -1230,7 +1230,7 @@ void (cfg_readKeyBindings)(void *f)
 }
 #undef IS_ON
 
-/* 0x42eca0: axis.cfg read from the data folder (0x9dae7c) when its first line is the
+/* 0x42eca0: axis.cfg read from the data folder (g_dataDir) when its first line is the
    header (0x4b0f50): the player, server, sound, graphics and key binding sections. Without the file or with another
    header, the defaults (the player PLAYER, the server AXIS ARENA with 8 players, sound at 100 / 100, the switches and
    graphics settings) and the default key bindings, then axis.cfg written with them. The player's name and the
@@ -1286,10 +1286,10 @@ void (cfg_init)(void)
 }
 
 /* 0x4460d0: the pilot profiles found in the save folder ("save"; made when missing: then "axisuser.dat" deleted and
-   back up, nothing found): each *.axs file's name (0x9f1ac4, 0x40 apart) and its header (0x104 bytes at 20000,
-   unscrambled, into 0x9f61d8); one with the right header (0x4b0fa0) becomes the next profile (0x48 bytes from
-   0x9f6848: its number, its name less ".axs" and its pilot, the header's last word), any other file is deleted. Then back up, profile_readHeader, the list loaded (profile_writeCleared) and the
-   profile named 0x9f8fe8 (among as many as there were files) chosen into 0x9f8c58. The original leaves eax to
+   back up, nothing found): each *.axs file's name (g_saveFileNames, 0x40 apart) and its header (0x104 bytes at 20000,
+   unscrambled, into g_profileHeader); one with the right header (0x4b0fa0) becomes the next profile (0x48 bytes from
+   g_profiles: its number, its name less ".axs" and its pilot, the header's last word), any other file is deleted. Then back up, profile_readHeader, the list loaded (profile_writeCleared) and the
+   profile named g_profileName (among as many as there were files) chosen into g_currentProfile. The original leaves eax to
    callers that ignore it */
 void (profile_scanSaves)(void)
 {
@@ -1369,10 +1369,10 @@ u32 THISCALL (catalogue_loadComponents)(u8 *scene, const char *path)
 
 /* 0x487cb0 (thiscall on the scene): a recording started (one going is stopped first: replay_closeRecording): the file
    AutoPlay\name.ape, or without a name the first of AutoPlay000 .. AutoPlay999 not there yet (the name kept at
-   +0x2340d0c; none free, or the file not made: nothing more). Recording (+0x2340d1d 1, the clock +0x2340d29 0), the
-   header written: version 0x1201, the settings (0x5ae9c4, 0x9dad94, the 32 bytes at 0x67fb44, 0x9da3e0), the map
-   (+0x22e7180), 0x4df8e8 and 0x76d408. Every player in use (net_playerInUse) is flagged to be sent (+0x234300e,
-   +0x2343012), the shown one (+0x234240d) too (+0x234300a, +0x2343006, its +0x179d1fe cleared). Its caller ignores
+   recordName; none free, or the file not made: nothing more). Recording (+0x2340d1d 1, the clock recordTime 0), the
+   header written: version 0x1201, the settings (g_matchMode, g_missionStage, the 32 bytes at g_mapTitle, g_mapRotation), the map
+   (gameMode), g_fragLimit and g_timeLimit. Every player in use (net_playerInUse) is flagged to be sent (+0x234300e,
+   +0x2343012), the shown one (localPlayer) too (+0x234300a, sendFlags, its playerRecords[].flagSent cleared). Its caller ignores
    the eax it leaves */
 void THISCALL (autoplay_startRecording)(u8 *s, const char *name)
 {

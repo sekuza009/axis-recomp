@@ -1,7 +1,7 @@
 /* armc_colours.c: the ARM CENTER's colour sliders, dragged with the pointer. Each colour slot holds two colours of
    three values (hue, then saturation and value); a slider's position is the pointer's x from the slider's left edge
-   (0x4dcc98, less 184 units), 0.00625 per unit, so 0 .. 1 across 160 units. Dragging marks the mech's colours as
-   changed (0x4dca98). */
+   (g_armcSliderLeft, less 184 units), 0.00625 per unit, so 0 .. 1 across 160 units. Dragging marks the mech's colours as
+   changed (g_coloursChanged). */
 #include "../game.h"
 
 
@@ -84,7 +84,7 @@ void (armc_applyColourSlot)(void)
 		tint_part(part, g_armcColourSlot);
 }
 
-/* 0x41d280: after a change (0x4dd074) every part takes its own slot's colours; then the part in view is tinted
+/* 0x41d280: after a change (g_colourChanged) every part takes its own slot's colours; then the part in view is tinted
    again with its slot */
 void (armc_retintParts)(void)
 {

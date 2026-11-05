@@ -5,7 +5,7 @@
 #define g_weaponList (g_weaponListTable)          /* the weapons on offer */
 #define g_extraList (g_extraListTable)           /* the other items on offer */
 
-/* the item in slot (0 .. 3 at 0x4dcb20, 4 .. 5 at 0x4dcb18) */
+/* the item in slot (0 .. 3 at g_mechItem2, 4 .. 5 at g_itemSlot4) */
 static int *slot_item(int slot)
 {
 	return slot < 4 ? (int *)ADDR(g_mechItem2) + slot : (int *)ADDR(g_itemSlot4) + (slot - 4);
@@ -176,10 +176,10 @@ u32 (armc_weaponsPageClicks)(void)
 	return button;
 }
 
-/* 0x41dcf0: the bonuses of the mech's two extra items (slots 5 and 4, 0x4dcb1c / 0x4dcb18): items 27 .. 35 each
-   raise a flag of their own (g_hasItemCapacity ..); the flags set, their values (as floats): 27 0x4dbc70 0.3; 28, 29, 30
-   100 into 0x4dc248, 0x4dcc6c, 0x4dc548; 31 0x4dcb34 50; 32 0x4dbc78 100, 0x4dc898 0.5, 0x4dceb4 3, 0x4dc88c 1;
-   33 0x4dcca0 0.5, 0x4dc894 -0.1; 34 0x4dceb0 0.2; 35 0x4dcc68 0.3, 0x4dbc74 1. Every flag and value is cleared
+/* 0x41dcf0: the bonuses of the mech's two extra items (slots 5 and 4, g_itemSlot5 / g_itemSlot4): items 27 .. 35 each
+   raise a flag of their own (g_hasItemCapacity ..); the flags set, their values (as floats): 27 g_itemBonusCapacityPerLevel 0.3; 28, 29, 30
+   100 into g_itemBonusEpak, g_itemBonus30mm, g_itemBonus60mm; 31 g_itemBonusMissile 50; 32 g_itemBonusDetectionRange 100, g_itemBonusLockOn 0.5, g_itemBonusHacking 3, g_itemBonusTargetKeep 1;
+   33 g_itemBonusActiveTime 0.5, g_itemBonusRechargeTime -0.1; 34 g_itemBonusWeightLimit 0.2; 35 g_itemBonusShield 0.3, g_itemBonusShieldUnread 1. Every flag and value is cleared
    first. The caller ignores the eax it leaves */
 void (armc_extraItemBonuses)(void)
 {

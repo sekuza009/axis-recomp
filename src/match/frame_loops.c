@@ -8,7 +8,7 @@
 
 static int paused(void *s) { return ST->scriptMode && ST->scriptRunning == 1; }   /* (a script holds the actors) */
 
-/* 0x47d000 (thiscall on the scene): the bullets (0x4e8-byte slots from +0x202ef38, +0x20a99b4 of them). Its callers
+/* 0x47d000 (thiscall on the scene): the bullets (0x4e8-byte slots from +0x202ef38, bulletSlotsUsed of them). Its callers
    ignore the eax it leaves */
 void THISCALL (bullet_updateAll)(void *s, int dt)
 {
@@ -19,7 +19,7 @@ void THISCALL (bullet_updateAll)(void *s, int dt)
 			bullet_update(s, i, dt);
 }
 
-/* 0x479a90: the effects (0x12c-byte slots from +0x20a99c4, +0x20f2da0 of them) */
+/* 0x479a90: the effects (0x12c-byte slots from particles[].active, particleCount of them) */
 void THISCALL (stage_updateEffects)(void *s, int dt)
 {
 	if (paused(s))
@@ -29,7 +29,7 @@ void THISCALL (stage_updateEffects)(void *s, int dt)
 			particle_update(s, i, dt);
 }
 
-/* 0x490d40: the objects (0x2cc-byte slots from +0x131ae48, +0x13c9b24 of them) */
+/* 0x490d40: the objects (0x2cc-byte slots from +0x131ae48, objectCount of them) */
 void THISCALL (stage_updateObjects)(void *s, int dt)
 {
 	if (paused(s))
@@ -39,8 +39,8 @@ void THISCALL (stage_updateObjects)(void *s, int dt)
 			mapObject_frame(s, i, dt);
 }
 
-/* 0x479950 (thiscall on the scene): an effect started in the next free slot (+0x20f2da4; at most 999): a slot added
-   when that is the count (+0x20f2da0, the new one marked free), the next free one after it found (none: it stays),
+/* 0x479950 (thiscall on the scene): an effect started in the next free slot (particleFreeHint; at most 999): a slot added
+   when that is the count (particleCount, the new one marked free), the next free one after it found (none: it stays),
    then the effect set up (particle_init). Returns its slot, or -1 */
 int THISCALL (particle_spawn)(u8 *s, u32 desc)
 {
@@ -64,9 +64,9 @@ int THISCALL (particle_spawn)(u8 *s, u32 desc)
 #undef NEXT
 }
 
-/* 0x45e0c0 (thiscall on the scene): the actors (0x8888-byte slots from +0x1cd94b0, +0x202e8c8 of them) moved on by
-   dt, the triggers run (all of it skipped while paused); dt added to the clock's fraction (+0x20fcd44), whole units over 1 moved into
-   the clock (+0x20fcd40). Its callers ignore the eax it leaves */
+/* 0x45e0c0 (thiscall on the scene): the actors (0x8888-byte slots from +0x1cd94b0, actorCount of them) moved on by
+   dt, the triggers run (all of it skipped while paused); dt added to the clock's fraction (clockFraction), whole units over 1 moved into
+   the clock (clockSeconds). Its callers ignore the eax it leaves */
 void THISCALL (actor_updateAll)(u8 *s, float dt)
 {
 	if (paused(s))
@@ -85,7 +85,7 @@ void THISCALL (actor_updateAll)(u8 *s, float dt)
 }
 
 /* 0x47ce50 (thiscall on the scene): a bullet fired (shot the FiredRound: none when its weapon is negative) into the next free slot
-   (+0x20a99b8; at most 399; a slot added when that is the count, +0x20a99b4), the next free one after it found, then
+   (bulletFreeHint; at most 399; a slot added when that is the count, bulletSlotsUsed), the next free one after it found, then
    the bullet set up (bullet_init). Returns its slot, or -1 */
 int THISCALL (bullet_spawn)(u8 *s, u32 id, u32 owner, u32 homingTarget, const u8 *shot, u32 quiet)
 {
@@ -109,8 +109,8 @@ int THISCALL (bullet_spawn)(u8 *s, u32 id, u32 owner, u32 homingTarget, const u8
 #undef NEXT
 }
 
-/* 0x490c50: an object added into the next free slot (+0x13c9b28; at most 999, else a message and -1; a slot added
-   when that is the count, +0x13c9b24), set up (object_initObjectBy), then the next free one after it found. Returns
+/* 0x490c50: an object added into the next free slot (objectFreeHint; at most 999, else a message and -1; a slot added
+   when that is the count, objectCount), set up (object_initObjectBy), then the next free one after it found. Returns
    its slot */
 int THISCALL (object_addObjectBy)(u8 *s, u32 type)
 {
@@ -136,11 +136,11 @@ int THISCALL (object_addObjectBy)(u8 *s, u32 type)
 #undef NEXT
 }
 
-/* 0x483640 (thiscall on the scene): the map's triggers (0x1c-byte records from +0xe3b038, +0xe3c938 of them): each
-   armed one (+8 1) fires (+0x18) on its time (flag 1: the clock, +0x20fcd40 + +0x20fcd44, reaching +0x10) or on the
-   player (flag 2: the player's actor, +0x202e8d4, within the squared radius +0x14 of its way point, +4; a NaN distance
+/* 0x483640 (thiscall on the scene): the map's triggers (0x1c-byte records from +0xe3b038, triggerCount of them): each
+   armed one (+8 1) fires (+0x18) on its time (flag 1: the clock, clockSeconds + clockFraction, reaching +0x10) or on the
+   player (flag 2: the player's actor, playerActor, within the squared radius +0x14 of its way point, +4; a NaN distance
    counts as within). Then each fired one runs its command (script_processCommandBy), is disarmed, and noted in the
-   fired list (+0xe3c618, one dword each, the others 0) */
+   fired list (triggerFired, one dword each, the others 0) */
 void THISCALL (script_processTriggers)(u8 *s)
 {
 #define COUNT ST->triggerCount
@@ -198,9 +198,9 @@ void THISCALL (profile_addMatchScores)(u8 *s)
 	BITS(sc->scoreCommitTimer) = 0x43960000;   /* 300.0f */
 }
 
-/* 0x48ec20 (thiscall on the scene): the effects' shapes looked up in the shape cache (+0x19e188c): three sets of eight
-   numbered ones (+0x20f2dac, +0x20f2dcc, +0x20f2dec; named by 0x4c8170, 0x4c815c, 0x4c8144) and eight single ones
-   (+0x20f2e74 ..); +0x20f2f3c cleared first. Its caller ignores the eax it leaves */
+/* 0x48ec20 (thiscall on the scene): the effects' shapes looked up in the shape cache (partShapes): three sets of eight
+   numbered ones (thrustShapes, +0x20f2dcc, +0x20f2dec; named by 0x4c8170, 0x4c815c, 0x4c8144) and eight single ones
+   (effectShapes ..); itemTextures cleared first. Its caller ignores the eax it leaves */
 void THISCALL (effect_initShapes)(u8 *s)
 {
 	static const u32 sets[3] = { STR(0x4c8170, "Effect\\PlasmaThrust-%d"), STR(0x4c815c, "Effect\\IonThrust-%d"), STR(0x4c8144, "Effect\\GravityThrust-%d") };
@@ -328,15 +328,15 @@ static void identity4(u32 *m)
 		m[k] = k % 5 == 0 ? 0x3f800000 : 0;
 }
 
-/* 0x48fee0 (thiscall on the scene): map object i (0x2cc bytes from +0x131ae44) set up from its type record: the
-   type's name found among the object names (0x40 bytes from +0x130b440, +0x131ae40 of them) or added (at most 1000,
-   else a fatal message); the next serial (+0x13c9b2c), in use, the name's index, three values (+0x40 ..), the
+/* 0x48fee0 (thiscall on the scene): map object i (0x2cc bytes from objects) set up from its type record: the
+   type's name found among the object names (0x40 bytes from objectNames, objectNameCount of them) or added (at most 1000,
+   else a fatal message); the next serial (objectSerial), in use, the name's index, three values (+0x40 ..), the
    animation path ("dir\sub\name" by 0x4c7a30 when the type names one, +0x4c), the position (+0x8c) and rotation
    (+0x98, a quaternion); its matrix (+0x74: translation x rotation) and inverse (+0xb4), a copy (+0xf4) and its
    inverse (+0x134), two identities (+0x174, +0x1b4), the copy times the inverse (+0x1f4) and its inverse (+0x234).
-   Its shape (shape_getByName, bound) and two ranges of its element count from the shading pool (+0xf30dc8, used
-   +0x13016c8; past 1000000 a fatal message), two values (+0xa8), the counters cleared, the shape's centre through
-   the matrix (+0x2bc; no shape: the position), and its shading worked out unless the map has it (+0x13016cc). Its
+   Its shape (shape_getByName, bound) and two ranges of its element count from the shading pool (objectColours, used
+   objectColourCount; past 1000000 a fatal message), two values (+0xa8), the counters cleared, the shape's centre through
+   the matrix (+0x2bc; no shape: the position), and its shading worked out unless the map has it (mapShaded). Its
    callers ignore the eax it leaves */
 void THISCALL (object_initObjectBy)(u8 *s, int i, const u8 *type)
 {
@@ -405,7 +405,7 @@ void THISCALL (object_initObjectBy)(u8 *s, int i, const u8 *type)
 		                 mo->matrixInverse);
 }
 
-/* a particle of kind at p (particle_spawn's record: the kind, 0, the point, the world's colour 0xa0e7e8, zeros) */
+/* a particle of kind at p (particle_spawn's record: the kind, 0, the point, the world's colour g_vecZero, zeros) */
 static void spawn_at(u8 *s, u32 kind, const float *p)
 {
 	u32 rec[13] = { kind, 0 };
@@ -456,8 +456,8 @@ static void spark(u8 *s, u8 *p, float dt)
 		BITS(pr->life) = BITS(pr->drawAge);
 }
 
-/* 0x476410 (thiscall on the scene): particle slot's frame (0x12c bytes from +0x20a99c0). Its age (+0x74, kept at +0x6c)
-   past its life (+0x70) frees it (0x4799f0); otherwise sparks move (spark), and puffs and flashes (kinds 2, 3, 25,
+/* 0x476410 (thiscall on the scene): particle slot's frame (0x12c bytes from particles). Its age (+0x74, kept at +0x6c)
+   past its life (+0x70) frees it (stage_freeParticle); otherwise sparks move (spark), and puffs and flashes (kinds 2, 3, 25,
    26, 30 .. 38) shrink with age, (1 - age / life)^2 times their size (+0x7c); the age moves on by dt. Its caller
    ignores the eax it leaves */
 void THISCALL (particle_update)(u8 *s, int slot, float dt)
@@ -593,7 +593,7 @@ static void item_pickup(u8 *s, u8 *ac, u8 *it, int i, u8 *t, int type)
 }
 
 /* 0x48ed90 (thiscall on the scene): the items' frame. Live actors' touch flags (+0x53c) cleared; every item (0x28
-   bytes from +0x20fadf8, +0x20fcd38 of them; its kind +0 into the 0x90-byte types at +0x20f3ae0, state +0x20, timer
+   bytes from +0x20fadf8, itemCount of them; its kind +0 into the 0x90-byte types at itemTypes, state +0x20, timer
    +0x24, position +0xc): a taken one comes back after its type's time (+0x48, with its sound +0x40); a present one
    spins (+0x1c, 600 a second, but kind 0x22) and the first live actor within 1.5 of its radius (+0x3e8) on every
    axis touches it (item_pickup). An actor touching no warp zone forgets the last one (+0x538 -1). Its callers ignore
@@ -655,7 +655,7 @@ void THISCALL (item_update)(u8 *s, float dt)
 #define PR ((Particle *)p)   /* the same by its fields (src/scene.fields) */
 #define K(address) ((const float *)RELOC(address))
 
-/* the next of the game's random numbers (its table 0xa106f8 by the counter 0xa1efb8) below n */
+/* the next of the game's random numbers (its table g_randTable by the counter g_randPos) below n */
 static u32 table_rand_below(u32 n)
 {
 	u32 at = g_randPos;
@@ -664,7 +664,7 @@ static u32 table_rand_below(u32 n)
 	return r;
 }
 
-/* the particle's direction (+0x10, from 0xa0e7a8 through its matrix +0x2c) */
+/* the particle's direction (+0x10, from g_vecOrigin through its matrix +0x2c) */
 static void particle_heading(u8 *p)
 {
 	const float *m = PR->matrix, *v = (const float *)ADDR(g_vecOrigin);
@@ -760,7 +760,7 @@ static void particle_beam(u8 *s, u8 *p, u32 colour)
 
 /* a trail particle (kinds 40 .. 49): its three points (the descriptor's trailPoints), and their texture coordinates
    (the first v 0.5) from the descriptor's trailSizes, either as size x 0.005 + 0.5 or (by d, the particle's size plus
-   a margin) as (size / d + 1) / 2; its colours the shared one (0xa1f23c) */
+   a margin) as (size / d + 1) / 2; its colours the shared one (g_white) */
 static void particle_trail(u8 *p, const u8 *desc, u32 margin)
 {
 	const ParticleDesc *pd = (const ParticleDesc *)desc;
@@ -787,7 +787,7 @@ static void particle_trail(u8 *p, const u8 *desc, u32 margin)
 	PR->trailColours[0] = PR->trailColours[1] = PR->trailColours[2] = g_white;
 }
 
-/* 0x475070 (thiscall on the scene): particle slot (0x12c bytes from +0x20a99c0) set up from its descriptor: a
+/* 0x475070 (thiscall on the scene): particle slot (0x12c bytes from particles) set up from its descriptor: a
    serial id, in use. A descriptor flagged +0x30 is a kind 50 effect (its 0x48 bytes from +0x34). Otherwise the
    kind (+0), owner, position, target, a matrix to copy, the size (+0x2c); then by kind its life (+0x70) and: 2 / 3
    a sound at the position; 4 its colour from +0x20; 9 a fade; 10 / 11 / 18 a random spin; 12 .. 17 the heading

@@ -1,5 +1,5 @@
 /* shape_colours.c: a model's tint: each of its shapes' parts names a material (set m / 512, entry m % 512 of the
-   material sets at 0xa0e010) that is recoloured, or marked changed when the tint is taken off. */
+   material sets at g_textures) that is recoloured, or marked changed when the tint is taken off. */
 #include "../game.h"
 #include <string.h>
 

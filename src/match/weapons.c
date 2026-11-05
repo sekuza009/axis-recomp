@@ -60,7 +60,7 @@ void THISCALL (actor_selectWeapon)(Stage *stage, int i, int slot)
 }
 
 /* 0x45edb0: actor i (when +0x14c is 1) picks slot 0 four times in five, else slot 4, from the game's random table
-   (0xa106f8, 4096 values, position 0xa1efb8), and its aim is set back to its own point */
+   (g_randTable, 4096 values, position g_randPos), and its aim is set back to its own point */
 void THISCALL (actor_pickRandomWeapon)(Stage *stage, int i)
 {
 	Player *actor = (Player *)((u8 *)(u8 *)&((Stage *)stage)->actors[i]);
@@ -134,7 +134,7 @@ void THISCALL (actor_takeDamage)(u8 *scene, int attacker, int target, int mode, 
 #undef ACTOR
 }
 
-/* the next value of the game's table of rand() values (0xa106f8, 4096 of them; the position 0xa1efb8 moves on) */
+/* the next value of the game's table of rand() values (g_randTable, 4096 of them; the position g_randPos moves on) */
 static u32 table_rand(void)
 {
 	u32 at = g_randPos;
@@ -152,12 +152,12 @@ static int within(const float *p, const float *from, const float *range)
 }
 
 /* 0x460270 (thiscall on the scene): a new target for actor p (0x8888-byte actors from +0x1cd93a8): the points (0x14
-   bytes) of every point list (0x1c-byte records from +0xe3b038: a count, the points; +0xe3c938 lists) but the one
+   bytes) of every point list (0x1c-byte records from triggers: a count, the points; triggerCount lists) but the one
    it follows (+0x8870) within its range (+0x8848) on each axis of it (+0x154) are candidates. The first five are
    kept, marked whether the line to them is clear (collision_rayTrace); after that a clear one takes the place of a
    random one that is not clear (two tries), and that list is left. One of the candidates picked at random: the
    target (+0x87f8 list, +0x87fc point, +0x8800 a random side), +0x8870 none, the range 1500. With none the range
-   grows (x 0x4a974c). Its caller ignores the eax it leaves */
+   grows (x k_1_5f). Its caller ignores the eax it leaves */
 void THISCALL (actor_pickPathPoint)(u8 *scene, int p)
 {
 	Stage *st = (Stage *)scene;
@@ -207,7 +207,7 @@ void THISCALL (actor_pickPathPoint)(u8 *scene, int p)
 #define BU ((Bullet *)b)   /* the same by its fields (src/scene.fields) */
 
 
-/* the next of the game's random numbers (its table 0xa106f8 by the counter 0xa1efb8) below n */
+/* the next of the game's random numbers (its table g_randTable by the counter g_randPos) below n */
 static u32 next_rand(u32 n)
 {
 	u32 at = g_randPos;
@@ -216,15 +216,15 @@ static u32 next_rand(u32 n)
 	return r;
 }
 
-/* 0x479b40 (thiscall on the scene): bullet slot (0x4e8 bytes from +0x202ef34) fired by owner from the shot (+0 a
-   target given, +4 the weapon: its record 0x2e18 bytes from +0x14d1ab4, +8 the origin, +0x14 the target's record,
-   +0x18 the direction or the target, +0x24 kept at +0x10). Its id (or the next serial, +0x20a99bc). Aimed shots
+/* 0x479b40 (thiscall on the scene): bullet slot (0x4e8 bytes from bullets) fired by owner from the shot (+0 a
+   target given, +4 the weapon: its record 0x2e18 bytes from actorInfo, +8 the origin, +0x14 the target's record,
+   +0x18 the direction or the target, +0x24 kept at +0x10). Its id (or the next serial, bulletSerial). Aimed shots
    spread with the weapon's +0x2dec less the owner's steadiness (+0x24) and are renormalised; mode 3 (+0x2dfc) fires
    into a random cone about the direction (through gluLookAt's inverse); the first step (speed +0x2de4) is traced
    (collision_rayTrace; the hit record +0x6c) and the part of a step used (+0x74) kept from 0 to 10. Then its
    velocity (+0x2de8 times the direction, or the step), colour, the homing target (homingTarget: a guided round's; the local player's own guided round follows the aim point), and, unless
    quiet, the muzzle flash (particle kind +0x2dfc + 10) and the firing sound (+0x2e00: at full volume for the local
-   player +0x202e8d4, else placed). Its callers ignore the eax it leaves */
+   player playerActor, else placed). Its callers ignore the eax it leaves */
 void THISCALL (bullet_init)(u8 *s, int slot, int id, int owner, int homingTarget, const u8 *shot, int quiet)
 {
 	u8 *b = (u8 *)&ST->bullets[slot];
@@ -344,7 +344,7 @@ void THISCALL (bullet_init)(u8 *s, int slot, int id, int owner, int homingTarget
 #undef K
 #undef BU
 
-/* ---- 0x47a2d0: a bullet's frame ---- */
+/* ---- bullet_update: a bullet's frame ---- */
 
 #define BU ((Bullet *)b)   /* the same by its fields (src/scene.fields) */
 #define WI ((ActorInfo *)w)   /* the same by its fields (src/scene.fields) */
@@ -655,7 +655,7 @@ static void splash(u8 *s, u8 *b, const u8 *w)
 }
 
 /* homing: the velocity (+0xa0) turned towards the target (actor +0xbc, else the point +0xc4) by at most the turn
-   rate (+0x2e0c, degrees: the cosine table 0xa17f38) about their cross product, at the weapon's speed (+0x2de8;
+   rate (+0x2e0c, degrees: the cosine table g_cosTable) about their cross product, at the weapon's speed (+0x2de8;
    for kind 3 both by the bullet's age); again in 1/15 s (+0xc0) */
 static void home(u8 *s, u8 *b, const u8 *w)
 {
@@ -761,10 +761,10 @@ static void fly_local(u8 *s, u8 *b, const u8 *w, const float *dt)
 }
 
 /* 0x47a2d0 (thiscall on the scene): bullet slot's frame (0x4e8 bytes from +0x202ef34; its weapon's record 0x2e18
-   bytes from +0x14d1ab4). An actor it hit (+0xb8) takes it first. In flight (age +0x70 up to its life +0x74): the
-   local player's (+0x202e8d4) bullets move and find their hits (fly_local), other players' follow the network's
+   bytes from actorInfo). An actor it hit (+0xb8) takes it first. In flight (age +0x70 up to its life +0x74): the
+   local player's (playerActor) bullets move and find their hits (fly_local), other players' follow the network's
    points (+0x90, or the last step again); it is drawn when it moved (+0x9c), aged, and its owner told when it ends
-   (+0x1cd971c). Afterwards: another player's bullet is drawn at its last point, then the surface it hit, the
+   (actors[].sendNow). Afterwards: another player's bullet is drawn at its last point, then the surface it hit, the
    splash, and the slot freed (bullet_free) */
 void THISCALL (bullet_update)(u8 *s, int slot, u32 dt_bits)
 {

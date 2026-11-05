@@ -65,7 +65,7 @@ void THISCALL (shape_computeBounds)(u8 *shape)
 /* 0x47ca70: bullet b's trail: a ring of 20 slots (four points each, 0x30 bytes from the bullet's +0xd4) with each
    slot's time at +0x494. Newest first, each live slot adds four quads joining it to the slot before; the first
    expired one (or one 18 behind) adds an end cap fanning to the previous slot's centre, and the trail ends. Only for
-   bullets of weapon type 3 whose box (+0x78) is within the view's distance (+0xa08) of the camera (+0x20f3970) */
+   bullets of weapon type 3 whose box (+0x78) is within the view's distance (+0xa08) of the camera (cameraPos) */
 void THISCALL (bullet_drawTrail)(Stage *stage, int b, void *view)
 {
 	u8 *bullet = (u8 *)(u8 *)&((Stage *)stage)->bullets[b];

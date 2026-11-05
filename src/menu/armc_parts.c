@@ -44,10 +44,10 @@ static void part_info(u8 *rec, int idx)
 	BITS(((PartInfo *)rec)->weight) = BITS(((ActorInfo *)info)->weight);
 }
 
-/* 0x41ca50: the record of weapon slot slot (0x4dbe50, 0x80 apart) */
+/* 0x41ca50: the record of weapon slot slot (g_partRecords, 0x80 apart) */
 void (armc_weaponSlotRecord)(int slot, int idx) { part_info(g_partRecords + slot * 0x80, idx); }
 
-/* 0x41cca0: the record of the part being looked at (0x4dc150); the first type picked is kept in 0x4dc198 */
+/* 0x41cca0: the record of the part being looked at (0x4dc150); the first type picked is kept in g_viewedPartIndex */
 void (armc_viewedPartRecord)(int idx)
 {
 	part_info(g_viewedPart, idx);
@@ -55,7 +55,7 @@ void (armc_viewedPartRecord)(int idx)
 		g_viewedPartIndex = idx;
 }
 
-/* ---- 0x41c510: the ARM CENTER's stats panel from the local player's actor in the scene (*0x9087b4): a speed (the
+/* ---- armc_readMechStats: the ARM CENTER's stats panel from the local player's actor in the scene (*g_scene): a speed (the
    root of +0x0 times a constant), the actor's values times the game's scale constants, its part's and weapon's
    records' values; every product extended precision, rounded once on store, the second factor from memory as in
    the original. Returns the scene ---- */
@@ -170,7 +170,7 @@ int (armc_drawPartPanels)(void)
 
 /* 0x40f340: mech part `part` (0 .. 4: head, chest, arm, leg, booster) stepped through its list, back (dir 1) or on
    (wrapping at both ends): its cursor, the list's count and entries, the chosen part (OBJ(g_armcParts) + 4 * part), and
-   the mech marked changed (0x4dcc58). Returns what the original leaves in eax: the new part on the even steps back
+   the mech marked changed (g_mechChanged). Returns what the original leaves in eax: the new part on the even steps back
    and odd steps on, else the cursor (another part: the part number) */
 u32 (armc_stepPart)(u32 part, int dir)
 {
@@ -207,7 +207,7 @@ static int append_parts(const Unlock *entry, u32 list, int len)
 	return len + n;
 }
 
-/* the unlocked level: in network play (0x4dc24c 3) the player's level (0x9dd5d8) less one; else the progress
+/* the unlocked level: in network play (g_armcFrom 3) the player's level (g_pilotLevel) less one; else the progress
    (0x9f181c) as the exe's patch reads it (its helper at 0xb68e80): up to 14 as it is, 15 becomes 14, 16 and above
    15. (The original's check after it, 0x7f and above becoming 14, can no longer be met.) */
 static int unlocked_level(int network)
@@ -222,11 +222,11 @@ static int unlocked_level(int network)
 	return level;
 }
 
-/* 0x40da40: the unlocked part lists up to a level (0x4dc784, also 0x4dc870): for each level up to it, of the table
-   set (network play 0x4aebd0, else 0x4ad5f0; seven tables 0x320 bytes apart, an Unlock a level), the first five
-   tables' parts appended to the five part lists (0x4dc3e8 / 0x4dcd6c / 0x4dc964 / 0x4dc89c / 0x4dbd7c, lengths
-   0x4dc780 / 0x4dcc60 / 0x4dca90 / 0x4dca94 / 0x4dc890), the last two's to the two lists that start with -1
-   (0x4dc79c / 0x4dcca4, lengths 0x4dc244 / 0x4dc778). The lengths are read from memory at each step as the
+/* 0x40da40: the unlocked part lists up to a level (g_unlockedLevel, also g_armcLevel): for each level up to it, of the table
+   set (network play g_unlockTablesNet, else g_unlockTablesSolo; seven tables 0x320 bytes apart, an Unlock a level), the first five
+   tables' parts appended to the five part lists (g_headList / g_chestList / g_armList / g_legList / g_boosterList, lengths
+   g_headCount / g_chestCount / g_armCount / g_legCount / g_armcLastPart), the last two's to the two lists that start with -1
+   (g_weaponListTable / g_extraListTable, lengths g_weaponCount / g_extraCount). The lengths are read from memory at each step as the
    original does (a list long enough to run over them would change them); the caller ignores the eax it leaves */
 void (armc_buildPartLists)(void)
 {

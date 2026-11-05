@@ -1,5 +1,5 @@
 /* game_lists.c: the lists of games to join, the game room's (window 0x9dd4a8 .. 0x9dd4b4) and the arena lobby's
-   (0x4db8c8 .. 0x4db8d4): the games (g_sessionList) from row 0x680bb0, the page, and their boxes */
+   (0x4db8c8 .. 0x4db8d4): the games (g_sessionList) from row g_gameListTop, the page, and their boxes */
 #include "../game.h"
 #include <string.h>
 
@@ -30,7 +30,7 @@ static void button(int lit, int x0, int y0, int x1, int y1, float dim_alpha)
 
 /* nine rows of games from g_listTop at x0, from y (to end) below y0: a lock (when locks), the name (32 characters),
    the map (13 characters; MSG(455, "ROTATION") with the rotation flag), the game mode (a string of kinds, step
-   apart), "players / most" and the ping (when pings); the game under the cursor (0x76d41c) in
+   apart), "players / most" and the ping (when pings); the game under the cursor (g_localPlayer) in
    white, the others cyan */
 static void game_rows(int x0, int y0, int y, int end, int locks, u32 kinds, int step, int pings)
 {
@@ -81,7 +81,7 @@ static void game_rows(int x0, int y0, int y, int end, int locks, u32 kinds, int 
 	}
 }
 
-/* "page / pages" (0x680bb8) in white, right-aligned (13 a character) 0x3c in from x1 at y */
+/* "page / pages" (g_lobbyListPage) in white, right-aligned (13 a character) 0x3c in from x1 at y */
 static void game_page(int x1, int y, int pages_count)
 {
 	set_colour_bits(g_textColour, 0x3f800000, 0x3f800000, 0x3f800000, 0x3f800000);
@@ -99,7 +99,7 @@ static void game_page(int x1, int y, int pages_count)
 #define X1 g_arenaGameListRight
 #define Y1 g_arenaGameListBottom
 
-/* a box over the list with a line (0x74f124 joining / 0x74f624 full) and a dark field (with the arena's name, 0x4db520,
+/* a box over the list with a line (0x74f124 joining / 0x74f624 full) and a dark field (with the arena's name, g_arenaJoinPassword,
    when joining) */
 static void info_box(u32 line, int named)
 {
@@ -116,10 +116,10 @@ static void info_box(u32 line, int named)
 }
 
 /* 0x40a070: the arena's game list: the window, its title 0x7524a4, three tabs (0x752524; the one under the pointer,
-   by arenaGameList_hitTest, lit unless a box is up), five column heads; the rows and page when there is a list (0x4dbac8,
-   or the full one 0x4dbaa8); three buttons (MSG(149, "$[0] JOIN"): join needs a game, and while searching only the second
+   by arenaGameList_hitTest, lit unless a box is up), five column heads; the rows and page when there is a list (g_arenaHaveList,
+   or the full one g_arenaListFull); three buttons (MSG(149, "$[0] JOIN"): join needs a game, and while searching only the second
    lights; all dimmed under the full / joining boxes); the scroll arrows (15 / 16); the blinking MSG(152, "SEARCHING FOR THE GAME SERVER") while
-   searching or 0x4db8b8; the joining and full boxes, the join confirmation (MSG(153, "CONNECTING TO THE GAME SERVER") / MSG(154, "PLEASE WAIT"), its button
+   searching or g_lobbyRefreshing; the joining and full boxes, the join confirmation (MSG(153, "CONNECTING TO THE GAME SERVER") / MSG(154, "PLEASE WAIT"), its button
    MSG(116, "$[0] CANCEL") by arenaDialogBox_hitTest) and the "leave?" box (the original asks arenaCreate_hitTest but lights its buttons by the
    list's own pointer test); the border. The original leaves eax to callers that ignore it */
 void (arena_drawGameList)(void)
@@ -248,10 +248,10 @@ static void room_button(int lit, int x0, int y0, int x1, int y1, float dim_alpha
 }
 
 /* 0x43adc0: the game room's list of games: the window, its title 0x759ca4, five column heads (0x759d24, 0x80
-   apart), rules; with a list (0x9dd330) of games, the rows and "page / pages" (0xa0b358); four buttons (MSG(387, "$[0] JOIN");
-   the one under the pointer, by gameList_hitTest, lit: the first only with games, and while searching (0x9dd6a0) only
-   the third; all dimmed while joining, 0x9dd6b4); the scroll arrows (13 / 14); the blinking MSG(391, "SEARCHING FOR THE GAME SERVER") while
-   searching or 0x9dd3fc; the joining box (MSG(38, "TYPE GAME PASSWORD") and the room's name 0x9dcee8); the join confirmation (MSG(153, "CONNECTING TO THE GAME SERVER") /
+   apart), rules; with a list (g_gameListLoaded) of games, the rows and "page / pages" (g_roomListCount); four buttons (MSG(387, "$[0] JOIN");
+   the one under the pointer, by gameList_hitTest, lit: the first only with games, and while searching (g_roomSearching) only
+   the third; all dimmed while joining, g_roomJoinNeedsPassword); the scroll arrows (13 / 14); the blinking MSG(391, "SEARCHING FOR THE GAME SERVER") while
+   searching or g_roomRefreshing; the joining box (MSG(38, "TYPE GAME PASSWORD") and the room's name g_joinPasswordAndRanking); the join confirmation (MSG(153, "CONNECTING TO THE GAME SERVER") /
    MSG(154, "PLEASE WAIT"), its button MSG(116, "$[0] CANCEL") by gameListStop_hitTest); the border. The original leaves eax to callers that ignore it */
 void (gameList_draw)(void)
 {
@@ -340,12 +340,12 @@ void (gameList_draw)(void)
 #undef X1
 #undef Y1
 
-/* 0x43ea10: the game room's page of games: the "searching" message's clock (0x9dcd40, while 0x9dd34c; done above 0x4a944c),
-   the tunnel; with the room camera arrived (g_roomCameraMode 2), and not page 99: a message box (0x90d1c4) alone, else the search's
-   end (0x9dd6a0 searching, 0x9da498 the answer in, 0x76d484 its result: -1 .. 4) and the blinking clock (0x4dba80
-   falling, back to 1000 below 0x4a9418); while the list refreshes (0x9dd3fc) its timer (0x9dd6c0 against 0x5b1914:
-   the list asked for again, the next in 5) and a stop (0xa0d7a0); then the list, and with a game joined (0x9dd56c)
-   the join sent (0x9dd6b4 clear) or, once a password is typed (0x9dd6c8), it checked against the game's (+0x3b)
+/* 0x43ea10: the game room's page of games: the "searching" message's clock (g_gameListClickTimer, while g_gameListClickArmed; done above k_20f),
+   the tunnel; with the room camera arrived (g_roomCameraMode 2), and not page 99: a message box (g_dialogOpen) alone, else the search's
+   end (g_roomSearching searching, g_roomSearchAnswerIn the answer in, g_searchResult its result: -1 .. 4) and the blinking clock (g_lobbyBlinkClock
+   falling, back to 1000 below k_10f); while the list refreshes (g_roomRefreshing) its timer (g_roomListRefreshTimer against g_listRefreshPeriod:
+   the list asked for again, the next in 5) and a stop (g_netListDone); then the list, and with a game joined (g_roomJoined)
+   the join sent (g_roomJoinNeedsPassword clear) or, once a password is typed (g_typingRoomJoinPassword), it checked against the game's (+0x3b)
    (message 0x27 when wrong) */
 void (gameList_drawPage)(void)
 {
@@ -439,7 +439,7 @@ static void shadowed(int x, int y, const char *text)
 }
 
 /* 0x409bc0: the arena's name dialog: the window, a cyan frame, the title 0x751fa4, two labels (0x752024, 0x752124)
-   and the name 0x4db560 (hidden while it is typed in, g_textFieldOpen); without a message (0x4dbbd0) the name or the
+   and the name g_arenaPlayerName (hidden while it is typed in, g_textFieldOpen); without a message (g_typingArenaName) the name or the
    second label under the pointer (arenaNameDialog_hitTest's 0 / 2) shadowed in yellow; three buttons (MSG(135, "$[0] O K"), 0x80 apart;
    3 .. 5, lit under the pointer), the border. The original leaves eax to callers that ignore it */
 void (arena_drawNameDialog)(void)
@@ -535,11 +535,11 @@ static int games_leave(void)
 	return 1;
 }
 
-/* 0x435fc0: the game room's list of games, its mouse (with the room camera arrived, g_roomCameraMode 2; not while joining, 0x9dd6b4,
-   or with a message box): a right click leaves the list (unless searching, 0x9dd6a0). A click (gameList_hitTest) on: 0
-   join (not while searching or refreshing, 0x9dd3fc, and only with games; else sound 6), 1 search, 2 stop or
+/* 0x435fc0: the game room's list of games, its mouse (with the room camera arrived, g_roomCameraMode 2; not while joining, g_roomJoinNeedsPassword,
+   or with a message box): a right click leaves the list (unless searching, g_roomSearching). A click (gameList_hitTest) on: 0
+   join (not while searching or refreshing, g_roomRefreshing, and only with games; else sound 6), 1 search, 2 stop or
    refresh, 3 leave, 13 / 14 one row up / down, or a row (4 .. 12): selects it, or on the selected row again within
-   the double-click time (0x9dd34c) joins it. Holding the button on the arrows scrolls once the blink clock reaches
+   the double-click time (g_gameListClickArmed) joins it. Holding the button on the arrows scrolls once the blink clock reaches
    5. The original leaves eax to callers that ignore it */
 void (gameList_mouse)(void)
 {
@@ -630,9 +630,9 @@ void (gameList_mouse)(void)
 	}
 }
 
-/* 0x4372f0: the game room's list of games, its keys (not while joining, 0x9dd6b4). With the join confirmation up only
-   back answers it (the timer 0x378 killed). 0x4e14f8 or fire joins the selected game (not while searching or
-   refreshing, and only with games: else sound 6); 0x4e151c searches; 0x4e1524 stops; back leaves the list; up / down
+/* 0x4372f0: the game room's list of games, its keys (not while joining, g_roomJoinNeedsPassword). With the join confirmation up only
+   back answers it (the timer 0x378 killed). g_dikJ or fire joins the selected game (not while searching or
+   refreshing, and only with games: else sound 6); g_dikR searches; g_dikS stops; back leaves the list; up / down
    held move the selection (once the blink clock reaches 5, restarting it); cancel2 leaves the room's lists. The
    original leaves eax to callers that ignore it */
 void (gameList_keys)(void)
@@ -707,7 +707,7 @@ void (gameList_keys)(void)
 	}
 }
 
-/* the searching message's blink clock (0x4dba80) run down, back to 1000 once below 0x4a9418 */
+/* the searching message's blink clock (g_lobbyBlinkClock) run down, back to 1000 once below k_10f */
 static void blink_down(void)
 {
 	long double blink = fsubr_m(fmul_m(fld_m((const float *)ADDR(g_lobbyBlinkRate)), &g_frameTime), &g_lobbyBlinkClock);
@@ -716,14 +716,14 @@ static void blink_down(void)
 		(*(u32 *)&g_lobbyBlinkClock) = 0x447a0000;   /* 1000 */
 }
 
-/* 0x40cfd0: the arena lobby's page of games: the "searching" message's clock (0x4dbaf8, while 0x4db71c), the
-   arena tunnel; with the arena camera arrived (g_arenaCameraMode 2) and not on sub-screen 5: a message box (0x90d1c4) alone, else the
-   local network search (0x4dba90: DirectPlay polled ten times, ended once its clock 0x4dba80 runs out), the server
-   search's end (0x4db858 searching, 0x4df018 the answer in, 0x76d484 its result -1 .. 4: messages 0x40 / 0x46,
-   0x4db8b8 the list to fetch, 0x907b2c) and blink, the list's refresh (0x4db8b8: its timer 0x4dbaf0 against 0x5b1914,
-   a stop 0xa0d7a0); then the list; then a join (0x4dbbec: once typed, the password, 0x4db520, checked against the
-   game's, message 0x27 when wrong; or the join sent, 0x4db8bc clear), a typed game address (0x4db714: joined as
-   99999 when not empty) or a join confirmed (0x4dbbf0). The original leaves eax to callers that ignore it */
+/* 0x40cfd0: the arena lobby's page of games: the "searching" message's clock (g_arenaSearchClock, while g_arenaListClickArmed), the
+   arena tunnel; with the arena camera arrived (g_arenaCameraMode 2) and not on sub-screen 5: a message box (g_dialogOpen) alone, else the
+   local network search (g_lanSearch: DirectPlay polled ten times, ended once its clock g_lobbyBlinkClock runs out), the server
+   search's end (g_lobbySearching searching, g_serverAnswerIn the answer in, g_searchResult its result -1 .. 4: messages 0x40 / 0x46,
+   g_lobbyRefreshing the list to fetch, g_arenaUpdateNotice) and blink, the list's refresh (g_lobbyRefreshing: its timer g_arenaListRefreshTimer against g_listRefreshPeriod,
+   a stop g_netListDone); then the list; then a join (g_lobbyJoinStarted: once typed, the password, g_arenaJoinPassword, checked against the
+   game's, message 0x27 when wrong; or the join sent, g_arenaJoinNeedsPassword clear), a typed game address (g_arenaFull: joined as
+   99999 when not empty) or a join confirmed (g_lobbyJoinRequest). The original leaves eax to callers that ignore it */
 void (arena_drawGamesPage)(void)
 {
 	if (g_arenaListClickArmed) {
@@ -819,14 +819,14 @@ void (arena_drawGamesPage)(void)
 
 /* ---- the arena lobby's list of games: its mouse ---- */
 
-/* the lobby busy: searching, connecting (0x4db858) or refreshing (0x4db8b8) */
+/* the lobby busy: searching, connecting (g_lobbySearching) or refreshing (g_lobbyRefreshing) */
 static int lobby_busy(void)
 {
 	return g_lanSearch || g_lobbySearching || g_lobbyRefreshing;
 }
 
-/* the selected game joined: connected to the server (0x4dbaac), its join password asked for when it is locked
-   (arena_askJoinPassword; 0x4dbbec), else the join asked of the lobby (0x4dbbf0) */
+/* the selected game joined: connected to the server (g_serverConnected), its join password asked for when it is locked
+   (arena_askJoinPassword; g_lobbyJoinStarted), else the join asked of the lobby (g_lobbyJoinRequest) */
 static void lobby_join(void)
 {
 	sound_playMenu(0);
@@ -840,7 +840,7 @@ static void lobby_join(void)
 	}
 }
 
-/* the lobby left for the arena screen's first page (0x4dba80 1; 0x4df018 set) */
+/* the lobby left for the arena screen's first page (g_lobbyBlinkClock 1; g_serverAnswerIn set) */
 static void lobby_leave(void)
 {
 	g_serverConnectionState = 0;
@@ -851,10 +851,10 @@ static void lobby_leave(void)
 
 /* 0x406c30 (the arena lobby's list of games, its mouse: with the arena camera arrived (g_arenaCameraMode 2), not
    while joining, with the "full" box or a message box). A right click (not while searching or connecting) drops the
-   connection and the mode. A click (arenaGameList_hitTest) on: 0 search the network (DirectPlay, 0x452ec0), 1 connect to
+   connection and the mode. A click (arenaGameList_hitTest) on: 0 search the network (DirectPlay, arena_openSession), 1 connect to
    the lobby server (lobby_openConnection), 2 the arena's title, 3 join (with games; not while busy), 4 back (a
    refresh in progress ended), 5 leave the lobby (mode 0), 15 / 16 one row up / down, or a row (6 .. 14): selects
-   it, or on the selected row again (0x4db71c) joins it. A busy lobby answers sound 6. Holding the button on the
+   it, or on the selected row again (g_arenaListClickArmed) joins it. A busy lobby answers sound 6. Holding the button on the
    arrows scrolls once the blink clock reaches 5. The caller ignores the eax it leaves */
 void (arenaGames_mouse)(void)
 {

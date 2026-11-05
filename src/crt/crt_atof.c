@@ -2,7 +2,7 @@
    0x4a6d9f __mtold12, 0x4a7508 __multtenpow12, 0x4a72e8 __ld12mul, 0x4a51e1 _ld12cvt). msvcrt.dll's atof rounds
    correctly; VC6's is one unit off now and then (for long numbers, or with an exponent), so it is rebuilt: the text
    read into at most 24 decimal digits, those made an 80-bit binary mantissa, scaled by powers of ten from the
-   runtime's tables (0x4d12f8 up, 0x4d1458 down) with a 96-bit product, and narrowed to a double. All integer
+   runtime's tables (g_crtTenPowersUp up, g_crtTenPowersDown down) with a 96-bit product, and narrowed to a double. All integer
    arithmetic; the narrowing rounds up only when a bit beyond the one after the round bit is set (VC6's rule).
 
    A 12-byte value ("ld12") is: +0 16 more mantissa bits, +2 and +6 the 64-bit mantissa (top bit explicit), +0xa the

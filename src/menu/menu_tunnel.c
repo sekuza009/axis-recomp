@@ -271,7 +271,7 @@ TunnelRing *(tunnel_addRing)(void)
 	return ring;
 }
 
-/* ---- 0x440e20: the background tunnel's ring number index (its depth -1100 x index): two circles of 101 points (each
+/* ---- tunnelRing_build: the background tunnel's ring number index (its depth -1100 x index): two circles of 101 points (each
    stored twice, at heights +500 and -500), the spins (taken from the ring before, when there is one), the cage's
    corners (+-50, +-50, +-49), and six flares whose heights step down, with their speeds ---- */
 
@@ -344,8 +344,8 @@ void (tunnelRing_build)(u8 *o, int index)
 	tr->ringIndex = index;
 }
 
-/* ---- the menu camera's move along the tunnel: its eye (0x4df024, three floats) and the point it looks at
-   (0x680378), kept at 0x9dd930 / 0x9dd918; the move's state in g_menuCameraMove (0 still, 1 / 3 moving in / out a ring,
+/* ---- the menu camera's move along the tunnel: its eye (g_menuCameraPos, three floats) and the point it looks at
+   (g_menuCameraLook), kept at g_roomSlideFarX / g_roomSlideNearX; the move's state in g_menuCameraMove (0 still, 1 / 3 moving in / out a ring,
    2 / 4 the view swinging up before them) ---- */
 #define EYE ((float *)ADDR(g_menuCameraPos))
 #define LOOK ((float *)ADDR(g_menuCameraLook))
@@ -372,7 +372,7 @@ static void swing(int next)
 	sound_playMenu(4);
 }
 
-/* the view lowered toward 45 (0x4a94e8) */
+/* the view lowered toward 45 (k_45f) */
 static void lower_view(const float *rate)
 {
 	if (g_viewAngle > k_45f)
@@ -381,13 +381,13 @@ static void lower_view(const float *rate)
 }
 
 /* 0x441260: one frame of the tunnel camera's move, worked on the ring before the last of the chain at ring. The
-   frame time is held at 2 at most; a step is 30 frame times (0x4b2a74, and as a float 0x4b2a78); a ring is 1100
-   steps (950 when entering the menus, 0x4deb48, which starts the eye and look point at 0; 2200 in the ARM CENTER,
-   0x67ef14). Still (0): the flares at full alpha, the view lowered, the camera kept once asked (0x4b2a70), and the
-   menus entered when the network is ready (0x76d410, 0x9da49c 0x65). Moving in (1) / out (3): eye and look point a
+   frame time is held at 2 at most; a step is 30 frame times (g_armcEnterStep, and as a float g_armcEnterStepF); a ring is 1100
+   steps (950 when entering the menus, g_enteringMenus, which starts the eye and look point at 0; 2200 in the ARM CENTER,
+   g_quitAsked). Still (0): the flares at full alpha, the view lowered, the camera kept once asked (g_keepCameraAsked), and the
+   menus entered when the network is ready (g_startedFromLobby, g_lobbyReply 0x65). Moving in (1) / out (3): eye and look point a
    step down / up the tunnel; once a ring's worth is done, the camera back at the kept place a ring further, the
    ring turned (by -1100, -2200 in the ARM CENTER, or +1100), a ring added (in) or the last one taken off (out),
-   the screen's state 0x67ef20 into 0x76d3e8 and the camera kept; moving out also lowers the view. 2 / 4 swing the
+   the screen's state g_nextScreen into g_screen and the camera kept; moving out also lowers the view. 2 / 4 swing the
    view up and start 1 / 3. The caller ignores the eax it leaves */
 void (menuTunnel_advance)(TunnelRing *ring)
 {

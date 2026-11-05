@@ -96,7 +96,7 @@ int THISCALL (collisionTri_traceSegment)(const u8 *self, const float *p0, const 
 	return 1;
 }
 
-/* ---- 0x47fce0: does the triangle touch the box from P - r to S + r? (r, P and S as the collision code passes them).
+/* ---- space_itemMeetsBox: does the triangle touch the box from P - r to S + r? (r, P and S as the collision code passes them).
    1. every corner of the triangle outside one face of the box: no; all inside: yes;
    2. all eight box corners on one side of the face plane: no;
    3. an edge of the triangle crossing a face of the box (its other two coordinates within it): yes;
@@ -219,10 +219,10 @@ static int clamp_to(float *v, const float *low, const float *high)
 }
 
 /* 0x471400 (thiscall on the stage): an actor's move (radius r from pos along vel) for this frame. outPos is pos + vel
-   kept inside the world box (+0x9ef91c low, +0x9ef928 high); when it had to be, the move is cut to match. The map
-   objects (+0x13c9b24 of them, 0x2cc bytes from +0x131ae48: active, solid +0x28c, triangles +0x288's +8, a box
+   kept inside the world box (worldLow low, worldHigh high); when it had to be, the move is cut to match. The map
+   objects (objectCount of them, 0x2cc bytes from +0x131ae48: active, solid +0x28c, triangles +0x288's +8, a box
    +0x278, the world-to-model matrix +0x130) with pos inside their box widened by r + the move's length become the
-   sub-models (+0x9ca0f4: triangles and the two matrices +0x1f0 / +0x230), and space_testSphere runs on the stage's
+   sub-models (nearObjects: triangles and the two matrices +0x1f0 / +0x230), and space_testSphere runs on the stage's
    grid (+0xa10) with them. Returns what it finds */
 int THISCALL (collision_moveActor)(u8 *stage, float r, const float *pos, const float *vel, u32 step, u32 k, float *outPos,
                                    u32 outVel, u32 outDist, u32 outPlane, u32 axis)
@@ -277,7 +277,7 @@ int THISCALL (collision_moveActor)(u8 *stage, float r, const float *pos, const f
 	                        st->nearObjects, count);
 }
 
-/* ---- 0x47dd90: a moving sphere against one triangle ---- */
+/* ---- collisionTri_sweepSphere: a moving sphere against one triangle ---- */
 #define TINY ((const float *)ADDR(k_1em8f))    /* 1e-8 */
 #define ONE ((const float *)ADDR(k_1f))
 #define MINUS_ONE ((const float *)ADDR(k_m1f))
@@ -556,7 +556,7 @@ static float row_dir(const float *m, const float *p, int i)
    the model, the contact back out; an empty sub-model list crashes the original, as it would here). The farthest
    contact along the move wins (collisionTri_sweepSphere's outDist), the record that gave it is skipped next time;
    then the move slides on: up to 6 passes, ending when a pass's distance is under r / 10, or (contact, outVel the
-   0xa0e7e8 axis, outDist 0) when the response turns back against vel. outPos starts as pos + vel. Returns 1 when
+   g_vecZero axis, outDist 0) when the response turns back against vel. outPos starts as pos + vel. Returns 1 when
    anything was hit */
 int THISCALL (space_collideBlock)(u8 *self, float r, const float *pos, const float *vel, u32 k, float *outPos,
                                  float *outVel, float *outDist, float *outPlane, u32 axis, const u32 *subs, int nsubs)
@@ -634,10 +634,10 @@ static void ground_triangle(u8 *grid, u32 id, const void *a, const void *b, cons
 	space_insertTriangle(grid, id, (u32)a, (u32)b, (u32)c, 0, -1, -1, -1, -1);
 }
 
-/* 0x471040 (thiscall on the stage): its collision space (+0xa10) set up over the world box (+0x9ef904 low, +0x9ef910
+/* 0x471040 (thiscall on the stage): its collision space (+0xa10) set up over the world box (levelLow low, levelHigh
    high) in cells of the given sizes (z, x, y: the counts of whole cells), with the margin, split count and depth. Then, with
-   +0x9ef30c, the floor (the box's lower face, two triangles, id 0x10); each ground layer (+0xdc0a74 of them, 0x20c
-   bytes from +0xdc0244: kind 0 or 1, rows +0x1c, columns +0x20, the (columns + 1) x (rows + 1) points +0x40) as two
+   floorOn, the floor (the box's lower face, two triangles, id 0x10); each ground layer (groundLayerCount of them, 0x20c
+   bytes from groundLayers: kind 0 or 1, rows +0x1c, columns +0x20, the (columns + 1) x (rows + 1) points +0x40) as two
    triangles a cell, split one way for kind 0 and the other for kind 1, each row logged; and every object in use
    (+4) that is not flagged 4 (+0xc) as a unit (space_buildUnits with its shape +0x27c and matrix +0xf4: +0x28c),
    every second one logged. Its caller ignores the eax it leaves */

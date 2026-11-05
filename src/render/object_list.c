@@ -64,8 +64,8 @@ int THISCALL (partList_queue)(ObjectList *list, void *view, const LightFactors *
 	return 1;
 }
 
-/* 0x497a90: the draw records of the stage's meshes (0x20c bytes each from +0xdc0278): for mesh i a vertex record B
-   (at *(+0xdc0a8c) + i * 0x80) and a box record A (*(+0xdc0cd8) + i * 0x80), the vertex and index counts summed, and
+/* 0x497a90: the draw records of the stage's meshes (0x20c bytes each from groundLayers[].texture): for mesh i a vertex record B
+   (at *(layerModel.parts) + i * 0x80) and a box record A (*(layerBoxModel.parts) + i * 0x80), the vertex and index counts summed, and
    each mesh's box sides written into it: four fans of five of its twelve points */
 void THISCALL (stage_buildMeshDrawRecords)(u8 *stage)
 {

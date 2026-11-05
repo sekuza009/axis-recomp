@@ -26,7 +26,7 @@ u32 (mci_pause)(void)
 	return mciSendCommandA(g_mciDevice, MCI_PAUSE, MCI_NOTIFY, params);
 }
 
-/* 0x41edf0: a printf-formatted message box titled "User Message" (the arguments' address kept in 0x4dd0b4 while
+/* 0x41edf0: a printf-formatted message box titled "User Message" (the arguments' address kept in g_messageBoxArgs while
    formatting); MessageBox's answer */
 int (sys_messageBox)(const char *format, ...)
 {
@@ -52,9 +52,9 @@ u32 (app_registerWindowClassEx)(const u32 *cls)
 	return RegisterClassExA(wc) & 0xffff;   /* RegisterClassExA */
 }
 
-/* 0x468450: the GL window resized to width x height (0xa0e810, 0xa0e928): the viewport set and, in full screen
-   (0xa0e920), the display mode changed to match (0x467f20; failing that, a message and 0). The cached state
-   0x4c4de8 is reset; returns 1 */
+/* 0x468450: the GL window resized to width x height (g_glWidth, g_glHeight): the viewport set and, in full screen
+   (g_fullScreen), the display mode changed to match (glWindow_setDisplayModeBy; failing that, a message and 0). The cached state
+   g_glCachedState is reset; returns 1 */
 int (glWindow_resize)(int width, int height)
 {
 	g_glWidth = width;
@@ -71,10 +71,10 @@ int (glWindow_resize)(int width, int height)
 
 
 /* 0x468250: the game's GL window made, once (a second call: a message and NULL), with title, width x height and
-   colour / depth bits (0xa0e810, 0xa0e928, 0xa0e818, 0xa0e924) kept. Without a given window (window and other
+   colour / depth bits (g_glWidth, g_glHeight, g_glColourBits, g_glDepthBits) kept. Without a given window (window and other
    NULL): its class registered (glWindow_wndProc, the icon named as the title, arrow cursor), the display mode
    switched in full screen (failing that, a message and windowed), a pop-up window of that size made, shown and
-   focused; otherwise the given window (and other, 0xa0e938) taken and resized. Then the GL state (gfx_resetState);
+   focused; otherwise the given window (and other, g_hdc) taken and resized. Then the GL state (gfx_resetState);
    returns the window */
 void *(glWindow_init)(const char *title, int width, int height, int colourBits, int depthBits, int fullscreen,
                       void *window, void *other)
@@ -163,7 +163,7 @@ int (glWindow_restoreDisplayMode)(void)
 
 /* 0x467f20: the display switched to width x height (bits: any when 0): the window's DC taken when there is none,
    the desktop's mode kept before the first switch; 1 when the screen is already in that mode or the switch worked
-   (then 0xa0e940 is set), else a message and 0 */
+   (then g_modeChanged is set), else a message and 0 */
 int (glWindow_setDisplayModeBy)(int width, int height, int bits)
 {
 	void *dc = g_glDc;
@@ -189,8 +189,8 @@ int (glWindow_setDisplayModeBy)(int width, int height, int bits)
 }
 
 /* 0x42eed0 (by use the display mode set; with the exe patch's cave at 0x4a8e54 done here): the desktop's own size
-   (0x67eefc x 0x76d430) is not switched to: a mode changed before (flag 0xb12a80) is left by
-   ChangeDisplaySettingsA(NULL), else nothing (0). Any other size is remembered (0xb12a84 / 0xb12a88, the flag set)
+   (g_desktopWidth x g_desktopHeight) is not switched to: a mode changed before (flag g_displayModeChanged) is left by
+   ChangeDisplaySettingsA(NULL), else nothing (0). Any other size is remembered (g_otherModeWidth / g_otherModeHeight, the flag set)
    and set with 32 bits (the patch's choice, whatever bits asks), with ChangeDisplaySettingsA's flags. Returns its
    answer. (The original's DEVMODE also has its word at 0x3c, dmColor, at 0x800.) */
 int (app_setDisplayMode)(int width, int height, u32 flags, int bits)
@@ -211,9 +211,9 @@ int (app_setDisplayMode)(int width, int height, u32 flags, int bits)
 	return ChangeDisplaySettingsA(mode, flags);
 }
 
-/* 0x4314e0: the game shut down: the object at 0x9087b4 deleted (it stays set), the screen restored (0x42eed0 with
-   the desktop's size), the arrow cursor back, 0x4014c0, the music stopped, the ten sounds at 0x4dd4d4 released,
-   the sound table released (0x456cd0) and DirectSound ended (0x467b70, whose eax it returns) */
+/* 0x4314e0: the game shut down: the object at g_scene deleted (it stays set), the screen restored (app_setDisplayMode with
+   the desktop's size), the arrow cursor back, input_releaseAll, the music stopped, the ten sounds at g_menuSoundBuffers released,
+   the sound table released (sound_freeAll) and DirectSound ended (sound_releaseDirectSound, whose eax it returns) */
 u32 (app_shutdown)(void)
 {
 	void *object = (*(void **)&g_scene);
@@ -242,8 +242,8 @@ _Static_assert(sizeof(PixelFormat) == 0x28, "PixelFormat");
 #define ChoosePixelFormat(dc, pfd) IMPORT(0x4a902c, int, void *, const void *)(dc, pfd)
 #define SetPixelFormat(dc, format, pfd) IMPORT(0x4a9030, int, void *, int, const void *)(dc, format, pfd)
 
-/* 0x467e60: the GL window's pixel format chosen and set: double-buffered (flags 0x21) RGBA with 0xa0e818 colour and
-   0xa0e924 depth bits. A message and 0 when there is none, it needs a palette, or it cannot be set; 1 when set.
+/* 0x467e60: the GL window's pixel format chosen and set: double-buffered (flags 0x21) RGBA with g_glColourBits colour and
+   g_glDepthBits depth bits. A message and 0 when there is none, it needs a palette, or it cannot be set; 1 when set.
    (The original fills only these fields and leaves the rest of the descriptor as the stack had it; here it is
    zeroed.) */
 int (glWindow_setupPixelFormat)(void *dc)
@@ -272,7 +272,7 @@ int (glWindow_setupPixelFormat)(void *dc)
 }
 
 /* 0x42f000: the window's pixel format from the game's descriptor (0x4b1020), filled in the first time (flag bit 1 of
-   0x9dbefc): (video depth 0x83a9c4 + 1) * 16 colour bits, 16 depth bits, the rest zero. 1 when set; 0 when there
+   g_pixelFormatFilled): (video depth g_videoDepth + 1) * 16 colour bits, 16 depth bits, the rest zero. 1 when set; 0 when there
    is none, it needs a palette, or it cannot be set */
 int (gfx_setPixelFormat)(void *dc)
 {
@@ -292,9 +292,9 @@ int (gfx_setPixelFormat)(void *dc)
 
 #define SendMessageA(hwnd, msg, w, l) IMPORT(0x4a92ec, int, void *, u32, u32, u32)(hwnd, msg, w, l)
 
-/* 0x43f460: the chat input box, `chars` letters wide (0x76d418): a 12-pixel font (face 0x4b29b0, 0x9dd8e4) and an
-   edit control (0x9dd888) on the main window at the chat line (0x9da3d8 - 5, 0x9da3dc + 0x21), subclassed by
-   0x440840 (the old procedure in 0x9dd868), focused, holding the typed line (0x9dc92c) with the caret at its end.
+/* 0x43f460: the chat input box, `chars` letters wide (g_chatEditLength): a 12-pixel font (face 0x4b29b0, g_inputFont) and an
+   edit control (g_hChatEdit) on the main window at the chat line (g_chatCaretX - 5, g_chatCaretY + 0x21), subclassed by
+   chat_editSubclass (the old procedure in g_editOldProc), focused, holding the typed line (g_chatLine) with the caret at its end.
    Returns the last SendMessageA's eax */
 int (chat_createEdit)(int chars)
 {
@@ -336,12 +336,12 @@ static int files_present(void)
 	return 1;
 }
 
-/* 0x43fcc0: the game started (inst, show): outside the lobby (0x76d410) the files checked; a 640 x 480 default; the
+/* 0x43fcc0: the game started (inst, show): outside the lobby (g_startedFromLobby) the files checked; a 640 x 480 default; the
    directory, data paths and messages; the process made DPI aware when user32 has SetProcessDPIAware (the exe
-   patch's cave at 0x4a8e20); the desktop's size, DC and depth (0x67eefc, 0x76d430, 0x76d480, 0x76d3ec); the
-   default keys and axis.cfg, 0x43f640, the display mode set (32 bits) and its answer reported (app_reportDisplayModeError); the
-   files checked again. The window class "AXIS" (WndProc 0x440070; app_registerWindowClassEx where GetVersion says
-   so, else RegisterClassA; kept at 0x4e0ca8), the window at (0, -1), the screen's size with one more row (the
+   patch's cave at 0x4a8e20); the desktop's size, DC and depth (g_desktopWidth, g_desktopHeight, g_windowDC, g_desktopDepth); the
+   default keys and axis.cfg, app_screenSizeForMode, the display mode set (32 bits) and its answer reported (app_reportDisplayModeError); the
+   files checked again. The window class "AXIS" (WndProc game_wndProc; app_registerWindowClassEx where GetVersion says
+   so, else RegisterClassA; kept at g_windowClass), the window at (0, -1), the screen's size with one more row (the
    patch's cave at 0x4a8f50), three timers, shown. Then the CD and the data (failing: the desktop's mode back, 0);
    screen 100, the cursor hidden, the clock check. Returns 1, or 0 on any failure */
 int (app_init)(void *inst, int show)
@@ -419,8 +419,8 @@ int (app_init)(void *inst, int show)
 #undef GetSystemMetrics
 #undef GetVersion
 
-/* 0x4680d0: the GL window's messages. Created: the cursor hidden, its DC (0xa0e938) given a pixel format (failing, the
-   game quits) and a GL context (0xa0e93c) made current. Painted: begun and ended. Resized: the view resized. Closed:
+/* 0x4680d0: the GL window's messages. Created: the cursor hidden, its DC (g_hdc) given a pixel format (failing, the
+   game quits) and a GL context (g_context) made current. Painted: begun and ended. Resized: the view resized. Closed:
    destroyed. Destroyed: the context and DC let go, the display mode restored, the cursor shown, the game quits. The
    rest go to DefWindowProcA */
 long STDCALL (glWindow_wndProc)(void *wnd, u32 msg, u32 w, u32 l)
@@ -482,11 +482,11 @@ static void chat_close(void *edit, int sent)
 	g_chatLineDone = 1;
 }
 
-/* 0x440840: the chat edit's window procedure (set by chat_createEdit). Keys: Enter, once the open delay (0x9da434)
-   is not over 0x4a93e8, takes the line and sends it (g_fieldStep 20: the next field); Esc drops it; Tab in the room
-   (0x76d3e8 0x320) closes it (sent) and steps by Shift (g_fieldStep 10 back when held, else 20); Home and Left are swallowed (0).
-   Timers: 0x29a, in the lobby (0x4dbbf4 2), and 0x115c, when connected (0x9dd84c), send their keep-alives (0x17 to
-   the lobby, 0x18 to the game server). Everything not swallowed goes on to the edit's own procedure (0x9dd868) */
+/* 0x440840: the chat edit's window procedure (set by chat_createEdit). Keys: Enter, once the open delay (g_menuKeyGuard)
+   is not over k_0f, takes the line and sends it (g_fieldStep 20: the next field); Esc drops it; Tab in the room
+   (g_screen 0x320) closes it (sent) and steps by Shift (g_fieldStep 10 back when held, else 20); Home and Left are swallowed (0).
+   Timers: 0x29a, in the lobby (g_arenaLobbyState 2), and 0x115c, when connected (g_roomConnected), send their keep-alives (0x17 to
+   the lobby, 0x18 to the game server). Everything not swallowed goes on to the edit's own procedure (g_editOldProc) */
 long STDCALL (chat_editSubclass)(void *wnd, u32 msg, u32 w, u32 l)
 {
 	if (msg == 0x100) {   /* WM_KEYDOWN */
@@ -524,13 +524,13 @@ long STDCALL (chat_editSubclass)(void *wnd, u32 msg, u32 w, u32 l)
 }
 
 /* 0x43f9d0: the program. The launch file read (app_parseCommandLine); a running launcher (window class 0x4b2834)
-   told to quit, then half a second; the start time (GetSystemTime into 0x9dd878, timeGetTime 0x9dd8e8) and two
+   told to quit, then half a second; the start time (GetSystemTime into g_clockLastTime, timeGetTime g_startTicks) and two
    seconds. A game already running (an "AXIS" window), or no CD (cd_findDrive), ends it with a message box. The
-   language by the system's (Korean 0x412 / 0x812: 1 and the message 0x4b2794, else 2 and 0x4b27e4, at 0x9dae74 /
-   0x9dd8c8); the clock check; outside the lobby (0x76d410) the launcher, start mode and file checks, each failing
+   language by the system's (Korean 0x412 / 0x812: 1 and the message 0x4b2794, else 2 and 0x4b27e4, at g_language /
+   g_launchMessage); the clock check; outside the lobby (g_startedFromLobby) the launcher, start mode and file checks, each failing
    with its message. The launcher told to quit again, app_init (failing: a message box), the screen saver off, then
-   the message loop (TranslateMessage while 0x68039c) with a frame (0x43f980) and the fade step after each round of
-   messages, until 0x4b2790 is cleared. Returns 1, or 0 on the exits. (Named game_WinMain: WinMain is the SDK's) */
+   the message loop (TranslateMessage while g_textFieldOpen) with a frame (editField_readTyping) and the fade step after each round of
+   messages, until g_gameRunning is cleared. Returns 1, or 0 on the exits. (Named game_WinMain: WinMain is the SDK's) */
 u32 STDCALL (game_WinMain)(void *inst, void *prev, const char *cmd, int show)
 {
 #define FindWindowA(cls, name) IMPORT(0x4a92cc, void *, const char *, const char *)(cls, name)
@@ -600,7 +600,7 @@ u32 STDCALL (game_WinMain)(void *inst, void *prev, const char *cmd, int show)
 /* 0x440070: the game window's messages (its class's procedure; the patch DLL subclasses it, see axisnet's input_read).
    Returns 1 for the messages it takes (0 where noted), DefWindowProcA's answer for the rest.
    - WM_CREATE: the window's DC (g_windowDC) given a pixel format (failing: the game quits) and a GL context
-     (0x9087b8); the GL state for the client size; the pointer at the menus' centre.
+     (g_glContext); the GL state for the client size; the pointer at the menus' centre.
    - WM_SIZE: the 3D view for the client size (gfx_setup3DView).
      As the installed exe has both (widefix.py: wrappers at 0x4a8f6a / 0x4a8f87, called from 0x440116 / 0x440186):
      the client is one pixel taller than the game's height (the window starts at y -1, so the driver keeps it
@@ -609,14 +609,14 @@ u32 STDCALL (game_WinMain)(void *inst, void *prev, const char *cmd, int show)
    - WM_PAINT: begun and ended. WM_CLOSE: the DC let go, the arena session left, the network closed, the three
      network timers stopped, the cursor put back, the window destroyed.
    - WM_DESTROY: the screen saver back on, the DC and the chat line let go, the cursor shown, the game quits; then,
-     by the exit mode (0x4df048): 0 the start mode 0 and the data files spoilt (and 0x4b2790 cleared), 1 the start
+     by the exit mode (g_exitCode): 0 the start mode 0 and the data files spoilt (and g_gameRunning cleared), 1 the start
      mode 1 and AxisGL.exe started again, 2 / 3 the start mode 0, the files spoilt and axispatch.exe ("nstower") /
      DServer.exe started, 99 the files spoilt and the ending movie; the process ends.
-   - WM_ACTIVATEAPP: the activation kept (0x9dd864). As the installed exe has it (cursorfix.py, through 0x44037c ->
+   - WM_ACTIVATEAPP: the activation kept (g_unusedActive). As the installed exe has it (cursorfix.py, through 0x44037c ->
      0x4a8ec1): the Windows cursor hidden while active and shown while not (counted down / up until it is), and the
      window restored when the game comes back (borderless); then (widefix.py's handler at 0x4a8ecb) a display mode
-     the game had set (0xb12a80) is given up while it is in the background (the window minimised) and set again
-     (0xb12a84 x 0xb12a88) when it comes back.
+     the game had set (g_displayModeChanged) is given up while it is in the background (the window minimised) and set again
+     (g_otherModeWidth x g_otherModeHeight) when it comes back.
    - WM_SYSCOMMAND: moving, sizing, maximising, the screen saver, closing, the task list, the keyboard menu and
      minimising are swallowed (0); SC_RESTORE goes to DefWindowProcA (cursorfix.py changed 0x44050c: the game
      swallowed it), though as the command 0xf120 itself, not as WM_SYSCOMMAND; anything else 1.

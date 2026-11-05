@@ -1,6 +1,6 @@
 /* glyph_cells.c: the font atlases' cell tables: for each glyph its texture coordinates, a row's top and bottom
    (the same across the row) and a column's left and right. Every value is a texel number times the constant at
-   0x4a957c (1/256). */
+   k_0_00390625f (1/256). */
 #include "../game.h"
 #include "../wide.h"
 #include <stdarg.h>
@@ -67,10 +67,10 @@ static void pen_cell(const u32 corner[4], int g, int x0, int x1, int y0, int y1)
 	}
 }
 
-/* 0x46b950: the pen font (the HUD's small text) from texture `name` (into 0xa106ac): 105 glyphs (from 1) in two
-   sets of 5 rows of 21, every glyph 8 wide (0xa0fb28): the fixed set, 8 x 8 texels from row 0x48, and the
-   proportional set, rows of 14 texels from the top with the widths at 0x4c5558. A second call only complains
-   (0xa106a8 set): 0. Otherwise 1 */
+/* 0x46b950: the pen font (the HUD's small text) from texture `name` (into g_penFontTexture): 105 glyphs (from 1) in two
+   sets of 5 rows of 21, every glyph 8 wide (g_penFixedWidths): the fixed set, 8 x 8 texels from row 0x48, and the
+   proportional set, rows of 14 texels from the top with the widths at g_penPropWidths. A second call only complains
+   (g_penFontNeverSet set): 0. Otherwise 1 */
 int (pen_init)(const char *name)
 {
 	/* (the corners' tables less one glyph: pen_cell takes glyphs from 1) */
@@ -97,10 +97,10 @@ int (pen_init)(const char *name)
 
 /* 0x46bdc0: the number value drawn with the HUD's digits (the armor / shield / ammo counters), right to left in
    count slots ending at x + count * w / 2: each slot w = scale * 28 wide, each digit h = scale * 26 tall (centred
-   on y) and widened by pad (scale * the float at 0x4a9534) on both sides. Unless padded, the slots beyond the
+   on y) and widened by pad (scale * the float at k_3f) on both sides. Unless padded, the slots beyond the
    value's own digits are left out. A negative value is drawn by its size with a minus sign to the left, on the slot
    where the next digit would go - over the last digit when all count slots were drawn. The
-   cells are 35 x 27 texels of the HUD texture (0xa106ac; digit d at column d % 5, row d / 5 from row 112, the minus
+   cells are 35 x 27 texels of the HUD texture (g_penFontTexture; digit d at column d % 5, row d / 5 from row 112, the minus
    at 175, 112). Two of the patch DLL's changes are followed as they stand in the code: the height's factor (26, the
    operand of the fmul at 0x46bdda) may be its height-based one, and the texture coordinates' function (loaded at
    0x46be96) may be its half-texel inset. Returns glDisable's eax */
@@ -167,7 +167,7 @@ u32 (hud_drawDigits)(int x, int y, float scale, int value, int count, int padded
 }
 
 /* 0x46bb00: text in the pen font (the HUD's small text: the power-up countdown, the ranking...), printf-style, at
-   (x, y) (y down from the top): font 1 the proportional set (14 tall, widths from 0x4c5558), else the fixed one (8 x
+   (x, y) (y down from the top): font 1 the proportional set (14 tall, widths from g_penPropWidths), else the fixed one (8 x
    8). A newline goes back to x one line lower, a tab moves 64 right, other characters outside ' ' .. '~' are left
    out. Each glyph's four corners take their texture coordinates from the font's four cell tables (glyph 1 = ' ').
    While it draws, the patch DLL is told (wide.h: penDraw): its vertex hook scales the power-up countdown's glyphs

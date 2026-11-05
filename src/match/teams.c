@@ -42,7 +42,7 @@ void THISCALL (teams_setup)(Scene *scene)
 			scene->teamIds[k] = k;
 }
 
-/* 0x4625a0: the actor the camera follows: in a team match (+0x22e7184) the first listed actor of the team that is
+/* 0x4625a0: the actor the camera follows: in a team match (teamGame) the first listed actor of the team that is
    behind (else the local player's), otherwise the first listed one */
 void *THISCALL (scene_followedActor)(Scene *scene)
 {
@@ -60,7 +60,7 @@ void *THISCALL (scene_followedActor)(Scene *scene)
 	return (u8 *)&scene->players[i];
 }
 
-/* 0x472310: the dynamic lights refilled: flagged (dynamicLightsSet), emptied (0x483d60), then a white light for
+/* 0x472310: the dynamic lights refilled: flagged (dynamicLightsSet), emptied (Light_clearCounts), then a white light for
    each active actor, of (its glow + 1) * 2500 at its position, and for each active particle whose size is above
    0, of that at its position */
 void THISCALL (stage_refillLights)(Stage *stage)

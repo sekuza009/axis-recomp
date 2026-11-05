@@ -118,7 +118,7 @@ int (input_createDirectInput)(void *window, void *instance)
 #define GetCursorPos(p) IMPORT(0x4a9300, u32, int *)(p)
 #define SetCursorPos(x, y) IMPORT(0x4a9304, u32, int, int)(x, y)
 
-/* 0x401730: the mouse read into the DIMOUSESTATE at 0x4d1a88 (16 bytes: movement x, y, wheel, 4 buttons), once per
+/* 0x401730: the mouse read into the DIMOUSESTATE at g_mouseState (16 bytes: movement x, y, wheel, 4 buttons), once per
    frame; when the input was lost the mouse is taken again and read again. As the installed exe has it (mousefix.py
    replaced the routine with code in the .axnet section's tail): while another window is in front, or the read or
    the re-take fails, the state is cleared instead of left as it was (a button down at an alt-tab stayed "held").
@@ -148,7 +148,7 @@ clear:
 
 /* 0x445c60: the frame's mouse input, on every screen. The mouse is taken again and read (input_readMouse; the patch DLL retargets
    this call to its own read around it: buttons after alt-tab, the menu cursor's speed); the pointer moves by the
-   read's movement, the wheel gives g_mouseWheel (one notch of 120 = 1, down positive) and 0x4ded70 (turned at all).
+   read's movement, the wheel gives g_mouseWheel (one notch of 120 = 1, down positive) and g_mouseWheelTurned (turned at all).
    Outside a match (screen 0x270f) the pointer is kept to 0..630 x 0..474, or by the patch DLL's clamp (it replaces the block at 0x445cd8), which lets it
    reach the whole width of a wide screen (wide.h: cursorClampFix). Each button gives its held state (0 / 0x80) and
    a click pulse (OBJ(g_mouseClicked) + i * 4) on the frame it went down (OBJ(g_mouseWasDown) + i * 4: down last frame). */
@@ -215,7 +215,7 @@ int (input_asyncKeyDown)(int key)
 	return (u16)GetAsyncKeyState(key) != 0;
 }
 
-/* 0x487c30: the cursor's position (screen pixels) into 0xae2f18, left as it was while another window is in front;
+/* 0x487c30: the cursor's position (screen pixels) into g_cursorPos, left as it was while another window is in front;
    returns the point */
 int *(input_getCursorPos)(void)
 {
@@ -228,7 +228,7 @@ int *(input_getCursorPos)(void)
 	return (int *)ADDR(g_cursorPos);
 }
 
-/* 0x487bd0: was the key just pressed (down now, and not already seen down)? The seen flags (0xae2f24 + key * 4) clear
+/* 0x487bd0: was the key just pressed (down now, and not already seen down)? The seen flags (g_asyncKeySeen + key * 4) clear
    when the key is up */
 int (input_asyncKeyPressed)(int key)
 {
@@ -264,7 +264,7 @@ int (input_isDown)(int key)
 	return input_keyHeldChecked(key) != 0;   /* input_keyHeldChecked: held */
 }
 
-/* 0x401600: was the key bound to an action just pressed (true once per press)? A key latches in 0x4d1a98 + key * 4
+/* 0x401600: was the key bound to an action just pressed (true once per press)? A key latches in g_keySeen + key * 4
    until it is seen released; the wheel (0xfd down) latches in 0x4d1e8c; 0xfe is the wheel turned up. The mouse
    buttons (0xfa .. 0xfc) answer the frame's click pulse (OBJ(g_mouseClicked) + i * 4) only when their flag (0x4d1e80 + i * 4),
    which flips on every call, was 0 - so with one test per frame about every other click was lost. The patch DLL
@@ -306,8 +306,8 @@ int (input_justPressed)(int key)
 	return 1;
 }
 
-/* 0x4013a0: the DirectInput mouse made (once): the device (GUID_SysMouse at 0x4a9698), its data format (c_dfDIMouse,
-   0x4a9610) and its cooperative level for the window (exclusive, foreground). 1 when ready, 0 on a failure */
+/* 0x4013a0: the DirectInput mouse made (once): the device (GUID_SysMouse at k_GUID_SysMouse), its data format (c_dfDIMouse,
+   k_c_dfDIMouse) and its cooperative level for the window (exclusive, foreground). 1 when ready, 0 on a failure */
 int (input_createMouse)(void *window)
 {
 	if (g_mouseActive)
@@ -323,9 +323,9 @@ int (input_createMouse)(void *window)
 	return 1;
 }
 
-/* 0x401310: the DirectInput keyboard made (once): the device (GUID_SysKeyboard, 0x4a9688), its data format
-   (c_dfDIKeyboard, 0x4a95f8), its cooperative level for the window (non-exclusive, foreground), acquired, the key
-   state (0x4d1a98) cleared. 1 when ready, 0 on a failure */
+/* 0x401310: the DirectInput keyboard made (once): the device (GUID_SysKeyboard, k_GUID_SysKeyboard), its data format
+   (c_dfDIKeyboard, k_c_dfDIKeyboard), its cooperative level for the window (non-exclusive, foreground), acquired, the key
+   state (g_keySeen) cleared. 1 when ready, 0 on a failure */
 int (input_initKeyboard)(void *window)
 {
 	if (g_keyboardActive)

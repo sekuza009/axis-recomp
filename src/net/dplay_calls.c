@@ -34,7 +34,7 @@ long (dplay_closeSession)(void *dplay)
 	return COM(dplay, COM_RELEASE, long)(dplay);
 }
 
-/* 0x4539f0: the DirectPlay lobby object (class 0x4a9668, interface 0x4a9678) into *out */
+/* 0x4539f0: the DirectPlay lobby object (class k_CLSID_DirectPlay, interface k_IID_IDirectPlay4A) into *out */
 long (dplay_createLobby)(void **out)
 {
 	return CoCreateInstance((const void *)OBJ(k_CLSID_DirectPlay), NULL, CLSCTX_INPROC_SERVER, (const void *)OBJ(k_IID_IDirectPlay4A), out);

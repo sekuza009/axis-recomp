@@ -102,10 +102,10 @@ void THISCALL (mech_setAll)(Scene *scene, const char *name, int pilotLevel, int 
 		player_markUsed(STAGE(scene), scene->localPlayer);
 }
 
-/* 0x461540 (thiscall on the game): the shown actor (+0x234240d; none when negative) given a weapon slot (none given,
-   negative: its current one, +0x1eccbb0) through the stage's refresh (stage_remakePlayerActor), its position and two angles kept
-   across that; its +0x1eccf0c set unless it is the stage's own (+0x2221fa0). A slot over 3 first selects and updates
-   its +0x1eccbb4 one. Its callers ignore the eax it leaves */
+/* 0x461540 (thiscall on the game): the shown actor (localPlayer; none when negative) given a weapon slot (none given,
+   negative: its current one, players[].slot) through the stage's refresh (stage_remakePlayerActor), its position and two angles kept
+   across that; its players[].variantLoaded set unless it is the stage's own (selectedActor). A slot over 3 first selects and updates
+   its players[].lastWeaponSlot one. Its callers ignore the eax it leaves */
 void THISCALL (armc_giveShownActorWeapon)(u8 *game, int slot)
 {
 	Scene *sc = (Scene *)game;

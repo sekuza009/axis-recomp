@@ -343,7 +343,7 @@ void THISCALL (ViewVolume_projectObject)(u8 *view, u8 *model, u32 *extra, const 
 	}
 }
 
-/* ---- 0x485af0: drawing what was queued ---- */
+/* ---- ViewVolume_draw: drawing what was queued ---- */
 
 typedef void (STDCALL *ArrayFn)(int size, u32 type, int stride, int count, const void *p);   /* +0x14.. (an extension's) */
 

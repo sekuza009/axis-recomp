@@ -157,7 +157,7 @@ u32 (menu_frameBegin)(void)
 	return IMPORT(0x4a91ec, u32, u32, u32)(0x302, 0x303);   /* glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA) */
 }
 
-/* 0x40ce70: the screen dimmed by a black overlay fading in (0x4deb74 grows by the frame time times a rate; its alpha
+/* 0x40ce70: the screen dimmed by a black overlay fading in (g_roomFade grows by the frame time times a rate; its alpha
    at most 1). Returns menu_drawRect's eax */
 u32 (menu_drawDimOverlay)(void)
 {
@@ -172,8 +172,8 @@ u32 (menu_drawDimOverlay)(void)
 	return menu_drawRect(0, 0, 640, 480, 1);   /* menu_drawRect, filled */
 }
 
-/* 0x41f050: the menu camera: the scene moved by minus the camera's position (0x4df024), then the view from it towards
-   the look-at point (0x680378), y up. Returns gluLookAt's eax */
+/* 0x41f050: the menu camera: the scene moved by minus the camera's position (g_menuCameraPos), then the view from it towards
+   the look-at point (g_menuCameraLook), y up. Returns gluLookAt's eax */
 u32 (gfx_setMenuCamera)(void)
 {
 	float z = (float)-fld_m((const float *)ADDR(g_armcCamDistance)), y = (float)-fld_m((const float *)ADDR(g_armcCamHeight)),
@@ -185,7 +185,7 @@ u32 (gfx_setMenuCamera)(void)
 		eye[0], eye[1], eye[2], at[0], at[1], at[2], 0.0, 1.0, 0.0);   /* gluLookAt */
 }
 
-/* ---- a dialog frame opening on (x0, y0) .. (x1, y1) (phase 0x4de740, frame counter 0x76d428) ---- */
+/* ---- a dialog frame opening on (x0, y0) .. (x1, y1) (phase g_menuFramePhase, frame counter g_menuFrameCounter) ---- */
 #define g_framePhase g_menuFramePhase
 #define g_frameCount g_menuFrameCounter
 
@@ -232,7 +232,7 @@ static int phase_done(int next)
    along y0 and from the bottom up x0 (64 and 48 units a frame); 2 those fade out as full-screen lines while two
    more grow in from the right along y1 and down x1; 3 the green lines along y1 and x1 fade while a dark blue panel
    (0, 0, 0.5, 0.3) grows from (x0, y0) by a tenth of the frame a frame, and once it is as wide as the frame the
-   phase goes back to 1 and the message box flag (0x90d1c4) is cleared. Other phases draw nothing. The callers pass
+   phase goes back to 1 and the message box flag (g_dialogOpen) is cleared. Other phases draw nothing. The callers pass
    on the eax it leaves to menu_frame, which ignores it */
 void (menu_drawFrame)(int x0, int y0, int x1, int y1)
 {
@@ -285,7 +285,7 @@ void (menu_drawFrame)(int x0, int y0, int x1, int y1)
 #undef g_framePhase
 #undef g_frameCount
 
-/* 0x4290d0: the message box: a dark blue-grey panel (0.2, 0.2, 0.7, alpha 0.7) and its two lines (0x4df81c, then the
+/* 0x4290d0: the message box: a dark blue-grey panel (0.2, 0.2, 0.7, alpha 0.7) and its two lines (g_messageBoxLine, then the
    message MSG(0, "PRESS ENTER OR CLICK MOUSE")) in yellow. Returns the text call's eax */
 u32 (menu_drawMessageBox)(void)
 {
@@ -298,8 +298,8 @@ u32 (menu_drawMessageBox)(void)
 	return text_drawBox16(0x69, 0xf4, 0x217, (const char *)MSG(0, "PRESS ENTER OR CLICK MOUSE"));
 }
 
-/* 0x428890: the text cursor at (x, y), a green bar 7 x 15 menu units, its alpha 1 - a timer (0x4de1f0: grows by the
-   frame time, back to 0 past 0x4a9508; a frame counter 0x9da908 wraps past 40). Returns glEnd's eax */
+/* 0x428890: the text cursor at (x, y), a green bar 7 x 15 menu units, its alpha 1 - a timer (g_cursorBlinkTimer: grows by the
+   frame time, back to 0 past k_0_9f; a frame counter g_frameCounter40 wraps past 40). Returns glEnd's eax */
 u32 (menu_drawTextCursor)(int x, int y)
 {
 	long double t = fmul_m(fld_m(&g_frameTime), k_0_035f);
@@ -323,7 +323,7 @@ u32 (menu_drawTextCursor)(int x, int y)
 }
 
 /* 0x428940: the input line at (x, y) in green with its cursor after the typed characters (8 units each); a password
-   (0x4e1868) shows as stars. Returns the text call's eax (or the dialog's state while one is open) */
+   (g_inputLineHidden) shows as stars. Returns the text call's eax (or the dialog's state while one is open) */
 u32 (menu_drawInputLine)(int x, int y)
 {
 	if (g_dialogOpen)

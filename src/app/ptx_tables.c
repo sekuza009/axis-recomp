@@ -74,7 +74,7 @@ void (ptx_initQuantTables)(int q)
 }
 
 /* 0x46e2b0: the dequantisation tables for quality q, with the AAN inverse DCT's scale factors (eight doubles at
-   0x4aa2b0) folded in */
+   k_aanScales) folded in */
 void (ptx_initDequantTables)(int q)
 {
 	typedef long double X;

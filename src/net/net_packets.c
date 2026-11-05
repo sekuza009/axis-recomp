@@ -1,8 +1,8 @@
 /* net_packets.c: the match's packet layer (linked after the C runtime in the exe, 0x4a8300 ..). Every packet is 64
    bytes; each player's packets are numbered 0..127 in turn (the number goes in the packet's first byte). Sent
-   packets are kept (0xaef6a0: 16 players x 128 x 64 bytes) so a lost one can be sent again when its receiver asks:
+   packets are kept (g_history: 16 players x 128 x 64 bytes) so a lost one can be sent again when its receiver asks:
    a packet whose first byte has bit 7 set is such a request, for the number in its low bits, from the player in its
-   second byte. Received ones wait in the player table (g_netSlots) or, arriving ahead of their turn, in the history marked in 0xb0f6a0 (16 x 128 flags). */
+   second byte. Received ones wait in the player table (g_netSlots) or, arriving ahead of their turn, in the history marked in g_ahead (16 x 128 flags). */
 #include "../game.h"
 #include <string.h>
 

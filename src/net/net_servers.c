@@ -26,7 +26,7 @@ void (net_clearServers)(void)
 	net_closeThreadHandles();
 }
 
-/* 0x454560: the receive thread's procedure: wait on the two events (0xa0bb10 data, 0xa0bf1c stop): data pings the
+/* 0x454560: the receive thread's procedure: wait on the two events (g_pingDataEvent data, g_pingStopEvent stop): data pings the
    listed servers and waits again, stop ends the thread, anything else waits again */
 void (net_pingThreadProc)(void)
 {

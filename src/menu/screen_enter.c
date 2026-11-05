@@ -24,8 +24,8 @@ static void clear_all(const u32 *a, int n)
 #define STORE_ALL(table) store_all(table, sizeof table / sizeof table[0])
 #define CLEAR_ALL(table) clear_all(table, sizeof table / sizeof table[0])
 
-/* the camera's target points 0 .. n-1 (16 bytes apart from 0x4df870, look-at points from 0x76d388) at its height,
-   and the current position as home (0x9db090) */
+/* the camera's target points 0 .. n-1 (16 bytes apart from g_camPoint0X, look-at points from g_camAim0X) at its height,
+   and the current position as home (g_menuCameraX) */
 static void camera_heights(int n)
 {
 	int z = g_menuCameraHeight;
@@ -207,7 +207,7 @@ void (menuState800_enterGameRoom)(void)
 /* ---- the front end's per-frame dispatch ---- */
 
 /* 0x445e40: the menus' mouse, once per frame: the mouse read (input_updateMouse), then, unless the menu camera is moving
-   (g_menuCameraMove), the message box's clicks while it is shown, else the current screen's (0x76d3e8): 200 the title, 210 profiles, 300 the main menu, 400 the lobby,
+   (g_menuCameraMove), the message box's clicks while it is shown, else the current screen's (g_screen): 200 the title, 210 profiles, 300 the main menu, 400 the lobby,
    500 missions, 600 setup, 700 the ARM CENTER, 800 the game room, 900 skirmish, 9999 in a match. Returns what the
    handler leaves in eax (or the original's leftover of its compares) */
 u32 (menu_processMouse)(void)
@@ -240,8 +240,8 @@ u32 (menu_processMouse)(void)
 	return (u32)(state - 210);
 }
 
-/* 0x41f970: a screen entered: its set-up by the state (0x76d3e8; the main menu also flags 0x4deb48), the state kept as
-   the one before (0x67ef0c). Returns the state */
+/* 0x41f970: a screen entered: its set-up by the state (g_screen; the main menu also flags g_enteringMenus), the state kept as
+   the one before (g_lastScreen). Returns the state */
 u32 (menu_enterState)(void)
 {
 	switch (g_menuState) {
@@ -294,8 +294,8 @@ int (menuState900_enterSkirmish)(void)
 }
 
 /* 0x447750: the mission select (screen 500; the main menu's SKIRMISH PLAY): the briefing camera, the window and its colours, the screen's panels
-   (missionsel_layout), the mission shown (0x9f63b4, 0x9f6328) the campaign's next one (0x9f181c, at most 14), a sound;
-   a newly reached mission (past 0x9f62fc) raises it and the briefing flag 0x9f62e0. Returns the campaign's mission */
+   (missionsel_layout), the mission shown (g_missionShown, g_missionChosen) the campaign's next one (0x9f181c, at most 14), a sound;
+   a newly reached mission (past g_profileProgressSaved) raises it and the briefing flag g_missionBriefing. Returns the campaign's mission */
 int (menuState500_enter)(void)
 {
 	static const Store setup[] = {
@@ -372,7 +372,7 @@ static void check_profiles(void)
 		}
 }
 
-/* the player's name for the match (0x4dedd8, 32 bytes) */
+/* the player's name for the match (g_matchPlayerName, 32 bytes) */
 static void match_name(const char *name)
 {
 	memset((void *)OBJ(g_matchPlayerName), 0, 32);
@@ -380,11 +380,11 @@ static void match_name(const char *name)
 }
 
 /* 0x41fd40 (the match started, state 9999): the menus' tunnel freed; outside the lobby
-   (0x76d410) the profile files checked; the display opened (aspect 0x4e1870, glWindow_init); a replay (0x9db990)
-   started at once (scene_startSession 0, 3); else the map (0x9dad94) loaded (failing: message 6 and back to state 400 /
-   800 for the arena / room). By the kind of match (0x5ae9c4): 1 the arena, 2 the room (the pilots read, the
-   player's name taken from the profile / the room, the part lists 0x40d990), 3 a skirmish (the name 0x9f1798),
-   started with scene_startSession (a host unless 0x67ef04 is 1; 3: 0, 0); then the map's name announced. The caller
+   (g_startedFromLobby) the profile files checked; the display opened (aspect g_viewAspect, glWindow_init); a replay (g_replayRunning)
+   started at once (scene_startSession 0, 3); else the map (g_missionStage) loaded (failing: message 6 and back to state 400 /
+   800 for the arena / room). By the kind of match (g_matchMode): 1 the arena, 2 the room (the pilots read, the
+   player's name taken from the profile / the room, the part lists armc_resetSeraphimParts), 3 a skirmish (the name 0x9f1798),
+   started with scene_startSession (a host unless g_netRole is 1; 3: 0, 0); then the map's name announced. The caller
    ignores the eax it leaves */
 void (match_enter)(void)
 {

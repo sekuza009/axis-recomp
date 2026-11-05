@@ -6,7 +6,7 @@
 static void list_up(void) { skirmish_cursorUp(); }
 static void list_down(void) { skirmish_cursorDown(); }
 
-/* 0x443f20: the skirmish list's keys: 0x4e0cd4 or fire reads the chosen mission's block (mission_loadBriefing), back
+/* 0x443f20: the skirmish list's keys: g_dikA or fire reads the chosen mission's block (mission_loadBriefing), back
    or cancel leaves, up / down move the cursor with a key repeat (the original leaves eax to callers that ignore it) */
 void (skirmish_listKeys)(void)
 {
@@ -22,8 +22,8 @@ void (skirmish_listKeys)(void)
 		key_repeat(g_keyDown, &g_repeatDown, list_down);
 }
 
-/* ---- the briefing: the text block 0x9ef1ec (read by mission_loadBriefing), from offset 0x9eeba4 up to 0x9ef200;
-   0x9ef1f4 characters of it shown so far, copied to 0x9f1064 ---- */
+/* ---- the briefing: the text block g_briefingSource (read by mission_loadBriefing), from offset g_briefingStart up to g_briefingEnd;
+   g_briefingShown characters of it shown so far, copied to g_briefingText ---- */
 
 /* 0x445520: the briefing typed out: while not done or skipped, every 1.4 of the clock (frame times added) shows one
    more character (a CR LF or a double-byte character at once); drawn in the briefing window (wrapping at 0x23e,
@@ -92,7 +92,7 @@ static void bind_button_texture(void)
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 }
 
-/* ---- the mission list: g_missions (count 0x9ef2c0) ---- */
+/* ---- the mission list: g_missions (count g_missionCount) ---- */
 
 /* the columns' left (and right) x from the window's left */
 static const int column_x0[4] = { 0x10, 0x159, 0x1b3, 0x20d }, column_x1[4] = { 0x154, 0x1ae, 0x208, 0x25d };
@@ -152,7 +152,7 @@ void (missionList_draw)(void)
 
 /* 0x4456b0: the mission briefing: a translucent blue window, its title 0x75e024, a cyan frame and rule, the text
    typed out (briefing_typeOut), two buttons at the right (MSG(521, "$[0] ACCEPT"), 0x80 apart; lit under the pointer: 0 / 1 by
-   briefing_hitTest) and two at the left (MSG(523, "$[0] NEXT"): 2 only once the text is out (0x4d7348), 3 only past the first
+   briefing_hitTest) and two at the left (MSG(523, "$[0] NEXT"): 2 only once the text is out (g_briefingSkipped), 3 only past the first
    page (g_briefingPage); greyed otherwise). The original leaves eax to callers that ignore it */
 void (missionBriefing_draw)(void)
 {

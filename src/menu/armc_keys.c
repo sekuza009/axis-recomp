@@ -6,8 +6,8 @@
 /* the keys of slots 0 .. 4 */
 static const u32 slot_keys[5] = { ADDR(g_dikH), ADDR(g_dikE), ADDR(g_dikS), ADDR(g_dikG), ADDR(g_dikB) };
 
-/* 0x4101e0: the parts page: 0x4e1538 / 0x4e1504 to the weapons / colour page, 0x4e151c toggles the spin; the part in
-   view picked (slot keys, 0x4e0cd4 the weapons) or stepped (up / down); left / right change that part; OK keeps the
+/* 0x4101e0: the parts page: g_dikW / g_dikL to the weapons / colour page, g_dikR toggles the spin; the part in
+   view picked (slot keys, g_dikA the weapons) or stepped (up / down); left / right change that part; OK keeps the
    mech, back or cancel leaves (the original leaves eax to callers that ignore it) */
 void (armc_partsPageKeys)(void)
 {
@@ -84,8 +84,8 @@ void (armc_partsPageKeys)(void)
 }
 
 
-/* 0x410500: the weapons page: cancel / back leave, OK keeps the mech; 0x4e1514 / 0x4e1504 to the parts / colour page
-   (slot 0 picked first), 0x4e151c toggles the spin; six keys pick an item slot; right / left move the cursor in its
+/* 0x410500: the weapons page: cancel / back leave, OK keeps the mech; g_dikP / g_dikL to the parts / colour page
+   (slot 0 picked first), g_dikR toggles the spin; six keys pick an item slot; right / left move the cursor in its
    list (slot 0's weapons wrap between 1 and the last; slots 4 / 5 skip a colour part already in the other slot),
    up and then down step the slot (the original leaves eax to callers that ignore it) */
 void (armc_weaponsPageKeys)(void)
@@ -172,9 +172,9 @@ void (armc_weaponsPageKeys)(void)
 	}
 }
 
-/* 0x410810: the colour page: OK keeps the mech, back or cancel leaves; 0x4e1514 / 0x4e1538 to the parts / weapons
-   page; the colour slot picked (slot keys, 0x4e0cd4 slot 5, kept for undo) or stepped (up / down; wrapping up to
-   slot 5 keeps it for undo too); 0x4e151c toggles the spin (the original leaves eax to callers that ignore it) */
+/* 0x410810: the colour page: OK keeps the mech, back or cancel leaves; g_dikP / g_dikW to the parts / weapons
+   page; the colour slot picked (slot keys, g_dikA slot 5, kept for undo) or stepped (up / down; wrapping up to
+   slot 5 keeps it for undo too); g_dikR toggles the spin (the original leaves eax to callers that ignore it) */
 void (armc_colourPageKeys)(void)
 {
 	if (input_justPressed(g_keyOk)) {
@@ -236,8 +236,8 @@ leave:
 	armc_exit(0);
 }
 
-/* 0x410ab0: the arm screen's keys (in its modes other than 0 / 1, without a message box): the keys 0x6803a8 and
-   0x9da4a0 held with 0x4e1508 pressed switch 0x4dd078; else the page's own keys (0x4dc798: 1 .. 3; page 4's are
+/* 0x410ab0: the arm screen's keys (in its modes other than 0 / 1, without a message box): the keys g_dikLCtrl and
+   g_dikLAlt held with g_dikM pressed switch g_armcHideInterface; else the page's own keys (g_armcMode: 1 .. 3; page 4's are
    an empty function). The caller ignores the eax it leaves */
 void (armc_processInput)(void)
 {

@@ -1,6 +1,6 @@
 /* menu_cameras.c: the front end's camera moving between its home and a screen's menu point. The camera is a
-   position (0x4df024) and a point it looks at (0x680378), three floats each; the menu points are 16 bytes apart
-   from OBJ(g_camPoints) (positions) and OBJ(g_camAims) (look-at points), the home at 0x9db090 / 0x76d3f8. Each frame the camera
+   position (g_menuCameraPos) and a point it looks at (g_menuCameraLook), three floats each; the menu points are 16 bytes apart
+   from OBJ(g_camPoints) (positions) and OBJ(g_camAims) (look-at points), the home at g_menuCameraX / g_menuLookAtX. Each frame the camera
    eases a share of the way (the frame's time times a rate) and snaps once close enough. The arithmetic is kept in
    the original's order and at x87 precision (long double). */
 #include "../game.h"
@@ -196,13 +196,13 @@ static void menu_camera2(const MenuCam2 *m)
 	(*(int *)&g_cursorBlink) = 0;
 }
 
-/* 0x410b50 (the arm screen's camera, 0x4dc790: 1 out to the first menu point, 0
+/* 0x410b50 (the arm screen's camera, g_armcState: 1 out to the first menu point, 0
    back home, 2 there). Going out it eases there (the view's aspect narrowing) and snaps once its depth passes -1
-   (-1101 in network play, 0x4dc24c 3): at (0, -200, 1500; 400 in network play) looking at (0, -200, 0), the dialog
+   (-1101 in network play, g_armcFrom 3): at (0, -200, 1500; 400 in network play) looking at (0, -200, 0), the dialog
    up. Coming home it eases fast while its depth is past -549 (-1649), else slowly, the aspect widening back, and
-   snaps home once within 0.01 of -550 (-1650); then on to where it came from (0x4dc24c): 1 the main menu (300), 2 the
+   snaps home once within 0.01 of -550 (-1650); then on to where it came from (g_armcFrom): 1 the main menu (300), 2 the
    arena lobby (400; the camera to its saved place, the home moved to (0, 0, -1550) looking at (0, 0, -1650)), 3 the
-   game room (800, menuCamera_initPoints); a launcher-started game (reply 0x67, 0x9da49c) then starts (arena_startFromLauncher). The caller
+   game room (800, menuCamera_initPoints); a launcher-started game (reply 0x67, g_lobbyReply) then starts (arena_startFromLauncher). The caller
    ignores the eax it leaves */
 void (armc_cameraStep)(void)
 {
@@ -306,7 +306,7 @@ void (missionsel_camera)(void)
 	menu_camera2(&mission);
 }
 
-/* ---- the free menu camera moved along its heading (the turn at 0x90d1cc, plus a quarter turn, wrapped, in radians)
+/* ---- the free menu camera moved along its heading (the turn at g_armcLookYaw, plus a quarter turn, wrapped, in radians)
    by the frame time times its speed ---- */
 
 static X heading(void)
@@ -318,7 +318,7 @@ static X heading(void)
 }
 #define SPEED F(0x4a9534)
 
-/* 0x42aa30: forward (the camera's position 0x4de344 / 0x4de34c and the menu camera's) */
+/* 0x42aa30: forward (the camera's position g_menuCamX / g_menuCamZ and the menu camera's) */
 void (menuCamera_forward)(void)
 {
 	X a = heading();
@@ -347,7 +347,7 @@ void (menuCamera_back)(void)
 	g_armcCamDistance = (float)((X)g_armcCamDistance - u);
 }
 
-/* the ARM CENTER's turn (0x90d1cc, degrees) as its sine and cosine, and kept in the slot's record (g_slotCams) */
+/* the ARM CENTER's turn (g_armcLookYaw, degrees) as its sine and cosine, and kept in the slot's record (g_slotCams) */
 static void turn_update(int slot)
 {
 	X a = (X)g_armcLookYaw * k_pi * k_oneOver180;
@@ -357,8 +357,8 @@ static void turn_update(int slot)
 	F(OBJ(g_slotCams) + 0x28 + slot * 88) = (float)t;
 }
 
-/* 0x42ab70: the ARM CENTER's mouse look (unless locked, 0x4de6fc): the pointer's distance from the centre turns
-   the view (wrapping 0 .. 360) and tilts it (0x4de6c4, within its limits); a click starts the camera's move to the
+/* 0x42ab70: the ARM CENTER's mouse look (unless locked, g_watchChatOpen): the pointer's distance from the centre turns
+   the view (wrapping 0 .. 360) and tilts it (g_armcLookTilt, within its limits); a click starts the camera's move to the
    slot's point */
 void (armc_mouseLook)(void)
 {
@@ -442,13 +442,13 @@ void (setup_camera)(void)
 	}
 }
 
-/* 0x42ada0: the free camera's keys (while watching): typing a chat line (0x4de6fc) until it is closed (0x68039c
-   clear): then sent (net_sendChat, 0x9fd95c / 0x9fd948) unless empty and the keyboard taken back; 0x4defa8 opens the
-   chat line (50 characters); the second cancel key leaves (a hosted game, 0xa0baf8, told first); the turn keys
-   (0x4def00 / 0x4def08) slide the camera and the menu camera sideways (0x4de6c0, 0x4de6c8 at 0x4a9534 a frame),
+/* 0x42ada0: the free camera's keys (while watching): typing a chat line (g_watchChatOpen) until it is closed (g_textFieldOpen
+   clear): then sent (net_sendChat, g_chatLogged / g_chatLog) unless empty and the keyboard taken back; g_keyChat opens the
+   chat line (50 characters); the second cancel key leaves (a hosted game, g_isHost, told first); the turn keys
+   (g_keyForward / g_keyBackward) slide the camera and the menu camera sideways (g_armcLookSin, g_armcLookCos at k_3f a frame),
    the move keys step it (menuCamera_forward / menuCamera_back); then the menu camera follows (0x680378 .. 0x680380 and the
-   look-at 0x4df024 ..) and the camera's position is kept in the watched slot (0x4dfa1c, 0x58 bytes, by 0x9fd954);
-   0x680388 toggles 0x4e0464 between 1 and 2, and four keys step 0x4de6e0 by 1 / 10 (not below 1). The original
+   look-at 0x4df024 ..) and the camera's position is kept in the watched slot (g_slotCams, 0x58 bytes, by g_watchedSlot);
+   g_dikZ_2 toggles g_fovKeys between 1 and 2, and four keys step g_debugValue by 1 / 10 (not below 1). The original
    leaves eax to callers that ignore it */
 void (freeCam_keys)(void)
 {

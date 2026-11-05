@@ -36,7 +36,7 @@ static void mark_notice(Scene *scene, int i, u32 local, u32 other)
 }
 
 /* 0x462150 (thiscall on the scene): the ranking. The team counts (redTeamCount / blueTeamCount by the team's slot, noTeamCount
-   the players flagged at 0x9f9840 without a team), then the players with a team in order of kills (fewer deaths
+   the players flagged at g_netSlots without a team), then the players with a team in order of kills (fewer deaths
    first on a tie: ranking[], rank[] their places, ties sharing one), the local player's place. With the king mark
    (kingOfTheHill): the first player marked (isKing, with a notice "you are" / "%s is" the new king when it changes)
    and put on team 0, the others on team 1. With commanders (platoon): per team the player with the most
@@ -51,7 +51,7 @@ void THISCALL (scene_updateRanking)(Scene *scene)
 				scene->redTeamCount++;
 			else if (scene_teamSide(scene, p->team) == 1)
 				scene->blueTeamCount++;
-		} else if (net_playerInUse(i) == 1 && p->team < 0)   /* the player's 0x9f9840 flag */
+		} else if (net_playerInUse(i) == 1 && p->team < 0)   /* the player's g_netSlots flag */
 			scene->noTeamCount++;
 	}
 	for (int k = 0; k < 16; k++)

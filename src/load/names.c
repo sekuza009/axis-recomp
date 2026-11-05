@@ -24,7 +24,7 @@ static int name_search(u32 count, u32 table, const char *name)
 	return -1;
 }
 
-/* 0x466ce0: a shape by name; 0x46b0c0: a skeleton data file by name */
+/* 0x466ce0: a shape by name; skelDat_findByName: a skeleton data file by name */
 int (shape_findByName)(const char *name) { return name_search(OBJ(g_shapeDat), (OBJ(g_shapeDat) + 0x4), name); }
 int (skelDat_findByName)(const char *name) { return name_search(OBJ(g_skelDat), (OBJ(g_skelDat) + 0x4), name); }
 
@@ -95,7 +95,7 @@ int THISCALL (tex_getIdByName)(u8 *manager, const char *name, u32 flags, u32 h1,
 }
 
 /* 0x466430 (thiscall on a shape): each of its parts (0x80 bytes from +0x14, +0x10 of them) given its texture (+0x44:
-   tex_getIdByName on the game's texture manager, 0xa0e010, by the part's name at +4, with the flags and two colours given);
+   tex_getIdByName on the game's texture manager, g_textures, by the part's name at +4, with the flags and two colours given);
    with a suffix the name gets 0x4b12f4 and the suffix appended first (too long for the 0x40 bytes: a fatal message
    first). Its callers ignore the eax it leaves */
 void THISCALL (shape_bindTextureBy)(u8 *shape, const char *suffix, int flags, int h1, int s1, int v1, int h2, int s2, int v2)
@@ -402,7 +402,7 @@ static void alpha_from(u8 *m, int have)
 		}
 }
 
-/* no colour mask: every pixel of the mask the colour at 0xa1f238 */
+/* no colour mask: every pixel of the mask the colour at g_packedRed */
 static void colour_fill(u8 *m)
 {
 	TextureBank *tm = (TextureBank *)m;
@@ -414,7 +414,7 @@ static void colour_fill(u8 *m)
 /* 0x455aa0 (thiscall on the texture bank): texture i's image (its name +0xc0128 + i * 0x68 cut at '*') loaded at
    +0x114, its alpha (alpha_from) and its colour mask at +0x80114 (or colour_fill), by the manager's format +0xc0114:
    0 items of the texture dat (name, name_ALPHA, name_COLOR: tex_findByName / tex_getItemFileBy, the decoder's tables set
-   up on first use, 0xa0e00c), 1 BMP files (name.BMP must open), 2 PTX files (name.RAW, name_ALPHA.RAW,
+   up on first use, g_ptxTablesReady), 1 BMP files (name.BMP must open), 2 PTX files (name.RAW, name_ALPHA.RAW,
    name_COLOR.RAW); a PTX of another size than +0xc0118 x +0xc011c is fatal. (The original's SEH frame, for its BMP
    objects, is not reproduced.) Its callers ignore the eax it leaves */
 void THISCALL (tex_loadImage)(u8 *m, int i)

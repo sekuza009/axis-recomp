@@ -116,7 +116,7 @@ void (menuCamera_initPoints)(void)
 }
 
 /* 0x440d70: the main menu's replay list opened: its state, a dialog open, its frame, the 1024 records (0x44 bytes
-   from 0x9dda88) cleared, the layout and the replay files listed. Returns the listing's eax */
+   from g_replayList) cleared, the layout and the replay files listed. Returns the listing's eax */
 u32 (replayList_open)(void)
 {
 	g_replayFileCount = 0;
@@ -135,7 +135,7 @@ u32 (replayList_open)(void)
 }
 
 /* 0x430bf0: the front end's start-up: the chat history cleared, then six steps (colours; three table builders, the key
-   repeat records, the menu's records), each counted on the progress bar (0x4dda34), drawn, and followed by a 2-second
+   repeat records, the menu's records), each counted on the progress bar (g_loadStep), drawn, and followed by a 2-second
    wait. Returns the last progress drawing's eax */
 u32 (frontEnd_startUp)(void)
 {

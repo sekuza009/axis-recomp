@@ -36,7 +36,7 @@ void (app_setDataPaths)(void)
 	copy_name(OBJ(g_stageDir), 0x105, (const char *)STR(0x4b0498, "stage/"));
 }
 
-/* ---- the chat input line (0x400 bytes at 0x9dc92c) and its three-line history ---- */
+/* ---- the chat input line (0x400 bytes at g_chatLine) and its three-line history ---- */
 /* 0x431560: the line emptied, in input mode mode */
 void (menu_clearInputBuffer)(int mode)
 {
@@ -53,7 +53,7 @@ void (chat_pushHistory)(void)
 	memcpy((void *)OBJ(g_chatHistory), (void *)OBJ(g_chatLine), 0x400);
 }
 
-/* 0x41ee40: message i of the 0x80-byte table at 0x74de24 shown in the message box */
+/* 0x41ee40: message i of the 0x80-byte table at g_messages shown in the message box */
 void (menu_showMessage)(int i)
 {
 	g_dialogPending = 1;
@@ -87,7 +87,7 @@ void (arena_clearSessionEntry)(void)
 	e->ping = 0;
 }
 
-/* ---- the saved mech (0x4dc878 parts, 0x4dcf18 weapons, 0x4dcfe0 colours) ---- */
+/* ---- the saved mech (g_savedMechParts parts, g_savedMechWeapons weapons, g_savedColourChoices colours) ---- */
 /* 0x430390: the empty mech: no weapons, part 0, colour pairs (0,1,0) (0,1,0) */
 void (mech_setEmpty)(void)
 {
@@ -101,7 +101,7 @@ void (mech_setEmpty)(void)
 		memcpy((void *)RELOC(p), colour, 24);
 }
 
-/* 0x40ddb0: the mech unpacked from the network / profile record at 0x9dd5f8 (signed bytes: five parts, the weapons,
+/* 0x40ddb0: the mech unpacked from the network / profile record at g_roomMech (signed bytes: five parts, the weapons,
    then the colours) */
 void (mech_unpackFromRecord)(void)
 {
@@ -179,7 +179,7 @@ void (menu_clickStartFade)(void)
 	}
 }
 
-/* ---- the ranking's pages: page 0x9dd6ac of 0x9dd4b8 (at most 99), the page before in 0x9dd1b4 ---- */
+/* ---- the ranking's pages: page g_rankingPage of g_roomListPages (at most 99), the page before in g_rankingPrevPage ---- */
 static void room_pageChanged(void)
 {
 	g_rankingRequestPending = 1;
@@ -210,7 +210,7 @@ void (ranking_nextPage)(void)
 	}
 }
 
-/* 0x4359f0: the list's mode cycled 0 .. 2 (the one before kept in 0x9dd300), its distance limit back to 10,000,000 */
+/* 0x4359f0: the list's mode cycled 0 .. 2 (the one before kept in g_rankingPrevSort), its distance limit back to 10,000,000 */
 void (ranking_cycleSort)(void)
 {
 	int mode = g_rankingSort;
@@ -221,7 +221,7 @@ void (ranking_cycleSort)(void)
 	g_rankingSort = (mode + 1) % 3;
 }
 
-/* the value a row is ranked by in mode (0x9dd1d0): 0 its power, 1 its kills, 2 its exp, 3 its rate; another mode
+/* the value a row is ranked by in mode (g_rankingSort): 0 its power, 1 its kills, 2 its exp, 3 its rate; another mode
    keeps the one before (0: none) */
 static int rank_value(const RankRow *row, int mode, long double *value)
 {
@@ -238,10 +238,10 @@ static int rank_value(const RankRow *row, int mode, long double *value)
 	return 1;
 }
 
-/* 0x435770: the ranking's page of ten rows (0x44 bytes from 0x9dceec) filled from the players received (62-byte
-   records from 0xa05330, up to the first without a name): each row its rank (page 0x9dd6ac * 10 + its place) or,
+/* 0x435770: the ranking's page of ten rows (0x44 bytes from g_roomJoinPassword4) filled from the players received (62-byte
+   records from g_netPlayerList, up to the first without a name): each row its rank (page g_rankingPage * 10 + its place) or,
    when its value (rank_value) equals the row's before, that row's rank; the page before's last value and rank
-   (0x9dd384, 0x9dd328) start the comparison, and this page's are kept there for the next */
+   (g_roomListDistanceLimit, g_rankingPrevRank) start the comparison, and this page's are kept there for the next */
 void (ranking_fillPage)(void)
 {
 	RankRow *rows = g_rankingRows;
@@ -384,7 +384,7 @@ void (skirmish_briefingClicks)(void)
 	g_skirmishPage = 10;
 }
 
-/* ---- leaving the skirmish screen (0x443c80) or the mission settings (0x447960): the screen's state cleared, the
+/* ---- leaving the skirmish screen (skirmish_leave) or the mission settings (missionSettings_leave): the screen's state cleared, the
    view squeezed (aspect 0.1) to open out again, the camera to (?, 0, 1600) looking ahead, a sound, the menu camera
    put back. Both return what that leaves in eax ---- */
 #define put_camera_back() GAME_FN(menu_restoreCamera, 0x447910, u32, void)()   /* menu_restoreCamera */
@@ -420,8 +420,8 @@ u32 (newIdConfirm_keys)(void)
 	return r;
 }
 
-/* 0x445be0: the skirmish screen drawn: the background (when 0x9eeba8), the map list unless closing (state
-   2), the camera; then while open (state past 1) the dialog's frame if one is open, else the screen A (0x9ef1f8 10)
+/* 0x445be0: the skirmish screen drawn: the background (when g_skirmishDrawBackground), the map list unless closing (state
+   2), the camera; then while open (state past 1) the dialog's frame if one is open, else the screen A (g_skirmishPage 10)
    or B (20). Returns what the original leaves in eax */
 u32 (menuState900_skirmishSetup)(void)
 {
@@ -462,9 +462,9 @@ u32 (skirmish_briefingKeys)(void)
 	return r;
 }
 
-/* ---- the mission select (selection 0x9f63b4) ---- */
-/* 0x4479d0: mission sel chosen: its 32-byte record (0x907b30) as the current one (0x67fb44), its three values from the
-   0x5c-byte records of g_skirmishInfo (+0x4c ..), the settings left, mission mode (0x67ef14 = 1, 0x5ae9c4 = 3) */
+/* ---- the mission select (selection g_missionShown) ---- */
+/* 0x4479d0: mission sel chosen: its 32-byte record (g_mapNames) as the current one (g_mapTitle), its three values from the
+   0x5c-byte records of g_skirmishInfo (+0x4c ..), the settings left, mission mode (g_quitAsked = 1, g_matchMode = 3) */
 u32 (mission_choose)(void)
 {
 	int sel = g_missionShown;
@@ -536,7 +536,7 @@ u32 (chat_closeLine)(int ok)
 	return r;
 }
 
-/* 0x431950: any of three keys closes the message box (0x4df900). Returns the last key's state */
+/* 0x431950: any of three keys closes the message box (g_dialogPending). Returns the last key's state */
 u32 (messageBox_keyClose)(void)
 {
 	static const u32 keys[3] = { ADDR(g_dikEnter), ADDR(g_dikSpace), ADDR(g_dikEscape) };
@@ -551,7 +551,7 @@ u32 (messageBox_keyClose)(void)
 	return r;
 }
 
-/* 0x4318b0: any of three keys starts the menu's fade (0x4df01c, once; its timer 0x4e0458 from 0). Returns what the
+/* 0x4318b0: any of three keys starts the menu's fade (g_titleShown, once; its timer g_titleFrames from 0). Returns what the
    original leaves in eax */
 u32 (menu_keyStartFade)(void)
 {
@@ -569,8 +569,8 @@ u32 (menu_keyStartFade)(void)
 	return r;
 }
 
-/* 0x442d10: the replay list's visible names: up to 10 rows, 20 pixels apart, from the first shown (0x9dd92c) of the
-   0x9dd928 replays (0x44-byte records from 0x9dda88): a flagged one (+0x40) on a red bar with yellow text, the others
+/* 0x442d10: the replay list's visible names: up to 10 rows, 20 pixels apart, from the first shown (g_replaySelectFirst) of the
+   g_replayFileCount replays (0x44-byte records from g_replayList): a flagged one (+0x40) on a red bar with yellow text, the others
    pale blue. Returns the last text_draw8's eax (0 with no rows) */
 u32 (replaySelect_drawNames)(void)
 {
@@ -602,7 +602,7 @@ static u32 to_pilot_screen(void)
 	return GAME_FN(debug_traceStripped, 0x48b420, u32, void)();
 }
 
-/* main menu choice i (with its sound; 0x4dda44 cleared): 0 SKIRMISH PLAY (menuState500_enter), 1 MULTIPLAY VIA
+/* main menu choice i (with its sound; g_cursorBlink cleared): 0 SKIRMISH PLAY (menuState500_enter), 1 MULTIPLAY VIA
    INTERNET (the arena lobby, next screen 400), 2 LADDER GAME (net_connect, then net_asyncSelect; messages 0x2a / 0x29
    when they fail; the game room, next screen 800), 3 the setup (600), 4 TO CUSTOMIZE (the ARM CENTER,
    armc_enterParts), 5 EXIT (back to the pilot screen). The original's eax into *r; 1 when a failure ended the
@@ -642,8 +642,8 @@ static int menu_choice(int i, u32 *r)
 	}
 }
 
-/* 0x4419d0: the main menu clicked (not while it is fading in (0x9db994 = 1); the replay selection dialog first if open):
-   its six buttons (outlines 0x2c bytes apart from 0x4deb80) as menu_choice. A right click goes back to the pilot screen too when
+/* 0x4419d0: the main menu clicked (not while it is fading in (g_replayZoomIn = 1); the replay selection dialog first if open):
+   its six buttons (outlines 0x2c bytes apart from g_mainMenuOutlines) as menu_choice. A right click goes back to the pilot screen too when
    there are tunnel rings (g_tunnelRings > 0). Returns what the original leaves in eax */
 u32 (mainmenu_clicks)(void)
 {
@@ -672,7 +672,7 @@ u32 (mainmenu_clicks)(void)
 
 /* 0x441e00: the main menu's keys (not while fading in; the replay selection dialog's keys (replaySelect_keys) when open):
    the six choices' keys as menu_choice, the back key quitting (without saving) when started from the launcher, and
-   the replay selection key (0x440d70, the dialog opened). Returns what the original leaves in eax */
+   the replay selection key (replayList_open, the dialog opened). Returns what the original leaves in eax */
 u32 (mainmenu_processKeys)(void)
 {
 	static const u32 key[6] = { ADDR(g_dikK), ADDR(g_dikM), ADDR(g_dikL), ADDR(g_dikS), ADDR(g_dikA), ADDR(g_dikX) };

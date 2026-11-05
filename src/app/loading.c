@@ -69,10 +69,10 @@ static void info_line(int row, const char *text)
 	text_drawSized(0x96, row * 16 + 0x46, text, 0x10);
 }
 
-/* 0x469320 (progress, as bits): the loading screen: cleared to blue, the backdrop (0xa0e980) on the inside of a
+/* 0x469320 (progress, as bits): the loading screen: cleared to blue, the backdrop (g_loadTexture) on the inside of a
    cylinder of 18 segments, 25133 deep, its texture's v running from the progress to the progress + 10; then in
    yellow the game's title (session modes 1 / 3: a network game, replays), zone, play type (both "on receiving" while +0x1f1cb0 is 1), frag and
-   time limits, and in grey the status line 0xa0e988 */
+   time limits, and in grey the status line g_statusLine */
 void (loading_draw)(u32 progress)
 {
 	glClearColor_bits(0x3f000000, 0x3f000000, 0x3f800000, 0x3f800000);   /* glClearColor(0.5, 0.5, 1, 1) */
@@ -149,11 +149,11 @@ static void next_step(void)
 	frontEnd_drawProgress();
 }
 
-/* 0x430ca0: the menus' textures by name: the intro frames ("iftex/m_intro1" .. 4, "m2_intro1" .. 4 into 0x9dad6c),
-   the corner and box screen (0x4deb4c), the main, arena, control and ladder menus' pairs (0x76d478 / 0x4df040 /
-   0x5b1978 / 0x4df904), the six spirals (0x9da45c), then "gameconnect" (0x4df450), "option" (0x9db0a4, the
-   buttons), "mouse" (0x4e152c), "cylinder" (0x4e186c), "cylinder_menu" (0x76d36c), "menu34" (0x4e0cd0, the tunnel)
-   and "character" (0x4dfa00); first a step and a wait of 2 */
+/* 0x430ca0: the menus' textures by name: the intro frames ("iftex/m_intro1" .. 4, "m2_intro1" .. 4 into g_introTextures),
+   the corner and box screen (g_menuFrameTextures), the main, arena, control and ladder menus' pairs (g_mainMenuTextures / g_arenaMenuTextures /
+   g_ctrlMenuTextures / g_ladderMenuTextures), the six spirals (g_spiralTextures), then "gameconnect" (g_gameConnectTexture), "option" (g_buttonTexture, the
+   buttons), "mouse" (g_cursorTexture), "cylinder" (g_tunnelTexture), "cylinder_menu" (g_cageTexture), "menu34" (g_menuTunnelTexture, the tunnel)
+   and "character" (g_characterTexture); first a step and a wait of 2 */
 void (menu_loadTextures)(void)
 {
 	static const u32 intro[8] = { STR(0x4b25dc, "iftex/m_intro1"), STR(0x4b25cc, "iftex/m_intro2"), STR(0x4b25bc, "iftex/m_intro3"), STR(0x4b25ac, "iftex/m_intro4"), STR(0x4b259c, "iftex/m2_intro1"), STR(0x4b258c, "iftex/m2_intro2"), STR(0x4b257c, "iftex/m2_intro3"), STR(0x4b256c, "iftex/m2_intro4") };
@@ -194,12 +194,12 @@ void (menu_loadTextures)(void)
 }
 #undef T
 
-/* 0x430400: the start-up load: the key tables (0x4d1688, 0x4d1a98) cleared, the settings, tables and lists loaded,
-   the text area the whole screen, the timer; DirectInput made once (0x9dbf0c; failure: a message box, 0); unless
-   0x76d410 the data files checked (failure: the message 0x4b04b0, 0); the sound (0xa0e80c: it works; then the menu
+/* 0x430400: the start-up load: the key tables (g_keyTable1, g_keySeen) cleared, the settings, tables and lists loaded,
+   the text area the whole screen, the timer; DirectInput made once (g_directInputMade; failure: a message box, 0); unless
+   g_startedFromLobby the data files checked (failure: the message 0x4b04b0, 0); the sound (g_soundOn: it works; then the menu
    sounds); the pointer at 310, 230, the keys' table; the CD (failure: a message box, 0); the six texture banks (with the
-   linear filtering and mipmap settings, 0x83a9cc / 0x83a9d0) gathered into 0x83a5e0 (g_textures), the font, four textures by name, the shape and
-   skeleton files, the scene (0x2343acb bytes, constructed; 0 if not had) into 0x9087b4, the sound table, the logo;
+   linear filtering and mipmap settings, g_cfgLinearFilter / g_cfgMipmaps) gathered into g_textureManager (g_textures), the font, four textures by name, the shape and
+   skeleton files, the scene (0x2343acb bytes, constructed; 0 if not had) into g_scene, the sound table, the logo;
    then the camera and menu defaults. Returns 1 (0 on a failure) */
 int (app_startupLoad)(void *instance)
 {
@@ -345,14 +345,14 @@ static char *bfd_name(u8 *g, char *out)
 	return out;
 }
 
-/* 0x468750 (thiscall on the game object): one step of loading per call. The first (+0x233cc28 0) resets the
-   loading lines to the title. By the stage (+0x233cc24): 0 the replay file's header (mode 3: version 0x1201, the
-   map, the players' names, the type), the scene reset; 1 the map named (0x9dad94 into 0x907b30: none ends it, 0xa0ea94
+/* 0x468750 (thiscall on the game object): one step of loading per call. The first (modeStarted 0) resets the
+   loading lines to the title. By the stage (loadStage): 0 the replay file's header (mode 3: version 0x1201, the
+   map, the players' names, the type), the scene reset; 1 the map named (g_missionStage into g_mapNames: none ends it, g_mapMissing
    set); 2 waiting for the stage's play information (the network drained into net_processGamePacket; a timeout
-   +0x2342395 against K 0x4a93d0, too many players or the game menu keys (g_keyGameMenu) stop it); 3 the ground; 4 the
+   lostTime against K k_5f, too many players or the game menu keys (g_keyGameMenu) stop it); 3 the ground; 4 the
    objects; 5 the collision volume; 6 the crosshair and the play information; 7 the mission and (mode 0) the actors; 8
-   the game started (+0x233cc20 by the mode). Each stage adds a line (the next depends on the mode +8); every step but
-   the last draws the screen. Returns +0x233cc20, or 0 once Esc or the stop is seen or the map has no name */
+   the game started (matchState by the mode). Each stage adds a line (the next depends on the mode +8); every step but
+   the last draws the screen. Returns matchState, or 0 once Esc or the stop is seen or the map has no name */
 u32 THISCALL (game_processLoadingMode)(u8 *g)
 {
 	char name[0x100], path[0x100];

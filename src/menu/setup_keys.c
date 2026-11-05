@@ -111,7 +111,7 @@ static u32 graphics_apply(void)
 	return r;
 }
 
-/* 0x422d20: the graphics tab's keys: OK (0x4e0cd4) as graphics_apply, back / cancel close the page */
+/* 0x422d20: the graphics tab's keys: OK (g_dikA) as graphics_apply, back / cancel close the page */
 void (setup_graphicTabKeys)(void)
 {
 	if (input_justPressed(g_dikA))
@@ -181,7 +181,7 @@ void (setup_selectControlTab)(void)
 	tab_opened();
 }
 
-/* ---- the control bindings: 32 pairs (primary, secondary), "none" being the value at 0x4df8e4 ---- */
+/* ---- the control bindings: 32 pairs (primary, secondary), "none" being the value at g_dikNone ---- */
 static const u32 bindings[32] = { OBJ(g_controlsEdit), (OBJ(g_controlsEdit) + 0x8), (OBJ(g_controlsEdit) + 0x10), (OBJ(g_controlsEdit) + 0x18), (OBJ(g_controlsEdit) + 0x20), (OBJ(g_controlsEdit) + 0x28), (OBJ(g_controlsEdit) + 0x30), (OBJ(g_controlsEdit) + 0x38),
                                   (OBJ(g_controlsEdit) + 0x40), (OBJ(g_controlsEdit) + 0x48), (OBJ(g_controlsEdit) + 0x50), (OBJ(g_controlsEdit) + 0x58), (OBJ(g_controlsEdit) + 0x60), (OBJ(g_controlsEdit) + 0x78), (OBJ(g_controlsEdit) + 0x80), (OBJ(g_controlsEdit) + 0x88),
                                   (OBJ(g_controlsEdit) + 0x90), (OBJ(g_controlsEdit) + 0x68), (OBJ(g_controlsEdit) + 0x70), (OBJ(g_controlsEdit) + 0x98), (OBJ(g_controlsEdit) + 0xa0), (OBJ(g_controlsEdit) + 0xa8), (OBJ(g_controlsEdit) + 0xb0), (OBJ(g_controlsEdit) + 0xb8),
@@ -218,7 +218,7 @@ void (setup_unbindKey)(int k)
 	}
 }
 
-/* 0x4220c0: the setup screen's top page clicks: a left click on one of its four buttons (outlines at 0x4df918)
+/* 0x4220c0: the setup screen's top page clicks: a left click on one of its four buttons (outlines at g_setupTopOutlines)
    opens the sound, graphics or controls tab or goes back to the main menu; a right click (when a tunnel ring is behind: g_tunnelRings > 0) goes
    back too. Returns what the original leaves in eax */
 u32 (setup_topPageClicks)(void)
@@ -259,7 +259,7 @@ u32 (setup_topPageClicks)(void)
 
 /* 0x422480: the graphics tab clicked (the page open, no message box; a right click closes it). Buttons
    (setupGraphic_hitTest): 0 the video mode on (0 .. 7, then 0), 1 .. 5 the colour depth, polygon detail, linear filtering,
-   mipmapping and frame counter switched, 6 the simple menu (with 0x9da494), 7 OK (graphics_apply), 8 close. Each
+   mipmapping and frame counter switched, 6 the simple menu (with g_texturesOff), 7 OK (graphics_apply), 8 close. Each
    with its sound. Returns what the original leaves in eax (for a switch, its old or new value) */
 u32 (setup_graphicTabClicks)(void)
 {
@@ -300,7 +300,7 @@ u32 (setup_graphicTabClicks)(void)
 	return button;
 }
 
-/* ---- the sound tab's mouse: the volume (g_soundEdited[0], 0 .. 100; 0x4dde90 the arrow last used, 0x4ddb98 its
+/* ---- the sound tab's mouse: the volume (g_soundEdited[0], 0 .. 100; g_setupPressed the arrow last used, g_setupPressedClock its
    glow) ---- */
 
 static void volume_down(void)
@@ -321,15 +321,15 @@ static void volume_up(void)
 	}
 }
 
-/* the slider set where the pointer is (its track 0x90 in from the page, 0x4ddad0) */
+/* the slider set where the pointer is (its track 0x90 in from the page, g_setupSoundLeft) */
 static void volume_at_pointer(void)
 {
 	g_volumeSetting = 1 - ftol(fmul_m((long double)(g_mouseX - g_setupSoundLeft - 0x90), k_m0_390625f));
 }
 
 /* 0x4221d0: the sound tab's mouse (an open page, no message box; a right click closes it but goes on): a click (the
-   blink clock restarted) on the volume's arrows (0 / 1) or slider (2), the sound toggles (5: 0x4dde9c 0 / 100; 6, 7:
-   0x4ddea0, 0x4ddea4), OK (8) or close (9); holding the arrows or the slider repeats once the clock passes 1 (and
+   blink clock restarted) on the volume's arrows (0 / 1) or slider (2), the sound toggles (5: g_effectsVolume 0 / 100; 6, 7:
+   g_setupSound3D, g_setupStereoReverse), OK (8) or close (9); holding the arrows or the slider repeats once the clock passes 1 (and
    restarts it). The original leaves eax to callers that ignore it */
 void (setup_soundTabClicks)(void)
 {
@@ -369,13 +369,13 @@ void (setup_soundTabClicks)(void)
 	}
 }
 
-/* ---- the controls tab: four pages of bindings (0x4ddce8), a row selected on the page (0x4de040, -1 none) ---- */
+/* ---- the controls tab: four pages of bindings (g_bindPage), a row selected on the page (g_bindRow, -1 none) ---- */
 #define g_bindToggle (g_setupToggles[0])          /* row 10's setting (on / off) */
 
 /* 0x422e10: the controls tab's keys. F1 (g_dikF1) only gives a sound. While a row waits: cancel stops waiting, any
    other key (codes 2 .. 0xdd) is bound to it. Otherwise: fire selects (row 10 toggles), up / down move along the
-   page's rows, four keys pick the page, OK takes the bindings (the copy at 0x4de0c0 into 0x4def00, axis.cfg read)
-   and closes, back or cancel closes, 0x4e0ce0 puts the defaults back (the original leaves eax to callers that
+   page's rows, four keys pick the page, OK takes the bindings (the copy at g_controlsEdit into g_keyForward, axis.cfg read)
+   and closes, back or cancel closes, g_dikD puts the defaults back (the original leaves eax to callers that
    ignore it) */
 void (setup_controlTabKeys)(void)
 {
@@ -450,10 +450,10 @@ void (setup_controlTabKeys)(void)
 }
 
 /* 0x422830: the controls tab's mouse (an open page, no message box). While a row waits for its key, a right click,
-   the wheel (down 0x9da490, up 0x76d490) or a click binds that button to it; otherwise a right click closes the page
-   (and goes on). A click picks a page (0 .. 3), OK (the bindings at 0x4de0c0 kept in 0x4def00, axis.cfg read; the
+   the wheel (down g_dikWheelDown, up g_dikWheelUp) or a click binds that button to it; otherwise a right click closes the page
+   (and goes on). A click picks a page (0 .. 3), OK (the bindings at g_controlsEdit kept in g_keyForward, axis.cfg read; the
    page closed), close, the defaults; on page 3 rows 7 / 8 toggle their setting (0x4de1c0 / 0x4de1c4), 9 drags the
-   slider and 10 / 11 step 0x4de1cc (0 .. 7); any other row control with a row selected makes it wait for a key.
+   slider and 10 / 11 step g_crosshair (0 .. 7); any other row control with a row selected makes it wait for a key.
    Holding the button on page 3's slider (once the blink clock passes 1) drags it. The original leaves eax to
    callers that ignore it */
 void (setup_controlTabClicks)(void)
@@ -521,16 +521,16 @@ void (setup_controlTabClicks)(void)
 		setup_sliderClicks();
 }
 
-/* the binding (two key slots, eight bytes from 0x4de0c0) each row of the three key pages edits; -1: none */
+/* the binding (two key slots, eight bytes from g_controlsEdit) each row of the three key pages edits; -1: none */
 static const signed char page_bindings[3][11] = {
 	{ 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, -1 },
 	{ 10, 11, 12, 15, 16, 17, 18, 13, 14, 19, 20 },
 	{ 21, 22, 23, 24, 25, 26, 28, 29, 30, 31, -1 },
 };
 
-/* 0x421680 (by use: the key pressed for the binding being edited, the page 0x4ddce8's
-   row 0x4de040): unless it is F1 (g_dikF1, never bound), the key is taken off the other bindings (setup_unbindKey) and
-   set in the row's binding: with its second slot set, the key in the first and the second cleared (0x4df8e4: none);
+/* 0x421680 (by use: the key pressed for the binding being edited, the page g_bindPage's
+   row g_bindRow): unless it is F1 (g_dikF1, never bound), the key is taken off the other bindings (setup_unbindKey) and
+   set in the row's binding: with its second slot set, the key in the first and the second cleared (g_dikNone: none);
    else into an empty first slot; else, unless the first is this key, into the second. Then the row redrawn. The
    callers ignore the eax it leaves */
 void (setup_bindKey)(int key)
@@ -553,8 +553,8 @@ void (setup_bindKey)(int key)
 	controls_fillPrimaryKeys();
 }
 
-/* the mouse-sensitivity slider's part under the cursor acted on: the minus / plus buttons step the value (0x4de1c8)
-   within 0..100 (0x4dde90 which way) and start the 5.0 highlight timer (0x4ddb98); the bar sets it from the cursor x */
+/* the mouse-sensitivity slider's part under the cursor acted on: the minus / plus buttons step the value (g_sensitivitySlider)
+   within 0..100 (g_setupPressed which way) and start the 5.0 highlight timer (g_setupPressedClock); the bar sets it from the cursor x */
 static void slider_press(void)
 {
 #define VALUE g_sensitivitySlider
@@ -580,8 +580,8 @@ static void slider_press(void)
 #undef VALUE
 }
 
-/* 0x4226b0: the slider on the control setup page: a click (0x4ded88), or the button held (0x4ded94) for over a
-   second (its timer 0x4dda44 past 0x4a9424), presses the part under the cursor, the timer starting again. Nothing
+/* 0x4226b0: the slider on the control setup page: a click (g_mouseClicked), or the button held (g_mouseButtonsHeld) for over a
+   second (its timer g_cursorBlink past k_1f), presses the part under the cursor, the timer starting again. Nothing
    uses the eax it leaves */
 void (setup_sliderClicks)(void)
 {

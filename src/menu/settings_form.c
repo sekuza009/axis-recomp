@@ -1,7 +1,7 @@
 /* settings_form.c: the game settings form, as the game room shows it and as the arena screen shows it for a new
    arena: the window, a title, the labels down the left and each value in its box, the value under the pointer drawn
    again with a shadow in yellow, the buttons, the map preview with its arrows and the custom rules button. Both
-   forms show a GameSettings record (the room's at 0x4df9c8, the new arena's at 0x4db528) in the same boxes. */
+   forms show a GameSettings record (the room's at g_roomSettingsName, the new arena's at g_newArenaName) in the same boxes. */
 #include "../game.h"
 #include <string.h>
 
@@ -180,12 +180,12 @@ static void preview_controls(const Form *f, int left, int right, int custom, con
 	text_drawBox16(X1 - 0x96, Y0 + 0xfb, X1 - 0x16, (const char *)MSG(501, "ADVANCED"));
 }
 
-/* 0x43bfe0: the game room's settings form (0x9dd1b8 .. 0x9dd1c4) for 0x4df9c8: the title 0x75a424, a cyan line, the
+/* 0x43bfe0: the game room's settings form (0x9dd1b8 .. 0x9dd1c4) for g_roomSettingsName: the title 0x75a424, a cyan line, the
    labels (MSG(397, "TITLE"), 0x80 apart), the values (the fifth row's text MSG(17, "DO NOT USE"), the modes at MSG(791, "DEATH MATCH"); hidden while
-   edited: 0x9dd380, 0x9dd6a8, 0x9dd388, 0x9dd568). Unless a field is being edited (0x68039c) or the "leave?" box is up
-   (0x907b2c), the value under the pointer (roomSettings_hitTest) highlighted. Two buttons (MSG(405, "$[0] O K"), lit from 8 unless
+   edited: g_editingRoomName, g_editingRoomPassword, g_editingFragLimit, g_editingTimeLimit). Unless a field is being edited (g_textFieldOpen) or the "leave?" box is up
+   (g_arenaUpdateNotice), the value under the pointer (roomSettings_hitTest) highlighted. Two buttons (MSG(405, "$[0] O K"), lit from 8 unless
    editing), the map preview (room_drawCustomOption), its arrows (11 / 12) and the custom rules button (13, not while
-   the map list is up, 0x4db508); the border. The caller ignores the eax it leaves */
+   the map list is up, g_mapListOpen); the border. The caller ignores the eax it leaves */
 void (room_drawGameSettings)(void)
 {
 	static const Form form = { ADDR(g_roomFormLeft), (GameSettings *)OBJ(g_roomSettingsName), { ADDR(g_editingRoomName), ADDR(g_editingRoomPassword), ADDR(g_editingFragLimit), ADDR(g_editingTimeLimit) }, MSG(791, "DEATH MATCH"),
@@ -231,10 +231,10 @@ static void box_buttons(int hovered, int lit_from)
 	}
 }
 
-/* 0x40b750: the arena screen's form for a new arena (0x4dbb00 .. 0x4dbb0c) for 0x4db528: the title 0x752c24, the
-   labels (MSG(157, "GAME NAME")), the values (the kind's name from 0x4dbba4, the modes at MSG(471, "DEATH MATCH"); hidden while edited: 0x4dbab0,
-   0x4dbacc, 0x4db850, 0x4db518). Unless a field is being edited, the confirmation (0x4db55c) or "leave?" box (0x907b2c)
-   or the map list (0x4db508) is up, the value under the pointer (createArena_hitTest) highlighted. Two buttons (MSG(165, "$[0] IPX GAME"), lit
+/* 0x40b750: the arena screen's form for a new arena (0x4dbb00 .. 0x4dbb0c) for g_newArenaName: the title 0x752c24, the
+   labels (MSG(157, "GAME NAME")), the values (the kind's name from g_arenaOnOff2, the modes at MSG(471, "DEATH MATCH"); hidden while edited: g_editingNewArenaName,
+   g_typingArenaPassword, g_editingNewArenaFragLimit, g_editingNewArenaTimeLimit). Unless a field is being edited, the confirmation (g_hostErrorBox) or "leave?" box (g_arenaUpdateNotice)
+   or the map list (g_mapListOpen) is up, the value under the pointer (createArena_hitTest) highlighted. Two buttons (MSG(165, "$[0] IPX GAME"), lit
    from 8 at 0.9) and below the second of the next pair (MSG(168, "$[0] CANCEL"), 11), the map preview (arena_drawCustomOption), its
    arrows (13 / 14) and the custom rules button (lit for kind 1). The confirmation box (MSG(168, "$[0] CANCEL") / MSG(169, "NETWORK INITIALIZE ERROR"), its buttons
    15 / 16) and the "leave?" box over the whole screen (MSG(3, "THIS PROGRAM HAS BEEN UPDATED") / MSG(4, "DO DOWNLOAD A NEW VERSION"), its buttons by arenaCreate_hitTest); the border.

@@ -18,10 +18,10 @@ static void tex_quad(float s0, float t0, float s1, float t1, int x0, int y0, int
 }
 
 /* 0x424810: the sound page (0x4ddad0 .. 0x4ddadc): the window, a cyan frame, the title 0x7533a4; the volume slider
-   from the button texture (0x9db0a4): the two arrows, the track and the bar (the volume 0x4dde98 long); while
-   0x4ddb98 runs down (by 0x4b071c, then -1 into 0x4dde90) the arrow pressed (0x4dde90: 0 / 1, or 2 / 3 a row lower)
+   from the button texture (g_buttonTexture): the two arrows, the track and the bar (the volume g_volumeSetting long); while
+   g_setupPressedClock runs down (by g_frameTime, then -1 into g_setupPressed) the arrow pressed (g_setupPressed: 0 / 1, or 2 / 3 a row lower)
    lit; the label MSG(172, "EFFECT SOUND") and three switches (MSG(173, "BGM"), 0x80 apart) with their on / off names (0x753624 + 0x80 x:
-   the volume on, 0x4ddea0, 0x4ddea4), the one under the pointer (5 .. 7, by setupSound_hitTest) yellow with a shadow; two
+   the volume on, g_setupSound3D, g_setupStereoReverse), the one under the pointer (5 .. 7, by setupSound_hitTest) yellow with a shadow; two
    buttons (MSG(178, "$[0] ACCEPT"), lit from 8) and the border. The original leaves eax to callers that ignore it */
 void (setup_drawSoundPage)(void)
 {
@@ -105,7 +105,7 @@ void (setup_drawSoundPage)(void)
 }
 
 /* 0x425460: the graphics page ("SETUP GRAPHIC"; 0x4dddd0 .. 0x4ddddc): the window, the title 0x7538a4, seven labels (0x753924, 0x80
-   apart) and their values: the screen size (the names at 0x4b04cc by 0x4ddba0) and six choices, each from its own
+   apart) and their values: the screen size (the names at g_resolutionNames by g_setupResolution) and six choices, each from its own
    table of 0x32-byte names (by 0x4ddba4 .. 0x4ddbb8); the value under the pointer (0 .. 6, by setupGraphic_hitTest) drawn
    again with a shadow, in yellow; two buttons (MSG(189, "$[0] ACCEPT"), lit from 7) and the border. The caller ignores the eax it
    leaves */
@@ -176,8 +176,8 @@ static const signed char key_rows[3][11] = {
 	{ 21, 22, 23, 24, 25, 26, 28, 29, 30, 31, -1 },
 };
 
-/* a key tab (0 .. 2): its title bright again, its labels, and each row's two keys by name (0x4b0750; the unbound
-   value 0x4df8e4 shows nothing). A fixed row is red, its one key in large type in both columns */
+/* a key tab (0 .. 2): its title bright again, its labels, and each row's two keys by name (g_keyNames; the unbound
+   value g_dikNone shows nothing). A fixed row is red, its one key in large type in both columns */
 static void key_tab(int tab)
 {
 #define X0 g_setupControlLeft
@@ -213,9 +213,9 @@ static void key_tab(int tab)
 }
 
 /* the fourth tab: its title, labels (0x7560a4, and 0x756224 lower), the two switches (0x4de1c0 / 0x4de1c4: on
-   MSG(119, "ON"), off MSG(118, "OFF")), the sensitivity slider (0x4de1c8, its arrows lit while 0x4ddb98 runs down: 0x4dde90 0 /
-   1) and the crosshair 0x4de1cc: when it changed (from 0x4b04f8) its texture looked up again (0 .. 7: the path
-   "texture/crosshair/crosshair<n>"; others keep the path in 0x4ddb58) into 0x4e0c8c, drawn in a box */
+   MSG(119, "ON"), off MSG(118, "OFF")), the sensitivity slider (g_sensitivitySlider, its arrows lit while g_setupPressedClock runs down: g_setupPressed 0 /
+   1) and the crosshair g_crosshair: when it changed (from g_lastCrosshair) its texture looked up again (0 .. 7: the path
+   "texture/crosshair/crosshair<n>"; others keep the path in g_crosshairName) into g_crosshairTexture, drawn in a box */
 static void settings_tab(void)
 {
 #define X0 g_setupControlLeft
@@ -278,9 +278,9 @@ static void settings_tab(void)
 }
 
 /* 0x425cd0 (the controls page, 0x4dde80 .. 0x4dde8c): the window, cyan lines,
-   the column heads (MSG(206, "KEY FUNCTION") ..), the four tab titles (MSG(202, "$[0] MOVE"), 0x80 apart; dim, the current one, 0x4ddce8, bright
-   again). The row under the pointer (setupControl_hitTest: 7 .. 17, kept in 0x4de040; -1 for rows the tab lacks and its fixed
-   ones) lit blue, or the row being edited (0x4dddc8) magenta. The tab's rows; three buttons (MSG(209, "$[0] ACCEPT"), lit from 4
+   the column heads (MSG(206, "KEY FUNCTION") ..), the four tab titles (MSG(202, "$[0] MOVE"), 0x80 apart; dim, the current one, g_bindPage, bright
+   again). The row under the pointer (setupControl_hitTest: 7 .. 17, kept in g_bindRow; -1 for rows the tab lacks and its fixed
+   ones) lit blue, or the row being edited (g_bindWaiting) magenta. The tab's rows; three buttons (MSG(209, "$[0] ACCEPT"), lit from 4
    unless editing); the help line (MSG(212, "Press ENTER or CLICK to change") over a row, MSG(213, "Press NEW-KEY to set |Press ESC to ca...") while editing) and the border. The caller ignores
    the eax it leaves */
 void (setup_drawControlsPage)(void)
@@ -409,8 +409,8 @@ static void stripes(int right, float h)
 #undef S_RIGHT
 }
 
-/* the panels' pulse bounced between 0 and 100 (by 0x4df010 a frame; turn_only: only turned round, not clamped there)
-   and the stripes scrolled on (0x4deda8 a frame, back to 0 at 200) */
+/* the panels' pulse bounced between 0 and 100 (by g_tunnelPulseStep a frame; turn_only: only turned round, not clamped there)
+   and the stripes scrolled on (g_menuTunnelSpeed a frame, back to 0 at 200) */
 static void tunnel_advance(int turn_only)
 {
 	const float *frame = (const float *)ADDR(g_frameTime);
@@ -434,12 +434,12 @@ static void tunnel_advance(int turn_only)
 		g_setupStripeScroll = 0;
 }
 
-/* 0x423e50: the tunnel behind the setup pages (3D projection): its alpha (0x4de038) eases to 0.3 (mode 0x4ddcec 1)
-   or 0.5 (mode 0); then layers of four walls (each under the menu camera, pushed back by 0x4ddd90 and turned by
-   -35 / 35, the far two the other way): layer 0 the panels (texture 0x4e0cd0, dimmed as the pulse rises), layer 1
+/* 0x423e50: the tunnel behind the setup pages (3D projection): its alpha (g_setupTunnelAlpha) eases to 0.3 (mode g_setupPage 1)
+   or 0.5 (mode 0); then layers of four walls (each under the menu camera, pushed back by g_setupTunnelDepth and turned by
+   -35 / 35, the far two the other way): layer 0 the panels (texture g_menuTunnelTexture, dimmed as the pulse rises), layer 1
    the scrolling stripes (the same texture, in the original's colour 1, 1, 10, 0.4), layer 2 nothing, layer 3 a
-   strip of 0x5b1978 a tenth further out, brighter by 0.2. After, the pulse bounces between 0 and 100 (by 0x4df010)
-   and the stripes scroll on (0x4deda8 a frame, back to 0 at 200). The original leaves eax to callers that ignore
+   strip of g_ctrlMenuTextures a tenth further out, brighter by 0.2. After, the pulse bounces between 0 and 100 (by g_tunnelPulseStep)
+   and the stripes scroll on (g_menuTunnelSpeed a frame, back to 0 at 200). The original leaves eax to callers that ignore
    it */
 void (setup_drawTunnel)(void)
 {
@@ -546,11 +546,11 @@ void (setup_drawTunnel)(void)
 	tunnel_advance(0);
 }
 /* the menus' tunnel (mission select, skirmish, ARM CENTER): four layers of six walls (each under the menu camera,
-   pushed back 550 and turned by -40 / 0 / 40, the far three the other way): layer 0 the panels (texture 0x4e0cd0,
+   pushed back 550 and turned by -40 / 0 / 40, the far three the other way): layer 0 the panels (texture g_menuTunnelTexture,
    10 high, dimmed from 0.5 as the pulse rises), layer 1 the stripes (the same texture, in the colour 1, 1, 10,
-   0.4), layer 2 nothing (its texture 0x76d47c bound, the walls' turns still made), layer 3 a strip of 0x76d478 a
-   tenth further out (alpha 0.7); then the hovered panel's glow (0x680398: 0x680ccc bouncing between 2 and 38 by
-   0x4df454; clamped there when clamp is set) and the pulse and scroll stepped on. The deep ones (deep): the panels
+   0.4), layer 2 nothing (its texture 0x76d47c bound, the walls' turns still made), layer 3 a strip of g_mainMenuTextures a
+   tenth further out (alpha 0.7); then the hovered panel's glow (g_panelHovered: g_panelGlow bouncing between 2 and 38 by
+   g_panelGlowStep; clamped there when clamp is set) and the pulse and scroll stepped on. The deep ones (deep): the panels
    purple, the stripes red, layer 2 drawn (fully transparent) */
 typedef struct {
 	u32 depth;             /* how far the walls are pushed back (float bits) */
@@ -560,13 +560,13 @@ typedef struct {
 	int clamp;
 	int turn_only;         /* the pulse only turned round at its ends */
 	int walls;             /* 6: three places a side (turned -40 / 0 / 40), 4: two (-35 / 35) */
-	const float *height;   /* the panels' half height (10 at 0x4a9418, 12 at 0x4a9410) */
-	const float *step;     /* layer 3's strip a place down the texture (0.15625 at 0x4a9478, 0.25 at 0x4a941c) */
+	const float *height;   /* the panels' half height (10 at k_10f, 12 at k_12f) */
+	const float *step;     /* layer 3's strip a place down the texture (0.15625 at k_0_15625f, 0.25 at k_0_25f) */
 	float t0, t1;          /* layer 3's strip's top on the far walls, and its height there */
 } Tunnel;
 
 /* the hovered menu panel: on, the wall whose layer 2 panel glows (-1: none), in the colour glow (r, g, b; its alpha
-   falling as the glow, 0x680ccc, rises); with layer3, layer 3's panels at 0.6 and the hovered one fading from 1;
+   falling as the glow, g_panelGlow, rises); with layer3, layer 3's panels at 0.6 and the hovered one fading from 1;
    white_stripes: the stripes plain (alpha 0.4); keep_texture: texturing left on (the caller turns it off) */
 typedef struct { int on; const float *glow; int layer3, white_stripes, keep_texture; } Highlight;
 
@@ -701,9 +701,9 @@ static void menu_tunnel(const Tunnel *t, const Highlight *h)
 	tunnel_advance(t->turn_only);
 }
 
-/* 0x448140: the mission-select screen's tunnel; 0x4445a0 / 0x411110: the skirmish and ARM CENTER screens' (the glow
-   clamped); 0x411ab0: the ARM CENTER's deep one (1650 back, its pulse only turned round); 0x4388e0: the game room's
-   (as deep as 0x9dd698). The originals leave eax to callers that ignore it */
+/* 0x448140: the mission-select screen's tunnel; skirmish_drawTunnel / armc_drawTunnel: the skirmish and ARM CENTER screens' (the glow
+   clamped); armc_drawPreviewTunnel: the ARM CENTER's deep one (1650 back, its pulse only turned round); room_drawTunnel: the game room's
+   (as deep as g_roomTunnelDepth). The originals leave eax to callers that ignore it */
 static const Highlight none = { -1, NULL, 0, 0, 0 };
 static const float white[3] = { 1.0f, 1.0f, 1.0f };
 #define SIX_WALLS 6, (const float *)ADDR(k_10f), k_0_15625f, 0.46875f, 0.625f
@@ -719,7 +719,7 @@ void (room_drawTunnel)(void)
 	Tunnel t = { g_roomTunnelDepth, OBJ(g_ladderMenuTextures) + 12, 1, 1, 1, 0, SIX_WALLS };
 	menu_tunnel(&t, &h);
 }
-/* 0x4091b0: the arena lobby's (as deep as 0x4dba68; four walls) */
+/* 0x4091b0: the arena lobby's (as deep as g_arenaTunnelDepth; four walls) */
 void (arena_drawTunnel)(void)
 {
 	static const Highlight h = { -1, white, 0, 0, 0 };
@@ -737,8 +737,8 @@ static void caption(u32 captions, int on)
 }
 
 /* the menu panel under the pointer: the first of count outlines (menu_pointInPolygon's, 0x2c bytes apart from outlines)
-   holding it, none (-1) while locked; 0x680398 tells whether there is one, and a new one restarts the glow (0x907b24
-   the last, 0x680ccc 40, 0x4df454 -1) */
+   holding it, none (-1) while locked; g_panelHovered tells whether there is one, and a new one restarts the glow (g_lastPanel
+   the last, g_panelGlow 40, g_panelGlowStep -1) */
 static int hovered_panel(u32 outlines, int count, int locked)
 {
 	int on = -1;
@@ -756,7 +756,7 @@ static int hovered_panel(u32 outlines, int count, int locked)
 	return on;
 }
 
-/* 0x437e00: the game room's menu: the panel under the pointer (six, 0x9daf88; none while 0x9dd7d8), the room's
+/* 0x437e00: the game room's menu: the panel under the pointer (six, g_roomOutlines; none while g_roomDialogOpen), the room's
    tunnel with that panel glowing, and with the room camera arrived (g_roomCameraMode 2) its caption (MSG(91, "SETUP ID|Hotkey is $[5] P"), 0x80 apart) at the bottom. The
    original leaves eax to callers that ignore it */
 void (room_drawMenu)(void)
@@ -769,9 +769,9 @@ void (room_drawMenu)(void)
 		caption(MSG(91, "SETUP ID|Hotkey is $[5] P"), h.on);
 }
 
-/* 0x408680: the arena lobby's top menu: the panel under the pointer (four, 0x5b1cf8; none while 0x4db85c), the
-   arena tunnel (as deep as 0x4dba68) with that panel lit, and in mode 2 (0x4dbb3c) its caption (MSG(86, "SETUP PLAYER FOR THE MULTIPLAY|Hotkey...")) unless
-   0x680370. The original leaves eax to callers that ignore it */
+/* 0x408680: the arena lobby's top menu: the panel under the pointer (four, g_lobbyTopOutlines; none while g_lobbyPanelsOff), the
+   arena tunnel (as deep as g_arenaTunnelDepth) with that panel lit, and in mode 2 (g_arenaCameraMode) its caption (MSG(86, "SETUP PLAYER FOR THE MULTIPLAY|Hotkey...")) unless
+   g_menuCameraMove. The original leaves eax to callers that ignore it */
 void (lobbyTop_drawMenu)(void)
 {
 	Highlight h = { hovered_panel(OBJ(g_lobbyTopOutlines), 4, g_lobbyPanelsOff), white, 1, 0, 0 };
@@ -781,8 +781,8 @@ void (lobbyTop_drawMenu)(void)
 		caption(MSG(86, "SETUP PLAYER FOR THE MULTIPLAY|Hotkey..."), h.on);
 }
 
-/* 0x423330: the setup screen's menu: the same over the setup tunnel's textures (0x5b197c / 0x5b1978, as deep as
-   0x4ddd90): four panels (0x4df918; none while 0x4dda60), the caption (MSG(81, "SETUP SOUND SYSTEM|Hotkey is $[5] S")) in mode 2 (0x4ddcec). The original
+/* 0x423330: the setup screen's menu: the same over the setup tunnel's textures (0x5b197c / g_ctrlMenuTextures, as deep as
+   g_setupTunnelDepth): four panels (g_setupTopOutlines; none while g_setupPanelMoving), the caption (MSG(81, "SETUP SOUND SYSTEM|Hotkey is $[5] S")) in mode 2 (g_setupPage). The original
    leaves eax to callers that ignore it */
 void (setup_drawMenu)(void)
 {
@@ -792,11 +792,11 @@ void (setup_drawMenu)(void)
 	if (h.on != -1 && g_setupPage == 2 && !g_menuCameraMove)
 		caption(MSG(81, "SETUP SOUND SYSTEM|Hotkey is $[5] S"), h.on);
 }
-/* 0x442050: the main menu: the panel under the pointer (six, 0x4deb80; none while the tunnel flies in, 0x9eeaa8, or
-   after one is picked, 0x9eeab4: then the idle clock 0x9dda80 and the hint's fade restart); with none the idle
-   clock runs on. The tunnel flies in (0x9eea90 from deep to -550, faster the deeper; 0x9eeab0 counts the frames)
+/* 0x442050: the main menu: the panel under the pointer (six, g_mainMenuOutlines; none while the tunnel flies in, g_tunnelFlyingIn, or
+   after one is picked, g_mainMenuPicked: then the idle clock g_menuIdleTime and the hint's fade restart); with none the idle
+   clock runs on. The tunnel flies in (g_mainMenuDepth from deep to -550, faster the deeper; g_mainMenuFrames counts the frames)
    and is drawn with the panel lit (the stripes plain); then the panel's caption (MSG(71, "SKIRMISH PLAY|Hotkey is $[5] K")), or once idle for 120
-   the hint 0x4b2a98 fading in and out (0x9eea8c by 0x9dd948), unless 0x680370. The original leaves eax to callers
+   the hint 0x4b2a98 fading in and out (g_menuHintClock by g_menuHintStep), unless g_menuCameraMove. The original leaves eax to callers
    that ignore it */
 void (menu_mainMenu)(void)
 {
@@ -871,9 +871,9 @@ void (menu_mainMenu)(void)
 #undef g_setupStripeScroll
 #undef g_tunnelPulse
 
-/* 0x4277c0: the setup panel eased in (0x4dda60 while it moves): its position (0x4de03c) moves the rest of the
-   way to 0x4a9448 times 0x4b071c x 0x4a93ec; the distance left (0x4ddd90) runs down by the same step, and once it
-   is no longer above the double at 0x4a9440 the motion stops and the distance is set to -1650 */
+/* 0x4277c0: the setup panel eased in (g_setupPanelMoving while it moves): its position (g_setupPanelPos) moves the rest of the
+   way to k_setupPanelTarget times g_frameTime x k_tenthsToDegrees; the distance left (g_setupTunnelDepth) runs down by the same step, and once it
+   is no longer above the double at k_setupPanelEnd the motion stops and the distance is set to -1650 */
 void (setup_easePanel)(void)
 {
 	typedef long double X;

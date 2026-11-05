@@ -95,9 +95,9 @@ static void object_glow(u8 *s, u8 *obj, float dt)
 	}
 }
 
-/* 0x490440 (thiscall on the scene): map object i's frame (0x2cc bytes from +0x131ae44). A running animation (speed
+/* 0x490440 (thiscall on the scene): map object i's frame (0x2cc bytes from objects). A running animation (speed
    +0x29c) moves its time (+0x298) on by dt: mode 1 stops below 0 and holds at 1; mode 2 loops (by the game clock,
-   +0x20fcd40 / 44); mode 3 stops outside 0 .. 1; the pose is then out of date (+0x2a4). An out-of-date object takes
+   clockSeconds / 44); mode 3 stops outside 0 .. 1; the pose is then out of date (+0x2a4). An out-of-date object takes
    its skeleton's pose (skel_applyPose, bone 0) into its matrices (+0xf4 the pose times +0x74, inverses, +0x1f4) and
    its shading (unless flagged 2) and its centre (+0x2bc) again. Shaded twice (+0x288 1) it copies its colours and
    shades the second set. A light (flag 1, with flares on: 0x83a9c8) is projected (+0x2ac ..) and its glow (+0x2a8)
@@ -229,12 +229,12 @@ static int tag_narrow(u8 *ac, u32 k)
 }
 
 /* 0x4729b0 (thiscall on the scene): the camera for this frame at pos looking along dir (the last one kept at
-   +0x20f3994, its modelview at +0x20f39e0): its modelview (gluLookAt, +0x20f39a0), the view (fov, w / h, near, far:
-   +0x20f3a20..), its projection (gluPerspective, +0x20f3a34) and their product (+0x20f3a74). Unless both mode flags
-   (+0x2149308 / +0x214930c) are set, every active light (flag 1) glows (object_glow). Every live actor gets its
-   screen position and depth (+0x87bc); another than the viewer (+0x202e8d8) that is in view with a clear line of
+   lastCameraPos, its modelview at lastModelview): its modelview (gluLookAt, +0x20f39a0), the view (fov, w / h, near, far:
+   +0x20f3a20..), its projection (gluPerspective, +0x20f3a34) and their product (viewProjection). Unless both mode flags
+   (scriptMode / scriptRunning) are set, every active light (flag 1) glows (object_glow). Every live actor gets its
+   screen position and depth (+0x87bc); another than the viewer (selectedActor) that is in view with a clear line of
    sight also gets its name-tag corners (its radius +0x3e8 out), a too-small flag (+0x484), and unless cloaked at the
-   local player's rank or above, when the local player faces it (its facingCos against the table 0xa17f38 by
+   local player's rank or above, when the local player faces it (its facingCos against the table g_cosTable by
    the local player's heading +4), a timer (+0x87e8) for enemies of a player with a weapon and a tag size (+0x87f0
    3 when the tag is wide); +0x87e0 says it is tagged. Its callers ignore the eax it leaves */
 void THISCALL (camera_setupView)(u8 *s, const float *pos, const float *dir, const float *up, float fov, int w, int h, float nr,
@@ -338,7 +338,7 @@ void THISCALL (camera_setupView)(u8 *s, const float *pos, const float *dir, cons
 #undef K
 #undef AC
 
-/* ---- 0x476890: a particle drawn ---- */
+/* ---- particle_draw: a particle drawn ---- */
 
 #define PR ((Particle *)p)   /* the same by its fields (src/scene.fields) */
 #define ALPHA(rgba) (((u8 *)&(rgba))[3])   /* an RGBA dword's alpha byte */
@@ -470,7 +470,7 @@ static void frame16_turned(float *uv, const float *t, int i)
 }
 
 /* smoke (texture 5, the row v0..v1): ten puffs along the particle's backward direction (its matrix's rows by the
-   world's 0xa0e7c8 * -50, scaled by +0x1c), each 1.1 times the last and farther out, fading by +0x20 */
+   world's g_vecUnitZ * -50, scaled by +0x1c), each 1.1 times the last and farther out, fading by +0x20 */
 static void smoke(u8 *s, u8 *p, void *vv, int i, float v0, float v1)
 {
 	int tex = TEX(5), phase = i % 8;
@@ -508,10 +508,10 @@ static void smoke(u8 *s, u8 *p, void *vv, int i, float v0, float v1)
 	}
 }
 
-/* 0x476890 (thiscall on the scene): particle i (0x12c-byte records from +0x20a99c0: frame +0, type +8, owner
+/* 0x476890 (thiscall on the scene): particle i (0x12c-byte records from particles: frame +0, type +8, owner
    +0xc, position +0x10, matrix +0x2c, timer +0x6c of +0x70, colour +0x78 with its alpha +0x7b, radius +0x80).
-   Below type 50 it must lie in the box of +0xa08 about the camera (+0x20f3970). By type: billboards from the effect
-   textures (+0x9ccfd4..) by the fraction t of the timer gone, the effect shapes (+0x20f2e74..; the owner's part
+   Below type 50 it must lie in the box of +0xa08 about the camera (cameraPos). By type: billboards from the effect
+   textures (effectTextures..) by the fraction t of the timer gone, the effect shapes (effectShapes..; the owner's part
    shapes for debris), a trail (types 40-49: triangles through ViewVolume_addTriangle) or a quad (type 50) */
 void THISCALL (particle_draw)(u8 *s, int i, void *vv)
 {

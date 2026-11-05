@@ -1,4 +1,4 @@
-/* mission_screens.c: the mission-select screen (0x9f6308 .. 0x9f6314) for mission 0x9f63b4: its title, the map's
+/* mission_screens.c: the mission-select screen (0x9f6308 .. 0x9f6314) for mission g_missionShown: its title, the map's
    preview, the mission record (0x9db99c, 0x5c bytes a mission) and the two buttons */
 #include "../game.h"
 #include <string.h>
@@ -57,7 +57,7 @@ static void mission_screen(int hovered)
 	strcat(title, map_name);
 	strcat(title, (const char *)STR(0x4b2b14, " ]"));
 	text_drawBox16(X0, Y0 + 8, X1, title);
-	/* the preview, looked up when asked for: "<0x680bc4><map>/<map>" */
+	/* the preview, looked up when asked for: "<g_stageDir><map>/<map>" */
 	if (g_missionPreviewDue) {
 		char path[128] = { 0 }, name[64];
 		strcpy(path, g_stageDir);

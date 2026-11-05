@@ -63,10 +63,10 @@ static inline double f64(long double x)
 
 
 /* 0x41fa40: the menus' frame: the cursor blink clock (100 past 1e6), the screen's set-up when it changed, its keys
-   (unless 0x9da49c is 0x68 / 0x69); a direct start from the main menu zooms in (aspect down to 0.01, the camera
+   (unless g_lobbyReply is 0x68 / 0x69); a direct start from the main menu zooms in (aspect down to 0.01, the camera
    back) and starts the match after 100; the screen's frame, the message box, the input line (menu_drawInputLine) while a text field is open, the cursor
    (not over a match or the profile intro), the buffers swapped; the view angle stepped; then the time: the FPS
-   counter (frames over each second, 0x4dd980) and the frame time (60 / the frame rate, 1 past 20). The original
+   counter (frames over each second, g_fps) and the frame time (60 / the frame rate, 1 past 20). The original
    leaves eax to callers that ignore it */
 void (menu_frame)(void)
 {
@@ -164,12 +164,12 @@ static void count_down(u8 *s, u32 offset, const float *dt)
 }
 
 /* 0x48b200 (thiscall on the scene): the playing state's frame. The match set up first when it is not yet
-   (+0x233cc28 0: match_startRound); scene_averageFrameTime (its answer dropped); the frame's time (+0x44) added to the
-   second's fraction (+0x233cc34) and to the FPS window (+0x2340c90); three countdowns (msgFade, readyTimer,
-   keyGuard). Past a whole second the seconds (+0x233cc30) take it, and the frame and packet counts of the window
-   (+0x2340c80 / +0x2340c84) become rates (+0x2340c88 / +0x2340c8c; 0 for an empty window), the window cleared. Then
-   the input, the game mode and, in state 2, the HUD pass (through the call site the patch DLL retargets). A quit (+0x23432cf 1) stops the music and answers 0; else
-   the state (+0x233cc20) */
+   (modeStarted 0: match_startRound); scene_averageFrameTime (its answer dropped); the frame's time (+0x44) added to the
+   second's fraction (secondFraction) and to the FPS window (windowTime); three countdowns (msgFade, readyTimer,
+   keyGuard). Past a whole second the seconds (wholeSeconds) take it, and the frame and packet counts of the window
+   (windowSent / windowReceived) become rates (sendRate / receiveRate; 0 for an empty window), the window cleared. Then
+   the input, the game mode and, in state 2, the HUD pass (through the call site the patch DLL retargets). A quit (quitAsked 1) stops the music and answers 0; else
+   the state (matchState) */
 int THISCALL (match_playFrame)(u8 *s)
 {
 #define SC ((Scene *)s)
@@ -215,9 +215,9 @@ int THISCALL (match_playFrame)(u8 *s)
 static int pressed2(u32 a, u32 b) { return input_justPressed(KEY(a)) || input_justPressed(KEY(b)); }
 static int held2(u32 a, u32 b) { return input_isDown(KEY(a)) || input_isDown(KEY(b)); }
 
-/* the mouse's offset from the screen centre (+0x2343293 vertical, inverted by the setting 0x4df000; +0x2343297
-   horizontal, negated when steer is set) scaled by the sensitivity (0x4df008: ((s 0.02)^2 + 1) / 2), and the
-   pointer put back in the centre (0x4ded68 / 0x4ded6c) */
+/* the mouse's offset from the screen centre (+0x2343293 vertical, inverted by the setting g_mouseInvert; +0x2343297
+   horizontal, negated when steer is set) scaled by the sensitivity (g_mouseSensitivity: ((s 0.02)^2 + 1) / 2), and the
+   pointer put back in the centre (g_mouseX / g_mouseY) */
 static void mouse_offset(u8 *s, int steer)
 {
 	SC->mouseX = g_mouseX;
@@ -256,7 +256,7 @@ static const u32 k_weaponKeys[6] = { (OBJ(g_controls) + 0x78), (OBJ(g_controls) 
    keys the player to follow (followKey); playing, the fire keys held / pressed; then every held control, the weapon keys,
    the mouse look (above 0.2 s of frame time it is still), the game menu (its keys once keyGuard is
    over), the chat keys, the camera mode cycle (respawnCameraMode), the scoreboard keys, the message log toggle cycle
-   (+0x2340ce8 / ce4 with their notices). In the in-match menu (+0x2340cf4 1) the mouse moves the selection (the
+   (messagesHidden / ce4 with their notices). In the in-match menu (escMenuOpen 1) the mouse moves the selection (the
    original's +-50 step, or the patch DLL's menu_nav where it replaced that block), and its keys choose. A network
    end (net_hostGone) quits. Its caller ignores the eax it leaves */
 void THISCALL (match_combatInput)(u8 *s)
@@ -407,13 +407,13 @@ static const u32 k_freeKeys[9][2] = { { 2, offsetof(Scene, holdAltitude) }, { 0x
                                       { 0x51, offsetof(Scene, holdUp) }, { 0x45, offsetof(Scene, holdDown) }, { 1, offsetof(Scene, holdFire) }, { 0x10, offsetof(Scene, holdBooster) } };
 
 /* 0x48a370 (thiscall on the game object): the free camera / test mode's frame. On its first frame the camera
-   presets (+0x233ca30, ten of six fields) copied to the working set (+0x233cb20), the game clock read and the
+   presets (cameraPresets, ten of six fields) copied to the working set (cameraSettings), the game clock read and the
    cursor centred. The keys (Windows virtual keys) set the input flags; ctrl with up / down zooms, else up / down /
-   left / right turn the camera (+0x233ca28 pitch within +-890, +0x233ca2c heading wrapped at 3600); space resets it;
-   Z / X (or shift with them) step the local player's (+0x234240d) parts held by F1 .. F6 down / up through their
+   left / right turn the camera (cameraAngle pitch within +-890, cameraAngle[1] heading wrapped at 3600); space resets it;
+   Z / X (or shift with them) step the local player's (localPlayer) parts held by F1 .. F6 down / up through their
    tables (the weapon slot by its item, selected again); the camera is placed behind the actor (camera_setupView);
    unless scenePaused (never set) the actors, bullets and particles move and the actor's ammunition is halved; the
-   scene is drawn, with a 100 x 150 grid of lines about the actor when +0x2340cd0. Returns 0 once Esc was pressed,
+   scene is drawn, with a 100 x 150 grid of lines about the actor when debugGrid. Returns 0 once Esc was pressed,
    else 3 (this mode again) */
 u32 THISCALL (match_freeCamFrame)(u8 *s)
 {
@@ -624,7 +624,7 @@ static void unfollow(u8 *s)
 	start_view(s);
 }
 
-/* the game's next random number below n (its table 0xa106f8 by the counter 0xa1efb8) */
+/* the game's next random number below n (its table g_randTable by the counter g_randPos) */
 static u32 rand_below(u32 n)
 {
 	u32 r = (*(u32 *)&g_randTable[g_randPos & 0xfff]) % n;
@@ -967,15 +967,15 @@ static const u32 k_presetKeys[10] = { ADDR(g_dikNumpad1), ADDR(g_dikNumpad2), AD
 /* the eight lines of a debug marker's star: the far corner's signs */
 static const signed char k_star[8][3] = { { 1, 1, 1 }, { -1, -1, -1 }, { 1, -1, 1 }, { -1, 1, -1 }, { -1, 1, 1 }, { 1, -1, -1 }, { -1, -1, 1 }, { 1, 1, -1 } };
 
-/* 0x487f00 (thiscall on the game object): the replay viewer's frame. On its first frame (+0x233cc28 0) the camera
+/* 0x487f00 (thiscall on the game object): the replay viewer's frame. On its first frame (modeStarted 0) the camera
    from the start view and its presets reset, the cursor centred. The keys: the free camera's moves, presets 1 .. 9
    and 0, following a player (the follow keys; the mouse buttons for the next player / preset), slow motion
-   (+0x2340d21), skip (+0x2340d25), the ranking, the HUD modes, quit; the mouse turns the view. Unless scenePaused
-   (never set) the replay file (+0x2340d08) is read up to the replay's time (+0x2340d2d): records of time, sender,
+   (replaySlow), skip (replaySkip), the ranking, the HUD modes, quit; the mouse turns the view. Unless scenePaused
+   (never set) the replay file (replayFile) is read up to the replay's time (replayTime): records of time, sender,
    length and packet handed to net_processGamePacket; at its end the next replay starts (returns 1) or the viewer
    quits. Then the scene's frame (clocks, objects, actors, bullets, particles, items), kill messages, the camera
    (free, or one of the presets about the followed player), the scene drawn (with debug markers for the map's
-   points when +0x2340cd4) and the overlay: icons for the followed player's preset and the replay clock, names,
+   points when debugPoints) and the overlay: icons for the followed player's preset and the replay clock, names,
    the ranking, the start count. Returns 0 when the viewer quits (the file closed, the music stopped), else 4 */
 u32 THISCALL (replay_frame)(u8 *s)
 {
@@ -1028,7 +1028,7 @@ u32 THISCALL (replay_frame)(u8 *s)
 			SC->manualPick[1] = 1;
 			SC->actionKey = 1;
 		}
-	/* the follow keys (all ten read the same key; with 0x67ef24 the players 11 .. 16) */
+	/* the follow keys (all ten read the same key; with g_dikLShift the players 11 .. 16) */
 	int follow = 0;
 	for (int k = 1; k <= 10; k++)
 		if (input_justPressed(g_dik1))
@@ -1052,7 +1052,7 @@ u32 THISCALL (replay_frame)(u8 *s)
 		}
 		notice_printCentre((Scene *)s, mode);
 	}
-	/* the mouse: its offset from the centre (y inverted with 0x4df000), scaled by the sensitivity, unless slow */
+	/* the mouse: its offset from the centre (y inverted with g_mouseInvert), scaled by the sensitivity, unless slow */
 	SC->mouseX = g_mouseX;
 	SC->mouseY = g_mouseY;
 	if (!(SC->frameTime >= 0.2f)) {
@@ -1261,7 +1261,7 @@ u32 THISCALL (replay_frame)(u8 *s)
 	return 0;
 }
 
-/* ---- 0x4988e0: the match's frame ---- */
+/* ---- match_frame: the match's frame ---- */
 
 
 /* the team games (odd modes up to 11) */
@@ -1596,7 +1596,7 @@ static void chat_keys(u8 *s)
 }
 
 /* 0x4988e0 (thiscall on the game object): the match's frame. The log of the last match written when asked
-   (0x9f67ec); nothing more until the match runs (+0x233c9e8). Then: the Esc menu and quitting, the local player
+   (g_writeMatchLog); nothing more until the match runs (matchDrawing). Then: the Esc menu and quitting, the local player
    joining (the network's slot, its name and record), its team or spawn, the bots' spawns, the free camera's keys
    or the player's own (actor_setInput), the view angle, the network's packets, the scene's frame (slowed at a round's
    end), the followed player when spectating, kill messages, the notices and countdowns, the network's per-player

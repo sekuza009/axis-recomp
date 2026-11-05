@@ -157,7 +157,7 @@ X (Mat4_determinant)(const float *m)
 }
 
 /* 0x47d740 Mat4_invert(out, m): out = adjugate / determinant; returns 0 (out untouched) if |det| < the double at
-   0x4aa458 or det is NaN (fcomp/test ah,1). Each entry is det3 * sign (fimul) / det rounded to float (fst) */
+   k_1em8 or det is NaN (fcomp/test ah,1). Each entry is det3 * sign (fimul) / det rounded to float (fst) */
 int (Mat4_invert)(float *out, const float *m)
 {
 	X det = Mat4_determinant(m);

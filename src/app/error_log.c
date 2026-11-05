@@ -1,6 +1,6 @@
 /* error_log.c: the game's error reporters. Each stamps the message with the local time (and an object's name),
-   appends both to ERROR.TXT when logging is on (0xa1efdc), and hands them to the error hook (0x4c57cc);
-   sys_errorTerminate and sys_fatalError then run the cleanup hook (0xa1efe8) and exit. */
+   appends both to ERROR.TXT when logging is on (g_errorLogging), and hands them to the error hook (g_errorHook);
+   sys_errorTerminate and sys_fatalError then run the cleanup hook (g_errorCleanupHook) and exit. */
 #include "../game.h"
 #include <stdarg.h>
 
@@ -12,7 +12,7 @@ typedef void (*Cleanup)(void);
 
 #define fseek(f, offset, whence) GAME_CDECL(0x49e91e, int, void *, int, int)(f, offset, whence)
 
-/* the message reported: flag (0xa1efe0 a message, 0xa1efe4 fatal) set; the time line from timeFormat (with the
+/* the message reported: flag (g_errorReported a message, g_fatalReported fatal) set; the time line from timeFormat (with the
    name at object +4 first when there is an object). Returns the error hook's eax */
 static int report(u32 flag, const u8 *object, u32 timeFormat, const char *format, va_list args)
 {

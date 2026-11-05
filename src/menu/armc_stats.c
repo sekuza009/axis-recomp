@@ -159,7 +159,7 @@ static void count_bonus(Panel *p, int dy, int n)
 	value(p, dy);
 }
 
-/* the wear on a part (0x4dc78c over the limit 0x4dcb0c: the share over it, four times, of f taken off; else 0) */
+/* the wear on a part (g_totalWeight over the limit g_legsMaxWeight: the share over it, four times, of f taken off; else 0) */
 static X wear(float f)
 {
 	if (g_totalWeight > g_legsMaxWeight)
@@ -258,7 +258,7 @@ static void section_chest(Panel *p)
 	count_bonus(p, ROW(2), ftol((SKILL(2) * HUNDREDTH + g_itemBonusShield) * (X)g_chestMaxShield + HALF));
 }
 
-/* slot 2, the arms: a level, four levels each raised by its own figure (count x 0x4dbc70 + base, from 1 shown), a figure */
+/* slot 2, the arms: a level, four levels each raised by its own figure (count x g_itemBonusCapacityPerLevel + base, from 1 shown), a figure */
 static void section_arms(Panel *p)
 {
 	static const u32 levels[4][3] = { { MSG(622, "CAPACITY FOR 30MM"), (OBJ(g_armsStats) + 0x4), ADDR(g_itemBonus30mm) }, { MSG(623, "CAPACITY FOR 60MM"), (OBJ(g_armsStats) + 0x8), ADDR(g_itemBonus60mm) },
@@ -438,11 +438,11 @@ static void section_mech(Panel *p)
 }
 #undef ROW
 
-/* 0x412650: the ARM CENTER's stats panel (0x4dcc90 .. 0x4dcc9c) for the part in slot 0x4dbc6c: the six slot
+/* 0x412650: the ARM CENTER's stats panel (0x4dcc90 .. 0x4dcc9c) for the part in slot g_armcPartSlot: the six slot
    buttons (the chosen one brighter) and their labels (MSG(281, "$[0] HEAD") ..; the sixth boxed, MSG(286, "VIEW $[0] ALL")), the part names
-   beside them when 0x4dbc68 is set, two buttons (MSG(115, "$[0] O K"), lit from 3 by armcPartsPage_hitTest), the weight button and its
-   arrows (14 / 15), the on / off button (MSG(287, "$[0] ROTATE") with 0x751924 + 0x80 x 0x4dceac) and the detail button (MSG(277, "SELECT"));
-   then the stats box (taller for Korean, 0x9dae74) and the slot's section. The caller ignores the eax it leaves */
+   beside them when g_armcPreview is set, two buttons (MSG(115, "$[0] O K"), lit from 3 by armcPartsPage_hitTest), the weight button and its
+   arrows (14 / 15), the on / off button (MSG(287, "$[0] ROTATE") with 0x751924 + 0x80 x g_armcSpin) and the detail button (MSG(277, "SELECT"));
+   then the stats box (taller for Korean, g_language) and the slot's section. The caller ignores the eax it leaves */
 void (armc_drawStatsPanel)(void)
 {
 	int slot = g_armcPartSlot, korean = g_language == 1;

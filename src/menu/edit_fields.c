@@ -81,7 +81,7 @@ void (arena_editComment)(void)
 	chat_createEdit(0x1e);
 }
 
-/* 0x404e10 / 0x404ed0: the two limits, bytes 0 and 1 of 0x4db54c, typed as up to three digits */
+/* 0x404e10 / 0x404ed0: the two limits, bytes 0 and 1 of g_arenaFragLimitTyped, typed as up to three digits */
 static void edit_limit(int value, int y, int *editing)
 {
 	char digits[12];
@@ -253,7 +253,7 @@ void (editField_readTyping)(void)
 }
 
 /* 0x433e60: the new-ID form's field k opened for typing: the name (16 typed, a 30-byte buffer), the password and
-   its repeat (12; the short-field flag set) or the e-mail (40), its current text copied in, the caret by the form (0x9dd6e8; rows 0x30
+   its repeat (12; the short-field flag set) or the e-mail (40), its current text copied in, the caret by the form (g_newIdFormLeft; rows 0x30
    apart). Another k only clears the form's flags. Returns 0 (the original's eax) */
 int (newIdForm_openField)(int k)
 {

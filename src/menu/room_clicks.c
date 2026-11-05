@@ -81,7 +81,7 @@ void (room_drawWhiteFade)(void)
 	menu_drawRect(0, 0, g_screenW, g_screenH, 1);
 }
 
-/* 0x405200 (arena_askJoinPassword): the arena screen's chat line, the same way (flag 0x4db8bc, its message field) */
+/* 0x405200 (arena_askJoinPassword): the arena screen's chat line, the same way (flag g_arenaJoinNeedsPassword, its message field) */
 void (arena_askJoinPassword)(void)
 {
 	g_arenaJoinNeedsPassword = 0;
@@ -106,7 +106,7 @@ static void update_notice_keys(int *question)
 void (roomUpdateNotice_keys)(void) { update_notice_keys(&g_roomUpdateNotice); }
 void (arenaUpdateNotice_keys)(void) { update_notice_keys(&g_arenaUpdateNotice); }
 
-/* 0x443e20: the skirmish mission list's clicks (no dialog open, 0x90d1c4): a right click leaves (skirmish_leave); a
+/* 0x443e20: the skirmish mission list's clicks (no dialog open, g_dialogOpen): a right click leaves (skirmish_leave); a
    left click on its buttons (skirmishList_hitTest): rows 0..7 pick that mission (skirmish_clickRow), 8 its briefing
    (mission_loadBriefing), 9 leaves. Returns the last call's eax */
 int (skirmish_listClicks)(void)
@@ -137,8 +137,8 @@ static int key_hit(u32 binding)
 	return 1;
 }
 
-/* 0x437140: the game room's keys: back or leave leaves the game; the others open the room's pages (0x4334c0,
-   0x433590, 0x433790, 0x433800) or the arm center (0x4dc24c = 3, armc_enterParts). Returns the action's eax */
+/* 0x437140: the game room's keys: back or leave leaves the game; the others open the room's pages (room_enterAccountPage,
+   room_enterGameList, room_enterCreatePage, ranking_enter) or the arm center (g_armcFrom = 3, armc_enterParts). Returns the action's eax */
 u32 (room_keys)(void)
 {
 	if (key_hit(ADDR(g_dikEscape_2)))
@@ -160,7 +160,7 @@ u32 (room_keys)(void)
 	return 0;
 }
 
-/* 0x435b00: the Ladder login's clicks (nothing pending: 0x9dd1c8, 0x9dd838) on its buttons (roomLogin_hitTest): 0 / 1
+/* 0x435b00: the Ladder login's clicks (nothing pending: g_roomLoginDue, g_roomRequestOut) on its buttons (roomLogin_hitTest): 0 / 1
    type the ID / the password (roomLogin_editId / Password), 2 LOG IN (the login due), 3 CANCEL back to the main
    menu (the keyboard taken back if it was let go, the connection closed), 4 NEW ID (room_openNewIdForm). Returns the action's eax */
 u32 (roomLogin_clicks)(void)
@@ -216,7 +216,7 @@ u32 (roomLogin_clicks)(void)
 }
 
 /* 0x435d30: the game room's page clicks (the room camera arrived (g_roomCameraMode 2); no dialog): its six buttons (outlines at
-   0x9daf88) open the room's pages, the arm center (0x4dc24c = 3) or leave the game; a right click (when a tunnel ring is behind:
+   g_roomOutlines) open the room's pages, the arm center (g_armcFrom = 3) or leave the game; a right click (when a tunnel ring is behind:
    g_tunnelRings > 0) leaves too. Returns what the original leaves in eax */
 u32 (room_pageClicks)(void)
 {
@@ -251,8 +251,8 @@ u32 (room_pageClicks)(void)
 	return room_leaveGame();   /* room_leaveGame */
 }
 
-/* ---- the selected map's preview (map `selected`, a signed byte; its name 32 bytes a slot at 0x907b30) loaded as a
-   texture: "<0x680bc4><name>/<name>" (the texture manager 0xa0e010) into 0x9da324; 0x680cd0 cleared ---- */
+/* ---- the selected map's preview (map `selected`, a signed byte; its name 32 bytes a slot at g_mapNames) loaded as a
+   texture: "<g_stageDir><name>/<name>" (the texture manager g_textures) into g_mapPreviewTexture; g_mapPreviewChanged cleared ---- */
 static void load_map_preview(u32 selected)
 {
 	char path[0x80], copy[0x40];
@@ -266,13 +266,13 @@ static void load_map_preview(u32 selected)
 	g_mapPreviewTexture = tex_getIdByName((*(void **)&g_textures), copy, 0, 0, 0, 0, 0, 0, 0);
 	g_mapPreviewChanged = 0;
 }
-/* 0x43bcb0: the game room's (selection 0x4df9e8); 0x40b420: the arena screen's (0x4db548) */
+/* 0x43bcb0: the game room's (selection g_roomMap); arena_loadMapPreview: the arena screen's (g_newArenaMap) */
 void (room_loadMapPreview)(void) { load_map_preview(ADDR(g_roomMap)); }
 void (arena_loadMapPreview)(void) { load_map_preview(ADDR(g_newArenaMap)); }
 
-/* 0x433d30: the typed line (0x9dc92c) committed to the new-ID form's field being edited (when the keyboard was let go for it,
-   0x68039c: the edit window 0x9dd888 destroyed and the focus back on the main window first): the ID
-   (0x9dd1d8, 30 bytes), the password and its repeat (0x9dd1f6, 0x9dd202, 12 bytes) or the e-mail (0x9dd20e, 50 bytes).
+/* 0x433d30: the typed line (g_chatLine) committed to the new-ID form's field being edited (when the keyboard was let go for it,
+   g_textFieldOpen: the edit window g_hChatEdit destroyed and the focus back on the main window first): the ID
+   (g_accountForm, 30 bytes), the password and its repeat (g_accountPassword, g_accountPasswordRepeat, 12 bytes) or the e-mail (g_accountEmail, 50 bytes).
    Returns what the original leaves in eax */
 /* typing closed if it was on: the hidden EDIT control destroyed, the focus back to the game window and the line
    closed (chat_closeLine); returns that call's eax, or 0 */
@@ -301,9 +301,9 @@ u32 (newIdForm_endTyping)(void)
 	return r;
 }
 
-/* 0x4355b0: the game room's hosting step (0x4ded60): 1 hosts the room's session (the music stopped, 0x452ec0, then
-   dplay_host with the room's settings record 0x5b1b30 and name 0x9dd570) and takes its settings (the 32-byte
-   rules, +0x20 .. +0x25); then 0 or 3 (3 also sets 0x907b2c) move on to 2, and 4 does too with message 0x2a.
+/* 0x4355b0: the game room's hosting step (g_connectStep): 1 hosts the room's session (the music stopped, arena_openSession, then
+   dplay_host with the room's settings record g_roomRecName and name g_ladderId) and takes its settings (the 32-byte
+   rules, +0x20 .. +0x25); then 0 or 3 (3 also sets g_arenaUpdateNotice) move on to 2, and 4 does too with message 0x2a.
    Returns the step (or the message's eax) */
 u32 (room_hostingStep)(void)
 {
@@ -348,9 +348,9 @@ u32 (room_hostingStep)(void)
 	return step;
 }
 
-/* 0x434e70: the window closed while connecting. An arena wait (0x4dbb78): it ends, the arena is left and message
-   0x44. Joining a listed game (0x4db708; its g_sessionList entry, row 0x4db710): the entry's
-   guid from the session received (0x4dbbf8) and its frag and time limits (0x5b1b54/55) for the join. Joined (0x1f4): the music stopped and the
+/* 0x434e70: the window closed while connecting. An arena wait (g_arenaJoinWaiting): it ends, the arena is left and message
+   0x44. Joining a listed game (g_arenaJoinPending; its g_sessionList entry, row g_arenaJoinRow): the entry's
+   guid from the session received (g_receivedSession) and its frag and time limits (g_roomRecFragLimit/55) for the join. Joined (0x1f4): the music stopped and the
    player's settings taken from the record for the game; otherwise a message by the result and the arena left.
    Returns what the original leaves in eax */
 u32 (room_joinAnswer)(void)
@@ -397,7 +397,7 @@ u32 (room_joinAnswer)(void)
 	return row * sizeof(SessionEntry);   /* (the original's eax: the entry's offset) */
 }
 
-/* 0x4346c0: the new-ID form checked (name 0x9dd1d8, password 0x9dd1f6 and its repeat 0x9dd202, e-mail 0x9dd20e):
+/* 0x4346c0: the new-ID form checked (name g_accountForm, password g_accountPassword and its repeat g_accountPasswordRepeat, e-mail g_accountEmail):
    a blank name, a bad name or password character, a missing or mismatched password and a bad e-mail each give
    their message and reopen the field; all good, its confirmation (room_openNewIdConfirm). Returns that call's eax */
 u32 (newIdForm_check)(void)
@@ -426,8 +426,8 @@ u32 (newIdForm_check)(void)
 	return r;
 }
 
-/* 0x434b90: the account change sent: the old password (0x9dd6d8) right and the new one repeated, every field free
-   of bad characters (else message 0x81 and 0x9dd1c8 cleared), the name, password and e-mail go out in message 0x1c.
+/* 0x434b90: the account change sent: the old password (g_accountOldPassword) right and the new one repeated, every field free
+   of bad characters (else message 0x81 and g_roomLoginDue cleared), the name, password and e-mail go out in message 0x1c.
    1 when sent */
 int (account_sendChange)(void)
 {
@@ -458,12 +458,12 @@ static u32 call_keeping_ebp(u32 address)
 	return r;
 }
 
-/* 0x43ede0: the ranking page. A request pending (0x9dd350) for sort column 0x9dd1d0: columns 0 .. 2 send their
-   code (0x25 / 0x23 / 0x26) with the first rank of page 0x9dd6ac (ranks 0x9dd83c .. 0x9dd7dc) in message 0x15 and
-   start waiting (0x9dd6b8, the blink at 1000); column 3 just clears the request. Then the room's tunnel; with
-   the room camera arrived (g_roomCameraMode 2) and outside page 99: with a message box open (0x90d1c4) only it is drawn (a
-   request made again once it closes), else while waiting an answer (0x76d40c) fills the list (ranking_fillPage) and
-   keeps the column and page, the blink counts down by 0x4b071c * 0x4ad498 (from 1000 again below 0), and the
+/* 0x43ede0: the ranking page. A request pending (g_rankingRequestPending) for sort column g_rankingSort: columns 0 .. 2 send their
+   code (0x25 / 0x23 / 0x26) with the first rank of page g_rankingPage (ranks 0x9dd83c .. 0x9dd7dc) in message 0x15 and
+   start waiting (g_rankingWaiting, the blink at 1000); column 3 just clears the request. Then the room's tunnel; with
+   the room camera arrived (g_roomCameraMode 2) and outside page 99: with a message box open (g_dialogOpen) only it is drawn (a
+   request made again once it closes), else while waiting an answer (g_rankingListIn) fills the list (ranking_fillPage) and
+   keeps the column and page, the blink counts down by g_frameTime * g_lobbyBlinkRate (from 1000 again below 0), and the
    table is drawn (ranking_drawTable). Returns what the original leaves in eax */
 u32 (ranking_page)(void)
 {
@@ -516,8 +516,8 @@ u32 (ranking_page)(void)
 }
 
 /* 0x434490: the login sent: typing closed and the form's flags cleared; a name or password with a character the
-   messages cannot carry gives its message (0x15a / 0x15b, 0x9dd1c8 cleared); else the name and password are kept
-   (0x9dd570, 30 bytes, and 0x9dd58e, 12) and sent as message 0x18 (net_send 0xe), then 0x9dd838 set. Returns the
+   messages cannot carry gives its message (0x15a / 0x15b, g_roomLoginDue cleared); else the name and password are kept
+   (g_ladderId, 30 bytes, and g_ladderPassword, 12) and sent as message 0x18 (net_send 0xe), then g_roomRequestOut set. Returns the
    message's or the send's eax */
 u32 (login_send)(void)
 {
@@ -549,10 +549,10 @@ u32 (login_send)(void)
 }
 
 /* 0x436620: the ranking page's clicks (the room camera arrived (g_roomCameraMode 2), no message box open; a right click closes the
-   page unless waiting for an answer). Not waiting (0x9dd6b8): buttons 0 .. 2 open the room's other pages
+   page unless waiting for an answer). Not waiting (g_rankingWaiting): buttons 0 .. 2 open the room's other pages
    (ranking_prevPage / 4359b0 / 4359f0), 4 closes the page, 5 / 7 / 8 sort by column 0 / 1 / 2 (the old column kept in
-   0x9dd300 and a request made, the list's state cleared). While waiting, button 3 cancels it (the column and page
-   put back from 0x9dd300 / 0x9dd1b4). Each with the click sound. Returns what the original leaves in eax */
+   g_rankingPrevSort and a request made, the list's state cleared). While waiting, button 3 cancels it (the column and page
+   put back from g_rankingPrevSort / g_rankingPrevPage). Each with the click sound. Returns what the original leaves in eax */
 u32 (ranking_clicks)(void)
 {
 	u32 mode = (*(u32 *)&g_roomCameraMode);
@@ -678,9 +678,9 @@ u32 (room_settingsClicks)(void)
 }
 
 /* 0x437630: the game room's settings page after typing (not while typing or with a message box): a typed field is
-   taken (the room's name into 0x4df9c8 unless blank (sound 6); the password into 0x4df9ee; the frag and time limits
-   as numbers into the bytes 0x4df9ec / 0x4df9ed; an empty line changes nothing), else the keys: start (0x4e1510;
-   room_announceGame, not while connecting) and the two close keys (0x4e0cdc, 0x76d48c). Returns what the original leaves
+   taken (the room's name into g_roomSettingsName unless blank (sound 6); the password into 0x4df9ee; the frag and time limits
+   as numbers into the bytes g_roomFragLimit / g_roomTimeLimit; an empty line changes nothing), else the keys: start (g_dikO;
+   room_announceGame, not while connecting) and the two close keys (g_dikC, g_dikEscape_2). Returns what the original leaves
    in eax */
 u32 (room_settingsAfterTyping)(void)
 {
@@ -735,8 +735,8 @@ u32 (room_settingsAfterTyping)(void)
 }
 
 /* ---- the map preview box (panel at y P[0], x P[1]; the box 0x80 square from (x - 0x96, y + 0x50)): the preview
-   reloaded when asked (0x680cd0), then either "custom" (0x4ad56c, yellow on a dark box) when the custom flag is
-   set or the preview texture 0x9da324, and a yellow outline. Returns the outline call's eax ---- */
+   reloaded when asked (g_mapPreviewChanged), then either "custom" (0x4ad56c, yellow on a dark box) when the custom flag is
+   set or the preview texture g_mapPreviewTexture, and a yellow outline. Returns the outline call's eax ---- */
 static u32 map_preview_box(const int *panel, u32 custom, u32 reload)
 {
 #define X0 (panel[1] - 0x96)
@@ -775,15 +775,15 @@ static u32 map_preview_box(const int *panel, u32 custom, u32 reload)
 #undef Y1
 }
 
-/* 0x43bde0: the game room's (panel 0x9dd1bc, custom flag 0x4df9ea, room_loadMapPreview); 0x40b550: the arena screen's
-   (0x4dbb04, 0x4db54a, arena_loadMapPreview) */
+/* 0x43bde0: the game room's (panel g_roomFormTop, custom flag g_roomCustom, room_loadMapPreview); arena_drawCustomOption: the arena screen's
+   (g_newArenaFormTop, g_newArenaKind, arena_loadMapPreview) */
 u32 (room_drawCustomOption)(void) { return map_preview_box((const int *)ADDR(g_roomFormTop), ADDR(g_roomCustom), FN_ADDR(room_loadMapPreview, 0x43bcb0)); }
 u32 (arena_drawCustomOption)(void) { return map_preview_box((const int *)ADDR(g_newArenaFormTop), ADDR(g_newArenaKind), FN_ADDR(arena_loadMapPreview, 0x40b420)); }
 
 /* 0x43e7b0: the account page (room page 0; the room camera arrived (g_roomCameraMode 2), not page 99): with a message box only its
-   frame; else the page (0x433610 when 0x9dd354, then account_drawPanel) and, once a field's typing has ended, the typed
+   frame; else the page (account_takeRank when g_accountNotice, then account_drawPanel) and, once a field's typing has ended, the typed
    line taken into it (the name, password, its repeat (12 bytes each) or the e-mail (50)) and the key that ended it
-   (0x9dc428: 0xa back, 0x14 on) opening the field before or after (account_editOldPassword .. 434260). Returns what the
+   (g_fieldStep: 0xa back, 0x14 on) opening the field before or after (account_editOldPassword .. 434260). Returns what the
    original leaves in eax */
 u32 (account_page)(void)
 {
@@ -823,8 +823,8 @@ u32 (account_page)(void)
 	return r;
 }
 
-/* ---- the new-ID form's keys: its text fields (0x74de1c: 0 .. 2), the text cursor placed in the one typed
-   into (0x67ef34 / 0x67fb38) ---- */
+/* ---- the new-ID form's keys: its text fields (g_dialogChoice: 0 .. 2), the text cursor placed in the one typed
+   into (g_highlightX / g_highlightY) ---- */
 #define g_loginField g_dialogChoice
 
 /* the cursor into field to at (x, y) */
@@ -839,8 +839,8 @@ static void login_field(int to, int x, int y)
 	g_fieldStep = 0;
 }
 
-/* OK (button 4 clicked, or the OK key) checks the form (newIdForm_check), cancel (button 5, or 0x4e0cdc) closes it, back to the login (room_openLogin);
-   neither while a message is up (0x68039c) */
+/* OK (button 4 clicked, or the OK key) checks the form (newIdForm_check), cancel (button 5, or g_dikC) closes it, back to the login (room_openLogin);
+   neither while a message is up (g_textFieldOpen) */
 static int form_buttons(void)
 {
 	int button = -1;
@@ -864,8 +864,8 @@ static int form_buttons(void)
 	return 1;
 }
 
-/* 0x436e10: the new-ID form's keys: its two buttons, then Tab (0x680390) to the next field, or with shift
-   (0x67ef24 / 0x9db0ac held) the one before (the original's path for "back" from the first field is never taken).
+/* 0x436e10: the new-ID form's keys: its two buttons, then Tab (g_dikTab) to the next field, or with shift
+   (g_dikLShift / g_dikRShift held) the one before (the original's path for "back" from the first field is never taken).
    The original leaves eax to callers that ignore it */
 void (newIdForm_keys)(void)
 {

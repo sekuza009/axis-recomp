@@ -130,12 +130,12 @@ void (armc_exit)(int confirmed)
 }
 
 /* ---- the mech preview of the parts and weapons pages: a perspective view turned by the preview's angle (spinning
-   while 0x4dceac is set), the mech drawn by armc_drawPreview3D for the part in view ---- */
+   while g_armcSpin is set), the mech drawn by armc_drawPreview3D for the part in view ---- */
 #define g_armcEye ((const u32 *)ADDR(g_vecOrigin))              /* (by use) the preview camera's position */
 
 /* 0x461850: the preview's 3D pass. The camera at eye looking along forward (camera_setupView, as the match's view);
    while the right button is held the cursor turns the mech: its offset from the screen's centre (w x h) is kept
-   (+0x2343293 y, +0x2343297 x) and the heading becomes x / w * 3600 less the preview's angle. The actor's pitch is
+   (mouseDy y, mouseDx x) and the heading becomes x / w * 3600 less the preview's angle. The actor's pitch is
    y / (h / 2) * 89 degrees. The mech is posed (actor_processFrame), lit by one light from the view direction, and
    its eight part lists queued: with no part chosen (part < 0) all under that light, else the chosen one white and
    the rest a dim violet, unlit; then drawn. The cursor is in 640 x 480 units while w and h are screen pixels, so
@@ -221,8 +221,8 @@ static int part_in_view(void)
 	return g_armcPartSlot == 5 ? -1 : g_armcPartSlot;
 }
 
-/* 0x41d600: the parts page's preview: a part changed (0x4dcc58) is put on the preview mech first (the item slots
-   too), a pending colour change (0x4dca98) applied */
+/* 0x41d600: the parts page's preview: a part changed (g_mechChanged) is put on the preview mech first (the item slots
+   too), a pending colour change (g_coloursChanged) applied */
 void (armc_updatePartsPreview)(void)
 {
 	gfx_setProjection2D3D(1);
@@ -254,7 +254,7 @@ void (armc_updatePartsPreview)(void)
 	}
 }
 
-/* 0x41d8a0: the weapons page's preview: item slot 0 emptied first when asked (0x4dbc80). It poses the
+/* 0x41d8a0: the weapons page's preview: item slot 0 emptied first when asked (g_emptyItemSlot0). It poses the
    item slot being picked (slots 4 / 5 as 6 / 7, the weapon slots as 5; none when that slot's record is empty) */
 void (armc_updateWeaponsPreview)(void)
 {
@@ -344,7 +344,7 @@ void (menuState700_armCenter)(void)
 /* 0x40ee20: entering the ARM CENTER: its music, the parts page with nothing picked, the camera put in front of the
    mech (further back from the room), the dialog box and two colours, the camera's point for the screen, the part
    lists built and the mech read (from the room's session or the profile), a sound; g_progressWentUp set when the level
-   (0x9dd5d8 from the room, 0x9f181c otherwise) went up since last time (new parts to show), the new value kept and returned */
+   (g_pilotLevel from the room, 0x9f181c otherwise) went up since last time (new parts to show), the new value kept and returned */
 u32 (armc_enterParts)(void)
 {
 	g_armcHideInterface = 0;
@@ -436,7 +436,7 @@ u32 (armc_enterParts)(void)
 	return money;
 }
 
-/* ---- the five spinning part panels behind the mech (panels 1 .. 5 of the records at 0x4dc550) ---- */
+/* ---- the five spinning part panels behind the mech (panels 1 .. 5 of the records at g_panelBoxes) ---- */
 typedef struct {
 	u32 corners[4][4];   /* x, y, z (and a pad) */
 	u32 x;               /* the panel's x offset */
@@ -466,7 +466,7 @@ static void panel_resize(Panel *p, float *size)
 }
 
 /* 0x41b400: the panels drawn: each under the menu camera scaled 0.8, its texture (0x9da470 - k * 4), at height
-   k * 5 + 0x4dcfc4 + 1 - 105 and depth 0x4dcfc8, turned by its angle; the angle advances by its speed. Then
+   k * 5 + 0x4dcfc4 + 1 - 105 and depth g_armcPanelDepth, turned by its angle; the angle advances by its speed. Then
    panels 2 / 3 breathe */
 void (armc_drawPanels)(void)
 {
@@ -600,7 +600,7 @@ void (armc_initPanels)(void)
 	(*(u32 *)&g_panelRate2) = 0xc0000000;   /* -2 */
 }
 
-/* 0x410190: the ARM CENTER's mouse, on pages 1 .. 4 (0x4dc798) in a state past 1 (0x4dc790) with no dialog open.
+/* 0x410190: the ARM CENTER's mouse, on pages 1 .. 4 (g_armcMode) in a state past 1 (g_armcState) with no dialog open.
    Returns what the original leaves in eax (the value it stopped at, or the page's handler's) */
 u32 (armc_mouse)(void)
 {
@@ -624,7 +624,7 @@ u32 (armc_mouse)(void)
 }
 
 /* 0x419000: catalogue item i's snapshot texture ("Actor/item/<name>/snapshot"; the name 0x80 bytes a slot at
-   0x4dbe50) loaded into 0x4dcc70[i]; nothing for a name shorter than 2 letters. 0x4dcc64 cleared either way */
+   g_partRecords) loaded into g_slotTextures[i]; nothing for a name shorter than 2 letters. g_armcChanged cleared either way */
 void (armc_snapshot)(int i)
 {
 	const char *name = (const char *)(OBJ(g_partRecords) + i * 0x80);
@@ -643,9 +643,9 @@ void (armc_snapshot)(int i)
 	g_armcChanged = 0;
 }
 
-/* 0x41dab0: the ARM CENTER's weight line at y (0x4dcc94): the label 0x7573a4 right-aligned at 0x27c (8 units a
-   character in mode 1, 0x9dae74, else 14); below it the total weight (the ten parts' weights summed into 0x4dc78c)
-   in red when above the most the legs carry (0x4dcb0c), else green, then "/most" in white, both as "%.0f" and
+/* 0x41dab0: the ARM CENTER's weight line at y (g_armcStatsPanelTop): the label 0x7573a4 right-aligned at 0x27c (8 units a
+   character in mode 1, g_language, else 14); below it the total weight (the ten parts' weights summed into g_totalWeight)
+   in red when above the most the legs carry (g_legsMaxWeight), else green, then "/most" in white, both as "%.0f" and
    right-aligned at 0x27e. The original leaves eax to callers that ignore it */
 void (armc_drawWeightLine)(void)
 {
@@ -674,9 +674,9 @@ void (armc_drawWeightLine)(void)
 	text_draw16(0x27e - (int)strlen(s.most) * 14, y + 0x10, s.most);
 }
 
-/* 0x412450: the three mode tabs across the top (0x4dcc90 / 0x4dcc94, 100 apart): the tab texture (0x9db0a4), the
-   chosen one (0x4dc798, 1 .. 3) brighter, then each tab's name (MSG(271, "$[0] PARTS"), 0x80 a slot) in its colour (0x4dbc58
-   chosen, else 0x4dc1d0). Returns 3 (the original's eax) */
+/* 0x412450: the three mode tabs across the top (g_armcStatsPanelLeft / g_armcStatsPanelTop, 100 apart): the tab texture (g_buttonTexture), the
+   chosen one (g_armcMode, 1 .. 3) brighter, then each tab's name (MSG(271, "$[0] PARTS"), 0x80 a slot) in its colour (g_armcTabColour
+   chosen, else g_armcTabColourDim). Returns 3 (the original's eax) */
 int (armc_drawModeTabs)(void)
 {
 	gfx_setProjection2D3D(2);
@@ -700,8 +700,8 @@ int (armc_drawModeTabs)(void)
 	return 3;
 }
 
-/* 0x40e7a0: the selection kept: the part choices (0x90 bytes from 0x4dc4b8 into 0x4dcfe0), the five colour
-   choices (0x4dc760 into 0x4dc878) and six more settings (0x4dcb18 into 0x4dcf18), between two calls of the part
+/* 0x40e7a0: the selection kept: the part choices (0x90 bytes from g_armcColours into g_savedColourChoices), the five colour
+   choices (g_armcParts into g_savedMechParts) and six more settings (g_itemSlot4 into g_savedMechWeapons), between two calls of the part
    lists (armc_resetSeraphimParts); the original then checked the choices' ranges, which the patched game jumps over. Then the
    progress saved; returns profile_saveProgress's eax */
 u32 (armc_saveSelection)(void)
@@ -714,11 +714,11 @@ u32 (armc_saveSelection)(void)
 	return profile_saveProgress();   /* profile_saveProgress */
 }
 
-/* 0x40e930: the selection sent to the others in the room: the colour choices (0x90 bytes from 0x4dc4b8, through the
-   FPU: a signalling NaN arrives quiet) kept (0x4dcfe0) and in the room's copy (0x9dd603); the part lists
-   (armc_resetSeraphimParts) unless 0x9dd5d8 is 0x14; the parts (0x4dc760) and six settings (0x4dcb18) kept as in
-   armc_saveSelection (the range checks jumped over again); their low bytes into the room's copy (0x9dd5f8: the five
-   parts, then settings 4 / 5, then 0 .. 3); then the packet at 0xa0b340: the name (0x9dd570), those 11 bytes from
+/* 0x40e930: the selection sent to the others in the room: the colour choices (0x90 bytes from g_armcColours, through the
+   FPU: a signalling NaN arrives quiet) kept (g_savedColourChoices) and in the room's copy (g_roomColours); the part lists
+   (armc_resetSeraphimParts) unless g_pilotLevel is 0x14; the parts (g_armcParts) and six settings (g_itemSlot4) kept as in
+   armc_saveSelection (the range checks jumped over again); their low bytes into the room's copy (g_roomMech: the five
+   parts, then settings 4 / 5, then 0 .. 3); then the packet at g_netSelectionPacket: the name (g_ladderId), those 11 bytes from
    +0x1e, the colours from +0x29; sent as kind 0x1b to the game server (0x65). The original returns net_send's eax
    to a caller that ignores it */
 void (armc_sendSelectionToNet)(void)
@@ -749,8 +749,8 @@ void (armc_sendSelectionToNet)(void)
 
 /* 0x40fb20: the ARM CENTER's parts page clicked (armcPartsPage_hitTest's buttons 1 .. 16): 1 / 2 the weapons and colour pages
    (armc_openWeaponsPage / armc_showColourPage, unless already there), 3 / 4 the screen's two exits (armc_exit), 6 .. 11 the mech
-   view 0 .. 5 (0x4dbc6c; its zoom 0x4dcfd8 back to 1), 14 / 15 the view's two turns (armc_stepPart; not in view 5),
-   16 the rotation toggle (0x4dceac). Each with its sound. Returns what the original leaves in eax */
+   view 0 .. 5 (g_armcPartSlot; its zoom g_armcZoom back to 1), 14 / 15 the view's two turns (armc_stepPart; not in view 5),
+   16 the rotation toggle (g_armcSpin). Each with its sound. Returns what the original leaves in eax */
 u32 (armc_partsPageClicks)(void)
 {
 	if (!g_mouseClick)
@@ -796,7 +796,7 @@ u32 (armc_partsPageClicks)(void)
 
 /* 0x40ff40: the colour page clicked (armcColour_hitTest's buttons 0 .. 17): 0 .. 2 the parts, weapons and colour pages
    (armc_showPartsPage / armc_openWeaponsPage / armc_showColourPage, unless already there), 3 / 4 the two exits (armc_exit), 5 .. 10 the colour slot
-   0 .. 5 (0x4dc4b0; slot 5 also armc_backupColours), 11 .. 16 the slider and swatch buttons (armc_dragPrimaryHue .. armc_dragSecondaryHue), 17 the
+   0 .. 5 (g_armcColourSlot; slot 5 also armc_backupColours), 11 .. 16 the slider and swatch buttons (armc_dragPrimaryHue .. armc_dragSecondaryHue), 17 the
    rotation toggle. Returns what the original leaves in eax */
 u32 (armc_colourPageClicks)(void)
 {

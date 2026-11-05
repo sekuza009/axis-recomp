@@ -60,8 +60,8 @@ void (music_shutdown)(void)
 	CoUninitialize();
 }
 
-/* 0x456de0: with sound on (0xa0e80c), v times the volume setting (0x4e0c90) as 0 .. 100 becomes the attenuation
-   (0xa0e66c): below 0 -1000, above 100 0, else (p * 5 - 500) * 20 * the factor at 0x4a93ec. Returns what the
+/* 0x456de0: with sound on (g_soundOn), v times the volume setting (g_soundVolume) as 0 .. 100 becomes the attenuation
+   (g_soundBaseVolume): below 0 -1000, above 100 0, else (p * 5 - 500) * 20 * the factor at k_tenthsToDegrees. Returns what the
    original leaves in eax */
 int (sound_setVolume)(int v)
 {
@@ -81,7 +81,7 @@ int (sound_setVolume)(int v)
 	return r;
 }
 
-/* 0x4572b0: the music segment (0xa0e670) restarted from the start once it has played to its length (0xa0e018, 64
+/* 0x4572b0: the music segment (g_music) restarted from the start once it has played to its length (g_musicLength, 64
    bits). Returns what the original leaves in eax */
 u32 (music_loopIfEnded)(void)
 {
@@ -127,7 +127,7 @@ u32 (sound_playNextBuffer)(u32 *sound, int mode, int value)
 	return turn;
 }
 
-/* 0x42bd40: the ten menu sounds loaded (0x467b90; their names from 0x4b1644 down to 0x4b1564) into 0x4dd4d4 ..
+/* 0x42bd40: the ten menu sounds loaded (sound_loadWav; their names from 0x4b1644 down to 0x4b1564) into 0x4dd4d4 ..
    0x4dd4f8. Returns the last one */
 u32 (sound_loadMenuSounds)(void)
 {
@@ -139,7 +139,7 @@ u32 (sound_loadMenuSounds)(void)
 	return r;
 }
 
-/* 0x457080: a sound file played once (with sound on): loaded under its name (0x467b90), at volume 0 .. 100 of the
+/* 0x457080: a sound file played once (with sound on): loaded under its name (sound_loadWav), at volume 0 .. 100 of the
    sound setting (below 0: silent at -1000, above 100: the setting's attenuation), then the buffer released. Returns
    what the original leaves in eax */
 u32 (sound_playFile)(const char *name, int volume)
@@ -163,8 +163,8 @@ u32 (sound_playFile)(const char *name, int volume)
 	return mem_free(sound);
 }
 
-/* 0x456d10: the sound table loaded (with sound on): the old one released (0x456cd0), the volume set, then from the
-   scrambled file: records of an index and a 256-byte sound name, each sound loaded into the table at 0xa0e02c,
+/* 0x456d10: the sound table loaded (with sound on): the old one released (sound_freeAll), the volume set, then from the
+   scrambled file: records of an index and a 256-byte sound name, each sound loaded into the table at g_soundTable,
    until a negative index. A missing file is a fatal error. Returns 1 (0 with sound off) */
 int (sound_initSoundTable)(const char *file, int volume)
 {
@@ -189,7 +189,7 @@ int (sound_initSoundTable)(const char *file, int volume)
 }
 
 /* 0x456e50: sound `index` played at volume 0..100 (with sound on and the sound loaded): below 0 silent (-1000),
-   above 100 the base volume (0xa0e66c), otherwise volume * 0x4a9504 * (base + 10000) - 10000. Returns the play's
+   above 100 the base volume (g_soundBaseVolume), otherwise volume * k_0_01f_4a9504 * (base + 10000) - 10000. Returns the play's
    eax, or what the original leaves when there is nothing to play */
 u32 (sound_playVolume)(int index, int volume)
 {
@@ -211,8 +211,8 @@ u32 (sound_playVolume)(int index, int volume)
 }
 
 /* 0x456ed0: sound index played at pos as heard from listener (side: the listener's right, the listener's up at
-   0xa0e7d8) within range (a float): fading from the base volume (0xa0e66c) at the listener to silence at range,
-   and panned by the side of the listener it is on (0x4a9700, or 0x4a96fc with 0x4e0c9c set, as the pan's scale).
+   g_vecUnitY) within range (a float): fading from the base volume (g_soundBaseVolume) at the listener to silence at range,
+   and panned by the side of the listener it is on (k_1500f_4a9700, or k_m1500f with g_stereoReverse set, as the pan's scale).
    Nothing out of range or with sound off. The callers ignore the eax it leaves */
 void (sound_play3D)(int index, const float *pos, const float *listener, const float *side, float range)
 {
@@ -326,8 +326,8 @@ Sound *(sound_loadWav)(const char *name)
 	return sound;
 }
 
-/* 0x467a50: DirectSound started on window hwnd (0xa0e804, priority level) with its primary buffer (0xa0e808) set to
-   44.1 kHz 16-bit stereo and playing (looped); sound on (0xa0e80c). 1, or 0 when any step fails (DirectSound
+/* 0x467a50: DirectSound started on window hwnd (g_directSound, priority level) with its primary buffer (g_primarySoundBuffer) set to
+   44.1 kHz 16-bit stereo and playing (looped); sound on (g_soundOn). 1, or 0 when any step fails (DirectSound
    released again when the buffer will not play) */
 int (sound_init)(void *hwnd)
 {
@@ -365,7 +365,7 @@ int (sound_init)(void *hwnd)
 }
 
 /* 0x462850 (thiscall on the scene): the match music by the map's kind (musicKind, from the ground file), picked with the random table
-   (0xa106f8) at the counter 0xa1efb8: 1 one of four (the counter before it moves on), 2 always "darkness", 3 and 4
+   (g_randTable) at the counter g_randPos: 1 one of four (the counter before it moves on), 2 always "darkness", 3 and 4
    one of three (the counter after). Returns music_play's eax, or kind - 1 for another kind */
 u32 THISCALL (music_playMatch)(u8 *stage)
 {
@@ -390,9 +390,9 @@ u32 THISCALL (music_playMatch)(u8 *stage)
 	return kind;
 }
 
-/* 0x457150: the music file `name` played through DirectShow's multimedia stream (CoCreateInstance of 0x4aaf10;
+/* 0x457150: the music file `name` played through DirectShow's multimedia stream (CoCreateInstance of k_CLSID_AMMultiMediaStream;
    Initialize for reading, the default audio renderer added, the file opened, run), the stream kept in g_music, its
-   duration in 0xa0e018 and the name in 0xa0e674. The music volume (0x4e0c94) below 50 or no such file: the music
+   duration in g_musicLength and the name in g_musicFile. The music volume (g_musicVolume) below 50 or no such file: the music
    stopped and 1. Any failing step: 0 (the stream let go of nothing). Otherwise 1 */
 int (music_play)(const char *name)
 {

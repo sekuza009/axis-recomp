@@ -57,7 +57,7 @@ void THISCALL (net_announceFragLimit)(Scene *scene) { scene->endEvents[1] = 1; s
 void THISCALL (net_announceTimeLimit)(Scene *scene) { scene->endEvents[2] = 1; scene->announcePending = 1; }
 /* 0x463780: team slot i's id */
 int THISCALL (scene_teamIdAt)(Scene *scene, int i) { return scene->teamIds[i]; }
-/* 0x474390: player record p marked used; 0x4743b0: marked free, its flag cleared */
+/* 0x474390: player record p marked used; playerRecord_markFree: marked free, its flag cleared */
 void THISCALL (playerRecord_markUsed)(Stage *stage, int p) { stage->playerRecords[p].used = 1; }
 void THISCALL (playerRecord_markFree)(Stage *stage, int p)
 {
@@ -82,7 +82,7 @@ int THISCALL (stage_resetLights)(Stage *stage)
 /* ---- small objects ---- */
 /* 0x480440: an empty slot: -1 and four zeros */
 void THISCALL (spaceSlot_clear)(int *self) { self[1] = self[2] = self[3] = self[4] = 0; self[0] = -1; }
-/* 0x469980, 0x46f480: members cleared (0x46f480 keeps the sixth) */
+/* 0x469980, 0x46f480: members cleared (partList_clear keeps the sixth) */
 void THISCALL (Skeleton_clear)(int *self) { for (int i = 1; i <= 7; i++) self[i] = 0; }
 void THISCALL (partList_clear)(int *self) { for (int i = 1; i <= 11; i++) if (i != 6) self[i] = 0; }
 /* 0x4699a0, 0x46f4b0: the owned block (BlockOwner) freed, then the members cleared */
@@ -130,8 +130,8 @@ char *(path_normalize)(char *s)
 	return s;
 }
 
-/* 0x451530: every one of the 16 network slots (g_netSlots) owned by id emptied, its flag (0x9f93d8) too; slot 0
-   freed sets 0x9fd94c. Leaves 0xff in AL */
+/* 0x451530: every one of the 16 network slots (g_netSlots) owned by id emptied, its flag (g_playerSlotFlags) too; slot 0
+   freed sets g_netHostGone. Leaves 0xff in AL */
 u8 (net_freeSlotsOf)(int id)
 {
 	for (int s = 0; s < 16; s++) {
@@ -152,7 +152,7 @@ void (net_clearSlots)(void) { for (NetSlot *p = g_netSlots; p < g_netSlots + 16;
 /* ---- front end ---- */
 /* 0x453a30: 1 if connection kind i (0 .. 3) is available */
 int (net_connectionAvailable)(u32 i) { return i < 4 && g_dpConnections[i] ? 1 : 0; }
-/* 0x4417c0: replay i of the replay selection dialog in or out; 0x4417f0: all in (0x44-byte entries from 0x9ddac8) */
+/* 0x4417c0: replay i of the replay selection dialog in or out; replaySelect_allIn: all in (0x44-byte entries from 0x9ddac8) */
 void (replaySelect_toggle)(int i) { int *f = &g_replayList[i].flag; *f = 1 - *f; }
 void (replaySelect_allIn)(void) { for (int i = 0; i < g_replayFileCount; i++) g_replayList[i].flag = 1; }
 /* 0x447af0: a click closes the mission briefing */
@@ -192,7 +192,7 @@ void THISCALL (tex_clearSetCounters)(void *self)
 		o->counterC = 0;
 	}
 }
-/* 0x473470: player record p's flag (16 x 24) filled with the default colour (0xa1f220), its state reset: not in the
+/* 0x473470: player record p's flag (16 x 24) filled with the default colour (g_defaultColour), its state reset: not in the
    atlas, unchanged, all sent */
 void THISCALL (playerRecord_resetColourGrid)(Stage *stage, int p)
 {
@@ -243,7 +243,7 @@ void THISCALL (player_setLevel)(Stage *stage, int p, int v)
 		if (stage->actors[i].player == p)
 			stage->actors[i].level = v;
 }
-/* 0x48fe10: the stage's identity matrix, 200 points at the origin (0xa0e7a8), the colour at 0xa1f220 */
+/* 0x48fe10: the stage's identity matrix, 200 points at the origin (g_vecOrigin), the colour at g_defaultColour */
 void THISCALL (stage_resetMatrixAndPoints)(Stage *stage)
 {
 	for (int k = 0; k < 16; k++)
@@ -337,9 +337,9 @@ void (armc_resetSeraphimParts)(void) {}
 
 /* ---- more small methods ---- */
 void THISCALL (stage_triggerActionNone)(void *self, int a) { (void)self; (void)a; }
-/* 0x45dfe0: the stage's actor without footstep sounds (+0x202e8dc) set (returned) */
+/* 0x45dfe0: the stage's actor without footstep sounds (silentActor) set (returned) */
 int THISCALL (stage_setSilentActor)(Stage *stage, int v) { stage->silentActor = v; return v; }
-/* 0x468720: the time sync object at 0xa0e948 constructed */
+/* 0x468720: the time sync object at g_loadTimer constructed */
 void *(static_initTimeSync)(void) { return TimeSync_ctor((void *)OBJ(g_loadTimer)); }
 /* 0x470f80: the stage's texture folder (stageName) set, upper-cased with back slashes (returned) */
 char *THISCALL (stage_setTextureFolder)(void *self, const char *folder)
@@ -417,7 +417,7 @@ void THISCALL (player_setName)(Stage *stage, int p, const char *name)
 }
 
 /* 0x473a80: player p's team set, and that of every actor of player p (one leaving the teams, team < 0, also loses
-   +0x14c); the teams changed (+0x202e8ec) */
+   +0x14c); the teams changed (teamsChanged) */
 void THISCALL (player_setTeam)(Stage *stage, int p, int team)
 {
 	player_seen(stage, p);
@@ -434,7 +434,7 @@ void THISCALL (player_setTeam)(Stage *stage, int p, int team)
 }
 
 /* 0x496e40: the stage's animation clocks advanced by dt (unless a script runs in mode 1): two at dt * the rate at
-   0x4a9428, wrapping at 1 and counting the turns; in game mode 2 a third at dt * the rate at 0x4aa498, counting turns
+   k_clockRate, wrapping at 1 and counting the turns; in game mode 2 a third at dt * the rate at k_clockRate3, counting turns
    0 .. 15 */
 void THISCALL (stage_advanceClocks)(Stage *stage, float dt)
 {
@@ -479,7 +479,7 @@ void THISCALL (stage_initSpaceOneCell)(u8 *stage)
 	space_setBy((u8 *)&st->space, st->levelLow, st->levelHigh, 1, 1, 1, 0, 0, 0);
 }
 
-/* 0x470fc0: a message formatted and handed to the log hook (0xae2ec8) if one is set, with b and c (a unused) */
+/* 0x470fc0: a message formatted and handed to the log hook (g_logHook) if one is set, with b and c (a unused) */
 void (log_message)(int a, int b, int c, const char *format, ...)
 {
 	char text[0x400];
@@ -508,9 +508,9 @@ static u32 reg_write(u32 value, const char *name)
 		RegSetValueExA(key, name, 0, 4, &data, 4);
 	return RegCloseKey(key);
 }
-/* 0x432400: the player's name and character: the room's name (0x9dd1d8) and the other name (0x9dd20e) copied into
-   the registry's copies (0x9dd570, 0x9dd5a6; the first also into 0x76d450), the character record 0x4df9c8 (a
-   32-byte name and six choices) into 0x5b1b30; then under HKCU\<the game's key> (0x4b179c) the two names and the six
+/* 0x432400: the player's name and character: the room's name (g_accountForm) and the other name (g_accountEmail) copied into
+   the registry's copies (g_ladderId, g_ladderEmail; the first also into g_ladderIdCopy), the character record g_roomSettingsName (a
+   32-byte name and six choices) into g_roomRecName; then under HKCU\<the game's key> (0x4b179c) the two names and the six
    choices as DWORDs (sign-extended but for the fourth and fifth). Returns RegCloseKey's answer (the key is closed
    even when it could not be opened) */
 u32 (reg_writeCharacterSettings)(void)
@@ -541,7 +541,7 @@ u32 (reg_writeCharacterSettings)(void)
 u32 (reg_writeEndMode)(u32 value) { return reg_write(value, (const char *)STR(0x4b0450, "EndMode")); }
 u32 (reg_writeStartMode)(u32 value) { return reg_write(value, (const char *)STR(0x4b29dc, "StartMode")); }
 
-/* 0x44ace0: the typed chat line (0x9dc92c) kept as the match's last line (0x9f63e4, 0x400 bytes; cleared when there
+/* 0x44ace0: the typed chat line (g_chatLine) kept as the match's last line (g_keptChatLine, 0x400 bytes; cleared when there
    is none), typing off, the key state reset and the keyboard taken again. Returns that call's eax */
 u32 (chat_keepLastLine)(void)
 {
@@ -597,7 +597,7 @@ static void read_string(u32 key, const char *name, char *dest, u32 size, u32 *ty
 }
 
 /* 0x42bee0: the player's name and character read back (reg_writeCharacterSettings' mirror). First the defaults: the
-   name "AxisPlayer" (0x9dd570), the game "Axis Ladder Game" (0x5b1b30), the choices 0, 8, 0, 0, 10, 10. Under
+   name "AxisPlayer" (g_ladderId), the game "Axis Ladder Game" (g_roomRecName), the choices 0, 8, 0, 0, 10, 10. Under
    HKCU\SOFTWARE\AxisArena\Character, created when missing: a new key gets them all written; an existing one has
    each read, and one it lacks written as the default. Then the limits kept within 5 .. 30, the map within 0 .. 21
    (else 0), the players 0 .. 16 (else 8), the game type 0 .. 11 (else 0), and the key closed. The caller ignores
@@ -652,7 +652,7 @@ void (reg_readCharacterSettings)(void)
 /* 0x42bde0: the server settings read from HKCU\SOFTWARE\AxisArena\SelectServer (AxisPlay.exe's choice): TcpDNS and
    LadderDNS (the game-list and ladder servers, 50 bytes; the second read with the size the first left) and their
    ports (TcpPort, LadderPort). Without the key a
-   message (which one by 0x9dae74), the key's unset handle closed (as the original does) and the main window closed.
+   message (which one by g_language), the key's unset handle closed (as the original does) and the main window closed.
    Returns the last call's eax */
 int (reg_readServerSettings)(void)
 {
@@ -671,9 +671,9 @@ int (reg_readServerSettings)(void)
 	return RegCloseKey(key);
 }
 
-/* 0x43f640: the screen size (0x5b1998 x 0x4e045c) for video mode 0x83a9c0: 640x480, 1280x720, 1600x900, 1920x1080,
-   2560x1440, 3840x2160, 1024x768, or 7 the desktop's (0x67eefc x 0x76d430); any mode also sets 0x9da494 from
-   0x83a9d8, which it returns */
+/* 0x43f640: the screen size (g_screenW x g_screenH) for video mode g_videoMode: 640x480, 1280x720, 1600x900, 1920x1080,
+   2560x1440, 3840x2160, 1024x768, or 7 the desktop's (g_desktopWidth x g_desktopHeight); any mode also sets g_texturesOff from
+   g_cfgSimpleMenu, which it returns */
 int (app_screenSizeForMode)(void)
 {
 	static const int sizes[7][2] = { { 640, 480 }, { 1280, 720 }, { 1600, 900 }, { 1920, 1080 }, { 2560, 1440 },
@@ -690,10 +690,10 @@ int (app_screenSizeForMode)(void)
 }
 
 
-/* 0x43f300: a clock set back? The seconds passed by the system clock since the last check (0x9dd878, minutes and
-   seconds; an hour change counts 60 more minutes; into 0x9dd860) against the seconds passed by timeGetTime (from
-   0x9dd8e8; into 0x9dd8ec): when the clock's are fewer than 0.7 of them, a message (by the language 0x9dae74) and
-   either the window closed (0x9dd904; 1) or 0 with the check restarted. Otherwise the check restarts and 1 */
+/* 0x43f300: a clock set back? The seconds passed by the system clock since the last check (g_clockLastTime, minutes and
+   seconds; an hour change counts 60 more minutes; into g_clockCheckSeconds) against the seconds passed by timeGetTime (from
+   g_startTicks; into g_clockCheckTickSeconds): when the clock's are fewer than 0.7 of them, a message (by the language g_language) and
+   either the window closed (g_clockCheckClosed; 1) or 0 with the check restarted. Otherwise the check restarts and 1 */
 int (sys_checkClockTampering)(void)
 {
 	const u16 *now = g_clockNowTime, *last = g_clockLastTime;   /* SYSTEMTIME: [4] hour, [5] minute, [6] second */
@@ -830,10 +830,10 @@ int THISCALL (actor_setActorTypeArmInfoBy)(Stage *stage, int p, int type) { retu
 int THISCALL (actor_setActorTypeLegInfoBy)(Stage *stage, int p, int type) { return set_part((u8 *)stage, p, type, &part_kinds[3]); }
 int THISCALL (actor_setActorTypeBoosterInfoBy)(Stage *stage, int p, int type) { return set_part((u8 *)stage, p, type, &part_kinds[4]); }
 
-/* 0x474060 (thiscall on the stage): player p's item in slot set (its player record at +0x1561b68, 0x47fd2 bytes
-   each: the item (items[slot]) and its name (itemNames[slot])). Game types 2 .. 11 (+0x20f3ab8) fix the
+/* 0x474060 (thiscall on the stage): player p's item in slot set (its player record at playerRecords, 0x47fd2 bytes
+   each: the item (items[slot]) and its name (itemNames[slot])). Game types 2 .. 11 (gameType) fix the
    first slot (3, 5, 0x24, 0x19, 0x16 by pairs; 10 / 11 the second too, 0x17) and leave the others empty (-1); else
-   the item given (negative: empty). An item past the catalogue (+0x1561b64) is a fatal message. Each of the player's
+   the item given (negative: empty). An item past the catalogue (actorInfoCount) is a fatal message. Each of the player's
    actors then has the slot updated (actor_loadWeapon, with its +0x49c). The callers ignore the eax it leaves */
 void THISCALL (actor_setActorTypeItemInfoBy)(Stage *stage, int p, int slot, int item)
 {

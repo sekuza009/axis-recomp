@@ -7,7 +7,7 @@
 #define FRAME_RATE k_60        /* 60: timer_now's seconds to 1/60 s frames */
 
 /* 0x4302d0: the frequency (a message box when there is none), halved until it is at most 2 MHz, the shift count
-   kept; the time's state (0x9db980, two doubles) cleared and the tick length 1 / f */
+   kept; the time's state (g_clockNow, two doubles) cleared and the tick length 1 / f */
 void (timer_init)(void)
 {
 	u64 f;
@@ -34,11 +34,11 @@ void (timer_waitFrames)(double frames)
 		;
 }
 
-/* 0x4301e0: the time in seconds (0x9db980, a double; the value returned unrounded): the performance counter
-   (QueryPerformanceCounter, kept at 0x5ae9c8) shifted right by 0x67ef1c into 32 bits, its rise since the last
-   reading (0x9dbf08) times the seconds per count (0x4ded58) added. The first call (0x4b1048) only takes the
+/* 0x4301e0: the time in seconds (g_clockNow, a double; the value returned unrounded): the performance counter
+   (QueryPerformanceCounter, kept at g_perfCounter) shifted right by g_timerShift into 32 bits, its rise since the last
+   reading (g_lastCount) times the seconds per count (g_timerTick) added. The first call (g_timerFirstCall) only takes the
    reading; a reading a little below the last (less than 0x10000000) adds nothing. A time that stays equal to the
-   one before (0x9db988) 100000 calls in a row is moved on by 0x4a94e0 */
+   one before (g_lastTime) 100000 calls in a row is moved on by k_1 */
 long double (timer_now)(void)
 {
 #define g_time g_clockNow
@@ -125,7 +125,7 @@ long double THISCALL (TimeSync_frameTime)(u8 *t)
 }
 
 /* 0x461210 (thiscall on the scene): the frame's time (TimeSync_frameTime of its timer, +0xc) kept in a ring of
-   ten (+0x48, next at +0x70), their average (the sum times 0x4a955c, 0.1) in +0x44; the average is also left on the
+   ten (+0x48, next at +0x70), their average (the sum times k_tenth, 0.1) in +0x44; the average is also left on the
    FPU stack, as the original leaves it (its callers pop it) */
 long double THISCALL (scene_averageFrameTime)(u8 *t)
 {

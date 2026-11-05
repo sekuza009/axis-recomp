@@ -5,8 +5,8 @@
 
 #define g_missionState g_missionPage   /* (by use) the mission select: 0 and 1 not up */
 
-/* ---- the start-up screen: the logo (texture 0x76d3f0, on a quad 320 x 256 at (160, 60)) over the clear colour
-   0x76d350, blended ---- */
+/* ---- the start-up screen: the logo (texture g_logoTexture, on a quad 320 x 256 at (160, 60)) over the clear colour
+   g_clearColour, blended ---- */
 static void draw_logo(int first)
 {
 	const u32 *clear = (const u32 *)OBJ(g_clearColour);
@@ -53,7 +53,7 @@ static void bar_column(int x, float r, float g, float b)
 	menu_drawRect(x, 0x1da, x + 1, 0x1de, 1);
 }
 
-/* 0x41f100: the start-up screen at progress 0x4dda34 (16 pixels a step): the logo, then a bar of that many columns
+/* 0x41f100: the start-up screen at progress g_loadStep (16 pixels a step): the logo, then a bar of that many columns
    below it, red to blue over the first 200, blue to green over the next 200, green to yellow after that. Returns
    SwapBuffers' answer */
 int (frontEnd_drawProgress)(void)
@@ -85,7 +85,7 @@ int (frontEnd_drawProgress)(void)
 	return SwapBuffers(g_windowDC);
 }
 
-/* 0x41f540: the intro: the start-up logo shown once (dimmed), then the loading picture stepped four times (0x4dda34) around the start-up loads, with
+/* 0x41f540: the intro: the start-up logo shown once (dimmed), then the loading picture stepped four times (g_loadStep) around the start-up loads, with
    waits of 5 and 2 (1/60 s); then the title screen (200) with the front end's state reset, the pointer at
    (310, 230), the Netsphere music and the frame clocks cleared */
 void (menuState100_intro)(void)
@@ -137,7 +137,7 @@ void (menu_drawBackground)(void)
 }
 
 /* 0x442e10: the replay selection dialog (0x9dd908 .. 0x9dd914): the window, its title 0x74e8a4, the list's frame with
-   its scroll arrows (0 / 1 under the pointer, by replaySelect_hitTest), two tick boxes (0x4b2a7c: MSG(22, "AUTO REPEAT"), 0x9eeac0:
+   its scroll arrows (0 / 1 under the pointer, by replaySelect_hitTest), two tick boxes (g_replayWrap: MSG(22, "AUTO REPEAT"), g_replayRandomOrder:
    MSG(23, "RANDOM PLAY")), two rows of two buttons (MSG(24, "$[0] ALL FILES") lit from 4, MSG(26, "$[0] O K") from 6), the list row under the pointer
    (8 .. 0x11) highlighted, the list (replaySelect_drawNames) and the border. The original leaves eax to callers that
    ignore it */
@@ -352,7 +352,7 @@ void (replaySelect_ok)(void)
 		}
 }
 
-/* ---- the replay selection dialog's list: 10 rows shown from replay 0x9dd92c of the 0x9dd928 ---- */
+/* ---- the replay selection dialog's list: 10 rows shown from replay g_replaySelectFirst of the g_replayFileCount ---- */
 static void maps_up(void)
 {
 	if (g_replaySelectFirst > 0) {
@@ -368,8 +368,8 @@ static void maps_down(void)
 	}
 }
 
-/* 0x441c00: the replay selection dialog's keys: cancel or back closes it (0x9eeab4), OK takes the choice (replaySelect_ok),
-   0x4e151c toggles 0x9eeac0, 0x4e0ce0 / 0x4e0cd4 take every replay out / in, up / down scroll the list with a key
+/* 0x441c00: the replay selection dialog's keys: cancel or back closes it (g_mainMenuPicked), OK takes the choice (replaySelect_ok),
+   g_dikR toggles g_replayRandomOrder, g_dikD / g_dikA take every replay out / in, up / down scroll the list with a key
    repeat (the original leaves eax to callers that ignore it) */
 void (replaySelect_keys)(void)
 {
@@ -407,8 +407,8 @@ void (replaySelect_keys)(void)
 }
 
 /* 0x441810: the replay selection dialog's mouse: a click (the blink clock restarted) on the arrows (0 / 1), the two
-   toggles (0x4b2a7c, 0x9eeac0), every replay in or out, OK, cancel (7), or a row's replay (8 .. 17); holding an arrow
-   scrolls once the clock reaches 5 (0x4a93d0), restarting it. The original leaves eax to callers that ignore it */
+   toggles (g_replayWrap, g_replayRandomOrder), every replay in or out, OK, cancel (7), or a row's replay (8 .. 17); holding an arrow
+   scrolls once the clock reaches 5 (k_5f), restarting it. The original leaves eax to callers that ignore it */
 void (replaySelect_mouse)(void)
 {
 	const float *repeat = (const float *)ADDR(k_5f);
@@ -448,9 +448,9 @@ void (replaySelect_mouse)(void)
 	}
 }
 
-/* 0x44f860: the profile screen's frame: while its intro (0x9f6838) runs, quit (app_quitGame); else the background and, once the zoom (0x4dda48)
+/* 0x44f860: the profile screen's frame: while its intro (g_profileIntro) runs, quit (app_quitGame); else the background and, once the zoom (g_introZoom)
    is not above 0, the pilot list reloaded for every value of the nine 0x4c-byte pilot stat records (from 0x9f9068)
-   that is out of range (above 30, the eighth above 50), then the page (0x9f8f10, 1 .. 6). The original leaves eax
+   that is out of range (above 30, the eighth above 50), then the page (g_profilePage, 1 .. 6). The original leaves eax
    to callers that ignore it */
 void (menuState210_frame)(void)
 {
@@ -498,8 +498,8 @@ void (ladder_sendRecord)(void)
 		ladder_checkAndSendRecord();
 }
 
-/* a panel sliding in: while flag is set, eased moves a tenth of the way to the constant at 0x4a9448 per time unit
-   and slid moves back by the same step, until slid is no longer above the double at 0x4a9440 (then the flag drops
+/* a panel sliding in: while flag is set, eased moves a tenth of the way to the constant at k_setupPanelTarget per time unit
+   and slid moves back by the same step, until slid is no longer above the double at k_setupPanelEnd (then the flag drops
    and slid is set to -1650). Afterwards, while the quit question is up, the keys are held and the next screen set
    to 9999 (returns 1) */
 static int menu_slide(u32 flag, u32 eased, u32 slid)
@@ -526,12 +526,12 @@ static int menu_slide(u32 flag, u32 eased, u32 slid)
 	return 1;
 }
 
-/* 0x40cef0 (lobbyTop_draw), 0x43e720: the lobby's and the room's panels */
+/* 0x40cef0 (lobbyTop_draw), room_slideMenu: the lobby's and the room's panels */
 int (lobbyTop_draw)(void) { return menu_slide(ADDR(g_lobbyPanelsOff), OBJ(g_lobbyTopEase), ADDR(g_arenaTunnelDepth)); }
 int (room_slideMenu)(void) { return menu_slide(ADDR(g_roomDialogOpen), ADDR(g_roomPanelEase), ADDR(g_roomTunnelDepth)); }
 
-/* ---- back to the menus after a game: the arena session left (0x452fe0) and, unless kept, the connection closed;
-   the player slots (0x410 bytes from 0x9f9840) emptied ---- */
+/* ---- back to the menus after a game: the arena session left (arena_leaveSession) and, unless kept, the connection closed;
+   the player slots (0x410 bytes from g_netSlots) emptied ---- */
 static void leave_game(u32 lobby, int disconnect)
 {
 	g_quitAsked = 0;
@@ -546,8 +546,8 @@ static void leave_game(u32 lobby, int disconnect)
 	}
 }
 /* the menu cameras placed (both at (0, 0, z), the far one at farZ, the near one at nearZ: float bits), the keys
-   blocked as given, 0x4deb48 set (and 0x4e1868 cleared when asked), the menu state cleared and the keyboard taken back if it was let go. Returns
-   what the original leaves in eax: input_initKeyboard's, or 0x68039c's value */
+   blocked as given, g_enteringMenus set (and g_inputLineHidden cleared when asked), the menu state cleared and the keyboard taken back if it was let go. Returns
+   what the original leaves in eax: input_initKeyboard's, or g_textFieldOpen's value */
 static u32 reset_menus(u32 farZ, u32 nearZ, int blocked, int entering, int clear_chat_field)
 {
 	u32 typing = (*(u32 *)&g_textFieldOpen);
@@ -591,7 +591,7 @@ u32 (game_returnToMissions)(void)
 	return reset_menus(FAR_BACK, NEAR_BACK, 0, 0, 0);
 }
 
-/* 0x41e8b0: to the main menu (300), the cameras in front (500, 400), 0x4deb48 set and 0x4e1868 cleared. Returns 1
+/* 0x41e8b0: to the main menu (300), the cameras in front (500, 400), g_enteringMenus set and g_inputLineHidden cleared. Returns 1
    when the keyboard was not let go */
 u32 (game_returnToMainMenu)(void)
 {
@@ -635,8 +635,8 @@ u32 (game_returnToGameRoom)(void)
 }
 
 /* 0x43ef70: the game room's frame. While the dialog highlight is shown the mouse glides a quarter of the way to it
-   and the highlight shrinks by the step 0x4b071c (gone below 0). Then the room's page (0x9dd834): 0 .. 4 the room's own pages over the
-   background and the room's camera (0x437a10), 66 / 77 / 88 / 99 dialogs drawn before the background (99 shows the
+   and the highlight shrinks by the step g_frameTime (gone below 0). Then the room's page (g_roomState): 0 .. 4 the room's own pages over the
+   background and the room's camera (room_camera), 66 / 77 / 88 / 99 dialogs drawn before the background (99 shows the
    quit question while it waits on the network). Returns the last call's eax, or the page */
 u32 (menuState800_gameRoom)(void)
 {
@@ -684,7 +684,7 @@ u32 (menuState800_gameRoom)(void)
 
 #define lstrcpyA(dst, src) IMPORT(0x4a911c, char *, char *, const char *)(dst, src)
 
-/* the match's result sent to the others (the host only): message 0x9f9418 with its flag word 0x9f941c raised
+/* the match's result sent to the others (the host only): message g_resultMessage with its flag word g_hostResultFlag raised
    while it goes out (net_sendMessage) */
 static void send_result(void)
 {
@@ -695,12 +695,12 @@ static void send_result(void)
 	g_hostResultFlag = 0;
 }
 
-/* 0x420100: after a match. Started from outside (0x76d410 = 1): the game quits (code 0) and the text mode is reset.
-   Otherwise by the match's mode 0x5ae9c4 (0 after a replay, 0x9db990): 1 the arena (the result sent; screen 400),
+/* 0x420100: after a match. Started from outside (g_startedFromLobby = 1): the game quits (code 0) and the text mode is reset.
+   Otherwise by the match's mode g_matchMode (0 after a replay, g_replayRunning): 1 the arena (the result sent; screen 400),
    2 a network game (the result sent, the two players' names 0x43 / 0x33 into a game record, net_send 0x16; back to
-   the room when 0xa05630, else the menus), 3 the campaign (the end mode set by the mission 0x9f181c and the
+   the room when g_gameServerSocket, else the menus), 3 the campaign (the end mode set by the mission 0x9f181c and the
    progress saved; after the last mission, 15, the game quits with code 0x63 instead), any other the menus. Then
-   the menu music, and message 6 when 0xa0ea94 asks for it. Returns what the original leaves in eax */
+   the menu music, and message 6 when g_mapMissing asks for it. Returns what the original leaves in eax */
 u32 (game_postMatch)(void)
 {
 	g_unusedPostMatchFlag = 1;

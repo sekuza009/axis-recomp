@@ -102,7 +102,7 @@ void (arena_savePlayerSettings)(void)
 }
 
 /* a map choice moved one on (dir > 0) or back, round the g_arenaMapCount maps, skipping 22 .. 24; nothing while the
-   lock byte is set; the change flagged (0x680cd0) */
+   lock byte is set; the change flagged (g_mapPreviewChanged) */
 static void map_step(int dir, u32 lock, u32 choice)
 {
 	signed char *c = (signed char *)RELOC(choice);
@@ -161,7 +161,7 @@ static void map_buttons(int hovered, int first, int y, int label)
 }
 
 /* 0x4038e0: the map list over a dimmed screen: two column heads (0x75d924, 0x75d9a4), up to 10 rows from g_mapTop
-   (22 .. 24 left out): the number, the name (0x907b30, 0x20 apart) and the game type's name (0x4db8d8, 20 apart),
+   (22 .. 24 left out): the number, the name (g_mapNames, 0x20 apart) and the game type's name (g_gameTypeNames, 20 apart),
    the row under the pointer (by mapList_hitTest) highlighted; the scroll arrows (0x14 / 0x15) and two rows of buttons
    (MSG(506, "$[0] DEFAULT") from 0x16, MSG(504, "$[0] O K") from 0x18). The original leaves eax to callers that ignore it */
 void (mapList_draw)(void)
@@ -210,8 +210,8 @@ void (mapList_draw)(void)
 #undef cyan_text
 
 /* 0x4036c0: the map list's mouse: a click (the blink clock restarted) on a row's map (0 .. 9) or game type (10 ..
-   19), the arrows (20 / 21: one row up / down), none, every map, OK, or close (25); in mode 2 (0x4dbb3c) holding an
-   arrow scrolls once the clock reaches 5 (0x4a93d0), restarting it. The original leaves eax to callers that ignore
+   19), the arrows (20 / 21: one row up / down), none, every map, OK, or close (25); in mode 2 (g_arenaCameraMode) holding an
+   arrow scrolls once the clock reaches 5 (k_5f), restarting it. The original leaves eax to callers that ignore
    it */
 void (mapList_mouse)(void)
 {

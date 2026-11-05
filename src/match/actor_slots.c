@@ -64,7 +64,7 @@ void THISCALL (stage_clearParticles)(Stage *stage)
 		stage->particles[i].active = 0;
 }
 
-/* 0x4799f0: particle slot i freed: the first-free hint (+0x20f2da4) moved down to it, and when it was the last
+/* 0x4799f0: particle slot i freed: the first-free hint (particleFreeHint) moved down to it, and when it was the last
    in use the used range (particleCount) shrinks past every free slot at its end */
 void THISCALL (stage_freeParticle)(Stage *stage, int i)
 {
@@ -116,7 +116,7 @@ void THISCALL (stage_drawBullets)(Stage *stage, void *view)
 			bullet_drawTrail(stage, i, view);
 }
 
-/* 0x48fde0: while the script runs (+0x2149308), its object (+0x2148ed8) told (recorder_noteStub); returns b */
+/* 0x48fde0: while the script runs (scriptMode), its object (scenePath) told (recorder_noteStub); returns b */
 int THISCALL (script_notifyObject)(Stage *stage, int a, int b, int c, int d)
 {
 	if (!stage->scriptMode)
@@ -125,7 +125,7 @@ int THISCALL (script_notifyObject)(Stage *stage, int a, int b, int c, int d)
 	return b;
 }
 
-/* 0x470a70: every actor slot emptied: the six slot numbers from playerActor on (-1), +0x202e8ec 1, the scores, the
+/* 0x470a70: every actor slot emptied: the six slot numbers from playerActor on (-1), teamsChanged 1, the scores, the
    16 player records and the stage's own reset, then the 100 slots */
 void THISCALL (scene_resetActors)(Stage *stage)
 {
@@ -276,7 +276,7 @@ void THISCALL (actor_deactivate)(Stage *stage, int i)
 
 /* 0x45dc00 (thiscall on the scene): actor slot i (at most 99) set up from its parts (actor_setupFromParts): the
    slots up to it are added first (each new one marked free, +0x108), and the first free slot (searched up to and
-   including the count, as the original does) kept as the next free (+0x202e8cc). Returns i, or -1 */
+   including the count, as the original does) kept as the next free (actorFreeHint). Returns i, or -1 */
 int THISCALL (stage_setupActorSlot)(u8 *scene, int i, u32 id, u32 controlledBy, u32 parts)
 {
 #define COUNT STS->actorCount
@@ -299,8 +299,8 @@ int THISCALL (stage_setupActorSlot)(u8 *scene, int i, u32 id, u32 controlledBy, 
 #undef USED
 }
 
-/* 0x474fd0: a player's part coloured from the network: six signed bytes, scaled (the first and fourth by 0x4aa41c,
-   the others by 0x4aa420), given to actor_setPartColor. Its caller ignores the eax it leaves */
+/* 0x474fd0: a player's part coloured from the network: six signed bytes, scaled (the first and fourth by k_1_40625f,
+   the others by k_0_0078125f), given to actor_setPartColor. Its caller ignores the eax it leaves */
 void THISCALL (actor_applyRemoteColours)(void *scene, int p, int part, int h1, int s1, int v1, int h2, int s2, int v2)
 {
 	long double k1 = k_1_40625f, k2 = k_0_0078125f;
@@ -351,7 +351,7 @@ void THISCALL (actor_loadArms)(u8 *scene, int a) { part_load(scene, a, &g_parts[
 void THISCALL (actor_loadLegs)(u8 *scene, int a) { part_load(scene, a, &g_parts[3]); }
 void THISCALL (actor_loadBooster)(u8 *scene, int a) { part_load(scene, a, &g_parts[4]); }
 
-/* 0x45de20 (thiscall on the scene): actor a spawned from a map record for the player (+0x202e8d4; none: a fatal
+/* 0x45de20 (thiscall on the scene): actor a spawned from a map record for the player (playerActor; none: a fatal
    message): set up from its parts (stage_setupActorSlot, with the record's position, angle and parts picked out), then given
    the record's settings: team and two values (kept twice), ranges and speeds scaled, its radius squared (scaled), a
    count from a scaled value, and the rest copied; no targets (+0x87f8, +0x87fc -1). Its callers ignore the eax it
@@ -394,7 +394,7 @@ void THISCALL (actor_applySpawnRecord)(u8 *scene, int a, const u8 *rec)
 }
 
 /* 0x45ebc0 (thiscall on the scene): player p's starting values when the slot is in use (+0x108 1). Game types 2 ..
-   11 (+0x20f3ab8) by pairs: the energy (+0x1c, +0x20, +0x128) 10 then 150, +0x12c 0, the four weapon slots
+   11 (gameType) by pairs: the energy (+0x1c, +0x20, +0x128) 10 then 150, +0x12c 0, the four weapon slots
    (+0x130 ..) empty but one (the pair's: 10 the first, else 50, its +0x28 .. 100; the last pair none). Otherwise
    +0x128 / +0x12c from +0x1c / +0x20 and each slot half its +0x28 ... Its caller ignores the eax it leaves */
 void THISCALL (actor_startingValues)(u8 *scene, int p)
@@ -457,8 +457,8 @@ void THISCALL (actor_loadWeapon)(u8 *scene, int a, int slot, int variant)
 }
 
 
-/* a hue as the colour code keeps it: wrapped (angle_wrap of it x 0x4a9418, then x 0x4a93ec), brought down by
-   0x4a9460 when over 0x4a945c (*h updated); its byte ((h - 0x4aa418) x 0x4aa414 - 0x4aa264) */
+/* a hue as the colour code keeps it: wrapped (angle_wrap of it x k_10f, then x k_tenthsToDegrees), brought down by
+   k_360f when over k_180f (*h updated); its byte ((h - k_m180f) x k_0_7083333f - k_128f) */
 static u8 hue_byte(float *h)
 {
 	long double v = fmul_m(angle_wrap(f32(fmul_m(fld_m(h), &k_10f))), &k_tenthsToDegrees);
@@ -468,7 +468,7 @@ static u8 hue_byte(float *h)
 	return (u8)ftol(fsub_m(fmul_m(fsub_m(fld_m(h), &k_m180f), &k_0_7083333f), &k_128f));
 }
 
-/* a saturation or value kept to -1 .. 0.999 (a NaN -1; *v updated); its byte (v x 0x4aa264) */
+/* a saturation or value kept to -1 .. 0.999 (a NaN -1; *v updated); its byte (v x k_128f) */
 static u8 level_byte(float *v)
 {
 	if (!(*v >= *&k_m1f))
@@ -520,10 +520,10 @@ static u8 *weapon_list(u8 *ac)
 }
 
 /* 0x45d3e0 (thiscall on the scene): actor a drawn into the view volume vv when in play and within the view range
-   (+0xa08 plus its radius +0x3e8) of the camera (+0x20f3970..) on every axis. Its tint (+0x4f0): a cloaked actor
+   (+0xa08 plus its radius +0x3e8) of the camera (cameraPos..) on every axis. Its tint (+0x4f0): a cloaked actor
    (flag 0x200) at the local player's rank or above white and faint (0x40 to itself, 0x10 to others); else a hit
-   flash (+0x120 up to K 0x4a9534) fading in then out, or the damage glow (+0x4ec white, +0x8854 red-orange); a
-   faint tint lights it with +0x20f2f48. The viewing actor (+0x202e8d8), when draw is set, shows only the weapon in
+   flash (+0x120 up to K k_3f) fading in then out, or the damage glow (+0x4ec white, +0x8854 red-orange); a
+   faint tint lights it with lightMatrix. The viewing actor (selectedActor), when draw is set, shows only the weapon in
    hand; others, when draw is not 1, all their lists up to the count +0x54c (the fifth unless +0x550; flags 0xd00 skip
    them without flares 0x83a9c8 or when too small on screen; faint ones only with flares); flags 0x100 / 0xc00 add a
    lit pass. A list that would not draw has them all reloaded (actor_loadHead / actor_loadBody / actor_loadArms /
@@ -777,7 +777,7 @@ static void mech_stats(u8 *s, u8 *ac, u8 *p, int check)
 }
 
 /* 0x457330 (thiscall on the scene): actor a built from player *pp's mech (the player record 0x47fd2 bytes from
-   +0x1561b68; its parts +0x30c head, chest, arms, legs, booster; pp: the player, controlledBy copied, the position +8
+   playerRecords; its parts +0x30c head, chest, arms, legs, booster; pp: the player, controlledBy copied, the position +8
    and the heading +0x14). The special items in its six slots (+0x320; kinds 0x1b .. 0x23 with a negative +0x2dc0)
    bend the defaults (+0x404 ..: armour, shields, power, cooling, mobility); then the stats: health and energy (the
    head with the level), the weight against the limit (any items' weight unless the game type is 2 .. 11) giving an
@@ -785,7 +785,7 @@ static void mech_stats(u8 *s, u8 *ac, u8 *p, int check)
    fixed values; its id (id, or the next serial when negative), the player's details, the weapon slot (actor_setWeaponSlot),
    the starting values (actor_startingValues), the position history, timers and flags reset, its lists loaded and parts
    placed (actor_loadHead .. actor_loadBooster, actor_loadWeapon; viewed by another than itself +0x49c), and the scene told
-   an actor joined (+0x202e8ec). Its caller ignores the eax it leaves */
+   an actor joined (teamsChanged). Its caller ignores the eax it leaves */
 void THISCALL (actor_setupFromParts)(u8 *s, int a, int id, u32 controlledBy, const u32 *pp)
 {
 	Stage *st = (Stage *)s;

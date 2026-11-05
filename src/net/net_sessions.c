@@ -1,12 +1,12 @@
 /* net_sessions.c: the network games received (DirectPlay's session enumeration) merged into the session list the
-   arena lobby and the game room show: g_sessionList's SessionEntrys, their count in 0x67ef30. */
+   arena lobby and the game room show: g_sessionList's SessionEntrys, their count in g_gameCount. */
 #include "../game.h"
 #include <string.h>
 
 /* one screen's received games: flag says new ones arrived; records of stride bytes from base (s = a record's key
    byte, its rotation flag: its map, most players, players, game mode, frag and time limits the six bytes before, its
    lock after 9 and password after 10; its name at s + nameOff, its address at s + str2Off); total sums the entries'
-   player counts; the three words of clear are cleared when nothing more is coming (0xa0d7a0 0) */
+   player counts; the three words of clear are cleared when nothing more is coming (g_netListDone 0) */
 typedef struct {
 	u32 flag, base;
 	int stride, nameOff, str2Off;

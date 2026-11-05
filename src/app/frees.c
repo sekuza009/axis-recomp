@@ -20,7 +20,7 @@ u32 (net_freeBuffers)(void)
 	return r;
 }
 
-/* 0x456cd0: with sound on (0xa0e80c), every loaded sound buffer (0xa0e02c .. 0xa0e66c) deleted */
+/* 0x456cd0: with sound on (g_soundOn), every loaded sound buffer (0xa0e02c .. 0xa0e66c) deleted */
 u32 (sound_freeAll)(void)
 {
 	if (!g_soundOn)

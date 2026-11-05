@@ -3,7 +3,7 @@
 #include "../game.h"
 #include <string.h>
 
-/* 0x431590: no key down (the 256 key states at 0x4d1a98), the menu keys held off (g_menuKeyGuard 5), no input line */
+/* 0x431590: no key down (the 256 key states at g_keySeen), the menu keys held off (g_menuKeyGuard 5), no input line */
 void (input_resetKeys)(void)
 {
 	memset((void *)OBJ(g_keySeen), 0, 0x100 * 4);
@@ -12,7 +12,7 @@ void (input_resetKeys)(void)
 	g_chatLength = 0;
 }
 
-/* 0x401780: the second key table (0x4d1fc4) and its state cleared */
+/* 0x401780: the second key table (g_keyTable2) and its state cleared */
 void (input_clearKeyTable2)(void)
 {
 	g_unusedKeyTable2Flags = 0x8000;
@@ -54,7 +54,7 @@ void (messageBox_clickClose)(void)
 	}
 }
 
-/* 0x433610: the rank reply taken (message 29, received at 0xa052c0): the rank (+0x16), 0 when out of the first 1000 (byte +1 set), into both copies of the pilot's record; the notice flags cleared */
+/* 0x433610: the rank reply taken (message 29, received at g_netNotice): the rank (+0x16), 0 when out of the first 1000 (byte +1 set), into both copies of the pilot's record; the notice flags cleared */
 void (account_takeRank)(void)
 {
 	int v = g_outOfRank != 1 ? g_receivedRank : 0;

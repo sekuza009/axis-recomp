@@ -1,5 +1,5 @@
 /* armc_screens.c: two of the ARM CENTER's pages: the weapons page (the item slots, the item box and its stats) and
-   the colour editor (two colours, hue, saturation and value, for each of the slots at 0x4dc4b8, six floats a slot:
+   the colour editor (two colours, hue, saturation and value, for each of the slots at g_armcColours, six floats a slot:
    hue 1, saturation 1, value 1, hue 2, then saturation 2 and value 2 in -1 .. 1) */
 #include "../game.h"
 #include <string.h>
@@ -16,7 +16,7 @@
 static const u32 *const bright = g_armcTabColour, *const dim = g_armcTabColourDim;
 #define TEXT(c) set_colour_bits(g_textColour, (c)[0], (c)[1], (c)[2], (c)[3])
 
-/* the box at the bottom right: "<0x756da4> <the name of 0x4dceac (0x751924)>" (the texture bound) */
+/* the box at the bottom right: "<0x756da4> <the name of g_armcSpin (0x751924)>" (the texture bound) */
 static void mode_box(void)
 {
 	glColor4f(1.0f, 1.0f, 1.0f, 0.7f);
@@ -104,9 +104,9 @@ static void marker(float pos, int y)
 
 /* 0x41a280: the colour editor: two boxes (0x75d3a4 / 0x75d424) of three lines each, the current slot's hue
    (turned half round, as 0 .. 50 by 0.278) and saturation and value (percent; the second colour's from -1 .. 1);
-   the six slot buttons (the current one, 0x4dc4b0, bright; the sixth MSG(286, "VIEW $[0] ALL")) with the parts' names beside them
-   when 0x4dbc68 is set; the sliders' tracks, bars and hue markers; two buttons (MSG(115, "$[0] O K"); 3 / 4 under the pointer,
-   by armcColour_hitTest, lit) and the box "<MSG(287, "$[0] ROTATE")> <MSG(118, "OFF") name of 0x4dceac>". The original leaves eax to callers
+   the six slot buttons (the current one, g_armcColourSlot, bright; the sixth MSG(286, "VIEW $[0] ALL")) with the parts' names beside them
+   when g_armcPreview is set; the sliders' tracks, bars and hue markers; two buttons (MSG(115, "$[0] O K"); 3 / 4 under the pointer,
+   by armcColour_hitTest, lit) and the box "<MSG(287, "$[0] ROTATE")> <MSG(118, "OFF") name of g_armcSpin>". The original leaves eax to callers
    that ignore it */
 void (armc_drawColourEditor)(void)
 {
@@ -250,12 +250,12 @@ static void stat_float(int x, int y, float value, u32 format, u32 unit)
 }
 
 /* 0x419160: the weapons page: two buttons (0x7517a4; 3 / 4 under the pointer, by armcWeaponsPage_hitTest, lit), the six part
-   slots (the chosen one, 0x4dbe48, bright), a new snapshot of it when asked (0x4dcc64), each slot's picture
-   (texture OBJ(g_slotTextures) + 4 k, when it has a name, 0x4dbe50) and label (MSG(291, "HAND-W1($[0] 1)")) with its name (or MSG(319, "EMPTY SLOT")); the part
-   box: its picture (0x4dcc88), name (0x4dc150) and type (MSG(711, "HV-PISTOL"), by 0x4dc79c / 0x4dcca4 of 0x4dc77c), or
+   slots (the chosen one, g_armcSlot, bright), a new snapshot of it when asked (g_armcChanged), each slot's picture
+   (texture OBJ(g_slotTextures) + 4 k, when it has a name, g_partRecords) and label (MSG(291, "HAND-W1($[0] 1)")) with its name (or MSG(319, "EMPTY SLOT")); the part
+   box: its picture (g_armcBuildTexture), name (0x4dc150) and type (MSG(711, "HV-PISTOL"), by g_weaponListTable / g_extraListTable of g_armcCursor), or
    MSG(320, "REMOVE WEAPON") without one; its arrows either side of it (0xc / 0xd lit); the mode box; the stats panel: nothing chosen (0x4dc190 = -1: MSG(319, "EMPTY SLOT")), a part type only
-   (0x4dc194 = -1: MSG(771, "SPECIAL WEAPON") and its kind MSG(745, "GRAVITY CONTROLLER")), or the 16 stats under their labels (MSG(301, "SLOT TYPE")), the sixth with
-   the pilot's (0x9f1818) skill bonus. The original leaves eax to callers that ignore it */
+   (g_viewedPartKind = -1: MSG(771, "SPECIAL WEAPON") and its kind MSG(745, "GRAVITY CONTROLLER")), or the 16 stats under their labels (MSG(301, "SLOT TYPE")), the sixth with
+   the pilot's (g_selectedPilotLevel) skill bonus. The original leaves eax to callers that ignore it */
 void (armc_drawWeaponsScreen)(void)
 {
 	int hovered = ((int)armcWeaponsPage_hitTest(g_mouseX, g_mouseY));   /* armcWeaponsPage_hitTest */

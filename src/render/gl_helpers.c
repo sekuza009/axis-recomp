@@ -10,7 +10,7 @@ void (gl_rotateXYZ)(u32 x, u32 y, u32 z)
 }
 
 /* 0x4685f0: the in-match projection switch (the HUD's): the model view reset, then, unless mode is the one set
-   already (0x4c4de8), the 3D projection (1: the view's angle, an aspect of width * scale / height, the near and far
+   already (g_glCachedState), the 3D projection (1: the view's angle, an aspect of width * scale / height, the near and far
    planes) or the HUD's 2D one (0: width * scale x height units). As the installed exe has it (hudfix.py: code in
    the .axnet section's tail, entered at 0x468671 and 0x4686af), the 3D projection takes the full screen and the 2D
    one the centred 16:9 box, unless the screen is at most 8 pixels wider; both make the menus' switch (g_projMode)
@@ -105,9 +105,9 @@ static u32 default_gl_state(void)
 }
 u32 (gfx_resetState)(void) { return default_gl_state(); }
 
-/* 0x42f150: a new window's GL state: the defaults, then the projection (field of view 0x68038c, the aspect
-   width / height kept in 0x4e1870, depth 1 .. 20000) and the window's size (0x42f0f0); 0x5ae9bc set. Returns
-   0x42f0f0's eax */
+/* 0x42f150: a new window's GL state: the defaults, then the projection (field of view g_viewAngle, the aspect
+   width / height kept in g_viewAspect, depth 1 .. 20000) and the window's size (gfx_setup3DView); g_projMode set. Returns
+   gfx_setup3DView's eax */
 u32 (gfx_initGLState)(int width, int height)
 {
 	default_gl_state();

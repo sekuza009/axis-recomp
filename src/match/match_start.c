@@ -16,9 +16,9 @@ static void set_round(Round *r, int map, int mode, int score, int time)
 }
 
 /* the first round's map rotation: solo, the 15 stages (0x5c-byte records of g_skirmishInfo from +0x4c: the mode, the time and the
-   score limits) from the stage chosen (0x9dad94); a network host, the arena maps in rotation (0x67ef00 of them, 8
-   bytes each from 0x4d9508: in rotation, the map's own mode, used when the chosen mode 0x76d368 is 14 or more) or,
-   without rotation (0x9da3e0), the chosen map only, from the first; a machine that joined, none */
+   score limits) from the stage chosen (g_missionStage); a network host, the arena maps in rotation (g_arenaMapCount of them, 8
+   bytes each from g_mapChoiceKeptTable: in rotation, the map's own mode, used when the chosen mode g_chosenGameMode is 14 or more) or,
+   without rotation (g_mapRotation), the chosen map only, from the first; a machine that joined, none */
 static void make_rotation(Scene *s)
 {
 	if (s->sessionMode == 0) {
@@ -64,9 +64,9 @@ static void make_rotation(Scene *s)
 }
 
 /* the first round: a Ladder game (the game room's: g_matchMode 2; the scores committed every 300 s, a game counted at
-   0x4de72a), the rotation, the limits, the mech (its name 0x4dedd8, value, parts, items and the five colour sets),
-   the room's level (from its points 0x4de722; outside 1 .. 20 fatal); then a network host makes its player 0, a
-   machine that joined has none yet, and a solo game makes player 0 with rotation on (0x9da3e0) */
+   g_ladderScore), the rotation, the limits, the mech (its name g_matchPlayerName, value, parts, items and the five colour sets),
+   the room's level (from its points g_ladderPoints; outside 1 .. 20 fatal); then a network host makes its player 0, a
+   machine that joined has none yet, and a solo game makes player 0 with rotation on (g_mapRotation) */
 static void first_round(Scene *s)
 {
 	s->ladderGame = g_matchMode == 2;
@@ -97,7 +97,7 @@ static void first_round(Scene *s)
 	static const u32 items[6] = { ADDR(g_savedMechItem2), ADDR(g_savedMechItem3), ADDR(g_savedMechItem4), ADDR(g_savedMechItem5), ADDR(g_savedMechWeapons), ADDR(g_savedMechItem1) };
 	for (int k = 0; k < 6; k++)
 		s->mechItems[k] = GAME_VAR(int, items[k]);
-	/* the five parts' colour pairs (six dwords each from 0x4dcfe0: hue, saturation, value of the first tint, then
+	/* the five parts' colour pairs (six dwords each from g_savedColourChoices: hue, saturation, value of the first tint, then
 	   of the second) */
 	for (int i = 0; i < 5; i++)
 		for (int t = 0; t < 3; t++) {
@@ -133,7 +133,7 @@ static void first_round(Scene *s)
 	s->stageCleared = 0;
 }
 
-/* a random position below n (from the game's table of rand() values, 0xa106f8, at 0xa1efb8), 0 when n is none */
+/* a random position below n (from the game's table of rand() values, g_randTable, at g_randPos), 0 when n is none */
 static int random_below(u32 n)
 {
 	if ((int)n <= 0)
@@ -146,7 +146,7 @@ static int random_below(u32 n)
 
 /* a later round: a random position in each of the six geometry tables (their counts at +0x15de6c8 .., rows of
    0x2aa .. 0xb86 dwords), the restart point, the round's tables copied (cameraMode counting through them, as in the
-   original), the camera back to mode 1, nobody watched, the pointer centred, the volumes (0x4e0c90, 0x4e0c94) set
+   original), the camera back to mode 1, nobody watched, the pointer centred, the volumes (g_soundVolume, g_musicVolume) set
    again, the local player's inPlay cleared, the teams (scene_setLocalTeam), the camera and its slot, a typed chat line
    kept (chat_keepLastLine) and the round's flags cleared */
 static void later_round(Scene *s)
@@ -210,9 +210,9 @@ void THISCALL (match_startRound)(Scene *s)
 		first_round(s);
 }
 
-/* 0x4732f0 (thiscall on the scene): game type t (+0x20f3ab8) and its rule flags (+0x20f3abc .. +0x20f3ad8, cleared
-   first): the odd types 1 .. 13 set +0x20f3abc; types 2 .. 11 by pairs set one of +0x20f3ac0 .. +0x20f3ad0, 12 sets
-   +0x20f3ad4 and 13 +0x20f3ad8. Its callers ignore the eax it leaves */
+/* 0x4732f0 (thiscall on the scene): game type t (gameType) and its rule flags (teamGame .. platoon, cleared
+   first): the odd types 1 .. 13 set teamGame; types 2 .. 11 by pairs set one of suddenDeath .. gladiator, 12 sets
+   kingOfTheHill and 13 platoon. Its callers ignore the eax it leaves */
 void THISCALL (game_setGameTypeFlags)(u8 *scene, int t)
 {
 #define AT(field) (offsetof(Stage, field) - offsetof(Stage, gameType))
@@ -239,10 +239,10 @@ static void identity(u32 *m)
 		m[k] = k % 5 == 0 ? 0x3f800000 : 0;
 }
 
-/* 0x470ad0 (thiscall on the scene): the scene's subsystems reset (stage_resetLights; the 100 dwords at +0x202ea80 and
-   +0x202ef30 cleared; the object list, stage_clearBullets, stage_clearParticles, stage_resetMatrixAndPoints), the camera at the origin looking down
-   -z (+0x20f3970 .. +0x20f399c) with identity matrices (+0x20f39a0, +0x20f39e0), the start and item points none, the
-   team commanders (+0x20fce50) and snapshot textures (+0x1cd6968) all -1, then the scripts (stage_clearMessages, script_reset) and stage_initSpaceOneCell. Its
+/* 0x470ad0 (thiscall on the scene): the scene's subsystems reset (stage_resetLights; the 100 dwords at lockHeld and
+   lockCount cleared; the object list, stage_clearBullets, stage_clearParticles, stage_resetMatrixAndPoints), the camera at the origin looking down
+   -z (cameraPos .. lastCameraPos[2]) with identity matrices (modelview, lastModelview), the start and item points none, the
+   team commanders (teamCommanders) and snapshot textures (snapshotTex) all -1, then the scripts (stage_clearMessages, script_reset) and stage_initSpaceOneCell. Its
    callers ignore the eax it leaves */
 void THISCALL (scene_reset)(u8 *s)
 {
@@ -284,12 +284,12 @@ static void model_sets(u8 *shapes, const char *dir, int n, int extra, int size, 
 
 /* 0x4700a0 (thiscall on the stage): the stage built (its names passed on to stage_setFolders): the collision space (in its
    block +0xb04), the ten sky textures (by 0x4c7410 from the third name; the last two flagged), the light factors and
-   the default light (grey, from (-1, -1, -1)). The sky box (+0x9ee080: six faces of 7 x 7 points, a cube of side
-   1 / sqrt(0x4aa408) turned to each face), the dome (+0x9eee54: 7 x 7 points of the up vector turned by two angles),
-   six 4-point rings top and bottom (+0x9ef0cc), an 11 x 11 ground grid (+0x9ef350); the world box (+-100000), the
+   the default light (grey, from (-1, -1, -1)). The sky box (skySphere: six faces of 7 x 7 points, a cube of side
+   1 / sqrt(k_27) turned to each face), the dome (+0x9eee54: 7 x 7 points of the up vector turned by two angles),
+   six 4-point rings top and bottom (sides), an 11 x 11 ground grid (floor); the world box (+-100000), the
    layer lists cleared; the shape and skeleton sets of the stage, of each of the 16 player records (five parts each) and
    of the map; the effects and three textures (0x4c73f4 ..), an identity and a 1.1 scale matrix, the flag atlas
-   (a texture, filled with 0xa1f220); the game type 0, the actors and the scene reset; built (+4 1). Its caller
+   (a texture, filled with g_defaultColour); the game type 0, the actors and the scene reset; built (+4 1). Its caller
    ignores the eax it leaves */
 void THISCALL (stage_build)(u8 *s, u32 stageDir, u32 mapDir, const char *textureDir, u32 shapeDir, const char *skeletonDir, u32 actorDir,
                                   u32 bulletDir, u32 effectDir, u32 sceneDir)

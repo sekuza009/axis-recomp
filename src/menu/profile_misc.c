@@ -33,13 +33,13 @@ static int has_any(const char *s, const char *bad)
 	return 0;
 }
 
-/* 0x434400: a room name with a character the network messages cannot carry; 0x44b7e0: a pilot name that cannot be
+/* 0x434400: a room name with a character the network messages cannot carry; profile_nameHasBadChar: a pilot name that cannot be
    a file name */
 int (room_nameHasBadChar)(const char *s) { return has_any(s, "`\"',/\\|~?"); }
 int (profile_nameHasBadChar)(const char *s) { return has_any(s, "\\/:*?\"<>|"); }
 
 /* profile colour record i (nine ints, 76 bytes a record from 0x9f9068) into the preview's floats, each plus the
-   constant at 0x4a9560; the preview reset (distance 40, -1, not turning) */
+   constant at k_50f; the preview reset (distance 40, -1, not turning) */
 static void load_colour(int i)
 {
 	(*(u32 *)&g_profileFrameAlpha) = 0x42200000;   /* 40.0 */
@@ -50,7 +50,7 @@ static void load_colour(int i)
 			(float)((long double)g_profileRecords[i].stats[k] + k_50f);
 }
 
-/* 0x44bc50: the selected profile's colours; 0x44bd20: those of the pilot under the list cursor */
+/* 0x44bc50: the selected profile's colours; profile_loadCursorColours: those of the pilot under the list cursor */
 void (profile_loadSelectedColours)(void) { load_colour(g_emblemCursor); }
 void (profile_loadCursorColours)(void) { load_colour(GAME_VAR(int, OBJ(g_profileList) + 0x40 + g_pilotChosen * 72)); }
 
@@ -85,7 +85,7 @@ int (name_isBlank)(const char *name)
 	return 1;
 }
 
-/* 0x44b2e0: 1 when (x, y) is in the dialog box rectangle at 0x9f9010 (left, top, right, bottom), else -1 */
+/* 0x44b2e0: 1 when (x, y) is in the dialog box rectangle at g_profileDialogBox (left, top, right, bottom), else -1 */
 int (profile_inDialogBox)(int x, int y)
 {
 	const int *r = g_profileDialogBox;
@@ -123,7 +123,7 @@ void (profile_resetCamera)(void)
 	g_profilePage = 1;
 }
 
-/* 0x44b870: does a profile with the typed name (0x9dc92c) exist, ignoring case? (The original's trailing-space trim
+/* 0x44b870: does a profile with the typed name (g_chatLine) exist, ignoring case? (The original's trailing-space trim
    can't run: it is skipped whenever the length is >= 0. Its compare buffer keeps the tail of a longer earlier
    name, as here.) */
 int (profile_nameExists)(void)
@@ -145,7 +145,7 @@ int (profile_nameExists)(void)
 }
 
 /* ---- the profile screen's confirmation dialogs: a click on the first button does the thing (with the menu sound),
-   the second (or a right click) closes the dialog (0x9f8f10). Both return the right click state (the original's eax) */
+   the second (or a right click) closes the dialog (g_profilePage). Both return the right click state (the original's eax) */
 /* 0x44c390: "delete this profile?" */
 int (profile_deleteClicks)(void)
 {
@@ -166,7 +166,7 @@ int (profile_deleteClicks)(void)
 	return g_rightClick;
 }
 
-/* 0x44c400: the log-out question: its first button runs profile_resetCamera, the second closes it (and clears 0x76d42c) */
+/* 0x44c400: the log-out question: its first button runs profile_resetCamera, the second closes it (and clears g_highlightShown) */
 int (profile_logOutClicks)(void)
 {
 	(*(int *)&g_cursorBlink) = 0;
@@ -186,7 +186,7 @@ int (profile_logOutClicks)(void)
 	return g_rightClick;
 }
 
-/* 0x44f6c0: logging in with the selected profile (when 0x9f6840): the profile saved, the main menu (state 300), the
+/* 0x44f6c0: logging in with the selected profile (when g_profileDialogOpen): the profile saved, the main menu (state 300), the
    profile's name as the player's (0x20 bytes), then axis.cfg loaded. Returns what the original leaves in eax */
 u32 (profile_logIn)(void)
 {
@@ -207,8 +207,8 @@ u32 (profile_logIn)(void)
 
 #define CALL(addr) GAME_CDECL(addr, u32, void)()
 
-/* 0x44f410: the profile screen's frame: the message's timer (0x9f8f18, to 0x4a944c; then the message goes), the
-   dialog's frame and its page (0x44b600) while open, else the screen (an entry being edited first), the page shown.
+/* 0x44f410: the profile screen's frame: the message's timer (g_profileMessageTime, to k_20f; then the message goes), the
+   dialog's frame and its page (profile_typeNewName) while open, else the screen (an entry being edited first), the page shown.
    Returns what the original leaves in eax */
 u32 (profile_frame)(void)
 {
@@ -234,8 +234,8 @@ u32 (profile_frame)(void)
 	return profile_drawManagementWindow();
 }
 
-/* 0x44c560: the profile screen's input: while its intro plays (0x9f6838) a click skips it (to state 5, the panel
-   sliding in from 100 at 0.05); else, with no dialog, by page (0x9f8f10): 1 the list, 2 the new profile, 3 and 5 the
+/* 0x44c560: the profile screen's input: while its intro plays (g_profileIntro) a click skips it (to state 5, the panel
+   sliding in from 100 at 0.05); else, with no dialog, by page (g_profilePage): 1 the list, 2 the new profile, 3 and 5 the
    dialogs, 6 the profile list's clicks. Returns what the original leaves in eax */
 u32 (profile_processInput)(void)
 {
@@ -324,8 +324,8 @@ u32 (profile_create)(void)
 	return profile_resetPreview();  /* profile_resetPreview */
 }
 
-/* a profile screen page with a panel: while the pointer glides (0x76d42c) it is pulled towards its target (0x67ef34,
-   0x67fb38) by the frame time times rate, until the glide's timer (0x680bc0) runs out; the screen drawn, then the
+/* a profile screen page with a panel: while the pointer glides (g_highlightShown) it is pulled towards its target (g_highlightX,
+   g_highlightY) by the frame time times rate, until the glide's timer (g_highlightSize) runs out; the screen drawn, then the
    dialog's frame (at frame: x0, y0, x1, y1) if one is open, else the panel. Returns what the original leaves in eax */
 static u32 glide_page(const float *rate, const u32 *frame, u32 panel)
 {
@@ -358,8 +358,8 @@ u32 (profile_logOutPage)(void)
 	return glide_page((const float *)ADDR(k_0_2f), frame, FN_ADDR(profile_drawLogOutQuestion, 0x44e3e0));
 }
 
-/* 0x44ce90: the profile list's names drawn (13 rows from the top entry 0x9f8c4c, 20 units apart in the panel at
-   0x9f8e48): grey-blue, the selected one brighter; dimmer while a dialog page is up (page other than 1). Returns the
+/* 0x44ce90: the profile list's names drawn (13 rows from the top entry g_profileListTop, 20 units apart in the panel at
+   g_profilePageLeft): grey-blue, the selected one brighter; dimmer while a dialog page is up (page other than 1). Returns the
    last text call's eax */
 u32 (profileList_drawNames)(void)
 {
@@ -426,10 +426,10 @@ u32 (profile_newNamePage)(void)
 	return profile_drawNewDialog();
 }
 
-/* 0x44ba60: the current profile (0x9f8d74) deleted: its save file ("save\<name>.axs") removed (DeleteFileA, tried
+/* 0x44ba60: the current profile (g_pilotChosen) deleted: its save file ("save\<name>.axs") removed (DeleteFileA, tried
    twice), the later profiles moved down a slot and the freed last slot cleared (colour -1), the count lowered.
    With none left everything is reset and the list written (profile_writeFile); otherwise, if the current one was the
-   last, the selection steps back (the scrolled row 0x9f8c5c, else the list's top 0x9f8c4c), then the list is
+   last, the selection steps back (the scrolled row g_profileListRow, else the list's top g_profileListTop), then the list is
    written and shown again (profile_resetPreview). Returns the last call's eax */
 u32 (profile_deleteFiles)(void)
 {
@@ -477,7 +477,7 @@ static u32 keyboard_back(void)
 	return ((u32)input_initKeyboard(g_mainWindow));   /* input_initKeyboard */
 }
 
-/* the typed line emptied (its length 0x9dcd30) */
+/* the typed line emptied (its length g_typedLength) */
 static void line_wipe(void)
 {
 	int n = g_typedLength;
@@ -485,7 +485,7 @@ static void line_wipe(void)
 		memset((void *)OBJ(g_chatLine), 0, n);
 }
 
-/* 0x44c190: the new pilot's name dialog. Before typing (0x9f8f34): a click on the name field (profile_inDialogBox) or
+/* 0x44c190: the new pilot's name dialog. Before typing (g_profileMessage): a click on the name field (profile_inDialogBox) or
    a right click starts it (profile_typeNewName). While typing: OK (button 0) refuses a blank name (sound 6), refuses a bad one
    (message 0x81, the dialog shut) or takes it (profile_nameExists; when that fails the dialog stays for another go),
    cancel (1) empties the line; a right click (g_rightClick) leaves typing with the line emptied. Returns what the original
@@ -548,8 +548,8 @@ u32 (profile_newNameDialog)(void)
 	return keyboard_back();
 }
 
-/* ---- the profile list's keys (page 1): 13 rows shown from 0x9f8c4c, the cursor 0x9f8c5c on them, the profile
-   chosen (0x9f8d74) the one under it; there are 0x9f9008 profiles ---- */
+/* ---- the profile list's keys (page 1): 13 rows shown from g_profileListTop, the cursor g_profileListRow on them, the profile
+   chosen (g_pilotChosen) the one under it; there are g_profileCount profiles ---- */
 #define g_listTop g_profileListTop
 #define g_listRow g_profileListRow
 
@@ -590,8 +590,8 @@ static void key_up(void) { list_up(); }
 static void key_down(void) { list_down(); }
 
 /* 0x44c600: the profile list's keys: up / down held (with the menu's key repeat) move the cursor, scrolling the list
-   at its ends (sound 2); N starts a new profile (profile_typeNewName); 0x4e0ce0 / 0x76d414 delete it
-   (profile_askDelete) when there is one; 0x4e14f4 logs in (the pilot grid: 0x9f6840, page 4), or starts a new
+   at its ends (sound 2); N starts a new profile (profile_typeNewName); g_dikD / g_dikDelete delete it
+   (profile_askDelete) when there is one; g_dikI logs in (the pilot grid: g_profileDialogOpen, page 4), or starts a new
    profile when there are none; OK / the second cancel key ask to log out (profile_askLogOut). The original leaves eax to
    callers that ignore it */
 void (profileList_keys)(void)
@@ -620,11 +620,11 @@ void (profileList_keys)(void)
 	if (input_justPressed(g_keyOk) == 1 || input_justPressed(g_keyCancel2))
 		profile_askLogOut();   /* profile_askLogOut */
 }
-/* 0x44be00: the profile list's mouse: a click (0x4ded88) on the page's buttons (profilePage_hitTest): 0 NEW: a new name typed
+/* 0x44be00: the profile list's mouse: a click (g_mouseClicked) on the page's buttons (profilePage_hitTest): 0 NEW: a new name typed
    (profile_typeNewName), 1 DELETE asked (profile_askDelete) when there is one, 2 LOG IN: the pilot grid opened (page 4; with
    no profiles a new name typed instead), 3 LOG OUT asked (profile_askLogOut), 4 the list: a row (profileList_hitTest) chosen, or the
-   chosen row clicked again (0x9f900c) opens the dialog; 5 / 6 a row up / down. Then with the button held
-   (0x4ded94) on the arrows they step again once the blink clock (0x4dda44) reaches 5. The original leaves eax to
+   chosen row clicked again (g_profileRowClicked) opens the dialog; 5 / 6 a row up / down. Then with the button held
+   (g_mouseButtonsHeld) on the arrows they step again once the blink clock (g_cursorBlink) reaches 5. The original leaves eax to
    callers that ignore it */
 void (profileList_mouse)(void)
 {

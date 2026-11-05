@@ -64,8 +64,8 @@ int (text_printableLength)(const char *s)
 }
 
 /* 0x403060: text drawn with the 5-pixel font as quads from (x, y), 6 pixels a letter: "|" a new line 10 pixels down
-   ("||" a "|"; unless 0x76d3e8 is 9999), "$[n]?c" letter c in colour n of the table at 0x9dada0, otherwise the
-   default colour (0x76d438); a byte with the top bit set and the next one are skipped (16 pixels). Returns
+   ("||" a "|"; unless g_screen is 9999), "$[n]?c" letter c in colour n of the table at g_codeColours, otherwise the
+   default colour (g_textColour); a byte with the top bit set and the next one are skipped (16 pixels). Returns
    glEnd's eax */
 u32 (text_ascii5Pass)(int x, int y, const u8 *s)
 {
@@ -98,15 +98,15 @@ u32 (text_ascii5Pass)(int x, int y, const u8 *s)
 	return IMPORT(0x4a9220, u32, void)();   /* glEnd */
 }
 
-/* ---- the larger text passes, one quad per character (colour 0x76d438): "|" breaks the line outside the console
+/* ---- the larger text passes, one quad per character (colour g_textColour): "|" breaks the line outside the console
    (screen 9999; "||" is a '|'), as does "\r\n"; "$[c]" colours the next character with colour c (16 bytes a slot
-   at 0x9dada0); the 13-unit passes also take "$#c" in a match or the game room (screens 9999 / 400): colour c
-   kept for the rest of the text, a later "$[c]" changing it. Lines are `line` apart, wrap at x 0x4ad490 and stop
-   at y 0x4ad494. The ASCII passes draw the single-byte characters (a double-byte one is skipped, `wide` across),
-   then keep where they ended (0x4d23c8 / 0x4d23cc; 0x4d7348 set when stopped). The Korean passes draw only the
-   double-byte syllables, each split by hangul_glyphs (after the conversion 0x44aac0 when 0x4d23d0 is 1): the lead
-   glyph alone (0x4d60e0) or the vowel and tail glyphs as two layers (0x4d23d4 / 0x4d23dc); other characters move
-   `space` for a space, else 0x4d23d8. Returns glEnd's eax, or glDisable's for the passes that end texturing ---- */
+   at g_codeColours); the 13-unit passes also take "$#c" in a match or the game room (screens 9999 / 400): colour c
+   kept for the rest of the text, a later "$[c]" changing it. Lines are `line` apart, wrap at x g_textWrapX and stop
+   at y g_textBottom. The ASCII passes draw the single-byte characters (a double-byte one is skipped, `wide` across),
+   then keep where they ended (g_textEndX / g_textEndY; g_briefingSkipped set when stopped). The Korean passes draw only the
+   double-byte syllables, each split by hangul_glyphs (after the conversion text_hangulConvert when g_convertHangul is 1): the lead
+   glyph alone (g_hangulLeadGlyph) or the vowel and tail glyphs as two layers (g_hangulVowelGlyph / g_hangulTailGlyph); other characters move
+   `space` for a space, else g_textCharWidth. Returns glEnd's eax, or glDisable's for the passes that end texturing ---- */
 typedef struct {
 	int line, wide;
 	int sticky;                  /* "$#c" understood */
@@ -209,7 +209,7 @@ static const TextPass han31b =  { 0x21, 0x20, 0, FN_ADDR(glyph_drawHud31Layered,
 u32 (text_ascii8Pass)(int x, int y, const u8 *s) { return text_pass(x, y, s, &ascii8); }
 u32 (text_ascii16Pass)(int x, int y, const u8 *s) { return text_pass(x, y, s, &ascii16); }
 u32 (text_ascii32Pass)(int x, int y, const u8 *s) { return text_pass(x, y, s, &ascii32); }
-/* 0x401870, 0x401aa0: Korean at 13 units, the lead glyphs and the vowel and tail glyphs; 0x401ce0, 0x401e70: the
+/* 0x401870, 0x401aa0: Korean at 13 units, the lead glyphs and the vowel and tail glyphs; text_hangul31Pass, text_hangul31LayeredPass: the
    same at 31 units */
 u32 (text_hangul13Pass)(int x, int y, const u8 *s) { return text_pass(x, y, s, &han13); }
 u32 (text_hangul13LayeredPass)(int x, int y, const u8 *s) { return text_pass(x, y, s, &han13b); }

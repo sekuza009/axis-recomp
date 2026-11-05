@@ -104,7 +104,7 @@ int (notice_printCentre)(Scene *scene, const char *format, ...)
 	return n;
 }
 
-/* 0x473450: printed into the stage's text buffer (+0x20fcd4c) */
+/* 0x473450: printed into the stage's text buffer (printText) */
 int (stage_printText)(u8 *obj, const char *format, ...)
 {
 	va_list args;

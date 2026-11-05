@@ -1,6 +1,6 @@
 /* lobby_states.c: the arena lobby's and the game room's screens set up as they are entered: the camera's target point
    for the screen (and its look-at point), the screen's state cleared, the panel brightness (0x3f333333 = 0.7), the
-   message box hidden (0x4dba68 / 0x9dd6bc), and for the lists the map list or the ranking reset. The lobby's
+   message box hidden (g_arenaTunnelDepth / g_roomPanelBrightness), and for the lists the map list or the ranking reset. The lobby's
    three sub-screens are 0 (the player's own record), 1 (the arena list) and 2 (creating an arena). */
 #include "../game.h"
 #include <string.h>
@@ -54,7 +54,7 @@ void (lobby_enterArenaList)(void)
 	g_listRefreshPeriod = 30;
 }
 
-/* 0x404980: the arena settings record (0x4ded20: title, map, options) loaded into the new arena's form (0x4db528). Maps 22 .. 24
+/* 0x404980: the arena settings record (g_playerName: title, map, options) loaded into the new arena's form (g_newArenaName). Maps 22 .. 24
    can't be chosen (back to 0); a title still the default one becomes "<player name><suffix>" */
 void (lobby_loadArenaSettings)(void)
 {
@@ -81,8 +81,8 @@ void (lobby_loadArenaSettings)(void)
 	g_newArenaPassword4 = 0;
 }
 
-/* 0x403420: the map on/off list (8-byte entries from 0x4d9508): the first time all off, then the first n maps
-   (0x67ef00) on; maps 22 .. 24 turned off (the last ones; the list's open flag cleared too) and the list laid out */
+/* 0x403420: the map on/off list (8-byte entries from g_mapChoiceKeptTable): the first time all off, then the first n maps
+   (g_arenaMapCount) on; maps 22 .. 24 turned off (the last ones; the list's open flag cleared too) and the list laid out */
 void (mapList_init)(void)
 {
 	if (!g_mapListMade) {
@@ -126,7 +126,7 @@ void (lobby_enterCreate)(void)
 	mapList_init();
 }
 
-/* 0x433700: the room settings record (0x5b1b30: a name and six bytes) copied to the room's (0x4df9c8); map types
+/* 0x433700: the room settings record (g_roomRecName: a name and six bytes) copied to the room's (g_roomSettingsName); map types
    22 .. 24 become 0 */
 void (room_loadSettingsRecord)(void)
 {
@@ -199,7 +199,7 @@ void (room_setLadderDefaults)(void)
 	mech_unpackFromRecord();
 }
 
-/* 0x432be0: the joined game's settings (0x9dd570: its name, its host's, the room record 0x5b1b30, the mech and the
+/* 0x432be0: the joined game's settings (g_ladderId: its name, its host's, the room record g_roomRecName, the mech and the
    window rectangles) copied into the room screen's */
 void (room_copyJoinedSettings)(void)
 {
@@ -318,7 +318,7 @@ static void default_mech(u8 *mech, u8 *colours)
 
 /* 0x434820: the new ID registered (its confirmation's OK): the form's ID and e-mail kept as the Ladder login's, the
    default mech and colours in both copies, the pilot's stats reset (level 1) and the Ladder record (g_ladderName ..)
-   set from them; the account record (0xa0b320: kind 0x18, the ID, password and e-mail, the defaults) sent to the
+   set from them; the account record (g_accountPacket: kind 0x18, the ID, password and e-mail, the defaults) sent to the
    server (net_send 0xf, 0x65). Returns net_send's
    eax */
 u32 (newId_register)(void)
@@ -352,7 +352,7 @@ u32 (newId_register)(void)
 	return r;
 }
 
-/* 0x4080c0: the lobby's back keys (unless a dialog is open): the first closes the list (0x907b2c), the second leaves
+/* 0x4080c0: the lobby's back keys (unless a dialog is open): the first closes the list (g_arenaUpdateNotice), the second leaves
    the game (quit code 2). Returns what the original leaves in eax */
 u32 (lobby_keysBack)(void)
 {
@@ -370,7 +370,7 @@ u32 (lobby_keysBack)(void)
 	return app_closeWindow(2);
 }
 
-/* 0x40cf80: the lobby's player screen: the arena tunnel, then in modes other than 0 and 1 (0x4dbb3c) and not on
+/* 0x40cf80: the lobby's player screen: the arena tunnel, then in modes other than 0 and 1 (g_arenaCameraMode) and not on
    sub-screen 5, the player panel (arena_drawNameDialog), or with a dialog open just its frame. Returns what the original
    leaves in eax */
 u32 (lobbyPlayer_draw)(void)
@@ -385,7 +385,7 @@ u32 (lobbyPlayer_draw)(void)
 	                                                     g_arenaNameDialogRight, g_arenaNameDialogBottom);   /* menu_drawFrame */
 }
 
-/* 0x4081f0: the lobby's keys, by sub-screen (0x4db51c): 0 the player's record, 1 the arena list (or its chat line
+/* 0x4081f0: the lobby's keys, by sub-screen (g_lobbySubState): 0 the player's record, 1 the arena list (or its chat line
    while open), 2 creating an arena (the back keys while the list is open, the map list, the quit dialog, else the
    connect), 5 the top; 3 and 4 have none. Returns what the handler leaves in eax (else the sub-screen) */
 u32 (lobby_processKeys)(void)
@@ -434,7 +434,7 @@ u32 (arenaUpdateNotice_clicks)(void)
 	return (u32)(button - 1);
 }
 
-/* ---- the lobby's per-frame dispatch by sub-screen (0x4db51c): drawing and clicks. Each returns what the handler it
+/* ---- the lobby's per-frame dispatch by sub-screen (g_lobbySubState): drawing and clicks. Each returns what the handler it
    ends in leaves in eax (or the sub-screen when there is none) ---- */
 
 /* 0x40d450: the lobby drawn: the top (5: its title, or the dim overlay while connecting to a ladder game), else the
@@ -618,9 +618,9 @@ static u32 settings_store(GameSettings *from, GameSettings *to, u32 then)
 	to->locked = locked;
 	return GAME_CDECL(then, u32, void)();
 }
-/* 0x405140: the arena being created kept as the arena settings (0x4ded20), then axis.cfg loaded again */
+/* 0x405140: the arena being created kept as the arena settings (g_playerName), then axis.cfg loaded again */
 u32 (lobby_keepArenaSettings)(void) { return settings_store((GameSettings *)OBJ(g_newArenaName), (GameSettings *)OBJ(g_playerName), FN_ADDR(cfg_writeAxisCfg, 0x42d730)); }
-/* 0x433640: the room's settings kept (0x5b1b30) and written to the registry (reg_writeCharacterSettings) */
+/* 0x433640: the room's settings kept (g_roomRecName) and written to the registry (reg_writeCharacterSettings) */
 u32 (room_keepSettings)(void) { return settings_store((GameSettings *)OBJ(g_roomSettingsName), (GameSettings *)OBJ(g_roomRecName), FN_ADDR(reg_writeCharacterSettings, 0x432400)); }
 
 /* 0x40d390: the create-arena screen drawn: the tunnel, then (modes other than 0 and 1, not on sub-screen 5) the
@@ -655,7 +655,7 @@ u32 (lobbyCreate_draw)(void)
 }
 
 /* 0x408110: the "NETWORK INITIALIZE ERROR" box's keys (hosting failed; no other dialog open): C closes it, O starts the arena anyway:
-   multiplayer on, the music stopped, the arena settings (0x4ded20) as the game's (map, players, limits), the lobby
+   multiplayer on, the music stopped, the arena settings (g_playerName) as the game's (map, players, limits), the lobby
    left. Returns what the original leaves in eax */
 u32 (hostError_keys)(void)
 {
@@ -724,7 +724,7 @@ u32 (lobby_playerScreenClicks)(void)
 }
 
 /* a joined session's settings taken from its list entry: the music stopped, its name as the map title, the map,
-   rotation, game mode, frag and time limits; the lobby left (0x4dbb3c 0) for the game (0x67ef14 1, 0x67ef04 2) */
+   rotation, game mode, frag and time limits; the lobby left (g_arenaCameraMode 0) for the game (g_quitAsked 1, g_netRole 2) */
 static void take_session(const SessionEntry *rec)
 {
 	music_shutdown();
@@ -758,9 +758,9 @@ u32 (arena_joinSession)(int session)
 	return rec->timeLimit;
 }
 
-/* 0x4062b0 (the arena join's answer, from WndProc): with the join dialog up (0x4dbb78)
-   message 0x44 and the connection closed; else a pending join (0x4db708) of the game picked (0x4db710: 99999 for
-   the one received at 0x4dbbf8, copied into a session record at 0x9dae20, otherwise its row of the list, which
+/* 0x4062b0 (the arena join's answer, from WndProc): with the join dialog up (g_arenaJoinWaiting)
+   message 0x44 and the connection closed; else a pending join (g_arenaJoinPending) of the game picked (g_arenaJoinRow: 99999 for
+   the one received at g_receivedSession, copied into a session record at g_joinedSessionRec, otherwise its row of the list, which
    takes the received id) is answered (dplay_join): joined, the session's settings are taken and the lobby
    connection closed; refused, messages 0x43 (501), 0x42 (502, 503), 0x44 (504), 0x45 (505) and the connection
    closed. The caller ignores the eax it leaves */
@@ -829,7 +829,7 @@ static u32 to_main_menu(void)
 	return r;
 }
 
-/* 0x407750: the lobby's top page keys (no dialog open, not while 0x67ef14 is 1): back (when a tunnel ring is behind: g_tunnelRings > 0) or
+/* 0x407750: the lobby's top page keys (no dialog open, not while g_quitAsked is 1): back (when a tunnel ring is behind: g_tunnelRings > 0) or
    leave goes to the main menu; the other three pick the lobby's sub-pages 2, 0 and 1. Returns the action's eax */
 u32 (lobbyTop_keys)(void)
 {
@@ -852,8 +852,8 @@ u32 (lobbyTop_keys)(void)
 	return 0;
 }
 
-/* 0x406950: the lobby's top page clicks (no dialog open, not while 0x67ef14 is 1): a left click on one of its four
-   buttons (outlines at 0x5b1cf8) picks sub-page 0, 1 or 2 or goes back to the main menu; a right click (when a tunnel ring
+/* 0x406950: the lobby's top page clicks (no dialog open, not while g_quitAsked is 1): a left click on one of its four
+   buttons (outlines at g_lobbyTopOutlines) picks sub-page 0, 1 or 2 or goes back to the main menu; a right click (when a tunnel ring
    is behind: g_tunnelRings > 0) goes back too. Returns what the original leaves in eax */
 u32 (lobby_topPageClicks)(void)
 {
@@ -886,10 +886,10 @@ u32 (lobby_topPageClicks)(void)
 	return to_main_menu();
 }
 
-/* 0x407840: the lobby's player page keys (page open, 0x4dbb3c not 0 or 1; no dialog): while the name is being typed
-   (0x4dbbd0), the typed line (0x9dc92c) becomes the player's name (0x4db560, 32 bytes) once the keyboard is back
-   (0x68039c clear) and typing ends; otherwise back closes the page, 0x4e1510 applies (0x4050a0) and closes it,
-   0x4e0ce0 resets the name to the default, 0x4e0cdc closes it. Returns what the original leaves in eax */
+/* 0x407840: the lobby's player page keys (page open, g_arenaCameraMode not 0 or 1; no dialog): while the name is being typed
+   (g_typingArenaName), the typed line (g_chatLine) becomes the player's name (g_arenaPlayerName, 32 bytes) once the keyboard is back
+   (g_textFieldOpen clear) and typing ends; otherwise back closes the page, g_dikO applies (arena_savePlayerSettings) and closes it,
+   g_dikD resets the name to the default, g_dikC closes it. Returns what the original leaves in eax */
 u32 (lobbyPlayer_keys)(void)
 {
 	u32 page = (*(u32 *)&g_arenaCameraMode);
@@ -927,7 +927,7 @@ u32 (lobbyPlayer_keys)(void)
 	return r;
 }
 
-/* 0x4060f0: the lobby server connection opened (unless open, 0x4db718): the old one closed, net_connect(100) (0: no
+/* 0x4060f0: the lobby server connection opened (unless open, g_lobbyConnectionOpen): the old one closed, net_connect(100) (0: no
    server, message 0x3d; 2: message 0x46) and the socket's messages sent to the main window (failing: 0x3e). Then
    the lobby screen's state reset and the hello sent (0x180001, net_send(0xd, 100)). 1, or 0 on a failure */
 int (lobby_openConnection)(void)
@@ -971,10 +971,10 @@ int (lobby_openConnection)(void)
 }
 
 /* 0x40d840: a launcher-started arena game. As its host (g_startedByLauncher 1): the arena's settings from axiswl.dat
-   (arena_loadSettings; none: quit) as the arena record (the name 0x5b191c into 0x4ded20, the optional password
-   0x5b193c, the limits, game type, map and players), then the lobby's arena list and the arena hosted
+   (arena_loadSettings; none: quit) as the arena record (the name g_arenaGameName into g_playerName, the optional password
+   g_arenaFilePassword, the limits, game type, map and players), then the lobby's arena list and the arena hosted
    (lobby_hostArena; reply 0x68). Otherwise the lobby's arena list and the server address given (g_serverAddressArg,
-   into 0x4dbbd4) joined (arena_joinListed(99999); reply 0x69).
+   into g_typedArenaName) joined (arena_joinListed(99999); reply 0x69).
    Returns the last call's eax */
 u32 (arena_startFromLauncher)(void)
 {
@@ -1010,9 +1010,9 @@ u32 (arena_startFromLauncher)(void)
 	return r;
 }
 
-/* 0x407300: the "NETWORK INITIALIZE ERROR" box's clicks (nothing else open: 0x4dbab0, 0x4db850, 0x4db518, 0x4dbacc, no
+/* 0x407300: the "NETWORK INITIALIZE ERROR" box's clicks (nothing else open: g_editingNewArenaName, g_editingNewArenaFragLimit, g_editingNewArenaTimeLimit, g_typingArenaPassword, no
    dialog): a right click or button 0x11 closes it (g_hostErrorBox); button 0x10 starts the game anyway with the player's settings (the
-   32-byte record 0x4ded20 and its colour / corporation bytes), the music stopped. Returns what the original
+   32-byte record g_playerName and its colour / corporation bytes), the music stopped. Returns what the original
    leaves in eax */
 u32 (hostError_clicks)(void)
 {
@@ -1047,10 +1047,10 @@ u32 (hostError_clicks)(void)
 	return (*(u32 *)&g_arenaFragLimit);
 }
 
-/* 0x405b80: the arena connection's outcome (0x4ded60; 2 nothing to do). 1 connected: the music stopped, the player
-   slot opened (arena_openSession), the arena hosted with the player's record (0x4ded20: name, 0x4dedb0, colours,
-   corporation; 0x4dedd0) and its settings taken for the game, 0x4ded54 set; then (as the state stands after) 0
-   closed, 3 closed for a ladder game (0x907b2c), 4 refused (message 0x46): the connection closed (net_disconnect) and
+/* 0x405b80: the arena connection's outcome (g_connectStep; 2 nothing to do). 1 connected: the music stopped, the player
+   slot opened (arena_openSession), the arena hosted with the player's record (g_playerName: name, g_cfgPlayerName, colours,
+   corporation; g_playerCorporation) and its settings taken for the game, g_arenaGameSetUp set; then (as the state stands after) 0
+   closed, 3 closed for a ladder game (g_arenaUpdateNotice), 4 refused (message 0x46): the connection closed (net_disconnect) and
    the state back to 2. Returns what the original leaves in eax */
 u32 (arena_connectionOutcome)(void)
 {
@@ -1091,9 +1091,9 @@ u32 (arena_connectionOutcome)(void)
 }
 
 /* 0x407e40: the "create arena" page after typing (not while typing or with a message box): a typed field is taken
-   (the arena's name into 0x4db528 unless blank (sound 6); the password into 0x4db54e; the two limits as numbers,
-   0 .. 250 (else 250), into the bytes 0x4db54c / 0x4db54d; an empty line changes nothing), else the keys: create
-   (0x4e14f4; lobby_hostArenaLan) and join (0x4e1528; lobby_announceArena) unless connecting, and the two close
+   (the arena's name into g_newArenaName unless blank (sound 6); the password into g_newArenaPassword; the two limits as numbers,
+   0 .. 250 (else 250), into the bytes g_arenaFragLimitTyped / g_arenaTimeLimitTyped; an empty line changes nothing), else the keys: create
+   (g_dikI; lobby_hostArenaLan) and join (g_dikT; lobby_announceArena) unless connecting, and the two close
    keys (the arena left). Returns what the original leaves in eax */
 u32 (arena_createAfterTyping)(void)
 {
@@ -1163,8 +1163,8 @@ u32 (arena_createAfterTyping)(void)
 }
 
 /* 0x407410: the "create arena" page clicked (no field being typed, page state 2, no message box; a right click leaves
-   the arena). Buttons (createArena_hitTest): 0 / 1 / 6 / 7 type a field (0x404d70, 0x404f90, 0x404e10, 0x404ed0), 2 / 12 /
-   14 the map on and 13 back (arena_stepMap), 3 the players +2 (to 16, then 2), 4 custom on / off (0x4db54a; the game
+   the arena). Buttons (createArena_hitTest): 0 / 1 / 6 / 7 type a field (arena_editComment, arena_editPassword, arena_editFragLimit, arena_editTimeLimit), 2 / 12 /
+   14 the map on and 13 back (arena_stepMap), 3 the players +2 (to 16, then 2), 4 custom on / off (g_newArenaKind; the game
    type kept in range), 5 the game type on (with a turn key held back) through 0 .. 13 (0 .. 14 when custom), 8
    create and 9 join (unless connecting), 11 leave, 15 the custom map list (when custom; mapList_startEdit). Returns what
    the original leaves in eax (for the byte settings, its low byte the new value) */
@@ -1259,10 +1259,10 @@ u32 (arena_createClick)(void)
 /* 0x4079c0: the arena lobby's game list keys (none while the "full" or "joining" box, a message box, or before the
    arena camera has arrived, g_arenaCameraMode 2). With the join confirmation up only back answers it (the timer 0x378 killed). Up / down held
    move along the list of games (once the blink clock reaches 5, restarting it; nine rows shown from g_gameListTop, the
-   selection in 0x76d41c); while no search runs (0x4dba90, 0x4db858, the result box 0x4db8b8) the click key or fire
-   joins the selected game (0x4dbbec; its join password asked for when connected, 0x4dbaac) or asks the lobby to
-   join (0x4dbbf0); cancel2 and back leave (to mode 0), 0x4e1524 cancels the search; 0x4e14f4 searches the local network
-   (a slot opened, 0x4dba80 150), 0x4e1528 the lobby server; 0x4e1514 edits the arena's title */
+   selection in g_localPlayer); while no search runs (g_lanSearch, g_lobbySearching, the result box g_lobbyRefreshing) the click key or fire
+   joins the selected game (g_lobbyJoinStarted; its join password asked for when connected, g_serverConnected) or asks the lobby to
+   join (g_lobbyJoinRequest); cancel2 and back leave (to mode 0), g_dikS cancels the search; g_dikI searches the local network
+   (a slot opened, g_lobbyBlinkClock 150), g_dikT the lobby server; g_dikP edits the arena's title */
 void (arenaGames_keys)(void)
 {
 #define g_listTop g_gameListTop
@@ -1400,9 +1400,9 @@ void (arenaGames_keys)(void)
 #undef busy
 }
 
-/* ---- the player's record (from 0x4de700: the name, +0x1e the level, +0x22 points, +0x26 rating, +0x2a 0x4de72a,
-   +0x2e wins, +0x32 losses) and its two kept copies (0x9dd5d8 and 0x9dd240: +0 level, +4 points, +0xc rating,
-   +0x10 0x4de72a's value, +0x14 wins, +0x18 losses, +0x1c the win rate) ---- */
+/* ---- the player's record (from g_ladderName: the name, +0x1e the level, +0x22 points, +0x26 rating, +0x2a g_ladderScore,
+   +0x2e wins, +0x32 losses) and its two kept copies (g_pilotLevel and g_pilotLevelKept: +0 level, +4 points, +0xc rating,
+   +0x10 g_ladderScore's value, +0x14 wins, +0x18 losses, +0x1c the win rate) ---- */
 #define R_POINTS g_ladderPoints
 #define R_RATING (*(float *)&g_ladderRating)
 #define R_OTHER g_ladderScore
@@ -1444,7 +1444,7 @@ static u32 take_back(u32 kept, u32 rate)
 	return rate;
 }
 
-/* the record into the packet (0xa0b338: the name when asked, then the same fields from +0x1e) and both kept
+/* the record into the packet (g_netPlayerRecordPacket: the name when asked, then the same fields from +0x1e) and both kept
    copies, and sent to the game server (kind 0x11) */
 static void record_send(u32 rate, int name)
 {
@@ -1470,8 +1470,8 @@ static void record_send(u32 rate, int name)
 	net_send(0x11, 0x65);
 }
 
-/* 0x4327f0: the player's Ladder record (g_ladderName ..) checked and sent: the rating worked out from the win rate; a kept copy (0x9dd5d8,
-   then 0x9dd240) taken back when the record's wins are more than 300 above it; the record sent and kept; then, when
+/* 0x4327f0: the player's Ladder record (g_ladderName ..) checked and sent: the rating worked out from the win rate; a kept copy (g_pilotLevel,
+   then g_pilotLevelKept) taken back when the record's wins are more than 300 above it; the record sent and kept; then, when
    the points are more than 150 a win, they are cut to 2 a win and the record is sent and kept again. The caller
    ignores the eax it leaves */
 void (ladder_checkAndSendRecord)(void)
@@ -1535,7 +1535,7 @@ static void take_arena(void)
 
 /* 0x4052c0: the arena hosted on the local network (a slot opened, kind 1): the settings kept, a special room's map;
    the slot or the hosting failing, the game state put back and the connection closed (the error box up, g_hostErrorBox); else the music stopped and the
-   settings taken (0x4dbbf4 1, back to lobby mode 0). The callers ignore the eax it leaves */
+   settings taken (g_arenaLobbyState 1, back to lobby mode 0). The callers ignore the eax it leaves */
 void (lobby_hostArenaLan)(void)
 {
 	int was = g_netRole;
@@ -1576,7 +1576,7 @@ void (lobby_hostArena)(void)
 }
 
 /* 0x405cf0: the arena announced on the lobby server: the settings kept, connected (messages 0x3d no server, 0x46
-   refused, 0x3e no events; 0), a special room's map, the hello packet (0xa0b310: kind 0x18, the settings, the
+   refused, 0x3e no events; 0), a special room's map, the hello packet (g_roomPacket: kind 0x18, the settings, the
    arena's name, this machine's address) sent as kind 10. Returns 1 when sent */
 int (lobby_announceArena)(void)
 {
@@ -1617,8 +1617,8 @@ int (lobby_announceArena)(void)
 	return 1;
 }
 
-/* 0x4351c0: the game room's game announced on the game server: the room's settings kept (0x5b1b30), a special
-   room's map, the packet (0xa0b328: kind 0x18, the player's name 0x9dd570 at +0x43, the settings, the game's name,
+/* 0x4351c0: the game room's game announced on the game server: the room's settings kept (g_roomRecName), a special
+   room's map, the packet (g_arenaPacket: kind 0x18, the player's name g_ladderId at +0x43, the settings, the game's name,
    this machine's address) sent as kind 0x12. The callers ignore the eax it leaves */
 void (room_announceGame)(void)
 {

@@ -1,5 +1,5 @@
 /* net_tables.c: the network code's fixed tables: the 200 sessions found (g_sessionTable at 0xa0b470: SessionSlot;
-   the last index in 0xa0b41c) and the sixteen player slot records (0x410 bytes from 0x9f9840). */
+   the last index in g_dplaySessionCount) and the sixteen player slot records (0x410 bytes from g_netSlots). */
 #include "../game.h"
 #include "winsock.h"
 #include <string.h>
@@ -23,7 +23,7 @@ int (net_sessionValue)(int i)
 }
 
 /* 0x4514a0: player slot (its low byte) taken by player id: the first ten shorts of its packet reset (two of them
-   -1), the one at +0x22 the current value of 0xa0b428 */
+   -1), the one at +0x22 the current value of g_localPlayerData */
 void (net_takePlayerSlot)(u32 slot, int id)
 {
 	static const short init[10] = { 0, 0, 0, 0, 0, -1, 0, 0, -1, 0 };
@@ -34,7 +34,7 @@ void (net_takePlayerSlot)(u32 slot, int id)
 	memcpy(&r->packet[0x22], &g_localPlayerData, 2);
 }
 
-/* 0x4515a0: all slots freed (and the 0x40 bytes at 0x9f93d8 cleared) */
+/* 0x4515a0: all slots freed (and the 0x40 bytes at g_playerSlotFlags cleared) */
 void (net_freeAllSlots)(void)
 {
 	memset((void *)OBJ(g_playerSlotFlags), 0, 0x40);
@@ -42,7 +42,7 @@ void (net_freeAllSlots)(void)
 		memset(r, 0, offsetof(NetSlot, packet));
 }
 
-/* 0x451450: a free player slot claimed (its flag in the sixteen at 0x9f93d8 set); 0xff when none is free */
+/* 0x451450: a free player slot claimed (its flag in the sixteen at g_playerSlotFlags set); 0xff when none is free */
 u8 (net_claimPlayerSlot)(void)
 {
 	for (u8 i = 0; i < 0x10; i++)
@@ -53,7 +53,7 @@ u8 (net_claimPlayerSlot)(void)
 	return 0xff;
 }
 
-/* 0x451410: a slot claimed for the local player (id 0xa0b424) when the session is up; 1 when done */
+/* 0x451410: a slot claimed for the local player (id g_localPlayerId) when the session is up; 1 when done */
 int (net_claimLocalSlot)(void)
 {
 	if (!g_isHost)
@@ -65,8 +65,8 @@ int (net_claimLocalSlot)(void)
 	return 1;
 }
 
-/* 0x454130: with a session list (0xa0b384), every used session slot (g_sessionTable)
-   freed and the list emptied (count 0xa0b41c). Returns the count, or 0 without a list */
+/* 0x454130: with a session list (g_dplaySessionList), every used session slot (g_sessionTable)
+   freed and the list emptied (count g_dplaySessionCount). Returns the count, or 0 without a list */
 u32 (net_freeSessionList)(void)
 {
 	if (!g_dplaySessionList)
@@ -86,7 +86,7 @@ u32 (net_freeSessionList)(void)
 	return r;
 }
 
-/* 0x4542a0: the address typed as "a.b.c.d" (0xa0b43c, cut up in place by strtok) as (a << 24) | b << 16 | c << 8 | d
+/* 0x4542a0: the address typed as "a.b.c.d" (g_localAddress, cut up in place by strtok) as (a << 24) | b << 16 | c << 8 | d
    (a not masked). Each part goes into a 4-byte slot of a zeroed 20-byte buffer (a longer part runs into the next
    slot); more than four parts would overrun the original's stack, and a string with none makes it copy from NULL */
 int (net_parseAddress)(void)
@@ -102,7 +102,7 @@ int (net_parseAddress)(void)
 	return ((((a << 8) | (b & 0xff)) << 8 | (c & 0xff)) << 8) | (d & 0xff);
 }
 
-/* 0x454390: the address as "a.b.c.d" (bytes high to low) into 0xa0b460; returns its length + 1 */
+/* 0x454390: the address as "a.b.c.d" (bytes high to low) into g_dottedAddress; returns its length + 1 */
 int (net_formatAddress)(u32 address)
 {
 	char text[16], part[4];
@@ -118,7 +118,7 @@ int (net_formatAddress)(u32 address)
 }
 
 /* 0x4540b0: a session found (by value): unless its instance GUID is GUID_NULL (k_GUID_NULL, 0x4aae70), a copy
-   (malloc'd) kept in the first free slot of the table at 0xa0b470, the count up. Returns the copy, 0 for a session
+   (malloc'd) kept in the first free slot of the table at g_sessionTable, the count up. Returns the copy, 0 for a session
    without a GUID, or -1 when the table is full */
 u32 (net_addSession)(SessionDesc d)
 {
@@ -176,7 +176,7 @@ int STDCALL (dplay_enumSessionsCallback)(const u8 *desc, void *timeout, u32 flag
 /* 0x4547c0: inet_addr of the text (Winsock, through the game's jump to its import) */
 u32 (net_inetAddr)(const char *text) { return ws_inet_addr(text); }
 
-/* 0x451270: a message sent from the local player (0xa0b424) to to: types 2 and 6 guaranteed (flag 1) with 8 bytes,
+/* 0x451270: a message sent from the local player (g_localPlayerId) to to: types 2 and 6 guaranteed (flag 1) with 8 bytes,
    type 7 with size bytes, any other with none. Returns the send's result */
 int (net_sendMessage)(const int *message, u32 to, u32 size)
 {
@@ -233,7 +233,7 @@ int (dplay_coInit)(void)
 	return hr;
 }
 
-/* 0x454760: the network thread's three handles closed (0xa0d788, 0xa0bf1c, 0xa0bb10) and the running flag cleared.
+/* 0x454760: the network thread's three handles closed (g_pingThread, g_pingStopEvent, g_pingDataEvent) and the running flag cleared.
    Returns what the original leaves in eax (the last close's answer, or 0) */
 u32 (net_closeThreadHandles)(void)
 {
@@ -251,9 +251,9 @@ u32 (net_closeThreadHandles)(void)
 	return r;
 }
 
-/* 0x452d70: the server's 62-byte reply received into 0xa052e8 (recv on 0xa05630 until 62 bytes have come or 3 s
+/* 0x452d70: the server's 62-byte reply received into g_serverReply (recv on g_gameServerSocket until 62 bytes have come or 3 s
    have passed; each call reads to the start of the buffer), then by its kind (+0x1e): 0 accepted (net_addPlayerRecord), 1
-   refused (0xa0b350 set, 0xa0b300 cleared) */
+   refused (g_playerListDone set, g_netLastRequest cleared) */
 void (net_receiveServerReply)(void)
 {
 	u8 *reply = g_serverReply;
@@ -275,7 +275,7 @@ void (net_receiveServerReply)(void)
 	}
 }
 
-/* 0x4520e0: both sockets (0xa055f8, 0xa05630) closed: a blocking call cancelled, sending shut down, the socket closed,
+/* 0x4520e0: both sockets (g_lobbySocket, g_gameServerSocket) closed: a blocking call cancelled, sending shut down, the socket closed,
    the connection's state reset (net_freeBuffers); then the connection flags cleared. Returns what the original leaves
    in eax */
 u32 (net_closeSockets)(void)
@@ -307,7 +307,7 @@ static void *alloc_clear(u32 n)
 
 /* 0x451600: the connection to `kind` (100 the lobby, 101 the game server) started afresh: the server table cleared,
    both sockets closed (a blocking call cancelled, sending shut down; net_freeBuffers after each), the server's address
-   taken (its host name, or what net_resolveHost made of it, into 0xa055e4) with its port (0xa05326); then every
+   taken (its host name, or what net_resolveHost made of it, into g_lobbyHost) with its port (g_serverPort); then every
    network table cleared and the packet buffers allocated anew, cleared. The caller ignores the eax it leaves */
 void (net_resetConnection)(int kind)
 {
@@ -353,7 +353,7 @@ static void global_free(void *p)
 }
 
 /* 0x453920: DirectPlay shut down: the lobby object released, the local player destroyed and the session closed and
-   released, the session buffers freed (0xa0bab0 is freed but not cleared), COM ended. Returns 0 */
+   released, the session buffers freed (g_connectionCopy is freed but not cleared), COM ended. Returns 0 */
 int (dplay_release)(void)
 {
 	void *lobby = g_dplayLobby;
@@ -388,7 +388,7 @@ int (dplay_release)(void)
 }
 
 /* 0x4547d0: host (a name or dotted address) resolved: Winsock started, a raw ICMP socket opened (for the pings),
-   the host looked up and its first address as text in 0xa0d320; the socket closed again. 1 when there is an
+   the host looked up and its first address as text in g_serverAddress; the socket closed again. 1 when there is an
    address; 0 if Winsock, the socket or the lookup failed (the socket is left open then, as in the original) */
 int (net_resolveHost)(const char *host)
 {
@@ -413,8 +413,8 @@ int (net_resolveHost)(const char *host)
 	return 1;
 }
 
-/* 0x453fd0: the sessions asked for (DirectPlay EnumSessions, async with the callback 0x453560, flags 0x12): of the
-   game's application (GUID at 0x4a96e8), on the instance at *0xa0bad8; once more while 0xa0b418 is 1. 1 on success,
+/* 0x453fd0: the sessions asked for (DirectPlay EnumSessions, async with the callback dplay_enumSessionsCallback, flags 0x12): of the
+   game's application (GUID at k_axisAppGuid), on the instance at *g_instanceGuid; once more while g_connectionKind is 1. 1 on success,
    0 without DirectPlay or on a failure */
 int (dplay_enumSessions)(void)
 {
@@ -440,7 +440,7 @@ int (dplay_enumSessions)(void)
 #define lstrcpyA(dst, src) IMPORT(0x4a911c, char *, char *, const char *)(dst, src)
 
 /* ---- a received record appended to a list: its strings (each also as the list's name, 20 bytes a slot at
-   0xa0bf20) and single bytes copied into the next slot, the count advanced. Returns the slot's offset in the list
+   g_serverNames) and single bytes copied into the next slot, the count advanced. Returns the slot's offset in the list
    (the original's eax) ---- */
 static int list_append(u32 count, u32 base, int size, const u8 *rec, const u8 *strings, int nstrings, int name,
                        const u8 *bytes, int nbytes)
@@ -455,14 +455,14 @@ static int list_append(u32 count, u32 base, int size, const u8 *rec, const u8 *s
 	GAME_VAR(int, count) = i + 1;
 	return i * size;
 }
-/* 0x452af0: a ServerRecord into the list at 0xa05748 (count 0xa0b368) */
+/* 0x452af0: a ServerRecord into the list at g_serverList (count g_serverListCount) */
 int (net_addServerRecord)(const u8 *rec)
 {
 	static const u8 strings[3] = { offsetof(ServerRecord, address), offsetof(ServerRecord, name), offsetof(ServerRecord, password) };
 	static const u8 bytes[9] = { offsetof(ServerRecord, kind), offsetof(ServerRecord, rotation), offsetof(ServerRecord, fragLimit), offsetof(ServerRecord, timeLimit), offsetof(ServerRecord, gameMode), offsetof(ServerRecord, players), offsetof(ServerRecord, map), offsetof(ServerRecord, maxPlayers), offsetof(ServerRecord, locked) };
 	return list_append(ADDR(g_serverListCount), OBJ(g_serverList), sizeof(ServerRecord), rec, strings, 3, offsetof(ServerRecord, address), bytes, 9);
 }
-/* 0x452c80: a RoomRecord into the list at 0x9fd960 (count 0xa0b358) */
+/* 0x452c80: a RoomRecord into the list at g_roomList (count g_roomListCount) */
 int (net_addRoomRecord)(const u8 *rec)
 {
 	static const u8 strings[4] = { offsetof(RoomRecord, hostName), offsetof(RoomRecord, address), offsetof(RoomRecord, name), offsetof(RoomRecord, password) };
@@ -472,7 +472,7 @@ int (net_addRoomRecord)(const u8 *rec)
 
 #define lstrlenA(s) IMPORT(0x4a9188, int, const char *)(s)
 /* 0x451350: a chat line for the log: "<name>: <text>" (format 0x4b3e30; the sender's short name from DirectPlay
-   through 0x454190, "?" when it has none) in a new global block, stored in *out. Returns the name lookup's result,
+   through dplay_getPlayerName, "?" when it has none) in a new global block, stored in *out. Returns the name lookup's result,
    or 0x8007000e (E_OUTOFMEMORY) when the block cannot be had */
 int (net_logMessage)(u32 from, const char *text, char **out)
 {
@@ -513,8 +513,8 @@ const char *(text_findWord)(const char *text, const char *word, int exact)
 	return NULL;
 }
 
-/* 0x4546d0: the network worker started: two events (0xa0bb10, 0xa0bf1c) and the thread running 0x454560 (handle
-   0xa0d788, id 0xa0d784), then the first event set. 1, or 0 when any of them cannot be made */
+/* 0x4546d0: the network worker started: two events (g_pingDataEvent, g_pingStopEvent) and the thread running net_pingThreadProc (handle
+   g_pingThread, id g_pingThreadId), then the first event set. 1, or 0 when any of them cannot be made */
 int (net_startThread)(void)
 {
 	if (!(g_pingDataEvent = CreateEventA(NULL, 0, 0, NULL)))   /* CreateEventA */
@@ -528,7 +528,7 @@ int (net_startThread)(void)
 	return 1;
 }
 
-/* 0x452de0: a player record appended to the list at 0xa05330 (count 0xa0b35c): its name and the seven values after
+/* 0x452de0: a player record appended to the list at g_netPlayerList (count g_playerListCount): its name and the seven values after
    its kind. Returns the slot's offset (the original's eax) */
 int (net_addPlayerRecord)(const u8 *rec)
 {
@@ -547,7 +547,7 @@ int (net_addPlayerRecord)(const u8 *rec)
 	return i * 62;
 }
 
-/* 0x454220: this machine's address as text in 0xa0b43c (16 bytes, cleared first): its host name looked up and the
+/* 0x454220: this machine's address as text in g_localAddress (16 bytes, cleared first): its host name looked up and the
    first address taken. -1 when the name cannot be had, otherwise 0 */
 int (net_getLocalAddress)(void)
 {
@@ -561,8 +561,8 @@ int (net_getLocalAddress)(void)
 	return 0;
 }
 
-/* 0x4512c0: a chat line sent: logged for this player (net_logMessage into 0x9fd944), then a message (type 1, from
-   the player 0xa0b424, the text at +0xc) in a new global block sent to everyone (0x450bf0). 1 when sent */
+/* 0x4512c0: a chat line sent: logged for this player (net_logMessage into g_sentChatBlock), then a message (type 1, from
+   the player g_localPlayerId, the text at +0xc) in a new global block sent to everyone (dplay_send). 1 when sent */
 int (net_sendChat)(const char *text)
 {
 	if (net_logMessage(g_localPlayerId, text, (char **)ADDR(g_sentChatBlock)) < 0)   /* net_logMessage */
@@ -577,7 +577,7 @@ int (net_sendChat)(const char *text)
 	return dplay_send(g_localPlayerId, 0, 0, message, size) >= 0;
 }
 
-/* 0x4548b0: host ip pinged (ICMP echo, waiting up to timeout ms). Returns the round trip time, kept in 0xa0d798:
+/* 0x4548b0: host ip pinged (ICMP echo, waiting up to timeout ms). Returns the round trip time, kept in g_pingTime:
    0 when the echo failed with no time, 1 when it came back in no time */
 /* (the game calls the three through its jump thunks 0x454e4c / 0x454e46 / 0x454e40; AxisRC.exe carries no game code,
    so there they are called through the import slots the thunks jump through) */
@@ -631,9 +631,9 @@ int (dplay_getPlayerName)(u32 id, void **out)
 	return r;
 }
 
-/* 0x4545b0: every server in the list pinged (net_pingServer by name, 20 bytes a slot at 0xa0bf20) until done
-   (0xa0d7a0): its time in 0xa0d384 (above 1000 ms less 400; 0 when it did not answer) and marked pinged (0xa0bb14);
-   then done, and the events reset (0x454740, whose eax it returns) */
+/* 0x4545b0: every server in the list pinged (net_pingServer by name, 20 bytes a slot at g_serverNames) until done
+   (g_netListDone): its time in g_serverPing (above 1000 ms less 400; 0 when it did not answer) and marked pinged (g_serverUsed);
+   then done, and the events reset (net_wakePingThread, whose eax it returns) */
 u32 (net_pingAllServers)(void)
 {
 	(*(int *)&g_pingTime) = 0;
@@ -669,9 +669,9 @@ static void reply_read(u32 socket, void *buf, u32 size)
 	} while (GetTickCount() - start <= 3000 && got < size);
 }
 
-/* 0x452a30: a lobby reply (0x5b bytes into 0xa05260, socket 0xa055f8), by its type (0xa052aa): 0 a server for the
-   list (net_addServerRecord), 1 the list is complete (its count to 0xa0d79c, the ping thread started), 2 / 3 the connection
-   state 0xa0b36c set (0xcb / 0x29); 1..3 also end the wait (0xa0b300) */
+/* 0x452a30: a lobby reply (0x5b bytes into g_lobbyReplyRecord, socket g_lobbySocket), by its type (g_lobbyReplyKind): 0 a server for the
+   list (net_addServerRecord), 1 the list is complete (its count to g_serverPingCount, the ping thread started), 2 / 3 the connection
+   state g_serverConnectionState set (0xcb / 0x29); 1..3 also end the wait (g_netLastRequest) */
 void (net_receiveLobbyReply)(void)
 {
 	reply_read(ADDR(g_lobbySocket), (void *)OBJ(g_lobbyReplyRecord), 0x5b);
@@ -696,8 +696,8 @@ void (net_receiveLobbyReply)(void)
 	}
 }
 
-/* 0x452bd0: a game server's reply (0x79 bytes into 0xa0b280, socket 0xa05630), by its type (0xa0b2e8): 0 a room for
-   the list (net_addRoomRecord), 1 the list is complete (as above, state 0xa0b34c 0xca), 2 / 3 state 0x28 */
+/* 0x452bd0: a game server's reply (0x79 bytes into g_gameServerReply, socket g_gameServerSocket), by its type (g_gameServerReplyKind): 0 a room for
+   the list (net_addRoomRecord), 1 the list is complete (as above, state g_gameServerState 0xca), 2 / 3 state 0x28 */
 void (net_receiveGameServerReply)(void)
 {
 	reply_read(ADDR(g_gameServerSocket), (void *)OBJ(g_gameServerReply), 0x79);
@@ -726,8 +726,8 @@ static u32 global_free_r(void *p)
 	return GlobalFree(GlobalHandle(p));   /* GlobalFree(GlobalHandle(p)) */
 }
 
-/* 0x450a60: every waiting DirectPlay message received (0x450bc0) into a global block of 0x9fd940 bytes, grown when
-   too small: system messages (from 0) go to 0x450c20 and the next is read; the first player message goes to
+/* 0x450a60: every waiting DirectPlay message received (dplay_receive) into a global block of g_netBlockSize bytes, grown when
+   too small: system messages (from 0) go to net_handleSystemMessage and the next is read; the first player message goes to
    net_handleMessage (a type 7 one longer than 0x49 bytes is dropped). The block is freed at the end (its size reset).
    Returns what the original leaves in eax */
 u32 (net_receiveAll)(void)
@@ -767,7 +767,7 @@ u32 (net_receiveAll)(void)
 }
 
 /* the session description shared by hosting and joining (g_sessionDesc at 0xa0b3b0): cleared, its size, the
-   session's GUID and the game's application GUID (0x4a96e8) */
+   session's GUID and the game's application GUID (k_axisAppGuid) */
 static DPSessionDesc2 *session_desc(const void *guid)
 {
 	DPSessionDesc2 *desc = g_sessionDesc;
@@ -785,10 +785,10 @@ static int create_player(void *play, u32 *id, const char *name)
 	return COM(play, 0x18, int, u32 *, void *, void *, void *, u32, u32)(play, id, dpname, NULL, NULL, 0, 0);
 }
 
-/* 0x453cf0: a session hosted (Open with DPOPEN_CREATE): flags 0x44, the instance GUID from *0xa0bad8, the session
+/* 0x453cf0: a session hosted (Open with DPOPEN_CREATE): flags 0x44, the instance GUID from *g_instanceGuid, the session
    name, at most maxPlayers, the user words (user3 = hi << 8 | lo, sign-extended bytes; user4 the local address,
-   unless 0xa0b418), then the local player `player`: its id into 0xa0b424, data into 0xa0b428, the host flag
-   0xa0baf8 set and a player slot claimed (net_claimLocalSlot). 0 without DirectPlay or on a failure, else 1 */
+   unless g_connectionKind), then the local player `player`: its id into g_localPlayerId, data into g_localPlayerData, the host flag
+   g_isHost set and a player slot claimed (net_claimLocalSlot). 0 without DirectPlay or on a failure, else 1 */
 int (dplay_hostSession)(const char *session, const char *player, u32 user1, u32 maxPlayers, u32 user2,
                         signed char hi, signed char lo, u32 data)
 {
@@ -820,7 +820,7 @@ int (dplay_hostSession)(const char *session, const char *player, u32 user1, u32 
 }
 
 /* 0x453e60: the session `guid` joined (Open with DPOPEN_JOIN), then the local player `player`: its id into
-   0xa0b424, data into 0xa0b428, the host flag 0xa0baf8 cleared. 0x1f4 joined (also for a CreatePlayer error not
+   g_localPlayerId, data into g_localPlayerData, the host flag g_isHost cleared. 0x1f4 joined (also for a CreatePlayer error not
    listed), 0x1f9 / 0x1f8 / 0x1f6 Open failing (0x887700dc, 0x887700f0, any other), 0x1fa the session full or
    refusing the player, 0x1fb without DirectPlay */
 int (dplay_joinSession)(const void *guid, const char *player, u32 data)
@@ -848,9 +848,9 @@ int (dplay_joinSession)(const void *guid, const char *player, u32 data)
 	return 0x1f4;
 }
 
-/* the lobby's part of dplay_create: its connection settings (DPLCONNECTION, into a global block 0xa0baf4) with the
-   session flags 0x44 and at most 16 players, connected (ConnectEx into 0xa0b404) and the local player created
-   with the lobby's player name record; the host flag 0xa0baf8 by the connection's flags (2 create, 1 join). Stops at the
+/* the lobby's part of dplay_create: its connection settings (DPLCONNECTION, into a global block g_lobbyConnectionBlock) with the
+   session flags 0x44 and at most 16 players, connected (ConnectEx into g_dplay) and the local player created
+   with the lobby's player name record; the host flag g_isHost by the connection's flags (2 create, 1 join). Stops at the
    first failure */
 static void dplay_lobbyConnect(void)
 {
@@ -891,7 +891,7 @@ static void dplay_lobbyConnect(void)
 
 /* 0x453790: DirectPlay made: first through a lobby that started the game (dplay_lobbyConnect), then (either way) a plain
    DirectPlay object (dplay_createLobby; its failure returned) and the connections listed (EnumConnections of the game's
-   application with dplay_enumConnections). The lobby's settings block is freed (but 0xa0baf4 kept). Returns the
+   application with dplay_enumConnections). The lobby's settings block is freed (but g_lobbyConnectionBlock kept). Returns the
    listing's failure, else 0 */
 int (dplay_create)(void)
 {
@@ -909,9 +909,9 @@ int (dplay_create)(void)
 }
 
 /* 0x451090: a game message from player `from`, by its type (the first word): 1 a chat line (+0xc) logged into
-   0x9fd948 (the old one dropped first; 0x9fd95c raised); 2 the host's id (+4, into 0x9fd94c) with the player slots
-   reset (0x454130, then 0x4515a0); 6 our own player slot (byte +4, 0x410 bytes a slot from 0x9f9840) taken, the slot
-   noted in 0x9fd954 and 0x9f9838 raised; 7 another player's slot data: the slot taken by `from` if it was free,
+   g_chatLog (the old one dropped first; g_chatLogged raised); 2 the host's id (+4, into g_netHostGone) with the player slots
+   reset (net_freeSessionList, then net_freeAllSlots); 6 our own player slot (byte +4, 0x410 bytes a slot from g_netSlots) taken, the slot
+   noted in g_watchedSlot and g_slotTakenFlag raised; 7 another player's slot data: the slot taken by `from` if it was free,
    then a 0x40-byte block (size +5, data +9) stored when the size is right. Returns what the original leaves in
    eax */
 u32 (net_handleMessage)(const u8 *message, u32 size, u32 from)
@@ -958,9 +958,9 @@ u32 (net_handleMessage)(const u8 *message, u32 size, u32 from)
 }
 
 /* 0x453a90: a fresh DirectPlay connection of kind 0 .. 3: the old object closed (dplay_closeSession). The kind picks
-   the service provider (0xa0bad8: 0xa0b3a0, 0xa0b450, 0xa0b408, 0xa0bab8) and its stored connection (0xa0badc from
+   the service provider (g_instanceGuid: g_tcpProviderGuid, g_ipxProviderGuid, g_modemProviderGuid, g_serialProviderGuid) and its stored connection (g_storedConnection from
    OBJ(g_dpConnections) + 4 * kind); for TCP/IP (0) a compound address is made instead by the lobby from the provider and the
-   host `address` (or 0xa0bb0c), size query then fill, into a new block 0xa0baf0. Then (when there is a connection) a
+   host `address` (or g_noAddress), size query then fill, into a new block g_hostAddressBlock. Then (when there is a connection) a
    new DirectPlay object (dplay_createLobby) initialised with it and its caps kept (timeout, buffer and queue sizes into
    0xa0bb00 .. 0xa0bb08). 0 when that fails, else 1 */
 int (dplay_initConnection)(int kind, const char *address)
@@ -1011,7 +1011,7 @@ int (dplay_initConnection)(int kind, const char *address)
 }
 
 /* a server socket closed: pending Winsock calls cancelled, sends shut down, the socket closed and forgotten, then
-   0x4519b0. Returns its eax */
+   net_freeBuffers. Returns its eax */
 static u32 socket_close(u32 socket)
 {
 	WSACleanup();                                  /* WSACleanup */
@@ -1043,8 +1043,8 @@ static int send_leave(u32 from, u32 to, const u8 *bytes, int nbytes, int flagged
 }
 
 
-/* ---- the info sent to the server when a player comes or goes while hosting over TCP/IP: the room's (0xa0b310 into
-   the packet 0xa0b314) or the arena's (0xa0b328 into 0xa0b32c), the player count (0x9fd950) included ---- */
+/* ---- the info sent to the server when a player comes or goes while hosting over TCP/IP: the room's (g_roomPacket into
+   the packet g_netInfoPacket) or the arena's (g_arenaPacket into g_arenaInfoPacket), the player count (g_playerCount) included ---- */
 
 static void room_info(u8 *dst, u8 first, u8 count)
 {
@@ -1087,10 +1087,10 @@ static void arena_info(u8 *dst, u8 first, u8 count)
 /* 0x450c20 (a DirectPlay system message): 5 (DPSYS_DESTROYPLAYERORGROUP), a player gone: its slots freed
    (net_freeSlotsOf, unless the host is gone), then the info sent with the count less one; 3
    (DPSYS_CREATEPLAYERORGROUP), a player joined (the host only): a slot claimed for it (net_claimPlayerSlot into
-   0x9f9424) and sent to it (net_sendMessage), the message's count kept and the info sent (an arena's then starts
+   g_netClaimedSlot) and sent to it (net_sendMessage), the message's count kept and the info sent (an arena's then starts
    with 1). Only while
-   hosting (0xa0baf8) over TCP/IP (0xa0b418 = 0) with the right socket open (200: the room on the lobby's, 201: the
-   arena on the game server's) and nothing pending (0xa0b360 / 0xa0b364). The original leaves eax to callers that
+   hosting (g_isHost) over TCP/IP (g_connectionKind = 0) with the right socket open (200: the room on the lobby's, 201: the
+   arena on the game server's) and nothing pending (g_lobbyPending / g_gameServerPending). The original leaves eax to callers that
    ignore it */
 void (net_handleSystemMessage)(const u32 *msg)
 {
@@ -1134,8 +1134,8 @@ void (net_handleSystemMessage)(const u32 *msg)
 	}
 }
 
-/* a TCP socket into *sock connected to the host 0xa055e4 (a dotted address, else looked up by name) at port
-   0xa05326, after Winsock 2.2 starts and the socket is bound to any address; connected: 0xa0b380 = status, 1. A
+/* a TCP socket into *sock connected to the host g_lobbyHost (a dotted address, else looked up by name) at port
+   g_serverPort, after Winsock 2.2 starts and the socket is bound to any address; connected: g_lobbyConnectStatus = status, 1. A
    refusal (connect's result compared with 10061, as the original does) 2, any failure 0 (Winsock cleaned up and
    the network left where the original does so) */
 static int connect_socket(int *sock, int status)
@@ -1181,8 +1181,8 @@ static int connect_socket(int *sock, int status)
 	return 1;
 }
 
-/* 0x451b80: connecting (everything closed first): 100 the lobby's socket (0xa055f8, status 200), 0x65 the game
-   server's (0xa05630, status 201); any other mode just 1 */
+/* 0x451b80: connecting (everything closed first): 100 the lobby's socket (g_lobbySocket, status 200), 0x65 the game
+   server's (g_gameServerSocket, status 201); any other mode just 1 */
 int (net_connect)(int mode)
 {
 	net_resetConnection(mode);
@@ -1194,9 +1194,9 @@ int (net_connect)(int mode)
 	return 1;
 }
 
-/* 0x451e60: leaving the network (while connected, 0xa0b2fc = 1): on the lobby's socket (0xa055f8) the player's
-   leave record (0xa0b310 into 0xa0b318, message 0xb) unless 0xa0b360, on the room's (0xa05630) the room record
-   (0xa0b328 into 0xa0b330, message 0x16) unless 0xa0b364; each socket closed. Without a send buffer it stops there
+/* 0x451e60: leaving the network (while connected, g_netConnected = 1): on the lobby's socket (g_lobbySocket) the player's
+   leave record (g_roomPacket into g_lobbyLeavePacket, message 0xb) unless g_lobbyPending, on the room's (g_gameServerSocket) the room record
+   (g_arenaPacket into g_roomRecordPacket, message 0x16) unless g_gameServerPending; each socket closed. Without a send buffer it stops there
    (0). Then the connection flags cleared. Returns what the original leaves in eax */
 u32 (net_disconnect)(void)
 {
@@ -1225,7 +1225,7 @@ u32 (net_disconnect)(void)
 u32 (jmp_net_receiveAll)(void) { return net_receiveAll(); }
 int (jmp_net_getLocalAddress)(void) { return net_getLocalAddress(); }
 
-/* ---- packets to the lobby (socket 0xa055f8) and the game server (0xa05630): a kind word, then the kind's buffer ---- */
+/* ---- packets to the lobby (socket g_lobbySocket) and the game server (g_gameServerSocket): a kind word, then the kind's buffer ---- */
 
 /* the buffer at the pointer kept at `buffer` sent whole (size bytes) over the socket kept at `socket`, if both are
    there */
@@ -1237,10 +1237,10 @@ static void send_buffer(u32 socket, u32 buffer, int size)
 }
 
 /* 0x4521c0: packet `kind` sent to `to` (100 the lobby, 101 the game server; another value sends only the packet
-   itself): its kind word (in 0xa0b30c; none: nothing at all), then the kind's buffer: 10 .. 12 to the lobby (0x5b
+   itself): its kind word (in g_netKindBuffer; none: nothing at all), then the kind's buffer: 10 .. 12 to the lobby (0x5b
    bytes), 13 the hello (the game list cleared), 23 the name (0x10), 14 / 15 the address request (this machine's
    address at +0x60), 17 .. 22 and 24 .. 29 to the game server (19 and 21 / 26 after clearing the server or player
-   tables, 22 with its first byte set). Most kinds are kept as the last request (0xa0b300). The callers ignore the
+   tables, 22 with its first byte set). Most kinds are kept as the last request (g_netLastRequest). The callers ignore the
    eax it leaves */
 void (net_send)(int kind, int to)
 {
@@ -1316,7 +1316,7 @@ void (net_send)(int kind, int to)
 	}
 }
 
-/* ---- replies to the last request (0xa0b300) ---- */
+/* ---- replies to the last request (g_netLastRequest) ---- */
 
 /* size bytes read from the socket kept at `socket` into buf, again and again until that many have come (1) or 3
    seconds since start have passed (0) */
@@ -1359,7 +1359,7 @@ static void status_reply(u32 socket, u32 reply, u32 status, u32 timeout, u32 sta
 	}
 }
 
-/* an answer (0x10b bytes into 0xa05638) from the game server: its code kept in `answer` when it is one of `codes`
+/* an answer (0x10b bytes into g_netRecvBuffer) from the game server: its code kept in `answer` when it is one of `codes`
    (that ends the request); a timeout leaves 0x28 */
 static void answer_reply(u32 answer, const u8 *codes, int count, u32 start)
 {
@@ -1376,10 +1376,10 @@ static void answer_reply(u32 answer, const u8 *codes, int count, u32 start)
 		}
 }
 
-/* 0x452620: the reply to the last request (0xa0b300) read: 10 the lobby's status (0xa055dc into 0xa0b370), 13 the
-   list of games, 14 / 15 the game server's answers (kept in 0xa0b378 / 0xa0b37c), 18 its status (0xa0b248 into
-   0xa0b374), 19 the server list, 21 the player list, 26 the player list cleared (0xa0b350), 29 a 0x22-byte notice
-   (0xa052c0; 0xa0b354 when it is not empty). The callers ignore the eax it leaves */
+/* 0x452620: the reply to the last request (g_netLastRequest) read: 10 the lobby's status (g_lobbyReplyCode into g_lobbyStatus), 13 the
+   list of games, 14 / 15 the game server's answers (kept in g_gameServerAnswer / g_gameServerAnswer15), 18 its status (g_gameServerReplyCode into
+   g_gameServerStatus), 19 the server list, 21 the player list, 26 the player list cleared (g_playerListDone), 29 a 0x22-byte notice
+   (g_netNotice; g_netNoticeIn when it is not empty). The callers ignore the eax it leaves */
 void (net_recv)(void)
 {
 	u32 start = GetTickCount();
@@ -1503,9 +1503,9 @@ static void THISCALL __attribute__((used)) net_sendPlayerInfo_body(u8 *s, int p,
 PACKET_ENTRY(net_sendPlayerInfo, 1);
 
 /* 0x4532f0: DirectPlay's EnumConnections callback: the service provider's short name kept upper-cased (the 0x80-byte
-   slot of the count 0xa0bac8, which counts up to 9), and by its kind (the name containing "TCP", "IPX", "MODEM" or
-   its Korean name, "SERIAL" or its Korean name) its GUID (0xa0b3a0, 0xa0b450, 0xa0b408, 0xa0bab8) and a copy of its
-   connection data (GlobalAlloc'ed, 0xa0bab0; 0xa0bae0 .. 0xa0baec). Returns 1 (go on) */
+   slot of the count g_serviceProviderCount, which counts up to 9), and by its kind (the name containing "TCP", "IPX", "MODEM" or
+   its Korean name, "SERIAL" or its Korean name) its GUID (g_tcpProviderGuid, g_ipxProviderGuid, g_modemProviderGuid, g_serialProviderGuid) and a copy of its
+   connection data (GlobalAlloc'ed, g_connectionCopy; 0xa0bae0 .. 0xa0baec). Returns 1 (go on) */
 u32 STDCALL (dplay_enumConnections)(const u32 *guid, const void *connection, u32 size, const u32 *name, u32 flags, void *context)
 {
 	static const struct { u32 words[2], guid, data; } kinds[4] = {
@@ -1625,7 +1625,7 @@ static int scaled(const void *v, u32 k)
 	return ftol(fmul_m(fld_m((const float *)RELOC(v)), (const float *)RELOC(k)));
 }
 
-/* an angle wrapped into a turn (angle_wrap, given the float's bits) times 0x4aa49c, truncated */
+/* an angle wrapped into a turn (angle_wrap, given the float's bits) times k_0_0711111f, truncated */
 static int angle_byte(const void *v)
 {
 	return ftol(fmul_m(FUN_0046c100_bits(*(const u32 *)RELOC(v)), k_0_0711111f));
@@ -1633,7 +1633,7 @@ static int angle_byte(const void *v)
 
 /* 0x48e2c0 (thiscall on the game): player p's state sent (packet 0; the actor at +0x1ecca70 + p x 0x8888): its
    flags word (+0x3f0), a byte of p and its mode (+0x3ec: 0 with +0x140, 1, 2; bit 0 in play +0x14c), the position
-   (+0x180, x 0x4a93ec, words), two angles (+0x18c, +0x190) and two tilts (+0x194, +0x198), two nibbles (+0x19c,
+   (+0x180, x k_tenthsToDegrees, words), two angles (+0x18c, +0x190) and two tilts (+0x194, +0x198), two nibbles (+0x19c,
    +0x1a4), a third angle (+0x1a0); a pending hit (+0x8850: cleared) as 0x80 alive / 0xc0 dead with the attacker
    (+0x4c0) and value (+0x4c4); then its five shot slots (+0x360, nine bytes each): a slot whose shot (0x4e8 bytes
    from +0x22225fc) is gone is cleared (-1); else flags (1, 3 for a new one: +0x1fc + slot x 0x20 cleared; 4 aimed
@@ -1708,7 +1708,7 @@ static void THISCALL __attribute__((used)) net_sendPlayerState_body(u8 *g, int p
 }
 PACKET_ENTRY(net_sendPlayerState, 1);
 
-/* the next value of the game's table of rand() values (0xa106f8, 4096 of them; the position 0xa1efb8 moves on) */
+/* the next value of the game's table of rand() values (g_randTable, 4096 of them; the position g_randPos moves on) */
 static u32 table_rand(void)
 {
 	u32 at = g_randPos;
@@ -1879,12 +1879,12 @@ static void match_limit(u8 *g, int state, u32 notice)
 }
 
 /* 0x48c830 (thiscall on the game object): a network packet (of 0x40 bytes only) from a player. When recording
-   (+0x2340d1d) it goes to the replay file first; while the game is starting (+0x233cc20 1) only kind 1. By the kind
+   (+0x2340d1d) it goes to the replay file first; while the game is starting (matchState 1) only kind 1. By the kind
    (byte 1): 0 a player's state (position, aim, weapon, lights, the five weapon slots; a player not yet set up is
    asked for); 1 the game state (round, time, map change, the checksums of the part and item tables, scores, items);
    2 a player joining with his mech; 3 the server ending the game; 4 / 5 the frag / time limit; 6 a cheat notice; 7
    a chat line; 8 a player connecting; 9 one leaving; 10 / 11 team changes; 12 a player's flag rows; 13 a pause
-   timer; 14 the items' states. Anything else goes to 0x48b420 (nothing) */
+   timer; 14 the items' states. Anything else goes to debug_traceStripped (nothing) */
 void THISCALL (net_processGamePacket)(u8 *g, u32 from, int size, const char *pkt)
 {
 	if (size != 0x40)

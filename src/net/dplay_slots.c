@@ -84,13 +84,13 @@ int (dplaySlot3_open)(int address)
 	return slot_open(3, address, close3);
 }
 
-/* close: 0x4549a0, 0x454ac0, 0x454bd0, 0x454ce0 */
+/* close: dplaySlot0_close, dplaySlot1_close, dplaySlot2_close, dplaySlot3_close */
 int (dplaySlot0_close)(void) { return slot_close(0); }
 int (dplaySlot1_close)(void) { return slot_close(1); }
 int (dplaySlot2_close)(void) { return slot_close(2); }
 int (dplaySlot3_close)(void) { return slot_close(3); }
 
-/* list the sessions: 0x4549c0, 0x454ae0, 0x454bf0, 0x454d00 */
+/* list the sessions: dplaySlot0_enum, dplaySlot1_enum, dplaySlot2_enum, dplaySlot3_enum */
 int (dplaySlot0_enum)(void) { return slot_enum(0); }
 int (dplaySlot1_enum)(void) { return slot_enum(1); }
 int (dplaySlot2_enum)(void) { return slot_enum(2); }
@@ -117,7 +117,7 @@ int (dplay_check)(void)
 	return 0;
 }
 
-/* 0x453090: a session hosted through the slot of connection kind 0xa0b418 (dplay_hostSession's eight arguments passed on); 0 for an
+/* 0x453090: a session hosted through the slot of connection kind g_connectionKind (dplay_hostSession's eight arguments passed on); 0 for an
    unknown kind */
 int (dplay_host)(int session, int player, int user1, int maxPlayers, int user2, int hi, int lo, int data)
 {
@@ -127,7 +127,7 @@ int (dplay_host)(int session, int player, int user1, int maxPlayers, int user2, 
 	return dplay_slotHost(kind, session, player, user1, maxPlayers, user2, hi, lo, data);
 }
 
-/* 0x453180: session `session` joined through the slot of connection kind 0xa0b418 (with its game mode); 0x1f7 when
+/* 0x453180: session `session` joined through the slot of connection kind g_connectionKind (with its game mode); 0x1f7 when
    there is no such session, 0x1f5 when it is full (players == maxPlayers), 0 for an unknown kind */
 int (dplay_join)(int session, int guid, int player, int data)
 {
@@ -142,9 +142,9 @@ int (dplay_join)(int session, int guid, int player, int data)
 	return dplay_slotJoin(kind, guid, player, data, (u8)rec->gameMode);
 }
 
-/* 0x452fe0: the arena session left (when one is open, 0xa0b390 and 0xa0b384): the host tells everyone first
-   (message 0x9f9418, flag 0x9f941c), the slot of the connection kind closed (the kind becomes 4), the session list
-   freed (0x454130, whose eax it returns) and the session state cleared. 1 when there is no session */
+/* 0x452fe0: the arena session left (when one is open, g_arenaSessionOpen and g_dplaySessionList): the host tells everyone first
+   (message g_resultMessage, flag g_hostResultFlag), the slot of the connection kind closed (the kind becomes 4), the session list
+   freed (net_freeSessionList, whose eax it returns) and the session state cleared. 1 when there is no session */
 u32 (arena_leaveSession)(void)
 {
 	static const u32 close[4] = { FN_ADDR(dplaySlot0_close, 0x4549a0), FN_ADDR(dplaySlot1_close, 0x454ac0), FN_ADDR(dplaySlot2_close, 0x454bd0), FN_ADDR(dplaySlot3_close, 0x454ce0) };
@@ -166,8 +166,8 @@ u32 (arena_leaveSession)(void)
 }
 
 /* 0x452ec0: an arena session opened with connection kind (0 TCP/IP to host, which is resolved first; 1..3 the
-   others): the old session left, the session state reset and the slot opened (0x454940 with the address, or
-   0x454a50 / 0x454b70 / 0x454c80). The slot's answer (and the session marked open), or 0 */
+   others): the old session left, the session state reset and the slot opened (dplaySlot0_open with the address, or
+   dplaySlot1_open / dplaySlot2_open / dplaySlot3_open). The slot's answer (and the session marked open), or 0 */
 int (arena_openSession)(u32 kind, const char *host)
 {
 	static const u32 open[4] = { FN_ADDR(dplaySlot0_open, 0x454940), FN_ADDR(dplaySlot1_open, 0x454a50), FN_ADDR(dplaySlot2_open, 0x454b70), FN_ADDR(dplaySlot3_open, 0x454c80) };

@@ -1,5 +1,5 @@
 /* room_dialogs.c: the room screen's dialogs opened and its state reset: each dialog a box (left, top, right,
-   bottom), its fields cleared, the screen's sub-state (0x9dd834) set to the dialog's. */
+   bottom), its fields cleared, the screen's sub-state (g_roomState) set to the dialog's. */
 #include "../game.h"
 #include <string.h>
 
@@ -73,8 +73,8 @@ void (room_enterGameList)(void)
 
 #define sound(id) GAME_FN(sound_playMenu, 0x41e760, u32, int)(id)   /* sound_playMenu, its eax */
 
-/* 0x4378e0: the game room's keys, by state (0x9dd834): 0 .. 2, 4 and 99 while no dialog is open (0x9dd7d8; 2: the map
-   list's keys when open), 66 and 88 (a message box 0x9dd850 first), 77. Returns what the handler leaves in eax */
+/* 0x4378e0: the game room's keys, by state (g_roomState): 0 .. 2, 4 and 99 while no dialog is open (g_roomDialogOpen; 2: the map
+   list's keys when open), 66 and 88 (the update notice, g_roomUpdateNotice, first), 77. Returns what the handler leaves in eax */
 u32 (room_keysByState)(void)
 {
 	u32 state = (*(u32 *)&g_roomState);
@@ -95,7 +95,7 @@ u32 (room_keysByState)(void)
 	return state;
 }
 
-/* 0x437240: the account page's keys (unless typing): while the server is awaited (0x9dd6d4) only Esc, leaving; else O
+/* 0x437240: the account page's keys (unless typing): while the server is awaited (g_roomAwaitingServer) only Esc, leaving; else O
    sends the account change (account_sendChange; refused: sound 6 and message 5); C or Esc leave the page (g_roomCameraMode 0: back home). Returns what the original leaves in eax */
 u32 (account_keys)(void)
 {
@@ -142,7 +142,7 @@ u32 (newIdForm_clicks)(void)
 	return button;
 }
 
-/* 0x434dd0: joining session i of the list: its DirectPlay connection (0x452ec0) and the join (dplay_listSessions); a failure
+/* 0x434dd0: joining session i of the list: its DirectPlay connection (arena_openSession) and the join (dplay_listSessions); a failure
    shows message 0x3f or 0x40 and stops the search; on success the join's wait starts (timer 0x378, 2 s, its id
    kept). Returns what the original leaves in eax */
 u32 (room_joinSession)(int i)
@@ -191,8 +191,8 @@ int (gameList_open)(void)
 	return 1;
 }
 
-/* 0x406200: joining arena i of the list (99999: the one typed in, 0x4dbbd4): the search stopped first if it runs,
-   the connection made (0x452ec0; message 0x3f and the search stopped on a failure), the join (dplay_listSessions, not
+/* 0x406200: joining arena i of the list (99999: the one typed in, g_typedArenaName): the search stopped first if it runs,
+   the connection made (arena_openSession; message 0x3f and the search stopped on a failure), the join (dplay_listSessions, not
    checked), the join's wait (timer 0x378, 2 s). Returns what the original leaves in eax */
 u32 (arena_joinListed)(int i)
 {
@@ -216,8 +216,8 @@ u32 (arena_joinListed)(int i)
 	return timer;
 }
 
-/* 0x436800: the game room's clicks, by state (0x9dd834), as room_keysByState does the keys (state 1: the stop button
-   while a join is waited for, 0x4db8b4). Returns what the handler leaves in eax */
+/* 0x436800: the game room's clicks, by state (g_roomState), as room_keysByState does the keys (state 1: the stop button
+   while a join is waited for, g_arenaConfirming). Returns what the handler leaves in eax */
 u32 (room_clicksByState)(void)
 {
 	u32 state = (*(u32 *)&g_roomState);
@@ -310,7 +310,7 @@ u32 (room_draw)(void)
 }
 
 /* 0x433c70: the chat edit control closed (the window focused again, the line sent): typed into the login's ID
-   (g_lineToLoginId: up to 30 bytes at 0x9dd1d8) or its password (0x9dd6b0: 12 bytes at 0x9dd1f6, the stars off).
+   (g_lineToLoginId: up to 30 bytes at g_accountForm) or its password (g_lineToLoginPassword: 12 bytes at g_accountPassword, the stars off).
    Returns what the original leaves in eax */
 u32 (chat_closeEdit)(void)
 {
@@ -344,12 +344,12 @@ static void highlight_choice(int choice, int x, int y)
 	g_highlightY = y;
 }
 
-/* 0x43df80: the Ladder login dialog's update (its panel at 0x9dd358): a password to retype (0x9dced0: the settings back and
-   the password opened again), the login to send (0x9dd198); once typing has ended (g_textFieldOpen clear), the line taken
-   into the ID (0x9dd830; 30 bytes at 0x9dd1d8) or password (0x9dd38c; 12 at 0x9dd1f6) and the key that
-   ended it (0x9dc428: 10 back, 20 on) moving to the other field or the dialog's buttons; else the server's answer
-   to the request (0xa0b378, awaited: 0x9dd838): 33 accepted (state 99, the settings written and taken), 42 done
-   (0x9dd850), 31 / 32 / 34 a message (31 / 32 / 35), anything else message 42 */
+/* 0x43df80: the Ladder login dialog's update (its panel at g_roomLoginLeft): a password to retype (g_retypePassword: the settings back and
+   the password opened again), the login to send (g_loginToSend); once typing has ended (g_textFieldOpen clear), the line taken
+   into the ID (g_typingLoginId; 30 bytes at g_accountForm) or password (g_typingLoginPassword; 12 at g_accountPassword) and the key that
+   ended it (g_fieldStep: 10 back, 20 on) moving to the other field or the dialog's buttons; else the server's answer
+   to the request (g_gameServerAnswer, awaited: g_roomRequestOut): 33 accepted (state 99, the settings written and taken), 42 done
+   (g_roomUpdateNotice), 31 / 32 / 34 a message (31 / 32 / 35), anything else message 42 */
 void (roomLogin_update)(void)
 {
 	if (g_retypePassword) {
@@ -425,9 +425,9 @@ void (roomLogin_update)(void)
 	g_roomLoginDue = 0;
 }
 
-/* 0x43e290: the new-ID form ("CREATE NEW ID"; its panel at 0x9dd6e8): the name opened when asked (0x9dd4a0); with no message box
-   (0x4df900) and typing ended, the line taken into the field being typed in (the first of the four flagged 1) and
-   the key that ended it (0x9dc428: 20 on, 10 back) moving to the next or previous field; on from the e-mail
+/* 0x43e290: the new-ID form ("CREATE NEW ID"; its panel at g_newIdFormLeft): the name opened when asked (g_openLoginName); with no message box
+   (g_dialogPending) and typing ended, the line taken into the field being typed in (the first of the four flagged 1) and
+   the key that ended it (g_fieldStep: 20 on, 10 back) moving to the next or previous field; on from the e-mail
    highlights the right button, back from the name the left one (the name's flag left set). Then the flagged field
    opened again for typing (the password's before the repeat's) */
 void (newIdForm_update)(void)
@@ -482,7 +482,7 @@ void (newIdForm_update)(void)
 }
 
 /* 0x43e610: the new ID's confirmation (state 88): its choice (g_newIdConfirmChoice: 1 OK registers it, newId_register; 2 back to
-   the form, state 0x4d), then the server's answer (0xa0b37c, when awaited: 0x9dd6a4): 33 accepted (the settings
+   the form, state 0x4d), then the server's answer (g_gameServerAnswer15, when awaited: g_roomAnswerAwaited): 33 accepted (the settings
    written, to state 99), 30 message 0x22, 42 a message box, anything else message 0x2a. Returns what the original leaves in eax */
 u32 (newIdConfirm_update)(void)
 {
@@ -594,9 +594,9 @@ static void stars(char *out, int size, const char *password)
 }
 
 /* 0x4399c0: the new-ID form ("CREATE NEW ID"; 0x9dd6e8 .. 0x9dd6f4; only its frame while a message box is open): the title
-   MSG(341, "CREATE NEW ID"), four labelled lines (MSG(342, "INPUT ID"), 0x80 apart) with underlines, the values (the name 0x9dd1d8, the two
-   passwords 0x9dd1f6 / 0x9dd202 as stars, 0x9dd20e), each left out while its field is being typed in (0x9dd348 /
-   0x9dd3f8 / 0x9dd564 / 0x9dd6cc, with the keys taken), the two buttons (the one under the pointer, 4 / 5 by
+   MSG(341, "CREATE NEW ID"), four labelled lines (MSG(342, "INPUT ID"), 0x80 apart) with underlines, the values (the name g_accountForm, the two
+   passwords g_accountPassword / g_accountPasswordRepeat as stars, g_accountEmail), each left out while its field is being typed in (g_typingAccountName /
+   g_typingAccountPassword / g_typingAccountRepeat / g_typingAccountEmail, with the keys taken), the two buttons (the one under the pointer, 4 / 5 by
    newIdForm_hitTest, bright) and the border. Returns the frame's or the border's eax */
 u32 (newIdForm_draw)(void)
 {
@@ -733,9 +733,9 @@ u32 (newIdConfirm_draw)(void)
 }
 
 /* 0x4392c0: the room login dialog (0x9dd358 .. 0x9dd364; only its frame while a message box is open): the title
-   MSG(331, "LADDER GAME ID MANAGER") and its rule, two labelled dark boxes (MSG(332, "YOUR ID"), 0x80 apart) with the name 0x9dd1d8 and the password
-   0x9dd1f6 as stars (each left out while it is being typed in: 0x9dd830 / 0x9dd38c), three buttons (MSG(334, "LOG$[0] IN"); the
-   one under the pointer, 2 .. 4 by roomLogin_hitTest, bright unless connecting), while connecting (0x9dd838) a box with
+   MSG(331, "LADDER GAME ID MANAGER") and its rule, two labelled dark boxes (MSG(332, "YOUR ID"), 0x80 apart) with the name g_accountForm and the password
+   g_accountPassword as stars (each left out while it is being typed in: g_typingLoginId / g_typingLoginPassword), three buttons (MSG(334, "LOG$[0] IN"); the
+   one under the pointer, 2 .. 4 by roomLogin_hitTest, bright unless connecting), while connecting (g_roomRequestOut) a box with
    two lines (MSG(49, "CHECKING YOUR ID. PLEASE WAIT."), MSG(50, "PRESS ESC-KEY TO CANCEL")), the update notice (g_roomUpdateNotice) and the border. Returns the frame's or the border's
    eax */
 u32 (roomLogin_draw)(void)
@@ -801,7 +801,7 @@ u32 (roomLogin_draw)(void)
 #undef Y1
 }
 
-/* a rank's badge (rank 1 .. : cell rank - 1 of the 10-wide grid of the font texture 0x76d448, bound) 24 x 16 at
+/* a rank's badge (rank 1 .. : cell rank - 1 of the 10-wide grid of the font texture g_fontAscii, bound) 24 x 16 at
    (x, y) */
 static void rank_badge(int rank, int x, int y)
 {
@@ -823,13 +823,13 @@ static void rank_badge(int rank, int x, int y)
 	glEnd();
 }
 
-/* 0x43a420: the pilot's account panel (0x9dd368 .. 0x9dd374); while waiting for the server (0x9dd6d4 = 1) only a
+/* 0x43a420: the pilot's account panel (0x9dd368 .. 0x9dd374); while waiting for the server (g_roomAwaitingServer = 1) only a
    box with two lines (MSG(423, "DOWNLOADING RANKING DATA"), MSG(50, "PRESS ESC-KEY TO CANCEL")). The title MSG(361, "USER INFOMATION"), five labels for the fields (MSG(362, "USER ID"), 0x80 apart) and
-   seven for the record (MSG(367, "LEVEL")); four dark boxes with the name 0x9dd1d8, three passwords as stars (0x9dd6d8,
-   0x9dd1f6, 0x9dd202; each left out while it is being typed in: 0x9dd69c / 0x9dd37c / 0x9dd378) and 0x9dd20e (left
-   out while 0x9dd304); the level 0x9dd5d8 with its rank badge (cell (level - 1) % 10, / 10 of the texture 0x76d448),
-   the rank 0x9dd248 (MSG(374, "OUT OF RANK(1000)") when none), two ratios ("%.2f": 0x9dd5e4, 0x9dd5f4) and three counts (0x9dd5ec,
-   0x9dd5f0, 0x9dd5dc); two buttons (MSG(115, "$[0] O K"); 4 / 5 under the pointer by account_hitTest, lit unless 0x68039c), a
+   seven for the record (MSG(367, "LEVEL")); four dark boxes with the name g_accountForm, three passwords as stars (g_accountOldPassword,
+   g_accountPassword, g_accountPasswordRepeat; each left out while it is being typed in: g_editingOldPassword / g_editingAccountPassword / g_editingPasswordRepeat) and g_accountEmail (left
+   out while g_editingEmail); the level g_pilotLevel with its rank badge (cell (level - 1) % 10, / 10 of the texture g_fontAscii),
+   the rank g_accountRank (MSG(374, "OUT OF RANK(1000)") when none), two ratios ("%.2f": g_pilotRating, g_pilotWinRate) and three counts (g_pilotWins,
+   g_pilotLosses, g_pilotPoints); two buttons (MSG(115, "$[0] O K"); 4 / 5 under the pointer by account_hitTest, lit unless g_textFieldOpen), a
    rule and the border. The original leaves eax to callers that ignore it */
 void (account_drawPanel)(void)
 {
@@ -930,12 +930,12 @@ void (account_drawPanel)(void)
 }
 
 /* 0x43d060: the ranking table (0x9dced8 .. 0x9dcee4): the title 0x75aba4; the page arrows (0 / 1 under the pointer,
-   by ranking_hitTest, lit) about "first ~ last" of page 0x9dd6ac (stored in 0x9dd83c / 0x9dd7dc); the sort button
+   by ranking_hitTest, lit) about "first ~ last" of page g_rankingPage (stored in g_rankingFirst / g_rankingLast); the sort button
    (MSG(412, "OPTION"); 2) with the sorted column's name; two rules and the column heads (MSG(413, "RANK") .., the sorted one in
-   yellow); when there is a list (0x9dd3b0) up to ten rows (g_rankingRows) until an
-   empty name (which stores the page in 0x9dd4b8): rank, name, rank badge (level) in a yellow frame, power "%8.1f",
+   yellow); when there is a list (g_rankingHaveList) up to ten rows (g_rankingRows) until an
+   empty name (which stores the page in g_roomListPages): rank, name, rank badge (level) in a yellow frame, power "%8.1f",
    rate "%3.2f" and three counts (kills, deaths, exp), the sorted value in yellow; a rule, two buttons
-   (MSG(421, "$[0] STOP"); 3 / 4, the first dead until the list is loaded, 0x9dd6b8); while loading the blinking MSG(423, "DOWNLOADING RANKING DATA"); the
+   (MSG(421, "$[0] STOP"); 3 / 4, the first dead until the list is loaded, g_rankingWaiting); while loading the blinking MSG(423, "DOWNLOADING RANKING DATA"); the
    border. Returns the border's eax */
 u32 (ranking_drawTable)(void)
 {
@@ -1087,9 +1087,9 @@ static void creategame_close(void)
 	GAME_FN(debug_traceStripped, 0x48b420, void, void)();   /* debug_traceStripped */
 }
 
-/* 0x436990: the Ladder login dialog's keys. While its request is out (0x9dd838) or the login is due (0x9dd1c8)
+/* 0x436990: the Ladder login dialog's keys. While its request is out (g_roomRequestOut) or the login is due (g_roomLoginDue)
    only cancel2 answers, closing the dialog (the answer dropped) and the lobby connection. Otherwise a click on its
-   buttons (roomLogin_hitTest: 2 send, 3 close and disconnect, 4 room_openNewIdForm), 0x4e14f4 send, back close, 0x4e150c
+   buttons (roomLogin_hitTest: 2 send, 3 close and disconnect, 4 room_openNewIdForm), g_dikI send, back close, g_dikN
    room_openNewIdForm (none of these while typing, g_textFieldOpen); the toggle key moves the highlight (g_dialogChoice) on: from
    the name (1) to the password field (2), to the OK button (3), then into the name field for typing; with shift,
    back: from OK (3) to the password field, to the name, then into the password field for typing. The original

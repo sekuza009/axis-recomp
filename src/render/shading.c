@@ -156,7 +156,7 @@ void (shape_getShadingColorBufferBy)(u8 *out, int first, const Part *part, const
 				first = 0;
 			break;
 		}
-		case 3: {   /* a point light falling off with the squared distance beyond a fifth (0x4aa25c) of the squared
+		case 3: {   /* a point light falling off with the squared distance beyond a fifth (k_0_04f) of the squared
 		               radius, its colour by how the normals face it */
 			if (m) {
 				p[0] = f32(((MUL(&m[8], &l->pos[2]) + MUL(&m[4], &l->pos[1])) + MUL(&l->pos[0], &m[0])) + m[12]);
@@ -208,7 +208,7 @@ static void light_mix(u8 *out, const u8 *light, int i, const u8 *base)
 	out[3] = 0xff;
 }
 
-/* the intensity ((1 - d) x 0x4aa264, at least 0) of a light at the cosine d */
+/* the intensity ((1 - d) x k_128f, at least 0) of a light at the cosine d */
 static int light_level(long double d)
 {
 	int i = ftol(fmul_m(fld_m(&k_1f) - d, &k_128f));
@@ -217,9 +217,9 @@ static int light_level(long double d)
 
 /* 0x472400 (thiscall on the scene): a ground layer's vertex colours (RGBA into cols) over rows r0 .. r1 and columns
    c0 .. c1 of its grid (+0x20 + 1 wide; normals at +0x44): for each directional light (the scene's 0x2c-byte light
-   records from +0x9cd008, +0x9d8000 of them: kind 1; 0 and 2 are skipped, another kind is a fatal message) the
+   records from mapLights.records[].kind, mapLights.count of them: kind 1; 0 and 2 are skipped, another kind is a fatal message) the
    intensity from the normal against its direction (+0x14), the first written (first == 1), the rest added; a layer
-   with sky colours (+0x30 1) gets the light from straight above (1 for a layer of kind 1, else 0x4a9424) in its 12
+   with sky colours (+0x30 1) gets the light from straight above (1 for a layer of kind 1, else k_1f) in its 12
    colours at +0xfc too. A kind-2 layer only clears its light map (+0x48) and sky colours. Its caller ignores the
    eax it leaves */
 void THISCALL (light_computeLayerLightBy)(u8 *scene, u8 *layer, u8 *cols, int first, int r0, int c0, int r1, int c1)
@@ -292,12 +292,12 @@ static void water_point(u8 *scene, u8 *layer, u8 *part, int at, int tex_at, floa
 }
 
 /* 0x497d20 (thiscall on the scene): the ground's drawing lists for this frame. For each layer (0x20c bytes from
-   +0xdc0244, +0xdc0a74 of them: origin +4, rows +0x1c, columns +0x20, cell size +0x24, cell bitmap +0x3c) the cells
-   (bit 0 set) within the view range (+0xa08) of the camera (+0x20f3970 / 78) become triangle strips (type 5, from the
+   groundLayers, groundLayerCount of them: origin +4, rows +0x1c, columns +0x20, cell size +0x24, cell bitmap +0x3c) the cells
+   (bit 0 set) within the view range (+0xa08) of the camera (cameraPos / 78) become triangle strips (type 5, from the
    layer's primitive heap +0x64, +0x68 of them, at most +0x60: a fatal message) of grid indices, into the part of the
-   first terrain model (+0xdc0a8c, 0x80 bytes a layer: its +0x58, +0x60). A water layer (+0x30 1) gives the second
-   model's part (+0xdc0cd8) its surface around the camera at its height (+8): rings of four and of eight (the second
-   h x 0x4aa500 out) with texture coordinates; otherwise that part has none. Both models then go to the view volume's
+   first terrain model (layerModel.parts, 0x80 bytes a layer: its +0x58, +0x60). A water layer (+0x30 1) gives the second
+   model's part (layerBoxModel.parts) its surface around the camera at its height (+8): rings of four and of eight (the second
+   h x k_m1_5f out) with texture coordinates; otherwise that part has none. Both models then go to the view volume's
    queue (ViewVolume_projectObject). Its callers ignore the eax it leaves */
 void THISCALL (ground_buildDrawLists)(u8 *s, void *view, float h)
 {

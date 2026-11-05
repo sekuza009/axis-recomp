@@ -872,10 +872,10 @@ static void clip_end(const float *a, float *b, float *d, const float *plane, int
 }
 
 /* 0x471740 (thiscall on the scene): the line of sight p0 -> p1 through the level. Every active scene object (0x2cc
-   bytes from +0x131ae44, +0x13c9b24 of them: +4 1, its unit +0x28c with a list and enabled +0x290) takes the segment
+   bytes from objects, objectCount of them: +4 1, its unit +0x28c with a list and enabled +0x290) takes the segment
    into its frame (the inverse +0x134); unless both ends lie beyond one side of its model's box (+0x27c: +0x34 low,
    +0x40 high), clipped to the box in x then y (the original's own rounding at every step), it becomes a sub-model
-   (+0x9ca0f4: its list, its matrices +0x1f4 / +0x234). Then the level grid (+0xa10) is traced with them
+   (nearObjects: its list, its matrices +0x1f4 / +0x234). Then the level grid (+0xa10) is traced with them
    (space_traceNodes). Returns its hit record or 0 */
 u32 THISCALL (collision_rayTrace)(u8 *s, const float *p0, const float *p1, void *hit)
 {

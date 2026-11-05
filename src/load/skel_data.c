@@ -267,7 +267,7 @@ static void rotate(long double angle, const float *axis)
 /* 0x46ab30 (thiscall on a skeleton): bone's matrix at time t (0 .. 1 of the +0x20 frames) into out, worked out on
    the GL modelview matrix (saved, then put back): the identity, then the position (the bone's +0x44, or its keys
    from +0x64, +0x60 of them, 0x20 bytes: base +8 and delta +0x14 over the key's length +4), then the rotation (the
-   angle +0x50 in 0x4aa270 units about +0x54; or its keys from +0x6c, +0x68 of them, 0x28 bytes: a base rotation
+   angle +0x50 in k_57_2958f units about +0x54; or its keys from +0x6c, +0x68 of them, 0x28 bytes: a base rotation
    +8 about +0xc and a delta +0x18 about +0x1c). A bone past the count (+0x10) gets the identity. Its callers ignore
    the eax it leaves */
 void THISCALL (skel_applyPose)(u8 *sk, u32 *out, int bone, float t)
@@ -514,7 +514,7 @@ static void transform(float *out, const float *m, const float *px, const float *
    at most the object's +0x10): on the GL modelview matrix (saved and put back) the parent bone's matrix is loaded
    (its record +0xc; none: base, or the matrix there was), the position translated (the bone's +0x44, or its keys as
    in skel_applyPose; times the bone record's scale +4), the rotation as in skel_applyPose; the result read back
-   into the bone's 0x64-byte record (+0xc), with two points carried through it: 0xa0e7a8 (to +0x4c) and the record's
+   into the bone's 0x64-byte record (+0xc), with two points carried through it: g_vecOrigin (to +0x4c) and the record's
    own point (+0, its +0x20 ..; none: the first again, to +0x58). Its callers ignore the eax it leaves */
 void THISCALL (skel_poseBones)(u8 *pose, const float *base)
 {
