@@ -5535,9 +5535,9 @@ extern u8 g_defaultColour_v[4];
 extern float g_realBlue_v[4];
 #endif
 #ifdef AXIS_FENCE
-#define g_colourMaskRed_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xdd0000 : g_fence + 0xdcfffc))
+#define g_packedRed_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xdd0000 : g_fence + 0xdcfffc))
 #else
-extern u8 g_colourMaskRed_v[4];
+extern u8 g_packedRed_v[4];
 #endif
 #ifdef AXIS_FENCE
 #define g_realWhite_v ((float *)(AXIS_FENCE == 2 ? g_fence + 0xdd2000 : g_fence + 0xdd1ff0))

@@ -408,7 +408,7 @@ static void colour_fill(u8 *m)
 	TextureBank *tm = (TextureBank *)m;
 	for (int y = 0; y < H(m); y++)
 		for (int x = 0; x < W(m); x++)
-			((u32 *)tm->colourMask)[y * W(m) + x] = g_colourMaskRed;
+			((u32 *)tm->colourMask)[y * W(m) + x] = g_packedRed;
 }
 
 /* 0x455aa0 (thiscall on the texture bank): texture i's image (its name +0xc0128 + i * 0x68 cut at '*') loaded at

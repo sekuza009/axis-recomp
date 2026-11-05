@@ -244,7 +244,7 @@ typedef struct Player {
 	i32 burstLeft;   /* +0x1f0: (by use) rounds of the current burst still to fire */
 	float burstTime;   /* +0x1f4: (by use) the time to the burst's next round */
 	ShotRecord shots[5];   /* +0x1f8: (by use) its rounds as sent (another machine's actor: netFired) */
-	FiredRound rounds[5];   /* +0x298: (by use) its rounds' records (ResourceSets: armc_computeTotals builds them; actor_processFrame fills one as each round fires) */
+	FiredRound rounds[5];   /* +0x298: (by use) its rounds' records (ResourceSets: actor_checkDataLoss builds them; actor_processFrame fills one as each round fires) */
 	i32 shotBullets[5];   /* +0x360: the bullets they made (-1 none) */
 	i32 sendNow;   /* +0x374: 1: its state is sent this frame (one of its rounds ran out of life; net_sendPlayerState); cleared each frame */
 	float velocity[3];   /* +0x378: (by use) moves towards the keys' (moveAccel) */
@@ -340,7 +340,7 @@ typedef struct Player {
 	float lockAnim;   /* +0x87ec: 0.25 when the local player's lock on it is made, counting down: the HUD's box closes in */
 	float labelFade;   /* +0x87f0: > 0: the name label is up (alpha labelFade / 3) */
 	i32 botNeeds;   /* +0x87f4: (by use) bit 0: low armour (under 0.3); bit 1: both weapons empty */
-	i32 target1;   /* +0x87f8: (by use) its targets (-1 none; dropped with the bullet: actor_clearTargetRefs) */
+	i32 target1;   /* +0x87f8: (by use) its targets (-1 none; dropped with the bullet: bullet_free) */
 	i32 target2;   /* +0x87fc */
 	i32 pathReverse;   /* +0x8800: (by use) 1: the path is followed backwards */
 	float botWait;   /* +0x8804: (by use) seconds a bot stays put */
@@ -779,7 +779,7 @@ typedef struct RankedPlayer {
 	float rate;   /* +0x3a */
 } RankedPlayer;
 
-/* a row of the ranking table (g_rankingRows, ten: roomList_fillPage from g_netPlayerList) */
+/* a row of the ranking table (g_rankingRows, ten: ranking_fillPage from g_netPlayerList) */
 typedef struct RankRow {
 	u8 _pad0000000[0x4];
 	i32 rank;   /* +0x4: its place (the row before's when its sorted value is the same) */
@@ -845,7 +845,7 @@ typedef struct ViewTriangle {
 /* the view volume: what a frame draws, queued by material and depth (view_volume.c, factors.c; the size is unknown: only the fields used) */
 typedef struct ViewVolume {
 	u8 _pad0000000[0x4];
-	i32 blockSize;   /* +0x4: (by use) its lists' memory (factor_initBy) */
+	i32 blockSize;   /* +0x4: (by use) its lists' memory (ViewVolume_initBy) */
 	u8 *block;   /* +0x8 */
 	i32 ownsBlock;   /* +0xc: 1: allocated here (freed with it) */
 	i32 entryPointsSet;   /* +0x10: (by use) set once its three GL entry points are looked up (+0x14 .. +0x1c); written, never read */
@@ -1045,9 +1045,9 @@ typedef struct TextureBank {
 	i32 indexCount;   /* +0x108: the image file's name index: indexCount entries of 0x44 bytes */
 	u8 *index;   /* +0x10c */
 	void *file;   /* +0x110: the image file (Data\ImageN.dat; format 0) */
-	u8 image[0x40000];   /* +0x114: (by use) the texture being loaded: RGBA, width x height (tex_loadColorMask) */
+	u8 image[0x40000];   /* +0x114: (by use) the texture being loaded: RGBA, width x height (tex_loadImage) */
 	u8 alphaImage[0x40000];   /* +0x40114: its _ALPHA image (the grey becomes the image's alpha) */
-	u8 colourMask[0x40000];   /* +0x80114: its _COLOR mask (none: all g_colourMaskRed) */
+	u8 colourMask[0x40000];   /* +0x80114: its _COLOR mask (none: all g_packedRed) */
 	i32 format;   /* +0xc0114 */
 	i32 width;   /* +0xc0118: its images' size */
 	i32 height;   /* +0xc011c */
@@ -1323,8 +1323,8 @@ typedef struct ScenePath {
 /* the stage: the scene's own object at Scene + 0x1f36c8 (STAGE()), "this" of the */
 typedef struct Stage {
 	u8 _pad0000000[0x4];
-	i32 built;   /* +0x4: (by use) 1: item_initTextures has built it; written, never read */
-	char stageDir[0x100];   /* +0x8: (by use) the data directories (object_setNames; game_loadAllData: "Stage" .. "Scene"): the stage's */
+	i32 built;   /* +0x4: (by use) 1: stage_build has built it; written, never read */
+	char stageDir[0x100];   /* +0x8: (by use) the data directories (stage_setFolders; Game_ctor: "Stage" .. "Scene"): the stage's */
 	char mapDir[0x100];   /* +0x108: the maps' (a map's files: "<mapDir>/<name>") */
 	char textureDir[0x100];   /* +0x208 */
 	char shapeDir[0x100];   /* +0x308 */
@@ -1335,15 +1335,15 @@ typedef struct Stage {
 	char sceneDir[0x100];   /* +0x808 */
 	char stageName[0x100];   /* +0x908: (by use) the stage's name (its clan texture: Stage\\<name>\\Clan) */
 	float cullMargin;   /* +0xa08: (by use) added to an object's radius when testing it against the camera box */
-	float viewDepth;   /* +0xa0c: (by use) the view distance's depth: -cullMargin x viewProjection[10] + viewProjection[14] (view_setDistance); written, never read */
+	float viewDepth;   /* +0xa0c: (by use) the view distance's depth: -cullMargin x viewProjection[10] + viewProjection[14] (stage_setViewDistance); written, never read */
 	Space space;   /* +0xa10: (by use) the collision space (space_initBy; its planes - 0xac bytes each, hit records point into them - space.planes.records) */
 	u8 _pad0000aac[0x58];
 	u8 spaceData[0x9c95f0];   /* +0xb04: (by use) the collision space's block (space_initBy on +0xa10) */
 	u32 nearObjects[1000][3];   /* +0x9ca0f4: (by use) the map objects near a moving sphere (collision_moveActor): each its unit's planes (SpaceUnit.lastNode), relMatrix and relInverse - space_testSphere's sub-models */
-	i32 effectTextures[9];   /* +0x9ccfd4: (by use) the effects' textures "<dir>\00" .. "08" (item_initTextures; objects.c TEX(k)); "09" is billboards */
+	i32 effectTextures[9];   /* +0x9ccfd4: (by use) the effects' textures "<dir>\00" .. "08" (stage_build; objects.c TEX(k)); "09" is billboards */
 	i32 billboards;   /* +0x9ccff8: (by use) the billboard list map items are drawn with (hud_484ca0's id) */
 	LightFactors mapLights;   /* +0x9ccffc: (by use) the map's lights (Light_read from the map file): they shade the map objects */
-	i32 dynamicLightsSet;   /* +0x9d800c: 1 once stage_refillFactors filled dynamicLights, 0 with stage_resetLights; never read */
+	i32 dynamicLightsSet;   /* +0x9d800c: 1 once stage_refillLights filled dynamicLights, 0 with stage_resetLights; never read */
 	LightFactors dynamicLights;   /* +0x9d8010: (by use) the lights cleared each frame (stage_resetLights); the objects' second colours */
 	LightFactors actorLights;   /* +0x9e3020: (by use) the actors' light: a grey ambient one and one from above (actor_slots.c) */
 	i32 clearOn;   /* +0x9ee030: (by use) the clear colour read from the ground info: on */
@@ -1438,7 +1438,7 @@ typedef struct Stage {
 	i32 cameraTargetMode;   /* +0x202e8e4: written, never read */
 	i32 lastDeath;   /* +0x202e8e8: (by use) the actor that died last */
 	i32 teamsChanged;   /* +0x202e8ec: (by use) 1: an actor joined or changed team */
-	i32 frags[100];   /* +0x202e8f0: (by use) frags by team (a kill counts for the other team's slot); cleared together (stage_clearActorRefs) */
+	i32 frags[100];   /* +0x202e8f0: (by use) frags by team (a kill counts for the other team's slot); cleared together (stage_clearFrags) */
 	float lockHeld[100];   /* +0x202ea80: per actor: seconds the local player's lock on it still holds (targetKeepTime when made; the beep then); sorted longest first into lockTimes / lockIds */
 	float lockTimes[100];   /* +0x202ec10: (by use) the locked-on actors' lock times, longest first (actor_frame.c) */
 	i32 lockIds[100];   /* +0x202eda0: and which actors they are */
@@ -1455,8 +1455,8 @@ typedef struct Stage {
 	u8 _pad20f2e0c[0x68];
 	u32 effectShapes[8];   /* +0x20f2e74: Effect\Shell-Fire, Shell-Bullet, Rail-Fire, Blade-Fire, Rail-Bullet, Lightning-, Missile-, Homing-Bullet */
 	u8 _pad20f2e94[0xa8];
-	i32 itemTextures[3];   /* +0x20f2f3c: (by use) the items' animated textures: damage map, booster, shield (item_initTextures; [0] cleared first by effect_initTextures) */
-	float lightMatrix[16];   /* +0x20f2f48: (by use) an identity (item_initTextures): a faintly tinted actor's light (actor_updateAllParts) */
+	i32 itemTextures[3];   /* +0x20f2f3c: (by use) the items' animated textures: damage map, booster, shield (stage_build; [0] cleared first by effect_initShapes) */
+	float lightMatrix[16];   /* +0x20f2f48: (by use) an identity (stage_build): a faintly tinted actor's light (actor_drawIntoView) */
 	float litMatrix[16];   /* +0x20f2f88: a 1.1 scale (the last element 1): the lit pass's (partList_queue) */
 	float baseMatrix[16];   /* +0x20f2fc8: (by use) the stage's identity matrix (stage_resetMatrixAndPoints) */
 	i32 pointCount;   /* +0x20f3008: written, never read */
@@ -1511,7 +1511,7 @@ typedef struct Stage {
 	i32 messages[32][5];   /* +0x2148c50: the map script's messages waiting (command 26 MESSAGE: speaker, text, colour ..; script_pushMessage); = Scene.msgRing */
 	i32 msgWrite;   /* +0x2148ed0: messages pushed (the ring's next: % 32); = Scene.msgWrite */
 	i32 msgRead;   /* +0x2148ed4: the oldest kept (moved on when the ring is full); = Scene.msgRead */
-	ScenePath scenePath;   /* +0x2148ed8: (by use) the scene-path player (a recording on: scene_loadPath) */
+	ScenePath scenePath;   /* +0x2148ed8: (by use) the scene-path player (a recording on: stage_advanceScenePath) */
 	char pathSound[0x100];   /* +0x2149108: (by use) a sound played with each path (scenePath\\<name>; empty: none) */
 	char scriptName[0x100];   /* +0x2149208: (by use) the .scp file running (script_runScpFile) */
 	i32 scriptMode;   /* +0x2149308: its mode (0 .. 2; with scriptRunning 1, mode 1 stops the actors and clocks) */
@@ -1530,20 +1530,20 @@ typedef struct Flare {
 
 /* a ring of the front end's 3D tunnel (menu_tunnel.c) */
 typedef struct TunnelRing {
-	i32 cleared0;   /* +0x0: (by use) only cleared (intro_cameraPath) */
+	i32 cleared0;   /* +0x0: (by use) only cleared (tunnelRing_build) */
 	i32 cleared4;   /* +0x4 */
 	float depth;   /* +0x8: its distance along the tunnel */
 	u8 _pad000000c[0x4];
 	float outer[2][201][4];   /* +0x10: the outer band: near and far circles of points (x, y, z + pad) */
 	float spin;   /* +0x1930 */
 	float spinSpeed;   /* +0x1934 */
-	i32 cleared1938;   /* +0x1938: (by use) only cleared (intro_cameraPath) */
-	i32 moveSteps;   /* +0x193c: (by use) armc_enter: steps moved toward the next ring */
-	float turn;   /* +0x1940: (by use) armc_enter: turned on by 1100 / 2200 a ring */
+	i32 cleared1938;   /* +0x1938: (by use) only cleared (tunnelRing_build) */
+	i32 moveSteps;   /* +0x193c: (by use) menuTunnel_advance: steps moved toward the next ring */
+	float turn;   /* +0x1940: (by use) menuTunnel_advance: turned on by 1100 / 2200 a ring */
 	float inner[2][201][4];   /* +0x1944: the inner band */
 	float innerSpin;   /* +0x3264 */
 	float innerSpeed;   /* +0x3268 */
-	float innerPos[3];   /* +0x326c: (by use) cleared (intro_cameraPath) */
+	float innerPos[3];   /* +0x326c: (by use) cleared (tunnelRing_build) */
 	float cage[8][4];   /* +0x3278: the cage's corners: one end 0..3, the other 4..7 */
 	float cagePos[3];   /* +0x32f8 */
 	u8 _pad0003304[0x4];
@@ -1566,19 +1566,19 @@ typedef struct Round {
 	i32 timeLimit;   /* +0xc */
 } Round;
 
-/* the scene: the one large object of a match, built by game_loadAllData */
+/* the scene: the one large object of a match, built by Game_ctor */
 typedef struct Scene {
 	u8 _pad0000000[0x4];
 	i32 client;   /* +0x4: (by use) in a network game: 1 on a machine that joined, 0 the host */
 	i32 sessionMode;   /* +0x8: the session (scene_startSession): 0 solo, 1 a network game, 2 the ARM CENTER's preview, 3 replays played (AutoPlay; no team marks, the watched player's tag) */
-	TimeSync timer;   /* +0xc: (by use) its frame timer (timer_getGameTime; timer.fps is shown by hud_drawFps) */
+	TimeSync timer;   /* +0xc: (by use) its frame timer (TimeSync_frameTime; timer.fps is shown by hud_drawFps) */
 	float frameTime;   /* +0x44: (by use) the last frame's time, seconds (the Esc menu fades in by it) */
-	float frameTimes[10];   /* +0x48: the last ten frames' times (frameTimer_average: frameTime is their mean) */
+	float frameTimes[10];   /* +0x48: the last ten frames' times (scene_averageFrameTime: frameTime is their mean) */
 	i32 frameTimeNext;   /* +0x70: the ring's next */
 	u8 view[4];   /* +0x74: the camera's view volume object starts here (passed by address) */
 	u8 _pad0000078[0x916c];
-	u8 viewMemory[2000000];   /* +0x91e4: the view volume's buffers (game_loadAllData: factor_initBy's memory), right after it */
-	i32 renderMode;   /* +0x1f1664: render_drawObjects' mode: 0 normal, 1 wireframe, 2 untextured (always 0 in the game) */
+	u8 viewMemory[2000000];   /* +0x91e4: the view volume's buffers (Game_ctor: ViewVolume_initBy's memory), right after it */
+	i32 renderMode;   /* +0x1f1664: ViewVolume_draw' mode: 0 normal, 1 wireframe, 2 untextured (always 0 in the game) */
 	Round rotation[100];   /* +0x1f1668: the maps played in turn (solo: the 15 stages) */
 	i32 rotationCount;   /* +0x1f1ca8 */
 	i32 rotationAt;   /* +0x1f1cac: the entry being played */
@@ -1656,7 +1656,7 @@ typedef struct Scene {
 	i32 spawnPointCount;   /* +0x22ee4bc: (by use) spawn points from 0x22ee23c, 0x14 bytes each (= Stage.startCount) */
 	u8 _pad22ee4c0[0x1f48];
 	i32 elapsed;   /* +0x22f0408: the match's time in seconds (= Stage.clockSeconds) */
-	float clockFraction;   /* +0x22f040c: = Stage.clockFraction (the same word): the part of a second; the clock's colon blinks by it, render_drawObjects scrolls textures by it */
+	float clockFraction;   /* +0x22f040c: = Stage.clockFraction (the same word): the part of a second; the clock's colon blinks by it, ViewVolume_draw scrolls textures by it */
 	i32 botsHoldFire;   /* +0x22f0410: = Stage.botsHoldFire (the same word): 1 at the round's end (round_over); 0 again on a retry */
 	char centreNotice[0x100];   /* +0x22f0414: (by use) a text shown in the centre once (cleared after) (= Stage.printText (stage_printText fills it)) */
 	i32 kingActor;   /* +0x22f0514: = Stage.kingActor (the same word): the king (isKing; -1 none) */
@@ -1691,9 +1691,9 @@ typedef struct Scene {
 	float cameraTarget[3];   /* +0x233cc14: (by use) the point the camera looks at (the camera path's mid point; cameraDir = it - cameraPos) */
 	i32 matchState;   /* +0x233cc20: the match's state: 1 loading, 2 playing, 3 free camera, 4 replay */
 	i32 loadStage;   /* +0x233cc24: (by use) game_processLoadingMode's stage (0 .. 8) */
-	i32 modeStarted;   /* +0x233cc28: (by use) 0 until game_processGameModeInit has run */
+	i32 modeStarted;   /* +0x233cc28: (by use) 0 until match_startRound has run */
 	i32 loadStep;   /* +0x233cc2c: set 0 with each loading stage, never read */
-	i32 wholeSeconds;   /* +0x233cc30: (by use) the seconds counted (match_inputState2: the fraction carried over) */
+	i32 wholeSeconds;   /* +0x233cc30: (by use) the seconds counted (match_playFrame: the fraction carried over) */
 	float secondFraction;   /* +0x233cc34: the second's fraction so far (the chat cursor blinks by it) */
 	float followTime;   /* +0x233cc38: (by use) seconds the replay viewer has followed its player (a new one after 14) */
 	float presetTime;   /* +0x233cc3c: (by use) seconds on the camera preset (a random one after 7) */
@@ -1721,7 +1721,7 @@ typedef struct Scene {
 	u8 _pad2340c98[0x4];
 	float escTimer;   /* +0x2340c9c: time the in-match menu has been open (fades in over 0.25 s) */
 	u8 _pad2340ca0[0x4];
-	i32 cleared2340ca4[11];   /* +0x2340ca4: (by use) only zeroed (game_loadAllData); nothing else uses them */
+	i32 cleared2340ca4[11];   /* +0x2340ca4: (by use) only zeroed (Game_ctor); nothing else uses them */
 	i32 debugGrid;   /* +0x2340cd0: (by use) 1: a 100 x 150 grid of lines about the actor */
 	i32 debugPoints;   /* +0x2340cd4: (by use) 1: the map's points marked */
 	u8 _pad2340cd8[0x8];
@@ -1762,11 +1762,11 @@ typedef struct Scene {
 	i32 startCountShown;   /* +0x23423c5: (by use) the count last shown (-1 none) */
 	i32 geometryCheckTurn;   /* +0x23423c9: (by use) the geometry table the next game packet checks (net_sendGamePacket: this % 5, then one on; 0 at a later round) */
 	i32 geometryPickUnread[6];   /* +0x23423cd: a random dword in each of the six part / item tables, picked each round; never read */
-	i32 geometryPerRow[6];   /* +0x23423e5: (by use) the six geometry tables' entries per row (6 3 6 7 10 0x18: game_loadAllData; net_sendGamePacket's checks) */
+	i32 geometryPerRow[6];   /* +0x23423e5: (by use) the six geometry tables' entries per row (6 3 6 7 10 0x18: Game_ctor; net_sendGamePacket's checks) */
 	i32 dataLossPending;   /* +0x23423fd: 1: a data mismatch found (the server's parts check every 20 s, or a packet's map / part tables; dataLossCode says which): the next frame shows the data loss notice and leaves */
 	i32 dataLossCode;   /* +0x2342401: shown when a game ends for lost data */
 	float partsCheckTime;   /* +0x2342405: (by use) the local player's parts checked every 20 s (network) */
-	float previewTurn;   /* +0x2342409: (by use) the ARM CENTER preview's turn by the cursor (armc_rotateFromCursor) */
+	float previewTurn;   /* +0x2342409: (by use) the ARM CENTER preview's turn by the cursor (armc_drawPreview3D) */
 	i32 localPlayer;   /* +0x234240d: the player at this machine (index into players) */
 	i32 localRecordSet;   /* +0x2342411: 1: the local player's record is set this match (local_spawn does it once; cleared at a new match / team change) */
 	i32 teamAsked;   /* +0x2342415: (by use) 1: the local player asked to play (START), the team to be given */
@@ -1800,22 +1800,22 @@ typedef struct Scene {
 	float noticeTimer;   /* +0x2342f02: > 0: the notice shown (2 s after notice_printCentre) */
 	char noticeText[0x40];   /* +0x2342f06: the centred notice (notice_printCentre: PREPARE THE BATTLE, FIGHT!, LEVEL UP! ..), shown while no restart counts down */
 	u8 _pad2342f46[0xc0];
-	i32 sendFlags[16][4];   /* +0x2343006: (by use) per player: what is to be sent ([0] its state, [1] its team, ...; notices_clearAll clears them) */
+	i32 sendFlags[16][4];   /* +0x2343006: (by use) per player: what is to be sent ([0] its state, [1] its team, ...; net_clearAnnouncements clears them) */
 	i32 announcePending;   /* +0x2343106: 1: an announcement is queued for the other players (the *Pending flags; net_sendMatchEvent sends them one at a time) */
-	i32 connectPlayer;   /* +0x234310a: kind 8: a player connected (notice_playerConnected) */
+	i32 connectPlayer;   /* +0x234310a: kind 8: a player connected (net_announcePlayerConnected) */
 	char connectName[0x40];   /* +0x234310e */
 	i32 connectPending;   /* +0x234314e */
-	i32 quitPlayer;   /* +0x2343152: kind 9: a player ended the match (notice_playerQuit) */
+	i32 quitPlayer;   /* +0x2343152: kind 9: a player ended the match (net_announcePlayerQuit) */
 	i32 quitPending;   /* +0x2343156 */
-	i32 chatPlayer;   /* +0x234315a: kind 7: a chat line (notice_chatLine) */
+	i32 chatPlayer;   /* +0x234315a: kind 7: a chat line (net_announceChatLine) */
 	char chatLine[0x39];   /* +0x234315e */
 	i32 chatTeam;   /* +0x2343197: (-1: to all) */
 	i32 chatPending;   /* +0x234319b */
-	i32 joinPlayer;   /* +0x234319f: kind 10: a player joined a team (notice_joinedTeam) */
+	i32 joinPlayer;   /* +0x234319f: kind 10: a player joined a team (net_announceJoinedTeam) */
 	i32 joinTeam;   /* +0x23431a3 */
 	char joinName[0x40];   /* +0x23431a7: its mech's name */
 	i32 joinPending;   /* +0x23431e7 */
-	i32 changePlayer;   /* +0x23431eb: kind 11: a player changed team (notice_changedTeam); written, never read */
+	i32 changePlayer;   /* +0x23431eb: kind 11: a player changed team (net_announceChangedTeam); written, never read */
 	i32 changeTeam;   /* +0x23431ef */
 	char changeName[0x40];   /* +0x23431f3 */
 	i32 changePending;   /* +0x2343233 */

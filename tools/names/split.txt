@@ -639,7 +639,7 @@ g_resultMsg
 g_netSlotMsg
 # freed: reviewed single-value pointers (split_ptr_ok.txt) and FPU operands inside nested calls, 2026-11-01
 g_armcEnterStepF
-g_colourMaskRed
+g_packedRed
 g_cursorBlinkTimer
 g_defaultColour
 g_replayRandomOrder

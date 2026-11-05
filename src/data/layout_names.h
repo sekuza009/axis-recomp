@@ -478,8 +478,6 @@ extern struct GameData g_data;
 #define g_colourChanged (*(int *)g_colourChanged_v)
 #undef g_colourDepthTexts
 #define g_colourDepthTexts ((char *)g_colourDepthTexts_v)
-#undef g_colourMaskRed
-#define g_colourMaskRed (*(u32 *)g_colourMaskRed_v)
 #undef g_coloursChanged
 #define g_coloursChanged (*(int *)g_coloursChanged_v)
 #undef g_componentDatPath
@@ -1858,6 +1856,8 @@ extern struct GameData g_data;
 #define g_packedGreen ((u8 *)g_packedGreen_v)
 #undef g_packedGrey
 #define g_packedGrey ((u8 *)g_packedGrey_v)
+#undef g_packedRed
+#define g_packedRed (*(u32 *)g_packedRed_v)
 #undef g_packedWhite
 #define g_packedWhite ((u8 *)g_data.g_packedWhite_)
 #undef g_packedYellow

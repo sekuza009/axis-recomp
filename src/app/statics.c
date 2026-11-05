@@ -112,7 +112,7 @@ void (colour_initPackedBlue)(void) { u8 *c = g_packedBlue; c[0] = 0; c[1] = 0; c
 void (colour_initPackedGrey)(void) { u8 *c = g_packedGrey; c[0] = 0x7f; c[1] = 0x7f; c[2] = 0x7f; c[3] = 0xff; }   /* 0x46db30 */
 void (colour_initPackedYellow)(void) { u8 *c = g_packedYellow; c[0] = 0xff; c[1] = 0xff; c[2] = 0; c[3] = 0xff; }   /* 0x46dc20 */
 void (colour_initPackedClear)(void) { u8 *c = (u8 *)ADDR(g_defaultColour); c[0] = 0; c[1] = 0; c[2] = 0; c[3] = 0; }   /* 0x46dad0 */
-void (colour_initPackedRed)(void) { u8 *c = (u8 *)ADDR(g_colourMaskRed); c[0] = 0xff; c[1] = 0; c[2] = 0; c[3] = 0xff; }   /* 0x46db90 */
+void (colour_initPackedRed)(void) { u8 *c = (u8 *)ADDR(g_packedRed); c[0] = 0xff; c[1] = 0; c[2] = 0; c[3] = 0xff; }   /* 0x46db90 */
 void (colour_initPackedWhite)(void) { u8 *c = g_packedWhite; c[0] = 0xff; c[1] = 0xff; c[2] = 0xff; c[3] = 0xff; }   /* 0x46db60 */
 void (colour_initPackedBlack)(void) { u8 *c = (u8 *)ADDR(g_unlit); c[0] = 0; c[1] = 0; c[2] = 0; c[3] = 0xff; }   /* 0x46db00 */
 void (colour_initPackedGreen)(void) { u8 *c = g_packedGreen; c[0] = 0; c[1] = 0xff; c[2] = 0; c[3] = 0xff; }   /* 0x46dbc0 */

@@ -580,12 +580,12 @@ u32 THISCALL (match_freeCamFrame)(u8 *s)
 				far_point(b, pitch + 100, yaw);
 				about(pb, b, actor);
 				about(pa, a, actor);
-				ViewVolume_addSegment(SC->view, (const void *)ADDR(g_colourMaskRed), pa, pb, 1);
+				ViewVolume_addSegment(SC->view, (const void *)ADDR(g_packedRed), pa, pb, 1);
 				far_point(a, pitch, yaw);
 				far_point(b, pitch, yaw + 150);
 				about(pb, b, actor);
 				about(pa, a, actor);
-				ViewVolume_addSegment(SC->view, (const void *)ADDR(g_colourMaskRed), pa, pb, 1);
+				ViewVolume_addSegment(SC->view, (const void *)ADDR(g_packedRed), pa, pb, 1);
 			}
 	stage_drawActors((Stage *)stage, SC->view, -1);
 	stage_drawBullets(stage, SC->view);

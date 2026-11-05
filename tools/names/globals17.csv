@@ -27,7 +27,7 @@
 0x9ef218,int,g_unusedBriefingWord
 0x5b193c,u32,g_arenaFilePassword
 0x5b1940,u32,g_arenaFilePassword4
-0xa1f238,u32,g_colourMaskRed
+0xa1f238,u32,g_packedRed
 0xa0e7e8,float,g_vecZero
 0xa0e7a8,float,g_vecOrigin
 0xa0e7c8,float,g_vecUnitZ

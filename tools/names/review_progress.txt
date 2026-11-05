@@ -114,7 +114,7 @@
 [x] src/text/text_passes.c 178
 [x] src/text/text_size.c 25
 [x] src/wide.c 92
-[ ] src/globals.h (every global: name vs its uses)
-[ ] src/objects.h
-[ ] src/scene.fields (every field: name vs its uses)
+[x] src/globals.h (every global: name vs its uses)
+[x] src/objects.h
+[x] src/scene.fields (every field: name vs its uses)
 [x] src/game.h / calls.h macro parameter names

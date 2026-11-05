@@ -1119,7 +1119,7 @@ u8 g_packedYellow_v[4] __attribute__((aligned(16)));   /* 0xa1f208 */
 float g_realClear_v[4] __attribute__((aligned(16)));   /* 0xa1f210 */
 u8 g_defaultColour_v[4] __attribute__((aligned(16)));   /* 0xa1f220 */
 float g_realBlue_v[4] __attribute__((aligned(16)));   /* 0xa1f228 */
-u8 g_colourMaskRed_v[4] __attribute__((aligned(16)));   /* 0xa1f238 */
+u8 g_packedRed_v[4] __attribute__((aligned(16)));   /* 0xa1f238 */
 float g_realWhite_v[4] __attribute__((aligned(16)));   /* 0xa1f240 */
 u32 g_logPackedColor_v[2] __attribute__((aligned(16)));   /* 0xa1f250 */
 float g_realGreen_v[4] __attribute__((aligned(16)));   /* 0xa1f258 */
@@ -2289,7 +2289,7 @@ const DataPiece g_splitObjects[] = {
 	{ 0xa1f210, g_realClear_v, 16 },
 	{ 0xa1f220, g_defaultColour_v, 4 },
 	{ 0xa1f228, g_realBlue_v, 16 },
-	{ 0xa1f238, g_colourMaskRed_v, 4 },
+	{ 0xa1f238, g_packedRed_v, 4 },
 	{ 0xa1f240, g_realWhite_v, 16 },
 	{ 0xa1f250, g_logPackedColor_v, 8 },
 	{ 0xa1f258, g_realGreen_v, 16 },
