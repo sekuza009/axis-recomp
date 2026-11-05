@@ -516,7 +516,7 @@ typedef struct Bullet {
 	i32 hitActor;   /* +0xb8: an actor it hit (-1 none), which takes it first */
 	i32 homingTarget;   /* +0xbc: the actor a guided round homes on (bullet_init's fourth argument; < 0 none: the local player's own round follows the aim point) */
 	float homeTimer;   /* +0xc0: (by use) a homing bullet turns again every 1/15 s */
-	float tip[3];   /* +0xc4: the local player's tracer end */
+	float homingPoint[3];   /* +0xc4: the point a guided round homes on without a target actor (the local player's own: 200000 along the aim) */
 	i32 hitWorld;   /* +0xd0: 1: it hit the world (splash damage then; weapons.c) */
 	float trail[20][4][3];   /* +0xd4: (by use) a trail's ring of cross-sections (4 points each: weapons.c trail) */
 	float trailAge[20];   /* +0x494: each one's age when made */
@@ -2304,7 +2304,7 @@ _Static_assert(offsetof(Bullet, step) == 0xac && sizeof(((Bullet *)0)->step) == 
 _Static_assert(offsetof(Bullet, hitActor) == 0xb8 && sizeof(((Bullet *)0)->hitActor) == 0x4, "scene.fields: Bullet.hitActor");
 _Static_assert(offsetof(Bullet, homingTarget) == 0xbc && sizeof(((Bullet *)0)->homingTarget) == 0x4, "scene.fields: Bullet.homingTarget");
 _Static_assert(offsetof(Bullet, homeTimer) == 0xc0 && sizeof(((Bullet *)0)->homeTimer) == 0x4, "scene.fields: Bullet.homeTimer");
-_Static_assert(offsetof(Bullet, tip) == 0xc4 && sizeof(((Bullet *)0)->tip) == 0xc, "scene.fields: Bullet.tip");
+_Static_assert(offsetof(Bullet, homingPoint) == 0xc4 && sizeof(((Bullet *)0)->homingPoint) == 0xc, "scene.fields: Bullet.homingPoint");
 _Static_assert(offsetof(Bullet, hitWorld) == 0xd0 && sizeof(((Bullet *)0)->hitWorld) == 0x4, "scene.fields: Bullet.hitWorld");
 _Static_assert(offsetof(Bullet, trail) == 0xd4 && sizeof(((Bullet *)0)->trail) == 0x3c0, "scene.fields: Bullet.trail");
 _Static_assert(offsetof(Bullet, trailAge) == 0x494 && sizeof(((Bullet *)0)->trailAge) == 0x50, "scene.fields: Bullet.trailAge");

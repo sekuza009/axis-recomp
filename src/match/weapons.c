@@ -59,7 +59,7 @@ void THISCALL (actor_selectWeapon)(Stage *stage, int i, int slot)
 	}
 }
 
-/* 0x45edb0: actor i (when +0x14c is 1) picks slot 0 four times in five, else slot 4, from the game's random table
+/* 0x45edb0: actor i (when state is 1) picks slot 0 four times in five, else slot 4, from the game's random table
    (g_randTable, 4096 values, position g_randPos), and its aim is set back to its own point */
 void THISCALL (actor_pickRandomWeapon)(Stage *stage, int i)
 {
@@ -151,12 +151,12 @@ static int within(const float *p, const float *from, const float *range)
 	return !(d > *range);
 }
 
-/* 0x460270 (thiscall on the scene): a new target for actor p (0x8888-byte actors from +0x1cd93a8): the points (0x14
+/* 0x460270 (thiscall on the scene): a new target for actor p (0x8888-byte actors from actors): the points (0x14
    bytes) of every point list (0x1c-byte records from triggers: a count, the points; triggerCount lists) but the one
-   it follows (+0x8870) within its range (+0x8848) on each axis of it (+0x154) are candidates. The first five are
+   it follows (stuckPath) within its range (pathRange) on each axis of it (pos) are candidates. The first five are
    kept, marked whether the line to them is clear (collision_rayTrace); after that a clear one takes the place of a
    random one that is not clear (two tries), and that list is left. One of the candidates picked at random: the
-   target (+0x87f8 list, +0x87fc point, +0x8800 a random side), +0x8870 none, the range 1500. With none the range
+   target (target1 list, target2 point, pathReverse a random side), stuckPath none, the range 1500. With none the range
    grows (x k_1_5f). Its caller ignores the eax it leaves */
 void THISCALL (actor_pickPathPoint)(u8 *scene, int p)
 {
@@ -217,13 +217,13 @@ static u32 next_rand(u32 n)
 }
 
 /* 0x479b40 (thiscall on the scene): bullet slot (0x4e8 bytes from bullets) fired by owner from the shot (+0 a
-   target given, +4 the weapon: its record 0x2e18 bytes from actorInfo, +8 the origin, +0x14 the target's record,
-   +0x18 the direction or the target, +0x24 kept at +0x10). Its id (or the next serial, bulletSerial). Aimed shots
-   spread with the weapon's +0x2dec less the owner's steadiness (+0x24) and are renormalised; mode 3 (+0x2dfc) fires
-   into a random cone about the direction (through gluLookAt's inverse); the first step (speed +0x2de4) is traced
-   (collision_rayTrace; the hit record +0x6c) and the part of a step used (+0x74) kept from 0 to 10. Then its
-   velocity (+0x2de8 times the direction, or the step), colour, the homing target (homingTarget: a guided round's; the local player's own guided round follows the aim point), and, unless
-   quiet, the muzzle flash (particle kind +0x2dfc + 10) and the firing sound (+0x2e00: at full volume for the local
+   target given, +4 the weapon: its record 0x2e18 bytes from actorInfo, +8 the origin, hitPlane the target's record,
+   dir the direction or the target, muzzle kept at colour). Its id (or the next serial, bulletSerial). Aimed shots
+   spread with the weapon's spread less the owner's steadiness (accuracy) and are renormalised; mode 3 (shotMode) fires
+   into a random cone about the direction (through gluLookAt's inverse); the first step (speed stepLength) is traced
+   (collision_rayTrace; the hit record hit) and the part of a step used (life) kept from 0 to 10. Then its
+   velocity (velocity times the direction, or the step), colour, the homing target (homingTarget: a guided round's; the local player's own guided round follows the aim point), and, unless
+   quiet, the muzzle flash (particle kind shotMode + 10) and the firing sound (sound: at full volume for the local
    player playerActor, else placed). Its callers ignore the eax it leaves */
 void THISCALL (bullet_init)(u8 *s, int slot, int id, int owner, int homingTarget, const u8 *shot, int quiet)
 {
@@ -314,12 +314,12 @@ void THISCALL (bullet_init)(u8 *s, int slot, int id, int owner, int homingTarget
 	BU->homingTarget = homingTarget;
 	if (w->guidance > 0 && homingTarget < 0 && BU->owner == ST->playerActor) {
 		const float *at = BU->prev;
-		float *tip = BU->tip;
+		float *point = BU->homingPoint;
 		long double tx = fmul_m(fld_m(&aim[0]), &k_200000f);
 		float ty = f32(fmul_m(fld_m(&aim[1]), &k_200000f)), tz = f32(fmul_m(fld_m(&aim[2]), &k_200000f));
-		tip[0] = f32(fadd_m(tx, &at[0]));
-		tip[1] = f32(fadd_m(fld_m(&ty), &at[1]));
-		tip[2] = f32(fadd_m(fld_m(&tz), &at[2]));
+		point[0] = f32(fadd_m(tx, &at[0]));
+		point[1] = f32(fadd_m(fld_m(&ty), &at[1]));
+		point[2] = f32(fadd_m(fld_m(&tz), &at[2]));
 	}
 	BU->hitWorld = 0;
 	BU->trailCount = 0;
@@ -372,7 +372,7 @@ static u32 effect_size(const u8 *w)
 	return BITS(v);
 }
 
-/* the inverse of the view gluLookAt makes from the bullet's last point (+0x78) to its point (+0x84) */
+/* the inverse of the view gluLookAt makes from the bullet's last point (prev) to its point (pos) */
 static void look_inverse(u8 *b, float *inv, int x_up)
 {
 	float *prev = BU->prev, *cur = BU->pos, mv[16];
@@ -394,9 +394,9 @@ static void offset_point(float *out, const float *off, const float *p)
 		out[k] = f32(fadd_m(fld_m(&off[k]), &p[k]));
 }
 
-/* a beam (kind 7): its four long sides (+0xd4.., the last point's corners, +0x104.. the point's) half the size off
+/* a beam (kind 7): its four long sides (trail.., the last point's corners, trail[1].. the point's) half the size off
    the line along the view's y (+-) and x (+-), each drawn as a textured strip (kind -1) with the bullet id's
-   quarter of the texture (+0); the length kept (+0x494). The flying copy sums the length's squares in another order */
+   quarter of the texture (+0); the length kept (trailAge). The flying copy sums the length's squares in another order */
 static void beam(u8 *s, u8 *b, const u8 *w, u32 *r, int flying)
 {
 	float *prev = BU->prev, *cur = BU->pos, inv[16], a[3];
@@ -494,8 +494,8 @@ static void trail(u8 *b, const u8 *w, int flying)
 	BITS(BU->trailAge[i]) = BITS(BU->age);
 }
 
-/* the shot drawn by its kind (+0x2dfc): a trail, a beam, or a particle of kind + 0x14 from the last point to the
-   point (flagged for the camera's own first 0.03 s, +0x202e8d8) */
+/* the shot drawn by its kind (shotMode): a trail, a beam, or a particle of kind + 0x14 from the last point to the
+   point (flagged for the camera's own first 0.03 s, selectedActor) */
 static void draw_shot(u8 *s, u8 *b, const u8 *w, u32 *r, int flying)
 {
 	int kind = WI->shotMode;
@@ -509,9 +509,9 @@ static void draw_shot(u8 *s, u8 *b, const u8 *w, u32 *r, int flying)
 	}
 }
 
-/* the bullet hit actor +0xb8: the damage when the actor is the local player's and alive (+0x1cd94f4), sparks and a
+/* the bullet hit actor hitActor: the damage when the actor is the local player's and alive (actors[].state), sparks and a
    flash (kind 8, the actor's 0x2000 flag) facing away from it, the hit sound, the local owner's hit beep, and the
-   push (+0x1ce1c04: 10 times the weapon's +0x2e14 towards the actor) */
+   push (actors[].push: 10 times the weapon's push towards the actor) */
 static void hit_actor(u8 *s, u8 *b, const u8 *w, u32 *r, int weapon)
 {
 	int t = BU->hitActor;
@@ -583,7 +583,7 @@ static void decal(u8 *s, u8 *b, const u8 *w, u32 *r, const u8 *h, const float *N
 }
 
 /* the surface the bullet hit (Bullet.hit, a CollisionPlane: its corners, normal, object):
-   the corners and normal taken into the world through the object's matrix (+0x1f4), the impact (kind + 0x1e), a
+   the corners and normal taken into the world through the object's matrix (relMatrix), the impact (kind + 0x1e), a
    mark unless the surface takes none (flag 0x10) or marks are off (0x83a9c8), the hit sound */
 static void hit_surface(u8 *s, u8 *b, const u8 *w, u32 *r)
 {
@@ -620,9 +620,9 @@ static void hit_surface(u8 *s, u8 *b, const u8 *w, u32 *r)
 	BU->hitWorld = 1;
 }
 
-/* splash damage once the bullet hit (+0xd0): every other live actor of the local player's (+0x1cd94b8) with health
-   over 3 within the weapon's radius (+0x2df4) of the point is hurt by up to the weapon's damage (by distance) and
-   pushed (+0x1ce1c04) */
+/* splash damage once the bullet hit (hitWorld): every other live actor of the local player's (actors[].controlledBy) with health
+   over 3 within the weapon's radius (splashRadius) of the point is hurt by up to the weapon's damage (by distance) and
+   pushed (actors[].push) */
 static void splash(u8 *s, u8 *b, const u8 *w)
 {
 	if (BU->hitWorld != 1 || !(WI->splashRadius > 0))
@@ -654,9 +654,9 @@ static void splash(u8 *s, u8 *b, const u8 *w)
 	}
 }
 
-/* homing: the velocity (+0xa0) turned towards the target (actor +0xbc, else the point +0xc4) by at most the turn
-   rate (+0x2e0c, degrees: the cosine table g_cosTable) about their cross product, at the weapon's speed (+0x2de8;
-   for kind 3 both by the bullet's age); again in 1/15 s (+0xc0) */
+/* homing: the velocity (vel) turned towards the target (actor homingTarget, else the point homingPoint) by at most the turn
+   rate (guidance, degrees: the cosine table g_cosTable) about their cross product, at the weapon's speed (velocity;
+   for kind 3 both by the bullet's age); again in 1/15 s (homeTimer) */
 static void home(u8 *s, u8 *b, const u8 *w)
 {
 	float *prev = BU->prev, *vel = BU->vel, spd, rate, T[3];
@@ -671,7 +671,7 @@ static void home(u8 *s, u8 *b, const u8 *w)
 	}
 	int tg = BU->homingTarget;
 	for (int k = 0; k < 3; k++)
-		T[k] = f32(fsub_m(fld_m(tg >= 0 ? &ST->actors[tg].nextPos[k] : BU->tip + k), &prev[k]));
+		T[k] = f32(fsub_m(fld_m(tg >= 0 ? &ST->actors[tg].nextPos[k] : BU->homingPoint + k), &prev[k]));
 	Vec3_normalize(T);
 	Vec3_normalize(vel);
 	long double dot = (fmul_m(fld_m(&T[2]), &vel[2]) + fmul_m(fld_m(&T[1]), &vel[1])) + fmul_m(fld_m(&T[0]), &vel[0]);
@@ -697,9 +697,9 @@ static void home(u8 *s, u8 *b, const u8 *w)
 }
 
 /* a local player's bullet in flight: homing, the step by its velocity (none for a weapon of no speed: it ends at
-   its point +0x60 at once, as does one whose life ends this frame unless it homes), the nearest actor the step
+   its point end at once, as does one whose life ends this frame unless it homes), the nearest actor the step
    passes within its radius plus the weapon's size (math_segmentSphere; the bullet then stops there), else for a
-   homing weapon the world in the way (collision_rayTrace: the hit record +0x6c and the life cut to it) */
+   homing weapon the world in the way (collision_rayTrace: the hit record hit and the life cut to it) */
 static void fly_local(u8 *s, u8 *b, const u8 *w, const float *dt)
 {
 	float *prev = BU->prev, *cur = BU->pos, *vel = BU->vel, *step = BU->step;
@@ -760,10 +760,10 @@ static void fly_local(u8 *s, u8 *b, const u8 *w, const float *dt)
 	BU->moved = 1;
 }
 
-/* 0x47a2d0 (thiscall on the scene): bullet slot's frame (0x4e8 bytes from +0x202ef34; its weapon's record 0x2e18
-   bytes from actorInfo). An actor it hit (+0xb8) takes it first. In flight (age +0x70 up to its life +0x74): the
+/* 0x47a2d0 (thiscall on the scene): bullet slot's frame (0x4e8 bytes from bullets; its weapon's record 0x2e18
+   bytes from actorInfo). An actor it hit (hitActor) takes it first. In flight (age age up to its life life): the
    local player's (playerActor) bullets move and find their hits (fly_local), other players' follow the network's
-   points (+0x90, or the last step again); it is drawn when it moved (+0x9c), aged, and its owner told when it ends
+   points (netPoint, or the last step again); it is drawn when it moved (moved), aged, and its owner told when it ends
    (actors[].sendNow). Afterwards: another player's bullet is drawn at its last point, then the surface it hit, the
    splash, and the slot freed (bullet_free) */
 void THISCALL (bullet_update)(u8 *s, int slot, u32 dt_bits)
