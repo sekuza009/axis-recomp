@@ -350,6 +350,9 @@
 #define g_realBlack ((float *)IMG(0xa1f280))   /* float[4]; real black */
 #define g_realYellow ((float *)IMG(0xa1f2d8))   /* float[4]; real yellow */
 #define g_realGrey ((float *)IMG(0xa1f2f0))   /* float[4]; real grey */
+#define k_teamHue ((float *)IMG(0x4a97fc))   /* float[5]; the team colours by side: hue (0 red, 240 blue, 120 green, 0, 0) */
+#define k_teamSaturation ((float *)IMG(0x4a9810))   /* float[5]; saturation (1, 1, 1, -1, -1: the last two keep the part's own) */
+#define k_teamValue ((float *)IMG(0x4a9824))   /* float[5]; value (1, 1, 1, 1, 0) */
 #define k_c_dfDIKeyboard ((u32 *)IMG(0x4a95f8))   /* u32[6]; DIDATAFORMAT (0x18 / 0x10 / DIDF_RELAXIS / 0x100 bytes / 0x100 objects at 0x44f950) */
 #define k_c_dfDIMouse ((u32 *)IMG(0x4a9610))   /* u32[6]; DIDATAFORMAT (0x18 / 0x10 / DIDF_RELAXIS / 0x10 bytes / 7 objects at 0x450950) */
 #define k_DPAID_INet ((u8 *)IMG(0x4a9628))   /* u8[16]; c4a54da0-e0af-11cf-9c4e-00a0c905425e */
@@ -376,6 +379,7 @@
 #define g_ksSyllableJohab ((u16 *)IMG(0x4b2b30))   /* u16[2350]; the Johab code of each KS X 1001 Hangul syllable (rows 0xb0 .. 0xc8, 94 a row) */
 #define g_ksJamoCodes ((u16 *)IMG(0x4b3d8c))   /* u16[39]; the KS X 1001 jamo (row 0xa4) text_hangulConvert knows */
 #define g_ksJamoJohab ((u16 *)IMG(0x4b3ddc))   /* u16[39]; their Johab codes */
+#define g_fragPoints ((int *)IMG(0x4b4314))   /* int[21]; a kill's points by the victim's level (0, 5, 10 .. 70, 80, 90, 100, 115, 130, 150) */
 #define g_matchPlayerName ((char *)IMG(0x4dedd8))   /* char[32]; the player's name for the match (match_name clears 32 bytes) */
 #define g_mapInfoDir ((char *)IMG(0x4dedf8))   /* char[261]; the second data path ("initdata/"; app_setDataPaths clears 0x105 bytes; mapinfo.dat's folder) */
 #define g_stageDir ((char *)IMG(0x680bc4))   /* char[261]; the maps' folder ("stage/"; app_setDataPaths clears 0x105 bytes) */
@@ -448,6 +452,7 @@
 #define g_ptxAcCodes ((int *)IMG(0x4c5bb0))   /* int[1024]; the AC Huffman codes: two tables of 256 (length; code) pairs */
 #define g_ptxDequantBase ((float *)IMG(0x4c6bb0))   /* float[128]; the dequantisation tables' base values (luma; chroma) */
 #define g_ptxQuantBase ((int *)IMG(0x4c6db0))   /* int[128]; the quantisation tables' base values (luma; chroma) */
+#define g_crtSysErrList ((u32 *)IMG(0x4d0780))   /* u32[]; the C runtime's sys_errlist: errno's texts ("No error", "Operation not permitted" ..) */
 #define g_crtStderr ((u8 *)IMG(0x4d0878))   /* u8[32]; the C runtime's stderr FILE (_iob[2]; name only: the runtime's own code reaches it) */
 #define g_crtTenPowersUp ((u8 *)IMG(0x4d12f8))   /* u8[352]; crt_atof's powers of ten (12-byte entries; name only) */
 #define g_crtTenPowersDown ((u8 *)IMG(0x4d1458))   /* u8[352]; crt_atof's negative powers of ten (name only) */

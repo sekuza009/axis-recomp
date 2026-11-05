@@ -1159,7 +1159,7 @@ int g_cursorPoint_v[2] __attribute__((aligned(16)));   /* 0xae2f18 */
 int g_asyncKeySeen_v[256] __attribute__((aligned(16)));   /* 0xae2f24 */
 u32 g_logScene_v[2] __attribute__((aligned(16)));   /* 0xae3328 */
 u8 g_sortState_v[49176] __attribute__((aligned(16)));   /* 0xae3338 */
-u8 g_currentStageName_v[4] __attribute__((aligned(16)));   /* 0xaef35c */
+u8 g_crtErrno_v[4] __attribute__((aligned(16)));   /* 0xaef35c */
 u8 g_packetQueue_v[139328] __attribute__((aligned(16)));   /* 0xaef660 */
 int g_nextNumber_v[16] __attribute__((aligned(16)));   /* 0xb116a0 */
 u8 g_netqCursor_v[4] __attribute__((aligned(16)));   /* 0xb116e0 */
@@ -2329,7 +2329,7 @@ const DataPiece g_splitObjects[] = {
 	{ 0xae2f24, g_asyncKeySeen_v, 1024 },
 	{ 0xae3328, g_logScene_v, 8 },
 	{ 0xae3338, g_sortState_v, 49176 },
-	{ 0xaef35c, g_currentStageName_v, 4 },
+	{ 0xaef35c, g_crtErrno_v, 4 },
 	{ 0xaef660, g_packetQueue_v, 139328 },
 	{ 0xb116a0, g_nextNumber_v, 64 },
 	{ 0xb116e0, g_netqCursor_v, 4 },

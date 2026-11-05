@@ -203,15 +203,15 @@ void (ptx_inverseDct)(const int *in, u8 *out)
 	}
 }
 
-/* 0x46e1e0: a decoder error (the C runtime's): "<name of the current stage (g_currentStageName)>" and the message (when there is one) to
-   stderr; a non-zero code exits with it. Returns the code */
+/* 0x46e1e0: a decoder error (the C runtime's): "CRTL ERROR: " and errno's text (g_crtSysErrList[g_crtErrno]), then the message
+   (when there is one), to stderr; a non-zero code exits with it. Returns the code */
 int (ptx_crtlError)(int code, const char *format, ...)
 {
 	void *err = (void *)OBJ(g_crtStderr);   /* stderr */
-	((int (CDECL *)(void *, const char *, ...))IMG(0x49f135))(err, (const char *)STR(0x4b182c, "\n"));
-	((int (CDECL *)(void *, const char *, ...))IMG(0x49f135))(err, (const char *)STR(0x4c6fc0, "CRTL ERROR: %s\n"), GAME_VAR(u32, 0x4d0780 + g_currentStageName * 4));
+	crt_fprintf(err, (const char *)STR(0x4b182c, "\n"));
+	crt_fprintf(err, (const char *)STR(0x4c6fc0, "CRTL ERROR: %s\n"), GAME_VAR(u32, OBJ(g_crtSysErrList) + g_crtErrno * 4));
 	if (format && strlen(format)) {
-		((int (CDECL *)(void *, const char *, ...))IMG(0x49f135))(err, (const char *)STR(0x4c6fb0, "CRTL ERROR: "));
+		crt_fprintf(err, (const char *)STR(0x4c6fb0, "CRTL ERROR: "));
 		va_list args;
 		va_start(args, format);
 		crt_vfprintf(err, format, args);   /* vfprintf */
@@ -226,8 +226,8 @@ int (ptx_crtlError)(int code, const char *format, ...)
 int (ptx_error)(int code, const char *format, ...)
 {
 	void *err = (void *)OBJ(g_crtStderr);   /* stderr */
-	((int (CDECL *)(void *, const char *, ...))IMG(0x49f135))(err, (const char *)STR(0x4b182c, "\n"));
-	((int (CDECL *)(void *, const char *, ...))IMG(0x49f135))(err, (const char *)STR(0x4c6fd0, "ERROR: "));
+	crt_fprintf(err, (const char *)STR(0x4b182c, "\n"));
+	crt_fprintf(err, (const char *)STR(0x4c6fd0, "ERROR: "));
 	va_list args;
 	va_start(args, format);
 	crt_vfprintf(err, format, args);   /* vfprintf */

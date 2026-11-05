@@ -500,6 +500,8 @@ extern struct GameData g_data;
 #define g_crosshairSetting (*(int *)((u8 *)g_controls_v + 0x10c))
 #undef g_crosshairTexture
 #define g_crosshairTexture (*(int *)g_crosshairTexture_v)
+#undef g_crtErrno
+#define g_crtErrno (*(int *)g_crtErrno_v)
 #undef g_crtStderr
 #define g_crtStderr ((u8 *)g_data.g_crtStderr_)
 #undef g_crtTenPowersDown
@@ -510,8 +512,6 @@ extern struct GameData g_data;
 #define g_ctrlMenuTextures ((int *)g_ctrlMenuTextures_v)
 #undef g_currentProfile
 #define g_currentProfile (*(int *)g_currentProfile_v)
-#undef g_currentStageName
-#define g_currentStageName (*(int *)g_currentStageName_v)
 #undef g_cursorBlink
 #define g_cursorBlink (*(float *)g_cursorBlink_v)
 #undef g_cursorBlinkTimer

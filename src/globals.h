@@ -226,7 +226,7 @@
 #define g_statusLine GAME_VAR(u8, 0xa0e988)
 #define g_errorLogging GAME_VAR(int, 0xa1efdc)
 #define g_cursorPos GAME_VAR(int, 0xae2f18)
-#define g_currentStageName GAME_VAR(int, 0xaef35c)
+#define g_crtErrno GAME_VAR(int, 0xaef35c)   /* the C runtime's errno (set by its own code: EINVAL, ENOENT ..) */
 #define g_otherModeWidth GAME_VAR(int, 0xb12a84)
 #define g_arenaCorporation GAME_VAR(int, 0x4db580)
 #define g_arenaSex GAME_VAR(int, 0x4db584)

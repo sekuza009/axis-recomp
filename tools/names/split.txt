@@ -84,7 +84,7 @@ g_connectionCopy
 g_connectionKind
 g_convertHangul
 g_crosshairTexture
-g_currentStageName
+g_crtErrno
 g_debugValue
 g_windowDC
 g_desktopDepth

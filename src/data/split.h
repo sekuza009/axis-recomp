@@ -5735,9 +5735,9 @@ extern u32 g_logScene_v[2];
 extern u8 g_sortState_v[49176];
 #endif
 #ifdef AXIS_FENCE
-#define g_currentStageName_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xeea000 : g_fence + 0xee9ffc))
+#define g_crtErrno_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xeea000 : g_fence + 0xee9ffc))
 #else
-extern u8 g_currentStageName_v[4];
+extern u8 g_crtErrno_v[4];
 #endif
 #ifdef AXIS_FENCE
 #define g_packetQueue_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xeec000 : g_fence + 0xeebfc0))

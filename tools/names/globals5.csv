@@ -38,7 +38,7 @@
 0xa1efdc,int,g_errorLogging
 0x4c57cc,ErrorHook,g_errorHook
 0xa0e988,u8,g_statusLine
-0xaef35c,int,g_currentStageName
+0xaef35c,int,g_crtErrno
 0xa052c1,u8,g_outOfRank
 0x5ae9c8,u32,g_perfCounter
 0xb12a84,int,g_otherModeWidth

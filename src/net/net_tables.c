@@ -1844,9 +1844,9 @@ static void team_change(u8 *g, int i, const char *pkt, u32 notice)
 	if (GS->teamGame == 1) {
 		int t = scene_teamSide(g, pkt[3]);
 		for (int k = 0; k < 5; k++)
-			GAME_THISFN(actor_setPartColor, 0x474b50, void, void *, int, int, u32, u32, u32, u32, u32, u32)(STAGE, i, k, GAME_VAR(u32, 0x4a97fc + t * 4),
-			                                                                             GAME_VAR(u32, 0x4a9810 + t * 4),
-			                                                                             GAME_VAR(u32, 0x4a9824 + t * 4), 0,
+			GAME_THISFN(actor_setPartColor, 0x474b50, void, void *, int, int, u32, u32, u32, u32, u32, u32)(STAGE, i, k, GAME_VAR(u32, OBJ(k_teamHue) + t * 4),
+			                                                                             GAME_VAR(u32, OBJ(k_teamSaturation) + t * 4),
+			                                                                             GAME_VAR(u32, OBJ(k_teamValue) + t * 4), 0,
 			                                                                             0xbf800000, 0x3f7fbe77);   /* actor_setPartColor */
 	}
 	player_setName(STAGE, i, pkt + 4);   /* player_setName */

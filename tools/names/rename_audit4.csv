@@ -316,3 +316,4 @@ arena_editTitle,arena_editAddress
 net_sendPlayerLevels,net_sendItemStates
 room_drawCustomOption,room_drawMapPreview
 arena_drawCustomOption,arena_drawMapPreview
+g_currentStageName,g_crtErrno
