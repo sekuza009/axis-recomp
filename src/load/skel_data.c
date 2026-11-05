@@ -25,8 +25,8 @@ static void take_block(u8 *self, void *mem, int size, char *out, u32 no_memory, 
 }
 
 /* 0x46aa10 (thiscall on a skeleton): read from f: the 0x24-byte header, the block (+8, its size +4), then the bones
-   (0x70 bytes each, +0x10 of them, at the block's start: +0x14) and after them each bone's two tables (+0x60 keys of
-   0x20 bytes at +0x64, +0x68 frames of 0x28 bytes at +0x6c). Its callers ignore the eax it leaves */
+   (0x70 bytes each, boneCount of them, at the block's start: bones) and after them each bone's two tables (posKeyCount keys of
+   0x20 bytes at posKeys, rotKeyCount frames of 0x28 bytes at rotKeys). Its callers ignore the eax it leaves */
 void THISCALL (skel_loadFromFile)(u8 *self, void *f, void *mem, int size)
 {
 	Skeleton *sko = (Skeleton *)self;
@@ -49,10 +49,10 @@ void THISCALL (skel_loadFromFile)(u8 *self, void *f, void *mem, int size)
 	}
 }
 
-/* 0x46aeb0 (thiscall on a skeleton set): set up for n skeletons from the directory dir (+0x10; none: 0x4b1304), a at
-   +0x110, n at +0x114, extra bytes (+0x124) after them: the block (+8, its size n x 0x70 + extra at +4) holds the
-   skeletons' 0x4c-byte records (+0x118), then their 0x24-byte skeletons (+0x11c, each created and released), then the
-   rest (+0x128). Its callers ignore the eax it leaves */
+/* 0x46aeb0 (thiscall on a skeleton set): set up for n skeletons from the directory dir (dir; none: 0x4b1304), a at
+   source, n at capacity, extra bytes (dataSize) after them: the block (+8, its size n x 0x70 + extra at +4) holds the
+   skeletons' 0x4c-byte records (nodes), then their 0x24-byte skeletons (items, each created and released), then the
+   rest (data). Its callers ignore the eax it leaves */
 void THISCALL (skelSet_setup)(u8 *self, const char *dir, int n, u32 source, int extra, void *mem, int size)
 {
 	Manager *mg = (Manager *)self;
@@ -73,10 +73,10 @@ void THISCALL (skelSet_setup)(u8 *self, const char *dir, int n, u32 source, int 
 	mg->data = mg->block + n * 0x70;
 }
 
-/* 0x466a60 (thiscall on a shape set): set up for n shapes from the directory dir (+0x10, upper-cased; none or
-   0x4b1304: empty), the source (where the items load from: 0 / 1 loose files, 2 the packed file) at +0x110, n at +0x114, extra bytes (+0x124) after them: the block (+8, its size n x 0x98 +
-   extra at +4) holds the shapes' 0x4c-byte records (+0x118), then their 0x4c-byte shapes (+0x11c, each created and
-   released), then the rest (+0x128); the name (+0x130) and seven counts (+0x230 ..) cleared. Its callers ignore the
+/* 0x466a60 (thiscall on a shape set): set up for n shapes from the directory dir (dir, upper-cased; none or
+   0x4b1304: empty), the source (where the items load from: 0 / 1 loose files, 2 the packed file) at source, n at capacity, extra bytes (dataSize) after them: the block (+8, its size n x 0x98 +
+   extra at +4) holds the shapes' 0x4c-byte records (nodes), then their 0x4c-byte shapes (items, each created and
+   released), then the rest (data); the texture folder (textureDir) and the bind flags with the tint (bindFlags ..) cleared. Its callers ignore the
    eax it leaves */
 void THISCALL (shape_initBy)(u8 *self, const char *dir, int n, u32 source, int extra, void *mem, int size)
 {
@@ -168,10 +168,10 @@ void THISCALL (skel_loadFrom)(u8 *sk, const char *path, void *mem, int size)
 
 /* 0x46f4e0 (thiscall on an object list): emptied (partList_release), then ns shapes (by the names 0x44 apart, each with
    an int at +0x40; looked up in the shape cache, the first 64 once, any later ones again when the entries are
-   filled) with their element counts summed (+0x18), and nk skeletons (by the names 0x40 apart). Its block (+8, size
-   +4: 100 bytes a shape, 4 a skeleton, lit == 1 a colour per element too): allocated (owned, +0xc 1; none a fatal
-   message) without memory given, else that memory (too small: a fatal message). The entries (+0x14: shape, int,
-   colours when lit and found), the skeletons after them (+0x20), and lit, the colours worked out (ObjectList_relight). Its
+   filled) with their element counts summed (colourCount), and nk skeletons (by the names 0x40 apart). Its block (+8, size
+   +4: 100 bytes a shape, 4 a skeleton, lit == 1 a colour per element too): allocated (owned, ownsBlock 1; none a fatal
+   message) without memory given, else that memory (too small: a fatal message). The entries (entries: shape, int,
+   colours when lit and found), the skeletons after them (frames), and lit, the colours worked out (ObjectList_relight). Its
    callers ignore the eax it leaves */
 void THISCALL (ObjectList_load)(u8 *list, void *shapes, void *skels, int ns, const u8 *names, int nk, const u8 *knames,
                                      int lit, u32 factors, u32 lights, void *mem, int size)
@@ -264,11 +264,11 @@ static void rotate(long double angle, const float *axis)
 	glRotatef_bits(abits, xbits, ((const u32 *)axis)[1], ((const u32 *)axis)[2]);
 }
 
-/* 0x46ab30 (thiscall on a skeleton): bone's matrix at time t (0 .. 1 of the +0x20 frames) into out, worked out on
-   the GL modelview matrix (saved, then put back): the identity, then the position (the bone's +0x44, or its keys
-   from +0x64, +0x60 of them, 0x20 bytes: base +8 and delta +0x14 over the key's length +4), then the rotation (the
-   angle +0x50 in k_57_2958f units about +0x54; or its keys from +0x6c, +0x68 of them, 0x28 bytes: a base rotation
-   +8 about +0xc and a delta +0x18 about +0x1c). A bone past the count (+0x10) gets the identity. Its callers ignore
+/* 0x46ab30 (thiscall on a skeleton): bone's matrix at time t (0 .. 1 of the frames frames) into out, worked out on
+   the GL modelview matrix (saved, then put back): the identity, then the position (the bone's pos, or its keys
+   from posKeys, posKeyCount of them, 0x20 bytes: base +8 and delta delta over the key's length +4), then the rotation (the
+   angle rotation[0] in k_57_2958f units about rotation[1..3]; or its keys from rotKeys, rotKeyCount of them, 0x28 bytes: a base rotation
+   +8 about rotation[1..3] and a delta step[0] about step[1..3]). A bone past the count (boneCount) gets the identity. Its callers ignore
    the eax it leaves */
 void THISCALL (skel_applyPose)(u8 *sk, u32 *out, int bone, float t)
 {
@@ -309,8 +309,8 @@ void THISCALL (skel_applyPose)(u8 *sk, u32 *out, int bone, float t)
 	glLoadMatrixf(saved);
 }
 
-/* A cache's name tree: 0x4c-byte nodes from +0x118 (the name, its item's index +0x40, left +0x44 and right +0x48 by
-   strcmp), +0x120 of them (at most +0x114: none, or full, a fatal message out / no_room, full). The index of key's
+/* A cache's name tree: 0x4c-byte nodes from nodes (the name, its item's index index, left left and right right by
+   strcmp), count of them (at most capacity: none, or full, a fatal message out / no_room, full). The index of key's
    node; a missing one is added (index the count, *added set; the caller loads the item and counts it) */
 static int tree_lookup(u8 *cache, const char *key, char *out, u32 no_room, u32 full, int *added)
 {
@@ -344,8 +344,8 @@ static int tree_lookup(u8 *cache, const char *key, char *out, u32 no_room, u32 f
 	return i;
 }
 
-/* an item's file path: "dir\name.ext" with the cache's directory (+0x10), or "name.ext"; the extension by the cache's
-   format (+0x110: 0 or 1, another a fatal message) */
+/* an item's file path: "dir\name.ext" with the cache's directory (dir), or "name.ext"; the extension by the cache's
+   format (source: 0 or 1, another a fatal message) */
 static void item_path(char *path, u8 *cache, const char *name, u32 ext0, u32 ext1, char *out, u32 bad)
 {
 	Manager *mg = (Manager *)cache;
@@ -363,8 +363,8 @@ static void item_path(char *path, u8 *cache, const char *name, u32 ext0, u32 ext
 
 /* 0x46b1a0 (thiscall on a skeleton cache): the skeleton named name (upper-cased; empty or starting with '.': none,
    0), found in the cache's name tree or added to it (tree_lookup) and loaded into skeleton i (0x24 bytes each from
-   +0x11c): from the skeleton dat (format +0x110 2: its item's file, skel_loadFromFile) or a "ske" / "ase" file
-   (skel_loadFrom), into the cache's data memory when it has one (+0x128, its size +0x124, +0x12c used: the
+   items): from the skeleton dat (format source 2: its item's file, skel_loadFromFile) or a "ske" / "ase" file
+   (skel_loadFrom), into the cache's data memory when it has one (data, its size dataSize, dataUsed used: the
    skeleton's size added) */
 u8 *THISCALL (skel_getSkeletonPtrBy)(u8 *cache, const char *name)
 {
@@ -396,9 +396,9 @@ u8 *THISCALL (skel_getSkeletonPtrBy)(u8 *cache, const char *name)
 }
 
 /* 0x466dc0 (thiscall on a shape cache): the shape named name, as skel_getSkeletonPtrBy does it for skeletons: shape
-   i (0x4c bytes each from +0x11c) loaded from the shape dat (shape_findDatEntry, shape_read) or a "shp" / "obj" file
-   (model_loadFrom), its textures looked up (shape_bindTextureBy with the cache's texture manager +0x130 and seven values
-   +0x230 ..); bound (shape_bindPartTextures) when bind is 1, found or added */
+   i (0x4c bytes each from items) loaded from the shape dat (shape_findDatEntry, shape_read) or a "shp" / "obj" file
+   (model_loadFrom), its textures looked up (shape_bindTextureBy with the cache's texture folder textureDir as the suffix and seven values
+   bindFlags ..); bound (shape_bindPartTextures) when bind is 1, found or added */
 u8 *THISCALL (shape_getByName)(u8 *cache, const char *name, int bind)
 {
 	Manager *mg = (Manager *)cache;
@@ -435,12 +435,12 @@ u8 *THISCALL (shape_getByName)(u8 *cache, const char *name, int bind)
 }
 
 /* 0x466120 (thiscall on a shape): read from f. Its old data released (Model_release), the 0x34-byte header (block size
-   +4, part count +0x10, a point +0x20, the version +0x30: 0x71110300 the current format; an older file has a 0x30-byte
+   +4, part count partCount, a point centre, the version version: 0x71110300 the current format; an older file has a 0x30-byte
    header and 0x68-byte parts, its block grown by 0x18 a part, the position put back as it was), the block (+8, as
-   take_block). The 0x80-byte parts (+0x14) at the block's start, then each part's tables after them: vertices,
-   normals (12 bytes each), colours (4), texture coordinates (8) for its +0x4c vertices, and its +0x60 primitives
+   take_block). The 0x80-byte parts (parts) at the block's start, then each part's tables after them: vertices,
+   normals (12 bytes each), colours (4), texture coordinates (8) for its vertexCount vertices, and its primCount primitives
    (12 bytes; one slot more is left past them), each with its index list (+4 of them). An old file is relocated
-   (shape_computeBounds). The shape's box (+0x34 low, +0x40 high) from the point +0x20 and every part's box (+0x68 ..). Its
+   (shape_computeBounds). The shape's box (low low, high high) from the point centre and every part's box (box ..). Its
    callers ignore the eax it leaves */
 void THISCALL (shape_read)(u8 *shape, void *f, void *mem, int size)
 {
@@ -509,13 +509,13 @@ static void transform(float *out, const float *m, const float *px, const float *
 		out[r] = f32(fadd_m(fmul_m(fld_m(pz), &m[8 + r]) + fmul_m(fld_m(py), &m[4 + r]) + fmul_m(fld_m(px), &m[r]), &m[12 + r]));
 }
 
-/* 0x46f8c0 (thiscall on an object's skeleton pose): its skeleton (the pointer at +0x20, entry +0x24; none: nothing)
-   posed at frame +0x28 (modulo the skeleton's frames +0x20 + 1) for each of its bones (0x70 bytes from its +0x14;
-   at most the object's +0x10): on the GL modelview matrix (saved and put back) the parent bone's matrix is loaded
-   (its record +0xc; none: base, or the matrix there was), the position translated (the bone's +0x44, or its keys as
+/* 0x46f8c0 (thiscall on an object's skeleton pose): its skeleton (the pointer at frames, entry frame; none: nothing)
+   posed at frame animTick (modulo the skeleton's frames frames + 1) for each of its bones (0x70 bytes from its bones;
+   at most the object's count): on the GL modelview matrix (saved and put back) the parent bone's matrix is loaded
+   (its record matrix; none: base, or the matrix there was), the position translated (the bone's pos, or its keys as
    in skel_applyPose; times the bone record's scale +4), the rotation as in skel_applyPose; the result read back
-   into the bone's 0x64-byte record (+0xc), with two points carried through it: g_vecOrigin (to +0x4c) and the record's
-   own point (+0, its +0x20 ..; none: the first again, to +0x58). Its callers ignore the eax it leaves */
+   into the bone's 0x64-byte record (matrix), with two points carried through it: g_vecOrigin (to pos) and the record's
+   own point (+0, its +0x20 ..; none: the first again, to centre). Its callers ignore the eax it leaves */
 void THISCALL (skel_poseBones)(u8 *pose, const float *base)
 {
 	ObjectList *ol = (ObjectList *)pose;
@@ -602,8 +602,8 @@ static void translation(float *m, const float *p)
 
 /* 0x469b90 (thiscall on a skeleton): a skeleton from a 3ds Max ASE text file. The old one released
    (Skeleton_release); pass 1 counts GEOMOBJECTs (bones, 0x70 bytes), TCB / Bezier position keys (0x20) and TCB rotation
-   keys (0x28) and takes the data memory (allocated, +0xc 1; or given: too small is fatal); pass 2 (from the top)
-   reads SCENE_LASTFRAME / FRAMESPEED (+0x20 the length in ms) / TICKSPERFRAME, and per bone (cameras skipped) its
+   keys (0x28) and takes the data memory (allocated, ownsBlock 1; or given: too small is fatal); pass 2 (from the top)
+   reads SCENE_LASTFRAME / FRAMESPEED (frames the length in ms) / TICKSPERFRAME, and per bone (cameras skipped) its
    NODE_NAME, NODE_PARENT (among the earlier bones; missing is fatal), TM_POS / TM_ROTAXIS / TM_ROTANGLE (y and z
    swapped, z and the angle negated) and its key lists (each rotation key composed onto the previous one). Then the
    bones become relative to their parents (last first) and the keys get their spans and deltas. Its caller ignores
@@ -822,7 +822,7 @@ static int obj_corner(u8 *part, int i, char *corner, const float *vs, const floa
 
 /* 0x464db0 (thiscall on a shape): a shape from a Wavefront OBJ text file. The old one released (Model_release);
    pass 1 counts the parts (usemtl), positions (v), normals (vn), texture coordinates (vt) and the corners of the
-   faces (+0x18: a face of 3 or 4 corners, 3 or 6; fewer are fatal; +0x1c triangles); the data memory is taken
+   faces (colourCount: a face of 3 or 4 corners, 3 or 6; fewer are fatal; triangleCount triangles); the data memory is taken
    (allocated with three temporary arrays, or given: too small is fatal); pass 2 counts each part's corners and lays
    out its arrays and its one triangle list; pass 3 reads the values, names the parts after the last "_" piece of
    the material (its last character cut) and expands the faces into corners (bare positions get a flat normal). A
