@@ -41,7 +41,7 @@ void (path_stripExtension)(const char *src, char *dst)
 	strcpy(dst, buf);
 }
 
-/* 0x4554c0: a texture bank's name, by binary search of its sorted 0x44-byte records (+0x10c, count +0x108): the
+/* 0x4554c0: a texture bank's name, by binary search of its sorted 0x44-byte records (index, count indexCount): the
    index or -1. The upper bound starts at the count, not count - 1, as in the original */
 int THISCALL (tex_findByName)(u8 *self, const u8 *name)
 {
@@ -65,8 +65,8 @@ int THISCALL (tex_findByName)(u8 *self, const u8 *name)
 	return -1;
 }
 
-/* 0x455550 (thiscall on a texture bank): the item named, its file (+0x110) moved to where the item starts (its
-   0x44-byte record at +0x10c, +0x40); returns the file, or 0 after a fatal message when there is no such item */
+/* 0x455550 (thiscall on a texture bank): the item named, its file (file) moved to where the item starts (its
+   0x44-byte record at index, +0x40); returns the file, or 0 after a fatal message when there is no such item */
 void *THISCALL (tex_getItemFileBy)(u8 *manager, const char *name)
 {
 	int i = tex_findByName(manager, name);
@@ -94,7 +94,7 @@ int THISCALL (tex_getIdByName)(u8 *manager, const char *name, u32 flags, u32 h1,
 	return -1;
 }
 
-/* 0x466430 (thiscall on a shape): each of its parts (0x80 bytes from +0x14, +0x10 of them) given its texture (+0x44:
+/* 0x466430 (thiscall on a shape): each of its parts (0x80 bytes from parts, partCount of them) given its texture (texture:
    tex_getIdByName on the game's texture manager, g_textures, by the part's name at +4, with the flags and two colours given);
    with a suffix the name gets 0x4b12f4 and the suffix appended first (too long for the 0x40 bytes: a fatal message
    first). Its callers ignore the eax it leaves */
@@ -116,10 +116,10 @@ void THISCALL (shape_bindTextureBy)(u8 *shape, const char *suffix, int flags, in
 }
 
 /* 0x4566c0 (thiscall on a texture bank): texture i bound, through the cache of GL textures (0x14-byte slots from
-   +0xcd12c: their index, the texture in them, the GL id, next and previous in a ring, +0xcd134 the oldest). Not in the
-   cache (its slot, +0xc0168 in its 0x68-byte record, negative): the oldest slot taken and the texture loaded into it
-   (tinted when its flags, +0xc016c, have 2; mipmapped unless they have 1; +0xcd138 counts the loads); in it but changed
-   (+0xc018c 1): loaded again; else just bound. The slot then becomes the newest: when it was the oldest the next one is
+   slots: their index, the texture in them, the GL id, next and previous in a ring, oldest the oldest). Not in the
+   cache (its slot, records[].slot in its 0x68-byte record, negative): the oldest slot taken and the texture loaded into it
+   (tinted when its flags, records[].flags, have 2; mipmapped unless they have 1; loadCount counts the loads); in it but changed
+   (records[].changed 1): loaded again; else just bound. The slot then becomes the newest: when it was the oldest the next one is
    (and that one's texture loses its slot), else it moves to just before the oldest. Its callers ignore the eax it leaves */
 void THISCALL (tex_bind)(u8 *tm, int i)
 {
@@ -166,8 +166,8 @@ void THISCALL (tex_bind)(u8 *tm, int i)
 #undef SLOT
 }
 
-/* 0x4569d0 (thiscall on the texture manager): the six banks kept (+4 .. +0x18), each (when given) checked for its
-   size: 64 x 64, 128 x 64, 256 x 64, 128 x 128, 256 x 128, 256 x 256 (its +0xc0118 / +0xc011c), a fatal message
+/* 0x4569d0 (thiscall on the texture manager): the six banks kept (+4 .. banks[5]), each (when given) checked for its
+   size: 64 x 64, 128 x 64, 256 x 64, 128 x 128, 256 x 128, 256 x 256 (its width / height), a fatal message
    with the size found otherwise. Its caller ignores the eax it leaves */
 void THISCALL (TextureManager_setBanks)(u8 *manager, u8 *bank64x64, u8 *bank128x64, u8 *bank256x64, u8 *bank128x128, u8 *bank256x128, u8 *bank256x256)
 {
@@ -185,8 +185,8 @@ void THISCALL (TextureManager_setBanks)(u8 *manager, u8 *bank64x64, u8 *bank128x
 		((TextureManager *)manager)->banks[k] = banks[k];
 }
 
-/* 0x456520 (thiscall on a texture bank): its pixels (+0x114, +0xc0118 x +0xc011c) uploaded to GL texture id: wrapped
-   (mode 1: repeat, else clamp), filtered linearly or not (+0xc0124 1), with mipmaps (+0xc0120 1: built by
+/* 0x456520 (thiscall on a texture bank): its pixels (image, width x height) uploaded to GL texture id: wrapped
+   (mode 1: repeat, else clamp), filtered linearly or not (linear 1), with mipmaps (mipmaps 1: built by
    gluBuild2DMipmaps after the first level) or without. Its callers ignore the eax it leaves */
 void THISCALL (tex_upload)(u8 *tm, u32 id, int mode)
 {
@@ -204,8 +204,8 @@ void THISCALL (tex_upload)(u8 *tm, u32 id, int mode)
 		gluBuild2DMipmaps(0xde1, 4, TM->width, TM->height, 0x1908, 0x1401, TM->image);
 }
 
-/* 0x4557e0 (thiscall on a texture bank): is the texture name (up to a '*') there in the manager's format (+0xc0114,
-   under its directory +8 when it has one) at its size (+0xc0118 x +0xc011c)? 0: in the dat index (tex_findByName); 1: a
+/* 0x4557e0 (thiscall on a texture bank): is the texture name (up to a '*') there in the manager's format (format,
+   under its directory +8 when it has one) at its size (width x height)? 0: in the dat index (tex_findByName); 1: a
    BMP of that size; 2: a RAW whose header (at 6, two shorts in 8-pixel units) gives it; else a fatal message. 1 or
    0, the local image (a BMPRGBFile) closed either way */
 int THISCALL (tex_textureFileExist)(u8 *tm, const char *name)
@@ -252,11 +252,11 @@ int THISCALL (tex_textureFileExist)(u8 *tm, const char *name)
 }
 
 /* 0x455080 (thiscall on a texture bank): set up (twice is a fatal message): its directory (+8, upper-cased; none or
-   0x4b1304 empty), format, size and filtering (+0xc0114 .. +0xc0124). The dat format (0) opens its image file for
-   the size (Data\Image64.dat ..., by 0x4b3f20 for another size; none a fatal message: kept open at +0x110) and reads
-   its index (a count +0x108, then that many 0x44-byte entries at +0x10c; no memory a fatal message). Then up to 0x200
-   texture slots (+0xcd130 of them, 0x14 bytes at +0xcd12c: its index, id -1, a GL texture name, previous and next in a
-   ring), the oldest +0xcd134, the counts +0xcd128 / +0xcd138 .. cleared; set up (+4 1). Its callers ignore the eax
+   0x4b1304 empty), format, size and filtering (format .. linear). The dat format (0) opens its image file for
+   the size (Data\Image64.dat ..., by 0x4b3f20 for another size; none a fatal message: kept open at file) and reads
+   its index (a count indexCount, then that many 0x44-byte entries at index; no memory a fatal message). Then up to 0x200
+   texture slots (slotCount of them, 0x14 bytes at slots: its index, id -1, a GL texture name, previous and next in a
+   ring), the oldest oldest, the counts recordCount / loadCount .. cleared; set up (+4 1). Its callers ignore the eax
    it leaves */
 void THISCALL (tex_initBy)(u8 *tm, const char *dir, int slots, int format, int w, int h, int linear, int mipmaps)
 {
@@ -325,10 +325,10 @@ void THISCALL (tex_initBy)(u8 *tm, const char *dir, int slots, int format, int w
 }
 
 /* 0x4555b0 (thiscall on a texture bank): the record for texture name (upper-cased; empty: -1) with flags and two
-   colours (h1 s1 v1, h2 s2 v2): among the +0xcd128 records (0x68 bytes from +0xc0128: the name, flags +0x44, the
-   colours +0x48 ..) a hit keeps it as it is when flags and colours match (a NaN matches anything, as fcom has it),
+   colours (h1 s1 v1, h2 s2 v2): among the recordCount records (0x68 bytes from records: the name, flags flags, the
+   colours colours ..) a hit keeps it as it is when flags and colours match (a NaN matches anything, as fcom has it),
    else takes them and is recoloured (tex_recolourMaterial). A miss whose file is there (tex_textureFileExist; else
-   -1) gets a new record (at most 512: a fatal message), bound at once (tex_bind) while the count is below +0xcd130.
+   -1) gets a new record (at most 512: a fatal message), bound at once (tex_bind) while the count is below slotCount.
    Returns the record's index */
 int THISCALL (tex_allocIdBy)(u8 *tm, const char *name, u32 flags, u32 h1, u32 s1, u32 v1, u32 h2, u32 s2, u32 v2)
 {
@@ -411,11 +411,11 @@ static void colour_fill(u8 *m)
 			((u32 *)tm->colourMask)[y * W(m) + x] = g_packedRed;
 }
 
-/* 0x455aa0 (thiscall on the texture bank): texture i's image (its name +0xc0128 + i * 0x68 cut at '*') loaded at
-   +0x114, its alpha (alpha_from) and its colour mask at +0x80114 (or colour_fill), by the manager's format +0xc0114:
+/* 0x455aa0 (thiscall on the texture bank): texture i's image (its name records + i * 0x68 cut at '*') loaded at
+   image, its alpha (alpha_from) and its colour mask at colourMask (or colour_fill), by the manager's format format:
    0 items of the texture dat (name, name_ALPHA, name_COLOR: tex_findByName / tex_getItemFileBy, the decoder's tables set
    up on first use, g_ptxTablesReady), 1 BMP files (name.BMP must open), 2 PTX files (name.RAW, name_ALPHA.RAW,
-   name_COLOR.RAW); a PTX of another size than +0xc0118 x +0xc011c is fatal. (The original's SEH frame, for its BMP
+   name_COLOR.RAW); a PTX of another size than width x height is fatal. (The original's SEH frame, for its BMP
    objects, is not reproduced.) Its callers ignore the eax it leaves */
 void THISCALL (tex_loadImage)(u8 *m, int i)
 {

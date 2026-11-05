@@ -28,7 +28,7 @@ void THISCALL (actor_setInput)(Stage *stage, int i, int v0, int v1, int v2, int 
 		FIELD(int, a, input_fields[k]) = v[k];
 }
 
-/* 0x45dff0: the camera follows actor i in mode with value (kept in the actor, +0x884c); the actor followed before
+/* 0x45dff0: the camera follows actor i in mode with value (kept in the actor, cameraValue); the actor followed before
    loses its value. A negative i follows none; an actor not in use is not followed */
 void THISCALL (camera_setTarget)(Stage *stage, int i, int mode, int value)
 {
@@ -275,7 +275,7 @@ void THISCALL (actor_deactivate)(Stage *stage, int i)
 }
 
 /* 0x45dc00 (thiscall on the scene): actor slot i (at most 99) set up from its parts (actor_setupFromParts): the
-   slots up to it are added first (each new one marked free, +0x108), and the first free slot (searched up to and
+   slots up to it are added first (each new one marked free, active), and the first free slot (searched up to and
    including the count, as the original does) kept as the next free (actorFreeHint). Returns i, or -1 */
 int THISCALL (stage_setupActorSlot)(u8 *scene, int i, u32 id, u32 controlledBy, u32 parts)
 {
@@ -309,7 +309,7 @@ void THISCALL (actor_applyRemoteColours)(void *scene, int p, int part, int h1, i
 }
 
 /* The five parts' models loaded (0x45e1f0 .. 0x45e530): where each part's model and its own fields are. An actor's part
-   type (its type record at +0x1561b68, 0x47fd2 bytes each, by the actor's +0x10c) names the part's model (by +model_at
+   type (its type record at playerRecords, 0x47fd2 bytes each, by the actor's player) names the part's model (by +model_at
    in that record); the actor's detail level (lowDetail) picks the model's set of shapes */
 typedef struct {
 	int model_at;      /* the part's type in the player record (parts[k]) */
@@ -354,7 +354,7 @@ void THISCALL (actor_loadBooster)(u8 *scene, int a) { part_load(scene, a, &g_par
 /* 0x45de20 (thiscall on the scene): actor a spawned from a map record for the player (playerActor; none: a fatal
    message): set up from its parts (stage_setupActorSlot, with the record's position, angle and parts picked out), then given
    the record's settings: team and two values (kept twice), ranges and speeds scaled, its radius squared (scaled), a
-   count from a scaled value, and the rest copied; no targets (+0x87f8, +0x87fc -1). Its callers ignore the eax it
+   count from a scaled value, and the rest copied; no targets (target1, target2 -1). Its callers ignore the eax it
    leaves */
 void THISCALL (actor_applySpawnRecord)(u8 *scene, int a, const u8 *rec)
 {
@@ -393,10 +393,10 @@ void THISCALL (actor_applySpawnRecord)(u8 *scene, int a, const u8 *rec)
 #undef AC
 }
 
-/* 0x45ebc0 (thiscall on the scene): player p's starting values when the slot is in use (+0x108 1). Game types 2 ..
-   11 (gameType) by pairs: the energy (+0x1c, +0x20, +0x128) 10 then 150, +0x12c 0, the four weapon slots
-   (+0x130 ..) empty but one (the pair's: 10 the first, else 50, its +0x28 .. 100; the last pair none). Otherwise
-   +0x128 / +0x12c from +0x1c / +0x20 and each slot half its +0x28 ... Its caller ignores the eax it leaves */
+/* 0x45ebc0 (thiscall on the scene): player p's starting values when the slot is in use (active 1). Game types 2 ..
+   11 (gameType) by pairs: the energy (armorMax, shieldMax, armor) 10 then 150, shield 0, the four weapon slots
+   (ammo ..) empty but one (the pair's: 10 the first, else 50, its ammoMax .. 100; the last pair none). Otherwise
+   armor / shield from armorMax / shieldMax and each slot half its ammoMax ... Its caller ignores the eax it leaves */
 void THISCALL (actor_startingValues)(u8 *scene, int p)
 {
 	Player *a = &STS->actors[p];
@@ -422,10 +422,10 @@ void THISCALL (actor_startingValues)(u8 *scene, int p)
 	}
 }
 
-/* 0x45e600 (thiscall on the scene): actor a's weapon model: its item in slot (its player type record's +0x320 + slot x 4; negative:
-   none) loaded, in the given variant, into the slot's loader: slots 4 and 5 their own (+0x587c; +0x701c, from the
-   item's second set of tables), any other only when it is the selected one (+0x140: +0x40dc, and +0x4cc the item's
-   +0x2dc0, -1 without). Without an item the loader is emptied (partList_release). Its callers ignore the eax it leaves */
+/* 0x45e600 (thiscall on the scene): actor a's weapon model: its item in slot (its player type record's items + slot x 4; negative:
+   none) loaded, in the given variant, into the slot's loader: slots 4 and 5 their own (weaponModel4; weaponModel5, from the
+   item's second set of tables), any other only when it is the selected one (slot: weaponModel, and weapon the item's
+   ammoSlot, -1 without). Without an item the loader is emptied (partList_release). Its callers ignore the eax it leaves */
 void THISCALL (actor_loadWeapon)(u8 *scene, int a, int slot, int variant)
 {
 	u8 *actor = (u8 *)&STS->actors[a];
@@ -479,7 +479,7 @@ static u8 level_byte(float *v)
 }
 
 /* 0x474b50 (thiscall on the scene): player p's part (0 .. 4) coloured: two hue / saturation / value sets kept as
-   bytes in the part type record's colour table (+0x479a4 + part x 2: hue, +0xa saturation, +0x14 value; the second
+   bytes in the part type record's colour table (partHue + part x 2: hue, partSaturation saturation, partValue value; the second
    set one byte on), then the part's shape cache (headShapes ..) given textures from the player's
    directory (by 0x4c77f8) tinted with them (shape_setTextureDir). Its callers ignore the eax it leaves */
 void THISCALL (actor_setPartColor)(u8 *scene, int p, int part, float h1, float s1, float v1, float h2, float s2, float v2)
@@ -513,18 +513,18 @@ static u32 flag_light(u8 *s, u32 f)
 	return ((Stage *)s)->itemTextures[f & 0x100 ? 0 : f & 0x800 ? 2 : 1];
 }
 
-/* the list of the weapon in hand (+0x140: 4, 5, else the last) */
+/* the list of the weapon in hand (slot: 4, 5, else the last) */
 static u8 *weapon_list(u8 *ac)
 {
 	return ac + (AC->slot == 4 ? 0x587c : AC->slot == 5 ? 0x701c : 0x40dc);
 }
 
 /* 0x45d3e0 (thiscall on the scene): actor a drawn into the view volume vv when in play and within the view range
-   (+0xa08 plus its radius +0x3e8) of the camera (cameraPos..) on every axis. Its tint (+0x4f0): a cloaked actor
-   (flag 0x200) at the local player's rank or above white and faint (0x40 to itself, 0x10 to others); else a hit
-   flash (+0x120 up to K k_3f) fading in then out, or the damage glow (+0x4ec white, +0x8854 red-orange); a
+   (cullMargin plus its radius radius) of the camera (cameraPos..) on every axis. Its tint (tint): a cloaked actor
+   (flag 0x200) at the local player's rank or above white and faint (0x40 to itself, 0x10 to others); else for its
+   first 3 s (spawnAge) a white flash fading in then out, or a shot's flash (glow, white) and a hit's (hitFlash, red-orange); a
    faint tint lights it with lightMatrix. The viewing actor (selectedActor), when draw is set, shows only the weapon in
-   hand; others, when draw is not 1, all their lists up to the count +0x54c (the fifth unless +0x550; flags 0xd00 skip
+   hand; others, when draw is not 1, all their lists up to the count breakUp (the fifth unless viewMarked; flags 0xd00 skip
    them without flares 0x83a9c8 or when too small on screen; faint ones only with flares); flags 0x100 / 0xc00 add a
    lit pass. A list that would not draw has them all reloaded (actor_loadHead / actor_loadBody / actor_loadArms /
    actor_loadLegs / actor_loadBooster / actor_loadWeapon). Its caller ignores the eax it leaves */
@@ -647,7 +647,7 @@ static long double level_factor(u8 *p, int k)
 }
 
 /* the mech's stats for actor ac from player record p's parts (the head, chest, arms, legs and booster records, the
-   pilot level, the special items' bonuses at +0x404 .., the weight against the limit and the overload r slowing the
+   pilot level, the special items' bonuses at ammoFactor .., the weight against the limit and the overload r slowing the
    legs and booster) and the fixed values, +0 .. +0x94. check: actor_checkDataLoss' copy, which rounds two of them
    differently */
 static void mech_stats(u8 *s, u8 *ac, u8 *p, int check)
@@ -777,14 +777,14 @@ static void mech_stats(u8 *s, u8 *ac, u8 *p, int check)
 }
 
 /* 0x457330 (thiscall on the scene): actor a built from player *pp's mech (the player record 0x47fd2 bytes from
-   playerRecords; its parts +0x30c head, chest, arms, legs, booster; pp: the player, controlledBy copied, the position +8
-   and the heading +0x14). The special items in its six slots (+0x320; kinds 0x1b .. 0x23 with a negative +0x2dc0)
-   bend the defaults (+0x404 ..: armour, shields, power, cooling, mobility); then the stats: health and energy (the
+   playerRecords; its parts parts head, chest, arms, legs, booster; pp: the player, controlledBy copied, the position +8
+   and the heading +0x14). The special items in its six slots (items; kinds 0x1b .. 0x23 with a negative ammoSlot)
+   bend the defaults (ammoFactor ..: armour, shields, power, cooling, mobility); then the stats: health and energy (the
    head with the level), the weight against the limit (any items' weight unless the game type is 2 .. 11) giving an
    overload r that slows the legs and booster (speed, turn, jump, gravity, fall), the arms' ammunition, and the
    fixed values; its id (id, or the next serial when negative), the player's details, the weapon slot (actor_setWeaponSlot),
    the starting values (actor_startingValues), the position history, timers and flags reset, its lists loaded and parts
-   placed (actor_loadHead .. actor_loadBooster, actor_loadWeapon; viewed by another than itself +0x49c), and the scene told
+   placed (actor_loadHead .. actor_loadBooster, actor_loadWeapon; viewed by another than itself variantLoaded), and the scene told
    an actor joined (teamsChanged). Its caller ignores the eax it leaves */
 void THISCALL (actor_setupFromParts)(u8 *s, int a, int id, u32 controlledBy, const u32 *pp)
 {
@@ -956,7 +956,7 @@ static int totals_agree(u8 *s, u8 *ac, u8 *me)
 }
 
 /* 0x45ee40 (thiscall on the scene): the "data loss" check match_frame runs every 20 s on the local
-   player's actor a: one not in play (+0x14c) passes; else totals_agree. The original's stack actor (its five
+   player's actor a: one not in play (state) passes; else totals_agree. The original's stack actor (its five
    resource sets and eight part lists constructed and destroyed again) is kept; its SEH frame is not reproduced.
    Returns 1 if all agree, else 0 */
 u32 THISCALL (actor_checkDataLoss)(u8 *s, int a)
