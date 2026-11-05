@@ -6,7 +6,7 @@
 #define fatal4(format, a, b) sys_fatalErrorN((char *)OBJ(g_logStage), (const char *)RELOC(format), a, b)
 
 /* 0x48b4a0 (thiscall on the scene): the way points: their count (wayPointCount) and 0x14-byte records (wayPoints), each
-   given its run of 0x30-byte actor commands (+0x10: from +0xdc0f10; +0xc: its length); the commands' total against commandCount.
+   given its run of 0x30-byte actor commands (commands: from commands; commandCount: its length); the commands' total against commandCount.
    Its caller ignores the eax it leaves */
 void THISCALL (map_loadWayPointInfoFrom)(u8 *scene, void *f)
 {
@@ -24,8 +24,8 @@ void THISCALL (map_loadWayPointInfoFrom)(u8 *scene, void *f)
 		fatal4(STR(0x4c7d24, "mismatch between total num of actor c..."), total, st->commandCount);
 }
 
-/* 0x48b530: the triggers: their count (triggerCount) and 0x1c-byte records (+0xe3b038), each given its run of way points
-   (+4: from wayPoints, 0x14 bytes each; +0: its length) and its radius squared, scaled (+0x14 x itself x k_10000f);
+/* 0x48b530: the triggers: their count (triggerCount) and 0x1c-byte records (triggers), each given its run of way points
+   (+4: from wayPoints, 0x14 bytes each; +0: its length) and its radius squared, scaled (radiusSq x itself x k_10000f);
    the total against the way points' count (wayPointCount) */
 void THISCALL (map_loadTriggerInfoFrom)(u8 *scene, void *f)
 {
@@ -47,7 +47,7 @@ void THISCALL (map_loadTriggerInfoFrom)(u8 *scene, void *f)
 
 /* 0x4875d0 (thiscall on the scene): the item file: its version (0x1201, else a fatal message; no file one too), the
    items' count (itemTypeCount) and 0x90-byte records (itemTypes); each item named (its first byte set) given its shape
-   (+0x8c: shape_getByName on the scene's shapes, partShapes, by its name at +0x4c), the others none. Returns 1 */
+   (model: shape_getByName on the scene's shapes, partShapes, by its name at shapeName), the others none. Returns 1 */
 int THISCALL (map_loadItemInfoFrom)(u8 *scene, const char *path)
 {
 	Stage *st = (Stage *)scene;
@@ -69,7 +69,7 @@ int THISCALL (map_loadItemInfoFrom)(u8 *scene, const char *path)
 	return 1;
 }
 
-/* 0x48b5c0 (thiscall on the scene): the map's mission file (its name from +0x108 and name by 0x4c77f0; none: a fatal
+/* 0x48b5c0 (thiscall on the scene): the map's mission file (its name from mapDir and name by 0x4c77f0; none: a fatal
    message): its version (0x1201, else a fatal message), two sections skipped (each a scrambled size, then that many
    bytes), a third size read, then the sections read in turn, each announced to the log first: the commands (map_readCommands), the way
    points and the triggers. Its caller ignores the eax it leaves */
@@ -101,7 +101,7 @@ void THISCALL (map_loadMissionInfoFrom)(u8 *scene, const char *name)
 
 /* 0x48b710 (thiscall on the scene): the map's objects. The caches emptied (objectShapes shapes, objectSkeletons skeletons,
    the object list: stage_clearMapObjects), the shading not loaded (mapShaded 0). Mode 0: the shading file (named by 0x4c7e90
-   from +0x108 and the name's base, path_stripExtension) read when there (a count, objectColourCount, then that many dwords at
+   from mapDir and the name's base, path_stripExtension) read when there (a count, objectColourCount, then that many dwords at
    objectColours; the count cleared, mapShaded 1). The objects file (by 0x4c77f0; none: a fatal message): version
    0x1201 (else a fatal message), a dword, the count, then the 0xb0-byte object types in blocks of 56, each added
    (object_addObjectBy) until one fails; every second one logged. Mode 1 without shading loaded: the shading file
@@ -163,7 +163,7 @@ void THISCALL (map_loadObjectInfoFrom)(u8 *scene, const char *name, int mode)
 	}
 }
 
-/* an item point's kind changed by the game's options (+0x20f3ac0 .. +0x20f3ad0, each on at 1): the kinds 0 .. 9 to 0,
+/* an item point's kind changed by the game's options (suddenDeath .. gladiator, each on at 1): the kinds 0 .. 9 to 0,
    2, 3, 5 or none (-1); with the first, 10 .. 19 and 0x1e, 0x1f, 0x25 none too; with the third 15 .. 19 to 10 .. 14 */
 static void remap_item(u8 *scene, int *kind)
 {
@@ -188,7 +188,7 @@ static void remap_item(u8 *scene, int *kind)
 		*kind = -1;
 }
 
-/* 0x4876b0 (thiscall on the scene): the map's play file (by 0x4c77f0 from +0x108 and name; none: a fatal message):
+/* 0x4876b0 (thiscall on the scene): the map's play file (by 0x4c77f0 from mapDir and name; none: a fatal message):
    version 0x1201 (else a fatal message), the first section skipped (a scrambled size), a dword, then the count and
    the 0x24-byte records (read scrambled 0x71c at a time): kind 0 the player start (startPos, its two angles x
    k_10f at startAngle), 1 a multiplayer start (0x14 bytes from starts, at most 32: startCount), 2 an item
@@ -271,14 +271,14 @@ static const u32 k_schemeVal[10][2] = {
 	{ 0x3e99999a, 0x3e4ccccd }, { 0x3e7fffff, 0x3e7fffff }, { 0x3f000000, 0x3f19999a }, { 0x3e99999a, 0x3f000000 },
 	{ 0x3f07ae15, 0x3f4ccccd }, { 0, 0 } };
 
-/* 0x474550 (thiscall on the scene): the map's players and actors (file by 0x4c77f0 from +0x108 and name; none, or a
+/* 0x474550 (thiscall on the scene): the map's players and actors (file by 0x4c77f0 from mapDir and name; none, or a
    version other than 0x1201, a fatal message): three sections skipped, a dword, then the player count (mapPlayerCount)
    and their 0x58-byte records (mapPlayers), the actor count (mapActorCount) and their 0x5c-byte records (mapActors).
    Every player but the first: its colour scheme (+4, now less one; when not negative) gives all five parts their
    colours, the game type (2 .. 11, by pairs) fixes its first item (3, 5, 0x24, 0x19, 0x16; the last pair the second
    too, 0x17), the other items but the fifth emptied (-1), and it is set up (playerRecord_setFromMapPlayer). The player count also at
-   playerRecordCount, every actor but the first active (+0x18), the clan texture (by 0x4c7724 from +0x908) looked up into
-   clanTexture, and each player's type record given +0x47fc6 1 and +0x47fce 0x180. Its caller ignores the eax it
+   playerRecordCount, every actor but the first run by the game (bot), the clan texture (by 0x4c7724 from stageName) looked up into
+   clanTexture, and each player's type record given flagShown 1 and flagSent 0x180. Its caller ignores the eax it
    leaves */
 void THISCALL (map_loadActorInfoFrom)(u8 *scene, const char *name)
 {
@@ -341,7 +341,7 @@ void THISCALL (map_loadActorInfoFrom)(u8 *scene, const char *name)
 
 #define POOL_MAX 4000000
 
-/* the next n bytes of the layers' pool (+0x9ef940, +0xdc0240 used of 4,000,000: past it a fatal message); the
+/* the next n bytes of the layers' pool (pool, poolUsed used of 4,000,000: past it a fatal message); the
    caller adds n once the block is filled */
 static u8 *pool_take(u8 *s, int n)
 {
@@ -365,15 +365,15 @@ static int grey(const u8 *px)
 	return px[0] == px[1] && px[0] == px[2] ? px[0] : -1;
 }
 
-/* 0x48b9d0 (thiscall on the stage): the map's ground file name (under the map directory +0x108). No file or a
+/* 0x48b9d0 (thiscall on the stage): the map's ground file name (under the map directory mapDir). No file or a
    version other than 0x1201 is fatal; then, scrambled, four blocks skipped, the map's directory (0x100), the view
-   range (+0xa08), the lights (Light_read), the clear colour and fog (clearOn ..), the background modes (sphere
+   range (cullMargin), the lights (Light_read), the clear colour and fog (clearOn ..), the background modes (sphere
    skyMode, sky layerMode, sides sideMode, floor floorOn) and their textures, the area limits (levelLow .. worldHigh, then areaValue, the mission number and the music kind),
-   and the layers (groundLayerCount; 0x20c-byte records from groundLayers: rows +0x1c, columns +0x20, origin +4, cell +0x24,
-   height scale +0x28, texture size +0x2c): each its texture "<dir>/Ground<i>Map" and a 256 x 256 RGB height map
-   (grey pixels are heights) giving, in the pool, its heights (+0x38), flat cells (+0x3c), vertices (+0x40), normals
-   (+0x44: the four triangles about each inner vertex, flipped by +0 1; the border the default g_vecUnitY), light map
-   (+0x48, ground_computeLighting), texture coordinates (+0x50), index (+0x54 / +0x58) and primitive (+0x60 / +0x64) heaps;
+   and the layers (groundLayerCount; 0x20c-byte records from groundLayers: rows rows, columns cols, origin +4, cell cellSize,
+   height scale heightScale, texture size texScale): each its texture "<dir>/Ground<i>Map" and a 256 x 256 RGB height map
+   (grey pixels are heights) giving, in the pool, its heights (heights), flat cells (flat), vertices (points), normals
+   (normals: the four triangles about each inner vertex, flipped by +0 1; the border the default g_vecUnitY), light map
+   (colours, ground_computeLighting), texture coordinates (uv), index (indexCapacity / indices) and primitive (stripCapacity / strips) heaps;
    last the layer meshes (stage_buildMeshDrawRecords). Returns 1 */
 int THISCALL (map_loadGroundInfoFrom)(u8 *s, const char *name)
 {

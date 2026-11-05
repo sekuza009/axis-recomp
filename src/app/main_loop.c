@@ -164,7 +164,7 @@ static void count_down(u8 *s, u32 offset, const float *dt)
 }
 
 /* 0x48b200 (thiscall on the scene): the playing state's frame. The match set up first when it is not yet
-   (modeStarted 0: match_startRound); scene_averageFrameTime (its answer dropped); the frame's time (+0x44) added to the
+   (modeStarted 0: match_startRound); scene_averageFrameTime (its answer dropped); the frame's time (frameTime) added to the
    second's fraction (secondFraction) and to the FPS window (windowTime); three countdowns (msgFade, readyTimer,
    keyGuard). Past a whole second the seconds (wholeSeconds) take it, and the frame and packet counts of the window
    (windowSent / windowReceived) become rates (sendRate / receiveRate; 0 for an empty window), the window cleared. Then
@@ -215,7 +215,7 @@ int THISCALL (match_playFrame)(u8 *s)
 static int pressed2(u32 a, u32 b) { return input_justPressed(KEY(a)) || input_justPressed(KEY(b)); }
 static int held2(u32 a, u32 b) { return input_isDown(KEY(a)) || input_isDown(KEY(b)); }
 
-/* the mouse's offset from the screen centre (+0x2343293 vertical, inverted by the setting g_mouseInvert; +0x2343297
+/* the mouse's offset from the screen centre (mouseDy vertical, inverted by the setting g_mouseInvert; mouseDx
    horizontal, negated when steer is set) scaled by the sensitivity (g_mouseSensitivity: ((s 0.02)^2 + 1) / 2), and the
    pointer put back in the centre (g_mouseX / g_mouseY) */
 static void mouse_offset(u8 *s, int steer)
@@ -600,7 +600,7 @@ u32 THISCALL (match_freeCamFrame)(u8 *s)
 #define S(type, offset) GAME_VAR(type, s + (offset))
 #define SC ((Scene *)s)   /* the same scene by its fields (src/scene.fields) */
 
-/* the camera back at the map's start view (+0x22ee228: position, pitch, heading) */
+/* the camera back at the map's start view (cameraSaved: position, pitch, heading) */
 static void start_view(u8 *s)
 {
 	memcpy(SC->cameraPos, SC->cameraSaved, 12);
@@ -632,7 +632,7 @@ static u32 rand_below(u32 n)
 	return r;
 }
 
-/* the view angle by step (narrower with +0x234328b), kept within 10 .. 60 */
+/* the view angle by step (narrower with holdZoom), kept within 10 .. 60 */
 static void zoom_view(u8 *s, const float *step)
 {
 	if (SC->holdZoom) {
@@ -648,8 +648,8 @@ static void zoom_view(u8 *s, const float *step)
 	}
 }
 
-/* the end of the replay file (or the skip key): the next replay (a random one with +0x9eeac0, else the next in
-   order, the list wrapping round with +0x4b2a7c) with the scene reset; 0 when the list is done (the viewer quits) */
+/* the end of the replay file (or the skip key): the next replay (a random one with g_replayRandomOrder, else the next in
+   order, the list wrapping round with g_replayWrap) with the scene reset; 0 when the list is done (the viewer quits) */
 static int replay_next(u8 *s)
 {
 	u8 *stage = (u8 *)SCENE_STAGE(s);
@@ -673,8 +673,8 @@ static int replay_next(u8 *s)
 	return 1;
 }
 
-/* the player followed: a number key (f, 0 ..), the next live player (+0x234331b), or a random one now and then
-   (none yet, gone, or followed 14 s); then the camera preset: the next one (+0x234331f) or a random one after 7 s */
+/* the player followed: a number key (f, 0 ..), the next live player (followNextAsked), or a random one now and then
+   (none yet, gone, or followed 14 s); then the camera preset: the next one (presetNextAsked) or a random one after 7 s */
 static void choose_followed(u8 *s, int f)
 {
 	int n = SC->playerCount;
@@ -723,7 +723,7 @@ static void choose_followed(u8 *s, int f)
 	}
 }
 
-/* the free camera's move (mv, from the keys) through the world, kept in the map's box (+0xbe2fcc .. +0xbe2fd8);
+/* the free camera's move (mv, from the keys) through the world, kept in the map's box (the stage's levelLow .. levelHigh);
    facing (0, 0, -1) */
 /* the move's results (collision_moveActor's: where it ends, the slide, the distance, the plane) */
 typedef struct { float out[3], delta[3], dist, plane[4]; } Move;
@@ -749,8 +749,8 @@ static void free_camera(u8 *s, const float *mv, u32 filter, Move *m)
 	dir[2] = -1.0f;
 }
 
-/* the preset's pitch (+0x233ca28) and heading (+0x233ca2c) from its table (index at +preset), the actor's own
-   (+0x160 / +0x164) added unless the preset fixes them; the pitch within +-890 */
+/* the preset's pitch (cameraAngle[0]) and heading (cameraAngle[1]) from its table (index at +preset), the actor's own
+   (pitch / yaw) added unless the preset fixes them; the pitch within +-890 */
 static void preset_angles(u8 *s, const u8 *t, u32 preset)
 {
 	int i = S(int, preset);
@@ -767,7 +767,7 @@ static void preset_angles(u8 *s, const u8 *t, u32 preset)
 		SC->cameraAngle[1] = f32(fadd_m(fld_m((const float *)&SC->cameraSettings[1][i]), &((const Player *)t)->yaw));
 }
 
-/* the camera pulled back by the preset's zoom (+0x233cb70) from 0.85 of the actor t's height (its position with
+/* the camera pulled back by the preset's zoom (cameraSettings[2][..]) from 0.85 of the actor t's height (its position with
    eye 0), short of what is in the way, at most 300 off; facing (0, 0, 1) */
 static void orbit_from(u8 *s, const u8 *t, u32 preset, int eye)
 {
@@ -802,7 +802,7 @@ static void orbit_from(u8 *s, const u8 *t, u32 preset, int eye)
 	dir[2] = 1.0f;
 }
 
-/* an actor's record (0x8888 bytes from +0x1ecca70) */
+/* an actor's record (0x8888 bytes from players) */
 #define ACTOR_AT(i) ((u8 *)&SC->players[i])
 
 /* preset orbiting the followed player (the preset index: cameraMode) */
@@ -814,7 +814,7 @@ static void orbit_camera(u8 *s, int i)
 }
 
 /* preset 1: the followed player and the nearest other live one, the camera on the line through both beyond the
-   followed one (the angle by their distance); alone, a point 5 heights ahead. Looks at their middle (+0x233cc14) */
+   followed one (the angle by their distance); alone, a point 5 heights ahead. Looks at their middle (cameraTarget) */
 static void pair_camera(u8 *s)
 {
 	int me = SC->watchedPlayer, best = -1, n = SC->playerCount;
@@ -858,9 +858,9 @@ static void pair_camera(u8 *s)
 		cam[k] = f32(fadd_m(fld_m(&t[k]), &mid[k]));
 }
 
-/* the other presets: the look point (+0x233cc14) moved half way to the followed player; when the view to it is
+/* the other presets: the look point (cameraTarget) moved half way to the followed player; when the view to it is
    blocked, the camera goes behind the player's head (its height back along its own heading and pitch) */
-/* the look point (+0x233cc14) moved half way to p */
+/* the look point (cameraTarget) moved half way to p */
 static void look_toward(u8 *s, const float *p)
 {
 	float *mid = SC->cameraTarget;
@@ -890,7 +890,7 @@ static void watch_camera(u8 *s)
 	}
 }
 
-/* the direction and up vectors turned by the camera's pitch (+0x233ca28) and heading (+0x233ca2c) */
+/* the direction and up vectors turned by the camera's pitch (cameraAngle[0]) and heading (cameraAngle[1]) */
 static void turn_view(u8 *s)
 {
 	float *dir = SC->cameraDir, *up = SC->cameraUp;
@@ -904,7 +904,7 @@ static void turn_view(u8 *s)
 }
 
 /* the free camera's keys: the move (mv) by speed along the view, turned for the held direction keys; up / down,
-   three times as fast with +0x2343283; the mouse turns the view (pitch within +-890, heading wrapped at 3600) */
+   three times as fast with holdBooster; the mouse turns the view (pitch within +-890, heading wrapped at 3600) */
 static void free_keys(u8 *s, float *mv, const float *speed, const float *turn)
 {
 	memcpy(mv, (const void *)ADDR(g_vecZero), 12);
@@ -1001,7 +1001,7 @@ u32 THISCALL (replay_frame)(u8 *s)
 		events_clear((Scene *)s, 60.0f);
 	}
 	scene_averageFrameTime(s);
-	/* the replay clock (+0x233cc30 whole seconds, +0x233cc34 the fraction) */
+	/* the replay clock (wholeSeconds whole seconds, secondFraction the fraction) */
 	long double t = fadd_m(fld_m(&SC->secondFraction), &SC->frameTime);
 	SC->secondFraction = (float)t;
 	if (t > 1.0f) {
@@ -1081,7 +1081,7 @@ u32 THISCALL (replay_frame)(u8 *s)
 		flag_uploadAtlas(stage);
 		SC->flagUploadTimer = 0.0f;
 	}
-	long double sp = fmul_m(fld_m(&SC->frameTime), &k_2000f);   /* 2000 a second, at most +0x1f4164 */
+	long double sp = fmul_m(fld_m(&SC->frameTime), &k_2000f);   /* 2000 a second, at most spaceMargin */
 	float speed = (float)sp;
 	if (sp > SC->spaceMargin)
 		BITS(speed) = BITS(SC->spaceMargin);
@@ -1271,7 +1271,7 @@ static int team_game(void)
 	return m == 1 || m == 3 || m == 5 || m == 7 || m == 9 || m == 11;
 }
 
-/* axiswl.log: the game title, map, limits and date, then the ranking (+0x23428f6, +0x2342976 of them): name, team
+/* axiswl.log: the game title, map, limits and date, then the ranking (ranking, rankCount of them): name, team
    (none outside team games), play time, kills and deaths. The opening log passes its own stack word as the play
    time (the original's: the same slot the network packets are read into later) */
 static void write_log(u8 *s, const char *format, int own_time, int stack_time)
@@ -1291,7 +1291,7 @@ static void write_log(u8 *s, const char *format, int own_time, int stack_time)
 	fclose(f);
 }
 
-/* a free spawn point (+0x22ee23c, 0x14 bytes each, +0x22ee4bc of them) from a random one on: the first no live
+/* a free spawn point (spawnPoints, 0x14 bytes each, spawnPointCount of them) from a random one on: the first no live
    actor stands within reach of (the reach: its height times 5, or twice it); NULL when there are none */
 static const u8 *spawn_point(u8 *s, int doubled)
 {
@@ -1335,7 +1335,7 @@ static void team_colours(u8 *s, int p, int team)
 		                        GAME_VAR(u32, 0x4a9824 + side * 4), 0, 0xbf800000, 0x3f7fbe77);
 }
 
-/* the local player (+0x234240d) into the match: its record (+0x2342429 ..), colours, a spawn point, the notice */
+/* the local player (localPlayer) into the match: its record (mechName ..), colours, a spawn point, the notice */
 static void local_spawn(u8 *s)
 {
 	if (SC->localRecordSet == 0) {
@@ -1400,7 +1400,7 @@ static void bot_spawns(u8 *s)
 	}
 }
 
-/* the camera looking back at the actor t's killer (+0x4c0) from 2 heights behind its head (+0x4e0) */
+/* the camera looking back at the actor t's killer (lastAttacker) from 2 heights behind its head (deathPos) */
 static void killer_view(u8 *s, const u8 *t)
 {
 	Player *act = (Player *)t;
@@ -1450,8 +1450,8 @@ static float mrow(const float *m, const float *v, int a, int ia, int b, int ib, 
 	return f32(fadd_m(x + fmul_m(fld_m(&m[c]), &v[ic]), &m[t]));
 }
 
-/* preset 1 of the local player's camera: at the selected weapon's muzzle (its part's bone matrix, +0x1568), a
-   fraction (+0x490) of the way from the eye (0.3 heights up, turned with the view) */
+/* preset 1 of the local player's camera: at the selected weapon's muzzle (its part's bone matrix, armsModel.entries), a
+   fraction (weaponLower) of the way from the eye (0.3 heights up, turned with the view) */
 static void muzzle_camera(u8 *s, const u8 *t)
 {
 	Player *act = (Player *)t;
@@ -1505,7 +1505,7 @@ static void muzzle_camera(u8 *s, const u8 *t)
 	dir[2] = 1.0f;
 }
 
-/* the round's slow motion: the last two seconds of a won round's end (+0x2342399) when the last to die (lastDeath) is
+/* the round's slow motion: the last two seconds of a won round's end (matchOver) when the last to die (lastDeath) is
    down (state 2), unless the time ran out */
 static int slow_end(u8 *s)
 {
@@ -1518,7 +1518,7 @@ static int slow_end(u8 *s)
 	return SC->lastDeath >= 0 && SC->players[SC->lastDeath].state == 2;
 }
 
-/* the winning team (+0x23423bd): the side whose team slot has more (team scores +0x2221fb8), -1 for a draw */
+/* the winning team (winnerTeam): the side whose team slot has more (team scores teamScores), -1 for a draw */
 static void winning_team(u8 *s)
 {
 	int a = scene_teamIdAt((Scene *)s, 1), b = scene_teamIdAt((Scene *)s, 0);
@@ -1534,7 +1534,7 @@ static void winning_team(u8 *s)
 		SC->winnerTeam = -1;
 }
 
-/* the round over (10 s of end, +0x234239d): the notice (frag or time limit), the log written later */
+/* the round over (10 s of end, endTime): the notice (frag or time limit), the log written later */
 static void round_over(u8 *s, int time_limit)
 {
 	SC->botsHoldFire = 1;
@@ -1551,7 +1551,7 @@ static void round_over(u8 *s, int time_limit)
 	g_writeMatchLog = 1;
 }
 
-/* the local player's camera chat keys: T (all, +0x23432fb) / Y (team, +0x23432ff) open the line, its end sends it
+/* the local player's camera chat keys: T (all, talkPressed) / Y (team, teamTalkPressed) open the line, its end sends it
    (a cheat code, a macro or the text) */
 static void chat_keys(u8 *s)
 {
@@ -2048,7 +2048,7 @@ void THISCALL (match_frame)(u8 *s)
 					start_view(s);
 					music_playMatch(sc);
 				} else {
-					if (SC->rotationCount > 0) {   /* the server's map rotation (+0x1f1668: map, mode) */
+					if (SC->rotationCount > 0) {   /* the server's map rotation (rotation: map, mode) */
 						SC->rotationAt = (SC->rotationAt + 1) % SC->rotationCount;
 						g_missionStage = SC->rotation[SC->rotationAt].map;
 						SC->nextMap = SC->rotation[(SC->rotationAt + 1) % SC->rotationCount].map;
