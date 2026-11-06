@@ -61,7 +61,7 @@ void THISCALL (actor_selectWeapon)(Stage *stage, int i, int slot)
 
 /* 0x45edb0: actor i (when state is 1) switches to slot 0 four times in five, else slot 4 (actor_selectWeapon), by the
    game's random table (g_randTable, 4096 values, position g_randPos); its bot timers restarted: dodgeTime and
-   heightTime 0, burstPause and burstFire from botTimes[3] / botTimes[4] */
+   heightTime 0, burstPause and burstFire from botParams[3] / botParams[4] */
 void THISCALL (actor_pickRandomWeapon)(Stage *stage, int i)
 {
 	Player *actor = (&stage->actors[i]);
@@ -73,8 +73,8 @@ void THISCALL (actor_pickRandomWeapon)(Stage *stage, int i)
 	actor_selectWeapon(stage, i, v % 100 < 80 ? 0 : 4);
 	(*(int *)&actor->dodgeTime) = 0;
 	(*(int *)&actor->heightTime) = 0;
-	(*(int *)&actor->burstPause) = (*(int *)&actor->botTimes[3]);
-	(*(int *)&actor->burstFire) = (*(int *)&actor->botTimes[4]);
+	(*(int *)&actor->burstPause) = (*(int *)&actor->botParams[3]);
+	(*(int *)&actor->burstFire) = (*(int *)&actor->botParams[4]);
 }
 
 /* 0x460000 (thiscall on the scene): actor target hit by actor attacker for damage, when it is in play (state 1) and

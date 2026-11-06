@@ -19,7 +19,7 @@ static void tex_quad(float s0, float t0, float s1, float t1, int x0, int y0, int
 
 /* 0x424810: the sound page (0x4ddad0 .. 0x4ddadc): the window, a cyan frame, the title MSG(171, "SETUP SOUND"); the volume slider
    from the button texture (g_buttonTexture): the two arrows, the track and the bar (the volume g_setupEffectVolume long); while
-   g_setupPressedClock runs down (by g_frameTime, then -1 into g_setupPressed) the arrow pressed (g_setupPressed: 0 / 1, or 2 / 3 a row lower)
+   g_setupPressedClock runs down (by g_frameTime, then -1 into g_setupArrowPressed) the arrow pressed (g_setupArrowPressed: 0 / 1, or 2 / 3 a row lower)
    lit; the label MSG(172, "EFFECT SOUND") and three switches (MSG(173, "BGM"), 0x80 apart) with their on / off names (MSG(176, "OFF") + 0x80 x:
    the volume on, g_setupSound3D, g_setupStereoReverse), the one under the pointer (5 .. 7, by setupSound_hitTest) yellow with a shadow; two
    buttons (MSG(178, "$[0] ACCEPT"), lit from 8) and the border. The original leaves eax to callers that ignore it */
@@ -52,7 +52,7 @@ void (setup_drawSoundPage)(void)
 	tex_quad(0.0f, 0.125f, s, 0.25f, X0 + 0x90, Y0 + 0x50, x, Y0 + 0x70);                  /* the bar */
 	const float *zero = (const float *)ADDR(k_0f);
 	if (g_setupPressedClock > *zero) {
-		switch (g_setupPressed) {
+		switch (g_setupArrowPressed) {
 		case 0: tex_quad(0.5f, 0.25f, 0.75f, 0.375f, X0 + 0x50, Y0 + 0x50, X0 + 0x90, Y0 + 0x70); break;
 		case 1: tex_quad(0.75f, 0.25f, 1.0f, 0.375f, X0 + 0x190, Y0 + 0x50, X0 + 0x1d0, Y0 + 0x70); break;
 		case 2: tex_quad(0.5f, 0.25f, 0.75f, 0.375f, X0 + 0x50, Y0 + 0x8c, X0 + 0x90, Y0 + 0xac); break;
@@ -62,7 +62,7 @@ void (setup_drawSoundPage)(void)
 		g_setupPressedClock = f32(left);
 		if (!(left >= *zero)) {
 			g_setupPressedClock = 0;
-			g_setupPressed = -1;
+			g_setupArrowPressed = -1;
 		}
 	}
 	set_colour_bits(g_textColour, bright[0], bright[1], bright[2], bright[3]);
@@ -213,7 +213,7 @@ static void key_tab(int tab)
 }
 
 /* the fourth tab: its title, labels (MSG(261, "INVERT MOUSE"), and MSG(264, "CROSSHAIRS") lower), the two switches (0x4de1c0 / 0x4de1c4: on
-   MSG(119, "ON"), off MSG(118, "OFF")), the sensitivity slider (g_sensitivitySlider, its arrows lit while g_setupPressedClock runs down: g_setupPressed 0 /
+   MSG(119, "ON"), off MSG(118, "OFF")), the sensitivity slider (g_sensitivitySlider, its arrows lit while g_setupPressedClock runs down: g_setupArrowPressed 0 /
    1) and the crosshair g_crosshairEdit: when it changed (from g_lastCrosshair) its texture looked up again (0 .. 7: the path
    "texture/crosshair/crosshair<n>"; others keep the path in g_crosshairName) into g_crosshairTexture, drawn in a box */
 static void settings_tab(void)
@@ -241,9 +241,9 @@ static void settings_tab(void)
 	tex_quad(0.0f, 0.125f, s, 0.25f, X0 + 0x108, Y0 + 0x88, x, Y0 + 0xa0);           /* the bar */
 	const float *zero = (const float *)ADDR(k_0f);
 	if (g_setupPressedClock > *zero) {
-		if (g_setupPressed == 0)
+		if (g_setupArrowPressed == 0)
 			menu_drawSmallButton1(X0 + 0xc8, Y0 + 0x88, X0 + 0x108, Y0 + 0xa0, 1);
-		else if (g_setupPressed == 1)
+		else if (g_setupArrowPressed == 1)
 			menu_drawSmallButton2(X0 + 0x1d0, Y0 + 0x88, X0 + 0x210, Y0 + 0xa0, 1);
 	}
 	int crosshair = g_crosshairEdit;
@@ -271,7 +271,7 @@ static void settings_tab(void)
 	g_setupPressedClock = f32(left);
 	if (!(left >= *zero)) {
 		g_setupPressedClock = 0;
-		g_setupPressed = -1;
+		g_setupArrowPressed = -1;
 	}
 #undef X0
 #undef Y0

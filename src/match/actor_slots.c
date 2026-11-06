@@ -359,7 +359,7 @@ void THISCALL (actor_loadBooster)(u8 *scene, int a) { part_load(scene, a, &g_par
    bot flag, position, pitch and yaw), then given the record's settings: unused1c, armour and shield (each as the
    maximum and the current value), speed (baseSpeed and speed, x 27.7778), turnRate (x 10), the detection range
    squared (x 10000), unused34, aimError (x 10, rounded to an int), scriptFlag, dodgeSpread / climbSpread (x 100),
-   botTimes copied; no path (path, pathPoint -1). Its callers (script command 15, match_frame) ignore the eax it
+   botParams copied; no path (path, pathPoint -1). Its callers (script command 15, match_frame) ignore the eax it
    leaves */
 void THISCALL (actor_applySpawnRecord)(u8 *scene, int a, const u8 *rec)
 {
@@ -391,7 +391,7 @@ void THISCALL (actor_applySpawnRecord)(u8 *scene, int a, const u8 *rec)
 	AC->dodgeSpread = (float)(SR->dodgeSpread * (long double)k_100f);
 	AC->climbSpread = (float)(SR->climbSpread * (long double)k_100f);
 	for (int k = 0; k < 5; k++)
-		BITS(AC->botTimes[k]) = BITS(SR->botTimes[k]);
+		BITS(AC->botParams[k]) = BITS(SR->botParams[k]);
 	AC->path = -1;
 	AC->pathPoint = -1;
 #undef SR
@@ -775,11 +775,11 @@ static void mech_stats(u8 *s, u8 *ac, u8 *p, int check)
 	AC->scriptFlag = 0;
 	AC->dodgeSpread = 1000.0f;   /* 1000 */
 	AC->climbSpread = 500.0f;   /* 500 */
-	AC->botTimes[0] = 2.0f;   /* 2 */
-	AC->botTimes[1] = 1.0f;
-	AC->botTimes[2] = 4000.0f;   /* 4000 */
-	AC->botTimes[3] = 5.0f;   /* 5 */
-	AC->botTimes[4] = 1.0f;
+	AC->botParams[0] = 2.0f;   /* 2 */
+	AC->botParams[1] = 1.0f;
+	AC->botParams[2] = 4000.0f;   /* 4000 */
+	AC->botParams[3] = 5.0f;   /* 5 */
+	AC->botParams[4] = 1.0f;
 }
 
 /* 0x457330 (thiscall on the scene): actor a built from the player record pp[0] (0x47fd2 bytes from playerRecords; its

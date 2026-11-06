@@ -294,7 +294,7 @@ int (menuState900_enterMissions)(void)
 }
 
 /* 0x447750: the skirmish screen (screen 500; the main menu's SKIRMISH PLAY, rounds from skirmish.dat): the briefing camera, the window and its colours, the screen's panels
-   (skirmish_layout), the round shown (g_skirmishShown, g_skirmishChosen) the campaign's next one (0x9f181c, at most 14), a sound;
+   (skirmish_layout), the round shown (g_skirmishRoundShown, g_skirmishChosen) the campaign's next one (0x9f181c, at most 14), a sound;
    a newly reached round (past g_progressSeen) raises it and the new-parts notice g_skirmishNewPartsNotice. Returns the campaign's mission */
 int (menuState500_enterSkirmish)(void)
 {
@@ -309,7 +309,7 @@ int (menuState500_enterSkirmish)(void)
 	g_skirmishShowBackground = 1;
 	g_skirmishLeft = 0;
 	int mission = g_progress < 15 ? g_progress : 14;
-	g_skirmishShown = mission;
+	g_skirmishRoundShown = mission;
 	g_skirmishChosen = mission;
 	g_skirmishPreviewDue = 1;
 	sound_playMenu(4);

@@ -152,7 +152,7 @@
 #define g_armcBright ((float *)IMG(0x4dbc58))   /* float[4]; the ARM CENTER's bright colour (RGBA 0, 1, 1, 1): the chosen tab, slot and button, labels (armc_open) */
 #define g_legsStats ((float *)IMG(0x4dc228))   /* float[7]; the legs' stats for the panel: agility, inertia, speed correction x 100 (g_legsSpeedCorrection), forward / side / back boost corrections x 100 (+0xc .. +0x14), the weight (g_legsWeight) (armc_readPartPanels) */
 #define g_armsStats ((int *)IMG(0x4dc290))   /* int[5]; the arms' stats copied from the part (armc_parts' loop of 5) */
-#define g_dpConnections ((int *)IMG(0xa0bae0))   /* int[4]; the DirectPlay connections by kind (net_connectionAvailable: below 4) */
+#define g_dpConnections ((int *)IMG(0xa0bae0))   /* int[4]; the DirectPlay connection data by kind (TCP, IPX, modem, serial): pointers to GlobalAlloc'ed copies (dplay_enumConnections, g_connectionCopy); net_connectionAvailable: below 4 and non-zero */
 #define g_camPoints ((float *)IMG(0x4df870))   /* float[20]; the menu camera's five target positions, 16 bytes apart (x y z; the fourth float never used): menuCamera_initPoints / the screens' enter functions write, the *_camera functions ease toward them */
 #define g_camAims ((float *)IMG(0x76d388))   /* float[20]; the menu camera's five look-at points (x, y, z and a fourth word each) */
 #define g_controls ((int *)IMG(0x4def00))   /* int[68]; axis.cfg's control settings: the key bindings (two slots per action) */
@@ -440,7 +440,7 @@
 #define g_skelDat ((u32 *)IMG(0xa0eab4))   /* u32[3]; Data\Skeleton.dat: the entry count; the table; the FILE */
 #define g_skirmishInfo ((u8 *)IMG(0x9db998))   /* u8[1380]; skirmish.dat's 15 records of 0x5c (to 0x9dbefc) */
 #define g_soundTable ((u32 *)IMG(0xa0e02c))   /* u32[400]; the sound table's buffers by index (sound_initSoundTable; to 0xa0e66c) */
-#define g_menuSoundBuffers ((u32 *)IMG(0x4dd4d4))   /* u32[10]; the ten menu sounds (sound_loadMenuSounds) */
+#define g_menuSoundBuffers ((u32 *)IMG(0x4dd4d4))   /* u32[10]; the ten menu sounds: a Sound pointer each (sound_loadWav; read as g_menuSounds) (sound_loadMenuSounds) */
 #define g_slotCams ((float *)IMG(0x4dfa1c))   /* float[352]; per local slot (g_localSlot) a 0x58-byte camera record: +0 .. +8 the free camera's point (freeCam_keys), +0x28 the ARM CENTER turn (freeCam_mouseLook's turn_update); a click moves the camera to +0 / +4. Only these offsets are used; 0x4dff9c .. 0x4e0458 is never referenced */
 #define g_unlockTablesSolo ((u8 *)IMG(0x4ad5f0))   /* u8[5600]; armc_buildPartLists' seven 0x320-byte Unlock tables for every ARM CENTER visit not from the Ladder room (g_armcFrom != 3: campaign, skirmish and the arena) (to 0x4aebd0) */
 #define g_unlockTablesNet ((u8 *)IMG(0x4aebd0))   /* u8[5600]; the same for network play (to 0x4b01b0) */
@@ -459,5 +459,5 @@
 #define k_teamNamesKorean ((char *)IMG(0x4a975c))   /* char[64]; the four team names in Korean (16 bytes each) */
 #define k_aanScales ((double *)IMG(0x4aa2b0))   /* double[8]; the AAN DCT's scale factors: their only user, ptx_initFdctDivisors, builds the forward DCT's divisors */
 #define k_ptxQuantScales ((int *)IMG(0x4aa2f0))   /* int[64]; the quantisation scale per coefficient */
-#define g_keyNames ((u32 *)IMG(0x4b0750))   /* u32[256]; a key code's name (pointers to the texts; to 0x4b0b50) */
+#define g_keyNames ((u32 *)IMG(0x4b0750))   /* u32[256]; a key code's name: pointers to the texts (to 0x4b0b50; read as const char *const *) */
 #define g_loadStatusText ((char *)IMG(0xa0e988))   /* char[256]; the loading screen's grey status line: the last log message (loading_drawScreen; as g_logHook; strcpy's it; game_processLoadingMode empties it; loading_draw prints it). Up to g_loadScroll 0xa0ea88 */

@@ -385,7 +385,7 @@ void THISCALL (object_initObjectBy)(Stage *s, int i, const ObjectType *type)
 		int need = ST->objectColourCount + shape->colourCount;
 		if (need > 1000000)
 			sys_fatalErrorN((char *)OBJ(g_logStage), (const char *)STR(0x4c8314, "object(%d) objectShapeElementShadingC..."), i, need, 1000000);
-		mo->colours[r] = (u32)&ST->objectColours[ST->objectColourCount];
+		mo->colourRuns[r] = (u32)&ST->objectColours[ST->objectColourCount];
 		ST->objectColourCount += mo->model->colourCount;
 	}
 	mo->colourSide = 1;
@@ -403,7 +403,7 @@ void THISCALL (object_initObjectBy)(Stage *s, int i, const ObjectType *type)
 	BITS(mo->glow) = 0;
 	BITS(mo->waitTime) = 0;
 	if (ST->shadingCached == 0)
-		shape_shadingColours((*(u32 * *)&mo->colours[0]), 1, mo->model, (const LightFactors *)&s->mapLights,
+		shape_shadingColours((*(u32 * *)&mo->colourRuns[0]), 1, mo->model, (const LightFactors *)&s->mapLights,
 		                 mo->matrixInverse);
 }
 

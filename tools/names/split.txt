@@ -159,7 +159,7 @@ g_fpsFrameCount
 g_menuTunnelTexture
 g_messageBoxArgs
 g_skirmishPreviewDue
-g_skirmishShown
+g_skirmishRoundShown
 g_musicVolumeSetting
 g_netBlockSize
 g_netChatMessageKind
@@ -539,7 +539,7 @@ g_newArenaForm
 # freed by the setup / form records (objects11.csv), 2026-11-01
 g_arenaCameraMode
 g_joinPollTicks
-g_setupPressed
+g_setupArrowPressed
 # the room / profile / mission records (objects12.csv), whole
 g_pilotStats
 g_pilotStatsKept

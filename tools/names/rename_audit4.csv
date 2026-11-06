@@ -393,6 +393,6 @@ g_missionSelectLeft,g_skirmishRectLeft
 g_missionSelectTop,g_skirmishRectTop
 g_missionSelectRect,g_skirmishRect
 g_missionShowBackground,g_skirmishShowBackground
-g_missionShown,g_skirmishShown
+g_missionShown,g_skirmishRoundShown
 g_missionState,g_skirmishState
 g_missionselRects,g_skirmishRects

@@ -1,5 +1,5 @@
 /* skirmish.c: the skirmish screen (screen 500, the main menu's SKIRMISH PLAY; window 0x9f6308 .. 0x9f6314) for
-   round g_skirmishShown: its title, the map's preview, its skirmish.dat record (g_skirmishInfo, 0x5c bytes a round) and the
+   round g_skirmishRoundShown: its title, the map's preview, its skirmish.dat record (g_skirmishInfo, 0x5c bytes a round) and the
    two buttons */
 #include "../game.h"
 #include <string.h>
@@ -10,8 +10,8 @@
 #define X1 (g_skirmishRect[2])
 #define Y1 (g_skirmishRect[3])
 #define K(addr) ((const float *)RELOC(addr))
-#define record ((const int *)((OBJ(g_skirmishInfo) + 0x4) + g_skirmishShown * 0x5c))
-#define map_name ((const char *)(OBJ(g_mapNames) + g_skirmishShown * 0x20))
+#define record ((const int *)((OBJ(g_skirmishInfo) + 0x4) + g_skirmishRoundShown * 0x5c))
+#define map_name ((const char *)(OBJ(g_mapNames) + g_skirmishRoundShown * 0x20))
 
 static void white_text(void)
 {
@@ -50,9 +50,9 @@ static void skirmish_roundScreen(int hovered)
 	set_colour_bits(g_textColour, bright[0], bright[1], bright[2], bright[3]);
 	/* "<n>ST <MSG(551, "ROUND")>  [ <map> ]" */
 	char title[256];
-	itoa(g_skirmishShown + 1, title, 10);
+	itoa(g_skirmishRoundShown + 1, title, 10);
 	static const u32 suffix[4] = { STR(0x4b2b20, "ST "), STR(0x4b2b24, "ND "), STR(0x4b2b28, "RD "), STR(0x4b2b2c, "TH ") };
-	strcat(title, (const char *)RELOC(suffix[(unsigned)g_skirmishShown < 3 ? g_skirmishShown : 3]));
+	strcat(title, (const char *)RELOC(suffix[(unsigned)g_skirmishRoundShown < 3 ? g_skirmishRoundShown : 3]));
 	strcat(title, (const char *)MSG(551, "ROUND"));
 	strcat(title, (const char *)STR(0x4b2b18, "  [ "));
 	strcat(title, map_name);
@@ -89,9 +89,9 @@ static void skirmish_roundScreen(int hovered)
 	bind(g_buttonTexture);
 	glEnable(GL_TEXTURE_2D);
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
-	menu_drawSmallButton1(X0 + 0x98, Y0 + 0x4c, X0 + 0xd0, Y0 + 0x74, g_skirmishShown > 0 && hovered == 2);
+	menu_drawSmallButton1(X0 + 0x98, Y0 + 0x4c, X0 + 0xd0, Y0 + 0x74, g_skirmishRoundShown > 0 && hovered == 2);
 	menu_drawSmallButton2(X0 + 0x160, Y0 + 0x4c, X0 + 0x198, Y0 + 0x74,
-	                        g_skirmishShown < g_progress && hovered == 3 && g_skirmishShown < 14);
+	                        g_skirmishRoundShown < g_progress && hovered == 3 && g_skirmishRoundShown < 14);
 	white_text();
 	/* the kind and the two values */
 	char line[128] = { 0 };
@@ -148,7 +148,7 @@ static void skirmish_roundScreen(int hovered)
 	menu_drawCornerOrnaments(X0, Y0, X1, Y1);
 }
 
-/* 0x448ac0: the skirmish screen for round g_skirmishShown (skirmish_roundScreen) with the button or arrow under the
+/* 0x448ac0: the skirmish screen for round g_skirmishRoundShown (skirmish_roundScreen) with the button or arrow under the
    pointer (skirmish_hitTest) lit. The original leaves eax to callers that ignore it */
 void (skirmish_drawRoundScreen)(void)
 {

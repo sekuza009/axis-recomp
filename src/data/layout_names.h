@@ -1481,13 +1481,13 @@ extern struct GameData g_data;
 #undef g_mechTargetKeepTime
 #define g_mechTargetKeepTime (*(float *)g_mechTargetKeepTime_v)
 #undef g_mechWeaponSlot0
-#define g_mechWeaponSlot0 (*(u32 *)((u8 *)g_armcSlotItems_v + 0x8))
+#define g_mechWeaponSlot0 (*(int *)((u8 *)g_armcSlotItems_v + 0x8))
 #undef g_mechWeaponSlot1
-#define g_mechWeaponSlot1 (*(u32 *)((u8 *)g_armcSlotItems_v + 0xc))
+#define g_mechWeaponSlot1 (*(int *)((u8 *)g_armcSlotItems_v + 0xc))
 #undef g_mechWeaponSlot2
-#define g_mechWeaponSlot2 (*(u32 *)((u8 *)g_armcSlotItems_v + 0x10))
+#define g_mechWeaponSlot2 (*(int *)((u8 *)g_armcSlotItems_v + 0x10))
 #undef g_mechWeaponSlot3
-#define g_mechWeaponSlot3 (*(u32 *)((u8 *)g_armcSlotItems_v + 0x14))
+#define g_mechWeaponSlot3 (*(int *)((u8 *)g_armcSlotItems_v + 0x14))
 #undef g_menuCamX
 #define g_menuCamX (*(float *)g_menuCamX_v)
 #undef g_menuCamZ
@@ -2434,6 +2434,8 @@ extern struct GameData g_data;
 #define g_sessionListOpen (*(int *)g_sessionListOpen_v)
 #undef g_sessionTable
 #define g_sessionTable ((SessionSlot *)g_sessionTable_v)
+#undef g_setupArrowPressed
+#define g_setupArrowPressed (*(int *)g_setupArrowPressed_v)
 #undef g_setupCameraMode
 #define g_setupCameraMode (*(int *)g_setupCameraMode_v)
 #undef g_setupColourDim
@@ -2464,8 +2466,6 @@ extern struct GameData g_data;
 #define g_setupPanelMoving (*(int *)g_setupPanelMoving_v)
 #undef g_setupPanelPos
 #define g_setupPanelPos (*(float *)g_setupPanelPos_v)
-#undef g_setupPressed
-#define g_setupPressed (*(int *)g_setupPressed_v)
 #undef g_setupPressedClock
 #define g_setupPressedClock (*(float *)g_setupPressedClock_v)
 #undef g_setupResolution
@@ -2530,10 +2530,10 @@ extern struct GameData g_data;
 #define g_skirmishRectTop (*(int *)((u8 *)g_skirmishRect_v + 0x4))
 #undef g_skirmishRects
 #define g_skirmishRects ((int *)g_skirmishRects_v)
+#undef g_skirmishRoundShown
+#define g_skirmishRoundShown (*(int *)g_skirmishRoundShown_v)
 #undef g_skirmishShowBackground
 #define g_skirmishShowBackground (*(int *)g_skirmishShowBackground_v)
-#undef g_skirmishShown
-#define g_skirmishShown (*(int *)g_skirmishShown_v)
 #undef g_skirmishState
 #define g_skirmishState (*(int *)g_skirmishState_v)
 #undef g_slotCams

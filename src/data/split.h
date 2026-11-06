@@ -1535,9 +1535,9 @@ extern int g_setupGraphicRects_v[36];
 extern int g_setupControlRect_v[4];
 #endif
 #ifdef AXIS_FENCE
-#define g_setupPressed_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0x270000 : g_fence + 0x26fffc))
+#define g_setupArrowPressed_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0x270000 : g_fence + 0x26fffc))
 #else
-extern u8 g_setupPressed_v[4];
+extern u8 g_setupArrowPressed_v[4];
 #endif
 #ifdef AXIS_FENCE
 #define g_soundEdited_v ((int *)(AXIS_FENCE == 2 ? g_fence + 0x272000 : g_fence + 0x271ff0))
@@ -4220,9 +4220,9 @@ extern int g_skirmishRects_v[16];
 extern u8 g_skirmishPreviewDue_v[4];
 #endif
 #ifdef AXIS_FENCE
-#define g_skirmishShown_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xba7000 : g_fence + 0xba6ffc))
+#define g_skirmishRoundShown_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xba7000 : g_fence + 0xba6ffc))
 #else
-extern u8 g_skirmishShown_v[4];
+extern u8 g_skirmishRoundShown_v[4];
 #endif
 #ifdef AXIS_FENCE
 #define g_skirmishShowBackground_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xba9000 : g_fence + 0xba8ffc))

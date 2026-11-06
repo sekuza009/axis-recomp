@@ -471,12 +471,12 @@ u32 (missions_briefingKeys)(void)
 	return r;
 }
 
-/* ---- the skirmish screen (screen 500; the round shown g_skirmishShown) ---- */
+/* ---- the skirmish screen (screen 500; the round shown g_skirmishRoundShown) ---- */
 /* 0x4479d0: the round shown started: its 32-byte record (g_mapNames) as the current one (g_gameTitle), its three values from the
    0x5c-byte records of g_skirmishInfo (gameMode ..), the screen left, the campaign's match mode (g_leavingForMatch = 1, g_matchMode = 3) */
 u32 (skirmish_startRound)(void)
 {
-	int sel = g_skirmishShown;
+	int sel = g_skirmishRoundShown;
 	u32 t = (u32)sel * 0x5c;
 	g_mapIndex = sel;
 	memcpy((void *)OBJ(g_gameTitle), (const void *)(OBJ(g_mapNames) + sel * 32), 32);
@@ -492,7 +492,7 @@ u32 (skirmish_startRound)(void)
 	return r;
 }
 
-/* 0x447a50: ... 2 and 3 step the round shown (g_skirmishShown) down and up (from 0 to at most g_progress and 14) ... */
+/* 0x447a50: ... 2 and 3 step the round shown (g_skirmishRoundShown) down and up (from 0 to at most g_progress and 14) ... */
 u32 (skirmish_clicks)(void)
 {
 	if (g_frameOpening)
@@ -502,7 +502,7 @@ u32 (skirmish_clicks)(void)
 	if (!g_mouseClick)
 		return 0;
 	u32 button = ((u32)skirmish_hitTest(g_mouseX, g_mouseY));   /* the screen's hit test */
-	int sel = g_skirmishShown;
+	int sel = g_skirmishRoundShown;
 	switch (button) {
 	case 0:
 		return skirmish_startRound();   /* skirmish_startRound */
@@ -511,12 +511,12 @@ u32 (skirmish_clicks)(void)
 	case 2:
 		if (sel <= 0)
 			return (u32)sel;
-		g_skirmishShown = --sel;
+		g_skirmishRoundShown = --sel;
 		return skirmish_roundChosen(sel);   /* skirmish_roundChosen */
 	case 3:
 		if (sel >= g_progress || sel >= 0xe)
 			return (u32)sel;
-		g_skirmishShown = ++sel;
+		g_skirmishRoundShown = ++sel;
 		return skirmish_roundChosen(sel);
 	}
 	return button;

@@ -136,6 +136,18 @@ def is_text(d, o):
 	return n
 
 
+def starts_long_text(w):
+	"""w is the start of a NUL-preceded text of 8 letters or more in the initialised data"""
+	try:
+		if raw(w - 1, 1) != b'\0':
+			return False
+		t = raw(w, 200)
+	except ValueError:
+		return False
+	n = t.index(0) if 0 in t else len(t)
+	return n >= 8 and all(32 <= c < 127 or c >= 0xa1 or c in (9, 10, 13) for c in t[:n])
+
+
 def is_pointer(w):
 	"""a word that holds an address of the image: any into the code (0x401000 .. 0x4a9000: an integer of that size is
 	rare), or into the data when it is 4-aligned or starts a string - and the word itself is not two or three
@@ -143,8 +155,8 @@ def is_pointer(w):
 	if not 0x401000 <= w < 0xb6b000:
 		return False
 	bs = struct.pack('<I', w)
-	if bs[3] == 0 and all(32 <= c < 127 for c in bs[:3]):
-		return False
+	if bs[3] == 0 and all(32 <= c < 127 for c in bs[:3]) and not starts_long_text(w):
+		return False   # (unless it points at the start of a long text: 0x4b2528, "(%K", is g_insertCdMessage's)
 	if w < 0x4a9000:
 		return True
 	if w in names:

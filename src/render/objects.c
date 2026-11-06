@@ -22,7 +22,7 @@ void THISCALL (stage_drawObject)(Stage *stage, int i, void *view)
 	for (int k = 0; k < 3; k++)
 		if (!((long double)r + stage->cameraPos[k] >= o->pos[k]))
 			return;
-	ViewVolume_queueModel(view, model, o->colourSide == 0 ? o->colours[0] : o->colours[1], o->matrix, 0, NULL, 1, -1, 0);
+	ViewVolume_queueModel(view, model, o->colourSide == 0 ? o->colourRuns[0] : o->colourRuns[1], o->matrix, 0, NULL, 1, -1, 0);
 }
 
 /* 0x490da0 (stage_drawObjects): every active object */
@@ -144,7 +144,7 @@ void THISCALL (mapObject_frame)(u8 *s, int i, float dt)
 		Mat4_multiply(MO->relMatrix, m, MO->placeInverse);
 		Mat4_invert(MO->relInverse, MO->relMatrix);
 		if (!(obj[0xc] & 2))
-			shape_shadingColours((*(u32 * *)&MO->colours[0]), 1, (Model *)((u8 *)MO->model), (const LightFactors *)&st->mapLights,
+			shape_shadingColours((*(u32 * *)&MO->colourRuns[0]), 1, (Model *)((u8 *)MO->model), (const LightFactors *)&st->mapLights,
 			                 MO->matrixInverse);
 		MO->poseStale = 0;
 		const float *c = MO->model->centre;
@@ -154,8 +154,8 @@ void THISCALL (mapObject_frame)(u8 *s, int i, float dt)
 			out[r] = f32(fadd_m(FMUL(m[8 + r], c[2]) + FMUL(m[r], c[0]) + FMUL(m[4 + r], c[1]), &m[12 + r]));
 	}
 	if (MO->colourSide == 1 && !(obj[0xc] & 2)) {
-		memcpy((*(void * *)&MO->colours[1]), (*(void * *)&MO->colours[0]), MO->model->colourCount * 4);
-		shape_shadingColours((*(u32 * *)&MO->colours[1]), 0, (Model *)((u8 *)MO->model), (const LightFactors *)&st->dynamicLights,
+		memcpy((*(void * *)&MO->colourRuns[1]), (*(void * *)&MO->colourRuns[0]), MO->model->colourCount * 4);
+		shape_shadingColours((*(u32 * *)&MO->colourRuns[1]), 0, (Model *)((u8 *)MO->model), (const LightFactors *)&st->dynamicLights,
 		                 MO->matrixInverse);
 	}
 	if ((obj[0xc] & 1) && g_highDetail == 1) {

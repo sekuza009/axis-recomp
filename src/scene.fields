@@ -80,7 +80,7 @@ struct Model 0x4c                                               # a shape (skel_
 0x30       4          u32 version                                # 0x71110300: the current format (older: 0x68-byte parts)
 0x34       0xc        float low[3]                               # the box over its parts
 0x40       0xc        float high[3]
-0x18       4          i32 colourCount                           # dwords in a shading colour buffer for it (a .shp header's: 3 x triangleCount; ObjectList_load, object_initObjectBy)
+0x18       4          i32 colourCount                                 # dwords in a shading colour buffer for it: a .shp model's 3 x triangleCount (ObjectList_load, object_initObjectBy); Stage.layerModel / waterModel: their layers' point counts summed, (rows + 1) x (cols + 1) each (ground_buildLayerModels)
 0x1c       4          i32 triangleCount                         # its triangles: a face 1, a quad 2 (model_loadObjFormatFrom, sizing the index lists); the .shp header's (colourCount / 3); cleared with colourCount (ground_buildLayerModels)
 0x2c       4          float radius                              # its bounding sphere
 
@@ -147,7 +147,7 @@ struct Player 0x8888                                            # a player's rec
 0x4bc      4          i32 lastHitMode                                # (by use; seen running) the last hit's mode (0 armour first, 1 shield first)
 0x880c     4          i32 invulnerable                          # 1: hits do nothing (actor_takeDamage returns at once; script command 14 sets it, 12 and the spawn reset clear it)
 0x8850     4          i32 hitPending                             # (by use; seen running) 1: a hit to send (net_sendPlayerState, then cleared)
-0x24       4          i32 accuracy                               # (by use; seen running) the arms' stats[0]: a shot's spread is the weapon's less a tenth of it (weapons.c)
+0x24       4          i32 accuracy                                    # (by use; seen running) the arms' stats[0]: a shot's spread (ActorItem.spread, tenths of a degree) is the weapon's less 10 x this, at least 0 (bullet_init, weapons.c)
 0x144      4          i32 lastWeaponSlot                         # (by use; seen running) the last of slots 0 .. 3 selected (its part shown again: actor_setWeaponSlot)
 0x1f8      0xa0       ShotRecord shots[5]                        # (by use; seen running) its rounds as sent (another machine's actor: netFired)
 0x298      0xc8       FiredRound rounds[5]                           # (by use; seen running) its rounds' records (ResourceSets: actor_checkDataLoss builds them; actor_processFrame fills one as each round fires)
@@ -192,10 +192,10 @@ struct Player 0x8888                                            # a player's rec
 0x8814     4          i32 lookPath                               # the path whose point it looks at (-1 none)
 0x8818     4          i32 lookPoint
 0x8824     4          float scanTime                             # (by use; seen running) a bot looks for a target every half second
-0x8828     4          float burstPause                           # (by use; seen running) seconds to the next burst (botTimes[3])
-0x882c     4          float burstFire                            # seconds of the burst left (botTimes[4])
-0x8830     4          float dodgeTime                            # (by use; seen running) seconds to the next sideways step (botTimes[0])
-0x8834     4          float heightTime                           # seconds to the next height change (botTimes[1])
+0x8828     4          float burstPause                           # (by use; seen running) seconds to the next burst (botParams[3])
+0x882c     4          float burstFire                            # seconds of the burst left (botParams[4])
+0x8830     4          float dodgeTime                            # (by use; seen running) seconds to the next sideways step (botParams[0])
+0x8834     4          float heightTime                           # seconds to the next height change (botParams[1])
 0x8838     0xc        float cleared8838[3]                       # (by use; seen running) only zeroed (actor_setupFromParts); nothing else reads or writes it
 0x8844     4          float lookTime                             # (by use; seen running) seconds to the next random look (2)
 0x886c     4          float stuckTime                            # (by use; seen running) the path checked every second: moved under 500 -> dropped
@@ -279,8 +279,8 @@ struct Player 0x8888                                            # a player's rec
 0x74       4          i32 aimError                              # a bot's shots wander by -this .. +this - 1 about pitch and yaw, tenths of a degree (actor_processFrame, rand_below(2 x this)); the spawn record's +0x38 (degrees) x 10, whole; 10 for a player's mech
 0x78       4          u32 scriptFlag                            # copied with the spawn record (+0x3c to the actor's +0x78); set 0 / 1 by trigger commands 10 / 11; not read
 0x7c       4          float dodgeSpread                         # (by use; seen running) a bot's sideways step about its target: up to +- this (the spawn record's +0x40 x 100)
-0x80       4          float climbSpread                         # a bot near its target picks a height goal of its OWN height +- up to this (botGoal[1] = pos[1] + rand(2 x this) - this, every botTimes[1] s); the spawn record's +0x44 x 100 (500 for a player's mech)
-0x84       0x14       float botTimes[5]                            # (by use; seen running) a bot's timings, seconds: [0] between sideways steps, [1] between height changes, [2] its distance kept from the target, [3] the pause between bursts, [4] a burst's length
+0x80       4          float climbSpread                         # a bot near its target picks a height goal of its OWN height +- up to this (botGoal[1] = pos[1] + rand(2 x this) - this, every botParams[1] s); the spawn record's +0x44 x 100 (500 for a player's mech)
+0x84       0x14       float botParams[5]                              # (by use; seen running) a bot's settings (the spawn record's): [0] seconds between sideways steps, [1] seconds between height changes, [2] the distance kept from the target (4000 for a player's mech), [3] seconds paused between bursts, [4] seconds a burst lasts
 0x44c      4          i32 inForward                             # the input it acts on this frame (actor_setInput): held forward
 0x450      4          i32 inBackward
 0x454      4          i32 inStepLeft
@@ -384,7 +384,7 @@ struct MapObject 0x2cc                                          # a map object (
 0xc        4          i32 flags                                 # ObjectType.flags: 1 a light (its glow and flare: object_glow, mapObject_frame), 2 not drawn and not re-shaded (stage_drawObject, mapObject_frame), 4 no collision unit (collision_initVolume), 8 animated on approach (trigger), 0x10 animated after a wait (trigger)
 0xf4       0x40       float matrix[16]                          # where it is drawn
 0x27c      4          Model *model
-0x280      8          u32 colours[2]                             # (by use; seen running) two runs of its shading colours (from Stage.objectColours; object_initObjectBy)
+0x280      8          u32 colourRuns[2]                               # (by use; seen running) two pointers, kept as u32, to its runs of colourCount shading colours in Stage.objectColours (object_initObjectBy): [0] lit by the map lights, [1] [0] re-shaded with the dynamic lights each frame
 0x288      4          i32 colourSide                            # 1 (always: object_initObjectBy, nothing else writes it): each frame colours[1] is colours[0] re-shaded with the dynamic lights (mapObject_frame) and drawn (stage_drawObject); 0 would draw colours[0] unchanged
 0x28c      4          void *unit                                # its collision unit (none: 0)
 0x290      4          i32 animated                              # 1: its animation was started (object_setAnimation) and not yet reset (anim_reset): its collision unit is out of the static space (space_disableUnit) and is traced through relMatrix / relInverse instead (collision_moveSphere, collision_rayTrace); stays 1 when held at its end (mode 1) or stopped by a mode-0 call
@@ -814,7 +814,7 @@ struct ViewVolume 0x9170                                        # the view volum
 0x9098     4          i32 trianglesFull
 0x909c     4          i32 quadsFull
 0x90a0     4          i32 segmentsFull
-0x90a4     4          i32 trianglesDrawn                        # counters of the frame (cleared by ViewVolume_clearDrawCounts: ViewVolume_initBy and match_drawFrame each match frame); counted up, never read
+0x90a4     4          i32 trianglesDrawn                              # draw counters (cleared by ViewVolume_clearDrawCounts: by ViewVolume_initBy, and by match_drawFrame each match frame - so per frame only in a match; outside one they keep counting); counted up, never read
 0x90a8     4          i32 meshesDrawn
 0x90ac     4          i32 textureBinds
 0x90b0     0x40       float projection[16]
@@ -1033,7 +1033,7 @@ struct SpawnRecord 0x5c                                         # an actor's spa
 0x3c       4          u32 scriptFlag                            # copied to the actor's +0x78 (Player.scriptFlag; actor_applySpawnRecord); not read
 0x40       4          float dodgeSpread                          # x 100
 0x44       4          float climbSpread                          # x 100
-0x48       0x14       float botTimes[5]                          # the bot's timings (copied to the actor's)
+0x48       0x14       float botParams[5]                         # the bot's settings (copied to the actor's Player.botParams: [2] a distance, the rest seconds)
 
 struct BmpFile 0x48                                             # an uncompressed 24-bit .BMP read in pieces (class BMPRGBFile: classes.c)
 0          4          u32 vtable
@@ -1260,7 +1260,7 @@ struct Stage 0x2150443                                          # the stage: the
 0x1cd6fb4  0x23f0     SpawnRecord mapActors[100]                 # the map's actors (the first: the player's)
 0x1cd93a4  4          i32 mapActorCount
 # the game type and its rule flags (game_setGameTypeFlags: the types as g_gameTypeNames, DM .. PLT)
-0x20f3ab8  4          i32 gameType                               # 0 death match, 2 sudden death, 4 shotgun / 6 ion cannon / 8 rocket arena, 10 gladiator (odd: the team game), 12 king of the hill, 13 platoon
+0x20f3ab8  4          i32 gameType                                    # 0 death match, 1 team death match, 2 / 3 sudden death, 4 / 5 shotgun, 6 / 7 ion cannon, 8 / 9 rocket arena, 10 / 11 gladiator (odd: the team game), 12 king of the hill, 13 platoon, 14 accept advanced mode (no rule flag: game_setGameTypeFlags handles 1 .. 13)
 0x20f3abc  4          i32 teamGame                               # the odd types
 0x20f3ac4  4          i32 shotgunArena                          # (types 4, 5) the map's ammunition item points (kinds 0 .. 9) all become kind 2, 60mmShell_Box (map_loadPlayInfoFrom: remap_item); its only reader
 0x20f3ac8  4          i32 ionCannonArena                        # (types 6, 7) the map's ammunition item points all become kind 3, Energy_Cell, forcefields (15 .. 19) shields (10 .. 14) (map_loadPlayInfoFrom: remap_item)
@@ -1277,7 +1277,7 @@ struct Stage 0x2150443                                          # the stage: the
                                                                  # MESSAGE command; 100 inferred from the gap to texts)
 0x210850c  0x40740    u8 texts[1000][0x108]                     # the script's texts, the same: a dword (not 0: it exists; MESSAGE checks it), then four lines of 0x41 chars hud_drawMessageBox shows (Scene.msgText is these bytes from +4); never written (1000 inferred from the gap to messages)
 0x2104fe4  4          i32 clanTexture                            # (by use; seen running) the map's clan texture (Stage\<map>\Clan)
-0xf30dc8   0x3d0900   u32 objectColours[1000000]                # the map objects' shading colours: two runs per object (MapObject.colours[0] / [1], its model's colourCount each; object_initObjectBy), read from or written to <mapDir>/Temp-<map>-objectShadingInfo.dat (map_loadObjectInfoFrom)
+0xf30dc8   0x3d0900   u32 objectColours[1000000]                # the map objects' shading colours: two runs per object (MapObject.colourRuns[0] / [1], its model's colourCount each; object_initObjectBy), read from or written to <mapDir>/Temp-<map>-objectShadingInfo.dat (map_loadObjectInfoFrom)
 0x13016c8  4          i32 objectColourCount                      # dwords of it used (over 1000000: a fatal message)
 0x13016cc  4          i32 shadingCached                         # 1: the objects' shading was read from the map's cache file (<mapDir>/Temp-<map>-objectShadingInfo.dat), so the objects are not shaded again at load (object_initObjectBy); 0: worked out, and written to that file when loading in mode 1
 0x130b440  0xfa00     char objectNames[1000][0x40]               # (by use; seen running) the map objects' type names
@@ -1331,9 +1331,9 @@ struct Stage 0x2150443                                          # the stage: the
 0xa08      4          float cullMargin                           # (by use; seen running) added to an object's radius when testing it against the camera box
 0x9ccff8   4          i32 billboards                             # (by use; seen running) the billboard list map items are drawn with (ViewVolume_addBillboard's id)
 0x9ee048   0x10       u32 glFogColour[4]                         # the fog OpenGL draws with (stage_setFog): r, g, b, a (floats, kept as bits)
-0x9ee058   4          u32 glFogStart                             # (floats, kept as bits)
-0x9ee05c   4          u32 glFogEnd
-0x9ee060   4          u32 glFogDensity
+0x9ee058   4          u32 glFogStart                                  # (floats, kept as bits)
+0x9ee05c   4          u32 glFogEnd                                    # (a float, kept as bits)
+0x9ee060   4          u32 glFogDensity                                # (a float, kept as bits)
 0x9ee064   4          i32 skyMode                                # the sky sphere: 0 none, 1 the upper half, 2 whole (render/sky.c)
 0x9ee068   0x18       i32 skyTextures[6]                         # one per face (texture ids)
 0x9ee080   0xdc8      float skySphere[6][7][7][3]                # per face a 7 x 7 grid of points (scaled 10000 when drawn)
@@ -1372,17 +1372,17 @@ struct TunnelRing 0x3538                                        # a ring of the 
 0          4          i32 cleared0                              # only cleared (tunnelRing_build); never read
 4          4          i32 cleared4
 8          4          float depth                               # its distance along the tunnel
-0x10       0x1920     float outer[2][201][4]                    # the outer band: near and far circles of points (x, y, z + pad)
+0x10       0x1920     float outer[2][201][4]                          # the outer band: near and far circles of points (x, y, z + pad); tunnelRing_build writes x, y, z of points 0 .. cells (100) only - the pads and the rest are never written
 0x1930     4          float spin
 0x1934     4          float spinSpeed
 0x1938     4          i32 cleared1938                           # only cleared (tunnelRing_build); never read
 0x193c     4          i32 moveSteps                             # menuTunnel_advance: the distance moved so far in this ring's move (+= 30 x the frame time), in or out; at the ring's length (1100; 950 entering the menus; 2200 in the ARM CENTER) the move ends and it restarts at 0
 0x1940     4          float depthShift                          # menuTunnel_advance: -1100 a ring moved in (-2200 with g_leavingForMatch), +1100 a ring moved out (the rings' spacing in depth); read only to add to itself
-0x1944     0x1920     float inner[2][201][4]                    # the inner band
+0x1944     0x1920     float inner[2][201][4]                          # the inner band (written as outer)
 0x3264     4          float innerSpin
 0x3268     4          float innerSpeed
 0x326c     0xc        float cleared326c[3]                      # only cleared (tunnelRing_build); never read
-0x3278     0x80       float cage[8][4]                          # the cage's corners: one end 0..3, the other 4..7
+0x3278     0x80       float cage[8][4]                                # the cage's corners: one end 0..3, the other 4..7 (x, y, z; the pads never written)
 0x32f8     0xc        float cagePos[3]
 0x3308     4          float cageSpin
 0x330c     4          float cageSpeed
@@ -1501,8 +1501,8 @@ struct Scene 0x2343b0b                                          # the scene: the
 0x234331b  4          i32 followNextAsked                       # (by use; seen running) 1 this frame: the next live player to follow asked for (the replay viewer, replay_frame; spectating in a match, match_combatInput)
 0x234331f  4          i32 presetNextAsked                       # 1 this frame: a right click asked for the next camera preset (the replay viewer, replay_frame; spectating in a match, match_combatInput): cameraMode / cameraSlot step on (+1 % 10)
 0x233cc28  4          i32 stateFrames                           # frames in the current state (matchState), counted by its frame function: 0 on the first, which sets the state up (match_startRound; the loading's reset; the free camera's and replay viewer's start)
-0x233cc38  4          float followTime                           # (by use; seen running) seconds the replay viewer has followed its player (a new one after 14)
-0x233cc3c  4          float presetTime                           # (by use; seen running) seconds on the camera preset (a random one after 7)
+0x233cc38  4          float followTime                                # (by use; seen running) seconds the followed player has been watched (the replay viewer, or a spectator in a match while manualPick[0] is 0): after 14 a new one (replay: at random; match: the next player)
+0x233cc3c  4          float presetTime                                # (by use; seen running) seconds on the camera preset (replay viewer: cameraMode; spectating in a match: cameraSlot); a random one after 7 unless manualPick[1]
 0x2221f90  4          i32 playerCount                            # (by use; seen running) the players in the match (the follow and spawn loops) (= Stage.actorCount)
 0x22ee23c  0x280      StartPoint spawnPoints[32]                 # (by use; seen running) the spawn points (scene_pickSpawnPoint: the first one no actor stands near) (= Stage.starts)
 0x22ee4bc  4          i32 spawnPointCount                        # (by use; seen running) spawn points from 0x22ee23c, 0x14 bytes each (= Stage.startCount)
@@ -1510,7 +1510,7 @@ struct Scene 0x2343b0b                                          # the scene: the
 0x2340d08  4          void *replayFile                           # (by use; seen running) the replay file being read
 0x2340d2d  4          float replayTime                           # (by use; seen running) the replay's time it is read up to
 0x2340cf0  4          i32 entryMenuShown                        # 0 at the session's start (scene_startSession) and after each round's end (endTime out): while 0 a spectator's fire key asks to quit (match_combatInput) and match_frame then sets it to 1 and opens the Esc menu (escMenu_open; the entry page while not in play)
-0x4        4          i32 client                                 # (by use; seen running) in a network game: 1 on a machine that joined, 0 the host
+0x4        4          i32 client                                      # (by use; seen running) in a network game: 1 on a machine that joined, 0 the host; -1 before any session (Console_ctor)
 0x1f1668   0x640      Round rotation[100]                        # the maps played in turn (solo: the 15 stages)
 0x1f1ca8   4          i32 rotationCount
 0x1f1cac   4          i32 rotationAt                             # the entry being played
@@ -1545,11 +1545,11 @@ struct Scene 0x2343b0b                                          # the scene: the
 0x2340d39  4          float keyGuard                               # (by use; seen running) > 0: the quit / talk keys are ignored (0.1 s)
 0x234239d  4          float endTime                                # (by use; seen running) seconds left of a round's end (10 from the result)
 0x23423a5  4          float quitDelay                              # (by use; seen running) seconds before leaving after the round is over (3)
-8          4          i32 sessionMode                           # the session (scene_startSession): 0 solo, 1 a network game, 2 the ARM CENTER's preview, 3 replays played (AutoPlay; no team marks, the watched player's tag)
+8          4          i32 sessionMode                                 # the session (scene_startSession): 0 solo, 1 a network game, 2 the ARM CENTER's preview, 3 replays played (AutoPlay; no team marks, the watched player's tag); -1 before any session (Console_ctor)
 0x74       0x9170     ViewVolume view                            # the camera's view volume (Console_ctor: vtable, ViewVolume_initBy into viewMemory right after it)
 0x44       4          float frameTime                            # (by use; seen running) the last frame's time, seconds (the Esc menu fades in by it)
-0x22ee228  0x14       u32 cameraSaved[5]                         # (by use; seen running) the camera a retry restarts from: position into cameraPos, pitch / heading into cameraAngle (= Stage.startPos and startAngle)
-0x233ca04  0xc        u32 cameraPos[3]                           # (by use; seen running) the camera's position (scene_startSession: the origin)
+0x22ee228  0x14       u32 cameraSaved[5]                              # (by use; seen running) the camera a retry restarts from (floats' bits): position into cameraPos, pitch / heading into cameraAngle (= Stage.startPos and startAngle)
+0x233ca04  0xc        u32 cameraPos[3]                                # (by use; seen running) the camera's position (floats' bits; scene_startSession: the origin)
 0x233ca10  0xc        float cameraDir[3]                         # its direction (-Z)
 0x233ca1c  0xc        float cameraUp[3]                          # its up (Y)
 0x233ca28  8          float cameraAngle[2]                       # its pitch (within +-890) and heading (wrapped at 3600; the free camera)
@@ -1625,7 +1625,7 @@ struct Scene 0x2343b0b                                          # the scene: the
 0x2342381  0x14       i32 teamIds[5]                             # the teams by slot (free: < 0; match/teams.c)
 0x23423ad  4          i32 fragLimit                             # the frag limit (g_fragLimit; the round's): > 0: the round ends when a team's teamScores or the leading player's kills reach it (msg_fragLimitReached); the HUD shows the frags still needed
 0x23423b1  4          i32 timeLimit                             # minutes (g_timeLimit; the round's): > 0: the round ends when elapsed reaches timeLimit x 60 (msg_timeLimitReached); the HUD shows the time left
-0x2342401  4          i32 dataLossCode                           # shown when a game ends for lost data
+0x2342401  4          i32 dataLossCode                                # why a game ends for lost data (msg_dataLoss): 0 the own player's parts check failed (every 20 s), 1 the host's map number differs, 2 a part table's check, 3 the actorItems table's; -1 none (match start)
 0x23423bd  4          i32 winnerTeam
 0x23423a1  4          i32 matchLeaving                          # 1: the match is being left: back to the menu when quitDelay runs out (quit, data loss, lost connection, unstable network, the server ending the game, the last mission won); also lets ladder_sendRecord run
 0x234240d  4          i32 localPlayer                            # the player at this machine (index into players)

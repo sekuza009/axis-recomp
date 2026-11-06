@@ -319,7 +319,7 @@ u8 g_bindWaiting_v[4] __attribute__((aligned(16)));   /* 0x4dddc8 */
 int g_setupGraphicRect_v[4] __attribute__((aligned(16)));   /* 0x4dddd0 */
 int g_setupGraphicRects_v[36] __attribute__((aligned(16)));   /* 0x4ddde0 */
 int g_setupControlRect_v[4] __attribute__((aligned(16)));   /* 0x4dde80 */
-u8 g_setupPressed_v[4] __attribute__((aligned(16)));   /* 0x4dde90 */
+u8 g_setupArrowPressed_v[4] __attribute__((aligned(16)));   /* 0x4dde90 */
 int g_soundEdited_v[4] __attribute__((aligned(16)));   /* 0x4dde98 */
 int g_setupControlRects_v[72] __attribute__((aligned(16)));   /* 0x4ddea8 */
 u8 g_setupTunnelAlpha_v[4] __attribute__((aligned(16)));   /* 0x4de038 */
@@ -856,7 +856,7 @@ float g_skirmishColourLit_v[4] __attribute__((aligned(16)));   /* 0x9f6318 */
 u8 g_skirmishChosen_v[4] __attribute__((aligned(16)));   /* 0x9f6328 */
 int g_skirmishRects_v[16] __attribute__((aligned(16)));   /* 0x9f6330 */
 u8 g_skirmishPreviewDue_v[4] __attribute__((aligned(16)));   /* 0x9f63b0 */
-u8 g_skirmishShown_v[4] __attribute__((aligned(16)));   /* 0x9f63b4 */
+u8 g_skirmishRoundShown_v[4] __attribute__((aligned(16)));   /* 0x9f63b4 */
 u8 g_skirmishShowBackground_v[4] __attribute__((aligned(16)));   /* 0x9f63b8 */
 u8 g_matchChatCaretY_v[4] __attribute__((aligned(16)));   /* 0x9f63c4 */
 u8 g_matchChatCaretX_v[4] __attribute__((aligned(16)));   /* 0x9f63c8 */
@@ -1489,7 +1489,7 @@ const DataPiece g_splitObjects[] = {
 	{ 0x4dddd0, g_setupGraphicRect_v, 16 },
 	{ 0x4ddde0, g_setupGraphicRects_v, 144 },
 	{ 0x4dde80, g_setupControlRect_v, 16 },
-	{ 0x4dde90, g_setupPressed_v, 4 },
+	{ 0x4dde90, g_setupArrowPressed_v, 4 },
 	{ 0x4dde98, g_soundEdited_v, 16 },
 	{ 0x4ddea8, g_setupControlRects_v, 288 },
 	{ 0x4de038, g_setupTunnelAlpha_v, 4 },
@@ -2026,7 +2026,7 @@ const DataPiece g_splitObjects[] = {
 	{ 0x9f6328, g_skirmishChosen_v, 4 },
 	{ 0x9f6330, g_skirmishRects_v, 64 },
 	{ 0x9f63b0, g_skirmishPreviewDue_v, 4 },
-	{ 0x9f63b4, g_skirmishShown_v, 4 },
+	{ 0x9f63b4, g_skirmishRoundShown_v, 4 },
 	{ 0x9f63b8, g_skirmishShowBackground_v, 4 },
 	{ 0x9f63c4, g_matchChatCaretY_v, 4 },
 	{ 0x9f63c8, g_matchChatCaretX_v, 4 },
@@ -4093,7 +4093,7 @@ static const char d_4b44f8[] = "YOU FRAGED KING %s, +1(x%d) FRAGS +%d(x%d) EXP";
 static const char d_4b4528[] = "OUT OF AMMO!";
 static const char d_4b4538[] = "invalid player actor slot(%d) - spawnActorBy()";
 static const u32 init_g_insertCdMessage[] = {   /* 0x4b4568 */
-	0x004b2528,   /* "Please insert Axis CD in your CD-ROM drive!" */
+	IMG(0x004b2528),   /* "Please insert Axis CD in your CD-ROM drive!" */
 };
 static const char d_4b466c[] = "Music/Heart of Giants.mp3";
 static const char d_4b476c[] = "Music/5 minute to blitz.mp3";

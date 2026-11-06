@@ -149,7 +149,7 @@ static void tab_opened(void)
 	g_setupCameraMode = 1;
 	(*(u32 *)&g_setupTunnelAlpha) = 0x3f333333;   /* 0.7 */
 	(*(int *)&g_setupPressedClock) = 0;
-	g_setupPressed = -1;
+	g_setupArrowPressed = -1;
 	g_setupPanelMoving = 0;
 	(*(u32 *)&g_setupTunnelDepth) = 0xc4ce4000;   /* -1650.0 */
 }
@@ -300,13 +300,13 @@ u32 (setup_graphicTabClicks)(void)
 	return button;
 }
 
-/* ---- the sound tab's mouse: the volume (g_soundEdited[0], 0 .. 100; g_setupPressed the arrow last used, g_setupPressedClock its
+/* ---- the sound tab's mouse: the volume (g_soundEdited[0], 0 .. 100; g_setupArrowPressed the arrow last used (0 down, 1 up), g_setupPressedClock its
    glow) ---- */
 
 static void volume_down(void)
 {
 	if (g_setupEffectVolume > 0) {
-		g_setupPressed = 0;
+		g_setupArrowPressed = 0;
 		g_setupEffectVolume--;
 		(*(u32 *)&g_setupPressedClock) = 0x40a00000;   /* 5 */
 	}
@@ -315,7 +315,7 @@ static void volume_down(void)
 static void volume_up(void)
 {
 	if (g_setupEffectVolume < 100) {
-		g_setupPressed = 1;
+		g_setupArrowPressed = 1;
 		g_setupEffectVolume++;
 		(*(u32 *)&g_setupPressedClock) = 0x40a00000;
 	}
@@ -554,21 +554,21 @@ void (setup_bindKey)(int key)
 }
 
 /* the mouse-sensitivity slider's part under the cursor acted on: the minus / plus buttons step the value (g_sensitivitySlider)
-   within 0..100 (g_setupPressed which way) and start the 5.0 highlight timer (g_setupPressedClock); the bar sets it from the cursor x */
+   within 0..100 (g_setupArrowPressed which way) and start the 5.0 highlight timer (g_setupPressedClock); the bar sets it from the cursor x */
 static void slider_press(void)
 {
 #define VALUE g_sensitivitySlider
 	switch (setupSlider_hitTest(g_mouseX, g_mouseY)) {
 	case 0:
 		if (VALUE > 0) {
-			g_setupPressed = 0;
+			g_setupArrowPressed = 0;
 			VALUE--;
 			(*(u32 *)&g_setupPressedClock) = 0x40a00000;   /* 5.0f */
 		}
 		break;
 	case 1:
 		if (VALUE < 100) {
-			g_setupPressed = 1;
+			g_setupArrowPressed = 1;
 			VALUE++;
 			(*(u32 *)&g_setupPressedClock) = 0x40a00000;
 		}

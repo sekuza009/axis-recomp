@@ -290,12 +290,12 @@ void (skirmish_roundKeys)(void)
 		skirmish_leave();
 		return;
 	}
-	if (input_justPressed(g_keyLeft) == 1 && g_skirmishShown > 0)
-		skirmish_roundChosen(--g_skirmishShown);
-	if (input_justPressed(g_keyRight) == 1 && g_skirmishShown < g_progress) {
-		if (g_skirmishShown >= 14)
+	if (input_justPressed(g_keyLeft) == 1 && g_skirmishRoundShown > 0)
+		skirmish_roundChosen(--g_skirmishRoundShown);
+	if (input_justPressed(g_keyRight) == 1 && g_skirmishRoundShown < g_progress) {
+		if (g_skirmishRoundShown >= 14)
 			return;
-		skirmish_roundChosen(++g_skirmishShown);
+		skirmish_roundChosen(++g_skirmishRoundShown);
 	}
 	if (input_isDown(g_keyLeftCtrl) && input_isDown(g_dikRAlt) && input_justPressed(g_dikPageUp))
 		g_progress = 16;
