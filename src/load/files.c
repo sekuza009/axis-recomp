@@ -472,6 +472,9 @@ u32 (mission_loadAxisMis)(void)
 
 /* 0x443af0: mission k's block read from axis.mis (in the data folder): after a 0x1a-byte header, 0xf8 bytes for
    each of the g_missionCount entries and the blocks before it (their blockSize) into a new buffer
+   (mission_loadAxisMis reads a 16-byte header, 0xf4 bytes an entry and then the sizes, 4 bytes each: so this starts
+   10 bytes past the end of what it reads, whatever the count - a test file with 10 bytes there opens; no real
+   axis.mis is known)
    g_briefingSource (the old one freed); its size into g_briefingEnd, the mission list's state cleared and the page set to
    20 (the mission settings). Without the file, message 0xb and its eax; otherwise 0 */
 u32 (mission_loadBriefing)(int k)

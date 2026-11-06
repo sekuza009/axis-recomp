@@ -606,7 +606,7 @@ typedef struct Mission {
 	char briefing[128];   /* +0x64: (shown under the list for the one picked) */
 	i32 number;   /* +0xe4: the third column */
 	i32 unusedE8;   /* +0xe8: read from axis.mis with the entry, cleared with the list; nothing reads it */
-	i32 result;   /* +0xec: the fourth: a message (MSG(511) + result * 0x80) */
+	i32 result;   /* +0xec: the fourth: a message (MSG(511) + result * 0x80): 0 DON'T, 1 SUCCEED, 2 FAILED (seen with a test axis.mis) */
 	i32 unusedF0;   /* +0xf0: read from axis.mis with the entry, -1 when the list is cleared; nothing reads it */
 	i32 blockSize;   /* +0xf4: its block in axis.mis (read after all the entries) */
 	u8 _pad00000f8[0x4];
@@ -1478,9 +1478,9 @@ typedef struct Stage {
 	i32 teamsChanged;   /* +0x202e8ec: (by use; seen running) 1: an actor joined or changed team */
 	i32 frags[100];   /* +0x202e8f0: (by use; seen running) frags by team (a kill counts for the other team's slot); cleared together (stage_clearFrags) */
 	float lockHeld[100];   /* +0x202ea80: per actor: seconds the local player's lock on it still holds (targetKeepTime when made; the beep then); sorted longest first into lockTimes / lockIds */
-	float lockTimes[100];   /* +0x202ec10: (by use) the locked-on actors' lock times, longest first (actor_frame.c) */
+	float lockTimes[100];   /* +0x202ec10: (by use; seen running) the locked-on actors' lock times, longest first (actor_frame.c) */
 	i32 lockIds[100];   /* +0x202eda0: and which actors they are */
-	i32 lockCount;   /* +0x202ef30: (by use) the local player's locked-on actors (lockTimes / lockIds; was named bulletCount) */
+	i32 lockCount;   /* +0x202ef30: (by use; seen running) the local player's locked-on actors (lockTimes / lockIds; was named bulletCount) */
 	Bullet bullets[400];   /* +0x202ef34: (stage_clearBullets) */
 	i32 bulletSlotsUsed;   /* +0x20a99b4: (by use; seen running) bullet slots up to the highest in use */
 	i32 bulletFreeHint;   /* +0x20a99b8: the lowest free bullet slot */
