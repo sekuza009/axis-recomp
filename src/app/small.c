@@ -168,8 +168,8 @@ int (net_connectionAvailable)(u32 i) { return i < 4 && g_dpConnections[i] ? 1 : 
 /* 0x4417c0: replay i of the replay selection dialog in or out; replaySelect_allIn: all in (0x44-byte entries from 0x9ddac8) */
 void (replaySelect_toggle)(int i) { int *f = &g_replayList[i].picked; *f = 1 - *f; }
 void (replaySelect_allIn)(void) { for (int i = 0; i < g_replayFileCount; i++) g_replayList[i].picked = 1; }
-/* 0x447af0: a click closes the mission briefing */
-void (briefing_clickClose)(void) { if (g_frameOpening == 0 && g_mouseClick != 0) g_skirmishBriefing = 0; }
+/* 0x447af0: a click closes the skirmish screen's new-parts notice */
+void (newPartsNotice_clickClose)(void) { if (g_frameOpening == 0 && g_mouseClick != 0) g_skirmishNewPartsNotice = 0; }
 /* 0x4411e0: the menu tunnel started from its first ring: the ring count (g_tunnelRings) back to 0 and one ring
    (number 0) appended to g_menuTunnel (tunnel_appendRing). Returns that call's eax. It frees nothing */
 u32 (tunnel_restart)(void) { g_tunnelRings = 0; return tunnel_appendRing((void *)ADDR(g_menuTunnel)); }
@@ -233,12 +233,12 @@ void THISCALL (script_pushMessage)(Stage *stage, int a, int b, int c, int d)
 	if (((stage->msgRead ^ head) & 0x1f) == 0)
 		stage->msgRead++;
 }
-/* 0x48fca0: the map script's state reset. ScenePath's first method is called (shared_emptyFunction, the shared empty
-   function). Then scriptMode, scriptHoldsPlay and the four undeclared dwords after them (Stage +0x2149310 ..
+/* 0x48fca0: the map script's state reset. The empty function 0x48b420 (shared_emptyFunction) is called directly on
+   the scene path (it is in no vtable). Then scriptMode, scriptHoldsPlay and the four undeclared dwords after them (Stage +0x2149310 ..
    +0x214931c) are cleared. Returns 0 */
 int THISCALL (script_reset)(Stage *stage)
 {
-	shared_emptyFunction((Scene *)&stage->scenePath);   /* ScenePath's first method: the shared empty function */
+	shared_emptyFunction((Scene *)&stage->scenePath);   /* a direct call to the empty function (in no vtable) */
 	for (int i = 0; i < 6; i++)
 		FIELD(int, stage, offsetof(Stage, scriptMode) + i * 4) = 0;   /* scriptMode, scriptHoldsPlay and four more */
 	return 0;
@@ -532,7 +532,7 @@ static u32 reg_write(u32 value, const char *name)
 		RegSetValueExA(key, name, 0, 4, &data, 4);
 	return RegCloseKey(key);
 }
-/* 0x432400: the Ladder settings (kept under the registry key "Character"): the room's name (g_accountForm) and the other name (g_accountEmail) copied into
+/* 0x432400: the Ladder settings (kept under the registry key "Character"): the typed Ladder ID (g_accountName, the form's first field) and e-mail (g_accountEmail) copied into
    the registry's copies (g_ladderId, g_ladderEmail; the first also into g_ladderIdCopy), the room settings record g_roomSettingsName (a
    32-byte name and six choices) into g_roomRecName; then under HKCU\<the game's key> (0x4b179c) the two names and the six
    choices as DWORDs (sign-extended but for the fourth and fifth). Returns RegCloseKey's answer (the key is closed
@@ -571,14 +571,14 @@ u32 (reg_writeStartMode)(u32 value) { return reg_write(value, (const char *)STR(
    Returns that call's eax */
 u32 (chat_endTyping)(void)
 {
-	memset((void *)ADDR(g_keptChatLine), 0, 0x400);
+	memset((void *)OBJ(g_keptChat), 0, 0x400);
 	if (strlen(g_chatLine)) {
-		memcpy((void *)ADDR(g_keptChatLine), (const void *)OBJ(g_chatLine), 0x400);
+		memcpy((void *)OBJ(g_keptChat), (const void *)OBJ(g_chatLine), 0x400);
 		g_chatTyping = 0;
 	}
 	g_textFieldOpen = 0;
 	input_resetKeys();   /* input_resetKeys: the key state */
-	return (u32)input_initKeyboard(g_hWndMain);
+	return (u32)input_initKeyboard(g_mainWindow);
 }
 
 /* 0x42ef30: a display mode change's problem reported (ChangeDisplaySettings' answer): codes 1 and -1 .. -5 each show their message (MSG(103, "SYSTEM MODE CHANGE RESTART") ..) in a box titled
@@ -784,7 +784,7 @@ void THISCALL (playerRecord_setFromMapPlayer)(Stage *stage, int p, const u8 *rec
 	actor_setActorTypeBoosterInfoBy(stage, p, mp->parts[4]);
 	for (int k = 0; k < 6; k++)
 		actor_setActorTypeItemInfoBy(stage, p, k, mp->items[k]);
-	player_markUsed(stage, p);
+	playerRecord_markUsed(stage, p);
 }
 
 /* 0x474210 (thiscall on the stage): player p set from its pieces: name, character, team, the five parts, the six items,
@@ -803,7 +803,7 @@ void THISCALL (playerRecord_set)(Stage *stage, int p, const char *name, int char
 	int items[6] = { i0, i1, i2, i3, i4, i5 };
 	for (int k = 0; k < 6; k++)
 		actor_setActorTypeItemInfoBy(stage, p, k, items[k]);
-	player_markUsed(stage, p);
+	playerRecord_markUsed(stage, p);
 }
 
 /* a part kind as actor_setActorType*InfoBy set it: the player's field, the stage's type count, the fatal message, the

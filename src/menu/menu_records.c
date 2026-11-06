@@ -17,13 +17,13 @@ void (arena_defaultPlayer)(void)
 {
 	copy_name(OBJ(g_arenaPlayerName), 32, (const char *)STR(0x4ad4b0, "PLAYER"));
 	g_arenaCorporation = 0;
-	g_arenaSex = 0;
+	g_arenaCustomize = 0;
 }
 
 /* 0x404930: axis.cfg's player name, corporation and sex (g_cfgPlayerName ..) */
 void (arena_loadPlayerSettings)(void)
 {
-	g_arenaSex = g_playerSex;
+	g_arenaCustomize = g_playerCustomize;
 	copy_name(OBJ(g_arenaPlayerName), 32, g_cfgPlayerName);
 	g_arenaCorporation = g_playerCorporation;
 }
@@ -40,11 +40,11 @@ void (app_setDataPaths)(void)
 /* 0x431560: the input line (g_chatLine, 0x400 bytes) emptied for a text field max characters long (g_lineMaxLength =
    max; g_chatLength 0). Callers: every text field's opening (account_edit*, arena_edit*, room_edit*, roomLogin_edit*,
    newIdForm_openField, profile_typeNewName, chat_textField, freeCam_keys) */
-void (menu_clearInputBuffer)(int mode)
+void (menu_clearInputBuffer)(int max)
 {
 	memset((void *)OBJ(g_chatLine), 0, 0x400);
 	g_chatLength = 0;
-	g_lineMaxLength = mode;
+	g_lineMaxLength = max;
 }
 
 /* 0x4315c0: the line pushed onto the history (the oldest line dropped) */
@@ -74,7 +74,7 @@ void (sessionList_swap)(void *a, void *b)
 	memcpy(b, &t, sizeof t);
 }
 
-/* 0x4045e0: session list entry g_gameCount (0x67ef30) cleared (all but its guid and rotation); the original does it
+/* 0x4045e0: session list entry g_gameCount (0x67ef30) cleared (all but its guid, rotation, address, password and locked); the original does it
    256 times over without moving on */
 void (arena_clearSessionEntry)(void)
 {
@@ -338,7 +338,7 @@ void (missions_clickRow)(int row)
 
 /* ---- the briefing's pages: each page's start offset in the text (g_briefingPageStarts, the page g_briefingPage), the
    one shown g_briefingStart; the characters shown so far g_briefingShown, and g_textHitBottom set once the page is
-   full (or the typing skipped); a page turned clears the shown text (g_briefingText, 1600 bytes) ---- */
+   full (a text pass stopped at the bottom); a page turned clears the shown text (g_briefingText, 1600 bytes) ---- */
 
 /* 0x443d80: the next page (once this one is full): it starts where the shown text ended */
 void (briefing_nextPage)(void)
@@ -444,7 +444,7 @@ u32 (menuState900_missions)(void)
 		return state;
 	if (g_frameOpening)
 		return menu_drawFrame(g_missionsWindowLeft, g_missionsWindowTop,
-		                                                     g_missionsWindowRight, g_briefingBottom);   /* menu_drawFrame */
+		                                                     g_missionsWindowRight, g_missionsWindowBottom);   /* menu_drawFrame */
 	int screen = g_missionsPage;
 	if (screen == 10)
 		return missions_frameList();   /* missionList_draw */
@@ -532,13 +532,13 @@ u32 (menu_closeInputLine)(int ok)
 	g_textFieldOpen = 0;
 	if (ok) {
 		input_resetKeys();
-		input_initKeyboard(g_hWndMain);
+		input_initKeyboard(g_mainWindow);
 		r = chat_pushHistory();   /* chat_pushHistory: into the history */
 	} else {
 		if (g_lineMaxLength > 0)
 			memset((void *)OBJ(g_chatLine), 0, g_lineMaxLength);
 		input_resetKeys();
-		r = (u32)input_initKeyboard(g_hWndMain);
+		r = (u32)input_initKeyboard(g_mainWindow);
 	}
 	g_lineMaxLength = 0;
 	g_chatLength = 0;

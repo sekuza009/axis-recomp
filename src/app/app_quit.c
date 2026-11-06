@@ -7,7 +7,7 @@
 int (app_closeWindow)(int code)
 {
 	g_exitCode = code;
-	return PostMessageA(g_hWndMain, WM_CLOSE, 0, 0);
+	return PostMessageA(g_mainWindow, WM_CLOSE, 0, 0);
 }
 
 /* 0x44f850 (app_quitGame): quit */

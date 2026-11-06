@@ -5,7 +5,7 @@
 /* 0x44aa40: the skirmish screen (500): the background (g_skirmishShowBackground), the tunnel (skirmish_drawTunnel)
    unless the camera has arrived (g_skirmishState 2), the camera (skirmish_camera); once arrived (state past 1): the
    dialog frame while it opens (g_skirmishBox), nothing once the screen has been left (g_skirmishLeft), else the
-   briefing (g_skirmishBriefing: skirmish_frameNewPartsNotice) or the round's settings (skirmish_frameRoundScreen) */
+   new-parts notice (g_skirmishNewPartsNotice: skirmish_frameNewPartsNotice) or the round's settings (skirmish_frameRoundScreen) */
 void (menuState500_skirmish)(void)
 {
 	if (g_skirmishShowBackground)
@@ -21,7 +21,7 @@ void (menuState500_skirmish)(void)
 	}
 	if (g_skirmishLeft)
 		return;
-	if (g_skirmishBriefing)
+	if (g_skirmishNewPartsNotice)
 		skirmish_frameNewPartsNotice();
 	else
 		skirmish_frameRoundScreen();

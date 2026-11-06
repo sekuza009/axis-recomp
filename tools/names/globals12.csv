@@ -10,7 +10,7 @@
 0xa106ac,int,g_penFontTexture
 0x4ded70,int,g_mouseWheelTurned
 0x4ded98,int,g_mouse2Down
-0x9dd900,int,g_chatLineDone
+0x9dd900,int,g_editLineDone
 # the pilot's record (see globals11)
 0x9dd5e4,int,g_pilotPower
 0x4de71e,int,g_ladderLevel

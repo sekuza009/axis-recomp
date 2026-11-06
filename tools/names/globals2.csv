@@ -3,11 +3,11 @@
 0x4df8e8,int,g_fragLimit
 0x76d408,int,g_timeLimit
 0x4ded40,signed char,g_arenaMap
-0x4ded41,u8,g_arenaPlayers
+0x4ded41,u8,g_arenaMaxPlayers
 0x4ded43,u8,g_arenaGameType
 0x4ded44,u8,g_arenaFragLimit
 0x4ded45,u8,g_arenaTimeLimit
-0x4dedd4,int,g_playerSex
+0x4dedd4,int,g_playerCustomize
 # display and window
 0x83a9c0,u32,g_videoMode
 0x83a9c4,int,g_videoDepth

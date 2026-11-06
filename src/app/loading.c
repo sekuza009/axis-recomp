@@ -1,5 +1,5 @@
-/* loading.c: the loading screen between the menus and a match: a progress bar under a text, faded in from black and
-   out to black. */
+/* loading.c: the loading screen between the menus and a match: a scrolling textured cylinder (Iftex/Cylinder) behind
+   the status text lines, faded in from black and out to black (no progress bar). */
 #include "../game.h"
 #include <string.h>
 

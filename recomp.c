@@ -377,9 +377,9 @@ void briefing_prevPage(void);
 /* 0x445de0 title_clickDismiss: a click starts the menu fade (once) */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void title_clickDismiss(void);
-/* 0x447af0 briefing_clickClose: a click (no dialog open) clears 0x9f62e0 */
+/* 0x447af0 newPartsNotice_clickClose: a click (no dialog open) clears 0x9f62e0 */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-void briefing_clickClose(void);
+void newPartsNotice_clickClose(void);
 
 /* 0x4463a0 mech_loadFromProfile: load the mech from the profile record (0x9f19f8..); negative saturation/value
    (and NaN: x87 "fcomp 0; test ah, 1" is also true when unordered) become 0 in the record first */
@@ -1536,7 +1536,7 @@ int gfx_getWidth(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 int gfx_getHeight(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-float view_angle(void);
+float view_fov(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 float view_nearPlane(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
@@ -2648,10 +2648,10 @@ void hud_drawRectOutline(int x0, int y0, int x1, int y1);
    current GL ones) */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 THISCALL void ViewVolume_captureMatrices(char *vv, DWORD proj, DWORD view);
-/* 0x483fd0 (thiscall) ViewVolume_freeBlock / 0x483fb0 ViewVolume_dtor / 0x463430 ViewVolume_deletingDtor(flags):
+/* 0x483fd0 (thiscall) ViewVolume_release / 0x483fb0 ViewVolume_dtor / 0x463430 ViewVolume_deletingDtor(flags):
    free the vertex buffer, look up the GL_EXT_vertex_array entry points; the destructors */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-THISCALL void ViewVolume_freeBlock(char *self);
+THISCALL void ViewVolume_release(char *self);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 int THISCALL ViewVolume_dtor(void *view);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
@@ -4233,7 +4233,7 @@ void arena_editJoinPassword(void);
 void missions_pageClicks(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void missions_pageKeys(void);
-/* 0x447b10 skirmish_screenClicks(): no dialog, not busy (0x9f6300): the unlock screen 0x9f62e0 (briefing_clickClose) or
+/* 0x447b10 skirmish_screenClicks(): no dialog, not busy (0x9f6300): the unlock screen 0x9f62e0 (newPartsNotice_clickClose) or
    the mission settings mouse (skirmish_clicks) */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void skirmish_screenClicks(void);
@@ -4273,9 +4273,9 @@ DWORD roomSettings_page(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 DWORD lobbyCreate_frame(void);
 /* batch 164 (lifted/grp110.c): mission settings keys, three jump stubs */
-/* 0x447c30 skirmish_briefingKeys(): on the unlock screen, cancel (0x76d48c) or back (0x9dae70) closes it (0x9f62e0 = 0) */
+/* 0x447c30 newPartsNotice_keys(): on the unlock screen, cancel (0x76d48c) or back (0x9dae70) closes it (0x9f62e0 = 0) */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-void skirmish_briefingKeys(void);
+void newPartsNotice_keys(void);
 /* 0x447b40 skirmish_roundKeys(): the mission settings keys: cancel / 0x4e0cdc leave (skirmish_leave), 0x4e1510 start
    (skirmish_startRound), 0x9dae14 / 0x9db974 the mission down / up within the unlocked count 0x9f181c and 0..14
    (skirmish_roundChosen); holding 0x6803a8 and 0x4df9fc and pressing 0x4df90c unlocks all 16 (the cheat) */
@@ -6981,7 +6981,7 @@ static void click_setup(void)
 	G32(0x4df01c) = irnd(0, 1); fill((void *)0x4e0458, 4); fill((void *)0x9f62e0, 4);
 }
 ST(title_clickDismiss, click_setup();, (CD(void, 0x445de0, void)(), 0), (title_clickDismiss(), 0))
-ST(briefing_clickClose, click_setup();, (CD(void, 0x447af0, void)(), 0), (briefing_clickClose(), 0))
+ST(newPartsNotice_clickClose, click_setup();, (CD(void, 0x447af0, void)(), 0), (newPartsNotice_clickClose(), 0))
 ST(mech_loadFromProfile, fill((void *)0x9f19f8, 0xd0); if (!irnd(0, 3)) G32(0x9f1a38) = (int)0x80000000;,
    (CD(void, 0x4463a0, void)(), 0), (mech_loadFromProfile(), 0))
 ST(mech_storeToProfile, fill((void *)0x4dc878, 0x14); fill((void *)0x4dcf18, 0x18); fill((void *)0x4dcfe0, 0x90);,
@@ -8105,7 +8105,7 @@ V0(static_initTex256x256, 0x42b2e0, fill((void *)0x83a9e0, 8);)
 ST(net_sessionCount, fill((void *)0xa0b41c, 4);, CD(int, 0x4532a0, void)(), net_sessionCount())
 ST(gfx_getWidth, fill((void *)0xa0e810, 4);, CD(int, 0x4685b0, void)(), gfx_getWidth())
 ST(gfx_getHeight, fill((void *)0xa0e928, 4);, CD(int, 0x4685c0, void)(), gfx_getHeight())
-ST(view_angle, fill((void *)0x4c4dec, 4);, ld_hash(CD(long double, 0x4686d0, void)()), ld_hash(view_angle()))
+ST(view_fov, fill((void *)0x4c4dec, 4);, ld_hash(CD(long double, 0x4686d0, void)()), ld_hash(view_fov()))
 ST(view_nearPlane, fill((void *)0x4c4df0, 4);, ld_hash(CD(long double, 0x4686f0, void)()), ld_hash(view_nearPlane()))
 ST(view_farPlane, fill((void *)0x4c4df4, 4);, ld_hash(CD(long double, 0x468700, void)()), ld_hash(view_farPlane()))
 ST(TextureManager_clear, fill(BUF, 0x40);, TC(int, 0x4569a0, char *)(BUF + 0x10), TextureManager_clear(BUF + 0x10))
@@ -9812,7 +9812,7 @@ static void vvext_setup(void)
 	fill(BUF + 0x2000, 0x40); S32(BUF + 0x2000, 0xc) = irnd(0, 1); S32(BUF + 0x2000, 8) = (int)(BUF + 0x3000);
 	g_mockGlExt = (DWORD)irnd(0, 2); g_a[0] = irnd(0, 3);
 }
-ST(ViewVolume_freeBlock, vvext_setup();, (TC(void, 0x483fd0, char *)(BUF + 0x2000), 0), (ViewVolume_freeBlock(BUF + 0x2000), 0))
+ST(ViewVolume_release, vvext_setup();, (TC(void, 0x483fd0, char *)(BUF + 0x2000), 0), (ViewVolume_release(BUF + 0x2000), 0))
 ST(ViewVolume_dtor, vvext_setup();, (TC(void, 0x483fb0, char *)(BUF + 0x2000), 0), (ViewVolume_dtor(BUF + 0x2000), 0))
 ST(ViewVolume_deletingDtor, vvext_setup();, (TC(void, 0x463430, char *, int)(BUF + 0x2000, g_a[0]), 0), (ViewVolume_deletingDtor(BUF + 0x2000, (DWORD)g_a[0]), 0))
 static void fog_setup(void) { for (int i = 0; i < 4; i++) SF(BUF + 0x700, i * 4) = csu_fr(0, 100); for (int i = 0; i < 3; i++) GF(&g_a[i]) = csu_fr(-1000, 500000); }
@@ -14378,7 +14378,7 @@ static void missionkeys_setup(void)
 static const DWORD g_stubMissionDraw[] = { 0x449a50, 0, 0 };
 static const DWORD g_stubSkirmishDraw[] = { 0x4456b0, 0, 0 };
 static const DWORD g_stubLocalAddr[] = { 0x454220, 0, 0 };
-ST(skirmish_briefingKeys, missionkeys_setup();, CALL_PLAIN(0x447c30, 0, 0, 0, 0, 0), (skirmish_briefingKeys(), 0))
+ST(newPartsNotice_keys, missionkeys_setup();, CALL_PLAIN(0x447c30, 0, 0, 0, 0, 0), (newPartsNotice_keys(), 0))
 ST(skirmish_roundKeys, missionkeys_setup();, CALL_PLAIN(0x447b40, 0, 0, 0, 0, 0), (skirmish_roundKeys(), 0))
 ST(skirmish_keys, missionkeys_setup();, CALL_PLAIN(0x447c70, 0, 0, 0, 0, 0), (skirmish_keys(), 0))
 ST(skirmish_frameNewPartsNotice, callee_stubs(g_stubMissionDraw, 0);, (CALL_PLAIN(0x44aa30, 0, 0, 0, 0, 0), 0), (skirmish_frameNewPartsNotice(), 0))   /* its eax goes up to menu_frame, which ignores it (tools/eaxuse.py) */
@@ -17191,7 +17191,7 @@ static const STest g_stests[] = {
 	T(ranking_prevPage, 0, 40, 0), T(ranking_nextPage, 0, 40, 0), T(ranking_cycleSort, 0, 30, 0), T(app_setDataPaths, 0, 10, 0),
 	T(replaySelect_toggle, 0, 30, 0), T(replaySelect_allIn, 0, 30, 0),
 	T(missions_cursorUp, 0, 40, 0), T(missions_cursorDown, 0, 40, 0), T(missions_clickRow, 0, 40, 0),
-	T(briefing_nextPage, 0, 40, 0), T(briefing_prevPage, 0, 40, 0), T(title_clickDismiss, 0, 30, 0), T(briefing_clickClose, 0, 30, 0),
+	T(briefing_nextPage, 0, 40, 0), T(briefing_prevPage, 0, 40, 0), T(title_clickDismiss, 0, 30, 0), T(newPartsNotice_clickClose, 0, 30, 0),
 	T(mech_loadFromProfile, 0, 60, 0), T(mech_storeToProfile, 0, 20, 0), T(menu_cameraToPoint0, 0, 20, 0), T(profile_inDialogBox, 1, 4, 3000),
 	T(net_claimPlayerSlot, 2, 40, 0), T(net_takePlayerSlot, 0, 30, 0), T(net_freeAllSlots, 0, 20, 0), T(net_getSession, 1, 4, 3000),
 	T(net_connectionAvailable, 1, 4, 3000), T(tex_findByName, 1, 4, 3000), T(arena_clearSessionEntry, 0, 20, 0),
@@ -17301,7 +17301,7 @@ static const STest g_stests[] = {
 	T(text_setWrapX, 1, 4, 300), T(text_setBottom, 1, 4, 300), T(menuCamera_setMove, 1, 4, 300), T(music_setVolumeSetting, 1, 4, 300),
 	T(view_setFov, 1, 4, 300), T(static_initTex64x64, 0, 4, 0), T(static_initTex128x64, 0, 4, 0), T(static_initTex256x64, 0, 4, 0),
 	T(static_initTex128x128, 0, 4, 0), T(static_initTex256x128, 0, 4, 0), T(static_initTex256x256, 0, 4, 0), T(net_sessionCount, 1, 4, 300),
-	T(gfx_getWidth, 1, 4, 300), T(gfx_getHeight, 1, 4, 300), T(view_angle, 1, 4, 300), T(view_nearPlane, 1, 4, 300),
+	T(gfx_getWidth, 1, 4, 300), T(gfx_getHeight, 1, 4, 300), T(view_fov, 1, 4, 300), T(view_nearPlane, 1, 4, 300),
 	T(view_farPlane, 1, 4, 300), T(TextureManager_clear, 1, 4, 300), T(Model_clear, 1, 4, 300), T(ShapeManager_clear, 1, 4, 300),
 	T(SkeletonManager_clear, 1, 4, 300), T(collisionPlane_clear, 1, 4, 300), T(spaceBlock_clear, 1, 4, 300), T(CollisionVolume_clear, 1, 4, 300),
 	T(ViewVolume_clear, 1, 4, 300), T(TimeSync_clear, 1, 4, 300), T(spaceNode_clear, 1, 4, 300), T(Light_clearCounts, 1, 4, 300),
@@ -17433,7 +17433,7 @@ static const STest g_stests[] = {
 	T(text_quad32, 0, 40, 0), T(text_quad5, 0, 40, 0), T(glyph_drawHangulVowelTail13, 0, 40, 0), T(glyph_drawHangulVowelTail31, 0, 40, 0),
 	T(menu_drawLargeButton, 0, 40, 0), T(menu_drawSmallButton1, 0, 40, 0), T(menu_drawWideButton, 0, 40, 0), T(menu_drawSmallButton2, 0, 40, 0),
 	T(menu_drawSmallButton3, 0, 40, 0), T(menu_drawSmallButton4, 0, 40, 0), T(sys_errorMessageNoName, 0, 40, 0), T(sys_errorMessage, 0, 40, 0),
-	T(sys_errorTerminate, 0, 40, 0), T(sys_fatalError, 0, 40, 0), T(ViewVolume_captureMatrices, 0, 400, 0), T(ViewVolume_freeBlock, 0, 40, 0),
+	T(sys_errorTerminate, 0, 40, 0), T(sys_fatalError, 0, 40, 0), T(ViewVolume_captureMatrices, 0, 400, 0), T(ViewVolume_release, 0, 40, 0),
 	T(ViewVolume_dtor, 0, 40, 0), T(ViewVolume_deletingDtor, 0, 40, 0), T(stage_setFog, 0, 40, 0), T(crt_arrayConstruct, 0, 40, 0),
 	/* batch 57 */
 	T(shapeDat_getItemFileBy, 1, 40, 0), T(skelDat_getItemFileBy, 1, 40, 0), T(app_spoilDataFiles, 0, 40, 0), T(net_addServerRecord, 0, 40, 0),
@@ -17685,7 +17685,7 @@ static const STest g_stests[] = {
 	T(setup_tabClicks, 0, 200, 0), T(setup_processTabKeys, 0, 200, 0), T(lobby_processKeys, 0, 300, 0), T(room_keysByState, 0, 400, 0),
 	T(room_clicksByState, 0, 400, 0), T(profile_listPage, 0, 300, 0), T(roomSettings_page, 0, 300, 0), T(lobbyCreate_frame, 0, 300, 0),
 	/* batch 164 */
-	T(skirmish_briefingKeys, 0, 300, 0), T(skirmish_roundKeys, 0, 400, 0), T(skirmish_keys, 0, 300, 0), T(skirmish_frameNewPartsNotice, 0, 50, 0),
+	T(newPartsNotice_keys, 0, 300, 0), T(skirmish_roundKeys, 0, 400, 0), T(skirmish_keys, 0, 300, 0), T(skirmish_frameNewPartsNotice, 0, 50, 0),
 	T(missions_frameBriefing, 0, 50, 0), T(jmp_net_getLocalAddress, 0, 50, 0),
 	/* batch 165 */
 	T(profile_typeNewName, 0, 200, 0), T(profile_askDelete, 0, 200, 0), T(profile_askLogOut, 0, 200, 0), T(profile_deleteClicks, 0, 300, 0),
@@ -18050,7 +18050,7 @@ static const struct { DWORD addr; void *fn; const char *name; } g_hooks3[] = {
 	{ 0x443cd0, (void *)missions_cursorUp, "missions_cursorUp" }, { 0x443d10, (void *)missions_cursorDown, "missions_cursorDown" },
 	{ 0x443d50, (void *)missions_clickRow, "missions_clickRow" }, { 0x443d80, (void *)briefing_nextPage, "briefing_nextPage" },
 	{ 0x443de0, (void *)briefing_prevPage, "briefing_prevPage" }, { 0x445de0, (void *)title_clickDismiss, "title_clickDismiss" },
-	{ 0x447af0, (void *)briefing_clickClose, "briefing_clickClose" }, { 0x4463a0, (void *)mech_loadFromProfile, "mech_loadFromProfile" },
+	{ 0x447af0, (void *)newPartsNotice_clickClose, "newPartsNotice_clickClose" }, { 0x4463a0, (void *)mech_loadFromProfile, "mech_loadFromProfile" },
 	{ 0x4464b0, (void *)mech_storeToProfile, "mech_storeToProfile" }, { 0x447910, (void *)menu_cameraToPoint0, "menu_cameraToPoint0" },
 	{ 0x44b2e0, (void *)profile_inDialogBox, "profile_inDialogBox" }, { 0x451450, (void *)net_claimPlayerSlot, "net_claimPlayerSlot" },
 	{ 0x4514a0, (void *)net_takePlayerSlot, "net_takePlayerSlot" }, { 0x4515a0, (void *)net_freeAllSlots, "net_freeAllSlots" },
@@ -18229,7 +18229,7 @@ static const struct { DWORD addr; void *fn; const char *name; } g_hooks3[] = {
 	{ 0x42b240, (void *)static_initTex128x128, "static_initTex128x128" }, { 0x42b290, (void *)static_initTex256x128, "static_initTex256x128" },
 	{ 0x42b2e0, (void *)static_initTex256x256, "static_initTex256x256" }, { 0x4532a0, (void *)net_sessionCount, "net_sessionCount" },
 	{ 0x4685b0, (void *)gfx_getWidth, "gfx_getWidth" }, { 0x4685c0, (void *)gfx_getHeight, "gfx_getHeight" },
-	{ 0x4686d0, (void *)view_angle, "view_angle" }, { 0x4686f0, (void *)view_nearPlane, "view_nearPlane" },
+	{ 0x4686d0, (void *)view_fov, "view_fov" }, { 0x4686f0, (void *)view_nearPlane, "view_nearPlane" },
 	{ 0x468700, (void *)view_farPlane, "view_farPlane" }, { 0x4569a0, (void *)TextureManager_clear, "TextureManager_clear" },
 	{ 0x464bb0, (void *)Model_clear, "Model_clear" }, { 0x466a20, (void *)ShapeManager_clear, "ShapeManager_clear" },
 	{ 0x46ae70, (void *)SkeletonManager_clear, "SkeletonManager_clear" }, { 0x47db50, (void *)collisionPlane_clear, "collisionPlane_clear" },
@@ -18453,7 +18453,7 @@ static const struct { DWORD addr; void *fn; const char *name; } g_hooks3[] = {
 	{ 0x4286b0, (void *)menu_drawSmallButton3, "menu_drawSmallButton3" }, { 0x4287a0, (void *)menu_drawSmallButton4, "menu_drawSmallButton4" },
 	{ 0x46c840, (void *)sys_errorMessageNoName, "sys_errorMessageNoName" }, { 0x46c5f0, (void *)sys_errorMessage, "sys_errorMessage" },
 	{ 0x46c950, (void *)sys_errorTerminate, "sys_errorTerminate" }, { 0x46c710, (void *)sys_fatalError, "sys_fatalError" },
-	{ 0x4841f0, (void *)ViewVolume_captureMatrices, "ViewVolume_captureMatrices" }, { 0x483fd0, (void *)ViewVolume_freeBlock, "ViewVolume_freeBlock" },
+	{ 0x4841f0, (void *)ViewVolume_captureMatrices, "ViewVolume_captureMatrices" }, { 0x483fd0, (void *)ViewVolume_release, "ViewVolume_release" },
 	{ 0x483fb0, (void *)ViewVolume_dtor, "ViewVolume_dtor" }, { 0x463430, (void *)ViewVolume_deletingDtor, "ViewVolume_deletingDtor" },
 	{ 0x472900, (void *)stage_setFog, "stage_setFog" }, { 0x401290, (void *)crt_arrayConstruct, "crt_arrayConstruct" },
 	/* batch 57 */
@@ -18769,7 +18769,7 @@ static const struct { DWORD addr; void *fn; const char *name; } g_hooks3[] = {
 	{ 0x436800, (void *)room_clicksByState, "room_clicksByState" }, { 0x44f410, (void *)profile_listPage, "profile_listPage" },
 	{ 0x43ed20, (void *)roomSettings_page, "roomSettings_page" }, { 0x40d390, (void *)lobbyCreate_frame, "lobbyCreate_frame" },
 	/* batch 164 */
-	{ 0x447c30, (void *)skirmish_briefingKeys, "skirmish_briefingKeys" }, { 0x447b40, (void *)skirmish_roundKeys, "skirmish_roundKeys" },
+	{ 0x447c30, (void *)newPartsNotice_keys, "newPartsNotice_keys" }, { 0x447b40, (void *)skirmish_roundKeys, "skirmish_roundKeys" },
 	{ 0x447c70, (void *)skirmish_keys, "skirmish_keys" }, { 0x44aa30, (void *)skirmish_frameNewPartsNotice, "skirmish_frameNewPartsNotice" },
 	{ 0x445bd0, (void *)missions_frameBriefing, "missions_frameBriefing" }, { 0x4532e0, (void *)jmp_net_getLocalAddress, "jmp_net_getLocalAddress" },
 	/* batch 165 */

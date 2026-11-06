@@ -94,7 +94,7 @@ only the test harness: nothing is lifted any more.
 Readable C: the conventions
   Records     src/scene.fields -> scene.h (tools/mkscene.py): packed structs at the game's offsets, every field's
               offset and size checked by a _Static_assert; anonymous unions allowed where the game keeps two views
-              of the same bytes (Particle: fade / trailPoints). Fields are named by use. "(by use)" or "(unclear)"
+              of the same bytes (Particle: fade / markPoints). Fields are named by use. "(by use)" or "(unclear)"
               marks a name not yet checked against every use (none left since 2026-11-06, when each was
               checked in src, the original's instructions, both Scene / Stage views and the data files);
               "(by use; seen running)" marks ones also watched in a traced run. Untagged names come from

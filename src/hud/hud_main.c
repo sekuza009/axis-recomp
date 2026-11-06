@@ -44,7 +44,7 @@ static float tex255(int n) { return f32((long double)n * (1.0f / 255)); }
    out; its size by the player's detection angle (the view's tangent scaled by it), red while a round homes on it */
 static void main_ring(Scene *scene, Player *player)
 {
-	int t = ftol((long double)view_angle() * 5.0f);
+	int t = ftol((long double)view_fov() * 5.0f);
 	float trig = g_trig[(t % 3600 + 3600) % 3600];
 	int half = gfx_getHeight() / 2;
 	float radius = f32(half / (long double)trig);

@@ -76,9 +76,9 @@ void (text_draw32)(int x, int y, const char *text)
 {
 	text_begin(26);
 	text_bindFont(g_fontHanCho);
-	text_hanCho32(x, y, text);
+	text_hangul31Pass(x, y, text);
 	text_bindFont(g_fontHanJungJong);
-	text_hanJungJong32(x, y, text);
+	text_hangul31LayeredPass(x, y, text);
 	text_bindFont(g_fontAsciiLarge);
 	PATCHED_CALL(0x402d90, void, int, int, const char *)(x, y, text);   /* text_ascii32Pass */
 	glDisable(GL_TEXTURE_2D);
@@ -103,8 +103,8 @@ void (text_drawCentred5)(int x0, int y, int x1, const char *text)
 	glDisable(GL_TEXTURE_2D);
 }
 
-/* the width correction of a line for the special characters it holds (counted by text_printableLength), in units of 3 */
-#define text_specialCount(s) GAME_FN(text_printableLength, 0x402590, int, const char *)(s)
+/* the printable (non-space) characters of a line (0x402590): with the visible length, the centring correction, in units of 3 */
+#define text_printableLength(s) GAME_FN(text_printableLength, 0x402590, int, const char *)(s)
 
 /* text_drawBox16 / text_drawBox32: text centred between x0 and x1, broken into lines at each "|" ("||" is a plain
    "|"; in a match no line breaks), one line under the other */
@@ -137,10 +137,10 @@ static void text_drawBoxLines(int x0, int y, int x1, const char *text, int large
 			strncpy(line, work, length);
 		}
 		int centre = x0 + (x1 - x0) / 2;
-		int visible = text_visibleLength(line), special = text_specialCount(line);
+		int visible = text_visibleLength(line), printable = text_printableLength(line);
 		if (!large) {
 			text_begin(13);
-			int x = centre - visible * 4 - special * 3;
+			int x = centre - visible * 4 - printable * 3;
 			text_bindFont(g_fontHanCho);
 			text_hangul13Pass(x, y, line);
 			text_bindFont(g_fontHanJungJong);
@@ -150,11 +150,11 @@ static void text_drawBoxLines(int x0, int y, int x1, const char *text, int large
 			y += 0x11;
 		} else {
 			text_begin(18);
-			int x = centre - visible * 8 - special * 3 + 4;
+			int x = centre - visible * 8 - printable * 3 + 4;
 			text_bindFont(g_fontHanCho);
-			text_hanCho32(x, y, line);
+			text_hangul31Pass(x, y, line);
 			text_bindFont(g_fontHanJungJong);
-			text_hanJungJong32(x, y, line);
+			text_hangul31LayeredPass(x, y, line);
 			text_bindFont(g_fontAsciiLarge);
 			PATCHED_CALL(0x402fbd, void, int, int, const char *)(x, y, line);   /* text_ascii32Pass */
 			y += 0x21;

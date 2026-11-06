@@ -103,7 +103,7 @@ u8 *(armc_readMechStats)(void)
 	mulf((OBJ(g_mechSpeeds) + 0x4), (const float *)ADDR(g_mechNormalSpeed), &A->runTop[0]);
 	g_mechMaxSpeedBwd = (float)-fmul_m(fld_m((const float *)ADDR(g_mechNormalSpeed)), &A->runTop[1]);
 	mulf((OBJ(g_mechSpeeds) + 0xc), (const float *)ADDR(g_mechNormalSpeed), &A->runTop[2]);
-	copyf(ADDR(g_legsMaxWeight), &A->loadMax);
+	copyf(ADDR(g_loadLimit), &A->loadMax);
 	copyf(OBJ(g_mechSpeeds) + 0x10, &A->load);
 	return g;
 }
@@ -164,8 +164,8 @@ int (armc_readPartPanels)(void)
 	mulf(OBJ(g_legsStats) + 0x10, &leg->sideBoostCorrection, (const float *)ADDR(k_100f));
 	mulf(OBJ(g_legsStats) + 0x14, &leg->backBoostCorrection, (const float *)ADDR(k_100f));
 	copyf(ADDR(g_legsWeight), &leg->weight);
-	int weapon = player->parts[4];
-	const BoosterType *booster = &st->boosterTypes[weapon];
+	int boosterIndex = player->parts[4];
+	const BoosterType *booster = &st->boosterTypes[boosterIndex];
 	panel_name(OBJ(g_boosterPanelName), booster->name);
 	g_boosterThrustType = booster->thrustType;
 	for (int i = 0; i < 3; i++)
@@ -174,7 +174,7 @@ int (armc_readPartPanels)(void)
 		mulf(ADDR(g_boosterNormalSpeed) + i * 4, &booster->speeds[i], k_0_036f);
 	(*(u32 *)&g_unusedArmcViewCountdown) = 0x3f800000;
 	copyf(ADDR(g_boosterWeight), &booster->weight);
-	return weapon;
+	return boosterIndex;
 }
 
 /* 0x40f340: mech part `part` (0 .. 4: head, chest, arm, leg, booster) stepped through its list, back (dir 1) or on

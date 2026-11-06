@@ -67,7 +67,7 @@ void (briefing_typeOut)(void)
 #define BX0 g_missionsWindowLeft
 #define BY0 g_missionsWindowTop
 #define BX1 g_missionsWindowRight
-#define BY1 g_briefingBottom
+#define BY1 g_missionsWindowBottom
 #define g_panelColour (((u32 *)g_missionsColourLit))
 #define g_dimColour (((u32 *)g_missionsColourDim))
 

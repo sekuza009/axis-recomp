@@ -276,7 +276,7 @@ static const Store briefing_camera[] = {
 int (menuState900_enterMissions)(void)
 {
 	static const Store setup[] = {
-		{ ADDR(g_missionsWindowLeft), 0xa }, { ADDR(g_missionsWindowTop), 0x14 }, { ADDR(g_missionsWindowRight), 0x276 }, { ADDR(g_briefingBottom), 0x1cc }, { OBJ(g_missionsColourLit), 0 },
+		{ ADDR(g_missionsWindowLeft), 0xa }, { ADDR(g_missionsWindowTop), 0x14 }, { ADDR(g_missionsWindowRight), 0x276 }, { ADDR(g_missionsWindowBottom), 0x1cc }, { OBJ(g_missionsColourLit), 0 },
 		{ (OBJ(g_missionsColourLit) + 0x4), ONE }, { (OBJ(g_missionsColourLit) + 0x8), ONE }, { (OBJ(g_missionsColourLit) + 0xc), ONE }, { OBJ(g_missionsColourDim), 0 }, { (OBJ(g_missionsColourDim) + 0x4), 0x3f19999a },
 		{ (OBJ(g_missionsColourDim) + 0x8), 0x3f19999a }, { (OBJ(g_missionsColourDim) + 0xc), ONE }, { ADDR(g_missionsState), 1 }, { ADDR(g_screen), 900 }, { ADDR(g_lastScreen), 900 },
 		{ ADDR(g_nextScreen), 900 } };
@@ -295,7 +295,7 @@ int (menuState900_enterMissions)(void)
 
 /* 0x447750: the skirmish screen (screen 500; the main menu's SKIRMISH PLAY, rounds from skirmish.dat): the briefing camera, the window and its colours, the screen's panels
    (skirmish_layout), the round shown (g_skirmishShown, g_skirmishChosen) the campaign's next one (0x9f181c, at most 14), a sound;
-   a newly reached round (past g_progressSeen) raises it and the briefing flag g_skirmishBriefing. Returns the campaign's mission */
+   a newly reached round (past g_progressSeen) raises it and the new-parts notice g_skirmishNewPartsNotice. Returns the campaign's mission */
 int (menuState500_enterSkirmish)(void)
 {
 	static const Store setup[] = {
@@ -313,9 +313,9 @@ int (menuState500_enterSkirmish)(void)
 	g_skirmishChosen = mission;
 	g_skirmishPreviewDue = 1;
 	sound_playMenu(4);
-	g_skirmishBriefing = 0;
+	g_skirmishNewPartsNotice = 0;
 	if (g_progress > g_progressSeen) {
-		g_skirmishBriefing = 1;
+		g_skirmishNewPartsNotice = 1;
 		g_progressSeen = g_progress;
 	}
 	return g_progress;
@@ -384,7 +384,7 @@ static void match_name(const char *name)
    started at once (scene_startSession 0, 3); else the map (g_mapIndex) loaded (failing: message 6 and back to state 400 /
    800 for the arena / room). By the kind of match (g_matchMode): 1 the arena, 2 the room (the pilots read, the
    player's name taken from the profile / the room, the part lists armc_resetSeraphimParts), 3 a skirmish (the name 0x9f1798),
-   started with scene_startSession (a host unless g_netRole is 1; 3: 0, 0); then the map's name announced. The caller
+   started with scene_startSession (a client unless g_netRole is 1, the host; 3: 0, 0); then the map's name announced. The caller
    ignores the eax it leaves */
 void (match_enter)(void)
 {
@@ -395,7 +395,7 @@ void (match_enter)(void)
 	g_matchRunning = 1;
 	g_viewAspect = f32((long double)g_screenW / (long double)g_screenH);
 	sys_checkClockTampering();
-	glWindow_init((const char *)STR(0x4b04a0, "Axis Console"), g_screenW, g_screenH, g_videoDepth, 0x10, 0, g_hWndMain, (*(int *)&g_windowDC));
+	glWindow_init((const char *)STR(0x4b04a0, "Axis Console"), g_screenW, g_screenH, g_videoDepth, 0x10, 0, g_mainWindow, (*(int *)&g_windowDC));
 #define scene g_scene   /* read at each use: loading the map makes the match's scene */
 	if (g_replayRunning) {
 		g_matchMode = 0;

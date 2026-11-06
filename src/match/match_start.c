@@ -62,11 +62,11 @@ static void make_rotation(Scene *s)
 	s->awaitingHostRound = 0;
 }
 
-/* the first round: a Ladder game (the game room's: g_matchMode 2; the scores committed every 300 s, a game counted at
+/* the match set up, before any map is loaded: a Ladder game (the game room's: g_matchMode 2; the scores committed every 300 s, a game counted at
    g_ladderGames), the rotation, the limits, the mech (its name g_matchPlayerName, value, parts, items and the five colour sets),
    the room's level (from its points g_ladderExp; outside 1 .. 20 fatal); then a network host makes its player 0, a
    machine that joined has none yet, and a solo game makes player 0 with rotation on (g_mapRotation) */
-static void first_round(Scene *s)
+static void match_setup(Scene *s)
 {
 	s->ladderGame = g_matchMode == 2;
 	if (s->ladderGame == 1) {
@@ -143,18 +143,18 @@ static int random_below(u32 n)
 	return (int)(r % n);
 }
 
-/* a later round: a random position in each of the six geometry tables (their counts at headCount .., rows of
+/* a round started on the loaded map (the first one too): a random position in each of the six type tables (the five part types', actorItems) (their counts at headCount .., rows of
    0x2aa .. 0xb86 dwords), the restart point, the round's tables copied (cameraMode counting through them, as in the
    original), the camera back to mode 1, nobody watched, the pointer centred, the volumes (g_soundVolume, g_musicVolume) set
    again, the local player's inPlay cleared, the teams (scene_setLocalTeam), the camera and its slot, a typed chat line
    kept (chat_endTyping) and the round's flags cleared */
-static void later_round(Scene *s)
+static void round_start(Scene *s)
 {
 	const int *counts[6] = { &s->headCount, &s->chestCount, &s->armCount, &s->legCount, &s->boosterCount, &s->actorItemCount };
 	static const u32 rows[6] = { sizeof(HeadType) / 4, sizeof(ChestType) / 4, sizeof(ArmType) / 4, sizeof(LegType) / 4, sizeof(BoosterType) / 4, sizeof(ActorItem) / 4 };   /* (the records in dwords) */
-	s->geometryCheckTurn = 0;
+	s->typeCheckTurn = 0;
 	for (int k = 0; k < 6; k++)
-		s->geometryPickUnread[k] = random_below(((u32)*counts[k] * rows[k] * 4) >> 2);
+		s->typeTablePickUnread[k] = random_below(((u32)*counts[k] * rows[k] * 4) >> 2);
 	s->dataLossPending = 0;
 	s->dataLossCode = -1;
 	s->wholeSeconds = 0;
@@ -200,16 +200,16 @@ static void later_round(Scene *s)
 }
 
 /* 0x49df10 (thiscall on the scene): run on the playing state's first frame (match_playFrame, stateFrames 0). Before
-   any map is loaded (matchDrawing 0, as scene_startSession leaves it) the match is set up (first_round: Ladder game,
+   any map is loaded (matchDrawing 0, as scene_startSession leaves it) the match is set up (match_setup: Ladder game,
    rotation, limits, mech, local player); once a map has loaded (loading stage 8 sets matchDrawing 1 and stateFrames 0
-   again) the round on it starts (later_round: geometry check, camera, volumes, scores, events, teams). Its caller
+   again) the round on it starts (round_start: type table check, camera, volumes, scores, events, teams). Its caller
    ignores the eax it leaves */
 void THISCALL (match_startRound)(Scene *s)
 {
 	if (s->matchDrawing)
-		later_round(s);
+		round_start(s);
 	else
-		first_round(s);
+		match_setup(s);
 }
 
 /* 0x4732f0 (thiscall on the scene): game type t (gameType) and its rule flags (teamGame .. platoon, cleared

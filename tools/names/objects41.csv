@@ -8,7 +8,7 @@
 0x4c59ec,int,64,g_ptxZigzag,the PTX decoder's zigzag order
 0x4c5af0,int,48,g_ptxDcCodes,the DC Huffman codes: two tables of 96 bytes (length; code pairs)
 0x4c5bb0,int,1024,g_ptxAcCodes,the AC Huffman codes: two tables of 256 (length; code) pairs
-0x4c6bb0,float,128,g_ptxDequantBase,the dequantisation tables' base values (luma; chroma)
+0x4c6bb0,float,128,g_ptxFdctBase,the dequantisation tables' base values (luma; chroma)
 0x4c6db0,int,128,g_ptxQuantBase,the quantisation tables' base values (luma; chroma)
 0x4d0878,u8,32,g_crtStderr,the C runtime's stderr FILE (_iob[2]; name only: the runtime's own code reaches it)
 0x4d12f8,u8,352,g_crtTenPowersUp,crt_atof's powers of ten (12-byte entries; name only)

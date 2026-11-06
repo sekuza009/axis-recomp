@@ -109,11 +109,11 @@ void *THISCALL (space_getNextFreeBlockPtrBy)(u8 *space, const u32 *mn, const u32
    plane record was made, that plane linked at the end of the unit's list (SpaceUnit.lastPlane;
    CollisionPlane.listNext / listPrev) and given a node (space_getNextFreeNodePtr) at the head of the unit's nodes
    (SpaceUnit.lastNode). Its callers ignore the eax it leaves */
-void THISCALL (space_addUnitTriangle)(void *space, u32 id, u8 *owner, u32 part, u32 i0, u32 i1, u32 i2, u32 v0, u32 v1, u32 v2)
+void THISCALL (space_addUnitTriangle)(void *space, u32 flags, u8 *owner, u32 part, u32 i0, u32 i1, u32 i2, u32 v0, u32 v1, u32 v2)
 {
 #define PL(p) ((CollisionPlane *)(p))
 	SpaceUnit *un = (SpaceUnit *)owner;
-	u8 *planes = space_insertTriangle(space, id, v0, v1, v2, owner, part, i0, i1, i2);
+	u8 *planes = space_insertTriangle(space, flags, v0, v1, v2, owner, part, i0, i1, i2);
 	if (!planes)
 		return;
 	u8 *last = un->lastPlane;
@@ -136,11 +136,11 @@ void THISCALL (space_addUnitTriangle)(void *space, u32 id, u8 *owner, u32 part, 
 }
 
 /* 0x4819b0 (thiscall on the space): the space emptied (planes, nodes, units, blocks) and laid out: its bounds mn / mx
-   (min, max), a grid of nx x ny x nz cells (nx .., cellCount their number: none, or more than its cellCapacity cells, a
-   fatal message), each cell's size (cellSize[0] .. cellSize[2]: z, x, y over nx, ny, nz, as the original pairs them), the margin (a float's bits) and the split count (margin,
+   (min, max), a grid of cz x cx x cy cells (along z, x, y: cellsZ, cellsX, cellsY; cellCount their number: none, or more than its cellCapacity cells, a
+   fatal message), each cell's size (cellSize[0] .. cellSize[2]: z, x, y over cz, cx, cy), the margin (a float's bits) and the split count (margin,
    splitCount) and the depth (depth; over 8 a fatal message); the cells' table (cells, two bytes each) all 0xff. Its callers
    ignore the eax it leaves */
-void THISCALL (space_setBy)(u8 *space, const u32 *mn, const u32 *mx, int nx, int ny, int nz, u32 margin, u32 splitCount, int depth)
+void THISCALL (space_setBy)(u8 *space, const u32 *mn, const u32 *mx, int cz, int cx, int cy, u32 margin, u32 splitCount, int depth)
 {
 	Space *sp = (Space *)space;
 #undef FIELD
@@ -154,15 +154,15 @@ void THISCALL (space_setBy)(u8 *space, const u32 *mn, const u32 *mx, int nx, int
 		FIELD(u32, 0x5c + i * 4) = mn[i];
 	BITS(SP->max[0]) = mx[0];
 	BITS(SP->max[1]) = mx[1];
-	SP->cellsX = ny;
+	SP->cellsX = cx;
 	BITS(SP->max[2]) = mx[2];
-	SP->cellsZ = nx;
-	SP->cellsY = nz;
-	int cells = SP->cellCount = nx * ny * nz;
+	SP->cellsZ = cz;
+	SP->cellsY = cy;
+	int cells = SP->cellCount = cz * cx * cy;
 	if (cells <= 0)
-		sys_fatalErrorN((char *)OBJ(g_logCollisionVolume), (const char *)STR(0x4c79f4, "non-zero size required(%dx%dx%d)-setBy()"), nx, ny, nz);
+		sys_fatalErrorN((char *)OBJ(g_logCollisionVolume), (const char *)STR(0x4c79f4, "non-zero size required(%dx%dx%d)-setBy()"), cz, cx, cy);
 	else if (cells > SP->cellCapacity)
-		sys_fatalErrorN((char *)OBJ(g_logCollisionVolume), (const char *)STR(0x4c79bc, "blockIndexTable overflow((%dx%dx%d=%d..."), nx, ny, nz, cells, SP->cellCapacity);
+		sys_fatalErrorN((char *)OBJ(g_logCollisionVolume), (const char *)STR(0x4c79bc, "blockIndexTable overflow((%dx%dx%d=%d..."), cz, cx, cy, cells, SP->cellCapacity);
 	SP->splitCount = splitCount;
 	SP->margin = margin;
 	SP->depth = depth;
@@ -257,8 +257,8 @@ int THISCALL (space_testSphere)(void *grid, u32 r, const float *pos, const float
 
 /* 0x482aa0 (thiscall on the collision space): the leaf of the space's octrees at pos + vel (written to outPos) has its
    triangles tested (space_collideBlock, its answer also kept at lastHit). The end point must be inside the space's box
-   (min low, max high) widened by the margin (margin); its cell (z, x, y: sizes cellSize[0], cellSize[1], cellSize[2]; nx, ny,
-   nz of them, each index at most the last) names a root node (shorts at cells; 0xffff none) among the 0x50-byte
+   (min low, max high) widened by the margin (margin); its cell (z, x, y: sizes cellSize[0], cellSize[1], cellSize[2]; cellsZ, cellsX,
+   cellsY of them, each index at most the last) names a root node (shorts at cells; 0xffff none) among the 0x50-byte
    nodes (blocks.records). From the cell's box the walk goes down into the eighth (children children .., x upper +4, z upper +8,
    y upper +0x10) holding the point until a leaf (split 0). 0 when there is none. The x middle is compared at full
    precision, the others as floats, as the original has them */
@@ -400,12 +400,12 @@ int THISCALL (space_insertItem)(u8 *space, u8 *block, u8 *item, int depth)
 	return 1;
 }
 
-/* 0x481eb0 (thiscall on the collision space): a triangle (v0, v1, v2) of a unit put into the space: nothing (0) when
+/* 0x481eb0 (thiscall on the collision space): a triangle (v0, v1, v2; its flags word flags: CollisionPlane.flags) of a unit put into the space: nothing (0) when
    its box misses the space's (min .. max[2], widened by the margin margin). Else a plane record (from the pool, set up
    by collisionTri_setup), and every grid cell its widened box covers (z, x, y as in space_collideAt) that the
    triangle really meets (collisionTri_meetsBox) gets it into its octree (space_insertItem, depth depth; the cell's root block made
    when it has none). Returns the plane */
-u8 *THISCALL (space_insertTriangle)(u8 *space, u32 id, const float *v0, const float *v1, const float *v2, u32 unit, u32 part,
+u8 *THISCALL (space_insertTriangle)(u8 *space, u32 flags, const float *v0, const float *v1, const float *v2, u32 unit, u32 part,
                                  u32 i0, u32 i1, u32 i2)
 {
 	Space *sp = (Space *)space;
@@ -430,7 +430,7 @@ u8 *THISCALL (space_insertTriangle)(u8 *space, u32 id, const float *v0, const fl
 		if (fsub_m(fld_m(&grid_low[c]), margin) >= high[c])
 			return 0;
 	u8 *plane = space_getNextFreePlanePtr(space);
-	collisionTri_setup(plane, id, v0, v1, v2, unit, part, i0, i1, i2);
+	collisionTri_setup(plane, flags, v0, v1, v2, unit, part, i0, i1, i2);
 	int z0 = ftol(fdiv_m(fsub_m(fsub_m(fld_m(&low[2]), margin), &grid_low[2]), size_z));
 	if (z0 < 0)
 		z0 = 0;
@@ -510,7 +510,7 @@ static void through(float *out, const float *m, const float *v, Rows rows)
 #undef V2
 
 /* 0x4823c0 (thiscall on the collision space): a unit for shape (from the pool, its id first) with every part not
-   flagged 0x20 (flag 1: its triangles' id 0x10, else 0) turned into triangles: its primitives (12 bytes: type, index
+   flagged 0x20 (flag 1: its triangles' flags 0x10, else 0) turned into triangles: its primitives (12 bytes: type, index
    count, indices) as lists (4), strips (5) or fans (6) of its vertices (vertices) through the matrix (the current GL
    modelview when none is given), each added with space_addUnitTriangle. Returns the unit */
 u32 *THISCALL (space_buildUnit)(u8 *space, u32 id, u8 *shape, const float *matrix)
@@ -600,7 +600,7 @@ static long double cell_edge(int c, const float *size, const float *low)
 }
 
 /* 0x483060 (thiscall on the collision space): the segment p0 .. p1 through the grid's cells (z, x, y: sizes cellSize[0],
-   cellSize[1], cellSize[2]; nx, ny, nz of them), cell by cell from p0's towards p1's: y slabs, within each the z slabs,
+   cellSize[1], cellSize[2]; nz, nx, ny of them), cell by cell from p0's towards p1's: y slabs, within each the z slabs,
    within those the x cells, the segment clipped to each (the y and x clips through a parameter rounded to a float,
    the z clip at full precision, as the original has them). Each cell with a root node (shorts at cells; 0xffff none)
    has its octree traced (space_traceBlock, the 0x50-byte nodes at blocks.records); the first that reports a hit is the

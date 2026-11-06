@@ -337,7 +337,7 @@ static void identity4(u32 *m)
    (rotation, a quaternion); its matrix (placeMatrix: translation x rotation) and inverse (placeInverse), a copy (matrix) and its
    inverse (matrixInverse), two identities (animMatrix, animInverse), the copy times the inverse (relMatrix) and its inverse (relInverse).
    Its shape (shape_getByName, bound) and two ranges of its element count from the shading pool (objectColours, used
-   objectColourCount; past 1000000 a fatal message), two values (glowSize), the counters cleared, the shape's centre through
+   objectColourCount; past 1000000 a fatal message), the type's glow (glowSize, glowColour), the counters cleared, the shape's centre through
    the matrix (pos; no shape: the position), and its shading worked out unless the map has it (mapShaded). Its
    callers ignore the eax it leaves */
 void THISCALL (object_initObjectBy)(Stage *s, int i, const ObjectType *type)
@@ -403,7 +403,7 @@ void THISCALL (object_initObjectBy)(Stage *s, int i, const ObjectType *type)
 	BITS(mo->glow) = 0;
 	BITS(mo->waitTime) = 0;
 	if (ST->shadingCached == 0)
-		shape_shadeParts((*(u32 * *)&mo->colours[0]), 1, mo->model, (const LightFactors *)&s->mapLights,
+		shape_shadingColours((*(u32 * *)&mo->colours[0]), 1, mo->model, (const LightFactors *)&s->mapLights,
 		                 mo->matrixInverse);
 }
 
@@ -760,9 +760,10 @@ static void particle_beam(u8 *s, u8 *p, u32 colour)
 	}
 }
 
-/* a trail particle (kinds 40 .. 49): its three points (the descriptor's trailPoints), and their texture coordinates
-   (the first v 0.5) from the descriptor's markCoords, either as size x 0.005 + 0.5 or (by d, the particle's size plus
-   a margin) as (size / d + 1) / 2; its colours the shared one (g_white) */
+/* a hit mark (kinds 40 .. 49, a bullet's mark on the surface it hit: weapons.c decal): its triangle's three points
+   (the descriptor's markCorners), and their texture coordinates (the first v 0.5) from the descriptor's markCoords
+   (offsets about the impact), either as offset x 0.005 + 0.5 or (by d, the particle's size plus a margin) as
+   (offset / d + 1) / 2; its colours the shared one (g_white) */
 static void particle_mark(u8 *p, const u8 *desc, u32 margin)
 {
 	const ParticleDesc *pd = (const ParticleDesc *)desc;
@@ -793,7 +794,7 @@ static void particle_mark(u8 *p, const u8 *desc, u32 margin)
    serial id, in use. A descriptor flagged isQuad is a kind 50 effect (its 0x48 bytes from quad). Otherwise the
    kind (+0), owner, position, target, a matrix to copy, the size (size); then by kind its life (life) and: 2 / 3
    a sound at the position; 4 its colour from +0x20; 9 a fade; 10 / 11 / 18 a random spin; 12 .. 17 the heading
-   through its matrix; 20 / 21 / 24 aimed at the target; 25 / 26 beams; 40 .. 49 trails */
+   through its matrix; 20 / 21 / 24 aimed at the target; 25 / 26 beams; 40 .. 49 hit marks */
 void THISCALL (particle_init)(u8 *s, int slot, const u8 *desc)
 {
 	const ParticleDesc *pd = (const ParticleDesc *)desc;

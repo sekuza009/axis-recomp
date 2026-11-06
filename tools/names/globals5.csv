@@ -10,7 +10,7 @@
 0x9dd868,u32,g_editOldProc
 0x5b1958,int,g_arenaFileSecret
 0x5b1954,int,g_arenaFileTimeLimit
-0x4dcb0c,float,g_legsMaxWeight
+0x4dcb0c,float,g_loadLimit
 0x4dc784,int,g_unlockedLevel
 0x9dd330,int,g_gameListLoaded
 0x9dd6c8,int,g_typingRoomJoinPassword

@@ -99,7 +99,7 @@ void THISCALL (mech_setAll)(Scene *scene, const char *name, int character, int t
 	mech_setItem(scene, 4, item4);
 	mech_setItem(scene, 5, item5);
 	if (scene->localPlayer >= 0)
-		player_markUsed(STAGE(scene), scene->localPlayer);
+		playerRecord_markUsed(STAGE(scene), scene->localPlayer);
 }
 
 /* 0x461540 (thiscall on the game): the shown actor (localPlayer; none when negative) given a weapon slot (none given,

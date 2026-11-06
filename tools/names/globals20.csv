@@ -30,7 +30,7 @@
 0x9dd910,int,g_replaySelectRight
 0x9dd914,int,g_replaySelectBottom
 0x9f16b0,int,g_missionsWindowRight
-0x9f16b4,int,g_briefingBottom
+0x9f16b4,int,g_missionsWindowBottom
 0x9f6308,int,g_skirmishRectLeft
 0x9f630c,int,g_skirmishRectTop
 0x9f8c54,int,g_pilotSelectLeft

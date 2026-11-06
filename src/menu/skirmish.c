@@ -156,7 +156,7 @@ void (skirmish_drawRoundScreen)(void)
 }
 
 /* 0x449a50: the round screen with nothing lit (the pointer still hit-tested) under a dimmed screen and the notice
-   MSG(563, "YOU'VE GOT NEW PARTS AND WEAPONS") / MSG(0, "PRESS ENTER OR CLICK MOUSE"), shown while g_skirmishBriefing
+   MSG(563, "YOU'VE GOT NEW PARTS AND WEAPONS") / MSG(0, "PRESS ENTER OR CLICK MOUSE"), shown while g_skirmishNewPartsNotice
    (a newly reached round). The original leaves eax to callers that ignore it */
 void (skirmish_drawNewPartsNotice)(void)
 {

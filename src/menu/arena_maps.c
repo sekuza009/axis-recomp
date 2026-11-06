@@ -90,7 +90,7 @@ void (mapList_ok)(void)
 /* 0x4050a0: the lobby player's name, sex and corporation kept as axis.cfg's (g_cfgPlayerName ..) and the configuration written */
 void (arena_savePlayerSettings)(void)
 {
-	g_playerSex = g_arenaSex;
+	g_playerCustomize = g_arenaCustomize;
 	const char *name = g_arenaPlayerName;
 	char *kept = g_cfgPlayerName;
 	int i = 0;

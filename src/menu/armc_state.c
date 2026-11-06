@@ -1,10 +1,10 @@
-/* armc_state.c: the ARM CENTER's working copy of the mech: loading the saved mech into it, the colour undo buffer,
+/* armc_state.c: the ARM CENTER's working copy of the mech: loading the saved mech into it, the VIEW ALL colour slot,
    the list cursors on the chosen parts, and the menu camera kept while the screen is open. Values are copied as
    their 32 bits (floats included). */
 #include "../game.h"
 
 #define g_armcColourBits ((u32 *)OBJ(g_armcColours))           /* the six colour slots, six values each (see g_armcColours) */
-#define g_colourUndo ((u32 *)(OBJ(g_armcColours) + 0x78))               /* one slot's six values, for undo */
+#define g_allPartsSlot ((u32 *)(OBJ(g_armcColours) + 0x78))            /* colour slot 5 (VIEW ALL): its six values */
 #define g_savedParts ((const u32 *)ADDR(g_savedMechHead))         /* the saved mech: head, chest, arm, leg, booster */
 #define g_workParts ((u32 *)OBJ(g_armcParts))                /* the working copy, same order */
 
@@ -20,19 +20,19 @@ static void copy(u32 *to, const u32 *from, int n)
 void (armc_seedAllColourSlot)(void)
 {
 	const u32 *slot1 = g_armcColourBits + 6;
-	g_colourUndo[0] = slot1[0];
-	g_colourUndo[2] = slot1[2];
-	g_colourUndo[1] = slot1[1];
-	g_colourUndo[3] = slot1[3];
-	g_colourUndo[4] = slot1[1];
-	g_colourUndo[5] = slot1[5];
+	g_allPartsSlot[0] = slot1[0];
+	g_allPartsSlot[2] = slot1[2];
+	g_allPartsSlot[1] = slot1[1];
+	g_allPartsSlot[3] = slot1[3];
+	g_allPartsSlot[4] = slot1[1];
+	g_allPartsSlot[5] = slot1[5];
 }
 
 /* 0x41ced0: colour slot 5's (VIEW ALL) six values copied into slots 0 .. 4, so every part takes the all-parts colour */
 void (armc_spreadAllColourSlot)(void)
 {
 	for (int s = 0; s < 5; s++)
-		copy(g_armcColourBits + s * 6, g_colourUndo, 6);
+		copy(g_armcColourBits + s * 6, g_allPartsSlot, 6);
 }
 
 /* 0x40ed20: each part list's cursor onto the chosen part (its first place in the unlocked list; 0 when not

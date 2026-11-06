@@ -1,4 +1,4 @@
-/* match_drawFrame.c: the in-match 2D pass, once per frame after the 3D scene: the screen cleared as needed, the scene's
+/* hud_pass.c: match_drawFrame, the in-match 2D pass, once per frame after the 3D scene: the screen cleared as needed, the scene's
    transparent and overlay parts drawn, then each HUD element by the match's state. Five of the HUD calls are
    wrapped by the patch DLL (each element anchored for wide screens), so they go through their call sites. */
 #include "../game.h"

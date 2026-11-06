@@ -438,14 +438,14 @@ u32 (profile_newNamePage)(void)
 }
 
 /* 0x44ba60: the current profile (g_profileChosen) deleted: its save file ("save\<name>.axs") removed (DeleteFileA, tried
-   twice), the later profiles moved down a slot and the freed last slot cleared (colour -1), the count lowered.
+   twice), the later profiles moved down a slot and the freed last slot cleared (pilot -1), the count lowered.
    With none left everything is reset and the list written (profile_writeFile); otherwise, if the current one was the
    last, the selection steps back (the scrolled row g_profileListRow, else the list's top g_profileListTop), then the list is
    written and shown again (profile_resetStatBars). Returns the last call's eax */
 u32 (profile_deleteChosen)(void)
 {
 	int current = g_profileChosen;
-	u8 *records = g_profiles;   /* 0x48 bytes each: +0 a word, +4 the name, +0x44 the colour */
+	u8 *records = g_profiles;   /* 0x48 bytes each: +0 a word, +4 the name, +0x44 the pilot */
 	if (crt_chdir((const char *)STR(0x4b2adc, "save")) == 0) {   /* chdir("save") */
 		char path[0x80];
 		memset(path, 0, sizeof path);

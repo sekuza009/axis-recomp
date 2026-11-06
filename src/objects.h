@@ -142,7 +142,7 @@
 #define g_cfgSwitches (g_graphicSettings + 3)   /* int[4]; axis.cfg's graphics switches: linear filtering, mip mapping, view fps, simple menu (cfg_readGraphics / cfg_writeGraphic: lines 3 .. 6) */
 #define g_armcParts ((int *)IMG(0x4dc760))   /* int[5]; the mech's chosen parts in the ARM CENTER: head, chest, arm, leg, booster (armc_stepPart; kept into g_savedMechPartIds by armc_saveSelection) */
 #define g_savedMechPartIds ((int *)IMG(0x4dc878))   /* int[5]; the saved mech's parts: head (g_savedMechHead), chest, arm, leg, booster (match_startRound's loop of 5; mech_unpackFromRecord / mech_loadFromProfile / armc_saveSelection write) */
-#define g_armcSlotItems ((int *)IMG(0x4dcb18))   /* int[6]; the ARM CENTER mech's items by slot: [0] / [1] the two extra items (slots 4 / 5: g_itemSlot4 / g_itemSlot5; items 27 .. 35), [2] .. [5] the four weapons (slots 0 .. 3: g_mechWeaponSlot0 .. 5); kept into g_savedMechSlotItems (armc_saveSelection) */
+#define g_armcSlotItems ((int *)IMG(0x4dcb18))   /* int[6]; the ARM CENTER mech's items by slot: [0] / [1] the two extra items (slots 4 / 5: g_itemSlot4 / g_itemSlot5; items 27 .. 35), [2] .. [5] the four weapons (slots 0 .. 3: g_mechWeaponSlot0 .. 3); kept into g_savedMechSlotItems (armc_saveSelection) */
 #define g_savedMechSlotItems ((int *)IMG(0x4dcf18))   /* int[6]; the saved mech's items in g_armcSlotItems' order: [0] / [1] the extra items (slots 4 / 5), [2] .. [5] the weapons (slots 0 .. 3); mech_unpackFromRecord's loop writes the four weapons from record bytes 7 .. 10 (bytes 5 / 6 the extras); mech_setEmpty: weapon slot 0 = 0, the rest -1 */
 #define g_slotTextures ((int *)IMG(0x4dcc70))   /* int[7]; ARM CENTER's snapshot textures by part record (armc_snapshot(i): the six slots, then the part looked at - g_armcBuildTexture, the seventh) */
 #define g_timerClocks ((double *)IMG(0x9db980))   /* double[2]; the timer's two doubles: the time now (g_clockNow) and the time last returned (g_lastTime); timer_init clears them as four dwords */
@@ -164,7 +164,7 @@
 #define g_menuEyeHome ((float *)IMG(0x9db090))   /* float[3]; the menu camera's home position (g_menuEyeHomeX .. Z) */
 #define g_menuLookHome ((float *)IMG(0x76d3f8))   /* float[3]; the menu camera's home look-at point (g_menuLookHomeX .. Z) */
 #define g_armcDim ((float *)IMG(0x4dc1d0))   /* float[4]; the ARM CENTER's dim colour (RGBA 0, 0.6, 0.6, 1): tabs, slots and buttons not chosen (armc_open) */
-#define g_mechSpeeds ((float *)IMG(0x4dcaf8))   /* float[6]; the stats panel's speeds and load: normal speed (g_mechNormalSpeed, x 0.036), top forward (x runTop[0]), top backward (g_mechMaxSpeedBwd), top sideways (x runTop[2]), the load (Player.load), the most load (g_legsMaxWeight = Player.loadMax) (armc_readMechStats) */
+#define g_mechSpeeds ((float *)IMG(0x4dcaf8))   /* float[6]; the stats panel's speeds and load: normal speed (g_mechNormalSpeed, x 0.036), top forward (x runTop[0]), top backward (g_mechMaxSpeedBwd), top sideways (x runTop[2]), the load (Player.load), the most load (g_loadLimit = Player.loadMax) (armc_readMechStats) */
 #define g_boosterStats ((float *)IMG(0x4dce80))   /* float[9]; the booster's stats for the panel: [0] its thrust type (an int: g_boosterThrustType), active / recharge time / recharge delay x 1000, four speeds x 0.036, the weight (g_boosterWeight) (armc_readPartPanels) */
 #define g_armcCameraBox ((u32 *)IMG(0x4dcf40))   /* u32[38]; ARM CENTER's camera box corners (+-700 or 0 as floats; armc_initCameraBox writes them from 0x4dcf00 + 0x40 ..) */
 #define g_setupSoundRect ((int *)IMG(0x4ddad0))   /* int[4]; the setup sound panel's window: left (g_setupSoundLeft) */
@@ -176,7 +176,7 @@
 #define g_pilotStatsKept ((int *)IMG(0x9dd240))   /* int[8]; the pilot's record as kept: level (g_pilotLevelKept) .. deaths */
 #define g_roomForm ((int *)IMG(0x9dd1b8))   /* int[4]; the game room settings form's window: left (g_roomFormLeft) */
 #define g_menuLookKept ((float *)IMG(0x9dd918))   /* float[3]; the menu camera's look-at point kept at the start of a tunnel move (menuTunnel_advance's camera_keep); the move ends at it +- a ring's length on z; game_returnTo* set it */
-#define g_menuEyeKept ((float *)IMG(0x9dd930))   /* float[3]; the room camera's position kept for the slide (g_menuEyeKeptX .. Z; menu_tunnel's EYE_KEPT) */
+#define g_menuEyeKept ((float *)IMG(0x9dd930))   /* float[3]; the menu camera's position kept at the start of a tunnel move (g_menuEyeKeptX .. Z; menuTunnel_advance's camera_keep, menu_tunnel's EYE_KEPT) */
 #define g_replaySelectDim ((float *)IMG(0x9dda70))   /* float[4]; the replay selection dialog's dim colour */
 #define g_replaySelectLit ((float *)IMG(0x9eea98))   /* float[4]; the replay selection dialog's lit colour */
 #define g_skirmishRect ((int *)IMG(0x9f6308))   /* int[4]; the skirmish screen's window: left (g_skirmishRectLeft) */
@@ -340,7 +340,7 @@
 #define g_sortState ((u8 *)IMG(0xae3338))   /* u8[49176]; the two depth sorts' state (depth_sort.c QsGlobals): per sort an i, j and pivot array of 0x2000 bytes (A: +0, +0x4008, +0xa018; B: +0x8018, +0x6018, +0x2008), the stack depth (A +0x2000, B +0x2004) and two words of swap space (A +0x6008, B +0x6010) */
 #define g_packedBlue ((u8 *)IMG(0xa1f200))   /* u8[4]; packed blue (colour_initPackedBlue) */
 #define g_packedGrey ((u8 *)IMG(0xa1f204))   /* u8[4]; packed grey */
-#define g_packedYellow ((u8 *)IMG(0xa1f208))   /* u8[4]; packed yellow (app_frameByScreen's view-volume segments) */
+#define g_packedYellow ((u8 *)IMG(0xa1f208))   /* u8[4]; packed yellow: the map lights' stars drawn as view-volume segments by replay_frame (0x487f00; addr_access labels those reads hud_cycleF11Mode, functions.csv's size for replay_frame being short) */
 #define g_packedGreen ((u8 *)IMG(0xa1f2ec))   /* u8[4]; packed green */
 #define g_realClear ((float *)IMG(0xa1f210))   /* float[4]; real clear: (0, 0, 0, 0) (colour_initRealClear); never read */
 #define g_realBlue ((float *)IMG(0xa1f228))   /* float[4]; real blue */
@@ -395,7 +395,7 @@
 #define g_noAddress ((char *)IMG(0xa0bb0c))   /* char[4]; the empty address DirectPlay's TCP connection gets without one (never written) */
 #define g_statBars ((float *)IMG(0x9f8d34))   /* float[9]; the profile screen's nine stat bars as drawn (eased a tenth a frame) */
 #define g_statBarTargets ((float *)IMG(0x9f8ec0))   /* float[9]; the stat bars' targets: the pilot character's nine stats + 50 (pilotSelect_loadStats / profile_loadPilotStats); g_statBars eases to them (profile_drawChosenPilot, profile_drawPilotSelect); cleared by pilotSelect_reset / profile_resetStatBars */
-#define g_profileMessageClickBox ((int *)IMG(0x9f9010))   /* int[4]; (left, top, right, bottom) = (471, 246, 550, 276), set by profileDialogBox_layout: profile_inDialogBox's rectangle, where a click while the NAME ALREADY REGISTRED message is up (g_profileMessage, newNameDialog_clicks) closes it and starts typing again. Nothing drawn lies there (the message's OK button is 0x16e..0x1ce, 0xe6..0x106; the dialog ends at x 0x208) */
+#define g_profileMessageClickBox ((int *)IMG(0x9f9010))   /* int[4]; (left, top, right, bottom) = (471, 246, 550, 276), set by profileDialogBox_layout: profile_inDialogBox's rectangle, meant as where a click while the NAME ALREADY REGISTRED message is up (g_profileMessage, newNameDialog_clicks) closes it and starts typing again; but profile_inDialogBox answers 1 / -1 and the caller tests for nonzero, so any click does. Nothing drawn lies there (the message's OK button is 0x16e..0x1ce, 0xe6..0x106; the dialog ends at x 0x208) */
 #define g_chatHistory ((char *)IMG(0x67ef38))   /* char[3072]; the chat line's three-line history of 0x400 bytes; newest first (frontEnd_startUp clears 0x300 dwords) */
 #define g_briefingPageStarts ((int *)IMG(0x9eeadc))   /* int[50]; the briefing's page start offsets (0xc8 bytes cleared; g_briefingStart follows) */
 #define g_ladderEmail ((char *)IMG(0x9dd5a6))   /* char[30]; the logged-in Ladder account's e-mail: from the server's account record (+0x22, login_takeAccountRecord), copied from / to the account page's g_accountEmail (reg_writeLadderSettings, room_copyAccountRecord, newId_register); cleared (30 bytes) by menuState800_enterGameRoom. Not kept in the registry */
@@ -408,14 +408,14 @@
 #define g_gameTypeNames ((char *)IMG(0x4db8d8))   /* char[300]; 15 game type names of 0x14 bytes (messages 456 .. 470) */
 #define g_arenaOnOff ((char *)IMG(0x4dbb14))   /* char[40]; OFF / ON; 0x14 bytes each (messages 444; 445; arena_initOptionTexts); never read - the new-arena form draws from the second copy g_rotationOnOff */
 #define g_rotationOnOff ((char *)IMG(0x4dbba4))   /* char[40]; OFF / ON (messages 444; 445; 0x14 bytes each) for the new-arena form's map rotation (GameSettings.rotation; arena_createDraw's Form.rotationNames) */
-#define g_lobbyTopRects ((int *)IMG(0x4dbb40))   /* int[8]; lobbyTop_layout's two rectangles */
+#define g_lobbyTopRects ((int *)IMG(0x4dbb40))   /* int[8]; lobbyTop_layout's two rectangles (written there only; never read) */
 #define g_lobbySlideEase ((float *)IMG(0x4dbb60))   /* float[1]; the arena lobby's tunnel-slide value (menu_slide: eased toward k_setupPanelTarget while g_lobbyPanelsSliding, each step also pushing g_arenaTunnelDepth back); 0 on entering (menuState400_enter) */
 #define g_colourDepthTexts ((char *)IMG(0x4ddbbc))   /* char[100]; COLOR DEPTH: 16BIT COLOR / 32BIT COLOR (messages 431; 432) */
 #define g_fxStatusTexts ((char *)IMG(0x4dda64))   /* char[100]; F/X STATUS: OFF / ON (messages 433; 434) */
 #define g_linearFilterTexts ((char *)IMG(0x4ddc84))   /* char[100]; LINEAR FILTERING: OFF / ON (messages 435; 436) */
-#define g_mipMapTexts ((char *)IMG(0x4de058))   /* char[100]; MIP MAPPING: OFF / ON */
+#define g_mipMapTexts ((char *)IMG(0x4de058))   /* char[100]; the MIP MAPPING switch's value names: OFF / ON (messages 435; 436), 0x32 bytes each */
 #define g_viewFpsTexts ((char *)IMG(0x4ddc20))   /* char[100]; the VIEW FPS switch's value names: OFF / ON (messages 435; 436), 0x32 bytes each */
-#define g_simpleMenuTexts ((char *)IMG(0x4ddaf0))   /* char[100]; SIMPLE MENU: OFF / ON */
+#define g_simpleMenuTexts ((char *)IMG(0x4ddaf0))   /* char[100]; the SIMPLE MENU switch's value names: OFF / ON (messages 435; 436), 0x32 bytes each */
 #define g_crosshairName ((char *)IMG(0x4ddb58))   /* char[32]; the crosshair texture's name (texture/crosshair/crosshair<n>: 0x20-byte strings) */
 #define g_messageBoxLine ((char *)IMG(0x4df81c))   /* char[80]; the front end's message box line (0x50 bytes cleared) */
 #define g_clearColour ((Colour *)IMG(0x76d350))   /* Colour[1]; the start-up screen's clear colour (black) */
@@ -448,16 +448,16 @@
 #define g_titleSpread ((int *)IMG(0x4b065c))   /* int[20]; by g_titleCloseFrames (0 .. 19): how far the title's quarters have moved apart (0 .. 512) */
 #define g_penPropWidths ((int *)IMG(0x4c5558))   /* int[105]; the pen font's proportional glyph widths (105 glyphs; to 0x4c56fc) */
 #define g_ptxZigzag ((int *)IMG(0x4c59ec))   /* int[64]; the PTX decoder's zigzag order */
-#define g_ptxDcCodes ((int *)IMG(0x4c5af0))   /* int[48]; the DC Huffman codes: two tables of 96 bytes (length; code pairs) */
+#define g_ptxDcCodes ((int *)IMG(0x4c5af0))   /* int[48]; the DC Huffman codes: two tables of 96 bytes (12 (length, code) pairs each); ptx_readDcDiff scans up to 16 pairs (128 bytes), so a miss in the first set reads on into the second */
 #define g_ptxAcCodes ((int *)IMG(0x4c5bb0))   /* int[1024]; the AC Huffman codes: two tables of 256 (length; code) pairs */
-#define g_ptxDequantBase ((float *)IMG(0x4c6bb0))   /* float[128]; the dequantisation tables' base values (luma; chroma) */
-#define g_ptxQuantBase ((int *)IMG(0x4c6db0))   /* int[128]; the quantisation tables' base values (luma; chroma) */
+#define g_ptxFdctBase ((float *)IMG(0x4c6bb0))   /* float[128]; the forward DCT divisors' base values (luma; chroma): read only by ptx_initFdctDivisors (an encoder's table) */
+#define g_ptxQuantBase ((int *)IMG(0x4c6db0))   /* int[128]; the quantisation tables' base values (luma; chroma): the decoder's dequantisation multipliers (ptx_initDequantTables) are made from them */
 #define g_crtSysErrList ((u32 *)IMG(0x4d0780))   /* u32[]; the C runtime's sys_errlist: errno's texts ("No error", "Operation not permitted" ..) */
 #define g_crtStderr ((u8 *)IMG(0x4d0878))   /* u8[32]; the C runtime's stderr FILE (_iob[2]; name only: the runtime's own code reaches it) */
-#define g_crtTenPowersUp ((u8 *)IMG(0x4d12f8))   /* u8[352]; crt_atof's powers of ten (12-byte entries; name only) */
-#define g_crtTenPowersDown ((u8 *)IMG(0x4d1458))   /* u8[352]; the C runtime's negative powers of ten (_pow10neg: 12-byte long-double entries) for its 12-byte multiply-by-power-of-ten FUN_004a7508, which both text-to-float (FUN_004a65b5, under crt_atof) and float-to-text (FUN_004a6e66, 17 digits, printf's %e/%f/%g) use (name only) */
+#define g_crtTenPowersUp ((u8 *)IMG(0x4d12f8))   /* u8[352]; the C runtime's positive powers of ten (_pow10pos: 12-byte long-double entries) for FUN_004a7508, the multiply-by-power-of-ten under both crt_atof's text-to-float and printf's float-to-text (FUN_004a6e66): the code starts from this address + 0x60, where the table (10 first) is, at 0x4d1358 (name only) */
+#define g_crtTenPowersDown ((u8 *)IMG(0x4d1458))   /* u8[352]; the C runtime's negative powers of ten (_pow10neg: 12-byte long-double entries) for its 12-byte multiply-by-power-of-ten FUN_004a7508, which both text-to-float (FUN_004a65b5, under crt_atof) and float-to-text (FUN_004a6e66, 17 digits, printf's %e/%f/%g) use: the code starts from this address + 0x60, where the table (0.1 first) is, at 0x4d14b8 (29 entries, to 0x4d1614) (name only) */
 #define k_teamNamesKorean ((char *)IMG(0x4a975c))   /* char[64]; the four team names in Korean (16 bytes each) */
-#define k_aanScales ((double *)IMG(0x4aa2b0))   /* double[8]; the AAN inverse DCT's scale factors */
+#define k_aanScales ((double *)IMG(0x4aa2b0))   /* double[8]; the AAN DCT's scale factors: their only user, ptx_initFdctDivisors, builds the forward DCT's divisors */
 #define k_ptxQuantScales ((int *)IMG(0x4aa2f0))   /* int[64]; the quantisation scale per coefficient */
 #define g_keyNames ((u32 *)IMG(0x4b0750))   /* u32[256]; a key code's name (pointers to the texts; to 0x4b0b50) */
 #define g_loadStatusText ((char *)IMG(0xa0e988))   /* char[256]; the loading screen's grey status line: the last log message (loading_drawScreen; as g_logHook; strcpy's it; game_processLoadingMode empties it; loading_draw prints it). Up to g_loadScroll 0xa0ea88 */

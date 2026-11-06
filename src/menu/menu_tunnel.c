@@ -384,11 +384,11 @@ static void lower_view(const float *rate)
 
 /* 0x441260: one frame of the tunnel camera's move, worked on the ring before the last of the chain at ring. The
    frame time is held at 2 at most; a step is 30 frame times (g_tunnelStep, and as a float g_tunnelStepF); a ring is 1100
-   steps (950 when entering the menus, g_enteringMenus, which starts the eye and look point at 0; 2200 in the ARM CENTER,
+   steps (950 when entering the menus, g_enteringMenus, which starts the eye and look point at 0; 2200 while leaving for a match,
    g_leavingForMatch). Still (0): the flares at full alpha, the view lowered, the camera kept once asked (g_keepCameraAsked), and the
    menus entered when the network is ready (g_launchedForNetGame, g_launchStartStep 0x65). Moving in (1) / out (3): eye and look point a
    step down / up the tunnel; once a ring's worth is done, the camera back at the kept place a ring further, the
-   ring turned (by -1100, -2200 in the ARM CENTER, or +1100), a ring added (in) or the last one taken off (out),
+   ring turned (by -1100, -2200 while leaving for a match, or +1100), a ring added (in) or the last one taken off (out),
    the screen's state g_nextScreen into g_screen and the camera kept; moving out also lowers the view. 2 / 4 swing the
    view up and start 1 / 3. The caller ignores the eax it leaves */
 void (menuTunnel_advance)(TunnelRing *ring)

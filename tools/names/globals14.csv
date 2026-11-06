@@ -9,7 +9,7 @@
 0x4ddea0,int,g_setupSound3D
 0x4ddea4,int,g_setupStereoReverse
 0x4b42dc,int,g_musicVolumeSetting
-0x76d418,int,g_chatEditLength
+0x76d418,int,g_editFieldLength
 0x4deb54,int,g_showCmd
 0x9dd858,u16,g_languageId
 0x4dd0b4,va_list,g_messageBoxArgs

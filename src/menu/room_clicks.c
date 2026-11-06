@@ -62,7 +62,7 @@ void (gameList_stopJoin)(void)
 		g_joinTimedOut = 0;
 		dplay_leaveSession();
 		g_joinConnecting = 0;
-		KillTimer(g_hWndMain, 0x378);
+		KillTimer(g_mainWindow, 0x378);
 	}
 }
 
@@ -107,7 +107,7 @@ static void update_notice_keys(int *question)
 void (roomUpdateNotice_keys)(void) { update_notice_keys(&g_roomUpdateNotice); }
 void (arenaUpdateNotice_keys)(void) { update_notice_keys(&g_arenaUpdateNotice); }
 
-/* 0x443e20: the mission list's clicks (screen 900) (no dialog open, g_frameOpening): a right click leaves (missions_leave); a
+/* 0x443e20: the mission list's clicks (screen 900) (not while a panel frame opens, g_frameOpening): a right click leaves (missions_leave); a
    left click on its buttons (missionList_hitTest): rows 0..7 pick that mission (missions_clickRow), 8 its briefing
    (mission_loadBriefing), 9 leaves. Returns the last call's eax */
 int (missions_listClicks)(void)
@@ -272,7 +272,7 @@ void (room_loadMapPreview)(void) { load_map_preview(ADDR(g_roomMap)); }
 void (arena_loadMapPreview)(void) { load_map_preview(ADDR(g_newArenaMap)); }
 
 /* 0x433d30: the typed line (g_chatLine) committed to the new-ID form's field being edited (when the keyboard was let go for it,
-   g_textFieldOpen: the edit window g_hChatEdit destroyed and the focus back on the main window first): the ID
+   g_textFieldOpen: the edit window g_hEditField destroyed and the focus back on the main window first): the ID
    (g_accountForm, 30 bytes), the password and its repeat (g_accountPassword, g_accountPasswordRepeat, 12 bytes) or the e-mail (g_accountEmail, 50 bytes).
    Returns what the original leaves in eax */
 /* typing closed if it was on: the hidden EDIT control destroyed, the focus back to the game window and the line
@@ -281,7 +281,7 @@ static u32 typing_end(void)
 {
 	if (!g_textFieldOpen)
 		return 0;
-	DestroyWindow(g_hChatEdit);   /* DestroyWindow */
+	DestroyWindow(g_hEditField);   /* DestroyWindow */
 	SetFocus(g_mainWindow);   /* SetFocus */
 	return menu_closeInputLine(1);   /* menu_closeInputLine */
 }
@@ -463,7 +463,7 @@ static u32 call_keeping_ebp(u32 address)
 /* 0x43ede0: the ranking page. A request pending (g_rankingRequestPending) for sort column g_rankingSort: columns 0 .. 2 send their
    code (0x25 / 0x23 / 0x26) with the first rank of page g_rankingPage (ranks 0x9dd83c .. 0x9dd7dc) in message 0x15 and
    start waiting (g_rankingWaiting, the blink at 1000); column 3 just clears the request. Then the room's tunnel; with
-   the room camera arrived (g_roomCameraMode 2) and outside page 99: with a message box open (g_frameOpening) only it is drawn (a
+   the room camera arrived (g_roomCameraMode 2) and outside page 99: while a panel frame opens (g_frameOpening) only it is drawn (a
    request made again once it closes), else while waiting an answer (g_rankingListIn) fills the list (ranking_fillPage) and
    keeps the column and page, the blink counts down by g_frameTime * g_lobbyBlinkRate (from 1000 again below 0), and the
    table is drawn (ranking_drawTable). Returns what the original leaves in eax */

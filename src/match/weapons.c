@@ -220,8 +220,9 @@ static u32 next_rand(u32 n)
    target given, +4 the weapon: its record 0x2e18 bytes from actorItems, +8 the origin, hitPlane the target's record,
    dir the direction or the target, muzzle kept at colour). Its id (or the next serial, bulletSerial). Aimed shots
    spread with the weapon's spread less the owner's steadiness (accuracy) and are renormalised; mode 3 (shotMode) fires
-   into a random cone about the direction (through gluLookAt's inverse); the first step (speed range) is traced
-   (collision_rayTrace; the hit record hit) and the part of a step used (life) kept from 0 to 10. Then its
+   into a random cone about the direction (through gluLookAt's inverse); the whole shooting range (the weapon's range) is
+   traced (collision_rayTrace; the hit record hit, its end impact) and the round's life is the distance to that end over
+   its velocity (0 unless 0 .. 10 seconds). Then its
    velocity (velocity times the direction, or the step), colour, the homing target (homingTarget: a guided round's; the local player's own guided round follows the aim point), and, unless
    quiet, the muzzle flash (particle kind shotMode + 10) and the firing sound (sound: at full volume for the local
    player playerActor, else placed). Its callers ignore the eax it leaves */
@@ -269,10 +270,10 @@ void THISCALL (bullet_init)(u8 *s, int slot, int id, int owner, int homingTarget
 			for (int r = 0; r < 3; r++)
 				dir[r] = f32(FMUL(v[2], inv[8 + r]) + FMUL(v[1], inv[4 + r]) + FMUL(inv[r], v[0]));
 		}
-		const float *speed = &w->range, *from = BU->from;
+		const float *range = &w->range, *from = BU->from;
 		float *end = BU->impact;
-		float sx = f32(fmul_m(fld_m(speed), &dir[0])), sy = f32(fmul_m(fld_m(speed), &dir[1]));
-		long double sz = fmul_m(fld_m(speed), &dir[2]);
+		float sx = f32(fmul_m(fld_m(range), &dir[0])), sy = f32(fmul_m(fld_m(range), &dir[1]));
+		long double sz = fmul_m(fld_m(range), &dir[2]);
 		end[0] = f32(FADD(sx, from[0]));
 		end[1] = f32(FADD(sy, from[1]));
 		end[2] = f32(fadd_m(sz, &from[2]));
@@ -287,7 +288,7 @@ void THISCALL (bullet_init)(u8 *s, int slot, int id, int owner, int homingTarget
 			} else
 				BU->life = 0.0f;
 		} else if (*w2de8 > 0)
-			BU->life = f32(fdiv_m(fld_m(speed), w2de8));
+			BU->life = f32(fdiv_m(fld_m(range), w2de8));
 		else
 			BU->life = 0.0f;
 		if (!(BU->life >= 0) || BU->life > *&k_10f)
@@ -349,12 +350,12 @@ void THISCALL (bullet_init)(u8 *s, int slot, int id, int owner, int homingTarget
 #define BU ((Bullet *)b)   /* the same by its fields (src/scene.fields) */
 #define WI ((ActorItem *)w)   /* the same by its fields (src/scene.fields) */
 
-/* an effect (particle_spawn's record r, 31 words: kind, flag, a point, a direction, three words, the size, one
-   more; the rest as the last effect left them) */
-static void effect(u8 *s, u32 *r, u32 kind, u32 flag, const void *at, const void *dir, u32 x0, u32 x1, u32 x2, u32 size, u32 x3)
+/* an effect (particle_spawn's record r, 31 words, a ParticleDesc: kind, owner, a point, a direction (target), three
+   words, the size, one more; the rest as the last effect left them) */
+static void effect(u8 *s, u32 *r, u32 kind, u32 owner, const void *at, const void *dir, u32 x0, u32 x1, u32 x2, u32 size, u32 x3)
 {
 	r[0] = kind;
-	r[1] = flag;
+	r[1] = owner;
 	memcpy(r + 2, at, 12);
 	memcpy(r + 5, dir, 12);
 	r[8] = x0;
@@ -655,7 +656,7 @@ static void splash(u8 *s, u8 *b, const u8 *w)
 }
 
 /* homing: the velocity (vel) turned towards the target (actor homingTarget, else the point homingPoint) by at most the turn
-   rate (guidance, degrees: the cosine table g_cosTable) about their cross product, at the weapon's speed (velocity;
+   rate (guidance, tenths of a degree: the cosine table g_cosTable's index; x pi / 1800 in radians) about their cross product, at the weapon's speed (velocity;
    for kind 3 both by the bullet's age); again in 1/15 s (homeTimer) */
 static void home(u8 *s, u8 *b, const u8 *w)
 {

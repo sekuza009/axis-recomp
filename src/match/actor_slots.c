@@ -6,8 +6,8 @@
 
 #define FIELD(type, obj, offset) GAME_VAR(type, (u8 *)RELOC(obj) + (offset))
 
-/* an actor's input record: twelve ints (the moves and buttons the actor acts on this frame); the ninth is the
-   one cleared to -1 */
+/* an actor's input record: twelve ints (the moves and buttons the actor acts on this frame); the tenth
+   (inWeaponSlot, index 9) is the one cleared to -1 */
 static const int input_fields[12] = { offsetof(Player, inForward), offsetof(Player, inBackward), offsetof(Player, inStepLeft), offsetof(Player, inStepRight), offsetof(Player, inPitch), offsetof(Player, inYaw), offsetof(Player, inFire), offsetof(Player, inAltitude), offsetof(Player, inBooster), offsetof(Player, inWeaponSlot), offsetof(Player, inPrevWeapon), offsetof(Player, inNextWeapon) };
 
 /* 0x45eab0: actor i's input cleared */
@@ -743,7 +743,7 @@ static void mech_stats(u8 *s, u8 *ac, u8 *p, int check)
 	AC->boostTime = f32(FMUL(boost->times[0], AC->boostTimeFactor));
 	AC->rechargeTime = f32(FMUL(boost->times[1], AC->rechargeTimeFactor));
 	AC->restTime = f32(FMUL(boost->times[2], AC->restTimeFactor));
-	/* the legs' factors: the level's second value plus the legs' own, plus 1 */
+	/* the legs' factors: the pilot character's SPEED skill (CharacterProfile.stats[5]) x 0.01 plus the legs' own, plus 1 */
 #define LEG(f) fadd_m(fadd_m(fmul_m((long double)((CharacterProfile *)g_characterProfiles)[pr->character].stats[5], &k_0_01f), &legs->f), &k_1f)
 	v = fmul_m(LEG(speedCorrection), &boost->speeds[0]) * left;
 	AC->speed = f32(v);

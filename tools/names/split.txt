@@ -66,7 +66,7 @@ g_textHitBottom
 g_briefingSource
 g_briefingStart
 g_catalogueFile
-g_chatLineDone
+g_editLineDone
 g_lastChatLine
 g_lastChatLineSet
 g_chatTyping
@@ -416,9 +416,9 @@ g_playerSetupRight
 g_playerSetupTop
 g_unusedArenaFloat
 g_arenaSessionOpen
-g_arenaSex
+g_arenaCustomize
 g_boosterCount
-g_briefingBottom
+g_missionsWindowBottom
 g_briefingClock
 g_missionsWindowRight
 g_characterTexture
@@ -560,7 +560,7 @@ g_arenaServerList
 g_mapCount
 g_arenaListPlayers
 g_lanSearchStarted
-g_chatEditLength
+g_editFieldLength
 g_chosenGameMode
 g_connectionAwaited
 g_currentProfile
@@ -593,7 +593,7 @@ g_perfCounterLow
 g_pilotSelectLeft
 g_pilotSelectTop
 g_playerCorporation
-g_playerSex
+g_playerCustomize
 g_profileCount
 g_profileListRow
 g_profileListTop
@@ -617,7 +617,7 @@ g_pilotSave
 g_armcViewPoints
 g_menuFrameTextures
 # freed: raw local defines replaced by names, the patch layer's IMG reads counted as routed (axis_dataAt), 2026-11-01
-g_armcPanelRight
+g_armcPageRight
 g_missionsWindowLeft
 g_missionsWindowTop
 g_glHeight
@@ -813,8 +813,8 @@ g_armcHideInterface
 g_armcMode
 g_armcPartSlot
 g_armcSessionDue
-g_chatCaretX
-g_chatCaretY
+g_editCaretX
+g_editCaretY
 g_chatLength
 g_ptxClamp
 g_glWindowContext
@@ -839,7 +839,7 @@ g_fontHanCho
 g_fontHanJungJong
 g_glWindow
 g_glWindowMade
-g_hChatEdit
+g_hEditField
 g_glWindowDc
 g_unusedHighlightAlpha
 g_highlightX
@@ -858,7 +858,7 @@ g_mapListKept
 g_mapTop
 g_menuKeyGuard
 g_menuVolume
-g_skirmishBriefing
+g_skirmishNewPartsNotice
 g_modeChanged
 g_mouseReady
 g_mouseTaken
@@ -1169,7 +1169,7 @@ g_penPropWidths
 g_ptxZigzag
 g_ptxDcCodes
 g_ptxAcCodes
-g_ptxDequantBase
+g_ptxFdctBase
 g_ptxQuantBase
 g_lobbyBlinkRate
 g_keyNames

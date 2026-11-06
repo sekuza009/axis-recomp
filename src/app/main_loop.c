@@ -110,7 +110,7 @@ void (menu_frame)(void)
 	if (g_dialogPending)
 		menu_drawMessageBox();
 	if (g_textFieldOpen)
-		menu_drawInputLine(g_chatCaretX, g_chatCaretY);
+		menu_drawInputLine(g_editCaretX, g_editCaretY);
 	glLoadIdentity();
 	if (g_screen != 9999 && !g_profileQuitting)
 		PATCHED_CALL(0x41fc28, void, void)();   /* menu_drawCursor; the patch DLL draws its own cursor here */
@@ -553,7 +553,7 @@ u32 THISCALL (match_freeCamFrame)(u8 *s)
 	Vec3_rotateAxis(up, 2, ftol(fld_m(&SC->cameraAngle[1])));
 	float far = view_farPlane(), near = view_nearPlane();
 	int h = gfx_getHeight(), w = gfx_getWidth();
-	float fov = view_angle();
+	float fov = view_fov();
 	stage_setupView(stage, cam, dir, up, *(u32 *)&fov, w, h,
 	                                                                                             *(u32 *)&near, *(u32 *)&far, BITS(SC->frameTime));   /* stage_setupView */
 	if (SC->scenePaused == 0) {
@@ -636,14 +636,14 @@ static u32 rand_below(u32 n)
 static void zoom_view(u8 *s, const float *step)
 {
 	if (SC->holdZoom) {
-		float a = f32(fsub_m((long double)view_angle(), step));
+		float a = f32(fsub_m((long double)view_fov(), step));
 		view_setFov(BITS(a));
-		if (!(view_angle() >= 10.0f))
+		if (!(view_fov() >= 10.0f))
 			view_setFov(0x41200000);   /* 10 */
 	} else {
-		float a = f32(fadd_m((long double)view_angle(), step));
+		float a = f32(fadd_m((long double)view_fov(), step));
 		view_setFov(BITS(a));
-		if (view_angle() > 60.0f)
+		if (view_fov() > 60.0f)
 			view_setFov(0x42700000);   /* 60 */
 	}
 }
@@ -1085,7 +1085,7 @@ u32 THISCALL (replay_frame)(u8 *s)
 	float speed = (float)sp;
 	if (sp > SC->spaceMargin)
 		BITS(speed) = BITS(SC->spaceMargin);
-	float turn = f32(fmul_m(fmul_m(fmul_m((long double)view_angle(), &k_0_01666667f), &SC->frameTime), &k_50f));
+	float turn = f32(fmul_m(fmul_m(fmul_m((long double)view_fov(), &k_0_01666667f), &SC->frameTime), &k_50f));
 	float step = f32(FMUL(SC->frameTime, k_180f));
 	/* the zoom keys: the preset's distance by (1 - 0.9 dt) */
 	if (SC->zoomInHeld == 1) {
@@ -1177,7 +1177,7 @@ u32 THISCALL (replay_frame)(u8 *s)
 	}
 	float far = view_farPlane(), near = view_nearPlane();
 	int h = gfx_getHeight(), w = gfx_getWidth();
-	float fov = view_angle();
+	float fov = view_fov();
 	stage_setupView(stage, (float *)SC->cameraPos, SC->cameraDir,
 	              SC->cameraUp, BITS(fov), w, h, BITS(near), BITS(far), BITS(SC->frameTime));   /* stage_setupView */
 	SC->stateFrames++;
@@ -1573,7 +1573,7 @@ static void chat_keys(u8 *s)
 		return;
 	SC->chatMode = 0;
 	chat_endTyping();
-	const char *typed = (const char *)ADDR(g_keptChatLine);
+	const char *typed = (const char *)OBJ(g_keptChat);
 	(void)me;
 	if (strlen(typed) != 0) {
 		int code = mode == 1 ? chat_matchCheatCode(s, SC->localPlayer, typed) : -1;
@@ -1744,7 +1744,7 @@ void THISCALL (match_frame)(u8 *s)
 	float speed = (float)sp;
 	if (sp > SC->spaceMargin)
 		BITS(speed) = BITS(SC->spaceMargin);
-	float turn = f32(fmul_m(fmul_m(fmul_m((long double)view_angle(), &k_0_01666667f), &SC->frameTime), &k_75f));
+	float turn = f32(fmul_m(fmul_m(fmul_m((long double)view_fov(), &k_0_01666667f), &SC->frameTime), &k_75f));
 	float step = f32(FMUL(SC->frameTime, k_180f));
 	if (SC->cameraReset == 1)
 		for (int k = 0; k < 10; k++)
@@ -2172,7 +2172,7 @@ void THISCALL (match_frame)(u8 *s)
 	}
 	float far = view_farPlane(), near = view_nearPlane();
 	int h = gfx_getHeight(), w = gfx_getWidth();
-	float fov = view_angle();
+	float fov = view_fov();
 	stage_setupView(stage, (float *)SC->cameraPos, SC->cameraDir,
 	              SC->cameraUp, BITS(fov), w, h, BITS(near), BITS(far), BITS(SC->frameTime));   /* stage_setupView */
 	stage_setCullMargin(stage, BITS(st->cullMargin));

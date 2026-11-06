@@ -3,17 +3,14 @@
 #include <string.h>
 #include "portrait.h"
 
-#define g_questionX g_highlightX   /* where the two-button question is drawn */
-#define g_questionY g_highlightY
-
 /* 0x44b600: the new pilot's name (16 characters), typed into the panel at g_newNameDialogTop */
 void (profile_typeNewName)(void)
 {
 	input_releaseKeyboard();
 	g_textFieldOpen = 1;
 	menu_clearInputBuffer(0x10);
-	g_chatCaretX = g_newNameDialogLeft + 0x24;
-	g_chatCaretY = g_newNameDialogTop + 0x38;
+	g_editCaretX = g_newNameDialogLeft + 0x24;
+	g_editCaretY = g_newNameDialogTop + 0x38;
 	g_menuKeyGuard = 5.0f;
 	g_profilePage = 2;
 	g_frameOpening = 1;
@@ -32,8 +29,8 @@ static void ask(int kind, int x, int y)
 	g_dialogFocus = 0;
 	g_pointerGlideTime = 20.0f;
 	g_unusedHighlightAlpha = 0.2f;
-	g_questionX = x + 0x9c;
-	g_questionY = y + 0x4a;
+	g_highlightX = x + 0x9c;   /* the pointer glides to its left button */
+	g_highlightY = y + 0x4a;
 }
 
 /* 0x44b670, 0x44b6e0: question 3 over the pilot panel, question 5 (log out) over its own panel */

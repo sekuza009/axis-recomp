@@ -18,12 +18,12 @@
 0x9f1a28,int,g_profileMechItem5
 # the room settings record (0x5b1b30: a name, then these bytes)
 0x5b1b50,signed char,g_roomRecMap
-0x5b1b51,u8,g_roomRecPlayers
+0x5b1b51,u8,g_roomRecMaxPlayers
 0x5b1b54,u8,g_roomRecFragLimit
 0x5b1b55,u8,g_roomRecTimeLimit
 # the arena settings' copies of the player's corporation and sex
 0x4db580,int,g_arenaCorporation
-0x4db584,int,g_arenaSex
+0x4db584,int,g_arenaCustomize
 # sound settings
 0x4e0c94,int,g_musicVolume
 0x4e0c9c,int,g_stereoReverse

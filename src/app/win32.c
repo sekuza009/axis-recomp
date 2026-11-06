@@ -298,9 +298,9 @@ int (gfx_setPixelFormat)(void *dc)
 #define SendMessageA(hwnd, msg, w, l) IMPORT(0x4a92ec, int, void *, u32, u32, u32)(hwnd, msg, w, l)
 
 /* 0x43f460: the hidden EDIT control that every text field types into (names, passwords, numbers,
-   addresses, the e-mail, chat), `chars` letters wide (g_chatEditLength): a 12-pixel Fixedsys font (0x4b29b0,
-   g_inputFont) and an edit control (g_hChatEdit, id 0xca, style 0x40000400, not visible) on the main window at the
-   field's caret (g_chatCaretX - 5, g_chatCaretY + 0x21), subclassed by editField_editProc (the old procedure in
+   addresses, the e-mail, chat), `chars` letters wide (g_editFieldLength): a 12-pixel Fixedsys font (0x4b29b0,
+   g_inputFont) and an edit control (g_hEditField, id 0xca, style 0x40000400, not visible) on the main window at the
+   field's caret (g_editCaretX - 5, g_editCaretY + 0x21), subclassed by editField_editProc (the old procedure in
    g_editOldProc), focused, holding the typed line (g_chatLine) with the caret at its end. Returns the last
    SendMessageA's eax (EM_SETSEL) */
 int (editField_createEdit)(int chars)
@@ -311,21 +311,21 @@ int (editField_createEdit)(int chars)
 	font.height = -12;
 	font.charSet = 1;   /* DEFAULT_CHARSET */
 	strcpy(font.face, (const char *)STR(0x4b29b0, "Fixedsys"));
-	g_chatEditLength = chars;
+	g_editFieldLength = chars;
 	g_inputFont = CreateFontIndirectA(&font);   /* CreateFontIndirectA */
 	void *edit = IMPORT(0x4a9350, void *, u32, const char *, const char *, u32, int, int, int, int, void *, u32, void *, void *)(
-		0, (const char *)STR(0x4b29a8, "EDIT"), NULL, 0x40000400, g_chatCaretX - 5, g_chatCaretY + 0x21,
+		0, (const char *)STR(0x4b29a8, "EDIT"), NULL, 0x40000400, g_editCaretX - 5, g_editCaretY + 0x21,
 		chars * 8, 0x18, g_mainWindow, 0xca, g_hInstance, NULL);   /* CreateWindowExA("EDIT") */
-	g_hChatEdit = edit;
+	g_hEditField = edit;
 	if (edit) {
 		SendMessageA(edit, 0x30, (*(u32 *)&g_inputFont), 0);   /* WM_SETFONT */
-		edit = g_hChatEdit;
+		edit = g_hEditField;
 	}
 	g_editOldProc = SetWindowLongA(edit, -4, FN_ADDR(editField_editProc, 0x440840));   /* SetWindowLongA(GWL_WNDPROC) */
-	SetFocus(g_hChatEdit);   /* SetFocus */
+	SetFocus(g_hEditField);   /* SetFocus */
 	u32 length = strlen(g_chatLine);
-	SendMessageA(g_hChatEdit, 0xc, 0, OBJ(g_chatLine));   /* WM_SETTEXT */
-	return SendMessageA(g_hChatEdit, 0xb1, length, length);   /* EM_SETSEL */
+	SendMessageA(g_hEditField, 0xc, 0, OBJ(g_chatLine));   /* WM_SETTEXT */
+	return SendMessageA(g_hEditField, 0xb1, length, length);   /* EM_SETSEL */
 }
 
 /* ---- the start-up ---- */
@@ -402,17 +402,17 @@ int (app_init)(void *inst, int show)
 		return 0;
 
 	memcpy((void *)OBJ(g_windowClass), &wc, sizeof wc);
-	g_hWndMain = IMPORT(0x4a9350, void *, u32, const char *, const char *, u32, int, int, int, int, void *, void *, void *, void *)
+	g_mainWindow = IMPORT(0x4a9350, void *, u32, const char *, const char *, u32, int, int, int, int, void *, void *, void *, void *)
 		(0, (const char *)STR(0x4b0714, "AXIS"), (const char *)STR(0x4b2874, "AXIS"), 0x86000000, 0, -1, g_screenW, g_screenH + 1, NULL, NULL, inst, NULL);   /* CreateWindowExA: WS_POPUP | WS_VISIBLE | WS_SYSMENU */
-	if (!g_hWndMain)
+	if (!g_mainWindow)
 		return 0;
 	g_hInstance = inst;
 	g_showCmd = show;
 	static const u32 timers[3][2] = { { 0x29a, 60000 }, { 0x115c, 30000 }, { 0x309, 60000 } };
 	for (int k = 0; k < 3; k++)
-		SetTimer(g_hWndMain, timers[k][0], timers[k][1], NULL);   /* SetTimer */
-	ShowWindow(g_hWndMain, show);   /* ShowWindow */
-	UpdateWindow(g_hWndMain);   /* UpdateWindow */
+		SetTimer(g_mainWindow, timers[k][0], timers[k][1], NULL);   /* SetTimer */
+	ShowWindow(g_mainWindow, show);   /* ShowWindow */
+	UpdateWindow(g_mainWindow);   /* UpdateWindow */
 	if (!app_startupLoad(inst)) {
 		app_setDisplayMode(g_desktopWidth, g_desktopHeight, 0, g_desktopDepth);
 		return 0;
@@ -476,20 +476,20 @@ long STDCALL (glWindow_wndProc)(void *wnd, u32 msg, u32 w, u32 l)
 
 #define CallWindowProcA(proc, wnd, msg, w, l) IMPORT(0x4a930c, long, u32, u32, u32, u32, u32)(proc, wnd, msg, w, l)
 
-/* the chat line closed by a key: its text kept (Enter) or dropped, the edit destroyed, the main window focused again
+/* the text field's line closed by a key: its text kept (Enter) or dropped, the edit destroyed, the main window focused again
    and the line closed (menu_closeInputLine, sent or not) */
-static void chat_close(void *edit, int sent)
+static void edit_close(void *edit, int sent)
 {
 	if (sent)
 		SendMessageA(edit, 0xd, 0x80, OBJ(g_chatLine));   /* WM_GETTEXT */
 	SendMessageA(edit, 0xc, 0, 0);                 /* WM_SETTEXT "" */
-	DestroyWindow(g_hChatEdit);   /* DestroyWindow */
+	DestroyWindow(g_hEditField);   /* DestroyWindow */
 	SetFocus(g_mainWindow);   /* SetFocus */
 	menu_closeInputLine(sent);   /* menu_closeInputLine */
-	g_chatLineDone = 1;
+	g_editLineDone = 1;
 }
 
-/* 0x440840: the chat edit's window procedure (set by editField_createEdit). Keys: Enter, once the open delay (g_menuKeyGuard)
+/* 0x440840: the text fields' hidden edit's window procedure (set by editField_createEdit). Keys: Enter, once the open delay (g_menuKeyGuard)
    is not over k_0f, takes the line and sends it (g_fieldStep 20: the next field); Esc drops it; Tab in the room
    (g_screen 0x320) closes it (sent) and steps by Shift (g_fieldStep 10 back when held, else 20); Home and Left are swallowed (0).
    Timers: 0x29a, in the lobby (g_arenaLobbyState 2), and 0x115c, when connected (g_roomConnected), send their keep-alives (0x17 to
@@ -500,20 +500,20 @@ long STDCALL (editField_editProc)(void *wnd, u32 msg, u32 w, u32 l)
 		switch (w) {
 		case 0xd:   /* Enter */
 			if (!(g_menuKeyGuard > k_0f)) {
-				chat_close(wnd, 1);
+				edit_close(wnd, 1);
 				g_fieldStep = 0x14;
 			}
 			break;
 		case 0x1b:   /* Esc */
-			chat_close(wnd, 0);
+			edit_close(wnd, 0);
 			break;
 		case 9:   /* Tab */
 			if (g_menuState == 0x320) {
-				DestroyWindow(g_hChatEdit);   /* DestroyWindow */
+				DestroyWindow(g_hEditField);   /* DestroyWindow */
 				SetFocus(g_mainWindow);   /* SetFocus */
 				menu_closeInputLine(1);   /* menu_closeInputLine */
 				g_fieldStep = 0x14;
-				g_chatLineDone = 1;
+				g_editLineDone = 1;
 				g_fieldStep = GetKeyState(0x10) < 0 ? 10 : 20;   /* GetKeyState(VK_SHIFT) */
 			}
 			break;
@@ -584,7 +584,7 @@ u32 STDCALL (game_WinMain)(void *inst, void *prev, const char *cmd, int show)
 	if (launcher)
 		PostMessageA(launcher, 0x12, 0, 0);
 	if (!app_init(inst, show)) {
-		MessageBoxA(g_hWndMain, (const char *)STR(0x4b29ec, "Windows Init Faild"), (const char *)STR(0x4b141c, "ERROR"), 0);
+		MessageBoxA(g_mainWindow, (const char *)STR(0x4b29ec, "Windows Init Faild"), (const char *)STR(0x4b141c, "ERROR"), 0);
 		return 0;
 	}
 	g_gameRunning = 1;
@@ -683,9 +683,9 @@ long STDCALL (game_wndProc)(void *wnd, u32 msg, u32 w, u32 l)
 		g_lobbyReportsOff = 1;
 		dplay_leaveSession();
 		net_disconnect();
-		KillTimer(g_hWndMain, 0x29a);
-		KillTimer(g_hWndMain, 0x115c);
-		KillTimer(g_hWndMain, 0x309);
+		KillTimer(g_mainWindow, 0x29a);
+		KillTimer(g_mainWindow, 0x115c);
+		KillTimer(g_mainWindow, 0x309);
 		g_lobbyReportsOff = 1;
 		app_shutdown();   /* app_shutdown */
 		DestroyWindow(wnd);
@@ -694,8 +694,8 @@ long STDCALL (game_wndProc)(void *wnd, u32 msg, u32 w, u32 l)
 		SystemParametersInfoA(0x61, 0, NULL, 0);   /* SystemParametersInfoA: SPI_SETSCREENSAVERRUNNING off */
 		if (g_windowDC)
 			ReleaseDC(wnd, g_windowDC);
-		if (g_hChatEdit)
-			DestroyWindow(g_hChatEdit);
+		if (g_hEditField)
+			DestroyWindow(g_hEditField);
 		ShowCursor(1);
 		PostQuitMessage(0);
 		switch (g_exitMode) {
@@ -740,17 +740,17 @@ long STDCALL (game_wndProc)(void *wnd, u32 msg, u32 w, u32 l)
 			while (ShowCursor(0) >= 0)
 				;
 			if (!g_displayModeChanged)
-				ShowWindow(g_hWndMain, 9);   /* SW_RESTORE */
+				ShowWindow(g_mainWindow, 9);   /* SW_RESTORE */
 			if (g_displayModeLeft) {
 				g_displayModeLeft = 0;
 				app_setDisplayMode(g_otherModeWidth, g_otherModeHeight, 4, 0x20);
-				ShowWindow(g_hWndMain, 9);
+				ShowWindow(g_mainWindow, 9);
 			}
 		} else {
 			while (ShowCursor(1) < 0)
 				;
 			if (g_displayModeChanged) {
-				ShowWindow(g_hWndMain, 7);   /* SW_SHOWMINNOACTIVE */
+				ShowWindow(g_mainWindow, 7);   /* SW_SHOWMINNOACTIVE */
 				ChangeDisplaySettingsA(NULL, 0);   /* ChangeDisplaySettingsA: the desktop's mode back */
 				g_displayModeChanged = 0;
 				g_displayModeLeft = 1;

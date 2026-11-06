@@ -119,7 +119,7 @@ void THISCALL (shape_bindTextureBy)(u8 *shape, const char *suffix, int flags, in
 /* 0x4566c0 (thiscall on a texture bank): texture i bound, through the cache of GL textures (0x14-byte slots from
    slots: their index, the texture in them, the GL id, next and previous in a ring, oldest the oldest). Not in the
    cache (its slot, records[].slot in its 0x68-byte record, negative): the oldest slot taken and the texture loaded into it
-   (tinted when its flags, records[].flags, have 2; mipmapped unless they have 1; loadCount counts the loads); in it but changed
+   (tinted when its flags, records[].flags, have 2; clamped at the edges when they have 1, else repeated: tex_upload's mode; mipmaps by the bank's mipmaps; loadCount counts the loads); in it but changed
    (records[].changed 1): loaded again; else just bound. The slot then becomes the newest: when it was the oldest the next one is
    (and that one's texture loses its slot), else it moves to just before the oldest. Its callers ignore the eax it leaves */
 void THISCALL (tex_bind)(u8 *tm, int i)

@@ -1,4 +1,5 @@
-/* net_sessions.c: the network games received (DirectPlay's session enumeration) merged into the session list the
+/* net_sessions.c: the network games received from the game's own TCP servers (the lobby's arena records,
+   g_serverList, and the game server's rooms, g_roomList, each with its ping) merged into the session list the
    arena lobby and the game room show: g_sessionList's SessionEntrys, their count in g_gameCount. */
 #include "../game.h"
 #include <string.h>

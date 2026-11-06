@@ -1,5 +1,5 @@
 /* menu_title.c: the title screen's emblem: a picture cut into four screen quarters (with a second, pulsing layer
-   over it) that spread apart as the title goes on, and the logo fading in over them. */
+   over it) that spread apart as the title goes on, and the logo fading out over them. */
 #include "../game.h"
 
 static void bind(int texture)
@@ -37,7 +37,8 @@ static void quarters(const int textures[4], int spread, int overlap)
 /* 0x429170: drawn every frame of the front end while the title is up (the patch DLL wraps the call to it).
    g_titleClosing: the title is closing, and both layers fade out over 50 frames as they spread (g_titleSpread by
    g_titleCloseFrames); otherwise the base layer stands at 0.6 and the top layer pulses between 0.2 and 0.9. The logo
-   fades in over ten time units (g_frameTime, taken as 1 when a frame took more than 3) and is drawn until opaque. */
+   fades out over ten time units (g_logoFade rising, alpha 1 - it; g_frameTime, taken as 1 when a frame took more
+   than 3) and is drawn until it is gone. */
 void (menu_titleEmblemTransition)(void)
 {
 	gfx_setProjection2D3D(2);

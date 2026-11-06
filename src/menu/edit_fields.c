@@ -1,6 +1,6 @@
 /* edit_fields.c: opening a text field for typing, on the arena screens and in the game room. Typing goes through a
    hidden EDIT control (editField_createEdit) into the shared line g_chatLine, drawn with a caret at
-   (g_chatCaretX, g_chatCaretY); the menu keys wait meanwhile (g_textFieldOpen, g_menuKeyGuard). Each field starts from its
+   (g_editCaretX, g_editCaretY); the menu keys wait meanwhile (g_textFieldOpen, g_menuKeyGuard). Each field starts from its
    current text (copied in) or empty, and raises its own "being edited" flag. */
 #include "../game.h"
 
@@ -8,7 +8,7 @@
 #define PANEL_X(addr) GAME_VAR(int, addr)
 #define PANEL_Y(addr) GAME_VAR(int, (addr) + 4)
 #define ARENA_SETUP ADDR(g_newArenaFormLeft)      /* the arena settings (name, password, limits) */
-#define ARENA_CREATE ADDR(g_playerSetupLeft)     /* "create arena" */
+#define PLAYER_SETUP ADDR(g_playerSetupLeft)     /* the arena lobby's SETUP PLAYER dialog */
 #define ARENA_JOIN ADDR(g_arenaGameListLeft)    /* the game list (the join password) */
 #define ROOM_TOP ADDR(g_roomFormLeft)
 #define ROOM_LOGIN ADDR(g_roomLoginLeft)     /* the Ladder login (ID, password) */
@@ -49,8 +49,8 @@ static int line_length(void)
 
 static void caret(int x, int y)
 {
-	g_chatCaretX = x;
-	g_chatCaretY = y;
+	g_editCaretX = x;
+	g_editCaretY = y;
 }
 
 /* ---- arena ---- */
@@ -61,7 +61,7 @@ void (arena_editPlayerName)(void)
 {
 	edit_start(0x10);
 	line_set(g_arenaPlayerName);
-	caret(PANEL_X(ARENA_CREATE) + 0xc2, PANEL_Y(ARENA_CREATE) + 100);
+	caret(PANEL_X(PLAYER_SETUP) + 0xc2, PANEL_Y(PLAYER_SETUP) + 100);
 	g_menuKeyGuard = 5.0f;
 	g_chatLength = line_length();
 	g_typingArenaPlayerName = 1;
@@ -249,8 +249,8 @@ void (editField_readTyping)(void)
 {
 	if (g_textFieldOpen == 0)
 		return;
-	int n = GetWindowTextLengthA(g_hChatEdit);
-	GetWindowTextA(g_hChatEdit, g_chatLine, n + 1);
+	int n = GetWindowTextLengthA(g_hEditField);
+	GetWindowTextA(g_hEditField, g_chatLine, n + 1);
 	g_chatLength = line_length();
 }
 

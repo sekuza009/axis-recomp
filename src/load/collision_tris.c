@@ -628,9 +628,9 @@ int THISCALL (space_collideBlock)(SpaceBlock *self, float r, const float *pos, c
 }
 
 /* a triangle of the stage's ground or bounds put into the collision space (no unit, part or indices) */
-static void ground_triangle(u8 *grid, u32 id, const void *a, const void *b, const void *c)
+static void ground_triangle(u8 *grid, u32 flags, const void *a, const void *b, const void *c)
 {
-	space_insertTriangle(grid, id, (u32)a, (u32)b, (u32)c, 0, -1, -1, -1, -1);
+	space_insertTriangle(grid, flags, (u32)a, (u32)b, (u32)c, 0, -1, -1, -1, -1);
 }
 
 /* 0x471040 (thiscall on the stage): its collision space (space) set up over the world box (levelLow low, levelHigh

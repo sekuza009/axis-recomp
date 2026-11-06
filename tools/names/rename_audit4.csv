@@ -382,7 +382,7 @@ g_skirmishRow,g_missionRow
 g_skirmishState,g_missionsState
 g_missionStage,g_mapIndex
 g_missionBox,g_skirmishBox
-g_missionBriefing,g_skirmishBriefing
+g_missionBriefing,g_skirmishNewPartsNotice
 g_missionBusy,g_skirmishLeft
 g_missionChosen,g_skirmishChosen
 g_missionColourDim,g_skirmishColourDim

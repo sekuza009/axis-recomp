@@ -82,11 +82,14 @@ void THISCALL (factor_addFactorBy)(LightFactors *pool, const u32 *record)
    triangles x 0x68, quads x 0x64, segments x 0x24 bytes; the counts at entryLimit, matrixLimit, colourLimit, triangleLimit, quadLimit, segmentLimit) in one block (+8, its size +4;
    allocated and owned, ownsBlock 1, without memory given, else the memory given, the caller's size checked: fatal
    messages), the tables' starts laid out (entries ..; the triangles' and quads' each in parts), then reset (ViewVolume_clearDrawCounts). Its
-   caller ignores the eax it leaves */
+   caller ignores the eax it leaves. As in the original, the quads' part is sized quads x 0x64 but quadOrderB starts at
+   + quadLimit x 0x64 and the segments at + quadLimit x 0x6c, so the segment table ends quadLimit x 8 bytes (3200 for
+   Console_ctor's 400) past the size checked: harmless only because viewMemory (2,000,000) is larger than the
+   1,240,000 asked */
 void THISCALL (ViewVolume_initBy)(u8 *view, int entries, int matrices, int colours, int triangles, int quads, int segments, void *mem, int size)
 {
 #define VV ((ViewVolume *)view)   /* the same by its fields (src/scene.fields) */
-	ViewVolume_freeBlock(view);
+	ViewVolume_release(view);
 	VV->colourLimit = colours;
 	VV->entryLimit = entries;
 	VV->matrixLimit = matrices;

@@ -158,7 +158,7 @@ void THISCALL (armc_drawPreview3D)(Scene *scene, const u32 *eye, const u32 *forw
 	u8 white[4] = { 0xff, 0xff, 0xff, 0xff }, dim[4] = { 0xf0, 0xc0, 0xc0, 0x60 };
 	scene_averageFrameTime(scene);
 	u32 x44 = BITS(scene->frameTime);
-	float far = view_farPlane(), near = view_nearPlane(), fov = view_angle();
+	float far = view_farPlane(), near = view_nearPlane(), fov = view_fov();
 	stage_setupView(stage, eye, forward, up,
 	                                                                                                       BITS(fov), w, h, BITS(near), BITS(far), x44);   /* stage_setupView */
 	ViewVolume_captureMatrices(vv, 0, scene->modelview);
@@ -300,7 +300,7 @@ void (menuState700_armCenter)(void)
 	if (state == 1 || state == 0)
 		return;
 	if (g_frameOpening) {
-		menu_drawFrame(g_armcPageLeft, g_armcPageTop, g_armcPanelRight, g_armcPageBottom);
+		menu_drawFrame(g_armcPageLeft, g_armcPageTop, g_armcPageRight, g_armcPageBottom);
 		return;
 	}
 	if (g_armcSessionDue && !g_armcSessionMade) {
@@ -368,7 +368,7 @@ u32 (armc_open)(void)
 	g_menuAt[2] = fromRoom ? 0xc4ce4000 : 0xc4098000;                                /* -1650, -550 */
 	g_armcPageLeft = 10;
 	g_armcPageTop = 10;
-	g_armcPanelRight = 0x276;
+	g_armcPageRight = 0x276;
 	g_armcPageBottom = 0x1d6;
 	static const u32 colourA[4] = { 0, 0x3f800000, 0x3f800000, 0x3f800000 }, colourB[4] = { 0, 0x3f19999a, 0x3f19999a, 0x3f800000 };
 	for (int i = 0; i < 4; i++) {
@@ -427,15 +427,15 @@ u32 (armc_open)(void)
 	armc_syncPartCursors();
 	sound_playMenu(4);
 	if (g_armcFrom == 3) {
-		int money = g_pilotLevel;
-		if (money > g_bestLevelNet)
-			g_bestLevelNet = money;
-		return money;
+		int reached = g_pilotLevel;
+		if (reached > g_bestLevelNet)
+			g_bestLevelNet = reached;
+		return reached;
 	}
-	int money = g_progress;
-	if (money > g_bestProgressSolo)
-		g_bestProgressSolo = money;
-	return money;
+	int reached = g_progress;
+	if (reached > g_bestProgressSolo)
+		g_bestProgressSolo = reached;
+	return reached;
 }
 
 /* ---- the five spinning part panels behind the mech (panels 1 .. 5 of the records at g_spinPanels) ---- */
@@ -602,7 +602,7 @@ void (armc_initPanels)(void)
 	(*(u32 *)&g_panelRate2) = 0xc0000000;   /* -2 */
 }
 
-/* 0x410190: the ARM CENTER's mouse, on pages 1 .. 4 (g_armcMode) in a state past 1 (g_armcState) with no dialog open.
+/* 0x410190: the ARM CENTER's mouse, on pages 1 .. 4 (g_armcMode) in a state past 1 (g_armcState) while no panel frame is opening (g_frameOpening).
    Returns what the original leaves in eax (the value it stopped at, or the page's handler's) */
 u32 (armc_mouse)(void)
 {
@@ -647,7 +647,7 @@ void (armc_snapshot)(int i)
 
 /* 0x41dab0: the ARM CENTER's weight line at y (g_armcPageTop): the label MSG(299, "WEIGHT") right-aligned at 0x27c (8 units a
    character in mode 1, g_language, else 14); below it the total weight (the ten parts' weights summed into g_totalWeight)
-   in red when above the most the legs carry (g_legsMaxWeight), else green, then "/most" in white, both as "%.0f" and
+   in red when above the load limit (g_loadLimit: the actor's loadMax), else green, then "/limit" in white, both as "%.0f" and
    right-aligned at 0x27e. The original leaves eax to callers that ignore it */
 void (armc_drawWeightLine)(void)
 {
@@ -663,11 +663,11 @@ void (armc_drawWeightLine)(void)
 	g_totalWeight = f32(sum);
 	memset(s.most, 0, sizeof s.most);
 	strcpy(s.most, (const char *)STR(0x4ad564, "/"));
-	sprintf(s.total, (const char *)STR(0x4b0354, "%.0f"), (double)g_legsMaxWeight);
+	sprintf(s.total, (const char *)STR(0x4b0354, "%.0f"), (double)g_loadLimit);
 	strcat(s.most, s.total);
 	memset(s.total, 0, sizeof s.total);
 	sprintf(s.total, (const char *)STR(0x4b0354, "%.0f"), (double)g_totalWeight);
-	if (g_totalWeight > g_legsMaxWeight)
+	if (g_totalWeight > g_loadLimit)
 		set_colour_bits(g_textColour, 0x3f800000, 0, 0, 0x3f800000);
 	else
 		set_colour_bits(g_textColour, 0, 0x3f800000, 0, 0x3f800000);

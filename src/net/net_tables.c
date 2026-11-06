@@ -1,5 +1,5 @@
 /* net_tables.c: the network code's fixed tables: the 200 sessions found (g_sessionTable at 0xa0b470: SessionSlot;
-   the last index in g_dplaySessionCount) and the sixteen player slot records (0x410 bytes from g_netSlots). */
+   their count in g_dplaySessionCount) and the sixteen player slot records (0x410 bytes from g_netSlots). */
 #include "../game.h"
 #include "winsock.h"
 #include <string.h>
@@ -15,7 +15,7 @@ int (net_findFreeSession)(void)
 }
 
 /* 0x4532b0: session i's SessionDesc copy (g_sessionTable[i].desc), 0 when i is out of range (0 ..
-   g_dplaySessionCount, the last inclusive) or the slot unused */
+   g_dplaySessionCount, a count, yet taken inclusive) or the slot unused */
 int (net_getSession)(int i)
 {
 	if (i > -1 && i <= g_dplaySessionCount && g_sessionTable[i].used)
@@ -88,7 +88,7 @@ u32 (net_freeSessionList)(void)
 	return r;
 }
 
-/* 0x4542a0: the address typed as "a.b.c.d" (g_localAddress, cut up in place by strtok) as (a << 24) | b << 16 | c << 8 | d
+/* 0x4542a0: this machine's address "a.b.c.d" (g_localAddress, from net_getLocalAddress; cut up in place by strtok) as (a << 24) | b << 16 | c << 8 | d
    (a not masked). Each part goes into a 4-byte slot of a zeroed 20-byte buffer (a longer part runs into the next
    slot); more than four parts would overrun the original's stack, and a string with none makes it copy from NULL */
 int (net_parseAddress)(void)
@@ -255,8 +255,9 @@ u32 (net_closeThreadHandles)(void)
 }
 
 /* 0x452d70: the server's 62-byte reply received into g_playerListReply (recv on g_gameServerSocket until 62 bytes have come or 3 s
-   have passed; each call reads to the start of the buffer), then by its kind (+0x1e): 0 accepted (net_addPlayerRecord), 1
-   refused (g_playerListDone set, g_netLastRequest cleared) */
+   have passed; each call reads to the start of the buffer), then by its kind (+0x1e): 0 a player for the list
+   (net_addPlayerRecord), 1 the list's end (g_playerListDone set: WndProc then raises g_rankingListIn; g_netLastRequest
+   cleared) */
 void (net_receivePlayerListReply)(void)
 {
 	u8 *reply = g_playerListReply;
@@ -564,7 +565,7 @@ int (net_getLocalAddress)(void)
 	return 0;
 }
 
-/* 0x4512c0: a chat line sent: logged for this player (net_formatChatLine into g_sentChatBlock), then a message (type 1, from
+/* 0x4512c0: a chat line sent: formatted for this player (net_formatChatLine into g_sentChatBlock), then a message (type 1, from
    the player g_localPlayerId, the text at +0xc) in a new global block sent to everyone (dplay_send). 1 when sent */
 int (net_sendChat)(const char *text)
 {
@@ -911,8 +912,8 @@ int (dplay_create)(void)
 	return r;
 }
 
-/* 0x451090: a game message from player `from`, by its type (the first word): 1 a chat line (+0xc) logged into
-   g_lastChatLine (the old one dropped first; g_lastChatLineSet raised); 2 the host's id (+4, into g_netHostGone) with the player slots
+/* 0x451090: a game message from player `from`, by its type (the first word): 1 a chat line (+0xc) formatted into
+   g_lastChatLine (the old pointer only cleared first, its block not freed; g_lastChatLineSet raised); 2 the host's id (+4, into g_netHostGone) with the player slots
    reset (net_freeSessionList, then net_freeAllSlots); 6 our own player slot (byte +4, 0x410 bytes a slot from g_netSlots) taken, the slot
    noted in g_localSlot and g_slotTakenFlag raised; 7 another player's slot data: the slot taken by `from` if it was free,
    then a 0x40-byte block (size +5, data +9) stored when the size is right. Returns what the original leaves in
@@ -1380,8 +1381,8 @@ static void answer_reply(u32 answer, const u8 *codes, int count, u32 start)
 }
 
 /* 0x452620: the reply to the last request (g_netLastRequest) read: 10 the lobby's status (g_lobbyReplyCode into g_lobbyStatus), 13 the
-   list of games, 14 / 15 the game server's answers (kept in g_gameServerAnswer / g_newIdAnswer), 18 its status (g_gameServerReplyCode into
-   g_gameServerStatus), 19 the server list, 21 the player list, 26 the player list cleared (g_playerListDone), 29 a 0x22-byte notice
+   server list (the lobby's: net_receiveLobbyReply), 14 / 15 the game server's answers (kept in g_gameServerAnswer / g_newIdAnswer), 18 its status (g_gameServerReplyCode into
+   g_gameServerStatus), 19 the room list (net_receiveGameServerReply), 21 the player list, 26 the player list cleared (g_playerListDone), 29 a 0x22-byte notice
    (g_rankReplyCode; g_rankReplyIn when it is not empty). The callers ignore the eax it leaves */
 void (net_recv)(void)
 {
@@ -1638,8 +1639,8 @@ static int angle_byte(const void *v)
    nextRun), a third angle (nextLean); a pending hit (hitPending: cleared) as 0x80 alive / 0xc0 dead with the attacker
    (lastAttacker) and value (lastHitWeapon); then its five shot slots (shotBullets, nine bytes each): a slot whose shot (0x4e8 bytes
    from the stage's bullets) is gone is cleared (-1); else flags (1, 3 for a new one: shots[].isNew + slot x 0x20 cleared; 4 aimed
-   at an actor, 8 still flying), the target (hitActor, or the object's index + 1, or 0) and the position (end while
-   it flies at an object, else pos). Sent by send_packet. Its caller ignores the eax it leaves */
+   at an actor, 8 its life run out, age > life: the round has ended), the target (hitActor, or the object's index + 1, or 0)
+   and the position (impact once it has ended on an object, else pos). Sent by send_packet. Its caller ignores the eax it leaves */
 static void THISCALL __attribute__((used)) net_sendPlayerState_body(u8 *g, int p, u8 *packet)
 {
 	u8 *a = (u8 *)&((Scene *)g)->players[p];
@@ -1696,10 +1697,10 @@ static void THISCALL __attribute__((used)) net_sendPlayerState_body(u8 *g, int p
 		else
 			w = 0;
 		memcpy(o + 1, &w, 2);
-		int flying = shot->age > shot->life;
-		if (flying)
+		int ended = shot->age > shot->life;
+		if (ended)
 			o[0] |= 8;
-		u8 *at = (u8 *)(flying && (*(void * *)&shot->hit) ? shot->impact : shot->pos);
+		u8 *at = (u8 *)(ended && (*(void * *)&shot->hit) ? shot->impact : shot->pos);
 		for (int c = 0; c < 3; c++) {
 			w = (u16)scaled(at + c * 4, ADDR(k_tenthsToDegrees));
 			memcpy(o + 3 + c * 2, &w, 2);
@@ -1717,7 +1718,7 @@ static u32 table_rand(void)
 	return (*(u32 *)&g_randTable[at & 0xfff]);
 }
 
-/* a random entry of one of the level's geometry tables (rows of row_len dwords from base, rows of them at +rows,
+/* a random entry of one of the type tables (the part types' and actorItems) (rows of row_len dwords from base, rows of them at +rows,
    n per row at +per_row): its random position (a 16-bit word, below 100000 before it was cut) into *at, the entry
    returned */
 static u32 sample(u8 *s, u32 per_row, u32 rows, int row_len, u32 base, u8 *at)
@@ -1734,8 +1735,8 @@ static u32 sample(u8 *s, u32 per_row, u32 rows, int row_len, u32 base, u8 *at)
    countdown endTime is running), the clock (elapsed, clockFraction), the player's two scores (players[].timePlayed,
    players[].timeFraction of its actor), which of the players in use (net_playerInUse) were flagged twice (sendFlags[][2],
    sendFlags[][3]: cleared, one bit each), the actor's two counts (players[].kills / deaths) and the team scores (teamScores[0] /
-   [1]), the last pickup (lastPickup, set back to -1), then two random checks of the level: one of the five geometry
-   tables in turn (geometryCheckTurn counting; its number in byte 0x2b) and the sixth, each a position and the entry there.
+   [1]), the last pickup (lastPickup, set back to -1), then two random checks of the data: one of the five part type
+   tables in turn (typeCheckTurn counting; its number in byte 0x2b) and the sixth, each a position and the entry there.
    Sent by send_packet. Its caller ignores the eax it leaves */
 static void THISCALL __attribute__((used)) net_sendGamePacket_body(u8 *s, int p, u8 *packet)
 {
@@ -1761,9 +1762,9 @@ static void THISCALL __attribute__((used)) net_sendGamePacket_body(u8 *s, int p,
 	memcpy(packet + 9, &sc->elapsed, 4);
 	float clock = f32(fld_m(&sc->clockFraction));
 	memcpy(packet + 0xd, &clock, 4);
-	u32 turn = ((u32)(sc)->geometryCheckTurn);
+	u32 turn = ((u32)(sc)->typeCheckTurn);
 	packet[0x2b] = (u8)(turn % 5);
-	sc->geometryCheckTurn = turn + 1;
+	sc->typeCheckTurn = turn + 1;
 	u32 v = sample(s, tables[packet[0x2b]].per_row, tables[packet[0x2b]].rows, tables[packet[0x2b]].row_len, tables[packet[0x2b]].base,
 	               packet + 0x2c);
 	memcpy(packet + 0x2e, &v, 4);
@@ -2015,18 +2016,18 @@ void THISCALL (net_processGamePacket)(u8 *g, u32 from, int size, const char *pkt
 				}
 			}
 			static const u32 parts[5][4] = {   /* each part kind's size table, its entries a row, its count, its record in dwords */
-				{ SCENE_STAGE_AT + offsetof(Stage, headTypes), offsetof(Scene, geometryPerRow[0]), offsetof(Scene, headCount), sizeof(HeadType) / 4 },
-				{ SCENE_STAGE_AT + offsetof(Stage, chestTypes), offsetof(Scene, geometryPerRow[1]), offsetof(Scene, chestCount), sizeof(ChestType) / 4 },
-				{ SCENE_STAGE_AT + offsetof(Stage, armTypes), offsetof(Scene, geometryPerRow[2]), offsetof(Scene, armCount), sizeof(ArmType) / 4 },
-				{ SCENE_STAGE_AT + offsetof(Stage, legTypes), offsetof(Scene, geometryPerRow[3]), offsetof(Scene, legCount), sizeof(LegType) / 4 },
-				{ SCENE_STAGE_AT + offsetof(Stage, boosterTypes), offsetof(Scene, geometryPerRow[4]), offsetof(Scene, boosterCount), sizeof(BoosterType) / 4 } };
+				{ SCENE_STAGE_AT + offsetof(Stage, headTypes), offsetof(Scene, typeTablePerRow[0]), offsetof(Scene, headCount), sizeof(HeadType) / 4 },
+				{ SCENE_STAGE_AT + offsetof(Stage, chestTypes), offsetof(Scene, typeTablePerRow[1]), offsetof(Scene, chestCount), sizeof(ChestType) / 4 },
+				{ SCENE_STAGE_AT + offsetof(Stage, armTypes), offsetof(Scene, typeTablePerRow[2]), offsetof(Scene, armCount), sizeof(ArmType) / 4 },
+				{ SCENE_STAGE_AT + offsetof(Stage, legTypes), offsetof(Scene, typeTablePerRow[3]), offsetof(Scene, legCount), sizeof(LegType) / 4 },
+				{ SCENE_STAGE_AT + offsetof(Stage, boosterTypes), offsetof(Scene, typeTablePerRow[4]), offsetof(Scene, boosterCount), sizeof(BoosterType) / 4 } };
 			u16 w = ((const GamePacket *)pkt)->checkIndex;
 			int part = b[0x2b];
 			if (part <= 4 && !table_ok(g, parts[part][0], parts[part][1], parts[part][2], parts[part][3], w, ((const GamePacket *)pkt)->checkValue)) {
 				GS->dataLossPending = 1;
 				GS->dataLossCode = 2;
 			}
-			if (!table_ok(g, offsetof(Scene, actorItems), offsetof(Scene, geometryPerRow[5]), offsetof(Scene, actorItemCount), sizeof(ActorItem) / 4, ((const GamePacket *)pkt)->checkIndex2, ((const GamePacket *)pkt)->checkValue2)) {
+			if (!table_ok(g, offsetof(Scene, actorItems), offsetof(Scene, typeTablePerRow[5]), offsetof(Scene, actorItemCount), sizeof(ActorItem) / 4, ((const GamePacket *)pkt)->checkIndex2, ((const GamePacket *)pkt)->checkValue2)) {
 				GS->dataLossPending = 1;
 				GS->dataLossCode = 3;
 			}
@@ -2094,7 +2095,7 @@ void THISCALL (net_processGamePacket)(u8 *g, u32 from, int size, const char *pkt
 			hi_c = left & ~0xffu;
 		}
 		if (((PlayerRecord *)PLAYER(i))->team >= 0)
-			player_markUsed(STAGE, i);
+			playerRecord_markUsed(STAGE, i);
 		return;
 	}
 	case 3:

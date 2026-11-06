@@ -98,9 +98,9 @@ u32 (text_ascii5Pass)(int x, int y, const u8 *s)
 	return IMPORT(0x4a9220, u32, void)();   /* glEnd */
 }
 
-/* ---- the larger text passes, one quad per character (colour g_textColour): "|" breaks the line outside the console
+/* ---- the larger text passes, one quad per character (colour g_textColour): "|" breaks the line outside a match
    (screen 9999; "||" is a '|'), as does "\r\n"; "$[c]" colours the next character with colour c (16 bytes a slot
-   at g_codeColours); the 13-unit passes also take "$#c" in a match or the game room (screens 9999 / 400): colour c
+   at g_codeColours); the 13-unit passes also take "$#c" in a match or the arena lobby (screens 9999 / 400): colour c
    kept for the rest of the text, a later "$[c]" changing it. Lines are `line` apart, wrap at x g_textWrapX and stop
    at y g_textBottom. The ASCII passes draw the single-byte characters (a double-byte one is skipped, `wide` across),
    then keep where they ended (g_textEndX / g_textEndY; g_textHitBottom set when stopped). The Korean passes draw only the

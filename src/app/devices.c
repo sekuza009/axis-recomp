@@ -128,7 +128,7 @@ int (input_createDirectInput)(void *window, void *instance)
 int (input_readMouse)(void)
 {
 	void *state = (void *)OBJ(g_mouseState);
-	if (g_hWndMain && GetForegroundWindow() != g_hWndMain)
+	if (g_mainWindow && GetForegroundWindow() != g_mainWindow)
 		goto clear;
 	if (g_mouse) {
 		long r = COM(g_mouse, DI_GETDEVICESTATE_MOUSE, long, u32, void *)(g_mouse, 0x10, state);
@@ -199,9 +199,9 @@ void (input_updateMouse)(void)
    answer, or the window in front when it isn't the game's */
 u32 (input_setCursorPos)(int x, int y)
 {
-	if (g_hWndMain) {
+	if (g_mainWindow) {
 		void *front = GetForegroundWindow();
-		if (g_hWndMain != front)
+		if (g_mainWindow != front)
 			return (u32)front;
 	}
 	return SetCursorPos(x, y);
@@ -210,7 +210,7 @@ u32 (input_setCursorPos)(int x, int y)
 /* 0x487ba0: is the key down now (1 or 0; GetAsyncKeyState's low 16 bits)? */
 int (input_asyncKeyDown)(int key)
 {
-	if (g_hWndMain && GetForegroundWindow() != g_hWndMain)
+	if (g_mainWindow && GetForegroundWindow() != g_mainWindow)
 		return 0;
 	return (u16)GetAsyncKeyState(key) != 0;
 }
@@ -219,7 +219,7 @@ int (input_asyncKeyDown)(int key)
    returns the point */
 int *(input_getCursorPos)(void)
 {
-	if (!g_hWndMain || GetForegroundWindow() == g_hWndMain) {
+	if (!g_mainWindow || GetForegroundWindow() == g_mainWindow) {
 		int p[2];
 		GetCursorPos(p);
 		g_cursorX = p[0];
@@ -232,7 +232,7 @@ int *(input_getCursorPos)(void)
    when the key is up */
 int (input_asyncKeyPressed)(int key)
 {
-	if (g_hWndMain && GetForegroundWindow() != g_hWndMain)
+	if (g_mainWindow && GetForegroundWindow() != g_mainWindow)
 		return 0;
 	int *seen = (int *)(OBJ(g_asyncKeySeen) + key * 4);
 	if (!(u16)GetAsyncKeyState(key))
@@ -266,7 +266,7 @@ int (input_isDown)(int key)
 }
 
 /* 0x401600: was the key bound to an action just pressed (true once per press)? A key latches in g_keySeen + key * 4
-   until it is seen released; the wheel (0xfd down) latches in 0x4d1e8c; 0xfe is the wheel turned up. The mouse
+   until it is seen released; the wheel turned up (0xfd, WHEEL-UP) latches in 0x4d1e8c; 0xfe is the wheel turned down (WHEEL-DOWN). The mouse
    buttons (0xfa .. 0xfc) answer the frame's click pulse (OBJ(g_mouseClicked) + i * 4) only when their flag (0x4d1e80 + i * 4),
    which flips on every call, was 0 - so with one test per frame about every other click was lost. The patch DLL
    (wide.h: pressedFix) makes the buttons latch like keys instead; with it installed they are its answer. */

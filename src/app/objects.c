@@ -2,12 +2,12 @@
    the vtable) runs the plain one and frees the object when bit 0 of flags is set. */
 #include "../game.h"
 
-/* 0x483fb0: a ViewVolume's destructor: its own vtable back, then its vertex buffer freed (ViewVolume_freeBlock,
-   which also looks the GL_EXT_vertex_array entry points up again) */
+/* 0x483fb0: a ViewVolume's destructor: its own vtable back, then released (ViewVolume_release: its owned block
+   freed, its lists cleared, and the GL_EXT_vertex_array entry points looked up again) */
 int THISCALL (ViewVolume_dtor)(void *view)
 {
 	*(u32 *)view = STR(0x4aa24c, "04F");
-	return ViewVolume_freeBlock(view);
+	return ViewVolume_release(view);
 }
 
 /* 0x463430, 0x460c20, 0x463830: the deleting destructors of ViewVolume, Console and Stage (they return the object) */

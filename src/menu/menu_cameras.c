@@ -130,7 +130,7 @@ void (arena_camera)(void)
    back to the main menu (state 300) ---- */
 typedef struct {
 	u32 mode, flag, minus1;
-	int mission;   /* the skirmish screen: its state set before the rest */
+	int skirmish;   /* the skirmish screen: its state set before the rest */
 } MenuCam2;
 
 static const u32 point0[6] = { ADDR(g_camPoint0X), ADDR(g_camPoint0Y), ADDR(g_camPoint0Z), ADDR(g_camAim0X), ADDR(g_camAim0Y), ADDR(g_camAim0Z) };
@@ -179,15 +179,15 @@ static void menu_camera2(const MenuCam2 *m)
 	(*(int *)&g_menuCameraLook) = (*(int *)&g_menuLookHomeX);
 	(*(int *)&g_menuCameraLookY) = (*(int *)&g_menuLookHomeY);
 	(*(int *)&g_menuCameraLookZ) = (*(int *)&g_menuLookHomeZ);
-	if (m->mission)
+	if (m->skirmish)
 		I(m->mode) = 2;
 	(*(int *)&g_menuEyeX) = (*(int *)&g_menuEyeHomeX);
 	(*(int *)&g_menuEyeY) = (*(int *)&g_menuEyeHomeY);
 	(*(int *)&g_menuEyeZ) = (*(int *)&g_menuEyeHomeZ);
-	if (m->mission && g_leavingForMatch == 1)
+	if (m->skirmish && g_leavingForMatch == 1)
 		(*(int *)&g_whiteFade) = 0;
 	g_viewAspect = (float)full;
-	if (!m->mission)
+	if (!m->skirmish)
 		I(m->mode) = 2;
 	I(m->minus1) = -1;
 	g_menuState = 300;
@@ -295,15 +295,15 @@ void (armc_cameraStep)(void)
 /* 0x444130: the mission list's camera (screen 900) */
 void (missions_camera)(void)
 {
-	static const MenuCam2 skirmish = { ADDR(g_missionsState), ADDR(g_missionsDrawBackground), ADDR(g_missionsPage), 0 };
-	menu_camera2(&skirmish);
+	static const MenuCam2 missions = { ADDR(g_missionsState), ADDR(g_missionsDrawBackground), ADDR(g_missionsPage), 0 };
+	menu_camera2(&missions);
 }
 
 /* 0x447cb0: the skirmish screen's camera (screen 500) */
 void (skirmish_camera)(void)
 {
-	static const MenuCam2 mission = { ADDR(g_skirmishState), ADDR(g_skirmishShowBackground), ADDR(g_skirmishLeft), 1 };
-	menu_camera2(&mission);
+	static const MenuCam2 skirmish = { ADDR(g_skirmishState), ADDR(g_skirmishShowBackground), ADDR(g_skirmishLeft), 1 };
+	menu_camera2(&skirmish);
 }
 
 /* ---- the free menu camera moved along its heading (the turn at g_freeCamYaw, plus a quarter turn, wrapped, in radians)
@@ -350,7 +350,7 @@ void (freeCam_stepRight)(void)
 	g_menuEyeZ = (float)((X)g_menuEyeZ - u);
 }
 
-/* the ARM CENTER's turn (g_freeCamYaw, degrees) as its sine and cosine, and kept in the slot's record (g_slotCams) */
+/* the free (watching) camera's turn (g_freeCamYaw, degrees) as its sine and cosine, and kept in the slot's record (g_slotCams) */
 static void turn_update(int slot)
 {
 	X a = (X)g_freeCamYaw * k_pi * k_oneOver180;
@@ -482,8 +482,8 @@ void (freeCam_keys)(void)
 		menu_clearInputBuffer(0x32);
 		g_watchChatOpen = 1;
 		(*(u32 *)&g_menuKeyGuard) = 0x41a00000;   /* 20 */
-		g_chatCaretX = 0x32;
-		g_chatCaretY = 0x1cc;
+		g_editCaretX = 0x32;
+		g_editCaretY = 0x1cc;
 		return;
 	}
 	if (input_justPressed(g_keyCancel2)) {

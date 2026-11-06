@@ -800,9 +800,6 @@ void (setup_drawMenu)(void)
    that ignore it */
 void (mainmenu_drawMenu)(void)
 {
-#define g_depth g_mainMenuDepth
-#define g_idle g_menuIdleTime
-#define g_hint g_menuHintFade
 #define g_hintStep (*(u32 *)&g_menuHintStep)
 	const float *frame = (const float *)ADDR(g_frameTime);
 	int on = -1;
@@ -812,12 +809,12 @@ void (mainmenu_drawMenu)(void)
 			break;
 		}
 	if (on == -1) {
-		g_idle = f32(fadd_m(fld_m(frame), &g_idle));
+		g_menuIdleTime = f32(fadd_m(fld_m(frame), &g_menuIdleTime));
 		g_panelHovered = 0;
 	} else {
 		g_panelHovered = !g_replaySelectOpen;
-		g_idle = 0;
-		g_hint = 0;
+		g_menuIdleTime = 0;
+		g_menuHintFade = 0;
 		g_hintStep = 0x3d4ccccd;   /* 0.05 */
 		if (g_replaySelectOpen)
 			on = -1;
@@ -828,42 +825,39 @@ void (mainmenu_drawMenu)(void)
 		}
 	}
 	if (g_tunnelFlyingIn) {   /* (no calls: before the tunnel's projection and texturing as in the original) */
-		long double step = fmul_m(fmul_m(fadd_m(fld_m(&g_depth), (const float *)ADDR(k_550f)), frame), (const float *)ADDR(k_tenthsToDegrees));
+		long double step = fmul_m(fmul_m(fadd_m(fld_m(&g_mainMenuDepth), (const float *)ADDR(k_550f)), frame), (const float *)ADDR(k_tenthsToDegrees));
 		g_mainMenuFrames++;
-		if (g_depth > k_m549_9f)
-			g_depth = f32(fld_m(&g_depth) - step);
+		if (g_mainMenuDepth > k_m549_9f)
+			g_mainMenuDepth = f32(fld_m(&g_mainMenuDepth) - step);
 		else {
 			g_tunnelFlyingIn = 0;
-			(*(u32 *)&g_depth) = 0xc4098000;   /* -550 */
+			(*(u32 *)&g_mainMenuDepth) = 0xc4098000;   /* -550 */
 		}
 	}
 	Highlight h = { on, white, 1, 1, 1 };
-	Tunnel t = { (*(u32 *)&g_depth), OBJ(g_mainMenuTextures) + 12, 0, 1, 1, 0, SIX_WALLS };
+	Tunnel t = { (*(u32 *)&g_mainMenuDepth), OBJ(g_mainMenuTextures) + 12, 0, 1, 1, 0, SIX_WALLS };
 	menu_tunnel(&t, &h);
 	if (on != -1) {
 		if (!g_menuCameraMove)
 			caption(MSG(71, "SKIRMISH PLAY|Hotkey is $[5] K"), on);
-	} else if (!g_menuCameraMove && !g_replaySelectOpen && g_idle > k_120f) {
-		long double hint = fadd_m(fmul_m(fld_m((const float *)&g_hintStep), frame), &g_hint);
-		g_hint = f32(hint);
+	} else if (!g_menuCameraMove && !g_replaySelectOpen && g_menuIdleTime > k_120f) {
+		long double hint = fadd_m(fmul_m(fld_m((const float *)&g_hintStep), frame), &g_menuHintFade);
+		g_menuHintFade = f32(hint);
 		if (hint > k_3f) {
-			g_hint = 1.0f;
+			g_menuHintFade = 1.0f;
 			g_hintStep = 0xbd4ccccd;   /* -0.05 */
-		} else if (!(g_hint >= k_0f)) {
-			g_hint = 0;
+		} else if (!(g_menuHintFade >= k_0f)) {
+			g_menuHintFade = 0;
 			g_hintStep = 0x3d4ccccd;
-			g_idle = 0;
+			g_menuIdleTime = 0;
 		}
 		gfx_setProjection2D3D(2);
 		glLoadIdentity();
-		float alpha = g_hint > k_1f ? 1.0f : g_hint;
+		float alpha = g_menuHintFade > k_1f ? 1.0f : g_menuHintFade;
 		set_colour_bits(g_textColour, 0x3f800000, 0x3f800000, 0x3f800000, BITS(alpha));
 		text_drawBox16(0, 0x1d0, 0x280, (const char *)STR(0x4b2a98, "AUTOPLAY-F1"));
 	}
 	glDisable(GL_TEXTURE_2D);
-#undef g_depth
-#undef g_idle
-#undef g_hint
 #undef g_hintStep
 }
 #undef SIX_WALLS

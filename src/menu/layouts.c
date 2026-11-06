@@ -59,7 +59,7 @@ static void options_panel(u32 rec, u32 rec2, u32 gx, u32 gy, u32 gx2)
 /* the ARM CENTER's layout origin (x, y, right, bottom) and its tab rows (3 tabs 0x64 apart, two rows) */
 #define AX ADDR(g_armcPageLeft)
 #define AY ADDR(g_armcPageTop)
-#define AX2 ADDR(g_armcPanelRight)
+#define AX2 ADDR(g_armcPageRight)
 #define AY2 ADDR(g_armcPageBottom)
 static void armc_tabs(u32 rec)
 {
@@ -114,7 +114,7 @@ void (roomLogin_layout)(void)
 void (missionList_layout)(void)
 {
 	static const RArg a[4] = { RA(ADDR(g_missionsWindowLeft), 0x10, 0), RA(ADDR(g_missionsWindowTop), 0x44, 1), RA(ADDR(g_missionsWindowLeft), 0x25d, 0), RA(ADDR(g_missionsWindowTop), 0x5c, 1) };
-	static const RArg b[4] = { RA(ADDR(g_missionsWindowRight), -0x12c, 1), RA(ADDR(g_briefingBottom), -0x40, 0), RA(ADDR(g_missionsWindowRight), -0xb4, 1), RA(ADDR(g_briefingBottom), -0x20, 0) };
+	static const RArg b[4] = { RA(ADDR(g_missionsWindowRight), -0x12c, 1), RA(ADDR(g_missionsWindowBottom), -0x40, 0), RA(ADDR(g_missionsWindowRight), -0xb4, 1), RA(ADDR(g_missionsWindowBottom), -0x20, 0) };
 	rect_spec(OBJ(g_missionListRects), (OBJ(g_missionListRects) + 0x80), 0x1a, a); rect_spec((OBJ(g_missionListRects) + 0x80), (OBJ(g_missionListRects) + 0x80) + 2 * 16, 0x8c, b);
 }
 
@@ -127,8 +127,8 @@ void (account_layout)(void)
 
 void (briefing_layout)(void)
 {
-	static const RArg a[4] = { RA(ADDR(g_missionsWindowRight), -0x12c, 1), RA(ADDR(g_briefingBottom), -0x30, 0), RA(ADDR(g_missionsWindowRight), -0xb4, 1), RA(ADDR(g_briefingBottom), -0x10, 0) };
-	static const RArg b[4] = { RA(ADDR(g_missionsWindowLeft), 0x40, 1), RA(ADDR(g_briefingBottom), -0x30, 0), RA(ADDR(g_missionsWindowLeft), 0xb8, 1), RA(ADDR(g_briefingBottom), -0x10, 0) };
+	static const RArg a[4] = { RA(ADDR(g_missionsWindowRight), -0x12c, 1), RA(ADDR(g_missionsWindowBottom), -0x30, 0), RA(ADDR(g_missionsWindowRight), -0xb4, 1), RA(ADDR(g_missionsWindowBottom), -0x10, 0) };
+	static const RArg b[4] = { RA(ADDR(g_missionsWindowLeft), 0x40, 1), RA(ADDR(g_missionsWindowBottom), -0x30, 0), RA(ADDR(g_missionsWindowLeft), 0xb8, 1), RA(ADDR(g_missionsWindowBottom), -0x10, 0) };
 	rect_spec(OBJ(g_briefingRects), (OBJ(g_briefingRects) + 0x20), 0x8c, a); rect_spec((OBJ(g_briefingRects) + 0x20), OBJ(g_briefingRects) + 4 * 16, 0x8c, b);
 }
 

@@ -1,44 +1,44 @@
 /* object_list.c: an object list: shapes placed by their own matrices, each with a buffer of shading colours, lit by
-   light factors (shape_shadeParts, through the inverse of the shape's matrix) and point lights (shape_lightParts),
+   light factors (shape_shadingColours, through the inverse of the shape's matrix) and a tint colour (shape_addColour),
    and handed to the view volume. */
 #include "../game.h"
 #include <string.h>
 
 
-/* an entry's colours: with neither lights nor factors cleared; factors first (they set the colours), point lights
-   then added on top, or alone (setting them). The inverse is taken again before the point lights, as the original
+/* an entry's colours: with neither tint nor factors cleared; factors first (they set the colours), the tint colour
+   then added on top, or alone (setting them). The inverse is taken again before the tint, as the original
    does, though they do not use it; a singular matrix leaves inverse as it was */
-static void relight(ListedObject *e, const LightFactors *factors, const void *lights)
+static void relight(ListedObject *e, const LightFactors *factors, const void *tint)
 {
 	float inverse[16];
-	if (lights == NULL) {
+	if (tint == NULL) {
 		if (factors != NULL) {
 			Mat4_invert(inverse, e->matrix);
-			shape_shadeParts(e->colours, 1, e->shape, factors, inverse);
+			shape_shadingColours(e->colours, 1, e->shape, factors, inverse);
 		} else {
 			for (u32 k = 0; k < (u32)e->shape->colourCount; k++)
 				e->colours[k] = 0;
 		}
 	} else if (factors != NULL) {
 		Mat4_invert(inverse, e->matrix);
-		shape_shadeParts(e->colours, 1, e->shape, factors, inverse);
+		shape_shadingColours(e->colours, 1, e->shape, factors, inverse);
 		Mat4_invert(inverse, e->matrix);
-		shape_lightParts(e->colours, 0, e->shape, lights);
+		shape_addColour(e->colours, 0, e->shape, tint);
 	} else {
 		Mat4_invert(inverse, e->matrix);
-		shape_lightParts(e->colours, 1, e->shape, lights);
+		shape_addColour(e->colours, 1, e->shape, tint);
 	}
 }
 
 /* 0x46f7a0 (ObjectList_relight): every entry that has a shape recoloured: shaded by the light factors
-   (shape_shadeParts through the inverse of its matrix), then the colour tint added on top (or alone set) by
+   (shape_shadingColours through the inverse of its matrix), then the colour tint added on top (or alone set) by
    shape_addColour (part_addColour: RGB added and clamped, alpha the minimum); neither gives black */
-void THISCALL (ObjectList_relight)(ObjectList *list, const LightFactors *factors, const void *lights)
+void THISCALL (ObjectList_relight)(ObjectList *list, const LightFactors *factors, const void *tint)
 {
 	for (int i = 0; i < list->count; i++) {
 		ListedObject *e = &list->entries[i];
 		if (e->shape != NULL)
-			relight(e, factors, lights);
+			relight(e, factors, tint);
 	}
 }
 
@@ -47,7 +47,7 @@ void THISCALL (ObjectList_relight)(ObjectList *list, const LightFactors *factors
    there is no tint, factors are given and factors->enabled is not 1) and queued with its own colours; any other list
    hands the factors and the tint colour on (ViewVolume_queueModel's colour). cull, material and the extra matrix
    go to ViewVolume_queueModel. */
-int THISCALL (ObjectList_queue)(ObjectList *list, void *view, const LightFactors *factors, const void *lights, int cull,
+int THISCALL (ObjectList_queue)(ObjectList *list, void *view, const LightFactors *factors, const void *tint, int cull,
                           int material, int extraMatrix)
 {
 	if (list->skelCount <= 0 || list->count <= 0 || list->skeletons[list->skel] == 0)
@@ -57,11 +57,11 @@ int THISCALL (ObjectList_queue)(ObjectList *list, void *view, const LightFactors
 		if (e->shape == NULL)
 			continue;
 		if (list->preLit == 1) {
-			if (lights != NULL || factors == NULL || factors->enabled == 1)
-				relight(e, factors, lights);
+			if (tint != NULL || factors == NULL || factors->enabled == 1)
+				relight(e, factors, tint);
 			ViewVolume_queueModel(view, e->shape, (u32)e->colours, e->matrix, 0, NULL, cull, material, extraMatrix);
 		} else {
-			ViewVolume_queueModel(view, e->shape, 0, e->matrix, (int)factors, lights, cull, material, extraMatrix);
+			ViewVolume_queueModel(view, e->shape, 0, e->matrix, (int)factors, tint, cull, material, extraMatrix);
 		}
 	}
 	return 1;

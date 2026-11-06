@@ -173,8 +173,8 @@ void (armc_weaponsPageKeys)(void)
 }
 
 /* 0x410810: the colour page: OK keeps the mech, back or cancel leaves; g_dikP / g_dikW to the parts / weapons
-   page; the colour slot picked (slot keys, g_dikA slot 5, kept for undo) or stepped (up / down; wrapping up to
-   slot 5 keeps it for undo too); g_dikR toggles the spin (the original leaves eax to callers that ignore it) */
+   page; the colour slot picked (slot keys, g_dikA slot 5, VIEW ALL: seeded from slot 1) or stepped (up / down; wrapping up to
+   slot 5 seeds it too); g_dikR toggles the spin (the original leaves eax to callers that ignore it) */
 void (armc_colourPageKeys)(void)
 {
 	if (input_justPressed(g_keyOk)) {

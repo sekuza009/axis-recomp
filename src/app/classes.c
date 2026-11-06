@@ -25,7 +25,7 @@ int THISCALL (collisionPlane_clear)(void *self) { return clear(self, 0x2b); }
 int THISCALL (spaceBlock_clear)(void *self) { return clear(self, 0x14); }
 int THISCALL (CollisionVolume_clear)(void *self) { return clear(self, 0x3d); }       /* CollisionVolume */
 int THISCALL (ViewVolume_clear)(void *self) { return clear(self, 0x245c); }
-int THISCALL (TimeSync_clear)(void *self) { return clear(self, 0xe); }        /* TimeSync */
+int THISCALL (TimeSync_clear)(void *self) { return clear(self, 0xe); }        /* TimeSync: from +0, so also the vtable TimeSync_ctor has just set (as in the original) */
 int THISCALL (spaceNode_clear)(void *self) { return clear(self, 0x4); }
 
 /* 0x483d60: Light's two counters cleared */
@@ -90,7 +90,7 @@ int THISCALL (CollisionVolume_release)(void *self) { free_owned(self); Collision
 int (net_sessionCount)(void) { return g_dplaySessionCount; }
 int (gfx_getWidth)(void) { return g_glWidth; }
 int (gfx_getHeight)(void) { return g_glHeight; }
-float (view_angle)(void) { return g_viewFov; }
+float (view_fov)(void) { return g_viewFov; }
 float (view_nearPlane)(void) { return g_viewNear; }
 float (view_farPlane)(void) { return g_viewFar; }
 
@@ -482,7 +482,7 @@ static const u32 k_cameraPresets[6][10] = {
    stage (+0x1f36c8) with all its member arrays built (the CRT's vector constructors crt_arrayConstruct / 0x49fd2d with their
    element constructors) and vtables set; the factor tables sized (ViewVolume_initBy into the block at viewMemory); the
    parts (stage_build with nine names), the component catalogue and the items loaded (failing: a fatal
-   message); the ten camera presets, the stage's player slots reset (stage_setCockpitActor -1), the geometry check sizes; the
+   message); the ten camera presets, the stage's player slots reset (stage_setCockpitActor -1), the part type tables' check sizes; the
    help text (Help.txt: 30 lines of 63 characters into consoleLines) read, each with its line end cut (an empty one
    cuts the byte before it), and the chat macros loaded (chat_loadMacros). (The original's SEH frame, for
    unwinding a failed construction, is not reproduced.) Returns the object */
@@ -551,14 +551,14 @@ u8 *THISCALL (Console_ctor)(u8 *g)
 	memcpy(GS->cameraPresets, k_cameraPresets, sizeof k_cameraPresets);
 	GS->cameraMode = 1;
 	stage_setCockpitActor((Stage *)s, -1);
-	GS->geometryPerRow[0] = 6;
-	GS->geometryPerRow[2] = 6;
+	GS->typeTablePerRow[0] = 6;
+	GS->typeTablePerRow[2] = 6;
 	GS->watchedPlayer = -1;
 	GS->manualPick[0] = GS->manualPick[1] = GS->manualPick[2] = 0;
-	GS->geometryPerRow[1] = 3;
-	GS->geometryPerRow[3] = 7;
-	GS->geometryPerRow[4] = 10;
-	GS->geometryPerRow[5] = 0x18;
+	GS->typeTablePerRow[1] = 3;
+	GS->typeTablePerRow[3] = 7;
+	GS->typeTablePerRow[4] = 10;
+	GS->typeTablePerRow[5] = 0x18;
 	for (int k = 0; k < 30; k++)
 		GS->helpLines[k][0] = 0;
 	void *f = crt_fopen((const char *)STR(0x4c457c, "Help.txt"), (const char *)STR(0x4ad5e0, "rt"));
@@ -647,7 +647,7 @@ void THISCALL (scene_startSession)(u8 *g, u32 client, int mode)
 	teams_setup((Scene *)g);
 	zero_dwords((u8 *)g + offsetof(Scene, lostTime), 8);   /* lostTime .. timeLimit */
 	GS->endReason = -1;
-	zero_dwords((u8 *)g + offsetof(Scene, geometryCheckTurn), 7);   /* geometryCheckTurn .. geometryPickUnread */
+	zero_dwords((u8 *)g + offsetof(Scene, typeCheckTurn), 7);   /* typeCheckTurn .. typeTablePickUnread */
 	GS->dataLossPending = (*(int *)&GS->previewTurn) = 0;
 	zero_dwords((u8 *)g + offsetof(Scene, holdAltitude), 10);   /* holdAltitude .. holdBooster */
 	GS->weaponKey = -1;

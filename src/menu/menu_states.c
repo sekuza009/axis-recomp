@@ -211,7 +211,7 @@ void (mainmenu_drawReplaySelect)(void)
 
 /* 0x443530: the main menu's frame: background, menu (mainmenu_drawMenu), the replay selection dialog when open; while the
    menus are being left for a match (g_leavingForMatch 1) the camera's move 1 (in), the next screen 9999 and the white
-   fade (menu_drawWhiteFade / menu_drawWhiteFade) */
+   fade (menu_drawWhiteFade) */
 void (menuState300_frame)(void)
 {
 	menu_drawBackground();
@@ -256,22 +256,22 @@ void (skirmish_roundChosen)(int mission)
 	sound_playMenu(2);
 }
 
-/* 0x447b10: the skirmish screen's clicks (none while a dialog is up or it is busy): the briefing's close, else the list's (skirmish_clicks) */
+/* 0x447b10: the skirmish screen's clicks (none while a dialog is up or it is busy): the new-parts notice's close, else the list's (skirmish_clicks) */
 void (skirmish_screenClicks)(void)
 {
 	if (g_frameOpening != 0 || g_skirmishLeft != 0)
 		return;
-	if (g_skirmishBriefing != 0)
-		briefing_clickClose();
+	if (g_skirmishNewPartsNotice != 0)
+		newPartsNotice_clickClose();
 	else
 		skirmish_clicks();
 }
 
-/* 0x447c30: the briefing's keys: Esc or Enter closes it */
-void (skirmish_briefingKeys)(void)
+/* 0x447c30: the new-parts notice's keys: Esc or Enter closes it */
+void (newPartsNotice_keys)(void)
 {
 	if (input_justPressed(g_keyCancel2) == 1 || input_justPressed(g_keyClick) == 1)
-		g_skirmishBriefing = 0;
+		g_skirmishNewPartsNotice = 0;
 }
 
 /* 0x447b40: the list's keys: Esc or back leaves, O starts the mission, left / right step through the missions
@@ -306,8 +306,8 @@ void (skirmish_keys)(void)
 {
 	if (g_skirmishState == 1 || g_skirmishState == 0 || g_frameOpening != 0 || g_skirmishLeft != 0)
 		return;
-	if (g_skirmishBriefing != 0)
-		skirmish_briefingKeys();
+	if (g_skirmishNewPartsNotice != 0)
+		newPartsNotice_keys();
 	else
 		skirmish_roundKeys();
 }
@@ -502,8 +502,8 @@ void (ladder_sendRecord)(void)
 
 /* a panel sliding in: while flag is set, eased moves a tenth of the way to the constant at k_setupPanelTarget per time unit
    and slid moves back by the same step, until slid is no longer above the double at k_setupPanelEnd (then the flag drops
-   and slid is set to -1650). Afterwards, while the quit question is up, the keys are held and the next screen set
-   to 9999 (returns 1) */
+   and slid is set to -1650). Afterwards, while leaving for a match (g_leavingForMatch), the camera's move 1 (menuCamera_setMove) and the next
+   screen 9999 (returns 1) */
 static int menu_slide(u32 flag, u32 eased, u32 slid)
 {
 	if (GAME_VAR(int, flag)) {
@@ -536,10 +536,10 @@ int (room_slideMenu)(void) { return menu_slide(ADDR(g_roomPanelsSliding), ADDR(g
 
 /* ---- back to the menus after a game: the arena session left (dplay_leaveSession) and, unless kept, the connection closed;
    the player slots (0x410 bytes from g_netSlots) emptied ---- */
-static void leave_game(u32 lobby, int disconnect)
+static void leave_game(u32 matchMode, int disconnect)
 {
 	g_leavingForMatch = 0;
-	(*(u32 *)&g_matchMode) = lobby;
+	(*(u32 *)&g_matchMode) = matchMode;
 	dplay_leaveSession();
 	if (disconnect)
 		net_disconnect();   /* net_disconnect */
@@ -691,9 +691,9 @@ u32 (menuState800_gameRoom)(void)
 
 #define lstrcpyA(dst, src) IMPORT(0x4a911c, char *, char *, const char *)(dst, src)
 
-/* the match's result sent to the others (the host only): message g_netHostLeftMessageKind with its flag word g_hostGoneMessageFlag raised
+/* the host leaving announced to the others (the host only): message g_netHostLeftMessageKind with its flag word g_hostGoneMessageFlag raised
    while it goes out (net_sendMessage) */
-static void send_result(void)
+static void send_host_leaving(void)
 {
 	if (!g_isHost)
 		return;
@@ -703,8 +703,8 @@ static void send_result(void)
 }
 
 /* 0x420100: after a match. Started from outside (g_launchedForNetGame = 1): the game quits (code 0) and the text mode is reset.
-   Otherwise by the match's mode g_matchMode (0 after a replay, g_replayRunning): 1 the arena (the result sent; screen 400),
-   2 a network game (the result sent, the two players' names 0x43 / 0x33 into a game record, net_send 0x16; back to
+   Otherwise by the match's mode g_matchMode (0 after a replay, g_replayRunning): 1 the arena (the host's leaving sent; screen 400),
+   2 a network game (the host's leaving sent, the two players' names 0x43 / 0x33 into a game record, net_send 0x16; back to
    the room when g_gameServerSocket, else the menus), 3 the campaign (the end mode set by the mission 0x9f181c and the
    progress saved; after the last mission, 15, the game quits with code 0x63 instead), any other the menus. Then
    the menu music, and message 6 when g_mapMissing asks for it. Returns what the original leaves in eax */
@@ -723,12 +723,12 @@ u32 (game_postMatch)(void)
 	int mission;
 	switch (g_matchMode) {
 	case 1:
-		send_result();
+		send_host_leaving();
 		game_returnToArenaLobby();
 		break;
 	case 2:
 		if (g_isHost) {
-			send_result();
+			send_host_leaving();
 			RoomRecord *to = (*(RoomRecord **)&g_roomLeavePacket), *from = (*(RoomRecord **)&g_roomPacket);
 			lstrcpyA(to->hostName, from->hostName);
 			lstrcpyA(to->address, from->address);

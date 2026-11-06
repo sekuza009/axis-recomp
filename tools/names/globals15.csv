@@ -19,7 +19,7 @@
 0x9dd938,u32,g_menuEyeKeptZ
 # the new arena's settings record (0x4db528: name, map, players, kind, mode, ..., password)
 0x4db548,signed char,g_newArenaMap
-0x4db549,u8,g_newArenaPlayers
+0x4db549,u8,g_newArenaMaxPlayers
 0x4db54a,u8,g_newArenaRotation
 0x4db54b,u8,g_newArenaMode
 0x4db54e,int,g_newArenaPassword

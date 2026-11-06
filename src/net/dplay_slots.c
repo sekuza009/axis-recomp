@@ -4,7 +4,7 @@
 #include "../game.h"
 #include <string.h>
 
-/* close slot k (close is the slot's own close function, called through the game as the original does) */
+/* close slot k: an open slot is marked closed and DirectPlay released (dplay_release); 0 when it was not open */
 static int slot_close(int k)
 {
 	if (g_dplaySlots[k] == 0)

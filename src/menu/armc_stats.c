@@ -20,7 +20,7 @@ typedef long double X;
 
 #define PANEL_X0 g_armcPageLeft
 #define PANEL_Y0 g_armcPageTop
-#define PANEL_X1 g_armcPanelRight
+#define PANEL_X1 g_armcPageRight
 #define PANEL_Y1 g_armcPageBottom
 
 static const u32 k_white[4] = { 0x3f800000, 0x3f800000, 0x3f800000, 0x3f800000 };
@@ -159,19 +159,19 @@ static void count_bonus(Panel *p, int dy, int n)
 	value(p, dy);
 }
 
-/* the wear on a part (g_totalWeight over the limit g_legsMaxWeight: the share over it, four times, of f taken off; else 0) */
+/* the wear on a part (g_totalWeight over the limit g_loadLimit: the share over it, four times, of f taken off; else 0) */
 static X wear(float f)
 {
-	if (g_totalWeight > g_legsMaxWeight)
-		return neg(((X)g_totalWeight - g_legsMaxWeight) / g_legsMaxWeight * FOUR * f);
+	if (g_totalWeight > g_loadLimit)
+		return neg(((X)g_totalWeight - g_loadLimit) / g_loadLimit * FOUR * f);
 	return ZERO;
 }
 
 /* the same for a speed: the share taken off the speed f with its bonus a */
 static X speed_wear(float f, X a)
 {
-	if (g_totalWeight > g_legsMaxWeight)
-		return neg(((X)g_totalWeight - g_legsMaxWeight) / g_legsMaxWeight * FOUR * ((X)f + a));
+	if (g_totalWeight > g_loadLimit)
+		return neg(((X)g_totalWeight - g_loadLimit) / g_loadLimit * FOUR * ((X)f + a));
 	return ZERO;
 }
 

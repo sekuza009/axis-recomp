@@ -26,7 +26,7 @@ static void take_block(u8 *self, void *mem, int size, char *out, u32 no_memory, 
 
 /* 0x46aa10 (thiscall on a skeleton): read from f: the 0x24-byte header, the block (+8, its size +4), then the bones
    (0x70 bytes each, boneCount of them, at the block's start: bones) and after them each bone's two tables (posKeyCount keys of
-   0x20 bytes at posKeys, rotKeyCount frames of 0x28 bytes at rotKeys). Its callers ignore the eax it leaves */
+   0x20 bytes at posKeys, rotKeyCount keys of 0x28 bytes at rotKeys). Its callers ignore the eax it leaves */
 void THISCALL (skel_loadFromFile)(u8 *self, void *f, void *mem, int size)
 {
 	Skeleton *sko = (Skeleton *)self;
@@ -174,7 +174,7 @@ void THISCALL (skel_loadFrom)(u8 *sk, const char *path, void *mem, int size)
    colours when lit and found), the skeletons after them (frames), and lit, the colours worked out (ObjectList_relight). Its
    callers ignore the eax it leaves */
 void THISCALL (ObjectList_load)(u8 *list, void *shapes, void *skels, int ns, const u8 *names, int nk, const u8 *knames,
-                                     int lit, u32 factors, u32 lights, void *mem, int size)
+                                     int lit, u32 factors, u32 tint, void *mem, int size)
 {
 	ObjectList *ol = (ObjectList *)list;
 	partList_release(list);
@@ -222,7 +222,7 @@ void THISCALL (ObjectList_load)(u8 *list, void *shapes, void *skels, int ns, con
 	for (int j = 0; j < ol->skelCount; j++)
 		AT(void *, ol->skeletons, j * 4) = skel_getSkeletonPtrBy(skels, (u32)(knames + j * 0x40));
 	if (ol->preLit == 1)
-		ObjectList_relight(list, factors, lights);
+		ObjectList_relight(list, factors, tint);
 }
 
 /* the key for frame among a bone's n keys (size bytes each, their first dword the frame they start at): the last one

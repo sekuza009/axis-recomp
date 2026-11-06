@@ -6,7 +6,7 @@
 
 #define X0 g_armcPageLeft
 #define Y0 g_armcPageTop
-#define X1 g_armcPanelRight
+#define X1 g_armcPageRight
 #define Y1 g_armcPageBottom
 #define K(addr) ((const float *)RELOC(addr))
 #define g_slot g_armcColourSlot
@@ -254,7 +254,7 @@ static void stat_float(int x, int y, float value, u32 format, u32 unit)
    (texture OBJ(g_slotTextures) + 4 k, when it has a name, g_partRecords) and label (MSG(291, "HAND-W1($[0] 1)")) with its name (or MSG(319, "EMPTY SLOT")); the part
    box: its picture (g_armcBuildTexture), name (0x4dc150) and type (MSG(711, "HV-PISTOL"), by g_weaponListTable / g_extraListTable of g_armcCursor), or
    MSG(320, "REMOVE WEAPON") without one; its arrows either side of it (0xc / 0xd lit); the mode box; the stats panel: nothing chosen (0x4dc190 = -1: MSG(319, "EMPTY SLOT")), a part type only
-   (g_viewedPartAmmoType = -1: MSG(771, "SPECIAL WEAPON") and its kind MSG(745, "GRAVITY CONTROLLER")), or the 16 stats under their labels (MSG(301, "SLOT TYPE")), the sixth with
+   (g_viewedPartAmmoType = -1: MSG(771, "SPECIAL WEAPON") and its description lines, MSG(745) + its actorItems index: 772 .. 780), or the 16 stats under their labels (MSG(301, "SLOT TYPE")), the sixth with
    the pilot's (g_selectedCharacter) skill bonus. The original leaves eax to callers that ignore it */
 void (armc_drawWeaponsScreen)(void)
 {

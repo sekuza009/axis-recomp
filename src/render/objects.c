@@ -144,7 +144,7 @@ void THISCALL (mapObject_frame)(u8 *s, int i, float dt)
 		Mat4_multiply(MO->relMatrix, m, MO->placeInverse);
 		Mat4_invert(MO->relInverse, MO->relMatrix);
 		if (!(obj[0xc] & 2))
-			shape_shadeParts((*(u32 * *)&MO->colours[0]), 1, (Model *)((u8 *)MO->model), (const LightFactors *)&st->mapLights,
+			shape_shadingColours((*(u32 * *)&MO->colours[0]), 1, (Model *)((u8 *)MO->model), (const LightFactors *)&st->mapLights,
 			                 MO->matrixInverse);
 		MO->poseStale = 0;
 		const float *c = MO->model->centre;
@@ -155,7 +155,7 @@ void THISCALL (mapObject_frame)(u8 *s, int i, float dt)
 	}
 	if (MO->colourSide == 1 && !(obj[0xc] & 2)) {
 		memcpy((*(void * *)&MO->colours[1]), (*(void * *)&MO->colours[0]), MO->model->colourCount * 4);
-		shape_shadeParts((*(u32 * *)&MO->colours[1]), 0, (Model *)((u8 *)MO->model), (const LightFactors *)&st->dynamicLights,
+		shape_shadingColours((*(u32 * *)&MO->colours[1]), 0, (Model *)((u8 *)MO->model), (const LightFactors *)&st->dynamicLights,
 		                 MO->matrixInverse);
 	}
 	if ((obj[0xc] & 1) && g_highDetail == 1) {

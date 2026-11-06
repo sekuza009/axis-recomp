@@ -43,7 +43,7 @@ static float *next_record(u8 *vv, int countAt, int full, int size)
 
 /* 0x485120: a line from p to q in colour *colour (packed RGBA) into the 36-byte records of the list at segments
    (colour, then the two clip-space points); with flag 1 dropped again when both ends are outside one clip plane */
-void THISCALL (ViewVolume_addSegment)(u8 *vv, const u32 *object, const float *p, const float *q, int flag)
+void THISCALL (ViewVolume_addSegment)(u8 *vv, const u32 *colour, const float *p, const float *q, int flag)
 {
 	float *r = next_record(vv, 0x908c, 0x90a0, 36);
 	if (!r)
@@ -58,7 +58,7 @@ void THISCALL (ViewVolume_addSegment)(u8 *vv, const u32 *object, const float *p,
 		VV->segmentCount--;
 		return;
 	}
-	*(u32 *)RELOC(r) = *object;
+	*(u32 *)RELOC(r) = *colour;
 }
 
 /* a quad record's fields besides its points: the texture id, two uv pairs (when it has a texture), the colour and its
@@ -227,7 +227,7 @@ int THISCALL (ViewVolume_addTriangle)(u8 *vv, int id, const u32 *info6, const u3
 /* 0x483fd0 (thiscall on a view volume): its owned block freed (ownsBlock), its lists cleared (ViewVolume_clear),
    then, if the driver has GL_EXT_vertex_array, the three entry points looked up (glArrays[0..2]) and entryPointsSet
    set. Run by the destructor (tail jump) and first thing in ViewVolume_initBy */
-void THISCALL (ViewVolume_freeBlock)(u8 *view)
+void THISCALL (ViewVolume_release)(u8 *view)
 {
 	ViewVolume *vw = (ViewVolume *)view;
 	if (vw->ownsBlock == 1) {

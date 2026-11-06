@@ -450,7 +450,7 @@ void (setup_controlTabKeys)(void)
 }
 
 /* 0x422830: the controls tab's mouse (an open page, no message box). While a row waits for its key, a right click,
-   the wheel (down g_dikWheelUp, up g_dikWheelDown) or a click binds that button to it; otherwise a right click closes the page
+   the wheel (up g_dikWheelUp, down g_dikWheelDown) or a click binds that button to it; otherwise a right click closes the page
    (and goes on). A click picks a page (0 .. 3), OK (the bindings at g_controlsEdit kept in g_keyForward, axis.cfg read; the
    page closed), close, the defaults; on page 3 rows 7 / 8 toggle their setting (0x4de1c0 / 0x4de1c4), 9 drags the
    slider and 10 / 11 step g_crosshairEdit (0 .. 7); any other row control with a row selected makes it wait for a key.

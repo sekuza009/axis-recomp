@@ -347,8 +347,8 @@ static int esc_name(Scene *scene)
 	if (g_textFieldOpen)
 		return scene->menuKeys[KEY_ESC] == 1;
 	chat_endTyping();
-	if (g_keptChatLine)
-		replay_startRecording(scene, (const char *)ADDR(g_keptChatLine));
+	if (g_keptChat[0])
+		replay_startRecording(scene, (const char *)OBJ(g_keptChat));
 	return 1;
 }
 

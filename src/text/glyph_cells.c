@@ -71,8 +71,8 @@ static void pen_cell(const u32 corner[4], int g, int x0, int x1, int y0, int y1)
 
 /* 0x46b950: the pen font (the HUD's small text) from texture `name` (into g_penFontTexture): 105 glyphs (from 1) in two
    sets of 5 rows of 21, every glyph 8 wide (g_penFixedWidths): the fixed set, 8 x 8 texels from row 0x48, and the
-   proportional set, rows of 14 texels from the top with the widths at g_penPropWidths. A second call only complains
-   (g_penInitialized set): 0. Otherwise 1 */
+   proportional set, rows of 14 texels from the top with the widths at g_penPropWidths. A second call would only complain
+   when g_penInitialized is 1 (then 0), but nothing sets it, so a second call sets the font up again. Returns 1 */
 int (pen_init)(const char *name)
 {
 	/* (the corners' tables less one glyph: pen_cell takes glyphs from 1) */

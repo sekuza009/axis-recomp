@@ -7,7 +7,7 @@
 0x4dc24c,int,g_armcFrom,src/menu/armc_misc.c,g_armcFrom
 0x4dc77c,int,g_armcCursor,src/menu/armc_items.c,g_armcCursor
 0x4dc77c,int,g_armcCursor,src/menu/armc_keys.c,g_armcCursor
-0x4dcc98,int,g_sliderLeft,src/menu/armc_colours.c,g_armcPanelRight
+0x4dcc98,int,g_sliderLeft,src/menu/armc_colours.c,g_armcPageRight
 0x4dceac,int,g_armcSpin,src/menu/armc_keys.c,g_armcSpin
 0x4dceac,int,g_armcSpin,src/menu/armc_misc.c,g_armcSpin
 0x4dcfd8,float,g_unusedArmcViewCountdown,src/menu/armc_keys.c,g_unusedArmcViewCountdown

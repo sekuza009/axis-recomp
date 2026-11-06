@@ -161,7 +161,7 @@ u32 (room_joinSession)(int i)
 	g_joinConnecting = 1;
 	g_joinTimedOut = 0;
 	g_sessionFound = 0;
-	u32 timer = SetTimer(g_hWndMain, 0x378, 2000, NULL);   /* SetTimer */
+	u32 timer = SetTimer(g_mainWindow, 0x378, 2000, NULL);   /* SetTimer */
 	g_arenaJoinTimer = timer;
 	return timer;
 }
@@ -211,7 +211,7 @@ u32 (arena_joinListed)(int i)
 	g_joinConnecting = 1;
 	g_joinTimedOut = 0;
 	g_sessionFound = 0;
-	u32 timer = SetTimer(g_hWndMain, 0x378, 2000, NULL);   /* SetTimer */
+	u32 timer = SetTimer(g_mainWindow, 0x378, 2000, NULL);   /* SetTimer */
 	g_arenaJoinTimer = timer;
 	return timer;
 }
@@ -293,15 +293,15 @@ u32 (roomSettings_page)(void)
 	if (g_frameOpening)
 		return menu_drawFrame(g_roomFormLeft, g_roomFormTop,
 		                                                     g_roomFormRight, g_roomFormBottom);   /* menu_drawFrame */
-	signed char players = g_roomRecPlayers;
+	signed char players = g_roomRecMaxPlayers;
 	if (players < 0 || players > 0x10)
-		(*(u8 *)&g_roomRecPlayers) = 8;
+		(*(u8 *)&g_roomRecMaxPlayers) = 8;
 	if (g_roomRecFragLimit > 0x32)
 		g_roomRecFragLimit = 0x1e;
 	if (g_roomRecTimeLimit > 0x3c)
 		g_roomRecTimeLimit = 0x1e;
-	signed char map = g_roomRecGameMode;
-	if (map < 0 || map > 0xb)
+	signed char gameMode = g_roomRecGameMode;
+	if (gameMode < 0 || gameMode > 0xb)
 		(*(u8 *)&g_roomRecGameMode) = 0;
 	room_drawGameSettings();   /* room_drawGameSettings */
 	if (g_mapListOpen == 1)
@@ -317,8 +317,8 @@ u32 (roomSettings_page)(void)
    what the original leaves in eax */
 u32 (roomLogin_endTyping)(void)
 {
-	DestroyWindow(g_hChatEdit);   /* DestroyWindow */
-	SetFocus(g_hWndMain);               /* SetFocus */
+	DestroyWindow(g_hEditField);   /* DestroyWindow */
+	SetFocus(g_mainWindow);               /* SetFocus */
 	menu_closeInputLine(1);                           /* menu_closeInputLine: the line sent */
 	if (g_lineToLoginId == 1) {
 		memset((void *)OBJ(g_accountName), 0, 30);

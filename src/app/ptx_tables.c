@@ -5,7 +5,7 @@
 
 #define I32(a) GAME_VAR(int, a)
 #define F32(a) GAME_VAR(float, a)
-#define g_ptxQuality I32(STR(0x4c59e8, "\377\377\377\377"))           /* the quality the tables are made for */
+#define g_ptxQuality I32(STR(0x4c59e8, "\377\377\377\377"))           /* meant as the quality the tables are made for, but never written: always -1, so both builders always rebuild */
 
 /* 0x46e320: the clamp table: 0 below, the identity, 255 above */
 void (ptx_initClampTable)(void)
@@ -74,7 +74,7 @@ void (ptx_initDequantTables)(int q)
 	}
 }
 
-/* 0x46e2b0: the forward DCT's divisors for quality q (g_ptxFdctDivisors: 1 / (g_ptxDequantBase x 100 / q
+/* 0x46e2b0: the forward DCT's divisors for quality q (g_ptxFdctDivisors: 1 / (g_ptxFdctBase x 100 / q
    x aan[row] x aan[col] x 8), libjpeg jcdctmgr's float fdtbl) - an encoder's table, never read by the decoder */
 void (ptx_initFdctDivisors)(int q)
 {
@@ -84,7 +84,7 @@ void (ptx_initFdctDivisors)(int q)
 	X qf = q;
 	const double *f = k_aanScales;
 	for (int j = 0; j < 128; j++) {
-		X v = (X)F32(OBJ(g_ptxDequantBase) + j * 4) * k_100;
+		X v = (X)F32(OBJ(g_ptxFdctBase) + j * 4) * k_100;
 		v = v / qf * f[(j >> 3) & 7] * f[j & 7] * k_8;
 		F32(OBJ(g_ptxFdctDivisors) + j * 4) = (float)((X)k_1 / v);
 	}

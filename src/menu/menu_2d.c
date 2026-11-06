@@ -234,7 +234,7 @@ static int phase_done(int next)
    along y0 and from the bottom up x0 (64 and 48 units a frame); 2 those fade out as full-screen lines while two
    more grow in from the right along y1 and down x1; 3 the green lines along y1 and x1 fade while a dark blue panel
    (0, 0, 0.5, 0.3) grows from (x0, y0) by a tenth of the frame a frame, and once it is as wide as the frame the
-   phase goes back to 1 and the message box flag (g_frameOpening) is cleared. Other phases draw nothing. The callers pass
+   phase goes back to 1 and the frame-opening flag (g_frameOpening) is cleared. Other phases draw nothing. The callers pass
    on the eax it leaves to menu_frame, which ignores it */
 void (menu_drawFrame)(int x0, int y0, int x1, int y1)
 {

@@ -97,7 +97,7 @@ u32 (file_readScrambled)(u8 *p, u32 size, u32 count, void *f)
 }
 
 /* ---- an entry of a .dat archive (0x44-byte records, the data's offset at +0x40) found by name and the archive's
-   file positioned at it; a missing name is reported to the log ---- */
+   file positioned at it; a missing name is a fatal error (sys_fatalErrorN, under the archive's log name) ---- */
 static void *dat_entry(int index, const char *name, u32 table, u32 file, u32 log)
 {
 	if (index < 0) {
@@ -163,7 +163,7 @@ u32 (cfg_writePlayer)(void *f)
 	int corp = g_playerCorporation;
 	FPUTS(corp == 1 ? STR(0x4b1808, "BLUE\n") : corp == 2 ? STR(0x4b1810, "YELLOW\n") : STR(0x4b1800, "RED\n"));
 	FPUTS(STR(0x4b17e8, "set_player customize "));
-	FPUTS(g_playerSex == 1 ? STR(0x4b17e4, "ON\n") : STR(0x4b17dc, "OFF\n"));
+	FPUTS(g_playerCustomize == 1 ? STR(0x4b17e4, "ON\n") : STR(0x4b17dc, "OFF\n"));
 	return FPUTS(STR(0x4b182c, "\n"));
 #undef FPUTS
 }
@@ -800,7 +800,7 @@ static int campaign_signed(const char *path)
 
 /* 0x446a10: the chosen pilot made current: axisuser.dat written (no file: nothing more); the pilot's file read
    into g_pilotSave (its name from the list at +0x80) when it is there and signed, else a new record made and written;
-   then the mech read, g_progressWentUp / g_skirmishBriefing cleared, g_progressSeen = the progress. Returns mech_loadFromProfile's eax */
+   then the mech read, g_progressWentUp / g_skirmishNewPartsNotice cleared, g_progressSeen = the progress. Returns mech_loadFromProfile's eax */
 u32 (profile_makeCurrent)(void)
 {
 	set_current_name();
@@ -832,7 +832,7 @@ u32 (profile_makeCurrent)(void)
 	crt_chdir((const char *)STR(0x4b2a80, ".."));
 	u32 r = mech_loadFromProfile();
 	g_progressWentUp = 0;
-	g_skirmishBriefing = 0;
+	g_skirmishNewPartsNotice = 0;
 	g_progressSeen = g_progress;
 	return r;
 }
@@ -1063,7 +1063,7 @@ static void skip_line(void *f)
 
 /* 0x42d7f0: the player's section read back (the lines cfg_writePlayer writes): the name (its words joined by
    spaces, then cut once more by str_dropLast, into g_cfgPlayerName), the corporation (RED 0, BLUE 1, YELLOW 2, else 0;
-   g_playerCorporation) and the sex (ON: 1; g_playerSex); then one more line. The original leaves fgets's eax to callers that
+   g_playerCorporation) and the customize switch (ON: 1; g_playerCustomize); then one more line. The original leaves fgets's eax to callers that
    ignore it */
 void (cfg_readPlayer)(void *f)
 {
@@ -1079,7 +1079,7 @@ void (cfg_readPlayer)(void *f)
 	else
 		g_playerCorporation = strcmp(value, (const char *)STR(0x4b21a8, "YELLOW")) ? 0 : 2;   /* YELLOW */
 	read_value(f, value, 0);
-	g_playerSex = !strcmp(value, (const char *)STR(0x4b21bc, "ON"));   /* ON */
+	g_playerCustomize = !strcmp(value, (const char *)STR(0x4b21bc, "ON"));   /* ON */
 	skip_line(f);
 }
 
@@ -1135,7 +1135,7 @@ static int named(const char *value, const u32 *names, int count)
 #define IS_ON(value) (!strcmp((value), (const char *)STR(0x4b21bc, "ON")))
 
 /* 0x42da70: the server section read back: the server's name (words joined by spaces, cut once more; g_arenaName),
-   the map (0 .. 21, else 0; g_arenaMap), the players (0 .. 16, else 8; g_arenaPlayers), a switch (ON; g_arenaRotation), the game
+   the map (0 .. 21, else 0; g_arenaMap), the players (0 .. 16, else 8; g_arenaMaxPlayers), a switch (ON; g_arenaRotation), the game
    type (TEAM DEATH MATCH 1 .. ACCEPT ADVANCED MODE 14, else 0; g_arenaGameType), two limits (above 250: 30; g_arenaFragLimit /
    g_arenaTimeLimit); then one more line */
 void (cfg_readServer)(void *f)
@@ -1158,7 +1158,7 @@ void (cfg_readServer)(void *f)
 			break;
 		case 2:
 			v = (signed char)crt_atoi(b.value);
-			(*(signed char *)&g_arenaPlayers) = v < 0 || v > 0x10 ? 8 : v;
+			(*(signed char *)&g_arenaMaxPlayers) = v < 0 || v > 0x10 ? 8 : v;
 			break;
 		case 3:
 			g_arenaRotation = IS_ON(b.value);
@@ -1274,7 +1274,7 @@ void (cfg_init)(void)
 	g_cfgSimpleMenu = 0;
 	strcpy(g_cfgPlayerName, (const char *)STR(0x4ad4b0, "PLAYER"));
 	g_playerCorporation = 0;
-	g_playerSex = 0;
+	g_playerCustomize = 0;
 	strcpy(g_arenaName, (const char *)STR(0x4ad4a4, "AXIS ARENA"));
 	g_soundVolume = 100;
 	g_musicVolume = 100;
