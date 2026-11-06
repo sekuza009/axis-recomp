@@ -11,7 +11,7 @@ unsigned (msg_print)(Scene *scene, int colour, const char *format, ...)
 	va_start(args, format);
 	scene->events[scene->eventCount % 5].type = colour;
 	vsprintf(scene->events[scene->eventCount % 5].text, format, args);
-	scene->events[scene->eventCount % 5].time = scene->eventTime;
+	BITS(scene->events[scene->eventCount % 5].timeLeft) = BITS(scene->eventTime);
 	scene->eventCount++;
 	if (scene->eventCount % 5 == scene->eventFirst % 5)
 		scene->eventFirst++;

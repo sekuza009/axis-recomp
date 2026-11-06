@@ -227,7 +227,7 @@ static void stats_copy(u32 dst, u32 src)
 	PilotStats *d = (PilotStats *)RELOC(dst);
 	const PilotStats *s = (const PilotStats *)RELOC(src);
 	d->level = s->level;
-	d->power = s->power;
+	BITS(d->power) = BITS(s->power);
 	BITS(d->killRate) = BITS(s->killRate);
 	d->deaths = s->deaths;
 	d->exp = s->exp;
@@ -344,7 +344,7 @@ u32 (newId_register)(void)
 	strcpy(record->name, g_accountName);
 	strcpy(record->password, g_accountPassword);
 	strcpy(record->email, g_accountEmail);
-	default_mech(record->mech, record->colours[0]);
+	default_mech(record->mech, (u8 *)record->colours[0]);
 	g_bestLevelNet = g_pilotLevel;
 	*(int *)record = 0x18;
 	u32 r = net_send(0xf, 0x65);
@@ -608,7 +608,7 @@ static u32 settings_store(GameSettings *from, GameSettings *to, u32 then)
 	u8 locked = from->password[0] != 0;
 	from->locked = locked;
 	copy_string((u8 *)to->name, (const u8 *)from->name);
-	to->players = from->players;
+	to->maxPlayers = from->maxPlayers;
 	to->map = from->map;
 	to->mode = from->mode;
 	to->rotation = from->rotation;
@@ -1635,7 +1635,7 @@ void (room_announceGame)(void)
 	packet->gameMode = room->mode;
 	packet->players = 1;
 	packet->map = room->map;
-	packet->maxPlayers = room->players;
+	packet->maxPlayers = room->maxPlayers;
 	packet->locked = room->locked;
 	lstrcpyA(packet->password, ((const GameSettings *)OBJ(g_roomRecName))->password);
 	lstrcpyA(((RoomRecord *)g_roomPacket)->name, g_roomRecName);

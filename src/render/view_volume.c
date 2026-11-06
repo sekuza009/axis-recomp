@@ -67,10 +67,10 @@ static void quad_fields(float *r, int id, const u32 *uv0, const u32 *uv1, const 
 {
 	((ViewQuad *)r)->texture = id;
 	if (id >= 0) {
-		((ViewQuad *)r)->uv0[0] = uv0[0];
-		((ViewQuad *)r)->uv0[1] = uv0[1];
-		((ViewQuad *)r)->uv1[0] = uv1[0];
-		((ViewQuad *)r)->uv1[1] = uv1[1];
+		BITS(((ViewQuad *)r)->uv0[0]) = uv0[0];
+		BITS(((ViewQuad *)r)->uv0[1]) = uv0[1];
+		BITS(((ViewQuad *)r)->uv1[0]) = uv1[0];
+		BITS(((ViewQuad *)r)->uv1[1]) = uv1[1];
 	}
 	((ViewQuad *)r)->colour = *colour;
 	((ViewQuad *)r)->kind = (int)extra;

@@ -153,10 +153,10 @@ void THISCALL (space_setBy)(u8 *space, const u32 *mn, const u32 *mx, int nx, int
 		FIELD(u32, 0x5c + i * 4) = mn[i];
 	BITS(SP->max[0]) = mx[0];
 	BITS(SP->max[1]) = mx[1];
-	SP->ny = ny;
+	SP->cellsX = ny;
 	BITS(SP->max[2]) = mx[2];
-	SP->nx = nx;
-	SP->nz = nz;
+	SP->cellsZ = nx;
+	SP->cellsY = nz;
 	int cells = SP->cellCount = nx * ny * nz;
 	if (cells <= 0)
 		sys_fatalErrorN((char *)OBJ(g_logCollisionVolume), (const char *)STR(0x4c79f4, "non-zero size required(%dx%dx%d)-setBy()"), nx, ny, nz);
@@ -165,9 +165,9 @@ void THISCALL (space_setBy)(u8 *space, const u32 *mn, const u32 *mx, int nx, int
 	SP->splitCount = splitCount;
 	SP->margin = margin;
 	SP->depth = depth;
-	SP->cellSize[0] = (float)(((long double)SP->max[2] - SP->min[2]) / SP->nx);
-	SP->cellSize[1] = (float)(((long double)SP->max[0] - SP->min[0]) / SP->ny);
-	SP->cellSize[2] = (float)(((long double)SP->max[1] - SP->min[1]) / SP->nz);
+	SP->cellSize[0] = (float)(((long double)SP->max[2] - SP->min[2]) / SP->cellsZ);
+	SP->cellSize[1] = (float)(((long double)SP->max[0] - SP->min[0]) / SP->cellsX);
+	SP->cellSize[2] = (float)(((long double)SP->max[1] - SP->min[1]) / SP->cellsY);
 	if (depth > 8)
 		sys_fatalErrorN((char *)OBJ(g_logCollisionVolume), (const char *)STR(0x4c7980, "blockRecursionLimit overflow(%d/%d)-s..."), depth, 8);
 	memset(SP->cells, 0xff, ((u32)SP->cellCapacity) * 2);
@@ -265,7 +265,7 @@ int THISCALL (space_collideAt)(u8 *grid, u32 r, const float *pos, const float *v
                                       u32 outVel, u32 outDist, u32 outPlane, u32 axis, u32 subs, u32 nsubs)
 {
 	Space *sp = (Space *)grid;
-	if (sp->nx <= 0 || sp->ny <= 0 || sp->nz <= 0)
+	if (sp->cellsZ <= 0 || sp->cellsX <= 0 || sp->cellsY <= 0)
 		return 0;
 	float to[3];
 	for (int c = 0; c < 3; c++)
@@ -280,7 +280,7 @@ int THISCALL (space_collideAt)(u8 *grid, u32 r, const float *pos, const float *v
 	for (int c = 0; c < 3; c++)
 		if (!(fadd_m(fld_m(&high[c]), margin) > outPos[c]))
 			return 0;
-	int nz = sp->nx, nx = sp->ny, ny = sp->nz;
+	int nz = sp->cellsZ, nx = sp->cellsX, ny = sp->cellsY;
 	int cz = ftol(fdiv_m(FSUB(outPos[2], low[2]), size_z));
 	if (cz > nz - 1)
 		cz = nz - 1;
@@ -434,20 +434,20 @@ u8 *THISCALL (space_insertTriangle)(u8 *space, u32 id, const float *v0, const fl
 	if (z0 < 0)
 		z0 = 0;
 	int z1 = ftol(fdiv_m(fsub_m(fadd_m(fld_m(&high[2]), margin), &grid_low[2]), size_z));
-	if (z1 > sp->nx - 1)
-		z1 = sp->nx - 1;
+	if (z1 > sp->cellsZ - 1)
+		z1 = sp->cellsZ - 1;
 	int x0 = ftol(fdiv_m(fsub_m(fsub_m(fld_m(&low[0]), margin), &grid_low[0]), size_x));
 	if (x0 < 0)
 		x0 = 0;
 	int x1 = ftol(fdiv_m(fsub_m(fadd_m(fld_m(&high[0]), margin), &grid_low[0]), size_x));
-	if (x1 > sp->ny - 1)
-		x1 = sp->ny - 1;
+	if (x1 > sp->cellsX - 1)
+		x1 = sp->cellsX - 1;
 	int y0 = ftol(fdiv_m(fsub_m(fsub_m(fld_m(&low[1]), margin), &grid_low[1]), size_y));
 	if (y0 < 0)
 		y0 = 0;
 	int y1 = ftol(fdiv_m(fsub_m(fadd_m(fld_m(&high[1]), margin), &grid_low[1]), size_y));
-	if (y1 > sp->nz - 1)
-		y1 = sp->nz - 1;
+	if (y1 > sp->cellsY - 1)
+		y1 = sp->cellsY - 1;
 	for (int y = y0; y <= y1; y++)
 		for (int z = z0; z <= z1; z++) {
 			float fy = f32(y), fz = f32(z);   /* (the original keeps these two as floats) */
@@ -461,7 +461,7 @@ u8 *THISCALL (space_insertTriangle)(u8 *space, u32 id, const float *v0, const fl
 				box[5] = f32(fadd_m(fld_m(&box[2]), size_z));
 				if (space_itemMeetsBox(plane, box, box + 3, *(const u32 *)margin) != 1)
 					continue;
-				int cell = (sp->nx * y + z) * sp->ny + x;
+				int cell = (sp->cellsZ * y + z) * sp->cellsX + x;
 				if (sp->cells[cell] == 0xffff) {
 					u8 *block = space_getNextFreeBlockPtrBy(space, box, box + 3);
 					sp->cells[cell] = (u16)array_indexOf(block, (*(int *)&sp->blocks.records), 0x50);
@@ -607,7 +607,7 @@ static long double cell_edge(int c, const float *size, const float *low)
 int THISCALL (space_traceNodes)(u8 *space, const float *p0, const float *p1, u32 hit, u32 subs, u32 nsubs)
 {
 	Space *sp = (Space *)space;
-	int nz = sp->nx, nx = sp->ny, ny = sp->nz;
+	int nz = sp->cellsZ, nx = sp->cellsX, ny = sp->cellsY;
 	if (nz <= 0 || nx <= 0 || ny <= 0)
 		return 0;
 	const float *low = sp->min;
@@ -664,7 +664,7 @@ int THISCALL (space_traceNodes)(u8 *space, const float *p0, const float *p1, u32
 						q[2] = f32(fadd_m(FMUL(db[2], t), &a2[2]));
 					}
 				}
-				u16 root = sp->cells[(cy * sp->nx + cz) * sp->ny + cx];
+				u16 root = sp->cells[(cy * sp->cellsZ + cz) * sp->cellsX + cx];
 				if (root != 0xffff) {
 					int r = space_traceBlock(sp->blocks.records + root * 0x50, a3, e3, hit, &dist, subs, nsubs);
 					if (r)

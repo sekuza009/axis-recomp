@@ -30,7 +30,7 @@ void THISCALL (events_clear)(Scene *scene, u32 time)
 {
 	scene->eventCount = 0;
 	scene->eventFirst = 0;
-	scene->eventTime = time;
+	BITS(scene->eventTime) = time;
 	BITS(scene->msgFade) = 0;
 	BITS(scene->noticeTimer) = 0;
 }
@@ -118,10 +118,10 @@ int (stage_printText)(Stage *obj, const char *format, ...)
 void THISCALL (events_age)(Scene *scene, float dt)
 {
 	for (u32 u = scene->eventFirst; u < scene->eventCount; u++) {
-		float *t = (float *)&scene->events[u % 5].time;
+		float *t = (float *)&scene->events[u % 5].timeLeft;
 		*t = (float)((long double)*t - dt);
 	}
 	u32 first = scene->eventFirst;
-	if (first < scene->eventCount && !(GAME_VAR(float, &scene->events[first % 5].time) > 0.0f))
+	if (first < scene->eventCount && !(GAME_VAR(float, &scene->events[first % 5].timeLeft) > 0.0f))
 		scene->eventFirst = first + 1;
 }

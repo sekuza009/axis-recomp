@@ -77,7 +77,7 @@ void THISCALL (stage_refillLights)(Stage *stage)
 	}
 	for (int i = 0; i < stage->particleCount; i++) {
 		Particle *p = &stage->particles[i];
-		if (p->active == 1 && p->size > k_0f)
-			factors_addPointLight_bits(pool, OBJ(g_packedWhite), BITS(p->size), p->pos);
+		if (p->active == 1 && p->lightRadius > k_0f)
+			factors_addPointLight_bits(pool, OBJ(g_packedWhite), BITS(p->lightRadius), p->pos);
 	}
 }

@@ -7,9 +7,9 @@
 
 /* a map script's message waiting in the box (Scene.msgRing = Stage.messages; command 26 MESSAGE) */
 typedef struct MessageSlot {
-	i32 speaker;   /* +0x0: its speaker (Stage.speakers) */
+	i32 speaker;   /* +0x0: its speaker (Stage.speakers; script_processCommand checks it exists); written, never read (hud_drawMessageBox shows only text and colour) */
 	u32 text;   /* +0x4: its text block in Scene.msgText */
-	i32 colour;   /* +0x8: index into g_textColours; 16 and up: none */
+	i32 colour;   /* +0x8: index into g_textColours (signed compare: < 16 used); 16 and up: the text drawn transparent (white, alpha 0) */
 	u8 _pad000000c[0x8];
 } MessageSlot;
 
@@ -17,7 +17,7 @@ typedef struct MessageSlot {
 typedef struct EventLine {
 	u32 type;   /* +0x0: 0..5: the colour */
 	char text[0x100];   /* +0x4 */
-	u32 time;   /* +0x104: Scene.eventTime when it was written */
+	float timeLeft;   /* +0x104: seconds it stays shown: Scene.eventTime (60.0) when written, counted down by events_age, which drops the oldest line once it is <= 0 (or NaN) */
 } EventLine;
 
 /* a round as fired (Player.rounds; bullet_spawn / bullet_init take it) */
@@ -26,18 +26,18 @@ typedef struct FiredRound {
 	i32 weapon;   /* +0x4: its item (ActorItem index) */
 	float from[3];   /* +0x8: where it starts (the muzzle) */
 	i32 hitPlane;   /* +0x14: a received round's collision plane (-1 none) */
-	float dir[3];   /* +0x18 */
+	float dir[3];   /* +0x18: fired here (received 0): the aim direction (the muzzle's +z); received: the point sent (ShotRecord.point): bullet_init aims at it and ends the round there (end = it, life 10) */
 	u32 muzzle;   /* +0x24: the muzzle entry's matrix (&ListedObject.matrix of the weapon model's entry given at ItemModelSet +0x15a8 + variant x 0x40; Bullet.muzzle takes it) */
 } FiredRound;
 
 /* a round an actor fired, as sent (Player.shots) */
 typedef struct ShotRecord {
-	i32 inUse;   /* +0x0: written, never read */
-	i32 isNew;   /* +0x4: 1: a new round (its bullet made) */
-	i32 kind;   /* +0x8 */
-	i32 owner;   /* +0xc */
-	i32 flag;   /* +0x10 */
-	float dir[3];   /* +0x14 */
+	i32 inUse;   /* +0x0: 1: the slot carries a round this packet (its slot's flag bit 1; 0 also for a teamless actor); actor_processFrame's received path skips the others */
+	i32 isNew;   /* +0x4: 1: a new round: the local actor's not yet announced (net_sendPlayerState sends flag 3 and clears it); a received one's bullet still to be made (actor_processFrame makes it and clears it) */
+	i32 hitActor;   /* +0x8: the actor the sender's round hit (packet flag 4; -1 none): the bullet's hitActor */
+	i32 hitPlane;   /* +0xc: the collision plane the sender's round hit (index into space.planes; -1 none or an actor hit): the bullet's hit, and a new round's FiredRound.hitPlane */
+	i32 ended;   /* +0x10: 1: the sender's round has run its life (age > life; packet flag 8): the bullet's life is set to age - dt so it ends this frame */
+	float point[3];   /* +0x14: the round's position as sent (its end when finished at a surface, else its pos; tenths decoded): the bullet's netPoint and end, a new round's FiredRound.dir */
 } ShotRecord;
 
 /* an item's models, per variant (ActorItem.sets: [0] in hand / slot 4, [1] slot 5) */
@@ -60,24 +60,24 @@ typedef struct ActorItem {
 	float weight;   /* +0x2db8: WEIGHT (an item's): added to the actor's load (mech_stats; not in game types 2 .. 11), shown in the ARM CENTER */
 	i32 slotType;   /* +0x2dbc: (the ARM CENTER's SLOT TYPE: message 321 + this, "HAND" ..) */
 	i32 ammoType;   /* +0x2dc0: BULLET TYPE (ARM CENTER; MSG(323) + this: 30mm, 60mm, E-PAK, ROCKET): the ammunition it uses (index into Player.ammo); -1: a special item, not a weapon */
-	i32 ammoPerShot;   /* +0x2dc4: ammunition one shot takes */
+	i32 ammoPerShot;   /* +0x2dc4: BULLET CONSUMPTION (ARM CENTER, message 303): ammunition one shot takes (actor_processFrame, weapons.c); a special item's (ammoType -1) kind instead: the ARM CENTER shows MSG(745) + this (GRAVITY CONTROLLER ..) */
 	i32 burst;   /* +0x2dc8: rounds a burst */
 	float burstGap;   /* +0x2dcc: seconds between a burst's rounds (0: all at once; actor_processFrame) */
 	float burstStep[3];   /* +0x2dd0: the offset between rounds fired in the same frame: round n of the frame's rounds starts (n % burst) x this from the muzzle, in the muzzle's frame (actor_processFrame); only POD-200, AFA-210 and AFA-70A have one, and their burstGap spreads bursts over frames */
 	i32 damageType;   /* +0x2ddc: DAMAGE TYPE (ARM CENTER; MSG(327) + this: 0 IMPACT, 1 ENERGY). 0: the shield takes the damage, the excess the armour; 1: the armour also loses 0.7 x it while the shield holds, then the excess plus 0.7 x what the shield took (actor_takeDamage) */
 	i32 damage;   /* +0x2de0: a hit's damage */
-	float stepLength;   /* +0x2de4: a shot's first step (traced) */
+	float range;   /* +0x2de4: SHOOTING RANGE (ARM CENTER, message 307; shown x0.01 m): bullet_init traces from the muzzle this far along the direction (end; the hit found) and gives the round life = this (or the hit's distance) / velocity */
 	float velocity;   /* +0x2de8: its speed (0: it arrives at once) */
-	float spread;   /* +0x2dec: aimed shots spread by it, less the owner's steadiness */
-	float hitRange;   /* +0x2df0: HIT RANGE (ARM CENTER, message 310): a round's hit box half-size, also its impact particle's size */
-	float splashRadius;   /* +0x2df4: SPLASH DAMAGE RANGE (message 311): a world hit's damage reaches this far, falling to half at the border (weapons.c) */
+	float spread;   /* +0x2dec: DISPERSION ANGLE (ARM CENTER, message 309; tenths of a degree, shown x0.1): bullet_init spreads aimed shots by (this - the owner's accuracy x 10) x K(0x4aa448) (none below 0) */
+	float hitRange;   /* +0x2df0: HIT RANGE (ARM CENTER, message 310; shown x0.01 m): added to an actor's radius for a round's hit test (fly_local: math_segmentSphere), a beam's half-width (shotMode 7), the size of its flash, flight, impact and mark particles */
+	float splashRadius;   /* +0x2df4: SPLASH DAMAGE RANGE (ARM CENTER, message 311; shown x0.01 m): once the round hits anything (struck: also set by hit_actor), the local machine's other live actors within this of its point take damage x (1 - d / this / 2) and the push likewise (splash, weapons.c); a bot holding it swaps weapons rather than fire at a target closer than this (actor_processFrame) */
 	i32 splashBorderDamage;   /* +0x2df8: SPLASH BORDER DAMAGE (ARM CENTER, message 312); only shown: the splash damage is half at the border (weapons.c) */
-	i32 shotMode;   /* +0x2dfc: 3: fired into a random cone; its muzzle flash is particle kind shotMode + 10 */
+	i32 shotMode;   /* +0x2dfc: the round's kind: particle kinds this + 10 (muzzle flash), + 0x14 (in flight; 3 a trail, 7 a beam instead), + 0x1e (impact), + 0x28 (surface mark), passed to actor_takeDamage; 3 also: fired into a random cone 8.1 degrees off the aim, and homing with speed and turn rate by age (home) */
 	i32 sound;   /* +0x2e00: its firing sound (< 0 none) */
 	i32 hitSound;   /* +0x2e04: its hit sound (< 0 none) */
 	float cycleTime;   /* +0x2e08: seconds a firing cycle */
-	float guidance;   /* +0x2e0c: GUIDANCE (ARM CENTER, message 314; degrees): > 0 a guided round, turning toward its target / the local player's aim point */
-	float targetingTime;   /* +0x2e10: TARGETING TIME (ARM CENTER, message 315; seconds): lockOnTime x this against the target's lockedOn; > 0 a lock-on weapon (the alert ring) */
+	float guidance;   /* +0x2e0c: GUIDANCE (ARM CENTER, message 314; tenths of a degree, shown x0.1): > 0 a guided round: every 1/15 s home() turns it by at most this toward its target / the local player's aim point (shotMode 3: this / (age + 1)^3) */
+	float targetingTime;   /* +0x2e10: TARGETING TIME (ARM CENTER, message 315; seconds, shown x1000 ms): the lock on an enemy is made once its aimTime passes the local player's lockOnTime x this (actor_processFrame); > 0: a lock-on weapon (aimTime counted, camera_setupView; the HUD ring) */
 	float push;   /* +0x2e14: > 0: a hit pushes the actor (x 10, away from the bullet) */
 } ActorItem;
 
@@ -110,7 +110,7 @@ typedef struct Model {
 typedef struct ShapePart {
 	u32 flags;   /* +0x0: 1 transparent (drawn a triangle at a time, depth-sorted; its collision triangles get 0x10: no marks), 2 unlit (its own colours), 4 not culled, 8 front faces culled, 0x10 no depth test, 0x20 not in the collision space (space_buildUnits) */
 	char texName[0x40];   /* +0x4: its texture's name ("Shape\alien\add01"; tex_getIdByName; shape_bindTextureBy appends "*<dir>"; the OBJ loader writes the material's last "_" piece) */
-	i32 texture;   /* +0x44: its texture's id (-1 / 0 none) */
+	i32 texture;   /* +0x44: its texture's id (bank x 512 + index: tex_getIdByName via shape_bindTextureBy); -1 none (shape_read, the OBJ loader's usemtl parts); 0 is a real id (bank 0's first) */
 	i32 colourBase;   /* +0x48: its first vertex in the shape's colour buffer */
 	i32 vertexCount;   /* +0x4c */
 	u8 *vertices;   /* +0x50: 12 bytes each */
@@ -133,7 +133,7 @@ typedef struct ShapePrim {
 typedef struct ListedObject {
 	Model *shape;   /* +0x0: none: an empty entry */
 	float scale;   /* +0x4: its bone's translation scale: the float after its name in the type's name record (ObjectList_load); skel_poseBones multiplies the bone's position by it */
-	u32 *colours;   /* +0x8: its shading colours (Model.colourCount dwords) */
+	u32 *colours;   /* +0x8: its shading colours (Model.colourCount dwords in the list's block): a pre-lit list's only (ObjectList_load; 0 otherwise or without a shape) */
 	float matrix[16];   /* +0xc: where it is placed */
 	float pos[3];   /* +0x4c: its bone's origin placed: (0, 0, 0) through matrix, the matrix's translation (skel_poseBones); without a shape, centre is copied from it */
 	float centre[3];   /* +0x58: its shape's centre placed (pos without a shape) */
@@ -148,16 +148,16 @@ typedef struct ObjectList {
 	i32 count;   /* +0x10 */
 	ListedObject *entries;   /* +0x14 */
 	i32 colourCount;   /* +0x18: the entries' shapes' colours summed */
-	i32 frameCount;   /* +0x1c: 0: nothing to draw (ObjectList_load: the skeletons named, one a frame) */
-	i32 *frames;   /* +0x20: frames[frame] == 0: nothing to draw */
-	i32 frame;   /* +0x24 */
-	i32 animTick;   /* +0x28: the animation's tick (anim_setFrame: the skeleton's frames x a 0 .. 1 fraction; skel_poseBones' frame: this % (frames + 1)) */
+	i32 skelCount;   /* +0x1c: its skeletons (animations; ObjectList_load's nk, by name from the skeleton cache); 0: not posed (skel_poseBones) nor drawn (partList_queue) */
+	struct Skeleton **skeletons;   /* +0x20: skelCount Skeleton pointers (in the block after the entries' colours); skeletons[skel] == 0: nothing posed or drawn */
+	i32 skel;   /* +0x24: the skeleton (animation) in use: index into skeletons (anim_setSkeleton; actor_processFrame always picks 0) */
+	i32 animTick;   /* +0x28: the animation's tick (anim_setSkeleton: the skeleton's frames x a 0 .. 1 fraction; skel_poseBones' frame: this % (frames + 1)) */
 	i32 preLit;   /* +0x2c: 1: lit here, drawn with its own colours */
 } ObjectList;
 
 /* a player's record (Scene.players) */
 typedef struct Player {
-	float radiusSq;   /* +0x0: (by use; seen running) the spawn record's radius squared, x 10000 */
+	float detectionRangeSq;   /* +0x0: (by use; seen running) the detection range squared (mech_stats: the head's detectionRange x the pilot's factor + rangeBonus; a spawn record's range replaces it) */
 	float detectionAngle;   /* +0x4: DETECTION ANGLE (ARM CENTER), tenths of a degree: the head's detectionAngle x the pilot's skill factor (mech_stats); the HUD alert ring's size, actor_checkDataLoss */
 	i32 hackingLevel;   /* +0x8: (the ARM CENTER's HACKING LEVEL) a cloaked actor (stateFlags 0x200) is seen by those whose level is above its own */
 	float lockOnTime;   /* +0xc: (the ARM CENTER's LOCK-ON TIME: the head's x lockOnTimeFactor) x the weapon's targetingTime: seconds a target must stay in the lock-on cone (its aimTime) before the lock is made */
@@ -175,7 +175,7 @@ typedef struct Player {
 	float rechargeTime;   /* +0x48: seconds the energy takes to refill */
 	float restTime;   /* +0x4c: seconds of rest after running */
 	float speed;   /* +0x50: the speed now (km/h x 27.7778: cm/s; the spawn record's or the legs and booster's); trigger commands may change it, command 12 puts baseSpeed back */
-	float runTop[4];   /* +0x54: (by use; seen running) the top speeds running: forward, back, right, left */
+	float runTop[4];   /* +0x54: (by use; seen running) the top speeds running: forward, back, step left, step right (the left-step key, A, drives nextStrafe toward [2]: key_axis) */
 	u32 unused1c;   /* +0x64: copied with the spawn record (+0x1c to the actor's +0x64; 100 for a player's mech, the maps' spawns 100, 1000 netsphere, 10 gigantic-core); never read */
 	float baseSpeed;   /* +0x68: the speed as set up (spawn record or mech_stats; see speed): trigger command 12 puts speed back to it, actor_checkDataLoss (totals_agree) compares it with the speed worked out again */
 	float turnRate;   /* +0x6c: a bot's most pitch / yaw turn a second toward its look (botLookPitch / botLookYaw -> inPitch / inYaw; actor_processFrame), tenths of a degree (Vec3_rotateAxis units); the spawn record's +0x2c x 10 (900 = 90 degrees a second for a player's mech) */
@@ -249,7 +249,7 @@ typedef struct Player {
 	i32 sendNow;   /* +0x374: 1: its state is sent this frame (one of its rounds ran out of life; net_sendPlayerState); cleared each frame */
 	float velocity[3];   /* +0x378: (by use; seen running) moves towards the keys' (moveAccel) */
 	float move[3];   /* +0x384: (by use; seen running) this frame's move (nextPos - pos) */
-	float pose[6];   /* +0x390: (by use; seen running) the body's pose: [0] and [1] turn the booster (swing and tilt), [2] turns the legs; [3] .. [5] the arms', legs' and booster's animation frames (anim_setFrame); nothing turns the head */
+	float pose[6];   /* +0x390: (by use; seen running) the body's pose: [0] and [1] turn the booster (swing and tilt), [2] turns the legs; [3] .. [5] the arms', legs' and booster's animation frames (anim_setSkeleton); nothing turns the head */
 	float bodyMatrix[16];   /* +0x3a8: (by use; seen running) the body's matrix (GL modelview at the actor, turned and leant: the chest's bones posed from it) */
 	float radius;   /* +0x3e8: (by use; seen running) its sphere against the others and the walls */
 	i32 chatIcon;   /* +0x3ec: a chat icon over the player while it types: 1 to all, 2 to its team (sent) */
@@ -378,9 +378,9 @@ typedef struct Factor {
 	i32 used;   /* +0x4: 1: in use */
 	i32 kind;   /* +0x8: 0 ambient, 1 directional, 2 a point light fading out over its radius, 3 a point light falling off with the distance squared */
 	u32 colour;   /* +0xc: packed RGBA */
-	u32 pos[3];   /* +0x10: a point light's position (floats' bits) */
-	u32 dir[3];   /* +0x1c: a directional light's direction (floats' bits) */
-	u32 radius;   /* +0x28: a point light's radius (a float's bits) */
+	float pos[3];   /* +0x10: a point light's position (kinds 2, 3) */
+	float dir[3];   /* +0x1c: a directional light's direction (kind 1) */
+	float radius;   /* +0x28: a point light's reach (kinds 2, 3) */
 } Factor;
 
 /* the light factors shape_shadeParts takes: vtable, 0x400 records, two counts, enabled (0xb010 bytes: the */
@@ -397,28 +397,27 @@ typedef struct MapObject {
 	i32 id;   /* +0x0: (by use; seen running) a serial (Stage.objectSerial) */
 	i32 active;   /* +0x4: 1: in use */
 	i32 nameIndex;   /* +0x8: its type's name (Stage.objectNames); written, never read */
-	u8 flags;   /* +0xc: bit 1 (2): not drawn */
-	u8 _pad000000d[0x3];
+	i32 flags;   /* +0xc: ObjectType.flags: 1 a light (its glow and flare: object_glow, mapObject_frame), 2 not drawn and not re-shaded (stage_drawObject, mapObject_frame), 4 no collision unit (collision_initVolume), 8 animated on approach (trigger), 0x10 animated after a wait (trigger) */
 	i32 trigger;   /* +0x10: x 100 (mapObject_frame): a proximity object's (flag 8) radius, a timed one's (flag 0x10) wait in seconds; 0 in every shipped map */
-	i32 animSpeed;   /* +0x14: its animation's speed (x k: object_setAnimation) */
+	i32 animPeriod;   /* +0x14: its animation's period in ms (anim_start passes it x 0.001 (forwards) or x -0.001 (backwards) as object_setAnimation's period: animRate = 1 / period) */
 	char animPath[0x40];   /* +0x18: its animation ("dir/map/name"; none: empty) */
 	float place[3];   /* +0x58: its position (the type record's) */
 	float rotation[4];   /* +0x64: a quaternion */
 	float placeMatrix[16];   /* +0x74: translation x rotation */
 	float placeInverse[16];   /* +0xb4 */
 	float matrix[16];   /* +0xf4: where it is drawn */
-	float matrixInverse[16];   /* +0x134: (matrix: a copy of placeMatrix) */
+	float matrixInverse[16];   /* +0x134: the inverse of matrix (world into the shape's own space): the shading (shape_shadeParts), the bounds tests of collision_moveActor / collision_rayTrace */
 	float animMatrix[16];   /* +0x174: (by use; seen running) its skeleton's pose (bone 0, skel_applyPose; an identity without one) */
-	float animInverse[16];   /* +0x1b4 */
+	float animInverse[16];   /* +0x1b4: the inverse of animMatrix (identity at setup; mapObject_frame); written, never read */
 	float relMatrix[16];   /* +0x1f4: matrix x placeInverse */
 	float relInverse[16];   /* +0x234 */
 	u32 glowSize;   /* +0x274: a float's bits: the glow flare's half-size (particle kind 4; objects with flag 1 while 3D items are on) */
 	u32 glowColour;   /* +0x278: the glow flare's colour (RGB; its alpha from the glow) */
 	Model *model;   /* +0x27c */
 	u32 colours[2];   /* +0x280: (by use; seen running) two runs of its shading colours (from Stage.objectColours; object_initObjectBy) */
-	i32 colourSide;   /* +0x288: which run is drawn (0: the first) */
+	i32 colourSide;   /* +0x288: 1 (always: object_initObjectBy, nothing else writes it): each frame colours[1] is colours[0] re-shaded with the dynamic lights (mapObject_frame) and drawn (stage_drawObject); 0 would draw colours[0] unchanged */
 	void *unit;   /* +0x28c: its collision unit (none: 0) */
-	i32 animated;   /* +0x290: 1: its skeleton plays */
+	i32 animated;   /* +0x290: 1: its animation was started (object_setAnimation) and not yet reset (anim_reset): its collision unit is out of the static space (space_disableUnit) and is traced through relMatrix / relInverse instead (collision_moveActor, collision_rayTrace); stays 1 when held at its end (mode 1) or stopped by a mode-0 call */
 	void *skeleton;   /* +0x294 */
 	float animTime;   /* +0x298: the animation's time, 0 .. 1 (mapObject_frame; skel_applyPose's t) */
 	float animRate;   /* +0x29c: 1 / the period (0: stopped) */
@@ -433,9 +432,9 @@ typedef struct MapObject {
 /* a map object as the map's object file gives it (map_loadObjectInfoFrom; object_initObjectBy) */
 typedef struct ObjectType {
 	char name[0x40];   /* +0x0: its shape (Stage.objectNames) */
-	i32 flags;   /* +0x40: MapObject.flags, trigger, animSpeed */
+	i32 flags;   /* +0x40: MapObject.flags, trigger, animPeriod */
 	i32 trigger;   /* +0x44 */
-	i32 animSpeed;   /* +0x48 */
+	i32 animPeriod;   /* +0x48: MapObject.animPeriod: the animation's period in ms */
 	char animName[0x40];   /* +0x4c: its animation (empty: none) */
 	float place[3];   /* +0x8c */
 	float rotation[4];   /* +0x98: a quaternion */
@@ -462,64 +461,64 @@ typedef struct MapItem {
 	float pitch;   /* +0x18: the play file's first angle x 10 (a pitch, as StartPoint.angle[0]); written by map_loadPlayInfoFrom, never read */
 	float angle;   /* +0x1c: its turn, tenths of a degree */
 	i32 taken;   /* +0x20: 1: taken (not drawn) */
-	float fade;   /* +0x24: below 1: drawn faded (alpha 255 * fade) */
+	float timer;   /* +0x24: seconds since it was placed, taken or came back (item_update adds dt every frame): a taken one comes back past its type's respawnTime; under 1 (or NaN) it is drawn fading in, alpha 255 x timer (stage_drawItems); a taken one's is sent as timer / 10 + 1, at most 15 (net_sendItemStates), and received as n x 10 */
 } MapItem;
 
 /* a particle or effect (Stage.particles: particle_init / particle_update): flashes, sparks, beams, trails, explosions... */
 typedef struct Particle {
-	i32 id;   /* +0x0: a serial (Stage +0x20f2da8) */
+	i32 id;   /* +0x0: a serial (Stage.particleSerial, particle_init); kind 0 picks its frame by id % 8 (particle_draw) */
 	i32 active;   /* +0x4: 1: in use */
-	i32 kind;   /* +0x8: what it is: 2 / 3 explosions, 9 sparks, 25 / 26 beams, 40 .. 49 trails, 50 a scripted effect ... */
-	i32 owner;   /* +0xc: the actor (or player) it belongs to */
+	i32 kind;   /* +0x8: what it is: 0 a small puff, 2 / 3 explosions (3: an actor's death), 4 a light's glow flare, 5 .. 7 thrust puffs (booster thrustType + 5), 8 a hit flash, 9 debris (a dead actor's part shapes, falling), 10 .. 18 muzzle flashes (shotMode + 10), 20 .. 26 shots in flight (shotMode + 0x14; 25 / 26 beams), 30 .. 39 impacts (shotMode + 0x1e), 40 .. 49 hit marks on surfaces (shotMode + 0x28: weapons.c decal), 50 a textured quad (a beam weapon's side: weapons.c beam) */
+	i32 owner;   /* +0xc: by kind: the actor it belongs to (muzzle flashes; glows halve for the cockpit actor's), 1 for a shot drawn from the cockpit actor's own first 0.03 s (kinds 20 .. 26: 22 / 25 / 26 then not drawn, nor particle_beam's dots), the hit actor's 0x2000 flag (kind 8: texture 4), the dead actor's player record (kind 9 debris), the flare's alpha 0 .. 255 (kind 4), a random 0 .. 7 (puffs 5 .. 7, unused) */
 	float pos[3];   /* +0x10 */
-	float target[3];   /* +0x1c: by kind: the point it aims at (20 / 21 / 24 aimed from pos; 25 / 26 beams from it back); a falling spark's velocity (9); smoke puffs' scale [0] and alpha factor [1] (5 .. 7); a glow flare's half-size [0] and colour bits [1] (4) */
+	float target[3];   /* +0x1c: by kind: the point it aims at (20 / 21 / 24 aimed from pos; 25 / 26 beams from it back); a piece of debris' velocity (9); smoke puffs' scale [0] and alpha factor [1] (5 .. 7); a glow flare's half-size [0] and colour bits [1] (4) */
 	u32 matrixFrom;   /* +0x28: a matrix it is placed by, as a pointer (0: none): a muzzle entry's (flashes), an emitter joint's (puffs) or a hit map object's (trail decals); copied into matrix at its start (particle_spin), and a trail (40 .. 49) is drawn through it every frame */
 	float matrix[16];   /* +0x2c */
 	float drawAge;   /* +0x6c: its age as drawn this frame (age before the frame's step) */
 	float life;   /* +0x70: seconds it lives (it is freed past it) */
 	float age;   /* +0x74 */
 	u32 colour;   /* +0x78: (its byte 0x7b: the alpha, set as it fades) */
-	float size;   /* +0x7c: shrinks with age for puffs and flashes */
+	float lightRadius;   /* +0x7c: the radius of the white point light it casts at pos (stage_refillLights, when above 0): 0 at its start, then (1 - age / life)^2 x 3000 (kind 2), 5000 (3), 2000 (25, 26), 1000 (30, 31), 1500 (32 .. 34, 37, 38), 5000 (35), 3000 (36) (particle_update); 0 for other kinds */
 	float baseSize;   /* +0x80: the descriptor's size */
-	union { float fade; float trailPoints[3][3]; };   /* +0x84: fade: (kind 9, a falling spark) the wait to its next puff (0.1 s); */
+	union { float fade; float markPoints[3][3]; };   /* +0x84: fade: (kind 9, debris) the wait to its next puff (0.1 s); */
 	u8 _pad00000a8[0xc];
-	float trailUv[6];   /* +0xb4: (trails) the three points' texture coordinates (u, v) */
+	float markUv[6];   /* +0xb4: (kinds 40 .. 49, a hit mark) the hit triangle's three corners' texture coordinates (u, v), the mark's texture centred (0.5, 0.5) on the impact: corner offsets (ParticleDesc.markCoords, weapons.c decal's uv) x 0.005 + 0.5, or (offset / (baseSize + 200 / 400) + 1) / 2 */
 	u8 _pad00000cc[0x8];
-	u32 trailColours[3];   /* +0xd4: the trail's three points' colours (white; their alpha fades with drawAge) */
+	u32 markColours[3];   /* +0xd4: (kinds 40 .. 49, a hit mark) its three corners' colours: white (g_white), their alpha fading over its second second (particle_draw: (2 - drawAge) x 256 once drawAge > 1) */
 	u8 _pad00000e0[0x4];
 	i32 quadTexture;   /* +0xe4: kind 50, a quad: its texture (ViewVolume_addQuad's), two texture corners, colour, points (ParticleDesc.quad) */
-	u32 quadUv0[2];   /* +0xe8 */
-	u32 quadUv1[2];   /* +0xf0 */
+	float quadUv0[2];   /* +0xe8: (kind 50) a texture corner (u, v) */
+	float quadUv1[2];   /* +0xf0: (kind 50) the other texture corner (u, v) */
 	u32 quadColour;   /* +0xf8 */
 	float quadPoints[4][3];   /* +0xfc */
 } Particle;
 
 /* a bullet in flight (Stage.bullets: bullet_init, bullet_update) */
 typedef struct Bullet {
-	i32 id;   /* +0x0: its id (the next serial, or the network's) */
+	i32 id;   /* +0x0: the next serial (Stage.bulletSerial: both bullet_spawn calls pass id -1); a beam picks its texture quarter by id % 4 */
 	i32 active;   /* +0x4: 1: in use */
 	i32 weapon;   /* +0x8: its weapon's record (index into Scene.actorItems) */
 	i32 owner;   /* +0xc: the actor that fired it */
 	u32 muzzle;   /* +0x10: the muzzle entry's matrix (FiredRound.muzzle; bullet_init passes it as its muzzle flash's ParticleDesc.matrixFrom) */
 	u8 _pad0000014[0x40];
 	float from[3];   /* +0x54: where it was fired from */
-	float end[3];   /* +0x60: where its first step ends (or the target's point) */
-	i32 hit;   /* +0x6c: what the first step's trace hit (a target: its record) */
+	float impact[3];   /* +0x60: where it ends, its impact point: the first step's end or hit (bullet_init; a network round: its target point), an actor's hit point (fly_local), a guided round's world hit (fly_local), or the network's point (actor_processFrame); its impact, mark and sound are made there (hit_actor, hit_surface) */
+	struct CollisionPlane *hit;   /* +0x6c: the surface (a CollisionPlane in Space.planes) where it ends: the first step's trace (bullet_init), each step's for a guided round (fly_local), the network's (actor_processFrame, bullet_init for a received round); 0: none, also when it hits an actor. hit_surface makes its impact and mark */
 	float age;   /* +0x70: seconds in flight */
-	float life;   /* +0x74: seconds it flies (0 .. 10) */
+	float life;   /* +0x74: the age at which it ends (s): the first step's length (or the distance to its hit) over the weapon's speed, kept to 0 .. 10 (bullet_init; a network round: 10); cut to its age when it hits an actor, to the world hit for a guided round (fly_local), or to age - dt by the network (actor_processFrame) */
 	float prev[3];   /* +0x78: its point before this frame's move */
 	float pos[3];   /* +0x84: its point */
 	float netPoint[3];   /* +0x90: the point the network sent (another player's bullet) */
-	i32 moved;   /* +0x9c: 1: it moved this frame (drawn) */
+	i32 moved;   /* +0x9c: 1: drawn this frame (draw_shot): a local round after its step (fly_local); another player's when the network sent a new point (netPoint, actor_processFrame), which it then moves to (otherwise it steps on by step undrawn); cleared after each frame */
 	float vel[3];   /* +0xa0 */
-	float step[3];   /* +0xac: this frame's direction of move */
+	float step[3];   /* +0xac: this frame's move: a local round's dt x vel (a weapon of no speed: vel itself; fly_local); another player's the unit direction to the network's point (bullet_update), added again on frames with no new point */
 	i32 hitActor;   /* +0xb8: an actor it hit (-1 none), which takes it first */
 	i32 homingTarget;   /* +0xbc: the actor a guided round homes on (bullet_init's fourth argument; < 0 none: the local player's own round follows the aim point) */
 	float homeTimer;   /* +0xc0: (by use; seen running) a homing bullet turns again every 1/15 s */
 	float homingPoint[3];   /* +0xc4: the point a guided round homes on without a target actor (the local player's own: 200000 along the aim) */
-	i32 hitWorld;   /* +0xd0: 1: it hit the world (splash damage then; weapons.c) */
+	i32 struck;   /* +0xd0: 1: it hit something, an actor (hit_actor) or a surface (hit_surface): splash damage then (splash); 0 from bullet_init */
 	float trail[20][4][3];   /* +0xd4: (by use; seen running) a trail's ring of cross-sections (4 points each: weapons.c trail) */
-	float trailAge[20];   /* +0x494: each one's age when made */
+	float trailAge[20];   /* +0x494: (kind 3 trails) each cross-section's bullet age when made (trail); bullet_drawTrail ends the trail at the first one more than 1 s old. A beam (kind 7) leaves its length in [0] (beam), never read */
 	i32 trailCount;   /* +0x4e4: the cross-sections made (the ring's next: % 20) */
 } Bullet;
 
@@ -533,10 +532,10 @@ typedef struct SpacePool {
 
 /* a node of the collision space's lists (its pool: Space.nodes): a block's items */
 typedef struct SpaceNode {
-	u8 *item;   /* +0x0: what it holds (a unit's: its planes; their first byte flags, 1: skipped) */
-	u8 *block;   /* +0x4: (a block's items) the block */
-	struct SpaceNode *newer;   /* +0x8: the one put in after it (also the free list's link) */
-	struct SpaceNode *next;   /* +0xc: the one put in before it */
+	u8 *item;   /* +0x0: the CollisionPlane it holds (a block's item or one of a unit's planes); the plane's first byte bit 1 (space_disableUnit): left out of the static space's tests (space_collideBlock / space_traceBlock skip it only outside the moving units' lists) */
+	u8 *block;   /* +0x4: (a block's items) the block; written (space_insertItem), never read */
+	struct SpaceNode *newer;   /* +0x8: the one put in after it (the list's back link; in the pool's free list the one before it, 0 at the head); written, never read */
+	struct SpaceNode *next;   /* +0xc: the one put in before it (the lists run from the newest through it); in the pool's free list the next free one */
 } SpaceNode;
 
 /* a block of the collision space (Space.blocks): an octree node over a box */
@@ -552,7 +551,7 @@ typedef struct SpaceBlock {
 	u8 *poolNext;   /* +0x4c */
 } SpaceBlock;
 
-/* the collision space (space_pools.c; the size is unknown: only the fields used) */
+/* the collision space (space_pools.c; 0xf4 bytes: CollisionVolume_clear zeroes 0x3d dwords, Stage.spaceData follows it; only the fields used) */
 typedef struct Space {
 	u8 _pad0000000[0x4];
 	i32 blockSize;   /* +0x4: its pools' memory (space_initBy: allocated when none is given) */
@@ -567,40 +566,41 @@ typedef struct Space {
 	i32 cellCount;   /* +0x58: nx * ny * nz; written, never read */
 	float min[3];   /* +0x5c: its bounds */
 	float max[3];   /* +0x68 */
-	i32 nx;   /* +0x74: the grid's cells per axis */
-	i32 ny;   /* +0x78 */
-	i32 nz;   /* +0x7c */
-	float cellSize[3];   /* +0x80: a cell's size: (z, x, y) extents over nx, ny, nz, as the original pairs them */
+	i32 cellsZ;   /* +0x74: the grid's cells along z (pos[2]): collision_initVolume's (levelHigh[2] - levelLow[2]) / size_z, space_setBy's first count */
+	i32 cellsX;   /* +0x78: the grid's cells along x (pos[0]) */
+	i32 cellsY;   /* +0x7c: the grid's cells along y (pos[1]) */
+	float cellSize[3];   /* +0x80: a cell's size, stored (z, x, y): cellSize[0] = (max[2] - min[2]) / cellsZ, [1] = x extent / cellsX, [2] = y extent / cellsY */
 	u32 margin;   /* +0x8c: a float (500.0, loading.c): how far the space's box, the grid cells and the blocks' boxes are widened for a triangle put in (space_insertTriangle, space_insertItem) and a point looked up (space_collideAt); also Scene.spaceMargin, the free camera's step cap */
 	i32 splitCount;   /* +0x90: items a block holds before it splits (space_setBy; 16, loading.c; space_insertItem) */
 	i32 depth;   /* +0x94: the blocks' recursion depth (at most 8) */
 	i32 lastHit;   /* +0x98: space_collideAt's last result; written, never read */
+	u8 _pad000009c[0x58];
 } Space;
 
 /* an ARM CENTER part-info record (g_partRecords, g_viewedPart: armc_parts.c part_info) */
 typedef struct PartInfo {
 	char name[0x40];   /* +0x0: the item's folder path after its last slash */
-	i32 slotType;   /* +0x40: -1: an empty record; the rest copied from ActorItem, some scaled for showing */
-	i32 ammoType;   /* +0x44: its ammunition kind (message 323 + this: "30mm" ..) */
-	i32 ammoPerShot;   /* +0x48: "cell" */
+	i32 slotType;   /* +0x40: SLOT TYPE (ActorItem.slotType): message 321 + this, 0 HAND, 1 SHOULDER; -1: an empty record (EMPTY SLOT, part_info with idx -1) */
+	i32 ammoType;   /* +0x44: BULLET TYPE (ActorItem.ammoType): message 323 + this: 0 30mm, 1 60mm, 2 E-PAK, 3 ROCKET; -1: a special weapon (SPECIAL WEAPON, message 771). The viewed record's is g_viewedPartKind */
+	i32 ammoPerShot;   /* +0x48: BULLET CONSUMPTION (ActorItem.ammoPerShot, "cell"); in the viewed record of a special weapon (ammoType -1) armc_viewedPartRecord overwrites it with the actorItems index (g_viewedPartIndex, the same memory), shown as message 745 + it ("GRAVITY CONTROLLER" ..) */
 	i32 burst;   /* +0x4c: "Round" */
 	i32 damageType;   /* +0x50: message 327 + this: "IMPACT" .. */
 	i32 damage;   /* +0x54 */
-	float range;   /* +0x58: stepLength x 0.01: "m" */
+	float range;   /* +0x58: range x 0.01: "m" */
 	float speed;   /* +0x5c: velocity x 0.01: "m/s" */
-	float spread;   /* +0x60: in degrees */
+	float spread;   /* +0x60: ActorItem.spread x 0.1 (k_tenthsToDegrees): shown "%.1f" with message 752 "'" (DISPERSION ANGLE) */
 	float hitRange;   /* +0x64: x 0.01: "m" (HIT RANGE) */
 	float splashRadius;   /* +0x68: x 0.01: "m" */
 	i32 splashBorderDamage;   /* +0x6c: (SPLASH BORDER DAMAGE) */
 	float cycleTime;   /* +0x70: x 1000: "ms" */
-	float guidance;   /* +0x74: in degrees (GUIDANCE) */
+	float guidance;   /* +0x74: ActorItem.guidance x 0.1 (k_tenthsToDegrees): shown "%.1f" with message 752 "'" (GUIDANCE) */
 	float targetingTime;   /* +0x78: x 1000: "ms" (TARGETING TIME) */
 	float weight;   /* +0x7c */
 } PartInfo;
 
 /* one of the 30 missions of axis.mis (g_missions: mission_loadAxisMis; screen 900's list, which nothing in the menus opens) */
 typedef struct Mission {
-	i32 id;   /* +0x0: (the file's first word) */
+	i32 unused0;   /* +0x0: an entry's first word in axis.mis (mission_loadAxisMis), 0 when the list is cleared; nothing reads it */
 	char name[64];   /* +0x4: the list's first column */
 	char title[32];   /* +0x44: its second */
 	char briefing[128];   /* +0x64: (shown under the list for the one picked) */
@@ -615,7 +615,7 @@ typedef struct Mission {
 /* a DirectPlay message carrying slot data (kinds 6 and 7: net_handleMessage; the match's */
 typedef struct NetPacketMessage {
 	u32 kind;   /* +0x0 */
-	u8 slot;   /* +0x4: the sender's slot */
+	u8 slot;   /* +0x4: kind 7: the sender's slot (net_sendPacketData: g_watchedSlot); kind 6 (g_netSlotMsg, 8 bytes): the slot the host gives the receiver (g_netClaimedSlot), taken as the local one */
 	i32 size;   /* +0x5: (0x40) */
 	u8 data[0x403];   /* +0x9: the packet: its first byte the number (net_packets.c) */
 } NetPacketMessage;
@@ -625,7 +625,7 @@ typedef struct NetSlot {
 	i32 used;   /* +0x0 */
 	u32 id;   /* +0x4: its DirectPlay player id */
 	i32 waiting;   /* +0x8: a packet is waiting in packet */
-	u32 size;   /* +0xc: (0x40) */
+	u32 size;   /* +0xc: the packet's size (0x40: net_handleMessage stores only that); written, never read (netq_receive uses 0x40) */
 	u8 packet[0x400];   /* +0x10: the packet received (64 bytes: its first byte the number, bit 7 a resend request */
 } NetSlot;
 
@@ -641,7 +641,7 @@ typedef struct DPSessionDesc2 {
 	const char *password;   /* +0x34: lpszPasswordA */
 	u32 reserved1;   /* +0x38 */
 	u32 reserved2;   /* +0x3c */
-	u32 user1;   /* +0x40: the game's: map (byte 0), rotation (byte 1) */
+	u32 user1;   /* +0x40: the game's: map (byte 0), rotation (byte 1) as the arena hosts set it (arena_connectionOutcome, host_arena); room_hostingStep (the Ladder game room) puts the game mode here instead (the original's) */
 	u32 user2;   /* +0x44: the game mode */
 	u32 user3;   /* +0x48: the time limit (byte 0), frag limit (byte 1) */
 	u32 user4;   /* +0x4c: (TCP) the host's address */
@@ -649,7 +649,7 @@ typedef struct DPSessionDesc2 {
 
 /* an arena as the lobby server lists it (g_serverList, 256; g_arenaPacket: the hosted arena's own, */
 typedef struct ServerRecord {
-	u8 kind;   /* +0x0: the message (0x18: set up; the player count's, the leave's) */
+	u8 kind;   /* +0x0: the record's first byte as the game sends it: 0x18 in the set-up packet (lobby_announceArena), g_arenaPacket's (0x18) in the info packet (arena_info), 1 in the leave packet (send_leave); copied into g_serverList (net_addServerRecord), never read */
 	char name[0x32];   /* +0x1 */
 	char address[16];   /* +0x33: the host's address as text */
 	signed char map;   /* +0x43 */
@@ -666,7 +666,7 @@ typedef struct ServerRecord {
 
 /* a game room as the game server lists it (g_roomList, 256; g_roomPacket: the room's own, */
 typedef struct RoomRecord {
-	u8 kind;   /* +0x0 */
+	u8 kind;   /* +0x0: the record's first byte as the game sends it: 0x18 in the set-up packet (room_announceGame); in the info packet (room_info) 1 when a player joined, else g_roomPacket's; 1 in the leave packet (send_leave); copied into g_roomList, never read */
 	char name[0x32];   /* +0x1 */
 	char address[16];   /* +0x33 */
 	char hostName[30];   /* +0x43: the player who made it (g_ladderId) */
@@ -726,7 +726,7 @@ typedef struct SessionEntry {
 /* a file of the replay selection / replay list (g_replayList, 1024) */
 typedef struct FileEntry {
 	char name[0x40];   /* +0x0 */
-	i32 flag;   /* +0x40: 1: picked (in the map rotation / the replays shown) */
+	i32 picked;   /* +0x40: 1: picked (a replay chosen in the replay selection: replaySelect_toggle / allIn / allOut; scene_startSession plays the picked ones) */
 } FileEntry;
 
 /* a map of the arena's map list (g_mapChoiceTable, g_mapChoiceKeptTable: 1024) */
@@ -741,9 +741,9 @@ typedef struct AccountPacket {
 	char name[30];   /* +0x4 */
 	char password[12];   /* +0x22 */
 	char email[0x32];   /* +0x2e */
-	char address[16];   /* +0x60: this machine's (net_tables: request 26) */
+	char address[16];   /* +0x60: this machine's (g_localAddress, written by net_tables' request 14 / 15 handler just before the record is sent: the login and the new ID) */
 	u8 mech[11];   /* +0x70: the default mech settings (lobby_states default_mech) */
-	u8 colours[6][0x18];   /* +0x7b: six colour pairs (hue, saturation, value twice) */
+	float colours[6][6];   /* +0x7b: six colour pairs, each (hue, saturation, value) twice (default_mech: 0, 1, 0.6) */
 } AccountPacket;
 
 /* the account form's fields as sent (g_netAccountBuffer: message 0x1c) */
@@ -757,7 +757,7 @@ typedef struct AccountForm {
 typedef struct GameSettings {
 	char name[32];   /* +0x0 */
 	signed char map;   /* +0x20 */
-	signed char players;   /* +0x21 */
+	signed char maxPlayers;   /* +0x21: the most players (the form's NO OF PLAYER row, MSG(400); 0 .. 16, else 8 from axis.cfg) */
 	signed char rotation;   /* +0x22: 1: map rotation on (the map list's maps in turn: the preview shows CUSTOM; the form's MAP ROTATION row) */
 	signed char mode;   /* +0x23 */
 	u8 limit[2];   /* +0x24: frag, time */
@@ -769,8 +769,8 @@ typedef struct GameSettings {
 /* a player of the ranking list as the game server sends it (62 bytes: g_serverReply; */
 typedef struct RankedPlayer {
 	char name[30];   /* +0x0 */
-	i32 kind;   /* +0x1e: the reply's kind: 0 a player (added), 1 refused */
-	i32 games;   /* +0x22: Ladder games played (the account's; DServer keeps it as 'a'); not shown, copied to RankRow.games */
+	i32 kind;   /* +0x1e: the reply's kind (g_serverReplyKind): 0 a player (net_addPlayerRecord adds it), 1 the list's end (g_playerListDone set, g_netLastRequest cleared) */
+	i32 games;   /* +0x22: Ladder rounds played (the account's g_ladderGames, see PlayerRecordPacket.games; DServer keeps it as 'a'); not shown, copied to RankRow.games */
 	i32 kills;   /* +0x26: the columns of the ranking table (RankRow) */
 	i32 deaths;   /* +0x2a */
 	i32 exp;   /* +0x2e */
@@ -785,7 +785,7 @@ typedef struct RankRow {
 	i32 rank;   /* +0x4: its place (the row before's when its sorted value is the same) */
 	char name[30];   /* +0x8: (empty: past the list's end) */
 	i32 exp;   /* +0x26: (sort 2) */
-	i32 games;   /* +0x2a: RankedPlayer.games (not shown); written, never read */
+	i32 games;   /* +0x2a: RankedPlayer.games (Ladder rounds played; not shown); written, never read */
 	i32 kills;   /* +0x2e: (sort 1) */
 	i32 deaths;   /* +0x32 */
 	float rate;   /* +0x36: (sort 3) */
@@ -800,7 +800,7 @@ typedef struct CharacterProfile {
 	char corporation[16];   /* +0x10 */
 	i32 sex;   /* +0x20: MSG(545) + it: 1 MALE, 2 FEMALE (the SEX row) */
 	i32 age;   /* +0x24: the AGE row */
-	i32 stats[9];   /* +0x28: percentages: [0] .. [3] the weapon groups' damage, [4] .. the skills (actor and */
+	i32 stats[9];   /* +0x28: percentages, the CHARACTER SELECT rows MSG(536 ..): [0] BULLET.LV, [1] ENERGY.LV, [2] BOMB.LV, [3] MELEE.LV (the weapon groups' damage: actor_takeDamage, the ARM CENTER's bonus), [4] MOBILITY, [5] SPEED (the legs': LEG()), [6] DEFENSE, [7] SCANNING, [8] MAX.LOAD ([4] .. as character_factor / SKILL(k): stats[4 + k] x 0.01 + 1); [7] at most 50, the others 30 (else 0) */
 } CharacterProfile;
 
 /* match packet kind 1, a player's game state (net_sendGamePacket; read by net_processGamePacket) */
@@ -812,20 +812,20 @@ typedef struct GamePacket {
 	signed char nextMap;   /* +0x4 */
 	signed char mode;   /* +0x5 */
 	signed char nextMode;   /* +0x6 */
-	u16 mission;   /* +0x7 */
+	short mapNumber;   /* +0x7: Scene.mapNumber (the map's own number; a receiver on the same map (g_mapIndex == map) with another number has data loss, dataLossCode 1) */
 	i32 elapsed;   /* +0x9: the match clock (Scene.elapsed, clockFraction) */
 	float clockFraction;   /* +0xd */
 	i32 timePlayed;   /* +0x11: the player's (Player.timePlayed, timeFraction) */
 	float timeFraction;   /* +0x15 */
-	u32 sendTwice[2];   /* +0x19: per player, a bit: its sendFlags [2] / [3] were raised */
+	u32 resendAsked[2];   /* +0x19: per player, a bit: [0] it is asked to send its info again (its sendFlags[2]: the receiver whose bit it is raises sendFlags[me][1], net_sendPlayerInfo), [1] its flag again (sendFlags[3]: the receiver clears its PlayerRecord.flagSent) */
 	short kills;   /* +0x21 */
 	short deaths;   /* +0x23 */
 	short teamScores[2];   /* +0x25 */
 	short lastPickup;   /* +0x29: the stage's (-1 none) */
-	u8 checkTable;   /* +0x2b: the geometry table checked (0 .. 4) and a sampled entry, its row and value */
-	u16 checkRow;   /* +0x2c */
+	u8 checkTable;   /* +0x2b: the part type table checked (geometryCheckTurn % 5: 0 headTypes, 1 chestTypes, 2 armTypes, 3 legTypes, 4 boosterTypes), and a sample of it (checkIndex) with the entry there (checkValue): a mismatch is data loss, code 2 */
+	u16 checkIndex;   /* +0x2c: a random word (table_rand() % 100000, cut to 16 bits) picking the entry: row (w / perRow) % count, column w % perRow (sample / table_ok) */
 	u32 checkValue;   /* +0x2e */
-	u16 checkRow2;   /* +0x32: the same for the actor types' table */
+	u16 checkIndex2;   /* +0x32: the same for the item table (actorItems, actorItemCount; perRow geometryPerRow[5]): a mismatch is data loss, code 3 */
 	u32 checkValue2;   /* +0x34 */
 	u8 _pad0000038[0x8];
 } GamePacket;
@@ -833,11 +833,11 @@ typedef struct GamePacket {
 /* the player's Ladder record sent to the game server (g_netPlayerRecordPacket, packet 0x11: lobby_states.c record_send) */
 typedef struct PlayerRecordPacket {
 	char name[0x1e];   /* +0x0: the Ladder name (written only when asked) */
-	i32 games;   /* +0x1e: Ladder games played (g_ladderGames) */
+	i32 games;   /* +0x1e: Ladder rounds played (g_ladderGames: one more at a Ladder match's first round, each next round and each restart) */
 	i32 kills;   /* +0x22 */
 	i32 deaths;   /* +0x26 */
 	i32 exp;   /* +0x2a */
-	i32 level;   /* +0x2e: actor_levelFromValue(points) */
+	i32 level;   /* +0x2e: actor_levelFromValue(exp): the level (1 .. 20) the Ladder exp (g_ladderExp) reaches */
 	float power;   /* +0x32 */
 } PlayerRecordPacket;
 
@@ -846,8 +846,8 @@ typedef struct PilotStats {
 	i32 level;   /* +0x0 */
 	i32 exp;   /* +0x4 */
 	i32 rank;   /* +0x8: its place in the ranking (message 29's reply +0x16; 0 out of the first 1000: the account panel shows OUT OF RANK(1000)) */
-	i32 power;   /* +0xc */
-	i32 games;   /* +0x10: Ladder games played */
+	float power;   /* +0xc: the kill rate x 0.01 x the exp (power_from_rate); shown "%.2f" on the account panel */
+	i32 games;   /* +0x10: Ladder rounds played (reply +0xf3; g_ladderGames) */
 	i32 kills;   /* +0x14 */
 	i32 deaths;   /* +0x18 */
 	float killRate;   /* +0x1c */
@@ -865,8 +865,8 @@ typedef struct SkirmishInfo {
 /* a queued quad or billboard (ViewVolume.quads; view_volume.c quad_fields) */
 typedef struct ViewQuad {
 	i32 texture;   /* +0x0: (none: negative; then no texture corners) */
-	u32 uv0[2];   /* +0x4: the corners' texture coordinates (billboard() reads them by word index) */
-	u32 uv1[2];   /* +0xc: (see uv0) */
+	float uv0[2];   /* +0x4: one corner's texture coordinates (u, v), for points[3]; billboard() gives points[2] (uv1[0], uv0[1]) and points[0] (uv0[0], uv1[1]) */
+	float uv1[2];   /* +0xc: the opposite corner's texture coordinates (u, v), for points[1] (see uv0) */
 	u32 colour;   /* +0x14 */
 	float points[4][4];   /* +0x18: its corners in clip space */
 	i32 kind;   /* +0x58: 2 / 3: depth-sorted into quadOrderA / B */
@@ -888,7 +888,7 @@ typedef struct ViewVolume {
 	i32 ownsBlock;   /* +0xc: 1: allocated here (freed with it) */
 	i32 entryPointsSet;   /* +0x10: set once its three GL entry points are looked up (+0x14 .. +0x1c); written, never read */
 	void *glArrays[3];   /* +0x14: glVertexPointerEXT / glColorPointerEXT / glTexCoordPointerEXT (wglGetProcAddress with GL_EXT_vertex_array; 0: draw_opaque uses the GL 1.1 ones) */
-	i32 materialOrder[3072];   /* +0x20: the materials in the order first queued (materialCount of them) */
+	i32 materialOrder[3072];   /* +0x20: the material lists in the order first queued (materialCount of them): each a list id, material + 1 (0: untextured, else the texture id + 1), the index into materialHeads / materialTails */
 	u8 _pad0003020[0x4];
 	i32 materialCount;   /* +0x3024 */
 	u8 *materialHeads[3073];   /* +0x3028: per material: its first queued entry (0: none yet) */
@@ -901,7 +901,7 @@ typedef struct ViewVolume {
 	i32 matrixCount;   /* +0x9044 */
 	i32 colourLimit;   /* +0x9048: the colour buffer: room for so many vertices */
 	u8 *colours;   /* +0x904c */
-	i32 colourMost;   /* +0x9050: the most vertices it held so far */
+	i32 colourMost;   /* +0x9050: the most vertices the colour buffer held in this ViewVolume_draw (0 at its start; raised by fits()); never read otherwise */
 	i32 triangleLimit;   /* +0x9054: the clipped triangles (0x60 bytes each) */
 	u8 *triangles;   /* +0x9058 */
 	i32 triangleCount;   /* +0x905c */
@@ -914,15 +914,15 @@ typedef struct ViewVolume {
 	i32 quadOrderACount;   /* +0x9078 */
 	u8 *quadOrderB;   /* +0x907c: ... of kind 3 */
 	i32 quadOrderBCount;   /* +0x9080 */
-	i32 segmentLimit;   /* +0x9084: the objects' segments (0x24 bytes each); written, never read */
+	i32 segmentLimit;   /* +0x9084: the coloured lines (0x24 bytes each: a packed RGBA colour, then two clip-space points; ViewVolume_addSegment: the debug grid in red, the map lights' yellow stars), drawn by ViewVolume_draw as GL_LINES */
 	u8 *segments;   /* +0x9088 */
 	i32 segmentCount;   /* +0x908c */
-	i32 entriesFull;   /* +0x9090: 1: a list overflowed (what did not fit is left out) */
+	i32 entriesFull;   /* +0x9090: 1: a list overflowed (what did not fit is left out); cleared by ViewVolume_reset; set, never read */
 	i32 matricesFull;   /* +0x9094 */
 	i32 trianglesFull;   /* +0x9098 */
 	i32 quadsFull;   /* +0x909c */
 	i32 segmentsFull;   /* +0x90a0 */
-	i32 trianglesDrawn;   /* +0x90a4: counters of the frame */
+	i32 trianglesDrawn;   /* +0x90a4: counters of the frame (cleared by ViewVolume_clearDrawCounts: ViewVolume_initBy and hud_pass each match frame); counted up, never read */
 	i32 meshesDrawn;   /* +0x90a8 */
 	i32 textureBinds;   /* +0x90ac */
 	float projection[16];   /* +0x90b0 */
@@ -940,7 +940,7 @@ typedef struct Skeleton {
 	u8 *bones;   /* +0x14: boneCount Bone records */
 	i32 posKeyTotal;   /* +0x18: its bones' position keys summed (the .ske header's; counted by skel_loadAseFrom for an ASE file, with rotKeyTotal sizing the block) */
 	i32 rotKeyTotal;   /* +0x1c: its rotation keys */
-	i32 frames;   /* +0x20: its animation's frames */
+	i32 duration;   /* +0x20: its animation's length in milliseconds (ASE: SCENE_LASTFRAME x (1000 / SCENE_FRAMESPEED); Skeleton.dat: 3300 = 100 frames at 33 ms, 1650 for some weapons); the key times are in the same units; skel_applyPose's t (0 .. 1) and anim_setSkeleton scale it, skel_poseBones takes animTick % (duration + 1) */
 } Skeleton;
 
 /* a skeleton's bone (Skeleton.bones) */
@@ -948,26 +948,26 @@ typedef struct Bone {
 	u8 _pad0000000[0x40];
 	i32 parent;   /* +0x40: its parent bone (< 0: the root) */
 	float pos[3];   /* +0x44: its position without keys */
-	float rotation[4];   /* +0x50: its rotation without keys: angle, then axis */
-	i32 posKeyCount;   /* +0x60: position keys, 0x20 bytes each: frame, length, base, delta */
+	float rotation[4];   /* +0x50: its rotation without keys: angle (radians), then axis */
+	i32 posKeyCount;   /* +0x60: position keys, 0x20 bytes each: time, length (ms), base, delta */
 	u8 *posKeys;   /* +0x64 */
-	i32 rotKeyCount;   /* +0x68: rotation keys, 0x28 bytes each: frame, length, base angle + axis, delta angle + axis */
+	i32 rotKeyCount;   /* +0x68: rotation keys, 0x28 bytes each: time, length (ms), base angle + axis, delta angle + axis */
 	u8 *rotKeys;   /* +0x6c */
 } Bone;
 
 /* a bone's position key (Bone.posKeys) */
 typedef struct PosKey {
-	i32 frame;   /* +0x0: the frame it starts at */
-	i32 length;   /* +0x4: frames to the next key (0: the last) */
+	i32 time;   /* +0x0: the time it starts at, in milliseconds (whole frames x 1000 / FRAMESPEED, as Skeleton.duration) */
+	i32 length;   /* +0x4: milliseconds to the next key (0: the last) */
 	float pos[3];   /* +0x8 */
 	float delta[3];   /* +0x14: to the next key's position */
 } PosKey;
 
 /* a bone's rotation key (Bone.rotKeys) */
 typedef struct RotKey {
-	i32 frame;   /* +0x0 */
-	i32 length;   /* +0x4 */
-	float rotation[4];   /* +0x8: its rotation: angle, then axis (from the ASE, combined with the ones before) */
+	i32 time;   /* +0x0: the time it starts at, in milliseconds (as PosKey.time) */
+	i32 length;   /* +0x4: milliseconds to the next key (0: the last) */
+	float rotation[4];   /* +0x8: its rotation: angle (radians), then axis (from the ASE, combined with the ones before) */
 	float step[4];   /* +0x18: the rotation to the next key (angle, axis) */
 } RotKey;
 
@@ -977,8 +977,8 @@ typedef struct Manager {
 	i32 blockSize;   /* +0x4 */
 	u8 *block;   /* +0x8: the name nodes, then the items, then the data memory */
 	i32 ownsBlock;   /* +0xc: 1: allocated here */
-	char dir[0x100];   /* +0x10: where the items' files are */
-	u32 source;   /* +0x110: where its items load from: 0 / 1 loose files with the first / second extension, 2 the packed data file (the skeleton sets) */
+	char dir[0x100];   /* +0x10: the folder of its loose item files (item_path, sources 0 / 1 only; not read with source 2, which every caller passes) */
+	u32 source;   /* +0x110: where its items load from: 0 / 1 loose files with the first / second extension (shp / obj, ske / ase), 2 the packed archive (Shape.dat / Skeleton.dat); every caller passes 2 */
 	i32 capacity;   /* +0x114: items it has room for */
 	u8 *nodes;   /* +0x118: the name tree: one 0x4c-byte TreeNode per item */
 	u8 *items;   /* +0x11c: the items (skeletons 0x24 bytes, shapes 0x4c) */
@@ -986,7 +986,7 @@ typedef struct Manager {
 	i32 dataSize;   /* +0x124: the data memory items are read into */
 	u8 *data;   /* +0x128 */
 	i32 dataUsed;   /* +0x12c */
-	char textureDir[0x100];   /* +0x130: (shapes) the textures' place, given with bindArgs to shape_bindTextureBy */
+	char textureSuffix[0x100];   /* +0x130: (shapes) a suffix for its parts' texture names (actor_setPartColor via shape_setTextureSuffix: "_T<player>"; empty: none): shape_bindTextureBy appends "*" and it to each part's name before tex_getIdByName, with bindFlags and the tint */
 	u32 bindFlags;   /* +0x230: (shapes) given to shape_bindTextureBy with the tint; bit 1: tinted (shape_setTint) */
 	u32 tint[6];   /* +0x234: two hue / saturation / value triples (floats' bits) */
 } Manager;
@@ -997,11 +997,11 @@ typedef struct SkelManager {
 	i32 blockSize;   /* +0x4 */
 	u8 *block;   /* +0x8: the name nodes, then the items, then the data memory */
 	i32 ownsBlock;   /* +0xc: 1: allocated here */
-	char dir[0x100];   /* +0x10: where the items' files are */
-	u32 source;   /* +0x110: where its items load from: 0 / 1 loose files with the first / second extension, 2 the packed data file (the skeleton sets) */
+	char dir[0x100];   /* +0x10: the folder of its loose .ske / .ase files (item_path, sources 0 / 1 only; not read with source 2, which every caller passes) */
+	u32 source;   /* +0x110: where its skeletons load from: 0 / 1 loose .ske / .ase files, 2 the packed Data\\Skeleton.dat (skelDat_getItemFileBy); every caller passes 2 */
 	i32 capacity;   /* +0x114: items it has room for */
 	u8 *nodes;   /* +0x118: the name tree: one 0x4c-byte TreeNode per item */
-	u8 *items;   /* +0x11c: the items (skeletons 0x24 bytes, shapes 0x4c) */
+	u8 *items;   /* +0x11c: its skeletons (0x24 bytes each) */
 	i32 count;   /* +0x120: items loaded */
 	i32 dataSize;   /* +0x124: the data memory items are read into */
 	u8 *data;   /* +0x128 */
@@ -1014,10 +1014,10 @@ typedef struct PlayerRecord {
 	char name[0x40];   /* +0x4: (by use; seen running) its name (its screenshot: Save\\<name>.BMP) */
 	i32 character;   /* +0x44: its pilot character (g_characterProfiles: the skills and damage factors by it) */
 	i32 team;   /* +0x48 */
-	char partNames[5][0x40];   /* +0x4c: its parts' type names (head, chest, arms, legs, booster: set_part) */
-	char itemNames[6][0x40];   /* +0x18c: its items' names (actor_setItem: the ActorItem's name) */
+	char partNames[5][0x40];   /* +0x4c: its parts' type names (head, chest, arms, legs, booster: copied from the part type record by set_part / actor_setActorType*InfoBy; cleared by player_clear); written, never read */
+	char itemNames[6][0x40];   /* +0x18c: its items' names (actor_setActorTypeItemInfoBy: the ActorItem's name, empty for none; cleared by player_clear); written, never read */
 	i32 parts[5];   /* +0x30c: its mech's parts: head, chest, arms, legs, booster (records of the stage's part tables; "invalid headIndex") */
-	i32 items[6];   /* +0x320: per item slot (Player.slot): its weapon's record (index into Scene.actorItems; < 0 none) */
+	i32 items[6];   /* +0x320: per item slot (Player.slot): its item (index into Stage.actorItems: a weapon or other hand / shoulder item; < 0 none; actor_setActorTypeItemInfoBy) */
 	Manager headShapes;   /* +0x338: (by use; seen running) its head type's shapes (model_sets: shape_initBy over the data after it) */
 	u8 headShapeData[0x7d00];   /* +0x584 */
 	Manager chestShapes;   /* +0x8284: (by use; seen running) its chest type's shapes (model_sets: shape_initBy over the data after it) */
@@ -1038,12 +1038,12 @@ typedef struct PlayerRecord {
 	u8 legSkelData[0xfa0];   /* +0x45934 */
 	SkelManager boosterSkels;   /* +0x468d4: its skeletons (skelSet_setup over the data after it) */
 	u8 boosterSkelData[0xfa0];   /* +0x46a04 */
-	u8 partHue[5][2];   /* +0x479a4: (by use; seen running) per part its two tints' hue (actor_setPartColor; bytes) */
-	u8 partSaturation[5][2];   /* +0x479ae */
-	u8 partValue[5][2];   /* +0x479b8 */
+	signed char partHue[5][2];   /* +0x479a4: (by use; seen running) per part its two tints' hue (actor_setPartColor; bytes) */
+	signed char partSaturation[5][2];   /* +0x479ae: per part its two tints' saturation x 128, kept to -1 .. 0.999 first (actor_setPartColor: level_byte), a signed byte; sent in packet 2 (net_sendPlayerInfo, 30 bytes from partHue) and read back signed (actor_applyRemoteColours: x k_0_0078125f) */
+	signed char partValue[5][2];   /* +0x479b8: per part its two tints' value (brightness) x 128, kept to -1 .. 0.999 first (actor_setPartColor: level_byte), a signed byte; sent in packet 2 (net_sendPlayerInfo) and read back signed (actor_applyRemoteColours) */
 	u32 flag[16][24];   /* +0x479c2: (by use; seen running) its flag: 24 x 16 RGBA (the pilot's own picture, Save\<name>.BMP; drawn after its name and in the ranking) */
 	u8 _pad0047fc2[0x4];
-	i32 flagShown;   /* +0x47fc6: 1: its flag is shown (ranking, markers) */
+	i32 flagShown;   /* +0x47fc6: 1: its flag is in the flag atlas (flag_uploadAtlas on its first copy; map_loadActorInfoFrom for the map's players): only then drawn (hud_drawMain, markers, ranking) and sent (net_sendFlagPiece, or while flagChanged) */
 	i32 flagChanged;   /* +0x47fca: 1: to be copied into the flag atlas (flagShown: it is there) */
 	i32 flagSent;   /* +0x47fce: (by use; seen running) its flag's pixels sent so far (0x180 = 24 x 16: all; the map's players start with all) */
 } PlayerRecord;
@@ -1060,10 +1060,10 @@ typedef struct TreeNode {
 typedef struct TexRecord {
 	char name[0x40];   /* +0x0: upper-cased */
 	i32 slot;   /* +0x40: its slot in the GL texture cache (TextureBank.slots; -1: not cached; tex_bind) */
-	u32 flags;   /* +0x44 */
+	u32 flags;   /* +0x44: 1: clamped at the edges, else repeated (tex_bind: tex_upload's mode; match_start gives it to effectTextures past 7); 2: tinted with colours through its _COLOR mask (tex_applyTintMask; set by tex_recolourMaterial; the player parts' textures, shape_setTextureSuffix); tex_markMaterialChanged keeps the bits 0x11111113 */
 	float colours[6];   /* +0x48: two hue / saturation / value sets */
 	i32 scrollMode;   /* +0x60: its texture coordinates' scrolling by the name's suffix: "_ANI" / "_ANI0" 1, "_ANI1" 2, "_ANI2" 3, "_ANI3" 4 (another "_ANI<c>": left as it was), else 0; ViewVolume_draw shifts them: 1 v +, 2 u +, 3 v -, 4 u - (view_volume.c tex_scroll) */
-	i32 changed;   /* +0x64: 1: recoloured (tex_recolourMaterial; its image made again) */
+	i32 changed;   /* +0x64: 1: its image to be loaded again at its next tex_bind (set by tex_recolourMaterial when a tint differs and by tex_markMaterialChanged; tex_bind reloads and clears it; texRecord_init 0) */
 } TexRecord;
 
 /* a slot of a texture bank's GL texture cache (names.c tex_bind) */
@@ -1114,7 +1114,7 @@ typedef struct GroundLayer {
 	i32 water;   /* +0x30: 1: a water layer: a surface drawn around the camera (waterModel: waterPrims, waterColours lit from above, or for kind 1 from below) */
 	u32 texture;   /* +0x34: its Ground<n>Map texture */
 	u8 *heights;   /* +0x38: one byte a point (the map image's grey) */
-	u8 *flat;   /* +0x3c: one byte a cell: all four corners present */
+	u8 *drawnCells;   /* +0x3c: one byte a cell: 1 when its four corners are all grey pixels of the map image (map_loadGroundInfoFrom); ground_buildDrawLists draws only those (bit 0); collision takes every cell */
 	float *points;   /* +0x40: 3 floats a point */
 	float *normals;   /* +0x44 */
 	u32 *colours;   /* +0x48: RGBA a point (light_computeLayerLightBy) */
@@ -1148,7 +1148,7 @@ typedef struct Trigger {
 	u32 flags;   /* +0xc: 1: on its time; 2: on the player within its radius */
 	float time;   /* +0x10: the match clock it fires at (flag 1) */
 	float radiusSq;   /* +0x14: read as a radius: squared and scaled at load (flag 2) */
-	i32 fired;   /* +0x18: 1: fires this frame (its first way point's commands run; then disarmed) */
+	i32 fired;   /* +0x18: 1: to fire (script_processTriggers sets it on its time / the player within its radius, for an armed one; script command 2 sets it for any trigger): script_processTriggers then runs its first way point's commands (script_processCommandBy entry 0), clears it and disarms it */
 } Trigger;
 
 /* a multiplayer start (Stage.starts) */
@@ -1177,7 +1177,7 @@ typedef struct SpawnRecord {
 	u32 unused1c;   /* +0x1c: copied to the actor's +0x64 (actor_applySpawnRecord; 100 for a player's mech, the maps' spawns 100, 1000 netsphere, 10 gigantic-core); never read */
 	i32 armor;   /* +0x20: the armour and shield it starts with (and their maximum) */
 	i32 shield;   /* +0x24 */
-	float speed;   /* +0x28: x 27.7778: the actor's speed and top speed */
+	float speed;   /* +0x28: km/h: x 27.7778 (to cm/s) the actor's speed and baseSpeed (actor_applySpawnRecord) */
 	float turnRate;   /* +0x2c: x 10: the actor's turnRate */
 	float range;   /* +0x30: its sight range (squared, x 10000: radiusSq) */
 	u32 unused34;   /* +0x34: copied to the actor's +0x70 (actor_applySpawnRecord; 3.0 for a player's mech); never read */
@@ -1210,7 +1210,7 @@ typedef struct BmpFile {
 
 /* a head part type (Stage.headTypes; the ARM CENTER's head panel: armc_parts.c) */
 typedef struct HeadType {
-	char name[0x40];   /* +0x0: its folder path (the panel's name) */
+	char name[0x40];   /* +0x0: its type name: the maker's folder and the part (MILLIA\HEAD ...: Component.dat); set_part copies it to PlayerRecord.partNames[0]; the ARM CENTER's head panel shows it with '\' and '/' as '-' (panel_name) */
 	i32 shapeCount[2];   /* +0x40: per detail level (Player.lowDetail: [0] near, [1] far): the shapes (ObjectList_load's ns) .. */
 	u8 _pad0000048[0x400];
 	char shapeNames[2][0x220];   /* +0x448: .. their names (0x44 apart: a name and its bone's translation scale, a float: ListedObject.scale) */
@@ -1218,10 +1218,10 @@ typedef struct HeadType {
 	u8 _pad0000890[0x100];
 	char skelNames[2][0x80];   /* +0x990: .. and their names (0x40 apart) */
 	float weight;   /* +0xa90 */
-	float detectionRange;   /* +0xa94: (by level: the actor's radiusSq, squared) */
-	float detectionAngle;   /* +0xa98: tenths of a degree */
+	float detectionRange;   /* +0xa94: DETECTION RANGE (message 601), 1/100 m (the panel shows x 0.01 m): x the pilot character's skill factor (stats[7] x 0.01 + 1), + the item bonus rangeBonus, squared = the actor's radiusSq (mech_stats) */
+	float detectionAngle;   /* +0xa98: DETECTION ANGLE (message 602), tenths of a degree: x the pilot character's skill factor (stats[7] x 0.01 + 1) = the actor's detectionAngle (mech_stats) */
 	i32 hackingLevel;   /* +0xa9c */
-	float lockOnTime;   /* +0xaa0 */
+	float lockOnTime;   /* +0xaa0: a factor on the weapon's lock-on time (x ActorItem.targetingTime x the item factor lockOnTimeFactor: the actor's lockOnTime, compared with aimTime in actor_processFrame); the panel's LOCK ON EFFICIENCY (message 604) is 100 / it, in % */
 	float targetKeepTime;   /* +0xaa4 */
 } HeadType;
 
@@ -1238,7 +1238,7 @@ typedef struct ChestType {
 	i32 legsJoint[2];   /* +0xa98 */
 	i32 headJoint[2];   /* +0xaa0 */
 	i32 boosterJoint[2];   /* +0xaa8 */
-	float weightLimit;   /* +0xab0: (by level: the actor's loadMax) */
+	float weightLimit;   /* +0xab0: WEIGHT LIMIT (message 611), tons: x the pilot character's skill factor (stats[8] x 0.01 + 1) x the item factor loadFactor = the actor's loadMax (mech_stats) */
 	i32 maxArmor;   /* +0xab4 */
 	i32 maxShield;   /* +0xab8 */
 } ChestType;
@@ -1254,7 +1254,7 @@ typedef struct ArmType {
 	char skelNames[2][0x80];   /* +0x11d0: .. and their names (0x40 apart) */
 	i32 weaponJoints[3][2];   /* +0x12d0: per detail level, the entries the weapons hang on: [0] slots 0 .. 3 (the right fist), [1] slot 4 (the RSW bone), [2] slot 5 (LSW) (actor_processFrame, muzzle_camera) */
 	float weight;   /* +0x12e8 */
-	i32 stats[5];   /* +0x12ec: (the ARM CENTER's arm stats) [1 ..] the ammunition per kind (the actor's ammoMax) */
+	i32 stats[5];   /* +0x12ec: [0] the FIRE CONTROL SYSTEM level (message 621; the actor's accuracy), [1 ..] CAPACITY FOR 30MM, 60MM, E-PAK, MISSLE (messages 622 .. 625): x the item factor ammoFactor, + ammoBonus = the actor's ammoMax (mech_stats) */
 } ArmType;
 
 /* a leg part type (Stage.legTypes) */
@@ -1270,10 +1270,10 @@ typedef struct LegType {
 	i32 emitterCount;   /* +0x13d0 */
 	u8 _pad00013d4[0x4];
 	float weight;   /* +0x13d8 */
-	float agility;   /* +0x13dc: AGILITY (ARM CENTER legs, message 631): x the pilot's level factor 0 = the actor's mobility (actor_setupFromParts) */
+	float agility;   /* +0x13dc: AGILITY (ARM CENTER legs, message 631): x the pilot character's skill factor (stats[4] x 0.01 + 1) x (1 - the overload) = the actor's mobility (at least 0; a third in the rocket arena) (mech_stats) */
 	float inertia;   /* +0x13e0: INERTIA (ARM CENTER legs, message 632): x the speed = the actor's moveAccel */
 	float speedCorrection;   /* +0x13e4 */
-	float forwardBoostCorrection;   /* +0x13e8: F.BOOST SPD CORRECTION (message 634): + the level's legs stat + 1, x the booster's speed [1] */
+	float forwardBoostCorrection;   /* +0x13e8: F.BOOST SPD CORRECTION (message 634): + the pilot character's legs skill (stats[5] x 0.01) + 1, x the booster's speed [1], / the speed, x (1 - the overload) = the actor's runTop[0] (mech_stats) */
 	float backBoostCorrection;   /* +0x13ec: B.BOOST SPD CORRECTION (message 636): with the booster's speed [2], negated */
 	float sideBoostCorrection;   /* +0x13f0: S.BOOST SPD CORRECTION (message 635): with the booster's speed [3] */
 } LegType;
@@ -1293,19 +1293,19 @@ typedef struct BoosterType {
 	float weight;   /* +0x17f8 */
 	i32 thrustType;   /* +0x17fc */
 	float lean;   /* +0x1800: the actor's boosterTilt: how far the booster joint tips with the aim's pitch (actor_processFrame's pose[1]); 0.0 in every booster of Component.dat */
-	float activeTime[3];   /* +0x1804: (the actor's boostTime, rechargeTime, restTime by these) */
-	float normalSpeed[4];   /* +0x1810 */
+	float times[3];   /* +0x1804: seconds: [0] ACTIVE TIME, [1] RECHARGE TIME, [2] DELAY FOR RECHARGE (messages 642 .. 644); x the item factors boostTimeFactor, rechargeTimeFactor, restTimeFactor = the actor's boostTime, rechargeTime, restTime (mech_stats) */
+	float speeds[4];   /* +0x1810: 1/100 m a second (x 0.036 = km/h on the panel): [0] NORMAL SPEED (message 645), [1] .. [3] the boost's forward, back and side speeds (MAX SPEED FWD/SWD/BWD, message 646); with the legs' corrections = the actor's speed and runTop[0 .. 2] (mech_stats) */
 } BoosterType;
 
 /* a plane of the collision space (Space.planes; a bullet's hit, Bullet.hit) */
 typedef struct CollisionPlane {
-	i32 flags;   /* +0x0: 0x10: takes no marks (a transparent part's triangle, or the background floor's); else 0 (collisionTri_setup; read only by hit_surface) */
+	i32 flags;   /* +0x0: 0x10: takes no marks (a transparent part's triangle, or the background floor's; read by hit_surface); 2: its unit disabled (space_disableUnit / space_enableUnit), skipped by collision; else 0 (collisionTri_setup) */
 	float cornerPoints[3][3];   /* +0x4: its triangle's corners (collisionTri_setup) */
 	float edges[3][3];   /* +0x28: edge i: corner i + 1 - corner i, normalized (collisionTri_setup) */
 	float normal[3];   /* +0x4c: the face's: (-edge 0) x edge 1 */
 	float dist;   /* +0x58: the face plane: normal . corner 0 */
 	float edgePlanes[3][4];   /* +0x5c: edge k's plane: normal x edge k, through corner k (its normal and distance) */
-	i32 *object;   /* +0x8c: its map object's index (none: 0) */
+	struct SpaceUnit *unit;   /* +0x8c: its collision unit (none: 0: the ground's triangles, collision_tris.c ground_triangle); the unit's index (its first field) is the map object's (Stage.objects): hit_surface / decal read *it */
 	i32 part;   /* +0x90: the object's shape part */
 	i32 cornerIndices[3];   /* +0x94: the corners' vertex indices in the part */
 	u8 *listNext;   /* +0xa0: its unit's list (space_addUnitPlanes: the next plane; the free pool walks +0xa4 as its next) */
@@ -1320,16 +1320,16 @@ typedef struct TimeSync {
 	i32 frames;   /* +0x8: frames counted towards the next second */
 	u64 frequency;   /* +0xc: the counter's */
 	u64 lastCount;   /* +0x14: its reading at the last frame */
-	int64_t rise;   /* +0x1c: the last frame's rise; written, never read */
+	int64_t rise;   /* +0x1c: the last frame's counter rise; its low half is read straight back (0x487533) to add to riseSum, and nothing reads it on a later frame */
 	int64_t riseSum;   /* +0x24: the rises summed (past a second: fps, then cleared) */
 	float fps;   /* +0x2c: frames per second (0 for a sum not positive) */
 	float frameTime;   /* +0x30: the last frame's seconds, at most maxFrame */
-	float maxFrame;   /* +0x34: 1/15 s unless set */
+	float maxFrame;   /* +0x34: the longest frame time: 1/15 s (0x3d888889), set on the first call because nothing else ever sets it (TimeSync_clear zeroes it) */
 } TimeSync;
 
-/* a unit of the collision space (Space.units; spaceSlot_clear): a map object's part */
+/* a unit of the collision space (Space.units; spaceSlot_clear): a map object (one unit for all its parts not flagged 0x20: space_buildUnits; the part is CollisionPlane.part) */
 typedef struct SpaceUnit {
-	i32 index;   /* +0x0: (-1 when cleared) */
+	i32 index;   /* +0x0: its map object's number (Stage.objects; space_buildUnits' id); -1 when cleared (spaceSlot_clear). CollisionPlane.object points at it */
 	u8 *lastPlane;   /* +0x4: its planes' list (CollisionPlane.listNext / listPrev): the last */
 	SpaceNode *lastNode;   /* +0x8: its planes' nodes: the last */
 	u8 *poolPrev;   /* +0xc: its links in the units' pool */
@@ -1339,13 +1339,13 @@ typedef struct SpaceUnit {
 /* what a particle is made from (particle_spawn's record; particle_init) */
 typedef struct ParticleDesc {
 	i32 kind;   /* +0x0 */
-	i32 owner;   /* +0x4 */
+	i32 owner;   /* +0x4: copied to Particle.owner, whose meaning is by kind: the actor it belongs to (glows and shells against cockpitActor), the player whose part shapes the debris shows (9: playerRecords index), a glow flare's alpha byte (4), a flag 1 (22, 25 ...), a random 0 .. 7 (emit(): the legs' / booster's puffs) */
 	float pos[3];   /* +0x8 */
-	float target[3];   /* +0x14 */
+	float target[3];   /* +0x14: copied to Particle.target, whose meaning is by kind (see there): an aim point, a hit's surface normal (effect(): impacts and marks), puffs' scale and alpha (emit()), a velocity ... */
 	u32 matrixFrom;   /* +0x20: a matrix to copy (none: 0) */
-	const float *trailPoints;   /* +0x24: a trail's three points (kinds 40 .. 49) */
-	const float *trailSizes;   /* +0x28: and its ends' sizes */
-	u32 size;   /* +0x2c: a float's bits */
+	const float *markCorners;   /* +0x24: kinds 40 .. 49, a bullet's mark on the surface it hit (weapons.c decal): the hit triangle's three corners (the map object's own vertices when matrixFrom is its matrix, else in the world) */
+	const float *markCoords;   /* +0x28: and the corners' coordinates in the mark's plane about the impact (six floats: corner 0 (its distance, 0), then corners 1 and 2 (u, v)), world units; particle_trail makes them texture coordinates (x 0.005 + 0.5, or (/ (size + margin) + 1) / 2; [1] unused, v 0.5) */
+	float size;   /* +0x2c: the particle's baseSize (0: none) */
 	i32 isQuad;   /* +0x30: 1: a kind 50 quad, from the fields below */
 	u8 quad[0x18];   /* +0x34: its texture, two texture corners, colour (Particle.quadTexture ..) */
 	float quadPoints[4][3];   /* +0x4c */
@@ -1375,7 +1375,6 @@ typedef struct Stage {
 	float cullMargin;   /* +0xa08: (by use; seen running) added to an object's radius when testing it against the camera box */
 	float viewDepth;   /* +0xa0c: (by use; seen running) the view distance's depth: -cullMargin x viewProjection[10] + viewProjection[14] (stage_setViewDistance); written, never read */
 	Space space;   /* +0xa10: (by use; seen running) the collision space (space_initBy; its planes - 0xac bytes each, hit records point into them - space.planes.records) */
-	u8 _pad0000aac[0x58];
 	u8 spaceData[0x9c95f0];   /* +0xb04: the collision space's block (space_initBy on +0xa10; stage_build) */
 	u32 nearObjects[1000][3];   /* +0x9ca0f4: the moving map objects (active, animated, with planes) a move or a ray may reach: each its unit's planes (SpaceUnit.lastNode), relMatrix and relInverse; the sub-models for space_testSphere (collision_moveActor) and space_traceNodes (collision_rayTrace) */
 	i32 effectTextures[9];   /* +0x9ccfd4: (by use; seen running) the effects' textures "<dir>\00" .. "08" (stage_build; objects.c TEX(k)); "09" is billboards */
@@ -1830,7 +1829,7 @@ typedef struct Scene {
 	EventLine events[5];   /* +0x23429ce: the last five events (ring of 5) */
 	u32 eventCount;   /* +0x2342ef6: events written so far */
 	u32 eventFirst;   /* +0x2342efa: first event still shown */
-	u32 eventTime;   /* +0x2342efe: (by use; seen running) stamped on each new event line */
+	float eventTime;   /* +0x2342efe: (by use; seen running) seconds a new event line stays shown (events_clear: 60; EventLine.timeLeft takes it) */
 	float noticeTimer;   /* +0x2342f02: > 0: the notice shown (2 s after notice_printCentre) */
 	char noticeText[0x40];   /* +0x2342f06: the centred notice (notice_printCentre: PREPARE THE BATTLE, FIGHT!, LEVEL UP! ..), shown while no restart counts down */
 	u8 _pad2342f46[0xc0];
@@ -1881,8 +1880,8 @@ typedef struct Scene {
 	i32 zoomOutHeld;   /* +0x23432af: Ctrl + down held (match_freeCamFrame): the distance grows (to 10000); replay_frame's read always sees 0 */
 	i32 turnLeftHeld;   /* +0x23432b3: left held (the free camera): the camera turns left */
 	i32 turnRightHeld;   /* +0x23432b7: right held: the camera turns right */
-	i32 pitchUpHeld;   /* +0x23432bb: up held without Ctrl (the free camera): the camera pitches up */
-	i32 pitchDownHeld;   /* +0x23432bf: down held without Ctrl: the camera pitches down */
+	i32 upKeyHeld;   /* +0x23432bb: Up held without Ctrl (the free camera, match_freeCamFrame): cameraAngle[0] down toward -890, so the camera orbits up over the actor and looks down at it */
+	i32 downKeyHeld;   /* +0x23432bf: Down held without Ctrl (the free camera): cameraAngle[0] up toward 890, the camera orbits down under the actor and looks up at it */
 	u8 _pad23432c3[0x8];
 	i32 cameraReset;   /* +0x23432cb: 1 this frame: the camera put back: match_frame copies all ten presets into cameraSettings, replay_frame the current one (preset_reset); in the free camera (Space, match_freeCamFrame) only the zoom (2000) and the angles (0) are reset. Set by local_spawn, a spectator's right click or numpad preset key (match_combatInput), the replay viewer's right click / numpad keys */
 	i32 quitAsked;   /* +0x23432cf: (by use; seen running) 1: the match is to be left (QUIT / no retry) */
@@ -1910,7 +1909,7 @@ _Static_assert(offsetof(MessageSlot, colour) == 0x8 && sizeof(((MessageSlot *)0)
 _Static_assert(sizeof(MessageSlot) == 0x14, "scene.fields: size of MessageSlot");
 _Static_assert(offsetof(EventLine, type) == 0x0 && sizeof(((EventLine *)0)->type) == 0x4, "scene.fields: EventLine.type");
 _Static_assert(offsetof(EventLine, text) == 0x4 && sizeof(((EventLine *)0)->text) == 0x100, "scene.fields: EventLine.text");
-_Static_assert(offsetof(EventLine, time) == 0x104 && sizeof(((EventLine *)0)->time) == 0x4, "scene.fields: EventLine.time");
+_Static_assert(offsetof(EventLine, timeLeft) == 0x104 && sizeof(((EventLine *)0)->timeLeft) == 0x4, "scene.fields: EventLine.timeLeft");
 _Static_assert(sizeof(EventLine) == 0x108, "scene.fields: size of EventLine");
 _Static_assert(offsetof(FiredRound, received) == 0x0 && sizeof(((FiredRound *)0)->received) == 0x4, "scene.fields: FiredRound.received");
 _Static_assert(offsetof(FiredRound, weapon) == 0x4 && sizeof(((FiredRound *)0)->weapon) == 0x4, "scene.fields: FiredRound.weapon");
@@ -1921,10 +1920,10 @@ _Static_assert(offsetof(FiredRound, muzzle) == 0x24 && sizeof(((FiredRound *)0)-
 _Static_assert(sizeof(FiredRound) == 0x28, "scene.fields: size of FiredRound");
 _Static_assert(offsetof(ShotRecord, inUse) == 0x0 && sizeof(((ShotRecord *)0)->inUse) == 0x4, "scene.fields: ShotRecord.inUse");
 _Static_assert(offsetof(ShotRecord, isNew) == 0x4 && sizeof(((ShotRecord *)0)->isNew) == 0x4, "scene.fields: ShotRecord.isNew");
-_Static_assert(offsetof(ShotRecord, kind) == 0x8 && sizeof(((ShotRecord *)0)->kind) == 0x4, "scene.fields: ShotRecord.kind");
-_Static_assert(offsetof(ShotRecord, owner) == 0xc && sizeof(((ShotRecord *)0)->owner) == 0x4, "scene.fields: ShotRecord.owner");
-_Static_assert(offsetof(ShotRecord, flag) == 0x10 && sizeof(((ShotRecord *)0)->flag) == 0x4, "scene.fields: ShotRecord.flag");
-_Static_assert(offsetof(ShotRecord, dir) == 0x14 && sizeof(((ShotRecord *)0)->dir) == 0xc, "scene.fields: ShotRecord.dir");
+_Static_assert(offsetof(ShotRecord, hitActor) == 0x8 && sizeof(((ShotRecord *)0)->hitActor) == 0x4, "scene.fields: ShotRecord.hitActor");
+_Static_assert(offsetof(ShotRecord, hitPlane) == 0xc && sizeof(((ShotRecord *)0)->hitPlane) == 0x4, "scene.fields: ShotRecord.hitPlane");
+_Static_assert(offsetof(ShotRecord, ended) == 0x10 && sizeof(((ShotRecord *)0)->ended) == 0x4, "scene.fields: ShotRecord.ended");
+_Static_assert(offsetof(ShotRecord, point) == 0x14 && sizeof(((ShotRecord *)0)->point) == 0xc, "scene.fields: ShotRecord.point");
 _Static_assert(sizeof(ShotRecord) == 0x20, "scene.fields: size of ShotRecord");
 _Static_assert(offsetof(ItemModelSet, shapeCount) == 0x0 && sizeof(((ItemModelSet *)0)->shapeCount) == 0xc, "scene.fields: ItemModelSet.shapeCount");
 _Static_assert(offsetof(ItemModelSet, shapeNames) == 0x90c && sizeof(((ItemModelSet *)0)->shapeNames) == 0x990, "scene.fields: ItemModelSet.shapeNames");
@@ -1944,7 +1943,7 @@ _Static_assert(offsetof(ActorItem, burstGap) == 0x2dcc && sizeof(((ActorItem *)0
 _Static_assert(offsetof(ActorItem, burstStep) == 0x2dd0 && sizeof(((ActorItem *)0)->burstStep) == 0xc, "scene.fields: ActorItem.burstStep");
 _Static_assert(offsetof(ActorItem, damageType) == 0x2ddc && sizeof(((ActorItem *)0)->damageType) == 0x4, "scene.fields: ActorItem.damageType");
 _Static_assert(offsetof(ActorItem, damage) == 0x2de0 && sizeof(((ActorItem *)0)->damage) == 0x4, "scene.fields: ActorItem.damage");
-_Static_assert(offsetof(ActorItem, stepLength) == 0x2de4 && sizeof(((ActorItem *)0)->stepLength) == 0x4, "scene.fields: ActorItem.stepLength");
+_Static_assert(offsetof(ActorItem, range) == 0x2de4 && sizeof(((ActorItem *)0)->range) == 0x4, "scene.fields: ActorItem.range");
 _Static_assert(offsetof(ActorItem, velocity) == 0x2de8 && sizeof(((ActorItem *)0)->velocity) == 0x4, "scene.fields: ActorItem.velocity");
 _Static_assert(offsetof(ActorItem, spread) == 0x2dec && sizeof(((ActorItem *)0)->spread) == 0x4, "scene.fields: ActorItem.spread");
 _Static_assert(offsetof(ActorItem, hitRange) == 0x2df0 && sizeof(((ActorItem *)0)->hitRange) == 0x4, "scene.fields: ActorItem.hitRange");
@@ -2005,13 +2004,13 @@ _Static_assert(offsetof(ObjectList, ownsBlock) == 0xc && sizeof(((ObjectList *)0
 _Static_assert(offsetof(ObjectList, count) == 0x10 && sizeof(((ObjectList *)0)->count) == 0x4, "scene.fields: ObjectList.count");
 _Static_assert(offsetof(ObjectList, entries) == 0x14 && sizeof(((ObjectList *)0)->entries) == 0x4, "scene.fields: ObjectList.entries");
 _Static_assert(offsetof(ObjectList, colourCount) == 0x18 && sizeof(((ObjectList *)0)->colourCount) == 0x4, "scene.fields: ObjectList.colourCount");
-_Static_assert(offsetof(ObjectList, frameCount) == 0x1c && sizeof(((ObjectList *)0)->frameCount) == 0x4, "scene.fields: ObjectList.frameCount");
-_Static_assert(offsetof(ObjectList, frames) == 0x20 && sizeof(((ObjectList *)0)->frames) == 0x4, "scene.fields: ObjectList.frames");
-_Static_assert(offsetof(ObjectList, frame) == 0x24 && sizeof(((ObjectList *)0)->frame) == 0x4, "scene.fields: ObjectList.frame");
+_Static_assert(offsetof(ObjectList, skelCount) == 0x1c && sizeof(((ObjectList *)0)->skelCount) == 0x4, "scene.fields: ObjectList.skelCount");
+_Static_assert(offsetof(ObjectList, skeletons) == 0x20 && sizeof(((ObjectList *)0)->skeletons) == 0x4, "scene.fields: ObjectList.skeletons");
+_Static_assert(offsetof(ObjectList, skel) == 0x24 && sizeof(((ObjectList *)0)->skel) == 0x4, "scene.fields: ObjectList.skel");
 _Static_assert(offsetof(ObjectList, animTick) == 0x28 && sizeof(((ObjectList *)0)->animTick) == 0x4, "scene.fields: ObjectList.animTick");
 _Static_assert(offsetof(ObjectList, preLit) == 0x2c && sizeof(((ObjectList *)0)->preLit) == 0x4, "scene.fields: ObjectList.preLit");
 _Static_assert(sizeof(ObjectList) == 0x30, "scene.fields: size of ObjectList");
-_Static_assert(offsetof(Player, radiusSq) == 0x0 && sizeof(((Player *)0)->radiusSq) == 0x4, "scene.fields: Player.radiusSq");
+_Static_assert(offsetof(Player, detectionRangeSq) == 0x0 && sizeof(((Player *)0)->detectionRangeSq) == 0x4, "scene.fields: Player.detectionRangeSq");
 _Static_assert(offsetof(Player, detectionAngle) == 0x4 && sizeof(((Player *)0)->detectionAngle) == 0x4, "scene.fields: Player.detectionAngle");
 _Static_assert(offsetof(Player, hackingLevel) == 0x8 && sizeof(((Player *)0)->hackingLevel) == 0x4, "scene.fields: Player.hackingLevel");
 _Static_assert(offsetof(Player, lockOnTime) == 0xc && sizeof(((Player *)0)->lockOnTime) == 0x4, "scene.fields: Player.lockOnTime");
@@ -2239,9 +2238,9 @@ _Static_assert(sizeof(LightFactors) == 0xb010, "scene.fields: size of LightFacto
 _Static_assert(offsetof(MapObject, id) == 0x0 && sizeof(((MapObject *)0)->id) == 0x4, "scene.fields: MapObject.id");
 _Static_assert(offsetof(MapObject, active) == 0x4 && sizeof(((MapObject *)0)->active) == 0x4, "scene.fields: MapObject.active");
 _Static_assert(offsetof(MapObject, nameIndex) == 0x8 && sizeof(((MapObject *)0)->nameIndex) == 0x4, "scene.fields: MapObject.nameIndex");
-_Static_assert(offsetof(MapObject, flags) == 0xc && sizeof(((MapObject *)0)->flags) == 0x1, "scene.fields: MapObject.flags");
+_Static_assert(offsetof(MapObject, flags) == 0xc && sizeof(((MapObject *)0)->flags) == 0x4, "scene.fields: MapObject.flags");
 _Static_assert(offsetof(MapObject, trigger) == 0x10 && sizeof(((MapObject *)0)->trigger) == 0x4, "scene.fields: MapObject.trigger");
-_Static_assert(offsetof(MapObject, animSpeed) == 0x14 && sizeof(((MapObject *)0)->animSpeed) == 0x4, "scene.fields: MapObject.animSpeed");
+_Static_assert(offsetof(MapObject, animPeriod) == 0x14 && sizeof(((MapObject *)0)->animPeriod) == 0x4, "scene.fields: MapObject.animPeriod");
 _Static_assert(offsetof(MapObject, animPath) == 0x18 && sizeof(((MapObject *)0)->animPath) == 0x40, "scene.fields: MapObject.animPath");
 _Static_assert(offsetof(MapObject, place) == 0x58 && sizeof(((MapObject *)0)->place) == 0xc, "scene.fields: MapObject.place");
 _Static_assert(offsetof(MapObject, rotation) == 0x64 && sizeof(((MapObject *)0)->rotation) == 0x10, "scene.fields: MapObject.rotation");
@@ -2273,7 +2272,7 @@ _Static_assert(sizeof(MapObject) == 0x2cc, "scene.fields: size of MapObject");
 _Static_assert(offsetof(ObjectType, name) == 0x0 && sizeof(((ObjectType *)0)->name) == 0x40, "scene.fields: ObjectType.name");
 _Static_assert(offsetof(ObjectType, flags) == 0x40 && sizeof(((ObjectType *)0)->flags) == 0x4, "scene.fields: ObjectType.flags");
 _Static_assert(offsetof(ObjectType, trigger) == 0x44 && sizeof(((ObjectType *)0)->trigger) == 0x4, "scene.fields: ObjectType.trigger");
-_Static_assert(offsetof(ObjectType, animSpeed) == 0x48 && sizeof(((ObjectType *)0)->animSpeed) == 0x4, "scene.fields: ObjectType.animSpeed");
+_Static_assert(offsetof(ObjectType, animPeriod) == 0x48 && sizeof(((ObjectType *)0)->animPeriod) == 0x4, "scene.fields: ObjectType.animPeriod");
 _Static_assert(offsetof(ObjectType, animName) == 0x4c && sizeof(((ObjectType *)0)->animName) == 0x40, "scene.fields: ObjectType.animName");
 _Static_assert(offsetof(ObjectType, place) == 0x8c && sizeof(((ObjectType *)0)->place) == 0xc, "scene.fields: ObjectType.place");
 _Static_assert(offsetof(ObjectType, rotation) == 0x98 && sizeof(((ObjectType *)0)->rotation) == 0x10, "scene.fields: ObjectType.rotation");
@@ -2294,7 +2293,7 @@ _Static_assert(offsetof(MapItem, pos) == 0xc && sizeof(((MapItem *)0)->pos) == 0
 _Static_assert(offsetof(MapItem, pitch) == 0x18 && sizeof(((MapItem *)0)->pitch) == 0x4, "scene.fields: MapItem.pitch");
 _Static_assert(offsetof(MapItem, angle) == 0x1c && sizeof(((MapItem *)0)->angle) == 0x4, "scene.fields: MapItem.angle");
 _Static_assert(offsetof(MapItem, taken) == 0x20 && sizeof(((MapItem *)0)->taken) == 0x4, "scene.fields: MapItem.taken");
-_Static_assert(offsetof(MapItem, fade) == 0x24 && sizeof(((MapItem *)0)->fade) == 0x4, "scene.fields: MapItem.fade");
+_Static_assert(offsetof(MapItem, timer) == 0x24 && sizeof(((MapItem *)0)->timer) == 0x4, "scene.fields: MapItem.timer");
 _Static_assert(sizeof(MapItem) == 0x28, "scene.fields: size of MapItem");
 _Static_assert(offsetof(Particle, id) == 0x0 && sizeof(((Particle *)0)->id) == 0x4, "scene.fields: Particle.id");
 _Static_assert(offsetof(Particle, active) == 0x4 && sizeof(((Particle *)0)->active) == 0x4, "scene.fields: Particle.active");
@@ -2308,12 +2307,12 @@ _Static_assert(offsetof(Particle, drawAge) == 0x6c && sizeof(((Particle *)0)->dr
 _Static_assert(offsetof(Particle, life) == 0x70 && sizeof(((Particle *)0)->life) == 0x4, "scene.fields: Particle.life");
 _Static_assert(offsetof(Particle, age) == 0x74 && sizeof(((Particle *)0)->age) == 0x4, "scene.fields: Particle.age");
 _Static_assert(offsetof(Particle, colour) == 0x78 && sizeof(((Particle *)0)->colour) == 0x4, "scene.fields: Particle.colour");
-_Static_assert(offsetof(Particle, size) == 0x7c && sizeof(((Particle *)0)->size) == 0x4, "scene.fields: Particle.size");
+_Static_assert(offsetof(Particle, lightRadius) == 0x7c && sizeof(((Particle *)0)->lightRadius) == 0x4, "scene.fields: Particle.lightRadius");
 _Static_assert(offsetof(Particle, baseSize) == 0x80 && sizeof(((Particle *)0)->baseSize) == 0x4, "scene.fields: Particle.baseSize");
 _Static_assert(offsetof(Particle, fade) == 0x84 && sizeof(((Particle *)0)->fade) <= 0x24, "scene.fields: Particle.fade");
-_Static_assert(offsetof(Particle, trailPoints) == 0x84 && sizeof(((Particle *)0)->trailPoints) <= 0x24, "scene.fields: Particle.trailPoints");
-_Static_assert(offsetof(Particle, trailUv) == 0xb4 && sizeof(((Particle *)0)->trailUv) == 0x18, "scene.fields: Particle.trailUv");
-_Static_assert(offsetof(Particle, trailColours) == 0xd4 && sizeof(((Particle *)0)->trailColours) == 0xc, "scene.fields: Particle.trailColours");
+_Static_assert(offsetof(Particle, markPoints) == 0x84 && sizeof(((Particle *)0)->markPoints) <= 0x24, "scene.fields: Particle.markPoints");
+_Static_assert(offsetof(Particle, markUv) == 0xb4 && sizeof(((Particle *)0)->markUv) == 0x18, "scene.fields: Particle.markUv");
+_Static_assert(offsetof(Particle, markColours) == 0xd4 && sizeof(((Particle *)0)->markColours) == 0xc, "scene.fields: Particle.markColours");
 _Static_assert(offsetof(Particle, quadTexture) == 0xe4 && sizeof(((Particle *)0)->quadTexture) == 0x4, "scene.fields: Particle.quadTexture");
 _Static_assert(offsetof(Particle, quadUv0) == 0xe8 && sizeof(((Particle *)0)->quadUv0) == 0x8, "scene.fields: Particle.quadUv0");
 _Static_assert(offsetof(Particle, quadUv1) == 0xf0 && sizeof(((Particle *)0)->quadUv1) == 0x8, "scene.fields: Particle.quadUv1");
@@ -2326,7 +2325,7 @@ _Static_assert(offsetof(Bullet, weapon) == 0x8 && sizeof(((Bullet *)0)->weapon) 
 _Static_assert(offsetof(Bullet, owner) == 0xc && sizeof(((Bullet *)0)->owner) == 0x4, "scene.fields: Bullet.owner");
 _Static_assert(offsetof(Bullet, muzzle) == 0x10 && sizeof(((Bullet *)0)->muzzle) == 0x4, "scene.fields: Bullet.muzzle");
 _Static_assert(offsetof(Bullet, from) == 0x54 && sizeof(((Bullet *)0)->from) == 0xc, "scene.fields: Bullet.from");
-_Static_assert(offsetof(Bullet, end) == 0x60 && sizeof(((Bullet *)0)->end) == 0xc, "scene.fields: Bullet.end");
+_Static_assert(offsetof(Bullet, impact) == 0x60 && sizeof(((Bullet *)0)->impact) == 0xc, "scene.fields: Bullet.impact");
 _Static_assert(offsetof(Bullet, hit) == 0x6c && sizeof(((Bullet *)0)->hit) == 0x4, "scene.fields: Bullet.hit");
 _Static_assert(offsetof(Bullet, age) == 0x70 && sizeof(((Bullet *)0)->age) == 0x4, "scene.fields: Bullet.age");
 _Static_assert(offsetof(Bullet, life) == 0x74 && sizeof(((Bullet *)0)->life) == 0x4, "scene.fields: Bullet.life");
@@ -2340,7 +2339,7 @@ _Static_assert(offsetof(Bullet, hitActor) == 0xb8 && sizeof(((Bullet *)0)->hitAc
 _Static_assert(offsetof(Bullet, homingTarget) == 0xbc && sizeof(((Bullet *)0)->homingTarget) == 0x4, "scene.fields: Bullet.homingTarget");
 _Static_assert(offsetof(Bullet, homeTimer) == 0xc0 && sizeof(((Bullet *)0)->homeTimer) == 0x4, "scene.fields: Bullet.homeTimer");
 _Static_assert(offsetof(Bullet, homingPoint) == 0xc4 && sizeof(((Bullet *)0)->homingPoint) == 0xc, "scene.fields: Bullet.homingPoint");
-_Static_assert(offsetof(Bullet, hitWorld) == 0xd0 && sizeof(((Bullet *)0)->hitWorld) == 0x4, "scene.fields: Bullet.hitWorld");
+_Static_assert(offsetof(Bullet, struck) == 0xd0 && sizeof(((Bullet *)0)->struck) == 0x4, "scene.fields: Bullet.struck");
 _Static_assert(offsetof(Bullet, trail) == 0xd4 && sizeof(((Bullet *)0)->trail) == 0x3c0, "scene.fields: Bullet.trail");
 _Static_assert(offsetof(Bullet, trailAge) == 0x494 && sizeof(((Bullet *)0)->trailAge) == 0x50, "scene.fields: Bullet.trailAge");
 _Static_assert(offsetof(Bullet, trailCount) == 0x4e4 && sizeof(((Bullet *)0)->trailCount) == 0x4, "scene.fields: Bullet.trailCount");
@@ -2376,15 +2375,15 @@ _Static_assert(offsetof(Space, cells) == 0x54 && sizeof(((Space *)0)->cells) == 
 _Static_assert(offsetof(Space, cellCount) == 0x58 && sizeof(((Space *)0)->cellCount) == 0x4, "scene.fields: Space.cellCount");
 _Static_assert(offsetof(Space, min) == 0x5c && sizeof(((Space *)0)->min) == 0xc, "scene.fields: Space.min");
 _Static_assert(offsetof(Space, max) == 0x68 && sizeof(((Space *)0)->max) == 0xc, "scene.fields: Space.max");
-_Static_assert(offsetof(Space, nx) == 0x74 && sizeof(((Space *)0)->nx) == 0x4, "scene.fields: Space.nx");
-_Static_assert(offsetof(Space, ny) == 0x78 && sizeof(((Space *)0)->ny) == 0x4, "scene.fields: Space.ny");
-_Static_assert(offsetof(Space, nz) == 0x7c && sizeof(((Space *)0)->nz) == 0x4, "scene.fields: Space.nz");
+_Static_assert(offsetof(Space, cellsZ) == 0x74 && sizeof(((Space *)0)->cellsZ) == 0x4, "scene.fields: Space.cellsZ");
+_Static_assert(offsetof(Space, cellsX) == 0x78 && sizeof(((Space *)0)->cellsX) == 0x4, "scene.fields: Space.cellsX");
+_Static_assert(offsetof(Space, cellsY) == 0x7c && sizeof(((Space *)0)->cellsY) == 0x4, "scene.fields: Space.cellsY");
 _Static_assert(offsetof(Space, cellSize) == 0x80 && sizeof(((Space *)0)->cellSize) == 0xc, "scene.fields: Space.cellSize");
 _Static_assert(offsetof(Space, margin) == 0x8c && sizeof(((Space *)0)->margin) == 0x4, "scene.fields: Space.margin");
 _Static_assert(offsetof(Space, splitCount) == 0x90 && sizeof(((Space *)0)->splitCount) == 0x4, "scene.fields: Space.splitCount");
 _Static_assert(offsetof(Space, depth) == 0x94 && sizeof(((Space *)0)->depth) == 0x4, "scene.fields: Space.depth");
 _Static_assert(offsetof(Space, lastHit) == 0x98 && sizeof(((Space *)0)->lastHit) == 0x4, "scene.fields: Space.lastHit");
-_Static_assert(sizeof(Space) == 0x9c, "scene.fields: size of Space");
+_Static_assert(sizeof(Space) == 0xf4, "scene.fields: size of Space");
 _Static_assert(offsetof(PartInfo, name) == 0x0 && sizeof(((PartInfo *)0)->name) == 0x40, "scene.fields: PartInfo.name");
 _Static_assert(offsetof(PartInfo, slotType) == 0x40 && sizeof(((PartInfo *)0)->slotType) == 0x4, "scene.fields: PartInfo.slotType");
 _Static_assert(offsetof(PartInfo, ammoType) == 0x44 && sizeof(((PartInfo *)0)->ammoType) == 0x4, "scene.fields: PartInfo.ammoType");
@@ -2403,7 +2402,7 @@ _Static_assert(offsetof(PartInfo, guidance) == 0x74 && sizeof(((PartInfo *)0)->g
 _Static_assert(offsetof(PartInfo, targetingTime) == 0x78 && sizeof(((PartInfo *)0)->targetingTime) == 0x4, "scene.fields: PartInfo.targetingTime");
 _Static_assert(offsetof(PartInfo, weight) == 0x7c && sizeof(((PartInfo *)0)->weight) == 0x4, "scene.fields: PartInfo.weight");
 _Static_assert(sizeof(PartInfo) == 0x80, "scene.fields: size of PartInfo");
-_Static_assert(offsetof(Mission, id) == 0x0 && sizeof(((Mission *)0)->id) == 0x4, "scene.fields: Mission.id");
+_Static_assert(offsetof(Mission, unused0) == 0x0 && sizeof(((Mission *)0)->unused0) == 0x4, "scene.fields: Mission.unused0");
 _Static_assert(offsetof(Mission, name) == 0x4 && sizeof(((Mission *)0)->name) == 0x40, "scene.fields: Mission.name");
 _Static_assert(offsetof(Mission, title) == 0x44 && sizeof(((Mission *)0)->title) == 0x20, "scene.fields: Mission.title");
 _Static_assert(offsetof(Mission, briefing) == 0x64 && sizeof(((Mission *)0)->briefing) == 0x80, "scene.fields: Mission.briefing");
@@ -2497,7 +2496,7 @@ _Static_assert(offsetof(SessionEntry, password) == 0x3f && sizeof(((SessionEntry
 _Static_assert(offsetof(SessionEntry, locked) == 0x47 && sizeof(((SessionEntry *)0)->locked) == 0x1, "scene.fields: SessionEntry.locked");
 _Static_assert(sizeof(SessionEntry) == 0x4a, "scene.fields: size of SessionEntry");
 _Static_assert(offsetof(FileEntry, name) == 0x0 && sizeof(((FileEntry *)0)->name) == 0x40, "scene.fields: FileEntry.name");
-_Static_assert(offsetof(FileEntry, flag) == 0x40 && sizeof(((FileEntry *)0)->flag) == 0x4, "scene.fields: FileEntry.flag");
+_Static_assert(offsetof(FileEntry, picked) == 0x40 && sizeof(((FileEntry *)0)->picked) == 0x4, "scene.fields: FileEntry.picked");
 _Static_assert(sizeof(FileEntry) == 0x44, "scene.fields: size of FileEntry");
 _Static_assert(offsetof(MapChoice, chosen) == 0x0 && sizeof(((MapChoice *)0)->chosen) == 0x4, "scene.fields: MapChoice.chosen");
 _Static_assert(offsetof(MapChoice, type) == 0x4 && sizeof(((MapChoice *)0)->type) == 0x4, "scene.fields: MapChoice.type");
@@ -2516,7 +2515,7 @@ _Static_assert(offsetof(AccountForm, email) == 0x2a && sizeof(((AccountForm *)0)
 _Static_assert(sizeof(AccountForm) == 0x5c, "scene.fields: size of AccountForm");
 _Static_assert(offsetof(GameSettings, name) == 0x0 && sizeof(((GameSettings *)0)->name) == 0x20, "scene.fields: GameSettings.name");
 _Static_assert(offsetof(GameSettings, map) == 0x20 && sizeof(((GameSettings *)0)->map) == 0x1, "scene.fields: GameSettings.map");
-_Static_assert(offsetof(GameSettings, players) == 0x21 && sizeof(((GameSettings *)0)->players) == 0x1, "scene.fields: GameSettings.players");
+_Static_assert(offsetof(GameSettings, maxPlayers) == 0x21 && sizeof(((GameSettings *)0)->maxPlayers) == 0x1, "scene.fields: GameSettings.maxPlayers");
 _Static_assert(offsetof(GameSettings, rotation) == 0x22 && sizeof(((GameSettings *)0)->rotation) == 0x1, "scene.fields: GameSettings.rotation");
 _Static_assert(offsetof(GameSettings, mode) == 0x23 && sizeof(((GameSettings *)0)->mode) == 0x1, "scene.fields: GameSettings.mode");
 _Static_assert(offsetof(GameSettings, limit) == 0x24 && sizeof(((GameSettings *)0)->limit) == 0x2, "scene.fields: GameSettings.limit");
@@ -2556,20 +2555,20 @@ _Static_assert(offsetof(GamePacket, map) == 0x3 && sizeof(((GamePacket *)0)->map
 _Static_assert(offsetof(GamePacket, nextMap) == 0x4 && sizeof(((GamePacket *)0)->nextMap) == 0x1, "scene.fields: GamePacket.nextMap");
 _Static_assert(offsetof(GamePacket, mode) == 0x5 && sizeof(((GamePacket *)0)->mode) == 0x1, "scene.fields: GamePacket.mode");
 _Static_assert(offsetof(GamePacket, nextMode) == 0x6 && sizeof(((GamePacket *)0)->nextMode) == 0x1, "scene.fields: GamePacket.nextMode");
-_Static_assert(offsetof(GamePacket, mission) == 0x7 && sizeof(((GamePacket *)0)->mission) == 0x2, "scene.fields: GamePacket.mission");
+_Static_assert(offsetof(GamePacket, mapNumber) == 0x7 && sizeof(((GamePacket *)0)->mapNumber) == 0x2, "scene.fields: GamePacket.mapNumber");
 _Static_assert(offsetof(GamePacket, elapsed) == 0x9 && sizeof(((GamePacket *)0)->elapsed) == 0x4, "scene.fields: GamePacket.elapsed");
 _Static_assert(offsetof(GamePacket, clockFraction) == 0xd && sizeof(((GamePacket *)0)->clockFraction) == 0x4, "scene.fields: GamePacket.clockFraction");
 _Static_assert(offsetof(GamePacket, timePlayed) == 0x11 && sizeof(((GamePacket *)0)->timePlayed) == 0x4, "scene.fields: GamePacket.timePlayed");
 _Static_assert(offsetof(GamePacket, timeFraction) == 0x15 && sizeof(((GamePacket *)0)->timeFraction) == 0x4, "scene.fields: GamePacket.timeFraction");
-_Static_assert(offsetof(GamePacket, sendTwice) == 0x19 && sizeof(((GamePacket *)0)->sendTwice) == 0x8, "scene.fields: GamePacket.sendTwice");
+_Static_assert(offsetof(GamePacket, resendAsked) == 0x19 && sizeof(((GamePacket *)0)->resendAsked) == 0x8, "scene.fields: GamePacket.resendAsked");
 _Static_assert(offsetof(GamePacket, kills) == 0x21 && sizeof(((GamePacket *)0)->kills) == 0x2, "scene.fields: GamePacket.kills");
 _Static_assert(offsetof(GamePacket, deaths) == 0x23 && sizeof(((GamePacket *)0)->deaths) == 0x2, "scene.fields: GamePacket.deaths");
 _Static_assert(offsetof(GamePacket, teamScores) == 0x25 && sizeof(((GamePacket *)0)->teamScores) == 0x4, "scene.fields: GamePacket.teamScores");
 _Static_assert(offsetof(GamePacket, lastPickup) == 0x29 && sizeof(((GamePacket *)0)->lastPickup) == 0x2, "scene.fields: GamePacket.lastPickup");
 _Static_assert(offsetof(GamePacket, checkTable) == 0x2b && sizeof(((GamePacket *)0)->checkTable) == 0x1, "scene.fields: GamePacket.checkTable");
-_Static_assert(offsetof(GamePacket, checkRow) == 0x2c && sizeof(((GamePacket *)0)->checkRow) == 0x2, "scene.fields: GamePacket.checkRow");
+_Static_assert(offsetof(GamePacket, checkIndex) == 0x2c && sizeof(((GamePacket *)0)->checkIndex) == 0x2, "scene.fields: GamePacket.checkIndex");
 _Static_assert(offsetof(GamePacket, checkValue) == 0x2e && sizeof(((GamePacket *)0)->checkValue) == 0x4, "scene.fields: GamePacket.checkValue");
-_Static_assert(offsetof(GamePacket, checkRow2) == 0x32 && sizeof(((GamePacket *)0)->checkRow2) == 0x2, "scene.fields: GamePacket.checkRow2");
+_Static_assert(offsetof(GamePacket, checkIndex2) == 0x32 && sizeof(((GamePacket *)0)->checkIndex2) == 0x2, "scene.fields: GamePacket.checkIndex2");
 _Static_assert(offsetof(GamePacket, checkValue2) == 0x34 && sizeof(((GamePacket *)0)->checkValue2) == 0x4, "scene.fields: GamePacket.checkValue2");
 _Static_assert(sizeof(GamePacket) == 0x40, "scene.fields: size of GamePacket");
 _Static_assert(offsetof(PlayerRecordPacket, name) == 0x0 && sizeof(((PlayerRecordPacket *)0)->name) == 0x1e, "scene.fields: PlayerRecordPacket.name");
@@ -2656,7 +2655,7 @@ _Static_assert(offsetof(Skeleton, boneCount) == 0x10 && sizeof(((Skeleton *)0)->
 _Static_assert(offsetof(Skeleton, bones) == 0x14 && sizeof(((Skeleton *)0)->bones) == 0x4, "scene.fields: Skeleton.bones");
 _Static_assert(offsetof(Skeleton, posKeyTotal) == 0x18 && sizeof(((Skeleton *)0)->posKeyTotal) == 0x4, "scene.fields: Skeleton.posKeyTotal");
 _Static_assert(offsetof(Skeleton, rotKeyTotal) == 0x1c && sizeof(((Skeleton *)0)->rotKeyTotal) == 0x4, "scene.fields: Skeleton.rotKeyTotal");
-_Static_assert(offsetof(Skeleton, frames) == 0x20 && sizeof(((Skeleton *)0)->frames) == 0x4, "scene.fields: Skeleton.frames");
+_Static_assert(offsetof(Skeleton, duration) == 0x20 && sizeof(((Skeleton *)0)->duration) == 0x4, "scene.fields: Skeleton.duration");
 _Static_assert(sizeof(Skeleton) == 0x24, "scene.fields: size of Skeleton");
 _Static_assert(offsetof(Bone, parent) == 0x40 && sizeof(((Bone *)0)->parent) == 0x4, "scene.fields: Bone.parent");
 _Static_assert(offsetof(Bone, pos) == 0x44 && sizeof(((Bone *)0)->pos) == 0xc, "scene.fields: Bone.pos");
@@ -2666,12 +2665,12 @@ _Static_assert(offsetof(Bone, posKeys) == 0x64 && sizeof(((Bone *)0)->posKeys) =
 _Static_assert(offsetof(Bone, rotKeyCount) == 0x68 && sizeof(((Bone *)0)->rotKeyCount) == 0x4, "scene.fields: Bone.rotKeyCount");
 _Static_assert(offsetof(Bone, rotKeys) == 0x6c && sizeof(((Bone *)0)->rotKeys) == 0x4, "scene.fields: Bone.rotKeys");
 _Static_assert(sizeof(Bone) == 0x70, "scene.fields: size of Bone");
-_Static_assert(offsetof(PosKey, frame) == 0x0 && sizeof(((PosKey *)0)->frame) == 0x4, "scene.fields: PosKey.frame");
+_Static_assert(offsetof(PosKey, time) == 0x0 && sizeof(((PosKey *)0)->time) == 0x4, "scene.fields: PosKey.time");
 _Static_assert(offsetof(PosKey, length) == 0x4 && sizeof(((PosKey *)0)->length) == 0x4, "scene.fields: PosKey.length");
 _Static_assert(offsetof(PosKey, pos) == 0x8 && sizeof(((PosKey *)0)->pos) == 0xc, "scene.fields: PosKey.pos");
 _Static_assert(offsetof(PosKey, delta) == 0x14 && sizeof(((PosKey *)0)->delta) == 0xc, "scene.fields: PosKey.delta");
 _Static_assert(sizeof(PosKey) == 0x20, "scene.fields: size of PosKey");
-_Static_assert(offsetof(RotKey, frame) == 0x0 && sizeof(((RotKey *)0)->frame) == 0x4, "scene.fields: RotKey.frame");
+_Static_assert(offsetof(RotKey, time) == 0x0 && sizeof(((RotKey *)0)->time) == 0x4, "scene.fields: RotKey.time");
 _Static_assert(offsetof(RotKey, length) == 0x4 && sizeof(((RotKey *)0)->length) == 0x4, "scene.fields: RotKey.length");
 _Static_assert(offsetof(RotKey, rotation) == 0x8 && sizeof(((RotKey *)0)->rotation) == 0x10, "scene.fields: RotKey.rotation");
 _Static_assert(offsetof(RotKey, step) == 0x18 && sizeof(((RotKey *)0)->step) == 0x10, "scene.fields: RotKey.step");
@@ -2688,7 +2687,7 @@ _Static_assert(offsetof(Manager, count) == 0x120 && sizeof(((Manager *)0)->count
 _Static_assert(offsetof(Manager, dataSize) == 0x124 && sizeof(((Manager *)0)->dataSize) == 0x4, "scene.fields: Manager.dataSize");
 _Static_assert(offsetof(Manager, data) == 0x128 && sizeof(((Manager *)0)->data) == 0x4, "scene.fields: Manager.data");
 _Static_assert(offsetof(Manager, dataUsed) == 0x12c && sizeof(((Manager *)0)->dataUsed) == 0x4, "scene.fields: Manager.dataUsed");
-_Static_assert(offsetof(Manager, textureDir) == 0x130 && sizeof(((Manager *)0)->textureDir) == 0x100, "scene.fields: Manager.textureDir");
+_Static_assert(offsetof(Manager, textureSuffix) == 0x130 && sizeof(((Manager *)0)->textureSuffix) == 0x100, "scene.fields: Manager.textureSuffix");
 _Static_assert(offsetof(Manager, bindFlags) == 0x230 && sizeof(((Manager *)0)->bindFlags) == 0x4, "scene.fields: Manager.bindFlags");
 _Static_assert(offsetof(Manager, tint) == 0x234 && sizeof(((Manager *)0)->tint) == 0x18, "scene.fields: Manager.tint");
 _Static_assert(sizeof(Manager) == 0x24c, "scene.fields: size of Manager");
@@ -2791,7 +2790,7 @@ _Static_assert(offsetof(GroundLayer, texScale) == 0x2c && sizeof(((GroundLayer *
 _Static_assert(offsetof(GroundLayer, water) == 0x30 && sizeof(((GroundLayer *)0)->water) == 0x4, "scene.fields: GroundLayer.water");
 _Static_assert(offsetof(GroundLayer, texture) == 0x34 && sizeof(((GroundLayer *)0)->texture) == 0x4, "scene.fields: GroundLayer.texture");
 _Static_assert(offsetof(GroundLayer, heights) == 0x38 && sizeof(((GroundLayer *)0)->heights) == 0x4, "scene.fields: GroundLayer.heights");
-_Static_assert(offsetof(GroundLayer, flat) == 0x3c && sizeof(((GroundLayer *)0)->flat) == 0x4, "scene.fields: GroundLayer.flat");
+_Static_assert(offsetof(GroundLayer, drawnCells) == 0x3c && sizeof(((GroundLayer *)0)->drawnCells) == 0x4, "scene.fields: GroundLayer.drawnCells");
 _Static_assert(offsetof(GroundLayer, points) == 0x40 && sizeof(((GroundLayer *)0)->points) == 0x4, "scene.fields: GroundLayer.points");
 _Static_assert(offsetof(GroundLayer, normals) == 0x44 && sizeof(((GroundLayer *)0)->normals) == 0x4, "scene.fields: GroundLayer.normals");
 _Static_assert(offsetof(GroundLayer, colours) == 0x48 && sizeof(((GroundLayer *)0)->colours) == 0x4, "scene.fields: GroundLayer.colours");
@@ -2920,8 +2919,8 @@ _Static_assert(offsetof(BoosterType, emitterCount) == 0x17f0 && sizeof(((Booster
 _Static_assert(offsetof(BoosterType, weight) == 0x17f8 && sizeof(((BoosterType *)0)->weight) == 0x4, "scene.fields: BoosterType.weight");
 _Static_assert(offsetof(BoosterType, thrustType) == 0x17fc && sizeof(((BoosterType *)0)->thrustType) == 0x4, "scene.fields: BoosterType.thrustType");
 _Static_assert(offsetof(BoosterType, lean) == 0x1800 && sizeof(((BoosterType *)0)->lean) == 0x4, "scene.fields: BoosterType.lean");
-_Static_assert(offsetof(BoosterType, activeTime) == 0x1804 && sizeof(((BoosterType *)0)->activeTime) == 0xc, "scene.fields: BoosterType.activeTime");
-_Static_assert(offsetof(BoosterType, normalSpeed) == 0x1810 && sizeof(((BoosterType *)0)->normalSpeed) == 0x10, "scene.fields: BoosterType.normalSpeed");
+_Static_assert(offsetof(BoosterType, times) == 0x1804 && sizeof(((BoosterType *)0)->times) == 0xc, "scene.fields: BoosterType.times");
+_Static_assert(offsetof(BoosterType, speeds) == 0x1810 && sizeof(((BoosterType *)0)->speeds) == 0x10, "scene.fields: BoosterType.speeds");
 _Static_assert(sizeof(BoosterType) == 0x1820, "scene.fields: size of BoosterType");
 _Static_assert(offsetof(CollisionPlane, flags) == 0x0 && sizeof(((CollisionPlane *)0)->flags) == 0x4, "scene.fields: CollisionPlane.flags");
 _Static_assert(offsetof(CollisionPlane, cornerPoints) == 0x4 && sizeof(((CollisionPlane *)0)->cornerPoints) == 0x24, "scene.fields: CollisionPlane.cornerPoints");
@@ -2929,7 +2928,7 @@ _Static_assert(offsetof(CollisionPlane, edges) == 0x28 && sizeof(((CollisionPlan
 _Static_assert(offsetof(CollisionPlane, normal) == 0x4c && sizeof(((CollisionPlane *)0)->normal) == 0xc, "scene.fields: CollisionPlane.normal");
 _Static_assert(offsetof(CollisionPlane, dist) == 0x58 && sizeof(((CollisionPlane *)0)->dist) == 0x4, "scene.fields: CollisionPlane.dist");
 _Static_assert(offsetof(CollisionPlane, edgePlanes) == 0x5c && sizeof(((CollisionPlane *)0)->edgePlanes) == 0x30, "scene.fields: CollisionPlane.edgePlanes");
-_Static_assert(offsetof(CollisionPlane, object) == 0x8c && sizeof(((CollisionPlane *)0)->object) == 0x4, "scene.fields: CollisionPlane.object");
+_Static_assert(offsetof(CollisionPlane, unit) == 0x8c && sizeof(((CollisionPlane *)0)->unit) == 0x4, "scene.fields: CollisionPlane.unit");
 _Static_assert(offsetof(CollisionPlane, part) == 0x90 && sizeof(((CollisionPlane *)0)->part) == 0x4, "scene.fields: CollisionPlane.part");
 _Static_assert(offsetof(CollisionPlane, cornerIndices) == 0x94 && sizeof(((CollisionPlane *)0)->cornerIndices) == 0xc, "scene.fields: CollisionPlane.cornerIndices");
 _Static_assert(offsetof(CollisionPlane, listNext) == 0xa0 && sizeof(((CollisionPlane *)0)->listNext) == 0x4, "scene.fields: CollisionPlane.listNext");
@@ -2956,8 +2955,8 @@ _Static_assert(offsetof(ParticleDesc, owner) == 0x4 && sizeof(((ParticleDesc *)0
 _Static_assert(offsetof(ParticleDesc, pos) == 0x8 && sizeof(((ParticleDesc *)0)->pos) == 0xc, "scene.fields: ParticleDesc.pos");
 _Static_assert(offsetof(ParticleDesc, target) == 0x14 && sizeof(((ParticleDesc *)0)->target) == 0xc, "scene.fields: ParticleDesc.target");
 _Static_assert(offsetof(ParticleDesc, matrixFrom) == 0x20 && sizeof(((ParticleDesc *)0)->matrixFrom) == 0x4, "scene.fields: ParticleDesc.matrixFrom");
-_Static_assert(offsetof(ParticleDesc, trailPoints) == 0x24 && sizeof(((ParticleDesc *)0)->trailPoints) == 0x4, "scene.fields: ParticleDesc.trailPoints");
-_Static_assert(offsetof(ParticleDesc, trailSizes) == 0x28 && sizeof(((ParticleDesc *)0)->trailSizes) == 0x4, "scene.fields: ParticleDesc.trailSizes");
+_Static_assert(offsetof(ParticleDesc, markCorners) == 0x24 && sizeof(((ParticleDesc *)0)->markCorners) == 0x4, "scene.fields: ParticleDesc.markCorners");
+_Static_assert(offsetof(ParticleDesc, markCoords) == 0x28 && sizeof(((ParticleDesc *)0)->markCoords) == 0x4, "scene.fields: ParticleDesc.markCoords");
 _Static_assert(offsetof(ParticleDesc, size) == 0x2c && sizeof(((ParticleDesc *)0)->size) == 0x4, "scene.fields: ParticleDesc.size");
 _Static_assert(offsetof(ParticleDesc, isQuad) == 0x30 && sizeof(((ParticleDesc *)0)->isQuad) == 0x4, "scene.fields: ParticleDesc.isQuad");
 _Static_assert(offsetof(ParticleDesc, quad) == 0x34 && sizeof(((ParticleDesc *)0)->quad) == 0x18, "scene.fields: ParticleDesc.quad");
@@ -2978,7 +2977,7 @@ _Static_assert(offsetof(Stage, sceneDir) == 0x808 && sizeof(((Stage *)0)->sceneD
 _Static_assert(offsetof(Stage, stageName) == 0x908 && sizeof(((Stage *)0)->stageName) == 0x100, "scene.fields: Stage.stageName");
 _Static_assert(offsetof(Stage, cullMargin) == 0xa08 && sizeof(((Stage *)0)->cullMargin) == 0x4, "scene.fields: Stage.cullMargin");
 _Static_assert(offsetof(Stage, viewDepth) == 0xa0c && sizeof(((Stage *)0)->viewDepth) == 0x4, "scene.fields: Stage.viewDepth");
-_Static_assert(offsetof(Stage, space) == 0xa10 && sizeof(((Stage *)0)->space) == 0x9c, "scene.fields: Stage.space");
+_Static_assert(offsetof(Stage, space) == 0xa10 && sizeof(((Stage *)0)->space) == 0xf4, "scene.fields: Stage.space");
 _Static_assert(offsetof(Stage, spaceData) == 0xb04 && sizeof(((Stage *)0)->spaceData) == 0x9c95f0, "scene.fields: Stage.spaceData");
 _Static_assert(offsetof(Stage, nearObjects) == 0x9ca0f4 && sizeof(((Stage *)0)->nearObjects) == 0x2ee0, "scene.fields: Stage.nearObjects");
 _Static_assert(offsetof(Stage, effectTextures) == 0x9ccfd4 && sizeof(((Stage *)0)->effectTextures) == 0x24, "scene.fields: Stage.effectTextures");
@@ -3427,8 +3426,8 @@ _Static_assert(offsetof(Scene, zoomInHeld) == 0x23432ab && sizeof(((Scene *)0)->
 _Static_assert(offsetof(Scene, zoomOutHeld) == 0x23432af && sizeof(((Scene *)0)->zoomOutHeld) == 0x4, "scene.fields: Scene.zoomOutHeld");
 _Static_assert(offsetof(Scene, turnLeftHeld) == 0x23432b3 && sizeof(((Scene *)0)->turnLeftHeld) == 0x4, "scene.fields: Scene.turnLeftHeld");
 _Static_assert(offsetof(Scene, turnRightHeld) == 0x23432b7 && sizeof(((Scene *)0)->turnRightHeld) == 0x4, "scene.fields: Scene.turnRightHeld");
-_Static_assert(offsetof(Scene, pitchUpHeld) == 0x23432bb && sizeof(((Scene *)0)->pitchUpHeld) == 0x4, "scene.fields: Scene.pitchUpHeld");
-_Static_assert(offsetof(Scene, pitchDownHeld) == 0x23432bf && sizeof(((Scene *)0)->pitchDownHeld) == 0x4, "scene.fields: Scene.pitchDownHeld");
+_Static_assert(offsetof(Scene, upKeyHeld) == 0x23432bb && sizeof(((Scene *)0)->upKeyHeld) == 0x4, "scene.fields: Scene.upKeyHeld");
+_Static_assert(offsetof(Scene, downKeyHeld) == 0x23432bf && sizeof(((Scene *)0)->downKeyHeld) == 0x4, "scene.fields: Scene.downKeyHeld");
 _Static_assert(offsetof(Scene, cameraReset) == 0x23432cb && sizeof(((Scene *)0)->cameraReset) == 0x4, "scene.fields: Scene.cameraReset");
 _Static_assert(offsetof(Scene, quitAsked) == 0x23432cf && sizeof(((Scene *)0)->quitAsked) == 0x4, "scene.fields: Scene.quitAsked");
 _Static_assert(offsetof(Scene, fKeys) == 0x23432d3 && sizeof(((Scene *)0)->fKeys) == 0x18, "scene.fields: Scene.fKeys");

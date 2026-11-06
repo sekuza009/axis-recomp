@@ -578,7 +578,7 @@ u32 (replaySelect_drawNames)(void)
 	for (int i = 0, dy = 0; i < g_replayFileCount && dy < 200; i++, dy += 20) {
 		set_colour_bits(g_textColour, 0x3f4ccccd, 0x3f4ccccd, 0x3f800000, 0x3f800000);   /* (0.8, 0.8, 1, 1) */
 		int replay = g_replaySelectFirst + i;
-		if (g_replayList[replay].flag) {
+		if (g_replayList[replay].picked) {
 			set_colour_bits(g_rectColour, 0x3f800000, 0x3dcccccd, 0x3e99999a, 0x3f000000);   /* (1, 0.1, 0.3, 0.5) */
 			menu_drawRect(g_replaySelectLeft + 0x20, g_replaySelectTop + dy + 0x2b, g_replaySelectRight - 0x50,
 			              g_replaySelectTop + dy + 0x3d, 1);

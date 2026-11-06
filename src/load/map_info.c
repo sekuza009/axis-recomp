@@ -251,7 +251,7 @@ void THISCALL (map_loadPlayInfoFrom)(u8 *scene, const char *name)
 			mi->pitch = f32(fmul_m(fld_m(&rf[7]), scale));
 			mi->angle = f32(fmul_m(fld_m(&rf[8]), scale));
 			mi->taken = 0;
-			(*(int *)&mi->fade) = 0;
+			(*(int *)&mi->timer) = 0;
 			st->itemCount++;
 		}
 	}
@@ -455,7 +455,7 @@ int THISCALL (map_loadGroundInfoFrom)(u8 *s, const char *name)
 			}
 		st->poolUsed += count;
 		int cells = gl->cols * gl->rows;
-		u8 *flat = gl->flat = pool_take(s, cells);
+		u8 *flat = gl->drawnCells = pool_take(s, cells);
 		for (int r = 0; r < gl->rows; r++)
 			for (int c = 0; c < gl->cols; c++) {
 				const u8 *px = image + r * 0x300 + c * 3;

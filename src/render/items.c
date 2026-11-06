@@ -32,9 +32,9 @@ void THISCALL (stage_drawItems)(Stage *stage, void *view)
 		u8 colour[4];
 		if (g_highDetail == 1 || type == 34) {
 			const u8 *tint = NULL;
-			if (!(item->fade >= 1.0f)) {
+			if (!(item->timer >= 1.0f)) {
 				colour[0] = colour[1] = colour[2] = 0xff;
-				colour[3] = (u8)ftol((long double)item->fade * 255.0f);
+				colour[3] = (u8)ftol((long double)item->timer * 255.0f);
 				tint = colour;
 			}
 			Model *model = kind->model;
@@ -46,9 +46,9 @@ void THISCALL (stage_drawItems)(Stage *stage, void *view)
 			ViewVolume_projectObject(view, model, 0, NULL, 0, tint, 1, -1, 0);
 			glPopMatrix();
 		} else {
-			if (!(item->fade >= 1.0f)) {
+			if (!(item->timer >= 1.0f)) {
 				colour[0] = colour[1] = colour[2] = 0xff;
-				colour[3] = (u8)ftol((long double)item->fade * 255.0f);
+				colour[3] = (u8)ftol((long double)item->timer * 255.0f);
 			} else {
 				*(u32 *)colour = g_white;
 			}

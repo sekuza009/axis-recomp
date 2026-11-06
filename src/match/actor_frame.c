@@ -397,7 +397,7 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 						memcpy(scratch, d, 12);
 						long double dist = FMUL(d[0], d[0]) + FMUL(d[2], d[2]);
 						dist = dist + FMUL(d[1], d[1]);
-						if (!(dist > AC->radiusSq) && collision_rayTrace(s, &AC->pos[0], at, scratch) == 0) {
+						if (!(dist > AC->detectionRangeSq) && collision_rayTrace(s, &AC->pos[0], at, scratch) == 0) {
 							AC->botTarget = j;
 							break;
 						}
@@ -728,20 +728,20 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 		if (!(AC->nextPitch >= *&k_m890f))
 			AC->nextPitch = -890.0f;
 		AC->nextYaw = f32(FADD(AC->inYaw, AC->yaw));
-		float fwd, back, right, lft;   /* the top speeds: 1 / -1 walking, runTop running */
+		float fwd, back, left, right;   /* the top speeds: 1 / -1 walking, runTop running (stepping left goes to +) */
 		if (AC->inBooster == 0) {
 			fwd = 1.0f;
 			back = -1.0f;
-			right = 1.0f;
-			lft = -1.0f;
+			left = 1.0f;
+			right = -1.0f;
 		} else {
 			fwd = AC->runTop[0];
 			back = AC->runTop[1];
-			right = AC->runTop[2];
-			lft = AC->runTop[3];
+			left = AC->runTop[2];
+			right = AC->runTop[3];
 		}
 		key_axis(&AC->nextForward, AC->inForward, AC->inBackward, fwd, back, speed);
-		key_axis(&AC->nextStrafe, AC->inStepLeft, AC->inStepRight, right, lft, speed);
+		key_axis(&AC->nextStrafe, AC->inStepLeft, AC->inStepRight, left, right, speed);
 		key_ramp(&AC->nextClimb, AC->inAltitude == 1, speed);
 		key_ramp(&AC->nextRun, AC->inBooster == 1, speed);
 		/* the body's lean (nextLean) from the forward speed and the pitch */
@@ -820,12 +820,12 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 	long double side = !(AC->forward >= -1.0f) ? -1.0L : AC->forward > 1.0f ? 1.0L : fld_m(&AC->forward);
 	AC->pose[4] = f32(fmul_m(fsubr_m(fmul_m(FADD(AC->run, k_1f), &k_0_5f) * FSUB(k_1f, AC->climb) * side, &k_1f), &k_0_5f));
 	BITS(AC->pose[5]) = BITS(AC->run);
-	anim_setFrame((u8 *)&AC->headModel, 0, BITS(AC->pose[3]));
-	anim_setFrame((u8 *)&AC->chestModel, 0, BITS(AC->pose[3]));
-	anim_setFrame((u8 *)&AC->armsModel, 0, BITS(AC->pose[3]));
-	anim_setFrame((u8 *)&AC->legsModel, 0, BITS(AC->pose[4]));
-	anim_setFrame((u8 *)&AC->boosterModel, 0, BITS(AC->pose[5]));
-	anim_setFrame((u8 *)model, 0, BITS(AC->fireAnim));
+	anim_setSkeleton((u8 *)&AC->headModel, 0, BITS(AC->pose[3]));
+	anim_setSkeleton((u8 *)&AC->chestModel, 0, BITS(AC->pose[3]));
+	anim_setSkeleton((u8 *)&AC->armsModel, 0, BITS(AC->pose[3]));
+	anim_setSkeleton((u8 *)&AC->legsModel, 0, BITS(AC->pose[4]));
+	anim_setSkeleton((u8 *)&AC->boosterModel, 0, BITS(AC->pose[5]));
+	anim_setSkeleton((u8 *)model, 0, BITS(AC->fireAnim));
 	/* the matrices: the body at the actor, turned and leant, the head on its neck, the arms */
 	glPushMatrix();
 	glTranslatef_bits(BITS(AC->pos[0]), BITS(AC->pos[1]), BITS(AC->pos[2]));
@@ -977,7 +977,7 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 				}
 				if (w >= 0) {
 					const int *muzzle = (const int *)(((u8 *)weapon) + (AC->slot == 5 ? 0x2ca4 : 0x15e8) + AC->variantLoaded * 64);
-					skel_applyPose(*(void **)model->frames, muzzle_m, muzzle[0], 0);
+					skel_applyPose(*(void **)model->skeletons, muzzle_m, muzzle[0], 0);
 					Mat4_invert(muzzle_inv, muzzle_m);
 					memset(ungrip, 0, 64);   /* the grip undone: grip_shift = muzzle_inv x ungrip x muzzle_m */
 					BITS(ungrip[0]) = BITS(ungrip[5]) = BITS(ungrip[10]) = BITS(ungrip[15]) = 0x3f800000;
@@ -1067,7 +1067,7 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 				if (*item >= 0)
 					bullet_free(s, *item);
 				const int *muzzle = (const int *)(((u8 *)weapon) + (AC->slot == 5 ? 0x2ca4 : 0x15e8) + AC->variantLoaded * 64);
-				skel_applyPose(*(void **)model->frames, muzzle_m, muzzle[0], 0);
+				skel_applyPose(*(void **)model->skeletons, muzzle_m, muzzle[0], 0);
 				Mat4_invert(muzzle_inv, muzzle_m);
 				memset(ungrip, 0, 64);
 				BITS(ungrip[0]) = BITS(ungrip[5]) = BITS(ungrip[10]) = BITS(ungrip[15]) = 0x3f800000;
@@ -1103,11 +1103,11 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 			if (b->active != 1)
 				continue;
 			b->hitActor = f[1];
-			b->hit = array_recordAt(f[2], (*(int *)&ST->space.planes.records), 0xac);
+			b->hit = (struct CollisionPlane *)array_recordAt(f[2], (*(int *)&ST->space.planes.records), 0xac);
 			if (f[3] == 1)
 				b->life = f32(fsub_m(fld_m(&b->age), dt));
 			memcpy(b->netPoint, f + 4, 12);
-			memcpy(b->end, f + 4, 12);
+			memcpy(b->impact, f + 4, 12);
 			b->moved = 1;
 		}
 	}

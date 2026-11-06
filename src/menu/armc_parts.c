@@ -10,7 +10,7 @@ static const short copied[6][2] = { { offsetof(PartInfo, slotType), offsetof(Act
 
 /* and those scaled by a constant of the game (PartInfo field, ActorItem field, constant's address) */
 static const struct { short dst, src; u32 scale; } scaled[8] = {
-	{ offsetof(PartInfo, range), offsetof(ActorItem, stepLength), ADDR(k_0_01f) }, { offsetof(PartInfo, speed), offsetof(ActorItem, velocity), ADDR(k_0_01f) }, { offsetof(PartInfo, spread), offsetof(ActorItem, spread), ADDR(k_tenthsToDegrees) }, { offsetof(PartInfo, hitRange), offsetof(ActorItem, hitRange), ADDR(k_0_01f) }, { offsetof(PartInfo, splashRadius), offsetof(ActorItem, splashRadius), ADDR(k_0_01f) }, { offsetof(PartInfo, cycleTime), offsetof(ActorItem, cycleTime), OBJ(k_1000f) }, { offsetof(PartInfo, guidance), offsetof(ActorItem, guidance), ADDR(k_tenthsToDegrees) }, { offsetof(PartInfo, targetingTime), offsetof(ActorItem, targetingTime), OBJ(k_1000f) } };
+	{ offsetof(PartInfo, range), offsetof(ActorItem, range), ADDR(k_0_01f) }, { offsetof(PartInfo, speed), offsetof(ActorItem, velocity), ADDR(k_0_01f) }, { offsetof(PartInfo, spread), offsetof(ActorItem, spread), ADDR(k_tenthsToDegrees) }, { offsetof(PartInfo, hitRange), offsetof(ActorItem, hitRange), ADDR(k_0_01f) }, { offsetof(PartInfo, splashRadius), offsetof(ActorItem, splashRadius), ADDR(k_0_01f) }, { offsetof(PartInfo, cycleTime), offsetof(ActorItem, cycleTime), OBJ(k_1000f) }, { offsetof(PartInfo, guidance), offsetof(ActorItem, guidance), ADDR(k_tenthsToDegrees) }, { offsetof(PartInfo, targetingTime), offsetof(ActorItem, targetingTime), OBJ(k_1000f) } };
 
 /* record rec for actor type idx; idx -1: the record emptied (its slotType -1) */
 static void part_info(u8 *rec, int idx)
@@ -69,7 +69,7 @@ u8 *(armc_readMechStats)(void)
 	Scene *sc = (Scene *)g;
 	Stage *st = SCENE_STAGE(g);   /* (the scene's stage) */
 	const Player *A = &sc->players[sc->localPlayer];
-	X s = fld_m(&A->radiusSq);
+	X s = fld_m(&A->detectionRangeSq);
 	s = x87_fsqrt(s);
 	s = s * k_0_01;
 	g_mechDetectionRange = (float)s;
@@ -160,9 +160,9 @@ int (armc_drawPartPanels)(void)
 	panel_name(OBJ(g_boosterPanelName), booster->name);
 	g_boosterThrustType = booster->thrustType;
 	for (int i = 0; i < 3; i++)
-		mulf(ADDR(g_boosterActiveTime) + i * 4, &booster->activeTime[i], k_1000f);
+		mulf(ADDR(g_boosterActiveTime) + i * 4, &booster->times[i], k_1000f);
 	for (int i = 0; i < 4; i++)
-		mulf(ADDR(g_boosterNormalSpeed) + i * 4, &booster->normalSpeed[i], k_0_036f);
+		mulf(ADDR(g_boosterNormalSpeed) + i * 4, &booster->speeds[i], k_0_036f);
 	(*(u32 *)&g_armcZoom) = 0x3f800000;
 	copyf(ADDR(g_boosterWeight), &booster->weight);
 	return weapon;

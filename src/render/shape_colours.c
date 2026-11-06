@@ -72,10 +72,10 @@ void (shape_colourPixels)(u8 *px, int mode, const void *shape, const u8 *colour)
 
 /* 0x467580: a model's texture folder (textureDir) and flags (bindFlags) set; with flag 2 its tint (two HSV colours), else
    its shapes' own colours */
-void THISCALL (shape_setTextureDir)(Manager *model, const char *folder, int flags, u32 h1, u32 s1, u32 v1, u32 h2, u32 s2,
+void THISCALL (shape_setTextureSuffix)(Manager *model, const char *folder, int flags, u32 h1, u32 s1, u32 v1, u32 h2, u32 s2,
                                     u32 v2)
 {
-	strcpy(model->textureDir, folder);
+	strcpy(model->textureSuffix, folder);
 	model->bindFlags = flags;
 	if (flags & 2)
 		shape_setTint((u8 *)model, h1, s1, v1, h2, s2, v2);

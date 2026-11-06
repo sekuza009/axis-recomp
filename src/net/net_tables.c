@@ -1464,7 +1464,7 @@ static void THISCALL __attribute__((used)) net_sendItemStates_body(u8 *s, u8 *pa
 			packet[2 + i / 2] = 0;
 		if (it->type < 0 || it->taken != 1)
 			continue;
-		int level = ftol(it->fade) / 10 + 1;
+		int level = ftol(it->timer) / 10 + 1;
 		if (level > 15)
 			level = 15;
 		packet[2 + i / 2] |= (u8)(i % 2 ? level << 4 : level);
@@ -1696,7 +1696,7 @@ static void THISCALL __attribute__((used)) net_sendPlayerState_body(u8 *g, int p
 		int flying = shot->age > shot->life;
 		if (flying)
 			o[0] |= 8;
-		u8 *at = (u8 *)(flying && (*(void * *)&shot->hit) ? shot->end : shot->pos);
+		u8 *at = (u8 *)(flying && (*(void * *)&shot->hit) ? shot->impact : shot->pos);
 		for (int c = 0; c < 3; c++) {
 			w = (u16)scaled(at + c * 4, ADDR(k_tenthsToDegrees));
 			memcpy(o + 3 + c * 2, &w, 2);
@@ -2017,13 +2017,13 @@ void THISCALL (net_processGamePacket)(u8 *g, u32 from, int size, const char *pkt
 				{ SCENE_STAGE_AT + offsetof(Stage, armTypes), offsetof(Scene, geometryPerRow[2]), offsetof(Scene, armCount), sizeof(ArmType) / 4 },
 				{ SCENE_STAGE_AT + offsetof(Stage, legTypes), offsetof(Scene, geometryPerRow[3]), offsetof(Scene, legCount), sizeof(LegType) / 4 },
 				{ SCENE_STAGE_AT + offsetof(Stage, boosterTypes), offsetof(Scene, geometryPerRow[4]), offsetof(Scene, boosterCount), sizeof(BoosterType) / 4 } };
-			u16 w = ((const GamePacket *)pkt)->checkRow;
+			u16 w = ((const GamePacket *)pkt)->checkIndex;
 			int part = b[0x2b];
 			if (part <= 4 && !table_ok(g, parts[part][0], parts[part][1], parts[part][2], parts[part][3], w, ((const GamePacket *)pkt)->checkValue)) {
 				GS->dataLossPending = 1;
 				GS->dataLossCode = 2;
 			}
-			if (!table_ok(g, offsetof(Scene, actorItems), offsetof(Scene, geometryPerRow[5]), offsetof(Scene, actorItemCount), sizeof(ActorItem) / 4, ((const GamePacket *)pkt)->checkRow2, ((const GamePacket *)pkt)->checkValue2)) {
+			if (!table_ok(g, offsetof(Scene, actorItems), offsetof(Scene, geometryPerRow[5]), offsetof(Scene, actorItemCount), sizeof(ActorItem) / 4, ((const GamePacket *)pkt)->checkIndex2, ((const GamePacket *)pkt)->checkValue2)) {
 				GS->dataLossPending = 1;
 				GS->dataLossCode = 3;
 			}
@@ -2032,9 +2032,9 @@ void THISCALL (net_processGamePacket)(u8 *g, u32 from, int size, const char *pkt
 		ac->timePlayed = ((const GamePacket *)pkt)->timePlayed;
 		BITS(ac->timeFraction) = BITS(((const GamePacket *)pkt)->timeFraction);
 		int me = GS->localPlayer;
-		if (((const GamePacket *)pkt)->sendTwice[0] & 1u << (me & 0x1f))
+		if (((const GamePacket *)pkt)->resendAsked[0] & 1u << (me & 0x1f))
 			GS->sendFlags[me][1] = 1;
-		if (((const GamePacket *)pkt)->sendTwice[1] & 1u << (me & 0x1f))
+		if (((const GamePacket *)pkt)->resendAsked[1] & 1u << (me & 0x1f))
 			((PlayerRecord *)PLAYER(me))->flagSent = 0;
 		((Player *)ACTOR(b[2]))->kills = ((const GamePacket *)pkt)->kills;
 		((Player *)ACTOR(b[2]))->deaths = ((const GamePacket *)pkt)->deaths;
@@ -2045,7 +2045,7 @@ void THISCALL (net_processGamePacket)(u8 *g, u32 from, int size, const char *pkt
 		short item = ((const GamePacket *)pkt)->lastPickup;
 		if ((GS->sessionMode != 3 || GS->replayVersion > 0x1201) && item >= 0 && SCENE_STAGE(g)->items[item].taken == 0) {
 			SCENE_STAGE(g)->items[item].taken = 1;
-			BITS(SCENE_STAGE(g)->items[item].fade) = 0;
+			BITS(SCENE_STAGE(g)->items[item].timer) = 0;
 		}
 		if (GS->sessionMode == 3 && GS->replayVersion >= 0x1202)
 			scene_updateRanking(g);   /* scene_updateRanking */
@@ -2200,10 +2200,10 @@ void THISCALL (net_processGamePacket)(u8 *g, u32 from, int size, const char *pkt
 			u8 v = b[2 + k / 2];
 			int n = (k % 2 == 0 ? v : v >> 4) & 0xf;
 			if (n == 0)
-				it->taken = BITS(it->fade) = 0;
+				it->taken = BITS(it->timer) = 0;
 			else {
 				it->taken = 1;
-				it->fade = f32(fmul_m((long double)n, &k_10f));
+				it->timer = f32(fmul_m((long double)n, &k_10f));
 			}
 		}
 		GS->itemLevelsTaken = 1;

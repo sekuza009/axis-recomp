@@ -35,7 +35,7 @@ void (net_clearServerSettings)(void)
 void (replaySelect_allOut)(void)
 {
 	for (FileEntry *p = g_replayList; p < g_replayList + 1024; p++)
-		p->flag = 0;
+		p->picked = 0;
 	g_replayWrap = 1;
 	g_unusedMainMenuWord = 0;
 	g_replayRandomOrder = 0;

@@ -63,10 +63,10 @@ static void anim_reset(u8 *obj)
 	MO->animated = 0;
 }
 
-/* the animation started (object_setAnimation with its name animPath and the speed: animSpeed x k) */
+/* the animation started (object_setAnimation with its name animPath and the speed: animPeriod x k) */
 static void anim_start(u8 *scene, int i, u8 *obj, u32 k)
 {
-	float speed = f32((long double)MO->animSpeed * *K(k));
+	float speed = f32((long double)MO->animPeriod * *K(k));
 	object_setAnimation(scene, i, (const char *)MO->animPath, *(u32 *)&speed, 1);
 }
 
@@ -699,13 +699,13 @@ void THISCALL (particle_draw)(u8 *s, int i, void *vv)
 		/* a trail's triangle (texture 8), its three colours fading over its last second */
 		int tex = TEX(8);
 		if (PR->drawAge > 1.0f)
-			ALPHA(PR->trailColours[0]) = ALPHA(PR->trailColours[1]) = ALPHA(PR->trailColours[2]) = clamp255(ftol(fmul_m(FSUB(k_2f, PR->drawAge), &k_256f)));
-		ViewVolume_addTriangle(vv, tex, (const u32 *)PR->trailUv, PR->trailColours, &PR->trailPoints[0][0],
+			ALPHA(PR->markColours[0]) = ALPHA(PR->markColours[1]) = ALPHA(PR->markColours[2]) = clamp255(ftol(fmul_m(FSUB(k_2f, PR->drawAge), &k_256f)));
+		ViewVolume_addTriangle(vv, tex, (const u32 *)PR->markUv, PR->markColours, &PR->markPoints[0][0],
 		                           (*(const float * *)&PR->matrixFrom), 1, 1);
 		return;
 	}
 	case 50:
-		ViewVolume_addQuad(vv, PR->quadTexture, PR->quadUv0, PR->quadUv1, &PR->quadColour, &PR->quadPoints[0][0], 2, 1);
+		ViewVolume_addQuad(vv, PR->quadTexture, (const u32 *)PR->quadUv0, (const u32 *)PR->quadUv1, &PR->quadColour, &PR->quadPoints[0][0], 2, 1);
 		return;
 	}
 }

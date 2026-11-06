@@ -47,7 +47,7 @@ void THISCALL (ObjectList_relight)(ObjectList *list, const LightFactors *factors
 int THISCALL (partList_queue)(ObjectList *list, void *view, const LightFactors *factors, const void *lights, int cull,
                           int material, int extraMatrix)
 {
-	if (list->frameCount <= 0 || list->count <= 0 || list->frames[list->frame] == 0)
+	if (list->skelCount <= 0 || list->count <= 0 || list->skeletons[list->skel] == 0)
 		return 0;
 	for (int i = 0; i < list->count; i++) {
 		ListedObject *e = &list->entries[i];

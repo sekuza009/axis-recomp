@@ -441,12 +441,12 @@ u32 THISCALL (match_freeCamFrame)(u8 *s)
 	if (input_asyncKeyDown(0x11)) {
 		SC->zoomInHeld = input_asyncKeyDown(0x26) ? 1 : 0;
 		SC->zoomOutHeld = input_asyncKeyDown(0x28) ? 1 : 0;
-		SC->pitchUpHeld = 0;
-		SC->pitchDownHeld = 0;
+		SC->upKeyHeld = 0;
+		SC->downKeyHeld = 0;
 	} else {
 		SC->zoomInHeld = SC->zoomOutHeld = 0;
-		SC->pitchUpHeld = input_asyncKeyDown(0x26) ? 1 : 0;
-		SC->pitchDownHeld = input_asyncKeyDown(0x28) ? 1 : 0;
+		SC->upKeyHeld = input_asyncKeyDown(0x26) ? 1 : 0;
+		SC->downKeyHeld = input_asyncKeyDown(0x28) ? 1 : 0;
 	}
 	SC->turnLeftHeld = input_asyncKeyDown(0x25) ? 1 : 0;
 	SC->turnRightHeld = input_asyncKeyDown(0x27) ? 1 : 0;
@@ -470,13 +470,13 @@ u32 THISCALL (match_freeCamFrame)(u8 *s)
 	float yaw = f32(look * SC->mouseDx), pitch = f32(look * SC->mouseDy);
 	actor_setInput(stage, 0, (*(u32 *)&SC->holdForward), (*(u32 *)&SC->holdBackward), (*(u32 *)&SC->holdStepLeft), (*(u32 *)&SC->holdStepRight), *(u32 *)&pitch, *(u32 *)&yaw,
 	             (*(u32 *)&SC->holdFire), (*(u32 *)&SC->holdAltitude), (*(u32 *)&SC->holdBooster), (*(u32 *)&SC->weaponKey), 0, 0);
-	if (SC->pitchUpHeld) {
+	if (SC->upKeyHeld) {
 		long double v = fsub_m(fld_m(SC->cameraAngle), &turn);
 		SC->cameraAngle[0] = f32(v);
 		if (!(v >= k_m890f))
 			SC->cameraAngle[0] = -890.0f;   /* -890 */
 	}
-	if (SC->pitchDownHeld) {
+	if (SC->downKeyHeld) {
 		long double v = fadd_m(fld_m(&turn), SC->cameraAngle);
 		SC->cameraAngle[0] = f32(v);
 		if (v > k_890f)
@@ -2230,7 +2230,7 @@ void THISCALL (match_frame)(u8 *s)
 				profile_addMatchScores(sc);
 			}
 			for (int i = 0; i < SCENE_STAGE(s)->itemCount; i++)
-				SCENE_STAGE(s)->items[i].taken = BITS(SCENE_STAGE(s)->items[i].fade) = 0;
+				SCENE_STAGE(s)->items[i].taken = BITS(SCENE_STAGE(s)->items[i].timer) = 0;
 			for (int i = 0; i < 16; i++) {
 				SC->players[i].kills = SC->players[i].deaths = SC->players[i].killsCounted = 0;
 				SC->players[i].deathsCounted = SC->players[i].timePlayed = BITS(SC->players[i].timeFraction) = 0;

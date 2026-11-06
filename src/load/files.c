@@ -459,7 +459,7 @@ u32 (mission_loadAxisMis)(void)
 	for (int k = 0; k < 4; k++)
 		crt_fread((void *)(ADDR(g_missionCount) + k * 4), 4, 1, f);
 	static const struct { int offset, size; } part[8] = {
-		{ offsetof(Mission, id), 4 }, { offsetof(Mission, name), 0x40 }, { offsetof(Mission, title), 0x20 }, { offsetof(Mission, briefing), 0x80 },
+		{ offsetof(Mission, unused0), 4 }, { offsetof(Mission, name), 0x40 }, { offsetof(Mission, title), 0x20 }, { offsetof(Mission, briefing), 0x80 },
 		{ offsetof(Mission, number), 4 }, { offsetof(Mission, unusedE8), 4 }, { offsetof(Mission, result), 4 }, { offsetof(Mission, unusedF0), 4 } };
 	Mission *mission = g_missions;
 	for (int i = 0; i < g_missionCount; i++)

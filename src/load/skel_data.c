@@ -99,7 +99,7 @@ void THISCALL (shape_initBy)(u8 *self, const char *dir, int n, u32 source, int e
 		Model_clear(mg->items + i * 0x4c);
 		Model_release(mg->items + i * 0x4c);
 	}
-	mg->textureDir[0] = 0;
+	mg->textureSuffix[0] = 0;
 	mg->data = mg->block + n * 0x98;
 	for (int k = 0; k < 7; k++)
 		AT(int, self, offsetof(Manager, bindFlags) + k * 4) = 0;   /* bindFlags, tint */
@@ -179,7 +179,7 @@ void THISCALL (ObjectList_load)(u8 *list, void *shapes, void *skels, int ns, con
 	ObjectList *ol = (ObjectList *)list;
 	partList_release(list);
 	ol->count = ns;
-	ol->frameCount = nk;
+	ol->skelCount = nk;
 	ol->preLit = lit;
 	ol->colourCount = 0;
 	/* 65, and the entries walked by pointer: the frame is then as deep as the original's (0x11c with the saved
@@ -193,7 +193,7 @@ void THISCALL (ObjectList_load)(u8 *list, void *shapes, void *skels, int ns, con
 		if (shape)
 			ol->colourCount += ((Model *)shape)->colourCount;
 	}
-	ol->blockSize = (ol->count * 25 + ol->frameCount) * 4;
+	ol->blockSize = (ol->count * 25 + ol->skelCount) * 4;
 	if (ol->preLit == 1)
 		ol->blockSize += ol->colourCount * 4;
 	if (!mem) {
@@ -218,9 +218,9 @@ void THISCALL (ObjectList_load)(u8 *list, void *shapes, void *skels, int ns, con
 		} else
 			entry[2] = 0;
 	}
-	ol->frames = (i32 *)(ol->block + colours);
-	for (int j = 0; j < ol->frameCount; j++)
-		AT(void *, ol->frames, j * 4) = skel_getSkeletonPtrBy(skels, (u32)(knames + j * 0x40));
+	ol->skeletons = (struct Skeleton **)(ol->block + colours);
+	for (int j = 0; j < ol->skelCount; j++)
+		AT(void *, ol->skeletons, j * 4) = skel_getSkeletonPtrBy(skels, (u32)(knames + j * 0x40));
 	if (ol->preLit == 1)
 		ObjectList_relight(list, factors, lights);
 }
@@ -229,14 +229,14 @@ void THISCALL (ObjectList_load)(u8 *list, void *shapes, void *skels, int ns, con
    starting at or before it (a binary search); a frame before the first key is moved up to it */
 static u8 *key_at(u8 *keys, int n, int size, int *frame)
 {
-#define KEY_FRAME(p) (((const PosKey *)RELOC(p))->frame)   /* (PosKey and RotKey both start with it) */
+#define KEY_TIME(p) (((const PosKey *)RELOC(p))->time)   /* (PosKey and RotKey both start with it: ms) */
 	int lo = 0;
-	if (*frame < KEY_FRAME(keys))
-		*frame = KEY_FRAME(keys);
+	if (*frame < KEY_TIME(keys))
+		*frame = KEY_TIME(keys);
 	else
 		for (int hi = n - 1; lo < hi;) {
 			int mid = (hi + lo + 1) / 2;
-			if (*frame < KEY_FRAME(keys + mid * size))
+			if (*frame < KEY_TIME(keys + mid * size))
 				hi = mid - 1;
 			else
 				lo = mid;
@@ -281,7 +281,7 @@ void THISCALL (skel_applyPose)(u8 *sk, u32 *out, int bone, float t)
 	const float *unit = k_57_2958f;
 	float saved[16];
 	glGetFloatv(0xba6, saved);   /* GL_MODELVIEW_MATRIX */
-	int frames = sko->frames;
+	int frames = sko->duration;
 	int frame = ftol(fmul_m(frames, &t));
 	if (frame < 0)
 		frame = 0;
@@ -300,7 +300,7 @@ void THISCALL (skel_applyPose)(u8 *sk, u32 *out, int bone, float t)
 	if (bn->rotKeyCount > 0) {
 		RotKey *key = (RotKey *)key_at(bn->rotKeys, bn->rotKeyCount, 0x28, &frame);
 		int length = key->length;
-		float f = length > 0 ? f32((long double)(frame - key->frame) / length) : 0;
+		float f = length > 0 ? f32((long double)(frame - key->time) / length) : 0;
 		rotate(fmul_m(fld_m(&key->rotation[0]), unit), &key->rotation[1]);
 		rotate(fmul_m(FMUL(f, key->step[0]), unit), &key->step[1]);
 	} else
@@ -425,7 +425,7 @@ u8 *THISCALL (shape_getByName)(u8 *cache, const char *name, int bind)
 		}
 		if (mem)
 			mg->dataUsed += md->blockSize;
-		shape_bindTextureBy(shape, mg->textureDir, mg->bindFlags, mg->tint[0], mg->tint[1],
+		shape_bindTextureBy(shape, mg->textureSuffix, mg->bindFlags, mg->tint[0], mg->tint[1],
 		                    mg->tint[2], mg->tint[3], mg->tint[4], mg->tint[5]);
 		mg->count++;
 	}
@@ -519,12 +519,12 @@ static void transform(float *out, const float *m, const float *px, const float *
 void THISCALL (skel_poseBones)(u8 *pose, const float *base)
 {
 	ObjectList *ol = (ObjectList *)pose;
-	if (ol->frameCount <= 0)
+	if (ol->skelCount <= 0)
 		return;
 	float saved[16], root[16];
 	glGetFloatv(0xba6, saved);   /* GL_MODELVIEW_MATRIX */
 	Mat4_copy(root, base ? base : saved);
-	u8 **entry = ((u8 **)ol->frames) + ol->frame;
+	u8 **entry = ((u8 **)ol->skeletons) + ol->skel;
 	if (!*entry)
 		return;
 	const float *unit = k_57_2958f, *point = (const float *)ADDR(g_vecOrigin);
@@ -533,7 +533,7 @@ void THISCALL (skel_poseBones)(u8 *pose, const float *base)
 		ListedObject *out = (ListedObject *)(((u8 *)ol->entries) + i * 0x64);
 		u8 *b = sk->bones + i * 0x70;
 		Bone *bn = (Bone *)b;
-		int frame = ol->animTick % (sk->frames + 1);
+		int frame = ol->animTick % (sk->duration + 1);
 		if (i >= sk->boneCount)
 			break;
 		int parent = bn->parent;
@@ -543,7 +543,7 @@ void THISCALL (skel_poseBones)(u8 *pose, const float *base)
 			int at = frame;
 			PosKey *key = (PosKey *)key_at(bn->posKeys, bn->posKeyCount, 0x20, &at);
 			int length = key->length;
-			long double f = length > 0 ? (long double)(at - key->frame) / length : fld_m((const float *)ADDR(k_0f));
+			long double f = length > 0 ? (long double)(at - key->time) / length : fld_m((const float *)ADDR(k_0f));
 			glTranslatef(fmul_m(fadd_m(fmul_m(f, &key->delta[0]), &key->pos[0]), scale), fmul_m(fadd_m(fmul_m(f, &key->delta[1]), &key->pos[1]), scale),
 			             fmul_m(fadd_m(fmul_m(f, &key->delta[2]), &key->pos[2]), scale));
 		} else
@@ -553,7 +553,7 @@ void THISCALL (skel_poseBones)(u8 *pose, const float *base)
 			int at = frame;
 			RotKey *key = (RotKey *)key_at(bn->rotKeys, bn->rotKeyCount, 0x28, &at);
 			int length = key->length;
-			float f = length > 0 ? f32((long double)(at - key->frame) / length) : 0;
+			float f = length > 0 ? f32((long double)(at - key->time) / length) : 0;
 			rotate(fmul_m(fld_m(&key->rotation[0]), unit), &key->rotation[1]);
 			rotate(fmul_m(FMUL(f, key->step[0]), unit), &key->step[1]);
 		} else
@@ -649,7 +649,7 @@ void THISCALL (skel_loadAseFrom)(u8 *sk, void *f, u8 *mem, int memSize)
 			frames = crt_atoi(TOKEN(LINE_END));
 		else if (!strcmp(t, (const char *)STR(0x4c541c, "SCENE_FRAMESPEED"))) {   /* SCENE_FRAMESPEED */
 			ms = 1000 / crt_atoi(TOKEN(LINE_END));
-			sko->frames = ms * frames;
+			sko->duration = ms * frames;
 		} else if (!strcmp(t, (const char *)STR(0x4c5408, "SCENE_TICKSPERFRAME")))   /* SCENE_TICKSPERFRAME */
 			ticks = crt_atoi(TOKEN(LINE_END));
 		else if (!strcmp(t, (const char *)STR(0x4c548c, "GEOMOBJECT"))) {   /* GEOMOBJECT */
@@ -693,7 +693,7 @@ void THISCALL (skel_loadAseFrom)(u8 *sk, void *f, u8 *mem, int memSize)
 				t = crt_strtok(line, (const char *)STR(0x4c535c, "* \t\n"));
 				if (!strcmp(t, (const char *)STR(0x4c5478, "CONTROL_TCB_POS_KEY")) || !strcmp(t, (const char *)STR(0x4c5460, "CONTROL_BEZIER_POS_KEY"))) {
 					PosKey *k = (PosKey *)(b->posKeys + b->posKeyCount * 0x20);
-					k->frame = ase_time(ticks, ms);
+					k->time = ase_time(ticks, ms);
 					k->pos[0] = ase_float(SPACE, 0);
 					k->pos[2] = ase_float(SPACE, 1);
 					k->pos[1] = ase_float(SPACE, 0);
@@ -708,7 +708,7 @@ void THISCALL (skel_loadAseFrom)(u8 *sk, void *f, u8 *mem, int memSize)
 				t = crt_strtok(line, (const char *)STR(0x4c535c, "* \t\n"));
 				if (!strcmp(t, (const char *)STR(0x4c544c, "CONTROL_TCB_ROT_KEY"))) {
 					RotKey *rk = (RotKey *)(b->rotKeys + b->rotKeyCount * 0x28);
-					rk->frame = ase_time(ticks, ms);
+					rk->time = ase_time(ticks, ms);
 					rk->rotation[1] = ase_float(SPACE, 0);
 					rk->rotation[3] = ase_float(SPACE, 1);
 					rk->rotation[2] = ase_float(SPACE, 0);
@@ -749,7 +749,7 @@ void THISCALL (skel_loadAseFrom)(u8 *sk, void *f, u8 *mem, int memSize)
 		u8 *bone = ((Skeleton *)sk)->bones + i * 0x70;
 		for (int k = 0; k < ((Bone *)bone)->posKeyCount - 1; k++) {
 			u8 *key = ((Bone *)bone)->posKeys + k * 0x20;
-			((PosKey *)key)->length = ((PosKey *)key)[1].frame - ((PosKey *)key)->frame;
+			((PosKey *)key)->length = ((PosKey *)key)[1].time - ((PosKey *)key)->time;
 			for (int c = 0; c < 3; c++)
 				((PosKey *)key)->delta[c] = f32(FSUB(((PosKey *)key)[1].pos[c], ((PosKey *)key)->pos[c]));
 		}
@@ -760,7 +760,7 @@ void THISCALL (skel_loadAseFrom)(u8 *sk, void *f, u8 *mem, int memSize)
 		}
 		for (int k = 0; k < ((Bone *)bone)->rotKeyCount - 1; k++) {
 			u8 *key = ((Bone *)bone)->rotKeys + k * 0x28;
-			((RotKey *)key)->length = ((RotKey *)key)[1].frame - ((RotKey *)key)->frame;
+			((RotKey *)key)->length = ((RotKey *)key)[1].time - ((RotKey *)key)->time;
 			float r[16], back[16], next[16], step[16];
 			Mat4_fromAxisAngle(r, ((RotKey *)key)->rotation);
 			Mat4_transpose(back, r);

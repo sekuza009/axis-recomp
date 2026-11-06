@@ -23,7 +23,7 @@ void THISCALL (factors_addDirectional)(void *pool, const u32 *a, const u32 *p)
 	r.kind = 1;
 	r.colour = *a;
 	for (int i = 0; i < 3; i++)
-		r.dir[i] = p[i];
+		BITS(r.dir[i]) = p[i];
 	factor_addFactorBy(pool, &r);
 }
 
@@ -35,8 +35,8 @@ void THISCALL (factors_addPointLight)(void *pool, const u32 *a, u32 x, const u32
 	r.kind = 2;
 	r.colour = *a;
 	for (int i = 0; i < 3; i++)
-		r.pos[i] = p[i];
-	r.radius = x;
+		BITS(r.pos[i]) = p[i];
+	BITS(r.radius) = x;
 	factor_addFactorBy(pool, &r);
 }
 

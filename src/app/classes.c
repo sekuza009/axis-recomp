@@ -603,7 +603,7 @@ void THISCALL (scene_startSession)(u8 *g, u32 client, int mode)
 	if (GS->sessionMode == 3)
 		for (int k = 0; k < g_replayListCount; k++) {
 			const char *e = g_replayList[k].name;
-			if (g_replayList[k].flag == 1)
+			if (g_replayList[k].picked == 1)
 				strcpy(GS->replayFiles[GS->replayCount++], e);
 		}
 	u8 *s = (u8 *)SCENE_STAGE(g);

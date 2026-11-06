@@ -992,7 +992,7 @@ int ptx_readBlock(int *blk);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 THISCALL void *actor_initPartLists(char *self);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-THISCALL void shape_setTextureDir(void *self, const char *name, int flags, DWORD a1, DWORD a2, DWORD a3, DWORD a4, DWORD a5, DWORD a6);
+THISCALL void shape_setTextureSuffix(void *self, const char *name, int flags, DWORD a1, DWORD a2, DWORD a3, DWORD a4, DWORD a5, DWORD a6);
 /* add a colour to RGBA pixels */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void image_addColour(BYTE *px, int mode, const DWORD *img, const BYTE *c);
@@ -1845,10 +1845,10 @@ int notice_printCentre(char *obj, const char *fmt, ...);
    display timer = 5.0. Returns the new count / 5 (what the original leaves in EAX) */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 unsigned msg_print(void *scene, int colour, const char *fmt, ...);
-/* 0x46f770 (thiscall) anim_setFrame(frame, scale): select frame i (< count at +0x1c) of the frame table (+0x20): +0x24 =
+/* 0x46f770 (thiscall) anim_setSkeleton(frame, scale): select frame i (< count at +0x1c) of the frame table (+0x20): +0x24 =
    i, +0x28 = __ftol(frame's int at +0x20 * scale) */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-THISCALL void anim_setFrame(void *self, int i, DWORD scale);
+THISCALL void anim_setSkeleton(void *self, int i, DWORD scale);
 /* 0x46de20 (thiscall) tex_tintRgba(dh, ds, dv): tint an RGBA byte colour: bytes / 255 -> floats, tex_tintHsv, * 255
    -> __ftol back into the bytes (all four channels, alpha too). Returns the last __ftol result */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
@@ -2609,7 +2609,7 @@ void armc_retintParts(void);
 /* batch 55 (lifted/grp4.c) */
 /* 0x474b50 (thiscall) actor_setPartColor(p, part, h1, s1, v1, h2, s2, v2): player p's part colours: hues wrapped to
    -180..180 degrees (angle_wrap), the other values clamped to -1..0.999, stored as bytes, then the part's shape
-   gets the tinted textures of player p's texture directory (shape_setTextureDir) */
+   gets the tinted textures of player p's texture directory (shape_setTextureSuffix) */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 THISCALL void actor_setPartColor(char *scene, DWORD p, DWORD part, DWORD a, DWORD b, DWORD c, DWORD d, DWORD e, DWORD f);
 /* 0x474fd0 (thiscall) actor_applyRemoteColours(p, part, 6 signed bytes): a colour packet: hues * 1.40625,
@@ -7564,10 +7564,10 @@ static void block_setup(void)
 }
 ST(ptx_readBlock, block_setup();, CD(int, 0x46f0b0, char *)(BUF + 0x200), ptx_readBlock((int *)(BUF + 0x200)))
 ST(actor_initPartLists, fill(BUF, 0x7100);, TC(void *, 0x463a40, char *)(BUF), actor_initPartLists(BUF))
-ST(shape_setTextureDir, shapes_setup(); fill_str(BUF + 0x400, 40, 1, 255); fill(BUF + 0x130, 0x40); g_a[6] = irnd(0, 7);
+ST(shape_setTextureSuffix, shapes_setup(); fill_str(BUF + 0x400, 40, 1, 255); fill(BUF + 0x130, 0x40); g_a[6] = irnd(0, 7);
    for (int k = 0; k < 6; k++) put_float_or_nan((char *)&g_a[k]);,
    (TC(void, 0x467580, char *, char *, int, int, int, int, int, int, int)(BUF, BUF + 0x400, g_a[6], g_a[0], g_a[1], g_a[2], g_a[3], g_a[4], g_a[5]), 0),
-   (shape_setTextureDir(BUF, BUF + 0x400, g_a[6], g_a[0], g_a[1], g_a[2], g_a[3], g_a[4], g_a[5]), 0))
+   (shape_setTextureSuffix(BUF, BUF + 0x400, g_a[6], g_a[0], g_a[1], g_a[2], g_a[3], g_a[4], g_a[5]), 0))
 ST(image_addColour, fill(BUF + 0x1000, 0x110); fill(BUF + 0x100, 4); S32(BUF, 0x100 + 0x4c) = irnd(-1, 64); fill(BUF + 0x200, 4);
    g_a[0] = irnd(0, 2);,
    (CD(void, 0x464a70, char *, int, char *, char *)(BUF + 0x1000, g_a[0], BUF + 0x100, BUF + 0x200), 0),
@@ -8481,8 +8481,8 @@ static void frame_setup(void)
 	g_a[0] = irnd(0, n + 1);                 /* a negative index makes both read a garbage pointer */
 	if (irnd(0, 9)) GF(&g_a[1]) = (float)irnd(-4000, 4000) / 100.0f; else put_float_or_nan((char *)&g_a[1]);
 }
-ST(anim_setFrame, frame_setup();, (TC(void, 0x46f770, char *, int, DWORD)(BUF, g_a[0], (DWORD)g_a[1]), 0),
-   (anim_setFrame(BUF, g_a[0], (DWORD)g_a[1]), 0))
+ST(anim_setSkeleton, frame_setup();, (TC(void, 0x46f770, char *, int, DWORD)(BUF, g_a[0], (DWORD)g_a[1]), 0),
+   (anim_setSkeleton(BUF, g_a[0], (DWORD)g_a[1]), 0))
 ST(tex_tintRgba, tint_setup(); fill(BUF + 0x300, 4);,
    TC(int, 0x46de20, char *, DWORD, DWORD, DWORD)(BUF + 0x300, (DWORD)g_a[0], (DWORD)g_a[1], (DWORD)g_a[2]),
    tex_tintRgba((BYTE *)(BUF + 0x300), (DWORD)g_a[0], (DWORD)g_a[1], (DWORD)g_a[2]))
@@ -17248,7 +17248,7 @@ static const STest g_stests[] = {
 	T(gameList_layout, 0, 8, 0), T(arenaGameList_layout, 0, 8, 0), T(profilePage_layout, 0, 8, 0), T(mapList_layout, 0, 4, 0),
 	T(lobby_enterArenaList, 0, 4, 0), T(room_setLadderDefaults, 0, 20, 0), T(armc_initCameraBox, 0, 4, 0), T(menu_initColours, 0, 4, 0),
 	T(profile_nameExists, 1, 40, 0), T(ptx_toRgba, 0, 4, 300), T(ptx_readBlock, 1, 150, 0), T(actor_initPartLists, 1, 4, 200),
-	T(shape_setTextureDir, 0, 4, 300), T(image_addColour, 0, 4, 1000), T(stage_resetMatrixAndPoints, 0, 4, 100), T(player_setName, 0, 4, 600),
+	T(shape_setTextureSuffix, 0, 4, 300), T(image_addColour, 0, 4, 1000), T(stage_resetMatrixAndPoints, 0, 4, 100), T(player_setName, 0, 4, 600),
 	T(scene_resetActors, 0, 4, 20),
 	/* batch 11 */
 	T(armcWeaponsPage_layout, 0, 8, 0), T(armcColour_layout, 0, 8, 0), T(armcPartsPage_layout, 0, 8, 0), T(replaySelect_layout, 0, 8, 0),
@@ -17342,7 +17342,7 @@ static const STest g_stests[] = {
 	/* batch 38 */
 	T(space_collideBlock, 1, 10, 20000),
 	/* batch 39 */
-	T(stage_printText, 1, 4, 2000), T(notice_printCentre, 1, 4, 2000), T(msg_print, 1, 4, 2000), T(anim_setFrame, 0, 4, 2000),
+	T(stage_printText, 1, 4, 2000), T(notice_printCentre, 1, 4, 2000), T(msg_print, 1, 4, 2000), T(anim_setSkeleton, 0, 4, 2000),
 	T(tex_tintRgba, 1, 4, 3000), T(net_parseAddress, 1, 300, 0), T(net_formatAddress, 1, 300, 0),
 	/* batch 40 */
 	T(space_collideAt, 1, 100, 20000), T(setup_sliderClicks, 0, 400, 0),
@@ -18154,7 +18154,7 @@ static const struct { DWORD addr; void *fn; const char *name; } g_hooks3[] = {
 	{ 0x40de80, (void *)armc_initCameraBox, "armc_initCameraBox" }, { 0x430ab0, (void *)menu_initColours, "menu_initColours" },
 	{ 0x44b870, (void *)profile_nameExists, "profile_nameExists" }, { 0x46e8e0, (void *)ptx_toRgba, "ptx_toRgba" },
 	{ 0x46f0b0, (void *)ptx_readBlock, "ptx_readBlock" }, { 0x463a40, (void *)actor_initPartLists, "actor_initPartLists" },
-	{ 0x467580, (void *)shape_setTextureDir, "shape_setTextureDir" }, { 0x464a70, (void *)image_addColour, "image_addColour" },
+	{ 0x467580, (void *)shape_setTextureSuffix, "shape_setTextureSuffix" }, { 0x464a70, (void *)image_addColour, "image_addColour" },
 	{ 0x48fe10, (void *)stage_resetMatrixAndPoints, "stage_resetMatrixAndPoints" }, { 0x473940, (void *)player_setName, "player_setName" },
 	{ 0x470a70, (void *)scene_resetActors, "scene_resetActors" },
 	/* batch 11 */
@@ -18295,7 +18295,7 @@ static const struct { DWORD addr; void *fn; const char *name; } g_hooks3[] = {
 	{ 0x4804b0, (void *)space_collideBlock, "space_collideBlock" },
 	/* batch 39 */
 	{ 0x473450, (void *)stage_printText, "stage_printText" }, { 0x463450, (void *)notice_printCentre, "notice_printCentre" },
-	{ 0x4629f0, (void *)msg_print, "msg_print" }, { 0x46f770, (void *)anim_setFrame, "anim_setFrame" },
+	{ 0x4629f0, (void *)msg_print, "msg_print" }, { 0x46f770, (void *)anim_setSkeleton, "anim_setSkeleton" },
 	{ 0x46de20, (void *)tex_tintRgba, "tex_tintRgba" }, { 0x4542a0, (void *)net_parseAddress, "net_parseAddress" },
 	{ 0x454390, (void *)net_formatAddress, "net_formatAddress" },
 	/* batch 40 */

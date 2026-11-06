@@ -274,7 +274,7 @@ typedef struct { u32 vtable; void *banks[6]; i32 count; } TextureManager;   /* t
 #define space_freeBlock(space, node) GAME_THISFN(space_freeBlock, 0x481980, void, void *, void *)(space, node)   /* a block back to the free list */
 #define space_insertItem(space, block, item, depth) GAME_THISFN(space_insertItem, 0x481ae0, int, void *, void *, void *, int)(space, block, item, depth)
 #define angle_wrap(degrees) GAME_FN(angle_wrap, 0x46c100, long double, float)(degrees)   /* an angle wrapped into a turn (in ST0) */
-#define shape_setTextureDir(model, folder, flags, h1, s1, v1, h2, s2, v2) GAME_THISFN(shape_setTextureDir, 0x467580, void, void *, const char *, int, u32, u32, u32, u32, u32, u32)(model, folder, flags, h1, s1, v1, h2, s2, v2)
+#define shape_setTextureSuffix(model, folder, flags, h1, s1, v1, h2, s2, v2) GAME_THISFN(shape_setTextureSuffix, 0x467580, void, void *, const char *, int, u32, u32, u32, u32, u32, u32)(model, folder, flags, h1, s1, v1, h2, s2, v2)
 #define space_getNextFreePlanePtr(space) GAME_THISFN(space_getNextFreePlanePtr, 0x4815c0, u8 *, void *)(space)
 #define collisionTri_setup(plane, flags, v0, v1, v2, object, part, corner0, corner1, corner2) GAME_THISFN(collisionTri_setup, 0x47db60, void, void *, u32, const float *, const float *, const float *, u32, u32, u32, u32, u32)(plane, flags, v0, v1, v2, object, part, corner0, corner1, corner2)   /* the triangle's planes */
 #define array_indexOf(record, base, stride) GAME_FN(array_indexOf, 0x46cba0, int, void *, int, int)(record, base, stride)   /* a record's index in its array */
@@ -344,7 +344,7 @@ typedef struct { u32 vtable; void *banks[6]; i32 count; } TextureManager;   /* t
 #define actor_pickPathPoint(scene, p) GAME_THISFN(actor_pickPathPoint, 0x460270, void, void *, int)(scene, p)
 #define angle_turn(from, b) GAME_FN(angle_turn, 0x46c140, long double, u32, u32)(from, b)   /* the turn from one angle to another */
 #define angle_stepTowards(from, b, t) GAME_FN(angle_stepTowards, 0x46c1c0, long double, u32, u32, u32)(from, b, t)   /* an angle part way */
-#define anim_setFrame(anim, i, scale) GAME_THISFN(anim_setFrame, 0x46f770, void, void *, int, u32)(anim, i, scale)
+#define anim_setSkeleton(anim, i, scale) GAME_THISFN(anim_setSkeleton, 0x46f770, void, void *, int, u32)(anim, i, scale)
 #define skel_poseBones(pose, base) GAME_THISFN(skel_poseBones, 0x46f8c0, void, void *, void *)(pose, base)
 #define partList_bindTextures(list) GAME_THISFN(partList_bindTextures, 0x46fed0, void, void *)(list)
 #define bullet_spawn(stage, slot, owner, homingTarget, shot, quiet) GAME_THISFN(bullet_spawn, 0x47ce50, int, void *, int, int, int, void *, int)(stage, slot, owner, homingTarget, shot, quiet)

@@ -219,7 +219,7 @@ static u32 next_rand(u32 n)
    target given, +4 the weapon: its record 0x2e18 bytes from actorItems, +8 the origin, hitPlane the target's record,
    dir the direction or the target, muzzle kept at colour). Its id (or the next serial, bulletSerial). Aimed shots
    spread with the weapon's spread less the owner's steadiness (accuracy) and are renormalised; mode 3 (shotMode) fires
-   into a random cone about the direction (through gluLookAt's inverse); the first step (speed stepLength) is traced
+   into a random cone about the direction (through gluLookAt's inverse); the first step (speed range) is traced
    (collision_rayTrace; the hit record hit) and the part of a step used (life) kept from 0 to 10. Then its
    velocity (velocity times the direction, or the step), colour, the homing target (homingTarget: a guided round's; the local player's own guided round follows the aim point), and, unless
    quiet, the muzzle flash (particle kind shotMode + 10) and the firing sound (sound: at full volume for the local
@@ -268,15 +268,15 @@ void THISCALL (bullet_init)(u8 *s, int slot, int id, int owner, int homingTarget
 			for (int r = 0; r < 3; r++)
 				dir[r] = f32(FMUL(v[2], inv[8 + r]) + FMUL(v[1], inv[4 + r]) + FMUL(inv[r], v[0]));
 		}
-		const float *speed = &w->stepLength, *from = BU->from;
-		float *end = BU->end;
+		const float *speed = &w->range, *from = BU->from;
+		float *end = BU->impact;
 		float sx = f32(fmul_m(fld_m(speed), &dir[0])), sy = f32(fmul_m(fld_m(speed), &dir[1]));
 		long double sz = fmul_m(fld_m(speed), &dir[2]);
 		end[0] = f32(FADD(sx, from[0]));
 		end[1] = f32(FADD(sy, from[1]));
 		end[2] = f32(fadd_m(sz, &from[2]));
 		float hit[3];
-		BU->hit = collision_rayTrace(s, from, end, hit);
+		BU->hit = (struct CollisionPlane *)collision_rayTrace(s, from, end, hit);
 		if (BU->hit) {
 			memcpy(end, hit, 12);
 			if (*w2de8 > 0) {
@@ -297,7 +297,7 @@ void THISCALL (bullet_init)(u8 *s, int slot, int id, int owner, int homingTarget
 		Vec3_normalize(dir);
 		int target = rd->hitPlane;
 		BITS(BU->hit) = target >= 0 ? (u32)ST->space.planes.records + target * 0xac : 0;
-		memcpy(BU->end, aim, 12);
+		memcpy(BU->impact, aim, 12);
 		BU->life = 10.0f;   /* 10 */
 	}
 	BU->age = 0.0f;
@@ -306,7 +306,7 @@ void THISCALL (bullet_init)(u8 *s, int slot, int id, int owner, int homingTarget
 	BU->moved = 0;
 	float *vel = BU->vel;
 	for (int k = 0; k < 3; k++)
-		vel[k] = *w2de8 > 0 ? f32(fmul_m(fld_m(w2de8), &dir[k])) : f32(fsub_m(fld_m(BU->end + k), BU->from + k));
+		vel[k] = *w2de8 > 0 ? f32(fmul_m(fld_m(w2de8), &dir[k])) : f32(fsub_m(fld_m(BU->impact + k), BU->from + k));
 	memcpy(BU->step, (const void *)ADDR(g_vecZero), 12);
 	BU->hitActor = -1;
 	BU->homeTimer = 0.0f;
@@ -320,7 +320,7 @@ void THISCALL (bullet_init)(u8 *s, int slot, int id, int owner, int homingTarget
 		point[1] = f32(FADD(ty, at[1]));
 		point[2] = f32(FADD(tz, at[2]));
 	}
-	BU->hitWorld = 0;
+	BU->struck = 0;
 	BU->trailCount = 0;
 	if (quiet)
 		return;
@@ -521,8 +521,8 @@ static void hit_actor(u8 *s, u8 *b, const u8 *w, u32 *r, int weapon)
 	for (int k = 0; k < 3; k++)
 		dir[k] = f32(fsub_m(fld_m(BU->pos + k), &ST->actors[t].nextPos[k]));
 	Vec3_normalize(dir);
-	effect(s, r, WI->shotMode + 0x1e, 0, (u8 *)BU->end, dir, 0, 0, 0, effect_size(w), 0);
-	effect(s, r, 8, ST->actors[BU->hitActor].stateFlags & 0x2000, (u8 *)BU->end, dir, 0, 0, 0, 0, 0);
+	effect(s, r, WI->shotMode + 0x1e, 0, (u8 *)BU->impact, dir, 0, 0, 0, effect_size(w), 0);
+	effect(s, r, 8, ST->actors[BU->hitActor].stateFlags & 0x2000, (u8 *)BU->impact, dir, 0, 0, 0, 0, 0);
 	if (WI->hitSound >= 0)
 		sound_play3D(WI->hitSound, ST->cameraPos, (u8 *)BU->pos, ST->viewDir, 0x47435000);
 	if (BU->owner == ST->playerActor)
@@ -536,7 +536,7 @@ static void hit_actor(u8 *s, u8 *b, const u8 *w, u32 *r, int weapon)
 		push[1] = f32(FMUL(y, k_10f));
 		push[2] = f32(fmul_m(z, &k_10f));
 	}
-	BU->hitWorld = 1;
+	BU->struck = 1;
 }
 
 /* ((M[a] * p[ia] + M[b] * p[ib]) + M[c] * p[ic]) + M[t], each product a matrix entry times a point's */
@@ -550,7 +550,7 @@ static float through(const float *M, const float *p, int a, int ia, int b, int i
    the other two corners' coordinates in them (uv: the axes' lengths, 0, then two pairs) */
 static void decal(u8 *s, u8 *b, const u8 *w, u32 *r, const u8 *h, const float *N, const float *P)
 {
-	const float *imp = BU->end;
+	const float *imp = BU->impact;
 	float e[3], uv[6], c2, le;
 	for (int k = 0; k < 3; k++)
 		e[k] = f32(FSUB(P[k], imp[k]));
@@ -570,13 +570,13 @@ static void decal(u8 *s, u8 *b, const u8 *w, u32 *r, const u8 *h, const float *N
 		uv[q * 2] = f32(fdiv_m((fmul_m(f2, &e[2]) + fmul_m(f1, &e[1])) + fmul_m(f0, &e[0]), &le));
 		uv[q * 2 + 1] = f32(((fmul_m(f2, &c2) + f1 * c1) + f0 * c0) / lc);
 	}
-	const int *obj = ((const CollisionPlane *)h)->object;
+	const int *obj = &((const CollisionPlane *)h)->unit->index;   /* (its unit's map object number) */
 	if (obj) {
 		const ShapePart *part = (const ShapePart *)ST->objects[*obj].model->parts + ((const CollisionPlane *)h)->part;
 		float tri[9];
 		for (int k = 0; k < 3; k++)
 			memcpy(tri + k * 3, (const float *)part->vertices + ((const CollisionPlane *)h)->cornerIndices[k] * 3, 12);
-		effect(s, r, WI->shotMode + 0x28, 0, imp, N, (u32)ST->objects[*((const CollisionPlane *)h)->object].matrix, (u32)tri, (u32)uv, 0, 0);
+		effect(s, r, WI->shotMode + 0x28, 0, imp, N, (u32)ST->objects[((const CollisionPlane *)h)->unit->index].matrix, (u32)tri, (u32)uv, 0, 0);
 	} else
 		effect(s, r, WI->shotMode + 0x28, 0, imp, N, 0, (u32)P, (u32)uv, effect_size(w), 0);
 }
@@ -591,7 +591,7 @@ static void hit_surface(u8 *s, u8 *b, const u8 *w, u32 *r)
 		return;
 	float N[3], P[9];
 	const float *n = ((const CollisionPlane *)h)->normal, *p = &((const CollisionPlane *)h)->cornerPoints[0][0];
-	const int *obj = ((const CollisionPlane *)h)->object;
+	const int *obj = &((const CollisionPlane *)h)->unit->index;   /* (its unit's map object number) */
 	if (obj) {
 		const float *M = ST->objects[*obj].relMatrix;
 		N[0] = f32((FMUL(n[2], M[8]) + FMUL(n[1], M[4])) + FMUL(n[0], M[0]));
@@ -611,20 +611,20 @@ static void hit_surface(u8 *s, u8 *b, const u8 *w, u32 *r)
 			N[k] = (float)fld_m(&n[k]);
 		memcpy(P, p, 36);
 	}
-	effect(s, r, WI->shotMode + 0x1e, 0, (u8 *)BU->end, N, 0, 0, 0, effect_size(w), 0);
+	effect(s, r, WI->shotMode + 0x1e, 0, (u8 *)BU->impact, N, 0, 0, 0, effect_size(w), 0);
 	if (!(*(*(const u8 * *)&BU->hit) & 0x10) && g_highDetail == 1)
 		decal(s, b, w, r, (*(const u8 * *)&BU->hit), N, P);
 	if (WI->hitSound >= 0)
-		sound_play3D(WI->hitSound, ST->cameraPos, (u8 *)BU->end, ST->viewDir, 0x47435000);
-	BU->hitWorld = 1;
+		sound_play3D(WI->hitSound, ST->cameraPos, (u8 *)BU->impact, ST->viewDir, 0x47435000);
+	BU->struck = 1;
 }
 
-/* splash damage once the bullet hit (hitWorld): every other live actor of the local player's (actors[].controlledBy) with health
+/* splash damage once the bullet hit (struck): every other live actor of the local player's (actors[].controlledBy) with health
    over 3 within the weapon's radius (splashRadius) of the point is hurt by up to the weapon's damage (by distance) and
    pushed (actors[].push) */
 static void splash(u8 *s, u8 *b, const u8 *w)
 {
-	if (BU->hitWorld != 1 || !(WI->splashRadius > 0))
+	if (BU->struck != 1 || !(WI->splashRadius > 0))
 		return;
 	for (int j = 0; j < ST->actorCount; j++) {
 		if (ST->actors[j].state != 1 || !(ST->actors[j].spawnAge > 3.0f) || ST->actors[j].controlledBy != ST->playerActor || BU->hitActor == j
@@ -716,10 +716,10 @@ static void fly_local(u8 *s, u8 *b, const u8 *w, const float *dt)
 			cur[1] = f32(FADD(prev[1], step[1]));
 			cur[2] = f32(FADD(prev[2], step[2]));
 		} else
-			memcpy(cur, BU->end, 12);
+			memcpy(cur, BU->impact, 12);
 	} else {
 		memcpy(step, vel, 12);
-		memcpy(cur, BU->end, 12);
+		memcpy(cur, BU->impact, 12);
 	}
 	float dir[3], best, hit[3], t;
 	memcpy(dir, step, 12);
@@ -732,7 +732,7 @@ static void fly_local(u8 *s, u8 *b, const u8 *w, const float *dt)
 		if (math_segmentSphere(prev, cur, dir, ST->actors[j].nextPos, radius, hit, &t) == 1 && !(t >= best)) {
 			BU->hitActor = j;
 			memcpy(cur, hit, 12);
-			memcpy(BU->end, hit, 12);
+			memcpy(BU->impact, hit, 12);
 			BITS(best) = BITS(t);
 		}
 	}
@@ -743,9 +743,9 @@ static void fly_local(u8 *s, u8 *b, const u8 *w, const float *dt)
 	if (WI->guidance > 0 && BU->hitActor < 0) {
 		float h[3];
 		int r = collision_rayTrace(s, prev, cur, h);
-		BU->hit = r;
+		BU->hit = (struct CollisionPlane *)r;
 		if (r) {
-			memcpy(BU->end, h, 12);
+			memcpy(BU->impact, h, 12);
 			h[0] = f32(FSUB(h[0], prev[0]));
 			long double dy = FSUB(h[1], prev[1]);
 			h[1] = (float)dy;

@@ -355,7 +355,7 @@ void THISCALL (object_initObjectBy)(Stage *s, int i, const ObjectType *type)
 	mo->id = ST->objectSerial++;
 	mo->active = 1;
 	mo->nameIndex = idx;
-	memcpy(obj + offsetof(MapObject, flags), &type->flags, 12);   /* flags, trigger, animSpeed */
+	memcpy(obj + offsetof(MapObject, flags), &type->flags, 12);   /* flags, trigger, animPeriod */
 	if (type->animName[0])
 		sprintf(mo->animPath, (const char *)STR(0x4c7a30, "%s/%s/%s"), ST->stageDir, ST->stageName, type->animName);
 	else
@@ -414,10 +414,10 @@ static void spawn_at(u8 *s, u32 kind, const float *p)
 	particle_spawn(s, rec);
 }
 
-/* a falling spark (kind 9) moved by its velocity (target) over dt and dropped 2000 dt further: what it meets on the
+/* a piece of debris (kind 9: a dead actor's part, actor_dies) moved by its velocity (target) over dt and dropped 2000 dt further: what it meets on the
    way (collision_rayTrace) stops it there, ends it and leaves a kind 2 particle; its orientation (matrix) turned by
    its age; every tenth of a second a trail particle (kind 2 one time in ten, which also ends it, else kind 0) */
-static void spark(u8 *s, u8 *p, float dt)
+static void debris(u8 *s, u8 *p, float dt)
 {
 	Particle *pr = (Particle *)p;
 	float *pos = pr->pos;
@@ -457,7 +457,7 @@ static void spark(u8 *s, u8 *p, float dt)
 }
 
 /* 0x476410 (thiscall on the scene): particle slot's frame (0x12c bytes from particles). Its age (age, kept at drawAge)
-   past its life (life) frees it (stage_freeParticle); otherwise sparks move (spark), and puffs and flashes (kinds 2, 3, 25,
+   past its life (life) frees it (stage_freeParticle); otherwise debris moves (debris), and puffs and flashes (kinds 2, 3, 25,
    26, 30 .. 38) shrink with age, (1 - age / life)^2 times their size (size); the age moves on by dt. Its caller
    ignores the eax it leaves */
 void THISCALL (particle_update)(u8 *s, int slot, float dt)
@@ -479,7 +479,7 @@ void THISCALL (particle_update)(u8 *s, int slot, float dt)
 		break;
 	case 1:
 		if (k == 9)
-			spark(s, p, dt);
+			debris(s, p, dt);
 		break;
 	case 5:
 		size = k == 25 || k == 26 ? ADDR(k_2000f) : 0;
@@ -493,7 +493,7 @@ void THISCALL (particle_update)(u8 *s, int slot, float dt)
 	}
 	if (size) {
 		long double u = fsub_m(fld_m((const float *)ADDR(k_1f)), &t);
-		pr->size = f32(fmul_m(u * u, (const float *)RELOC(size)));
+		pr->lightRadius = f32(fmul_m(u * u, (const float *)RELOC(size)));
 	}
 	pr->age = f32(FADD(dt, pr->age));
 }
@@ -589,7 +589,7 @@ static void item_pickup(u8 *s, u8 *ac, u8 *it, int i, u8 *t, int type)
 		ST->lastPickup = i;
 	item_sound(s, ((ItemType *)t)->pickSound, it);
 	mi->taken = 1;
-	mi->fade = 0.0f;
+	mi->timer = 0.0f;
 }
 
 /* 0x48ed90 (thiscall on the scene): the items' frame. Live actors' touch flags (onWarp) cleared; every item (0x28
@@ -613,10 +613,10 @@ void THISCALL (item_update)(u8 *s, float dt)
 			continue;
 		ItemType *t = &ST->itemTypes[type];
 		if (mi->taken == 1) {
-			if (mi->fade > t->respawnTime) {
+			if (mi->timer > t->respawnTime) {
 				item_sound(s, t->respawnSound, it);
 				mi->taken = 0;
-				mi->fade = 0.0f;
+				mi->timer = 0.0f;
 			}
 		} else if (mi->taken == 0) {
 			if (type != 0x22)
@@ -642,7 +642,7 @@ void THISCALL (item_update)(u8 *s, float dt)
 				}
 			}
 		}
-		mi->fade = f32(FADD(dt, mi->fade));
+		mi->timer = f32(FADD(dt, mi->timer));
 	}
 	for (int k = 0; k < ST->actorCount; k++) {
 		u8 *ac = (u8 *)&ST->actors[k];
@@ -759,32 +759,32 @@ static void particle_beam(u8 *s, u8 *p, u32 colour)
 }
 
 /* a trail particle (kinds 40 .. 49): its three points (the descriptor's trailPoints), and their texture coordinates
-   (the first v 0.5) from the descriptor's trailSizes, either as size x 0.005 + 0.5 or (by d, the particle's size plus
+   (the first v 0.5) from the descriptor's markCoords, either as size x 0.005 + 0.5 or (by d, the particle's size plus
    a margin) as (size / d + 1) / 2; its colours the shared one (g_white) */
-static void particle_trail(u8 *p, const u8 *desc, u32 margin)
+static void particle_mark(u8 *p, const u8 *desc, u32 margin)
 {
 	const ParticleDesc *pd = (const ParticleDesc *)desc;
 	PR->life = 2.0f;   /* 2 s */
-	memcpy(PR->trailPoints[0], pd->trailPoints, 12);
-	memcpy(PR->trailPoints[1], pd->trailPoints + 3, 12);
-	memcpy(PR->trailPoints[2], pd->trailPoints + 6, 12);
-	const float *q = pd->trailSizes;
-	static const u8 uv[5] = { 0, 2, 3, 4, 5 };   /* (q[k] gives trailUv[k]; q[1] is not used) */
+	memcpy(PR->markPoints[0], pd->markCorners, 12);
+	memcpy(PR->markPoints[1], pd->markCorners + 3, 12);
+	memcpy(PR->markPoints[2], pd->markCorners + 6, 12);
+	const float *q = pd->markCoords;
+	static const u8 uv[5] = { 0, 2, 3, 4, 5 };   /* (q[k] gives markUv[k]; q[1] is not used) */
 	if (!margin) {
 		for (int k = 0; k < 5; k++) {
-			PR->trailUv[uv[k]] = f32(fadd_m(FMUL(q[uv[k]], k_0_005f_4aa428), &k_0_5f));
+			PR->markUv[uv[k]] = f32(fadd_m(FMUL(q[uv[k]], k_0_005f_4aa428), &k_0_5f));
 			if (k == 0)
-				PR->trailUv[1] = 0.5f;
+				PR->markUv[1] = 0.5f;
 		}
 	} else {
 		long double d = fadd_m(fld_m(&PR->baseSize), K(margin));
 		for (int k = 0; k < 5; k++) {
-			PR->trailUv[uv[k]] = f32(fmul_m(fadd_m(fld_m(&q[uv[k]]) / d, &k_1f), &k_0_5f));
+			PR->markUv[uv[k]] = f32(fmul_m(fadd_m(fld_m(&q[uv[k]]) / d, &k_1f), &k_0_5f));
 			if (k == 0)
-				PR->trailUv[1] = 0.5f;
+				PR->markUv[1] = 0.5f;
 		}
 	}
-	PR->trailColours[0] = PR->trailColours[1] = PR->trailColours[2] = g_white;
+	PR->markColours[0] = PR->markColours[1] = PR->markColours[2] = g_white;
 }
 
 /* 0x475070 (thiscall on the scene): particle slot (0x12c bytes from particles) set up from its descriptor: a
@@ -820,8 +820,8 @@ void THISCALL (particle_init)(u8 *s, int slot, const u8 *desc)
 	PR->life = 1.0f;
 	PR->age = 0.0f;
 	PR->colour = g_white;
-	PR->size = 0.0f;
-	BITS(PR->baseSize) = pd->size;
+	PR->lightRadius = 0.0f;
+	BITS(PR->baseSize) = BITS(pd->size);
 	int kind = PR->kind;
 	switch (kind) {
 	case 0: case 1: case 8: PR->life = 0.5f; break;   /* 0.5 s */
@@ -866,9 +866,9 @@ void THISCALL (particle_init)(u8 *s, int slot, const u8 *desc)
 	case 30: case 31: case 32: case 33: case 34: case 35: case 36: case 37: case 38:
 		PR->life = 1.0f;
 		break;
-	case 40: case 41: case 49: particle_trail(p, desc, 0); break;
-	case 42: case 43: case 44: case 46: case 47: case 48: particle_trail(p, desc, ADDR(k_200f)); break;
-	case 45: particle_trail(p, desc, ADDR(k_400f)); break;
+	case 40: case 41: case 49: particle_mark(p, desc, 0); break;
+	case 42: case 43: case 44: case 46: case 47: case 48: particle_mark(p, desc, ADDR(k_200f)); break;
+	case 45: particle_mark(p, desc, ADDR(k_400f)); break;
 	}
 }
 #undef K

@@ -341,7 +341,7 @@ void (replaySelect_ok)(void)
 {
 	int count = g_replayFileCount;
 	for (int i = 0; i < count; i++)
-		if (g_replayList[i].flag == 1) {
+		if (g_replayList[i].picked == 1) {
 			sound_playMenu(0);
 			g_replayListCount = g_replayFileCount;
 			g_replayZoomIn = 1;

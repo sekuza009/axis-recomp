@@ -43,7 +43,7 @@ void (missions_clear)(void)
 	for (Mission *e = g_missions; e < g_missions + 30; e++) {
 		memset(e->name, 0, 0x40);
 		memset((u8 *)e + offsetof(Mission, title), 0, sizeof e->title + sizeof e->briefing);
-		e->id = 0;
+		e->unused0 = 0;
 		e->number = 0;
 		e->unusedE8 = 0;
 		e->unusedF0 = -1;

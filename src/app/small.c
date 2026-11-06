@@ -153,8 +153,8 @@ void (net_clearSlots)(void) { for (NetSlot *p = g_netSlots; p < g_netSlots + 16;
 /* 0x453a30: 1 if connection kind i (0 .. 3) is available */
 int (net_connectionAvailable)(u32 i) { return i < 4 && g_dpConnections[i] ? 1 : 0; }
 /* 0x4417c0: replay i of the replay selection dialog in or out; replaySelect_allIn: all in (0x44-byte entries from 0x9ddac8) */
-void (replaySelect_toggle)(int i) { int *f = &g_replayList[i].flag; *f = 1 - *f; }
-void (replaySelect_allIn)(void) { for (int i = 0; i < g_replayFileCount; i++) g_replayList[i].flag = 1; }
+void (replaySelect_toggle)(int i) { int *f = &g_replayList[i].picked; *f = 1 - *f; }
+void (replaySelect_allIn)(void) { for (int i = 0; i < g_replayFileCount; i++) g_replayList[i].picked = 1; }
 /* 0x447af0: a click closes the mission briefing */
 void (briefing_clickClose)(void) { if (g_dialogOpen == 0 && g_mouseClick != 0) g_skirmishBriefing = 0; }
 /* 0x4411e0: the background tunnel's rings made again (tunnel_appendRing) */
@@ -372,15 +372,15 @@ int THISCALL (script_runScpFile)(Stage *stage, const char *name, int mode)
 	return mode - 2;
 }
 
-/* 0x46f770: an animation's frame i chosen (when it has a frame table, frames, and i is below the count frameCount), and its
-   length (the frame's int at +0x20) times scale */
-void THISCALL (anim_setFrame)(u8 *anim, int i, float scale)
+/* 0x46f770: the list's skeleton i chosen (when it has skeletons, and i is below the count skelCount), and the tick set
+   to its duration (the skeleton's ms at +0x20) times scale */
+void THISCALL (anim_setSkeleton)(u8 *anim, int i, float scale)
 {
 	ObjectList *ol = (ObjectList *)anim;
-	if (!ol->frames || i >= ol->frameCount)
+	if (!ol->skeletons || i >= ol->skelCount)
 		return;
-	ol->frame = i;
-	const int *frame = ((int **)ol->frames)[i];
+	ol->skel = i;
+	const int *frame = ((int **)ol->skeletons)[i];
 	ol->animTick = ftol(fmul_m((long double)frame[8], &scale));
 }
 

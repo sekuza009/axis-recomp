@@ -380,7 +380,7 @@ void THISCALL (actor_applySpawnRecord)(u8 *scene, int a, const u8 *rec)
 	AC->baseSpeed = AC->speed = (float)(SR->speed * (long double)k_27_7778f);
 	AC->turnRate = (float)(SR->turnRate * (long double)k_10f);
 	long double radius = SR->range;
-	AC->radiusSq = (float)(radius * radius * k_10000f);
+	AC->detectionRangeSq = (float)(radius * radius * k_10000f);
 	AC->unused34 = SR->unused34;
 	AC->aimError = ftol(SR->aimError * (long double)k_10f);
 	AC->scriptFlag = SR->scriptFlag;
@@ -482,7 +482,7 @@ static u8 level_byte(float *v)
 /* 0x474b50 (thiscall on the scene): player p's part (0 .. 4) coloured: two hue / saturation / value sets kept as
    bytes in the part type record's colour table (partHue + part x 2: hue, partSaturation saturation, partValue value; the second
    set one byte on), then the part's shape cache (headShapes ..) given textures from the player's
-   directory (by 0x4c77f8) tinted with them (shape_setTextureDir). Its callers ignore the eax it leaves */
+   directory (by 0x4c77f8) tinted with them (shape_setTextureSuffix). Its callers ignore the eax it leaves */
 void THISCALL (actor_setPartColor)(Stage *scene, int p, int part, float h1, float s1, float v1, float h2, float s2, float v2)
 {
 	static const u32 shapes[5] = { offsetof(PlayerRecord, headShapes), offsetof(PlayerRecord, chestShapes), offsetof(PlayerRecord, armShapes), offsetof(PlayerRecord, legShapes), offsetof(PlayerRecord, boosterShapes) };
@@ -496,7 +496,7 @@ void THISCALL (actor_setPartColor)(Stage *scene, int p, int part, float h1, floa
 	char dir[0x100];
 	sprintf(dir, (const char *)STR(0x4c77f8, "_T%d"), p);
 	if ((unsigned)part <= 4)
-		shape_setTextureDir((u8 *)pr + shapes[part], dir, 2, *(u32 *)&h1, *(u32 *)&s1, *(u32 *)&v1,
+		shape_setTextureSuffix((u8 *)pr + shapes[part], dir, 2, *(u32 *)&h1, *(u32 *)&s1, *(u32 *)&v1,
 		                    *(u32 *)&h2, *(u32 *)&s2, *(u32 *)&v2);
 }
 
@@ -704,7 +704,7 @@ static void mech_stats(u8 *s, u8 *ac, u8 *p, int check)
 		}
 	}
 	long double hp = fadd_m(fmul_m(character_factor(p, 3), &head->detectionRange), &AC->rangeBonus);
-	AC->radiusSq = f32(hp * hp);
+	AC->detectionRangeSq = f32(hp * hp);
 	AC->detectionAngle = f32(fmul_m(character_factor(p, 3), &head->detectionAngle));
 	AC->hackingLevel = head->hackingLevel + AC->hackingBonus;
 	AC->lockOnTime = f32(FMUL(head->lockOnTime, AC->lockOnTimeFactor));
@@ -736,12 +736,12 @@ static void mech_stats(u8 *s, u8 *ac, u8 *p, int check)
 	if (st->rocketArena == 1)
 		AC->mobility = f32(FMUL(AC->mobility, k_0_333f));
 	BITS(AC->boosterTilt) = BITS(boost->lean);
-	AC->boostTime = f32(FMUL(boost->activeTime[0], AC->boostTimeFactor));
-	AC->rechargeTime = f32(FMUL(boost->activeTime[1], AC->rechargeTimeFactor));
-	AC->restTime = f32(FMUL(boost->activeTime[2], AC->restTimeFactor));
+	AC->boostTime = f32(FMUL(boost->times[0], AC->boostTimeFactor));
+	AC->rechargeTime = f32(FMUL(boost->times[1], AC->rechargeTimeFactor));
+	AC->restTime = f32(FMUL(boost->times[2], AC->restTimeFactor));
 	/* the legs' factors: the level's second value plus the legs' own, plus 1 */
 #define LEG(f) fadd_m(fadd_m(fmul_m((long double)g_characterProfiles[pr->character].stats[5], &k_0_01f), &legs->f), &k_1f)
-	v = fmul_m(LEG(speedCorrection), &boost->normalSpeed[0]) * left;
+	v = fmul_m(LEG(speedCorrection), &boost->speeds[0]) * left;
 	AC->speed = f32(v);
 	if (!(v >= *&k_100f))
 		AC->speed = 100.0f;   /* 100 */
@@ -749,15 +749,15 @@ static void mech_stats(u8 *s, u8 *ac, u8 *p, int check)
 	AC->moveAccel = f32(v);
 	if (st->rocketArena == 1)   /* (the check scales the stored value) */
 		AC->moveAccel = f32(fmul_m(check ? fld_m(&AC->moveAccel) : v, &k_0_333f));
-	v = fdiv_m(fmul_m(LEG(forwardBoostCorrection), &boost->normalSpeed[1]), &AC->speed) * left;
+	v = fdiv_m(fmul_m(LEG(forwardBoostCorrection), &boost->speeds[1]), &AC->speed) * left;
 	AC->runTop[0] = f32(v);
 	if (!(v >= 0))
 		AC->runTop[0] = 0.0f;
-	v = fmul_m(fdiv_m(fmul_m(LEG(backBoostCorrection), &boost->normalSpeed[2]), &AC->speed) * left, &k_m1f);
+	v = fmul_m(fdiv_m(fmul_m(LEG(backBoostCorrection), &boost->speeds[2]), &AC->speed) * left, &k_m1f);
 	AC->runTop[1] = f32(v);
 	if (v > 0)
 		AC->runTop[1] = 0.0f;
-	v = fdiv_m(fmul_m(LEG(sideBoostCorrection), &boost->normalSpeed[3]), &AC->speed) * left;
+	v = fdiv_m(fmul_m(LEG(sideBoostCorrection), &boost->speeds[3]), &AC->speed) * left;
 	AC->runTop[2] = f32(v);
 	if (!((check ? fld_m(&AC->runTop[2]) : v) >= 0))   /* (the check tests the stored value) */
 		AC->runTop[2] = 0.0f;
@@ -926,7 +926,7 @@ static int totals_agree(u8 *s, u8 *ac, u8 *me)
 		if (pair < 4)
 			act->ammoMax[pair] = 100;
 	}
-	static const u8 floats1[] = { offsetof(Player, radiusSq), offsetof(Player, detectionAngle) }, ints[] = { offsetof(Player, armorMax), offsetof(Player, shieldMax), offsetof(Player, accuracy), offsetof(Player, ammoMax[0]), offsetof(Player, ammoMax[1]), offsetof(Player, ammoMax[2]), offsetof(Player, ammoMax[3]) };
+	static const u8 floats1[] = { offsetof(Player, detectionRangeSq), offsetof(Player, detectionAngle) }, ints[] = { offsetof(Player, armorMax), offsetof(Player, shieldMax), offsetof(Player, accuracy), offsetof(Player, ammoMax[0]), offsetof(Player, ammoMax[1]), offsetof(Player, ammoMax[2]), offsetof(Player, ammoMax[3]) };
 	static const u8 floats2[] = { offsetof(Player, lockOnTime), offsetof(Player, targetKeepTime), offsetof(Player, loadMax), offsetof(Player, load) }, floats3[] = { offsetof(Player, mobility), offsetof(Player, boostTime), offsetof(Player, rechargeTime), offsetof(Player, restTime), offsetof(Player, speed), offsetof(Player, moveAccel), offsetof(Player, runTop[0]), offsetof(Player, runTop[1]), offsetof(Player, runTop[2]), offsetof(Player, runTop[3]) };
 	for (int k = 0; k < 2; k++)
 		if (!close_enough((const float *)(ac + floats1[k]), (const float *)(me + floats1[k])))

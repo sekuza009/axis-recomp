@@ -3,30 +3,30 @@
 # "struct Name size"; fields are "offset  size  declaration  # comment". Add fields as rebuilds need them.
 
 struct MessageSlot 0x14                                         # a map script's message waiting in the box (Scene.msgRing = Stage.messages; command 26 MESSAGE)
-0          4          i32 speaker                                # its speaker (Stage.speakers)
+0          4          i32 speaker                               # its speaker (Stage.speakers; script_processCommand checks it exists); written, never read (hud_drawMessageBox shows only text and colour)
 4          4          u32 text                                  # its text block in Scene.msgText
-8          4          i32 colour                                # index into g_textColours; 16 and up: none
+8          4          i32 colour                                # index into g_textColours (signed compare: < 16 used); 16 and up: the text drawn transparent (white, alpha 0)
 
 struct EventLine 0x108                                          # one line of the event list (Scene.events)
 0          4          u32 type                                  # 0..5: the colour
 4          0x100      char text[0x100]
-0x104      4          u32 time                                  # Scene.eventTime when it was written
+0x104      4          float timeLeft                              # seconds it stays shown: Scene.eventTime (60.0) when written, counted down by events_age, which drops the oldest line once it is <= 0 (or NaN)
 
 struct FiredRound 0x28                                          # a round as fired (Player.rounds; bullet_spawn / bullet_init take it)
 0          4          i32 received                               # (by use; seen running) 0: fired here; 1: another machine's (its hit known)
 4          4          i32 weapon                                 # its item (ActorItem index)
 8          0xc        float from[3]                              # where it starts (the muzzle)
 0x14       4          i32 hitPlane                               # a received round's collision plane (-1 none)
-0x18       0xc        float dir[3]
+0x18       0xc        float dir[3]                              # fired here (received 0): the aim direction (the muzzle's +z); received: the point sent (ShotRecord.point): bullet_init aims at it and ends the round there (end = it, life 10)
 0x24       4          u32 muzzle                                # the muzzle entry's matrix (&ListedObject.matrix of the weapon model's entry given at ItemModelSet +0x15a8 + variant x 0x40; Bullet.muzzle takes it)
 
 struct ShotRecord 0x20                                          # a round an actor fired, as sent (Player.shots)
-0          4          i32 inUse                                 # written, never read
-4          4          i32 isNew                                  # 1: a new round (its bullet made)
-8          4          i32 kind
-0xc        4          i32 owner
-0x10       4          i32 flag
-0x14       0xc        float dir[3]
+0          4          i32 inUse                                 # 1: the slot carries a round this packet (its slot's flag bit 1; 0 also for a teamless actor); actor_processFrame's received path skips the others
+4          4          i32 isNew                                 # 1: a new round: the local actor's not yet announced (net_sendPlayerState sends flag 3 and clears it); a received one's bullet still to be made (actor_processFrame makes it and clears it)
+8          4          i32 hitActor                              # the actor the sender's round hit (packet flag 4; -1 none): the bullet's hitActor
+0xc        4          i32 hitPlane                              # the collision plane the sender's round hit (index into space.planes; -1 none or an actor hit): the bullet's hit, and a new round's FiredRound.hitPlane
+0x10       4          i32 ended                                 # 1: the sender's round has run its life (age > life; packet flag 8): the bullet's life is set to age - dt so it ends this frame
+0x14       0xc        float point[3]                            # the round's position as sent (its end when finished at a surface, else its pos; tenths decoded): the bullet's netPoint and end, a new round's FiredRound.dir
 
 struct ItemModelSet 0x16bc                                      # an item's models, per variant (ActorItem.sets: [0] in hand / slot 4, [1] slot 5)
 0          0xc        i32 shapeCount[3]                         # per variant (Player.variantLoaded): the shapes (ObjectList_load's ns) ..
@@ -47,20 +47,20 @@ struct ActorItem 0x2e18                                         # an item record
 0x2e04     4          i32 hitSound                               # its hit sound (< 0 none)
 0x2e14     4          float push                                 # > 0: a hit pushes the actor (x 10, away from the bullet)
 0x2dc0     4          i32 ammoType                              # BULLET TYPE (ARM CENTER; MSG(323) + this: 30mm, 60mm, E-PAK, ROCKET): the ammunition it uses (index into Player.ammo); -1: a special item, not a weapon
-0x2dc4     4          i32 ammoPerShot                           # ammunition one shot takes
+0x2dc4     4          i32 ammoPerShot                           # BULLET CONSUMPTION (ARM CENTER, message 303): ammunition one shot takes (actor_processFrame, weapons.c); a special item's (ammoType -1) kind instead: the ARM CENTER shows MSG(745) + this (GRAVITY CONTROLLER ..)
 0x2dc8     4          i32 burst                                 # rounds a burst
 0x2dcc     4          float burstGap                            # seconds between a burst's rounds (0: all at once; actor_processFrame)
-0x2de4     4          float stepLength                          # a shot's first step (traced)
+0x2de4     4          float range                               # SHOOTING RANGE (ARM CENTER, message 307; shown x0.01 m): bullet_init traces from the muzzle this far along the direction (end; the hit found) and gives the round life = this (or the hit's distance) / velocity
 0x2de8     4          float velocity                            # its speed (0: it arrives at once)
-0x2dec     4          float spread                              # aimed shots spread by it, less the owner's steadiness
-0x2df0     4          float hitRange                            # HIT RANGE (ARM CENTER, message 310): a round's hit box half-size, also its impact particle's size
-0x2df4     4          float splashRadius                        # SPLASH DAMAGE RANGE (message 311): a world hit's damage reaches this far, falling to half at the border (weapons.c)
-0x2dfc     4          i32 shotMode                              # 3: fired into a random cone; its muzzle flash is particle kind shotMode + 10
+0x2dec     4          float spread                              # DISPERSION ANGLE (ARM CENTER, message 309; tenths of a degree, shown x0.1): bullet_init spreads aimed shots by (this - the owner's accuracy x 10) x K(0x4aa448) (none below 0)
+0x2df0     4          float hitRange                            # HIT RANGE (ARM CENTER, message 310; shown x0.01 m): added to an actor's radius for a round's hit test (fly_local: math_segmentSphere), a beam's half-width (shotMode 7), the size of its flash, flight, impact and mark particles
+0x2df4     4          float splashRadius                        # SPLASH DAMAGE RANGE (ARM CENTER, message 311; shown x0.01 m): once the round hits anything (struck: also set by hit_actor), the local machine's other live actors within this of its point take damage x (1 - d / this / 2) and the push likewise (splash, weapons.c); a bot holding it swaps weapons rather than fire at a target closer than this (actor_processFrame)
+0x2dfc     4          i32 shotMode                              # the round's kind: particle kinds this + 10 (muzzle flash), + 0x14 (in flight; 3 a trail, 7 a beam instead), + 0x1e (impact), + 0x28 (surface mark), passed to actor_takeDamage; 3 also: fired into a random cone 8.1 degrees off the aim, and homing with speed and turn rate by age (home)
 0x2e00     4          i32 sound                                 # its firing sound (< 0 none)
 0x2e08     4          float cycleTime                           # seconds a firing cycle
-0x2e0c     4          float guidance                            # GUIDANCE (ARM CENTER, message 314; degrees): > 0 a guided round, turning toward its target / the local player's aim point
+0x2e0c     4          float guidance                            # GUIDANCE (ARM CENTER, message 314; tenths of a degree, shown x0.1): > 0 a guided round: every 1/15 s home() turns it by at most this toward its target / the local player's aim point (shotMode 3: this / (age + 1)^3)
 0          0x40       char name[0x40]                           # the folder under Actor/
-0x2e10     4          float targetingTime                       # TARGETING TIME (ARM CENTER, message 315; seconds): lockOnTime x this against the target's lockedOn; > 0 a lock-on weapon (the alert ring)
+0x2e10     4          float targetingTime                       # TARGETING TIME (ARM CENTER, message 315; seconds, shown x1000 ms): the lock on an enemy is made once its aimTime passes the local player's lockOnTime x this (actor_processFrame); > 0: a lock-on weapon (aimTime counted, camera_setupView; the HUD ring)
 
 
 struct BlockOwner 0x10                                          # the head Model, Manager, SkelManager and ObjectList share: their data block (take_block)
@@ -85,7 +85,7 @@ struct Model 0x4c                                               # a shape (skel_
 struct ShapePart 0x80                                           # a shape's part (Model.parts): one material's vertices and primitives
 0          4          u32 flags                                  # 1 transparent (drawn a triangle at a time, depth-sorted; its collision triangles get 0x10: no marks), 2 unlit (its own colours), 4 not culled, 8 front faces culled, 0x10 no depth test, 0x20 not in the collision space (space_buildUnits)
 4          0x40       char texName[0x40]                         # its texture's name ("Shape\alien\add01"; tex_getIdByName; shape_bindTextureBy appends "*<dir>"; the OBJ loader writes the material's last "_" piece)
-0x44       4          i32 texture                                # its texture's id (-1 / 0 none)
+0x44       4          i32 texture                               # its texture's id (bank x 512 + index: tex_getIdByName via shape_bindTextureBy); -1 none (shape_read, the OBJ loader's usemtl parts); 0 is a real id (bank 0's first)
 0x48       4          i32 colourBase                             # its first vertex in the shape's colour buffer
 0x4c       4          i32 vertexCount
 0x50       4          u8 *vertices                               # 12 bytes each
@@ -103,7 +103,7 @@ struct ShapePrim 0xc                                            # a part's primi
 
 struct ListedObject 0x64                                        # an object list's entry (ObjectList.entries)
 0          4          Model *shape                              # none: an empty entry
-8          4          u32 *colours                              # its shading colours (Model.colourCount dwords)
+8          4          u32 *colours                              # its shading colours (Model.colourCount dwords in the list's block): a pre-lit list's only (ObjectList_load; 0 otherwise or without a shape)
 4          4          float scale                               # its bone's translation scale: the float after its name in the type's name record (ObjectList_load); skel_poseBones multiplies the bone's position by it
 0xc        0x40       float matrix[16]                          # where it is placed
 0x4c       0xc        float pos[3]                              # its bone's origin placed: (0, 0, 0) through matrix, the matrix's translation (skel_poseBones); without a shape, centre is copied from it
@@ -117,10 +117,10 @@ struct ObjectList 0x30                                          # shapes placed 
 0x10       4          i32 count
 0x14       4          ListedObject *entries
 0x18       4          i32 colourCount                            # the entries' shapes' colours summed
-0x1c       4          i32 frameCount                            # 0: nothing to draw (ObjectList_load: the skeletons named, one a frame)
-0x20       4          i32 *frames                               # frames[frame] == 0: nothing to draw
-0x24       4          i32 frame
-0x28       4          i32 animTick                              # the animation's tick (anim_setFrame: the skeleton's frames x a 0 .. 1 fraction; skel_poseBones' frame: this % (frames + 1))
+0x1c       4          i32 skelCount                             # its skeletons (animations; ObjectList_load's nk, by name from the skeleton cache); 0: not posed (skel_poseBones) nor drawn (partList_queue)
+0x20       4          struct Skeleton **skeletons                      # skelCount Skeleton pointers (in the block after the entries' colours); skeletons[skel] == 0: nothing posed or drawn
+0x24       4          i32 skel                                  # the skeleton (animation) in use: index into skeletons (anim_setSkeleton; actor_processFrame always picks 0)
+0x28       4          i32 animTick                              # the animation's tick (anim_setSkeleton: the skeleton's frames x a 0 .. 1 fraction; skel_poseBones' frame: this % (frames + 1))
 0x2c       4          i32 preLit                                # 1: lit here, drawn with its own colours
 
 struct Player 0x8888                                            # a player's record (Scene.players)
@@ -205,7 +205,7 @@ struct Player 0x8888                                            # a player's rec
 0x44       4          float boostTime                            # (by use; seen running) seconds of running the energy lasts
 0x48       4          float rechargeTime                         # seconds the energy takes to refill
 0x4c       4          float restTime                             # seconds of rest after running
-0x54       0x10       float runTop[4]                            # (by use; seen running) the top speeds running: forward, back, right, left
+0x54       0x10       float runTop[4]                            # (by use; seen running) the top speeds running: forward, back, step left, step right (the left-step key, A, drives nextStrafe toward [2]: key_axis)
 # the motion state: this frame's (pos .. fireAnim, from the next one each frame: actor_frame.c), the next one
 # (nextPos .. fireCycle: the keys', or moved towards the sent one), the sent one (netPos .. netMotion)
 0x168      4          float forward                              # (by use; seen running) forward speed (-1 .. 1, more running)
@@ -231,7 +231,7 @@ struct Player 0x8888                                            # a player's rec
 0x1ec      4          i32 firing                                 # (by use; seen running) 1: firing this frame
 0x378      0xc        float velocity[3]                          # (by use; seen running) moves towards the keys' (moveAccel)
 0x384      0xc        float move[3]                              # (by use; seen running) this frame's move (nextPos - pos)
-0x390      0x18       float pose[6]                             # (by use; seen running) the body's pose: [0] and [1] turn the booster (swing and tilt), [2] turns the legs; [3] .. [5] the arms', legs' and booster's animation frames (anim_setFrame); nothing turns the head
+0x390      0x18       float pose[6]                             # (by use; seen running) the body's pose: [0] and [1] turn the booster (swing and tilt), [2] turns the legs; [3] .. [5] the arms', legs' and booster's animation frames (anim_setSkeleton); nothing turns the head
 0x3e8      4          float radius                               # (by use; seen running) its sphere against the others and the walls
 0x4a8      4          float footstepTime                         # (by use; seen running) a footstep every third of a second
 0x4e0      0xc        float deathPos[3]                          # (by use; seen running) where it died (its position while not in play)
@@ -265,7 +265,7 @@ struct Player 0x8888                                            # a player's rec
 0x490      4          float weaponRaise                         # the weapon's raise, 0 .. 1 (1: up, firing allowed: actor_processFrame needs >= 1); weaponLowering takes it down (3 a second), then it comes back up with the new slot's weapon (3 a second; 2.25 for item 3, 1.95 for item 11); the grip is set 600 x (1 - this) off (hold); 1 when set up
 0x881c     4          i32 followTarget                           # (by use; seen running) the actor a bot follows (-1 none)
 0x8820     4          i32 botTarget                              # (by use; seen running) the actor a bot attacks (-1 none)
-0          4          float radiusSq                            # (by use; seen running) the spawn record's radius squared, x 10000
+0          4          float detectionRangeSq                    # (by use; seen running) the detection range squared (mech_stats: the head's detectionRange x the pilot's factor + rangeBonus; a spawn record's range replaces it)
 0x1c       4          i32 armorMax                              # (by use; seen running) its full armour: it starts with it (actor_startingValues); armour pickups fill to it (EXTENDED: to it + 100)
 0x20       4          i32 shieldMax                             # its full shield: set from the spawn record or chest maxShield x the pilot's factor x shieldFactor (mech_stats; 10 / 150 in the fixed-energy game types); it starts with it, regains up to it (shieldRegen), shield pickups fill to it (EXTENDED: to it + 100); checked in actor_checkDataLoss
 0x28       0x10       i32 ammoMax[4]                            # (by use; seen running) per ammunition kind (ActorItem.ammoType): the full load (ammo starts at half)
@@ -345,9 +345,9 @@ struct Factor 0x2c                                              # a light (Light
 4          4          i32 used                                   # 1: in use
 8          4          i32 kind                                   # 0 ambient, 1 directional, 2 a point light fading out over its radius, 3 a point light falling off with the distance squared
 0xc        4          u32 colour                                 # packed RGBA
-0x10       0xc        u32 pos[3]                                 # a point light's position (floats' bits)
-0x1c       0xc        u32 dir[3]                                 # a directional light's direction (floats' bits)
-0x28       4          u32 radius                                 # a point light's radius (a float's bits)
+0x10       0xc        float pos[3]                              # a point light's position (kinds 2, 3)
+0x1c       0xc        float dir[3]                              # a directional light's direction (kind 1)
+0x28       4          float radius                              # a point light's reach (kinds 2, 3)
 
 struct LightFactors 0xb010                                      # the light factors shape_shadeParts takes: vtable, 0x400 records, two counts, enabled (0xb010 bytes: the
                                                                  # size armc_drawPreview3D gives its stack copy, and the distance from Stage.dynamicLights to actorLights)
@@ -358,7 +358,7 @@ struct LightFactors 0xb010                                      # the light fact
 
 struct MapObject 0x2cc                                          # a map object (Scene.objects): animated scenery
 0x10       4          i32 trigger                               # x 100 (mapObject_frame): a proximity object's (flag 8) radius, a timed one's (flag 0x10) wait in seconds; 0 in every shipped map
-0x14       4          i32 animSpeed                              # its animation's speed (x k: object_setAnimation)
+0x14       4          i32 animPeriod                            # its animation's period in ms (anim_start passes it x 0.001 (forwards) or x -0.001 (backwards) as object_setAnimation's period: animRate = 1 / period)
 0x298      4          float animTime                            # the animation's time, 0 .. 1 (mapObject_frame; skel_applyPose's t)
 0x2a4      4          i32 poseStale                             # 1: its matrices to be taken from the pose again (mapObject_frame sets, uses and clears it)
 0x2a8      4          float glow                                # a light's glow, 0 .. 1 (object_glow: up 4 a second while seen, down otherwise; the flare's alpha)
@@ -371,21 +371,21 @@ struct MapObject 0x2cc                                          # a map object (
 0x64       0x10       float rotation[4]                          # a quaternion
 0x74       0x40       float placeMatrix[16]                      # translation x rotation
 0xb4       0x40       float placeInverse[16]
-0x134      0x40       float matrixInverse[16]                    # (matrix: a copy of placeMatrix)
+0x134      0x40       float matrixInverse[16]                   # the inverse of matrix (world into the shape's own space): the shading (shape_shadeParts), the bounds tests of collision_moveActor / collision_rayTrace
 0x174      0x40       float animMatrix[16]                         # (by use; seen running) its skeleton's pose (bone 0, skel_applyPose; an identity without one)
-0x1b4      0x40       float animInverse[16]
+0x1b4      0x40       float animInverse[16]                     # the inverse of animMatrix (identity at setup; mapObject_frame); written, never read
 0x1f4      0x40       float relMatrix[16]                        # matrix x placeInverse
 0x234      0x40       float relInverse[16]
 0x274      4          u32 glowSize                              # a float's bits: the glow flare's half-size (particle kind 4; objects with flag 1 while 3D items are on)
 0x278      4          u32 glowColour                            # the glow flare's colour (RGB; its alpha from the glow)
 4          4          i32 active                                # 1: in use
-0xc        1          u8 flags                                  # bit 1 (2): not drawn
+0xc        4          i32 flags                                 # ObjectType.flags: 1 a light (its glow and flare: object_glow, mapObject_frame), 2 not drawn and not re-shaded (stage_drawObject, mapObject_frame), 4 no collision unit (collision_initVolume), 8 animated on approach (trigger), 0x10 animated after a wait (trigger)
 0xf4       0x40       float matrix[16]                          # where it is drawn
 0x27c      4          Model *model
 0x280      8          u32 colours[2]                             # (by use; seen running) two runs of its shading colours (from Stage.objectColours; object_initObjectBy)
-0x288      4          i32 colourSide                             # which run is drawn (0: the first)
+0x288      4          i32 colourSide                            # 1 (always: object_initObjectBy, nothing else writes it): each frame colours[1] is colours[0] re-shaded with the dynamic lights (mapObject_frame) and drawn (stage_drawObject); 0 would draw colours[0] unchanged
 0x28c      4          void *unit                                # its collision unit (none: 0)
-0x290      4          i32 animated                              # 1: its skeleton plays
+0x290      4          i32 animated                              # 1: its animation was started (object_setAnimation) and not yet reset (anim_reset): its collision unit is out of the static space (space_disableUnit) and is traced through relMatrix / relInverse instead (collision_moveActor, collision_rayTrace); stays 1 when held at its end (mode 1) or stopped by a mode-0 call
 0x294      4          void *skeleton
 0x29c      4          float animRate                            # 1 / the period (0: stopped)
 0x2a0      4          i32 animMode
@@ -393,9 +393,9 @@ struct MapObject 0x2cc                                          # a map object (
 
 struct ObjectType 0xb0                                          # a map object as the map's object file gives it (map_loadObjectInfoFrom; object_initObjectBy)
 0          0x40       char name[0x40]                            # its shape (Stage.objectNames)
-0x40       4          i32 flags                                  # MapObject.flags, trigger, animSpeed
+0x40       4          i32 flags                                  # MapObject.flags, trigger, animPeriod
 0x44       4          i32 trigger
-0x48       4          i32 animSpeed
+0x48       4          i32 animPeriod                            # MapObject.animPeriod: the animation's period in ms
 0x4c       0x40       char animName[0x40]                        # its animation (empty: none)
 0x8c       0xc        float place[3]
 0x98       0x10       float rotation[4]                          # a quaternion
@@ -418,55 +418,55 @@ struct MapItem 0x28                                             # an item lying 
 0xc        0xc        float pos[3]
 0x1c       4          float angle                               # its turn, tenths of a degree
 0x20       4          i32 taken                                 # 1: taken (not drawn)
-0x24       4          float fade                                # below 1: drawn faded (alpha 255 * fade)
+0x24       4          float timer                               # seconds since it was placed, taken or came back (item_update adds dt every frame): a taken one comes back past its type's respawnTime; under 1 (or NaN) it is drawn fading in, alpha 255 x timer (stage_drawItems); a taken one's is sent as timer / 10 + 1, at most 15 (net_sendItemStates), and received as n x 10
 
 struct Particle 0x12c                                         # a particle or effect (Stage.particles: particle_init / particle_update): flashes, sparks, beams, trails, explosions...
-0          4          i32 id                                    # a serial (Stage +0x20f2da8)
-8          4          i32 kind                                  # what it is: 2 / 3 explosions, 9 sparks, 25 / 26 beams, 40 .. 49 trails, 50 a scripted effect ...
-0xc        4          i32 owner                                 # the actor (or player) it belongs to
+0          4          i32 id                                    # a serial (Stage.particleSerial, particle_init); kind 0 picks its frame by id % 8 (particle_draw)
+8          4          i32 kind                                  # what it is: 0 a small puff, 2 / 3 explosions (3: an actor's death), 4 a light's glow flare, 5 .. 7 thrust puffs (booster thrustType + 5), 8 a hit flash, 9 debris (a dead actor's part shapes, falling), 10 .. 18 muzzle flashes (shotMode + 10), 20 .. 26 shots in flight (shotMode + 0x14; 25 / 26 beams), 30 .. 39 impacts (shotMode + 0x1e), 40 .. 49 hit marks on surfaces (shotMode + 0x28: weapons.c decal), 50 a textured quad (a beam weapon's side: weapons.c beam)
+0xc        4          i32 owner                                 # by kind: the actor it belongs to (muzzle flashes; glows halve for the cockpit actor's), 1 for a shot drawn from the cockpit actor's own first 0.03 s (kinds 20 .. 26: 22 / 25 / 26 then not drawn, nor particle_beam's dots), the hit actor's 0x2000 flag (kind 8: texture 4), the dead actor's player record (kind 9 debris), the flare's alpha 0 .. 255 (kind 4), a random 0 .. 7 (puffs 5 .. 7, unused)
 0x10       0xc        float pos[3]
-0x1c       0xc        float target[3]                           # by kind: the point it aims at (20 / 21 / 24 aimed from pos; 25 / 26 beams from it back); a falling spark's velocity (9); smoke puffs' scale [0] and alpha factor [1] (5 .. 7); a glow flare's half-size [0] and colour bits [1] (4)
+0x1c       0xc        float target[3]                           # by kind: the point it aims at (20 / 21 / 24 aimed from pos; 25 / 26 beams from it back); a piece of debris' velocity (9); smoke puffs' scale [0] and alpha factor [1] (5 .. 7); a glow flare's half-size [0] and colour bits [1] (4)
 0x28       4          u32 matrixFrom                            # a matrix it is placed by, as a pointer (0: none): a muzzle entry's (flashes), an emitter joint's (puffs) or a hit map object's (trail decals); copied into matrix at its start (particle_spin), and a trail (40 .. 49) is drawn through it every frame
 0x2c       0x40       float matrix[16]
 0x6c       4          float drawAge                             # its age as drawn this frame (age before the frame's step)
 0x70       4          float life                                # seconds it lives (it is freed past it)
 0x74       4          float age
 0x78       4          u32 colour                                # (its byte 0x7b: the alpha, set as it fades)
-0x7c       4          float size                                # shrinks with age for puffs and flashes
+0x7c       4          float lightRadius                         # the radius of the white point light it casts at pos (stage_refillLights, when above 0): 0 at its start, then (1 - age / life)^2 x 3000 (kind 2), 5000 (3), 2000 (25, 26), 1000 (30, 31), 1500 (32 .. 34, 37, 38), 5000 (35), 3000 (36) (particle_update); 0 for other kinds
 0x80       4          float baseSize                            # the descriptor's size
-0x84       0x24       union { float fade; float trailPoints[3][3]; }   # fade: (kind 9, a falling spark) the wait to its next puff (0.1 s);
-                                                                 # trailPoints: (trails, kinds 40 .. 49) their triangle's three points
-0xb4       0x18       float trailUv[6]                           # (trails) the three points' texture coordinates (u, v)
-0xd4       0xc        u32 trailColours[3]                       # the trail's three points' colours (white; their alpha fades with drawAge)
+0x84       0x24       union { float fade; float markPoints[3][3]; }   # fade: (kind 9, debris) the wait to its next puff (0.1 s);
+                                                                 # markPoints: (hit marks, kinds 40 .. 49) their triangle's three points
+0xb4       0x18       float markUv[6]                           # (kinds 40 .. 49, a hit mark) the hit triangle's three corners' texture coordinates (u, v), the mark's texture centred (0.5, 0.5) on the impact: corner offsets (ParticleDesc.markCoords, weapons.c decal's uv) x 0.005 + 0.5, or (offset / (baseSize + 200 / 400) + 1) / 2
+0xd4       0xc        u32 markColours[3]                        # (kinds 40 .. 49, a hit mark) its three corners' colours: white (g_white), their alpha fading over its second second (particle_draw: (2 - drawAge) x 256 once drawAge > 1)
 0xe4       4          i32 quadTexture                           # kind 50, a quad: its texture (ViewVolume_addQuad's), two texture corners, colour, points (ParticleDesc.quad)
-0xe8       8          u32 quadUv0[2]
-0xf0       8          u32 quadUv1[2]
+0xe8       8          float quadUv0[2]                            # (kind 50) a texture corner (u, v)
+0xf0       8          float quadUv1[2]                            # (kind 50) the other texture corner (u, v)
 0xf8       4          u32 quadColour
 0xfc       0x30       float quadPoints[4][3]
 4          4          i32 active                                # 1: in use
 
 struct Bullet 0x4e8                                             # a bullet in flight (Stage.bullets: bullet_init, bullet_update)
 0xc0       4          float homeTimer                            # (by use; seen running) a homing bullet turns again every 1/15 s
-0xd0       4          i32 hitWorld                               # 1: it hit the world (splash damage then; weapons.c)
+0xd0       4          i32 struck                                # 1: it hit something, an actor (hit_actor) or a surface (hit_surface): splash damage then (splash); 0 from bullet_init
 0xd4       0x3c0      float trail[20][4][3]                        # (by use; seen running) a trail's ring of cross-sections (4 points each: weapons.c trail)
-0x494      0x50       float trailAge[20]                         # each one's age when made
+0x494      0x50       float trailAge[20]                        # (kind 3 trails) each cross-section's bullet age when made (trail); bullet_drawTrail ends the trail at the first one more than 1 s old. A beam (kind 7) leaves its length in [0] (beam), never read
 0x4e4      4          i32 trailCount                             # the cross-sections made (the ring's next: % 20)
-0          4          i32 id                                    # its id (the next serial, or the network's)
+0          4          i32 id                                    # the next serial (Stage.bulletSerial: both bullet_spawn calls pass id -1); a beam picks its texture quarter by id % 4
 4          4          i32 active                                # 1: in use
 8          4          i32 weapon                                # its weapon's record (index into Scene.actorItems)
 0xc        4          i32 owner                                 # the actor that fired it
 0x10       4          u32 muzzle                                # the muzzle entry's matrix (FiredRound.muzzle; bullet_init passes it as its muzzle flash's ParticleDesc.matrixFrom)
 0x54       0xc        float from[3]                             # where it was fired from
-0x60       0xc        float end[3]                              # where its first step ends (or the target's point)
-0x6c       4          i32 hit                                   # what the first step's trace hit (a target: its record)
+0x60       0xc        float impact[3]                           # where it ends, its impact point: the first step's end or hit (bullet_init; a network round: its target point), an actor's hit point (fly_local), a guided round's world hit (fly_local), or the network's point (actor_processFrame); its impact, mark and sound are made there (hit_actor, hit_surface)
+0x6c       4          struct CollisionPlane *hit                       # the surface (a CollisionPlane in Space.planes) where it ends: the first step's trace (bullet_init), each step's for a guided round (fly_local), the network's (actor_processFrame, bullet_init for a received round); 0: none, also when it hits an actor. hit_surface makes its impact and mark
 0x70       4          float age                                 # seconds in flight
-0x74       4          float life                                # seconds it flies (0 .. 10)
+0x74       4          float life                                # the age at which it ends (s): the first step's length (or the distance to its hit) over the weapon's speed, kept to 0 .. 10 (bullet_init; a network round: 10); cut to its age when it hits an actor, to the world hit for a guided round (fly_local), or to age - dt by the network (actor_processFrame)
 0x78       0xc        float prev[3]                             # its point before this frame's move
 0x84       0xc        float pos[3]                              # its point
 0x90       0xc        float netPoint[3]                         # the point the network sent (another player's bullet)
-0x9c       4          i32 moved                                 # 1: it moved this frame (drawn)
+0x9c       4          i32 moved                                 # 1: drawn this frame (draw_shot): a local round after its step (fly_local); another player's when the network sent a new point (netPoint, actor_processFrame), which it then moves to (otherwise it steps on by step undrawn); cleared after each frame
 0xa0       0xc        float vel[3]
-0xac       0xc        float step[3]                             # this frame's direction of move
+0xac       0xc        float step[3]                             # this frame's move: a local round's dt x vel (a weapon of no speed: vel itself; fly_local); another player's the unit direction to the network's point (bullet_update), added again on frames with no new point
 0xb8       4          i32 hitActor                              # an actor it hit (-1 none), which takes it first
 0xbc       4          i32 homingTarget                          # the actor a guided round homes on (bullet_init's fourth argument; < 0 none: the local player's own round follows the aim point)
 0xc4       0xc        float homingPoint[3]                      # the point a guided round homes on without a target actor (the local player's own: 200000 along the aim)
@@ -480,10 +480,10 @@ struct SpacePool 0x10                                           # one of the col
 struct SpaceNode 0x10                                            # a node of the collision space's lists (its pool: Space.nodes): a block's items
                                                                  # (SpaceBlock.items) and a unit's planes (SpaceUnit.lastNode); a list runs from its
                                                                  # head, the newest, through next
-0          4          u8 *item                                   # what it holds (a unit's: its planes; their first byte flags, 1: skipped)
-4          4          u8 *block                                  # (a block's items) the block
-8          4          struct SpaceNode *newer                    # the one put in after it (also the free list's link)
-0xc        4          struct SpaceNode *next                     # the one put in before it
+0          4          u8 *item                                  # the CollisionPlane it holds (a block's item or one of a unit's planes); the plane's first byte bit 1 (space_disableUnit): left out of the static space's tests (space_collideBlock / space_traceBlock skip it only outside the moving units' lists)
+4          4          u8 *block                                 # (a block's items) the block; written (space_insertItem), never read
+8          4          struct SpaceNode *newer                   # the one put in after it (the list's back link; in the pool's free list the one before it, 0 at the head); written, never read
+0xc        4          struct SpaceNode *next                    # the one put in before it (the lists run from the newest through it); in the pool's free list the next free one
 
 struct SpaceBlock 0x50                                          # a block of the collision space (Space.blocks): an octree node over a box
 0          0xc        float low[3]
@@ -495,7 +495,7 @@ struct SpaceBlock 0x50                                          # a block of the
 0x48       4          u8 *poolPrev                               # its links in the blocks' pool
 0x4c       4          u8 *poolNext
 
-struct Space 0x9c                                               # the collision space (space_pools.c; the size is unknown: only the fields used)
+struct Space 0xf4                                               # the collision space (space_pools.c; 0xf4 bytes: CollisionVolume_clear zeroes 0x3d dwords, Stage.spaceData follows it; only the fields used)
 4          4          i32 blockSize                              # its pools' memory (space_initBy: allocated when none is given)
 8          4          u8 *block
 0xc        4          i32 ownsBlock                              # 1: allocated here
@@ -508,10 +508,10 @@ struct Space 0x9c                                               # the collision 
 0x58       4          i32 cellCount                             # nx * ny * nz; written, never read
 0x5c       0xc        float min[3]                              # its bounds
 0x68       0xc        float max[3]
-0x74       4          i32 nx                                    # the grid's cells per axis
-0x78       4          i32 ny
-0x7c       4          i32 nz
-0x80       0xc        float cellSize[3]                         # a cell's size: (z, x, y) extents over nx, ny, nz, as the original pairs them
+0x74       4          i32 cellsZ                                # the grid's cells along z (pos[2]): collision_initVolume's (levelHigh[2] - levelLow[2]) / size_z, space_setBy's first count
+0x78       4          i32 cellsX                                # the grid's cells along x (pos[0])
+0x7c       4          i32 cellsY                                # the grid's cells along y (pos[1])
+0x80       0xc        float cellSize[3]                         # a cell's size, stored (z, x, y): cellSize[0] = (max[2] - min[2]) / cellsZ, [1] = x extent / cellsX, [2] = y extent / cellsY
 0x8c       4          u32 margin                                # a float (500.0, loading.c): how far the space's box, the grid cells and the blocks' boxes are widened for a triangle put in (space_insertTriangle, space_insertItem) and a point looked up (space_collideAt); also Scene.spaceMargin, the free camera's step cap
 0x90       4          i32 splitCount                            # items a block holds before it splits (space_setBy; 16, loading.c; space_insertItem)
 0x94       4          i32 depth                                 # the blocks' recursion depth (at most 8)
@@ -519,25 +519,25 @@ struct Space 0x9c                                               # the collision 
 
 struct PartInfo 0x80                                            # an ARM CENTER part-info record (g_partRecords, g_viewedPart: armc_parts.c part_info)
 0          0x40       char name[0x40]                            # the item's folder path after its last slash
-0x40       4          i32 slotType                               # -1: an empty record; the rest copied from ActorItem, some scaled for showing
-0x44       4          i32 ammoType                               # its ammunition kind (message 323 + this: "30mm" ..)
-0x48       4          i32 ammoPerShot                            # "cell"
+0x40       4          i32 slotType                              # SLOT TYPE (ActorItem.slotType): message 321 + this, 0 HAND, 1 SHOULDER; -1: an empty record (EMPTY SLOT, part_info with idx -1)
+0x44       4          i32 ammoType                              # BULLET TYPE (ActorItem.ammoType): message 323 + this: 0 30mm, 1 60mm, 2 E-PAK, 3 ROCKET; -1: a special weapon (SPECIAL WEAPON, message 771). The viewed record's is g_viewedPartKind
+0x48       4          i32 ammoPerShot                           # BULLET CONSUMPTION (ActorItem.ammoPerShot, "cell"); in the viewed record of a special weapon (ammoType -1) armc_viewedPartRecord overwrites it with the actorItems index (g_viewedPartIndex, the same memory), shown as message 745 + it ("GRAVITY CONTROLLER" ..)
 0x4c       4          i32 burst                                  # "Round"
 0x50       4          i32 damageType                             # message 327 + this: "IMPACT" ..
 0x54       4          i32 damage
-0x58       4          float range                                # stepLength x 0.01: "m"
+0x58       4          float range                                # range x 0.01: "m"
 0x5c       4          float speed                                # velocity x 0.01: "m/s"
-0x60       4          float spread                               # in degrees
+0x60       4          float spread                              # ActorItem.spread x 0.1 (k_tenthsToDegrees): shown "%.1f" with message 752 "'" (DISPERSION ANGLE)
 0x64       4          float hitRange                            # x 0.01: "m" (HIT RANGE)
 0x68       4          float splashRadius                         # x 0.01: "m"
 0x6c       4          i32 splashBorderDamage                    # (SPLASH BORDER DAMAGE)
 0x70       4          float cycleTime                            # x 1000: "ms"
-0x74       4          float guidance                            # in degrees (GUIDANCE)
+0x74       4          float guidance                            # ActorItem.guidance x 0.1 (k_tenthsToDegrees): shown "%.1f" with message 752 "'" (GUIDANCE)
 0x78       4          float targetingTime                       # x 1000: "ms" (TARGETING TIME)
 0x7c       4          float weight
 
 struct Mission 0xfc                                              # one of the 30 missions of axis.mis (g_missions: mission_loadAxisMis; screen 900's list, which nothing in the menus opens)
-0          4          i32 id                                     # (the file's first word)
+0          4          i32 unused0                               # an entry's first word in axis.mis (mission_loadAxisMis), 0 when the list is cleared; nothing reads it
 4          0x40       char name[64]                              # the list's first column
 0x44       0x20       char title[32]                             # its second
 0x64       0x80       char briefing[128]                         # (shown under the list for the one picked)
@@ -550,7 +550,7 @@ struct Mission 0xfc                                              # one of the 30
 struct NetPacketMessage 0x40c                                    # a DirectPlay message carrying slot data (kinds 6 and 7: net_handleMessage; the match's
                                                                  # packets are kind 7, g_netSendPacket)
 0          4          u32 kind
-4          1          u8 slot                                    # the sender's slot
+4          1          u8 slot                                   # kind 7: the sender's slot (net_sendPacketData: g_watchedSlot); kind 6 (g_netSlotMsg, 8 bytes): the slot the host gives the receiver (g_netClaimedSlot), taken as the local one
 5          4          i32 size                                   # (0x40)
 9          0x403      u8 data[0x403]                             # the packet: its first byte the number (net_packets.c)
 
@@ -558,7 +558,7 @@ struct NetSlot 0x410                                             # one of the si
 0          4          i32 used
 4          4          u32 id                                     # its DirectPlay player id
 8          4          i32 waiting                                # a packet is waiting in packet
-0xc        4          u32 size                                   # (0x40)
+0xc        4          u32 size                                  # the packet's size (0x40: net_handleMessage stores only that); written, never read (netq_receive uses 0x40)
 0x10       0x400      u8 packet[0x400]                           # the packet received (64 bytes: its first byte the number, bit 7 a resend request
                                                                  # for the player in the second)
 
@@ -573,14 +573,14 @@ struct DPSessionDesc2 0x50                                       # DirectPlay's 
 0x34       4          const char *password                       # lpszPasswordA
 0x38       4          u32 reserved1
 0x3c       4          u32 reserved2
-0x40       4          u32 user1                                  # the game's: map (byte 0), rotation (byte 1)
+0x40       4          u32 user1                                 # the game's: map (byte 0), rotation (byte 1) as the arena hosts set it (arena_connectionOutcome, host_arena); room_hostingStep (the Ladder game room) puts the game mode here instead (the original's)
 0x44       4          u32 user2                                  # the game mode
 0x48       4          u32 user3                                  # the time limit (byte 0), frag limit (byte 1)
 0x4c       4          u32 user4                                  # (TCP) the host's address
 
 struct ServerRecord 0x5b                                         # an arena as the lobby server lists it (g_serverList, 256; g_arenaPacket: the hosted arena's own,
                                                                  # sent when it is set up; g_arenaInfoPacket / g_lobbyLeavePacket: its updates)
-0          1          u8 kind                                    # the message (0x18: set up; the player count's, the leave's)
+0          1          u8 kind                                   # the record's first byte as the game sends it: 0x18 in the set-up packet (lobby_announceArena), g_arenaPacket's (0x18) in the info packet (arena_info), 1 in the leave packet (send_leave); copied into g_serverList (net_addServerRecord), never read
 1          0x32       char name[0x32]
 0x33       0x10       char address[16]                           # the host's address as text
 0x43       1          signed char map
@@ -595,7 +595,7 @@ struct ServerRecord 0x5b                                         # an arena as t
 
 struct RoomRecord 0x79                                           # a game room as the game server lists it (g_roomList, 256; g_roomPacket: the room's own,
                                                                  # g_roomInfoPacket / g_roomLeavePacket its updates): a ServerRecord with the host's name
-0          1          u8 kind
+0          1          u8 kind                                   # the record's first byte as the game sends it: 0x18 in the set-up packet (room_announceGame); in the info packet (room_info) 1 when a player joined, else g_roomPacket's; 1 in the leave packet (send_leave); copied into g_roomList, never read
 1          0x32       char name[0x32]
 0x33       0x10       char address[16]
 0x43       0x1e       char hostName[30]                          # the player who made it (g_ladderId)
@@ -646,7 +646,7 @@ struct SessionEntry 0x4a                                         # a game of the
 
 struct FileEntry 0x44                                            # a file of the replay selection / replay list (g_replayList, 1024)
 0          0x40       char name[0x40]
-0x40       4          i32 flag                                   # 1: picked (in the map rotation / the replays shown)
+0x40       4          i32 picked                                # 1: picked (a replay chosen in the replay selection: replaySelect_toggle / allIn / allOut; scene_startSession plays the picked ones)
 
 struct MapChoice 8                                               # a map of the arena's map list (g_mapChoiceTable, g_mapChoiceKeptTable: 1024)
 0          4          i32 chosen                                 # in the rotation
@@ -657,9 +657,9 @@ struct AccountPacket 0x10b                                       # the game serv
 4          0x1e       char name[30]
 0x22       0xc        char password[12]
 0x2e       0x32       char email[0x32]
-0x60       0x10       char address[16]                           # this machine's (net_tables: request 26)
+0x60       0x10       char address[16]                          # this machine's (g_localAddress, written by net_tables' request 14 / 15 handler just before the record is sent: the login and the new ID)
 0x70       0xb        u8 mech[11]                                # the default mech settings (lobby_states default_mech)
-0x7b       0x90       u8 colours[6][0x18]                        # six colour pairs (hue, saturation, value twice)
+0x7b       0x90       float colours[6][6]                        # six colour pairs, each (hue, saturation, value) twice (default_mech: 0, 1, 0.6)
 
 struct AccountForm 0x5c                                          # the account form's fields as sent (g_netAccountBuffer: message 0x1c)
 0          0x1e       char name[30]
@@ -670,7 +670,7 @@ struct GameSettings 0x30                                         # a game's sett
                                                                  # registry's, g_roomSettingsName: the room form's, g_newArenaName: the new arena form's)
 0          0x20       char name[32]
 0x20       1          signed char map
-0x21       1          signed char players
+0x21       1          signed char maxPlayers                    # the most players (the form's NO OF PLAYER row, MSG(400); 0 .. 16, else 8 from axis.cfg)
 0x22       1          signed char rotation                       # 1: map rotation on (the map list's maps in turn: the preview shows CUSTOM; the form's MAP ROTATION row)
 0x23       1          signed char mode
 0x24       2          u8 limit[2]                                # frag, time
@@ -680,8 +680,8 @@ struct GameSettings 0x30                                         # a game's sett
 struct RankedPlayer 0x3e                                         # a player of the ranking list as the game server sends it (62 bytes: g_serverReply;
                                                                  # kept in g_netPlayerList, eleven of them, by net_addPlayerRecord)
 0          0x1e       char name[30]
-0x1e       4          i32 kind                                   # the reply's kind: 0 a player (added), 1 refused
-0x22       4          i32 games                                 # Ladder games played (the account's; DServer keeps it as 'a'); not shown, copied to RankRow.games
+0x1e       4          i32 kind                                  # the reply's kind (g_serverReplyKind): 0 a player (net_addPlayerRecord adds it), 1 the list's end (g_playerListDone set, g_netLastRequest cleared)
+0x22       4          i32 games                                 # Ladder rounds played (the account's g_ladderGames, see PlayerRecordPacket.games; DServer keeps it as 'a'); not shown, copied to RankRow.games
 0x26       4          i32 kills                                  # the columns of the ranking table (RankRow)
 0x2a       4          i32 deaths
 0x2e       4          i32 exp
@@ -693,7 +693,7 @@ struct RankRow 0x44                                              # a row of the 
 4          4          i32 rank                                   # its place (the row before's when its sorted value is the same)
 8          0x1e       char name[30]                              # (empty: past the list's end)
 0x26       4          i32 exp                                    # (sort 2)
-0x2a       4          i32 games                                 # RankedPlayer.games (not shown); written, never read
+0x2a       4          i32 games                                 # RankedPlayer.games (Ladder rounds played; not shown); written, never read
 0x2e       4          i32 kills                                  # (sort 1)
 0x32       4          i32 deaths
 0x36       4          float rate                                 # (sort 3)
@@ -706,7 +706,7 @@ struct CharacterProfile 0x4c                                     # a pilot chara
 0x10       0x10       char corporation[16]
 0x20       4          i32 sex                                    # MSG(545) + it: 1 MALE, 2 FEMALE (the SEX row)
 0x24       4          i32 age                                    # the AGE row
-0x28       0x24       i32 stats[9]                               # percentages: [0] .. [3] the weapon groups' damage, [4] .. the skills (actor and
+0x28       0x24       i32 stats[9]                              # percentages, the CHARACTER SELECT rows MSG(536 ..): [0] BULLET.LV, [1] ENERGY.LV, [2] BOMB.LV, [3] MELEE.LV (the weapon groups' damage: actor_takeDamage, the ARM CENTER's bonus), [4] MOBILITY, [5] SPEED (the legs': LEG()), [6] DEFENSE, [7] SCANNING, [8] MAX.LOAD ([4] .. as character_factor / SKILL(k): stats[4 + k] x 0.01 + 1); [7] at most 50, the others 30 (else 0)
                                                                  # ARM CENTER factors x 0.01), [5] the legs'; [7] at most 50, the others 30
 
 struct GamePacket 0x40                                          # match packet kind 1, a player's game state (net_sendGamePacket; read by net_processGamePacket)
@@ -717,37 +717,37 @@ struct GamePacket 0x40                                          # match packet k
 4          1          signed char nextMap
 5          1          signed char mode
 6          1          signed char nextMode
-7          2          u16 mission
+7          2          short mapNumber                           # Scene.mapNumber (the map's own number; a receiver on the same map (g_mapIndex == map) with another number has data loss, dataLossCode 1)
 9          4          i32 elapsed                                # the match clock (Scene.elapsed, clockFraction)
 0xd        4          float clockFraction
 0x11       4          i32 timePlayed                             # the player's (Player.timePlayed, timeFraction)
 0x15       4          float timeFraction
-0x19       8          u32 sendTwice[2]                           # per player, a bit: its sendFlags [2] / [3] were raised
+0x19       8          u32 resendAsked[2]                        # per player, a bit: [0] it is asked to send its info again (its sendFlags[2]: the receiver whose bit it is raises sendFlags[me][1], net_sendPlayerInfo), [1] its flag again (sendFlags[3]: the receiver clears its PlayerRecord.flagSent)
 0x21       2          short kills
 0x23       2          short deaths
 0x25       4          short teamScores[2]
 0x29       2          short lastPickup                             # the stage's (-1 none)
-0x2b       1          u8 checkTable                              # the geometry table checked (0 .. 4) and a sampled entry, its row and value
-0x2c       2          u16 checkRow
+0x2b       1          u8 checkTable                             # the part type table checked (geometryCheckTurn % 5: 0 headTypes, 1 chestTypes, 2 armTypes, 3 legTypes, 4 boosterTypes), and a sample of it (checkIndex) with the entry there (checkValue): a mismatch is data loss, code 2
+0x2c       2          u16 checkIndex                            # a random word (table_rand() % 100000, cut to 16 bits) picking the entry: row (w / perRow) % count, column w % perRow (sample / table_ok)
 0x2e       4          u32 checkValue
-0x32       2          u16 checkRow2                              # the same for the actor types' table
+0x32       2          u16 checkIndex2                           # the same for the item table (actorItems, actorItemCount; perRow geometryPerRow[5]): a mismatch is data loss, code 3
 0x34       4          u32 checkValue2
 
 struct PlayerRecordPacket 0x36                                  # the player's Ladder record sent to the game server (g_netPlayerRecordPacket, packet 0x11: lobby_states.c record_send)
 0          0x1e       char name[0x1e]                            # the Ladder name (written only when asked)
-0x1e       4          i32 games                                 # Ladder games played (g_ladderGames)
+0x1e       4          i32 games                                 # Ladder rounds played (g_ladderGames: one more at a Ladder match's first round, each next round and each restart)
 0x22       4          i32 kills
 0x26       4          i32 deaths
 0x2a       4          i32 exp   
-0x2e       4          i32 level                                  # actor_levelFromValue(points)
+0x2e       4          i32 level                                 # actor_levelFromValue(exp): the level (1 .. 20) the Ladder exp (g_ladderExp) reaches
 0x32       4          float power
 
 struct PilotStats 0x20                                          # a pilot's standing (g_pilotLevel .., kept as g_pilotLevelKept ..: lobby_states.c take_back)
 0          4          i32 level
 4          4          i32 exp   
 8          4          i32 rank                                  # its place in the ranking (message 29's reply +0x16; 0 out of the first 1000: the account panel shows OUT OF RANK(1000))
-0xc        4          i32 power
-0x10       4          i32 games                                 # Ladder games played
+0xc        4          float power                               # the kill rate x 0.01 x the exp (power_from_rate); shown "%.2f" on the account panel
+0x10       4          i32 games                                 # Ladder rounds played (reply +0xf3; g_ladderGames)
 0x14       4          i32 kills
 0x18       4          i32 deaths
 0x1c       4          float killRate
@@ -759,8 +759,8 @@ struct SkirmishInfo 0x5c                                        # a skirmish map
 
 struct ViewQuad 0x5c                                            # a queued quad or billboard (ViewVolume.quads; view_volume.c quad_fields)
 0          4          i32 texture                                # (none: negative; then no texture corners)
-4          8          u32 uv0[2]                                # the corners' texture coordinates (billboard() reads them by word index)
-0xc        8          u32 uv1[2]                                # (see uv0)
+4          8          float uv0[2]                                # one corner's texture coordinates (u, v), for points[3]; billboard() gives points[2] (uv1[0], uv0[1]) and points[0] (uv0[0], uv1[1])
+0xc        8          float uv1[2]                                # the opposite corner's texture coordinates (u, v), for points[1] (see uv0)
 0x14       4          u32 colour
 0x18       0x40       float points[4][4]                         # its corners in clip space
 0x58       4          i32 kind                                   # 2 / 3: depth-sorted into quadOrderA / B
@@ -776,7 +776,7 @@ struct ViewVolume 0x9170                                        # the view volum
 0xc        4          i32 ownsBlock                              # 1: allocated here (freed with it)
 0x14       0xc        void *glArrays[3]                         # glVertexPointerEXT / glColorPointerEXT / glTexCoordPointerEXT (wglGetProcAddress with GL_EXT_vertex_array; 0: draw_opaque uses the GL 1.1 ones)
 0x10       4          i32 entryPointsSet                        # set once its three GL entry points are looked up (+0x14 .. +0x1c); written, never read
-0x20       0x3000     i32 materialOrder[3072]                   # the materials in the order first queued (materialCount of them)
+0x20       0x3000     i32 materialOrder[3072]                   # the material lists in the order first queued (materialCount of them): each a list id, material + 1 (0: untextured, else the texture id + 1), the index into materialHeads / materialTails
 0x3024     4          i32 materialCount
 0x3028     0x3004     u8 *materialHeads[3073]                    # per material: its first queued entry (0: none yet)
 0x602c     0x3004     u8 *materialTails[3073]                    # its last (entries are linked on from it)
@@ -788,7 +788,7 @@ struct ViewVolume 0x9170                                        # the view volum
 0x9044     4          i32 matrixCount
 0x9048     4          i32 colourLimit                           # the colour buffer: room for so many vertices
 0x904c     4          u8 *colours
-0x9050     4          i32 colourMost                            # the most vertices it held so far
+0x9050     4          i32 colourMost                            # the most vertices the colour buffer held in this ViewVolume_draw (0 at its start; raised by fits()); never read otherwise
 0x9054     4          i32 triangleLimit                         # the clipped triangles (0x60 bytes each)
 0x9058     4          u8 *triangles
 0x905c     4          i32 triangleCount
@@ -801,15 +801,15 @@ struct ViewVolume 0x9170                                        # the view volum
 0x9078     4          i32 quadOrderACount
 0x907c     4          u8 *quadOrderB                            # ... of kind 3
 0x9080     4          i32 quadOrderBCount
-0x9084     4          i32 segmentLimit                          # the objects' segments (0x24 bytes each); written, never read
+0x9084     4          i32 segmentLimit                          # the coloured lines (0x24 bytes each: a packed RGBA colour, then two clip-space points; ViewVolume_addSegment: the debug grid in red, the map lights' yellow stars), drawn by ViewVolume_draw as GL_LINES
 0x9088     4          u8 *segments
 0x908c     4          i32 segmentCount
-0x9090     4          i32 entriesFull                           # 1: a list overflowed (what did not fit is left out)
+0x9090     4          i32 entriesFull                           # 1: a list overflowed (what did not fit is left out); cleared by ViewVolume_reset; set, never read
 0x9094     4          i32 matricesFull
 0x9098     4          i32 trianglesFull
 0x909c     4          i32 quadsFull
 0x90a0     4          i32 segmentsFull
-0x90a4     4          i32 trianglesDrawn                        # counters of the frame
+0x90a4     4          i32 trianglesDrawn                        # counters of the frame (cleared by ViewVolume_clearDrawCounts: ViewVolume_initBy and hud_pass each match frame); counted up, never read
 0x90a8     4          i32 meshesDrawn
 0x90ac     4          i32 textureBinds
 0x90b0     0x40       float projection[16]
@@ -824,35 +824,35 @@ struct Skeleton 0x24                                            # a skeleton (sk
 0x14       4          u8 *bones                                 # boneCount Bone records
 0x18       4          i32 posKeyTotal                           # its bones' position keys summed (the .ske header's; counted by skel_loadAseFrom for an ASE file, with rotKeyTotal sizing the block)
 0x1c       4          i32 rotKeyTotal                            # its rotation keys
-0x20       4          i32 frames                                # its animation's frames
+0x20       4          i32 duration                              # its animation's length in milliseconds (ASE: SCENE_LASTFRAME x (1000 / SCENE_FRAMESPEED); Skeleton.dat: 3300 = 100 frames at 33 ms, 1650 for some weapons); the key times are in the same units; skel_applyPose's t (0 .. 1) and anim_setSkeleton scale it, skel_poseBones takes animTick % (duration + 1)
 
 struct Bone 0x70                                                # a skeleton's bone (Skeleton.bones)
 0x40       4          i32 parent                                # its parent bone (< 0: the root)
 0x44       0xc        float pos[3]                              # its position without keys
-0x50       0x10       float rotation[4]                          # its rotation without keys: angle, then axis
-0x60       4          i32 posKeyCount                           # position keys, 0x20 bytes each: frame, length, base, delta
+0x50       0x10       float rotation[4]                         # its rotation without keys: angle (radians), then axis
+0x60       4          i32 posKeyCount                           # position keys, 0x20 bytes each: time, length (ms), base, delta
 0x64       4          u8 *posKeys
-0x68       4          i32 rotKeyCount                           # rotation keys, 0x28 bytes each: frame, length, base angle + axis, delta angle + axis
+0x68       4          i32 rotKeyCount                           # rotation keys, 0x28 bytes each: time, length (ms), base angle + axis, delta angle + axis
 0x6c       4          u8 *rotKeys
 
 struct PosKey 0x20                                              # a bone's position key (Bone.posKeys)
-0          4          i32 frame                                  # the frame it starts at
-4          4          i32 length                                 # frames to the next key (0: the last)
+0          4          i32 time                                  # the time it starts at, in milliseconds (whole frames x 1000 / FRAMESPEED, as Skeleton.duration)
+4          4          i32 length                                # milliseconds to the next key (0: the last)
 8          0xc        float pos[3]
 0x14       0xc        float delta[3]                             # to the next key's position
 
 struct RotKey 0x28                                              # a bone's rotation key (Bone.rotKeys)
-0          4          i32 frame
-4          4          i32 length
-8          0x10       float rotation[4]                          # its rotation: angle, then axis (from the ASE, combined with the ones before)
+0          4          i32 time                                  # the time it starts at, in milliseconds (as PosKey.time)
+4          4          i32 length                                # milliseconds to the next key (0: the last)
+8          0x10       float rotation[4]                         # its rotation: angle (radians), then axis (from the ASE, combined with the ones before)
 0x18       0x10       float step[4]                              # the rotation to the next key (angle, axis)
 
 struct Manager 0x24c                                            # a shape manager (skel_data.c; a skeleton manager is its first 0x130 bytes: SkelManager): items loaded by name into one block, found through a name tree
 4          4          i32 blockSize
 8          4          u8 *block                                 # the name nodes, then the items, then the data memory
 0xc        4          i32 ownsBlock                             # 1: allocated here
-0x10       0x100      char dir[0x100]                           # where the items' files are
-0x110      4          u32 source                                # where its items load from: 0 / 1 loose files with the first / second extension, 2 the packed data file (the skeleton sets)
+0x10       0x100      char dir[0x100]                           # the folder of its loose item files (item_path, sources 0 / 1 only; not read with source 2, which every caller passes)
+0x110      4          u32 source                                # where its items load from: 0 / 1 loose files with the first / second extension (shp / obj, ske / ase), 2 the packed archive (Shape.dat / Skeleton.dat); every caller passes 2
 0x114      4          i32 capacity                              # items it has room for
 0x118      4          u8 *nodes                                 # the name tree: one 0x4c-byte TreeNode per item
 0x11c      4          u8 *items                                 # the items (skeletons 0x24 bytes, shapes 0x4c)
@@ -860,7 +860,7 @@ struct Manager 0x24c                                            # a shape manage
 0x124      4          i32 dataSize                              # the data memory items are read into
 0x128      4          u8 *data
 0x12c      4          i32 dataUsed
-0x130      0x100      char textureDir[0x100]                    # (shapes) the textures' place, given with bindArgs to shape_bindTextureBy
+0x130      0x100      char textureSuffix[0x100]                 # (shapes) a suffix for its parts' texture names (actor_setPartColor via shape_setTextureSuffix: "_T<player>"; empty: none): shape_bindTextureBy appends "*" and it to each part's name before tex_getIdByName, with bindFlags and the tint
 0x230      4          u32 bindFlags                              # (shapes) given to shape_bindTextureBy with the tint; bit 1: tinted (shape_setTint)
 0x234      0x18       u32 tint[6]                                # two hue / saturation / value triples (floats' bits)
 
@@ -868,30 +868,30 @@ struct SkelManager 0x130                                        # a skeleton man
 4          4          i32 blockSize
 8          4          u8 *block                                 # the name nodes, then the items, then the data memory
 0xc        4          i32 ownsBlock                             # 1: allocated here
-0x10       0x100      char dir[0x100]                           # where the items' files are
-0x110      4          u32 source                                # where its items load from: 0 / 1 loose files with the first / second extension, 2 the packed data file (the skeleton sets)
+0x10       0x100      char dir[0x100]                           # the folder of its loose .ske / .ase files (item_path, sources 0 / 1 only; not read with source 2, which every caller passes)
+0x110      4          u32 source                                # where its skeletons load from: 0 / 1 loose .ske / .ase files, 2 the packed Data\\Skeleton.dat (skelDat_getItemFileBy); every caller passes 2
 0x114      4          i32 capacity                              # items it has room for
 0x118      4          u8 *nodes                                 # the name tree: one 0x4c-byte TreeNode per item
-0x11c      4          u8 *items                                 # the items (skeletons 0x24 bytes, shapes 0x4c)
+0x11c      4          u8 *items                                 # its skeletons (0x24 bytes each)
 0x120      4          i32 count                                 # items loaded
 0x124      4          i32 dataSize                              # the data memory items are read into
 0x128      4          u8 *data
 0x12c      4          i32 dataUsed
 struct PlayerRecord 0x47fd2                                      # a player of the match (Scene / Stage playerRecords): its team, mech parts and items; its actor points back (Player.player)
 0          4          i32 used                                   # (by use; seen running) 1: in use (playerRecord_markUsed / markFree)
-0x479a4    0xa        u8 partHue[5][2]                           # (by use; seen running) per part its two tints' hue (actor_setPartColor; bytes)
-0x479ae    0xa        u8 partSaturation[5][2]
-0x479b8    0xa        u8 partValue[5][2]
+0x479a4    0xa        signed char partHue[5][2]                 # (by use; seen running) per part its two tints' hue (actor_setPartColor; bytes)
+0x479ae    0xa        signed char partSaturation[5][2]          # per part its two tints' saturation x 128, kept to -1 .. 0.999 first (actor_setPartColor: level_byte), a signed byte; sent in packet 2 (net_sendPlayerInfo, 30 bytes from partHue) and read back signed (actor_applyRemoteColours: x k_0_0078125f)
+0x479b8    0xa        signed char partValue[5][2]               # per part its two tints' value (brightness) x 128, kept to -1 .. 0.999 first (actor_setPartColor: level_byte), a signed byte; sent in packet 2 (net_sendPlayerInfo) and read back signed (actor_applyRemoteColours)
 0x479c2    0x600      u32 flag[16][24]                         # (by use; seen running) its flag: 24 x 16 RGBA (the pilot's own picture, Save\<name>.BMP; drawn after its name and in the ranking)
 0x47fca    4          i32 flagChanged                          # 1: to be copied into the flag atlas (flagShown: it is there)
 0x47fce    4          i32 flagSent                             # (by use; seen running) its flag's pixels sent so far (0x180 = 24 x 16: all; the map's players start with all)
 4          0x40       char name[0x40]                            # (by use; seen running) its name (its screenshot: Save\\<name>.BMP)
 0x44       4          i32 character                              # its pilot character (g_characterProfiles: the skills and damage factors by it)
 0x48       4          i32 team
-0x4c       0x140      char partNames[5][0x40]                    # its parts' type names (head, chest, arms, legs, booster: set_part)
-0x18c      0x180      char itemNames[6][0x40]                    # its items' names (actor_setItem: the ActorItem's name)
+0x4c       0x140      char partNames[5][0x40]                   # its parts' type names (head, chest, arms, legs, booster: copied from the part type record by set_part / actor_setActorType*InfoBy; cleared by player_clear); written, never read
+0x18c      0x180      char itemNames[6][0x40]                   # its items' names (actor_setActorTypeItemInfoBy: the ActorItem's name, empty for none; cleared by player_clear); written, never read
 0x30c      0x14       i32 parts[5]                               # its mech's parts: head, chest, arms, legs, booster (records of the stage's part tables; "invalid headIndex")
-0x320      0x18       i32 items[6]                              # per item slot (Player.slot): its weapon's record (index into Scene.actorItems; < 0 none)
+0x320      0x18       i32 items[6]                              # per item slot (Player.slot): its item (index into Stage.actorItems: a weapon or other hand / shoulder item; < 0 none; actor_setActorTypeItemInfoBy)
 0x338      0x24c      Manager headShapes                     # (by use; seen running) its head type's shapes (model_sets: shape_initBy over the data after it)
 0x584      0x7d00     u8 headShapeData[0x7d00]
 0x8284     0x24c      Manager chestShapes                    # (by use; seen running) its chest type's shapes (model_sets: shape_initBy over the data after it)
@@ -912,7 +912,7 @@ struct PlayerRecord 0x47fd2                                      # a player of t
 0x45934    0xfa0      u8 legSkelData[0xfa0]
 0x468d4    0x130      SkelManager boosterSkels              # its skeletons (skelSet_setup over the data after it)
 0x46a04    0xfa0      u8 boosterSkelData[0xfa0]
-0x47fc6    4          i32 flagShown                             # 1: its flag is shown (ranking, markers)
+0x47fc6    4          i32 flagShown                             # 1: its flag is in the flag atlas (flag_uploadAtlas on its first copy; map_loadActorInfoFrom for the map's players): only then drawn (hud_drawMain, markers, ranking) and sent (net_sendFlagPiece, or while flagChanged)
 
 struct TreeNode 0x4c                                            # a manager's name tree node: by strcmp, smaller left
 0          0x40       char name[0x40]
@@ -923,10 +923,10 @@ struct TreeNode 0x4c                                            # a manager's na
 struct TexRecord 0x68                                           # a texture bank's material: a texture by name, its flags and colours (tex_allocIdBy)
 0          0x40       char name[0x40]                            # upper-cased
 0x40       4          i32 slot                                  # its slot in the GL texture cache (TextureBank.slots; -1: not cached; tex_bind)
-0x44       4          u32 flags
+0x44       4          u32 flags                                 # 1: clamped at the edges, else repeated (tex_bind: tex_upload's mode; match_start gives it to effectTextures past 7); 2: tinted with colours through its _COLOR mask (tex_applyTintMask; set by tex_recolourMaterial; the player parts' textures, shape_setTextureSuffix); tex_markMaterialChanged keeps the bits 0x11111113
 0x48       0x18       float colours[6]                          # two hue / saturation / value sets
 0x60       4          i32 scrollMode                            # its texture coordinates' scrolling by the name's suffix: "_ANI" / "_ANI0" 1, "_ANI1" 2, "_ANI2" 3, "_ANI3" 4 (another "_ANI<c>": left as it was), else 0; ViewVolume_draw shifts them: 1 v +, 2 u +, 3 v -, 4 u - (view_volume.c tex_scroll)
-0x64       4          i32 changed                                # 1: recoloured (tex_recolourMaterial; its image made again)
+0x64       4          i32 changed                               # 1: its image to be loaded again at its next tex_bind (set by tex_recolourMaterial when a tint differs and by tex_markMaterialChanged; tex_bind reloads and clears it; texRecord_init 0)
 
 struct TexSlot 0x14                                             # a slot of a texture bank's GL texture cache (names.c tex_bind)
 0          4          i32 index                                  # its own index
@@ -969,7 +969,7 @@ struct GroundLayer 0x20c                                        # a layer of the
 0x30       4          i32 water                                 # 1: a water layer: a surface drawn around the camera (waterModel: waterPrims, waterColours lit from above, or for kind 1 from below)
 0x34       4          u32 texture                               # its Ground<n>Map texture
 0x38       4          u8 *heights                               # one byte a point (the map image's grey)
-0x3c       4          u8 *flat                                  # one byte a cell: all four corners present
+0x3c       4          u8 *drawnCells                            # one byte a cell: 1 when its four corners are all grey pixels of the map image (map_loadGroundInfoFrom); ground_buildDrawLists draws only those (bit 0); collision takes every cell
 0x40       4          float *points                             # 3 floats a point
 0x44       4          float *normals
 0x48       4          u32 *colours                              # RGBA a point (light_computeLayerLightBy)
@@ -998,7 +998,7 @@ struct Trigger 0x1c                                             # a trigger (Sta
 0xc        4          u32 flags                                  # 1: on its time; 2: on the player within its radius
 0x10       4          float time                                 # the match clock it fires at (flag 1)
 0x14       4          float radiusSq                             # read as a radius: squared and scaled at load (flag 2)
-0x18       4          i32 fired                                  # 1: fires this frame (its first way point's commands run; then disarmed)
+0x18       4          i32 fired                                 # 1: to fire (script_processTriggers sets it on its time / the player within its radius, for an armed one; script command 2 sets it for any trigger): script_processTriggers then runs its first way point's commands (script_processCommandBy entry 0), clears it and disarms it
 
 struct StartPoint 0x14                                          # a multiplayer start (Stage.starts)
 0          0xc        float pos[3]
@@ -1020,7 +1020,7 @@ struct SpawnRecord 0x5c                                         # an actor's spa
 0x1c       4          u32 unused1c                              # copied to the actor's +0x64 (actor_applySpawnRecord; 100 for a player's mech, the maps' spawns 100, 1000 netsphere, 10 gigantic-core); never read
 0x20       4          i32 armor                                  # the armour and shield it starts with (and their maximum)
 0x24       4          i32 shield
-0x28       4          float speed                                # x 27.7778: the actor's speed and top speed
+0x28       4          float speed                               # km/h: x 27.7778 (to cm/s) the actor's speed and baseSpeed (actor_applySpawnRecord)
 0x2c       4          float turnRate                            # x 10: the actor's turnRate
 0x30       4          float range                                # its sight range (squared, x 10000: radiusSq)
 0x34       4          u32 unused34                              # copied to the actor's +0x70 (actor_applySpawnRecord; 3.0 for a player's mech); never read
@@ -1050,12 +1050,12 @@ struct HeadType 0xaa8                                           # a head part ty
 0x448      0x440      char shapeNames[2][0x220]                 # .. their names (0x44 apart: a name and its bone's translation scale, a float: ListedObject.scale)
 0x888      8          i32 skelCount[2]                           # .. the skeletons ..
 0x990      0x100      char skelNames[2][0x80]                    # .. and their names (0x40 apart)
-0          0x40       char name[0x40]                            # its folder path (the panel's name)
+0          0x40       char name[0x40]                           # its type name: the maker's folder and the part (MILLIA\HEAD ...: Component.dat); set_part copies it to PlayerRecord.partNames[0]; the ARM CENTER's head panel shows it with '\' and '/' as '-' (panel_name)
 0xa90      4          float weight
-0xa94      4          float detectionRange                       # (by level: the actor's radiusSq, squared)
-0xa98      4          float detectionAngle                       # tenths of a degree
+0xa94      4          float detectionRange                      # DETECTION RANGE (message 601), 1/100 m (the panel shows x 0.01 m): x the pilot character's skill factor (stats[7] x 0.01 + 1), + the item bonus rangeBonus, squared = the actor's radiusSq (mech_stats)
+0xa98      4          float detectionAngle                      # DETECTION ANGLE (message 602), tenths of a degree: x the pilot character's skill factor (stats[7] x 0.01 + 1) = the actor's detectionAngle (mech_stats)
 0xa9c      4          i32 hackingLevel
-0xaa0      4          float lockOnTime
+0xaa0      4          float lockOnTime                          # a factor on the weapon's lock-on time (x ActorItem.targetingTime x the item factor lockOnTimeFactor: the actor's lockOnTime, compared with aimTime in actor_processFrame); the panel's LOCK ON EFFICIENCY (message 604) is 100 / it, in %
 0xaa4      4          float targetKeepTime
 
 struct ChestType 0xabc                                          # a chest part type (Stage.chestTypes)
@@ -1068,7 +1068,7 @@ struct ChestType 0xabc                                          # a chest part t
 0xaa0      8          i32 headJoint[2]
 0xaa8      8          i32 boosterJoint[2]
 0          0x40       char name[0x40]
-0xab0      4          float weightLimit                          # (by level: the actor's loadMax)
+0xab0      4          float weightLimit                         # WEIGHT LIMIT (message 611), tons: x the pilot character's skill factor (stats[8] x 0.01 + 1) x the item factor loadFactor = the actor's loadMax (mech_stats)
 0xab4      4          i32 maxArmor
 0xab8      4          i32 maxShield
 
@@ -1080,7 +1080,7 @@ struct ArmType 0x1300                                           # an arm part ty
 0x12d0     0x18       i32 weaponJoints[3][2]                    # per detail level, the entries the weapons hang on: [0] slots 0 .. 3 (the right fist), [1] slot 4 (the RSW bone), [2] slot 5 (LSW) (actor_processFrame, muzzle_camera)
 0          0x40       char name[0x40]
 0x12e8     4          float weight
-0x12ec     0x14       i32 stats[5]                               # (the ARM CENTER's arm stats) [1 ..] the ammunition per kind (the actor's ammoMax)
+0x12ec     0x14       i32 stats[5]                              # [0] the FIRE CONTROL SYSTEM level (message 621; the actor's accuracy), [1 ..] CAPACITY FOR 30MM, 60MM, E-PAK, MISSLE (messages 622 .. 625): x the item factor ammoFactor, + ammoBonus = the actor's ammoMax (mech_stats)
 
 struct LegType 0x13f4                                           # a leg part type (Stage.legTypes)
 0x40       8          i32 shapeCount[2]                         # per detail level (Player.lowDetail: [0] near, [1] far): the shapes (ObjectList_load's ns) ..
@@ -1091,10 +1091,10 @@ struct LegType 0x13f4                                           # a leg part typ
 0x13d0     4          i32 emitterCount
 0          0x40       char name[0x40]
 0x13d8     4          float weight
-0x13dc     4          float agility                             # AGILITY (ARM CENTER legs, message 631): x the pilot's level factor 0 = the actor's mobility (actor_setupFromParts)
+0x13dc     4          float agility                             # AGILITY (ARM CENTER legs, message 631): x the pilot character's skill factor (stats[4] x 0.01 + 1) x (1 - the overload) = the actor's mobility (at least 0; a third in the rocket arena) (mech_stats)
 0x13e0     4          float inertia                             # INERTIA (ARM CENTER legs, message 632): x the speed = the actor's moveAccel
 0x13e4     4          float speedCorrection
-0x13e8     4          float forwardBoostCorrection              # F.BOOST SPD CORRECTION (message 634): + the level's legs stat + 1, x the booster's speed [1]
+0x13e8     4          float forwardBoostCorrection              # F.BOOST SPD CORRECTION (message 634): + the pilot character's legs skill (stats[5] x 0.01) + 1, x the booster's speed [1], / the speed, x (1 - the overload) = the actor's runTop[0] (mech_stats)
 0x13ec     4          float backBoostCorrection                 # B.BOOST SPD CORRECTION (message 636): with the booster's speed [2], negated
 0x13f0     4          float sideBoostCorrection                 # S.BOOST SPD CORRECTION (message 635): with the booster's speed [3]
 
@@ -1109,17 +1109,17 @@ struct BoosterType 0x1820                                       # a booster part
 0x17f8     4          float weight
 0x17fc     4          i32 thrustType
 0x1800     4          float lean                                # the actor's boosterTilt: how far the booster joint tips with the aim's pitch (actor_processFrame's pose[1]); 0.0 in every booster of Component.dat
-0x1804     0xc        float activeTime[3]                        # (the actor's boostTime, rechargeTime, restTime by these)
-0x1810     0x10       float normalSpeed[4]
+0x1804     0xc        float times[3]                            # seconds: [0] ACTIVE TIME, [1] RECHARGE TIME, [2] DELAY FOR RECHARGE (messages 642 .. 644); x the item factors boostTimeFactor, rechargeTimeFactor, restTimeFactor = the actor's boostTime, rechargeTime, restTime (mech_stats)
+0x1810     0x10       float speeds[4]                           # 1/100 m a second (x 0.036 = km/h on the panel): [0] NORMAL SPEED (message 645), [1] .. [3] the boost's forward, back and side speeds (MAX SPEED FWD/SWD/BWD, message 646); with the legs' corrections = the actor's speed and runTop[0 .. 2] (mech_stats)
 
 struct CollisionPlane 0xac                                      # a plane of the collision space (Space.planes; a bullet's hit, Bullet.hit)
-0          4          i32 flags                                 # 0x10: takes no marks (a transparent part's triangle, or the background floor's); else 0 (collisionTri_setup; read only by hit_surface)
+0          4          i32 flags                                 # 0x10: takes no marks (a transparent part's triangle, or the background floor's; read by hit_surface); 2: its unit disabled (space_disableUnit / space_enableUnit), skipped by collision; else 0 (collisionTri_setup)
 4          0x24       float cornerPoints[3][3]                  # its triangle's corners (collisionTri_setup)
 0x28       0x24       float edges[3][3]                         # edge i: corner i + 1 - corner i, normalized (collisionTri_setup)
 0x4c       0xc        float normal[3]                            # the face's: (-edge 0) x edge 1
 0x58       4          float dist                                 # the face plane: normal . corner 0
 0x5c       0x30       float edgePlanes[3][4]                     # edge k's plane: normal x edge k, through corner k (its normal and distance)
-0x8c       4          i32 *object                                # its map object's index (none: 0)
+0x8c       4          struct SpaceUnit *unit                           # its collision unit (none: 0: the ground's triangles, collision_tris.c ground_triangle); the unit's index (its first field) is the map object's (Stage.objects): hit_surface / decal read *it
 0x90       4          i32 part                                   # the object's shape part
 0x94       0xc        i32 cornerIndices[3]                       # the corners' vertex indices in the part
 0xa0       4          u8 *listNext                               # its unit's list (space_addUnitPlanes: the next plane; the free pool walks +0xa4 as its next)
@@ -1130,14 +1130,14 @@ struct TimeSync 0x38                                            # a frame timer 
 8          4          i32 frames                                 # frames counted towards the next second
 0xc        8          u64 frequency                              # the counter's
 0x14       8          u64 lastCount                              # its reading at the last frame
-0x1c       8          int64_t rise                               # the last frame's rise; written, never read
+0x1c       8          int64_t rise                              # the last frame's counter rise; its low half is read straight back (0x487533) to add to riseSum, and nothing reads it on a later frame
 0x24       8          int64_t riseSum                            # the rises summed (past a second: fps, then cleared)
 0x2c       4          float fps                                  # frames per second (0 for a sum not positive)
 0x30       4          float frameTime                            # the last frame's seconds, at most maxFrame
-0x34       4          float maxFrame                             # 1/15 s unless set
+0x34       4          float maxFrame                            # the longest frame time: 1/15 s (0x3d888889), set on the first call because nothing else ever sets it (TimeSync_clear zeroes it)
 
-struct SpaceUnit 0x14                                           # a unit of the collision space (Space.units; spaceSlot_clear): a map object's part
-0          4          i32 index                                  # (-1 when cleared)
+struct SpaceUnit 0x14                                           # a unit of the collision space (Space.units; spaceSlot_clear): a map object (one unit for all its parts not flagged 0x20: space_buildUnits; the part is CollisionPlane.part)
+0          4          i32 index                                 # its map object's number (Stage.objects; space_buildUnits' id); -1 when cleared (spaceSlot_clear). CollisionPlane.object points at it
 4          4          u8 *lastPlane                              # its planes' list (CollisionPlane.listNext / listPrev): the last
 8          4          SpaceNode *lastNode                        # its planes' nodes: the last
 0xc        4          u8 *poolPrev                               # its links in the units' pool
@@ -1145,13 +1145,13 @@ struct SpaceUnit 0x14                                           # a unit of the 
 
 struct ParticleDesc 0x7c                                        # what a particle is made from (particle_spawn's record; particle_init)
 0          4          i32 kind
-4          4          i32 owner
+4          4          i32 owner                                 # copied to Particle.owner, whose meaning is by kind: the actor it belongs to (glows and shells against cockpitActor), the player whose part shapes the debris shows (9: playerRecords index), a glow flare's alpha byte (4), a flag 1 (22, 25 ...), a random 0 .. 7 (emit(): the legs' / booster's puffs)
 8          0xc        float pos[3]
-0x14       0xc        float target[3]
+0x14       0xc        float target[3]                           # copied to Particle.target, whose meaning is by kind (see there): an aim point, a hit's surface normal (effect(): impacts and marks), puffs' scale and alpha (emit()), a velocity ...
 0x20       4          u32 matrixFrom                             # a matrix to copy (none: 0)
-0x24       4          const float *trailPoints                   # a trail's three points (kinds 40 .. 49)
-0x28       4          const float *trailSizes                    # and its ends' sizes
-0x2c       4          u32 size                                   # a float's bits
+0x24       4          const float *markCorners                  # kinds 40 .. 49, a bullet's mark on the surface it hit (weapons.c decal): the hit triangle's three corners (the map object's own vertices when matrixFrom is its matrix, else in the world)
+0x28       4          const float *markCoords                   # and the corners' coordinates in the mark's plane about the impact (six floats: corner 0 (its distance, 0), then corners 1 and 2 (u, v)), world units; particle_trail makes them texture coordinates (x 0.005 + 0.5, or (/ (size + margin) + 1) / 2; [1] unused, v 0.5)
+0x2c       4          float size                                # the particle's baseSize (0: none)
 0x30       4          i32 isQuad                                 # 1: a kind 50 quad, from the fields below
 0x34       0x18       u8 quad[0x18]                              # its texture, two texture corners, colour (Particle.quadTexture ..)
 0x4c       0x30       float quadPoints[4][3]
@@ -1310,7 +1310,7 @@ struct Stage 0x2150443                                          # the stage: the
 0xdc0244   0x830      GroundLayer groundLayers[4]                # (groundLayerCount of them)
 0xdc0a74   4          i32 groundLayerCount
 0x1561b68  0x47fd20   PlayerRecord playerRecords[16]             # (Scene.playerRecords)
-0xa10      0x9c       Space space                                # (by use; seen running) the collision space (space_initBy; its planes - 0xac bytes each, hit records point into them - space.planes.records)
+0xa10      0xf4       Space space                                # (by use; seen running) the collision space (space_initBy; its planes - 0xac bytes each, hit records point into them - space.planes.records)
 0x202e8d8  4          i32 cockpitActor                          # (by use; seen running) the actor the camera sits in (stage_selectActor from match_frame: the local player in camera mode 1 while playing; -1 none)
 0x202e8f0  0x190      i32 frags[100]                             # (by use; seen running) frags by team (a kill counts for the other team's slot); cleared together (stage_clearFrags)
 0x202ef30  4          i32 lockCount                              # (by use; seen running) the local player's locked-on actors (lockTimes / lockIds; was named bulletCount)
@@ -1457,8 +1457,8 @@ struct Scene 0x2343b0b                                          # the scene: the
 0x234328b  4          i32 holdZoom                               # held: zoom
 0x23432b3  4          i32 turnLeftHeld                          # left held (the free camera): the camera turns left
 0x23432b7  4          i32 turnRightHeld                         # right held: the camera turns right
-0x23432bb  4          i32 pitchUpHeld                           # up held without Ctrl (the free camera): the camera pitches up
-0x23432bf  4          i32 pitchDownHeld                         # down held without Ctrl: the camera pitches down
+0x23432bb  4          i32 upKeyHeld                             # Up held without Ctrl (the free camera, match_freeCamFrame): cameraAngle[0] down toward -890, so the camera orbits up over the actor and looks down at it
+0x23432bf  4          i32 downKeyHeld                           # Down held without Ctrl (the free camera): cameraAngle[0] up toward 890, the camera orbits down under the actor and looks up at it
 0x23432d3  0x18       i32 fKeys[6]                              # F1 .. F6 held (the free camera / test mode, match_freeCamFrame): the parts F1 head .. F5 booster and F6 the weapon that Z / X step through
 0x23432eb  4          i32 prevWeaponPressed                      # (by use; seen running) pressed this frame: pre-weapon
 0x23432ef  4          i32 nextWeaponPressed                      # next-weapon
@@ -1649,6 +1649,6 @@ struct Scene 0x2343b0b                                          # the scene: the
 0x23429ce  0x528      EventLine events[5]                        # the last five events (ring of 5)
 0x2342ef6  4          u32 eventCount                             # events written so far
 0x2342efa  4          u32 eventFirst                             # first event still shown
-0x2342efe  4          u32 eventTime                              # (by use; seen running) stamped on each new event line
+0x2342efe  4          float eventTime                             # (by use; seen running) seconds a new event line stays shown (events_clear: 60; EventLine.timeLeft takes it)
 0x23424f6  0x400      char playerNames[16][0x40]                 # the players' names kept apart (scene_saveNames / scene_restoreNames)
 0x2343106  4          i32 announcePending                       # 1: an announcement is queued for the other players (the *Pending flags; net_sendMatchEvent sends them one at a time)

@@ -89,7 +89,7 @@ static void draw_values(const Form *f, char *text)
 	else
 		text_draw8(X0 + 0xa4, Y0 + 0x6f, map_name(f));
 	field_box(X0 + 0x9f, Y0 + 0x95, X0 + 0xef, Y0 + 0xab);
-	itoa(s->players, text, 10);
+	itoa(s->maxPlayers, text, 10);
 	text_draw8(X0 + 0xa4, Y0 + 0x98, text);
 	field_box(X0 + 0x9f, Y0 + 0xb7, X0 + 0xef, Y0 + 0xcd);
 	white();
@@ -128,7 +128,7 @@ static void draw_hover(const Form *f, int hovered, char *text)
 			hover_text(X0 + 0xa4, Y0 + 0x6f, map_name(f));
 		break;
 	case 3:
-		itoa(s->players, text, 10);
+		itoa(s->maxPlayers, text, 10);
 		hover_text(X0 + 0xa4, Y0 + 0x98, text);
 		break;
 	case 4:
