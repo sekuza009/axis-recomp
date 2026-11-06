@@ -1528,7 +1528,7 @@ struct Scene 0x2343b0b                                          # the scene: the
 0x2340c88  4          float sendRate                            # packets a second (windowSent / windowTime, match_playFrame); written, never read
 0x2340c8c  4          float receiveRate                         # received packets a second (windowReceived / windowTime); written, never read
 0x2340c90  4          float windowTime                           # the window's seconds
-0x2340c94  4          float resendWarning                        # 1 when packets had to be sent again, running down; written, never read
+0x2340c94  4          float packetLossTimer                     # 1.0 when a player's packets arrived out of turn (some lost: netq_skippedCount, then cleared), running down by frameTime to 0; nothing else reads it (a warning the original never shows)
 0x2342395  4          float lostTime                            # seconds a networked machine has gone without its player slot (while net_hasSlot is 0: the host has it at once, a joining machine on the host's message 6); over 5 the connection is lost (msg_connectionLost); 0 at each round start
 0x2221f9c  4          i32 playerActor                           # = Stage.playerActor (the same word): the local player's actor slot; 0 at a solo game's first round
 0x23423c9  4          i32 typeCheckTurn                           # (by use; seen running) the part type table the next game packet checks (net_sendGamePacket: this % 5, then one on; 0 at a later round)

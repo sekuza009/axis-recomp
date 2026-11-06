@@ -118,7 +118,7 @@ static void match_setup(Scene *s)
 			s->nextMap = -1;
 			s->nextMode = -1;
 		}
-		memset(&s->sendTimer, 0, 9 * 4);   /* sendTimer .. resendWarning */
+		memset(&s->sendTimer, 0, 9 * 4);   /* sendTimer .. packetLossTimer */
 		s->rankingShown = 1;
 	} else {
 		g_netHostGone = 0;

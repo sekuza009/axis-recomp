@@ -1753,7 +1753,7 @@ typedef struct Scene {
 	float sendRate;   /* +0x2340c88: packets a second (windowSent / windowTime, match_playFrame); written, never read */
 	float receiveRate;   /* +0x2340c8c: received packets a second (windowReceived / windowTime); written, never read */
 	float windowTime;   /* +0x2340c90: the window's seconds */
-	float resendWarning;   /* +0x2340c94: 1 when packets had to be sent again, running down; written, never read */
+	float packetLossTimer;   /* +0x2340c94: 1.0 when a player's packets arrived out of turn (some lost: netq_skippedCount, then cleared), running down by frameTime to 0; nothing else reads it (a warning the original never shows) */
 	u8 _pad2340c98[0x4];
 	float escTimer;   /* +0x2340c9c: time the in-match menu has been open (fades in over 0.25 s) */
 	u8 _pad2340ca0[0x4];
@@ -3313,7 +3313,7 @@ _Static_assert(offsetof(Scene, windowReceived) == 0x2340c84 && sizeof(((Scene *)
 _Static_assert(offsetof(Scene, sendRate) == 0x2340c88 && sizeof(((Scene *)0)->sendRate) == 0x4, "scene.fields: Scene.sendRate");
 _Static_assert(offsetof(Scene, receiveRate) == 0x2340c8c && sizeof(((Scene *)0)->receiveRate) == 0x4, "scene.fields: Scene.receiveRate");
 _Static_assert(offsetof(Scene, windowTime) == 0x2340c90 && sizeof(((Scene *)0)->windowTime) == 0x4, "scene.fields: Scene.windowTime");
-_Static_assert(offsetof(Scene, resendWarning) == 0x2340c94 && sizeof(((Scene *)0)->resendWarning) == 0x4, "scene.fields: Scene.resendWarning");
+_Static_assert(offsetof(Scene, packetLossTimer) == 0x2340c94 && sizeof(((Scene *)0)->packetLossTimer) == 0x4, "scene.fields: Scene.packetLossTimer");
 _Static_assert(offsetof(Scene, escTimer) == 0x2340c9c && sizeof(((Scene *)0)->escTimer) == 0x4, "scene.fields: Scene.escTimer");
 _Static_assert(offsetof(Scene, cleared2340ca4) == 0x2340ca4 && sizeof(((Scene *)0)->cleared2340ca4) == 0x2c, "scene.fields: Scene.cleared2340ca4");
 _Static_assert(offsetof(Scene, debugGrid) == 0x2340cd0 && sizeof(((Scene *)0)->debugGrid) == 0x4, "scene.fields: Scene.debugGrid");

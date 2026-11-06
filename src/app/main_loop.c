@@ -2208,9 +2208,9 @@ void THISCALL (match_frame)(u8 *s)
 		}
 		if (netq_skippedCount() > 0) {
 			netq_clearSkipped();
-			SC->resendWarning = 1.0f;
-		} else if (run_down(s, offsetof(Scene, resendWarning)))
-			SC->resendWarning = 0.0f;
+			SC->packetLossTimer = 1.0f;
+		} else if (run_down(s, offsetof(Scene, packetLossTimer)))
+			SC->packetLossTimer = 0.0f;
 	}
 	/* the match restart count */
 	if (SC->restartTimer > 0) {

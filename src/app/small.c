@@ -396,14 +396,14 @@ int THISCALL (script_startScenePath)(Stage *stage, const char *name, int mode)
 /* 0x46f770 (thiscall on a part list, ObjectList): when it has skeletons and i < skelCount, animation (skeleton) i is
    chosen (skel) and animTick is set to its duration (ms, Skeleton +0x20) times t, a 0 .. 1 fraction of the animation.
    Nothing happens otherwise */
-void THISCALL (anim_setTime)(u8 *anim, int i, float scale)
+void THISCALL (anim_setTime)(u8 *anim, int i, float t)
 {
 	ObjectList *ol = (ObjectList *)anim;
 	if (!ol->skeletons || i >= ol->skelCount)
 		return;
 	ol->skel = i;
 	const int *frame = ((int **)ol->skeletons)[i];
-	ol->animTick = ftol(fmul_m((long double)frame[8], &scale));
+	ol->animTick = ftol(fmul_m((long double)frame[8], &t));
 }
 
 /* 0x4722e0: the stage's cull margin (cullMargin, the float's bits copied) set, and viewDepth = -v x
