@@ -346,10 +346,10 @@ void (tunnelRing_build)(u8 *o, int index)
 	tr->ringIndex = index;
 }
 
-/* ---- the menu camera's move along the tunnel: its eye (g_menuCameraPos, three floats) and the point it looks at
+/* ---- the menu camera's move along the tunnel: its eye (g_menuEyeX, three floats) and the point it looks at
    (g_menuCameraLook), kept at g_menuEyeKeptX / g_menuLookKeptX; the move's state in g_menuCameraMove (0 still, 1 / 3 moving in / out a ring,
    2 / 4 the view swinging up before them) ---- */
-#define EYE ((float *)ADDR(g_menuCameraPos))
+#define EYE ((float *)ADDR(g_menuEyeX))
 #define LOOK ((float *)ADDR(g_menuCameraLook))
 #define EYE_KEPT ((float *)ADDR(g_menuEyeKeptX))
 #define LOOK_KEPT ((float *)ADDR(g_menuLookKeptX))

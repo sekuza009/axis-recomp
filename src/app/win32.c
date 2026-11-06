@@ -826,7 +826,7 @@ long STDCALL (game_wndProc)(void *wnd, u32 msg, u32 w, u32 l)
 		}
 		if (g_playerListDone)
 			g_rankingListIn = 1;
-		if (g_netNoticeIn)
+		if (g_rankReplyIn)
 			g_accountNotice = 1;
 		return 1;
 	}

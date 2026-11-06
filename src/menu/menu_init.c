@@ -103,7 +103,7 @@ void (menuCamera_initPoints)(void)
 		GAME_VAR(int, (OBJ(g_camPoints) + 0x8) + i * 0x10) = z;
 		GAME_VAR(int, (OBJ(g_camAims) + 0x8) + i * 0x10) = z;
 	}
-	(*(int *)&g_menuEyeHomeX) = (*(int *)&g_menuCameraPos);
+	(*(int *)&g_menuEyeHomeX) = (*(int *)&g_menuEyeX);
 	(*(int *)&g_menuEyeHomeY) = (*(int *)&g_menuEyeY);
 	(*(int *)&g_menuEyeHomeZ) = (*(int *)&g_menuEyeZ);
 	int lx = (*(int *)&g_menuCameraLook), ly = (*(int *)&g_menuCameraLookY), lz = (*(int *)&g_menuCameraLookZ);

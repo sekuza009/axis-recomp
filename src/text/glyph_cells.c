@@ -46,9 +46,9 @@ void (font_initMenuGrids)(void)
 void (font_initHudGrids)(void)
 {
 	static const Grid grids[3] = {
-		{ 0, 16, 0x100, 0, 15, 16, 16, 0, 15, OBJ(g_hudFontBottom), OBJ(g_hudFontTop), OBJ(g_hudFontLeft), OBJ(g_hudFontRight) },
-		{ 0, 16, 0x60, 0, 15, 16, 16, 0, 15, OBJ(g_hanJungBottom), OBJ(g_hudLayerATop), OBJ(g_hudLayerALeft), OBJ(g_hudLayerARight) },
-		{ 0x6f, 16, 0xdf, -15, 0, 16, 16, 0, 15, OBJ(g_hudLayerBBottom), OBJ(g_hudLayerBTop), OBJ(g_hudLayerBLeft), OBJ(g_hudLayerBRight) } };
+		{ 0, 16, 0x100, 0, 15, 16, 16, 0, 15, OBJ(g_hanChoBottom), OBJ(g_hanChoTop), OBJ(g_hanChoLeft), OBJ(g_hanChoRight) },
+		{ 0, 16, 0x60, 0, 15, 16, 16, 0, 15, OBJ(g_hanJungBottom), OBJ(g_hanJungTop), OBJ(g_hanJungLeft), OBJ(g_hanJungRight) },
+		{ 0x6f, 16, 0xdf, -15, 0, 16, 16, 0, 15, OBJ(g_hanJongBottom), OBJ(g_hanJongTop), OBJ(g_hanJongLeft), OBJ(g_hanJongRight) } };
 	for (int k = 0; k < 3; k++)
 		glyph_grid(&grids[k]);
 }

@@ -218,7 +218,7 @@ g_tunnelRings
 g_lineMaxLength
 g_typingLoginId
 g_briefingPage
-g_unusedArmcMoveWord
+g_unusedFreeCamMoveWord
 g_unusedArmcWord1
 g_unusedArmcWord3
 g_unusedDplayWord1
@@ -650,7 +650,7 @@ g_lobbyReplyRecord
 g_rankReply
 g_playerListReply
 g_gameServerReply
-g_netRecvRecord
+g_profileReply
 # the network globals: the receive buffers named, the blanket hold dropped, sockets / ports / pointer words reviewed, 2026-11-01
 g_gameServerSocket
 g_roomListAnswer
@@ -664,7 +664,7 @@ g_netAccountRequest
 g_netKindBuffer
 g_netLastRequest
 g_arenaListRequest
-g_netNoticeIn
+g_rankReplyIn
 g_netSelectionPacket
 g_gameServerKeepAlive
 g_lobbyKeepAlive
@@ -1036,18 +1036,18 @@ g_font5Bottom
 g_font5Top
 g_font5Left
 g_font5Right
-g_hudFontBottom
-g_hudFontTop
-g_hudFontLeft
-g_hudFontRight
+g_hanChoBottom
+g_hanChoTop
+g_hanChoLeft
+g_hanChoRight
 g_hanJungBottom
-g_hudLayerATop
-g_hudLayerALeft
-g_hudLayerARight
-g_hudLayerBBottom
-g_hudLayerBTop
-g_hudLayerBLeft
-g_hudLayerBRight
+g_hanJungTop
+g_hanJungLeft
+g_hanJungRight
+g_hanJongBottom
+g_hanJongTop
+g_hanJongLeft
+g_hanJongRight
 # the pen font tables (objects32.csv), whole
 g_penFixedTopLeft
 g_penFixedTopRight

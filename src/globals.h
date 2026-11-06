@@ -94,10 +94,10 @@
 #define g_unusedEmptySlot0Flag GAME_VAR(int, 0x4dbc80)   /* never set to 1 (0 in the image, .bss): armc_updatePartsPreview / armc_updateWeaponsPreview only test and clear it, so armc_weaponSlotRecord(0, 0) there never runs */
 #define g_savedMechHead GAME_VAR(int, 0x4dc878)   /* the saved mech's head part (g_savedMechPartIds[0]; chest, arm, leg, booster follow) */
 #define g_mechChanged GAME_VAR(int, 0x4dcc58)
-#define g_savedMechItem0 GAME_VAR(int, 0x4dcf18)   /* the saved mech's item slot 0 (g_savedMechSlotItems[0]; g_savedMechItem1 .. 5 follow): from record byte 5 / g_profileMechItem0 / g_itemSlot4 (g_armcSlotItems[0]) */
+#define g_savedMechItemSlot4 GAME_VAR(int, 0x4dcf18)   /* the saved mech's item in slot 4 (g_savedMechSlotItems[0]: an extra item; [1] slot 5, [2] .. [5] weapon slots 0 .. 3): from record byte 5 / the profile's record (armc_state.c: into g_itemSlot4) */
 #define g_setupPanelMoving GAME_VAR(int, 0x4dda60)
 #define g_arenaRotation GAME_VAR(u8, 0x4ded42)
-#define g_menuCameraPos GAME_VAR(float, 0x4df024)   /* the menu camera's eye x (g_menuEye[0]; y and z follow) */
+#define g_menuEyeX GAME_VAR(float, 0x4df024)   /* the menu camera's eye x (g_menuEye[0]; y and z follow) */
 #define g_characterTexture GAME_VAR(int, 0x4dfa00)
 #define g_panelHovered GAME_VAR(int, 0x680398)
 #define g_mapPreviewChanged GAME_VAR(int, 0x680cd0)
@@ -239,11 +239,11 @@
 #define g_savedMechArm GAME_VAR(int, 0x4dc880)
 #define g_savedMechLeg GAME_VAR(int, 0x4dc884)
 #define g_savedMechBooster GAME_VAR(int, 0x4dc888)
-#define g_savedMechItem1 GAME_VAR(int, 0x4dcf1c)
-#define g_savedMechItem2 GAME_VAR(int, 0x4dcf20)
-#define g_savedMechItem3 GAME_VAR(int, 0x4dcf24)
-#define g_savedMechItem4 GAME_VAR(int, 0x4dcf28)
-#define g_savedMechItem5 GAME_VAR(int, 0x4dcf2c)
+#define g_savedMechItemSlot5 GAME_VAR(int, 0x4dcf1c)   /* the saved mech's item in slot 5 (g_savedMechSlotItems[1]; into g_itemSlot5) */
+#define g_savedMechWeaponSlot0 GAME_VAR(int, 0x4dcf20)   /* the saved mech's item in weapon slot 0 (g_savedMechSlotItems[2]; into g_mechWeaponSlot0) */
+#define g_savedMechWeaponSlot1 GAME_VAR(int, 0x4dcf24)   /* the saved mech's item in weapon slot 1 (g_savedMechSlotItems[3]; into g_mechWeaponSlot1) */
+#define g_savedMechWeaponSlot2 GAME_VAR(int, 0x4dcf28)   /* the saved mech's item in weapon slot 2 (g_savedMechSlotItems[4]; into g_mechWeaponSlot2) */
+#define g_savedMechWeaponSlot3 GAME_VAR(int, 0x4dcf2c)   /* the saved mech's item in weapon slot 3 (g_savedMechSlotItems[5]; into g_mechWeaponSlot3) */
 #define g_fpsFrameCount GAME_VAR(int, 0x4dd0b0)   /* frames counted this second for the fps readout (menu_frame, only while g_showFps; cleared when a second has passed, g_fps = frames / seconds); app_startupLoad zeroes it */
 #define g_debugValue GAME_VAR(int, 0x4de6e0)
 #define g_mouseWheel GAME_VAR(int, 0x4ded7c)
@@ -274,7 +274,7 @@
 #define g_accountPacket GAME_VAR(char *, 0xa0b320)
 #define g_roomPacket GAME_VAR(u8 *, 0xa0b328)
 #define g_dplayLobby GAME_VAR(void *, 0xa0b398)
-#define g_roomPlayers GAME_VAR(u8, 0x4df9e9)
+#define g_roomMaxPlayers GAME_VAR(u8, 0x4df9e9)
 #define g_roomRotation GAME_VAR(u8, 0x4df9ea)
 #define g_roomRecRotation GAME_VAR(u8, 0x5b1b52)
 #define g_profileMechChest GAME_VAR(int, 0x9f19fc)
@@ -426,7 +426,7 @@
 #define g_profileLogInAsked GAME_VAR(int, 0x9f6840)   /* LOG IN chosen on the profile screen (button 2, key I, or the chosen row clicked twice: page 4, the pilot grid); profile_logIn does nothing without it; cleared only on entering the screen (menuState210_enter) */
 #define g_profileRowClickTime GAME_VAR(float, 0x9f8f18)   /* the time (1/60 s, g_frameTime) since a profile row was clicked (g_profileRowClicked); past 20 the click is forgotten; a second click on the same row within it opens the pilot grid (a double click) */
 #define g_netHostGone GAME_VAR(int, 0x9fd94c)   /* the network game is over: set when slot 0 (the host) is freed (net_freeSlotsOf), when the TCP sockets are closed (net_closeSockets), or to the word at +4 of a type 2 game message (net_handleMessage); cleared by net_resetState / match_startRound. Read by net_hostGone (0x4a86e0: the match quits) and net_handleSystemMessage (no per-player slot freeing once set) */
-#define g_netNoticeIn GAME_VAR(int, 0xa0b354)
+#define g_rankReplyIn GAME_VAR(int, 0xa0b354)
 #define g_newIdAnswer GAME_VAR(int, 0xa0b37c)   /* the game server's answer to request 15, the new ID's registration (newId_register): 0x21 accepted, 0x1e refused (message 0x22), 0x2a the update notice, 0x28 no answer; newIdConfirm_update reads and clears it */
 #define g_mapMissing GAME_VAR(int, 0xa0ea94)
 #define g_errorCleanupHook GAME_VAR(int, 0xa1efe8)
@@ -686,7 +686,7 @@
 #define g_unusedStartupWord2 GAME_VAR(u32, 0x4dd96c)
 #define g_setupResolution GAME_VAR(int, 0x4ddba0)
 #define g_freeCamHeight GAME_VAR(float, 0x4de348)
-#define g_unusedArmcMoveWord GAME_VAR(u32, 0x4de6f0)
+#define g_unusedFreeCamMoveWord GAME_VAR(u32, 0x4de6f0)
 #define g_unusedPostMatchFlag GAME_VAR(int, 0x4de6f8)
 #define g_arenaPassword GAME_VAR(u32, 0x4ded46)   /* char[8] (GameSettings.password of g_arenaName): the arena's password, sent with it */
 #define g_arenaPassword4 GAME_VAR(u32, 0x4ded4a)
@@ -725,7 +725,7 @@
 #define g_unusedNetResetWord GAME_VAR(int, 0xa05328)
 #define g_lobbyTcpPort GAME_VAR(int, 0xa055f4)
 #define g_ladderPort GAME_VAR(int, 0xa05634)
-#define g_profileReplyResult GAME_VAR(int, 0xa05638)   /* the Ladder server's profile reply's result code: the first dword of g_netRecvRecord (requests 14 login / 15 create ID; 0x21 ok, 0x1f no such ID, 0x20 wrong password, 0x22 ID in use, 0x1e ID taken) */
+#define g_profileReplyResult GAME_VAR(int, 0xa05638)   /* the Ladder server's profile reply's result code: the first dword of g_profileReply (requests 14 login / 15 create ID; 0x21 ok, 0x1f no such ID, 0x20 wrong password, 0x22 ID in use, 0x1e ID taken) */
 #define g_roomListRequest GAME_VAR(u32, 0xa0b334)   /* the 4-byte body of request 19 (list rooms; 01 00 18 00 = 0x180001, written by gameList_open), sent to the game server by net_send(19); allocated by net_resetConnection, freed by net_freeBuffers */
 #define g_unusedSessionWord GAME_VAR(int, 0xa0b420)
 #define g_unusedDplayWord1 GAME_VAR(int, 0xa0b42c)
@@ -835,7 +835,7 @@
 #define g_replaySelectLitB GAME_VAR(float, 0x9eeaa0)
 #define g_replaySelectLitA GAME_VAR(float, 0x9eeaa4)
 #define g_keptChatLine GAME_VAR(char, 0x9f63e4)
-#define g_rankReplyCode GAME_VAR(u8, 0xa052c0)   /* the first byte of the 0x22-byte reply to request 29 (my rank; g_rankReply): 1 when a reply came (net_recv sets g_netNoticeIn when it is non-zero); +1 g_outOfRank, +0x16 g_receivedRank */
+#define g_rankReplyCode GAME_VAR(u8, 0xa052c0)   /* the first byte of the 0x22-byte reply to request 29 (my rank; g_rankReply): 1 when a reply came (net_recv sets g_rankReplyIn when it is non-zero); +1 g_outOfRank, +0x16 g_receivedRank */
 #define g_arenaGameListLeft GAME_VAR(int, 0x4db8c8)
 #define g_arenaGameListTop GAME_VAR(int, 0x4db8cc)
 #define g_arenaGameListRight GAME_VAR(int, 0x4db8d0)

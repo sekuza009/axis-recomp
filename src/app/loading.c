@@ -282,7 +282,7 @@ int (app_startupLoad)(void *instance)
 	char logo[64];
 	strcpy(logo, (const char *)STR(0x4b24f0, "iftex/axis_title"));
 	(*(u32 *)&g_menuEyeY) = 0;
-	(*(u32 *)&g_menuCameraPos) = 0;
+	(*(u32 *)&g_menuEyeX) = 0;
 	(*(u32 *)&g_menuEyeZ) = 0x43fa0000;   /* 500 */
 	(*(u32 *)&g_menuCameraLook) = 0;
 	(*(u32 *)&g_menuCameraLookY) = 0;

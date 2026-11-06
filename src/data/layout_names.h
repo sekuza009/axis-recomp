@@ -958,8 +958,30 @@ extern struct GameData g_data;
 #define g_hChatEdit (*(void * *)g_hChatEdit_v)
 #undef g_hInstance
 #define g_hInstance (*(void * *)g_hInstance_v)
+#undef g_hanChoBottom
+#define g_hanChoBottom ((float *)g_hanChoBottom_v)
+#undef g_hanChoLeft
+#define g_hanChoLeft ((float *)g_hanChoLeft_v)
+#undef g_hanChoRight
+#define g_hanChoRight ((float *)g_hanChoRight_v)
+#undef g_hanChoTop
+#define g_hanChoTop ((float *)g_hanChoTop_v)
+#undef g_hanJongBottom
+#define g_hanJongBottom ((float *)g_hanJongBottom_v)
+#undef g_hanJongLeft
+#define g_hanJongLeft ((float *)g_hanJongLeft_v)
+#undef g_hanJongRight
+#define g_hanJongRight ((float *)g_hanJongRight_v)
+#undef g_hanJongTop
+#define g_hanJongTop ((float *)g_hanJongTop_v)
 #undef g_hanJungBottom
 #define g_hanJungBottom ((float *)g_hanJungBottom_v)
+#undef g_hanJungLeft
+#define g_hanJungLeft ((float *)g_hanJungLeft_v)
+#undef g_hanJungRight
+#define g_hanJungRight ((float *)g_hanJungRight_v)
+#undef g_hanJungTop
+#define g_hanJungTop ((float *)g_hanJungTop_v)
 #undef g_hangulLeadGlyph
 #define g_hangulLeadGlyph (*(int *)g_hangulLeadGlyph_v)
 #undef g_hangulLeadIndex
@@ -1034,28 +1056,6 @@ extern struct GameData g_data;
 #define g_hostGoneMessageFlag (*(int *)((u8 *)g_hostLeavingMsg_v + 0x4))
 #undef g_hostLeavingMsg
 #define g_hostLeavingMsg ((u32 *)g_hostLeavingMsg_v)
-#undef g_hudFontBottom
-#define g_hudFontBottom ((float *)g_hudFontBottom_v)
-#undef g_hudFontLeft
-#define g_hudFontLeft ((float *)g_hudFontLeft_v)
-#undef g_hudFontRight
-#define g_hudFontRight ((float *)g_hudFontRight_v)
-#undef g_hudFontTop
-#define g_hudFontTop ((float *)g_hudFontTop_v)
-#undef g_hudLayerALeft
-#define g_hudLayerALeft ((float *)g_hudLayerALeft_v)
-#undef g_hudLayerARight
-#define g_hudLayerARight ((float *)g_hudLayerARight_v)
-#undef g_hudLayerATop
-#define g_hudLayerATop ((float *)g_hudLayerATop_v)
-#undef g_hudLayerBBottom
-#define g_hudLayerBBottom ((float *)g_hudLayerBBottom_v)
-#undef g_hudLayerBLeft
-#define g_hudLayerBLeft ((float *)g_hudLayerBLeft_v)
-#undef g_hudLayerBRight
-#define g_hudLayerBRight ((float *)g_hudLayerBRight_v)
-#undef g_hudLayerBTop
-#define g_hudLayerBTop ((float *)g_hudLayerBTop_v)
 #undef g_hudProjMode
 #define g_hudProjMode (*(int *)g_hudProjMode_v)
 #undef g_inputFont
@@ -1500,8 +1500,6 @@ extern struct GameData g_data;
 #define g_menuCameraLookZ (*(float *)((u8 *)g_menuLook_v + 0x8))
 #undef g_menuCameraMove
 #define g_menuCameraMove (*(int *)g_menuCameraMove_v)
-#undef g_menuCameraPos
-#define g_menuCameraPos (*(float *)((u8 *)g_menuEye_v + 0x0))
 #undef g_menuEye
 #define g_menuEye ((float *)g_menuEye_v)
 #undef g_menuEyeHome
@@ -1520,6 +1518,8 @@ extern struct GameData g_data;
 #define g_menuEyeKeptY (*(float *)((u8 *)g_menuEyeKept_v + 0x4))
 #undef g_menuEyeKeptZ
 #define g_menuEyeKeptZ (*(float *)((u8 *)g_menuEyeKept_v + 0x8))
+#undef g_menuEyeX
+#define g_menuEyeX (*(float *)((u8 *)g_menuEye_v + 0x0))
 #undef g_menuEyeY
 #define g_menuEyeY (*(float *)((u8 *)g_menuEye_v + 0x4))
 #undef g_menuEyeZ
@@ -1704,8 +1704,6 @@ extern struct GameData g_data;
 #define g_netLeaveBuffer (*(char * *)g_netLeaveBuffer_v)
 #undef g_netListDone
 #define g_netListDone (*(int *)g_netListDone_v)
-#undef g_netNoticeIn
-#define g_netNoticeIn (*(int *)g_netNoticeIn_v)
 #undef g_netPacketMessageKind
 #define g_netPacketMessageKind (*(int *)((u8 *)g_netSendPacket_v + 0x0))
 #undef g_netPlayerList
@@ -1716,8 +1714,6 @@ extern struct GameData g_data;
 #define g_netQueueOnline (*(int *)g_netQueueOnline_v)
 #undef g_netRankingBuffer
 #define g_netRankingBuffer (*(int * *)g_netRankingBuffer_v)
-#undef g_netRecvRecord
-#define g_netRecvRecord ((u8 *)g_netRecvRecord_v)
 #undef g_netRole
 #define g_netRole (*(int *)g_netRole_v)
 #undef g_netSelectionPacket
@@ -2038,8 +2034,10 @@ extern struct GameData g_data;
 #define g_profileQuitSkip (*(int *)g_profileQuitSkip_v)
 #undef g_profileQuitting
 #define g_profileQuitting (*(int *)g_profileQuitting_v)
+#undef g_profileReply
+#define g_profileReply ((u8 *)g_profileReply_v)
 #undef g_profileReplyResult
-#define g_profileReplyResult (*(int *)((u8 *)g_netRecvRecord_v + 0x0))
+#define g_profileReplyResult (*(int *)((u8 *)g_profileReply_v + 0x0))
 #undef g_profileReveal
 #define g_profileReveal (*(int *)g_profileReveal_v)
 #undef g_profileRevealClock
@@ -2112,6 +2110,8 @@ extern struct GameData g_data;
 #define g_rankReply ((u8 *)g_rankReply_v)
 #undef g_rankReplyCode
 #define g_rankReplyCode (*(u8 *)((u8 *)g_rankReply_v + 0x0))
+#undef g_rankReplyIn
+#define g_rankReplyIn (*(int *)g_rankReplyIn_v)
 #undef g_rankingFirst
 #define g_rankingFirst (*(int *)g_rankingFirst_v)
 #undef g_rankingHaveList
@@ -2298,6 +2298,8 @@ extern struct GameData g_data;
 #define g_roomLoginTop (*(int *)g_roomLoginTop_v)
 #undef g_roomMap
 #define g_roomMap (*(signed char *)((u8 *)g_roomSettingsName_v + 0x20))
+#undef g_roomMaxPlayers
+#define g_roomMaxPlayers (*(u8 *)((u8 *)g_roomSettingsName_v + 0x21))
 #undef g_roomMech
 #define g_roomMech ((u8 *)g_roomMech_v)
 #undef g_roomMechKept
@@ -2308,8 +2310,6 @@ extern struct GameData g_data;
 #define g_roomPacket (*(u8 * *)g_roomPacket_v)
 #undef g_roomPanelsSliding
 #define g_roomPanelsSliding (*(int *)g_roomPanelsSliding_v)
-#undef g_roomPlayers
-#define g_roomPlayers (*(u8 *)((u8 *)g_roomSettingsName_v + 0x21))
 #undef g_roomRecFragLimit
 #define g_roomRecFragLimit (*(u8 *)((u8 *)g_roomRecName_v + 0x24))
 #undef g_roomRecGameMode
@@ -2360,24 +2360,24 @@ extern struct GameData g_data;
 #define g_savedMechChest (*(int *)((u8 *)g_savedMechPartIds_v + 0x4))
 #undef g_savedMechHead
 #define g_savedMechHead (*(int *)((u8 *)g_savedMechPartIds_v + 0x0))
-#undef g_savedMechItem0
-#define g_savedMechItem0 (*(int *)((u8 *)g_savedMechSlotItems_v + 0x0))
-#undef g_savedMechItem1
-#define g_savedMechItem1 (*(int *)((u8 *)g_savedMechSlotItems_v + 0x4))
-#undef g_savedMechItem2
-#define g_savedMechItem2 (*(int *)((u8 *)g_savedMechSlotItems_v + 0x8))
-#undef g_savedMechItem3
-#define g_savedMechItem3 (*(int *)((u8 *)g_savedMechSlotItems_v + 0xc))
-#undef g_savedMechItem4
-#define g_savedMechItem4 (*(int *)((u8 *)g_savedMechSlotItems_v + 0x10))
-#undef g_savedMechItem5
-#define g_savedMechItem5 (*(int *)((u8 *)g_savedMechSlotItems_v + 0x14))
+#undef g_savedMechItemSlot4
+#define g_savedMechItemSlot4 (*(int *)((u8 *)g_savedMechSlotItems_v + 0x0))
+#undef g_savedMechItemSlot5
+#define g_savedMechItemSlot5 (*(int *)((u8 *)g_savedMechSlotItems_v + 0x4))
 #undef g_savedMechLeg
 #define g_savedMechLeg (*(int *)((u8 *)g_savedMechPartIds_v + 0xc))
 #undef g_savedMechPartIds
 #define g_savedMechPartIds ((int *)g_savedMechPartIds_v)
 #undef g_savedMechSlotItems
 #define g_savedMechSlotItems ((int *)g_savedMechSlotItems_v)
+#undef g_savedMechWeaponSlot0
+#define g_savedMechWeaponSlot0 (*(int *)((u8 *)g_savedMechSlotItems_v + 0x8))
+#undef g_savedMechWeaponSlot1
+#define g_savedMechWeaponSlot1 (*(int *)((u8 *)g_savedMechSlotItems_v + 0xc))
+#undef g_savedMechWeaponSlot2
+#define g_savedMechWeaponSlot2 (*(int *)((u8 *)g_savedMechSlotItems_v + 0x10))
+#undef g_savedMechWeaponSlot3
+#define g_savedMechWeaponSlot3 (*(int *)((u8 *)g_savedMechSlotItems_v + 0x14))
 #undef g_screen
 #define g_screen (*(int *)g_screen_v)
 #undef g_screenCentreX
@@ -2720,8 +2720,6 @@ extern struct GameData g_data;
 #define g_unusedArenaFloat (*(float *)g_unusedArenaFloat_v)
 #undef g_unusedArenaWord
 #define g_unusedArenaWord (*(int *)g_unusedArenaWord_v)
-#undef g_unusedArmcMoveWord
-#define g_unusedArmcMoveWord (*(u32 *)g_unusedArmcMoveWord_v)
 #undef g_unusedArmcPoint0Y
 #define g_unusedArmcPoint0Y (*(float *)((u8 *)g_armcViewPoints_v + 0x4))
 #undef g_unusedArmcPoint3Y
@@ -2756,6 +2754,8 @@ extern struct GameData g_data;
 #define g_unusedDplayWord4 (*(int *)g_unusedDplayWord4_v)
 #undef g_unusedEmptySlot0Flag
 #define g_unusedEmptySlot0Flag (*(int *)g_unusedEmptySlot0Flag_v)
+#undef g_unusedFreeCamMoveWord
+#define g_unusedFreeCamMoveWord (*(u32 *)g_unusedFreeCamMoveWord_v)
 #undef g_unusedHighlightAlpha
 #define g_unusedHighlightAlpha (*(float *)g_unusedHighlightAlpha_v)
 #undef g_unusedInitWord

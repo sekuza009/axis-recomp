@@ -33,7 +33,7 @@ static void camera_heights(int n)
 		I(ADDR(g_camPoint0Z) + i * 0x10) = z;
 		I(ADDR(g_camAim0Z) + i * 0x10) = z;
 	}
-	(*(int *)&g_menuEyeHomeX) = (*(int *)&g_menuCameraPos);
+	(*(int *)&g_menuEyeHomeX) = (*(int *)&g_menuEyeX);
 	(*(int *)&g_menuEyeHomeY) = (*(int *)&g_menuEyeY);
 	(*(int *)&g_menuEyeHomeZ) = (*(int *)&g_menuEyeZ);
 }
@@ -265,7 +265,7 @@ u32 (menu_enterState)(void)
 /* the skirmish and mission screens' camera: at (0, 0, -450) moving to (0, 0, -550), that place its home, one target
    point (0, 0, 100) looking at the origin */
 static const Store briefing_camera[] = {
-	{ ADDR(g_menuCameraPos), 0 }, { ADDR(g_menuEyeY), 0 }, { ADDR(g_menuEyeZ), 0xc3e10000 }, { ADDR(g_menuCameraLook), 0 }, { ADDR(g_menuCameraLookY), 0 },
+	{ ADDR(g_menuEyeX), 0 }, { ADDR(g_menuEyeY), 0 }, { ADDR(g_menuEyeZ), 0xc3e10000 }, { ADDR(g_menuCameraLook), 0 }, { ADDR(g_menuCameraLookY), 0 },
 	{ ADDR(g_menuCameraLookZ), 0xc4098000 }, { ADDR(g_camPoint0X), 0 }, { ADDR(g_camPoint0Y), 0 }, { ADDR(g_camPoint0Z), 0x42c80000 }, { ADDR(g_camAim0X), 0 },
 	{ ADDR(g_camAim0Y), 0 }, { ADDR(g_camAim0Z), 0 }, { ADDR(g_menuEyeHomeX), 0 }, { ADDR(g_menuEyeHomeY), 0 }, { ADDR(g_menuEyeHomeZ), 0xc3e10000 }, { ADDR(g_menuLookHomeX), 0 },
 	{ ADDR(g_menuLookHomeY), 0 }, { ADDR(g_menuLookHomeZ), 0xc4098000 } };

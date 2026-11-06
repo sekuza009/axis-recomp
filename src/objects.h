@@ -159,7 +159,7 @@
 #define g_controlsEdit ((int *)IMG(0x4de0c0))   /* int[68]; setup's edited copy of g_controls (copied in when the control tab opens, setup_selectControlTab; back on OK): bindings 0 .. 0x3f, then the mouse switches (g_mouseSwitchesEdit), sensitivity (g_sensitivitySlider), crosshair (g_crosshairEdit) */
 #define g_mouseSettings (g_controls + 0x40)   /* int[4]; axis.cfg's mouse lines 0x40 .. 0x43: invert, smooth, sensitivity, crosshair */
 #define g_mouseSwitchesEdit (g_controlsEdit + 0x40)   /* int[2]; setup's edited INVERT MOUSE / SMOOTH MOUSE switches (g_controlsEdit's 0x40 / 0x41: axis.cfg's convertmouse, smoothmouse; setup_pages' loop of 2 draws them ON / OFF) */
-#define g_menuEye ((float *)IMG(0x4df024))   /* float[3]; the menu camera's position (x: g_menuCameraPos; y and z are globals.h's g_menuEyeY / g_menuEyeZ), eased by the *_camera functions, moved along the tunnel by menuTunnel_advance */
+#define g_menuEye ((float *)IMG(0x4df024))   /* float[3]; the menu camera's position (x: g_menuEyeX; y and z are globals.h's g_menuEyeY / g_menuEyeZ), eased by the *_camera functions, moved along the tunnel by menuTunnel_advance */
 #define g_menuLook ((float *)IMG(0x680378))   /* float[3]; the point the menu camera looks at (g_menuCameraLook, g_menuCameraLookY, and z = globals.h's g_menuCameraLookZ) */
 #define g_menuEyeHome ((float *)IMG(0x9db090))   /* float[3]; the menu camera's home position (g_menuEyeHomeX .. Z) */
 #define g_menuLookHome ((float *)IMG(0x76d3f8))   /* float[3]; the menu camera's home look-at point (g_menuLookHomeX .. Z) */
@@ -196,7 +196,7 @@
 #define g_rankReply ((u8 *)IMG(0xa052c0))   /* u8[34]; the game server's rank reply (request 29; 0x22 bytes, net_recv): +0 non-zero once it has arrived (g_rankReplyCode), +1 set when out of the first 1000 (g_outOfRank), +0x16 the rank (g_receivedRank; account_takeRank) */
 #define g_playerListReply ((u8 *)IMG(0xa052e8))   /* u8[62]; the game server's 62-byte player-list reply (request 21, g_gameServerSocket): its kind at +0x1e (g_serverReplyKind): 0 a player record (net_addPlayerRecord), 1 the end of the list */
 #define g_gameServerReply ((u8 *)IMG(0xa0b280))   /* u8[121]; the game server's room-list reply (request 19; 0x79 bytes; its kind at +0x68: g_gameServerReplyKind): 0 a room record (net_addRoomRecord), 1 the end of the list, 2 / 3 refused */
-#define g_netRecvRecord ((u8 *)IMG(0xa05638))   /* u8[267]; the game server's 0x10b-byte answer to requests 14 / 15 (net_recv's answer_reply; net_resetConnection clears 0x42 dwords + a word + a byte): its first word is the answer code (g_profileReplyResult), followed by the account record (login_takeAccountRecord reads +4 .. +0x10a) */
+#define g_profileReply ((u8 *)IMG(0xa05638))   /* u8[267]; the game server's 0x10b-byte answer to requests 14 / 15 (net_recv's answer_reply; net_resetConnection clears 0x42 dwords + a word + a byte): its first word is the answer code (g_profileReplyResult), followed by the account record (login_takeAccountRecord reads +4 .. +0x10a) */
 #define g_texture64x64 ((u8 *)IMG(0x4e1878))   /* u8[840004]; the 64 x 64 texture set (a Texture: g_texture64x64Vtable its vtable word) */
 #define g_texture128x64 ((u8 *)IMG(0x5b1db8))   /* u8[840004]; the 128 x 64 texture set (g_texture128x64Vtable its vtable word) */
 #define g_texture256x64 ((u8 *)IMG(0x680cd8))   /* u8[840004]; the 256 x 64 texture set (g_texture256x64Vtable its vtable word) */
@@ -315,18 +315,18 @@
 #define g_font5Top ((float *)IMG(0x5b1114))   /* float[128]; the 5-pixel menu font: the cells' top edges */
 #define g_font5Left ((float *)IMG(0x5b1514))   /* float[256]; the 5-pixel menu font: the cells' left edges */
 #define g_font5Right ((float *)IMG(0x4e10e8))   /* float[256]; the small menu font (text_quad5: 7 x 7 texel cells, 6 units a letter): the cells' right edges. Storage 256 (to g_dikF 0x4e14e8), only 128 set and read: font_initMenuGrids fills 4 rows of 32 (texel rows 0x80 .. 0x9f), text_quad5 reads c - 1 for ASCII c < 0x80 */
-#define g_hudFontBottom ((float *)IMG(0x4e0474))   /* float[256]; the HUD glyphs: the cells' bottom edges */
-#define g_hudFontTop ((float *)IMG(0x5b0910))   /* float[256]; the HUD glyphs: the cells' top edges */
-#define g_hudFontLeft ((float *)IMG(0x5b0d10))   /* float[256]; the HUD glyphs: the cells' left edges */
-#define g_hudFontRight ((float *)IMG(0x4e0878))   /* float[256]; the HUD glyphs: the cells' right edges */
-#define g_hanJungBottom ((float *)IMG(0x5b1b64))   /* float[96]; the Hangul vowel (jungseong) glyphs on the g_fontHanJungJong texture (6 rows of 16 from row 0; index vowel + lead set x 22, at most 87): the cells' bottom edges */
-#define g_hudLayerATop ((float *)IMG(0x4e16d8))   /* float[96]; the HUD two-layer font's layer A (6 rows x 16 glyphs from texel row 0): each glyph's top edge (t) */
-#define g_hudLayerALeft ((float *)IMG(0x4e1548))   /* float[100]; the HUD two-layer glyphs' first set (96 cells: 6 rows of 16 from texel row 0; font_initHudGrids): the cells' left edges */
-#define g_hudLayerARight ((float *)IMG(0x5b199c))   /* float[96]; the HUD two-layer glyphs, layer A (the first glyph of glyph_drawHud13Layered / glyph_drawHud31Layered): the cells' right edges (6 rows x 16) */
-#define g_hudLayerBBottom ((float *)IMG(0x83a7e0))   /* float[120]; the HUD two-layer glyphs */
-#define g_hudLayerBTop ((float *)IMG(0x4df638))   /* float[120]; the HUD two-layer glyphs' second set (B, glyph_drawHud13Layered / glyph_drawHud31Layered's j): the cells' top edges. 112 set (font_initHudGrids: 7 rows of 16 from texel row 0x60); storage 120 (the tables are 0x1e0 apart) */
-#define g_hudLayerBLeft ((float *)IMG(0x4df458))   /* float[120]; the HUD two-layer glyphs' second set (glyph_drawHud13Layered / 31Layered's j): the cells' left edges, 7 rows of 16 from texel row 0x60 (112 used; 8 spare floats before g_hudLayerBTop) */
-#define g_hudLayerBRight ((float *)IMG(0x83a600))   /* float[120] (112 used); the HUD's second glyph layer (the Hangul tail glyphs: tail + set * 28, 0 .. 111; 7 rows of 16 from texel 0x60): the cells' right edges */
+#define g_hanChoBottom ((float *)IMG(0x4e0474))   /* float[256]; the Hangul initial-consonant (choseong) glyphs on the g_fontHanCho texture (index lead + vowel set x 20, at most 159; font_initHudGrids): the cells' bottom edges */
+#define g_hanChoTop ((float *)IMG(0x5b0910))   /* float[256]; the Hangul initial-consonant (choseong) glyphs on the g_fontHanCho texture (index lead + vowel set x 20, at most 159; font_initHudGrids): the cells' top edges */
+#define g_hanChoLeft ((float *)IMG(0x5b0d10))   /* float[256]; the Hangul initial-consonant (choseong) glyphs on the g_fontHanCho texture (index lead + vowel set x 20, at most 159; font_initHudGrids): the cells' left edges */
+#define g_hanChoRight ((float *)IMG(0x4e0878))   /* float[256]; the Hangul initial-consonant (choseong) glyphs on the g_fontHanCho texture (index lead + vowel set x 20, at most 159; font_initHudGrids): the cells' right edges */
+#define g_hanJungBottom ((float *)IMG(0x5b1b64))   /* float[96]; the Hangul vowel (jungseong) glyphs on the g_fontHanJungJong texture (6 rows of 16 from row 0; index vowel + lead set x 22, at most 87; 96 set by font_initHudGrids): the cells' bottom edges */
+#define g_hanJungTop ((float *)IMG(0x4e16d8))   /* float[96]; the Hangul vowel (jungseong) glyphs on the g_fontHanJungJong texture (6 rows of 16 from row 0; index vowel + lead set x 22, at most 87; 96 set by font_initHudGrids): the cells' top edges */
+#define g_hanJungLeft ((float *)IMG(0x4e1548))   /* float[100]; the Hangul vowel (jungseong) glyphs on the g_fontHanJungJong texture (6 rows of 16 from row 0; index vowel + lead set x 22, at most 87; 96 set by font_initHudGrids): the cells' left edges */
+#define g_hanJungRight ((float *)IMG(0x5b199c))   /* float[96]; the Hangul vowel (jungseong) glyphs on the g_fontHanJungJong texture (6 rows of 16 from row 0; index vowel + lead set x 22, at most 87; 96 set by font_initHudGrids): the cells' right edges */
+#define g_hanJongBottom ((float *)IMG(0x83a7e0))   /* float[120]; the Hangul final-consonant (jongseong) glyphs on the g_fontHanJungJong texture (7 rows of 16 from texel row 0x60; index final + set x 28, at most 111; 112 of the 120 set by font_initHudGrids): the cells' bottom edges */
+#define g_hanJongTop ((float *)IMG(0x4df638))   /* float[120]; the Hangul final-consonant (jongseong) glyphs on the g_fontHanJungJong texture (7 rows of 16 from texel row 0x60; index final + set x 28, at most 111; 112 of the 120 set by font_initHudGrids): the cells' top edges */
+#define g_hanJongLeft ((float *)IMG(0x4df458))   /* float[120]; the Hangul final-consonant (jongseong) glyphs on the g_fontHanJungJong texture (7 rows of 16 from texel row 0x60; index final + set x 28, at most 111; 112 of the 120 set by font_initHudGrids): the cells' left edges */
+#define g_hanJongRight ((float *)IMG(0x83a600))   /* the Hangul final-consonant (jongseong) glyphs on the g_fontHanJungJong texture (7 rows of 16 from texel row 0x60; index final + set x 28, at most 111; 112 of the 120 set by font_initHudGrids): the cells' right edges */
 #define g_penFixedTopLeft ((float *)IMG(0xa0f498))   /* float[210]; the fixed set's top left corners */
 #define g_penFixedTopRight ((float *)IMG(0xa10018))   /* float[210]; the fixed set's top right corners */
 #define g_penFixedBottomRight ((float *)IMG(0xa0f150))   /* float[210]; the fixed set's bottom right corners */

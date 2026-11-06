@@ -136,7 +136,7 @@ void (room_loadSettingsRecord)(void)
 	memset((void *)OBJ(g_roomSettingsName), 0, 32);
 	(*(u8 *)&g_roomGameMode) = (*(u8 *)&g_roomRecGameMode);   /* stored before the name is copied, as in the original */
 	strcpy(g_roomSettingsName, g_roomRecName);
-	g_roomPlayers = (*(u8 *)&g_roomRecPlayers);
+	g_roomMaxPlayers = (*(u8 *)&g_roomRecPlayers);
 	g_roomRotation = g_roomRecRotation;
 	g_roomFragLimit = g_roomRecFragLimit;
 	g_roomTimeLimit = g_roomRecTimeLimit;
@@ -182,7 +182,7 @@ void (ranking_enter)(void)
 void (room_setLadderDefaults)(void)
 {
 	strcpy(g_roomSettingsName, (const char *)STR(0x4b17bc, "Axis Ladder Game"));
-	(*(char *)&g_roomPlayers) = 8;
+	(*(char *)&g_roomMaxPlayers) = 8;
 	(*(char *)&g_roomGameMode) = 0;
 	strcpy(g_ladderIdCopy, g_ladderId);
 	(*(char *)&g_roomMap) = 0;
@@ -207,7 +207,7 @@ void (room_copyJoinedSettings)(void)
 	strcpy(g_accountEmail, g_ladderEmail);
 	u8 map = (*(u8 *)&g_roomRecPlayers);
 	strcpy(g_roomSettingsName, g_roomRecName);
-	g_roomPlayers = map;
+	g_roomMaxPlayers = map;
 	(*(u8 *)&g_roomMap) = (*(u8 *)&g_roomRecMap);
 	g_roomRotation = g_roomRecRotation;
 	(*(u8 *)&g_roomGameMode) = (*(u8 *)&g_roomRecGameMode);
@@ -274,24 +274,24 @@ void (pilotRecord_syncCopies)(void)
 	}
 }
 
-/* 0x432db0: the login accepted (answer 0x21): the account record the server sent (g_netRecvRecord) taken: the ID and
+/* 0x432db0: the login accepted (answer 0x21): the account record the server sent (g_profileReply) taken: the ID and
    e-mail, the 11 mech bytes, the six colour pairs (a negative or NaN saturation or value becomes 0), the pilot's
    stats; then the room's settings, the Ladder record (g_ladderName ..) and the mech */
 void (login_takeAccountRecord)(void)
 {
-	strcpy(g_ladderId, (const char *)(OBJ(g_netRecvRecord) + 0x4));
-	strcpy(g_ladderEmail, (const char *)(OBJ(g_netRecvRecord) + 0x22));
-	memcpy((void *)OBJ(g_roomMech), (void *)(OBJ(g_netRecvRecord) + 0x54), 11);
+	strcpy(g_ladderId, (const char *)(OBJ(g_profileReply) + 0x4));
+	strcpy(g_ladderEmail, (const char *)(OBJ(g_profileReply) + 0x22));
+	memcpy((void *)OBJ(g_roomMech), (void *)(OBJ(g_profileReply) + 0x54), 11);
 	for (int k = 0; k < 6; k++) {
-		memcpy((void *)(OBJ(g_roomColours) + k * 0x18), (void *)((OBJ(g_netRecvRecord) + 0x5f) + k * 0x18), 0x18);
+		memcpy((void *)(OBJ(g_roomColours) + k * 0x18), (void *)((OBJ(g_profileReply) + 0x5f) + k * 0x18), 0x18);
 		if (!(GAME_VAR(float, OBJ(g_roomColours) + 0x4 + k * 0x18) >= k_0f))
 			GAME_VAR(int, OBJ(g_roomColours) + 0x4 + k * 0x18) = 0;
 		if (!(GAME_VAR(float, OBJ(g_roomColours) + 0x8 + k * 0x18) >= k_0f))
 			GAME_VAR(int, OBJ(g_roomColours) + 0x8 + k * 0x18) = 0;
 	}
-	static const u32 rect[7][2] = { { ADDR(g_pilotLevel), (OBJ(g_netRecvRecord) + 0xef) }, { ADDR(g_pilotExp), (OBJ(g_netRecvRecord) + 0xff) }, { ADDR(g_pilotPower), (OBJ(g_netRecvRecord) + 0x103) },
-	                                { ADDR(g_pilotKillRate), (OBJ(g_netRecvRecord) + 0x107) }, { ADDR(g_pilotKills), (OBJ(g_netRecvRecord) + 0xf7) }, { ADDR(g_pilotDeaths), (OBJ(g_netRecvRecord) + 0xfb) },
-	                                { ADDR(g_pilotGames), (OBJ(g_netRecvRecord) + 0xf3) } };
+	static const u32 rect[7][2] = { { ADDR(g_pilotLevel), (OBJ(g_profileReply) + 0xef) }, { ADDR(g_pilotExp), (OBJ(g_profileReply) + 0xff) }, { ADDR(g_pilotPower), (OBJ(g_profileReply) + 0x103) },
+	                                { ADDR(g_pilotKillRate), (OBJ(g_profileReply) + 0x107) }, { ADDR(g_pilotKills), (OBJ(g_profileReply) + 0xf7) }, { ADDR(g_pilotDeaths), (OBJ(g_profileReply) + 0xfb) },
+	                                { ADDR(g_pilotGames), (OBJ(g_profileReply) + 0xf3) } };
 	for (int k = 0; k < 7; k++)
 		GAME_VAR(int, rect[k][0]) = GAME_VAR(int, rect[k][1]);
 	room_copyJoinedSettings();

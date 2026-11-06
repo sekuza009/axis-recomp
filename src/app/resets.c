@@ -60,7 +60,7 @@ void (account_takeRank)(void)
 	int v = g_outOfRank != 1 ? g_receivedRank : 0;
 	g_pilotRank = v;
 	g_accountRank = v;
-	g_netNoticeIn = 0;
+	g_rankReplyIn = 0;
 	g_accountNotice = 0;
 	g_roomAwaitingServer = 0;
 }

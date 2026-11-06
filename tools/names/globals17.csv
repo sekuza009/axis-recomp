@@ -74,7 +74,7 @@
 0x4ded4a,u32,g_arenaPassword4
 0x4ded4e,u8,g_arenaLocked
 0x90d1cc,float,g_freeCamYaw
-0x4de6f0,u32,g_unusedArmcMoveWord
+0x4de6f0,u32,g_unusedFreeCamMoveWord
 0x4de348,float,g_freeCamHeight
 0x4dca34,u32,g_unusedArmcPoint0Y
 0x4dca64,u32,g_unusedArmcPoint3Y

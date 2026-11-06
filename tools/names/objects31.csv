@@ -12,15 +12,15 @@
 0x5b1114,float,256,g_font5Top,the 5-pixel menu font: the cells' top edges
 0x5b1514,float,256,g_font5Left,the 5-pixel menu font: the cells' left edges
 0x4e10e8,float,256,g_font5Right,the 5-pixel menu font: the cells' right edges
-0x4e0474,float,256,g_hudFontBottom,the HUD glyphs: the cells' bottom edges
-0x5b0910,float,256,g_hudFontTop,the HUD glyphs: the cells' top edges
-0x5b0d10,float,256,g_hudFontLeft,the HUD glyphs: the cells' left edges
-0x4e0878,float,256,g_hudFontRight,the HUD glyphs: the cells' right edges
+0x4e0474,float,256,g_hanChoBottom,the HUD glyphs: the cells' bottom edges
+0x5b0910,float,256,g_hanChoTop,the HUD glyphs: the cells' top edges
+0x5b0d10,float,256,g_hanChoLeft,the HUD glyphs: the cells' left edges
+0x4e0878,float,256,g_hanChoRight,the HUD glyphs: the cells' right edges
 0x5b1b64,float,100,g_hanJungBottom,the HUD two-layer glyphs, first set: the cells' bottom edges
-0x4e16d8,float,100,g_hudLayerATop,the HUD two-layer glyphs, first set: the cells' top edges
-0x4e1548,float,100,g_hudLayerALeft,the HUD two-layer glyphs, first set: the cells' left edges
-0x5b199c,float,100,g_hudLayerARight,the HUD two-layer glyphs, first set: the cells' right edges
-0x83a7e0,float,120,g_hudLayerBBottom,the HUD two-layer glyphs, second set: the cells' bottom edges
-0x4df638,float,120,g_hudLayerBTop,the HUD two-layer glyphs, second set: the cells' top edges
-0x4df458,float,120,g_hudLayerBLeft,the HUD two-layer glyphs, second set: the cells' left edges
-0x83a600,float,120,g_hudLayerBRight,the HUD two-layer glyphs, second set: the cells' right edges
+0x4e16d8,float,100,g_hanJungTop,the HUD two-layer glyphs, first set: the cells' top edges
+0x4e1548,float,100,g_hanJungLeft,the HUD two-layer glyphs, first set: the cells' left edges
+0x5b199c,float,100,g_hanJungRight,the HUD two-layer glyphs, first set: the cells' right edges
+0x83a7e0,float,120,g_hanJongBottom,the HUD two-layer glyphs, second set: the cells' bottom edges
+0x4df638,float,120,g_hanJongTop,the HUD two-layer glyphs, second set: the cells' top edges
+0x4df458,float,120,g_hanJongLeft,the HUD two-layer glyphs, second set: the cells' left edges
+0x83a600,float,120,g_hanJongRight,the HUD two-layer glyphs, second set: the cells' right edges

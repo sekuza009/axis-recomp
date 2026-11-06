@@ -56,7 +56,7 @@ void (armc_syncPartCursors)(void)
 /* 0x40e670: the menu camera put back as it was before the screen (angles and position), the preview off */
 void (armc_restoreMenuCamera)(void)
 {
-	copy((u32 *)ADDR(g_menuCameraPos), (const u32 *)ADDR(g_camPoint0X), 3);
+	copy((u32 *)ADDR(g_menuEyeX), (const u32 *)ADDR(g_camPoint0X), 3);
 	copy((u32 *)ADDR(g_menuCameraLook), (const u32 *)ADDR(g_camAim0X), 3);
 	g_armcPreview = 0;
 }
@@ -69,12 +69,12 @@ void (armc_loadSavedMech)(void)
 	g_workParts[3] = g_savedParts[3];
 	g_workParts[2] = g_savedParts[2];
 	g_workParts[4] = g_savedParts[4];
-	g_mechWeaponSlot1 = (*(u32 *)&g_savedMechItem3);
-	g_mechWeaponSlot0 = (*(u32 *)&g_savedMechItem2);
-	g_mechWeaponSlot2 = (*(u32 *)&g_savedMechItem4);
-	(*(u32 *)&g_itemSlot5) = (*(u32 *)&g_savedMechItem1);
-	g_mechWeaponSlot3 = (*(u32 *)&g_savedMechItem5);
-	(*(u32 *)&g_itemSlot4) = (*(u32 *)&g_savedMechItem0);
+	g_mechWeaponSlot1 = (*(u32 *)&g_savedMechWeaponSlot1);
+	g_mechWeaponSlot0 = (*(u32 *)&g_savedMechWeaponSlot0);
+	g_mechWeaponSlot2 = (*(u32 *)&g_savedMechWeaponSlot2);
+	(*(u32 *)&g_itemSlot5) = (*(u32 *)&g_savedMechItemSlot5);
+	g_mechWeaponSlot3 = (*(u32 *)&g_savedMechWeaponSlot3);
+	(*(u32 *)&g_itemSlot4) = (*(u32 *)&g_savedMechItemSlot4);
 	copy(g_armcColourBits, (const u32 *)OBJ(g_savedColourChoices), 0x90 / 4);
 }
 

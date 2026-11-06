@@ -1,5 +1,5 @@
 /* menu_cameras.c: the front end's camera moving between its home and a screen's menu point. The camera is a
-   position (g_menuCameraPos) and a point it looks at (g_menuCameraLook), three floats each; the menu points are 16 bytes apart
+   position (g_menuEyeX) and a point it looks at (g_menuCameraLook), three floats each; the menu points are 16 bytes apart
    from OBJ(g_camPoints) (positions) and OBJ(g_camAims) (look-at points), the home at g_menuEyeHomeX / g_menuLookHomeX. Each frame the camera
    eases a share of the way (the frame's time times a rate) and snaps once close enough. The arithmetic is kept in
    the original's order and at x87 precision (long double). */
@@ -14,7 +14,7 @@ typedef long double X;
 #define SCREEN_ASPECT ((X)I(ADDR(g_screenW)) / I(ADDR(g_screenH)))
 #define RATE F(0x4a93ec)                   /* the share eased per second */
 
-static const u32 cam[6] = { ADDR(g_menuCameraPos), ADDR(g_menuEyeY), ADDR(g_menuEyeZ), ADDR(g_menuCameraLook), ADDR(g_menuCameraLookY), ADDR(g_menuCameraLookZ) };
+static const u32 cam[6] = { ADDR(g_menuEyeX), ADDR(g_menuEyeY), ADDR(g_menuEyeZ), ADDR(g_menuCameraLook), ADDR(g_menuCameraLookY), ADDR(g_menuCameraLookZ) };
 static const u32 home[6] = { ADDR(g_menuEyeHomeX), ADDR(g_menuEyeHomeY), ADDR(g_menuEyeHomeZ), ADDR(g_menuLookHomeX), ADDR(g_menuLookHomeY), ADDR(g_menuLookHomeZ) };
 
 /* the frame time limited to 1 second (above the constant at limit) */
@@ -44,7 +44,7 @@ static void menu_camera(const MenuCam *m)
 	if (mode == 1) {
 		int i = I(m->idx) * 16;
 		X k = g_frameTime, c = RATE;
-		g_menuCameraPos = (float)(((X)F(i + OBJ(g_camPoints)) - g_menuCameraPos) * k * c + g_menuCameraPos);
+		g_menuEyeX = (float)(((X)F(i + OBJ(g_camPoints)) - g_menuEyeX) * k * c + g_menuEyeX);
 		if (!m->arena)
 			g_menuEyeY = (float)(((X)F(i + (OBJ(g_camPoints) + 0x4)) - g_menuEyeY) * k * c + g_menuEyeY);
 		g_menuEyeZ = (float)(((X)F(i + (OBJ(g_camPoints) + 0x8)) - g_menuEyeZ) * k * c + g_menuEyeZ);
@@ -58,7 +58,7 @@ static void menu_camera(const MenuCam *m)
 		/* there: snapped to the point */
 		if (!m->arena) {
 			I(m->mode) = 2;
-			(*(int *)&g_menuCameraPos) = I(i + OBJ(g_camPoints));
+			(*(int *)&g_menuEyeX) = I(i + OBJ(g_camPoints));
 			(*(int *)&g_menuEyeY) = I(i + (OBJ(g_camPoints) + 0x4));
 			(*(int *)&g_menuEyeZ) = I(i + (OBJ(g_camPoints) + 0x8));
 			(*(int *)&g_menuCameraLook) = I(i + OBJ(g_camAims));
@@ -71,7 +71,7 @@ static void menu_camera(const MenuCam *m)
 			(*(int *)&g_menuEyeZ) = I(i + (OBJ(g_camPoints) + 0x8));
 			volatile X x = F(i + OBJ(g_camPoints));   /* fld / fst / fstp */
 			(*(int *)&g_arenaKeptCamY) = (*(int *)&g_menuEyeY);
-			g_menuCameraPos = (float)x;
+			g_menuEyeX = (float)x;
 			(*(int *)&g_menuCameraLook) = I(i + OBJ(g_camAims));
 			(*(int *)&g_menuCameraLookY) = I(i + (OBJ(g_camAims) + 0x4));
 			g_arenaKeptCamX = (float)x;
@@ -94,7 +94,7 @@ static void menu_camera(const MenuCam *m)
 		(*(int *)&g_menuCameraLookY) = (*(int *)&g_menuLookHomeY);
 		(*(int *)&g_menuCameraLookZ) = (*(int *)&g_menuLookHomeZ);
 		I(m->mode) = 2;
-		(*(int *)&g_menuCameraPos) = (*(int *)&g_menuEyeHomeX);
+		(*(int *)&g_menuEyeX) = (*(int *)&g_menuEyeHomeX);
 		(*(int *)&g_menuEyeY) = (*(int *)&g_menuEyeHomeY);
 		(*(int *)&g_menuEyeZ) = (*(int *)&g_menuEyeHomeZ);
 		I(m->idx) = m->idxHome;
@@ -151,7 +151,7 @@ static void menu_camera2(const MenuCam2 *m)
 		if (!(last > k_m1f))
 			return;
 		X full = SCREEN_ASPECT;
-		(*(int *)&g_menuCameraPos) = 0;
+		(*(int *)&g_menuEyeX) = 0;
 		(*(u32 *)&g_menuEyeY) = 0xc3480000;   /* -200 */
 		(*(u32 *)&g_menuEyeZ) = 0x44bb8000;   /* 1500 */
 		(*(int *)&g_menuCameraLook) = 0;
@@ -181,7 +181,7 @@ static void menu_camera2(const MenuCam2 *m)
 	(*(int *)&g_menuCameraLookZ) = (*(int *)&g_menuLookHomeZ);
 	if (m->mission)
 		I(m->mode) = 2;
-	(*(int *)&g_menuCameraPos) = (*(int *)&g_menuEyeHomeX);
+	(*(int *)&g_menuEyeX) = (*(int *)&g_menuEyeHomeX);
 	(*(int *)&g_menuEyeY) = (*(int *)&g_menuEyeHomeY);
 	(*(int *)&g_menuEyeZ) = (*(int *)&g_menuEyeHomeZ);
 	if (m->mission && g_leavingForMatch == 1)
@@ -221,7 +221,7 @@ void (armc_cameraStep)(void)
 			g_viewAspect = (float)((X)g_viewAspect - (X)g_frameTime * k_0_07f);
 		if (!(last > F(network ? ADDR(k_m1101f) : ADDR(k_m1f))))   /* (the depth before its rounding) */
 			return;
-		(*(int *)&g_menuCameraPos) = 0;
+		(*(int *)&g_menuEyeX) = 0;
 		(*(u32 *)&g_menuEyeY) = 0xc3480000;   /* -200 */
 		(*(u32 *)&g_menuEyeZ) = network ? 0x43c80000 : 0x44bb8000;   /* 400 / 1500 */
 		g_frameOpening = 1;
@@ -258,7 +258,7 @@ void (armc_cameraStep)(void)
 		break;
 	case 2:
 		state = 400;
-		(*(int *)&g_menuCameraPos) = (*(int *)&g_arenaKeptCamX);
+		(*(int *)&g_menuEyeX) = (*(int *)&g_arenaKeptCamX);
 		(*(int *)&g_menuEyeY) = (*(int *)&g_arenaKeptCamY);
 		(*(int *)&g_menuEyeZ) = (*(int *)&g_arenaKeptCamZ);
 		(*(int *)&g_menuCameraLook) = (*(int *)&g_arenaKeptLookX);
@@ -329,7 +329,7 @@ void (menuCamera_forward)(void)
 	g_menuCamX = (float)(t + g_menuCamX);   /* the unrounded step here ... */
 	X u = c * g_frameTime * SPEED;
 	g_menuCamZ = (float)(u + g_menuCamZ);
-	g_menuCameraPos = (float)((X)tf + g_menuCameraPos);   /* ... the rounded one here */
+	g_menuEyeX = (float)((X)tf + g_menuEyeX);   /* ... the rounded one here */
 	g_menuEyeZ = (float)(u + g_menuEyeZ);
 }
 
@@ -343,7 +343,7 @@ void (menuCamera_back)(void)
 	g_menuCamX = (float)((X)g_menuCamX - tf);
 	X u = c * g_frameTime * SPEED;
 	g_menuCamZ = (float)((X)g_menuCamZ - u);
-	g_menuCameraPos = (float)((X)g_menuCameraPos - tf);
+	g_menuEyeX = (float)((X)g_menuEyeX - tf);
 	g_menuEyeZ = (float)((X)g_menuEyeZ - u);
 }
 
@@ -387,7 +387,7 @@ void (armc_mouseLook)(void)
 	if (g_mouseClick && !g_freeCamMoveStarted) {
 		u32 r = OBJ(g_slotCams) + slot * 88;
 		g_freeCamMoveStarted = 1;
-		g_unusedArmcMoveWord = 0x41f00000;   /* 30 */
+		g_unusedFreeCamMoveWord = 0x41f00000;   /* 30 */
 		(*(int *)&g_freeCamMoveTargetX) = I(r);
 		(*(int *)&g_freeCamMoveTargetY) = I(r + 4);
 		(*(int *)&g_freeCamMoveTargetZ) = I(r + 8);
@@ -407,7 +407,7 @@ void (setup_camera)(void)
 	X k = g_frameTime, c = RATE;
 	if (mode == 1) {
 		int i = g_setupTab * 16;
-		g_menuCameraPos = (float)(((X)F(i + OBJ(g_camPoints)) - g_menuCameraPos) * k * c + g_menuCameraPos);
+		g_menuEyeX = (float)(((X)F(i + OBJ(g_camPoints)) - g_menuEyeX) * k * c + g_menuEyeX);
 		g_menuEyeZ = (float)(((X)F(i + (OBJ(g_camPoints) + 0x8)) - g_menuEyeZ) * k * c + g_menuEyeZ);
 		X look = ((X)F(i + OBJ(g_camAims)) - g_menuCameraLook) * k * c + g_menuCameraLook;
 		g_menuCameraLook = (float)look;
@@ -417,14 +417,14 @@ void (setup_camera)(void)
 		if (!(look > k_69_9))
 			return;
 		for (int a = 0; a < 3; a++) {
-			I(ADDR(g_menuCameraPos) + a * 4) = I(i + OBJ(g_camPoints) + a * 4);
+			I(ADDR(g_menuEyeX) + a * 4) = I(i + OBJ(g_camPoints) + a * 4);
 		}
 		for (int a = 0; a < 3; a++)
 			I(ADDR(g_menuCameraLook) + a * 4) = I(i + OBJ(g_camAims) + a * 4);
 		g_setupCameraMode = 2;
 		g_frameOpening = 1;
 	} else if (mode == 0) {
-		g_menuCameraPos = (float)((X)g_menuCameraPos - ((X)g_menuCameraPos - g_menuEyeHomeX) * k * c);
+		g_menuEyeX = (float)((X)g_menuEyeX - ((X)g_menuEyeX - g_menuEyeHomeX) * k * c);
 		g_menuEyeZ = (float)((X)g_menuEyeZ - ((X)g_menuEyeZ - g_menuEyeHomeZ) * k * c);
 		X look = (X)g_menuCameraLook - ((X)g_menuCameraLook - g_menuLookHomeX) * k * c;
 		g_menuCameraLook = (float)look;
@@ -437,7 +437,7 @@ void (setup_camera)(void)
 			I(ADDR(g_menuCameraLook) + a * 4) = I(ADDR(g_menuLookHomeX) + a * 4);
 		g_setupCameraMode = 2;
 		for (int a = 0; a < 3; a++)
-			I(ADDR(g_menuCameraPos) + a * 4) = I(ADDR(g_menuEyeHomeX) + a * 4);
+			I(ADDR(g_menuEyeX) + a * 4) = I(ADDR(g_menuEyeHomeX) + a * 4);
 		g_setupTab = 0x29a;
 	}
 }
@@ -496,7 +496,7 @@ void (freeCam_keys)(void)
 		long double b = fmul_m(fmul_m(fld_m(&g_freeCamTurnCos), frame), speed);
 		float bf = f32(b);
 		g_menuCamZ = f32(fadd_m(b, &g_menuCamZ));
-		g_menuCameraPos = f32(fadd_m(a, &g_menuCameraPos));
+		g_menuEyeX = f32(fadd_m(a, &g_menuEyeX));
 		g_menuEyeZ = f32(FADD(bf, g_menuEyeZ));
 	}
 	if (input_isDown(g_keyBackward) == 1) {
@@ -504,7 +504,7 @@ void (freeCam_keys)(void)
 		g_menuCamX = f32(fld_m(&g_menuCamX) - a);
 		float bf = f32(fmul_m(fmul_m(fld_m(&g_freeCamTurnCos), frame), speed));
 		g_menuCamZ = f32(FSUB(g_menuCamZ, bf));
-		g_menuCameraPos = f32(fld_m(&g_menuCameraPos) - a);
+		g_menuEyeX = f32(fld_m(&g_menuEyeX) - a);
 		g_menuEyeZ = f32(FSUB(g_menuEyeZ, bf));
 	}
 	if (input_isDown(g_keyStepLeft) == 1)
@@ -513,7 +513,7 @@ void (freeCam_keys)(void)
 		menuCamera_back();
 	(*(u32 *)&g_menuCameraLook) = (*(u32 *)&g_menuCamX);
 	(*(u32 *)&g_menuCameraLookZ) = (*(u32 *)&g_menuCamZ);
-	g_menuCameraPos = f32(fsubr_m(fmul_m(fld_m(&g_freeCamTurnSin), (const float *)ADDR(k_50f)), &g_menuCamX));
+	g_menuEyeX = f32(fsubr_m(fmul_m(fld_m(&g_freeCamTurnSin), (const float *)ADDR(k_50f)), &g_menuCamX));
 	g_menuEyeY = f32(fadd_m(fld_m(&g_freeCamHeight), (const float *)ADDR(k_10f)));
 	u32 *slot = (u32 *)(OBJ(g_slotCams) + g_localSlot * 0x58);
 	slot[0] = (*(u32 *)&g_menuCamX);

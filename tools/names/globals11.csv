@@ -26,7 +26,7 @@
 0x9f6840,int,g_profileLogInAsked
 0x9f8f18,float,g_profileRowClickTime
 0x9dd354,int,g_accountNotice
-0xa0b354,int,g_netNoticeIn
+0xa0b354,int,g_rankReplyIn
 0x5b1dac,int,g_matchRunning
 0x4b2790,int,g_gameRunning
 0x4dcf10,int,g_armcLeaving

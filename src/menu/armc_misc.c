@@ -702,7 +702,7 @@ int (armc_drawModeTabs)(void)
 }
 
 /* 0x40e7a0: the selection kept: the part choices (0x90 bytes from g_armcColours into g_savedColourChoices), the five colour
-   choices (g_armcParts into g_savedMechHead) and six more settings (g_itemSlot4 into g_savedMechItem0), between two calls of the part
+   choices (g_armcParts into g_savedMechHead) and six more settings (g_itemSlot4 into g_savedMechItemSlot4), between two calls of the part
    lists (armc_resetSeraphimParts); the original then checked the choices' ranges, which the patched game jumps over. Then the
    progress saved; returns profile_saveProgress's eax */
 u32 (armc_saveSelection)(void)
@@ -710,7 +710,7 @@ u32 (armc_saveSelection)(void)
 	armc_resetSeraphimParts();
 	memcpy((void *)OBJ(g_savedColourChoices), (const void *)OBJ(g_armcColours), 0x90);
 	memcpy((void *)ADDR(g_savedMechHead), (const void *)OBJ(g_armcParts), 5 * 4);
-	memcpy((void *)ADDR(g_savedMechItem0), (const void *)ADDR(g_itemSlot4), 6 * 4);
+	memcpy((void *)ADDR(g_savedMechItemSlot4), (const void *)ADDR(g_itemSlot4), 6 * 4);
 	armc_resetSeraphimParts();
 	return profile_saveProgress();   /* profile_saveProgress */
 }
@@ -732,9 +732,9 @@ void (armc_sendSelectionToNet)(void)
 	if (g_pilotLevel != 0x14)
 		armc_resetSeraphimParts();
 	memcpy((void *)ADDR(g_savedMechHead), (const void *)OBJ(g_armcParts), 5 * 4);
-	memcpy((void *)ADDR(g_savedMechItem0), (const void *)ADDR(g_itemSlot4), 6 * 4);
+	memcpy((void *)ADDR(g_savedMechItemSlot4), (const void *)ADDR(g_itemSlot4), 6 * 4);
 	u8 *room = g_roomMech;
-	const int *parts = (const int *)ADDR(g_savedMechHead), *settings = (const int *)ADDR(g_savedMechItem0);
+	const int *parts = (const int *)ADDR(g_savedMechHead), *settings = (const int *)ADDR(g_savedMechItemSlot4);
 	for (int i = 0; i < 4; i++)
 		room[7 + i] = (u8)settings[2 + i];
 	room[5] = (u8)g_itemSlot4;

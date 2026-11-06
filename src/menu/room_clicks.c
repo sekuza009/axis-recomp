@@ -616,7 +616,7 @@ u32 (room_settingsClicks)(void)
 	if (!g_mouseClick)
 		return 0;
 	u32 button = ((u32)roomSettings_hitTest(g_mouseX, g_mouseY));   /* roomSettings_hitTest */
-	u8 *players = (u8 *)ADDR(g_roomPlayers), *type = (u8 *)ADDR(g_roomGameMode), *frags = (u8 *)ADDR(g_roomFragLimit), *time = (u8 *)ADDR(g_roomTimeLimit);
+	u8 *players = (u8 *)ADDR(g_roomMaxPlayers), *type = (u8 *)ADDR(g_roomGameMode), *frags = (u8 *)ADDR(g_roomFragLimit), *time = (u8 *)ADDR(g_roomTimeLimit);
 	u32 r;
 	switch (button) {
 	case 0:

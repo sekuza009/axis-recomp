@@ -1379,7 +1379,7 @@ static void answer_reply(u32 answer, const u8 *codes, int count, u32 start)
 /* 0x452620: the reply to the last request (g_netLastRequest) read: 10 the lobby's status (g_lobbyReplyCode into g_lobbyStatus), 13 the
    list of games, 14 / 15 the game server's answers (kept in g_gameServerAnswer / g_newIdAnswer), 18 its status (g_gameServerReplyCode into
    g_gameServerStatus), 19 the server list, 21 the player list, 26 the player list cleared (g_playerListDone), 29 a 0x22-byte notice
-   (g_rankReplyCode; g_netNoticeIn when it is not empty). The callers ignore the eax it leaves */
+   (g_rankReplyCode; g_rankReplyIn when it is not empty). The callers ignore the eax it leaves */
 void (net_recv)(void)
 {
 	u32 start = GetTickCount();
@@ -1414,7 +1414,7 @@ void (net_recv)(void)
 	case 29:
 		recv_all(ADDR(g_gameServerSocket), (void *)ADDR(g_rankReplyCode), 0x22, start);
 		if (g_rankReplyCode) {
-			g_netNoticeIn = 1;
+			g_rankReplyIn = 1;
 			g_netLastRequest = 0;
 		}
 		break;

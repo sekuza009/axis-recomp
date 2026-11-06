@@ -93,7 +93,7 @@ static void first_round(Scene *s)
 	}
 	for (int k = 0; k < 5; k++)
 		s->mechParts[k] = g_savedMechPartIds[k];
-	static const u32 items[6] = { ADDR(g_savedMechItem2), ADDR(g_savedMechItem3), ADDR(g_savedMechItem4), ADDR(g_savedMechItem5), ADDR(g_savedMechItem0), ADDR(g_savedMechItem1) };
+	static const u32 items[6] = { ADDR(g_savedMechWeaponSlot0), ADDR(g_savedMechWeaponSlot1), ADDR(g_savedMechWeaponSlot2), ADDR(g_savedMechWeaponSlot3), ADDR(g_savedMechItemSlot4), ADDR(g_savedMechItemSlot5) };
 	for (int k = 0; k < 6; k++)
 		s->mechItems[k] = GAME_VAR(int, items[k]);
 	/* the five parts' colour pairs (six dwords each from g_savedColourChoices: hue, saturation, value of the first tint, then

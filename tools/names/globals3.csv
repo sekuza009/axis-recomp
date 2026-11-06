@@ -1,7 +1,7 @@
 # globals, batch 3 (address,type,name)
 0x4ded42,u8,g_arenaRotation
 0x4dc878,int,g_savedMechHead
-0x4dcf18,int,g_savedMechItem0
+0x4dcf18,int,g_savedMechItemSlot4
 0x4dcc58,int,g_mechChanged
 0x4dbc80,int,g_unusedEmptySlot0Flag
 0x680cd0,int,g_mapPreviewChanged
@@ -11,7 +11,7 @@
 0x9eeaa8,int,g_tunnelFlyingIn
 0x4dda60,int,g_setupPanelMoving
 0x9da440,int,g_dikF1
-0x4df024,u32,g_menuCameraPos
+0x4df024,u32,g_menuEyeX
 0x9db990,int,g_replayRunning
 0x4b2a7c,int,g_replayWrap
 0x9dd8e8,u32,g_startTicks

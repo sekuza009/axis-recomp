@@ -4,11 +4,11 @@
 0x4dc880,int,g_savedMechArm
 0x4dc884,int,g_savedMechLeg
 0x4dc888,int,g_savedMechBooster
-0x4dcf1c,int,g_savedMechItem1
-0x4dcf20,int,g_savedMechItem2
-0x4dcf24,int,g_savedMechItem3
-0x4dcf28,int,g_savedMechItem4
-0x4dcf2c,int,g_savedMechItem5
+0x4dcf1c,int,g_savedMechItemSlot5
+0x4dcf20,int,g_savedMechWeaponSlot0
+0x4dcf24,int,g_savedMechWeaponSlot1
+0x4dcf28,int,g_savedMechWeaponSlot2
+0x4dcf2c,int,g_savedMechWeaponSlot3
 # the profile record's mech items 0 .. 5
 0x9f1a14,int,g_profileMechItem0
 0x9f1a18,int,g_profileMechItem1

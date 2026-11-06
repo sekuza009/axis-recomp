@@ -87,16 +87,16 @@ void (arena_clearSessionEntry)(void)
 	e->ping = 0;
 }
 
-/* ---- the saved mech (g_savedMechHead parts, g_savedMechItem0 weapons, g_savedColourChoices colours) ---- */
+/* ---- the saved mech (g_savedMechHead parts, g_savedMechItemSlot4 weapons, g_savedColourChoices colours) ---- */
 /* 0x430390: the empty mech: no weapons, part 0, colour pairs (0,1,0) (0,1,0) */
 void (mech_setEmpty)(void)
 {
 	static const float colour[6] = { 0, 1, 0, 0, 1, 0 };
-	g_savedMechItem3 = g_savedMechItem4 = g_savedMechItem5 =
-		g_savedMechItem0 = g_savedMechItem1 = -1;
+	g_savedMechWeaponSlot1 = g_savedMechWeaponSlot2 = g_savedMechWeaponSlot3 =
+		g_savedMechItemSlot4 = g_savedMechItemSlot5 = -1;
 	g_savedMechHead = g_savedMechChest = g_savedMechArm =
 		g_savedMechLeg = g_savedMechBooster = 0;
-	g_savedMechItem2 = 0;
+	g_savedMechWeaponSlot0 = 0;
 	for (u32 p = OBJ(g_savedColourChoices); p < (OBJ(g_savedColourChoices) + 0x78); p += 24)
 		memcpy((void *)RELOC(p), colour, 24);
 }
@@ -113,8 +113,8 @@ void (mech_unpackFromRecord)(void)
 	g_savedMechBooster = rec[4];
 	for (int i = 0; i < 4; i++)
 		GAME_VAR(int, OBJ(g_savedMechSlotItems) + 8 + i * 4) = rec[7 + i];   /* (items 2 .. 5) */
-	g_savedMechItem1 = rec[6];
-	g_savedMechItem0 = rec[5];
+	g_savedMechItemSlot5 = rec[6];
+	g_savedMechItemSlot4 = rec[5];
 	memcpy((void *)OBJ(g_savedColourChoices), (void *)OBJ(g_roomColours), 0x90);
 }
 
@@ -127,12 +127,12 @@ void (mech_loadFromProfile)(void)
 	g_savedMechArm = g_profileMechArm;
 	g_savedMechBooster = g_profileMechBooster;
 	g_savedMechLeg = g_profileMechLeg;
-	g_savedMechItem2 = g_profileMechItem2;
-	g_savedMechItem4 = g_profileMechItem4;
-	g_savedMechItem3 = g_profileMechItem3;
-	g_savedMechItem5 = g_profileMechItem5;
-	g_savedMechItem0 = g_profileMechItem0;
-	g_savedMechItem1 = g_profileMechItem1;
+	g_savedMechWeaponSlot0 = g_profileMechItem2;
+	g_savedMechWeaponSlot2 = g_profileMechItem4;
+	g_savedMechWeaponSlot1 = g_profileMechItem3;
+	g_savedMechWeaponSlot3 = g_profileMechItem5;
+	g_savedMechItemSlot4 = g_profileMechItem0;
+	g_savedMechItemSlot5 = g_profileMechItem1;
 	for (int o = 0; o < 0x90; o += 0x18) {
 		if (!(GAME_VAR(float, OBJ(g_pilotSave) + 0x320 + o) >= 0.0f))
 			GAME_VAR(int, OBJ(g_pilotSave) + 0x320 + o) = 0;
@@ -150,19 +150,19 @@ void (mech_storeToProfile)(void)
 	g_profileMechLeg = g_savedMechLeg;
 	g_profileMechArm = g_savedMechArm;
 	g_profileMechBooster = g_savedMechBooster;
-	g_profileMechItem3 = g_savedMechItem3;
-	g_profileMechItem2 = g_savedMechItem2;
-	g_profileMechItem4 = g_savedMechItem4;
-	g_profileMechItem1 = g_savedMechItem1;
-	g_profileMechItem5 = g_savedMechItem5;
-	g_profileMechItem0 = g_savedMechItem0;
+	g_profileMechItem3 = g_savedMechWeaponSlot1;
+	g_profileMechItem2 = g_savedMechWeaponSlot0;
+	g_profileMechItem4 = g_savedMechWeaponSlot2;
+	g_profileMechItem1 = g_savedMechItemSlot5;
+	g_profileMechItem5 = g_savedMechWeaponSlot3;
+	g_profileMechItem0 = g_savedMechItemSlot4;
 	memcpy((void *)(OBJ(g_pilotSave) + 0x31c), (void *)OBJ(g_savedColourChoices), 0x90);
 }
 
 /* 0x447910: the menu camera put back (armc_restoreMenuCamera without its flag) */
 void (menu_restoreCamera)(void)
 {
-	(*(int *)&g_menuCameraPos) = (*(int *)&g_camPoint0X);
+	(*(int *)&g_menuEyeX) = (*(int *)&g_camPoint0X);
 	(*(int *)&g_menuEyeY) = (*(int *)&g_camPoint0Y);
 	(*(int *)&g_menuEyeZ) = (*(int *)&g_camPoint0Z);
 	(*(int *)&g_menuCameraLook) = (*(int *)&g_camAim0X);

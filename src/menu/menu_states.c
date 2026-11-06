@@ -550,7 +550,7 @@ static u32 reset_menus(u32 farZ, u32 nearZ, int blocked, int entering, int clear
 {
 	u32 typing = (*(u32 *)&g_textFieldOpen);
 	(*(u32 *)&g_menuEyeY) = 0;
-	(*(u32 *)&g_menuCameraPos) = 0;
+	(*(u32 *)&g_menuEyeX) = 0;
 	(*(u32 *)&g_menuEyeZ) = farZ;
 	(*(u32 *)&g_menuCameraLook) = 0;
 	(*(u32 *)&g_menuCameraLookY) = 0;

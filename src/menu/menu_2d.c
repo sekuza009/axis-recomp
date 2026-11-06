@@ -172,15 +172,15 @@ u32 (menu_drawDimOverlay)(void)
 	return menu_drawRect(0, 0, 640, 480, 1);   /* menu_drawRect, filled */
 }
 
-/* 0x41f050: the menu camera: the scene moved by minus the camera's position (g_menuCameraPos), then the view from it towards
+/* 0x41f050: the menu camera: the scene moved by minus the camera's position (g_menuEyeX), then the view from it towards
    the look-at point (g_menuCameraLook), y up. Returns gluLookAt's eax */
 u32 (gfx_setMenuCamera)(void)
 {
 	float z = (float)-fld_m((const float *)ADDR(g_menuEyeZ)), y = (float)-fld_m((const float *)ADDR(g_menuEyeY)),
-	      x = (float)-fld_m((const float *)ADDR(g_menuCameraPos));
+	      x = (float)-fld_m((const float *)ADDR(g_menuEyeX));
 	glTranslatef(x, y, z);   /* glTranslatef */
 	glLoadIdentity();
-	const float *eye = (const float *)ADDR(g_menuCameraPos), *at = (const float *)ADDR(g_menuCameraLook);
+	const float *eye = (const float *)ADDR(g_menuEyeX), *at = (const float *)ADDR(g_menuCameraLook);
 	return IMPORT(0x4a904c, u32, double, double, double, double, double, double, double, double, double)(
 		eye[0], eye[1], eye[2], at[0], at[1], at[2], 0.0, 1.0, 0.0);   /* gluLookAt */
 }
