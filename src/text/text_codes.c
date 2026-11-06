@@ -103,7 +103,7 @@ u32 (text_ascii5Pass)(int x, int y, const u8 *s)
    at g_codeColours); the 13-unit passes also take "$#c" in a match or the game room (screens 9999 / 400): colour c
    kept for the rest of the text, a later "$[c]" changing it. Lines are `line` apart, wrap at x g_textWrapX and stop
    at y g_textBottom. The ASCII passes draw the single-byte characters (a double-byte one is skipped, `wide` across),
-   then keep where they ended (g_textEndX / g_textEndY; g_briefingSkipped set when stopped). The Korean passes draw only the
+   then keep where they ended (g_textEndX / g_textEndY; g_textHitBottom set when stopped). The Korean passes draw only the
    double-byte syllables, each split by hangul_glyphs (after the conversion text_hangulConvert when g_convertHangul is 1): the lead
    glyph alone (g_hangulLeadGlyph) or the vowel and tail glyphs as two layers (g_hangulVowelGlyph / g_hangulTailGlyph); other characters move
    `space` for a space, else g_textCharWidth. Returns glEnd's eax, or glDisable's for the passes that end texturing ---- */
@@ -157,7 +157,7 @@ static u32 text_pass(int x, int y, const u8 *s, const TextPass *pass)
 		}
 		if (y >= g_textBottom) {
 			if (!pass->korean)
-				g_briefingSkipped = 1;
+				g_textHitBottom = 1;
 			break;
 		}
 		if (!pass->korean) {

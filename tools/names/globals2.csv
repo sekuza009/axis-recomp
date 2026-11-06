@@ -19,18 +19,18 @@
 # sound
 0x4e0c90,int,g_soundVolume
 # the front end
-0x9db994,int,g_replayZoomIn
+0x9db994,int,g_replayShowOn
 0x9eeac0,int,g_replayRandomOrder
-0x9dcd30,int,g_typedLength
+0x9dcd30,int,g_lineMaxLength
 0x4ddd90,float,g_setupTunnelDepth
 0x4df454,u32,g_panelGlowStep
 0x907b24,int,g_lastPanel
 0x680378,u32,g_menuCameraLook
 0x9dd88c,int,g_argCount
-0x76d364,int,g_startedByLauncher
+0x76d364,int,g_launchedAsHost
 # the arena lobby and joining
-0x4dbaac,int,g_serverConnected
-0x4dbbf0,int,g_lobbyJoinRequest
+0x4dbaac,int,g_joinThroughServer
+0x4dbbf0,int,g_lanJoinRequest
 0x9da498,int,g_roomSearchAnswerIn
 # the game room
 0x9dd350,int,g_rankingRequestPending
@@ -40,9 +40,9 @@
 0x9dd84c,int,g_roomConnected
 0x9f8d6c,int,g_chosenPilot
 # the network
-0xa0b34c,int,g_gameServerState
+0xa0b34c,int,g_roomListAnswer
 0xa0b368,int,g_serverListCount
 0xa0d79c,int,g_serverPingCount
-0xa0b384,int,g_dplaySessionList
-0x9f941c,int,g_hostResultFlag
+0xa0b384,int,g_sessionListOpen
+0x9f941c,int,g_hostGoneMessageFlag
 0x9fd940,u32,g_netBlockSize

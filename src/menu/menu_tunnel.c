@@ -60,7 +60,7 @@ static void outer_bands(TunnelRing *first)
 	int n, drawn = 0;
 	TunnelRing *ring = last_ring(first, &n);
 	if (g_simpleMenu == 0)
-		bind(g_tunnelTexture);
+		bind(g_ringBandTexture);
 	for (int pass = 0; n != 0 && pass < 2; pass++, n--, drawn++) {
 		gfx_setMenuCamera();
 		glTranslatef_bits(0, 0, BITS(ring->depth));
@@ -347,12 +347,12 @@ void (tunnelRing_build)(u8 *o, int index)
 }
 
 /* ---- the menu camera's move along the tunnel: its eye (g_menuCameraPos, three floats) and the point it looks at
-   (g_menuCameraLook), kept at g_roomSlideFarX / g_roomSlideNearX; the move's state in g_menuCameraMove (0 still, 1 / 3 moving in / out a ring,
+   (g_menuCameraLook), kept at g_menuEyeKeptX / g_menuLookKeptX; the move's state in g_menuCameraMove (0 still, 1 / 3 moving in / out a ring,
    2 / 4 the view swinging up before them) ---- */
 #define EYE ((float *)ADDR(g_menuCameraPos))
 #define LOOK ((float *)ADDR(g_menuCameraLook))
-#define EYE_KEPT ((float *)ADDR(g_roomSlideFarX))
-#define LOOK_KEPT ((float *)ADDR(g_roomSlideNearX))
+#define EYE_KEPT ((float *)ADDR(g_menuEyeKeptX))
+#define LOOK_KEPT ((float *)ADDR(g_menuLookKeptX))
 
 static void camera_keep(void)
 {
@@ -385,8 +385,8 @@ static void lower_view(const float *rate)
 /* 0x441260: one frame of the tunnel camera's move, worked on the ring before the last of the chain at ring. The
    frame time is held at 2 at most; a step is 30 frame times (g_tunnelStep, and as a float g_tunnelStepF); a ring is 1100
    steps (950 when entering the menus, g_enteringMenus, which starts the eye and look point at 0; 2200 in the ARM CENTER,
-   g_quitAsked). Still (0): the flares at full alpha, the view lowered, the camera kept once asked (g_keepCameraAsked), and the
-   menus entered when the network is ready (g_startedFromLobby, g_lobbyReply 0x65). Moving in (1) / out (3): eye and look point a
+   g_leavingForMatch). Still (0): the flares at full alpha, the view lowered, the camera kept once asked (g_keepCameraAsked), and the
+   menus entered when the network is ready (g_launchedForNetGame, g_launchStartStep 0x65). Moving in (1) / out (3): eye and look point a
    step down / up the tunnel; once a ring's worth is done, the camera back at the kept place a ring further, the
    ring turned (by -1100, -2200 in the ARM CENTER, or +1100), a ring added (in) or the last one taken off (out),
    the screen's state g_nextScreen into g_screen and the camera kept; moving out also lowers the view. 2 / 4 swing the
@@ -403,7 +403,7 @@ void (menuTunnel_advance)(TunnelRing *ring)
 		ringLength = 0x3b6;
 		EYE[0] = EYE[1] = LOOK[0] = LOOK[1] = 0.0f;
 	}
-	if (g_quitAsked)
+	if (g_leavingForMatch)
 		ringLength = 0x898;
 	TunnelRing *r = ring;
 	for (TunnelRing *last = ring; last->next != NULL; last = last->next)
@@ -418,11 +418,11 @@ void (menuTunnel_advance)(TunnelRing *ring)
 			camera_keep();
 			g_keepCameraAsked = 0;
 		}
-		if (g_startedFromLobby == 1 && g_lobbyReply == 0x65) {
+		if (g_launchedForNetGame == 1 && g_launchStartStep == 0x65) {
 			g_armcFrom = 1;
 			armc_enterParts();
 			g_enteringMenus = 0;
-			g_lobbyReply = 0x66;
+			g_launchStartStep = 0x66;
 		}
 		return;
 	case 1:
@@ -437,7 +437,7 @@ void (menuTunnel_advance)(TunnelRing *ring)
 		r->moveSteps += step;
 		if (r->moveSteps >= ringLength) {
 			if (state == 1)
-				r->depthShift = f32(fsub_m(fld_m(&r->depthShift), (const float *)(g_quitAsked ? ADDR(k_2200f) : OBJ(k_1100f))));
+				r->depthShift = f32(fsub_m(fld_m(&r->depthShift), (const float *)(g_leavingForMatch ? ADDR(k_2200f) : OBJ(k_1100f))));
 			else
 				r->depthShift = f32(fadd_m(fld_m(&r->depthShift), k_1100f));
 			r->moveSteps = 0;

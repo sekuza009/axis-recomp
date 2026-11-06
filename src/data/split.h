@@ -180,9 +180,9 @@ extern u8 g_componentDatPath_v[4];
 extern u8 g_insertCdMessage_v[4];
 #endif
 #ifdef AXIS_FENCE
-#define g_glCachedState_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0x49000 : g_fence + 0x48ffc))
+#define g_hudProjMode_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0x49000 : g_fence + 0x48ffc))
 #else
-extern u8 g_glCachedState_v[4];
+extern u8 g_hudProjMode_v[4];
 #endif
 #ifdef AXIS_FENCE
 #define g_viewFov_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0x4b000 : g_fence + 0x4affc))
@@ -270,9 +270,9 @@ extern u8 g_keyState_v[256];
 extern u8 g_keyboardReady_v[4];
 #endif
 #ifdef AXIS_FENCE
-#define g_mouseActive_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0x74000 : g_fence + 0x73ffc))
+#define g_mouseReady_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0x74000 : g_fence + 0x73ffc))
 #else
-extern u8 g_mouseActive_v[4];
+extern u8 g_mouseReady_v[4];
 #endif
 #ifdef AXIS_FENCE
 #define g_unusedKeyTable2Word0_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0x76000 : g_fence + 0x75ffc))
@@ -335,9 +335,9 @@ extern u8 g_hangulTailGlyph_v[4];
 extern u8 g_hangulLeadGlyph_v[4];
 #endif
 #ifdef AXIS_FENCE
-#define g_briefingSkipped_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0x8e000 : g_fence + 0x8dffc))
+#define g_textHitBottom_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0x8e000 : g_fence + 0x8dffc))
 #else
-extern u8 g_briefingSkipped_v[4];
+extern u8 g_textHitBottom_v[4];
 #endif
 #ifdef AXIS_FENCE
 #define g_mapTop_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0x90000 : g_fence + 0x8fffc))
@@ -420,9 +420,9 @@ extern int g_createArenaRects_v[64];
 extern int g_createArena2Rects_v[8];
 #endif
 #ifdef AXIS_FENCE
-#define g_arenaJoinPending_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xb2000 : g_fence + 0xb1ffc))
+#define g_sessionFound_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xb2000 : g_fence + 0xb1ffc))
 #else
-extern u8 g_arenaJoinPending_v[4];
+extern u8 g_sessionFound_v[4];
 #endif
 #ifdef AXIS_FENCE
 #define g_typingArenaJoinPassword_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xb4000 : g_fence + 0xb3ffc))
@@ -485,9 +485,9 @@ extern u8 g_serverSearching_v[4];
 extern u8 g_lobbySearching_v[4];
 #endif
 #ifdef AXIS_FENCE
-#define g_lobbyPanelsOff_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xcc000 : g_fence + 0xcbffc))
+#define g_lobbyPanelsSliding_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xcc000 : g_fence + 0xcbffc))
 #else
-extern u8 g_lobbyPanelsOff_v[4];
+extern u8 g_lobbyPanelsSliding_v[4];
 #endif
 #ifdef AXIS_FENCE
 #define g_teamNames_v ((char *)(AXIS_FENCE == 2 ? g_fence + 0xce000 : g_fence + 0xcdfc4))
@@ -500,9 +500,9 @@ extern char g_teamNames_v[60];
 extern u32 g_arenaDim_v[4];
 #endif
 #ifdef AXIS_FENCE
-#define g_arenaConfirming_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xd2000 : g_fence + 0xd1ffc))
+#define g_joinConnecting_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xd2000 : g_fence + 0xd1ffc))
 #else
-extern u8 g_arenaConfirming_v[4];
+extern u8 g_joinConnecting_v[4];
 #endif
 #ifdef AXIS_FENCE
 #define g_lobbyRefreshing_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xd4000 : g_fence + 0xd3ffc))
@@ -555,9 +555,9 @@ extern int g_lobbyTopRect_v[4];
 extern u8 g_lobbyBlinkClock_v[4];
 #endif
 #ifdef AXIS_FENCE
-#define g_arenaSearchStarted_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xe8000 : g_fence + 0xe7ffc))
+#define g_lanSearchStarted_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xe8000 : g_fence + 0xe7ffc))
 #else
-extern u8 g_arenaSearchStarted_v[4];
+extern u8 g_lanSearchStarted_v[4];
 #endif
 #ifdef AXIS_FENCE
 #define g_connectionAwaited_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xea000 : g_fence + 0xe9ffc))
@@ -565,9 +565,9 @@ extern u8 g_arenaSearchStarted_v[4];
 extern u8 g_connectionAwaited_v[4];
 #endif
 #ifdef AXIS_FENCE
-#define g_arenaNameSum_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xec000 : g_fence + 0xebffc))
+#define g_arenaListPlayers_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xec000 : g_fence + 0xebffc))
 #else
-extern u8 g_arenaNameSum_v[4];
+extern u8 g_arenaListPlayers_v[4];
 #endif
 #ifdef AXIS_FENCE
 #define g_lanSearch_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xee000 : g_fence + 0xedffc))
@@ -580,14 +580,14 @@ extern u8 g_lanSearch_v[4];
 extern u32 g_arenaBright_v[4];
 #endif
 #ifdef AXIS_FENCE
-#define g_arenaListFull_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xf2000 : g_fence + 0xf1ffc))
+#define g_arenaServerList_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xf2000 : g_fence + 0xf1ffc))
 #else
-extern u8 g_arenaListFull_v[4];
+extern u8 g_arenaServerList_v[4];
 #endif
 #ifdef AXIS_FENCE
-#define g_serverConnected_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xf4000 : g_fence + 0xf3ffc))
+#define g_joinThroughServer_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xf4000 : g_fence + 0xf3ffc))
 #else
-extern u8 g_serverConnected_v[4];
+extern u8 g_joinThroughServer_v[4];
 #endif
 #ifdef AXIS_FENCE
 #define g_editingNewArenaName_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xf6000 : g_fence + 0xf5ffc))
@@ -610,9 +610,9 @@ extern u8 g_arenaKeptLookY_v[4];
 extern u8 g_arenaKeptLookZ_v[4];
 #endif
 #ifdef AXIS_FENCE
-#define g_arenaHaveList_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xfe000 : g_fence + 0xfdffc))
+#define g_arenaLanListBuilt_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xfe000 : g_fence + 0xfdffc))
 #else
-extern u8 g_arenaHaveList_v[4];
+extern u8 g_arenaLanListBuilt_v[4];
 #endif
 #ifdef AXIS_FENCE
 #define g_typingArenaPassword_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0x100000 : g_fence + 0xffffc))
@@ -635,9 +635,9 @@ extern u8 g_arenaListRefreshTimer_v[4];
 extern u8 g_unusedArenaCamWord_v[4];
 #endif
 #ifdef AXIS_FENCE
-#define g_arenaSearchClock_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0x108000 : g_fence + 0x107ffc))
+#define g_arenaListClickTimer_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0x108000 : g_fence + 0x107ffc))
 #else
-extern u8 g_arenaSearchClock_v[4];
+extern u8 g_arenaListClickTimer_v[4];
 #endif
 #ifdef AXIS_FENCE
 #define g_newArenaForm_v ((int *)(AXIS_FENCE == 2 ? g_fence + 0x10a000 : g_fence + 0x109ff0))
@@ -645,9 +645,9 @@ extern u8 g_arenaSearchClock_v[4];
 extern int g_newArenaForm_v[4];
 #endif
 #ifdef AXIS_FENCE
-#define g_arenaSearchTicks_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0x10c000 : g_fence + 0x10bffc))
+#define g_joinPollTicks_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0x10c000 : g_fence + 0x10bffc))
 #else
-extern u8 g_arenaSearchTicks_v[4];
+extern u8 g_joinPollTicks_v[4];
 #endif
 #ifdef AXIS_FENCE
 #define g_arenaOnOff_v ((char *)(AXIS_FENCE == 2 ? g_fence + 0x10e000 : g_fence + 0x10dfd8))
@@ -665,9 +665,9 @@ extern u8 g_arenaCameraMode_v[4];
 extern int g_lobbyTopRects_v[8];
 #endif
 #ifdef AXIS_FENCE
-#define g_lobbyTopEase_v ((float *)(AXIS_FENCE == 2 ? g_fence + 0x114000 : g_fence + 0x113ffc))
+#define g_lobbySlideEase_v ((float *)(AXIS_FENCE == 2 ? g_fence + 0x114000 : g_fence + 0x113ffc))
 #else
-extern float g_lobbyTopEase_v[1];
+extern float g_lobbySlideEase_v[1];
 #endif
 #ifdef AXIS_FENCE
 #define g_playerSetupLeft_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0x116000 : g_fence + 0x115ffc))
@@ -690,9 +690,9 @@ extern u8 g_playerSetupRight_v[4];
 extern u8 g_playerSetupBottom_v[4];
 #endif
 #ifdef AXIS_FENCE
-#define g_arenaJoinWaiting_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0x11e000 : g_fence + 0x11dffc))
+#define g_joinTimedOut_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0x11e000 : g_fence + 0x11dffc))
 #else
-extern u8 g_arenaJoinWaiting_v[4];
+extern u8 g_joinTimedOut_v[4];
 #endif
 #ifdef AXIS_FENCE
 #define g_arenaCreateRects_v ((int *)(AXIS_FENCE == 2 ? g_fence + 0x120000 : g_fence + 0x11ffe0))
@@ -700,19 +700,19 @@ extern u8 g_arenaJoinWaiting_v[4];
 extern int g_arenaCreateRects_v[8];
 #endif
 #ifdef AXIS_FENCE
-#define g_arenaPanelBrightness_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0x122000 : g_fence + 0x121ffc))
+#define g_unusedArenaFloat_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0x122000 : g_fence + 0x121ffc))
 #else
-extern u8 g_arenaPanelBrightness_v[4];
+extern u8 g_unusedArenaFloat_v[4];
 #endif
 #ifdef AXIS_FENCE
-#define g_arenaOnOff2_v ((char *)(AXIS_FENCE == 2 ? g_fence + 0x124000 : g_fence + 0x123fd8))
+#define g_rotationOnOff_v ((char *)(AXIS_FENCE == 2 ? g_fence + 0x124000 : g_fence + 0x123fd8))
 #else
-extern char g_arenaOnOff2_v[40];
+extern char g_rotationOnOff_v[40];
 #endif
 #ifdef AXIS_FENCE
-#define g_typingArenaName_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0x126000 : g_fence + 0x125ffc))
+#define g_typingArenaPlayerName_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0x126000 : g_fence + 0x125ffc))
 #else
-extern u8 g_typingArenaName_v[4];
+extern u8 g_typingArenaPlayerName_v[4];
 #endif
 #ifdef AXIS_FENCE
 #define g_typedArenaAddressText_v ((char *)(AXIS_FENCE == 2 ? g_fence + 0x128000 : g_fence + 0x127fe8))
@@ -725,9 +725,9 @@ extern char g_typedArenaAddressText_v[24];
 extern u8 g_lobbyJoinStarted_v[4];
 #endif
 #ifdef AXIS_FENCE
-#define g_lobbyJoinRequest_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0x12c000 : g_fence + 0x12bffc))
+#define g_lanJoinRequest_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0x12c000 : g_fence + 0x12bffc))
 #else
-extern u8 g_lobbyJoinRequest_v[4];
+extern u8 g_lanJoinRequest_v[4];
 #endif
 #ifdef AXIS_FENCE
 #define g_arenaLobbyState_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0x12e000 : g_fence + 0x12dffc))
@@ -770,9 +770,9 @@ extern u8 g_chestMaxArmor_v[4];
 extern u8 g_chestMaxShield_v[4];
 #endif
 #ifdef AXIS_FENCE
-#define g_armcTabColour_v ((u32 *)(AXIS_FENCE == 2 ? g_fence + 0x13e000 : g_fence + 0x13dff0))
+#define g_armcBright_v ((u32 *)(AXIS_FENCE == 2 ? g_fence + 0x13e000 : g_fence + 0x13dff0))
 #else
-extern u32 g_armcTabColour_v[4];
+extern u32 g_armcBright_v[4];
 #endif
 #ifdef AXIS_FENCE
 #define g_armcPreview_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0x140000 : g_fence + 0x13fffc))
@@ -805,9 +805,9 @@ extern u8 g_itemBonusDetectionRange_v[4];
 extern u8 g_armCursor_v[4];
 #endif
 #ifdef AXIS_FENCE
-#define g_emptyItemSlot0_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0x14c000 : g_fence + 0x14bffc))
+#define g_unusedEmptySlot0Flag_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0x14c000 : g_fence + 0x14bffc))
 #else
-extern u8 g_emptyItemSlot0_v[4];
+extern u8 g_unusedEmptySlot0Flag_v[4];
 #endif
 #ifdef AXIS_FENCE
 #define g_armcWeaponsPageRects_v ((int *)(AXIS_FENCE == 2 ? g_fence + 0x14e000 : g_fence + 0x14df10))
@@ -830,9 +830,9 @@ extern u8 g_armcSlot_v[4];
 extern u8 g_partRecords_v[896];
 #endif
 #ifdef AXIS_FENCE
-#define g_armcTabColourDim_v ((u32 *)(AXIS_FENCE == 2 ? g_fence + 0x156000 : g_fence + 0x155ff0))
+#define g_armcDim_v ((u32 *)(AXIS_FENCE == 2 ? g_fence + 0x156000 : g_fence + 0x155ff0))
 #else
-extern u32 g_armcTabColourDim_v[4];
+extern u32 g_armcDim_v[4];
 #endif
 #ifdef AXIS_FENCE
 #define g_bestProgressSolo_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0x158000 : g_fence + 0x157ffc))
@@ -915,9 +915,9 @@ extern u8 g_itemBonus60mm_v[4];
 extern u8 g_armcSessionMade_v[4];
 #endif
 #ifdef AXIS_FENCE
-#define g_panelBoxes_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0x178000 : g_fence + 0x177df0))
+#define g_spinPanels_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0x178000 : g_fence + 0x177df0))
 #else
-extern u8 g_panelBoxes_v[528];
+extern u8 g_spinPanels_v[528];
 #endif
 #ifdef AXIS_FENCE
 #define g_armcParts_v ((int *)(AXIS_FENCE == 2 ? g_fence + 0x17a000 : g_fence + 0x179fec))
@@ -975,9 +975,9 @@ extern int g_weaponListTable_v[50];
 extern u8 g_unusedArmcWord1_v[4];
 #endif
 #ifdef AXIS_FENCE
-#define g_armcEntered_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0x190000 : g_fence + 0x18fffc))
+#define g_armcCameraTravelling_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0x190000 : g_fence + 0x18fffc))
 #else
-extern u8 g_armcEntered_v[4];
+extern u8 g_armcCameraTravelling_v[4];
 #endif
 #ifdef AXIS_FENCE
 #define g_armcSessionDue_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0x192000 : g_fence + 0x191ffc))
@@ -1000,9 +1000,9 @@ extern int g_savedMechPartIds_v[5];
 extern u8 g_itemBonusTargetKeep_v[4];
 #endif
 #ifdef AXIS_FENCE
-#define g_armcLastPart_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0x19a000 : g_fence + 0x199ffc))
+#define g_boosterCount_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0x19a000 : g_fence + 0x199ffc))
 #else
-extern u8 g_armcLastPart_v[4];
+extern u8 g_boosterCount_v[4];
 #endif
 #ifdef AXIS_FENCE
 #define g_itemBonusRechargeTime_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0x19c000 : g_fence + 0x19bffc))
@@ -1110,9 +1110,9 @@ extern u8 g_mechLegsBackBoost_v[4];
 extern u8 g_unusedMechStat_v[4];
 #endif
 #ifdef AXIS_FENCE
-#define g_mechBoosterEnergy_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0x1c6000 : g_fence + 0x1c5ffc))
+#define g_mechBoostTime_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0x1c6000 : g_fence + 0x1c5ffc))
 #else
-extern u8 g_mechBoosterEnergy_v[4];
+extern u8 g_mechBoostTime_v[4];
 #endif
 #ifdef AXIS_FENCE
 #define g_mechBoosterRecharge_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0x1c8000 : g_fence + 0x1c7ffc))
@@ -1130,9 +1130,9 @@ extern u8 g_mechBoosterRestTime_v[4];
 extern float g_mechSpeeds_v[6];
 #endif
 #ifdef AXIS_FENCE
-#define g_mechSettings_v ((int *)(AXIS_FENCE == 2 ? g_fence + 0x1ce000 : g_fence + 0x1cdfe8))
+#define g_armcSlotItems_v ((int *)(AXIS_FENCE == 2 ? g_fence + 0x1ce000 : g_fence + 0x1cdfe8))
 #else
-extern int g_mechSettings_v[6];
+extern int g_armcSlotItems_v[6];
 #endif
 #ifdef AXIS_FENCE
 #define g_boosterCursor_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0x1d0000 : g_fence + 0x1cfffc))
@@ -1185,24 +1185,24 @@ extern int g_slotTextures_v[7];
 extern u8 g_headCursor_v[4];
 #endif
 #ifdef AXIS_FENCE
-#define g_armcStatsPanelLeft_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0x1e4000 : g_fence + 0x1e3ffc))
+#define g_armcPageLeft_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0x1e4000 : g_fence + 0x1e3ffc))
 #else
-extern u8 g_armcStatsPanelLeft_v[4];
+extern u8 g_armcPageLeft_v[4];
 #endif
 #ifdef AXIS_FENCE
-#define g_armcStatsPanelTop_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0x1e6000 : g_fence + 0x1e5ffc))
+#define g_armcPageTop_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0x1e6000 : g_fence + 0x1e5ffc))
 #else
-extern u8 g_armcStatsPanelTop_v[4];
+extern u8 g_armcPageTop_v[4];
 #endif
 #ifdef AXIS_FENCE
-#define g_armcSliderLeft_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0x1e8000 : g_fence + 0x1e7ffc))
+#define g_armcPanelRight_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0x1e8000 : g_fence + 0x1e7ffc))
 #else
-extern u8 g_armcSliderLeft_v[4];
+extern u8 g_armcPanelRight_v[4];
 #endif
 #ifdef AXIS_FENCE
-#define g_armcStatsPanelBottom_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0x1ea000 : g_fence + 0x1e9ffc))
+#define g_armcPageBottom_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0x1ea000 : g_fence + 0x1e9ffc))
 #else
-extern u8 g_armcStatsPanelBottom_v[4];
+extern u8 g_armcPageBottom_v[4];
 #endif
 #ifdef AXIS_FENCE
 #define g_itemBonusActiveTime_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0x1ec000 : g_fence + 0x1ebffc))
@@ -1295,9 +1295,9 @@ extern u8 g_armcLeaving_v[4];
 extern u8 g_unusedArmcWord2_v[4];
 #endif
 #ifdef AXIS_FENCE
-#define g_savedMechSettings_v ((int *)(AXIS_FENCE == 2 ? g_fence + 0x210000 : g_fence + 0x20ffe8))
+#define g_savedMechSlotItems_v ((int *)(AXIS_FENCE == 2 ? g_fence + 0x210000 : g_fence + 0x20ffe8))
 #else
-extern int g_savedMechSettings_v[6];
+extern int g_savedMechSlotItems_v[6];
 #endif
 #ifdef AXIS_FENCE
 #define g_progressWentUp_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0x212000 : g_fence + 0x211ffc))
@@ -1315,9 +1315,9 @@ extern u8 g_chestCursor_v[4];
 extern u32 g_armcCameraBox_v[38];
 #endif
 #ifdef AXIS_FENCE
-#define g_armcZoom_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0x218000 : g_fence + 0x217ffc))
+#define g_unusedArmcViewCountdown_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0x218000 : g_fence + 0x217ffc))
 #else
-extern u8 g_armcZoom_v[4];
+extern u8 g_unusedArmcViewCountdown_v[4];
 #endif
 #ifdef AXIS_FENCE
 #define g_savedColourChoices_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0x21a000 : g_fence + 0x219f70))
@@ -1350,9 +1350,9 @@ extern u8 g_fpsSecondStart_v[8];
 extern u8 g_unusedClock2_v[8];
 #endif
 #ifdef AXIS_FENCE
-#define g_menuFrameCount_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0x226000 : g_fence + 0x225ffc))
+#define g_fpsFrameCount_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0x226000 : g_fence + 0x225ffc))
 #else
-extern u8 g_menuFrameCount_v[4];
+extern u8 g_fpsFrameCount_v[4];
 #endif
 #ifdef AXIS_FENCE
 #define g_messageBoxArgs_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0x228000 : g_fence + 0x227ffc))
@@ -1420,14 +1420,14 @@ extern u8 g_launcherCheck_v[12];
 extern u8 g_loadStep_v[4];
 #endif
 #ifdef AXIS_FENCE
-#define g_cursorBlink_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0x242000 : g_fence + 0x241ffc))
+#define g_menuRepeatClock_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0x242000 : g_fence + 0x241ffc))
 #else
-extern u8 g_cursorBlink_v[4];
+extern u8 g_menuRepeatClock_v[4];
 #endif
 #ifdef AXIS_FENCE
-#define g_introZoom_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0x244000 : g_fence + 0x243ffc))
+#define g_replayZoomTime_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0x244000 : g_fence + 0x243ffc))
 #else
-extern u8 g_introZoom_v[4];
+extern u8 g_replayZoomTime_v[4];
 #endif
 #ifdef AXIS_FENCE
 #define g_setupPanelMoving_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0x246000 : g_fence + 0x245ffc))
@@ -1495,9 +1495,9 @@ extern char g_linearFilterTexts_v[100];
 extern u8 g_bindPage_v[4];
 #endif
 #ifdef AXIS_FENCE
-#define g_setupPage_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0x260000 : g_fence + 0x25fffc))
+#define g_setupCameraMode_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0x260000 : g_fence + 0x25fffc))
 #else
-extern u8 g_setupPage_v[4];
+extern u8 g_setupCameraMode_v[4];
 #endif
 #ifdef AXIS_FENCE
 #define g_setupSoundRects_v ((int *)(AXIS_FENCE == 2 ? g_fence + 0x262000 : g_fence + 0x261f60))
@@ -1605,9 +1605,9 @@ extern u8 g_unusedLogoFade_v[4];
 extern u8 g_cursorBlinkTimer_v[4];
 #endif
 #ifdef AXIS_FENCE
-#define g_armcMoveStarted_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0x28c000 : g_fence + 0x28bffc))
+#define g_freeCamMoveStarted_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0x28c000 : g_fence + 0x28bffc))
 #else
-extern u8 g_armcMoveStarted_v[4];
+extern u8 g_freeCamMoveStarted_v[4];
 #endif
 #ifdef AXIS_FENCE
 #define g_menuCamX_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0x28e000 : g_fence + 0x28dffc))
@@ -1625,49 +1625,49 @@ extern u8 g_freeCamHeight_v[4];
 extern u8 g_menuCamZ_v[4];
 #endif
 #ifdef AXIS_FENCE
-#define g_armcMoveEyeX_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0x294000 : g_fence + 0x293ffc))
+#define g_freeCamMoveEyeX_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0x294000 : g_fence + 0x293ffc))
 #else
-extern u8 g_armcMoveEyeX_v[4];
+extern u8 g_freeCamMoveEyeX_v[4];
 #endif
 #ifdef AXIS_FENCE
-#define g_armcMoveEyeY_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0x296000 : g_fence + 0x295ffc))
+#define g_freeCamMoveEyeY_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0x296000 : g_fence + 0x295ffc))
 #else
-extern u8 g_armcMoveEyeY_v[4];
+extern u8 g_freeCamMoveEyeY_v[4];
 #endif
 #ifdef AXIS_FENCE
-#define g_armcMoveEyeZ_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0x298000 : g_fence + 0x297ffc))
+#define g_freeCamMoveEyeZ_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0x298000 : g_fence + 0x297ffc))
 #else
-extern u8 g_armcMoveEyeZ_v[4];
+extern u8 g_freeCamMoveEyeZ_v[4];
 #endif
 #ifdef AXIS_FENCE
-#define g_armcLookSin_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0x29a000 : g_fence + 0x299ffc))
+#define g_freeCamTurnSin_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0x29a000 : g_fence + 0x299ffc))
 #else
-extern u8 g_armcLookSin_v[4];
+extern u8 g_freeCamTurnSin_v[4];
 #endif
 #ifdef AXIS_FENCE
-#define g_armcLookTilt_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0x29c000 : g_fence + 0x29bffc))
+#define g_freeCamTilt_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0x29c000 : g_fence + 0x29bffc))
 #else
-extern u8 g_armcLookTilt_v[4];
+extern u8 g_freeCamTilt_v[4];
 #endif
 #ifdef AXIS_FENCE
-#define g_armcLookCos_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0x29e000 : g_fence + 0x29dffc))
+#define g_freeCamTurnCos_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0x29e000 : g_fence + 0x29dffc))
 #else
-extern u8 g_armcLookCos_v[4];
+extern u8 g_freeCamTurnCos_v[4];
 #endif
 #ifdef AXIS_FENCE
-#define g_armcMoveTargetX_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0x2a0000 : g_fence + 0x29fffc))
+#define g_freeCamMoveTargetX_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0x2a0000 : g_fence + 0x29fffc))
 #else
-extern u8 g_armcMoveTargetX_v[4];
+extern u8 g_freeCamMoveTargetX_v[4];
 #endif
 #ifdef AXIS_FENCE
-#define g_armcMoveTargetY_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0x2a2000 : g_fence + 0x2a1ffc))
+#define g_freeCamMoveTargetY_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0x2a2000 : g_fence + 0x2a1ffc))
 #else
-extern u8 g_armcMoveTargetY_v[4];
+extern u8 g_freeCamMoveTargetY_v[4];
 #endif
 #ifdef AXIS_FENCE
-#define g_armcMoveTargetZ_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0x2a4000 : g_fence + 0x2a3ffc))
+#define g_freeCamMoveTargetZ_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0x2a4000 : g_fence + 0x2a3ffc))
 #else
-extern u8 g_armcMoveTargetZ_v[4];
+extern u8 g_freeCamMoveTargetZ_v[4];
 #endif
 #ifdef AXIS_FENCE
 #define g_debugValue_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0x2a6000 : g_fence + 0x2a5ffc))
@@ -1785,9 +1785,9 @@ extern u8 g_dikNumpad7_v[4];
 extern u8 g_dikNumpad9_v[4];
 #endif
 #ifdef AXIS_FENCE
-#define g_roomFade_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0x2d4000 : g_fence + 0x2d3ffc))
+#define g_whiteFade_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0x2d4000 : g_fence + 0x2d3ffc))
 #else
-extern u8 g_roomFade_v[4];
+extern u8 g_whiteFade_v[4];
 #endif
 #ifdef AXIS_FENCE
 #define g_dikNumpad0_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0x2d6000 : g_fence + 0x2d5ffc))
@@ -1825,9 +1825,9 @@ extern u8 g_dikNumLock_v[4];
 extern u8 g_mainWindow_v[4];
 #endif
 #ifdef AXIS_FENCE
-#define g_playerName_v ((char *)(AXIS_FENCE == 2 ? g_fence + 0x2e4000 : g_fence + 0x2e3fd0))
+#define g_arenaName_v ((char *)(AXIS_FENCE == 2 ? g_fence + 0x2e4000 : g_fence + 0x2e3fd0))
 #else
-extern char g_playerName_v[48];
+extern char g_arenaName_v[48];
 #endif
 #ifdef AXIS_FENCE
 #define g_arenaGameSetUp_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0x2e6000 : g_fence + 0x2e5ffc))
@@ -1840,9 +1840,9 @@ extern u8 g_arenaGameSetUp_v[4];
 extern u8 g_timerTick_v[8];
 #endif
 #ifdef AXIS_FENCE
-#define g_connectStep_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0x2ea000 : g_fence + 0x2e9ffc))
+#define g_hostAnswer_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0x2ea000 : g_fence + 0x2e9ffc))
 #else
-extern u8 g_connectStep_v[4];
+extern u8 g_hostAnswer_v[4];
 #endif
 #ifdef AXIS_FENCE
 #define g_mousePos_v ((int *)(AXIS_FENCE == 2 ? g_fence + 0x2ec000 : g_fence + 0x2ebff8))
@@ -1925,9 +1925,9 @@ extern u8 g_menuScaleY_v[4];
 extern u8 g_serverAnswerIn_v[4];
 #endif
 #ifdef AXIS_FENCE
-#define g_titleShown_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0x30c000 : g_fence + 0x30bffc))
+#define g_titleClosing_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0x30c000 : g_fence + 0x30bffc))
 #else
-extern u8 g_titleShown_v[4];
+extern u8 g_titleClosing_v[4];
 #endif
 #ifdef AXIS_FENCE
 #define g_menuEye_v ((float *)(AXIS_FENCE == 2 ? g_fence + 0x30e000 : g_fence + 0x30dff4))
@@ -1990,9 +1990,9 @@ extern float g_hudLayerBLeft_v[120];
 extern float g_hudLayerBTop_v[120];
 #endif
 #ifdef AXIS_FENCE
-#define g_lobbyListRow_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0x326000 : g_fence + 0x325ffc))
+#define g_gameListRow_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0x326000 : g_fence + 0x325ffc))
 #else
-extern u8 g_lobbyListRow_v[4];
+extern u8 g_gameListRow_v[4];
 #endif
 #ifdef AXIS_FENCE
 #define g_messageBoxLine_v ((char *)(AXIS_FENCE == 2 ? g_fence + 0x328000 : g_fence + 0x327fb0))
@@ -2085,9 +2085,9 @@ extern u8 g_characterTexture_v[4];
 extern float g_slotCams_v[655];
 #endif
 #ifdef AXIS_FENCE
-#define g_titleFrames_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0x34c000 : g_fence + 0x34bffc))
+#define g_titleCloseFrames_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0x34c000 : g_fence + 0x34bffc))
 #else
-extern u8 g_titleFrames_v[4];
+extern u8 g_titleCloseFrames_v[4];
 #endif
 #ifdef AXIS_FENCE
 #define g_screenH_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0x34e000 : g_fence + 0x34dffc))
@@ -2100,9 +2100,9 @@ extern u8 g_screenH_v[4];
 extern u8 g_dik0_v[4];
 #endif
 #ifdef AXIS_FENCE
-#define g_fovKeys_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0x352000 : g_fence + 0x351ffc))
+#define g_freeCamZoom_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0x352000 : g_fence + 0x351ffc))
 #else
-extern u8 g_fovKeys_v[4];
+extern u8 g_freeCamZoom_v[4];
 #endif
 #ifdef AXIS_FENCE
 #define g_dik1_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0x354000 : g_fence + 0x353ffc))
@@ -2245,9 +2245,9 @@ extern u8 g_dikI_v[4];
 extern u8 g_dikJ_v[4];
 #endif
 #ifdef AXIS_FENCE
-#define g_setupStripeScroll_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0x38c000 : g_fence + 0x38bffc))
+#define g_tunnelStripeScroll_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0x38c000 : g_fence + 0x38bffc))
 #else
-extern u8 g_setupStripeScroll_v[4];
+extern u8 g_tunnelStripeScroll_v[4];
 #endif
 #ifdef AXIS_FENCE
 #define g_dikK_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0x38e000 : g_fence + 0x38dffc))
@@ -2355,9 +2355,9 @@ extern float g_hudLayerATop_v[100];
 extern u8 g_inputLineHidden_v[4];
 #endif
 #ifdef AXIS_FENCE
-#define g_tunnelTexture_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0x3b8000 : g_fence + 0x3b7ffc))
+#define g_ringBandTexture_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0x3b8000 : g_fence + 0x3b7ffc))
 #else
-extern u8 g_tunnelTexture_v[4];
+extern u8 g_ringBandTexture_v[4];
 #endif
 #ifdef AXIS_FENCE
 #define g_viewAspect_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0x3ba000 : g_fence + 0x3b9ffc))
@@ -2385,9 +2385,9 @@ extern u8 g_dikEnd_v[4];
 extern u8 g_matchMode_v[4];
 #endif
 #ifdef AXIS_FENCE
-#define g_perfCounter_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0x491000 : g_fence + 0x490ffc))
+#define g_perfCounterLow_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0x491000 : g_fence + 0x490ffc))
 #else
-extern u8 g_perfCounter_v[4];
+extern u8 g_perfCounterLow_v[4];
 #endif
 #ifdef AXIS_FENCE
 #define g_timerHigh_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0x493000 : g_fence + 0x492ffc))
@@ -2455,9 +2455,9 @@ extern float g_hudLayerARight_v[100];
 extern char g_roomRecName_v[48];
 #endif
 #ifdef AXIS_FENCE
-#define g_hudLayerABottom_v ((float *)(AXIS_FENCE == 2 ? g_fence + 0x4ae000 : g_fence + 0x4ade70))
+#define g_hanJungBottom_v ((float *)(AXIS_FENCE == 2 ? g_fence + 0x4ae000 : g_fence + 0x4ade70))
 #else
-extern float g_hudLayerABottom_v[100];
+extern float g_hanJungBottom_v[100];
 #endif
 #ifdef AXIS_FENCE
 #define g_lobbyTopOutlines_v ((int *)(AXIS_FENCE == 2 ? g_fence + 0x4b0000 : g_fence + 0x4aff50))
@@ -2490,9 +2490,9 @@ extern u8 g_texture128x64_v[840004];
 extern u8 g_desktopWidth_v[4];
 #endif
 #ifdef AXIS_FENCE
-#define g_arenaMapCount_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0x589000 : g_fence + 0x588ffc))
+#define g_mapCount_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0x589000 : g_fence + 0x588ffc))
 #else
-extern u8 g_arenaMapCount_v[4];
+extern u8 g_mapCount_v[4];
 #endif
 #ifdef AXIS_FENCE
 #define g_netRole_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0x58b000 : g_fence + 0x58affc))
@@ -2515,9 +2515,9 @@ extern u8 g_lastScreen_v[4];
 extern u8 g_dikScrollLock_v[4];
 #endif
 #ifdef AXIS_FENCE
-#define g_quitAsked_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0x593000 : g_fence + 0x592ffc))
+#define g_leavingForMatch_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0x593000 : g_fence + 0x592ffc))
 #else
-extern u8 g_quitAsked_v[4];
+extern u8 g_leavingForMatch_v[4];
 #endif
 #ifdef AXIS_FENCE
 #define g_hInstance_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0x595000 : g_fence + 0x594ffc))
@@ -2580,9 +2580,9 @@ extern u8 g_menuTunnel_v[4];
 extern u8 g_dikPrintScreen_v[4];
 #endif
 #ifdef AXIS_FENCE
-#define g_mapTitle_v ((char *)(AXIS_FENCE == 2 ? g_fence + 0x5ad000 : g_fence + 0x5acfe0))
+#define g_gameTitle_v ((char *)(AXIS_FENCE == 2 ? g_fence + 0x5ad000 : g_fence + 0x5acfe0))
 #else
-extern char g_mapTitle_v[32];
+extern char g_gameTitle_v[32];
 #endif
 #ifdef AXIS_FENCE
 #define g_font8Right_v ((float *)(AXIS_FENCE == 2 ? g_fence + 0x5af000 : g_fence + 0x5aec00))
@@ -2680,9 +2680,9 @@ extern u8 g_gameListTop_v[4];
 extern u8 g_repeatDown_v[4];
 #endif
 #ifdef AXIS_FENCE
-#define g_lobbyListPage_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0x5d5000 : g_fence + 0x5d4ffc))
+#define g_listAnswered_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0x5d5000 : g_fence + 0x5d4ffc))
 #else
-extern u8 g_lobbyListPage_v[4];
+extern u8 g_listAnswered_v[4];
 #endif
 #ifdef AXIS_FENCE
 #define g_dikMouse3_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0x5d7000 : g_fence + 0x5d6ffc))
@@ -2690,9 +2690,9 @@ extern u8 g_lobbyListPage_v[4];
 extern u8 g_dikMouse3_v[4];
 #endif
 #ifdef AXIS_FENCE
-#define g_highlightSize_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0x5d9000 : g_fence + 0x5d8ffc))
+#define g_pointerGlideTime_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0x5d9000 : g_fence + 0x5d8ffc))
 #else
-extern u8 g_highlightSize_v[4];
+extern u8 g_pointerGlideTime_v[4];
 #endif
 #ifdef AXIS_FENCE
 #define g_stageDir_v ((char *)(AXIS_FENCE == 2 ? g_fence + 0x5db000 : g_fence + 0x5daefb))
@@ -2715,9 +2715,9 @@ extern u8 g_mapPreviewChanged_v[4];
 extern u8 g_texture256x64_v[840004];
 #endif
 #ifdef AXIS_FENCE
-#define g_dialogChoice_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0x6b0000 : g_fence + 0x6afffc))
+#define g_dialogFocus_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0x6b0000 : g_fence + 0x6afffc))
 #else
-extern u8 g_dialogChoice_v[4];
+extern u8 g_dialogFocus_v[4];
 #endif
 #ifdef AXIS_FENCE
 #define g_dikApostrophe_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0x6b2000 : g_fence + 0x6b1ffc))
@@ -2760,9 +2760,9 @@ extern u8 g_clearColour_v[16];
 extern u8 g_fontHanJungJong_v[4];
 #endif
 #ifdef AXIS_FENCE
-#define g_startedByLauncher_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0x6e1000 : g_fence + 0x6e0ffc))
+#define g_launchedAsHost_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0x6e1000 : g_fence + 0x6e0ffc))
 #else
-extern u8 g_startedByLauncher_v[4];
+extern u8 g_launchedAsHost_v[4];
 #endif
 #ifdef AXIS_FENCE
 #define g_chosenGameMode_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0x6e3000 : g_fence + 0x6e2ffc))
@@ -2840,9 +2840,9 @@ extern u8 g_timeLimit_v[4];
 extern u8 g_rankingListIn_v[4];
 #endif
 #ifdef AXIS_FENCE
-#define g_startedFromLobby_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0x701000 : g_fence + 0x700ffc))
+#define g_launchedForNetGame_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0x701000 : g_fence + 0x700ffc))
 #else
-extern u8 g_startedFromLobby_v[4];
+extern u8 g_launchedForNetGame_v[4];
 #endif
 #ifdef AXIS_FENCE
 #define g_dikDelete_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0x703000 : g_fence + 0x702ffc))
@@ -2875,9 +2875,9 @@ extern u8 g_dikMouse2_v[4];
 extern u8 g_menuFrameCounter_v[4];
 #endif
 #ifdef AXIS_FENCE
-#define g_highlightShown_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0x70f000 : g_fence + 0x70effc))
+#define g_pointerGliding_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0x70f000 : g_fence + 0x70effc))
 #else
-extern u8 g_highlightShown_v[4];
+extern u8 g_pointerGliding_v[4];
 #endif
 #ifdef AXIS_FENCE
 #define g_desktopHeight_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0x711000 : g_fence + 0x710ffc))
@@ -2930,9 +2930,9 @@ extern u8 g_searchResult_v[4];
 extern u8 g_dikEscape_2_v[4];
 #endif
 #ifdef AXIS_FENCE
-#define g_dikWheelUp_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0x725000 : g_fence + 0x724ffc))
+#define g_dikWheelDown_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0x725000 : g_fence + 0x724ffc))
 #else
-extern u8 g_dikWheelUp_v[4];
+extern u8 g_dikWheelDown_v[4];
 #endif
 #ifdef AXIS_FENCE
 #define g_texture128x128_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0x727000 : g_fence + 0x726ebc))
@@ -3000,14 +3000,14 @@ extern u8 g_sessionList_v[18944];
 extern u8 g_dikHome_v[4];
 #endif
 #ifdef AXIS_FENCE
-#define g_dialogOpen_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0x8df000 : g_fence + 0x8deffc))
+#define g_frameOpening_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0x8df000 : g_fence + 0x8deffc))
 #else
-extern u8 g_dialogOpen_v[4];
+extern u8 g_frameOpening_v[4];
 #endif
 #ifdef AXIS_FENCE
-#define g_armcLookYaw_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0x8e1000 : g_fence + 0x8e0ffc))
+#define g_freeCamYaw_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0x8e1000 : g_fence + 0x8e0ffc))
 #else
-extern u8 g_armcLookYaw_v[4];
+extern u8 g_freeCamYaw_v[4];
 #endif
 #ifdef AXIS_FENCE
 #define g_skirmishInfoCount_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0x8e3000 : g_fence + 0x8e2ffc))
@@ -3105,9 +3105,9 @@ extern u8 g_dikF8_v[4];
 extern u8 g_rectColour_v[16];
 #endif
 #ifdef AXIS_FENCE
-#define g_dikWheelDown_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0x9d6000 : g_fence + 0x9d5ffc))
+#define g_dikWheelUp_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0x9d6000 : g_fence + 0x9d5ffc))
 #else
-extern u8 g_dikWheelDown_v[4];
+extern u8 g_dikWheelUp_v[4];
 #endif
 #ifdef AXIS_FENCE
 #define g_simpleMenu_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0x9d8000 : g_fence + 0x9d7ffc))
@@ -3120,9 +3120,9 @@ extern u8 g_simpleMenu_v[4];
 extern u8 g_roomSearchAnswerIn_v[4];
 #endif
 #ifdef AXIS_FENCE
-#define g_lobbyReply_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0x9dc000 : g_fence + 0x9dbffc))
+#define g_launchStartStep_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0x9dc000 : g_fence + 0x9dbffc))
 #else
-extern u8 g_lobbyReply_v[4];
+extern u8 g_launchStartStep_v[4];
 #endif
 #ifdef AXIS_FENCE
 #define g_dikLAlt_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0x9de000 : g_fence + 0x9ddffc))
@@ -3130,9 +3130,9 @@ extern u8 g_lobbyReply_v[4];
 extern u8 g_dikLAlt_v[4];
 #endif
 #ifdef AXIS_FENCE
-#define g_highlightAlpha_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0x9e0000 : g_fence + 0x9dfffc))
+#define g_unusedHighlightAlpha_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0x9e0000 : g_fence + 0x9dfffc))
 #else
-extern u8 g_highlightAlpha_v[4];
+extern u8 g_unusedHighlightAlpha_v[4];
 #endif
 #ifdef AXIS_FENCE
 #define g_font16Top_v ((float *)(AXIS_FENCE == 2 ? g_fence + 0x9e2000 : g_fence + 0x9e1ba0))
@@ -3280,9 +3280,9 @@ extern u32 g_timerClocks_v[4];
 extern u8 g_replayRunning_v[4];
 #endif
 #ifdef AXIS_FENCE
-#define g_replayZoomIn_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xa1c000 : g_fence + 0xa1bffc))
+#define g_replayShowOn_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xa1c000 : g_fence + 0xa1bffc))
 #else
-extern u8 g_replayZoomIn_v[4];
+extern u8 g_replayShowOn_v[4];
 #endif
 #ifdef AXIS_FENCE
 #define g_skirmishInfo_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xa1e000 : g_fence + 0xa1da9c))
@@ -3300,9 +3300,9 @@ extern u8 g_pixelFormatFilled_v[1];
 extern u8 g_timerRepeatCount_v[4];
 #endif
 #ifdef AXIS_FENCE
-#define g_lastCount_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xa24000 : g_fence + 0xa23ffc))
+#define g_timerLastCount_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xa24000 : g_fence + 0xa23ffc))
 #else
-extern u8 g_lastCount_v[4];
+extern u8 g_timerLastCount_v[4];
 #endif
 #ifdef AXIS_FENCE
 #define g_directInputMade_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xa26000 : g_fence + 0xa25ffc))
@@ -3325,9 +3325,9 @@ extern u8 g_fieldStep_v[4];
 extern char g_chatLine_v[1024];
 #endif
 #ifdef AXIS_FENCE
-#define g_typedLength_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xa2e000 : g_fence + 0xa2dffc))
+#define g_lineMaxLength_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xa2e000 : g_fence + 0xa2dffc))
 #else
-extern u8 g_typedLength_v[4];
+extern u8 g_lineMaxLength_v[4];
 #endif
 #ifdef AXIS_FENCE
 #define g_gameListClickTimer_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xa30000 : g_fence + 0xa2fffc))
@@ -3360,9 +3360,9 @@ extern u32 g_roomBright_v[4];
 extern u8 g_retypePassword_v[4];
 #endif
 #ifdef AXIS_FENCE
-#define g_roomMessageRect_v ((int *)(AXIS_FENCE == 2 ? g_fence + 0xa3c000 : g_fence + 0xa3bff0))
+#define g_rankingRect_v ((int *)(AXIS_FENCE == 2 ? g_fence + 0xa3c000 : g_fence + 0xa3bff0))
 #else
-extern int g_roomMessageRect_v[4];
+extern int g_rankingRect_v[4];
 #endif
 #ifdef AXIS_FENCE
 #define g_joinPasswordAndRanking_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xa3e000 : g_fence + 0xa3dd54))
@@ -3375,9 +3375,9 @@ extern u8 g_joinPasswordAndRanking_v[684];
 extern u8 g_loginToSend_v[4];
 #endif
 #ifdef AXIS_FENCE
-#define g_roomDialogBox_v ((int *)(AXIS_FENCE == 2 ? g_fence + 0xa42000 : g_fence + 0xa41ff0))
+#define g_newIdConfirmBox_v ((int *)(AXIS_FENCE == 2 ? g_fence + 0xa42000 : g_fence + 0xa41ff0))
 #else
-extern int g_roomDialogBox_v[4];
+extern int g_newIdConfirmBox_v[4];
 #endif
 #ifdef AXIS_FENCE
 #define g_unusedRoomWord_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xa44000 : g_fence + 0xa43ffc))
@@ -3540,9 +3540,9 @@ extern u8 g_editingAccountPassword_v[4];
 extern u8 g_editingRoomName_v[4];
 #endif
 #ifdef AXIS_FENCE
-#define g_roomListDistanceLimit_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xa84000 : g_fence + 0xa83ffc))
+#define g_rankingPrevValue_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xa84000 : g_fence + 0xa83ffc))
 #else
-extern u8 g_roomListDistanceLimit_v[4];
+extern u8 g_rankingPrevValue_v[4];
 #endif
 #ifdef AXIS_FENCE
 #define g_editingFragLimit_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xa86000 : g_fence + 0xa85ffc))
@@ -3610,14 +3610,14 @@ extern u8 g_roomGameListRight_v[4];
 extern u8 g_roomGameListBottom_v[4];
 #endif
 #ifdef AXIS_FENCE
-#define g_roomListPages_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xaa0000 : g_fence + 0xa9fffc))
+#define g_rankingLastPage_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xaa0000 : g_fence + 0xa9fffc))
 #else
-extern u8 g_roomListPages_v[4];
+extern u8 g_rankingLastPage_v[4];
 #endif
 #ifdef AXIS_FENCE
-#define g_gameListJoinClicked_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xaa2000 : g_fence + 0xaa1ffc))
+#define g_gameListRefreshClicked_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xaa2000 : g_fence + 0xaa1ffc))
 #else
-extern u8 g_gameListJoinClicked_v[4];
+extern u8 g_gameListRefreshClicked_v[4];
 #endif
 #ifdef AXIS_FENCE
 #define g_rankingRects_v ((int *)(AXIS_FENCE == 2 ? g_fence + 0xaa4000 : g_fence + 0xaa3f70))
@@ -3625,9 +3625,9 @@ extern u8 g_gameListJoinClicked_v[4];
 extern int g_rankingRects_v[36];
 #endif
 #ifdef AXIS_FENCE
-#define g_roomPanelEase_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xaa6000 : g_fence + 0xaa5ffc))
+#define g_unusedRoomPanelEase_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xaa6000 : g_fence + 0xaa5ffc))
 #else
-extern u8 g_roomPanelEase_v[4];
+extern u8 g_unusedRoomPanelEase_v[4];
 #endif
 #ifdef AXIS_FENCE
 #define g_typingAccountRepeat_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xaa8000 : g_fence + 0xaa7ffc))
@@ -3640,9 +3640,9 @@ extern u8 g_typingAccountRepeat_v[4];
 extern u8 g_editingTimeLimit_v[4];
 #endif
 #ifdef AXIS_FENCE
-#define g_roomJoined_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xaac000 : g_fence + 0xaabffc))
+#define g_roomJoinStarted_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xaac000 : g_fence + 0xaabffc))
 #else
-extern u8 g_roomJoined_v[4];
+extern u8 g_roomJoinStarted_v[4];
 #endif
 #ifdef AXIS_FENCE
 #define g_ladderId_v ((char *)(AXIS_FENCE == 2 ? g_fence + 0xaae000 : g_fence + 0xaadfca))
@@ -3680,9 +3680,9 @@ extern u8 g_editingOldPassword_v[4];
 extern u8 g_roomSearching_v[4];
 #endif
 #ifdef AXIS_FENCE
-#define g_roomAnswerAwaited_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xabc000 : g_fence + 0xabbffc))
+#define g_newIdAnswerAwaited_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xabc000 : g_fence + 0xabbffc))
 #else
-extern u8 g_roomAnswerAwaited_v[4];
+extern u8 g_newIdAnswerAwaited_v[4];
 #endif
 #ifdef AXIS_FENCE
 #define g_editingRoomPassword_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xabe000 : g_fence + 0xabdffc))
@@ -3710,9 +3710,9 @@ extern u8 g_roomJoinNeedsPassword_v[4];
 extern u8 g_rankingWaiting_v[4];
 #endif
 #ifdef AXIS_FENCE
-#define g_roomPanelBrightness_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xac8000 : g_fence + 0xac7ffc))
+#define g_unusedRoomFloat_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xac8000 : g_fence + 0xac7ffc))
 #else
-extern u8 g_roomPanelBrightness_v[4];
+extern u8 g_unusedRoomFloat_v[4];
 #endif
 #ifdef AXIS_FENCE
 #define g_roomListRefreshTimer_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xaca000 : g_fence + 0xac9ffc))
@@ -3765,9 +3765,9 @@ extern u8 g_newIdFormBottom_v[4];
 extern int g_roomSettingsRects_v[56];
 #endif
 #ifdef AXIS_FENCE
-#define g_roomDialogOpen_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xade000 : g_fence + 0xaddffc))
+#define g_roomPanelsSliding_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xade000 : g_fence + 0xaddffc))
 #else
-extern u8 g_roomDialogOpen_v[4];
+extern u8 g_roomPanelsSliding_v[4];
 #endif
 #ifdef AXIS_FENCE
 #define g_rankingLast_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xae0000 : g_fence + 0xadfffc))
@@ -3800,9 +3800,9 @@ extern u8 g_roomRequestOut_v[4];
 extern u8 g_rankingFirst_v[4];
 #endif
 #ifdef AXIS_FENCE
-#define g_roomNameSum_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xaec000 : g_fence + 0xaebffc))
+#define g_roomListPlayers_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xaec000 : g_fence + 0xaebffc))
 #else
-extern u8 g_roomNameSum_v[4];
+extern u8 g_roomListPlayers_v[4];
 #endif
 #ifdef AXIS_FENCE
 #define g_unusedRoomCamWord_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xaee000 : g_fence + 0xaedffc))
@@ -3895,9 +3895,9 @@ extern u8 g_unusedInitWord_v[4];
 extern u8 g_chatLineDone_v[4];
 #endif
 #ifdef AXIS_FENCE
-#define g_clockCheckClosed_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xb12000 : g_fence + 0xb11ffc))
+#define g_clockCheckQuits_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xb12000 : g_fence + 0xb11ffc))
 #else
-extern u8 g_clockCheckClosed_v[4];
+extern u8 g_clockCheckQuits_v[4];
 #endif
 #ifdef AXIS_FENCE
 #define g_replaySelectLeft_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xb14000 : g_fence + 0xb13ffc))
@@ -3920,9 +3920,9 @@ extern u8 g_replaySelectRight_v[4];
 extern u8 g_replaySelectBottom_v[4];
 #endif
 #ifdef AXIS_FENCE
-#define g_roomLookKept_v ((float *)(AXIS_FENCE == 2 ? g_fence + 0xb1c000 : g_fence + 0xb1bff4))
+#define g_menuLookKept_v ((float *)(AXIS_FENCE == 2 ? g_fence + 0xb1c000 : g_fence + 0xb1bff4))
 #else
-extern float g_roomLookKept_v[3];
+extern float g_menuLookKept_v[3];
 #endif
 #ifdef AXIS_FENCE
 #define g_replayFileCount_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xb1e000 : g_fence + 0xb1dffc))
@@ -3935,9 +3935,9 @@ extern u8 g_replayFileCount_v[4];
 extern u8 g_replaySelectFirst_v[4];
 #endif
 #ifdef AXIS_FENCE
-#define g_roomEyeKept_v ((float *)(AXIS_FENCE == 2 ? g_fence + 0xb22000 : g_fence + 0xb21ff4))
+#define g_menuEyeKept_v ((float *)(AXIS_FENCE == 2 ? g_fence + 0xb22000 : g_fence + 0xb21ff4))
 #else
-extern float g_roomEyeKept_v[3];
+extern float g_menuEyeKept_v[3];
 #endif
 #ifdef AXIS_FENCE
 #define g_unusedReplayListWord1_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xb24000 : g_fence + 0xb23ffc))
@@ -3975,9 +3975,9 @@ extern u8 g_replayList_v[69632];
 extern u8 g_unusedReplayListWord2_v[4];
 #endif
 #ifdef AXIS_FENCE
-#define g_menuHintClock_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xb42000 : g_fence + 0xb41ffc))
+#define g_menuHintFade_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xb42000 : g_fence + 0xb41ffc))
 #else
-extern u8 g_menuHintClock_v[4];
+extern u8 g_menuHintFade_v[4];
 #endif
 #ifdef AXIS_FENCE
 #define g_mainMenuDepth_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xb44000 : g_fence + 0xb43ffc))
@@ -4000,9 +4000,9 @@ extern u8 g_tunnelFlyingIn_v[4];
 extern u8 g_mainMenuFrames_v[4];
 #endif
 #ifdef AXIS_FENCE
-#define g_mainMenuPicked_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xb4c000 : g_fence + 0xb4bffc))
+#define g_replaySelectOpen_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xb4c000 : g_fence + 0xb4bffc))
 #else
-extern u8 g_mainMenuPicked_v[4];
+extern u8 g_replaySelectOpen_v[4];
 #endif
 #ifdef AXIS_FENCE
 #define g_replayListCount_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xb4e000 : g_fence + 0xb4dffc))
@@ -4115,19 +4115,19 @@ extern char g_briefingText_v[1600];
 extern u8 g_missionPicked_v[4];
 #endif
 #ifdef AXIS_FENCE
-#define g_briefingX_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xb7b000 : g_fence + 0xb7affc))
+#define g_missionsWindowLeft_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xb7b000 : g_fence + 0xb7affc))
 #else
-extern u8 g_briefingX_v[4];
+extern u8 g_missionsWindowLeft_v[4];
 #endif
 #ifdef AXIS_FENCE
-#define g_briefingY_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xb7d000 : g_fence + 0xb7cffc))
+#define g_missionsWindowTop_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xb7d000 : g_fence + 0xb7cffc))
 #else
-extern u8 g_briefingY_v[4];
+extern u8 g_missionsWindowTop_v[4];
 #endif
 #ifdef AXIS_FENCE
-#define g_briefingRight_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xb7f000 : g_fence + 0xb7effc))
+#define g_missionsWindowRight_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xb7f000 : g_fence + 0xb7effc))
 #else
-extern u8 g_briefingRight_v[4];
+extern u8 g_missionsWindowRight_v[4];
 #endif
 #ifdef AXIS_FENCE
 #define g_briefingBottom_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xb81000 : g_fence + 0xb80ffc))
@@ -4155,9 +4155,9 @@ extern int g_briefingRects_v[16];
 extern int g_mouseWasDown_v[3];
 #endif
 #ifdef AXIS_FENCE
-#define g_campaign_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xb8b000 : g_fence + 0xb8ac54))
+#define g_pilotSave_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xb8b000 : g_fence + 0xb8ac54))
 #else
-extern u8 g_campaign_v[940];
+extern u8 g_pilotSave_v[940];
 #endif
 #ifdef AXIS_FENCE
 #define g_pilotNoise_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xb8d000 : g_fence + 0xb8c8f0))
@@ -4185,14 +4185,14 @@ extern u32 g_skirmishColourDim_v[4];
 extern u8 g_skirmishState_v[4];
 #endif
 #ifdef AXIS_FENCE
-#define g_profileProgressSaved_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xb99000 : g_fence + 0xb98ffc))
+#define g_progressSeen_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xb99000 : g_fence + 0xb98ffc))
 #else
-extern u8 g_profileProgressSaved_v[4];
+extern u8 g_progressSeen_v[4];
 #endif
 #ifdef AXIS_FENCE
-#define g_skirmishBusy_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xb9b000 : g_fence + 0xb9affc))
+#define g_skirmishLeft_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xb9b000 : g_fence + 0xb9affc))
 #else
-extern u8 g_skirmishBusy_v[4];
+extern u8 g_skirmishLeft_v[4];
 #endif
 #ifdef AXIS_FENCE
 #define g_skirmishRect_v ((int *)(AXIS_FENCE == 2 ? g_fence + 0xb9d000 : g_fence + 0xb9cff0))
@@ -4300,9 +4300,9 @@ extern u8 g_pilotSelectRight_v[4];
 extern u8 g_logOutDialogX_v[4];
 #endif
 #ifdef AXIS_FENCE
-#define g_profileIntro_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xbc7000 : g_fence + 0xbc6ffc))
+#define g_profileQuitting_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xbc7000 : g_fence + 0xbc6ffc))
 #else
-extern u8 g_profileIntro_v[4];
+extern u8 g_profileQuitting_v[4];
 #endif
 #ifdef AXIS_FENCE
 #define g_logOutDialogY_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xbc9000 : g_fence + 0xbc8ffc))
@@ -4310,9 +4310,9 @@ extern u8 g_profileIntro_v[4];
 extern u8 g_logOutDialogY_v[4];
 #endif
 #ifdef AXIS_FENCE
-#define g_profileDialogOpen_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xbcb000 : g_fence + 0xbcaffc))
+#define g_profileLogInAsked_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xbcb000 : g_fence + 0xbcaffc))
 #else
-extern u8 g_profileDialogOpen_v[4];
+extern u8 g_profileLogInAsked_v[4];
 #endif
 #ifdef AXIS_FENCE
 #define g_profiles_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xbcd000 : g_fence + 0xbccc00))
@@ -4380,14 +4380,14 @@ extern u8 g_statBarsStale_v[4];
 extern u8 g_chosenPilot_v[4];
 #endif
 #ifdef AXIS_FENCE
-#define g_profileScreenReady_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xbe9000 : g_fence + 0xbe8ffc))
+#define g_profileNoneAtEntry_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xbe9000 : g_fence + 0xbe8ffc))
 #else
-extern u8 g_profileScreenReady_v[4];
+extern u8 g_profileNoneAtEntry_v[4];
 #endif
 #ifdef AXIS_FENCE
-#define g_pilotChosen_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xbeb000 : g_fence + 0xbeaffc))
+#define g_profileChosen_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xbeb000 : g_fence + 0xbeaffc))
 #else
-extern u8 g_pilotChosen_v[4];
+extern u8 g_profileChosen_v[4];
 #endif
 #ifdef AXIS_FENCE
 #define g_profileListRects_v ((int *)(AXIS_FENCE == 2 ? g_fence + 0xbed000 : g_fence + 0xbecf30))
@@ -4405,14 +4405,14 @@ extern u8 g_profilePageLeft_v[4];
 extern u8 g_profilePageTop_v[4];
 #endif
 #ifdef AXIS_FENCE
-#define g_profileIntroSpeed_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xbf3000 : g_fence + 0xbf2ffc))
+#define g_unusedProfileCameraSpeed_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xbf3000 : g_fence + 0xbf2ffc))
 #else
-extern u8 g_profileIntroSpeed_v[4];
+extern u8 g_unusedProfileCameraSpeed_v[4];
 #endif
 #ifdef AXIS_FENCE
-#define g_profileIntroState_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xbf5000 : g_fence + 0xbf4ffc))
+#define g_profileQuitSkip_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xbf5000 : g_fence + 0xbf4ffc))
 #else
-extern u8 g_profileIntroState_v[4];
+extern u8 g_profileQuitSkip_v[4];
 #endif
 #ifdef AXIS_FENCE
 #define g_profilePageRight_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xbf7000 : g_fence + 0xbf6ffc))
@@ -4470,14 +4470,14 @@ extern u8 g_profileDialogY_v[4];
 extern u8 g_profilePage_v[4];
 #endif
 #ifdef AXIS_FENCE
-#define g_profileIntroZoom_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xc0d000 : g_fence + 0xc0cffc))
+#define g_unusedProfileCameraZoom_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xc0d000 : g_fence + 0xc0cffc))
 #else
-extern u8 g_profileIntroZoom_v[4];
+extern u8 g_unusedProfileCameraZoom_v[4];
 #endif
 #ifdef AXIS_FENCE
-#define g_profileMessageTime_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xc0f000 : g_fence + 0xc0effc))
+#define g_profileRowClickTime_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xc0f000 : g_fence + 0xc0effc))
 #else
-extern u8 g_profileMessageTime_v[4];
+extern u8 g_profileRowClickTime_v[4];
 #endif
 #ifdef AXIS_FENCE
 #define g_profileDialogX_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xc11000 : g_fence + 0xc10ffc))
@@ -4505,9 +4505,9 @@ extern u8 g_profileDialogBottom_v[4];
 extern u8 g_profileDialogRight_v[4];
 #endif
 #ifdef AXIS_FENCE
-#define g_profileIntroTime_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xc1b000 : g_fence + 0xc1affc))
+#define g_unusedProfileCameraTime_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xc1b000 : g_fence + 0xc1affc))
 #else
-extern u8 g_profileIntroTime_v[4];
+extern u8 g_unusedProfileCameraTime_v[4];
 #endif
 #ifdef AXIS_FENCE
 #define g_profileMessage_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xc1d000 : g_fence + 0xc1cffc))
@@ -4530,9 +4530,9 @@ extern u8 g_profileCount_v[4];
 extern u8 g_profileRowClicked_v[4];
 #endif
 #ifdef AXIS_FENCE
-#define g_profileDialogBox_v ((int *)(AXIS_FENCE == 2 ? g_fence + 0xc25000 : g_fence + 0xc24ff0))
+#define g_profileMessageClickBox_v ((int *)(AXIS_FENCE == 2 ? g_fence + 0xc25000 : g_fence + 0xc24ff0))
 #else
-extern int g_profileDialogBox_v[4];
+extern int g_profileMessageClickBox_v[4];
 #endif
 #ifdef AXIS_FENCE
 #define g_newNameDialogRects_v ((int *)(AXIS_FENCE == 2 ? g_fence + 0xc27000 : g_fence + 0xc26fe0))
@@ -4560,9 +4560,9 @@ extern u8 g_netChatMessageKind_v[4];
 extern u8 g_netChatMessageWord1_v[4];
 #endif
 #ifdef AXIS_FENCE
-#define g_netChatMessageWord2_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xc31000 : g_fence + 0xc30ffc))
+#define g_netChatMessageFrom_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xc31000 : g_fence + 0xc30ffc))
 #else
-extern u8 g_netChatMessageWord2_v[4];
+extern u8 g_netChatMessageFrom_v[4];
 #endif
 #ifdef AXIS_FENCE
 #define g_netChatMessageText_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xc33000 : g_fence + 0xc32ffc))
@@ -4575,9 +4575,9 @@ extern u8 g_netChatMessageText_v[4];
 extern int g_playerSlotFlags_v[16];
 #endif
 #ifdef AXIS_FENCE
-#define g_resultMsg_v ((u32 *)(AXIS_FENCE == 2 ? g_fence + 0xc37000 : g_fence + 0xc36ff8))
+#define g_hostLeavingMsg_v ((u32 *)(AXIS_FENCE == 2 ? g_fence + 0xc37000 : g_fence + 0xc36ff8))
 #else
-extern u32 g_resultMsg_v[2];
+extern u32 g_hostLeavingMsg_v[2];
 #endif
 #ifdef AXIS_FENCE
 #define g_netSlotMsg_v ((u32 *)(AXIS_FENCE == 2 ? g_fence + 0xc39000 : g_fence + 0xc38ff8))
@@ -4605,9 +4605,9 @@ extern u8 g_netBlockSize_v[4];
 extern u8 g_sentChatBlock_v[4];
 #endif
 #ifdef AXIS_FENCE
-#define g_chatLog_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xc43000 : g_fence + 0xc42ffc))
+#define g_lastChatLine_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xc43000 : g_fence + 0xc42ffc))
 #else
-extern u8 g_chatLog_v[4];
+extern u8 g_lastChatLine_v[4];
 #endif
 #ifdef AXIS_FENCE
 #define g_netHostGone_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xc45000 : g_fence + 0xc44ffc))
@@ -4620,9 +4620,9 @@ extern u8 g_netHostGone_v[4];
 extern u8 g_playerCount_v[4];
 #endif
 #ifdef AXIS_FENCE
-#define g_watchedSlot_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xc49000 : g_fence + 0xc48fff))
+#define g_localSlot_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xc49000 : g_fence + 0xc48fff))
 #else
-extern u8 g_watchedSlot_v[1];
+extern u8 g_localSlot_v[1];
 #endif
 #ifdef AXIS_FENCE
 #define g_unusedArenaWord_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xc4b000 : g_fence + 0xc4affc))
@@ -4630,9 +4630,9 @@ extern u8 g_watchedSlot_v[1];
 extern u8 g_unusedArenaWord_v[4];
 #endif
 #ifdef AXIS_FENCE
-#define g_chatLogged_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xc4d000 : g_fence + 0xc4cffc))
+#define g_lastChatLineSet_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xc4d000 : g_fence + 0xc4cffc))
 #else
-extern u8 g_chatLogged_v[4];
+extern u8 g_lastChatLineSet_v[4];
 #endif
 #ifdef AXIS_FENCE
 #define g_roomList_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xc4f000 : g_fence + 0xc4e700))
@@ -4645,9 +4645,9 @@ extern u8 g_roomList_v[30976];
 extern u8 g_lobbyReplyRecord_v[91];
 #endif
 #ifdef AXIS_FENCE
-#define g_netNoticeRecord_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xc5a000 : g_fence + 0xc59fde))
+#define g_rankReply_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xc5a000 : g_fence + 0xc59fde))
 #else
-extern u8 g_netNoticeRecord_v[34];
+extern u8 g_rankReply_v[34];
 #endif
 #ifdef AXIS_FENCE
 #define g_netByteBuffer_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xc5c000 : g_fence + 0xc5bffc))
@@ -4655,9 +4655,9 @@ extern u8 g_netNoticeRecord_v[34];
 extern u8 g_netByteBuffer_v[4];
 #endif
 #ifdef AXIS_FENCE
-#define g_serverReply_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xc5e000 : g_fence + 0xc5dfc2))
+#define g_playerListReply_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xc5e000 : g_fence + 0xc5dfc2))
 #else
-extern u8 g_serverReply_v[62];
+extern u8 g_playerListReply_v[62];
 #endif
 #ifdef AXIS_FENCE
 #define g_serverPort_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xc60000 : g_fence + 0xc5fffe))
@@ -4665,9 +4665,9 @@ extern u8 g_serverReply_v[62];
 extern u8 g_serverPort_v[2];
 #endif
 #ifdef AXIS_FENCE
-#define g_unusedNetCloseWord_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xc62000 : g_fence + 0xc61ffc))
+#define g_unusedNetResetWord_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xc62000 : g_fence + 0xc61ffc))
 #else
-extern u8 g_unusedNetCloseWord_v[4];
+extern u8 g_unusedNetResetWord_v[4];
 #endif
 #ifdef AXIS_FENCE
 #define g_netPlayerList_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xc64000 : g_fence + 0xc63d56))
@@ -4745,14 +4745,14 @@ extern u8 g_netConnected_v[4];
 extern u8 g_netLastRequest_v[4];
 #endif
 #ifdef AXIS_FENCE
-#define g_netSendName_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xc87000 : g_fence + 0xc86ffc))
+#define g_lobbyKeepAlive_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xc87000 : g_fence + 0xc86ffc))
 #else
-extern u8 g_netSendName_v[4];
+extern u8 g_lobbyKeepAlive_v[4];
 #endif
 #ifdef AXIS_FENCE
-#define g_netSendBuffer_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xc89000 : g_fence + 0xc88ffc))
+#define g_gameServerKeepAlive_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xc89000 : g_fence + 0xc88ffc))
 #else
-extern u8 g_netSendBuffer_v[4];
+extern u8 g_gameServerKeepAlive_v[4];
 #endif
 #ifdef AXIS_FENCE
 #define g_netKindBuffer_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xc8b000 : g_fence + 0xc8affc))
@@ -4775,9 +4775,9 @@ extern u8 g_arenaInfoPacket_v[4];
 extern u8 g_lobbyLeavePacket_v[4];
 #endif
 #ifdef AXIS_FENCE
-#define g_netLobbyMessage_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xc93000 : g_fence + 0xc92ffc))
+#define g_arenaListRequest_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xc93000 : g_fence + 0xc92ffc))
 #else
-extern u8 g_netLobbyMessage_v[4];
+extern u8 g_arenaListRequest_v[4];
 #endif
 #ifdef AXIS_FENCE
 #define g_accountPacket_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xc95000 : g_fence + 0xc94ffc))
@@ -4805,9 +4805,9 @@ extern u8 g_roomInfoPacket_v[4];
 extern u8 g_roomLeavePacket_v[4];
 #endif
 #ifdef AXIS_FENCE
-#define g_netRequestBuffer_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xc9f000 : g_fence + 0xc9effc))
+#define g_roomListRequest_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xc9f000 : g_fence + 0xc9effc))
 #else
-extern u8 g_netRequestBuffer_v[4];
+extern u8 g_roomListRequest_v[4];
 #endif
 #ifdef AXIS_FENCE
 #define g_netPlayerRecordPacket_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xca1000 : g_fence + 0xca0ffc))
@@ -4830,9 +4830,9 @@ extern u8 g_netSelectionPacket_v[4];
 extern u8 g_netAccountBuffer_v[4];
 #endif
 #ifdef AXIS_FENCE
-#define g_gameServerState_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xca9000 : g_fence + 0xca8ffc))
+#define g_roomListAnswer_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xca9000 : g_fence + 0xca8ffc))
 #else
-extern u8 g_gameServerState_v[4];
+extern u8 g_roomListAnswer_v[4];
 #endif
 #ifdef AXIS_FENCE
 #define g_playerListDone_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xcab000 : g_fence + 0xcaaffc))
@@ -4855,9 +4855,9 @@ extern u8 g_roomListCount_v[4];
 extern u8 g_playerListCount_v[4];
 #endif
 #ifdef AXIS_FENCE
-#define g_lobbyPending_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xcb3000 : g_fence + 0xcb2ffc))
+#define g_lobbyReportsOff_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xcb3000 : g_fence + 0xcb2ffc))
 #else
-extern u8 g_lobbyPending_v[4];
+extern u8 g_lobbyReportsOff_v[4];
 #endif
 #ifdef AXIS_FENCE
 #define g_gameServerPending_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xcb5000 : g_fence + 0xcb4ffc))
@@ -4870,9 +4870,9 @@ extern u8 g_gameServerPending_v[4];
 extern u8 g_serverListCount_v[4];
 #endif
 #ifdef AXIS_FENCE
-#define g_serverConnectionState_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xcb9000 : g_fence + 0xcb8ffc))
+#define g_lobbyListAnswer_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xcb9000 : g_fence + 0xcb8ffc))
 #else
-extern u8 g_serverConnectionState_v[4];
+extern u8 g_lobbyListAnswer_v[4];
 #endif
 #ifdef AXIS_FENCE
 #define g_lobbyStatus_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xcbb000 : g_fence + 0xcbaffc))
@@ -4890,19 +4890,19 @@ extern u8 g_gameServerStatus_v[4];
 extern u8 g_gameServerAnswer_v[4];
 #endif
 #ifdef AXIS_FENCE
-#define g_gameServerAnswer15_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xcc1000 : g_fence + 0xcc0ffc))
+#define g_newIdAnswer_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xcc1000 : g_fence + 0xcc0ffc))
 #else
-extern u8 g_gameServerAnswer15_v[4];
+extern u8 g_newIdAnswer_v[4];
 #endif
 #ifdef AXIS_FENCE
-#define g_lobbyConnectStatus_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xcc3000 : g_fence + 0xcc2ffc))
+#define g_connectedServer_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xcc3000 : g_fence + 0xcc2ffc))
 #else
-extern u8 g_lobbyConnectStatus_v[4];
+extern u8 g_connectedServer_v[4];
 #endif
 #ifdef AXIS_FENCE
-#define g_dplaySessionList_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xcc5000 : g_fence + 0xcc4ffc))
+#define g_sessionListOpen_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xcc5000 : g_fence + 0xcc4ffc))
 #else
-extern u8 g_dplaySessionList_v[4];
+extern u8 g_sessionListOpen_v[4];
 #endif
 #ifdef AXIS_FENCE
 #define g_netQueueOnline_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xcc7000 : g_fence + 0xcc6ffc))
@@ -5025,9 +5025,9 @@ extern u8 g_serviceProviderCount_v[4];
 extern u8 g_arenaJoinTimer_v[4];
 #endif
 #ifdef AXIS_FENCE
-#define g_instanceGuid_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xcf7000 : g_fence + 0xcf6ffc))
+#define g_providerGuid_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xcf7000 : g_fence + 0xcf6ffc))
 #else
-extern u8 g_instanceGuid_v[4];
+extern u8 g_providerGuid_v[4];
 #endif
 #ifdef AXIS_FENCE
 #define g_storedConnection_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xcf9000 : g_fence + 0xcf8ffc))
@@ -5080,9 +5080,9 @@ extern char g_noAddress_v[4];
 extern u8 g_pingDataEvent_v[4];
 #endif
 #ifdef AXIS_FENCE
-#define g_serverUsed_v ((u32 *)(AXIS_FENCE == 2 ? g_fence + 0xd0d000 : g_fence + 0xd0cc00))
+#define g_serverPinged_v ((u32 *)(AXIS_FENCE == 2 ? g_fence + 0xd0d000 : g_fence + 0xd0cc00))
 #else
-extern u32 g_serverUsed_v[256];
+extern u32 g_serverPinged_v[256];
 #endif
 #ifdef AXIS_FENCE
 #define g_unusedPingWord1_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xd0f000 : g_fence + 0xd0effc))
@@ -5100,14 +5100,14 @@ extern u8 g_unusedPingWord2_v[4];
 extern u8 g_pingStopEvent_v[4];
 #endif
 #ifdef AXIS_FENCE
-#define g_serverNames_v ((u32 *)(AXIS_FENCE == 2 ? g_fence + 0xd15000 : g_fence + 0xd14c00))
+#define g_pingAddresses_v ((u32 *)(AXIS_FENCE == 2 ? g_fence + 0xd15000 : g_fence + 0xd14c00))
 #else
-extern u32 g_serverNames_v[1280];
+extern u32 g_pingAddresses_v[1280];
 #endif
 #ifdef AXIS_FENCE
-#define g_serverAddress_v ((char *)(AXIS_FENCE == 2 ? g_fence + 0xd18000 : g_fence + 0xd17f9c))
+#define g_resolvedAddress_v ((char *)(AXIS_FENCE == 2 ? g_fence + 0xd18000 : g_fence + 0xd17f9c))
 #else
-extern char g_serverAddress_v[100];
+extern char g_resolvedAddress_v[100];
 #endif
 #ifdef AXIS_FENCE
 #define g_serverPing_v ((int *)(AXIS_FENCE == 2 ? g_fence + 0xd1a000 : g_fence + 0xd19c00))
@@ -5310,14 +5310,14 @@ extern u8 g_glWindowMade_v[4];
 extern u8 g_glWindow_v[4];
 #endif
 #ifdef AXIS_FENCE
-#define g_hdc_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xd6a000 : g_fence + 0xd69ffc))
+#define g_glWindowDc_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xd6a000 : g_fence + 0xd69ffc))
 #else
-extern u8 g_hdc_v[4];
+extern u8 g_glWindowDc_v[4];
 #endif
 #ifdef AXIS_FENCE
-#define g_context_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xd6c000 : g_fence + 0xd6bffc))
+#define g_glWindowContext_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xd6c000 : g_fence + 0xd6bffc))
 #else
-extern u8 g_context_v[4];
+extern u8 g_glWindowContext_v[4];
 #endif
 #ifdef AXIS_FENCE
 #define g_modeChanged_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xd6e000 : g_fence + 0xd6dffc))
@@ -5340,9 +5340,9 @@ extern u8 g_loadTexture_v[4];
 extern u8 g_loadFade_v[4];
 #endif
 #ifdef AXIS_FENCE
-#define g_loadProgress_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xd76000 : g_fence + 0xd75ffc))
+#define g_loadScroll_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xd76000 : g_fence + 0xd75ffc))
 #else
-extern u8 g_loadProgress_v[4];
+extern u8 g_loadScroll_v[4];
 #endif
 #ifdef AXIS_FENCE
 #define g_loadGame_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xd78000 : g_fence + 0xd77ffc))
@@ -5415,9 +5415,9 @@ extern float g_penFixedTopRight_v[210];
 extern float g_penPropTopRight_v[210];
 #endif
 #ifdef AXIS_FENCE
-#define g_penFontNeverSet_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xd94000 : g_fence + 0xd93ffc))
+#define g_penInitialized_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xd94000 : g_fence + 0xd93ffc))
 #else
-extern u8 g_penFontNeverSet_v[4];
+extern u8 g_penInitialized_v[4];
 #endif
 #ifdef AXIS_FENCE
 #define g_penFontTexture_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xd96000 : g_fence + 0xd95ffc))
@@ -5590,9 +5590,9 @@ extern u8 g_packedGreen_v[4];
 extern float g_realGrey_v[4];
 #endif
 #ifdef AXIS_FENCE
-#define g_clamp_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xde6000 : g_fence + 0xde5ffc))
+#define g_ptxClamp_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xde6000 : g_fence + 0xde5ffc))
 #else
-extern u8 g_clamp_v[4];
+extern u8 g_ptxClamp_v[4];
 #endif
 #ifdef AXIS_FENCE
 #define g_ptxCbBlue_v ((int *)(AXIS_FENCE == 2 ? g_fence + 0xde8000 : g_fence + 0xde7c00))
@@ -5650,14 +5650,14 @@ extern u8 g_ptxLastDc_v[4];
 extern int g_ptxCrGreen_v[256];
 #endif
 #ifdef AXIS_FENCE
-#define g_ptxDequant_v ((float *)(AXIS_FENCE == 2 ? g_fence + 0xe7d000 : g_fence + 0xe7ce00))
+#define g_ptxFdctDivisors_v ((float *)(AXIS_FENCE == 2 ? g_fence + 0xe7d000 : g_fence + 0xe7ce00))
 #else
-extern float g_ptxDequant_v[128];
+extern float g_ptxFdctDivisors_v[128];
 #endif
 #ifdef AXIS_FENCE
-#define g_ptxQuant_v ((int *)(AXIS_FENCE == 2 ? g_fence + 0xe7f000 : g_fence + 0xe7ee00))
+#define g_ptxDequant_v ((int *)(AXIS_FENCE == 2 ? g_fence + 0xe7f000 : g_fence + 0xe7ee00))
 #else
-extern int g_ptxQuant_v[128];
+extern int g_ptxDequant_v[128];
 #endif
 #ifdef AXIS_FENCE
 #define g_ptxHuffSet_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xe81000 : g_fence + 0xe80ffc))
@@ -5755,9 +5755,9 @@ extern int g_nextNumber_v[16];
 extern u8 g_netqCursor_v[4];
 #endif
 #ifdef AXIS_FENCE
-#define g_resends_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xf14000 : g_fence + 0xf13ffc))
+#define g_packetsSkipped_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xf14000 : g_fence + 0xf13ffc))
 #else
-extern u8 g_resends_v[4];
+extern u8 g_packetsSkipped_v[4];
 #endif
 #ifdef AXIS_FENCE
 #define g_displayModeChanged_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xf16000 : g_fence + 0xf15fff))

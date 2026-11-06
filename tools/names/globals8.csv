@@ -5,4 +5,4 @@
 0x4dbbf8,const u8 *,g_receivedSession
 0xa0b32c,u8 *,g_roomInfoPacket
 0xa0b330,u8 *,g_roomLeavePacket
-0x4dde9c,int,g_effectsVolume
+0x4dde9c,int,g_setupMusicVolume

@@ -581,8 +581,8 @@ typedef struct Space {
 typedef struct PartInfo {
 	char name[0x40];   /* +0x0: the item's folder path after its last slash */
 	i32 slotType;   /* +0x40: SLOT TYPE (ActorItem.slotType): message 321 + this, 0 HAND, 1 SHOULDER; -1: an empty record (EMPTY SLOT, part_info with idx -1) */
-	i32 ammoType;   /* +0x44: BULLET TYPE (ActorItem.ammoType): message 323 + this: 0 30mm, 1 60mm, 2 E-PAK, 3 ROCKET; -1: a special weapon (SPECIAL WEAPON, message 771). The viewed record's is g_viewedPartKind */
-	i32 ammoPerShot;   /* +0x48: BULLET CONSUMPTION (ActorItem.ammoPerShot, "cell"); in the viewed record of a special weapon (ammoType -1) armc_viewedPartRecord overwrites it with the actorItems index (g_viewedPartIndex, the same memory), shown as message 745 + it ("GRAVITY CONTROLLER" ..) */
+	i32 ammoType;   /* +0x44: BULLET TYPE (ActorItem.ammoType): message 323 + this: 0 30mm, 1 60mm, 2 E-PAK, 3 ROCKET; -1: a special weapon (SPECIAL WEAPON, message 771). The viewed record's is g_viewedPartAmmoType */
+	i32 ammoPerShot;   /* +0x48: BULLET CONSUMPTION (ActorItem.ammoPerShot, "cell"); in the viewed record of a special weapon (ammoType -1) armc_viewedPartRecord overwrites it with the actorItems index (g_viewedPartAmmoPerShot, the same memory), shown as message 745 + it ("GRAVITY CONTROLLER" ..) */
 	i32 burst;   /* +0x4c: "Round" */
 	i32 damageType;   /* +0x50: message 327 + this: "IMPACT" .. */
 	i32 damage;   /* +0x54 */
@@ -615,7 +615,7 @@ typedef struct Mission {
 /* a DirectPlay message carrying slot data (kinds 6 and 7: net_handleMessage; the match's */
 typedef struct NetPacketMessage {
 	u32 kind;   /* +0x0 */
-	u8 slot;   /* +0x4: kind 7: the sender's slot (net_sendPacketData: g_watchedSlot); kind 6 (g_netSlotMsg, 8 bytes): the slot the host gives the receiver (g_netClaimedSlot), taken as the local one */
+	u8 slot;   /* +0x4: kind 7: the sender's slot (net_sendPacketData: g_localSlot); kind 6 (g_netSlotMsg, 8 bytes): the slot the host gives the receiver (g_netClaimedSlot), taken as the local one */
 	i32 size;   /* +0x5: (0x40) */
 	u8 data[0x403];   /* +0x9: the packet: its first byte the number (net_packets.c) */
 } NetPacketMessage;
@@ -753,7 +753,7 @@ typedef struct AccountForm {
 	char email[0x32];   /* +0x2a */
 } AccountForm;
 
-/* a game's settings record (g_playerName: the arena's / axis.cfg's, g_roomRecName: the */
+/* a game's settings record (g_arenaName: the arena's / axis.cfg's, g_roomRecName: the */
 typedef struct GameSettings {
 	char name[32];   /* +0x0 */
 	signed char map;   /* +0x20 */
@@ -766,7 +766,7 @@ typedef struct GameSettings {
 	u8 _pad000002f[0x1];
 } GameSettings;
 
-/* a player of the ranking list as the game server sends it (62 bytes: g_serverReply; */
+/* a player of the ranking list as the game server sends it (62 bytes: g_playerListReply; */
 typedef struct RankedPlayer {
 	char name[30];   /* +0x0 */
 	i32 kind;   /* +0x1e: the reply's kind (g_serverReplyKind): 0 a player (net_addPlayerRecord adds it), 1 the list's end (g_playerListDone set, g_netLastRequest cleared) */
@@ -1575,7 +1575,7 @@ typedef struct TunnelRing {
 	float spinSpeed;   /* +0x1934 */
 	i32 cleared1938;   /* +0x1938: only cleared (tunnelRing_build); never read */
 	i32 moveSteps;   /* +0x193c: menuTunnel_advance: the distance moved so far in this ring's move (+= 30 x the frame time), in or out; at the ring's length (1100; 950 entering the menus; 2200 in the ARM CENTER) the move ends and it restarts at 0 */
-	float depthShift;   /* +0x1940: menuTunnel_advance: -1100 a ring moved in (-2200 with g_quitAsked), +1100 a ring moved out (the rings' spacing in depth); read only to add to itself */
+	float depthShift;   /* +0x1940: menuTunnel_advance: -1100 a ring moved in (-2200 with g_leavingForMatch), +1100 a ring moved out (the rings' spacing in depth); read only to add to itself */
 	float inner[2][201][4];   /* +0x1944: the inner band */
 	float innerSpin;   /* +0x3264 */
 	float innerSpeed;   /* +0x3268 */

@@ -1,6 +1,6 @@
 # the control settings (step 3b): axis.cfg's key bindings (two DIK slots each, 0x4def00) with the mouse lines after
 # them (+0x100: invert, smooth, sensitivity, crosshair), 0x110 bytes setup_keys.c copies whole; and setup's edited
 # copy of it (0x4de0c0, copied both ways, its tail setup's two toggles, slider, crosshair). Records of the
-# g_keyFreeCam* / g_mouse* globals (name_objects.py --records); g_mouseSettings / g_setupToggles are + 0x40 in them
+# g_keyFreeCam* / g_mouse* globals (name_objects.py --records); g_mouseSettings / g_mouseSwitchesEdit are + 0x40 in them
 0x4def00,int,68,g_controls,axis.cfg's control settings: the key bindings (two slots per action), then the mouse (+0x100: g_mouseSettings)
-0x4de0c0,int,68,g_controlsEdit,setup's edited copy of g_controls (copied in on open, back on OK; +0x100: g_setupToggles)
+0x4de0c0,int,68,g_controlsEdit,setup's edited copy of g_controls (copied in on open, back on OK; +0x100: g_mouseSwitchesEdit)

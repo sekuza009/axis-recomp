@@ -4,4 +4,4 @@
 0xaa2e98,u8,0x40000,g_ptxData,the image decoder's input
 0x9fd960,u8,0x1e40,g_roomList,the server's room list (net_clearRoomList: 0x1e40 bytes)
 0x9ef2d0,u8,0x1d88,g_missions,the 30 missions of axis.mis: 0xfc bytes each (mission_clear runs to 0x9f109c)
-0xa0bf20,u32,0x500,g_serverNames,256 server names of 0x14 bytes
+0xa0bf20,u32,0x500,g_pingAddresses,256 server names of 0x14 bytes

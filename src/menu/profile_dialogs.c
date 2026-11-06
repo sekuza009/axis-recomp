@@ -16,7 +16,7 @@ void (profile_typeNewName)(void)
 	g_chatCaretY = g_newNameDialogTop + 0x38;
 	g_menuKeyGuard = 5.0f;
 	g_profilePage = 2;
-	g_dialogOpen = 1;
+	g_frameOpening = 1;
 	g_profileMessage = 0;
 	chat_createEdit(0x10);
 }
@@ -25,13 +25,13 @@ void (profile_typeNewName)(void)
 static void ask(int kind, int x, int y)
 {
 	sound_playMenu(0);
-	g_dialogOpen = 1;
-	g_highlightShown = 1;
+	g_frameOpening = 1;
+	g_pointerGliding = 1;
 	g_profilePage = kind;
-	g_cursorBlink = 0.0f;
-	g_dialogChoice = 0;
-	g_highlightSize = 20.0f;
-	g_highlightAlpha = 0.2f;
+	g_menuRepeatClock = 0.0f;
+	g_dialogFocus = 0;
+	g_pointerGlideTime = 20.0f;
+	g_unusedHighlightAlpha = 0.2f;
 	g_questionX = x + 0x9c;
 	g_questionY = y + 0x4a;
 }
@@ -44,7 +44,7 @@ void (profile_askLogOut)(void) { ask(5, g_logOutDialogX, g_logOutDialogY); }
    screen */
 void (profile_drawScreen)(void)
 {
-	if (g_dialogOpen != 0) {
+	if (g_frameOpening != 0) {
 		menu_drawFrame(g_pilotSelectLeft, g_pilotSelectTop, g_pilotSelectRight, g_pilotSelectBottom);
 		return;
 	}
@@ -457,7 +457,7 @@ text_draw8(X0 + 0x184, Y0 + 0x48, PILOT(g_pilot)->name);
 #undef Y1
 }
 
-/* 0x44cf70: the chosen profile's pilot (0x9f688c, 0x48 bytes a profile, of g_pilotChosen, into g_chosenPilot) beside the
+/* 0x44cf70: the chosen profile's pilot (0x9f688c, 0x48 bytes a profile, of g_profileChosen, into g_chosenPilot) beside the
    profile list, when there are profiles (g_profileCount): 13 labels (MSG(532, "NAME :")), the portrait in a yellow frame, the name,
    corporation and sex (the original places these two by the panel's x, g_profilePageLeft, not its y), the age, the nine
    stats and their bars; all at half brightness while the list does not have the focus (g_profilePage) */
@@ -467,7 +467,7 @@ void (profile_drawChosenPilot)(void)
 #define Y0 g_profilePageTop
 	if (g_profileCount <= 0)
 		return;
-	int pilot = *(const int *)((OBJ(g_profileList) + 0x40) + g_pilotChosen * 0x48);
+	int pilot = *(const int *)((OBJ(g_profileNames) + 0x40) + g_profileChosen * 0x48);
 	g_chosenPilot = pilot;
 	int focus = g_profilePage == 1;
 	float *panel = (float *)OBJ(g_profileColour);

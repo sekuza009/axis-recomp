@@ -1,5 +1,5 @@
 # globals, batch 7 (address,type,name)
-# the profile record's mech parts (head: g_profileMechRecord)
+# the profile record's mech parts (head: g_profileMechHead)
 0x9f19fc,int,g_profileMechChest
 0x9f1a00,int,g_profileMechArm
 0x9f1a04,int,g_profileMechLeg

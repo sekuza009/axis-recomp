@@ -383,7 +383,7 @@ g_skirmishState,g_missionsState
 g_missionStage,g_mapIndex
 g_missionBox,g_skirmishBox
 g_missionBriefing,g_skirmishBriefing
-g_missionBusy,g_skirmishBusy
+g_missionBusy,g_skirmishLeft
 g_missionChosen,g_skirmishChosen
 g_missionColourDim,g_skirmishColourDim
 g_missionColourLit,g_skirmishColourLit

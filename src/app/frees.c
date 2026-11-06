@@ -6,8 +6,8 @@
    pointers cleared */
 u32 (net_freeBuffers)(void)
 {
-	static const u32 buffers[19] = { ADDR(g_arenaPacket), ADDR(g_arenaInfoPacket), ADDR(g_lobbyLeavePacket), ADDR(g_netKindBuffer), ADDR(g_netLobbyMessage), ADDR(g_netSendName), ADDR(g_accountPacket), ADDR(g_roomPacket),
-	                                 ADDR(g_roomInfoPacket), ADDR(g_roomLeavePacket), ADDR(g_netRequestBuffer), ADDR(g_netRankingBuffer), ADDR(g_netSendBuffer), ADDR(g_netSelectionPacket), ADDR(g_netAccountBuffer), ADDR(g_netPlayerRecordPacket),
+	static const u32 buffers[19] = { ADDR(g_arenaPacket), ADDR(g_arenaInfoPacket), ADDR(g_lobbyLeavePacket), ADDR(g_netKindBuffer), ADDR(g_arenaListRequest), ADDR(g_lobbyKeepAlive), ADDR(g_accountPacket), ADDR(g_roomPacket),
+	                                 ADDR(g_roomInfoPacket), ADDR(g_roomLeavePacket), ADDR(g_roomListRequest), ADDR(g_netRankingBuffer), ADDR(g_gameServerKeepAlive), ADDR(g_netSelectionPacket), ADDR(g_netAccountBuffer), ADDR(g_netPlayerRecordPacket),
 	                                 ADDR(g_netByteBuffer), ADDR(g_netLeaveBuffer), ADDR(g_netAccountRequest) };
 	u32 r = 0;
 	for (int i = 0; i < 19; i++) {

@@ -520,8 +520,8 @@ struct Space 0xf4                                               # the collision 
 struct PartInfo 0x80                                            # an ARM CENTER part-info record (g_partRecords, g_viewedPart: armc_parts.c part_info)
 0          0x40       char name[0x40]                            # the item's folder path after its last slash
 0x40       4          i32 slotType                              # SLOT TYPE (ActorItem.slotType): message 321 + this, 0 HAND, 1 SHOULDER; -1: an empty record (EMPTY SLOT, part_info with idx -1)
-0x44       4          i32 ammoType                              # BULLET TYPE (ActorItem.ammoType): message 323 + this: 0 30mm, 1 60mm, 2 E-PAK, 3 ROCKET; -1: a special weapon (SPECIAL WEAPON, message 771). The viewed record's is g_viewedPartKind
-0x48       4          i32 ammoPerShot                           # BULLET CONSUMPTION (ActorItem.ammoPerShot, "cell"); in the viewed record of a special weapon (ammoType -1) armc_viewedPartRecord overwrites it with the actorItems index (g_viewedPartIndex, the same memory), shown as message 745 + it ("GRAVITY CONTROLLER" ..)
+0x44       4          i32 ammoType                              # BULLET TYPE (ActorItem.ammoType): message 323 + this: 0 30mm, 1 60mm, 2 E-PAK, 3 ROCKET; -1: a special weapon (SPECIAL WEAPON, message 771). The viewed record's is g_viewedPartAmmoType
+0x48       4          i32 ammoPerShot                           # BULLET CONSUMPTION (ActorItem.ammoPerShot, "cell"); in the viewed record of a special weapon (ammoType -1) armc_viewedPartRecord overwrites it with the actorItems index (g_viewedPartAmmoPerShot, the same memory), shown as message 745 + it ("GRAVITY CONTROLLER" ..)
 0x4c       4          i32 burst                                  # "Round"
 0x50       4          i32 damageType                             # message 327 + this: "IMPACT" ..
 0x54       4          i32 damage
@@ -550,7 +550,7 @@ struct Mission 0xfc                                              # one of the 30
 struct NetPacketMessage 0x40c                                    # a DirectPlay message carrying slot data (kinds 6 and 7: net_handleMessage; the match's
                                                                  # packets are kind 7, g_netSendPacket)
 0          4          u32 kind
-4          1          u8 slot                                   # kind 7: the sender's slot (net_sendPacketData: g_watchedSlot); kind 6 (g_netSlotMsg, 8 bytes): the slot the host gives the receiver (g_netClaimedSlot), taken as the local one
+4          1          u8 slot                                   # kind 7: the sender's slot (net_sendPacketData: g_localSlot); kind 6 (g_netSlotMsg, 8 bytes): the slot the host gives the receiver (g_netClaimedSlot), taken as the local one
 5          4          i32 size                                   # (0x40)
 9          0x403      u8 data[0x403]                             # the packet: its first byte the number (net_packets.c)
 
@@ -666,7 +666,7 @@ struct AccountForm 0x5c                                          # the account f
 0x1e       0xc        char password[12]
 0x2a       0x32       char email[0x32]
 
-struct GameSettings 0x30                                         # a game's settings record (g_playerName: the arena's / axis.cfg's, g_roomRecName: the
+struct GameSettings 0x30                                         # a game's settings record (g_arenaName: the arena's / axis.cfg's, g_roomRecName: the
                                                                  # registry's, g_roomSettingsName: the room form's, g_newArenaName: the new arena form's)
 0          0x20       char name[32]
 0x20       1          signed char map
@@ -677,7 +677,7 @@ struct GameSettings 0x30                                         # a game's sett
 0x26       8          char password[8]
 0x2e       1          u8 locked                                  # the password is not empty (settings_store)
 
-struct RankedPlayer 0x3e                                         # a player of the ranking list as the game server sends it (62 bytes: g_serverReply;
+struct RankedPlayer 0x3e                                         # a player of the ranking list as the game server sends it (62 bytes: g_playerListReply;
                                                                  # kept in g_netPlayerList, eleven of them, by net_addPlayerRecord)
 0          0x1e       char name[30]
 0x1e       4          i32 kind                                  # the reply's kind (g_serverReplyKind): 0 a player (net_addPlayerRecord adds it), 1 the list's end (g_playerListDone set, g_netLastRequest cleared)
@@ -1369,7 +1369,7 @@ struct TunnelRing 0x3538                                        # a ring of the 
 0x1934     4          float spinSpeed
 0x1938     4          i32 cleared1938                           # only cleared (tunnelRing_build); never read
 0x193c     4          i32 moveSteps                             # menuTunnel_advance: the distance moved so far in this ring's move (+= 30 x the frame time), in or out; at the ring's length (1100; 950 entering the menus; 2200 in the ARM CENTER) the move ends and it restarts at 0
-0x1940     4          float depthShift                          # menuTunnel_advance: -1100 a ring moved in (-2200 with g_quitAsked), +1100 a ring moved out (the rings' spacing in depth); read only to add to itself
+0x1940     4          float depthShift                          # menuTunnel_advance: -1100 a ring moved in (-2200 with g_leavingForMatch), +1100 a ring moved out (the rings' spacing in depth); read only to add to itself
 0x1944     0x1920     float inner[2][201][4]                    # the inner band
 0x3264     4          float innerSpin
 0x3268     4          float innerSpeed

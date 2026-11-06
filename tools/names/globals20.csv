@@ -7,9 +7,9 @@
 0x9dd4ac,int,g_roomGameListTop
 0x9dd4b0,int,g_roomGameListRight
 0x9dd4b4,int,g_roomGameListBottom
-0x4dcc90,int,g_armcStatsPanelLeft
-0x4dcc94,int,g_armcStatsPanelTop
-0x4dcc9c,int,g_armcStatsPanelBottom
+0x4dcc90,int,g_armcPageLeft
+0x4dcc94,int,g_armcPageTop
+0x4dcc9c,int,g_armcPageBottom
 0x4ddad0,int,g_setupSoundLeft
 0x4ddad8,int,g_setupSoundRight
 0x4dddd4,int,g_setupGraphicTop
@@ -29,7 +29,7 @@
 0x9dd90c,int,g_replaySelectTop
 0x9dd910,int,g_replaySelectRight
 0x9dd914,int,g_replaySelectBottom
-0x9f16b0,int,g_briefingRight
+0x9f16b0,int,g_missionsWindowRight
 0x9f16b4,int,g_briefingBottom
 0x9f6308,int,g_skirmishRectLeft
 0x9f630c,int,g_skirmishRectTop
@@ -52,11 +52,11 @@
 0x4de72e,int,g_ladderKills
 0x4de732,int,g_ladderDeaths
 # lists, the rest
-0x4df818,int,g_lobbyListRow
+0x4df818,int,g_gameListRow
 0x680bb0,int,g_gameListTop
 0x9f8c4c,int,g_profileListTop
 0x9f8c5c,int,g_profileListRow
-0x9f8d74,int,g_pilotChosen
+0x9f8d74,int,g_profileChosen
 0x9dc428,int,g_fieldStep
 0x4de1c8,int,g_sensitivitySlider
 0x4de740,int,g_menuFramePhase
@@ -64,6 +64,6 @@
 0x9db980,double,g_clockNow
 0x9dd948,u32,g_menuHintStep
 0x9dda80,int,g_menuIdleTime
-0x9eea8c,int,g_menuHintClock
+0x9eea8c,int,g_menuHintFade
 0x9eea90,u32,g_mainMenuDepth
 0xaa2e94,int,g_ptxHuffSet

@@ -8,7 +8,7 @@ void (input_resetKeys)(void)
 {
 	memset((void *)OBJ(g_keySeen), 0, 0x100 * 4);
 	(*(u32 *)&g_menuKeyGuard) = 0x40a00000;   /* 5.0 */
-	g_typedLength = 0;
+	g_lineMaxLength = 0;
 	g_chatLength = 0;
 }
 
@@ -45,16 +45,16 @@ void (replaySelect_allOut)(void)
 void (messageBox_clickClose)(void)
 {
 	if (g_rightClick) {
-		(*(int *)&g_cursorBlink) = 0;
+		(*(int *)&g_menuRepeatClock) = 0;
 		g_dialogPending = 0;
 	}
 	if (g_mouseClick) {
-		(*(int *)&g_cursorBlink) = 0;
+		(*(int *)&g_menuRepeatClock) = 0;
 		g_dialogPending = 0;
 	}
 }
 
-/* 0x433610: the rank reply taken (message 29, received at g_netNotice): the rank (+0x16), 0 when out of the first 1000 (byte +1 set), into both copies of the pilot's record; the notice flags cleared */
+/* 0x433610: the rank reply taken (message 29, received at g_rankReplyCode): the rank (+0x16), 0 when out of the first 1000 (byte +1 set), into both copies of the pilot's record; the notice flags cleared */
 void (account_takeRank)(void)
 {
 	int v = g_outOfRank != 1 ? g_receivedRank : 0;

@@ -21,8 +21,8 @@
 0x76d388,int,g_camAim0X
 0x76d38c,int,g_camAim0Y
 0x76d390,int,g_camAim0Z
-0x4dc868,int,g_armcEntered
-0x4db85c,int,g_lobbyPanelsOff
+0x4dc868,int,g_armcCameraTravelling
+0x4db85c,int,g_lobbyPanelsSliding
 0x4db510,int,g_mapListMade
 # constants (.rdata)
 0x4a9708,float,k_10000f

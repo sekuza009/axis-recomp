@@ -57,10 +57,10 @@ static void options_panel(u32 rec, u32 rec2, u32 gx, u32 gy, u32 gx2)
 }
 
 /* the ARM CENTER's layout origin (x, y, right, bottom) and its tab rows (3 tabs 0x64 apart, two rows) */
-#define AX ADDR(g_armcStatsPanelLeft)
-#define AY ADDR(g_armcStatsPanelTop)
-#define AX2 ADDR(g_armcSliderLeft)
-#define AY2 ADDR(g_armcStatsPanelBottom)
+#define AX ADDR(g_armcPageLeft)
+#define AY ADDR(g_armcPageTop)
+#define AX2 ADDR(g_armcPanelRight)
+#define AY2 ADDR(g_armcPageBottom)
 static void armc_tabs(u32 rec)
 {
 	static const RArg a[4] = { RA(AX, 0x10, 1), RA(AY, -8, 0), RA(AX, 0x70, 1), RA(AY, 0x18, 0) };
@@ -79,7 +79,7 @@ void (logOutDialog_layout)(void) { rects_row(OBJ(g_logOutDialogRects), OBJ(g_log
 
 void (newNameDialog_layout)(void) { rects_row(OBJ(g_newNameDialogRects), OBJ(g_newNameDialogRects) + 2 * 16, ADDR(g_newNameDialogLeft), ADDR(g_newNameDialogTop), 0xa0, 0x100, 0x5a, 0x7a, 0x78); }
 
-void (newIdConfirm_layout)(void) { rects_row(OBJ(g_newIdConfirmRects), OBJ(g_newIdConfirmRects) + 2 * 16, OBJ(g_roomDialogBox), (OBJ(g_roomDialogBox) + 0xc), 0x64, 0xdc, -0x40, -0x20, 0xb4); }
+void (newIdConfirm_layout)(void) { rects_row(OBJ(g_newIdConfirmRects), OBJ(g_newIdConfirmRects) + 2 * 16, OBJ(g_newIdConfirmBox), (OBJ(g_newIdConfirmBox) + 0xc), 0x64, 0xdc, -0x40, -0x20, 0xb4); }
 
 void (lobbyTop_layout)(void) { rects_row(OBJ(g_lobbyTopRects), OBJ(g_lobbyTopRects) + 2 * 16, OBJ(g_lobbyTopRect), (OBJ(g_lobbyTopRect) + 0x4), 0x32, 0xe6, 0x64, 0x94, 0xc8); }
 
@@ -113,8 +113,8 @@ void (roomLogin_layout)(void)
 
 void (missionList_layout)(void)
 {
-	static const RArg a[4] = { RA(ADDR(g_briefingX), 0x10, 0), RA(ADDR(g_briefingY), 0x44, 1), RA(ADDR(g_briefingX), 0x25d, 0), RA(ADDR(g_briefingY), 0x5c, 1) };
-	static const RArg b[4] = { RA(ADDR(g_briefingRight), -0x12c, 1), RA(ADDR(g_briefingBottom), -0x40, 0), RA(ADDR(g_briefingRight), -0xb4, 1), RA(ADDR(g_briefingBottom), -0x20, 0) };
+	static const RArg a[4] = { RA(ADDR(g_missionsWindowLeft), 0x10, 0), RA(ADDR(g_missionsWindowTop), 0x44, 1), RA(ADDR(g_missionsWindowLeft), 0x25d, 0), RA(ADDR(g_missionsWindowTop), 0x5c, 1) };
+	static const RArg b[4] = { RA(ADDR(g_missionsWindowRight), -0x12c, 1), RA(ADDR(g_briefingBottom), -0x40, 0), RA(ADDR(g_missionsWindowRight), -0xb4, 1), RA(ADDR(g_briefingBottom), -0x20, 0) };
 	rect_spec(OBJ(g_missionListRects), (OBJ(g_missionListRects) + 0x80), 0x1a, a); rect_spec((OBJ(g_missionListRects) + 0x80), (OBJ(g_missionListRects) + 0x80) + 2 * 16, 0x8c, b);
 }
 
@@ -127,8 +127,8 @@ void (account_layout)(void)
 
 void (briefing_layout)(void)
 {
-	static const RArg a[4] = { RA(ADDR(g_briefingRight), -0x12c, 1), RA(ADDR(g_briefingBottom), -0x30, 0), RA(ADDR(g_briefingRight), -0xb4, 1), RA(ADDR(g_briefingBottom), -0x10, 0) };
-	static const RArg b[4] = { RA(ADDR(g_briefingX), 0x40, 1), RA(ADDR(g_briefingBottom), -0x30, 0), RA(ADDR(g_briefingX), 0xb8, 1), RA(ADDR(g_briefingBottom), -0x10, 0) };
+	static const RArg a[4] = { RA(ADDR(g_missionsWindowRight), -0x12c, 1), RA(ADDR(g_briefingBottom), -0x30, 0), RA(ADDR(g_missionsWindowRight), -0xb4, 1), RA(ADDR(g_briefingBottom), -0x10, 0) };
+	static const RArg b[4] = { RA(ADDR(g_missionsWindowLeft), 0x40, 1), RA(ADDR(g_briefingBottom), -0x30, 0), RA(ADDR(g_missionsWindowLeft), 0xb8, 1), RA(ADDR(g_briefingBottom), -0x10, 0) };
 	rect_spec(OBJ(g_briefingRects), (OBJ(g_briefingRects) + 0x20), 0x8c, a); rect_spec((OBJ(g_briefingRects) + 0x20), OBJ(g_briefingRects) + 4 * 16, 0x8c, b);
 }
 
@@ -246,13 +246,13 @@ void (setupSound_layout)(void)
 
 void (ranking_layout)(void)
 {
-	static const RArg a[4] = { RA(OBJ(g_roomMessageRect), 0x7d, 1), RA((OBJ(g_roomMessageRect) + 0xc), -0x30, 0), RA(OBJ(g_roomMessageRect), 0x11d, 1), RA((OBJ(g_roomMessageRect) + 0xc), -0x10, 0) };
+	static const RArg a[4] = { RA(OBJ(g_rankingRect), 0x7d, 1), RA((OBJ(g_rankingRect) + 0xc), -0x30, 0), RA(OBJ(g_rankingRect), 0x11d, 1), RA((OBJ(g_rankingRect) + 0xc), -0x10, 0) };
 	static const short r[4][2] = { { 0x112, 0x144 }, { 0x14e, 0x130 }, { 0x18a, 0x1bc }, { 0x20c, 0x23e } };   /* [1] is inverted */
-	rect1(OBJ(g_rankingRects), OBJ(g_roomMessageRect), 0xb2, (OBJ(g_roomMessageRect) + 0x4), 0x26, OBJ(g_roomMessageRect), 0xe6, (OBJ(g_roomMessageRect) + 0x4), 0x3e);
-	rect1((OBJ(g_rankingRects) + 0x10), OBJ(g_roomMessageRect), 0x144, (OBJ(g_roomMessageRect) + 0x4), 0x26, OBJ(g_roomMessageRect), 0x178, (OBJ(g_roomMessageRect) + 0x4), 0x3e);
-	rect1((OBJ(g_rankingRects) + 0x20), (OBJ(g_roomMessageRect) + 0x8), -0x78, (OBJ(g_roomMessageRect) + 0x4), 0x24, (OBJ(g_roomMessageRect) + 0x8), -0x14, (OBJ(g_roomMessageRect) + 0x4), 0x40);
+	rect1(OBJ(g_rankingRects), OBJ(g_rankingRect), 0xb2, (OBJ(g_rankingRect) + 0x4), 0x26, OBJ(g_rankingRect), 0xe6, (OBJ(g_rankingRect) + 0x4), 0x3e);
+	rect1((OBJ(g_rankingRects) + 0x10), OBJ(g_rankingRect), 0x144, (OBJ(g_rankingRect) + 0x4), 0x26, OBJ(g_rankingRect), 0x178, (OBJ(g_rankingRect) + 0x4), 0x3e);
+	rect1((OBJ(g_rankingRects) + 0x20), (OBJ(g_rankingRect) + 0x8), -0x78, (OBJ(g_rankingRect) + 0x4), 0x24, (OBJ(g_rankingRect) + 0x8), -0x14, (OBJ(g_rankingRect) + 0x4), 0x40);
 	rect_spec((OBJ(g_rankingRects) + 0x30), (OBJ(g_rankingRects) + 0x50), 0xc8, a);
-	for (int k = 0; k < 4; k++) rect1((OBJ(g_rankingRects) + 0x50) + k * 16, OBJ(g_roomMessageRect), r[k][0], (OBJ(g_roomMessageRect) + 0x4), 0x50, OBJ(g_roomMessageRect), r[k][1], (OBJ(g_roomMessageRect) + 0x4), 0x66);
+	for (int k = 0; k < 4; k++) rect1((OBJ(g_rankingRects) + 0x50) + k * 16, OBJ(g_rankingRect), r[k][0], (OBJ(g_rankingRect) + 0x4), 0x50, OBJ(g_rankingRect), r[k][1], (OBJ(g_rankingRect) + 0x4), 0x66);
 }
 
 void (roomSettings_layout)(void)

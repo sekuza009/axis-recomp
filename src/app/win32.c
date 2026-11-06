@@ -54,7 +54,7 @@ u32 (app_registerWindowClassEx)(const u32 *cls)
 
 /* 0x468450: the GL window resized to width x height (g_glWidth, g_glHeight): the viewport set and, in full screen
    (g_fullScreen), the display mode changed to match (glWindow_setDisplayModeBy; failing that, a message and 0). The cached state
-   g_glCachedState is reset; returns 1 */
+   g_hudProjMode is reset; returns 1 */
 int (glWindow_resize)(int width, int height)
 {
 	g_glWidth = width;
@@ -65,7 +65,7 @@ int (glWindow_resize)(int width, int height)
 		sys_errorMessageNoName((const char *)STR(0x4c500c, "glWindow screen resolution change fai..."));   /* sys_errorMessageNoName */
 		return 0;
 	}
-	g_glCachedState = -1;
+	g_hudProjMode = -1;
 	return 1;
 }
 
@@ -74,7 +74,7 @@ int (glWindow_resize)(int width, int height)
    colour / depth bits (g_glWidth, g_glHeight, g_glColourBits, g_glDepthBits) kept. Without a given window (window and other
    NULL): its class registered (glWindow_wndProc, the icon named as the title, arrow cursor), the display mode
    switched in full screen (failing that, a message and windowed), a pop-up window of that size made, shown and
-   focused; otherwise the given window (and other, g_hdc) taken and resized. Then the GL state (gfx_resetState);
+   focused; otherwise the given window (and other, g_glWindowDc) taken and resized. Then the GL state (gfx_resetState);
    returns the window */
 void *(glWindow_init)(const char *title, int width, int height, int colourBits, int depthBits, int fullscreen,
                       void *window, void *other)
@@ -123,16 +123,16 @@ void *(glWindow_init)(const char *title, int width, int height, int colourBits, 
 		g_glWindowMade = 1;
 	} else {
 		g_glWindow = window;
-		g_hdc = other;   /* the GL window's DC (g_hdc below) */
+		g_glWindowDc = other;   /* the GL window's DC (g_glWindowDc below) */
 		glWindow_resize(width, height);
 	}
 	gfx_resetState();   /* gfx_resetState */
-	g_glCachedState = -1;
+	g_hudProjMode = -1;
 	return g_glWindow;
 }
 
 #define GetDeviceCaps(dc, index) IMPORT(0x4a9034, int, void *, int)(dc, index)
-#define g_glDc g_hdc
+#define g_glDc g_glWindowDc
 
 /* a DEVMODEA asking for width x height (and bits). (The original fills only these fields and leaves the
    rest as the stack had it; here it is zeroed.) */
@@ -336,7 +336,7 @@ static int files_present(void)
 	return 1;
 }
 
-/* 0x43fcc0: the game started (inst, show): outside the lobby (g_startedFromLobby) the files checked; a 640 x 480 default; the
+/* 0x43fcc0: the game started (inst, show): outside the lobby (g_launchedForNetGame) the files checked; a 640 x 480 default; the
    directory, data paths and messages; the process made DPI aware when user32 has SetProcessDPIAware (the exe
    patch's cave at 0x4a8e20); the desktop's size, DC and depth (g_desktopWidth, g_desktopHeight, g_windowDC, g_desktopDepth); the
    default keys and axis.cfg, app_screenSizeForMode, the display mode set (32 bits) and its answer reported (app_reportDisplayModeError); the
@@ -346,7 +346,7 @@ static int files_present(void)
    screen 100, the cursor hidden, the clock check. Returns 1, or 0 on any failure */
 int (app_init)(void *inst, int show)
 {
-	if (!g_startedFromLobby && !files_present())
+	if (!g_launchedForNetGame && !files_present())
 		return 0;
 	g_screenW = 640;
 	g_screenH = 480;
@@ -369,7 +369,7 @@ int (app_init)(void *inst, int show)
 	cfg_init();
 	app_screenSizeForMode();
 	app_reportDisplayModeError(app_setDisplayMode(g_screenW, g_screenH, 4, (g_videoDepth + 1) * 16));   /* CDS_FULLSCREEN */
-	if (!g_startedFromLobby && !files_present())
+	if (!g_launchedForNetGame && !files_present())
 		return 0;
 
 	struct { u32 style; u32 proc; int cls_extra, wnd_extra; void *inst, *icon, *cursor, *brush; const char *menu, *name; } wc;
@@ -412,20 +412,20 @@ int (app_init)(void *inst, int show)
 	}
 	g_menuState = 100;
 	ShowCursor(0);   /* ShowCursor */
-	g_clockCheckClosed = 1;
+	g_clockCheckQuits = 1;
 	sys_checkClockTampering();
 	return 1;
 }
 #undef GetSystemMetrics
 #undef GetVersion
 
-/* 0x4680d0: the GL window's messages. Created: the cursor hidden, its DC (g_hdc) given a pixel format (failing, the
-   game quits) and a GL context (g_context) made current. Painted: begun and ended. Resized: the view resized. Closed:
+/* 0x4680d0: the GL window's messages. Created: the cursor hidden, its DC (g_glWindowDc) given a pixel format (failing, the
+   game quits) and a GL context (g_glWindowContext) made current. Painted: begun and ended. Resized: the view resized. Closed:
    destroyed. Destroyed: the context and DC let go, the display mode restored, the cursor shown, the game quits. The
    rest go to DefWindowProcA */
 long STDCALL (glWindow_wndProc)(void *wnd, u32 msg, u32 w, u32 l)
 {
-#define g_dc g_hdc
+#define g_dc g_glWindowDc
 #undef PostQuitMessage
 #define PostQuitMessage(code) IMPORT(0x4a932c, void, int)(code)
 	u32 rect[4], paint[0x10];
@@ -435,8 +435,8 @@ long STDCALL (glWindow_wndProc)(void *wnd, u32 msg, u32 w, u32 l)
 		g_dc = GetDC(wnd);   /* GetDC */
 		if (!glWindow_setupPixelFormat(g_dc))
 			PostQuitMessage(0);
-		g_context = wglCreateContext(g_dc);   /* wglCreateContext */
-		wglMakeCurrent(g_dc, g_context);   /* wglMakeCurrent */
+		g_glWindowContext = wglCreateContext(g_dc);   /* wglCreateContext */
+		wglMakeCurrent(g_dc, g_glWindowContext);   /* wglMakeCurrent */
 		IMPORT(0x4a9310, int, void *, u32 *)(wnd, rect);   /* GetClientRect */
 		return 0;
 	case 0xf:   /* WM_PAINT */
@@ -450,11 +450,11 @@ long STDCALL (glWindow_wndProc)(void *wnd, u32 msg, u32 w, u32 l)
 		glWindow_resize(l & 0xffff, l >> 16);
 		return 0;
 	case 2:   /* WM_DESTROY */
-		if (g_context)
-			wglDeleteContext(g_context);   /* wglDeleteContext */
+		if (g_glWindowContext)
+			wglDeleteContext(g_glWindowContext);   /* wglDeleteContext */
 		if (g_dc)
 			ReleaseDC(wnd, g_dc);   /* ReleaseDC */
-		g_context = 0;
+		g_glWindowContext = 0;
 		g_dc = 0;
 		glWindow_restoreDisplayMode();
 		ShowCursor(1);
@@ -463,7 +463,7 @@ long STDCALL (glWindow_wndProc)(void *wnd, u32 msg, u32 w, u32 l)
 	}
 	return DefWindowProcA(wnd, msg, w, l);   /* DefWindowProcA */
 #undef g_dc
-#undef g_context
+#undef g_glWindowContext
 #undef PostQuitMessage
 }
 
@@ -527,7 +527,7 @@ long STDCALL (chat_editSubclass)(void *wnd, u32 msg, u32 w, u32 l)
    told to quit, then half a second; the start time (GetSystemTime into g_clockLastTime, timeGetTime g_startTicks) and two
    seconds. A game already running (an "AXIS" window), or no CD (cd_findDrive), ends it with a message box. The
    language by the system's (Korean 0x412 / 0x812: 1 and the message 0x4b2794, else 2 and 0x4b27e4, at g_language /
-   g_launchMessage); the clock check; outside the lobby (g_startedFromLobby) the launcher, start mode and file checks, each failing
+   g_launchMessage); the clock check; outside the lobby (g_launchedForNetGame) the launcher, start mode and file checks, each failing
    with its message. The launcher told to quit again, app_init (failing: a message box), the screen saver off, then
    the message loop (TranslateMessage while g_textFieldOpen) with a frame (editField_readTyping) and the fade step after each round of
    messages, until g_gameRunning is cleared. Returns 1, or 0 on the exits. (Named game_WinMain: WinMain is the SDK's) */
@@ -561,7 +561,7 @@ u32 STDCALL (game_WinMain)(void *inst, void *prev, const char *cmd, int show)
 		(*(u32 *)&g_launchMessage) = STR(0x4b27e4, "Axisplay.exe has been expired");
 	}
 	sys_checkClockTampering();
-	if (!g_startedFromLobby) {
+	if (!g_launchedForNetGame) {
 		if (!app_readLauncherCheck()) {
 			sys_messageBox(g_launchMessage);
 			return 0;
@@ -673,13 +673,13 @@ long STDCALL (game_wndProc)(void *wnd, u32 msg, u32 w, u32 l)
 			ReleaseDC(wnd, g_windowDC);
 		g_glContext = NULL;
 		g_windowDC = NULL;
-		g_lobbyPending = 1;
+		g_lobbyReportsOff = 1;
 		arena_leaveSession();
 		net_disconnect();
 		KillTimer(g_hWndMain, 0x29a);
 		KillTimer(g_hWndMain, 0x115c);
 		KillTimer(g_hWndMain, 0x309);
-		g_lobbyPending = 1;
+		g_lobbyReportsOff = 1;
 		app_shutdown();   /* app_shutdown */
 		DestroyWindow(wnd);
 		return 1;
@@ -767,13 +767,13 @@ long STDCALL (game_wndProc)(void *wnd, u32 msg, u32 w, u32 l)
 				net_send(0x17, 100);
 		} else if (w == 0x378) {
 			dplay_listSessions();
-			if (++g_arenaSearchTicks > 30) {
-				g_arenaJoinWaiting = 1;
+			if (++g_joinPollTicks > 30) {
+				g_joinTimedOut = 1;
 			} else {
 				g_receivedSession = (const u8 *)net_sessionValue(0);
 				if (!g_receivedSession)
 					return 1;
-				g_arenaJoinPending = 1;
+				g_sessionFound = 1;
 			}
 			KillTimer(wnd, 0x378);
 			if (g_screen == 800)
@@ -794,12 +794,12 @@ long STDCALL (game_wndProc)(void *wnd, u32 msg, u32 w, u32 l)
 		}
 		net_recv();   /* net_recv */
 		switch (g_lobbyStatus) {
-		case 0x29: g_connectStep = 4; break;
-		case 0x66: g_connectStep = 1; break;
-		case 0x67: g_connectStep = 3; break;
-		default: g_connectStep = 0; break;
+		case 0x29: g_hostAnswer = 4; break;
+		case 0x66: g_hostAnswer = 1; break;
+		case 0x67: g_hostAnswer = 3; break;
+		default: g_hostAnswer = 0; break;
 		}
-		switch (g_serverConnectionState) {
+		switch (g_lobbyListAnswer) {
 		case 0x29: g_serverAnswerIn = 1; g_searchResult = 4; break;
 		case 0xca: g_serverAnswerIn = 1; g_searchResult = 1; break;
 		case 0xcb: g_serverAnswerIn = 1; g_searchResult = 3; break;
@@ -814,12 +814,12 @@ long STDCALL (game_wndProc)(void *wnd, u32 msg, u32 w, u32 l)
 		}
 		net_recv();
 		switch (g_gameServerStatus) {
-		case 0x28: g_connectStep = 4; break;
-		case 0x66: g_connectStep = 1; break;
-		case 0x67: g_connectStep = 3; break;
-		default: g_connectStep = 0; break;
+		case 0x28: g_hostAnswer = 4; break;
+		case 0x66: g_hostAnswer = 1; break;
+		case 0x67: g_hostAnswer = 3; break;
+		default: g_hostAnswer = 0; break;
 		}
-		switch (g_gameServerState) {
+		switch (g_roomListAnswer) {
 		case 0x28: g_roomSearchAnswerIn = 1; g_searchResult = 4; break;
 		case 0xca: g_roomSearchAnswerIn = 1; g_searchResult = 1; break;
 		case 0xcb: g_roomSearchAnswerIn = 1; g_searchResult = 3; break;

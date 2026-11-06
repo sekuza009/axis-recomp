@@ -142,24 +142,24 @@ int (dplay_join)(int session, int guid, int player, int data)
 	return dplay_slotJoin(kind, guid, player, data, (u8)rec->gameMode);
 }
 
-/* 0x452fe0: the arena session left (when one is open, g_arenaSessionOpen and g_dplaySessionList): the host tells everyone first
-   (message g_resultMessage, flag g_hostResultFlag), the slot of the connection kind closed (the kind becomes 4), the session list
+/* 0x452fe0: the arena session left (when one is open, g_arenaSessionOpen and g_sessionListOpen): the host tells everyone first
+   (message g_netHostLeftMessageKind, flag g_hostGoneMessageFlag), the slot of the connection kind closed (the kind becomes 4), the session list
    freed (net_freeSessionList, whose eax it returns) and the session state cleared. 1 when there is no session */
 u32 (arena_leaveSession)(void)
 {
 	static const u32 close[4] = { FN_ADDR(dplaySlot0_close, 0x4549a0), FN_ADDR(dplaySlot1_close, 0x454ac0), FN_ADDR(dplaySlot2_close, 0x454bd0), FN_ADDR(dplaySlot3_close, 0x454ce0) };
-	if (g_arenaSessionOpen != 1 || !g_dplaySessionList)
+	if (g_arenaSessionOpen != 1 || !g_sessionListOpen)
 		return 1;
 	if (g_isHost) {
-		g_hostResultFlag = 1;
-		GAME_FN(net_sendMessage, 0x451270, int, void *, u32, u32)((void *)ADDR(g_resultMessage), 0, 0);   /* net_sendMessage: send */
+		g_hostGoneMessageFlag = 1;
+		GAME_FN(net_sendMessage, 0x451270, int, void *, u32, u32)((void *)ADDR(g_netHostLeftMessageKind), 0, 0);   /* net_sendMessage: send */
 	}
 	u32 kind = (*(u32 *)&g_connectionKind);
 	(*(u32 *)&g_connectionKind) = 4;
 	if (kind <= 3)
 		GAME_CDECL(close[kind], int, void)();
 	u32 r = net_freeSessionList();   /* net_freeSessionList */
-	g_dplaySessionList = 0;
+	g_sessionListOpen = 0;
 	g_netQueueOnline = 0;
 	g_arenaSessionOpen = 0;
 	return r;
@@ -177,12 +177,12 @@ int (arena_openSession)(u32 kind, const char *host)
 	if (host) {
 		if (!net_resolveHost(host))   /* net_resolveHost */
 			return 0;
-		strcpy(address, g_serverAddress);
+		strcpy(address, g_resolvedAddress);
 	}
-	if (g_dplaySessionList) {
+	if (g_sessionListOpen) {
 		if ((*(u32 *)&g_connectionKind) == kind) {
 			arena_leaveSession();
-			g_dplaySessionList = 0;
+			g_sessionListOpen = 0;
 		} else
 			arena_leaveSession();
 	}
@@ -196,7 +196,7 @@ int (arena_openSession)(u32 kind, const char *host)
 	int r = kind == 0 ? GAME_CDECL(open[0], int, const char *)(address) : GAME_CDECL(open[kind], int, int)(0);
 	if (!r)
 		return 0;
-	g_dplaySessionList = 1;
+	g_sessionListOpen = 1;
 	g_netQueueOnline = 1;
 	return r;
 }

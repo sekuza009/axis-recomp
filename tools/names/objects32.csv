@@ -1,5 +1,5 @@
 # the pen font's corner tables (step 3b): from glyph 1, an (s, t) pair a glyph, 105 glyphs (pen_init writes glyph g at
-# the table + (g - 1) * 8; font_penDraw reads glyph c - 0x20); packed one after the other up to g_penFontNeverSet
+# the table + (g - 1) * 8; font_penDraw reads glyph c - 0x20); packed one after the other up to g_penInitialized
 0xa0f498,float,210,g_penFixedTopLeft,the fixed set's top left corners
 0xa10018,float,210,g_penFixedTopRight,the fixed set's top right corners
 0xa0f150,float,210,g_penFixedBottomRight,the fixed set's bottom right corners

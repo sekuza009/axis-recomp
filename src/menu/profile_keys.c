@@ -6,10 +6,10 @@
 /* the highlight of a two-button dialog whose frame is at (x, y): choice 0 the left button, 1 the right one */
 static void dialog_select(int choice, int x, int y)
 {
-	g_dialogChoice = choice;
-	g_highlightShown = 1;
-	g_highlightSize = 20.0f;
-	g_highlightAlpha = 0.4f;
+	g_dialogFocus = choice;
+	g_pointerGliding = 1;
+	g_pointerGlideTime = 20.0f;
+	g_unusedHighlightAlpha = 0.4f;
 	g_highlightX = x + (choice ? 0x114 : 0x9c);
 	g_highlightY = y + 0x4a;
 	sound_playMenu(2);
@@ -17,16 +17,16 @@ static void dialog_select(int choice, int x, int y)
 /* the arrow and toggle keys of a two-button dialog; answers whether one moved the highlight */
 static int dialog_keys(int x, int y)
 {
-	if (input_justPressed(g_keyRight) == 1 && g_dialogChoice == 0) {
+	if (input_justPressed(g_keyRight) == 1 && g_dialogFocus == 0) {
 		dialog_select(1, x, y);
 		return 1;
 	}
-	if (input_justPressed(g_keyLeft) == 1 && g_dialogChoice == 1) {
+	if (input_justPressed(g_keyLeft) == 1 && g_dialogFocus == 1) {
 		dialog_select(0, x, y);
 		return 1;
 	}
 	if (input_justPressed(g_keyToggle) == 1) {
-		dialog_select(g_dialogChoice == 0 ? 1 : 0, x, y);
+		dialog_select(g_dialogFocus == 0 ? 1 : 0, x, y);
 		return 1;
 	}
 	return 0;
@@ -35,7 +35,7 @@ static int dialog_keys(int x, int y)
 /* 0x44c850 (profile_messageKeys): page 2, a message: OK or a click closes it */
 void (profile_messageKeys)(void)
 {
-	g_cursorBlink = 0.0f;
+	g_menuRepeatClock = 0.0f;
 	if (!g_profileMessage)
 		return;
 	if (input_justPressed(g_keyClick) == 1) {
@@ -54,7 +54,7 @@ void (profile_messageKeys)(void)
    right button or a cancel key keeps it; either way back to the list */
 void (profile_deleteKeys)(void)
 {
-	g_cursorBlink = 0.0f;
+	g_menuRepeatClock = 0.0f;
 	if (input_justPressed(g_keyOk) == 1) {
 		sound_playMenu(0);
 		profile_deleteFiles();
@@ -83,7 +83,7 @@ void (profile_deleteKeys)(void)
    (profile_resetCamera), the right button or a cancel key goes back to the list */
 void (profile_logOutKeys)(void)
 {
-	g_cursorBlink = 0.0f;
+	g_menuRepeatClock = 0.0f;
 	if (input_justPressed(g_keyOk) == 1) {
 		sound_playMenu(0);
 		profile_resetCamera();
@@ -100,7 +100,7 @@ void (profile_logOutKeys)(void)
 	}
 	if (button == 1 || input_justPressed(g_keyCancel) == 1 || input_justPressed(g_keyBack) == 1) {
 		sound_playMenu(0);
-		g_highlightShown = 0;
+		g_pointerGliding = 0;
 		g_profilePage = 1;
 		return;
 	}
@@ -111,7 +111,7 @@ void (profile_logOutKeys)(void)
    cancel leaves; either way back to the list. The arrows move the cursor (0..8) and wrap within its row or column */
 void (pilotSelect_keys)(void)
 {
-	g_cursorBlink = 0.0f;
+	g_menuRepeatClock = 0.0f;
 	if (input_justPressed(g_keyOk) == 1) {
 		sound_playMenu(0);
 		profile_create();
@@ -144,5 +144,5 @@ void (pilotSelect_keys)(void)
 		return;
 	}
 	g_profilePage = 1;
-	g_highlightShown = 0;
+	g_pointerGliding = 0;
 }

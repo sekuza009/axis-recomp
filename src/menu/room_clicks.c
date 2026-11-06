@@ -9,7 +9,7 @@
    launcher to update), CANCEL (button 1) only closes it */
 void (updateNotice_clicks)(void)
 {
-	if (g_dialogOpen != 0 || g_mouseClick == 0)
+	if (g_frameOpening != 0 || g_mouseClick == 0)
 		return;
 	switch (updateNotice_hitTest(g_mouseX, g_mouseY)) {
 	case 0:
@@ -53,15 +53,15 @@ void (room_askJoinPassword)(void)
    for given up: its flags off, the session left (arena_leaveSession) and its timer (0x378) killed */
 void (gameList_stopJoin)(void)
 {
-	if (g_dialogOpen != 0 || g_mouseClick == 0 || g_roomCameraMode != 2)
+	if (g_frameOpening != 0 || g_mouseClick == 0 || g_roomCameraMode != 2)
 		return;
-	g_cursorBlink = 0.0f;
+	g_menuRepeatClock = 0.0f;
 	if (gameListStop_hitTest(g_mouseX, g_mouseY) == 0) {
 		sound_playMenu(0);
-		g_arenaSearchTicks = 0;
-		g_arenaJoinWaiting = 0;
+		g_joinPollTicks = 0;
+		g_joinTimedOut = 0;
 		arena_leaveSession();
-		g_arenaConfirming = 0;
+		g_joinConnecting = 0;
 		KillTimer(g_hWndMain, 0x378);
 	}
 }
@@ -70,8 +70,8 @@ void (gameList_stopJoin)(void)
    colour stops at 1) */
 void (room_drawWhiteFade)(void)
 {
-	long double a = (long double)g_frameTime * 0.015f + g_roomFade;
-	g_roomFade = f32(a);
+	long double a = (long double)g_frameTime * 0.015f + g_whiteFade;
+	g_whiteFade = f32(a);
 	float alpha = f32(a);
 	if (a > 1.0f)
 		alpha = 1.0f;
@@ -106,12 +106,12 @@ static void update_notice_keys(int *question)
 void (roomUpdateNotice_keys)(void) { update_notice_keys(&g_roomUpdateNotice); }
 void (arenaUpdateNotice_keys)(void) { update_notice_keys(&g_arenaUpdateNotice); }
 
-/* 0x443e20: the mission list's clicks (screen 900) (no dialog open, g_dialogOpen): a right click leaves (missions_leave); a
+/* 0x443e20: the mission list's clicks (screen 900) (no dialog open, g_frameOpening): a right click leaves (missions_leave); a
    left click on its buttons (missionList_hitTest): rows 0..7 pick that mission (missions_clickRow), 8 its briefing
    (mission_loadBriefing), 9 leaves. Returns the last call's eax */
 int (missions_listClicks)(void)
 {
-	int r = g_dialogOpen;
+	int r = g_frameOpening;
 	if (r)
 		return r;
 	if (g_rightClick)
@@ -224,8 +224,8 @@ u32 (room_pageClicks)(void)
 	u32 page = (*(u32 *)&g_roomCameraMode);
 	if (page == 1 || page == 0)
 		return page;
-	if (g_dialogOpen)
-		return g_dialogOpen;
+	if (g_frameOpening)
+		return g_frameOpening;
 	if (g_mouseClick) {
 		const Outline *buttons = (const Outline *)OBJ(g_roomOutlines);
 		for (int i = 0; i < 6; i++) {
@@ -301,19 +301,19 @@ u32 (newIdForm_endTyping)(void)
 	return r;
 }
 
-/* 0x4355b0: the game room's hosting step (g_connectStep): 1 hosts the room's session (the music stopped, arena_openSession, then
+/* 0x4355b0: the game room's hosting step (g_hostAnswer): 1 hosts the room's session (the music stopped, arena_openSession, then
    dplay_host with the room's settings record g_roomRecName and name g_ladderId) and takes its settings (the 32-byte
    rules, +0x20 .. +0x25); then 0 or 3 (3 also sets g_arenaUpdateNotice) move on to 2, and 4 does too with message 0x2a.
    Returns the step (or the message's eax) */
 u32 (room_hostingStep)(void)
 {
 	const u8 *room = (const u8 *)OBJ(g_roomRecName);
-	u32 step = (*(u32 *)&g_connectStep);
+	u32 step = (*(u32 *)&g_hostAnswer);
 	if (step == 2)
 		return 2;
 	if (step == 1) {
 		g_connectionAwaited = 0;
-		g_quitAsked = 1;
+		g_leavingForMatch = 1;
 		g_netRole = 1;
 		music_shutdown();
 		g_roomCameraMode = 0;
@@ -323,11 +323,11 @@ u32 (room_hostingStep)(void)
 			room[0x24], room[0x25], 0);   /* dplay_host: host */
 		g_mapIndex = (signed char)room[0x20];
 		g_chosenGameMode = (signed char)room[0x23];
-		memcpy((void *)OBJ(g_mapTitle), room, 32);
+		memcpy((void *)OBJ(g_gameTitle), room, 32);
 		g_mapRotation = (signed char)room[0x22];
 		g_fragLimit = room[0x24];
 		g_timeLimit = room[0x25];
-		step = (*(u32 *)&g_connectStep);
+		step = (*(u32 *)&g_hostAnswer);
 		g_arenaGameSetUp = 1;
 	}
 	switch (step) {
@@ -337,33 +337,33 @@ u32 (room_hostingStep)(void)
 	case 0:
 		g_connectionAwaited = 0;
 		g_arenaGameSetUp = 0;
-		g_connectStep = 2;
+		g_hostAnswer = 2;
 		return step;
 	case 4:
 		g_connectionAwaited = 0;
-		g_connectStep = 2;
+		g_hostAnswer = 2;
 		g_arenaGameSetUp = 0;
 		return menu_showMessage(0x2a);   /* the message */
 	}
 	return step;
 }
 
-/* 0x434e70: the window closed while connecting. An arena wait (g_arenaJoinWaiting): it ends, the arena is left and message
-   0x44. Joining a listed game (g_arenaJoinPending; its g_sessionList entry, row g_arenaJoinRow): the entry's
+/* 0x434e70: the window closed while connecting. An arena wait (g_joinTimedOut): it ends, the arena is left and message
+   0x44. Joining a listed game (g_sessionFound; its g_sessionList entry, row g_arenaJoinRow): the entry's
    guid from the session received (g_receivedSession) and its frag and time limits (g_roomRecFragLimit/55) for the join. Joined (0x1f4): the music stopped and the
    player's settings taken from the record for the game; otherwise a message by the result and the arena left.
    Returns what the original leaves in eax */
 u32 (room_joinAnswer)(void)
 {
-	if (g_arenaJoinWaiting) {
-		g_arenaSearchTicks = 0;
-		g_arenaJoinWaiting = 0;
+	if (g_joinTimedOut) {
+		g_joinPollTicks = 0;
+		g_joinTimedOut = 0;
 		arena_leaveSession();
 		u32 r = menu_showMessage(0x44);   /* the message */
-		g_arenaConfirming = 0;
+		g_joinConnecting = 0;
 		return r;
 	}
-	if (!g_arenaJoinPending)
+	if (!g_sessionFound)
 		return 0;
 	u32 row = (*(u32 *)&g_arenaJoinRow);
 	SessionEntry *game = &g_sessionList[row];
@@ -376,20 +376,20 @@ u32 (room_joinAnswer)(void)
 		if ((u32)(r - 0x1f5) <= 4)
 			menu_showMessage(message[r - 0x1f5]);
 		u32 e = arena_leaveSession();
-		g_arenaSearchTicks = 0;
-		g_arenaJoinPending = 0;
-		g_arenaConfirming = 0;
+		g_joinPollTicks = 0;
+		g_sessionFound = 0;
+		g_joinConnecting = 0;
 		return e;
 	}
 	music_shutdown();
-	g_quitAsked = 1;
+	g_leavingForMatch = 1;
 	g_netRole = 2;
 	g_roomCameraMode = 0;
-	g_arenaSearchTicks = 0;
-	g_arenaJoinPending = 0;
-	g_arenaConfirming = 0;
+	g_joinPollTicks = 0;
+	g_sessionFound = 0;
+	g_joinConnecting = 0;
 	g_mapIndex = game->map;
-	memcpy((void *)OBJ(g_mapTitle), game->name, 32);
+	memcpy((void *)OBJ(g_gameTitle), game->name, 32);
 	g_mapRotation = game->rotation;
 	g_chosenGameMode = game->gameMode;
 	g_fragLimit = game->fragLimit;
@@ -461,7 +461,7 @@ static u32 call_keeping_ebp(u32 address)
 /* 0x43ede0: the ranking page. A request pending (g_rankingRequestPending) for sort column g_rankingSort: columns 0 .. 2 send their
    code (0x25 / 0x23 / 0x26) with the first rank of page g_rankingPage (ranks 0x9dd83c .. 0x9dd7dc) in message 0x15 and
    start waiting (g_rankingWaiting, the blink at 1000); column 3 just clears the request. Then the room's tunnel; with
-   the room camera arrived (g_roomCameraMode 2) and outside page 99: with a message box open (g_dialogOpen) only it is drawn (a
+   the room camera arrived (g_roomCameraMode 2) and outside page 99: with a message box open (g_frameOpening) only it is drawn (a
    request made again once it closes), else while waiting an answer (g_rankingListIn) fills the list (ranking_fillPage) and
    keeps the column and page, the blink counts down by g_frameTime * g_lobbyBlinkRate (from 1000 again below 0), and the
    table is drawn (ranking_drawTable). Returns what the original leaves in eax */
@@ -490,11 +490,11 @@ u32 (ranking_page)(void)
 	int mode = g_roomCameraMode;
 	if (mode == 1 || mode == 0 || g_roomState == 99)
 		return mode;
-	if (g_dialogOpen) {
-		const int *box = g_roomMessageRect;
+	if (g_frameOpening) {
+		const int *box = g_rankingRect;
 		menu_drawFrame(box[0], box[1], box[2], box[3]);   /* the message box */
-		if (g_dialogOpen)
-			return (*(u32 *)&g_dialogOpen);
+		if (g_frameOpening)
+			return (*(u32 *)&g_frameOpening);
 		g_rankingRequestPending = 1;
 		return 0;
 	}
@@ -556,7 +556,7 @@ u32 (login_send)(void)
 u32 (ranking_clicks)(void)
 {
 	u32 mode = (*(u32 *)&g_roomCameraMode);
-	if (mode == 1 || mode == 0 || g_dialogOpen)
+	if (mode == 1 || mode == 0 || g_frameOpening)
 		return mode;
 	int waiting = g_rankingWaiting;
 	if (g_rightClick && !waiting)
@@ -609,8 +609,8 @@ u32 (room_settingsClicks)(void)
 	u32 mode = (*(u32 *)&g_roomCameraMode);
 	if (mode == 1 || mode == 0)
 		return mode;
-	if (g_dialogOpen)
-		return (*(u32 *)&g_dialogOpen);
+	if (g_frameOpening)
+		return (*(u32 *)&g_frameOpening);
 	if (g_rightClick)
 		g_roomCameraMode = 0;
 	if (!g_mouseClick)
@@ -684,8 +684,8 @@ u32 (room_settingsClicks)(void)
    in eax */
 u32 (room_settingsAfterTyping)(void)
 {
-	if (g_dialogOpen)
-		return (*(u32 *)&g_dialogOpen);
+	if (g_frameOpening)
+		return (*(u32 *)&g_frameOpening);
 	if (g_textFieldOpen)
 		return 0;
 	const char *line = g_chatLine;
@@ -794,7 +794,7 @@ u32 (account_page)(void)
 	u32 mode = (*(u32 *)&g_roomCameraMode);
 	if (mode == 1 || mode == 0 || g_roomState == 99)
 		return mode;
-	if (g_dialogOpen)
+	if (g_frameOpening)
 		return menu_drawFrame(g_accountPanelLeft, g_accountPanelTop,
 		                                                     g_accountPanelRight, g_accountPanelBottom);
 	if (g_accountNotice)
@@ -823,17 +823,17 @@ u32 (account_page)(void)
 	return r;
 }
 
-/* ---- the new-ID form's keys: its text fields (g_dialogChoice: 0 .. 2), the text cursor placed in the one typed
+/* ---- the new-ID form's keys: its text fields (g_dialogFocus: 0 .. 2), the text cursor placed in the one typed
    into (g_highlightX / g_highlightY) ---- */
-#define g_loginField g_dialogChoice
+#define g_loginField g_dialogFocus
 
 /* the cursor into field to at (x, y) */
 static void login_field(int to, int x, int y)
 {
 	g_loginField = to;
-	g_highlightShown = 1;
-	(*(u32 *)&g_highlightSize) = 0x41a00000;   /* 20 */
-	(*(u32 *)&g_highlightAlpha) = 0x3ecccccd;   /* 0.4 */
+	g_pointerGliding = 1;
+	(*(u32 *)&g_pointerGlideTime) = 0x41a00000;   /* 20 */
+	(*(u32 *)&g_unusedHighlightAlpha) = 0x3ecccccd;   /* 0.4 */
 	g_highlightX = x;
 	g_highlightY = y;
 	g_fieldStep = 0;

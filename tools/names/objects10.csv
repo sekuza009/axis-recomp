@@ -1,5 +1,5 @@
 # ARM CENTER's part stats and camera box (step 3b): records of the named globals in them (name_objects.py --records)
-0x4dc1d0,u32,4,g_armcTabColourDim,ARM CENTER's tab colour when not chosen (RGBA; g_armcTabColour the chosen one: armc_misc's loop of 4)
+0x4dc1d0,u32,4,g_armcDim,ARM CENTER's tab colour when not chosen (RGBA; g_armcBright the chosen one: armc_misc's loop of 4)
 0x4dcaf8,float,6,g_mechSpeeds,the mech's speeds from its legs: normal (g_mechNormalSpeed) .. max backward (g_mechMaxSpeedBwd) .. the legs' max weight (g_legsMaxWeight)
 0x4dce80,float,10,g_boosterStats,the booster's stats: thrust type (g_boosterThrustType), three times (g_boosterActiveTime + i * 4), four speeds (g_boosterNormalSpeed + i * 4), weight
 0x4dcf40,u32,38,g_armcCameraBox,ARM CENTER's camera box corners (+-700 or 0 as floats; armc_initCameraBox writes them from 0x4dcf00 + 0x40 ..)

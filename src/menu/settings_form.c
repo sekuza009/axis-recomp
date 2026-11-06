@@ -233,7 +233,7 @@ static void box_buttons(int hovered, int lit_from)
 }
 
 /* 0x40b750: the arena screen's form for a new arena (0x4dbb00 .. 0x4dbb0c) for g_newArenaName: the title MSG(156, "CREATE ARENA"), the
-   labels (MSG(157, "GAME NAME")), the values (the rotation's OFF / ON from g_arenaOnOff2, the modes at MSG(471, "DEATH MATCH"); hidden while edited: g_editingNewArenaName,
+   labels (MSG(157, "GAME NAME")), the values (the rotation's OFF / ON from g_rotationOnOff, the modes at MSG(471, "DEATH MATCH"); hidden while edited: g_editingNewArenaName,
    g_typingArenaPassword, g_editingNewArenaFragLimit, g_editingNewArenaTimeLimit). Unless a field is being edited, the confirmation (g_hostErrorBox) or "leave?" box (g_arenaUpdateNotice)
    or the map list (g_mapListOpen) is up, the value under the pointer (createArena_hitTest) highlighted. Two buttons (MSG(165, "$[0] IPX GAME"), lit
    from 8 at 0.9) and below the second of the next pair (MSG(168, "$[0] CANCEL"), 11), the map preview (arena_drawMapPreview), its
@@ -243,7 +243,7 @@ static void box_buttons(int hovered, int lit_from)
 void (arena_createDraw)(void)
 {
 	static const Form form = { ADDR(g_newArenaFormLeft), (GameSettings *)OBJ(g_newArenaName), { ADDR(g_editingNewArenaName), ADDR(g_typingArenaPassword), ADDR(g_editingNewArenaFragLimit), ADDR(g_editingNewArenaTimeLimit) }, MSG(471, "DEATH MATCH"),
-	                           0, OBJ(g_arenaOnOff2), 10 };
+	                           0, OBJ(g_rotationOnOff), 10 };
 	const Form *f = &form;
 	const u32 *bright = g_arenaBright, *dim = g_arenaDim;
 	int editing = g_textFieldOpen, hostError = g_hostErrorBox, updateNotice = g_arenaUpdateNotice;

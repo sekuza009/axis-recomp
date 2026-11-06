@@ -129,7 +129,7 @@ static const Store k_dikCodes[118] = {
 	{ ADDR(g_dikDelete), 0xd3 }, { ADDR(g_dikLWin), 0xdb }, { ADDR(g_dikRWin), 0xdc }, { ADDR(g_dikApps), 0xdd }, { ADDR(g_dikEscape_2), 0x1 },
 	{ ADDR(g_dikInsert_2), 0xd2 }, { ADDR(g_dikPageUp_2), 0xc9 }, { ADDR(g_dikHome_2), 0xc7 }, { ADDR(g_dikEnd_2), 0xcf }, { ADDR(g_dikDelete_2), 0xd3 },
 	{ ADDR(g_dikPageDown_2), 0xd1 }, { ADDR(g_dikZ_2), 0x2c }, { ADDR(g_dikEnter_2), 0x1c }, { ADDR(g_dikMouse1), 0xfa }, { ADDR(g_dikMouse2), 0xfb },
-	{ ADDR(g_dikMouse3), 0xfc }, { ADDR(g_dikWheelDown), 0xfd }, { ADDR(g_dikWheelUp), 0xfe } };
+	{ ADDR(g_dikMouse3), 0xfc }, { ADDR(g_dikWheelUp), 0xfd }, { ADDR(g_dikWheelDown), 0xfe } };
 
 void (input_initDikCodes)(void) { apply_stores(k_dikCodes, 118); }   /* 0x42fd40: the DirectInput key codes (DIK_*) into their globals */
 
@@ -171,6 +171,6 @@ static const CStore k_defaultBindingsEdit[68] = {
 	{ (OBJ(g_controlsEdit) + 0xd0), ADDR(g_dikF4), 1 }, { (OBJ(g_controlsEdit) + 0xd8), ADDR(g_dikF5), 1 }, { (OBJ(g_controlsEdit) + 0xd4), ADDR(g_dikNone), 1 }, { (OBJ(g_controlsEdit) + 0xdc), ADDR(g_dikNone), 1 },
 	{ (OBJ(g_controlsEdit) + 0xe0), ADDR(g_dikTab), 1 }, { (OBJ(g_controlsEdit) + 0xe4), ADDR(g_dikNone), 1 }, { (OBJ(g_controlsEdit) + 0xe8), ADDR(g_dikF10), 1 }, { (OBJ(g_controlsEdit) + 0xec), ADDR(g_dikNone), 1 },
 	{ (OBJ(g_controlsEdit) + 0xf4), ADDR(g_dikNone), 1 }, { (OBJ(g_controlsEdit) + 0xfc), ADDR(g_dikNone), 1 }, { (OBJ(g_controlsEdit) + 0xf0), ADDR(g_dikV), 1 }, { (OBJ(g_controlsEdit) + 0xf8), ADDR(g_dikF1), 1 },
-	{ OBJ(g_setupToggles), 0x0, 0 }, { (OBJ(g_setupToggles) + 0x4), 0x0, 0 }, { ADDR(g_sensitivitySlider), 0x32, 0 }, { ADDR(g_crosshair), 0x0, 0 } };
+	{ OBJ(g_mouseSwitchesEdit), 0x0, 0 }, { (OBJ(g_mouseSwitchesEdit) + 0x4), 0x0, 0 }, { ADDR(g_sensitivitySlider), 0x32, 0 }, { ADDR(g_crosshairEdit), 0x0, 0 } };
 
 void (setup_defaultBindings)(void) { apply_cstores(k_defaultBindingsEdit, 68); }   /* the setup page's DEFAULT: the defaults into its edit copy (g_controlsEdit) */

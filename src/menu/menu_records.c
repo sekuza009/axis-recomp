@@ -42,7 +42,7 @@ void (menu_clearInputBuffer)(int mode)
 {
 	memset((void *)OBJ(g_chatLine), 0, 0x400);
 	g_chatLength = 0;
-	g_typedLength = mode;
+	g_lineMaxLength = mode;
 }
 
 /* 0x4315c0: the line pushed onto the history (the oldest line dropped) */
@@ -58,7 +58,7 @@ void (menu_showMessage)(int i)
 {
 	g_dialogPending = 1;
 	memset((void *)OBJ(g_messageBoxLine), 0, 0x50);
-	g_lobbyReply = 0;
+	g_launchStartStep = 0;
 	strcpy(g_messageBoxLine, (const char *)(MSG(0, "PRESS ENTER OR CLICK MOUSE") + i * 0x80));
 }
 
@@ -87,14 +87,14 @@ void (arena_clearSessionEntry)(void)
 	e->ping = 0;
 }
 
-/* ---- the saved mech (g_savedMechParts parts, g_savedMechWeapons weapons, g_savedColourChoices colours) ---- */
+/* ---- the saved mech (g_savedMechHead parts, g_savedMechItem0 weapons, g_savedColourChoices colours) ---- */
 /* 0x430390: the empty mech: no weapons, part 0, colour pairs (0,1,0) (0,1,0) */
 void (mech_setEmpty)(void)
 {
 	static const float colour[6] = { 0, 1, 0, 0, 1, 0 };
 	g_savedMechItem3 = g_savedMechItem4 = g_savedMechItem5 =
-		g_savedMechWeapons = g_savedMechItem1 = -1;
-	g_savedMechParts = g_savedMechChest = g_savedMechArm =
+		g_savedMechItem0 = g_savedMechItem1 = -1;
+	g_savedMechHead = g_savedMechChest = g_savedMechArm =
 		g_savedMechLeg = g_savedMechBooster = 0;
 	g_savedMechItem2 = 0;
 	for (u32 p = OBJ(g_savedColourChoices); p < (OBJ(g_savedColourChoices) + 0x78); p += 24)
@@ -106,15 +106,15 @@ void (mech_setEmpty)(void)
 void (mech_unpackFromRecord)(void)
 {
 	const signed char *rec = (const signed char *)OBJ(g_roomMech);
-	g_savedMechParts = rec[0];
+	g_savedMechHead = rec[0];
 	g_savedMechChest = rec[1];
 	g_savedMechArm = rec[2];
 	g_savedMechLeg = rec[3];
 	g_savedMechBooster = rec[4];
 	for (int i = 0; i < 4; i++)
-		GAME_VAR(int, OBJ(g_savedMechSettings) + 8 + i * 4) = rec[7 + i];   /* (items 2 .. 5) */
+		GAME_VAR(int, OBJ(g_savedMechSlotItems) + 8 + i * 4) = rec[7 + i];   /* (items 2 .. 5) */
 	g_savedMechItem1 = rec[6];
-	g_savedMechWeapons = rec[5];
+	g_savedMechItem0 = rec[5];
 	memcpy((void *)OBJ(g_savedColourChoices), (void *)OBJ(g_roomColours), 0x90);
 }
 
@@ -123,7 +123,7 @@ void (mech_unpackFromRecord)(void)
 void (mech_loadFromProfile)(void)
 {
 	g_savedMechChest = g_profileMechChest;
-	g_savedMechParts = g_profileMechRecord;
+	g_savedMechHead = g_profileMechHead;
 	g_savedMechArm = g_profileMechArm;
 	g_savedMechBooster = g_profileMechBooster;
 	g_savedMechLeg = g_profileMechLeg;
@@ -131,21 +131,21 @@ void (mech_loadFromProfile)(void)
 	g_savedMechItem4 = g_profileMechItem4;
 	g_savedMechItem3 = g_profileMechItem3;
 	g_savedMechItem5 = g_profileMechItem5;
-	g_savedMechWeapons = g_profileMechItem0;
+	g_savedMechItem0 = g_profileMechItem0;
 	g_savedMechItem1 = g_profileMechItem1;
 	for (int o = 0; o < 0x90; o += 0x18) {
-		if (!(GAME_VAR(float, OBJ(g_campaign) + 0x320 + o) >= 0.0f))
-			GAME_VAR(int, OBJ(g_campaign) + 0x320 + o) = 0;
-		if (!(GAME_VAR(float, OBJ(g_campaign) + 0x324 + o) >= 0.0f))
-			GAME_VAR(int, OBJ(g_campaign) + 0x324 + o) = 0;
-		memcpy((void *)(OBJ(g_savedColourChoices) + o), (void *)((OBJ(g_campaign) + 0x31c) + o), 0x18);
+		if (!(GAME_VAR(float, OBJ(g_pilotSave) + 0x320 + o) >= 0.0f))
+			GAME_VAR(int, OBJ(g_pilotSave) + 0x320 + o) = 0;
+		if (!(GAME_VAR(float, OBJ(g_pilotSave) + 0x324 + o) >= 0.0f))
+			GAME_VAR(int, OBJ(g_pilotSave) + 0x324 + o) = 0;
+		memcpy((void *)(OBJ(g_savedColourChoices) + o), (void *)((OBJ(g_pilotSave) + 0x31c) + o), 0x18);
 	}
 }
 
 /* 0x4464b0: the mech stored into the profile record (the inverse of mech_loadFromProfile) */
 void (mech_storeToProfile)(void)
 {
-	g_profileMechRecord = g_savedMechParts;
+	g_profileMechHead = g_savedMechHead;
 	g_profileMechChest = g_savedMechChest;
 	g_profileMechLeg = g_savedMechLeg;
 	g_profileMechArm = g_savedMechArm;
@@ -155,31 +155,31 @@ void (mech_storeToProfile)(void)
 	g_profileMechItem4 = g_savedMechItem4;
 	g_profileMechItem1 = g_savedMechItem1;
 	g_profileMechItem5 = g_savedMechItem5;
-	g_profileMechItem0 = g_savedMechWeapons;
-	memcpy((void *)(OBJ(g_campaign) + 0x31c), (void *)OBJ(g_savedColourChoices), 0x90);
+	g_profileMechItem0 = g_savedMechItem0;
+	memcpy((void *)(OBJ(g_pilotSave) + 0x31c), (void *)OBJ(g_savedColourChoices), 0x90);
 }
 
 /* 0x447910: the menu camera put back (armc_restoreMenuCamera without its flag) */
 void (menu_restoreCamera)(void)
 {
 	(*(int *)&g_menuCameraPos) = g_camPoint0X;
-	(*(int *)&g_armcCamHeight) = g_camPoint0Y;
-	(*(int *)&g_armcCamDistance) = g_camPoint0Z;
+	(*(int *)&g_menuEyeY) = g_camPoint0Y;
+	(*(int *)&g_menuEyeZ) = g_camPoint0Z;
 	(*(int *)&g_menuCameraLook) = g_camAim0X;
 	(*(int *)&g_menuCameraLookY) = g_camAim0Y;
-	g_menuCameraHeight = g_camAim0Z;
+	g_menuCameraLookZ = g_camAim0Z;
 }
 
 /* 0x445de0: a click (either button) starts the menu fade, once */
 void (menu_clickStartFade)(void)
 {
-	if ((g_mouseClick || g_rightClick) && !g_titleShown) {
-		g_titleShown = 1;
-		g_titleFrames = 0;
+	if ((g_mouseClick || g_rightClick) && !g_titleClosing) {
+		g_titleClosing = 1;
+		g_titleCloseFrames = 0;
 	}
 }
 
-/* ---- the ranking's pages: page g_rankingPage of g_roomListPages (at most 99), the page before in g_rankingPrevPage ---- */
+/* ---- the ranking's pages: page g_rankingPage of g_rankingLastPage (at most 99), the page before in g_rankingPrevPage ---- */
 static void room_pageChanged(void)
 {
 	g_rankingRequestPending = 1;
@@ -203,7 +203,7 @@ void (ranking_prevPage)(void)
 void (ranking_nextPage)(void)
 {
 	int *page = &g_rankingPage;
-	if (*page < g_roomListPages && *page < 99) {
+	if (*page < g_rankingLastPage && *page < 99) {
 		g_rankingPrevPage = *page;
 		(*page)++;
 		room_pageChanged();
@@ -217,7 +217,7 @@ void (ranking_cycleSort)(void)
 	g_rankingPrevSort = mode;
 	room_pageChanged();
 	g_rankingPrevRank = 0;
-	g_roomListDistanceLimit = 0x4b189680;   /* 10000000.0f */
+	g_rankingPrevValue = 0x4b189680;   /* 10000000.0f */
 	g_rankingSort = (mode + 1) % 3;
 }
 
@@ -241,7 +241,7 @@ static int rank_value(const RankRow *row, int mode, long double *value)
 /* 0x435770: the ranking's page of ten rows (0x44 bytes from g_roomJoinPassword4) filled from the players received (62-byte
    records from g_netPlayerList, up to the first without a name): each row its rank (page g_rankingPage * 10 + its place) or,
    when its value (rank_value) equals the row's before, that row's rank; the page before's last value and rank
-   (g_roomListDistanceLimit, g_rankingPrevRank) start the comparison, and this page's are kept there for the next */
+   (g_rankingPrevValue, g_rankingPrevRank) start the comparison, and this page's are kept there for the next */
 void (ranking_fillPage)(void)
 {
 	RankRow *rows = g_rankingRows;
@@ -272,7 +272,7 @@ void (ranking_fillPage)(void)
 		row->level = player->level;
 		int mode = g_rankingSort, rank;
 		if (i == 0) {
-			before = (*(float *)&g_roomListDistanceLimit);
+			before = (*(float *)&g_rankingPrevValue);
 			rank = g_rankingPrevRank;
 		} else {
 			long double v;
@@ -284,7 +284,7 @@ void (ranking_fillPage)(void)
 		if (!(value < before) && !(value > before))   /* (fcom: unordered counts as equal) */
 			row->rank = rank;
 	}
-	(*(float *)&g_roomListDistanceLimit) = f32(value);
+	(*(float *)&g_rankingPrevValue) = f32(value);
 	g_rankingPrevRank = rows[i - 1].rank;
 }
 
@@ -329,20 +329,20 @@ void (missions_clickRow)(int row)
 }
 
 /* ---- the briefing's pages: each page's start offset in the text (g_briefingPageStarts, the page g_briefingPage), the
-   one shown g_briefingStart; the characters shown so far g_briefingShown, and g_briefingSkipped set once the page is
+   one shown g_briefingStart; the characters shown so far g_briefingShown, and g_textHitBottom set once the page is
    full (or the typing skipped); a page turned clears the shown text (g_briefingText, 1600 bytes) ---- */
 
 /* 0x443d80: the next page (once this one is full): it starts where the shown text ended */
 void (briefing_nextPage)(void)
 {
-	if (g_briefingSkipped) {
+	if (g_textHitBottom) {
 		int d = g_briefingPage;
 		g_briefingPage = d + 1;
 		g_briefingStart = g_briefingPageStarts[d] - 1 + g_briefingShown;
 		g_briefingShown = 0;
 		g_briefingPageStarts[d + 1] = g_briefingStart;
 		memset((void *)OBJ(g_briefingText), 0, 1600);
-		g_briefingSkipped = 0;
+		g_textHitBottom = 0;
 	}
 }
 
@@ -354,7 +354,7 @@ void (briefing_prevPage)(void)
 		g_briefingStart = g_briefingPageStarts[g_briefingPage];
 		memset((void *)OBJ(g_briefingText), 0, 1600);
 		g_briefingShown = 0;
-		g_briefingSkipped = 0;
+		g_textHitBottom = 0;
 		g_briefingDone = 0;
 	}
 }
@@ -363,7 +363,7 @@ void (briefing_prevPage)(void)
    does), 2 the next page, 3 the page before */
 void (missions_briefingClicks)(void)
 {
-	if (g_dialogOpen)
+	if (g_frameOpening)
 		return;
 	if (!g_rightClick) {
 		if (!g_mouseClick)
@@ -392,10 +392,10 @@ static u32 leave_settings(u32 state)
 {
 	GAME_VAR(int, state) = 0;
 	(*(u32 *)&g_viewAspect) = 0x3dcccccd;   /* g_viewAspect = 0.1 */
-	(*(int *)&g_armcCamHeight) = 0;
-	(*(u32 *)&g_armcCamDistance) = 0x44c80000;   /* 1600 */
+	(*(int *)&g_menuEyeY) = 0;
+	(*(u32 *)&g_menuEyeZ) = 0x44c80000;   /* 1600 */
 	(*(int *)&g_menuCameraLookY) = 0;
-	g_menuCameraHeight = 0;
+	g_menuCameraLookZ = 0;
 	sound_playMenu(4);
 	return put_camera_back();
 }
@@ -433,9 +433,9 @@ u32 (menuState900_missions)(void)
 	int state = g_missionsState;
 	if (state == 1 || state == 0)
 		return state;
-	if (g_dialogOpen)
-		return menu_drawFrame(g_briefingX, g_briefingY,
-		                                                     g_briefingRight, g_briefingBottom);   /* menu_drawFrame */
+	if (g_frameOpening)
+		return menu_drawFrame(g_missionsWindowLeft, g_missionsWindowTop,
+		                                                     g_missionsWindowRight, g_briefingBottom);   /* menu_drawFrame */
 	int screen = g_missionsPage;
 	if (screen == 10)
 		return missions_frameList();   /* missionList_draw */
@@ -463,14 +463,14 @@ u32 (missions_briefingKeys)(void)
 }
 
 /* ---- the skirmish screen (screen 500; the round shown g_skirmishShown) ---- */
-/* 0x4479d0: the round shown started: its 32-byte record (g_mapNames) as the current one (g_mapTitle), its three values from the
-   0x5c-byte records of g_skirmishInfo (gameMode ..), the screen left, the campaign's match mode (g_quitAsked = 1, g_matchMode = 3) */
+/* 0x4479d0: the round shown started: its 32-byte record (g_mapNames) as the current one (g_gameTitle), its three values from the
+   0x5c-byte records of g_skirmishInfo (gameMode ..), the screen left, the campaign's match mode (g_leavingForMatch = 1, g_matchMode = 3) */
 u32 (skirmish_startRound)(void)
 {
 	int sel = g_skirmishShown;
 	u32 t = (u32)sel * 0x5c;
 	g_mapIndex = sel;
-	memcpy((void *)OBJ(g_mapTitle), (const void *)(OBJ(g_mapNames) + sel * 32), 32);
+	memcpy((void *)OBJ(g_gameTitle), (const void *)(OBJ(g_mapNames) + sel * 32), 32);
 	const SkirmishInfo *rec = (const SkirmishInfo *)(OBJ(g_skirmishInfo) + t);
 	int a = rec->gameMode, b = rec->fragLimit, c = rec->timeLimit;
 	g_mapRotation = 0;
@@ -478,7 +478,7 @@ u32 (skirmish_startRound)(void)
 	g_fragLimit = b;
 	g_timeLimit = c;
 	u32 r = skirmish_leave();   /* skirmish_leave: the settings left */
-	g_quitAsked = 1;
+	g_leavingForMatch = 1;
 	g_matchMode = 3;
 	return r;
 }
@@ -487,8 +487,8 @@ u32 (skirmish_startRound)(void)
    step the selection down and up (within 0 .. the count 0x9f181c and 14). Returns what the original leaves in eax */
 u32 (skirmish_clicks)(void)
 {
-	if (g_dialogOpen)
-		return g_dialogOpen;
+	if (g_frameOpening)
+		return g_frameOpening;
 	if (g_rightClick)
 		skirmish_leave();
 	if (!g_mouseClick)
@@ -525,12 +525,12 @@ u32 (chat_closeLine)(int ok)
 		input_initKeyboard(g_hWndMain);
 		r = chat_pushHistory();   /* chat_pushHistory: into the history */
 	} else {
-		if (g_typedLength > 0)
-			memset((void *)OBJ(g_chatLine), 0, g_typedLength);
+		if (g_lineMaxLength > 0)
+			memset((void *)OBJ(g_chatLine), 0, g_lineMaxLength);
 		input_resetKeys();
 		r = (u32)input_initKeyboard(g_hWndMain);
 	}
-	g_typedLength = 0;
+	g_lineMaxLength = 0;
 	g_chatLength = 0;
 	(*(u32 *)&g_menuKeyGuard) = 0x41200000;   /* 10 */
 	return r;
@@ -544,14 +544,14 @@ u32 (messageBox_keyClose)(void)
 	for (int k = 0; k < 3; k++) {
 		r = input_justPressed(GAME_VAR(int, keys[k]));
 		if (r == 1) {
-			(*(int *)&g_cursorBlink) = 0;
+			(*(int *)&g_menuRepeatClock) = 0;
 			g_dialogPending = 0;
 		}
 	}
 	return r;
 }
 
-/* 0x4318b0: any of three keys starts the menu's fade (g_titleShown, once; its timer g_titleFrames from 0). Returns what the
+/* 0x4318b0: any of three keys starts the menu's fade (g_titleClosing, once; its timer g_titleCloseFrames from 0). Returns what the
    original leaves in eax */
 u32 (menu_keyStartFade)(void)
 {
@@ -560,10 +560,10 @@ u32 (menu_keyStartFade)(void)
 	for (int k = 0; k < 3; k++) {
 		r = input_justPressed(GAME_VAR(int, keys[k]));
 		if (r == 1) {
-			if (g_titleShown)
-				return (*(u32 *)&g_titleShown);
-			g_titleShown = 1;
-			g_titleFrames = 0;
+			if (g_titleClosing)
+				return (*(u32 *)&g_titleClosing);
+			g_titleClosing = 1;
+			g_titleCloseFrames = 0;
 		}
 	}
 	return r;
@@ -602,7 +602,7 @@ static u32 to_pilot_screen(void)
 	return GAME_FN(debug_traceStripped, 0x48b420, u32, void)();
 }
 
-/* main menu choice i (with its sound; g_cursorBlink cleared): 0 SKIRMISH PLAY (menuState500_enterSkirmish), 1 MULTIPLAY VIA
+/* main menu choice i (with its sound; g_menuRepeatClock cleared): 0 SKIRMISH PLAY (menuState500_enterSkirmish), 1 MULTIPLAY VIA
    INTERNET (the arena lobby, next screen 400), 2 LADDER GAME (net_connect, then net_asyncSelect; messages 0x2a / 0x29
    when they fail; the game room, next screen 800), 3 the setup (600), 4 TO CUSTOMIZE (the ARM CENTER,
    armc_enterParts), 5 EXIT (back to the pilot screen). The original's eax into *r; 1 when a failure ended the
@@ -611,7 +611,7 @@ static int menu_choice(int i, u32 *r)
 {
 	sound_playMenu(0);
 	if (i)
-		g_cursorBlink = 0.0f;
+		g_menuRepeatClock = 0.0f;
 	int result;
 	switch (i) {
 	case 0:
@@ -642,17 +642,17 @@ static int menu_choice(int i, u32 *r)
 	}
 }
 
-/* 0x4419d0: the main menu clicked (not while it is fading in (g_replayZoomIn = 1); the replay selection dialog first if open):
+/* 0x4419d0: the main menu clicked (not while it is fading in (g_replayShowOn = 1); the replay selection dialog first if open):
    its six buttons (outlines 0x2c bytes apart from g_mainMenuOutlines) as menu_choice. A right click goes back to the pilot screen too when
    there are tunnel rings (g_tunnelRings > 0). Returns what the original leaves in eax */
 u32 (mainmenu_clicks)(void)
 {
-	if (g_replayZoomIn == 1)
+	if (g_replayShowOn == 1)
 		return 1;
-	if (g_mainMenuPicked)
+	if (g_replaySelectOpen)
 		return replaySelect_mouse();   /* replaySelect_mouse: the replay selection dialog */
 	if (g_mouseClick) {
-		g_cursorBlink = 0.0f;
+		g_menuRepeatClock = 0.0f;
 		const Outline *buttons = (const Outline *)OBJ(g_mainMenuOutlines);
 		int i = 0;
 		while (i < 6 && point_in_outline(g_mouseX, g_mouseY, buttons[i]) != 1)
@@ -666,7 +666,7 @@ u32 (mainmenu_clicks)(void)
 	int rings = g_tunnelRings;
 	if (rings <= 0)
 		return rings;
-	g_cursorBlink = 0.0f;
+	g_menuRepeatClock = 0.0f;
 	return to_pilot_screen();
 }
 
@@ -676,9 +676,9 @@ u32 (mainmenu_clicks)(void)
 u32 (mainmenu_processKeys)(void)
 {
 	static const u32 key[6] = { ADDR(g_dikK), ADDR(g_dikM), ADDR(g_dikL), ADDR(g_dikS), ADDR(g_dikA), ADDR(g_dikX) };
-	if (g_replayZoomIn == 1)
+	if (g_replayShowOn == 1)
 		return 1;
-	if (g_mainMenuPicked)
+	if (g_replaySelectOpen)
 		return replaySelect_keys();   /* replaySelect_keys */
 	for (int i = 0; i < 6; i++)
 		if (input_justPressed(GAME_VAR(int, key[i])) == 1) {
@@ -687,7 +687,7 @@ u32 (mainmenu_processKeys)(void)
 			return r;
 		}
 	if (input_justPressed(g_dikEscape_2) && g_tunnelRings > 0) {
-		g_cursorBlink = 0.0f;
+		g_menuRepeatClock = 0.0f;
 		menuCamera_setMove(4);
 		g_enteringMenus = 1;
 		g_nextScreen = 210;
@@ -697,6 +697,6 @@ u32 (mainmenu_processKeys)(void)
 	if (r != 1)
 		return r;
 	r = replayList_open();
-	g_mainMenuPicked = 1;
+	g_replaySelectOpen = 1;
 	return r;
 }

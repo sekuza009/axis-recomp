@@ -35,8 +35,8 @@ void (timer_waitFrames)(double frames)
 }
 
 /* 0x4301e0: the time in seconds (g_clockNow, a double; the value returned unrounded): the performance counter
-   (QueryPerformanceCounter, kept at g_perfCounter) shifted right by g_timerShift into 32 bits, its rise since the last
-   reading (g_lastCount) times the seconds per count (g_timerTick) added. The first call (g_timerFirstCall) only takes the
+   (QueryPerformanceCounter, kept at g_perfCounterLow) shifted right by g_timerShift into 32 bits, its rise since the last
+   reading (g_timerLastCount) times the seconds per count (g_timerTick) added. The first call (g_timerFirstCall) only takes the
    reading; a reading a little below the last (less than 0x10000000) adds nothing. A time that stays equal to the
    one before (g_lastTime) 100000 calls in a row is moved on by k_1 */
 long double (timer_now)(void)
@@ -46,21 +46,21 @@ long double (timer_now)(void)
 	IMPORT(0x4a9140, int, u32 *)(counter);   /* QueryPerformanceCounter */
 	int shift = g_timerShift;
 	g_timerHigh = counter[1];
-	g_perfCounter = counter[0];
+	g_perfCounterLow = counter[0];
 	u32 count = counter[1] << ((32 - shift) & 31) | counter[0] >> (shift & 31);   /* (x86 shift counts, mod 32) */
 	if (g_timerFirstCall) {
 		long double t = g_time;
-		g_lastCount = count;
+		g_timerLastCount = count;
 		g_timerFirstCall = 0;
 		return t;
 	}
-	u32 last = g_lastCount;
+	u32 last = g_timerLastCount;
 	if (count <= last && last - count < 0x10000000) {
 		long double t = g_time;
-		g_lastCount = count;
+		g_timerLastCount = count;
 		return t;
 	}
-	g_lastCount = count;
+	g_timerLastCount = count;
 	long double t = (long double)(count - last) * g_timerTick + g_time;
 	g_time = (double)t;
 	long double before = g_lastTime;
@@ -75,7 +75,7 @@ long double (timer_now)(void)
 	g_lastTime = (double)t;
 	return t;
 #undef g_time
-#undef g_lastCount
+#undef g_timerLastCount
 }
 
 /* 0x487490 (thiscall on a frame timer): the frame time in seconds. On first use the counter's frequency (frequency) and

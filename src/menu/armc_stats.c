@@ -18,10 +18,10 @@ typedef long double X;
 #define HALF F(0x4a942c)
 #define ZERO F(0x4a93e8)
 
-#define PANEL_X0 g_armcStatsPanelLeft
-#define PANEL_Y0 g_armcStatsPanelTop
-#define PANEL_X1 g_armcSliderLeft
-#define PANEL_Y1 g_armcStatsPanelBottom
+#define PANEL_X0 g_armcPageLeft
+#define PANEL_Y0 g_armcPageTop
+#define PANEL_X1 g_armcPanelRight
+#define PANEL_Y1 g_armcPageBottom
 
 static const u32 k_white[4] = { 0x3f800000, 0x3f800000, 0x3f800000, 0x3f800000 };
 static const u32 k_cyan[4] = { 0, 0x3f800000, 0x3f800000, 0x3f800000 };
@@ -428,7 +428,7 @@ static void section_mech(Panel *p)
 	}
 	value(p, ROW(8));
 	label(p, ROW(9), MSG(680, "BOOSTER ENERGY"));
-	sprintf(p->t.bonus, FMT(STR(0x4b0254, "%.1f/")), (double)((X)g_mechBoosterEnergy * THOUSANDTH));
+	sprintf(p->t.bonus, FMT(STR(0x4b0254, "%.1f/")), (double)((X)g_mechBoostTime * THOUSANDTH));
 	append(p->t.line, p->t.bonus);
 	sprintf(p->t.bonus, FMT(STR(0x4b02fc, "%.1f(")), (double)((X)g_mechBoosterRecharge * THOUSANDTH));
 	append(p->t.bonus, (const char *)MSG(761, "sec"));
@@ -446,7 +446,7 @@ static void section_mech(Panel *p)
 void (armc_drawStatsPanel)(void)
 {
 	int slot = g_armcPartSlot, korean = g_language == 1;
-	const u32 *bright = g_armcTabColour, *dim = g_armcTabColourDim;
+	const u32 *bright = g_armcBright, *dim = g_armcDim;
 	int hovered = armcPartsPage_hitTest(g_mouseX, g_mouseY);
 	glEnable(GL_TEXTURE_2D);
 	int texture = g_buttonTexture;

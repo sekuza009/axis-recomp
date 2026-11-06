@@ -6,7 +6,6 @@
 #define I32(a) GAME_VAR(int, a)
 #define F32(a) GAME_VAR(float, a)
 #define g_ptxQuality I32(STR(0x4c59e8, "\377\377\377\377"))           /* the quality the tables are made for */
-#define g_ptxClamp (*(u8 * *)&g_clamp)   /* clamp[v]: v limited to 0 .. 255 (v from -0x100) */
 
 /* 0x46e320: the clamp table: 0 below, the identity, 255 above */
 void (ptx_initClampTable)(void)
@@ -69,7 +68,7 @@ void (ptx_initQuantTables)(int q)
 		return;
 	for (int j = 0; j < 128; j++) {
 		int t = (int)((u32)I32(OBJ(g_ptxQuantBase) + j * 4) * (u32)I32(OBJ(k_ptxQuantScales) + (j & 63) * 4) * 100u);
-		I32(OBJ(g_ptxQuant) + j * 4) = (t / q) >> 12;
+		I32(OBJ(g_ptxDequant) + j * 4) = (t / q) >> 12;
 	}
 }
 
@@ -85,7 +84,7 @@ void (ptx_initDequantTables)(int q)
 	for (int j = 0; j < 128; j++) {
 		X v = (X)F32(OBJ(g_ptxDequantBase) + j * 4) * k_100;
 		v = v / qf * f[(j >> 3) & 7] * f[j & 7] * k_8;
-		F32(OBJ(g_ptxDequant) + j * 4) = (float)((X)k_1 / v);
+		F32(OBJ(g_ptxFdctDivisors) + j * 4) = (float)((X)k_1 / v);
 	}
 }
 

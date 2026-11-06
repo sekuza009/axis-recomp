@@ -21,7 +21,7 @@
 # the whole mech (slot 5)
 0x4dcad0,float,g_mechMobility
 0x4dcaf8,float,g_mechNormalSpeed
-0x4dcaec,float,g_mechBoosterEnergy
+0x4dcaec,float,g_mechBoostTime
 0x4dcaf0,float,g_mechBoosterRecharge
 # the items' bonuses (armc_items.c sets them by the items fitted)
 0x4dbc70,float,g_itemBonusCapacityPerLevel
@@ -34,16 +34,16 @@
 0x4dceb0,float,g_itemBonusWeightLimit
 0x4dcc68,float,g_itemBonusShield
 # the ARM CENTER's mouse look and its camera move to a part
-0x4de6c0,float,g_armcLookSin
-0x4de6c4,float,g_armcLookTilt
-0x4de6c8,float,g_armcLookCos
-0x4de340,int,g_armcMoveStarted
-0x4de6d0,int,g_armcMoveTargetX
-0x4de6d4,int,g_armcMoveTargetY
-0x4de6d8,int,g_armcMoveTargetZ
-0x4de350,float,g_armcMoveEyeX
-0x4de354,int,g_armcMoveEyeY
-0x4de358,float,g_armcMoveEyeZ
+0x4de6c0,float,g_freeCamTurnSin
+0x4de6c4,float,g_freeCamTilt
+0x4de6c8,float,g_freeCamTurnCos
+0x4de340,int,g_freeCamMoveStarted
+0x4de6d0,int,g_freeCamMoveTargetX
+0x4de6d4,int,g_freeCamMoveTargetY
+0x4de6d8,int,g_freeCamMoveTargetZ
+0x4de350,float,g_freeCamMoveEyeX
+0x4de354,int,g_freeCamMoveEyeY
+0x4de358,float,g_freeCamMoveEyeZ
 # the arena screen's camera kept while away (menu_cameras.c)
 0x4db840,float,g_arenaKeptCamX
 0x4db844,int,g_arenaKeptCamY
@@ -73,4 +73,4 @@
 0x9dd596,int,g_ladderPassword8
 # chat, the network
 0x9f63e4,char,g_keptChatLine
-0xa052c0,u8,g_netNotice
+0xa052c0,u8,g_rankReplyCode

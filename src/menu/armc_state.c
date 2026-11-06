@@ -5,7 +5,7 @@
 
 #define g_armcColourBits ((u32 *)OBJ(g_armcColours))           /* the six colour slots, six values each (see g_armcColours) */
 #define g_colourUndo ((u32 *)(OBJ(g_armcColours) + 0x78))               /* one slot's six values, for undo */
-#define g_savedParts ((const u32 *)ADDR(g_savedMechParts))         /* the saved mech: head, chest, arm, leg, booster */
+#define g_savedParts ((const u32 *)ADDR(g_savedMechHead))         /* the saved mech: head, chest, arm, leg, booster */
 #define g_workParts ((u32 *)OBJ(g_armcParts))                /* the working copy, same order */
 
 static void copy(u32 *to, const u32 *from, int n)
@@ -40,7 +40,7 @@ void (armc_syncPartCursors)(void)
 	static const struct { u32 cursor, count, list, chosen; } kinds[] = {
 		{ ADDR(g_headCursor), ADDR(g_headCount), OBJ(g_headList), OBJ(g_armcParts) }, { ADDR(g_chestCursor), ADDR(g_chestCount), OBJ(g_chestList), (OBJ(g_armcParts) + 0x4) },
 		{ ADDR(g_armCursor), ADDR(g_armCount), OBJ(g_armList), (OBJ(g_armcParts) + 0x8) }, { (OBJ(g_boosterStats) + 0x24), ADDR(g_legCount), OBJ(g_legList), (OBJ(g_armcParts) + 0xc) },
-		{ ADDR(g_boosterCursor), ADDR(g_armcLastPart), OBJ(g_boosterList), (OBJ(g_armcParts) + 0x10) } };   /* head, chest, arm, leg, booster */
+		{ ADDR(g_boosterCursor), ADDR(g_boosterCount), OBJ(g_boosterList), (OBJ(g_armcParts) + 0x10) } };   /* head, chest, arm, leg, booster */
 	for (int k = 0; k < 5; k++) {
 		int *cursor = (int *)kinds[k].cursor;
 		const int *list = (const int *)kinds[k].list;
@@ -69,12 +69,12 @@ void (armc_loadSavedMech)(void)
 	g_workParts[3] = g_savedParts[3];
 	g_workParts[2] = g_savedParts[2];
 	g_workParts[4] = g_savedParts[4];
-	g_mechItem3 = (*(u32 *)&g_savedMechItem3);
-	g_mechItem2 = (*(u32 *)&g_savedMechItem2);
-	g_mechItem4 = (*(u32 *)&g_savedMechItem4);
+	g_mechWeaponSlot1 = (*(u32 *)&g_savedMechItem3);
+	g_mechWeaponSlot0 = (*(u32 *)&g_savedMechItem2);
+	g_mechWeaponSlot2 = (*(u32 *)&g_savedMechItem4);
 	(*(u32 *)&g_itemSlot5) = (*(u32 *)&g_savedMechItem1);
-	g_mechItem5 = (*(u32 *)&g_savedMechItem5);
-	(*(u32 *)&g_itemSlot4) = (*(u32 *)&g_savedMechWeapons);
+	g_mechWeaponSlot3 = (*(u32 *)&g_savedMechItem5);
+	(*(u32 *)&g_itemSlot4) = (*(u32 *)&g_savedMechItem0);
 	copy(g_armcColourBits, (const u32 *)OBJ(g_savedColourChoices), 0x90 / 4);
 }
 

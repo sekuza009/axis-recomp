@@ -81,12 +81,12 @@ static void game_rows(int x0, int y0, int y, int end, int locks, u32 kinds, int 
 	}
 }
 
-/* "page / pages" (g_lobbyListPage) in white, right-aligned (13 a character) 0x3c in from x1 at y */
+/* "page / pages" (g_listAnswered) in white, right-aligned (13 a character) 0x3c in from x1 at y */
 static void game_page(int x1, int y, int pages_count)
 {
 	set_colour_bits(g_textColour, 0x3f800000, 0x3f800000, 0x3f800000, 0x3f800000);
 	char page[50] = { 0 }, pages[10] = { 0 };
-	itoa(g_lobbyListPage, page, 10);
+	itoa(g_listAnswered, page, 10);
 	strcat(page, (const char *)STR(0x4ad564, "/"));
 	itoa(pages_count, pages, 10);
 	strcat(page, pages);
@@ -116,8 +116,8 @@ static void info_box(u32 line, int named)
 }
 
 /* 0x40a070: the arena's game list: the window, its title MSG(141, "JOIN ARENA"), three tabs (MSG(142, "SEARCH $[0] IPX"); the one under the pointer,
-   by arenaGameList_hitTest, lit unless a box is up), five column heads; the rows and page when there is a list (g_arenaHaveList,
-   or the full one g_arenaListFull); three buttons (MSG(149, "$[0] JOIN"): join needs a game, and while searching only the second
+   by arenaGameList_hitTest, lit unless a box is up), five column heads; the rows and page when there is a list (g_arenaLanListBuilt,
+   or the full one g_arenaServerList); three buttons (MSG(149, "$[0] JOIN"): join needs a game, and while searching only the second
    lights; all dimmed under the address / password boxes); the scroll arrows (15 / 16); the blinking MSG(152, "SEARCHING FOR THE GAME SERVER") while
    searching or g_lobbyRefreshing; the password and address boxes, the join confirmation (MSG(153, "CONNECTING TO THE GAME SERVER") / MSG(154, "PLEASE WAIT"), its button
    MSG(116, "$[0] CANCEL") by arenaDialogBox_hitTest) and the "leave?" box (the original asks arenaCreate_hitTest but lights its buttons by the
@@ -133,7 +133,7 @@ void (arena_drawGameList)(void)
 	menu_drawLine(X0 + 0x10, Y0 + 0x28, X1 - 0x10, Y0 + 0x28);
 	TEXT(bright);
 	text_draw16(X0 + 0x50, Y0 + 0x10, (const char *)MSG(141, "JOIN ARENA"));
-	int boxed = g_arenaConfirming || g_arenaUpdateNotice || g_typingArenaAddress || g_arenaJoinNeedsPassword;
+	int boxed = g_joinConnecting || g_arenaUpdateNotice || g_typingArenaAddress || g_arenaJoinNeedsPassword;
 	for (int k = 0; k < 3; k++) {
 		bind_buttons();
 		int x = X0 + k * 0xb4;
@@ -149,10 +149,10 @@ void (arena_drawGameList)(void)
 	RECT(0, 0x3f800000, 0x3f800000, 0x3f800000);
 	menu_drawLine(X0 + 0x10, Y0 + 0x6e, X1 - 0x10, Y0 + 0x6e);
 	menu_drawLine(X0 + 0x10, Y1 - 0x54, X1 - 0x10, Y1 - 0x54);
-	if (g_arenaHaveList || g_arenaListFull) {
-		int full = g_arenaListFull;
+	if (g_arenaLanListBuilt || g_arenaServerList) {
+		int full = g_arenaServerList;
 		game_rows(X0, Y0, 0x78, 0x150, full, OBJ(g_gameTypeNames), 20, full);
-		game_page(X1, Y1 - 0x4c, g_arenaHaveList ? g_gameCount : g_serverListCount);
+		game_page(X1, Y1 - 0x4c, g_arenaLanListBuilt ? g_gameCount : g_serverListCount);
 	}
 	RECT(0, 0x3f800000, 0x3f800000, 0x3f800000);
 	menu_drawLine(X0 + 0x10, Y1 - 0x32, X1 - 0x10, Y1 - 0x32);
@@ -160,7 +160,7 @@ void (arena_drawGameList)(void)
 		bind_buttons();
 		int x = X0 + k * 0x96 + 0x5a;
 		int lit = 0;
-		if (hovered == k + 3 && !g_arenaConfirming && !g_arenaUpdateNotice) {
+		if (hovered == k + 3 && !g_joinConnecting && !g_arenaUpdateNotice) {
 			if (g_searching)
 				lit = k == 1;
 			else
@@ -188,7 +188,7 @@ void (arena_drawGameList)(void)
 		info_box(MSG(38, "TYPE GAME PASSWORD"), 1);
 	if (g_typingArenaAddress)
 		info_box(MSG(48, "INPUT IP-ADDRESS"), 0);
-	if (g_arenaConfirming) {
+	if (g_joinConnecting) {
 		int on = arenaDialogBox_hitTest(g_mouseX, g_mouseY);   /* arenaDialogBox_hitTest */
 		RECT(0x3e4ccccd, 0x3e4ccccd, 0x3f333333, 0x3f333333);
 		menu_drawRect(0x64, 0xc8, 0x21c, 0x140, 1);
@@ -316,7 +316,7 @@ void (gameList_draw)(void)
 		set_colour_bits(g_textColour, 0x3f800000, 0x3f800000, 0x3f800000, 0x3f800000);
 		text_draw16(X0 + 0xd8, Y0 + 0xd0, (const char *)ADDR(g_roomJoinPassword));
 	}
-	if (g_arenaConfirming) {
+	if (g_joinConnecting) {
 		glDisable(GL_TEXTURE_2D);
 		int on = gameListStop_hitTest(g_mouseX, g_mouseY);
 		RECT(0x3e4ccccd, 0x3e4ccccd, 0x3f333333, 0x3f333333);
@@ -341,10 +341,10 @@ void (gameList_draw)(void)
 #undef Y1
 
 /* 0x43ea10: the game room's page of games: the "searching" message's clock (g_gameListClickTimer, while g_gameListClickArmed; done above k_20f),
-   the tunnel; with the room camera arrived (g_roomCameraMode 2), and not page 99: a message box (g_dialogOpen) alone, else the search's
+   the tunnel; with the room camera arrived (g_roomCameraMode 2), and not page 99: a message box (g_frameOpening) alone, else the search's
    end (g_roomSearching searching, g_roomSearchAnswerIn the answer in, g_searchResult its result: -1 .. 4) and the blinking clock (g_lobbyBlinkClock
    falling, back to 1000 below k_10f); while the list refreshes (g_roomRefreshing) its timer (g_roomListRefreshTimer against g_listRefreshPeriod:
-   the list asked for again, the next in 5) and a stop (g_netListDone); then the list, and with a game joined (g_roomJoined)
+   the list asked for again, the next in 5) and a stop (g_netListDone); then the list, and with a game joined (g_roomJoinStarted)
    the join sent (g_roomJoinNeedsPassword clear) or, once a password is typed (g_typingRoomJoinPassword), it checked against the game's (+0x3b)
    (message 0x27 when wrong) */
 void (gameList_drawPage)(void)
@@ -362,7 +362,7 @@ void (gameList_drawPage)(void)
 	int mode = g_roomCameraMode;
 	if (mode == 1 || mode == 0 || g_roomState == 99)
 		return;
-	if (g_dialogOpen) {
+	if (g_frameOpening) {
 		menu_drawFrame(g_roomGameListLeft, g_roomGameListTop, g_roomGameListRight, g_roomGameListBottom);
 		return;
 	}
@@ -409,7 +409,7 @@ void (gameList_drawPage)(void)
 		}
 	}
 	gameList_draw();
-	if (!g_roomJoined)
+	if (!g_roomJoinStarted)
 		return;
 	if (!g_roomJoinNeedsPassword) {
 		room_joinSession(g_pickedGame);
@@ -422,7 +422,7 @@ void (gameList_drawPage)(void)
 	strcpy((char *)ADDR(g_roomJoinPassword), g_chatLine);
 	if (strcmp(g_sessionList[g_pickedGame].password, (const char *)ADDR(g_roomJoinPassword)) != 0) {
 		menu_showMessage(0x27);
-		g_roomJoined = 0;
+		g_roomJoinStarted = 0;
 	}
 	g_roomJoinNeedsPassword = 0;
 }
@@ -439,7 +439,7 @@ static void shadowed(int x, int y, const char *text)
 }
 
 /* 0x409bc0: the SETUP PLAYER dialog: the window, a cyan frame, the title MSG(131, "SETUP PLAYER"), two labels (MSG(132, "PLAYER NAME :"), MSG(134, "MOVE TO ARM-CENTER"))
-   and the name g_arenaPlayerName (hidden while it is typed in, g_textFieldOpen); without a message (g_typingArenaName) the name or the
+   and the name g_arenaPlayerName (hidden while it is typed in, g_textFieldOpen); without a message (g_typingArenaPlayerName) the name or the
    second label under the pointer (playerSetup_hitTest's 0 / 2) shadowed in yellow; three buttons (MSG(135, "$[0] O K"), 0x80 apart;
    3 .. 5, lit under the pointer), the border. The original leaves eax to callers that ignore it */
 void (lobby_drawPlayerSetup)(void)
@@ -461,7 +461,7 @@ void (lobby_drawPlayerSetup)(void)
 	set_colour_bits(g_textColour, 0x3f800000, 0x3f800000, 0x3f800000, 0x3f800000);
 	if (!g_textFieldOpen)
 		text_draw8(x0 + 0xc2, y0 + 0x64, g_arenaPlayerName);
-	if (!g_typingArenaName) {
+	if (!g_typingArenaPlayerName) {
 		if (hovered == 0 && !g_textFieldOpen)
 			shadowed(x0 + 0xc1, y0 + 0x63, g_arenaPlayerName);
 		else if (hovered == 2)
@@ -471,7 +471,7 @@ void (lobby_drawPlayerSetup)(void)
 		int x = g_playerSetupLeft + k * 0x78, y = g_playerSetupTop;
 		bind_buttons();
 		glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
-		button(hovered == k + 3 && !g_typingArenaName, x + 0x32, y + 0xdc, x + 0x96, y + 0xfc, 0.4f);
+		button(hovered == k + 3 && !g_typingArenaPlayerName, x + 0x32, y + 0xdc, x + 0x96, y + 0xfc, 0.4f);
 		text_drawBox16(x + 0x32, g_playerSetupTop + 0xe4, x + 0x96, (const char *)(MSG(135, "$[0] O K") + k * 0x80));
 	}
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
@@ -483,9 +483,9 @@ void (lobby_drawPlayerSetup)(void)
 /* the selection one row up (the list scrolls at the top row) */
 static void games_up(void)
 {
-	int row = g_lobbyListRow;
+	int row = g_gameListRow;
 	if (row > 0)
-		g_lobbyListRow = --row;
+		g_gameListRow = --row;
 	else if (g_listTop > 0)
 		g_listTop--;
 	g_pickedGame = g_listTop + row;
@@ -494,11 +494,11 @@ static void games_up(void)
 /* one row down (nine rows shown), unless at the last game: 0 then */
 static int games_down(void)
 {
-	int row = g_lobbyListRow;
+	int row = g_gameListRow;
 	if (g_listTop + row >= g_gameCount - 1)
 		return 0;
 	if (row < 8)
-		g_lobbyListRow = ++row;
+		g_gameListRow = ++row;
 	else
 		g_listTop++;
 	g_pickedGame = g_listTop + row;
@@ -510,7 +510,7 @@ static void games_stop(void)
 {
 	sound_playMenu(0);
 	(*(u32 *)&g_lobbyBlinkClock) = 0x3f800000;   /* 1 */
-	g_gameServerState = 0;
+	g_roomListAnswer = 0;
 	g_roomSearchAnswerIn = 1;
 	if (g_roomRefreshing == 1) {
 		g_roomRefreshing = 0;
@@ -528,7 +528,7 @@ static int games_leave(void)
 		return 0;
 	}
 	sound_playMenu(0);
-	g_gameServerState = 0;
+	g_roomListAnswer = 0;
 	g_roomCameraMode = 0;
 	g_gameServerPending = 0;
 	g_netListDone = 1;
@@ -544,13 +544,13 @@ static int games_leave(void)
 void (gameList_mouse)(void)
 {
 	int mode = g_roomCameraMode;
-	if (mode == 1 || mode == 0 || g_roomJoinNeedsPassword || g_dialogOpen)
+	if (mode == 1 || mode == 0 || g_roomJoinNeedsPassword || g_frameOpening)
 		return;
 	if (g_rightClick) {
 		if (g_roomSearching)
 			return;
 		sound_playMenu(0);
-		g_gameServerState = 0;
+		g_roomListAnswer = 0;
 		g_roomCameraMode = 0;
 		g_gameServerPending = 0;
 		return;
@@ -558,7 +558,7 @@ void (gameList_mouse)(void)
 	if (g_mouseClick) {
 		int on = gameList_hitTest(g_mouseX, g_mouseY);
 		if (on == 0) {
-			if (g_roomJoined)
+			if (g_roomJoinStarted)
 				return;
 			if (g_roomSearching || g_roomRefreshing || g_gameCount <= 0) {
 				sound_playMenu(6);
@@ -566,20 +566,20 @@ void (gameList_mouse)(void)
 			}
 			sound_playMenu(0);
 			room_askJoinPassword();
-			g_roomJoined = 1;
+			g_roomJoinStarted = 1;
 		} else if (on == 1) {
 			if (g_roomSearching || g_roomRefreshing) {
 				sound_playMenu(6);
 				return;
 			}
-			if (g_roomJoined)
+			if (g_roomJoinStarted)
 				return;
 			g_roomListCount = 0;
-			g_lobbyListPage = 0;
+			g_listAnswered = 0;
 			if (gameList_open() == 1) {
 				sound_playMenu(0);
 				g_roomSearching = 1;
-				g_gameListJoinClicked = 1;
+				g_gameListRefreshClicked = 1;
 			}
 		} else if (on == 2)
 			games_stop();
@@ -595,25 +595,25 @@ void (gameList_mouse)(void)
 			int row = on - 4;
 			if (g_listTop + row >= g_gameCount)
 				return;
-			if (row == g_lobbyListRow && g_gameListClickArmed) {
+			if (row == g_gameListRow && g_gameListClickArmed) {
 				if (g_gameCount <= 0)
 					return;
 				if (g_roomSearching || g_roomRefreshing) {
 					sound_playMenu(6);
 					return;
 				}
-				if (g_roomJoined)
+				if (g_roomJoinStarted)
 					return;
 				sound_playMenu(0);
 				g_gameListClickArmed = 0;
 				(*(int *)&g_gameListClickTimer) = 0;
-				g_roomJoined = 1;
+				g_roomJoinStarted = 1;
 				room_askJoinPassword();
 			} else {
 				sound_playMenu(0);
 				g_gameListClickArmed = 1;
 				(*(int *)&g_gameListClickTimer) = 0;
-				g_lobbyListRow = row;
+				g_gameListRow = row;
 				g_pickedGame = g_listTop + row;
 			}
 		}
@@ -621,12 +621,12 @@ void (gameList_mouse)(void)
 	if (!g_mouseHeld)
 		return;
 	int on = gameList_hitTest(g_mouseX, g_mouseY);
-	if ((on != 13 && on != 14) || !(g_cursorBlink >= k_5f))
+	if ((on != 13 && on != 14) || !(g_menuRepeatClock >= k_5f))
 		return;
 	if (on == 13 || games_down()) {
 		if (on == 13)
 			games_up();
-		g_cursorBlink = 0.0f;
+		g_menuRepeatClock = 0.0f;
 	}
 }
 
@@ -639,26 +639,26 @@ void (gameList_keys)(void)
 {
 	if (g_roomJoinNeedsPassword)
 		return;
-	if (g_arenaConfirming) {
+	if (g_joinConnecting) {
 		if (input_justPressed(g_keyBack)) {
 			sound_playMenu(0);
-			g_arenaSearchTicks = 0;
-			g_arenaJoinWaiting = 0;
+			g_joinPollTicks = 0;
+			g_joinTimedOut = 0;
 			arena_leaveSession();
-			g_arenaConfirming = 0;
+			g_joinConnecting = 0;
 			KillTimer(g_hWndMain, 0x378);
 		}
 		return;
 	}
 	if (input_justPressed(g_dikJ) || input_justPressed(g_keyClick)) {
-		if (g_roomJoined)
+		if (g_roomJoinStarted)
 			return;
 		if (g_roomSearching || g_roomRefreshing || g_gameCount <= 0) {
 			sound_playMenu(6);
 			return;
 		}
 		sound_playMenu(0);
-		g_roomJoined = 1;
+		g_roomJoinStarted = 1;
 		room_askJoinPassword();
 		return;
 	}
@@ -668,10 +668,10 @@ void (gameList_keys)(void)
 			return;
 		}
 		g_roomListCount = 0;
-		g_lobbyListPage = 0;
+		g_listAnswered = 0;
 		if (gameList_open() == 1) {
 			g_roomSearching = 1;
-			g_gameListJoinClicked = 1;
+			g_gameListRefreshClicked = 1;
 			sound_playMenu(0);
 		}
 		return;
@@ -685,17 +685,17 @@ void (gameList_keys)(void)
 		return;
 	}
 	if (input_isDown(g_keyUp)) {
-		if (g_cursorBlink >= k_5f) {
+		if (g_menuRepeatClock >= k_5f) {
 			sound_playMenu(2);
-			g_cursorBlink = 0.0f;
+			g_menuRepeatClock = 0.0f;
 			games_up();
 		}
 		return;
 	}
 	if (input_isDown(g_keyDown)) {
-		if (g_cursorBlink >= k_5f) {
+		if (g_menuRepeatClock >= k_5f) {
 			sound_playMenu(2);
-			g_cursorBlink = 0.0f;
+			g_menuRepeatClock = 0.0f;
 			games_down();
 		}
 		return;
@@ -703,7 +703,7 @@ void (gameList_keys)(void)
 	if (input_justPressed(g_keyCancel2)) {
 		sound_playMenu(0);
 		g_roomCameraMode = 0;
-		g_gameServerState = 0;
+		g_roomListAnswer = 0;
 	}
 }
 
@@ -716,29 +716,29 @@ static void blink_down(void)
 		(*(u32 *)&g_lobbyBlinkClock) = 0x447a0000;   /* 1000 */
 }
 
-/* 0x40cfd0: the arena lobby's page of games: the "searching" message's clock (g_arenaSearchClock, while g_arenaListClickArmed), the
-   arena tunnel; with the arena camera arrived (g_arenaCameraMode 2) and not on sub-screen 5: a message box (g_dialogOpen) alone, else the
+/* 0x40cfd0: the arena lobby's page of games: the "searching" message's clock (g_arenaListClickTimer, while g_arenaListClickArmed), the
+   arena tunnel; with the arena camera arrived (g_arenaCameraMode 2) and not on sub-screen 5: a message box (g_frameOpening) alone, else the
    local network search (g_lanSearch: DirectPlay polled ten times, ended once its clock g_lobbyBlinkClock runs out), the server
    search's end (g_lobbySearching searching, g_serverAnswerIn the answer in, g_searchResult its result -1 .. 4: messages 0x40 / 0x46,
    g_lobbyRefreshing the list to fetch, g_arenaUpdateNotice) and blink, the list's refresh (g_lobbyRefreshing: its timer g_arenaListRefreshTimer against g_listRefreshPeriod,
    a stop g_netListDone); then the list; then a join (g_lobbyJoinStarted: once typed, the password, g_arenaJoinPassword, checked against the
    game's, message 0x27 when wrong; or the join sent, g_arenaJoinNeedsPassword clear), a typed game address (g_typingArenaAddress: joined as
-   99999 when not empty) or a join confirmed (g_lobbyJoinRequest). The original leaves eax to callers that ignore it */
+   99999 when not empty) or a join confirmed (g_lanJoinRequest). The original leaves eax to callers that ignore it */
 void (arena_drawGamesPage)(void)
 {
 	if (g_arenaListClickArmed) {
-		long double t = FADD(g_frameTime, g_arenaSearchClock);
-		g_arenaSearchClock = f32(t);
+		long double t = FADD(g_frameTime, g_arenaListClickTimer);
+		g_arenaListClickTimer = f32(t);
 		if (t > k_20f) {
 			g_arenaListClickArmed = 0;
-			(*(int *)&g_arenaSearchClock) = 0;
+			(*(int *)&g_arenaListClickTimer) = 0;
 		}
 	}
 	arena_drawTunnel();
 	int mode = g_arenaCameraMode;
 	if (mode == 1 || mode == 0 || g_lobbySubState == 5)
 		return;
-	if (g_dialogOpen) {
+	if (g_frameOpening) {
 		menu_drawFrame(g_arenaGameListLeft, g_arenaGameListTop, g_arenaGameListRight, g_arenaGameListBottom);
 		return;
 	}
@@ -813,7 +813,7 @@ void (arena_drawGamesPage)(void)
 		if (g_typedArenaAddress)
 			arena_joinListed(99999);
 	}
-	if (g_lobbyJoinRequest)
+	if (g_lanJoinRequest)
 		arena_joinSession(g_pickedGame);
 }
 
@@ -825,17 +825,17 @@ static int lobby_busy(void)
 	return g_lanSearch || g_lobbySearching || g_lobbyRefreshing;
 }
 
-/* the selected game joined: connected to the server (g_serverConnected), its join password asked for when it is locked
-   (arena_askJoinPassword; g_lobbyJoinStarted), else the join asked of the lobby (g_lobbyJoinRequest) */
+/* the selected game joined: connected to the server (g_joinThroughServer), its join password asked for when it is locked
+   (arena_askJoinPassword; g_lobbyJoinStarted), else the join asked of the lobby (g_lanJoinRequest) */
 static void lobby_join(void)
 {
 	sound_playMenu(0);
-	if (g_serverConnected) {
+	if (g_joinThroughServer) {
 		g_lobbyJoinStarted = 1;
-		g_lobbyJoinRequest = 0;
+		g_lanJoinRequest = 0;
 		arena_askJoinPassword();
 	} else {
-		g_lobbyJoinRequest = 1;
+		g_lanJoinRequest = 1;
 		g_lobbyJoinStarted = 0;
 	}
 }
@@ -843,7 +843,7 @@ static void lobby_join(void)
 /* the lobby left for the arena screen's first page (g_lobbyBlinkClock 1; g_serverAnswerIn set) */
 static void lobby_leave(void)
 {
-	g_serverConnectionState = 0;
+	g_lobbyListAnswer = 0;
 	sound_playMenu(0);
 	(*(u32 *)&g_lobbyBlinkClock) = 0x3f800000;   /* 1 */
 	g_serverAnswerIn = 1;
@@ -859,19 +859,19 @@ static void lobby_leave(void)
 void (arenaGames_mouse)(void)
 {
 	int mode = g_arenaCameraMode;
-	if (mode == 1 || mode == 0 || g_arenaJoinNeedsPassword || g_typingArenaAddress || g_dialogOpen)
+	if (mode == 1 || mode == 0 || g_arenaJoinNeedsPassword || g_typingArenaAddress || g_frameOpening)
 		return;
 	if (g_rightClick) {
 		if (g_lobbySearching || g_lanSearch)
 			return;
-		g_serverConnectionState = 0;
+		g_lobbyListAnswer = 0;
 		arena_leaveSession();
 		net_disconnect();
 		sound_playMenu(0);
 		g_arenaCameraMode = mode = 0;
 	}
 	if (g_mouseClick && mode == 2) {
-		g_cursorBlink = 0.0f;
+		g_menuRepeatClock = 0.0f;
 		int on = arenaGameList_hitTest(g_mouseX, g_mouseY);
 		switch (on) {
 		case 0:
@@ -888,16 +888,16 @@ void (arenaGames_mouse)(void)
 					g_lobbyConnectionOpen = 0;
 					net_disconnect();
 				}
-				if (g_arenaSearchStarted)
+				if (g_lanSearchStarted)
 					arena_leaveSession();
 				g_serverListCount = 0;
 				arena_openSession(1, NULL);
-				g_lobbyListPage = 0;
+				g_listAnswered = 0;
 				g_lanSearch = 1;
 				(*(u32 *)&g_lobbyBlinkClock) = 0x43160000;   /* 150 */
 				g_gameCount = 0;
-				g_serverConnected = 0;
-				g_arenaSearchStarted = 1;
+				g_joinThroughServer = 0;
+				g_lanSearchStarted = 1;
 				g_serverSearching = 0;
 			} else {
 				g_lobbyConnectionOpen = 0;
@@ -905,10 +905,10 @@ void (arenaGames_mouse)(void)
 				arena_leaveSession();
 				g_serverListCount = 0;
 				if (lobby_openConnection() == 1) {
-					g_serverConnected = 1;
+					g_joinThroughServer = 1;
 					g_lobbySearching = 1;
 					g_serverSearching = 1;
-					g_arenaSearchStarted = 0;
+					g_lanSearchStarted = 0;
 					g_lobbyConnectionOpen = 1;
 				}
 			}
@@ -979,7 +979,7 @@ void (arenaGames_mouse)(void)
 			int row = on - 6;
 			if (g_listTop + row >= g_gameCount)
 				return;
-			if (row == g_lobbyListRow && g_arenaListClickArmed) {
+			if (row == g_gameListRow && g_arenaListClickArmed) {
 				if (g_gameCount <= 0)
 					return;
 				if (lobby_busy()) {
@@ -991,21 +991,21 @@ void (arenaGames_mouse)(void)
 			} else {
 				sound_playMenu(0);
 				g_arenaListClickArmed = 1;
-				g_lobbyListRow = row;
+				g_gameListRow = row;
 				g_pickedGame = g_listTop + row;
 			}
-			(*(int *)&g_arenaSearchClock) = 0;
+			(*(int *)&g_arenaListClickTimer) = 0;
 			break;
 		}
 	}
 	if (!g_mouseHeld || g_arenaCameraMode != 2 || g_typingArenaAddress)
 		return;
 	int on = arenaGameList_hitTest(g_mouseX, g_mouseY);
-	if ((on != 15 && on != 16) || !(g_cursorBlink >= k_5f))
+	if ((on != 15 && on != 16) || !(g_menuRepeatClock >= k_5f))
 		return;
 	if (on == 15 || games_down()) {
 		if (on == 15)
 			games_up();
-		g_cursorBlink = 0.0f;
+		g_menuRepeatClock = 0.0f;
 	}
 }

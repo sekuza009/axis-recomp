@@ -13,7 +13,7 @@
 /* 0x422b30: the open tab's clicks (nothing while a dialog is up): controls, sound, graphics or the top page */
 void (setup_tabClicks)(void)
 {
-	if (g_dialogOpen != 0)
+	if (g_frameOpening != 0)
 		return;
 	switch (g_setupTab) {
 	case TAB_CONTROL: setup_controlTabClicks(); break;
@@ -26,7 +26,7 @@ void (setup_tabClicks)(void)
 /* 0x4230a0: the tab's keys */
 void (setup_processTabKeys)(void)
 {
-	if (g_dialogOpen != 0)
+	if (g_frameOpening != 0)
 		return;
 	switch (g_setupTab) {
 	case TAB_CONTROL: setup_controlTabKeys(); break;
@@ -41,7 +41,7 @@ static void leave(void)
 {
 	menuCamera_setMove(4);
 	g_nextScreen = 300;
-	g_cursorBlink = 0.0f;
+	g_menuRepeatClock = 0.0f;
 	debug_traceStripped(NULL);
 }
 
@@ -78,7 +78,7 @@ static void sound_ok(void)
 	g_menuVolume = (volume * 5 - 500) * 4;
 	sound_playMenu(0);
 	cfg_writeAxisCfg();
-	g_setupPage = 0;
+	g_setupCameraMode = 0;
 	music_shutdown();
 	music_play((const char *)STR(0x4b01cc, "music/Netsphere.mp3"));
 }
@@ -90,7 +90,7 @@ void (setup_soundTabKeys)(void)
 		sound_ok();
 	else if (input_justPressed(g_keyBack) || input_justPressed(g_keyCancel2)) {
 		sound_playMenu(0);
-		g_setupPage = 0;
+		g_setupCameraMode = 0;
 	}
 }
 
@@ -107,7 +107,7 @@ static u32 graphics_apply(void)
 	u32 r = cfg_writeAxisCfg();   /* cfg_writeAxisCfg */
 	if (!same)
 		return ((u32)app_closeWindow(1));   /* app_closeWindow */
-	g_setupPage = 0;
+	g_setupCameraMode = 0;
 	return r;
 }
 
@@ -118,7 +118,7 @@ void (setup_graphicTabKeys)(void)
 		graphics_apply();
 	else if (input_justPressed(g_keyBack) || input_justPressed(g_keyCancel2)) {
 		sound_playMenu(0);
-		g_setupPage = 0;
+		g_setupCameraMode = 0;
 	}
 }
 
@@ -126,9 +126,9 @@ void (setup_graphicTabKeys)(void)
 static void with_page(void (*draw)(void), const int frame[4])
 {
 	setup_drawTunnel();
-	if (g_setupPage == 1 || g_setupPage == 0 || g_setupTab == TAB_TOP)
+	if (g_setupCameraMode == 1 || g_setupCameraMode == 0 || g_setupTab == TAB_TOP)
 		return;
-	if (g_dialogOpen == 0)
+	if (g_frameOpening == 0)
 		draw();
 	else
 		menu_drawFrame(frame[0], frame[1], frame[2], frame[3]);
@@ -146,7 +146,7 @@ void (setup_frameControlsPage)(void) { with_page(page_controls, (const int *)ADD
 /* a tab opened: the page state, the setup camera's distance (-1650) and its fade (0.7), no item picked */
 static void tab_opened(void)
 {
-	g_setupPage = 1;
+	g_setupCameraMode = 1;
 	(*(u32 *)&g_setupTunnelAlpha) = 0x3f333333;   /* 0.7 */
 	(*(int *)&g_setupPressedClock) = 0;
 	g_setupPressed = -1;
@@ -236,7 +236,7 @@ u32 (setup_topPageClicks)(void)
 				menuCamera_setMove(4);
 				sound_playMenu(0);
 				g_nextScreen = 300;
-				(*(int *)&g_cursorBlink) = 0;
+				(*(int *)&g_menuRepeatClock) = 0;
 				GAME_FN(debug_traceStripped, 0x48b420, void, void)();   /* debug_traceStripped */
 				break;
 			}
@@ -252,7 +252,7 @@ u32 (setup_topPageClicks)(void)
 	sound_playMenu(0);
 	u32 r = menuCamera_setMove(4);   /* menuCamera_setMove */
 	g_nextScreen = 300;
-	(*(int *)&g_cursorBlink) = 0;
+	(*(int *)&g_menuRepeatClock) = 0;
 	GAME_FN(debug_traceStripped, 0x48b420, void, void)();
 	return r;
 }
@@ -263,11 +263,11 @@ u32 (setup_topPageClicks)(void)
    with its sound. Returns what the original leaves in eax (for a switch, its old or new value) */
 u32 (setup_graphicTabClicks)(void)
 {
-	u32 page = (*(u32 *)&g_setupPage);
-	if (page == 1 || page == 0 || g_dialogOpen)
+	u32 page = (*(u32 *)&g_setupCameraMode);
+	if (page == 1 || page == 0 || g_frameOpening)
 		return page;
 	if (g_rightClick)
-		g_setupPage = 0;
+		g_setupCameraMode = 0;
 	if (!g_mouseClick)
 		return page;
 	u32 button = ((u32)setupGraphic_hitTest(g_mouseX, g_mouseY));   /* setupGraphic_hitTest */
@@ -294,7 +294,7 @@ u32 (setup_graphicTabClicks)(void)
 		return graphics_apply();
 	case 8:
 		old = sound_playMenu(0);
-		g_setupPage = 0;
+		g_setupCameraMode = 0;
 		return old;
 	}
 	return button;
@@ -305,18 +305,18 @@ u32 (setup_graphicTabClicks)(void)
 
 static void volume_down(void)
 {
-	if (g_volumeSetting > 0) {
+	if (g_setupEffectVolume > 0) {
 		g_setupPressed = 0;
-		g_volumeSetting--;
+		g_setupEffectVolume--;
 		(*(u32 *)&g_setupPressedClock) = 0x40a00000;   /* 5 */
 	}
 }
 
 static void volume_up(void)
 {
-	if (g_volumeSetting < 100) {
+	if (g_setupEffectVolume < 100) {
 		g_setupPressed = 1;
-		g_volumeSetting++;
+		g_setupEffectVolume++;
 		(*(u32 *)&g_setupPressedClock) = 0x40a00000;
 	}
 }
@@ -324,26 +324,26 @@ static void volume_up(void)
 /* the slider set where the pointer is (its track 0x90 in from the page, g_setupSoundLeft) */
 static void volume_at_pointer(void)
 {
-	g_volumeSetting = 1 - ftol(fmul_m((long double)(g_mouseX - g_setupSoundLeft - 0x90), k_m0_390625f));
+	g_setupEffectVolume = 1 - ftol(fmul_m((long double)(g_mouseX - g_setupSoundLeft - 0x90), k_m0_390625f));
 }
 
 /* 0x4221d0: the sound tab's mouse (an open page, no message box; a right click closes it but goes on): a click (the
-   blink clock restarted) on the volume's arrows (0 / 1) or slider (2), the sound toggles (5: g_effectsVolume 0 / 100; 6, 7:
+   blink clock restarted) on the volume's arrows (0 / 1) or slider (2), the sound toggles (5: g_setupMusicVolume 0 / 100; 6, 7:
    g_setupSound3D, g_setupStereoReverse), OK (8) or close (9); holding the arrows or the slider repeats once the clock passes 1 (and
    restarts it). The original leaves eax to callers that ignore it */
 void (setup_soundTabClicks)(void)
 {
-	if (g_setupPage == 1 || g_setupPage == 0 || g_dialogOpen)
+	if (g_setupCameraMode == 1 || g_setupCameraMode == 0 || g_frameOpening)
 		return;
 	if (g_rightClick)
-		g_setupPage = 0;
+		g_setupCameraMode = 0;
 	if (g_mouseClick) {
-		g_cursorBlink = 0.0f;
+		g_menuRepeatClock = 0.0f;
 		switch (setupSound_hitTest(g_mouseX, g_mouseY)) {
 		case 0: volume_down(); break;
 		case 1: volume_up(); break;
 		case 2: volume_at_pointer(); break;
-		case 5: g_effectsVolume = g_effectsVolume >= 50 ? 0 : 100; break;
+		case 5: g_setupMusicVolume = g_setupMusicVolume >= 50 ? 0 : 100; break;
 		case 6:
 			sound_playMenu(2);
 			g_setupSound3D = 1 - g_setupSound3D;
@@ -355,13 +355,13 @@ void (setup_soundTabClicks)(void)
 		case 8: sound_ok(); break;
 		case 9:
 			sound_playMenu(0);
-			g_setupPage = 0;
+			g_setupCameraMode = 0;
 			break;
 		}
 	}
-	if (!g_mouseHeld || !(g_cursorBlink > k_1f))
+	if (!g_mouseHeld || !(g_menuRepeatClock > k_1f))
 		return;
-	g_cursorBlink = 0.0f;
+	g_menuRepeatClock = 0.0f;
 	switch (setupSound_hitTest(g_mouseX, g_mouseY)) {
 	case 0: volume_down(); break;
 	case 1: volume_up(); break;
@@ -370,7 +370,7 @@ void (setup_soundTabClicks)(void)
 }
 
 /* ---- the controls tab: four pages of bindings (g_bindPage), a row selected on the page (g_bindRow, -1 none) ---- */
-#define g_bindToggle (g_setupToggles[0])          /* row 10's setting (on / off) */
+#define g_bindToggle (g_mouseSwitchesEdit[0])          /* row 10's setting (on / off) */
 
 /* 0x422e10: the controls tab's keys. F1 (g_dikF1) only gives a sound. While a row waits: cancel stops waiting, any
    other key (codes 2 .. 0xdd) is bound to it. Otherwise: fire selects (row 10 toggles), up / down move along the
@@ -433,7 +433,7 @@ void (setup_controlTabKeys)(void)
 		sound_playMenu(0);
 		memcpy((void *)OBJ(g_controls), (const void *)OBJ(g_controlsEdit), 0x44 * 4);
 		cfg_writeAxisCfg();
-		g_setupPage = 0;
+		g_setupCameraMode = 0;
 		return;
 	}
 	if (input_justPressed(g_keyBack) != 1) {
@@ -446,19 +446,19 @@ void (setup_controlTabKeys)(void)
 			return;
 	}
 	sound_playMenu(0);
-	g_setupPage = 0;
+	g_setupCameraMode = 0;
 }
 
 /* 0x422830: the controls tab's mouse (an open page, no message box). While a row waits for its key, a right click,
-   the wheel (down g_dikWheelDown, up g_dikWheelUp) or a click binds that button to it; otherwise a right click closes the page
+   the wheel (down g_dikWheelUp, up g_dikWheelDown) or a click binds that button to it; otherwise a right click closes the page
    (and goes on). A click picks a page (0 .. 3), OK (the bindings at g_controlsEdit kept in g_keyForward, axis.cfg read; the
    page closed), close, the defaults; on page 3 rows 7 / 8 toggle their setting (0x4de1c0 / 0x4de1c4), 9 drags the
-   slider and 10 / 11 step g_crosshair (0 .. 7); any other row control with a row selected makes it wait for a key.
+   slider and 10 / 11 step g_crosshairEdit (0 .. 7); any other row control with a row selected makes it wait for a key.
    Holding the button on page 3's slider (once the blink clock passes 1) drags it. The original leaves eax to
    callers that ignore it */
 void (setup_controlTabClicks)(void)
 {
-	if (g_setupPage == 1 || g_setupPage == 0 || g_dialogOpen)
+	if (g_setupCameraMode == 1 || g_setupCameraMode == 0 || g_frameOpening)
 		return;
 	int waiting = g_bindWaiting;
 	if (g_rightClick) {
@@ -467,14 +467,14 @@ void (setup_controlTabClicks)(void)
 			g_bindWaiting = 0;
 			return;
 		}
-		g_setupPage = 0;
+		g_setupCameraMode = 0;
 	}
 	if (g_mouseWheelTurned && waiting) {
 		int wheel = g_mouseWheel;
 		if (wheel < 0)
-			setup_bindKey(g_dikWheelDown);
-		else if (wheel > 0)
 			setup_bindKey(g_dikWheelUp);
+		else if (wheel > 0)
+			setup_bindKey(g_dikWheelDown);
 		g_bindWaiting = 0;
 		return;
 	}
@@ -492,15 +492,15 @@ void (setup_controlTabClicks)(void)
 			sound_playMenu(0);
 			memcpy((void *)OBJ(g_controls), (const void *)OBJ(g_controlsEdit), 0x110);
 			cfg_writeAxisCfg();
-			g_setupPage = 0;
+			g_setupCameraMode = 0;
 		} else if (on == 5) {
 			sound_playMenu(0);
-			g_setupPage = 0;
+			g_setupCameraMode = 0;
 		} else if (on == 6) {
 			sound_playMenu(0);
 			setup_defaultBindings();
 		} else if ((on == 7 || on == 8) && row >= 0 && page == 3) {
-			int *setting = &GAME_VAR(int, on == 7 ? OBJ(g_setupToggles) : (OBJ(g_setupToggles) + 0x4));
+			int *setting = &GAME_VAR(int, on == 7 ? OBJ(g_mouseSwitchesEdit) : (OBJ(g_mouseSwitchesEdit) + 0x4));
 			*setting = 1 - *setting;
 			sound_playMenu(0);
 			return;
@@ -508,8 +508,8 @@ void (setup_controlTabClicks)(void)
 			setup_sliderClicks();
 			return;
 		} else if ((on == 10 || on == 11) && g_bindPage == 3) {
-			if (++g_crosshair > 7)
-				g_crosshair = 0;
+			if (++g_crosshairEdit > 7)
+				g_crosshairEdit = 0;
 			sound_playMenu(0);
 			return;
 		} else if (on >= 7 && on <= 17 && row >= 0) {
@@ -517,7 +517,7 @@ void (setup_controlTabClicks)(void)
 			sound_playMenu(0);
 		}
 	}
-	if (g_mouseHeld && g_cursorBlink > k_1f && setupControl_hitTest(g_mouseX, g_mouseY) == 9 && g_bindPage == 3)
+	if (g_mouseHeld && g_menuRepeatClock > k_1f && setupControl_hitTest(g_mouseX, g_mouseY) == 9 && g_bindPage == 3)
 		setup_sliderClicks();
 }
 
@@ -581,11 +581,11 @@ static void slider_press(void)
 }
 
 /* 0x4226b0: the slider on the control setup page: a click (g_mouseClicked), or the button held (g_mouseButtonsHeld) for over a
-   second (its timer g_cursorBlink past k_1f), presses the part under the cursor, the timer starting again. Nothing
+   second (its timer g_menuRepeatClock past k_1f), presses the part under the cursor, the timer starting again. Nothing
    uses the eax it leaves */
 void (setup_sliderClicks)(void)
 {
-#define TIMER g_cursorBlink
+#define TIMER g_menuRepeatClock
 	if (g_mouseClick) {
 		TIMER = 0;
 		slider_press();

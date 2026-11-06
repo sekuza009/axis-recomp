@@ -18,7 +18,7 @@ static void merge(const Received *g)
 {
 	if (GAME_VAR(int, g->flag)) {
 		for (int i = 0; i < g_serverPingCount; i++) {
-			if ((*(int *)&g_serverUsed[i]) != 1)   /* not new */
+			if ((*(int *)&g_serverPinged[i]) != 1)   /* not new */
 				continue;
 			const u8 *s = (const u8 *)(RELOC(g->base) + i * g->stride);
 			int ping = g_serverPing[i];
@@ -45,8 +45,8 @@ static void merge(const Received *g)
 				g_gameCount = k + 1;
 				sessionList_sort();   /* the list sorted again */
 			}
-			(*(int *)&g_serverUsed[i]) = 0;
-			g_lobbyListPage++;
+			(*(int *)&g_serverPinged[i]) = 0;
+			g_listAnswered++;
 		}
 		if (!g_netListDone)
 			return;
@@ -58,14 +58,14 @@ static void merge(const Received *g)
 /* 0x434ff0: the game room's (0x79-byte records) */
 void (room_mergeReceivedSessions)(void)
 {
-	static const Received room = { ADDR(g_roomListCount), (OBJ(g_roomList) + offsetof(RoomRecord, rotation)), sizeof(RoomRecord), (int)offsetof(RoomRecord, name) - (int)offsetof(RoomRecord, rotation), (int)offsetof(RoomRecord, address) - (int)offsetof(RoomRecord, rotation), ADDR(g_roomNameSum), { ADDR(g_roomSearching), ADDR(g_roomSearchAnswerIn), ADDR(g_roomRefreshing) } };
+	static const Received room = { ADDR(g_roomListCount), (OBJ(g_roomList) + offsetof(RoomRecord, rotation)), sizeof(RoomRecord), (int)offsetof(RoomRecord, name) - (int)offsetof(RoomRecord, rotation), (int)offsetof(RoomRecord, address) - (int)offsetof(RoomRecord, rotation), ADDR(g_roomListPlayers), { ADDR(g_roomSearching), ADDR(g_roomSearchAnswerIn), ADDR(g_roomRefreshing) } };
 	merge(&room);
 }
 
 /* 0x406640: the arena lobby's (0x5b-byte records) */
 void (arena_mergeReceivedSessions)(void)
 {
-	static const Received arena = { ADDR(g_serverListCount), (OBJ(g_serverList) + offsetof(ServerRecord, rotation)), sizeof(ServerRecord), (int)offsetof(ServerRecord, name) - (int)offsetof(ServerRecord, rotation), (int)offsetof(ServerRecord, address) - (int)offsetof(ServerRecord, rotation), ADDR(g_arenaNameSum), { ADDR(g_lobbySearching), ADDR(g_serverAnswerIn), ADDR(g_lobbyRefreshing) } };
+	static const Received arena = { ADDR(g_serverListCount), (OBJ(g_serverList) + offsetof(ServerRecord, rotation)), sizeof(ServerRecord), (int)offsetof(ServerRecord, name) - (int)offsetof(ServerRecord, rotation), (int)offsetof(ServerRecord, address) - (int)offsetof(ServerRecord, rotation), ADDR(g_arenaListPlayers), { ADDR(g_lobbySearching), ADDR(g_serverAnswerIn), ADDR(g_lobbyRefreshing) } };
 	merge(&arena);
 }
 
@@ -91,7 +91,7 @@ void (arenaList_rebuild)(void)
 {
 	int n = net_sessionCount();
 	g_gameCount = n;
-	g_lobbyListPage = n;
+	g_listAnswered = n;
 	for (int i = 0; i < g_gameCount; i++) {
 		const SessionDesc *s = (const SessionDesc *)net_sessionValue(i);
 		SessionEntry *e = &g_sessionList[i];
@@ -107,8 +107,8 @@ void (arenaList_rebuild)(void)
 		e->timeLimit = s->timeLimit;
 		e->ping = 0;
 	}
-	g_arenaHaveList = 1;
+	g_arenaLanListBuilt = 1;
 	g_pickedGame = 0;
-	g_arenaListFull = 0;
+	g_arenaServerList = 0;
 	sessionList_sort();
 }

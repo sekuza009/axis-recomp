@@ -587,7 +587,7 @@ typedef struct { float r, g, b, a; } Colour;
 #define menu_clearInputBuffer(mode) GAME_FN(menu_clearInputBuffer, 0x431560, void, int)(mode)
 #define chat_createEdit(chars) GAME_FN(chat_createEdit, 0x43f460, void, int)(chars)   /* the hidden EDIT control typing goes to */
 #define itoa(value, out, radix) GAME_CDECL(0x49fb53, char *, int, char *, int)(value, out, radix)
-#define g_missionProgress (*(int *)(g_campaign + 0x104))   /* the furthest stage reached */
+#define g_missionProgress (*(int *)(g_pilotSave + 0x104))   /* the furthest stage reached */
 #define g_trig (g_tanTable)            /* 3600 values by tenths of a degree (the ring's radius) */
 #define g_showFps (*(int *)&g_cfgSwitches[2])           /* 1: the FPS counter is shown */
 #define g_gameModeNames ((const char (*)[64])STR(0x4c7030, "DEATH MATCH"))   /* "DEATH MATCH", "TEAM DEATH MATCH", ... (12) */
@@ -804,7 +804,7 @@ typedef struct { float r, g, b, a; } Colour;
 #define CoUninitialize() IMPORT(0x4a93b8, void, void)()
 
 /* ---- front-end screens (menu/menu_states.c) ---- */
-#define g_progress (*(int *)(g_campaign + 0x104))            /* rounds beaten (missions unlocked) */
+#define g_progress (*(int *)(g_pilotSave + 0x104))            /* rounds beaten (missions unlocked) */
 #define menuTunnel_advance(ring) GAME_FN(menuTunnel_advance, 0x441260, void, void *)(ring)   /* moves the background tunnel on */
 #define menu_drawBackground3D(first) GAME_FN(menu_drawBackground3D, 0x429d70, void, void *)(first)
 #define skirmish_roundChosen(mission) GAME_FN(skirmish_roundChosen, 0x4479b0, u32, int)(mission)

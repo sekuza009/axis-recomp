@@ -1,6 +1,6 @@
 /* lobby_states.c: the arena lobby's and the game room's screens set up as they are entered: the camera's target point
    for the screen (and its look-at point), the screen's state cleared, the panel brightness (0x3f333333 = 0.7), the
-   message box hidden (g_arenaTunnelDepth / g_roomPanelBrightness), and for the lists the map list or the ranking reset. The lobby's
+   message box hidden (g_arenaTunnelDepth / g_unusedRoomFloat), and for the lists the map list or the ranking reset. The lobby's
    three sub-screens are 0 (the player's own record), 1 (the arena list) and 2 (creating an arena). */
 #include "../game.h"
 #include <string.h>
@@ -16,7 +16,7 @@ static void clear_all(const u32 *addresses, int n)
    (arena_loadPlayerSettings) */
 void (lobby_enterPlayerScreen)(void)
 {
-	int z = g_menuCameraHeight;
+	int z = g_menuCameraLookZ;
 	(*(u32 *)&g_camPoint0X) = 0x420c0000;   /* 35.0 */
 	g_camPoint0Y = 0;
 	g_camPoint0Z = z;
@@ -26,19 +26,19 @@ void (lobby_enterPlayerScreen)(void)
 	arena_loadPlayerSettings();
 	g_arenaCameraMode = 1;
 	g_lobbySubState = 0;
-	g_arenaPanelBrightness = 0x3f333333;
+	g_unusedArenaFloat = 0x3f333333;
 	g_armcFrom = 0;
-	g_lobbyPanelsOff = 0;
+	g_lobbyPanelsSliding = 0;
 	g_arenaTunnelDepth = 0xc4ce4000;   /* -1650.0 */
 }
 
 /* 0x404b30: sub-screen 1, the arena list: its 24 state words cleared, 999 (no selection), 30 seconds */
 void (lobby_enterArenaList)(void)
 {
-	static const u32 cleared[] = { (OBJ(g_camPoints) + 0x14), ADDR(g_serverConnected), ADDR(g_lobbyRefreshing), ADDR(g_arenaSearchStarted), ADDR(g_serverSearching), ADDR(g_lobbyJoinStarted), ADDR(g_lobbyJoinRequest), ADDR(g_lanSearch),
-	                               ADDR(g_lobbySearching), ADDR(g_arenaHaveList), ADDR(g_arenaListFull), ADDR(g_gameCount), ADDR(g_lobbyBlinkClock), ADDR(g_pickedGame), ADDR(g_gameListTop), ADDR(g_lobbyListRow),
-	                               ADDR(g_arenaListClickArmed), ADDR(g_arenaSearchClock), ADDR(g_lobbyPanelsOff), ADDR(g_arenaConfirming), ADDR(g_lobbyConnectionOpen), ADDR(g_arenaUpdateNotice), ADDR(g_arenaListRefreshTimer), ADDR(g_typingArenaAddress) };
-	int z = g_menuCameraHeight;
+	static const u32 cleared[] = { (OBJ(g_camPoints) + 0x14), ADDR(g_joinThroughServer), ADDR(g_lobbyRefreshing), ADDR(g_lanSearchStarted), ADDR(g_serverSearching), ADDR(g_lobbyJoinStarted), ADDR(g_lanJoinRequest), ADDR(g_lanSearch),
+	                               ADDR(g_lobbySearching), ADDR(g_arenaLanListBuilt), ADDR(g_arenaServerList), ADDR(g_gameCount), ADDR(g_lobbyBlinkClock), ADDR(g_pickedGame), ADDR(g_gameListTop), ADDR(g_gameListRow),
+	                               ADDR(g_arenaListClickArmed), ADDR(g_arenaListClickTimer), ADDR(g_lobbyPanelsSliding), ADDR(g_joinConnecting), ADDR(g_lobbyConnectionOpen), ADDR(g_arenaUpdateNotice), ADDR(g_arenaListRefreshTimer), ADDR(g_typingArenaAddress) };
+	int z = g_menuCameraLookZ;
 	g_camPoint1X = 0x420c0000;   /* 35.0 */
 	g_camPoint1Z = z;
 	g_camAim1Z = z;
@@ -46,29 +46,29 @@ void (lobby_enterArenaList)(void)
 	g_camAim1Y = 0xc20c0000;   /* -35.0 */
 	g_lobbySubState = 1;
 	g_arenaCameraMode = 1;
-	g_arenaPanelBrightness = 0x3f333333;
+	g_unusedArenaFloat = 0x3f333333;
 	clear_all(cleared, sizeof cleared / sizeof cleared[0]);
 	g_lastPanel = 999;
-	g_lobbyPending = 1;
+	g_lobbyReportsOff = 1;
 	g_arenaTunnelDepth = 0xc4ce4000;
 	g_listRefreshPeriod = 30;
 }
 
-/* 0x404980: the arena settings record (g_playerName: title, map, options) loaded into the new arena's form (g_newArenaName). Maps 22 .. 24
+/* 0x404980: the arena settings record (g_arenaName: title, map, options) loaded into the new arena's form (g_newArenaName). Maps 22 .. 24
    can't be chosen (back to 0); a title still the default one becomes "<player name><suffix>" */
 void (lobby_loadArenaSettings)(void)
 {
 	signed char map = g_arenaMap;
 	if (map >= 0x16 && map <= 0x18)
 		g_arenaMap = map = 0;
-	if (!strcmp(g_playerName, (const char *)STR(0x4ad4a4, "AXIS ARENA"))) {
-		memset((void *)OBJ(g_playerName), 0, 32);
-		strcpy(g_playerName, g_cfgPlayerName);
-		strcat(g_playerName, (const char *)STR(0x4ad49c, " room"));
+	if (!strcmp(g_arenaName, (const char *)STR(0x4ad4a4, "AXIS ARENA"))) {
+		memset((void *)OBJ(g_arenaName), 0, 32);
+		strcpy(g_arenaName, g_cfgPlayerName);
+		strcat(g_arenaName, (const char *)STR(0x4ad49c, " room"));
 		map = g_arenaMap;
 	}
 	memset((void *)OBJ(g_newArenaName), 0, 32);
-	strcpy(g_newArenaName, g_playerName);
+	strcpy(g_newArenaName, g_arenaName);
 	u8 b1 = g_arenaPlayers, b2 = g_arenaRotation, b3 = g_arenaGameType, b4 = g_arenaFragLimit,
 	   b5 = g_arenaTimeLimit;
 	g_newArenaMap = map;
@@ -76,13 +76,13 @@ void (lobby_loadArenaSettings)(void)
 	g_newArenaPlayers = b1;
 	g_newArenaRotation = b2;
 	g_newArenaPassword = 0;
-	g_arenaFragLimitTyped = b4;
-	g_arenaTimeLimitTyped = b5;
+	g_newArenaFragLimit = b4;
+	g_newArenaTimeLimit = b5;
 	g_newArenaPassword4 = 0;
 }
 
 /* 0x403420: the map on/off list (8-byte entries from g_mapChoiceKeptTable): the first time all off, then the first n maps
-   (g_arenaMapCount) on; maps 22 .. 24 turned off (the last ones; the list's open flag cleared too) and the list laid out */
+   (g_mapCount) on; maps 22 .. 24 turned off (the last ones; the list's open flag cleared too) and the list laid out */
 void (mapList_init)(void)
 {
 	if (!g_mapListMade) {
@@ -90,7 +90,7 @@ void (mapList_init)(void)
 			p->chosen = 0;
 			p->type = 0;
 		}
-		for (int k = 0; k < g_arenaMapCount; k++) {
+		for (int k = 0; k < g_mapCount; k++) {
 			g_mapChoiceKeptTable[k].chosen = 1;
 			g_mapChoiceKeptTable[k].type = 0;
 		}
@@ -107,9 +107,9 @@ void (mapList_init)(void)
    list */
 void (lobby_enterCreate)(void)
 {
-	static const u32 cleared[] = { ADDR(g_arenaLobbyState), ADDR(g_connectionAwaited), ADDR(g_lobbyPending), ADDR(g_hostErrorBox), ADDR(g_arenaGameSetUp), ADDR(g_lobbyPanelsOff), ADDR(g_arenaUpdateNotice), ADDR(g_editingNewArenaName),
+	static const u32 cleared[] = { ADDR(g_arenaLobbyState), ADDR(g_connectionAwaited), ADDR(g_lobbyReportsOff), ADDR(g_hostErrorBox), ADDR(g_arenaGameSetUp), ADDR(g_lobbyPanelsSliding), ADDR(g_arenaUpdateNotice), ADDR(g_editingNewArenaName),
 	                               ADDR(g_editingNewArenaFragLimit), ADDR(g_editingNewArenaTimeLimit), ADDR(g_typingArenaPassword) };
-	int z = g_menuCameraHeight;
+	int z = g_menuCameraLookZ;
 	g_camPoint2X = 0xc20c0000;   /* -35.0 */
 	g_camPoint2Y = 0;
 	g_camPoint2Z = z;
@@ -119,7 +119,7 @@ void (lobby_enterCreate)(void)
 	lobby_loadArenaSettings();
 	g_lobbySubState = 2;
 	g_arenaCameraMode = 1;
-	g_arenaPanelBrightness = 0x3f333333;
+	g_unusedArenaFloat = 0x3f333333;
 	clear_all(cleared, sizeof cleared / sizeof cleared[0]);
 	g_arenaTunnelDepth = 0xc4ce4000;
 	g_mapPreviewChanged = 1;
@@ -145,12 +145,12 @@ void (room_loadSettingsRecord)(void)
 /* 0x433790: the create-game page (state 2) entered: the room's settings record, its state cleared, the map list */
 void (room_enterCreatePage)(void)
 {
-	static const u32 cleared[] = { ADDR(g_arenaLobbyState), ADDR(g_connectionAwaited), ADDR(g_lobbyPending), ADDR(g_arenaGameSetUp), ADDR(g_arenaUpdateNotice), ADDR(g_editingRoomName), ADDR(g_editingFragLimit), ADDR(g_editingTimeLimit),
+	static const u32 cleared[] = { ADDR(g_arenaLobbyState), ADDR(g_connectionAwaited), ADDR(g_lobbyReportsOff), ADDR(g_arenaGameSetUp), ADDR(g_arenaUpdateNotice), ADDR(g_editingRoomName), ADDR(g_editingFragLimit), ADDR(g_editingTimeLimit),
 	                               ADDR(g_editingRoomPassword) };
 	room_loadSettingsRecord();
 	g_roomState = 2;
 	g_roomCameraMode = 1;
-	g_roomPanelBrightness = 0x3f333333;
+	g_unusedRoomFloat = 0x3f333333;
 	clear_all(cleared, sizeof cleared / sizeof cleared[0]);
 	g_mapPreviewChanged = 1;
 	(*(char *)&g_roomRotation) = 0;
@@ -171,10 +171,10 @@ void (ranking_enter)(void)
 	g_roomCameraMode = 1;
 	g_rankingFirst = 1;
 	g_roomState = 4;
-	g_roomPanelBrightness = 0x3f333333;
+	g_unusedRoomFloat = 0x3f333333;
 	g_rankingLast = 10;
-	g_roomListDistanceLimit = 0x4b189680;   /* 10000000.0 */
-	g_roomListPages = 999;
+	g_rankingPrevValue = 0x4b189680;   /* 10000000.0 */
+	g_rankingLastPage = 999;
 }
 
 /* 0x432620: the Ladder room's default game settings: the name "Axis Ladder Game", 8 players, mode 0, map 0, limits 10
@@ -348,7 +348,7 @@ u32 (newId_register)(void)
 	g_bestLevelNet = g_pilotLevel;
 	*(int *)record = 0x18;
 	u32 r = net_send(0xf, 0x65);
-	g_roomAnswerAwaited = 1;
+	g_newIdAnswerAwaited = 1;
 	return r;
 }
 
@@ -356,8 +356,8 @@ u32 (newId_register)(void)
    the game (quit code 2). Returns what the original leaves in eax */
 u32 (lobby_keysBack)(void)
 {
-	if (g_dialogOpen)
-		return g_dialogOpen;
+	if (g_frameOpening)
+		return g_frameOpening;
 	u32 r = input_justPressed(g_dikC);
 	if (r) {
 		g_arenaUpdateNotice = 0;
@@ -379,7 +379,7 @@ u32 (lobbyPlayer_draw)(void)
 	int mode = g_arenaCameraMode;
 	if (mode == 1 || mode == 0 || g_lobbySubState == 5)
 		return mode;
-	if (!g_dialogOpen)
+	if (!g_frameOpening)
 		return lobby_drawPlayerSetup();   /* lobby_drawPlayerSetup */
 	return menu_drawFrame(g_playerSetupLeft, g_playerSetupTop,
 	                                                     g_playerSetupRight, g_playerSetupBottom);   /* menu_drawFrame */
@@ -416,8 +416,8 @@ u32 (lobby_processKeys)(void)
    button) closes the game (code 2), CANCEL the notice. Returns what the original leaves in eax */
 u32 (arenaUpdateNotice_clicks)(void)
 {
-	if (g_dialogOpen)
-		return g_dialogOpen;
+	if (g_frameOpening)
+		return g_frameOpening;
 	if (g_rightClick)
 		g_arenaUpdateNotice = 0;
 	if (!g_mouseClick)
@@ -446,7 +446,7 @@ u32 (menuState400_frame)(void)
 	case 5:
 		lobbyTop_draw();   /* lobbyTop_draw */
 		menu_drawBackground();
-		if (g_quitAsked == 1 && g_arenaCameraMode == 2)
+		if (g_leavingForMatch == 1 && g_arenaCameraMode == 2)
 			return menu_drawDimOverlay();   /* menu_drawDimOverlay */
 		return lobbyTop_drawMenu();       /* lobbyTop_drawMenu */
 	case 0:
@@ -477,7 +477,7 @@ u32 (lobby_clicks)(void)
 	case 0:
 		return lobby_playerScreenClicks();
 	case 1:
-		if (g_arenaConfirming)
+		if (g_joinConnecting)
 			return lobby_close();   /* lobby_close */
 		if (g_arenaUpdateNotice)
 			return arenaUpdateNotice_clicks();   /* arenaUpdateNotice_clicks */
@@ -498,18 +498,18 @@ u32 (lobby_clicks)(void)
    stopped (arena_leaveSession) and its timer (0x378) killed. Returns what the original leaves in eax */
 u32 (lobby_close)(void)
 {
-	if (g_dialogOpen)
-		return g_dialogOpen;
+	if (g_frameOpening)
+		return g_frameOpening;
 	if (!g_mouseClick || g_arenaCameraMode != 2)
 		return g_mouseClick;
-	(*(int *)&g_cursorBlink) = 0;
+	(*(int *)&g_menuRepeatClock) = 0;
 	u32 hit = ((u32)arenaDialogBox_hitTest(g_mouseX, g_mouseY));   /* the close button's hit test */
 	if (hit)
 		return hit;
-	g_arenaSearchTicks = 0;
-	g_arenaJoinWaiting = 0;
+	g_joinPollTicks = 0;
+	g_joinTimedOut = 0;
 	arena_leaveSession();   /* arena_leaveSession */
-	g_arenaConfirming = 0;
+	g_joinConnecting = 0;
 	return ((u32)KillTimer(g_hWndMain, 0x378));   /* KillTimer */
 }
 
@@ -551,7 +551,7 @@ u32 (room_leaveGame)(void)
    arenaUpdateNotice_clicks. Returns what the original leaves in eax */
 u32 (createUpdateNotice_clicks)(void)
 {
-	static const u32 panels[5] = { ADDR(g_editingNewArenaName), ADDR(g_editingNewArenaFragLimit), ADDR(g_editingNewArenaTimeLimit), ADDR(g_typingArenaPassword), ADDR(g_dialogOpen) };
+	static const u32 panels[5] = { ADDR(g_editingNewArenaName), ADDR(g_editingNewArenaFragLimit), ADDR(g_editingNewArenaTimeLimit), ADDR(g_typingArenaPassword), ADDR(g_frameOpening) };
 	for (int k = 0; k < 5; k++)
 		if (GAME_VAR(int, panels[k]))
 			return GAME_VAR(u32, panels[k]);
@@ -618,8 +618,8 @@ static u32 settings_store(GameSettings *from, GameSettings *to, u32 then)
 	to->locked = locked;
 	return GAME_CDECL(then, u32, void)();
 }
-/* 0x405140: the arena being created kept as the arena settings (g_playerName), then axis.cfg loaded again */
-u32 (lobby_keepArenaSettings)(void) { return settings_store((GameSettings *)OBJ(g_newArenaName), (GameSettings *)OBJ(g_playerName), FN_ADDR(cfg_writeAxisCfg, 0x42d730)); }
+/* 0x405140: the arena being created kept as the arena settings (g_arenaName), then axis.cfg loaded again */
+u32 (lobby_keepArenaSettings)(void) { return settings_store((GameSettings *)OBJ(g_newArenaName), (GameSettings *)OBJ(g_arenaName), FN_ADDR(cfg_writeAxisCfg, 0x42d730)); }
 /* 0x433640: the room's settings kept (g_roomRecName) and written to the registry (reg_writeLadderSettings) */
 u32 (room_keepSettings)(void) { return settings_store((GameSettings *)OBJ(g_roomSettingsName), (GameSettings *)OBJ(g_roomRecName), FN_ADDR(reg_writeLadderSettings, 0x432400)); }
 
@@ -633,7 +633,7 @@ u32 (lobbyCreate_draw)(void)
 	int mode = g_arenaCameraMode;
 	if (mode == 1 || mode == 0 || g_lobbySubState == 5)
 		return (u32)mode;
-	if (g_dialogOpen)
+	if (g_frameOpening)
 		return menu_drawFrame(g_newArenaFormLeft, g_newArenaFormTop,
 		                                                     g_newArenaFormRight, g_newArenaFormBottom);   /* menu_drawFrame */
 	signed char players = (*(signed char *)&g_arenaPlayers);
@@ -655,12 +655,12 @@ u32 (lobbyCreate_draw)(void)
 }
 
 /* 0x408110: the "NETWORK INITIALIZE ERROR" box's keys (hosting failed; no other dialog open): C closes it, O starts the arena anyway:
-   multiplayer on, the music stopped, the arena settings (g_playerName) as the game's (map, players, limits), the lobby
+   multiplayer on, the music stopped, the arena settings (g_arenaName) as the game's (map, players, limits), the lobby
    left. Returns what the original leaves in eax */
 u32 (hostError_keys)(void)
 {
-	if (g_dialogOpen)
-		return (u32)g_dialogOpen;
+	if (g_frameOpening)
+		return (u32)g_frameOpening;
 	u32 r = input_justPressed(g_dikC);
 	if (r) {
 		g_hostErrorBox = 0;
@@ -668,13 +668,13 @@ u32 (hostError_keys)(void)
 	}
 	if (!input_justPressed(g_dikO))
 		return 0;
-	g_quitAsked = 1;
+	g_leavingForMatch = 1;
 	g_netRole = 1;
 	music_shutdown();   /* music_shutdown */
 	u32 limits = (*(u32 *)&g_arenaFragLimit);
 	g_mapRotation = (*(signed char *)&g_arenaRotation);
 	g_mapIndex = g_arenaMap;
-	memcpy((void *)OBJ(g_mapTitle), (const void *)OBJ(g_playerName), 32);
+	memcpy((void *)OBJ(g_gameTitle), (const void *)OBJ(g_arenaName), 32);
 	g_chosenGameMode = (*(signed char *)&g_arenaGameType);
 	(*(u32 *)&g_fragLimit) = limits & 0xff;
 	(*(u32 *)&g_timeLimit) = (limits >> 8) & 0xff;
@@ -690,7 +690,7 @@ u32 (hostError_keys)(void)
 u32 (lobby_playerScreenClicks)(void)
 {
 	int mode = g_arenaCameraMode;
-	if (mode == 1 || mode == 0 || g_dialogOpen || g_typingArenaName)
+	if (mode == 1 || mode == 0 || g_frameOpening || g_typingArenaPlayerName)
 		return (u32)mode;
 	if (g_rightClick) {
 		g_arenaCameraMode = 0;
@@ -724,15 +724,15 @@ u32 (lobby_playerScreenClicks)(void)
 }
 
 /* a joined session's settings taken from its list entry: the music stopped, its name as the map title, the map,
-   rotation, game mode, frag and time limits; the lobby left (g_arenaCameraMode 0) for the game (g_quitAsked 1, g_netRole 2) */
+   rotation, game mode, frag and time limits; the lobby left (g_arenaCameraMode 0) for the game (g_leavingForMatch 1, g_netRole 2) */
 static void take_session(const SessionEntry *rec)
 {
 	music_shutdown();
 	g_mapIndex = rec->map;
-	memcpy((void *)OBJ(g_mapTitle), rec->name, 32);
+	memcpy((void *)OBJ(g_gameTitle), rec->name, 32);
 	g_mapRotation = rec->rotation;
 	g_arenaCameraMode = 0;
-	g_quitAsked = 1;
+	g_leavingForMatch = 1;
 	g_netRole = 2;
 	g_chosenGameMode = rec->gameMode;
 	g_fragLimit = rec->fragLimit;
@@ -746,39 +746,39 @@ u32 (arena_joinSession)(int session)
 {
 	const SessionEntry *rec = &g_sessionList[session];
 	g_lobbyJoinStarted = 0;
-	g_lobbyJoinRequest = 0;
-	g_arenaTimeLimit = g_arenaTimeLimitTyped = rec->timeLimit;
-	g_arenaFragLimit = g_arenaFragLimitTyped = rec->fragLimit;
+	g_lanJoinRequest = 0;
+	g_arenaTimeLimit = g_newArenaTimeLimit = rec->timeLimit;
+	g_arenaFragLimit = g_newArenaFragLimit = rec->fragLimit;
 	int r = dplay_join(session, rec->guid, g_cfgPlayerName,
 	                                                               g_playerCorporation);   /* dplay_join: join */
 	if (r != 0x1f4)
 		return menu_showMessage(r == 0x1f5 ? 0x36 : 0x35);   /* the message */
 	take_session(rec);
-	g_arenaConfirming = 0;
+	g_joinConnecting = 0;
 	return rec->timeLimit;
 }
 
-/* 0x4062b0 (the arena join's answer, from WndProc): with the join dialog up (g_arenaJoinWaiting)
-   message 0x44 and the connection closed; else a pending join (g_arenaJoinPending) of the game picked (g_arenaJoinRow: 99999 for
+/* 0x4062b0 (the arena join's answer, from WndProc): with the join dialog up (g_joinTimedOut)
+   message 0x44 and the connection closed; else a pending join (g_sessionFound) of the game picked (g_arenaJoinRow: 99999 for
    the one received at g_receivedSession, copied into a session record at g_joinedSessionRec, otherwise its row of the list, which
    takes the received id) is answered (dplay_join): joined, the session's settings are taken and the lobby
    connection closed; refused, messages 0x43 (501), 0x42 (502, 503), 0x44 (504), 0x45 (505) and the connection
    closed. The caller ignores the eax it leaves */
 void (arena_joinAnswer)(void)
 {
-	if (g_arenaJoinWaiting) {
-		g_arenaSearchTicks = 0;
-		g_arenaJoinWaiting = 0;
+	if (g_joinTimedOut) {
+		g_joinPollTicks = 0;
+		g_joinTimedOut = 0;
 		arena_leaveSession();
 		menu_showMessage(0x44);
-		g_arenaConfirming = 0;
+		g_joinConnecting = 0;
 		return;
 	}
 	int pick = g_arenaJoinRow;
 	SessionEntry *rec;
 	if (pick == 99999) {
 		g_arenaJoinRow = 0;
-		if (!g_arenaJoinPending)
+		if (!g_sessionFound)
 			return;
 		const SessionDesc *in = (const SessionDesc *)g_receivedSession;
 		rec = g_joinedSessionRec;
@@ -790,7 +790,7 @@ void (arena_joinAnswer)(void)
 		rec->rotation = in->rotation;
 		strcpy(rec->name, in->name);
 	} else {
-		if (!g_arenaJoinPending)
+		if (!g_sessionFound)
 			return;
 		rec = &g_sessionList[pick];
 		rec->guid = ((const SessionDesc *)g_receivedSession)->guid;
@@ -807,9 +807,9 @@ void (arena_joinAnswer)(void)
 			menu_showMessage(message[r - 0x1f5]);
 		arena_leaveSession();
 	}
-	g_arenaSearchTicks = 0;
-	g_arenaJoinPending = 0;
-	g_arenaConfirming = 0;
+	g_joinPollTicks = 0;
+	g_sessionFound = 0;
+	g_joinConnecting = 0;
 }
 
 /* ---- a menu key: the key bound at `binding` was just pressed (the confirm sound played then) ---- */
@@ -829,13 +829,13 @@ static u32 to_main_menu(void)
 	return r;
 }
 
-/* 0x407750: the lobby's top page keys (no dialog open, not while g_quitAsked is 1): back (when a tunnel ring is behind: g_tunnelRings > 0) or
+/* 0x407750: the lobby's top page keys (no dialog open, not while g_leavingForMatch is 1): back (when a tunnel ring is behind: g_tunnelRings > 0) or
    leave goes to the main menu; the other three pick the lobby's sub-pages 2, 0 and 1. Returns the action's eax */
 u32 (lobbyTop_keys)(void)
 {
-	if (g_dialogOpen)
-		return g_dialogOpen;
-	if (g_quitAsked == 1)
+	if (g_frameOpening)
+		return g_frameOpening;
+	if (g_leavingForMatch == 1)
 		return 0;
 	if (input_justPressed(g_keyCancel2) && g_tunnelRings > 0) {
 		sound_playMenu(0);
@@ -852,14 +852,14 @@ u32 (lobbyTop_keys)(void)
 	return 0;
 }
 
-/* 0x406950: the lobby's top page clicks (no dialog open, not while g_quitAsked is 1): a left click on one of its four
+/* 0x406950: the lobby's top page clicks (no dialog open, not while g_leavingForMatch is 1): a left click on one of its four
    buttons (outlines at g_lobbyTopOutlines) picks sub-page 0, 1 or 2 or goes back to the main menu; a right click (when a tunnel ring
    is behind: g_tunnelRings > 0) goes back too. Returns what the original leaves in eax */
 u32 (lobby_topPageClicks)(void)
 {
-	if (g_dialogOpen)
-		return g_dialogOpen;
-	if (g_quitAsked == 1)
+	if (g_frameOpening)
+		return g_frameOpening;
+	if (g_leavingForMatch == 1)
 		return 0;
 	if (g_mouseClick) {
 		const Outline *buttons = (const Outline *)OBJ(g_lobbyTopOutlines);
@@ -887,20 +887,20 @@ u32 (lobby_topPageClicks)(void)
 }
 
 /* 0x407840: the lobby's player page keys (page open, g_arenaCameraMode not 0 or 1; no dialog): while the name is being typed
-   (g_typingArenaName), the typed line (g_chatLine) becomes the player's name (g_arenaPlayerName, 32 bytes) once the keyboard is back
+   (g_typingArenaPlayerName), the typed line (g_chatLine) becomes the player's name (g_arenaPlayerName, 32 bytes) once the keyboard is back
    (g_textFieldOpen clear) and typing ends; otherwise back closes the page, g_dikO applies (arena_savePlayerSettings) and closes it,
    g_dikD resets the name to the default, g_dikC closes it. Returns what the original leaves in eax */
 u32 (lobbyPlayer_keys)(void)
 {
 	u32 page = (*(u32 *)&g_arenaCameraMode);
-	if (page == 1 || page == 0 || g_dialogOpen)
+	if (page == 1 || page == 0 || g_frameOpening)
 		return page;
-	if (g_typingArenaName) {
+	if (g_typingArenaPlayerName) {
 		if (g_textFieldOpen)
 			return page;
 		const char *typed = g_chatLine;
 		u32 length = strlen(typed);
-		g_typingArenaName = 0;
+		g_typingArenaPlayerName = 0;
 		if (!length)
 			return 0;
 		memset((void *)OBJ(g_arenaPlayerName), 0, 32);
@@ -945,52 +945,52 @@ int (lobby_openConnection)(void)
 		}
 	}
 	g_lobbyConnectionOpen = 1;
-	g_serverConnected = 1;
+	g_joinThroughServer = 1;
 	g_connectionAwaited = 1;
-	g_connectStep = 2;
+	g_hostAnswer = 2;
 	g_serverAnswerIn = 0;
 	g_lobbyRefreshing = 0;
 	g_lobbySearching = 1;
 	g_searchResult = 0;
-	g_lobbyListPage = 0;
-	g_arenaNameSum = 0;
-	g_serverConnectionState = 0;
+	g_listAnswered = 0;
+	g_arenaListPlayers = 0;
+	g_lobbyListAnswer = 0;
 	g_unusedRoomListWord = 0;
 	g_gameCount = 0;
-	g_arenaListFull = 1;
-	g_arenaHaveList = 0;
+	g_arenaServerList = 1;
+	g_arenaLanListBuilt = 0;
 	g_pickedGame = 0;
 	(*(u32 *)&g_lobbyBlinkClock) = 0x447a0000;   /* 1000.0f */
 	g_gameListTop = 0;
-	g_lobbyListRow = 0;
-	*g_netLobbyMessage = 0x180001;   /* the message to send */
+	g_gameListRow = 0;
+	*g_arenaListRequest = 0x180001;   /* the message to send */
 	net_send(0xd, 100);   /* net_send */
-	g_arenaConfirming = 0;
+	g_joinConnecting = 0;
 	g_listRefreshPeriod = 30;
 	return 1;
 }
 
-/* 0x40d840: a launcher-started arena game. As its host (g_startedByLauncher 1): the arena's settings from axiswl.dat
-   (arena_loadSettings; none: quit) as the arena record (the name g_arenaGameName into g_playerName, the optional password
+/* 0x40d840: a launcher-started arena game. As its host (g_launchedAsHost 1): the arena's settings from axiswl.dat
+   (arena_loadSettings; none: quit) as the arena record (the name g_arenaGameName into g_arenaName, the optional password
    g_arenaFilePassword, the limits, game type, map and players), then the lobby's arena list and the arena hosted
    (lobby_hostArena; reply 0x68). Otherwise the lobby's arena list and the server address given (g_serverAddressArg,
    into g_typedArenaAddress) joined (arena_joinListed(99999); reply 0x69).
    Returns the last call's eax */
 u32 (arena_startFromLauncher)(void)
 {
-	if (g_startedByLauncher != 1) {
+	if (g_launchedAsHost != 1) {
 		menuState400_enter();   /* menuState400_enter */
 		lobby_enterArenaList();   /* lobby_enterArenaList */
 		memset((void *)ADDR(g_typedArenaAddress), 0, 24);
 		strcpy((char *)ADDR(g_typedArenaAddress), g_serverAddressArg);
 		u32 r = arena_joinListed(99999);   /* arena_joinListed */
-		g_lobbyReply = 0x69;
+		g_launchStartStep = 0x69;
 		return r;
 	}
 	if (!arena_loadSettings((const char *)STR(0x4ad5e4, "axiswl.dat")))
 		return PostQuitMessage(0);                               /* PostQuitMessage */
-	memset((void *)OBJ(g_playerName), 0, 32);
-	strcpy(g_playerName, g_arenaGameName);
+	memset((void *)OBJ(g_arenaName), 0, 32);
+	strcpy(g_arenaName, g_arenaGameName);
 	u8 secret = (*(u8 *)&g_arenaFileSecret);   /* (1: a password game) */
 	g_arenaPassword = 0;
 	g_arenaLocked = secret;
@@ -1002,22 +1002,22 @@ u32 (arena_startFromLauncher)(void)
 	g_arenaRotation = 0;
 	(*(u8 *)&g_arenaMap) = g_arenaFileMap;
 	g_arenaPlayers = g_arenaFilePlayers;
-	g_arenaTimeLimit = (*(u8 *)&g_cmdTimeLimit);
+	g_arenaTimeLimit = (*(u8 *)&g_arenaFileTimeLimit);
 	menuState400_enter();
 	lobby_enterArenaList();
 	u32 r = lobby_hostArena();   /* lobby_hostArena */
-	g_lobbyReply = 0x68;
+	g_launchStartStep = 0x68;
 	return r;
 }
 
 /* 0x407300: the "NETWORK INITIALIZE ERROR" box's clicks (nothing else open: g_editingNewArenaName, g_editingNewArenaFragLimit, g_editingNewArenaTimeLimit, g_typingArenaPassword, no
    dialog): a right click or button 0x11 closes it (g_hostErrorBox); button 0x10 starts the game anyway with the player's settings (the
-   32-byte record g_playerName and its colour / corporation bytes), the music stopped. Returns what the original
+   32-byte record g_arenaName and its colour / corporation bytes), the music stopped. Returns what the original
    leaves in eax */
 u32 (hostError_clicks)(void)
 {
 	u32 busy = (*(u32 *)&g_editingNewArenaName);
-	if (busy || g_editingNewArenaFragLimit || g_editingNewArenaTimeLimit || g_typingArenaPassword || g_dialogOpen)
+	if (busy || g_editingNewArenaFragLimit || g_editingNewArenaTimeLimit || g_typingArenaPassword || g_frameOpening)
 		return busy;
 	if (g_rightClick) {
 		g_hostErrorBox = 0;
@@ -1032,12 +1032,12 @@ u32 (hostError_clicks)(void)
 	}
 	if (button != 0x10)
 		return button - 0x11;
-	g_quitAsked = 1;
+	g_leavingForMatch = 1;
 	g_netRole = 1;
 	music_shutdown();
 	g_mapRotation = (signed char)g_arenaRotation;
 	g_mapIndex = (signed char)(*(u8 *)&g_arenaMap);
-	memcpy((void *)OBJ(g_mapTitle), (const void *)OBJ(g_playerName), 32);
+	memcpy((void *)OBJ(g_gameTitle), (const void *)OBJ(g_arenaName), 32);
 	g_chosenGameMode = (signed char)g_arenaGameType;
 	g_fragLimit = g_arenaFragLimit;
 	g_timeLimit = g_arenaTimeLimit;
@@ -1047,20 +1047,20 @@ u32 (hostError_clicks)(void)
 	return (*(u32 *)&g_arenaFragLimit);
 }
 
-/* 0x405b80: the arena connection's outcome (g_connectStep; 2 nothing to do). 1 connected: the music stopped, the player
-   slot opened (arena_openSession), the arena hosted with the player's record (g_playerName: name, g_cfgPlayerName, colours,
+/* 0x405b80: the arena connection's outcome (g_hostAnswer; 2 nothing to do). 1 connected: the music stopped, the player
+   slot opened (arena_openSession), the arena hosted with the player's record (g_arenaName: name, g_cfgPlayerName, colours,
    corporation; g_playerCorporation) and its settings taken for the game, g_arenaGameSetUp set; then (as the state stands after) 0
    closed, 3 closed for a ladder game (g_arenaUpdateNotice), 4 refused (message 0x46): the connection closed (net_disconnect) and
    the state back to 2. Returns what the original leaves in eax */
 u32 (arena_connectionOutcome)(void)
 {
-	int state = g_connectStep;
+	int state = g_hostAnswer;
 	if (state == 2)
 		return 2;
-	const u8 *me = (const u8 *)OBJ(g_playerName);
+	const u8 *me = (const u8 *)OBJ(g_arenaName);
 	if (state == 1) {
 		g_connectionAwaited = 0;
-		g_quitAsked = 1;
+		g_leavingForMatch = 1;
 		g_netRole = 1;
 		music_shutdown();
 		g_arenaCameraMode = 0;
@@ -1069,18 +1069,18 @@ u32 (arena_connectionOutcome)(void)
 			(int)(signed char)me[0x22] << 8 | (int)(signed char)me[0x20], (signed char)me[0x21], (signed char)me[0x23],
 			me[0x24], me[0x25], (*(u32 *)&g_playerCorporation));   /* dplay_host: host */
 		g_mapIndex = (signed char)me[0x20];
-		memcpy((void *)OBJ(g_mapTitle), me, 32);
+		memcpy((void *)OBJ(g_gameTitle), me, 32);
 		g_mapRotation = (signed char)me[0x22];
 		g_chosenGameMode = (signed char)me[0x23];
 		g_fragLimit = me[0x24];
 		g_timeLimit = me[0x25];
-		state = g_connectStep;
+		state = g_hostAnswer;
 		g_arenaGameSetUp = 1;
 	}
 	if (state != 0 && state != 3 && state != 4)
 		return state;
 	u32 r = net_disconnect();   /* net_disconnect: the connection closed */
-	g_connectStep = 2;
+	g_hostAnswer = 2;
 	if (state == 3)
 		g_arenaUpdateNotice = 1;
 	g_connectionAwaited = 0;
@@ -1092,13 +1092,13 @@ u32 (arena_connectionOutcome)(void)
 
 /* 0x407e40: the "create arena" page after typing (not while typing or with a message box): a typed field is taken
    (the arena's name into g_newArenaName unless blank (sound 6); the password into g_newArenaPassword; the two limits as numbers,
-   0 .. 250 (else 250), into the bytes g_arenaFragLimitTyped / g_arenaTimeLimitTyped; an empty line changes nothing), else the keys: create
+   0 .. 250 (else 250), into the bytes g_newArenaFragLimit / g_newArenaTimeLimit; an empty line changes nothing), else the keys: create
    (g_dikI; lobby_hostArenaLan) and join (g_dikT; lobby_announceArena) unless connecting, and the two close
    keys (the arena left). Returns what the original leaves in eax */
 u32 (arena_createAfterTyping)(void)
 {
 	u32 mode = (*(u32 *)&g_arenaCameraMode);
-	if (mode == 1 || mode == 0 || g_dialogOpen)
+	if (mode == 1 || mode == 0 || g_frameOpening)
 		return mode;
 	const char *line = g_chatLine;
 	if (g_editingNewArenaName) {   /* the arena's name */
@@ -1123,7 +1123,7 @@ u32 (arena_createAfterTyping)(void)
 		strcpy((char *)ADDR(g_newArenaPassword), line);
 		return 0;
 	}
-	static const u32 limit[2][2] = { { ADDR(g_editingNewArenaFragLimit), ADDR(g_arenaFragLimitTyped) }, { ADDR(g_editingNewArenaTimeLimit), ADDR(g_arenaTimeLimitTyped) } };
+	static const u32 limit[2][2] = { { ADDR(g_editingNewArenaFragLimit), ADDR(g_newArenaFragLimit) }, { ADDR(g_editingNewArenaTimeLimit), ADDR(g_newArenaTimeLimit) } };
 	for (int k = 0; k < 2; k++) {
 		if (!GAME_VAR(int, limit[k][0]))
 			continue;
@@ -1175,7 +1175,7 @@ u32 (arena_createClick)(void)
 	if (g_editingNewArenaFragLimit || g_editingNewArenaTimeLimit || g_typingArenaPassword)
 		return 0;
 	u32 mode = (*(u32 *)&g_arenaCameraMode);
-	if (mode == 1 || mode == 0 || g_dialogOpen)
+	if (mode == 1 || mode == 0 || g_frameOpening)
 		return mode;
 	if (g_rightClick) {
 		sound_playMenu(0);
@@ -1260,32 +1260,32 @@ u32 (arena_createClick)(void)
    arena camera has arrived, g_arenaCameraMode 2). With the join confirmation up only back answers it (the timer 0x378 killed). Up / down held
    move along the list of games (once the blink clock reaches 5, restarting it; nine rows shown from g_gameListTop, the
    selection in g_pickedGame); while no search runs (g_lanSearch, g_lobbySearching, the result box g_lobbyRefreshing) the click key or fire
-   joins the selected game (g_lobbyJoinStarted; its join password asked for when connected, g_serverConnected) or asks the lobby to
-   join (g_lobbyJoinRequest); cancel2 and back leave (to mode 0), g_dikS cancels the search; g_dikI searches the local network
+   joins the selected game (g_lobbyJoinStarted; its join password asked for when connected, g_joinThroughServer) or asks the lobby to
+   join (g_lanJoinRequest); cancel2 and back leave (to mode 0), g_dikS cancels the search; g_dikI searches the local network
    (a slot opened, g_lobbyBlinkClock 150), g_dikT the lobby server; g_dikP types a game's IP address (arena_editAddress) */
 void (arenaGames_keys)(void)
 {
 #define g_listTop g_gameListTop
-#define g_listRow g_lobbyListRow
+#define g_listRow g_gameListRow
 #define busy (g_lanSearch || g_lobbySearching || g_lobbyRefreshing)
 	int mode = g_arenaCameraMode;
-	if (g_typingArenaAddress || mode == 1 || mode == 0 || g_arenaJoinNeedsPassword || g_dialogOpen)
+	if (g_typingArenaAddress || mode == 1 || mode == 0 || g_arenaJoinNeedsPassword || g_frameOpening)
 		return;
-	if (g_arenaConfirming) {
+	if (g_joinConnecting) {
 		if (input_justPressed(g_keyBack)) {
-			g_arenaSearchTicks = 0;
-			g_arenaJoinWaiting = 0;
+			g_joinPollTicks = 0;
+			g_joinTimedOut = 0;
 			arena_leaveSession();
-			g_arenaConfirming = 0;
+			g_joinConnecting = 0;
 			KillTimer(g_hWndMain, 0x378);
 		}
 		return;
 	}
 	if (input_isDown(g_keyUp)) {
-		if (!(g_cursorBlink >= k_5f))
+		if (!(g_menuRepeatClock >= k_5f))
 			return;
 		int row = g_listRow;
-		g_cursorBlink = 0.0f;
+		g_menuRepeatClock = 0.0f;
 		if (row > 0)
 			g_listRow = --row;
 		else if (g_listTop > 0)
@@ -1294,9 +1294,9 @@ void (arenaGames_keys)(void)
 		return;
 	}
 	if (input_isDown(g_keyDown)) {
-		if (!(g_cursorBlink >= k_5f))
+		if (!(g_menuRepeatClock >= k_5f))
 			return;
-		g_cursorBlink = 0.0f;
+		g_menuRepeatClock = 0.0f;
 		if (g_listTop + g_listRow >= g_gameCount - 1)
 			return;
 		if (g_listRow < 8)
@@ -1309,18 +1309,18 @@ void (arenaGames_keys)(void)
 	if (input_justPressed(g_dikJ) || input_justPressed(g_keyClick)) {
 		if (busy || g_gameCount <= 0)
 			return;
-		if (g_serverConnected) {
+		if (g_joinThroughServer) {
 			g_lobbyJoinStarted = 1;
-			g_lobbyJoinRequest = 0;
+			g_lanJoinRequest = 0;
 			arena_askJoinPassword();
 		} else {
-			g_lobbyJoinRequest = 1;
+			g_lanJoinRequest = 1;
 			g_lobbyJoinStarted = 0;
 		}
 		return;
 	}
 	if (input_justPressed(g_keyCancel2)) {
-		g_serverConnectionState = 0;
+		g_lobbyListAnswer = 0;
 		arena_leaveSession();
 		net_disconnect();
 		g_serverAnswerIn = 1;
@@ -1329,7 +1329,7 @@ void (arenaGames_keys)(void)
 		return;
 	}
 	if (input_justPressed(g_dikS)) {
-		g_serverConnectionState = 0;
+		g_lobbyListAnswer = 0;
 		(*(u32 *)&g_lobbyBlinkClock) = 0x3f800000;
 		g_serverAnswerIn = 1;
 		g_searchResult = -1;
@@ -1347,7 +1347,7 @@ void (arenaGames_keys)(void)
 	if (input_justPressed(g_keyBack)) {
 		if (busy)
 			return;
-		g_serverConnectionState = 0;
+		g_lobbyListAnswer = 0;
 		(*(u32 *)&g_lobbyBlinkClock) = 0x3f800000;
 		g_serverAnswerIn = 1;
 		arena_leaveSession();
@@ -1362,15 +1362,15 @@ void (arenaGames_keys)(void)
 			g_lobbyConnectionOpen = 0;
 			net_disconnect();
 		}
-		if (g_arenaSearchStarted)
+		if (g_lanSearchStarted)
 			arena_leaveSession();
 		g_serverListCount = 0;
 		arena_openSession(1, NULL);
 		g_lanSearch = 1;
-		g_arenaSearchStarted = 1;
-		g_lobbyListPage = 0;
+		g_lanSearchStarted = 1;
+		g_listAnswered = 0;
 		g_gameCount = 0;
-		g_serverConnected = 0;
+		g_joinThroughServer = 0;
 		g_serverSearching = 0;
 		(*(u32 *)&g_lobbyBlinkClock) = 0x43160000;   /* 150 */
 		return;
@@ -1383,11 +1383,11 @@ void (arenaGames_keys)(void)
 		arena_leaveSession();
 		g_serverListCount = 0;
 		if (lobby_openConnection() == 1) {
-			g_serverConnected = 1;
+			g_joinThroughServer = 1;
 			g_lobbySearching = 1;
 			g_serverSearching = 1;
 			g_lobbyConnectionOpen = 1;
-			g_arenaSearchStarted = 0;
+			g_lanSearchStarted = 0;
 		}
 		return;
 	}
@@ -1517,7 +1517,7 @@ static void special_map(const char *name, u8 *map)
 /* the arena hosted with its settings (dplay_host): 0 when that failed */
 static int host_arena(void)
 {
-	return dplay_host(g_playerName, g_cfgPlayerName, ((int)(signed char)g_arenaRotation << 8) | (int)g_arenaMap,
+	return dplay_host(g_arenaName, g_cfgPlayerName, ((int)(signed char)g_arenaRotation << 8) | (int)g_arenaMap,
 	                    (signed char)g_arenaPlayers, (signed char)g_arenaGameType, g_arenaFragLimit, g_arenaTimeLimit, g_playerCorporation);
 }
 
@@ -1525,7 +1525,7 @@ static int host_arena(void)
 static void take_arena(void)
 {
 	g_mapIndex = g_arenaMap;
-	memcpy((void *)OBJ(g_mapTitle), (const void *)OBJ(g_playerName), 32);
+	memcpy((void *)OBJ(g_gameTitle), (const void *)OBJ(g_arenaName), 32);
 	g_mapRotation = (signed char)g_arenaRotation;
 	g_chosenGameMode = (signed char)g_arenaGameType;
 	g_fragLimit = g_arenaFragLimit;
@@ -1539,17 +1539,17 @@ static void take_arena(void)
 void (lobby_hostArenaLan)(void)
 {
 	int was = g_netRole;
-	g_quitAsked = 1;
+	g_leavingForMatch = 1;
 	g_netRole = 1;
 	lobby_keepArenaSettings();
 	int hosted = arena_openSession(1, NULL);
 	if (hosted) {
-		special_map(g_playerName, (u8 *)ADDR(g_arenaMap));
+		special_map(g_arenaName, (u8 *)ADDR(g_arenaMap));
 		hosted = host_arena();
 	}
 	if (!hosted) {
 		g_hostErrorBox = 1;
-		g_quitAsked = 0;
+		g_leavingForMatch = 0;
 		g_netRole = was;
 		arena_leaveSession();
 		return;
@@ -1565,12 +1565,12 @@ void (lobby_hostArenaLan)(void)
 void (lobby_hostArena)(void)
 {
 	g_arenaLobbyState = 2;
-	g_quitAsked = 1;
+	g_leavingForMatch = 1;
 	g_netRole = 1;
 	music_shutdown();
 	g_arenaCameraMode = 0;
 	arena_openSession(0, NULL);
-	special_map(g_playerName, (u8 *)ADDR(g_arenaMap));
+	special_map(g_arenaName, (u8 *)ADDR(g_arenaMap));
 	host_arena();
 	take_arena();
 }
@@ -1595,7 +1595,7 @@ int (lobby_announceArena)(void)
 		return 0;
 	}
 	g_arenaGameSetUp = 1;
-	special_map(g_playerName, (u8 *)ADDR(g_arenaMap));
+	special_map(g_arenaName, (u8 *)ADDR(g_arenaMap));
 	ServerRecord *packet = (ServerRecord *)g_arenaPacket;
 	packet->kind = 0x18;
 	packet->rotation = g_arenaRotation;
@@ -1607,11 +1607,11 @@ int (lobby_announceArena)(void)
 	packet->maxPlayers = g_arenaPlayers;
 	packet->locked = g_arenaLocked;
 	lstrcpyA(packet->password, (const char *)ADDR(g_arenaPassword));
-	lstrcpyA(((ServerRecord *)g_arenaPacket)->name, g_playerName);
+	lstrcpyA(((ServerRecord *)g_arenaPacket)->name, g_arenaName);
 	jmp_net_getLocalAddress();
 	lstrcpyA(((ServerRecord *)g_arenaPacket)->address, g_localAddress);
 	g_connectionAwaited = 1;
-	g_connectStep = 2;
+	g_hostAnswer = 2;
 	net_send(0xa, 0x64);
 	g_arenaLobbyState = 2;
 	return 1;
@@ -1642,7 +1642,7 @@ void (room_announceGame)(void)
 	jmp_net_getLocalAddress();
 	lstrcpyA(((RoomRecord *)g_roomPacket)->address, g_localAddress);
 	g_connectionAwaited = 1;
-	g_connectStep = 2;
+	g_hostAnswer = 2;
 	net_send(0x12, 0x65);
 	g_arenaLobbyState = 2;
 }

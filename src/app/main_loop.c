@@ -63,35 +63,35 @@ static inline double f64(long double x)
 
 
 /* 0x41fa40: the menus' frame: the cursor blink clock (100 past 1e6), the screen's set-up when it changed, its keys
-   (unless g_lobbyReply is 0x68 / 0x69); a direct start from the main menu zooms in (aspect down to 0.01, the camera
+   (unless g_launchStartStep is 0x68 / 0x69); a direct start from the main menu zooms in (aspect down to 0.01, the camera
    back) and starts the match after 100; the screen's frame, the message box, the input line (menu_drawInputLine) while a text field is open, the cursor
    (not over a match or the profile intro), the buffers swapped; the view angle stepped; then the time: the FPS
    counter (frames over each second, g_fps) and the frame time (60 / the frame rate, 1 past 20). The original
    leaves eax to callers that ignore it */
 void (menu_frame)(void)
 {
-	long double blink = FADD(g_frameTime, g_cursorBlink);
-	g_cursorBlink = blink;
+	long double blink = FADD(g_frameTime, g_menuRepeatClock);
+	g_menuRepeatClock = blink;
 	if (blink > k_1000000f)
-		g_cursorBlink = 100.0f;
+		g_menuRepeatClock = 100.0f;
 	if (g_screen != g_lastScreen)
 		menu_enterState();
-	if (g_lobbyReply != 0x69 && g_lobbyReply != 0x68) {
+	if (g_launchStartStep != 0x69 && g_launchStartStep != 0x68) {
 		menu_processMouse();
 		menu_processKeys();
 	}
-	if (g_screen == 300 && g_replayZoomIn && !g_dialogPending) {
+	if (g_screen == 300 && g_replayShowOn && !g_dialogPending) {
 		g_viewAspect = f32(fsubr_m(fmul_m(fld_m(&g_frameTime), k_0_05f), &g_viewAspect));   /* 0.05 a frame */
-		g_armcCamDistance = fadd_m(fld_m((const float *)ADDR(g_armcCamDistance)), (const float *)ADDR(k_10f));                       /* the camera 10 back */
-		long double zoom = FADD(g_introZoom, g_frameTime);
-		g_introZoom = zoom;
+		g_menuEyeZ = fadd_m(fld_m((const float *)ADDR(g_menuEyeZ)), (const float *)ADDR(k_10f));                       /* the camera 10 back */
+		long double zoom = FADD(g_replayZoomTime, g_frameTime);
+		g_replayZoomTime = zoom;
 		if (!(g_viewAspect >= k_0_01f))
 			g_viewAspect = 0.01f;
 		if (zoom >= k_100f) {
 			g_screen = 9999;
 			g_nextScreen = 9999;
 			g_replayRunning = 1;
-			BITS(g_cursorBlink) = 0;
+			BITS(g_menuRepeatClock) = 0;
 		}
 	}
 	menu_frameBegin();
@@ -112,12 +112,12 @@ void (menu_frame)(void)
 	if (g_textFieldOpen)
 		menu_drawInputLine(g_chatCaretX, g_chatCaretY);
 	glLoadIdentity();
-	if (g_screen != 9999 && !g_profileIntro)
+	if (g_screen != 9999 && !g_profileQuitting)
 		PATCHED_CALL(0x41fc28, void, void)();   /* menu_drawCursor; the patch DLL draws its own cursor here */
 	glDisable(0xbe2);   /* GL_BLEND */
 	glFinish();
 	SwapBuffers(g_windowDC);
-	switch (g_fovKeys) {
+	switch (g_freeCamZoom) {
 	case 1:
 		if (g_viewAngle > k_5f)
 			g_viewAngle = fsub_m(fld_m(&g_viewAngle), (const float *)ADDR(k_5f));
@@ -131,12 +131,12 @@ void (menu_frame)(void)
 	g_clockNow = now;
 	if (g_showFps) {
 		g_fpsFrameClock = now;
-		int frames = ++g_menuFrameCount;
+		int frames = ++g_fpsFrameCount;
 		long double second = now - g_fpsSecondStart;
 		double secondStored = f64(second);
 		g_fpsSecondSoFar = secondStored;
 		if (second >= k_1) {
-			g_menuFrameCount = 0;
+			g_fpsFrameCount = 0;
 			g_fps = (long double)frames / secondStored;
 			g_fpsSecondStart = now;
 		}
@@ -1070,7 +1070,7 @@ u32 THISCALL (replay_frame)(u8 *s)
 	g_mouseX = gfx_getWidth() / 2;
 	g_mouseY = gfx_getHeight() / 2;
 	if (pressed2(ADDR(g_keyGameMenu), ADDR(g_keyGameMenu2)) && !(SC->keyGuard > 0)) {
-		g_replayZoomIn = 0;
+		g_replayShowOn = 0;
 		SC->quitAsked = 1;
 	}
 	if (run_down(s, offsetof(Scene, msgFade)))
@@ -1278,7 +1278,7 @@ static void write_log(u8 *s, const char *format, int own_time, int stack_time)
 {
 	static const char *const k_teams[3] = { (const char *)STR(0x4b21b8, "RED"), (const char *)STR(0x4b21b0, "BLUE"), (const char *)STR(0x4d06ec, "NOTEAM") };   /* NOTEAM */
 	void *f = crt_fopen((const char *)STR(0x4d06e0, "axiswl.log"), (const char *)STR(0x4b21a4, "wt"));
-	crt_fprintf(f, format, g_mapTitle, g_mapIndex, g_fragLimit, g_timeLimit, g_matchPlayerName);
+	crt_fprintf(f, format, g_gameTitle, g_mapIndex, g_fragLimit, g_timeLimit, g_matchPlayerName);
 	for (int k = 0; k < SC->rankCount; k++) {
 		int e = SC->ranking[k];
 		int team = team_game() ? SC->players[e].team : 2;
@@ -1613,7 +1613,7 @@ void THISCALL (match_frame)(u8 *s)
 	int from, size;     /* the network packet's sender and size, as the reader leaves them; the opening log's play
 	                       time reads the sender's slot before it is ever written, as the original does */
 	u8 packet[0x130];
-	if (g_writeMatchLog != 0 && g_startedFromLobby != 0) {
+	if (g_writeMatchLog != 0 && g_launchedForNetGame != 0) {
 		write_log(s, (const char *)(SC->rankCount > 1 ? STR(0x4d0658, "GameTitle %s\nMapNo %d\nFragLimit %d\nTi...") : STR(0x4d069c, "GameTitle %s\nMapNo %d\nFragLimit %d\nTi...")), 0, *(volatile int *)&from);
 		g_writeMatchLog = 0;
 		g_matchLogWritten = 1;
@@ -2004,7 +2004,7 @@ void THISCALL (match_frame)(u8 *s)
 		long double v = FSUB(SC->endTime, SC->frameTime);
 		SC->endTime = (float)v;
 		if (!(v >= 0)) {
-			if (g_startedFromLobby != 0) {
+			if (g_launchedForNetGame != 0) {
 				SC->quitAsked = 1;
 				SC->escMenuOpen = 0;
 			}
@@ -2254,7 +2254,7 @@ void THISCALL (match_frame)(u8 *s)
 		long double v = FSUB(SC->quitDelay, SC->frameTime);
 		SC->quitDelay = (float)v;
 		if (!(v > 0)) {
-			if (g_matchLogWritten == 0 && g_startedFromLobby != 0)
+			if (g_matchLogWritten == 0 && g_launchedForNetGame != 0)
 				write_log(s, (const char *)(g_matchEndedByServer == 1 || (g_matchEndedByUser == 1 && SC->rankCount <= 1) ? STR(0x4d069c, "GameTitle %s\nMapNo %d\nFragLimit %d\nTi...") : STR(0x4d05a8, "GameTitle %s\nMapNo %d\nFragLimit %d\nTi...")),
 				          1, 0);
 			replay_closeRecording(sc);

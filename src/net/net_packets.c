@@ -6,7 +6,6 @@
 #include "../game.h"
 #include <string.h>
 
-#define g_localSlot g_watchedSlot            /* the local player's slot */
 #define g_send g_netSendPacket                                            /* the message sent */
 
 /* 0x4a8300: the layer reset; host 1: the local player's slot held from the start (g_slotTakenFlag). Returns the eax the fills leave (-1) */
@@ -17,7 +16,7 @@ u32 (netq_reset)(int host)
 	memset(g_unused16, 0, 0x10 * 4);
 	memset(g_nextNumber, 0xff, 0x10 * 4);
 	g_netqCursor = 0;
-	g_resends = 0;
+	g_packetsSkipped = 0;
 	return 0xffffffff;
 }
 
@@ -62,7 +61,7 @@ static void taken(int p)
 
 /* 0x4a8450: the next packet from any player, starting with the one after the last (into *from, *size 64, data):
    1 a packet, 2 a resend request (answered here when it is for the local player's packets), 0 none. A packet that
-   is not the one due from its player counts in g_resends and moves the expected number past it */
+   is not the one due from its player counts in g_packetsSkipped and moves the expected number past it */
 int (netq_receive)(int *from, int *size, void *data)
 {
 	if (!netq_online())
@@ -111,7 +110,7 @@ int (netq_receive)(int *from, int *size, void *data)
 		g_ahead[(p << 7) + number] = 0;
 		g_nextNumber[p] = (u8)(number + 1) & 0x7f;
 		g_unused16[p] = 0;
-		g_resends++;
+		g_packetsSkipped++;
 		return 1;
 	}
 	taken(p);
@@ -124,5 +123,5 @@ int (net_hasSlot)(void) { return g_slotTakenFlag; }
 int (net_hostGone)(void) { return g_netHostGone; }
 int (net_localSlot)(void) { return g_localSlot; }
 int (net_playerInUse)(int i) { return g_netSlots[i].used; }
-void (netq_clearResends)(void) { g_resends = 0; }
-int (netq_resends)(void) { return g_resends; }
+void (netq_clearResends)(void) { g_packetsSkipped = 0; }
+int (netq_resends)(void) { return g_packetsSkipped; }

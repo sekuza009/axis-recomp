@@ -15,7 +15,7 @@ static void set_round(Round *r, int map, int mode, int score, int time)
 }
 
 /* the first round's map rotation: solo, the 15 stages (0x5c-byte records of g_skirmishInfo from gameMode: the mode, the time and the
-   score limits) from the stage chosen (g_mapIndex); a network host, the arena maps in rotation (g_arenaMapCount of them, 8
+   score limits) from the stage chosen (g_mapIndex); a network host, the arena maps in rotation (g_mapCount of them, 8
    bytes each from g_mapChoiceKeptTable: in rotation, the map's own mode, used when the chosen mode g_chosenGameMode is 14 or more) or,
    without rotation (g_mapRotation), the chosen map only, from the first; a machine that joined, none */
 static void make_rotation(Scene *s)
@@ -41,7 +41,7 @@ static void make_rotation(Scene *s)
 	}
 	if (g_mapRotation == 1) {
 		s->rotationCount = 0;
-		for (int k = 0; k < g_arenaMapCount; k++) {
+		for (int k = 0; k < g_mapCount; k++) {
 			const MapChoice *entry = &g_mapChoiceKeptTable[k];
 			if (entry->chosen != 1)
 				continue;
@@ -93,7 +93,7 @@ static void first_round(Scene *s)
 	}
 	for (int k = 0; k < 5; k++)
 		s->mechParts[k] = g_savedMechPartIds[k];
-	static const u32 items[6] = { ADDR(g_savedMechItem2), ADDR(g_savedMechItem3), ADDR(g_savedMechItem4), ADDR(g_savedMechItem5), ADDR(g_savedMechWeapons), ADDR(g_savedMechItem1) };
+	static const u32 items[6] = { ADDR(g_savedMechItem2), ADDR(g_savedMechItem3), ADDR(g_savedMechItem4), ADDR(g_savedMechItem5), ADDR(g_savedMechItem0), ADDR(g_savedMechItem1) };
 	for (int k = 0; k < 6; k++)
 		s->mechItems[k] = GAME_VAR(int, items[k]);
 	/* the five parts' colour pairs (six dwords each from g_savedColourChoices: hue, saturation, value of the first tint, then

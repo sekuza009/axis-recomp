@@ -34,14 +34,14 @@ void (menu_processKeys)(void)
    key or a click skips it to its end; else the current page's handler */
 void (profile_screenKeys)(void)
 {
-	if (g_dialogOpen)
+	if (g_frameOpening)
 		return;
-	if (g_profileIntro && g_profileIntroState != 5) {
+	if (g_profileQuitting && g_profileQuitSkip != 5) {
 		if (input_justPressed(g_keyCancel) == 1 || input_justPressed(g_keyClick) == 1) {
-			g_profileIntroState = 5;
-			g_profileIntroTime = 0;
-			g_profileIntroZoom = 100.0f;
-			g_profileIntroSpeed = 0.05f;
+			g_profileQuitSkip = 5;
+			g_unusedProfileCameraTime = 0;
+			g_unusedProfileCameraZoom = 100.0f;
+			g_unusedProfileCameraSpeed = 0.05f;
 		}
 		return;
 	}

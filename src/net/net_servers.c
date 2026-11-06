@@ -16,11 +16,11 @@ int (net_pingServer)(const char *address, int slot)
 void (net_clearServers)(void)
 {
 	for (int i = 0; i < 0x100; i++)
-		g_serverUsed[i] = 0;
+		g_serverPinged[i] = 0;
 	for (int i = 0; i < 0x100; i++)
 		g_serverPing[i] = 0;
 	for (int i = 0; i < 0x500; i++)
-		g_serverNames[i] = 0;
+		g_pingAddresses[i] = 0;
 	g_serverPingCount = 0;
 	g_netListDone = 0;
 	net_closeThreadHandles();

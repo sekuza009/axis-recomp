@@ -47,7 +47,7 @@ void (font_initHudGrids)(void)
 {
 	static const Grid grids[3] = {
 		{ 0, 16, 0x100, 0, 15, 16, 16, 0, 15, OBJ(g_hudFontBottom), OBJ(g_hudFontTop), OBJ(g_hudFontLeft), OBJ(g_hudFontRight) },
-		{ 0, 16, 0x60, 0, 15, 16, 16, 0, 15, OBJ(g_hudLayerABottom), OBJ(g_hudLayerATop), OBJ(g_hudLayerALeft), OBJ(g_hudLayerARight) },
+		{ 0, 16, 0x60, 0, 15, 16, 16, 0, 15, OBJ(g_hanJungBottom), OBJ(g_hudLayerATop), OBJ(g_hudLayerALeft), OBJ(g_hudLayerARight) },
 		{ 0x6f, 16, 0xdf, -15, 0, 16, 16, 0, 15, OBJ(g_hudLayerBBottom), OBJ(g_hudLayerBTop), OBJ(g_hudLayerBLeft), OBJ(g_hudLayerBRight) } };
 	for (int k = 0; k < 3; k++)
 		glyph_grid(&grids[k]);
@@ -70,13 +70,13 @@ static void pen_cell(const u32 corner[4], int g, int x0, int x1, int y0, int y1)
 /* 0x46b950: the pen font (the HUD's small text) from texture `name` (into g_penFontTexture): 105 glyphs (from 1) in two
    sets of 5 rows of 21, every glyph 8 wide (g_penFixedWidths): the fixed set, 8 x 8 texels from row 0x48, and the
    proportional set, rows of 14 texels from the top with the widths at g_penPropWidths. A second call only complains
-   (g_penFontNeverSet set): 0. Otherwise 1 */
+   (g_penInitialized set): 0. Otherwise 1 */
 int (pen_init)(const char *name)
 {
 	/* (the corners' tables less one glyph: pen_cell takes glyphs from 1) */
 	static const u32 fixed[4] = { OBJ(g_penFixedTopLeft) - 8, OBJ(g_penFixedTopRight) - 8, OBJ(g_penFixedBottomRight) - 8, OBJ(g_penFixedBottomLeft) - 8 };
 	static const u32 proportional[4] = { OBJ(g_penPropTopLeft) - 8, OBJ(g_penPropTopRight) - 8, OBJ(g_penPropBottomRight) - 8, OBJ(g_penPropBottomLeft) - 8 };
-	if (g_penFontNeverSet == 1) {
+	if (g_penInitialized == 1) {
 		sys_errorMessageNoName((const char *)STR(0x4c56fc, "pen duplicate initialization - penInit()"));
 		return 0;
 	}

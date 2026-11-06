@@ -157,12 +157,12 @@ u32 (menu_frameBegin)(void)
 	return IMPORT(0x4a91ec, u32, u32, u32)(0x302, 0x303);   /* glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA) */
 }
 
-/* 0x40ce70: the screen dimmed by a black overlay fading in (g_roomFade grows by the frame time times a rate; its alpha
+/* 0x40ce70: the screen dimmed by a black overlay fading in (g_whiteFade grows by the frame time times a rate; its alpha
    at most 1). Returns menu_drawRect's eax */
 u32 (menu_drawDimOverlay)(void)
 {
-	long double a = fadd_m(fmul_m(fld_m(&g_frameTime), k_0_015f), (const float *)ADDR(g_roomFade));
-	g_roomFade = (float)a;
+	long double a = fadd_m(fmul_m(fld_m(&g_frameTime), k_0_015f), (const float *)ADDR(g_whiteFade));
+	g_whiteFade = (float)a;
 	float alpha = (float)a;
 	if (a > k_1f)
 		alpha = 1.0f;
@@ -176,7 +176,7 @@ u32 (menu_drawDimOverlay)(void)
    the look-at point (g_menuCameraLook), y up. Returns gluLookAt's eax */
 u32 (gfx_setMenuCamera)(void)
 {
-	float z = (float)-fld_m((const float *)ADDR(g_armcCamDistance)), y = (float)-fld_m((const float *)ADDR(g_armcCamHeight)),
+	float z = (float)-fld_m((const float *)ADDR(g_menuEyeZ)), y = (float)-fld_m((const float *)ADDR(g_menuEyeY)),
 	      x = (float)-fld_m((const float *)ADDR(g_menuCameraPos));
 	glTranslatef(x, y, z);   /* glTranslatef */
 	glLoadIdentity();
@@ -232,7 +232,7 @@ static int phase_done(int next)
    along y0 and from the bottom up x0 (64 and 48 units a frame); 2 those fade out as full-screen lines while two
    more grow in from the right along y1 and down x1; 3 the green lines along y1 and x1 fade while a dark blue panel
    (0, 0, 0.5, 0.3) grows from (x0, y0) by a tenth of the frame a frame, and once it is as wide as the frame the
-   phase goes back to 1 and the message box flag (g_dialogOpen) is cleared. Other phases draw nothing. The callers pass
+   phase goes back to 1 and the message box flag (g_frameOpening) is cleared. Other phases draw nothing. The callers pass
    on the eax it leaves to menu_frame, which ignores it */
 void (menu_drawFrame)(int x0, int y0, int x1, int y1)
 {
@@ -279,7 +279,7 @@ void (menu_drawFrame)(int x0, int y0, int x1, int y1)
 	if (!((long double)x1 > width)) {
 		g_framePhase = 1;
 		g_frameCount = 0;
-		g_dialogOpen = 0;
+		g_frameOpening = 0;
 	}
 }
 #undef g_framePhase
@@ -326,8 +326,8 @@ u32 (menu_drawTextCursor)(int x, int y)
    (g_inputLineHidden) shows as stars. Returns the text call's eax (or the dialog's state while one is open) */
 u32 (menu_drawInputLine)(int x, int y)
 {
-	if (g_dialogOpen)
-		return (u32)g_dialogOpen;
+	if (g_frameOpening)
+		return (u32)g_frameOpening;
 	Color4_set_bits((void *)OBJ(g_textColour), 0, 0x3f800000, 0, 0x3f800000);
 	menu_drawTextCursor(x + g_chatLength * 8, y);   /* menu_drawTextCursor: the cursor */
 	if (!g_inputLineHidden)

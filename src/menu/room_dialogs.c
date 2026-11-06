@@ -17,7 +17,7 @@ static void set_box(u32 box, int left, int top, int right, int bottom)
 static void dialog_opened(int state)
 {
 	g_roomState = state;
-	g_dialogOpen = 1;
+	g_frameOpening = 1;
 	g_typingLoginId = 0;
 	g_typingLoginPassword = 0;
 	g_inputLineHidden = 0;
@@ -27,7 +27,7 @@ static void dialog_opened(int state)
 /* 0x433980: the new ID's confirmation (state 0x58 = 88) opened */
 void (room_openNewIdConfirm)(void)
 {
-	set_box(OBJ(g_roomDialogBox), 0x50, 0x78, 0x230, 0x168);
+	set_box(OBJ(g_newIdConfirmBox), 0x50, 0x78, 0x230, 0x168);
 	newIdConfirm_layout();
 	dialog_opened(0x58);
 	g_newIdConfirmChoice = 0;
@@ -61,8 +61,8 @@ void (room_openLogin)(void)
 void (room_enterGameList)(void)
 {
 	static const u32 cleared[] = { ADDR(g_roomRefreshing), ADDR(g_roomSearching), ADDR(g_gameListLoaded), ADDR(g_roomSearchAnswerIn), ADDR(g_gameCount), ADDR(g_lobbyBlinkClock), ADDR(g_pickedGame), ADDR(g_gameListTop),
-	                               ADDR(g_lobbyListRow), ADDR(g_gameListJoinClicked), ADDR(g_roomJoined), ADDR(g_roomListRefreshTimer), ADDR(g_gameListClickArmed), ADDR(g_gameListClickTimer), ADDR(g_roomNameSum) };
-	g_roomPanelBrightness = 0x3f333333;   /* 0.7 */
+	                               ADDR(g_gameListRow), ADDR(g_gameListRefreshClicked), ADDR(g_roomJoinStarted), ADDR(g_roomListRefreshTimer), ADDR(g_gameListClickArmed), ADDR(g_gameListClickTimer), ADDR(g_roomListPlayers) };
+	g_unusedRoomFloat = 0x3f333333;   /* 0.7 */
 	g_roomState = 1;
 	g_roomCameraMode = 1;
 	g_lastPanel = 999;
@@ -73,12 +73,12 @@ void (room_enterGameList)(void)
 
 #define sound(id) GAME_FN(sound_playMenu, 0x41e760, u32, int)(id)   /* sound_playMenu, its eax */
 
-/* 0x4378e0: the game room's keys, by state (g_roomState): 0 .. 2, 4 and 99 while no dialog is open (g_roomDialogOpen; 2: the map
+/* 0x4378e0: the game room's keys, by state (g_roomState): 0 .. 2, 4 and 99 while no dialog is open (g_roomPanelsSliding; 2: the map
    list's keys when open), 66 and 88 (the update notice, g_roomUpdateNotice, first), 77. Returns what the handler leaves in eax */
 u32 (room_keysByState)(void)
 {
 	u32 state = (*(u32 *)&g_roomState);
-	int dialog = g_roomDialogOpen;
+	int dialog = g_roomPanelsSliding;
 	switch (state) {
 	case 0: return dialog ? (u32)dialog : account_keys();   /* account_keys */
 	case 1: return dialog ? (u32)dialog : gameList_keys();
@@ -147,7 +147,7 @@ u32 (newIdForm_clicks)(void)
    kept). Returns what the original leaves in eax */
 u32 (room_joinSession)(int i)
 {
-	g_roomJoined = 0;
+	g_roomJoinStarted = 0;
 	if (!arena_openSession(0, g_sessionList[i].address)) {
 		menu_showMessage(0x3f);
 		return arena_leaveSession();   /* arena_leaveSession */
@@ -157,10 +157,10 @@ u32 (room_joinSession)(int i)
 		menu_showMessage(0x40);
 		return arena_leaveSession();
 	}
-	g_arenaSearchTicks = 0;
-	g_arenaConfirming = 1;
-	g_arenaJoinWaiting = 0;
-	g_arenaJoinPending = 0;
+	g_joinPollTicks = 0;
+	g_joinConnecting = 1;
+	g_joinTimedOut = 0;
+	g_sessionFound = 0;
 	u32 timer = SetTimer(g_hWndMain, 0x378, 2000, NULL);   /* SetTimer */
 	g_arenaJoinTimer = timer;
 	return timer;
@@ -171,22 +171,22 @@ u32 (room_joinSession)(int i)
 int (gameList_open)(void)
 {
 	g_connectionAwaited = 1;
-	g_connectStep = 2;
+	g_hostAnswer = 2;
 	g_roomSearchAnswerIn = 0;
 	g_roomRefreshing = 0;
 	g_roomSearching = 1;
-	g_gameServerState = 0;
+	g_roomListAnswer = 0;
 	g_unusedRoomListWord = 0;
 	g_gameCount = 0;
 	g_gameListLoaded = 1;
 	g_pickedGame = 0;
 	(*(u32 *)&g_lobbyBlinkClock) = 0x447a0000;   /* 1000 */
 	g_gameListTop = 0;
-	g_lobbyListRow = 0;
+	g_gameListRow = 0;
 	arena_clearSessionEntry();   /* arena_clearSessionEntry */
-	GAME_VAR(u32, g_netRequestBuffer) = 0x180001;
+	GAME_VAR(u32, g_roomListRequest) = 0x180001;
 	net_send(0x13, 0x65);   /* net_send */
-	g_roomNameSum = 0;
+	g_roomListPlayers = 0;
 	g_listRefreshPeriod = 0x1e;
 	return 1;
 }
@@ -197,8 +197,8 @@ int (gameList_open)(void)
 u32 (arena_joinListed)(int i)
 {
 	g_lobbyJoinStarted = 0;
-	g_lobbyJoinRequest = 0;
-	if (g_arenaSearchStarted)
+	g_lanJoinRequest = 0;
+	if (g_lanSearchStarted)
 		arena_leaveSession();
 	void *session = i == 99999 ? (void *)ADDR(g_typedArenaAddress) : (void *)g_sessionList[i].address;
 	if (!arena_openSession(0, session)) {
@@ -207,27 +207,27 @@ u32 (arena_joinListed)(int i)
 	}
 	g_arenaJoinRow = i;
 	dplay_listSessions();
-	g_arenaSearchTicks = 0;
-	g_arenaConfirming = 1;
-	g_arenaJoinWaiting = 0;
-	g_arenaJoinPending = 0;
+	g_joinPollTicks = 0;
+	g_joinConnecting = 1;
+	g_joinTimedOut = 0;
+	g_sessionFound = 0;
 	u32 timer = SetTimer(g_hWndMain, 0x378, 2000, NULL);   /* SetTimer */
 	g_arenaJoinTimer = timer;
 	return timer;
 }
 
 /* 0x436800: the game room's clicks, by state (g_roomState), as room_keysByState does the keys (state 1: the stop button
-   while a join is waited for, g_arenaConfirming). Returns what the handler leaves in eax */
+   while a join is waited for, g_joinConnecting). Returns what the handler leaves in eax */
 u32 (room_clicksByState)(void)
 {
 	u32 state = (*(u32 *)&g_roomState);
-	int dialog = g_roomDialogOpen;
+	int dialog = g_roomPanelsSliding;
 	switch (state) {
 	case 0: return dialog ? (u32)dialog : account_clicks();   /* account_clicks */
 	case 1:
 		if (dialog)
 			return (u32)dialog;
-		return g_arenaConfirming ? gameList_stopJoin() : gameList_mouse();
+		return g_joinConnecting ? gameList_stopJoin() : gameList_mouse();
 	case 2:
 		if (dialog)
 			return (u32)dialog;
@@ -249,8 +249,8 @@ u32 (account_clicks)(void)
 	int mode = g_roomCameraMode;
 	if (mode == 1 || mode == 0 || g_roomAwaitingServer == 1)
 		return (u32)mode;
-	if (g_dialogOpen)
-		return (u32)g_dialogOpen;
+	if (g_frameOpening)
+		return (u32)g_frameOpening;
 	if (g_textFieldOpen)
 		return (*(u32 *)&g_textFieldOpen);
 	if (!g_rightClick) {
@@ -288,7 +288,7 @@ u32 (room_draw)(void)
 	int mode = g_roomCameraMode;
 	if (mode == 1 || mode == 0 || g_roomState == 0x63)
 		return (u32)mode;
-	if (g_dialogOpen)
+	if (g_frameOpening)
 		return menu_drawFrame(g_roomFormLeft, g_roomFormTop,
 		                                                     g_roomFormRight, g_roomFormBottom);   /* menu_drawFrame */
 	signed char players = (*(signed char *)&g_roomRecPlayers);
@@ -333,13 +333,13 @@ u32 (chat_closeEdit)(void)
 	return (*(u32 *)&g_lineToLoginId);
 }
 
-/* the dialog's button choice (g_dialogChoice) highlighted at (x, y) */
+/* the dialog's button choice (g_dialogFocus) highlighted at (x, y) */
 static void highlight_choice(int choice, int x, int y)
 {
-	g_dialogChoice = choice;
-	g_highlightShown = 1;
-	(*(u32 *)&g_highlightSize) = 0x41a00000;   /* g_highlightSize 20 */
-	(*(u32 *)&g_highlightAlpha) = 0x3ecccccd;   /* g_highlightAlpha 0.4 */
+	g_dialogFocus = choice;
+	g_pointerGliding = 1;
+	(*(u32 *)&g_pointerGlideTime) = 0x41a00000;   /* g_pointerGlideTime 20 */
+	(*(u32 *)&g_unusedHighlightAlpha) = 0x3ecccccd;   /* g_unusedHighlightAlpha 0.4 */
 	g_highlightX = x;
 	g_highlightY = y;
 }
@@ -482,7 +482,7 @@ void (newIdForm_update)(void)
 }
 
 /* 0x43e610: the new ID's confirmation (state 88): its choice (g_newIdConfirmChoice: 1 OK registers it, newId_register; 2 back to
-   the form, state 0x4d), then the server's answer (g_gameServerAnswer15, when awaited: g_roomAnswerAwaited): 33 accepted (the settings
+   the form, state 0x4d), then the server's answer (g_newIdAnswer, when awaited: g_newIdAnswerAwaited): 33 accepted (the settings
    written, to state 99), 30 message 0x22, 42 a message box, anything else message 0x2a. Returns what the original leaves in eax */
 u32 (newIdConfirm_update)(void)
 {
@@ -495,9 +495,9 @@ u32 (newIdConfirm_update)(void)
 		g_roomState = 0x4d;
 		g_newIdConfirmChoice = 0;
 	}
-	if (!g_roomAnswerAwaited)
+	if (!g_newIdAnswerAwaited)
 		return r;
-	u32 answer = (*(u32 *)&g_gameServerAnswer15);
+	u32 answer = (*(u32 *)&g_newIdAnswer);
 	switch (answer) {
 	case 0:
 		return 0;
@@ -506,23 +506,23 @@ u32 (newIdConfirm_update)(void)
 		g_roomRequestOut = 0;
 		room_setLadderDefaults();
 		r = reg_writeLadderSettings();   /* reg_writeLadderSettings */
-		g_gameServerAnswer15 = 0;
+		g_newIdAnswer = 0;
 		g_roomConnected = 1;
 		return r;
 	case 30:
 		g_roomRequestOut = 0;
 		r = menu_showMessage(0x22);
-		g_gameServerAnswer15 = 0;
+		g_newIdAnswer = 0;
 		return r;
 	case 42:
 		g_roomRequestOut = 0;
-		g_gameServerAnswer15 = 0;
+		g_newIdAnswer = 0;
 		g_roomUpdateNotice = 1;
 		return answer;
 	}
 	g_roomRequestOut = 0;
 	r = menu_showMessage(0x2a);
-	g_gameServerAnswer15 = 0;
+	g_newIdAnswer = 0;
 	return r;
 }
 
@@ -571,7 +571,7 @@ u32 (room_enterAccountPage)(void)
 	for (unsigned k = 0; k < sizeof cleared / sizeof cleared[0]; k++)
 		GAME_VAR(int, cleared[k]) = 0;
 	g_roomCameraMode = 1;
-	g_roomPanelBrightness = 0x3f333333;
+	g_unusedRoomFloat = 0x3f333333;
 	static const u32 cleared2[] = { ADDR(g_editingOldPassword), ADDR(g_editingAccountPassword), ADDR(g_editingPasswordRepeat), ADDR(g_editingEmail), ADDR(g_unusedAccountWord), (OBJ(g_accountPassword) + 0x8), (OBJ(g_accountOldPassword) + 0x8) };
 	for (unsigned k = 0; k < sizeof cleared2 / sizeof cleared2[0]; k++)
 		GAME_VAR(int, cleared2[k]) = 0;
@@ -604,7 +604,7 @@ u32 (newIdForm_draw)(void)
 #define Y0 g_newIdFormTop
 #define X1 g_newIdFormRight
 #define Y1 g_newIdFormBottom
-	if (g_dialogOpen)
+	if (g_frameOpening)
 		return menu_drawFrame(X0, Y0, X1, Y1);   /* the frame */
 	const u32 *bright = g_roomBright, *dim = g_roomDim;
 	int hovered = newIdForm_hitTest(g_mouseX, g_mouseY);
@@ -686,11 +686,11 @@ static void update_notice(void)
    frame's or the border's eax */
 u32 (newIdConfirm_draw)(void)
 {
-#define X0 (g_roomDialogBox[0])
-#define Y0 (g_roomDialogBox[1])
-#define X1 (g_roomDialogBox[2])
-#define Y1 (g_roomDialogBox[3])
-	if (g_dialogOpen)
+#define X0 (g_newIdConfirmBox[0])
+#define Y0 (g_newIdConfirmBox[1])
+#define X1 (g_newIdConfirmBox[2])
+#define Y1 (g_newIdConfirmBox[3])
+	if (g_frameOpening)
 		return menu_drawFrame(X0, Y0, X1, Y1);   /* menu_drawFrame */
 	const u32 *bright = g_roomBright, *dim = g_roomDim;
 	int hovered = newIdConfirm_hitTest(g_mouseX, g_mouseY);
@@ -744,7 +744,7 @@ u32 (roomLogin_draw)(void)
 #define Y0 g_roomLoginTop
 #define X1 g_roomLoginRight
 #define Y1 g_roomLoginBottom
-	if (g_dialogOpen)
+	if (g_frameOpening)
 		return menu_drawFrame(X0, Y0, X1, Y1);   /* menu_drawFrame */
 	const u32 *bright = g_roomBright, *dim = g_roomDim;
 	int hovered = roomLogin_hitTest(g_mouseX, g_mouseY);
@@ -933,16 +933,16 @@ void (account_drawPanel)(void)
    by ranking_hitTest, lit) about "first ~ last" of page g_rankingPage (stored in g_rankingFirst / g_rankingLast); the sort button
    (MSG(412, "OPTION"); 2) with the sorted column's name; two rules and the column heads (MSG(413, "RANK") .., the sorted one in
    yellow); when there is a list (g_rankingHaveList) up to ten rows (g_rankingRows) until an
-   empty name (which stores the page in g_roomListPages): rank, name, rank badge (level) in a yellow frame, power "%8.1f",
+   empty name (which stores the page in g_rankingLastPage): rank, name, rank badge (level) in a yellow frame, power "%8.1f",
    rate "%3.2f" and three counts (kills, deaths, exp), the sorted value in yellow; a rule, two buttons
    (MSG(421, "$[0] STOP"); 3 / 4, the first dead until the list is loaded, g_rankingWaiting); while loading the blinking MSG(423, "DOWNLOADING RANKING DATA"); the
    border. Returns the border's eax */
 u32 (ranking_drawTable)(void)
 {
-#define X0 (g_roomMessageRect[0])
-#define Y0 (g_roomMessageRect[1])
-#define X1 (g_roomMessageRect[2])
-#define Y1 (g_roomMessageRect[3])
+#define X0 (g_rankingRect[0])
+#define Y0 (g_rankingRect[1])
+#define X1 (g_rankingRect[2])
+#define Y1 (g_rankingRect[3])
 #define TEXT(c) set_colour_bits(g_textColour, (c)[0], (c)[1], (c)[2], (c)[3])
 	const u32 *bright = g_roomBright, *dim = g_roomDim;
 	static const u32 white[4] = { 0x3f800000, 0x3f800000, 0x3f800000, 0x3f800000 };
@@ -1007,7 +1007,7 @@ u32 (ranking_drawTable)(void)
 		for (int i = 0; i < 10; i++) {
 			const RankRow *row = &g_rankingRows[i];
 			if (!row->name[0]) {
-				g_roomListPages = g_rankingPage;
+				g_rankingLastPage = g_rankingPage;
 				break;
 			}
 			int y = Y0 + i * 0x16 + 0x78;
@@ -1090,7 +1090,7 @@ static void creategame_close(void)
 /* 0x436990: the Ladder login dialog's keys. While its request is out (g_roomRequestOut) or the login is due (g_roomLoginDue)
    only cancel2 answers, closing the dialog (the answer dropped) and the lobby connection. Otherwise a click on its
    buttons (roomLogin_hitTest: 2 send, 3 close and disconnect, 4 room_openNewIdForm), g_dikI send, back close, g_dikN
-   room_openNewIdForm (none of these while typing, g_textFieldOpen); the toggle key moves the highlight (g_dialogChoice) on: from
+   room_openNewIdForm (none of these while typing, g_textFieldOpen); the toggle key moves the highlight (g_dialogFocus) on: from
    the name (1) to the password field (2), to the OK button (3), then into the name field for typing; with shift,
    back: from OK (3) to the password field, to the name, then into the password field for typing. The original
    leaves eax to callers that ignore it */
@@ -1105,7 +1105,7 @@ void (roomLogin_keys)(void)
 			g_inputLineHidden = 0;
 			g_textFieldOpen = 0;
 			creategame_close();
-			g_highlightShown = 0;
+			g_pointerGliding = 0;
 			net_disconnect();
 		}
 		return;
@@ -1116,7 +1116,7 @@ void (roomLogin_keys)(void)
 			if (g_roomLoginDue)
 				return;
 			sound_playMenu(0);
-			g_highlightShown = 0;
+			g_pointerGliding = 0;
 			g_loginToSend = 1;
 			g_roomLoginDue = 1;
 			return;
@@ -1126,13 +1126,13 @@ void (roomLogin_keys)(void)
 			g_textFieldOpen = 0;
 			creategame_close();
 			g_inputLineHidden = 0;
-			g_highlightShown = 0;
+			g_pointerGliding = 0;
 			net_disconnect();
 			return;
 		}
 		if (on == 4) {
 			g_textFieldOpen = 0;
-			g_highlightShown = 0;
+			g_pointerGliding = 0;
 			sound_playMenu(0);
 			room_openNewIdForm();
 			return;
@@ -1164,7 +1164,7 @@ void (roomLogin_keys)(void)
 	if (input_justPressed(g_keyToggle) != 1)
 		return;
 	g_fieldStep = 20;
-	int choice = g_dialogChoice;
+	int choice = g_dialogFocus;
 	if (input_isDown(g_keyLeftShift) == 1 || input_isDown(g_keyRightShift) == 1) {
 		g_fieldStep = 10;
 		if (choice == 1) {

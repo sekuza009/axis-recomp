@@ -17,7 +17,7 @@ static void clear_unused(void)
 /* 0x403490: start editing from the kept list */
 void (mapList_startEdit)(void)
 {
-	int n = g_arenaMapCount;
+	int n = g_mapCount;
 	for (int i = 0; i < n; i++) {
 		g_mapChoices[i].chosen = g_mapChoicesKept[i].chosen;
 		g_mapChoices[i].type = g_mapChoicesKept[i].type;
@@ -30,7 +30,7 @@ void (mapList_startEdit)(void)
 void (mapList_chooseAll)(void)
 {
 	sound_playMenu(0);
-	for (int i = 0; i < g_arenaMapCount; i++)
+	for (int i = 0; i < g_mapCount; i++)
 		g_mapChoices[i].chosen = 1;
 	clear_unused();
 }
@@ -39,7 +39,7 @@ void (mapList_chooseAll)(void)
 void (mapList_chooseNone)(void)
 {
 	sound_playMenu(0);
-	for (int i = 0; i < g_arenaMapCount; i++) {
+	for (int i = 0; i < g_mapCount; i++) {
 		g_mapChoices[i].chosen = 0;
 		g_mapChoices[i].type = 0;
 	}
@@ -72,14 +72,14 @@ void (mapList_stepGameType)(int i)
 void (mapList_ok)(void)
 {
 	int i = 0;
-	if (g_arenaMapCount <= 0)
+	if (g_mapCount <= 0)
 		return;
 	while (g_mapChoices[i].chosen != 1)
-		if (++i >= g_arenaMapCount)
+		if (++i >= g_mapCount)
 			return;
 	sound_playMenu(0);
 	clear_unused();
-	for (i = 0; i < g_arenaMapCount; i++) {
+	for (i = 0; i < g_mapCount; i++) {
 		g_mapChoicesKept[i].chosen = g_mapChoices[i].chosen;
 		g_mapChoicesKept[i].type = g_mapChoices[i].type;
 	}
@@ -101,7 +101,7 @@ void (arena_savePlayerSettings)(void)
 	cfg_writeAxisCfg();
 }
 
-/* a map choice moved one on (dir > 0) or back, round the g_arenaMapCount maps, skipping 22 .. 24; nothing while the
+/* a map choice moved one on (dir > 0) or back, round the g_mapCount maps, skipping 22 .. 24; nothing while the
    lock byte is set; the change flagged (g_mapPreviewChanged) */
 static void map_step(int dir, u32 lock, u32 choice)
 {
@@ -111,11 +111,11 @@ static void map_step(int dir, u32 lock, u32 choice)
 	if (dir > 0) {
 		if (++*c == 0x16)
 			*c = 0x19;
-		if (*c >= g_arenaMapCount)
+		if (*c >= g_mapCount)
 			*c = 0;
 	} else {
 		if (--*c < 0)
-			*c = (signed char)((*(char *)&g_arenaMapCount) - 1);
+			*c = (signed char)((*(char *)&g_mapCount) - 1);
 		if (*c == 0x18)
 			*c = 0x15;
 	}
@@ -179,7 +179,7 @@ void (mapList_draw)(void)
 	text_draw8(0x168, 0x32, (const char *)MSG(503, "TYPE"));
 	set_colour_bits(g_rectColour, 0, 0x3f800000, 0x3f800000, 0x3f4ccccd);
 	menu_drawLine(0x96, 0x4b, 0x1ea, 0x4b);
-	for (int i = 0; i < g_arenaMapCount && i < 10; i++) {
+	for (int i = 0; i < g_mapCount && i < 10; i++) {
 		int y = 0x57 + i * 0x18;
 		if (hovered == i) {
 			set_colour_bits(g_rectColour, 0x3dcccccd, 0x3e4ccccd, 0x3f4ccccd, 0x3ecccccd);   /* 0.1, 0.2, 0.8, 0.4 */
@@ -217,7 +217,7 @@ void (mapList_mouse)(void)
 {
 	const float *repeat = (const float *)ADDR(k_5f);
 	if (g_mouseClick) {
-		g_cursorBlink = 0.0f;
+		g_menuRepeatClock = 0.0f;
 		int on = mapList_hitTest(g_mouseX, g_mouseY);
 		if (on >= 0 && on < 10)
 			mapList_toggle(g_mapTop + on);
@@ -229,7 +229,7 @@ void (mapList_mouse)(void)
 				g_mapTop--;
 		} else if (on == 21) {
 			sound_playMenu(2);
-			if (g_mapTop + 10 < g_arenaMapCount)
+			if (g_mapTop + 10 < g_mapCount)
 				g_mapTop++;
 		} else if (on == 22)
 			mapList_chooseNone();
@@ -245,15 +245,15 @@ void (mapList_mouse)(void)
 	if (!g_mouseHeld || g_arenaCameraMode != 2)
 		return;
 	int on = mapList_hitTest(g_mouseX, g_mouseY);
-	if (on == 20 && g_cursorBlink >= *repeat) {
+	if (on == 20 && g_menuRepeatClock >= *repeat) {
 		if (g_mapTop > 0)
 			g_mapTop--;
-		g_cursorBlink = 0.0f;
-	} else if (on == 21 && g_cursorBlink >= *repeat) {
-		if (g_mapTop + 10 < g_arenaMapCount) {
-			g_cursorBlink = 0.0f;
+		g_menuRepeatClock = 0.0f;
+	} else if (on == 21 && g_menuRepeatClock >= *repeat) {
+		if (g_mapTop + 10 < g_mapCount) {
+			g_menuRepeatClock = 0.0f;
 			g_mapTop++;
 		} else
-			g_cursorBlink = 0.0f;
+			g_menuRepeatClock = 0.0f;
 	}
 }

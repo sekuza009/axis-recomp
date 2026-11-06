@@ -3,7 +3,7 @@
 0x4ad5f0,u8,5600,g_unlockTablesSolo,armc_buildPartLists' seven 0x320-byte Unlock tables for solo play (to 0x4aebd0)
 0x4aebd0,u8,5600,g_unlockTablesNet,the same for network play (to 0x4b01b0)
 0x4b04c4,float,2,g_setupWallTurns,the setup tunnel's wall turn by parity (-35; 35)
-0x4b065c,int,20,g_titleSpread,by g_titleFrames (0 .. 19): how far the title's quarters have moved apart (0 .. 512)
+0x4b065c,int,20,g_titleSpread,by g_titleCloseFrames (0 .. 19): how far the title's quarters have moved apart (0 .. 512)
 0x4c5558,int,105,g_penPropWidths,the pen font's proportional glyph widths (105 glyphs; to 0x4c56fc)
 0x4c59ec,int,64,g_ptxZigzag,the PTX decoder's zigzag order
 0x4c5af0,int,48,g_ptxDcCodes,the DC Huffman codes: two tables of 96 bytes (length; code pairs)

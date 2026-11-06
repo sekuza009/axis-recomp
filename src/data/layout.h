@@ -2139,7 +2139,7 @@ struct __attribute__((packed)) GameData {
 	u8 _gap_5b194d[0x3];
 	u8 g_arenaFileFragLimit_;
 	u8 _gap_5b1951[0x3];
-	int g_cmdTimeLimit_;
+	int g_arenaFileTimeLimit_;
 	int g_arenaFileSecret_;
 	u8 _gap_5b195c[0x18];
 	int g_dikSlash_;
@@ -2167,11 +2167,11 @@ struct __attribute__((packed)) GameData {
 	u8 _gap_9f908c[0x7b4];
 	u8 g_netSlots_[16640];
 	u8 _gap_9fd940[0x7ca4];
-	char g_lobbyHost_[16];
+	char g_serverHost_[16];
 	u8 _gap_a055f4[0x9330];
 	u8 g_glDepthBits_;
 	u8 _gap_a0e925[0x63];
-	u8 g_statusLine_;
+	u8 g_loadStatusText_;
 	u8 _gap_a0e989[0x108b3];
 	u8 g_packedWhite_[4];
 	u8 _gap_a1f240[0x38];
@@ -2205,7 +2205,7 @@ _Static_assert(offsetof(struct GameData, g_arenaFileMap_) == 0x104944, "g_arenaF
 _Static_assert(offsetof(struct GameData, g_arenaFilePlayers_) == 0x104948, "g_arenaFilePlayers");
 _Static_assert(offsetof(struct GameData, g_arenaFileGameType_) == 0x10494c, "g_arenaFileGameType");
 _Static_assert(offsetof(struct GameData, g_arenaFileFragLimit_) == 0x104950, "g_arenaFileFragLimit");
-_Static_assert(offsetof(struct GameData, g_cmdTimeLimit_) == 0x104954, "g_cmdTimeLimit");
+_Static_assert(offsetof(struct GameData, g_arenaFileTimeLimit_) == 0x104954, "g_arenaFileTimeLimit");
 _Static_assert(offsetof(struct GameData, g_arenaFileSecret_) == 0x104958, "g_arenaFileSecret");
 _Static_assert(offsetof(struct GameData, g_dikSlash_) == 0x104974, "g_dikSlash");
 _Static_assert(offsetof(struct GameData, g_scene_) == 0x45b7b4, "g_scene");
@@ -2220,9 +2220,9 @@ _Static_assert(offsetof(struct GameData, g_saveFileNames_) == 0x544ac4, "g_saveF
 _Static_assert(offsetof(struct GameData, g_profileName_) == 0x54bfe8, "g_profileName");
 _Static_assert(offsetof(struct GameData, g_characterProfiles_) == 0x54c040, "g_characterProfiles");
 _Static_assert(offsetof(struct GameData, g_netSlots_) == 0x54c840, "g_netSlots");
-_Static_assert(offsetof(struct GameData, g_lobbyHost_) == 0x5585e4, "g_lobbyHost");
+_Static_assert(offsetof(struct GameData, g_serverHost_) == 0x5585e4, "g_serverHost");
 _Static_assert(offsetof(struct GameData, g_glDepthBits_) == 0x561924, "g_glDepthBits");
-_Static_assert(offsetof(struct GameData, g_statusLine_) == 0x561988, "g_statusLine");
+_Static_assert(offsetof(struct GameData, g_loadStatusText_) == 0x561988, "g_loadStatusText");
 _Static_assert(offsetof(struct GameData, g_packedWhite_) == 0x57223c, "g_packedWhite");
 _Static_assert(offsetof(struct GameData, g_unlit_) == 0x572278, "g_unlit");
 _Static_assert(sizeof(struct GameRdata) == 0x4000 && sizeof(struct GameData) == 0x666000, "the layout sizes");

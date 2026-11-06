@@ -34,7 +34,7 @@ void (briefing_typeOut)(void)
 	u8 *text = g_briefingSource;
 	if (!text)
 		return;
-	if (!g_briefingDone && !g_briefingSkipped) {
+	if (!g_briefingDone && !g_textHitBottom) {
 		long double clock = FADD(g_frameTime, g_briefingClock);
 		g_briefingClock = clock;
 		if (clock > k_1_4) {
@@ -52,8 +52,8 @@ void (briefing_typeOut)(void)
 	}
 	text_setWrapX(0x23e);
 	text_setBottom(0x76);
-	text_draw8(g_briefingX + 0x20, g_briefingY + 0x40, g_briefingText);
-	if (!g_briefingDone && !g_briefingSkipped) {
+	text_draw8(g_missionsWindowLeft + 0x20, g_missionsWindowTop + 0x40, g_briefingText);
+	if (!g_briefingDone && !g_textHitBottom) {
 		set_colour_bits(g_rectColour, 0, 0x3f800000, 0x3f800000, 0x3f800000);
 		menu_drawRect(g_textEndX, g_textEndY - 1, g_textEndX + 8, g_textEndY + 0x11, 1);
 		set_colour_bits(g_rectColour, 0, 0x3f800000, 0x3f800000, 0x3f000000);
@@ -64,9 +64,9 @@ void (briefing_typeOut)(void)
 }
 
 /* ---- the briefing window (0x9f16a8 .. 0x9f16b4) ---- */
-#define BX0 g_briefingX
-#define BY0 g_briefingY
-#define BX1 g_briefingRight
+#define BX0 g_missionsWindowLeft
+#define BY0 g_missionsWindowTop
+#define BX1 g_missionsWindowRight
 #define BY1 g_briefingBottom
 #define g_panelColour (g_missionsColourLit)
 #define g_dimColour (g_missionsColourDim)
@@ -153,7 +153,7 @@ void (missionList_draw)(void)
 
 /* 0x4456b0: the mission briefing: a translucent blue window, its title MSG(516, "MISSION BRIEFING"), a cyan frame and rule, the text
    typed out (briefing_typeOut), two buttons at the right (MSG(521, "$[0] ACCEPT"), 0x80 apart; lit under the pointer: 0 / 1 by
-   briefing_hitTest) and two at the left (MSG(523, "$[0] NEXT"): 2 only once the text is out (g_briefingSkipped), 3 only past the first
+   briefing_hitTest) and two at the left (MSG(523, "$[0] NEXT"): 2 only once the text is out (g_textHitBottom), 3 only past the first
    page (g_briefingPage); greyed otherwise). The original leaves eax to callers that ignore it */
 void (missionBriefing_draw)(void)
 {
@@ -178,7 +178,7 @@ void (missionBriefing_draw)(void)
 	for (int k = 0; k < 2; k++) {
 		bind_button_texture();
 		int x = BX0 + k * 0x8c;
-		int usable = k == 0 ? g_briefingSkipped != 0 : g_briefingPage > 0;
+		int usable = k == 0 ? g_textHitBottom != 0 : g_briefingPage > 0;
 		int lit = usable && hovered == k + 2;
 		briefing_button(x + 0x30, x + 0xa8, lit, usable ? (lit ? g_panelColour : g_dimColour) : NULL,
 		                (const char *)(MSG(523, "$[0] NEXT") + k * 0x80));

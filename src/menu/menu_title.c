@@ -35,8 +35,8 @@ static void quarters(const int textures[4], int spread, int overlap)
 }
 
 /* 0x429170: drawn every frame of the front end while the title is up (the patch DLL wraps the call to it).
-   g_titleShown: the title is closing, and both layers fade out over 50 frames as they spread (g_titleSpread by
-   g_titleFrames); otherwise the base layer stands at 0.6 and the top layer pulses between 0.2 and 0.9. The logo
+   g_titleClosing: the title is closing, and both layers fade out over 50 frames as they spread (g_titleSpread by
+   g_titleCloseFrames); otherwise the base layer stands at 0.6 and the top layer pulses between 0.2 and 0.9. The logo
    fades in over ten time units (g_frameTime, taken as 1 when a frame took more than 3) and is drawn until opaque. */
 void (menu_titleEmblemTransition)(void)
 {
@@ -46,12 +46,12 @@ void (menu_titleEmblemTransition)(void)
 		g_frameTime = 1.0f;
 	glEnable(GL_TEXTURE_2D);
 
-	glColor4f(1.0f, 1.0f, 1.0f, g_titleShown ? (float)(1.0f - (long double)g_titleFrames * 0.02f) : 0.6f);
-	quarters(&g_titleTextures[0], g_titleSpread[g_titleFrames], 0);
+	glColor4f(1.0f, 1.0f, 1.0f, g_titleClosing ? (float)(1.0f - (long double)g_titleCloseFrames * 0.02f) : 0.6f);
+	quarters(&g_titleTextures[0], g_titleSpread[g_titleCloseFrames], 0);
 
 	float alpha;
-	if (g_titleShown) {
-		alpha = (float)(1.0f - (long double)g_titleFrames * 0.02f);
+	if (g_titleClosing) {
+		alpha = (float)(1.0f - (long double)g_titleCloseFrames * 0.02f);
 	} else {
 		if (g_emblemAlpha > 1.0f)
 			g_emblemAlpha = 1.0f;
@@ -60,7 +60,7 @@ void (menu_titleEmblemTransition)(void)
 		alpha = g_emblemAlpha;
 	}
 	glColor4f(1.0f, 1.0f, 1.0f, alpha);
-	quarters(&g_titleTextures[4], g_titleSpread[g_titleFrames], 1);
+	quarters(&g_titleTextures[4], g_titleSpread[g_titleCloseFrames], 1);
 
 	/* the pulse: the sum before rounding is what the limits are tested against */
 	long double a = (long double)g_emblemPulse * g_frameTime + g_emblemAlpha;

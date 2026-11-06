@@ -1,5 +1,5 @@
 # local names promoted to globals.h (the global name last)
-0x4d7348,int,g_briefingSkipped,src/menu/skirmish.c,g_briefingSkipped
+0x4d7348,int,g_textHitBottom,src/menu/skirmish.c,g_textHitBottom
 0x4dbe48,int,g_armcSlot,src/menu/armc_items.c,g_armcSlot
 0x4dbe48,int,g_armcSlot,src/menu/armc_keys.c,g_armcSlot
 0x4dbe48,int,g_buildSlot,src/menu/armc_screens.c,g_armcSlot
@@ -7,18 +7,18 @@
 0x4dc24c,int,g_armcFrom,src/menu/armc_misc.c,g_armcFrom
 0x4dc77c,int,g_armcCursor,src/menu/armc_items.c,g_armcCursor
 0x4dc77c,int,g_armcCursor,src/menu/armc_keys.c,g_armcCursor
-0x4dcc98,int,g_sliderLeft,src/menu/armc_colours.c,g_armcSliderLeft
+0x4dcc98,int,g_sliderLeft,src/menu/armc_colours.c,g_armcPanelRight
 0x4dceac,int,g_armcSpin,src/menu/armc_keys.c,g_armcSpin
 0x4dceac,int,g_armcSpin,src/menu/armc_misc.c,g_armcSpin
-0x4dcfd8,float,g_armcZoom,src/menu/armc_keys.c,g_armcZoom
-0x4dcfd8,float,g_armcZoom,src/menu/armc_misc.c,g_armcZoom
+0x4dcfd8,float,g_unusedArmcViewCountdown,src/menu/armc_keys.c,g_unusedArmcViewCountdown
+0x4dcfd8,float,g_unusedArmcViewCountdown,src/menu/armc_misc.c,g_unusedArmcViewCountdown
 0x4ddb98,float,g_pressedClock,src/menu/setup_pages.c,g_setupPressedClock
 0x4dde90,int,g_pressed,src/menu/setup_pages.c,g_setupPressed
 0x4de038,float,g_tunnelAlpha,src/menu/setup_pages.c,g_setupTunnelAlpha
 0x4de040,int,g_bindRow,src/menu/setup_keys.c,g_bindRow
 0x4de040,int,g_row,src/menu/setup_pages.c,g_bindRow
-0x4df028,float,g_armcCamHeight,src/menu/armc_misc.c,g_armcCamHeight
-0x4df02c,float,g_armcCamDistance,src/menu/armc_misc.c,g_armcCamDistance
+0x4df028,float,g_menuEyeY,src/menu/armc_misc.c,g_menuEyeY
+0x4df02c,float,g_menuEyeZ,src/menu/armc_misc.c,g_menuEyeZ
 0x67ef30,int,g_gameCount,src/menu/game_lists.c,g_gameCount
 0x67ef30,int,g_gameCount,src/menu/lobby_states.c,g_gameCount
 0x67ef30,int,g_sessionCount,src/net/net_sessions.c,g_gameCount
@@ -29,8 +29,8 @@
 0x9ef1f4,int,g_briefingShown,src/menu/skirmish.c,g_briefingShown
 0x9ef2c0,int,g_missionCount,src/menu/skirmish.c,g_missionCount
 0x9f16a4,int,g_missionPicked,src/menu/skirmish.c,g_missionPicked
-0x9f16a8,int,g_briefingX,src/menu/skirmish.c,g_briefingX
-0x9f16ac,int,g_briefingY,src/menu/skirmish.c,g_briefingY
+0x9f16a8,int,g_missionsWindowLeft,src/menu/skirmish.c,g_missionsWindowLeft
+0x9f16ac,int,g_missionsWindowTop,src/menu/skirmish.c,g_missionsWindowTop
 0x9f16b8,float,g_briefingClock,src/menu/skirmish.c,g_briefingClock
 0x9f63b4,int,g_mission,src/menu/menu_states.c,g_skirmishShown
 0x9f63b4,int,g_mission,src/menu/mission_screens.c,g_skirmishShown

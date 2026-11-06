@@ -156,7 +156,7 @@ int (net_connectionAvailable)(u32 i) { return i < 4 && g_dpConnections[i] ? 1 : 
 void (replaySelect_toggle)(int i) { int *f = &g_replayList[i].picked; *f = 1 - *f; }
 void (replaySelect_allIn)(void) { for (int i = 0; i < g_replayFileCount; i++) g_replayList[i].picked = 1; }
 /* 0x447af0: a click closes the mission briefing */
-void (briefing_clickClose)(void) { if (g_dialogOpen == 0 && g_mouseClick != 0) g_skirmishBriefing = 0; }
+void (briefing_clickClose)(void) { if (g_frameOpening == 0 && g_mouseClick != 0) g_skirmishBriefing = 0; }
 /* 0x4411e0: the background tunnel's rings made again (tunnel_appendRing) */
 u32 (tunnel_rebuild)(void) { g_tunnelRings = 0; return tunnel_appendRing((void *)ADDR(g_menuTunnel)); }
 /* 0x44ad30: the text colour */
@@ -164,7 +164,7 @@ void (text_setColor)(u32 r, u32 g, u32 b, u32 a) { set_colour_bits(g_textColour,
 /* 0x404120, 0x431db0, 0x44b080: a dialog's box rectangle */
 void (arenaDialogBox_layout)(void) { set4ints(0x104, 0x118, 0x17c, 0x138, g_arenaDialogBoxRects); }
 void (gameListStop_layout)(void) { set4ints(0x104, 0x118, 0x17c, 0x138, g_gameListStopRects); }
-void (profileDialogBox_layout)(void) { set4ints(0x1d7, 0xf6, 0x226, 0x114, g_profileDialogBox); }
+void (profileDialogBox_layout)(void) { set4ints(0x1d7, 0xf6, 0x226, 0x114, g_profileMessageClickBox); }
 /* 0x45dfb0: actor i selected when it is in use (any negative i: none selected) */
 void THISCALL (stage_selectActor)(Stage *stage, int i)
 {
@@ -693,7 +693,7 @@ int (app_screenSizeForMode)(void)
 /* 0x43f300: a clock set back? The seconds passed by the system clock since the last check (g_clockLastTime, minutes and
    seconds; an hour change counts 60 more minutes; into g_clockCheckSeconds) against the seconds passed by timeGetTime (from
    g_startTicks; into g_clockCheckTickSeconds): when the clock's are fewer than 0.7 of them, a message (by the language g_language) and
-   either the window closed (g_clockCheckClosed; 1) or 0 with the check restarted. Otherwise the check restarts and 1 */
+   either the window closed (g_clockCheckQuits; 1) or 0 with the check restarted. Otherwise the check restarts and 1 */
 int (sys_checkClockTampering)(void)
 {
 	const u16 *now = g_clockNowTime, *last = g_clockLastTime;   /* SYSTEMTIME: [4] hour, [5] minute, [6] second */
@@ -708,7 +708,7 @@ int (sys_checkClockTampering)(void)
 	long double ticked = (long double)(uint64_t)tickSeconds;
 	if (ticked * k_0_3 + (long double)(uint64_t)(u32)seconds < ticked) {   /* clock + 0.3 * ticks < ticks */
 		sys_messageBox((const char *)(g_language == 1 ? STR(0x4b2914, "\300\337\270\370\265\307\260\305\263\252 \300\314\273\363\307\321 \307\301\267\316\261\327\267\245\300\314 \265\277\300\333\307\317\260\355...") : STR(0x4b2888, "Now Unauthorized program is running\n\n...")));
-		if (g_clockCheckClosed) {
+		if (g_clockCheckQuits) {
 			PostMessageA(g_mainWindow, 0x10, 0, 0);   /* WM_CLOSE */
 			return 1;
 		}

@@ -18,7 +18,7 @@ static void tex_quad(float s0, float t0, float s1, float t1, int x0, int y0, int
 }
 
 /* 0x424810: the sound page (0x4ddad0 .. 0x4ddadc): the window, a cyan frame, the title MSG(171, "SETUP SOUND"); the volume slider
-   from the button texture (g_buttonTexture): the two arrows, the track and the bar (the volume g_volumeSetting long); while
+   from the button texture (g_buttonTexture): the two arrows, the track and the bar (the volume g_setupEffectVolume long); while
    g_setupPressedClock runs down (by g_frameTime, then -1 into g_setupPressed) the arrow pressed (g_setupPressed: 0 / 1, or 2 / 3 a row lower)
    lit; the label MSG(172, "EFFECT SOUND") and three switches (MSG(173, "BGM"), 0x80 apart) with their on / off names (MSG(176, "OFF") + 0x80 x:
    the volume on, g_setupSound3D, g_setupStereoReverse), the one under the pointer (5 .. 7, by setupSound_hitTest) yellow with a shadow; two
@@ -46,7 +46,7 @@ void (setup_drawSoundPage)(void)
 	tex_quad(0.0f, 0.25f, 0.25f, 0.375f, X0 + 0x50, Y0 + 0x50, X0 + 0x90, Y0 + 0x70);      /* the arrows */
 	tex_quad(0.25f, 0.25f, 0.5f, 0.375f, X0 + 0x190, Y0 + 0x50, X0 + 0x1d0, Y0 + 0x70);
 	tex_quad(0.0f, 0.0f, 1.0f, 0.125f, X0 + 0x90, Y0 + 0x50, X0 + 0x190, Y0 + 0x70);       /* the track */
-	long double volume = (long double)g_volumeSetting;
+	long double volume = (long double)g_setupEffectVolume;
 	float s = f32(fmul_m(volume, k_0_01f_4a9504));
 	int x = X0 - ftol(fmul_m(volume, k_m2_56f)) + 0x90;
 	tex_quad(0.0f, 0.125f, s, 0.25f, X0 + 0x90, Y0 + 0x50, x, Y0 + 0x70);                  /* the bar */
@@ -69,7 +69,7 @@ void (setup_drawSoundPage)(void)
 	text_draw16(X0 + 0x50, Y0 + 0x3c, (const char *)MSG(172, "EFFECT SOUND"));
 	for (int k = 0; k < 3; k++)
 		text_draw8(X0 + 0x8c, Y0 + 0x9c + k * 0x28, (const char *)(MSG(173, "BGM") + k * 0x80));
-	int on = g_effectsVolume > 0;
+	int on = g_setupMusicVolume > 0;
 	for (int k = 0; k < 3; k++) {
 		int value = k == 0 ? on : GAME_VAR(int, k == 1 ? ADDR(g_setupSound3D) : ADDR(g_setupStereoReverse));
 		const char *name = (const char *)(MSG(176, "OFF") + value * 0x80);
@@ -214,7 +214,7 @@ static void key_tab(int tab)
 
 /* the fourth tab: its title, labels (MSG(261, "INVERT MOUSE"), and MSG(264, "CROSSHAIRS") lower), the two switches (0x4de1c0 / 0x4de1c4: on
    MSG(119, "ON"), off MSG(118, "OFF")), the sensitivity slider (g_sensitivitySlider, its arrows lit while g_setupPressedClock runs down: g_setupPressed 0 /
-   1) and the crosshair g_crosshair: when it changed (from g_lastCrosshair) its texture looked up again (0 .. 7: the path
+   1) and the crosshair g_crosshairEdit: when it changed (from g_lastCrosshair) its texture looked up again (0 .. 7: the path
    "texture/crosshair/crosshair<n>"; others keep the path in g_crosshairName) into g_crosshairTexture, drawn in a box */
 static void settings_tab(void)
 {
@@ -227,7 +227,7 @@ static void settings_tab(void)
 		text_draw8(X0 + 0x30, Y0 + 0x5c + r * 0x18, (const char *)(MSG(261, "INVERT MOUSE") + r * 0x80));
 	text_draw8(X0 + 0x30, Y0 + 0xb0, (const char *)MSG(264, "CROSSHAIRS"));
 	for (int k = 0; k < 2; k++)
-		text_draw8(X0 + 0xc8, Y0 + 0x5c + k * 0x18, (const char *)(GAME_VAR(int, OBJ(g_setupToggles) + k * 4) == 1 ? MSG(119, "ON") : MSG(118, "OFF")));
+		text_draw8(X0 + 0xc8, Y0 + 0x5c + k * 0x18, (const char *)(GAME_VAR(int, OBJ(g_mouseSwitchesEdit) + k * 4) == 1 ? MSG(119, "ON") : MSG(118, "OFF")));
 	int texture = g_buttonTexture;
 	tex_bind(g_textures->banks[texture / 512], texture % 512);
 	glEnable(GL_TEXTURE_2D);
@@ -246,7 +246,7 @@ static void settings_tab(void)
 		else if (g_setupPressed == 1)
 			menu_drawSmallButton2(X0 + 0x1d0, Y0 + 0x88, X0 + 0x210, Y0 + 0xa0, 1);
 	}
-	int crosshair = g_crosshair;
+	int crosshair = g_crosshairEdit;
 	if (crosshair != g_lastCrosshair) {
 		if ((u32)crosshair <= 7)
 			strcpy(g_crosshairName, (const char *)(STR(0x4b063c, "texture/crosshair/crosshair0") - crosshair * 0x20));
@@ -358,9 +358,9 @@ void (setup_drawControlsPage)(void)
    side of the moving seam z = 40 - 0.4 scroll */
 static void stripes(int right, float h)
 {
-#define SEAM f32(fsubr_m(fmul_m(fld_m(&g_setupStripeScroll), k_0_4f), k_40f))
-#define S_LEFT f32(fsubr_m(fmul_m(fld_m(&g_setupStripeScroll), k_0_005f), (const float *)ADDR(k_1f)))   /* 1 - 0.005 scroll */
-#define S_RIGHT f32(fmul_m(fld_m(&g_setupStripeScroll), k_0_005f))                                    /* 0.005 scroll */
+#define SEAM f32(fsubr_m(fmul_m(fld_m(&g_tunnelStripeScroll), k_0_4f), k_40f))
+#define S_LEFT f32(fsubr_m(fmul_m(fld_m(&g_tunnelStripeScroll), k_0_005f), (const float *)ADDR(k_1f)))   /* 1 - 0.005 scroll */
+#define S_RIGHT f32(fmul_m(fld_m(&g_tunnelStripeScroll), k_0_005f))                                    /* 0.005 scroll */
 	if (!right) {
 		glBegin(GL_QUADS);
 		glTexCoord2f(0.0f, 0.0f);
@@ -428,13 +428,13 @@ static void tunnel_advance(int turn_only)
 		g_tunnelPulse = 100.0f;
 		g_tunnelPulseStep = 0xbf800000;   /* -1 */
 	}
-	long double scroll = fadd_m(fmul_m(fld_m((const float *)ADDR(g_menuTunnelSpeed)), frame), &g_setupStripeScroll);
-	g_setupStripeScroll = f32(scroll);
+	long double scroll = fadd_m(fmul_m(fld_m((const float *)ADDR(g_menuTunnelSpeed)), frame), &g_tunnelStripeScroll);
+	g_tunnelStripeScroll = f32(scroll);
 	if (scroll >= k_200f)
-		g_setupStripeScroll = 0;
+		g_tunnelStripeScroll = 0;
 }
 
-/* 0x423e50: the tunnel behind the setup pages (3D projection): its alpha (g_setupTunnelAlpha) eases to 0.3 (mode g_setupPage 1)
+/* 0x423e50: the tunnel behind the setup pages (3D projection): its alpha (g_setupTunnelAlpha) eases to 0.3 (mode g_setupCameraMode 1)
    or 0.5 (mode 0); then layers of four walls (each under the menu camera, pushed back by g_setupTunnelDepth and turned by
    -35 / 35, the far two the other way): layer 0 the panels (texture g_menuTunnelTexture, dimmed as the pulse rises), layer 1
    the scrolling stripes (the same texture, in the original's colour 1, 1, 10, 0.4), layer 2 nothing, layer 3 a
@@ -446,10 +446,10 @@ void (setup_drawTunnel)(void)
 	const float *frame = (const float *)ADDR(g_frameTime);
 	gfx_setProjection2D3D(1);
 	glEnable(GL_TEXTURE_2D);
-	if (g_setupPage == 1)
+	if (g_setupCameraMode == 1)
 		g_setupTunnelAlpha = f32(fsubr_m(fmul_m(fmul_m(fsub_m(fld_m(&g_setupTunnelAlpha), k_0_3f), frame),
 		                                   (const float *)ADDR(k_tenthsToDegrees)), &g_setupTunnelAlpha));
-	else if (g_setupPage == 0)
+	else if (g_setupCameraMode == 0)
 		g_setupTunnelAlpha = f32(fadd_m(fmul_m(fmul_m(fsub_m(fld_m((const float *)ADDR(k_0_5f)), &g_setupTunnelAlpha), frame),
 		                                  (const float *)ADDR(k_tenthsToDegrees)), &g_setupTunnelAlpha));
 	glColor4f(1.0f, 1.0f, 1.0f, g_setupTunnelAlpha);
@@ -756,25 +756,25 @@ static int hovered_panel(u32 outlines, int count, int locked)
 	return on;
 }
 
-/* 0x437e00: the game room's menu: the panel under the pointer (six, g_roomOutlines; none while g_roomDialogOpen), the room's
+/* 0x437e00: the game room's menu: the panel under the pointer (six, g_roomOutlines; none while g_roomPanelsSliding), the room's
    tunnel with that panel glowing, and with the room camera arrived (g_roomCameraMode 2) its caption (MSG(91, "SETUP ID|Hotkey is $[5] P"), 0x80 apart) at the bottom. The
    original leaves eax to callers that ignore it */
 void (room_drawMenu)(void)
 {
 	static const float glow[3] = { 1.0f, 0.1f, 1.0f };
-	Highlight h = { hovered_panel(OBJ(g_roomOutlines), 6, g_roomDialogOpen), glow, 0, 0, 0 };
+	Highlight h = { hovered_panel(OBJ(g_roomOutlines), 6, g_roomPanelsSliding), glow, 0, 0, 0 };
 	Tunnel t = { g_roomTunnelDepth, OBJ(g_ladderMenuTextures) + 12, 1, 1, 1, 0, SIX_WALLS };
 	menu_tunnel(&t, &h);
 	if (h.on != -1 && g_roomCameraMode == 2)
 		caption(MSG(91, "SETUP ID|Hotkey is $[5] P"), h.on);
 }
 
-/* 0x408680: the arena lobby's top menu: the panel under the pointer (four, g_lobbyTopOutlines; none while g_lobbyPanelsOff), the
+/* 0x408680: the arena lobby's top menu: the panel under the pointer (four, g_lobbyTopOutlines; none while g_lobbyPanelsSliding), the
    arena tunnel (as deep as g_arenaTunnelDepth) with that panel lit, and in mode 2 (g_arenaCameraMode) its caption (MSG(86, "SETUP PLAYER FOR THE MULTIPLAY|Hotkey...")) unless
    g_menuCameraMove. The original leaves eax to callers that ignore it */
 void (lobbyTop_drawMenu)(void)
 {
-	Highlight h = { hovered_panel(OBJ(g_lobbyTopOutlines), 4, g_lobbyPanelsOff), white, 1, 0, 0 };
+	Highlight h = { hovered_panel(OBJ(g_lobbyTopOutlines), 4, g_lobbyPanelsSliding), white, 1, 0, 0 };
 	Tunnel t = { g_arenaTunnelDepth, OBJ(g_arenaMenuTextures) + 12, 0, 1, 1, 0, FOUR_WALLS };
 	menu_tunnel(&t, &h);
 	if (h.on != -1 && g_arenaCameraMode == 2 && !g_menuCameraMove)
@@ -782,27 +782,27 @@ void (lobbyTop_drawMenu)(void)
 }
 
 /* 0x423330: the setup screen's menu: the same over the setup tunnel's textures (0x5b197c / g_ctrlMenuTextures, as deep as
-   g_setupTunnelDepth): four panels (g_setupTopOutlines; none while g_setupPanelMoving), the caption (MSG(81, "SETUP SOUND SYSTEM|Hotkey is $[5] S")) in mode 2 (g_setupPage). The original
+   g_setupTunnelDepth): four panels (g_setupTopOutlines; none while g_setupPanelMoving), the caption (MSG(81, "SETUP SOUND SYSTEM|Hotkey is $[5] S")) in mode 2 (g_setupCameraMode). The original
    leaves eax to callers that ignore it */
 void (setup_drawMenu)(void)
 {
 	Highlight h = { hovered_panel(OBJ(g_setupTopOutlines), 4, g_setupPanelMoving), white, 1, 0, 0 };
 	Tunnel t = { (*(u32 *)&g_setupTunnelDepth), OBJ(g_ctrlMenuTextures) + 12, 0, 1, 1, 0, FOUR_WALLS };
 	menu_tunnel(&t, &h);
-	if (h.on != -1 && g_setupPage == 2 && !g_menuCameraMove)
+	if (h.on != -1 && g_setupCameraMode == 2 && !g_menuCameraMove)
 		caption(MSG(81, "SETUP SOUND SYSTEM|Hotkey is $[5] S"), h.on);
 }
 /* 0x442050: the main menu: the panel under the pointer (six, g_mainMenuOutlines; none while the tunnel flies in, g_tunnelFlyingIn, or
-   after one is picked, g_mainMenuPicked: then the idle clock g_menuIdleTime and the hint's fade restart); with none the idle
+   after one is picked, g_replaySelectOpen: then the idle clock g_menuIdleTime and the hint's fade restart); with none the idle
    clock runs on. The tunnel flies in (g_mainMenuDepth from deep to -550, faster the deeper; g_mainMenuFrames counts the frames)
    and is drawn with the panel lit (the stripes plain); then the panel's caption (MSG(71, "SKIRMISH PLAY|Hotkey is $[5] K")), or once idle for 120
-   the hint 0x4b2a98 fading in and out (g_menuHintClock by g_menuHintStep), unless g_menuCameraMove. The original leaves eax to callers
+   the hint 0x4b2a98 fading in and out (g_menuHintFade by g_menuHintStep), unless g_menuCameraMove. The original leaves eax to callers
    that ignore it */
 void (menu_mainMenu)(void)
 {
 #define g_depth (*(float *)&g_mainMenuDepth)
 #define g_idle (*(float *)&g_menuIdleTime)
-#define g_hint (*(float *)&g_menuHintClock)
+#define g_hint (*(float *)&g_menuHintFade)
 #define g_hintStep g_menuHintStep
 	const float *frame = (const float *)ADDR(g_frameTime);
 	int on = -1;
@@ -815,11 +815,11 @@ void (menu_mainMenu)(void)
 		g_idle = f32(fadd_m(fld_m(frame), &g_idle));
 		g_panelHovered = 0;
 	} else {
-		g_panelHovered = !g_mainMenuPicked;
+		g_panelHovered = !g_replaySelectOpen;
 		g_idle = 0;
 		g_hint = 0;
 		g_hintStep = 0x3d4ccccd;   /* 0.05 */
-		if (g_mainMenuPicked)
+		if (g_replaySelectOpen)
 			on = -1;
 		else if (g_lastPanel != on) {
 			g_lastPanel = on;
@@ -843,7 +843,7 @@ void (menu_mainMenu)(void)
 	if (on != -1) {
 		if (!g_menuCameraMove)
 			caption(MSG(71, "SKIRMISH PLAY|Hotkey is $[5] K"), on);
-	} else if (!g_menuCameraMove && !g_mainMenuPicked && g_idle > k_120f) {
+	} else if (!g_menuCameraMove && !g_replaySelectOpen && g_idle > k_120f) {
 		long double hint = fadd_m(fmul_m(fld_m((const float *)&g_hintStep), frame), &g_hint);
 		g_hint = f32(hint);
 		if (hint > k_3f) {
@@ -868,7 +868,7 @@ void (menu_mainMenu)(void)
 }
 #undef SIX_WALLS
 #undef FOUR_WALLS
-#undef g_setupStripeScroll
+#undef g_tunnelStripeScroll
 #undef g_tunnelPulse
 
 /* 0x4277c0: the setup panel eased in (g_setupPanelMoving while it moves): its position (g_setupPanelPos) moves the rest of the

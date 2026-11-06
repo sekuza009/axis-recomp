@@ -29,11 +29,11 @@ void (text_quad5)(int x, int y, int c) { glyph_quad(x, y, 7, 7, c - 1, OBJ(g_fon
 /* 0x427ce0, 0x427ee0: two layers at once (glyph i from one set, j from another), 13 and 31 units */
 void (glyph_drawHud13Layered)(int x, int y, int i, int j)
 {
-	glyph_quad(x, y, 0xd, 0xd, i, OBJ(g_hudLayerALeft), OBJ(g_hudLayerATop), OBJ(g_hudLayerARight), OBJ(g_hudLayerABottom));
+	glyph_quad(x, y, 0xd, 0xd, i, OBJ(g_hudLayerALeft), OBJ(g_hudLayerATop), OBJ(g_hudLayerARight), OBJ(g_hanJungBottom));
 	glyph_quad(x, y, 0xd, 0xd, j, OBJ(g_hudLayerBLeft), OBJ(g_hudLayerBTop), OBJ(g_hudLayerBRight), OBJ(g_hudLayerBBottom));
 }
 void (glyph_drawHud31Layered)(int x, int y, int i, int j)
 {
-	glyph_quad(x, y, 0x1f, 0x1f, i, OBJ(g_hudLayerALeft), OBJ(g_hudLayerATop), OBJ(g_hudLayerARight), OBJ(g_hudLayerABottom));
+	glyph_quad(x, y, 0x1f, 0x1f, i, OBJ(g_hudLayerALeft), OBJ(g_hudLayerATop), OBJ(g_hudLayerARight), OBJ(g_hanJungBottom));
 	glyph_quad(x, y, 0x1f, 0x1f, j, OBJ(g_hudLayerBLeft), OBJ(g_hudLayerBTop), OBJ(g_hudLayerBRight), OBJ(g_hudLayerBBottom));
 }

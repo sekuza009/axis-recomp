@@ -3,14 +3,14 @@
 #include "../game.h"
 #include <string.h>
 
-#define g_loadText ((char *)ADDR(g_statusLine))
+#define g_loadText ((char *)ADDR(g_loadStatusText))
 #define ONE k_1f
 
 /* one frame of a fade: the screen at its progress, under a black quad (alpha 1 - time fading in, time fading out),
    the fade's time advanced */
 static void fade_frame(int in)
 {
-	loading_draw_bits(BITS(g_loadProgress));
+	loading_draw_bits(BITS(g_loadScroll));
 	if (in)
 		glColor4f(1.0f, 1.0f, 1.0f, FSUB(ONE, g_loadFade));
 	else
@@ -29,7 +29,7 @@ void (loading_drawScreen)(int mode, int unused, const char *text)
 	(void)unused;
 	long double dt = TimeSync_frameTime(g_loadTimer);
 	if (mode == -2) {
-		g_loadProgress = fadd_m(dt, &g_loadProgress);
+		g_loadScroll = fadd_m(dt, &g_loadScroll);
 		strcpy(g_loadText, text);
 		BITS(g_loadFade) = 0;
 		do
@@ -38,7 +38,7 @@ void (loading_drawScreen)(int mode, int unused, const char *text)
 		return;
 	}
 	if (mode == -1) {
-		BITS(g_loadProgress) = 0;
+		BITS(g_loadScroll) = 0;
 		strcpy(g_loadText, text);
 		g_loadTexture = tex_getIdByName(g_textures, (const char *)STR(0x4c533c, "Iftex/Cylinder"), 0, 0, 0, 0, 0, 0, 0);
 		BITS(g_loadFade) = 0;
@@ -47,10 +47,10 @@ void (loading_drawScreen)(int mode, int unused, const char *text)
 		while (!(g_loadFade >= ONE));
 		return;
 	}
-	g_loadProgress = fadd_m(dt, &g_loadProgress);
+	g_loadScroll = fadd_m(dt, &g_loadScroll);
 	if (mode == 1)
 		strcpy(g_loadText, text);
-	loading_draw_bits(BITS(g_loadProgress));
+	loading_draw_bits(BITS(g_loadScroll));
 	gfx_swapBuffers();
 }
 
@@ -72,7 +72,7 @@ static void info_line(int row, const char *text)
 /* 0x469320 (progress, as bits): the loading screen: cleared to blue, the backdrop (g_loadTexture) on the inside of a
    cylinder of 18 segments, 25133 deep, its texture's v running from the progress to the progress + 10; then in
    yellow the game's title (session modes 1 / 3: a network game, replays), zone, play type (both "on receiving" while awaitingHostRound is 1), frag and
-   time limits, and in grey the status line g_statusLine */
+   time limits, and in grey the status line g_loadStatusText */
 void (loading_draw)(u32 progress)
 {
 	glClearColor_bits(0x3f000000, 0x3f000000, 0x3f800000, 0x3f800000);   /* glClearColor(0.5, 0.5, 1, 1) */
@@ -105,7 +105,7 @@ void (loading_draw)(u32 progress)
 	int row = 2;
 	int mode = *(int *)(g_loadGame + 8);
 	if (mode == 1 || mode == 3) {
-		sprintf(line, (const char *)STR(0x4c5330, "TITLE: %s"), g_mapTitle);
+		sprintf(line, (const char *)STR(0x4c5330, "TITLE: %s"), g_gameTitle);
 		info_line(row, line);
 		row = 4;
 	}
@@ -127,7 +127,7 @@ void (loading_draw)(u32 progress)
 	sprintf(line, (const char *)STR(0x4c52c8, "TIME LIMIT: %d"), g_timeLimit);
 	info_line(row, line);
 	text_setColor(0.5f, 0.5f, 0.5f, 1.0f);
-	text_drawSized(0x96, row * 16 + 0x76, (const char *)ADDR(g_statusLine), 0x10);
+	text_drawSized(0x96, row * 16 + 0x76, (const char *)ADDR(g_loadStatusText), 0x10);
 }
 
 /* ---- the game's start-up load ---- */
@@ -152,7 +152,7 @@ static void next_step(void)
 /* 0x430ca0: the menus' textures by name: the intro frames ("iftex/m_intro1" .. 4, "m2_intro1" .. 4 into g_introTextures),
    the corner and box screen (g_menuFrameTextures), the main, arena, control and ladder menus' pairs (g_mainMenuTextures / g_arenaMenuTextures /
    g_ctrlMenuTextures / g_ladderMenuTextures), the six spirals (g_spiralTextures), then "gameconnect" (g_gameConnectTexture), "option" (g_buttonTexture, the
-   buttons), "mouse" (g_cursorTexture), "cylinder" (g_tunnelTexture), "cylinder_menu" (g_cageTexture), "menu34" (g_menuTunnelTexture, the tunnel)
+   buttons), "mouse" (g_cursorTexture), "cylinder" (g_ringBandTexture), "cylinder_menu" (g_cageTexture), "menu34" (g_menuTunnelTexture, the tunnel)
    and "character" (g_characterTexture); first a step and a wait of 2 */
 void (menu_loadTextures)(void)
 {
@@ -184,7 +184,7 @@ void (menu_loadTextures)(void)
 		next_step();
 	}
 	static const struct { u32 name, into; } rest[7] = {
-		{ STR(0x4ad574, "iftex/gameconnect"), ADDR(g_gameConnectTexture) }, { STR(0x4b2360, "iftex/option"), ADDR(g_buttonTexture) }, { STR(0x4b2354, "iftex/mouse"), ADDR(g_cursorTexture) }, { STR(0x4b2344, "iftex/cylinder"), ADDR(g_tunnelTexture) },
+		{ STR(0x4ad574, "iftex/gameconnect"), ADDR(g_gameConnectTexture) }, { STR(0x4b2360, "iftex/option"), ADDR(g_buttonTexture) }, { STR(0x4b2354, "iftex/mouse"), ADDR(g_cursorTexture) }, { STR(0x4b2344, "iftex/cylinder"), ADDR(g_ringBandTexture) },
 		{ STR(0x4b2330, "iftex/cylinder_menu"), ADDR(g_cageTexture) }, { STR(0x4b2320, "iftex/menu34"), ADDR(g_menuTunnelTexture) }, { STR(0x4b255c, "iftex/character"), ADDR(g_characterTexture) },
 	};
 	for (int k = 0; k < 7; k++) {
@@ -196,7 +196,7 @@ void (menu_loadTextures)(void)
 
 /* 0x430400: the start-up load: the key tables (g_keyTable1, g_keySeen) cleared, the settings, tables and lists loaded,
    the text area the whole screen, the timer; DirectInput made once (g_directInputMade; failure: a message box, 0); unless
-   g_startedFromLobby the data files checked (failure: the message 0x4b04b0, 0); the sound (g_soundOn: it works; then the menu
+   g_launchedForNetGame the data files checked (failure: the message 0x4b04b0, 0); the sound (g_soundOn: it works; then the menu
    sounds); the pointer at 310, 230, the keys' table; the CD (failure: a message box, 0); the six texture banks (with the
    linear filtering and mipmap settings, g_cfgLinearFilter / g_cfgMipmaps) gathered into g_textureManager (g_textures), the font, four textures by name, the shape and
    skeleton files, the scene (0x2343acb bytes, constructed; 0 if not had) into g_scene, the sound table, the logo;
@@ -220,10 +220,10 @@ int (app_startupLoad)(void *instance)
 	font_initHudGrids();
 	text_setWrapX(0x280);
 	text_setBottom(0x1e0);
-	g_briefingSkipped = 0;
+	g_textHitBottom = 0;
 	timer_init();
 	g_convertHangul = 1;
-	g_quitAsked = 0;
+	g_leavingForMatch = 0;
 	if (!g_directInputMade) {
 		if (!input_createDirectInput(g_mainWindow, instance)) {
 			MessageBoxA(g_mainWindow, (const char *)MSG(112, "DIRECT INPUT INIT FAILED"), (const char *)MSG(101, "ERROR"), 0);
@@ -231,7 +231,7 @@ int (app_startupLoad)(void *instance)
 		}
 		g_directInputMade = 1;
 	}
-	if (!g_startedFromLobby) {
+	if (!g_launchedForNetGame) {
 		if (!app_checkFile_profeng() || !app_checkFile_profkor() || !app_checkFile_skirmish() || !app_checkFile_axisgame()
 		    || !app_checkFile_game()) {
 			sys_messageBox((const char *)STR(0x4b04b0, "Run AxisPlay.exe"));
@@ -281,13 +281,13 @@ int (app_startupLoad)(void *instance)
 	sound_initSoundTable((const char *)STR(0x4b2504, "Data/Sound.dat"), 0x64);
 	char logo[64];
 	strcpy(logo, (const char *)STR(0x4b24f0, "iftex/axis_title"));
-	(*(u32 *)&g_armcCamHeight) = 0;
+	(*(u32 *)&g_menuEyeY) = 0;
 	g_menuCameraPos = 0;
-	(*(u32 *)&g_armcCamDistance) = 0x43fa0000;   /* 500 */
+	(*(u32 *)&g_menuEyeZ) = 0x43fa0000;   /* 500 */
 	g_menuCameraLook = 0;
 	g_menuCameraLookY = 0;
-	(*(u32 *)&g_menuCameraHeight) = 0x43c80000;   /* 400 */
-	g_menuFrameCount = 0;
+	(*(u32 *)&g_menuCameraLookZ) = 0x43c80000;   /* 400 */
+	g_fpsFrameCount = 0;
 	g_logoTexture = tex_getIdByName(g_textures, logo, 0, 0, 0, 0, 0, 0, 0);
 	set_colour_bits(g_textColour, 0, 0x3f800000, 0, 0x3f800000);
 	set_colour_bits(g_clearColour, 0, 0, 0, 0x3f800000);
@@ -358,7 +358,7 @@ u32 THISCALL (game_processLoadingMode)(u8 *g)
 	char name[0x100], path[0x100];
 	if (GS->stateFrames == 0) {
 		g_loadGame = g;
-		g_statusLine = 0;
+		g_loadStatusText = 0;
 		GS->loadLineCount = 1;
 		strcpy(GS->loadLines[0], (const char *)STR(0x4c52b0, "START LOADING PROCESS"));
 		GS->loadStage = 0;
@@ -380,7 +380,7 @@ u32 THISCALL (game_processLoadingMode)(u8 *g)
 				sys_fatalError((char *)OBJ(g_logConsole), (const char *)STR(0x4c5234, "incorrect file version, remove the fi..."), (int)path);
 			fread_scrambled((void *)ADDR(g_matchMode), 4, 1, GS->replayFile);
 			fread_scrambled((void *)ADDR(g_mapIndex), 4, 1, GS->replayFile);
-			fread_scrambled((void *)OBJ(g_mapTitle), 1, 0x20, GS->replayFile);
+			fread_scrambled((void *)OBJ(g_gameTitle), 1, 0x20, GS->replayFile);
 			fread_scrambled((void *)ADDR(g_mapRotation), 4, 1, GS->replayFile);
 			fread_scrambled((void *)ADDR(g_chosenGameMode), 4, 1, GS->replayFile);
 			fread_scrambled((void *)ADDR(g_fragLimit), 4, 1, GS->replayFile);

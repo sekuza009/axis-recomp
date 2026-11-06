@@ -63,7 +63,7 @@ void (arena_editName)(void)
 	caret(PANEL_X(ARENA_CREATE) + 0xc2, PANEL_Y(ARENA_CREATE) + 100);
 	g_menuKeyGuard = 5.0f;
 	g_chatLength = line_length();
-	g_typingArenaName = 1;
+	g_typingArenaPlayerName = 1;
 	g_inputLineHidden = 0;
 	chat_createEdit(0x10);
 }
@@ -81,7 +81,7 @@ void (arena_editComment)(void)
 	chat_createEdit(0x1e);
 }
 
-/* 0x404e10 / 0x404ed0: the two limits, bytes 0 and 1 of g_arenaFragLimitTyped, typed as up to three digits */
+/* 0x404e10 / 0x404ed0: the two limits, bytes 0 and 1 of g_newArenaFragLimit, typed as up to three digits */
 static void edit_limit(int value, int y, int *editing)
 {
 	char digits[12];
@@ -98,12 +98,12 @@ static void edit_limit(int value, int y, int *editing)
 
 void (arena_editFragLimit)(void)
 {
-	edit_limit(g_arenaFragLimitTyped, 0xfe, &g_editingNewArenaFragLimit);
+	edit_limit(g_newArenaFragLimit, 0xfe, &g_editingNewArenaFragLimit);
 }
 
 void (arena_editTimeLimit)(void)
 {
-	edit_limit(g_arenaTimeLimitTyped, 0x120, &g_editingNewArenaTimeLimit);
+	edit_limit(g_newArenaTimeLimit, 0x120, &g_editingNewArenaTimeLimit);
 }
 
 /* 0x404f90: the password (8), from what the line holds */

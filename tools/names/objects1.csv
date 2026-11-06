@@ -7,12 +7,12 @@
 0x9dd1f6,char,0xc,g_accountPassword,(12 bytes)
 0x9dd202,char,0xc,g_accountPasswordRepeat,(12 bytes)
 0x9dd20e,char,0x28,g_accountEmail,(40 bytes)
-0x4ded20,char,0x20,g_playerName,the arena player's record: the name (32 bytes)
+0x4ded20,char,0x20,g_arenaName,the arena player's record: the name (32 bytes)
 0x4dedb0,char,0x20,g_cfgPlayerName,axis.cfg's player name (default "PLAYER")
 0x5b1b30,char,0x20,g_roomRecName,the room record's name (fields from +0x20: g_roomRec*)
 0x4df9c8,char,0x20,g_roomSettingsName,the room's settings record (GameSettings): its name
 0x4db528,char,0x20,g_newArenaName,the new arena's settings record: its name
-0x67fb44,char,0x20,g_mapTitle,the map's title (TITLE: %s)
+0x67fb44,char,0x20,g_gameTitle,the map's title (TITLE: %s)
 0x9f8fe8,char,0x20,g_profileName,the profile's name (written 0x20 bytes)
 0x4db560,char,0x20,g_arenaPlayerName,(0x20 bytes)
 0xa0b43c,char,0x10,g_localAddress,the local IP address text (memset 16)

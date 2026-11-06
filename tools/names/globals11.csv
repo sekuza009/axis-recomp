@@ -1,5 +1,5 @@
 # the arena lobby / the room
-0x4dbb10,int,g_arenaSearchTicks
+0x4dbb10,int,g_joinPollTicks
 0x4db55c,int,g_hostErrorBox
 0x9dd6d4,int,g_roomAwaitingServer
 0x4dbab0,int,g_editingNewArenaName
@@ -14,7 +14,7 @@
 0x9dd254,int,g_pilotKillsKept
 # the network
 0x9fd94c,int,g_netHostGone
-0xa0b37c,int,g_gameServerAnswer15
+0xa0b37c,int,g_newIdAnswer
 # loading, the match's end
 0xa0ea94,int,g_mapMissing
 0x9f67f4,int,g_matchEndedByUser
@@ -23,8 +23,8 @@
 # the menus
 0x4dcf34,int,g_progressWentUp
 0x4de6fc,int,g_watchChatOpen
-0x9f6840,int,g_profileDialogOpen
-0x9f8f18,float,g_profileMessageTime
+0x9f6840,int,g_profileLogInAsked
+0x9f8f18,float,g_profileRowClickTime
 0x9dd354,int,g_accountNotice
 0xa0b354,int,g_netNoticeIn
 0x5b1dac,int,g_matchRunning

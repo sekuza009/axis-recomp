@@ -46,7 +46,7 @@ void (input_releaseMouse)(void)
 		COM(g_mouse, COM_RELEASE, long)(g_mouse);
 		g_mouse = NULL;
 	}
-	g_mouseActive = 0;
+	g_mouseReady = 0;
 }
 
 /* 0x4014c0: all of DirectInput released */
@@ -215,17 +215,17 @@ int (input_asyncKeyDown)(int key)
 	return (u16)GetAsyncKeyState(key) != 0;
 }
 
-/* 0x487c30: the cursor's position (screen pixels) into g_cursorPos, left as it was while another window is in front;
+/* 0x487c30: the cursor's position (screen pixels) into g_cursorX, left as it was while another window is in front;
    returns the point */
 int *(input_getCursorPos)(void)
 {
 	if (!g_hWndMain || GetForegroundWindow() == g_hWndMain) {
 		int p[2];
 		GetCursorPos(p);
-		g_cursorPos = p[0];
+		g_cursorX = p[0];
 		g_cursorPosY = p[1];
 	}
-	return (int *)ADDR(g_cursorPos);
+	return (int *)ADDR(g_cursorX);
 }
 
 /* 0x487bd0: was the key just pressed (down now, and not already seen down)? The seen flags (g_asyncKeySeen + key * 4) clear
@@ -310,7 +310,7 @@ int (input_justPressed)(int key)
    k_c_dfDIMouse) and its cooperative level for the window (exclusive, foreground). 1 when ready, 0 on a failure */
 int (input_createMouse)(void *window)
 {
-	if (g_mouseActive)
+	if (g_mouseReady)
 		return 1;
 	void *dinput = g_directInput;
 	if (COM(dinput, 0x0c, int, const void *, void **, void *)(dinput, (const void *)OBJ(k_GUID_SysMouse), &g_mouse, NULL) < 0)
@@ -319,7 +319,7 @@ int (input_createMouse)(void *window)
 		return 0;
 	if (COM(g_mouse, 0x34, int, void *, u32)(g_mouse, window, 5) < 0)
 		return 0;
-	g_mouseActive = 1;
+	g_mouseReady = 1;
 	return 1;
 }
 

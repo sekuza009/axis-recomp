@@ -11,12 +11,12 @@
 0x76d3ac,u32,g_camAim2Y
 0x76d3b0,int,g_camAim2Z
 # the room menu's slide (room_slideMenu): from the near point to the far one
-0x9dd918,u32,g_roomSlideNearX
-0x9dd91c,u32,g_roomSlideNearY
-0x9dd920,u32,g_roomSlideNearZ
-0x9dd930,u32,g_roomSlideFarX
-0x9dd934,u32,g_roomSlideFarY
-0x9dd938,u32,g_roomSlideFarZ
+0x9dd918,u32,g_menuLookKeptX
+0x9dd91c,u32,g_menuLookKeptY
+0x9dd920,u32,g_menuLookKeptZ
+0x9dd930,u32,g_menuEyeKeptX
+0x9dd934,u32,g_menuEyeKeptY
+0x9dd938,u32,g_menuEyeKeptZ
 # the new arena's settings record (0x4db528: name, map, players, kind, mode, ..., password)
 0x4db548,signed char,g_newArenaMap
 0x4db549,u8,g_newArenaPlayers

@@ -53,7 +53,7 @@ static void load_stat_bars(int i)
 /* 0x44bc50: the stat bars for the pilot under CHARACTER SELECT's cursor; profile_loadPilotStats: for the pilot of the
    profile chosen in the list */
 void (pilotSelect_loadStats)(void) { load_stat_bars(g_pilotSelectCursor); }
-void (profile_loadPilotStats)(void) { load_stat_bars(GAME_VAR(int, OBJ(g_profileList) + 0x40 + g_pilotChosen * 72)); }
+void (profile_loadPilotStats)(void) { load_stat_bars(GAME_VAR(int, OBJ(g_profileNames) + 0x40 + g_profileChosen * 72)); }
 
 /* 0x445ee0: a whole 0x3ac-byte profile record scrambled */
 void (save_cryptRecord)(u8 *rec, u8 key) { crypt_bytes(rec, 0x3ac, key); }
@@ -86,10 +86,10 @@ int (name_isBlank)(const char *name)
 	return 1;
 }
 
-/* 0x44b2e0: 1 when (x, y) is in the dialog box rectangle at g_profileDialogBox (left, top, right, bottom), else -1 */
+/* 0x44b2e0: 1 when (x, y) is in the dialog box rectangle at g_profileMessageClickBox (left, top, right, bottom), else -1 */
 int (profile_inDialogBox)(int x, int y)
 {
-	const int *r = g_profileDialogBox;
+	const int *r = g_profileMessageClickBox;
 	return x >= r[0] && x <= r[2] && y >= r[1] && y <= r[3] ? 1 : -1;
 }
 
@@ -115,12 +115,12 @@ void (profile_resetSelection)(void)
 /* 0x44bc00: the profile screen's camera put to its start (distance 80, speed 0.1) */
 void (profile_resetCamera)(void)
 {
-	g_profileIntroState = 0;
-	g_profileIntro = 1;
+	g_profileQuitSkip = 0;
+	g_profileQuitting = 1;
 	g_unusedProfileCameraWord = -1;
-	(*(u32 *)&g_profileIntroZoom) = 0x42a00000;   /* 80.0 */
-	g_profileIntroTime = 0;
-	(*(u32 *)&g_profileIntroSpeed) = 0x3dcccccd;   /* 0.1 */
+	(*(u32 *)&g_unusedProfileCameraZoom) = 0x42a00000;   /* 80.0 */
+	g_unusedProfileCameraTime = 0;
+	(*(u32 *)&g_unusedProfileCameraSpeed) = 0x3dcccccd;   /* 0.1 */
 	g_profilePage = 1;
 }
 
@@ -136,7 +136,7 @@ int (profile_nameExists)(void)
 	for (int i = 0, n = (int)strlen(s); i < n; i++)
 		typed[i] = s[i] >= 'A' && s[i] <= 'Z' ? s[i] + 0x20 : s[i];
 	for (int e = 0; e < g_profileCount; e++) {
-		const char *p = (const char *)(OBJ(g_profileList) + e * 0x48);
+		const char *p = (const char *)(OBJ(g_profileNames) + e * 0x48);
 		for (int i = 0, n = (int)strlen(p); i < n; i++)
 			name[i] = p[i] >= 'A' && p[i] <= 'Z' ? p[i] + 0x20 : p[i];
 		if (!strcmp(typed, name))
@@ -150,7 +150,7 @@ int (profile_nameExists)(void)
 /* 0x44c390: "delete this profile?" */
 int (profile_deleteClicks)(void)
 {
-	(*(int *)&g_cursorBlink) = 0;
+	(*(int *)&g_menuRepeatClock) = 0;
 	if (g_mouseClick) {
 		int button = deleteDialog_hitTest(g_mouseX, g_mouseY);   /* the dialog's hit test */
 		if (button == 0) {
@@ -167,10 +167,10 @@ int (profile_deleteClicks)(void)
 	return g_rightClick;
 }
 
-/* 0x44c400: the log-out question: its first button runs profile_resetCamera, the second closes it (and clears g_highlightShown) */
+/* 0x44c400: the log-out question: its first button runs profile_resetCamera, the second closes it (and clears g_pointerGliding) */
 int (profile_logOutClicks)(void)
 {
-	(*(int *)&g_cursorBlink) = 0;
+	(*(int *)&g_menuRepeatClock) = 0;
 	if (g_mouseClick) {
 		int button = logOutDialog_hitTest(g_mouseX, g_mouseY);
 		if (button == 0) {
@@ -179,7 +179,7 @@ int (profile_logOutClicks)(void)
 		} else if (button == 1) {
 			sound_playMenu(0);
 			g_profilePage = 1;
-			g_highlightShown = 0;
+			g_pointerGliding = 0;
 		}
 	}
 	if (g_rightClick)
@@ -187,45 +187,45 @@ int (profile_logOutClicks)(void)
 	return g_rightClick;
 }
 
-/* 0x44f6c0: logging in with the selected profile (when g_profileDialogOpen): the profile saved, the main menu (state 300), the
+/* 0x44f6c0: logging in with the selected profile (when g_profileLogInAsked): the profile saved, the main menu (state 300), the
    profile's name as the player's (0x20 bytes), then axis.cfg loaded. Returns what the original leaves in eax */
 u32 (profile_logIn)(void)
 {
-	if (!g_profileDialogOpen)
+	if (!g_profileLogInAsked)
 		return 0;
-	g_lobbyReply = 0;
-	if (g_startedFromLobby == 1)
-		g_lobbyReply = 0x65;
+	g_launchStartStep = 0;
+	if (g_launchedForNetGame == 1)
+		g_launchStartStep = 0x65;
 	profile_makeCurrent();   /* profile_makeCurrent */
 	g_menuState = 300;
 	g_nextScreen = 300;
 	g_menuCameraMove = 2;
 	g_unusedMenuReturnWord = 0;
 	crt_strncpy(g_cfgPlayerName,
-	                                                        (const char *)(OBJ(g_profileList) + g_currentProfile * 0x48), 0x20);   /* strncpy */
+	                                                        (const char *)(OBJ(g_profileNames) + g_currentProfile * 0x48), 0x20);   /* strncpy */
 	return cfg_writeAxisCfg();   /* cfg_writeAxisCfg */
 }
 
 #define CALL(addr) GAME_CDECL(addr, u32, void)()
 
-/* 0x44f410: the profile screen's frame: the message's timer (g_profileMessageTime, to k_20f; then the message goes), the
+/* 0x44f410: the profile screen's frame: the message's timer (g_profileRowClickTime, to k_20f; then the message goes), the
    dialog's frame and its page (profile_typeNewName) while open, else the screen (an entry being edited first), the page shown.
    Returns what the original leaves in eax */
 u32 (profile_frame)(void)
 {
 	if (g_profileRowClicked) {
-		long double t = fadd_m(fld_m(&g_frameTime), (const float *)ADDR(g_profileMessageTime));
-		g_profileMessageTime = (float)t;
+		long double t = fadd_m(fld_m(&g_frameTime), (const float *)ADDR(g_profileRowClickTime));
+		g_profileRowClickTime = (float)t;
 		if (t > k_20f) {
 			g_profileRowClicked = 0;
-			(*(int *)&g_profileMessageTime) = 0;
+			(*(int *)&g_profileRowClickTime) = 0;
 		}
 	}
-	if (g_dialogOpen) {
+	if (g_frameOpening) {
 		menu_drawFrame(g_profilePageLeft, g_profilePageTop, g_profilePageRight, g_profilePageBottom);
-		if (g_dialogOpen)
-			return (u32)g_dialogOpen;
-		if (!g_profileScreenReady)
+		if (g_frameOpening)
+			return (u32)g_frameOpening;
+		if (!g_profileNoneAtEntry)
 			return 0;
 		return profile_typeNewName();
 	}
@@ -235,23 +235,23 @@ u32 (profile_frame)(void)
 	return profile_drawManagementWindow();
 }
 
-/* 0x44c560: the profile screen's input: while its intro plays (g_profileIntro) a click skips it (to state 5, the panel
+/* 0x44c560: the profile screen's input: while its intro plays (g_profileQuitting) a click skips it (to state 5, the panel
    sliding in from 100 at 0.05); else, with no dialog, by page (g_profilePage): 1 the list, 2 the new profile, 3 and 5 the
    dialogs, 6 the profile list's clicks. Returns what the original leaves in eax */
 u32 (profile_processInput)(void)
 {
-	int intro = g_profileIntro;
-	if (intro && g_profileIntroState != 5) {
+	int intro = g_profileQuitting;
+	if (intro && g_profileQuitSkip != 5) {
 		u32 r = g_mouseClick ? (u32)g_mouseClick : (*(u32 *)&g_rightClick);
 		if (r) {
-			g_profileIntroState = 5;
-			g_profileIntroTime = 0;
-			(*(u32 *)&g_profileIntroZoom) = 0x42c80000;   /* 100 */
-			(*(u32 *)&g_profileIntroSpeed) = 0x3d4ccccd;   /* 0.05 */
+			g_profileQuitSkip = 5;
+			g_unusedProfileCameraTime = 0;
+			(*(u32 *)&g_unusedProfileCameraZoom) = 0x42c80000;   /* 100 */
+			(*(u32 *)&g_unusedProfileCameraSpeed) = 0x3d4ccccd;   /* 0.05 */
 		}
 		return r;
 	}
-	if (g_dialogOpen || intro)
+	if (g_frameOpening || intro)
 		return (u32)intro;
 	u32 page = (*(u32 *)&g_profilePage) - 1;
 	switch (page) {
@@ -269,7 +269,7 @@ u32 (profile_processInput)(void)
    state (the original's eax) */
 int (pilotSelect_clicks)(void)
 {
-	(*(int *)&g_cursorBlink) = 0;
+	(*(int *)&g_menuRepeatClock) = 0;
 	if (g_mouseClick) {
 		u32 row = ((u32)pilotSelect_hitTest(g_mouseX, g_mouseY));   /* the list's hit test */
 		if (row <= 8) {
@@ -287,7 +287,7 @@ int (pilotSelect_clicks)(void)
 		} else if (row == 10) {
 			sound_playMenu(0);
 			g_profilePage = 1;
-			g_highlightShown = 0;
+			g_pointerGliding = 0;
 		}
 	}
 	if (g_rightClick)
@@ -304,8 +304,8 @@ int (pilotSelect_clicks)(void)
 u32 (profile_create)(void)
 {
 	int n = g_profileCount;
-	strcpy((char *)(OBJ(g_profileList) + n * 0x48), g_chatLine);
-	GAME_VAR(int, OBJ(g_profileList) + 0x40 + n * 0x48) = g_pilotSelectCursor;
+	strcpy((char *)(OBJ(g_profileNames) + n * 0x48), g_chatLine);
+	GAME_VAR(int, OBJ(g_profileNames) + 0x40 + n * 0x48) = g_pilotSelectCursor;
 	if (chdir_((const char *)STR(0x4b2adc, "save"))) {
 		mkdir_((const char *)STR(0x4b2adc, "save"));
 		chdir_((const char *)STR(0x4b2adc, "save"));
@@ -315,33 +315,33 @@ u32 (profile_create)(void)
 	g_profileCount = count;
 	if (count <= 0xd) {
 		g_profileListRow = count - 1;
-		g_pilotChosen = g_profileListTop + count - 1;
+		g_profileChosen = g_profileListTop + count - 1;
 	} else {
 		g_profileListRow = 0xc;
 		g_profileListTop = count - 0xd;
-		g_pilotChosen = count - 1;
+		g_profileChosen = count - 1;
 	}
 	profile_newCampaign();         /* profile_newCampaign (it writes the profile) */
 	return profile_resetPreview();  /* profile_resetPreview */
 }
 
-/* a profile screen page with a panel: while the pointer glides (g_highlightShown) it is pulled towards its target (g_highlightX,
-   g_highlightY) by the frame time times rate, until the glide's timer (g_highlightSize) runs out; the screen drawn, then the
+/* a profile screen page with a panel: while the pointer glides (g_pointerGliding) it is pulled towards its target (g_highlightX,
+   g_highlightY) by the frame time times rate, until the glide's timer (g_pointerGlideTime) runs out; the screen drawn, then the
    dialog's frame (at frame: x0, y0, x1, y1) if one is open, else the panel. Returns what the original leaves in eax */
 static u32 glide_page(const float *rate, const u32 *frame, u32 panel)
 {
-	if (g_highlightShown) {
+	if (g_pointerGliding) {
 		int step = ftol(fmul_m(fmul_m((long double)(g_highlightX - g_mouseX), &g_frameTime), rate));
 		g_mouseX += step;
 		step = ftol(fmul_m(fmul_m((long double)(g_highlightY - g_mouseY), &g_frameTime), rate));
 		g_mouseY += step;
-		long double t = fsub_m(fld_m((const float *)ADDR(g_highlightSize)), &g_frameTime);
-		g_highlightSize = (float)t;
+		long double t = fsub_m(fld_m((const float *)ADDR(g_pointerGlideTime)), &g_frameTime);
+		g_pointerGlideTime = (float)t;
 		if (!(t >= k_0f))
-			g_highlightShown = 0;
+			g_pointerGliding = 0;
 	}
 	profile_drawManagementWindow();   /* profile_drawManagementWindow */
-	if (g_dialogOpen)
+	if (g_frameOpening)
 		return menu_drawFrame(GAME_VAR(int, frame[0]), GAME_VAR(int, frame[1]),
 		                                                     GAME_VAR(int, frame[2]), GAME_VAR(int, frame[3]));   /* menu_drawFrame */
 	return CALL(panel);
@@ -369,12 +369,12 @@ u32 (profileList_drawNames)(void)
 		int page1 = g_profilePage == 1;
 		u32 shade = page1 ? 0x3f000000 : 0x3e99999a;   /* 0.5 / 0.3 */
 		Color4_set_bits((void *)OBJ(g_textColour), 0, shade, shade, 0x3f800000);
-		if (g_profileListTop + i == g_pilotChosen) {
+		if (g_profileListTop + i == g_profileChosen) {
 			shade = g_profilePage == 1 ? 0x3f800000 : 0x3f000000;   /* 1 / 0.5 */
 			Color4_set_bits((void *)OBJ(g_textColour), 0, shade, shade, 0x3f800000);
 		}
 		r = text_draw8(g_profilePageLeft + 0x28, g_profilePageTop + 0x24 + i * 0x14,
-		                                                      (const char *)(OBJ(g_profileList) + (g_profileListTop + i) * 0x48));   /* text_draw8 */
+		                                                      (const char *)(OBJ(g_profileNames) + (g_profileListTop + i) * 0x48));   /* text_draw8 */
 	}
 	return r;
 }
@@ -389,7 +389,7 @@ u32 (profile_newNamePage)(void)
 {
 	const char *typed = g_chatLine;
 	profile_drawManagementWindow();
-	if (g_dialogOpen)
+	if (g_frameOpening)
 		return menu_drawFrame(g_newNameDialogLeft, g_newNameDialogTop,
 		                                                     g_newNameDialogRight, g_newNameDialogBottom);
 	if (g_profileMessage)
@@ -397,7 +397,7 @@ u32 (profile_newNamePage)(void)
 	if (g_textFieldOpen)
 		return profile_drawNewDialog();
 	if (!strlen(typed)) {
-		g_dialogOpen = 0;
+		g_frameOpening = 0;
 		g_profileMessage = 0;
 		g_profilePage = 1;
 		return profile_drawNewDialog();
@@ -405,13 +405,13 @@ u32 (profile_newNamePage)(void)
 	if (name_isBlank(typed) == 1) {   /* name_isBlank */
 		u32 r = sound_playMenu(6);              /* sound_playMenu */
 		g_profilePage = 1;
-		g_dialogOpen = 0;
+		g_frameOpening = 0;
 		g_profileMessage = 0;
 		return r;
 	}
 	if (profile_nameHasBadChar(typed) == 1) {   /* profile_nameHasBadChar */
 		sound_playMenu(6);
-		g_dialogOpen = 0;
+		g_frameOpening = 0;
 		g_profileMessage = 0;
 		g_profilePage = 1;
 		return menu_showMessage(0x81);             /* the message */
@@ -419,7 +419,7 @@ u32 (profile_newNamePage)(void)
 	if (profile_nameExists()) {                     /* profile_nameExists */
 		sound_playMenu(6);
 		g_profileMessage = 1;
-		g_dialogOpen = 1;
+		g_frameOpening = 1;
 		return profile_drawNewDialog();
 	}
 	g_profilePage = 6;
@@ -427,14 +427,14 @@ u32 (profile_newNamePage)(void)
 	return profile_drawNewDialog();
 }
 
-/* 0x44ba60: the current profile (g_pilotChosen) deleted: its save file ("save\<name>.axs") removed (DeleteFileA, tried
+/* 0x44ba60: the current profile (g_profileChosen) deleted: its save file ("save\<name>.axs") removed (DeleteFileA, tried
    twice), the later profiles moved down a slot and the freed last slot cleared (colour -1), the count lowered.
    With none left everything is reset and the list written (profile_writeFile); otherwise, if the current one was the
    last, the selection steps back (the scrolled row g_profileListRow, else the list's top g_profileListTop), then the list is
    written and shown again (profile_resetPreview). Returns the last call's eax */
 u32 (profile_deleteFiles)(void)
 {
-	int current = g_pilotChosen;
+	int current = g_profileChosen;
 	u8 *records = g_profiles;   /* 0x48 bytes each: +0 a word, +4 the name, +0x44 the colour */
 	if (crt_chdir((const char *)STR(0x4b2adc, "save")) == 0) {   /* chdir("save") */
 		char path[0x80];
@@ -453,11 +453,11 @@ u32 (profile_deleteFiles)(void)
 	*(int *)freed = 0;
 	*(int *)(freed + 0x44) = -1;
 	g_profileCount = count;
-	if (g_pilotChosen >= count) {
+	if (g_profileChosen >= count) {
 		if (count <= 0) {
 			g_profileListRow = 0;
 			g_profileListTop = 0;
-			g_pilotChosen = 0;
+			g_profileChosen = 0;
 			g_profileCount = 0;
 			return profile_writeFile();   /* profile_writeFile: the list written */
 		}
@@ -465,7 +465,7 @@ u32 (profile_deleteFiles)(void)
 			g_profileListRow--;
 		else
 			g_profileListTop--;
-		g_pilotChosen = g_profileListTop + g_profileListRow;
+		g_profileChosen = g_profileListTop + g_profileListRow;
 	}
 	profile_writeFile();
 	return profile_resetPreview();   /* profile_resetPreview */
@@ -478,10 +478,10 @@ static u32 keyboard_back(void)
 	return ((u32)input_initKeyboard(g_mainWindow));   /* input_initKeyboard */
 }
 
-/* the typed line emptied (its length g_typedLength) */
+/* the typed line emptied (its length g_lineMaxLength) */
 static void line_wipe(void)
 {
-	int n = g_typedLength;
+	int n = g_lineMaxLength;
 	if (n > 0)
 		memset((void *)OBJ(g_chatLine), 0, n);
 }
@@ -494,7 +494,7 @@ static void line_wipe(void)
 u32 (profile_newNameDialog)(void)
 {
 	const char *typed = g_chatLine;
-	g_cursorBlink = 0.0f;
+	g_menuRepeatClock = 0.0f;
 	u32 r = 0;
 	if (g_profileMessage) {
 		if (g_mouseClick &&
@@ -519,7 +519,7 @@ u32 (profile_newNameDialog)(void)
 				return sound_playMenu(6);
 			if (profile_nameHasBadChar(typed) == 1) {   /* profile_nameHasBadChar: a bad character */
 				sound_playMenu(6);
-				g_dialogOpen = 0;
+				g_frameOpening = 0;
 				g_profileMessage = 0;
 				g_profilePage = 1;
 				menu_showMessage(0x81);
@@ -529,7 +529,7 @@ u32 (profile_newNameDialog)(void)
 			if (profile_nameExists()) {   /* profile_nameExists: taken */
 				sound_playMenu(6);
 				g_profileMessage = 1;
-				g_dialogOpen = 1;
+				g_frameOpening = 1;
 			} else
 				sound_playMenu(0);
 			g_textFieldOpen = 0;
@@ -550,13 +550,13 @@ u32 (profile_newNameDialog)(void)
 }
 
 /* ---- the profile list's keys (page 1): 13 rows shown from g_profileListTop, the cursor g_profileListRow on them, the profile
-   chosen (g_pilotChosen) the one under it; there are g_profileCount profiles ---- */
+   chosen (g_profileChosen) the one under it; there are g_profileCount profiles ---- */
 #define g_listTop g_profileListTop
 #define g_listRow g_profileListRow
 
 static void list_moved(void)
 {
-	g_pilotChosen = g_listTop + g_listRow;
+	g_profileChosen = g_listTop + g_listRow;
 	g_statBarsStale = 1;
 	sound_playMenu(2);
 }
@@ -592,7 +592,7 @@ static void key_down(void) { list_down(); }
 
 /* 0x44c600: the profile list's keys: up / down held (with the menu's key repeat) move the cursor, scrolling the list
    at its ends (sound 2); N starts a new profile (profile_typeNewName); g_dikD / g_dikDelete delete it
-   (profile_askDelete) when there is one; g_dikI logs in (the pilot grid: g_profileDialogOpen, page 4), or starts a new
+   (profile_askDelete) when there is one; g_dikI logs in (the pilot grid: g_profileLogInAsked, page 4), or starts a new
    profile when there are none; OK / the second cancel key ask to log out (profile_askLogOut). The original leaves eax to
    callers that ignore it */
 void (profileList_keys)(void)
@@ -601,7 +601,7 @@ void (profileList_keys)(void)
 		return;
 	if (input_justPressed(g_dikN) == 1) {
 		sound_playMenu(0);
-		g_cursorBlink = 0;
+		g_menuRepeatClock = 0;
 		profile_typeNewName();
 		return;
 	}
@@ -610,12 +610,12 @@ void (profileList_keys)(void)
 		profile_askDelete();   /* profile_askDelete */
 	if (input_justPressed(g_dikI) == 1) {
 		sound_playMenu(0);
-		g_cursorBlink = 0;
+		g_menuRepeatClock = 0;
 		if (g_profileCount <= 0) {
 			profile_typeNewName();
 			return;
 		}
-		g_profileDialogOpen = 1;
+		g_profileLogInAsked = 1;
 		g_profilePage = 4;
 	}
 	if (input_justPressed(g_keyOk) == 1 || input_justPressed(g_keyCancel2))
@@ -625,12 +625,12 @@ void (profileList_keys)(void)
    (profile_typeNewName), 1 DELETE asked (profile_askDelete) when there is one, 2 LOG IN: the pilot grid opened (page 4; with
    no profiles a new name typed instead), 3 LOG OUT asked (profile_askLogOut), 4 the list: a row (profileList_hitTest) chosen, or the
    chosen row clicked again (g_profileRowClicked) opens the dialog; 5 / 6 a row up / down. Then with the button held
-   (g_mouseButtonsHeld) on the arrows they step again once the blink clock (g_cursorBlink) reaches 5. The original leaves eax to
+   (g_mouseButtonsHeld) on the arrows they step again once the blink clock (g_menuRepeatClock) reaches 5. The original leaves eax to
    callers that ignore it */
 void (profileList_mouse)(void)
 {
 	if (g_mouseClick) {
-		g_cursorBlink = 0;
+		g_menuRepeatClock = 0;
 		switch (profilePage_hitTest(g_mouseX, g_mouseY)) {   /* profilePage_hitTest */
 		case 0:
 			sound_playMenu(0);
@@ -642,12 +642,12 @@ void (profileList_mouse)(void)
 			break;
 		case 2:
 			sound_playMenu(0);
-			g_cursorBlink = 0;
+			g_menuRepeatClock = 0;
 			if (g_profileCount <= 0) {
 				profile_typeNewName();
 				return;
 			}
-			g_profileDialogOpen = 1;
+			g_profileLogInAsked = 1;
 			g_profilePage = 4;
 			break;
 		case 3:
@@ -659,18 +659,18 @@ void (profileList_mouse)(void)
 			if (row == -1 || g_listTop + row >= g_profileCount)
 				return;
 			if (row == g_listRow && g_profileRowClicked) {
-				g_cursorBlink = 0;
-				g_profileDialogOpen = 1;
+				g_menuRepeatClock = 0;
+				g_profileLogInAsked = 1;
 				g_profilePage = 4;
 				g_profileRowClicked = 0;
-				(*(int *)&g_profileMessageTime) = 0;
+				(*(int *)&g_profileRowClickTime) = 0;
 				break;
 			}
 			g_listRow = row;
 			g_profileRowClicked = 1;
-			(*(int *)&g_profileMessageTime) = 0;
-			if (g_pilotChosen != g_listTop + row) {
-				g_pilotChosen = g_listTop + row;
+			(*(int *)&g_profileRowClickTime) = 0;
+			if (g_profileChosen != g_listTop + row) {
+				g_profileChosen = g_listTop + row;
 				g_statBarsStale = 1;
 			}
 			break;
@@ -689,13 +689,13 @@ void (profileList_mouse)(void)
 	int held = profilePage_hitTest(g_mouseX, g_mouseY);   /* profilePage_hitTest */
 	if (held != 5 && held != 6)
 		return;
-	if (!(g_cursorBlink >= k_5f))   /* 5 */
+	if (!(g_menuRepeatClock >= k_5f))   /* 5 */
 		return;
 	if (held == 5)
 		list_up();
 	else if (!list_down())
 		return;
-	g_cursorBlink = 0;
+	g_menuRepeatClock = 0;
 #undef g_mouseX
 #undef g_mouseY
 }

@@ -47,12 +47,12 @@ static void part_info(u8 *rec, int idx)
 /* 0x41ca50: the record of weapon slot slot (g_partRecords, 0x80 apart) */
 void (armc_weaponSlotRecord)(int slot, int idx) { part_info(g_partRecords + slot * 0x80, idx); }
 
-/* 0x41cca0: the record of the part being looked at (0x4dc150); the first type picked is kept in g_viewedPartIndex */
+/* 0x41cca0: the record of the part being looked at (0x4dc150); the first type picked is kept in g_viewedPartAmmoPerShot */
 void (armc_viewedPartRecord)(int idx)
 {
 	part_info(g_viewedPart, idx);
-	if (idx != -1 && g_viewedPartKind == -1)
-		g_viewedPartIndex = idx;
+	if (idx != -1 && g_viewedPartAmmoType == -1)
+		g_viewedPartAmmoPerShot = idx;
 }
 
 /* ---- armc_readMechStats: the ARM CENTER's stats panel from the local player's actor in the scene (*g_scene): a speed (the
@@ -88,7 +88,7 @@ u8 *(armc_readMechStats)(void)
 	mulf(ADDR(g_mechLegsSideBoost), &leg->sideBoostCorrection, (const float *)ADDR(k_100f));
 	mulf(ADDR(g_mechLegsBackBoost), &leg->backBoostCorrection, (const float *)ADDR(k_100f));
 	g_unusedMechStat = st->boosterTypes[player->parts[4]].thrustType;
-	mulf(ADDR(g_mechBoosterEnergy), &A->boostTime, k_1000f);
+	mulf(ADDR(g_mechBoostTime), &A->boostTime, k_1000f);
 	mulf(ADDR(g_mechBoosterRecharge), &A->rechargeTime, k_1000f);
 	mulf(ADDR(g_mechBoosterRestTime), &A->restTime, k_1000f);
 	mulf(ADDR(g_mechNormalSpeed), &A->speed, k_0_036f);
@@ -163,7 +163,7 @@ int (armc_drawPartPanels)(void)
 		mulf(ADDR(g_boosterActiveTime) + i * 4, &booster->times[i], k_1000f);
 	for (int i = 0; i < 4; i++)
 		mulf(ADDR(g_boosterNormalSpeed) + i * 4, &booster->speeds[i], k_0_036f);
-	(*(u32 *)&g_armcZoom) = 0x3f800000;
+	(*(u32 *)&g_unusedArmcViewCountdown) = 0x3f800000;
 	copyf(ADDR(g_boosterWeight), &booster->weight);
 	return weapon;
 }
@@ -176,7 +176,7 @@ u32 (armc_stepPart)(u32 part, int dir)
 {
 	static const struct { u32 cursor, count, list; } parts[5] = {
 		{ ADDR(g_headCursor), ADDR(g_headCount), OBJ(g_headList) }, { ADDR(g_chestCursor), ADDR(g_chestCount), OBJ(g_chestList) }, { ADDR(g_armCursor), ADDR(g_armCount), OBJ(g_armList) },
-		{ (OBJ(g_boosterStats) + 0x24), ADDR(g_legCount), OBJ(g_legList) }, { ADDR(g_boosterCursor), ADDR(g_armcLastPart), OBJ(g_boosterList) } };
+		{ (OBJ(g_boosterStats) + 0x24), ADDR(g_legCount), OBJ(g_legList) }, { ADDR(g_boosterCursor), ADDR(g_boosterCount), OBJ(g_boosterList) } };
 	g_mechChanged = 1;
 	if (part > 4)
 		return part;
@@ -225,7 +225,7 @@ static int unlocked_level(int network)
 /* 0x40da40: the unlocked part lists up to a level (g_unlockedLevel, also g_armcLevel): for each level up to it, of the table
    set (network play g_unlockTablesNet, else g_unlockTablesSolo; seven tables 0x320 bytes apart, an Unlock a level), the first five
    tables' parts appended to the five part lists (g_headList / g_chestList / g_armList / g_legList / g_boosterList, lengths
-   g_headCount / g_chestCount / g_armCount / g_legCount / g_armcLastPart), the last two's to the two lists that start with -1
+   g_headCount / g_chestCount / g_armCount / g_legCount / g_boosterCount), the last two's to the two lists that start with -1
    (g_weaponListTable / g_extraListTable, lengths g_weaponCount / g_extraCount). The lengths are read from memory at each step as the
    original does (a list long enough to run over them would change them); the caller ignores the eax it leaves */
 void (armc_buildPartLists)(void)
@@ -235,7 +235,7 @@ void (armc_buildPartLists)(void)
 	g_armcLevel = level;
 	g_unlockedLevel = level;
 	static const u32 lists[5] = { OBJ(g_headList), OBJ(g_chestList), OBJ(g_armList), OBJ(g_legList), OBJ(g_boosterList) };
-	static const u32 lengths[5] = { ADDR(g_headCount), ADDR(g_chestCount), ADDR(g_armCount), ADDR(g_legCount), ADDR(g_armcLastPart) };
+	static const u32 lengths[5] = { ADDR(g_headCount), ADDR(g_chestCount), ADDR(g_armCount), ADDR(g_legCount), ADDR(g_boosterCount) };
 	for (int k = 0; k < 5; k++)
 		GAME_VAR(int, lengths[k]) = 0;
 	u32 tables = network ? OBJ(g_unlockTablesNet) : OBJ(g_unlockTablesSolo);
@@ -247,7 +247,7 @@ void (armc_buildPartLists)(void)
 				GAME_VAR(int, lengths[k]) = append_parts(TABLE(k, lv), lists[k], GAME_VAR(int, lengths[k]));
 			last = append_parts(TABLE(4, lv), lists[4], last);
 		}
-		g_armcLastPart = last;
+		g_boosterCount = last;
 	}
 	/* the two lists that start with -1; their lengths too stored once at the end */
 	static const u32 extra[2] = { OBJ(g_weaponListTable), OBJ(g_extraListTable) };

@@ -376,7 +376,7 @@ int (app_readLauncherCheck)(void)
 }
 
 /* ---- axisuser.dat (in the data folder g_dataDir), written afresh: a magic word (0xfefefef7), the count (g_profileCount),
-   the current profile (g_currentProfile, first set from g_pilotChosen), g_profileListTop, g_profileListRow, the 32-byte name g_profileName and the
+   the current profile (g_currentProfile, first set from g_profileChosen), g_profileListTop, g_profileListRow, the 32-byte name g_profileName and the
    0x48-byte profile records from g_profiles. Without the file the count is 0 ---- */
 static void profiles_path(char *path)
 {
@@ -388,7 +388,7 @@ static void *profiles_create(void)
 {
 	char path[0x184];
 	profiles_path(path);
-	(*(u32 *)&g_currentProfile) = (*(u32 *)&g_pilotChosen);
+	(*(u32 *)&g_currentProfile) = (*(u32 *)&g_profileChosen);
 	void *f = crt_fopen(path, (const char *)STR(0x4b2ab0, "wb"));
 	if (!f)
 		g_profileCount = 0;
@@ -432,7 +432,7 @@ u32 (profile_writeFile)(void)
 	if (!f)
 		return 0;
 	memset((void *)OBJ(g_profileName), 0, 0x20);
-	strcpy(g_profileName, (const char *)(OBJ(g_profileList) + g_currentProfile * 0x48));
+	strcpy(g_profileName, (const char *)(OBJ(g_profileNames) + g_currentProfile * 0x48));
 	return profiles_write(f);
 }
 
@@ -500,7 +500,7 @@ u32 (mission_loadBriefing)(int k)
 	g_briefingShown = 0;
 	g_briefingDone = 0;
 	g_briefingStart = 0;
-	g_briefingSkipped = 0;
+	g_textHitBottom = 0;
 	g_briefingPage = 0;
 	g_missionsPage = 20;
 	g_briefingEnd = mission[k].blockSize;
@@ -532,7 +532,7 @@ u32 (cfg_writeGraphic)(void *f)
 #undef FPUTS
 }
 
-/* 0x42c6f0: the server section of axis.cfg written from the player's record (g_playerName): the name (with an extra
+/* 0x42c6f0: the server section of axis.cfg written from the player's record (g_arenaName): the name (with an extra
    line break by fprintf), the map and player count (signed bytes g_arenaMap / 41), customize on/off (g_arenaRotation), the
    game type (g_arenaGameType: 1 .. 14 by name, any other DEATH MATCH) and the game and time flags (bytes g_arenaFragLimit / 45).
    Returns the last fputs */
@@ -541,7 +541,7 @@ u32 (cfg_writeServer)(void *f)
 #define FPUTS(s) GAME_CDECL(0x49f167, u32, const char *, void *)((const char *)RELOC(s), f)
 	static const u32 type[15] = { STR(0x4b1878, "DEATH MATCH\n"), STR(0x4b1988, "TEAM DEATH MATCH\n"), STR(0x4b1978, "SUDDEN DEATH\n"), STR(0x4b1964, "TEAM SUDDEN DEATH\n"), STR(0x4b1954, "SHOTGUN ARENA\n"), STR(0x4b1940, "TEAM SHOTGUN ARENA\n"), STR(0x4b192c, "IONCANNON ARENA\n"), STR(0x4b1914, "TEAM IONCANNON ARENA\n"),
 	                              STR(0x4b1904, "ROCKET ARENA\n"), STR(0x4b18f0, "TEAM ROCKET ARENA\n"), STR(0x4b18dc, "GLADIATOR ARENA\n"), STR(0x4b18c4, "TEAM GLADIATOR ARENA\n"), STR(0x4b18b0, "KING ON THE HILL\n"), STR(0x4b18a0, "PLATOON MODE\n"), STR(0x4b1888, "ACCEPT ADVANCED MODE\n") };
-	const u8 *me = (const u8 *)OBJ(g_playerName);
+	const u8 *me = (const u8 *)OBJ(g_arenaName);
 	char number[12];
 	FPUTS(STR(0x4b19f0, "set_server name "));
 	FPUTS(me);
@@ -571,16 +571,16 @@ u32 (cfg_writeServer)(void *f)
 }
 
 /* 0x43f160: the command line the launcher started the game with, split at spaces into g_launchArgs (the count in
-   g_argCount). "-net" alone: started for a network game when axiswl.dat is there (g_startedFromLobby and g_startedByLauncher set);
-   "-ip x <server>": the server's address into g_serverAddressArg (g_startedFromLobby set). Empty or longer than 0x400: nothing.
+   g_argCount). "-net" alone: started for a network game when axiswl.dat is there (g_launchedForNetGame and g_launchedAsHost set);
+   "-ip x <server>": the server's address into g_serverAddressArg (g_launchedForNetGame set). Empty or longer than 0x400: nothing.
    Returns what the original leaves in eax (the count, the comparison, fclose's or strcpy's length) */
 u32 (app_parseCommandLine)(char *line)
 {
 	size_t length = strlen(line);
 	if (length > 0x400 || length <= 1) {
 		g_argCount = 0;
-		g_startedFromLobby = 0;
-		g_startedByLauncher = 0;
+		g_launchedForNetGame = 0;
+		g_launchedAsHost = 0;
 		return 0;
 	}
 	char **args = (char **)OBJ(g_launchArgs);
@@ -590,8 +590,8 @@ u32 (app_parseCommandLine)(char *line)
 		args[g_argCount++] = word;
 		word = crt_strtok(NULL, (const char *)STR(0x4b035c, " "));
 	} while (word);
-	g_startedFromLobby = 0;
-	g_startedByLauncher = 0;
+	g_launchedForNetGame = 0;
+	g_launchedAsHost = 0;
 	u32 r = (*(u32 *)&g_argCount);
 	if (r == 1) {
 		r = (u32)str_order(args[0], (const char *)STR(0x4b2880, "-net"));
@@ -599,8 +599,8 @@ u32 (app_parseCommandLine)(char *line)
 			return r;
 		void *f = crt_fopen((const char *)STR(0x4ad5e4, "axiswl.dat"), (const char *)STR(0x4ad5e0, "rt"));
 		if (f) {
-			g_startedFromLobby = 1;
-			g_startedByLauncher = 1;
+			g_launchedForNetGame = 1;
+			g_launchedAsHost = 1;
 			r = fclose(f);
 		}
 	}
@@ -609,9 +609,9 @@ u32 (app_parseCommandLine)(char *line)
 	r = (u32)str_order(args[1], (const char *)STR(0x4b287c, "-ip"));
 	if (r)
 		return r;
-	g_startedFromLobby = 1;
+	g_launchedForNetGame = 1;
 	memset((void *)OBJ(g_serverAddressArg), 0, 0x400);
-	g_startedByLauncher = 0;
+	g_launchedAsHost = 0;
 	strcpy(g_serverAddressArg, args[2]);
 	return strlen(args[2]) + 1;
 }
@@ -663,11 +663,11 @@ u32 (data_loadMessages)(void)
 	return fclose(f);
 }
 
-/* ---- the pilot's campaign file (in the save folder: the pilot's name + 0x4b2afc): the 0x3ac-byte record g_campaign
+/* ---- the pilot's campaign file (in the save folder: the pilot's name + 0x4b2afc): the 0x3ac-byte record g_pilotSave
    (a signature 0x4b0fa0 first, the pilot's name at +0x80, its value at +0x100) between blocks of noise, 20000 bytes
    before it and 24999 after (the same 10000 random bytes below 0xfe each time), scrambled with key 0x7e ---- */
-#define g_pilot g_pilotChosen               /* the pilot chosen in the list */
-#define pilot_name(i) ((const char *)(OBJ(g_profileList) + (i) * 0x48))
+#define g_pilot g_profileChosen               /* the pilot chosen in the list */
+#define pilot_name(i) ((const char *)(OBJ(g_profileNames) + (i) * 0x48))
 
 /* the current profile's name as axisuser.dat keeps it */
 static void set_current_name(void)
@@ -699,7 +699,7 @@ static void pilot_write(void *f)
 	crt_fwrite(noise, 10000, 1, f);
 	crt_fwrite(noise, 10000, 1, f);
 	u8 record[0x3ac];
-	memcpy(record, g_campaign, sizeof record);
+	memcpy(record, g_pilotSave, sizeof record);
 	save_cryptRecord(record, 0x7e);
 	crt_fwrite(record, sizeof record, 1, f);
 	crt_fwrite(noise, 10000, 1, f);
@@ -721,7 +721,7 @@ int (profile_saveProgress)(void)
 	char path[0x80];
 	pilot_path(path);
 	f = crt_fopen(path, (const char *)STR(0x4b2ab0, "wb"));
-	(*(u32 *)&g_selectedCharacter) = GAME_VAR(u32, OBJ(g_profileList) + 0x40 + g_pilot * 0x48);
+	(*(u32 *)&g_selectedCharacter) = GAME_VAR(u32, OBJ(g_profileNames) + 0x40 + g_pilot * 0x48);
 	if (f)
 		pilot_write(f);
 	fclose(f);
@@ -732,29 +732,29 @@ int (profile_saveProgress)(void)
    0x4b2ae4) and settings, twelve (170, 0.4, 0) triples */
 static void campaign_new(void)
 {
-	memset(g_campaign, 0, 0x80);
-	strcpy((char *)g_campaign, (const char *)STR(0x4b0fa0, "AXIS USER PROFILE DATA Master ver 1.0..."));
-	memset((void *)(OBJ(g_campaign) + 0x80), 0, 0x80);
-	memcpy((void *)(OBJ(g_campaign) + 0x80), pilot_name(g_pilot), 0x80);
-	(*(u32 *)&g_selectedCharacter) = GAME_VAR(u32, OBJ(g_profileList) + 0x40 + g_pilot * 0x48);
+	memset(g_pilotSave, 0, 0x80);
+	strcpy((char *)g_pilotSave, (const char *)STR(0x4b0fa0, "AXIS USER PROFILE DATA Master ver 1.0..."));
+	memset((void *)(OBJ(g_pilotSave) + 0x80), 0, 0x80);
+	memcpy((void *)(OBJ(g_pilotSave) + 0x80), pilot_name(g_pilot), 0x80);
+	(*(u32 *)&g_selectedCharacter) = GAME_VAR(u32, OBJ(g_profileNames) + 0x40 + g_pilot * 0x48);
 	g_progress = 0;
-	memset((void *)(OBJ(g_campaign) + 0x108), 0, 0x190);
-	memset((void *)(OBJ(g_campaign) + 0x298), 0, 0x40);
-	static const u32 cleared[6] = { (OBJ(g_campaign) + 0x2d8), (OBJ(g_campaign) + 0x2f4), (OBJ(g_campaign) + 0x2dc), (OBJ(g_campaign) + 0x2f8), (OBJ(g_campaign) + 0x314), (OBJ(g_campaign) + 0x318) };
+	memset((void *)(OBJ(g_pilotSave) + 0x108), 0, 0x190);
+	memset((void *)(OBJ(g_pilotSave) + 0x298), 0, 0x40);
+	static const u32 cleared[6] = { (OBJ(g_pilotSave) + 0x2d8), (OBJ(g_pilotSave) + 0x2f4), (OBJ(g_pilotSave) + 0x2dc), (OBJ(g_pilotSave) + 0x2f8), (OBJ(g_pilotSave) + 0x314), (OBJ(g_pilotSave) + 0x318) };
 	for (int i = 0; i < 6; i++)
 		GAME_VAR(u32, cleared[i]) = 0;
-	strcpy((char *)(OBJ(g_campaign) + 0x2d8), (const char *)STR(0x4b2af4, "[TRAP]"));
-	strcpy((char *)(OBJ(g_campaign) + 0x2f4), (const char *)STR(0x4b2aec, "[NOPA]"));
-	strcpy((char *)(OBJ(g_campaign) + 0x314), (const char *)STR(0x4b2ae4, "[ROLO]"));
+	strcpy((char *)(OBJ(g_pilotSave) + 0x2d8), (const char *)STR(0x4b2af4, "[TRAP]"));
+	strcpy((char *)(OBJ(g_pilotSave) + 0x2f4), (const char *)STR(0x4b2aec, "[NOPA]"));
+	strcpy((char *)(OBJ(g_pilotSave) + 0x314), (const char *)STR(0x4b2ae4, "[ROLO]"));
 	g_profileMechItem5 = -1;
 	g_profileMechItem0 = -1;
-	for (u32 a = ADDR(g_profileMechRecord); a <= ADDR(g_profileMechBooster); a += 4)
+	for (u32 a = ADDR(g_profileMechHead); a <= ADDR(g_profileMechBooster); a += 4)
 		GAME_VAR(int, a) = 0;
 	g_profileMechItem2 = 0;
 	g_profileMechItem3 = 2;
 	g_profileMechItem4 = 8;
 	g_profileMechItem1 = 0x11;
-	for (u32 *t = (u32 *)(OBJ(g_campaign) + 0x31c); t < (u32 *)(OBJ(g_campaign) + 0x3ac); t += 3) {
+	for (u32 *t = (u32 *)(OBJ(g_pilotSave) + 0x31c); t < (u32 *)(OBJ(g_pilotSave) + 0x3ac); t += 3) {
 		t[0] = 0x432a0000;   /* 170 */
 		t[1] = 0x3ecccccd;   /* 0.4 */
 		t[2] = 0;
@@ -799,8 +799,8 @@ static int campaign_signed(const char *path)
 }
 
 /* 0x446a10: the chosen pilot made current: axisuser.dat written (no file: nothing more); the pilot's file read
-   into g_campaign (its name from the list at +0x80) when it is there and signed, else a new record made and written;
-   then the mech read, g_progressWentUp / g_skirmishBriefing cleared, g_profileProgressSaved = the progress. Returns mech_loadFromProfile's eax */
+   into g_pilotSave (its name from the list at +0x80) when it is there and signed, else a new record made and written;
+   then the mech read, g_progressWentUp / g_skirmishBriefing cleared, g_progressSeen = the progress. Returns mech_loadFromProfile's eax */
 u32 (profile_makeCurrent)(void)
 {
 	set_current_name();
@@ -819,8 +819,8 @@ u32 (profile_makeCurrent)(void)
 			u8 record[0x3ac];
 			crt_fread(record, sizeof record, 1, f);
 			save_cryptRecord(record, 0x7e);
-			memcpy(g_campaign, record, sizeof record);
-			memcpy((void *)(OBJ(g_campaign) + 0x80), pilot_name(g_pilot), 0x80);
+			memcpy(g_pilotSave, record, sizeof record);
+			memcpy((void *)(OBJ(g_pilotSave) + 0x80), pilot_name(g_pilot), 0x80);
 		}
 	} else {
 		campaign_new();
@@ -833,7 +833,7 @@ u32 (profile_makeCurrent)(void)
 	u32 r = mech_loadFromProfile();
 	g_progressWentUp = 0;
 	g_skirmishBriefing = 0;
-	g_profileProgressSaved = g_progress;
+	g_progressSeen = g_progress;
 	return r;
 }
 
@@ -868,7 +868,7 @@ u32 (profile_readHeader)(void)
 	}
 	crt_chdir((const char *)STR(0x4b2a80, ".."));
 	for (int i = 0; i < g_profileCount; i++)
-		if (str_order((const char *)(OBJ(g_profileList) + i * 0x48), g_profileName) == 0) {
+		if (str_order((const char *)(OBJ(g_profileNames) + i * 0x48), g_profileName) == 0) {
 			g_currentProfile = i;
 			break;
 		}
@@ -949,7 +949,7 @@ void (data_loadCharacterProfiles)(void)
 
 /* 0x42b830: mapinfo.dat read (from the maps' folder g_mapInfoDir): its header must start with "AXIS MAP INFOMATION DATA
    FILE" and have 0x1a at +0x32, else the game ends with "Map Infomation Data File Not Found"; then the map count
-   (g_arenaMapCount) and for each map its 32-byte name (g_mapNames) and 0x50-byte description (g_mapAbouts), both decoded
+   (g_mapCount) and for each map its 32-byte name (g_mapNames) and 0x50-byte description (g_mapAbouts), both decoded
    (str_invert), and the names' trailing spaces cut. Returns 0, or the count when there are none */
 u32 (data_loadMapInfo)(void)
 {
@@ -964,8 +964,8 @@ u32 (data_loadMapInfo)(void)
 		fclose(f);
 		data_missing(STR(0x4b14e0, "Map Infomation Data File Not Found"));
 	}
-	crt_fread((void *)ADDR(g_arenaMapCount), 4, 1, f);
-	for (int i = 0; i < g_arenaMapCount; i++) {
+	crt_fread((void *)ADDR(g_mapCount), 4, 1, f);
+	for (int i = 0; i < g_mapCount; i++) {
 		char *name = (char *)(OBJ(g_mapNames) + i * 0x20), *about = (char *)(OBJ(g_mapAbouts) + i * 0x50);
 		crt_fread(name, 0x20, 1, f);
 		str_invert(name);    /* str_invert: decoded */
@@ -973,7 +973,7 @@ u32 (data_loadMapInfo)(void)
 		str_invert(about);
 	}
 	fclose(f);
-	int count = g_arenaMapCount;
+	int count = g_mapCount;
 	if (count <= 0)
 		return count;
 	for (int i = 0; i < count; i++) {
@@ -987,7 +987,7 @@ u32 (data_loadMapInfo)(void)
 /* 0x40d4e0: an arena's settings file read (text, "rt"): each line (but // comments) split at spaces and tabs, a
    keyword taking the next word as its value: gamename (into g_arenaGameName, 32 bytes), secret (g_arenaFileSecret), password
    (g_arenaFilePassword, 8 bytes), gametype (g_arenaFileGameType), maxplayer (g_arenaFilePlayers), map (g_arenaFileMap), fraglimit (g_arenaFileFragLimit), timelimit
-   (g_cmdTimeLimit; the original then reads on from the keyword, not the value). Each test sees the word the one before
+   (g_arenaFileTimeLimit; the original then reads on from the keyword, not the value). Each test sees the word the one before
    left. Returns 1, or 0 when the file does not open */
 int (arena_loadSettings)(const char *path)
 {
@@ -1028,7 +1028,7 @@ int (arena_loadSettings)(const char *path)
 					GAME_VAR(int, numbers[k].into) = crt_atoi(word);
 				}
 			if (!strcmp(word, (const char *)STR(0x4ad588, "timelimit")))   /* timelimit */
-				g_cmdTimeLimit = crt_atoi(crt_strtok(NULL, gaps));
+				g_arenaFileTimeLimit = crt_atoi(crt_strtok(NULL, gaps));
 			word = crt_strtok(NULL, gaps);
 		}
 	}
@@ -1134,7 +1134,7 @@ static int named(const char *value, const u32 *names, int count)
 
 #define IS_ON(value) (!strcmp((value), (const char *)STR(0x4b21bc, "ON")))
 
-/* 0x42da70: the server section read back: the server's name (words joined by spaces, cut once more; g_playerName),
+/* 0x42da70: the server section read back: the server's name (words joined by spaces, cut once more; g_arenaName),
    the map (0 .. 21, else 0; g_arenaMap), the players (0 .. 16, else 8; g_arenaPlayers), a switch (ON; g_arenaRotation), the game
    type (TEAM DEATH MATCH 1 .. ACCEPT ADVANCED MODE 14, else 0; g_arenaGameType), two limits (above 250: 30; g_arenaFragLimit /
    g_arenaTimeLimit); then one more line */
@@ -1150,7 +1150,7 @@ void (cfg_readServer)(void *f)
 		switch (n) {
 		case 0:
 			str_dropLast(b.value);
-			strcpy(g_playerName, b.value);
+			strcpy(g_arenaName, b.value);
 			break;
 		case 1:
 			v = (signed char)crt_atoi(b.value);
@@ -1169,7 +1169,7 @@ void (cfg_readServer)(void *f)
 			break;
 		default: {
 			u8 limit = (u8)crt_atoi(b.value);
-			(*(u8 *)&g_playerName[0x24 + (n - 5)]) = limit > 250 ? 30 : limit;
+			(*(u8 *)&g_arenaName[0x24 + (n - 5)]) = limit > 250 ? 30 : limit;
 			break;
 		}
 		}
@@ -1248,7 +1248,7 @@ void (cfg_init)(void)
 	strcpy(s.path, g_dataDir);
 	strcat(s.path, (const char *)STR(0x4b2198, "\\axis.cfg"));
 	memset((void *)OBJ(g_cfgPlayerName), 0, 32);
-	memset((void *)OBJ(g_playerName), 0, 32);
+	memset((void *)OBJ(g_arenaName), 0, 32);
 	void *f = crt_fopen(s.path, (const char *)STR(0x4ad5e0, "rt"));
 	if (f) {
 		__asm__("" : "=m"(s.line));   /* (left as the stack holds it until fgets writes it) */
@@ -1275,7 +1275,7 @@ void (cfg_init)(void)
 	strcpy(g_cfgPlayerName, (const char *)STR(0x4ad4b0, "PLAYER"));
 	g_playerCorporation = 0;
 	g_playerSex = 0;
-	strcpy(g_playerName, (const char *)STR(0x4ad4a4, "AXIS ARENA"));
+	strcpy(g_arenaName, (const char *)STR(0x4ad4a4, "AXIS ARENA"));
 	g_soundVolume = 100;
 	g_musicVolume = 100;
 	static const u8 server[6] = { 0, 8, 0, 0, 0, 0 };   /* 0x4ded40 (g_arenaMap ..): map 0, 8 players (numofplayer), the rest 0 */
@@ -1339,7 +1339,7 @@ void (profile_scanSaves)(void)
 	profile_readHeader();
 	profile_writeCleared(valid);
 	for (int i = 0; i < count; i++)
-		if (!strcmp(g_profileList + i * 0x48, g_profileName)) {
+		if (!strcmp(g_profileNames + i * 0x48, g_profileName)) {
 			g_currentProfile = i;
 			return;
 		}
@@ -1373,7 +1373,7 @@ u32 THISCALL (catalogue_loadComponents)(u8 *scene, const char *path)
 /* 0x487cb0 (thiscall on the scene): a recording started (one going is stopped first: replay_closeRecording): the file
    AutoPlay\name.ape, or without a name the first of AutoPlay000 .. AutoPlay999 not there yet (the name kept at
    recordName; none free, or the file not made: nothing more). Recording (recording 1, the clock recordTime 0), the
-   header written: version 0x1201, the settings (g_matchMode, g_mapIndex, the 32 bytes at g_mapTitle, g_mapRotation), the map
+   header written: version 0x1201, the settings (g_matchMode, g_mapIndex, the 32 bytes at g_gameTitle, g_mapRotation), the map
    (gameMode), g_fragLimit and g_timeLimit. Every player in use (net_playerInUse) is flagged to be sent (sendFlags[][2],
    sendFlags[][3]), the shown one (localPlayer) too (sendFlags[][1], sendFlags, its playerRecords[].flagSent cleared). Its caller ignores
    the eax it leaves */
@@ -1406,7 +1406,7 @@ void THISCALL (autoplay_startRecording)(u8 *s, const char *name)
 	file_writeScrambled(&value, 4, 1, sc->replayFile);
 	file_writeScrambled((void *)ADDR(g_matchMode), 4, 1, sc->replayFile);
 	file_writeScrambled((void *)ADDR(g_mapIndex), 4, 1, sc->replayFile);
-	file_writeScrambled((void *)OBJ(g_mapTitle), 1, 0x20, sc->replayFile);
+	file_writeScrambled((void *)OBJ(g_gameTitle), 1, 0x20, sc->replayFile);
 	file_writeScrambled((void *)ADDR(g_mapRotation), 4, 1, sc->replayFile);
 	value = sc->gameMode;
 	file_writeScrambled(&value, 4, 1, sc->replayFile);

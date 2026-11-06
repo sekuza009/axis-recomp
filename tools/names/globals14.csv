@@ -50,19 +50,19 @@
 0x9dd1c0,int,g_roomFormRight
 0x9dd1c4,int,g_roomFormBottom
 # the menus' camera points
-0x9db090,int,g_menuCameraX
-0x9db094,int,g_menuCameraY
-0x9db098,int,g_menuCameraZ
-0x76d3f8,int,g_menuLookAtX
-0x76d3fc,int,g_menuLookAtY
-0x76d400,int,g_menuLookAtZ
+0x9db090,int,g_menuEyeHomeX
+0x9db094,int,g_menuEyeHomeY
+0x9db098,int,g_menuEyeHomeZ
+0x76d3f8,int,g_menuLookHomeX
+0x76d3fc,int,g_menuLookHomeY
+0x76d400,int,g_menuLookHomeZ
 # the network: buffers, replies, DirectPlay caps
 0xa0b33c,char *,g_netLeaveBuffer
 0xa0b314,u8 *,g_arenaInfoPacket
 0xa0b30c,u32 *,g_netKindBuffer
-0xa0b308,char *,g_netSendBuffer
-0xa0b304,char *,g_netSendName
-0xa0b31c,u32 *,g_netLobbyMessage
+0xa0b308,char *,g_gameServerKeepAlive
+0xa0b304,char *,g_lobbyKeepAlive
+0xa0b31c,u32 *,g_arenaListRequest
 0xa0b338,u8 *,g_netPlayerRecordPacket
 0xa0b340,u8 *,g_netSelectionPacket
 0xa0b344,char *,g_netAccountBuffer
@@ -80,10 +80,10 @@
 0x9f9424,int,g_netClaimedSlot
 # the ARM CENTER, the profile, missions
 0x4dc870,int,g_armcLevel
-0x4dc890,int,g_armcLastPart
+0x4dc890,int,g_boosterCount
 0x4b2a74,int,g_tunnelStep
 0x4b2a78,float,g_tunnelStepF
-0x9f62fc,int,g_profileProgressSaved
+0x9f62fc,int,g_progressSeen
 0x9f6328,int,g_skirmishChosen
 0x90d1d8,int,g_skirmishInfoCount
-0x9dd4bc,int,g_gameListJoinClicked
+0x9dd4bc,int,g_gameListRefreshClicked

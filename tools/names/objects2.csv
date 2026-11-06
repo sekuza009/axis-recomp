@@ -81,13 +81,13 @@
 0x4dc4b8,float,0x24,g_armcColours,the ARM CENTER's colour choices (0x90 bytes: six values per slot)
 0x9dd6d8,char,0xc,g_accountOldPassword,(12 bytes)
 0xa1f23c,u8,4,g_packedWhite,a packed colour (ff ff ff ff: colour_initPackedWhite)
-0xa0d320,char,0x64,g_serverAddress,the server's address text (100 bytes)
+0xa0d320,char,0x64,g_resolvedAddress,the server's address text (100 bytes)
 0x9dd878,u16,8,g_clockLastTime,a SYSTEMTIME (sys_checkClockTampering)
 0x9dd8d0,u16,8,g_clockNowTime,a SYSTEMTIME
 0x4dba98,u32,4,g_arenaBright,the arena lobby's bright colour
 0x4db8a0,u32,4,g_arenaDim,the arena lobby's dim colour
 0x9f8d58,u32,4,g_profileDim,the profile screen's dim colour
 0x907b30,char,0x20,g_mapNames,0x20 bytes a map (extent unknown: the first)
-0x9f684c,char,0x48,g_profileList,0x48 bytes a profile (extent unknown: the first)
+0x9f684c,char,0x48,g_profileNames,0x48 bytes a profile (extent unknown: the first)
 0x9087c4,u8,0x4a,g_gameList,0x4a bytes a game (extent unknown: the first)
 0x9f9040,u8,0x4c,g_characterProfiles,0x4c bytes a record (extent unknown: the first)

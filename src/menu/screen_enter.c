@@ -25,17 +25,17 @@ static void clear_all(const u32 *a, int n)
 #define CLEAR_ALL(table) clear_all(table, sizeof table / sizeof table[0])
 
 /* the camera's target points 0 .. n-1 (16 bytes apart from g_camPoint0X, look-at points from g_camAim0X) at its height,
-   and the current position as home (g_menuCameraX) */
+   and the current position as home (g_menuEyeHomeX) */
 static void camera_heights(int n)
 {
-	int z = g_menuCameraHeight;
+	int z = g_menuCameraLookZ;
 	for (int i = 0; i < n; i++) {
 		I(ADDR(g_camPoint0Z) + i * 0x10) = z;
 		I(ADDR(g_camAim0Z) + i * 0x10) = z;
 	}
-	g_menuCameraX = (*(int *)&g_menuCameraPos);
-	g_menuCameraY = (*(int *)&g_armcCamHeight);
-	g_menuCameraZ = (*(int *)&g_armcCamDistance);
+	g_menuEyeHomeX = (*(int *)&g_menuCameraPos);
+	g_menuEyeHomeY = (*(int *)&g_menuEyeY);
+	g_menuEyeHomeZ = (*(int *)&g_menuEyeZ);
 }
 
 /* the four target and look-at points of the lobby and setup screens: (+-35, 0) looking at (-+70, +-35) */
@@ -54,11 +54,11 @@ void (menuState300_enter)(void)
 	(*(u32 *)&g_flareSizeA) = 0x42400000;   /* 48 */
 	(*(u32 *)&g_flareStepB) = 0x3e4ccccd;   /* 0.2 */
 	(*(u32 *)&g_flareStepA) = 0xbe4ccccd;   /* -0.2 */
-	(*(int *)&g_cursorBlink) = 0;
+	(*(int *)&g_menuRepeatClock) = 0;
 	g_menuIdleTime = 0;
 	g_menuHintStep = 0x3d4ccccd;   /* 0.05 */
-	g_menuHintClock = 0;
-	g_mainMenuPicked = 0;
+	g_menuHintFade = 0;
+	g_replaySelectOpen = 0;
 	g_replaySelectLitR = 0;
 	g_replaySelectLitG = ONE;
 	g_replaySelectLitB = ONE;
@@ -74,12 +74,12 @@ void (menuState300_enter)(void)
 void (menuState400_enter)(void)
 {
 	static const Store layout[] = {
-		{ OBJ(g_lobbyTopEase), 0 }, { ADDR(g_lobbySubState), 5 }, { OBJ(g_lobbyTopRect), 0x50 }, { (OBJ(g_lobbyTopRect) + 0x4), 0x96 }, { (OBJ(g_lobbyTopRect) + 0x8), 0x230 }, { (OBJ(g_lobbyTopRect) + 0xc), 0x15e },
+		{ OBJ(g_lobbySlideEase), 0 }, { ADDR(g_lobbySubState), 5 }, { OBJ(g_lobbyTopRect), 0x50 }, { (OBJ(g_lobbyTopRect) + 0x4), 0x96 }, { (OBJ(g_lobbyTopRect) + 0x8), 0x230 }, { (OBJ(g_lobbyTopRect) + 0xc), 0x15e },
 		{ ADDR(g_playerSetupRight), 0x21c }, { ADDR(g_playerSetupBottom), 0x190 }, { ADDR(g_arenaGameListRight), 0x262 }, { ADDR(g_newArenaFormLeft), 0x28 }, { ADDR(g_newArenaFormTop), 0x1e },
 		{ ADDR(g_newArenaFormRight), 0x258 } };
-	static const u32 cleared1[] = { ADDR(g_typingArenaName), ADDR(g_editingNewArenaName), ADDR(g_editingNewArenaFragLimit), ADDR(g_editingNewArenaTimeLimit), ADDR(g_typingArenaPassword), ADDR(g_lanSearch), ADDR(g_lobbySearching), ADDR(g_arenaHaveList),
-	                                ADDR(g_arenaListFull), ADDR(g_gameCount), ADDR(g_lobbyBlinkClock) };
-	static const u32 cleared2[] = { ADDR(g_pickedGame), ADDR(g_gameListTop), ADDR(g_lobbyListRow), ADDR(g_arenaSearchStarted), ADDR(g_serverSearching), OBJ(g_arenaBright), ADDR(g_arenaUpdateNotice), ADDR(g_arenaLobbyState) };
+	static const u32 cleared1[] = { ADDR(g_typingArenaPlayerName), ADDR(g_editingNewArenaName), ADDR(g_editingNewArenaFragLimit), ADDR(g_editingNewArenaTimeLimit), ADDR(g_typingArenaPassword), ADDR(g_lanSearch), ADDR(g_lobbySearching), ADDR(g_arenaLanListBuilt),
+	                                ADDR(g_arenaServerList), ADDR(g_gameCount), ADDR(g_lobbyBlinkClock) };
+	static const u32 cleared2[] = { ADDR(g_pickedGame), ADDR(g_gameListTop), ADDR(g_gameListRow), ADDR(g_lanSearchStarted), ADDR(g_serverSearching), OBJ(g_arenaBright), ADDR(g_arenaUpdateNotice), ADDR(g_arenaLobbyState) };
 	static const Store state[] = {
 		{ ADDR(g_arenaCameraMode), 2 }, { ADDR(g_lastPanel), 999 }, { (OBJ(g_arenaBright) + 0x4), ONE }, { (OBJ(g_arenaBright) + 0x8), ONE }, { (OBJ(g_arenaBright) + 0xc), ONE },
 		{ OBJ(g_arenaDim), 0x3e99999a }, { (OBJ(g_arenaDim) + 0x4), 0x3f333333 }, { (OBJ(g_arenaDim) + 0x8), 0x3f333333 }, { (OBJ(g_arenaDim) + 0xc), ONE }, { ADDR(g_unusedArenaWord), 0xf },
@@ -88,20 +88,20 @@ void (menuState400_enter)(void)
 	arena_clearSessionEntry();
 	g_playerSetupLeft = 0x64;
 	g_playerSetupTop = 0x64;
-	(*(int *)&g_cursorBlink) = 0;
+	(*(int *)&g_menuRepeatClock) = 0;
 	g_arenaGameListLeft = 0x14;
 	g_arenaGameListTop = 0x14;
 	g_arenaTunnelDepth = 0xc4af0000;   /* -1400 */
 	g_arenaGameListBottom = 0x1c2;
 	g_newArenaFormBottom = 0x1c2;
-	g_lobbyPanelsOff = 1;
+	g_lobbyPanelsSliding = 1;
 	camera_heights(4);
-	int lx = (*(int *)&g_menuCameraLook), ly = (*(int *)&g_menuCameraLookY), lz = g_menuCameraHeight;
+	int lx = (*(int *)&g_menuCameraLook), ly = (*(int *)&g_menuCameraLookY), lz = g_menuCameraLookZ;
 	STORE_ALL(layout);
 	STORE_ALL(camera4);
-	g_menuLookAtX = lx;
-	g_menuLookAtY = ly;
-	g_menuLookAtZ = lz;
+	g_menuLookHomeX = lx;
+	g_menuLookHomeY = ly;
+	g_menuLookHomeZ = lz;
 	CLEAR_ALL(cleared1);
 	lobbyTop_layout();
 	playerSetup_layout();
@@ -118,24 +118,24 @@ void (menuState400_enter)(void)
 void (menuState600_enterSetup)(void)
 {
 	static const Store layout[] = {
-		{ ADDR(g_setupTab), 0x29a }, { ADDR(g_setupTunnelDepth), 0xc4af0000 }, { ADDR(g_setupPanelMoving), 1 }, { ADDR(g_setupPanelPos), 0 }, { ADDR(g_setupPage), 2 },
+		{ ADDR(g_setupTab), 0x29a }, { ADDR(g_setupTunnelDepth), 0xc4af0000 }, { ADDR(g_setupPanelMoving), 1 }, { ADDR(g_setupPanelPos), 0 }, { ADDR(g_setupCameraMode), 2 },
 		{ ADDR(g_setupSoundLeft), 0x32 }, { (OBJ(g_setupSoundRect) + 0x4), 0x3c }, { (OBJ(g_setupSoundRect) + 0xc), 0x1a4 }, { OBJ(g_setupGraphicRect), 0x64 }, { (OBJ(g_setupGraphicRect) + 0x8), 0x21c },
 		{ (OBJ(g_setupGraphicRect) + 0xc), 0x1c2 }, { ADDR(g_setupControlLeft), 0x28 }, { (OBJ(g_setupControlRect) + 0xc), 0x1b8 } };
 	static const Store colours[] = {
 		{ OBJ(g_setupColourLit), 0 }, { (OBJ(g_setupColourLit) + 0x4), ONE }, { (OBJ(g_setupColourLit) + 0x8), ONE }, { (OBJ(g_setupColourLit) + 0xc), ONE }, { OBJ(g_setupColourDim), 0 },
-		{ (OBJ(g_setupColourDim) + 0x4), 0x3f19999a }, { (OBJ(g_setupColourDim) + 0x8), 0x3f19999a }, { (OBJ(g_setupColourDim) + 0xc), ONE }, { ADDR(g_setupStripeScroll), 0 }, { ADDR(g_menuTunnelSpeed), ONE },
+		{ (OBJ(g_setupColourDim) + 0x4), 0x3f19999a }, { (OBJ(g_setupColourDim) + 0x8), 0x3f19999a }, { (OBJ(g_setupColourDim) + 0xc), ONE }, { ADDR(g_tunnelStripeScroll), 0 }, { ADDR(g_menuTunnelSpeed), ONE },
 		{ ADDR(g_tunnelPulse), 0 }, { ADDR(g_tunnelPulseStep), ONE } };
 	g_setupGraphicTop = 0x1e;
 	g_setupControlTop = 0x1e;
 	g_setupSoundRight = 0x24e;
 	g_setupControlRight = 0x24e;
 	camera_heights(4);
-	int lx = (*(int *)&g_menuCameraLook), ly = (*(int *)&g_menuCameraLookY), lz = g_menuCameraHeight;
+	int lx = (*(int *)&g_menuCameraLook), ly = (*(int *)&g_menuCameraLookY), lz = g_menuCameraLookZ;
 	STORE_ALL(layout);
 	STORE_ALL(camera4);
-	g_menuLookAtX = lx;
-	g_menuLookAtY = ly;
-	g_menuLookAtZ = lz;
+	g_menuLookHomeX = lx;
+	g_menuLookHomeY = ly;
+	g_menuLookHomeZ = lz;
 	setupSound_layout();
 	setupGraphic_layout();
 	setupControl_layout();
@@ -157,21 +157,21 @@ void (menuState600_enterSetup)(void)
 void (menuState800_enterGameRoom)(void)
 {
 	static const Store layout[] = {
-		{ ADDR(g_roomTunnelDepth), 0xc4af0000 }, { ADDR(g_roomDialogOpen), 1 }, { ADDR(g_roomPanelEase), 0 }, { ADDR(g_roomCameraMode), 2 }, { ADDR(g_roomPanelBrightness), 0x3f333333 },
+		{ ADDR(g_roomTunnelDepth), 0xc4af0000 }, { ADDR(g_roomPanelsSliding), 1 }, { ADDR(g_unusedRoomPanelEase), 0 }, { ADDR(g_roomCameraMode), 2 }, { ADDR(g_unusedRoomFloat), 0x3f333333 },
 		{ ADDR(g_roomState), 0x42 }, { ADDR(g_connectionAwaited), 0 }, { ADDR(g_roomLoginLeft), 0x32 }, { ADDR(g_roomLoginTop), 0x6e }, { ADDR(g_roomLoginRight), 0x24e },
 		{ ADDR(g_roomLoginBottom), 0x172 }, { ADDR(g_accountPanelLeft), 0x3c }, { ADDR(g_accountPanelTop), 0x1e }, { ADDR(g_accountPanelRight), 0x244 }, { ADDR(g_accountPanelBottom), 0x1c2 },
 		{ ADDR(g_roomGameListLeft), 0x14 }, { ADDR(g_roomGameListTop), 0x28 }, { ADDR(g_roomGameListRight), 0x26c }, { ADDR(g_roomGameListBottom), 0x1b8 }, { ADDR(g_roomFormLeft), 0x28 },
-		{ ADDR(g_roomFormTop), 0x1e }, { ADDR(g_roomFormRight), 0x258 }, { ADDR(g_roomFormBottom), 0x1c2 }, { OBJ(g_roomMessageRect), 0x10 }, { (OBJ(g_roomMessageRect) + 0x4), 0x1e },
-		{ (OBJ(g_roomMessageRect) + 0x8), 0x268 }, { (OBJ(g_roomMessageRect) + 0xc), 0x1b8 } };
+		{ ADDR(g_roomFormTop), 0x1e }, { ADDR(g_roomFormRight), 0x258 }, { ADDR(g_roomFormBottom), 0x1c2 }, { OBJ(g_rankingRect), 0x10 }, { (OBJ(g_rankingRect) + 0x4), 0x1e },
+		{ (OBJ(g_rankingRect) + 0x8), 0x268 }, { (OBJ(g_rankingRect) + 0xc), 0x1b8 } };
 	static const Store colours_camera[] = {
-		{ ADDR(g_connectStep), 2 }, { OBJ(g_roomBright), 0 }, { (OBJ(g_roomBright) + 0x4), ONE }, { (OBJ(g_roomBright) + 0x8), ONE }, { (OBJ(g_roomBright) + 0xc), ONE },
+		{ ADDR(g_hostAnswer), 2 }, { OBJ(g_roomBright), 0 }, { (OBJ(g_roomBright) + 0x4), ONE }, { (OBJ(g_roomBright) + 0x8), ONE }, { (OBJ(g_roomBright) + 0xc), ONE },
 		{ OBJ(g_roomDim), 0x3e99999a }, { (OBJ(g_roomDim) + 0x4), 0x3f333333 }, { (OBJ(g_roomDim) + 0x8), 0x3f333333 }, { (OBJ(g_roomDim) + 0xc), ONE },
 		{ ADDR(g_camPoint0X), 0x41a00000 }, { ADDR(g_camPoint0Y), 0xc1200000 }, { ADDR(g_camAim0X), 0xc28c0000 }, { ADDR(g_camAim0Y), 0x425c0000 },
 		{ ADDR(g_camPoint1X), 0x41a00000 }, { (OBJ(g_camPoints) + 0x14), 0 }, { ADDR(g_camAim1X), 0xc28c0000 }, { ADDR(g_camAim1Y), 0 },
 		{ ADDR(g_camPoint2X), 0x41a00000 }, { ADDR(g_camPoint2Y), 0x41200000 }, { ADDR(g_camAim2X), 0xc28c0000 }, { ADDR(g_camAim2Y), 0xc25c0000 },
 		{ (OBJ(g_camPoints) + 0x30), 0xc1a00000 }, { (OBJ(g_camPoints) + 0x34), 0xc1200000 }, { (OBJ(g_camAims) + 0x30), 0x428c0000 }, { (OBJ(g_camAims) + 0x34), 0x425c0000 },
 		{ (OBJ(g_camPoints) + 0x40), 0xc1a00000 }, { (OBJ(g_camPoints) + 0x44), 0 }, { (OBJ(g_camAims) + 0x40), 0x428c0000 }, { (OBJ(g_camAims) + 0x44), 0 } };
-	static const u32 cleared[] = { ADDR(g_roomRequestOut), ADDR(g_roomAnswerAwaited), ADDR(g_unusedRoomWord), ADDR(g_arenaGameSetUp), ADDR(g_roomLoginDue), ADDR(g_rankingRequestPending), ADDR(g_roomConnected), ADDR(g_roomAwaitingServer),
+	static const u32 cleared[] = { ADDR(g_roomRequestOut), ADDR(g_newIdAnswerAwaited), ADDR(g_unusedRoomWord), ADDR(g_arenaGameSetUp), ADDR(g_roomLoginDue), ADDR(g_rankingRequestPending), ADDR(g_roomConnected), ADDR(g_roomAwaitingServer),
 	                               ADDR(g_roomUpdateNotice) };
 	g_matchMode = 2;
 	arena_clearSessionEntry();
@@ -185,9 +185,9 @@ void (menuState800_enterGameRoom)(void)
 	updateNotice_layout();
 	STORE_ALL(colours_camera);
 	camera_heights(5);
-	g_menuLookAtX = (*(int *)&g_menuCameraLook);
-	g_menuLookAtY = (*(int *)&g_menuCameraLookY);
-	g_menuLookAtZ = g_menuCameraHeight;
+	g_menuLookHomeX = (*(int *)&g_menuCameraLook);
+	g_menuLookHomeY = (*(int *)&g_menuCameraLookY);
+	g_menuLookHomeZ = g_menuCameraLookZ;
 	memset((void *)OBJ(g_ladderEmail), 0, 7 * 4 + 2);
 	g_ladderPassword = 0;
 	g_ladderPassword4 = 0;
@@ -201,7 +201,7 @@ void (menuState800_enterGameRoom)(void)
 	room_copyJoinedSettings();
 	g_retypePassword = 1;
 	CLEAR_ALL(cleared);
-	g_roomListPages = 999;
+	g_rankingLastPage = 999;
 }
 
 /* ---- the front end's per-frame dispatch ---- */
@@ -265,10 +265,10 @@ u32 (menu_enterState)(void)
 /* the skirmish and mission screens' camera: at (0, 0, -450) moving to (0, 0, -550), that place its home, one target
    point (0, 0, 100) looking at the origin */
 static const Store briefing_camera[] = {
-	{ ADDR(g_menuCameraPos), 0 }, { ADDR(g_armcCamHeight), 0 }, { ADDR(g_armcCamDistance), 0xc3e10000 }, { ADDR(g_menuCameraLook), 0 }, { ADDR(g_menuCameraLookY), 0 },
-	{ ADDR(g_menuCameraHeight), 0xc4098000 }, { ADDR(g_camPoint0X), 0 }, { ADDR(g_camPoint0Y), 0 }, { ADDR(g_camPoint0Z), 0x42c80000 }, { ADDR(g_camAim0X), 0 },
-	{ ADDR(g_camAim0Y), 0 }, { ADDR(g_camAim0Z), 0 }, { ADDR(g_menuCameraX), 0 }, { ADDR(g_menuCameraY), 0 }, { ADDR(g_menuCameraZ), 0xc3e10000 }, { ADDR(g_menuLookAtX), 0 },
-	{ ADDR(g_menuLookAtY), 0 }, { ADDR(g_menuLookAtZ), 0xc4098000 } };
+	{ ADDR(g_menuCameraPos), 0 }, { ADDR(g_menuEyeY), 0 }, { ADDR(g_menuEyeZ), 0xc3e10000 }, { ADDR(g_menuCameraLook), 0 }, { ADDR(g_menuCameraLookY), 0 },
+	{ ADDR(g_menuCameraLookZ), 0xc4098000 }, { ADDR(g_camPoint0X), 0 }, { ADDR(g_camPoint0Y), 0 }, { ADDR(g_camPoint0Z), 0x42c80000 }, { ADDR(g_camAim0X), 0 },
+	{ ADDR(g_camAim0Y), 0 }, { ADDR(g_camAim0Z), 0 }, { ADDR(g_menuEyeHomeX), 0 }, { ADDR(g_menuEyeHomeY), 0 }, { ADDR(g_menuEyeHomeZ), 0xc3e10000 }, { ADDR(g_menuLookHomeX), 0 },
+	{ ADDR(g_menuLookHomeY), 0 }, { ADDR(g_menuLookHomeZ), 0xc4098000 } };
 
 /* 0x443950: the mission list (screen 900, axis.mis; nothing in the menus opens it): the briefing camera, the briefing window and its colours, the page's
    panels (missionList_layout, briefing_layout), the page set to 10 (the mission list) with a sound, the mission list
@@ -276,7 +276,7 @@ static const Store briefing_camera[] = {
 int (menuState900_enterMissions)(void)
 {
 	static const Store setup[] = {
-		{ ADDR(g_briefingX), 0xa }, { ADDR(g_briefingY), 0x14 }, { ADDR(g_briefingRight), 0x276 }, { ADDR(g_briefingBottom), 0x1cc }, { OBJ(g_missionsColourLit), 0 },
+		{ ADDR(g_missionsWindowLeft), 0xa }, { ADDR(g_missionsWindowTop), 0x14 }, { ADDR(g_missionsWindowRight), 0x276 }, { ADDR(g_briefingBottom), 0x1cc }, { OBJ(g_missionsColourLit), 0 },
 		{ (OBJ(g_missionsColourLit) + 0x4), ONE }, { (OBJ(g_missionsColourLit) + 0x8), ONE }, { (OBJ(g_missionsColourLit) + 0xc), ONE }, { OBJ(g_missionsColourDim), 0 }, { (OBJ(g_missionsColourDim) + 0x4), 0x3f19999a },
 		{ (OBJ(g_missionsColourDim) + 0x8), 0x3f19999a }, { (OBJ(g_missionsColourDim) + 0xc), ONE }, { ADDR(g_missionsState), 1 }, { ADDR(g_screen), 900 }, { ADDR(g_lastScreen), 900 },
 		{ ADDR(g_nextScreen), 900 } };
@@ -295,7 +295,7 @@ int (menuState900_enterMissions)(void)
 
 /* 0x447750: the skirmish screen (screen 500; the main menu's SKIRMISH PLAY, rounds from skirmish.dat): the briefing camera, the window and its colours, the screen's panels
    (skirmish_layout), the round shown (g_skirmishShown, g_skirmishChosen) the campaign's next one (0x9f181c, at most 14), a sound;
-   a newly reached round (past g_profileProgressSaved) raises it and the briefing flag g_skirmishBriefing. Returns the campaign's mission */
+   a newly reached round (past g_progressSeen) raises it and the briefing flag g_skirmishBriefing. Returns the campaign's mission */
 int (menuState500_enterSkirmish)(void)
 {
 	static const Store setup[] = {
@@ -307,16 +307,16 @@ int (menuState500_enterSkirmish)(void)
 	STORE_ALL(setup);
 	skirmish_layout();   /* skirmish_layout */
 	g_skirmishShowBackground = 1;
-	g_skirmishBusy = 0;
+	g_skirmishLeft = 0;
 	int mission = g_progress < 15 ? g_progress : 14;
 	g_skirmishShown = mission;
 	g_skirmishChosen = mission;
 	g_skirmishPreviewDue = 1;
 	sound_playMenu(4);
 	g_skirmishBriefing = 0;
-	if (g_progress > g_profileProgressSaved) {
+	if (g_progress > g_progressSeen) {
 		g_skirmishBriefing = 1;
-		g_profileProgressSaved = g_progress;
+		g_progressSeen = g_progress;
 	}
 	return g_progress;
 }
@@ -332,28 +332,28 @@ u32 (menuState210_enter)(void)
 		{ ADDR(g_profilePageBottom), 0x1a4 }, { ADDR(g_newNameDialogLeft), 0x78 }, { ADDR(g_newNameDialogTop), 0x96 }, { ADDR(g_newNameDialogRight), 0x208 }, { ADDR(g_newNameDialogBottom), 0x118 },
 		{ ADDR(g_profileDialogX), 0x78 }, { ADDR(g_profileDialogY), 0x96 }, { ADDR(g_profileDialogRight), 0x208 }, { ADDR(g_logOutDialogX), 0x78 }, { ADDR(g_logOutDialogY), 0x96 },
 		{ ADDR(g_logOutDialogRight), 0x208 }, { ADDR(g_pilotSelectLeft), 0x1e }, { ADDR(g_pilotSelectTop), 0x14 }, { ADDR(g_pilotSelectRight), 0x262 }, { ADDR(g_pilotSelectBottom), 0x1c2 } };
-	static const u32 cleared[] = { ADDR(g_profileScreenReady), ADDR(g_profileDialogOpen), ADDR(g_profileListTop), ADDR(g_profileListRow), ADDR(g_pilotChosen), ADDR(g_currentProfile), ADDR(g_repeatDown), ADDR(g_repeatUp),
-	                               ADDR(g_highlightShown) };
+	static const u32 cleared[] = { ADDR(g_profileNoneAtEntry), ADDR(g_profileLogInAsked), ADDR(g_profileListTop), ADDR(g_profileListRow), ADDR(g_profileChosen), ADDR(g_currentProfile), ADDR(g_repeatDown), ADDR(g_repeatUp),
+	                               ADDR(g_pointerGliding) };
 	static const Store colours[] = {
 		{ OBJ(g_profileColour), 0 }, { (OBJ(g_profileColour) + 0x4), ONE }, { (OBJ(g_profileColour) + 0x8), ONE }, { (OBJ(g_profileColour) + 0xc), ONE }, { OBJ(g_profileDim), 0 },
-		{ (OBJ(g_profileDim) + 0x4), 0x3f19999a }, { (OBJ(g_profileDim) + 0x8), 0x3f19999a }, { (OBJ(g_profileDim) + 0xc), ONE }, { ADDR(g_cursorBlink), 0 }, { ADDR(g_introZoom), 0 },
-		{ ADDR(g_profileIntro), 0 }, { ADDR(g_profileRowClicked), 0 }, { ADDR(g_profileMessageTime), 0 } };
+		{ (OBJ(g_profileDim) + 0x4), 0x3f19999a }, { (OBJ(g_profileDim) + 0x8), 0x3f19999a }, { (OBJ(g_profileDim) + 0xc), ONE }, { ADDR(g_menuRepeatClock), 0 }, { ADDR(g_replayZoomTime), 0 },
+		{ ADDR(g_profileQuitting), 0 }, { ADDR(g_profileRowClicked), 0 }, { ADDR(g_profileRowClickTime), 0 } };
 	static const u32 rects[7] = { FN_ADDR(profilePage_layout, 0x44af30), FN_ADDR(newNameDialog_layout, 0x44b030), FN_ADDR(profileDialogBox_layout, 0x44b080), FN_ADDR(deleteDialog_layout, 0x44b0b0), FN_ADDR(logOutDialog_layout, 0x44b100), FN_ADDR(profileList_layout, 0x44b150), FN_ADDR(pilotSelect_layout, 0x44b1a0) };
 	STORE_ALL(layout);
 	CLEAR_ALL(cleared);
 	profile_readHeader();   /* profile_readHeader: the header read back */
 	int current = g_currentProfile;
-	g_pilotChosen = current;
+	g_profileChosen = current;
 	g_profileListRow = current;
 	if (current >= 13) {
 		g_profileListRow = 12;
 		g_profileListTop = current - 12;
 	}
 	if (g_profileCount == 0)
-		g_profileScreenReady = 1;
+		g_profileNoneAtEntry = 1;
 	g_menuFramePhase = 1;
 	g_menuFrameCounter = 0;
-	g_dialogOpen = 1;
+	g_frameOpening = 1;
 	g_profilePage = 1;
 	for (int k = 0; k < 7; k++)
 		GAME_CDECL(rects[k], void, void)();
@@ -380,7 +380,7 @@ static void match_name(const char *name)
 }
 
 /* 0x41fd40 (the match started, state 9999): the menus' tunnel freed; outside the lobby
-   (g_startedFromLobby) the profile files checked; the display opened (aspect g_viewAspect, glWindow_init); a replay (g_replayRunning)
+   (g_launchedForNetGame) the profile files checked; the display opened (aspect g_viewAspect, glWindow_init); a replay (g_replayRunning)
    started at once (scene_startSession 0, 3); else the map (g_mapIndex) loaded (failing: message 6 and back to state 400 /
    800 for the arena / room). By the kind of match (g_matchMode): 1 the arena, 2 the room (the pilots read, the
    player's name taken from the profile / the room, the part lists armc_resetSeraphimParts), 3 a skirmish (the name 0x9f1798),
@@ -390,7 +390,7 @@ void (match_enter)(void)
 {
 	while (g_menuTunnel)   /* the menus' tunnel, ring by ring */
 		tunnel_removeLastRing((TunnelRing **)ADDR(g_menuTunnel));
-	if (!g_startedFromLobby)
+	if (!g_launchedForNetGame)
 		check_profiles();
 	g_matchRunning = 1;
 	g_viewAspect = f32((long double)g_screenW / (long double)g_screenH);
@@ -428,7 +428,7 @@ void (match_enter)(void)
 		scene_startSession(scene, g_netRole == 1 ? 0 : 1, 1);
 		break;
 	case 3:
-		match_name((const char *)(OBJ(g_campaign) + 0x80));
+		match_name((const char *)(OBJ(g_pilotSave) + 0x80));
 		scene_startSession(scene, 0, 0);
 		break;
 	}

@@ -5,10 +5,10 @@
 #define g_weaponList (g_weaponListTable)          /* the weapons on offer */
 #define g_extraList (g_extraListTable)           /* the other items on offer */
 
-/* the item in slot (0 .. 3 at g_mechItem2, 4 .. 5 at g_itemSlot4) */
+/* the item in slot (0 .. 3 at g_mechWeaponSlot0, 4 .. 5 at g_itemSlot4) */
 static int *slot_item(int slot)
 {
-	return slot < 4 ? (int *)ADDR(g_mechItem2) + slot : (int *)ADDR(g_itemSlot4) + (slot - 4);
+	return slot < 4 ? (int *)ADDR(g_mechWeaponSlot0) + slot : (int *)ADDR(g_itemSlot4) + (slot - 4);
 }
 
 /* the whole mech handed to the scene, with name */

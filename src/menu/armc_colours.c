@@ -1,13 +1,13 @@
 /* armc_colours.c: the ARM CENTER's colour sliders, dragged with the pointer. Each colour slot holds two colours of
    three values (hue, then saturation and value); a slider's position is the pointer's x from the slider's left edge
-   (g_armcSliderLeft, less 184 units), 0.00625 per unit, so 0 .. 1 across 160 units. Dragging marks the mech's colours as
+   (g_armcPanelRight, less 184 units), 0.00625 per unit, so 0 .. 1 across 160 units. Dragging marks the mech's colours as
    changed (g_coloursChanged). */
 #include "../game.h"
 
 
 static long double slider_pos(void)
 {
-	return (long double)(g_mouseX - g_armcSliderLeft + 0xb8) * 0.00625f;
+	return (long double)(g_mouseX - g_armcPanelRight + 0xb8) * 0.00625f;
 }
 
 /* a hue: 0 .. 360 degrees (clamped to 359, not 360), stored shifted by half a turn into -180 .. 180, then back into

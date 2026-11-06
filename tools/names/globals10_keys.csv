@@ -40,5 +40,5 @@
 0x680388,int,g_dikZ_2
 0x4de73c,int,g_dikMouse1
 0x76d424,int,g_dikMouse2
-0x9da490,int,g_dikWheelDown
-0x76d490,int,g_dikWheelUp
+0x9da490,int,g_dikWheelUp
+0x76d490,int,g_dikWheelDown

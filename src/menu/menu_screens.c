@@ -14,11 +14,11 @@ void (menuState500_skirmish)(void)
 	skirmish_camera();
 	if (g_skirmishState == 1 || g_skirmishState == 0)
 		return;
-	if (g_dialogOpen) {
+	if (g_frameOpening) {
 		menu_drawFrame(g_skirmishBox[0], g_skirmishBox[1], g_skirmishBox[2], g_skirmishBox[3]);
 		return;
 	}
-	if (g_skirmishBusy)
+	if (g_skirmishLeft)
 		return;
 	if (g_skirmishBriefing)
 		skirmish_frameScreen();
@@ -31,7 +31,7 @@ void (menuState500_skirmish)(void)
    version lines at the bottom (the version right-aligned at 6 units per character) */
 void (menuState200_title)(void)
 {
-	if (g_titleShown && ++g_titleFrames >= 19) {
+	if (g_titleClosing && ++g_titleCloseFrames >= 19) {
 		g_screen = 210;
 		g_menuKeyGuard = 5.0f;
 	}

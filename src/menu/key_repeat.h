@@ -11,7 +11,7 @@ static int key_repeat(int key, float *wait, void (*step)(void))
 		BITS(*wait) = 0;
 	if (input_isDown(key) != 1)
 		return 0;
-	g_cursorBlink = 0;
+	g_menuRepeatClock = 0;
 	if (*wait > k_0f) {
 		*wait = fsub_m(fld_m(wait), &g_frameTime);
 		return 1;

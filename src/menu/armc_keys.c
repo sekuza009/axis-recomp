@@ -35,7 +35,7 @@ void (armc_partsPageKeys)(void)
 			if (g_armcPartSlot != k) {
 				sound_playMenu(2);
 				g_armcPartSlot = k;
-				g_armcZoom = 1.0f;
+				g_unusedArmcViewCountdown = 1.0f;
 			}
 			return;
 		}
@@ -48,14 +48,14 @@ void (armc_partsPageKeys)(void)
 		sound_playMenu(2);
 		if (--g_armcPartSlot < 0)
 			g_armcPartSlot = 5;
-		g_armcZoom = 1.0f;
+		g_unusedArmcViewCountdown = 1.0f;
 		return;
 	}
 	if (input_justPressed(g_keyDown)) {
 		sound_playMenu(2);
 		if (++g_armcPartSlot > 5)
 			g_armcPartSlot = 0;
-		g_armcZoom = 1.0f;
+		g_unusedArmcViewCountdown = 1.0f;
 		return;
 	}
 	if (input_justPressed(g_keyLeft)) {
@@ -242,7 +242,7 @@ leave:
 void (armc_processInput)(void)
 {
 	int mode = g_armcState;
-	if (mode == 1 || mode == 0 || g_dialogOpen)
+	if (mode == 1 || mode == 0 || g_frameOpening)
 		return;
 	if (input_isDown(g_dikLCtrl) && input_isDown(g_dikLAlt) && input_justPressed(g_dikM)) {
 		g_armcHideInterface = 1 - g_armcHideInterface;

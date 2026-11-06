@@ -92,9 +92,9 @@ int (ptx_readBlock)(int *block)
 }
 
 /* the RGB of a pixel from its Y, Cb and Cr (16.16 tables for green) */
-#define RED(Y, Cr) g_clamp[g_ptxCrRed[Cr] + (Y)]
-#define GREEN(Y, Cb, Cr) g_clamp[((g_ptxCbGreen[Cb] + g_ptxCrGreen[Cr]) >> 16) + (Y)]
-#define BLUE(Y, Cb) g_clamp[g_ptxCbBlue[Cb] + (Y)]
+#define RED(Y, Cr) g_ptxClamp[g_ptxCrRed[Cr] + (Y)]
+#define GREEN(Y, Cb, Cr) g_ptxClamp[((g_ptxCbGreen[Cb] + g_ptxCrGreen[Cr]) >> 16) + (Y)]
+#define BLUE(Y, Cb) g_ptxClamp[g_ptxCbBlue[Cb] + (Y)]
 
 /* 0x46e830: n pixels to RGB */
 void (ptx_toRgb)(const u8 *y, u8 *dst, unsigned n)
@@ -140,15 +140,15 @@ void (ptx_layoutBlocks)(const u8 *src, u8 *dst, int w, int h, int bpp)
 }
 
 /* ---- ptx_inverseDct: one 8 x 8 block of coefficients to 8 x 8 bytes: libjpeg's jpeg_idct_ifast (AAN, 8-bit fixed point
-   multiplies as (x * c) >> 8 in wrapping 32-bit ints, no rounding), with the quantisation table at g_ptxQuant and the
+   multiplies as (x * c) >> 8 in wrapping 32-bit ints, no rounding), with the quantisation table at g_ptxDequant and the
    range limit table at the clamp table + 0x80 ---- */
 static int idct_mul(int x, int c) { return (int)((u32)x * (u32)c) >> 8; }
 #define Q(i) ((u32)(i))
 
 void (ptx_inverseDct)(const int *in, u8 *out)
 {
-	const int *quant = g_ptxQuant;
-	const u8 *limit = g_clamp + 0x80;
+	const int *quant = g_ptxDequant;
+	const u8 *limit = g_ptxClamp + 0x80;
 	int ws[64];
 	for (int c = 0; c < 8; c++) {   /* pass 1: the columns, dequantised */
 		const int *i = in + c, *q = quant + c;
