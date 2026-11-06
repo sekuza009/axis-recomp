@@ -1218,6 +1218,8 @@ extern struct GameData g_data;
 #define g_leavingForMatch (*(int *)g_leavingForMatch_v)
 #undef g_legCount
 #define g_legCount (*(int *)g_legCount_v)
+#undef g_legCursor
+#define g_legCursor (g_data.g_legCursor_)
 #undef g_legList
 #define g_legList ((int *)g_legList_v)
 #undef g_legPanelName

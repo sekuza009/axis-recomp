@@ -7,7 +7,7 @@ S=[struct.unpack_from('<8sIIII',b,pe+24+opt+40*i) for i in range(n)]
 def off(va):
     for nm,vs,sva,rs,ro in S:
         if sva<=va-0x400000<sva+rs: return va-0x400000-sva+ro
-sz={int(r['address'],16):(int(r['size']),r['name']) for r in csv.DictReader(open(D+'decomp/out/functions.csv'))}
+sz={int(r['address'],16):(int(r.get('extent') or r['size']),r['name']) for r in csv.DictReader(open(D+'decomp/out/functions.csv'))}   # (extent: the whole span)
 md=capstone.Cs(capstone.CS_ARCH_X86,capstone.CS_MODE_32)
 for a in sys.argv[1:]:
     a=int(a,16); s,name=sz[a]; o=off(a)

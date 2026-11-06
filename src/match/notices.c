@@ -25,13 +25,13 @@ void THISCALL (scene_restoreNames)(Scene *scene)
 	}
 }
 
-/* 0x4629c0: the event list emptied, new lines to stay shown time seconds (eventTime; every caller passes 60.0); the
+/* 0x4629c0: the event list emptied, new lines to stay shown timeBits seconds (a float's bits, into eventTime; every caller passes 60.0); the
    message box (msgFade) and the centred notice (noticeTimer) faded out */
-void THISCALL (events_clear)(Scene *scene, u32 time)
+void THISCALL (events_clear)(Scene *scene, u32 timeBits)
 {
 	scene->eventCount = 0;
 	scene->eventFirst = 0;
-	BITS(scene->eventTime) = time;
+	BITS(scene->eventTime) = timeBits;   /* (a float, taken as its bits: the original only copies it) */
 	BITS(scene->msgFade) = 0;
 	BITS(scene->noticeTimer) = 0;
 }

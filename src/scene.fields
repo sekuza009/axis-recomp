@@ -6,6 +6,8 @@ struct MessageSlot 0x14                                         # a map script's
 0          4          i32 speaker                               # its speaker (Stage.speakers; script_processCommand checks it exists); written, never read (hud_drawMessageBox shows only text and colour)
 4          4          u32 text                                  # its text block in Scene.msgText
 8          4          i32 colour                                # index into g_textColours (signed compare: < 16 used); 16 and up: the text drawn transparent (white, alpha 0)
+0xc        4          i32 unusedC                               # command 26's fourth argument (script_pushMessage); never read (hud_drawMessageBox reads +4 and +8 only)
+0x10       4          i32 unused10                              # the same argument again; never read
 
 struct EventLine 0x108                                          # one line of the event list (Scene.events)
 0          4          u32 type                                  # 0..5: the colour
@@ -1231,7 +1233,7 @@ struct Stage 0x2150443                                          # the stage: the
 0x20f3008  4          i32 pointCount                            # written, never read
 0x20f300c  0x960      float points[200][3]                      # 200 points set to the origin (stage_resetMatrixAndPoints; Console_ctor's vector constructor); nothing else writes or reads them
 0x20f396c  4          u32 defaultColour                         # written, never read
-0x2148c50  0x280      i32 messages[32][5]                       # the map script's messages waiting (command 26 MESSAGE: speaker, text, colour ..; script_pushMessage); = Scene.msgRing
+0x2148c50  0x280      MessageSlot messages[32]                  # the map script's messages waiting (command 26 MESSAGE: speaker, text, colour ..; script_pushMessage); = Scene.msgRing
 0x2148ed0  4          u32 msgWrite                              # messages pushed (the ring's next: % 32); = Scene.msgWrite
 0x2148ed4  4          u32 msgRead                               # the oldest kept (moved on when the ring is full); = Scene.msgRead
 0x9ef904   0xc        float levelLow[3]                          # (by use; seen running) the level's bounds (the level grid over them; the actors kept inside)

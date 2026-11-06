@@ -10,7 +10,8 @@ typedef struct MessageSlot {
 	i32 speaker;   /* +0x0: its speaker (Stage.speakers; script_processCommand checks it exists); written, never read (hud_drawMessageBox shows only text and colour) */
 	u32 text;   /* +0x4: its text block in Scene.msgText */
 	i32 colour;   /* +0x8: index into g_textColours (signed compare: < 16 used); 16 and up: the text drawn transparent (white, alpha 0) */
-	u8 _pad000000c[0x8];
+	i32 unusedC;   /* +0xc: command 26's fourth argument (script_pushMessage); never read (hud_drawMessageBox reads +4 and +8 only) */
+	i32 unused10;   /* +0x10: the same argument again; never read */
 } MessageSlot;
 
 /* one line of the event list (Scene.events) */
@@ -1546,7 +1547,7 @@ typedef struct Stage {
 	u8 _pad2108508[0x4];
 	u8 texts[1000][0x108];   /* +0x210850c: the script's texts, the same: a dword (not 0: it exists; MESSAGE checks it), then four lines of 0x41 chars hud_drawMessageBox shows (Scene.msgText is these bytes from +4); never written (1000 inferred from the gap to messages) */
 	u8 _pad2148c4c[0x4];
-	i32 messages[32][5];   /* +0x2148c50: the map script's messages waiting (command 26 MESSAGE: speaker, text, colour ..; script_pushMessage); = Scene.msgRing */
+	MessageSlot messages[32];   /* +0x2148c50: the map script's messages waiting (command 26 MESSAGE: speaker, text, colour ..; script_pushMessage); = Scene.msgRing */
 	u32 msgWrite;   /* +0x2148ed0: messages pushed (the ring's next: % 32); = Scene.msgWrite */
 	u32 msgRead;   /* +0x2148ed4: the oldest kept (moved on when the ring is full); = Scene.msgRead */
 	ScenePath scenePath;   /* +0x2148ed8: the scene-path object (the game's class "Scene"; its methods are all empty stubs): stage_advanceScenePath opens and steps it while scriptMode is set, and as scenePath_advanceStub answers 0, scriptMode is cleared on that first frame */
@@ -1908,6 +1909,8 @@ typedef struct Scene {
 _Static_assert(offsetof(MessageSlot, speaker) == 0x0 && sizeof(((MessageSlot *)0)->speaker) == 0x4, "scene.fields: MessageSlot.speaker");
 _Static_assert(offsetof(MessageSlot, text) == 0x4 && sizeof(((MessageSlot *)0)->text) == 0x4, "scene.fields: MessageSlot.text");
 _Static_assert(offsetof(MessageSlot, colour) == 0x8 && sizeof(((MessageSlot *)0)->colour) == 0x4, "scene.fields: MessageSlot.colour");
+_Static_assert(offsetof(MessageSlot, unusedC) == 0xc && sizeof(((MessageSlot *)0)->unusedC) == 0x4, "scene.fields: MessageSlot.unusedC");
+_Static_assert(offsetof(MessageSlot, unused10) == 0x10 && sizeof(((MessageSlot *)0)->unused10) == 0x4, "scene.fields: MessageSlot.unused10");
 _Static_assert(sizeof(MessageSlot) == 0x14, "scene.fields: size of MessageSlot");
 _Static_assert(offsetof(EventLine, type) == 0x0 && sizeof(((EventLine *)0)->type) == 0x4, "scene.fields: EventLine.type");
 _Static_assert(offsetof(EventLine, text) == 0x4 && sizeof(((EventLine *)0)->text) == 0x100, "scene.fields: EventLine.text");

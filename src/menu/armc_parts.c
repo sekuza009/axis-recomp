@@ -185,7 +185,7 @@ u32 (armc_stepPart)(u32 part, int dir)
 {
 	static const struct { u32 cursor, count, list; } parts[5] = {
 		{ ADDR(g_headCursor), ADDR(g_headCount), OBJ(g_headList) }, { ADDR(g_chestCursor), ADDR(g_chestCount), OBJ(g_chestList) }, { ADDR(g_armCursor), ADDR(g_armCount), OBJ(g_armList) },
-		{ (OBJ(g_boosterStats) + 0x24), ADDR(g_legCount), OBJ(g_legList) }, { ADDR(g_boosterCursor), ADDR(g_boosterCount), OBJ(g_boosterList) } };
+		{ ADDR(g_legCursor), ADDR(g_legCount), OBJ(g_legList) }, { ADDR(g_boosterCursor), ADDR(g_boosterCount), OBJ(g_boosterList) } };
 	g_mechChanged = 1;
 	if (part > 4)
 		return part;

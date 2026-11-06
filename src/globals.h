@@ -1124,6 +1124,7 @@
 #define g_mechLegsBackBoost GAME_VAR(float, 0x4dcae4)
 #define g_mechBoosterRestTime GAME_VAR(float, 0x4dcaf4)
 #define g_boosterCursor GAME_VAR(int, 0x4dcb30)
+#define g_legCursor GAME_VAR(int, 0x4dcea4)   /* the leg list's cursor (armc_stepPart / armc_syncPartCursors, beside g_legCount / g_legList); right after g_boosterStats' nine floats */
 #define g_chestCount GAME_VAR(int, 0x4dcc60)
 #define g_headCursor GAME_VAR(int, 0x4dcc8c)
 #define g_chestCursor GAME_VAR(int, 0x4dcf3c)

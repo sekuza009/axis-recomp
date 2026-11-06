@@ -223,12 +223,12 @@ void THISCALL (playerRecord_resetFlag)(Stage *stage, int p)
    of 32 (20 bytes each; Scene.msgRing shows them); when full the oldest is dropped */
 void THISCALL (script_pushMessage)(Stage *stage, int a, int b, int c, int d)
 {
-	int *e = stage->messages[stage->msgWrite & 0x1f];
-	e[0] = a;
-	e[1] = b;
-	e[2] = c;
-	e[3] = d;
-	e[4] = d;
+	MessageSlot *e = &stage->messages[stage->msgWrite & 0x1f];
+	e->speaker = a;
+	e->text = (u32)b;
+	e->colour = c;
+	e->unusedC = d;
+	e->unused10 = d;
 	int head = ++stage->msgWrite;
 	if (((stage->msgRead ^ head) & 0x1f) == 0)
 		stage->msgRead++;

@@ -266,7 +266,7 @@ void THISCALL (scene_reset)(u8 *s)
 	st->itemCount = 0;
 	st->lastPickup = -1;
 	st->clockSeconds = (*(int *)&st->clockFraction) = st->botsHoldFire = 0;
-	s[0x20fcd4c] = 0;
+	st->printText[0] = 0;   /* the kill report emptied */
 	st->kingActor = -1;
 	memset(st->teamCommanders, 0xff, 0x64 * 4);
 	stage_clearMessages(s);

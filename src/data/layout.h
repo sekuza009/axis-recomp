@@ -2120,7 +2120,8 @@ struct __attribute__((packed)) GameData {
 	int g_hasItemCapacity_;
 	u8 _gap_4dcb14[0x148];
 	int g_hasItem30mm_;
-	u8 _gap_4dcc60[0x248];
+	u8 _gap_4dcc60[0x244];
+	int g_legCursor_;
 	int g_hasItemEpak_;
 	u8 _gap_4dceac[0x84];
 	int g_hasItemShield_;
@@ -2193,6 +2194,7 @@ _Static_assert(offsetof(struct GameData, g_hasItemWeight_) == 0x2f774, "g_hasIte
 _Static_assert(offsetof(struct GameData, g_hasItemSensor_) == 0x2f794, "g_hasItemSensor");
 _Static_assert(offsetof(struct GameData, g_hasItemCapacity_) == 0x2fb10, "g_hasItemCapacity");
 _Static_assert(offsetof(struct GameData, g_hasItem30mm_) == 0x2fc5c, "g_hasItem30mm");
+_Static_assert(offsetof(struct GameData, g_legCursor_) == 0x2fea4, "g_legCursor");
 _Static_assert(offsetof(struct GameData, g_hasItemEpak_) == 0x2fea8, "g_hasItemEpak");
 _Static_assert(offsetof(struct GameData, g_hasItemShield_) == 0x2ff30, "g_hasItemShield");
 _Static_assert(offsetof(struct GameData, g_messageBoxText_) == 0x300d0, "g_messageBoxText");
