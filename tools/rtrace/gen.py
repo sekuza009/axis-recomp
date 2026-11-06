@@ -174,6 +174,20 @@ for off, size, decl in structs['Scene']['fields']:
     fast.append('{%d, 0x%x, %d, %d}' % (lid['Scene.' + name], off, size // esz, esz))
 out.append('const int rt_sceneFast[][4] = {%s};' % ', '.join(fast))
 out.append('const int rt_sceneFastCount = %d;' % len(fast))
+pfast = []   # the local player's small fields (its one-frame inputs), at Scene.players[Scene.localPlayer]
+for off, size, decl in structs['Player']['fields']:
+    d = split_decl(decl)
+    if not d or not size:
+        continue
+    tt, ptr, name, dims = d
+    if ptr or tt not in SCALAR or size > 64 or SCALAR[tt][0] == 'c' or 'Player.' + name not in lid:
+        continue
+    esz = SCALAR[tt][1]
+    pfast.append('{%d, 0x%x, %d, %d}' % (lid['Player.' + name], off, size // esz, esz))
+foff = {decl_name: off for off, size, decl in structs['Scene']['fields'] for decl_name in [(split_decl(decl) or ('', 0, '', []))[2]]}
+out.append('const int rt_playerFast[][4] = {%s};' % ', '.join(pfast))
+out.append('const int rt_playerFastCount = %d;' % len(pfast))
+out.append('const int rt_localPlayerAt = 0x%x, rt_playersAt = 0x%x, rt_playerSize = 0x%x;' % (foff['localPlayer'], foff['players'], structs['Player']['size']))
 out.append('const char *const rt_structNames[] = {%s};' % ', '.join('"%s"' % s for s in structs))
 out.append('const int rt_structCount = %d;' % len(structs))
 out.append('Leaf rt_leaves[] = {')

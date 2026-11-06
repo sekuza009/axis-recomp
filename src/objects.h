@@ -144,7 +144,7 @@
 #define g_savedMechPartIds ((int *)IMG(0x4dc878))   /* int[5]; the saved mech's parts: head (g_savedMechHead), chest, arm, leg, booster (match_startRound's loop of 5; mech_unpackFromRecord / mech_loadFromProfile / armc_saveSelection write) */
 #define g_armcSlotItems ((int *)IMG(0x4dcb18))   /* int[6]; the ARM CENTER mech's items by slot: [0] / [1] the two extra items (slots 4 / 5: g_itemSlot4 / g_itemSlot5; items 27 .. 35), [2] .. [5] the four weapons (slots 0 .. 3: g_mechWeaponSlot0 .. 3); kept into g_savedMechSlotItems (armc_saveSelection) */
 #define g_savedMechSlotItems ((int *)IMG(0x4dcf18))   /* int[6]; the saved mech's items in g_armcSlotItems' order: [0] / [1] the extra items (slots 4 / 5), [2] .. [5] the weapons (slots 0 .. 3); mech_unpackFromRecord's loop writes the four weapons from record bytes 7 .. 10 (bytes 5 / 6 the extras); mech_setEmpty: weapon slot 0 = 0, the rest -1 */
-#define g_slotTextures ((int *)IMG(0x4dcc70))   /* int[7]; ARM CENTER's snapshot textures by part record (armc_snapshot(i): the six slots, then the part looked at - g_armcBuildTexture, the seventh) */
+#define g_slotTextures ((int *)IMG(0x4dcc70))   /* int[7]; ARM CENTER's snapshot textures by part record (armc_snapshot(i): the six slots, then the part looked at - g_armcViewedPartTexture, the seventh) */
 #define g_timerClocks ((double *)IMG(0x9db980))   /* double[2]; the timer's two doubles: the time now (g_clockNow) and the time last returned (g_lastTime); timer_init clears them as four dwords */
 #define g_mouseClicked ((int *)IMG(0x4ded88))   /* int[3]; the three mouse buttons' click pulses (0xfa .. 0xfc) */
 #define g_mouseButtonsHeld ((int *)IMG(0x4ded94))   /* int[3]; the three mouse buttons held (devices.c's loop of 3) */

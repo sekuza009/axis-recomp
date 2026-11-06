@@ -158,8 +158,6 @@ extern struct GameData g_data;
 #define g_armcAngle (*(float *)g_armcAngle_v)
 #undef g_armcBright
 #define g_armcBright ((float *)g_armcBright_v)
-#undef g_armcBuildTexture
-#define g_armcBuildTexture (*(int *)((u8 *)g_slotTextures_v + 0x18))
 #undef g_armcCameraBox
 #define g_armcCameraBox ((u32 *)g_armcCameraBox_v)
 #undef g_armcCameraTravelling
@@ -220,6 +218,8 @@ extern struct GameData g_data;
 #define g_armcUnusedFlag (*(int *)g_armcUnusedFlag_v)
 #undef g_armcViewPoints
 #define g_armcViewPoints ((float *)g_armcViewPoints_v)
+#undef g_armcViewedPartTexture
+#define g_armcViewedPartTexture (*(int *)((u8 *)g_slotTextures_v + 0x18))
 #undef g_armcWeaponsPageRects
 #define g_armcWeaponsPageRects ((int *)g_armcWeaponsPageRects_v)
 #undef g_armsFcsLevel

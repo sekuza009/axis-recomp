@@ -31,7 +31,7 @@
 # the rest
 0x9f63c8,int,g_matchChatCaretX
 0x9f63c4,int,g_matchChatCaretY
-0x4dcc88,int,g_armcBuildTexture
+0x4dcc88,int,g_armcViewedPartTexture
 0x9eeab0,int,g_mainMenuFrames
 0x4a9458,u32,k_armcDistanceRoom
 0x4a9454,u32,k_armcDistance

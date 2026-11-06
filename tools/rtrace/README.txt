@@ -21,3 +21,18 @@ set - make it from src/menu/menu_records.c by replacing the menuState500_enterSk
 menu's action). mis_run.sh plays the mission list with a hand-made axis.mis (removed after); all2.sh runs
 every session. The Ladder screens need DServer/axis_server.py running with --accounts on a scratch copy
 (the password the game sends is lower case). 2304 of 3036 fields / globals seen non-zero.
+
+Third round (2026-11-06): scripted sessions for the paths no earlier session reached. The menus' pointer
+follows relative mouse motion only (about 0.756 of it in the half-size screenshot's pixels) and a click acts
+where the pointer is: ui_lib.sh's goto / clk / at (clickhere.ps1 clicks without moving), typ / key, and
+start_game / end_game (saves, axis.cfg and axisnet.ini backed up BEFORE anything is changed, put back after).
+  sessA.sh  a hosted arena: the free camera's keys, the remaining controls, the chat cheat codes, the Esc
+            menu, the time limit running out
+  sessB.sh  the Ladder forms (local DServer, seeded accounts): new ID (O, then click the confirmation's OK),
+            the account page, the ranking's pages and sorts, the create-room form
+  sessC.sh  the arena create form, the player name, ARM CENTER entered from the player page
+  sessD.sh  every shoulder item cycled in ARM CENTER (the extra items' flags and bonuses)
+  sessE.sh  the setup screens: a key rebound, the mouse tab, sound and graphics toggles (ACCEPT)
+  mp_loss.sh the two-copy game with each copy suspended 5 s (suspend.ps1): no packet was lost (DirectPlay
+            delivers them late), so the skipped-packet path stays unreached
+The fast pass also samples the local player's small fields (its one-frame inputs). 2386 of 3036 seen.

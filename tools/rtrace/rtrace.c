@@ -163,6 +163,16 @@ static void fast_pass(void)
 	const rt_u8 *sc = rt_scene();
 	if (!sc) return;
 	rt_u8 buf[64];
+	extern const int rt_playerFast[][4], rt_playerFastCount, rt_localPlayerAt, rt_playersAt, rt_playerSize;
+	int local = -1;
+	if (rt_copy(sc + rt_localPlayerAt, &local, 4) && local >= 0 && local < 16) {
+		const rt_u8 *pl = sc + rt_playersAt + local * rt_playerSize;
+		for (int i = 0; i < rt_playerFastCount; i++) {
+			const int *f = rt_playerFast[i];
+			if (rt_copy(pl + f[1], buf, f[2] * f[3]))
+				rt_O(f[0], buf, f[2], f[3]);
+		}
+	}
 	for (int i = 0; i < rt_sceneFastCount; i++) {
 		const int *f = rt_sceneFast[i];
 		if (rt_copy(sc + f[1], buf, f[2] * f[3]))
