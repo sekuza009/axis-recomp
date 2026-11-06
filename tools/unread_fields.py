@@ -1,24 +1,53 @@
-import re, subprocess, os
-R = 'C:/Users/Alexander/Desktop/Axis/recomp/'
-cur, cands = None, []
-for line in open(R + 'src/scene.fields', encoding='latin-1'):
-    if line.startswith('struct '):
-        cur = line.split()[1]; continue
-    m = re.match(r'^(0x[0-9a-f]+|\d+)\s+(0x[0-9a-f]+|\d+)\s+[\w *]+?\b(\w+)(\[[^\]]*\])?\s*(#.*)?$', line.rstrip())
-    if not (m and cur): continue
-    name, com = m.group(3), (m.group(5) or '')
-    if re.match(r'(unused|cleared)', name) or re.search(r'never read|not read|nothing reads|never touched|written, never|set, never|only zeroed|only written', com):
-        cands.append((cur, name, com[:110]))
-print(len(cands), 'fields claimed never read')
-for s, f, com in cands:
-    out = subprocess.run(['python', 'tools/field_uses.py', '%s.%s' % (s, f)], cwd=R, capture_output=True, text=True).stdout
-    uses = [l for l in out.splitlines() if re.search(r'(->|\.)\s*%s\b' % f, l) or 'offsetof' in l]
-    reads = []
-    for l in uses:
-        code = re.sub(r'/\*.*?\*/', '', l.split(':', 2)[-1])
-        code = re.sub(r'(->|\.)\s*%s\b(\[[^\]]*\])*\s*(=(?!=)|\+\+|--)' % f, ' WRITE ', code)   # stores
-        code = re.sub(r'\b(memset|zero\w*|clear\w*)\s*\([^;]*%s' % f, ' WRITE ', code)
-        if re.search(r'(->|\.)\s*%s\b' % f, code) or 'offsetof' in code:
-            reads.append(l.strip()[:160])
-    print('%-14s %-16s uses %2d, reads %d  %s' % (s, f, len(uses), len(reads), com[:70]))
-    for r in reads[:4]: print('      ', r)
+r"""unread_fields.py: scene.fields fields the rebuilt C never reads - every member access by name is a plain store
+(x->f = ..., not ==), no offsetof() names it, and no Scene / Stage field over the same bytes is read either. The C
+being the whole game, these are fields the game only writes; their names should not suggest a use (names saying
+unused / cleared / only are skipped). A name shared by several structs counts all of their uses (so a listed field
+is unread in all of them)."""
+import glob, os, re
+
+os.chdir(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..'))
+STAGE_IN_SCENE = 0x1f36c8
+structs, cur = {}, None
+for line in open('src/scene.fields', encoding='latin-1'):
+	if line.startswith('struct '):
+		cur = line.split()[1]; structs[cur] = []; continue
+	m = re.match(r'^(0x[0-9a-f]+|\d+)\s+(0x[0-9a-f]+|\d+)\s+[\w ]+?\b(\w+)(\[[^\]]*\])?\s*(#.*)?$', line.rstrip())
+	if m and cur:
+		structs[cur].append((int(m.group(1), 0), int(m.group(2), 0), m.group(3), (m.group(5) or '').strip()))
+code = ''
+for f in glob.glob('src/**/*.[ch]', recursive=True):
+	if os.path.basename(f) == 'scene.h' or os.sep + 'data' + os.sep in f:
+		continue
+	code += re.sub(r'/\*.*?\*/', ' ', open(f, encoding='latin-1').read(), flags=re.S)
+
+
+def is_read(name):
+	if re.search(r'offsetof\(\s*\w+\s*,\s*%s\b' % name, code):
+		return True
+	for m in re.finditer(r'(?:->|\.)\s*%s\b(\s*\[[^\]]*\])*\s*(=?)(=?)' % name, code):
+		if m.group(2) == '=' and m.group(3) != '=':
+			continue   # a plain store
+		return True
+	return False
+
+
+def aliases(st, off, size):
+	if st == 'Scene' and off >= STAGE_IN_SCENE:
+		return [f for f in structs['Stage'] if f[0] < off - STAGE_IN_SCENE + size and off - STAGE_IN_SCENE < f[0] + f[1]]
+	if st == 'Stage':
+		return [f for f in structs['Scene'] if f[0] < off + STAGE_IN_SCENE + size and off + STAGE_IN_SCENE < f[0] + f[1]]
+	return []
+
+
+n = 0
+for st, fields in structs.items():
+	for off, size, name, com in fields:
+		if re.search(r'unused|cleared|only|never read|not read|reserved|pad', name + ' ' + com, re.I):
+			continue
+		if is_read(name):
+			continue
+		if any(is_read(a[2]) for a in aliases(st, off, size) if a[2] != name):
+			continue
+		n += 1
+		print('%-14s %-26s +%#x  %s' % (st, name, off, com[:110]))
+print(n, 'fields never read')
