@@ -137,7 +137,7 @@ void (armc_weaponsPageKeys)(void)
 		if (g_armcSlot == 0) {
 			if (cursor >= g_weaponCount)
 				g_armcCursor = 1;
-		} else if (g_armcSlot > 3 && armc_colourPartEquipped(cursor) == 1)
+		} else if (g_armcSlot > 3 && armc_extraItemEquipped(cursor) == 1)
 			g_armcCursor++;
 		sound_playMenu(8);
 		armc_showCursorItem();
@@ -149,7 +149,7 @@ void (armc_weaponsPageKeys)(void)
 		if (g_armcSlot == 0) {
 			if (cursor == 0)
 				g_armcCursor = g_weaponCount - 1;
-		} else if (g_armcSlot > 3 && armc_colourPartEquipped(cursor) == 1)
+		} else if (g_armcSlot > 3 && armc_extraItemEquipped(cursor) == 1)
 			g_armcCursor--;
 		sound_playMenu(8);
 		armc_showCursorItem();
@@ -207,7 +207,7 @@ void (armc_colourPageKeys)(void)
 	if (input_justPressed(g_dikA)) {
 		sound_playMenu(2);
 		g_armcColourSlot = 5;
-		armc_backupColours();
+		armc_seedAllColourSlot();
 		return;
 	}
 	if (input_justPressed(g_dikR)) {
@@ -219,7 +219,7 @@ void (armc_colourPageKeys)(void)
 		sound_playMenu(2);
 		if (--g_armcColourSlot < 0) {
 			g_armcColourSlot = 5;
-			armc_backupColours();
+			armc_seedAllColourSlot();
 		}
 		return;
 	}
@@ -252,6 +252,6 @@ void (armc_processInput)(void)
 	case 1: armc_partsPageKeys(); break;
 	case 2: armc_weaponsPageKeys(); break;
 	case 3: armc_colourPageKeys(); break;
-	case 4: debug_traceStripped((*(Scene **)&g_armcMode)); break;   /* (its ecx: the original jumps there with the page in ecx) */
+	case 4: shared_emptyFunction((*(Scene **)&g_armcMode)); break;   /* (its ecx: the original jumps there with the page in ecx) */
 	}
 }

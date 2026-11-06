@@ -18,21 +18,22 @@ static void glyph_quad(int x, int y, int w, int h, int i, u32 u0, u32 v0, u32 u1
 	menu_vertex(x, y + h);
 }
 
-/* 0x427c30, 0x427e30: HUD glyph i, 13 and 31 units */
-void (glyph_drawHud13)(int x, int y, int i) { glyph_quad(x, y, 0xd, 0xd, i, OBJ(g_hanChoLeft), OBJ(g_hanChoTop), OBJ(g_hanChoRight), OBJ(g_hanChoBottom)); }
-void (glyph_drawHud31)(int x, int y, int i) { glyph_quad(x, y, 0x1f, 0x1f, i, OBJ(g_hanChoLeft), OBJ(g_hanChoTop), OBJ(g_hanChoRight), OBJ(g_hanChoBottom)); }
+/* 0x427c30, 0x427e30: Hangul lead-consonant glyph i (g_hanCho tables), 13 and 31 units */
+void (glyph_drawHangulLead13)(int x, int y, int i) { glyph_quad(x, y, 0xd, 0xd, i, OBJ(g_hanChoLeft), OBJ(g_hanChoTop), OBJ(g_hanChoRight), OBJ(g_hanChoBottom)); }
+void (glyph_drawHangulLead31)(int x, int y, int i) { glyph_quad(x, y, 0x1f, 0x1f, i, OBJ(g_hanChoLeft), OBJ(g_hanChoTop), OBJ(g_hanChoRight), OBJ(g_hanChoBottom)); }
 /* 0x428030, 0x4280e0, 0x428190, 0x428240: character c (1-based) of the 8, 16, 32 and 5-pixel fonts */
 void (text_quad8)(int x, int y, int c) { glyph_quad(x, y, 7, 0xf, c - 1, OBJ(g_font8Left), OBJ(g_font8Top), OBJ(g_font8Right), OBJ(g_font8Bottom)); }
 void (text_quad16)(int x, int y, int c) { glyph_quad(x, y, 0xf, 0xf, c - 1, OBJ(g_font16Left), OBJ(g_font16Top), OBJ(g_font16Right), OBJ(g_font16Bottom)); }
 void (text_quad32)(int x, int y, int c) { glyph_quad(x, y, 0x17, 0x1f, c - 1, OBJ(g_font16Left), OBJ(g_font16Top), OBJ(g_font16Right), OBJ(g_font16Bottom)); }
 void (text_quad5)(int x, int y, int c) { glyph_quad(x, y, 7, 7, c - 1, OBJ(g_font5Left), OBJ(g_font5Top), OBJ(g_font5Right), OBJ(g_font5Bottom)); }
-/* 0x427ce0, 0x427ee0: two layers at once (glyph i from one set, j from another), 13 and 31 units */
-void (glyph_drawHud13Layered)(int x, int y, int i, int j)
+/* 0x427ce0, 0x427ee0: a Hangul vowel glyph i (g_hanJung tables) and tail glyph j (g_hanJong) on top of each other, 13
+   and 31 units */
+void (glyph_drawHangulVowelTail13)(int x, int y, int i, int j)
 {
 	glyph_quad(x, y, 0xd, 0xd, i, OBJ(g_hanJungLeft), OBJ(g_hanJungTop), OBJ(g_hanJungRight), OBJ(g_hanJungBottom));
 	glyph_quad(x, y, 0xd, 0xd, j, OBJ(g_hanJongLeft), OBJ(g_hanJongTop), OBJ(g_hanJongRight), OBJ(g_hanJongBottom));
 }
-void (glyph_drawHud31Layered)(int x, int y, int i, int j)
+void (glyph_drawHangulVowelTail31)(int x, int y, int i, int j)
 {
 	glyph_quad(x, y, 0x1f, 0x1f, i, OBJ(g_hanJungLeft), OBJ(g_hanJungTop), OBJ(g_hanJungRight), OBJ(g_hanJungBottom));
 	glyph_quad(x, y, 0x1f, 0x1f, j, OBJ(g_hanJongLeft), OBJ(g_hanJongTop), OBJ(g_hanJongRight), OBJ(g_hanJongBottom));

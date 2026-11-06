@@ -77,7 +77,7 @@ void (sessionList_sort)(void)
 		for (int j = 0; j < g_gameCount - 1; j++) {
 			SessionEntry *e = &g_sessionList[j];
 			if (e[0].ping > e[1].ping) {
-				record_swap(&e[0], &e[1]);
+				sessionList_swap(&e[0], &e[1]);
 				swapped = 1;
 			}
 		}
@@ -86,14 +86,14 @@ void (sessionList_sort)(void)
 	}
 }
 
-/* 0x406810: the arena list rebuilt from the sessions DirectPlay found (net_sessionValue), then sorted */
+/* 0x406810: the arena list rebuilt from the sessions DirectPlay found (net_getSession), then sorted */
 void (arenaList_rebuild)(void)
 {
 	int n = net_sessionCount();
 	g_gameCount = n;
 	g_listAnswered = n;
 	for (int i = 0; i < g_gameCount; i++) {
-		const SessionDesc *s = (const SessionDesc *)net_sessionValue(i);
+		const SessionDesc *s = (const SessionDesc *)net_getSession(i);
 		SessionEntry *e = &g_sessionList[i];
 		memset(e->name, 0, 32);
 		strcpy(e->name, s->name);

@@ -1,9 +1,9 @@
 /* scores.c: the players' scores at the start of a match. */
 #include "../game.h"
 
-/* 0x4620e0 (thiscall on the scene): every player's kills, deaths, time and the other counts cleared and the team
-   unset (and, in a network game, the player's flag-record slot 0x1755278 + i * 0x47fd2 set to -1); then the actor
-   reset and the ranking */
+/* 0x4620e0 (thiscall on the scene): every player's kills, deaths, the counted copies, time and inPlay cleared and the
+   team unset (and, in a network game, the player record's team, playerRecords[i].team, set to -1 too); then the team
+   frags cleared (stage_clearFrags) and the ranking made again (scene_updateRanking) */
 void THISCALL (scene_resetScores)(Scene *scene)
 {
 	for (int i = 0; i < 16; i++) {
@@ -47,9 +47,9 @@ void THISCALL (scene_updateRanking)(Scene *scene)
 	for (int i = 0; i < 16; i++) {
 		Player *p = &scene->players[i];
 		if (p->team >= 0) {
-			if (scene_teamSide(scene, p->team) == 0)
+			if (scene_claimTeamSlot(scene, p->team) == 0)
 				scene->redTeamCount++;
-			else if (scene_teamSide(scene, p->team) == 1)
+			else if (scene_claimTeamSlot(scene, p->team) == 1)
 				scene->blueTeamCount++;
 		} else if (net_playerInUse(i) == 1 && p->team < 0)   /* the player's g_netSlots flag */
 			scene->noTeamCount++;

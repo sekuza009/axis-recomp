@@ -1143,7 +1143,7 @@ static CallSite g_sites[] = {
     {0x445c69, 0x401730},   /* input_readMouse */
     {0x45636e, 0x4554c0},   /* tex_findByName */
     {0x45c638, 0x473780}, {0x460920, 0x473780}, {0x498dd8, 0x473780}, {0x49a54f, 0x473780},   /* catalogue_loadComponents */
-    {0x466ea9, 0x466d60}, {0x466ee0, 0x466d60}, {0x4671f6, 0x466d60}, {0x467249, 0x466d60},   /* shape_findDatEntry */
+    {0x466ea9, 0x466d60}, {0x466ee0, 0x466d60}, {0x4671f6, 0x466d60}, {0x467249, 0x466d60},   /* shapeDat_getItemFileBy */
     {0x466eb8, 0x466120}, {0x466eef, 0x466120}, {0x467214, 0x466120}, {0x467267, 0x466120},   /* shape_read */
     {0x48a19c, 0x4913a0}, {0x498580, 0x4913a0},   /* hud_drawPlayerMarkers */
     {0x48a1c0, 0x495190},   /* hud_drawMessageBox */
@@ -1151,7 +1151,7 @@ static CallSite g_sites[] = {
     {0x48a259, 0x44ad60}, {0x48a2ff, 0x44ad60},   /* text_drawSized */
     {0x48a309, 0x496b80},   /* hud_drawWatchedName */
     {0x48a318, 0x494930}, {0x4986a0, 0x494930},   /* hud_drawRanking */
-    {0x48b386, 0x4982f0},   /* hud_pass */
+    {0x48b386, 0x4982f0},   /* match_drawFrame */
     {0x491c2d, 0x44ae10},   /* text_drawCentred */
     {0x49395f, 0x46bb00},   /* font_penDraw */
     {0x4985c4, 0x491f50},   /* hud_drawLockOn */
@@ -1413,7 +1413,7 @@ enum { A_NONE, A_LEFT, A_CENTER, A_RIGHT };
    loading text jump between two widths. The call is routed through hud_pass_wrap, which counts depth. */
 volatile int g_inhud __asm__("axis_inhud");
 volatile DWORD g_scene __asm__("axis_scene");
-void *g_hudpass_fn __asm__("axis_hudpass") = (void *)GAMEFN(hud_pass, 0x4982f0);
+void *g_hudpass_fn __asm__("axis_hudpass") = (void *)GAMEFN(match_drawFrame, 0x4982f0);
 /* which part of the HUD pass is drawing: 1 = player markers (0x4913a0), 2 = main HUD (0x4926f0) */
 volatile int g_area __asm__("axis_area");
 void *g_markers_fn __asm__("axis_markers_fn") = (void *)GAMEFN(hud_drawPlayerMarkers, 0x4913a0);
@@ -2195,7 +2195,7 @@ __attribute__((naked)) static void cat_wrap(void) {   /* replaces "call 0x473780
 static int g_mk_pending;   /* the model being read was asked for with the MARKED\ prefix */
 static void *__cdecl mk_find(const char *name) {   /* replaces "call 0x466d60" (cdecl: Shape.dat entry by name) */
     g_mk_pending = !_strnicmp(name, MK_PREFIX, 7);
-    return ((void *(__cdecl *)(const char *))GAMEFN(shape_findDatEntry, 0x466d60))(g_mk_pending ? name + 7 : name);
+    return ((void *(__cdecl *)(const char *))GAMEFN(shapeDat_getItemFileBy, 0x466d60))(g_mk_pending ? name + 7 : name);
 }
 static void __cdecl mk_retex(BYTE *shp) {
     if (!g_mk_pending) return;

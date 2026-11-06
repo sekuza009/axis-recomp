@@ -74,8 +74,12 @@ void (static_emptyCtorSkelData6)(void) { }   /* 0x46b900 */
 void (static_emptyCtorSkelData7)(void) { }   /* 0x46b920 */
 void (static_emptyCtorSkelData8)(void) { }   /* 0x46b940 */
 void (static_emptyCtorTimeSync1)(void) { }   /* 0x487b70 */
-void (static_emptyCtorTimeSync2)(void) { }   /* 0x487b90 */
-void (debug_traceStripped)(void) { }   /* 0x48b420 */
+void (static_emptyCtorTimeSync2)(void) { }   /* 0x48b420: an empty function ("ret") shared by every empty function of the game (identical code folded): called
+   as a cdecl one-argument trace (net_processGamePacket pushes the packet and pops 4), as an empty thiscall method
+   (Scene_ctor, stage_build, script_reset with &stage->scenePath, match_drawFrame) and with no arguments from the menus' key
+   / click handlers (lobby_topPageClicks, lobbyTop_keys, armc_processInput, menuState100_intro, setup_topPageClicks /
+   Keys, room_leave, roomLogin_clicks / keys, mainmenu_clicks / processKeys) */
+void (shared_emptyFunction)(void) { }   /* 0x48b420 */
 
 /* ---- start-up: one global object made (or a class's error log), its destructor registered (atexit's result) ---- */
 int (static_startTex64x64)(void) { static_initTex64x64(); return static_registerTex64x64Dtor(); }   /* 0x42b120 */

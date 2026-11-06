@@ -134,7 +134,7 @@ void (armc_drawColourEditor)(void)
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 	for (int k = 0; k < 6; k++) {
 		glColor4f(1.0f, 1.0f, 1.0f, g_slot == k ? 0.8f : 0.4f);
-		profile_drawButton(X0 + 0x10, Y0 + k * 0x30 + 0x40, X0 + 0xb0, Y0 + k * 0x30 + 0x6c, 1);
+		menu_drawLargeButton(X0 + 0x10, Y0 + k * 0x30 + 0x40, X0 + 0xb0, Y0 + k * 0x30 + 0x6c, 1);
 	}
 	for (int k = 0; k < 6; k++) {
 		if (g_slot == k)

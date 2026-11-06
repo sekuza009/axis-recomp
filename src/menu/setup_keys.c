@@ -42,7 +42,7 @@ static void leave(void)
 	menuCamera_setMove(4);
 	g_nextScreen = 300;
 	g_menuRepeatClock = 0.0f;
-	debug_traceStripped(NULL);
+	shared_emptyFunction(NULL);
 }
 
 /* 0x422b70: the top page: a tab key opens its tab; the back key (when a tunnel ring is behind: g_tunnelRings > 0) or the leave key goes
@@ -79,7 +79,7 @@ static void sound_ok(void)
 	sound_playMenu(0);
 	cfg_writeAxisCfg();
 	g_setupCameraMode = 0;
-	music_shutdown();
+	music_stop();
 	music_play((const char *)STR(0x4b01cc, "music/Netsphere.mp3"));
 }
 
@@ -237,7 +237,7 @@ u32 (setup_topPageClicks)(void)
 				sound_playMenu(0);
 				g_nextScreen = 300;
 				(*(int *)&g_menuRepeatClock) = 0;
-				GAME_FN(debug_traceStripped, 0x48b420, void, void)();   /* debug_traceStripped */
+				GAME_FN(shared_emptyFunction, 0x48b420, void, void)();   /* shared_emptyFunction */
 				break;
 			}
 			break;
@@ -253,7 +253,7 @@ u32 (setup_topPageClicks)(void)
 	u32 r = menuCamera_setMove(4);   /* menuCamera_setMove */
 	g_nextScreen = 300;
 	(*(int *)&g_menuRepeatClock) = 0;
-	GAME_FN(debug_traceStripped, 0x48b420, void, void)();
+	GAME_FN(shared_emptyFunction, 0x48b420, void, void)();
 	return r;
 }
 

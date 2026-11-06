@@ -2,9 +2,10 @@
 #include "../game.h"
 #include <string.h>
 
-/* 0x44aa40 (menuState500_skirmish): the skirmish screen: the background, the tunnel (refreshed
-   except on page 2), the screen itself; on its pages from 2 on an open dialog draws its frame, else the screen's
-   input (two handlers: the briefing and the round's screen) */
+/* 0x44aa40: the skirmish screen (500): the background (g_skirmishShowBackground), the tunnel (skirmish_drawTunnel)
+   unless the camera has arrived (g_skirmishState 2), the camera (skirmish_camera); once arrived (state past 1): the
+   dialog frame while it opens (g_skirmishBox), nothing once the screen has been left (g_skirmishLeft), else the
+   briefing (g_skirmishBriefing: skirmish_frameNewPartsNotice) or the round's settings (skirmish_frameRoundScreen) */
 void (menuState500_skirmish)(void)
 {
 	if (g_skirmishShowBackground)
@@ -21,14 +22,15 @@ void (menuState500_skirmish)(void)
 	if (g_skirmishLeft)
 		return;
 	if (g_skirmishBriefing)
-		skirmish_frameScreen();
+		skirmish_frameNewPartsNotice();
 	else
-		skirmish_frameSettings();
+		skirmish_frameRoundScreen();
 }
 
-/* 0x41f8d0 (menuState200_title): the title screen's frame: after 19 frames of the title the profile screen follows
-   (fading in); the background, the emblem and the transition (a call the patch DLL wraps), and the copyright and
-   version lines at the bottom (the version right-aligned at 6 units per character) */
+/* 0x41f8d0: the title screen's frame: 19 frames after the title was dismissed (g_titleClosing, counted in
+   g_titleCloseFrames) the profile screen (210) follows, with a key delay of 5; the background, the emblem and logo
+   (menu_titleEmblemTransition, a call the patch DLL wraps), and the copyright and version lines at the bottom (the
+   version right-aligned at 6 units per character) */
 void (menuState200_title)(void)
 {
 	if (g_titleClosing && ++g_titleCloseFrames >= 19) {

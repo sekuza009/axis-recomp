@@ -14,7 +14,7 @@ static void clock_setColour(int low, Scene *scene)
 
 /* 0x496610: top centre: the points the leader still needs for the score limit (icon 1, right-aligned to 13 units
    per character), and the time left as mm:ss (icon 2); red when one point / ten seconds are left */
-void THISCALL (hud_drawClock)(Scene *scene)
+void THISCALL (hud_drawMatchCounters)(Scene *scene)
 {
 	char text[256];
 	if (scene->fragLimit > 0) {
@@ -51,7 +51,7 @@ void THISCALL (hud_drawMatchResult)(Scene *scene)
 	if (scene->teamGame == 1) {
 		glColor4f(0.6f, 0.6f, 0.6f, 0.5f);
 		hud_fillRect(0, 0x15e, 0x280, 0x192);
-		switch (scene_teamSide(scene, scene->winnerTeam)) {
+		switch (scene_claimTeamSlot(scene, scene->winnerTeam)) {
 		case 0:
 			sprintf(text, "RED TEAM WIN!");
 			text_setColor(1.0f, 0.0f, 0.0f, 1.0f);

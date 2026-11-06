@@ -33,9 +33,9 @@ static int has_any(const char *s, const char *bad)
 	return 0;
 }
 
-/* 0x434400: a room name with a character the network messages cannot carry; profile_nameHasBadChar: a pilot name that cannot be
-   a file name */
-int (room_nameHasBadChar)(const char *s) { return has_any(s, "`\"',/\\|~?"); }
+/* 0x434400: a Ladder account field (ID, password, e-mail) with a character the server's messages cannot carry
+   (`"',/\|~?); profile_nameHasBadChar (0x44b7e0): a pilot name that cannot be a file name (\/:*?"<>|) */
+int (account_hasBadChar)(const char *s) { return has_any(s, "`\"',/\\|~?"); }
 int (profile_nameHasBadChar)(const char *s) { return has_any(s, "\\/:*?\"<>|"); }
 
 /* the stat bars' targets (g_statBarTargets) from pilot character i's nine stats, each plus k_50f; the frame's pulse
@@ -93,8 +93,9 @@ int (profile_inDialogBox)(int x, int y)
 	return x >= r[0] && x <= r[2] && y >= r[1] && y <= r[3] ? 1 : -1;
 }
 
-/* 0x44b7a0: the colour preview reset: no colours, distance 40, -1, turning */
-void (profile_resetPreview)(void)
+/* 0x44b7a0: the stat bars reset: their targets (g_statBarTargets) and drawn values (g_statBars) cleared and marked to
+   be loaded again (g_statBarsStale), the frame's pulse restarted (g_profileFrameAlpha 40, g_profileFrameStep -1) */
+void (profile_resetStatBars)(void)
 {
 	memset((void *)OBJ(g_statBarTargets), 0, 36);
 	memset((void *)OBJ(g_statBars), 0, 36);
@@ -103,17 +104,20 @@ void (profile_resetPreview)(void)
 	(*(u32 *)&g_profileFrameStep) = 0xbf800000;   /* -1.0 */
 }
 
-/* 0x44b750: the same, and no profile selected */
-void (profile_resetSelection)(void)
+/* 0x44b750: the stat bars reset (profile_resetStatBars), the pilot grid's cursor on the first pilot
+   (g_pilotSelectCursor 0) and its portrait growth stopped (g_profileReveal, g_profileRevealClock 0) */
+void (pilotSelect_reset)(void)
 {
-	profile_resetPreview();
+	profile_resetStatBars();
 	g_pilotSelectCursor = 0;
 	(*(int *)&g_profileRevealClock) = 0;
 	g_profileReveal = 0;
 }
 
-/* 0x44bc00: the profile screen's camera put to its start (distance 80, speed 0.1) */
-void (profile_resetCamera)(void)
+/* 0x44bc00: the log-out question answered yes (profile_logOutClicks button 0, profile_keys.c): g_profileQuitting set
+   (the next frame menuState210_frame quits: app_quitGame), g_profileQuitSkip 0, the unused camera words set (-1, zoom
+   80, time 0, speed 0.1), page 1 */
+void (profile_quitGame)(void)
 {
 	g_profileQuitSkip = 0;
 	g_profileQuitting = 1;
@@ -155,7 +159,7 @@ int (profile_deleteClicks)(void)
 		int button = deleteDialog_hitTest(g_mouseX, g_mouseY);   /* the dialog's hit test */
 		if (button == 0) {
 			sound_playMenu(0);
-			profile_deleteFiles();
+			profile_deleteChosen();
 			g_profilePage = 1;
 		} else if (button == 1) {
 			sound_playMenu(0);
@@ -167,7 +171,7 @@ int (profile_deleteClicks)(void)
 	return g_rightClick;
 }
 
-/* 0x44c400: the log-out question: its first button runs profile_resetCamera, the second closes it (and clears g_pointerGliding) */
+/* 0x44c400: the log-out question: its first button runs profile_quitGame, the second closes it (and clears g_pointerGliding) */
 int (profile_logOutClicks)(void)
 {
 	(*(int *)&g_menuRepeatClock) = 0;
@@ -175,7 +179,7 @@ int (profile_logOutClicks)(void)
 		int button = logOutDialog_hitTest(g_mouseX, g_mouseY);
 		if (button == 0) {
 			sound_playMenu(0);
-			profile_resetCamera();
+			profile_quitGame();
 		} else if (button == 1) {
 			sound_playMenu(0);
 			g_profilePage = 1;
@@ -187,8 +191,10 @@ int (profile_logOutClicks)(void)
 	return g_rightClick;
 }
 
-/* 0x44f6c0: logging in with the selected profile (when g_profileLogInAsked): the profile saved, the main menu (state 300), the
-   profile's name as the player's (0x20 bytes), then axis.cfg loaded. Returns what the original leaves in eax */
+/* 0x44f6c0: the profile screen's page 4 (menuState210_frame's table): logging in with the chosen profile (only when
+   g_profileLogInAsked): it is made current (profile_makeCurrent: axisuser.dat written, the pilot's save read), the
+   main menu (state 300), the profile's name as the player's (0x20 bytes, g_cfgPlayerName), then axis.cfg written
+   (cfg_writeAxisCfg). Returns its eax */
 u32 (profile_logIn)(void)
 {
 	if (!g_profileLogInAsked)
@@ -208,10 +214,12 @@ u32 (profile_logIn)(void)
 
 #define CALL(addr) GAME_CDECL(addr, u32, void)()
 
-/* 0x44f410: the profile screen's frame: the message's timer (g_profileRowClickTime, to k_20f; then the message goes), the
-   dialog's frame and its page (profile_typeNewName) while open, else the screen (an entry being edited first), the page shown.
-   Returns what the original leaves in eax */
-u32 (profile_frame)(void)
+/* 0x44f410: the profile screen's page 1, the list (menuState210_frame's table, with profile_newNamePage /
+   profile_deletePage / profile_logIn / profile_logOutPage / pilotSelect_page): the row click's timer
+   (g_profileRowClickTime, to k_20f; then g_profileRowClicked clears); while a dialog frame opens, its frame
+   (menu_drawFrame) and, entered with no profiles (g_profileNoneAtEntry), the new-name typing (profile_typeNewName);
+   else the stat bars loaded when stale and the management window drawn. Returns what the original leaves in eax */
+u32 (profile_listPage)(void)
 {
 	if (g_profileRowClicked) {
 		long double t = fadd_m(fld_m(&g_frameTime), (const float *)ADDR(g_profileRowClickTime));
@@ -235,9 +243,11 @@ u32 (profile_frame)(void)
 	return profile_drawManagementWindow();
 }
 
-/* 0x44c560: the profile screen's input: while its intro plays (g_profileQuitting) a click skips it (to state 5, the panel
-   sliding in from 100 at 0.05); else, with no dialog, by page (g_profilePage): 1 the list, 2 the new profile, 3 and 5 the
-   dialogs, 6 the profile list's clicks. Returns what the original leaves in eax */
+/* 0x44c560: the profile screen's mouse (from menu_processMouse): once log-out was answered yes (g_profileQuitting)
+   the first click or right click sets g_profileQuitSkip 5 and the unused camera words (zoom 100, speed 0.05; the game
+   quits on the next frame anyway); else, with no dialog frame opening, by page (g_profilePage): 1 the list
+   (profileList_mouse), 2 the new-name dialog, 3 delete, 5 log out, 6 the pilot grid (pilotSelect_clicks). Returns
+   what the original leaves in eax */
 u32 (profile_processInput)(void)
 {
 	int intro = g_profileQuitting;
@@ -256,7 +266,7 @@ u32 (profile_processInput)(void)
 	u32 page = (*(u32 *)&g_profilePage) - 1;
 	switch (page) {
 	case 0: return profileList_mouse();
-	case 1: return profile_newNameDialog();
+	case 1: return newNameDialog_clicks();
 	case 2: return profile_deleteClicks();   /* profile_deleteClicks */
 	case 4: return profile_logOutClicks();   /* profile_logOutClicks */
 	case 5: return pilotSelect_clicks();   /* pilotSelect_clicks */
@@ -322,7 +332,7 @@ u32 (profile_create)(void)
 		g_profileChosen = count - 1;
 	}
 	profile_newCampaign();         /* profile_newCampaign (it writes the profile) */
-	return profile_resetPreview();  /* profile_resetPreview */
+	return profile_resetStatBars();  /* profile_resetStatBars */
 }
 
 /* a profile screen page with a panel: while the pointer glides (g_pointerGliding) it is pulled towards its target (g_highlightX,
@@ -383,7 +393,7 @@ u32 (profileList_drawNames)(void)
    its frame (menu_drawFrame), with the "NAME ALREADY REGISTRED" message up its window, while typing the name
    dialog; once the typed name (g_chatLine) is in: empty cancels, a blank one (name_isBlank) is refused with sound 6,
    one with a bad character (profile_nameHasBadChar) too with message 0x81, one that exists (profile_nameExists)
-   brings up the message; any other goes on to the pilot grid (page 6, profile_resetSelection). Returns the last
+   brings up the message; any other goes on to the pilot grid (page 6, pilotSelect_reset). Returns the last
    call's eax */
 u32 (profile_newNamePage)(void)
 {
@@ -423,7 +433,7 @@ u32 (profile_newNamePage)(void)
 		return profile_drawNewDialog();
 	}
 	g_profilePage = 6;
-	profile_resetSelection();
+	pilotSelect_reset();
 	return profile_drawNewDialog();
 }
 
@@ -431,8 +441,8 @@ u32 (profile_newNamePage)(void)
    twice), the later profiles moved down a slot and the freed last slot cleared (colour -1), the count lowered.
    With none left everything is reset and the list written (profile_writeFile); otherwise, if the current one was the
    last, the selection steps back (the scrolled row g_profileListRow, else the list's top g_profileListTop), then the list is
-   written and shown again (profile_resetPreview). Returns the last call's eax */
-u32 (profile_deleteFiles)(void)
+   written and shown again (profile_resetStatBars). Returns the last call's eax */
+u32 (profile_deleteChosen)(void)
 {
 	int current = g_profileChosen;
 	u8 *records = g_profiles;   /* 0x48 bytes each: +0 a word, +4 the name, +0x44 the colour */
@@ -468,7 +478,7 @@ u32 (profile_deleteFiles)(void)
 		g_profileChosen = g_profileListTop + g_profileListRow;
 	}
 	profile_writeFile();
-	return profile_resetPreview();   /* profile_resetPreview */
+	return profile_resetStatBars();   /* profile_resetStatBars */
 }
 
 /* typing over: the key state reset (input_resetKeys) and the keyboard taken again; returns input_initKeyboard's eax */
@@ -486,12 +496,14 @@ static void line_wipe(void)
 		memset((void *)OBJ(g_chatLine), 0, n);
 }
 
-/* 0x44c190: the new pilot's name dialog. Before typing (g_profileMessage): a click on the name field (profile_inDialogBox) or
-   a right click starts it (profile_typeNewName). While typing: OK (button 0) refuses a blank name (sound 6), refuses a bad one
-   (message 0x81, the dialog shut) or takes it (profile_nameExists; when that fails the dialog stays for another go),
-   cancel (1) empties the line; a right click (g_rightClick) leaves typing with the line emptied. Returns what the original
+/* 0x44c190: the new-name dialog's clicks (page 2). While the name-taken message is up (g_profileMessage): any click
+   (profile_inDialogBox returns 1 or -1 and the original only tests for nonzero, so where the click lands does not
+   matter) or a right click closes it and typing starts again (profile_typeNewName). Otherwise (newNameDialog_hitTest)
+   OK (0) refuses a blank name (sound 6), refuses one with a bad character (message 0x81, the dialog shut), brings the
+   message up when the name exists (profile_nameExists), else takes it (profile_newNamePage then goes on to the pilot
+   grid); CANCEL (1) empties the line; a right click shuts the dialog with the line emptied. Returns what the original
    leaves in eax */
-u32 (profile_newNameDialog)(void)
+u32 (newNameDialog_clicks)(void)
 {
 	const char *typed = g_chatLine;
 	g_menuRepeatClock = 0.0f;

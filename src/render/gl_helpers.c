@@ -15,7 +15,7 @@ void (gl_rotateXYZ)(u32 x, u32 y, u32 z)
    the .axnet section's tail, entered at 0x468671 and 0x4686af), the 3D projection takes the full screen and the 2D
    one the centred 16:9 box, unless the screen is at most 8 pixels wider; both make the menus' switch (g_projMode)
    set its viewport again next time */
-void (gfx_setProjectionHud)(int mode, float scale)
+void (gfx_setMatchProjection)(int mode, float scale)
 {
 	glLoadIdentity();
 	if (mode == g_hudProjMode)

@@ -5,8 +5,9 @@
 #include <string.h>
 
 
-/* 0x41dfb0: the parts page: the preview, the part lists (armc_resetSeraphimParts, a no-op in the patched game) and, unless the
-   interface is hidden (Ctrl+Alt+M), the frame and the stats panel */
+/* 0x41dfb0: the parts page: the preview, the SERAPHIM parts reset unless entered from the room
+   (armc_resetSeraphimParts, g_armcFrom not 3; a no-op in the patched game) and, unless the interface is hidden
+   (Ctrl+Alt+M), the mode tabs and the stats panel */
 void (armc_drawPartsPage)(void)
 {
 	if (g_armcPreview != 0)
@@ -95,7 +96,7 @@ void (armc_exit)(int confirmed)
 {
 	switch (g_armcFrom) {
 	case 1:
-		armc_restoreMenuCamera();
+		armc_snapCameraToPoint0();
 		g_armcState = 0;
 		g_viewAspect = 0.1f;
 		if (confirmed)
@@ -109,7 +110,7 @@ void (armc_exit)(int confirmed)
 			armc_saveSelection();
 		break;
 	case 3:
-		armc_restoreMenuCamera();
+		armc_snapCameraToPoint0();
 		g_armcState = 0;
 		g_viewAspect = 0.1f;
 		if (confirmed)
@@ -134,7 +135,7 @@ void (armc_exit)(int confirmed)
 /* ---- the mech preview of the parts and weapons pages: a perspective view turned by the preview's angle (spinning
    while g_armcSpin is set), the mech drawn by armc_drawPreview3D for the part in view ---- */
 
-/* 0x461850: the preview's 3D pass. The camera at eye looking along forward (camera_setupView, as the match's view);
+/* 0x461850: the preview's 3D pass. The camera at eye looking along forward (stage_setupView, as the match's view);
    while the right button is held the cursor turns the mech: its offset from the screen's centre (w x h) is kept
    (mouseDy y, mouseDx x) and the heading becomes x / w * 3600 less the preview's angle. The actor's pitch is
    y / (h / 2) * 89 degrees. The mech is posed (actor_processFrame), lit by one light from the view direction, and
@@ -151,15 +152,15 @@ void THISCALL (armc_drawPreview3D)(Scene *scene, const u32 *eye, const u32 *forw
 	u32 light[0xb010 / 4];   /* a Light: vtable, 0x400 entries of 0x2c bytes, two counts, the changed flag (+0xb00c:
 	                            factor_addFactorBy sets it); the original's frame holds it whole at +0x18 */
 	for (int i = 0; i < 0x400; i++)
-		ResourceSet_trivialCtor((u8 *)RELOC(light) + 4 + i * 0x2c);
+		class_emptyCtor((u8 *)RELOC(light) + 4 + i * 0x2c);
 	light[0] = VT(Light, 0x4aa248);
 	Light_clearCounts(light);
 	u8 white[4] = { 0xff, 0xff, 0xff, 0xff }, dim[4] = { 0xf0, 0xc0, 0xc0, 0x60 };
 	scene_averageFrameTime(scene);
 	u32 x44 = BITS(scene->frameTime);
 	float far = view_farPlane(), near = view_nearPlane(), fov = view_angle();
-	camera_setupView(stage, eye, forward, up,
-	                                                                                                       BITS(fov), w, h, BITS(near), BITS(far), x44);   /* camera_setupView */
+	stage_setupView(stage, eye, forward, up,
+	                                                                                                       BITS(fov), w, h, BITS(near), BITS(far), x44);   /* stage_setupView */
 	ViewVolume_captureMatrices(vv, 0, scene->modelview);
 	ViewVolume_reset(vv);
 	int fix = *g_wide->rotFix, W = fix ? 640 : w, H = fix ? 480 : h;
@@ -187,9 +188,9 @@ void THISCALL (armc_drawPreview3D)(Scene *scene, const u32 *eye, const u32 *forw
 	for (int k = 0; k < 8; k++) {
 		u8 *list = (u8 *)&scene->players[scene->localPlayer] + lists[k];
 		if (part < 0)
-			partList_queue(list, vv, light, NULL, 1, (u32)-1, 0);
+			ObjectList_queue(list, vv, light, NULL, 1, (u32)-1, 0);
 		else
-			partList_queue(list, vv, NULL, k == part ? white : dim, 1, (u32)-1, 0);
+			ObjectList_queue(list, vv, NULL, k == part ? white : dim, 1, (u32)-1, 0);
 	}
 	ViewVolume_draw(vv, 0, 0.0f);
 	Light_dtor(light);
@@ -230,13 +231,13 @@ void (armc_updatePartsPreview)(void)
 	if (g_mechChanged == 1) {
 		const int *parts = g_armcParts;    /* the mech's head, chest, arm, leg, booster */
 		switch (g_armcPartSlot) {
-		case 0: armc_setHeadIndex(g_scene, parts[0]); break;
-		case 1: armc_setChestIndex(g_scene, parts[1]); break;
-		case 2: armc_setArmIndex(g_scene, parts[2]); break;
-		case 3: armc_setLegIndex(g_scene, parts[3]); break;
-		case 4: armc_setBoosterIndex(g_scene, parts[4]); break;
+		case 0: mech_setHeadIndex(g_scene, parts[0]); break;
+		case 1: mech_setChestIndex(g_scene, parts[1]); break;
+		case 2: mech_setArmIndex(g_scene, parts[2]); break;
+		case 3: mech_setLegIndex(g_scene, parts[3]); break;
+		case 4: mech_setBoosterIndex(g_scene, parts[4]); break;
 		}
-		armc_drawPartPanels();
+		armc_readPartPanels();
 		armc_giveShownActorWeapon(g_scene, g_armcSlot);
 		armc_readMechStats();
 		g_mechChanged = 0;
@@ -261,7 +262,7 @@ void (armc_updateWeaponsPreview)(void)
 {
 	gfx_setProjection2D3D(1);
 	if (g_unusedEmptySlot0Flag == 1) {
-		armc_weaponSlotRecord(0, 0);
+		armc_itemSlotRecord(0, 0);
 		g_unusedEmptySlot0Flag = 0;
 	}
 	int slot;
@@ -304,9 +305,9 @@ void (menuState700_armCenter)(void)
 	}
 	if (g_armcSessionDue && !g_armcSessionMade) {
 		static const u32 items[6] = { ADDR(g_mechWeaponSlot0), ADDR(g_mechWeaponSlot1), ADDR(g_mechWeaponSlot2), ADDR(g_mechWeaponSlot3), ADDR(g_itemSlot4), ADDR(g_itemSlot5) };
-		armc_enterScreen();
+		armc_makeSession();
 		for (int slot = 0; slot < 6; slot++)
-			armc_weaponSlotRecord(slot, GAME_VAR(int, items[slot]));
+			armc_itemSlotRecord(slot, GAME_VAR(int, items[slot]));
 		state = g_armcState;
 	}
 	if (state == 2 && !g_armcLeaving) {
@@ -346,7 +347,7 @@ void (menuState700_armCenter)(void)
    mech (further back from the room), the dialog box and two colours, the camera's point for the screen, the part
    lists built and the mech read (from the room's session or the profile), a sound; g_progressWentUp set when the level
    (g_pilotLevel from the room, 0x9f181c otherwise) went up since last time (new parts to show), the new value kept and returned */
-u32 (armc_enterParts)(void)
+u32 (armc_open)(void)
 {
 	g_armcHideInterface = 0;
 	g_armcSlot = 0;
@@ -560,7 +561,7 @@ void THISCALL (stage_claimPlayerActor)(Stage *stage, int a, int id, int controll
 void (armc_rightClickLeave)(void)
 {
 	if (g_rightClick) {
-		armc_restoreMenuCamera();
+		armc_snapCameraToPoint0();
 		g_armcState = 0;
 		BITS(g_viewAspect) = 0;
 	}
@@ -578,8 +579,8 @@ void (armc_initCameraBox)(void)
 		GAME_VAR(u32, OBJ(g_armcCameraBox) - 0x40 + corner[k].offset) = corner[k].sign > 0 ? 0x442f0000 : corner[k].sign < 0 ? 0xc42f0000 : 0;
 }
 
-/* 0x40dfa0: the six part panels (g_panels): their corners (+-600), x, angle cleared and turning speeds, and the
-   camera's limits (200, 600, 2, -2) */
+/* 0x40dfa0: the six part panels (g_panels): their corners (+-600), x, angle cleared and turning speeds; panels 2 /
+   3's breathing half widths (g_panelSize2 600, g_panelSize3 200) and rates (g_panelRate2 -2, g_panelRate3 2) */
 void (armc_initPanels)(void)
 {
 	for (Panel *p = g_panels; p < g_panels + 6; p++) {
@@ -701,10 +702,11 @@ int (armc_drawModeTabs)(void)
 	return 3;
 }
 
-/* 0x40e7a0: the selection kept: the part choices (0x90 bytes from g_armcColours into g_savedColourChoices), the five colour
-   choices (g_armcParts into g_savedMechHead) and six more settings (g_itemSlot4 into g_savedMechItemSlot4), between two calls of the part
-   lists (armc_resetSeraphimParts); the original then checked the choices' ranges, which the patched game jumps over. Then the
-   progress saved; returns profile_saveProgress's eax */
+/* 0x40e7a0: the selection kept: the colour choices (0x90 bytes from g_armcColours into g_savedColourChoices), the
+   five part choices (g_armcParts into g_savedMechHead) and the six item slots (the six dwords from g_itemSlot4: slots
+   4, 5, then weapons 0 .. 3, into g_savedMechItemSlot4), between two SERAPHIM-part resets (armc_resetSeraphimParts,
+   no-ops in the patched game); the original then checked the choices' ranges, which the patched game jumps over. Then
+   the progress saved; returns profile_saveProgress's eax */
 u32 (armc_saveSelection)(void)
 {
 	armc_resetSeraphimParts();
@@ -797,7 +799,7 @@ u32 (armc_partsPageClicks)(void)
 
 /* 0x40ff40: the colour page clicked (armcColour_hitTest's buttons 0 .. 17): 0 .. 2 the parts, weapons and colour pages
    (armc_showPartsPage / armc_openWeaponsPage / armc_showColourPage, unless already there), 3 / 4 the two exits (armc_exit), 5 .. 10 the colour slot
-   0 .. 5 (g_armcColourSlot; slot 5 also armc_backupColours), 11 .. 16 the slider and swatch buttons (armc_dragPrimaryHue .. armc_dragSecondaryHue), 17 the
+   0 .. 5 (g_armcColourSlot; slot 5 also armc_seedAllColourSlot), 11 .. 16 the slider and swatch buttons (armc_setPrimaryHueFromPointer .. armc_setSecondaryHueFromPointer), 17 the
    rotation toggle. Returns what the original leaves in eax */
 u32 (armc_colourPageClicks)(void)
 {
@@ -805,7 +807,7 @@ u32 (armc_colourPageClicks)(void)
 		return 0;
 	u32 button = armcColour_hitTest(g_mouseX, g_mouseY);   /* armcColour_hitTest */
 	static const u32 page[3] = { FN_ADDR(armc_showPartsPage, 0x40f200), FN_ADDR(armc_openWeaponsPage, 0x40f220), FN_ADDR(armc_showColourPage, 0x40f320) };
-	static const u32 control[6] = { FN_ADDR(armc_dragPrimaryHue, 0x40f5d0), FN_ADDR(armc_dragPrimarySaturation, 0x40f670), FN_ADDR(armc_dragPrimaryValue, 0x40f6b0), FN_ADDR(armc_dragSecondaryHue, 0x40f6f0), FN_ADDR(armc_dragSecondarySaturation, 0x40f790), FN_ADDR(armc_dragSecondaryValue, 0x40f7e0) };
+	static const u32 control[6] = { FN_ADDR(armc_setPrimaryHueFromPointer, 0x40f5d0), FN_ADDR(armc_setPrimarySaturationFromPointer, 0x40f670), FN_ADDR(armc_setPrimaryValueFromPointer, 0x40f6b0), FN_ADDR(armc_setSecondaryHueFromPointer, 0x40f6f0), FN_ADDR(armc_setSecondarySaturationFromPointer, 0x40f790), FN_ADDR(armc_setSecondaryValueFromPointer, 0x40f7e0) };
 	u32 r;
 	switch (button) {
 	case 0: case 1: case 2:
@@ -821,7 +823,7 @@ u32 (armc_colourPageClicks)(void)
 			return button - 5;
 		r = sound_playMenu(2);
 		(*(u32 *)&g_armcColourSlot) = button - 5;
-		return button == 10 ? armc_backupColours() : r;
+		return button == 10 ? armc_seedAllColourSlot() : r;
 	case 11: case 12: case 13: case 14: case 15: case 16:
 		return GAME_CDECL(control[button - 11], u32, void)();
 	case 17:

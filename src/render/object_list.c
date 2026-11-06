@@ -30,7 +30,9 @@ static void relight(ListedObject *e, const LightFactors *factors, const void *li
 	}
 }
 
-/* 0x46f7a0 (ObjectList_relight): relight every entry that has a shape */
+/* 0x46f7a0 (ObjectList_relight): every entry that has a shape recoloured: shaded by the light factors
+   (shape_shadeParts through the inverse of its matrix), then the colour tint added on top (or alone set) by
+   shape_addColour (part_addColour: RGB added and clamped, alpha the minimum); neither gives black */
 void THISCALL (ObjectList_relight)(ObjectList *list, const LightFactors *factors, const void *lights)
 {
 	for (int i = 0; i < list->count; i++) {
@@ -40,11 +42,12 @@ void THISCALL (ObjectList_relight)(ObjectList *list, const LightFactors *factors
 	}
 }
 
-/* 0x46fd20 (partList_queue): the list into the view volume, when it has frames and the current one is set (returns 1;
-   else 0 and nothing done). A pre-lit list (preLit == 1) is relit here (factors only while factors->enabled when
-   there are no point lights) and drawn with its own colours; any other list hands the factors and lights on. cull,
-   material and the extra matrix go to ViewVolume_projectObject. */
-int THISCALL (partList_queue)(ObjectList *list, void *view, const LightFactors *factors, const void *lights, int cull,
+/* 0x46fd20: the list into the view volume, when it has frames and the current one is set (returns 1; else 0 and
+   nothing done). A pre-lit list (preLit == 1) is recoloured here (relight: factors and the tint; skipped only when
+   there is no tint, factors are given and factors->enabled is not 1) and queued with its own colours; any other list
+   hands the factors and the tint colour on (ViewVolume_queueModel's colour). cull, material and the extra matrix
+   go to ViewVolume_queueModel. */
+int THISCALL (ObjectList_queue)(ObjectList *list, void *view, const LightFactors *factors, const void *lights, int cull,
                           int material, int extraMatrix)
 {
 	if (list->skelCount <= 0 || list->count <= 0 || list->skeletons[list->skel] == 0)
@@ -56,18 +59,20 @@ int THISCALL (partList_queue)(ObjectList *list, void *view, const LightFactors *
 		if (list->preLit == 1) {
 			if (lights != NULL || factors == NULL || factors->enabled == 1)
 				relight(e, factors, lights);
-			ViewVolume_projectObject(view, e->shape, (u32)e->colours, e->matrix, 0, NULL, cull, material, extraMatrix);
+			ViewVolume_queueModel(view, e->shape, (u32)e->colours, e->matrix, 0, NULL, cull, material, extraMatrix);
 		} else {
-			ViewVolume_projectObject(view, e->shape, 0, e->matrix, (int)factors, lights, cull, material, extraMatrix);
+			ViewVolume_queueModel(view, e->shape, 0, e->matrix, (int)factors, lights, cull, material, extraMatrix);
 		}
 	}
 	return 1;
 }
 
-/* 0x497a90: the draw records of the stage's meshes (0x20c bytes each from groundLayers[].texture): for mesh i a vertex record B
-   (at *(layerModel.parts) + i * 0x80) and a water record A (*(waterModel.parts) + i * 0x80), the vertex and index counts summed, and
-   each A given four fans of five of its twelve points (drawn only for a water layer: ground_buildDrawLists makes the points) */
-void THISCALL (stage_buildMeshDrawRecords)(u8 *stage)
+/* 0x497a90 (thiscall on the stage): the ground's two models set up from its layers (0x20c bytes each from
+   groundLayers): for layer i a part of layerModel (the grid: (rows + 1) x (cols + 1) points, colours, uv, its strips)
+   and a part of waterModel (12 points, waterColours, waterUv, four fans of five of its twelve points; drawn only for
+   a water layer: primCount 4, ground_buildDrawLists makes the points); both parts' flags by the layer's kind (0: 0,
+   1: 8, 2: 6) and its texture; the models' colourCount summed from the vertex counts (triangleCount 0) */
+void THISCALL (ground_buildLayerModels)(u8 *stage)
 {
 	Stage *st = (Stage *)stage;
 	int n = st->groundLayerCount;
@@ -124,7 +129,7 @@ void THISCALL (stage_buildMeshDrawRecords)(u8 *stage)
 
 /* 0x46fed0: the textures of every shape in an object list bound (count count, 100-byte entries from *(entries), the
    shape first) */
-void THISCALL (partList_bindTextures)(ObjectList *list)
+void THISCALL (ObjectList_bindTextures)(ObjectList *list)
 {
 	for (int i = 0; i < list->count; i++) {
 		void *shape = list->entries[i].shape;

@@ -37,8 +37,9 @@ static void huff_value(int *out, int n)
 		*out = *out - (1 << n) + 1;
 }
 
-/* 0x46f190: a DC difference: 16 bits looked at, matched against the table's 16 codes (length, code), only the code's
-   bits used, then the value of that many bits */
+/* 0x46f190: a DC difference: 16 bits looked at, matched against up to 16 (length, code) pairs from the
+   set's DC table (each table holds 12: 96 bytes, so a miss reads on into the next), only the code's bits used, then
+   the value of that many bits */
 void (ptx_readDcDiff)(int *out)
 {
 	int v, len = 0, k;
@@ -260,7 +261,7 @@ static int ptx_read(void *f, u8 *out, int *fmt, int *width, int *height, int clo
 		ptx_error(-1, (const char *)STR(0x4c6fd8, "not implemented\n"));
 		planes = -1;
 	}
-	ptx_initQuantTables(head.quality);
+	ptx_initDequantTables(head.quality);
 	u8 *data = g_ptxData;
 	ptx_fread(data, 1, 0x10000, f);
 	int pos = 0, bits = 0;

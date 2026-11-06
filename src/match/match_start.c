@@ -147,7 +147,7 @@ static int random_below(u32 n)
    0x2aa .. 0xb86 dwords), the restart point, the round's tables copied (cameraMode counting through them, as in the
    original), the camera back to mode 1, nobody watched, the pointer centred, the volumes (g_soundVolume, g_musicVolume) set
    again, the local player's inPlay cleared, the teams (scene_setLocalTeam), the camera and its slot, a typed chat line
-   kept (chat_keepLastLine) and the round's flags cleared */
+   kept (chat_endTyping) and the round's flags cleared */
 static void later_round(Scene *s)
 {
 	const int *counts[6] = { &s->headCount, &s->chestCount, &s->armCount, &s->legCount, &s->boosterCount, &s->actorItemCount };
@@ -168,7 +168,7 @@ static void later_round(Scene *s)
 		for (int t = 0; t < 6; t++)
 			s->cameraSettings[t][s->cameraMode] = s->cameraPresets[t][s->cameraMode];
 	s->cameraMode = 1;
-	stage_selectActor(STAGE(s), -1);
+	stage_setCockpitActor(STAGE(s), -1);
 	s->watchedPlayer = -1;
 	memset(s->manualPick, 0, sizeof s->manualPick);
 	s->playing = 0;
@@ -189,7 +189,7 @@ static void later_round(Scene *s)
 	events_clear(s, 60.0f);
 	s->chatMode = 0;
 	if (g_textFieldOpen)
-		chat_keepLastLine();
+		chat_endTyping();
 	(*(int *)&s->keyGuard) = 0;
 	s->matchOver = 0;
 	(*(int *)&s->endTime) = 0;
@@ -199,7 +199,10 @@ static void later_round(Scene *s)
 	BITS(s->msgFade) = 0;
 }
 
-/* 0x49df10 (thiscall on the scene): the round started, the first (matchDrawing clear) or a later one. Its caller
+/* 0x49df10 (thiscall on the scene): run on the playing state's first frame (match_playFrame, stateFrames 0). Before
+   any map is loaded (matchDrawing 0, as scene_startSession leaves it) the match is set up (first_round: Ladder game,
+   rotation, limits, mech, local player); once a map has loaded (loading stage 8 sets matchDrawing 1 and stateFrames 0
+   again) the round on it starts (later_round: geometry check, camera, volumes, scores, events, teams). Its caller
    ignores the eax it leaves */
 void THISCALL (match_startRound)(Scene *s)
 {
@@ -277,8 +280,8 @@ void THISCALL (scene_reset)(u8 *s)
 static void model_sets(u8 *shapes, const char *dir, int n, int extra, int size, u8 *skels, const char *skel_dir, int sn,
                        int sextra, u8 *smem, int ssize)
 {
-	shape_initBy(shapes, dir, n, 2, extra, shapes + sizeof(Manager), size);   /* (its block right after it) */
-	skelSet_setup(skels, skel_dir, sn, 2, sextra, smem, ssize);
+	ShapeManager_initBy(shapes, dir, n, 2, extra, shapes + sizeof(Manager), size);   /* (its block right after it) */
+	SkeletonManager_initBy(skels, skel_dir, sn, 2, sextra, smem, ssize);
 }
 
 /* 0x4700a0 (thiscall on the stage): the stage built (its names passed on to stage_setFolders): the collision space (in its
@@ -385,9 +388,9 @@ void THISCALL (stage_build)(u8 *s, u32 stageDir, u32 mapDir, const char *texture
 	st->layerModel.parts = st->layerParts;
 	st->waterModel.parts = (u8 *)st->waterParts;
 	const char *dir = st->shapeDir;
-	shape_initBy((u8 *)&st->objectShapes, dir, 0x190, 2, 0xe54c0, st->objectShapeData, sizeof st->objectShapeData);
+	ShapeManager_initBy((u8 *)&st->objectShapes, dir, 0x190, 2, 0xe54c0, st->objectShapeData, sizeof st->objectShapeData);
 	st->objectColourCount = 0;
-	skelSet_setup((u8 *)&st->objectSkeletons, st->skeletonDir, 0x64, 2, 0x7080, st->objectSkeletonData, sizeof st->objectSkeletonData);
+	SkeletonManager_initBy((u8 *)&st->objectSkeletons, st->skeletonDir, 0x64, 2, 0x7080, st->objectSkeletonData, sizeof st->objectSkeletonData);
 	static const u32 zero[10] = { offsetof(Stage, objectNameCount), offsetof(Stage, objectCount), offsetof(Stage, objectFreeHint), offsetof(Stage, objectSerial), offsetof(Stage, headTypeCount), offsetof(Stage, chestTypeCount), offsetof(Stage, armTypeCount), offsetof(Stage, legTypeCount),
 	                              offsetof(Stage, boosterTypeCount), offsetof(Stage, playerRecordCount) };
 	for (int k = 0; k < 10; k++)
@@ -405,9 +408,9 @@ void THISCALL (stage_build)(u8 *s, u32 stageDir, u32 mapDir, const char *texture
 			model_sets(type + parts[k].shapes, dir, parts[k].n, parts[k].extra, parts[k].size, type + parts[k].skels, skeletonDir, 2,
 			           parts[k].sextra, type + parts[k].smem, parts[k].ssize);
 	}
-	shape_initBy((u8 *)&st->itemShapes, dir, 0x258, 2, 0x2c6280, st->itemShapeData, sizeof st->itemShapeData);
-	skelSet_setup((u8 *)&st->itemSkeletons, skeletonDir, 0x64, 2, 0x15ae0, st->itemSkeletonData, sizeof st->itemSkeletonData);
-	debug_traceStripped((Scene *)s);
+	ShapeManager_initBy((u8 *)&st->itemShapes, dir, 0x258, 2, 0x2c6280, st->itemShapeData, sizeof st->itemShapeData);
+	SkeletonManager_initBy((u8 *)&st->itemSkeletons, skeletonDir, 0x64, 2, 0x15ae0, st->itemSkeletonData, sizeof st->itemSkeletonData);
+	shared_emptyFunction((Scene *)s);
 	effect_initShapes(s);
 	static const u32 names[3] = { STR(0x4c73f4, "Texture\\Item_damagemap_ani0"), STR(0x4c73d8, "Texture\\Item_booster_ani0"), STR(0x4c73bc, "Texture\\Item_shield_ani0") };
 	for (int k = 0; k < 3; k++) {

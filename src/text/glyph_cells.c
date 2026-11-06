@@ -31,8 +31,9 @@ static void glyph_grid(const Grid *g)
 	}
 }
 
-/* 0x42f940: the menu fonts' (16 x 8 of 16 texels, 32 x 16 of 8, and four extra rows) */
-void (font_initMenuGrids)(void)
+/* 0x42f940: the ASCII fonts' cell tables: g_font16* (16 x 8 cells of 16 texels), g_font8* (32 x 8 cells, 8 wide, 16
+   tall) and g_font5* (four rows of 32 cells, 8 x 8, from texel row 0x87) */
+void (font_initAsciiGrids)(void)
 {
 	static const Grid grids[3] = {
 		{ 0, 16, 0x80, 0, 15, 16, 16, 0, 15, OBJ(g_font16Bottom), OBJ(g_font16Top), OBJ(g_font16Left), OBJ(g_font16Right) },
@@ -42,8 +43,9 @@ void (font_initMenuGrids)(void)
 		glyph_grid(&grids[k]);
 }
 
-/* 0x42fb40: the HUD fonts' */
-void (font_initHudGrids)(void)
+/* 0x42fb40: the Hangul fonts' cell tables: lead consonants (g_hanCho*, 16 x 16), vowels (g_hanJung*, 16 x 6) and
+   tails (g_hanJong*, 16 x 7 from texel row 0x6f) */
+void (font_initHangulGrids)(void)
 {
 	static const Grid grids[3] = {
 		{ 0, 16, 0x100, 0, 15, 16, 16, 0, 15, OBJ(g_hanChoBottom), OBJ(g_hanChoTop), OBJ(g_hanChoLeft), OBJ(g_hanChoRight) },

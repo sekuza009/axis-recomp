@@ -798,7 +798,7 @@ void (setup_drawMenu)(void)
    and is drawn with the panel lit (the stripes plain); then the panel's caption (MSG(71, "SKIRMISH PLAY|Hotkey is $[5] K")), or once idle for 120
    the hint 0x4b2a98 fading in and out (g_menuHintFade by g_menuHintStep), unless g_menuCameraMove. The original leaves eax to callers
    that ignore it */
-void (menu_mainMenu)(void)
+void (mainmenu_drawMenu)(void)
 {
 #define g_depth g_mainMenuDepth
 #define g_idle g_menuIdleTime

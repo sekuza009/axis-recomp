@@ -120,7 +120,7 @@ static void info_box(u32 line, int named)
    or the full one g_arenaServerList); three buttons (MSG(149, "$[0] JOIN"): join needs a game, and while searching only the second
    lights; all dimmed under the address / password boxes); the scroll arrows (15 / 16); the blinking MSG(152, "SEARCHING FOR THE GAME SERVER") while
    searching or g_lobbyRefreshing; the password and address boxes, the join confirmation (MSG(153, "CONNECTING TO THE GAME SERVER") / MSG(154, "PLEASE WAIT"), its button
-   MSG(116, "$[0] CANCEL") by arenaDialogBox_hitTest) and the "leave?" box (the original asks arenaCreate_hitTest but lights its buttons by the
+   MSG(116, "$[0] CANCEL") by arenaDialogBox_hitTest) and the "leave?" box (the original asks arenaUpdateNotice_hitTest but lights its buttons by the
    list's own pointer test); the border. The original leaves eax to callers that ignore it */
 void (arena_drawGameList)(void)
 {
@@ -203,7 +203,7 @@ void (arena_drawGameList)(void)
 		text_drawBox16(0x104, 0x120, 0x17c, (const char *)MSG(116, "$[0] CANCEL"));
 	}
 	if (g_arenaUpdateNotice) {
-		arenaCreate_hitTest(g_mouseX, g_mouseY);   /* arenaCreate_hitTest (unused) */
+		arenaUpdateNotice_hitTest(g_mouseX, g_mouseY);   /* arenaUpdateNotice_hitTest (unused) */
 		RECT(0x3dcccccd, 0x3dcccccd, 0x3dcccccd, 0x3ecccccd);   /* 0.1, 0.1, 0.1, 0.4 */
 		menu_drawRect(0, 0, 0x280, 0x1e0, 1);
 		RECT(0x3dcccccd, 0x3dcccccd, 0x3dcccccd, 0x3f4ccccd);
@@ -347,7 +347,7 @@ void (gameList_draw)(void)
    the list asked for again, the next in 5) and a stop (g_netListDone); then the list, and with a game joined (g_roomJoinStarted)
    the join sent (g_roomJoinNeedsPassword clear) or, once a password is typed (g_typingRoomJoinPassword), it checked against the game's (+0x3b)
    (message 0x27 when wrong) */
-void (gameList_drawPage)(void)
+void (gameList_pageFrame)(void)
 {
 	const float *step = (const float *)ADDR(g_lobbyBlinkRate), *blinkFloor = (const float *)ADDR(k_10f);
 	if (g_gameListClickArmed) {
@@ -644,7 +644,7 @@ void (gameList_keys)(void)
 			sound_playMenu(0);
 			g_joinPollTicks = 0;
 			g_joinTimedOut = 0;
-			arena_leaveSession();
+			dplay_leaveSession();
 			g_joinConnecting = 0;
 			KillTimer(g_hWndMain, 0x378);
 		}
@@ -724,7 +724,7 @@ static void blink_down(void)
    a stop g_netListDone); then the list; then a join (g_lobbyJoinStarted: once typed, the password, g_arenaJoinPassword, checked against the
    game's, message 0x27 when wrong; or the join sent, g_arenaJoinNeedsPassword clear), a typed game address (g_typingArenaAddress: joined as
    99999 when not empty) or a join confirmed (g_lanJoinRequest). The original leaves eax to callers that ignore it */
-void (arena_drawGamesPage)(void)
+void (arena_gamesPageFrame)(void)
 {
 	if (g_arenaListClickArmed) {
 		long double t = FADD(g_frameTime, g_arenaListClickTimer);
@@ -851,7 +851,7 @@ static void lobby_leave(void)
 
 /* 0x406c30 (the arena lobby's list of games, its mouse: with the arena camera arrived (g_arenaCameraMode 2), not
    while joining, with the address box or a message box). A right click (not while searching or connecting) drops the
-   connection and the mode. A click (arenaGameList_hitTest) on: 0 search the network (DirectPlay, arena_openSession), 1 connect to
+   connection and the mode. A click (arenaGameList_hitTest) on: 0 search the network (DirectPlay, dplay_openConnection), 1 connect to
    the lobby server (lobby_openConnection), 2 a game's IP address typed (arena_editAddress), 3 join (with games; not while busy), 4 back (a
    refresh in progress ended), 5 leave the lobby (mode 0), 15 / 16 one row up / down, or a row (6 .. 14): selects
    it, or on the selected row again (g_arenaListClickArmed) joins it. A busy lobby answers sound 6. Holding the button on the
@@ -865,7 +865,7 @@ void (arenaGames_mouse)(void)
 		if (g_lobbySearching || g_lanSearch)
 			return;
 		g_lobbyListAnswer = 0;
-		arena_leaveSession();
+		dplay_leaveSession();
 		net_disconnect();
 		sound_playMenu(0);
 		g_arenaCameraMode = mode = 0;
@@ -889,9 +889,9 @@ void (arenaGames_mouse)(void)
 					net_disconnect();
 				}
 				if (g_lanSearchStarted)
-					arena_leaveSession();
+					dplay_leaveSession();
 				g_serverListCount = 0;
-				arena_openSession(1, NULL);
+				dplay_openConnection(1, NULL);
 				g_listAnswered = 0;
 				g_lanSearch = 1;
 				(*(u32 *)&g_lobbyBlinkClock) = 0x43160000;   /* 150 */
@@ -902,7 +902,7 @@ void (arenaGames_mouse)(void)
 			} else {
 				g_lobbyConnectionOpen = 0;
 				net_disconnect();
-				arena_leaveSession();
+				dplay_leaveSession();
 				g_serverListCount = 0;
 				if (lobby_openConnection() == 1) {
 					g_joinThroughServer = 1;
@@ -938,7 +938,7 @@ void (arenaGames_mouse)(void)
 			lobby_leave();
 			g_searchResult = -1;
 			g_lobbyConnectionOpen = 0;
-			arena_leaveSession();
+			dplay_leaveSession();
 			net_disconnect();
 			if (g_lobbyRefreshing == 1) {
 				g_lobbyRefreshing = 0;
@@ -955,7 +955,7 @@ void (arenaGames_mouse)(void)
 			if (g_typingArenaAddress)
 				return;
 			lobby_leave();
-			arena_leaveSession();
+			dplay_leaveSession();
 			net_disconnect();
 			g_arenaCameraMode = 0;
 			g_netListDone = 1;

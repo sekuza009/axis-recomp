@@ -44,10 +44,13 @@ static void part_info(u8 *rec, int idx)
 	BITS(((PartInfo *)rec)->weight) = BITS(((ActorItem *)info)->weight);
 }
 
-/* 0x41ca50: the record of weapon slot slot (g_partRecords, 0x80 apart) */
-void (armc_weaponSlotRecord)(int slot, int idx) { part_info(g_partRecords + slot * 0x80, idx); }
+/* 0x41ca50: the PartInfo record of item slot slot (0 .. 5: four weapon slots, then the two extra-item slots 4 / 5;
+   g_partRecords, 0x80 apart) made from actorItems[idx] (idx -1: emptied) */
+void (armc_itemSlotRecord)(int slot, int idx) { part_info(g_partRecords + slot * 0x80, idx); }
 
-/* 0x41cca0: the record of the part being looked at (0x4dc150); the first type picked is kept in g_viewedPartAmmoPerShot */
+/* 0x41cca0: the record of the item being looked at (g_viewedPart, 0x4dc150, the seventh of g_partRecords) from
+   actorItems[idx]; for a special item (its ammoType -1) the record's ammoPerShot (g_viewedPartAmmoPerShot, 0x4dc198)
+   is overwritten with idx, so armc_drawWeaponsScreen shows MSG(745) + idx (772 .. 780: the item's description lines) */
 void (armc_viewedPartRecord)(int idx)
 {
 	part_info(g_viewedPart, idx);
@@ -63,6 +66,11 @@ typedef long double X;
 static void mulf(u32 dst, const float *a, const float *b) { GAME_VAR(float, dst) = (float)fmul_m(fld_m(a), b); }
 static void copyf(u32 dst, const float *src) { GAME_VAR(float, dst) = (float)fld_m(src); }   /* (an SNaN quieted) */
 
+/* armc_readMechStats (0x41c510): the ARM CENTER's mech stats from the local player's Player (*g_scene): the detection
+   range (root of detectionRangeSq x 0.01), detection angle, hacking level, lock-on and target-keep times, the seven
+   maxima (g_mechPartStats), mobility, the leg type's inertia and corrections, the booster type's thrust type
+   (g_unusedMechStat), boost / recharge / rest times, the speeds and load (g_mechSpeeds); every product extended
+   precision, rounded once on store, the second factor from memory as in the original. Returns the scene */
 u8 *(armc_readMechStats)(void)
 {
 	u8 *g = (*(u8 **)&g_scene);
@@ -119,10 +127,11 @@ static void panel_name(u32 dst, const char *name)
 		memcpy((void *)RELOC(dst), buf, len);
 }
 
-/* 0x41b750: the ARM CENTER's part panels for the local player's mech: for its head, chest, arm, leg and weapon (the
-   player record's indices playerRecords[].parts ..) the part's name and stats, some scaled by the game's constants. Returns the
-   weapon's index */
-int (armc_drawPartPanels)(void)
+/* 0x41b750: the ARM CENTER's part panels' values for the local player's mech, nothing drawn: for its head, chest,
+   arm, leg and booster (playerRecords[].parts[0..4]) the part's name ('\' and '/' as '-', g_headPanelName ..) and
+   stats, some scaled by the game's constants; g_unusedArmcViewCountdown set to 1. Returns the booster's index
+   (parts[4]) */
+int (armc_readPartPanels)(void)
 {
 	u8 *g = (*(u8 **)&g_scene);
 	Scene *sc = (Scene *)g;

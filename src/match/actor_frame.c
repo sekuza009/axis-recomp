@@ -284,7 +284,7 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 	const BoosterType *booster = &ST->boosterTypes[pr->parts[4]];
 	if (AC->lowDetail != AC->lowDetailLoaded) {
 		actor_loadHead(s, i);
-		actor_loadBody(s, i);
+		actor_loadChest(s, i);
 		actor_loadArms(s, i);
 		actor_loadLegs(s, i);
 		actor_loadBooster(s, i);
@@ -709,7 +709,7 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 			moveLeft = f32(Vec3_normalize(dir));
 		}
 		float r = AC->radius;
-		int moved = collision_moveActor(s, r, AC->pos, AC->move, BITS(r), 0, mv_pos, slide, mv_dist, mv_plane, 0);
+		int moved = collision_moveSphere(s, r, AC->pos, AC->move, BITS(r), 0, mv_pos, slide, mv_dist, mv_plane, 0);
 		memcpy(AC->nextPos, mv_pos, 12);
 		if (moved == 1)
 			for (int c = 0; c < 3; c++)
@@ -820,45 +820,45 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 	long double side = !(AC->forward >= -1.0f) ? -1.0L : AC->forward > 1.0f ? 1.0L : fld_m(&AC->forward);
 	AC->pose[4] = f32(fmul_m(fsubr_m(fmul_m(FADD(AC->run, k_1f), &k_0_5f) * FSUB(k_1f, AC->climb) * side, &k_1f), &k_0_5f));
 	BITS(AC->pose[5]) = BITS(AC->run);
-	anim_setSkeleton((u8 *)&AC->headModel, 0, BITS(AC->pose[3]));
-	anim_setSkeleton((u8 *)&AC->chestModel, 0, BITS(AC->pose[3]));
-	anim_setSkeleton((u8 *)&AC->armsModel, 0, BITS(AC->pose[3]));
-	anim_setSkeleton((u8 *)&AC->legsModel, 0, BITS(AC->pose[4]));
-	anim_setSkeleton((u8 *)&AC->boosterModel, 0, BITS(AC->pose[5]));
-	anim_setSkeleton((u8 *)model, 0, BITS(AC->fireAnim));
+	anim_setTime((u8 *)&AC->headModel, 0, BITS(AC->pose[3]));
+	anim_setTime((u8 *)&AC->chestModel, 0, BITS(AC->pose[3]));
+	anim_setTime((u8 *)&AC->armsModel, 0, BITS(AC->pose[3]));
+	anim_setTime((u8 *)&AC->legsModel, 0, BITS(AC->pose[4]));
+	anim_setTime((u8 *)&AC->boosterModel, 0, BITS(AC->pose[5]));
+	anim_setTime((u8 *)model, 0, BITS(AC->fireAnim));
 	/* the matrices: the body at the actor, turned and leant, the head on its neck, the arms */
 	glPushMatrix();
 	glTranslatef_bits(BITS(AC->pos[0]), BITS(AC->pos[1]), BITS(AC->pos[2]));
 	glRotatef(f32(FMUL(AC->yaw, k_tenthsToDegrees)), 0, 1, 0);
 	glRotatef(f32(FMUL(AC->lean, k_tenthsToDegrees)), 1, 0, 0);
 	glGetFloatv(0xba6, AC->bodyMatrix);
-	skel_poseBones((u8 *)&AC->chestModel, AC->bodyMatrix);
+	ObjectList_poseBones((u8 *)&AC->chestModel, AC->bodyMatrix);
 	glLoadMatrixf((const float *)(uintptr_t)((u32)AC->chestModel.entries + chest->legsJoint[AC->lowDetail] * 100 + 0xc));
 	glRotatef(f32(FMUL(AC->pose[2], k_tenthsToDegrees)), 0, 1, 0);
-	skel_poseBones((u8 *)&AC->legsModel, 0);
+	ObjectList_poseBones((u8 *)&AC->legsModel, 0);
 	glLoadMatrixf(part_matrix((u8 *)&AC->chestModel.entries, chest->armsJoint, AC->lowDetail));
-	skel_poseBones((u8 *)&AC->armsModel, 0);
+	ObjectList_poseBones((u8 *)&AC->armsModel, 0);
 	glLoadMatrixf(part_matrix((u8 *)&AC->chestModel.entries, chest->headJoint, AC->lowDetail));
 	if (((u32)AC->stateFlags) & 0x1000)
 		glScalef_bits(0x40a00000, 0x40a00000, 0x40a00000);   /* 5 */
-	skel_poseBones((u8 *)&AC->headModel, 0);
+	ObjectList_poseBones((u8 *)&AC->headModel, 0);
 	glLoadMatrixf(part_matrix((u8 *)&AC->chestModel.entries, chest->boosterJoint, AC->lowDetail));
 	glRotatef(f32(fmul_m(fld_m(&AC->pose[0]), k_0_05f)), 0, 0, 1);
 	glRotatef(f32(FMUL(AC->pose[1], k_tenthsToDegrees)), 1, 0, 0);
-	skel_poseBones((u8 *)&AC->boosterModel, 0);
+	ObjectList_poseBones((u8 *)&AC->boosterModel, 0);
 	memcpy(grip, &g_vecZero, 12);   /* where the weapon is held, for the local player's view */
 	glLoadMatrixf(part_matrix((u8 *)&AC->armsModel.entries, arms->weaponJoints[0], AC->lowDetail));
 	if (i == ST->cockpitActor && weapon && AC->slot <= 3)
 		hold(grip, (const u8 *)weapon->sets[0].grip[AC->variantLoaded], 0, &AC->weaponRaise);
-	skel_poseBones((u8 *)&AC->weaponModel, 0);
+	ObjectList_poseBones((u8 *)&AC->weaponModel, 0);
 	glLoadMatrixf(part_matrix((u8 *)&AC->armsModel.entries, arms->weaponJoints[1], AC->lowDetail));
 	if (i == ST->cockpitActor && weapon && AC->slot == 4)
 		hold(grip, (const u8 *)weapon->sets[0].grip[AC->variantLoaded], 0, &AC->weaponRaise);
-	skel_poseBones((u8 *)&AC->weaponModel4, 0);
+	ObjectList_poseBones((u8 *)&AC->weaponModel4, 0);
 	glLoadMatrixf(part_matrix((u8 *)&AC->armsModel.entries, arms->weaponJoints[2], AC->lowDetail));
 	if (i == ST->cockpitActor && weapon && AC->slot == 5)
 		hold(grip, (const u8 *)weapon->sets[1].grip[AC->variantLoaded], 1, &AC->weaponRaise);
-	skel_poseBones((u8 *)&AC->weaponModel5, 0);
+	ObjectList_poseBones((u8 *)&AC->weaponModel5, 0);
 	glPopMatrix();
 	if (i == ST->playerActor) {   /* the local player's locks (lockHeld per actor), sorted longest first (lockTimes / lockIds) */
 		float *lock = ST->lockHeld;
@@ -977,7 +977,7 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 				}
 				if (w >= 0) {
 					const int *muzzle = (const int *)(((u8 *)weapon) + (AC->slot == 5 ? 0x2ca4 : 0x15e8) + AC->variantLoaded * 64);
-					skel_applyPose(*(void **)model->skeletons, muzzle_m, muzzle[0], 0);
+					skel_getBoneMatrix(*(void **)model->skeletons, muzzle_m, muzzle[0], 0);
 					Mat4_invert(muzzle_inv, muzzle_m);
 					memset(ungrip, 0, 64);   /* the grip undone: grip_shift = muzzle_inv x ungrip x muzzle_m */
 					BITS(ungrip[0]) = BITS(ungrip[5]) = BITS(ungrip[10]) = BITS(ungrip[15]) = 0x3f800000;
@@ -1067,7 +1067,7 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 				if (*item >= 0)
 					bullet_free(s, *item);
 				const int *muzzle = (const int *)(((u8 *)weapon) + (AC->slot == 5 ? 0x2ca4 : 0x15e8) + AC->variantLoaded * 64);
-				skel_applyPose(*(void **)model->skeletons, muzzle_m, muzzle[0], 0);
+				skel_getBoneMatrix(*(void **)model->skeletons, muzzle_m, muzzle[0], 0);
 				Mat4_invert(muzzle_inv, muzzle_m);
 				memset(ungrip, 0, 64);
 				BITS(ungrip[0]) = BITS(ungrip[5]) = BITS(ungrip[10]) = BITS(ungrip[15]) = 0x3f800000;
@@ -1262,7 +1262,7 @@ timers:
 	static const u16 parts[7] = { offsetof(Player, headModel), offsetof(Player, chestModel), offsetof(Player, armsModel), offsetof(Player, legsModel), offsetof(Player, boosterModel), offsetof(Player, weaponModel4), offsetof(Player, weaponModel5) };
 	if (AC->breakUp < 7) {   /* the parts' break-up, one a frame */
 		if (AC->breakUp >= 0)
-			partList_bindTextures(a + parts[AC->breakUp]);
+			ObjectList_bindTextures(a + parts[AC->breakUp]);
 		AC->breakUp++;
 	}
 }

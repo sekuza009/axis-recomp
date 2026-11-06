@@ -37,35 +37,35 @@ static int wrap(int index, int count)
 }
 
 /* 0x4613d0, 0x461410, 0x461450, 0x461490, 0x4614d0: a part by its index */
-void THISCALL (armc_setHeadIndex)(Scene *scene, int index)
+void THISCALL (mech_setHeadIndex)(Scene *scene, int index)
 {
 	scene->mechParts[0] = wrap(index, scene->headCount);
 	if (scene->localPlayer >= 0)
 		actor_setActorTypeHeadInfoBy(STAGE(scene), scene->localPlayer, scene->mechParts[0]);
 }
 
-void THISCALL (armc_setChestIndex)(Scene *scene, int index)
+void THISCALL (mech_setChestIndex)(Scene *scene, int index)
 {
 	scene->mechParts[1] = wrap(index, scene->chestCount);
 	if (scene->localPlayer >= 0)
 		actor_setActorTypeChestInfoBy(STAGE(scene), scene->localPlayer, scene->mechParts[1]);
 }
 
-void THISCALL (armc_setArmIndex)(Scene *scene, int index)
+void THISCALL (mech_setArmIndex)(Scene *scene, int index)
 {
 	scene->mechParts[2] = wrap(index, scene->armCount);
 	if (scene->localPlayer >= 0)
 		actor_setActorTypeArmInfoBy(STAGE(scene), scene->localPlayer, scene->mechParts[2]);
 }
 
-void THISCALL (armc_setLegIndex)(Scene *scene, int index)
+void THISCALL (mech_setLegIndex)(Scene *scene, int index)
 {
 	scene->mechParts[3] = wrap(index, scene->legCount);
 	if (scene->localPlayer >= 0)
 		actor_setActorTypeLegInfoBy(STAGE(scene), scene->localPlayer, scene->mechParts[3]);
 }
 
-void THISCALL (armc_setBoosterIndex)(Scene *scene, int index)
+void THISCALL (mech_setBoosterIndex)(Scene *scene, int index)
 {
 	scene->mechParts[4] = wrap(index, scene->boosterCount);
 	if (scene->localPlayer >= 0)
@@ -87,11 +87,11 @@ void THISCALL (mech_setAll)(Scene *scene, const char *name, int character, int t
 	mech_setName(scene, name);
 	mech_setCharacter(scene, character);
 	scene_setLocalTeam(scene, team);
-	armc_setHeadIndex(scene, head);
-	armc_setChestIndex(scene, chest);
-	armc_setArmIndex(scene, arm);
-	armc_setLegIndex(scene, leg);
-	armc_setBoosterIndex(scene, booster);
+	mech_setHeadIndex(scene, head);
+	mech_setChestIndex(scene, chest);
+	mech_setArmIndex(scene, arm);
+	mech_setLegIndex(scene, leg);
+	mech_setBoosterIndex(scene, booster);
 	mech_setItem(scene, 0, item0);
 	mech_setItem(scene, 1, item1);
 	mech_setItem(scene, 2, item2);

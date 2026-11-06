@@ -16,7 +16,7 @@ int THISCALL (scene_findTeam)(Scene *scene, int id)
 
 /* 0x463740: the slot of team id, given the first free slot if it has none yet; -1 when there is no room (or for a
    negative id) */
-int THISCALL (scene_teamSide)(Scene *scene, int id)
+int THISCALL (scene_claimTeamSlot)(Scene *scene, int id)
 {
 	if (id < 0)
 		return -1;
@@ -42,9 +42,10 @@ void THISCALL (teams_setup)(Scene *scene)
 			scene->teamIds[k] = k;
 }
 
-/* 0x4625a0: the actor the camera follows: in a team match (teamGame) the first listed actor of the team that is
-   behind (else the local player's), otherwise the first listed one */
-void *THISCALL (scene_followedActor)(Scene *scene)
+/* 0x4625a0: the match's top player: in a team match (teamGame) the best-ranked player of the leading team (team 1
+   when its frags, teamScores[1], are higher, else team 0; none ranked there: the local player), otherwise the first
+   in the ranking. hud_drawMatchResult prints it as "Top Player", and the end-of-match camera follows it while alive */
+void *THISCALL (scene_topPlayer)(Scene *scene)
 {
 	int i;
 	if (scene->teamGame == 1) {

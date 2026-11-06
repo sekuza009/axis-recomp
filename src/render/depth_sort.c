@@ -60,8 +60,8 @@ static void depth_sort(const QsGlobals *q, u32 *e, int lo, int hi)
 
 static const QsGlobals k_sortA = { (OBJ(g_sortState) + 0x2000), OBJ(g_sortBounds), (OBJ(g_sortBounds) + 0x2000), OBJ(g_sortState), (OBJ(g_sortState) + 0x4008), (OBJ(g_sortState) + 0xa018), (OBJ(g_sortState) + 0x6008) };
 
-void (render_depthSortA)(u32 *e, int lo, int hi) { depth_sort(&k_sortA, e, lo, hi); }
+void (render_depthSortTriangles)(u32 *e, int lo, int hi) { depth_sort(&k_sortA, e, lo, hi); }
 
 static const QsGlobals k_sortB = { (OBJ(g_sortState) + 0x2004), (OBJ(g_sortBounds) + 0x4000), (OBJ(g_sortBounds) + 0x6000), (OBJ(g_sortState) + 0x8018), (OBJ(g_sortState) + 0x6018), (OBJ(g_sortState) + 0x2008), (OBJ(g_sortState) + 0x6010) };
 
-void (render_depthSortB)(u32 *e, int lo, int hi) { depth_sort(&k_sortB, e, lo, hi); }
+void (render_depthSortBillboards)(u32 *e, int lo, int hi) { depth_sort(&k_sortB, e, lo, hi); }

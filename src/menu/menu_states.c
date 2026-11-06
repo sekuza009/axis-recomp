@@ -98,7 +98,7 @@ void (menuState100_intro)(void)
 	g_loadStep++;
 	frontEnd_drawProgress();
 	timer_waitFrames(5.0);
-	tunnel_rebuild();
+	tunnel_restart();
 	g_loadStep++;
 	frontEnd_drawProgress();
 	timer_waitFrames(2.0);
@@ -106,7 +106,7 @@ void (menuState100_intro)(void)
 	frontEnd_startUp();
 	g_loadStep++;
 	frontEnd_drawProgress();
-	debug_traceStripped(NULL);   /* (an empty function) */
+	shared_emptyFunction(NULL);   /* (an empty function) */
 	g_loadStep++;
 	frontEnd_drawProgress();
 	g_screen = 200;
@@ -209,18 +209,19 @@ void (mainmenu_drawReplaySelect)(void)
 		replaySelect_drawDialog();
 }
 
-/* 0x443530: the main menu's frame: background, menu, the replay selection dialog when open, and while the quit question
-   is up the keys are held (state 1), the next screen set to 9999 and the screen dimmed */
+/* 0x443530: the main menu's frame: background, menu (mainmenu_drawMenu), the replay selection dialog when open; while the
+   menus are being left for a match (g_leavingForMatch 1) the camera's move 1 (in), the next screen 9999 and the white
+   fade (menu_drawWhiteFade / menu_drawWhiteFade) */
 void (menuState300_frame)(void)
 {
 	menu_drawBackground();
-	menu_mainMenu();
+	mainmenu_drawMenu();
 	if (g_replaySelectOpen != 0)
 		mainmenu_drawReplaySelect();
 	if (g_leavingForMatch == 1) {
 		menuCamera_setMove(1);
 		g_nextScreen = 9999;
-		menu_drawDimOverlay();
+		menu_drawWhiteFade();
 	}
 }
 
@@ -267,7 +268,7 @@ void (skirmish_screenClicks)(void)
 }
 
 /* 0x447c30: the briefing's keys: Esc or Enter closes it */
-void (briefing_keys)(void)
+void (skirmish_briefingKeys)(void)
 {
 	if (input_justPressed(g_keyCancel2) == 1 || input_justPressed(g_keyClick) == 1)
 		g_skirmishBriefing = 0;
@@ -306,14 +307,15 @@ void (skirmish_keys)(void)
 	if (g_skirmishState == 1 || g_skirmishState == 0 || g_frameOpening != 0 || g_skirmishLeft != 0)
 		return;
 	if (g_skirmishBriefing != 0)
-		briefing_keys();
+		skirmish_briefingKeys();
 	else
 		skirmish_roundKeys();
 }
 
-/* 0x41edc0 (menu_returnToMain): back to the main menu: the background tunnel freed ring by ring (last first), the menus
-   entered again, state 300 */
-void (menu_returnToMain)(void)
+/* 0x41edc0: the game server's socket closed (WndProc 0x40a FD_CLOSE, not in a match): the background tunnel freed
+   ring by ring, then game_returnToArenaLobby (screen 300 for now, next screen 400, the camera's move 2 into it),
+   g_screen 300 */
+void (menu_returnToArenaLobbyViaMain)(void)
 {
 	while (g_menuTunnel != NULL)
 		armc_freeRing(&g_menuTunnel);
@@ -335,8 +337,9 @@ void (menu_returnToMainFromRoom)(void)
 	g_screen = 300;
 }
 
-/* 0x441770: the replay selection dialog's OK: if a replay is chosen (0x44-byte entries from 0x9ddac8), the dialog closes and
-   the choice is kept */
+/* 0x441770: the replay selection dialog's OK: if any replay is picked (g_replayList), the menu sound,
+   g_replayListCount = g_replayFileCount, the dialog closed and the show of the picked replays started (g_replayShowOn
+   1) */
 void (replaySelect_ok)(void)
 {
 	int count = g_replayFileCount;
@@ -446,10 +449,11 @@ void (replaySelect_mouse)(void)
 	}
 }
 
-/* 0x44f860: the profile screen's frame: while its intro (g_profileQuitting) runs, quit (app_quitGame); else the background and, once the zoom (g_replayZoomTime)
-   is not above 0, the pilot list reloaded for every value of the nine 0x4c-byte pilot stat records (from 0x9f9068)
-   that is out of range (above 30, the eighth above 50), then the page (g_profilePage, 1 .. 6). The original leaves eax
-   to callers that ignore it */
+/* 0x44f860: the profile screen's frame: once the log-out was confirmed (g_profileQuitting) the game quits
+   (app_quitGame); else the background and, once the zoom (g_replayZoomTime) is not above 0, the pilot table reloaded
+   (data_loadCharacterProfiles) for every stat of the first nine pilots that is out of range (above 30, stat 7 above
+   50), then the page (g_profilePage 1 .. 6: profile_listPage, profile_newNamePage, profile_deletePage, profile_logIn,
+   profile_logOutPage, pilotSelect_page = the pilot select) */
 void (menuState210_frame)(void)
 {
 	if (g_profileQuitting) {
@@ -464,10 +468,10 @@ void (menuState210_frame)(void)
 		for (int f = 0; f < 9; f++)
 			if (((CharacterProfile *)g_characterProfiles)[p].stats[stats[f]] > (stats[f] == 7 ? 50 : 30))
 				data_loadCharacterProfiles();
-	static const u32 pages[6] = { FN_ADDR(profile_frame, 0x44f410), FN_ADDR(profile_newNamePage, 0x44f4b0), FN_ADDR(profile_deletePage, 0x44f5f0), FN_ADDR(profile_logIn, 0x44f6c0), FN_ADDR(profile_logOutPage, 0x44f740), FN_ADDR(profile_drawScreen, 0x44f810) };
+	static const u32 pages[6] = { FN_ADDR(profile_listPage, 0x44f410), FN_ADDR(profile_newNamePage, 0x44f4b0), FN_ADDR(profile_deletePage, 0x44f5f0), FN_ADDR(profile_logIn, 0x44f6c0), FN_ADDR(profile_logOutPage, 0x44f740), FN_ADDR(pilotSelect_page, 0x44f810) };
 	u32 page = (*(u32 *)&g_profilePage) - 1;
 	if (page <= 5)
-		GAME_CDECL(pages[page], void, void)();   /* profile_frame .. profile_drawScreen */
+		GAME_CDECL(pages[page], void, void)();   /* profile_listPage .. pilotSelect_page */
 }
 
 /* 0x427920: the setup screen's frame: the background, then by tab the screen with its page, or the top page */
@@ -524,17 +528,19 @@ static int menu_slide(u32 flag, u32 eased, u32 slid)
 	return 1;
 }
 
-/* 0x40cef0 (lobbyTop_draw), room_slideMenu: the lobby's and the room's panels */
-int (lobbyTop_draw)(void) { return menu_slide(ADDR(g_lobbyPanelsSliding), OBJ(g_lobbySlideEase), ADDR(g_arenaTunnelDepth)); }
+/* 0x40cef0: the arena lobby's panels sliding in (menu_slide on g_lobbyPanelsSliding / g_lobbySlideEase /
+   g_arenaTunnelDepth); while leaving for a match (g_leavingForMatch) the camera's move 1 and next screen 9999
+   (returns 1). Caller menuState400_frame */
+int (lobby_slidePanels)(void) { return menu_slide(ADDR(g_lobbyPanelsSliding), OBJ(g_lobbySlideEase), ADDR(g_arenaTunnelDepth)); }
 int (room_slideMenu)(void) { return menu_slide(ADDR(g_roomPanelsSliding), ADDR(g_unusedRoomPanelEase), ADDR(g_roomTunnelDepth)); }
 
-/* ---- back to the menus after a game: the arena session left (arena_leaveSession) and, unless kept, the connection closed;
+/* ---- back to the menus after a game: the arena session left (dplay_leaveSession) and, unless kept, the connection closed;
    the player slots (0x410 bytes from g_netSlots) emptied ---- */
 static void leave_game(u32 lobby, int disconnect)
 {
 	g_leavingForMatch = 0;
 	(*(u32 *)&g_matchMode) = lobby;
-	arena_leaveSession();
+	dplay_leaveSession();
 	if (disconnect)
 		net_disconnect();   /* net_disconnect */
 	g_arenaLobbyState = 0;
@@ -584,7 +590,7 @@ u32 (game_returnToSkirmish)(void)
 	leave_game(0, 1);
 	g_menuState = 500;
 	g_nextScreen = 500;
-	tunnel_rebuild();
+	tunnel_restart();
 	tunnel_addRing();
 	return reset_menus(FAR_BACK, NEAR_BACK, 0, 0, 0);
 }
@@ -596,7 +602,7 @@ u32 (game_returnToMainMenu)(void)
 	leave_game(0, 1);
 	g_menuState = 300;
 	g_nextScreen = 300;
-	tunnel_rebuild();
+	tunnel_restart();
 	u32 typing = (*(u32 *)&g_textFieldOpen);
 	u32 r = reset_menus(0x43fa0000, 0x43c80000, 2, 1, 1);
 	return typing == 1 ? r : 1;
@@ -609,12 +615,13 @@ u32 (game_returnToArenaLobby)(void)
 	g_nextScreen = 400;
 	g_menuState = 300;
 	g_lastScreen = 300;
-	tunnel_rebuild();
+	tunnel_restart();
 	tunnel_addRing();
 	return reset_menus(FAR_BACK, NEAR_BACK, 2, 0, 0);
 }
 
-/* 0x41eb00: back to the game room (800; lobby state 2, the connection kept): the room's state cleared too */
+/* 0x41eb00: back to the game room (800; g_matchMode left at 2, the connection kept): g_roomState 99 (the room's
+   menu), the room's flags cleared too */
 u32 (game_returnToGameRoom)(void)
 {
 	leave_game(2, 0);
@@ -622,7 +629,7 @@ u32 (game_returnToGameRoom)(void)
 	g_menuState = 800;
 	g_nextScreen = 800;
 	g_lastScreen = 800;
-	tunnel_rebuild();
+	tunnel_restart();
 	tunnel_addRing();
 	u32 r = reset_menus(FAR_BACK, NEAR_BACK, 2, 0, 0);
 	g_retypePassword = 0;
@@ -632,10 +639,12 @@ u32 (game_returnToGameRoom)(void)
 	return r;
 }
 
-/* 0x43ef70: the game room's frame. While the dialog highlight is shown the mouse glides a quarter of the way to it
-   and the highlight shrinks by the step g_frameTime (gone below 0). Then the room's page (g_roomState): 0 .. 4 the room's own pages over the
-   background and the room's camera (room_camera), 66 / 77 / 88 / 99 dialogs drawn before the background (99 shows the
-   quit question while it waits on the network). Returns the last call's eax, or the page */
+/* 0x43ef70: the game room's frame. While the pointer glides (g_pointerGliding) it moves a quarter of the way to
+   g_highlightX / Y per time unit until g_pointerGlideTime runs out. Then by g_roomState: 0 account, 1 game list, 2
+   the room, 4 ranking -- over the background with the room's camera; 66 login, 77 new-ID form, 88 new-ID
+   confirmation: updated, background, drawn; 99 the room's menu: panels slid (room_slideMenu), background, then the
+   white fade (room_drawWhiteFade) while leaving for a match with the camera arrived, else room_drawMenu. Returns the
+   last call's eax, or the page */
 u32 (menuState800_gameRoom)(void)
 {
 	if (g_pointerGliding) {
@@ -654,8 +663,8 @@ u32 (menuState800_gameRoom)(void)
 		room_camera();   /* the room's camera */
 		switch (page) {
 		case 0: return account_page();
-		case 1: return gameList_drawPage();
-		case 2: return room_draw();
+		case 1: return gameList_pageFrame();
+		case 2: return roomSettings_page();
 		default: return ranking_page();
 		}
 	case 66:
@@ -737,7 +746,7 @@ u32 (game_postMatch)(void)
 			g_progress = 16;
 			profile_saveProgress();
 			reg_writeEndMode(1);      /* reg_writeEndMode */
-			music_shutdown();
+			music_stop();
 			r = ((u32)app_closeWindow(0x63));
 			goto message;
 		}

@@ -245,8 +245,9 @@ int (input_asyncKeyPressed)(int key)
 	return 1;
 }
 
-/* 0x401590: is the key bound to an action down? 0xfa .. 0xfc the mouse buttons (as their state), 0xfd / 0xfe the
-   wheel turned down / up this frame, anything else a key held (1 or 0) */
+/* 0x401590: is the key bound to an action down? 0xfa .. 0xfc the mouse buttons (as their state), 0xfd /
+   0xfe the wheel turned up / down this frame (the game's key names WHEEL-UP / WHEEL-DOWN), anything else a key held
+   (1 or 0) */
 int (input_isDown)(int key)
 {
 	switch (key) {

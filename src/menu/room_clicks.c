@@ -50,7 +50,7 @@ void (room_askJoinPassword)(void)
 }
 
 /* 0x435f40: the game list's stop button (gameListStop_hitTest; with the room camera arrived): the join being waited
-   for given up: its flags off, the session left (arena_leaveSession) and its timer (0x378) killed */
+   for given up: its flags off, the session left (dplay_leaveSession) and its timer (0x378) killed */
 void (gameList_stopJoin)(void)
 {
 	if (g_frameOpening != 0 || g_mouseClick == 0 || g_roomCameraMode != 2)
@@ -60,7 +60,7 @@ void (gameList_stopJoin)(void)
 		sound_playMenu(0);
 		g_joinPollTicks = 0;
 		g_joinTimedOut = 0;
-		arena_leaveSession();
+		dplay_leaveSession();
 		g_joinConnecting = 0;
 		KillTimer(g_hWndMain, 0x378);
 	}
@@ -81,7 +81,8 @@ void (room_drawWhiteFade)(void)
 	menu_drawRect(0, 0, g_screenW, g_screenH, 1);
 }
 
-/* 0x405200 (arena_askJoinPassword): the arena screen's chat line, the same way (flag g_arenaJoinNeedsPassword, its message field) */
+/* 0x405200: the same for the arena lobby: when the game picked (g_pickedGame) is locked, g_arenaJoinNeedsPassword set
+   and its password asked for (arena_editJoinPassword) */
 void (arena_askJoinPassword)(void)
 {
 	g_arenaJoinNeedsPassword = 0;
@@ -138,11 +139,11 @@ static int key_hit(u32 binding)
 }
 
 /* 0x437140: the game room's keys: back or leave leaves the game; the others open the room's pages (room_enterAccountPage,
-   room_enterGameList, room_enterCreatePage, ranking_enter) or the arm center (g_armcFrom = 3, armc_enterParts). Returns the action's eax */
+   room_enterGameList, room_enterCreatePage, ranking_enter) or the arm center (g_armcFrom = 3, armc_open). Returns the action's eax */
 u32 (room_keys)(void)
 {
 	if (key_hit(ADDR(g_dikEscape_2)))
-		return room_leaveGame();   /* room_leaveGame */
+		return room_leave();   /* room_leave */
 	if (key_hit(ADDR(g_dikP)))
 		return room_enterAccountPage();   /* room_enterAccountPage */
 	if (key_hit(ADDR(g_dikJ)))
@@ -153,10 +154,10 @@ u32 (room_keys)(void)
 		return ranking_enter();   /* ranking_enter */
 	if (key_hit(ADDR(g_dikA))) {
 		g_armcFrom = 3;
-		return armc_enterParts();
+		return armc_open();
 	}
 	if (key_hit(ADDR(g_dikX)))
-		return room_leaveGame();
+		return room_leave();
 	return 0;
 }
 
@@ -178,12 +179,12 @@ u32 (roomLogin_clicks)(void)
 	u32 r;
 	switch (button) {
 	case 0:
-		chat_closeEdit();
+		roomLogin_endTyping();
 		r = roomLogin_editId();       /* roomLogin_editId */
 		g_lineToLoginId = 1;
 		return r;
 	case 1:
-		chat_closeEdit();
+		roomLogin_endTyping();
 		r = roomLogin_editPassword();       /* roomLogin_editPassword */
 		g_lineToLoginPassword = 1;
 		return r;
@@ -206,7 +207,7 @@ u32 (roomLogin_clicks)(void)
 		g_roomState = 0x63;
 		g_nextScreen = 300;
 		g_inputLineHidden = 0;
-		GAME_FN(debug_traceStripped, 0x48b420, void, void)();          /* debug_traceStripped */
+		GAME_FN(shared_emptyFunction, 0x48b420, void, void)();          /* shared_emptyFunction */
 		return net_disconnect();
 	case 4:
 		sound_playMenu(0);
@@ -220,7 +221,7 @@ u32 (roomLogin_clicks)(void)
    g_tunnelRings > 0) leaves too. Returns what the original leaves in eax */
 u32 (room_pageClicks)(void)
 {
-	static const u32 actions[6] = { FN_ADDR(room_enterAccountPage, 0x4334c0), FN_ADDR(room_enterGameList, 0x433590), FN_ADDR(room_enterCreatePage, 0x433790), 0, FN_ADDR(ranking_enter, 0x433800), FN_ADDR(room_leaveGame, 0x435a40) };
+	static const u32 actions[6] = { FN_ADDR(room_enterAccountPage, 0x4334c0), FN_ADDR(room_enterGameList, 0x433590), FN_ADDR(room_enterCreatePage, 0x433790), 0, FN_ADDR(ranking_enter, 0x433800), FN_ADDR(room_leave, 0x435a40) };
 	u32 page = (*(u32 *)&g_roomCameraMode);
 	if (page == 1 || page == 0)
 		return page;
@@ -234,7 +235,7 @@ u32 (room_pageClicks)(void)
 			sound_playMenu(0);
 			if (i == 3) {   /* the arm center */
 				g_armcFrom = 3;
-				armc_enterParts();   /* armc_enterParts */
+				armc_open();   /* armc_open */
 				g_enteringMenus = 0;
 			} else
 				GAME_CDECL(actions[i], void, void)();
@@ -248,7 +249,7 @@ u32 (room_pageClicks)(void)
 	if (allowed <= 0)
 		return allowed;
 	sound_playMenu(0);
-	return room_leaveGame();   /* room_leaveGame */
+	return room_leave();   /* room_leave */
 }
 
 /* ---- the selected map's preview (map `selected`, a signed byte; its name 32 bytes a slot at g_mapNames) loaded as a
@@ -275,14 +276,14 @@ void (arena_loadMapPreview)(void) { load_map_preview(ADDR(g_newArenaMap)); }
    (g_accountForm, 30 bytes), the password and its repeat (g_accountPassword, g_accountPasswordRepeat, 12 bytes) or the e-mail (g_accountEmail, 50 bytes).
    Returns what the original leaves in eax */
 /* typing closed if it was on: the hidden EDIT control destroyed, the focus back to the game window and the line
-   closed (chat_closeLine); returns that call's eax, or 0 */
+   closed (menu_closeInputLine); returns that call's eax, or 0 */
 static u32 typing_end(void)
 {
 	if (!g_textFieldOpen)
 		return 0;
 	DestroyWindow(g_hChatEdit);   /* DestroyWindow */
 	SetFocus(g_mainWindow);   /* SetFocus */
-	return chat_closeLine(1);   /* chat_closeLine */
+	return menu_closeInputLine(1);   /* menu_closeInputLine */
 }
 
 u32 (newIdForm_endTyping)(void)
@@ -301,7 +302,7 @@ u32 (newIdForm_endTyping)(void)
 	return r;
 }
 
-/* 0x4355b0: the game room's hosting step (g_hostAnswer): 1 hosts the room's session (the music stopped, arena_openSession, then
+/* 0x4355b0: the game room's hosting step (g_hostAnswer): 1 hosts the room's session (the music stopped, dplay_openConnection, then
    dplay_host with the room's settings record g_roomRecName and name g_ladderId) and takes its settings (the 32-byte
    rules, +0x20 .. +0x25); then 0 or 3 (3 also sets g_arenaUpdateNotice) move on to 2, and 4 does too with message 0x2a.
    Returns the step (or the message's eax) */
@@ -315,9 +316,9 @@ u32 (room_hostingStep)(void)
 		g_connectionAwaited = 0;
 		g_leavingForMatch = 1;
 		g_netRole = 1;
-		music_shutdown();
+		music_stop();
 		g_roomCameraMode = 0;
-		GAME_FN(arena_openSession, 0x452ec0, int, int, int)(0, 0);   /* arena_openSession */
+		GAME_FN(dplay_openConnection, 0x452ec0, int, int, int)(0, 0);   /* dplay_openConnection */
 		dplay_host(
 			room, g_ladderId, (signed char)room[0x23], (signed char)room[0x21], (signed char)room[0x23],
 			room[0x24], room[0x25], 0);   /* dplay_host: host */
@@ -348,17 +349,18 @@ u32 (room_hostingStep)(void)
 	return step;
 }
 
-/* 0x434e70: the window closed while connecting. An arena wait (g_joinTimedOut): it ends, the arena is left and message
-   0x44. Joining a listed game (g_sessionFound; its g_sessionList entry, row g_arenaJoinRow): the entry's
-   guid from the session received (g_receivedSession) and its frag and time limits (g_roomRecFragLimit/55) for the join. Joined (0x1f4): the music stopped and the
-   player's settings taken from the record for the game; otherwise a message by the result and the arena left.
-   Returns what the original leaves in eax */
+/* 0x434e70: the join's wait ended in the game room (WM_TIMER 0x378 in game_wndProc when g_screen is 800, after 30
+   polls or a session found). Timed out (g_joinTimedOut): the session left and message 0x44 (CONNETION TIME OUT). A
+   session found (g_sessionFound; its g_sessionList entry, row g_arenaJoinRow): the entry's guid from the session
+   received (g_receivedSession) and its frag and time limits taken, then joined (dplay_join); joined (0x1f4): the
+   music stopped and the match's settings taken from the entry; otherwise a message by the result (0x43 / 0x42 / 0x42
+   / 0x44 / 0x45) and the session left. Returns what the original leaves in eax */
 u32 (room_joinAnswer)(void)
 {
 	if (g_joinTimedOut) {
 		g_joinPollTicks = 0;
 		g_joinTimedOut = 0;
-		arena_leaveSession();
+		dplay_leaveSession();
 		u32 r = menu_showMessage(0x44);   /* the message */
 		g_joinConnecting = 0;
 		return r;
@@ -375,13 +377,13 @@ u32 (room_joinAnswer)(void)
 		static const u8 message[5] = { 0x43, 0x42, 0x42, 0x44, 0x45 };
 		if ((u32)(r - 0x1f5) <= 4)
 			menu_showMessage(message[r - 0x1f5]);
-		u32 e = arena_leaveSession();
+		u32 e = dplay_leaveSession();
 		g_joinPollTicks = 0;
 		g_sessionFound = 0;
 		g_joinConnecting = 0;
 		return e;
 	}
-	music_shutdown();
+	music_stop();
 	g_leavingForMatch = 1;
 	g_netRole = 2;
 	g_roomCameraMode = 0;
@@ -409,15 +411,15 @@ u32 (newIdForm_check)(void)
 	int message, reopen;
 	if (strlen(name) == 0 || name_isBlank(name) == 1)   /* name_isBlank: blank */
 		message = 0x24, reopen = ADDR(g_typingAccountName);
-	else if (room_nameHasBadChar(name) == 1)                  /* room_nameHasBadChar: a bad character */
+	else if (account_hasBadChar(name) == 1)                  /* account_hasBadChar: a bad character */
 		message = 0x15a, reopen = ADDR(g_typingAccountName);
 	else if (strlen(password) == 0)
 		message = 0x25, reopen = ADDR(g_typingAccountPassword);
 	else if (strcmp(password, g_accountPasswordRepeat))
 		message = 0x21, reopen = ADDR(g_typingAccountPassword);
-	else if (room_nameHasBadChar(password) == 1)
+	else if (account_hasBadChar(password) == 1)
 		message = 0x15b, reopen = ADDR(g_typingAccountPassword);
-	else if (room_nameHasBadChar(g_accountEmail) == 1)
+	else if (account_hasBadChar(g_accountEmail) == 1)
 		message = 0x81, reopen = ADDR(g_typingAccountEmail);
 	else
 		return room_openNewIdConfirm();
@@ -435,7 +437,7 @@ int (account_sendChange)(void)
 		return 0;
 	static const u32 fields[4] = { OBJ(g_accountOldPassword), OBJ(g_accountPassword), OBJ(g_accountPasswordRepeat), OBJ(g_accountEmail) };
 	for (int i = 0; i < 4; i++)
-		if (room_nameHasBadChar((const char *)RELOC(fields[i])) == 1) {   /* room_nameHasBadChar */
+		if (account_hasBadChar((const char *)RELOC(fields[i])) == 1) {   /* account_hasBadChar */
 			menu_showMessage(0x81);
 			g_roomLoginDue = 0;
 			return 0;
@@ -527,8 +529,8 @@ u32 (login_send)(void)
 	g_inputLineHidden = 0;
 	g_textFieldOpen = 0;
 	const char *name = g_accountName, *password = g_accountPassword;
-	int bad = room_nameHasBadChar(name) == 1 ? 0x15a
-	        : room_nameHasBadChar(password) == 1 ? 0x15b : 0;   /* room_nameHasBadChar */
+	int bad = account_hasBadChar(name) == 1 ? 0x15a
+	        : account_hasBadChar(password) == 1 ? 0x15b : 0;   /* account_hasBadChar */
 	if (bad) {
 		u32 r = menu_showMessage(bad);
 		g_roomLoginDue = 0;
@@ -596,7 +598,7 @@ u32 (ranking_clicks)(void)
 
 /* 0x436400: the game room's settings page clicked (no field being typed in, the room camera arrived (g_roomCameraMode 2), no message
    box; a right click closes the page). Buttons (roomSettings_hitTest): 0 / 1 type the room's name or password
-   (room_editName / 433a80), 3 the players +2 (4 .. 16, then 2), 5 the game type on (with a turn key held back) through
+   (room_editGameName / 433a80), 3 the players +2 (4 .. 16, then 2), 5 the game type on (with a turn key held back) through
    0 .. 9, 6 / 7 the frag and time limits +5 (up to 50 / 60, then 5), 8 start (room_announceGame; not while connecting),
    9 close, 11 / 2, 10, 12 the map back / on (room_stepMap), 13 the map list (mapList_startEdit). Returns what the original
    leaves in eax (for the byte settings, its low byte the new value) */
@@ -620,7 +622,7 @@ u32 (room_settingsClicks)(void)
 	u32 r;
 	switch (button) {
 	case 0:
-		return room_editName();   /* room_editName */
+		return room_editGameName();   /* room_editGameName */
 	case 1:
 		return room_editPassword();   /* room_editPassword */
 	case 2: case 10: case 12:

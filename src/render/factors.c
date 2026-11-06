@@ -40,8 +40,8 @@ void THISCALL (factors_addPointLight)(void *pool, const u32 *a, u32 x, const u32
 	factor_addFactorBy(pool, &r);
 }
 
-/* 0x4728e0 (thiscall on the scene): the layer's lighting computed into its colours over its rows and
-   columns. Its caller ignores the eax it leaves */
+/* 0x4728e0 (thiscall on the stage): the layer's lighting computed into its colours over all its vertices
+   (light_computeLayerLightBy, rows 0 .. rows, columns 0 .. cols, first 1). Its caller ignores the eax it leaves */
 void THISCALL (ground_computeLighting)(void *scene, const GroundLayer *layer)
 {
 	light_computeLayerLightBy(scene, (const u8 *)layer, (u32)layer->colours, 1, 0, 0, layer->rows, layer->cols);
@@ -86,7 +86,7 @@ void THISCALL (factor_addFactorBy)(LightFactors *pool, const u32 *record)
 void THISCALL (ViewVolume_initBy)(u8 *view, int entries, int matrices, int colours, int triangles, int quads, int segments, void *mem, int size)
 {
 #define VV ((ViewVolume *)view)   /* the same by its fields (src/scene.fields) */
-	gfx_initVertexArrayExt(view);
+	ViewVolume_freeBlock(view);
 	VV->colourLimit = colours;
 	VV->entryLimit = entries;
 	VV->matrixLimit = matrices;

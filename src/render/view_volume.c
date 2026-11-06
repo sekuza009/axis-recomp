@@ -41,8 +41,8 @@ static float *next_record(u8 *vv, int countAt, int full, int size)
 	return r;
 }
 
-/* 0x485120: an object's two points p and q (into the 36-byte records of the list at segments); the object's first
-   word kept with them */
+/* 0x485120: a line from p to q in colour *colour (packed RGBA) into the 36-byte records of the list at segments
+   (colour, then the two clip-space points); with flag 1 dropped again when both ends are outside one clip plane */
 void THISCALL (ViewVolume_addSegment)(u8 *vv, const u32 *object, const float *p, const float *q, int flag)
 {
 	float *r = next_record(vv, 0x908c, 0x90a0, 36);
@@ -224,9 +224,10 @@ int THISCALL (ViewVolume_addTriangle)(u8 *vv, int id, const u32 *info6, const u3
 	return ret;
 }
 
-/* 0x483fd0: the view's vertex buffer freed (when it owns one, ownsBlock) and reset; if the driver has GL_EXT_vertex_array,
-   its three entry points looked up (glArrays[0] .. glArrays[2]) and the flag (entryPointsSet) set */
-void THISCALL (gfx_initVertexArrayExt)(u8 *view)
+/* 0x483fd0 (thiscall on a view volume): its owned block freed (ownsBlock), its lists cleared (ViewVolume_clear),
+   then, if the driver has GL_EXT_vertex_array, the three entry points looked up (glArrays[0..2]) and entryPointsSet
+   set. Run by the destructor (tail jump) and first thing in ViewVolume_initBy */
+void THISCALL (ViewVolume_freeBlock)(u8 *view)
 {
 	ViewVolume *vw = (ViewVolume *)view;
 	if (vw->ownsBlock == 1) {
@@ -263,7 +264,7 @@ static void corner(float *out, const float *m, const float *px, long double y, l
    used of entryLimit: full sets entriesFull; a material's first entry is listed at materialOrder, materialCount of them; heads materialHeads,
    tails materialTails): the part, its colours (from extra, by the part's colourBase), the light factors, the colour (a tint added), the matrix,
    an extra matrix (multiplied after it; 0 none) */
-void THISCALL (ViewVolume_projectObject)(u8 *view, u8 *model, u32 *extra, const float *matrix, u32 factors, u32 colour, int cull,
+void THISCALL (ViewVolume_queueModel)(u8 *view, u8 *model, u32 *extra, const float *matrix, u32 factors, u32 colour, int cull,
                                          int material, u32 extraMatrix)
 {
 	Model *md = (Model *)model;
@@ -443,14 +444,14 @@ static const u32 *item_colours(u8 *vv, const u32 *it, const u8 *mesh)
 			invert(inv, (const float *)RELOC(it[4]));
 			shape_getShadingColorBufferBy(buf, 0, mesh, factors, inv);
 			if (it[3])
-				image_addColour(buf, 0, (const u32 *)mesh, (const u8 *)RELOC(it[3]));
+				part_addColour(buf, 0, (const u32 *)mesh, (const u8 *)RELOC(it[3]));
 			return (const u32 *)buf;
 		}
 		if (it[3]) {
 			if (!fits(vv, mesh))
 				return NULL;
 			memcpy(buf, colours, (u32)((const ShapePart *)mesh)->vertexCount * 4);
-			image_addColour(buf, 0, (const u32 *)mesh, (const u8 *)RELOC(it[3]));
+			part_addColour(buf, 0, (const u32 *)mesh, (const u8 *)RELOC(it[3]));
 			return (const u32 *)buf;
 		}
 		return (const u32 *)colours;
@@ -463,13 +464,13 @@ static const u32 *item_colours(u8 *vv, const u32 *it, const u8 *mesh)
 			return NULL;
 		shape_getShadingColorBufferBy(buf, 1, mesh, factors, inv);
 		if (it[3])
-			image_addColour(buf, 0, (const u32 *)mesh, (const u8 *)RELOC(it[3]));
+			part_addColour(buf, 0, (const u32 *)mesh, (const u8 *)RELOC(it[3]));
 		return (const u32 *)buf;
 	}
 	if (it[3]) {
 		if (!fits(vv, mesh))
 			return NULL;
-		image_addColour(buf, 1, (const u32 *)mesh, (const u8 *)RELOC(it[3]));
+		part_addColour(buf, 1, (const u32 *)mesh, (const u8 *)RELOC(it[3]));
 		return (const u32 *)buf;
 	}
 	return ((const u32 *)((const ShapePart *)mesh)->colours);
@@ -625,7 +626,7 @@ static void billboard(const u32 *r, int textured)
 
 static const float k_third = -0.33333334f, k_half = -0.5f;   /* the depth keys: minus the mean z */
 
-/* 0x485af0: draw what ViewVolume_projectObject queued (mode 1 wireframe, 2 untextured; b the texture scroll).
+/* 0x485af0: draw what ViewVolume_queueModel queued (mode 1 wireframe, 2 untextured; b the texture scroll).
    Under the view volume's matrices (projection / modelview) and the caller's fog: per material (count materialCount, ids materialOrder:
    0 none, else the texture id + 1) its item chain (materialHeads + id * 4: mesh, colours, factors, tint, matrix, second
    matrix, next), opaque meshes drawn, transparent ones (flag 1, or a second matrix) queued as triangles. Then the
@@ -749,8 +750,8 @@ void THISCALL (ViewVolume_draw)(u8 *vv, int mode, float b)
 	/* triangles and billboards merged back to front (triangles fogged when fog is on, billboards never) */
 	identity_matrices();
 	fog_set(fog, mapped);
-	render_depthSortA(((u32 *)VV->triangleOrder), 0, VV->triangleOrderCount - 1);
-	render_depthSortB(((u32 *)VV->quadOrderA), 0, VV->quadOrderACount - 1);
+	render_depthSortTriangles(((u32 *)VV->triangleOrder), 0, VV->triangleOrderCount - 1);
+	render_depthSortBillboards(((u32 *)VV->quadOrderA), 0, VV->quadOrderACount - 1);
 	int ia = 0, ib = 0, triangles = 0;
 	cur = -1;
 	glDisable(0xb44);
@@ -804,7 +805,7 @@ void THISCALL (ViewVolume_draw)(u8 *vv, int mode, float b)
 	glDisable(GL_FOG);
 
 	/* the billboards of kind 3, unfogged, without depth test */
-	render_depthSortB(((u32 *)VV->quadOrderB), 0, VV->quadOrderBCount - 1);
+	render_depthSortBillboards(((u32 *)VV->quadOrderB), 0, VV->quadOrderBCount - 1);
 	cur = -1;
 	glDisable(0xb44);
 	glDisable(GL_DEPTH_TEST);

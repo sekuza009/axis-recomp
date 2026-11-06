@@ -189,8 +189,8 @@ void THISCALL (hud_drawMenuBox)(Scene *scene, int x0, int y0, int x1, int y1)
 	glDisable(GL_TEXTURE_2D);
 }
 
-/* 0x49ca20: the in-match menu opened on page with item under the cursor (a spectator's page 4 first, overwritten:
-   the original stores both) */
+/* 0x49ca20: the in-match menu opened on page with item under the cursor (with no local player, localPlayer < 0, page
+   4 / item 0 are stored first and then overwritten: the original stores both) */
 void THISCALL (escMenu_open)(Scene *scene, int page, int item)
 {
 	if (scene->localPlayer < 0) {
@@ -234,12 +234,12 @@ static void esc_pairCursor(Scene *scene)
 		scene->escCursor = 1;
 }
 
-/* a team change's cost: in a Ladder game the scores so far committed to the title first (profile_addMatchScores);
+/* a team change's cost: in a Ladder game the scores so far committed to the title first (ladder_addMatchScores);
    the local player's kills dropped and one death added */
 static void esc_resetScore(Scene *scene)
 {
 	if (scene->ladderGame == 1)
-		profile_addMatchScores(scene);
+		ladder_addMatchScores(scene);
 	scene->players[scene->localPlayer].killsCounted = 0;
 	scene->players[scene->localPlayer].kills = 0;
 	scene->players[scene->localPlayer].deaths++;
@@ -279,7 +279,7 @@ static int esc_main(Scene *scene)
 			return 1;
 		}
 		if (scene->chosenTeam >= 0 && scene->sessionMode)   /* JOIN: the team page, on the team asked for before */
-			escMenu_open(scene, 1, scene_teamSide(scene, scene->chosenTeam) != 0);
+			escMenu_open(scene, 1, scene_claimTeamSlot(scene, scene->chosenTeam) != 0);
 		else
 			escMenu_open(scene, 1, scene->redTeamCount > scene->blueTeamCount);
 		return 0;
@@ -346,9 +346,9 @@ static int esc_name(Scene *scene)
 {
 	if (g_textFieldOpen)
 		return scene->menuKeys[KEY_ESC] == 1;
-	chat_keepLastLine();
+	chat_endTyping();
 	if (g_keptChatLine)
-		autoplay_startRecording(scene, (const char *)ADDR(g_keptChatLine));
+		replay_startRecording(scene, (const char *)ADDR(g_keptChatLine));
 	return 1;
 }
 
@@ -385,7 +385,7 @@ static int esc_quit(Scene *scene)
 /* 0x49ca70: the in-match menu's keys, once it has faded in (a quarter second): its page's (the main page, the team,
    the replay's name, RETRY?, QUIT?), the menu closed when the page says so, a sound for any key; the open time
    (escTimer) runs on by the frame's */
-void THISCALL (match_escMenu)(Scene *scene)
+void THISCALL (escMenu_update)(Scene *scene)
 {
 	static int (*const page[5])(Scene *) = { esc_main, esc_team, esc_name, esc_retry, esc_quit };
 	if (scene->escTimer >= k_0_25f) {

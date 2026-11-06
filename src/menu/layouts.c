@@ -6,7 +6,7 @@
 /* one rectangle: each corner value = global + constant */
 static void rect1(u32 rec, u32 g0, int c0, u32 g1, int c1, u32 g2, int c2, u32 g3, int c3)
 {
-	set4ints(GAME_I32(g0) + c0, GAME_I32(g1) + c1, GAME_I32(g2) + c2, GAME_I32(g3) + c3, (int *)RELOC(rec));
+	rect_set(GAME_I32(g0) + c0, GAME_I32(g1) + c1, GAME_I32(g2) + c2, GAME_I32(g3) + c3, (int *)RELOC(rec));
 }
 
 /* a row or column of rectangles, 16 bytes apart from rec up to end: each corner value = global (or 0) + constant,
@@ -19,7 +19,7 @@ static void rect_spec(u32 rec, u32 end, int step, const RArg *a)
 		int v[4];
 		for (int k = 0; k < 4; k++)
 			v[k] = (a[k].g ? GAME_I32(a[k].g) : 0) + a[k].c + (a[k].d ? d : 0);
-		set4ints(v[0], v[1], v[2], v[3], (int *)RELOC(rec));
+		rect_set(v[0], v[1], v[2], v[3], (int *)RELOC(rec));
 	}
 }
 
@@ -27,7 +27,7 @@ static void rect_spec(u32 rec, u32 end, int step, const RArg *a)
 static void rects_column(u32 rec, u32 end, int x)
 {
 	for (; rec < end; rec += 16, x += 0xa0)
-		set4ints(x, 0x104, x + 0x78, 0x124, (int *)RELOC(rec));
+		rect_set(x, 0x104, x + 0x78, 0x124, (int *)RELOC(rec));
 }
 
 /* a row of buttons relative to a movable origin (x at ox, y at oy): stride dx, corners at x0 / y0 and x1 / y1 */
@@ -35,7 +35,7 @@ static void rects_row(u32 rec, u32 end, u32 ox, u32 oy, int x0, int x1, int y0, 
 {
 	for (int d = 0; rec < end; rec += 16, d += dx) {
 		int x = GAME_I32(ox), y = GAME_I32(oy);
-		set4ints(d + x + x0, y + y0, d + x + x1, y + y1, (int *)RELOC(rec));
+		rect_set(d + x + x0, y + y0, d + x + x1, y + y1, (int *)RELOC(rec));
 	}
 }
 
@@ -69,7 +69,7 @@ static void armc_tabs(u32 rec)
 	rect_spec(rec + 3 * 16, rec + 5 * 16, 0x64, b);     /* .. then two */
 }
 
-void (arenaCreate_layout)(void) { rects_column(OBJ(g_arenaCreateRects), OBJ(g_arenaCreateRects) + 2 * 16, 0xb4); }
+void (arenaUpdateNotice_layout)(void) { rects_column(OBJ(g_arenaCreateRects), OBJ(g_arenaCreateRects) + 2 * 16, 0xb4); }
 
 void (updateNotice_layout)(void) { rects_column(OBJ(g_updateNoticeRects), OBJ(g_updateNoticeRects) + 2 * 16, 0xb4); }
 
@@ -136,8 +136,8 @@ void (skirmish_layout)(void)
 {
 	static const RArg a[4] = { RA(ADDR(g_skirmishRectLeft), 0x96, 1), RA((OBJ(g_skirmishRect) + 0xc), -0x30, 0), RA(ADDR(g_skirmishRectLeft), 0x10e, 1), RA((OBJ(g_skirmishRect) + 0xc), -0x10, 0) };
 	rect_spec(OBJ(g_skirmishRects), (OBJ(g_skirmishRects) + 0x20), 0x8c, a);
-	set4ints(g_skirmishRectLeft + 0x98, g_skirmishRectTop + 0x4c, g_skirmishRectLeft + 0xd0, g_skirmishRectTop + 0x74, (int *)(OBJ(g_skirmishRects) + 0x20));
-	set4ints(g_skirmishRectLeft + 0x160, g_skirmishRectTop + 0x4c, g_skirmishRectLeft + 0x198, g_skirmishRectTop + 0x74, (int *)(OBJ(g_skirmishRects) + 0x30));
+	rect_set(g_skirmishRectLeft + 0x98, g_skirmishRectTop + 0x4c, g_skirmishRectLeft + 0xd0, g_skirmishRectTop + 0x74, (int *)(OBJ(g_skirmishRects) + 0x20));
+	rect_set(g_skirmishRectLeft + 0x160, g_skirmishRectTop + 0x4c, g_skirmishRectLeft + 0x198, g_skirmishRectTop + 0x74, (int *)(OBJ(g_skirmishRects) + 0x30));
 }
 
 void (pilotSelect_layout)(void)        /* 3 x 3 grid, then a row of two */
@@ -145,7 +145,7 @@ void (pilotSelect_layout)(void)        /* 3 x 3 grid, then a row of two */
 	u32 rec = OBJ(g_pilotSelectRects);
 	for (int i = 0; rec < (OBJ(g_pilotSelectRects) + 0x90); i++, rec += 16) {
 		int y = g_pilotSelectTop + (i / 3) * 86, x = g_pilotSelectLeft + (i % 3) * 86;
-		set4ints(x + 0x20, y + 0x4c, x + 0x74, y + 0xa0, (int *)RELOC(rec));
+		rect_set(x + 0x20, y + 0x4c, x + 0x74, y + 0xa0, (int *)RELOC(rec));
 	}
 	static const RArg b[4] = { RA(ADDR(g_pilotSelectLeft), 0xaa, 1), RA(ADDR(g_pilotSelectBottom), -0x40, 0), RA(ADDR(g_pilotSelectLeft), 0x122, 1), RA(ADDR(g_pilotSelectBottom), -0x20, 0) };
 	rect_spec((OBJ(g_pilotSelectRects) + 0x90), OBJ(g_pilotSelectRects) + 11 * 16, 0xa0, b);
@@ -176,7 +176,7 @@ void (profilePage_layout)(void)
 	                               { 0x1a4, 0x24, 0x1e4, 0x64 } };
 	rect_spec(OBJ(g_profilePageRects), (OBJ(g_profilePageRects) + 0x40), 0x72, a);
 	for (int k = 0; k < 4; k++)
-		set4ints(g_profilePageLeft + r[k][0], g_profilePageTop + r[k][1], g_profilePageLeft + r[k][2], g_profilePageTop + r[k][3],
+		rect_set(g_profilePageLeft + r[k][0], g_profilePageTop + r[k][1], g_profilePageLeft + r[k][2], g_profilePageTop + r[k][3],
 		         (int *)((OBJ(g_profilePageRects) + 0x40) + k * 16));
 }
 
@@ -264,7 +264,7 @@ void (roomSettings_layout)(void)
 }
 
 /* ---- the arena options, the profile list and the map list ---- */
-void (arenaOptions_layout)(void)
+void (createArena_layout)(void)
 {
 	static const RArg a[4] = { RA(ADDR(g_newArenaFormLeft), 0x3c, 1), RA(ADDR(g_newArenaFormBottom), -0x5a, 0), RA(ADDR(g_newArenaFormLeft), 0x104, 1), RA(ADDR(g_newArenaFormBottom), -0x3a, 0) };
 	static const RArg b[4] = { RA(ADDR(g_newArenaFormLeft), 0x3c, 1), RA(ADDR(g_newArenaFormBottom), -0x32, 0), RA(ADDR(g_newArenaFormLeft), 0x104, 1), RA(ADDR(g_newArenaFormBottom), -0x12, 0) };
@@ -278,7 +278,7 @@ void (profileList_layout)(void)       /* a column: 13 rows 0x14 apart */
 {
 	for (u32 rec = OBJ(g_profileListRects), d = 0; rec < OBJ(g_profileListRects) + 13 * 16; rec += 16, d += 0x14) {   /* (13 rectangles) */
 		int y = g_profilePageTop, x = g_profilePageLeft;
-		set4ints(x + 0x20, d + y + 0x23, x + 0xd4, d + y + 0x36, (int *)RELOC(rec));
+		rect_set(x + 0x20, d + y + 0x23, x + 0xd4, d + y + 0x36, (int *)RELOC(rec));
 	}
 }
 
@@ -286,14 +286,14 @@ void (mapList_layout)(void)
 {
 	int y = 0x57;
 	for (u32 rec = (OBJ(g_mapListRects) + 0xa0); rec < (OBJ(g_mapListRects) + 0x140); rec += 16, y += 0x18) {
-		set4ints(0x96, y, 0x154, y + 0x14, (int *)(RELOC(rec) - 0xa0));
-		set4ints(0x168, y, 0x1a4, y + 0x14, (int *)RELOC(rec));
+		rect_set(0x96, y, 0x154, y + 0x14, (int *)(RELOC(rec) - 0xa0));
+		rect_set(0x168, y, 0x1a4, y + 0x14, (int *)RELOC(rec));
 	}
-	set4ints(0x1c2, 0x96, 0x1e0, 0xca, (int *)(OBJ(g_mapListRects) + 0x140));
-	set4ints(0x1c2, 0xdc, 0x1e0, 0x110, (int *)(OBJ(g_mapListRects) + 0x150));
+	rect_set(0x1c2, 0x96, 0x1e0, 0xca, (int *)(OBJ(g_mapListRects) + 0x140));
+	rect_set(0x1c2, 0xdc, 0x1e0, 0x110, (int *)(OBJ(g_mapListRects) + 0x150));
 	int x = 0xaa;
 	for (u32 rec = (OBJ(g_mapListRects) + 0x180); rec < (OBJ(g_mapListRects) + 0x1a0); rec += 16, x += 0xa0) {
-		set4ints(x, 0x15e, x + 0x8c, 0x17e, (int *)(RELOC(rec) - 0x20));
-		set4ints(x, 0x186, x + 0x8c, 0x1a6, (int *)RELOC(rec));
+		rect_set(x, 0x15e, x + 0x8c, 0x17e, (int *)(RELOC(rec) - 0x20));
+		rect_set(x, 0x186, x + 0x8c, 0x1a6, (int *)RELOC(rec));
 	}
 }

@@ -26,31 +26,31 @@ static void slider_hue(float *hue)
 }
 
 /* 0x40f5d0, 0x40f670, 0x40f6b0: the first colour's hue, saturation and value (0 .. 1) */
-void (armc_dragPrimaryHue)(void) { slider_hue(&g_armcColours[g_armcColourSlot * 6]); }
+void (armc_setPrimaryHueFromPointer)(void) { slider_hue(&g_armcColours[g_armcColourSlot * 6]); }
 
-void (armc_dragPrimarySaturation)(void)
+void (armc_setPrimarySaturationFromPointer)(void)
 {
 	g_coloursChanged = 1;
 	g_armcColours[g_armcColourSlot * 6 + 1] = (float)slider_pos();
 }
 
-void (armc_dragPrimaryValue)(void)
+void (armc_setPrimaryValueFromPointer)(void)
 {
 	g_coloursChanged = 1;
 	g_armcColours[g_armcColourSlot * 6 + 2] = (float)slider_pos();
 }
 
 /* 0x40f6f0, 0x40f790, 0x40f7e0: the second colour's: its saturation and value run -1 .. 1 */
-void (armc_dragSecondaryHue)(void) { slider_hue(&g_armcColours[g_armcColourSlot * 6 + 3]); }
+void (armc_setSecondaryHueFromPointer)(void) { slider_hue(&g_armcColours[g_armcColourSlot * 6 + 3]); }
 
-void (armc_dragSecondarySaturation)(void)
+void (armc_setSecondarySaturationFromPointer)(void)
 {
 	long double v = slider_pos();
 	g_coloursChanged = 1;
 	g_armcColours[g_armcColourSlot * 6 + 4] = (float)(v + v - 1.0f);
 }
 
-void (armc_dragSecondaryValue)(void)
+void (armc_setSecondaryValueFromPointer)(void)
 {
 	long double v = slider_pos();
 	g_coloursChanged = 1;
@@ -79,7 +79,7 @@ void (armc_applyColourSlot)(void)
 		tint_part(slot, slot);
 		return;
 	}
-	armc_restoreColourUndo();
+	armc_spreadAllColourSlot();
 	for (int part = 0; part < 5; part++)
 		tint_part(part, g_armcColourSlot);
 }

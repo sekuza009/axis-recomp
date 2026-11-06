@@ -22,7 +22,7 @@ void THISCALL (stage_drawObject)(Stage *stage, int i, void *view)
 	for (int k = 0; k < 3; k++)
 		if (!((long double)r + stage->cameraPos[k] >= o->pos[k]))
 			return;
-	ViewVolume_projectObject(view, model, o->colourSide == 0 ? o->colours[0] : o->colours[1], o->matrix, 0, NULL, 1, -1, 0);
+	ViewVolume_queueModel(view, model, o->colourSide == 0 ? o->colours[0] : o->colours[1], o->matrix, 0, NULL, 1, -1, 0);
 }
 
 /* 0x490da0 (stage_drawObjects): every active object */
@@ -33,7 +33,7 @@ void THISCALL (stage_drawObjects)(Stage *stage, void *view)
 			stage_drawObject(stage, i, view);
 }
 
-/* 0x45e170 (stage_drawActors): every active actor's parts; pass is handed on (hud_pass gives 0 and 1, the match's view
+/* 0x45e170 (stage_drawActors): every active actor's parts; pass is handed on (match_drawFrame gives 0 and 1, the match's view
    -1) */
 void THISCALL (stage_drawActors)(Stage *stage, void *view, int pass)
 {
@@ -98,7 +98,7 @@ static void object_glow(u8 *s, u8 *obj, float dt)
 /* 0x490440 (thiscall on the scene): map object i's frame (0x2cc bytes from objects). A running animation (speed
    animRate) moves its time (animTime) on by dt: mode 1 stops below 0 and holds at 1; mode 2 loops (by the game clock,
    clockSeconds / 44); mode 3 stops outside 0 .. 1; the pose is then out of date (poseStale). An out-of-date object takes
-   its skeleton's pose (skel_applyPose, bone 0) into its matrices (matrix the pose times placeMatrix, inverses, relMatrix) and
+   its skeleton's pose (skel_getBoneMatrix, bone 0) into its matrices (matrix the pose times placeMatrix, inverses, relMatrix) and
    its shading (unless flagged 2) and its centre (pos) again. Shaded twice (colourSide 1) it copies its colours and
    shades the second set. A light (flag 1, with flares on: 0x83a9c8) is projected (clip ..) and its glow (glow)
    grows while it is on screen and in plain view of the camera (collision_rayTrace), else fades; while it glows it
@@ -136,7 +136,7 @@ void THISCALL (mapObject_frame)(u8 *s, int i, float dt)
 		MO->poseStale = 1;
 	}
 	if (MO->poseStale == 1) {
-		skel_applyPose(MO->skeleton, MO->animMatrix, 0, BITS(MO->animTime));
+		skel_getBoneMatrix(MO->skeleton, MO->animMatrix, 0, BITS(MO->animTime));
 		float *m = MO->matrix;
 		Mat4_multiply(m, MO->placeMatrix, MO->animMatrix);
 		Mat4_invert(MO->matrixInverse, m);
@@ -237,7 +237,7 @@ static int tag_narrow(u8 *ac, u32 k)
    local player's rank or above, when the local player faces it (its facingCos against the table g_cosTable by
    the local player's heading +4), a timer (aimTime: the lock-on's) for enemies of a player with a weapon, and its name label shown (labelFade
    3) when the tag is wide enough; onScreen marks it in view. Its callers ignore the eax it leaves */
-void THISCALL (camera_setupView)(u8 *s, const float *pos, const float *dir, const float *up, float fov, int w, int h, float nr,
+void THISCALL (stage_setupView)(u8 *s, const float *pos, const float *dir, const float *up, float fov, int w, int h, float nr,
                                  float fr, float dt)
 {
 	float *cam = ST->cameraPos, *mv = ST->modelview, *pr = ST->projection;
@@ -362,7 +362,7 @@ static void square(float *ab, long double h)
 /* one of the effect shapes about the particle's matrix (matrix) */
 static void shape(void *vv, u8 *p, void *model, const void *colour, int cull)
 {
-	ViewVolume_projectObject(vv, model, 0, PR->matrix, 0, colour, cull, -1, 0);
+	ViewVolume_queueModel(vv, model, 0, PR->matrix, 0, colour, cull, -1, 0);
 }
 
 static const float k_glowUV[4] = { 0.5f, 0.125f, 0.625f, 0.25f }, k_coreUV[4] = { 0.875f, 0.125f, 1.0f, 0.25f };

@@ -24,8 +24,9 @@ static int name_search(u32 count, u32 table, const char *name)
 	return -1;
 }
 
-/* 0x466ce0: a shape by name; skelDat_findByName: a skeleton data file by name */
-int (shape_findByName)(const char *name) { return name_search(OBJ(g_shapeDat), (OBJ(g_shapeDat) + 0x4), name); }
+/* 0x466ce0: an entry's index in Shape.dat's table by name (binary search, -1 none); skelDat_findByName
+   (0x46b0c0): the same in the skeleton archive */
+int (shapeDat_findByName)(const char *name) { return name_search(OBJ(g_shapeDat), (OBJ(g_shapeDat) + 0x4), name); }
 int (skelDat_findByName)(const char *name) { return name_search(OBJ(g_skelDat), (OBJ(g_skelDat) + 0x4), name); }
 
 /* 0x46cad0: src without its extension (from the last '.') copied to dst */
@@ -327,7 +328,7 @@ void THISCALL (tex_initBy)(u8 *tm, const char *dir, int slots, int format, int w
 /* 0x4555b0 (thiscall on a texture bank): the record for texture name (upper-cased; empty: -1) with flags and two
    colours (h1 s1 v1, h2 s2 v2): among the recordCount records (0x68 bytes from records: the name, flags flags, the
    colours colours ..) a hit keeps it as it is when flags and colours match (a NaN matches anything, as fcom has it),
-   else takes them and is recoloured (tex_recolourMaterial). A miss whose file is there (tex_textureFileExist; else
+   else takes them and is recoloured (tex_setMaterialTint). A miss whose file is there (tex_textureFileExist; else
    -1) gets a new record (at most 512: a fatal message), bound at once (tex_bind) while the count is below slotCount.
    Returns the record's index */
 int THISCALL (tex_allocIdBy)(u8 *tm, const char *name, u32 flags, u32 h1, u32 s1, u32 v1, u32 h2, u32 s2, u32 v2)
@@ -355,7 +356,7 @@ int THISCALL (tex_allocIdBy)(u8 *tm, const char *name, u32 flags, u32 h1, u32 s1
 			return i;
 #undef SAME
 		rec->flags = flags;
-		tex_recolourMaterial(tm, i, colour[0], colour[1], colour[2], colour[3], colour[4], colour[5]);
+		tex_setMaterialTint(tm, i, colour[0], colour[1], colour[2], colour[3], colour[4], colour[5]);
 		return i;
 	}
 	if (!tex_textureFileExist(tm, key))

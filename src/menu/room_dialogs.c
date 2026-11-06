@@ -142,20 +142,20 @@ u32 (newIdForm_clicks)(void)
 	return button;
 }
 
-/* 0x434dd0: joining session i of the list: its DirectPlay connection (arena_openSession) and the join (dplay_listSessions); a failure
+/* 0x434dd0: joining session i of the list: its DirectPlay connection (dplay_openConnection) and the join (dplay_listSessions); a failure
    shows message 0x3f or 0x40 and stops the search; on success the join's wait starts (timer 0x378, 2 s, its id
    kept). Returns what the original leaves in eax */
 u32 (room_joinSession)(int i)
 {
 	g_roomJoinStarted = 0;
-	if (!arena_openSession(0, g_sessionList[i].address)) {
+	if (!dplay_openConnection(0, g_sessionList[i].address)) {
 		menu_showMessage(0x3f);
-		return arena_leaveSession();   /* arena_leaveSession */
+		return dplay_leaveSession();   /* dplay_leaveSession */
 	}
 	g_arenaJoinRow = i;
 	if (!dplay_listSessions()) {        /* dplay_listSessions */
 		menu_showMessage(0x40);
-		return arena_leaveSession();
+		return dplay_leaveSession();
 	}
 	g_joinPollTicks = 0;
 	g_joinConnecting = 1;
@@ -192,18 +192,18 @@ int (gameList_open)(void)
 }
 
 /* 0x406200: joining arena i of the list (99999: the one typed in, g_typedArenaAddress): the search stopped first if it runs,
-   the connection made (arena_openSession; message 0x3f and the search stopped on a failure), the join (dplay_listSessions, not
+   the connection made (dplay_openConnection; message 0x3f and the search stopped on a failure), the join (dplay_listSessions, not
    checked), the join's wait (timer 0x378, 2 s). Returns what the original leaves in eax */
 u32 (arena_joinListed)(int i)
 {
 	g_lobbyJoinStarted = 0;
 	g_lanJoinRequest = 0;
 	if (g_lanSearchStarted)
-		arena_leaveSession();
+		dplay_leaveSession();
 	void *session = i == 99999 ? (void *)ADDR(g_typedArenaAddress) : (void *)g_sessionList[i].address;
-	if (!arena_openSession(0, session)) {
+	if (!dplay_openConnection(0, session)) {
 		menu_showMessage(0x3f);
-		return arena_leaveSession();
+		return dplay_leaveSession();
 	}
 	g_arenaJoinRow = i;
 	dplay_listSessions();
@@ -278,11 +278,13 @@ u32 (account_clicks)(void)
 	return r;
 }
 
-/* 0x43ed20: the game room drawn (its background first): while open and not leaving (state 99), the dialog's frame if
-   one is open, else the room settings kept in range (players 0 .. 16 else 8, the frag limit at most 50 and the time
-   at most 60 else 30, the map 0 .. 11 else 0), the settings panel, the map list when open, the options when shown.
-   Returns what the original leaves in eax */
-u32 (room_draw)(void)
+/* 0x43ed20: the game room's settings page (state 2; next to account_page, gameList_pageFrame, ranking_page): the
+   room's tunnel; with the room camera arrived and not leaving (state 99), the dialog's frame if one is opening, else
+   the registry record's settings kept in range (players 0 .. 16 else 8, the frag limit at most 50 and the time at
+   most 60 else 30, the game mode (g_roomRecGameMode, +0x23) 0 .. 11 else 0), the settings form
+   (room_drawGameSettings), the map list when open, and while a connection is awaited (g_connectionAwaited) the
+   hosting step (room_hostingStep). Returns what the original leaves in eax */
+u32 (roomSettings_page)(void)
 {
 	room_drawTunnel();   /* room_drawTunnel */
 	int mode = g_roomCameraMode;
@@ -309,14 +311,15 @@ u32 (room_draw)(void)
 	return room_hostingStep();   /* room_hostingStep */
 }
 
-/* 0x433c70: the chat edit control closed (the window focused again, the line sent): typed into the login's ID
-   (g_lineToLoginId: up to 30 bytes at g_accountForm) or its password (g_lineToLoginPassword: 12 bytes at g_accountPassword, the stars off).
-   Returns what the original leaves in eax */
-u32 (chat_closeEdit)(void)
+/* 0x433c70: typing in the Ladder login ended: the hidden EDIT control destroyed, the focus back on the main window,
+   the line closed (menu_closeInputLine); the line then taken into the field it was for: the ID (g_lineToLoginId: 30 bytes
+   at g_accountName) or the password (g_lineToLoginPassword: 12 bytes at g_accountPassword, the stars off). Returns
+   what the original leaves in eax */
+u32 (roomLogin_endTyping)(void)
 {
 	DestroyWindow(g_hChatEdit);   /* DestroyWindow */
 	SetFocus(g_hWndMain);               /* SetFocus */
-	chat_closeLine(1);                           /* chat_closeLine: the line sent */
+	menu_closeInputLine(1);                           /* menu_closeInputLine: the line sent */
 	if (g_lineToLoginId == 1) {
 		memset((void *)OBJ(g_accountName), 0, 30);
 		g_lineToLoginId = 0;
@@ -353,13 +356,13 @@ static void highlight_choice(int choice, int x, int y)
 void (roomLogin_update)(void)
 {
 	if (g_retypePassword) {
-		room_copyJoinedSettings();
+		room_copyAccountRecord();
 		roomLogin_editPassword();
 		g_retypePassword = 0;
 		return;
 	}
 	if (g_loginToSend == 1) {
-		chat_closeEdit();
+		roomLogin_endTyping();
 		login_send();
 		g_loginToSend = 0;
 		return;
@@ -639,7 +642,7 @@ u32 (newIdForm_draw)(void)
 		tex_bind(g_textures->banks[texture / 512], texture % 512);
 		const u32 *colour = hovered == k + 4 ? bright : dim;
 		glColor4f(1.0f, 1.0f, 1.0f, hovered == k + 4 ? 1.0f : 0.4f);
-		profile_drawButton(X0 + x + 0x5a, Y1 - 0x40, X0 + x + 0xfa, Y1 - 0x20, 1);
+		menu_drawLargeButton(X0 + x + 0x5a, Y1 - 0x40, X0 + x + 0xfa, Y1 - 0x20, 1);
 		set_colour_bits(g_textColour, colour[0], colour[1], colour[2], colour[3]);
 		text_drawBox16(X0 + x + 0x5a, Y1 - 0x38, X0 + x + 0xfa, (const char *)(MSG(115, "$[0] O K") + k * 0x80));
 	}
@@ -1084,7 +1087,7 @@ static void creategame_close(void)
 	menuCamera_setMove(4);
 	g_roomState = 99;
 	g_nextScreen = 300;
-	GAME_FN(debug_traceStripped, 0x48b420, void, void)();   /* debug_traceStripped */
+	GAME_FN(shared_emptyFunction, 0x48b420, void, void)();   /* shared_emptyFunction */
 }
 
 /* 0x436990: the Ladder login dialog's keys. While its request is out (g_roomRequestOut) or the login is due (g_roomLoginDue)

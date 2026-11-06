@@ -14,8 +14,9 @@ int (net_findFreeSession)(void)
 	return -1;
 }
 
-/* 0x4532b0: session i's value, 0 when out of range or unused */
-int (net_sessionValue)(int i)
+/* 0x4532b0: session i's SessionDesc copy (g_sessionTable[i].desc), 0 when i is out of range (0 ..
+   g_dplaySessionCount, the last inclusive) or the slot unused */
+int (net_getSession)(int i)
 {
 	if (i > -1 && i <= g_dplaySessionCount && g_sessionTable[i].used)
 		return (int)g_sessionTable[i].desc;
@@ -53,7 +54,8 @@ u8 (net_claimPlayerSlot)(void)
 	return 0xff;
 }
 
-/* 0x451410: a slot claimed for the local player (id g_localPlayerId) when the session is up; 1 when done */
+/* 0x451410: on the host only (g_isHost; else 0): a free player slot claimed for the local player (id
+   g_localPlayerId), noted in g_localSlot, g_slotTakenFlag raised; 1 */
 int (net_claimLocalSlot)(void)
 {
 	if (!g_isHost)
@@ -214,9 +216,10 @@ int (net_asyncSelect)(void *wnd, int which)
 	return 1;
 }
 
-/* 0x453720: DirectPlay's start: its state and the session table cleared, COM started, the DirectPlay objects made
-   (dplay_check); on a failure everything released again and the error returned, else 0 */
-int (dplay_coInit)(void)
+/* 0x453720: DirectPlay's start: the unused words and the session table (g_sessionTable) cleared, COM started
+   (CoInitialize), then net_resetState + DirectPlay made (dplay_resetAndCreate). Only CoInitialize's failure
+   reaches the error path (dplay_release, its HRESULT returned): dplay_resetAndCreate always returns 0. 0 otherwise */
+int (dplay_init)(void)
 {
 	g_unusedDplayWord1 = 0;
 	g_unusedDplayWord2 = 0;
@@ -225,7 +228,7 @@ int (dplay_coInit)(void)
 	g_unusedDplayWord4 = 0;
 	int hr = CoInitialize(NULL);   /* CoInitialize */
 	if (hr >= 0) {
-		hr = dplay_check();      /* dplay_check */
+		hr = dplay_resetAndCreate();      /* dplay_resetAndCreate */
 		if (hr >= 0)
 			return 0;
 	}
@@ -254,7 +257,7 @@ u32 (net_closeThreadHandles)(void)
 /* 0x452d70: the server's 62-byte reply received into g_playerListReply (recv on g_gameServerSocket until 62 bytes have come or 3 s
    have passed; each call reads to the start of the buffer), then by its kind (+0x1e): 0 accepted (net_addPlayerRecord), 1
    refused (g_playerListDone set, g_netLastRequest cleared) */
-void (net_receiveServerReply)(void)
+void (net_receivePlayerListReply)(void)
 {
 	u8 *reply = g_playerListReply;
 	u32 start = GetTickCount();
@@ -471,10 +474,10 @@ int (net_addRoomRecord)(const u8 *rec)
 }
 
 #define lstrlenA(s) IMPORT(0x4a9188, int, const char *)(s)
-/* 0x451350: a chat line for the log: "<name>: <text>" (format 0x4b3e30; the sender's short name from DirectPlay
-   through dplay_getPlayerName, "?" when it has none) in a new global block, stored in *out. Returns the name lookup's result,
-   or 0x8007000e (E_OUTOFMEMORY) when the block cannot be had */
-int (net_logMessage)(u32 from, const char *text, char **out)
+/* 0x451350: a chat line as text: \"<name> > <text>\" (format 0x4b3e30 \"%s > %s\"; the sender's short name from
+   DirectPlay through dplay_getPlayerName, \"unknown\" (0x4b3e38) when it has none) in a new global block, stored in
+   *out. Returns the name lookup's result, or 0x8007000e (E_OUTOFMEMORY) when the block cannot be had */
+int (net_formatChatLine)(u32 from, const char *text, char **out)
 {
 	u8 *name = NULL;
 	int r = dplay_getPlayerName(from, &name);
@@ -498,7 +501,7 @@ int (net_logMessage)(u32 from, const char *text, char **out)
 
 /* 0x454d90: the first place in text where word appears (strncmp at each position where the first letters match, or
    _strnicmp, ignoring case, when exact is 0); NULL when it does not */
-const char *(text_findWord)(const char *text, const char *word, int exact)
+const char *(text_findSubstring)(const char *text, const char *word, int exact)
 {
 	int length = strlen(word);
 	int positions = strlen(text) - length + 1;
@@ -515,7 +518,7 @@ const char *(text_findWord)(const char *text, const char *word, int exact)
 
 /* 0x4546d0: the network worker started: two events (g_pingDataEvent, g_pingStopEvent) and the thread running net_pingThreadProc (handle
    g_pingThread, id g_pingThreadId), then the first event set. 1, or 0 when any of them cannot be made */
-int (net_startThread)(void)
+int (net_startPingThread)(void)
 {
 	if (!(g_pingDataEvent = CreateEventA(NULL, 0, 0, NULL)))   /* CreateEventA */
 		return 0;
@@ -561,11 +564,11 @@ int (net_getLocalAddress)(void)
 	return 0;
 }
 
-/* 0x4512c0: a chat line sent: logged for this player (net_logMessage into g_sentChatBlock), then a message (type 1, from
+/* 0x4512c0: a chat line sent: logged for this player (net_formatChatLine into g_sentChatBlock), then a message (type 1, from
    the player g_localPlayerId, the text at +0xc) in a new global block sent to everyone (dplay_send). 1 when sent */
 int (net_sendChat)(const char *text)
 {
-	if (net_logMessage(g_localPlayerId, text, (char **)ADDR(g_sentChatBlock)) < 0)   /* net_logMessage */
+	if (net_formatChatLine(g_localPlayerId, text, (char **)ADDR(g_sentChatBlock)) < 0)   /* net_formatChatLine */
 		return 0;
 	int size = lstrlenA(text) + 0x10;
 	u8 *message = GlobalLock(GlobalAlloc(0x42, size));   /* GlobalLock(GlobalAlloc(GHND)) */
@@ -633,7 +636,7 @@ int (dplay_getPlayerName)(u32 id, void **out)
 
 /* 0x4545b0: every server in the list pinged (net_pingServer by name, 20 bytes a slot at g_pingAddresses) until done
    (g_netListDone): its time in g_serverPing (above 1000 ms less 400; 0 when it did not answer) and marked pinged (g_serverPinged);
-   then done, and the events reset (net_wakePingThread, whose eax it returns) */
+   then done, and the events reset (net_stopPingThread, whose eax it returns) */
 u32 (net_pingAllServers)(void)
 {
 	(*(int *)&g_pingTime) = 0;
@@ -653,7 +656,7 @@ u32 (net_pingAllServers)(void)
 		}
 	}
 	g_netListDone = 1;
-	return net_wakePingThread();   /* net_wakePingThread */
+	return net_stopPingThread();   /* net_stopPingThread */
 }
 
 /* ---- a reply of size bytes read from socket into buf, waiting up to 3 s. Each recv lands at buf's start (as in the
@@ -681,7 +684,7 @@ void (net_receiveLobbyReply)(void)
 		break;
 	case 1:
 		g_serverPingCount = g_serverListCount;
-		net_startThread();   /* net_startThread */
+		net_startPingThread();   /* net_startPingThread */
 		g_lobbyListAnswer = 0xca;
 		g_netLastRequest = 0;
 		break;
@@ -707,7 +710,7 @@ void (net_receiveGameServerReply)(void)
 		break;
 	case 1:
 		g_serverPingCount = g_roomListCount;
-		net_startThread();
+		net_startPingThread();
 		g_roomListAnswer = 0xca;
 		g_netLastRequest = 0;
 		break;
@@ -890,13 +893,13 @@ static void dplay_lobbyConnect(void)
 }
 
 /* 0x453790: DirectPlay made: first through a lobby that started the game (dplay_lobbyConnect), then (either way) a plain
-   DirectPlay object (dplay_createLobby; its failure returned) and the connections listed (EnumConnections of the game's
+   DirectPlay object (dplay_createObject; its failure returned) and the connections listed (EnumConnections of the game's
    application with dplay_enumConnections). The lobby's settings block is freed (but g_lobbyConnectionBlock kept). Returns the
    listing's failure, else 0 */
 int (dplay_create)(void)
 {
 	dplay_lobbyConnect();
-	int r = dplay_createLobby((void **)ADDR(g_dplay));   /* dplay_createLobby */
+	int r = dplay_createObject((void **)ADDR(g_dplay));   /* dplay_createObject */
 	if (r < 0)
 		return r;
 	void *play = g_dplay;
@@ -926,7 +929,7 @@ u32 (net_handleMessage)(const u8 *message, u32 size, u32 from)
 	case 1:
 		if ((*(int *)&g_lastChatLine))
 			(*(int *)&g_lastChatLine) = 0;
-		r = net_logMessage(from, message + 0xc, (char **)ADDR(g_lastChatLine));   /* net_logMessage */
+		r = net_formatChatLine(from, message + 0xc, (char **)ADDR(g_lastChatLine));   /* net_formatChatLine */
 		if (r >= 0)
 			g_lastChatLineSet = 1;
 		return r;
@@ -961,7 +964,7 @@ u32 (net_handleMessage)(const u8 *message, u32 size, u32 from)
    the service provider (g_providerGuid: g_tcpProviderGuid, g_ipxProviderGuid, g_modemProviderGuid, g_serialProviderGuid) and its stored connection (g_storedConnection from
    OBJ(g_dpConnections) + 4 * kind); for TCP/IP (0) a compound address is made instead by the lobby from the provider and the
    host `address` (or g_noAddress), size query then fill, into a new block g_hostAddressBlock. Then (when there is a connection) a
-   new DirectPlay object (dplay_createLobby) initialised with it and its caps kept (timeout, buffer and queue sizes into
+   new DirectPlay object (dplay_createObject) initialised with it and its caps kept (timeout, buffer and queue sizes into
    0xa0bb00 .. 0xa0bb08). 0 when that fails, else 1 */
 int (dplay_initConnection)(int kind, const char *address)
 {
@@ -995,7 +998,7 @@ int (dplay_initConnection)(int kind, const char *address)
 	}
 	if (!g_storedConnection)
 		return 1;
-	if (dplay_createLobby((void **)ADDR(g_dplay)) < 0 || !g_dplay)   /* dplay_createLobby */
+	if (dplay_createObject((void **)ADDR(g_dplay)) < 0 || !g_dplay)   /* dplay_createObject */
 		return 0;
 	void *play = g_dplay;
 	if (COM(play, 0x98, int, void *, u32)(play, g_storedConnection, 0) < 0)   /* InitializeConnection */
@@ -1404,7 +1407,7 @@ void (net_recv)(void)
 		net_receiveGameServerReply();
 		break;
 	case 21:
-		net_receiveServerReply();
+		net_receivePlayerListReply();
 		break;
 	case 26:
 		net_clearPlayerList();
@@ -1522,8 +1525,8 @@ u32 STDCALL (dplay_enumConnections)(const u32 *guid, const void *connection, u32
 		return 1;
 	memcpy(data, connection, size);
 	for (int k = 0; k < 4; k++)
-		if (text_findWord(own, (const char *)kinds[k].words[0], 1) ||
-		    (kinds[k].words[1] && text_findWord(own, (const char *)kinds[k].words[1], 1))) {
+		if (text_findSubstring(own, (const char *)kinds[k].words[0], 1) ||
+		    (kinds[k].words[1] && text_findSubstring(own, (const char *)kinds[k].words[1], 1))) {
 			memcpy((void *)RELOC(kinds[k].guid), id, 0x10);
 			GAME_VAR(void *, kinds[k].data) = g_connectionCopy;
 			break;
@@ -1842,12 +1845,12 @@ static void team_change(u8 *g, int i, const char *pkt, u32 notice)
 {
 	player_setTeam(STAGE, i, pkt[3]);   /* player_setTeam */
 	if (GS->teamGame == 1) {
-		int t = scene_teamSide(g, pkt[3]);
+		int t = scene_claimTeamSlot(g, pkt[3]);
 		for (int k = 0; k < 5; k++)
-			GAME_THISFN(actor_setPartColor, 0x474b50, void, void *, int, int, u32, u32, u32, u32, u32, u32)(STAGE, i, k, GAME_VAR(u32, OBJ(k_teamHue) + t * 4),
+			GAME_THISFN(playerRecord_setPartColour, 0x474b50, void, void *, int, int, u32, u32, u32, u32, u32, u32)(STAGE, i, k, GAME_VAR(u32, OBJ(k_teamHue) + t * 4),
 			                                                                             GAME_VAR(u32, OBJ(k_teamSaturation) + t * 4),
 			                                                                             GAME_VAR(u32, OBJ(k_teamValue) + t * 4), 0,
-			                                                                             0xbf800000, 0x3f7fbe77);   /* actor_setPartColor */
+			                                                                             0xbf800000, 0x3f7fbe77);   /* playerRecord_setPartColour */
 	}
 	player_setName(STAGE, i, pkt + 4);   /* player_setName */
 	actor_name(g, i, pkt + 4);
@@ -1882,7 +1885,7 @@ static void match_limit(u8 *g, int state, u32 notice)
    asked for); 1 the game state (round, time, map change, the checksums of the part and item tables, scores, items);
    2 a player joining with his mech; 3 the server ending the game; 4 / 5 the frag / time limit; 6 a cheat notice; 7
    a chat line; 8 a player connecting; 9 one leaving; 10 / 11 team changes; 12 a player's flag rows; 13 a pause
-   timer; 14 the items' states. Anything else goes to debug_traceStripped (nothing) */
+   timer; 14 the items' states. Anything else goes to shared_emptyFunction (nothing) */
 void THISCALL (net_processGamePacket)(u8 *g, u32 from, int size, const char *pkt)
 {
 	if (size != 0x40)
@@ -1997,7 +2000,7 @@ void THISCALL (net_processGamePacket)(u8 *g, u32 from, int size, const char *pkt
 					g_mapIndex = pkt[3];
 					GS->nextMap = pkt[4];
 					GS->nextMode = pkt[6];
-					scene_setTextureFolder((Scene *)g, g_mapNames + g_mapIndex * 0x20);
+					scene_setMapName((Scene *)g, g_mapNames + g_mapIndex * 0x20);
 					GS->matchState = 1;
 					GS->stateFrames = 0;
 					game_setGameTypeFlags((Stage *)STAGE, pkt[5]);
@@ -2085,8 +2088,8 @@ void THISCALL (net_processGamePacket)(u8 *g, u32 from, int size, const char *pkt
 		   the call left) */
 		u32 hi_a = (u32)(g + i * 0x8888) & ~0xffu, hi_c = *(u32 *)&((Player *)ACTOR(i))->grade & ~0xffu;
 		for (int k = 0; k < 5; k++, c += 2) {
-			u32 left = thiscall8_ecx(FN_ADDR(actor_applyRemoteColours, 0x474fd0), STAGE, i, k, hi_c | c[-0xb], hi_a | c[-1], hi_c | c[9], hi_a | c[-0xa], hi_c | c[0],
-			                         hi_a | c[0xa]);   /* actor_applyRemoteColours */
+			u32 left = thiscall8_ecx(FN_ADDR(playerRecord_applyNetColours, 0x474fd0), STAGE, i, k, hi_c | c[-0xb], hi_a | c[-1], hi_c | c[9], hi_a | c[-0xa], hi_c | c[0],
+			                         hi_a | c[0xa]);   /* playerRecord_applyNetColours */
 			hi_a = 0;
 			hi_c = left & ~0xffu;
 		}
@@ -2209,7 +2212,7 @@ void THISCALL (net_processGamePacket)(u8 *g, u32 from, int size, const char *pkt
 		GS->itemLevelsTaken = 1;
 		return;
 	}
-	GAME_FN(debug_traceStripped, 0x48b420, void, const char *)(pkt);   /* debug_traceStripped */
+	GAME_FN(shared_emptyFunction, 0x48b420, void, const char *)(pkt);   /* shared_emptyFunction */
 }
 #undef G
 #undef GS

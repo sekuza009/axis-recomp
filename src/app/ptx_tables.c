@@ -61,8 +61,10 @@ void (ptx_initYCbCrTables)(void)
 	}
 }
 
-/* 0x46e9b0: the two 64-entry quantisation tables (luma, chroma) scaled for quality q */
-void (ptx_initQuantTables)(int q)
+/* 0x46e9b0: the decoder's dequantisation multipliers for quality q (g_ptxDequant, luma then chroma):
+   base (g_ptxQuantBase) x AAN scale (k_ptxQuantScales) x 100 / q >> 12, libjpeg's ifast IDCT multiplier table;
+   ptx_inverseDct multiplies the coefficients by them */
+void (ptx_initDequantTables)(int q)
 {
 	if (g_ptxQuality == q)
 		return;
@@ -72,9 +74,9 @@ void (ptx_initQuantTables)(int q)
 	}
 }
 
-/* 0x46e2b0: the dequantisation tables for quality q, with the AAN inverse DCT's scale factors (eight doubles at
-   k_aanScales) folded in */
-void (ptx_initDequantTables)(int q)
+/* 0x46e2b0: the forward DCT's divisors for quality q (g_ptxFdctDivisors: 1 / (g_ptxDequantBase x 100 / q
+   x aan[row] x aan[col] x 8), libjpeg jcdctmgr's float fdtbl) - an encoder's table, never read by the decoder */
+void (ptx_initFdctDivisors)(int q)
 {
 	typedef long double X;
 	if (g_ptxQuality == q)
@@ -94,7 +96,7 @@ void (ptx_initTables)(void)
 	g_ptxHuffSet = 0;
 	ptx_initClampTable();
 	ptx_initYCbCrTables();
-	ptx_initDequantTables(100);
+	ptx_initFdctDivisors(100);
 	ptx_initColourTables();
-	ptx_initQuantTables(100);
+	ptx_initDequantTables(100);
 }

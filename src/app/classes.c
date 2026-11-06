@@ -16,6 +16,7 @@ static int clear(void *p, int dwords)
 
 
 /* ---- member blocks cleared, each the size of its class ---- */
+/* TextureManager: all 8 words (vtable, banks[6], count) */
 int THISCALL (TextureManager_clear)(void *self) { return clear(self, 0x8); }       /* TextureBank */
 int THISCALL (Model_clear)(void *self) { return clear(self, 0x13); }      /* Model */
 int THISCALL (ShapeManager_clear)(void *self) { return clear(self, 0x93); }       /* ShapeManager */
@@ -52,14 +53,15 @@ void THISCALL (ViewVolume_clearDrawCounts)(ViewVolume *view)
 }
 
 /* 0x480210: three ints set */
-void THISCALL (ints_set3)(int *p, int a, int b, int c)
+void THISCALL (Vec3_setNoReturn)(int *p, int a, int b, int c)
 {
 	p[0] = a;
 	p[1] = b;
 	p[2] = c;
 }
 
-/* 0x4569b0: the texture manager's members cleared (TextureManager_clear: the six banks) and its count */
+/* 0x4569b0: the texture manager's members cleared (TextureManager_clear: all 8 words, vtable and count
+   included), then its count set 0 again (a repeat) */
 int THISCALL (TextureManager_reset)(void *self)
 {
 	TextureManager_clear(self);
@@ -108,10 +110,10 @@ static void set3(u32 addr, u32 x, u32 y, u32 z)
 	p[2] = z;
 }
 void (vec_initOrigin)(void) { set3(ADDR(g_vecOrigin), 0, 0, 0); }
-void (vec_initZero)(void) { set3(OBJ(g_vecZero2), 0, 0, 0); }
+void (vec_initZero2)(void) { set3(OBJ(g_vecZero2), 0, 0, 0); }
 void (vec_initAxisZ)(void) { set3(ADDR(g_vecUnitZ), 0, 0, 0x3f800000u); }
 void (vec_initUp)(void) { set3(OBJ(g_vecUnitY), 0, 0x3f800000u, 0); }
-void (vec_initRest)(void) { set3(ADDR(g_vecZero), 0, 0, 0); }
+void (vec_initZero)(void) { set3(ADDR(g_vecZero), 0, 0, 0); }
 void (vec_initAxisX)(void) { set3(OBJ(g_vecUnitX), 0x3f800000u, 0, 0); }
 
 /* ---- class lifecycles ---- */
@@ -120,8 +122,9 @@ void (vec_initAxisX)(void) { set3(OBJ(g_vecUnitX), 0x3f800000u, 0, 0); }
 #define DELETING(cls, dtor) \
 	void *THISCALL (cls##_deletingDtor)(void *self, int flags) { dtor(self); if (flags & 1) operator_delete(self); return self; }
 
-/* Texture (vtable 0x4a956c): Texture_dtor (its destructor) frees the pixel buffer (index,
-   held while indexCount is not negative) and closes its file (file); the result is what the last call left */
+/* Texture (vtable 0x4a956c): Texture_dtor (its destructor) frees its image file's name index (index, held while
+   indexCount is not negative; indexCount then 0) and closes its image file (file); the result is what the last call
+   left */
 u32 THISCALL (Texture_dtor)(u32 *self)
 {
 	u32 r = self[0x42];
@@ -157,7 +160,7 @@ void (static_endTextureManager)(void) { TextureManager_dtor((u32 *)ADDR(g_textur
 
 /* the game's class Scene (vtable 0x4aa258): our ScenePath (Stage.scenePath), not our Scene - that one is the game's
    class Console (Console_dtor). The class functions here keep the game's class names. */
-void *THISCALL (Scene_ctor)(u32 *self) { self[0] = VT(Scene, 0x4aa258); debug_traceStripped(NULL); return self; }
+void *THISCALL (Scene_ctor)(u32 *self) { self[0] = VT(Scene, 0x4aa258); shared_emptyFunction(NULL); return self; }
 void THISCALL (Scene_dtor)(u32 *self) { self[0] = VT(Scene, 0x4aa258); }
 DELETING(Scene, Scene_dtor)
 
@@ -268,9 +271,10 @@ u32 THISCALL (ResourceSet_dtor)(u8 *self)
 	((void (STDCALL *)(void *, u32, int, u32))IMG(0x49fc4f))(array, size, count, dtor)   /* `eh vector destructor iterator' (stdcall) */
 
 /* 0x46ff70: the stage destroyed, its members last first: Scene_dtor (scenePath), the 100 actors (actors,
-   0x8888 bytes each, actor_destroyPartLists), the skeleton and shape managers, the 16 resource sets (playerRecords, 0x47fd2 bytes
-   each, ResourceSet_dtor), two more managers, two Model_dtor tables, the three factor pools and space.
-   Returns the last destructor's eax */
+   0x8888 bytes each, actor_destroyPartLists), the item skeleton and shape managers, the 16 resource sets
+   (playerRecords, 0x47fd2 bytes each, ResourceSet_dtor), the object skeleton and shape managers, the two models
+   (waterModel, layerModel: Model_dtor), the three light pools (actorLights, dynamicLights, mapLights: Light_dtor) and
+   space (CollisionVolume_dtor). Returns the last destructor's eax */
 u32 THISCALL (Stage_dtor)(u8 *self)
 {
 	Stage *stage = (Stage *)self;
@@ -478,13 +482,13 @@ static const u32 k_cameraPresets[6][10] = {
    stage (+0x1f36c8) with all its member arrays built (the CRT's vector constructors crt_arrayConstruct / 0x49fd2d with their
    element constructors) and vtables set; the factor tables sized (ViewVolume_initBy into the block at viewMemory); the
    parts (stage_build with nine names), the component catalogue and the items loaded (failing: a fatal
-   message); the ten camera presets, the stage's player slots reset (stage_selectActor -1), the geometry check sizes; the
+   message); the ten camera presets, the stage's player slots reset (stage_setCockpitActor -1), the geometry check sizes; the
    help text (Help.txt: 30 lines of 63 characters into consoleLines) read, each with its line end cut (an empty one
    cuts the byte before it), and the chat macros loaded (chat_loadMacros). (The original's SEH frame, for
    unwinding a failed construction, is not reproduced.) Returns the object */
-u8 *THISCALL (Game_ctor)(u8 *g)
+u8 *THISCALL (Console_ctor)(u8 *g)
 {
-#define VECTOR(at, size, count) ((void (STDCALL *)(void *, int, int, u32))FN_ADDR(crt_arrayConstruct, 0x401290))(at, size, count, FN_ADDR(ResourceSet_trivialCtor, 0x45fff0))   /* (the CRT's iterators are stdcall) */
+#define VECTOR(at, size, count) ((void (STDCALL *)(void *, int, int, u32))FN_ADDR(crt_arrayConstruct, 0x401290))(at, size, count, FN_ADDR(class_emptyCtor, 0x45fff0))   /* (the CRT's iterators are stdcall) */
 #define VTABLE(at, vt) (GAME_VAR(u32, at) = (vt))
 	u8 *s = (u8 *)SCENE_STAGE(g);
 	Stage *st = (Stage *)s;
@@ -542,11 +546,11 @@ u8 *THISCALL (Game_ctor)(u8 *g)
 	                                                                                  STR(0x4c45c0, "Skeleton"), STR(0x4c45cc, "Actor"), STR(0x4c45d4, "Bullet"), STR(0x4c45dc, "Effect"), STR(0x4c45e4, "Scene"));   /* stage_build */
 	if (!PATCHED_THISCALL(0x460920, int, void *, const char *)(s, (const char *)STR(0x4b4418, "Data/Component.dat")))   /* catalogue_loadComponents (the patch DLL adds the KYRIE parts here) */
 		sys_fatalErrorN((char *)OBJ(g_logConsole), (const char *)STR(0x4c4598, "file damaged!"));
-	if (!map_loadItemInfoFrom(s, (const char *)STR(0x4c4588, "Data/Item.dat")))   /* map_loadItemInfoFrom */
+	if (!catalogue_loadItemInfoFrom(s, (const char *)STR(0x4c4588, "Data/Item.dat")))   /* catalogue_loadItemInfoFrom */
 		sys_fatalErrorN((char *)OBJ(g_logConsole), (const char *)STR(0x4c4598, "file damaged!"));
 	memcpy(GS->cameraPresets, k_cameraPresets, sizeof k_cameraPresets);
 	GS->cameraMode = 1;
-	stage_selectActor((Stage *)s, -1);
+	stage_setCockpitActor((Stage *)s, -1);
 	GS->geometryPerRow[0] = 6;
 	GS->geometryPerRow[2] = 6;
 	GS->watchedPlayer = -1;

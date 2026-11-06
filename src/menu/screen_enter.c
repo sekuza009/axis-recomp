@@ -107,8 +107,8 @@ void (menuState400_enter)(void)
 	playerSetup_layout();
 	arenaGameList_layout();
 	arenaDialogBox_layout();
-	arenaOptions_layout();
-	arenaCreate_layout();
+	createArena_layout();
+	arenaUpdateNotice_layout();
 	CLEAR_ALL(cleared2);
 	STORE_ALL(state);
 }
@@ -198,7 +198,7 @@ void (menuState800_enterGameRoom)(void)
 	g_lineToLoginPassword = 1;
 	g_lineToLoginId = 0;
 	g_loginToSend = 0;
-	room_copyJoinedSettings();
+	room_copyAccountRecord();
 	g_retypePassword = 1;
 	CLEAR_ALL(cleared);
 	g_rankingLastPage = 999;
@@ -219,7 +219,7 @@ u32 (menu_processMouse)(void)
 		return messageBox_clickClose();   /* the message box */
 	int state = g_menuState;
 	switch (state) {
-	case 200: return menu_clickStartFade();
+	case 200: return title_clickDismiss();
 	case 210: return profile_processInput();   /* profile_processInput */
 	case 300: return mainmenu_clicks();
 	case 400: return lobby_clicks();   /* lobby_clicks */
@@ -228,7 +228,7 @@ u32 (menu_processMouse)(void)
 	case 700: return armc_mouse();   /* armc_mouse */
 	case 800: return room_clicksByState();
 	case 900: return missions_pageClicks();
-	case 9999: return armc_mouseLook();  /* armc_mouseLook */
+	case 9999: return freeCam_mouseLook();  /* freeCam_mouseLook */
 	}
 	/* the original's subtraction chain leaves these */
 	if (state > 900)
@@ -324,7 +324,7 @@ int (menuState500_enterSkirmish)(void)
 /* 0x44b420: the pilot screen (state 210): its panels laid out, the profiles' header read back (profile_readHeader) with
    the current one selected and scrolled into the 13 visible rows, the new-pilot dialog up when there are none, the
    message box and the screen's rectangles (profilePage_layout, 44b030 .. 44b1a0), its colours, then the list shown
-   (profile_resetPreview). Returns that call's eax */
+   (profile_resetStatBars). Returns that call's eax */
 u32 (menuState210_enter)(void)
 {
 	static const Store layout[] = {
@@ -358,7 +358,7 @@ u32 (menuState210_enter)(void)
 	for (int k = 0; k < 7; k++)
 		GAME_CDECL(rects[k], void, void)();
 	STORE_ALL(colours);
-	return profile_resetPreview();   /* profile_resetPreview */
+	return profile_resetStatBars();   /* profile_resetStatBars */
 }
 
 /* the profile files checked (the English one, then four times the Korean one): a missing one ends the game with
@@ -432,6 +432,6 @@ void (match_enter)(void)
 		scene_startSession(scene, 0, 0);
 		break;
 	}
-	scene_setTextureFolder(scene, (const char *)(OBJ(g_mapNames) + g_mapIndex * 0x20));   /* (the original also builds "%s" with the name on its stack, unused) */
+	scene_setMapName(scene, (const char *)(OBJ(g_mapNames) + g_mapIndex * 0x20));   /* (the original also builds "%s" with the name on its stack, unused) */
 #undef scene
 }

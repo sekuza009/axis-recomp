@@ -43,7 +43,7 @@ void THISCALL (stage_drawItems)(Stage *stage, void *view)
 			glPushMatrix();
 			glTranslatef_stored(item->pos);
 			glRotatef((float)((long double)item->angle * 0.1f), 0.0f, 1.0f, 0.0f);
-			ViewVolume_projectObject(view, model, 0, NULL, 0, tint, 1, -1, 0);
+			ViewVolume_queueModel(view, model, 0, NULL, 0, tint, 1, -1, 0);
 			glPopMatrix();
 		} else {
 			if (!(item->timer >= 1.0f)) {

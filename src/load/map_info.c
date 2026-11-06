@@ -48,7 +48,7 @@ void THISCALL (map_loadTriggerInfoFrom)(u8 *scene, void *f)
 /* 0x4875d0 (thiscall on the scene): the item file: its version (0x1201, else a fatal message; no file one too), the
    items' count (itemTypeCount) and 0x90-byte records (itemTypes); each item named (its first byte set) given its shape
    (model: shape_getByName on the scene's shapes, itemShapes, by its name at shapeName), the others none. Returns 1 */
-int THISCALL (map_loadItemInfoFrom)(u8 *scene, const char *path)
+int THISCALL (catalogue_loadItemInfoFrom)(u8 *scene, const char *path)
 {
 	Stage *st = (Stage *)scene;
 	void *f = crt_fopen(path, (const char *)STR(0x4ad170, "rb"));
@@ -283,7 +283,7 @@ static const u32 k_schemeVal[10][2] = {
 void THISCALL (map_loadActorInfoFrom)(u8 *scene, const char *name)
 {
 	Stage *st = (Stage *)scene;
-#define setPartColor(p, part, s) GAME_THISFN(actor_setPartColor, 0x474b50, void, void *, int, int, u32, u32, u32, u32, u32, u32)(scene, p, part, \
+#define setPartColor(p, part, s) GAME_THISFN(playerRecord_setPartColour, 0x474b50, void, void *, int, int, u32, u32, u32, u32, u32, u32)(scene, p, part, \
 	k_schemeHue[s][0], k_schemeSat[s][0], k_schemeVal[s][0], k_schemeHue[s][1], k_schemeSat[s][1], k_schemeVal[s][1])
 	static const int fixed[5] = { 3, 5, 0x24, 0x19, 0x16 };
 	char path[0x100];
@@ -374,7 +374,7 @@ static int grey(const u8 *px)
    (grey pixels are heights) giving, in the pool, its heights (heights), flat cells (flat), vertices (points), normals
    (normals: the four triangles about each inner vertex, flipped by +0 1; the border the default g_vecUnitY), light map
    (colours, ground_computeLighting), texture coordinates (uv), index (indexCapacity / indices) and primitive (stripCapacity / strips) heaps;
-   last the layer meshes (stage_buildMeshDrawRecords). Returns 1 */
+   last the layer meshes (ground_buildLayerModels). Returns 1 */
 int THISCALL (map_loadGroundInfoFrom)(u8 *s, const char *name)
 {
 	Stage *st = (Stage *)s;
@@ -532,7 +532,7 @@ int THISCALL (map_loadGroundInfoFrom)(u8 *s, const char *name)
 		gl->strips = heap;
 		st->poolUsed += prims * 12;
 	}
-	stage_buildMeshDrawRecords(s);
+	ground_buildLayerModels(s);
 	fclose(f);
 	return 1;
 }

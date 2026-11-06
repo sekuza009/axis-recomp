@@ -19,7 +19,7 @@ int (mapList_hitTest)(int x, int y) { return hit(x, y, g_mapListRects, 26); }   
 int (playerSetup_hitTest)(int x, int y) { return hit(x, y, g_playerSetupRects, 6); }   /* 0x404460 */
 int (arenaGameList_hitTest)(int x, int y) { return hit(x, y, g_arenaGameListRects, 18); }   /* 0x4044a0 */
 int (arenaDialogBox_hitTest)(int x, int y) { return hit(x, y, g_arenaDialogBoxRects, 1); }   /* 0x4044e0 */
-int (arenaCreate_hitTest)(int x, int y) { return hit(x, y, g_arenaCreateRects, 2); }   /* 0x4045a0 */
+int (arenaUpdateNotice_hitTest)(int x, int y) { return hit(x, y, g_arenaCreateRects, 2); }   /* 0x4045a0 */
 int (armcPartsPage_hitTest)(int x, int y) { return hit(x, y, g_armcPartsPageRects, 17); }   /* 0x40e450 */
 int (armcWeaponsPage_hitTest)(int x, int y) { return hit(x, y, g_armcWeaponsPageRects, 15); }   /* 0x40e490 */
 int (armcColour_hitTest)(int x, int y) { return hit(x, y, g_armcColourRects, 18); }   /* 0x40e4d0 */

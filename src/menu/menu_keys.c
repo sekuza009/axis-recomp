@@ -17,7 +17,7 @@ void (menu_processKeys)(void)
 		return;
 	}
 	switch (g_screen) {
-	case 200: menu_keyStartFade(); break;              /* title */
+	case 200: title_keyDismiss(); break;              /* title */
 	case 210: profile_screenKeys(); break;              /* profiles */
 	case 300: mainmenu_processKeys(); break;
 	case 400: lobby_processKeys(); break;
@@ -30,8 +30,10 @@ void (menu_processKeys)(void)
 	}
 }
 
-/* 0x44cdd0 (profile_screenKeys): the profile screen's keys: none with a dialog open; during the intro animation the cancel
-   key or a click skips it to its end; else the current page's handler */
+/* 0x44cdd0: the profile screen's keys: none while a dialog frame opens (g_frameOpening); once the log-out was
+   answered yes (g_profileQuitting, the game about to quit) the cancel key or a click only sets g_profileQuitSkip 5
+   and the unused camera words; else the current page's handler (g_profilePage: 1 list, 2 message, 3 delete, 5 log
+   out, 6 pilot select) */
 void (profile_screenKeys)(void)
 {
 	if (g_frameOpening)

@@ -24,9 +24,9 @@ int (hangul_glyphs)(u32 hi, u32 lo)
 	return g_hangulTailGlyph = tail + tailSet * 28;
 }
 
-/* 0x402590: the printable characters of a chat line (spaces not counted): outside a match "|x" is a code ("||" a
-   '|'), "$[c]" before a character colours it, and in a match or the game room "$#c" too; a double-byte character's
-   second byte is skipped */
+/* 0x402590: the printable characters of a line of text (spaces not counted): outside a match "|x" is a code ("||" a
+   '|'), "$[c]" before a character colours it, and in a match or the lobby (screens 9999 / 400) "$#c" too; a
+   double-byte character is not counted (its second byte skipped). Used to centre box text (text_drawBox16 / 32) */
 int (text_printableLength)(const char *s)
 {
 	int n = 0, state = g_menuState;
@@ -199,10 +199,10 @@ static u32 text_pass(int x, int y, const u8 *s, const TextPass *pass)
 static const TextPass ascii8 =  { 0x11, 0x10, 1, FN_ADDR(text_quad8, 0x428030), 0, 0, 8,    8,    8,    0 };
 static const TextPass ascii16 = { 0x11, 0x10, 1, FN_ADDR(text_quad16, 0x4280e0), 0, 0, 8,    0xb,  0xd,  1 };
 static const TextPass ascii32 = { 0x21, 0x20, 0, FN_ADDR(text_quad32, 0x428190), 0, 0, 0x10, 0x10, 0x16, 1 };
-static const TextPass han13 =   { 0x11, 0x10, 1, FN_ADDR(glyph_drawHud13, 0x427c30), 1, 0, 8,    0,    0,    0 };
-static const TextPass han13b =  { 0x11, 0x10, 1, FN_ADDR(glyph_drawHud13Layered, 0x427ce0), 1, 1, 8,    0,    0,    0 };
-static const TextPass han31 =   { 0x21, 0x20, 0, FN_ADDR(glyph_drawHud31, 0x427e30), 1, 0, 0x10, 0,    0,    0 };
-static const TextPass han31b =  { 0x21, 0x20, 0, FN_ADDR(glyph_drawHud31Layered, 0x427ee0), 1, 1, 0x10, 0,    0,    0 };
+static const TextPass han13 =   { 0x11, 0x10, 1, FN_ADDR(glyph_drawHangulLead13, 0x427c30), 1, 0, 8,    0,    0,    0 };
+static const TextPass han13b =  { 0x11, 0x10, 1, FN_ADDR(glyph_drawHangulVowelTail13, 0x427ce0), 1, 1, 8,    0,    0,    0 };
+static const TextPass han31 =   { 0x21, 0x20, 0, FN_ADDR(glyph_drawHangulLead31, 0x427e30), 1, 0, 0x10, 0,    0,    0 };
+static const TextPass han31b =  { 0x21, 0x20, 0, FN_ADDR(glyph_drawHangulVowelTail31, 0x427ee0), 1, 1, 0x10, 0,    0,    0 };
 
 /* 0x402010, 0x402210, 0x402420: the 8, 16 and 32-pixel fonts (0x402010 also notes where it starts first, which the
    end overwrites) */

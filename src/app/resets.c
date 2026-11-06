@@ -3,7 +3,8 @@
 #include "../game.h"
 #include <string.h>
 
-/* 0x431590: no key down (the 256 key states at g_keySeen), the menu keys held off (g_menuKeyGuard 5), no input line */
+/* 0x431590: the 256 key press latches (g_keySeen) cleared (a key still held then counts as just pressed
+   again), the menu keys held off (g_menuKeyGuard 5), the input line emptied (g_lineMaxLength, g_chatLength 0) */
 void (input_resetKeys)(void)
 {
 	memset((void *)OBJ(g_keySeen), 0, 0x100 * 4);
@@ -31,7 +32,8 @@ void (net_clearServerSettings)(void)
 	g_ladderPort = 0;
 }
 
-/* 0x440df0: every replay of the replay selection list out (g_replayList's flags) */
+/* 0x440df0: every replay of the replay selection list out (g_replayList's picked flags, 1024 entries)
+   and the show's options back to their defaults (g_replayWrap 1, g_replayRandomOrder 0; g_unusedMainMenuWord 0) */
 void (replaySelect_allOut)(void)
 {
 	for (FileEntry *p = g_replayList; p < g_replayList + 1024; p++)

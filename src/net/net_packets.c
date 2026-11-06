@@ -123,5 +123,5 @@ int (net_hasSlot)(void) { return g_slotTakenFlag; }
 int (net_hostGone)(void) { return g_netHostGone; }
 int (net_localSlot)(void) { return g_localSlot; }
 int (net_playerInUse)(int i) { return g_netSlots[i].used; }
-void (netq_clearResends)(void) { g_packetsSkipped = 0; }
-int (netq_resends)(void) { return g_packetsSkipped; }
+void (netq_clearSkipped)(void) { g_packetsSkipped = 0; }
+int (netq_skippedCount)(void) { return g_packetsSkipped; }

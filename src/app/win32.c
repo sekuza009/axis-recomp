@@ -7,7 +7,9 @@
 #define MCI_PAUSE 0x809
 #define MCI_NOTIFY 1
 
-/* 0x43f580: the current directory into the game's path buffer (0x76d224, 0x105 bytes) */
+/* 0x43f580: the current directory (GetCurrentDirectoryA, 0x105 bytes) read into 0x76d224, which lies
+   inside g_messages' storage (g_messages + 0x1f400, message line 1000); nothing reads it from there (this push is the
+   only access to 0x76d224 in the original). Returns GetCurrentDirectoryA's answer */
 u32 (app_readCurrentDirectory)(void)
 {
 	return GetCurrentDirectoryA(0x105, (char *)(OBJ(g_messages) + 0x1f400));
@@ -19,8 +21,11 @@ int (sys_messageBoxOverActive)(const char *title, const char *text)
 	return MessageBoxA(GetActiveWindow(), text, title, 0);
 }
 
-/* 0x46c540: the MCI device (the CD audio) paused, notifying the window kept in its parameters */
-u32 (mci_pause)(void)
+/* 0x46c540: the ending movie's MCI device (g_mciDevice, the "AVIVideo" device movie_playEnding opened)
+   sent MCI_PAUSE with MCI_NOTIFY and a parameter block copied from the one movie_playEnding gave MCI_PLAY
+   (g_mciCallback, g_mciFrom, g_mciTo); mciSendCommandA's answer. Only caller: movie_playEnding, when Esc
+   (GetAsyncKeyState 0x1b) cuts the movie short, just before MCI_CLOSE */
+u32 (movie_pauseEnding)(void)
 {
 	u32 params[3] = { g_mciCallback, g_mciFrom, g_mciTo };
 	return mciSendCommandA(g_mciDevice, MCI_PAUSE, MCI_NOTIFY, params);
@@ -222,7 +227,7 @@ u32 (app_shutdown)(void)
 	app_setDisplayMode(g_desktopWidth, g_desktopHeight, 0, g_desktopDepth);
 	SetCursor(LoadCursorA(NULL, 0x7f00));   /* SetCursor(LoadCursorA(IDC_ARROW)) */
 	input_releaseAll();
-	music_shutdown();
+	music_stop();
 	for (u32 p = OBJ(g_menuSoundBuffers); p < OBJ(g_menuSoundBuffers) + 10 * 4; p += 4)
 		mem_free(GAME_VAR(void *, p));
 	sound_freeAll();
@@ -292,11 +297,13 @@ int (gfx_setPixelFormat)(void *dc)
 
 #define SendMessageA(hwnd, msg, w, l) IMPORT(0x4a92ec, int, void *, u32, u32, u32)(hwnd, msg, w, l)
 
-/* 0x43f460: the chat input box, `chars` letters wide (g_chatEditLength): a 12-pixel font (face 0x4b29b0, g_inputFont) and an
-   edit control (g_hChatEdit) on the main window at the chat line (g_chatCaretX - 5, g_chatCaretY + 0x21), subclassed by
-   chat_editSubclass (the old procedure in g_editOldProc), focused, holding the typed line (g_chatLine) with the caret at its end.
-   Returns the last SendMessageA's eax */
-int (chat_createEdit)(int chars)
+/* 0x43f460: the hidden EDIT control that every text field types into (names, passwords, numbers,
+   addresses, the e-mail, chat), `chars` letters wide (g_chatEditLength): a 12-pixel Fixedsys font (0x4b29b0,
+   g_inputFont) and an edit control (g_hChatEdit, id 0xca, style 0x40000400, not visible) on the main window at the
+   field's caret (g_chatCaretX - 5, g_chatCaretY + 0x21), subclassed by editField_editProc (the old procedure in
+   g_editOldProc), focused, holding the typed line (g_chatLine) with the caret at its end. Returns the last
+   SendMessageA's eax (EM_SETSEL) */
+int (editField_createEdit)(int chars)
 {
 	struct { int height, width, escapement, orientation, weight; u8 italic, underline, strikeOut, charSet, outPrecision,
 	         clipPrecision, quality, pitchAndFamily; char face[32]; } font;   /* LOGFONTA */
@@ -314,7 +321,7 @@ int (chat_createEdit)(int chars)
 		SendMessageA(edit, 0x30, (*(u32 *)&g_inputFont), 0);   /* WM_SETFONT */
 		edit = g_hChatEdit;
 	}
-	g_editOldProc = SetWindowLongA(edit, -4, FN_ADDR(chat_editSubclass, 0x440840));   /* SetWindowLongA(GWL_WNDPROC) */
+	g_editOldProc = SetWindowLongA(edit, -4, FN_ADDR(editField_editProc, 0x440840));   /* SetWindowLongA(GWL_WNDPROC) */
 	SetFocus(g_hChatEdit);   /* SetFocus */
 	u32 length = strlen(g_chatLine);
 	SendMessageA(g_hChatEdit, 0xc, 0, OBJ(g_chatLine));   /* WM_SETTEXT */
@@ -470,7 +477,7 @@ long STDCALL (glWindow_wndProc)(void *wnd, u32 msg, u32 w, u32 l)
 #define CallWindowProcA(proc, wnd, msg, w, l) IMPORT(0x4a930c, long, u32, u32, u32, u32, u32)(proc, wnd, msg, w, l)
 
 /* the chat line closed by a key: its text kept (Enter) or dropped, the edit destroyed, the main window focused again
-   and the line closed (chat_closeLine, sent or not) */
+   and the line closed (menu_closeInputLine, sent or not) */
 static void chat_close(void *edit, int sent)
 {
 	if (sent)
@@ -478,16 +485,16 @@ static void chat_close(void *edit, int sent)
 	SendMessageA(edit, 0xc, 0, 0);                 /* WM_SETTEXT "" */
 	DestroyWindow(g_hChatEdit);   /* DestroyWindow */
 	SetFocus(g_mainWindow);   /* SetFocus */
-	chat_closeLine(sent);   /* chat_closeLine */
+	menu_closeInputLine(sent);   /* menu_closeInputLine */
 	g_chatLineDone = 1;
 }
 
-/* 0x440840: the chat edit's window procedure (set by chat_createEdit). Keys: Enter, once the open delay (g_menuKeyGuard)
+/* 0x440840: the chat edit's window procedure (set by editField_createEdit). Keys: Enter, once the open delay (g_menuKeyGuard)
    is not over k_0f, takes the line and sends it (g_fieldStep 20: the next field); Esc drops it; Tab in the room
    (g_screen 0x320) closes it (sent) and steps by Shift (g_fieldStep 10 back when held, else 20); Home and Left are swallowed (0).
    Timers: 0x29a, in the lobby (g_arenaLobbyState 2), and 0x115c, when connected (g_roomConnected), send their keep-alives (0x17 to
    the lobby, 0x18 to the game server). Everything not swallowed goes on to the edit's own procedure (g_editOldProc) */
-long STDCALL (chat_editSubclass)(void *wnd, u32 msg, u32 w, u32 l)
+long STDCALL (editField_editProc)(void *wnd, u32 msg, u32 w, u32 l)
 {
 	if (msg == 0x100) {   /* WM_KEYDOWN */
 		switch (w) {
@@ -504,7 +511,7 @@ long STDCALL (chat_editSubclass)(void *wnd, u32 msg, u32 w, u32 l)
 			if (g_menuState == 0x320) {
 				DestroyWindow(g_hChatEdit);   /* DestroyWindow */
 				SetFocus(g_mainWindow);   /* SetFocus */
-				chat_closeLine(1);   /* chat_closeLine */
+				menu_closeInputLine(1);   /* menu_closeInputLine */
 				g_fieldStep = 0x14;
 				g_chatLineDone = 1;
 				g_fieldStep = GetKeyState(0x10) < 0 ? 10 : 20;   /* GetKeyState(VK_SHIFT) */
@@ -674,7 +681,7 @@ long STDCALL (game_wndProc)(void *wnd, u32 msg, u32 w, u32 l)
 		g_glContext = NULL;
 		g_windowDC = NULL;
 		g_lobbyReportsOff = 1;
-		arena_leaveSession();
+		dplay_leaveSession();
 		net_disconnect();
 		KillTimer(g_hWndMain, 0x29a);
 		KillTimer(g_hWndMain, 0x115c);
@@ -770,7 +777,7 @@ long STDCALL (game_wndProc)(void *wnd, u32 msg, u32 w, u32 l)
 			if (++g_joinPollTicks > 30) {
 				g_joinTimedOut = 1;
 			} else {
-				g_receivedSession = (const u8 *)net_sessionValue(0);
+				g_receivedSession = (const u8 *)net_getSession(0);
 				if (!g_receivedSession)
 					return 1;
 				g_sessionFound = 1;
@@ -789,7 +796,7 @@ long STDCALL (game_wndProc)(void *wnd, u32 msg, u32 w, u32 l)
 		if ((u16)l == 0x20) {   /* FD_CLOSE */
 			net_closeSockets();   /* net_closeSockets */
 			if (g_screen != 0x270f)
-				menu_returnToMain();   /* menu_returnToMain */
+				menu_returnToArenaLobbyViaMain();   /* menu_returnToArenaLobbyViaMain */
 			return 0;
 		}
 		net_recv();   /* net_recv */

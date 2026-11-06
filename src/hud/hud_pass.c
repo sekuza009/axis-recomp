@@ -1,11 +1,14 @@
-/* hud_pass.c: the in-match 2D pass, once per frame after the 3D scene: the screen cleared as needed, the scene's
+/* match_drawFrame.c: the in-match 2D pass, once per frame after the 3D scene: the screen cleared as needed, the scene's
    transparent and overlay parts drawn, then each HUD element by the match's state. Five of the HUD calls are
    wrapped by the patch DLL (each element anchored for wide screens), so they go through their call sites. */
 #include "../game.h"
 
 
-/* 0x4982f0: the 2D pass (only while scene->matchDrawing) */
-void THISCALL (hud_pass)(Scene *scene)
+/* 0x4982f0: the match's whole frame drawn (only while scene->matchDrawing; match_playFrame in match state 2): the
+   buffers cleared, the 3D scene unless scriptMode 1 (sky, ground, objects, actors pass 0, bullets, particles, items
+   gathered into scene->view and drawn, with fog), the actors' pass 1 over a cleared depth buffer, the script object's
+   2D notify, then the HUD elements by the match's state */
+void THISCALL (match_drawFrame)(Scene *scene)
 {
 	char text[256];
 	if (!scene->matchDrawing)
@@ -20,7 +23,7 @@ void THISCALL (hud_pass)(Scene *scene)
 		glClearDepth(1.0);
 		glClear(GL_DEPTH_BUFFER_BIT);
 	}
-	gfx_setProjectionHud(1, 1.0f);
+	gfx_setMatchProjection(1, 1.0f);
 
 	if (scene->scriptMode != 1) {
 		ViewVolume_captureMatrices(&scene->view, scene->projection, scene->modelview);
@@ -58,7 +61,7 @@ void THISCALL (hud_pass)(Scene *scene)
 		int height = gfx_getHeight();
 		script_notifyObject(STAGE(scene), 0, 0, gfx_getWidth(), height);
 	}
-	gfx_setProjectionHud(0, 1.0f);
+	gfx_setMatchProjection(0, 1.0f);
 
 	if (scene->hudHidden == 0) {
 		if (scene->scriptMode == 0) {
@@ -89,7 +92,7 @@ void THISCALL (hud_pass)(Scene *scene)
 			if (scene->chatMode != 0)
 				hud_drawChatInput(scene);
 			if (!scene->matchOver && !scene->matchLeaving)
-				hud_drawClock(scene);
+				hud_drawMatchCounters(scene);
 			if (scene->matchOver == 1 && scene->players[scene->ranking[0]].state == 1)
 				hud_drawMatchResult(scene);
 			if (scene->playing == 0) {
@@ -106,7 +109,7 @@ void THISCALL (hud_pass)(Scene *scene)
 		}
 		if (scene->teamGame == 1)
 			hud_drawTeamScores(scene);
-		debug_traceStripped(scene);
+		shared_emptyFunction(scene);
 		if (g_showFps == 1)
 			PATCHED_THISCALL(0x498862, void, Scene *)(scene);                     /* hud_drawFps */
 		if (scene->helpOpen == 1)

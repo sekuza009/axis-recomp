@@ -26,14 +26,15 @@ void THISCALL (shape_markMaterialsChanged)(void *shape)
 	}
 }
 
-/* 0x4665c0: each part's material recoloured (two hue, saturation, value triples) */
-void THISCALL (shape_recolourMaterials)(void *shape, u32 h1, u32 s1, u32 v1, u32 h2, u32 s2, u32 v2)
+/* 0x4665c0: each part's material (texture >= 0) given the two hue / saturation / value tints (tex_setMaterialTint);
+   the pixels are recoloured later, when tex_bind reloads it */
+void THISCALL (shape_setMaterialTints)(void *shape, u32 h1, u32 s1, u32 v1, u32 h2, u32 s2, u32 v2)
 {
 	for (int i = 0; i < PART_COUNT(shape); i++) {
 		int m = PART(shape, i)->texture;
 		if (m < 0)
 			continue;
-		tex_recolourMaterial(MATERIAL_SET(m), m % 512, h1, s1, v1, h2, s2, v2);
+		tex_setMaterialTint(MATERIAL_SET(m), m % 512, h1, s1, v1, h2, s2, v2);
 	}
 }
 
@@ -48,11 +49,14 @@ void THISCALL (shape_setTint)(Manager *model, u32 h1, u32 s1, u32 v1, u32 h2, u3
 	model->tint[4] = s2;
 	model->tint[5] = v2;
 	for (int i = 0; i < SHAPE_COUNT((u8 *)model); i++)
-		shape_recolourMaterials(SHAPE((u8 *)model, i), h1, s1, v1, h2, s2, v2);
+		shape_setMaterialTints(SHAPE((u8 *)model, i), h1, s1, v1, h2, s2, v2);
 }
 
-/* 0x4675f0: the tint taken off */
-void THISCALL (model_clearTint)(Manager *model)
+/* 0x4675f0: the shape manager's tint record cleared (bindFlags bit 1 off, tint[0..5] 0) and each shape's part
+   materials marked changed (shape_markMaterialsChanged). The materials keep flag 2 and their tints
+   (tex_markMaterialChanged keeps bits 0x11111113), so a reload still tints them. Only reached from
+   shape_setTextureSuffix without flag 2, and its one caller (playerRecord_setPartColour) always passes 2 */
+void THISCALL (shape_clearTint)(Manager *model)
 {
 	model->bindFlags &= ~2;
 	for (int k = 0; k < 6; k++)
@@ -61,17 +65,18 @@ void THISCALL (model_clearTint)(Manager *model)
 		shape_markMaterialsChanged(SHAPE((u8 *)model, i));
 }
 
-/* 0x466960: every part's pixels coloured (image_addColour on the part's place in px) */
-void (shape_colourPixels)(u8 *px, int mode, const void *shape, const u8 *colour)
+/* 0x466960: one RGBA colour added to (mode 0) or set on (mode 1) every part's vertex colours, which are the part's
+   slice of the shape's colour buffer px from colourBase (part_addColour) */
+void (shape_addColour)(u8 *px, int mode, const void *shape, const u8 *colour)
 {
 	for (int i = 0; i < PART_COUNT(shape); i++) {
 		const u32 *part = (const u32 *)PART(shape, i);
-		image_addColour(px + part[0x12] * 4, mode, part, colour);
+		part_addColour(px + part[0x12] * 4, mode, part, colour);
 	}
 }
 
-/* 0x467580: a model's texture folder (textureDir) and flags (bindFlags) set; with flag 2 its tint (two HSV colours), else
-   its shapes' own colours */
+/* 0x467580: a shape manager's texture-name suffix (textureSuffix, e.g. "_T<player>") and bindFlags set; with flag 2
+   its tint (two HSV colours, shape_setTint), else shape_clearTint */
 void THISCALL (shape_setTextureSuffix)(Manager *model, const char *folder, int flags, u32 h1, u32 s1, u32 v1, u32 h2, u32 s2,
                                     u32 v2)
 {
@@ -80,7 +85,7 @@ void THISCALL (shape_setTextureSuffix)(Manager *model, const char *folder, int f
 	if (flags & 2)
 		shape_setTint((u8 *)model, h1, s1, v1, h2, s2, v2);
 	else
-		model_clearTint((u8 *)model);
+		shape_clearTint((u8 *)model);
 }
 
 /* 0x46de20: an RGBA byte colour tinted: to floats (/ 255), tex_tintHsv, back to bytes (* 255, all four channels,

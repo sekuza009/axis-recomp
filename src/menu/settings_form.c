@@ -238,7 +238,7 @@ static void box_buttons(int hovered, int lit_from)
    or the map list (g_mapListOpen) is up, the value under the pointer (createArena_hitTest) highlighted. Two buttons (MSG(165, "$[0] IPX GAME"), lit
    from 8 at 0.9) and below the second of the next pair (MSG(168, "$[0] CANCEL"), 11), the map preview (arena_drawMapPreview), its
    arrows (13 / 14) and the ADVANCED button (lit with the rotation on). The confirmation box (MSG(168, "$[0] CANCEL") / MSG(169, "NETWORK INITIALIZE ERROR"), its buttons
-   15 / 16) and the "leave?" box over the whole screen (MSG(3, "THIS PROGRAM HAS BEEN UPDATED") / MSG(4, "DO DOWNLOAD A NEW VERSION"), its buttons by arenaCreate_hitTest); the border.
+   15 / 16) and the "leave?" box over the whole screen (MSG(3, "THIS PROGRAM HAS BEEN UPDATED") / MSG(4, "DO DOWNLOAD A NEW VERSION"), its buttons by arenaUpdateNotice_hitTest); the border.
    The caller ignores the eax it leaves */
 void (arena_createDraw)(void)
 {
@@ -284,7 +284,7 @@ void (arena_createDraw)(void)
 		GAME_FN(menu_drawTopRightOrnament, 0x428b50, void, int, int, int, int)(0x64, 0xb4, 0x21c, 0x140);   /* menu_drawTopRightOrnament */
 	}
 	if (updateNotice) {
-		int choice = arenaCreate_hitTest(g_mouseX, g_mouseY);
+		int choice = arenaUpdateNotice_hitTest(g_mouseX, g_mouseY);
 		set_colour_bits(g_rectColour, 0x3dcccccd, 0x3dcccccd, 0x3dcccccd, 0x3ecccccd);   /* 0.1, 0.4: the screen dimmed */
 		menu_drawRect(0, 0, 0x280, 0x1e0, 1);
 		set_colour_bits(g_rectColour, 0x3dcccccd, 0x3dcccccd, 0x3dcccccd, 0x3f4ccccd);

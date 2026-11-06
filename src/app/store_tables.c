@@ -85,7 +85,7 @@ static const Store k_mainMenuOutlines[66] = {
 	{ (OBJ(g_mainMenuOutlines) + 0xe4), 0xff }, { (OBJ(g_mainMenuOutlines) + 0xe8), 0x92 }, { (OBJ(g_mainMenuOutlines) + 0xfc), 0xffffff1a }, { (OBJ(g_mainMenuOutlines) + 0x100), 0xffffff91 }, { (OBJ(g_mainMenuOutlines) + 0xf0), 0x78 },
 	{ (OBJ(g_mainMenuOutlines) + 0x104), 0xffffffce } };
 
-void (menu_initMainButtons)(void) { apply_stores(k_mainMenuOutlines, 66); }   /* 0x42f2b0: the main menu's button outlines */
+void (menu_initMainOutlines)(void) { apply_stores(k_mainMenuOutlines, 66); }   /* 0x42f2b0: the main menu's button outlines */
 
 static const Store k_roomOutlines[66] = {
 	{ (OBJ(g_roomOutlines) + 0x30), 0xfffffefc }, { (OBJ(g_roomOutlines) + 0x3c), 0xfffffefc }, { (OBJ(g_roomOutlines) + 0x40), 0xfffffefc }, { (OBJ(g_roomOutlines) + 0x34), 0xffffff81 }, { (OBJ(g_roomOutlines) + 0x38), 0xffffff81 },
@@ -103,7 +103,7 @@ static const Store k_roomOutlines[66] = {
 	{ (OBJ(g_roomOutlines) + 0xe4), 0xff }, { (OBJ(g_roomOutlines) + 0xe8), 0x92 }, { (OBJ(g_roomOutlines) + 0xfc), 0xffffff1a }, { (OBJ(g_roomOutlines) + 0x100), 0xffffff91 }, { (OBJ(g_roomOutlines) + 0xf0), 0x78 },
 	{ (OBJ(g_roomOutlines) + 0x104), 0xffffffce } };
 
-void (room_initMenuButtons)(void) { apply_stores(k_roomOutlines, 66); }   /* 0x42f690: the game room's button outlines */
+void (room_initOutlines)(void) { apply_stores(k_roomOutlines, 66); }   /* 0x42f690: the game room's button outlines */
 
 static const Store k_dikCodes[118] = {
 	{ ADDR(g_dikNone), 0x0 }, { ADDR(g_dikEscape), 0x1 }, { ADDR(g_dik1), 0x2 }, { ADDR(g_dik2), 0x3 }, { ADDR(g_dik3), 0x4 },

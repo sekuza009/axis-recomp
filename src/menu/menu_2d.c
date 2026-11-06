@@ -157,9 +157,10 @@ u32 (menu_frameBegin)(void)
 	return IMPORT(0x4a91ec, u32, u32, u32)(0x302, 0x303);   /* glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA) */
 }
 
-/* 0x40ce70: the screen dimmed by a black overlay fading in (g_whiteFade grows by the frame time times a rate; its alpha
-   at most 1). Returns menu_drawRect's eax */
-u32 (menu_drawDimOverlay)(void)
+/* 0x40ce70: the white fade over the screen while the menus are left for a match (g_whiteFade grows by the frame time
+   x 0.015; the rect's alpha is it, at most 1): a full-screen rectangle in (1, 1, 1, alpha). Callers:
+   menuState400_frame (arena lobby) and menuState300_frame tail-jump to it. Returns menu_drawRect's eax */
+u32 (menu_drawWhiteFade)(void)
 {
 	long double a = fadd_m(fmul_m(fld_m(&g_frameTime), k_0_015f), (const float *)ADDR(g_whiteFade));
 	g_whiteFade = (float)a;
@@ -172,8 +173,9 @@ u32 (menu_drawDimOverlay)(void)
 	return menu_drawRect(0, 0, 640, 480, 1);   /* menu_drawRect, filled */
 }
 
-/* 0x41f050: the menu camera: the scene moved by minus the camera's position (g_menuEyeX), then the view from it towards
-   the look-at point (g_menuCameraLook), y up. Returns gluLookAt's eax */
+/* 0x41f050: the menu camera: a glTranslatef by minus the camera's position (g_menuEye / g_menuCameraPos, g_menuEyeY,
+   g_menuEyeZ) that the glLoadIdentity right after it discards, then gluLookAt from that position towards the look-at
+   point (g_menuCameraLook ..), y up. Returns gluLookAt's eax */
 u32 (gfx_setMenuCamera)(void)
 {
 	float z = (float)-fld_m((const float *)ADDR(g_menuEyeZ)), y = (float)-fld_m((const float *)ADDR(g_menuEyeY)),

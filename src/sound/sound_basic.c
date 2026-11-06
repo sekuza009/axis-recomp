@@ -3,22 +3,22 @@
 #include "../game.h"
 #include <string.h>
 
-#undef dsbuf_play
-#undef dsbuf_setVolume
+#undef sound_playNext
+#undef sound_setNextVolume
 #define DSB_PLAY 0x30
 #define DSB_SETVOLUME 0x3c
 
 typedef struct {
 	void *buffers[8];
 	i32 next;            /* the buffer to play next */
-	i32 panModes[8];     /* per buffer: the last play's mode (1 / 2: with a pan; sound_playNextBuffer) */
+	i32 panModes[8];     /* per buffer: the last play's mode (1 / 2: with a pan; sound_playPanned) */
 	i32 pans[8];         /* and its pan (SetPan) */
 } Sound;                 /* 100 bytes */
 
 #define g_menuSounds ((Sound *const *)OBJ(g_menuSoundBuffers))
 
 /* 0x467d70: play the sound's next buffer; the turn moves on (0 .. 7) */
-void (dsbuf_play)(Sound *sound)
+void (sound_playNext)(Sound *sound)
 {
 	if (sound == NULL)
 		return;
@@ -32,7 +32,7 @@ void (dsbuf_play)(Sound *sound)
 }
 
 /* 0x467db0: the volume of the buffer to play next */
-void (dsbuf_setVolume)(Sound *sound, int volume)
+void (sound_setNextVolume)(Sound *sound, int volume)
 {
 	if (sound == NULL)
 		return;
@@ -46,12 +46,12 @@ void (sound_playMenu)(int id)
 {
 	if (g_soundOn != 1)
 		return;
-	dsbuf_setVolume(g_menuSounds[id], g_menuVolume);
-	dsbuf_play(g_menuSounds[id]);
+	sound_setNextVolume(g_menuSounds[id], g_menuVolume);
+	sound_playNext(g_menuSounds[id]);
 }
 
 /* 0x457310: the music graph released, then COM let go */
-void (music_shutdown)(void)
+void (music_stop)(void)
 {
 	if (g_music == NULL)
 		return;
@@ -104,7 +104,7 @@ u32 (music_loopIfEnded)(void)
 /* 0x467dd0: the sound's next buffer (of eight, next) played with a pan (mode 1 or 2: value, within
    +-10000, kept per buffer in pans; the mode in panModes): the pan applied (SetPan), then played. Returns what
    the original leaves in eax: 0 without a sound, 1 for a value out of range, else the next turn (7 when wrapping) */
-u32 (sound_playNextBuffer)(u32 *sound, int mode, int value)
+u32 (sound_playPanned)(u32 *sound, int mode, int value)
 {
 	if (!sound)
 		return 0;
@@ -158,8 +158,8 @@ u32 (sound_playFile)(const char *name, int volume)
 		attenuation = g_soundBaseVolume;
 	else
 		attenuation = ftol(fmul_m((long double)volume, k_0_01f_4a9504) * (g_soundBaseVolume + 10000)) - 10000;
-	GAME_FN(dsbuf_setVolume, 0x467db0, void, void *, int)(sound, attenuation);   /* dsbuf_setVolume */
-	GAME_FN(dsbuf_play, 0x467d70, void, void *)(sound);                     /* dsbuf_play */
+	GAME_FN(sound_setNextVolume, 0x467db0, void, void *, int)(sound, attenuation);   /* sound_setNextVolume */
+	GAME_FN(sound_playNext, 0x467d70, void, void *)(sound);                     /* sound_playNext */
 	return mem_free(sound);
 }
 
@@ -206,8 +206,8 @@ u32 (sound_playVolume)(int index, int volume)
 		level = g_soundBaseVolume;
 	else
 		level = ftol(fmul_m((long double)volume, k_0_01f_4a9504) * (long double)(g_soundBaseVolume + 10000)) - 10000;
-	GAME_FN(dsbuf_setVolume, 0x467db0, void, void *, int)(sound, level);   /* dsbuf_setVolume */
-	return GAME_FN(dsbuf_play, 0x467d70, u32, void *)(GAME_VAR(void *, OBJ(g_soundTable) + index * 4));   /* dsbuf_play */
+	GAME_FN(sound_setNextVolume, 0x467db0, void, void *, int)(sound, level);   /* sound_setNextVolume */
+	return GAME_FN(sound_playNext, 0x467d70, u32, void *)(GAME_VAR(void *, OBJ(g_soundTable) + index * 4));   /* sound_playNext */
 }
 
 /* 0x456ed0: sound index played at pos as heard from listener (side: the listener's right, the listener's up at
@@ -240,8 +240,8 @@ void (sound_play3D)(int index, const float *pos, const float *listener, const fl
 	long double across = FMUL(c[1], side[1]) + FMUL(c[2], side[2]);
 	across = across + FMUL(c[0], side[0]);
 	int pan = ftol(fmul_m(across, (const float *)(g_stereoReverse ? ADDR(k_m1500f) : ADDR(k_1500f_4a9700))));
-	GAME_FN(dsbuf_setVolume, 0x467db0, void, void *, int)(GAME_VAR(void *, OBJ(g_soundTable) + index * 4), volume);   /* dsbuf_setVolume */
-	sound_playNextBuffer(GAME_VAR(void *, OBJ(g_soundTable) + index * 4), (pan > 0) + 1, pan);
+	GAME_FN(sound_setNextVolume, 0x467db0, void, void *, int)(GAME_VAR(void *, OBJ(g_soundTable) + index * 4), volume);   /* sound_setNextVolume */
+	sound_playPanned(GAME_VAR(void *, OBJ(g_soundTable) + index * 4), (pan > 0) + 1, pan);
 }
 
 #define DS_CREATESOUNDBUFFER 0x0c
@@ -397,14 +397,14 @@ u32 THISCALL (music_playMatch)(Scene *stage)
 int (music_play)(const char *name)
 {
 	if (g_musicVolume < 50) {
-		music_shutdown();
+		music_stop();
 		return 1;
 	}
 	if (g_music)
-		music_shutdown();
+		music_stop();
 	if (!file_existsf(name)) {   /* the file exists */
 		if (g_music)
-			music_shutdown();
+			music_stop();
 		return 1;
 	}
 	void *stream;

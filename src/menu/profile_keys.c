@@ -32,7 +32,8 @@ static int dialog_keys(int x, int y)
 	return 0;
 }
 
-/* 0x44c850 (profile_messageKeys): page 2, a message: OK or a click closes it */
+/* 0x44c850: page 2 (the new pilot's name) keys: only while its message is up (g_profileMessage, NAME ALREADY
+   REGISTRED): a click or OK closes it and the name is typed again (profile_typeNewName) */
 void (profile_messageKeys)(void)
 {
 	g_menuRepeatClock = 0.0f;
@@ -57,7 +58,7 @@ void (profile_deleteKeys)(void)
 	g_menuRepeatClock = 0.0f;
 	if (input_justPressed(g_keyOk) == 1) {
 		sound_playMenu(0);
-		profile_deleteFiles();
+		profile_deleteChosen();
 		g_profilePage = 1;
 		return;
 	}
@@ -66,7 +67,7 @@ void (profile_deleteKeys)(void)
 		button = deleteDialog_hitTest(g_mouseX, g_mouseY);
 		if (button == 0) {
 			sound_playMenu(0);
-			profile_deleteFiles();
+			profile_deleteChosen();
 			g_profilePage = 1;
 			return;
 		}
@@ -80,13 +81,13 @@ void (profile_deleteKeys)(void)
 }
 
 /* 0x44ca90 (profile_logOutKeys): page 5, "log out, are you sure?": OK or a click on the left button confirms
-   (profile_resetCamera), the right button or a cancel key goes back to the list */
+   (profile_quitGame), the right button or a cancel key goes back to the list */
 void (profile_logOutKeys)(void)
 {
 	g_menuRepeatClock = 0.0f;
 	if (input_justPressed(g_keyOk) == 1) {
 		sound_playMenu(0);
-		profile_resetCamera();
+		profile_quitGame();
 		return;
 	}
 	int button = -1;
@@ -94,7 +95,7 @@ void (profile_logOutKeys)(void)
 		button = logOutDialog_hitTest(g_mouseX, g_mouseY);
 		if (button == 0) {
 			sound_playMenu(0);
-			profile_resetCamera();
+			profile_quitGame();
 			return;
 		}
 	}

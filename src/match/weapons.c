@@ -44,8 +44,8 @@ void THISCALL (actor_setWeaponSlot)(Stage *stage, int i, int slot)
 	}
 }
 
-/* 0x45e880: actor i starts switching to weapon slot (2 seconds) unless it is the slot in use, when its player record
-   holds a weapon there of a known type */
+/* 0x45e880: actor i starts switching to weapon slot (weaponLowering 1, switchSlot; its icon shown 2 s, slotIconTime)
+   unless it is the slot in use, when its player record holds a weapon there of a known type */
 void THISCALL (actor_selectWeapon)(Stage *stage, int i, int slot)
 {
 	Player *actor = (&stage->actors[i]);
@@ -59,8 +59,9 @@ void THISCALL (actor_selectWeapon)(Stage *stage, int i, int slot)
 	}
 }
 
-/* 0x45edb0: actor i (when state is 1) picks slot 0 four times in five, else slot 4, from the game's random table
-   (g_randTable, 4096 values, position g_randPos), and its aim is set back to its own point */
+/* 0x45edb0: actor i (when state is 1) switches to slot 0 four times in five, else slot 4 (actor_selectWeapon), by the
+   game's random table (g_randTable, 4096 values, position g_randPos); its bot timers restarted: dodgeTime and
+   heightTime 0, burstPause and burstFire from botTimes[3] / botTimes[4] */
 void THISCALL (actor_pickRandomWeapon)(Stage *stage, int i)
 {
 	Player *actor = (&stage->actors[i]);

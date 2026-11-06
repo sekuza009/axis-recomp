@@ -37,7 +37,7 @@ u32 THISCALL (chat_saveMacros)(Scene *scene)
 
 /* 0x462740 (thiscall on the scene): a chat line as a macro. "/N=text" (N one digit) stores text as macro N and saves
    them (-1); "/N" or "/NN" puts macro N into out (1); anything else is not a macro (0) */
-int THISCALL (chat_macro)(Scene *scene, const char *in, char *out)
+int THISCALL (chat_applyMacro)(Scene *scene, const char *in, char *out)
 {
 	char line[0x100];
 	if (in[0] != '/')
@@ -108,9 +108,9 @@ static void *dat_entry(int index, const char *name, u32 table, u32 file, u32 log
 	return GAME_VAR(void *, file);
 }
 /* 0x466d60: in Shape.dat */
-void *(shape_findDatEntry)(const char *name)
+void *(shapeDat_getItemFileBy)(const char *name)
 {
-	return dat_entry(shape_findByName(name), name, (OBJ(g_shapeDat) + 0x4), (OBJ(g_shapeDat) + 0x8), OBJ(g_logShapeManager));
+	return dat_entry(shapeDat_findByName(name), name, (OBJ(g_shapeDat) + 0x4), (OBJ(g_shapeDat) + 0x8), OBJ(g_logShapeManager));
 }
 /* 0x46b140: in the skeleton archive */
 void *(skelDat_getItemFileBy)(const char *name)
@@ -118,8 +118,8 @@ void *(skelDat_getItemFileBy)(const char *name)
 	return dat_entry(skelDat_findByName(name), name, (OBJ(g_skelDat) + 0x4), (OBJ(g_skelDat) + 0x8), OBJ(g_logSkeletonManager));
 }
 
-/* 0x4617f0: the chat macros (chatMacros: 100 of 0x39 bytes) read from Chat.scp; without the file, all
-   emptied and the defaults made (chat_saveMacros). Returns what the original leaves in eax */
+/* 0x4617f0: the chat macros (chatMacros: 100 of 0x39 bytes) read from Chat.scp; without the file, all 100 emptied
+   (first byte 0) and saved so (chat_saveMacros). Returns what the original leaves in eax */
 u32 THISCALL (chat_loadMacros)(Scene *scene)
 {
 	void *f = crt_fopen((const char *)STR(0x4c45ec, "Chat.scp"), (const char *)STR(0x4ad170, "rb"));
@@ -1288,12 +1288,14 @@ void (cfg_init)(void)
 	cfg_writeAxisCfg();
 }
 
-/* 0x4460d0: the pilot profiles found in the save folder ("save"; made when missing: then "axisuser.dat" deleted and
-   back up, nothing found): each *.axs file's name (g_saveFileNames, 0x40 apart) and its header (0x104 bytes at 20000,
-   unscrambled, into g_profileHeader); one with the right header (0x4b0fa0) becomes the next profile (0x48 bytes from
-   g_profiles: its number, its name less ".axs" and its pilot, the header's last word), any other file is deleted. Then back up, profile_readHeader, the list loaded (profile_writeCleared) and the
-   profile named g_profileName (among as many as there were files) chosen into g_currentProfile. The original leaves eax to
-   callers that ignore it */
+/* 0x4460d0: the pilot profiles found in the save folder ("save"; when it cannot be entered: "axisuser.dat" deleted
+   from the data folder g_dataDir, back up, nothing more; the folder is NOT made here): each *.axs file's name
+   (g_saveFileNames, 0x40 apart) and its header (0x104 bytes at 20000, unscrambled, into g_profileHeader); one with
+   the right header (0x4b0fa0) becomes the next profile (0x48 bytes from g_profiles: its number, its name less ".axs"
+   and its pilot, the header's last word), any other file is deleted. No *.axs at all: back up and axisuser.dat
+   rewritten empty (profile_writeCleared(0)). Then back up, profile_readHeader, axisuser.dat rewritten with the valid
+   count (profile_writeCleared) and the profile named g_profileName (among as many as there were files) chosen into
+   g_currentProfile. The original leaves eax to callers that ignore it */
 void (profile_scanSaves)(void)
 {
 	if (crt_chdir((const char *)STR(0x4b2adc, "save"))) {
@@ -1345,9 +1347,9 @@ void (profile_scanSaves)(void)
 		}
 }
 
-/* 0x473780 (thiscall on the scene): the component catalogue from path (a failed open or a version other than 0x1204
-   is a fatal message): six tables, each logged, its count then its records read unscrambled (frames, weapons,
-   bodies, legs, parts, items). Returns 1 */
+/* 0x473780 (thiscall on the scene, i.e. its stage): the component catalogue from path (a failed open or a version
+   other than 0x1204 is a fatal message): six tables, each logged, its count then its records read unscrambled (heads,
+   chests, arms, legs, boosters, items: headTypes .. actorItems). Returns 1 */
 u32 THISCALL (catalogue_loadComponents)(u8 *scene, const char *path)
 {
 	static const u32 tables[6][4] = {   /* log message, count, records, record size */
@@ -1377,7 +1379,7 @@ u32 THISCALL (catalogue_loadComponents)(u8 *scene, const char *path)
    (gameMode), g_fragLimit and g_timeLimit. Every player in use (net_playerInUse) is flagged to be sent (sendFlags[][2],
    sendFlags[][3]), the shown one (localPlayer) too (sendFlags[][1], sendFlags, its playerRecords[].flagSent cleared). Its caller ignores
    the eax it leaves */
-void THISCALL (autoplay_startRecording)(u8 *s, const char *name)
+void THISCALL (replay_startRecording)(u8 *s, const char *name)
 {
 	Scene *sc = (Scene *)s;
 	char *kept = sc->recordName, path[0x100];

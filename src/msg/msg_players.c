@@ -90,10 +90,10 @@ void THISCALL (msg_playerJoinedTeam)(Scene *scene, int player, int team)
 		return;
 	if (g_language == KOREAN) {
 		const char *format = (const char *)(scene->teamGame == 1 ? STR(0x4c46e4, "%s\264\324\300\314 %s\306\300\277\241 \307\325\267\371\307\337\275\300\264\317\264\331.") : STR(0x4c46c8, "%s\264\324\300\314 \300\374\305\365\277\241 \302\374\277\251\307\337\275\300\264\317\264\331."));
-		msg_print(scene, 0, format, name, (const char *)(OBJ(k_teamNamesKorean) + scene_teamSide(scene, team) * 16));
+		msg_print(scene, 0, format, name, (const char *)(OBJ(k_teamNamesKorean) + scene_claimTeamSlot(scene, team) * 16));
 	} else if (g_language == ENGLISH) {
 		const char *format = (const char *)(scene->teamGame == 1 ? STR(0x4c471c, "%s has joined %s team.") : STR(0x4c4700, "%s has joined the battle."));
-		msg_print(scene, 0, format, name, (const char *)(STR(0x4a97ac, "red") + scene_teamSide(scene, team) * 16));
+		msg_print(scene, 0, format, name, (const char *)(STR(0x4a97ac, "red") + scene_claimTeamSlot(scene, team) * 16));
 	}
 }
 
@@ -113,19 +113,19 @@ int THISCALL (chat_matchCheatCode)(Scene *scene, int actor, const char *text)
 	return -1;
 }
 
-/* 0x462e30: "%s has changed team to %s." with the team's name (16 bytes a slot, by scene_teamSide), or without a
+/* 0x462e30: "%s has changed team to %s." with the team's name (16 bytes a slot, by scene_claimTeamSlot), or without a
    team (negative) "%s becomes a spectator" (colour 0), in the game's language. Its callers ignore the eax it leaves */
 void THISCALL (msg_playerChangedTeam)(Scene *scene, int player, int team)
 {
 	const char *name = PLAYER_NAME(scene, player);
 	if (g_language == KOREAN) {
 		if (team >= 0)
-			msg_print(scene, 0, (const char *)STR(0x4c4754, "%s\264\324\300\314 \306\300\300\273 %s\306\300\300\270\267\316 \271\331\262\345\275\300\264\317\264\331."), name, (const char *)(OBJ(k_teamNamesKorean) + scene_teamSide(scene, team) * 16));
+			msg_print(scene, 0, (const char *)STR(0x4c4754, "%s\264\324\300\314 \306\300\300\273 %s\306\300\300\270\267\316 \271\331\262\345\275\300\264\317\264\331."), name, (const char *)(OBJ(k_teamNamesKorean) + scene_claimTeamSlot(scene, team) * 16));
 		else
 			msg_print(scene, 0, (const char *)STR(0x4c4734, "%s\264\324\300\314 \260\324\300\323\300\273 \261\270\260\346\270\270 \307\325\264\317\264\331."), name);
 	} else if (g_language == ENGLISH) {
 		if (team >= 0)
-			msg_print(scene, 0, (const char *)STR(0x4c4790, "%s has changed team to %s."), name, (const char *)(STR(0x4a97ac, "red") + scene_teamSide(scene, team) * 16));
+			msg_print(scene, 0, (const char *)STR(0x4c4790, "%s has changed team to %s."), name, (const char *)(STR(0x4a97ac, "red") + scene_claimTeamSlot(scene, team) * 16));
 		else
 			msg_print(scene, 0, (const char *)STR(0x4c4778, "%s becomes a spectator"), name);
 	}

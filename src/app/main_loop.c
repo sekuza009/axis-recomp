@@ -1,20 +1,20 @@
-/* main_loop.c: one frame of the game. WinMain's message loop calls app_frame whenever no window message is
+/* app_frameByScreen.c: one frame of the game. WinMain's message loop calls app_frame whenever no window message is
    waiting; it runs either a match frame or the front end's menus. */
 #include "../game.h"
 #include <string.h>
 
-/* 0x4202d0 (app_frame): the frame: the music, the menus' key guard counted down, then main_loop */
+/* 0x4202d0 (app_frame): the frame: the music, the menus' key guard counted down, then app_frameByScreen */
 void (app_frame)(void)
 {
 	music_loopIfEnded();
 	if (g_menuKeyGuard > 0.0f)
 		g_menuKeyGuard = g_menuKeyGuard - g_frameTime;
-	main_loop();
+	app_frameByScreen();
 }
 
 /* 0x420280: in a match the input and the match's frame (match_frameByState); a frame that answers 0 ends the match;
    outside a match the menus' frame */
-void (main_loop)(void)
+void (app_frameByScreen)(void)
 {
 	if (g_screen != 9999) {
 		menu_frame();
@@ -198,9 +198,9 @@ int THISCALL (match_playFrame)(u8 *s)
 	match_combatInput(s);
 	match_frame(s);
 	if (SC->matchState == 2)
-		PATCHED_THISCALL(0x48b386, void, void *)(s);   /* hud_pass; the patch DLL calls its hud_pass_wrap here */
+		PATCHED_THISCALL(0x48b386, void, void *)(s);   /* match_drawFrame; the patch DLL calls its hud_pass_wrap here */
 	if (SC->quitAsked == 1) {
-		music_shutdown();
+		music_stop();
 		return 0;
 	}
 	return SC->matchState;
@@ -411,7 +411,7 @@ static const u32 k_freeKeys[9][2] = { { 2, offsetof(Scene, holdAltitude) }, { 0x
    cursor centred. The keys (Windows virtual keys) set the input flags; ctrl with up / down zooms, else up / down /
    left / right turn the camera (cameraAngle pitch within +-890, cameraAngle[1] heading wrapped at 3600); space resets it;
    Z / X (or shift with them) step the local player's (localPlayer) parts held by F1 .. F6 down / up through their
-   tables (the weapon slot by its item, selected again); the camera is placed behind the actor (camera_setupView);
+   tables (the weapon slot by its item, selected again); the camera is placed behind the actor (stage_setupView);
    unless scenePaused (never set) the actors, bullets and particles move and the actor's ammunition is halved; the
    scene is drawn, with a 100 x 150 grid of lines about the actor when debugGrid. Returns 0 once Esc was pressed,
    else 3 (this mode again) */
@@ -554,12 +554,12 @@ u32 THISCALL (match_freeCamFrame)(u8 *s)
 	float far = view_farPlane(), near = view_nearPlane();
 	int h = gfx_getHeight(), w = gfx_getWidth();
 	float fov = view_angle();
-	camera_setupView(stage, cam, dir, up, *(u32 *)&fov, w, h,
-	                                                                                             *(u32 *)&near, *(u32 *)&far, BITS(SC->frameTime));   /* camera_setupView */
+	stage_setupView(stage, cam, dir, up, *(u32 *)&fov, w, h,
+	                                                                                             *(u32 *)&near, *(u32 *)&far, BITS(SC->frameTime));   /* stage_setupView */
 	if (SC->scenePaused == 0) {
-		actor_updateAll(stage, BITS(SC->frameTime));
+		stage_updateActorsAndTriggers(stage, BITS(SC->frameTime));
 		bullet_updateAll(stage, BITS(SC->frameTime));
-		stage_updateEffects(stage, BITS(SC->frameTime));
+		stage_updateParticles(stage, BITS(SC->frameTime));
 		for (int k = 0; k < 4; k++) {
 			Player *me = &SC->players[SC->localPlayer];
 			me->ammo[k] = me->ammoMax[k] / 2;
@@ -569,7 +569,7 @@ u32 THISCALL (match_freeCamFrame)(u8 *s)
 	glClearColor_stored(((const u32[]){ 0x3dcccccd, 0x3f000000, 0x3f800000 }));
 	glClearDepth(1.0);
 	glClear(0x4100);
-	gfx_setProjectionHud(1, 1.0f);
+	gfx_setMatchProjection(1, 1.0f);
 	ViewVolume_captureMatrices(&SC->view, 0, SC->modelview);
 	ViewVolume_reset(&SC->view);
 	if (SC->debugGrid == 1)
@@ -591,7 +591,7 @@ u32 THISCALL (match_freeCamFrame)(u8 *s)
 	stage_drawBullets(stage, &SC->view);
 	stage_drawParticles((Stage *)stage, &SC->view);
 	ViewVolume_draw(&SC->view, SC->renderMode, 0.0f);
-	gfx_setProjectionHud(0, 1.0f);
+	gfx_setMatchProjection(0, 1.0f);
 	return SC->quitAsked == 1 ? 0 : 3;
 }
 #undef S
@@ -637,14 +637,14 @@ static void zoom_view(u8 *s, const float *step)
 {
 	if (SC->holdZoom) {
 		float a = f32(fsub_m((long double)view_angle(), step));
-		view_setAngle(BITS(a));
+		view_setFov(BITS(a));
 		if (!(view_angle() >= 10.0f))
-			view_setAngle(0x41200000);   /* 10 */
+			view_setFov(0x41200000);   /* 10 */
 	} else {
 		float a = f32(fadd_m((long double)view_angle(), step));
-		view_setAngle(BITS(a));
+		view_setFov(BITS(a));
 		if (view_angle() > 60.0f)
-			view_setAngle(0x42700000);   /* 60 */
+			view_setFov(0x42700000);   /* 60 */
 	}
 }
 
@@ -725,13 +725,13 @@ static void choose_followed(u8 *s, int f)
 
 /* the free camera's move (mv, from the keys) through the world, kept in the map's box (the stage's levelLow .. levelHigh);
    facing (0, 0, -1) */
-/* the move's results (collision_moveActor's: where it ends, the slide, the distance, the plane) */
+/* the move's results (collision_moveSphere's: where it ends, the slide, the distance, the plane) */
 typedef struct { float out[3], delta[3], dist, plane[4]; } Move;
 
 static void free_camera(u8 *s, const float *mv, u32 filter, Move *m)
 {
 	float *cam = (float *)SC->cameraPos, *out = m->out, *delta = m->delta;
-	int hit = collision_moveActor((u8 *)SCENE_STAGE(s), 500.0f, cam, mv, 0x43fa0000, 0, out, delta, &m->dist, m->plane, filter);
+	int hit = collision_moveSphere((u8 *)SCENE_STAGE(s), 500.0f, cam, mv, 0x43fa0000, 0, out, delta, &m->dist, m->plane, filter);
 	memcpy(cam, out, 12);
 	if (hit == 1) {
 		cam[0] = f32(FADD(delta[0], cam[0]));
@@ -989,7 +989,7 @@ u32 THISCALL (replay_frame)(u8 *s)
 		for (SC->cameraMode = 0; SC->cameraMode < 10; SC->cameraMode++)
 			preset_reset(s);
 		SC->cameraMode = 1;
-		stage_selectActor((Stage *)stage, -1);
+		stage_setCockpitActor((Stage *)stage, -1);
 		SC->watchedPlayer = -1;
 		SC->manualPick[0] = SC->manualPick[1] = SC->manualPick[2] = 0;
 		TimeSync_frameTime((u8 *)&SC->timer);
@@ -1132,9 +1132,9 @@ u32 THISCALL (replay_frame)(u8 *s)
 			} while (!(SC->recordTime > SC->replayTime));
 		stage_advanceClocks(stage, BITS(dt));
 		stage_updateObjects(stage, BITS(dt));
-		actor_updateAll(stage, BITS(dt));
+		stage_updateActorsAndTriggers(stage, BITS(dt));
 		bullet_updateAll(stage, BITS(dt));
-		stage_updateEffects(stage, BITS(dt));
+		stage_updateParticles(stage, BITS(dt));
 		item_update(stage, BITS(dt));
 		choose_followed(s, follow);
 		if (SC->manualPick[0] == 0)
@@ -1178,8 +1178,8 @@ u32 THISCALL (replay_frame)(u8 *s)
 	float far = view_farPlane(), near = view_nearPlane();
 	int h = gfx_getHeight(), w = gfx_getWidth();
 	float fov = view_angle();
-	camera_setupView(stage, (float *)SC->cameraPos, SC->cameraDir,
-	              SC->cameraUp, BITS(fov), w, h, BITS(near), BITS(far), BITS(SC->frameTime));   /* camera_setupView */
+	stage_setupView(stage, (float *)SC->cameraPos, SC->cameraDir,
+	              SC->cameraUp, BITS(fov), w, h, BITS(near), BITS(far), BITS(SC->frameTime));   /* stage_setupView */
 	SC->stateFrames++;
 
 	/* the scene */
@@ -1192,7 +1192,7 @@ u32 THISCALL (replay_frame)(u8 *s)
 		glClearDepth(1.0);
 		glClear(0x100);
 	}
-	gfx_setProjectionHud(1, 1.0f);
+	gfx_setMatchProjection(1, 1.0f);
 	u8 *view = (u8 *)&SC->view;
 	ViewVolume_captureMatrices(view, 0, SC->modelview);
 	ViewVolume_reset(view);
@@ -1224,7 +1224,7 @@ u32 THISCALL (replay_frame)(u8 *s)
 	}
 	ViewVolume_draw(view, SC->renderMode, SC->clockFraction);
 	glDisable(GL_FOG);
-	gfx_setProjectionHud(0, 1.0f);
+	gfx_setMatchProjection(0, 1.0f);
 
 	/* the overlay */
 	if (SC->hudHidden == 0) {
@@ -1257,7 +1257,7 @@ u32 THISCALL (replay_frame)(u8 *s)
 	if (SC->quitAsked != 1)
 		return 4;
 	fclose(SC->replayFile);
-	music_shutdown();
+	music_stop();
 	return 0;
 }
 
@@ -1329,7 +1329,7 @@ static const u8 *spawn_point(u8 *s, int doubled)
 /* the five parts of actor p in team colours (by its team's side) */
 static void team_colours(u8 *s, int p, int team)
 {
-	int side = scene_teamSide((Scene *)s, team);
+	int side = scene_claimTeamSlot((Scene *)s, team);
 	for (int part = 0; part < 5; part++)
 		actor_setPartColor_bits((u8 *)SCENE_STAGE(s), p, part, GAME_VAR(u32, OBJ(k_teamHue) + side * 4), GAME_VAR(u32, OBJ(k_teamSaturation) + side * 4),
 		                        GAME_VAR(u32, OBJ(k_teamValue) + side * 4), 0, 0xbf800000, 0x3f7fbe77);
@@ -1541,7 +1541,7 @@ static void round_over(u8 *s, int time_limit)
 	SC->matchOver = 1;
 	SC->endTime = 10.0f;   /* 10 */
 	SC->playing = 1;
-	music_shutdown();
+	music_stop();
 	if (time_limit)
 		msg_timeLimitReached(s);
 	else
@@ -1572,16 +1572,16 @@ static void chat_keys(u8 *s)
 	if ((mode != 1 && mode != 2) || g_textFieldOpen != 0)
 		return;
 	SC->chatMode = 0;
-	chat_keepLastLine();
+	chat_endTyping();
 	const char *typed = (const char *)ADDR(g_keptChatLine);
 	(void)me;
 	if (strlen(typed) != 0) {
 		int code = mode == 1 ? chat_matchCheatCode(s, SC->localPlayer, typed) : -1;
 		if (code >= 0) {
 			msg_cheatUsed(s, SC->localPlayer, code);
-			recorder_openStub(s, (void *)SC->localPlayer, (const void *)RELOC(code));
+			scenePath_openStub(s, (void *)SC->localPlayer, (const void *)RELOC(code));
 		} else {
-			int r = chat_macro(s, typed, line);
+			int r = chat_applyMacro(s, typed, line);
 			if (r == 0)
 				strcpy(line, typed);
 			if (r == 0 || r == 1) {
@@ -1633,7 +1633,7 @@ void THISCALL (match_frame)(u8 *s)
 	/* the Esc menu, quitting */
 	int quit_check = 1;
 	if (SC->escMenuOpen == 1)
-		match_escMenu(s);
+		escMenu_update(s);
 	else if (SC->quitAsked == 1) {
 		if (SC->matchLeaving == 0) {
 			sound_playVolume(9, 100);
@@ -1651,7 +1651,7 @@ void THISCALL (match_frame)(u8 *s)
 			if (SC->matchLeaving == 0) {
 				SC->matchLeaving = 1;
 				SC->quitDelay = 3.0f;
-				music_shutdown();
+				music_stop();
 				if (SC->sessionMode == 0) {
 					msg_userEndsGame(s);
 					g_matchEndedByUser = 1;
@@ -1666,7 +1666,7 @@ void THISCALL (match_frame)(u8 *s)
 		} else {
 			SC->matchLeaving = 1;
 			SC->quitDelay = 0.0f;
-			music_shutdown();
+			music_stop();
 			if (SC->localPlayer >= 0)
 				net_announcePlayerQuit(s, SC->localPlayer);
 			g_matchEndedByUser = 0;
@@ -1709,7 +1709,7 @@ void THISCALL (match_frame)(u8 *s)
 	    && (SC->firePressed == 1 || SC->playAsked == 1)) {
 		if (SC->teamGame == 1 && (SC->localTeam < 0 || scene_findTeam((Scene *)s, SC->localTeam) < 0)) {
 			if (SC->chosenTeam >= 0 && SC->sessionMode != 0)
-				escMenu_open((Scene *)s, 1, scene_teamSide((Scene *)s, SC->chosenTeam) == 0 ? 0 : 1);
+				escMenu_open((Scene *)s, 1, scene_claimTeamSlot((Scene *)s, SC->chosenTeam) == 0 ? 0 : 1);
 			else
 				escMenu_open((Scene *)s, 1, SC->redTeamCount > SC->blueTeamCount ? 1 : 0);
 		} else {
@@ -1738,7 +1738,7 @@ void THISCALL (match_frame)(u8 *s)
 		local_spawn(s);
 	if (SC->sessionMode == 0 && SC->localPlayer >= 0 && SC->players[SC->localPlayer].inPlay == 1 && SC->matchOver == 0)
 		bot_spawns(s);
-	stage_selectActor((Stage *)stage, SC->playing == 1 && SC->cameraMode == 1 ? SC->localPlayer : -1);
+	stage_setCockpitActor((Stage *)stage, SC->playing == 1 && SC->cameraMode == 1 ? SC->localPlayer : -1);
 	/* the keys' rates */
 	long double sp = FMUL(SC->frameTime, k_2000f);
 	float speed = (float)sp;
@@ -1813,11 +1813,11 @@ void THISCALL (match_frame)(u8 *s)
 		else if (SC->playing == 1 && SC->cameraMode == 2 && SC->localPlayer >= 0)
 			SC->players[SC->localPlayer].viewMarked = 1;
 		stage_advanceClocks(stage, BITS(dt));
-		actor_updateAll(stage, BITS(dt));
+		stage_updateActorsAndTriggers(stage, BITS(dt));
 		if (SC->matchOver == 1 || SC->matchLeaving == 1)
 			stage_clearBullets(stage);
 		bullet_updateAll(stage, BITS(dt));
-		stage_updateEffects(stage, BITS(dt));
+		stage_updateParticles(stage, BITS(dt));
 		item_update(stage, BITS(dt));
 		stage_refillLights(stage);
 		stage_updateObjects(stage, BITS(dt));
@@ -1836,7 +1836,7 @@ void THISCALL (match_frame)(u8 *s)
 				msg_dataLoss(s);
 				SC->matchLeaving = 1;
 				SC->quitDelay = 3.0f;
-				music_shutdown();
+				music_stop();
 				SC->dataLossPending = 0;
 			}
 		}
@@ -2027,7 +2027,7 @@ void THISCALL (match_frame)(u8 *s)
 				/* the next round */
 				if (SC->ladderGame == 1) {
 					g_ladderGames++;
-					profile_addMatchScores(sc);
+					ladder_addMatchScores(sc);
 				}
 				scene_resetScores(sc);
 				SC->localRank = -1;
@@ -2173,9 +2173,9 @@ void THISCALL (match_frame)(u8 *s)
 	float far = view_farPlane(), near = view_nearPlane();
 	int h = gfx_getHeight(), w = gfx_getWidth();
 	float fov = view_angle();
-	camera_setupView(stage, (float *)SC->cameraPos, SC->cameraDir,
-	              SC->cameraUp, BITS(fov), w, h, BITS(near), BITS(far), BITS(SC->frameTime));   /* camera_setupView */
-	stage_setViewDistance(stage, BITS(st->cullMargin));
+	stage_setupView(stage, (float *)SC->cameraPos, SC->cameraDir,
+	              SC->cameraUp, BITS(fov), w, h, BITS(near), BITS(far), BITS(SC->frameTime));   /* stage_setupView */
+	stage_setCullMargin(stage, BITS(st->cullMargin));
 	if (SC->localPlayer >= 0)
 		chat_keys(s);
 	if (SC->chatMode != 0)
@@ -2184,7 +2184,7 @@ void THISCALL (match_frame)(u8 *s)
 		long double v = FSUB(SC->scoreCommitTimer, SC->frameTime);
 		SC->scoreCommitTimer = (float)v;
 		if (!(v >= 0))
-			profile_addMatchScores(sc);
+			ladder_addMatchScores(sc);
 	}
 	/* the connection (a client's) */
 	if (SC->sessionMode == 1) {
@@ -2194,20 +2194,20 @@ void THISCALL (match_frame)(u8 *s)
 					msg_connectionLost(s);
 					SC->matchLeaving = 1;
 					SC->quitDelay = 3.0f;
-					music_shutdown();
+					music_stop();
 				} else
 					SC->lostTime = f32(FADD(SC->lostTime, SC->frameTime));
 			}
-			if (SC->matchLeaving == 0 && netq_resends() >= 0x80) {
-				netq_clearResends();
+			if (SC->matchLeaving == 0 && netq_skippedCount() >= 0x80) {
+				netq_clearSkipped();
 				msg_networkUnstable(s);
 				SC->matchLeaving = 1;
 				SC->quitDelay = 3.0f;
-				music_shutdown();
+				music_stop();
 			}
 		}
-		if (netq_resends() > 0) {
-			netq_clearResends();
+		if (netq_skippedCount() > 0) {
+			netq_clearSkipped();
 			SC->resendWarning = 1.0f;
 		} else if (run_down(s, offsetof(Scene, resendWarning)))
 			SC->resendWarning = 0.0f;
@@ -2227,7 +2227,7 @@ void THISCALL (match_frame)(u8 *s)
 			replay_closeRecording(sc);
 			if (SC->ladderGame == 1) {
 				g_ladderGames++;
-				profile_addMatchScores(sc);
+				ladder_addMatchScores(sc);
 			}
 			for (int i = 0; i < SCENE_STAGE(s)->itemCount; i++)
 				SCENE_STAGE(s)->items[i].taken = BITS(SCENE_STAGE(s)->items[i].timer) = 0;
@@ -2258,13 +2258,13 @@ void THISCALL (match_frame)(u8 *s)
 				write_log(s, (const char *)(g_matchEndedByServer == 1 || (g_matchEndedByUser == 1 && SC->rankCount <= 1) ? STR(0x4d069c, "GameTitle %s\nMapNo %d\nFragLimit %d\nTi...") : STR(0x4d05a8, "GameTitle %s\nMapNo %d\nFragLimit %d\nTi...")),
 				          1, 0);
 			replay_closeRecording(sc);
-			music_shutdown();
+			music_stop();
 			if (SC->chatMode != 0 && g_textFieldOpen == 0) {
 				SC->chatMode = 0;
-				chat_keepLastLine();
+				chat_endTyping();
 			}
 			if (SC->ladderGame == 1)
-				profile_addMatchScores(sc);
+				ladder_addMatchScores(sc);
 			SC->quitAsked = 1;
 		}
 	}

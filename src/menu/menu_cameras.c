@@ -318,8 +318,10 @@ static X heading(void)
 }
 #define SPEED F(0x4a9534)
 
-/* 0x42aa30: forward (the camera's position g_menuCamX / g_menuCamZ and the menu camera's) */
-void (menuCamera_forward)(void)
+/* 0x42aa30: the free (watching) camera stepped left: along its heading plus a quarter turn (g_freeCamYaw + 90
+   degrees) by the frame time x its speed, both the free camera's point (g_menuCamX / g_menuCamZ) and the menu
+   camera's eye (g_menuCameraPos, g_menuEyeZ). Only caller freeCam_keys, on g_keyStepLeft (A) */
+void (freeCam_stepLeft)(void)
 {
 	X a = heading();
 	float s = (float)x87_fsin(a);
@@ -333,8 +335,9 @@ void (menuCamera_forward)(void)
 	g_menuEyeZ = (float)(u + g_menuEyeZ);
 }
 
-/* 0x42aad0: back (here every use of the sideways step is rounded) */
-void (menuCamera_back)(void)
+/* 0x42aad0: the free camera stepped right (freeCam_stepLeft's opposite; here every use of the sideways step is
+   rounded). Only caller freeCam_keys, on g_keyStepRight (D) */
+void (freeCam_stepRight)(void)
 {
 	X a = heading();
 	float s = (float)x87_fsin(a);
@@ -357,10 +360,11 @@ static void turn_update(int slot)
 	F(OBJ(g_slotCams) + 0x28 + slot * 88) = (float)t;
 }
 
-/* 0x42ab70: the ARM CENTER's mouse look (unless locked, g_watchChatOpen): the pointer's distance from the centre turns
-   the view (wrapping 0 .. 360) and tilts it (g_freeCamTilt, within its limits); a click starts the camera's move to the
-   slot's point */
-void (armc_mouseLook)(void)
+/* 0x42ab70: the free (watching) camera's mouse look, screen 9999 (not while the chat line is open, g_watchChatOpen):
+   the pointer's distance from (320, 240) turns the view (g_freeCamYaw, wrapping 0 .. 360; turn_update keeps its sine
+   / cosine and puts it in the local slot's g_slotCams record) and tilts it (g_freeCamTilt, -50 .. 50); the first
+   click (g_freeCamMoveStarted) sets g_freeCamMoveTarget / g_freeCamMoveEye from the slot's record */
+void (freeCam_mouseLook)(void)
 {
 	if (g_watchChatOpen)
 		return;
@@ -442,14 +446,16 @@ void (setup_camera)(void)
 	}
 }
 
-/* 0x42ada0: the free camera's keys (while watching): typing a chat line (g_watchChatOpen) until it is closed (g_textFieldOpen
-   clear): then sent (net_sendChat, g_lastChatLineSet / g_lastChatLine) unless empty and the keyboard taken back; g_keyChat opens the
-   chat line (50 characters); the second cancel key leaves (a hosted game, g_isHost, told first); the turn keys
-   (g_keyForward / g_keyBackward) slide the camera and the menu camera sideways (g_freeCamTurnSin, g_freeCamTurnCos at k_3f a frame),
-   the move keys step it (menuCamera_forward / menuCamera_back); then the menu camera follows (0x680378 .. 0x680380 and the
-   look-at 0x4df024 ..) and the camera's position is kept in the watched slot (g_slotCams, 0x58 bytes, by g_localSlot);
-   g_dikZ_2 toggles g_freeCamZoom between 1 and 2, and four keys step g_debugValue by 1 / 10 (not below 1). The original
-   leaves eax to callers that ignore it */
+/* 0x42ada0: the free camera's keys (screen 9999, watching): while the chat line is open (g_watchChatOpen) wait until
+   it is closed (g_textFieldOpen clear), then send it (net_sendChat; g_lastChatLineSet / g_lastChatLine) unless empty
+   and take the keyboard back; g_keyChat opens the chat line (50 characters); g_keyCancel2 leaves (a host tells the
+   others first: g_netHostLeftMessageKind) through game_returnToMainMenu; g_keyForward / g_keyBackward (W / S) move
+   the camera along its heading (g_freeCamTurnSin / g_freeCamTurnCos x k_3f x the frame time), g_keyStepLeft /
+   g_keyStepRight (A / D) step it sideways (freeCam_stepLeft / freeCam_stepRight); then the menu camera follows:
+   look-at (g_menuCamX, g_menuCameraLookY = height + tilt, g_menuCamZ), eye 50 units behind along the heading at
+   height + 10; the point is kept in the local slot's g_slotCams record (0x58 bytes, g_localSlot); g_dikZ_2 toggles
+   g_freeCamZoom 1 / 2, and 1 / 2 / 3 / 4 step g_debugValue by +1 / +10 / -1 / -10 (not below 1). The original leaves
+   eax to callers that ignore it */
 void (freeCam_keys)(void)
 {
 	const float *frame = (const float *)ADDR(g_frameTime), *speed = (const float *)ADDR(k_3f);
@@ -508,9 +514,9 @@ void (freeCam_keys)(void)
 		g_menuEyeZ = f32(FSUB(g_menuEyeZ, bf));
 	}
 	if (input_isDown(g_keyStepLeft) == 1)
-		menuCamera_forward();
+		freeCam_stepLeft();
 	if (input_isDown(g_keyStepRight) == 1)
-		menuCamera_back();
+		freeCam_stepRight();
 	(*(u32 *)&g_menuCameraLook) = (*(u32 *)&g_menuCamX);
 	(*(u32 *)&g_menuCameraLookZ) = (*(u32 *)&g_menuCamZ);
 	g_menuEyeX = f32(fsubr_m(fmul_m(fld_m(&g_freeCamTurnSin), (const float *)ADDR(k_50f)), &g_menuCamX));

@@ -105,10 +105,11 @@ void *THISCALL (space_getNextFreeBlockPtrBy)(u8 *space, const u32 *mn, const u32
 #undef SP
 }
 
-/* 0x482320 (thiscall on the space): a unit's planes built (space_insertTriangle) and, when there are any, linked at the
-   end of the owner's list (SpaceUnit.lastPlane; CollisionPlane.listNext / listPrev) and given a node (space_getNextFreeNodePtr)
-   at the head of its nodes (SpaceUnit.lastNode). Its callers ignore the eax it leaves */
-void THISCALL (space_addUnitPlanes)(void *space, u32 id, u8 *owner, u32 part, u32 i0, u32 i1, u32 i2, u32 v0, u32 v1, u32 v2)
+/* 0x482320 (thiscall on the space): one triangle of a unit put into the space (space_insertTriangle) and, when its
+   plane record was made, that plane linked at the end of the unit's list (SpaceUnit.lastPlane;
+   CollisionPlane.listNext / listPrev) and given a node (space_getNextFreeNodePtr) at the head of the unit's nodes
+   (SpaceUnit.lastNode). Its callers ignore the eax it leaves */
+void THISCALL (space_addUnitTriangle)(void *space, u32 id, u8 *owner, u32 part, u32 i0, u32 i1, u32 i2, u32 v0, u32 v1, u32 v2)
 {
 #define PL(p) ((CollisionPlane *)(p))
 	SpaceUnit *un = (SpaceUnit *)owner;
@@ -347,7 +348,7 @@ static void drop_if_empty(u8 *space, u8 **child)
 }
 
 /* 0x481ae0 (thiscall on the collision space): item put into block's part of the octree, depth levels more allowed.
-   Nothing (0) when it misses the block's box (space_itemMeetsBox, widened by the margin margin) or is already first in its
+   Nothing (0) when it misses the block's box (collisionTri_meetsBox, widened by the margin margin) or is already first in its
    list. A leaf (split 0) gets a node for it (item, block; linked in first at items, itemCount counting them); holding more
    than splitCount with depth left it splits: eight child blocks (children ..), every item put into each of them a level
    down, its nodes freed (space_freeNode), the children left empty dropped. An inner block puts the item into each
@@ -357,7 +358,7 @@ int THISCALL (space_insertItem)(u8 *space, u8 *block, u8 *item, int depth)
 	SpaceBlock *bk = (SpaceBlock *)block;
 	Space *sp = (Space *)space;
 	const float *low = (const float *)block, *high = bk->high;
-	if (!space_itemMeetsBox(item, low, high, sp->margin))
+	if (!collisionTri_meetsBox(item, low, high, sp->margin))
 		return 0;
 	SpaceNode *first = bk->items;
 	if (first && first->item == item)
@@ -402,7 +403,7 @@ int THISCALL (space_insertItem)(u8 *space, u8 *block, u8 *item, int depth)
 /* 0x481eb0 (thiscall on the collision space): a triangle (v0, v1, v2) of a unit put into the space: nothing (0) when
    its box misses the space's (min .. max[2], widened by the margin margin). Else a plane record (from the pool, set up
    by collisionTri_setup), and every grid cell its widened box covers (z, x, y as in space_collideAt) that the
-   triangle really meets (space_itemMeetsBox) gets it into its octree (space_insertItem, depth depth; the cell's root block made
+   triangle really meets (collisionTri_meetsBox) gets it into its octree (space_insertItem, depth depth; the cell's root block made
    when it has none). Returns the plane */
 u8 *THISCALL (space_insertTriangle)(u8 *space, u32 id, const float *v0, const float *v1, const float *v2, u32 unit, u32 part,
                                  u32 i0, u32 i1, u32 i2)
@@ -459,7 +460,7 @@ u8 *THISCALL (space_insertTriangle)(u8 *space, u32 id, const float *v0, const fl
 				box[3] = f32(fadd_m(fld_m(&box[0]), size_x));
 				box[4] = f32(fadd_m(fld_m(&box[1]), size_y));
 				box[5] = f32(fadd_m(fld_m(&box[2]), size_z));
-				if (space_itemMeetsBox(plane, box, box + 3, *(const u32 *)margin) != 1)
+				if (collisionTri_meetsBox(plane, box, box + 3, *(const u32 *)margin) != 1)
 					continue;
 				int cell = (sp->cellsZ * y + z) * sp->cellsX + x;
 				if (sp->cells[cell] == 0xffff) {
@@ -511,8 +512,8 @@ static void through(float *out, const float *m, const float *v, Rows rows)
 /* 0x4823c0 (thiscall on the collision space): a unit for shape (from the pool, its id first) with every part not
    flagged 0x20 (flag 1: its triangles' id 0x10, else 0) turned into triangles: its primitives (12 bytes: type, index
    count, indices) as lists (4), strips (5) or fans (6) of its vertices (vertices) through the matrix (the current GL
-   modelview when none is given), each added with space_addUnitPlanes. Returns the unit */
-u32 *THISCALL (space_buildUnits)(u8 *space, u32 id, u8 *shape, const float *matrix)
+   modelview when none is given), each added with space_addUnitTriangle. Returns the unit */
+u32 *THISCALL (space_buildUnit)(u8 *space, u32 id, u8 *shape, const float *matrix)
 {
 	Model *md = (Model *)shape;
 	float own[16];
@@ -544,7 +545,7 @@ u32 *THISCALL (space_buildUnits)(u8 *space, u32 id, u8 *shape, const float *matr
 					space_transformPoint(b, matrix, VERT(k - 1));
 					u32 i2 = IDX(k);
 					space_transformPoint(c, matrix, VERT(k));
-					space_addUnitPlanes(space, kind, unit, i, i0, i1, i2, a, b, c);
+					space_addUnitTriangle(space, kind, unit, i, i0, i1, i2, a, b, c);
 				}
 				break;
 			case 5:   /* a strip */
@@ -563,7 +564,7 @@ u32 *THISCALL (space_buildUnits)(u8 *space, u32 id, u8 *shape, const float *matr
 						i1 = IDX(k - 1);
 						through(b, matrix, VERT(k - 1), k_oddNext);
 					}
-					space_addUnitPlanes(space, kind, unit, i, i0, i1, i2, a, b, c);
+					space_addUnitTriangle(space, kind, unit, i, i0, i1, i2, a, b, c);
 				}
 				break;
 			case 4:   /* a list */
@@ -574,7 +575,7 @@ u32 *THISCALL (space_buildUnits)(u8 *space, u32 id, u8 *shape, const float *matr
 					through(b, matrix, VERT(k + 1), k_listNext);
 					u32 i2 = IDX(k + 2);
 					through(c, matrix, VERT(k + 2), k_listLast);
-					space_addUnitPlanes(space, kind, unit, i, i0, i1, i2, a, b, c);
+					space_addUnitTriangle(space, kind, unit, i, i0, i1, i2, a, b, c);
 				}
 				break;
 			}
@@ -604,7 +605,7 @@ static long double cell_edge(int c, const float *size, const float *low)
    the z clip at full precision, as the original has them). Each cell with a root node (shorts at cells; 0xffff none)
    has its octree traced (space_traceBlock, the 0x50-byte nodes at blocks.records); the first that reports a hit is the
    answer. 0 when nothing is hit */
-int THISCALL (space_traceNodes)(u8 *space, const float *p0, const float *p1, u32 hit, u32 subs, u32 nsubs)
+int THISCALL (space_traceCells)(u8 *space, const float *p0, const float *p1, u32 hit, u32 subs, u32 nsubs)
 {
 	Space *sp = (Space *)space;
 	int nz = sp->cellsZ, nx = sp->cellsX, ny = sp->cellsY;
@@ -876,7 +877,7 @@ static void clip_end(const float *a, float *b, float *d, const float *plane, int
    into its frame (the inverse matrixInverse); unless both ends lie beyond one side of its model's box (model: low low,
    high high), clipped to the box in x then y (the original's own rounding at every step), it becomes a sub-model
    (nearObjects: its list, its matrices relMatrix / relInverse). Then the level grid (space) is traced with them
-   (space_traceNodes). Returns its hit record or 0 */
+   (space_traceCells). Returns its hit record or 0 */
 u32 THISCALL (collision_rayTrace)(u8 *s, const float *p0, const float *p1, void *hit)
 {
 	Stage *st = (Stage *)s;
@@ -933,5 +934,5 @@ u32 THISCALL (collision_rayTrace)(u8 *s, const float *p0, const float *p1, void 
 		sub[2] = (u32)o->relInverse;
 		n++;
 	}
-	return space_traceNodes((u8 *)&st->space, p0, p1, hit, st->nearObjects, n);
+	return space_traceCells((u8 *)&st->space, p0, p1, hit, st->nearObjects, n);
 }

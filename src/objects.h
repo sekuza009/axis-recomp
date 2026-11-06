@@ -26,7 +26,7 @@
 #define g_roomBright ((float *)IMG(0x9dcec0))   /* float[4]; the game room's bright colour (RGBA: 0, 1, 1, 1 cyan; menuState800_enterGameRoom) */
 #define g_roomDim ((float *)IMG(0x9dd338))   /* float[4]; the game room's dim colour (RGBA 0.3, 0.7, 0.7, 1) */
 #define g_profileColour ((float *)IMG(0x9f8eb0))   /* float[4]; the profile screen's bright colour (RGBA 0, 1, 1, 1 cyan; menuState210_enter); g_profileDim the dim one */
-#define g_vecZero2 ((float *)IMG(0xa0e7b8))   /* float[3]; a zero vector (vec_initZero) */
+#define g_vecZero2 ((float *)IMG(0xa0e7b8))   /* float[3]; a zero vector (vec_initZero2) */
 #define g_vecUnitY ((float *)IMG(0xa0e7d8))   /* float[3]; (0 1 0: vec_initUp) */
 #define g_vecUnitX ((float *)IMG(0xa0e7f8))   /* float[3]; (1 0 0: vec_initAxisX) */
 #define g_logTexture ((u32 *)IMG(0xa0dff8))   /* u32[2]; vtable + class name */
@@ -108,7 +108,7 @@
 #define g_armcColours ((float *)IMG(0x4dc4b8))   /* float[36]; the ARM CENTER's colour choices (0x90 bytes: six values per slot) */
 #define g_accountOldPassword ((char *)IMG(0x9dd6d8))   /* char[12]; the account page's old-password field as typed (account_editOldPassword; account_sendChange checks it against g_ladderPassword; room_enterAccountPage / account_page clear its 12 bytes) */
 #define g_packedWhite ((u8 *)IMG(0xa1f23c))   /* u8[4]; a packed colour (ff ff ff ff: colour_initPackedWhite) */
-#define g_resolvedAddress ((char *)IMG(0xa0d320))   /* char[100]; net_resolveHost's answer: the host's first address as dotted text (0x64 bytes cleared each call); taken as the lobby / Ladder server's address (net_resetConnection) or the arena host to join (arena_openSession) */
+#define g_resolvedAddress ((char *)IMG(0xa0d320))   /* char[100]; net_resolveHost's answer: the host's first address as dotted text (0x64 bytes cleared each call); taken as the lobby / Ladder server's address (net_resetConnection) or the arena host to join (dplay_openConnection) */
 #define g_clockLastTime ((u16 *)IMG(0x9dd878))   /* u16[8]; a SYSTEMTIME (sys_checkClockTampering) */
 #define g_clockNowTime ((u16 *)IMG(0x9dd8d0))   /* u16[8]; a SYSTEMTIME */
 #define g_arenaBright ((float *)IMG(0x4dba98))   /* float[4]; the arena lobby's bright colour */
@@ -129,7 +129,7 @@
 #define g_ptxYCbCrTables ((int *)IMG(0xa1f704))   /* int[2048]; RGB -> YCbCr: eight tables of 256 (libjpeg jccolor's rgb_ycc_tab: R/G/B shares of Y, Cb, Cr; ptx_initYCbCrTables); the encoder's, never read */
 #define g_ptxClampTable ((u8 *)IMG(0xa61b0c))   /* u8[1408]; the range-limit (clamp) table in libjpeg's layout: 0x100 zeros, 0 .. 255, 0x180 x 255, 0x180 zeros, then 0 .. 127 again (+0x500); g_ptxClamp points at +0x100, ptx_inverseDct limits through g_ptxClamp + 0x80 */
 #define g_ptxPlanes ((u8 *)IMG(0xa6228c))   /* u8[262144]; the decoded planes: 64 KB each */
-#define g_ptxFdctDivisors ((float *)IMG(0xaa2a90))   /* float[128]; the forward DCT's quantisation divisors as reciprocals, 1 / (base x 100 / quality x aan[row] x aan[col] x 8) (libjpeg jcdctmgr's float fdtbl), luma then chroma; built by ptx_initDequantTables (quality 100), never read */
+#define g_ptxFdctDivisors ((float *)IMG(0xaa2a90))   /* float[128]; the forward DCT's quantisation divisors as reciprocals, 1 / (base x 100 / quality x aan[row] x aan[col] x 8) (libjpeg jcdctmgr's float fdtbl), luma then chroma; built by ptx_initFdctDivisors (quality 100), never read */
 #define g_ptxDequant ((int *)IMG(0xaa2c94))   /* int[128]; the decoder's two 64-entry dequantisation multipliers for the image's quality: base (g_ptxQuantBase) x AAN scale (k_ptxQuantScales) x 100 / quality >> 12 (libjpeg jddctmgr's ifast table); ptx_inverseDct multiplies each coefficient by its entry */
 #define g_replayList ((FileEntry *)IMG(0x9dda88))   /* FileEntry[1024]; the file dialog's names (the reset runs 0x9ddac8 .. 0x9eeac8) */
 #define g_introTextures ((int *)IMG(0x9dad6c))   /* int[8]; the intro frames: iftex/m_intro1 .. 4, then m2_intro1 .. 4 (menu_loadTextures); menu_titleEmblemTransition reads all eight */
@@ -149,8 +149,8 @@
 #define g_mouseClicked ((int *)IMG(0x4ded88))   /* int[3]; the three mouse buttons' click pulses (0xfa .. 0xfc) */
 #define g_mouseButtonsHeld ((int *)IMG(0x4ded94))   /* int[3]; the three mouse buttons held (devices.c's loop of 3) */
 #define g_mechPartStats ((int *)IMG(0x4dcab4))   /* int[7]; the stats panel's copy of the local mech's Player maxima: armorMax, shieldMax, the +0x24 word (accuracy), ammoMax[4] (armc_readMechStats' loop of 7; armc_drawStatsPanel reads) */
-#define g_armcBright ((float *)IMG(0x4dbc58))   /* float[4]; the ARM CENTER's bright colour (RGBA 0, 1, 1, 1): the chosen tab, slot and button, labels (armc_enterParts) */
-#define g_legsStats ((float *)IMG(0x4dc228))   /* float[7]; the legs' stats for the panel: agility, inertia, speed correction x 100 (g_legsSpeedCorrection), forward / side / back boost corrections x 100 (+0xc .. +0x14), the weight (g_legsWeight) (armc_drawPartPanels) */
+#define g_armcBright ((float *)IMG(0x4dbc58))   /* float[4]; the ARM CENTER's bright colour (RGBA 0, 1, 1, 1): the chosen tab, slot and button, labels (armc_open) */
+#define g_legsStats ((float *)IMG(0x4dc228))   /* float[7]; the legs' stats for the panel: agility, inertia, speed correction x 100 (g_legsSpeedCorrection), forward / side / back boost corrections x 100 (+0xc .. +0x14), the weight (g_legsWeight) (armc_readPartPanels) */
 #define g_armsStats ((int *)IMG(0x4dc290))   /* int[5]; the arms' stats copied from the part (armc_parts' loop of 5) */
 #define g_dpConnections ((int *)IMG(0xa0bae0))   /* int[4]; the DirectPlay connections by kind (net_connectionAvailable: below 4) */
 #define g_camPoints ((float *)IMG(0x4df870))   /* float[20]; the menu camera's five target positions, 16 bytes apart (x y z; the fourth float never used): menuCamera_initPoints / the screens' enter functions write, the *_camera functions ease toward them */
@@ -163,9 +163,9 @@
 #define g_menuLook ((float *)IMG(0x680378))   /* float[3]; the point the menu camera looks at (g_menuCameraLook, g_menuCameraLookY, and z = globals.h's g_menuCameraLookZ) */
 #define g_menuEyeHome ((float *)IMG(0x9db090))   /* float[3]; the menu camera's home position (g_menuEyeHomeX .. Z) */
 #define g_menuLookHome ((float *)IMG(0x76d3f8))   /* float[3]; the menu camera's home look-at point (g_menuLookHomeX .. Z) */
-#define g_armcDim ((float *)IMG(0x4dc1d0))   /* float[4]; the ARM CENTER's dim colour (RGBA 0, 0.6, 0.6, 1): tabs, slots and buttons not chosen (armc_enterParts) */
+#define g_armcDim ((float *)IMG(0x4dc1d0))   /* float[4]; the ARM CENTER's dim colour (RGBA 0, 0.6, 0.6, 1): tabs, slots and buttons not chosen (armc_open) */
 #define g_mechSpeeds ((float *)IMG(0x4dcaf8))   /* float[6]; the stats panel's speeds and load: normal speed (g_mechNormalSpeed, x 0.036), top forward (x runTop[0]), top backward (g_mechMaxSpeedBwd), top sideways (x runTop[2]), the load (Player.load), the most load (g_legsMaxWeight = Player.loadMax) (armc_readMechStats) */
-#define g_boosterStats ((float *)IMG(0x4dce80))   /* float[9]; the booster's stats for the panel: [0] its thrust type (an int: g_boosterThrustType), active / recharge time / recharge delay x 1000, four speeds x 0.036, the weight (g_boosterWeight) (armc_drawPartPanels) */
+#define g_boosterStats ((float *)IMG(0x4dce80))   /* float[9]; the booster's stats for the panel: [0] its thrust type (an int: g_boosterThrustType), active / recharge time / recharge delay x 1000, four speeds x 0.036, the weight (g_boosterWeight) (armc_readPartPanels) */
 #define g_armcCameraBox ((u32 *)IMG(0x4dcf40))   /* u32[38]; ARM CENTER's camera box corners (+-700 or 0 as floats; armc_initCameraBox writes them from 0x4dcf00 + 0x40 ..) */
 #define g_setupSoundRect ((int *)IMG(0x4ddad0))   /* int[4]; the setup sound panel's window: left (g_setupSoundLeft) */
 #define g_graphicEdited ((u32 *)IMG(0x4ddba0))   /* u32[7]; the graphics tab's seven values being edited: the screen size (g_setupResolution) then six choices (copied from / to g_graphicInUse) */
@@ -182,7 +182,7 @@
 #define g_skirmishRect ((int *)IMG(0x9f6308))   /* int[4]; the skirmish screen's window: left (g_skirmishRectLeft) */
 #define g_skirmishColourLit ((float *)IMG(0x9f6318))   /* float[4]; the skirmish screen's lit text colour, RGBA (0, 1, 1, 1): the title and the hovered button / arrow (menuState500_enterSkirmish) */
 #define g_skirmishColourDim ((float *)IMG(0x9f62e8))   /* float[4]; the skirmish screen's dim text colour, RGBA (0, 0.6, 0.6, 1): buttons not hovered */
-#define g_keptChat ((char *)IMG(0x9f63e4))   /* char[1024]; the typed chat line kept for the match (chat_keepLastLine: cleared, then copied whole (0x400) from g_chatLine; match_frame / match_escMenu read it; g_keptChatLine its first byte) */
+#define g_keptChat ((char *)IMG(0x9f63e4))   /* char[1024]; the typed chat line kept for the match (chat_endTyping: cleared, then copied whole (0x400) from g_chatLine; match_frame / escMenu_update read it; g_keptChatLine its first byte) */
 #define g_netSendPacket ((NetPacketMessage *)IMG(0x9f9428))   /* NetPacketMessage[1]; the packet message being sent (cleared as 0x103 words): kind (g_netPacketMessageKind) */
 #define g_pilotSave ((u8 *)IMG(0x9f1718))   /* u8[940]; the pilot's save record (0x3ac bytes, the middle of the .axs file, scrambled with key 0x7e): +0 the signature 'AXIS USER PROFILE DATA Master ver 1.0', +0x80 the pilot's name, +0x100 its value, +0x104 the progress (g_progress), +0x2d8 .. the mech's parts and colours (mech_storeToProfile / mech_loadFromProfile / save_loadColours) */
 #define g_armcViewPoints ((float *)IMG(0x4dca30))   /* float[24]; ARM CENTER's six points, 16 bytes each (x, y, z, unused): y = 300, 0, 0, -500, 0, 350; x and z 0 (armc_initCameraPoints; never read) */
@@ -190,7 +190,7 @@
 #define g_soundSettings ((int *)IMG(0x4e0c90))   /* int[4]; the sound settings in use (axis.cfg's sound block): [0] the volume (g_soundVolume), [1] the music volume (g_musicVolume), [2] 3D sound (g_sound3D), [3] stereo reverse (g_stereoReverse) */
 #define g_missionHeader ((u32 *)IMG(0x9ef2c0))   /* u32[4]; the mission file's header: the count (g_missionCount) and three words (g_misHeader1 .. 3; read as four words) */
 #define g_cursorPoint ((int *)IMG(0xae2f18))   /* int[2]; the cursor's screen position (GetCursorPos writes it: x g_cursorX, y g_cursorPosY; input_getCursorPos returns its address) */
-#define g_hostLeavingMsg ((u32 *)IMG(0x9f9418))   /* u32[2]; the 8-byte 'host leaving' message (type 2, set by net_resetState; +4 is 1 while it is sent: g_hostGoneMessageFlag). The host sends it on leaving (game_postMatch, freeCam_keys, arena_leaveSession); net_handleMessage's case 2 copies +4 into g_netHostGone and frees the session list and the slots */
+#define g_hostLeavingMsg ((u32 *)IMG(0x9f9418))   /* u32[2]; the 8-byte 'host leaving' message (type 2, set by net_resetState; +4 is 1 while it is sent: g_hostGoneMessageFlag). The host sends it on leaving (game_postMatch, freeCam_keys, dplay_leaveSession); net_handleMessage's case 2 copies +4 into g_netHostGone and frees the session list and the slots */
 #define g_netSlotMsg ((u32 *)IMG(0x9f9420))   /* u32[2]; an 8-byte message sent (net_sendMessage): kind (g_netSlotMessageKind) */
 #define g_lobbyReplyRecord ((u8 *)IMG(0xa05260))   /* u8[91]; a lobby reply (0x5b bytes read from the lobby socket; its kind at +0x4a: g_lobbyReplyKind) */
 #define g_rankReply ((u8 *)IMG(0xa052c0))   /* u8[34]; the game server's rank reply (request 29; 0x22 bytes, net_recv): +0 non-zero once it has arrived (g_rankReplyCode), +1 set when out of the first 1000 (g_outOfRank), +0x16 the rank (g_receivedRank; account_takeRank) */
@@ -204,9 +204,9 @@
 #define g_texture256x256 ((u8 *)IMG(0x83a9e0))   /* u8[840004]; the 256 x 256 texture set (g_texture256x256Vtable its vtable word) */
 #define g_texture256x128 ((u8 *)IMG(0x90d1e0))   /* u8[840004]; the 256 x 128 texture set (g_texture256x128Vtable its vtable word) */
 #define g_textureSets ((u32 *)IMG(0x83a5e0))   /* TextureManager[1]; the texture manager: its vtable word (g_textureManager, 0x4a9570), the six sets banks[0..5] (+4 .. +0x18: 64x64, 128x64, 256x64, 128x128, 256x128, 256x256), the count (+0x1c) (TextureManager_clear: 8 words; g_textures points here) */
-#define g_vecOriginXyz ((float *)IMG(0xa0e7a8))   /* float[3]; the origin (0, 0, 0; vec_initOrigin): copied as a start point (armc_update*Preview, stage_remakePlayerActor, scene_startSession) and used as an operand in actor_processFrame / skel_poseBones / particle_init (g_vecOrigin its first float) */
+#define g_vecOriginXyz ((float *)IMG(0xa0e7a8))   /* float[3]; the origin (0, 0, 0; vec_initOrigin): copied as a start point (armc_update*Preview, stage_remakePlayerActor, scene_startSession) and used as an operand in actor_processFrame / ObjectList_poseBones / particle_init (g_vecOrigin its first float) */
 #define g_vecUnitZXyz ((float *)IMG(0xa0e7c8))   /* float[3]; the unit z axis (0, 0, 1; vec_initAxisZ): negated as the scene camera's direction (classes.c), a shot's default direction (actor_frame.c) */
-#define g_vecZeroXyz ((float *)IMG(0xa0e7e8))   /* float[3]; the zero vector (0, 0, 0; vec_initRest): velocities / moves / steps are cleared from it (actor_setupFromParts, particle_update, bullet_init); collisionTri_sweepSphere's fallback axis */
+#define g_vecZeroXyz ((float *)IMG(0xa0e7e8))   /* float[3]; the zero vector (0, 0, 0; vec_initZero): velocities / moves / steps are cleared from it (actor_setupFromParts, particle_update, bullet_init); collisionTri_sweepSphere's fallback axis */
 #define g_musicDuration ((u32 *)IMG(0xa0e018))   /* u32[2]; the music's duration (IAMMultiMediaStream::GetDuration's 64-bit STREAM_TIME, written in music_play: g_musicLength the low word, g_musicEndHigh the high; music_loopIfEnded compares the position with it) */
 #define g_resolutionNames ((u32 *)IMG(0x4b04cc))   /* u32[8]; the setup screen's screen size names (by g_setupResolution) */
 #define g_typedArenaAddressText ((char *)IMG(0x4dbbd4))   /* char[24]; the arena address typed (cleared as 24 bytes; its edit takes 20 characters; g_typedArenaAddress its first word) */
@@ -218,7 +218,7 @@
 #define g_createArena2Rects ((int *)IMG(0x4db6e8))   /* int[8]; createArena_hitTest's 2 hit rectangles (hit_tests.c) */
 #define g_arenaGameListRects ((int *)IMG(0x4db720))   /* int[72]; arenaGameList_hitTest's 18 hit rectangles (hit_tests.c) */
 #define g_arenaDialogBoxRects ((int *)IMG(0x4dbad0))   /* int[4]; arenaDialogBox_hitTest's 1 hit rectangles (hit_tests.c) */
-#define g_arenaCreateRects ((int *)IMG(0x4dbb80))   /* int[8]; arenaCreate_hitTest's 2 hit rectangles (hit_tests.c) */
+#define g_arenaCreateRects ((int *)IMG(0x4dbb80))   /* int[8]; arenaUpdateNotice_hitTest's 2 hit rectangles (hit_tests.c) */
 #define g_armcWeaponsPageRects ((int *)IMG(0x4dbc88))   /* int[60]; armcWeaponsPage_hitTest's 15 hit rectangles (hit_tests.c) */
 #define g_armcPartsPageRects ((int *)IMG(0x4dc2a8))   /* int[68]; armcPartsPage_hitTest's 17 hit rectangles (hit_tests.c) */
 #define g_armcColourRects ((int *)IMG(0x4dcb38))   /* int[72]; armcColour_hitTest's 18 hit rectangles (hit_tests.c) */
@@ -314,19 +314,19 @@
 #define g_font5Bottom ((float *)IMG(0x4e0ce4))   /* float[128]; the 5-pixel menu font: the cells' bottom edges (4 rows from texel 0x87, step 8, x 32 glyphs; the gap to the next variable is 256 floats) */
 #define g_font5Top ((float *)IMG(0x5b1114))   /* float[128]; the 5-pixel menu font: the cells' top edges */
 #define g_font5Left ((float *)IMG(0x5b1514))   /* float[256]; the 5-pixel menu font: the cells' left edges */
-#define g_font5Right ((float *)IMG(0x4e10e8))   /* float[256]; the small menu font (text_quad5: 7 x 7 texel cells, 6 units a letter): the cells' right edges. Storage 256 (to g_dikF 0x4e14e8), only 128 set and read: font_initMenuGrids fills 4 rows of 32 (texel rows 0x80 .. 0x9f), text_quad5 reads c - 1 for ASCII c < 0x80 */
-#define g_hanChoBottom ((float *)IMG(0x4e0474))   /* float[256]; the Hangul initial-consonant (choseong) glyphs on the g_fontHanCho texture (index lead + vowel set x 20, at most 159; font_initHudGrids): the cells' bottom edges */
-#define g_hanChoTop ((float *)IMG(0x5b0910))   /* float[256]; the Hangul initial-consonant (choseong) glyphs on the g_fontHanCho texture (index lead + vowel set x 20, at most 159; font_initHudGrids): the cells' top edges */
-#define g_hanChoLeft ((float *)IMG(0x5b0d10))   /* float[256]; the Hangul initial-consonant (choseong) glyphs on the g_fontHanCho texture (index lead + vowel set x 20, at most 159; font_initHudGrids): the cells' left edges */
-#define g_hanChoRight ((float *)IMG(0x4e0878))   /* float[256]; the Hangul initial-consonant (choseong) glyphs on the g_fontHanCho texture (index lead + vowel set x 20, at most 159; font_initHudGrids): the cells' right edges */
-#define g_hanJungBottom ((float *)IMG(0x5b1b64))   /* float[96]; the Hangul vowel (jungseong) glyphs on the g_fontHanJungJong texture (6 rows of 16 from row 0; index vowel + lead set x 22, at most 87; 96 set by font_initHudGrids): the cells' bottom edges */
-#define g_hanJungTop ((float *)IMG(0x4e16d8))   /* float[96]; the Hangul vowel (jungseong) glyphs on the g_fontHanJungJong texture (6 rows of 16 from row 0; index vowel + lead set x 22, at most 87; 96 set by font_initHudGrids): the cells' top edges */
-#define g_hanJungLeft ((float *)IMG(0x4e1548))   /* float[100]; the Hangul vowel (jungseong) glyphs on the g_fontHanJungJong texture (6 rows of 16 from row 0; index vowel + lead set x 22, at most 87; 96 set by font_initHudGrids): the cells' left edges */
-#define g_hanJungRight ((float *)IMG(0x5b199c))   /* float[96]; the Hangul vowel (jungseong) glyphs on the g_fontHanJungJong texture (6 rows of 16 from row 0; index vowel + lead set x 22, at most 87; 96 set by font_initHudGrids): the cells' right edges */
-#define g_hanJongBottom ((float *)IMG(0x83a7e0))   /* float[120]; the Hangul final-consonant (jongseong) glyphs on the g_fontHanJungJong texture (7 rows of 16 from texel row 0x60; index final + set x 28, at most 111; 112 of the 120 set by font_initHudGrids): the cells' bottom edges */
-#define g_hanJongTop ((float *)IMG(0x4df638))   /* float[120]; the Hangul final-consonant (jongseong) glyphs on the g_fontHanJungJong texture (7 rows of 16 from texel row 0x60; index final + set x 28, at most 111; 112 of the 120 set by font_initHudGrids): the cells' top edges */
-#define g_hanJongLeft ((float *)IMG(0x4df458))   /* float[120]; the Hangul final-consonant (jongseong) glyphs on the g_fontHanJungJong texture (7 rows of 16 from texel row 0x60; index final + set x 28, at most 111; 112 of the 120 set by font_initHudGrids): the cells' left edges */
-#define g_hanJongRight ((float *)IMG(0x83a600))   /* the Hangul final-consonant (jongseong) glyphs on the g_fontHanJungJong texture (7 rows of 16 from texel row 0x60; index final + set x 28, at most 111; 112 of the 120 set by font_initHudGrids): the cells' right edges */
+#define g_font5Right ((float *)IMG(0x4e10e8))   /* float[256]; the small menu font (text_quad5: 7 x 7 texel cells, 6 units a letter): the cells' right edges. Storage 256 (to g_dikF 0x4e14e8), only 128 set and read: font_initAsciiGrids fills 4 rows of 32 (texel rows 0x80 .. 0x9f), text_quad5 reads c - 1 for ASCII c < 0x80 */
+#define g_hanChoBottom ((float *)IMG(0x4e0474))   /* float[256]; the Hangul initial-consonant (choseong) glyphs on the g_fontHanCho texture (index lead + vowel set x 20, at most 159; font_initHangulGrids): the cells' bottom edges */
+#define g_hanChoTop ((float *)IMG(0x5b0910))   /* float[256]; the Hangul initial-consonant (choseong) glyphs on the g_fontHanCho texture (index lead + vowel set x 20, at most 159; font_initHangulGrids): the cells' top edges */
+#define g_hanChoLeft ((float *)IMG(0x5b0d10))   /* float[256]; the Hangul initial-consonant (choseong) glyphs on the g_fontHanCho texture (index lead + vowel set x 20, at most 159; font_initHangulGrids): the cells' left edges */
+#define g_hanChoRight ((float *)IMG(0x4e0878))   /* float[256]; the Hangul initial-consonant (choseong) glyphs on the g_fontHanCho texture (index lead + vowel set x 20, at most 159; font_initHangulGrids): the cells' right edges */
+#define g_hanJungBottom ((float *)IMG(0x5b1b64))   /* float[96]; the Hangul vowel (jungseong) glyphs on the g_fontHanJungJong texture (6 rows of 16 from row 0; index vowel + lead set x 22, at most 87; 96 set by font_initHangulGrids): the cells' bottom edges */
+#define g_hanJungTop ((float *)IMG(0x4e16d8))   /* float[96]; the Hangul vowel (jungseong) glyphs on the g_fontHanJungJong texture (6 rows of 16 from row 0; index vowel + lead set x 22, at most 87; 96 set by font_initHangulGrids): the cells' top edges */
+#define g_hanJungLeft ((float *)IMG(0x4e1548))   /* float[100]; the Hangul vowel (jungseong) glyphs on the g_fontHanJungJong texture (6 rows of 16 from row 0; index vowel + lead set x 22, at most 87; 96 set by font_initHangulGrids): the cells' left edges */
+#define g_hanJungRight ((float *)IMG(0x5b199c))   /* float[96]; the Hangul vowel (jungseong) glyphs on the g_fontHanJungJong texture (6 rows of 16 from row 0; index vowel + lead set x 22, at most 87; 96 set by font_initHangulGrids): the cells' right edges */
+#define g_hanJongBottom ((float *)IMG(0x83a7e0))   /* float[120]; the Hangul final-consonant (jongseong) glyphs on the g_fontHanJungJong texture (7 rows of 16 from texel row 0x60; index final + set x 28, at most 111; 112 of the 120 set by font_initHangulGrids): the cells' bottom edges */
+#define g_hanJongTop ((float *)IMG(0x4df638))   /* float[120]; the Hangul final-consonant (jongseong) glyphs on the g_fontHanJungJong texture (7 rows of 16 from texel row 0x60; index final + set x 28, at most 111; 112 of the 120 set by font_initHangulGrids): the cells' top edges */
+#define g_hanJongLeft ((float *)IMG(0x4df458))   /* float[120]; the Hangul final-consonant (jongseong) glyphs on the g_fontHanJungJong texture (7 rows of 16 from texel row 0x60; index final + set x 28, at most 111; 112 of the 120 set by font_initHangulGrids): the cells' left edges */
+#define g_hanJongRight ((float *)IMG(0x83a600))   /* the Hangul final-consonant (jongseong) glyphs on the g_fontHanJungJong texture (7 rows of 16 from texel row 0x60; index final + set x 28, at most 111; 112 of the 120 set by font_initHangulGrids): the cells' right edges */
 #define g_penFixedTopLeft ((float *)IMG(0xa0f498))   /* float[210]; the fixed set's top left corners */
 #define g_penFixedTopRight ((float *)IMG(0xa10018))   /* float[210]; the fixed set's top right corners */
 #define g_penFixedBottomRight ((float *)IMG(0xa0f150))   /* float[210]; the fixed set's bottom right corners */
@@ -340,7 +340,7 @@
 #define g_sortState ((u8 *)IMG(0xae3338))   /* u8[49176]; the two depth sorts' state (depth_sort.c QsGlobals): per sort an i, j and pivot array of 0x2000 bytes (A: +0, +0x4008, +0xa018; B: +0x8018, +0x6018, +0x2008), the stack depth (A +0x2000, B +0x2004) and two words of swap space (A +0x6008, B +0x6010) */
 #define g_packedBlue ((u8 *)IMG(0xa1f200))   /* u8[4]; packed blue (colour_initPackedBlue) */
 #define g_packedGrey ((u8 *)IMG(0xa1f204))   /* u8[4]; packed grey */
-#define g_packedYellow ((u8 *)IMG(0xa1f208))   /* u8[4]; packed yellow (main_loop's view-volume segments) */
+#define g_packedYellow ((u8 *)IMG(0xa1f208))   /* u8[4]; packed yellow (app_frameByScreen's view-volume segments) */
 #define g_packedGreen ((u8 *)IMG(0xa1f2ec))   /* u8[4]; packed green */
 #define g_realClear ((float *)IMG(0xa1f210))   /* float[4]; real clear: (0, 0, 0, 0) (colour_initRealClear); never read */
 #define g_realBlue ((float *)IMG(0xa1f228))   /* float[4]; real blue */
@@ -394,11 +394,11 @@
 #define g_tcpDns ((char *)IMG(0xa0b24c))   /* char[50]; HKCU SelectServer TcpDNS (50 bytes) */
 #define g_noAddress ((char *)IMG(0xa0bb0c))   /* char[4]; the empty address DirectPlay's TCP connection gets without one (never written) */
 #define g_statBars ((float *)IMG(0x9f8d34))   /* float[9]; the profile screen's nine stat bars as drawn (eased a tenth a frame) */
-#define g_statBarTargets ((float *)IMG(0x9f8ec0))   /* float[9]; the stat bars' targets: the pilot character's nine stats + 50 (pilotSelect_loadStats / profile_loadPilotStats); g_statBars eases to them (profile_drawChosenPilot, profile_drawPilotSelect); cleared by profile_resetSelection / profile_resetPreview */
-#define g_profileMessageClickBox ((int *)IMG(0x9f9010))   /* int[4]; (left, top, right, bottom) = (471, 246, 550, 276), set by profileDialogBox_layout: profile_inDialogBox's rectangle, where a click while the NAME ALREADY REGISTRED message is up (g_profileMessage, profile_newNameDialog) closes it and starts typing again. Nothing drawn lies there (the message's OK button is 0x16e..0x1ce, 0xe6..0x106; the dialog ends at x 0x208) */
+#define g_statBarTargets ((float *)IMG(0x9f8ec0))   /* float[9]; the stat bars' targets: the pilot character's nine stats + 50 (pilotSelect_loadStats / profile_loadPilotStats); g_statBars eases to them (profile_drawChosenPilot, profile_drawPilotSelect); cleared by pilotSelect_reset / profile_resetStatBars */
+#define g_profileMessageClickBox ((int *)IMG(0x9f9010))   /* int[4]; (left, top, right, bottom) = (471, 246, 550, 276), set by profileDialogBox_layout: profile_inDialogBox's rectangle, where a click while the NAME ALREADY REGISTRED message is up (g_profileMessage, newNameDialog_clicks) closes it and starts typing again. Nothing drawn lies there (the message's OK button is 0x16e..0x1ce, 0xe6..0x106; the dialog ends at x 0x208) */
 #define g_chatHistory ((char *)IMG(0x67ef38))   /* char[3072]; the chat line's three-line history of 0x400 bytes; newest first (frontEnd_startUp clears 0x300 dwords) */
 #define g_briefingPageStarts ((int *)IMG(0x9eeadc))   /* int[50]; the briefing's page start offsets (0xc8 bytes cleared; g_briefingStart follows) */
-#define g_ladderEmail ((char *)IMG(0x9dd5a6))   /* char[30]; the logged-in Ladder account's e-mail: from the server's account record (+0x22, login_takeAccountRecord), copied from / to the account page's g_accountEmail (reg_writeLadderSettings, room_copyJoinedSettings, newId_register); cleared (30 bytes) by menuState800_enterGameRoom. Not kept in the registry */
+#define g_ladderEmail ((char *)IMG(0x9dd5a6))   /* char[30]; the logged-in Ladder account's e-mail: from the server's account record (+0x22, login_takeAccountRecord), copied from / to the account page's g_accountEmail (reg_writeLadderSettings, room_copyAccountRecord, newId_register); cleared (30 bytes) by menuState800_enterGameRoom. Not kept in the registry */
 #define g_keyTable1 ((int *)IMG(0x4d1688))   /* int[256]; a key table only cleared at start-up */
 #define g_mouseState ((int *)IMG(0x4d1a88))   /* int[4]; DIMOUSESTATE: x; y; wheel movement; four button bytes */
 #define g_keyTable2 ((int *)IMG(0x4d1fc4))   /* int[256]; the second key table (only cleared) */
@@ -433,15 +433,15 @@
 #define g_roomJoinPassword4 (*(int *)(g_joinPasswordAndRanking + 4))   /* the typed password's second dword, also the ranking rows' start */
 #define g_rankingRows ((RankRow *)(g_joinPasswordAndRanking + 4))   /* RankRow[10] */
 #define g_newIdConfirmBox ((int *)IMG(0x9dd1a0))   /* int[4]; the new ID confirmation's box (room_openNewIdConfirm; newIdConfirm_layout) */
-#define g_roomMechKept ((u8 *)IMG(0x9dd260))   /* u8[11]; a copy of the room record's mech (g_roomMech: the five parts, settings 4 / 5, then 0 .. 3) made by room_copyJoinedSettings, or newId_register's defaults; written only, never read */
-#define g_roomColoursKept ((float *)IMG(0x9dd26b))   /* float[36]; the room's colour choices (g_roomColours) kept: copied by room_copyJoinedSettings, set to the defaults by newId_register; never read */
+#define g_roomMechKept ((u8 *)IMG(0x9dd260))   /* u8[11]; a copy of the room record's mech (g_roomMech: the five parts, settings 4 / 5, then 0 .. 3) made by room_copyAccountRecord, or newId_register's defaults; written only, never read */
+#define g_roomColoursKept ((float *)IMG(0x9dd26b))   /* float[36]; the room's colour choices (g_roomColours) kept: copied by room_copyAccountRecord, set to the defaults by newId_register; never read */
 #define g_launchArgs ((char **)IMG(0x9dd890))   /* char *[14]; the launch line's words: pointers into the line strtok cut at spaces (count g_argCount; lines over 0x400 or under 2 characters are not split). No bound on the count: 14 fit before g_launchMessage (0x9dd8c8) */
 #define g_shapeDat ((u32 *)IMG(0xa0e79c))   /* u32[3]; Data\Shape.dat: the entry count; the table; the FILE */
 #define g_skelDat ((u32 *)IMG(0xa0eab4))   /* u32[3]; Data\Skeleton.dat: the entry count; the table; the FILE */
 #define g_skirmishInfo ((u8 *)IMG(0x9db998))   /* u8[1380]; skirmish.dat's 15 records of 0x5c (to 0x9dbefc) */
 #define g_soundTable ((u32 *)IMG(0xa0e02c))   /* u32[400]; the sound table's buffers by index (sound_initSoundTable; to 0xa0e66c) */
 #define g_menuSoundBuffers ((u32 *)IMG(0x4dd4d4))   /* u32[10]; the ten menu sounds (sound_loadMenuSounds) */
-#define g_slotCams ((float *)IMG(0x4dfa1c))   /* float[352]; per local slot (g_localSlot) a 0x58-byte camera record: +0 .. +8 the free camera's point (freeCam_keys), +0x28 the ARM CENTER turn (armc_mouseLook's turn_update); a click moves the camera to +0 / +4. Only these offsets are used; 0x4dff9c .. 0x4e0458 is never referenced */
+#define g_slotCams ((float *)IMG(0x4dfa1c))   /* float[352]; per local slot (g_localSlot) a 0x58-byte camera record: +0 .. +8 the free camera's point (freeCam_keys), +0x28 the ARM CENTER turn (freeCam_mouseLook's turn_update); a click moves the camera to +0 / +4. Only these offsets are used; 0x4dff9c .. 0x4e0458 is never referenced */
 #define g_unlockTablesSolo ((u8 *)IMG(0x4ad5f0))   /* u8[5600]; armc_buildPartLists' seven 0x320-byte Unlock tables for every ARM CENTER visit not from the Ladder room (g_armcFrom != 3: campaign, skirmish and the arena) (to 0x4aebd0) */
 #define g_unlockTablesNet ((u8 *)IMG(0x4aebd0))   /* u8[5600]; the same for network play (to 0x4b01b0) */
 #define g_setupWallTurns ((float *)IMG(0x4b04c4))   /* float[2]; the setup tunnel's wall turn by parity (-35; 35) */

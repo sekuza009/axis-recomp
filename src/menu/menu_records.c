@@ -37,7 +37,9 @@ void (app_setDataPaths)(void)
 }
 
 /* ---- the chat input line (0x400 bytes at g_chatLine) and its three-line history ---- */
-/* 0x431560: the line emptied, in input mode mode */
+/* 0x431560: the input line (g_chatLine, 0x400 bytes) emptied for a text field max characters long (g_lineMaxLength =
+   max; g_chatLength 0). Callers: every text field's opening (account_edit*, arena_edit*, room_edit*, roomLogin_edit*,
+   newIdForm_openField, profile_typeNewName, chat_textField, freeCam_keys) */
 void (menu_clearInputBuffer)(int mode)
 {
 	memset((void *)OBJ(g_chatLine), 0, 0x400);
@@ -64,7 +66,7 @@ void (menu_showMessage)(int i)
 
 /* ---- session list entries (SessionEntry) ---- */
 /* 0x4065a0: entries a and b swapped */
-void (record_swap)(void *a, void *b)
+void (sessionList_swap)(void *a, void *b)
 {
 	SessionEntry t;
 	memcpy(&t, a, sizeof t);
@@ -88,7 +90,9 @@ void (arena_clearSessionEntry)(void)
 }
 
 /* ---- the saved mech (g_savedMechHead parts, g_savedMechItemSlot4 weapons, g_savedColourChoices colours) ---- */
-/* 0x430390: the empty mech: no weapons, part 0, colour pairs (0,1,0) (0,1,0) */
+/* 0x430390: the default mech (start-up, app_startupLoad): parts 0, weapon slot 0 item 0, weapon slots 1 .. 3 and item
+   slots 4 / 5 -1 (none), and the first five of the six colour entries (24 bytes each) (0, 1, 0, 0, 1, 0); the sixth
+   is left */
 void (mech_setEmpty)(void)
 {
 	static const float colour[6] = { 0, 1, 0, 0, 1, 0 };
@@ -159,8 +163,10 @@ void (mech_storeToProfile)(void)
 	memcpy((void *)(OBJ(g_pilotSave) + 0x31c), (void *)OBJ(g_savedColourChoices), 0x90);
 }
 
-/* 0x447910: the menu camera put back (armc_restoreMenuCamera without its flag) */
-void (menu_restoreCamera)(void)
+/* 0x447910: the menu camera snapped to the screen's first menu point: eye from g_camPoints[0] (g_camPoint0X ..),
+   look-at from g_camAims[0] (armc_snapCameraToPoint0 does the same and also clears g_armcPreview). Tail of
+   missions_leave / skirmish_leave */
+void (menu_cameraToPoint0)(void)
 {
 	(*(int *)&g_menuEyeX) = (*(int *)&g_camPoint0X);
 	(*(int *)&g_menuEyeY) = (*(int *)&g_camPoint0Y);
@@ -170,8 +176,9 @@ void (menu_restoreCamera)(void)
 	(*(int *)&g_menuCameraLookZ) = (*(int *)&g_camAim0Z);
 }
 
-/* 0x445de0: a click (either button) starts the menu fade, once */
-void (menu_clickStartFade)(void)
+/* 0x445de0: the title screen's (200) clicks: either button dismisses the title once (g_titleClosing 1,
+   g_titleCloseFrames 0: its layers fade and spread, then the profile screen) */
+void (title_clickDismiss)(void)
 {
 	if ((g_mouseClick || g_rightClick) && !g_titleClosing) {
 		g_titleClosing = 1;
@@ -210,7 +217,8 @@ void (ranking_nextPage)(void)
 	}
 }
 
-/* 0x4359f0: the list's mode cycled 0 .. 2 (the one before kept in g_rankingPrevSort), its distance limit back to 10,000,000 */
+/* 0x4359f0: the ranking's sort column cycled 0 .. 2 (g_rankingSort; the one before kept in g_rankingPrevSort), a new
+   page requested, and the tie comparison restarted: g_rankingPrevRank 0, g_rankingPrevValue 10,000,000 */
 void (ranking_cycleSort)(void)
 {
 	int mode = g_rankingSort;
@@ -387,7 +395,7 @@ void (missions_briefingClicks)(void)
 /* ---- leaving the mission list (missions_leave) or the skirmish screen (skirmish_leave): the screen's state cleared, the
    view squeezed (aspect 0.1) to open out again, the camera to (?, 0, 1600) looking ahead, a sound, the menu camera
    put back. Both return what that leaves in eax ---- */
-#define put_camera_back() GAME_FN(menu_restoreCamera, 0x447910, u32, void)()   /* menu_restoreCamera */
+#define put_camera_back() GAME_FN(menu_cameraToPoint0, 0x447910, u32, void)()   /* menu_cameraToPoint0 */
 static u32 leave_settings(u32 state)
 {
 	GAME_VAR(int, state) = 0;
@@ -420,9 +428,10 @@ u32 (newIdConfirm_keys)(void)
 	return r;
 }
 
-/* 0x445be0: the mission list (screen 900) drawn: the background (when g_missionsDrawBackground), the map list unless closing (state
-   2), the camera; then while open (state past 1) the dialog's frame if one is open, else the screen A (g_missionsPage 10)
-   or B (20). Returns what the original leaves in eax */
+/* 0x445be0: the mission list (screen 900) drawn: the background (when g_missionsDrawBackground), the tunnel
+   (missions_drawTunnel) unless the camera has arrived (g_missionsState 2), the camera (missions_camera); then, once
+   arrived (state past 1), the dialog's frame while it opens, else the list (g_missionsPage 10: missions_frameList) or
+   the briefing (20: missions_frameBriefing). Returns what the original leaves in eax */
 u32 (menuState900_missions)(void)
 {
 	if (g_missionsDrawBackground)
@@ -483,8 +492,7 @@ u32 (skirmish_startRound)(void)
 	return r;
 }
 
-/* 0x447a50: the skirmish screen's clicks (no dialog open): a right click leaves; buttons 0 choose, 1 leave, 2 and 3
-   step the selection down and up (within 0 .. the count 0x9f181c and 14). Returns what the original leaves in eax */
+/* 0x447a50: ... 2 and 3 step the round shown (g_skirmishShown) down and up (from 0 to at most g_progress and 14) ... */
 u32 (skirmish_clicks)(void)
 {
 	if (g_frameOpening)
@@ -514,9 +522,11 @@ u32 (skirmish_clicks)(void)
 	return button;
 }
 
-/* 0x431600: the chat line closed: sent (into the history) when ok, else emptied; typing off, the keyboard taken again,
-   the fade timer 10. Returns what the original leaves in eax */
-u32 (chat_closeLine)(int ok)
+/* 0x431600: the open text field's input line (g_chatLine) closed: kept (pushed onto the history, chat_pushHistory)
+   when ok, else its g_lineMaxLength bytes wiped; typing off (g_textFieldOpen 0), the keyboard re-initialised, the key
+   delay g_menuKeyGuard 10. Callers editField_editProc (x3), roomLogin_endTyping, login_send, newIdForm_endTyping. Returns
+   what the original leaves in eax */
+u32 (menu_closeInputLine)(int ok)
 {
 	u32 r;
 	g_textFieldOpen = 0;
@@ -551,9 +561,9 @@ u32 (messageBox_keyClose)(void)
 	return r;
 }
 
-/* 0x4318b0: any of three keys starts the menu's fade (g_titleClosing, once; its timer g_titleCloseFrames from 0). Returns what the
-   original leaves in eax */
-u32 (menu_keyStartFade)(void)
+/* 0x4318b0: the title screen's (200) keys: Enter, Space or Esc dismisses the title once (g_titleClosing 1,
+   g_titleCloseFrames 0). Returns what the original leaves in eax */
+u32 (title_keyDismiss)(void)
 {
 	static const u32 keys[3] = { ADDR(g_dikEnter), ADDR(g_dikSpace), ADDR(g_dikEscape) };
 	u32 r = 0;
@@ -592,20 +602,20 @@ u32 (replaySelect_drawNames)(void)
 }
 
 /* back to the pilot screen (main menu choice 5, EXIT): the camera pulled back (move 4; g_enteringMenus, next screen
-   210), the progress saved and debug_traceStripped. Returns its eax */
+   210), the progress saved and shared_emptyFunction. Returns its eax */
 static u32 to_pilot_screen(void)
 {
 	menuCamera_setMove(4);
 	g_enteringMenus = 1;
 	g_nextScreen = 210;
 	profile_saveProgress();
-	return GAME_FN(debug_traceStripped, 0x48b420, u32, void)();
+	return GAME_FN(shared_emptyFunction, 0x48b420, u32, void)();
 }
 
 /* main menu choice i (with its sound; g_menuRepeatClock cleared): 0 SKIRMISH PLAY (menuState500_enterSkirmish), 1 MULTIPLAY VIA
    INTERNET (the arena lobby, next screen 400), 2 LADDER GAME (net_connect, then net_asyncSelect; messages 0x2a / 0x29
    when they fail; the game room, next screen 800), 3 the setup (600), 4 TO CUSTOMIZE (the ARM CENTER,
-   armc_enterParts), 5 EXIT (back to the pilot screen). The original's eax into *r; 1 when a failure ended the
+   armc_open), 5 EXIT (back to the pilot screen). The original's eax into *r; 1 when a failure ended the
    caller there */
 static int menu_choice(int i, u32 *r)
 {
@@ -633,7 +643,7 @@ static int menu_choice(int i, u32 *r)
 		return 0;
 	case 4:
 		g_armcFrom = 1;
-		*r = armc_enterParts();   /* armc_enterParts: the ARM CENTER */
+		*r = armc_open();   /* armc_open: the ARM CENTER */
 		g_enteringMenus = 0;
 		return 0;
 	default:
@@ -642,9 +652,10 @@ static int menu_choice(int i, u32 *r)
 	}
 }
 
-/* 0x4419d0: the main menu clicked (not while it is fading in (g_replayShowOn = 1); the replay selection dialog first if open):
-   its six buttons (outlines 0x2c bytes apart from g_mainMenuOutlines) as menu_choice. A right click goes back to the pilot screen too when
-   there are tunnel rings (g_tunnelRings > 0). Returns what the original leaves in eax */
+/* 0x4419d0: the main menu clicked (nothing while picked replays are being shown, g_replayShowOn 1; the replay
+   selection dialog's mouse first if it is open): its six buttons (g_mainMenuOutlines, 0x2c bytes apart) as
+   menu_choice. A right click goes back to the pilot screen too when there are tunnel rings (g_tunnelRings > 0).
+   Returns what the original leaves in eax */
 u32 (mainmenu_clicks)(void)
 {
 	if (g_replayShowOn == 1)
@@ -670,9 +681,10 @@ u32 (mainmenu_clicks)(void)
 	return to_pilot_screen();
 }
 
-/* 0x441e00: the main menu's keys (not while fading in; the replay selection dialog's keys (replaySelect_keys) when open):
-   the six choices' keys as menu_choice, the back key quitting (without saving) when started from the launcher, and
-   the replay selection key (replayList_open, the dialog opened). Returns what the original leaves in eax */
+/* 0x441e00: the main menu's keys (nothing while picked replays are being shown, g_replayShowOn 1; the replay
+   selection dialog's keys when it is open): K M L S A X as the six choices (menu_choice); Esc with tunnel rings back
+   to the pilot screen (camera move 4, next screen 210) WITHOUT saving the progress (unlike choice 5 / a right click);
+   F1 opens the replay selection (replayList_open). Returns what the original leaves in eax */
 u32 (mainmenu_processKeys)(void)
 {
 	static const u32 key[6] = { ADDR(g_dikK), ADDR(g_dikM), ADDR(g_dikL), ADDR(g_dikS), ADDR(g_dikA), ADDR(g_dikX) };
@@ -691,7 +703,7 @@ u32 (mainmenu_processKeys)(void)
 		menuCamera_setMove(4);
 		g_enteringMenus = 1;
 		g_nextScreen = 210;
-		return GAME_FN(debug_traceStripped, 0x48b420, u32, void)();
+		return GAME_FN(shared_emptyFunction, 0x48b420, u32, void)();
 	}
 	u32 r = (u32)input_justPressed(g_dikF1);
 	if (r != 1)

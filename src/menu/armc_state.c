@@ -14,8 +14,10 @@ static void copy(u32 *to, const u32 *from, int n)
 		to[i] = from[i];
 }
 
-/* 0x40f590: colour slot 1 into the undo buffer; the fifth value is taken from the second (sic) */
-void (armc_backupColours)(void)
+/* 0x40f590: colour slot 5 (VIEW ALL, g_armcColours + 0x78) seeded from slot 1 (the chest): its six values copied, the
+   fifth from slot 1's second (sic). Called when slot 5 is chosen (keys A / up past 0, click on button 10). Leaves
+   slot 1's fourth value in eax (armc_colourPageClicks returns it) */
+void (armc_seedAllColourSlot)(void)
 {
 	const u32 *slot1 = g_armcColourBits + 6;
 	g_colourUndo[0] = slot1[0];
@@ -26,8 +28,8 @@ void (armc_backupColours)(void)
 	g_colourUndo[5] = slot1[5];
 }
 
-/* 0x41ced0: the undo buffer into colour slots 0 .. 4 */
-void (armc_restoreColourUndo)(void)
+/* 0x41ced0: colour slot 5's (VIEW ALL) six values copied into slots 0 .. 4, so every part takes the all-parts colour */
+void (armc_spreadAllColourSlot)(void)
 {
 	for (int s = 0; s < 5; s++)
 		copy(g_armcColourBits + s * 6, g_colourUndo, 6);
@@ -53,8 +55,9 @@ void (armc_syncPartCursors)(void)
 	}
 }
 
-/* 0x40e670: the menu camera put back as it was before the screen (angles and position), the preview off */
-void (armc_restoreMenuCamera)(void)
+/* 0x40e670: the menu camera's eye and look-at points (g_menuEyeX.., g_menuCameraLook..) set to camera point 0
+   (g_camPoint0X.., g_camAim0X..: the ARM CENTER's own, set when it was entered), the preview off (g_armcPreview 0) */
+void (armc_snapCameraToPoint0)(void)
 {
 	copy((u32 *)ADDR(g_menuEyeX), (const u32 *)ADDR(g_camPoint0X), 3);
 	copy((u32 *)ADDR(g_menuCameraLook), (const u32 *)ADDR(g_camAim0X), 3);
@@ -78,8 +81,10 @@ void (armc_loadSavedMech)(void)
 	copy(g_armcColourBits, (const u32 *)OBJ(g_savedColourChoices), 0x90 / 4);
 }
 
-/* 0x40f830: 1 if item list entry i is a colour part (27 and up) already in one of the two item slots */
-int (armc_colourPartEquipped)(int i)
+/* 0x40f830: 1 if extra-list entry i (g_extraListTable) is a special item (actorItems 27 and up: EXPANSION MAGAZINE ..
+   FORCEFIELD BOOSTER, MSG 711 + it) already in one of the two item slots (g_itemSlot4 / g_itemSlot5), so it can't be
+   taken twice */
+int (armc_extraItemEquipped)(int i)
 {
 	int item = (g_extraListTable)[i];
 	return item >= 0x1b && (item == g_itemSlot4 || item == g_itemSlot5);

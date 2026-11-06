@@ -2,7 +2,8 @@
 #include "../game.h"
 
 
-/* 0x454650: ping the server named address (dotted) and keep its time in slot; 1 when it answered within a second */
+/* 0x454650: ping the server named address (dotted, inet_addr) with a 1 s timeout (net_ping), its slot's g_serverPing
+   cleared first; 1 when net_ping returns a non-zero time */
 int (net_pingServer)(const char *address, int slot)
 {
 	g_unusedPingWord1 = 0;
@@ -26,8 +27,8 @@ void (net_clearServers)(void)
 	net_closeThreadHandles();
 }
 
-/* 0x454560: the receive thread's procedure: wait on the two events (g_pingDataEvent data, g_pingStopEvent stop): data pings the
-   listed servers and waits again, stop ends the thread, anything else waits again */
+/* 0x454560: the ping thread's procedure (started by net_startPingThread): wait on g_pingDataEvent (0: ping every listed
+   server, net_pingAllServers) and g_pingStopEvent (1: ExitThread); anything else waits again */
 void (net_pingThreadProc)(void)
 {
 	void *events[2] = { g_pingDataEvent, g_pingStopEvent };
@@ -40,8 +41,9 @@ void (net_pingThreadProc)(void)
 	}
 }
 
-/* 0x454740: the network thread told to go on (one event reset, the other set; SetEvent's result) */
-int (net_wakePingThread)(void)
+/* 0x454740: the ping thread told to end: g_pingDataEvent reset, g_pingStopEvent set (its wait then returns 1:
+   ExitThread). SetEvent's result */
+int (net_stopPingThread)(void)
 {
 	ResetEvent(g_pingDataEvent);
 	return SetEvent(g_pingStopEvent);

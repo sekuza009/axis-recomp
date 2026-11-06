@@ -21,9 +21,10 @@ static void fade_frame(int in)
 	gfx_swapBuffers();
 }
 
-/* 0x469730 (mode, unused, text): the loading screen. -1: the progress reset, the text set, the backdrop looked up,
-   then a fade from black over one second of game time; -2: the progress advanced by the time since the last call,
-   the text set, then a fade to black; any other mode: the progress advanced (the text set when 1) and one frame */
+/* 0x469730 (mode, unused, text): the loading screen, as the log hook (g_logHook)
+   while a match loads. -1: the backdrop's scroll (g_loadScroll) reset, the text set, the backdrop looked up, then a
+   fade from black over one second of game time; -2: the scroll advanced by the time since the last call, the text
+   set, then a fade to black; any other mode: the scroll advanced (the text set when 1) and one frame */
 void (loading_drawScreen)(int mode, int unused, const char *text)
 {
 	(void)unused;
@@ -78,7 +79,7 @@ void (loading_draw)(u32 progress)
 	glClearColor_bits(0x3f000000, 0x3f000000, 0x3f800000, 0x3f800000);   /* glClearColor(0.5, 0.5, 1, 1) */
 	glClearDepth(1.0);
 	glClear(0x4100);   /* GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT */
-	gfx_setProjectionHud_bits(1, 0x3f800000);   /* gfx_setProjectionHud(1, 1.0) */
+	gfx_setProjectionHud_bits(1, 0x3f800000);   /* gfx_setMatchProjection(1, 1.0) */
 	glEnable(GL_TEXTURE_2D);
 	int texture = g_loadTexture;
 	tex_bind(g_textures->banks[texture / 512], texture % 512);
@@ -216,8 +217,8 @@ int (app_startupLoad)(void *instance)
 	data_loadSkirmishInfo();
 	arena_initOptionTexts();
 	profile_scanSaves();
-	font_initMenuGrids();
-	font_initHudGrids();
+	font_initAsciiGrids();
+	font_initHangulGrids();
 	text_setWrapX(0x280);
 	text_setBottom(0x1e0);
 	g_textHitBottom = 0;
@@ -277,7 +278,7 @@ int (app_startupLoad)(void *instance)
 	shapeDat_initBy();
 	skelDat_initBy();
 	void *scene = operator_new(0x2343acb);
-	(*(void **)&g_scene) = scene ? Game_ctor(scene) : NULL;
+	(*(void **)&g_scene) = scene ? Console_ctor(scene) : NULL;
 	sound_initSoundTable((const char *)STR(0x4b2504, "Data/Sound.dat"), 0x64);
 	char logo[64];
 	strcpy(logo, (const char *)STR(0x4b24f0, "iftex/axis_title"));
@@ -369,7 +370,7 @@ u32 THISCALL (game_processLoadingMode)(u8 *g)
 	switch (GS->loadStage) {
 	case 0:
 		keep_alive(g);
-		music_shutdown();
+		music_stop();
 		if (GS->sessionMode == 3) {
 			sprintf(path, (const char *)STR(0x4c52a4, "AutoPlay/%s"), GS->replayFiles[GS->replayIndex]);
 			void *f = GS->replayFile = crt_fopen(path, (const char *)STR(0x4ad170, "rb"));
@@ -407,7 +408,7 @@ u32 THISCALL (game_processLoadingMode)(u8 *g)
 			g_mapMissing = 1;
 			return 0;
 		}
-		scene_setTextureFolder((Scene *)g, map);
+		scene_setMapName((Scene *)g, map);
 		mode = GS->sessionMode;
 		if (mode >= 0 && mode <= 3)
 			next_stage(g, mode == 2 ? 6 : 2, STR(0x4c51e4, ".INIT PLAY INFO"));   /* .INIT PLAY INFO */
@@ -420,7 +421,7 @@ u32 THISCALL (game_processLoadingMode)(u8 *g)
 		log_message((int)STAGE(g), 1, 0, (const char *)STR(0x4c51c0, ".receiving stage play information"));
 		keep_alive(g);
 		if (GS->awaitingHostRound == 0) {
-			scene_setTextureFolder((Scene *)g, g_mapNames + g_mapIndex * 0x20);
+			scene_setMapName((Scene *)g, g_mapNames + g_mapIndex * 0x20);
 			mode = GS->sessionMode;
 			if (mode == 0 || mode == 1 || mode == 3)
 				next_stage(g, 3, STR(0x4c51b0, ".LOAD GROUND"));   /* .LOAD GROUND */
@@ -447,7 +448,7 @@ u32 THISCALL (game_processLoadingMode)(u8 *g)
 			if (t > k_5f)
 				stop = 1;
 		}
-		if (netq_resends() >= 0x80)
+		if (netq_skippedCount() >= 0x80)
 			stop = 1;
 		if (input_justPressed(g_keyGameMenu) || input_justPressed(g_keyGameMenu2))
 			stop = 1;
@@ -534,11 +535,11 @@ u32 THISCALL (game_processLoadingMode)(u8 *g)
 	glClearColor_stored(((const u32[]){ 0, 0, 0 }));
 	glClearDepth(1.0);
 	glClear(0x4100);
-	gfx_setProjectionHud(1, 1.0f);
+	gfx_setMatchProjection(1, 1.0f);
 	ViewVolume_captureMatrices((u8 *)&GS->view, 0, (u8 *)GS->modelview);
 	ViewVolume_reset((u8 *)&GS->view);
 	ViewVolume_draw((u8 *)&GS->view, GS->renderMode, 0.0f);
-	gfx_setProjectionHud(0, 1.0f);
+	gfx_setMatchProjection(0, 1.0f);
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 	for (int k = 0, y = 8; k < GS->loadLineCount; k += 2, y += 16)   /* (every other line from the second, as the original steps) */
 		font_penDraw(0x10, y, 0, GS->loadLines[k + 1]);

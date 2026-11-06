@@ -18,7 +18,7 @@ void (profile_typeNewName)(void)
 	g_profilePage = 2;
 	g_frameOpening = 1;
 	g_profileMessage = 0;
-	chat_createEdit(0x10);
+	editField_createEdit(0x10);
 }
 
 /* a two-button question (dialog kind) placed over the panel whose corner is (x, y) */
@@ -40,9 +40,10 @@ static void ask(int kind, int x, int y)
 void (profile_askDelete)(void) { ask(3, g_profileDialogX, g_profileDialogY); }
 void (profile_askLogOut)(void) { ask(5, g_logOutDialogX, g_logOutDialogY); }
 
-/* 0x44f810: the profile screen: only its frame while a dialog is up, else the pilot preview (when shown) and the
-   screen */
-void (profile_drawScreen)(void)
+/* 0x44f810: the profile screen's page 6, CHARACTER SELECT: only the dialog frame while it opens (g_pilotSelect* box),
+   else the stat bars' targets reloaded when stale (g_statBarsStale: pilotSelect_loadStats) and the pilot grid drawn
+   (profile_drawPilotSelect). Caller menuState210_frame's page table */
+void (pilotSelect_page)(void)
 {
 	if (g_frameOpening != 0) {
 		menu_drawFrame(g_pilotSelectLeft, g_pilotSelectTop, g_pilotSelectRight, g_pilotSelectBottom);
@@ -159,7 +160,7 @@ u32 (profile_drawNewDialog)(void)
 	int texture = g_buttonTexture;
 	tex_bind(g_textures->banks[texture / 512], texture % 512);
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
-	profile_drawButton(X0 + 0x14, Y0 + 0x30, X1 - 0x14, Y0 + 0x50, 1);
+	menu_drawLargeButton(X0 + 0x14, Y0 + 0x30, X1 - 0x14, Y0 + 0x50, 1);
 	for (int k = 0; k < 2; k++) {
 		int x = X0 + k * 0x78;
 		glEnable(GL_TEXTURE_2D);

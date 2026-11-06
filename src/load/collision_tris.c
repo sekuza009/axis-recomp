@@ -96,7 +96,7 @@ int THISCALL (collisionTri_traceSegment)(const CollisionPlane *self, const float
 	return 1;
 }
 
-/* ---- space_itemMeetsBox: does the triangle touch the box from P - r to S + r? (r, P and S as the collision code passes them).
+/* ---- collisionTri_meetsBox: does the triangle touch the box from P - r to S + r? (r, P and S as the collision code passes them).
    1. every corner of the triangle outside one face of the box: no; all inside: yes;
    2. all eight box corners on one side of the face plane: no;
    3. an edge of the triangle crossing a face of the box (its other two coordinates within it): yes;
@@ -127,7 +127,9 @@ static int edges_cross(const float *T, const float *at, int a, int b, int c, con
 	return 0;
 }
 
-int THISCALL (space_itemMeetsBox)(const float *T, const float *P, const float *S, float r)
+/* 0x47fce0 (thiscall on a triangle record): does the triangle touch the box from P - r to S + r? 1. every corner ...
+   (keep the existing 4-step text) */
+int THISCALL (collisionTri_meetsBox)(const float *T, const float *P, const float *S, float r)
 {
 	float lo[3];
 	for (int a = 0; a < 3; a++)
@@ -218,13 +220,10 @@ static int clamp_to(float *v, const float *low, const float *high)
 	return 0;
 }
 
-/* 0x471400 (thiscall on the stage): an actor's move (radius r from pos along vel) for this frame. outPos is pos + vel
-   kept inside the world box (worldLow low, worldHigh high); when it had to be, the move is cut to match. The map
-   objects (objectCount of them, objects: active, animated, the triangles of its unit, the box of its model, the
-   world-to-model matrix matrixInverse) with pos inside their box widened by r + the move's length become the
-   sub-models (nearObjects: triangles and the two matrices relMatrix / relInverse), and space_testSphere runs on the stage's
-   grid (space) with them. Returns what it finds */
-int THISCALL (collision_moveActor)(u8 *stage, float r, const float *pos, const float *vel, u32 step, u32 k, float *outPos,
+/* 0x471400 (thiscall on the stage): a sphere's move (radius r from pos along vel) for this frame: an actor's
+   (actor_processFrame) or the free camera's (radius 500: free_camera in match_frame and hud_cycleF11Mode). outPos is
+   ... (rest unchanged) */
+int THISCALL (collision_moveSphere)(u8 *stage, float r, const float *pos, const float *vel, u32 step, u32 k, float *outPos,
                                    u32 outVel, u32 outDist, u32 outPlane, u32 axis)
 {
 	Stage *st = (Stage *)stage;
@@ -639,7 +638,7 @@ static void ground_triangle(u8 *grid, u32 id, const void *a, const void *b, cons
    floorMode, the floor (the box's lower face, two triangles, flags 0x10: no marks); each ground layer (groundLayerCount of them, 0x20c
    bytes from groundLayers: kind 0 or 1, rows rows, columns cols, the (columns + 1) x (rows + 1) points points) as two
    triangles a cell, split one way for kind 0 and the other for kind 1, each row logged; and every object in use
-   (+4) that is not flagged 4 (flags) as a unit (space_buildUnits with its shape model and matrix matrix: unit),
+   (+4) that is not flagged 4 (flags) as a unit (space_buildUnit with its shape model and matrix matrix: unit),
    every second one logged. Its caller ignores the eax it leaves */
 void THISCALL (collision_initVolume)(u8 *stage, float size_z, float size_x, float size_y, u32 margin, u32 splitCount, u32 depth)
 {
@@ -689,6 +688,6 @@ void THISCALL (collision_initVolume)(u8 *stage, float size_z, float size_x, floa
 			continue;
 		if (i % 2 == 0)
 			log_message((int)stage, 0, i, (const char *)STR(0x4c7418, "add object %d planes"), i);
-		obj->unit = (void *)space_buildUnits(grid, i, obj->model, obj->matrix);
+		obj->unit = (void *)space_buildUnit(grid, i, obj->model, obj->matrix);
 	}
 }

@@ -438,11 +438,13 @@ static void section_mech(Panel *p)
 }
 #undef ROW
 
-/* 0x412650: the ARM CENTER's stats panel (0x4dcc90 .. 0x4dcc9c) for the part in slot g_armcPartSlot: the six slot
-   buttons (the chosen one brighter) and their labels (MSG(281, "$[0] HEAD") ..; the sixth boxed, MSG(286, "VIEW $[0] ALL")), the part names
-   beside them when g_armcPreview is set, two buttons (MSG(115, "$[0] O K"), lit from 3 by armcPartsPage_hitTest), the weight button and its
-   arrows (14 / 15), the on / off button (MSG(287, "$[0] ROTATE") with MSG(118, "OFF") + 0x80 x g_armcSpin) and the detail button (MSG(277, "SELECT"));
-   then the stats box (taller for Korean, g_language) and the slot's section. The caller ignores the eax it leaves */
+/* 0x412650: the ARM CENTER parts page's panel (in the page frame g_armcPageLeft .. g_armcPageBottom, 0x4dcc90 ..
+   0x4dcc9c) for the view g_armcPartSlot: the six view buttons (the chosen one brighter) and their labels (MSG(281,
+   "$[0] HEAD") ..; the sixth boxed, MSG(286, "VIEW $[0] ALL")), the part names beside them when g_armcPreview is set,
+   two buttons (MSG(115, "$[0] O K") / CANCEL, lit from 3 by armcPartsPage_hitTest), the SELECT box (MSG(277), rect
+   13, no action) between its two arrows (14 / 15: armc_stepPart), the ROTATE button (16: MSG(287, "$[0] ROTATE") with
+   MSG(118, "OFF") + 0x80 x g_armcSpin); then the stats box (taller for Korean, g_language 1) and the view's section
+   (head, chest, arms, legs, booster, 5 the whole mech). The caller ignores the eax it leaves */
 void (armc_drawStatsPanel)(void)
 {
 	int slot = g_armcPartSlot, korean = g_language == 1;
@@ -454,7 +456,7 @@ void (armc_drawStatsPanel)(void)
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 	for (int i = 0; i < 6; i++) {
 		glColor4f(1.0f, 1.0f, 1.0f, slot == i ? 0.8f : 0.4f);
-		profile_drawButton(PANEL_X0 + 0x10, PANEL_Y0 + 0x40 + i * 0x30, PANEL_X0 + 0xb0, PANEL_Y0 + 0x6c + i * 0x30, 1);
+		menu_drawLargeButton(PANEL_X0 + 0x10, PANEL_Y0 + 0x40 + i * 0x30, PANEL_X0 + 0xb0, PANEL_Y0 + 0x6c + i * 0x30, 1);
 	}
 	for (int i = 0; i < 2; i++) {
 		glColor4f(1.0f, 1.0f, 1.0f, hovered == i + 3 ? 0.8f : 0.4f);

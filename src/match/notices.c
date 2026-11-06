@@ -25,7 +25,8 @@ void THISCALL (scene_restoreNames)(Scene *scene)
 	}
 }
 
-/* 0x4629c0: the event list emptied, new lines stamped with time; the message box and the centred notice faded out */
+/* 0x4629c0: the event list emptied, new lines to stay shown time seconds (eventTime; every caller passes 60.0); the
+   message box (msgFade) and the centred notice (noticeTimer) faded out */
 void THISCALL (events_clear)(Scene *scene, u32 time)
 {
 	scene->eventCount = 0;
@@ -35,7 +36,9 @@ void THISCALL (events_clear)(Scene *scene, u32 time)
 	BITS(scene->noticeTimer) = 0;
 }
 
-/* 0x463480: every queued announcement dropped */
+/* 0x463480: every queued send dropped: the per-player send flags (sendFlags[16][4]) and the announcements' pending
+   flags (announcePending, connect, quit, chat, join, change, the three endEvents, cheatPending; restartPending is
+   left, never set anyway) */
 void THISCALL (net_clearAnnouncements)(Scene *scene)
 {
 	memset(scene->sendFlags, 0, sizeof scene->sendFlags);

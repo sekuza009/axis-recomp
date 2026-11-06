@@ -28,9 +28,11 @@ void THISCALL (actor_setInput)(Stage *stage, int i, int v0, int v1, int v2, int 
 		FIELD(int, a, input_fields[k]) = v[k];
 }
 
-/* 0x45dff0 (script commands 24 / 25): actor i held out of play with value (kept in the actor, outOfPlay; mode kept
-   but never read); the actor held before is let go. A negative i holds none; an actor not in use is not held.
-   No camera code reads any of it (no shipped map uses commands 21 .. 27) */
+/* 0x45dff0 (script commands 24 / 25): actor i held out of play with value (kept in the actor, outOfPlay; mode kept in
+   heldMode but never read); the actor held before (heldActor) is let go. Only an actor in play (state 1) or a
+   negative i is taken; a negative i holds none but, as in the original, value is still stored at actors[-1].outOfPlay
+   (the word 0x8888 before actors[0].outOfPlay; command 25 stores 0). No camera code reads any of it (no shipped map
+   uses commands 21 .. 27) */
 void THISCALL (script_holdActor)(Stage *stage, int i, int mode, int value)
 {
 	int *target = &stage->heldActor;
@@ -117,12 +119,12 @@ void THISCALL (stage_drawBullets)(Stage *stage, void *view)
 			bullet_drawTrail(stage, i, view);
 }
 
-/* 0x48fde0: while the script runs (scriptMode), its object (scenePath) told (recorder_noteStub); returns b */
+/* 0x48fde0: while the script runs (scriptMode), its object (scenePath) told (scenePath_notifyStub); returns b */
 int THISCALL (script_notifyObject)(Stage *stage, int a, int b, int c, int d)
 {
 	if (!stage->scriptMode)
 		return 0;
-	recorder_noteStub((u8 *)&stage->scenePath, a, b, c, d);
+	scenePath_notifyStub((u8 *)&stage->scenePath, a, b, c, d);
 	return b;
 }
 
@@ -213,7 +215,7 @@ void THISCALL (stage_resetPlayerRecords)(Stage *stage)
 		pr->character = 0;
 		pr->team = -1;
 		player_clear(e);
-		playerRecord_resetColourGrid(stage, p);
+		playerRecord_resetFlag(stage, p);
 	}
 	stage->playerRecordCount = 0;
 }
@@ -301,11 +303,11 @@ int THISCALL (stage_setupActorSlot)(Stage *scene, int i, u32 id, u32 controlledB
 }
 
 /* 0x474fd0: a player's part coloured from the network: six signed bytes, scaled (the first and fourth by k_1_40625f,
-   the others by k_0_0078125f), given to actor_setPartColor. Its caller ignores the eax it leaves */
-void THISCALL (actor_applyRemoteColours)(void *scene, int p, int part, int h1, int s1, int v1, int h2, int s2, int v2)
+   the others by k_0_0078125f), given to playerRecord_setPartColour. Its caller ignores the eax it leaves */
+void THISCALL (playerRecord_applyNetColours)(void *scene, int p, int part, int h1, int s1, int v1, int h2, int s2, int v2)
 {
 	long double k1 = k_1_40625f, k2 = k_0_0078125f;
-	actor_setPartColor(scene, p, part, (float)((signed char)h1 * k1), (float)((signed char)s1 * k2), (float)((signed char)v1 * k2),
+	playerRecord_setPartColour(scene, p, part, (float)((signed char)h1 * k1), (float)((signed char)s1 * k2), (float)((signed char)v1 * k2),
 	                   (float)((signed char)h2 * k1), (float)((signed char)s2 * k2), (float)((signed char)v2 * k2));
 }
 
@@ -347,15 +349,17 @@ static const PartModel g_parts[5] = {
 
 /* (thiscall on the scene; their callers ignore the eax they leave) */
 void THISCALL (actor_loadHead)(u8 *scene, int a) { part_load(scene, a, &g_parts[0]); }
-void THISCALL (actor_loadBody)(u8 *scene, int a) { part_load(scene, a, &g_parts[1]); }
+void THISCALL (actor_loadChest)(u8 *scene, int a) { part_load(scene, a, &g_parts[1]); }
 void THISCALL (actor_loadArms)(u8 *scene, int a) { part_load(scene, a, &g_parts[2]); }
 void THISCALL (actor_loadLegs)(u8 *scene, int a) { part_load(scene, a, &g_parts[3]); }
 void THISCALL (actor_loadBooster)(u8 *scene, int a) { part_load(scene, a, &g_parts[4]); }
 
-/* 0x45de20 (thiscall on the scene): actor a spawned from a map record for the player (playerActor; none: a fatal
-   message): set up from its parts (stage_setupActorSlot, with the record's position, angle and parts picked out), then given
-   the record's settings: team and two values (kept twice), ranges and speeds scaled, its radius squared (scaled), a
-   count from a scaled value, and the rest copied; no targets (path, pathPoint -1). Its callers ignore the eax it
+/* 0x45de20 (thiscall on the scene): actor a spawned from a map record (SpawnRecord), controlled by the player's actor
+   (playerActor; none: a fatal message): set up from its parts (stage_setupActorSlot with the record's player record,
+   bot flag, position, pitch and yaw), then given the record's settings: unused1c, armour and shield (each as the
+   maximum and the current value), speed (baseSpeed and speed, x 27.7778), turnRate (x 10), the detection range
+   squared (x 10000), unused34, aimError (x 10, rounded to an int), scriptFlag, dodgeSpread / climbSpread (x 100),
+   botTimes copied; no path (path, pathPoint -1). Its callers (script command 15, match_frame) ignore the eax it
    leaves */
 void THISCALL (actor_applySpawnRecord)(u8 *scene, int a, const u8 *rec)
 {
@@ -479,11 +483,11 @@ static u8 level_byte(float *v)
 	return (u8)ftol(fmul_m(fld_m(v), &k_128f));
 }
 
-/* 0x474b50 (thiscall on the scene): player p's part (0 .. 4) coloured: two hue / saturation / value sets kept as
-   bytes in the part type record's colour table (partHue + part x 2: hue, partSaturation saturation, partValue value; the second
-   set one byte on), then the part's shape cache (headShapes ..) given textures from the player's
-   directory (by 0x4c77f8) tinted with them (shape_setTextureSuffix). Its callers ignore the eax it leaves */
-void THISCALL (actor_setPartColor)(Stage *scene, int p, int part, float h1, float s1, float v1, float h2, float s2, float v2)
+/* 0x474b50 (thiscall on the scene): player record p's part (0 .. 4) coloured: two hue / saturation / value sets kept
+   as bytes in the player record's colour grid (partHue / partSaturation / partValue [part][0] the first set, [1] the
+   second), then the record's shape cache for the part (headShapes ..) given the texture folder suffix _T<p>
+   (0x4c77f8) and tinted with them (shape_setTextureSuffix, flag 2). Its callers ignore the eax it leaves */
+void THISCALL (playerRecord_setPartColour)(Stage *scene, int p, int part, float h1, float s1, float v1, float h2, float s2, float v2)
 {
 	static const u32 shapes[5] = { offsetof(PlayerRecord, headShapes), offsetof(PlayerRecord, chestShapes), offsetof(PlayerRecord, armShapes), offsetof(PlayerRecord, legShapes), offsetof(PlayerRecord, boosterShapes) };
 	PlayerRecord *pr = &scene->playerRecords[p];
@@ -528,7 +532,7 @@ static u8 *weapon_list(u8 *ac)
    faint tint lights it with lightMatrix. The viewing actor (cockpitActor), when draw is set, shows only the weapon in
    hand; others, when draw is not 1, all their lists up to the count breakUp (the fifth unless viewMarked; flags 0xd00 skip
    them without flares 0x83a9c8 or when too small on screen; faint ones only with flares); flags 0x100 / 0xc00 add a
-   lit pass. A list that would not draw has them all reloaded (actor_loadHead / actor_loadBody / actor_loadArms /
+   lit pass. A list that would not draw has them all reloaded (actor_loadHead / actor_loadChest / actor_loadArms /
    actor_loadLegs / actor_loadBooster / actor_loadWeapon). Its caller ignores the eax it leaves */
 void THISCALL (actor_drawIntoView)(u8 *s, int a, void *vv, int draw)
 {
@@ -577,10 +581,10 @@ void THISCALL (actor_drawIntoView)(u8 *s, int a, void *vv, int draw)
 	u32 f;
 	if (a == st->cockpitActor) {
 		if (draw) {
-			ok = partList_queue(weapon_list(ac), vv, lights, tint, 1, (u32)-1, light) & 1;
+			ok = ObjectList_queue(weapon_list(ac), vv, lights, tint, 1, (u32)-1, light) & 1;
 			f = ((u32)AC->stateFlags);
 			if ((f & 0x100) || (f & 0xc00))
-				ok &= partList_queue(weapon_list(ac), vv, lights, tint, 1, flag_texture(s, f), (u32)st->overlayMatrix);
+				ok &= ObjectList_queue(weapon_list(ac), vv, lights, tint, 1, flag_texture(s, f), (u32)st->overlayMatrix);
 		}
 	} else if (draw != 1) {
 		f = ((u32)AC->stateFlags);
@@ -605,7 +609,7 @@ void THISCALL (actor_drawIntoView)(u8 *s, int a, void *vv, int draw)
 					return;
 				if (k == 4 && AC->viewMarked)
 					continue;
-				int r = partList_queue(ac + k_partLists[k], vv, lights, tint, 1, (u32)-1, light);
+				int r = ObjectList_queue(ac + k_partLists[k], vv, lights, tint, 1, (u32)-1, light);
 				ok = k ? ok & r : r & 1;
 			}
 		}
@@ -614,14 +618,14 @@ void THISCALL (actor_drawIntoView)(u8 *s, int a, void *vv, int draw)
 			u32 lt = flag_texture(s, f);
 			for (int k = 0; k < 8; k++)
 				if (k != 4 || !AC->viewMarked)
-					ok &= partList_queue(ac + k_partLists[k], vv, lights, tint, 1, lt, (u32)st->overlayMatrix);
+					ok &= ObjectList_queue(ac + k_partLists[k], vv, lights, tint, 1, lt, (u32)st->overlayMatrix);
 		}
 	}
 	AC->viewMarked = 0;
 	if (ok)
 		return;
 	actor_loadHead(s, a);
-	actor_loadBody(s, a);
+	actor_loadChest(s, a);
 	actor_loadArms(s, a);
 	actor_loadLegs(s, a);
 	actor_loadBooster(s, a);
@@ -778,16 +782,18 @@ static void mech_stats(u8 *s, u8 *ac, u8 *p, int check)
 	AC->botTimes[4] = 1.0f;
 }
 
-/* 0x457330 (thiscall on the scene): actor a built from player *pp's mech (the player record 0x47fd2 bytes from
-   playerRecords; its parts parts head, chest, arms, legs, booster; pp: the player, controlledBy copied, the position +8
-   and the heading +0x14). The special items in its six slots (items; kinds 0x1b .. 0x23 with a negative ammoType)
-   bend the defaults (ammoFactor ..: armour, shields, power, cooling, mobility); then the stats: health and energy (the
-   head with the level), the weight against the limit (any items' weight unless the game type is 2 .. 11) giving an
-   overload r that slows the legs and booster (speed, turn, jump, gravity, fall), the arms' ammunition, and the
-   fixed values; its id (id, or the next serial when negative), the player's details, the weapon slot (actor_setWeaponSlot),
-   the starting values (actor_startingValues), the position history, timers and flags reset, its lists loaded and parts
-   placed (actor_loadHead .. actor_loadBooster, actor_loadWeapon; viewed by another than itself variantLoaded), and the scene told
-   an actor joined (rankingDirty). Its caller ignores the eax it leaves */
+/* 0x457330 (thiscall on the scene): actor a built from the player record pp[0] (0x47fd2 bytes from playerRecords; its
+   parts head, chest, arms, legs, booster), with bot pp[1], the position pp + 2 and pitch / yaw pp[5] / pp[6];
+   controlledBy from the argument. The mech's stats (mech_stats): the special items in its six slots (items; kinds
+   0x1b .. 0x23 with a negative ammoType) raise the ammo factors and bonuses, the detection range / lock-on /
+   target-keep / hacking, the booster times, the load limit, or the shield factor and regeneration; then the head's
+   detection range and angle, hacking level and lock times, the chest's load limit and armour / shield maxima, the
+   arms' accuracy and ammo maxima, the load (parts, plus the items unless the game type is 2 .. 11) whose overload
+   slows the mobility, speed, move acceleration and run speeds (legs and booster), the pilot character's factors, and
+   the fixed bot values; its id (id, or the next serial when negative), the player's details, the weapon slot
+   (actor_setWeaponSlot), the starting values (actor_startingValues), the position history, timers and flags reset,
+   its lists loaded (actor_loadHead .. actor_loadBooster, actor_loadWeapon; variantLoaded 1 unless it is the cockpit
+   actor), and the ranking redone (rankingDirty). Its caller ignores the eax it leaves */
 void THISCALL (actor_setupFromParts)(u8 *s, int a, int id, u32 controlledBy, const u32 *pp)
 {
 	Stage *st = (Stage *)s;
@@ -866,7 +872,7 @@ void THISCALL (actor_setupFromParts)(u8 *s, int a, int id, u32 controlledBy, con
 	AC->whiteFlash = 1.0f;
 	AC->breakUp = 0;
 	actor_loadHead(s, a);
-	actor_loadBody(s, a);
+	actor_loadChest(s, a);
 	actor_loadArms(s, a);
 	actor_loadLegs(s, a);
 	actor_loadBooster(s, a);
@@ -966,7 +972,7 @@ u32 THISCALL (actor_checkDataLoss)(u8 *s, int a)
 	Stage *st = (Stage *)s;
 	u8 me[0x8888];   /* the stack actor (only the fields it computes are read) */
 	for (int k = 0; k < 5; k++)
-		ResourceSet_trivialCtor((u8 *)&((Player *)me)->rounds[k]);   /* ResourceSet_trivialCtor: a resource set */
+		class_emptyCtor((u8 *)&((Player *)me)->rounds[k]);   /* class_emptyCtor: a resource set */
 	for (int k = 0; k < 8; k++) {
 		GAME_VAR(u32, me + k_listAt[k]) = VT(UnitPoseInfo, 0x4a9754);
 		partList_clear(me + k_listAt[k]);

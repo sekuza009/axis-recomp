@@ -148,16 +148,17 @@ static void skirmish_roundScreen(int hovered)
 	menu_drawCornerOrnaments(X0, Y0, X1, Y1);
 }
 
-/* 0x448ac0: the mission settings screen, the button or arrow under the pointer (skirmish_hitTest) lit. The
-   original leaves eax to callers that ignore it */
-void (skirmish_drawSettingsScreen)(void)
+/* 0x448ac0: the skirmish screen for round g_skirmishShown (skirmish_roundScreen) with the button or arrow under the
+   pointer (skirmish_hitTest) lit. The original leaves eax to callers that ignore it */
+void (skirmish_drawRoundScreen)(void)
 {
 	skirmish_roundScreen(skirmish_hitTest(g_mouseX, g_mouseY));   /* skirmish_hitTest */
 }
 
-/* 0x449a50: the same with nothing lit (the pointer is still asked), under a dimmed screen with the message
-   MSG(563, "YOU'VE GOT NEW PARTS AND WEAPONS") / MSG(0, "PRESS ENTER OR CLICK MOUSE"). The original leaves eax to callers that ignore it */
-void (skirmish_drawScreen)(void)
+/* 0x449a50: the round screen with nothing lit (the pointer still hit-tested) under a dimmed screen and the notice
+   MSG(563, "YOU'VE GOT NEW PARTS AND WEAPONS") / MSG(0, "PRESS ENTER OR CLICK MOUSE"), shown while g_skirmishBriefing
+   (a newly reached round). The original leaves eax to callers that ignore it */
+void (skirmish_drawNewPartsNotice)(void)
 {
 	skirmish_hitTest(g_mouseX, g_mouseY);   /* skirmish_hitTest */
 	skirmish_roundScreen(-1);
@@ -172,7 +173,7 @@ void (skirmish_drawScreen)(void)
 	text_drawBox16(0x46, 0xf5, 0x23a, (const char *)MSG(0, "PRESS ENTER OR CLICK MOUSE"));
 }
 
-/* 0x44aa20, 0x44aa30: jumps to skirmish_drawSettingsScreen and skirmish_drawScreen (the skirmish screen's states'
+/* 0x44aa20, 0x44aa30: jumps to skirmish_drawRoundScreen and skirmish_drawNewPartsNotice (the skirmish screen's states'
    frames; their callers ignore eax) */
-void (skirmish_frameSettings)(void) { skirmish_drawSettingsScreen(); }
-void (skirmish_frameScreen)(void) { skirmish_drawScreen(); }
+void (skirmish_frameRoundScreen)(void) { skirmish_drawRoundScreen(); }
+void (skirmish_frameNewPartsNotice)(void) { skirmish_drawNewPartsNotice(); }

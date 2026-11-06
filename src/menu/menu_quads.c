@@ -26,15 +26,17 @@ static void button(int x0, int y0, int x1, int y1, int lit, const float plainCel
 	glEnd();
 }
 
-/* 0x4282f0: the wide button (27 callers: the screens' text buttons) */
+/* 0x4282f0: the wide button (the screens' text buttons; 87 call sites in 28 functions) */
 void (menu_drawWideButton)(int x0, int y0, int x1, int y1, int lit)
 {
 	static const float plain[4] = { 0.005f, 0.375f, 0.375f, 0.5f }, lit_[4] = { 0.38f, 0.375f, 0.75f, 0.5f };
 	button(x0, y0, x1, y1, lit, plain, lit_);
 }
 
-/* 0x4283e0: the profile screen's button */
-void (profile_drawButton)(int x0, int y0, int x1, int y1, int lit)
+/* 0x4283e0: the large button cell (0.625 x 0.156 of the sheet), lit or plain; every caller passes lit 1 (a label /
+   field background): profile_drawNewDialog, newIdForm_draw (room_dialogs.c), armc_drawColourEditor (armc_screens.c),
+   armc_drawStatsPanel (armc_stats.c) */
+void (menu_drawLargeButton)(int x0, int y0, int x1, int y1, int lit)
 {
 	static const float plain[4] = { 0.0f, 0.5f, 0.625f, 0.65625f }, lit_[4] = { 0.0f, 0.65625f, 0.625f, 0.8125f };
 	button(x0, y0, x1, y1, lit, plain, lit_);
@@ -107,7 +109,8 @@ void (menu_drawCornerOrnaments)(int x0, int y0, int x1, int y1)
 	glDisable(GL_TEXTURE_2D);
 }
 
-/* 0x428b50: the ornament on a panel's top right corner (the third quarter); the first argument is unused */
+/* 0x428b50: the ornament on a panel's top right corner (the texture's lower right quarter, s and t 0.5 .. 1); the
+   first argument is unused */
 void (menu_drawTopRightOrnament)(int x0, int y0, int x1)
 {
 	(void)x0;

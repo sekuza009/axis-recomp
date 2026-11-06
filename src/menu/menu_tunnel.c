@@ -420,7 +420,7 @@ void (menuTunnel_advance)(TunnelRing *ring)
 		}
 		if (g_launchedForNetGame == 1 && g_launchStartStep == 0x65) {
 			g_armcFrom = 1;
-			armc_enterParts();
+			armc_open();
 			g_enteringMenus = 0;
 			g_launchStartStep = 0x66;
 		}

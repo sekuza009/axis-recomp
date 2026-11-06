@@ -53,7 +53,7 @@ void THISCALL (skel_loadFromFile)(u8 *self, void *f, void *mem, int size)
    source, n at capacity, extra bytes (dataSize) after them: the block (+8, its size n x 0x70 + extra at +4) holds the
    skeletons' 0x4c-byte records (nodes), then their 0x24-byte skeletons (items, each created and released), then the
    rest (data). Its callers ignore the eax it leaves */
-void THISCALL (skelSet_setup)(u8 *self, const char *dir, int n, u32 source, int extra, void *mem, int size)
+void THISCALL (SkeletonManager_initBy)(u8 *self, const char *dir, int n, u32 source, int extra, void *mem, int size)
 {
 	Manager *mg = (Manager *)self;
 	SkeletonManager_release(self);
@@ -78,7 +78,7 @@ void THISCALL (skelSet_setup)(u8 *self, const char *dir, int n, u32 source, int 
    extra at +4) holds the shapes' 0x4c-byte records (nodes), then their 0x4c-byte shapes (items, each created and
    released), then the rest (data); the texture folder (textureDir) and the bind flags with the tint (bindFlags ..) cleared. Its callers ignore the
    eax it leaves */
-void THISCALL (shape_initBy)(u8 *self, const char *dir, int n, u32 source, int extra, void *mem, int size)
+void THISCALL (ShapeManager_initBy)(u8 *self, const char *dir, int n, u32 source, int extra, void *mem, int size)
 {
 	Manager *mg = (Manager *)self;
 	ShapeManager_release(self);
@@ -270,7 +270,7 @@ static void rotate(long double angle, const float *axis)
    angle rotation[0] in k_57_2958f units about rotation[1..3]; or its keys from rotKeys, rotKeyCount of them, 0x28 bytes: a base rotation
    +8 about rotation[1..3] and a delta step[0] about step[1..3]). A bone past the count (boneCount) gets the identity. Its callers ignore
    the eax it leaves */
-void THISCALL (skel_applyPose)(u8 *sk, u32 *out, int bone, float t)
+void THISCALL (skel_getBoneMatrix)(u8 *sk, u32 *out, int bone, float t)
 {
 	Skeleton *sko = (Skeleton *)sk;
 	if (bone >= sko->boneCount) {
@@ -396,7 +396,7 @@ u8 *THISCALL (skel_getSkeletonPtrBy)(u8 *cache, const char *name)
 }
 
 /* 0x466dc0 (thiscall on a shape cache): the shape named name, as skel_getSkeletonPtrBy does it for skeletons: shape
-   i (0x4c bytes each from items) loaded from the shape dat (shape_findDatEntry, shape_read) or a "shp" / "obj" file
+   i (0x4c bytes each from items) loaded from the shape dat (shapeDat_getItemFileBy, shape_read) or a "shp" / "obj" file
    (model_loadFrom), its textures looked up (shape_bindTextureBy with the cache's texture folder textureDir as the suffix and seven values
    bindFlags ..); bound (shape_bindPartTextures) when bind is 1, found or added */
 u8 *THISCALL (shape_getByName)(u8 *cache, const char *name, int bind)
@@ -417,7 +417,7 @@ u8 *THISCALL (shape_getByName)(u8 *cache, const char *name, int bind)
 		int room = mem ? mg->dataSize - mg->dataUsed : 0;
 		if (((int)mg->source) == 2)
 			/* (the original's first of its four copies of this pair: the patch DLL retargets all four, for the KYRIE models) */
-			PATCHED_THISCALL(0x466eb8, void, void *, void *, void *, int)(shape, PATCHED_CALL(0x466ea9, void *, const char *)(key), at, room);   /* shape_read (shape_findDatEntry) */
+			PATCHED_THISCALL(0x466eb8, void, void *, void *, void *, int)(shape, PATCHED_CALL(0x466ea9, void *, const char *)(key), at, room);   /* shape_read (shapeDat_getItemFileBy) */
 		else {
 			char path[0x100];
 			item_path(path, cache, own, STR(0x4c4d68, "shp"), STR(0x4c4d6c, "obj"), (char *)OBJ(g_logShapeManager), STR(0x4c4d70, "invalid file format(%s)-getShapePtrBy()"));
@@ -513,10 +513,10 @@ static void transform(float *out, const float *m, const float *px, const float *
    posed at frame animTick (modulo the skeleton's frames frames + 1) for each of its bones (0x70 bytes from its bones;
    at most the object's count): on the GL modelview matrix (saved and put back) the parent bone's matrix is loaded
    (its record matrix; none: base, or the matrix there was), the position translated (the bone's pos, or its keys as
-   in skel_applyPose; times the bone record's scale +4), the rotation as in skel_applyPose; the result read back
+   in skel_getBoneMatrix; times the bone record's scale +4), the rotation as in skel_getBoneMatrix; the result read back
    into the bone's 0x64-byte record (matrix), with two points carried through it: g_vecOrigin (to pos) and the record's
    own point (+0, its +0x20 ..; none: the first again, to centre). Its callers ignore the eax it leaves */
-void THISCALL (skel_poseBones)(u8 *pose, const float *base)
+void THISCALL (ObjectList_poseBones)(u8 *pose, const float *base)
 {
 	ObjectList *ol = (ObjectList *)pose;
 	if (ol->skelCount <= 0)

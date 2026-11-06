@@ -2349,7 +2349,7 @@ static const u32 d_4ad000[] = {   /* 0x4ad000 */
 	FN_ADDR(static_startTextureLog, 0x454fd0), FN_ADDR(static_startTextureManagerLog, 0x456930),
 	FN_ADDR(static_startSoundLog, 0x456c80), FN_ADDR(static_startConsoleLog, 0x460510),
 	FN_ADDR(static_startShapeLog, 0x463b20), FN_ADDR(static_startShapeManagerLog, 0x4669b0),
-	FN_VIA(vec_initZero, 0x467890, 0x467880), FN_VIA(vec_initRest, 0x4678c0, 0x4678b0),
+	FN_VIA(vec_initZero2, 0x467890, 0x467880), FN_VIA(vec_initZero, 0x4678c0, 0x4678b0),
 	FN_VIA(vec_initOrigin, 0x4678f0, 0x4678e0), FN_VIA(vec_initAxisX, 0x467920, 0x467910),
 	FN_VIA(vec_initUp, 0x467950, 0x467940), FN_VIA(vec_initAxisZ, 0x467980, 0x467970),
 	FN_ADDR(static_startTimeSync, 0x468710), FN_ADDR(static_startSkeletonLog, 0x469920),

@@ -33,8 +33,8 @@ void THISCALL (hud_drawFps)(Scene *scene)
 	text_drawSized(0x1f1, 8, text, 16);
 }
 
-/* 0x4953d0 (hud_drawChatInput): the chat line while typing: a half-transparent box and the line, with a "_" cursor
-   during the first half of each blink */
+/* 0x4953d0 (hud_drawChatInput): the chat line while typing (chatMode 1 or 2): a half-transparent box and the line,
+   with a "_" cursor during the second half of each second (secondFraction >= 0.5) */
 void THISCALL (hud_drawChatInput)(Scene *scene)
 {
 	char text[256];
@@ -75,9 +75,9 @@ void THISCALL (hud_drawTeamScores)(Scene *scene)
 	left = gfx_getWidth() / 2 - boxWidth;
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 	int team = scene->players[scene->localPlayer].team;
-	if (scene_teamSide(scene, team) == 0) {
+	if (scene_claimTeamSlot(scene, team) == 0) {
 		hud_drawRectOutline(left, top, boxWidth + left, boxHeight + top);
-	} else if (scene_teamSide(scene, scene->players[scene->localPlayer].team) == 1) {
+	} else if (scene_claimTeamSlot(scene, scene->players[scene->localPlayer].team) == 1) {
 		int x = left + boxWidth + 1;
 		hud_drawRectOutline(x + 1, top + 1, boxWidth + x - 1, boxHeight + top - 1);
 	}

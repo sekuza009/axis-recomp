@@ -11,7 +11,9 @@ void (menu_initColours)(void)
 		GAME_VAR(u32, OBJ(g_codeColours) + k * 4) = on[k] ? 0x3f800000 : 0;
 }
 
-/* 0x40e510: three camera points (0, 300, 0), (0, -500, 0), (0, 350, 0) (16 bytes apart, the fourth word kept) */
+/* 0x40e510: ARM CENTER's six 16-byte points (g_armcViewPoints) zeroed (x, y, z; the fourth word kept), then the y of
+   points 0, 3 and 5 set to 300, -500 and 350. Nothing reads the table (g_armcViewPoints: never read). Caller
+   armc_open */
 void (armc_initCameraPoints)(void)
 {
 	for (int *p = (int *)OBJ(g_armcViewPoints); p < (int *)OBJ(g_armcViewPoints) + 6 * 4; p += 4)
@@ -88,8 +90,10 @@ void (setupTop_initOutlines)(void)
 	}
 }
 
-/* 0x433360: the menu camera's five target points and look-at points (all at the camera's height), the home point
-   from where the camera is now */
+/* 0x433360: the menu camera's five target points (g_camPoints) and look-at points (g_camAims) set: x / y from a table
+   ((20, -10), (20, 0), (20, 10), (-20, -10), (-20, 0); look-at x -70 / 70, y 55, 0, -55 ..), their z all the current
+   look-at's z (g_menuCameraLookZ); the home eye and look-at (g_menuEyeHome*, g_menuLookHome*) from where the camera
+   is now; g_roomAwaitingServer cleared. Only caller armc_cameraStep, on the way back to the game room (800) */
 void (menuCamera_initPoints)(void)
 {
 	static const u32 point[][2] = {
@@ -134,12 +138,13 @@ u32 (replayList_open)(void)
 	return autoplay_listFiles();    /* autoplay_listFiles */
 }
 
-/* 0x430bf0: the front end's start-up: the chat history cleared, then six steps (colours; three table builders, the key
-   repeat records, the menu's records), each counted on the progress bar (g_loadStep), drawn, and followed by a 2-second
-   wait. Returns the last progress drawing's eax */
+/* 0x430bf0: the front end's start-up: the chat history cleared and the colours set (menu_initColours), then six
+   progress steps (g_loadStep counted, frontEnd_drawProgress), each of the first five followed by a 2-frame wait
+   (timer_waitFrames: 1/60 s frames) and one of menu_initMainOutlines, lobbyTop_initOutlines, room_initOutlines,
+   setupTop_initOutlines, net_clearSlots. Only caller menuState100_intro. Returns the last progress drawing's eax */
 u32 (frontEnd_startUp)(void)
 {
-	static const u32 steps[5] = { FN_ADDR(menu_initMainButtons, 0x42f2b0), FN_ADDR(lobbyTop_initOutlines, 0x42f500), FN_ADDR(room_initMenuButtons, 0x42f690), FN_ADDR(setupTop_initOutlines, 0x42f8e0), FN_ADDR(net_clearSlots, 0x430bd0) };
+	static const u32 steps[5] = { FN_ADDR(menu_initMainOutlines, 0x42f2b0), FN_ADDR(lobbyTop_initOutlines, 0x42f500), FN_ADDR(room_initOutlines, 0x42f690), FN_ADDR(setupTop_initOutlines, 0x42f8e0), FN_ADDR(net_clearSlots, 0x430bd0) };
 	memset((void *)OBJ(g_chatHistory), 0, 0x300 * 4);
 	menu_initColours();   /* menu_initColours: the colours */
 	u32 r = 0;

@@ -53,7 +53,7 @@ void THISCALL (hud_drawRanking)(Scene *scene)
 			float red = side == 0 ? 1.0f : 0.0f, blue = side == 0 ? 0.0f : 1.0f;
 			for (int k = 0; k < scene->rankCount; k++) {
 				int p = scene->ranking[k];
-				if (scene_teamSide(scene, scene->players[p].team) != side)
+				if (scene_claimTeamSlot(scene, scene->players[p].team) != side)
 					continue;
 				glColor4f(red, 0.0f, blue, p == scene->localPlayer ? 0.5f : 0.2f);
 				ranking_row(scene, p, &y);

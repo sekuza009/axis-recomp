@@ -13,9 +13,10 @@ typedef long double X;
 #define TURN k_360f       /* 360 degrees */
 #define TINY k_1em8f       /* 1e-8 */
 
-/* 0x464a70: a colour c added to the image's pixels (count img[0x13]), each channel at most 255 and the alpha at most
-   c's; mode 1, or an image with flag 2, fills them with c instead */
-void (image_addColour)(u8 *px, int mode, const u32 *img, const u8 *c)
+/* 0x464a70: colour c added to a shape part's vertex colours px (count: the part's vertexCount, img[0x13]), each
+   channel kept to 255 at most and the alpha to c's at most. Mode 1, or an unlit part (flags bit 1), fills them with c
+   instead */
+void (part_addColour)(u8 *px, int mode, const u32 *img, const u8 *c)
 {
 	if (mode == 1 || (img[0] & 2)) {
 		for (int i = 0; i < (int)img[0x13]; i++)
@@ -37,7 +38,7 @@ void (image_addColour)(u8 *px, int mode, const u32 *img, const u8 *c)
 #define EQ_OR_NAN(a, b) (!((a) < (b)) && !((a) > (b)))
 
 /* 0x46def0: r, g, b -> hue (degrees; FLT_MAX without saturation), saturation, value */
-void (tex_rgbToHsv)(float r, float g, float b, float *h, float *s, float *v)
+void (color_rgbToHsv)(float r, float g, float b, float *h, float *s, float *v)
 {
 	X max = r > g ? (r > b ? r : b) : (g > b ? g : b);
 	X min = !(r >= g) ? (!(r >= b) ? r : b) : (!(g >= b) ? g : b);
@@ -69,7 +70,7 @@ void (tex_rgbToHsv)(float r, float g, float b, float *h, float *s, float *v)
 void THISCALL (tex_tintHsv)(float *rgb, float dh, float ds, float dv)
 {
 	float h, s, v;
-	tex_rgbToHsv(BITS(rgb[0]), BITS(rgb[1]), BITS(rgb[2]), &h, &s, &v);
+	color_rgbToHsv(BITS(rgb[0]), BITS(rgb[1]), BITS(rgb[2]), &h, &s, &v);
 	X d = dh;
 	if (!(d >= ZERO))
 		h = f32(d + TURN);
@@ -101,9 +102,10 @@ static int same(u32 a, u32 b)
 	return EQ_OR_NAN(x, y);
 }
 
-/* 0x456860: slot m's tints (first h, s, v, then the second's; copied as raw bits) set, the slot marked tinted (flag
-   2) and changed (+0x84) when any value differs */
-void THISCALL (tex_recolourMaterial)(TextureBank *self, int m, u32 h1, u32 s1, u32 v1, u32 h2, u32 s2, u32 v2)
+/* 0x456860: material m's tints (the first h, s, v, then the second's, copied as raw bits) stored, the record marked
+   tinted (flag 2) and changed (changed, +0x64) when any value differs (equal-or-NaN compares). The recolouring itself
+   happens at the next tex_bind (tex_applyTintMask) */
+void THISCALL (tex_setMaterialTint)(TextureBank *self, int m, u32 h1, u32 s1, u32 v1, u32 h2, u32 s2, u32 v2)
 {
 	TexRecord *rec = &self->records[m];
 	u32 flags = rec->flags | 2;
@@ -121,8 +123,9 @@ void THISCALL (tex_recolourMaterial)(TextureBank *self, int m, u32 h1, u32 s1, u
 	}
 }
 
-/* 0x456470: texture slot i's tints applied where its mask asks (red >= 200: the first, else green >= 200: the second),
-   if the slot is tinted. Returns what the original leaves in eax */
+/* 0x456470: material i's tints applied to the loaded image (image) where its _COLOR mask (colourMask) has red >= 200
+   (the first tint) or else green >= 200 (the second), when the material is tinted (flag 2). Returns what the original
+   leaves in eax (height, or i's upper bytes with the flags byte) */
 int THISCALL (tex_applyTintMask)(TextureBank *tex, int i)
 {
 	TexRecord *rec = &tex->records[i];

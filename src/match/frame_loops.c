@@ -20,7 +20,7 @@ void THISCALL (bullet_updateAll)(void *s, int dt)
 }
 
 /* 0x479a90: the effects (0x12c-byte slots from particles[].active, particleCount of them) */
-void THISCALL (stage_updateEffects)(void *s, int dt)
+void THISCALL (stage_updateParticles)(void *s, int dt)
 {
 	if (paused(s))
 		return;
@@ -67,7 +67,7 @@ int THISCALL (particle_spawn)(u8 *s, u32 desc)
 /* 0x45e0c0 (thiscall on the scene): the actors (0x8888-byte slots from actors[].active, actorCount of them) moved on by
    dt, the triggers run (all of it skipped while paused); dt added to the clock's fraction (clockFraction), whole units over 1 moved into
    the clock (clockSeconds). Its callers ignore the eax it leaves */
-void THISCALL (actor_updateAll)(u8 *s, float dt)
+void THISCALL (stage_updateActorsAndTriggers)(u8 *s, float dt)
 {
 	if (paused(s))
 		return;
@@ -178,10 +178,10 @@ void THISCALL (script_processTriggers)(u8 *s)
 }
 
 /* 0x49d150 (thiscall on the scene): the local player (none when negative): its kills, deaths and score since they
-   were last counted (killsCounted, deathsCounted, scoreCounted) added to the Ladder record's kills, deaths and exp, and
-   counted; while the match is not being left (matchLeaving 0) the
-   room's text kept (ladder_sendRecord); scoreCommitTimer 300. Its callers ignore the eax it leaves */
-void THISCALL (profile_addMatchScores)(u8 *s)
+   were last counted (killsCounted, deathsCounted, scoreCounted) added to the Ladder record's kills, deaths and exp
+   (g_ladderKills, g_ladderDeaths, g_ladderExp), and counted; while the match is not being left (matchLeaving 0) the
+   Ladder record sent (ladder_sendRecord); scoreCommitTimer 300. Its callers ignore the eax it leaves */
+void THISCALL (ladder_addMatchScores)(u8 *s)
 {
 	Scene *sc = (Scene *)s;
 	if (sc->localPlayer >= 0) {
@@ -216,12 +216,14 @@ void THISCALL (effect_initShapes)(u8 *s)
 		ST->effectShapes[k] = shape_getByName((u8 *)&ST->itemShapes, (const char *)RELOC(singles[k]), 1);
 }
 
-/* 0x483770 (thiscall on the scene): entry `entry` of trigger trig's script (the triggers' 0x1c-byte records from
-   triggers[].wayPoints, +0 their entry list; an entry 0x14 bytes: commandCount its command count, commands the 0x30-byte commands) run for
-   actor actorIndex (none when negative; actors are 0x8888 bytes from actors). Each command by its type: triggers on / off
-   (+4) and armed (+0x14); the actor's orders, targets, speed and flags; actors spawned, reset or deactivated; the
-   camera's target; events; .scp files, animations and sounds by formatted names; objects (de)activated. Its callers
-   ignore the eax it leaves */
+/* 0x483770 (thiscall on the scene): way point `entry` of trigger trig (the triggers' 0x1c-byte records; WayPoint 0x14
+   bytes from wayPoints: commandCount commands of 0x30 bytes at commands) run for actor actorIndex (none when
+   negative). Each command by its type: triggers armed / disarmed (armed: 0 / 1) or fired (fired: 2),
+   stage_triggerActionNone (3, 9); the actor's waits, path, look / follow targets, speed, script flag and
+   invulnerability (4 .. 14, 18 .. 23); an actor spawned from its map record (15), its armour zeroed (16) or
+   deactivated (17); its weapon holding an item selected and fired (20); an actor held out of play or let go (24 / 25:
+   script_holdActor); a message (26); .scp files (27), object animations (28) and sounds (29) by formatted names;
+   objects (de)activated (30 / 31). Its callers ignore the eax it leaves */
 void THISCALL (script_processCommandBy)(u8 *s, int actorIndex, int trig, int entry)
 {
 	u8 *actor = actorIndex >= 0 ? (u8 *)&ST->actors[actorIndex] : NULL;
@@ -305,7 +307,7 @@ void THISCALL (script_processCommandBy)(u8 *s, int actorIndex, int trig, int ent
 			break;
 		case 27:
 			sprintf(name, (const char *)STR(0x4c7a3c, "%s/%s.scp"), ST->sceneDir, (const char *)&c[1]);
-			script_runScpFile(s, name, c[9]);
+			script_startScenePath(s, name, c[9]);
 			break;
 		case 28:
 			sprintf(name, (const char *)STR(0x4c7a30, "%s/%s/%s"), s + 8, ST->stageName, (const char *)&c[2]);
@@ -456,10 +458,10 @@ static void debris(u8 *s, u8 *p, float dt)
 		BITS(pr->life) = BITS(pr->drawAge);
 }
 
-/* 0x476410 (thiscall on the scene): particle slot's frame (0x12c bytes from particles). Its age (age, kept at drawAge)
-   past its life (life) frees it (stage_freeParticle); otherwise debris moves (debris), and puffs and flashes (kinds 2, 3, 25,
-   26, 30 .. 38) shrink with age, (1 - age / life)^2 times their size (size); the age moves on by dt. Its caller
-   ignores the eax it leaves */
+/* 0x476410 (thiscall on the scene): particle slot's frame (0x12c bytes from particles). Its age (age, kept at
+   drawAge) past its life (life) frees it (stage_freeParticle); otherwise debris moves (debris, kind 9), and flashes
+   and impacts (kinds 2, 3, 25, 26, 30 .. 38) cast a light that shrinks with age: lightRadius = (1 - age / life)^2 x
+   the kind's radius (3000 / 5000 / 2000 / 1000 / 1500); the age moves on by dt. Its caller ignores the eax it leaves */
 void THISCALL (particle_update)(u8 *s, int slot, float dt)
 {
 	u8 *p = (u8 *)&ST->particles[slot];

@@ -17,7 +17,7 @@ static int slot_close(int k)
    the connection made; 1 when open */
 static int slot_open(int k, int address, int (*close)(void))
 {
-	if (dplay_coInit() != 0)
+	if (dplay_init() != 0)
 		return 0;
 	if (!dplay_connectionAvailable(k)) {
 		g_dplaySlots[k] = 0;
@@ -108,8 +108,9 @@ int (dplaySlot1_join)(int guid, int player, int data, int gameMode) { return slo
 int (dplaySlot2_join)(int guid, int player, int data, int gameMode) { return slot_join(2, guid, player, data, gameMode); }
 int (dplaySlot3_join)(int guid, int player, int data, int gameMode) { return slot_join(3, guid, player, data, gameMode); }
 
-/* 0x453770: DirectPlay checked once more: net_resetState, then a DirectPlay object made and released again */
-int (dplay_check)(void)
+/* 0x453770: the network state reset (net_resetState) and DirectPlay made (dplay_create); when that fails everything
+   is released again (dplay_release). Always 0, so dplay_init never sees dplay_create's failure */
+int (dplay_resetAndCreate)(void)
 {
 	net_resetState();
 	if (dplay_create() != 0)
@@ -131,7 +132,7 @@ int (dplay_host)(int session, int player, int user1, int maxPlayers, int user2, 
    there is no such session, 0x1f5 when it is full (players == maxPlayers), 0 for an unknown kind */
 int (dplay_join)(int session, int guid, int player, int data)
 {
-	const SessionDesc *rec = (const SessionDesc *)net_sessionValue(session);
+	const SessionDesc *rec = (const SessionDesc *)net_getSession(session);
 	if (!rec)
 		return 0x1f7;
 	if (rec->players == rec->maxPlayers)
@@ -145,7 +146,7 @@ int (dplay_join)(int session, int guid, int player, int data)
 /* 0x452fe0: the arena session left (when one is open, g_arenaSessionOpen and g_sessionListOpen): the host tells everyone first
    (message g_netHostLeftMessageKind, flag g_hostGoneMessageFlag), the slot of the connection kind closed (the kind becomes 4), the session list
    freed (net_freeSessionList, whose eax it returns) and the session state cleared. 1 when there is no session */
-u32 (arena_leaveSession)(void)
+u32 (dplay_leaveSession)(void)
 {
 	static const u32 close[4] = { FN_ADDR(dplaySlot0_close, 0x4549a0), FN_ADDR(dplaySlot1_close, 0x454ac0), FN_ADDR(dplaySlot2_close, 0x454bd0), FN_ADDR(dplaySlot3_close, 0x454ce0) };
 	if (g_arenaSessionOpen != 1 || !g_sessionListOpen)
@@ -168,7 +169,7 @@ u32 (arena_leaveSession)(void)
 /* 0x452ec0: an arena session opened with connection kind (0 TCP/IP to host, which is resolved first; 1..3 the
    others): the old session left, the session state reset and the slot opened (dplaySlot0_open with the address, or
    dplaySlot1_open / dplaySlot2_open / dplaySlot3_open). The slot's answer (and the session marked open), or 0 */
-int (arena_openSession)(u32 kind, const char *host)
+int (dplay_openConnection)(u32 kind, const char *host)
 {
 	static const u32 open[4] = { FN_ADDR(dplaySlot0_open, 0x454940), FN_ADDR(dplaySlot1_open, 0x454a50), FN_ADDR(dplaySlot2_open, 0x454b70), FN_ADDR(dplaySlot3_open, 0x454c80) };
 	char address[16] = { 0 };
@@ -181,10 +182,10 @@ int (arena_openSession)(u32 kind, const char *host)
 	}
 	if (g_sessionListOpen) {
 		if ((*(u32 *)&g_connectionKind) == kind) {
-			arena_leaveSession();
+			dplay_leaveSession();
 			g_sessionListOpen = 0;
 		} else
-			arena_leaveSession();
+			dplay_leaveSession();
 	}
 	(*(u32 *)&g_connectionKind) = kind;
 	g_dplaySessionCount = 0;

@@ -95,7 +95,7 @@ void THISCALL (hud_drawPlayerMarkers)(Scene *scene)
 		if (scene->teamGame == 0)
 			text_setColor(1.0f, 1.0f, 1.0f, alpha);
 		else
-			switch (scene_teamSide(scene, player->team)) {
+			switch (scene_claimTeamSlot(scene, player->team)) {
 			case 0: text_setColor(1.0f, 0.0f, 0.0f, alpha); break;
 			case 1: text_setColor(0.0f, 0.0f, 1.0f, alpha); break;
 			default: text_setColor(1.0f, 1.0f, 1.0f, alpha); break;

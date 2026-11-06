@@ -84,7 +84,7 @@ void (armc_takeCursorItem)(void)
 		*slot_item(slot) = item;
 	}
 	g_armcChanged = 1;
-	armc_weaponSlotRecord(g_armcSlot, item);
+	armc_itemSlotRecord(g_armcSlot, item);
 	armc_snapshot(g_armcSlot);
 	slot = g_armcSlot;
 	set_mech(g_matchPlayerName);
@@ -92,9 +92,11 @@ void (armc_takeCursorItem)(void)
 	armc_pickSlot(slot);
 }
 
-/* 0x40e5d0: entering the screen: the CD checked, the mech set up from the screen's state, the player's actor made
-   again, the preview on */
-void (armc_enterScreen)(void)
+/* 0x40e5d0: the screen's session made once the "please wait" box has been shown (menuState700_armCenter,
+   g_armcSessionDue): the scene's session started (scene_startSession(0, 2): the CD checked), the mech handed to it
+   (mech_setAll with g_cfgPlayerName), the player's actor made again (stage_remakePlayerActor), the preview on,
+   g_armcSessionMade set, a full re-tint asked (g_colourChanged) */
+void (armc_makeSession)(void)
 {
 	scene_startSession(g_scene, 0, 2);
 	set_mech(g_cfgPlayerName);
@@ -112,7 +114,7 @@ void (armc_openWeaponsPage)(void)
 	g_armcSlot = 0;
 	g_unusedArmcWord1 = 0;
 	for (int slot = 0; slot < 6; slot++)
-		armc_weaponSlotRecord(slot, *slot_item(slot));
+		armc_itemSlotRecord(slot, *slot_item(slot));
 	g_armcCursor = 0;
 	for (int i = 0; i < g_weaponCount; i++)
 		if (g_weaponList[i] == *slot_item(0)) {
@@ -132,7 +134,7 @@ void (armc_openWeaponsPage)(void)
 /* 0x40fd30: the weapons page clicked (armcWeaponsPage_hitTest's buttons 0 .. 14): 0 / 2 the parts and colour pages (the slot
    closed first; unless already there), 3 / 4 the screen's two exits (armc_exit), 6 .. 11 slot 0 .. 5 picked,
    12 / 13 the cursor back / on (weapons wrap past the first entry; for the other items a step the slot cannot take
-   (armc_colourPartEquipped) is skipped) with the item shown and taken, 14 the rotation toggle. Each with its sound. Returns
+   (armc_extraItemEquipped) is skipped) with the item shown and taken, 14 the rotation toggle. Each with its sound. Returns
    what the original leaves in eax */
 u32 (armc_weaponsPageClicks)(void)
 {
@@ -162,7 +164,7 @@ u32 (armc_weaponsPageClicks)(void)
 				g_armcCursor = g_weaponCount - 1;
 			else if (step > 0 && g_armcCursor >= g_weaponCount)
 				g_armcCursor = 1;
-		} else if (g_armcSlot > 3 && armc_colourPartEquipped(g_armcCursor) == 1)   /* armc_colourPartEquipped */
+		} else if (g_armcSlot > 3 && armc_extraItemEquipped(g_armcCursor) == 1)   /* armc_extraItemEquipped */
 			g_armcCursor += step;
 		sound_playMenu(8);
 		armc_showCursorItem();          /* armc_showCursorItem: the item shown */

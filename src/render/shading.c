@@ -298,7 +298,7 @@ static void water_point(u8 *scene, u8 *layer, u8 *part, int at, int tex_at, floa
    first terrain model (layerModel.parts, 0x80 bytes a layer: its colours, primCount). A water layer (water 1) gives the second
    model's part (waterModel.parts) its surface around the camera at its height (+8): rings of four and of eight (the second
    h x k_m1_5f out) with texture coordinates; otherwise that part has none. Both models then go to the view volume's
-   queue (ViewVolume_projectObject). Its callers ignore the eax it leaves */
+   queue (ViewVolume_queueModel). Its callers ignore the eax it leaves */
 void THISCALL (ground_buildDrawLists)(u8 *s, void *view, float h)
 {
 	Stage *st = (Stage *)s;
@@ -376,6 +376,6 @@ void THISCALL (ground_buildDrawLists)(u8 *s, void *view, float h)
 			water_point(s, layer, water, 0x30 + k * 0xc, 0x20 + k * 8, v, angle);
 		}
 	}
-	ViewVolume_projectObject(view, (u8 *)&st->waterModel, 0, NULL, 0, NULL, 0, -1, 0);
-	ViewVolume_projectObject(view, (u8 *)&st->layerModel, 0, NULL, 0, NULL, 0, -1, 0);
+	ViewVolume_queueModel(view, (u8 *)&st->waterModel, 0, NULL, 0, NULL, 0, -1, 0);
+	ViewVolume_queueModel(view, (u8 *)&st->layerModel, 0, NULL, 0, NULL, 0, -1, 0);
 }

@@ -124,8 +124,8 @@ void (space_transformPoint)(float *out, const float *m, const float *p)
 	out[2] = (float)((X)m[10] * p[2] + (X)m[2] * p[0] + (X)m[6] * p[1] + m[14]);
 }
 
-/* 0x4679a0: out = the unit normal of the triangle p0, p1, p2 ((p1 - p0) x (p2 - p0)); of p1 - p0, x and y are
-   rounded to floats and z is not */
+/* 0x4679a0: out = the unit normal of the triangle with corner p0: (p2 - p0) x (p1 - p0), normalised; of p1 - p0, x
+   and y are rounded to floats and z is not */
 void (math_triangleNormal)(float *out, const float *p1, const float *p0, const float *p2)
 {
 	X ux = (X)p2[0] - p0[0], uy = (X)p2[1] - p0[1], uz = (X)p2[2] - p0[2];
