@@ -28,14 +28,14 @@ static void clear_all(const u32 *a, int n)
    and the current position as home (g_menuEyeHomeX) */
 static void camera_heights(int n)
 {
-	int z = g_menuCameraLookZ;
+	int z = (*(int *)&g_menuCameraLookZ);
 	for (int i = 0; i < n; i++) {
 		I(ADDR(g_camPoint0Z) + i * 0x10) = z;
 		I(ADDR(g_camAim0Z) + i * 0x10) = z;
 	}
-	g_menuEyeHomeX = (*(int *)&g_menuCameraPos);
-	g_menuEyeHomeY = (*(int *)&g_menuEyeY);
-	g_menuEyeHomeZ = (*(int *)&g_menuEyeZ);
+	(*(int *)&g_menuEyeHomeX) = (*(int *)&g_menuCameraPos);
+	(*(int *)&g_menuEyeHomeY) = (*(int *)&g_menuEyeY);
+	(*(int *)&g_menuEyeHomeZ) = (*(int *)&g_menuEyeZ);
 }
 
 /* the four target and look-at points of the lobby and setup screens: (+-35, 0) looking at (-+70, +-35) */
@@ -48,25 +48,25 @@ static const Store camera4[] = {
 /* 0x440bb0: the main menu: its camera (-300), its limits, colours, fade */
 void (menuState300_enter)(void)
 {
-	g_mainMenuDepth = 0xc3960000;   /* -300 */
+	(*(u32 *)&g_mainMenuDepth) = 0xc3960000;   /* -300 */
 	g_mainMenuFrames = 0;
 	(*(u32 *)&g_flareSizeB) = 0x41200000;   /* 10 */
 	(*(u32 *)&g_flareSizeA) = 0x42400000;   /* 48 */
 	(*(u32 *)&g_flareStepB) = 0x3e4ccccd;   /* 0.2 */
 	(*(u32 *)&g_flareStepA) = 0xbe4ccccd;   /* -0.2 */
 	(*(int *)&g_menuRepeatClock) = 0;
-	g_menuIdleTime = 0;
-	g_menuHintStep = 0x3d4ccccd;   /* 0.05 */
-	g_menuHintFade = 0;
+	(*(int *)&g_menuIdleTime) = 0;
+	(*(u32 *)&g_menuHintStep) = 0x3d4ccccd;   /* 0.05 */
+	(*(int *)&g_menuHintFade) = 0;
 	g_replaySelectOpen = 0;
-	g_replaySelectLitR = 0;
-	g_replaySelectLitG = ONE;
-	g_replaySelectLitB = ONE;
-	g_replaySelectLitA = ONE;
-	g_replaySelectDimR = 0x3e99999a;   /* (0.3, 0.7, 0.7, 1) */
-	g_replaySelectDimG = 0x3f333333;
-	g_replaySelectDimB = 0x3f333333;
-	g_replaySelectDimA = ONE;
+	(*(int *)&g_replaySelectLitR) = 0;
+	(*(u32 *)&g_replaySelectLitG) = ONE;
+	(*(u32 *)&g_replaySelectLitB) = ONE;
+	(*(u32 *)&g_replaySelectLitA) = ONE;
+	(*(u32 *)&g_replaySelectDimR) = 0x3e99999a;   /* (0.3, 0.7, 0.7, 1) */
+	(*(u32 *)&g_replaySelectDimG) = 0x3f333333;
+	(*(u32 *)&g_replaySelectDimB) = 0x3f333333;
+	(*(u32 *)&g_replaySelectDimA) = ONE;
 	g_matchMode = 0;
 }
 
@@ -91,17 +91,17 @@ void (menuState400_enter)(void)
 	(*(int *)&g_menuRepeatClock) = 0;
 	g_arenaGameListLeft = 0x14;
 	g_arenaGameListTop = 0x14;
-	g_arenaTunnelDepth = 0xc4af0000;   /* -1400 */
+	(*(u32 *)&g_arenaTunnelDepth) = 0xc4af0000;   /* -1400 */
 	g_arenaGameListBottom = 0x1c2;
 	g_newArenaFormBottom = 0x1c2;
 	g_lobbyPanelsSliding = 1;
 	camera_heights(4);
-	int lx = (*(int *)&g_menuCameraLook), ly = (*(int *)&g_menuCameraLookY), lz = g_menuCameraLookZ;
+	int lx = (*(int *)&g_menuCameraLook), ly = (*(int *)&g_menuCameraLookY), lz = (*(int *)&g_menuCameraLookZ);
 	STORE_ALL(layout);
 	STORE_ALL(camera4);
-	g_menuLookHomeX = lx;
-	g_menuLookHomeY = ly;
-	g_menuLookHomeZ = lz;
+	(*(int *)&g_menuLookHomeX) = lx;
+	(*(int *)&g_menuLookHomeY) = ly;
+	(*(int *)&g_menuLookHomeZ) = lz;
 	CLEAR_ALL(cleared1);
 	lobbyTop_layout();
 	playerSetup_layout();
@@ -130,12 +130,12 @@ void (menuState600_enterSetup)(void)
 	g_setupSoundRight = 0x24e;
 	g_setupControlRight = 0x24e;
 	camera_heights(4);
-	int lx = (*(int *)&g_menuCameraLook), ly = (*(int *)&g_menuCameraLookY), lz = g_menuCameraLookZ;
+	int lx = (*(int *)&g_menuCameraLook), ly = (*(int *)&g_menuCameraLookY), lz = (*(int *)&g_menuCameraLookZ);
 	STORE_ALL(layout);
 	STORE_ALL(camera4);
-	g_menuLookHomeX = lx;
-	g_menuLookHomeY = ly;
-	g_menuLookHomeZ = lz;
+	(*(int *)&g_menuLookHomeX) = lx;
+	(*(int *)&g_menuLookHomeY) = ly;
+	(*(int *)&g_menuLookHomeZ) = lz;
 	setupSound_layout();
 	setupGraphic_layout();
 	setupControl_layout();
@@ -185,9 +185,9 @@ void (menuState800_enterGameRoom)(void)
 	updateNotice_layout();
 	STORE_ALL(colours_camera);
 	camera_heights(5);
-	g_menuLookHomeX = (*(int *)&g_menuCameraLook);
-	g_menuLookHomeY = (*(int *)&g_menuCameraLookY);
-	g_menuLookHomeZ = g_menuCameraLookZ;
+	(*(int *)&g_menuLookHomeX) = (*(int *)&g_menuCameraLook);
+	(*(int *)&g_menuLookHomeY) = (*(int *)&g_menuCameraLookY);
+	(*(int *)&g_menuLookHomeZ) = (*(int *)&g_menuCameraLookZ);
 	memset((void *)OBJ(g_ladderEmail), 0, 7 * 4 + 2);
 	g_ladderPassword = 0;
 	g_ladderPassword4 = 0;

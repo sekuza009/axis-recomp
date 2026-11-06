@@ -43,11 +43,11 @@ int (profile_nameHasBadChar)(const char *s) { return has_any(s, "\\/:*?\"<>|"); 
 static void load_stat_bars(int i)
 {
 	(*(u32 *)&g_profileFrameAlpha) = 0x42200000;   /* 40.0 */
-	g_profileFrameStep = 0xbf800000;   /* -1.0 */
+	(*(u32 *)&g_profileFrameStep) = 0xbf800000;   /* -1.0 */
 	g_statBarsStale = 0;
 	for (int k = 0; k < 9; k++)
 		g_statBarTargets[k] =
-			(float)((long double)g_characterProfiles[i].stats[k] + k_50f);
+			(float)((long double)((CharacterProfile *)g_characterProfiles)[i].stats[k] + k_50f);
 }
 
 /* 0x44bc50: the stat bars for the pilot under CHARACTER SELECT's cursor; profile_loadPilotStats: for the pilot of the
@@ -100,7 +100,7 @@ void (profile_resetPreview)(void)
 	memset((void *)OBJ(g_statBars), 0, 36);
 	g_statBarsStale = 1;
 	(*(u32 *)&g_profileFrameAlpha) = 0x42200000;   /* 40.0 */
-	g_profileFrameStep = 0xbf800000;   /* -1.0 */
+	(*(u32 *)&g_profileFrameStep) = 0xbf800000;   /* -1.0 */
 }
 
 /* 0x44b750: the same, and no profile selected */
@@ -108,7 +108,7 @@ void (profile_resetSelection)(void)
 {
 	profile_resetPreview();
 	g_pilotSelectCursor = 0;
-	g_profileRevealClock = 0;
+	(*(int *)&g_profileRevealClock) = 0;
 	g_profileReveal = 0;
 }
 
@@ -277,7 +277,7 @@ int (pilotSelect_clicks)(void)
 				(*(u32 *)&g_pilotSelectCursor) = row;
 				g_statBarsStale = 1;
 				sound_playMenu(2);
-				g_profileRevealClock = 0;
+				(*(int *)&g_profileRevealClock) = 0;
 				g_profileReveal = 0;
 			}
 		} else if (row == 9) {

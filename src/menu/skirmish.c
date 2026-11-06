@@ -42,7 +42,7 @@ static void value_line(int y, u32 label, int value, u32 none, u32 unit)
 /* the screen, hovered the button (0 / 1) or arrow (2 / 3) under the pointer (-1: none, nothing lit) */
 static void skirmish_roundScreen(int hovered)
 {
-	const u32 *bright = g_skirmishColourLit, *dim = g_skirmishColourDim;
+	const u32 *bright = ((u32 *)g_skirmishColourLit), *dim = ((u32 *)g_skirmishColourDim);
 	gfx_setProjection2D3D(2);
 	glLoadIdentity();
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);

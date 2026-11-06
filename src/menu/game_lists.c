@@ -6,7 +6,7 @@
 #define g_listTop g_gameListTop
 #define g_searching (g_lanSearch || g_lobbySearching)
 
-static const u32 *const bright = g_arenaBright, *const dim = g_arenaDim;
+static const u32 *const bright = ((u32 *)g_arenaBright), *const dim = ((u32 *)g_arenaDim);
 #define TEXT(c) set_colour_bits(g_textColour, (c)[0], (c)[1], (c)[2], (c)[3])
 #define RECT(r, g, b, a) set_colour_bits(g_rectColour, r, g, b, a)
 
@@ -234,7 +234,7 @@ void (arena_drawGameList)(void)
 #define X1 g_roomGameListRight
 #define Y1 g_roomGameListBottom
 
-static const u32 *const room_bright = g_roomBright, *const room_dim = g_roomDim;
+static const u32 *const room_bright = ((u32 *)g_roomBright), *const room_dim = ((u32 *)g_roomDim);
 
 /* a room button's quad, lit or dimmed, and the text colour to match */
 static void room_button(int lit, int x0, int y0, int x1, int y1, float dim_alpha)
@@ -810,7 +810,7 @@ void (arena_drawGamesPage)(void)
 		g_typingArenaAddress = 0;
 		memset((void *)ADDR(g_typedArenaAddress), 0, 6 * 4);
 		strcpy((char *)ADDR(g_typedArenaAddress), g_chatLine);
-		if (g_typedArenaAddress)
+		if ((*(char *)&g_typedArenaAddress))
 			arena_joinListed(99999);
 	}
 	if (g_lanJoinRequest)

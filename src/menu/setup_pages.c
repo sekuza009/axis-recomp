@@ -29,7 +29,7 @@ void (setup_drawSoundPage)(void)
 #define Y0 (g_setupSoundRect[1])
 #define X1 g_setupSoundRight
 #define Y1 (g_setupSoundRect[3])
-	const u32 *bright = g_setupColourLit, *dim = g_setupColourDim;
+	const u32 *bright = ((u32 *)g_setupColourLit), *dim = ((u32 *)g_setupColourDim);
 	int hovered = setupSound_hitTest(g_mouseX, g_mouseY);
 	gfx_setProjection2D3D(2);
 	glLoadIdentity();
@@ -116,7 +116,7 @@ void (setup_drawGraphicPage)(void)
 #define X1 (g_setupGraphicRect[2])
 #define Y1 (g_setupGraphicRect[3])
 	static const u32 names[6] = { OBJ(g_colourDepthTexts), OBJ(g_fxStatusTexts), OBJ(g_linearFilterTexts), OBJ(g_mipMapTexts), OBJ(g_viewFpsTexts), OBJ(g_simpleMenuTexts) };
-	const u32 *bright = g_setupColourLit, *dim = g_setupColourDim;
+	const u32 *bright = ((u32 *)g_setupColourLit), *dim = ((u32 *)g_setupColourDim);
 	int hovered = setupGraphic_hitTest(g_mouseX, g_mouseY);
 	gfx_setProjection2D3D(2);
 	glLoadIdentity();
@@ -184,7 +184,7 @@ static void key_tab(int tab)
 #define Y0 g_setupControlTop
 	static const u32 labels[3] = { MSG(216, "FORWARD"), MSG(231, "FIRE"), MSG(246, "CHAT") };
 	static const int rows[3] = { 10, 11, 10 };
-	const u32 *bright = g_setupColourLit;
+	const u32 *bright = ((u32 *)g_setupColourLit);
 	const char *const *key_name = (const char *const *)OBJ(g_keyNames);
 	int none = g_dikNone;
 	set_colour_bits(g_textColour, bright[0], bright[1], bright[2], bright[3]);
@@ -220,7 +220,7 @@ static void settings_tab(void)
 {
 #define X0 g_setupControlLeft
 #define Y0 g_setupControlTop
-	const u32 *bright = g_setupColourLit;
+	const u32 *bright = ((u32 *)g_setupColourLit);
 	set_colour_bits(g_textColour, bright[0], bright[1], bright[2], bright[3]);
 	text_draw16(X0 + 0x1ae, Y0 + 0x12, (const char *)MSG(205, "MO$[0] USE"));
 	for (int r = 0; r < 3; r++)
@@ -289,7 +289,7 @@ void (setup_drawControlsPage)(void)
 #define Y0 g_setupControlTop
 #define X1 g_setupControlRight
 #define Y1 (g_setupControlRect[3])
-	const u32 *bright = g_setupColourLit, *dim = g_setupColourDim;
+	const u32 *bright = ((u32 *)g_setupColourLit), *dim = ((u32 *)g_setupColourDim);
 	int hovered = setupControl_hitTest(g_mouseX, g_mouseY);
 	gfx_setProjection2D3D(2);
 	glLoadIdentity();
@@ -418,15 +418,15 @@ static void tunnel_advance(int turn_only)
 	g_tunnelPulse = f32(pulse);
 	if (turn_only) {
 		if (!(pulse > k_0f))
-			g_tunnelPulseStep = 0x3f800000;
+			(*(u32 *)&g_tunnelPulseStep) = 0x3f800000;
 		if (pulse >= k_100f)
-			g_tunnelPulseStep = 0xbf800000;
+			(*(u32 *)&g_tunnelPulseStep) = 0xbf800000;
 	} else if (!(pulse > k_0f)) {
 		g_tunnelPulse = 0;
-		g_tunnelPulseStep = 0x3f800000;   /* 1 */
+		(*(u32 *)&g_tunnelPulseStep) = 0x3f800000;   /* 1 */
 	} else if (g_tunnelPulse >= k_100f) {
 		g_tunnelPulse = 100.0f;
-		g_tunnelPulseStep = 0xbf800000;   /* -1 */
+		(*(u32 *)&g_tunnelPulseStep) = 0xbf800000;   /* -1 */
 	}
 	long double scroll = fadd_m(fmul_m(fld_m((const float *)ADDR(g_menuTunnelSpeed)), frame), &g_tunnelStripeScroll);
 	g_tunnelStripeScroll = f32(scroll);
@@ -683,19 +683,19 @@ static void menu_tunnel(const Tunnel *t, const Highlight *h)
 	if (!h->keep_texture)
 		glDisable(GL_TEXTURE_2D);
 	if (g_panelHovered) {
-		long double glow = fadd_m(fmul_m(fld_m((const float *)ADDR(g_frameTime)), &(*(float *)&g_panelGlowStep)), &g_panelGlow);
+		long double glow = fadd_m(fmul_m(fld_m((const float *)ADDR(g_frameTime)), &g_panelGlowStep), &g_panelGlow);
 		g_panelGlow = f32(glow);
 		if (!clamp) {
 			if (!(glow > k_2f))
-				g_panelGlowStep = 0x3f800000;   /* 1 */
+				(*(u32 *)&g_panelGlowStep) = 0x3f800000;   /* 1 */
 			if (glow >= k_38f)
-				g_panelGlowStep = 0xbf800000;   /* -1 */
+				(*(u32 *)&g_panelGlowStep) = 0xbf800000;   /* -1 */
 		} else if (!(glow > k_2f)) {
 			(*(u32 *)&g_panelGlow) = 0x40000000;   /* 2 */
-			g_panelGlowStep = 0x3f800000;
+			(*(u32 *)&g_panelGlowStep) = 0x3f800000;
 		} else if (g_panelGlow >= k_38f) {
 			(*(u32 *)&g_panelGlow) = 0x42180000;   /* 38 */
-			g_panelGlowStep = 0xbf800000;
+			(*(u32 *)&g_panelGlowStep) = 0xbf800000;
 		}
 	}
 	tunnel_advance(t->turn_only);
@@ -716,14 +716,14 @@ void (room_drawTunnel)(void)
 {
 	static const float glow[3] = { 0.5f, 0.1f, 1.0f };   /* (no wall glows: the original compares with -1) */
 	static const Highlight h = { -1, glow, 0, 0, 0 };
-	Tunnel t = { g_roomTunnelDepth, OBJ(g_ladderMenuTextures) + 12, 1, 1, 1, 0, SIX_WALLS };
+	Tunnel t = { (*(u32 *)&g_roomTunnelDepth), OBJ(g_ladderMenuTextures) + 12, 1, 1, 1, 0, SIX_WALLS };
 	menu_tunnel(&t, &h);
 }
 /* 0x4091b0: the arena lobby's (as deep as g_arenaTunnelDepth; four walls) */
 void (arena_drawTunnel)(void)
 {
 	static const Highlight h = { -1, white, 0, 0, 0 };
-	Tunnel t = { g_arenaTunnelDepth, OBJ(g_arenaMenuTextures) + 12, 0, 1, 1, 0, FOUR_WALLS };
+	Tunnel t = { (*(u32 *)&g_arenaTunnelDepth), OBJ(g_arenaMenuTextures) + 12, 0, 1, 1, 0, FOUR_WALLS };
 	menu_tunnel(&t, &h);
 }
 
@@ -751,7 +751,7 @@ static int hovered_panel(u32 outlines, int count, int locked)
 	if (on != -1 && g_lastPanel != on) {
 		g_lastPanel = on;
 		(*(u32 *)&g_panelGlow) = 0x42200000;   /* 40 */
-		g_panelGlowStep = 0xbf800000;   /* -1 */
+		(*(u32 *)&g_panelGlowStep) = 0xbf800000;   /* -1 */
 	}
 	return on;
 }
@@ -763,7 +763,7 @@ void (room_drawMenu)(void)
 {
 	static const float glow[3] = { 1.0f, 0.1f, 1.0f };
 	Highlight h = { hovered_panel(OBJ(g_roomOutlines), 6, g_roomPanelsSliding), glow, 0, 0, 0 };
-	Tunnel t = { g_roomTunnelDepth, OBJ(g_ladderMenuTextures) + 12, 1, 1, 1, 0, SIX_WALLS };
+	Tunnel t = { (*(u32 *)&g_roomTunnelDepth), OBJ(g_ladderMenuTextures) + 12, 1, 1, 1, 0, SIX_WALLS };
 	menu_tunnel(&t, &h);
 	if (h.on != -1 && g_roomCameraMode == 2)
 		caption(MSG(91, "SETUP ID|Hotkey is $[5] P"), h.on);
@@ -775,7 +775,7 @@ void (room_drawMenu)(void)
 void (lobbyTop_drawMenu)(void)
 {
 	Highlight h = { hovered_panel(OBJ(g_lobbyTopOutlines), 4, g_lobbyPanelsSliding), white, 1, 0, 0 };
-	Tunnel t = { g_arenaTunnelDepth, OBJ(g_arenaMenuTextures) + 12, 0, 1, 1, 0, FOUR_WALLS };
+	Tunnel t = { (*(u32 *)&g_arenaTunnelDepth), OBJ(g_arenaMenuTextures) + 12, 0, 1, 1, 0, FOUR_WALLS };
 	menu_tunnel(&t, &h);
 	if (h.on != -1 && g_arenaCameraMode == 2 && !g_menuCameraMove)
 		caption(MSG(86, "SETUP PLAYER FOR THE MULTIPLAY|Hotkey..."), h.on);
@@ -800,10 +800,10 @@ void (setup_drawMenu)(void)
    that ignore it */
 void (menu_mainMenu)(void)
 {
-#define g_depth (*(float *)&g_mainMenuDepth)
-#define g_idle (*(float *)&g_menuIdleTime)
-#define g_hint (*(float *)&g_menuHintFade)
-#define g_hintStep g_menuHintStep
+#define g_depth g_mainMenuDepth
+#define g_idle g_menuIdleTime
+#define g_hint g_menuHintFade
+#define g_hintStep (*(u32 *)&g_menuHintStep)
 	const float *frame = (const float *)ADDR(g_frameTime);
 	int on = -1;
 	for (int k = 0; k < 6 && !g_tunnelFlyingIn; k++)
@@ -824,7 +824,7 @@ void (menu_mainMenu)(void)
 		else if (g_lastPanel != on) {
 			g_lastPanel = on;
 			(*(u32 *)&g_panelGlow) = 0x42200000;   /* 40 */
-			g_panelGlowStep = 0xbf800000;   /* -1 */
+			(*(u32 *)&g_panelGlowStep) = 0xbf800000;   /* -1 */
 		}
 	}
 	if (g_tunnelFlyingIn) {   /* (no calls: before the tunnel's projection and texturing as in the original) */

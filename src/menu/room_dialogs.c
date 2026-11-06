@@ -62,7 +62,7 @@ void (room_enterGameList)(void)
 {
 	static const u32 cleared[] = { ADDR(g_roomRefreshing), ADDR(g_roomSearching), ADDR(g_gameListLoaded), ADDR(g_roomSearchAnswerIn), ADDR(g_gameCount), ADDR(g_lobbyBlinkClock), ADDR(g_pickedGame), ADDR(g_gameListTop),
 	                               ADDR(g_gameListRow), ADDR(g_gameListRefreshClicked), ADDR(g_roomJoinStarted), ADDR(g_roomListRefreshTimer), ADDR(g_gameListClickArmed), ADDR(g_gameListClickTimer), ADDR(g_roomListPlayers) };
-	g_unusedRoomFloat = 0x3f333333;   /* 0.7 */
+	(*(u32 *)&g_unusedRoomFloat) = 0x3f333333;   /* 0.7 */
 	g_roomState = 1;
 	g_roomCameraMode = 1;
 	g_lastPanel = 999;
@@ -291,16 +291,16 @@ u32 (room_draw)(void)
 	if (g_frameOpening)
 		return menu_drawFrame(g_roomFormLeft, g_roomFormTop,
 		                                                     g_roomFormRight, g_roomFormBottom);   /* menu_drawFrame */
-	signed char players = (*(signed char *)&g_roomRecPlayers);
+	signed char players = g_roomRecPlayers;
 	if (players < 0 || players > 0x10)
-		g_roomRecPlayers = 8;
+		(*(u8 *)&g_roomRecPlayers) = 8;
 	if (g_roomRecFragLimit > 0x32)
 		g_roomRecFragLimit = 0x1e;
 	if (g_roomRecTimeLimit > 0x3c)
 		g_roomRecTimeLimit = 0x1e;
-	signed char map = (*(signed char *)&g_roomRecGameMode);
+	signed char map = g_roomRecGameMode;
 	if (map < 0 || map > 0xb)
-		g_roomRecGameMode = 0;
+		(*(u8 *)&g_roomRecGameMode) = 0;
 	room_drawGameSettings();   /* room_drawGameSettings */
 	if (g_mapListOpen == 1)
 		mapList_draw();   /* mapList_draw: the map list */
@@ -571,7 +571,7 @@ u32 (room_enterAccountPage)(void)
 	for (unsigned k = 0; k < sizeof cleared / sizeof cleared[0]; k++)
 		GAME_VAR(int, cleared[k]) = 0;
 	g_roomCameraMode = 1;
-	g_unusedRoomFloat = 0x3f333333;
+	(*(u32 *)&g_unusedRoomFloat) = 0x3f333333;
 	static const u32 cleared2[] = { ADDR(g_editingOldPassword), ADDR(g_editingAccountPassword), ADDR(g_editingPasswordRepeat), ADDR(g_editingEmail), ADDR(g_unusedAccountWord), (OBJ(g_accountPassword) + 0x8), (OBJ(g_accountOldPassword) + 0x8) };
 	for (unsigned k = 0; k < sizeof cleared2 / sizeof cleared2[0]; k++)
 		GAME_VAR(int, cleared2[k]) = 0;
@@ -606,7 +606,7 @@ u32 (newIdForm_draw)(void)
 #define Y1 g_newIdFormBottom
 	if (g_frameOpening)
 		return menu_drawFrame(X0, Y0, X1, Y1);   /* the frame */
-	const u32 *bright = g_roomBright, *dim = g_roomDim;
+	const u32 *bright = ((u32 *)g_roomBright), *dim = ((u32 *)g_roomDim);
 	int hovered = newIdForm_hitTest(g_mouseX, g_mouseY);
 	gfx_setProjection2D3D(2);
 	glLoadIdentity();
@@ -692,7 +692,7 @@ u32 (newIdConfirm_draw)(void)
 #define Y1 (g_newIdConfirmBox[3])
 	if (g_frameOpening)
 		return menu_drawFrame(X0, Y0, X1, Y1);   /* menu_drawFrame */
-	const u32 *bright = g_roomBright, *dim = g_roomDim;
+	const u32 *bright = ((u32 *)g_roomBright), *dim = ((u32 *)g_roomDim);
 	int hovered = newIdConfirm_hitTest(g_mouseX, g_mouseY);
 	gfx_setProjection2D3D(2);
 	glLoadIdentity();
@@ -746,7 +746,7 @@ u32 (roomLogin_draw)(void)
 #define Y1 g_roomLoginBottom
 	if (g_frameOpening)
 		return menu_drawFrame(X0, Y0, X1, Y1);   /* menu_drawFrame */
-	const u32 *bright = g_roomBright, *dim = g_roomDim;
+	const u32 *bright = ((u32 *)g_roomBright), *dim = ((u32 *)g_roomDim);
 	int hovered = roomLogin_hitTest(g_mouseX, g_mouseY);
 	gfx_setProjection2D3D(2);
 	glLoadIdentity();
@@ -838,7 +838,7 @@ void (account_drawPanel)(void)
 #define X1 g_accountPanelRight
 #define Y1 g_accountPanelBottom
 #define K(addr) ((const float *)RELOC(addr))
-	const u32 *bright = g_roomBright, *dim = g_roomDim;
+	const u32 *bright = ((u32 *)g_roomBright), *dim = ((u32 *)g_roomDim);
 	int hovered = ((int)account_hitTest(g_mouseX, g_mouseY));   /* account_hitTest */
 	gfx_setProjection2D3D(2);
 	glLoadIdentity();
@@ -897,7 +897,7 @@ void (account_drawPanel)(void)
 		itoa(g_accountRank, text, 10);
 		text_draw8(X0 + 0x98, Y0 + 0xd6, text);
 	}
-	sprintf(text, (const char *)STR(0x4b0268, "%.2f"), (double)(*(float *)&g_pilotPower));
+	sprintf(text, (const char *)STR(0x4b0268, "%.2f"), (double)g_pilotPower);
 	text_draw8(X0 + 0x98, Y0 + 0xee, text);
 	sprintf(text, (const char *)STR(0x4b0268, "%.2f"), (double)g_pilotKillRate);
 	text_draw8(X0 + 0x98, Y0 + 0x106, text);
@@ -944,7 +944,7 @@ u32 (ranking_drawTable)(void)
 #define X1 (g_rankingRect[2])
 #define Y1 (g_rankingRect[3])
 #define TEXT(c) set_colour_bits(g_textColour, (c)[0], (c)[1], (c)[2], (c)[3])
-	const u32 *bright = g_roomBright, *dim = g_roomDim;
+	const u32 *bright = ((u32 *)g_roomBright), *dim = ((u32 *)g_roomDim);
 	static const u32 white[4] = { 0x3f800000, 0x3f800000, 0x3f800000, 0x3f800000 };
 	static const u32 yellow[4] = { 0x3f800000, 0x3f800000, 0, 0x3f800000 };
 	int hovered = ((int)ranking_hitTest(g_mouseX, g_mouseY));   /* ranking_hitTest */

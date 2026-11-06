@@ -3,7 +3,7 @@
 #include "../game.h"
 #include <string.h>
 
-#define g_loadText ((char *)ADDR(g_loadStatusText))
+#define g_loadText g_loadStatusText
 #define ONE k_1f
 
 /* one frame of a fade: the screen at its progress, under a black quad (alpha 1 - time fading in, time fading out),
@@ -103,22 +103,22 @@ void (loading_draw)(u32 progress)
 	text_setColor(1.0f, 1.0f, 0.0f, 1.0f);
 	char line[0x100];
 	int row = 2;
-	int mode = *(int *)(g_loadGame + 8);
+	int mode = *(int *)((*(u8 * *)&g_loadGame) + 8);
 	if (mode == 1 || mode == 3) {
 		sprintf(line, (const char *)STR(0x4c5330, "TITLE: %s"), g_gameTitle);
 		info_line(row, line);
 		row = 4;
 	}
-	if (((Scene *)g_loadGame)->awaitingHostRound == 1)
+	if (((Scene *)(*(u8 * *)&g_loadGame))->awaitingHostRound == 1)
 		sprintf(line, (const char *)STR(0x4c531c, "ZONE: ON RECEIVING"));
 	else
 		sprintf(line, (const char *)STR(0x4c5310, "ZONE: %s"), (const char *)(OBJ(g_mapNames) + g_mapIndex * 32));
 	info_line(row, line);
 	row += 2;
-	if (((Scene *)g_loadGame)->awaitingHostRound == 1)
+	if (((Scene *)(*(u8 * *)&g_loadGame))->awaitingHostRound == 1)
 		sprintf(line, (const char *)STR(0x4c52f8, "PLAY TYPE: ON RECEIVING"));
 	else
-		sprintf(line, (const char *)STR(0x4c52e8, "PLAY TYPE: %s"), (const char *)(STR(0x4c7030, "DEATH MATCH") + ((Scene *)g_loadGame)->gameMode * 64));
+		sprintf(line, (const char *)STR(0x4c52e8, "PLAY TYPE: %s"), (const char *)(STR(0x4c7030, "DEATH MATCH") + ((Scene *)(*(u8 * *)&g_loadGame))->gameMode * 64));
 	info_line(row, line);
 	row += 2;
 	sprintf(line, (const char *)STR(0x4c52d8, "FRAG LIMIT: %d"), g_fragLimit);
@@ -127,7 +127,7 @@ void (loading_draw)(u32 progress)
 	sprintf(line, (const char *)STR(0x4c52c8, "TIME LIMIT: %d"), g_timeLimit);
 	info_line(row, line);
 	text_setColor(0.5f, 0.5f, 0.5f, 1.0f);
-	text_drawSized(0x96, row * 16 + 0x76, (const char *)ADDR(g_loadStatusText), 0x10);
+	text_drawSized(0x96, row * 16 + 0x76, (const char *)g_loadStatusText, 0x10);
 }
 
 /* ---- the game's start-up load ---- */
@@ -282,10 +282,10 @@ int (app_startupLoad)(void *instance)
 	char logo[64];
 	strcpy(logo, (const char *)STR(0x4b24f0, "iftex/axis_title"));
 	(*(u32 *)&g_menuEyeY) = 0;
-	g_menuCameraPos = 0;
+	(*(u32 *)&g_menuCameraPos) = 0;
 	(*(u32 *)&g_menuEyeZ) = 0x43fa0000;   /* 500 */
-	g_menuCameraLook = 0;
-	g_menuCameraLookY = 0;
+	(*(u32 *)&g_menuCameraLook) = 0;
+	(*(u32 *)&g_menuCameraLookY) = 0;
 	(*(u32 *)&g_menuCameraLookZ) = 0x43c80000;   /* 400 */
 	g_fpsFrameCount = 0;
 	g_logoTexture = tex_getIdByName(g_textures, logo, 0, 0, 0, 0, 0, 0, 0);
@@ -357,8 +357,8 @@ u32 THISCALL (game_processLoadingMode)(u8 *g)
 {
 	char name[0x100], path[0x100];
 	if (GS->stateFrames == 0) {
-		g_loadGame = g;
-		g_loadStatusText = 0;
+		(*(u8 * *)&g_loadGame) = g;
+		g_loadStatusText[0] = 0;
 		GS->loadLineCount = 1;
 		strcpy(GS->loadLines[0], (const char *)STR(0x4c52b0, "START LOADING PROCESS"));
 		GS->loadStage = 0;

@@ -645,7 +645,7 @@ static void fill_dwords(u8 *at, int n, u32 v)
 static long double character_factor(u8 *p, int k)
 {
 	PlayerRecord *pr = (PlayerRecord *)p;
-	return fadd_m(fmul_m((long double)g_characterProfiles[pr->character].stats[4 + k], &k_0_01f), &k_1f);
+	return fadd_m(fmul_m((long double)((CharacterProfile *)g_characterProfiles)[pr->character].stats[4 + k], &k_0_01f), &k_1f);
 }
 
 /* the mech's stats for actor ac from player record p's parts (the head, chest, arms, legs and booster records, the
@@ -740,7 +740,7 @@ static void mech_stats(u8 *s, u8 *ac, u8 *p, int check)
 	AC->rechargeTime = f32(FMUL(boost->times[1], AC->rechargeTimeFactor));
 	AC->restTime = f32(FMUL(boost->times[2], AC->restTimeFactor));
 	/* the legs' factors: the level's second value plus the legs' own, plus 1 */
-#define LEG(f) fadd_m(fadd_m(fmul_m((long double)g_characterProfiles[pr->character].stats[5], &k_0_01f), &legs->f), &k_1f)
+#define LEG(f) fadd_m(fadd_m(fmul_m((long double)((CharacterProfile *)g_characterProfiles)[pr->character].stats[5], &k_0_01f), &legs->f), &k_1f)
 	v = fmul_m(LEG(speedCorrection), &boost->speeds[0]) * left;
 	AC->speed = f32(v);
 	if (!(v >= *&k_100f))

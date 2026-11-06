@@ -139,7 +139,7 @@ void (pilotSelect_keys)(void)
 		}
 		g_statBarsStale = 1;
 		sound_playMenu(2);
-		g_profileRevealClock = 0;
+		(*(int *)&g_profileRevealClock) = 0;
 		g_profileReveal = 0;
 		return;
 	}

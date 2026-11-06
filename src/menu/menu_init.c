@@ -16,9 +16,9 @@ void (armc_initCameraPoints)(void)
 {
 	for (int *p = (int *)OBJ(g_armcViewPoints); p < (int *)OBJ(g_armcViewPoints) + 6 * 4; p += 4)
 		p[0] = p[1] = p[2] = 0;
-	g_unusedArmcPoint0Y = 0x43960000;   /* 300 */
-	g_unusedArmcPoint3Y = 0xc3fa0000;   /* -500 */
-	g_unusedArmcPoint5Y = 0x43af0000;   /* 350 */
+	(*(u32 *)&g_unusedArmcPoint0Y) = 0x43960000;   /* 300 */
+	(*(u32 *)&g_unusedArmcPoint3Y) = 0xc3fa0000;   /* -500 */
+	(*(u32 *)&g_unusedArmcPoint5Y) = 0x43af0000;   /* 350 */
 }
 
 /* 0x42bc00: the arena option texts (0x80-byte strings of the text table) copied into the menu's 0x14-byte fields */
@@ -98,20 +98,20 @@ void (menuCamera_initPoints)(void)
 		{ ADDR(g_camPoint2X), 0x41a00000 }, { ADDR(g_camPoint2Y), 0x41200000 }, { ADDR(g_camAim2X), 0xc28c0000 }, { ADDR(g_camAim2Y), 0xc25c0000 },
 		{ (OBJ(g_camPoints) + 0x30), 0xc1a00000 }, { (OBJ(g_camPoints) + 0x34), 0xc1200000 }, { (OBJ(g_camAims) + 0x30), 0x428c0000 }, { (OBJ(g_camAims) + 0x34), 0x425c0000 },
 		{ (OBJ(g_camPoints) + 0x40), 0xc1a00000 }, { (OBJ(g_camPoints) + 0x44), 0 }, { (OBJ(g_camAims) + 0x40), 0x428c0000 }, { (OBJ(g_camAims) + 0x44), 0 } };   /* (+-20, +-10), (-+70, +-55) */
-	int z = g_menuCameraLookZ;
+	int z = (*(int *)&g_menuCameraLookZ);
 	for (int i = 0; i < 5; i++) {
 		GAME_VAR(int, (OBJ(g_camPoints) + 0x8) + i * 0x10) = z;
 		GAME_VAR(int, (OBJ(g_camAims) + 0x8) + i * 0x10) = z;
 	}
-	g_menuEyeHomeX = (*(int *)&g_menuCameraPos);
-	g_menuEyeHomeY = (*(int *)&g_menuEyeY);
-	g_menuEyeHomeZ = (*(int *)&g_menuEyeZ);
-	int lx = (*(int *)&g_menuCameraLook), ly = (*(int *)&g_menuCameraLookY), lz = g_menuCameraLookZ;
+	(*(int *)&g_menuEyeHomeX) = (*(int *)&g_menuCameraPos);
+	(*(int *)&g_menuEyeHomeY) = (*(int *)&g_menuEyeY);
+	(*(int *)&g_menuEyeHomeZ) = (*(int *)&g_menuEyeZ);
+	int lx = (*(int *)&g_menuCameraLook), ly = (*(int *)&g_menuCameraLookY), lz = (*(int *)&g_menuCameraLookZ);
 	for (unsigned i = 0; i < sizeof point / sizeof point[0]; i++)
 		GAME_VAR(u32, point[i][0]) = point[i][1];
-	g_menuLookHomeX = lx;
-	g_menuLookHomeY = ly;
-	g_menuLookHomeZ = lz;
+	(*(int *)&g_menuLookHomeX) = lx;
+	(*(int *)&g_menuLookHomeY) = ly;
+	(*(int *)&g_menuLookHomeZ) = lz;
 	g_roomAwaitingServer = 0;
 }
 

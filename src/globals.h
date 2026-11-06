@@ -20,9 +20,9 @@
 #define g_listRefreshPeriod GAME_VAR(int, 0x5b1914)
 #define g_panelGlow GAME_VAR(float, 0x680ccc)
 #define g_chosenGameMode GAME_VAR(int, 0x76d368)
-#define g_launchedForNetGame GAME_VAR(int, 0x76d410)   /* started by the launcher for a network game: command line "-net" (axiswl.dat present: host) or "<x> -ip <server>" (join); skips the file checks, drives the automatic start (g_lobbyReply) and quits after the match (game_postMatch) */
+#define g_launchedForNetGame GAME_VAR(int, 0x76d410)   /* started by the launcher for a network game: command line "-net" (axiswl.dat present: host) or "<x> -ip <server>" (join); skips the file checks, drives the automatic start (g_launchStartStep) and quits after the match (game_postMatch) */
 #define g_mapRotation GAME_VAR(int, 0x9da3e0)
-#define g_launchStartStep GAME_VAR(int, 0x9da49c)   /* the launcher-started game's automatic start (g_startedFromLobby): 0 none (also cleared by menu_showMessage), 0x65 profile logged in, 0x66 menus entered (ARM CENTER), 0x67 ARM CENTER left (menu_cameras then calls arena_startFromLauncher), 0x68 hosting / 0x69 joining (menu_frame then takes no mouse or keys) */
+#define g_launchStartStep GAME_VAR(int, 0x9da49c)   /* the launcher-started game's automatic start (g_launchedForNetGame): 0 none (also cleared by menu_showMessage), 0x65 profile logged in, 0x66 menus entered (ARM CENTER), 0x67 ARM CENTER left (menu_cameras then calls arena_startFromLauncher), 0x68 hosting / 0x69 joining (menu_frame then takes no mouse or keys) */
 #define g_buttonTexture GAME_VAR(int, 0x9db0a4)
 #define g_roomCameraMode GAME_VAR(int, 0x9dce48)
 #define g_roomLoginDue GAME_VAR(int, 0x9dd1c8)
@@ -41,8 +41,8 @@
 #define g_netListDone GAME_VAR(int, 0xa0d7a0)
 #define g_soundBaseVolume GAME_VAR(int, 0xa0e66c)
 #define g_randPos GAME_VAR(u32, 0xa1efb8)
-#define g_joinThroughServer GAME_VAR(int, 0x4dbaac)   /* the game list is the lobby server's (1, lobby_openConnection / arenaGames connect) rather than the LAN search's (0, set when the DirectPlay search starts); picks the join path: password check + arena_askJoinPassword (1) or arena_joinSession via g_lobbyJoinRequest (0) */
-#define g_lanJoinRequest GAME_VAR(int, 0x4dbbf0)   /* join the selected LAN (DirectPlay-listed) game: set by lobby_join when the list is not the server's (g_serverConnected 0); arena_drawGamesPage then calls arena_joinSession(g_pickedGame) */
+#define g_joinThroughServer GAME_VAR(int, 0x4dbaac)   /* the game list is the lobby server's (1, lobby_openConnection / arenaGames connect) rather than the LAN search's (0, set when the DirectPlay search starts); picks the join path: password check + arena_askJoinPassword (1) or arena_joinSession via g_lanJoinRequest (0) */
+#define g_lanJoinRequest GAME_VAR(int, 0x4dbbf0)   /* join the selected LAN (DirectPlay-listed) game: set by lobby_join when the list is not the server's (g_joinThroughServer 0); arena_drawGamesPage then calls arena_joinSession(g_pickedGame) */
 #define g_setupTunnelDepth GAME_VAR(float, 0x4ddd90)
 #define g_arenaMap GAME_VAR(signed char, 0x4ded40)
 #define g_arenaPlayers GAME_VAR(u8, 0x4ded41)
@@ -50,11 +50,11 @@
 #define g_arenaFragLimit GAME_VAR(u8, 0x4ded44)
 #define g_arenaTimeLimit GAME_VAR(u8, 0x4ded45)
 #define g_playerSex GAME_VAR(int, 0x4dedd4)
-#define g_panelGlowStep GAME_VAR(u32, 0x4df454)   /* the hovered panel's glow step per frame time: +1 or -1 (g_panelGlow bounces between 2 and 38) */
+#define g_panelGlowStep GAME_VAR(float, 0x4df454)   /* the hovered panel's glow step per frame time: +1 or -1 (g_panelGlow bounces between 2 and 38) */
 #define g_fragLimit GAME_VAR(int, 0x4df8e8)
 #define g_soundVolume GAME_VAR(int, 0x4e0c90)
 #define g_desktopWidth GAME_VAR(int, 0x67eefc)
-#define g_menuCameraLook GAME_VAR(u32, 0x680378)   /* the menu camera's look-at x (g_menuLook[0]; y and z follow) */
+#define g_menuCameraLook GAME_VAR(float, 0x680378)   /* the menu camera's look-at x (g_menuLook[0]; y and z follow) */
 #define g_launchedAsHost GAME_VAR(int, 0x76d364)   /* started by the launcher with "-net" and axiswl.dat present: arena_startFromLauncher hosts the arena from axiswl.dat's settings (0: it joins g_serverAddressArg instead) */
 #define g_timeLimit GAME_VAR(int, 0x76d408)
 #define g_rankingListIn GAME_VAR(int, 0x76d40c)
@@ -73,7 +73,7 @@
 #define g_argCount GAME_VAR(int, 0x9dd88c)
 #define g_replayRandomOrder GAME_VAR(int, 0x9eeac0)
 #define g_chosenPilot GAME_VAR(int, 0x9f8d6c)
-#define g_hostGoneMessageFlag GAME_VAR(int, 0x9f941c)   /* word +4 of the type-2 message at g_resultMessage (0x9f9418) that the host sends when it closes the session (arena_leaveSession, game_postMatch's send_result, freeCam_keys): 1 while sent; receivers copy it into g_netHostGone and free the session (net_handleMessage case 2) */
+#define g_hostGoneMessageFlag GAME_VAR(int, 0x9f941c)   /* word +4 of the type-2 message at g_netHostLeftMessageKind (0x9f9418) that the host sends when it closes the session (arena_leaveSession, game_postMatch's send_result, freeCam_keys): 1 while sent; receivers copy it into g_netHostGone and free the session (net_handleMessage case 2) */
 #define g_netBlockSize GAME_VAR(u32, 0x9fd940)
 #define g_roomListAnswer GAME_VAR(int, 0xa0b34c)   /* the game server's answer to the room-list request (net_receiveGameServerReply): 0xca the list complete (ping thread started), 0x28 reply kinds 2 / 3 (WndProc -> g_searchResult 4: MSG 0x2a SERVER IS BUSY); 0 none */
 #define g_serverListCount GAME_VAR(int, 0xa0b368)
@@ -83,7 +83,7 @@
 #define g_glHeight GAME_VAR(int, 0xa0e928)
 #define g_replayWrap GAME_VAR(int, 0x4b2a7c)
 #define g_arenaJoinRow GAME_VAR(int, 0x4db710)
-#define g_arenaServerList GAME_VAR(int, 0x4dbaa8)   /* the arena list shows the lobby server's games (lobby_openConnection sets 1; the LAN rebuild arenaList_rebuild clears it): rows with the lock icon and the ping; while g_arenaHaveList is 0 the page count is g_serverListCount */
+#define g_arenaServerList GAME_VAR(int, 0x4dbaa8)   /* the arena list shows the lobby server's games (lobby_openConnection sets 1; the LAN rebuild arenaList_rebuild clears it): rows with the lock icon and the ping; while g_arenaLanListBuilt is 0 the page count is g_serverListCount */
 #define g_arenaLanListBuilt GAME_VAR(int, 0x4dbac8)   /* the LAN search's list built (arenaList_rebuild: g_sessionList from DirectPlay's sessions, count g_gameCount); cleared when the server is connected or the screen entered */
 #define g_typingArenaPassword GAME_VAR(int, 0x4dbacc)
 #define g_arenaListClickTimer GAME_VAR(float, 0x4dbaf8)   /* the arena list's double-click window: grows by g_frameTime while g_arenaListClickArmed (a row clicked once); past 20 the click is disarmed; reset to 0 on each row click */
@@ -94,10 +94,10 @@
 #define g_unusedEmptySlot0Flag GAME_VAR(int, 0x4dbc80)   /* never set to 1 (0 in the image, .bss): armc_updatePartsPreview / armc_updateWeaponsPreview only test and clear it, so armc_weaponSlotRecord(0, 0) there never runs */
 #define g_savedMechHead GAME_VAR(int, 0x4dc878)   /* the saved mech's head part (g_savedMechPartIds[0]; chest, arm, leg, booster follow) */
 #define g_mechChanged GAME_VAR(int, 0x4dcc58)
-#define g_savedMechItem0 GAME_VAR(int, 0x4dcf18)   /* the saved mech's item slot 0 (g_savedMechSettings[0]; g_savedMechItem1 .. 5 follow): from record byte 5 / g_profileMechItem0 / g_itemSlot4 (g_mechSettings[0]) */
+#define g_savedMechItem0 GAME_VAR(int, 0x4dcf18)   /* the saved mech's item slot 0 (g_savedMechSlotItems[0]; g_savedMechItem1 .. 5 follow): from record byte 5 / g_profileMechItem0 / g_itemSlot4 (g_armcSlotItems[0]) */
 #define g_setupPanelMoving GAME_VAR(int, 0x4dda60)
 #define g_arenaRotation GAME_VAR(u8, 0x4ded42)
-#define g_menuCameraPos GAME_VAR(u32, 0x4df024)   /* the menu camera's eye x (g_menuEye[0]; y and z follow) */
+#define g_menuCameraPos GAME_VAR(float, 0x4df024)   /* the menu camera's eye x (g_menuEye[0]; y and z follow) */
 #define g_characterTexture GAME_VAR(int, 0x4dfa00)
 #define g_panelHovered GAME_VAR(int, 0x680398)
 #define g_mapPreviewChanged GAME_VAR(int, 0x680cd0)
@@ -121,7 +121,7 @@
 #define g_playerListDone GAME_VAR(int, 0xa0b350)
 #define g_roomListCount GAME_VAR(int, 0xa0b358)
 #define g_playerListCount GAME_VAR(int, 0xa0b35c)
-#define g_gameServerPending GAME_VAR(int, 0xa0b364)   /* never set: only ever written 0 (gameList_mouse 0x436020 / 0x43616f, gameList_keys 0x4374e2; .bss); net_handleSystemMessage and net_disconnect test it, so the room's leave packet (0x16) and the room-info sends are never held back by it (the lobby's twin g_lobbyPending is set) */
+#define g_gameServerPending GAME_VAR(int, 0xa0b364)   /* never set: only ever written 0 (gameList_mouse 0x436020 / 0x43616f, gameList_keys 0x4374e2; .bss); net_handleSystemMessage and net_disconnect test it, so the room's leave packet (0x16) and the room-info sends are never held back by it (the lobby's twin g_lobbyReportsOff is set) */
 #define g_connectedServer GAME_VAR(int, 0xa0b380)   /* which server's socket is connected: 200 the lobby (g_lobbySocket), 201 the game server (g_gameServerSocket), 0 none (net_disconnect / net_closeSockets); net_handleSystemMessage sends the hosted record to that one */
 #define g_localPlayerData GAME_VAR(u32, 0xa0b428)
 #define g_connectionCopy GAME_VAR(void *, 0xa0bab0)
@@ -150,7 +150,7 @@
 #define g_mouseInvert GAME_VAR(int, 0x4df000)
 #define g_mouseSensitivity GAME_VAR(int, 0x4df008)
 #define g_crosshairSetting GAME_VAR(int, 0x4df00c)
-#define g_roomMap GAME_VAR(u8, 0x4df9e8)
+#define g_roomMap GAME_VAR(signed char, 0x4df9e8)
 #define g_roomFragLimit GAME_VAR(u8, 0x4df9ec)
 #define g_roomTimeLimit GAME_VAR(u8, 0x4df9ed)
 #define g_sound3D GAME_VAR(int, 0x4e0c98)   /* axis.cfg's "3dsound": only the setup page and axis.cfg use it (3D SOUND does nothing) */
@@ -164,7 +164,7 @@
 #define g_editingRoomName GAME_VAR(int, 0x9dd380)
 #define g_openLoginName GAME_VAR(int, 0x9dd4a0)
 #define g_rankingLastPage GAME_VAR(int, 0x9dd4b8)   /* the ranking's last page: 999 until a page shows an empty row (ranking_drawTable stores g_rankingPage there); ranking_nextPage stops at it */
-#define g_newIdAnswerAwaited GAME_VAR(int, 0x9dd6a4)   /* 1 once the new ID was sent (newId_register): newIdConfirm_update then reads the server's answer (g_gameServerAnswer15) */
+#define g_newIdAnswerAwaited GAME_VAR(int, 0x9dd6a4)   /* 1 once the new ID was sent (newId_register): newIdConfirm_update then reads the server's answer (g_newIdAnswer) */
 #define g_roomListRefreshTimer GAME_VAR(float, 0x9dd6c0)
 #define g_roomPanelsSliding GAME_VAR(int, 0x9dd7d8)   /* 1 while the game room's panels slide in (menuState800_enterGameRoom sets it; room_slideMenu (menu_slide) clears it when g_roomTunnelDepth is past k_setupPanelEnd): the room's keys, clicks and panel hover are off meanwhile */
 #define g_rankingFirst GAME_VAR(int, 0x9dd83c)   /* the ranking page's first rank shown ("first ~ last"; page * 10 + 1): written by ranking_enter / ranking_drawTable / ranking_page, never read */
@@ -172,7 +172,7 @@
 #define g_clockCheckQuits GAME_VAR(int, 0x9dd904)   /* 1: a clock found set back closes the game (sys_checkClockTampering posts WM_CLOSE); 0: only the message and the check restarted. app_init sets 1 before the first check; nothing clears it */
 #define g_replayListCount GAME_VAR(int, 0x9eeab8)
 #define g_writeMatchLog GAME_VAR(int, 0x9f67ec)
-#define g_lastChatLine GAME_VAR(int, 0x9fd948)   /* the last chat line: a received one as "<name> > <text>" in a GlobalAlloc block (net_logMessage), or g_chatLine for one the free camera sent (freeCam_keys); only net_handleMessage reads it (to zero it, the old block not freed) */
+#define g_lastChatLine GAME_VAR(char *, 0x9fd948)   /* the last chat line: a received one as "<name> > <text>" in a GlobalAlloc block (net_logMessage), or g_chatLine for one the free camera sent (freeCam_keys); only net_handleMessage reads it (to zero it, the old block not freed) */
 #define g_lastChatLineSet GAME_VAR(int, 0x9fd95c)   /* 1 when g_lastChatLine was set (net_handleMessage, freeCam_keys; 0 for an empty line): never read */
 #define g_netConnected GAME_VAR(int, 0xa0b2fc)
 #define g_lobbyReportsOff GAME_VAR(int, 0xa0b360)   /* 1: nothing about the hosted arena goes to the lobby server (net_handleSystemMessage's player join/leave updates, net_disconnect's leave record): set entering the arena list (lobby_enterArenaList) and on WM_CLOSE; cleared entering a create page (lobby_enterCreate, room_enterCreatePage) */
@@ -181,7 +181,7 @@
 #define g_serviceProviderCount GAME_VAR(int, 0xa0bac8)
 #define g_pingStopEvent GAME_VAR(void *, 0xa0bf1c)
 #define g_glColourBits GAME_VAR(int, 0xa0e818)
-#define g_glDepthBits GAME_VAR(u8, 0xa0e924)
+#define g_glDepthBits GAME_VAR(int, 0xa0e924)
 #define g_defaultColour GAME_VAR(int, 0xa1f220)
 #define g_logHook GAME_VAR(void *, 0xae2ec8)
 #define g_displayModeChanged GAME_VAR(u8, 0xb12a80)
@@ -197,8 +197,8 @@
 #define g_unlockedLevel GAME_VAR(int, 0x4dc784)
 #define g_legsMaxWeight GAME_VAR(float, 0x4dcb0c)
 #define g_cursorBlinkTimer GAME_VAR(float, 0x4de1f0)
-#define g_menuCamX GAME_VAR(u32, 0x4de344)
-#define g_menuCamZ GAME_VAR(u32, 0x4de34c)
+#define g_menuCamX GAME_VAR(float, 0x4de344)
+#define g_menuCamZ GAME_VAR(float, 0x4de34c)
 #define g_crosshairTexture GAME_VAR(int, 0x4e0c8c)
 #define g_perfCounterLow GAME_VAR(u32, 0x5ae9c8)   /* the last QueryPerformanceCounter reading's low word (timer_now; the high word in g_timerHigh): never read */
 #define g_arenaFileTimeLimit GAME_VAR(int, 0x5b1954)   /* axiswl.dat's timelimit (arena_loadSettings; arena_startFromLauncher takes its low byte into g_arenaTimeLimit) */
@@ -209,13 +209,13 @@
 #define g_typingAccountName GAME_VAR(int, 0x9dd348)
 #define g_typingAccountPassword GAME_VAR(int, 0x9dd3f8)
 #define g_typingAccountRepeat GAME_VAR(int, 0x9dd564)
-#define g_roomTunnelDepth GAME_VAR(u32, 0x9dd698)
+#define g_roomTunnelDepth GAME_VAR(float, 0x9dd698)
 #define g_editingRoomPassword GAME_VAR(int, 0x9dd6a8)
 #define g_typingRoomJoinPassword GAME_VAR(int, 0x9dd6c8)
 #define g_typingAccountEmail GAME_VAR(int, 0x9dd6cc)
 #define g_editOldProc GAME_VAR(u32, 0x9dd868)
 #define g_profileMechHead GAME_VAR(int, 0x9f19f8)   /* the profile's mech: its head part (the record's first word; chest .. booster follow to 0x9f1a08) */
-#define g_netHostLeftMessageKind GAME_VAR(int, 0x9f9418)   /* the host-leaving game message: its kind word (2; net_resetState) then the flag word g_hostResultFlag (+4); the host sends it (net_sendMessage) from game_postMatch, freeCam_keys (cancel) and arena_leaveSession; receivers (net_handleMessage kind 2) put +4 into g_netHostGone and reset the slots */
+#define g_netHostLeftMessageKind GAME_VAR(int, 0x9f9418)   /* the host-leaving game message: its kind word (2; net_resetState) then the flag word g_hostGoneMessageFlag (+4); the host sends it (net_sendMessage) from game_postMatch, freeCam_keys (cancel) and arena_leaveSession; receivers (net_handleMessage kind 2) put +4 into g_netHostGone and reset the slots */
 #define g_slotTakenFlag GAME_VAR(int, 0x9f9838)
 #define g_outOfRank GAME_VAR(u8, 0xa052c1)
 #define g_serverPort GAME_VAR(u16, 0xa05326)
@@ -223,7 +223,6 @@
 #define g_pingThread GAME_VAR(void *, 0xa0d788)
 #define g_musicLength GAME_VAR(u32, 0xa0e018)
 #define g_primarySoundBuffer GAME_VAR(void *, 0xa0e808)
-#define g_loadStatusText GAME_VAR(u8, 0xa0e988)   /* char[256]; the loading screen's grey status line: the last log message (loading_drawScreen, as g_logHook, strcpy's it; game_processLoadingMode empties it; loading_draw prints it). Up to g_loadProgress 0xa0ea88 */
 #define g_errorLogging GAME_VAR(int, 0xa1efdc)   /* ERROR.TXT logging on (== 1): never written by the game (bss, 0), so the error functions never append to ERROR.TXT */
 #define g_cursorX GAME_VAR(int, 0xae2f18)   /* the cursor's x (screen pixels; g_cursorPoint[0], input_getCursorPos) */
 #define g_crtErrno GAME_VAR(int, 0xaef35c)   /* the C runtime's errno (set by its own code: EINVAL, ENOENT ..) */
@@ -231,9 +230,9 @@
 #define g_arenaCorporation GAME_VAR(int, 0x4db580)
 #define g_arenaSex GAME_VAR(int, 0x4db584)
 #define g_sessionFound GAME_VAR(int, 0x4db708)   /* 1 once the session search (WM_TIMER 0x378) found the picked game's session (g_receivedSession): arena_joinAnswer / room_joinAnswer then join it; cleared when a search starts (arena_joinListed, room_joinSession) and after the answer */
-#define g_arenaTunnelDepth GAME_VAR(u32, 0x4dba68)
+#define g_arenaTunnelDepth GAME_VAR(float, 0x4dba68)
 #define g_playerSetupTop GAME_VAR(int, 0x4dbb6c)
-#define g_unusedArenaFloat GAME_VAR(u32, 0x4dbba0)   /* 0.7 stored on entering the player / list / create pages (lobby_enterPlayerScreen, lobby_enterArenaList, lobby_enterCreate); never read */
+#define g_unusedArenaFloat GAME_VAR(float, 0x4dbba0)   /* 0.7 stored on entering the player / list / create pages (lobby_enterPlayerScreen, lobby_enterArenaList, lobby_enterCreate); never read */
 #define g_bestProgressSolo GAME_VAR(int, 0x4dc1e0)
 #define g_bestLevelNet GAME_VAR(int, 0x4dc4b4)
 #define g_savedMechChest GAME_VAR(int, 0x4dc87c)
@@ -251,7 +250,7 @@
 #define g_musicVolume GAME_VAR(int, 0x4e0c94)
 #define g_stereoReverse GAME_VAR(int, 0x4e0c9c)   /* axis.cfg's "stereoreverse": sound_play3D pans the other way */
 #define g_roomRecMap GAME_VAR(signed char, 0x5b1b50)
-#define g_roomRecPlayers GAME_VAR(u8, 0x5b1b51)
+#define g_roomRecPlayers GAME_VAR(signed char, 0x5b1b51)
 #define g_roomRecFragLimit GAME_VAR(u8, 0x5b1b54)
 #define g_roomRecTimeLimit GAME_VAR(u8, 0x5b1b55)
 #define g_netRole GAME_VAR(int, 0x67ef04)
@@ -260,9 +259,9 @@
 #define g_cfgMipmaps GAME_VAR(u32, 0x83a9d0)
 #define g_timerRepeatCount GAME_VAR(int, 0x9dbf00)
 #define g_accountRank GAME_VAR(int, 0x9dd248)
-#define g_rankingPrevValue GAME_VAR(u32, 0x9dd384)   /* the ranking: the previous page's last sort value (ranking_fillPage stores it, the next page's first row ties with it); 10,000,000 from ranking_enter / ranking_cycleSort */
+#define g_rankingPrevValue GAME_VAR(float, 0x9dd384)   /* the ranking: the previous page's last sort value (ranking_fillPage stores it, the next page's first row ties with it); 10,000,000 from ranking_enter / ranking_cycleSort */
 #define g_rankingWaiting GAME_VAR(int, 0x9dd6b8)
-#define g_unusedRoomFloat GAME_VAR(u32, 0x9dd6bc)   /* 0.7 stored on entering each game room page (menuState800_enterGameRoom, room_enterAccountPage, room_enterGameList, room_enterCreatePage, ranking_enter); never read */
+#define g_unusedRoomFloat GAME_VAR(float, 0x9dd6bc)   /* 0.7 stored on entering each game room page (menuState800_enterGameRoom, room_enterAccountPage, room_enterGameList, room_enterCreatePage, ranking_enter); never read */
 #define g_launchMessage GAME_VAR(const char *, 0x9dd8c8)
 #define g_replaySelectOpen GAME_VAR(int, 0x9eeab4)   /* the main menu's replay selection dialog is open (F1: mainmenu_processKeys -> replayList_open; closed by replaySelect_ok / its cancel and back keys / its button 7; menuState300_enter clears it): the main menu's keys and clicks go to the dialog, menuState300_frame draws it, menu_mainMenu lights no panel */
 #define g_profileMechItem0 GAME_VAR(int, 0x9f1a14)
@@ -296,19 +295,19 @@
 #define g_coloursChanged GAME_VAR(int, 0x4dca98)
 #define g_armcChanged GAME_VAR(int, 0x4dcc64)
 #define g_loadStep GAME_VAR(int, 0x4dda34)
-#define g_replayZoomTime GAME_VAR(float, 0x4dda48)   /* the main menu's zoom into a chosen replay (while g_replayZoomIn on screen 300): g_frameTime added each frame (menu_frame); at 100 the replay starts (screen 9999, g_replayRunning); cleared by menuState100_intro, menuState210_enter, game_returnTo*; menuState210_frame draws nothing while it is above 0 */
+#define g_replayZoomTime GAME_VAR(float, 0x4dda48)   /* the main menu's zoom into a chosen replay (while g_replayShowOn on screen 300): g_frameTime added each frame (menu_frame); at 100 the replay starts (screen 9999, g_replayRunning); cleared by menuState100_intro, menuState210_enter, game_returnTo*; menuState210_frame draws nothing while it is above 0 */
 #define g_bindPage GAME_VAR(int, 0x4ddce8)
 #define g_setupCameraMode GAME_VAR(int, 0x4ddcec)   /* the setup screen's camera (setup_camera): 1 going to the open tab's menu point (tab_opened), 0 going home (the page closed: OK / back / cancel), 2 arrived (page shown, or home); the tunnel's alpha eases to 0.3 in 1 and 0.5 in 0 (setup_drawTunnel) */
 #define g_bindWaiting GAME_VAR(int, 0x4dddc8)
 #define g_setupEffectVolume GAME_VAR(int, 0x4dde98)   /* the sound tab's EFFECT SOUND volume being edited (0 .. 100; g_soundEdited[0]); OK makes it g_soundVolume (axis.cfg set_sound effectvolume) */
 #define g_whiteFade GAME_VAR(float, 0x4deb74)   /* the white fade over the screen while the menus are left for a match (+0.015 x g_frameTime a frame, drawn alpha capped at 1): room_drawWhiteFade (game room) and menu_drawDimOverlay (arena lobby, missions); cleared by arena_camera, room_camera, missionsel_camera */
-#define g_tunnelPulseStep GAME_VAR(u32, 0x4df010)
+#define g_tunnelPulseStep GAME_VAR(float, 0x4df010)
 #define g_menuScaleY GAME_VAR(float, 0x4df014)
 #define g_freeCamZoom GAME_VAR(int, 0x4e0464)   /* the free camera's zoom (Z in freeCam_keys toggles 1 / 2): 1 narrows g_viewAngle by 5 each menu frame down to 5, 2 widens it by 5 up to 45 (menu_frame, after SwapBuffers); other values leave it */
 #define g_projMode GAME_VAR(int, 0x5ae9bc)
 #define g_mapCount GAME_VAR(int, 0x67ef00)   /* mapinfo.dat's map count (data_loadMapInfo); g_mapNames / g_mapAbouts hold that many */
-#define g_leavingForMatch GAME_VAR(int, 0x67ef14)   /* 1 while the menus are being left for a match: set when an arena / room game is hosted or joined (lobby_hostArena, lobby_hostArenaLan, arena_connectionOutcome, arena_joinAnswer, room_hostingStep, room_clicks) or a skirmish / mission starts (menu_records.c:481); the menu tunnel then runs 2200-step rings, the white fade (g_roomFade) runs, the top pages ignore keys / clicks and menu_slide moves to screen 9999. Cleared at start-up (app_startupLoad), on a host failure (lobby_hostArenaLan), and by leave_game on the way back */
-#define g_menuCameraLookZ GAME_VAR(int, 0x680380)   /* the menu camera's look-at point: z (gluLookAt centre z; g_menuCameraLook / g_menuCameraLookY the x / y) */
+#define g_leavingForMatch GAME_VAR(int, 0x67ef14)   /* 1 while the menus are being left for a match: set when an arena / room game is hosted or joined (lobby_hostArena, lobby_hostArenaLan, arena_connectionOutcome, arena_joinAnswer, room_hostingStep, room_clicks) or a skirmish / mission starts (menu_records.c:481); the menu tunnel then runs 2200-step rings, the white fade (g_whiteFade) runs, the top pages ignore keys / clicks and menu_slide moves to screen 9999. Cleared at start-up (app_startupLoad), on a host failure (lobby_hostArenaLan), and by leave_game on the way back */
+#define g_menuCameraLookZ GAME_VAR(float, 0x680380)   /* the menu camera's look-at point: z (gluLookAt centre z; g_menuCameraLook / g_menuCameraLookY the x / y) */
 #define g_menuScaleX GAME_VAR(float, 0x680bac)
 #define g_arenaUpdateNotice GAME_VAR(int, 0x907b2c)
 #define g_tunnelRings GAME_VAR(int, 0x9dae10)
@@ -326,7 +325,7 @@
 #define g_briefingDone GAME_VAR(int, 0x9f105c)
 #define g_briefingPage GAME_VAR(int, 0x9f1060)
 #define g_selectedCharacter GAME_VAR(int, 0x9f1818)
-#define g_profileFrameStep GAME_VAR(u32, 0x9f8c48)
+#define g_profileFrameStep GAME_VAR(float, 0x9f8c48)
 #define g_profileCount GAME_VAR(int, 0x9f9008)
 #define g_dplay GAME_VAR(void *, 0xa0b404)
 #define g_connectionKind GAME_VAR(int, 0xa0b418)
@@ -349,7 +348,7 @@
 #define g_lobbyJoinStarted GAME_VAR(int, 0x4dbbec)
 #define g_arenaLobbyState GAME_VAR(int, 0x4dbbf4)
 #define g_arenaGameSetUp GAME_VAR(int, 0x4ded54)
-#define g_menuCameraLookY GAME_VAR(u32, 0x68037c)   /* the menu camera's look-at point: y (gluLookAt centre y) */
+#define g_menuCameraLookY GAME_VAR(float, 0x68037c)   /* the menu camera's look-at point: y (gluLookAt centre y) */
 #define g_gameListClickTimer GAME_VAR(float, 0x9dcd40)
 #define g_gameListClickArmed GAME_VAR(int, 0x9dd34c)
 #define g_dikMouse1 GAME_VAR(int, 0x4de73c)
@@ -403,13 +402,13 @@
 #define g_catalogueFile GAME_VAR(const char *, 0x4d05a4)
 #define g_hostErrorBox GAME_VAR(int, 0x4db55c)
 #define g_editingNewArenaName GAME_VAR(int, 0x4dbab0)
-#define g_joinPollTicks GAME_VAR(int, 0x4dbb10)   /* ticks of the join timer 0x378 (2 s; WndProc: dplay_listSessions each tick until a session arrives); past 30 the join gives up (g_arenaJoinWaiting set). Zeroed when a join starts or ends: arena_joinListed, room_joinSession, arena_joinAnswer, room_joinAnswer, gameList_stopJoin, gameList_keys, arenaGames_keys, lobby_close */
+#define g_joinPollTicks GAME_VAR(int, 0x4dbb10)   /* ticks of the join timer 0x378 (2 s; WndProc: dplay_listSessions each tick until a session arrives); past 30 the join gives up (g_joinTimedOut set). Zeroed when a join starts or ends: arena_joinListed, room_joinSession, arena_joinAnswer, room_joinAnswer, gameList_stopJoin, gameList_keys, arenaGames_keys, lobby_close */
 #define g_armcUnusedFlag GAME_VAR(int, 0x4dc788)
 #define g_armcLeaving GAME_VAR(int, 0x4dcf10)
 #define g_progressWentUp GAME_VAR(int, 0x4dcf34)
 #define g_watchChatOpen GAME_VAR(int, 0x4de6fc)
-#define g_roomGameMode GAME_VAR(u8, 0x4df9eb)   /* the room form's game mode (GameSettings.mode at g_roomSettingsName + 0x23; 0 .. 9, the mode names MSG(791) + mode * 0x80) */
-#define g_roomRecGameMode GAME_VAR(u8, 0x5b1b53)   /* the registry record's game mode (GameSettings.mode at g_roomRecName + 0x23); room_draw resets it to 0 outside 0 .. 11 */
+#define g_roomGameMode GAME_VAR(signed char, 0x4df9eb)   /* the room form's game mode (GameSettings.mode at g_roomSettingsName + 0x23; 0 .. 9, the mode names MSG(791) + mode * 0x80) */
+#define g_roomRecGameMode GAME_VAR(signed char, 0x5b1b53)   /* the registry record's game mode (GameSettings.mode at g_roomRecName + 0x23); room_draw resets it to 0 outside 0 .. 11 */
 #define g_matchRunning GAME_VAR(int, 0x5b1dac)
 #define g_cfgSimpleMenu GAME_VAR(int, 0x83a9d8)
 #define g_pilotExpKept GAME_VAR(int, 0x9dd244)
@@ -442,21 +441,21 @@
 #define g_editingNewArenaTimeLimit GAME_VAR(int, 0x4db518)
 #define g_typingArenaJoinPassword GAME_VAR(int, 0x4db70c)
 #define g_editingNewArenaFragLimit GAME_VAR(int, 0x4db850)
-#define g_lobbyPanelsSliding GAME_VAR(int, 0x4db85c)   /* the arena lobby's top menu is sliding in: set by menuState400_enter; while set lobbyTop_draw (menu_slide) eases g_lobbyTopEase and moves g_arenaTunnelDepth, clearing it at the end (depth -1650), and lobbyTop_drawMenu hovers no panel. lobby_enterPlayerScreen / lobby_enterArenaList / lobby_enterCreate clear it */
+#define g_lobbyPanelsSliding GAME_VAR(int, 0x4db85c)   /* the arena lobby's top menu is sliding in: set by menuState400_enter; while set lobbyTop_draw (menu_slide) eases g_lobbySlideEase and moves g_arenaTunnelDepth, clearing it at the end (depth -1650), and lobbyTop_drawMenu hovers no panel. lobby_enterPlayerScreen / lobby_enterArenaList / lobby_enterCreate clear it */
 #define g_armcCameraTravelling GAME_VAR(int, 0x4dc868)   /* the ARM CENTER's camera is between the menus and the ARM CENTER: set by armc_enterParts and while it flies home (armc_cameraStep, state 0), cleared when it arrives (state 2); while set (and not from the lobby, g_armcFrom 2) menuState700_armCenter draws the menus' background */
 #define g_ladderLevel GAME_VAR(int, 0x4de71e)
 #define g_mouseWheelTurned GAME_VAR(int, 0x4ded70)
 #define g_mouse2Down GAME_VAR(int, 0x4ded98)
-#define g_camPoint0X GAME_VAR(int, 0x4df870)
-#define g_camPoint0Y GAME_VAR(int, 0x4df874)
-#define g_camPoint0Z GAME_VAR(int, 0x4df878)
-#define g_camAim0X GAME_VAR(int, 0x76d388)
-#define g_camAim0Y GAME_VAR(int, 0x76d38c)
-#define g_camAim0Z GAME_VAR(int, 0x76d390)
+#define g_camPoint0X GAME_VAR(float, 0x4df870)
+#define g_camPoint0Y GAME_VAR(float, 0x4df874)
+#define g_camPoint0Z GAME_VAR(float, 0x4df878)
+#define g_camAim0X GAME_VAR(float, 0x76d388)
+#define g_camAim0Y GAME_VAR(float, 0x76d38c)
+#define g_camAim0Z GAME_VAR(float, 0x76d390)
 #define g_editingEmail GAME_VAR(int, 0x9dd304)
 #define g_editingPasswordRepeat GAME_VAR(int, 0x9dd378)
 #define g_editingAccountPassword GAME_VAR(int, 0x9dd37c)
-#define g_pilotPower GAME_VAR(int, 0x9dd5e4)
+#define g_pilotPower GAME_VAR(float, 0x9dd5e4)
 #define g_editingOldPassword GAME_VAR(int, 0x9dd69c)
 #define g_chatLineDone GAME_VAR(int, 0x9dd900)
 #define g_penFontTexture GAME_VAR(int, 0xa106ac)
@@ -521,22 +520,22 @@
 #define g_texture128x64Vtable GAME_VAR(u32, 0x5b1db8)
 #define g_screenCentreY GAME_VAR(int, 0x680394)
 #define g_texture256x64Vtable GAME_VAR(u32, 0x680cd8)
-#define g_menuLookHomeX GAME_VAR(int, 0x76d3f8)   /* the menu camera's home look-at point (g_menuLookHome[0]) */
-#define g_menuLookHomeY GAME_VAR(int, 0x76d3fc)
-#define g_menuLookHomeZ GAME_VAR(int, 0x76d400)
+#define g_menuLookHomeX GAME_VAR(float, 0x76d3f8)   /* the menu camera's home look-at point (g_menuLookHome[0]) */
+#define g_menuLookHomeY GAME_VAR(float, 0x76d3fc)
+#define g_menuLookHomeZ GAME_VAR(float, 0x76d400)
 #define g_chatEditLength GAME_VAR(int, 0x76d418)
 #define g_texture128x128Vtable GAME_VAR(u32, 0x76d498)
 #define g_texture256x256Vtable GAME_VAR(u32, 0x83a9e0)
 #define g_skirmishInfoCount GAME_VAR(int, 0x90d1d8)
 #define g_texture256x128Vtable GAME_VAR(u32, 0x90d1e0)
-#define g_menuEyeHomeX GAME_VAR(int, 0x9db090)   /* the menu camera's home position (g_menuEyeHome[0]) */
-#define g_menuEyeHomeY GAME_VAR(int, 0x9db094)
-#define g_menuEyeHomeZ GAME_VAR(int, 0x9db098)
+#define g_menuEyeHomeX GAME_VAR(float, 0x9db090)   /* the menu camera's home position (g_menuEyeHome[0]) */
+#define g_menuEyeHomeY GAME_VAR(float, 0x9db094)
+#define g_menuEyeHomeZ GAME_VAR(float, 0x9db098)
 #define g_roomFormLeft GAME_VAR(int, 0x9dd1b8)
 #define g_roomFormTop GAME_VAR(int, 0x9dd1bc)
 #define g_roomFormRight GAME_VAR(int, 0x9dd1c0)
 #define g_roomFormBottom GAME_VAR(int, 0x9dd1c4)
-#define g_pilotPowerKept GAME_VAR(int, 0x9dd24c)
+#define g_pilotPowerKept GAME_VAR(float, 0x9dd24c)
 #define g_pilotDeathsKept GAME_VAR(int, 0x9dd258)
 #define g_gameListRefreshClicked GAME_VAR(int, 0x9dd4bc)   /* set when the game room's list request goes out (REFRESH, button 1 = MSG(388) '$[0] REFRESH', or the R key; gameList_open succeeded); cleared by room_enterGameList; never read */
 #define g_pilotDeaths GAME_VAR(int, 0x9dd5f0)
@@ -577,38 +576,38 @@
 #define k_armcDistance GAME_VAR(u32, 0x4a9454)
 #define k_armcDistanceRoom GAME_VAR(u32, 0x4a9458)
 #define g_newArenaMap GAME_VAR(signed char, 0x4db548)
-#define g_newArenaPlayers GAME_VAR(u8, 0x4db549)
-#define g_newArenaRotation GAME_VAR(u8, 0x4db54a)
-#define g_newArenaMode GAME_VAR(u8, 0x4db54b)
+#define g_newArenaPlayers GAME_VAR(signed char, 0x4db549)
+#define g_newArenaRotation GAME_VAR(signed char, 0x4db54a)
+#define g_newArenaMode GAME_VAR(signed char, 0x4db54b)
 #define g_newArenaPassword GAME_VAR(int, 0x4db54e)
 #define g_armcBuildTexture GAME_VAR(int, 0x4dcc88)
 #define g_keyForward GAME_VAR(int, 0x4def00)
 #define g_keyBackward GAME_VAR(int, 0x4def08)
 #define g_keyStepLeft GAME_VAR(int, 0x4def10)
 #define g_keyStepRight GAME_VAR(int, 0x4def18)
-#define g_camPoint1X GAME_VAR(u32, 0x4df880)
-#define g_camPoint1Z GAME_VAR(int, 0x4df888)
-#define g_camPoint2X GAME_VAR(u32, 0x4df890)
-#define g_camPoint2Y GAME_VAR(int, 0x4df894)
-#define g_camPoint2Z GAME_VAR(int, 0x4df898)
-#define g_arenaFileMap GAME_VAR(u8, 0x5b1944)   /* the arena file's map (atoi; arena_startFromLauncher takes the low byte into g_arenaMap) */
-#define g_arenaFilePlayers GAME_VAR(u8, 0x5b1948)
-#define g_arenaFileGameType GAME_VAR(u8, 0x5b194c)
-#define g_arenaFileFragLimit GAME_VAR(u8, 0x5b1950)
-#define g_camAim1X GAME_VAR(u32, 0x76d398)
-#define g_camAim1Y GAME_VAR(u32, 0x76d39c)
-#define g_camAim1Z GAME_VAR(int, 0x76d3a0)
-#define g_camAim2X GAME_VAR(u32, 0x76d3a8)
-#define g_camAim2Y GAME_VAR(u32, 0x76d3ac)
-#define g_camAim2Z GAME_VAR(int, 0x76d3b0)
+#define g_camPoint1X GAME_VAR(float, 0x4df880)
+#define g_camPoint1Z GAME_VAR(float, 0x4df888)
+#define g_camPoint2X GAME_VAR(float, 0x4df890)
+#define g_camPoint2Y GAME_VAR(float, 0x4df894)
+#define g_camPoint2Z GAME_VAR(float, 0x4df898)
+#define g_arenaFileMap GAME_VAR(int, 0x5b1944)   /* the arena file's map (atoi; arena_startFromLauncher takes the low byte into g_arenaMap) */
+#define g_arenaFilePlayers GAME_VAR(int, 0x5b1948)
+#define g_arenaFileGameType GAME_VAR(int, 0x5b194c)
+#define g_arenaFileFragLimit GAME_VAR(int, 0x5b1950)
+#define g_camAim1X GAME_VAR(float, 0x76d398)
+#define g_camAim1Y GAME_VAR(float, 0x76d39c)
+#define g_camAim1Z GAME_VAR(float, 0x76d3a0)
+#define g_camAim2X GAME_VAR(float, 0x76d3a8)
+#define g_camAim2Y GAME_VAR(float, 0x76d3ac)
+#define g_camAim2Z GAME_VAR(float, 0x76d3b0)
 #define g_pilotGamesKept GAME_VAR(int, 0x9dd250)
 #define g_pilotGames GAME_VAR(int, 0x9dd5e8)
-#define g_menuLookKeptX GAME_VAR(u32, 0x9dd918)   /* the menu camera's look-at point (g_menuLook) kept by menuTunnel_advance (camera_keep) and put back a ring further when a tunnel move ends; X (with g_menuLookKeptY / Z; objects.h g_roomLookKept) */
-#define g_menuLookKeptY GAME_VAR(u32, 0x9dd91c)
-#define g_menuLookKeptZ GAME_VAR(u32, 0x9dd920)
-#define g_menuEyeKeptX GAME_VAR(u32, 0x9dd930)   /* the menu camera's position (g_menuEye) kept by menuTunnel_advance (camera_keep; EYE_KEPT), X (with Y / Z; objects.h g_roomEyeKept) */
-#define g_menuEyeKeptY GAME_VAR(u32, 0x9dd934)
-#define g_menuEyeKeptZ GAME_VAR(u32, 0x9dd938)
+#define g_menuLookKeptX GAME_VAR(float, 0x9dd918)   /* the menu camera's look-at point (g_menuLook) kept by menuTunnel_advance (camera_keep) and put back a ring further when a tunnel move ends; X (with g_menuLookKeptY / Z; objects.h g_menuLookKept) */
+#define g_menuLookKeptY GAME_VAR(float, 0x9dd91c)
+#define g_menuLookKeptZ GAME_VAR(float, 0x9dd920)
+#define g_menuEyeKeptX GAME_VAR(float, 0x9dd930)   /* the menu camera's position (g_menuEye) kept by menuTunnel_advance (camera_keep; EYE_KEPT), X (with Y / Z; objects.h g_menuEyeKept) */
+#define g_menuEyeKeptY GAME_VAR(float, 0x9dd934)
+#define g_menuEyeKeptZ GAME_VAR(float, 0x9dd938)
 #define g_mainMenuFrames GAME_VAR(int, 0x9eeab0)
 #define g_matchChatCaretY GAME_VAR(int, 0x9f63c4)
 #define g_matchChatCaretX GAME_VAR(int, 0x9f63c8)
@@ -616,7 +615,7 @@
 #define g_armcSlot GAME_VAR(int, 0x4dbe48)
 #define g_armcFrom GAME_VAR(int, 0x4dc24c)
 #define g_armcCursor GAME_VAR(int, 0x4dc77c)
-#define g_armcPanelRight GAME_VAR(int, 0x4dcc98)   /* the ARM CENTER window's right edge (630, armc_enterParts); with g_armcStatsPanelLeft / Top / Bottom the window every page draws in. The colour sliders start 184 units left of it (armc_colours.c) */
+#define g_armcPanelRight GAME_VAR(int, 0x4dcc98)   /* the ARM CENTER window's right edge (630, armc_enterParts); with g_armcPageLeft / Top / Bottom the window every page draws in. The colour sliders start 184 units left of it (armc_colours.c) */
 #define g_armcSpin GAME_VAR(int, 0x4dceac)
 #define g_unusedArmcViewCountdown GAME_VAR(float, 0x4dcfd8)   /* float; set to 1 on each change of the part in view (armc_enterParts, armc_partsPageClicks, armc_partsPageKeys, armc_drawPartPanels), then lowered by 0.1 a frame time down to -2 (menuState700_armCenter); nothing else reads it */
 #define g_setupPressedClock GAME_VAR(float, 0x4ddb98)
@@ -632,7 +631,7 @@
 #define g_briefingShown GAME_VAR(int, 0x9ef1f4)
 #define g_missionCount GAME_VAR(int, 0x9ef2c0)
 #define g_missionPicked GAME_VAR(int, 0x9f16a4)
-#define g_missionsWindowLeft GAME_VAR(int, 0x9f16a8)   /* the mission screen's window, left (10; with g_missionsWindowTop, g_briefingRight 0x276, g_briefingBottom 0x1cc): the mission list, its briefing and the skirmish settings all draw in it */
+#define g_missionsWindowLeft GAME_VAR(int, 0x9f16a8)   /* the mission screen's window, left (10; with g_missionsWindowTop, g_missionsWindowRight 0x276, g_briefingBottom 0x1cc): the mission list, its briefing and the skirmish settings all draw in it */
 #define g_missionsWindowTop GAME_VAR(int, 0x9f16ac)
 #define g_briefingClock GAME_VAR(float, 0x9f16b8)
 #define g_skirmishShown GAME_VAR(int, 0x9f63b4)
@@ -640,7 +639,7 @@
 #define g_netQueueOnline GAME_VAR(int, 0xa0b388)
 #define g_bitStream GAME_VAR(const u8 *, 0xa61708)
 #define g_imp_wsprintfA GAME_VAR(void *, 0x4a92f0)
-#define g_componentDatPath GAME_VAR(u32, 0x4b4414)   /* -> "Data/Component.dat" (0x4b4418): the component catalogue's path; actor_processFrame passes it to the catalogue load (0x473780) when the local player's actor passes from dying to dead */
+#define g_componentDatPath GAME_VAR(const char *, 0x4b4414)   /* -> "Data/Component.dat" (0x4b4418): the component catalogue's path; actor_processFrame passes it to the catalogue load (0x473780) when the local player's actor passes from dying to dead */
 #define g_insertCdMessage GAME_VAR(const char *, 0x4b4568)
 #define g_unusedKeyTable2Word0 GAME_VAR(int, 0x4d1fb0)
 #define g_unusedKeyTable2Flags GAME_VAR(u16, 0x4d1fba)
@@ -653,28 +652,28 @@
 #define g_arenaJoinPassword4 GAME_VAR(int, 0x4db524)
 #define g_newArenaPassword4 GAME_VAR(int, 0x4db552)
 #define g_arenaListPlayers GAME_VAR(int, 0x4dba8c)   /* the players of all arenas merged into the list so far (each SessionEntry.players added by arena_mergeReceivedSessions; 0 from lobby_openConnection); nothing else reads it */
-#define g_typedArenaAddress GAME_VAR(char, 0x4dbbd4)   /* the first word of g_typedArenaAddressText (char[24]) (arena_editAddress clears it as a dword with g_typedArenaAddress4) */
+#define g_typedArenaAddress GAME_VAR(int, 0x4dbbd4)   /* the first word of g_typedArenaAddressText (char[24]) (arena_editAddress clears it as a dword with g_typedArenaAddress4) */
 #define g_typedArenaAddress4 GAME_VAR(int, 0x4dbbd8)
 #define g_unusedArmcWord4 GAME_VAR(int, 0x4dbc00)
 #define g_chestMaxArmor GAME_VAR(int, 0x4dbc4c)
 #define g_chestMaxShield GAME_VAR(int, 0x4dbc50)
 #define g_viewedPartAmmoType GAME_VAR(int, 0x4dc194)   /* g_viewedPart's PartInfo.ammoType (+0x44): BULLET TYPE 0 .. 3, -1 a special weapon */
 #define g_viewedPartAmmoPerShot GAME_VAR(int, 0x4dc198)   /* g_viewedPart's PartInfo.ammoPerShot (+0x48); for a special weapon (ammoType -1) armc_viewedPartRecord overwrites it with the item's actorItems index (shown as message 745 + it) */
-#define g_panel0Speed GAME_VAR(u32, 0x4dc5a4)   /* g_panels[0].speed: ARM CENTER background panel 0's turning speed (0.15, armc_initPanels; armc_drawPanels turns panels 1 .. 5 only, so this one is never read) */
-#define g_panel1Speed GAME_VAR(u32, 0x4dc5fc)
-#define g_panel2Speed GAME_VAR(u32, 0x4dc654)
-#define g_panel3Speed GAME_VAR(u32, 0x4dc6ac)
-#define g_panel4Speed GAME_VAR(u32, 0x4dc704)
-#define g_panel5Speed GAME_VAR(u32, 0x4dc75c)
+#define g_panel0Speed GAME_VAR(float, 0x4dc5a4)   /* g_panels[0].speed: ARM CENTER background panel 0's turning speed (0.15, armc_initPanels; armc_drawPanels turns panels 1 .. 5 only, so this one is never read) */
+#define g_panel1Speed GAME_VAR(float, 0x4dc5fc)
+#define g_panel2Speed GAME_VAR(float, 0x4dc654)
+#define g_panel3Speed GAME_VAR(float, 0x4dc6ac)
+#define g_panel4Speed GAME_VAR(float, 0x4dc704)
+#define g_panel5Speed GAME_VAR(float, 0x4dc75c)
 #define g_unusedArmcWord1 GAME_VAR(int, 0x4dc864)
-#define g_unusedArmcPoint0Y GAME_VAR(u32, 0x4dca34)   /* 300.0: g_armcViewPoints[1] (point 0's y), set by armc_initCameraPoints; the whole table 0x4dca30 .. 0x4dca8c is never read */
-#define g_unusedArmcPoint3Y GAME_VAR(u32, 0x4dca64)
-#define g_unusedArmcPoint5Y GAME_VAR(u32, 0x4dca84)
+#define g_unusedArmcPoint0Y GAME_VAR(float, 0x4dca34)   /* 300.0: g_armcViewPoints[1] (point 0's y), set by armc_initCameraPoints; the whole table 0x4dca30 .. 0x4dca8c is never read */
+#define g_unusedArmcPoint3Y GAME_VAR(float, 0x4dca64)
+#define g_unusedArmcPoint5Y GAME_VAR(float, 0x4dca84)
 #define g_mechDetectionRange GAME_VAR(float, 0x4dcaa0)
 #define g_mechHackingLevel GAME_VAR(int, 0x4dcaa8)
 #define g_unusedMechStat GAME_VAR(int, 0x4dcae8)
 #define g_mechMaxSpeedBwd GAME_VAR(float, 0x4dcb00)
-#define g_mechWeaponSlot0 GAME_VAR(u32, 0x4dcb20)   /* g_mechSettings[2]: the item in weapon slot 0 (armc_items.c slot_item(0)); g_mechSettings[0 .. 1] are the item slots 4 / 5 (g_itemSlot4 / 5) */
+#define g_mechWeaponSlot0 GAME_VAR(u32, 0x4dcb20)   /* g_armcSlotItems[2]: the item in weapon slot 0 (armc_items.c slot_item(0)); g_armcSlotItems[0 .. 1] are the item slots 4 / 5 (g_itemSlot4 / 5) */
 #define g_mechWeaponSlot1 GAME_VAR(u32, 0x4dcb24)
 #define g_mechWeaponSlot2 GAME_VAR(u32, 0x4dcb28)
 #define g_mechWeaponSlot3 GAME_VAR(u32, 0x4dcb2c)
@@ -682,7 +681,7 @@
 #define g_boosterThrustType GAME_VAR(int, 0x4dce80)
 #define g_headHackingLevel GAME_VAR(int, 0x4dcf00)
 #define g_unusedArmcWord2 GAME_VAR(int, 0x4dcf14)
-#define g_armcPanelDepth GAME_VAR(u32, 0x4dcfc8)   /* z of the panels' origin point (g_armcCameraBox + 0x88, 0 from armc_initCameraBox; its y + 0x84 gives the panels' heights); armc_drawPanels glTranslate's z */
+#define g_armcPanelDepth GAME_VAR(float, 0x4dcfc8)   /* z of the panels' origin point (g_armcCameraBox + 0x88, 0 from armc_initCameraBox; its y + 0x84 gives the panels' heights); armc_drawPanels glTranslate's z */
 #define g_unusedStartupWord3 GAME_VAR(int, 0x4dd0b8)
 #define g_unusedStartupWord2 GAME_VAR(u32, 0x4dd96c)
 #define g_setupResolution GAME_VAR(int, 0x4ddba0)
@@ -692,7 +691,7 @@
 #define g_arenaPassword GAME_VAR(u32, 0x4ded46)   /* char[8] (GameSettings.password of g_arenaName): the arena's password, sent with it */
 #define g_arenaPassword4 GAME_VAR(u32, 0x4ded4a)
 #define g_arenaLocked GAME_VAR(u8, 0x4ded4e)   /* GameSettings.locked: 1 a password game (the arena file's "secret") */
-#define g_menuTunnelSpeed GAME_VAR(u32, 0x4deda8)
+#define g_menuTunnelSpeed GAME_VAR(float, 0x4deda8)
 #define g_mouseSmooth GAME_VAR(int, 0x4df004)
 #define g_unusedMenuReturnWord GAME_VAR(int, 0x4df8e0)
 #define g_arenaFilePassword GAME_VAR(u32, 0x5b193c)
@@ -766,11 +765,11 @@
 #define k_100 GAME_VAR(double, 0x4aa3f8)
 #define k_27 GAME_VAR(double, 0x4aa408)
 #define g_arenaKeptCamX GAME_VAR(float, 0x4db840)
-#define g_arenaKeptCamY GAME_VAR(int, 0x4db844)
-#define g_arenaKeptCamZ GAME_VAR(int, 0x4db848)
-#define g_arenaKeptLookX GAME_VAR(int, 0x4dbab8)
-#define g_arenaKeptLookY GAME_VAR(int, 0x4dbabc)
-#define g_arenaKeptLookZ GAME_VAR(int, 0x4dbac0)
+#define g_arenaKeptCamY GAME_VAR(float, 0x4db844)
+#define g_arenaKeptCamZ GAME_VAR(float, 0x4db848)
+#define g_arenaKeptLookX GAME_VAR(float, 0x4dbab8)
+#define g_arenaKeptLookY GAME_VAR(float, 0x4dbabc)
+#define g_arenaKeptLookZ GAME_VAR(float, 0x4dbac0)
 #define g_chestWeightLimit GAME_VAR(float, 0x4dbc48)
 #define g_itemBonusCapacityPerLevel GAME_VAR(float, 0x4dbc70)
 #define g_itemBonusDetectionRange GAME_VAR(float, 0x4dbc78)
@@ -816,27 +815,27 @@
 #define g_fps GAME_VAR(float, 0x4dd980)
 #define g_freeCamMoveStarted GAME_VAR(int, 0x4de340)   /* set to 1 by the first click in the free camera (armc_mouseLook) and never cleared: later clicks start nothing; read only there */
 #define g_freeCamMoveEyeX GAME_VAR(float, 0x4de350)
-#define g_freeCamMoveEyeY GAME_VAR(int, 0x4de354)
+#define g_freeCamMoveEyeY GAME_VAR(float, 0x4de354)
 #define g_freeCamMoveEyeZ GAME_VAR(float, 0x4de358)
-#define g_freeCamTurnSin GAME_VAR(float, 0x4de6c0)   /* sin of the free camera's turn (g_armcLookYaw, degrees), set by armc_mouseLook's turn_update; freeCam_keys slides the camera by it */
+#define g_freeCamTurnSin GAME_VAR(float, 0x4de6c0)   /* sin of the free camera's turn (g_freeCamYaw, degrees), set by armc_mouseLook's turn_update; freeCam_keys slides the camera by it */
 #define g_freeCamTilt GAME_VAR(float, 0x4de6c4)
 #define g_freeCamTurnCos GAME_VAR(float, 0x4de6c8)
-#define g_freeCamMoveTargetX GAME_VAR(int, 0x4de6d0)
-#define g_freeCamMoveTargetY GAME_VAR(int, 0x4de6d4)
-#define g_freeCamMoveTargetZ GAME_VAR(int, 0x4de6d8)
+#define g_freeCamMoveTargetX GAME_VAR(float, 0x4de6d0)
+#define g_freeCamMoveTargetY GAME_VAR(float, 0x4de6d4)
+#define g_freeCamMoveTargetZ GAME_VAR(float, 0x4de6d8)
 #define g_ladderPassword GAME_VAR(int, 0x9dd58e)   /* the Ladder password (12 bytes; g_ladderId + 0x1e): its first dword */
 #define g_ladderPassword4 GAME_VAR(int, 0x9dd592)
 #define g_ladderPassword8 GAME_VAR(int, 0x9dd596)
-#define g_replaySelectDimR GAME_VAR(u32, 0x9dda70)
-#define g_replaySelectDimG GAME_VAR(u32, 0x9dda74)
-#define g_replaySelectDimB GAME_VAR(u32, 0x9dda78)
-#define g_replaySelectDimA GAME_VAR(u32, 0x9dda7c)
-#define g_replaySelectLitR GAME_VAR(int, 0x9eea98)
-#define g_replaySelectLitG GAME_VAR(u32, 0x9eea9c)
-#define g_replaySelectLitB GAME_VAR(u32, 0x9eeaa0)
-#define g_replaySelectLitA GAME_VAR(u32, 0x9eeaa4)
+#define g_replaySelectDimR GAME_VAR(float, 0x9dda70)
+#define g_replaySelectDimG GAME_VAR(float, 0x9dda74)
+#define g_replaySelectDimB GAME_VAR(float, 0x9dda78)
+#define g_replaySelectDimA GAME_VAR(float, 0x9dda7c)
+#define g_replaySelectLitR GAME_VAR(float, 0x9eea98)
+#define g_replaySelectLitG GAME_VAR(float, 0x9eea9c)
+#define g_replaySelectLitB GAME_VAR(float, 0x9eeaa0)
+#define g_replaySelectLitA GAME_VAR(float, 0x9eeaa4)
 #define g_keptChatLine GAME_VAR(char, 0x9f63e4)
-#define g_rankReplyCode GAME_VAR(u8, 0xa052c0)   /* the first byte of the 0x22-byte reply to request 29 (my rank; g_netNoticeRecord): 1 when a reply came (net_recv sets g_netNoticeIn when it is non-zero); +1 g_outOfRank, +0x16 g_receivedRank */
+#define g_rankReplyCode GAME_VAR(u8, 0xa052c0)   /* the first byte of the 0x22-byte reply to request 29 (my rank; g_rankReply): 1 when a reply came (net_recv sets g_netNoticeIn when it is non-zero); +1 g_outOfRank, +0x16 g_receivedRank */
 #define g_arenaGameListLeft GAME_VAR(int, 0x4db8c8)
 #define g_arenaGameListTop GAME_VAR(int, 0x4db8cc)
 #define g_arenaGameListRight GAME_VAR(int, 0x4db8d0)
@@ -852,7 +851,7 @@
 #define g_setupControlRight GAME_VAR(int, 0x4dde88)
 #define g_sensitivitySlider GAME_VAR(int, 0x4de1c8)
 #define g_ladderExp GAME_VAR(int, 0x4de722)
-#define g_ladderPower GAME_VAR(int, 0x4de726)
+#define g_ladderPower GAME_VAR(float, 0x4de726)
 #define g_ladderGames GAME_VAR(int, 0x4de72a)
 #define g_ladderKills GAME_VAR(int, 0x4de72e)
 #define g_ladderDeaths GAME_VAR(int, 0x4de732)
@@ -880,11 +879,11 @@
 #define g_replaySelectTop GAME_VAR(int, 0x9dd90c)
 #define g_replaySelectRight GAME_VAR(int, 0x9dd910)
 #define g_replaySelectBottom GAME_VAR(int, 0x9dd914)
-#define g_menuHintStep GAME_VAR(u32, 0x9dd948)   /* the AUTOPLAY-F1 hint's fade step per time unit: +0.05 rising, -0.05 falling (menu_mainMenu; 0.05 again on any panel hover and at menuState300_enter) */
-#define g_menuIdleTime GAME_VAR(int, 0x9dda80)   /* time in 1/60 s with no main-menu panel under the pointer (menu_mainMenu adds g_frameTime; 0 on a hover / when the hint finishes); the AUTOPLAY-F1 hint shows past 120 */
-#define g_menuHintFade GAME_VAR(int, 0x9eea8c)   /* the AUTOPLAY-F1 hint's fade (menu_mainMenu): + g_menuHintStep x g_frameTime; past 3 set to 1 and falling, below 0 set to 0 and rising (idle restarts); drawn with alpha min(1, this) */
-#define g_mainMenuDepth GAME_VAR(u32, 0x9eea90)   /* the main menu tunnel's camera depth: -300 at menuState300_enter, flown down to -550 while g_tunnelFlyingIn (menu_mainMenu), passed to menu_tunnel */
-#define g_missionsWindowRight GAME_VAR(int, 0x9f16b0)   /* the mission screen's (900) window: right (0x276); left / top g_briefingX / g_briefingY */
+#define g_menuHintStep GAME_VAR(float, 0x9dd948)   /* the AUTOPLAY-F1 hint's fade step per time unit: +0.05 rising, -0.05 falling (menu_mainMenu; 0.05 again on any panel hover and at menuState300_enter) */
+#define g_menuIdleTime GAME_VAR(float, 0x9dda80)   /* time in 1/60 s with no main-menu panel under the pointer (menu_mainMenu adds g_frameTime; 0 on a hover / when the hint finishes); the AUTOPLAY-F1 hint shows past 120 */
+#define g_menuHintFade GAME_VAR(float, 0x9eea8c)   /* the AUTOPLAY-F1 hint's fade (menu_mainMenu): + g_menuHintStep x g_frameTime; past 3 set to 1 and falling, below 0 set to 0 and rising (idle restarts); drawn with alpha min(1, this) */
+#define g_mainMenuDepth GAME_VAR(float, 0x9eea90)   /* the main menu tunnel's camera depth: -300 at menuState300_enter, flown down to -550 while g_tunnelFlyingIn (menu_mainMenu), passed to menu_tunnel */
+#define g_missionsWindowRight GAME_VAR(int, 0x9f16b0)   /* the mission screen's (900) window: right (0x276); left / top g_missionsWindowLeft / g_missionsWindowTop */
 #define g_briefingBottom GAME_VAR(int, 0x9f16b4)
 #define g_skirmishRectLeft GAME_VAR(int, 0x9f6308)
 #define g_skirmishRectTop GAME_VAR(int, 0x9f630c)
@@ -1077,7 +1076,7 @@
 #define g_statBarsStale GAME_VAR(int, 0x9f8d68)   /* 1: the pilot shown changed, the stat bars to be loaded again */
 #define g_unusedProfileCameraSpeed GAME_VAR(float, 0x9f8e50)   /* only written: 0.1 by profile_resetCamera, 0.05 when a key or click comes while g_profileQuitting (profile_processInput, profile_screenKeys) */
 #define g_profileQuitSkip GAME_VAR(int, 0x9f8e54)   /* 0 from profile_resetCamera; 5 once a key or click came while g_profileQuitting (profile_processInput and profile_screenKeys answer only while it is not 5). The game quits on the next frame anyway */
-#define g_profileRevealClock GAME_VAR(int, 0x9f8ee4)   /* a float: the time to the next step of g_profileReveal; cleared when the pilot cursor moves */
+#define g_profileRevealClock GAME_VAR(float, 0x9f8ee4)   /* a float: the time to the next step of g_profileReveal; cleared when the pilot cursor moves */
 #define g_profileDialogY GAME_VAR(int, 0x9f8f0c)
 #define g_profilePage GAME_VAR(int, 0x9f8f10)   /* the profile screen's page: 1 the list, 2 a new name typed (profile_typeNewName), 3 the delete question (profile_askDelete), 4 logging in (profile_logIn; no keys), 5 the log-out question (profile_askLogOut), 6 CHARACTER SELECT (the pilot grid) */
 #define g_unusedProfileCameraZoom GAME_VAR(float, 0x9f8f14)   /* only written: 80 by profile_resetCamera, 100 by profile_processInput / profile_screenKeys */
@@ -1098,14 +1097,14 @@
 #define g_loadTexture GAME_VAR(int, 0xa0e980)   /* the backdrop's texture id */
 #define g_loadFade GAME_VAR(float, 0xa0e984)   /* the fade's time, 0 .. 1 s */
 #define g_loadScroll GAME_VAR(float, 0xa0ea88)   /* the loading screen's time (TimeSync_frameTime summed since loading_drawScreen(-1)): the backdrop cylinder's texture v runs from it to it + 10, so it scrolls; not a progress fraction */
-#define g_loadGame GAME_VAR(u8 *, 0xa0ea8c)   /* the game object being loaded (game_processLoadingMode's this): loading_draw reads its sessionMode (+8), awaitingHostRound, gameMode */
+#define g_loadGame GAME_VAR(Scene *, 0xa0ea8c)   /* the game object being loaded (game_processLoadingMode's this): loading_draw reads its sessionMode (+8), awaitingHostRound, gameMode */
 #define g_white GAME_VAR(u32, 0xa1f23c)   /* four bytes 0xff: an opaque white colour */
 #define g_unlit GAME_VAR(u32, 0xa1f278)   /* the colour of a vertex out of a light's reach */
 #define g_ptxClamp GAME_VAR(const u8 *, 0xa1f300)   /* the PTX decoder's clamp: points 0x100 into g_ptxClampTable (ptx_initClampTable), so g_ptxClamp[v] is v limited to 0 .. 255 for v from -0x100 (ptx_toRgb / ptx_toRgba; ptx_inverseDct from +0x80) */
 #define g_netqCursor GAME_VAR(int, 0xb116e0)   /* the player netq_receive looks at first (turns 0..15) */
 #define g_packetsSkipped GAME_VAR(int, 0xb116e4)   /* packets that came out of turn (netq_receive: a number other than the one due, the expected number moved past it). Any count lights the match's resend warning (match_frame clears it); 0x80 or more: 'network unstable' and the match is left (match_frame), or the loading stops (game_processLoadingMode) */
 #define g_roomLoginRight GAME_VAR(int, 0x9dd360)
-#define g_unusedRoomPanelEase GAME_VAR(float, 0x9dd560)   /* eased towards k_setupPanelTarget by room_slideMenu (menu_slide) while g_roomDialogOpen, but read only there to ease itself: nothing uses the value; 0 from menuState800_enterGameRoom */
+#define g_unusedRoomPanelEase GAME_VAR(float, 0x9dd560)   /* eased towards k_setupPanelTarget by room_slideMenu (menu_slide) while g_roomPanelsSliding, but read only there to ease itself: nothing uses the value; 0 from menuState800_enterGameRoom */
 #define g_missionRow GAME_VAR(int, 0x9f1058)
 #define g_profileDialogBottom GAME_VAR(int, 0x9f8f28)
 #define g_profileDialogRight GAME_VAR(int, 0x9f8f2c)

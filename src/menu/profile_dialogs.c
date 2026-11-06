@@ -62,7 +62,7 @@ u32 (profile_drawMessageWindow)(void)
 #define Y0 g_newNameDialogTop
 #define X1 g_newNameDialogRight
 #define Y1 g_newNameDialogBottom
-	const u32 *colour = g_profileColour;
+	const u32 *colour = ((u32 *)g_profileColour);
 	gfx_setProjection2D3D(2);
 	glLoadIdentity();
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
@@ -97,7 +97,7 @@ static u32 two_buttons(const TwoButtons *d)
 #define Y0 GAME_VAR(int, d->y0)
 #define X1 GAME_VAR(int, d->x1)
 #define Y1 GAME_VAR(int, d->y1)
-	const u32 *panel = g_profileColour, *dim = g_profileDim;
+	const u32 *panel = ((u32 *)g_profileColour), *dim = ((u32 *)g_profileDim);
 	gfx_setProjection2D3D(2);
 	glLoadIdentity();
 	int hovered = GAME_CDECL(d->hit, int, int, int)(g_mouseX, g_mouseY);
@@ -146,7 +146,7 @@ u32 (profile_drawNewDialog)(void)
 #define Y0 g_newNameDialogTop
 #define X1 g_newNameDialogRight
 #define Y1 g_newNameDialogBottom
-	const u32 *panel = g_profileColour, *dim = g_profileDim;
+	const u32 *panel = ((u32 *)g_profileColour), *dim = ((u32 *)g_profileDim);
 	gfx_setProjection2D3D(2);
 	glLoadIdentity();
 	int hovered = newNameDialog_hitTest(g_mouseX, g_mouseY);
@@ -199,7 +199,7 @@ void (profile_drawManagementWindow)(void)
 #define Y1 g_profilePageBottom
 #define PAGE g_profilePage
 	float *panel = (float *)OBJ(g_profileColour);
-	const u32 *bright = g_profileColour, *dim = g_profileDim;
+	const u32 *bright = ((u32 *)g_profileColour), *dim = ((u32 *)g_profileDim);
 	int hovered = profilePage_hitTest(g_mouseX, g_mouseY);
 	gfx_setProjection2D3D(2);
 	glLoadIdentity();
@@ -270,7 +270,7 @@ void (profile_drawManagementWindow)(void)
 }
 
 /* ---- a pilot's details (g_characterProfiles: name, corporation, sex, age, nine stats) ---- */
-#define PILOT(n) (&g_characterProfiles[n])
+#define PILOT(n) (&((CharacterProfile *)g_characterProfiles)[n])
 
 /* the nine stats, right-aligned (by their digits and sign) from x, step apart from y, each with 0x4b3e2c */
 static void pilot_stats(int pilot, int x, int y, int step)
@@ -336,8 +336,8 @@ void (profile_drawPilotSelect)(void)
 #define Y1 g_pilotSelectBottom
 #define K(addr) ((const float *)RELOC(addr))
 #define g_pilot g_pilotSelectCursor
-#define g_revealClock (*(float *)&g_profileRevealClock)
-	const u32 *panel = g_profileColour, *dim = g_profileDim;
+#define g_revealClock g_profileRevealClock
+	const u32 *panel = ((u32 *)g_profileColour), *dim = ((u32 *)g_profileDim);
 	gfx_setProjection2D3D(2);
 	glLoadIdentity();
 	int hovered = pilotSelect_hitTest(g_mouseX, g_mouseY);   /* pilotSelect_hitTest */
@@ -408,9 +408,9 @@ void (profile_drawPilotSelect)(void)
 	long double pulse = fadd_m(fmul_m(fld_m((&g_frameTime)), (const float *)&g_profileFrameStep), &g_profileFrameAlpha);
 	g_profileFrameAlpha = f32(pulse);
 	if (!(pulse > *&k_2f))
-		g_profileFrameStep = 0x3f800000;   /* 1 */
+		(*(u32 *)&g_profileFrameStep) = 0x3f800000;   /* 1 */
 	if (pulse >= *&k_38f)
-		g_profileFrameStep = 0xbf800000;   /* -1 */
+		(*(u32 *)&g_profileFrameStep) = 0xbf800000;   /* -1 */
 	if (g_profileReveal < 8) {
 		long double clock = fadd_m(fld_m(&g_revealClock), (&g_frameTime));
 		g_revealClock = f32(clock);

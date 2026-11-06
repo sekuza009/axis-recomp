@@ -418,7 +418,7 @@ void (setup_controlTabKeys)(void)
 		return;
 	}
 	if (input_justPressed(g_keyDown) == 1) {
-		if (g_bindRow < g_bindRows[g_bindPage] - 1)
+		if (g_bindRow < ((int *)g_bindRows)[g_bindPage] - 1)
 			g_bindRow++;
 		return;
 	}

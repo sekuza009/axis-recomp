@@ -68,8 +68,8 @@ void (briefing_typeOut)(void)
 #define BY0 g_missionsWindowTop
 #define BX1 g_missionsWindowRight
 #define BY1 g_briefingBottom
-#define g_panelColour (g_missionsColourLit)
-#define g_dimColour (g_missionsColourDim)
+#define g_panelColour (((u32 *)g_missionsColourLit))
+#define g_dimColour (((u32 *)g_missionsColourDim))
 
 /* one of the window's buttons (x0 .. x1 along its bottom): the textured quad, lit when lit, then its label in
    colour (none: grey, the button greyed) */

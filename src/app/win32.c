@@ -85,7 +85,7 @@ void *(glWindow_init)(const char *title, int width, int height, int colourBits, 
 	}
 	strcpy(g_glTitle, title);
 	g_glColourBits = colourBits;
-	(*(int *)&g_glDepthBits) = depthBits;
+	g_glDepthBits = depthBits;
 	g_fullScreen = fullscreen;
 	g_glWidth = width;
 	g_glHeight = height;
@@ -254,7 +254,7 @@ int (glWindow_setupPixelFormat)(void *dc)
 	pfd->version = 1;
 	pfd->flags = 0x21;   /* PFD_DRAW_TO_WINDOW | PFD_SUPPORT_OPENGL */
 	pfd->colorBits = (*(u8 *)&g_glColourBits);
-	pfd->depthBits = g_glDepthBits;
+	pfd->depthBits = (*(u8 *)&g_glDepthBits);
 	int format = ChoosePixelFormat(dc, pfd);
 	if (!format) {
 		sys_errorMessageNoName((const char *)STR(0x4c4e5c, "glWindow ChoosePixelFormat failed - s..."));   /* sys_errorMessageNoName */

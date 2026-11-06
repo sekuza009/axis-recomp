@@ -22,7 +22,7 @@ void (timer_init)(void)
 	}
 	g_timerShift = shift;
 	for (int i = 0; i < 4; i++)
-		g_timerClocks[i] = 0;
+		((u32 *)g_timerClocks)[i] = 0;
 	g_timerTick = ONE / (long double)(u32)f;
 }
 

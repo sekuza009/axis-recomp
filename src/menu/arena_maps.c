@@ -3,7 +3,7 @@
 #include "../game.h"
 #include <string.h>
 
-#define g_mapChoices ((MapChoice *)g_mapChoiceTable)          /* (objects.h: 1024 of them) */
+#define g_mapChoices g_mapChoiceTable          /* (objects.h: 1024 of them) */
 #define g_mapChoicesKept ((MapChoice *)g_mapChoiceKeptTable)
 
 /* the maps that are never offered */

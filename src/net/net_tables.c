@@ -533,9 +533,9 @@ int (net_startThread)(void)
 int (net_addPlayerRecord)(const u8 *rec)
 {
 	const RankedPlayer *from = (const RankedPlayer *)RELOC(rec);
-	lstrcpyA(g_netPlayerList[g_playerListCount].name, from->name);
+	lstrcpyA(((RankedPlayer *)g_netPlayerList)[g_playerListCount].name, from->name);
 	int i = g_playerListCount;
-	RankedPlayer *slot = &g_netPlayerList[i];
+	RankedPlayer *slot = &((RankedPlayer *)g_netPlayerList)[i];
 	slot->deaths = from->deaths;
 	slot->kills = from->kills;
 	slot->games = from->games;
@@ -649,7 +649,7 @@ u32 (net_pingAllServers)(void)
 				g_serverPing[i] = time;
 			} else
 				g_serverPing[i] = 0;
-			(*(int *)&g_serverPinged[i]) = 1;
+			(*(int *)&((u32 *)g_serverPinged)[i]) = 1;
 		}
 	}
 	g_netListDone = 1;
@@ -924,8 +924,8 @@ u32 (net_handleMessage)(const u8 *message, u32 size, u32 from)
 	int r;
 	switch (type) {
 	case 1:
-		if (g_lastChatLine)
-			g_lastChatLine = 0;
+		if ((*(int *)&g_lastChatLine))
+			(*(int *)&g_lastChatLine) = 0;
 		r = net_logMessage(from, message + 0xc, (char **)ADDR(g_lastChatLine));   /* net_logMessage */
 		if (r >= 0)
 			g_lastChatLineSet = 1;

@@ -1180,7 +1180,7 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 			AC->state = 3;
 			AC->stateTime = 0.0f;
 			if (i == ST->playerActor)   /* the patch DLL's cat_wrap */
-				PATCHED_THISCALL(0x45c638, void, void *, u32)(s, g_componentDatPath);
+				PATCHED_THISCALL(0x45c638, void, void *, u32)(s, (*(u32 *)&g_componentDatPath));
 		}
 	} else if (AC->state == 3)
 		BITS(AC->spawnAge) = BITS(AC->dropAge);

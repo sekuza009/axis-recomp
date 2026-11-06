@@ -16,20 +16,20 @@ static void clear_all(const u32 *addresses, int n)
    (arena_loadPlayerSettings) */
 void (lobby_enterPlayerScreen)(void)
 {
-	int z = g_menuCameraLookZ;
+	int z = (*(int *)&g_menuCameraLookZ);
 	(*(u32 *)&g_camPoint0X) = 0x420c0000;   /* 35.0 */
-	g_camPoint0Y = 0;
-	g_camPoint0Z = z;
+	(*(int *)&g_camPoint0Y) = 0;
+	(*(int *)&g_camPoint0Z) = z;
 	(*(u32 *)&g_camAim0X) = 0xc28c0000;   /* -70.0 */
 	(*(u32 *)&g_camAim0Y) = 0x420c0000;   /* 35.0 */
-	g_camAim0Z = z;
+	(*(int *)&g_camAim0Z) = z;
 	arena_loadPlayerSettings();
 	g_arenaCameraMode = 1;
 	g_lobbySubState = 0;
-	g_unusedArenaFloat = 0x3f333333;
+	(*(u32 *)&g_unusedArenaFloat) = 0x3f333333;
 	g_armcFrom = 0;
 	g_lobbyPanelsSliding = 0;
-	g_arenaTunnelDepth = 0xc4ce4000;   /* -1650.0 */
+	(*(u32 *)&g_arenaTunnelDepth) = 0xc4ce4000;   /* -1650.0 */
 }
 
 /* 0x404b30: sub-screen 1, the arena list: its 24 state words cleared, 999 (no selection), 30 seconds */
@@ -38,19 +38,19 @@ void (lobby_enterArenaList)(void)
 	static const u32 cleared[] = { (OBJ(g_camPoints) + 0x14), ADDR(g_joinThroughServer), ADDR(g_lobbyRefreshing), ADDR(g_lanSearchStarted), ADDR(g_serverSearching), ADDR(g_lobbyJoinStarted), ADDR(g_lanJoinRequest), ADDR(g_lanSearch),
 	                               ADDR(g_lobbySearching), ADDR(g_arenaLanListBuilt), ADDR(g_arenaServerList), ADDR(g_gameCount), ADDR(g_lobbyBlinkClock), ADDR(g_pickedGame), ADDR(g_gameListTop), ADDR(g_gameListRow),
 	                               ADDR(g_arenaListClickArmed), ADDR(g_arenaListClickTimer), ADDR(g_lobbyPanelsSliding), ADDR(g_joinConnecting), ADDR(g_lobbyConnectionOpen), ADDR(g_arenaUpdateNotice), ADDR(g_arenaListRefreshTimer), ADDR(g_typingArenaAddress) };
-	int z = g_menuCameraLookZ;
-	g_camPoint1X = 0x420c0000;   /* 35.0 */
-	g_camPoint1Z = z;
-	g_camAim1Z = z;
-	g_camAim1X = 0xc28c0000;   /* -70.0 */
-	g_camAim1Y = 0xc20c0000;   /* -35.0 */
+	int z = (*(int *)&g_menuCameraLookZ);
+	(*(u32 *)&g_camPoint1X) = 0x420c0000;   /* 35.0 */
+	(*(int *)&g_camPoint1Z) = z;
+	(*(int *)&g_camAim1Z) = z;
+	(*(u32 *)&g_camAim1X) = 0xc28c0000;   /* -70.0 */
+	(*(u32 *)&g_camAim1Y) = 0xc20c0000;   /* -35.0 */
 	g_lobbySubState = 1;
 	g_arenaCameraMode = 1;
-	g_unusedArenaFloat = 0x3f333333;
+	(*(u32 *)&g_unusedArenaFloat) = 0x3f333333;
 	clear_all(cleared, sizeof cleared / sizeof cleared[0]);
 	g_lastPanel = 999;
 	g_lobbyReportsOff = 1;
-	g_arenaTunnelDepth = 0xc4ce4000;
+	(*(u32 *)&g_arenaTunnelDepth) = 0xc4ce4000;
 	g_listRefreshPeriod = 30;
 }
 
@@ -72,9 +72,9 @@ void (lobby_loadArenaSettings)(void)
 	u8 b1 = g_arenaPlayers, b2 = g_arenaRotation, b3 = g_arenaGameType, b4 = g_arenaFragLimit,
 	   b5 = g_arenaTimeLimit;
 	g_newArenaMap = map;
-	g_newArenaMode = b3;
-	g_newArenaPlayers = b1;
-	g_newArenaRotation = b2;
+	(*(u8 *)&g_newArenaMode) = b3;
+	(*(u8 *)&g_newArenaPlayers) = b1;
+	(*(u8 *)&g_newArenaRotation) = b2;
 	g_newArenaPassword = 0;
 	g_newArenaFragLimit = b4;
 	g_newArenaTimeLimit = b5;
@@ -109,19 +109,19 @@ void (lobby_enterCreate)(void)
 {
 	static const u32 cleared[] = { ADDR(g_arenaLobbyState), ADDR(g_connectionAwaited), ADDR(g_lobbyReportsOff), ADDR(g_hostErrorBox), ADDR(g_arenaGameSetUp), ADDR(g_lobbyPanelsSliding), ADDR(g_arenaUpdateNotice), ADDR(g_editingNewArenaName),
 	                               ADDR(g_editingNewArenaFragLimit), ADDR(g_editingNewArenaTimeLimit), ADDR(g_typingArenaPassword) };
-	int z = g_menuCameraLookZ;
-	g_camPoint2X = 0xc20c0000;   /* -35.0 */
-	g_camPoint2Y = 0;
-	g_camPoint2Z = z;
-	g_camAim2X = 0x428c0000;   /* 70.0 */
-	g_camAim2Y = 0x420c0000;   /* 35.0 */
-	g_camAim2Z = z;
+	int z = (*(int *)&g_menuCameraLookZ);
+	(*(u32 *)&g_camPoint2X) = 0xc20c0000;   /* -35.0 */
+	(*(int *)&g_camPoint2Y) = 0;
+	(*(int *)&g_camPoint2Z) = z;
+	(*(u32 *)&g_camAim2X) = 0x428c0000;   /* 70.0 */
+	(*(u32 *)&g_camAim2Y) = 0x420c0000;   /* 35.0 */
+	(*(int *)&g_camAim2Z) = z;
 	lobby_loadArenaSettings();
 	g_lobbySubState = 2;
 	g_arenaCameraMode = 1;
-	g_unusedArenaFloat = 0x3f333333;
+	(*(u32 *)&g_unusedArenaFloat) = 0x3f333333;
 	clear_all(cleared, sizeof cleared / sizeof cleared[0]);
-	g_arenaTunnelDepth = 0xc4ce4000;
+	(*(u32 *)&g_arenaTunnelDepth) = 0xc4ce4000;
 	g_mapPreviewChanged = 1;
 	mapList_init();
 }
@@ -132,11 +132,11 @@ void (room_loadSettingsRecord)(void)
 {
 	if (g_roomRecMap > 0x15 && g_roomRecMap < 0x19)
 		(*(u8 *)&g_roomRecMap) = 0;
-	g_roomMap = (*(u8 *)&g_roomRecMap);
+	(*(u8 *)&g_roomMap) = (*(u8 *)&g_roomRecMap);
 	memset((void *)OBJ(g_roomSettingsName), 0, 32);
-	g_roomGameMode = g_roomRecGameMode;   /* stored before the name is copied, as in the original */
+	(*(u8 *)&g_roomGameMode) = (*(u8 *)&g_roomRecGameMode);   /* stored before the name is copied, as in the original */
 	strcpy(g_roomSettingsName, g_roomRecName);
-	g_roomPlayers = g_roomRecPlayers;
+	g_roomPlayers = (*(u8 *)&g_roomRecPlayers);
 	g_roomRotation = g_roomRecRotation;
 	g_roomFragLimit = g_roomRecFragLimit;
 	g_roomTimeLimit = g_roomRecTimeLimit;
@@ -150,7 +150,7 @@ void (room_enterCreatePage)(void)
 	room_loadSettingsRecord();
 	g_roomState = 2;
 	g_roomCameraMode = 1;
-	g_unusedRoomFloat = 0x3f333333;
+	(*(u32 *)&g_unusedRoomFloat) = 0x3f333333;
 	clear_all(cleared, sizeof cleared / sizeof cleared[0]);
 	g_mapPreviewChanged = 1;
 	(*(char *)&g_roomRotation) = 0;
@@ -171,9 +171,9 @@ void (ranking_enter)(void)
 	g_roomCameraMode = 1;
 	g_rankingFirst = 1;
 	g_roomState = 4;
-	g_unusedRoomFloat = 0x3f333333;
+	(*(u32 *)&g_unusedRoomFloat) = 0x3f333333;
 	g_rankingLast = 10;
-	g_rankingPrevValue = 0x4b189680;   /* 10000000.0 */
+	(*(u32 *)&g_rankingPrevValue) = 0x4b189680;   /* 10000000.0 */
 	g_rankingLastPage = 999;
 }
 
@@ -205,12 +205,12 @@ void (room_copyJoinedSettings)(void)
 {
 	strcpy(g_accountName, g_ladderId);
 	strcpy(g_accountEmail, g_ladderEmail);
-	u8 map = g_roomRecPlayers;
+	u8 map = (*(u8 *)&g_roomRecPlayers);
 	strcpy(g_roomSettingsName, g_roomRecName);
 	g_roomPlayers = map;
-	g_roomMap = (*(u8 *)&g_roomRecMap);
+	(*(u8 *)&g_roomMap) = (*(u8 *)&g_roomRecMap);
 	g_roomRotation = g_roomRecRotation;
-	g_roomGameMode = g_roomRecGameMode;
+	(*(u8 *)&g_roomGameMode) = (*(u8 *)&g_roomRecGameMode);
 	g_roomFragLimit = g_roomRecFragLimit;
 	g_roomTimeLimit = g_roomRecTimeLimit;
 	memcpy((void *)OBJ(g_roomMechKept), (void *)OBJ(g_roomMech), 11);
@@ -254,12 +254,12 @@ void (pilotRecord_syncCopies)(void)
 			b1 = a1;
 		}
 	}
-	int e0 = g_ladderLevel, e1 = g_ladderExp, e3 = g_ladderPower,
+	int e0 = g_ladderLevel, e1 = g_ladderExp, e3 = (*(int *)&g_ladderPower),
 	    e4 = g_ladderGames, e5 = g_ladderKills, e6 = g_ladderDeaths;
 	if (c5 > e5 || a1 > e1) {
 		g_pilotLevel = e0;
 		g_pilotExp = e1;
-		g_pilotPower = e3;
+		(*(int *)&g_pilotPower) = e3;
 		g_pilotKills = e5;
 		g_pilotDeaths = e6;
 		g_pilotGames = e4;
@@ -267,7 +267,7 @@ void (pilotRecord_syncCopies)(void)
 	if (g_pilotKillsKept > e5 || b1 > e1) {
 		g_pilotExpKept = e1;
 		g_pilotLevelKept = e0;
-		g_pilotPowerKept = e3;
+		(*(int *)&g_pilotPowerKept) = e3;
 		g_pilotKillsKept = e5;
 		g_pilotDeathsKept = e6;
 		g_pilotGamesKept = e4;
@@ -325,7 +325,7 @@ u32 (newId_register)(void)
 {
 	strcpy(g_ladderId, g_accountName);
 	strcpy(g_ladderEmail, g_accountEmail);
-	default_mech(g_roomMechKept, g_roomColoursKept);
+	default_mech(g_roomMechKept, ((u8 *)g_roomColoursKept));
 	default_mech(g_roomMech, (u8 *)OBJ(g_roomColours));
 	g_pilotLevelKept = 1;
 	g_pilotLevel = 1;
@@ -335,7 +335,7 @@ u32 (newId_register)(void)
 	for (unsigned k = 0; k < sizeof zero / sizeof zero[0]; k++)
 		GAME_VAR(int, zero[k]) = 0;
 	strcpy(g_ladderName, g_ladderId);
-	g_ladderPower = g_pilotPower;
+	(*(int *)&g_ladderPower) = (*(int *)&g_pilotPower);
 	g_ladderLevel = 1;
 	static const u32 zero2[] = { ADDR(g_ladderExp), ADDR(g_ladderKills), ADDR(g_ladderDeaths), ADDR(g_ladderGames) };
 	for (int k = 0; k < 4; k++)
@@ -580,7 +580,7 @@ u32 (arena_editAddress)(void)
 	g_textFieldOpen = 1;
 	menu_clearInputBuffer(0x14);
 	memset((void *)OBJ(g_chatLine), 0, 0x400);
-	(*(int *)&g_typedArenaAddress) = 0;
+	g_typedArenaAddress = 0;
 	g_chatCaretX = g_arenaGameListLeft + 0xd8;
 	g_chatCaretY = g_arenaGameListTop + 0xd0;
 	g_chatLength = (int)strlen(g_chatLine);
@@ -997,11 +997,11 @@ u32 (arena_startFromLauncher)(void)
 	g_arenaPassword4 = 0;
 	if (secret == 1)
 		strcpy((char *)ADDR(g_arenaPassword), (const char *)ADDR(g_arenaFilePassword));
-	g_arenaFragLimit = g_arenaFileFragLimit;
-	g_arenaGameType = g_arenaFileGameType;
+	g_arenaFragLimit = (*(u8 *)&g_arenaFileFragLimit);
+	g_arenaGameType = (*(u8 *)&g_arenaFileGameType);
 	g_arenaRotation = 0;
-	(*(u8 *)&g_arenaMap) = g_arenaFileMap;
-	g_arenaPlayers = g_arenaFilePlayers;
+	(*(u8 *)&g_arenaMap) = (*(u8 *)&g_arenaFileMap);
+	g_arenaPlayers = (*(u8 *)&g_arenaFilePlayers);
 	g_arenaTimeLimit = (*(u8 *)&g_arenaFileTimeLimit);
 	menuState400_enter();
 	lobby_enterArenaList();
@@ -1403,7 +1403,7 @@ void (arenaGames_keys)(void)
 /* ---- the player's record (from g_ladderName: the name, +0x1e the level, +0x22 exp, +0x26 power, +0x2a games played,
    +0x2e kills, +0x32 deaths) and its two kept copies (PilotStats: g_pilotLevel and g_pilotLevelKept) ---- */
 #define R_EXP g_ladderExp
-#define R_POWER (*(float *)&g_ladderPower)
+#define R_POWER g_ladderPower
 #define R_GAMES g_ladderGames
 #define R_KILLS g_ladderKills
 #define R_DEATHS g_ladderDeaths

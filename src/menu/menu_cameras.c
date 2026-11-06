@@ -44,13 +44,13 @@ static void menu_camera(const MenuCam *m)
 	if (mode == 1) {
 		int i = I(m->idx) * 16;
 		X k = g_frameTime, c = RATE;
-		(*(float *)&g_menuCameraPos) = (float)(((X)F(i + OBJ(g_camPoints)) - (*(float *)&g_menuCameraPos)) * k * c + (*(float *)&g_menuCameraPos));
+		g_menuCameraPos = (float)(((X)F(i + OBJ(g_camPoints)) - g_menuCameraPos) * k * c + g_menuCameraPos);
 		if (!m->arena)
 			g_menuEyeY = (float)(((X)F(i + (OBJ(g_camPoints) + 0x4)) - g_menuEyeY) * k * c + g_menuEyeY);
 		g_menuEyeZ = (float)(((X)F(i + (OBJ(g_camPoints) + 0x8)) - g_menuEyeZ) * k * c + g_menuEyeZ);
-		X look = ((X)F(i + OBJ(g_camAims)) - (*(float *)&g_menuCameraLook)) * k * c + (*(float *)&g_menuCameraLook);
-		(*(float *)&g_menuCameraLook) = (float)look;
-		(*(float *)&g_menuCameraLookY) = (float)(((X)F(i + (OBJ(g_camAims) + 0x4)) - (*(float *)&g_menuCameraLookY)) * k * c + (*(float *)&g_menuCameraLookY));
+		X look = ((X)F(i + OBJ(g_camAims)) - g_menuCameraLook) * k * c + g_menuCameraLook;
+		g_menuCameraLook = (float)look;
+		g_menuCameraLookY = (float)(((X)F(i + (OBJ(g_camAims) + 0x4)) - g_menuCameraLookY) * k * c + g_menuCameraLookY);
 		if (!(look >= k_0f))
 			look = -look;
 		if (!(look > k_69_9))
@@ -63,40 +63,40 @@ static void menu_camera(const MenuCam *m)
 			(*(int *)&g_menuEyeZ) = I(i + (OBJ(g_camPoints) + 0x8));
 			(*(int *)&g_menuCameraLook) = I(i + OBJ(g_camAims));
 			(*(int *)&g_menuCameraLookY) = I(i + (OBJ(g_camAims) + 0x4));
-			g_menuCameraLookZ = I(i + (OBJ(g_camAims) + 0x8));
+			(*(int *)&g_menuCameraLookZ) = I(i + (OBJ(g_camAims) + 0x8));
 			g_frameOpening = 1;
 		} else {
 			g_frameOpening = 1;
 			(*(int *)&g_menuEyeY) = I(i + (OBJ(g_camPoints) + 0x4));
 			(*(int *)&g_menuEyeZ) = I(i + (OBJ(g_camPoints) + 0x8));
 			volatile X x = F(i + OBJ(g_camPoints));   /* fld / fst / fstp */
-			g_arenaKeptCamY = (*(int *)&g_menuEyeY);
-			(*(float *)&g_menuCameraPos) = (float)x;
+			(*(int *)&g_arenaKeptCamY) = (*(int *)&g_menuEyeY);
+			g_menuCameraPos = (float)x;
 			(*(int *)&g_menuCameraLook) = I(i + OBJ(g_camAims));
 			(*(int *)&g_menuCameraLookY) = I(i + (OBJ(g_camAims) + 0x4));
 			g_arenaKeptCamX = (float)x;
-			g_menuCameraLookZ = I(i + (OBJ(g_camAims) + 0x8));
-			g_arenaKeptCamZ = (*(int *)&g_menuEyeZ);
+			(*(int *)&g_menuCameraLookZ) = I(i + (OBJ(g_camAims) + 0x8));
+			(*(int *)&g_arenaKeptCamZ) = (*(int *)&g_menuEyeZ);
 			I(m->mode) = 2;
-			g_arenaKeptLookX = (*(int *)&g_menuCameraLook);
-			g_arenaKeptLookY = (*(int *)&g_menuCameraLookY);
-			g_arenaKeptLookZ = g_menuCameraLookZ;
+			(*(int *)&g_arenaKeptLookX) = (*(int *)&g_menuCameraLook);
+			(*(int *)&g_arenaKeptLookY) = (*(int *)&g_menuCameraLookY);
+			(*(int *)&g_arenaKeptLookZ) = (*(int *)&g_menuCameraLookZ);
 		}
 		return;
 	}
 	if (mode != 0)
 		return;
-	X look = (*(float *)&g_menuCameraLook);
+	X look = g_menuCameraLook;
 	if (!(look >= k_0f))
 		look = -look;
 	if (!(look >= k_cameraSnapDistance)) {   /* close enough: snapped home */
-		(*(int *)&g_menuCameraLook) = g_menuLookHomeX;
-		(*(int *)&g_menuCameraLookY) = g_menuLookHomeY;
-		g_menuCameraLookZ = g_menuLookHomeZ;
+		(*(int *)&g_menuCameraLook) = (*(int *)&g_menuLookHomeX);
+		(*(int *)&g_menuCameraLookY) = (*(int *)&g_menuLookHomeY);
+		(*(int *)&g_menuCameraLookZ) = (*(int *)&g_menuLookHomeZ);
 		I(m->mode) = 2;
-		(*(int *)&g_menuCameraPos) = g_menuEyeHomeX;
-		(*(int *)&g_menuEyeY) = g_menuEyeHomeY;
-		(*(int *)&g_menuEyeZ) = g_menuEyeHomeZ;
+		(*(int *)&g_menuCameraPos) = (*(int *)&g_menuEyeHomeX);
+		(*(int *)&g_menuEyeY) = (*(int *)&g_menuEyeHomeY);
+		(*(int *)&g_menuEyeZ) = (*(int *)&g_menuEyeHomeZ);
 		I(m->idx) = m->idxHome;
 		if (g_leavingForMatch == 1)
 			(*(int *)&g_whiteFade) = 0;
@@ -155,8 +155,8 @@ static void menu_camera2(const MenuCam2 *m)
 		(*(u32 *)&g_menuEyeY) = 0xc3480000;   /* -200 */
 		(*(u32 *)&g_menuEyeZ) = 0x44bb8000;   /* 1500 */
 		(*(int *)&g_menuCameraLook) = 0;
-		g_menuCameraLookY = 0xc3480000;
-		g_menuCameraLookZ = 0;
+		(*(u32 *)&g_menuCameraLookY) = 0xc3480000;
+		(*(int *)&g_menuCameraLookZ) = 0;
 		I(m->mode) = 2;
 		I(m->flag) = 0;
 		g_frameOpening = 1;
@@ -165,7 +165,7 @@ static void menu_camera2(const MenuCam2 *m)
 	}
 	if (mode != 0)
 		return;
-	int fast = (*(float *)&g_menuCameraLookZ) > k_m549f;
+	int fast = g_menuCameraLookZ > k_m549f;
 	X c = fast ? k_tenthsToDegrees : k_0_5f;
 	I(m->flag) = 1;
 	for (int i = 0; i < 6; i++)
@@ -173,17 +173,17 @@ static void menu_camera2(const MenuCam2 *m)
 	X full = SCREEN_ASPECT;
 	if (!(g_viewAspect >= full))
 		g_viewAspect = (float)((X)g_frameTime * F(fast ? OBJ(k_0_05f) : ADDR(k_0_01f)) + g_viewAspect);
-	if ((*(float *)&g_menuCameraLookZ) > k_m549_99f)
+	if (g_menuCameraLookZ > k_m549_99f)
 		return;
 	/* home */
-	(*(int *)&g_menuCameraLook) = g_menuLookHomeX;
-	(*(int *)&g_menuCameraLookY) = g_menuLookHomeY;
-	g_menuCameraLookZ = g_menuLookHomeZ;
+	(*(int *)&g_menuCameraLook) = (*(int *)&g_menuLookHomeX);
+	(*(int *)&g_menuCameraLookY) = (*(int *)&g_menuLookHomeY);
+	(*(int *)&g_menuCameraLookZ) = (*(int *)&g_menuLookHomeZ);
 	if (m->mission)
 		I(m->mode) = 2;
-	(*(int *)&g_menuCameraPos) = g_menuEyeHomeX;
-	(*(int *)&g_menuEyeY) = g_menuEyeHomeY;
-	(*(int *)&g_menuEyeZ) = g_menuEyeHomeZ;
+	(*(int *)&g_menuCameraPos) = (*(int *)&g_menuEyeHomeX);
+	(*(int *)&g_menuEyeY) = (*(int *)&g_menuEyeHomeY);
+	(*(int *)&g_menuEyeZ) = (*(int *)&g_menuEyeHomeZ);
 	if (m->mission && g_leavingForMatch == 1)
 		(*(int *)&g_whiteFade) = 0;
 	g_viewAspect = (float)full;
@@ -226,8 +226,8 @@ void (armc_cameraStep)(void)
 		(*(u32 *)&g_menuEyeZ) = network ? 0x43c80000 : 0x44bb8000;   /* 400 / 1500 */
 		g_frameOpening = 1;
 		(*(int *)&g_menuCameraLook) = 0;
-		g_menuCameraLookY = 0xc3480000;
-		g_menuCameraLookZ = 0;
+		(*(u32 *)&g_menuCameraLookY) = 0xc3480000;
+		(*(int *)&g_menuCameraLookZ) = 0;
 		g_armcState = 2;
 		g_armcCameraTravelling = 0;
 		g_viewAspect = (float)SCREEN_ASPECT;
@@ -235,7 +235,7 @@ void (armc_cameraStep)(void)
 	}
 	if (mode != 0)
 		return;
-	int fast = !((X)base + k_1f >= (*(float *)&g_menuCameraLookZ));
+	int fast = !((X)base + k_1f >= g_menuCameraLookZ);
 	X c = fast ? k_tenthsToDegrees : k_0_5f;
 	g_armcCameraTravelling = 1;
 	for (int i = 0; i < 6; i++)
@@ -243,7 +243,7 @@ void (armc_cameraStep)(void)
 	X full = SCREEN_ASPECT;
 	if (!(g_viewAspect >= full))
 		g_viewAspect = (float)((X)g_frameTime * F(fast ? OBJ(k_0_05f) : ADDR(k_0_01f)) + g_viewAspect);
-	if (!((X)base + k_0_01f >= (*(float *)&g_menuCameraLookZ)))
+	if (!((X)base + k_0_01f >= g_menuCameraLookZ))
 		return;
 	/* home */
 	g_armcState = 2;
@@ -259,16 +259,16 @@ void (armc_cameraStep)(void)
 	case 2:
 		state = 400;
 		(*(int *)&g_menuCameraPos) = (*(int *)&g_arenaKeptCamX);
-		(*(int *)&g_menuEyeY) = g_arenaKeptCamY;
-		(*(int *)&g_menuEyeZ) = g_arenaKeptCamZ;
-		(*(int *)&g_menuCameraLook) = g_arenaKeptLookX;
-		(*(int *)&g_menuCameraLookY) = g_arenaKeptLookY;
-		g_menuCameraLookZ = g_arenaKeptLookZ;
-		g_menuEyeHomeX = 0;
-		g_menuEyeHomeY = 0;
+		(*(int *)&g_menuEyeY) = (*(int *)&g_arenaKeptCamY);
+		(*(int *)&g_menuEyeZ) = (*(int *)&g_arenaKeptCamZ);
+		(*(int *)&g_menuCameraLook) = (*(int *)&g_arenaKeptLookX);
+		(*(int *)&g_menuCameraLookY) = (*(int *)&g_arenaKeptLookY);
+		(*(int *)&g_menuCameraLookZ) = (*(int *)&g_arenaKeptLookZ);
+		(*(int *)&g_menuEyeHomeX) = 0;
+		(*(int *)&g_menuEyeHomeY) = 0;
 		(*(u32 *)&g_menuEyeHomeZ) = 0xc4c1c000;   /* -1550 */
-		g_menuLookHomeX = 0;
-		g_menuLookHomeY = 0;
+		(*(int *)&g_menuLookHomeX) = 0;
+		(*(int *)&g_menuLookHomeY) = 0;
 		(*(u32 *)&g_menuLookHomeZ) = 0xc4ce4000;   /* -1650 */
 		break;
 	case 3:
@@ -326,10 +326,10 @@ void (menuCamera_forward)(void)
 	X c = x87_fcos(a);
 	X t = (X)g_frameTime * s * SPEED;
 	float tf = (float)t;
-	(*(float *)&g_menuCamX) = (float)(t + (*(float *)&g_menuCamX));   /* the unrounded step here ... */
+	g_menuCamX = (float)(t + g_menuCamX);   /* the unrounded step here ... */
 	X u = c * g_frameTime * SPEED;
-	(*(float *)&g_menuCamZ) = (float)(u + (*(float *)&g_menuCamZ));
-	(*(float *)&g_menuCameraPos) = (float)((X)tf + (*(float *)&g_menuCameraPos));   /* ... the rounded one here */
+	g_menuCamZ = (float)(u + g_menuCamZ);
+	g_menuCameraPos = (float)((X)tf + g_menuCameraPos);   /* ... the rounded one here */
 	g_menuEyeZ = (float)(u + g_menuEyeZ);
 }
 
@@ -340,10 +340,10 @@ void (menuCamera_back)(void)
 	float s = (float)x87_fsin(a);
 	X c = x87_fcos(a);
 	float tf = (float)((X)g_frameTime * s * SPEED);
-	(*(float *)&g_menuCamX) = (float)((X)(*(float *)&g_menuCamX) - tf);
+	g_menuCamX = (float)((X)g_menuCamX - tf);
 	X u = c * g_frameTime * SPEED;
-	(*(float *)&g_menuCamZ) = (float)((X)(*(float *)&g_menuCamZ) - u);
-	(*(float *)&g_menuCameraPos) = (float)((X)(*(float *)&g_menuCameraPos) - tf);
+	g_menuCamZ = (float)((X)g_menuCamZ - u);
+	g_menuCameraPos = (float)((X)g_menuCameraPos - tf);
 	g_menuEyeZ = (float)((X)g_menuEyeZ - u);
 }
 
@@ -388,11 +388,11 @@ void (armc_mouseLook)(void)
 		u32 r = OBJ(g_slotCams) + slot * 88;
 		g_freeCamMoveStarted = 1;
 		g_unusedArmcMoveWord = 0x41f00000;   /* 30 */
-		g_freeCamMoveTargetX = I(r);
-		g_freeCamMoveTargetY = I(r + 4);
-		g_freeCamMoveTargetZ = I(r + 8);
+		(*(int *)&g_freeCamMoveTargetX) = I(r);
+		(*(int *)&g_freeCamMoveTargetY) = I(r + 4);
+		(*(int *)&g_freeCamMoveTargetZ) = I(r + 8);
 		g_freeCamMoveEyeX = (float)((X)g_freeCamTurnSin * k_2000f + F(r));
-		g_freeCamMoveEyeY = I(r + 4);
+		(*(int *)&g_freeCamMoveEyeY) = I(r + 4);
 		g_freeCamMoveEyeZ = (float)((X)g_freeCamTurnCos * k_2000f + F(r + 8));
 	}
 }
@@ -407,11 +407,11 @@ void (setup_camera)(void)
 	X k = g_frameTime, c = RATE;
 	if (mode == 1) {
 		int i = g_setupTab * 16;
-		(*(float *)&g_menuCameraPos) = (float)(((X)F(i + OBJ(g_camPoints)) - (*(float *)&g_menuCameraPos)) * k * c + (*(float *)&g_menuCameraPos));
+		g_menuCameraPos = (float)(((X)F(i + OBJ(g_camPoints)) - g_menuCameraPos) * k * c + g_menuCameraPos);
 		g_menuEyeZ = (float)(((X)F(i + (OBJ(g_camPoints) + 0x8)) - g_menuEyeZ) * k * c + g_menuEyeZ);
-		X look = ((X)F(i + OBJ(g_camAims)) - (*(float *)&g_menuCameraLook)) * k * c + (*(float *)&g_menuCameraLook);
-		(*(float *)&g_menuCameraLook) = (float)look;
-		(*(float *)&g_menuCameraLookY) = (float)(((X)F(i + (OBJ(g_camAims) + 0x4)) - (*(float *)&g_menuCameraLookY)) * k * c + (*(float *)&g_menuCameraLookY));
+		X look = ((X)F(i + OBJ(g_camAims)) - g_menuCameraLook) * k * c + g_menuCameraLook;
+		g_menuCameraLook = (float)look;
+		g_menuCameraLookY = (float)(((X)F(i + (OBJ(g_camAims) + 0x4)) - g_menuCameraLookY) * k * c + g_menuCameraLookY);
 		if (!(look >= k_0f))
 			look = -look;
 		if (!(look > k_69_9))
@@ -424,11 +424,11 @@ void (setup_camera)(void)
 		g_setupCameraMode = 2;
 		g_frameOpening = 1;
 	} else if (mode == 0) {
-		(*(float *)&g_menuCameraPos) = (float)((X)(*(float *)&g_menuCameraPos) - ((X)(*(float *)&g_menuCameraPos) - (*(float *)&g_menuEyeHomeX)) * k * c);
-		g_menuEyeZ = (float)((X)g_menuEyeZ - ((X)g_menuEyeZ - (*(float *)&g_menuEyeHomeZ)) * k * c);
-		X look = (X)(*(float *)&g_menuCameraLook) - ((X)(*(float *)&g_menuCameraLook) - (*(float *)&g_menuLookHomeX)) * k * c;
-		(*(float *)&g_menuCameraLook) = (float)look;
-		(*(float *)&g_menuCameraLookY) = (float)((X)(*(float *)&g_menuCameraLookY) - ((X)(*(float *)&g_menuCameraLookY) - (*(float *)&g_menuLookHomeY)) * k * c);
+		g_menuCameraPos = (float)((X)g_menuCameraPos - ((X)g_menuCameraPos - g_menuEyeHomeX) * k * c);
+		g_menuEyeZ = (float)((X)g_menuEyeZ - ((X)g_menuEyeZ - g_menuEyeHomeZ) * k * c);
+		X look = (X)g_menuCameraLook - ((X)g_menuCameraLook - g_menuLookHomeX) * k * c;
+		g_menuCameraLook = (float)look;
+		g_menuCameraLookY = (float)((X)g_menuCameraLookY - ((X)g_menuCameraLookY - g_menuLookHomeY) * k * c);
 		if (!(look >= k_0f))
 			look = -look;
 		if (look >= k_cameraSnapDistance)
@@ -492,35 +492,35 @@ void (freeCam_keys)(void)
 	}
 	if (input_isDown(g_keyForward) == 1) {
 		long double a = fmul_m(fmul_m(fld_m(frame), &g_freeCamTurnSin), speed);
-		(*(float *)&g_menuCamX) = f32(fadd_m(a, &(*(float *)&g_menuCamX)));
+		g_menuCamX = f32(fadd_m(a, &g_menuCamX));
 		long double b = fmul_m(fmul_m(fld_m(&g_freeCamTurnCos), frame), speed);
 		float bf = f32(b);
-		(*(float *)&g_menuCamZ) = f32(fadd_m(b, &(*(float *)&g_menuCamZ)));
-		(*(float *)&g_menuCameraPos) = f32(fadd_m(a, &(*(float *)&g_menuCameraPos)));
+		g_menuCamZ = f32(fadd_m(b, &g_menuCamZ));
+		g_menuCameraPos = f32(fadd_m(a, &g_menuCameraPos));
 		g_menuEyeZ = f32(FADD(bf, g_menuEyeZ));
 	}
 	if (input_isDown(g_keyBackward) == 1) {
 		long double a = fmul_m(fmul_m(fld_m(frame), &g_freeCamTurnSin), speed);
-		(*(float *)&g_menuCamX) = f32(fld_m(&(*(float *)&g_menuCamX)) - a);
+		g_menuCamX = f32(fld_m(&g_menuCamX) - a);
 		float bf = f32(fmul_m(fmul_m(fld_m(&g_freeCamTurnCos), frame), speed));
-		(*(float *)&g_menuCamZ) = f32(FSUB((*(float *)&g_menuCamZ), bf));
-		(*(float *)&g_menuCameraPos) = f32(fld_m(&(*(float *)&g_menuCameraPos)) - a);
+		g_menuCamZ = f32(FSUB(g_menuCamZ, bf));
+		g_menuCameraPos = f32(fld_m(&g_menuCameraPos) - a);
 		g_menuEyeZ = f32(FSUB(g_menuEyeZ, bf));
 	}
 	if (input_isDown(g_keyStepLeft) == 1)
 		menuCamera_forward();
 	if (input_isDown(g_keyStepRight) == 1)
 		menuCamera_back();
-	g_menuCameraLook = g_menuCamX;
-	(*(u32 *)&g_menuCameraLookZ) = g_menuCamZ;
-	(*(float *)&g_menuCameraPos) = f32(fsubr_m(fmul_m(fld_m(&g_freeCamTurnSin), (const float *)ADDR(k_50f)), &(*(float *)&g_menuCamX)));
+	(*(u32 *)&g_menuCameraLook) = (*(u32 *)&g_menuCamX);
+	(*(u32 *)&g_menuCameraLookZ) = (*(u32 *)&g_menuCamZ);
+	g_menuCameraPos = f32(fsubr_m(fmul_m(fld_m(&g_freeCamTurnSin), (const float *)ADDR(k_50f)), &g_menuCamX));
 	g_menuEyeY = f32(fadd_m(fld_m(&g_freeCamHeight), (const float *)ADDR(k_10f)));
 	u32 *slot = (u32 *)(OBJ(g_slotCams) + g_localSlot * 0x58);
-	slot[0] = g_menuCamX;
+	slot[0] = (*(u32 *)&g_menuCamX);
 	slot[1] = (*(u32 *)&g_freeCamHeight);
-	slot[2] = g_menuCamZ;
-	g_menuEyeZ = f32(fsubr_m(fmul_m(fld_m(&g_freeCamTurnCos), (const float *)ADDR(k_50f)), &(*(float *)&g_menuCamZ)));
-	(*(float *)&g_menuCameraLookY) = f32(FADD(g_freeCamTilt, g_freeCamHeight));
+	slot[2] = (*(u32 *)&g_menuCamZ);
+	g_menuEyeZ = f32(fsubr_m(fmul_m(fld_m(&g_freeCamTurnCos), (const float *)ADDR(k_50f)), &g_menuCamZ));
+	g_menuCameraLookY = f32(FADD(g_freeCamTilt, g_freeCamHeight));
 	if (input_justPressed(g_dikZ_2) == 1)
 		g_freeCamZoom = g_freeCamZoom == 1 ? 2 : 1;
 	if (input_justPressed(g_dik1) == 1)

@@ -162,12 +162,12 @@ void (mech_storeToProfile)(void)
 /* 0x447910: the menu camera put back (armc_restoreMenuCamera without its flag) */
 void (menu_restoreCamera)(void)
 {
-	(*(int *)&g_menuCameraPos) = g_camPoint0X;
-	(*(int *)&g_menuEyeY) = g_camPoint0Y;
-	(*(int *)&g_menuEyeZ) = g_camPoint0Z;
-	(*(int *)&g_menuCameraLook) = g_camAim0X;
-	(*(int *)&g_menuCameraLookY) = g_camAim0Y;
-	g_menuCameraLookZ = g_camAim0Z;
+	(*(int *)&g_menuCameraPos) = (*(int *)&g_camPoint0X);
+	(*(int *)&g_menuEyeY) = (*(int *)&g_camPoint0Y);
+	(*(int *)&g_menuEyeZ) = (*(int *)&g_camPoint0Z);
+	(*(int *)&g_menuCameraLook) = (*(int *)&g_camAim0X);
+	(*(int *)&g_menuCameraLookY) = (*(int *)&g_camAim0Y);
+	(*(int *)&g_menuCameraLookZ) = (*(int *)&g_camAim0Z);
 }
 
 /* 0x445de0: a click (either button) starts the menu fade, once */
@@ -217,7 +217,7 @@ void (ranking_cycleSort)(void)
 	g_rankingPrevSort = mode;
 	room_pageChanged();
 	g_rankingPrevRank = 0;
-	g_rankingPrevValue = 0x4b189680;   /* 10000000.0f */
+	(*(u32 *)&g_rankingPrevValue) = 0x4b189680;   /* 10000000.0f */
 	g_rankingSort = (mode + 1) % 3;
 }
 
@@ -257,7 +257,7 @@ void (ranking_fillPage)(void)
 	float before = 1000000.0f;
 	int i;
 	for (i = 0; i < 10; i++) {
-		const RankedPlayer *player = &g_netPlayerList[i];
+		const RankedPlayer *player = &((RankedPlayer *)g_netPlayerList)[i];
 		if (!player->name[0])
 			break;
 		RankRow *row = &rows[i];
@@ -272,7 +272,7 @@ void (ranking_fillPage)(void)
 		row->level = player->level;
 		int mode = g_rankingSort, rank;
 		if (i == 0) {
-			before = (*(float *)&g_rankingPrevValue);
+			before = g_rankingPrevValue;
 			rank = g_rankingPrevRank;
 		} else {
 			long double v;
@@ -284,7 +284,7 @@ void (ranking_fillPage)(void)
 		if (!(value < before) && !(value > before))   /* (fcom: unordered counts as equal) */
 			row->rank = rank;
 	}
-	(*(float *)&g_rankingPrevValue) = f32(value);
+	g_rankingPrevValue = f32(value);
 	g_rankingPrevRank = rows[i - 1].rank;
 }
 
@@ -395,7 +395,7 @@ static u32 leave_settings(u32 state)
 	(*(int *)&g_menuEyeY) = 0;
 	(*(u32 *)&g_menuEyeZ) = 0x44c80000;   /* 1600 */
 	(*(int *)&g_menuCameraLookY) = 0;
-	g_menuCameraLookZ = 0;
+	(*(int *)&g_menuCameraLookZ) = 0;
 	sound_playMenu(4);
 	return put_camera_back();
 }

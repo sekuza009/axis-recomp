@@ -18,7 +18,7 @@ static void merge(const Received *g)
 {
 	if (GAME_VAR(int, g->flag)) {
 		for (int i = 0; i < g_serverPingCount; i++) {
-			if ((*(int *)&g_serverPinged[i]) != 1)   /* not new */
+			if ((*(int *)&((u32 *)g_serverPinged)[i]) != 1)   /* not new */
 				continue;
 			const u8 *s = (const u8 *)(RELOC(g->base) + i * g->stride);
 			int ping = g_serverPing[i];
@@ -45,7 +45,7 @@ static void merge(const Received *g)
 				g_gameCount = k + 1;
 				sessionList_sort();   /* the list sorted again */
 			}
-			(*(int *)&g_serverPinged[i]) = 0;
+			(*(int *)&((u32 *)g_serverPinged)[i]) = 0;
 			g_listAnswered++;
 		}
 		if (!g_netListDone)

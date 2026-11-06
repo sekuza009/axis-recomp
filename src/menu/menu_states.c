@@ -114,8 +114,8 @@ void (menuState100_intro)(void)
 	static const u32 cleared[] = { ADDR(g_titleClosing), ADDR(g_titleCloseFrames), ADDR(g_menuCameraMove), ADDR(g_unusedMenuReturnWord), ADDR(g_cursorFrame), ADDR(g_cursorFrameTime), ADDR(g_tunnelStripeScroll), ADDR(g_tunnelPulse), ADDR(g_replayZoomTime) };
 	for (unsigned i = 0; i < sizeof cleared / sizeof cleared[0]; i++)
 		GAME_VAR(u32, cleared[i]) = 0;
-	g_menuTunnelSpeed = 0x3f800000;   /* 1.0 */
-	g_tunnelPulseStep = 0x3f800000;
+	(*(u32 *)&g_menuTunnelSpeed) = 0x3f800000;   /* 1.0 */
+	(*(u32 *)&g_tunnelPulseStep) = 0x3f800000;
 	g_mouseX = 0x136;
 	g_mouseY = 0xe6;
 	music_play((const char *)STR(0x4b01cc, "music/Netsphere.mp3"));
@@ -462,7 +462,7 @@ void (menuState210_frame)(void)
 	static const signed char stats[9] = { 0, 2, 3, 1, 5, 4, 6, 8, 7 };   /* in the order checked */
 	for (int p = 0; p < 9; p++)   /* (the first nine profiles: any value past its limit reloads them all) */
 		for (int f = 0; f < 9; f++)
-			if (g_characterProfiles[p].stats[stats[f]] > (stats[f] == 7 ? 50 : 30))
+			if (((CharacterProfile *)g_characterProfiles)[p].stats[stats[f]] > (stats[f] == 7 ? 50 : 30))
 				data_loadCharacterProfiles();
 	static const u32 pages[6] = { FN_ADDR(profile_frame, 0x44f410), FN_ADDR(profile_newNamePage, 0x44f4b0), FN_ADDR(profile_deletePage, 0x44f5f0), FN_ADDR(profile_logIn, 0x44f6c0), FN_ADDR(profile_logOutPage, 0x44f740), FN_ADDR(profile_drawScreen, 0x44f810) };
 	u32 page = (*(u32 *)&g_profilePage) - 1;
@@ -550,19 +550,19 @@ static u32 reset_menus(u32 farZ, u32 nearZ, int blocked, int entering, int clear
 {
 	u32 typing = (*(u32 *)&g_textFieldOpen);
 	(*(u32 *)&g_menuEyeY) = 0;
-	g_menuCameraPos = 0;
+	(*(u32 *)&g_menuCameraPos) = 0;
 	(*(u32 *)&g_menuEyeZ) = farZ;
-	g_menuCameraLook = 0;
-	g_menuCameraLookY = 0;
+	(*(u32 *)&g_menuCameraLook) = 0;
+	(*(u32 *)&g_menuCameraLookY) = 0;
 	(*(u32 *)&g_menuCameraLookZ) = nearZ;
 	g_menuCameraMove = blocked;
 	g_unusedMenuReturnWord = 0;
-	g_menuEyeKeptX = 0;
-	g_menuEyeKeptY = 0;
-	g_menuEyeKeptZ = farZ;
-	g_menuLookKeptX = 0;
-	g_menuLookKeptY = 0;
-	g_menuLookKeptZ = nearZ;
+	(*(u32 *)&g_menuEyeKeptX) = 0;
+	(*(u32 *)&g_menuEyeKeptY) = 0;
+	(*(u32 *)&g_menuEyeKeptZ) = farZ;
+	(*(u32 *)&g_menuLookKeptX) = 0;
+	(*(u32 *)&g_menuLookKeptY) = 0;
+	(*(u32 *)&g_menuLookKeptZ) = nearZ;
 	g_enteringMenus = entering;
 	g_replayRunning = 0;
 	(*(int *)&g_menuRepeatClock) = 0;

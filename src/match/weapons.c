@@ -94,7 +94,7 @@ void THISCALL (actor_takeDamage)(u8 *scene, int attacker, int target, int mode, 
 		return;
 	int character = atk->active == 1 ? atk->character : -1;
 	if ((unsigned)kind <= 9) {
-		int percent = g_characterProfiles[character].stats[group[kind]] + 100;
+		int percent = ((CharacterProfile *)g_characterProfiles)[character].stats[group[kind]] + 100;
 		damage = ftol(fadd_m(fmul_m((long double)percent * damage, (const float *)ADDR(k_0_01f)), (const float *)ADDR(k_0_5f)));
 	}
 	if (((u32)atk->stateFlags) & 0x100)

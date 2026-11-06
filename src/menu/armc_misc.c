@@ -119,7 +119,7 @@ void (armc_exit)(int confirmed)
 	g_menuEyeY = 0.0f;
 	g_menuEyeZ = 1600.0f;
 	(*(int *)&g_menuCameraLookY) = 0;
-	g_menuCameraLookZ = 0;
+	(*(int *)&g_menuCameraLookZ) = 0;
 	g_armcLeaving = 1;
 	g_flareSizeB = 10.0f;
 	g_flareSizeA = 48.0f;
@@ -371,8 +371,8 @@ u32 (armc_enterParts)(void)
 	g_armcPageBottom = 0x1d6;
 	static const u32 colourA[4] = { 0, 0x3f800000, 0x3f800000, 0x3f800000 }, colourB[4] = { 0, 0x3f19999a, 0x3f19999a, 0x3f800000 };
 	for (int i = 0; i < 4; i++) {
-		g_armcBright[i] = colourA[i];
-		g_armcDim[i] = colourB[i];
+		((u32 *)g_armcBright)[i] = colourA[i];
+		((u32 *)g_armcDim)[i] = colourB[i];
 	}
 	g_progressWentUp = 0;
 	u32 *point = (u32 *)ADDR(g_camPoint0X), *pointAt = (u32 *)ADDR(g_camAim0X);   /* the ARM CENTER's camera point */
@@ -484,7 +484,7 @@ void (armc_drawPanels)(void)
 		else if (k == 3)
 			panel_resize(p, &g_panelSize3);
 		float y = f32(fsub_m(fadd_m(fadd_m(fmul_m((long double)k, &k_5f), F(OBJ(g_armcCameraBox) + 0x84)), &k_1f), &k_105f));
-		glTranslatef_bits(p->x, BITS(y), g_armcPanelDepth);
+		glTranslatef_bits(p->x, BITS(y), (*(u32 *)&g_armcPanelDepth));
 		glPushMatrix();
 		gl_rotateXYZ(0, BITS(p->angle), 0);
 		glBegin(GL_QUADS);

@@ -13,7 +13,7 @@
 #define SLOT (g_armcColours + g_slot * 6)
 #define glVertex(x, y) menu_vertex(x, y)
 
-static const u32 *const bright = g_armcBright, *const dim = g_armcDim;
+static const u32 *const bright = ((u32 *)g_armcBright), *const dim = ((u32 *)g_armcDim);
 #define TEXT(c) set_colour_bits(g_textColour, (c)[0], (c)[1], (c)[2], (c)[3])
 
 /* the box at the bottom right: "<MSG(287, "$[0] ROTATE")> <the name of g_armcSpin (MSG(118, "OFF"))>" (the texture bound) */
@@ -366,7 +366,7 @@ void (armc_drawWeaponsScreen)(void)
 	itoa(PART->damage, value, 10);
 	static const u8 skill[5] = { 0, 0, 1, 2, 3 };   /* the profile's stat by kind; above 3 the last */
 	int kind_of = (unsigned)PART->ammoType <= 3 ? PART->ammoType : 4;
-	long double b = fmul_m((long double)g_characterProfiles[g_selectedCharacter].stats[skill[kind_of]], (const float *)ADDR(k_0_01f));
+	long double b = fmul_m((long double)((CharacterProfile *)g_characterProfiles)[g_selectedCharacter].stats[skill[kind_of]], (const float *)ADDR(k_0_01f));
 	b *= (long double)PART->damage;
 	if (b >= k_0f)
 		sprintf(bonus, (const char *)STR(0x4b02f0, " +%d"), ftol(b));

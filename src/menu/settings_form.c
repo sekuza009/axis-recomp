@@ -193,7 +193,7 @@ void (room_drawGameSettings)(void)
 	                           MSG(17, "DO NOT USE"), 0, 20 };
 	static const u32 grey[4] = { 0x3e99999a, 0x3f333333, 0x3f333333, 0x3f800000 };   /* 0.3, 0.7, 0.7, 1 */
 	const Form *f = &form;
-	const u32 *bright = g_roomBright, *dim = g_roomDim;
+	const u32 *bright = ((u32 *)g_roomBright), *dim = ((u32 *)g_roomDim);
 	int editing = g_textFieldOpen, open = editing || g_arenaUpdateNotice;
 	char text[20];
 	int hovered = roomSettings_hitTest(g_mouseX, g_mouseY);
@@ -225,7 +225,7 @@ void (room_drawGameSettings)(void)
 /* two buttons (MSG(115, "$[0] O K"), 0x80 apart) in a box over the arena form; the button lit is lit_from + its index */
 static void box_buttons(int hovered, int lit_from)
 {
-	const u32 *bright = g_arenaBright, *dim = g_arenaDim;
+	const u32 *bright = ((u32 *)g_arenaBright), *dim = ((u32 *)g_arenaDim);
 	for (int k = 0; k < 2; k++) {
 		int x = 0xb4 + k * 0xa0;
 		button(hovered == lit_from + k, 1.0f, x, 0x104, x + 0x78, 0x124, 0x10c, bright, dim, MSG(115, "$[0] O K") + k * 0x80);
@@ -245,7 +245,7 @@ void (arena_createDraw)(void)
 	static const Form form = { ADDR(g_newArenaFormLeft), (GameSettings *)OBJ(g_newArenaName), { ADDR(g_editingNewArenaName), ADDR(g_typingArenaPassword), ADDR(g_editingNewArenaFragLimit), ADDR(g_editingNewArenaTimeLimit) }, MSG(471, "DEATH MATCH"),
 	                           0, OBJ(g_rotationOnOff), 10 };
 	const Form *f = &form;
-	const u32 *bright = g_arenaBright, *dim = g_arenaDim;
+	const u32 *bright = ((u32 *)g_arenaBright), *dim = ((u32 *)g_arenaDim);
 	int editing = g_textFieldOpen, hostError = g_hostErrorBox, updateNotice = g_arenaUpdateNotice;
 	int open = editing || hostError || updateNotice, blocked = open || g_mapListOpen;
 	char text[20];
