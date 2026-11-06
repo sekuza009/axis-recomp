@@ -231,8 +231,8 @@ static int tag_narrow(u8 *ac, u32 k)
 /* 0x4729b0 (thiscall on the scene): the camera for this frame at pos looking along dir (the last one kept at
    lastCameraPos, its modelview at lastModelview): its modelview (gluLookAt, modelview), the view (fov, w / h, near, far:
    fov..), its projection (gluPerspective, projection) and their product (viewProjection). Unless both mode flags
-   (scriptMode / scriptRunning) are set, every active light (flag 1) glows (object_glow). Every live actor gets its
-   screen position and depth (screenPos); another than the viewer (selectedActor) that is in view with a clear line of
+   (scriptMode / scriptHoldsPlay) are set, every active light (flag 1) glows (object_glow). Every live actor gets its
+   screen position and depth (screenPos); another than the viewer (cockpitActor) that is in view with a clear line of
    sight also gets its name-tag corners (its radius radius out), a too-small flag (lowDetail), and unless cloaked at the
    local player's rank or above, when the local player faces it (its facingCos against the table g_cosTable by
    the local player's heading +4), a timer (aimTime: the lock-on's) for enemies of a player with a weapon, and its name label shown (labelFade
@@ -267,7 +267,7 @@ void THISCALL (camera_setupView)(u8 *s, const float *pos, const float *dir, cons
 	glPopMatrix();
 	glMatrixMode(0x1700);
 	Mat4_multiply(ST->viewProjection, pr, mv);
-	if (!ST->scriptMode || !ST->scriptRunning)
+	if (!ST->scriptMode || !ST->scriptHoldsPlay)
 		for (int k = 0; k < ST->objectCount; k++) {
 			u8 *obj = (u8 *)&ST->objects[k];
 			MapObject *mo = (MapObject *)obj;
@@ -289,7 +289,7 @@ void THISCALL (camera_setupView)(u8 *s, const float *pos, const float *dir, cons
 		AC->screenPos[2] = f32(fld_m(&e[2]));
 		float nw = f32(-fld_m(&c[3]));
 		u8 hit[12];
-		if (k == ST->selectedActor || !(c[0] > nw) || !(c[1] > nw) || !(c[2] > nw) || c[0] >= c[3] || c[1] >= c[3] ||
+		if (k == ST->cockpitActor || !(c[0] > nw) || !(c[1] > nw) || !(c[2] > nw) || c[0] >= c[3] || c[1] >= c[3] ||
 		    c[2] >= c[3] || collision_rayTrace(s, cam, p, hit)) {
 			AC->aimTime = 0.0f;
 			AC->onScreen = 0;
@@ -311,7 +311,7 @@ void THISCALL (camera_setupView)(u8 *s, const float *pos, const float *dir, cons
 		AC->lowDetail = tag_narrow(ac, OBJ(k_30f));
 		u8 *me = (u8 *)&ST->actors[ST->playerActor];
 		Player *act = (Player *)me;
-		if ((((u32)AC->timerFlags) & 0x200) && AC->hackingLevel >= act->hackingLevel) {
+		if ((((u32)AC->stateFlags) & 0x200) && AC->hackingLevel >= act->hackingLevel) {
 			AC->aimTime = 0.0f;
 			AC->onScreen = 1;
 			continue;
@@ -324,9 +324,9 @@ void THISCALL (camera_setupView)(u8 *s, const float *pos, const float *dir, cons
 			AC->onScreen = 1;
 			continue;
 		}
-		int weapon = act->actorType;
+		int weapon = act->heldItem;
 		if (ST->playerActor >= 0 && AC->team != act->team && weapon >= 0 &&
-		    ST->actorInfo[weapon].targetingTime > 0)
+		    ST->actorItems[weapon].targetingTime > 0)
 			AC->aimTime = f32(FADD(dt, AC->aimTime));
 		else
 			AC->aimTime = 0.0f;
@@ -367,12 +367,12 @@ static void shape(void *vv, u8 *p, void *model, const void *colour, int cull)
 
 static const float k_glowUV[4] = { 0.5f, 0.125f, 0.625f, 0.25f }, k_coreUV[4] = { 0.875f, 0.125f, 1.0f, 0.25f };
 
-/* the glow: faded by a squared (a = 1 - t), +-big, or +-small for the viewing actor's own (selectedActor) */
+/* the glow: faded by a squared (a = 1 - t), +-big, or +-small for the viewing actor's own (cockpitActor) */
 static void glow(u8 *s, u8 *p, void *vv, long double a, float big, float small)
 {
 	float ab[4];
 	ALPHA(PR->colour) = clamp255(ftol(fmul_m(a * a, &k_128f)));   /* 128 */
-	square(ab, PR->owner == ST->selectedActor ? small : big);
+	square(ab, PR->owner == ST->cockpitActor ? small : big);
 	quad(vv, TEX(0), k_glowUV, 0, p, ab, PR->pos, 2);
 }
 
@@ -383,7 +383,7 @@ static void sized_glow(u8 *s, u8 *p, void *vv, long double a, const float *add)
 	ALPHA(PR->colour) = clamp255(ftol(fmul_m(a * a, &k_128f)));
 	long double size = fadd_m(fld_m(&PR->baseSize), add);
 	square(ab, size);
-	if (PR->owner == ST->selectedActor) {
+	if (PR->owner == ST->cockpitActor) {
 		ab[0] = f32(FMUL(ab[0], k_0_5f));
 		ab[1] = f32(FMUL(ab[1], k_0_5f));
 		ab[2] = ab[3] = (float)fmul_m(size, &k_0_5f);
@@ -635,7 +635,7 @@ void THISCALL (particle_draw)(u8 *s, int i, void *vv)
 	}
 	case 20:
 	case 21:
-		if (PR->owner != ST->selectedActor)
+		if (PR->owner != ST->cockpitActor)
 			shape(vv, p, (void *)ST->effectShapes[type == 20 ? 1 : 4], (u8 *)&PR->colour, 0);   /* shell / rail bullet */
 		return;
 	case 22:

@@ -33,7 +33,7 @@ void THISCALL (msg_connectionLost)(Scene *scene) { say(scene, STR(0x4c4938, "\26
 /* 0x4633c0: "The network state is not stable. The game ends." */
 void THISCALL (msg_networkUnstable)(Scene *scene) { say(scene, STR(0x4c4990, "\263\327\306\256\277\366\305\251\273\363\305\302\260\241 \301\301\301\366 \276\312\276\306\274\255 \260\324\300\323\300\273 \301\276\267..."), STR(0x4c49c0, "The network state is not stable. The ..."), 0x15); }
 /* 0x462f90: "Frag limit(%d) reached." */
-void THISCALL (msg_fragLimitReached)(Scene *scene) { say_number(scene, STR(0x4c4818, "\270\361\307\245\306\304\261\253\274\366 %d\277\241 \264\331\264\336\276\322\275\300\264\317\264\331."), STR(0x4c4838, "Frag limit(%d) reached."), scene->scoreLimit, 0x15); }
+void THISCALL (msg_fragLimitReached)(Scene *scene) { say_number(scene, STR(0x4c4818, "\270\361\307\245\306\304\261\253\274\366 %d\277\241 \264\331\264\336\276\322\275\300\264\317\264\331."), STR(0x4c4838, "Frag limit(%d) reached."), scene->fragLimit, 0x15); }
 /* 0x462fd0: "Time limit(%d minutes) reached." */
 void THISCALL (msg_timeLimitReached)(Scene *scene) { say_number(scene, STR(0x4c4850, "\270\361\307\245\260\324\300\323\275\303\260\243 %d\272\320\277\241 \264\331\264\336\276\322\275\300\264\317\264\331."), STR(0x4c4874, "Time limit(%d minutes) reached."), scene->timeLimit, 0x15); }
 /* 0x4633f0: "Game end caused by data loss(code %d)." */

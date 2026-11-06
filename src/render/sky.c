@@ -190,7 +190,7 @@ void THISCALL (sky_draw)(Stage *stage, float scale)
 
 	glLoadIdentity();
 	gluLookAt(0.0, height, 0.0, dir[0], (double)((long double)height + dir[1]), dir[2], up[0], up[1], up[2]);
-	if (stage->floorOn != 0)
+	if (stage->floorMode != 0)
 		sky_floor(stage, scale);
 	glLoadMatrixf(saved);
 }

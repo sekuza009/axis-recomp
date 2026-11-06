@@ -51,7 +51,7 @@ void THISCALL (Console_dtor)(u8 *self)
 	Scene *sc = (Scene *)self;
 	GAME_VAR(u32, self) = VT(Console, 0x4aa238);
 	Stage_dtor(SCENE_STAGE(self));
-	ViewVolume_dtor(sc->view);
+	ViewVolume_dtor(&sc->view);
 	TimeSync_dtor((u8 *)&sc->timer);
 }
 

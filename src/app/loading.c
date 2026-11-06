@@ -362,7 +362,7 @@ u32 THISCALL (game_processLoadingMode)(u8 *g)
 		GS->loadLineCount = 1;
 		strcpy(GS->loadLines[0], (const char *)STR(0x4c52b0, "START LOADING PROCESS"));
 		GS->loadStage = 0;
-		GS->loadStep = 0;
+		GS->unused233cc2c = 0;
 	}
 	int stop = input_asyncKeyPressed(0x1b) != 0;
 	int mode;
@@ -397,7 +397,7 @@ u32 THISCALL (game_processLoadingMode)(u8 *g)
 			next_stage(g, 2, STR(0x4c51e4, ".INIT PLAY INFO"));   /* .INIT PLAY INFO */
 		else
 			no_next(g);
-		GS->loadStep = 0;
+		GS->unused233cc2c = 0;
 		break;
 	case 1: {
 		log_message((int)STAGE(g), 1, 0, (const char *)STR(0x4c51f4, ".load auto-play file"));
@@ -413,7 +413,7 @@ u32 THISCALL (game_processLoadingMode)(u8 *g)
 			next_stage(g, mode == 2 ? 6 : 2, STR(0x4c51e4, ".INIT PLAY INFO"));   /* .INIT PLAY INFO */
 		else
 			no_next(g);
-		GS->loadStep = 0;
+		GS->unused233cc2c = 0;
 		break;
 	}
 	case 2:
@@ -426,7 +426,7 @@ u32 THISCALL (game_processLoadingMode)(u8 *g)
 				next_stage(g, 3, STR(0x4c51b0, ".LOAD GROUND"));   /* .LOAD GROUND */
 			else
 				no_next(g);
-			GS->loadStep = 0;
+			GS->unused233cc2c = 0;
 			break;
 		}
 		{
@@ -464,7 +464,7 @@ u32 THISCALL (game_processLoadingMode)(u8 *g)
 			next_stage(g, 4, STR(0x4c5180, ".LOAD OBJECT"));   /* .LOAD OBJECT */
 		else
 			no_next(g);
-		GS->loadStep = 0;
+		GS->unused233cc2c = 0;
 		break;
 	case 4:
 		log_message((int)STAGE(g), 1, 0, (const char *)STR(0x4c5164, ".load obstacle information"));
@@ -475,7 +475,7 @@ u32 THISCALL (game_processLoadingMode)(u8 *g)
 			next_stage(g, 5, STR(0x4c514c, ".SET COLLISION VOLUME"));   /* .SET COLLISION VOLUME */
 		else
 			no_next(g);
-		GS->loadStep = 0;
+		GS->unused233cc2c = 0;
 		break;
 	case 5:
 		log_message((int)STAGE(g), 1, 0, (const char *)STR(0x4c512c, ".analyze collision information"));
@@ -486,7 +486,7 @@ u32 THISCALL (game_processLoadingMode)(u8 *g)
 			next_stage(g, 6, STR(0x4c511c, ".LOAD PLAY INFO"));   /* .LOAD PLAY INFO */
 		else
 			no_next(g);
-		GS->loadStep = 0;
+		GS->unused233cc2c = 0;
 		break;
 	case 6:
 		log_message((int)STAGE(g), 1, 0, (const char *)STR(0x4c5104, ".analyze battle field"));
@@ -499,7 +499,7 @@ u32 THISCALL (game_processLoadingMode)(u8 *g)
 			next_stage(g, mode <= 1 ? 7 : 8, STR(0x4c50a0, "END LOADING PROCESS"));   /* END LOADING PROCESS */
 		else
 			no_next(g);
-		GS->loadStep = 0;
+		GS->unused233cc2c = 0;
 		break;
 	case 7:
 		keep_alive(g);
@@ -514,7 +514,7 @@ u32 THISCALL (game_processLoadingMode)(u8 *g)
 			next_stage(g, 8, STR(0x4c50a0, "END LOADING PROCESS"));   /* END LOADING PROCESS */
 		else
 			no_next(g);
-		GS->loadStep = 0;
+		GS->unused233cc2c = 0;
 		break;
 	case 8:
 		log_message((int)STAGE(g), -2, 0, (const char *)STR(0x4c5048, ".end loading process"));
@@ -535,9 +535,9 @@ u32 THISCALL (game_processLoadingMode)(u8 *g)
 	glClearDepth(1.0);
 	glClear(0x4100);
 	gfx_setProjectionHud(1, 1.0f);
-	ViewVolume_captureMatrices((u8 *)GS->view, 0, (u8 *)GS->modelview);
-	ViewVolume_reset((u8 *)GS->view);
-	ViewVolume_draw((u8 *)GS->view, GS->renderMode, 0.0f);
+	ViewVolume_captureMatrices((u8 *)&GS->view, 0, (u8 *)GS->modelview);
+	ViewVolume_reset((u8 *)&GS->view);
+	ViewVolume_draw((u8 *)&GS->view, GS->renderMode, 0.0f);
 	gfx_setProjectionHud(0, 1.0f);
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 	for (int k = 0, y = 8; k < GS->loadLineCount; k += 2, y += 16)   /* (every other line from the second, as the original steps) */

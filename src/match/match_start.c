@@ -10,7 +10,7 @@ static void set_round(Round *r, int map, int mode, int score, int time)
 {
 	r->map = map;
 	r->mode = mode;
-	r->scoreLimit = score;
+	r->fragLimit = score;
 	r->timeLimit = time;
 }
 
@@ -78,9 +78,9 @@ static void first_round(Scene *s)
 	make_rotation(s);
 	if (s->rotationCount > 0)
 		game_setGameTypeFlags(STAGE(s), s->rotation[s->rotationAt].mode);
-	s->scoreLimit = g_fragLimit;
+	s->fragLimit = g_fragLimit;
 	s->timeLimit = g_timeLimit;
-	strcpy(s->mechName, g_matchPlayerName);
+	strcpy(s->localName, g_matchPlayerName);
 	s->character = g_selectedCharacter;
 	if (s->ladderGame == 1) {
 		s->levelPoints = g_ladderExp;
@@ -108,8 +108,8 @@ static void first_round(Scene *s)
 			netq_reset(1);
 			s->localPlayer = 0;
 			actor_resetSlot(STAGE(s), 0);
-			player_setName(STAGE(s), s->localPlayer, s->mechName);
-			strcpy(s->players[s->localPlayer].name, s->mechName);
+			player_setName(STAGE(s), s->localPlayer, s->localName);
+			strcpy(s->players[s->localPlayer].name, s->localName);
 			s->players[s->localPlayer].player = s->localPlayer;
 		} else {
 			netq_reset(0);
@@ -123,7 +123,7 @@ static void first_round(Scene *s)
 	} else {
 		g_netHostGone = 0;
 		s->localPlayer = 0;
-		player_setName(STAGE(s), 0, s->mechName);
+		player_setName(STAGE(s), 0, s->localName);
 		s->playerActor = 0;
 		g_mapRotation = 1;
 		s->rankingShown = 0;
@@ -150,8 +150,8 @@ static int random_below(u32 n)
    kept (chat_keepLastLine) and the round's flags cleared */
 static void later_round(Scene *s)
 {
-	const int *counts[6] = { &s->headCount, &s->chestCount, &s->armCount, &s->legCount, &s->boosterCount, &s->actorInfoCount };
-	static const u32 rows[6] = { sizeof(HeadType) / 4, sizeof(ChestType) / 4, sizeof(ArmType) / 4, sizeof(LegType) / 4, sizeof(BoosterType) / 4, sizeof(ActorInfo) / 4 };   /* (the records in dwords) */
+	const int *counts[6] = { &s->headCount, &s->chestCount, &s->armCount, &s->legCount, &s->boosterCount, &s->actorItemCount };
+	static const u32 rows[6] = { sizeof(HeadType) / 4, sizeof(ChestType) / 4, sizeof(ArmType) / 4, sizeof(LegType) / 4, sizeof(BoosterType) / 4, sizeof(ActorItem) / 4 };   /* (the records in dwords) */
 	s->geometryCheckTurn = 0;
 	for (int k = 0; k < 6; k++)
 		s->geometryPickUnread[k] = random_below(((u32)*counts[k] * rows[k] * 4) >> 2);
@@ -159,7 +159,7 @@ static void later_round(Scene *s)
 	s->dataLossCode = -1;
 	s->wholeSeconds = 0;
 	BITS(s->secondFraction) = 0;
-	s->stateSendTimer = 3.0f;
+	s->gamePacketTimer = 3.0f;
 	for (int k = 0; k < 3; k++)
 		s->cameraPos[k] = s->cameraSaved[k];
 	BITS(s->cameraAngle[0]) = s->cameraSaved[3];
@@ -282,7 +282,7 @@ static void model_sets(u8 *shapes, const char *dir, int n, int extra, int size, 
 }
 
 /* 0x4700a0 (thiscall on the stage): the stage built (its names passed on to stage_setFolders): the collision space (in its
-   block spaceData), the ten sky textures (by 0x4c7410 from the third name; the last two flagged), the light factors and
+   block spaceData), the ten effect textures (effectTextures and billboards, by 0x4c7410 from the third name; the last two flagged), the light factors and
    the default light (grey, from (-1, -1, -1)). The sky box (skySphere: six faces of 7 x 7 points, a cube of side
    1 / sqrt(k_27) turned to each face), the dome (layer: 7 x 7 points of the up vector turned by two angles),
    six 4-point rings top and bottom (sides), an 11 x 11 ground grid (floor); the world box (+-100000), the
@@ -361,7 +361,7 @@ void THISCALL (stage_build)(u8 *s, u32 stageDir, u32 mapDir, const char *texture
 			low[2] = f32(fld_m((float *)&v[2]));
 		}
 	}
-	st->floorOn = 0;
+	st->floorMode = 0;
 	memset(st->floorTextures, 0xff, 16 * 4);
 	float *grid = &st->floor[0][0][0];
 	for (int i = 0; i <= 10; i++) {
@@ -383,7 +383,7 @@ void THISCALL (stage_build)(u8 *s, u32 stageDir, u32 mapDir, const char *texture
 	memcpy(st->worldHigh, st->levelHigh, 12);
 	st->groundLayerCount = 0;
 	st->layerModel.parts = st->layerParts;
-	st->waterModel.parts = st->waterParts;
+	st->waterModel.parts = (u8 *)st->waterParts;
 	const char *dir = st->shapeDir;
 	shape_initBy((u8 *)&st->objectShapes, dir, 0x190, 2, 0xe54c0, st->objectShapeData, sizeof st->objectShapeData);
 	st->objectColourCount = 0;
@@ -405,8 +405,8 @@ void THISCALL (stage_build)(u8 *s, u32 stageDir, u32 mapDir, const char *texture
 			model_sets(type + parts[k].shapes, dir, parts[k].n, parts[k].extra, parts[k].size, type + parts[k].skels, skeletonDir, 2,
 			           parts[k].sextra, type + parts[k].smem, parts[k].ssize);
 	}
-	shape_initBy((u8 *)&st->partShapes, dir, 0x258, 2, 0x2c6280, st->partShapeData, sizeof st->partShapeData);
-	skelSet_setup((u8 *)&st->partSkeletons, skeletonDir, 0x64, 2, 0x15ae0, st->partSkeletonData, sizeof st->partSkeletonData);
+	shape_initBy((u8 *)&st->itemShapes, dir, 0x258, 2, 0x2c6280, st->itemShapeData, sizeof st->itemShapeData);
+	skelSet_setup((u8 *)&st->itemSkeletons, skeletonDir, 0x64, 2, 0x15ae0, st->itemSkeletonData, sizeof st->itemSkeletonData);
 	debug_traceStripped((Scene *)s);
 	effect_initShapes(s);
 	static const u32 names[3] = { STR(0x4c73f4, "Texture\\Item_damagemap_ani0"), STR(0x4c73d8, "Texture\\Item_booster_ani0"), STR(0x4c73bc, "Texture\\Item_shield_ani0") };
@@ -416,7 +416,7 @@ void THISCALL (stage_build)(u8 *s, u32 stageDir, u32 mapDir, const char *texture
 	}
 	for (int k = 0; k < 16; k++) {
 		BITS(st->lightMatrix[k]) = k % 5 == 0 ? 0x3f800000 : 0;
-		BITS(st->litMatrix[k]) = k == 15 ? 0x3f800000 : k % 5 == 0 ? 0x3f8ccccd : 0;   /* 1.1 */
+		BITS(st->overlayMatrix[k]) = k == 15 ? 0x3f800000 : k % 5 == 0 ? 0x3f8ccccd : 0;   /* 1.1 */
 	}
 	glGenTextures(1, &st->flagGlTexture);   /* glGenTextures */
 	for (int k = 0; k < 0x2000; k++)

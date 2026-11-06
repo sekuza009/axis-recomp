@@ -23,7 +23,7 @@ typedef struct EventLine {
 /* a round as fired (Player.rounds; bullet_spawn / bullet_init take it) */
 typedef struct FiredRound {
 	i32 received;   /* +0x0: (by use; seen running) 0: fired here; 1: another machine's (its hit known) */
-	i32 weapon;   /* +0x4: its item (ActorInfo index) */
+	i32 weapon;   /* +0x4: its item (ActorItem index) */
 	float from[3];   /* +0x8: where it starts (the muzzle) */
 	i32 hitPlane;   /* +0x14: a received round's collision plane (-1 none) */
 	float dir[3];   /* +0x18 */
@@ -40,7 +40,7 @@ typedef struct ShotRecord {
 	float dir[3];   /* +0x14 */
 } ShotRecord;
 
-/* an item's models, per variant (ActorInfo.sets: [0] in hand / slot 4, [1] slot 5) */
+/* an item's models, per variant (ActorItem.sets: [0] in hand / slot 4, [1] slot 5) */
 typedef struct ItemModelSet {
 	i32 shapeCount[3];   /* +0x0: per variant (Player.variantLoaded): the shapes (ObjectList_load's ns) .. */
 	u8 _pad000000c[0x900];
@@ -53,8 +53,8 @@ typedef struct ItemModelSet {
 	float grip[3][3];   /* +0x1698: where the actor holds it (actor_processFrame: hold) */
 } ItemModelSet;
 
-/* an actor type's record (Scene.actorInfo) */
-typedef struct ActorInfo {
+/* an item record: a weapon or special item (Stage.actorItems; Component.dat's sixth table, "read ActorItemInfo") */
+typedef struct ActorItem {
 	char name[0x40];   /* +0x0: the folder under Actor/ */
 	ItemModelSet sets[2];   /* +0x40: its models (actor_loadWeapon, actor_processFrame, muzzle_camera): [0] in hand and in slot 4, [1] in slot 5 */
 	float weight;   /* +0x2db8: WEIGHT (an item's): added to the actor's load (mech_stats; not in game types 2 .. 11), shown in the ARM CENTER */
@@ -79,7 +79,7 @@ typedef struct ActorInfo {
 	float guidance;   /* +0x2e0c: GUIDANCE (ARM CENTER, message 314; degrees): > 0 a guided round, turning toward its target / the local player's aim point */
 	float targetingTime;   /* +0x2e10: TARGETING TIME (ARM CENTER, message 315; seconds): lockOnTime x this against the target's lockedOn; > 0 a lock-on weapon (the alert ring) */
 	float push;   /* +0x2e14: > 0: a hit pushes the actor (x 10, away from the bullet) */
-} ActorInfo;
+} ActorItem;
 
 /* the head Model, Manager, SkelManager and ObjectList share: their data block (take_block) */
 typedef struct BlockOwner {
@@ -159,31 +159,31 @@ typedef struct ObjectList {
 typedef struct Player {
 	float radiusSq;   /* +0x0: (by use; seen running) the spawn record's radius squared, x 10000 */
 	float detectionAngle;   /* +0x4: DETECTION ANGLE (ARM CENTER), tenths of a degree: the head's detectionAngle x the pilot's skill factor (mech_stats); the HUD alert ring's size, actor_checkDataLoss */
-	i32 hackingLevel;   /* +0x8: (the ARM CENTER's HACKING LEVEL) a cloaked actor (timerFlags 0x200) is seen by those whose level is above its own */
-	float lockOnTime;   /* +0xc: (the ARM CENTER's LOCK-ON TIME) x the weapon's ring range: the lock-on reaches that far */
+	i32 hackingLevel;   /* +0x8: (the ARM CENTER's HACKING LEVEL) a cloaked actor (stateFlags 0x200) is seen by those whose level is above its own */
+	float lockOnTime;   /* +0xc: (the ARM CENTER's LOCK-ON TIME: the head's x lockOnTimeFactor) x the weapon's targetingTime: seconds a target must stay in the lock-on cone (its aimTime) before the lock is made */
 	float targetKeepTime;   /* +0x10: (the ARM CENTER's TARGET KEEP TIME) seconds a lock-on holds once out of reach */
 	float loadMax;   /* +0x14: (by use; seen running) the weight carried without slowing (the chest's, by level and items) */
-	float load;   /* +0x18: the parts' and items' weight (over loadMax: slower) */
-	i32 armorMax;   /* +0x1c: (by use; seen running) the armor it starts with (actor_startingValues) */
-	i32 shieldMax;   /* +0x20: the shield it starts with */
+	float load;   /* +0x18: the head's, arms', legs' and booster's weight, plus the six items' outside game types 2 .. 11 (the chest's not counted: it gives loadMax); over loadMax: mobility, speed and runTop cut by 4 x the overload fraction (mech_stats) */
+	i32 armorMax;   /* +0x1c: (by use; seen running) its full armour: it starts with it (actor_startingValues); armour pickups fill to it (EXTENDED: to it + 100) */
+	i32 shieldMax;   /* +0x20: its full shield: set from the spawn record or chest maxShield x the pilot's factor x shieldFactor (mech_stats; 10 / 150 in the fixed-energy game types); it starts with it, regains up to it (shieldRegen), shield pickups fill to it (EXTENDED: to it + 100); checked in actor_checkDataLoss */
 	i32 accuracy;   /* +0x24: (by use; seen running) the arms' stats[0]: a shot's spread is the weapon's less a tenth of it (weapons.c) */
-	i32 ammoMax[4];   /* +0x28: (by use; seen running) per weapon slot: the full load (ammo starts at half) */
+	i32 ammoMax[4];   /* +0x28: (by use; seen running) per ammunition kind (ActorItem.ammoType): the full load (ammo starts at half) */
 	float mobility;   /* +0x38: (the ARM CENTER's MOBILITY) how fast the movement keys ramp (a second) */
 	float moveAccel;   /* +0x3c: the velocity's change towards the keys' (a second) */
-	float leanPitch;   /* +0x40: the body's lean with the pitch */
+	float boosterTilt;   /* +0x40: how far the booster tips with the aim's pitch (BoosterType.lean): pose[1] = (1 - climb) x (pitch + 900) / 1800 x this, the booster joint's x rotation; 0.0 in every booster of Component.dat */
 	float boostTime;   /* +0x44: (by use; seen running) seconds of running the energy lasts */
 	float rechargeTime;   /* +0x48: seconds the energy takes to refill */
 	float restTime;   /* +0x4c: seconds of rest after running */
-	float speed;   /* +0x50: the speed now (km/h x 27.7778: cm/s; the spawn record's or the legs and booster's); trigger commands may change it, command 12 puts topSpeed back */
+	float speed;   /* +0x50: the speed now (km/h x 27.7778: cm/s; the spawn record's or the legs and booster's); trigger commands may change it, command 12 puts baseSpeed back */
 	float runTop[4];   /* +0x54: (by use; seen running) the top speeds running: forward, back, right, left */
 	u32 unused1c;   /* +0x64: copied with the spawn record (+0x1c to the actor's +0x64; 100 for a player's mech, the maps' spawns 100, 1000 netsphere, 10 gigantic-core); never read */
-	float topSpeed;   /* +0x68: the speed it started with (see speed) */
-	float turnRate;   /* +0x6c: the most pitch / yaw turn toward the view a second (actor_processFrame); the spawn record's +0x2c x 10 (900 for a player's mech) */
+	float baseSpeed;   /* +0x68: the speed as set up (spawn record or mech_stats; see speed): trigger command 12 puts speed back to it, actor_checkDataLoss (totals_agree) compares it with the speed worked out again */
+	float turnRate;   /* +0x6c: a bot's most pitch / yaw turn a second toward its look (botLookPitch / botLookYaw -> inPitch / inYaw; actor_processFrame), tenths of a degree (Vec3_rotateAxis units); the spawn record's +0x2c x 10 (900 = 90 degrees a second for a player's mech) */
 	u32 unused34;   /* +0x70: copied with the spawn record (+0x34 to the actor's +0x70; 3.0 for a player's mech); not read */
-	i32 aimError;   /* +0x74: the bots' aim wanders by +- this about pitch and yaw (actor_processFrame); the spawn record's +0x38 x 10, whole */
+	i32 aimError;   /* +0x74: a bot's shots wander by -this .. +this - 1 about pitch and yaw, tenths of a degree (actor_processFrame, rand_below(2 x this)); the spawn record's +0x38 (degrees) x 10, whole; 10 for a player's mech */
 	u32 scriptFlag;   /* +0x78: copied with the spawn record (+0x3c to the actor's +0x78); set 0 / 1 by trigger commands 10 / 11; not read */
 	float dodgeSpread;   /* +0x7c: (by use; seen running) a bot's sideways step about its target: up to +- this (the spawn record's +0x40 x 100) */
-	float climbSpread;   /* +0x80: a bot's height about its target: up to +- this (the spawn record's +0x44 x 100) */
+	float climbSpread;   /* +0x80: a bot near its target picks a height goal of its OWN height +- up to this (botGoal[1] = pos[1] + rand(2 x this) - this, every botTimes[1] s); the spawn record's +0x44 x 100 (500 for a player's mech) */
 	float botTimes[5];   /* +0x84: (by use; seen running) a bot's timings, seconds: [0] between sideways steps, [1] between height changes, [2] its distance kept from the target, [3] the pause between bursts, [4] a burst's length */
 	char name[0x40];   /* +0x98 */
 	i32 inPlay;   /* +0xd8: 1: the slot holds a fielded mech (actor_setupFromParts); 0 when reset, cleared with the scores or a spectator. Spectating follows only these; bots spawn (bot_spawns, solo) only while the local player's is 1; while the local player's is 0 the entry menu opens and the Esc menu has no quit item */
@@ -194,25 +194,25 @@ typedef struct Player {
 	i32 score;   /* +0xec: shown top left */
 	i32 killsCounted;   /* +0xf0: kills already added to the Ladder record's (g_ladderKills; profile_addMatchScores); cleared with the scores */
 	i32 deathsCounted;   /* +0xf4: deaths already added to the Ladder record's (g_ladderDeaths) */
-	i32 startPoints;   /* +0xf8: the level points it started the match with (then the score already added to the */
+	i32 scoreCounted;   /* +0xf8: the score already added to the Ladder record's exp (g_ladderExp; profile_addMatchScores); set with score at the match start */
 	i32 timePlayed;   /* +0xfc: seconds */
-	float timeFraction;   /* +0x100: timePlayed's part second (whole seconds carried into it each frame); cleared with the scores */
+	float timeFraction;   /* +0x100: timePlayed's part second: dt added each frame, and once over 1 its whole seconds are moved out into timePlayed; sent with it (packet 0); cleared with the scores */
 	i32 id;   /* +0x104: (by use; seen running) its id (the next serial, or the network's) */
 	i32 active;   /* +0x108: 1: the slot is in use (0 for the local player's: "press fire" may be shown) */
 	i32 player;   /* +0x10c: (by use; seen running) the player record it belongs to (stride 0x47fd2; -1 none); the ranking shows that player's flag (unless Scene.network) */
 	i32 controlledBy;   /* +0x110: the player slot whose machine runs it (actor_setupFromParts' a3): the local machine's actors are those equal to Stage.playerActor */
 	i32 character;   /* +0x114: its player's pilot character (0 .. 8: CHARACTER SELECT's; its CharacterProfile's stats give bonuses) */
-	i32 team;   /* +0x118: 0 / 1 in team games */
+	i32 team;   /* +0x118: its team (-1 none: not joined / only watching; set for every actor of the player by player_setTeam, cleared with the scores): 0 / 1 in team games; outside them the local player takes its own player slot (match_frame: scene_setLocalTeam(localPlayer)) so every other is an enemy; map players' from the map file; scene_teamSide maps it to a side; same-team hits do no damage (actor_takeDamage); Stage.frags / teamCommanders by it */
 	i32 bot;   /* +0x11c: (by use; seen running) not 0: run by the game (targets, following) */
 	float spawnAge;   /* +0x120: seconds since it spawned: the first 3 s it fades in and cannot fire or be hit; dropAge is kept 10 s on from it */
-	float dropAge;   /* +0x124: the spawnAge past which the actor is dropped (actor_deactivate): kept 10 s ahead while it is run here (each frame) or heard from (each network state), so a silent network copy goes after 10 s; a dead one's (state 3) set to now */
+	float dropAge;   /* +0x124: the spawnAge past which the actor is dropped (actor_deactivate): kept 10 s ahead while it is alive and run here or heard from (each network state), so a silent network copy goes after 10 s; 1 at setup; a dead one's (state 3) spawnAge is set to it, so it goes the next frame */
 	i32 armor;   /* +0x128: (by use; seen running) shown bottom left (ARMOR) */
 	i32 shield;   /* +0x12c: shown bottom left (SHIELD) */
-	i32 ammo[4];   /* +0x130: per weapon slot */
-	i32 slot;   /* +0x140: (by use; seen running) the selected item slot (the player record\'s items); its icon is the gauge\'s cell (3 x 3) */
+	i32 ammo[4];   /* +0x130: per ammunition kind (ActorItem.ammoType: 0 30mm, 1 60mm, 2 E-PAK, 3 missile), not per weapon slot: a weapon's shots take ammoPerShot from ammo[its ammoType]; the four counters bottom right */
+	i32 slot;   /* +0x140: (by use; seen running) the selected item slot (the player record\'s items); its icon is the slot icon\'s cell (3 x 3) */
 	i32 lastWeaponSlot;   /* +0x144: (by use; seen running) the last of slots 0 .. 3 selected (its part shown again: actor_setWeaponSlot) */
-	i32 actorType;   /* +0x148: index into Scene.actorInfo / snapshotTex */
-	i32 state;   /* +0x14c: 1: in play */
+	i32 heldItem;   /* +0x148: the actorItems index of the item in its selected slot (PlayerRecord.items[slot], set by actor_setWeaponSlot; < 0 none): the HUD's snapshot (Actor/<name>/SnapShot, snapshotTex), the lock-on ring and camera_setupView's aimTime when that item has targetingTime */
+	i32 state;   /* +0x14c: 0 not in play, 1 alive in play (set up: actor_setupFromParts), 2 dying (armour gone; after 2 s of stateTime -> 3), 3 dead (spawnAge set to dropAge: dropped the next frame; bot_spawns respawns from it); 0 also when its player leaves the teams (player_setTeam) */
 	float stateTime;   /* +0x150: (by use; seen running) seconds in its state (dying: out after 2) */
 	float pos[3];   /* +0x154: (by use; seen running) its position (ray traces start there) */
 	float pitch;   /* +0x160: (by use; seen running) the look's pitch, within +-89 degrees with the input's */
@@ -249,12 +249,12 @@ typedef struct Player {
 	i32 sendNow;   /* +0x374: 1: its state is sent this frame (one of its rounds ran out of life; net_sendPlayerState); cleared each frame */
 	float velocity[3];   /* +0x378: (by use; seen running) moves towards the keys' (moveAccel) */
 	float move[3];   /* +0x384: (by use; seen running) this frame's move (nextPos - pos) */
-	float pose[6];   /* +0x390: (by use; seen running) the body's pose: swing, lean, head turn; 3 animation frames */
+	float pose[6];   /* +0x390: (by use; seen running) the body's pose: [0] and [1] turn the booster (swing and tilt), [2] turns the legs; [3] .. [5] the arms', legs' and booster's animation frames (anim_setFrame); nothing turns the head */
 	float bodyMatrix[16];   /* +0x3a8: (by use; seen running) the body's matrix (GL modelview at the actor, turned and leant: the chest's bones posed from it) */
 	float radius;   /* +0x3e8: (by use; seen running) its sphere against the others and the walls */
 	i32 chatIcon;   /* +0x3ec: a chat icon over the player while it types: 1 to all, 2 to its team (sent) */
-	i32 timerFlags;   /* +0x3f0: bit 8 + k: timer k shown */
-	float timers[4];   /* +0x3f4: seconds left (2: boost, the energy bar turns blue) */
+	i32 stateFlags;   /* +0x3f0: the state bits worked out each frame for the local machine's actors (actor_processFrame) and sent with it (packet 0 +2, u16; net_processGamePacket takes them for the others): 1 armor >= armorMax, 2 armor >= armorMax + 100, 4 shield >= shieldMax, 8 shield >= shieldMax + 100, 0x10 << k ammo[k] full (the low byte refuses those pickups, item_pickup), 0x100 << k power-up timer k running (0x100 DAMAGE AMP: damage x2; 0x200 CLOAKING FIELD; 0x400 OVERED BOOSTER: running costs no energy; 0x800 GRAVITY ARMOR: damage halved; drawn with flag_texture; the HUD's timers), 0x1000 big head (x5), 0x2000 shield empty (the hit effect), 0x4000 id odd (a change on the network means a new spawn: actor_deactivate) */
+	float timers[4];   /* +0x3f4: the power-ups' seconds left: [0] DAMAGE AMP, [1] CLOAKING FIELD, [2] OVERED BOOSTER (the energy bar blue, no breath sound), [3] GRAVITY ARMOR (item_pickup, 30 s each; the King of the Hill's king keeps [0] and [2] at 1000, others capped to 0 past 30); counted down each frame; their icons down the right side (main_timers) */
 	float ammoFactor[4];   /* +0x404: x the arms' ammunition, per kind */
 	i32 ammoBonus[4];   /* +0x414: + rounds, per kind */
 	float rangeBonus;   /* +0x424: + the sight range (radiusSq) */
@@ -282,66 +282,66 @@ typedef struct Player {
 	i32 inNextWeapon;   /* +0x480 */
 	i32 lowDetail;   /* +0x484: 1: far away (its name tag under 30 px wide at 640): the parts' low-detail models and joints; they are reloaded when it differs from lowDetailLoaded */
 	i32 lowDetailLoaded;   /* +0x488 */
-	i32 weaponLowering;   /* +0x48c: (by use; seen running) 1: the weapon is going down (weaponLower from 1 to 0) */
-	float weaponLower;   /* +0x490 */
-	float gauge;   /* +0x494: > 0: the gauge is shown (its alpha, at most 1) */
-	i32 slotLoaded;   /* +0x498: the slot whose item was loaded last (every actor's: a new slot's item loaded once, its part shown) */
+	i32 weaponLowering;   /* +0x48c: (by use; seen running) 1: the weapon is going down (weaponRaise from 1 to 0) for a switch to switchSlot */
+	float weaponRaise;   /* +0x490: the weapon's raise, 0 .. 1 (1: up, firing allowed: actor_processFrame needs >= 1); weaponLowering takes it down (3 a second), then it comes back up with the new slot's weapon (3 a second; 2.25 for item 3, 1.95 for item 11); the grip is set 600 x (1 - this) off (hold); 1 when set up */
+	float slotIconTime;   /* +0x494: seconds the selected slot's icon stays up at the bottom centre (its 64 x 64 cell of the menu box texture by slot, main_gauge): 2 when a weapon switch starts (actor_selectWeapon), counted down; its alpha, at most 1; 0 when set up */
+	i32 switchSlot;   /* +0x498: the weapon slot it is switching to (actor_selectWeapon sets it with weaponLowering 1; once weaponRaise is down to 0 actor_processFrame makes it the slot (actor_setWeaponSlot) and loads its item); another machine's actor: set to slot (and its item loaded) when slot changes; 0 when set up */
 	i32 variantLoaded;   /* +0x49c: (by use; seen running) the parts' variant loaded (0 for the selected actor, else detail + 1) */
 	i32 firePrev;   /* +0x4a0: (by use; seen running) the fire key the frame before (a held key fires one round) */
 	float effectScale;   /* +0x4a4: (by use; seen running) the emitters' scale by the speed (0.5 .. 3) */
 	float footstepTime;   /* +0x4a8: (by use; seen running) a footstep every third of a second */
-	float energyUsed;   /* +0x4ac: 0..1 */
+	float energy;   /* +0x4ac: the booster energy LEFT, 0 .. 1 (1: full, as set up): running with the booster (inBooster and a move key, unless OVERED BOOSTER) spends 1/boostTime a second; after staminaRest is back to 1 it refills at 1/rechargeTime a second; 0 sets overheat, <= 0.2 warned; the energy bar's length (main_energy) */
 	float staminaRest;   /* +0x4b0: (by use; seen running) the rest after running (back to 1) */
-	i32 overheat;   /* +0x4b4: 1: the energy bar is red */
-	i32 warned;   /* +0x4b8: 1: the energy bar blinks red */
+	i32 overheat;   /* +0x4b4: 1: the energy ran out (set when energy reaches 0, cleared once it is back to 0.5): the booster input is dropped (inBooster 0), the energy bar is red, the local player's out-of-breath sound */
+	i32 warned;   /* +0x4b8: 1: energy at or under 0.2 (set every frame): the energy bar blinks red (twice a second, by spawnAge), the local player's out-of-breath sound with the footsteps (unless OVERED BOOSTER) */
 	i32 lastHitMode;   /* +0x4bc: (by use; seen running) the last hit's mode (0 armour first, 1 shield first) */
 	i32 lastAttacker;   /* +0x4c0: (by use; seen running) the actor that hit it last (credited with the kill) */
-	i32 lastHitWeapon;   /* +0x4c4: (by use; seen running) the last hit's weapon (an actorInfo index: the kill message names it, "crushed X(SG-18)"; was named mechType) */
+	i32 lastHitWeapon;   /* +0x4c4: (by use; seen running) the last hit's weapon (an actorItems index: the kill message names it, "crushed X(SG-18)"; was named mechType) */
 	u8 _pad00004c8[0x4];
-	i32 weapon;   /* +0x4cc: the selected weapon slot */
-	i32 cheat;   /* +0x4d0: a cheat code to apply this frame (-1 none): 0 armour and shield refilled, 1 ammunition, 2 / 3 big head on / off, 4 suicide (chat_matchCheatCode; net) */
+	i32 ammoKind;   /* +0x4cc: the selected weapon's ammunition kind (its ActorItem.ammoType: index into ammo; -1 without an item): the HUD's lit ammunition counter; set when the selected slot's model is loaded (actor_loadWeapon) and when the switched weapon comes up (actor_processFrame) */
+	i32 cheat;   /* +0x4d0: a cheat to apply this frame (-1 none): 2 / 3 big head on / off, 4 suicide; set only by chat_matchCheatCode (the local player's typed chat, codes 2 .. 4). Cases 0 (armour and shield refilled) and 1 (ammunition refilled) are handled but never set */
 	i32 bigHead;   /* +0x4d4: 1: its head drawn five times larger (cheat 2 on, 3 off; sent as state bit 0x1000) */
-	i32 isKing;   /* +0x4d8: 1: the king (King of the Hill: the leader; scene_updateRanking): a mark after its ranking row and over it, five times the points */
+	i32 isKing;   /* +0x4d8: 1: the king (King of the Hill: ranking[0]; scene_updateRanking also puts it on team 0 and every other player on team 1, YOU ARE / %s IS THE NEW KING!): a mark at its HUD's top right, after its ranking row and over it; fragging it gives 5 frags and five times the frag points (x2.5 in sudden death); it keeps DAMAGE AMP and OVERED BOOSTER (timers[0], [2] held at 1000) */
 	i32 isCommander;   /* +0x4dc: 1: its team's commander (Platoon: the most time; scene_updateRanking; YOUR COMMANDER .. HAS BEEN KILLED): the team's icon after its ranking row and over it */
 	float deathPos[3];   /* +0x4e0: (by use; seen running) where it died (its position while not in play) */
 	float glow;   /* +0x4ec: (by use; seen running) a fresh shot's flash (and speed unless cloaked) */
 	u8 tint[4];   /* +0x4f0: (by use; seen running) its tint (r g b a: a cloaked actor's; alpha <= 0x10 also lights it faintly) */
 	char message[0x40];   /* +0x4f4: (by use; seen running) a message for the local player ("OUT OF AMMO!") */
-	float messageTime;   /* +0x534: its time shown (-10000: none) */
+	float messageTime;   /* +0x534: 0 on the frame a message is set (item_pickup, the warp; OUT OF AMMO! sets it to the frame time, taken off later that frame): that frame the local player's message is printed and its state sent (net_sendPlayerState); then the frame time is taken off each frame; -10000 at setup */
 	i32 lastWarp;   /* +0x538: (by use; seen running) the warp zone (item) it came through last (-1 none: not kept off it) */
 	i32 onWarp;   /* +0x53c: 1: touching a warp zone this frame */
 	float warpWait;   /* +0x540: seconds before it can warp again (2) */
 	float shieldRegenTime;   /* +0x544: (by use; seen running) seconds towards the next shield regained */
-	float damageFlash;   /* +0x548: > 0: a white flash over the screen at this alpha */
+	float whiteFlash;   /* +0x548: > 0: a white flash over the screen at this alpha (hud_main main_draw, playing): 1 when the actor is set up / spawns (actor_setupFromParts) and when it warps (item_pickup, WARP ZONE); counted down by dt */
 	i32 breakUp;   /* +0x54c: (by use; seen running) the parts' break-up step (one a frame, to 7) */
-	i32 viewMarked;   /* +0x550: set by hud_pass for the player the view follows */
-	ObjectList headModel;   /* +0x554: (by use; seen running) the posed part models (ObjectList each, their entries following inside): the head (on the chest's neck joint; x5 with timerFlags 0x1000) */
-	u8 headModelMem[0x7d0];   /* +0x584: its entries' memory (ObjectList_load's mem) */
-	ObjectList chestModel;   /* +0xd54: the chest: posed at bodyMatrix, carries the head, arms and legs */
-	u8 chestModelMem[0x7d0];   /* +0xd84: its entries' memory (ObjectList_load's mem) */
+	i32 viewMarked;   /* +0x550: 1 for the player the view is inside this frame (camera mode 2 while playing, or the watched player on camera slot 2): set by match_frame, hud_pass and replay_frame; its booster (part list 4) is not drawn and its legs' / booster's emitters are skipped (actor_processFrame); cleared once drawn (actor_drawIntoView) */
+	ObjectList headModel;   /* +0x554: (by use; seen running) the posed part models (ObjectList each, their entries following inside): the head (on the chest's neck joint; x5 with stateFlags 0x1000) */
+	u8 headModelMem[0x7d0];   /* +0x584: its block's memory: the entries (100 bytes each), then the skeleton pointers (ObjectList_load's mem; its size the limit) */
+	ObjectList chestModel;   /* +0xd54: the chest: posed at bodyMatrix; its joints carry the legs, arms, head and booster (ChestType.legsJoint .. boosterJoint) */
+	u8 chestModelMem[0x7d0];   /* +0xd84: its block's memory: the entries (100 bytes each), then the skeleton pointers (ObjectList_load's mem; its size the limit) */
 	ObjectList armsModel;   /* +0x1554: the arms: carry the weapon models */
-	u8 armsModelMem[0xfa0];   /* +0x1584: its entries' memory (ObjectList_load's mem) */
+	u8 armsModelMem[0xfa0];   /* +0x1584: its block's memory: the entries (100 bytes each), then the skeleton pointers (ObjectList_load's mem; its size the limit) */
 	ObjectList legsModel;   /* +0x2524: the legs (their frame from pose[4]) */
-	u8 legsModelMem[0xfa0];   /* +0x2554: its entries' memory (ObjectList_load's mem) */
+	u8 legsModelMem[0xfa0];   /* +0x2554: its block's memory: the entries (100 bytes each), then the skeleton pointers (ObjectList_load's mem; its size the limit) */
 	ObjectList boosterModel;   /* +0x34f4: the booster (pose[5]: run) */
-	u8 boosterModelMem[0xbb8];   /* +0x3524: its entries' memory (ObjectList_load's mem) */
+	u8 boosterModelMem[0xbb8];   /* +0x3524: its block's memory: the entries (100 bytes each), then the skeleton pointers (ObjectList_load's mem; its size the limit) */
 	ObjectList weaponModel;   /* +0x40dc: the weapon in hand (slots 0 .. 3) */
-	u8 weaponModelMem[0x1770];   /* +0x410c: its entries' memory (ObjectList_load's mem) */
+	u8 weaponModelMem[0x1770];   /* +0x410c: its block's memory: the entries (100 bytes each), then the skeleton pointers (ObjectList_load's mem; its size the limit) */
 	ObjectList weaponModel4;   /* +0x587c: the slot-4 weapon */
-	u8 weaponModel4Mem[0x1770];   /* +0x58ac: its entries' memory (ObjectList_load's mem) */
+	u8 weaponModel4Mem[0x1770];   /* +0x58ac: its block's memory: the entries (100 bytes each), then the skeleton pointers (ObjectList_load's mem; its size the limit) */
 	ObjectList weaponModel5;   /* +0x701c: the slot-5 weapon */
-	u8 weaponModel5Mem[0x1770];   /* +0x704c: its entries' memory (ObjectList_load's mem) */
+	u8 weaponModel5Mem[0x1770];   /* +0x704c: its block's memory: the entries (100 bytes each), then the skeleton pointers (ObjectList_load's mem; its size the limit) */
 	float screenPos[3];   /* +0x87bc: projected position on the screen: x, y (pixels; to_screen), the depth */
 	float tagTopLeft[3];   /* +0x87c8: (by use; seen running) its radius box's top-left corner on the screen (x, y: the marks stand on y), the depth */
 	float tagBottomRight[3];   /* +0x87d4: the box's bottom-right corner (tag_narrow: the width from these) */
-	i32 onScreen;   /* +0x87e0: 1: projected in front of the camera */
+	i32 onScreen;   /* +0x87e0: 1: seen this frame (camera_setupView, alive actors only): inside the view's clip box, not the selected (viewing) actor, and a clear line from the camera (collision_rayTrace); 0 otherwise or when taken out; the HUD's markers and lock-on boxes need it */
 	float facingCos;   /* +0x87e4: (by use; seen running) the cosine of its angle off the local player's view (render: who faces it); written, never read */
-	float aimTime;   /* +0x87e8: seconds this actor has been in the local player's lock-on weapon's view cone (0 out of it); past lockOnTime x targetingTime the lock is made */
+	float aimTime;   /* +0x87e8: seconds this enemy has been seen within the local player's detection cone (its detectionAngle off the view's axis: g_cosTable) while the local player's selected item has targetingTime > 0 (camera_setupView; 0 otherwise, out of sight, or cloaked at the local player's rank or above); past the local player's lockOnTime x targetingTime the lock is made (actor_processFrame); > 0: hud_drawLockOn's aiming box */
 	float lockAnim;   /* +0x87ec: 0.25 when the local player's lock on it is made, counting down: the HUD's box closes in */
 	float labelFade;   /* +0x87f0: > 0: the name label is up (alpha labelFade / 3) */
 	i32 botNeeds;   /* +0x87f4: (by use; seen running) bit 0: low armour (under 0.3); bit 1: both weapons empty */
-	i32 target1;   /* +0x87f8: (by use; seen running) its targets (-1 none; dropped with the bullet: bullet_free) */
-	i32 target2;   /* +0x87fc */
+	i32 path;   /* +0x87f8: the trigger whose way points it walks (a bot or a script: actor_pickPathPoint, commands; -1 none) */
+	i32 pathPoint;   /* +0x87fc: the point of its path (path's wayPoints) it is heading for; stepped on (or back with pathReverse) when within 1000, its script command run (script_processCommandBy) */
 	i32 pathReverse;   /* +0x8800: (by use; seen running) 1: the path is followed backwards */
 	float botWait;   /* +0x8804: seconds a bot stays put (script command 4; counted down by actor_processFrame; it still aims and fires) */
 	i32 botWaitTrigger;   /* +0x8808: (by use; seen running) a trigger a bot waits for (-1 none) */
@@ -361,14 +361,14 @@ typedef struct Player {
 	float pathRange;   /* +0x8848: (by use; seen running) how far a bot looks for path points (1500, x1.5 while none is found) */
 	i32 outOfPlay;   /* +0x884c: 0 in play; else held out by script command 24 (script_holdActor's value): its weapons, firing, stamina, emitters, footsteps and death check skipped, others pass through it, bullets miss it; 1: also not drawn and spared splash damage */
 	i32 hitPending;   /* +0x8850: (by use; seen running) 1: a hit to send (net_sendPlayerState, then cleared) */
-	float hitFlash;   /* +0x8854: > 0: a red flash at half this alpha */
+	float hitFlash;   /* +0x8854: seconds of a hit's effects: 0.5 when hit (actor_takeDamage, also between teammates; net_processGamePacket), counted down: the HUD's red flash at half this alpha, the model tinted red (alpha x 255), the local actor's push (push x step x this squared); a bot turns on lastAttacker while > 0 */
 	float botTargetTime;   /* +0x8858: (by use; seen running) seconds left on the bot's target (10.5) */
 	float push[3];   /* +0x885c: (by use; seen running) a hit's push on the local actor (with hitFlash) */
 	i32 killPending;   /* +0x8868: 1: it died (actor_dies); the match frame reports the kill (msg_kill with lastAttacker) and clears this */
 	float stuckTime;   /* +0x886c: (by use; seen running) the path checked every second: moved under 500 -> dropped */
 	i32 stuckPath;   /* +0x8870: the path dropped */
 	float stuckMove[3];   /* +0x8874: the moves summed over the second */
-	i32 homedOn;   /* +0x8880: 1: a guided round of another machine's (Bullet.link) is homing on it: the HUD's alert ring and beep; a bot without a target turns on the shooter */
+	i32 homedOn;   /* +0x8880: 1: a guided round of another machine's (Bullet.homingTarget == this actor, its owner not run here) is homing on it: the HUD's alert ring and beep; a bot without a target turns on the shooter */
 	float beepTimer;   /* +0x8884: the countdown to the local player's next warning beep (sound 0x11, every 0.5 s) while a round from another machine homes on it; 0 otherwise (actor_processFrame) */
 } Player;
 
@@ -498,7 +498,7 @@ typedef struct Particle {
 typedef struct Bullet {
 	i32 id;   /* +0x0: its id (the next serial, or the network's) */
 	i32 active;   /* +0x4: 1: in use */
-	i32 weapon;   /* +0x8: its weapon's record (index into Scene.actorInfo) */
+	i32 weapon;   /* +0x8: its weapon's record (index into Scene.actorItems) */
 	i32 owner;   /* +0xc: the actor that fired it */
 	u32 muzzle;   /* +0x10: the muzzle entry's matrix (FiredRound.muzzle; bullet_init passes it as its muzzle flash's ParticleDesc.matrixFrom) */
 	u8 _pad0000014[0x40];
@@ -580,7 +580,7 @@ typedef struct Space {
 /* an ARM CENTER part-info record (g_partRecords, g_viewedPart: armc_parts.c part_info) */
 typedef struct PartInfo {
 	char name[0x40];   /* +0x0: the item's folder path after its last slash */
-	i32 slotType;   /* +0x40: -1: an empty record; the rest copied from ActorInfo, some scaled for showing */
+	i32 slotType;   /* +0x40: -1: an empty record; the rest copied from ActorItem, some scaled for showing */
 	i32 ammoType;   /* +0x44: its ammunition kind (message 323 + this: "30mm" ..) */
 	i32 ammoPerShot;   /* +0x48: "cell" */
 	i32 burst;   /* +0x4c: "Round" */
@@ -880,7 +880,7 @@ typedef struct ViewTriangle {
 	i32 kind;   /* +0x5c: 2: depth-sorted (triangleOrder) */
 } ViewTriangle;
 
-/* the view volume: what a frame draws, queued by material and depth (view_volume.c, factors.c; the size is unknown: only the fields used) */
+/* the view volume: what a frame draws, queued by material and depth (view_volume.c, factors.c; 0x9170 bytes: ViewVolume_clear clears 0x245c dwords; only the fields used) */
 typedef struct ViewVolume {
 	u8 _pad0000000[0x4];
 	i32 blockSize;   /* +0x4: its lists' memory (ViewVolume_initBy) */
@@ -1015,9 +1015,9 @@ typedef struct PlayerRecord {
 	i32 character;   /* +0x44: its pilot character (g_characterProfiles: the skills and damage factors by it) */
 	i32 team;   /* +0x48 */
 	char partNames[5][0x40];   /* +0x4c: its parts' type names (head, chest, arms, legs, booster: set_part) */
-	char itemNames[6][0x40];   /* +0x18c: its items' names (actor_setItem: the ActorInfo's name) */
+	char itemNames[6][0x40];   /* +0x18c: its items' names (actor_setItem: the ActorItem's name) */
 	i32 parts[5];   /* +0x30c: its mech's parts: head, chest, arms, legs, booster (records of the stage's part tables; "invalid headIndex") */
-	i32 items[6];   /* +0x320: per item slot (Player.slot): its weapon's record (index into Scene.actorInfo; < 0 none) */
+	i32 items[6];   /* +0x320: per item slot (Player.slot): its weapon's record (index into Scene.actorItems; < 0 none) */
 	Manager headShapes;   /* +0x338: (by use; seen running) its head type's shapes (model_sets: shape_initBy over the data after it) */
 	u8 headShapeData[0x7d00];   /* +0x584 */
 	Manager chestShapes;   /* +0x8284: (by use; seen running) its chest type's shapes (model_sets: shape_initBy over the data after it) */
@@ -1181,8 +1181,8 @@ typedef struct SpawnRecord {
 	float turnRate;   /* +0x2c: x 10: the actor's turnRate */
 	float range;   /* +0x30: its sight range (squared, x 10000: radiusSq) */
 	u32 unused34;   /* +0x34: copied to the actor's +0x70 (actor_applySpawnRecord; 3.0 for a player's mech); never read */
-	float aimError;   /* +0x38: the bots' aim wanders by +- this about pitch and yaw (actor_processFrame); the spawn record's +0x38 x 10, whole */
-	u32 scriptFlag;   /* +0x3c: copied with the spawn record (+0x3c to the actor's +0x78); set 0 / 1 by trigger commands 10 / 11; not read */
+	float aimError;   /* +0x38: the actor's aimError in degrees (actor_applySpawnRecord: x 10, whole, into Player.aimError) */
+	u32 scriptFlag;   /* +0x3c: copied to the actor's +0x78 (Player.scriptFlag; actor_applySpawnRecord); not read */
 	float dodgeSpread;   /* +0x40: x 100 */
 	float climbSpread;   /* +0x44: x 100 */
 	float botTimes[5];   /* +0x48: the bot's timings (copied to the actor's) */
@@ -1292,7 +1292,7 @@ typedef struct BoosterType {
 	u8 _pad00017f4[0x4];
 	float weight;   /* +0x17f8 */
 	i32 thrustType;   /* +0x17fc */
-	float lean;   /* +0x1800: the actor's leanPitch: how far the booster joint tips with the aim's pitch (actor_processFrame's pose[1]); 0.0 in every booster of Component.dat */
+	float lean;   /* +0x1800: the actor's boosterTilt: how far the booster joint tips with the aim's pitch (actor_processFrame's pose[1]); 0.0 in every booster of Component.dat */
 	float activeTime[3];   /* +0x1804: (the actor's boostTime, rechargeTime, restTime by these) */
 	float normalSpeed[4];   /* +0x1810 */
 } BoosterType;
@@ -1364,9 +1364,9 @@ typedef struct Stage {
 	i32 built;   /* +0x4: (by use; seen running) 1: stage_build has built it; written, never read */
 	char stageDir[0x100];   /* +0x8: (by use; seen running) the data directories (stage_setFolders; Game_ctor: "Stage" .. "Scene"): the stage's */
 	char mapDir[0x100];   /* +0x108: the maps' (a map's files: "<mapDir>/<name>") */
-	char textureDir[0x100];   /* +0x208 */
+	char textureDir[0x100];   /* +0x208: written, never read (stage_build uses its textureDir argument, not this copy) */
 	char shapeDir[0x100];   /* +0x308 */
-	char skeletonDir[0x100];   /* +0x408 */
+	char skeletonDir[0x100];   /* +0x408: objectSkeletons' folder (stage_build; the other skeleton sets get stage_build's argument, the same text) */
 	char actorDir[0x100];   /* +0x508: written, never read */
 	char bulletDir[0x100];   /* +0x608: written, never read */
 	char effectDir[0x100];   /* +0x708: written, never read */
@@ -1385,7 +1385,7 @@ typedef struct Stage {
 	LightFactors dynamicLights;   /* +0x9d8010: (by use; seen running) the lights cleared each frame (stage_resetLights); the objects' second colours */
 	LightFactors actorLights;   /* +0x9e3020: (by use; seen running) the actors' light: a grey ambient one and one from above (actor_slots.c) */
 	i32 clearOn;   /* +0x9ee030: (by use; seen running) the clear colour read from the ground info: on */
-	u32 clearColour[4];   /* +0x9ee034: r g b a (floats' bits) */
+	u32 clearColour[4];   /* +0x9ee034: r g b (floats' bits; glClearColor's alpha is always 1): read with clearOn from the ground info (map_loadGroundInfoFrom, 16 bytes); the fourth word is read but never used */
 	i32 fogOn;   /* +0x9ee044: the fog read from the ground info: 1 on (stage_setFog: glFogColour ..; hud_pass and the scene pass check it) */
 	u32 glFogColour[4];   /* +0x9ee048: the fog OpenGL draws with (stage_setFog): r, g, b, a (floats, kept as bits) */
 	u32 glFogStart;   /* +0x9ee058: (floats, kept as bits) */
@@ -1402,11 +1402,11 @@ typedef struct Stage {
 	i32 sideMode;   /* +0x9ef0b0: side walls: 0 none, 1 low, else high */
 	i32 sideTextures[6];   /* +0x9ef0b4 */
 	float sides[6][8][3];   /* +0x9ef0cc: per wall eight points; the first four give x and z (scaled 8000) */
-	i32 floorOn;   /* +0x9ef30c: 1: the animated floor under the sky */
+	i32 floorMode;   /* +0x9ef30c: the floor under the sky: 0 none; non-0: drawn (sky_draw) and its plane added to the collision space (collision_initVolume); 2: animated through floorTextures (stage_advanceClocks), 1: frame 0 only */
 	i32 floorTextures[16];   /* +0x9ef310: its animation frames */
 	float floor[11][11][3];   /* +0x9ef350: its grid (times the scale sky_draw gets) */
 	i32 floorFrame;   /* +0x9ef8fc */
-	float floorClock;   /* +0x9ef900: the floor's animation clock (stage_advanceClocks, only while floorOn is 2: at 1 floorFrame steps on, % 16) */
+	float floorClock;   /* +0x9ef900: the floor's animation clock (stage_advanceClocks, only while floorMode is 2: at 1 floorFrame steps on, % 16) */
 	float levelLow[3];   /* +0x9ef904: (by use; seen running) the level's bounds (the level grid over them; the actors kept inside) */
 	float levelHigh[3];   /* +0x9ef910 */
 	float worldLow[3];   /* +0x9ef91c: the world box moves are kept inside (collision_tris.c) */
@@ -1421,7 +1421,7 @@ typedef struct Stage {
 	Model layerModel;   /* +0xdc0a78: (by use; seen running) the ground layers drawn as one shape: a part each (stage_buildMeshDrawRecords) */
 	u8 layerParts[0x200];   /* +0xdc0ac4: (by use; seen running) layerModel's parts */
 	Model waterModel;   /* +0xdc0cc4: the ground layers' water surfaces: a part each (drawn only for a water layer) */
-	u8 waterParts[0x200];   /* +0xdc0d10: waterModel's parts */
+	ShapePart waterParts[4];   /* +0xdc0d10: waterModel's parts: one per ground layer, filled by stage_buildMeshDrawRecords */
 	u8 commands[10000][0x30];   /* +0xdc0f10: the actor commands (0x30 bytes each; map_readCommands) the way points run (script_processCommandBy) */
 	i32 commandCount;   /* +0xe36210 */
 	WayPoint wayPoints[1000];   /* +0xe36214 */
@@ -1452,15 +1452,15 @@ typedef struct Stage {
 	i32 legTypeCount;   /* +0x148646c */
 	BoosterType boosterTypes[50];   /* +0x1486470 */
 	i32 boosterTypeCount;   /* +0x14d1ab0 */
-	ActorInfo actorInfo[50];   /* +0x14d1ab4: the item types ("read ActorItemInfo"; Scene.actorInfo: mechs and weapons) */
-	i32 actorInfoCount;   /* +0x1561b64 */
+	ActorItem actorItems[50];   /* +0x14d1ab4: the actor items: Data/Component.dat's sixth table ("read ActorItemInfo"): the weapons and other hand / shoulder items (37 shipped: ITEM\SMG-17 .. ITEM\ICA-6000); indexed by PlayerRecord.items, Bullet.weapon, Player.lastHitWeapon */
+	i32 actorItemCount;   /* +0x1561b64: actorItems read (Component.dat: 37) */
 	PlayerRecord playerRecords[16];   /* +0x1561b68: (Scene.playerRecords) */
 	i32 playerRecordCount;   /* +0x19e1888: (by use; seen running) player records in use (grows to cover a new player) */
-	Manager partShapes;   /* +0x19e188c: the mech parts' and items' shapes (ShapeManager; ObjectList_load) */
-	u8 partShapeData[0x2dc6c0];   /* +0x19e1ad8: partShapes' block */
-	SkelManager partSkeletons;   /* +0x1cbe198: their skeletons (SkeletonManager) */
-	u8 partSkeletonData[0x186a0];   /* +0x1cbe2c8: partSkeletons' block */
-	i32 snapshotTex[50];   /* +0x1cd6968: = Scene.snapshotTex (the same words): each actor type's snapshot texture id, -1 (not loaded) at stage_reset */
+	Manager itemShapes;   /* +0x19e188c: the weapons' (actor_loadWeapon), the map items' (map_loadItemInfoFrom: ItemType.model) and the effects' shapes (effect_initShapes) (ShapeManager, 600); the mech parts have each player record's own caches */
+	u8 itemShapeData[0x2dc6c0];   /* +0x19e1ad8: itemShapes' block (stage_build: shape_initBy) */
+	SkelManager itemSkeletons;   /* +0x1cbe198: the weapons' skeletons (SkeletonManager; actor_loadWeapon only) */
+	u8 itemSkeletonData[0x186a0];   /* +0x1cbe2c8: itemSkeletons' block (stage_build: skelSet_setup) */
+	i32 snapshotTex[50];   /* +0x1cd6968: = Scene.snapshotTex (the same words): each item's snapshot texture id, -1 (not loaded) at scene_reset */
 	MapPlayer mapPlayers[16];   /* +0x1cd6a30: (by use; seen running) the map's player records (map_loadActorInfoFrom: colour scheme +4, items +0x40) */
 	i32 mapPlayerCount;   /* +0x1cd6fb0 */
 	SpawnRecord mapActors[100];   /* +0x1cd6fb4: the map's actors (the first: the player's) */
@@ -1470,14 +1470,14 @@ typedef struct Stage {
 	i32 actorFreeHint;   /* +0x202e8cc: (by use; seen running) the lowest free actor slot */
 	i32 actorSerial;   /* +0x202e8d0: the next actor's id */
 	i32 playerActor;   /* +0x202e8d4: the local player's actor slot */
-	i32 selectedActor;   /* +0x202e8d8: (by use; seen running) the selected actor (stage_selectActor; -1 none) */
+	i32 cockpitActor;   /* +0x202e8d8: (by use; seen running) the actor the camera sits in (stage_selectActor from match_frame: the local player in camera mode 1 while playing; -1 none) */
 	i32 silentActor;   /* +0x202e8dc: (by use; seen running) stage_setSilentActor's value */
 	i32 heldActor;   /* +0x202e8e0: the actor script command 24 holds out of play (script_holdActor; command 25 and the resets: -1); read only to let the one before go (Player.outOfPlay) */
 	i32 heldMode;   /* +0x202e8e4: command 24's mode for it; written, never read */
 	i32 lastDeath;   /* +0x202e8e8: (by use; seen running) the actor that died last */
-	i32 teamsChanged;   /* +0x202e8ec: (by use; seen running) 1: an actor joined or changed team */
+	i32 rankingDirty;   /* +0x202e8ec: 1: the ranking to be made again next frame (match_frame: scene_updateRanking, then 0): set when an actor spawns, dies, is taken out, the actors are reset, a round starts or a player's team is set (= Scene.rankingDirty) */
 	i32 frags[100];   /* +0x202e8f0: (by use; seen running) frags by team (a kill counts for the other team's slot); cleared together (stage_clearFrags) */
-	float lockHeld[100];   /* +0x202ea80: per actor: seconds the local player's lock on it still holds (targetKeepTime when made; the beep then); sorted longest first into lockTimes / lockIds */
+	float lockHeld[100];   /* +0x202ea80: per actor: seconds the local player's lock on it still holds: set to targetKeepTime every frame its aim time passes lockOnTime x the weapon's targetingTime (an enemy; the beep and lockAnim 0.25 when it was 0), else counted down; sorted longest first into lockTimes / lockIds; 0 on death / deactivation */
 	float lockTimes[100];   /* +0x202ec10: (by use; seen running) the locked-on actors' lock times, longest first (actor_frame.c) */
 	i32 lockIds[100];   /* +0x202eda0: and which actors they are */
 	i32 lockCount;   /* +0x202ef30: (by use; seen running) the local player's locked-on actors (lockTimes / lockIds; was named bulletCount) */
@@ -1486,7 +1486,7 @@ typedef struct Stage {
 	i32 bulletFreeHint;   /* +0x20a99b8: the lowest free bullet slot */
 	i32 bulletSerial;   /* +0x20a99bc: the next bullet's id */
 	Particle particles[1000];   /* +0x20a99c0 */
-	i32 particleCount;   /* +0x20f2da0: slots in use */
+	i32 particleCount;   /* +0x20f2da0: slots up to the highest in use + 1 (free ones among them; shrinks past free slots at the end: stage_freeParticle) */
 	i32 particleFreeHint;   /* +0x20f2da4: (by use; seen running) the lowest free particle slot */
 	i32 particleSerial;   /* +0x20f2da8: the next particle's id */
 	u32 thrustShapes[3][8];   /* +0x20f2dac: (by use; seen running) the thrust effects' shapes: plasma, ion, gravity (eight frames each) */
@@ -1495,17 +1495,17 @@ typedef struct Stage {
 	u8 _pad20f2e94[0xa8];
 	i32 itemTextures[3];   /* +0x20f2f3c: (by use; seen running) the items' animated textures: damage map, booster, shield (stage_build; [0] cleared first by effect_initShapes) */
 	float lightMatrix[16];   /* +0x20f2f48: (by use; seen running) an identity (stage_build): a faintly tinted actor's light (actor_drawIntoView) */
-	float litMatrix[16];   /* +0x20f2f88: a 1.1 scale (the last element 1): the lit pass's (partList_queue) */
+	float overlayMatrix[16];   /* +0x20f2f88: a 1.1 scale: the item-effect overlay pass's extra matrix (actor_drawIntoView: flags 0x100 / 0xc00 draw the actor's lists again with the damage map / booster / shield textures through partList_queue, 10% larger) */
 	float baseMatrix[16];   /* +0x20f2fc8: (by use; seen running) the stage's identity matrix (stage_resetMatrixAndPoints) */
 	i32 pointCount;   /* +0x20f3008: written, never read */
-	float points[200][3];   /* +0x20f300c: at the origin until set */
+	float points[200][3];   /* +0x20f300c: 200 points set to the origin (stage_resetMatrixAndPoints; Game_ctor's vector constructor); nothing else writes or reads them */
 	u32 defaultColour;   /* +0x20f396c: written, never read */
 	float cameraPos[3];   /* +0x20f3970: (by use; seen running) the centre of the camera box objects are tested against */
 	float viewDir[3];   /* +0x20f397c: (by use; seen running) the camera's direction (the sky's look-at) */
 	float viewUp[3];   /* +0x20f3988: (by use; seen running) the camera's up */
 	float lastCameraPos[3];   /* +0x20f3994: (by use; seen running) the camera's position the frame before (camera_setupView) */
 	float modelview[16];   /* +0x20f39a0: gluLookAt's matrix */
-	float lastModelview[16];   /* +0x20f39e0: the frame before's */
+	float lastModelview[16];   /* +0x20f39e0: the frame before's (camera_setupView copies modelview here first; scene_reset: identity); written, never read */
 	float fov;   /* +0x20f3a20: the view's angle, near and far planes */
 	i32 viewWidth;   /* +0x20f3a24: (by use; seen running) the view's size in pixels (screen points) */
 	i32 viewHeight;   /* +0x20f3a28 */
@@ -1516,11 +1516,11 @@ typedef struct Stage {
 	i32 showExp;   /* +0x20f3ab4: 1: kills report the experience points too (match_startRound: 1 in a Ladder game) */
 	i32 gameType;   /* +0x20f3ab8: 0 death match, 2 sudden death, 4 shotgun / 6 ion cannon / 8 rocket arena, 10 gladiator (odd: the team game), 12 king of the hill, 13 platoon */
 	i32 teamGame;   /* +0x20f3abc: the odd types */
-	i32 suddenDeath;   /* +0x20f3ac0: (types 2, 3) kills give half the points; the map's items thinned */
-	i32 shotgunArena;   /* +0x20f3ac4: (types 4, 5) the map's weapons all shotguns */
-	i32 ionCannonArena;   /* +0x20f3ac8: (6, 7) */
-	i32 rocketArena;   /* +0x20f3acc: (8, 9) */
-	i32 gladiator;   /* +0x20f3ad0: (10, 11) no weapons on the map */
+	i32 suddenDeath;   /* +0x20f3ac0: (types 2, 3) kills give half the points; the map's items: ammo boxes all 30mm shell boxes (kinds 0 .. 9 to 0), shields, forcefields (10 .. 19), damage amplifier, cloak and gravity armour (30, 31, 37) removed */
+	i32 shotgunArena;   /* +0x20f3ac4: (types 4, 5) the map's ammunition item points (kinds 0 .. 9) all become kind 2, 60mmShell_Box (map_loadPlayInfoFrom: remap_item); its only reader */
+	i32 ionCannonArena;   /* +0x20f3ac8: (types 6, 7) the map's ammunition item points all become kind 3, Energy_Cell, forcefields (15 .. 19) shields (10 .. 14) (map_loadPlayInfoFrom: remap_item) */
+	i32 rocketArena;   /* +0x20f3acc: (types 8, 9) the map's ammunition item points all become kind 5, Rocket_Pack (remap_item); mobility and moveAccel x 1/3 (actor_setupFromParts) */
+	i32 gladiator;   /* +0x20f3ad0: (types 10, 11) the map's ammo boxes removed (item kinds 0 .. 9 to none: map_loadPlayInfoFrom's remap) */
 	i32 kingOfTheHill;   /* +0x20f3ad4: (type 12) the leader is the king: marked, given power-ups */
 	i32 platoon;   /* +0x20f3ad8: (13) */
 	i32 itemTypeCount;   /* +0x20f3adc: itemTypes' count, read with them from Data/Item.dat at start (200); zeroed by scene_reset though the types stay; not read after */
@@ -1546,13 +1546,13 @@ typedef struct Stage {
 	u8 texts[1000][0x108];   /* +0x210850c: the script's texts, the same: a dword (not 0: it exists; MESSAGE checks it), then four lines of 0x41 chars hud_drawMessageBox shows (Scene.msgText is these bytes from +4); never written (1000 inferred from the gap to messages) */
 	u8 _pad2148c4c[0x4];
 	i32 messages[32][5];   /* +0x2148c50: the map script's messages waiting (command 26 MESSAGE: speaker, text, colour ..; script_pushMessage); = Scene.msgRing */
-	i32 msgWrite;   /* +0x2148ed0: messages pushed (the ring's next: % 32); = Scene.msgWrite */
-	i32 msgRead;   /* +0x2148ed4: the oldest kept (moved on when the ring is full); = Scene.msgRead */
+	u32 msgWrite;   /* +0x2148ed0: messages pushed (the ring's next: % 32); = Scene.msgWrite */
+	u32 msgRead;   /* +0x2148ed4: the oldest kept (moved on when the ring is full); = Scene.msgRead */
 	ScenePath scenePath;   /* +0x2148ed8: the scene-path object (the game's class "Scene"; its methods are all empty stubs): stage_advanceScenePath opens and steps it while scriptMode is set, and as recorder_setPathStub answers 0, scriptMode is cleared on that first frame */
 	char pathSound[0x100];   /* +0x2149108: a sound played under scenePath\ on each stage frame with scriptMode set (stage_advanceScenePath; empty: none); never written, so nothing is played */
 	char scriptName[0x100];   /* +0x2149208: the .scp path script command 27 named (<sceneDir>/<name>.scp; script_runScpFile), handed to the scene-path object's empty recorder_openStub: no code reads the file; no shipped map has command 27 */
-	i32 scriptMode;   /* +0x2149308: its mode (0 .. 2; with scriptRunning 1, mode 1 stops the actors and clocks) */
-	i32 scriptRunning;   /* +0x214930c */
+	i32 scriptMode;   /* +0x2149308: its mode (0 .. 2; with scriptHoldsPlay 1, mode 1 stops the actors and clocks) */
+	i32 scriptHoldsPlay;   /* +0x214930c: 1 only for mode 1 (script_runScpFile; 0 for modes 0 and 2): while scriptMode is set, the actors, triggers and match clock, bullets, effects, objects and animation clocks stop, and objects do not glow */
 	u8 _pad2149310[0x7133];
 } Stage;
 
@@ -1599,8 +1599,8 @@ typedef struct TunnelRing {
 typedef struct Round {
 	i32 map;   /* +0x0 */
 	i32 mode;   /* +0x4: the game mode */
-	i32 scoreLimit;   /* +0x8 */
-	i32 timeLimit;   /* +0xc */
+	i32 fragLimit;   /* +0x8: the round's frag limit (set_round); written, never read (Scene.fragLimit comes from g_fragLimit) */
+	i32 timeLimit;   /* +0xc: the round's time limit (set_round); written, never read (Scene.timeLimit comes from g_timeLimit) */
 } Round;
 
 /* the scene: the one large object of a match, built by Game_ctor */
@@ -1612,8 +1612,7 @@ typedef struct Scene {
 	float frameTime;   /* +0x44: (by use; seen running) the last frame's time, seconds (the Esc menu fades in by it) */
 	float frameTimes[10];   /* +0x48: the last ten frames' times (scene_averageFrameTime: frameTime is their mean) */
 	i32 frameTimeNext;   /* +0x70: the ring's next */
-	u8 view[4];   /* +0x74: the camera's view volume object starts here (passed by address) */
-	u8 _pad0000078[0x916c];
+	ViewVolume view;   /* +0x74: the camera's view volume (Game_ctor: vtable, ViewVolume_initBy into viewMemory right after it) */
 	u8 viewMemory[2000000];   /* +0x91e4: the view volume's buffers (Game_ctor: ViewVolume_initBy's memory), right after it */
 	i32 renderMode;   /* +0x1f1664: ViewVolume_draw' mode: 0 normal, 1 wireframe, 2 untextured (always 0 in the game) */
 	Round rotation[100];   /* +0x1f1668: the maps played in turn (solo: the 15 stages) */
@@ -1626,23 +1625,23 @@ typedef struct Scene {
 	i32 replayCount;   /* +0x1f35bc: (by use; seen running) replays in the viewer's list */
 	i32 replayIndex;   /* +0x1f35c0: the one playing (random or in order) */
 	i32 replayVersion;   /* +0x1f35c4: (by use; seen running) the replay file's version (0x1201) */
-	char mapName[0x100];   /* +0x1f35c8: the map's file name (bfd_name: name.bfd) */
+	char mapName[0x100];   /* +0x1f35c8: the map's name (its g_mapNames entry; also the texture folder: scene_setTextureFolder); its file is name.bfd (bfd_name) */
 	u8 _pad01f36c8[0xa9c];
-	float spaceMargin;   /* +0x1f4164: = Stage.space.margin (the same word): the free camera's step is capped by it (no wall passed in one move) */
+	float spaceMargin;   /* +0x1f4164: = Stage.space.margin (the same word; 500, collision_initVolume): caps the free-flying camera's step (2000 a second x frameTime) in the replay viewer and for a spectator not playing (free_keys) */
 	u8 _pad01f4168[0x9cc538];
 	i32 hudTexture;   /* +0xbc06a0: texture id of the HUD marks (lock-on boxes) (= Stage.effectTextures[1]) */
 	u8 _pad0bc06a4[0x4];
 	i32 hudBarTexture;   /* +0xbc06a8: texture id of the counters' plate and weapon slots (= Stage.effectTextures[3]) */
 	i32 markerTexture;   /* +0xbc06ac: texture id of the solo / team marks over players (= Stage.effectTextures[4]) */
 	i32 iconTexture;   /* +0xbc06b0: texture id (bank * 512 + slot) of the HUD's icon atlas: the grade badges (10 a row from texel 224; hud_drawEmblem), the counter and timer icons (8 a row from 96; hud_drawIcon) (= Stage.effectTextures[5]) */
-	i32 menuBoxTexture;   /* +0xbc06b4: texture id of the menu box cells (= Stage.effectTextures[6]) */
+	i32 menuBoxTexture;   /* +0xbc06b4: texture id of the menu box cells (3 x 3 of 32 texels, hud_drawMenuBox) and the weapon slot icons (3 x 2 cells of 64 from row 128; hud_drawMain) (= Stage.effectTextures[6]) */
 	u8 _pad0bc06b8[0x21040];
 	i32 clearOn;   /* +0xbe16f8: = Stage.clearOn (the same word): 1: the screen is cleared to clearColour (the map\'s ground info) */
-	u32 clearColour[3];   /* +0xbe16fc: = Stage.clearColour (its r, g, b): the clear colour */
+	u32 clearColour[3];   /* +0xbe16fc: = Stage.clearColour (its r, g, b; floats' bits): the clear colour (the map's 4th value is never read) */
 	u8 _pad0be1708[0x4];
 	i32 fogOn;   /* +0xbe170c: = Stage.fogOn (the same word): 1: fog on (the map\'s ground info), for the objects\' pass */
-	u8 fogColour[0x10];   /* +0xbe1710: = Stage.glFogColour (the same words): the fog's r, g, b, a */
-	u32 fogParams[3];   /* +0xbe1720: = Stage.glFogStart, glFogEnd, glFogDensity */
+	u32 fogColour[4];   /* +0xbe1710: = Stage.glFogColour (the same words): the fog's r, g, b, a (floats' bits) */
+	u32 fogParams[3];   /* +0xbe1720: = Stage.glFogStart, glFogEnd, glFogDensity (floats' bits) */
 	u8 _pad0be172c[0x18d0];
 	float unusedBe2ffc;   /* +0xbe2ffc: (= Stage.unused9ef934) a float read with the ground file's limits (0.5 .. 1.3 by map), 1.0 from scene_startSession; never read */
 	i32 mapNumber;   /* +0xbe3000: (by use; seen running) the map's own number from its ground section (= Stage.mapNumber): checked against g_mapIndex while loading ("file damaged!") and sent in the game packets, where a client with another for the same map has data loss */
@@ -1657,11 +1656,11 @@ typedef struct Scene {
 	i32 legCount;   /* +0x1679b34: = Stage.legTypeCount */
 	u8 _pad1679b38[0x4b640];
 	i32 boosterCount;   /* +0x16c5178: = Stage.boosterTypeCount */
-	ActorInfo actorInfo[50];   /* +0x16c517c: (the stage's item types) */
-	i32 actorInfoCount;   /* +0x175522c */
+	ActorItem actorItems[50];   /* +0x16c517c: = Stage.actorItems (the stage's item table) */
+	i32 actorItemCount;   /* +0x175522c: = Stage.actorItemCount */
 	PlayerRecord playerRecords[16];   /* +0x1755230 */
 	u8 _pad1bd4f50[0x2f50e0];
-	i32 snapshotTex[50];   /* +0x1eca030: texture id of each actor type's snapshot (< 0: not loaded; 50 of them: Stage.snapshotTex, the same words) */
+	i32 snapshotTex[50];   /* +0x1eca030: texture id of each item's snapshot (Actor/<actorItems name>/SnapShot: the held weapon's picture in the HUD panel; < 0 not loaded yet, hud_drawMain loads it on first use; scene_reset sets all 50 to -1; = Stage.snapshotTex) */
 	u8 _pad1eca0f8[0x2974];
 	i32 mapActorCount;   /* +0x1ecca6c: = Stage.mapActorCount (the same word): the map's actor records (Stage.mapActors), the bots spawned from them */
 	Player players[16];   /* +0x1ecca70 */
@@ -1669,24 +1668,23 @@ typedef struct Scene {
 	i32 playerCount;   /* +0x2221f90: (by use; seen running) the players in the match (the follow and spawn loops) (= Stage.actorCount) */
 	u8 _pad2221f94[0x8];
 	i32 playerActor;   /* +0x2221f9c: = Stage.playerActor (the same word): the local player's actor slot; 0 at a solo game's first round */
-	i32 selectedActor;   /* +0x2221fa0: = Stage.selectedActor (the same word): no snapshot panel for it; the ARM CENTER's mech is drawn in full detail */
+	i32 cockpitActor;   /* +0x2221fa0: = Stage.cockpitActor: the actor the camera sits in (the local player in camera mode 1 while playing; -1 otherwise, the ARM CENTER too): only its weapon drawn, at full detail; its own effects small or skipped; no snapshot panel */
 	u8 _pad2221fa4[0xc];
 	i32 lastDeath;   /* +0x2221fb0: = Stage.lastDeath (the same word): the actor that died last; the round ends slowed while it is down */
-	i32 teamsChanged;   /* +0x2221fb4: = Stage.teamsChanged (the same word): 1: an actor joined or changed team: the ranking made again (scene_updateRanking) */
-	i32 teamScores[4];   /* +0x2221fb8: by team slot (this_get_0x2342381_463780 gives a team's slot) (= Stage.frags (by team slot)) */
-	u8 _pad2221fc8[0x180];
-	float lockHeld[16];   /* +0x2222148: = Stage.lockHeld (per player): the lock on it still holds */
-	u8 _pad2222188[0xc4ee0];
-	float modelview[16];   /* +0x22e7068: the view matrix the overlay parts are drawn with (ViewVolume_captureMatrices) */
+	i32 rankingDirty;   /* +0x2221fb4: = Stage.rankingDirty (the same word): 1: the ranking to be made again next frame (match_frame: scene_updateRanking, then 0): set when an actor spawns (actor_setupFromParts), dies (actor_processFrame), is taken out (actor_deactivate), the actors are reset (scene_resetActors), a round starts (stage_newRound) or a player's team is set (player_setTeam) */
+	i32 teamScores[100];   /* +0x2221fb8: = Stage.frags: each team's frags (by team id, Player.team; the team at slot k is scene_teamIdAt(k)); compared with fragLimit; sent as two shorts in the game packet (net_sendGamePacket) */
+	float lockHeld[100];   /* +0x2222148: = Stage.lockHeld (per actor): seconds the local player's lock on it still holds (> 0: the lock box drawn, fading as it runs out) */
+	u8 _pad22222d8[0xc4d90];
+	float modelview[16];   /* +0x22e7068: = Stage.modelview (the same words): the camera's view matrix (gluLookAt; camera_setupView), given to the view volume (ViewVolume_captureMatrices) for the scene and the overlay parts */
 	u8 _pad22e70a8[0x54];
-	float projection[16];   /* +0x22e70fc: and its projection (hud_pass) */
+	float projection[16];   /* +0x22e70fc: = Stage.projection (the same words): gluPerspective's matrix (camera_setupView); read by hud_pass */
 	u8 _pad22e713c[0x40];
 	i32 showExp;   /* +0x22e717c: = Stage.showExp (the same word): 1 in a Ladder game (first_round) */
 	i32 gameMode;   /* +0x22e7180: index into g_gameModeNames (= Stage.gameType) */
 	i32 teamGame;   /* +0x22e7184: 1: teams */
 	u8 _pad22e7188[0x14];
-	i32 kingOfTheHill;   /* +0x22e719c: = Stage.kingOfTheHill (the same word, game type 12): the first player is the king (isKing); no team mate arrows or leader marks */
-	i32 platoon;   /* +0x22e71a0: = Stage.platoon (the same word, game type 13): each team's leader (isPlatoonLeader, the most time) replaces the leader mark / rank */
+	i32 kingOfTheHill;   /* +0x22e719c: = Stage.kingOfTheHill (the same word, game type 12): the ranking's leader is the king (isKing, team 0; the others team 1; scene_updateRanking); no team mate arrows or leader marks */
+	i32 platoon;   /* +0x22e71a0: = Stage.platoon (the same word, game type 13): each team's commander (isCommander: the most time played; scene_updateRanking, teamCommanders) replaces the leader mark / rank */
 	u8 _pad22e71a4[0x7084];
 	u32 cameraSaved[5];   /* +0x22ee228: (by use; seen running) the camera a retry restarts from: position into cameraPos, pitch / heading into cameraAngle (= Stage.startPos and startAngle) */
 	StartPoint spawnPoints[32];   /* +0x22ee23c: (by use; seen running) the spawn points (scene_pickSpawnPoint: the first one no actor stands near) (= Stage.starts) */
@@ -1697,124 +1695,123 @@ typedef struct Scene {
 	i32 botsHoldFire;   /* +0x22f0410: = Stage.botsHoldFire (the same word): 1 at the round's end (round_over); 0 again on a retry */
 	char centreNotice[0x100];   /* +0x22f0414: a text shown in the centre once (match_frame: notice_printCentre, then cleared) (= Stage.printText: stage_printText fills it) */
 	i32 kingActor;   /* +0x22f0514: = Stage.kingActor (the same word): the king (isKing; -1 none) */
-	i32 teamCommanders[2];   /* +0x22f0518: = Stage.teamCommanders (the same words): each team's commander (isCommander; -1 none) */
-	u8 _pad22f0520[0x188];
-	u32 flagGlTexture;   /* +0x22f06a8: GL texture of the flags, used in network games (= Stage.flagGlTexture, the players' flag atlas) */
+	i32 teamCommanders[100];   /* +0x22f0518: = Stage.teamCommanders (the same words): each team's commander (isCommander; -1 none) */
+	u32 flagGlTexture;   /* +0x22f06a8: GL texture name of the players' flag atlas (= Stage.flagGlTexture; glGenTextures in stage_build, flag_uploadAtlas): hud_drawFlag's flags outside a solo game */
 	u8 _pad22f06ac[0x8000];
 	i32 flagTexture;   /* +0x22f86ac: texture id of the flags (4 a row) (= Stage.clanTexture (Stage\<map>\Clan)) */
 	u8 _pad22f86b0[0x3528];
-	char msgText[0x40][0x108];   /* +0x22fbbd8: message texts: four lines of 0x41 bytes per block */
+	char msgText[0x40][0x108];   /* +0x22fbbd8: = Stage.texts from +4 (block k at Stage.texts[k] + 4, k < 1000; the 0x40 here is only the view's size): four lines of 0x41 chars per block (hud_drawMessageBox); never written in the exe */
 	u8 _pad22ffdd8[0x3c540];
 	MessageSlot msgRing[32];   /* +0x233c318: messages waiting to be shown (ring of 32) */
-	u32 msgWrite;   /* +0x233c598: next slot msgRing gets written to */
-	u32 msgRead;   /* +0x233c59c: next slot hud_drawMessageBox shows */
+	u32 msgWrite;   /* +0x233c598: messages pushed so far (= Stage.msgWrite; the next goes to msgRing[msgWrite & 31]) */
+	u32 msgRead;   /* +0x233c59c: = Stage.msgRead: the oldest message kept (msgRing[msgRead & 31]); hud_drawMessageBox shows that one while msgRead < msgWrite; moved on only when the ring overflows */
 	u8 _pad233c5a0[0x430];
-	i32 scriptMode;   /* +0x233c9d0: = Stage.scriptMode (the same word): a map script's mode, 0 normal; 1 no overlay parts; 2 depth cleared again */
+	i32 scriptMode;   /* +0x233c9d0: = Stage.scriptMode (the same word): a map script's mode: 0 normal (the HUD drawn); 1 hud_pass skips the 3D scene; 2 depth cleared before script_notifyObject; not 0: no HUD, and with scriptHoldsPlay the actors and clocks stop */
 	u8 _pad233c9d4[0x14];
 	i32 matchDrawing;   /* +0x233c9e8: 1: a match is loaded and drawn (set at the loading's end): the frame is presented and the 2D pass drawn */
 	i32 lastMissionWon;   /* +0x233c9ec: 1: the last skirmish stage (g_mapIndex 14) cleared solo (match_frame); written, never read */
 	i32 ladderGame;   /* +0x233c9f0: 1: a Ladder (ranked) game (g_matchMode 2, the game room): emblems in the ranking, the level from the title's points, the scores committed every 300 s */
 	u8 _pad233c9f4[0x4];
 	i32 crosshairTexture;   /* +0x233c9f8 */
-	i32 playing;   /* +0x233c9fc: 1: the local player plays; 0: watching watchedPlayer */
+	i32 playing;   /* +0x233c9fc: 1: the view is a player's: in a match the local player plays (0: spectating watchedPlayer by cameraSlot); in a replay a player is followed (0: the free camera) */
 	i32 unused233ca00;   /* +0x233ca00: (by use; seen running) only written: 0 by scene_startSession */
 	u32 cameraPos[3];   /* +0x233ca04: (by use; seen running) the camera's position (scene_startSession: the origin) */
 	float cameraDir[3];   /* +0x233ca10: its direction (-Z) */
 	float cameraUp[3];   /* +0x233ca1c: its up (Y) */
 	float cameraAngle[2];   /* +0x233ca28: its pitch (within +-890) and heading (wrapped at 3600; the free camera) */
 	u32 cameraPresets[6][10];   /* +0x233ca30: the camera presets: six fields by ten camera modes (classes.c k_cameraPresets, Game_ctor), copied into cameraSettings (replay_frame, the scene pass, match_freeCamFrame, match_startRound) */
-	u32 cameraSettings[6][10];   /* +0x233cb20: the working set (the free camera, each later round) */
+	u32 cameraSettings[6][10];   /* +0x233cb20: the working camera presets, six fields by ten camera modes as cameraPresets ([0] pitch, [1] heading, [2] distance: floats' bits; [3] look at the actor, [4] fixed pitch, [5] fixed heading: ints); copied from cameraPresets at the free camera's start, by preset_reset (replay viewer), on cameraReset (match_frame) and each later round (later_round); pitch / heading moved by the mouse, the distance by the zoom keys */
 	i32 cameraMode;   /* +0x233cc10 */
 	float cameraTarget[3];   /* +0x233cc14: (by use; seen running) the point the camera looks at (the camera path's mid point; cameraDir = it - cameraPos) */
-	i32 matchState;   /* +0x233cc20: the match's state: 1 loading, 2 playing, 3 free camera, 4 replay */
+	i32 matchState;   /* +0x233cc20: the match's state (match_frameByState): 0 over (game_postMatch), 1 loading, 2 playing (match_playFrame), 3 free camera (the ARM CENTER's preview), 4 replay */
 	i32 loadStage;   /* +0x233cc24: (by use; seen running) game_processLoadingMode's stage (0 .. 8) */
 	i32 stateFrames;   /* +0x233cc28: frames in the current state (matchState), counted by its frame function: 0 on the first, which sets the state up (match_startRound; the loading's reset; the free camera's and replay viewer's start) */
-	i32 loadStep;   /* +0x233cc2c: set 0 with each loading stage, never read */
+	i32 unused233cc2c;   /* +0x233cc2c: only written: 0 (game_processLoadingMode: its first call and after each stage); never read */
 	i32 wholeSeconds;   /* +0x233cc30: (by use; seen running) the seconds counted (match_playFrame: the fraction carried over) */
-	float secondFraction;   /* +0x233cc34: the second's fraction so far (the chat cursor blinks by it) */
+	float secondFraction;   /* +0x233cc34: the second's fraction over wholeSeconds (match_playFrame, replay_frame); the chat cursor and the replay's clock blink by it */
 	float followTime;   /* +0x233cc38: (by use; seen running) seconds the replay viewer has followed its player (a new one after 14) */
 	float presetTime;   /* +0x233cc3c: (by use; seen running) seconds on the camera preset (a random one after 7) */
 	float msgFade;   /* +0x233cc40: message box fade, seconds (1 or more: opaque) */
 	i32 unused233cc44;   /* +0x233cc44: (by use; seen running) only written: 0 by scene_startSession */
 	float respawnTime;   /* +0x233cc48: (by use; seen running) the local player's wait to respawn (10 s) */
 	float restartTimer;   /* +0x233cc4c: > 0: the match restarts when it runs out (5 s; packet kind 13): a beep each second, then the scores, frags and items reset and the local player spawns */
-	float scoreCommitTimer;   /* +0x233cc50: a Ladder game's seconds to the next commit of the scores to the title (300; profile_addMatchScores) */
-	float stateSendTimer;   /* +0x233cc54: seconds to the local player's next full state send (sendFlags[local][0]; every 3 s) */
-	float rankingTimer;   /* +0x233cc58: the ranking made again (scene_updateRanking) when it runs out or teamsChanged; 5 s, but nothing counts it down (only teamsChanged does it) */
+	float scoreCommitTimer;   /* +0x233cc50: a Ladder game's seconds to the next commit of the local player's kills / deaths / score into the Ladder record (g_ladderKills, g_ladderDeaths, g_ladderExp) and its send (ladder_sendRecord): profile_addMatchScores, every 300 s */
+	float gamePacketTimer;   /* +0x233cc54: seconds to the local player's next game packet (sendFlags[local][0] -> net_sendGamePacket: the room's map / mode, clock, scores, the geometry samples); every 3 s; 3 at scene_startSession and match_startRound */
+	float rankingTimer;   /* +0x233cc58: the ranking made again (scene_updateRanking) when it runs out or rankingDirty; 5 s, but nothing counts it down (only rankingDirty does it) */
 	float infoSendTimer;   /* +0x233cc5c: the local player's info (net_sendPlayerInfo, sendFlags[local][1]) sent again every 15 s while it has a team */
-	char loadLines[64][0x100];   /* +0x233cc60: the loading screen's lines (loadLineCount of them) */
+	char loadLines[64][0x100];   /* +0x233cc60: the loading screen's lines (loadLineCount of them; [0] START LOADING PROCESS); drawn every other one from [1] (lines 1, 3, 5 ..., 16 px apart) */
 	i32 loadLineCount;   /* +0x2340c60 */
 	i32 watchedPlayer;   /* +0x2340c64: the player a spectator watches */
 	i32 manualPick[3];   /* +0x2340c68: picked by hand while watching: [0] the followed player (followTime stops), [1] the camera preset (presetTime stops), [2] no one: the free camera */
 	float sendTimer;   /* +0x2340c74: (by use; seen running) seconds since the local player's state was sent (again past 0.05) */
-	i32 packetsSent;   /* +0x2340c78: this frame's packets out and in (net_sendPacket, the receive loops) */
+	i32 packetsSent;   /* +0x2340c78: this frame's packets out and in (send_packet: every net_send* packet; the receive loops in match_frame and the loading's stage 2) */
 	i32 packetsReceived;   /* +0x2340c7c */
 	i32 windowSent;   /* +0x2340c80: summed over the window (about a second), then rates */
 	i32 windowReceived;   /* +0x2340c84 */
-	float sendRate;   /* +0x2340c88: packets a second */
-	float receiveRate;   /* +0x2340c8c */
+	float sendRate;   /* +0x2340c88: packets a second (windowSent / windowTime, match_playFrame); written, never read */
+	float receiveRate;   /* +0x2340c8c: received packets a second (windowReceived / windowTime); written, never read */
 	float windowTime;   /* +0x2340c90: the window's seconds */
 	float resendWarning;   /* +0x2340c94: 1 when packets had to be sent again, running down; written, never read */
 	u8 _pad2340c98[0x4];
 	float escTimer;   /* +0x2340c9c: time the in-match menu has been open (fades in over 0.25 s) */
 	u8 _pad2340ca0[0x4];
 	i32 cleared2340ca4[11];   /* +0x2340ca4: (by use; seen running) only zeroed (scene_startSession); nothing else uses them */
-	i32 debugGrid;   /* +0x2340cd0: 1 (Game_ctor, never changed): the free camera / test mode draws a red grid of lines about the actor */
+	i32 debugGrid;   /* +0x2340cd0: 1 (scene_startSession, never changed): match_freeCamFrame draws a red sphere of lines about the actor (pitch 0 .. 1800 by 100, heading 0 .. 3600 by 150) */
 	i32 markLights;   /* +0x2340cd4: 1: the map's lights (mapLights records in use) marked with yellow stars in the 3D pass; only zeroed (scene_startSession), never set, so always off */
 	u8 _pad2340cd8[0x8];
 	i32 scenePaused;   /* +0x2340ce0: never set (only cleared): 1 would hold the scene (no actor / bullet / particle updates; the replay file not read) */
 	i32 hudHidden;   /* +0x2340ce4: 1: no HUD at all */
 	i32 messagesHidden;   /* +0x2340ce8 */
 	i32 helpOpen;   /* +0x2340cec: 1: the help screen over the whole screen (the HELP key toggles it; hud_drawHelp) */
-	i32 entryMenuShown;   /* +0x2340cf0: 0 at a round's start and after its end: the fire / quit keys then open the entry menu (escMenu_open), which sets it to 1 */
+	i32 entryMenuShown;   /* +0x2340cf0: 0 at the session's start (scene_startSession) and after each round's end (endTime out): while 0 a spectator's fire key asks to quit (match_combatInput) and match_frame then sets it to 1 and opens the Esc menu (escMenu_open; the entry page while not in play) */
 	i32 escMenuOpen;   /* +0x2340cf4 */
 	i32 escPage;   /* +0x2340cf8: 0 main, 1 team, 2 file name, 3 retry?, 4 quit? */
 	i32 escCursor;   /* +0x2340cfc: the item under the cursor */
-	i32 spawnPending;   /* +0x2340d00: 1: the local player spawns (a team chosen, the team page answered, or 10 s after its death; local_spawn clears it) */
+	i32 spawnPending;   /* +0x2340d00: 1: the local player spawns this frame (a team given on fire / playAsked, the team page answered, 10 s after its death, or the restart count run out); local_spawn clears it */
 	i32 rankingShown;   /* +0x2340d04 */
 	void *replayFile;   /* +0x2340d08: (by use; seen running) the replay file being read */
 	char recordName[0x11];   /* +0x2340d0c: the replay being recorded ("AutoPlay\%s") */
-	i32 recording;   /* +0x2340d1d: 1: the record mark is shown */
+	i32 recording;   /* +0x2340d1d: 1: a replay is being recorded (autoplay_startRecording .. replay_closeRecording): each packet also goes to replayFile; the record mark shown */
 	i32 replaySlow;   /* +0x2340d21: (by use; seen running) the replay viewer's slow motion (Space held) */
 	i32 replaySkip;   /* +0x2340d25: (by use; seen running) ... and its skip to the next replay (Enter held) */
-	float recordTime;   /* +0x2340d29: seconds recorded */
+	float recordTime;   /* +0x2340d29: seconds recorded (each recorded packet stamped with it); playing a replay: the stamp of the last packet read (packets are processed while it is not past replayTime) */
 	float replayTime;   /* +0x2340d2d: (by use; seen running) the replay's time it is read up to */
 	u8 _pad2340d31[0x4];
-	i32 chatMode;   /* +0x2340d35: 0 closed, 1 / 2 typing (team / all) */
+	i32 chatMode;   /* +0x2340d35: 0 closed, 1 typing to all (the talk key; cheat codes checked), 2 typing to the team (team talk) */
 	float keyGuard;   /* +0x2340d39: (by use; seen running) > 0: the quit / talk keys are ignored (0.1 s) */
 	char chatMacros[100][0x39];   /* +0x2340d3d: (by use; seen running) the chat macros ("/N=text"; Chat.scp: chat_loadMacros / chat_saveMacros) */
 	i32 teamIds[5];   /* +0x2342381: the teams by slot (free: < 0; match/teams.c) */
 	float lostTime;   /* +0x2342395: seconds a networked machine has gone without its player slot (while net_hasSlot is 0: the host has it at once, a joining machine on the host's message 6); over 5 the connection is lost (msg_connectionLost); 0 at each round start */
 	i32 matchOver;   /* +0x2342399: (by use; seen running) 1: the result is shown */
 	float endTime;   /* +0x234239d: (by use; seen running) seconds left of a round's end (10 from the result) */
-	i32 matchLeaving;   /* +0x23423a1: 1: the match is being left: back to the menu when quitDelay runs out (quit, data loss, lost connection, unstable network, the last mission won); the HUD hides */
+	i32 matchLeaving;   /* +0x23423a1: 1: the match is being left: back to the menu when quitDelay runs out (quit, data loss, lost connection, unstable network, the server ending the game, the last mission won); also lets ladder_sendRecord run */
 	float quitDelay;   /* +0x23423a5: (by use; seen running) seconds before leaving after the round is over (3) */
 	i32 stageCleared;   /* +0x23423a9: 1: the local player (or team) reached the score limit on the campaign's current stage (g_mapIndex == g_progress): the progress moves on; 0: MISSION FAILED, RETRY */
-	i32 scoreLimit;   /* +0x23423ad: > 0: the points still needed are shown */
-	i32 timeLimit;   /* +0x23423b1: minutes; > 0: the time left is shown */
+	i32 fragLimit;   /* +0x23423ad: the frag limit (g_fragLimit; the round's): > 0: the round ends when a team's teamScores or the leading player's kills reach it (msg_fragLimitReached); the HUD shows the frags still needed */
+	i32 timeLimit;   /* +0x23423b1: minutes (g_timeLimit; the round's): > 0: the round ends when elapsed reaches timeLimit x 60 (msg_timeLimitReached); the HUD shows the time left */
 	i32 endReason;   /* +0x23423b5: how the round ended: -1 not over, 0 its frag limit, 1 its time limit, 2 the server ended it (the server's end notices by it) */
 	float endNoticeTime;   /* +0x23423b9: (by use; seen running) the server's end notices every half second */
 	i32 winnerTeam;   /* +0x23423bd */
 	float startCountdown;   /* +0x23423c1: (by use; seen running) "PREPARE THE BATTLE": seconds before the start (3), counted down */
 	i32 startCountdownShown;   /* +0x23423c5: (by use; seen running) the countdown's second last shown (-1 none) */
 	i32 geometryCheckTurn;   /* +0x23423c9: (by use; seen running) the geometry table the next game packet checks (net_sendGamePacket: this % 5, then one on; 0 at a later round) */
-	i32 geometryPickUnread[6];   /* +0x23423cd: a random dword in each of the six part / item tables, picked each round; never read */
+	i32 geometryPickUnread[6];   /* +0x23423cd: a random dword index (below count x record dwords) into each of the six tables (head, chest, arm, leg, booster types and actorItems), picked each later round (later_round); never read */
 	i32 geometryPerRow[6];   /* +0x23423e5: (by use; seen running) the six geometry tables' entries per row (6 3 6 7 10 0x18: Game_ctor; net_sendGamePacket's checks) */
-	i32 dataLossPending;   /* +0x23423fd: 1: a data mismatch found (the server's parts check every 20 s, or a packet's map / part tables; dataLossCode says which): the next frame shows the data loss notice and leaves */
+	i32 dataLossPending;   /* +0x23423fd: 1: a data mismatch found (in a network game each machine's own check of its live local player's parts every 20 s, actor_checkDataLoss: code 0; or a host game packet's map number / part-table / actorItems sample: codes 1, 2, 3 in dataLossCode): match_frame then shows msg_dataLoss and leaves (matchLeaving, quitDelay 3) */
 	i32 dataLossCode;   /* +0x2342401: shown when a game ends for lost data */
 	float partsCheckTime;   /* +0x2342405: (by use; seen running) the local player's parts checked every 20 s (network) */
-	float previewTurn;   /* +0x2342409: the ARM CENTER preview's turn while the right button is held: the cursor's x across the screen as 0 .. 3600, less the view's angle (armc_drawPreview3D) */
+	float previewTurn;   /* +0x2342409: the ARM CENTER preview's heading for the mech (Player.nextYaw), set while the right button is held: the cursor's offset from the screen's centre as -1800 .. 1800 (dx / w * 3600) less the preview's angle (g_armcAngle mod 3600); kept otherwise (armc_drawPreview3D) */
 	i32 localPlayer;   /* +0x234240d: the player at this machine (index into players) */
 	i32 localRecordSet;   /* +0x2342411: 1: the local player's record is set this match (local_spawn does it once; cleared at a new match / team change) */
 	i32 playAsked;   /* +0x2342415: 1: the local player asked to play from the Esc menu (START in a game without teams; a team picked on the team page in a solo game): like a fire press it gives the team (or opens the team page) and spawnPending, then is cleared */
 	i32 statsTaken;   /* +0x2342419: (by use; seen running) 1: the local player's starting kills / deaths set */
 	i32 chosenTeam;   /* +0x234241d: (by use; seen running) the team asked for (< 0: none) */
-	i32 flagLoaded;   /* +0x2342421: 1: the local player's flag has been loaded (Save\<name>.BMP, network games; once a match) */
+	i32 flagLoadTried;   /* +0x2342421: 1: the local player's flag load done for this session (Save\<name>.BMP via playerRecord_loadFlag, network games only; whether it was found goes to playerRecords[local].flagChanged); 0 at scene_startSession */
 	float flagUploadTimer;   /* +0x2342425: seconds to the flag atlas's upload (5 after a flag was loaded or received; flag_uploadAtlas) */
-	char mechName[0x11];   /* +0x2342429: the ARM CENTER's mech being edited (menu/armc_mech.c) */
+	char localName[0x11];   /* +0x2342429: the local player's name (g_matchPlayerName at the first round: the cfg name, Ladder ID or campaign pilot; player_setName, the record, team announcements; the ARM CENTER's mech_setName) */
 	i32 character;   /* +0x234243a: the local pilot's character (g_selectedCharacter: CHARACTER SELECT's; PlayerRecord.character) */
 	i32 localTeam;   /* +0x234243e: the local player's team; < 0: only watching (no "press fire", START / JOIN) */
-	i32 level;   /* +0x2342442: the room game's level (1 .. 20, from levelPoints) */
+	i32 level;   /* +0x2342442: the local player's starting grade: a Ladder game's (g_matchMode 2) level from levelPoints (actor_levelFromValue, 1 .. 20 else fatal); 1 otherwise */
 	i32 levelPoints;   /* +0x2342446 */
 	i32 mechParts[5];   /* +0x234244a: head, chest, arm, leg, booster */
 	i32 mechItems[6];   /* +0x234245e */
@@ -1842,7 +1839,7 @@ typedef struct Scene {
 	i32 connectPlayer;   /* +0x234310a: kind 8: a player connected (net_announcePlayerConnected) */
 	char connectName[0x40];   /* +0x234310e */
 	i32 connectPending;   /* +0x234314e */
-	i32 quitPlayer;   /* +0x2343152: kind 9: a player ended the match (net_announcePlayerQuit) */
+	i32 quitPlayer;   /* +0x2343152: kind 9: a player left the game (net_announcePlayerQuit, when the local player quits; the receivers show msg_playerLeft and free its slot) */
 	i32 quitPending;   /* +0x2343156 */
 	i32 chatPlayer;   /* +0x234315a: kind 7: a chat line (net_announceChatLine) */
 	char chatLine[0x39];   /* +0x234315e */
@@ -1858,8 +1855,8 @@ typedef struct Scene {
 	i32 changePending;   /* +0x2343233 */
 	i32 endEvents[3];   /* +0x2343237: end notices to send: [0] the server ends the game (packet kind 3), [1] the frag limit (4), [2] the time limit (5) */
 	i32 restartPending;   /* +0x2343243: 1: packet kind 13 to send (the receivers' match restart, restartTimer 5 s); never set in the game */
-	i32 cheatPlayer;   /* +0x2343247: see cheatPending (its low byte sent) */
-	i32 cheatCode;   /* +0x234324b: see cheatPending (its low byte sent) */
+	i32 cheatPlayer;   /* +0x2343247: see cheatPending (its low byte sent); never written (always 0) */
+	i32 cheatCode;   /* +0x234324b: see cheatPending (its low byte sent); never written (always 0) */
 	i32 cheatPending;   /* +0x234324f: 1: a cheat-used notice (packet kind 6: cheatPlayer, cheatCode; msg_cheatUsed on the other side) to send; never set in the game */
 	i32 itemLevelsTaken;   /* +0x2343253: (by use; seen running) 1: the host's item levels (game packet 14) taken in; later ones ignored */
 	i32 mouseX;   /* +0x2343257: (by use; seen running) the cursor this frame (g_mouseX), screen pixels */
@@ -1869,25 +1866,25 @@ typedef struct Scene {
 	i32 holdBackward;   /* +0x2343267: (S) */
 	i32 holdStepLeft;   /* +0x234326b: (A) */
 	i32 holdStepRight;   /* +0x234326f: (D) */
-	i32 holdUp;   /* +0x2343273: (by use; seen running) held: move up (axis.cfg's moveup; Q in the replay viewer) */
-	i32 holdDown;   /* +0x2343277: held: move down (movedown; E) */
+	i32 holdUp;   /* +0x2343273: (by use; seen running) held: move up (axis.cfg's moveup; Q in the free camera / test mode) */
+	i32 holdDown;   /* +0x2343277: held: move down (axis.cfg's movedown, default F; E in the free camera / test mode) */
 	i32 holdFire;   /* +0x234327b: (left button) */
 	i32 firePressed;   /* +0x234327f: (by use; seen running) fire pressed this frame (holdFire: held) */
-	i32 holdBooster;   /* +0x2343283: held: booster (shift in the replay viewer) */
+	i32 holdBooster;   /* +0x2343283: held: booster (the booster binding: match_combatInput; shift in the free camera / test mode: match_freeCamFrame); actor_setInput's booster, and free_keys' 3x move */
 	i32 weaponKey;   /* +0x2343287: the weapon slot whose key (HAND WEAPON 1 .. 4, R / L SHOULDER) is held, the last of them (-1 none): Player.inWeaponSlot */
 	i32 holdZoom;   /* +0x234328b: held: zoom */
 	i32 rankingKey;   /* +0x234328f: 1: the ranking key is held */
 	float mouseDy;   /* +0x2343293: (by use; seen running) the cursor's offset from the centre, scaled by the sensitivity; inverted by the setting */
-	float mouseDx;   /* +0x2343297: (negated when steering) */
+	float mouseDx;   /* +0x2343297: the cursor's x offset from the centre (scaled by the sensitivity like mouseDy, 0 when the frame is over 0.2 s); negated where it turns a view (match play: mouse_offset's steer, the replay viewer, the free camera), as is in the Esc menu (mouse_offset 0) and the ARM CENTER preview (unscaled) */
 	u8 _pad234329b[0x10];
-	i32 zoomInHeld;   /* +0x23432ab: Ctrl + up held (the free camera, the replay viewer): the camera preset's distance shrinks */
-	i32 zoomOutHeld;   /* +0x23432af: Ctrl + down held: the distance grows */
+	i32 zoomInHeld;   /* +0x23432ab: Ctrl + up held (the free camera / test mode, match_freeCamFrame): the camera preset's distance shrinks (to 500); replay_frame reads it too but nothing sets it there (always 0) */
+	i32 zoomOutHeld;   /* +0x23432af: Ctrl + down held (match_freeCamFrame): the distance grows (to 10000); replay_frame's read always sees 0 */
 	i32 turnLeftHeld;   /* +0x23432b3: left held (the free camera): the camera turns left */
 	i32 turnRightHeld;   /* +0x23432b7: right held: the camera turns right */
 	i32 pitchUpHeld;   /* +0x23432bb: up held without Ctrl (the free camera): the camera pitches up */
 	i32 pitchDownHeld;   /* +0x23432bf: down held without Ctrl: the camera pitches down */
 	u8 _pad23432c3[0x8];
-	i32 cameraReset;   /* +0x23432cb: 1 this frame: the camera settings taken from the presets again (the player spawned; a preset picked by a spectator or in the replay viewer: right click, the number keys; Space in the free camera) */
+	i32 cameraReset;   /* +0x23432cb: 1 this frame: the camera put back: match_frame copies all ten presets into cameraSettings, replay_frame the current one (preset_reset); in the free camera (Space, match_freeCamFrame) only the zoom (2000) and the angles (0) are reset. Set by local_spawn, a spectator's right click or numpad preset key (match_combatInput), the replay viewer's right click / numpad keys */
 	i32 quitAsked;   /* +0x23432cf: (by use; seen running) 1: the match is to be left (QUIT / no retry) */
 	i32 fKeys[6];   /* +0x23432d3: F1 .. F6 held (the free camera / test mode, match_freeCamFrame): the parts F1 head .. F5 booster and F6 the weapon that Z / X step through */
 	i32 prevWeaponPressed;   /* +0x23432eb: (by use; seen running) pressed this frame: pre-weapon */
@@ -1936,31 +1933,31 @@ _Static_assert(offsetof(ItemModelSet, skelNames) == 0x1428 && sizeof(((ItemModel
 _Static_assert(offsetof(ItemModelSet, muzzle) == 0x1674 && sizeof(((ItemModelSet *)0)->muzzle) == 0x24, "scene.fields: ItemModelSet.muzzle");
 _Static_assert(offsetof(ItemModelSet, grip) == 0x1698 && sizeof(((ItemModelSet *)0)->grip) == 0x24, "scene.fields: ItemModelSet.grip");
 _Static_assert(sizeof(ItemModelSet) == 0x16bc, "scene.fields: size of ItemModelSet");
-_Static_assert(offsetof(ActorInfo, name) == 0x0 && sizeof(((ActorInfo *)0)->name) == 0x40, "scene.fields: ActorInfo.name");
-_Static_assert(offsetof(ActorInfo, sets) == 0x40 && sizeof(((ActorInfo *)0)->sets) == 0x2d78, "scene.fields: ActorInfo.sets");
-_Static_assert(offsetof(ActorInfo, weight) == 0x2db8 && sizeof(((ActorInfo *)0)->weight) == 0x4, "scene.fields: ActorInfo.weight");
-_Static_assert(offsetof(ActorInfo, slotType) == 0x2dbc && sizeof(((ActorInfo *)0)->slotType) == 0x4, "scene.fields: ActorInfo.slotType");
-_Static_assert(offsetof(ActorInfo, ammoType) == 0x2dc0 && sizeof(((ActorInfo *)0)->ammoType) == 0x4, "scene.fields: ActorInfo.ammoType");
-_Static_assert(offsetof(ActorInfo, ammoPerShot) == 0x2dc4 && sizeof(((ActorInfo *)0)->ammoPerShot) == 0x4, "scene.fields: ActorInfo.ammoPerShot");
-_Static_assert(offsetof(ActorInfo, burst) == 0x2dc8 && sizeof(((ActorInfo *)0)->burst) == 0x4, "scene.fields: ActorInfo.burst");
-_Static_assert(offsetof(ActorInfo, burstGap) == 0x2dcc && sizeof(((ActorInfo *)0)->burstGap) == 0x4, "scene.fields: ActorInfo.burstGap");
-_Static_assert(offsetof(ActorInfo, burstStep) == 0x2dd0 && sizeof(((ActorInfo *)0)->burstStep) == 0xc, "scene.fields: ActorInfo.burstStep");
-_Static_assert(offsetof(ActorInfo, damageType) == 0x2ddc && sizeof(((ActorInfo *)0)->damageType) == 0x4, "scene.fields: ActorInfo.damageType");
-_Static_assert(offsetof(ActorInfo, damage) == 0x2de0 && sizeof(((ActorInfo *)0)->damage) == 0x4, "scene.fields: ActorInfo.damage");
-_Static_assert(offsetof(ActorInfo, stepLength) == 0x2de4 && sizeof(((ActorInfo *)0)->stepLength) == 0x4, "scene.fields: ActorInfo.stepLength");
-_Static_assert(offsetof(ActorInfo, velocity) == 0x2de8 && sizeof(((ActorInfo *)0)->velocity) == 0x4, "scene.fields: ActorInfo.velocity");
-_Static_assert(offsetof(ActorInfo, spread) == 0x2dec && sizeof(((ActorInfo *)0)->spread) == 0x4, "scene.fields: ActorInfo.spread");
-_Static_assert(offsetof(ActorInfo, hitRange) == 0x2df0 && sizeof(((ActorInfo *)0)->hitRange) == 0x4, "scene.fields: ActorInfo.hitRange");
-_Static_assert(offsetof(ActorInfo, splashRadius) == 0x2df4 && sizeof(((ActorInfo *)0)->splashRadius) == 0x4, "scene.fields: ActorInfo.splashRadius");
-_Static_assert(offsetof(ActorInfo, splashBorderDamage) == 0x2df8 && sizeof(((ActorInfo *)0)->splashBorderDamage) == 0x4, "scene.fields: ActorInfo.splashBorderDamage");
-_Static_assert(offsetof(ActorInfo, shotMode) == 0x2dfc && sizeof(((ActorInfo *)0)->shotMode) == 0x4, "scene.fields: ActorInfo.shotMode");
-_Static_assert(offsetof(ActorInfo, sound) == 0x2e00 && sizeof(((ActorInfo *)0)->sound) == 0x4, "scene.fields: ActorInfo.sound");
-_Static_assert(offsetof(ActorInfo, hitSound) == 0x2e04 && sizeof(((ActorInfo *)0)->hitSound) == 0x4, "scene.fields: ActorInfo.hitSound");
-_Static_assert(offsetof(ActorInfo, cycleTime) == 0x2e08 && sizeof(((ActorInfo *)0)->cycleTime) == 0x4, "scene.fields: ActorInfo.cycleTime");
-_Static_assert(offsetof(ActorInfo, guidance) == 0x2e0c && sizeof(((ActorInfo *)0)->guidance) == 0x4, "scene.fields: ActorInfo.guidance");
-_Static_assert(offsetof(ActorInfo, targetingTime) == 0x2e10 && sizeof(((ActorInfo *)0)->targetingTime) == 0x4, "scene.fields: ActorInfo.targetingTime");
-_Static_assert(offsetof(ActorInfo, push) == 0x2e14 && sizeof(((ActorInfo *)0)->push) == 0x4, "scene.fields: ActorInfo.push");
-_Static_assert(sizeof(ActorInfo) == 0x2e18, "scene.fields: size of ActorInfo");
+_Static_assert(offsetof(ActorItem, name) == 0x0 && sizeof(((ActorItem *)0)->name) == 0x40, "scene.fields: ActorItem.name");
+_Static_assert(offsetof(ActorItem, sets) == 0x40 && sizeof(((ActorItem *)0)->sets) == 0x2d78, "scene.fields: ActorItem.sets");
+_Static_assert(offsetof(ActorItem, weight) == 0x2db8 && sizeof(((ActorItem *)0)->weight) == 0x4, "scene.fields: ActorItem.weight");
+_Static_assert(offsetof(ActorItem, slotType) == 0x2dbc && sizeof(((ActorItem *)0)->slotType) == 0x4, "scene.fields: ActorItem.slotType");
+_Static_assert(offsetof(ActorItem, ammoType) == 0x2dc0 && sizeof(((ActorItem *)0)->ammoType) == 0x4, "scene.fields: ActorItem.ammoType");
+_Static_assert(offsetof(ActorItem, ammoPerShot) == 0x2dc4 && sizeof(((ActorItem *)0)->ammoPerShot) == 0x4, "scene.fields: ActorItem.ammoPerShot");
+_Static_assert(offsetof(ActorItem, burst) == 0x2dc8 && sizeof(((ActorItem *)0)->burst) == 0x4, "scene.fields: ActorItem.burst");
+_Static_assert(offsetof(ActorItem, burstGap) == 0x2dcc && sizeof(((ActorItem *)0)->burstGap) == 0x4, "scene.fields: ActorItem.burstGap");
+_Static_assert(offsetof(ActorItem, burstStep) == 0x2dd0 && sizeof(((ActorItem *)0)->burstStep) == 0xc, "scene.fields: ActorItem.burstStep");
+_Static_assert(offsetof(ActorItem, damageType) == 0x2ddc && sizeof(((ActorItem *)0)->damageType) == 0x4, "scene.fields: ActorItem.damageType");
+_Static_assert(offsetof(ActorItem, damage) == 0x2de0 && sizeof(((ActorItem *)0)->damage) == 0x4, "scene.fields: ActorItem.damage");
+_Static_assert(offsetof(ActorItem, stepLength) == 0x2de4 && sizeof(((ActorItem *)0)->stepLength) == 0x4, "scene.fields: ActorItem.stepLength");
+_Static_assert(offsetof(ActorItem, velocity) == 0x2de8 && sizeof(((ActorItem *)0)->velocity) == 0x4, "scene.fields: ActorItem.velocity");
+_Static_assert(offsetof(ActorItem, spread) == 0x2dec && sizeof(((ActorItem *)0)->spread) == 0x4, "scene.fields: ActorItem.spread");
+_Static_assert(offsetof(ActorItem, hitRange) == 0x2df0 && sizeof(((ActorItem *)0)->hitRange) == 0x4, "scene.fields: ActorItem.hitRange");
+_Static_assert(offsetof(ActorItem, splashRadius) == 0x2df4 && sizeof(((ActorItem *)0)->splashRadius) == 0x4, "scene.fields: ActorItem.splashRadius");
+_Static_assert(offsetof(ActorItem, splashBorderDamage) == 0x2df8 && sizeof(((ActorItem *)0)->splashBorderDamage) == 0x4, "scene.fields: ActorItem.splashBorderDamage");
+_Static_assert(offsetof(ActorItem, shotMode) == 0x2dfc && sizeof(((ActorItem *)0)->shotMode) == 0x4, "scene.fields: ActorItem.shotMode");
+_Static_assert(offsetof(ActorItem, sound) == 0x2e00 && sizeof(((ActorItem *)0)->sound) == 0x4, "scene.fields: ActorItem.sound");
+_Static_assert(offsetof(ActorItem, hitSound) == 0x2e04 && sizeof(((ActorItem *)0)->hitSound) == 0x4, "scene.fields: ActorItem.hitSound");
+_Static_assert(offsetof(ActorItem, cycleTime) == 0x2e08 && sizeof(((ActorItem *)0)->cycleTime) == 0x4, "scene.fields: ActorItem.cycleTime");
+_Static_assert(offsetof(ActorItem, guidance) == 0x2e0c && sizeof(((ActorItem *)0)->guidance) == 0x4, "scene.fields: ActorItem.guidance");
+_Static_assert(offsetof(ActorItem, targetingTime) == 0x2e10 && sizeof(((ActorItem *)0)->targetingTime) == 0x4, "scene.fields: ActorItem.targetingTime");
+_Static_assert(offsetof(ActorItem, push) == 0x2e14 && sizeof(((ActorItem *)0)->push) == 0x4, "scene.fields: ActorItem.push");
+_Static_assert(sizeof(ActorItem) == 0x2e18, "scene.fields: size of ActorItem");
 _Static_assert(offsetof(BlockOwner, blockSize) == 0x4 && sizeof(((BlockOwner *)0)->blockSize) == 0x4, "scene.fields: BlockOwner.blockSize");
 _Static_assert(offsetof(BlockOwner, block) == 0x8 && sizeof(((BlockOwner *)0)->block) == 0x4, "scene.fields: BlockOwner.block");
 _Static_assert(offsetof(BlockOwner, ownsBlock) == 0xc && sizeof(((BlockOwner *)0)->ownsBlock) == 0x4, "scene.fields: BlockOwner.ownsBlock");
@@ -2027,14 +2024,14 @@ _Static_assert(offsetof(Player, accuracy) == 0x24 && sizeof(((Player *)0)->accur
 _Static_assert(offsetof(Player, ammoMax) == 0x28 && sizeof(((Player *)0)->ammoMax) == 0x10, "scene.fields: Player.ammoMax");
 _Static_assert(offsetof(Player, mobility) == 0x38 && sizeof(((Player *)0)->mobility) == 0x4, "scene.fields: Player.mobility");
 _Static_assert(offsetof(Player, moveAccel) == 0x3c && sizeof(((Player *)0)->moveAccel) == 0x4, "scene.fields: Player.moveAccel");
-_Static_assert(offsetof(Player, leanPitch) == 0x40 && sizeof(((Player *)0)->leanPitch) == 0x4, "scene.fields: Player.leanPitch");
+_Static_assert(offsetof(Player, boosterTilt) == 0x40 && sizeof(((Player *)0)->boosterTilt) == 0x4, "scene.fields: Player.boosterTilt");
 _Static_assert(offsetof(Player, boostTime) == 0x44 && sizeof(((Player *)0)->boostTime) == 0x4, "scene.fields: Player.boostTime");
 _Static_assert(offsetof(Player, rechargeTime) == 0x48 && sizeof(((Player *)0)->rechargeTime) == 0x4, "scene.fields: Player.rechargeTime");
 _Static_assert(offsetof(Player, restTime) == 0x4c && sizeof(((Player *)0)->restTime) == 0x4, "scene.fields: Player.restTime");
 _Static_assert(offsetof(Player, speed) == 0x50 && sizeof(((Player *)0)->speed) == 0x4, "scene.fields: Player.speed");
 _Static_assert(offsetof(Player, runTop) == 0x54 && sizeof(((Player *)0)->runTop) == 0x10, "scene.fields: Player.runTop");
 _Static_assert(offsetof(Player, unused1c) == 0x64 && sizeof(((Player *)0)->unused1c) == 0x4, "scene.fields: Player.unused1c");
-_Static_assert(offsetof(Player, topSpeed) == 0x68 && sizeof(((Player *)0)->topSpeed) == 0x4, "scene.fields: Player.topSpeed");
+_Static_assert(offsetof(Player, baseSpeed) == 0x68 && sizeof(((Player *)0)->baseSpeed) == 0x4, "scene.fields: Player.baseSpeed");
 _Static_assert(offsetof(Player, turnRate) == 0x6c && sizeof(((Player *)0)->turnRate) == 0x4, "scene.fields: Player.turnRate");
 _Static_assert(offsetof(Player, unused34) == 0x70 && sizeof(((Player *)0)->unused34) == 0x4, "scene.fields: Player.unused34");
 _Static_assert(offsetof(Player, aimError) == 0x74 && sizeof(((Player *)0)->aimError) == 0x4, "scene.fields: Player.aimError");
@@ -2051,7 +2048,7 @@ _Static_assert(offsetof(Player, deaths) == 0xe8 && sizeof(((Player *)0)->deaths)
 _Static_assert(offsetof(Player, score) == 0xec && sizeof(((Player *)0)->score) == 0x4, "scene.fields: Player.score");
 _Static_assert(offsetof(Player, killsCounted) == 0xf0 && sizeof(((Player *)0)->killsCounted) == 0x4, "scene.fields: Player.killsCounted");
 _Static_assert(offsetof(Player, deathsCounted) == 0xf4 && sizeof(((Player *)0)->deathsCounted) == 0x4, "scene.fields: Player.deathsCounted");
-_Static_assert(offsetof(Player, startPoints) == 0xf8 && sizeof(((Player *)0)->startPoints) == 0x4, "scene.fields: Player.startPoints");
+_Static_assert(offsetof(Player, scoreCounted) == 0xf8 && sizeof(((Player *)0)->scoreCounted) == 0x4, "scene.fields: Player.scoreCounted");
 _Static_assert(offsetof(Player, timePlayed) == 0xfc && sizeof(((Player *)0)->timePlayed) == 0x4, "scene.fields: Player.timePlayed");
 _Static_assert(offsetof(Player, timeFraction) == 0x100 && sizeof(((Player *)0)->timeFraction) == 0x4, "scene.fields: Player.timeFraction");
 _Static_assert(offsetof(Player, id) == 0x104 && sizeof(((Player *)0)->id) == 0x4, "scene.fields: Player.id");
@@ -2068,7 +2065,7 @@ _Static_assert(offsetof(Player, shield) == 0x12c && sizeof(((Player *)0)->shield
 _Static_assert(offsetof(Player, ammo) == 0x130 && sizeof(((Player *)0)->ammo) == 0x10, "scene.fields: Player.ammo");
 _Static_assert(offsetof(Player, slot) == 0x140 && sizeof(((Player *)0)->slot) == 0x4, "scene.fields: Player.slot");
 _Static_assert(offsetof(Player, lastWeaponSlot) == 0x144 && sizeof(((Player *)0)->lastWeaponSlot) == 0x4, "scene.fields: Player.lastWeaponSlot");
-_Static_assert(offsetof(Player, actorType) == 0x148 && sizeof(((Player *)0)->actorType) == 0x4, "scene.fields: Player.actorType");
+_Static_assert(offsetof(Player, heldItem) == 0x148 && sizeof(((Player *)0)->heldItem) == 0x4, "scene.fields: Player.heldItem");
 _Static_assert(offsetof(Player, state) == 0x14c && sizeof(((Player *)0)->state) == 0x4, "scene.fields: Player.state");
 _Static_assert(offsetof(Player, stateTime) == 0x150 && sizeof(((Player *)0)->stateTime) == 0x4, "scene.fields: Player.stateTime");
 _Static_assert(offsetof(Player, pos) == 0x154 && sizeof(((Player *)0)->pos) == 0xc, "scene.fields: Player.pos");
@@ -2110,7 +2107,7 @@ _Static_assert(offsetof(Player, pose) == 0x390 && sizeof(((Player *)0)->pose) ==
 _Static_assert(offsetof(Player, bodyMatrix) == 0x3a8 && sizeof(((Player *)0)->bodyMatrix) == 0x40, "scene.fields: Player.bodyMatrix");
 _Static_assert(offsetof(Player, radius) == 0x3e8 && sizeof(((Player *)0)->radius) == 0x4, "scene.fields: Player.radius");
 _Static_assert(offsetof(Player, chatIcon) == 0x3ec && sizeof(((Player *)0)->chatIcon) == 0x4, "scene.fields: Player.chatIcon");
-_Static_assert(offsetof(Player, timerFlags) == 0x3f0 && sizeof(((Player *)0)->timerFlags) == 0x4, "scene.fields: Player.timerFlags");
+_Static_assert(offsetof(Player, stateFlags) == 0x3f0 && sizeof(((Player *)0)->stateFlags) == 0x4, "scene.fields: Player.stateFlags");
 _Static_assert(offsetof(Player, timers) == 0x3f4 && sizeof(((Player *)0)->timers) == 0x10, "scene.fields: Player.timers");
 _Static_assert(offsetof(Player, ammoFactor) == 0x404 && sizeof(((Player *)0)->ammoFactor) == 0x10, "scene.fields: Player.ammoFactor");
 _Static_assert(offsetof(Player, ammoBonus) == 0x414 && sizeof(((Player *)0)->ammoBonus) == 0x10, "scene.fields: Player.ammoBonus");
@@ -2139,21 +2136,21 @@ _Static_assert(offsetof(Player, inNextWeapon) == 0x480 && sizeof(((Player *)0)->
 _Static_assert(offsetof(Player, lowDetail) == 0x484 && sizeof(((Player *)0)->lowDetail) == 0x4, "scene.fields: Player.lowDetail");
 _Static_assert(offsetof(Player, lowDetailLoaded) == 0x488 && sizeof(((Player *)0)->lowDetailLoaded) == 0x4, "scene.fields: Player.lowDetailLoaded");
 _Static_assert(offsetof(Player, weaponLowering) == 0x48c && sizeof(((Player *)0)->weaponLowering) == 0x4, "scene.fields: Player.weaponLowering");
-_Static_assert(offsetof(Player, weaponLower) == 0x490 && sizeof(((Player *)0)->weaponLower) == 0x4, "scene.fields: Player.weaponLower");
-_Static_assert(offsetof(Player, gauge) == 0x494 && sizeof(((Player *)0)->gauge) == 0x4, "scene.fields: Player.gauge");
-_Static_assert(offsetof(Player, slotLoaded) == 0x498 && sizeof(((Player *)0)->slotLoaded) == 0x4, "scene.fields: Player.slotLoaded");
+_Static_assert(offsetof(Player, weaponRaise) == 0x490 && sizeof(((Player *)0)->weaponRaise) == 0x4, "scene.fields: Player.weaponRaise");
+_Static_assert(offsetof(Player, slotIconTime) == 0x494 && sizeof(((Player *)0)->slotIconTime) == 0x4, "scene.fields: Player.slotIconTime");
+_Static_assert(offsetof(Player, switchSlot) == 0x498 && sizeof(((Player *)0)->switchSlot) == 0x4, "scene.fields: Player.switchSlot");
 _Static_assert(offsetof(Player, variantLoaded) == 0x49c && sizeof(((Player *)0)->variantLoaded) == 0x4, "scene.fields: Player.variantLoaded");
 _Static_assert(offsetof(Player, firePrev) == 0x4a0 && sizeof(((Player *)0)->firePrev) == 0x4, "scene.fields: Player.firePrev");
 _Static_assert(offsetof(Player, effectScale) == 0x4a4 && sizeof(((Player *)0)->effectScale) == 0x4, "scene.fields: Player.effectScale");
 _Static_assert(offsetof(Player, footstepTime) == 0x4a8 && sizeof(((Player *)0)->footstepTime) == 0x4, "scene.fields: Player.footstepTime");
-_Static_assert(offsetof(Player, energyUsed) == 0x4ac && sizeof(((Player *)0)->energyUsed) == 0x4, "scene.fields: Player.energyUsed");
+_Static_assert(offsetof(Player, energy) == 0x4ac && sizeof(((Player *)0)->energy) == 0x4, "scene.fields: Player.energy");
 _Static_assert(offsetof(Player, staminaRest) == 0x4b0 && sizeof(((Player *)0)->staminaRest) == 0x4, "scene.fields: Player.staminaRest");
 _Static_assert(offsetof(Player, overheat) == 0x4b4 && sizeof(((Player *)0)->overheat) == 0x4, "scene.fields: Player.overheat");
 _Static_assert(offsetof(Player, warned) == 0x4b8 && sizeof(((Player *)0)->warned) == 0x4, "scene.fields: Player.warned");
 _Static_assert(offsetof(Player, lastHitMode) == 0x4bc && sizeof(((Player *)0)->lastHitMode) == 0x4, "scene.fields: Player.lastHitMode");
 _Static_assert(offsetof(Player, lastAttacker) == 0x4c0 && sizeof(((Player *)0)->lastAttacker) == 0x4, "scene.fields: Player.lastAttacker");
 _Static_assert(offsetof(Player, lastHitWeapon) == 0x4c4 && sizeof(((Player *)0)->lastHitWeapon) == 0x4, "scene.fields: Player.lastHitWeapon");
-_Static_assert(offsetof(Player, weapon) == 0x4cc && sizeof(((Player *)0)->weapon) == 0x4, "scene.fields: Player.weapon");
+_Static_assert(offsetof(Player, ammoKind) == 0x4cc && sizeof(((Player *)0)->ammoKind) == 0x4, "scene.fields: Player.ammoKind");
 _Static_assert(offsetof(Player, cheat) == 0x4d0 && sizeof(((Player *)0)->cheat) == 0x4, "scene.fields: Player.cheat");
 _Static_assert(offsetof(Player, bigHead) == 0x4d4 && sizeof(((Player *)0)->bigHead) == 0x4, "scene.fields: Player.bigHead");
 _Static_assert(offsetof(Player, isKing) == 0x4d8 && sizeof(((Player *)0)->isKing) == 0x4, "scene.fields: Player.isKing");
@@ -2167,7 +2164,7 @@ _Static_assert(offsetof(Player, lastWarp) == 0x538 && sizeof(((Player *)0)->last
 _Static_assert(offsetof(Player, onWarp) == 0x53c && sizeof(((Player *)0)->onWarp) == 0x4, "scene.fields: Player.onWarp");
 _Static_assert(offsetof(Player, warpWait) == 0x540 && sizeof(((Player *)0)->warpWait) == 0x4, "scene.fields: Player.warpWait");
 _Static_assert(offsetof(Player, shieldRegenTime) == 0x544 && sizeof(((Player *)0)->shieldRegenTime) == 0x4, "scene.fields: Player.shieldRegenTime");
-_Static_assert(offsetof(Player, damageFlash) == 0x548 && sizeof(((Player *)0)->damageFlash) == 0x4, "scene.fields: Player.damageFlash");
+_Static_assert(offsetof(Player, whiteFlash) == 0x548 && sizeof(((Player *)0)->whiteFlash) == 0x4, "scene.fields: Player.whiteFlash");
 _Static_assert(offsetof(Player, breakUp) == 0x54c && sizeof(((Player *)0)->breakUp) == 0x4, "scene.fields: Player.breakUp");
 _Static_assert(offsetof(Player, viewMarked) == 0x550 && sizeof(((Player *)0)->viewMarked) == 0x4, "scene.fields: Player.viewMarked");
 _Static_assert(offsetof(Player, headModel) == 0x554 && sizeof(((Player *)0)->headModel) == 0x30, "scene.fields: Player.headModel");
@@ -2195,8 +2192,8 @@ _Static_assert(offsetof(Player, aimTime) == 0x87e8 && sizeof(((Player *)0)->aimT
 _Static_assert(offsetof(Player, lockAnim) == 0x87ec && sizeof(((Player *)0)->lockAnim) == 0x4, "scene.fields: Player.lockAnim");
 _Static_assert(offsetof(Player, labelFade) == 0x87f0 && sizeof(((Player *)0)->labelFade) == 0x4, "scene.fields: Player.labelFade");
 _Static_assert(offsetof(Player, botNeeds) == 0x87f4 && sizeof(((Player *)0)->botNeeds) == 0x4, "scene.fields: Player.botNeeds");
-_Static_assert(offsetof(Player, target1) == 0x87f8 && sizeof(((Player *)0)->target1) == 0x4, "scene.fields: Player.target1");
-_Static_assert(offsetof(Player, target2) == 0x87fc && sizeof(((Player *)0)->target2) == 0x4, "scene.fields: Player.target2");
+_Static_assert(offsetof(Player, path) == 0x87f8 && sizeof(((Player *)0)->path) == 0x4, "scene.fields: Player.path");
+_Static_assert(offsetof(Player, pathPoint) == 0x87fc && sizeof(((Player *)0)->pathPoint) == 0x4, "scene.fields: Player.pathPoint");
 _Static_assert(offsetof(Player, pathReverse) == 0x8800 && sizeof(((Player *)0)->pathReverse) == 0x4, "scene.fields: Player.pathReverse");
 _Static_assert(offsetof(Player, botWait) == 0x8804 && sizeof(((Player *)0)->botWait) == 0x4, "scene.fields: Player.botWait");
 _Static_assert(offsetof(Player, botWaitTrigger) == 0x8808 && sizeof(((Player *)0)->botWaitTrigger) == 0x4, "scene.fields: Player.botWaitTrigger");
@@ -3008,7 +3005,7 @@ _Static_assert(offsetof(Stage, layerScroll) == 0x9ef0a8 && sizeof(((Stage *)0)->
 _Static_assert(offsetof(Stage, sideMode) == 0x9ef0b0 && sizeof(((Stage *)0)->sideMode) == 0x4, "scene.fields: Stage.sideMode");
 _Static_assert(offsetof(Stage, sideTextures) == 0x9ef0b4 && sizeof(((Stage *)0)->sideTextures) == 0x18, "scene.fields: Stage.sideTextures");
 _Static_assert(offsetof(Stage, sides) == 0x9ef0cc && sizeof(((Stage *)0)->sides) == 0x240, "scene.fields: Stage.sides");
-_Static_assert(offsetof(Stage, floorOn) == 0x9ef30c && sizeof(((Stage *)0)->floorOn) == 0x4, "scene.fields: Stage.floorOn");
+_Static_assert(offsetof(Stage, floorMode) == 0x9ef30c && sizeof(((Stage *)0)->floorMode) == 0x4, "scene.fields: Stage.floorMode");
 _Static_assert(offsetof(Stage, floorTextures) == 0x9ef310 && sizeof(((Stage *)0)->floorTextures) == 0x40, "scene.fields: Stage.floorTextures");
 _Static_assert(offsetof(Stage, floor) == 0x9ef350 && sizeof(((Stage *)0)->floor) == 0x5ac, "scene.fields: Stage.floor");
 _Static_assert(offsetof(Stage, floorFrame) == 0x9ef8fc && sizeof(((Stage *)0)->floorFrame) == 0x4, "scene.fields: Stage.floorFrame");
@@ -3058,14 +3055,14 @@ _Static_assert(offsetof(Stage, legTypes) == 0x1447ec4 && sizeof(((Stage *)0)->le
 _Static_assert(offsetof(Stage, legTypeCount) == 0x148646c && sizeof(((Stage *)0)->legTypeCount) == 0x4, "scene.fields: Stage.legTypeCount");
 _Static_assert(offsetof(Stage, boosterTypes) == 0x1486470 && sizeof(((Stage *)0)->boosterTypes) == 0x4b640, "scene.fields: Stage.boosterTypes");
 _Static_assert(offsetof(Stage, boosterTypeCount) == 0x14d1ab0 && sizeof(((Stage *)0)->boosterTypeCount) == 0x4, "scene.fields: Stage.boosterTypeCount");
-_Static_assert(offsetof(Stage, actorInfo) == 0x14d1ab4 && sizeof(((Stage *)0)->actorInfo) == 0x900b0, "scene.fields: Stage.actorInfo");
-_Static_assert(offsetof(Stage, actorInfoCount) == 0x1561b64 && sizeof(((Stage *)0)->actorInfoCount) == 0x4, "scene.fields: Stage.actorInfoCount");
+_Static_assert(offsetof(Stage, actorItems) == 0x14d1ab4 && sizeof(((Stage *)0)->actorItems) == 0x900b0, "scene.fields: Stage.actorItems");
+_Static_assert(offsetof(Stage, actorItemCount) == 0x1561b64 && sizeof(((Stage *)0)->actorItemCount) == 0x4, "scene.fields: Stage.actorItemCount");
 _Static_assert(offsetof(Stage, playerRecords) == 0x1561b68 && sizeof(((Stage *)0)->playerRecords) == 0x47fd20, "scene.fields: Stage.playerRecords");
 _Static_assert(offsetof(Stage, playerRecordCount) == 0x19e1888 && sizeof(((Stage *)0)->playerRecordCount) == 0x4, "scene.fields: Stage.playerRecordCount");
-_Static_assert(offsetof(Stage, partShapes) == 0x19e188c && sizeof(((Stage *)0)->partShapes) == 0x24c, "scene.fields: Stage.partShapes");
-_Static_assert(offsetof(Stage, partShapeData) == 0x19e1ad8 && sizeof(((Stage *)0)->partShapeData) == 0x2dc6c0, "scene.fields: Stage.partShapeData");
-_Static_assert(offsetof(Stage, partSkeletons) == 0x1cbe198 && sizeof(((Stage *)0)->partSkeletons) == 0x130, "scene.fields: Stage.partSkeletons");
-_Static_assert(offsetof(Stage, partSkeletonData) == 0x1cbe2c8 && sizeof(((Stage *)0)->partSkeletonData) == 0x186a0, "scene.fields: Stage.partSkeletonData");
+_Static_assert(offsetof(Stage, itemShapes) == 0x19e188c && sizeof(((Stage *)0)->itemShapes) == 0x24c, "scene.fields: Stage.itemShapes");
+_Static_assert(offsetof(Stage, itemShapeData) == 0x19e1ad8 && sizeof(((Stage *)0)->itemShapeData) == 0x2dc6c0, "scene.fields: Stage.itemShapeData");
+_Static_assert(offsetof(Stage, itemSkeletons) == 0x1cbe198 && sizeof(((Stage *)0)->itemSkeletons) == 0x130, "scene.fields: Stage.itemSkeletons");
+_Static_assert(offsetof(Stage, itemSkeletonData) == 0x1cbe2c8 && sizeof(((Stage *)0)->itemSkeletonData) == 0x186a0, "scene.fields: Stage.itemSkeletonData");
 _Static_assert(offsetof(Stage, snapshotTex) == 0x1cd6968 && sizeof(((Stage *)0)->snapshotTex) == 0xc8, "scene.fields: Stage.snapshotTex");
 _Static_assert(offsetof(Stage, mapPlayers) == 0x1cd6a30 && sizeof(((Stage *)0)->mapPlayers) == 0x580, "scene.fields: Stage.mapPlayers");
 _Static_assert(offsetof(Stage, mapPlayerCount) == 0x1cd6fb0 && sizeof(((Stage *)0)->mapPlayerCount) == 0x4, "scene.fields: Stage.mapPlayerCount");
@@ -3076,12 +3073,12 @@ _Static_assert(offsetof(Stage, actorCount) == 0x202e8c8 && sizeof(((Stage *)0)->
 _Static_assert(offsetof(Stage, actorFreeHint) == 0x202e8cc && sizeof(((Stage *)0)->actorFreeHint) == 0x4, "scene.fields: Stage.actorFreeHint");
 _Static_assert(offsetof(Stage, actorSerial) == 0x202e8d0 && sizeof(((Stage *)0)->actorSerial) == 0x4, "scene.fields: Stage.actorSerial");
 _Static_assert(offsetof(Stage, playerActor) == 0x202e8d4 && sizeof(((Stage *)0)->playerActor) == 0x4, "scene.fields: Stage.playerActor");
-_Static_assert(offsetof(Stage, selectedActor) == 0x202e8d8 && sizeof(((Stage *)0)->selectedActor) == 0x4, "scene.fields: Stage.selectedActor");
+_Static_assert(offsetof(Stage, cockpitActor) == 0x202e8d8 && sizeof(((Stage *)0)->cockpitActor) == 0x4, "scene.fields: Stage.cockpitActor");
 _Static_assert(offsetof(Stage, silentActor) == 0x202e8dc && sizeof(((Stage *)0)->silentActor) == 0x4, "scene.fields: Stage.silentActor");
 _Static_assert(offsetof(Stage, heldActor) == 0x202e8e0 && sizeof(((Stage *)0)->heldActor) == 0x4, "scene.fields: Stage.heldActor");
 _Static_assert(offsetof(Stage, heldMode) == 0x202e8e4 && sizeof(((Stage *)0)->heldMode) == 0x4, "scene.fields: Stage.heldMode");
 _Static_assert(offsetof(Stage, lastDeath) == 0x202e8e8 && sizeof(((Stage *)0)->lastDeath) == 0x4, "scene.fields: Stage.lastDeath");
-_Static_assert(offsetof(Stage, teamsChanged) == 0x202e8ec && sizeof(((Stage *)0)->teamsChanged) == 0x4, "scene.fields: Stage.teamsChanged");
+_Static_assert(offsetof(Stage, rankingDirty) == 0x202e8ec && sizeof(((Stage *)0)->rankingDirty) == 0x4, "scene.fields: Stage.rankingDirty");
 _Static_assert(offsetof(Stage, frags) == 0x202e8f0 && sizeof(((Stage *)0)->frags) == 0x190, "scene.fields: Stage.frags");
 _Static_assert(offsetof(Stage, lockHeld) == 0x202ea80 && sizeof(((Stage *)0)->lockHeld) == 0x190, "scene.fields: Stage.lockHeld");
 _Static_assert(offsetof(Stage, lockTimes) == 0x202ec10 && sizeof(((Stage *)0)->lockTimes) == 0x190, "scene.fields: Stage.lockTimes");
@@ -3099,7 +3096,7 @@ _Static_assert(offsetof(Stage, thrustShapes) == 0x20f2dac && sizeof(((Stage *)0)
 _Static_assert(offsetof(Stage, effectShapes) == 0x20f2e74 && sizeof(((Stage *)0)->effectShapes) == 0x20, "scene.fields: Stage.effectShapes");
 _Static_assert(offsetof(Stage, itemTextures) == 0x20f2f3c && sizeof(((Stage *)0)->itemTextures) == 0xc, "scene.fields: Stage.itemTextures");
 _Static_assert(offsetof(Stage, lightMatrix) == 0x20f2f48 && sizeof(((Stage *)0)->lightMatrix) == 0x40, "scene.fields: Stage.lightMatrix");
-_Static_assert(offsetof(Stage, litMatrix) == 0x20f2f88 && sizeof(((Stage *)0)->litMatrix) == 0x40, "scene.fields: Stage.litMatrix");
+_Static_assert(offsetof(Stage, overlayMatrix) == 0x20f2f88 && sizeof(((Stage *)0)->overlayMatrix) == 0x40, "scene.fields: Stage.overlayMatrix");
 _Static_assert(offsetof(Stage, baseMatrix) == 0x20f2fc8 && sizeof(((Stage *)0)->baseMatrix) == 0x40, "scene.fields: Stage.baseMatrix");
 _Static_assert(offsetof(Stage, pointCount) == 0x20f3008 && sizeof(((Stage *)0)->pointCount) == 0x4, "scene.fields: Stage.pointCount");
 _Static_assert(offsetof(Stage, points) == 0x20f300c && sizeof(((Stage *)0)->points) == 0x960, "scene.fields: Stage.points");
@@ -3154,7 +3151,7 @@ _Static_assert(offsetof(Stage, scenePath) == 0x2148ed8 && sizeof(((Stage *)0)->s
 _Static_assert(offsetof(Stage, pathSound) == 0x2149108 && sizeof(((Stage *)0)->pathSound) == 0x100, "scene.fields: Stage.pathSound");
 _Static_assert(offsetof(Stage, scriptName) == 0x2149208 && sizeof(((Stage *)0)->scriptName) == 0x100, "scene.fields: Stage.scriptName");
 _Static_assert(offsetof(Stage, scriptMode) == 0x2149308 && sizeof(((Stage *)0)->scriptMode) == 0x4, "scene.fields: Stage.scriptMode");
-_Static_assert(offsetof(Stage, scriptRunning) == 0x214930c && sizeof(((Stage *)0)->scriptRunning) == 0x4, "scene.fields: Stage.scriptRunning");
+_Static_assert(offsetof(Stage, scriptHoldsPlay) == 0x214930c && sizeof(((Stage *)0)->scriptHoldsPlay) == 0x4, "scene.fields: Stage.scriptHoldsPlay");
 _Static_assert(sizeof(Stage) == 0x2150443, "scene.fields: size of Stage");
 _Static_assert(offsetof(Flare, corners) == 0x0 && sizeof(((Flare *)0)->corners) == 0x40, "scene.fields: Flare.corners");
 _Static_assert(offsetof(Flare, pos) == 0x40 && sizeof(((Flare *)0)->pos) == 0xc, "scene.fields: Flare.pos");
@@ -3187,7 +3184,7 @@ _Static_assert(offsetof(TunnelRing, next) == 0x3534 && sizeof(((TunnelRing *)0)-
 _Static_assert(sizeof(TunnelRing) == 0x3538, "scene.fields: size of TunnelRing");
 _Static_assert(offsetof(Round, map) == 0x0 && sizeof(((Round *)0)->map) == 0x4, "scene.fields: Round.map");
 _Static_assert(offsetof(Round, mode) == 0x4 && sizeof(((Round *)0)->mode) == 0x4, "scene.fields: Round.mode");
-_Static_assert(offsetof(Round, scoreLimit) == 0x8 && sizeof(((Round *)0)->scoreLimit) == 0x4, "scene.fields: Round.scoreLimit");
+_Static_assert(offsetof(Round, fragLimit) == 0x8 && sizeof(((Round *)0)->fragLimit) == 0x4, "scene.fields: Round.fragLimit");
 _Static_assert(offsetof(Round, timeLimit) == 0xc && sizeof(((Round *)0)->timeLimit) == 0x4, "scene.fields: Round.timeLimit");
 _Static_assert(sizeof(Round) == 0x10, "scene.fields: size of Round");
 _Static_assert(offsetof(Scene, client) == 0x4 && sizeof(((Scene *)0)->client) == 0x4, "scene.fields: Scene.client");
@@ -3196,7 +3193,7 @@ _Static_assert(offsetof(Scene, timer) == 0xc && sizeof(((Scene *)0)->timer) == 0
 _Static_assert(offsetof(Scene, frameTime) == 0x44 && sizeof(((Scene *)0)->frameTime) == 0x4, "scene.fields: Scene.frameTime");
 _Static_assert(offsetof(Scene, frameTimes) == 0x48 && sizeof(((Scene *)0)->frameTimes) == 0x28, "scene.fields: Scene.frameTimes");
 _Static_assert(offsetof(Scene, frameTimeNext) == 0x70 && sizeof(((Scene *)0)->frameTimeNext) == 0x4, "scene.fields: Scene.frameTimeNext");
-_Static_assert(offsetof(Scene, view) == 0x74 && sizeof(((Scene *)0)->view) == 0x4, "scene.fields: Scene.view");
+_Static_assert(offsetof(Scene, view) == 0x74 && sizeof(((Scene *)0)->view) == 0x9170, "scene.fields: Scene.view");
 _Static_assert(offsetof(Scene, viewMemory) == 0x91e4 && sizeof(((Scene *)0)->viewMemory) == 0x1e8480, "scene.fields: Scene.viewMemory");
 _Static_assert(offsetof(Scene, renderMode) == 0x1f1664 && sizeof(((Scene *)0)->renderMode) == 0x4, "scene.fields: Scene.renderMode");
 _Static_assert(offsetof(Scene, rotation) == 0x1f1668 && sizeof(((Scene *)0)->rotation) == 0x640, "scene.fields: Scene.rotation");
@@ -3229,19 +3226,19 @@ _Static_assert(offsetof(Scene, chestCount) == 0x15fff84 && sizeof(((Scene *)0)->
 _Static_assert(offsetof(Scene, armCount) == 0x163b588 && sizeof(((Scene *)0)->armCount) == 0x4, "scene.fields: Scene.armCount");
 _Static_assert(offsetof(Scene, legCount) == 0x1679b34 && sizeof(((Scene *)0)->legCount) == 0x4, "scene.fields: Scene.legCount");
 _Static_assert(offsetof(Scene, boosterCount) == 0x16c5178 && sizeof(((Scene *)0)->boosterCount) == 0x4, "scene.fields: Scene.boosterCount");
-_Static_assert(offsetof(Scene, actorInfo) == 0x16c517c && sizeof(((Scene *)0)->actorInfo) == 0x900b0, "scene.fields: Scene.actorInfo");
-_Static_assert(offsetof(Scene, actorInfoCount) == 0x175522c && sizeof(((Scene *)0)->actorInfoCount) == 0x4, "scene.fields: Scene.actorInfoCount");
+_Static_assert(offsetof(Scene, actorItems) == 0x16c517c && sizeof(((Scene *)0)->actorItems) == 0x900b0, "scene.fields: Scene.actorItems");
+_Static_assert(offsetof(Scene, actorItemCount) == 0x175522c && sizeof(((Scene *)0)->actorItemCount) == 0x4, "scene.fields: Scene.actorItemCount");
 _Static_assert(offsetof(Scene, playerRecords) == 0x1755230 && sizeof(((Scene *)0)->playerRecords) == 0x47fd20, "scene.fields: Scene.playerRecords");
 _Static_assert(offsetof(Scene, snapshotTex) == 0x1eca030 && sizeof(((Scene *)0)->snapshotTex) == 0xc8, "scene.fields: Scene.snapshotTex");
 _Static_assert(offsetof(Scene, mapActorCount) == 0x1ecca6c && sizeof(((Scene *)0)->mapActorCount) == 0x4, "scene.fields: Scene.mapActorCount");
 _Static_assert(offsetof(Scene, players) == 0x1ecca70 && sizeof(((Scene *)0)->players) == 0x88880, "scene.fields: Scene.players");
 _Static_assert(offsetof(Scene, playerCount) == 0x2221f90 && sizeof(((Scene *)0)->playerCount) == 0x4, "scene.fields: Scene.playerCount");
 _Static_assert(offsetof(Scene, playerActor) == 0x2221f9c && sizeof(((Scene *)0)->playerActor) == 0x4, "scene.fields: Scene.playerActor");
-_Static_assert(offsetof(Scene, selectedActor) == 0x2221fa0 && sizeof(((Scene *)0)->selectedActor) == 0x4, "scene.fields: Scene.selectedActor");
+_Static_assert(offsetof(Scene, cockpitActor) == 0x2221fa0 && sizeof(((Scene *)0)->cockpitActor) == 0x4, "scene.fields: Scene.cockpitActor");
 _Static_assert(offsetof(Scene, lastDeath) == 0x2221fb0 && sizeof(((Scene *)0)->lastDeath) == 0x4, "scene.fields: Scene.lastDeath");
-_Static_assert(offsetof(Scene, teamsChanged) == 0x2221fb4 && sizeof(((Scene *)0)->teamsChanged) == 0x4, "scene.fields: Scene.teamsChanged");
-_Static_assert(offsetof(Scene, teamScores) == 0x2221fb8 && sizeof(((Scene *)0)->teamScores) == 0x10, "scene.fields: Scene.teamScores");
-_Static_assert(offsetof(Scene, lockHeld) == 0x2222148 && sizeof(((Scene *)0)->lockHeld) == 0x40, "scene.fields: Scene.lockHeld");
+_Static_assert(offsetof(Scene, rankingDirty) == 0x2221fb4 && sizeof(((Scene *)0)->rankingDirty) == 0x4, "scene.fields: Scene.rankingDirty");
+_Static_assert(offsetof(Scene, teamScores) == 0x2221fb8 && sizeof(((Scene *)0)->teamScores) == 0x190, "scene.fields: Scene.teamScores");
+_Static_assert(offsetof(Scene, lockHeld) == 0x2222148 && sizeof(((Scene *)0)->lockHeld) == 0x190, "scene.fields: Scene.lockHeld");
 _Static_assert(offsetof(Scene, modelview) == 0x22e7068 && sizeof(((Scene *)0)->modelview) == 0x40, "scene.fields: Scene.modelview");
 _Static_assert(offsetof(Scene, projection) == 0x22e70fc && sizeof(((Scene *)0)->projection) == 0x40, "scene.fields: Scene.projection");
 _Static_assert(offsetof(Scene, showExp) == 0x22e717c && sizeof(((Scene *)0)->showExp) == 0x4, "scene.fields: Scene.showExp");
@@ -3257,7 +3254,7 @@ _Static_assert(offsetof(Scene, clockFraction) == 0x22f040c && sizeof(((Scene *)0
 _Static_assert(offsetof(Scene, botsHoldFire) == 0x22f0410 && sizeof(((Scene *)0)->botsHoldFire) == 0x4, "scene.fields: Scene.botsHoldFire");
 _Static_assert(offsetof(Scene, centreNotice) == 0x22f0414 && sizeof(((Scene *)0)->centreNotice) == 0x100, "scene.fields: Scene.centreNotice");
 _Static_assert(offsetof(Scene, kingActor) == 0x22f0514 && sizeof(((Scene *)0)->kingActor) == 0x4, "scene.fields: Scene.kingActor");
-_Static_assert(offsetof(Scene, teamCommanders) == 0x22f0518 && sizeof(((Scene *)0)->teamCommanders) == 0x8, "scene.fields: Scene.teamCommanders");
+_Static_assert(offsetof(Scene, teamCommanders) == 0x22f0518 && sizeof(((Scene *)0)->teamCommanders) == 0x190, "scene.fields: Scene.teamCommanders");
 _Static_assert(offsetof(Scene, flagGlTexture) == 0x22f06a8 && sizeof(((Scene *)0)->flagGlTexture) == 0x4, "scene.fields: Scene.flagGlTexture");
 _Static_assert(offsetof(Scene, flagTexture) == 0x22f86ac && sizeof(((Scene *)0)->flagTexture) == 0x4, "scene.fields: Scene.flagTexture");
 _Static_assert(offsetof(Scene, msgText) == 0x22fbbd8 && sizeof(((Scene *)0)->msgText) == 0x4200, "scene.fields: Scene.msgText");
@@ -3282,7 +3279,7 @@ _Static_assert(offsetof(Scene, cameraTarget) == 0x233cc14 && sizeof(((Scene *)0)
 _Static_assert(offsetof(Scene, matchState) == 0x233cc20 && sizeof(((Scene *)0)->matchState) == 0x4, "scene.fields: Scene.matchState");
 _Static_assert(offsetof(Scene, loadStage) == 0x233cc24 && sizeof(((Scene *)0)->loadStage) == 0x4, "scene.fields: Scene.loadStage");
 _Static_assert(offsetof(Scene, stateFrames) == 0x233cc28 && sizeof(((Scene *)0)->stateFrames) == 0x4, "scene.fields: Scene.stateFrames");
-_Static_assert(offsetof(Scene, loadStep) == 0x233cc2c && sizeof(((Scene *)0)->loadStep) == 0x4, "scene.fields: Scene.loadStep");
+_Static_assert(offsetof(Scene, unused233cc2c) == 0x233cc2c && sizeof(((Scene *)0)->unused233cc2c) == 0x4, "scene.fields: Scene.unused233cc2c");
 _Static_assert(offsetof(Scene, wholeSeconds) == 0x233cc30 && sizeof(((Scene *)0)->wholeSeconds) == 0x4, "scene.fields: Scene.wholeSeconds");
 _Static_assert(offsetof(Scene, secondFraction) == 0x233cc34 && sizeof(((Scene *)0)->secondFraction) == 0x4, "scene.fields: Scene.secondFraction");
 _Static_assert(offsetof(Scene, followTime) == 0x233cc38 && sizeof(((Scene *)0)->followTime) == 0x4, "scene.fields: Scene.followTime");
@@ -3292,7 +3289,7 @@ _Static_assert(offsetof(Scene, unused233cc44) == 0x233cc44 && sizeof(((Scene *)0
 _Static_assert(offsetof(Scene, respawnTime) == 0x233cc48 && sizeof(((Scene *)0)->respawnTime) == 0x4, "scene.fields: Scene.respawnTime");
 _Static_assert(offsetof(Scene, restartTimer) == 0x233cc4c && sizeof(((Scene *)0)->restartTimer) == 0x4, "scene.fields: Scene.restartTimer");
 _Static_assert(offsetof(Scene, scoreCommitTimer) == 0x233cc50 && sizeof(((Scene *)0)->scoreCommitTimer) == 0x4, "scene.fields: Scene.scoreCommitTimer");
-_Static_assert(offsetof(Scene, stateSendTimer) == 0x233cc54 && sizeof(((Scene *)0)->stateSendTimer) == 0x4, "scene.fields: Scene.stateSendTimer");
+_Static_assert(offsetof(Scene, gamePacketTimer) == 0x233cc54 && sizeof(((Scene *)0)->gamePacketTimer) == 0x4, "scene.fields: Scene.gamePacketTimer");
 _Static_assert(offsetof(Scene, rankingTimer) == 0x233cc58 && sizeof(((Scene *)0)->rankingTimer) == 0x4, "scene.fields: Scene.rankingTimer");
 _Static_assert(offsetof(Scene, infoSendTimer) == 0x233cc5c && sizeof(((Scene *)0)->infoSendTimer) == 0x4, "scene.fields: Scene.infoSendTimer");
 _Static_assert(offsetof(Scene, loadLines) == 0x233cc60 && sizeof(((Scene *)0)->loadLines) == 0x4000, "scene.fields: Scene.loadLines");
@@ -3339,7 +3336,7 @@ _Static_assert(offsetof(Scene, endTime) == 0x234239d && sizeof(((Scene *)0)->end
 _Static_assert(offsetof(Scene, matchLeaving) == 0x23423a1 && sizeof(((Scene *)0)->matchLeaving) == 0x4, "scene.fields: Scene.matchLeaving");
 _Static_assert(offsetof(Scene, quitDelay) == 0x23423a5 && sizeof(((Scene *)0)->quitDelay) == 0x4, "scene.fields: Scene.quitDelay");
 _Static_assert(offsetof(Scene, stageCleared) == 0x23423a9 && sizeof(((Scene *)0)->stageCleared) == 0x4, "scene.fields: Scene.stageCleared");
-_Static_assert(offsetof(Scene, scoreLimit) == 0x23423ad && sizeof(((Scene *)0)->scoreLimit) == 0x4, "scene.fields: Scene.scoreLimit");
+_Static_assert(offsetof(Scene, fragLimit) == 0x23423ad && sizeof(((Scene *)0)->fragLimit) == 0x4, "scene.fields: Scene.fragLimit");
 _Static_assert(offsetof(Scene, timeLimit) == 0x23423b1 && sizeof(((Scene *)0)->timeLimit) == 0x4, "scene.fields: Scene.timeLimit");
 _Static_assert(offsetof(Scene, endReason) == 0x23423b5 && sizeof(((Scene *)0)->endReason) == 0x4, "scene.fields: Scene.endReason");
 _Static_assert(offsetof(Scene, endNoticeTime) == 0x23423b9 && sizeof(((Scene *)0)->endNoticeTime) == 0x4, "scene.fields: Scene.endNoticeTime");
@@ -3358,9 +3355,9 @@ _Static_assert(offsetof(Scene, localRecordSet) == 0x2342411 && sizeof(((Scene *)
 _Static_assert(offsetof(Scene, playAsked) == 0x2342415 && sizeof(((Scene *)0)->playAsked) == 0x4, "scene.fields: Scene.playAsked");
 _Static_assert(offsetof(Scene, statsTaken) == 0x2342419 && sizeof(((Scene *)0)->statsTaken) == 0x4, "scene.fields: Scene.statsTaken");
 _Static_assert(offsetof(Scene, chosenTeam) == 0x234241d && sizeof(((Scene *)0)->chosenTeam) == 0x4, "scene.fields: Scene.chosenTeam");
-_Static_assert(offsetof(Scene, flagLoaded) == 0x2342421 && sizeof(((Scene *)0)->flagLoaded) == 0x4, "scene.fields: Scene.flagLoaded");
+_Static_assert(offsetof(Scene, flagLoadTried) == 0x2342421 && sizeof(((Scene *)0)->flagLoadTried) == 0x4, "scene.fields: Scene.flagLoadTried");
 _Static_assert(offsetof(Scene, flagUploadTimer) == 0x2342425 && sizeof(((Scene *)0)->flagUploadTimer) == 0x4, "scene.fields: Scene.flagUploadTimer");
-_Static_assert(offsetof(Scene, mechName) == 0x2342429 && sizeof(((Scene *)0)->mechName) == 0x11, "scene.fields: Scene.mechName");
+_Static_assert(offsetof(Scene, localName) == 0x2342429 && sizeof(((Scene *)0)->localName) == 0x11, "scene.fields: Scene.localName");
 _Static_assert(offsetof(Scene, character) == 0x234243a && sizeof(((Scene *)0)->character) == 0x4, "scene.fields: Scene.character");
 _Static_assert(offsetof(Scene, localTeam) == 0x234243e && sizeof(((Scene *)0)->localTeam) == 0x4, "scene.fields: Scene.localTeam");
 _Static_assert(offsetof(Scene, level) == 0x2342442 && sizeof(((Scene *)0)->level) == 0x4, "scene.fields: Scene.level");

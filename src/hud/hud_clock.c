@@ -17,7 +17,7 @@ static void clock_setColour(int low, Scene *scene)
 void THISCALL (hud_drawClock)(Scene *scene)
 {
 	char text[256];
-	if (scene->scoreLimit > 0) {
+	if (scene->fragLimit > 0) {
 		int best;
 		if (scene->teamGame == 1)
 			best = scene->teamScores[0] < scene->teamScores[1] ? scene->teamScores[1] : scene->teamScores[0];
@@ -25,8 +25,8 @@ void THISCALL (hud_drawClock)(Scene *scene)
 			best = scene->players[scene->ranking[0]].kills;
 		else
 			best = 0;
-		clock_setColour(scene->scoreLimit - best <= 1, scene);
-		sprintf(text, "%d", scene->scoreLimit - best);
+		clock_setColour(scene->fragLimit - best <= 1, scene);
+		sprintf(text, "%d", scene->fragLimit - best);
 		text_drawSized((0x15 - (int)strlen(text)) * 13, 8, text, 16);
 		glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 		hud_drawIcon(scene, 0xf9 - (int)strlen(text) * 13, 8, 1);

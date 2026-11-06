@@ -47,7 +47,7 @@ void THISCALL (map_loadTriggerInfoFrom)(u8 *scene, void *f)
 
 /* 0x4875d0 (thiscall on the scene): the item file: its version (0x1201, else a fatal message; no file one too), the
    items' count (itemTypeCount) and 0x90-byte records (itemTypes); each item named (its first byte set) given its shape
-   (model: shape_getByName on the scene's shapes, partShapes, by its name at shapeName), the others none. Returns 1 */
+   (model: shape_getByName on the scene's shapes, itemShapes, by its name at shapeName), the others none. Returns 1 */
 int THISCALL (map_loadItemInfoFrom)(u8 *scene, const char *path)
 {
 	Stage *st = (Stage *)scene;
@@ -64,7 +64,7 @@ int THISCALL (map_loadItemInfoFrom)(u8 *scene, const char *path)
 	fclose(f);
 	for (int i = 0; i < *count; i++) {
 		ItemType *item = &st->itemTypes[i];
-		item->model = (Model *)(((u8 *)item)[0] ? shape_getByName((u8 *)&st->partShapes, item->shapeName, 1) : 0);
+		item->model = (Model *)(((u8 *)item)[0] ? shape_getByName((u8 *)&st->itemShapes, item->shapeName, 1) : 0);
 	}
 	return 1;
 }
@@ -100,9 +100,9 @@ void THISCALL (map_loadMissionInfoFrom)(u8 *scene, const char *name)
 }
 
 /* 0x48b710 (thiscall on the scene): the map's objects. The caches emptied (objectShapes shapes, objectSkeletons skeletons,
-   the object list: stage_clearMapObjects), the shading not loaded (mapShaded 0). Mode 0: the shading file (named by 0x4c7e90
+   the object list: stage_clearMapObjects), the shading not loaded (shadingCached 0). Mode 0: the shading file (named by 0x4c7e90
    from mapDir and the name's base, path_stripExtension) read when there (a count, objectColourCount, then that many dwords at
-   objectColours; the count cleared, mapShaded 1). The objects file (by 0x4c77f0; none: a fatal message): version
+   objectColours; the count cleared, shadingCached 1). The objects file (by 0x4c77f0; none: a fatal message): version
    0x1201 (else a fatal message), a dword, the count, then the 0xb0-byte object types in blocks of 56, each added
    (object_addObjectBy) until one fails; every second one logged. Mode 1 without shading loaded: the shading file
    written. Its caller ignores the eax it leaves */
@@ -368,7 +368,7 @@ static int grey(const u8 *px)
 /* 0x48b9d0 (thiscall on the stage): the map's ground file name (under the map directory mapDir). No file or a
    version other than 0x1201 is fatal; then, scrambled, four blocks skipped, the map's directory (0x100), the view
    range (cullMargin), the lights (Light_read), the clear colour and fog (clearOn ..), the background modes (sphere
-   skyMode, sky layerMode, sides sideMode, floor floorOn) and their textures, the area limits (levelLow .. worldHigh, then an unread float (unused9ef934), the map number and the music kind),
+   skyMode, sky layerMode, sides sideMode, floor floorMode) and their textures, the area limits (levelLow .. worldHigh, then an unread float (unused9ef934), the map number and the music kind),
    and the layers (groundLayerCount; 0x20c-byte records from groundLayers: rows rows, columns cols, origin +4, cell cellSize,
    height scale heightScale, texture size texScale): each its texture "<dir>/Ground<i>Map" and a 256 x 256 RGB height map
    (grey pixels are heights) giving, in the pool, its heights (heights), flat cells (flat), vertices (points), normals
@@ -404,7 +404,7 @@ int THISCALL (map_loadGroundInfoFrom)(u8 *s, const char *name)
 	log_message((int)s, 0, 0, (const char *)STR(0x4c801c, "load fog info"));
 	fread_scrambled(&st->fogOn, 4, 1, f);
 	fread_scrambled(st->glFogColour, 0x10, 1, f);
-	void *fog_and_modes[] = { &st->glFogStart, &st->glFogEnd, &st->glFogDensity, &st->skyMode, &st->layerMode, &st->sideMode, &st->floorOn };
+	void *fog_and_modes[] = { &st->glFogStart, &st->glFogEnd, &st->glFogDensity, &st->skyMode, &st->layerMode, &st->sideMode, &st->floorMode };
 	for (int k = 0; k < 7; k++)
 		fread_scrambled(fog_and_modes[k], 4, 1, f);
 	log_message((int)s, 0, 0, (const char *)STR(0x4c8004, "load background sphere"));
@@ -428,7 +428,7 @@ int THISCALL (map_loadGroundInfoFrom)(u8 *s, const char *name)
 		for (int k = 0; k < 6; k++)
 			st->sideTextures[k] = (i32) ground_tex(dir, STR(0x4c7f3c, "%s/SideLayer%d"), k + 1, tex);   /* SideLayer<n> */
 	log_message((int)s, 0, 0, (const char *)STR(0x4c7f24, "load background floor"));
-	if (st->floorOn > 0 && st->floorOn <= 2)
+	if (st->floorMode > 0 && st->floorMode <= 2)
 		for (int k = 0; k < 16; k++)
 			st->floorTextures[k] = (i32) ground_tex(dir, STR(0x4c7f14, "%s/FloorAni%02d"), k + 1, tex);   /* FloorAni<nn> */
 	log_message((int)s, 0, 0, (const char *)STR(0x4c7f04, "load area limit"));

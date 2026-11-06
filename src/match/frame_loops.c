@@ -1,12 +1,12 @@
 /* frame_loops.c: the scene's per-frame passes over its slots: each slot in use (its first dword 1) updated, unless
-   a script holds the actors (scriptMode set with scriptRunning 1). The count is read again after each slot. */
+   a script holds the actors (scriptMode set with scriptHoldsPlay 1). The count is read again after each slot. */
 #include "../game.h"
 #include <string.h>
 #define ST ((Stage *)s)   /* the stage (s in each function) by its fields (src/scene.fields) */
 
 #define FIELD(type, obj, offset) GAME_VAR(type, (u8 *)RELOC(obj) + (offset))
 
-static int paused(void *s) { return ST->scriptMode && ST->scriptRunning == 1; }   /* (a script holds the actors) */
+static int paused(void *s) { return ST->scriptMode && ST->scriptHoldsPlay == 1; }   /* (a script holds the actors) */
 
 /* 0x47d000 (thiscall on the scene): the bullets (0x4e8-byte slots from bullets[].active, bulletSlotsUsed of them). Its callers
    ignore the eax it leaves */
@@ -178,7 +178,7 @@ void THISCALL (script_processTriggers)(u8 *s)
 }
 
 /* 0x49d150 (thiscall on the scene): the local player (none when negative): its kills, deaths and score since they
-   were last counted (killsCounted, deathsCounted, startPoints) added to the Ladder record's kills, deaths and exp, and
+   were last counted (killsCounted, deathsCounted, scoreCounted) added to the Ladder record's kills, deaths and exp, and
    counted; while the match is not being left (matchLeaving 0) the
    room's text kept (ladder_sendRecord); scoreCommitTimer 300. Its callers ignore the eax it leaves */
 void THISCALL (profile_addMatchScores)(u8 *s)
@@ -188,17 +188,17 @@ void THISCALL (profile_addMatchScores)(u8 *s)
 		Player *me = &sc->players[sc->localPlayer];
 		g_ladderKills += me->kills - me->killsCounted;
 		g_ladderDeaths += me->deaths - me->deathsCounted;
-		g_ladderExp += me->score - me->startPoints;
+		g_ladderExp += me->score - me->scoreCounted;
 		me->killsCounted = me->kills;
 		me->deathsCounted = me->deaths;
-		me->startPoints = me->score;
+		me->scoreCounted = me->score;
 	}
 	if (!sc->matchLeaving)
 		ladder_sendRecord();
 	BITS(sc->scoreCommitTimer) = 0x43960000;   /* 300.0f */
 }
 
-/* 0x48ec20 (thiscall on the scene): the effects' shapes looked up in the shape cache (partShapes): three sets of eight
+/* 0x48ec20 (thiscall on the scene): the effects' shapes looked up in the shape cache (itemShapes): three sets of eight
    numbered ones (thrustShapes, thrustShapes[8], thrustShapes[16]; named by 0x4c8170, 0x4c815c, 0x4c8144) and eight single ones
    (effectShapes ..); itemTextures cleared first. Its caller ignores the eax it leaves */
 void THISCALL (effect_initShapes)(u8 *s)
@@ -210,10 +210,10 @@ void THISCALL (effect_initShapes)(u8 *s)
 	for (int set = 0; set < 3; set++)
 		for (int k = 0; k < 8; k++) {
 			sprintf(name, (const char *)RELOC(sets[set]), k);
-			ST->thrustShapes[set][k] = shape_getByName((u8 *)&ST->partShapes, name, 1);
+			ST->thrustShapes[set][k] = shape_getByName((u8 *)&ST->itemShapes, name, 1);
 		}
 	for (int k = 0; k < 8; k++)
-		ST->effectShapes[k] = shape_getByName((u8 *)&ST->partShapes, (const char *)RELOC(singles[k]), 1);
+		ST->effectShapes[k] = shape_getByName((u8 *)&ST->itemShapes, (const char *)RELOC(singles[k]), 1);
 }
 
 /* 0x483770 (thiscall on the scene): entry `entry` of trigger trig's script (the triggers' 0x1c-byte records from
@@ -239,8 +239,8 @@ void THISCALL (script_processCommandBy)(u8 *s, int actorIndex, int trig, int ent
 		case 5: if (actor) (*(u32 *)&ac->botWaitTrigger) = c[1]; break;
 		case 7:
 			if (actor) {
-				ac->target1 = c[1];
-				ac->target2 = c[2];
+				ac->path = c[1];
+				ac->pathPoint = c[2];
 			}
 			break;
 		case 8:
@@ -257,7 +257,7 @@ void THISCALL (script_processCommandBy)(u8 *s, int actorIndex, int trig, int ent
 			if (actor) {
 				(*(int *)&ac->botWait) = 0;
 				ac->botWaitTrigger = -1;
-				BITS(ac->speed) = BITS(ac->topSpeed);
+				BITS(ac->speed) = BITS(ac->baseSpeed);
 				ac->invulnerable = 0;
 				ac->lookActor = ac->lookPath = ac->lookPoint = ac->followTarget = -1;
 			}
@@ -287,12 +287,12 @@ void THISCALL (script_processCommandBy)(u8 *s, int actorIndex, int trig, int ent
 			break;
 		case 21: if (actor) (*(u32 *)&ac->followTarget) = c[1]; break;
 		case 22:
-			ST->actors[c[1]].target1 = -1;
-			ST->actors[c[1]].target2 = -1;
+			ST->actors[c[1]].path = -1;
+			ST->actors[c[1]].pathPoint = -1;
 			break;
 		case 23:
-			ST->actors[c[1]].target1 = c[2];
-			ST->actors[c[1]].target2 = c[3];
+			ST->actors[c[1]].path = c[2];
+			ST->actors[c[1]].pathPoint = c[3];
 			break;
 		case 24: script_holdActor(s, c[1], c[2], c[3]); break;
 		case 25: script_holdActor(s, -1, -1, 0); break;
@@ -501,7 +501,7 @@ void THISCALL (particle_update)(u8 *s, int slot, float dt)
 #define A(type, offset) GAME_VAR(type, ac + (offset))
 #define AC ((Player *)ac)   /* the same by its fields (src/scene.fields) */
 
-/* the cells, armour and shield items (kinds 0 .. 5, 10 .. 19): the actor's flag (timerFlags) that refuses them, the
+/* the cells, armour and shield items (kinds 0 .. 5, 10 .. 19): the actor's flag (stateFlags) that refuses them, the
    count raised, its limit (and how far an extended one may go past it), the message; an extended one is noted as the
    last big pickup (lastPickup) */
 static const struct { u8 flag; u16 count, limit; u8 add, over; u32 text; } k_supplies[16] = {
@@ -536,7 +536,7 @@ static void item_pickup(u8 *s, u8 *ac, u8 *it, int i, u8 *t, int type)
 			return;
 		}
 		int k = type < 10 ? type : 6 + type % 10;
-		if (*(const u8 *)&AC->timerFlags & k_supplies[k].flag)
+		if (*(const u8 *)&AC->stateFlags & k_supplies[k].flag)
 			return;
 		int limit = A(int, k_supplies[k].limit) + k_supplies[k].over;
 		A(int, k_supplies[k].count) += k_supplies[k].add;
@@ -563,7 +563,7 @@ static void item_pickup(u8 *s, u8 *ac, u8 *it, int i, u8 *t, int type)
 				AC->lastWarp = mi->warpTo;
 				strcpy(AC->message, (const char *)STR(0x4c8198, "WARP ZONE"));   /* WARP ZONE */
 				AC->messageTime = 0.0f;
-				AC->damageFlash = 1.0f;
+				AC->whiteFlash = 1.0f;
 				AC->warpWait = 2.0f;
 				AC->id = ST->actorSerial++;
 				warped = 1;

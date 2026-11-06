@@ -126,13 +126,13 @@ int THISCALL (script_notifyObject)(Stage *stage, int a, int b, int c, int d)
 	return b;
 }
 
-/* 0x470a70: every actor slot emptied: the six slot numbers from playerActor on (-1), teamsChanged 1, the scores, the
+/* 0x470a70: every actor slot emptied: the six slot numbers from playerActor on (-1), rankingDirty 1, the scores, the
    16 player records and the stage's own reset, then the 100 slots */
 void THISCALL (scene_resetActors)(Stage *stage)
 {
 	for (int k = 0; k < 6; k++)
 		FIELD(int, stage, offsetof(Stage, playerActor) + k * 4) = -1;   /* playerActor .. heldMode */
-	stage->teamsChanged = 1;
+	stage->rankingDirty = 1;
 	stage_clearFrags(stage);
 	stage_resetPlayerRecords(stage);
 	stage_clearActorSlots(stage);
@@ -224,7 +224,7 @@ void THISCALL (stage_newRound)(Stage *stage)
 {
 	for (int k = 0; k < 6; k++)
 		FIELD(int, stage, offsetof(Stage, playerActor) + k * 4) = -1;   /* playerActor .. heldMode */
-	stage->teamsChanged = 1;
+	stage->rankingDirty = 1;
 	stage_clearFrags(stage);
 	for (int p = 0; p < 16; p++) {
 		PlayerRecord *pr = &stage->playerRecords[p];
@@ -272,7 +272,7 @@ void THISCALL (actor_deactivate)(Stage *stage, int i)
 			n = stage->actorCount - 1;
 			stage->actorCount = n;
 		}
-	stage->teamsChanged = 1;
+	stage->rankingDirty = 1;
 }
 
 /* 0x45dc00 (thiscall on the scene): actor slot i (at most 99) set up from its parts (actor_setupFromParts): the
@@ -355,7 +355,7 @@ void THISCALL (actor_loadBooster)(u8 *scene, int a) { part_load(scene, a, &g_par
 /* 0x45de20 (thiscall on the scene): actor a spawned from a map record for the player (playerActor; none: a fatal
    message): set up from its parts (stage_setupActorSlot, with the record's position, angle and parts picked out), then given
    the record's settings: team and two values (kept twice), ranges and speeds scaled, its radius squared (scaled), a
-   count from a scaled value, and the rest copied; no targets (target1, target2 -1). Its callers ignore the eax it
+   count from a scaled value, and the rest copied; no targets (path, pathPoint -1). Its callers ignore the eax it
    leaves */
 void THISCALL (actor_applySpawnRecord)(u8 *scene, int a, const u8 *rec)
 {
@@ -377,7 +377,7 @@ void THISCALL (actor_applySpawnRecord)(u8 *scene, int a, const u8 *rec)
 	AC->shieldMax = SR->shield;
 	AC->armor = SR->armor;
 	AC->shield = SR->shield;
-	AC->topSpeed = AC->speed = (float)(SR->speed * (long double)k_27_7778f);
+	AC->baseSpeed = AC->speed = (float)(SR->speed * (long double)k_27_7778f);
 	AC->turnRate = (float)(SR->turnRate * (long double)k_10f);
 	long double radius = SR->range;
 	AC->radiusSq = (float)(radius * radius * k_10000f);
@@ -388,8 +388,8 @@ void THISCALL (actor_applySpawnRecord)(u8 *scene, int a, const u8 *rec)
 	AC->climbSpread = (float)(SR->climbSpread * (long double)k_100f);
 	for (int k = 0; k < 5; k++)
 		BITS(AC->botTimes[k]) = BITS(SR->botTimes[k]);
-	AC->target1 = -1;
-	AC->target2 = -1;
+	AC->path = -1;
+	AC->pathPoint = -1;
 #undef SR
 #undef AC
 }
@@ -435,8 +435,8 @@ void THISCALL (actor_loadWeapon)(u8 *scene, int a, int slot, int variant)
 		return;
 	PlayerRecord *type = (PlayerRecord *)((u8 *)&STS->playerRecords[pl->player]);
 	int item = type->items[slot];
-	u8 *it = item >= 0 ? (u8 *)&STS->actorInfo[item] : NULL;
-	ActorInfo *info = (ActorInfo *)it;
+	u8 *it = item >= 0 ? (u8 *)&STS->actorItems[item] : NULL;
+	ActorItem *info = (ActorItem *)it;
 	int self, set = 0;
 	if (slot == 4)
 		self = offsetof(Player, weaponModel4);
@@ -448,13 +448,13 @@ void THISCALL (actor_loadWeapon)(u8 *scene, int a, int slot, int variant)
 	else
 		return;
 	if (it)
-		ObjectList_load(actor + self, (u8 *)&STS->partShapes, (u8 *)&STS->partSkeletons, info->sets[set].shapeCount[variant],
+		ObjectList_load(actor + self, (u8 *)&STS->itemShapes, (u8 *)&STS->itemSkeletons, info->sets[set].shapeCount[variant],
 		                     info->sets[set].shapeNames[variant], info->sets[set].skelCount[variant], info->sets[set].skelNames[variant],
 		                     0, 0, 0, actor + self + sizeof(ObjectList), 0x1770);   /* (its memory right after it) */
 	else
 		partList_release(actor + self);
 	if (self == offsetof(Player, weaponModel))
-		pl->weapon = it ? info->ammoType : -1;
+		pl->ammoKind = it ? info->ammoType : -1;
 }
 
 
@@ -525,7 +525,7 @@ static u8 *weapon_list(u8 *ac)
    (cullMargin plus its radius radius) of the camera (cameraPos..) on every axis. Its tint (tint): a cloaked actor
    (flag 0x200) at the local player's rank or above white and faint (0x40 to itself, 0x10 to others); else for its
    first 3 s (spawnAge) a white flash fading in then out, or a shot's flash (glow, white) and a hit's (hitFlash, red-orange); a
-   faint tint lights it with lightMatrix. The viewing actor (selectedActor), when draw is set, shows only the weapon in
+   faint tint lights it with lightMatrix. The viewing actor (cockpitActor), when draw is set, shows only the weapon in
    hand; others, when draw is not 1, all their lists up to the count breakUp (the fifth unless viewMarked; flags 0xd00 skip
    them without flares 0x83a9c8 or when too small on screen; faint ones only with flares); flags 0x100 / 0xc00 add a
    lit pass. A list that would not draw has them all reloaded (actor_loadHead / actor_loadBody / actor_loadArms /
@@ -546,7 +546,7 @@ void THISCALL (actor_drawIntoView)(u8 *s, int a, void *vv, int draw)
 			return;
 	u8 *tint = AC->tint;
 	int local = st->playerActor;
-	if ((((u32)AC->timerFlags) & 0x200) && AC->hackingLevel >= st->actors[local].hackingLevel) {
+	if ((((u32)AC->stateFlags) & 0x200) && AC->hackingLevel >= st->actors[local].hackingLevel) {
 		tint[0] = tint[1] = tint[2] = 0xff;
 		tint[3] = a == local ? 0x40 : 0x10;
 	} else if (!(AC->spawnAge > *&k_3f)) {
@@ -575,15 +575,15 @@ void THISCALL (actor_drawIntoView)(u8 *s, int a, void *vv, int draw)
 	u8 *lights = (u8 *)&st->actorLights;
 	int ok = 1;
 	u32 f;
-	if (a == st->selectedActor) {
+	if (a == st->cockpitActor) {
 		if (draw) {
 			ok = partList_queue(weapon_list(ac), vv, lights, tint, 1, (u32)-1, light) & 1;
-			f = ((u32)AC->timerFlags);
+			f = ((u32)AC->stateFlags);
 			if ((f & 0x100) || (f & 0xc00))
-				ok &= partList_queue(weapon_list(ac), vv, lights, tint, 1, flag_texture(s, f), (u32)st->litMatrix);
+				ok &= partList_queue(weapon_list(ac), vv, lights, tint, 1, flag_texture(s, f), (u32)st->overlayMatrix);
 		}
 	} else if (draw != 1) {
-		f = ((u32)AC->timerFlags);
+		f = ((u32)AC->stateFlags);
 		int lists = 1;
 		if (f & 0xd00) {
 			if (g_highDetail == 0)
@@ -609,12 +609,12 @@ void THISCALL (actor_drawIntoView)(u8 *s, int a, void *vv, int draw)
 				ok = k ? ok & r : r & 1;
 			}
 		}
-		f = ((u32)AC->timerFlags);
+		f = ((u32)AC->stateFlags);
 		if ((f & 0x100) || (f & 0xc00)) {
 			u32 lt = flag_texture(s, f);
 			for (int k = 0; k < 8; k++)
 				if (k != 4 || !AC->viewMarked)
-					ok &= partList_queue(ac + k_partLists[k], vv, lights, tint, 1, lt, (u32)st->litMatrix);
+					ok &= partList_queue(ac + k_partLists[k], vv, lights, tint, 1, lt, (u32)st->overlayMatrix);
 		}
 	}
 	AC->viewMarked = 0;
@@ -672,7 +672,7 @@ static void mech_stats(u8 *s, u8 *ac, u8 *p, int check)
 	AC->shieldRegen = 0;
 	for (int k = 0; k < 6; k++) {
 		int it = pr->items[k];
-		if (it < 0 || st->actorInfo[it].ammoType >= 0)
+		if (it < 0 || st->actorItems[it].ammoType >= 0)
 			continue;
 		switch (it) {
 		case 0x1b:
@@ -717,7 +717,7 @@ static void mech_stats(u8 *s, u8 *ac, u8 *p, int check)
 		for (int k = 0; k < 6; k++) {
 			int it = pr->items[k];
 			if (it >= 0)
-				AC->load = f32(FADD(st->actorInfo[it].weight, AC->load));
+				AC->load = f32(FADD(st->actorItems[it].weight, AC->load));
 		}
 	long double over = AC->load > AC->loadMax
 		? fmul_m(fdiv_m(FSUB(AC->load, AC->loadMax), &AC->loadMax), &k_4f)
@@ -735,7 +735,7 @@ static void mech_stats(u8 *s, u8 *ac, u8 *p, int check)
 		AC->mobility = 0.0f;
 	if (st->rocketArena == 1)
 		AC->mobility = f32(FMUL(AC->mobility, k_0_333f));
-	BITS(AC->leanPitch) = BITS(boost->lean);
+	BITS(AC->boosterTilt) = BITS(boost->lean);
 	AC->boostTime = f32(FMUL(boost->activeTime[0], AC->boostTimeFactor));
 	AC->rechargeTime = f32(FMUL(boost->activeTime[1], AC->rechargeTimeFactor));
 	AC->restTime = f32(FMUL(boost->activeTime[2], AC->restTimeFactor));
@@ -764,7 +764,7 @@ static void mech_stats(u8 *s, u8 *ac, u8 *p, int check)
 #undef LEG
 	AC->runTop[3] = f32(-fld_m(&AC->runTop[2]));
 	AC->unused1c = 100;
-	BITS(AC->topSpeed) = BITS(AC->speed);
+	BITS(AC->baseSpeed) = BITS(AC->speed);
 	AC->turnRate = 900.0f;   /* 900 */
 	AC->unused34 = 0x40400000;   /* 3 */
 	AC->aimError = 10;
@@ -787,7 +787,7 @@ static void mech_stats(u8 *s, u8 *ac, u8 *p, int check)
    fixed values; its id (id, or the next serial when negative), the player's details, the weapon slot (actor_setWeaponSlot),
    the starting values (actor_startingValues), the position history, timers and flags reset, its lists loaded and parts
    placed (actor_loadHead .. actor_loadBooster, actor_loadWeapon; viewed by another than itself variantLoaded), and the scene told
-   an actor joined (teamsChanged). Its caller ignores the eax it leaves */
+   an actor joined (rankingDirty). Its caller ignores the eax it leaves */
 void THISCALL (actor_setupFromParts)(u8 *s, int a, int id, u32 controlledBy, const u32 *pp)
 {
 	Stage *st = (Stage *)s;
@@ -844,16 +844,16 @@ void THISCALL (actor_setupFromParts)(u8 *s, int a, int id, u32 controlledBy, con
 	memcpy(AC->move, (const void *)ADDR(g_vecZero), 12);
 	AC->radius = 500.0f;   /* 500 */
 	AC->chatIcon = 0;
-	AC->timerFlags = AC->id % 2 == 1 ? 0x4000 : 0;
+	AC->stateFlags = AC->id % 2 == 1 ? 0x4000 : 0;
 	fill_dwords(ac + offsetof(Player, timers), 4, 0);   /* timers */
 	fill_dwords(ac + offsetof(Player, inForward), 11, 0);   /* inForward .. inBooster */
 	AC->inWeaponSlot = -1;
 	fill_dwords(ac + offsetof(Player, inPrevWeapon), 5, 0);   /* inPrevWeapon .. weaponLowering */
-	AC->weaponLower = 1.0f;
-	(*(int *)&AC->gauge) = AC->slotLoaded = 0;
-	AC->variantLoaded = a == st->selectedActor ? 0 : 1;
+	AC->weaponRaise = 1.0f;
+	(*(int *)&AC->slotIconTime) = AC->switchSlot = 0;
+	AC->variantLoaded = a == st->cockpitActor ? 0 : 1;
 	fill_dwords(ac + offsetof(Player, firePrev), 3, 0);   /* firePrev .. footstepTime */
-	BITS(AC->energyUsed) = BITS(AC->staminaRest) = 0x3f800000;
+	BITS(AC->energy) = BITS(AC->staminaRest) = 0x3f800000;
 	AC->overheat = AC->warned = 0;
 	fill_dwords(ac + offsetof(Player, lastHitMode), 3, (u32)-1);   /* lastHitMode .. lastHitWeapon */
 	AC->cheat = -1;
@@ -863,7 +863,7 @@ void THISCALL (actor_setupFromParts)(u8 *s, int a, int id, u32 controlledBy, con
 	AC->messageTime = -10000.0f;   /* -10000 */
 	AC->lastWarp = -1;
 	fill_dwords(ac + offsetof(Player, onWarp), 3, 0);   /* onWarp .. shieldRegenTime */
-	AC->damageFlash = 1.0f;
+	AC->whiteFlash = 1.0f;
 	AC->breakUp = 0;
 	actor_loadHead(s, a);
 	actor_loadBody(s, a);
@@ -874,7 +874,7 @@ void THISCALL (actor_setupFromParts)(u8 *s, int a, int id, u32 controlledBy, con
 		actor_loadWeapon(s, a, k, ((u32)AC->variantLoaded));
 	fill_dwords(ac + offsetof(Player, screenPos), 10, 0);   /* screenPos .. tagBottomRight, onScreen */
 	fill_dwords(ac + offsetof(Player, aimTime), 4, 0);   /* aimTime .. botNeeds */
-	AC->target1 = AC->target2 = -1;
+	AC->path = AC->pathPoint = -1;
 	AC->pathReverse = (*(int *)&AC->botWait) = 0;
 	AC->botWaitTrigger = -1;
 	AC->invulnerable = 0;
@@ -892,7 +892,7 @@ void THISCALL (actor_setupFromParts)(u8 *s, int a, int id, u32 controlledBy, con
 	memcpy(AC->stuckMove, (const void *)ADDR(g_vecZero), 12);
 	AC->homedOn = (*(int *)&AC->beepTimer) = 0;
 	(*(int *)&st->lockHeld[a]) = 0;
-	st->teamsChanged = 1;
+	st->rankingDirty = 1;
 }
 #undef AC
 
@@ -942,7 +942,7 @@ static int totals_agree(u8 *s, u8 *ac, u8 *me)
 	for (int k = 0; k < 10; k++)
 		if (!close_enough((const float *)(ac + floats3[k]), (const float *)(me + floats3[k])))
 			return 0;
-	if (!close_enough(&AC->topSpeed, &act->speed))
+	if (!close_enough(&AC->baseSpeed, &act->speed))
 		return 0;
 	int d = AC->shieldRegen - act->shieldRegen;
 	if ((long double)(d < 0 ? -d : d) > *&k_tenthsToDegrees)

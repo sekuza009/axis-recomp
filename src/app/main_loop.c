@@ -528,12 +528,12 @@ u32 THISCALL (match_freeCamFrame)(u8 *s)
 				GAME_THISCALL(k_partSteps[k][2], int, void *, int, int)(stage, act->player, GAME_VAR(int, ((u8 *)player) + k_partSteps[k][1]) + 1);
 		if (SC->fKeys[5] == 1) {
 			int it = player->items[act->slot];
-			if (it < SC->actorInfoCount - 1)
+			if (it < SC->actorItemCount - 1)
 				item = it + 1;
 		}
 	}
 	if (item >= 0) {
-		int slot = SC->actorInfo[item].slotType ? 4 : 0;
+		int slot = SC->actorItems[item].slotType ? 4 : 0;
 		actor_setActorTypeItemInfoBy((Stage *)stage, 0, slot, item);
 		actor_selectWeapon((Stage *)stage, 0, slot);
 	}
@@ -570,8 +570,8 @@ u32 THISCALL (match_freeCamFrame)(u8 *s)
 	glClearDepth(1.0);
 	glClear(0x4100);
 	gfx_setProjectionHud(1, 1.0f);
-	ViewVolume_captureMatrices(SC->view, 0, SC->modelview);
-	ViewVolume_reset(SC->view);
+	ViewVolume_captureMatrices(&SC->view, 0, SC->modelview);
+	ViewVolume_reset(&SC->view);
 	if (SC->debugGrid == 1)
 		for (int pitch = 0; pitch < 0x708; pitch += 100)
 			for (int yaw = 0; yaw < 0xe10; yaw += 150) {
@@ -580,17 +580,17 @@ u32 THISCALL (match_freeCamFrame)(u8 *s)
 				far_point(b, pitch + 100, yaw);
 				about(pb, b, actor);
 				about(pa, a, actor);
-				ViewVolume_addSegment(SC->view, (const void *)ADDR(g_packedRed), pa, pb, 1);
+				ViewVolume_addSegment(&SC->view, (const void *)ADDR(g_packedRed), pa, pb, 1);
 				far_point(a, pitch, yaw);
 				far_point(b, pitch, yaw + 150);
 				about(pb, b, actor);
 				about(pa, a, actor);
-				ViewVolume_addSegment(SC->view, (const void *)ADDR(g_packedRed), pa, pb, 1);
+				ViewVolume_addSegment(&SC->view, (const void *)ADDR(g_packedRed), pa, pb, 1);
 			}
-	stage_drawActors((Stage *)stage, SC->view, -1);
-	stage_drawBullets(stage, SC->view);
-	stage_drawParticles((Stage *)stage, SC->view);
-	ViewVolume_draw(SC->view, SC->renderMode, 0.0f);
+	stage_drawActors((Stage *)stage, &SC->view, -1);
+	stage_drawBullets(stage, &SC->view);
+	stage_drawParticles((Stage *)stage, &SC->view);
+	ViewVolume_draw(&SC->view, SC->renderMode, 0.0f);
 	gfx_setProjectionHud(0, 1.0f);
 	return SC->quitAsked == 1 ? 0 : 3;
 }
@@ -1193,7 +1193,7 @@ u32 THISCALL (replay_frame)(u8 *s)
 		glClear(0x100);
 	}
 	gfx_setProjectionHud(1, 1.0f);
-	u8 *view = SC->view;
+	u8 *view = (u8 *)&SC->view;
 	ViewVolume_captureMatrices(view, 0, SC->modelview);
 	ViewVolume_reset(view);
 	if (SC->playing == 1 && SC->cameraMode == 2 && SC->watchedPlayer >= 0)
@@ -1335,11 +1335,11 @@ static void team_colours(u8 *s, int p, int team)
 		                        GAME_VAR(u32, OBJ(k_teamValue) + side * 4), 0, 0xbf800000, 0x3f7fbe77);
 }
 
-/* the local player (localPlayer) into the match: its record (mechName ..), colours, a spawn point, the notice */
+/* the local player (localPlayer) into the match: its record (localName ..), colours, a spawn point, the notice */
 static void local_spawn(u8 *s)
 {
 	if (SC->localRecordSet == 0) {
-		playerRecord_set((u8 *)SCENE_STAGE(s), SC->localPlayer, (const char *)SC->mechName, (*(u32 *)&SC->character), (*(u32 *)&SC->localTeam), (*(u32 *)&SC->mechParts[0]),
+		playerRecord_set((u8 *)SCENE_STAGE(s), SC->localPlayer, (const char *)SC->localName, (*(u32 *)&SC->character), (*(u32 *)&SC->localTeam), (*(u32 *)&SC->mechParts[0]),
 		             (*(u32 *)&SC->mechParts[1]), (*(u32 *)&SC->mechParts[2]), (*(u32 *)&SC->mechParts[3]), (*(u32 *)&SC->mechParts[4]), (*(u32 *)&SC->mechItems[0]), (*(u32 *)&SC->mechItems[1]),
 		             (*(u32 *)&SC->mechItems[2]), (*(u32 *)&SC->mechItems[3]), (*(u32 *)&SC->mechItems[4]), (*(u32 *)&SC->mechItems[5]));
 		SC->localRecordSet = 1;
@@ -1451,14 +1451,14 @@ static float mrow(const float *m, const float *v, int a, int ia, int b, int ib, 
 }
 
 /* preset 1 of the local player's camera: at the selected weapon's muzzle (its part's bone matrix, armsModel.entries), a
-   fraction (weaponLower) of the way from the eye (0.3 heights up, turned with the view) */
+   fraction (weaponRaise) of the way from the eye (0.3 heights up, turned with the view) */
 static void muzzle_camera(u8 *s, const u8 *t)
 {
 	Player *act = (Player *)t;
 	const PlayerRecord *pr = &SC->playerRecords[act->player];
 	int slot = act->slot;
 	const ArmType *arms = &SCENE_STAGE(s)->armTypes[pr->parts[2]];
-	ActorInfo *item = (ActorInfo *)((u8 *)&SCENE_STAGE(s)->actorInfo[pr->items[slot]]);
+	ActorItem *item = (ActorItem *)((u8 *)&SCENE_STAGE(s)->actorItems[pr->items[slot]]);
 	float P[3], E[3] = { 0, 0, 0 };
 	const float *v, *m;
 	int bone;
@@ -1492,7 +1492,7 @@ static void muzzle_camera(u8 *s, const u8 *t)
 	for (int k = 0; k < 3; k++)
 		E[k] = f32(FADD(E[k], act->pos[k]));
 	float f;
-	BITS(f) = BITS(act->weaponLower);
+	BITS(f) = BITS(act->weaponRaise);
 	long double dx = FSUB(P[0], E[0]);
 	float dy = f32(FSUB(P[1], E[1])), dz = f32(FSUB(P[2], E[2]));
 	long double hx = fmul_m(dx, &f);
@@ -1678,15 +1678,15 @@ void THISCALL (match_frame)(u8 *s)
 		SC->players[SC->localPlayer].grade = SC->level;
 		SC->players[SC->localPlayer].levelShown = SC->level;
 		SC->players[SC->localPlayer].score = SC->levelPoints;
-		SC->players[SC->localPlayer].startPoints = SC->levelPoints;
+		SC->players[SC->localPlayer].scoreCounted = SC->levelPoints;
 		SC->statsTaken = 1;
 	}
-	if (SC->flagLoaded == 0 && SC->localPlayer >= 0 && SC->sessionMode == 1) {
+	if (SC->flagLoadTried == 0 && SC->localPlayer >= 0 && SC->sessionMode == 1) {
 		int loaded = playerRecord_loadFlag(stage, SC->localPlayer);
 		SC->playerRecords[SC->localPlayer].flagChanged = loaded;
 		SC->playerRecords[SC->localPlayer].flagSent = 0;
 		SC->flagUploadTimer = 5.0f;   /* 5 */
-		SC->flagLoaded = 1;
+		SC->flagLoadTried = 1;
 	} else if (run_down(s, offsetof(Scene, flagUploadTimer))) {
 		flag_uploadAtlas(stage);
 		SC->flagUploadTimer = 0.0f;
@@ -1696,8 +1696,8 @@ void THISCALL (match_frame)(u8 *s)
 		PATCHED_THISCALL(0x498dd8, u32, void *, const char *)(stage, g_catalogueFile);   /* catalogue_loadComponents */
 		SC->localPlayer = net_localSlot();
 		actor_resetSlot((Stage *)stage, SC->localPlayer);
-		player_setName((Stage *)stage, SC->localPlayer, (const char *)SC->mechName);
-		strcpy(((Player *)ACTOR_AT(SC->localPlayer))->name, (const char *)SC->mechName);
+		player_setName((Stage *)stage, SC->localPlayer, (const char *)SC->localName);
+		strcpy(((Player *)ACTOR_AT(SC->localPlayer))->name, (const char *)SC->localName);
 		SC->players[SC->localPlayer].player = SC->localPlayer;
 		msg_playerConnected(s, SC->localPlayer);
 		net_announcePlayerConnected(s, SC->localPlayer, (u8 *)&SC->playerRecords[SC->localPlayer] + 4);
@@ -1716,7 +1716,7 @@ void THISCALL (match_frame)(u8 *s)
 			if (SC->localTeam < 0) {
 				scene_setLocalTeam((Scene *)s, SC->localPlayer);
 				msg_playerJoinedTeam((Scene *)s, SC->localPlayer, SC->localTeam);
-				net_announceJoinedTeam((Scene *)s, SC->localPlayer, SC->localTeam, (const char *)SC->mechName);
+				net_announceJoinedTeam((Scene *)s, SC->localPlayer, SC->localTeam, (const char *)SC->localName);
 			}
 			SC->spawnPending = 1;
 		}
@@ -1822,7 +1822,7 @@ void THISCALL (match_frame)(u8 *s)
 		stage_refillLights(stage);
 		stage_updateObjects(stage, BITS(dt));
 		stage_advanceScenePath(stage, BITS(dt));
-		if (SC->sessionMode == 1) {   /* the server checks the local player's parts every 20 s */
+		if (SC->sessionMode == 1) {   /* every networked machine checks its own player's parts every 20 s */
 			long double v = FSUB(SC->partsCheckTime, SC->frameTime);
 			SC->partsCheckTime = (float)v;
 			if (!(v >= 0) && SC->localPlayer >= 0 && SC->players[SC->localPlayer].state == 1) {
@@ -1936,23 +1936,23 @@ void THISCALL (match_frame)(u8 *s)
 		notice_printCentre((Scene *)s, (const char *)SC->centreNotice);
 		(*(u8 *)&SC->centreNotice[0]) = 0;
 	}
-	if (SC->teamsChanged == 1 || !(SC->rankingTimer > 0)) {
+	if (SC->rankingDirty == 1 || !(SC->rankingTimer > 0)) {
 		scene_updateRanking(sc);
 		if (net_playerInUse(SC->localPlayer) == 1 && SC->rank[SC->localPlayer] == 1
 		    && (SC->localRank > 1 || (SC->kingOfTheHill == 1 && SC->localRank != 1)))
 			sound_playVolume(0xf, 100);   /* (never: the update just set localRank to the place; as the original) */
-		SC->teamsChanged = 0;
+		SC->rankingDirty = 0;
 		SC->rankingTimer = 5.0f;
 	}
 	if (SC->recording == 1)
 		SC->recordTime = f32(FADD(SC->frameTime, SC->recordTime));
 	/* the network's per-player updates */
 	if (SC->localPlayer >= 0) {
-		long double v = FSUB(SC->stateSendTimer, SC->frameTime);
-		SC->stateSendTimer = (float)v;
+		long double v = FSUB(SC->gamePacketTimer, SC->frameTime);
+		SC->gamePacketTimer = (float)v;
 		if (!(v > 0)) {
 			SC->sendFlags[SC->localPlayer][0] = 1;
-			SC->stateSendTimer = 3.0f;
+			SC->gamePacketTimer = 3.0f;
 		}
 		if (SC->players[SC->localPlayer].team >= 0) {
 			v = FSUB(SC->infoSendTimer, SC->frameTime);
@@ -2086,20 +2086,20 @@ void THISCALL (match_frame)(u8 *s)
 	}
 	/* the frag and time limits */
 	if (SC->client == 0 && SC->matchOver == 0) {
-		int limit = SC->scoreLimit;
+		int limit = SC->fragLimit;
 		if (limit > 0) {
 			if (SC->teamGame == 1) {
-				if (SC->teamScores[scene_teamIdAt((Scene *)s, 0)] >= SC->scoreLimit
-				    || SC->teamScores[scene_teamIdAt((Scene *)s, 1)] >= SC->scoreLimit) {
+				if (SC->teamScores[scene_teamIdAt((Scene *)s, 0)] >= SC->fragLimit
+				    || SC->teamScores[scene_teamIdAt((Scene *)s, 1)] >= SC->fragLimit) {
 					winning_team(s);
 					round_over(s, 0);
-					if (SC->sessionMode == 0 && SC->teamScores[SC->localTeam] >= SC->scoreLimit
+					if (SC->sessionMode == 0 && SC->teamScores[SC->localTeam] >= SC->fragLimit
 					    && g_mapIndex == g_progress)
 						SC->stageCleared = 1;
 				}
 			} else if (SC->rankCount > 0 && SC->players[SC->ranking[0]].kills >= limit) {
 				round_over(s, 0);
-				if (SC->sessionMode == 0 && SC->players[SC->localPlayer].kills >= SC->scoreLimit
+				if (SC->sessionMode == 0 && SC->players[SC->localPlayer].kills >= SC->fragLimit
 				    && g_mapIndex == g_progress)
 					SC->stageCleared = 1;
 			}

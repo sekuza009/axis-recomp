@@ -1093,7 +1093,7 @@ typedef struct { float r, g, b, a; } Colour;
 #define profile_readHeader() GAME_FN(profile_readHeader, 0x4474a0, u32, void)()   /* a 0x3ac-byte profile record scrambled (menu/profile_misc.c) */
 #define mech_storeToProfile() GAME_FN(mech_storeToProfile, 0x4464b0, void, void)()   /* the current profile's record gathered (0x9f1718) */
 #define crypt_record80(p, key) GAME_FN(crypt_record80, 0x445f40, void, u8 *, u8)(p, key)   /* a 0x80-byte record unscrambled */
-#define fread_scrambled(p, size, count, f) GAME_FN(file_readScrambled, 0x46cbe0, u32, void *, u32, u32, void *)(p, size, count, f)   /* fread, each byte unscrambled (rotated left, xor 0x59) */
+#define fread_scrambled(p, size, count, f) GAME_FN(file_readScrambled, 0x46cbe0, u32, void *, u32, u32, void *)(p, size, count, f)   /* fread, each byte unscrambled (xor 0x59, then rotated left by 1) */
 #define bullet_drawTrail(stage, b, view) GAME_THISFN(bullet_drawTrail, 0x47ca70, void, Stage *, int, void *)(stage, b, view)   /* bullet i's trail drawn */
 #define recorder_noteStub(self, a0, a1, a2, a3) GAME_THISFN(recorder_noteStub, 0x48b450, void, void *, int, int, int, int)(self, a0, a1, a2, a3)
 #define mem_free(p) GAME_FN(mem_free, 0x467d60, u32, void *)(p)   /* p deleted (0 for none) */

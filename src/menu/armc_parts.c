@@ -1,16 +1,16 @@
 /* armc_parts.c: the ARM CENTER's part-info records (0x80 bytes): what the screen shows of an actor type picked as
-   a part or a weapon: its folder's last name, six values copied from its ActorInfo, eight scaled. */
+   a part or a weapon: its folder's last name, six values copied from its ActorItem, eight scaled. */
 #include "../game.h"
 #include <string.h>
 
 #define FIELD(type, obj, offset) GAME_VAR(type, (u8 *)RELOC(obj) + (offset))
 
-/* ActorInfo fields copied as they are (PartInfo field, ActorInfo field) */
-static const short copied[6][2] = { { offsetof(PartInfo, slotType), offsetof(ActorInfo, slotType) }, { offsetof(PartInfo, ammoType), offsetof(ActorInfo, ammoType) }, { offsetof(PartInfo, ammoPerShot), offsetof(ActorInfo, ammoPerShot) }, { offsetof(PartInfo, burst), offsetof(ActorInfo, burst) }, { offsetof(PartInfo, damageType), offsetof(ActorInfo, damageType) }, { offsetof(PartInfo, damage), offsetof(ActorInfo, damage) } };
+/* ActorItem fields copied as they are (PartInfo field, ActorItem field) */
+static const short copied[6][2] = { { offsetof(PartInfo, slotType), offsetof(ActorItem, slotType) }, { offsetof(PartInfo, ammoType), offsetof(ActorItem, ammoType) }, { offsetof(PartInfo, ammoPerShot), offsetof(ActorItem, ammoPerShot) }, { offsetof(PartInfo, burst), offsetof(ActorItem, burst) }, { offsetof(PartInfo, damageType), offsetof(ActorItem, damageType) }, { offsetof(PartInfo, damage), offsetof(ActorItem, damage) } };
 
-/* and those scaled by a constant of the game (PartInfo field, ActorInfo field, constant's address) */
+/* and those scaled by a constant of the game (PartInfo field, ActorItem field, constant's address) */
 static const struct { short dst, src; u32 scale; } scaled[8] = {
-	{ offsetof(PartInfo, range), offsetof(ActorInfo, stepLength), ADDR(k_0_01f) }, { offsetof(PartInfo, speed), offsetof(ActorInfo, velocity), ADDR(k_0_01f) }, { offsetof(PartInfo, spread), offsetof(ActorInfo, spread), ADDR(k_tenthsToDegrees) }, { offsetof(PartInfo, hitRange), offsetof(ActorInfo, hitRange), ADDR(k_0_01f) }, { offsetof(PartInfo, splashRadius), offsetof(ActorInfo, splashRadius), ADDR(k_0_01f) }, { offsetof(PartInfo, cycleTime), offsetof(ActorInfo, cycleTime), OBJ(k_1000f) }, { offsetof(PartInfo, guidance), offsetof(ActorInfo, guidance), ADDR(k_tenthsToDegrees) }, { offsetof(PartInfo, targetingTime), offsetof(ActorInfo, targetingTime), OBJ(k_1000f) } };
+	{ offsetof(PartInfo, range), offsetof(ActorItem, stepLength), ADDR(k_0_01f) }, { offsetof(PartInfo, speed), offsetof(ActorItem, velocity), ADDR(k_0_01f) }, { offsetof(PartInfo, spread), offsetof(ActorItem, spread), ADDR(k_tenthsToDegrees) }, { offsetof(PartInfo, hitRange), offsetof(ActorItem, hitRange), ADDR(k_0_01f) }, { offsetof(PartInfo, splashRadius), offsetof(ActorItem, splashRadius), ADDR(k_0_01f) }, { offsetof(PartInfo, cycleTime), offsetof(ActorItem, cycleTime), OBJ(k_1000f) }, { offsetof(PartInfo, guidance), offsetof(ActorItem, guidance), ADDR(k_tenthsToDegrees) }, { offsetof(PartInfo, targetingTime), offsetof(ActorItem, targetingTime), OBJ(k_1000f) } };
 
 /* record rec for actor type idx; idx -1: the record emptied (its slotType -1) */
 static void part_info(u8 *rec, int idx)
@@ -21,7 +21,7 @@ static void part_info(u8 *rec, int idx)
 		memset(rec + offsetof(PartInfo, ammoType), 0, sizeof(PartInfo) - offsetof(PartInfo, ammoType));   /* ammoType .. the end */
 		return;
 	}
-	ActorInfo *info = &g_scene->actorInfo[idx];
+	ActorItem *info = &g_scene->actorItems[idx];
 
 	/* the name: the folder path's part after its last slash */
 	char path[128] = { 0 };
@@ -37,11 +37,11 @@ static void part_info(u8 *rec, int idx)
 		FIELD(int, rec, copied[k][0]) = FIELD(int, info, copied[k][1]);
 	for (int k = 0; k < 8; k++) {
 		if (k == 5)
-			((PartInfo *)rec)->splashBorderDamage = ((ActorInfo *)info)->splashBorderDamage;
+			((PartInfo *)rec)->splashBorderDamage = ((ActorItem *)info)->splashBorderDamage;
 		FIELD(float, rec, scaled[k].dst) =
 			(float)((long double)FIELD(float, info, scaled[k].src) * GAME_VAR(float, scaled[k].scale));
 	}
-	BITS(((PartInfo *)rec)->weight) = BITS(((ActorInfo *)info)->weight);
+	BITS(((PartInfo *)rec)->weight) = BITS(((ActorItem *)info)->weight);
 }
 
 /* 0x41ca50: the record of weapon slot slot (g_partRecords, 0x80 apart) */

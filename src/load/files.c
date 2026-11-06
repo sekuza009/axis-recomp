@@ -1353,7 +1353,7 @@ u32 THISCALL (catalogue_loadComponents)(u8 *scene, const char *path)
 	static const u32 tables[6][4] = {   /* log message, count, records, record size */
 		{ STR(0x4c755c, "read ActorHeadInfo"), offsetof(Stage, headTypeCount), offsetof(Stage, headTypes), sizeof(HeadType) }, { STR(0x4c7548, "read ActorChestInfo"), offsetof(Stage, chestTypeCount), offsetof(Stage, chestTypes), sizeof(ChestType) },
 		{ STR(0x4c7534, "read ActorArmInfo"), offsetof(Stage, armTypeCount), offsetof(Stage, armTypes), sizeof(ArmType) }, { STR(0x4c7520, "read ActorLegInfo"), offsetof(Stage, legTypeCount), offsetof(Stage, legTypes), sizeof(LegType) },
-		{ STR(0x4c7508, "read ActorBoosterInfo"), offsetof(Stage, boosterTypeCount), offsetof(Stage, boosterTypes), sizeof(BoosterType) }, { STR(0x4c74f4, "read ActorItemInfo"), offsetof(Stage, actorInfoCount), offsetof(Stage, actorInfo), sizeof(ActorInfo) } };
+		{ STR(0x4c7508, "read ActorBoosterInfo"), offsetof(Stage, boosterTypeCount), offsetof(Stage, boosterTypes), sizeof(BoosterType) }, { STR(0x4c74f4, "read ActorItemInfo"), offsetof(Stage, actorItemCount), offsetof(Stage, actorItems), sizeof(ActorItem) } };
 	void *f = crt_fopen(path, (const char *)STR(0x4ad170, "rb"));
 	if (!f)
 		sys_fatalError((char *)OBJ(g_logStage), (const char *)STR(0x4c75bc, "can't open file %s - loadActorCompone..."), (int)path);

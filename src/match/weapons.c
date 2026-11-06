@@ -17,8 +17,8 @@ static void weapon_cycle(Stage *stage, int i, int step)
 		int weapon = player->items[slot];
 		if (weapon < 0)
 			continue;
-		int type = stage->actorInfo[weapon].ammoType;
-		if (ac->ammo[type] < stage->actorInfo[weapon].ammoPerShot || type < 0)
+		int type = stage->actorItems[weapon].ammoType;
+		if (ac->ammo[type] < stage->actorItems[weapon].ammoPerShot || type < 0)
 			continue;
 		actor_selectWeapon(stage, i, slot);
 		return;
@@ -40,7 +40,7 @@ void THISCALL (actor_setWeaponSlot)(Stage *stage, int i, int slot)
 		ac->slot = slot;
 		if (slot < 4)
 			ac->lastWeaponSlot = slot;
-		ac->actorType = stage->playerRecords[player].items[slot];
+		ac->heldItem = stage->playerRecords[player].items[slot];
 	}
 }
 
@@ -52,10 +52,10 @@ void THISCALL (actor_selectWeapon)(Stage *stage, int i, int slot)
 	if (actor->slot == slot)
 		return;
 	int weapon = stage->playerRecords[actor->player].items[slot];
-	if (weapon > -1 && stage->actorInfo[weapon].ammoType > -1) {
+	if (weapon > -1 && stage->actorItems[weapon].ammoType > -1) {
 		actor->weaponLowering = 1;
-		actor->slotLoaded = slot;
-		actor->gauge = 2.0f;
+		actor->switchSlot = slot;
+		actor->slotIconTime = 2.0f;
 	}
 }
 
@@ -97,9 +97,9 @@ void THISCALL (actor_takeDamage)(u8 *scene, int attacker, int target, int mode, 
 		int percent = g_characterProfiles[character].stats[group[kind]] + 100;
 		damage = ftol(fadd_m(fmul_m((long double)percent * damage, (const float *)ADDR(k_0_01f)), (const float *)ADDR(k_0_5f)));
 	}
-	if (((u32)atk->timerFlags) & 0x100)
+	if (((u32)atk->stateFlags) & 0x100)
 		damage *= 2;
-	if (((u32)ac->timerFlags) & 0x800)
+	if (((u32)ac->stateFlags) & 0x800)
 		damage /= 2;
 	if (ac->team != atk->team || target == attacker) {
 		if (mode == 0) {
@@ -155,7 +155,7 @@ static int within(const float *p, const float *from, const float *range)
    it follows (stuckPath) within its range (pathRange) on each axis of it (pos) are candidates. The first five are
    kept, marked whether the line to them is clear (collision_rayTrace); after that a clear one takes the place of a
    random one that is not clear (two tries), and that list is left. One of the candidates picked at random: the
-   target (target1 list, target2 point, pathReverse a random side), stuckPath none, the range 1500. With none the range
+   target (path list, pathPoint point, pathReverse a random side), stuckPath none, the range 1500. With none the range
    grows (x k_1_5f). Its caller ignores the eax it leaves */
 void THISCALL (actor_pickPathPoint)(u8 *scene, int p)
 {
@@ -193,8 +193,8 @@ void THISCALL (actor_pickPathPoint)(u8 *scene, int p)
 	}
 	if (n > 0) {
 		int k = table_rand() % n;
-		ac->target1 = lists[k];
-		ac->target2 = points[k];
+		ac->path = lists[k];
+		ac->pathPoint = points[k];
 		ac->pathReverse = table_rand() & 1;
 		ac->stuckPath = -1;
 		BITS(ac->pathRange) = 0x44bb8000;   /* 1500.0 */
@@ -216,7 +216,7 @@ static u32 next_rand(u32 n)
 }
 
 /* 0x479b40 (thiscall on the scene): bullet slot (0x4e8 bytes from bullets) fired by owner from the shot (+0 a
-   target given, +4 the weapon: its record 0x2e18 bytes from actorInfo, +8 the origin, hitPlane the target's record,
+   target given, +4 the weapon: its record 0x2e18 bytes from actorItems, +8 the origin, hitPlane the target's record,
    dir the direction or the target, muzzle kept at colour). Its id (or the next serial, bulletSerial). Aimed shots
    spread with the weapon's spread less the owner's steadiness (accuracy) and are renormalised; mode 3 (shotMode) fires
    into a random cone about the direction (through gluLookAt's inverse); the first step (speed stepLength) is traced
@@ -228,7 +228,7 @@ void THISCALL (bullet_init)(u8 *s, int slot, int id, int owner, int homingTarget
 {
 	u8 *b = (u8 *)&ST->bullets[slot];
 	const FiredRound *rd = (const FiredRound *)shot;
-	ActorInfo *w = (ActorInfo *)((u8 *)&ST->actorInfo[rd->weapon]);
+	ActorItem *w = (ActorItem *)((u8 *)&ST->actorItems[rd->weapon]);
 	const float *o = rd->from, *aim = rd->dir;
 	if (id >= 0)
 		BU->id = id;
@@ -346,7 +346,7 @@ void THISCALL (bullet_init)(u8 *s, int slot, int id, int owner, int homingTarget
 /* ---- bullet_update: a bullet's frame ---- */
 
 #define BU ((Bullet *)b)   /* the same by its fields (src/scene.fields) */
-#define WI ((ActorInfo *)w)   /* the same by its fields (src/scene.fields) */
+#define WI ((ActorItem *)w)   /* the same by its fields (src/scene.fields) */
 
 /* an effect (particle_spawn's record r, 31 words: kind, flag, a point, a direction, three words, the size, one
    more; the rest as the last effect left them) */
@@ -494,7 +494,7 @@ static void trail(u8 *b, const u8 *w, int flying)
 }
 
 /* the shot drawn by its kind (shotMode): a trail, a beam, or a particle of kind + 0x14 from the last point to the
-   point (flagged for the camera's own first 0.03 s, selectedActor) */
+   point (flagged for the camera's own first 0.03 s, cockpitActor) */
 static void draw_shot(u8 *s, u8 *b, const u8 *w, u32 *r, int flying)
 {
 	int kind = WI->shotMode;
@@ -503,7 +503,7 @@ static void draw_shot(u8 *s, u8 *b, const u8 *w, u32 *r, int flying)
 	else if (kind == 7)
 		beam(s, b, w, r, flying);
 	else {
-		u32 flag = BU->owner == ST->selectedActor && !(BU->age >= *&k_0_03f) ? 1 : 0;
+		u32 flag = BU->owner == ST->cockpitActor && !(BU->age >= *&k_0_03f) ? 1 : 0;
 		effect(s, r, kind + 0x14, flag, (u8 *)BU->prev, (u8 *)BU->pos, 0, 0, 0, effect_size(w), 0);
 	}
 }
@@ -522,7 +522,7 @@ static void hit_actor(u8 *s, u8 *b, const u8 *w, u32 *r, int weapon)
 		dir[k] = f32(fsub_m(fld_m(BU->pos + k), &ST->actors[t].nextPos[k]));
 	Vec3_normalize(dir);
 	effect(s, r, WI->shotMode + 0x1e, 0, (u8 *)BU->end, dir, 0, 0, 0, effect_size(w), 0);
-	effect(s, r, 8, ST->actors[BU->hitActor].timerFlags & 0x2000, (u8 *)BU->end, dir, 0, 0, 0, 0, 0);
+	effect(s, r, 8, ST->actors[BU->hitActor].stateFlags & 0x2000, (u8 *)BU->end, dir, 0, 0, 0, 0, 0);
 	if (WI->hitSound >= 0)
 		sound_play3D(WI->hitSound, ST->cameraPos, (u8 *)BU->pos, ST->viewDir, 0x47435000);
 	if (BU->owner == ST->playerActor)
@@ -760,7 +760,7 @@ static void fly_local(u8 *s, u8 *b, const u8 *w, const float *dt)
 }
 
 /* 0x47a2d0 (thiscall on the scene): bullet slot's frame (0x4e8 bytes from bullets; its weapon's record 0x2e18
-   bytes from actorInfo). An actor it hit (hitActor) takes it first. In flight (age age up to its life life): the
+   bytes from actorItems). An actor it hit (hitActor) takes it first. In flight (age age up to its life life): the
    local player's (playerActor) bullets move and find their hits (fly_local), other players' follow the network's
    points (netPoint, or the last step again); it is drawn when it moved (moved), aged, and its owner told when it ends
    (actors[].sendNow). Afterwards: another player's bullet is drawn at its last point, then the surface it hit, the
@@ -770,7 +770,7 @@ void THISCALL (bullet_update)(u8 *s, int slot, u32 dt_bits)
 	const float *dt = (const float *)&dt_bits;   /* (only ever read from memory, as the original does) */
 	u8 *b = (u8 *)&ST->bullets[slot];
 	int weapon = BU->weapon;
-	u8 *w = (u8 *)&ST->actorInfo[weapon];
+	u8 *w = (u8 *)&ST->actorItems[weapon];
 	u32 r[31];   /* particle_spawn's record, reused */
 	float *prev = BU->prev, *cur = BU->pos, *step = BU->step;
 	if (BU->hitActor >= 0)

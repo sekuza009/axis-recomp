@@ -77,7 +77,7 @@ void THISCALL (bullet_drawTrail)(Stage *stage, int b, void *view)
 	for (int a = 0; a < 3; a++)
 		if (!(r + stage->cameraPos[a] >= bu->prev[a]))
 			return;
-	if (stage->actorInfo[bu->weapon].shotMode != 3)
+	if (stage->actorItems[bu->weapon].shotMode != 3)
 		return;
 	int texture = stage->effectTextures[1];
 	u32 uv0[2] = { 0x3e840000, 0x3e840000 }, uv1[2] = { 0x3efc0000, 0x3ebc0000 };   /* (0.258, 0.258), (0.492, 0.367) */

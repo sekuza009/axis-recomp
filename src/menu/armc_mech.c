@@ -8,10 +8,10 @@ void THISCALL (mech_setName)(Scene *scene, const char *name)
 {
 	int i = 0;
 	do
-		scene->mechName[i] = name[i];
+		scene->localName[i] = name[i];
 	while (name[i++] != '\0');
 	if (scene->localPlayer >= 0)
-		player_setName(STAGE(scene), scene->localPlayer, scene->mechName);
+		player_setName(STAGE(scene), scene->localPlayer, scene->localName);
 }
 
 /* 0x461370: the local pilot's character set: the scene's and, with a local player, its record's and actors' */
@@ -104,7 +104,7 @@ void THISCALL (mech_setAll)(Scene *scene, const char *name, int character, int t
 
 /* 0x461540 (thiscall on the game): the shown actor (localPlayer; none when negative) given a weapon slot (none given,
    negative: its current one, players[].slot) through the stage's refresh (stage_remakePlayerActor), its position and two angles kept
-   across that; its players[].variantLoaded set unless it is the stage's own (selectedActor). A slot over 3 first selects and updates
+   across that; its players[].variantLoaded set unless it is the stage's own (cockpitActor). A slot over 3 first selects and updates
    its players[].lastWeaponSlot one. Its callers ignore the eax it leaves */
 void THISCALL (armc_giveShownActorWeapon)(u8 *game, int slot)
 {
@@ -117,7 +117,7 @@ void THISCALL (armc_giveShownActorWeapon)(u8 *game, int slot)
 	u32 angle0 = BITS(ACTOR.nextPitch), angle1 = BITS(ACTOR.nextYaw);   /* (copied as dwords, put back through the FPU) */
 	int other = ACTOR.lastWeaponSlot;
 	int chosen = slot >= 0 ? slot : ACTOR.slot;
-	ACTOR.variantLoaded = I != sc->selectedActor;
+	ACTOR.variantLoaded = I != sc->cockpitActor;
 	Stage *stage = SCENE_STAGE(game);
 	stage_remakePlayerActor(stage);
 	for (int k = 0; k < 3; k++)

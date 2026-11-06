@@ -1537,8 +1537,8 @@ u32 STDCALL (dplay_enumConnections)(const u32 *guid, const void *connection, u32
 /* 0x48e680 (thiscall on the scene): the first pending match event (flags at 1, each cleared when taken) sent as its
    packet (kind in the second byte; 0x6b where it carries nothing): 3, 4, 5 (endEvents[0], endEvents[1], endEvents[2]); 6 two
    bytes (cheatPending: cheatPlayer, cheatCode); 7 a byte and a line (chatPending: chatPlayer, chatLine; and byte
-   0x3e from chatTeam); 8 the same (connectPending: connectPlayer, connectName); 9 a byte (quitPending: quitPlayer); 10 two
-   bytes and a line (joinPending: joinPlayer, joinTeam, joinName); 11 the camera's actor, a byte and a line
+   0x3c from chatTeam); 8 the same (connectPending: connectPlayer, connectName); 9 a byte (quitPending: quitPlayer); 10 two
+   bytes and a line (joinPending: joinPlayer, joinTeam, joinName); 11 the local player (localPlayer), a byte and a line
    (changePending: changeTeam, changeName); 13 (restartPending). With none pending any more the events are done
    (announcePending 0). Sent by send_packet (even with nothing pending). Its callers ignore the eax it leaves */
 static void THISCALL __attribute__((used)) net_sendMatchEvent_body(u8 *s, u8 *packet)
@@ -1630,7 +1630,7 @@ static int angle_byte(const void *v)
 }
 
 /* 0x48e2c0 (thiscall on the game): player p's state sent (packet 0; the actor at players + p x 0x8888): its
-   flags word (timerFlags), a byte of p and its mode (chatIcon: 0 with slot, 1, 2; bit 0 in play state), the position
+   flags word (stateFlags), a byte of p and its mode (chatIcon: 0 with slot, 1, 2; bit 0 in play state), the position
    (nextPos, x k_tenthsToDegrees, words), two angles (nextPitch, nextYaw) and two tilts (nextForward, nextStrafe), two nibbles (nextClimb,
    nextRun), a third angle (nextLean); a pending hit (hitPending: cleared) as 0x80 alive / 0xc0 dead with the attacker
    (lastAttacker) and value (lastHitWeapon); then its five shot slots (shotBullets, nine bytes each): a slot whose shot (0x4e8 bytes
@@ -1643,7 +1643,7 @@ static void THISCALL __attribute__((used)) net_sendPlayerState_body(u8 *g, int p
 	Player *pl = (Player *)a;
 	u16 w;
 	packet[1] = 0;
-	memcpy(packet + 2, &pl->timerFlags, 2);
+	memcpy(packet + 2, &pl->stateFlags, 2);
 	switch (pl->chatIcon) {
 	case 0: packet[4] = (u8)((((u8)p << 3) | (u8)pl->slot) << 1); break;
 	case 1: packet[4] = (u8)(p << 4 | 0xc); break;
@@ -1902,31 +1902,31 @@ void THISCALL (net_processGamePacket)(u8 *g, u32 from, int size, const char *pkt
 		int weapon = (b[4] >> 1) & 7, i = b[4] >> 4;
 		float x = tens(*(const short *)(pkt + 5)), y = tens(*(const short *)(pkt + 7)), z = tens(*(const short *)(pkt + 9));
 		long double h = fmul_m((long double)b[0xb], &k_14_0625f);
-		float yaw = f32(h);
+		float pitch = f32(h);   /* b[0xb]: the pitch, b[0xc]: the heading (nextPitch, nextYaw) */
 		if (h > *&k_1800f)
-			yaw = f32(FSUB(yaw, k_3600f));
-		float pitch = f32(fmul_m((long double)b[0xc], &k_14_0625f));
+			pitch = f32(FSUB(pitch, k_3600f));
+		float yaw = f32(fmul_m((long double)b[0xc], &k_14_0625f));
 		if (GAME_VAR(int, PLAYER(i)) == 0) {
 			GS->sendFlags[GS->localPlayer][0] = 1;
 			GS->sendFlags[i][2] = 1;
 			return;
 		}
 		Player *ac = (Player *)(ACTOR(i));
-		if ((*(const u16 *)&ac->timerFlags ^ *(const u16 *)(pkt + 2)) & 0x4000)
+		if ((*(const u16 *)&ac->stateFlags ^ *(const u16 *)(pkt + 2)) & 0x4000)
 			actor_deactivate(STAGE, i);   /* actor_deactivate */
 		if (ac->active == 0 && (b[4] & 1)) {
 			u32 rec[7] = { (u32)i, 0 };
 			memcpy(&rec[2], &x, 4);
 			memcpy(&rec[3], &y, 4);
 			memcpy(&rec[4], &z, 4);
-			memcpy(&rec[5], &yaw, 4);
-			memcpy(&rec[6], &pitch, 4);
+			memcpy(&rec[5], &pitch, 4);
+			memcpy(&rec[6], &yaw, 4);
 			stage_setupActorSlot((Stage *)STAGE, i, -1, from, rec);
 			scene_updateRanking(g);   /* scene_updateRanking */
 		}
 		ac->netFired = 1;
 		ac->dropAge = f32(FADD(ac->spawnAge, k_10f));
-		BITS(ac->timerFlags) = *(const u16 *)(pkt + 2);
+		BITS(ac->stateFlags) = *(const u16 *)(pkt + 2);
 		if (weapon == 6)
 			ac->chatIcon = 1;
 		else if (weapon == 7)
@@ -1938,8 +1938,8 @@ void THISCALL (net_processGamePacket)(u8 *g, u32 from, int size, const char *pkt
 		ac->netPos[0] = x;
 		ac->netPos[1] = y;
 		ac->netPos[2] = z;
-		ac->netPitch = yaw;
-		ac->netYaw = pitch;
+		ac->netPitch = pitch;
+		ac->netYaw = yaw;
 		ac->netMotion[0] = f32(fmul_m((long double)(signed char)b[0xd], &k_tenth));
 		ac->netMotion[1] = f32(fmul_m((long double)(signed char)b[0xe], &k_tenth));
 		ac->netMotion[2] = f32(fmul_m((long double)(b[0xf] >> 4), &k_0_06666667f));
@@ -2023,7 +2023,7 @@ void THISCALL (net_processGamePacket)(u8 *g, u32 from, int size, const char *pkt
 				GS->dataLossPending = 1;
 				GS->dataLossCode = 2;
 			}
-			if (!table_ok(g, offsetof(Scene, actorInfo), offsetof(Scene, geometryPerRow[5]), offsetof(Scene, actorInfoCount), sizeof(ActorInfo) / 4, ((const GamePacket *)pkt)->checkRow2, ((const GamePacket *)pkt)->checkValue2)) {
+			if (!table_ok(g, offsetof(Scene, actorItems), offsetof(Scene, geometryPerRow[5]), offsetof(Scene, actorItemCount), sizeof(ActorItem) / 4, ((const GamePacket *)pkt)->checkRow2, ((const GamePacket *)pkt)->checkValue2)) {
 				GS->dataLossPending = 1;
 				GS->dataLossCode = 3;
 			}
@@ -2054,7 +2054,7 @@ void THISCALL (net_processGamePacket)(u8 *g, u32 from, int size, const char *pkt
 	case 2: {
 		const char *name = pkt + 2;
 		const u8 *m = b + 2;   /* the record after the name's 0x11 bytes */
-		int i = m[0x14], lim = GS->actorInfoCount;
+		int i = m[0x14], lim = GS->actorItemCount;
 		if (strlen(name) >= 0x11 || (signed char)m[0x11] < 0 || (signed char)m[0x11] > 8 || i >= 0x10 || m[0x15] > GS->headCount ||
 		    m[0x16] > GS->chestCount || m[0x17] > GS->armCount || m[0x18] > GS->legCount || m[0x19] > GS->boosterCount)
 			break;

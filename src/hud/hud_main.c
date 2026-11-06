@@ -144,7 +144,7 @@ static void main_weapons(Scene *scene, Player *player)
 		left = f32(left - wx(8.0f));
 		left = f32(left - wx(244.0f));
 		int x = ftol(wx(acrossf) + left);
-		int other = player->weapon != i;
+		int other = player->ammoKind != i;
 		glEnable(GL_TEXTURE_2D);
 		tex_bind(g_textures->banks[scene->hudBarTexture / 512], scene->hudBarTexture % 512);
 		glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
@@ -170,7 +170,7 @@ static void main_weapons(Scene *scene, Player *player)
 		glVertex2i(x, vy);
 		glEnd();
 		glDisable(GL_TEXTURE_2D);
-		glColor4f(1.0f, 1.0f, 1.0f, player->weapon == i ? 1.0f : 0.5f);
+		glColor4f(1.0f, 1.0f, 1.0f, player->ammoKind == i ? 1.0f : 0.5f);
 		float scale = f32(wx(0.53f));
 		float dyf = f32(hy(50.0f) + y0f);
 		dyf = f32(dyf - hy(26.0f));
@@ -193,7 +193,7 @@ static void main_gauge(Scene *scene, Player *player)
 	int x = ftol(centre - wx(32.0f));
 	glEnable(GL_TEXTURE_2D);
 	tex_bind(g_textures->banks[scene->menuBoxTexture / 512], scene->menuBoxTexture % 512);
-	float gauge = player->gauge;
+	float gauge = player->slotIconTime;
 	glColor4f(1.0f, 1.0f, 1.0f, gauge > 1.0f ? 1.0f : gauge);
 	glBegin(GL_QUADS);
 	glTexCoord2f(tex255(player->slot % 3 * 64), tex255((player->slot / 3 + 2) * 64));
@@ -215,12 +215,12 @@ static void main_gauge(Scene *scene, Player *player)
 	glDisable(GL_TEXTURE_2D);
 }
 
-/* the four timers down the right side (those whose bit 8 + k is set in timerFlags): an icon from the HUD\'s icon
+/* the four timers down the right side (those whose bit 8 + k is set in stateFlags): an icon from the HUD\'s icon
    atlas, and the seconds left once 30 or fewer */
 static void main_timers(Scene *scene, Player *player)
 {
 	for (int k = 0; k < 4; k++) {
-		if (!(player->timerFlags & 0x100 << k))
+		if (!(player->stateFlags & 0x100 << k))
 			continue;
 		float left = player->timers[k];
 		float h = f32(gfx_getHeight() / 2);
@@ -289,11 +289,11 @@ static void main_snapshot(Scene *scene, Player *player)
 		x = ftol(w - wx(128.0f));
 	}
 	glEnable(GL_TEXTURE_2D);
-	if (scene->snapshotTex[player->actorType] < 0) {
-		sprintf(name, "Actor/%s/SnapShot", scene->actorInfo[player->actorType].name);
-		scene->snapshotTex[player->actorType] = tex_getIdByName(g_textures, name, 0, 0, 0, 0, 0, 0, 0);
+	if (scene->snapshotTex[player->heldItem] < 0) {
+		sprintf(name, "Actor/%s/SnapShot", scene->actorItems[player->heldItem].name);
+		scene->snapshotTex[player->heldItem] = tex_getIdByName(g_textures, name, 0, 0, 0, 0, 0, 0, 0);
 	}
-	int id = scene->snapshotTex[player->actorType];
+	int id = scene->snapshotTex[player->heldItem];
 	tex_bind(g_textures->banks[id / 512], id % 512);
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 	glBegin(GL_QUADS);
@@ -341,13 +341,13 @@ static int energy_right(void)
 	return ftol(wx(ENERGY_WIDTH) + w8);
 }
 
-/* the energy bar on the left: a faint full-length background, the remaining energy (1 - energyUsed) in blue
+/* the energy bar on the left: a faint full-length background, the energy left (energy) in blue
    (boosted, timer 2 running), red (overheated, or blinking 4 times a second while warned) or white, and an
    outline */
 static void main_energy(Player *player)
 {
 	int len = ftol(hy(ENERGY_HEIGHT));
-	int cut = ftol((1.0L - player->energyUsed) * len);
+	int cut = ftol((1.0L - player->energy) * len);
 	glBegin(GL_QUADS);
 	glColor4f(1.0f, 1.0f, 1.0f, 0.25f);
 	int y = energy_top(0, 0);
@@ -437,7 +437,7 @@ static void main_draw(Scene *scene)
 
 	part(HUD_SCREEN);
 	if (scene->playing == 1) {
-		float flash = player->damageFlash;
+		float flash = player->whiteFlash;
 		if (flash > 0.0f) {
 			glColor4f(1.0f, 1.0f, 1.0f, flash);
 			int h = gfx_getHeight();
@@ -450,7 +450,7 @@ static void main_draw(Scene *scene)
 		gfx_fillRect(0, 0, gfx_getWidth(), h);
 	}
 	if (scene->playing == 1 && (player->homedOn == 1
-	    || (player->actorType >= 0 && scene->actorInfo[player->actorType].targetingTime > 0.0f))) {
+	    || (player->heldItem >= 0 && scene->actorItems[player->heldItem].targetingTime > 0.0f))) {
 		part(HUD_PIXELS);
 		main_ring(scene, player);
 	}
@@ -466,12 +466,12 @@ static void main_draw(Scene *scene)
 			main_weapons(scene, player);
 	}
 	part(HUD_CENTRE);
-	if (player->gauge > 0.0f && scene->playing == 1)
+	if (player->slotIconTime > 0.0f && scene->playing == 1)
 		main_gauge(scene, player);
 	part(HUD_RIGHT);
 	if (scene->playing == 1)
 		main_timers(scene, player);
-	if ((scene->playing == 1 && scene->selectedActor != p) || (scene->playing == 0 && scene->cameraSlot == 2))
+	if ((scene->playing == 1 && scene->cockpitActor != p) || (scene->playing == 0 && scene->cameraSlot == 2))
 		main_snapshot(scene, player);
 	part(HUD_LEFT);
 	if (scene->playing == 1)

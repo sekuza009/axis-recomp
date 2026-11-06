@@ -165,7 +165,7 @@ static void actor_dies(u8 *s, u8 *a, int i, u32 *fx, float *scratch)
 		sound_playVolume(0xd, 0x64);
 	AC->state = 2;
 	AC->stateTime = 0.0f;
-	ST->teamsChanged = 1;
+	ST->rankingDirty = 1;
 	int k = AC->lastAttacker;
 	if (ST->kingOfTheHill == 1) {   /* every one for themselves */
 		if (k != i) {
@@ -272,8 +272,8 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 	PlayerRecord *pr = (PlayerRecord *)player;
 	if (AC->spawnAge > AC->dropAge) {   /* not run or heard from for 10 s, or dead: dropped */
 		actor_deactivate((Stage *)s, i);
-		if (ST->selectedActor == i)
-			ST->selectedActor = -1;
+		if (ST->cockpitActor == i)
+			ST->cockpitActor = -1;
 		return;
 	}
 	if (AC->controlledBy != ST->playerActor || AC->bot != 0)
@@ -291,11 +291,11 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 		AC->lowDetailLoaded = AC->lowDetail;
 	}
 	int item = pr->items[AC->slot];
-	ActorInfo *weapon = (ActorInfo *)(item >= 0 ? (u8 *)&ST->actorInfo[item] : NULL);
+	ActorItem *weapon = (ActorItem *)(item >= 0 ? (u8 *)&ST->actorItems[item] : NULL);
 	if (AC->controlledBy == ST->playerActor && weapon && AC->ammo[weapon->ammoType] < weapon->ammoPerShot
-	    && !(AC->weaponLower < 1.0f)) {   /* out of ammunition: the next weapon */
+	    && !(AC->weaponRaise < 1.0f)) {   /* out of ammunition: the next weapon */
 		actor_nextWeapon(s, i);
-		weapon = &ST->actorInfo[pr->items[AC->slot]];
+		weapon = &ST->actorItems[pr->items[AC->slot]];
 	}
 	if (AC->inWeaponSlot >= 0)
 		actor_selectWeapon((Stage *)s, i, AC->inWeaponSlot);
@@ -303,7 +303,7 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 		actor_prevWeapon(s, i);
 	if (AC->inNextWeapon == 1)
 		actor_nextWeapon(s, i);
-	if (i == ST->selectedActor) {
+	if (i == ST->cockpitActor) {
 		if (AC->variantLoaded != 0) {
 			AC->variantLoaded = 0;
 			actor_loadWeapon(s, i, AC->slot, 0);
@@ -314,8 +314,8 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 		actor_loadWeapon(s, i, 4, AC->variantLoaded);
 		actor_loadWeapon(s, i, 5, AC->variantLoaded);
 	}
-	if (AC->controlledBy != ST->playerActor && AC->weaponLowering == 0 && AC->slotLoaded != AC->slot) {
-		AC->slotLoaded = AC->slot;
+	if (AC->controlledBy != ST->playerActor && AC->weaponLowering == 0 && AC->switchSlot != AC->slot) {
+		AC->switchSlot = AC->slot;
 		actor_loadWeapon(s, i, AC->slot, AC->variantLoaded);
 	}
 	ObjectList *model = (ObjectList *)(AC->slot == 4 ? (u8 *)&AC->weaponModel4 : AC->slot == 5 ? (u8 *)&AC->weaponModel5 : (u8 *)&AC->weaponModel);
@@ -336,9 +336,9 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 		if (AC->bot != 0) {
 			if (AC->armor < ftol(fmul_m((long double)AC->armorMax, k_0_3f)))   /* under 0.3 of its armour */
 				AC->botNeeds = 1;
-			ActorInfo *w0 = &ST->actorInfo[pr->items[0]];
+			ActorItem *w0 = &ST->actorItems[pr->items[0]];
 			if (AC->ammo[w0->ammoType] < w0->ammoPerShot && pr->items[4] >= 0) {
-				ActorInfo *w1 = &ST->actorInfo[pr->items[4]];
+				ActorItem *w1 = &ST->actorItems[pr->items[4]];
 				if (AC->ammo[w1->ammoType] < w1->ammoPerShot)
 					(*(u8 *)&AC->botNeeds) |= 2;   /* both weapons empty */
 			}
@@ -352,7 +352,7 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 			aimed = 1;
 			if (AC->homedOn == 0 && AC->bot != 0 && AC->botTarget < 0) {
 				int t = ST->bullets[k].owner;
-				if (ST->actors[t].team != AC->team && ST->actors[t].state == 1 && (!(ST->actors[t].timerFlags & 0x200) || ST->actors[t].hackingLevel < AC->hackingLevel)) {
+				if (ST->actors[t].team != AC->team && ST->actors[t].state == 1 && (!(ST->actors[t].stateFlags & 0x200) || ST->actors[t].hackingLevel < AC->hackingLevel)) {
 					AC->botTarget = t;
 					AC->botTargetTime = 10.5f;   /* 10.5 */
 					actor_pickRandomWeapon(s, i);
@@ -381,14 +381,14 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 			AC->scanTime = (float)v;
 			int k = AC->lastAttacker;
 			if (AC->hitFlash > 0 && k != i && ST->actors[k].team != AC->team && ST->actors[k].state == 1 && AC->botTarget != k
-			    && (!(ST->actors[k].timerFlags & 0x200) || ST->actors[k].hackingLevel < AC->hackingLevel)) {   /* the one who hit it */
+			    && (!(ST->actors[k].stateFlags & 0x200) || ST->actors[k].hackingLevel < AC->hackingLevel)) {   /* the one who hit it */
 				AC->botTarget = k;
 				AC->botTargetTime = 10.5f;
 				actor_pickRandomWeapon(s, i);
 			} else if (!(v > 0) && !((*(u8 *)&AC->botNeeds) & 2)) {
 				if (AC->botTarget < 0) {   /* the first other team's actor in sight within its range (+0) */
 					for (int j = 0; j < ST->actorCount; j++) {
-						if (j == i || ST->actors[j].state != 1 || ST->actors[j].team == AC->team || ((ST->actors[j].timerFlags & 0x200) && ST->actors[j].hackingLevel >= AC->hackingLevel))
+						if (j == i || ST->actors[j].state != 1 || ST->actors[j].team == AC->team || ((ST->actors[j].stateFlags & 0x200) && ST->actors[j].hackingLevel >= AC->hackingLevel))
 							continue;
 						float d[3];
 						const float *at = &ST->actors[j].pos[0];
@@ -407,13 +407,13 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 				} else {
 					int t = AC->botTarget;
 					if (collision_rayTrace(s, &AC->pos[0], &ST->actors[t].pos[0], scratch) != 0
-					    || ((ST->actors[AC->botTarget].timerFlags & 0x200) && ST->actors[AC->botTarget].hackingLevel >= AC->hackingLevel)) {   /* lost from sight */
+					    || ((ST->actors[AC->botTarget].stateFlags & 0x200) && ST->actors[AC->botTarget].hackingLevel >= AC->hackingLevel)) {   /* lost from sight */
 						if (!(AC->botTargetTime > 0))
 							AC->botTarget = -1;
 						else
 							for (int j = 0; j < ST->actorCount; j++) {
 								if (j == i || ST->actors[j].state != 1 || ST->actors[j].team == AC->team
-								    || ((ST->actors[j].timerFlags & 0x200) && ST->actors[j].hackingLevel >= AC->hackingLevel))
+								    || ((ST->actors[j].stateFlags & 0x200) && ST->actors[j].hackingLevel >= AC->hackingLevel))
 									continue;
 								if (collision_rayTrace(s, &AC->pos[0], &ST->actors[j].pos[0], scratch) == 0) {
 									AC->botTarget = j;
@@ -444,17 +444,17 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 		for (int c = 0; c < 3; c++)
 			AC->stuckMove[c] = f32(FADD(AC->move[c], AC->stuckMove[c]));
 		if (!(AC->stuckTime > 0)) {
-			if (AC->target1 >= 0) {
+			if (AC->path >= 0) {
 				long double x = fld_m(&AC->stuckMove[0]), y = fld_m(&AC->stuckMove[1]), z = fld_m(&AC->stuckMove[2]);
 				if (!((x * x + y * y) + z * z >= *&k_250000f)) {
-					AC->stuckPath = AC->target1;
-					AC->target1 = -1;
+					AC->stuckPath = AC->path;
+					AC->path = -1;
 				}
 			}
 			AC->stuckTime = 1.0f;
 			memcpy(AC->stuckMove, (const void *)ADDR(g_vecZero), 12);
 		}
-		if (AC->bot == 1 && AC->target1 < 0 && (AC->botTarget < 0 || ((*(u8 *)&AC->botNeeds) & 3))) {
+		if (AC->bot == 1 && AC->path < 0 && (AC->botTarget < 0 || ((*(u8 *)&AC->botNeeds) & 3))) {
 			actor_pickPathPoint(s, i);
 			if ((*(u8 *)&AC->botNeeds) & 2)
 				AC->botTarget = -1;
@@ -463,29 +463,29 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 			AC->lookActor = -1;
 		if (AC->followTarget >= 0 && ST->actors[AC->followTarget].state != 1)
 			AC->followTarget = -1;
-		if (AC->target1 >= 0) {   /* the scripted path (target1, its point target2): its command when within 1000 */
-			const float *pt = PATH_POINT(AC->target1, AC->target2);
+		if (AC->path >= 0) {   /* the scripted path (path, its point pathPoint): its command when within 1000 */
+			const float *pt = PATH_POINT(AC->path, AC->pathPoint);
 			float d[3];
 			for (int c = 0; c < 3; c++)
 				d[c] = f32(FSUB(pt[c], AC->pos[c]));
 			memcpy(scratch, d, 12);
 			long double dist = FMUL(d[0], d[0]) + FMUL(d[2], d[2]);
 			if (!(dist + FMUL(d[1], d[1]) >= *&k_1000000f)) {
-				script_processCommandBy(s, i, AC->target1, AC->target2);
-				int at = AC->target2;
+				script_processCommandBy(s, i, AC->path, AC->pathPoint);
+				int at = AC->pathPoint;
 				if (AC->pathReverse == 0) {   /* forwards, or backwards */
-					if (at < ST->triggers[AC->target1].wayPointCount - 1)
-						AC->target2 = at + 1;
+					if (at < ST->triggers[AC->path].wayPointCount - 1)
+						AC->pathPoint = at + 1;
 					else
-						AC->target1 = AC->target2 = -1;
-				} else if (AC->target2 > 0)
-					AC->target2 = AC->target2 - 1;
+						AC->path = AC->pathPoint = -1;
+				} else if (AC->pathPoint > 0)
+					AC->pathPoint = AC->pathPoint - 1;
 				else
-					AC->target1 = AC->target2 = -1;
+					AC->path = AC->pathPoint = -1;
 			}
 		}
-		if (AC->bot == 1 && AC->target1 >= 0 && AC->botTarget >= 0 && !((*(u8 *)&AC->botNeeds) & 1))
-			AC->target1 = -1;
+		if (AC->bot == 1 && AC->path >= 0 && AC->botTarget >= 0 && !((*(u8 *)&AC->botNeeds) & 1))
+			AC->path = -1;
 		if (AC->botWait > 0)
 			AC->botWait = f32(fsub_m(fld_m(&AC->botWait), dt));
 		if (AC->botWaitTrigger >= 0 && ST->triggerFired[AC->botWaitTrigger] == 1)
@@ -499,14 +499,14 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 				memcpy(scratch, d, 12);
 				long double dist = FMUL(d[0], d[0]) + FMUL(d[2], d[2]);
 				memcpy(AC->botGoal, dist + FMUL(d[1], d[1]) > *&k_9000000f ? (const void *)RELOC(at) : (const void *)AC->pos, 12);
-			} else if (AC->target1 >= 0) {   /* its path's point while over 1000 away */
-				const float *pt = PATH_POINT(AC->target1, AC->target2);
+			} else if (AC->path >= 0) {   /* its path's point while over 1000 away */
+				const float *pt = PATH_POINT(AC->path, AC->pathPoint);
 				float d[3];
 				for (int c = 0; c < 3; c++)
 					d[c] = f32(FSUB(pt[c], AC->pos[c]));
 				memcpy(scratch, d, 12);
 				long double dist = FMUL(d[2], d[2]) + FMUL(d[1], d[1]);
-				memcpy(AC->botGoal, dist + FMUL(d[0], d[0]) > *&k_1000000f ? (const void *)PATH_POINT(AC->target1, AC->target2) : (const void *)AC->pos, 12);
+				memcpy(AC->botGoal, dist + FMUL(d[0], d[0]) > *&k_1000000f ? (const void *)PATH_POINT(AC->path, AC->pathPoint) : (const void *)AC->pos, 12);
 			} else if (AC->botTarget >= 0) {   /* about its target: sideways by a random amount, now and then */
 				long double v = fsub_m(fld_m(&AC->dodgeTime), dt);
 				AC->dodgeTime = (float)v;
@@ -552,8 +552,8 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 				aim_at(a, &ST->actors[AC->followTarget].pos[0]);
 			else if (AC->botTarget >= 0)
 				aim_at(a, &ST->actors[AC->botTarget].pos[0]);
-			else if (AC->target1 >= 0)
-				aim_at(a, PATH_POINT(AC->target1, AC->target2));
+			else if (AC->path >= 0)
+				aim_at(a, PATH_POINT(AC->path, AC->pathPoint));
 			else {
 				long double v = fsub_m(fld_m(&AC->lookTime), dt);
 				AC->lookTime = (float)v;
@@ -789,32 +789,32 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 	}
 	if (AC->outOfPlay != 0)
 		goto tail;   /* 45cdb1 */
-	if (AC->weaponLowering == 1) {   /* the weapon going down (weaponLower from 1 to 0) */
-		if (AC->weaponLower > 0) {
-			if (BITS(AC->weaponLower) == 0x3f800000 && i == ST->playerActor)
+	if (AC->weaponLowering == 1) {   /* the weapon going down (weaponRaise from 1 to 0) */
+		if (AC->weaponRaise > 0) {
+			if (BITS(AC->weaponRaise) == 0x3f800000 && i == ST->playerActor)
 				sound_playVolume(0x14, 0x64);
-			AC->weaponLower = f32(fsubr_m(fmul_m(fld_m(dt), &k_3f), &AC->weaponLower));
+			AC->weaponRaise = f32(fsubr_m(fmul_m(fld_m(dt), &k_3f), &AC->weaponRaise));
 		}
-		if (!(AC->weaponLower > 0))
-			AC->weaponLowering = (*(int *)&AC->weaponLower) = 0;
+		if (!(AC->weaponRaise > 0))
+			AC->weaponLowering = (*(int *)&AC->weaponRaise) = 0;
 	} else if (AC->weaponLowering == 0) {   /* the next one coming up */
-		if (!(AC->weaponLower > 0)) {
-			actor_setWeaponSlot((Stage *)s, i, AC->slotLoaded);
-			actor_loadWeapon(s, i, AC->slotLoaded, AC->variantLoaded);
-			weapon = &ST->actorInfo[pr->items[AC->slot]];
+		if (!(AC->weaponRaise > 0)) {
+			actor_setWeaponSlot((Stage *)s, i, AC->switchSlot);
+			actor_loadWeapon(s, i, AC->switchSlot, AC->variantLoaded);
+			weapon = &ST->actorItems[pr->items[AC->slot]];
 			model = (ObjectList *)(AC->slot == 4 ? (u8 *)&AC->weaponModel4 : AC->slot == 5 ? (u8 *)&AC->weaponModel5 : (u8 *)&AC->weaponModel);
-			AC->weapon = ((u32)weapon->ammoType);
+			AC->ammoKind = ((u32)weapon->ammoType);
 		}
-		if (!(AC->weaponLower >= 1.0f)) {
+		if (!(AC->weaponRaise >= 1.0f)) {
 			int kind = pr->items[AC->slot];
-			AC->weaponLower = f32(fadd_m(fmul_m(fld_m(dt), K(kind == 11 ? ADDR(k_1_95f) : kind == 3 ? ADDR(k_2_25f) : ADDR(k_3f))), &AC->weaponLower));
-			if (AC->weaponLower >= 1.0f)
-				AC->weaponLower = 1.0f;
+			AC->weaponRaise = f32(fadd_m(fmul_m(fld_m(dt), K(kind == 11 ? ADDR(k_1_95f) : kind == 3 ? ADDR(k_2_25f) : ADDR(k_3f))), &AC->weaponRaise));
+			if (AC->weaponRaise >= 1.0f)
+				AC->weaponRaise = 1.0f;
 		}
 	}
 	/* the body's pose: the swing, lean and head turn, and its animation frames */
 	clamp450(&AC->pose[0], FMUL(AC->strafe, k_m200f));
-	AC->pose[1] = f32(fmul_m(fmul_m(FSUB(k_1f, AC->climb) * FADD(AC->pitch, k_900f), &AC->leanPitch), &k_0_0005555556f));
+	AC->pose[1] = f32(fmul_m(fmul_m(FSUB(k_1f, AC->climb) * FADD(AC->pitch, k_900f), &AC->boosterTilt), &k_0_0005555556f));
 	clamp450(&AC->pose[2], FMUL(AC->strafe, k_200f));
 	AC->pose[3] = f32(fmul_m(fadd_m(FSUB(AC->pitch, AC->lean), &k_900f), &k_0_0005555556f));
 	long double side = !(AC->forward >= -1.0f) ? -1.0L : AC->forward > 1.0f ? 1.0L : fld_m(&AC->forward);
@@ -839,7 +839,7 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 	glLoadMatrixf(part_matrix((u8 *)&AC->chestModel.entries, chest->armsJoint, AC->lowDetail));
 	skel_poseBones((u8 *)&AC->armsModel, 0);
 	glLoadMatrixf(part_matrix((u8 *)&AC->chestModel.entries, chest->headJoint, AC->lowDetail));
-	if (((u32)AC->timerFlags) & 0x1000)
+	if (((u32)AC->stateFlags) & 0x1000)
 		glScalef_bits(0x40a00000, 0x40a00000, 0x40a00000);   /* 5 */
 	skel_poseBones((u8 *)&AC->headModel, 0);
 	glLoadMatrixf(part_matrix((u8 *)&AC->chestModel.entries, chest->boosterJoint, AC->lowDetail));
@@ -848,16 +848,16 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 	skel_poseBones((u8 *)&AC->boosterModel, 0);
 	memcpy(grip, &g_vecZero, 12);   /* where the weapon is held, for the local player's view */
 	glLoadMatrixf(part_matrix((u8 *)&AC->armsModel.entries, arms->weaponJoints[0], AC->lowDetail));
-	if (i == ST->selectedActor && weapon && AC->slot <= 3)
-		hold(grip, (const u8 *)weapon->sets[0].grip[AC->variantLoaded], 0, &AC->weaponLower);
+	if (i == ST->cockpitActor && weapon && AC->slot <= 3)
+		hold(grip, (const u8 *)weapon->sets[0].grip[AC->variantLoaded], 0, &AC->weaponRaise);
 	skel_poseBones((u8 *)&AC->weaponModel, 0);
 	glLoadMatrixf(part_matrix((u8 *)&AC->armsModel.entries, arms->weaponJoints[1], AC->lowDetail));
-	if (i == ST->selectedActor && weapon && AC->slot == 4)
-		hold(grip, (const u8 *)weapon->sets[0].grip[AC->variantLoaded], 0, &AC->weaponLower);
+	if (i == ST->cockpitActor && weapon && AC->slot == 4)
+		hold(grip, (const u8 *)weapon->sets[0].grip[AC->variantLoaded], 0, &AC->weaponRaise);
 	skel_poseBones((u8 *)&AC->weaponModel4, 0);
 	glLoadMatrixf(part_matrix((u8 *)&AC->armsModel.entries, arms->weaponJoints[2], AC->lowDetail));
-	if (i == ST->selectedActor && weapon && AC->slot == 5)
-		hold(grip, (const u8 *)weapon->sets[1].grip[AC->variantLoaded], 1, &AC->weaponLower);
+	if (i == ST->cockpitActor && weapon && AC->slot == 5)
+		hold(grip, (const u8 *)weapon->sets[1].grip[AC->variantLoaded], 1, &AC->weaponRaise);
 	skel_poseBones((u8 *)&AC->weaponModel5, 0);
 	glPopMatrix();
 	if (i == ST->playerActor) {   /* the local player's locks (lockHeld per actor), sorted longest first (lockTimes / lockIds) */
@@ -919,7 +919,7 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 	AC->sendNow = 0;
 	if (AC->controlledBy == ST->playerActor) {
 		if (weapon && AC->state == 1) {
-			if (AC->inFire == 1 && AC->spawnAge > 3.0f && AC->slot >= 0 && !(AC->fireAnim > 0) && AC->weaponLower >= 1.0f && AC->weaponLowering == 0
+			if (AC->inFire == 1 && AC->spawnAge > 3.0f && AC->slot >= 0 && !(AC->fireAnim > 0) && AC->weaponRaise >= 1.0f && AC->weaponLowering == 0
 			    && AC->armor > 0)
 				AC->firing = 1;
 			int shots = 0;   /* this frame's rounds: whole cycles times the burst, and a burst's rounds left (burstLeft, burstTime) */
@@ -1111,12 +1111,12 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 			b->moved = 1;
 		}
 	}
-	/* stamina (energyUsed): spent running, back after a rest (staminaRest the rest) */
-	if (!(((u32)AC->timerFlags) & 0x400) && AC->inBooster == 1 && (AC->inForward == 1 || AC->inBackward == 1 || AC->inStepLeft == 1 || AC->inStepRight == 1)) {
-		long double v = fsubr_m(fdiv_m(fld_m(dt), &AC->boostTime), &AC->energyUsed);
-		AC->energyUsed = (float)v;
+	/* the booster energy (energy, what is left): spent running, back after a rest (staminaRest the rest) */
+	if (!(((u32)AC->stateFlags) & 0x400) && AC->inBooster == 1 && (AC->inForward == 1 || AC->inBackward == 1 || AC->inStepLeft == 1 || AC->inStepRight == 1)) {
+		long double v = fsubr_m(fdiv_m(fld_m(dt), &AC->boostTime), &AC->energy);
+		AC->energy = (float)v;
 		if (!(v >= 0)) {
-			AC->energyUsed = 0.0f;
+			AC->energy = 0.0f;
 			AC->overheat = 1;
 		}
 		AC->staminaRest = 0.0f;
@@ -1125,14 +1125,14 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 		AC->staminaRest = (float)v;
 		if (v > 1.0L)
 			AC->staminaRest = 1.0f;
-	} else if (!(AC->energyUsed >= 1.0f)) {
-		long double v = fadd_m(fdiv_m(fld_m(dt), &AC->rechargeTime), &AC->energyUsed);
-		AC->energyUsed = (float)v;
+	} else if (!(AC->energy >= 1.0f)) {
+		long double v = fadd_m(fdiv_m(fld_m(dt), &AC->rechargeTime), &AC->energy);
+		AC->energy = (float)v;
 		if (v > 1.0L)
-			AC->energyUsed = 1.0f;
+			AC->energy = 1.0f;
 	}
-	AC->warned = AC->energyUsed > *&k_0_2f ? 0 : 1;
-	if (AC->overheat == 1 && AC->energyUsed >= 0.5f)
+	AC->warned = AC->energy > *&k_0_2f ? 0 : 1;
+	if (AC->overheat == 1 && AC->energy >= 0.5f)
 		AC->overheat = 0;
 	if (AC->state == 1) {
 		/* the effects' scale by the speed: 0.5 .. 3 */
@@ -1142,9 +1142,9 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 			BITS(AC->effectScale) = BITS(AC->nextForward);
 		else
 			AC->effectScale = 3.0f;
-		if (i != ST->selectedActor && AC->viewMarked == 0) {   /* the legs' and booster's emitters, faint when cloaked or hurt */
+		if (i != ST->cockpitActor && AC->viewMarked == 0) {   /* the legs' and booster's emitters, faint when cloaked or hurt */
 			BITS(scratch[0]) = BITS(AC->effectScale);
-			if ((((u32)AC->timerFlags) & 0x200) && AC->hackingLevel >= ST->actors[ST->playerActor].hackingLevel)
+			if ((((u32)AC->stateFlags) & 0x200) && AC->hackingLevel >= ST->actors[ST->playerActor].hackingLevel)
 				scratch[1] = 0.0627451f;   /* 1/255 */
 			else if (AC->spawnAge > 3.0f)
 				scratch[1] = 1.0f;
@@ -1189,7 +1189,7 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 		long double g = FSUB(k_0_5f, AC->fireAnim);
 		AC->glow = (float)(g + g);
 	}
-	if ((((u32)AC->timerFlags) & 0x200) && AC->hackingLevel >= ST->actors[ST->playerActor].hackingLevel) {
+	if ((((u32)AC->stateFlags) & 0x200) && AC->hackingLevel >= ST->actors[ST->playerActor].hackingLevel) {
 		if (AC->effectScale > 1.0f)
 			AC->glow = f32(fadd_m(fmul_m(FSUB(AC->effectScale, k_1f), &k_0_2f), &AC->glow));
 	} else
@@ -1209,7 +1209,7 @@ timers:
 	countdown(&AC->labelFade, dt);
 	countdown(&AC->hitFlash, dt);
 	countdown(&AC->botTargetTime, dt);
-	countdown(&AC->gauge, dt);
+	countdown(&AC->slotIconTime, dt);
 	AC->messageTime = f32(fsub_m(fld_m(&AC->messageTime), dt));
 	countdown(&AC->warpWait, dt);
 	if (AC->shield < AC->shieldMax && AC->shieldRegen > 0) {   /* the shield back by shieldRegen a second up to shieldMax */
@@ -1227,7 +1227,7 @@ timers:
 		}
 	} else
 		AC->shieldRegenTime = 0.0f;
-	countdown(&AC->damageFlash, dt);
+	countdown(&AC->whiteFlash, dt);
 	countdown(&AC->timers[0], dt);
 	countdown(&AC->timers[1], dt);
 	countdown(&AC->timers[2], dt);
@@ -1257,7 +1257,7 @@ timers:
 			f |= 0x2000;
 		if (AC->id % 2 == 1)
 			f |= 0x4000;
-		AC->timerFlags = f;
+		AC->stateFlags = f;
 	}
 	static const u16 parts[7] = { offsetof(Player, headModel), offsetof(Player, chestModel), offsetof(Player, armsModel), offsetof(Player, legsModel), offsetof(Player, boosterModel), offsetof(Player, weaponModel4), offsetof(Player, weaponModel5) };
 	if (AC->breakUp < 7) {   /* the parts' break-up, one a frame */

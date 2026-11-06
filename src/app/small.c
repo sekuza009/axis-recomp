@@ -169,7 +169,7 @@ void (profileDialogBox_layout)(void) { set4ints(0x1d7, 0xf6, 0x226, 0x114, g_pro
 void THISCALL (stage_selectActor)(Stage *stage, int i)
 {
 	if (i < 0 || stage->actors[i].state == 1)
-		stage->selectedActor = i;
+		stage->cockpitActor = i;
 }
 /* 0x456820: material m (the manager's record m) marked changed, its flags kept to the bits 0x11111113 (the
    original's guard, flags | 2, is always true) */
@@ -223,7 +223,7 @@ int THISCALL (script_reset)(Stage *stage)
 {
 	debug_traceStripped((Scene *)&stage->scenePath);   /* ScenePath's first method: the shared empty function */
 	for (int i = 0; i < 6; i++)
-		FIELD(int, stage, offsetof(Stage, scriptMode) + i * 4) = 0;   /* scriptMode, scriptRunning and four more */
+		FIELD(int, stage, offsetof(Stage, scriptMode) + i * 4) = 0;   /* scriptMode, scriptHoldsPlay and four more */
 	return 0;
 }
 /* player p counted among the players seen so far (the highest + 1) */
@@ -362,11 +362,11 @@ int THISCALL (script_runScpFile)(Stage *stage, const char *name, int mode)
 	strcpy(stage->scriptName, name);
 	stage->scriptMode = mode;
 	if (mode == 0 || mode == 2) {
-		stage->scriptRunning = 0;
+		stage->scriptHoldsPlay = 0;
 		return 0;
 	}
 	if (mode == 1) {
-		stage->scriptRunning = 1;
+		stage->scriptHoldsPlay = 1;
 		return 0;
 	}
 	return mode - 2;
@@ -417,7 +417,7 @@ void THISCALL (player_setName)(Stage *stage, int p, const char *name)
 }
 
 /* 0x473a80: player p's team set, and that of every actor of player p (one leaving the teams, team < 0, also loses
-   state); the teams changed (teamsChanged) */
+   state); the teams changed (rankingDirty) */
 void THISCALL (player_setTeam)(Stage *stage, int p, int team)
 {
 	player_seen(stage, p);
@@ -430,7 +430,7 @@ void THISCALL (player_setTeam)(Stage *stage, int p, int team)
 				actor->state = 0;
 		}
 	}
-	stage->teamsChanged = 1;
+	stage->rankingDirty = 1;
 }
 
 /* 0x496e40: the stage's animation clocks advanced by dt (unless a script runs in mode 1): two at dt * the rate at
@@ -439,7 +439,7 @@ void THISCALL (player_setTeam)(Stage *stage, int p, int team)
 void THISCALL (stage_advanceClocks)(Stage *stage, float dt)
 {
 	typedef long double X;
-	if (stage->scriptMode && stage->scriptRunning == 1)
+	if (stage->scriptMode && stage->scriptHoldsPlay == 1)
 		return;
 	X d = (X)dt * k_clockRate, one = k_1f;
 	for (int k = 0; k < 2; k++) {
@@ -450,7 +450,7 @@ void THISCALL (stage_advanceClocks)(Stage *stage, float dt)
 			stage->layerScroll[k] = (float)(a - one);
 		}
 	}
-	if (stage->floorOn != 2)
+	if (stage->floorMode != 2)
 		return;
 	X e = (X)dt * k_clockRate3 + stage->floorClock;
 	stage->floorClock = (float)e;
@@ -833,7 +833,7 @@ int THISCALL (actor_setActorTypeBoosterInfoBy)(Stage *stage, int p, int type) { 
 /* 0x474060 (thiscall on the stage): player p's item in slot set (its player record at playerRecords, 0x47fd2 bytes
    each: the item (items[slot]) and its name (itemNames[slot])). Game types 2 .. 11 (gameType) fix the
    first slot (3, 5, 0x24, 0x19, 0x16 by pairs; 10 / 11 the second too, 0x17) and leave the others empty (-1); else
-   the item given (negative: empty). An item past the catalogue (actorInfoCount) is a fatal message. Each of the player's
+   the item given (negative: empty). An item past the catalogue (actorItemCount) is a fatal message. Each of the player's
    actors then has the slot updated (actor_loadWeapon, with its variantLoaded). The callers ignore the eax it leaves */
 void THISCALL (actor_setActorTypeItemInfoBy)(Stage *stage, int p, int slot, int item)
 {
@@ -845,10 +845,10 @@ void THISCALL (actor_setActorTypeItemInfoBy)(Stage *stage, int p, int slot, int 
 	if (mode <= 9)
 		item = slot == 0 ? fixed[mode / 2] : mode >= 8 && slot == 1 ? 0x17 : -1;
 	if (item >= 0)
-		strcpy(((PlayerRecord *)RELOC(type))->itemNames[slot], (const char *)(u8 *)&st->actorInfo[item]);
+		strcpy(((PlayerRecord *)RELOC(type))->itemNames[slot], (const char *)(u8 *)&st->actorItems[item]);
 	else
 		type->itemNames[slot][0] = 0;
-	if (item >= st->actorInfoCount)
+	if (item >= st->actorItemCount)
 		sys_fatalError((char *)OBJ(g_logStage), (const char *)STR(0x4c76f0, "invalid itemIndex(%d) - setActorTypeI..."), item);
 	type->items[slot] = item;
 	for (int i = 0; i < st->actorCount; i++)

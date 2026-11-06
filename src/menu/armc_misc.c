@@ -147,7 +147,7 @@ void THISCALL (armc_drawPreview3D)(Scene *scene, const u32 *eye, const u32 *forw
                                       int w, int h)
 {
 	static const u32 lists[8] = { offsetof(Player, headModel), offsetof(Player, chestModel), offsetof(Player, armsModel), offsetof(Player, legsModel), offsetof(Player, boosterModel), offsetof(Player, weaponModel), offsetof(Player, weaponModel4), offsetof(Player, weaponModel5) };   /* (in the actor) */
-	u8 *s = (u8 *)scene, *stage = (u8 *)SCENE_STAGE(s), *vv = scene->view;
+	u8 *s = (u8 *)scene, *stage = (u8 *)SCENE_STAGE(s), *vv = (u8 *)&scene->view;
 	u32 light[0xb010 / 4];   /* a Light: vtable, 0x400 entries of 0x2c bytes, two counts, the changed flag (+0xb00c:
 	                            factor_addFactorBy sets it); the original's frame holds it whole at +0x18 */
 	for (int i = 0; i < 0x400; i++)

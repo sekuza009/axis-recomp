@@ -636,7 +636,7 @@ static void ground_triangle(u8 *grid, u32 id, const void *a, const void *b, cons
 
 /* 0x471040 (thiscall on the stage): its collision space (space) set up over the world box (levelLow low, levelHigh
    high) in cells of the given sizes (z, x, y: the counts of whole cells), with the margin, split count and depth. Then, with
-   floorOn, the floor (the box's lower face, two triangles, flags 0x10: no marks); each ground layer (groundLayerCount of them, 0x20c
+   floorMode, the floor (the box's lower face, two triangles, flags 0x10: no marks); each ground layer (groundLayerCount of them, 0x20c
    bytes from groundLayers: kind 0 or 1, rows rows, columns cols, the (columns + 1) x (rows + 1) points points) as two
    triangles a cell, split one way for kind 0 and the other for kind 1, each row logged; and every object in use
    (+4) that is not flagged 4 (flags) as a unit (space_buildUnits with its shape model and matrix matrix: unit),
@@ -652,7 +652,7 @@ void THISCALL (collision_initVolume)(u8 *stage, float size_z, float size_x, floa
 	int nz = ftol(fdiv_m(FSUB(high[2], low[2]), &size_z));
 	space_setBy(grid, (void *)low, (void *)high, nz, nx, ny, margin, splitCount, depth);
 	log_message((int)stage, 0, 0, (const char *)STR(0x4c747c, "add floor planes"));
-	if (st->floorOn) {
+	if (st->floorMode) {
 #define F(v) f32(fld_m(&(v)))
 		float va[3] = { F(high[0]), F(low[1]), F(low[2]) }, vb[3] = { F(low[0]), F(low[1]), F(high[2]) };
 		float vd[3] = { F(high[0]), F(low[1]), F(high[2]) };
