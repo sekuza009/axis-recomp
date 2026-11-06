@@ -694,7 +694,7 @@ typedef struct SessionDesc {
 	signed char rotation;   /* +0x25: .. and the map rotation flag */
 	u8 maxPlayers;   /* +0x26: dwMaxPlayers */
 	signed char gameMode;   /* +0x27: dwUser2 */
-	u8 fragLimit;   /* +0x28: dwUser3's two low bytes, the other way round */
+	u8 fragLimit;   /* +0x28: dwUser3's second byte (bits 8 .. 15; dplay_hostSession's hi): the frag limit (its low byte is timeLimit) */
 	u8 timeLimit;   /* +0x29: dwUser3's low byte: the host's time limit in minutes (dplay_hostSession's lo); into SessionEntry.timeLimit (arenaList_rebuild) or the joined record (arena_joinAnswer) */
 	i32 players;   /* +0x2a: dwCurrentPlayers */
 	char name[70];   /* +0x2e: lpszSessionName */
@@ -1332,7 +1332,7 @@ typedef struct TimeSync {
 
 /* a unit of the collision space (Space.units; spaceSlot_clear): a map object (one unit for all its parts not flagged 0x20: space_buildUnit; the part is CollisionPlane.part) */
 typedef struct SpaceUnit {
-	i32 index;   /* +0x0: its map object's number (Stage.objects; space_buildUnit' id); -1 when cleared (spaceSlot_clear). CollisionPlane.object points at it */
+	i32 index;   /* +0x0: its map object's number (Stage.objects; space_buildUnit' id); -1 when cleared (spaceSlot_clear). CollisionPlane.unit points at it */
 	u8 *lastPlane;   /* +0x4: its planes' list (CollisionPlane.listNext / listPrev): the last */
 	SpaceNode *lastNode;   /* +0x8: its planes' nodes: the last */
 	u8 *poolPrev;   /* +0xc: its links in the units' pool */

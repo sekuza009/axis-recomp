@@ -12,3 +12,12 @@ pointer validity, string termination).
   review.py    one line per exercised field (name | declaration | observed | comment) for reading against the code
 The scripts carry the scratchpad paths they were run from (D=...): set D to a working folder before reuse.
 First run 2026-11-06: 21 sessions, 2135 of 3023 fields / globals exercised.
+
+Second round (2026-11-06): gen.py follows pointers typed with a record (two levels, each record once a pass:
+models, skeletons, the collision space, texture slots) and walks derived arrays (g_rankingRows ...); a 3 ms
+pass samples Scene's small fields (one-frame input flags). build.sh links a test copy of menu_records.c
+(menu_records_test.c: the SKIRMISH entry opens the unused mission list, screen 900, when AXISRC_MISSIONS is
+set - make it from src/menu/menu_records.c by replacing the menuState500_enterSkirmish() call in the main
+menu's action). mis_run.sh plays the mission list with a hand-made axis.mis (removed after); all2.sh runs
+every session. The Ladder screens need DServer/axis_server.py running with --accounts on a scratch copy
+(the password the game sends is lower case). 2304 of 3036 fields / globals seen non-zero.

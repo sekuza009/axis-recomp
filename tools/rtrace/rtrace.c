@@ -1,6 +1,8 @@
 /* range trace sampler (test only): every 250 ms all leaves are read (the scene from a snapshot) and their
    statistics kept; every 5 s they are written to Axis\rtrace.tsv */
 #include <windows.h>
+#include <mmsystem.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -130,6 +132,44 @@ void rt_root(const rt_u8 *p, int type, unsigned size)
 	else rt_walk_any(type, g_snap);
 }
 
+/* a pointer to a record of known type: copied (its own buffer) and walked; two levels deep at most, each record
+   once a pass, nothing over 4 MB */
+static unsigned g_visit[8192], g_visitPass[8192];
+static int g_depth;
+void rt_follow(unsigned ptr, int type, unsigned size)
+{
+	if (!ptr || ptr - 0x400000u < 0x76b000u || g_depth >= 2 || size > (4u << 20))
+		return;
+	unsigned h = (ptr * 2654435761u) >> 19;
+	for (int k = 0; k < 8; k++, h = (h + 1) & 8191) {
+		if (g_visitPass[h] == (unsigned)g_pass && g_visit[h] == ptr) return;
+		if (g_visitPass[h] != (unsigned)g_pass) { g_visitPass[h] = g_pass; g_visit[h] = ptr; break; }
+	}
+	rt_u8 *buf = malloc(size);
+	if (!buf) return;
+	if (rt_copy((const void *)(uintptr_t)ptr, buf, size)) {
+		g_depth++;
+		rt_walk_any(type, buf);
+		g_depth--;
+	}
+	free(buf);
+}
+
+/* the fast pass: Scene's small fields (input flags and the like live one frame) */
+extern const int rt_sceneFast[][4];
+extern const int rt_sceneFastCount;
+static void fast_pass(void)
+{
+	const rt_u8 *sc = rt_scene();
+	if (!sc) return;
+	rt_u8 buf[64];
+	for (int i = 0; i < rt_sceneFastCount; i++) {
+		const int *f = rt_sceneFast[i];
+		if (rt_copy(sc + f[1], buf, f[2] * f[3]))
+			rt_O(f[0], buf, f[2], f[3]);
+	}
+}
+
 static void dump(void)
 {
 	char tmp[MAX_PATH];
@@ -155,8 +195,14 @@ static void dump(void)
 static DWORD WINAPI run(void *unused)
 {
 	DWORD last = GetTickCount();
+	DWORD full = 0;
+	timeBeginPeriod(1);
 	for (;;) {
-		Sleep(250);
+		Sleep(3);
+		fast_pass();
+		if (GetTickCount() - full < 250)
+			continue;
+		full = GetTickCount();
 		g_pass++;
 		g_nseen = 0;
 		rt_walk_static();      /* (the scene through g_scene's pointer: rt_root snapshots it) */
@@ -173,8 +219,10 @@ static HWND WINAPI find_window(LPCSTR cls, LPCSTR name)
 		return NULL;
 	return FindWindowA(cls, name);
 }
+int g_testMissions;
 void trace_start(void)
 {
+	g_testMissions = GetEnvironmentVariableA("AXISRC_MISSIONS", NULL, 0) != 0;
 	if (GetEnvironmentVariableA("AXISRC_MULTI", NULL, 0)) {
 		DWORD old;
 		void **slot = (void **)(g_rdata + (0x4a92cc - 0x4a9000));

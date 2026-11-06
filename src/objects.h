@@ -253,7 +253,7 @@
 #define g_rankingRect ((int *)IMG(0x9dced8))   /* int[4]; the game room's ranking page window: left, top, right, bottom (16, 30, 616, 440: menuState800_enterGameRoom); ranking_layout positions the page's buttons from it, ranking_drawTable draws in it, ranking_page draws it as a frame while a dialog is open */
 #define g_setupColourLit ((float *)IMG(0x4de048))   /* float[4]; setup's lit text colour, RGBA (0, 1, 1, 1): titles and the hovered row (menuState600_enterSetup) */
 #define g_setupColourDim ((float *)IMG(0x4ddae0))   /* float[4]; setup's dim text colour, RGBA (0, 0.6, 0.6, 1): rows not hovered */
-#define g_missionsColourLit ((float *)IMG(0x9ef208))   /* float[4]; the mission list's lit text colour, RGBA (0, 1, 1, 1): titles, the picked row, hovered buttons (menuState900_enterSkirmish) */
+#define g_missionsColourLit ((float *)IMG(0x9ef208))   /* float[4]; the mission list's lit text colour, RGBA (0, 1, 1, 1): titles, the picked row, hovered buttons (set by menuState900_enterMissions; mission_list.c's g_panelColour) */
 #define g_missionsColourDim ((float *)IMG(0x9eeac8))   /* float[4]; the mission list's dim text colour, RGBA (0, 0.6, 0.6, 1): rows and buttons that are not picked or hovered */
 #define g_textColours ((Colour *)IMG(0xa1f100))   /* Colour[16]; the 16 message colours (RGBA floats; colour_initTextColours fills them) */
 #define g_keyState ((u8 *)IMG(0x4d1e9c))   /* u8[256]; the keyboard's 256 key bytes (0x80: held; DirectInput's GetDeviceState) */
