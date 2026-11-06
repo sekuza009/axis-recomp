@@ -856,8 +856,12 @@ extern struct GameData g_data;
 #define g_frameRate (*(double *)g_frameRate_v)
 #undef g_frameTime
 #define g_frameTime (*(float *)g_frameTime_v)
-#undef g_freeCamHeight
-#define g_freeCamHeight (*(float *)g_freeCamHeight_v)
+#undef g_freeCamLookX
+#define g_freeCamLookX (*(float *)g_freeCamLookX_v)
+#undef g_freeCamLookY
+#define g_freeCamLookY (*(float *)g_freeCamLookY_v)
+#undef g_freeCamLookZ
+#define g_freeCamLookZ (*(float *)g_freeCamLookZ_v)
 #undef g_freeCamMoveEyeX
 #define g_freeCamMoveEyeX (*(float *)g_freeCamMoveEyeX_v)
 #undef g_freeCamMoveEyeY
@@ -1488,10 +1492,6 @@ extern struct GameData g_data;
 #define g_mechWeaponSlot2 (*(int *)((u8 *)g_armcSlotItems_v + 0x10))
 #undef g_mechWeaponSlot3
 #define g_mechWeaponSlot3 (*(int *)((u8 *)g_armcSlotItems_v + 0x14))
-#undef g_menuCamX
-#define g_menuCamX (*(float *)g_menuCamX_v)
-#undef g_menuCamZ
-#define g_menuCamZ (*(float *)g_menuCamZ_v)
 #undef g_menuCameraLook
 #define g_menuCameraLook (*(float *)((u8 *)g_menuLook_v + 0x0))
 #undef g_menuCameraLookY

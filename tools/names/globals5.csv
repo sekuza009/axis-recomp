@@ -16,8 +16,8 @@
 0x9dd6c8,int,g_typingRoomJoinPassword
 0x9dd240,int,g_pilotLevelKept
 0x4de1f0,float,g_cursorBlinkTimer
-0x4de344,u32,g_menuCamX
-0x4de34c,u32,g_menuCamZ
+0x4de344,u32,g_freeCamLookX
+0x4de34c,u32,g_freeCamLookZ
 0x9f9418,int,g_netHostLeftMessageKind
 0x9f19f8,int,g_profileMechHead
 0x9dd6a8,int,g_editingRoomPassword

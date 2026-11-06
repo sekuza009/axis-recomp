@@ -334,9 +334,9 @@ u8 g_logoFade_v[4] __attribute__((aligned(16)));   /* 0x4de1e8 */
 u8 g_unusedLogoFade_v[4] __attribute__((aligned(16)));   /* 0x4de1ec */
 u8 g_cursorBlinkTimer_v[4] __attribute__((aligned(16)));   /* 0x4de1f0 */
 u8 g_freeCamMoveStarted_v[4] __attribute__((aligned(16)));   /* 0x4de340 */
-u8 g_menuCamX_v[4] __attribute__((aligned(16)));   /* 0x4de344 */
-u8 g_freeCamHeight_v[4] __attribute__((aligned(16)));   /* 0x4de348 */
-u8 g_menuCamZ_v[4] __attribute__((aligned(16)));   /* 0x4de34c */
+u8 g_freeCamLookX_v[4] __attribute__((aligned(16)));   /* 0x4de344 */
+u8 g_freeCamLookY_v[4] __attribute__((aligned(16)));   /* 0x4de348 */
+u8 g_freeCamLookZ_v[4] __attribute__((aligned(16)));   /* 0x4de34c */
 u8 g_freeCamMoveEyeX_v[4] __attribute__((aligned(16)));   /* 0x4de350 */
 u8 g_freeCamMoveEyeY_v[4] __attribute__((aligned(16)));   /* 0x4de354 */
 u8 g_freeCamMoveEyeZ_v[4] __attribute__((aligned(16)));   /* 0x4de358 */
@@ -1504,9 +1504,9 @@ const DataPiece g_splitObjects[] = {
 	{ 0x4de1ec, g_unusedLogoFade_v, 4 },
 	{ 0x4de1f0, g_cursorBlinkTimer_v, 4 },
 	{ 0x4de340, g_freeCamMoveStarted_v, 4 },
-	{ 0x4de344, g_menuCamX_v, 4 },
-	{ 0x4de348, g_freeCamHeight_v, 4 },
-	{ 0x4de34c, g_menuCamZ_v, 4 },
+	{ 0x4de344, g_freeCamLookX_v, 4 },
+	{ 0x4de348, g_freeCamLookY_v, 4 },
+	{ 0x4de34c, g_freeCamLookZ_v, 4 },
 	{ 0x4de350, g_freeCamMoveEyeX_v, 4 },
 	{ 0x4de354, g_freeCamMoveEyeY_v, 4 },
 	{ 0x4de358, g_freeCamMoveEyeZ_v, 4 },

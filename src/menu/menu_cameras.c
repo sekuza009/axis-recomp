@@ -319,7 +319,7 @@ static X heading(void)
 #define SPEED F(0x4a9534)
 
 /* 0x42aa30: the free (watching) camera stepped left: along its heading plus a quarter turn (g_freeCamYaw + 90
-   degrees) by the frame time x its speed, both the free camera's point (g_menuCamX / g_menuCamZ) and the menu
+   degrees) by the frame time x its speed, both the free camera's point (g_freeCamLookX / g_freeCamLookZ) and the menu
    camera's eye (g_menuCameraPos, g_menuEyeZ). Only caller freeCam_keys, on g_keyStepLeft (A) */
 void (freeCam_stepLeft)(void)
 {
@@ -328,9 +328,9 @@ void (freeCam_stepLeft)(void)
 	X c = x87_fcos(a);
 	X t = (X)g_frameTime * s * SPEED;
 	float tf = (float)t;
-	g_menuCamX = (float)(t + g_menuCamX);   /* the unrounded step here ... */
+	g_freeCamLookX = (float)(t + g_freeCamLookX);   /* the unrounded step here ... */
 	X u = c * g_frameTime * SPEED;
-	g_menuCamZ = (float)(u + g_menuCamZ);
+	g_freeCamLookZ = (float)(u + g_freeCamLookZ);
 	g_menuEyeX = (float)((X)tf + g_menuEyeX);   /* ... the rounded one here */
 	g_menuEyeZ = (float)(u + g_menuEyeZ);
 }
@@ -343,9 +343,9 @@ void (freeCam_stepRight)(void)
 	float s = (float)x87_fsin(a);
 	X c = x87_fcos(a);
 	float tf = (float)((X)g_frameTime * s * SPEED);
-	g_menuCamX = (float)((X)g_menuCamX - tf);
+	g_freeCamLookX = (float)((X)g_freeCamLookX - tf);
 	X u = c * g_frameTime * SPEED;
-	g_menuCamZ = (float)((X)g_menuCamZ - u);
+	g_freeCamLookZ = (float)((X)g_freeCamLookZ - u);
 	g_menuEyeX = (float)((X)g_menuEyeX - tf);
 	g_menuEyeZ = (float)((X)g_menuEyeZ - u);
 }
@@ -452,7 +452,7 @@ void (setup_camera)(void)
    others first: g_netHostLeftMessageKind) through game_returnToMainMenu; g_keyForward / g_keyBackward (W / S) move
    the camera along its heading (g_freeCamTurnSin / g_freeCamTurnCos x k_3f x the frame time), g_keyStepLeft /
    g_keyStepRight (A / D) step it sideways (freeCam_stepLeft / freeCam_stepRight); then the menu camera follows:
-   look-at (g_menuCamX, g_menuCameraLookY = height + tilt, g_menuCamZ), eye 50 units behind along the heading at
+   look-at (g_freeCamLookX, g_menuCameraLookY = height + tilt, g_freeCamLookZ), eye 50 units behind along the heading at
    height + 10; the point is kept in the local slot's g_slotCams record (0x58 bytes, g_localSlot); g_dikZ_2 toggles
    g_freeCamZoom 1 / 2, and 1 / 2 / 3 / 4 step g_debugValue by +1 / +10 / -1 / -10 (not below 1). The original leaves
    eax to callers that ignore it */
@@ -498,18 +498,18 @@ void (freeCam_keys)(void)
 	}
 	if (input_isDown(g_keyForward) == 1) {
 		long double a = fmul_m(fmul_m(fld_m(frame), &g_freeCamTurnSin), speed);
-		g_menuCamX = f32(fadd_m(a, &g_menuCamX));
+		g_freeCamLookX = f32(fadd_m(a, &g_freeCamLookX));
 		long double b = fmul_m(fmul_m(fld_m(&g_freeCamTurnCos), frame), speed);
 		float bf = f32(b);
-		g_menuCamZ = f32(fadd_m(b, &g_menuCamZ));
+		g_freeCamLookZ = f32(fadd_m(b, &g_freeCamLookZ));
 		g_menuEyeX = f32(fadd_m(a, &g_menuEyeX));
 		g_menuEyeZ = f32(FADD(bf, g_menuEyeZ));
 	}
 	if (input_isDown(g_keyBackward) == 1) {
 		long double a = fmul_m(fmul_m(fld_m(frame), &g_freeCamTurnSin), speed);
-		g_menuCamX = f32(fld_m(&g_menuCamX) - a);
+		g_freeCamLookX = f32(fld_m(&g_freeCamLookX) - a);
 		float bf = f32(fmul_m(fmul_m(fld_m(&g_freeCamTurnCos), frame), speed));
-		g_menuCamZ = f32(FSUB(g_menuCamZ, bf));
+		g_freeCamLookZ = f32(FSUB(g_freeCamLookZ, bf));
 		g_menuEyeX = f32(fld_m(&g_menuEyeX) - a);
 		g_menuEyeZ = f32(FSUB(g_menuEyeZ, bf));
 	}
@@ -517,16 +517,16 @@ void (freeCam_keys)(void)
 		freeCam_stepLeft();
 	if (input_isDown(g_keyStepRight) == 1)
 		freeCam_stepRight();
-	(*(u32 *)&g_menuCameraLook) = (*(u32 *)&g_menuCamX);
-	(*(u32 *)&g_menuCameraLookZ) = (*(u32 *)&g_menuCamZ);
-	g_menuEyeX = f32(fsubr_m(fmul_m(fld_m(&g_freeCamTurnSin), (const float *)ADDR(k_50f)), &g_menuCamX));
-	g_menuEyeY = f32(fadd_m(fld_m(&g_freeCamHeight), (const float *)ADDR(k_10f)));
+	(*(u32 *)&g_menuCameraLook) = (*(u32 *)&g_freeCamLookX);
+	(*(u32 *)&g_menuCameraLookZ) = (*(u32 *)&g_freeCamLookZ);
+	g_menuEyeX = f32(fsubr_m(fmul_m(fld_m(&g_freeCamTurnSin), (const float *)ADDR(k_50f)), &g_freeCamLookX));
+	g_menuEyeY = f32(fadd_m(fld_m(&g_freeCamLookY), (const float *)ADDR(k_10f)));
 	u32 *slot = (u32 *)(OBJ(g_slotCams) + g_localSlot * 0x58);
-	slot[0] = (*(u32 *)&g_menuCamX);
-	slot[1] = (*(u32 *)&g_freeCamHeight);
-	slot[2] = (*(u32 *)&g_menuCamZ);
-	g_menuEyeZ = f32(fsubr_m(fmul_m(fld_m(&g_freeCamTurnCos), (const float *)ADDR(k_50f)), &g_menuCamZ));
-	g_menuCameraLookY = f32(FADD(g_freeCamTilt, g_freeCamHeight));
+	slot[0] = (*(u32 *)&g_freeCamLookX);
+	slot[1] = (*(u32 *)&g_freeCamLookY);
+	slot[2] = (*(u32 *)&g_freeCamLookZ);
+	g_menuEyeZ = f32(fsubr_m(fmul_m(fld_m(&g_freeCamTurnCos), (const float *)ADDR(k_50f)), &g_freeCamLookZ));
+	g_menuCameraLookY = f32(FADD(g_freeCamTilt, g_freeCamLookY));
 	if (input_justPressed(g_dikZ_2) == 1)
 		g_freeCamZoom = g_freeCamZoom == 1 ? 2 : 1;
 	if (input_justPressed(g_dik1) == 1)

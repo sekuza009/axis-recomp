@@ -631,7 +631,7 @@ u32 STDCALL (game_WinMain)(void *inst, void *prev, const char *cmd, int show)
      arena's session search: the sessions listed; after 30 tries the join gives up, else a session found ends it
      (none: try again next time); either way the timer stops and the room closes (room_joinAnswer) or the arena's join
      is answered (arena_joinAnswer).
-   - 0x40a, 0x40c (the game server's and the lobby's sockets): closed, both sockets closed and the menus back at
+   - 0x40a, 0x40c (the lobby's and the game server's sockets): closed, both sockets closed and the menus back at
      the main menu (0), unless in a match; else the reply read and the connection's step and search result
      taken from it. */
 long STDCALL (game_wndProc)(void *wnd, u32 msg, u32 w, u32 l)
@@ -792,7 +792,7 @@ long STDCALL (game_wndProc)(void *wnd, u32 msg, u32 w, u32 l)
 				net_send(0x18, 0x65);
 		}
 		return 1;
-	case 0x40a:   /* the game server's socket */
+	case 0x40a:   /* the lobby's socket (net_asyncSelect 100: g_lobbySocket) */
 		if ((u16)l == 0x20) {   /* FD_CLOSE */
 			net_closeSockets();   /* net_closeSockets */
 			if (g_screen != 0x270f)
@@ -812,7 +812,7 @@ long STDCALL (game_wndProc)(void *wnd, u32 msg, u32 w, u32 l)
 		case 0xcb: g_serverAnswerIn = 1; g_searchResult = 3; break;
 		}
 		return 1;
-	case 0x40c:   /* the lobby's socket */
+	case 0x40c:   /* the game server's socket (net_asyncSelect 101: g_gameServerSocket) */
 		if ((u16)l == 0x20) {
 			net_closeSockets();
 			if (g_screen != 0x270f)

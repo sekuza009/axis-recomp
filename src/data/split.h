@@ -1610,19 +1610,19 @@ extern u8 g_cursorBlinkTimer_v[4];
 extern u8 g_freeCamMoveStarted_v[4];
 #endif
 #ifdef AXIS_FENCE
-#define g_menuCamX_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0x28e000 : g_fence + 0x28dffc))
+#define g_freeCamLookX_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0x28e000 : g_fence + 0x28dffc))
 #else
-extern u8 g_menuCamX_v[4];
+extern u8 g_freeCamLookX_v[4];
 #endif
 #ifdef AXIS_FENCE
-#define g_freeCamHeight_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0x290000 : g_fence + 0x28fffc))
+#define g_freeCamLookY_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0x290000 : g_fence + 0x28fffc))
 #else
-extern u8 g_freeCamHeight_v[4];
+extern u8 g_freeCamLookY_v[4];
 #endif
 #ifdef AXIS_FENCE
-#define g_menuCamZ_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0x292000 : g_fence + 0x291ffc))
+#define g_freeCamLookZ_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0x292000 : g_fence + 0x291ffc))
 #else
-extern u8 g_menuCamZ_v[4];
+extern u8 g_freeCamLookZ_v[4];
 #endif
 #ifdef AXIS_FENCE
 #define g_freeCamMoveEyeX_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0x294000 : g_fence + 0x293ffc))

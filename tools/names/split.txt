@@ -114,7 +114,7 @@ g_fpsSecondSoFar
 g_fpsSecondStart
 g_frameCounter40
 g_frameRate
-g_freeCamHeight
+g_freeCamLookY
 g_fullScreen
 g_gameListClickTimer
 g_gameRunning
@@ -153,8 +153,8 @@ g_mciFrom
 g_mciTo
 g_mechChanged
 g_mechDetectionRange
-g_menuCamX
-g_menuCamZ
+g_freeCamLookX
+g_freeCamLookZ
 g_fpsFrameCount
 g_menuTunnelTexture
 g_messageBoxArgs

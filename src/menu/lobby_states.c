@@ -32,7 +32,7 @@ void (lobby_enterPlayerScreen)(void)
 	(*(u32 *)&g_arenaTunnelDepth) = 0xc4ce4000;   /* -1650.0 */
 }
 
-/* 0x404b30: sub-screen 1, the arena list: its 24 state words cleared, 999 (no selection), 30 seconds */
+/* 0x404b30: sub-screen 1, the arena list: its 24 state words cleared, 999 (no selection), the refresh period 30 (1/60 s: half a second) */
 void (lobby_enterArenaList)(void)
 {
 	static const u32 cleared[] = { (OBJ(g_camPoints) + 0x14), ADDR(g_joinThroughServer), ADDR(g_lobbyRefreshing), ADDR(g_lanSearchStarted), ADDR(g_serverSearching), ADDR(g_lobbyJoinStarted), ADDR(g_lanJoinRequest), ADDR(g_lanSearch),

@@ -56,7 +56,7 @@ void (room_openLogin)(void)
 	strcpy(g_accountName, g_ladderId);
 }
 
-/* 0x433590: the game list page (state 1) entered: brightness 0.7, the list refreshed every 30 s, no panel (999), the
+/* 0x433590: the game list page (state 1) entered: brightness 0.7, the list merged every 30 (1/60 s: half a second), no panel (999), the
    rest cleared */
 void (room_enterGameList)(void)
 {
@@ -167,7 +167,7 @@ u32 (room_joinSession)(int i)
 }
 
 /* 0x434d00: the game room's list opened: its state reset, the session list cleared, the request for the server's
-   room list sent (message 0x13, 0x65 bytes), 30 seconds. Returns 1 */
+   room list sent (message 0x13, 0x65 bytes), the refresh period 30 (1/60 s). Returns 1 */
 int (gameList_open)(void)
 {
 	g_connectionAwaited = 1;
