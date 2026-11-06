@@ -104,7 +104,7 @@ static void *dat_entry(int index, const char *name, u32 table, u32 file, u32 log
 		sys_fatalErrorN((void *)RELOC(log), (const char *)STR(0x4b3f80, "can't find item(%s) - getItemFileBy()"), name);   /* sys_fatalError */
 		return 0;
 	}
-	crt_fseek(GAME_VAR(void *, file), FIELD(int, GAME_VAR(u8 *, table) + index * 0x44, 0x40), 0);   /* fseek */
+	crt_fseek(GAME_VAR(void *, file), ((const ArchiveEntry *)GAME_VAR(u8 *, table))[index].offset, 0);   /* fseek */
 	return GAME_VAR(void *, file);
 }
 /* 0x466d60: in Shape.dat */
@@ -526,7 +526,7 @@ u32 (cfg_writeGraphic)(void *f)
 	FPUTS(g_highDetail ? STR(0x4b1acc, "HIGH\n") : STR(0x4b1ad4, "LOW\n"));
 	for (int i = 0; i < 4; i++) {
 		FPUTS(switches[i]);
-		FPUTS(GAME_VAR(int, OBJ(g_cfgSwitches) + i * 4) == 1 ? STR(0x4b17e4, "ON\n") : STR(0x4b17dc, "OFF\n"));
+		FPUTS(g_cfgSwitches[i] == 1 ? STR(0x4b17e4, "ON\n") : STR(0x4b17dc, "OFF\n"));
 	}
 	return FPUTS(STR(0x4b182c, "\n"));
 #undef FPUTS
@@ -721,7 +721,7 @@ int (profile_saveProgress)(void)
 	char path[0x80];
 	pilot_path(path);
 	f = crt_fopen(path, (const char *)STR(0x4b2ab0, "wb"));
-	(*(u32 *)&g_selectedCharacter) = GAME_VAR(u32, OBJ(g_profileNames) + 0x40 + g_pilot * 0x48);
+	(*(u32 *)&g_selectedCharacter) = GAME_VAR(u32, OBJ(g_profileNames) + 0x40 + g_pilot * 0x48);   /* g_profileRecords[g_pilot].pilot */
 	if (f)
 		pilot_write(f);
 	fclose(f);
@@ -736,7 +736,7 @@ static void campaign_new(void)
 	strcpy((char *)g_pilotSave, (const char *)STR(0x4b0fa0, "AXIS USER PROFILE DATA Master ver 1.0..."));
 	memset((void *)(OBJ(g_pilotSave) + 0x80), 0, 0x80);
 	memcpy((void *)(OBJ(g_pilotSave) + 0x80), pilot_name(g_pilot), 0x80);
-	(*(u32 *)&g_selectedCharacter) = GAME_VAR(u32, OBJ(g_profileNames) + 0x40 + g_pilot * 0x48);
+	(*(u32 *)&g_selectedCharacter) = GAME_VAR(u32, OBJ(g_profileNames) + 0x40 + g_pilot * 0x48);   /* g_profileRecords[g_pilot].pilot */
 	g_progress = 0;
 	memset((void *)(OBJ(g_pilotSave) + 0x108), 0, 0x190);
 	memset((void *)(OBJ(g_pilotSave) + 0x298), 0, 0x40);
@@ -1194,7 +1194,7 @@ void (cfg_readGraphics)(void *f)
 		else if (n == 2)
 			g_highDetail = !strcmp(b.value, (const char *)STR(0x4b22cc, "HIGH"));
 		else
-			GAME_VAR(int, OBJ(g_cfgSwitches) + (n - 3) * 4) = IS_ON(b.value);
+			g_cfgSwitches[n - 3] = IS_ON(b.value);
 	}
 	crt_fgets(b.line, 0x50, f);
 }
@@ -1221,9 +1221,9 @@ void (cfg_readKeyBindings)(void *f)
 	for (int n = 0; n < 0x44; n++) {
 		read_into(f, &b, 0);
 		if (n == 0x40 || n == 0x41)
-			GAME_VAR(int, OBJ(g_mouseSettings) + (n - 0x40) * 4) = IS_ON(b.value);
+			GAME_VAR(int, OBJ(g_mouseSettings) + (n - 0x40) * 4) = IS_ON(b.value);   /* g_mouseSettings[n - 0x40] */
 		else if (n == 0x42 || n == 0x43)
-			GAME_VAR(int, OBJ(g_mouseSettings) + 8 + (n - 0x42) * 4) = crt_atoi(b.value);   /* (sensitivity, crosshair) */
+			GAME_VAR(int, OBJ(g_mouseSettings) + 8 + (n - 0x42) * 4) = crt_atoi(b.value);   /* g_mouseSettings[2 + n - 0x42]: sensitivity, crosshair */
 		else
 			for (int k = 0; k < 256; k++)
 				if (!strcmp(b.value, key_name[k]))

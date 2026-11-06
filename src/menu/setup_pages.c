@@ -227,7 +227,7 @@ static void settings_tab(void)
 		text_draw8(X0 + 0x30, Y0 + 0x5c + r * 0x18, (const char *)(MSG(261, "INVERT MOUSE") + r * 0x80));
 	text_draw8(X0 + 0x30, Y0 + 0xb0, (const char *)MSG(264, "CROSSHAIRS"));
 	for (int k = 0; k < 2; k++)
-		text_draw8(X0 + 0xc8, Y0 + 0x5c + k * 0x18, (const char *)(GAME_VAR(int, OBJ(g_mouseSwitchesEdit) + k * 4) == 1 ? MSG(119, "ON") : MSG(118, "OFF")));
+		text_draw8(X0 + 0xc8, Y0 + 0x5c + k * 0x18, (const char *)(g_mouseSwitchesEdit[(u32)k] == 1 ? MSG(119, "ON") : MSG(118, "OFF")));
 	int texture = g_buttonTexture;
 	tex_bind(g_textures->banks[texture / 512], texture % 512);
 	glEnable(GL_TEXTURE_2D);
@@ -467,7 +467,7 @@ void (setup_drawTunnel)(void)
 			texture = g_menuTunnelTexture;
 		} else if (layer == 3) {
 			glColor4f(1.0f, 1.0f, 1.0f, f32(fadd_m(fld_m(&g_setupTunnelAlpha), (const float *)ADDR(k_0_2f))));
-			texture = GAME_VAR(int, OBJ(g_ctrlMenuTextures) + 12 - layer * 4);
+			texture = g_ctrlMenuTextures[3 - layer];   /* (layer 3: [0], ctrlmenu01) */
 		} else
 			continue;
 		tex_bind(g_textures->banks[texture / 512], texture % 512);

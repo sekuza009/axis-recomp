@@ -53,7 +53,7 @@ static void load_stat_bars(int i)
 /* 0x44bc50: the stat bars for the pilot under CHARACTER SELECT's cursor; profile_loadPilotStats: for the pilot of the
    profile chosen in the list */
 void (pilotSelect_loadStats)(void) { load_stat_bars(g_pilotSelectCursor); }
-void (profile_loadPilotStats)(void) { load_stat_bars(GAME_VAR(int, OBJ(g_profileNames) + 0x40 + g_profileChosen * 72)); }
+void (profile_loadPilotStats)(void) { load_stat_bars(g_profileRecords[(u32)g_profileChosen].pilot); }
 
 /* 0x445ee0: a whole 0x3ac-byte profile record scrambled */
 void (save_cryptRecord)(u8 *rec, u8 key) { crypt_bytes(rec, 0x3ac, key); }
@@ -315,7 +315,7 @@ u32 (profile_create)(void)
 {
 	int n = g_profileCount;
 	strcpy((char *)(OBJ(g_profileNames) + n * 0x48), g_chatLine);
-	GAME_VAR(int, OBJ(g_profileNames) + 0x40 + n * 0x48) = g_pilotSelectCursor;
+	g_profileRecords[(u32)n].pilot = g_pilotSelectCursor;
 	if (chdir_((const char *)STR(0x4b2adc, "save"))) {
 		mkdir_((const char *)STR(0x4b2adc, "save"));
 		chdir_((const char *)STR(0x4b2adc, "save"));

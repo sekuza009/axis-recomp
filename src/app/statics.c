@@ -27,12 +27,12 @@ void *(TimeSync_initLog)(void) { return ErrorLog_ctor((void *)OBJ(g_logTimeSync)
 void *(Scene_initLog)(void) { return ErrorLog_ctor((void *)OBJ(g_logScene), (const char *)STR(0x4c7d18, "class Scene"), 0); }   /* 0x48b3c0 "class Scene" */
 
 /* ---- global objects: the vtable 0x4a956c (Texture) and an empty second field ---- */
-void (static_initTex64x64)(void) { g_texture64x64Vtable = VT(Texture, 0x4a956c); GAME_VAR(u32, OBJ(g_texture64x64) + 4) = 0; }   /* 0x42b130 */
-void (static_initTex128x64)(void) { g_texture128x64Vtable = VT(Texture, 0x4a956c); GAME_VAR(u32, OBJ(g_texture128x64) + 4) = 0; }   /* 0x42b1a0 */
-void (static_initTex256x64)(void) { g_texture256x64Vtable = VT(Texture, 0x4a956c); GAME_VAR(u32, OBJ(g_texture256x64) + 4) = 0; }   /* 0x42b1f0 */
-void (static_initTex128x128)(void) { g_texture128x128Vtable = VT(Texture, 0x4a956c); GAME_VAR(u32, OBJ(g_texture128x128) + 4) = 0; }   /* 0x42b240 */
-void (static_initTex256x128)(void) { g_texture256x128Vtable = VT(Texture, 0x4a956c); GAME_VAR(u32, OBJ(g_texture256x128) + 4) = 0; }   /* 0x42b290 */
-void (static_initTex256x256)(void) { g_texture256x256Vtable = VT(Texture, 0x4a956c); GAME_VAR(u32, OBJ(g_texture256x256) + 4) = 0; }   /* 0x42b2e0 */
+void (static_initTex64x64)(void) { g_texture64x64Vtable = VT(Texture, 0x4a956c); ((TextureBank *)g_texture64x64)->ready = 0; }   /* 0x42b130 */
+void (static_initTex128x64)(void) { g_texture128x64Vtable = VT(Texture, 0x4a956c); ((TextureBank *)g_texture128x64)->ready = 0; }   /* 0x42b1a0 */
+void (static_initTex256x64)(void) { g_texture256x64Vtable = VT(Texture, 0x4a956c); ((TextureBank *)g_texture256x64)->ready = 0; }   /* 0x42b1f0 */
+void (static_initTex128x128)(void) { g_texture128x128Vtable = VT(Texture, 0x4a956c); ((TextureBank *)g_texture128x128)->ready = 0; }   /* 0x42b240 */
+void (static_initTex256x128)(void) { g_texture256x128Vtable = VT(Texture, 0x4a956c); ((TextureBank *)g_texture256x128)->ready = 0; }   /* 0x42b290 */
+void (static_initTex256x256)(void) { g_texture256x256Vtable = VT(Texture, 0x4a956c); ((TextureBank *)g_texture256x256)->ready = 0; }   /* 0x42b2e0 */
 
 /* ---- a global object's destructor registered with atexit (the result of atexit) ---- */
 int (static_registerTex64x64Dtor)(void) { return atexit((void (*)(void))FN_ADDR(static_destroyTex64x64, 0x42b180)); }

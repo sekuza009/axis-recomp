@@ -6,10 +6,10 @@
 #define g_ladderId ((char *)IMG(0x9dd570))   /* char[54]; the Ladder login: the ID (30 bytes; the registry's "Name", default "AxisPlayer"), then its password at +0x1e (g_ladderPassword; 12 at most), up to the registry's e-mail copy at 0x9dd5a6 */
 #define g_ladderName ((char *)IMG(0x4de700))   /* char[30]; the logged-in pilot's Ladder record: the ID, then from +0x1e its level, exp, power, games, kills and deaths (g_ladderLevel ..) */
 #define g_accountForm ((u8 *)IMG(0x9dd1d8))   /* u8[104]; the account / Ladder login / new-ID forms' fields: the name (+0; 30); the password (+0x1e; 12); its repeat (+0x2a; 12); the e-mail (+0x36; 50, up to g_pilotStatsKept at 0x9dd240). room_openNewIdForm's clear of 0x54 bytes covers the name, both passwords and the e-mail's first 30 bytes */
-#define g_accountName ((char *)(g_accountForm + 0))
-#define g_accountPassword ((char *)(g_accountForm + 0x1e))
-#define g_accountPasswordRepeat ((char *)(g_accountForm + 0x2a))
-#define g_accountEmail ((char *)(g_accountForm + 0x36))
+#define g_accountName ((char *)(g_accountForm + 0))   /* the account form's name field (30 bytes) */
+#define g_accountPassword ((char *)(g_accountForm + 0x1e))   /* its password (12) */
+#define g_accountPasswordRepeat ((char *)(g_accountForm + 0x2a))   /* the password typed again (12) */
+#define g_accountEmail ((char *)(g_accountForm + 0x36))   /* its e-mail address (50) */
 #define g_arenaName ((char *)IMG(0x4ded20))   /* char[48]; the arena settings record (GameSettings, axis.cfg's server section): the arena's (server's) name ("set_server name"; default "AXIS ARENA", lobby_loadArenaSettings turns that into "<player> room"), then the map .. limits (+0x20: g_arenaMap ..), the password (+0x26: g_arenaPassword), the locked flag +0x2e */
 #define g_cfgPlayerName ((char *)IMG(0x4dedb0))   /* char[32]; axis.cfg's player name (default "PLAYER") */
 #define g_roomRecName ((char *)IMG(0x5b1b30))   /* char[48]; the room settings record (GameSettings, the registry's copy): the name, then the six choices (+0x20: g_roomRec*), the password (+0x26) */
@@ -185,6 +185,7 @@
 #define g_keptChat ((char *)IMG(0x9f63e4))   /* char[1024]; the typed chat line kept for the match (chat_endTyping: cleared, then copied whole (0x400) from g_chatLine; match_frame / escMenu_update read it; g_keptChatLine its first byte) */
 #define g_netSendPacket ((NetPacketMessage *)IMG(0x9f9428))   /* NetPacketMessage[1]; the packet message being sent (cleared as 0x103 words): kind (g_netPacketMessageKind) */
 #define g_pilotSave ((u8 *)IMG(0x9f1718))   /* u8[940]; the pilot's save record (0x3ac bytes, the middle of the .axs file, scrambled with key 0x7e): +0 the signature 'AXIS USER PROFILE DATA Master ver 1.0', +0x80 the pilot's name, +0x100 its value, +0x104 the progress (g_progress), +0x2d8 .. the mech's parts and colours (mech_storeToProfile / mech_loadFromProfile) */
+#define g_pilotSaveColours ((float *)(g_pilotSave + 0x31c))   /* float[36]; the save record's colour choices: six ColourChoice records (+0x31c .. +0x3ac; g_savedColourChoices' copy: mech_loadFromProfile / mech_storeToProfile) */
 #define g_armcViewPoints ((float *)IMG(0x4dca30))   /* float[24]; ARM CENTER's six points, 16 bytes each (x, y, z, unused): y = 300, 0, 0, -500, 0, 350; x and z 0 (armc_initCameraPoints; never read) */
 #define g_menuFrameTextures ((int *)IMG(0x4deb4c))   /* int[2]; the menu frames' textures (menu_loadTextures): [0] the panel corner ornaments (g_menuOrnamentTexture: menu_drawCornerOrnaments, menu_drawTopRightOrnament), [1] the dialog window frame (g_dialogFrameTexture: every dialog's draw) */
 #define g_soundSettings ((int *)IMG(0x4e0c90))   /* int[4]; the sound settings in use (axis.cfg's sound block): [0] the volume (g_soundVolume), [1] the music volume (g_musicVolume), [2] 3D sound (g_sound3D), [3] stereo reverse (g_stereoReverse) */
@@ -427,6 +428,7 @@
 #define g_sessionList ((SessionEntry *)IMG(0x9087c0))   /* SessionEntry[256] (to 0x90d1c0) */
 #define g_profiles ((u8 *)IMG(0x9f6848))   /* u8[9216]; 128 records of 0x48 (to 0x9f8c48): +0 the number; +4 the name (g_profileNames); +0x44 the pilot */
 #define g_profileNames ((char *)(g_profiles + 4))   /* the profiles' names: +4 in each g_profiles record (0x48 apart, so name i is at + i x 0x48); +0x40 from here is the record's pilot (g_profiles +0x44) */
+#define g_profileRecords ((ProfileRecord *)g_profiles)   /* ProfileRecord[128]; g_profiles as its records (number, name, pilot) */
 #define g_saveFileNames ((char *)IMG(0x9f1ac4))   /* char[8192]; profile_scanSaves' *.axs names (0x40 apart; strcpy of any count: held) */
 #define g_joinPasswordAndRanking ((u8 *)IMG(0x9dcee8))   /* u8[684]; the room's typed password text (+0; 8 bytes cleared; a strcpy of the chat line) and the ranking's ten 0x44-byte rows from +4 (to 0x9dd194): the two overlap in the original */
 #define g_roomJoinPassword (*(int *)g_joinPasswordAndRanking)   /* the typed password (text from here) */

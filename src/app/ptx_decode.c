@@ -210,7 +210,7 @@ int (ptx_crtlError)(int code, const char *format, ...)
 {
 	void *err = (void *)OBJ(g_crtStderr);   /* stderr */
 	crt_fprintf(err, (const char *)STR(0x4b182c, "\n"));
-	crt_fprintf(err, (const char *)STR(0x4c6fc0, "CRTL ERROR: %s\n"), GAME_VAR(u32, OBJ(g_crtSysErrList) + g_crtErrno * 4));
+	crt_fprintf(err, (const char *)STR(0x4c6fc0, "CRTL ERROR: %s\n"), g_crtSysErrList[(u32)g_crtErrno]);
 	if (format && strlen(format)) {
 		crt_fprintf(err, (const char *)STR(0x4c6fb0, "CRTL ERROR: "));
 		va_list args;

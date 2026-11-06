@@ -116,7 +116,7 @@ void (mech_unpackFromRecord)(void)
 	g_savedMechLeg = rec[3];
 	g_savedMechBooster = rec[4];
 	for (int i = 0; i < 4; i++)
-		GAME_VAR(int, OBJ(g_savedMechSlotItems) + 8 + i * 4) = rec[7 + i];   /* (items 2 .. 5) */
+		g_savedMechSlotItems[2 + (u32)i] = rec[7 + i];   /* (items 2 .. 5) */
 	g_savedMechItemSlot5 = rec[6];
 	g_savedMechItemSlot4 = rec[5];
 	memcpy((void *)OBJ(g_savedColourChoices), (void *)OBJ(g_roomColours), 0x90);
@@ -138,11 +138,12 @@ void (mech_loadFromProfile)(void)
 	g_savedMechItemSlot4 = g_profileMechItem0;
 	g_savedMechItemSlot5 = g_profileMechItem1;
 	for (int o = 0; o < 0x90; o += 0x18) {
-		if (!(GAME_VAR(float, OBJ(g_pilotSave) + 0x320 + o) >= 0.0f))
-			GAME_VAR(int, OBJ(g_pilotSave) + 0x320 + o) = 0;
-		if (!(GAME_VAR(float, OBJ(g_pilotSave) + 0x324 + o) >= 0.0f))
-			GAME_VAR(int, OBJ(g_pilotSave) + 0x324 + o) = 0;
-		memcpy((void *)(OBJ(g_savedColourChoices) + o), (void *)((OBJ(g_pilotSave) + 0x31c) + o), 0x18);
+		ColourChoice *c = (ColourChoice *)(OBJ(g_pilotSaveColours) + o);
+		if (!(c->first[1] >= 0.0f))   /* the first tint's saturation and value: not below 0 */
+			BITS(c->first[1]) = 0;
+		if (!(c->first[2] >= 0.0f))
+			BITS(c->first[2]) = 0;
+		memcpy((void *)(OBJ(g_savedColourChoices) + o), (void *)(OBJ(g_pilotSaveColours) + o), 0x18);
 	}
 }
 
@@ -160,7 +161,7 @@ void (mech_storeToProfile)(void)
 	g_profileMechItem1 = g_savedMechItemSlot5;
 	g_profileMechItem5 = g_savedMechWeaponSlot3;
 	g_profileMechItem0 = g_savedMechItemSlot4;
-	memcpy((void *)(OBJ(g_pilotSave) + 0x31c), (void *)OBJ(g_savedColourChoices), 0x90);
+	memcpy((void *)OBJ(g_pilotSaveColours), (void *)OBJ(g_savedColourChoices), 0x90);
 }
 
 /* 0x447910: the menu camera snapped to the screen's first menu point: eye from g_camPoints[0] (g_camPoint0X ..),

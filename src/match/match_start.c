@@ -100,8 +100,8 @@ static void match_setup(Scene *s)
 	   of the second) */
 	for (int i = 0; i < 5; i++)
 		for (int t = 0; t < 3; t++) {
-			BITS(s->mechColours[t][i][0]) = GAME_VAR(u32, OBJ(g_savedColourChoices) + i * 0x18 + t * 4);
-			BITS(s->mechColours[t][i][1]) = GAME_VAR(u32, OBJ(g_savedColourChoices) + 0xc + i * 0x18 + t * 4);
+			BITS(s->mechColours[t][i][0]) = BITS(((ColourChoice *)g_savedColourChoices)[(u32)i].first[(u32)t]);
+			BITS(s->mechColours[t][i][1]) = BITS(((ColourChoice *)g_savedColourChoices)[(u32)i].second[(u32)t]);
 		}
 	if (s->sessionMode == 1) {
 		if (!s->client) {

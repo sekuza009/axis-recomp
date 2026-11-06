@@ -1332,7 +1332,7 @@ static void team_colours(u8 *s, int p, int team)
 	int side = scene_claimTeamSlot((Scene *)s, team);
 	for (int part = 0; part < 5; part++)
 		actor_setPartColor_bits((u8 *)SCENE_STAGE(s), p, part, GAME_VAR(u32, OBJ(k_teamHue) + side * 4), GAME_VAR(u32, OBJ(k_teamSaturation) + side * 4),
-		                        GAME_VAR(u32, OBJ(k_teamValue) + side * 4), 0, 0xbf800000, 0x3f7fbe77);
+		                        GAME_VAR(u32, OBJ(k_teamValue) + side * 4), 0, 0xbf800000, 0x3f7fbe77);   /* k_teamHue / Saturation / Value[side] (byte offsets: the original's addressing) */
 }
 
 /* the local player (localPlayer) into the match: its record (localName ..), colours, a spawn point, the notice */

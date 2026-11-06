@@ -78,7 +78,7 @@ void (net_resetState)(void)
    the lobby top menu's (g_lobbyTopOutlines): each 4 points, then its five x and five y */
 void (setupTop_initOutlines)(void)
 {
-	for (int o = 0; o < 0xb0; o += 0x2c) {
+	for (int o = 0; o < 0xb0; o += 0x2c) {   /* four MenuOutline records (0x2c): points = 4, then x[5] (+4) and y[5] (+0x18) copied */
 		GAME_VAR(int, OBJ(g_setupTopOutlines) + o) = 4;
 		GAME_VAR(int, OBJ(g_outlinesCopy) + o) = 4;
 		for (int j = 0; j < 20; j += 4) {

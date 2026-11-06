@@ -270,7 +270,7 @@ void (armc_updateWeaponsPreview)(void)
 	case 1: preview(1, part_in_view()); break;
 	case 2:
 		slot = g_armcSlot;
-		if (GAME_VAR(int, OBJ(g_partRecords) + 0x40 + slot * 0x80) == -1)
+		if (((PartInfo *)g_partRecords)[slot].slotType == -1)
 			preview(1, -1);
 		else
 			preview(1, slot > 3 ? slot + 2 : 5);
@@ -477,7 +477,7 @@ void (armc_drawPanels)(void)
 		gfx_setMenuCamera();
 		glScalef_bits(0x3f4ccccd, 0x3f4ccccd, 0x3f4ccccd);   /* 0.8 */
 		glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
-		int texture = GAME_VAR(int, OBJ(g_spiralTextures) + 0x14 - k * 4);   /* (spirals 5 .. 1) */
+		int texture = GAME_VAR(int, OBJ(g_spiralTextures) + 0x14 - k * 4);   /* g_spiralTextures[5 - k]: spirals 5 .. 1 */
 		tex_bind(g_textures->banks[texture / 512], texture % 512);
 		Panel *p = &g_panels[k];
 		if (k == 2)

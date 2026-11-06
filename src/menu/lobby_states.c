@@ -286,10 +286,11 @@ void (login_takeAccountRecord)(void)
 	memcpy((void *)OBJ(g_roomMech), (void *)(OBJ(g_profileReply) + 0x54), 11);
 	for (int k = 0; k < 6; k++) {
 		memcpy((void *)(OBJ(g_roomColours) + k * 0x18), (void *)((OBJ(g_profileReply) + 0x5f) + k * 0x18), 0x18);
-		if (!(GAME_VAR(float, OBJ(g_roomColours) + 0x4 + k * 0x18) >= k_0f))
-			GAME_VAR(int, OBJ(g_roomColours) + 0x4 + k * 0x18) = 0;
-		if (!(GAME_VAR(float, OBJ(g_roomColours) + 0x8 + k * 0x18) >= k_0f))
-			GAME_VAR(int, OBJ(g_roomColours) + 0x8 + k * 0x18) = 0;
+		ColourChoice *c = &((ColourChoice *)g_roomColours)[(u32)k];
+		if (!(c->first[1] >= k_0f))   /* the first tint's saturation and value: not below 0 */
+			BITS(c->first[1]) = 0;
+		if (!(c->first[2] >= k_0f))
+			BITS(c->first[2]) = 0;
 	}
 	static const u32 rect[7][2] = { { ADDR(g_pilotLevel), (OBJ(g_profileReply) + 0xef) }, { ADDR(g_pilotExp), (OBJ(g_profileReply) + 0xff) }, { ADDR(g_pilotPower), (OBJ(g_profileReply) + 0x103) },
 	                                { ADDR(g_pilotKillRate), (OBJ(g_profileReply) + 0x107) }, { ADDR(g_pilotKills), (OBJ(g_profileReply) + 0xf7) }, { ADDR(g_pilotDeaths), (OBJ(g_profileReply) + 0xfb) },

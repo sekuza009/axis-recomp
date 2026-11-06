@@ -895,9 +895,9 @@ void THISCALL (model_loadObjFormatFrom)(u8 *sh, void *f, u8 *mem, int memSize)
 	int at = md->partCount << 7;
 	for (int k = 0; k < md->partCount; k++) {
 		u8 *pt = all + k * 0x80;
-		GAME_VAR(int, pt) = 0;
+		((ShapePart *)pt)->flags = 0;
 		((ShapePart *)pt)->texture = 0;
-		for (int o = 0x4c; o <= 0x64; o += 4)
+		for (int o = offsetof(ShapePart, vertexCount); o <= (int)offsetof(ShapePart, prims); o += 4)   /* vertexCount .. prims */
 			GAME_VAR(int, pt + o) = 0;
 	}
 	crt_fseek(f, 0, 0);

@@ -241,7 +241,7 @@ void (sound_play3D)(int index, const float *pos, const float *listener, const fl
 	across = across + FMUL(c[0], side[0]);
 	int pan = ftol(fmul_m(across, (const float *)(g_stereoReverse ? ADDR(k_m1500f) : ADDR(k_1500f_4a9700))));
 	GAME_FN(sound_setNextVolume, 0x467db0, void, void *, int)(GAME_VAR(void *, OBJ(g_soundTable) + index * 4), volume);   /* sound_setNextVolume */
-	sound_playPanned(GAME_VAR(void *, OBJ(g_soundTable) + index * 4), (pan > 0) + 1, pan);
+	sound_playPanned(GAME_VAR(void *, OBJ(g_soundTable) + index * 4) /* g_soundTable[index] */, (pan > 0) + 1, pan);
 }
 
 #define DS_CREATESOUNDBUFFER 0x0c

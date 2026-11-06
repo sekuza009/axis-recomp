@@ -17,7 +17,7 @@ for line in open('src/scene.fields', encoding='latin-1'):
 	if line.startswith('struct '):
 		cur = line.split()[1]; structs[cur] = []
 		continue
-	m = re.match(r'^(0x[0-9a-f]+|\d+)\s+(0x[0-9a-f]+|\d+)\s+[\w ]+?\b(\w+)(\[[^\]]*\])?\s*(#.*)?$', line.rstrip())
+	m = re.match(r'^(0x[0-9a-f]+|\d+)\s+(0x[0-9a-f]+|\d+)\s+[\w *]+?\b(\w+)((?:\[[^\]]*\])*)\s*(#.*)?$', line.rstrip())   # (pointer and 2-D fields too)
 	if m and cur:
 		structs[cur].append((int(m.group(1), 0), int(m.group(2), 0), m.group(3), (m.group(5) or '').strip()))
 
