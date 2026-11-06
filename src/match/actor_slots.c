@@ -28,17 +28,18 @@ void THISCALL (actor_setInput)(Stage *stage, int i, int v0, int v1, int v2, int 
 		FIELD(int, a, input_fields[k]) = v[k];
 }
 
-/* 0x45dff0: the camera follows actor i in mode with value (kept in the actor, cameraValue); the actor followed before
-   loses its value. A negative i follows none; an actor not in use is not followed */
-void THISCALL (camera_setTarget)(Stage *stage, int i, int mode, int value)
+/* 0x45dff0 (script commands 24 / 25): actor i held out of play with value (kept in the actor, outOfPlay; mode kept
+   but never read); the actor held before is let go. A negative i holds none; an actor not in use is not held.
+   No camera code reads any of it (no shipped map uses commands 21 .. 27) */
+void THISCALL (script_holdActor)(Stage *stage, int i, int mode, int value)
 {
-	int *target = &stage->cameraTarget;
+	int *target = &stage->heldActor;
 	if (*target > -1)
-		stage->actors[*target].cameraValue = 0;
+		stage->actors[*target].outOfPlay = 0;
 	if (i < 0 || stage->actors[i].state == 1) {
 		*target = i;
-		stage->cameraTargetMode = mode;
-		stage->actors[i].cameraValue = value;
+		stage->heldMode = mode;
+		stage->actors[i].outOfPlay = value;
 	}
 }
 
@@ -130,7 +131,7 @@ int THISCALL (script_notifyObject)(Stage *stage, int a, int b, int c, int d)
 void THISCALL (scene_resetActors)(Stage *stage)
 {
 	for (int k = 0; k < 6; k++)
-		FIELD(int, stage, offsetof(Stage, playerActor) + k * 4) = -1;   /* playerActor .. cameraTargetMode */
+		FIELD(int, stage, offsetof(Stage, playerActor) + k * 4) = -1;   /* playerActor .. heldMode */
 	stage->teamsChanged = 1;
 	stage_clearFrags(stage);
 	stage_resetPlayerRecords(stage);
@@ -222,7 +223,7 @@ void THISCALL (stage_resetPlayerRecords)(Stage *stage)
 void THISCALL (stage_newRound)(Stage *stage)
 {
 	for (int k = 0; k < 6; k++)
-		FIELD(int, stage, offsetof(Stage, playerActor) + k * 4) = -1;   /* playerActor .. cameraTargetMode */
+		FIELD(int, stage, offsetof(Stage, playerActor) + k * 4) = -1;   /* playerActor .. heldMode */
 	stage->teamsChanged = 1;
 	stage_clearFrags(stage);
 	for (int p = 0; p < 16; p++) {
@@ -315,7 +316,7 @@ typedef struct {
 	int model_at;      /* the part's type in the player record (parts[k]) */
 	u32 models;        /* the types' table in the stage, */
 	int model_size;    /* and each one's size */
-	int shapes_n, names, name_size, skels_n, knames;   /* in the type: per pose (shapeCount, shapeNames, skelCount, skelNames) */
+	int shapes_n, names, name_size, skels_n, knames;   /* in the type: per detail level (shapeCount, shapeNames, skelCount, skelNames) */
 	int data, skels;   /* the player record's shape and skeleton caches handed over */
 	int self;          /* the actor's ObjectList for this part (its memory right after it) */
 	u32 limit;
@@ -425,7 +426,7 @@ void THISCALL (actor_startingValues)(u8 *scene, int p)
 /* 0x45e600 (thiscall on the scene): actor a's weapon model: its item in slot (its player type record's items + slot x 4; negative:
    none) loaded, in the given variant, into the slot's loader: slots 4 and 5 their own (weaponModel4; weaponModel5, from the
    item's second set of tables), any other only when it is the selected one (slot: weaponModel, and weapon the item's
-   ammoSlot, -1 without). Without an item the loader is emptied (partList_release). Its callers ignore the eax it leaves */
+   ammoType, -1 without). Without an item the loader is emptied (partList_release). Its callers ignore the eax it leaves */
 void THISCALL (actor_loadWeapon)(u8 *scene, int a, int slot, int variant)
 {
 	u8 *actor = (u8 *)&STS->actors[a];
@@ -447,13 +448,13 @@ void THISCALL (actor_loadWeapon)(u8 *scene, int a, int slot, int variant)
 	else
 		return;
 	if (it)
-		ObjectList_load(actor + self, (u8 *)&STS->partShapes, (u8 *)&STS->partSkeletons, info->sets[set].models[variant],
-		                     info->sets[set].bones[variant], info->sets[set].counts[variant], info->sets[set].frames[variant],
+		ObjectList_load(actor + self, (u8 *)&STS->partShapes, (u8 *)&STS->partSkeletons, info->sets[set].shapeCount[variant],
+		                     info->sets[set].shapeNames[variant], info->sets[set].skelCount[variant], info->sets[set].skelNames[variant],
 		                     0, 0, 0, actor + self + sizeof(ObjectList), 0x1770);   /* (its memory right after it) */
 	else
 		partList_release(actor + self);
 	if (self == offsetof(Player, weaponModel))
-		pl->weapon = it ? info->ammoSlot : -1;
+		pl->weapon = it ? info->ammoType : -1;
 }
 
 
@@ -533,7 +534,7 @@ void THISCALL (actor_drawIntoView)(u8 *s, int a, void *vv, int draw)
 {
 	Stage *st = (Stage *)s;
 	u8 *ac = (u8 *)&st->actors[a];
-	if (AC->state != 1 || AC->cameraValue == 1)
+	if (AC->state != 1 || AC->outOfPlay == 1)
 		return;
 	float r = f32(FADD(st->cullMargin, AC->radius));
 	const float *cam = (const float *)st->cameraPos, *at = AC->pos;
@@ -671,7 +672,7 @@ static void mech_stats(u8 *s, u8 *ac, u8 *p, int check)
 	AC->shieldRegen = 0;
 	for (int k = 0; k < 6; k++) {
 		int it = pr->items[k];
-		if (it < 0 || st->actorInfo[it].ammoSlot >= 0)
+		if (it < 0 || st->actorInfo[it].ammoType >= 0)
 			continue;
 		switch (it) {
 		case 0x1b:
@@ -734,7 +735,7 @@ static void mech_stats(u8 *s, u8 *ac, u8 *p, int check)
 		AC->mobility = 0.0f;
 	if (st->rocketArena == 1)
 		AC->mobility = f32(FMUL(AC->mobility, k_0_333f));
-	BITS(AC->leanPitch) = boost->lean;
+	BITS(AC->leanPitch) = BITS(boost->lean);
 	AC->boostTime = f32(FMUL(boost->activeTime[0], AC->boostTimeFactor));
 	AC->rechargeTime = f32(FMUL(boost->activeTime[1], AC->rechargeTimeFactor));
 	AC->restTime = f32(FMUL(boost->activeTime[2], AC->restTimeFactor));
@@ -779,7 +780,7 @@ static void mech_stats(u8 *s, u8 *ac, u8 *p, int check)
 
 /* 0x457330 (thiscall on the scene): actor a built from player *pp's mech (the player record 0x47fd2 bytes from
    playerRecords; its parts parts head, chest, arms, legs, booster; pp: the player, controlledBy copied, the position +8
-   and the heading +0x14). The special items in its six slots (items; kinds 0x1b .. 0x23 with a negative ammoSlot)
+   and the heading +0x14). The special items in its six slots (items; kinds 0x1b .. 0x23 with a negative ammoType)
    bend the defaults (ammoFactor ..: armour, shields, power, cooling, mobility); then the stats: health and energy (the
    head with the level), the weight against the limit (any items' weight unless the game type is 2 .. 11) giving an
    overload r that slows the legs and booster (speed, turn, jump, gravity, fall), the arms' ammunition, and the
@@ -882,7 +883,7 @@ void THISCALL (actor_setupFromParts)(u8 *s, int a, int id, u32 controlledBy, con
 	memcpy(AC->cleared8838, (const void *)ADDR(g_vecZero), 12);
 	AC->lookTime = 0.0f;
 	BITS(AC->pathRange) = 0x44bb8000;   /* 1500 */
-	fill_dwords(ac + offsetof(Player, cameraValue), 3, 0);   /* cameraValue .. hitFlash */
+	fill_dwords(ac + offsetof(Player, outOfPlay), 3, 0);   /* outOfPlay .. hitFlash */
 	memcpy(AC->push, (const void *)ADDR(g_vecZero), 12);
 	AC->botTargetTime = 0.0f;
 	AC->killPending = 0;

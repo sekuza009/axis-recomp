@@ -108,7 +108,7 @@ void (arenaList_rebuild)(void)
 		e->ping = 0;
 	}
 	g_arenaHaveList = 1;
-	g_localPlayer = 0;
+	g_pickedGame = 0;
 	g_arenaListFull = 0;
 	sessionList_sort();
 }

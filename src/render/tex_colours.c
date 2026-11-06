@@ -158,17 +158,17 @@ void THISCALL (texRecord_init)(u8 *self, const char *name, int slot, int flags, 
 	(*(int *)&tr->colours[5]) = v2;
 	int n = (int)strlen((char *)self);
 	if (n > 4 && !memcmp(self + n - 4, "_ANI", 4)) {
-		tr->animation = 1;
+		tr->scrollMode = 1;
 		tr->changed = 0;
 		return;
 	}
 	if (n > 5 && !memcmp(self + n - 5, "_ANI", 4)) {
 		char c = (char)self[n - 1];
 		if (c >= '0' && c <= '3')
-			tr->animation = c - '0' + 1;
+			tr->scrollMode = c - '0' + 1;
 		tr->changed = 0;
 		return;
 	}
-	tr->animation = 0;
+	tr->scrollMode = 0;
 	tr->changed = 0;
 }

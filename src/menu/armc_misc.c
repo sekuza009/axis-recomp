@@ -71,14 +71,16 @@ void (armc_drawTextRight)(int x, int y, const char *text)
 		text_draw8(x - n * 8, y, text);
 }
 
-/* 0x45ddc0 (thiscall on the stage): the player's actor made again in its own slot, at the start position */
+#define g_originBits ((const u32 *)ADDR(g_vecOrigin))   /* the origin (0, 0, 0; only vec_initOrigin writes it) as bits */
+
+/* 0x45ddc0 (thiscall on the stage): the player's actor made again in its own slot, at the origin */
 void THISCALL (stage_remakePlayerActor)(Stage *stage)
 {
 	struct { i32 slot, zero; u32 pos[3]; i32 zero2, zero3; } spawn;
 	int slot = stage->playerActor;
-	spawn.pos[0] = g_startPos[0];
-	spawn.pos[1] = g_startPos[1];
-	spawn.pos[2] = g_startPos[2];
+	spawn.pos[0] = g_originBits[0];
+	spawn.pos[1] = g_originBits[1];
+	spawn.pos[2] = g_originBits[2];
 	spawn.slot = slot;
 	spawn.zero = 0;
 	spawn.zero2 = 0;
@@ -131,7 +133,6 @@ void (armc_exit)(int confirmed)
 
 /* ---- the mech preview of the parts and weapons pages: a perspective view turned by the preview's angle (spinning
    while g_armcSpin is set), the mech drawn by armc_drawPreview3D for the part in view ---- */
-#define g_armcEye ((const u32 *)ADDR(g_vecOrigin))              /* (by use) the preview camera's position */
 
 /* 0x461850: the preview's 3D pass. The camera at eye looking along forward (camera_setupView, as the match's view);
    while the right button is held the cursor turns the mech: its offset from the screen's centre (w x h) is kept
@@ -148,7 +149,7 @@ void THISCALL (armc_drawPreview3D)(Scene *scene, const u32 *eye, const u32 *forw
 	static const u32 lists[8] = { offsetof(Player, headModel), offsetof(Player, chestModel), offsetof(Player, armsModel), offsetof(Player, legsModel), offsetof(Player, boosterModel), offsetof(Player, weaponModel), offsetof(Player, weaponModel4), offsetof(Player, weaponModel5) };   /* (in the actor) */
 	u8 *s = (u8 *)scene, *stage = (u8 *)SCENE_STAGE(s), *vv = scene->view;
 	u32 light[0xb010 / 4];   /* a Light: vtable, 0x400 entries of 0x2c bytes, two counts, the changed flag (+0xb00c:
-	                            factor_addFactorBy sets it; one word short, it landed on the white tint) */
+	                            factor_addFactorBy sets it); the original's frame holds it whole at +0x18 */
 	for (int i = 0; i < 0x400; i++)
 		ResourceSet_trivialCtor((u8 *)RELOC(light) + 4 + i * 0x2c);
 	light[0] = VT(Light, 0x4aa248);
@@ -203,7 +204,7 @@ static void preview(int posed, int part)   /* posed: the mech posed for part */
 	glMatrixMode(GL_MODELVIEW);
 	float turn = f32(fmul_m(fld_m(&g_armcAngle), (const float *)ADDR(k_tenthsToDegrees)));
 	gl_rotateXYZ(0, BITS(turn), 0);
-	u32 eye[3] = { g_armcEye[0], g_armcEye[1], g_armcEye[2] };
+	u32 eye[3] = { g_originBits[0], g_originBits[1], g_originBits[2] };   /* the eye at the origin */
 	u32 forward[3] = { 0, 0, 0xbf800000 }, up[3] = { 0, 0x3f800000, 0 };   /* (0, 0, -1), (0, 1, 0), on the stack as the original's */
 	if (posed)
 		armc_drawPreview3D(g_scene, eye, forward, up, part, ftol(g_armcAngle), g_screenW, g_screenH);

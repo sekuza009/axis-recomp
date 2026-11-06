@@ -334,7 +334,7 @@ static void no_next(u8 *g)
 /* a network client (mode 1, local player 0) that is online keeps the host told it is still loading */
 static void keep_alive(u8 *g)
 {
-	if (GS->sessionMode == 1 && GS->localPlayer == 0 && net_isClient() == 1)
+	if (GS->sessionMode == 1 && GS->localPlayer == 0 && net_hasSlot() == 1)
 		net_sendGamePacket(g, GS->localPlayer);
 }
 
@@ -441,7 +441,7 @@ u32 THISCALL (game_processLoadingMode)(u8 *g)
 				netq_poll();
 			}
 		}
-		if (net_isClient() == 0) {
+		if (net_hasSlot() == 0) {
 			long double t = FADD(GS->frameTime, GS->lostTime);
 			GS->lostTime = f32(t);
 			if (t > k_5f)
@@ -480,7 +480,7 @@ u32 THISCALL (game_processLoadingMode)(u8 *g)
 	case 5:
 		log_message((int)STAGE(g), 1, 0, (const char *)STR(0x4c512c, ".analyze collision information"));
 		keep_alive(g);
-		collision_initVolume(STAGE(g), 0x469c4000, 0x469c4000, 0x469c4000, 0x43fa0000, 0x10, 3);   /* 20000 cubed, cells of 500 */
+		collision_initVolume(STAGE(g), 0x469c4000, 0x469c4000, 0x469c4000, 0x43fa0000, 0x10, 3);   /* cells of 20000 each way, margin 500, split at 16 items, depth 3 */
 		mode = GS->sessionMode;
 		if (mode == 0 || mode == 1 || mode == 3)
 			next_stage(g, 6, STR(0x4c511c, ".LOAD PLAY INFO"));   /* .LOAD PLAY INFO */

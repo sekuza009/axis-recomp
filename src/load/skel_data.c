@@ -167,7 +167,7 @@ void THISCALL (skel_loadFrom)(u8 *sk, const char *path, void *mem, int size)
 }
 
 /* 0x46f4e0 (thiscall on an object list): emptied (partList_release), then ns shapes (by the names 0x44 apart, each with
-   an int at +0x40; looked up in the shape cache, the first 64 once, any later ones again when the entries are
+   its bone's translation scale (a float) at +0x40; looked up in the shape cache, the first 64 once, any later ones again when the entries are
    filled) with their element counts summed (colourCount), and nk skeletons (by the names 0x40 apart). Its block (+8, size
    +4: 100 bytes a shape, 4 a skeleton, lit == 1 a colour per element too): allocated (owned, ownsBlock 1; none a fatal
    message) without memory given, else that memory (too small: a fatal message). The entries (entries: shape, int,

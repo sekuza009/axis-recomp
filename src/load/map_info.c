@@ -368,7 +368,7 @@ static int grey(const u8 *px)
 /* 0x48b9d0 (thiscall on the stage): the map's ground file name (under the map directory mapDir). No file or a
    version other than 0x1201 is fatal; then, scrambled, four blocks skipped, the map's directory (0x100), the view
    range (cullMargin), the lights (Light_read), the clear colour and fog (clearOn ..), the background modes (sphere
-   skyMode, sky layerMode, sides sideMode, floor floorOn) and their textures, the area limits (levelLow .. worldHigh, then areaValue, the mission number and the music kind),
+   skyMode, sky layerMode, sides sideMode, floor floorOn) and their textures, the area limits (levelLow .. worldHigh, then an unread float (unused9ef934), the map number and the music kind),
    and the layers (groundLayerCount; 0x20c-byte records from groundLayers: rows rows, columns cols, origin +4, cell cellSize,
    height scale heightScale, texture size texScale): each its texture "<dir>/Ground<i>Map" and a 256 x 256 RGB height map
    (grey pixels are heights) giving, in the pool, its heights (heights), flat cells (flat), vertices (points), normals
@@ -432,7 +432,7 @@ int THISCALL (map_loadGroundInfoFrom)(u8 *s, const char *name)
 		for (int k = 0; k < 16; k++)
 			st->floorTextures[k] = (i32) ground_tex(dir, STR(0x4c7f14, "%s/FloorAni%02d"), k + 1, tex);   /* FloorAni<nn> */
 	log_message((int)s, 0, 0, (const char *)STR(0x4c7f04, "load area limit"));
-	void *limits[7] = { st->levelLow, st->levelHigh, st->worldLow, st->worldHigh, &st->areaValue, &st->mapNumber, &st->musicKind };
+	void *limits[7] = { st->levelLow, st->levelHigh, st->worldLow, st->worldHigh, &st->unused9ef934, &st->mapNumber, &st->musicKind };
 	static const u8 sizes[7] = { 0xc, 0xc, 0xc, 0xc, 4, 4, 4 };
 	for (int k = 0; k < 7; k++)
 		fread_scrambled(limits[k], sizes[k], 1, f);

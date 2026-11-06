@@ -59,13 +59,13 @@ static void outer_bands(TunnelRing *first)
 {
 	int n, drawn = 0;
 	TunnelRing *ring = last_ring(first, &n);
-	if (g_texturesOff == 0)
+	if (g_simpleMenu == 0)
 		bind(g_tunnelTexture);
 	for (int pass = 0; n != 0 && pass < 2; pass++, n--, drawn++) {
 		gfx_setMenuCamera();
 		glTranslatef_bits(0, 0, BITS(ring->depth));
 		gfx_rotateXYZ(0x43340000u /* 180 */, 0, BITS(ring->spin));
-		if (g_texturesOff == 0) {
+		if (g_simpleMenu == 0) {
 			float step = f32(5.0f / (long double)ring->cells);
 			float blue = (float)(1.0f - (long double)g_pulse);
 			glColor4f_bits(0, BITS(g_pulse), BITS(blue), 0x3f4ccccdu /* 0.8 */);
@@ -76,7 +76,9 @@ static void outer_bands(TunnelRing *first)
 			ring->spin = -360.0f;
 		ring = ring->back;
 	}
-	/* (unclear) the camera matrix pushed for the first ring is let go after the second */
+	/* a stray pop after two rings (sic): nothing on the menu path pushes a matrix (gfx_setMenuCamera loads the
+	   identity; the original's 21 glPushMatrix calls are all in ARM CENTER panels, match drawing, particles and
+	   bullets, each popped there), so this only underflows the modelview stack (GL_STACK_UNDERFLOW, no effect) */
 	if (drawn == 2)
 		glPopMatrix();
 }
@@ -90,7 +92,7 @@ static void inner_bands(TunnelRing *first)
 		gfx_setMenuCamera();
 		glTranslatef_bits(0, 0, BITS(ring->depth));
 		gfx_rotateXYZ(0x43340000u /* 180 */, 0, BITS(ring->innerSpin));
-		if (g_texturesOff == 0) {
+		if (g_simpleMenu == 0) {
 			float step = f32(5.0f / (long double)ring->cells);
 			float red = (float)(1.0f - (long double)g_pulse);
 			glColor4f_bits(BITS(red), BITS(g_pulse), BITS(g_pulse), 0x3f19999au /* 0.6 */);
@@ -146,7 +148,7 @@ static void flares(TunnelRing *first)
 			Flare *f = &ring->flares[k];
 			glColor4f_bits(0x3f800000u, 0x3f800000u, 0x3f800000u, BITS(ring->alpha));
 			gfx_setMenuCamera();
-			if (g_texturesOff == 0)
+			if (g_simpleMenu == 0)
 				bind(g_flareTextures[-k]);
 			if (k == 2)
 				square(f, &g_flareSizeA);
@@ -154,7 +156,7 @@ static void flares(TunnelRing *first)
 				square(f, &g_flareSizeB);
 			glTranslatef_stored(f->pos);
 			gfx_rotateXYZ(0, 0, BITS(f->spin));
-			if (g_texturesOff == 0) {
+			if (g_simpleMenu == 0) {
 				glBegin(GL_QUADS);
 				glTexCoord2f(0.0f, 1.0f);
 				glVertex3f_stored(f->corners[0]);
@@ -204,7 +206,7 @@ static void cages(TunnelRing *first)
 		gfx_setMenuCamera();
 		glTranslatef_stored(ring->cagePos);
 		gfx_rotateXYZ(0, 0, BITS(ring->cageSpin));
-		if (g_texturesOff == 0) {
+		if (g_simpleMenu == 0) {
 			bind(g_cageTexture);
 			glColor4f(0.3f, 0.3f, 0.3f, 1.0f);
 			for (int side = 0; side < 4; side++) {
@@ -229,7 +231,7 @@ static void cages(TunnelRing *first)
 	}
 }
 
-/* 0x429d70: the background, drawn from the tunnel's first ring; g_texturesOff leaves out everything textured but
+/* 0x429d70: the background, drawn from the tunnel's first ring; g_simpleMenu leaves out everything textured but
    still moves it all on */
 void (menu_drawBackground3D)(TunnelRing *first)
 {
@@ -293,7 +295,7 @@ void (tunnelRing_build)(u8 *o, int index)
 				BITS(tr->spin) = BITS(tr->back->spin);
 			tr->spinSpeed = 0.2f;
 			tr->cleared1938 = 0;
-			(*(int *)&tr->turn) = 0;
+			(*(int *)&tr->depthShift) = 0;
 			tr->moveSteps = 0;
 			band = tr->inner;
 			if (tr->cells < 0)
@@ -316,7 +318,7 @@ void (tunnelRing_build)(u8 *o, int index)
 	if (tr->back)
 		BITS(tr->innerSpin) = BITS(tr->back->innerSpin);
 	tr->innerSpeed = -0.5f;
-	BITS(tr->innerPos[0]) = BITS(tr->innerPos[1]) = BITS(tr->innerPos[2]) = 0;
+	BITS(tr->cleared326c[0]) = BITS(tr->cleared326c[1]) = BITS(tr->cleared326c[2]) = 0;
 	X y = H * k_m1100f - k_550f;
 	tr->cagePos[2] = (float)y;
 	y -= k_49f;
@@ -435,9 +437,9 @@ void (menuTunnel_advance)(TunnelRing *ring)
 		r->moveSteps += step;
 		if (r->moveSteps >= ringLength) {
 			if (state == 1)
-				r->turn = f32(fsub_m(fld_m(&r->turn), (const float *)(g_quitAsked ? ADDR(k_2200f) : OBJ(k_1100f))));
+				r->depthShift = f32(fsub_m(fld_m(&r->depthShift), (const float *)(g_quitAsked ? ADDR(k_2200f) : OBJ(k_1100f))));
 			else
-				r->turn = f32(fadd_m(fld_m(&r->turn), k_1100f));
+				r->depthShift = f32(fadd_m(fld_m(&r->depthShift), k_1100f));
 			r->moveSteps = 0;
 			for (int k = 0; k < 2; k++) {
 				((u32 *)EYE)[k] = ((const u32 *)EYE_KEPT)[k];

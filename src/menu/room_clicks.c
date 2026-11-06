@@ -39,11 +39,11 @@ void (newIdConfirm_clicks)(void)
 	}
 }
 
-/* 0x434da0: the join password asked for (room_editJoinPassword) when the game picked (g_localPlayer) is locked */
+/* 0x434da0: the join password asked for (room_editJoinPassword) when the game picked (g_pickedGame) is locked */
 void (room_askJoinPassword)(void)
 {
 	g_roomJoinNeedsPassword = 0;
-	if (g_sessionList[g_localPlayer].locked != 0) {
+	if (g_sessionList[g_pickedGame].locked != 0) {
 		g_roomJoinNeedsPassword = 1;
 		room_editJoinPassword();
 	}
@@ -85,7 +85,7 @@ void (room_drawWhiteFade)(void)
 void (arena_askJoinPassword)(void)
 {
 	g_arenaJoinNeedsPassword = 0;
-	if (g_sessionList[g_localPlayer].locked != 0) {
+	if (g_sessionList[g_pickedGame].locked != 0) {
 		g_arenaJoinNeedsPassword = 1;
 		arena_editJoinPassword();
 	}

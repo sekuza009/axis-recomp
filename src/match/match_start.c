@@ -178,7 +178,7 @@ static void later_round(Scene *s)
 	sound_setVolume(g_soundVolume);
 	music_setVolumeSetting(g_musicVolume);
 	s->localRecordSet = 0;
-	s->teamAsked = 0;
+	s->playAsked = 0;
 	if (s->localPlayer >= 0)
 		s->players[s->localPlayer].inPlay = 0;
 	scene_setLocalTeam(s, -1);
@@ -378,12 +378,12 @@ void THISCALL (stage_build)(u8 *s, u32 stageDir, u32 mapDir, const char *texture
 		BITS(st->levelHigh[c]) = 0x47c35000;   /* 100000 */
 	}
 	memcpy(st->worldLow, st->levelLow, 12);
-	st->areaValue = 1.0f;
+	st->unused9ef934 = 1.0f;
 	st->poolUsed = 0;
 	memcpy(st->worldHigh, st->levelHigh, 12);
 	st->groundLayerCount = 0;
 	st->layerModel.parts = st->layerParts;
-	st->layerBoxModel.parts = st->layerBoxParts;
+	st->waterModel.parts = st->waterParts;
 	const char *dir = st->shapeDir;
 	shape_initBy((u8 *)&st->objectShapes, dir, 0x190, 2, 0xe54c0, st->objectShapeData, sizeof st->objectShapeData);
 	st->objectColourCount = 0;

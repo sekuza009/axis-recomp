@@ -220,7 +220,7 @@ static int light_level(long double d)
    records from mapLights.records[].kind, mapLights.count of them: kind 1; 0 and 2 are skipped, another kind is a fatal message) the
    intensity from the normal against its direction (dir), the first written (first == 1), the rest added; a water
    layer (water 1) gets the light from straight above (from below, -1, for a layer of kind 1) in its 12 box colours
-   (boxColours) too. A kind-2 layer only clears its light map (colours) and box colours. Its caller ignores the
+   (waterColours) too. A kind-2 layer only clears its light map (colours) and box colours. Its caller ignores the
    eax it leaves */
 void THISCALL (light_computeLayerLightBy)(Stage *scene, u8 *layer, u8 *cols, int first, int r0, int c0, int r1, int c1)
 {
@@ -228,7 +228,7 @@ void THISCALL (light_computeLayerLightBy)(Stage *scene, u8 *layer, u8 *cols, int
 	if (gl->kind == 2) {
 		memset(((void *)(gl)->colours), 0xff, (gl->cols + 1) * (gl->rows + 1) * 4);
 		if (gl->water == 1)
-			memset(gl->boxColours, 0xff, 12 * 4);
+			memset(gl->waterColours, 0xff, 12 * 4);
 		return;
 	}
 	const LightFactors *lights = &scene->mapLights;
@@ -254,9 +254,9 @@ void THISCALL (light_computeLayerLightBy)(Stage *scene, u8 *layer, u8 *cols, int
 			const float *above = gl->kind == 1 ? &k_m1f : &k_1f;
 			int i = light_level(MUL(above, &dir[1]));
 			u8 sky[4];
-			light_mix(sky, light, i, first == 1 ? NULL : (const u8 *)gl->boxColours);
+			light_mix(sky, light, i, first == 1 ? NULL : (const u8 *)gl->waterColours);
 			for (int k = 0; k < 12; k++)
-				memcpy(&gl->boxColours[k], sky, 4);
+				memcpy(&gl->waterColours[k], sky, 4);
 		}
 		first = 0;
 	}
@@ -296,7 +296,7 @@ static void water_point(u8 *scene, u8 *layer, u8 *part, int at, int tex_at, floa
    (bit 0 set) within the view range (cullMargin) of the camera (cameraPos / 78) become triangle strips (type 5, from the
    layer's primitive heap strips, stripCount of them, at most stripCapacity: a fatal message) of grid indices, into the part of the
    first terrain model (layerModel.parts, 0x80 bytes a layer: its colours, primCount). A water layer (water 1) gives the second
-   model's part (layerBoxModel.parts) its surface around the camera at its height (+8): rings of four and of eight (the second
+   model's part (waterModel.parts) its surface around the camera at its height (+8): rings of four and of eight (the second
    h x k_m1_5f out) with texture coordinates; otherwise that part has none. Both models then go to the view volume's
    queue (ViewVolume_projectObject). Its callers ignore the eax it leaves */
 void THISCALL (ground_buildDrawLists)(u8 *s, void *view, float h)
@@ -309,7 +309,7 @@ void THISCALL (ground_buildDrawLists)(u8 *s, void *view, float h)
 		u8 *layer = (u8 *)&st->groundLayers[i];
 		GroundLayer *gl = (GroundLayer *)layer;
 		ShapePart *part = (ShapePart *)(st->layerModel.parts + i * 0x80);
-		u8 *water = st->layerBoxModel.parts + i * 0x80;
+		u8 *water = st->waterModel.parts + i * 0x80;
 		ShapePart *sp = (ShapePart *)water;
 		const float *size = &gl->cellSize, *origin = (const float *)(layer + 4);
 		int c0 = !(origin[0] >= min_x) ? ftol(fdiv_m(FSUB(min_x, origin[0]), size)) : 0;
@@ -376,6 +376,6 @@ void THISCALL (ground_buildDrawLists)(u8 *s, void *view, float h)
 			water_point(s, layer, water, 0x30 + k * 0xc, 0x20 + k * 8, v, angle);
 		}
 	}
-	ViewVolume_projectObject(view, (u8 *)&st->layerBoxModel, 0, NULL, 0, NULL, 0, -1, 0);
+	ViewVolume_projectObject(view, (u8 *)&st->waterModel, 0, NULL, 0, NULL, 0, -1, 0);
 	ViewVolume_projectObject(view, (u8 *)&st->layerModel, 0, NULL, 0, NULL, 0, -1, 0);
 }

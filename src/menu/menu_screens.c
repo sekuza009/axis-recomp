@@ -9,10 +9,10 @@ void (menuState500_skirmish)(void)
 {
 	if (g_skirmishShowBackground)
 		menu_drawBackground();
-	if (g_skirmishPage != 2)
+	if (g_skirmishState != 2)
 		skirmish_drawTunnel();
 	skirmish_camera();
-	if (g_skirmishPage == 1 || g_skirmishPage == 0)
+	if (g_skirmishState == 1 || g_skirmishState == 0)
 		return;
 	if (g_dialogOpen) {
 		menu_drawFrame(g_skirmishBox[0], g_skirmishBox[1], g_skirmishBox[2], g_skirmishBox[3]);

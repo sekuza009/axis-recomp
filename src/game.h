@@ -276,11 +276,11 @@ typedef struct { u32 vtable; void *banks[6]; i32 count; } TextureManager;   /* t
 #define angle_wrap(degrees) GAME_FN(angle_wrap, 0x46c100, long double, float)(degrees)   /* an angle wrapped into a turn (in ST0) */
 #define shape_setTextureDir(model, folder, flags, h1, s1, v1, h2, s2, v2) GAME_THISFN(shape_setTextureDir, 0x467580, void, void *, const char *, int, u32, u32, u32, u32, u32, u32)(model, folder, flags, h1, s1, v1, h2, s2, v2)
 #define space_getNextFreePlanePtr(space) GAME_THISFN(space_getNextFreePlanePtr, 0x4815c0, u8 *, void *)(space)
-#define collisionTri_setup(plane, id, v0, v1, v2, object, part, corner0, corner1, corner2) GAME_THISFN(collisionTri_setup, 0x47db60, void, void *, u32, const float *, const float *, const float *, u32, u32, u32, u32, u32)(plane, id, v0, v1, v2, object, part, corner0, corner1, corner2)   /* the triangle's planes */
+#define collisionTri_setup(plane, flags, v0, v1, v2, object, part, corner0, corner1, corner2) GAME_THISFN(collisionTri_setup, 0x47db60, void, void *, u32, const float *, const float *, const float *, u32, u32, u32, u32, u32)(plane, flags, v0, v1, v2, object, part, corner0, corner1, corner2)   /* the triangle's planes */
 #define array_indexOf(record, base, stride) GAME_FN(array_indexOf, 0x46cba0, int, void *, int, int)(record, base, stride)   /* a record's index in its array */
 #define stage_triggerActionNone(scene, a) GAME_THISFN(stage_triggerActionNone, 0x483ce0, void, void *, u32)(scene, a)
 #define actor_applySpawnRecord(scene, a, rec) GAME_THISFN(actor_applySpawnRecord, 0x45de20, int, void *, int, void *)(scene, a, rec)
-#define camera_setTarget(stage, i, mode, value) GAME_THISFN(camera_setTarget, 0x45dff0, void, void *, u32, u32, u32)(stage, i, mode, value)
+#define script_holdActor(stage, i, mode, value) GAME_THISFN(script_holdActor, 0x45dff0, void, void *, u32, u32, u32)(stage, i, mode, value)
 #define script_pushMessage(stage, a, b, c, d) GAME_THISFN(script_pushMessage, 0x48fc40, void, void *, u32, u32, u32, u32)(stage, a, b, c, d)
 #define script_runScpFile(stage, name, mode) GAME_THISFN(script_runScpFile, 0x48fce0, void, void *, const char *, u32)(stage, name, mode)
 #define object_setAnimation(stage, i, name, period, mode) GAME_THISFN(object_setAnimation, 0x490df0, void, void *, u32, const char *, u32, u32)(stage, i, name, period, mode)
@@ -359,7 +359,7 @@ typedef struct { u32 vtable; void *banks[6]; i32 count; } TextureManager;   /* t
 #define net_processGamePacket(scene, from, size, pkt) GAME_THISFN(net_processGamePacket, 0x48c830, void, void *, int, int, void *)(scene, from, size, pkt)
 #define netq_poll() GAME_FN(netq_poll, 0x4a8350, void, void)()   /* the network's incoming messages gathered */
 #define netq_receive(from, size, data) GAME_FN(netq_receive, 0x4a8450, int, int *, int *, void *)(from, size, data)   /* the next message: 0 none, 1 a game packet */
-#define net_isClient() GAME_FN(net_isClient, 0x4a86d0, int, void)()   /* online as a client? */
+#define net_hasSlot() GAME_FN(net_hasSlot, 0x4a86d0, int, void)()   /* the local player has its slot (g_slotTakenFlag: the host from the reset, a joining machine on message 6); packets are sent only then */
 #define netq_online() GAME_FN(netq_online, 0x4a86c0, int, void)()   /* (g_netOnline) */
 #define netq_resends() GAME_FN(netq_resends, 0x4a8730, int, void)()
 #define map_loadGroundInfoFrom(stage, name) GAME_THISFN(map_loadGroundInfoFrom, 0x48b9d0, int, void *, const char *)(stage, name)
@@ -611,7 +611,7 @@ typedef struct { float r, g, b, a; } Colour;
 #define g_keyRightCtrl g_dikRCtrl
 #define input_isDown(key) GAME_FN(input_isDown, 0x401590, int, int)(key)   /* the key (code) is held */
 #define g_mouseClick (g_mouseClicked[0])           /* a click this frame (the left button) */
-#define g_mouseHeld (g_mouseButtonsHeld[0])        /* (by use) the left button held down */
+#define g_mouseHeld (g_mouseButtonsHeld[0])        /* the left button held down (0x80; input_updateMouse) */
 #define g_hWndMain g_mainWindow
 #define KillTimer(hwnd, id) IMPORT(0x4a9330, int, void *, u32)(hwnd, id)
 /* a rectangle in menu units in g_rectColour, filled or outlined (the patch DLL replaces it: kept original) */
@@ -717,7 +717,6 @@ typedef struct { float r, g, b, a; } Colour;
 #define armc_drawStatsPanel() GAME_FN(armc_drawStatsPanel, 0x412650, void, void)()
 #define armc_drawWeaponsScreen() GAME_FN(armc_drawWeaponsScreen, 0x419160, void, void)()
 #define armc_drawColourEditor() GAME_FN(armc_drawColourEditor, 0x41a280, void, void)()
-#define g_startPos ((const u32 *)ADDR(g_vecOrigin))          /* (by use) where the player's actor starts (three floats) */
 /* claim actor slot a for the player and make it theirs (thiscall on the stage; spawn: slot, -, position...) */
 #define stage_claimPlayerActor(stage, a, id, controlledBy, spawn) GAME_THISFN(stage_claimPlayerActor, 0x45dd80, void, Stage *, int, int, int, void *)(stage, a, id, controlledBy, spawn)
 
@@ -791,7 +790,7 @@ typedef struct { float r, g, b, a; } Colour;
 #define tunnel_removeLastRing(head) GAME_FN(tunnel_removeLastRing, 0x441190, u32, TunnelRing **)(head)   /* the last ring taken off and freed */
 #define crypt_countingKey(p, key) GAME_FN(crypt_countingKey, 0x42b3c0, int, u8 *, u8)(p, key)   /* a 0x4c-byte record decoded (xor key, key + 1, ...) */
 #define cfg_writeAxisCfg() GAME_FN(cfg_writeAxisCfg, 0x42d730, u32, void)()
-#define setup_bindKey(key) GAME_FN(setup_bindKey, 0x421680, void, int)(key)   /* (by use) the row being bound gets key */
+#define setup_bindKey(key) GAME_FN(setup_bindKey, 0x421680, void, int)(key)   /* the row being bound gets key (a key, mouse button or wheel code) */
 #define setup_defaultBindings() GAME_FN(setup_defaultBindings, 0x420c10, void, void)()   /* the default key bindings */
 #define music_shutdown() GAME_FN(music_shutdown, 0x457310, void, void)()
 

@@ -391,8 +391,8 @@ static void use_texture(u8 *vv, int t, int mode)
 		glDisable(GL_TEXTURE_2D);
 }
 
-/* texture t's scrolling (its record's +0xc0188): 1 / 2 v / u up by b, 3 / 4 down, else none */
-static int tex_scroll(int t) { return FIELD(int, g_textures->banks[t / 512], 0xc0188 + t % 512 * 0x68); }
+/* texture t's scrolling (its record's scrollMode): 1 / 2 v / u up by b, 3 / 4 down, else none */
+static int tex_scroll(int t) { return ((TextureBank *)g_textures->banks[t / 512])->records[t % 512].scrollMode; }
 
 static void scroll(float *uv, int n, int kind, const float *b)
 {

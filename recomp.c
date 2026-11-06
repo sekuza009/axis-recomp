@@ -451,9 +451,9 @@ THISCALL void tex_clearSetCounters(char *self);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 THISCALL void actor_deactivate(void *self, int i);
 
-/* 0x45dff0 (thiscall) camera_setTarget(actor, mode, value) */
+/* 0x45dff0 (thiscall) script_holdActor(actor, mode, value) */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-THISCALL void camera_setTarget(char *self, int i, int mode, int value);
+THISCALL void script_holdActor(char *self, int i, int mode, int value);
 
 /* 0x45e070 (thiscall) stage_clearActorSlots: reset the 100 actor slots */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
@@ -4176,7 +4176,7 @@ unsigned netq_poll(void);
 unsigned net_sendPacketData(int size, const void *data);
 int netq_receive(int *from, int *size, void *data);
 int netq_online(void);
-int net_isClient(void);
+int net_hasSlot(void);
 int net_hostGone(void);
 int net_localSlot(void);
 int net_playerInUse(int i);
@@ -7052,8 +7052,8 @@ static void actors_setup(void)
 	g_a[1] = irnd(0, 6); g_a[2] = irnd(-100, 100); g_a[3] = irnd(-100, 100);
 }
 ST(actor_deactivate, actors_setup();, (TC(void, 0x45dca0, char *, int)(BUF, g_a[0]), 0), (actor_deactivate(BUF, g_a[0]), 0))
-ST(camera_setTarget, actors_setup(); g_a[0] = irnd(-2, 10);,
-   (TC(void, 0x45dff0, char *, int, int, int)(BUF, g_a[0], g_a[2], g_a[3]), 0), (camera_setTarget(BUF, g_a[0], g_a[2], g_a[3]), 0))
+ST(script_holdActor, actors_setup(); g_a[0] = irnd(-2, 10);,
+   (TC(void, 0x45dff0, char *, int, int, int)(BUF, g_a[0], g_a[2], g_a[3]), 0), (script_holdActor(BUF, g_a[0], g_a[2], g_a[3]), 0))
 ST(stage_clearActorSlots, actors_setup();, (TC(void, 0x45e070, char *)(BUF), 0), (stage_clearActorSlots(BUF), 0))
 ST(actor_setWeaponSlot, actors_setup();, (TC(void, 0x45e810, char *, int, int)(BUF, g_a[0], g_a[1]), 0), (actor_setWeaponSlot(BUF, g_a[0], g_a[1]), 0))
 ST(actor_selectWeapon, actors_setup();, (TC(void, 0x45e880, char *, int, int)(BUF, g_a[0], g_a[1]), 0), (actor_selectWeapon(BUF, g_a[0], g_a[1]), 0))
@@ -17132,7 +17132,7 @@ ST(net_sendPacketData, netq_setup();, ((DWORD (__cdecl *)(int, const void *))ori
 ST(netq_receive, netq_setup();, CALL_PLAIN(0x4a8450, 0, (int)(BUF + 0x100), (int)(BUF + 0x104), (int)(BUF + 0x200), 0),
    (DWORD)netq_receive((int *)(BUF + 0x100), (int *)(BUF + 0x104), BUF + 0x200))
 ST(netq_online, netq_setup();, CALL_PLAIN(0x4a86c0, 0, 0, 0, 0, 0), (DWORD)netq_online())
-ST(net_isClient, netq_setup();, CALL_PLAIN(0x4a86d0, 0, 0, 0, 0, 0), (DWORD)net_isClient())
+ST(net_hasSlot, netq_setup();, CALL_PLAIN(0x4a86d0, 0, 0, 0, 0, 0), (DWORD)net_hasSlot())
 ST(net_hostGone, netq_setup();, CALL_PLAIN(0x4a86e0, 0, 0, 0, 0, 0), (DWORD)net_hostGone())
 ST(net_localSlot, netq_setup();, CALL_PLAIN(0x4a86f0, 0, 0, 0, 0, 0), (DWORD)net_localSlot())
 ST(net_playerInUse, netq_setup();, CALL_PLAIN(0x4a8700, 0, g_a[2] & 15, 0, 0, 0), (DWORD)net_playerInUse(g_a[2] & 15))
@@ -17197,7 +17197,7 @@ static const STest g_stests[] = {
 	T(net_connectionAvailable, 1, 4, 3000), T(tex_findByName, 1, 4, 3000), T(arena_clearSessionEntry, 0, 20, 0),
 	/* batch 5 */
 	T(tex_markMaterialChanged, 0, 4, 300), T(tex_recolourMaterial, 0, 4, 1000), T(tex_clearSetCounters, 0, 4, 300),
-	T(actor_deactivate, 0, 4, 600), T(camera_setTarget, 0, 4, 600), T(stage_clearActorSlots, 0, 4, 60),
+	T(actor_deactivate, 0, 4, 600), T(script_holdActor, 0, 4, 600), T(stage_clearActorSlots, 0, 4, 60),
 	T(actor_setWeaponSlot, 0, 4, 600), T(actor_selectWeapon, 0, 4, 600), T(actor_clearInput, 0, 4, 200), T(actor_setInput, 0, 4, 200),
 	T(scene_saveNames, 0, 4, 100), T(scene_restoreNames, 0, 4, 100), T(scene_followedActor, 1, 4, 1000), T(chat_matchCheatCode, 1, 10, 1000),
 	T(events_clear, 0, 4, 200), T(events_age, 0, 4, 2000), T(net_clearAnnouncements, 0, 4, 200), T(net_announcePlayerConnected, 0, 4, 300),
@@ -17675,7 +17675,7 @@ static const STest g_stests[] = {
 	/* batch 160 */
 	T(sound_loadWav, 0, 300, 0),
 	/* batch 161 */
-	T(input_keyHeldChecked, 0, 300, 0), T(input_keyHeld, 0, 300, 0), T(input_isDown, 0, 300, 0), T(input_justPressed, 0, 600, 0), T(input_readMouse, 0, 600, 0), T(input_updateMouse, 0, 600, 0), T(armc_drawPreview3D, 0, 600, 0), T(gfx_setProjectionHud, 0, 600, 0), T(gfx_fillRect, 0, 600, 0), T(hud_drawDigits, 0, 600, 0), T(font_penDraw, 0, 600, 0), T(game_wndProc, 0, 2000, 0), T(crt_vsprintf, 0, 20000, 0), T(crt_atoi, 0, 5000, 0), T(crt_atof, 0, 5000, 0), T(crt_strtok, 0, 3000, 0), T(crt_itoa, 0, 3000, 0), T(crt_tolower, 0, 2000, 0), T(crt_strupr, 0, 2000, 0), T(crt_strstr, 0, 2000, 0), T(crt_strncmp, 0, 2000, 0), T(crt_strnicmp, 0, 2000, 0), T(crt_strncpy, 0, 2000, 0), T(crt_rand, 0, 2000, 0), T(crt_ftol, 0, 10000, 0), T(crt_acos, 0, 5000, 0), T(netq_reset, 0, 300, 0), T(netq_poll, 0, 300, 0), T(net_sendPacketData, 0, 600, 0), T(netq_receive, 0, 3000, 0), T(netq_online, 0, 100, 0), T(net_isClient, 0, 100, 0), T(net_hostGone, 0, 100, 0), T(net_localSlot, 0, 100, 0), T(net_playerInUse, 0, 100, 0), T(netq_clearResends, 0, 100, 0), T(netq_resends, 0, 100, 0), T(sound_playMenu, 0, 200, 0),
+	T(input_keyHeldChecked, 0, 300, 0), T(input_keyHeld, 0, 300, 0), T(input_isDown, 0, 300, 0), T(input_justPressed, 0, 600, 0), T(input_readMouse, 0, 600, 0), T(input_updateMouse, 0, 600, 0), T(armc_drawPreview3D, 0, 600, 0), T(gfx_setProjectionHud, 0, 600, 0), T(gfx_fillRect, 0, 600, 0), T(hud_drawDigits, 0, 600, 0), T(font_penDraw, 0, 600, 0), T(game_wndProc, 0, 2000, 0), T(crt_vsprintf, 0, 20000, 0), T(crt_atoi, 0, 5000, 0), T(crt_atof, 0, 5000, 0), T(crt_strtok, 0, 3000, 0), T(crt_itoa, 0, 3000, 0), T(crt_tolower, 0, 2000, 0), T(crt_strupr, 0, 2000, 0), T(crt_strstr, 0, 2000, 0), T(crt_strncmp, 0, 2000, 0), T(crt_strnicmp, 0, 2000, 0), T(crt_strncpy, 0, 2000, 0), T(crt_rand, 0, 2000, 0), T(crt_ftol, 0, 10000, 0), T(crt_acos, 0, 5000, 0), T(netq_reset, 0, 300, 0), T(netq_poll, 0, 300, 0), T(net_sendPacketData, 0, 600, 0), T(netq_receive, 0, 3000, 0), T(netq_online, 0, 100, 0), T(net_hasSlot, 0, 100, 0), T(net_hostGone, 0, 100, 0), T(net_localSlot, 0, 100, 0), T(net_playerInUse, 0, 100, 0), T(netq_clearResends, 0, 100, 0), T(netq_resends, 0, 100, 0), T(sound_playMenu, 0, 200, 0),
 	T(missions_leave, 0, 200, 0), T(skirmish_leave, 0, 200, 0), T(skirmish_roundChosen, 0, 200, 0),
 	/* batch 162 */
 	T(missions_listClicks, 0, 300, 0), T(skirmish_clicks, 0, 300, 0), T(skirmish_startRound, 0, 200, 0), T(missions_briefingKeys, 0, 300, 0),
@@ -18059,7 +18059,7 @@ static const struct { DWORD addr; void *fn; const char *name; } g_hooks3[] = {
 	/* batch 5 */
 	{ 0x456820, (void *)tex_markMaterialChanged, "tex_markMaterialChanged" }, { 0x456860, (void *)tex_recolourMaterial, "tex_recolourMaterial" },
 	{ 0x456b50, (void *)tex_clearSetCounters, "tex_clearSetCounters" }, { 0x45dca0, (void *)actor_deactivate, "actor_deactivate" },
-	{ 0x45dff0, (void *)camera_setTarget, "camera_setTarget" }, { 0x45e070, (void *)stage_clearActorSlots, "stage_clearActorSlots" },
+	{ 0x45dff0, (void *)script_holdActor, "script_holdActor" }, { 0x45e070, (void *)stage_clearActorSlots, "stage_clearActorSlots" },
 	{ 0x45e810, (void *)actor_setWeaponSlot, "actor_setWeaponSlot" }, { 0x45e880, (void *)actor_selectWeapon, "actor_selectWeapon" },
 	{ 0x45eab0, (void *)actor_clearInput, "actor_clearInput" }, { 0x45eb20, (void *)actor_setInput, "actor_setInput" },
 	{ 0x4616e0, (void *)scene_saveNames, "scene_saveNames" }, { 0x461730, (void *)scene_restoreNames, "scene_restoreNames" },
@@ -18750,7 +18750,7 @@ static const struct { DWORD addr; void *fn; const char *name; } g_hooks3[] = {
 	{ 0x440070, (void *)game_wndProc, "game_wndProc" },
 	{ 0x4a8300, (void *)netq_reset, "netq_reset" }, { 0x4a8350, (void *)netq_poll, "netq_poll" },
 	{ 0x4a8360, (void *)net_sendPacketData, "net_sendPacketData" }, { 0x4a8450, (void *)netq_receive, "netq_receive" },
-	{ 0x4a86c0, (void *)netq_online, "netq_online" }, { 0x4a86d0, (void *)net_isClient, "net_isClient" },
+	{ 0x4a86c0, (void *)netq_online, "netq_online" }, { 0x4a86d0, (void *)net_hasSlot, "net_hasSlot" },
 	{ 0x4a86e0, (void *)net_hostGone, "net_hostGone" }, { 0x4a86f0, (void *)net_localSlot, "net_localSlot" },
 	{ 0x4a8700, (void *)net_playerInUse, "net_playerInUse" }, { 0x4a8720, (void *)netq_clearResends, "netq_clearResends" },
 	{ 0x4a8730, (void *)netq_resends, "netq_resends" }, { 0x41e760, (void *)sound_playMenu, "sound_playMenu" },

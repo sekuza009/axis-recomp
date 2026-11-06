@@ -337,7 +337,7 @@ void (armc_drawWeaponsScreen)(void)
 		text_drawBox16(x, y + 0x40, x + 0xc8, (const char *)MSG(319, "EMPTY SLOT"));
 		return;
 	}
-	if (PART->ammoSlot == -1) {
+	if (PART->ammoType == -1) {
 		TEXT(yellow);
 		text_draw8(x + 8, y + 0x10, (const char *)MSG(771, "SPECIAL WEAPON"));
 		TEXT(white);
@@ -354,18 +354,18 @@ void (armc_drawWeaponsScreen)(void)
 	strcpy(text, (const char *)(MSG(321, "HAND") + PART->slotType * 0x80));
 	armc_drawTextRight(vx, y + 8, text);
 	char kind[50] = { 0 };
-	strcpy(kind, (const char *)(MSG(323, "30mm") + PART->ammoSlot * 0x80));
+	strcpy(kind, (const char *)(MSG(323, "30mm") + PART->ammoType * 0x80));
 	armc_drawTextRight(vx, y + 0x18, kind);
 	stat_int(vx, y + 0x28, PART->ammoPerShot, MSG(756, "cell"));
 	stat_int(vx, y + 0x38, PART->burst, MSG(758, "Round"));
 	char name[50] = { 0 };
-	strcpy(name, (const char *)(MSG(327, "IMPACT") + PART->damageMode * 0x80));
+	strcpy(name, (const char *)(MSG(327, "IMPACT") + PART->damageType * 0x80));
 	armc_drawTextRight(vx, y + 0x48, name);
 	/* the sixth with the pilot's skill (of the part's kind) in percent of it as a bonus */
 	char value[50] = { 0 }, bonus[16];
 	itoa(PART->damage, value, 10);
 	static const u8 skill[5] = { 0, 0, 1, 2, 3 };   /* the profile's stat by kind; above 3 the last */
-	int kind_of = (unsigned)PART->ammoSlot <= 3 ? PART->ammoSlot : 4;
+	int kind_of = (unsigned)PART->ammoType <= 3 ? PART->ammoType : 4;
 	long double b = fmul_m((long double)g_characterProfiles[g_selectedCharacter].stats[skill[kind_of]], (const float *)ADDR(k_0_01f));
 	b *= (long double)PART->damage;
 	if (b >= k_0f)

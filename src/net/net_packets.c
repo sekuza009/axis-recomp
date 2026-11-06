@@ -6,14 +6,13 @@
 #include "../game.h"
 #include <string.h>
 
-#define g_netClient g_slotTakenFlag           /* the packet layer is on (as a client) */
 #define g_localSlot g_watchedSlot            /* the local player's slot */
 #define g_send g_netSendPacket                                            /* the message sent */
 
-/* 0x4a8300: the layer reset; host 1: on as a client. Returns the eax the fills leave (-1) */
+/* 0x4a8300: the layer reset; host 1: the local player's slot held from the start (g_slotTakenFlag). Returns the eax the fills leave (-1) */
 u32 (netq_reset)(int host)
 {
-	g_netClient = host == 1;
+	g_slotTakenFlag = host == 1;
 	memset(g_ahead, 0, 0x800 * 4);
 	memset(g_unused16, 0, 0x10 * 4);
 	memset(g_nextNumber, 0xff, 0x10 * 4);
@@ -31,10 +30,10 @@ u32 (netq_poll)(void)
 }
 
 /* 0x4a8360: a packet (size bytes, 64 expected: else an error message) numbered and sent to every player, a copy kept
-   for resending. 0 when the layer is off */
+   for resending. 0 while the local player has no slot (net_hasSlot) */
 u32 (net_sendPacketData)(int size, const void *data)
 {
-	if (!net_isClient())
+	if (!net_hasSlot())
 		return 0;
 	if (size != 0x40)
 		sys_errorTerminate((const char *)STR(0x4d1640, "incorrect packet data size(%d/%d) - p..."), size, 0x40);
@@ -121,7 +120,7 @@ int (netq_receive)(int *from, int *size, void *data)
 
 /* 0x4a86c0 .. 0x4a8730: the layer's flags and counters */
 int (netq_online)(void) { return g_netQueueOnline; }
-int (net_isClient)(void) { return g_netClient; }
+int (net_hasSlot)(void) { return g_slotTakenFlag; }
 int (net_hostGone)(void) { return g_netHostGone; }
 int (net_localSlot)(void) { return g_localSlot; }
 int (net_playerInUse)(int i) { return g_netSlots[i].used; }

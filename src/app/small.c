@@ -221,7 +221,7 @@ void THISCALL (script_pushMessage)(Stage *stage, int a, int b, int c, int d)
 /* 0x48fca0: the script's six counters cleared */
 int THISCALL (script_reset)(Stage *stage)
 {
-	debug_traceStripped((Scene *)stage);   /* an empty method of the stage */
+	debug_traceStripped((Scene *)&stage->scenePath);   /* ScenePath's first method: the shared empty function */
 	for (int i = 0; i < 6; i++)
 		FIELD(int, stage, offsetof(Stage, scriptMode) + i * 4) = 0;   /* scriptMode, scriptRunning and four more */
 	return 0;
@@ -672,7 +672,7 @@ int (reg_readServerSettings)(void)
 }
 
 /* 0x43f640: the screen size (g_screenW x g_screenH) for video mode g_videoMode: 640x480, 1280x720, 1600x900, 1920x1080,
-   2560x1440, 3840x2160, 1024x768, or 7 the desktop's (g_desktopWidth x g_desktopHeight); any mode also sets g_texturesOff from
+   2560x1440, 3840x2160, 1024x768, or 7 the desktop's (g_desktopWidth x g_desktopHeight); any mode also sets g_simpleMenu from
    g_cfgSimpleMenu, which it returns */
 int (app_screenSizeForMode)(void)
 {
@@ -686,7 +686,7 @@ int (app_screenSizeForMode)(void)
 		g_screenW = g_desktopWidth;
 		g_screenH = g_desktopHeight;
 	}
-	return g_texturesOff = g_cfgSimpleMenu;
+	return g_simpleMenu = g_cfgSimpleMenu;
 }
 
 

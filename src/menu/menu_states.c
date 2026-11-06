@@ -3,8 +3,6 @@
 #include "../game.h"
 #include "key_repeat.h"
 
-#define g_skirmishState g_skirmishPage   /* (by use) the skirmish screen: 0 and 1 not up */
-
 /* ---- the start-up screen: the logo (texture g_logoTexture, on a quad 320 x 256 at (160, 60)) over the clear colour
    g_clearColour, blended ---- */
 static void draw_logo(int first)

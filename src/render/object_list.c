@@ -65,8 +65,8 @@ int THISCALL (partList_queue)(ObjectList *list, void *view, const LightFactors *
 }
 
 /* 0x497a90: the draw records of the stage's meshes (0x20c bytes each from groundLayers[].texture): for mesh i a vertex record B
-   (at *(layerModel.parts) + i * 0x80) and a box record A (*(layerBoxModel.parts) + i * 0x80), the vertex and index counts summed, and
-   each mesh's box sides written into it: four fans of five of its twelve points */
+   (at *(layerModel.parts) + i * 0x80) and a water record A (*(waterModel.parts) + i * 0x80), the vertex and index counts summed, and
+   each A given four fans of five of its twelve points (drawn only for a water layer: ground_buildDrawLists makes the points) */
 void THISCALL (stage_buildMeshDrawRecords)(u8 *stage)
 {
 	Stage *st = (Stage *)stage;
@@ -74,25 +74,25 @@ void THISCALL (stage_buildMeshDrawRecords)(u8 *stage)
 	st->layerModel.partCount = n;
 	st->layerModel.colourCount = 0;
 	st->layerModel.triangleCount = 0;
-	st->layerBoxModel.partCount = st->groundLayerCount;
-	st->layerBoxModel.colourCount = 0;
-	st->layerBoxModel.triangleCount = 0;
+	st->waterModel.partCount = st->groundLayerCount;
+	st->waterModel.colourCount = 0;
+	st->waterModel.triangleCount = 0;
 	static const int sides[4][5] = { { 4, 5, 0, 3, 0xb }, { 6, 7, 1, 0, 5 }, { 8, 9, 2, 1, 7 }, { 0xa, 0xb, 3, 2, 9 } };
 	for (int i = 0; i < st->groundLayerCount; i++) {
 		GroundLayer *gl = &st->groundLayers[i];
-		ShapePart *A = (ShapePart *)st->layerBoxModel.parts + i, *B = (ShapePart *)st->layerModel.parts + i;
+		ShapePart *A = (ShapePart *)st->waterModel.parts + i, *B = (ShapePart *)st->layerModel.parts + i;
 		switch (gl->kind) {
 		case 0:
-			*(int *)B->name = 0;
-			*(int *)A->name = 0;
+			B->flags = 0;
+			A->flags = 0;
 			break;
 		case 1:
-			*(int *)B->name = 8;
-			*(int *)A->name = 8;
+			B->flags = 8;
+			A->flags = 8;
 			break;
 		case 2:
-			*(int *)B->name = 6;
-			*(int *)A->name = 6;
+			B->flags = 6;
+			A->flags = 6;
 			break;
 		}
 		B->texture = gl->texture;
@@ -104,21 +104,21 @@ void THISCALL (stage_buildMeshDrawRecords)(u8 *stage)
 		B->texCoords = gl->uv;
 		B->primCount = 0;
 		B->prims = gl->strips;
-		A->colourBase = st->layerBoxModel.colourCount;
-		A->vertices = (u8 *)gl->boxPoints;
-		A->colours = (u8 *)gl->boxColours;
+		A->colourBase = st->waterModel.colourCount;
+		A->vertices = (u8 *)gl->waterPoints;
+		A->colours = (u8 *)gl->waterColours;
 		A->vertexCount = 0xc;
-		A->texCoords = &gl->boxUv[0][0];
+		A->texCoords = &gl->waterUv[0][0];
 		A->primCount = gl->water == 1 ? 4 : 0;
-		A->prims = (u8 *)gl->boxPrims;
+		A->prims = (u8 *)gl->waterPrims;
 		for (int f = 0; f < 4; f++) {
-			gl->boxPrims[f].kind = 6;   /* (a fan) */
-			gl->boxPrims[f].indexCount = 5;
-			gl->boxPrims[f].indices = (u8 *)gl->boxIndices[f];
-			memcpy(gl->boxIndices[f], sides[f], sizeof sides[f]);
+			gl->waterPrims[f].kind = 6;   /* (a fan) */
+			gl->waterPrims[f].indexCount = 5;
+			gl->waterPrims[f].indices = (u8 *)gl->waterIndices[f];
+			memcpy(gl->waterIndices[f], sides[f], sizeof sides[f]);
 		}
 		st->layerModel.colourCount += B->vertexCount;
-		st->layerBoxModel.colourCount += A->vertexCount;
+		st->waterModel.colourCount += A->vertexCount;
 	}
 }
 

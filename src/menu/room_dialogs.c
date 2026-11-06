@@ -60,7 +60,7 @@ void (room_openLogin)(void)
    rest cleared */
 void (room_enterGameList)(void)
 {
-	static const u32 cleared[] = { ADDR(g_roomRefreshing), ADDR(g_roomSearching), ADDR(g_gameListLoaded), ADDR(g_roomSearchAnswerIn), ADDR(g_gameCount), ADDR(g_lobbyBlinkClock), ADDR(g_localPlayer), ADDR(g_gameListTop),
+	static const u32 cleared[] = { ADDR(g_roomRefreshing), ADDR(g_roomSearching), ADDR(g_gameListLoaded), ADDR(g_roomSearchAnswerIn), ADDR(g_gameCount), ADDR(g_lobbyBlinkClock), ADDR(g_pickedGame), ADDR(g_gameListTop),
 	                               ADDR(g_lobbyListRow), ADDR(g_gameListJoinClicked), ADDR(g_roomJoined), ADDR(g_roomListRefreshTimer), ADDR(g_gameListClickArmed), ADDR(g_gameListClickTimer), ADDR(g_roomNameSum) };
 	g_roomPanelBrightness = 0x3f333333;   /* 0.7 */
 	g_roomState = 1;
@@ -179,7 +179,7 @@ int (gameList_open)(void)
 	g_unusedRoomListWord = 0;
 	g_gameCount = 0;
 	g_gameListLoaded = 1;
-	g_localPlayer = 0;
+	g_pickedGame = 0;
 	(*(u32 *)&g_lobbyBlinkClock) = 0x447a0000;   /* 1000 */
 	g_gameListTop = 0;
 	g_lobbyListRow = 0;

@@ -247,7 +247,7 @@ int THISCALL (tex_textureFileExist)(u8 *tm, const char *name)
 			}
 		}
 	}
-	BMPRGBFile_dtor((u8 *)&image);   /* (by use its destructor) */
+	BMPRGBFile_dtor((u8 *)&image);   /* (its destructor: vtable 0x4a96f8's deleting destructor calls it) */
 	return ok;
 }
 

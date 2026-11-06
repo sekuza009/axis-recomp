@@ -17,7 +17,7 @@ static void weapon_cycle(Stage *stage, int i, int step)
 		int weapon = player->items[slot];
 		if (weapon < 0)
 			continue;
-		int type = stage->actorInfo[weapon].ammoSlot;
+		int type = stage->actorInfo[weapon].ammoType;
 		if (ac->ammo[type] < stage->actorInfo[weapon].ammoPerShot || type < 0)
 			continue;
 		actor_selectWeapon(stage, i, slot);
@@ -52,7 +52,7 @@ void THISCALL (actor_selectWeapon)(Stage *stage, int i, int slot)
 	if (actor->slot == slot)
 		return;
 	int weapon = stage->playerRecords[actor->player].items[slot];
-	if (weapon > -1 && stage->actorInfo[weapon].ammoSlot > -1) {
+	if (weapon > -1 && stage->actorInfo[weapon].ammoType > -1) {
 		actor->weaponLowering = 1;
 		actor->slotLoaded = slot;
 		actor->gauge = 2.0f;
@@ -237,7 +237,7 @@ void THISCALL (bullet_init)(u8 *s, int slot, int id, int owner, int homingTarget
 	BU->active = 1;
 	BU->weapon = rd->weapon;
 	BU->owner = owner;
-	BU->colour = rd->muzzle;
+	BU->muzzle = rd->muzzle;
 	memcpy(BU->from, o, 12);
 	float dir[3];
 	const float *w2de8 = &w->velocity;
@@ -327,7 +327,7 @@ void THISCALL (bullet_init)(u8 *s, int slot, int id, int owner, int homingTarget
 	u32 rec[13] = { ((u32)w->shotMode) + 10, ((u32)BU->owner) };
 	memcpy(&rec[2], BU->prev, 12);
 	memcpy(&rec[5], (const void *)OBJ(g_vecZero2), 12);
-	rec[8] = BU->colour;
+	rec[8] = BU->muzzle;   /* its matrixFrom */
 	float size = f32(fld_m(&w->hitRange));
 	memcpy(&rec[11], &size, 4);
 	particle_spawn(s, rec);
@@ -515,7 +515,7 @@ static void hit_actor(u8 *s, u8 *b, const u8 *w, u32 *r, int weapon)
 {
 	int t = BU->hitActor;
 	if (ST->actors[t].controlledBy == ST->playerActor && ST->actors[t].state == 1)
-		actor_takeDamage(s, BU->owner, t, WI->damageMode, WI->damage, WI->shotMode, weapon);
+		actor_takeDamage(s, BU->owner, t, WI->damageType, WI->damage, WI->shotMode, weapon);
 	t = BU->hitActor;
 	float dir[3];
 	for (int k = 0; k < 3; k++)
@@ -628,7 +628,7 @@ static void splash(u8 *s, u8 *b, const u8 *w)
 		return;
 	for (int j = 0; j < ST->actorCount; j++) {
 		if (ST->actors[j].state != 1 || !(ST->actors[j].spawnAge > 3.0f) || ST->actors[j].controlledBy != ST->playerActor || BU->hitActor == j
-		    || ST->actors[j].cameraValue == 1)
+		    || ST->actors[j].outOfPlay == 1)
 			continue;
 		float d[3];
 		for (int k = 0; k < 3; k++)
@@ -638,7 +638,7 @@ static void splash(u8 *s, u8 *b, const u8 *w)
 			continue;
 		float f = f32(fsubr_m(fmul_m(fdiv_m(len, &WI->splashRadius), &k_0_5f), &k_1f));   /* 1 - len / r / 2 */
 		int damage = ftol(fmul_m((long double)WI->damage, &f));
-		actor_takeDamage(s, BU->owner, j, WI->damageMode, damage, WI->shotMode, BU->weapon);
+		actor_takeDamage(s, BU->owner, j, WI->damageType, damage, WI->shotMode, BU->weapon);
 		if (WI->push > 0) {
 			long double k = fld_m(&WI->push);
 			float x = f32(fmul_m(k, &d[0])), y = f32(fmul_m(k, &d[1]));
@@ -726,7 +726,7 @@ static void fly_local(u8 *s, u8 *b, const u8 *w, const float *dt)
 	Vec3_normalize(dir);
 	BITS(best) = 0x7f7fffff;
 	for (int j = 0; j < ST->actorCount; j++) {
-		if (ST->actors[j].state != 1 || !(ST->actors[j].spawnAge > 3.0f) || j == BU->owner || ST->actors[j].cameraValue != 0)
+		if (ST->actors[j].state != 1 || !(ST->actors[j].spawnAge > 3.0f) || j == BU->owner || ST->actors[j].outOfPlay != 0)
 			continue;
 		float radius = f32(FADD(ST->actors[j].radius, WI->hitRange));
 		if (math_segmentSphere(prev, cur, dir, ST->actors[j].nextPos, radius, hit, &t) == 1 && !(t >= best)) {

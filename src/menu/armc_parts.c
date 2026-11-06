@@ -6,7 +6,7 @@
 #define FIELD(type, obj, offset) GAME_VAR(type, (u8 *)RELOC(obj) + (offset))
 
 /* ActorInfo fields copied as they are (PartInfo field, ActorInfo field) */
-static const short copied[6][2] = { { offsetof(PartInfo, slotType), offsetof(ActorInfo, slotType) }, { offsetof(PartInfo, ammoSlot), offsetof(ActorInfo, ammoSlot) }, { offsetof(PartInfo, ammoPerShot), offsetof(ActorInfo, ammoPerShot) }, { offsetof(PartInfo, burst), offsetof(ActorInfo, burst) }, { offsetof(PartInfo, damageMode), offsetof(ActorInfo, damageMode) }, { offsetof(PartInfo, damage), offsetof(ActorInfo, damage) } };
+static const short copied[6][2] = { { offsetof(PartInfo, slotType), offsetof(ActorInfo, slotType) }, { offsetof(PartInfo, ammoType), offsetof(ActorInfo, ammoType) }, { offsetof(PartInfo, ammoPerShot), offsetof(ActorInfo, ammoPerShot) }, { offsetof(PartInfo, burst), offsetof(ActorInfo, burst) }, { offsetof(PartInfo, damageType), offsetof(ActorInfo, damageType) }, { offsetof(PartInfo, damage), offsetof(ActorInfo, damage) } };
 
 /* and those scaled by a constant of the game (PartInfo field, ActorInfo field, constant's address) */
 static const struct { short dst, src; u32 scale; } scaled[8] = {
@@ -18,7 +18,7 @@ static void part_info(u8 *rec, int idx)
 	if (idx == -1) {
 		memset(rec, 0, 64);
 		((PartInfo *)rec)->slotType = -1;
-		memset(rec + offsetof(PartInfo, ammoSlot), 0, sizeof(PartInfo) - offsetof(PartInfo, ammoSlot));   /* ammoSlot .. the end */
+		memset(rec + offsetof(PartInfo, ammoType), 0, sizeof(PartInfo) - offsetof(PartInfo, ammoType));   /* ammoType .. the end */
 		return;
 	}
 	ActorInfo *info = &g_scene->actorInfo[idx];

@@ -65,7 +65,7 @@ int g_keyTable1_v[256] __attribute__((aligned(16)));   /* 0x4d1688 */
 int g_mouseState_v[4] __attribute__((aligned(16)));   /* 0x4d1a88 */
 int g_keySeen_v[256] __attribute__((aligned(16)));   /* 0x4d1a98 */
 u8 g_keyState_v[256] __attribute__((aligned(16)));   /* 0x4d1e9c */
-u8 g_keyboardActive_v[4] __attribute__((aligned(16)));   /* 0x4d1fa8 */
+u8 g_keyboardReady_v[4] __attribute__((aligned(16)));   /* 0x4d1fa8 */
 u8 g_mouseActive_v[4] __attribute__((aligned(16)));   /* 0x4d1fac */
 u8 g_unusedKeyTable2Word0_v[4] __attribute__((aligned(16)));   /* 0x4d1fb0 */
 u8 g_unusedKeyTable2Flags_v[2] __attribute__((aligned(16)));   /* 0x4d1fba */
@@ -583,7 +583,7 @@ u8 g_rankingListIn_v[4] __attribute__((aligned(16)));   /* 0x76d40c */
 u8 g_startedFromLobby_v[4] __attribute__((aligned(16)));   /* 0x76d410 */
 u8 g_dikDelete_v[4] __attribute__((aligned(16)));   /* 0x76d414 */
 u8 g_chatEditLength_v[4] __attribute__((aligned(16)));   /* 0x76d418 */
-u8 g_localPlayer_v[4] __attribute__((aligned(16)));   /* 0x76d41c */
+u8 g_pickedGame_v[4] __attribute__((aligned(16)));   /* 0x76d41c */
 u8 g_dikCapsLock_v[4] __attribute__((aligned(16)));   /* 0x76d420 */
 u8 g_dikMouse2_v[4] __attribute__((aligned(16)));   /* 0x76d424 */
 u8 g_menuFrameCounter_v[4] __attribute__((aligned(16)));   /* 0x76d428 */
@@ -634,7 +634,7 @@ u8 g_dikF9_v[4] __attribute__((aligned(16)));   /* 0x9da478 */
 u8 g_dikF8_v[4] __attribute__((aligned(16)));   /* 0x9da47c */
 u8 g_rectColour_v[16] __attribute__((aligned(16)));   /* 0x9da480 */
 u8 g_dikWheelDown_v[4] __attribute__((aligned(16)));   /* 0x9da490 */
-u8 g_texturesOff_v[4] __attribute__((aligned(16)));   /* 0x9da494 */
+u8 g_simpleMenu_v[4] __attribute__((aligned(16)));   /* 0x9da494 */
 u8 g_roomSearchAnswerIn_v[4] __attribute__((aligned(16)));   /* 0x9da498 */
 u8 g_lobbyReply_v[4] __attribute__((aligned(16)));   /* 0x9da49c */
 u8 g_dikLAlt_v[4] __attribute__((aligned(16)));   /* 0x9da4a0 */
@@ -848,7 +848,7 @@ u8 g_pilotNoise_v[10000] __attribute__((aligned(16)));   /* 0x9f3ac4 */
 u8 g_profileHeader_v[260] __attribute__((aligned(16)));   /* 0x9f61d8 */
 u8 g_skirmishBriefing_v[4] __attribute__((aligned(16)));   /* 0x9f62e0 */
 u32 g_skirmishColourDim_v[4] __attribute__((aligned(16)));   /* 0x9f62e8 */
-u8 g_skirmishPage_v[4] __attribute__((aligned(16)));   /* 0x9f62f8 */
+u8 g_skirmishState_v[4] __attribute__((aligned(16)));   /* 0x9f62f8 */
 u8 g_profileProgressSaved_v[4] __attribute__((aligned(16)));   /* 0x9f62fc */
 u8 g_skirmishBusy_v[4] __attribute__((aligned(16)));   /* 0x9f6300 */
 int g_skirmishRect_v[4] __attribute__((aligned(16)));   /* 0x9f6308 */
@@ -1235,7 +1235,7 @@ const DataPiece g_splitObjects[] = {
 	{ 0x4d1a88, g_mouseState_v, 16 },
 	{ 0x4d1a98, g_keySeen_v, 1024 },
 	{ 0x4d1e9c, g_keyState_v, 256 },
-	{ 0x4d1fa8, g_keyboardActive_v, 4 },
+	{ 0x4d1fa8, g_keyboardReady_v, 4 },
 	{ 0x4d1fac, g_mouseActive_v, 4 },
 	{ 0x4d1fb0, g_unusedKeyTable2Word0_v, 4 },
 	{ 0x4d1fba, g_unusedKeyTable2Flags_v, 2 },
@@ -1753,7 +1753,7 @@ const DataPiece g_splitObjects[] = {
 	{ 0x76d410, g_startedFromLobby_v, 4 },
 	{ 0x76d414, g_dikDelete_v, 4 },
 	{ 0x76d418, g_chatEditLength_v, 4 },
-	{ 0x76d41c, g_localPlayer_v, 4 },
+	{ 0x76d41c, g_pickedGame_v, 4 },
 	{ 0x76d420, g_dikCapsLock_v, 4 },
 	{ 0x76d424, g_dikMouse2_v, 4 },
 	{ 0x76d428, g_menuFrameCounter_v, 4 },
@@ -1804,7 +1804,7 @@ const DataPiece g_splitObjects[] = {
 	{ 0x9da47c, g_dikF8_v, 4 },
 	{ 0x9da480, g_rectColour_v, 16 },
 	{ 0x9da490, g_dikWheelDown_v, 4 },
-	{ 0x9da494, g_texturesOff_v, 4 },
+	{ 0x9da494, g_simpleMenu_v, 4 },
 	{ 0x9da498, g_roomSearchAnswerIn_v, 4 },
 	{ 0x9da49c, g_lobbyReply_v, 4 },
 	{ 0x9da4a0, g_dikLAlt_v, 4 },
@@ -2018,7 +2018,7 @@ const DataPiece g_splitObjects[] = {
 	{ 0x9f61d8, g_profileHeader_v, 260 },
 	{ 0x9f62e0, g_skirmishBriefing_v, 4 },
 	{ 0x9f62e8, g_skirmishColourDim_v, 16 },
-	{ 0x9f62f8, g_skirmishPage_v, 4 },
+	{ 0x9f62f8, g_skirmishState_v, 4 },
 	{ 0x9f62fc, g_profileProgressSaved_v, 4 },
 	{ 0x9f6300, g_skirmishBusy_v, 4 },
 	{ 0x9f6308, g_skirmishRect_v, 16 },

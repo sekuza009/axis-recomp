@@ -30,7 +30,7 @@ static void button(int lit, int x0, int y0, int x1, int y1, float dim_alpha)
 
 /* nine rows of games from g_listTop at x0, from y (to end) below y0: a lock (when locks), the name (32 characters),
    the map (13 characters; MSG(455, "ROTATION") with the rotation flag), the game mode (a string of kinds, step
-   apart), "players / most" and the ping (when pings); the game under the cursor (g_localPlayer) in
+   apart), "players / most" and the ping (when pings); the game under the cursor (g_pickedGame) in
    white, the others cyan */
 static void game_rows(int x0, int y0, int y, int end, int locks, u32 kinds, int step, int pings)
 {
@@ -55,7 +55,7 @@ static void game_rows(int x0, int y0, int y, int end, int locks, u32 kinds, int 
 			glDisable(GL_TEXTURE_2D);
 		}
 		set_colour_bits(g_textColour, 0, 0x3f4ccccd, 0x3f4ccccd, 0x3f800000);   /* 0, 0.8, 0.8, 1 */
-		if (g_localPlayer == g_listTop + i)
+		if (g_pickedGame == g_listTop + i)
 			set_colour_bits(g_textColour, 0x3f800000, 0x3f800000, 0x3f800000, 0x3f800000);
 		memset(text, 0, sizeof text);
 		crt_strncpy(text, game->name, 0x20);
@@ -412,7 +412,7 @@ void (gameList_drawPage)(void)
 	if (!g_roomJoined)
 		return;
 	if (!g_roomJoinNeedsPassword) {
-		room_joinSession(g_localPlayer);
+		room_joinSession(g_pickedGame);
 		return;
 	}
 	if (!g_typingRoomJoinPassword || g_textFieldOpen)
@@ -420,7 +420,7 @@ void (gameList_drawPage)(void)
 	g_typingRoomJoinPassword = 0;
 	memset((void *)ADDR(g_roomJoinPassword), 0, 8);
 	strcpy((char *)ADDR(g_roomJoinPassword), g_chatLine);
-	if (strcmp(g_sessionList[g_localPlayer].password, (const char *)ADDR(g_roomJoinPassword)) != 0) {
+	if (strcmp(g_sessionList[g_pickedGame].password, (const char *)ADDR(g_roomJoinPassword)) != 0) {
 		menu_showMessage(0x27);
 		g_roomJoined = 0;
 	}
@@ -488,7 +488,7 @@ static void games_up(void)
 		g_lobbyListRow = --row;
 	else if (g_listTop > 0)
 		g_listTop--;
-	g_localPlayer = g_listTop + row;
+	g_pickedGame = g_listTop + row;
 }
 
 /* one row down (nine rows shown), unless at the last game: 0 then */
@@ -501,7 +501,7 @@ static int games_down(void)
 		g_lobbyListRow = ++row;
 	else
 		g_listTop++;
-	g_localPlayer = g_listTop + row;
+	g_pickedGame = g_listTop + row;
 	return 1;
 }
 
@@ -614,7 +614,7 @@ void (gameList_mouse)(void)
 				g_gameListClickArmed = 1;
 				(*(int *)&g_gameListClickTimer) = 0;
 				g_lobbyListRow = row;
-				g_localPlayer = g_listTop + row;
+				g_pickedGame = g_listTop + row;
 			}
 		}
 	}
@@ -788,7 +788,7 @@ void (arena_drawGamesPage)(void)
 	arena_drawGameList();
 	if (g_lobbyJoinStarted) {
 		if (!g_arenaJoinNeedsPassword) {
-			arena_joinListed(g_localPlayer);
+			arena_joinListed(g_pickedGame);
 			return;
 		}
 		if (!g_typingArenaJoinPassword || g_textFieldOpen)
@@ -796,7 +796,7 @@ void (arena_drawGamesPage)(void)
 		memset((void *)ADDR(g_arenaJoinPassword), 0, 8);
 		g_typingArenaJoinPassword = 0;
 		strcpy((char *)ADDR(g_arenaJoinPassword), g_chatLine);
-		int wrong = strcmp(g_sessionList[g_localPlayer].password, (const char *)ADDR(g_arenaJoinPassword)) != 0;
+		int wrong = strcmp(g_sessionList[g_pickedGame].password, (const char *)ADDR(g_arenaJoinPassword)) != 0;
 		if (wrong)
 			g_lobbyJoinStarted = 0;
 		g_arenaJoinNeedsPassword = 0;
@@ -814,7 +814,7 @@ void (arena_drawGamesPage)(void)
 			arena_joinListed(99999);
 	}
 	if (g_lobbyJoinRequest)
-		arena_joinSession(g_localPlayer);
+		arena_joinSession(g_pickedGame);
 }
 
 /* ---- the arena lobby's list of games: its mouse ---- */
@@ -992,7 +992,7 @@ void (arenaGames_mouse)(void)
 				sound_playMenu(0);
 				g_arenaListClickArmed = 1;
 				g_lobbyListRow = row;
-				g_localPlayer = g_listTop + row;
+				g_pickedGame = g_listTop + row;
 			}
 			(*(int *)&g_arenaSearchClock) = 0;
 			break;

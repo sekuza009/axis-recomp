@@ -79,7 +79,7 @@ void (menuState400_enter)(void)
 		{ ADDR(g_newArenaFormRight), 0x258 } };
 	static const u32 cleared1[] = { ADDR(g_typingArenaName), ADDR(g_editingNewArenaName), ADDR(g_editingNewArenaFragLimit), ADDR(g_editingNewArenaTimeLimit), ADDR(g_typingArenaPassword), ADDR(g_lanSearch), ADDR(g_lobbySearching), ADDR(g_arenaHaveList),
 	                                ADDR(g_arenaListFull), ADDR(g_gameCount), ADDR(g_lobbyBlinkClock) };
-	static const u32 cleared2[] = { ADDR(g_localPlayer), ADDR(g_gameListTop), ADDR(g_lobbyListRow), ADDR(g_arenaSearchStarted), ADDR(g_serverSearching), OBJ(g_arenaBright), ADDR(g_arenaUpdateNotice), ADDR(g_arenaLobbyState) };
+	static const u32 cleared2[] = { ADDR(g_pickedGame), ADDR(g_gameListTop), ADDR(g_lobbyListRow), ADDR(g_arenaSearchStarted), ADDR(g_serverSearching), OBJ(g_arenaBright), ADDR(g_arenaUpdateNotice), ADDR(g_arenaLobbyState) };
 	static const Store state[] = {
 		{ ADDR(g_arenaCameraMode), 2 }, { ADDR(g_lastPanel), 999 }, { (OBJ(g_arenaBright) + 0x4), ONE }, { (OBJ(g_arenaBright) + 0x8), ONE }, { (OBJ(g_arenaBright) + 0xc), ONE },
 		{ OBJ(g_arenaDim), 0x3e99999a }, { (OBJ(g_arenaDim) + 0x4), 0x3f333333 }, { (OBJ(g_arenaDim) + 0x8), 0x3f333333 }, { (OBJ(g_arenaDim) + 0xc), ONE }, { ADDR(g_unusedArenaWord), 0xf },
@@ -301,7 +301,7 @@ int (menuState500_enterSkirmish)(void)
 	static const Store setup[] = {
 		{ ADDR(g_skirmishRectLeft), 0x28 }, { ADDR(g_skirmishRectTop), 0xa }, { (OBJ(g_skirmishRect) + 0x8), 0x258 }, { (OBJ(g_skirmishRect) + 0xc), 0x1cc }, { OBJ(g_skirmishColourLit), 0 },
 		{ (OBJ(g_skirmishColourLit) + 0x4), ONE }, { (OBJ(g_skirmishColourLit) + 0x8), ONE }, { (OBJ(g_skirmishColourLit) + 0xc), ONE }, { OBJ(g_skirmishColourDim), 0 }, { (OBJ(g_skirmishColourDim) + 0x4), 0x3f19999a },
-		{ (OBJ(g_skirmishColourDim) + 0x8), 0x3f19999a }, { (OBJ(g_skirmishColourDim) + 0xc), ONE }, { ADDR(g_skirmishPage), 1 }, { ADDR(g_screen), 500 }, { ADDR(g_lastScreen), 500 },
+		{ (OBJ(g_skirmishColourDim) + 0x8), 0x3f19999a }, { (OBJ(g_skirmishColourDim) + 0xc), ONE }, { ADDR(g_skirmishState), 1 }, { ADDR(g_screen), 500 }, { ADDR(g_lastScreen), 500 },
 		{ ADDR(g_nextScreen), 500 } };
 	STORE_ALL(briefing_camera);
 	STORE_ALL(setup);

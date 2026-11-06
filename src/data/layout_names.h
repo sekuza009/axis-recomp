@@ -1190,8 +1190,8 @@ extern struct GameData g_data;
 #define g_keyTable2 ((int *)g_keyTable2_v)
 #undef g_keyboard
 #define g_keyboard (g_data.g_keyboard_)
-#undef g_keyboardActive
-#define g_keyboardActive (*(int *)g_keyboardActive_v)
+#undef g_keyboardReady
+#define g_keyboardReady (*(int *)g_keyboardReady_v)
 #undef g_ladderDeaths
 #define g_ladderDeaths (*(int *)g_ladderDeaths_v)
 #undef g_ladderDns
@@ -1338,8 +1338,6 @@ extern struct GameData g_data;
 #define g_lobbyTopRects ((int *)g_lobbyTopRects_v)
 #undef g_localAddress
 #define g_localAddress ((char *)g_localAddress_v)
-#undef g_localPlayer
-#define g_localPlayer (*(int *)g_localPlayer_v)
 #undef g_localPlayerData
 #define g_localPlayerData (*(u32 *)g_localPlayerData_v)
 #undef g_localPlayerId
@@ -1880,6 +1878,8 @@ extern struct GameData g_data;
 #define g_penPropWidths ((int *)g_penPropWidths_v)
 #undef g_perfCounter
 #define g_perfCounter (*(u32 *)g_perfCounter_v)
+#undef g_pickedGame
+#define g_pickedGame (*(int *)g_pickedGame_v)
 #undef g_pilotChosen
 #define g_pilotChosen (*(int *)g_pilotChosen_v)
 #undef g_pilotDeaths
@@ -2516,6 +2516,8 @@ extern struct GameData g_data;
 #define g_shapeDat ((u32 *)g_shapeDat_v)
 #undef g_showCmd
 #define g_showCmd (*(int *)g_showCmd_v)
+#undef g_simpleMenu
+#define g_simpleMenu (*(int *)g_simpleMenu_v)
 #undef g_simpleMenuTexts
 #define g_simpleMenuTexts ((char *)g_simpleMenuTexts_v)
 #undef g_sinTable
@@ -2536,8 +2538,6 @@ extern struct GameData g_data;
 #define g_skirmishInfo ((u8 *)g_skirmishInfo_v)
 #undef g_skirmishInfoCount
 #define g_skirmishInfoCount (*(int *)g_skirmishInfoCount_v)
-#undef g_skirmishPage
-#define g_skirmishPage (*(int *)g_skirmishPage_v)
 #undef g_skirmishPreviewDue
 #define g_skirmishPreviewDue (*(int *)g_skirmishPreviewDue_v)
 #undef g_skirmishRect
@@ -2552,6 +2552,8 @@ extern struct GameData g_data;
 #define g_skirmishShowBackground (*(int *)g_skirmishShowBackground_v)
 #undef g_skirmishShown
 #define g_skirmishShown (*(int *)g_skirmishShown_v)
+#undef g_skirmishState
+#define g_skirmishState (*(int *)g_skirmishState_v)
 #undef g_slotCams
 #define g_slotCams ((float *)g_slotCams_v)
 #undef g_slotTakenFlag
@@ -2654,8 +2656,6 @@ extern struct GameData g_data;
 #define g_textureSets ((u32 *)g_textureSets_v)
 #undef g_textures
 #define g_textures (*(TextureManager * *)g_textures_v)
-#undef g_texturesOff
-#define g_texturesOff (*(int *)g_texturesOff_v)
 #undef g_timeLimit
 #define g_timeLimit (*(int *)g_timeLimit_v)
 #undef g_timerClocks

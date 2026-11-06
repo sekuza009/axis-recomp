@@ -1278,7 +1278,7 @@ void (cfg_init)(void)
 	strcpy(g_playerName, (const char *)STR(0x4ad4a4, "AXIS ARENA"));
 	g_soundVolume = 100;
 	g_musicVolume = 100;
-	static const u8 server[6] = { 0, 8, 0, 0, 0, 0 };   /* 0x4ded40: (by use) 8 players */
+	static const u8 server[6] = { 0, 8, 0, 0, 0, 0 };   /* 0x4ded40 (g_arenaMap ..): map 0, 8 players (numofplayer), the rest 0 */
 	memcpy((void *)ADDR(g_arenaMap), server, 6);
 	g_sound3D = 1;
 	g_highDetail = 1;

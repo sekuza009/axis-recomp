@@ -188,7 +188,7 @@ int (glWindow_setDisplayModeBy)(int width, int height, int bits)
 	return 1;
 }
 
-/* 0x42eed0 (by use the display mode set; with the exe patch's cave at 0x4a8e54 done here): the desktop's own size
+/* 0x42eed0 (the display mode set; with the exe patch's cave at 0x4a8e54 done here): the desktop's own size
    (g_desktopWidth x g_desktopHeight) is not switched to: a mode changed before (flag g_displayModeChanged) is left by
    ChangeDisplaySettingsA(NULL), else nothing (0). Any other size is remembered (g_otherModeWidth / g_otherModeHeight, the flag set)
    and set with 32 bits (the patch's choice, whatever bits asks), with ChangeDisplaySettingsA's flags. Returns its

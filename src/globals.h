@@ -786,15 +786,15 @@
 #define g_mechBoosterRecharge GAME_VAR(float, 0x4dcaf0)
 #define g_mechNormalSpeed GAME_VAR(float, 0x4dcaf8)
 #define g_itemBonusShield GAME_VAR(float, 0x4dcc68)
-#define g_hasItemCapacity GAME_VAR(int, 0x4dcb10)   /* (by use) extra item 27 is fitted (armc_extraItemBonuses) */
-#define g_hasItemEpak GAME_VAR(int, 0x4dcea8)   /* (by use) extra item 28 is fitted (armc_extraItemBonuses) */
-#define g_hasItem30mm GAME_VAR(int, 0x4dcc5c)   /* (by use) extra item 29 is fitted (armc_extraItemBonuses) */
-#define g_hasItem60mm GAME_VAR(int, 0x4dbc54)   /* (by use) extra item 30 is fitted (armc_extraItemBonuses) */
-#define g_hasItemMissile GAME_VAR(int, 0x4dbe44)   /* (by use) extra item 31 is fitted (armc_extraItemBonuses) */
-#define g_hasItemSensor GAME_VAR(int, 0x4dc794)   /* (by use) extra item 32 is fitted (armc_extraItemBonuses) */
-#define g_hasItemBooster GAME_VAR(int, 0x4dbd78)   /* (by use) extra item 33 is fitted (armc_extraItemBonuses) */
-#define g_hasItemWeight GAME_VAR(int, 0x4dc774)   /* (by use) extra item 34 is fitted (armc_extraItemBonuses) */
-#define g_hasItemShield GAME_VAR(int, 0x4dcf30)   /* (by use) extra item 35 is fitted (armc_extraItemBonuses) */
+#define g_hasItemCapacity GAME_VAR(int, 0x4dcb10)   /* extra item 27 (BE-VOX EXPANSION MAGAZINE) is fitted (armc_extraItemBonuses; written only) */
+#define g_hasItemEpak GAME_VAR(int, 0x4dcea8)   /* extra item 28 (BE-EOX E-PAK EXTRA MAGAZINE) is fitted (armc_extraItemBonuses; written only) */
+#define g_hasItem30mm GAME_VAR(int, 0x4dcc5c)   /* extra item 29 (BE-30X 30MM EXTRA MAGAZINE) is fitted (armc_extraItemBonuses; written only) */
+#define g_hasItem60mm GAME_VAR(int, 0x4dbc54)   /* extra item 30 (BE-60X 60MM EXTRA MAGAZINE) is fitted (armc_extraItemBonuses; written only) */
+#define g_hasItemMissile GAME_VAR(int, 0x4dbe44)   /* extra item 31 (BE-ROX EXTRA ROCKET CHAMBER) is fitted (armc_extraItemBonuses; written only) */
+#define g_hasItemSensor GAME_VAR(int, 0x4dc794)   /* extra item 32 (SE-S10 SENSOR ARRAY) is fitted (armc_extraItemBonuses; written only) */
+#define g_hasItemBooster GAME_VAR(int, 0x4dbd78)   /* extra item 33 (TEP-34L BOOST GENERATOR) is fitted (armc_extraItemBonuses; read there) */
+#define g_hasItemWeight GAME_VAR(int, 0x4dc774)   /* extra item 34 (BP-2001 GRAVITY CONTROLLER) is fitted (armc_extraItemBonuses; read there) */
+#define g_hasItemShield GAME_VAR(int, 0x4dcf30)   /* extra item 35 (SH-4 FORCEFIELD BOOSTER) is fitted (armc_extraItemBonuses; read there) */
 #define g_itemBonusActiveTime GAME_VAR(float, 0x4dcca0)
 #define g_boosterActiveTime GAME_VAR(float, 0x4dce84)
 #define g_boosterRechargeTime GAME_VAR(float, 0x4dce88)
@@ -978,7 +978,7 @@
 #define g_dikBackslash GAME_VAR(int, 0x9dae78)
 #define g_dikNumpadStar GAME_VAR(int, 0x9db0a8)
 /* moved from game.h and the files' own defines (tools/promote_locals.py) */
-#define g_mouseTaken GAME_VAR(int, 0x4ad17c)   /* (by use) 0: the mouse is let go instead of taken */
+#define g_mouseTaken GAME_VAR(int, 0x4ad17c)   /* 1 in the exe's data and never written: input_reacquireMouse always takes the mouse again (0 would let it go) */
 #define g_pulse GAME_VAR(float, 0x4b06fc)   /* the bands' colour pulse, 0.05 .. 0.95 */
 #define g_pulseStep GAME_VAR(float, 0x4b0700)
 #define g_flareSizeB GAME_VAR(float, 0x4b0704)   /* flare 3's half-size, 10 .. 48 */
@@ -989,11 +989,11 @@
 #define g_directInput GAME_VAR(void *, 0x4d1e98)
 #define g_keyboard GAME_VAR(void *, 0x4d1fa0)
 #define g_mouse GAME_VAR(void *, 0x4d1fa4)
-#define g_keyboardActive GAME_VAR(int, 0x4d1fa8)   /* (by use) the window is active: the keyboard may be taken */
+#define g_keyboardReady GAME_VAR(int, 0x4d1fa8)   /* 1 once the DirectInput keyboard is made and acquired (input_initKeyboard); 0 when released (input_releaseKeyboard: while a text field takes typing through Windows, and at shutdown); while 0 the key reads give 0 */
 #define g_mouseActive GAME_VAR(int, 0x4d1fac)
 #define g_textCharWidth GAME_VAR(int, 0x4d23d8)   /* units per character of the font being drawn */
 #define g_mapTop GAME_VAR(int, 0x4d7350)   /* the first map shown */
-#define g_mapListKept GAME_VAR(int, 0x4d94fc)   /* (by use) set once a list has been kept */
+#define g_mapListKept GAME_VAR(int, 0x4d94fc)   /* 1 once a list has been kept (mapList_ok); never read */
 #define g_lobbySubState GAME_VAR(int, 0x4db51c)   /* the lobby's page: 5 the top menu, 0 player setup, 1 join, 2 create */
 #define g_armcAngle GAME_VAR(float, 0x4dbc04)   /* the preview's turn */
 #define g_armcPartSlot GAME_VAR(int, 0x4dbc6c)   /* 0 head, 1 chest, 2 arm, 3 leg, 4 booster, 5 weapons */
@@ -1001,7 +1001,7 @@
 #define g_armcColourSlot GAME_VAR(int, 0x4dc4b0)   /* the colour slot being edited */
 #define g_extraCount GAME_VAR(int, 0x4dc778)
 #define g_armcMode GAME_VAR(int, 0x4dc798)   /* the ARM CENTER's page: 1 the parts, 2 the weapons, 3 the colours, 4 ... */
-#define g_armcSessionDue GAME_VAR(int, 0x4dc86c)   /* (by use) the "please wait" box was shown: the session is made next */
+#define g_armcSessionDue GAME_VAR(int, 0x4dc86c)   /* the "please wait" box was shown: the session is made next */
 #define g_armcHideInterface GAME_VAR(int, 0x4dd078)   /* Ctrl+Alt+M: the screen without its interface */
 #define g_menuVolume GAME_VAR(int, 0x4dd984)   /* DirectSound volume of the menu sounds: (v * 5 - 500) * 4 of the setting */
 #define g_cursorBlink GAME_VAR(float, 0x4dda44)   /* the text cursor's blink clock */
@@ -1016,7 +1016,7 @@
 #define g_titleShown GAME_VAR(int, 0x4df01c)
 #define g_timerFrequency GAME_VAR(u64, 0x4df030)   /* QueryPerformanceFrequency's result */
 #define g_cursorFrame GAME_VAR(int, 0x4df03c)   /* the mouse pointer's animation frame, 0..14 */
-#define g_exitCode GAME_VAR(int, 0x4df048)   /* (by use) why the game closed: 1 to start again with new graphics */
+#define g_exitCode GAME_VAR(int, 0x4df048)   /* how the game closes (app_closeWindow's code; WM_DESTROY acts on it): 0 quit, 1 start AxisGL.exe again (graphics changed), 2 start axispatch.exe "nstower", 3 start DServer.exe "1", 99 the ending movie */
 #define g_dialogPending GAME_VAR(int, 0x4df900)   /* a message box is up: it takes the keys */
 #define g_cursorFrameTime GAME_VAR(float, 0x4df910)   /* frame time collected towards the next frame (5 units) */
 #define g_titleFrames GAME_VAR(int, 0x4e0458)   /* frames the title has been shown */
@@ -1029,7 +1029,7 @@
 #define g_screenW GAME_VAR(int, 0x5b1998)
 #define g_lastScreen GAME_VAR(int, 0x67ef0c)   /* the screen whose music / state was set up last */
 #define g_timerShift GAME_VAR(int, 0x67ef1c)   /* how far the counter is shifted right */
-#define g_nextScreen GAME_VAR(int, 0x67ef20)   /* (by use) the front-end screen to go to (300 the main menu) */
+#define g_nextScreen GAME_VAR(int, 0x67ef20)   /* the front-end screen to go to: taken into g_screen when the tunnel's move ends (menuTunnel_advance); 300 the main menu */
 #define g_highlightX GAME_VAR(int, 0x67ef34)
 #define g_highlightY GAME_VAR(int, 0x67fb38)
 #define g_menuCameraMove GAME_VAR(int, 0x680370)   /* the menu camera's move along the tunnel (menu_tunnel.c): 0 still, 1 / 3 moving in / out a ring, 2 / 4 the view swinging up first; the menus ignore keys while not 0 */
@@ -1045,7 +1045,7 @@
                                                          500 skirmish, 600 setup, 700 armour, 800 game room, 900 the mission list (axis.mis; never
                                                          entered), 9999 in a match */
 #define g_logoTexture GAME_VAR(int, 0x76d3f0)
-#define g_localPlayer GAME_VAR(int, 0x76d41c)   /* (by use) the local player's index in the room's lists */
+#define g_pickedGame GAME_VAR(int, 0x76d41c)   /* the game picked in the arena lobby's / game room's game list: an index into g_sessionList (g_listTop + the row); joined with arena_joinSession / room_joinSession, its password and lock checked */
 #define g_highlightShown GAME_VAR(int, 0x76d42c)
 #define g_fontAscii GAME_VAR(int, 0x76d448)   /* ASCII, 5- and 8-unit fonts */
 #define g_scene GAME_VAR(Scene *, 0x9087b4)   /* the scene object (0 outside a match) */
@@ -1054,7 +1054,7 @@
 #define g_chatCaretX GAME_VAR(int, 0x9da3d8)   /* where the line being typed is drawn (menu units) */
 #define g_chatCaretY GAME_VAR(int, 0x9da3dc)
 #define g_menuKeyGuard GAME_VAR(float, 0x9da434)   /* the menus' fade-in: the keys wait for it to reach 0 */
-#define g_texturesOff GAME_VAR(int, 0x9da494)   /* (by use) set: the menus' 3D background is drawn untextured (left out) */
+#define g_simpleMenu GAME_VAR(int, 0x9da494)   /* SIMPLE MENU (the graphics setting, from g_cfgSimpleMenu; the setup page's button 6 flips it): the menus' 3D background (the tunnel's bands, flares and cages) is not drawn, only moved on */
 #define g_highlightAlpha GAME_VAR(float, 0x9da4a4)
 #define g_fontAsciiLarge GAME_VAR(int, 0x9dad90)   /* ASCII, 16- and 32-unit fonts */
 #define g_mapIndex GAME_VAR(int, 0x9dad94)   /* the mission stage being played */
@@ -1066,7 +1066,7 @@
 #define g_hChatEdit GAME_VAR(void *, 0x9dd888)   /* the hidden EDIT control typing goes to */
 #define g_missionTop GAME_VAR(int, 0x9f16bc)   /* the first row shown */
 #define g_skirmishBriefing GAME_VAR(int, 0x9f62e0)   /* 1: a mission's briefing is shown (a click closes it: briefing_clickClose) */
-#define g_skirmishPage GAME_VAR(int, 0x9f62f8)   /* 0 / 1: no keys; 2: no list refresh */
+#define g_skirmishState GAME_VAR(int, 0x9f62f8)   /* the skirmish screen's camera state (menu_camera2): 1 flying in (menuState500_enter), 2 there: the screen is up (keys, no tunnel), 0 flying home (skirmish_leave); 2 again once home */
 #define g_skirmishBusy GAME_VAR(int, 0x9f6300)
 #define g_skirmishShowBackground GAME_VAR(int, 0x9f63b8)
 #define g_profileReveal GAME_VAR(int, 0x9f6828)   /* the pilot portrait's cell under the cursor grown by this (pixels a side, one more each tick of g_profileRevealClock); 0 when the emblem cursor moves */
@@ -1079,7 +1079,7 @@
 #define g_profileIntroState GAME_VAR(int, 0x9f8e54)   /* 5: finished */
 #define g_profileRevealClock GAME_VAR(int, 0x9f8ee4)   /* a float: the time to the next step of g_profileReveal; cleared when the pilot cursor moves */
 #define g_profileDialogY GAME_VAR(int, 0x9f8f0c)
-#define g_profilePage GAME_VAR(int, 0x9f8f10)   /* 1 list, 2 info, 3 / 5 name forms, 6 CHARACTER SELECT; 4 has no keys */
+#define g_profilePage GAME_VAR(int, 0x9f8f10)   /* the profile screen's page: 1 the list, 2 a new name typed (profile_typeNewName), 3 the delete question (profile_askDelete), 4 logging in (profile_logIn; no keys), 5 the log-out question (profile_askLogOut), 6 CHARACTER SELECT (the pilot grid) */
 #define g_profileIntroZoom GAME_VAR(float, 0x9f8f14)
 #define g_profileDialogX GAME_VAR(int, 0x9f8f1c)   /* page 3's dialog frame */
 #define g_profileIntroTime GAME_VAR(int, 0x9f8f30)

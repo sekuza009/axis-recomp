@@ -16,14 +16,14 @@ static X mul(X a, const float *m) { return fmul_m(a, m); }
 /* *src copied through the FPU (a signalling NaN comes out quiet) */
 static void copy_through_fpu(float *dst, const float *src) { *dst = (float)fld_m(src); }
 
-/* 0x47db60: triangle (v0, v1, v2) set up in the record: its id, edges and planes, its map object and shape part and
+/* 0x47db60: triangle (v0, v1, v2) set up in the record: its flags (0x10: no marks), edges and planes, its map object and shape part and
    its corners' vertex indices; returns the second index (what the original leaves in eax) */
-int THISCALL (collisionTri_setup)(u8 *self, int id, const float *v0, const float *v1, const float *v2, int object, int part,
+int THISCALL (collisionTri_setup)(u8 *self, int flags, const float *v0, const float *v1, const float *v2, int object, int part,
                            int corner0, int corner1, int corner2)
 {
 	CollisionPlane *tp = (CollisionPlane *)self;
 	collisionPlane_clear(self);
-	tp->id = id;
+	tp->flags = flags;
 	memcpy(tp->cornerPoints[0], v0, 12);
 	memcpy(tp->cornerPoints[1], v1, 12);
 	memcpy(tp->cornerPoints[2], v2, 12);
@@ -636,7 +636,7 @@ static void ground_triangle(u8 *grid, u32 id, const void *a, const void *b, cons
 
 /* 0x471040 (thiscall on the stage): its collision space (space) set up over the world box (levelLow low, levelHigh
    high) in cells of the given sizes (z, x, y: the counts of whole cells), with the margin, split count and depth. Then, with
-   floorOn, the floor (the box's lower face, two triangles, id 0x10); each ground layer (groundLayerCount of them, 0x20c
+   floorOn, the floor (the box's lower face, two triangles, flags 0x10: no marks); each ground layer (groundLayerCount of them, 0x20c
    bytes from groundLayers: kind 0 or 1, rows rows, columns cols, the (columns + 1) x (rows + 1) points points) as two
    triangles a cell, split one way for kind 0 and the other for kind 1, each row logged; and every object in use
    (+4) that is not flagged 4 (flags) as a unit (space_buildUnits with its shape model and matrix matrix: unit),

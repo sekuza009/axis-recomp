@@ -31,7 +31,7 @@ changes them in memory, see batch 93), game plays normally on them (round-12 ski
   FUN_00443d80/00443de0 (undo stack), menu_445de0, mission_447af0, FUN_004463a0/match_4464b0 (mech <-> profile record),
   FUN_00451450 (AL-only return; harness ret mode 2), arena_4514a0/4515a0/4532b0/453a30/4045e0, tex_4554c0 (binary search).
   Batch 5 (22 scene-object methods, all matched first time): FUN_00456820, tex_recolourMaterial, hud_456b50,
-  actor_deactivate/selectWeapon/45eab0, camera_setTarget, FUN_0045e070/0045e810, match_45eb20/4616e0/461730,
+  actor_deactivate/selectWeapon/45eab0, script_holdActor, FUN_0045e070/0045e810, match_45eb20/4616e0/461730,
   FUN_004625a0, chat_matchCheatCode, match feed 4629c0/462ac0, HUD notices match_463480/4634e0/463530/463550/4635b0/463610.
   Batch 6 (53 small leaf functions; 52 matched first time): block clears net_452e60/452e80/452ea0, match_431590 (key
   state), app_401780/4515d0, mainmenu_440df0; constant setters (8 RGBA byte + 8 RGBA float colours at 0xa1f200..,

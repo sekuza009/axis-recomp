@@ -294,8 +294,8 @@ void THISCALL (script_processCommandBy)(u8 *s, int actorIndex, int trig, int ent
 			ST->actors[c[1]].target1 = c[2];
 			ST->actors[c[1]].target2 = c[3];
 			break;
-		case 24: camera_setTarget(s, c[1], c[2], c[3]); break;
-		case 25: camera_setTarget(s, -1, -1, 0); break;
+		case 24: script_holdActor(s, c[1], c[2], c[3]); break;
+		case 25: script_holdActor(s, -1, -1, 0); break;
 		case 26:
 			if (*(const int *)ST->speakers[c[1]] == 0)
 				sys_fatalError((char *)OBJ(g_logStage), (const char *)STR(0x4c7a8c, "invalid speaker (%d) in command MESSA..."), c[1]);

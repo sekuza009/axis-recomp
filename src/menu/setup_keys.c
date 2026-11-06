@@ -259,7 +259,7 @@ u32 (setup_topPageClicks)(void)
 
 /* 0x422480: the graphics tab clicked (the page open, no message box; a right click closes it). Buttons
    (setupGraphic_hitTest): 0 the video mode on (0 .. 7, then 0), 1 .. 5 the colour depth, polygon detail, linear filtering,
-   mipmapping and frame counter switched, 6 the simple menu (with g_texturesOff), 7 OK (graphics_apply), 8 close. Each
+   mipmapping and frame counter switched, 6 the simple menu (with g_simpleMenu), 7 OK (graphics_apply), 8 close. Each
    with its sound. Returns what the original leaves in eax (for a switch, its old or new value) */
 u32 (setup_graphicTabClicks)(void)
 {
@@ -286,9 +286,9 @@ u32 (setup_graphicTabClicks)(void)
 		return button == 2 || button == 5 ? 1 - old : old;   /* the original's eax held one or the other */
 	case 6:
 		sound_playMenu(2);
-		old = (*(u32 *)&g_texturesOff);
+		old = (*(u32 *)&g_simpleMenu);
 		edited[6] = 1 - edited[6];
-		(*(u32 *)&g_texturesOff) = 1 - old;
+		(*(u32 *)&g_simpleMenu) = 1 - old;
 		return old;
 	case 7:
 		return graphics_apply();
@@ -528,11 +528,11 @@ static const signed char page_bindings[3][11] = {
 	{ 21, 22, 23, 24, 25, 26, 28, 29, 30, 31, -1 },
 };
 
-/* 0x421680 (by use: the key pressed for the binding being edited, the page g_bindPage's
+/* 0x421680 (the key, mouse button or wheel code pressed for the binding being edited, the page g_bindPage's
    row g_bindRow): unless it is F1 (g_dikF1, never bound), the key is taken off the other bindings (setup_unbindKey) and
    set in the row's binding: with its second slot set, the key in the first and the second cleared (g_dikNone: none);
-   else into an empty first slot; else, unless the first is this key, into the second. Then the row redrawn. The
-   callers ignore the eax it leaves */
+   else into an empty first slot; else, unless the first is this key, into the second. Then every pair left with no
+   primary key gets its secondary as the primary (controls_fillPrimaryKeys). The callers ignore the eax it leaves */
 void (setup_bindKey)(int key)
 {
 	if (key == g_dikF1)

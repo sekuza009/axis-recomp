@@ -844,7 +844,7 @@ g_hdc
 g_highlightAlpha
 g_highlightX
 g_highlightY
-g_keyboardActive
+g_keyboardReady
 g_language
 g_lastCount
 g_loadFade
@@ -875,7 +875,7 @@ g_pulse
 g_pulseStep
 g_resends
 g_textCharWidth
-g_texturesOff
+g_simpleMenu
 g_timerFrequency
 g_timerShift
 g_timerTick
@@ -892,7 +892,7 @@ g_highlightSize
 g_menuCameraMove
 g_lastScreen
 g_lobbySubState
-g_localPlayer
+g_pickedGame
 g_mapIndex
 g_missionTop
 g_nextScreen
@@ -950,7 +950,7 @@ g_dikNumpad8
 g_dikNumpad9
 g_extraCount
 g_skirmishBusy
-g_skirmishPage
+g_skirmishState
 g_skirmishShowBackground
 g_weaponCount
 # the text colours (objects24.csv), whole

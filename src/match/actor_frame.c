@@ -292,7 +292,7 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 	}
 	int item = pr->items[AC->slot];
 	ActorInfo *weapon = (ActorInfo *)(item >= 0 ? (u8 *)&ST->actorInfo[item] : NULL);
-	if (AC->controlledBy == ST->playerActor && weapon && AC->ammo[weapon->ammoSlot] < weapon->ammoPerShot
+	if (AC->controlledBy == ST->playerActor && weapon && AC->ammo[weapon->ammoType] < weapon->ammoPerShot
 	    && !(AC->weaponLower < 1.0f)) {   /* out of ammunition: the next weapon */
 		actor_nextWeapon(s, i);
 		weapon = &ST->actorInfo[pr->items[AC->slot]];
@@ -337,9 +337,9 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 			if (AC->armor < ftol(fmul_m((long double)AC->armorMax, k_0_3f)))   /* under 0.3 of its armour */
 				AC->botNeeds = 1;
 			ActorInfo *w0 = &ST->actorInfo[pr->items[0]];
-			if (AC->ammo[w0->ammoSlot] < w0->ammoPerShot && pr->items[4] >= 0) {
+			if (AC->ammo[w0->ammoType] < w0->ammoPerShot && pr->items[4] >= 0) {
 				ActorInfo *w1 = &ST->actorInfo[pr->items[4]];
-				if (AC->ammo[w1->ammoSlot] < w1->ammoPerShot)
+				if (AC->ammo[w1->ammoType] < w1->ammoPerShot)
 					(*(u8 *)&AC->botNeeds) |= 2;   /* both weapons empty */
 			}
 		}
@@ -680,7 +680,7 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 		memcpy(dir, AC->move, 12);
 		moveLeft = f32(Vec3_normalize(dir));
 		for (int j = 0; j < ST->actorCount; j++) {   /* slide around the other live actors */
-			if (ST->actors[j].state != 1 || j == i || ST->actors[j].cameraValue != 0)
+			if (ST->actors[j].state != 1 || j == i || ST->actors[j].outOfPlay != 0)
 				continue;
 			float r = f32(fmul_m(FADD(ST->actors[j].radius, AC->radius), &k_0_75f));
 			if (math_segmentSphere(AC->pos, AC->nextPos, dir, &ST->actors[j].pos[0], r, hit, hit_t) != 1)
@@ -787,7 +787,7 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 		if (v >= 1.0L)
 			AC->fireCycle = 0;
 	}
-	if (AC->cameraValue != 0)
+	if (AC->outOfPlay != 0)
 		goto tail;   /* 45cdb1 */
 	if (AC->weaponLowering == 1) {   /* the weapon going down (weaponLower from 1 to 0) */
 		if (AC->weaponLower > 0) {
@@ -803,7 +803,7 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 			actor_loadWeapon(s, i, AC->slotLoaded, AC->variantLoaded);
 			weapon = &ST->actorInfo[pr->items[AC->slot]];
 			model = (ObjectList *)(AC->slot == 4 ? (u8 *)&AC->weaponModel4 : AC->slot == 5 ? (u8 *)&AC->weaponModel5 : (u8 *)&AC->weaponModel);
-			AC->weapon = ((u32)weapon->ammoSlot);
+			AC->weapon = ((u32)weapon->ammoType);
 		}
 		if (!(AC->weaponLower >= 1.0f)) {
 			int kind = pr->items[AC->slot];
@@ -962,7 +962,7 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 					k++;
 				if (k == 5)
 					break;
-				int w = weapon->ammoSlot;
+				int w = weapon->ammoType;
 				if (AC->ammo[w] < weapon->ammoPerShot && AC->bot != 2) {   /* out of ammunition */
 					if (i == ST->playerActor) {
 						if (AC->firePrev != 0)
@@ -1047,7 +1047,7 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 					AC->shotBullets[k] = bullet_spawn(s, -1, i, target, rec, n);
 					AC->shots[k].isNew = 1;
 					if (AC->bot != 2)
-						AC->ammo[weapon->ammoSlot] -= weapon->ammoPerShot;
+						AC->ammo[weapon->ammoType] -= weapon->ammoPerShot;
 				}
 				AC->fireAnim = 0.0001f;   /* 0.0001: the firing cycle restarts */
 				long double v = fdiv_m(fld_m(dt), cycle);

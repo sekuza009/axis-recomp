@@ -36,7 +36,7 @@ void (lobby_enterPlayerScreen)(void)
 void (lobby_enterArenaList)(void)
 {
 	static const u32 cleared[] = { (OBJ(g_camPoints) + 0x14), ADDR(g_serverConnected), ADDR(g_lobbyRefreshing), ADDR(g_arenaSearchStarted), ADDR(g_serverSearching), ADDR(g_lobbyJoinStarted), ADDR(g_lobbyJoinRequest), ADDR(g_lanSearch),
-	                               ADDR(g_lobbySearching), ADDR(g_arenaHaveList), ADDR(g_arenaListFull), ADDR(g_gameCount), ADDR(g_lobbyBlinkClock), ADDR(g_localPlayer), ADDR(g_gameListTop), ADDR(g_lobbyListRow),
+	                               ADDR(g_lobbySearching), ADDR(g_arenaHaveList), ADDR(g_arenaListFull), ADDR(g_gameCount), ADDR(g_lobbyBlinkClock), ADDR(g_pickedGame), ADDR(g_gameListTop), ADDR(g_lobbyListRow),
 	                               ADDR(g_arenaListClickArmed), ADDR(g_arenaSearchClock), ADDR(g_lobbyPanelsOff), ADDR(g_arenaConfirming), ADDR(g_lobbyConnectionOpen), ADDR(g_arenaUpdateNotice), ADDR(g_arenaListRefreshTimer), ADDR(g_typingArenaAddress) };
 	int z = g_menuCameraHeight;
 	g_camPoint1X = 0x420c0000;   /* 35.0 */
@@ -959,7 +959,7 @@ int (lobby_openConnection)(void)
 	g_gameCount = 0;
 	g_arenaListFull = 1;
 	g_arenaHaveList = 0;
-	g_localPlayer = 0;
+	g_pickedGame = 0;
 	(*(u32 *)&g_lobbyBlinkClock) = 0x447a0000;   /* 1000.0f */
 	g_gameListTop = 0;
 	g_lobbyListRow = 0;
@@ -1259,7 +1259,7 @@ u32 (arena_createClick)(void)
 /* 0x4079c0: the arena lobby's game list keys (none while the address or password box, a message box, or before the
    arena camera has arrived, g_arenaCameraMode 2). With the join confirmation up only back answers it (the timer 0x378 killed). Up / down held
    move along the list of games (once the blink clock reaches 5, restarting it; nine rows shown from g_gameListTop, the
-   selection in g_localPlayer); while no search runs (g_lanSearch, g_lobbySearching, the result box g_lobbyRefreshing) the click key or fire
+   selection in g_pickedGame); while no search runs (g_lanSearch, g_lobbySearching, the result box g_lobbyRefreshing) the click key or fire
    joins the selected game (g_lobbyJoinStarted; its join password asked for when connected, g_serverConnected) or asks the lobby to
    join (g_lobbyJoinRequest); cancel2 and back leave (to mode 0), g_dikS cancels the search; g_dikI searches the local network
    (a slot opened, g_lobbyBlinkClock 150), g_dikT the lobby server; g_dikP types a game's IP address (arena_editAddress) */
@@ -1290,7 +1290,7 @@ void (arenaGames_keys)(void)
 			g_listRow = --row;
 		else if (g_listTop > 0)
 			g_listTop--;
-		g_localPlayer = g_listTop + row;
+		g_pickedGame = g_listTop + row;
 		return;
 	}
 	if (input_isDown(g_keyDown)) {
@@ -1303,7 +1303,7 @@ void (arenaGames_keys)(void)
 			g_listRow++;
 		else
 			g_listTop++;
-		g_localPlayer = g_listTop + g_listRow;
+		g_pickedGame = g_listTop + g_listRow;
 		return;
 	}
 	if (input_justPressed(g_dikJ) || input_justPressed(g_keyClick)) {

@@ -975,7 +975,7 @@ static const signed char k_star[8][3] = { { 1, 1, 1 }, { -1, -1, -1 }, { 1, -1, 
    length and packet handed to net_processGamePacket; at its end the next replay starts (returns 1) or the viewer
    quits. Then the scene's frame (clocks, objects, actors, bullets, particles, items), kill messages, the camera
    (free, or one of the presets about the followed player), the scene drawn (with debug markers for the map's
-   points when debugPoints) and the overlay: icons for the followed player's preset and the replay clock, names,
+   lights when markLights) and the overlay: icons for the followed player's preset and the replay clock, names,
    the ranking, the start countdown. Returns 0 when the viewer quits (the file closed, the music stopped), else 4 */
 u32 THISCALL (replay_frame)(u8 *s)
 {
@@ -1205,7 +1205,7 @@ u32 THISCALL (replay_frame)(u8 *s)
 	stage_drawBullets(stage, view);
 	stage_drawParticles((Stage *)stage, view);
 	stage_drawItems(stage, view);
-	if (SC->debugPoints == 1)
+	if (SC->markLights == 1)
 		for (int i = 0; i < SCENE_STAGE(s)->mapLights.count; i++) {   /* (the map's lights: each a yellow star at its position) */
 			const Factor *r = &SCENE_STAGE(s)->mapLights.records[i];
 			if (r->used != 1)
@@ -1637,7 +1637,7 @@ void THISCALL (match_frame)(u8 *s)
 	else if (SC->quitAsked == 1) {
 		if (SC->matchLeaving == 0) {
 			sound_playVolume(9, 100);
-			if (SC->entryMenuShown == 0 || (SC->sessionMode == 0 && SC->teamAsked == 1 && SC->players[SC->localPlayer].inPlay == 0)) {
+			if (SC->entryMenuShown == 0 || (SC->sessionMode == 0 && SC->playAsked == 1 && SC->players[SC->localPlayer].inPlay == 0)) {
 				SC->rankingShown = 0;
 				SC->entryMenuShown = 1;
 			}
@@ -1692,7 +1692,7 @@ void THISCALL (match_frame)(u8 *s)
 		SC->flagUploadTimer = 0.0f;
 	}
 	/* joining: the network's slot for the local player */
-	if (SC->localPlayer < 0 && net_isClient()) {
+	if (SC->localPlayer < 0 && net_hasSlot()) {
 		PATCHED_THISCALL(0x498dd8, u32, void *, const char *)(stage, g_catalogueFile);   /* catalogue_loadComponents */
 		SC->localPlayer = net_localSlot();
 		actor_resetSlot((Stage *)stage, SC->localPlayer);
@@ -1706,7 +1706,7 @@ void THISCALL (match_frame)(u8 *s)
 	/* a team chosen (or a menu for it), then the spawn */
 	int me = SC->localPlayer;
 	if (me >= 0 && SC->players[me].active == 0 && SC->matchOver == 0 && SC->playerRecords[me].flagSent == 0x180
-	    && (SC->firePressed == 1 || SC->teamAsked == 1)) {
+	    && (SC->firePressed == 1 || SC->playAsked == 1)) {
 		if (SC->teamGame == 1 && (SC->localTeam < 0 || scene_findTeam((Scene *)s, SC->localTeam) < 0)) {
 			if (SC->chosenTeam >= 0 && SC->sessionMode != 0)
 				escMenu_open((Scene *)s, 1, scene_teamSide((Scene *)s, SC->chosenTeam) == 0 ? 0 : 1);
@@ -1720,7 +1720,7 @@ void THISCALL (match_frame)(u8 *s)
 			}
 			SC->spawnPending = 1;
 		}
-		SC->teamAsked = 0;
+		SC->playAsked = 0;
 	}
 	me = SC->localPlayer;
 	if (me >= 0 && SC->localTeam >= 0 && SC->players[me].active == 0 && SC->chatMode == 0 && SC->matchOver == 0
@@ -1760,7 +1760,7 @@ void THISCALL (match_frame)(u8 *s)
 			}
 		} else
 			free_keys(s, mv, &speed, &turn);
-	} else if (SC->playing == 1 && (SC->sessionMode == 0 || net_isClient())) {
+	} else if (SC->playing == 1 && (SC->sessionMode == 0 || net_hasSlot())) {
 		if (SC->matchOver == 1 || SC->matchLeaving == 1) {
 			if (SC->matchOver == 1 && SC->ranking[0] != SC->localPlayer) {   /* the round's end: the camera turns */
 				float *v = (float *)&SC->cameraSettings[0][SC->cameraMode];
@@ -2069,7 +2069,7 @@ void THISCALL (match_frame)(u8 *s)
 				SC->localRecordSet = 0;
 				SC->localTeam = -1;
 				if (SC->teamGame == 0) {
-					SC->teamAsked = 0;
+					SC->playAsked = 0;
 					if (SC->localPlayer >= 0)
 						SC->players[SC->localPlayer].inPlay = 0;
 					scene_setLocalTeam((Scene *)s, -1);
@@ -2189,7 +2189,7 @@ void THISCALL (match_frame)(u8 *s)
 	/* the connection (a client's) */
 	if (SC->sessionMode == 1) {
 		if (SC->matchLeaving == 0) {
-			if (net_isClient() == 0) {
+			if (net_hasSlot() == 0) {
 				if (SC->lostTime > 5.0f) {
 					msg_connectionLost(s);
 					SC->matchLeaving = 1;

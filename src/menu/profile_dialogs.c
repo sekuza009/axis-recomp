@@ -3,7 +3,6 @@
 #include <string.h>
 #include "portrait.h"
 
-#define g_profileDialog g_profilePage   /* (by use) the open dialog: 2 the name, 3 and 5 the questions */
 #define g_questionX g_highlightX   /* where the two-button question is drawn */
 #define g_questionY g_highlightY
 
@@ -16,7 +15,7 @@ void (profile_typeNewName)(void)
 	g_chatCaretX = g_newNameDialogLeft + 0x24;
 	g_chatCaretY = g_newNameDialogTop + 0x38;
 	g_menuKeyGuard = 5.0f;
-	g_profileDialog = 2;
+	g_profilePage = 2;
 	g_dialogOpen = 1;
 	g_profileMessage = 0;
 	chat_createEdit(0x10);
@@ -28,7 +27,7 @@ static void ask(int kind, int x, int y)
 	sound_playMenu(0);
 	g_dialogOpen = 1;
 	g_highlightShown = 1;
-	g_profileDialog = kind;
+	g_profilePage = kind;
 	g_cursorBlink = 0.0f;
 	g_dialogChoice = 0;
 	g_highlightSize = 20.0f;
@@ -470,7 +469,7 @@ void (profile_drawChosenPilot)(void)
 		return;
 	int pilot = *(const int *)((OBJ(g_profileList) + 0x40) + g_pilotChosen * 0x48);
 	g_chosenPilot = pilot;
-	int focus = g_profileDialog == 1;
+	int focus = g_profilePage == 1;
 	float *panel = (float *)OBJ(g_profileColour);
 	if (focus)
 		set_colour_bits(g_textColour, BITS(panel[0]), BITS(panel[1]), BITS(panel[2]), BITS(panel[3]));

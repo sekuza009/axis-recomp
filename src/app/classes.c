@@ -282,7 +282,7 @@ u32 THISCALL (Stage_dtor)(u8 *self)
 	eh_vector_destructor((u8 *)stage->playerRecords, 0x47fd2, 16, FN_ADDR(ResourceSet_dtor, 0x463960));
 	SkeletonManager_dtor((u8 *)&stage->objectSkeletons);
 	ShapeManager_dtor((u8 *)&stage->objectShapes);
-	Model_dtor((u8 *)&stage->layerBoxModel);
+	Model_dtor((u8 *)&stage->waterModel);
 	Model_dtor((u8 *)&stage->layerModel);
 	Light_dtor((u8 *)&stage->actorLights);
 	Light_dtor((u8 *)&stage->dynamicLights);
@@ -353,7 +353,7 @@ int THISCALL (playerRecord_loadFlag)(Stage *scene, int p)
 		}
 		BMPRGBFile_close((u8 *)&image);
 	}
-	BMPRGBFile_dtor((u8 *)&image);   /* (by use its destructor) */
+	BMPRGBFile_dtor((u8 *)&image);   /* (its destructor: vtable 0x4a96f8's deleting destructor calls it) */
 	return ok;
 }
 
@@ -505,7 +505,7 @@ u8 *THISCALL (Game_ctor)(u8 *g)
 	VECTOR((u8 *)st->floor, 0xc, 0x79);
 	VECTOR((u8 *)st->groundLayers, 0x20c, 4);
 	Model_ctor((u8 *)&st->layerModel);   /* Model_ctor */
-	Model_ctor((u8 *)&st->layerBoxModel);
+	Model_ctor((u8 *)&st->waterModel);
 	VECTOR((u8 *)st->wayPoints, 0x14, 0x3e8);
 	VTABLE((u8 *)&st->objectShapes, VT(ShapeManager, 0x4aa244));
 	ShapeManager_clear((u8 *)&st->objectShapes);
@@ -638,7 +638,7 @@ void THISCALL (scene_startSession)(u8 *g, u32 client, int mode)
 	GS->infoSendTimer = 15.0f;
 	zero_dwords((u8 *)GS->cleared2340ca4, 11);
 	GS->debugGrid = 1;
-	zero_dwords((u8 *)g + offsetof(Scene, debugPoints), 13);   /* debugPoints .. rankingShown */
+	zero_dwords((u8 *)g + offsetof(Scene, markLights), 13);   /* markLights .. rankingShown */
 	zero_dwords((u8 *)g + offsetof(Scene, recording), 7);   /* recording .. chatMode */
 	teams_setup((Scene *)g);
 	zero_dwords((u8 *)g + offsetof(Scene, lostTime), 8);   /* lostTime .. timeLimit */

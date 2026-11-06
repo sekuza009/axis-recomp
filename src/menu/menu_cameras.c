@@ -302,7 +302,7 @@ void (missions_camera)(void)
 /* 0x447cb0: the skirmish screen's camera (screen 500) */
 void (skirmish_camera)(void)
 {
-	static const MenuCam2 mission = { ADDR(g_skirmishPage), ADDR(g_skirmishShowBackground), ADDR(g_skirmishBusy), 1 };
+	static const MenuCam2 mission = { ADDR(g_skirmishState), ADDR(g_skirmishShowBackground), ADDR(g_skirmishBusy), 1 };
 	menu_camera2(&mission);
 }
 

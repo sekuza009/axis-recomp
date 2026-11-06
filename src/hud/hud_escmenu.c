@@ -275,7 +275,7 @@ static int esc_main(Scene *scene)
 			return 1;
 		}
 		if (scene->teamGame != 1) {   /* START */
-			scene->teamAsked = 1;
+			scene->playAsked = 1;
 			return 1;
 		}
 		if (scene->chosenTeam >= 0 && scene->sessionMode)   /* JOIN: the team page, on the team asked for before */
@@ -314,7 +314,7 @@ static int esc_team(Scene *scene)
 		return keys[KEY_ESC] == 1;
 	if (!scene->sessionMode) {
 		scene->localTeam = 0;
-		scene->teamAsked = 1;
+		scene->playAsked = 1;
 		scene->chosenTeam = 0;
 		scene->teamIds[scene->escCursor == 0 ? 0 : 1] = 0;
 	} else {

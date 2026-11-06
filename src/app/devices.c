@@ -11,7 +11,7 @@
 /* 0x4012c0: take the keyboard again */
 void (input_reacquireKeyboard)(void)
 {
-	if (g_keyboard != NULL && g_keyboardActive != 0)
+	if (g_keyboard != NULL && g_keyboardReady != 0)
 		COM(g_keyboard, DI_ACQUIRE, long)(g_keyboard);
 }
 
@@ -35,7 +35,7 @@ void (input_releaseKeyboard)(void)
 		COM(g_keyboard, COM_RELEASE, long)(g_keyboard);
 		g_keyboard = NULL;
 	}
-	g_keyboardActive = 0;
+	g_keyboardReady = 0;
 }
 
 /* 0x401490: the same for the mouse */
@@ -84,7 +84,7 @@ static long read_keys(void)
 /* 0x4014f0 (input_keyHeld): 1 while key (a DIK code) is held */
 int (input_keyHeld)(int key)
 {
-	if (g_keyboardActive == 0)
+	if (g_keyboardReady == 0)
 		return 0;
 	if (read_keys() < 0)
 		return 0;
@@ -94,7 +94,7 @@ int (input_keyHeld)(int key)
 /* 0x401540 (input_keyHeldChecked): the same, 0 when reading the keyboard did not fully succeed */
 int (input_keyHeldChecked)(int key)
 {
-	if (g_keyboardActive == 0)
+	if (g_keyboardReady == 0)
 		return 0;
 	if (read_keys() != 0)
 		return 0;
@@ -328,7 +328,7 @@ int (input_createMouse)(void *window)
    state (g_keySeen) cleared. 1 when ready, 0 on a failure */
 int (input_initKeyboard)(void *window)
 {
-	if (g_keyboardActive)
+	if (g_keyboardReady)
 		return 1;
 	void *dinput = g_directInput;
 	if (COM(dinput, 0x0c, int, const void *, void **, void *)(dinput, (const void *)OBJ(k_GUID_SysKeyboard), &g_keyboard, NULL) < 0)
@@ -339,6 +339,6 @@ int (input_initKeyboard)(void *window)
 		return 0;
 	COM(g_keyboard, DI_ACQUIRE, int)(g_keyboard);   /* (its result not checked) */
 	memset((void *)OBJ(g_keySeen), 0, 0x400);
-	g_keyboardActive = 1;
+	g_keyboardReady = 1;
 	return 1;
 }

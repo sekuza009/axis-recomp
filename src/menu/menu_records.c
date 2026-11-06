@@ -400,7 +400,7 @@ static u32 leave_settings(u32 state)
 	return put_camera_back();
 }
 u32 (missions_leave)(void) { return leave_settings(ADDR(g_missionsState)); }
-u32 (skirmish_leave)(void) { return leave_settings(ADDR(g_skirmishPage)); }
+u32 (skirmish_leave)(void) { return leave_settings(ADDR(g_skirmishState)); }
 
 /* 0x4370e0: the new ID confirmation's keys: O chooses OK (g_newIdConfirmChoice 1), C CANCEL (2), each with the menu
    sound. Returns what the original leaves in eax */

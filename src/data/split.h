@@ -265,9 +265,9 @@ extern int g_keySeen_v[256];
 extern u8 g_keyState_v[256];
 #endif
 #ifdef AXIS_FENCE
-#define g_keyboardActive_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0x72000 : g_fence + 0x71ffc))
+#define g_keyboardReady_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0x72000 : g_fence + 0x71ffc))
 #else
-extern u8 g_keyboardActive_v[4];
+extern u8 g_keyboardReady_v[4];
 #endif
 #ifdef AXIS_FENCE
 #define g_mouseActive_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0x74000 : g_fence + 0x73ffc))
@@ -2855,9 +2855,9 @@ extern u8 g_dikDelete_v[4];
 extern u8 g_chatEditLength_v[4];
 #endif
 #ifdef AXIS_FENCE
-#define g_localPlayer_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0x707000 : g_fence + 0x706ffc))
+#define g_pickedGame_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0x707000 : g_fence + 0x706ffc))
 #else
-extern u8 g_localPlayer_v[4];
+extern u8 g_pickedGame_v[4];
 #endif
 #ifdef AXIS_FENCE
 #define g_dikCapsLock_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0x709000 : g_fence + 0x708ffc))
@@ -3110,9 +3110,9 @@ extern u8 g_rectColour_v[16];
 extern u8 g_dikWheelDown_v[4];
 #endif
 #ifdef AXIS_FENCE
-#define g_texturesOff_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0x9d8000 : g_fence + 0x9d7ffc))
+#define g_simpleMenu_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0x9d8000 : g_fence + 0x9d7ffc))
 #else
-extern u8 g_texturesOff_v[4];
+extern u8 g_simpleMenu_v[4];
 #endif
 #ifdef AXIS_FENCE
 #define g_roomSearchAnswerIn_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0x9da000 : g_fence + 0x9d9ffc))
@@ -4180,9 +4180,9 @@ extern u8 g_skirmishBriefing_v[4];
 extern u32 g_skirmishColourDim_v[4];
 #endif
 #ifdef AXIS_FENCE
-#define g_skirmishPage_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xb97000 : g_fence + 0xb96ffc))
+#define g_skirmishState_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xb97000 : g_fence + 0xb96ffc))
 #else
-extern u8 g_skirmishPage_v[4];
+extern u8 g_skirmishState_v[4];
 #endif
 #ifdef AXIS_FENCE
 #define g_profileProgressSaved_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xb99000 : g_fence + 0xb98ffc))
