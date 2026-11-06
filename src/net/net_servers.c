@@ -3,7 +3,8 @@
 
 
 /* 0x454650: ping the server named address (dotted, inet_addr) with a 1 s timeout (net_ping), its slot's g_serverPing
-   cleared first; 1 when net_ping returns a non-zero time */
+   cleared first; 1 when net_ping returns a non-zero time: a server that answers (its time, at least 1), not one that
+   does not (IcmpSendEcho writes the reply on a timeout too: status 11010, time 0, so net_ping gives 0; tested) */
 int (net_pingServer)(const char *address, int slot)
 {
 	g_unusedPingWord1 = 0;
