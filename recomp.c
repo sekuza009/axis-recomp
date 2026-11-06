@@ -2237,10 +2237,10 @@ DWORD sound_freeAll(void);
 /* 0x48b460 (thiscall) map_readCommands(f): read a scrambled count (+0xe36210) and that many 0x30-byte records (+0xdc0f10) */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 THISCALL DWORD map_readCommands(char *self, DWORD f);
-/* 0x483d70 (thiscall) Light_read(f): read two counts (+0xb004, +0xb008), +0xb004 x 0x2c-byte records (+4) and
+/* 0x483d70 (thiscall) LightFactors_read(f): read two counts (+0xb004, +0xb008), +0xb004 x 0x2c-byte records (+4) and
    one more dword (+0xb00c), all scrambled */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-THISCALL DWORD Light_read(char *self, DWORD f);
+THISCALL DWORD LightFactors_read(char *self, DWORD f);
 /* 0x45ff30 (ECX) actor_destroyPartLists: destroy an actor's 8 sub-objects (UnitPoseInfo_dtor); 0x463960 ResourceSet_dtor:
    a player's 5 skeleton and 5 shape managers; 0x46ff70 Stage_dtor: the stage (scene, 100 actors and 16 players via
    eh_vector_destructor_iterator, managers, models, lights, collision volume); 0x4617f0 chat_loadMacros (it loads
@@ -2553,9 +2553,9 @@ DWORD lobby_keepArenaSettings(void);
    axis.cfg */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 DWORD profile_logIn(void);
-/* 0x41dcf0 armc_extraItemBonuses: reset the customise screen's state and set the camera for the current page */
+/* 0x41dcf0 armc_applyExtraItemBonuses: reset the customise screen's state and set the camera for the current page */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-void armc_extraItemBonuses(void);
+void armc_applyExtraItemBonuses(void);
 /* 0x42e730 cfg_readKeyBindings(f) / 0x42e240 cfg_readGraphics(f) / 0x42da70 cfg_readServer(f): read a fixed
    number of axis.cfg lines (68 / 7 / 7) and take the values named in them */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
@@ -3510,7 +3510,7 @@ void THISCALL stage_drawParticles(void *stage, void *view);
 /* batch 111 (lifted/grp57.c) */
 /* 0x48b9d0 (thiscall on the scene) map_loadGroundInfoFrom(name): the map's ground from "dir/name" (dir +0x108; no
    file or a version other than 0x1201 is fatal), all scrambled after the version: four blocks skipped, the map's
-   directory name (0x100 bytes), the view range (+0xa08), the lights (Light_read into +0x9ccffc), clear colour
+   directory name (0x100 bytes), the view range (+0xa08), the lights (LightFactors_read into +0x9ccffc), clear colour
    and fog (+0x9ee030..+0x9ee060), the sky sphere / sky layer / side layer / animated floor modes (+0x9ee064,
    +0x9eee48, +0x9ef0b0, +0x9ef30c) whose textures are then looked up by name ("<dir>/SphereFloor", ...,
    "SkyInnerLayer", "SideLayer1..6", "FloorAni01..16"), ground colours (+0x9ef904..), and the layers (count
@@ -8962,7 +8962,7 @@ static void counted_file_setup(int nfirst)
 	g_vfsOpenFail = 0;
 }
 ST(map_readCommands, fill(BUF + 0xe36200, 0x20); counted_file_setup(1);, TC(DWORD, 0x48b460, char *, DWORD)(BUF, VFS_FILE(0)), map_readCommands(BUF, VFS_FILE(0)))
-ST(Light_read, fill(BUF + 0xb000, 0x20); counted_file_setup(2);, TC(DWORD, 0x483d70, char *, DWORD)(BUF, VFS_FILE(1)), Light_read(BUF, VFS_FILE(1)))
+ST(LightFactors_read, fill(BUF + 0xb000, 0x20); counted_file_setup(2);, TC(DWORD, 0x483d70, char *, DWORD)(BUF, VFS_FILE(1)), LightFactors_read(BUF, VFS_FILE(1)))
 /* sub-object destructors over zeroed memory with a few owned buffers (release functions delete +8 when +0xc == 1) */
 static void owned_bits(char *base, DWORD span, int n)
 {
@@ -9506,7 +9506,7 @@ ST(cfg_writeAxisCfg, axiscfg_setup();, CALL_PLAIN(0x42d730, 0, 0, 0, 0, 0), (DWO
 ST(arena_savePlayerSettings, axiscfg_setup(); fill_str((char *)0x4db560, 30, 32, 126);, CALL_PLAIN(0x4050a0, 0, 0, 0, 0, 0), (arena_savePlayerSettings(), 0))
 ST(lobby_keepArenaSettings, axiscfg_setup(); fill_str((char *)0x4db528, 30, 32, 126); fill_str((char *)0x4db54e, 8, 32, 126);, CALL_PLAIN(0x405140, 0, 0, 0, 0, 0), (DWORD)(lobby_keepArenaSettings()))
 ST(profile_logIn, axiscfg_setup(); G32(0x9f6840) = irnd(0, 2) ? 1 : 0; G32(0x76d410) = irnd(0, 2); G32(0x9f8c58) = irnd(0, 13);, CALL_PLAIN(0x44f6c0, 0, 0, 0, 0, 0), (DWORD)(profile_logIn()))
-ST(armc_extraItemBonuses, G32(0x4dcb1c) = irnd(0, 3) ? irnd(25, 37) : irnd(-5, 60); G32(0x4dcb18) = irnd(0, 3) ? irnd(25, 37) : irnd(-5, 60);   /* the two item slots: bonus items 27 .. 35 mostly */, (CALL_PLAIN(0x41dcf0, 0, 0, 0, 0, 0), 0), (armc_extraItemBonuses(), 0))   /* its caller ignores the eax it leaves (tools/eaxuse.py) */
+ST(armc_applyExtraItemBonuses, G32(0x4dcb1c) = irnd(0, 3) ? irnd(25, 37) : irnd(-5, 60); G32(0x4dcb18) = irnd(0, 3) ? irnd(25, 37) : irnd(-5, 60);   /* the two item slots: bonus items 27 .. 35 mostly */, (CALL_PLAIN(0x41dcf0, 0, 0, 0, 0, 0), 0), (armc_applyExtraItemBonuses(), 0))   /* its caller ignores the eax it leaves (tools/eaxuse.py) */
 /* config lines from the config vocabulary; past the end fgets leaves the stack buffer as it was (stack painted) */
 /* axis.cfg text for the three cfg readers (BUF + 0x200000): lines "KEYn = value" (the readers skip the first two
    words and join the rest), as many as the reader takes and a few more, or fewer (the file ending early). A value is
@@ -12555,7 +12555,7 @@ static void groundfile_setup(void)
 	for (int b = 0; b < 4; b++) { int n = irnd(0, 16); *(int *)(d + len) = n; len += 4; fill(d + len, n); len += n; }
 	memset(d + len, 0, 0x100); strcpy((char *)d + len, dir); len += 0x100;
 	SF(d, len) = (float)irnd(100, 5000); len += 4;
-	int nlight = irnd(0, 3);                                 /* Light_read: two counts, the records, one more dword */
+	int nlight = irnd(0, 3);                                 /* LightFactors_read: two counts, the records, one more dword */
 	*(int *)(d + len) = nlight; *(int *)(d + len + 4) = irnd(0, 3); len += 8;
 	for (int k = 0; k < nlight; k++) {
 		BYTE *f = d + len; fill(f, 0x2c);
@@ -17386,7 +17386,7 @@ static const STest g_stests[] = {
 	T(Texture_deletingDtor, 1, 4, 300), T(BMPRGBFile_deletingDtor, 1, 4, 300), T(Model_deletingDtor, 1, 4, 300), T(ShapeManager_deletingDtor, 1, 4, 300),
 	T(CollisionVolume_deletingDtor, 1, 4, 300), T(SkeletonManager_deletingDtor, 1, 4, 300), T(static_destroyTex64x64, 1, 30, 0), T(static_destroyTex128x64, 1, 30, 0),
 	T(static_destroyTex256x64, 1, 30, 0), T(static_destroyTex128x128, 1, 30, 0), T(static_destroyTex256x128, 1, 30, 0), T(static_destroyTex256x256, 1, 30, 0),
-	T(sound_freeAll, 1, 40, 0), T(map_readCommands, 1, 4, 1000), T(Light_read, 1, 4, 1000), T(actor_destroyPartLists, 1, 4, 300),
+	T(sound_freeAll, 1, 40, 0), T(map_readCommands, 1, 4, 1000), T(LightFactors_read, 1, 4, 1000), T(actor_destroyPartLists, 1, 4, 300),
 	T(ResourceSet_dtor, 1, 4, 100), T(Stage_dtor, 1, 4, 10), T(chat_loadMacros, 1, 30, 0), T(chat_applyMacro, 1, 4, 2000),
 	/* batch 47 */
 	T(app_readCurrentDirectory, 1, 40, 0), T(gfx_swapBuffers, 1, 40, 0), T(dplay_createObject, 1, 40, 0), T(net_stopPingThread, 1, 40, 0),
@@ -17418,7 +17418,7 @@ static const STest g_stests[] = {
 	T(actor_startingValues, 0, 400, 0), T(ranking_fillPage, 1, 200, 0), T(armc_stepPart, 1, 40, 0),
 	/* batch 52 */
 	T(cd_findDrive, 1, 40, 0), T(cfg_writeAxisCfg, 1, 40, 0), T(arena_savePlayerSettings, 1, 40, 0), T(lobby_keepArenaSettings, 1, 40, 0),
-	T(profile_logIn, 1, 40, 0), T(armc_extraItemBonuses, 1, 400, 0), T(cfg_readKeyBindings, 1, 1000, 0), T(cfg_readGraphics, 1, 1000, 0),
+	T(profile_logIn, 1, 40, 0), T(armc_applyExtraItemBonuses, 1, 400, 0), T(cfg_readKeyBindings, 1, 1000, 0), T(cfg_readGraphics, 1, 1000, 0),
 	T(cfg_readServer, 1, 1000, 0), T(net_sendGamePacket, 0, 300, 0), T(setup_bindKey, 1, 3000, 0),
 	/* batch 53 */
 	T(space_traceBlock, 1, 600, 0), T(space_traceCells, 1, 600, 0), T(collision_rayTrace, 0, 600, 0),
@@ -18372,7 +18372,7 @@ static const struct { DWORD addr; void *fn; const char *name; } g_hooks3[] = {
 	{ 0x42b220, (void *)static_destroyTex256x64, "static_destroyTex256x64" }, { 0x42b270, (void *)static_destroyTex128x128, "static_destroyTex128x128" },
 	{ 0x42b2c0, (void *)static_destroyTex256x128, "static_destroyTex256x128" }, { 0x42b310, (void *)static_destroyTex256x256, "static_destroyTex256x256" },
 	{ 0x456cd0, (void *)sound_freeAll, "sound_freeAll" }, { 0x48b460, (void *)map_readCommands, "map_readCommands" },
-	{ 0x483d70, (void *)Light_read, "Light_read" }, { 0x45ff30, (void *)actor_destroyPartLists, "actor_destroyPartLists" },
+	{ 0x483d70, (void *)LightFactors_read, "LightFactors_read" }, { 0x45ff30, (void *)actor_destroyPartLists, "actor_destroyPartLists" },
 	{ 0x463960, (void *)ResourceSet_dtor, "ResourceSet_dtor" }, { 0x46ff70, (void *)Stage_dtor, "Stage_dtor" },
 	{ 0x4617f0, (void *)chat_loadMacros, "chat_loadMacros" }, { 0x462740, (void *)chat_applyMacro, "chat_applyMacro" },
 	/* batch 47 */
@@ -18427,7 +18427,7 @@ static const struct { DWORD addr; void *fn; const char *name; } g_hooks3[] = {
 	/* batch 52 */
 	{ 0x401000, (void *)cd_findDrive, "cd_findDrive" }, { 0x42d730, (void *)cfg_writeAxisCfg, "cfg_writeAxisCfg" },
 	{ 0x4050a0, (void *)arena_savePlayerSettings, "arena_savePlayerSettings" }, { 0x405140, (void *)lobby_keepArenaSettings, "lobby_keepArenaSettings" },
-	{ 0x44f6c0, (void *)profile_logIn, "profile_logIn" }, { 0x41dcf0, (void *)armc_extraItemBonuses, "armc_extraItemBonuses" },
+	{ 0x44f6c0, (void *)profile_logIn, "profile_logIn" }, { 0x41dcf0, (void *)armc_applyExtraItemBonuses, "armc_applyExtraItemBonuses" },
 	{ 0x42e730, (void *)cfg_readKeyBindings, "cfg_readKeyBindings" }, { 0x42e240, (void *)cfg_readGraphics, "cfg_readGraphics" },
 	{ 0x42da70, (void *)cfg_readServer, "cfg_readServer" }, { 0x48dbf0, (void *)net_sendGamePacket, "net_sendGamePacket" },
 	{ 0x421680, (void *)setup_bindKey, "setup_bindKey" },

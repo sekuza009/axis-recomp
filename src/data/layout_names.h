@@ -774,8 +774,8 @@ extern struct GameData g_data;
 #define g_editingTimeLimit (*(int *)g_editingTimeLimit_v)
 #undef g_emblemAlpha
 #define g_emblemAlpha (*(float *)g_emblemAlpha_v)
-#undef g_emblemPulse
-#define g_emblemPulse (*(float *)g_emblemPulse_v)
+#undef g_emblemAlphaStep
+#define g_emblemAlphaStep (*(float *)g_emblemAlphaStep_v)
 #undef g_enteringMenus
 #define g_enteringMenus (*(int *)g_enteringMenus_v)
 #undef g_errorCleanupHook
@@ -1918,8 +1918,8 @@ extern struct GameData g_data;
 #define g_pilotStatsKept ((int *)g_pilotStatsKept_v)
 #undef g_pingAddresses
 #define g_pingAddresses ((char *)g_pingAddresses_v)
-#undef g_pingDataEvent
-#define g_pingDataEvent (*(void * *)g_pingDataEvent_v)
+#undef g_pingStartEvent
+#define g_pingStartEvent (*(void * *)g_pingStartEvent_v)
 #undef g_pingStopEvent
 #define g_pingStopEvent (*(void * *)g_pingStopEvent_v)
 #undef g_pingThread

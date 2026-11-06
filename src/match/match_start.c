@@ -339,7 +339,7 @@ void THISCALL (stage_build)(u8 *s, u32 stageDir, u32 mapDir, const char *texture
 		}
 	}
 	st->layerMode = 0;
-	st->layerTextures[0] = st->layerTextures[1] = -1;
+	st->skyLayerTextures[0] = st->skyLayerTextures[1] = -1;
 	float *dome = &st->layer[0][0][0];
 	for (int i = 0; i <= 6; i++) {
 		int ai = ftol(fmul_m(fsub_m((long double)i, &k_3f), &k_200f));

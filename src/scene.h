@@ -387,7 +387,7 @@ typedef struct Factor {
 /* the light factors shape_shadingColours takes: vtable, 0x400 records, two counts, enabled (0xb010 bytes: the */
 typedef struct LightFactors {
 	u8 _pad0000000[0x4];
-	Factor records[0x400];   /* +0x4: its factors (Light_read; 0x400 x 0x2c) */
+	Factor records[0x400];   /* +0x4: its factors (LightFactors_read; 0x400 x 0x2c) */
 	i32 count;   /* +0xb004: records in use (a slot added when the next free is the count) */
 	i32 nextFree;   /* +0xb008: the next free slot */
 	i32 enabled;   /* +0xb00c: 1: a pre-lit object list uses them without point lights; set as one is added */
@@ -1382,7 +1382,7 @@ typedef struct Stage {
 	u32 nearObjects[1000][3];   /* +0x9ca0f4: the moving map objects (active, animated, with planes) a move or a ray may reach: each its unit's planes (SpaceUnit.lastNode), relMatrix and relInverse; the sub-models for space_testSphere (collision_moveSphere) and space_traceCells (collision_rayTrace) */
 	i32 effectTextures[9];   /* +0x9ccfd4: (by use; seen running) the effects' textures "<dir>\00" .. "08" (stage_build; objects.c TEX(k)); "09" is billboards */
 	i32 billboards;   /* +0x9ccff8: (by use; seen running) the billboard list map items are drawn with (ViewVolume_addBillboard's id) */
-	LightFactors mapLights;   /* +0x9ccffc: (by use; seen running) the map's lights (Light_read from the map file): they shade the map objects */
+	LightFactors mapLights;   /* +0x9ccffc: (by use; seen running) the map's lights (LightFactors_read from the map file): they shade the map objects */
 	i32 dynamicLightsSet;   /* +0x9d800c: 1 once stage_refillLights filled dynamicLights, 0 with stage_resetLights; never read */
 	LightFactors dynamicLights;   /* +0x9d8010: (by use; seen running) the lights cleared each frame (stage_resetLights); the objects' second colours */
 	LightFactors actorLights;   /* +0x9e3020: (by use; seen running) the actors' light: a grey ambient one and one from above (actor_slots.c) */
@@ -1397,7 +1397,7 @@ typedef struct Stage {
 	i32 skyTextures[6];   /* +0x9ee068: one per face (texture ids) */
 	float skySphere[6][7][7][3];   /* +0x9ee080: per face a 7 x 7 grid of points (scaled 10000 when drawn) */
 	i32 layerMode;   /* +0x9eee48: cloud layers: 0 none, 1 one, 2 two */
-	i32 layerTextures[2];   /* +0x9eee4c */
+	i32 skyLayerTextures[2];   /* +0x9eee4c: the sky's two layer textures: [0] <map>/SkyOuterLayer, [1] SkyInnerLayer (map_loadGroundInfoFrom; -1 none, match start); bound by the sky drawing (sky.c) */
 	float layer[7][7][3];   /* +0x9eee54: the layers' grid (scaled 10000) */
 	i32 layerTurns[2];   /* +0x9ef0a0: (by use; seen running) the layers' scroll: whole turns (layerScroll the part) */
 	float layerScroll[2];   /* +0x9ef0a8: u, v: the layers' texture offset */
@@ -3007,7 +3007,7 @@ _Static_assert(offsetof(Stage, skyMode) == 0x9ee064 && sizeof(((Stage *)0)->skyM
 _Static_assert(offsetof(Stage, skyTextures) == 0x9ee068 && sizeof(((Stage *)0)->skyTextures) == 0x18, "scene.fields: Stage.skyTextures");
 _Static_assert(offsetof(Stage, skySphere) == 0x9ee080 && sizeof(((Stage *)0)->skySphere) == 0xdc8, "scene.fields: Stage.skySphere");
 _Static_assert(offsetof(Stage, layerMode) == 0x9eee48 && sizeof(((Stage *)0)->layerMode) == 0x4, "scene.fields: Stage.layerMode");
-_Static_assert(offsetof(Stage, layerTextures) == 0x9eee4c && sizeof(((Stage *)0)->layerTextures) == 0x8, "scene.fields: Stage.layerTextures");
+_Static_assert(offsetof(Stage, skyLayerTextures) == 0x9eee4c && sizeof(((Stage *)0)->skyLayerTextures) == 0x8, "scene.fields: Stage.skyLayerTextures");
 _Static_assert(offsetof(Stage, layer) == 0x9eee54 && sizeof(((Stage *)0)->layer) == 0x24c, "scene.fields: Stage.layer");
 _Static_assert(offsetof(Stage, layerTurns) == 0x9ef0a0 && sizeof(((Stage *)0)->layerTurns) == 0x8, "scene.fields: Stage.layerTurns");
 _Static_assert(offsetof(Stage, layerScroll) == 0x9ef0a8 && sizeof(((Stage *)0)->layerScroll) == 0x8, "scene.fields: Stage.layerScroll");

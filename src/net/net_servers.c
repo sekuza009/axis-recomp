@@ -28,11 +28,11 @@ void (net_clearServers)(void)
 	net_closeThreadHandles();
 }
 
-/* 0x454560: the ping thread's procedure (started by net_startPingThread): wait on g_pingDataEvent (0: ping every listed
+/* 0x454560: the ping thread's procedure (started by net_startPingThread): wait on g_pingStartEvent (0: ping every listed
    server, net_pingAllServers) and g_pingStopEvent (1: ExitThread); anything else waits again */
 void (net_pingThreadProc)(void)
 {
-	void *events[2] = { g_pingDataEvent, g_pingStopEvent };
+	void *events[2] = { g_pingStartEvent, g_pingStopEvent };
 	for (;;) {
 		u32 r = WaitForMultipleObjects(2, events, 0, 0xffffffff);
 		if (r == 0)
@@ -42,10 +42,10 @@ void (net_pingThreadProc)(void)
 	}
 }
 
-/* 0x454740: the ping thread told to end: g_pingDataEvent reset, g_pingStopEvent set (its wait then returns 1:
+/* 0x454740: the ping thread told to end: g_pingStartEvent reset, g_pingStopEvent set (its wait then returns 1:
    ExitThread). SetEvent's result */
 int (net_stopPingThread)(void)
 {
-	ResetEvent(g_pingDataEvent);
+	ResetEvent(g_pingStartEvent);
 	return SetEvent(g_pingStopEvent);
 }

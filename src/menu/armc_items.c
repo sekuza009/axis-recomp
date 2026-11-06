@@ -183,7 +183,7 @@ u32 (armc_weaponsPageClicks)(void)
    100 into g_itemBonusEpak, g_itemBonus30mm, g_itemBonus60mm; 31 g_itemBonusMissile 50; 32 g_itemBonusDetectionRange 100, g_itemBonusLockOn 0.5, g_itemBonusHacking 3, g_itemBonusTargetKeep 1;
    33 g_itemBonusActiveTime 0.5, g_itemBonusRechargeTime -0.1; 34 g_itemBonusWeightLimit 0.2; 35 g_itemBonusShield 0.3, g_itemBonusShieldUnread 1. Every flag and value is cleared
    first. The caller ignores the eax it leaves */
-void (armc_extraItemBonuses)(void)
+void (armc_applyExtraItemBonuses)(void)
 {
 	static const u32 flag[9] = { ADDR(g_hasItemCapacity), ADDR(g_hasItemEpak), ADDR(g_hasItem30mm), ADDR(g_hasItem60mm), ADDR(g_hasItemMissile), ADDR(g_hasItemSensor), ADDR(g_hasItemBooster), ADDR(g_hasItemWeight), ADDR(g_hasItemShield) };
 	static const u32 value[14] = { ADDR(g_itemBonusCapacityPerLevel), ADDR(g_itemBonusEpak), ADDR(g_itemBonus30mm), ADDR(g_itemBonus60mm), ADDR(g_itemBonusMissile), ADDR(g_itemBonusDetectionRange), ADDR(g_itemBonusLockOn), ADDR(g_itemBonusHacking), ADDR(g_itemBonusTargetKeep),

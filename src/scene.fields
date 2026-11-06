@@ -353,7 +353,7 @@ struct Factor 0x2c                                              # a light (Light
 
 struct LightFactors 0xb010                                      # the light factors shape_shadingColours takes: vtable, 0x400 records, two counts, enabled (0xb010 bytes: the
                                                                  # size armc_drawPreview3D gives its stack copy, and the distance from Stage.dynamicLights to actorLights)
-4          0xb000     Factor records[0x400]                     # its factors (Light_read; 0x400 x 0x2c)
+4          0xb000     Factor records[0x400]                     # its factors (LightFactors_read; 0x400 x 0x2c)
 0xb004     4          i32 count                                  # records in use (a slot added when the next free is the count)
 0xb008     4          i32 nextFree                               # the next free slot
 0xb00c     4          i32 enabled                               # 1: a pre-lit object list uses them without point lights; set as one is added
@@ -1203,7 +1203,7 @@ struct Stage 0x2150443                                          # the stage: the
                                                                 # game's Stage methods; offsets here are from the stage (Scene fields past
                                                                 # 0x1f36c8 lie inside it too: Scene.players is Stage.actors)
 # the mech part types (PlayerRecord.parts indexes them; catalogue_loadComponents reads them from Data/Component.dat: 20 heads, 14 chests, 18 arms, 20 legs, 16 boosters; actor_setActorType*InfoBy only checks an index): room for 50 of each kind
-0x9ccffc   0xb010     LightFactors mapLights                     # (by use; seen running) the map's lights (Light_read from the map file): they shade the map objects
+0x9ccffc   0xb010     LightFactors mapLights                     # (by use; seen running) the map's lights (LightFactors_read from the map file): they shade the map objects
 0x9d800c   4          i32 dynamicLightsSet                      # 1 once stage_refillLights filled dynamicLights, 0 with stage_resetLights; never read
 0x9d8010   0xb010     LightFactors dynamicLights                 # (by use; seen running) the lights cleared each frame (stage_resetLights); the objects' second colours
 0x9e3020   0xb010     LightFactors actorLights                   # (by use; seen running) the actors' light: a grey ambient one and one from above (actor_slots.c)
@@ -1338,7 +1338,7 @@ struct Stage 0x2150443                                          # the stage: the
 0x9ee068   0x18       i32 skyTextures[6]                         # one per face (texture ids)
 0x9ee080   0xdc8      float skySphere[6][7][7][3]                # per face a 7 x 7 grid of points (scaled 10000 when drawn)
 0x9eee48   4          i32 layerMode                              # cloud layers: 0 none, 1 one, 2 two
-0x9eee4c   8          i32 layerTextures[2]
+0x9eee4c   8          i32 skyLayerTextures[2]                   # the sky's two layer textures: [0] <map>/SkyOuterLayer, [1] SkyInnerLayer (map_loadGroundInfoFrom; -1 none, match start); bound by the sky drawing (sky.c)
 0x9eee54   0x24c      float layer[7][7][3]                       # the layers' grid (scaled 10000)
 0x9ef0a8   8          float layerScroll[2]                       # u, v: the layers' texture offset
 0x9ef0b0   4          i32 sideMode                               # side walls: 0 none, 1 low, else high

@@ -51,4 +51,4 @@
 0xa0bab0,void *,g_connectionCopy
 0xa0bad8,const void *,g_providerGuid
 0xa0badc,void *,g_storedConnection
-0xa0bb10,void *,g_pingDataEvent
+0xa0bb10,void *,g_pingStartEvent

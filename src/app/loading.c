@@ -303,7 +303,7 @@ int (app_startupLoad)(void *instance)
 	g_unusedStartupWord2 = 0;
 	g_unusedStartupWord3 = 0;
 	(*(u32 *)&g_emblemAlpha) = 0x3dcccccd;   /* 0.1 */
-	(*(u32 *)&g_emblemPulse) = 0x3ca3d70a;   /* 0.02 */
+	(*(u32 *)&g_emblemAlphaStep) = 0x3ca3d70a;   /* 0.02 */
 	(*(u32 *)&g_logoFade) = 0;
 	g_cursorFrame = 0;
 	(*(u32 *)&g_cursorFrameTime) = 0;

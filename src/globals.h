@@ -16,7 +16,7 @@
 #define g_rightClick GAME_VAR(int, 0x4ded8c)   /* g_mouseClicked[1]: the right button clicked this frame */
 #define g_playerCorporation GAME_VAR(int, 0x4dedd0)
 #define g_serverAnswerIn GAME_VAR(int, 0x4df018)
-#define g_matchMode GAME_VAR(int, 0x5ae9c4)
+#define g_matchMode GAME_VAR(int, 0x5ae9c4)   /* the kind of match set up / played: 0 none (solo; after a replay), 1 an arena (the lobby), 2 the game room's (a Ladder game: Scene.ladderGame), 3 the skirmish campaign; written into replays' headers, and on leaving a match picks the screen to return to (game_return*) */
 #define g_listRefreshPeriod GAME_VAR(int, 0x5b1914)
 #define g_panelGlow GAME_VAR(float, 0x680ccc)
 #define g_chosenGameMode GAME_VAR(int, 0x76d368)
@@ -113,7 +113,7 @@
 #define g_rankingLast GAME_VAR(int, 0x9dd7dc)
 #define g_typingLoginId GAME_VAR(int, 0x9dd830)
 #define g_startTicks GAME_VAR(u32, 0x9dd8e8)
-#define g_tunnelFlyingIn GAME_VAR(int, 0x9eeaa8)
+#define g_tunnelFlyingIn GAME_VAR(int, 0x9eeaa8)   /* 1 while the main menu's tunnel flies in after a screen change (menuTunnel_advance); mainmenu_drawMenu clears it once g_mainMenuDepth reaches -550; no panel is hovered meanwhile */
 #define g_profileRowClicked GAME_VAR(int, 0x9f900c)
 #define g_localSlot GAME_VAR(u8, 0x9fd954)   /* the local player's slot (0 .. 15): taken by net_claimLocalSlot or given by the host (net_handleMessage kind 6); sent in every packet (net_sendPacketData); also picks the slot's camera record in g_slotCams (freeCam_mouseLook, freeCam_keys) */
 #define g_lobbySocket GAME_VAR(u32, 0xa055f8)
@@ -128,7 +128,7 @@
 #define g_providerGuid GAME_VAR(const void *, 0xa0bad8)   /* points at the chosen DirectPlay service provider's GUID (g_tcpProviderGuid / ipx / modem / serial by connection kind, dplay_initConnection); the TCP compound address's DPAID_ServiceProvider data; also copied into the session descriptions' guidInstance (dplay_hostSession, dplay_enumSessions) */
 #define g_storedConnection GAME_VAR(void *, 0xa0badc)
 #define g_hostAddressBlock GAME_VAR(void *, 0xa0baf0)
-#define g_pingDataEvent GAME_VAR(void *, 0xa0bb10)
+#define g_pingStartEvent GAME_VAR(void *, 0xa0bb10)   /* the ping thread's wake-up event: set to make net_pingThreadProc ping the listed servers; reset when the thread is told to end (g_pingStopEvent) */
 #define g_ptxTablesReady GAME_VAR(int, 0xa0e00c)
 #define g_fullScreen GAME_VAR(int, 0xa0e920)
 #define g_textWrapX GAME_VAR(int, 0x4ad490)
@@ -405,7 +405,7 @@
 #define g_joinPollTicks GAME_VAR(int, 0x4dbb10)   /* ticks of the join timer 0x378 (2 s; WndProc: dplay_listSessions each tick until a session arrives); past 30 the join gives up (g_joinTimedOut set). Zeroed when a join starts or ends: arena_joinListed, room_joinSession, arena_joinAnswer, room_joinAnswer, gameList_stopJoin, gameList_keys, arenaGames_keys, arenaJoinBox_clicks */
 #define g_armcUnusedFlag GAME_VAR(int, 0x4dc788)
 #define g_armcLeaving GAME_VAR(int, 0x4dcf10)
-#define g_progressWentUp GAME_VAR(int, 0x4dcf34)
+#define g_progressWentUp GAME_VAR(int, 0x4dcf34)   /* 1 when the ARM CENTER opens with the pilot's level (from a game room) or progress (solo) above its best so far (g_bestLevelNet / g_bestProgressSolo); cleared when a profile is read */
 #define g_watchChatOpen GAME_VAR(int, 0x4de6fc)
 #define g_roomGameMode GAME_VAR(signed char, 0x4df9eb)   /* the room form's game mode (GameSettings.mode at g_roomSettingsName + 0x23; 0 .. 9, the mode names MSG(791) + mode * 0x80) */
 #define g_roomRecGameMode GAME_VAR(signed char, 0x5b1b53)   /* the registry record's game mode (GameSettings.mode at g_roomRecName + 0x23); roomSettings_page resets it to 0 outside 0 .. 11 */
@@ -558,7 +558,7 @@
 #define g_arenaListRequest GAME_VAR(u32 *, 0xa0b31c)   /* the 4-byte packet 13 to the lobby (lobby_openConnection writes 0x180001): asks for the arena list (net_send 13 clears g_serverList first; net_recv 13 -> net_receiveLobbyReply adds the servers) */
 #define g_netRankingBuffer GAME_VAR(int *, 0xa0b324)
 #define g_netPlayerRecordPacket GAME_VAR(u8 *, 0xa0b338)
-#define g_netLeaveBuffer GAME_VAR(char *, 0xa0b33c)
+#define g_netLeaveBuffer GAME_VAR(char *, 0xa0b33c)   /* request 25's (0x19) 0x1e-byte body: the Ladder ID, sent to the game server when the game room is left (room_leave); allocated by net_resetConnection */
 #define g_netSelectionPacket GAME_VAR(u8 *, 0xa0b340)
 #define g_netAccountBuffer GAME_VAR(char *, 0xa0b344)
 #define g_lobbyStatus GAME_VAR(int, 0xa0b370)
@@ -785,15 +785,15 @@
 #define g_mechBoosterRecharge GAME_VAR(float, 0x4dcaf0)
 #define g_mechNormalSpeed GAME_VAR(float, 0x4dcaf8)
 #define g_itemBonusShield GAME_VAR(float, 0x4dcc68)
-#define g_hasItemCapacity GAME_VAR(int, 0x4dcb10)   /* extra item 27 (BE-VOX EXPANSION MAGAZINE) is fitted (armc_extraItemBonuses; written only) */
-#define g_hasItemEpak GAME_VAR(int, 0x4dcea8)   /* extra item 28 (BE-EOX E-PAK EXTRA MAGAZINE) is fitted (armc_extraItemBonuses; written only) */
-#define g_hasItem30mm GAME_VAR(int, 0x4dcc5c)   /* extra item 29 (BE-30X 30MM EXTRA MAGAZINE) is fitted (armc_extraItemBonuses; written only) */
-#define g_hasItem60mm GAME_VAR(int, 0x4dbc54)   /* extra item 30 (BE-60X 60MM EXTRA MAGAZINE) is fitted (armc_extraItemBonuses; written only) */
-#define g_hasItemMissile GAME_VAR(int, 0x4dbe44)   /* extra item 31 (BE-ROX EXTRA ROCKET CHAMBER) is fitted (armc_extraItemBonuses; written only) */
-#define g_hasItemSensor GAME_VAR(int, 0x4dc794)   /* extra item 32 (SE-S10 SENSOR ARRAY) is fitted (armc_extraItemBonuses; written only) */
-#define g_hasItemBooster GAME_VAR(int, 0x4dbd78)   /* extra item 33 (TEP-34L BOOST GENERATOR) is fitted (armc_extraItemBonuses; read there) */
-#define g_hasItemWeight GAME_VAR(int, 0x4dc774)   /* extra item 34 (BP-2001 GRAVITY CONTROLLER) is fitted (armc_extraItemBonuses; read there) */
-#define g_hasItemShield GAME_VAR(int, 0x4dcf30)   /* extra item 35 (SH-4 FORCEFIELD BOOSTER) is fitted (armc_extraItemBonuses; read there) */
+#define g_hasItemCapacity GAME_VAR(int, 0x4dcb10)   /* extra item 27 (BE-VOX EXPANSION MAGAZINE) is fitted (armc_applyExtraItemBonuses; written only) */
+#define g_hasItemEpak GAME_VAR(int, 0x4dcea8)   /* extra item 28 (BE-EOX E-PAK EXTRA MAGAZINE) is fitted (armc_applyExtraItemBonuses; written only) */
+#define g_hasItem30mm GAME_VAR(int, 0x4dcc5c)   /* extra item 29 (BE-30X 30MM EXTRA MAGAZINE) is fitted (armc_applyExtraItemBonuses; written only) */
+#define g_hasItem60mm GAME_VAR(int, 0x4dbc54)   /* extra item 30 (BE-60X 60MM EXTRA MAGAZINE) is fitted (armc_applyExtraItemBonuses; written only) */
+#define g_hasItemMissile GAME_VAR(int, 0x4dbe44)   /* extra item 31 (BE-ROX EXTRA ROCKET CHAMBER) is fitted (armc_applyExtraItemBonuses; written only) */
+#define g_hasItemSensor GAME_VAR(int, 0x4dc794)   /* extra item 32 (SE-S10 SENSOR ARRAY) is fitted (armc_applyExtraItemBonuses; written only) */
+#define g_hasItemBooster GAME_VAR(int, 0x4dbd78)   /* extra item 33 (TEP-34L BOOST GENERATOR) is fitted (armc_applyExtraItemBonuses; read there) */
+#define g_hasItemWeight GAME_VAR(int, 0x4dc774)   /* extra item 34 (BP-2001 GRAVITY CONTROLLER) is fitted (armc_applyExtraItemBonuses; read there) */
+#define g_hasItemShield GAME_VAR(int, 0x4dcf30)   /* extra item 35 (SH-4 FORCEFIELD BOOSTER) is fitted (armc_applyExtraItemBonuses; read there) */
 #define g_itemBonusActiveTime GAME_VAR(float, 0x4dcca0)
 #define g_boosterActiveTime GAME_VAR(float, 0x4dce84)
 #define g_boosterRechargeTime GAME_VAR(float, 0x4dce88)
@@ -1005,7 +1005,7 @@
 #define g_menuVolume GAME_VAR(int, 0x4dd984)   /* DirectSound volume of the menu sounds: (v * 5 - 500) * 4 of the setting */
 #define g_menuRepeatClock GAME_VAR(float, 0x4dda44)   /* the menus' hold-to-repeat clock in 1/60 s: menu_frame adds g_frameTime (back to 100 past 1e6); a held scroll arrow / key acts again once it reaches the caller's threshold (5 in the map, arena, game and replay lists, 1 for the setup sliders and bindings) and sets it to 0; screen entries and most menu clicks / keys clear it */
 #define g_setupTab GAME_VAR(int, 0x4ddac8)   /* 0 sound, 1 graphics, 2 controls, 0x29a the top page */
-#define g_emblemPulse GAME_VAR(float, 0x4de1d8)   /* its change per time unit: 0.02 from app_startupLoad, then +-0.018 (menu_titleEmblemTransition) */
+#define g_emblemAlphaStep GAME_VAR(float, 0x4de1d8)   /* its change per time unit: 0.02 from app_startupLoad, then +-0.018 (menu_titleEmblemTransition) */
 #define g_emblemAlpha GAME_VAR(float, 0x4de1e0)   /* the pulsing layer's alpha: 0.1 at start-up (loading.c), then pulsing between 0.2 and 0.9 (menu_titleEmblemTransition) */
 #define g_logoFade GAME_VAR(float, 0x4de1e8)   /* the title logo (iftex/axis_title) fading OUT: 0 .. 1 by 0.1 a time unit; drawn with alpha 1 - this until it reaches 1 */
 #define g_unusedLogoFade GAME_VAR(float, 0x4de1ec)   /* only written (menu_titleEmblemTransition: a second fade running twice as fast from 0.2) */

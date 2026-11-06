@@ -1580,9 +1580,9 @@ extern char g_mipMapTexts_v[100];
 extern int g_controlsEdit_v[68];
 #endif
 #ifdef AXIS_FENCE
-#define g_emblemPulse_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0x282000 : g_fence + 0x281ffc))
+#define g_emblemAlphaStep_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0x282000 : g_fence + 0x281ffc))
 #else
-extern u8 g_emblemPulse_v[4];
+extern u8 g_emblemAlphaStep_v[4];
 #endif
 #ifdef AXIS_FENCE
 #define g_emblemAlpha_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0x284000 : g_fence + 0x283ffc))
@@ -5075,9 +5075,9 @@ extern u8 g_dpMaxQueueSize_v[4];
 extern char g_noAddress_v[4];
 #endif
 #ifdef AXIS_FENCE
-#define g_pingDataEvent_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xd0b000 : g_fence + 0xd0affc))
+#define g_pingStartEvent_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xd0b000 : g_fence + 0xd0affc))
 #else
-extern u8 g_pingDataEvent_v[4];
+extern u8 g_pingStartEvent_v[4];
 #endif
 #ifdef AXIS_FENCE
 #define g_serverPinged_v ((int *)(AXIS_FENCE == 2 ? g_fence + 0xd0d000 : g_fence + 0xd0cc00))

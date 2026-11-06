@@ -15,7 +15,7 @@ u32 THISCALL (map_readCommands)(u8 *self, void *f)
 }
 
 /* 0x483d70: a light factor pool read: its count and next free slot, that many 0x2c-byte records, and enabled */
-u32 THISCALL (Light_read)(u8 *self, void *f)
+u32 THISCALL (LightFactors_read)(u8 *self, void *f)
 {
 	LightFactors *lf = (LightFactors *)self;
 	fread_scrambled(&lf->count, 4, 1, f);

@@ -328,7 +328,7 @@ u8 g_bindRow_v[4] __attribute__((aligned(16)));   /* 0x4de040 */
 float g_setupColourLit_v[4] __attribute__((aligned(16)));   /* 0x4de048 */
 char g_mipMapTexts_v[100] __attribute__((aligned(16)));   /* 0x4de058 */
 int g_controlsEdit_v[68] __attribute__((aligned(16)));   /* 0x4de0c0 */
-u8 g_emblemPulse_v[4] __attribute__((aligned(16)));   /* 0x4de1d8 */
+u8 g_emblemAlphaStep_v[4] __attribute__((aligned(16)));   /* 0x4de1d8 */
 u8 g_emblemAlpha_v[4] __attribute__((aligned(16)));   /* 0x4de1e0 */
 u8 g_logoFade_v[4] __attribute__((aligned(16)));   /* 0x4de1e8 */
 u8 g_unusedLogoFade_v[4] __attribute__((aligned(16)));   /* 0x4de1ec */
@@ -1027,7 +1027,7 @@ u8 g_dpTimeout_v[4] __attribute__((aligned(16)));   /* 0xa0bb00 */
 u8 g_dpMaxBufferSize_v[4] __attribute__((aligned(16)));   /* 0xa0bb04 */
 u8 g_dpMaxQueueSize_v[4] __attribute__((aligned(16)));   /* 0xa0bb08 */
 char g_noAddress_v[4] __attribute__((aligned(16)));   /* 0xa0bb0c */
-u8 g_pingDataEvent_v[4] __attribute__((aligned(16)));   /* 0xa0bb10 */
+u8 g_pingStartEvent_v[4] __attribute__((aligned(16)));   /* 0xa0bb10 */
 int g_serverPinged_v[256] __attribute__((aligned(16)));   /* 0xa0bb14 */
 u8 g_unusedPingWord1_v[4] __attribute__((aligned(16)));   /* 0xa0bf14 */
 u8 g_unusedPingWord2_v[4] __attribute__((aligned(16)));   /* 0xa0bf18 */
@@ -1498,7 +1498,7 @@ const DataPiece g_splitObjects[] = {
 	{ 0x4de048, g_setupColourLit_v, 16 },
 	{ 0x4de058, g_mipMapTexts_v, 100 },
 	{ 0x4de0c0, g_controlsEdit_v, 272 },
-	{ 0x4de1d8, g_emblemPulse_v, 4 },
+	{ 0x4de1d8, g_emblemAlphaStep_v, 4 },
 	{ 0x4de1e0, g_emblemAlpha_v, 4 },
 	{ 0x4de1e8, g_logoFade_v, 4 },
 	{ 0x4de1ec, g_unusedLogoFade_v, 4 },
@@ -2197,7 +2197,7 @@ const DataPiece g_splitObjects[] = {
 	{ 0xa0bb04, g_dpMaxBufferSize_v, 4 },
 	{ 0xa0bb08, g_dpMaxQueueSize_v, 4 },
 	{ 0xa0bb0c, g_noAddress_v, 4 },
-	{ 0xa0bb10, g_pingDataEvent_v, 4 },
+	{ 0xa0bb10, g_pingStartEvent_v, 4 },
 	{ 0xa0bb14, g_serverPinged_v, 1024 },
 	{ 0xa0bf14, g_unusedPingWord1_v, 4 },
 	{ 0xa0bf18, g_unusedPingWord2_v, 4 },

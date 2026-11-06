@@ -386,7 +386,7 @@ g_replayShowOn
 g_mechBoostTime
 g_mechBoosterRecharge
 g_mechMobility
-g_pingDataEvent
+g_pingStartEvent
 g_replayRunning
 g_serverAnswerIn
 g_totalWeight
@@ -827,7 +827,7 @@ g_dialogPending
 g_emblemAlpha
 g_pilotSelectCursor
 g_statBarsStale
-g_emblemPulse
+g_emblemAlphaStep
 g_exitCode
 g_flareSizeA
 g_flareSizeB

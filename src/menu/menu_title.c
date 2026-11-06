@@ -64,14 +64,14 @@ void (menu_titleEmblemTransition)(void)
 	quarters(&g_titleTextures[4], g_titleSpread[g_titleCloseFrames], 1);
 
 	/* the pulse: the sum before rounding is what the limits are tested against */
-	long double a = (long double)g_emblemPulse * g_frameTime + g_emblemAlpha;
+	long double a = (long double)g_emblemAlphaStep * g_frameTime + g_emblemAlpha;
 	g_emblemAlpha = f32(a);
 	if (a > 0.9) {
 		g_emblemAlpha = 0.9f;
-		g_emblemPulse = -0.018f;
+		g_emblemAlphaStep = -0.018f;
 	}
 	if (!(g_emblemAlpha >= 0.2)) {
-		g_emblemPulse = 0.018f;
+		g_emblemAlphaStep = 0.018f;
 		g_emblemAlpha = 0.2f;
 	}
 

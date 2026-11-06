@@ -236,11 +236,11 @@ int (dplay_init)(void)
 	return hr;
 }
 
-/* 0x454760: the network thread's three handles closed (g_pingThread, g_pingStopEvent, g_pingDataEvent) and the running flag cleared.
+/* 0x454760: the network thread's three handles closed (g_pingThread, g_pingStopEvent, g_pingStartEvent) and the running flag cleared.
    Returns what the original leaves in eax (the last close's answer, or 0) */
 u32 (net_closeThreadHandles)(void)
 {
-	static const u32 handles[3] = { ADDR(g_pingThread), ADDR(g_pingStopEvent), ADDR(g_pingDataEvent) };
+	static const u32 handles[3] = { ADDR(g_pingThread), ADDR(g_pingStopEvent), ADDR(g_pingStartEvent) };
 	u32 r = 0;
 	for (int k = 0; k < 3; k++) {
 		r = GAME_VAR(u32, handles[k]);
@@ -517,18 +517,18 @@ const char *(text_findSubstring)(const char *text, const char *word, int exact)
 	return NULL;
 }
 
-/* 0x4546d0: the network worker started: two events (g_pingDataEvent, g_pingStopEvent) and the thread running net_pingThreadProc (handle
+/* 0x4546d0: the network worker started: two events (g_pingStartEvent, g_pingStopEvent) and the thread running net_pingThreadProc (handle
    g_pingThread, id g_pingThreadId), then the first event set. 1, or 0 when any of them cannot be made */
 int (net_startPingThread)(void)
 {
-	if (!(g_pingDataEvent = CreateEventA(NULL, 0, 0, NULL)))   /* CreateEventA */
+	if (!(g_pingStartEvent = CreateEventA(NULL, 0, 0, NULL)))   /* CreateEventA */
 		return 0;
 	if (!(g_pingStopEvent = CreateEventA(NULL, 0, 0, NULL)))
 		return 0;
 	g_pingThread = CreateThread(NULL, 0, (void *)FN_ADDR(net_pingThreadProc, 0x454560), NULL, 0, (u32 *)ADDR(g_pingThreadId));   /* CreateThread */
 	if (!g_pingThread)
 		return 0;
-	SetEvent(g_pingDataEvent);
+	SetEvent(g_pingStartEvent);
 	return 1;
 }
 

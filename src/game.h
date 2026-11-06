@@ -373,7 +373,7 @@ typedef struct { u32 vtable; void *banks[6]; i32 count; } TextureManager;   /* t
 #define match_resetInputState(scene) GAME_THISFN(match_resetInputState, 0x461f10, void, void *)(scene)
 #define net_hostGone() GAME_FN(net_hostGone, 0x4a86e0, int, void)()   /* the network says the match is over? */
 #define crt_fread(p, size, count, f) GAME_CDECL(0x49e836, u32, void *, u32, u32, void *)(p, size, count, f)
-#define Light_read(lights, f) GAME_THISFN(Light_read, 0x483d70, void, void *, void *)(lights, f)   /* the lights read */
+#define LightFactors_read(lights, f) GAME_THISFN(LightFactors_read, 0x483d70, void, void *, void *)(lights, f)   /* the lights read */
 #define math_triangleNormal(out, p1, p0, p2) GAME_FN(math_triangleNormal, 0x4679a0, float *, float *, const float *, const float *, const float *)(out, p1, p0, p2)   /* a triangle's normal */
 #define ground_computeLighting(scene, layer) GAME_THISFN(ground_computeLighting, 0x4728e0, void, void *, void *)(scene, layer)   /* a layer's light map */
 #define ground_buildLayerModels(stage) GAME_THISFN(ground_buildLayerModels, 0x497a90, void, void *)(stage)   /* the layer meshes */
@@ -693,7 +693,7 @@ typedef struct { float r, g, b, a; } Colour;
 #define armc_makeSession() GAME_FN(armc_makeSession, 0x40e5d0, void, void)()      /* an ARM CENTER session made (menu/armc_items.c) */
 #define armc_setup3DView() GAME_FN(armc_setup3DView, 0x41b710, void, void)()      /* the 3D view set up (menu/armc_misc.c) */
 #define armc_drawPanels() GAME_FN(armc_drawPanels, 0x41b400, void, void)()
-#define armc_extraItemBonuses() GAME_FN(armc_extraItemBonuses, 0x41dcf0, void, void)()
+#define armc_applyExtraItemBonuses() GAME_FN(armc_applyExtraItemBonuses, 0x41dcf0, void, void)()
 #define armc_drawPartsPage() GAME_FN(armc_drawPartsPage, 0x41dfb0, void, void)()      /* the pages' draw passes (menu/armc_misc.c) */
 #define armc_drawWeaponsPage() GAME_FN(armc_drawWeaponsPage, 0x41dfe0, void, void)()
 #define armc_drawColourPage() GAME_FN(armc_drawColourPage, 0x41e010, void, void)()

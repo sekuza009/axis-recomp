@@ -67,7 +67,7 @@ static void sky_sphere(Stage *stage)
    stage->layerScroll; the second layer (layerMode 2) sits at 0.9 of the size and scrolls twice as fast */
 static void sky_layer(Stage *stage, int second)
 {
-	bind(stage->layerTextures[second]);
+	bind(stage->skyLayerTextures[second]);
 	for (int row = 0; row < 6; row++) {
 		glBegin(GL_TRIANGLE_STRIP);
 		float top = (float)row, bottom = (float)(row + 1);

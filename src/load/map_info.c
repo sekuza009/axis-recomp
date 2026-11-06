@@ -367,7 +367,7 @@ static int grey(const u8 *px)
 
 /* 0x48b9d0 (thiscall on the stage): the map's ground file name (under the map directory mapDir). No file or a
    version other than 0x1201 is fatal; then, scrambled, four blocks skipped, the map's directory (0x100), the view
-   range (cullMargin), the lights (Light_read), the clear colour and fog (clearOn ..), the background modes (sphere
+   range (cullMargin), the lights (LightFactors_read), the clear colour and fog (clearOn ..), the background modes (sphere
    skyMode, sky layerMode, sides sideMode, floor floorMode) and their textures, the area limits (levelLow .. worldHigh, then an unread float (unused9ef934), the map number and the music kind),
    and the layers (groundLayerCount; 0x20c-byte records from groundLayers: rows rows, columns cols, origin +4, cell cellSize,
    height scale heightScale, texture size texScale): each its texture "<dir>/Ground<i>Map" and a 256 x 256 RGB height map
@@ -397,7 +397,7 @@ int THISCALL (map_loadGroundInfoFrom)(u8 *s, const char *name)
 	log_message((int)s, 0, 0, (const char *)STR(0x4c804c, "get default rendering distance"));
 	fread_scrambled(&st->cullMargin, 4, 1, f);
 	log_message((int)s, 0, 0, (const char *)STR(0x4c8040, "load light"));
-	Light_read((u8 *)&st->mapLights, f);
+	LightFactors_read((u8 *)&st->mapLights, f);
 	log_message((int)s, 0, 0, (const char *)STR(0x4c802c, "load clearing color"));
 	fread_scrambled(&st->clearOn, 4, 1, f);
 	fread_scrambled(st->clearColour, 0x10, 1, f);
@@ -420,8 +420,8 @@ int THISCALL (map_loadGroundInfoFrom)(u8 *s, const char *name)
 	mode = st->layerMode;
 	if (mode == 1 || mode == 2) {
 		if (mode == 2)
-			(*(u32 *)&st->layerTextures[1]) = ground_tex(dir, STR(0x4c7f78, "%s/SkyInnerLayer"), 0, tex);   /* SkyInnerLayer */
-		(*(u32 *)&st->layerTextures[0]) = ground_tex(dir, STR(0x4c7f64, "%s/SkyOuterLayer"), 0, tex);       /* SkyOuterLayer */
+			(*(u32 *)&st->skyLayerTextures[1]) = ground_tex(dir, STR(0x4c7f78, "%s/SkyInnerLayer"), 0, tex);   /* SkyInnerLayer */
+		(*(u32 *)&st->skyLayerTextures[0]) = ground_tex(dir, STR(0x4c7f64, "%s/SkyOuterLayer"), 0, tex);       /* SkyOuterLayer */
 	}
 	log_message((int)s, 0, 0, (const char *)STR(0x4c7f4c, "load background side"));
 	if (st->sideMode > 0 && st->sideMode <= 2)

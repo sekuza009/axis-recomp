@@ -315,7 +315,7 @@ void (menuState700_armCenter)(void)
 		armc_setup3DView();
 		armc_drawPanels();
 	}
-	armc_extraItemBonuses();
+	armc_applyExtraItemBonuses();
 	switch (g_armcMode) {
 	case 1: armc_drawPartsPage(); break;
 	case 2: armc_drawWeaponsPage(); break;
