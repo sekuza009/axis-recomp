@@ -56,7 +56,7 @@ void THISCALL (skel_loadFromFile)(u8 *self, void *f, void *mem, int size)
    rest (data). Its callers ignore the eax it leaves */
 void THISCALL (SkeletonManager_initBy)(u8 *self, const char *dir, int n, u32 source, int extra, void *mem, int size)
 {
-	Manager *mg = (Manager *)self;
+	ShapeManager *mg = (ShapeManager *)self;
 	SkeletonManager_release(self);
 	strcpy(mg->dir, dir ? dir : (const char *)STR(0x4b1304, "."));
 	mg->source = source;
@@ -81,7 +81,7 @@ void THISCALL (SkeletonManager_initBy)(u8 *self, const char *dir, int n, u32 sou
    eax it leaves */
 void THISCALL (ShapeManager_initBy)(u8 *self, const char *dir, int n, u32 source, int extra, void *mem, int size)
 {
-	Manager *mg = (Manager *)self;
+	ShapeManager *mg = (ShapeManager *)self;
 	ShapeManager_release(self);
 	if (dir && strcmp(dir, (const char *)STR(0x4b1304, ".")) != 0)
 		strcpy(mg->dir, dir);
@@ -103,7 +103,7 @@ void THISCALL (ShapeManager_initBy)(u8 *self, const char *dir, int n, u32 source
 	mg->textureSuffix[0] = 0;
 	mg->data = mg->block + n * 0x98;
 	for (int k = 0; k < 7; k++)
-		AT(int, self, offsetof(Manager, bindFlags) + k * 4) = 0;   /* bindFlags, tint */
+		AT(int, self, offsetof(ShapeManager, bindFlags) + k * 4) = 0;   /* bindFlags, tint */
 }
 
 /* a file's format by its extension (after the last '.', none past a '\' or '/'; its first three letters compared
@@ -192,7 +192,7 @@ void THISCALL (ObjectList_load)(u8 *list, void *shapes, void *skels, int ns, con
 		if (i < 64)
 			found[i] = shape;
 		if (shape)
-			ol->colourCount += ((Model *)shape)->colourCount;
+			ol->colourCount += ((Shape *)shape)->colourCount;
 	}
 	ol->blockSize = (ol->count * 25 + ol->skelCount) * 4;
 	if (ol->preLit == 1)
@@ -215,7 +215,7 @@ void THISCALL (ObjectList_load)(u8 *list, void *shapes, void *skels, int ns, con
 		entry[1] = AT(u32, names, i * 0x44 + 0x40);
 		if (ol->preLit == 1 && entry[0]) {
 			entry[2] = (u32)(ol->block + colours);
-			colours += ((const Model *)RELOC(entry[0]))->colourCount * 4;
+			colours += ((const Shape *)RELOC(entry[0]))->colourCount * 4;
 		} else
 			entry[2] = 0;
 	}
@@ -315,7 +315,7 @@ void THISCALL (skel_getBoneMatrix)(u8 *sk, u32 *out, int bone, float t)
    node; a missing one is added (index the count, *added set; the caller loads the item and counts it) */
 static int tree_lookup(u8 *cache, const char *key, char *out, u32 no_room, u32 full, int *added)
 {
-	Manager *mg = (Manager *)cache;
+	ShapeManager *mg = (ShapeManager *)cache;
 	*added = 0;
 	if (mg->capacity == 0)
 		sys_fatalErrorN(out, (const char *)RELOC(no_room));
@@ -349,7 +349,7 @@ static int tree_lookup(u8 *cache, const char *key, char *out, u32 no_room, u32 f
    format (source: 0 or 1, another a fatal message) */
 static void item_path(char *path, u8 *cache, const char *name, u32 ext0, u32 ext1, char *out, u32 bad)
 {
-	Manager *mg = (Manager *)cache;
+	ShapeManager *mg = (ShapeManager *)cache;
 	char ext[4];
 	int format = ((int)mg->source);
 	if (format == 0 || format == 1)
@@ -369,7 +369,7 @@ static void item_path(char *path, u8 *cache, const char *name, u32 ext0, u32 ext
    skeleton's size added) */
 u8 *THISCALL (skel_getSkeletonPtrBy)(u8 *cache, const char *name)
 {
-	Manager *mg = (Manager *)cache;
+	ShapeManager *mg = (ShapeManager *)cache;
 	char key[0x100];
 	strcpy(key, name);
 	path_normalize(key);
@@ -402,7 +402,7 @@ u8 *THISCALL (skel_getSkeletonPtrBy)(u8 *cache, const char *name)
    bindFlags ..); bound (shape_bindPartTextures) when bind is 1, found or added */
 u8 *THISCALL (shape_getByName)(u8 *cache, const char *name, int bind)
 {
-	Manager *mg = (Manager *)cache;
+	ShapeManager *mg = (ShapeManager *)cache;
 	char key[0x100];
 	strcpy(key, name);
 	path_normalize(key);
@@ -410,7 +410,7 @@ u8 *THISCALL (shape_getByName)(u8 *cache, const char *name, int bind)
 		return NULL;
 	int added, i = tree_lookup(cache, key, (char *)OBJ(g_logShapeManager), STR(0x4c4d98, "sizeOfShapeBuffer is zero-getShapePtr..."), STR(0x4c4d30, "shape overflow(%d)-getShapePtrBy()"), &added);
 	u8 *shape = mg->items + i * 0x4c;
-	Model *md = (Model *)shape;
+	Shape *md = (Shape *)shape;
 	if (added) {
 		const char *own = (const char *)mg->nodes + i * 0x4c;
 		u8 *mem = mg->data;
@@ -449,7 +449,7 @@ u8 *THISCALL (shape_getByName)(u8 *cache, const char *name, int bind)
    callers ignore the eax it leaves */
 void THISCALL (shape_read)(u8 *shape, void *f, void *mem, int size)
 {
-	Model *md = (Model *)shape;
+	Shape *md = (Shape *)shape;
 	Model_release(shape);
 	crt_fread(shape, 0x34, 1, f);
 	int current = md->version == 0x71110300;
@@ -566,7 +566,7 @@ void THISCALL (ObjectList_poseBones)(u8 *list, const float *base)
 		float *m = out->matrix;
 		glGetFloatv(0xba6, m);
 		transform(out->pos, m, &point[0], &point[1], &point[2]);
-		const Model *shape = out->shape;
+		const Shape *shape = out->shape;
 		if (shape) {
 			for (int r = 0; r < 3; r++)   /* (here the z, x, y terms in that order for the y and z rows) */
 				out->centre[r] = r == 0
@@ -837,7 +837,7 @@ static int obj_corner(u8 *part, int i, char *corner, const float *vs, const floa
    it leaves */
 void THISCALL (model_loadObjFormatFrom)(u8 *sh, void *f, u8 *mem, int memSize)
 {
-	Model *md = (Model *)sh;
+	Shape *md = (Shape *)sh;
 	char line[0x100], last[0x100], c[4][0x20];
 	int nv = 0, nvn = 0, nvt = 0;
 	Model_release(sh);

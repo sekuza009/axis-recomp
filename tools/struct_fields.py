@@ -1,6 +1,6 @@
 r"""struct_fields.py <file.c> <macro> <Type> <name> [--dry] [--list]: a file's accesses by offset through one of its
 macros,  #define A(type, offset) GAME_VAR(type, actor + (offset)),  written as fields of a struct of src/scene.fields:
-A(int, 0xec) -> AC->score, with  #define AC ((Player *)actor)  put after each definition of the macro (and #undef'd
+A(int, 0xec) -> AC->score, with  #define AC ((Actor *)actor)  put after each definition of the macro (and #undef'd
 with it). Offsets inside a struct member or an array of structs resolve through them (SC->players[3].score).
 
 The rules (as tools/scene_fields.py, which this generalises):

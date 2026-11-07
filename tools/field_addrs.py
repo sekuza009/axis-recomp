@@ -26,7 +26,7 @@ for l in open('src/scene.fields', encoding='latin-1'):
 t = open(path, encoding='latin-1', newline='').read()
 n = 0
 # only where PTR is defined (a "#define PTR ((T *)var)" up to its #undef or the end) when the file defines it;
-# a PTR that is an expression ((Player *)ac) works everywhere
+# a PTR that is an expression ((Actor *)ac) works everywhere
 SPANS = None
 if re.match(r'^\w+$', PTR) and PTR != var:   # (PTR the variable itself, already typed: everywhere)
 	SPANS = []

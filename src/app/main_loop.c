@@ -410,7 +410,7 @@ static void far_point(float *v, int pitch, int yaw)
 static void about(float *out, const float *v, const u8 *actor)
 {
 	for (int k = 0; k < 3; k++)
-		out[k] = f32(FADD(v[k], ((const Player *)actor)->pos[k]));
+		out[k] = f32(FADD(v[k], ((const Actor *)actor)->pos[k]));
 }
 
 /* the mech test mode's part steps (match_mechTestFrame): the flag (F1 .. F5 held), the player's part field, the setter, the table size */
@@ -452,7 +452,7 @@ u32 THISCALL (match_mechTestFrame)(u8 *s)
 		input_setCursorPos(gfx_getWidth() / 2, y);
 	}
 	u8 *actor = (u8 *)&SC->players[SC->localPlayer];
-	Player *act = (Player *)actor;
+	Actor *act = (Actor *)actor;
 	PlayerRecord *playerRecord = &SC->playerRecords[act->player];
 	for (int k = 0; k < 9; k++)
 		S(int, k_mechTestKeys[k][1]) = input_asyncKeyDown(k_mechTestKeys[k][0]) ? 1 : 0;
@@ -583,7 +583,7 @@ u32 THISCALL (match_mechTestFrame)(u8 *s)
 		bullet_updateAll(stage, BITS(SC->frameTime));
 		stage_updateParticles(stage, BITS(SC->frameTime));
 		for (int k = 0; k < 4; k++) {
-			Player *me = &SC->players[SC->localPlayer];
+			Actor *me = &SC->players[SC->localPlayer];
 			me->ammo[k] = me->ammoMax[k] / 2;
 		}
 	}
@@ -778,7 +778,7 @@ static void preset_angles(u8 *s, const u8 *t, u32 preset)
 	int i = S(int, preset);
 	SC->cameraAngle[0] = (float)fld_m((const float *)&SC->cameraSettings[0][i]);
 	if (SC->cameraSettings[4][S(int, preset)] == 0)
-		SC->cameraAngle[0] = f32(fadd_m(fld_m((const float *)&SC->cameraSettings[0][i]), &((const Player *)t)->pitch));
+		SC->cameraAngle[0] = f32(fadd_m(fld_m((const float *)&SC->cameraSettings[0][i]), &((const Actor *)t)->pitch));
 	if (SC->cameraAngle[0] > 890.0f)
 		SC->cameraAngle[0] = 890.0f;
 	if (!(SC->cameraAngle[0] >= -890.0f))
@@ -786,7 +786,7 @@ static void preset_angles(u8 *s, const u8 *t, u32 preset)
 	i = S(int, preset);
 	SC->cameraAngle[1] = (float)fld_m((const float *)&SC->cameraSettings[1][i]);
 	if (SC->cameraSettings[5][S(int, preset)] == 0)
-		SC->cameraAngle[1] = f32(fadd_m(fld_m((const float *)&SC->cameraSettings[1][i]), &((const Player *)t)->yaw));
+		SC->cameraAngle[1] = f32(fadd_m(fld_m((const float *)&SC->cameraSettings[1][i]), &((const Actor *)t)->yaw));
 }
 
 /* the camera pulled back by the preset's zoom (cameraSettings[2][..]) from 0.85 of the actor t's height (its position with
@@ -795,7 +795,7 @@ static void orbit_from(u8 *s, const u8 *t, u32 preset, int eye)
 {
 	float *cam = SC->cameraPos, a[3] = { 0, 0, 0 }, b[3], to[3], d[3];
 	if (eye) {
-		a[1] = f32(FMUL(((const Player *)t)->radius, k_0_85f));   /* 0.85 */
+		a[1] = f32(FMUL(((const Actor *)t)->radius, k_0_85f));   /* 0.85 */
 		Vec3_rotateAxis(a, 1, ftol(fld_m(SC->cameraAngle)));
 		Vec3_rotateAxis(a, 2, ftol(fld_m(&SC->cameraAngle[1])));
 	}
@@ -804,7 +804,7 @@ static void orbit_from(u8 *s, const u8 *t, u32 preset, int eye)
 	Vec3_rotateAxis(b, 1, ftol(fld_m(SC->cameraAngle)));
 	Vec3_rotateAxis(b, 2, ftol(fld_m(&SC->cameraAngle[1])));
 	for (int k = 0; k < 3; k++)
-		a[k] = f32(FADD(a[k], ((const Player *)t)->pos[k]));
+		a[k] = f32(FADD(a[k], ((const Actor *)t)->pos[k]));
 	to[0] = f32(FADD(b[0], a[0]));
 	to[1] = f32(FADD(a[1], b[1]));
 	to[2] = f32(FADD(a[2], b[2]));
@@ -1339,7 +1339,7 @@ static void write_log(u8 *s, const char *format, int own_time, int stack_time)
 		int team = team_game() ? SC->players[e].team : 2;
 		char name[64];
 		memset(name, 0, sizeof name);
-		strcpy(name, ((Player *)ACTOR_AT(e))->name);
+		strcpy(name, ((Actor *)ACTOR_AT(e))->name);
 		crt_fprintf(f, (const char *)STR(0x4d062c, "ID:%s Team:%s PlayTime:%d Kill:%d Dea..."), name, k_teams[team], own_time ? SC->players[e].timePlayed : stack_time,
 		            SC->players[e].kills, SC->players[e].deaths);
 	}
@@ -1360,11 +1360,11 @@ static const u8 *spawn_point(u8 *s, int doubled)
 		for (int j = 0; j < SC->playerCount; j++) {
 			if (SC->players[j].state != 1)
 				continue;
-			const float *pos = ((Player *)ACTOR_AT(j))->pos, *at = SC->spawnPoints[r].pos;
+			const float *pos = ((Actor *)ACTOR_AT(j))->pos, *at = SC->spawnPoints[r].pos;
 			float d[3];
 			for (int k = 0; k < 3; k++)
 				d[k] = f32(FSUB(pos[k], at[k]));
-			long double reach = doubled ? fld_m(&((Player *)ACTOR_AT(j))->radius) * 2 : FMUL(((Player *)ACTOR_AT(j))->radius, k_5f);
+			long double reach = doubled ? fld_m(&((Actor *)ACTOR_AT(j))->radius) * 2 : FMUL(((Actor *)ACTOR_AT(j))->radius, k_5f);
 			long double dist = FMUL(d[2], d[2]) + FMUL(d[1], d[1]);
 			dist = dist + FMUL(d[0], d[0]);
 			if (reach * reach > dist) {
@@ -1458,13 +1458,13 @@ static void bot_spawns(u8 *s)
 /* the camera looking back at the actor t's killer (lastAttacker) from 2 heights behind where it died (deathPos) */
 static void killer_view(u8 *s, const u8 *t)
 {
-	Player *act = (Player *)t;
-	float *cam = SC->cameraPos, *diedAt = (float *)((const Player *)t)->deathPos, d[3], p[3];
+	Actor *act = (Actor *)t;
+	float *cam = SC->cameraPos, *diedAt = (float *)((const Actor *)t)->deathPos, d[3], p[3];
 	int k = act->lastAttacker;
 	for (int j = 0; j < 3; j++)
-		d[j] = f32(FSUB(((Player *)ACTOR_AT(k))->pos[j], diedAt[j]));
+		d[j] = f32(FSUB(((Actor *)ACTOR_AT(k))->pos[j], diedAt[j]));
 	Vec3_normalize(d);
-	long double r = FMUL(((const Player *)t)->radius, k_m2f);   /* -2 heights */
+	long double r = FMUL(((const Actor *)t)->radius, k_m2f);   /* -2 heights */
 	for (int j = 0; j < 3; j++)
 		p[j] = f32(fmul_m(r, &d[j]));
 	for (int j = 0; j < 3; j++)
@@ -1480,7 +1480,7 @@ static void killer_view(u8 *s, const u8 *t)
 		cam[1] = f32(FSUB(cam[1], dy));
 		cam[2] = f32(FSUB(cam[2], dz));
 	}
-	look_toward(s, ((Player *)ACTOR_AT(act->lastAttacker))->pos);
+	look_toward(s, ((Actor *)ACTOR_AT(act->lastAttacker))->pos);
 	for (int j = 0; j < 3; j++)
 		SC->cameraDir[j] = f32(fsub_m(fld_m(SC->cameraTarget + j), &cam[j]));
 }
@@ -1509,7 +1509,7 @@ static float mrow(const float *m, const float *v, int a, int ia, int b, int ib, 
    fraction (weaponRaise) of the way from the eye (0.3 heights up, turned with the view) */
 static void muzzle_camera(u8 *s, const u8 *t)
 {
-	Player *act = (Player *)t;
+	Actor *act = (Actor *)t;
 	const PlayerRecord *pr = &SC->playerRecords[act->player];
 	int slot = act->slot;
 	const ArmType *arms = &SCENE_STAGE(s)->armTypes[pr->parts[2]];
@@ -1756,7 +1756,7 @@ void THISCALL (match_frame)(u8 *s)
 		SC->localPlayer = net_localSlot();
 		actor_resetSlot((Stage *)stage, SC->localPlayer);
 		player_setName((Stage *)stage, SC->localPlayer, (const char *)SC->localName);
-		strcpy(((Player *)ACTOR_AT(SC->localPlayer))->name, (const char *)SC->localName);
+		strcpy(((Actor *)ACTOR_AT(SC->localPlayer))->name, (const char *)SC->localName);
 		SC->players[SC->localPlayer].player = SC->localPlayer;
 		msg_playerConnected(s, SC->localPlayer);
 		net_announcePlayerConnected(s, SC->localPlayer, (u8 *)&SC->playerRecords[SC->localPlayer] + 4);
@@ -1958,8 +1958,8 @@ void THISCALL (match_frame)(u8 *s)
 	if (SC->rankingKey == 1)
 		SC->msgFade = 5.0f;
 	me = SC->localPlayer;
-	if (me >= 0 && SC->players[me].state == 1 && !(((Player *)ACTOR_AT(me))->messageTime < 0) && !(((Player *)ACTOR_AT(me))->messageTime > 0))
-		notice_printCentre((Scene *)s, ((Player *)ACTOR_AT(me))->message);   /* (its own text as the format) */
+	if (me >= 0 && SC->players[me].state == 1 && !(((Actor *)ACTOR_AT(me))->messageTime < 0) && !(((Actor *)ACTOR_AT(me))->messageTime > 0))
+		notice_printCentre((Scene *)s, ((Actor *)ACTOR_AT(me))->message);   /* (its own text as the format) */
 	/* the start countdown (3, 2, 1, go) */
 	if (SC->startCountdown > 0) {
 		long double v = FSUB(SC->startCountdown, SC->frameTime);
@@ -2207,18 +2207,18 @@ void THISCALL (match_frame)(u8 *s)
 			turn_view(s);
 		}
 	} else if (SC->playing == 1) {
-		const Player *t;
+		const Actor *t;
 		if (SC->matchOver == 1) {   /* the round's end: the winner, the top player or oneself */
 			SC->cameraMode = 9;
 			if (slow_end(s))
-				t = (Player *)(ACTOR_AT(SC->lastDeath));
-			else if (((Player *)scene_topPlayer(sc))->state == 1)
-				t = (Player *)((const u8 *)scene_topPlayer(sc));
+				t = (Actor *)(ACTOR_AT(SC->lastDeath));
+			else if (((Actor *)scene_topPlayer(sc))->state == 1)
+				t = (Actor *)((const u8 *)scene_topPlayer(sc));
 			else
-				t = (Player *)(ACTOR_AT(SC->localPlayer));
+				t = (Actor *)(ACTOR_AT(SC->localPlayer));
 		} else {
 			SC->cameraMode = SC->respawnCameraMode;
-			t = (Player *)(ACTOR_AT(SC->localPlayer));
+			t = (Actor *)(ACTOR_AT(SC->localPlayer));
 		}
 		if (t->state != 1 && t->lastAttacker >= 0)
 			killer_view(s, (u8 *)t);

@@ -123,7 +123,7 @@ extern struct GameData g_data;
 #undef g_arenaOnOff
 #define g_arenaOnOff ((char *)g_arenaOnOff_v)
 #undef g_arenaPacket
-#define g_arenaPacket (*(ServerRecord * *)g_arenaPacket_v)
+#define g_arenaPacket (*(ArenaRecord * *)g_arenaPacket_v)
 #undef g_arenaPassword
 #define g_arenaPassword (*(u32 *)((u8 *)g_arenaName_v + 0x26))
 #undef g_arenaPassword4

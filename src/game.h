@@ -530,10 +530,10 @@ typedef struct { u32 vtable; void *banks[6]; i32 count; } TextureManager;   /* t
 #define render_depthSortBillboards(e, lo, hi) GAME_FN(render_depthSortBillboards, 0x491190, void, u32 *, int, int)(e, lo, hi)   /* (billboards) */
 /* a shape's shading colours from light factors (seen through inverse, the inverse of the shape's matrix), every part
    into its slice of out; first = 1 (0x466910) */
-#define shape_shadingColours(out, first, shape, factors, inverse) GAME_FN(shape_shadingColours, 0x466910, void, u32 *, int, Model *, const LightFactors *, \
+#define shape_shadingColours(out, first, shape, factors, inverse) GAME_FN(shape_shadingColours, 0x466910, void, u32 *, int, Shape *, const LightFactors *, \
 	const float *)(out, first, shape, factors, inverse)
 /* one RGBA tint colour set (first = 1) or added (0) on every part's colours, in its slice of out (0x466960) */
-#define shape_addColour(out, first, shape, tint) GAME_FN(shape_addColour, 0x466960, void, u32 *, int, Model *, const void *)(out, first, shape, tint)
+#define shape_addColour(out, first, shape, tint) GAME_FN(shape_addColour, 0x466960, void, u32 *, int, Shape *, const void *)(out, first, shape, tint)
 #define stage_drawObject(stage, i, view) GAME_THISFN(stage_drawObject, 0x490b30, void, Stage *, int, void *)(stage, i, view)   /* a map object to the view volume */
 /* queue every mesh of model for drawing (see recomp.c): extra, matrix (none: the current modelview), a4, colour (4 bytes,
    or none), cull (1: skip meshes outside a clip plane),
@@ -565,7 +565,7 @@ typedef struct { u32 vtable; void *banks[6]; i32 count; } TextureManager;   /* t
 #define script_notifyObject(stage, a, b, c, d) GAME_THISFN(script_notifyObject, 0x48fde0, void, void *, int, int, int, int)(stage, a, b, c, d)
 /* scene_topPlayer: the match's top player: in team games the best ranked player of the leading team (the local player
    if it has none), else the first ranked */
-#define scene_topPlayer(scene) GAME_THISFN(scene_topPlayer, 0x4625a0, Player *, Scene *)(scene)
+#define scene_topPlayer(scene) GAME_THISFN(scene_topPlayer, 0x4625a0, Actor *, Scene *)(scene)
 #define hud_drawDigits(x, y, scale, value, count, padded) GAME_FN(hud_drawDigits, 0x46bdc0, void, int, int, float, int, int, int)(x, y, scale, value, count, padded)
 #define tex_getIdByName(manager, name, flags, h1, s1, v1, h2, s2, v2) GAME_THISFN(tex_getIdByName, 0x456be0, int, void *, const char *, int, int, int, int, int, int, int)(manager, name, flags, h1, s1, v1, h2, s2, v2)
 #define vec_rotate(v, angle) GAME_THISFN(vec_rotate, 0x467700, void, float *, int)(v, angle)   /* turns (x, y) by angle (tenths of a degree) */
@@ -588,7 +588,7 @@ typedef struct { u32 vtable; void *banks[6]; i32 count; } TextureManager;   /* t
 #define net_playerInUse(i) GAME_FN(net_playerInUse, 0x4a8700, int, int)(i)   /* the player table's slot i is taken */
 
 /* ---- globals ---- */
-typedef struct { float r, g, b, a; } Colour;
+typedef struct { float r, g, b, a; } Colour;   /* an RGBA colour, four floats (Color4_set / set_colour_bits; g_textColour, g_textColours ..) */
 #define input_releaseKeyboard() GAME_FN(input_releaseKeyboard, 0x401460, void, void)()
 #define menu_clearInputBuffer(max) GAME_FN(menu_clearInputBuffer, 0x431560, void, int)(max)
 #define editField_createEdit(chars) GAME_FN(editField_createEdit, 0x43f460, void, int)(chars)   /* the hidden EDIT control typing goes to */
@@ -1279,7 +1279,8 @@ void fix_glViewport(int x, int y, int w, int h);
 #define sys_errorTerminate(...) GAME_FN(sys_errorTerminate, 0x46c950, void, const char *, ...)(__VA_ARGS__)
 
 /* a menu button's outline as menu_pointInPolygon takes it on the stack: the edge count, then the corners' xs and ys */
-typedef struct { int n, x[5], y[5]; } Outline;
+typedef struct { int n, x[5], y[5]; } Outline;   /* a MenuOutline (scene.fields) as point_in_outline takes it by value: the
+   same 0x2c bytes, not packed (aligned loads, as the original) */
 #define point_in_outline(x, y, outline) GAME_FN(menu_pointInPolygon, 0x41eea0, int, int, int, Outline)(x, y, outline)   /* menu_pointInPolygon */
 
 /* the Korean text passes (text/text_codes.c): the lead glyphs, and the vowel and tail glyphs, at 13 and 31 units */

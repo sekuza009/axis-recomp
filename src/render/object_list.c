@@ -142,7 +142,7 @@ void THISCALL (ObjectList_bindTextures)(ObjectList *list)
    texturing on during it */
 void THISCALL (shape_bindPartTextures)(u8 *shape)
 {
-	Model *md = (Model *)shape;
+	Shape *md = (Shape *)shape;
 	glEnable(GL_TEXTURE_2D);
 	for (int i = 0; i < md->partCount; i++) {
 		int id = ((ShapePart *)(md)->parts + i)->texture;

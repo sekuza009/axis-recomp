@@ -2,12 +2,12 @@ r"""plain_writes.py <file.c>... [--dry]: a statement that writes an integer fiel
     (*(u32 *)&AC->player) = pp[0];
 written as the plain assignment, AC->player = pp[0]; (the same bits stored: int and u32 are the same size and the
 value converts without change of its bits). Only for fields src/scene.fields types i32 / u32, through the pointer
-names the struct tools use (AC Player, SC / GS Scene, ST / STS Stage, BU Bullet, WI ActorInfo, PR Particle);
+names the struct tools use (AC Actor, SC / GS Scene, ST / STS Stage, BU Bullet, WI ActorInfo, PR Particle);
 never a float field (that would convert the value). Check: tools/objcmp.py."""
 import re, sys, os
 
 os.chdir(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..'))
-PTRS = {'AC': 'Player', 'SC': 'Scene', 'GS': 'Scene', 'ST': 'Stage', 'STS': 'Stage', 'BU': 'Bullet', 'WI': 'ActorInfo',
+PTRS = {'AC': 'Actor', 'SC': 'Scene', 'GS': 'Scene', 'ST': 'Stage', 'STS': 'Stage', 'BU': 'Bullet', 'WI': 'ActorInfo',
         'PR': 'Particle'}
 types, cur = {}, None
 for l in open('src/scene.fields', encoding='latin-1'):

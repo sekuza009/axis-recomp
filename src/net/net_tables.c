@@ -463,9 +463,9 @@ static int list_append(u32 count, u32 base, int size, const u8 *rec, const u8 *s
 /* 0x452af0: a ServerRecord into the list at g_serverList (count g_serverListCount) */
 int (net_addServerRecord)(const u8 *rec)
 {
-	static const u8 strings[3] = { offsetof(ServerRecord, address), offsetof(ServerRecord, name), offsetof(ServerRecord, password) };
-	static const u8 bytes[9] = { offsetof(ServerRecord, kind), offsetof(ServerRecord, rotation), offsetof(ServerRecord, fragLimit), offsetof(ServerRecord, timeLimit), offsetof(ServerRecord, gameMode), offsetof(ServerRecord, players), offsetof(ServerRecord, map), offsetof(ServerRecord, maxPlayers), offsetof(ServerRecord, locked) };
-	return list_append(ADDR(g_serverListCount), OBJ(g_serverList), sizeof(ServerRecord), rec, strings, 3, offsetof(ServerRecord, address), bytes, 9);
+	static const u8 strings[3] = { offsetof(ArenaRecord, address), offsetof(ArenaRecord, name), offsetof(ArenaRecord, password) };
+	static const u8 bytes[9] = { offsetof(ArenaRecord, kind), offsetof(ArenaRecord, rotation), offsetof(ArenaRecord, fragLimit), offsetof(ArenaRecord, timeLimit), offsetof(ArenaRecord, gameMode), offsetof(ArenaRecord, players), offsetof(ArenaRecord, map), offsetof(ArenaRecord, maxPlayers), offsetof(ArenaRecord, locked) };
+	return list_append(ADDR(g_serverListCount), OBJ(g_serverList), sizeof(ArenaRecord), rec, strings, 3, offsetof(ArenaRecord, address), bytes, 9);
 }
 /* 0x452c80: a RoomRecord into the list at g_roomList (count g_roomListCount) */
 int (net_addRoomRecord)(const u8 *rec)
@@ -1053,8 +1053,8 @@ static int send_leave(u32 from, u32 to, const u8 *bytes, int nbytes, int flagged
 
 static void arena_info(u8 *dst, u8 kind, u8 count)
 {
-	const ServerRecord *src = g_arenaPacket;
-	ServerRecord *to = (ServerRecord *)dst;
+	const ArenaRecord *src = g_arenaPacket;
+	ArenaRecord *to = (ArenaRecord *)dst;
 	to->kind = kind;
 	to->rotation = src->rotation;
 	to->timeLimit = src->timeLimit;
@@ -1205,7 +1205,7 @@ int (net_connect)(int mode)
    (0). Then the connection flags cleared. Returns what the original leaves in eax */
 u32 (net_disconnect)(void)
 {
-	static const u8 lobbyBytes[9] = { offsetof(ServerRecord, rotation), offsetof(ServerRecord, fragLimit), offsetof(ServerRecord, timeLimit), offsetof(ServerRecord, gameMode), offsetof(ServerRecord, players), offsetof(ServerRecord, map), offsetof(ServerRecord, maxPlayers), offsetof(ServerRecord, locked) }, lobbyNames[3] = { offsetof(ServerRecord, password), offsetof(ServerRecord, address), offsetof(ServerRecord, name) };
+	static const u8 lobbyBytes[9] = { offsetof(ArenaRecord, rotation), offsetof(ArenaRecord, fragLimit), offsetof(ArenaRecord, timeLimit), offsetof(ArenaRecord, gameMode), offsetof(ArenaRecord, players), offsetof(ArenaRecord, map), offsetof(ArenaRecord, maxPlayers), offsetof(ArenaRecord, locked) }, lobbyNames[3] = { offsetof(ArenaRecord, password), offsetof(ArenaRecord, address), offsetof(ArenaRecord, name) };
 	static const u8 roomBytes[9] = { offsetof(RoomRecord, rotation), offsetof(RoomRecord, fragLimit), offsetof(RoomRecord, gameMode), offsetof(RoomRecord, players), offsetof(RoomRecord, map), offsetof(RoomRecord, maxPlayers), offsetof(RoomRecord, timeLimit), offsetof(RoomRecord, locked) }, roomNames[3] = { offsetof(RoomRecord, password), offsetof(RoomRecord, hostName), offsetof(RoomRecord, address) };
 	if (g_netConnected != 1)
 		return (*(u32 *)&g_netConnected);
@@ -1280,7 +1280,7 @@ void (net_send)(int kind, int to)
 		const char *from = (const char *)g_arenaPacket;
 		if (!address || !from)
 			return;
-		strcpy(address, ((const ServerRecord *)from)->address);
+		strcpy(address, ((const ArenaRecord *)from)->address);
 		send_buffer(ADDR(g_lobbySocket), ADDR(g_lobbyKeepAlive), 0x10);
 		return;
 	}
@@ -1646,7 +1646,7 @@ static int angle_byte(const void *v)
 static void THISCALL __attribute__((used)) net_sendPlayerState_body(u8 *g, int p, u8 *packet)
 {
 	u8 *a = (u8 *)&((Scene *)g)->players[p];
-	Player *pl = (Player *)a;
+	Actor *pl = (Actor *)a;
 	u16 w;
 	packet[1] = 0;
 	memcpy(packet + 2, &pl->stateFlags, 2);
@@ -1834,12 +1834,12 @@ static int table_ok(u8 *g, u32 base, u32 per, u32 count, int stride, u16 w, u32 
 /* a player's name copied into its actor (name) and the slot's own index noted (player) */
 static void actor_name(u8 *g, int i, const char *name)
 {
-	char *to = ((Player *)ACTOR(i))->name;
+	char *to = ((Actor *)ACTOR(i))->name;
 	if (name)
 		strcpy(to, name);
 	else
 		to[0] = 0;
-	((Player *)ACTOR(i))->player = i;
+	((Actor *)ACTOR(i))->player = i;
 }
 
 /* team change (kinds 10 / 11): the team, team colours when team colours are on, the name, the notice; a player
@@ -1858,10 +1858,10 @@ static void team_change(u8 *g, int i, const char *pkt, u32 notice)
 	player_setName(STAGE, i, pkt + 4);   /* player_setName */
 	actor_name(g, i, pkt + 4);
 	GAME_THISCALL(notice, void, void *, int, int)(g, i, pkt[3]);
-	if (pkt[3] >= 0 || ((Player *)ACTOR(i))->inPlay != 1)
+	if (pkt[3] >= 0 || ((Actor *)ACTOR(i))->inPlay != 1)
 		return;
 	actor_deactivate(STAGE, i);   /* actor_deactivate */
-	((Player *)ACTOR(i))->deaths++;
+	((Actor *)ACTOR(i))->deaths++;
 }
 
 /* the end of a match's limit (kinds 4 / 5, state 0 frags or 1 time): once, its notice, and the result for team
@@ -1917,7 +1917,7 @@ void THISCALL (net_processGamePacket)(u8 *g, u32 from, int size, const char *pkt
 			GS->sendFlags[i][2] = 1;
 			return;
 		}
-		Player *ac = (Player *)(ACTOR(i));
+		Actor *ac = (Actor *)(ACTOR(i));
 		if ((*(const u16 *)&ac->stateFlags ^ *(const u16 *)(pkt + 2)) & 0x4000)
 			actor_deactivate(STAGE, i);   /* actor_deactivate */
 		if (ac->active == 0 && (b[4] & 1)) {
@@ -2034,7 +2034,7 @@ void THISCALL (net_processGamePacket)(u8 *g, u32 from, int size, const char *pkt
 				GS->dataLossCode = 3;
 			}
 		}
-		Player *ac = (Player *)(ACTOR(b[2]));
+		Actor *ac = (Actor *)(ACTOR(b[2]));
 		ac->timePlayed = ((const GamePacket *)pkt)->timePlayed;
 		BITS(ac->timeFraction) = BITS(((const GamePacket *)pkt)->timeFraction);
 		int me = GS->localPlayer;
@@ -2042,8 +2042,8 @@ void THISCALL (net_processGamePacket)(u8 *g, u32 from, int size, const char *pkt
 			GS->sendFlags[me][1] = 1;
 		if (((const GamePacket *)pkt)->resendAsked[1] & 1u << (me & 0x1f))
 			((PlayerRecord *)PLAYER(me))->flagSent = 0;
-		((Player *)ACTOR(b[2]))->kills = ((const GamePacket *)pkt)->kills;
-		((Player *)ACTOR(b[2]))->deaths = ((const GamePacket *)pkt)->deaths;
+		((Actor *)ACTOR(b[2]))->kills = ((const GamePacket *)pkt)->kills;
+		((Actor *)ACTOR(b[2]))->deaths = ((const GamePacket *)pkt)->deaths;
 		if (b[2] == 0) {
 			GS->teamScores[0] = ((const GamePacket *)pkt)->teamScores[0];
 			GS->teamScores[1] = ((const GamePacket *)pkt)->teamScores[1];
@@ -2069,7 +2069,7 @@ void THISCALL (net_processGamePacket)(u8 *g, u32 from, int size, const char *pkt
 			bad |= m[0x1a + k] > lim;
 		if (bad)
 			break;
-		((Player *)ACTOR(i))->player = i;
+		((Actor *)ACTOR(i))->player = i;
 		player_setName(STAGE, i, name);   /* player_setName */
 		player_setCharacter(STAGE, i, (signed char)m[0x11]);
 		player_setTeam(STAGE, i, (signed char)m[0x12]);   /* player_setTeam */
@@ -2078,18 +2078,18 @@ void THISCALL (net_processGamePacket)(u8 *g, u32 from, int size, const char *pkt
 			GAME_THISCALL(setters[k], int, void *, int, int)(STAGE, i, m[0x15 + k] - 1);
 		for (int k = 0; k < 6; k++)
 			actor_setActorTypeItemInfoBy(STAGE, i, k, m[0x1a + k] - 1);   /* actor_setActorTypeItemInfoBy */
-		((Player *)ACTOR(i))->grade = (signed char)m[0x13];
-		char *to = ((Player *)ACTOR(i))->name;
+		((Actor *)ACTOR(i))->grade = (signed char)m[0x13];
+		char *to = ((Actor *)ACTOR(i))->name;
 		if (name)
 			strcpy(to, name);
 		else
 			to[0] = 0;
-		((Player *)ACTOR(i))->levelShown = ((Player *)ACTOR(i))->grade;
+		((Actor *)ACTOR(i))->levelShown = ((Actor *)ACTOR(i))->grade;
 		const u8 *c = m + 0x2b;
 		/* (the original loads each colour byte into al / cl and pushes the whole register: on the first part the
 		   rest of eax is left from the actor's address and of ecx from its grade; later eax holds the player and ecx what
 		   the call left) */
-		u32 hi_a = (u32)(g + i * 0x8888) & ~0xffu, hi_c = *(u32 *)&((Player *)ACTOR(i))->grade & ~0xffu;
+		u32 hi_a = (u32)(g + i * 0x8888) & ~0xffu, hi_c = *(u32 *)&((Actor *)ACTOR(i))->grade & ~0xffu;
 		for (int k = 0; k < 5; k++, c += 2) {
 			u32 left = thiscall8_ecx(FN_ADDR(playerRecord_applyNetColours, 0x474fd0), STAGE, i, k, hi_c | c[-0xb], hi_a | c[-1], hi_c | c[9], hi_a | c[-0xa], hi_c | c[0],
 			                         hi_a | c[0xa]);   /* playerRecord_applyNetColours */

@@ -48,13 +48,13 @@ def split_decl(decl):
 
 structs = parse_fields()
 # pointers to arrays whose length is another field of the same record: (struct, pointer) -> (count field, element, cap)
-COUNTED = {('Model', 'parts'): ('partCount', 'ShapePart', 256), ('ShapePart', 'prims'): ('primCount', 'ShapePrim', 256),
+COUNTED = {('Shape', 'parts'): ('partCount', 'ShapePart', 256), ('ShapePart', 'prims'): ('primCount', 'ShapePrim', 256),
            ('Skeleton', 'bones'): ('boneCount', 'Bone', 256), ('Bone', 'posKeys'): ('posKeyCount', 'PosKey', 256),
            ('Bone', 'rotKeys'): ('rotKeyCount', 'RotKey', 256), ('ViewVolume', 'quads'): ('quadLimit', 'ViewQuad', 512),
-           ('Manager', 'items'): ('count', 'Model', 512), ('SkelManager', 'items'): ('count', 'Skeleton', 512),
-           ('Manager', 'nodes'): ('count', 'TreeNode', 512), ('SkelManager', 'nodes'): ('count', 'TreeNode', 512)}
+           ('ShapeManager', 'items'): ('count', 'Shape', 512), ('SkelManager', 'items'): ('count', 'Skeleton', 512),
+           ('ShapeManager', 'nodes'): ('count', 'TreeNode', 512), ('SkelManager', 'nodes'): ('count', 'TreeNode', 512)}
 # the collision space's pools: (offset in Space, element)
-POOLS = [(0x10, 'CollisionPlane'), (0x20, 'SpaceNode'), (0x30, 'SpaceUnit'), (0x40, 'SpaceBlock')]
+POOLS = [(0x10, 'CollisionTri'), (0x20, 'SpaceNode'), (0x30, 'SpaceUnit'), (0x40, 'SpaceBlock')]
 leaves = []       # (name, kind, esz, strlen)
 lid = {}
 
@@ -193,7 +193,7 @@ for off, size, decl in structs['Scene']['fields']:
 out.append('const int rt_sceneFast[][4] = {%s};' % ', '.join(fast))
 out.append('const int rt_sceneFastCount = %d;' % len(fast))
 pfast = []   # the local player's small fields (its one-frame inputs), at Scene.players[Scene.localPlayer]
-for off, size, decl in structs['Player']['fields']:
+for off, size, decl in structs['Actor']['fields']:
     d = split_decl(decl)
     if not d or not size:
         continue
@@ -205,7 +205,7 @@ for off, size, decl in structs['Player']['fields']:
 foff = {decl_name: off for off, size, decl in structs['Scene']['fields'] for decl_name in [(split_decl(decl) or ('', 0, '', []))[2]]}
 out.append('const int rt_playerFast[][4] = {%s};' % ', '.join(pfast))
 out.append('const int rt_playerFastCount = %d;' % len(pfast))
-out.append('const int rt_localPlayerAt = 0x%x, rt_playersAt = 0x%x, rt_playerSize = 0x%x;' % (foff['localPlayer'], foff['players'], structs['Player']['size']))
+out.append('const int rt_localPlayerAt = 0x%x, rt_playersAt = 0x%x, rt_playerSize = 0x%x;' % (foff['localPlayer'], foff['players'], structs['Actor']['size']))
 out.append('const char *const rt_structNames[] = {%s};' % ', '.join('"%s"' % s for s in structs))
 out.append('const int rt_structCount = %d;' % len(structs))
 out.append('Leaf rt_leaves[] = {')

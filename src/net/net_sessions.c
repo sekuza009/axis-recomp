@@ -66,7 +66,7 @@ void (room_mergeReceivedSessions)(void)
 /* 0x406640: the arena lobby's (0x5b-byte records) */
 void (arena_mergeReceivedSessions)(void)
 {
-	static const Received arena = { ADDR(g_serverListCount), (OBJ(g_serverList) + offsetof(ServerRecord, rotation)), sizeof(ServerRecord), (int)offsetof(ServerRecord, name) - (int)offsetof(ServerRecord, rotation), (int)offsetof(ServerRecord, address) - (int)offsetof(ServerRecord, rotation), ADDR(g_arenaListPlayers), { ADDR(g_lobbySearching), ADDR(g_serverAnswerIn), ADDR(g_lobbyRefreshing) } };
+	static const Received arena = { ADDR(g_serverListCount), (OBJ(g_serverList) + offsetof(ArenaRecord, rotation)), sizeof(ArenaRecord), (int)offsetof(ArenaRecord, name) - (int)offsetof(ArenaRecord, rotation), (int)offsetof(ArenaRecord, address) - (int)offsetof(ArenaRecord, rotation), ADDR(g_arenaListPlayers), { ADDR(g_lobbySearching), ADDR(g_serverAnswerIn), ADDR(g_lobbyRefreshing) } };
 	merge(&arena);
 }
 

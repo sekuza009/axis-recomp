@@ -195,7 +195,7 @@
 #define k_15f GAME_VAR(float, 0x4aa498)
 #define g_errorHook GAME_VAR(ErrorHook, 0x4c57cc)   /* the error hook (stamp, text) every error report ends in (error_log.c report: its eax returned): sys_messageBoxOverActive (0x46c580) in the image; nothing assigns it at run time */
 #define g_unlockedLevel GAME_VAR(int, 0x4dc784)   /* the level the ARM CENTER's part lists are unlocked up to (armc_buildPartLists sets it with g_armcLevel, then reads it for the weapon and extra lists) */
-#define g_loadLimit GAME_VAR(float, 0x4dcb0c)   /* the stats panel's load limit: the actor's Player.loadMax (the chest's weightLimit x the pilot's MAX.LOAD factor x the items' loadFactor; armc_readMechStats) */
+#define g_loadLimit GAME_VAR(float, 0x4dcb0c)   /* the stats panel's load limit: the actor's Actor.loadMax (the chest's weightLimit x the pilot's MAX.LOAD factor x the items' loadFactor; armc_readMechStats) */
 #define g_cursorBlinkTimer GAME_VAR(float, 0x4de1f0)   /* the text cursor's blink: grows by frame time x 0.035 each menu_drawTextCursor, back to 0 past 0.9; the cursor's alpha is 1 - it */
 #define g_freeCamLookX GAME_VAR(float, 0x4de344)   /* X of the free (watching) camera's look-at point: moved by freeCam_keys (W / S) and freeCam_stepLeft / freeCam_stepRight; copied to g_menuCameraLook and the local slot's g_slotCams record */
 #define g_freeCamLookZ GAME_VAR(float, 0x4de34c)   /* Z of the free camera's look-at point (see g_freeCamLookX; copied to g_menuCameraLookZ) */
@@ -270,7 +270,7 @@
 #define g_profileMechItem3 GAME_VAR(int, 0x9f1a20)   /* the profile's weapon slot 1 item (g_savedMechWeaponSlot1; 2 for a new profile) */
 #define g_profileMechItem4 GAME_VAR(int, 0x9f1a24)   /* the profile's weapon slot 2 item (g_savedMechWeaponSlot2; 8 for a new profile) */
 #define g_profileMechItem5 GAME_VAR(int, 0x9f1a28)   /* the profile's weapon slot 3 item (g_savedMechWeaponSlot3; -1 for a new profile) */
-#define g_arenaPacket GAME_VAR(ServerRecord *, 0xa0b310)   /* buffer (0x5b bytes, ServerRecord) of the hosted arena's record: filled and sent as request 10 by lobby_announceArena; copied into the info (arena_info) and leave (net_disconnect) packets */
+#define g_arenaPacket GAME_VAR(ArenaRecord *, 0xa0b310)   /* buffer (0x5b bytes, ServerRecord) of the hosted arena's record: filled and sent as request 10 by lobby_announceArena; copied into the info (arena_info) and leave (net_disconnect) packets */
 #define g_accountPacket GAME_VAR(AccountPacket *, 0xa0b320)   /* buffer (0x10b bytes, AccountPacket) of the account record: the new ID (newId_register, request 15) or the login (login_send, request 14); net_send puts this machine's address in it */
 #define g_roomPacket GAME_VAR(RoomRecord *, 0xa0b328)   /* buffer (0x79 bytes, RoomRecord) of the room's announced game: filled by room_announceGame (request 0x12); copied into the info (room_info) and leave packets (net_disconnect, game_postMatch) */
 #define g_dplayLobby GAME_VAR(void *, 0xa0b398)   /* the IDirectPlayLobby3A object (CoCreateInstance in dplay_lobbyConnect): connection settings, ConnectEx and compound addresses; released by dplay_release */
@@ -551,7 +551,7 @@
 #define g_playerListReplyKind GAME_VAR(int, 0xa05306)   /* the game server's player-list reply's kind (g_playerListReply +0x1e; net_receivePlayerListReply): 0 a player (net_addPlayerRecord), 1 the list's end (g_playerListDone set) */
 #define g_netAccountRequest GAME_VAR(char *, 0xa055e0)   /* the 0x1e-byte body of request 29 (0x1d, the rank): the Ladder ID (room_enterAccountPage); allocated by net_resetConnection, freed by net_freeBuffers */
 #define g_gameServerReplyKind GAME_VAR(u32, 0xa0b2e8)   /* a game server room-list reply's kind (g_gameServerReply +0x68; net_receiveGameServerReply): 0 a room (net_addRoomRecord), 1 the list's end (pings started, g_roomListAnswer 0xca), 2 / 3 refused (0x28) */
-#define g_lobbyKeepAlive GAME_VAR(char *, 0xa0b304)   /* the 16-byte buffer of packet 23 (0x17), the lobby keep-alive sent on timer 0x29a while hosting an arena (g_arenaLobbyState 2: WndProc / editField_editProc): the hosted arena's address (g_arenaPacket's ServerRecord.address) */
+#define g_lobbyKeepAlive GAME_VAR(char *, 0xa0b304)   /* the 16-byte buffer of packet 23 (0x17), the lobby keep-alive sent on timer 0x29a while hosting an arena (g_arenaLobbyState 2: WndProc / editField_editProc): the hosted arena's address (g_arenaPacket's ArenaRecord.address) */
 #define g_gameServerKeepAlive GAME_VAR(char *, 0xa0b308)   /* the 16-byte buffer of packet 24 (0x18), the game server keep-alive sent on timer 0x115c while g_roomConnected: this machine's address (g_localAddress) */
 #define g_netKindBuffer GAME_VAR(u32 *, 0xa0b30c)   /* the 4-byte buffer net_send puts a packet's kind in and sends first to the lobby (100) or game server (101); allocated by net_resetConnection, freed by net_freeBuffers */
 #define g_arenaInfoPacket GAME_VAR(u8 *, 0xa0b314)   /* the 0x5b-byte packet 12 to the lobby: the hosted arena's record (g_arenaPacket) with the player count, rebuilt when a player comes or goes (net_handleSystemMessage, arena_info); allocated by net_resetConnection */
@@ -669,10 +669,10 @@
 #define g_unusedArmcPoint0Y GAME_VAR(float, 0x4dca34)   /* 300.0: g_armcViewPoints[1] (point 0's y), set by armc_initCameraPoints; the whole table 0x4dca30 .. 0x4dca8c is never read */
 #define g_unusedArmcPoint3Y GAME_VAR(float, 0x4dca64)   /* -500.0: g_armcViewPoints point 3's y, set by armc_initCameraPoints; never read (see g_unusedArmcPoint0Y) */
 #define g_unusedArmcPoint5Y GAME_VAR(float, 0x4dca84)   /* 350.0: g_armcViewPoints point 5's y, set by armc_initCameraPoints; never read (see g_unusedArmcPoint0Y) */
-#define g_mechDetectionRange GAME_VAR(float, 0x4dcaa0)   /* the mech's detection range for the ARM CENTER's whole-mech panel: sqrt(Player.detectionRangeSq) x 0.01 (armc_readMechStats); section_mech shows it as "%.1f(m)" */
-#define g_mechHackingLevel GAME_VAR(int, 0x4dcaa8)   /* the mech's hacking level (Player.hackingLevel; armc_readMechStats); section_mech shows it as "%d(Lv)" */
+#define g_mechDetectionRange GAME_VAR(float, 0x4dcaa0)   /* the mech's detection range for the ARM CENTER's whole-mech panel: sqrt(Actor.detectionRangeSq) x 0.01 (armc_readMechStats); section_mech shows it as "%.1f(m)" */
+#define g_mechHackingLevel GAME_VAR(int, 0x4dcaa8)   /* the mech's hacking level (Actor.hackingLevel; armc_readMechStats); section_mech shows it as "%d(Lv)" */
 #define g_unusedMechStat GAME_VAR(int, 0x4dcae8)   /* the booster type's thrust type, set by armc_readMechStats; never read (the panel uses g_boosterThrustType) */
-#define g_mechMaxSpeedBwd GAME_VAR(float, 0x4dcb00)   /* the mech's top backward speed: -(g_mechNormalSpeed x Player.runTop[1]) (km/h; armc_readMechStats); section_mech shows it last of MAX SPEED */
+#define g_mechMaxSpeedBwd GAME_VAR(float, 0x4dcb00)   /* the mech's top backward speed: -(g_mechNormalSpeed x Actor.runTop[1]) (km/h; armc_readMechStats); section_mech shows it last of MAX SPEED */
 #define g_mechWeaponSlot0 GAME_VAR(int, 0x4dcb20)   /* g_armcSlotItems[2]: the item in weapon slot 0 (armc_items.c slot_item(0); -1 empty); g_armcSlotItems[0 .. 1] are the item slots 4 / 5 (g_itemSlot4 / 5) */
 #define g_mechWeaponSlot1 GAME_VAR(int, 0x4dcb24)   /* g_armcSlotItems[3]: the item in weapon slot 1 (-1 empty) */
 #define g_mechWeaponSlot2 GAME_VAR(int, 0x4dcb28)   /* g_armcSlotItems[4]: the item in weapon slot 2 (-1 empty) */
@@ -780,10 +780,10 @@
 #define g_itemBonusTargetKeep GAME_VAR(float, 0x4dc88c)   /* 1 when extra item 32 (SE-S10 SENSOR ARRAY) is fitted, else 0 (armc_applyExtraItemBonuses): bonus factor on the head's TARGET KEEPING TIME (section_head: x g_headTargetKeepTime / 1000 sec) */
 #define g_itemBonusRechargeTime GAME_VAR(float, 0x4dc894)   /* -0.1 when extra item 33 (TEP-34L BOOST GENERATOR) is fitted, else 0 (armc_applyExtraItemBonuses): bonus factor on the booster's RECHARGE TIME (section_booster) */
 #define g_itemBonusLockOn GAME_VAR(float, 0x4dc898)   /* 0.5 when extra item 32 (SE-S10 SENSOR ARRAY) is fitted, else 0 (armc_applyExtraItemBonuses): bonus factor on the head's LOCK ON EFFICIENCY percent (section_head) */
-#define g_mechMobility GAME_VAR(float, 0x4dcad0)   /* the mech's mobility (Player.mobility, armc_readMechStats): the whole-mech panel's MOBILITY, "%.2f" (section_mech) */
-#define g_mechBoostTime GAME_VAR(float, 0x4dcaec)   /* the mech's boost time in ms (Player.boostTime x 1000): the first figure of BOOSTER ENERGY (message 680), shown / 1000 in seconds */
-#define g_mechBoosterRecharge GAME_VAR(float, 0x4dcaf0)   /* the mech's booster recharge time in ms (Player.rechargeTime x 1000, armc_readMechStats): the second figure of BOOSTER ENERGY (message 680), shown / 1000 in seconds (section_mech) */
-#define g_mechNormalSpeed GAME_VAR(float, 0x4dcaf8)   /* the mech's normal speed in km/h (Player.speed x 0.036, armc_readMechStats; g_mechSpeeds[0]): the panel's NORMAL SPEED and the base of the top speeds (runTop x it, g_mechMaxSpeedBwd) (section_mech) */
+#define g_mechMobility GAME_VAR(float, 0x4dcad0)   /* the mech's mobility (Actor.mobility, armc_readMechStats): the whole-mech panel's MOBILITY, "%.2f" (section_mech) */
+#define g_mechBoostTime GAME_VAR(float, 0x4dcaec)   /* the mech's boost time in ms (Actor.boostTime x 1000): the first figure of BOOSTER ENERGY (message 680), shown / 1000 in seconds */
+#define g_mechBoosterRecharge GAME_VAR(float, 0x4dcaf0)   /* the mech's booster recharge time in ms (Actor.rechargeTime x 1000, armc_readMechStats): the second figure of BOOSTER ENERGY (message 680), shown / 1000 in seconds (section_mech) */
+#define g_mechNormalSpeed GAME_VAR(float, 0x4dcaf8)   /* the mech's normal speed in km/h (Actor.speed x 0.036, armc_readMechStats; g_mechSpeeds[0]): the panel's NORMAL SPEED and the base of the top speeds (runTop x it, g_mechMaxSpeedBwd) (section_mech) */
 #define g_itemBonusShield GAME_VAR(float, 0x4dcc68)   /* 0.3 when extra item 35 (SH-4 FORCEFIELD BOOSTER) is fitted, else 0 (armc_applyExtraItemBonuses): added to skill 2's fraction for the chest's MAX SHIELD bonus (section_chest) */
 #define g_hasItemCapacity GAME_VAR(int, 0x4dcb10)   /* extra item 27 (BE-VOX EXPANSION MAGAZINE) is fitted (armc_applyExtraItemBonuses; written only) */
 #define g_hasItemEpak GAME_VAR(int, 0x4dcea8)   /* extra item 28 (BE-EOX E-PAK EXTRA MAGAZINE) is fitted (armc_applyExtraItemBonuses; written only) */
@@ -1114,15 +1114,15 @@
 #define g_headCount GAME_VAR(int, 0x4dc780)   /* the head list's length (g_headList; armc_buildPartLists); wraps g_headCursor (armc_stepPart, armc_syncPartCursors) */
 #define g_armCount GAME_VAR(int, 0x4dca90)   /* the arm list's length (g_armList; armc_buildPartLists); wraps g_armCursor (armc_stepPart, armc_syncPartCursors) */
 #define g_legCount GAME_VAR(int, 0x4dca94)   /* the leg list's length (g_legList; armc_buildPartLists); wraps g_legCursor (armc_stepPart, armc_syncPartCursors) */
-#define g_mechDetectionAngle GAME_VAR(float, 0x4dcaa4)   /* the local mech's Player.detectionAngle x k_0_1f (armc_readMechStats); never read */
-#define g_mechLockOnTime GAME_VAR(float, 0x4dcaac)   /* the local mech's Player.lockOnTime x 100 (armc_readMechStats); never read */
-#define g_mechTargetKeepTime GAME_VAR(float, 0x4dcab0)   /* the local mech's Player.targetKeepTime x 1000 (armc_readMechStats); never read */
+#define g_mechDetectionAngle GAME_VAR(float, 0x4dcaa4)   /* the local mech's Actor.detectionAngle x k_0_1f (armc_readMechStats); never read */
+#define g_mechLockOnTime GAME_VAR(float, 0x4dcaac)   /* the local mech's Actor.lockOnTime x 100 (armc_readMechStats); never read */
+#define g_mechTargetKeepTime GAME_VAR(float, 0x4dcab0)   /* the local mech's Actor.targetKeepTime x 1000 (armc_readMechStats); never read */
 #define g_mechLegsInertia GAME_VAR(float, 0x4dcad4)   /* the leg type's inertia (LegType.inertia; armc_readMechStats); never read */
 #define g_mechLegsSpeedCorrection GAME_VAR(float, 0x4dcad8)   /* the leg type's speedCorrection x 100 (armc_readMechStats); never read */
 #define g_mechLegsForwardBoost GAME_VAR(float, 0x4dcadc)   /* the leg type's forwardBoostCorrection x 100 (armc_readMechStats); never read */
 #define g_mechLegsSideBoost GAME_VAR(float, 0x4dcae0)   /* the leg type's sideBoostCorrection x 100 (armc_readMechStats); never read */
 #define g_mechLegsBackBoost GAME_VAR(float, 0x4dcae4)   /* the leg type's backBoostCorrection x 100 (armc_readMechStats); never read */
-#define g_mechBoosterRestTime GAME_VAR(float, 0x4dcaf4)   /* the local mech's Player.restTime x 1000 (armc_readMechStats); never read */
+#define g_mechBoosterRestTime GAME_VAR(float, 0x4dcaf4)   /* the local mech's Actor.restTime x 1000 (armc_readMechStats); never read */
 #define g_boosterCursor GAME_VAR(int, 0x4dcb30)   /* the booster list's cursor (armc_stepPart / armc_syncPartCursors, beside g_boosterCount / g_boosterList) */
 #define g_legCursor GAME_VAR(int, 0x4dcea4)   /* the leg list's cursor (armc_stepPart / armc_syncPartCursors, beside g_legCount / g_legList); right after g_boosterStats' nine floats */
 #define g_chestCount GAME_VAR(int, 0x4dcc60)   /* the chest list's length (g_chestList; armc_buildPartLists); wraps g_chestCursor (armc_stepPart, armc_syncPartCursors) */

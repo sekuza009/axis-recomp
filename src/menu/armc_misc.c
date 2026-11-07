@@ -147,7 +147,7 @@ void (armc_exit)(int confirmed)
 void THISCALL (armc_drawPreview3D)(Scene *scene, const u32 *eye, const u32 *forward, const u32 *up, int part, int angle,
                                       int w, int h)
 {
-	static const u32 lists[8] = { offsetof(Player, headModel), offsetof(Player, chestModel), offsetof(Player, armsModel), offsetof(Player, legsModel), offsetof(Player, boosterModel), offsetof(Player, weaponModel), offsetof(Player, weaponModel4), offsetof(Player, weaponModel5) };   /* (in the actor) */
+	static const u32 lists[8] = { offsetof(Actor, headModel), offsetof(Actor, chestModel), offsetof(Actor, armsModel), offsetof(Actor, legsModel), offsetof(Actor, boosterModel), offsetof(Actor, weaponModel), offsetof(Actor, weaponModel4), offsetof(Actor, weaponModel5) };   /* (in the actor) */
 	u8 *s = (u8 *)scene, *stage = (u8 *)SCENE_STAGE(s), *vv = (u8 *)&scene->view;
 	u32 light[0xb010 / 4];   /* a Light: vtable, 0x400 entries of 0x2c bytes, two counts, the changed flag (+0xb00c:
 	                            factor_addFactorBy sets it); the original's frame holds it whole at +0x18 */
@@ -182,7 +182,7 @@ void THISCALL (armc_drawPreview3D)(Scene *scene, const u32 *eye, const u32 *forw
 	}
 	int a = scene->localPlayer;
 	u8 *actor = (u8 *)&scene->players[a];
-	Player *pl = (Player *)actor;
+	Actor *pl = (Actor *)actor;
 	pl->nextPitch = (float)fmul_m(fld_m(&scene->mouseDy) / (long double)(H / 2),
 	                                               (const float *)ADDR(k_890f));   /* 890: tenths of a degree */
 	BITS(pl->nextYaw) = BITS(scene->previewTurn);

@@ -7,7 +7,7 @@
 void THISCALL (scene_resetScores)(Scene *scene)
 {
 	for (int i = 0; i < 16; i++) {
-		Player *p = &scene->players[i];
+		Actor *p = &scene->players[i];
 		p->inPlay = 0;
 		p->kills = 0;
 		p->deaths = 0;
@@ -45,7 +45,7 @@ void THISCALL (scene_updateRanking)(Scene *scene)
 {
 	scene->redTeamCount = scene->blueTeamCount = scene->noTeamCount = 0;
 	for (int i = 0; i < 16; i++) {
-		Player *p = &scene->players[i];
+		Actor *p = &scene->players[i];
 		if (p->team >= 0) {
 			if (scene_claimTeamSlot(scene, p->team) == 0)
 				scene->redTeamCount++;
@@ -60,7 +60,7 @@ void THISCALL (scene_updateRanking)(Scene *scene)
 	for (int k = 0; k < 16; k++) {
 		int best = -1, bestKills = (int)0x80000000;
 		for (int i = 0; i < 16; i++) {
-			const Player *p = &scene->players[i];
+			const Actor *p = &scene->players[i];
 			if (p->team < 0 || scene->rank[i] >= 0)
 				continue;
 			if (p->kills > bestKills
@@ -78,7 +78,7 @@ void THISCALL (scene_updateRanking)(Scene *scene)
 	int place = 0;
 	for (int j = 0; j < scene->rankCount; j++) {
 		if (j > 0) {
-			const Player *cur = &scene->players[scene->ranking[j]], *prev = &scene->players[scene->ranking[j - 1]];
+			const Actor *cur = &scene->players[scene->ranking[j]], *prev = &scene->players[scene->ranking[j - 1]];
 			if (cur->kills < prev->kills || (cur->kills == prev->kills && cur->deaths > prev->deaths))
 				place = j;
 		}
@@ -88,7 +88,7 @@ void THISCALL (scene_updateRanking)(Scene *scene)
 		scene->localRank = scene->rank[scene->localPlayer];
 	if (scene->kingOfTheHill == 1)
 		for (int i = 0; i < 16; i++) {
-			Player *p = &scene->players[i];
+			Actor *p = &scene->players[i];
 			if (p->team < 0)
 				continue;
 			if (i == scene->ranking[0]) {
@@ -113,7 +113,7 @@ void THISCALL (scene_updateRanking)(Scene *scene)
 		float most;
 		BITS(most) = 0x800000;   /* the smallest normal float */
 		for (int i = 0; i < 16; i++) {
-			const Player *p = &scene->players[i];
+			const Actor *p = &scene->players[i];
 			if (p->team != t)
 				continue;
 			long double time = fadd_m((long double)p->timePlayed, &p->timeFraction);
@@ -123,7 +123,7 @@ void THISCALL (scene_updateRanking)(Scene *scene)
 			}
 		}
 		for (int i = 0; i < 16; i++) {
-			Player *p = &scene->players[i];
+			Actor *p = &scene->players[i];
 			if (p->team != t)
 				continue;
 			if (i != leader)

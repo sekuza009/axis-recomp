@@ -15,7 +15,7 @@ static float as_float(u32 bits) { float f; memcpy(&f, &bits, 4); return f; }
    copied as raw bits. With no parts, centre and radius are 0 */
 void THISCALL (shape_computeBounds)(u8 *shape)
 {
-	Model *md = (Model *)shape;
+	Shape *md = (Shape *)shape;
 	if (!md->partCount) {
 		(*(int *)&md->centre[0]) = 0;
 		(*(int *)&md->centre[1]) = 0;

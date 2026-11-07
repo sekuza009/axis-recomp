@@ -43,7 +43,7 @@ static float tex255(int n) { return f32((long double)n * (1.0f / 255)); }
 
 /* the alert ring: a quad strip around the screen centre, opaque at its inner edge and fading out 1.2 times further
    out; its size by the player's detection angle (the view's tangent scaled by it), red while a round homes on it */
-static void main_ring(Scene *scene, Player *player)
+static void main_ring(Scene *scene, Actor *player)
 {
 	int t = ftol((long double)view_fov() * 5.0f);
 	float trig = g_trig[(t % 3600 + 3600) % 3600];
@@ -78,7 +78,7 @@ static void main_ring(Scene *scene, Player *player)
 }
 
 /* the two counters at the bottom left (armor, shield) on their plate */
-static void main_counters(Scene *scene, Player *player)
+static void main_counters(Scene *scene, Actor *player)
 {
 	float h = hf();
 	int y0 = ftol(h - hy(74.0f));
@@ -115,7 +115,7 @@ static void main_counters(Scene *scene, Player *player)
 }
 
 /* the top left: flag, emblem, the score icon and the score */
-static void main_score(Scene *scene, Player *player, int p)
+static void main_score(Scene *scene, Actor *player, int p)
 {
 	char text[256];
 	int x = 4;
@@ -136,7 +136,7 @@ static void main_score(Scene *scene, Player *player, int p)
 
 /* the four ammunition counters (ammo[0 .. 3]: 30MM, 60MM, E-PACK and MISSILE cells) along the bottom right, 61 units
    apart: the selected weapon's kind (ammoKind) lit, each with its count */
-static void main_ammo(Scene *scene, Player *player)
+static void main_ammo(Scene *scene, Actor *player)
 {
 	for (int i = 0, across = 0; across < 0xf4; i++, across += 0x3d) {
 		float h = hf();
@@ -186,7 +186,7 @@ static void main_ammo(Scene *scene, Player *player)
 
 /* the selected weapon slot's icon at the bottom centre: the slot's cell of the menu texture (3 x 3 cells of 64
    texels), fading out with slotIconTime (2 s from a weapon switch; its alpha, at most 1) */
-static void main_slotIcon(Scene *scene, Player *player)
+static void main_slotIcon(Scene *scene, Actor *player)
 {
 	float h = hf();
 	h = f32(h - hy(8.0f));
@@ -219,7 +219,7 @@ static void main_slotIcon(Scene *scene, Player *player)
 
 /* the four timers down the right side (those whose bit 8 + k is set in stateFlags): an icon from the HUD\'s icon
    atlas, and the seconds left once 30 or fewer */
-static void main_timers(Scene *scene, Player *player)
+static void main_timers(Scene *scene, Actor *player)
 {
 	for (int k = 0; k < 4; k++) {
 		if (!(player->stateFlags & 0x100 << k))
@@ -271,7 +271,7 @@ static void main_timers(Scene *scene, Player *player)
 
 /* the actor's snapshot (Actor/<name>/SnapShot, loaded once per actor type) at the bottom right, while it is not the
    selected actor (the cockpit view) (or for a spectator on camera 2) */
-static void main_snapshot(Scene *scene, Player *player)
+static void main_snapshot(Scene *scene, Actor *player)
 {
 	char name[256];
 	int x, y;
@@ -350,7 +350,7 @@ static int energy_right(void)
 /* the energy bar on the left: a faint full-length background, the energy left (energy) in blue
    (boosted, timer 2 running), red (overheated, or blinking 4 times a second while warned) or white, and an
    outline */
-static void main_energy(Player *player)
+static void main_energy(Actor *player)
 {
 	int len = ftol(hy(ENERGY_HEIGHT));
 	int cut = ftol((1.0L - player->energy) * len);
@@ -392,7 +392,7 @@ static void main_energy(Player *player)
 }
 
 /* the crosshair at the centre: 64 units, 72 while fireAnim (firing) > 0 (then at alpha 0.75) */
-static void main_crosshair(Scene *scene, Player *player)
+static void main_crosshair(Scene *scene, Actor *player)
 {
 	int size = player->fireAnim > 0.0f ? 0x48 : 0x40;
 	int w = hud_toScreenX(size), h = hud_toScreenY(size);
@@ -443,7 +443,7 @@ static void main_draw(Scene *scene)
 {
 	char text[256];
 	int p = scene->playing == 1 ? scene->localPlayer : scene->watchedPlayer;
-	Player *player = &scene->players[p];
+	Actor *player = &scene->players[p];
 
 	part(HUD_SCREEN);
 	if (scene->playing == 1) {

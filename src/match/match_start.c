@@ -280,7 +280,7 @@ void THISCALL (scene_reset)(u8 *s)
 static void model_sets(u8 *shapes, const char *dir, int n, int extra, int size, u8 *skels, const char *skel_dir, int sn,
                        int sextra, u8 *smem, int ssize)
 {
-	ShapeManager_initBy(shapes, dir, n, 2, extra, shapes + sizeof(Manager), size);   /* (its block right after it) */
+	ShapeManager_initBy(shapes, dir, n, 2, extra, shapes + sizeof(ShapeManager), size);   /* (its block right after it) */
 	SkeletonManager_initBy(skels, skel_dir, sn, 2, sextra, smem, ssize);
 }
 

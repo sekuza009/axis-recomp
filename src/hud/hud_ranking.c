@@ -11,7 +11,7 @@
 static void ranking_row(Scene *scene, int p, int *y)
 {
 	char name[64], score[32], time[32];
-	Player *player = &scene->players[p];
+	Actor *player = &scene->players[p];
 	hud_fillRect(0x70, *y, 0x210, *y + 0x10);
 	text_setColor(1.0f, 1.0f, 1.0f, 1.0f);
 	sprintf(name, player->name);

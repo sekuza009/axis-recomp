@@ -155,7 +155,7 @@ void rt_follow(unsigned ptr, int type, unsigned size)
 	free(buf);
 }
 
-/* count records of size bytes at ptr (a pointer whose length is another field: Model.parts, the space's pools ..),
+/* count records of size bytes at ptr (a pointer whose length is another field: Shape.parts, the space's pools ..),
    at most cap of them, each walked */
 void rt_follow_n(unsigned ptr, int count, int cap, int type, unsigned size)
 {

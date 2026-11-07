@@ -185,7 +185,7 @@ void THISCALL (ladder_addMatchScores)(u8 *s)
 {
 	Scene *sc = (Scene *)s;
 	if (sc->localPlayer >= 0) {
-		Player *me = &sc->players[sc->localPlayer];
+		Actor *me = &sc->players[sc->localPlayer];
 		g_ladderKills += me->kills - me->killsCounted;
 		g_ladderDeaths += me->deaths - me->deathsCounted;
 		g_ladderExp += me->score - me->scoreCounted;
@@ -227,7 +227,7 @@ void THISCALL (effect_initShapes)(u8 *s)
 void THISCALL (script_processCommandBy)(u8 *s, int actorIndex, int trig, int entry)
 {
 	u8 *actor = actorIndex >= 0 ? (u8 *)&ST->actors[actorIndex] : NULL;
-	Player *ac = (Player *)actor;
+	Actor *ac = (Actor *)actor;
 	WayPoint *e = (WayPoint *)(ST->triggers[trig].wayPoints + entry * 0x14);
 	char name[0x100];
 	for (int i = 0; i < e->commandCount; i++) {
@@ -379,8 +379,8 @@ void THISCALL (object_initObjectBy)(Stage *s, int i, const ObjectType *type)
 	identity4((u32 *)mo->animInverse);
 	Mat4_multiply(mo->relMatrix, m, mo->placeInverse);
 	Mat4_invert(mo->relInverse, mo->relMatrix);
-	Model *shape = (Model *)((u8 *)shape_getByName((u8 *)&ST->objectShapes, type->name, 1));
-	mo->model = (Model *)((u8 *)shape);
+	Shape *shape = (Shape *)((u8 *)shape_getByName((u8 *)&ST->objectShapes, type->name, 1));
+	mo->model = (Shape *)((u8 *)shape);
 	for (int r = 0; r < 2; r++) {
 		int need = ST->objectColourCount + shape->colourCount;
 		if (need > 1000000)
@@ -501,18 +501,18 @@ void THISCALL (particle_update)(u8 *s, int slot, float dt)
 }
 
 #define A(type, offset) GAME_VAR(type, ac + (offset))
-#define AC ((Player *)ac)   /* the same by its fields (src/scene.fields) */
+#define AC ((Actor *)ac)   /* the same by its fields (src/scene.fields) */
 
 /* the cells, armour and shield items (kinds 0 .. 5, 10 .. 19): the actor's flag (stateFlags) that refuses them, the
    count raised, its limit (and how far an extended one may go past it), the message; an extended one is noted as the
    last big pickup (lastPickup) */
 static const struct { u8 flag; u16 count, limit; u8 add, over; u32 text; } k_supplies[16] = {
-	{ 0x10, offsetof(Player, ammo[0]), offsetof(Player, ammoMax[0]), 1, 0, STR(0x4c82f4, "+1 30MM CELL") }, { 0x10, offsetof(Player, ammo[0]), offsetof(Player, ammoMax[0]), 40, 0, STR(0x4c82e4, "+40 30MM CELLS") }, { 0x20, offsetof(Player, ammo[1]), offsetof(Player, ammoMax[1]), 40, 0, STR(0x4c82d4, "+40 60MM CELLS") },
-	{ 0x40, offsetof(Player, ammo[2]), offsetof(Player, ammoMax[2]), 40, 0, STR(0x4c82c0, "+40 E-PACK CELLS") }, { 0x80, offsetof(Player, ammo[3]), offsetof(Player, ammoMax[3]), 15, 0, STR(0x4c82ac, "+15 MISSILE CELLS") }, { 0x80, offsetof(Player, ammo[3]), offsetof(Player, ammoMax[3]), 5, 0, STR(0x4c8298, "+5 MISSILE CELLS") },
-	{ 1, offsetof(Player, armor), offsetof(Player, armorMax), 10, 0, STR(0x4c828c, "+10 ARMOR") }, { 1, offsetof(Player, armor), offsetof(Player, armorMax), 25, 0, STR(0x4c8280, "+25 ARMOR") }, { 1, offsetof(Player, armor), offsetof(Player, armorMax), 50, 0, STR(0x4c8274, "+50 ARMOR") },
-	{ 1, offsetof(Player, armor), offsetof(Player, armorMax), 100, 0, STR(0x4c8268, "+100 ARMOR") }, { 2, offsetof(Player, armor), offsetof(Player, armorMax), 100, 100, STR(0x4c8254, "+100 EXTENDED ARMOR") }, { 4, offsetof(Player, shield), offsetof(Player, shieldMax), 10, 0, STR(0x4c8248, "+10 SHIELD") },
-	{ 4, offsetof(Player, shield), offsetof(Player, shieldMax), 25, 0, STR(0x4c823c, "+25 SHIELD") }, { 4, offsetof(Player, shield), offsetof(Player, shieldMax), 50, 0, STR(0x4c8230, "+50 SHIELD") }, { 4, offsetof(Player, shield), offsetof(Player, shieldMax), 100, 0, STR(0x4c8224, "+100 SHIELD") },
-	{ 8, offsetof(Player, shield), offsetof(Player, shieldMax), 100, 100, STR(0x4c820c, "+100 EXTENDED SHIELD") } };
+	{ 0x10, offsetof(Actor, ammo[0]), offsetof(Actor, ammoMax[0]), 1, 0, STR(0x4c82f4, "+1 30MM CELL") }, { 0x10, offsetof(Actor, ammo[0]), offsetof(Actor, ammoMax[0]), 40, 0, STR(0x4c82e4, "+40 30MM CELLS") }, { 0x20, offsetof(Actor, ammo[1]), offsetof(Actor, ammoMax[1]), 40, 0, STR(0x4c82d4, "+40 60MM CELLS") },
+	{ 0x40, offsetof(Actor, ammo[2]), offsetof(Actor, ammoMax[2]), 40, 0, STR(0x4c82c0, "+40 E-PACK CELLS") }, { 0x80, offsetof(Actor, ammo[3]), offsetof(Actor, ammoMax[3]), 15, 0, STR(0x4c82ac, "+15 MISSILE CELLS") }, { 0x80, offsetof(Actor, ammo[3]), offsetof(Actor, ammoMax[3]), 5, 0, STR(0x4c8298, "+5 MISSILE CELLS") },
+	{ 1, offsetof(Actor, armor), offsetof(Actor, armorMax), 10, 0, STR(0x4c828c, "+10 ARMOR") }, { 1, offsetof(Actor, armor), offsetof(Actor, armorMax), 25, 0, STR(0x4c8280, "+25 ARMOR") }, { 1, offsetof(Actor, armor), offsetof(Actor, armorMax), 50, 0, STR(0x4c8274, "+50 ARMOR") },
+	{ 1, offsetof(Actor, armor), offsetof(Actor, armorMax), 100, 0, STR(0x4c8268, "+100 ARMOR") }, { 2, offsetof(Actor, armor), offsetof(Actor, armorMax), 100, 100, STR(0x4c8254, "+100 EXTENDED ARMOR") }, { 4, offsetof(Actor, shield), offsetof(Actor, shieldMax), 10, 0, STR(0x4c8248, "+10 SHIELD") },
+	{ 4, offsetof(Actor, shield), offsetof(Actor, shieldMax), 25, 0, STR(0x4c823c, "+25 SHIELD") }, { 4, offsetof(Actor, shield), offsetof(Actor, shieldMax), 50, 0, STR(0x4c8230, "+50 SHIELD") }, { 4, offsetof(Actor, shield), offsetof(Actor, shieldMax), 100, 0, STR(0x4c8224, "+100 SHIELD") },
+	{ 8, offsetof(Actor, shield), offsetof(Actor, shieldMax), 100, 100, STR(0x4c820c, "+100 EXTENDED SHIELD") } };
 
 /* the item's sound (its type's respawnSound or pickSound) at its position, heard from the camera */
 static void item_sound(u8 *s, int sound, u8 *it)

@@ -293,7 +293,7 @@ void (Mat4_transpose)(u32 *d, const u32 *s)
    0x4a9754) with its members cleared (the element constructor of the stage's actors) */
 void *THISCALL (actor_initPartLists)(u8 *self)
 {
-	static const int lists[8] = { offsetof(Player, headModel), offsetof(Player, chestModel), offsetof(Player, armsModel), offsetof(Player, legsModel), offsetof(Player, boosterModel), offsetof(Player, weaponModel), offsetof(Player, weaponModel4), offsetof(Player, weaponModel5) };
+	static const int lists[8] = { offsetof(Actor, headModel), offsetof(Actor, chestModel), offsetof(Actor, armsModel), offsetof(Actor, legsModel), offsetof(Actor, boosterModel), offsetof(Actor, weaponModel), offsetof(Actor, weaponModel4), offsetof(Actor, weaponModel5) };
 	for (int k = 0; k < 8; k++) {
 		FIELD(u32, self, lists[k]) = VT(UnitPoseInfo, 0x4a9754);
 		partList_clear(self + lists[k]);
@@ -431,7 +431,7 @@ void THISCALL (player_setName)(Stage *stage, int p, const char *name)
 	else
 		*dst = 0;
 	for (int i = 0; i < stage->actorCount; i++) {
-		Player *actor = &stage->actors[i];
+		Actor *actor = &stage->actors[i];
 		if (actor->player != p)
 			continue;
 		if (name)
@@ -448,7 +448,7 @@ void THISCALL (player_setTeam)(Stage *stage, int p, int team)
 	player_seen(stage, p);
 	stage->playerRecords[p].team = team;
 	for (int i = 0; i < stage->actorCount; i++) {
-		Player *actor = &stage->actors[i];
+		Actor *actor = &stage->actors[i];
 		if (actor->player == p) {
 			actor->team = team;
 			if (team < 0)

@@ -8,12 +8,12 @@
 
 /* an actor's input record: twelve ints (the moves and buttons the actor acts on this frame); the tenth
    (inWeaponSlot, index 9) is the one cleared to -1 */
-static const int input_fields[12] = { offsetof(Player, inForward), offsetof(Player, inBackward), offsetof(Player, inStepLeft), offsetof(Player, inStepRight), offsetof(Player, inPitch), offsetof(Player, inYaw), offsetof(Player, inFire), offsetof(Player, inAltitude), offsetof(Player, inBooster), offsetof(Player, inWeaponSlot), offsetof(Player, inPrevWeapon), offsetof(Player, inNextWeapon) };
+static const int input_fields[12] = { offsetof(Actor, inForward), offsetof(Actor, inBackward), offsetof(Actor, inStepLeft), offsetof(Actor, inStepRight), offsetof(Actor, inPitch), offsetof(Actor, inYaw), offsetof(Actor, inFire), offsetof(Actor, inAltitude), offsetof(Actor, inBooster), offsetof(Actor, inWeaponSlot), offsetof(Actor, inPrevWeapon), offsetof(Actor, inNextWeapon) };
 
 /* 0x45eab0: actor i's input cleared */
 void THISCALL (actor_clearInput)(Stage *stage, int i)
 {
-	Player *a = &stage->actors[i];
+	Actor *a = &stage->actors[i];
 	for (int k = 0; k < 12; k++)
 		FIELD(int, a, input_fields[k]) = k == 9 ? -1 : 0;
 }
@@ -22,7 +22,7 @@ void THISCALL (actor_clearInput)(Stage *stage, int i)
 void THISCALL (actor_setInput)(Stage *stage, int i, int v0, int v1, int v2, int v3, int v4, int v5, int v6, int v7,
                              int v8, int v9, int v10, int v11)
 {
-	Player *a = &stage->actors[i];
+	Actor *a = &stage->actors[i];
 	const int v[12] = { v0, v1, v2, v3, v4, v5, v6, v7, v8, v9, v10, v11 };
 	for (int k = 0; k < 12; k++)
 		FIELD(int, a, input_fields[k]) = v[k];
@@ -97,13 +97,13 @@ void THISCALL (stage_clearBullets)(Stage *stage)
 /* 0x4743e0: actor slot i emptied: no name, no player (-1), no team (-1), its counters and marks cleared */
 void THISCALL (actor_resetSlot)(Stage *stage, int i)
 {
-	Player *a = &stage->actors[i];
+	Actor *a = &stage->actors[i];
 	a->name[0] = '\0';
 	a->player = -1;
 	a->character = 0;
 	a->team = -1;
 	for (int k = 0; k < 11; k++)
-		FIELD(int, a, offsetof(Player, inPlay) + k * 4) = 0;   /* inPlay .. (11 words) */
+		FIELD(int, a, offsetof(Actor, inPlay) + k * 4) = 0;   /* inPlay .. (11 words) */
 	a->state = 0;
 	a->bigHead = 0;
 	a->viewMarked = 0;
@@ -149,7 +149,7 @@ void THISCALL (stage_clearActorSlots)(Stage *stage)
 	stage->actorFreeHint = 0;
 	stage->actorSerial = 0;
 	for (int i = 0; i < 100; i++) {
-		Player *ac = &stage->actors[i];
+		Actor *ac = &stage->actors[i];
 		ac->active = 0;
 		ac->player = -1;
 		ac->state = 0;
@@ -239,11 +239,11 @@ void THISCALL (stage_newRound)(Stage *stage)
 	}
 	stage->playerRecordCount = 0;
 	stage_clearActorSlots(stage);
-	static const short cleared[] = { offsetof(Player, inPlay), offsetof(Player, kills), offsetof(Player, deaths), offsetof(Player, killsCounted),
-	                                 offsetof(Player, deathsCounted), offsetof(Player, timePlayed), offsetof(Player, timeFraction), offsetof(Player, state),
-	                                 offsetof(Player, bigHead), offsetof(Player, isKing), offsetof(Player, isCommander) };
+	static const short cleared[] = { offsetof(Actor, inPlay), offsetof(Actor, kills), offsetof(Actor, deaths), offsetof(Actor, killsCounted),
+	                                 offsetof(Actor, deathsCounted), offsetof(Actor, timePlayed), offsetof(Actor, timeFraction), offsetof(Actor, state),
+	                                 offsetof(Actor, bigHead), offsetof(Actor, isKing), offsetof(Actor, isCommander) };
 	for (int i = 0; i < 100; i++) {
-		Player *ac = &stage->actors[i];
+		Actor *ac = &stage->actors[i];
 		ac->team = -1;
 		for (unsigned k = 0; k < sizeof cleared / sizeof cleared[0]; k++)
 			FIELD(int, ac, cleared[k]) = 0;
@@ -254,7 +254,7 @@ void THISCALL (stage_newRound)(Stage *stage)
    free slot and the used count kept up to date); the teams changed */
 void THISCALL (actor_deactivate)(Stage *stage, int i)
 {
-	Player *ac = &stage->actors[i];
+	Actor *ac = &stage->actors[i];
 	if (!ac->active)
 		return;
 	ac->active = 0;
@@ -330,7 +330,7 @@ typedef struct {
 static void part_load(u8 *scene, int a, const PartModel *m)
 {
 	u8 *actor = (u8 *)&STS->actors[a];
-	Player *act = (Player *)actor;
+	Actor *act = (Actor *)actor;
 	if (!act->active)
 		return;
 	u8 *record = (u8 *)&STS->playerRecords[act->player];
@@ -344,7 +344,7 @@ static void part_load(u8 *scene, int a, const PartModel *m)
 static const PartModel k_partModels[5] = {
 #define PART(k, T, part, model) { offsetof(PlayerRecord, parts[k]), offsetof(Stage, part##Types), sizeof(T), offsetof(T, shapeCount), offsetof(T, shapeNames), \
 	sizeof ((T *)0)->shapeNames[0], offsetof(T, skelCount), offsetof(T, skelNames), offsetof(PlayerRecord, part##Shapes), offsetof(PlayerRecord, part##Skels), \
-	offsetof(Player, model), sizeof ((Player *)0)->model##Mem }
+	offsetof(Actor, model), sizeof ((Actor *)0)->model##Mem }
 	PART(0, HeadType, head, headModel), PART(1, ChestType, chest, chestModel), PART(2, ArmType, arm, armsModel),
 	PART(3, LegType, leg, legsModel), PART(4, BoosterType, booster, boosterModel),
 #undef PART
@@ -377,7 +377,7 @@ void THISCALL (actor_applySpawnRecord)(u8 *scene, int a, const u8 *rec)
 	if (a < 0)
 		return;
 	u8 *actor = (u8 *)&STS->actors[a];
-	Player *act = (Player *)actor;
+	Actor *act = (Actor *)actor;
 #define AC act   /* the same by its fields (src/scene.fields) */
 	AC->unused64 = SR->unused1c;
 	AC->armorMax = SR->armor;
@@ -407,7 +407,7 @@ void THISCALL (actor_applySpawnRecord)(u8 *scene, int a, const u8 *rec)
    armor / shield from armorMax / shieldMax and each slot half its ammoMax ... Its caller ignores the eax it leaves */
 void THISCALL (actor_startingValues)(u8 *scene, int p)
 {
-	Player *a = &STS->actors[p];
+	Actor *a = &STS->actors[p];
 	if (a->active != 1)
 		return;
 	unsigned mode = STS->gameType - 2;
@@ -437,7 +437,7 @@ void THISCALL (actor_startingValues)(u8 *scene, int p)
 void THISCALL (actor_loadWeapon)(u8 *scene, int a, int slot, int variant)
 {
 	u8 *actor = (u8 *)&STS->actors[a];
-	Player *pl = (Player *)actor;
+	Actor *pl = (Actor *)actor;
 	if (!pl->active)
 		return;
 	PlayerRecord *record = (PlayerRecord *)((u8 *)&STS->playerRecords[pl->player]);
@@ -446,12 +446,12 @@ void THISCALL (actor_loadWeapon)(u8 *scene, int a, int slot, int variant)
 	ActorItem *info = (ActorItem *)it;
 	int listAt, set = 0;
 	if (slot == 4)
-		listAt = offsetof(Player, weaponModel4);
+		listAt = offsetof(Actor, weaponModel4);
 	else if (slot == 5) {
-		listAt = offsetof(Player, weaponModel5);
+		listAt = offsetof(Actor, weaponModel5);
 		set = 1;
 	} else if (slot == pl->slot)
-		listAt = offsetof(Player, weaponModel);
+		listAt = offsetof(Actor, weaponModel);
 	else
 		return;
 	if (it)
@@ -460,7 +460,7 @@ void THISCALL (actor_loadWeapon)(u8 *scene, int a, int slot, int variant)
 		                     0, 0, 0, actor + listAt + sizeof(ObjectList), 0x1770);   /* (its memory right after it) */
 	else
 		partList_release(actor + listAt);
-	if (listAt == offsetof(Player, weaponModel))
+	if (listAt == offsetof(Actor, weaponModel))
 		pl->ammoKind = it ? info->ammoType : -1;
 }
 
@@ -509,11 +509,11 @@ void THISCALL (playerRecord_setPartColour)(Stage *scene, int p, int part, float 
 
 #define K(address) ((const float *)RELOC(address))
 #define A(type, offset) GAME_VAR(type, ac + (offset))
-#define AC ((Player *)ac)   /* the same by its fields (src/scene.fields) */
+#define AC ((Actor *)ac)   /* the same by its fields (src/scene.fields) */
 
 /* the actor's eight object lists (the five parts, then the three weapon models) */
-static const u32 k_partLists[8] = { offsetof(Player, headModel), offsetof(Player, chestModel), offsetof(Player, armsModel), offsetof(Player, legsModel),
-                                     offsetof(Player, boosterModel), offsetof(Player, weaponModel4), offsetof(Player, weaponModel5), offsetof(Player, weaponModel) };
+static const u32 k_partLists[8] = { offsetof(Actor, headModel), offsetof(Actor, chestModel), offsetof(Actor, armsModel), offsetof(Actor, legsModel),
+                                     offsetof(Actor, boosterModel), offsetof(Actor, weaponModel4), offsetof(Actor, weaponModel5), offsetof(Actor, weaponModel) };
 
 /* the overlay texture the actor's flags ask for (Stage.itemTextures; 0x100: the damage map, 0x800: the shield, else the
    booster) */
@@ -639,7 +639,7 @@ void THISCALL (actor_drawIntoView)(u8 *s, int a, void *vv, int draw)
 #undef A
 #undef AC
 
-#define AC ((Player *)ac)   /* the same by its fields (src/scene.fields) */
+#define AC ((Actor *)ac)   /* the same by its fields (src/scene.fields) */
 
 /* n dwords from at in the actor set to v */
 static void fill_dwords(u8 *at, int n, u32 v)
@@ -675,7 +675,7 @@ static void mech_stats(u8 *s, u8 *ac, u8 *p, int check)
 	AC->rangeBonus = 0.0f;
 	BITS(AC->lockOnTimeFactor) = BITS(AC->targetKeepFactor) = 0x3f800000;
 	AC->hackingBonus = 0;
-	fill_dwords(ac + offsetof(Player, boostTimeFactor), 5, 0x3f800000);   /* boostTimeFactor .. shieldFactor */
+	fill_dwords(ac + offsetof(Actor, boostTimeFactor), 5, 0x3f800000);   /* boostTimeFactor .. shieldFactor */
 	AC->shieldRegen = 0;
 	for (int k = 0; k < 6; k++) {
 		int it = pr->items[k];
@@ -819,7 +819,7 @@ void THISCALL (actor_setupFromParts)(u8 *s, int a, int id, u32 controlledBy, con
 	AC->dropAge = 1.0f;
 	AC->armor = ((u32)AC->armorMax);
 	AC->shield = ((u32)AC->shieldMax);
-	fill_dwords(ac + offsetof(Player, ammo), 4, 0);   /* ammo */
+	fill_dwords(ac + offsetof(Actor, ammo), 4, 0);   /* ammo */
 	AC->slot = -1;
 	AC->lastWeaponSlot = 0;
 	actor_setWeaponSlot((Stage *)s, a, 0);
@@ -829,7 +829,7 @@ void THISCALL (actor_setupFromParts)(u8 *s, int a, int id, u32 controlledBy, con
 	memcpy(AC->pos, spawn + 2, 12);
 	BITS(AC->pitch) = spawn[5];
 	BITS(AC->yaw) = spawn[6];
-	fill_dwords(ac + offsetof(Player, forward), 6, 0);   /* forward .. fireAnim */
+	fill_dwords(ac + offsetof(Actor, forward), 6, 0);   /* forward .. fireAnim */
 	/* the next, sent and bot-goal states start at the place and the heading */
 	memcpy(AC->nextPos, AC->pos, 12);
 	BITS(AC->nextPitch) = BITS(AC->pitch);
@@ -840,9 +840,9 @@ void THISCALL (actor_setupFromParts)(u8 *s, int a, int id, u32 controlledBy, con
 	memcpy(AC->botGoal, AC->pos, 12);
 	BITS(AC->botLookPitch) = BITS(AC->pitch);
 	BITS(AC->botLookYaw) = BITS(AC->yaw);
-	fill_dwords(ac + offsetof(Player, nextForward), 6, 0);   /* nextForward .. fireCycle */
-	fill_dwords(ac + offsetof(Player, netMotion), 5, 0);   /* netMotion */
-	fill_dwords(ac + offsetof(Player, netFired), 3, 0);   /* netFired .. burstLeft */
+	fill_dwords(ac + offsetof(Actor, nextForward), 6, 0);   /* nextForward .. fireCycle */
+	fill_dwords(ac + offsetof(Actor, netMotion), 5, 0);   /* netMotion */
+	fill_dwords(ac + offsetof(Actor, netFired), 3, 0);   /* netFired .. burstLeft */
 	AC->burstTime = 0.0f;
 	for (int k = 0; k < 5; k++) {
 		AC->shots[k].inUse = 0;
@@ -855,24 +855,24 @@ void THISCALL (actor_setupFromParts)(u8 *s, int a, int id, u32 controlledBy, con
 	AC->radius = 500.0f;   /* 500 */
 	AC->chatIcon = 0;
 	AC->stateFlags = AC->id % 2 == 1 ? 0x4000 : 0;
-	fill_dwords(ac + offsetof(Player, timers), 4, 0);   /* timers */
-	fill_dwords(ac + offsetof(Player, inForward), 11, 0);   /* inForward .. inBooster */
+	fill_dwords(ac + offsetof(Actor, timers), 4, 0);   /* timers */
+	fill_dwords(ac + offsetof(Actor, inForward), 11, 0);   /* inForward .. inBooster */
 	AC->inWeaponSlot = -1;
-	fill_dwords(ac + offsetof(Player, inPrevWeapon), 5, 0);   /* inPrevWeapon .. weaponLowering */
+	fill_dwords(ac + offsetof(Actor, inPrevWeapon), 5, 0);   /* inPrevWeapon .. weaponLowering */
 	AC->weaponRaise = 1.0f;
 	(*(int *)&AC->slotIconTime) = AC->switchSlot = 0;
 	AC->variantLoaded = a == st->cockpitActor ? 0 : 1;
-	fill_dwords(ac + offsetof(Player, firePrev), 3, 0);   /* firePrev .. footstepTime */
+	fill_dwords(ac + offsetof(Actor, firePrev), 3, 0);   /* firePrev .. footstepTime */
 	BITS(AC->energy) = BITS(AC->staminaRest) = 0x3f800000;
 	AC->overheat = AC->warned = 0;
-	fill_dwords(ac + offsetof(Player, lastHitDamageType), 3, (u32)-1);   /* lastHitMode .. lastHitWeapon */
+	fill_dwords(ac + offsetof(Actor, lastHitDamageType), 3, (u32)-1);   /* lastHitMode .. lastHitWeapon */
 	AC->cheat = -1;
 	memcpy(AC->deathPos, AC->pos, 12);
 	AC->glow = 0.0f;
 	(*(u8 *)&AC->message[0]) = 0;
 	AC->messageTime = -10000.0f;   /* -10000 */
 	AC->lastWarp = -1;
-	fill_dwords(ac + offsetof(Player, onWarp), 3, 0);   /* onWarp .. shieldRegenTime */
+	fill_dwords(ac + offsetof(Actor, onWarp), 3, 0);   /* onWarp .. shieldRegenTime */
 	AC->whiteFlash = 1.0f;
 	AC->partListsBound = 0;
 	actor_loadHead(s, a);
@@ -882,18 +882,18 @@ void THISCALL (actor_setupFromParts)(u8 *s, int a, int id, u32 controlledBy, con
 	actor_loadBooster(s, a);
 	for (int k = 5; k >= 0; k--)
 		actor_loadWeapon(s, a, k, ((u32)AC->variantLoaded));
-	fill_dwords(ac + offsetof(Player, screenPos), 10, 0);   /* screenPos .. tagBottomRight, onScreen */
-	fill_dwords(ac + offsetof(Player, aimTime), 4, 0);   /* aimTime .. botNeeds */
+	fill_dwords(ac + offsetof(Actor, screenPos), 10, 0);   /* screenPos .. tagBottomRight, onScreen */
+	fill_dwords(ac + offsetof(Actor, aimTime), 4, 0);   /* aimTime .. botNeeds */
 	AC->path = AC->pathPoint = -1;
 	AC->pathReverse = (*(int *)&AC->botWait) = 0;
 	AC->botWaitTrigger = -1;
 	AC->invulnerable = 0;
-	fill_dwords(ac + offsetof(Player, lookActor), 5, (u32)-1);   /* lookActor .. botTarget */
-	fill_dwords(ac + offsetof(Player, scanTime), 5, 0);   /* scanTime .. heightTime */
+	fill_dwords(ac + offsetof(Actor, lookActor), 5, (u32)-1);   /* lookActor .. botTarget */
+	fill_dwords(ac + offsetof(Actor, scanTime), 5, 0);   /* scanTime .. heightTime */
 	memcpy(AC->cleared8838, (const void *)ADDR(g_vecZero), 12);
 	AC->lookTime = 0.0f;
 	BITS(AC->pathRange) = 0x44bb8000;   /* 1500 */
-	fill_dwords(ac + offsetof(Player, outOfPlay), 3, 0);   /* outOfPlay .. hitFlash */
+	fill_dwords(ac + offsetof(Actor, outOfPlay), 3, 0);   /* outOfPlay .. hitFlash */
 	memcpy(AC->push, (const void *)ADDR(g_vecZero), 12);
 	AC->botTargetTime = 0.0f;
 	AC->killPending = 0;
@@ -907,10 +907,10 @@ void THISCALL (actor_setupFromParts)(u8 *s, int a, int id, u32 controlledBy, con
 #undef AC
 
 #define A(type, offset) GAME_VAR(type, ac + (offset))
-#define AC ((Player *)ac)   /* the same by its fields (src/scene.fields) */
+#define AC ((Actor *)ac)   /* the same by its fields (src/scene.fields) */
 
 /* the actor's eight part lists (constructed on the stack copy as the original does) */
-static const u16 k_listAt[8] = { offsetof(Player, headModel), offsetof(Player, chestModel), offsetof(Player, armsModel), offsetof(Player, legsModel), offsetof(Player, boosterModel), offsetof(Player, weaponModel), offsetof(Player, weaponModel4), offsetof(Player, weaponModel5) };
+static const u16 k_listAt[8] = { offsetof(Actor, headModel), offsetof(Actor, chestModel), offsetof(Actor, armsModel), offsetof(Actor, legsModel), offsetof(Actor, boosterModel), offsetof(Actor, weaponModel), offsetof(Actor, weaponModel4), offsetof(Actor, weaponModel5) };
 
 /* |a - b| (an x87 abs: a NaN stays) within 0.1 */
 static int close_enough(const float *a, const float *b)
@@ -926,7 +926,7 @@ static int close_enough(const float *a, const float *b)
 static int totals_agree(u8 *s, u8 *ac, u8 *me)
 {
 	Stage *st = (Stage *)s;
-	Player *mine = (Player *)me;
+	Actor *mine = (Actor *)me;
 	u8 *p = (u8 *)&st->playerRecords[AC->player];
 	mech_stats(s, me, p, 1);
 	unsigned mode = st->gameType - 2;
@@ -936,8 +936,8 @@ static int totals_agree(u8 *s, u8 *ac, u8 *me)
 		if (pair < 4)
 			mine->ammoMax[pair] = 100;
 	}
-	static const u8 floats1[] = { offsetof(Player, detectionRangeSq), offsetof(Player, detectionAngle) }, ints[] = { offsetof(Player, armorMax), offsetof(Player, shieldMax), offsetof(Player, accuracy), offsetof(Player, ammoMax[0]), offsetof(Player, ammoMax[1]), offsetof(Player, ammoMax[2]), offsetof(Player, ammoMax[3]) };
-	static const u8 floats2[] = { offsetof(Player, lockOnTime), offsetof(Player, targetKeepTime), offsetof(Player, loadMax), offsetof(Player, load) }, floats3[] = { offsetof(Player, mobility), offsetof(Player, boostTime), offsetof(Player, rechargeTime), offsetof(Player, restTime), offsetof(Player, speed), offsetof(Player, moveAccel), offsetof(Player, runTop[0]), offsetof(Player, runTop[1]), offsetof(Player, runTop[2]), offsetof(Player, runTop[3]) };
+	static const u8 floats1[] = { offsetof(Actor, detectionRangeSq), offsetof(Actor, detectionAngle) }, ints[] = { offsetof(Actor, armorMax), offsetof(Actor, shieldMax), offsetof(Actor, accuracy), offsetof(Actor, ammoMax[0]), offsetof(Actor, ammoMax[1]), offsetof(Actor, ammoMax[2]), offsetof(Actor, ammoMax[3]) };
+	static const u8 floats2[] = { offsetof(Actor, lockOnTime), offsetof(Actor, targetKeepTime), offsetof(Actor, loadMax), offsetof(Actor, load) }, floats3[] = { offsetof(Actor, mobility), offsetof(Actor, boostTime), offsetof(Actor, rechargeTime), offsetof(Actor, restTime), offsetof(Actor, speed), offsetof(Actor, moveAccel), offsetof(Actor, runTop[0]), offsetof(Actor, runTop[1]), offsetof(Actor, runTop[2]), offsetof(Actor, runTop[3]) };
 	for (int k = 0; k < 2; k++)
 		if (!close_enough((const float *)(ac + floats1[k]), (const float *)(me + floats1[k])))
 			return 0;
@@ -976,7 +976,7 @@ u32 THISCALL (actor_checkDataLoss)(u8 *s, int a)
 	Stage *st = (Stage *)s;
 	u8 me[0x8888];   /* the stack actor (only the fields it computes are read) */
 	for (int k = 0; k < 5; k++)
-		class_emptyCtor((u8 *)&((Player *)me)->rounds[k]);   /* class_emptyCtor: a resource set */
+		class_emptyCtor((u8 *)&((Actor *)me)->rounds[k]);   /* class_emptyCtor: a resource set */
 	for (int k = 0; k < 8; k++) {
 		GAME_VAR(u32, me + k_listAt[k]) = VT(UnitPoseInfo, 0x4a9754);
 		partList_clear(me + k_listAt[k]);

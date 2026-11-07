@@ -107,11 +107,11 @@ void *THISCALL (space_getNextFreeBlockPtrBy)(u8 *space, const u32 *mn, const u32
 
 /* 0x482320 (thiscall on the space): one triangle of a unit put into the space (space_insertTriangle) and, when its
    plane record was made, that plane linked at the end of the unit's list (SpaceUnit.lastPlane;
-   CollisionPlane.listNext / listPrev) and given a node (space_getNextFreeNodePtr) at the head of the unit's nodes
+   CollisionTri.listNext / listPrev) and given a node (space_getNextFreeNodePtr) at the head of the unit's nodes
    (SpaceUnit.lastNode). Its callers ignore the eax it leaves */
 void THISCALL (space_addUnitTriangle)(void *space, u32 flags, u8 *owner, u32 part, u32 i0, u32 i1, u32 i2, u32 v0, u32 v1, u32 v2)
 {
-#define PL(p) ((CollisionPlane *)(p))
+#define PL(p) ((CollisionTri *)(p))
 	SpaceUnit *un = (SpaceUnit *)owner;
 	u8 *plane = space_insertTriangle(space, flags, v0, v1, v2, owner, part, i0, i1, i2);
 	if (!plane)
@@ -400,7 +400,7 @@ int THISCALL (space_insertItem)(u8 *space, u8 *block, u8 *item, int depth)
 	return 1;
 }
 
-/* 0x481eb0 (thiscall on the collision space): a triangle (v0, v1, v2; its flags word flags: CollisionPlane.flags) of a unit put into the space: nothing (0) when
+/* 0x481eb0 (thiscall on the collision space): a triangle (v0, v1, v2; its flags word flags: CollisionTri.flags) of a unit put into the space: nothing (0) when
    its box misses the space's (min .. max[2], widened by the margin margin). Else a plane record (from the pool, set up
    by collisionTri_setup), and every grid cell its widened box covers (z, x, y as in space_collideAt) that the
    triangle really meets (collisionTri_meetsBox) gets it into its octree (space_insertItem, depth depth; the cell's root block made
@@ -515,7 +515,7 @@ static void through(float *out, const float *m, const float *v, Rows rows)
    modelview when none is given), each added with space_addUnitTriangle. Returns the unit */
 u32 *THISCALL (space_buildUnit)(u8 *space, u32 id, u8 *shape, const float *matrix)
 {
-	Model *md = (Model *)shape;
+	Shape *md = (Shape *)shape;
 	float modelview[16];
 	if (!matrix) {
 		glGetFloatv(0xba6, modelview);   /* GL_MODELVIEW_MATRIX */

@@ -268,7 +268,7 @@ static void corner(float *out, const float *m, const float *px, long double y, l
 void THISCALL (ViewVolume_queueModel)(u8 *view, u8 *model, u32 *colours, const float *matrix, u32 factors, u32 colour, int cull,
                                          int material, u32 extraMatrix)
 {
-	Model *md = (Model *)model;
+	Shape *md = (Shape *)model;
 	ViewVolume *vw = (ViewVolume *)view;
 	if (md->partCount <= 0)
 		return;

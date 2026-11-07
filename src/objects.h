@@ -121,7 +121,7 @@
 #define g_ptxData ((u8 *)IMG(0xaa2e98))   /* u8[262144]; the image decoder's input: a .ptx file's compressed planes after the header (ptx_read reads 0x10000 bytes; each plane's bit reader starts where the last one ended) */
 #define g_roomList ((RoomRecord *)IMG(0x9fd960))   /* RoomRecord[256]; the server's room list: 256 rooms of 0x79 bytes (net_clearRoomList: 0x1e40 dwords) */
 #define g_missions ((Mission *)IMG(0x9ef2d0))   /* Mission[30]; the missions of axis.mis (missions_clear's loop pointer runs from +0x44 to 0x9f109c: the 30 records end at 0x9f1058) */
-#define g_pingAddresses ((char *)IMG(0xa0bf20))   /* char[256][20]; each listed arena's / room's host address as text (ServerRecord.address / RoomRecord.address, copied by net_addServerRecord / net_addRoomRecord), pinged in turn by net_pingAllServers (results g_serverPing); net_clearServers zeroes 0x500 dwords */
+#define g_pingAddresses ((char *)IMG(0xa0bf20))   /* char[256][20]; each listed arena's / room's host address as text (ArenaRecord.address / RoomRecord.address, copied by net_addServerRecord / net_addRoomRecord), pinged in turn by net_pingAllServers (results g_serverPing); net_clearServers zeroes 0x500 dwords */
 #define g_ptxCbGreen ((int *)IMG(0xa6170c))   /* int[256]; YCbCr -> RGB: Cb's part of green (ptx_initColourTables: 256 entries) */
 #define g_ptxCrRed ((int *)IMG(0xaa228c))   /* int[256]; Cr's part of red */
 #define g_ptxCbBlue ((int *)IMG(0xa1f304))   /* int[256]; Cb's part of blue */
@@ -164,7 +164,7 @@
 #define g_menuEyeHome ((float *)IMG(0x9db090))   /* float[3]; the menu camera's home position (g_menuEyeHomeX .. Z) */
 #define g_menuLookHome ((float *)IMG(0x76d3f8))   /* float[3]; the menu camera's home look-at point (g_menuLookHomeX .. Z) */
 #define g_armcDim ((float *)IMG(0x4dc1d0))   /* float[4]; the ARM CENTER's dim colour (RGBA 0, 0.6, 0.6, 1): tabs, slots and buttons not chosen (armc_open) */
-#define g_mechSpeeds ((float *)IMG(0x4dcaf8))   /* float[6]; the stats panel's speeds and load: normal speed (g_mechNormalSpeed, x 0.036), top forward (x runTop[0]), top backward (g_mechMaxSpeedBwd), top sideways (x runTop[2]), the load (Player.load), the most load (g_loadLimit = Player.loadMax) (armc_readMechStats) */
+#define g_mechSpeeds ((float *)IMG(0x4dcaf8))   /* float[6]; the stats panel's speeds and load: normal speed (g_mechNormalSpeed, x 0.036), top forward (x runTop[0]), top backward (g_mechMaxSpeedBwd), top sideways (x runTop[2]), the load (Actor.load), the most load (g_loadLimit = Actor.loadMax) (armc_readMechStats) */
 #define g_boosterStats ((float *)IMG(0x4dce80))   /* float[9]; the booster's stats for the panel: [0] its thrust type (an int: g_boosterThrustType), active / recharge time / recharge delay x 1000, four speeds x 0.036, the weight (g_boosterWeight) (armc_readPartPanels) */
 #define g_armcCameraBox ((u32 *)IMG(0x4dcf40))   /* u32[38]; an ARM CENTER box: eight corners of a 1400-unit cube (+-700 as float bits, 16 bytes apart; never read), then the panels' origin point at +0x80 (0: y +0x84 read by armc_drawPanels, z +0x88 = g_armcPanelDepth); all written once by armc_initCameraBox */
 #define g_setupSoundRect ((int *)IMG(0x4ddad0))   /* int[4]; the setup sound panel's window: left (g_setupSoundLeft) */

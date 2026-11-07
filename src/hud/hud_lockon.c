@@ -22,7 +22,7 @@ static void lockon_quad(int x, int y, int size, float s0, float t0, float s1, fl
 void THISCALL (hud_drawLockOn)(Scene *scene)
 {
 	for (int i = 0; i < 16; i++) {
-		Player *player = &scene->players[i];
+		Actor *player = &scene->players[i];
 		if (i == scene->localPlayer || player->state != 1 || player->onScreen != 1)
 			continue;
 		if (scene->lockHeld[i] > 0.0f) {

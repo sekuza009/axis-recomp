@@ -6,7 +6,7 @@
 /* a collision unit's planes (from its last, lastPlane, back through listPrev) flagged or not (flag 1: off) */
 static void unit_parts_flag(void *unit, int set)
 {
-	for (u32 *p = (u32 *)((SpaceUnit *)unit)->lastPlane; p; p = (u32 *)((CollisionPlane *)p)->listPrev)
+	for (u32 *p = (u32 *)((SpaceUnit *)unit)->lastPlane; p; p = (u32 *)((CollisionTri *)p)->listPrev)
 		if (set)
 			*p |= 1;
 		else

@@ -11,7 +11,7 @@ void THISCALL (stage_drawObject)(Stage *stage, int i, void *view)
 	MapObject *o = &stage->objects[i];
 	if (o->flags & 2)
 		return;
-	Model *model = o->model;
+	Shape *model = o->model;
 	if (model == NULL)
 		return;
 	float r = f32((long double)model->radius + stage->cullMargin);
@@ -144,7 +144,7 @@ void THISCALL (mapObject_frame)(u8 *s, int i, float dt)
 		Mat4_multiply(MO->relMatrix, m, MO->placeInverse);
 		Mat4_invert(MO->relInverse, MO->relMatrix);
 		if (!(obj[0xc] & 2))
-			shape_shadingColours((*(u32 * *)&MO->colourRuns[0]), 1, (Model *)((u8 *)MO->model), (const LightFactors *)&st->mapLights,
+			shape_shadingColours((*(u32 * *)&MO->colourRuns[0]), 1, (Shape *)((u8 *)MO->model), (const LightFactors *)&st->mapLights,
 			                 MO->matrixInverse);
 		MO->poseStale = 0;
 		const float *c = MO->model->centre;
@@ -155,7 +155,7 @@ void THISCALL (mapObject_frame)(u8 *s, int i, float dt)
 	}
 	if (MO->colourSide == 1 && !(obj[0xc] & 2)) {
 		memcpy((*(void * *)&MO->colourRuns[1]), (*(void * *)&MO->colourRuns[0]), MO->model->colourCount * 4);
-		shape_shadingColours((*(u32 * *)&MO->colourRuns[1]), 0, (Model *)((u8 *)MO->model), (const LightFactors *)&st->dynamicLights,
+		shape_shadingColours((*(u32 * *)&MO->colourRuns[1]), 0, (Shape *)((u8 *)MO->model), (const LightFactors *)&st->dynamicLights,
 		                 MO->matrixInverse);
 	}
 	if ((obj[0xc] & 1) && g_highDetail == 1) {
@@ -178,7 +178,7 @@ void THISCALL (mapObject_frame)(u8 *s, int i, float dt)
 		long double nearest = fld_m(K(0x4aa4a4));
 		for (int k = 0; k < ST->actorCount; k++) {
 			u8 *a = (u8 *)&ST->actors[k];
-			Player *pl = (Player *)a;
+			Actor *pl = (Actor *)a;
 			if (pl->state != 1)
 				continue;
 			long double dx = FSUB(pl->pos[0], MO->place[0]);
@@ -210,7 +210,7 @@ void THISCALL (mapObject_frame)(u8 *s, int i, float dt)
 #undef K
 
 #define K(address) ((const float *)RELOC(address))
-#define AC ((Player *)ac)   /* the same by its fields (src/scene.fields) */
+#define AC ((Actor *)ac)   /* the same by its fields (src/scene.fields) */
 
 
 /* the screen point (the view's width viewWidth and height viewHeight) of clip x / w and y / w */
@@ -223,7 +223,7 @@ static void to_screen(u8 *s, long double qx, long double qy, float *out)
 /* whether the name tag's width on screen (tagTopLeft .. tagBottomRight) is under k (from the width 640 / the screen's) */
 static int tag_narrow(u8 *ac, u32 k)
 {
-	Player *pl = (Player *)ac;
+	Actor *pl = (Actor *)ac;
 	float span = f32(FSUB(pl->tagBottomRight[0], pl->tagTopLeft[0]));
 	return fmul_m(fld_m(&k_640f) / (long double)gfx_getWidth(), K(k)) > span;
 }
@@ -310,7 +310,7 @@ void THISCALL (stage_setupView)(u8 *s, const float *pos, const float *dir, const
 		AC->tagBottomRight[2] = f32(fld_m(&e[2]));
 		AC->lowDetail = tag_narrow(ac, OBJ(k_30f));
 		u8 *me = (u8 *)&ST->actors[ST->playerActor];
-		Player *act = (Player *)me;
+		Actor *act = (Actor *)me;
 		if ((((u32)AC->stateFlags) & 0x200) && AC->hackingLevel >= act->hackingLevel) {
 			AC->aimTime = 0.0f;
 			AC->onScreen = 1;
@@ -599,7 +599,7 @@ void THISCALL (particle_draw)(u8 *s, int i, void *vv)
 	case 9: {   /* debris: one of the owner's part shapes (the part by i % 5) */
 		static const u32 k_parts[4] = { offsetof(PlayerRecord, headShapes), offsetof(PlayerRecord, chestShapes), offsetof(PlayerRecord, armShapes), offsetof(PlayerRecord, legShapes) };
 		int part = i % 5;
-		Manager *cache = (Manager *)((u8 *)&ST->playerRecords[PR->owner] + (part >= 0 && part < 4 ? k_parts[part] : offsetof(PlayerRecord, boosterShapes)));
+		ShapeManager *cache = (ShapeManager *)((u8 *)&ST->playerRecords[PR->owner] + (part >= 0 && part < 4 ? k_parts[part] : offsetof(PlayerRecord, boosterShapes)));
 		shape(vv, p, cache->items + i % cache->count * 0x4c, 0, 1);
 		return;
 	}

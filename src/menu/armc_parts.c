@@ -76,7 +76,7 @@ u8 *(armc_readMechStats)(void)
 	u8 *g = (*(u8 **)&g_scene);
 	Scene *sc = (Scene *)g;
 	Stage *st = SCENE_STAGE(g);   /* (the scene's stage) */
-	const Player *A = &sc->players[sc->localPlayer];
+	const Actor *A = &sc->players[sc->localPlayer];
 	X s = fld_m(&A->detectionRangeSq);
 	s = x87_fsqrt(s);
 	s = s * k_0_01;

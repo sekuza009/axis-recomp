@@ -1,5 +1,5 @@
 /* hud_markers.c: the marks over the other players in view, placed in screen pixels around each player's projected
-   point (Player.screenPos[0], Player.tagTopLeft[1]; OpenGL's y runs up, hence height - y). */
+   point (Actor.screenPos[0], Actor.tagTopLeft[1]; OpenGL's y runs up, hence height - y). */
 #include "../game.h"
 #include "../fixes/fixes.h"
 #include <string.h>
@@ -42,7 +42,7 @@ static int marker_hudY(float py)
 }
 
 /* a 64-unit mark standing on the player's point, centred */
-static void marker_big(Scene *scene, Player *player, int texture, float alpha, float s0, float t0, float s1, float t1)
+static void marker_big(Scene *scene, Actor *player, int texture, float alpha, float s0, float t0, float s1, float t1)
 {
 	(void)scene;
 	int w = hud_scaleX(64.0f), h = hud_scaleY(64.0f);
@@ -63,7 +63,7 @@ void THISCALL (hud_drawPlayerMarkers)(Scene *scene)
 {
 	char name[256];
 	for (int i = 0; i < 16; i++) {
-		Player *player = &scene->players[i];
+		Actor *player = &scene->players[i];
 		if (i == scene->localPlayer || player->state != 1 || player->onScreen != 1)
 			continue;
 		if (player->isKing == 1)

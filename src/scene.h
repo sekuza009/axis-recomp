@@ -21,7 +21,7 @@ typedef struct EventLine {
 	float timeLeft;   /* +0x104: seconds it stays shown: Scene.eventTime (60.0) when written, counted down by events_age, which drops the oldest line once it is <= 0 (or NaN) */
 } EventLine;
 
-/* a round as fired (Player.rounds; bullet_spawn / bullet_init take it) */
+/* a round as fired (Actor.rounds; bullet_spawn / bullet_init take it) */
 typedef struct FiredRound {
 	i32 received;   /* +0x0: (by use; seen running) 0: fired here; 1: another machine's (its hit known) */
 	i32 weapon;   /* +0x4: its item (ActorItem index) */
@@ -31,7 +31,7 @@ typedef struct FiredRound {
 	u32 muzzle;   /* +0x24: the muzzle entry's matrix (&ListedObject.matrix of the weapon model's entry given at ItemModelSet +0x15a8 + variant x 0x40; Bullet.muzzle takes it) */
 } FiredRound;
 
-/* a round an actor fired, as sent (Player.shots) */
+/* a round an actor fired, as sent (Actor.shots) */
 typedef struct ShotRecord {
 	i32 inUse;   /* +0x0: 1: the slot carries a round this packet (its slot's flag bit 1; 0 also for a teamless actor); actor_processFrame's received path skips the others */
 	i32 isNew;   /* +0x4: 1: a new round: the local actor's not yet announced (net_sendPlayerState sends flag 3 and clears it); a received one's bullet still to be made (actor_processFrame makes it and clears it) */
@@ -43,14 +43,14 @@ typedef struct ShotRecord {
 
 /* an item's models, per variant (ActorItem.sets: [0] in hand / slot 4, [1] slot 5) */
 typedef struct ItemModelSet {
-	i32 shapeCount[3];   /* +0x0: per variant (Player.variantLoaded): the shapes (ObjectList_load's ns) .. */
+	i32 shapeCount[3];   /* +0x0: per variant (Actor.variantLoaded): the shapes (ObjectList_load's ns) .. */
 	u8 _pad000000c[0x900];
 	u8 shapeNames[3][0x330];   /* +0x90c: .. their names (0x44 apart: a name and its bone's translation scale, a float: ListedObject.scale) .. */
 	i32 skelCount[3];   /* +0x129c: .. the skeletons .. */
 	u8 _pad00012a8[0x180];
 	u8 skelNames[3][0x80];   /* +0x1428: .. and their names (0x40 apart; actor_loadWeapon) */
 	u8 _pad00015a8[0xcc];
-	float muzzle[3][3];   /* +0x1674: per variant (Player.variantLoaded): the muzzle point (x, y, z) in the frame of the arm's weapon joint (ArmType.weaponJoints); only muzzle_camera reads it (camera preset 1 at the muzzle) */
+	float muzzle[3][3];   /* +0x1674: per variant (Actor.variantLoaded): the muzzle point (x, y, z) in the frame of the arm's weapon joint (ArmType.weaponJoints); only muzzle_camera reads it (camera preset 1 at the muzzle) */
 	float grip[3][3];   /* +0x1698: where the actor holds it (actor_processFrame: hold) */
 } ItemModelSet;
 
@@ -60,7 +60,7 @@ typedef struct ActorItem {
 	ItemModelSet sets[2];   /* +0x40: its models (actor_loadWeapon, actor_processFrame, muzzle_camera): [0] in hand and in slot 4, [1] in slot 5 */
 	float weight;   /* +0x2db8: WEIGHT (an item's): added to the actor's load (mech_stats; not in game types 2 .. 11), shown in the ARM CENTER */
 	i32 slotType;   /* +0x2dbc: (the ARM CENTER's SLOT TYPE: message 321 + this, "HAND" ..) */
-	i32 ammoType;   /* +0x2dc0: BULLET TYPE (ARM CENTER; MSG(323) + this: 30mm, 60mm, E-PAK, ROCKET): the ammunition it uses (index into Player.ammo); -1: a special item, not a weapon */
+	i32 ammoType;   /* +0x2dc0: BULLET TYPE (ARM CENTER; MSG(323) + this: 30mm, 60mm, E-PAK, ROCKET): the ammunition it uses (index into Actor.ammo); -1: a special item, not a weapon */
 	i32 ammoPerShot;   /* +0x2dc4: BULLET CONSUMPTION (ARM CENTER, message 303): ammunition one shot takes (actor_processFrame, weapons.c); for a special item (ammoType -1) the ARM CENTER shows MSG(745) + its actorItems index instead (772 .. 780: its description lines; armc_viewedPartRecord) */
 	i32 burst;   /* +0x2dc8: rounds a burst */
 	float burstGap;   /* +0x2dcc: seconds between a burst's rounds (0: all at once; actor_processFrame) */
@@ -90,8 +90,8 @@ typedef struct BlockOwner {
 	i32 ownsBlock;   /* +0xc: 1: allocated here (freed with it) */
 } BlockOwner;
 
-/* a shape (skel_data.c: its 0x34-byte file header, then its box; a map object's model, an object list's entries...) */
-typedef struct Model {
+/* a shape (the game's class Shape; shapes_skeletons.c: its 0x34-byte file header, then its box): a map object's model, an object list's entries ... */
+typedef struct Shape {
 	u8 _pad0000000[0x4];
 	i32 blockSize;   /* +0x4: its data block (take_block): the parts and their tables */
 	u8 *block;   /* +0x8: its data block (take_block in shape_read, model_loadObjFormatFrom: allocated or the memory given): the parts at its start, then each part's vertices, normals, colours, texCoords, prims and index lists */
@@ -105,9 +105,9 @@ typedef struct Model {
 	u32 version;   /* +0x30: 0x71110300: the current format (older: 0x68-byte parts) */
 	float low[3];   /* +0x34: the box over its parts */
 	float high[3];   /* +0x40: the box's high corner (with low): set from centre, then widened by each part's box (shape_read, model_loadObjFormatFrom); read for animated objects' collisions (collision_moveSphere, collision_rayTrace) */
-} Model;
+} Shape;
 
-/* a shape's part (Model.parts): one material's vertices and primitives */
+/* a shape's part (Shape.parts): one material's vertices and primitives */
 typedef struct ShapePart {
 	u32 flags;   /* +0x0: 1 transparent (drawn a triangle at a time, depth-sorted; its collision triangles get 0x10: no marks), 2 unlit (its own colours), 4 not culled, 8 front faces culled, 0x10 no depth test, 0x20 not in the collision space (space_buildUnit) */
 	char texName[0x40];   /* +0x4: its texture's name ("Shape\alien\add01"; tex_getIdByName; shape_bindTextureBy appends "*<dir>"; the OBJ loader writes the material's last "_" piece) */
@@ -132,9 +132,9 @@ typedef struct ShapePrim {
 
 /* an object list's entry (ObjectList.entries) */
 typedef struct ListedObject {
-	Model *shape;   /* +0x0: none: an empty entry */
+	Shape *shape;   /* +0x0: none: an empty entry */
 	float scale;   /* +0x4: its bone's translation scale: the float after its name in the type's name record (ObjectList_load); ObjectList_poseBones multiplies the bone's position by it */
-	u32 *colours;   /* +0x8: its shading colours (Model.colourCount dwords in the list's block): a pre-lit list's only (ObjectList_load; 0 otherwise or without a shape); the game's lists (part_load, actor_loadWeapon) are never pre-lit, so always 0 */
+	u32 *colours;   /* +0x8: its shading colours (Shape.colourCount dwords in the list's block): a pre-lit list's only (ObjectList_load; 0 otherwise or without a shape); the game's lists (part_load, actor_loadWeapon) are never pre-lit, so always 0 */
 	float matrix[16];   /* +0xc: where it is placed */
 	float pos[3];   /* +0x4c: its bone's origin placed: (0, 0, 0) through matrix, the matrix's translation (ObjectList_poseBones); without a shape, centre is copied from it */
 	float centre[3];   /* +0x58: its shape's centre placed (pos without a shape) */
@@ -144,7 +144,7 @@ typedef struct ListedObject {
 typedef struct ObjectList {
 	u8 _pad0000000[0x4];
 	i32 blockSize;   /* +0x4: its block: the entries (100 bytes each), their colours when preLit, the skeletons (ObjectList_load) */
-	u8 *block;   /* +0x8: its block (ObjectList_load: allocated, owned, or the memory given such as Player.headModelMem): the entries, the pre-lit colours, the skeleton pointers; freed by partList_release when owned */
+	u8 *block;   /* +0x8: its block (ObjectList_load: allocated, owned, or the memory given such as Actor.headModelMem): the entries, the pre-lit colours, the skeleton pointers; freed by partList_release when owned */
 	i32 ownsBlock;   /* +0xc: 1: allocated here (ObjectList_load without memory; the game's lists all get the Player's memory, so 0) */
 	i32 count;   /* +0x10: its entries (ObjectList_load's ns: shapes named); 0: not queued (ObjectList_queue); looped by ObjectList_relight, ObjectList_bindTextures, ObjectList_poseBones (one bone each) */
 	ListedObject *entries;   /* +0x14: count ListedObject records (100 bytes) at the block's start (ObjectList_load); posed by ObjectList_poseBones, drawn by ObjectList_queue; a weapon's muzzle entry's matrix read by actor_processFrame */
@@ -156,8 +156,8 @@ typedef struct ObjectList {
 	i32 preLit;   /* +0x2c: 1: lit here, drawn with its own colours (ObjectList_load's lit; part_load and actor_loadWeapon pass 0, so never 1 in this game) */
 } ObjectList;
 
-/* a player's record (Scene.players) */
-typedef struct Player {
+/* an actor: a mech in play, a player's or a bot's (Stage.actors, 100 slots; Scene.players */
+typedef struct Actor {
 	float detectionRangeSq;   /* +0x0: (by use; seen running) the detection range squared (mech_stats: the head's detectionRange x the pilot's factor + rangeBonus; a spawn record's range replaces it) */
 	float detectionAngle;   /* +0x4: DETECTION ANGLE (ARM CENTER), tenths of a degree: the head's detectionAngle x the pilot's skill factor (mech_stats); the local player's lock-on cone (stage_setupView: an enemy's facingCos must exceed g_cosTable[this]), the HUD alert ring's size, actor_checkDataLoss */
 	i32 hackingLevel;   /* +0x8: (the ARM CENTER's HACKING LEVEL) a cloaked actor (stateFlags 0x200) is seen by those whose level is above its own */
@@ -371,7 +371,7 @@ typedef struct Player {
 	float stuckMove[3];   /* +0x8874: the moves summed over the second */
 	i32 homedOn;   /* +0x8880: 1: a guided round of another machine's (Bullet.homingTarget == this actor, its owner not run here) is homing on it: the HUD's alert ring and beep; a bot without a target turns on the shooter */
 	float beepTimer;   /* +0x8884: the countdown to the local player's next warning beep (sound 0x11, every 0.5 s) while a round from another machine homes on it; 0 otherwise (actor_processFrame) */
-} Player;
+} Actor;
 
 /* a light (LightFactors.records; factors.c builds them; shading.c's Light reads them) */
 typedef struct Factor {
@@ -414,7 +414,7 @@ typedef struct MapObject {
 	float relInverse[16];   /* +0x234: the inverse of relMatrix (object_initObjectBy, mapObject_frame); handed with relMatrix to the collision tests of an animated object (collision_moveSphere, collision_rayTrace: nearObjects) */
 	float glowSize;   /* +0x274: the glow flare's half-size (particle kind 4; objects with flag 1 while 3D items are on) */
 	u32 glowColour;   /* +0x278: the glow flare's colour (RGB; its alpha from the glow) */
-	Model *model;   /* +0x27c: its shape (object_initObjectBy: shape_getByName in objectShapes by the type's name): drawn (stage_drawObject), shaded (shape_shadingColours), its collision unit (space_buildUnit), box for animated collisions */
+	Shape *model;   /* +0x27c: its shape (object_initObjectBy: shape_getByName in objectShapes by the type's name): drawn (stage_drawObject), shaded (shape_shadingColours), its collision unit (space_buildUnit), box for animated collisions */
 	u32 colourRuns[2];   /* +0x280: (by use; seen running) two pointers, kept as u32, to its runs of colourCount shading colours in Stage.objectColours (object_initObjectBy): [0] lit by the map lights, [1] [0] re-shaded with the dynamic lights each frame */
 	i32 colourSide;   /* +0x288: 1 (always: object_initObjectBy, nothing else writes it): each frame colours[1] is colours[0] re-shaded with the dynamic lights (mapObject_frame) and drawn (stage_drawObject); 0 would draw colours[0] unchanged */
 	void *unit;   /* +0x28c: its collision unit (none: 0) */
@@ -450,7 +450,7 @@ typedef struct ItemType {
 	i32 pickSound;   /* +0x44: played as it is taken (a warp zone: as it warps) */
 	float respawnTime;   /* +0x48: (by use; seen running) a taken item comes back once its MapItem.timer passes this (seconds; item_update) */
 	char shapeName[0x40];   /* +0x4c: its shape (catalogue_loadItemInfoFrom: shape_getByName into model) */
-	Model *model;   /* +0x8c: its shape when items are drawn in 3D (none: not drawn) */
+	Shape *model;   /* +0x8c: its shape when items are drawn in 3D (none: not drawn) */
 } ItemType;
 
 /* an item lying on the map (Stage.items): power-ups, ammo... */
@@ -504,7 +504,7 @@ typedef struct Bullet {
 	u8 _pad0000014[0x40];
 	float from[3];   /* +0x54: where it was fired from */
 	float impact[3];   /* +0x60: where it ends, its impact point: the first step's end or hit (bullet_init; a network round: its target point), an actor's hit point (fly_local), a guided round's world hit (fly_local), or the network's point (actor_processFrame); its impact, mark and sound are made there (hit_actor, hit_surface) */
-	struct CollisionPlane *hit;   /* +0x6c: the surface (a CollisionPlane in Space.planes) where it ends: the first step's trace (bullet_init), each step's for a guided round (fly_local), the network's (actor_processFrame, bullet_init for a received round); 0: none, also when it hits an actor. hit_surface makes its impact and mark */
+	struct CollisionTri *hit;   /* +0x6c: the surface (a triangle in Space.planes) where it ends: the first step's trace (bullet_init), each step's for a guided round (fly_local), the network's (actor_processFrame, bullet_init for a received round); 0: none, also when it hits an actor. hit_surface makes its impact and mark */
 	float age;   /* +0x70: seconds in flight */
 	float life;   /* +0x74: the age at which it ends (s): the first step's length (or the distance to its hit) over the weapon's speed, kept to 0 .. 10 (bullet_init; a network round: 10); cut to its age when it hits an actor, to the world hit for a guided round (fly_local), or to age - dt by the network (actor_processFrame) */
 	float prev[3];   /* +0x78: its point before this frame's move */
@@ -649,7 +649,7 @@ typedef struct DPSessionDesc2 {
 } DPSessionDesc2;
 
 /* an arena as the lobby server lists it (g_serverList, 256; g_arenaPacket: the hosted arena's own, */
-typedef struct ServerRecord {
+typedef struct ArenaRecord {
 	u8 kind;   /* +0x0: the record's first byte as the game sends it: 0x18 in the set-up packet (lobby_announceArena), g_arenaPacket's (0x18) in the info packet (arena_info), 1 in the leave packet (send_leave); copied into g_serverList (net_addServerRecord), never read */
 	char name[0x32];   /* +0x1: the arena's name (lobby_announceArena: g_arenaName); in the info and leave packets; a listed one's goes to SessionEntry.name (arena_mergeReceivedSessions) */
 	char address[16];   /* +0x33: the host's address as text */
@@ -664,9 +664,9 @@ typedef struct ServerRecord {
 	u8 _pad000004e[0x4];
 	u8 locked;   /* +0x52: the arena's lock flag (lobby_announceArena: g_arenaLocked); in the info and leave packets; a listed one's to SessionEntry.locked */
 	char password[8];   /* +0x53: the arena's password (lobby_announceArena: g_arenaPassword); in the info and leave packets; a listed one's to SessionEntry.password */
-} ServerRecord;
+} ArenaRecord;
 
-/* a game room as the game server lists it (g_roomList, 256; g_roomPacket: the room's own, */
+/* a game hosted from the game room, as the game server lists it (g_roomList, 256; g_roomPacket: */
 typedef struct RoomRecord {
 	u8 kind;   /* +0x0: the record's first byte as the game sends it: 0x18 in the set-up packet (room_announceGame); in the info packet (room_info) 1 when a player joined, else g_roomPacket's; 1 in the leave packet (send_leave); copied into g_roomList, never read */
 	char name[0x32];   /* +0x1: the room game's name (room_announceGame: g_roomRecName); a listed one's (net_addRoomRecord) goes to SessionEntry.name (room_mergeReceivedSessions); not in the info or leave packets */
@@ -818,11 +818,11 @@ typedef struct GamePacket {
 	short mapNumber;   /* +0x7: Scene.mapNumber (the map's own number; a receiver on the same map (g_mapIndex == map) with another number has data loss, dataLossCode 1) */
 	i32 elapsed;   /* +0x9: the match clock (Scene.elapsed, clockFraction) */
 	float clockFraction;   /* +0xd: (see elapsed) Scene.clockFraction, the part of a second; set on the receiver from player 0's packet */
-	i32 timePlayed;   /* +0x11: the player's (Player.timePlayed, timeFraction) */
-	float timeFraction;   /* +0x15: (see timePlayed) Player.timeFraction; set into the sender's actor */
+	i32 timePlayed;   /* +0x11: the player's (Actor.timePlayed, timeFraction) */
+	float timeFraction;   /* +0x15: (see timePlayed) Actor.timeFraction; set into the sender's actor */
 	u32 resendAsked[2];   /* +0x19: per player, a bit: [0] it is asked to send its info again (its sendFlags[2]: the receiver whose bit it is raises sendFlags[me][1], net_sendPlayerInfo), [1] its flag again (sendFlags[3]: the receiver clears its PlayerRecord.flagSent) */
-	short kills;   /* +0x21: the sender's Player.kills (low 16 bits); the receiver sets that actor's kills */
-	short deaths;   /* +0x23: the sender's Player.deaths (low 16 bits); the receiver sets that actor's deaths */
+	short kills;   /* +0x21: the sender's Actor.kills (low 16 bits); the receiver sets that actor's kills */
+	short deaths;   /* +0x23: the sender's Actor.deaths (low 16 bits); the receiver sets that actor's deaths */
 	short teamScores[2];   /* +0x25: Scene.teamScores[0] / [1] (low 16 bits); the receiver takes them from player 0's packet only */
 	short lastPickup;   /* +0x29: the map item (Stage.items index) the sender last picked up (Stage.lastPickup, -1 after each send; -1 none): the receiver marks it taken (MapItem.taken 1, timer 0) */
 	u8 checkTable;   /* +0x2b: the part type table checked (typeCheckTurn % 5: 0 headTypes, 1 chestTypes, 2 armTypes, 3 legTypes, 4 boosterTypes), and a sample of it (checkIndex) with the entry there (checkValue): a mismatch is data loss, code 2 */
@@ -974,8 +974,8 @@ typedef struct RotKey {
 	float step[4];   /* +0x18: the rotation to the next key (angle, axis) */
 } RotKey;
 
-/* a shape manager (skel_data.c; a skeleton manager is its first 0x130 bytes: SkelManager): items loaded by name into one block, found through a name tree */
-typedef struct Manager {
+/* a shape manager (the game's class ShapeManager; shapes_skeletons.c; a skeleton manager is its first 0x130 bytes: SkelManager): shapes loaded by name into one block, found through a name tree */
+typedef struct ShapeManager {
 	u8 _pad0000000[0x4];
 	i32 blockSize;   /* +0x4: its block's size: capacity x 0x98 (a 0x4c-byte name node and a 0x4c-byte shape each) + dataSize (ShapeManager_initBy); take_block allocates it or checks the memory given against it */
 	u8 *block;   /* +0x8: the name nodes, then the items, then the data memory */
@@ -992,7 +992,7 @@ typedef struct Manager {
 	char textureSuffix[0x100];   /* +0x130: (shapes) a suffix for its parts' texture names (playerRecord_setPartColour via shape_setTextureSuffix: "_T<player>"; empty: none): shape_bindTextureBy appends "*" and it to each part's name before tex_getIdByName, with bindFlags and the tint */
 	u32 bindFlags;   /* +0x230: (shapes) given to shape_bindTextureBy with the tint; bit 1: tinted (shape_setTint) */
 	float tint[6];   /* +0x234: two hue / saturation / value triples (shape_setTint; passed as bits to shape_bindTextureBy) */
-} Manager;
+} ShapeManager;
 
 /* a skeleton manager (skel_data.c: SkeletonManager_initBy): Manager's first 0x130 bytes, without the textures and tint */
 typedef struct SkelManager {
@@ -1011,7 +1011,7 @@ typedef struct SkelManager {
 	i32 dataUsed;   /* +0x12c: bytes of data used: each loaded skeleton's blockSize added (skel_getSkeletonPtrBy); 0 again when its skeletons are released (SkeletonManager_releaseSkeletons: release_all) */
 } SkelManager;
 
-/* a player of the match (Scene / Stage playerRecords): its team, mech parts and items; its actor points back (Player.player) */
+/* a player of the match (Scene / Stage playerRecords): its team, mech parts and items; its actor points back (Actor.player) */
 typedef struct PlayerRecord {
 	i32 used;   /* +0x0: (by use; seen running) 1: in use (playerRecord_markUsed / markFree) */
 	char name[0x40];   /* +0x4: its name (player_setName, which also names its actors); its flag picture is Save\\<name>.BMP (playerRecord_loadFlag); shown in notices and messages */
@@ -1020,16 +1020,16 @@ typedef struct PlayerRecord {
 	char partNames[5][0x40];   /* +0x4c: its parts' type names (head, chest, arms, legs, booster: copied from the part type record by set_part / actor_setActorType*InfoBy; cleared by record_clearPartsItems); written, never read */
 	char itemNames[6][0x40];   /* +0x18c: its items' names (actor_setActorTypeItemInfoBy: the ActorItem's name, empty for none; cleared by record_clearPartsItems); written, never read */
 	i32 parts[5];   /* +0x30c: its mech's parts: head, chest, arms, legs, booster (records of the stage's part tables; "invalid headIndex") */
-	i32 items[6];   /* +0x320: per item slot (Player.slot): its item (index into Stage.actorItems: a weapon or other hand / shoulder item; < 0 none; actor_setActorTypeItemInfoBy) */
-	Manager headShapes;   /* +0x338: (by use; seen running) its head type's shapes (model_sets: ShapeManager_initBy over the data after it) */
+	i32 items[6];   /* +0x320: per item slot (Actor.slot): its item (index into Stage.actorItems: a weapon or other hand / shoulder item; < 0 none; actor_setActorTypeItemInfoBy) */
+	ShapeManager headShapes;   /* +0x338: (by use; seen running) its head type's shapes (model_sets: ShapeManager_initBy over the data after it) */
 	u8 headShapeData[0x7d00];   /* +0x584: headShapes' block (stage_build: model_sets): 8 name nodes and shapes (0x98 bytes each), then 0x7840 bytes of shape data */
-	Manager chestShapes;   /* +0x8284: (by use; seen running) its chest type's shapes (model_sets: ShapeManager_initBy over the data after it) */
+	ShapeManager chestShapes;   /* +0x8284: (by use; seen running) its chest type's shapes (model_sets: ShapeManager_initBy over the data after it) */
 	u8 chestShapeData[0x7d00];   /* +0x84d0: chestShapes' block (stage_build: model_sets): 8 name nodes and shapes (0x98 bytes each), then 0x7840 bytes of shape data */
-	Manager armShapes;   /* +0x101d0: (by use; seen running) its arm type's shapes (model_sets: ShapeManager_initBy over the data after it) */
+	ShapeManager armShapes;   /* +0x101d0: (by use; seen running) its arm type's shapes (model_sets: ShapeManager_initBy over the data after it) */
 	u8 armShapeData[0xfa00];   /* +0x1041c: armShapes' block (stage_build: model_sets): 16 name nodes and shapes (0x98 bytes each), then 0xf080 bytes of shape data */
-	Manager legShapes;   /* +0x1fe1c: (by use; seen running) its leg type's shapes (model_sets: ShapeManager_initBy over the data after it) */
+	ShapeManager legShapes;   /* +0x1fe1c: (by use; seen running) its leg type's shapes (model_sets: ShapeManager_initBy over the data after it) */
 	u8 legShapeData[0xfa00];   /* +0x20068: legShapes' block (stage_build: model_sets): 16 name nodes and shapes (0x98 bytes each), then 0xf080 bytes of shape data */
-	Manager boosterShapes;   /* +0x2fa68: (by use; seen running) its booster type's shapes (model_sets: ShapeManager_initBy over the data after it) */
+	ShapeManager boosterShapes;   /* +0x2fa68: (by use; seen running) its booster type's shapes (model_sets: ShapeManager_initBy over the data after it) */
 	u8 boosterShapeData[0x13880];   /* +0x2fcb4: boosterShapes' block (stage_build: model_sets): 20 name nodes and shapes (0x98 bytes each), then 0x12ca0 bytes of shape data */
 	SkelManager headSkels;   /* +0x43534: its skeletons (SkeletonManager_initBy over the data after it) */
 	u8 headSkelData[0x7d0];   /* +0x43664: headSkels' block (stage_build: model_sets): 2 name nodes and skeletons (0x70 bytes each), then 0x6f0 bytes of skeleton data */
@@ -1174,9 +1174,9 @@ typedef struct MapPlayer {
 typedef struct SpawnRecord {
 	i32 player;   /* +0x0: its player record */
 	float pos[3];   /* +0x4: where it spawns (actor_applySpawnRecord, script command 15); bot_spawns puts a free start point's position (spawn_point; else mapStart) in a copy instead */
-	float pitch;   /* +0x10: the actor's starting pitch (actor_applySpawnRecord: via stage_setupActorSlot to actor_setupFromParts, Player.pitch) */
-	float yaw;   /* +0x14: the actor's starting heading (actor_applySpawnRecord: via stage_setupActorSlot to actor_setupFromParts, Player.yaw) */
-	i32 bot;   /* +0x18: 1: run by the game (the map's actors but the first; bot_spawns spawns these); copied to Player.bot (actor_applySpawnRecord) */
+	float pitch;   /* +0x10: the actor's starting pitch (actor_applySpawnRecord: via stage_setupActorSlot to actor_setupFromParts, Actor.pitch) */
+	float yaw;   /* +0x14: the actor's starting heading (actor_applySpawnRecord: via stage_setupActorSlot to actor_setupFromParts, Actor.yaw) */
+	i32 bot;   /* +0x18: 1: run by the game (the map's actors but the first; bot_spawns spawns these); copied to Actor.bot (actor_applySpawnRecord) */
 	u32 unused1c;   /* +0x1c: copied to the actor's +0x64 (actor_applySpawnRecord; 100 for a player's mech, the maps' spawns 100, 1000 netsphere, 10 gigantic-core); never read */
 	i32 armor;   /* +0x20: the armour and shield it starts with (and their maximum) */
 	i32 shield;   /* +0x24: (see armor) its shield and shieldMax (actor_applySpawnRecord) */
@@ -1184,11 +1184,11 @@ typedef struct SpawnRecord {
 	float turnRate;   /* +0x2c: x 10: the actor's turnRate */
 	float range;   /* +0x30: its detection range (squared, x 10000: the actor's detectionRangeSq) */
 	float unused34;   /* +0x34: copied to the actor's +0x70 (actor_applySpawnRecord; 3.0 for a player's mech); never read */
-	float aimError;   /* +0x38: the actor's aimError in degrees (actor_applySpawnRecord: x 10, whole, into Player.aimError) */
-	u32 scriptFlag;   /* +0x3c: copied to the actor's +0x78 (Player.scriptFlag; actor_applySpawnRecord); not read */
+	float aimError;   /* +0x38: the actor's aimError in degrees (actor_applySpawnRecord: x 10, whole, into Actor.aimError) */
+	u32 scriptFlag;   /* +0x3c: copied to the actor's +0x78 (Actor.scriptFlag; actor_applySpawnRecord); not read */
 	float dodgeSpread;   /* +0x40: x 100 */
 	float climbSpread;   /* +0x44: x 100 */
-	float botParams[5];   /* +0x48: the bot's settings (copied to the actor's Player.botParams: [2] a distance, the rest seconds) */
+	float botParams[5];   /* +0x48: the bot's settings (copied to the actor's Actor.botParams: [2] a distance, the rest seconds) */
 } SpawnRecord;
 
 /* an uncompressed 24-bit .BMP read in pieces (class BMPRGBFile: classes.c) */
@@ -1214,7 +1214,7 @@ typedef struct BmpFile {
 /* a head part type (Stage.headTypes; the ARM CENTER's head panel: armc_parts.c) */
 typedef struct HeadType {
 	char name[0x40];   /* +0x0: its type name: the maker's folder and the part (MILLIA\HEAD ...: Component.dat); set_part copies it to PlayerRecord.partNames[0]; the ARM CENTER's head panel shows it with '\' and '/' as '-' (panel_name) */
-	i32 shapeCount[2];   /* +0x40: per detail level (Player.lowDetail: [0] near, [1] far): the shapes (ObjectList_load's ns) .. */
+	i32 shapeCount[2];   /* +0x40: per detail level (Actor.lowDetail: [0] near, [1] far): the shapes (ObjectList_load's ns) .. */
 	u8 _pad0000048[0x400];
 	char shapeNames[2][0x220];   /* +0x448: .. their names (0x44 apart: a name and its bone's translation scale, a float: ListedObject.scale) */
 	i32 skelCount[2];   /* +0x888: .. the skeletons .. */
@@ -1231,7 +1231,7 @@ typedef struct HeadType {
 /* a chest part type (Stage.chestTypes) */
 typedef struct ChestType {
 	char name[0x40];   /* +0x0: its type name (KYRIE\CHEST ...: Component.dat); set_part copies it to PlayerRecord.partNames[1]; the ARM CENTER's chest panel shows it with '\' and '/' as '-' (armc_readPartPanels: panel_name) */
-	i32 shapeCount[2];   /* +0x40: per detail level (Player.lowDetail: [0] near, [1] far): the shapes (ObjectList_load's ns) .. */
+	i32 shapeCount[2];   /* +0x40: per detail level (Actor.lowDetail: [0] near, [1] far): the shapes (ObjectList_load's ns) .. */
 	u8 _pad0000048[0x400];
 	char shapeNames[2][0x220];   /* +0x448: .. their names (0x44 apart: a name and its bone's translation scale, a float: ListedObject.scale) */
 	i32 skelCount[2];   /* +0x888: .. the skeletons .. */
@@ -1249,7 +1249,7 @@ typedef struct ChestType {
 /* an arm part type (Stage.armTypes) */
 typedef struct ArmType {
 	char name[0x40];   /* +0x0: its type name (KYRIE\ARM ...: Component.dat); set_part copies it to PlayerRecord.partNames[2]; the ARM CENTER's arm panel shows it with '\' and '/' as '-' (armc_readPartPanels: panel_name) */
-	i32 shapeCount[2];   /* +0x40: per detail level (Player.lowDetail: [0] near, [1] far): the shapes (ObjectList_load's ns) .. */
+	i32 shapeCount[2];   /* +0x40: per detail level (Actor.lowDetail: [0] near, [1] far): the shapes (ObjectList_load's ns) .. */
 	u8 _pad0000048[0x800];
 	char shapeNames[2][0x440];   /* +0x848: .. their names (0x44 apart: a name and its bone's translation scale, a float: ListedObject.scale) */
 	i32 skelCount[2];   /* +0x10c8: .. the skeletons .. */
@@ -1263,7 +1263,7 @@ typedef struct ArmType {
 /* a leg part type (Stage.legTypes) */
 typedef struct LegType {
 	char name[0x40];   /* +0x0: its type name (KYRIE\LEG ...: Component.dat); set_part copies it to PlayerRecord.partNames[3]; the ARM CENTER's leg panel shows it with '\' and '/' as '-' (armc_readPartPanels: panel_name) */
-	i32 shapeCount[2];   /* +0x40: per detail level (Player.lowDetail: [0] near, [1] far): the shapes (ObjectList_load's ns) .. */
+	i32 shapeCount[2];   /* +0x40: per detail level (Actor.lowDetail: [0] near, [1] far): the shapes (ObjectList_load's ns) .. */
 	u8 _pad0000048[0x800];
 	char shapeNames[2][0x440];   /* +0x848: .. their names (0x44 apart: a name and its bone's translation scale, a float: ListedObject.scale) */
 	i32 skelCount[2];   /* +0x10c8: .. the skeletons .. */
@@ -1284,7 +1284,7 @@ typedef struct LegType {
 /* a booster part type (Stage.boosterTypes) */
 typedef struct BoosterType {
 	char name[0x40];   /* +0x0: its type name (KYRIE\BOOSTER ...: Component.dat); set_part copies it to PlayerRecord.partNames[4]; the ARM CENTER's booster panel shows it with '\' and '/' as '-' (armc_readPartPanels: panel_name) */
-	i32 shapeCount[2];   /* +0x40: per detail level (Player.lowDetail: [0] near, [1] far): the shapes (ObjectList_load's ns) .. */
+	i32 shapeCount[2];   /* +0x40: per detail level (Actor.lowDetail: [0] near, [1] far): the shapes (ObjectList_load's ns) .. */
 	u8 _pad0000048[0xa00];
 	char shapeNames[2][0x550];   /* +0xa48: .. their names (0x44 apart: a name and its bone's translation scale, a float: ListedObject.scale) */
 	i32 skelCount[2];   /* +0x14e8: .. the skeletons .. */
@@ -1293,15 +1293,15 @@ typedef struct BoosterType {
 	i32 emitters[2][0x20];   /* +0x16f0: its thrust: [0] the entries, [1] 1: only while running (run > 0, the booster key) (actor_processFrame: emit) */
 	i32 emitterCount;   /* +0x17f0: how many of emitters are used: emit spawns a thrust particle at each (actor_processFrame) */
 	i32 emitterCountCopy;   /* +0x17f4: the same value as emitterCount in every Component.dat record (1 .. 5); never read */
-	float weight;   /* +0x17f8: its weight: added with the legs', arms' and head's into Player.load (mech_stats, then the items'); shown as g_boosterWeight in the ARM CENTER panel (armc_readPartPanels) */
+	float weight;   /* +0x17f8: its weight: added with the legs', arms' and head's into Actor.load (mech_stats, then the items'); shown as g_boosterWeight in the ARM CENTER panel (armc_readPartPanels) */
 	i32 thrustType;   /* +0x17fc: THRUST TYPE (message 641): 0 PLASMA THRUST ENGINE, 1 ION THRUST ENGINE, 2 GRAVITY ION ENGINE (section_booster shows MSG(651 + it) via g_boosterThrustType, armc_readPartPanels); its puffs are particle kind 5 + it (emit, actor_frame.c); its step sound every third of a second is sound it, + 3 while inBooster (actor_processFrame); also copied to g_unusedMechStat (armc_readMechStats) */
 	float lean;   /* +0x1800: the actor's boosterTilt: how far the booster joint tips with the aim's pitch (actor_processFrame's pose[1]); 0.0 in every booster of Component.dat */
 	float times[3];   /* +0x1804: seconds: [0] ACTIVE TIME, [1] RECHARGE TIME, [2] DELAY FOR RECHARGE (messages 642 .. 644); x the item factors boostTimeFactor, rechargeTimeFactor, restTimeFactor = the actor's boostTime, rechargeTime, restTime (mech_stats) */
 	float speeds[4];   /* +0x1810: 1/100 m a second (x 0.036 = km/h on the panel): [0] NORMAL SPEED (message 645), [1] .. [3] the boost's forward, back and side speeds (MAX SPEED FWD/SWD/BWD, message 646); with the legs' corrections = the actor's speed and runTop[0 .. 2] (mech_stats) */
 } BoosterType;
 
-/* a plane of the collision space (Space.planes; a bullet's hit, Bullet.hit) */
-typedef struct CollisionPlane {
+/* a triangle of the collision space (Space.planes; collisionTri_setup): its corners, edges, face and */
+typedef struct CollisionTri {
 	i32 flags;   /* +0x0: 0x10: takes no marks (a transparent part's triangle, or the background floor's; read by hit_surface); 1: its unit disabled (space_disableUnit sets it, space_enableUnit clears it), skipped by the ray and sphere traces; else 0 (collisionTri_setup) */
 	float cornerPoints[3][3];   /* +0x4: its triangle's corners (collisionTri_setup) */
 	float edges[3][3];   /* +0x28: edge i: corner i + 1 - corner i, normalized (collisionTri_setup) */
@@ -1314,7 +1314,7 @@ typedef struct CollisionPlane {
 	u8 *listNext;   /* +0xa0: its unit's list (space_addUnitTriangle: the next plane; the free pool walks +0xa4 as its next) */
 	u8 *listPrev;   /* +0xa4: in use: the previous plane of its unit's list (space_addUnitTriangle; space_disableUnit / space_enableUnit walk back from SpaceUnit.lastPlane by it); free: the next free plane (reset_pool chains +0xa4, space_getNextFreePlanePtr) */
 	u8 _pad00000a8[0x4];
-} CollisionPlane;
+} CollisionTri;
 
 /* a frame timer on the performance counter (timer.c; class TimeSync) */
 typedef struct TimeSync {
@@ -1330,10 +1330,10 @@ typedef struct TimeSync {
 	float maxFrame;   /* +0x34: the longest frame time: 1/15 s (0x3d888889), set on the first call because nothing else ever sets it (TimeSync_clear zeroes it) */
 } TimeSync;
 
-/* a unit of the collision space (Space.units; spaceSlot_clear): a map object (one unit for all its parts not flagged 0x20: space_buildUnit; the part is CollisionPlane.part) */
+/* a unit of the collision space (Space.units; spaceSlot_clear): a map object (one unit for all its parts not flagged 0x20: space_buildUnit; the part is CollisionTri.part) */
 typedef struct SpaceUnit {
-	i32 index;   /* +0x0: its map object's number (Stage.objects; space_buildUnit' id); -1 when cleared (spaceSlot_clear). CollisionPlane.unit points at it */
-	u8 *lastPlane;   /* +0x4: its planes' list (CollisionPlane.listNext / listPrev): the last */
+	i32 index;   /* +0x0: its map object's number (Stage.objects; space_buildUnit' id); -1 when cleared (spaceSlot_clear). CollisionTri.unit points at it */
+	u8 *lastPlane;   /* +0x4: its planes' list (CollisionTri.listNext / listPrev): the last */
 	SpaceNode *lastNode;   /* +0x8: its planes' nodes: the last */
 	u8 *poolPrev;   /* +0xc: its links in the units' pool */
 	u8 *poolNext;   /* +0x10: the next unit of the free pool (space_resetUnits chains the units; space_getNextFreeUnitPtr moves the pool's freeHead to it and clears that one's poolPrev) */
@@ -1361,7 +1361,7 @@ typedef struct ScenePath {
 	u8 _pad000000c[0x224];
 } ScenePath;
 
-/* the stage: the scene's own object at Scene + 0x1f36c8 (STAGE()), "this" of the */
+/* the stage: the scene's own object at Scene + 0x1f36c8 (STAGE()), "this" of the stage_* thiscalls (the game's */
 typedef struct Stage {
 	u8 _pad0000000[0x4];
 	i32 built;   /* +0x4: (by use; seen running) 1: stage_build has built it; written, never read */
@@ -1420,9 +1420,9 @@ typedef struct Stage {
 	i32 poolUsed;   /* +0xdc0240: its bytes taken */
 	GroundLayer groundLayers[4];   /* +0xdc0244: (groundLayerCount of them) */
 	i32 groundLayerCount;   /* +0xdc0a74: ground layers read (map_loadGroundInfoFrom; 0 at stage_build; 0 / 1 seen): built into layerModel / waterModel parts (ground_buildLayerModels), collided (collision_initVolume: kinds 0 / 1), drawn (ground_buildDrawLists) */
-	Model layerModel;   /* +0xdc0a78: (by use; seen running) the ground layers drawn as one shape: a part each (ground_buildLayerModels) */
+	Shape layerModel;   /* +0xdc0a78: (by use; seen running) the ground layers drawn as one shape: a part each (ground_buildLayerModels) */
 	u8 layerParts[0x200];   /* +0xdc0ac4: (by use; seen running) layerModel's parts */
-	Model waterModel;   /* +0xdc0cc4: the ground layers' water surfaces: a part each (drawn only for a water layer) */
+	Shape waterModel;   /* +0xdc0cc4: the ground layers' water surfaces: a part each (drawn only for a water layer) */
 	ShapePart waterParts[4];   /* +0xdc0d10: waterModel's parts: one per ground layer, filled by ground_buildLayerModels */
 	u8 commands[10000][0x30];   /* +0xdc0f10: the actor commands (0x30 bytes each; map_readCommands) the way points run (script_processCommandBy) */
 	i32 commandCount;   /* +0xe36210: actor commands read with commands (map_readCommands); map_loadWayPointInfoFrom checks the way points' runs add up to it (else fatal) */
@@ -1431,7 +1431,7 @@ typedef struct Stage {
 	Trigger triggers[200];   /* +0xe3b038: the map's triggers (map_loadTriggerInfoFrom: triggerCount of them): fired by script_processTriggers and script commands 0 / 1 / 2 (arm, disarm, fire; script_processCommandBy); their way points are the bots' paths (actor_pickPathPoint) */
 	i32 triggerFired[200];   /* +0xe3c618: (by use; seen running) 1: the trigger fired this frame */
 	i32 triggerCount;   /* +0xe3c938: triggers read (map_loadTriggerInfoFrom); script_processTriggers and actor_pickPathPoint walk them */
-	Manager objectShapes;   /* +0xe3c93c: (by use; seen running) the map objects' shapes (ShapeManager) */
+	ShapeManager objectShapes;   /* +0xe3c93c: (by use; seen running) the map objects' shapes (ShapeManager) */
 	u8 objectShapeData[0xf4240];   /* +0xe3cb88: objectShapes' block (ShapeManager_initBy; stage_build) */
 	u32 objectColours[1000000];   /* +0xf30dc8: the map objects' shading colours: two runs per object (MapObject.colourRuns[0] / [1], its model's colourCount each; object_initObjectBy), read from or written to <mapDir>/Temp-<map>-objectShadingInfo.dat (map_loadObjectInfoFrom) */
 	i32 objectColourCount;   /* +0x13016c8: dwords of it used (over 1000000: a fatal message) */
@@ -1454,11 +1454,11 @@ typedef struct Stage {
 	i32 legTypeCount;   /* +0x148646c: leg types read (catalogue_loadComponents; 20 / 21 seen; 0 at stage_build): a part past it is fatal (actor_setActorTypeLegInfoBy); the pickers wrap at it (Scene.legCount: mech_setLegIndex); bounds received parts (net_processGamePacket) */
 	BoosterType boosterTypes[50];   /* +0x1486470: the booster part types (catalogue_loadComponents; boosterTypeCount of them), by PlayerRecord.parts[4]: mech_stats, actor_processFrame (puffs, sound), armc_readMechStats, armc_readPartPanels; checked by net_processGamePacket */
 	i32 boosterTypeCount;   /* +0x14d1ab0: booster types read (catalogue_loadComponents; 16 / 17 seen; 0 at stage_build): a part past it is fatal (actor_setActorTypeBoosterInfoBy); the pickers wrap at it (Scene.boosterCount: mech_setBoosterIndex); bounds received parts */
-	ActorItem actorItems[50];   /* +0x14d1ab4: the actor items: Data/Component.dat's sixth table ("read ActorItemInfo"): the weapons and other hand / shoulder items (37 shipped: ITEM\SMG-17 .. ITEM\ICA-6000); indexed by PlayerRecord.items, Bullet.weapon, Player.lastHitWeapon */
+	ActorItem actorItems[50];   /* +0x14d1ab4: the actor items: Data/Component.dat's sixth table ("read ActorItemInfo"): the weapons and other hand / shoulder items (37 shipped: ITEM\SMG-17 .. ITEM\ICA-6000); indexed by PlayerRecord.items, Bullet.weapon, Actor.lastHitWeapon */
 	i32 actorItemCount;   /* +0x1561b64: actorItems read (Component.dat: 37) */
 	PlayerRecord playerRecords[16];   /* +0x1561b68: (Scene.playerRecords) */
 	i32 playerRecordCount;   /* +0x19e1888: (by use; seen running) player records in use (grows to cover a new player) */
-	Manager itemShapes;   /* +0x19e188c: the weapons' (actor_loadWeapon), the map items' (catalogue_loadItemInfoFrom: ItemType.model) and the effects' shapes (effect_initShapes) (ShapeManager, 600); the mech parts have each player record's own caches */
+	ShapeManager itemShapes;   /* +0x19e188c: the weapons' (actor_loadWeapon), the map items' (catalogue_loadItemInfoFrom: ItemType.model) and the effects' shapes (effect_initShapes) (ShapeManager, 600); the mech parts have each player record's own caches */
 	u8 itemShapeData[0x2dc6c0];   /* +0x19e1ad8: itemShapes' block (stage_build: ShapeManager_initBy) */
 	SkelManager itemSkeletons;   /* +0x1cbe198: the weapons' skeletons (SkeletonManager; actor_loadWeapon only) */
 	u8 itemSkeletonData[0x186a0];   /* +0x1cbe2c8: itemSkeletons' block (stage_build: SkeletonManager_initBy) */
@@ -1467,14 +1467,14 @@ typedef struct Stage {
 	i32 mapPlayerCount;   /* +0x1cd6fb0: map player records read with mapPlayers (map_loadActorInfoFrom; 0 / 8 seen): those from 1 made players (playerRecord_setFromMapPlayer), all given their flags; playerRecordCount set to it */
 	SpawnRecord mapActors[100];   /* +0x1cd6fb4: the map's actors (the first: the player's) */
 	i32 mapActorCount;   /* +0x1cd93a4: spawn records read with mapActors (map_loadActorInfoFrom; 0 / 8 seen): those from 1 flagged bots there; bot_spawns walks them */
-	Player actors[100];   /* +0x1cd93a8: the actor slots (Scene.players, the players' actors first) */
+	Actor actors[100];   /* +0x1cd93a8: the actor slots (Scene.players, the players' actors first) */
 	i32 actorCount;   /* +0x202e8c8: slots in use (the highest claimed + 1) */
 	i32 actorFreeHint;   /* +0x202e8cc: (by use; seen running) the lowest free actor slot */
 	i32 actorSerial;   /* +0x202e8d0: the next actor's id */
 	i32 playerActor;   /* +0x202e8d4: the local player's actor slot */
 	i32 cockpitActor;   /* +0x202e8d8: (by use; seen running) the actor the camera sits in (stage_setCockpitActor from match_frame: the local player in camera mode 1 while playing; -1 none) */
 	i32 silentActor;   /* +0x202e8dc: (by use; seen running) the actor whose footstep sounds are not played (actor_processFrame); -1 none (scene_resetActors, stage_newRound); stage_setSilentActor sets it (0 at the scene's start) */
-	i32 heldActor;   /* +0x202e8e0: the actor script command 24 holds out of play (script_holdActor; command 25 and the resets: -1); read only to let the one before go (Player.outOfPlay) */
+	i32 heldActor;   /* +0x202e8e0: the actor script command 24 holds out of play (script_holdActor; command 25 and the resets: -1); read only to let the one before go (Actor.outOfPlay) */
 	i32 heldMode;   /* +0x202e8e4: command 24's mode for it; written, never read */
 	i32 lastDeath;   /* +0x202e8e8: (by use; seen running) the actor that died last */
 	i32 rankingDirty;   /* +0x202e8ec: 1: the ranking to be made again next frame (match_frame: scene_updateRanking, then 0): set when an actor spawns, dies, is taken out, the actors are reset, a round starts or a player's team is set (= Scene.rankingDirty) */
@@ -1605,7 +1605,7 @@ typedef struct Round {
 	i32 timeLimit;   /* +0xc: the round's time limit (set_round); written, never read (Scene.timeLimit comes from g_timeLimit) */
 } Round;
 
-/* the scene: the one large object of a match, built by Console_ctor */
+/* the scene: the game object (the game's class Console; its class "Scene" is ScenePath), built once at start-up */
 typedef struct Scene {
 	u8 _pad0000000[0x4];
 	i32 client;   /* +0x4: (by use; seen running) in a network game: 1 on a machine that joined, 0 the host; -1 before any session (Console_ctor) */
@@ -1660,12 +1660,12 @@ typedef struct Scene {
 	i32 boosterCount;   /* +0x16c5178: = Stage.boosterTypeCount */
 	ActorItem actorItems[50];   /* +0x16c517c: = Stage.actorItems (the stage's item table) */
 	i32 actorItemCount;   /* +0x175522c: = Stage.actorItemCount */
-	PlayerRecord playerRecords[16];   /* +0x1755230: = Stage.playerRecords: the 16 players' records (name, character, team, parts, items, flag), indexed by Player.player / localPlayer */
+	PlayerRecord playerRecords[16];   /* +0x1755230: = Stage.playerRecords: the 16 players' records (name, character, team, parts, items, flag), indexed by Actor.player / localPlayer */
 	u8 _pad1bd4f50[0x2f50e0];
 	i32 snapshotTex[50];   /* +0x1eca030: texture id of each item's snapshot (Actor/<actorItems name>/SnapShot: the held weapon's picture in the HUD panel; < 0 not loaded yet, hud_drawMain loads it on first use; scene_reset sets all 50 to -1; = Stage.snapshotTex) */
 	u8 _pad1eca0f8[0x2974];
 	i32 mapActorCount;   /* +0x1ecca6c: = Stage.mapActorCount (the same word): the map's actor records (Stage.mapActors), the bots spawned from them */
-	Player players[16];   /* +0x1ecca70: = Stage.actors[0 .. 15]: the players' actors (slot = player number; localPlayer, watchedPlayer and ranking index them) */
+	Actor players[16];   /* +0x1ecca70: = Stage.actors[0 .. 15]: the players' actors (slot = player number; localPlayer, watchedPlayer and ranking index them) */
 	u8 _pad1f552f0[0x2ccca0];
 	i32 playerCount;   /* +0x2221f90: (by use; seen running) the players in the match (the follow and spawn loops) (= Stage.actorCount) */
 	u8 _pad2221f94[0x8];
@@ -1674,7 +1674,7 @@ typedef struct Scene {
 	u8 _pad2221fa4[0xc];
 	i32 lastDeath;   /* +0x2221fb0: = Stage.lastDeath (the same word): the actor that died last; the round ends slowed while it is down */
 	i32 rankingDirty;   /* +0x2221fb4: = Stage.rankingDirty (the same word): 1: the ranking to be made again next frame (match_frame: scene_updateRanking, then 0): set when an actor spawns (actor_setupFromParts), dies (actor_processFrame), is taken out (actor_deactivate), the actors are reset (scene_resetActors), a round starts (stage_newRound) or a player's team is set (player_setTeam) */
-	i32 teamScores[100];   /* +0x2221fb8: = Stage.frags: each team's frags (by team id, Player.team; the team at slot k is scene_teamIdAt(k)); compared with fragLimit; sent as two shorts in the game packet (net_sendGamePacket) */
+	i32 teamScores[100];   /* +0x2221fb8: = Stage.frags: each team's frags (by team id, Actor.team; the team at slot k is scene_teamIdAt(k)); compared with fragLimit; sent as two shorts in the game packet (net_sendGamePacket) */
 	float lockHeld[100];   /* +0x2222148: = Stage.lockHeld (per actor): seconds the local player's lock on it still holds (> 0: the lock box drawn, fading as it runs out) */
 	u8 _pad22222d8[0xc4d90];
 	float modelview[16];   /* +0x22e7068: = Stage.modelview (the same words): the camera's view matrix (gluLookAt; stage_setupView), given to the view volume (ViewVolume_captureMatrices) for the scene and the overlay parts */
@@ -1802,7 +1802,7 @@ typedef struct Scene {
 	i32 dataLossPending;   /* +0x23423fd: 1: a data mismatch found (in a network game each machine's own check of its live local player's parts every 20 s, actor_checkDataLoss: code 0; or a host game packet's map number / part-table / actorItems sample: codes 1, 2, 3 in dataLossCode): match_frame then shows msg_dataLoss and leaves (matchLeaving, quitDelay 3) */
 	i32 dataLossCode;   /* +0x2342401: why a game ends for lost data (msg_dataLoss): 0 the own player's parts check failed (every 20 s), 1 the host's map number differs, 2 a part table's check, 3 the actorItems table's; -1 none (match start) */
 	float partsCheckTime;   /* +0x2342405: seconds to the next check of the local player's parts (actor_checkDataLoss; a failure is dataLossCode 0): counted down by frameTime in a network game (sessionMode 1) and set back to 20 after a check; the check runs only while the local player's actor is alive (state 1), so it goes below 0 while it is dead or watching */
-	float previewTurn;   /* +0x2342409: the ARM CENTER preview's heading for the mech (Player.nextYaw), set while the right button is held: the cursor's offset from the screen's centre as -1800 .. 1800 (dx / w * 3600) less the preview's angle (g_armcAngle mod 3600); kept otherwise (armc_drawPreview3D) */
+	float previewTurn;   /* +0x2342409: the ARM CENTER preview's heading for the mech (Actor.nextYaw), set while the right button is held: the cursor's offset from the screen's centre as -1800 .. 1800 (dx / w * 3600) less the preview's angle (g_armcAngle mod 3600); kept otherwise (armc_drawPreview3D) */
 	i32 localPlayer;   /* +0x234240d: the player at this machine (index into players) */
 	i32 localRecordSet;   /* +0x2342411: 1: the local player's record is set this match (local_spawn does it once; cleared at a new match / team change) */
 	i32 playAsked;   /* +0x2342415: 1: the local player asked to play from the Esc menu (START in a game without teams; a team picked on the team page in a solo game): like a fire press it gives the team (or opens the team page) and spawnPending, then is cleared */
@@ -1873,7 +1873,7 @@ typedef struct Scene {
 	i32 holdFire;   /* +0x234327b: (left button) */
 	i32 firePressed;   /* +0x234327f: (by use; seen running) fire pressed this frame (holdFire: held) */
 	i32 holdBooster;   /* +0x2343283: held: booster (the booster binding: match_combatInput; shift in the mech test mode, match_mechTestFrame); actor_setInput's booster, and free_keys' 3x move */
-	i32 weaponKey;   /* +0x2343287: the weapon slot whose key (HAND WEAPON 1 .. 4, R / L SHOULDER) is held, the last of them (-1 none): Player.inWeaponSlot */
+	i32 weaponKey;   /* +0x2343287: the weapon slot whose key (HAND WEAPON 1 .. 4, R / L SHOULDER) is held, the last of them (-1 none): Actor.inWeaponSlot */
 	i32 holdZoom;   /* +0x234328b: held: zoom */
 	i32 rankingKey;   /* +0x234328f: 1: the ranking key is held */
 	float mouseDy;   /* +0x2343293: (by use; seen running) the cursor's offset from the centre, scaled by the sensitivity; inverted by the setting */
@@ -1992,19 +1992,19 @@ _Static_assert(offsetof(BlockOwner, blockSize) == 0x4 && sizeof(((BlockOwner *)0
 _Static_assert(offsetof(BlockOwner, block) == 0x8 && sizeof(((BlockOwner *)0)->block) == 0x4, "scene.fields: BlockOwner.block");
 _Static_assert(offsetof(BlockOwner, ownsBlock) == 0xc && sizeof(((BlockOwner *)0)->ownsBlock) == 0x4, "scene.fields: BlockOwner.ownsBlock");
 _Static_assert(sizeof(BlockOwner) == 0x10, "scene.fields: size of BlockOwner");
-_Static_assert(offsetof(Model, blockSize) == 0x4 && sizeof(((Model *)0)->blockSize) == 0x4, "scene.fields: Model.blockSize");
-_Static_assert(offsetof(Model, block) == 0x8 && sizeof(((Model *)0)->block) == 0x4, "scene.fields: Model.block");
-_Static_assert(offsetof(Model, ownsBlock) == 0xc && sizeof(((Model *)0)->ownsBlock) == 0x4, "scene.fields: Model.ownsBlock");
-_Static_assert(offsetof(Model, partCount) == 0x10 && sizeof(((Model *)0)->partCount) == 0x4, "scene.fields: Model.partCount");
-_Static_assert(offsetof(Model, parts) == 0x14 && sizeof(((Model *)0)->parts) == 0x4, "scene.fields: Model.parts");
-_Static_assert(offsetof(Model, colourCount) == 0x18 && sizeof(((Model *)0)->colourCount) == 0x4, "scene.fields: Model.colourCount");
-_Static_assert(offsetof(Model, triangleCount) == 0x1c && sizeof(((Model *)0)->triangleCount) == 0x4, "scene.fields: Model.triangleCount");
-_Static_assert(offsetof(Model, centre) == 0x20 && sizeof(((Model *)0)->centre) == 0xc, "scene.fields: Model.centre");
-_Static_assert(offsetof(Model, radius) == 0x2c && sizeof(((Model *)0)->radius) == 0x4, "scene.fields: Model.radius");
-_Static_assert(offsetof(Model, version) == 0x30 && sizeof(((Model *)0)->version) == 0x4, "scene.fields: Model.version");
-_Static_assert(offsetof(Model, low) == 0x34 && sizeof(((Model *)0)->low) == 0xc, "scene.fields: Model.low");
-_Static_assert(offsetof(Model, high) == 0x40 && sizeof(((Model *)0)->high) == 0xc, "scene.fields: Model.high");
-_Static_assert(sizeof(Model) == 0x4c, "scene.fields: size of Model");
+_Static_assert(offsetof(Shape, blockSize) == 0x4 && sizeof(((Shape *)0)->blockSize) == 0x4, "scene.fields: Shape.blockSize");
+_Static_assert(offsetof(Shape, block) == 0x8 && sizeof(((Shape *)0)->block) == 0x4, "scene.fields: Shape.block");
+_Static_assert(offsetof(Shape, ownsBlock) == 0xc && sizeof(((Shape *)0)->ownsBlock) == 0x4, "scene.fields: Shape.ownsBlock");
+_Static_assert(offsetof(Shape, partCount) == 0x10 && sizeof(((Shape *)0)->partCount) == 0x4, "scene.fields: Shape.partCount");
+_Static_assert(offsetof(Shape, parts) == 0x14 && sizeof(((Shape *)0)->parts) == 0x4, "scene.fields: Shape.parts");
+_Static_assert(offsetof(Shape, colourCount) == 0x18 && sizeof(((Shape *)0)->colourCount) == 0x4, "scene.fields: Shape.colourCount");
+_Static_assert(offsetof(Shape, triangleCount) == 0x1c && sizeof(((Shape *)0)->triangleCount) == 0x4, "scene.fields: Shape.triangleCount");
+_Static_assert(offsetof(Shape, centre) == 0x20 && sizeof(((Shape *)0)->centre) == 0xc, "scene.fields: Shape.centre");
+_Static_assert(offsetof(Shape, radius) == 0x2c && sizeof(((Shape *)0)->radius) == 0x4, "scene.fields: Shape.radius");
+_Static_assert(offsetof(Shape, version) == 0x30 && sizeof(((Shape *)0)->version) == 0x4, "scene.fields: Shape.version");
+_Static_assert(offsetof(Shape, low) == 0x34 && sizeof(((Shape *)0)->low) == 0xc, "scene.fields: Shape.low");
+_Static_assert(offsetof(Shape, high) == 0x40 && sizeof(((Shape *)0)->high) == 0xc, "scene.fields: Shape.high");
+_Static_assert(sizeof(Shape) == 0x4c, "scene.fields: size of Shape");
 _Static_assert(offsetof(ShapePart, flags) == 0x0 && sizeof(((ShapePart *)0)->flags) == 0x4, "scene.fields: ShapePart.flags");
 _Static_assert(offsetof(ShapePart, texName) == 0x4 && sizeof(((ShapePart *)0)->texName) == 0x40, "scene.fields: ShapePart.texName");
 _Static_assert(offsetof(ShapePart, texture) == 0x44 && sizeof(((ShapePart *)0)->texture) == 0x4, "scene.fields: ShapePart.texture");
@@ -2041,218 +2041,218 @@ _Static_assert(offsetof(ObjectList, skel) == 0x24 && sizeof(((ObjectList *)0)->s
 _Static_assert(offsetof(ObjectList, animTick) == 0x28 && sizeof(((ObjectList *)0)->animTick) == 0x4, "scene.fields: ObjectList.animTick");
 _Static_assert(offsetof(ObjectList, preLit) == 0x2c && sizeof(((ObjectList *)0)->preLit) == 0x4, "scene.fields: ObjectList.preLit");
 _Static_assert(sizeof(ObjectList) == 0x30, "scene.fields: size of ObjectList");
-_Static_assert(offsetof(Player, detectionRangeSq) == 0x0 && sizeof(((Player *)0)->detectionRangeSq) == 0x4, "scene.fields: Player.detectionRangeSq");
-_Static_assert(offsetof(Player, detectionAngle) == 0x4 && sizeof(((Player *)0)->detectionAngle) == 0x4, "scene.fields: Player.detectionAngle");
-_Static_assert(offsetof(Player, hackingLevel) == 0x8 && sizeof(((Player *)0)->hackingLevel) == 0x4, "scene.fields: Player.hackingLevel");
-_Static_assert(offsetof(Player, lockOnTime) == 0xc && sizeof(((Player *)0)->lockOnTime) == 0x4, "scene.fields: Player.lockOnTime");
-_Static_assert(offsetof(Player, targetKeepTime) == 0x10 && sizeof(((Player *)0)->targetKeepTime) == 0x4, "scene.fields: Player.targetKeepTime");
-_Static_assert(offsetof(Player, loadMax) == 0x14 && sizeof(((Player *)0)->loadMax) == 0x4, "scene.fields: Player.loadMax");
-_Static_assert(offsetof(Player, load) == 0x18 && sizeof(((Player *)0)->load) == 0x4, "scene.fields: Player.load");
-_Static_assert(offsetof(Player, armorMax) == 0x1c && sizeof(((Player *)0)->armorMax) == 0x4, "scene.fields: Player.armorMax");
-_Static_assert(offsetof(Player, shieldMax) == 0x20 && sizeof(((Player *)0)->shieldMax) == 0x4, "scene.fields: Player.shieldMax");
-_Static_assert(offsetof(Player, accuracy) == 0x24 && sizeof(((Player *)0)->accuracy) == 0x4, "scene.fields: Player.accuracy");
-_Static_assert(offsetof(Player, ammoMax) == 0x28 && sizeof(((Player *)0)->ammoMax) == 0x10, "scene.fields: Player.ammoMax");
-_Static_assert(offsetof(Player, mobility) == 0x38 && sizeof(((Player *)0)->mobility) == 0x4, "scene.fields: Player.mobility");
-_Static_assert(offsetof(Player, moveAccel) == 0x3c && sizeof(((Player *)0)->moveAccel) == 0x4, "scene.fields: Player.moveAccel");
-_Static_assert(offsetof(Player, boosterTilt) == 0x40 && sizeof(((Player *)0)->boosterTilt) == 0x4, "scene.fields: Player.boosterTilt");
-_Static_assert(offsetof(Player, boostTime) == 0x44 && sizeof(((Player *)0)->boostTime) == 0x4, "scene.fields: Player.boostTime");
-_Static_assert(offsetof(Player, rechargeTime) == 0x48 && sizeof(((Player *)0)->rechargeTime) == 0x4, "scene.fields: Player.rechargeTime");
-_Static_assert(offsetof(Player, restTime) == 0x4c && sizeof(((Player *)0)->restTime) == 0x4, "scene.fields: Player.restTime");
-_Static_assert(offsetof(Player, speed) == 0x50 && sizeof(((Player *)0)->speed) == 0x4, "scene.fields: Player.speed");
-_Static_assert(offsetof(Player, runTop) == 0x54 && sizeof(((Player *)0)->runTop) == 0x10, "scene.fields: Player.runTop");
-_Static_assert(offsetof(Player, unused64) == 0x64 && sizeof(((Player *)0)->unused64) == 0x4, "scene.fields: Player.unused64");
-_Static_assert(offsetof(Player, baseSpeed) == 0x68 && sizeof(((Player *)0)->baseSpeed) == 0x4, "scene.fields: Player.baseSpeed");
-_Static_assert(offsetof(Player, turnRate) == 0x6c && sizeof(((Player *)0)->turnRate) == 0x4, "scene.fields: Player.turnRate");
-_Static_assert(offsetof(Player, unused70) == 0x70 && sizeof(((Player *)0)->unused70) == 0x4, "scene.fields: Player.unused70");
-_Static_assert(offsetof(Player, aimError) == 0x74 && sizeof(((Player *)0)->aimError) == 0x4, "scene.fields: Player.aimError");
-_Static_assert(offsetof(Player, scriptFlag) == 0x78 && sizeof(((Player *)0)->scriptFlag) == 0x4, "scene.fields: Player.scriptFlag");
-_Static_assert(offsetof(Player, dodgeSpread) == 0x7c && sizeof(((Player *)0)->dodgeSpread) == 0x4, "scene.fields: Player.dodgeSpread");
-_Static_assert(offsetof(Player, climbSpread) == 0x80 && sizeof(((Player *)0)->climbSpread) == 0x4, "scene.fields: Player.climbSpread");
-_Static_assert(offsetof(Player, botParams) == 0x84 && sizeof(((Player *)0)->botParams) == 0x14, "scene.fields: Player.botParams");
-_Static_assert(offsetof(Player, name) == 0x98 && sizeof(((Player *)0)->name) == 0x40, "scene.fields: Player.name");
-_Static_assert(offsetof(Player, inPlay) == 0xd8 && sizeof(((Player *)0)->inPlay) == 0x4, "scene.fields: Player.inPlay");
-_Static_assert(offsetof(Player, grade) == 0xdc && sizeof(((Player *)0)->grade) == 0x4, "scene.fields: Player.grade");
-_Static_assert(offsetof(Player, levelShown) == 0xe0 && sizeof(((Player *)0)->levelShown) == 0x4, "scene.fields: Player.levelShown");
-_Static_assert(offsetof(Player, kills) == 0xe4 && sizeof(((Player *)0)->kills) == 0x4, "scene.fields: Player.kills");
-_Static_assert(offsetof(Player, deaths) == 0xe8 && sizeof(((Player *)0)->deaths) == 0x4, "scene.fields: Player.deaths");
-_Static_assert(offsetof(Player, score) == 0xec && sizeof(((Player *)0)->score) == 0x4, "scene.fields: Player.score");
-_Static_assert(offsetof(Player, killsCounted) == 0xf0 && sizeof(((Player *)0)->killsCounted) == 0x4, "scene.fields: Player.killsCounted");
-_Static_assert(offsetof(Player, deathsCounted) == 0xf4 && sizeof(((Player *)0)->deathsCounted) == 0x4, "scene.fields: Player.deathsCounted");
-_Static_assert(offsetof(Player, scoreCounted) == 0xf8 && sizeof(((Player *)0)->scoreCounted) == 0x4, "scene.fields: Player.scoreCounted");
-_Static_assert(offsetof(Player, timePlayed) == 0xfc && sizeof(((Player *)0)->timePlayed) == 0x4, "scene.fields: Player.timePlayed");
-_Static_assert(offsetof(Player, timeFraction) == 0x100 && sizeof(((Player *)0)->timeFraction) == 0x4, "scene.fields: Player.timeFraction");
-_Static_assert(offsetof(Player, id) == 0x104 && sizeof(((Player *)0)->id) == 0x4, "scene.fields: Player.id");
-_Static_assert(offsetof(Player, active) == 0x108 && sizeof(((Player *)0)->active) == 0x4, "scene.fields: Player.active");
-_Static_assert(offsetof(Player, player) == 0x10c && sizeof(((Player *)0)->player) == 0x4, "scene.fields: Player.player");
-_Static_assert(offsetof(Player, controlledBy) == 0x110 && sizeof(((Player *)0)->controlledBy) == 0x4, "scene.fields: Player.controlledBy");
-_Static_assert(offsetof(Player, character) == 0x114 && sizeof(((Player *)0)->character) == 0x4, "scene.fields: Player.character");
-_Static_assert(offsetof(Player, team) == 0x118 && sizeof(((Player *)0)->team) == 0x4, "scene.fields: Player.team");
-_Static_assert(offsetof(Player, bot) == 0x11c && sizeof(((Player *)0)->bot) == 0x4, "scene.fields: Player.bot");
-_Static_assert(offsetof(Player, spawnAge) == 0x120 && sizeof(((Player *)0)->spawnAge) == 0x4, "scene.fields: Player.spawnAge");
-_Static_assert(offsetof(Player, dropAge) == 0x124 && sizeof(((Player *)0)->dropAge) == 0x4, "scene.fields: Player.dropAge");
-_Static_assert(offsetof(Player, armor) == 0x128 && sizeof(((Player *)0)->armor) == 0x4, "scene.fields: Player.armor");
-_Static_assert(offsetof(Player, shield) == 0x12c && sizeof(((Player *)0)->shield) == 0x4, "scene.fields: Player.shield");
-_Static_assert(offsetof(Player, ammo) == 0x130 && sizeof(((Player *)0)->ammo) == 0x10, "scene.fields: Player.ammo");
-_Static_assert(offsetof(Player, slot) == 0x140 && sizeof(((Player *)0)->slot) == 0x4, "scene.fields: Player.slot");
-_Static_assert(offsetof(Player, lastWeaponSlot) == 0x144 && sizeof(((Player *)0)->lastWeaponSlot) == 0x4, "scene.fields: Player.lastWeaponSlot");
-_Static_assert(offsetof(Player, heldItem) == 0x148 && sizeof(((Player *)0)->heldItem) == 0x4, "scene.fields: Player.heldItem");
-_Static_assert(offsetof(Player, state) == 0x14c && sizeof(((Player *)0)->state) == 0x4, "scene.fields: Player.state");
-_Static_assert(offsetof(Player, stateTime) == 0x150 && sizeof(((Player *)0)->stateTime) == 0x4, "scene.fields: Player.stateTime");
-_Static_assert(offsetof(Player, pos) == 0x154 && sizeof(((Player *)0)->pos) == 0xc, "scene.fields: Player.pos");
-_Static_assert(offsetof(Player, pitch) == 0x160 && sizeof(((Player *)0)->pitch) == 0x4, "scene.fields: Player.pitch");
-_Static_assert(offsetof(Player, yaw) == 0x164 && sizeof(((Player *)0)->yaw) == 0x4, "scene.fields: Player.yaw");
-_Static_assert(offsetof(Player, forward) == 0x168 && sizeof(((Player *)0)->forward) == 0x4, "scene.fields: Player.forward");
-_Static_assert(offsetof(Player, strafe) == 0x16c && sizeof(((Player *)0)->strafe) == 0x4, "scene.fields: Player.strafe");
-_Static_assert(offsetof(Player, climb) == 0x170 && sizeof(((Player *)0)->climb) == 0x4, "scene.fields: Player.climb");
-_Static_assert(offsetof(Player, lean) == 0x174 && sizeof(((Player *)0)->lean) == 0x4, "scene.fields: Player.lean");
-_Static_assert(offsetof(Player, run) == 0x178 && sizeof(((Player *)0)->run) == 0x4, "scene.fields: Player.run");
-_Static_assert(offsetof(Player, fireAnim) == 0x17c && sizeof(((Player *)0)->fireAnim) == 0x4, "scene.fields: Player.fireAnim");
-_Static_assert(offsetof(Player, nextPos) == 0x180 && sizeof(((Player *)0)->nextPos) == 0xc, "scene.fields: Player.nextPos");
-_Static_assert(offsetof(Player, nextPitch) == 0x18c && sizeof(((Player *)0)->nextPitch) == 0x4, "scene.fields: Player.nextPitch");
-_Static_assert(offsetof(Player, nextYaw) == 0x190 && sizeof(((Player *)0)->nextYaw) == 0x4, "scene.fields: Player.nextYaw");
-_Static_assert(offsetof(Player, nextForward) == 0x194 && sizeof(((Player *)0)->nextForward) == 0x4, "scene.fields: Player.nextForward");
-_Static_assert(offsetof(Player, nextStrafe) == 0x198 && sizeof(((Player *)0)->nextStrafe) == 0x4, "scene.fields: Player.nextStrafe");
-_Static_assert(offsetof(Player, nextClimb) == 0x19c && sizeof(((Player *)0)->nextClimb) == 0x4, "scene.fields: Player.nextClimb");
-_Static_assert(offsetof(Player, nextLean) == 0x1a0 && sizeof(((Player *)0)->nextLean) == 0x4, "scene.fields: Player.nextLean");
-_Static_assert(offsetof(Player, nextRun) == 0x1a4 && sizeof(((Player *)0)->nextRun) == 0x4, "scene.fields: Player.nextRun");
-_Static_assert(offsetof(Player, fireCycle) == 0x1a8 && sizeof(((Player *)0)->fireCycle) == 0x4, "scene.fields: Player.fireCycle");
-_Static_assert(offsetof(Player, netPos) == 0x1ac && sizeof(((Player *)0)->netPos) == 0xc, "scene.fields: Player.netPos");
-_Static_assert(offsetof(Player, netPitch) == 0x1b8 && sizeof(((Player *)0)->netPitch) == 0x4, "scene.fields: Player.netPitch");
-_Static_assert(offsetof(Player, netYaw) == 0x1bc && sizeof(((Player *)0)->netYaw) == 0x4, "scene.fields: Player.netYaw");
-_Static_assert(offsetof(Player, netMotion) == 0x1c0 && sizeof(((Player *)0)->netMotion) == 0x14, "scene.fields: Player.netMotion");
-_Static_assert(offsetof(Player, botGoal) == 0x1d4 && sizeof(((Player *)0)->botGoal) == 0xc, "scene.fields: Player.botGoal");
-_Static_assert(offsetof(Player, botLookPitch) == 0x1e0 && sizeof(((Player *)0)->botLookPitch) == 0x4, "scene.fields: Player.botLookPitch");
-_Static_assert(offsetof(Player, botLookYaw) == 0x1e4 && sizeof(((Player *)0)->botLookYaw) == 0x4, "scene.fields: Player.botLookYaw");
-_Static_assert(offsetof(Player, netFired) == 0x1e8 && sizeof(((Player *)0)->netFired) == 0x4, "scene.fields: Player.netFired");
-_Static_assert(offsetof(Player, firing) == 0x1ec && sizeof(((Player *)0)->firing) == 0x4, "scene.fields: Player.firing");
-_Static_assert(offsetof(Player, burstLeft) == 0x1f0 && sizeof(((Player *)0)->burstLeft) == 0x4, "scene.fields: Player.burstLeft");
-_Static_assert(offsetof(Player, burstTime) == 0x1f4 && sizeof(((Player *)0)->burstTime) == 0x4, "scene.fields: Player.burstTime");
-_Static_assert(offsetof(Player, shots) == 0x1f8 && sizeof(((Player *)0)->shots) == 0xa0, "scene.fields: Player.shots");
-_Static_assert(offsetof(Player, rounds) == 0x298 && sizeof(((Player *)0)->rounds) == 0xc8, "scene.fields: Player.rounds");
-_Static_assert(offsetof(Player, shotBullets) == 0x360 && sizeof(((Player *)0)->shotBullets) == 0x14, "scene.fields: Player.shotBullets");
-_Static_assert(offsetof(Player, sendNow) == 0x374 && sizeof(((Player *)0)->sendNow) == 0x4, "scene.fields: Player.sendNow");
-_Static_assert(offsetof(Player, velocity) == 0x378 && sizeof(((Player *)0)->velocity) == 0xc, "scene.fields: Player.velocity");
-_Static_assert(offsetof(Player, move) == 0x384 && sizeof(((Player *)0)->move) == 0xc, "scene.fields: Player.move");
-_Static_assert(offsetof(Player, pose) == 0x390 && sizeof(((Player *)0)->pose) == 0x18, "scene.fields: Player.pose");
-_Static_assert(offsetof(Player, bodyMatrix) == 0x3a8 && sizeof(((Player *)0)->bodyMatrix) == 0x40, "scene.fields: Player.bodyMatrix");
-_Static_assert(offsetof(Player, radius) == 0x3e8 && sizeof(((Player *)0)->radius) == 0x4, "scene.fields: Player.radius");
-_Static_assert(offsetof(Player, chatIcon) == 0x3ec && sizeof(((Player *)0)->chatIcon) == 0x4, "scene.fields: Player.chatIcon");
-_Static_assert(offsetof(Player, stateFlags) == 0x3f0 && sizeof(((Player *)0)->stateFlags) == 0x4, "scene.fields: Player.stateFlags");
-_Static_assert(offsetof(Player, timers) == 0x3f4 && sizeof(((Player *)0)->timers) == 0x10, "scene.fields: Player.timers");
-_Static_assert(offsetof(Player, ammoFactor) == 0x404 && sizeof(((Player *)0)->ammoFactor) == 0x10, "scene.fields: Player.ammoFactor");
-_Static_assert(offsetof(Player, ammoBonus) == 0x414 && sizeof(((Player *)0)->ammoBonus) == 0x10, "scene.fields: Player.ammoBonus");
-_Static_assert(offsetof(Player, rangeBonus) == 0x424 && sizeof(((Player *)0)->rangeBonus) == 0x4, "scene.fields: Player.rangeBonus");
-_Static_assert(offsetof(Player, lockOnTimeFactor) == 0x428 && sizeof(((Player *)0)->lockOnTimeFactor) == 0x4, "scene.fields: Player.lockOnTimeFactor");
-_Static_assert(offsetof(Player, targetKeepFactor) == 0x42c && sizeof(((Player *)0)->targetKeepFactor) == 0x4, "scene.fields: Player.targetKeepFactor");
-_Static_assert(offsetof(Player, hackingBonus) == 0x430 && sizeof(((Player *)0)->hackingBonus) == 0x4, "scene.fields: Player.hackingBonus");
-_Static_assert(offsetof(Player, boostTimeFactor) == 0x434 && sizeof(((Player *)0)->boostTimeFactor) == 0x4, "scene.fields: Player.boostTimeFactor");
-_Static_assert(offsetof(Player, rechargeTimeFactor) == 0x438 && sizeof(((Player *)0)->rechargeTimeFactor) == 0x4, "scene.fields: Player.rechargeTimeFactor");
-_Static_assert(offsetof(Player, restTimeFactor) == 0x43c && sizeof(((Player *)0)->restTimeFactor) == 0x4, "scene.fields: Player.restTimeFactor");
-_Static_assert(offsetof(Player, loadFactor) == 0x440 && sizeof(((Player *)0)->loadFactor) == 0x4, "scene.fields: Player.loadFactor");
-_Static_assert(offsetof(Player, shieldFactor) == 0x444 && sizeof(((Player *)0)->shieldFactor) == 0x4, "scene.fields: Player.shieldFactor");
-_Static_assert(offsetof(Player, shieldRegen) == 0x448 && sizeof(((Player *)0)->shieldRegen) == 0x4, "scene.fields: Player.shieldRegen");
-_Static_assert(offsetof(Player, inForward) == 0x44c && sizeof(((Player *)0)->inForward) == 0x4, "scene.fields: Player.inForward");
-_Static_assert(offsetof(Player, inBackward) == 0x450 && sizeof(((Player *)0)->inBackward) == 0x4, "scene.fields: Player.inBackward");
-_Static_assert(offsetof(Player, inStepLeft) == 0x454 && sizeof(((Player *)0)->inStepLeft) == 0x4, "scene.fields: Player.inStepLeft");
-_Static_assert(offsetof(Player, inStepRight) == 0x458 && sizeof(((Player *)0)->inStepRight) == 0x4, "scene.fields: Player.inStepRight");
-_Static_assert(offsetof(Player, inPitch) == 0x464 && sizeof(((Player *)0)->inPitch) == 0x4, "scene.fields: Player.inPitch");
-_Static_assert(offsetof(Player, inYaw) == 0x468 && sizeof(((Player *)0)->inYaw) == 0x4, "scene.fields: Player.inYaw");
-_Static_assert(offsetof(Player, inFire) == 0x46c && sizeof(((Player *)0)->inFire) == 0x4, "scene.fields: Player.inFire");
-_Static_assert(offsetof(Player, inAltitude) == 0x470 && sizeof(((Player *)0)->inAltitude) == 0x4, "scene.fields: Player.inAltitude");
-_Static_assert(offsetof(Player, inBooster) == 0x474 && sizeof(((Player *)0)->inBooster) == 0x4, "scene.fields: Player.inBooster");
-_Static_assert(offsetof(Player, inWeaponSlot) == 0x478 && sizeof(((Player *)0)->inWeaponSlot) == 0x4, "scene.fields: Player.inWeaponSlot");
-_Static_assert(offsetof(Player, inPrevWeapon) == 0x47c && sizeof(((Player *)0)->inPrevWeapon) == 0x4, "scene.fields: Player.inPrevWeapon");
-_Static_assert(offsetof(Player, inNextWeapon) == 0x480 && sizeof(((Player *)0)->inNextWeapon) == 0x4, "scene.fields: Player.inNextWeapon");
-_Static_assert(offsetof(Player, lowDetail) == 0x484 && sizeof(((Player *)0)->lowDetail) == 0x4, "scene.fields: Player.lowDetail");
-_Static_assert(offsetof(Player, lowDetailLoaded) == 0x488 && sizeof(((Player *)0)->lowDetailLoaded) == 0x4, "scene.fields: Player.lowDetailLoaded");
-_Static_assert(offsetof(Player, weaponLowering) == 0x48c && sizeof(((Player *)0)->weaponLowering) == 0x4, "scene.fields: Player.weaponLowering");
-_Static_assert(offsetof(Player, weaponRaise) == 0x490 && sizeof(((Player *)0)->weaponRaise) == 0x4, "scene.fields: Player.weaponRaise");
-_Static_assert(offsetof(Player, slotIconTime) == 0x494 && sizeof(((Player *)0)->slotIconTime) == 0x4, "scene.fields: Player.slotIconTime");
-_Static_assert(offsetof(Player, switchSlot) == 0x498 && sizeof(((Player *)0)->switchSlot) == 0x4, "scene.fields: Player.switchSlot");
-_Static_assert(offsetof(Player, variantLoaded) == 0x49c && sizeof(((Player *)0)->variantLoaded) == 0x4, "scene.fields: Player.variantLoaded");
-_Static_assert(offsetof(Player, firePrev) == 0x4a0 && sizeof(((Player *)0)->firePrev) == 0x4, "scene.fields: Player.firePrev");
-_Static_assert(offsetof(Player, effectScale) == 0x4a4 && sizeof(((Player *)0)->effectScale) == 0x4, "scene.fields: Player.effectScale");
-_Static_assert(offsetof(Player, footstepTime) == 0x4a8 && sizeof(((Player *)0)->footstepTime) == 0x4, "scene.fields: Player.footstepTime");
-_Static_assert(offsetof(Player, energy) == 0x4ac && sizeof(((Player *)0)->energy) == 0x4, "scene.fields: Player.energy");
-_Static_assert(offsetof(Player, staminaRest) == 0x4b0 && sizeof(((Player *)0)->staminaRest) == 0x4, "scene.fields: Player.staminaRest");
-_Static_assert(offsetof(Player, overheat) == 0x4b4 && sizeof(((Player *)0)->overheat) == 0x4, "scene.fields: Player.overheat");
-_Static_assert(offsetof(Player, warned) == 0x4b8 && sizeof(((Player *)0)->warned) == 0x4, "scene.fields: Player.warned");
-_Static_assert(offsetof(Player, lastHitDamageType) == 0x4bc && sizeof(((Player *)0)->lastHitDamageType) == 0x4, "scene.fields: Player.lastHitDamageType");
-_Static_assert(offsetof(Player, lastAttacker) == 0x4c0 && sizeof(((Player *)0)->lastAttacker) == 0x4, "scene.fields: Player.lastAttacker");
-_Static_assert(offsetof(Player, lastHitWeapon) == 0x4c4 && sizeof(((Player *)0)->lastHitWeapon) == 0x4, "scene.fields: Player.lastHitWeapon");
-_Static_assert(offsetof(Player, ammoKind) == 0x4cc && sizeof(((Player *)0)->ammoKind) == 0x4, "scene.fields: Player.ammoKind");
-_Static_assert(offsetof(Player, cheat) == 0x4d0 && sizeof(((Player *)0)->cheat) == 0x4, "scene.fields: Player.cheat");
-_Static_assert(offsetof(Player, bigHead) == 0x4d4 && sizeof(((Player *)0)->bigHead) == 0x4, "scene.fields: Player.bigHead");
-_Static_assert(offsetof(Player, isKing) == 0x4d8 && sizeof(((Player *)0)->isKing) == 0x4, "scene.fields: Player.isKing");
-_Static_assert(offsetof(Player, isCommander) == 0x4dc && sizeof(((Player *)0)->isCommander) == 0x4, "scene.fields: Player.isCommander");
-_Static_assert(offsetof(Player, deathPos) == 0x4e0 && sizeof(((Player *)0)->deathPos) == 0xc, "scene.fields: Player.deathPos");
-_Static_assert(offsetof(Player, glow) == 0x4ec && sizeof(((Player *)0)->glow) == 0x4, "scene.fields: Player.glow");
-_Static_assert(offsetof(Player, tint) == 0x4f0 && sizeof(((Player *)0)->tint) == 0x4, "scene.fields: Player.tint");
-_Static_assert(offsetof(Player, message) == 0x4f4 && sizeof(((Player *)0)->message) == 0x40, "scene.fields: Player.message");
-_Static_assert(offsetof(Player, messageTime) == 0x534 && sizeof(((Player *)0)->messageTime) == 0x4, "scene.fields: Player.messageTime");
-_Static_assert(offsetof(Player, lastWarp) == 0x538 && sizeof(((Player *)0)->lastWarp) == 0x4, "scene.fields: Player.lastWarp");
-_Static_assert(offsetof(Player, onWarp) == 0x53c && sizeof(((Player *)0)->onWarp) == 0x4, "scene.fields: Player.onWarp");
-_Static_assert(offsetof(Player, warpWait) == 0x540 && sizeof(((Player *)0)->warpWait) == 0x4, "scene.fields: Player.warpWait");
-_Static_assert(offsetof(Player, shieldRegenTime) == 0x544 && sizeof(((Player *)0)->shieldRegenTime) == 0x4, "scene.fields: Player.shieldRegenTime");
-_Static_assert(offsetof(Player, whiteFlash) == 0x548 && sizeof(((Player *)0)->whiteFlash) == 0x4, "scene.fields: Player.whiteFlash");
-_Static_assert(offsetof(Player, partListsBound) == 0x54c && sizeof(((Player *)0)->partListsBound) == 0x4, "scene.fields: Player.partListsBound");
-_Static_assert(offsetof(Player, viewMarked) == 0x550 && sizeof(((Player *)0)->viewMarked) == 0x4, "scene.fields: Player.viewMarked");
-_Static_assert(offsetof(Player, headModel) == 0x554 && sizeof(((Player *)0)->headModel) == 0x30, "scene.fields: Player.headModel");
-_Static_assert(offsetof(Player, headModelMem) == 0x584 && sizeof(((Player *)0)->headModelMem) == 0x7d0, "scene.fields: Player.headModelMem");
-_Static_assert(offsetof(Player, chestModel) == 0xd54 && sizeof(((Player *)0)->chestModel) == 0x30, "scene.fields: Player.chestModel");
-_Static_assert(offsetof(Player, chestModelMem) == 0xd84 && sizeof(((Player *)0)->chestModelMem) == 0x7d0, "scene.fields: Player.chestModelMem");
-_Static_assert(offsetof(Player, armsModel) == 0x1554 && sizeof(((Player *)0)->armsModel) == 0x30, "scene.fields: Player.armsModel");
-_Static_assert(offsetof(Player, armsModelMem) == 0x1584 && sizeof(((Player *)0)->armsModelMem) == 0xfa0, "scene.fields: Player.armsModelMem");
-_Static_assert(offsetof(Player, legsModel) == 0x2524 && sizeof(((Player *)0)->legsModel) == 0x30, "scene.fields: Player.legsModel");
-_Static_assert(offsetof(Player, legsModelMem) == 0x2554 && sizeof(((Player *)0)->legsModelMem) == 0xfa0, "scene.fields: Player.legsModelMem");
-_Static_assert(offsetof(Player, boosterModel) == 0x34f4 && sizeof(((Player *)0)->boosterModel) == 0x30, "scene.fields: Player.boosterModel");
-_Static_assert(offsetof(Player, boosterModelMem) == 0x3524 && sizeof(((Player *)0)->boosterModelMem) == 0xbb8, "scene.fields: Player.boosterModelMem");
-_Static_assert(offsetof(Player, weaponModel) == 0x40dc && sizeof(((Player *)0)->weaponModel) == 0x30, "scene.fields: Player.weaponModel");
-_Static_assert(offsetof(Player, weaponModelMem) == 0x410c && sizeof(((Player *)0)->weaponModelMem) == 0x1770, "scene.fields: Player.weaponModelMem");
-_Static_assert(offsetof(Player, weaponModel4) == 0x587c && sizeof(((Player *)0)->weaponModel4) == 0x30, "scene.fields: Player.weaponModel4");
-_Static_assert(offsetof(Player, weaponModel4Mem) == 0x58ac && sizeof(((Player *)0)->weaponModel4Mem) == 0x1770, "scene.fields: Player.weaponModel4Mem");
-_Static_assert(offsetof(Player, weaponModel5) == 0x701c && sizeof(((Player *)0)->weaponModel5) == 0x30, "scene.fields: Player.weaponModel5");
-_Static_assert(offsetof(Player, weaponModel5Mem) == 0x704c && sizeof(((Player *)0)->weaponModel5Mem) == 0x1770, "scene.fields: Player.weaponModel5Mem");
-_Static_assert(offsetof(Player, screenPos) == 0x87bc && sizeof(((Player *)0)->screenPos) == 0xc, "scene.fields: Player.screenPos");
-_Static_assert(offsetof(Player, tagTopLeft) == 0x87c8 && sizeof(((Player *)0)->tagTopLeft) == 0xc, "scene.fields: Player.tagTopLeft");
-_Static_assert(offsetof(Player, tagBottomRight) == 0x87d4 && sizeof(((Player *)0)->tagBottomRight) == 0xc, "scene.fields: Player.tagBottomRight");
-_Static_assert(offsetof(Player, onScreen) == 0x87e0 && sizeof(((Player *)0)->onScreen) == 0x4, "scene.fields: Player.onScreen");
-_Static_assert(offsetof(Player, facingCos) == 0x87e4 && sizeof(((Player *)0)->facingCos) == 0x4, "scene.fields: Player.facingCos");
-_Static_assert(offsetof(Player, aimTime) == 0x87e8 && sizeof(((Player *)0)->aimTime) == 0x4, "scene.fields: Player.aimTime");
-_Static_assert(offsetof(Player, lockAnim) == 0x87ec && sizeof(((Player *)0)->lockAnim) == 0x4, "scene.fields: Player.lockAnim");
-_Static_assert(offsetof(Player, labelFade) == 0x87f0 && sizeof(((Player *)0)->labelFade) == 0x4, "scene.fields: Player.labelFade");
-_Static_assert(offsetof(Player, botNeeds) == 0x87f4 && sizeof(((Player *)0)->botNeeds) == 0x4, "scene.fields: Player.botNeeds");
-_Static_assert(offsetof(Player, path) == 0x87f8 && sizeof(((Player *)0)->path) == 0x4, "scene.fields: Player.path");
-_Static_assert(offsetof(Player, pathPoint) == 0x87fc && sizeof(((Player *)0)->pathPoint) == 0x4, "scene.fields: Player.pathPoint");
-_Static_assert(offsetof(Player, pathReverse) == 0x8800 && sizeof(((Player *)0)->pathReverse) == 0x4, "scene.fields: Player.pathReverse");
-_Static_assert(offsetof(Player, botWait) == 0x8804 && sizeof(((Player *)0)->botWait) == 0x4, "scene.fields: Player.botWait");
-_Static_assert(offsetof(Player, botWaitTrigger) == 0x8808 && sizeof(((Player *)0)->botWaitTrigger) == 0x4, "scene.fields: Player.botWaitTrigger");
-_Static_assert(offsetof(Player, invulnerable) == 0x880c && sizeof(((Player *)0)->invulnerable) == 0x4, "scene.fields: Player.invulnerable");
-_Static_assert(offsetof(Player, lookActor) == 0x8810 && sizeof(((Player *)0)->lookActor) == 0x4, "scene.fields: Player.lookActor");
-_Static_assert(offsetof(Player, lookPath) == 0x8814 && sizeof(((Player *)0)->lookPath) == 0x4, "scene.fields: Player.lookPath");
-_Static_assert(offsetof(Player, lookPoint) == 0x8818 && sizeof(((Player *)0)->lookPoint) == 0x4, "scene.fields: Player.lookPoint");
-_Static_assert(offsetof(Player, followTarget) == 0x881c && sizeof(((Player *)0)->followTarget) == 0x4, "scene.fields: Player.followTarget");
-_Static_assert(offsetof(Player, botTarget) == 0x8820 && sizeof(((Player *)0)->botTarget) == 0x4, "scene.fields: Player.botTarget");
-_Static_assert(offsetof(Player, scanTime) == 0x8824 && sizeof(((Player *)0)->scanTime) == 0x4, "scene.fields: Player.scanTime");
-_Static_assert(offsetof(Player, burstPause) == 0x8828 && sizeof(((Player *)0)->burstPause) == 0x4, "scene.fields: Player.burstPause");
-_Static_assert(offsetof(Player, burstFire) == 0x882c && sizeof(((Player *)0)->burstFire) == 0x4, "scene.fields: Player.burstFire");
-_Static_assert(offsetof(Player, dodgeTime) == 0x8830 && sizeof(((Player *)0)->dodgeTime) == 0x4, "scene.fields: Player.dodgeTime");
-_Static_assert(offsetof(Player, heightTime) == 0x8834 && sizeof(((Player *)0)->heightTime) == 0x4, "scene.fields: Player.heightTime");
-_Static_assert(offsetof(Player, cleared8838) == 0x8838 && sizeof(((Player *)0)->cleared8838) == 0xc, "scene.fields: Player.cleared8838");
-_Static_assert(offsetof(Player, lookTime) == 0x8844 && sizeof(((Player *)0)->lookTime) == 0x4, "scene.fields: Player.lookTime");
-_Static_assert(offsetof(Player, pathRange) == 0x8848 && sizeof(((Player *)0)->pathRange) == 0x4, "scene.fields: Player.pathRange");
-_Static_assert(offsetof(Player, outOfPlay) == 0x884c && sizeof(((Player *)0)->outOfPlay) == 0x4, "scene.fields: Player.outOfPlay");
-_Static_assert(offsetof(Player, hitPending) == 0x8850 && sizeof(((Player *)0)->hitPending) == 0x4, "scene.fields: Player.hitPending");
-_Static_assert(offsetof(Player, hitFlash) == 0x8854 && sizeof(((Player *)0)->hitFlash) == 0x4, "scene.fields: Player.hitFlash");
-_Static_assert(offsetof(Player, botTargetTime) == 0x8858 && sizeof(((Player *)0)->botTargetTime) == 0x4, "scene.fields: Player.botTargetTime");
-_Static_assert(offsetof(Player, push) == 0x885c && sizeof(((Player *)0)->push) == 0xc, "scene.fields: Player.push");
-_Static_assert(offsetof(Player, killPending) == 0x8868 && sizeof(((Player *)0)->killPending) == 0x4, "scene.fields: Player.killPending");
-_Static_assert(offsetof(Player, stuckTime) == 0x886c && sizeof(((Player *)0)->stuckTime) == 0x4, "scene.fields: Player.stuckTime");
-_Static_assert(offsetof(Player, stuckPath) == 0x8870 && sizeof(((Player *)0)->stuckPath) == 0x4, "scene.fields: Player.stuckPath");
-_Static_assert(offsetof(Player, stuckMove) == 0x8874 && sizeof(((Player *)0)->stuckMove) == 0xc, "scene.fields: Player.stuckMove");
-_Static_assert(offsetof(Player, homedOn) == 0x8880 && sizeof(((Player *)0)->homedOn) == 0x4, "scene.fields: Player.homedOn");
-_Static_assert(offsetof(Player, beepTimer) == 0x8884 && sizeof(((Player *)0)->beepTimer) == 0x4, "scene.fields: Player.beepTimer");
-_Static_assert(sizeof(Player) == 0x8888, "scene.fields: size of Player");
+_Static_assert(offsetof(Actor, detectionRangeSq) == 0x0 && sizeof(((Actor *)0)->detectionRangeSq) == 0x4, "scene.fields: Actor.detectionRangeSq");
+_Static_assert(offsetof(Actor, detectionAngle) == 0x4 && sizeof(((Actor *)0)->detectionAngle) == 0x4, "scene.fields: Actor.detectionAngle");
+_Static_assert(offsetof(Actor, hackingLevel) == 0x8 && sizeof(((Actor *)0)->hackingLevel) == 0x4, "scene.fields: Actor.hackingLevel");
+_Static_assert(offsetof(Actor, lockOnTime) == 0xc && sizeof(((Actor *)0)->lockOnTime) == 0x4, "scene.fields: Actor.lockOnTime");
+_Static_assert(offsetof(Actor, targetKeepTime) == 0x10 && sizeof(((Actor *)0)->targetKeepTime) == 0x4, "scene.fields: Actor.targetKeepTime");
+_Static_assert(offsetof(Actor, loadMax) == 0x14 && sizeof(((Actor *)0)->loadMax) == 0x4, "scene.fields: Actor.loadMax");
+_Static_assert(offsetof(Actor, load) == 0x18 && sizeof(((Actor *)0)->load) == 0x4, "scene.fields: Actor.load");
+_Static_assert(offsetof(Actor, armorMax) == 0x1c && sizeof(((Actor *)0)->armorMax) == 0x4, "scene.fields: Actor.armorMax");
+_Static_assert(offsetof(Actor, shieldMax) == 0x20 && sizeof(((Actor *)0)->shieldMax) == 0x4, "scene.fields: Actor.shieldMax");
+_Static_assert(offsetof(Actor, accuracy) == 0x24 && sizeof(((Actor *)0)->accuracy) == 0x4, "scene.fields: Actor.accuracy");
+_Static_assert(offsetof(Actor, ammoMax) == 0x28 && sizeof(((Actor *)0)->ammoMax) == 0x10, "scene.fields: Actor.ammoMax");
+_Static_assert(offsetof(Actor, mobility) == 0x38 && sizeof(((Actor *)0)->mobility) == 0x4, "scene.fields: Actor.mobility");
+_Static_assert(offsetof(Actor, moveAccel) == 0x3c && sizeof(((Actor *)0)->moveAccel) == 0x4, "scene.fields: Actor.moveAccel");
+_Static_assert(offsetof(Actor, boosterTilt) == 0x40 && sizeof(((Actor *)0)->boosterTilt) == 0x4, "scene.fields: Actor.boosterTilt");
+_Static_assert(offsetof(Actor, boostTime) == 0x44 && sizeof(((Actor *)0)->boostTime) == 0x4, "scene.fields: Actor.boostTime");
+_Static_assert(offsetof(Actor, rechargeTime) == 0x48 && sizeof(((Actor *)0)->rechargeTime) == 0x4, "scene.fields: Actor.rechargeTime");
+_Static_assert(offsetof(Actor, restTime) == 0x4c && sizeof(((Actor *)0)->restTime) == 0x4, "scene.fields: Actor.restTime");
+_Static_assert(offsetof(Actor, speed) == 0x50 && sizeof(((Actor *)0)->speed) == 0x4, "scene.fields: Actor.speed");
+_Static_assert(offsetof(Actor, runTop) == 0x54 && sizeof(((Actor *)0)->runTop) == 0x10, "scene.fields: Actor.runTop");
+_Static_assert(offsetof(Actor, unused64) == 0x64 && sizeof(((Actor *)0)->unused64) == 0x4, "scene.fields: Actor.unused64");
+_Static_assert(offsetof(Actor, baseSpeed) == 0x68 && sizeof(((Actor *)0)->baseSpeed) == 0x4, "scene.fields: Actor.baseSpeed");
+_Static_assert(offsetof(Actor, turnRate) == 0x6c && sizeof(((Actor *)0)->turnRate) == 0x4, "scene.fields: Actor.turnRate");
+_Static_assert(offsetof(Actor, unused70) == 0x70 && sizeof(((Actor *)0)->unused70) == 0x4, "scene.fields: Actor.unused70");
+_Static_assert(offsetof(Actor, aimError) == 0x74 && sizeof(((Actor *)0)->aimError) == 0x4, "scene.fields: Actor.aimError");
+_Static_assert(offsetof(Actor, scriptFlag) == 0x78 && sizeof(((Actor *)0)->scriptFlag) == 0x4, "scene.fields: Actor.scriptFlag");
+_Static_assert(offsetof(Actor, dodgeSpread) == 0x7c && sizeof(((Actor *)0)->dodgeSpread) == 0x4, "scene.fields: Actor.dodgeSpread");
+_Static_assert(offsetof(Actor, climbSpread) == 0x80 && sizeof(((Actor *)0)->climbSpread) == 0x4, "scene.fields: Actor.climbSpread");
+_Static_assert(offsetof(Actor, botParams) == 0x84 && sizeof(((Actor *)0)->botParams) == 0x14, "scene.fields: Actor.botParams");
+_Static_assert(offsetof(Actor, name) == 0x98 && sizeof(((Actor *)0)->name) == 0x40, "scene.fields: Actor.name");
+_Static_assert(offsetof(Actor, inPlay) == 0xd8 && sizeof(((Actor *)0)->inPlay) == 0x4, "scene.fields: Actor.inPlay");
+_Static_assert(offsetof(Actor, grade) == 0xdc && sizeof(((Actor *)0)->grade) == 0x4, "scene.fields: Actor.grade");
+_Static_assert(offsetof(Actor, levelShown) == 0xe0 && sizeof(((Actor *)0)->levelShown) == 0x4, "scene.fields: Actor.levelShown");
+_Static_assert(offsetof(Actor, kills) == 0xe4 && sizeof(((Actor *)0)->kills) == 0x4, "scene.fields: Actor.kills");
+_Static_assert(offsetof(Actor, deaths) == 0xe8 && sizeof(((Actor *)0)->deaths) == 0x4, "scene.fields: Actor.deaths");
+_Static_assert(offsetof(Actor, score) == 0xec && sizeof(((Actor *)0)->score) == 0x4, "scene.fields: Actor.score");
+_Static_assert(offsetof(Actor, killsCounted) == 0xf0 && sizeof(((Actor *)0)->killsCounted) == 0x4, "scene.fields: Actor.killsCounted");
+_Static_assert(offsetof(Actor, deathsCounted) == 0xf4 && sizeof(((Actor *)0)->deathsCounted) == 0x4, "scene.fields: Actor.deathsCounted");
+_Static_assert(offsetof(Actor, scoreCounted) == 0xf8 && sizeof(((Actor *)0)->scoreCounted) == 0x4, "scene.fields: Actor.scoreCounted");
+_Static_assert(offsetof(Actor, timePlayed) == 0xfc && sizeof(((Actor *)0)->timePlayed) == 0x4, "scene.fields: Actor.timePlayed");
+_Static_assert(offsetof(Actor, timeFraction) == 0x100 && sizeof(((Actor *)0)->timeFraction) == 0x4, "scene.fields: Actor.timeFraction");
+_Static_assert(offsetof(Actor, id) == 0x104 && sizeof(((Actor *)0)->id) == 0x4, "scene.fields: Actor.id");
+_Static_assert(offsetof(Actor, active) == 0x108 && sizeof(((Actor *)0)->active) == 0x4, "scene.fields: Actor.active");
+_Static_assert(offsetof(Actor, player) == 0x10c && sizeof(((Actor *)0)->player) == 0x4, "scene.fields: Actor.player");
+_Static_assert(offsetof(Actor, controlledBy) == 0x110 && sizeof(((Actor *)0)->controlledBy) == 0x4, "scene.fields: Actor.controlledBy");
+_Static_assert(offsetof(Actor, character) == 0x114 && sizeof(((Actor *)0)->character) == 0x4, "scene.fields: Actor.character");
+_Static_assert(offsetof(Actor, team) == 0x118 && sizeof(((Actor *)0)->team) == 0x4, "scene.fields: Actor.team");
+_Static_assert(offsetof(Actor, bot) == 0x11c && sizeof(((Actor *)0)->bot) == 0x4, "scene.fields: Actor.bot");
+_Static_assert(offsetof(Actor, spawnAge) == 0x120 && sizeof(((Actor *)0)->spawnAge) == 0x4, "scene.fields: Actor.spawnAge");
+_Static_assert(offsetof(Actor, dropAge) == 0x124 && sizeof(((Actor *)0)->dropAge) == 0x4, "scene.fields: Actor.dropAge");
+_Static_assert(offsetof(Actor, armor) == 0x128 && sizeof(((Actor *)0)->armor) == 0x4, "scene.fields: Actor.armor");
+_Static_assert(offsetof(Actor, shield) == 0x12c && sizeof(((Actor *)0)->shield) == 0x4, "scene.fields: Actor.shield");
+_Static_assert(offsetof(Actor, ammo) == 0x130 && sizeof(((Actor *)0)->ammo) == 0x10, "scene.fields: Actor.ammo");
+_Static_assert(offsetof(Actor, slot) == 0x140 && sizeof(((Actor *)0)->slot) == 0x4, "scene.fields: Actor.slot");
+_Static_assert(offsetof(Actor, lastWeaponSlot) == 0x144 && sizeof(((Actor *)0)->lastWeaponSlot) == 0x4, "scene.fields: Actor.lastWeaponSlot");
+_Static_assert(offsetof(Actor, heldItem) == 0x148 && sizeof(((Actor *)0)->heldItem) == 0x4, "scene.fields: Actor.heldItem");
+_Static_assert(offsetof(Actor, state) == 0x14c && sizeof(((Actor *)0)->state) == 0x4, "scene.fields: Actor.state");
+_Static_assert(offsetof(Actor, stateTime) == 0x150 && sizeof(((Actor *)0)->stateTime) == 0x4, "scene.fields: Actor.stateTime");
+_Static_assert(offsetof(Actor, pos) == 0x154 && sizeof(((Actor *)0)->pos) == 0xc, "scene.fields: Actor.pos");
+_Static_assert(offsetof(Actor, pitch) == 0x160 && sizeof(((Actor *)0)->pitch) == 0x4, "scene.fields: Actor.pitch");
+_Static_assert(offsetof(Actor, yaw) == 0x164 && sizeof(((Actor *)0)->yaw) == 0x4, "scene.fields: Actor.yaw");
+_Static_assert(offsetof(Actor, forward) == 0x168 && sizeof(((Actor *)0)->forward) == 0x4, "scene.fields: Actor.forward");
+_Static_assert(offsetof(Actor, strafe) == 0x16c && sizeof(((Actor *)0)->strafe) == 0x4, "scene.fields: Actor.strafe");
+_Static_assert(offsetof(Actor, climb) == 0x170 && sizeof(((Actor *)0)->climb) == 0x4, "scene.fields: Actor.climb");
+_Static_assert(offsetof(Actor, lean) == 0x174 && sizeof(((Actor *)0)->lean) == 0x4, "scene.fields: Actor.lean");
+_Static_assert(offsetof(Actor, run) == 0x178 && sizeof(((Actor *)0)->run) == 0x4, "scene.fields: Actor.run");
+_Static_assert(offsetof(Actor, fireAnim) == 0x17c && sizeof(((Actor *)0)->fireAnim) == 0x4, "scene.fields: Actor.fireAnim");
+_Static_assert(offsetof(Actor, nextPos) == 0x180 && sizeof(((Actor *)0)->nextPos) == 0xc, "scene.fields: Actor.nextPos");
+_Static_assert(offsetof(Actor, nextPitch) == 0x18c && sizeof(((Actor *)0)->nextPitch) == 0x4, "scene.fields: Actor.nextPitch");
+_Static_assert(offsetof(Actor, nextYaw) == 0x190 && sizeof(((Actor *)0)->nextYaw) == 0x4, "scene.fields: Actor.nextYaw");
+_Static_assert(offsetof(Actor, nextForward) == 0x194 && sizeof(((Actor *)0)->nextForward) == 0x4, "scene.fields: Actor.nextForward");
+_Static_assert(offsetof(Actor, nextStrafe) == 0x198 && sizeof(((Actor *)0)->nextStrafe) == 0x4, "scene.fields: Actor.nextStrafe");
+_Static_assert(offsetof(Actor, nextClimb) == 0x19c && sizeof(((Actor *)0)->nextClimb) == 0x4, "scene.fields: Actor.nextClimb");
+_Static_assert(offsetof(Actor, nextLean) == 0x1a0 && sizeof(((Actor *)0)->nextLean) == 0x4, "scene.fields: Actor.nextLean");
+_Static_assert(offsetof(Actor, nextRun) == 0x1a4 && sizeof(((Actor *)0)->nextRun) == 0x4, "scene.fields: Actor.nextRun");
+_Static_assert(offsetof(Actor, fireCycle) == 0x1a8 && sizeof(((Actor *)0)->fireCycle) == 0x4, "scene.fields: Actor.fireCycle");
+_Static_assert(offsetof(Actor, netPos) == 0x1ac && sizeof(((Actor *)0)->netPos) == 0xc, "scene.fields: Actor.netPos");
+_Static_assert(offsetof(Actor, netPitch) == 0x1b8 && sizeof(((Actor *)0)->netPitch) == 0x4, "scene.fields: Actor.netPitch");
+_Static_assert(offsetof(Actor, netYaw) == 0x1bc && sizeof(((Actor *)0)->netYaw) == 0x4, "scene.fields: Actor.netYaw");
+_Static_assert(offsetof(Actor, netMotion) == 0x1c0 && sizeof(((Actor *)0)->netMotion) == 0x14, "scene.fields: Actor.netMotion");
+_Static_assert(offsetof(Actor, botGoal) == 0x1d4 && sizeof(((Actor *)0)->botGoal) == 0xc, "scene.fields: Actor.botGoal");
+_Static_assert(offsetof(Actor, botLookPitch) == 0x1e0 && sizeof(((Actor *)0)->botLookPitch) == 0x4, "scene.fields: Actor.botLookPitch");
+_Static_assert(offsetof(Actor, botLookYaw) == 0x1e4 && sizeof(((Actor *)0)->botLookYaw) == 0x4, "scene.fields: Actor.botLookYaw");
+_Static_assert(offsetof(Actor, netFired) == 0x1e8 && sizeof(((Actor *)0)->netFired) == 0x4, "scene.fields: Actor.netFired");
+_Static_assert(offsetof(Actor, firing) == 0x1ec && sizeof(((Actor *)0)->firing) == 0x4, "scene.fields: Actor.firing");
+_Static_assert(offsetof(Actor, burstLeft) == 0x1f0 && sizeof(((Actor *)0)->burstLeft) == 0x4, "scene.fields: Actor.burstLeft");
+_Static_assert(offsetof(Actor, burstTime) == 0x1f4 && sizeof(((Actor *)0)->burstTime) == 0x4, "scene.fields: Actor.burstTime");
+_Static_assert(offsetof(Actor, shots) == 0x1f8 && sizeof(((Actor *)0)->shots) == 0xa0, "scene.fields: Actor.shots");
+_Static_assert(offsetof(Actor, rounds) == 0x298 && sizeof(((Actor *)0)->rounds) == 0xc8, "scene.fields: Actor.rounds");
+_Static_assert(offsetof(Actor, shotBullets) == 0x360 && sizeof(((Actor *)0)->shotBullets) == 0x14, "scene.fields: Actor.shotBullets");
+_Static_assert(offsetof(Actor, sendNow) == 0x374 && sizeof(((Actor *)0)->sendNow) == 0x4, "scene.fields: Actor.sendNow");
+_Static_assert(offsetof(Actor, velocity) == 0x378 && sizeof(((Actor *)0)->velocity) == 0xc, "scene.fields: Actor.velocity");
+_Static_assert(offsetof(Actor, move) == 0x384 && sizeof(((Actor *)0)->move) == 0xc, "scene.fields: Actor.move");
+_Static_assert(offsetof(Actor, pose) == 0x390 && sizeof(((Actor *)0)->pose) == 0x18, "scene.fields: Actor.pose");
+_Static_assert(offsetof(Actor, bodyMatrix) == 0x3a8 && sizeof(((Actor *)0)->bodyMatrix) == 0x40, "scene.fields: Actor.bodyMatrix");
+_Static_assert(offsetof(Actor, radius) == 0x3e8 && sizeof(((Actor *)0)->radius) == 0x4, "scene.fields: Actor.radius");
+_Static_assert(offsetof(Actor, chatIcon) == 0x3ec && sizeof(((Actor *)0)->chatIcon) == 0x4, "scene.fields: Actor.chatIcon");
+_Static_assert(offsetof(Actor, stateFlags) == 0x3f0 && sizeof(((Actor *)0)->stateFlags) == 0x4, "scene.fields: Actor.stateFlags");
+_Static_assert(offsetof(Actor, timers) == 0x3f4 && sizeof(((Actor *)0)->timers) == 0x10, "scene.fields: Actor.timers");
+_Static_assert(offsetof(Actor, ammoFactor) == 0x404 && sizeof(((Actor *)0)->ammoFactor) == 0x10, "scene.fields: Actor.ammoFactor");
+_Static_assert(offsetof(Actor, ammoBonus) == 0x414 && sizeof(((Actor *)0)->ammoBonus) == 0x10, "scene.fields: Actor.ammoBonus");
+_Static_assert(offsetof(Actor, rangeBonus) == 0x424 && sizeof(((Actor *)0)->rangeBonus) == 0x4, "scene.fields: Actor.rangeBonus");
+_Static_assert(offsetof(Actor, lockOnTimeFactor) == 0x428 && sizeof(((Actor *)0)->lockOnTimeFactor) == 0x4, "scene.fields: Actor.lockOnTimeFactor");
+_Static_assert(offsetof(Actor, targetKeepFactor) == 0x42c && sizeof(((Actor *)0)->targetKeepFactor) == 0x4, "scene.fields: Actor.targetKeepFactor");
+_Static_assert(offsetof(Actor, hackingBonus) == 0x430 && sizeof(((Actor *)0)->hackingBonus) == 0x4, "scene.fields: Actor.hackingBonus");
+_Static_assert(offsetof(Actor, boostTimeFactor) == 0x434 && sizeof(((Actor *)0)->boostTimeFactor) == 0x4, "scene.fields: Actor.boostTimeFactor");
+_Static_assert(offsetof(Actor, rechargeTimeFactor) == 0x438 && sizeof(((Actor *)0)->rechargeTimeFactor) == 0x4, "scene.fields: Actor.rechargeTimeFactor");
+_Static_assert(offsetof(Actor, restTimeFactor) == 0x43c && sizeof(((Actor *)0)->restTimeFactor) == 0x4, "scene.fields: Actor.restTimeFactor");
+_Static_assert(offsetof(Actor, loadFactor) == 0x440 && sizeof(((Actor *)0)->loadFactor) == 0x4, "scene.fields: Actor.loadFactor");
+_Static_assert(offsetof(Actor, shieldFactor) == 0x444 && sizeof(((Actor *)0)->shieldFactor) == 0x4, "scene.fields: Actor.shieldFactor");
+_Static_assert(offsetof(Actor, shieldRegen) == 0x448 && sizeof(((Actor *)0)->shieldRegen) == 0x4, "scene.fields: Actor.shieldRegen");
+_Static_assert(offsetof(Actor, inForward) == 0x44c && sizeof(((Actor *)0)->inForward) == 0x4, "scene.fields: Actor.inForward");
+_Static_assert(offsetof(Actor, inBackward) == 0x450 && sizeof(((Actor *)0)->inBackward) == 0x4, "scene.fields: Actor.inBackward");
+_Static_assert(offsetof(Actor, inStepLeft) == 0x454 && sizeof(((Actor *)0)->inStepLeft) == 0x4, "scene.fields: Actor.inStepLeft");
+_Static_assert(offsetof(Actor, inStepRight) == 0x458 && sizeof(((Actor *)0)->inStepRight) == 0x4, "scene.fields: Actor.inStepRight");
+_Static_assert(offsetof(Actor, inPitch) == 0x464 && sizeof(((Actor *)0)->inPitch) == 0x4, "scene.fields: Actor.inPitch");
+_Static_assert(offsetof(Actor, inYaw) == 0x468 && sizeof(((Actor *)0)->inYaw) == 0x4, "scene.fields: Actor.inYaw");
+_Static_assert(offsetof(Actor, inFire) == 0x46c && sizeof(((Actor *)0)->inFire) == 0x4, "scene.fields: Actor.inFire");
+_Static_assert(offsetof(Actor, inAltitude) == 0x470 && sizeof(((Actor *)0)->inAltitude) == 0x4, "scene.fields: Actor.inAltitude");
+_Static_assert(offsetof(Actor, inBooster) == 0x474 && sizeof(((Actor *)0)->inBooster) == 0x4, "scene.fields: Actor.inBooster");
+_Static_assert(offsetof(Actor, inWeaponSlot) == 0x478 && sizeof(((Actor *)0)->inWeaponSlot) == 0x4, "scene.fields: Actor.inWeaponSlot");
+_Static_assert(offsetof(Actor, inPrevWeapon) == 0x47c && sizeof(((Actor *)0)->inPrevWeapon) == 0x4, "scene.fields: Actor.inPrevWeapon");
+_Static_assert(offsetof(Actor, inNextWeapon) == 0x480 && sizeof(((Actor *)0)->inNextWeapon) == 0x4, "scene.fields: Actor.inNextWeapon");
+_Static_assert(offsetof(Actor, lowDetail) == 0x484 && sizeof(((Actor *)0)->lowDetail) == 0x4, "scene.fields: Actor.lowDetail");
+_Static_assert(offsetof(Actor, lowDetailLoaded) == 0x488 && sizeof(((Actor *)0)->lowDetailLoaded) == 0x4, "scene.fields: Actor.lowDetailLoaded");
+_Static_assert(offsetof(Actor, weaponLowering) == 0x48c && sizeof(((Actor *)0)->weaponLowering) == 0x4, "scene.fields: Actor.weaponLowering");
+_Static_assert(offsetof(Actor, weaponRaise) == 0x490 && sizeof(((Actor *)0)->weaponRaise) == 0x4, "scene.fields: Actor.weaponRaise");
+_Static_assert(offsetof(Actor, slotIconTime) == 0x494 && sizeof(((Actor *)0)->slotIconTime) == 0x4, "scene.fields: Actor.slotIconTime");
+_Static_assert(offsetof(Actor, switchSlot) == 0x498 && sizeof(((Actor *)0)->switchSlot) == 0x4, "scene.fields: Actor.switchSlot");
+_Static_assert(offsetof(Actor, variantLoaded) == 0x49c && sizeof(((Actor *)0)->variantLoaded) == 0x4, "scene.fields: Actor.variantLoaded");
+_Static_assert(offsetof(Actor, firePrev) == 0x4a0 && sizeof(((Actor *)0)->firePrev) == 0x4, "scene.fields: Actor.firePrev");
+_Static_assert(offsetof(Actor, effectScale) == 0x4a4 && sizeof(((Actor *)0)->effectScale) == 0x4, "scene.fields: Actor.effectScale");
+_Static_assert(offsetof(Actor, footstepTime) == 0x4a8 && sizeof(((Actor *)0)->footstepTime) == 0x4, "scene.fields: Actor.footstepTime");
+_Static_assert(offsetof(Actor, energy) == 0x4ac && sizeof(((Actor *)0)->energy) == 0x4, "scene.fields: Actor.energy");
+_Static_assert(offsetof(Actor, staminaRest) == 0x4b0 && sizeof(((Actor *)0)->staminaRest) == 0x4, "scene.fields: Actor.staminaRest");
+_Static_assert(offsetof(Actor, overheat) == 0x4b4 && sizeof(((Actor *)0)->overheat) == 0x4, "scene.fields: Actor.overheat");
+_Static_assert(offsetof(Actor, warned) == 0x4b8 && sizeof(((Actor *)0)->warned) == 0x4, "scene.fields: Actor.warned");
+_Static_assert(offsetof(Actor, lastHitDamageType) == 0x4bc && sizeof(((Actor *)0)->lastHitDamageType) == 0x4, "scene.fields: Actor.lastHitDamageType");
+_Static_assert(offsetof(Actor, lastAttacker) == 0x4c0 && sizeof(((Actor *)0)->lastAttacker) == 0x4, "scene.fields: Actor.lastAttacker");
+_Static_assert(offsetof(Actor, lastHitWeapon) == 0x4c4 && sizeof(((Actor *)0)->lastHitWeapon) == 0x4, "scene.fields: Actor.lastHitWeapon");
+_Static_assert(offsetof(Actor, ammoKind) == 0x4cc && sizeof(((Actor *)0)->ammoKind) == 0x4, "scene.fields: Actor.ammoKind");
+_Static_assert(offsetof(Actor, cheat) == 0x4d0 && sizeof(((Actor *)0)->cheat) == 0x4, "scene.fields: Actor.cheat");
+_Static_assert(offsetof(Actor, bigHead) == 0x4d4 && sizeof(((Actor *)0)->bigHead) == 0x4, "scene.fields: Actor.bigHead");
+_Static_assert(offsetof(Actor, isKing) == 0x4d8 && sizeof(((Actor *)0)->isKing) == 0x4, "scene.fields: Actor.isKing");
+_Static_assert(offsetof(Actor, isCommander) == 0x4dc && sizeof(((Actor *)0)->isCommander) == 0x4, "scene.fields: Actor.isCommander");
+_Static_assert(offsetof(Actor, deathPos) == 0x4e0 && sizeof(((Actor *)0)->deathPos) == 0xc, "scene.fields: Actor.deathPos");
+_Static_assert(offsetof(Actor, glow) == 0x4ec && sizeof(((Actor *)0)->glow) == 0x4, "scene.fields: Actor.glow");
+_Static_assert(offsetof(Actor, tint) == 0x4f0 && sizeof(((Actor *)0)->tint) == 0x4, "scene.fields: Actor.tint");
+_Static_assert(offsetof(Actor, message) == 0x4f4 && sizeof(((Actor *)0)->message) == 0x40, "scene.fields: Actor.message");
+_Static_assert(offsetof(Actor, messageTime) == 0x534 && sizeof(((Actor *)0)->messageTime) == 0x4, "scene.fields: Actor.messageTime");
+_Static_assert(offsetof(Actor, lastWarp) == 0x538 && sizeof(((Actor *)0)->lastWarp) == 0x4, "scene.fields: Actor.lastWarp");
+_Static_assert(offsetof(Actor, onWarp) == 0x53c && sizeof(((Actor *)0)->onWarp) == 0x4, "scene.fields: Actor.onWarp");
+_Static_assert(offsetof(Actor, warpWait) == 0x540 && sizeof(((Actor *)0)->warpWait) == 0x4, "scene.fields: Actor.warpWait");
+_Static_assert(offsetof(Actor, shieldRegenTime) == 0x544 && sizeof(((Actor *)0)->shieldRegenTime) == 0x4, "scene.fields: Actor.shieldRegenTime");
+_Static_assert(offsetof(Actor, whiteFlash) == 0x548 && sizeof(((Actor *)0)->whiteFlash) == 0x4, "scene.fields: Actor.whiteFlash");
+_Static_assert(offsetof(Actor, partListsBound) == 0x54c && sizeof(((Actor *)0)->partListsBound) == 0x4, "scene.fields: Actor.partListsBound");
+_Static_assert(offsetof(Actor, viewMarked) == 0x550 && sizeof(((Actor *)0)->viewMarked) == 0x4, "scene.fields: Actor.viewMarked");
+_Static_assert(offsetof(Actor, headModel) == 0x554 && sizeof(((Actor *)0)->headModel) == 0x30, "scene.fields: Actor.headModel");
+_Static_assert(offsetof(Actor, headModelMem) == 0x584 && sizeof(((Actor *)0)->headModelMem) == 0x7d0, "scene.fields: Actor.headModelMem");
+_Static_assert(offsetof(Actor, chestModel) == 0xd54 && sizeof(((Actor *)0)->chestModel) == 0x30, "scene.fields: Actor.chestModel");
+_Static_assert(offsetof(Actor, chestModelMem) == 0xd84 && sizeof(((Actor *)0)->chestModelMem) == 0x7d0, "scene.fields: Actor.chestModelMem");
+_Static_assert(offsetof(Actor, armsModel) == 0x1554 && sizeof(((Actor *)0)->armsModel) == 0x30, "scene.fields: Actor.armsModel");
+_Static_assert(offsetof(Actor, armsModelMem) == 0x1584 && sizeof(((Actor *)0)->armsModelMem) == 0xfa0, "scene.fields: Actor.armsModelMem");
+_Static_assert(offsetof(Actor, legsModel) == 0x2524 && sizeof(((Actor *)0)->legsModel) == 0x30, "scene.fields: Actor.legsModel");
+_Static_assert(offsetof(Actor, legsModelMem) == 0x2554 && sizeof(((Actor *)0)->legsModelMem) == 0xfa0, "scene.fields: Actor.legsModelMem");
+_Static_assert(offsetof(Actor, boosterModel) == 0x34f4 && sizeof(((Actor *)0)->boosterModel) == 0x30, "scene.fields: Actor.boosterModel");
+_Static_assert(offsetof(Actor, boosterModelMem) == 0x3524 && sizeof(((Actor *)0)->boosterModelMem) == 0xbb8, "scene.fields: Actor.boosterModelMem");
+_Static_assert(offsetof(Actor, weaponModel) == 0x40dc && sizeof(((Actor *)0)->weaponModel) == 0x30, "scene.fields: Actor.weaponModel");
+_Static_assert(offsetof(Actor, weaponModelMem) == 0x410c && sizeof(((Actor *)0)->weaponModelMem) == 0x1770, "scene.fields: Actor.weaponModelMem");
+_Static_assert(offsetof(Actor, weaponModel4) == 0x587c && sizeof(((Actor *)0)->weaponModel4) == 0x30, "scene.fields: Actor.weaponModel4");
+_Static_assert(offsetof(Actor, weaponModel4Mem) == 0x58ac && sizeof(((Actor *)0)->weaponModel4Mem) == 0x1770, "scene.fields: Actor.weaponModel4Mem");
+_Static_assert(offsetof(Actor, weaponModel5) == 0x701c && sizeof(((Actor *)0)->weaponModel5) == 0x30, "scene.fields: Actor.weaponModel5");
+_Static_assert(offsetof(Actor, weaponModel5Mem) == 0x704c && sizeof(((Actor *)0)->weaponModel5Mem) == 0x1770, "scene.fields: Actor.weaponModel5Mem");
+_Static_assert(offsetof(Actor, screenPos) == 0x87bc && sizeof(((Actor *)0)->screenPos) == 0xc, "scene.fields: Actor.screenPos");
+_Static_assert(offsetof(Actor, tagTopLeft) == 0x87c8 && sizeof(((Actor *)0)->tagTopLeft) == 0xc, "scene.fields: Actor.tagTopLeft");
+_Static_assert(offsetof(Actor, tagBottomRight) == 0x87d4 && sizeof(((Actor *)0)->tagBottomRight) == 0xc, "scene.fields: Actor.tagBottomRight");
+_Static_assert(offsetof(Actor, onScreen) == 0x87e0 && sizeof(((Actor *)0)->onScreen) == 0x4, "scene.fields: Actor.onScreen");
+_Static_assert(offsetof(Actor, facingCos) == 0x87e4 && sizeof(((Actor *)0)->facingCos) == 0x4, "scene.fields: Actor.facingCos");
+_Static_assert(offsetof(Actor, aimTime) == 0x87e8 && sizeof(((Actor *)0)->aimTime) == 0x4, "scene.fields: Actor.aimTime");
+_Static_assert(offsetof(Actor, lockAnim) == 0x87ec && sizeof(((Actor *)0)->lockAnim) == 0x4, "scene.fields: Actor.lockAnim");
+_Static_assert(offsetof(Actor, labelFade) == 0x87f0 && sizeof(((Actor *)0)->labelFade) == 0x4, "scene.fields: Actor.labelFade");
+_Static_assert(offsetof(Actor, botNeeds) == 0x87f4 && sizeof(((Actor *)0)->botNeeds) == 0x4, "scene.fields: Actor.botNeeds");
+_Static_assert(offsetof(Actor, path) == 0x87f8 && sizeof(((Actor *)0)->path) == 0x4, "scene.fields: Actor.path");
+_Static_assert(offsetof(Actor, pathPoint) == 0x87fc && sizeof(((Actor *)0)->pathPoint) == 0x4, "scene.fields: Actor.pathPoint");
+_Static_assert(offsetof(Actor, pathReverse) == 0x8800 && sizeof(((Actor *)0)->pathReverse) == 0x4, "scene.fields: Actor.pathReverse");
+_Static_assert(offsetof(Actor, botWait) == 0x8804 && sizeof(((Actor *)0)->botWait) == 0x4, "scene.fields: Actor.botWait");
+_Static_assert(offsetof(Actor, botWaitTrigger) == 0x8808 && sizeof(((Actor *)0)->botWaitTrigger) == 0x4, "scene.fields: Actor.botWaitTrigger");
+_Static_assert(offsetof(Actor, invulnerable) == 0x880c && sizeof(((Actor *)0)->invulnerable) == 0x4, "scene.fields: Actor.invulnerable");
+_Static_assert(offsetof(Actor, lookActor) == 0x8810 && sizeof(((Actor *)0)->lookActor) == 0x4, "scene.fields: Actor.lookActor");
+_Static_assert(offsetof(Actor, lookPath) == 0x8814 && sizeof(((Actor *)0)->lookPath) == 0x4, "scene.fields: Actor.lookPath");
+_Static_assert(offsetof(Actor, lookPoint) == 0x8818 && sizeof(((Actor *)0)->lookPoint) == 0x4, "scene.fields: Actor.lookPoint");
+_Static_assert(offsetof(Actor, followTarget) == 0x881c && sizeof(((Actor *)0)->followTarget) == 0x4, "scene.fields: Actor.followTarget");
+_Static_assert(offsetof(Actor, botTarget) == 0x8820 && sizeof(((Actor *)0)->botTarget) == 0x4, "scene.fields: Actor.botTarget");
+_Static_assert(offsetof(Actor, scanTime) == 0x8824 && sizeof(((Actor *)0)->scanTime) == 0x4, "scene.fields: Actor.scanTime");
+_Static_assert(offsetof(Actor, burstPause) == 0x8828 && sizeof(((Actor *)0)->burstPause) == 0x4, "scene.fields: Actor.burstPause");
+_Static_assert(offsetof(Actor, burstFire) == 0x882c && sizeof(((Actor *)0)->burstFire) == 0x4, "scene.fields: Actor.burstFire");
+_Static_assert(offsetof(Actor, dodgeTime) == 0x8830 && sizeof(((Actor *)0)->dodgeTime) == 0x4, "scene.fields: Actor.dodgeTime");
+_Static_assert(offsetof(Actor, heightTime) == 0x8834 && sizeof(((Actor *)0)->heightTime) == 0x4, "scene.fields: Actor.heightTime");
+_Static_assert(offsetof(Actor, cleared8838) == 0x8838 && sizeof(((Actor *)0)->cleared8838) == 0xc, "scene.fields: Actor.cleared8838");
+_Static_assert(offsetof(Actor, lookTime) == 0x8844 && sizeof(((Actor *)0)->lookTime) == 0x4, "scene.fields: Actor.lookTime");
+_Static_assert(offsetof(Actor, pathRange) == 0x8848 && sizeof(((Actor *)0)->pathRange) == 0x4, "scene.fields: Actor.pathRange");
+_Static_assert(offsetof(Actor, outOfPlay) == 0x884c && sizeof(((Actor *)0)->outOfPlay) == 0x4, "scene.fields: Actor.outOfPlay");
+_Static_assert(offsetof(Actor, hitPending) == 0x8850 && sizeof(((Actor *)0)->hitPending) == 0x4, "scene.fields: Actor.hitPending");
+_Static_assert(offsetof(Actor, hitFlash) == 0x8854 && sizeof(((Actor *)0)->hitFlash) == 0x4, "scene.fields: Actor.hitFlash");
+_Static_assert(offsetof(Actor, botTargetTime) == 0x8858 && sizeof(((Actor *)0)->botTargetTime) == 0x4, "scene.fields: Actor.botTargetTime");
+_Static_assert(offsetof(Actor, push) == 0x885c && sizeof(((Actor *)0)->push) == 0xc, "scene.fields: Actor.push");
+_Static_assert(offsetof(Actor, killPending) == 0x8868 && sizeof(((Actor *)0)->killPending) == 0x4, "scene.fields: Actor.killPending");
+_Static_assert(offsetof(Actor, stuckTime) == 0x886c && sizeof(((Actor *)0)->stuckTime) == 0x4, "scene.fields: Actor.stuckTime");
+_Static_assert(offsetof(Actor, stuckPath) == 0x8870 && sizeof(((Actor *)0)->stuckPath) == 0x4, "scene.fields: Actor.stuckPath");
+_Static_assert(offsetof(Actor, stuckMove) == 0x8874 && sizeof(((Actor *)0)->stuckMove) == 0xc, "scene.fields: Actor.stuckMove");
+_Static_assert(offsetof(Actor, homedOn) == 0x8880 && sizeof(((Actor *)0)->homedOn) == 0x4, "scene.fields: Actor.homedOn");
+_Static_assert(offsetof(Actor, beepTimer) == 0x8884 && sizeof(((Actor *)0)->beepTimer) == 0x4, "scene.fields: Actor.beepTimer");
+_Static_assert(sizeof(Actor) == 0x8888, "scene.fields: size of Actor");
 _Static_assert(offsetof(Factor, index) == 0x0 && sizeof(((Factor *)0)->index) == 0x4, "scene.fields: Factor.index");
 _Static_assert(offsetof(Factor, used) == 0x4 && sizeof(((Factor *)0)->used) == 0x4, "scene.fields: Factor.used");
 _Static_assert(offsetof(Factor, kind) == 0x8 && sizeof(((Factor *)0)->kind) == 0x4, "scene.fields: Factor.kind");
@@ -2469,20 +2469,20 @@ _Static_assert(offsetof(DPSessionDesc2, user2) == 0x44 && sizeof(((DPSessionDesc
 _Static_assert(offsetof(DPSessionDesc2, user3) == 0x48 && sizeof(((DPSessionDesc2 *)0)->user3) == 0x4, "scene.fields: DPSessionDesc2.user3");
 _Static_assert(offsetof(DPSessionDesc2, user4) == 0x4c && sizeof(((DPSessionDesc2 *)0)->user4) == 0x4, "scene.fields: DPSessionDesc2.user4");
 _Static_assert(sizeof(DPSessionDesc2) == 0x50, "scene.fields: size of DPSessionDesc2");
-_Static_assert(offsetof(ServerRecord, kind) == 0x0 && sizeof(((ServerRecord *)0)->kind) == 0x1, "scene.fields: ServerRecord.kind");
-_Static_assert(offsetof(ServerRecord, name) == 0x1 && sizeof(((ServerRecord *)0)->name) == 0x32, "scene.fields: ServerRecord.name");
-_Static_assert(offsetof(ServerRecord, address) == 0x33 && sizeof(((ServerRecord *)0)->address) == 0x10, "scene.fields: ServerRecord.address");
-_Static_assert(offsetof(ServerRecord, map) == 0x43 && sizeof(((ServerRecord *)0)->map) == 0x1, "scene.fields: ServerRecord.map");
-_Static_assert(offsetof(ServerRecord, maxPlayers) == 0x44 && sizeof(((ServerRecord *)0)->maxPlayers) == 0x1, "scene.fields: ServerRecord.maxPlayers");
-_Static_assert(offsetof(ServerRecord, players) == 0x45 && sizeof(((ServerRecord *)0)->players) == 0x1, "scene.fields: ServerRecord.players");
-_Static_assert(offsetof(ServerRecord, gameMode) == 0x46 && sizeof(((ServerRecord *)0)->gameMode) == 0x1, "scene.fields: ServerRecord.gameMode");
-_Static_assert(offsetof(ServerRecord, fragLimit) == 0x47 && sizeof(((ServerRecord *)0)->fragLimit) == 0x1, "scene.fields: ServerRecord.fragLimit");
-_Static_assert(offsetof(ServerRecord, timeLimit) == 0x48 && sizeof(((ServerRecord *)0)->timeLimit) == 0x1, "scene.fields: ServerRecord.timeLimit");
-_Static_assert(offsetof(ServerRecord, rotation) == 0x49 && sizeof(((ServerRecord *)0)->rotation) == 0x1, "scene.fields: ServerRecord.rotation");
-_Static_assert(offsetof(ServerRecord, replyKind) == 0x4a && sizeof(((ServerRecord *)0)->replyKind) == 0x4, "scene.fields: ServerRecord.replyKind");
-_Static_assert(offsetof(ServerRecord, locked) == 0x52 && sizeof(((ServerRecord *)0)->locked) == 0x1, "scene.fields: ServerRecord.locked");
-_Static_assert(offsetof(ServerRecord, password) == 0x53 && sizeof(((ServerRecord *)0)->password) == 0x8, "scene.fields: ServerRecord.password");
-_Static_assert(sizeof(ServerRecord) == 0x5b, "scene.fields: size of ServerRecord");
+_Static_assert(offsetof(ArenaRecord, kind) == 0x0 && sizeof(((ArenaRecord *)0)->kind) == 0x1, "scene.fields: ArenaRecord.kind");
+_Static_assert(offsetof(ArenaRecord, name) == 0x1 && sizeof(((ArenaRecord *)0)->name) == 0x32, "scene.fields: ArenaRecord.name");
+_Static_assert(offsetof(ArenaRecord, address) == 0x33 && sizeof(((ArenaRecord *)0)->address) == 0x10, "scene.fields: ArenaRecord.address");
+_Static_assert(offsetof(ArenaRecord, map) == 0x43 && sizeof(((ArenaRecord *)0)->map) == 0x1, "scene.fields: ArenaRecord.map");
+_Static_assert(offsetof(ArenaRecord, maxPlayers) == 0x44 && sizeof(((ArenaRecord *)0)->maxPlayers) == 0x1, "scene.fields: ArenaRecord.maxPlayers");
+_Static_assert(offsetof(ArenaRecord, players) == 0x45 && sizeof(((ArenaRecord *)0)->players) == 0x1, "scene.fields: ArenaRecord.players");
+_Static_assert(offsetof(ArenaRecord, gameMode) == 0x46 && sizeof(((ArenaRecord *)0)->gameMode) == 0x1, "scene.fields: ArenaRecord.gameMode");
+_Static_assert(offsetof(ArenaRecord, fragLimit) == 0x47 && sizeof(((ArenaRecord *)0)->fragLimit) == 0x1, "scene.fields: ArenaRecord.fragLimit");
+_Static_assert(offsetof(ArenaRecord, timeLimit) == 0x48 && sizeof(((ArenaRecord *)0)->timeLimit) == 0x1, "scene.fields: ArenaRecord.timeLimit");
+_Static_assert(offsetof(ArenaRecord, rotation) == 0x49 && sizeof(((ArenaRecord *)0)->rotation) == 0x1, "scene.fields: ArenaRecord.rotation");
+_Static_assert(offsetof(ArenaRecord, replyKind) == 0x4a && sizeof(((ArenaRecord *)0)->replyKind) == 0x4, "scene.fields: ArenaRecord.replyKind");
+_Static_assert(offsetof(ArenaRecord, locked) == 0x52 && sizeof(((ArenaRecord *)0)->locked) == 0x1, "scene.fields: ArenaRecord.locked");
+_Static_assert(offsetof(ArenaRecord, password) == 0x53 && sizeof(((ArenaRecord *)0)->password) == 0x8, "scene.fields: ArenaRecord.password");
+_Static_assert(sizeof(ArenaRecord) == 0x5b, "scene.fields: size of ArenaRecord");
 _Static_assert(offsetof(RoomRecord, kind) == 0x0 && sizeof(((RoomRecord *)0)->kind) == 0x1, "scene.fields: RoomRecord.kind");
 _Static_assert(offsetof(RoomRecord, name) == 0x1 && sizeof(((RoomRecord *)0)->name) == 0x32, "scene.fields: RoomRecord.name");
 _Static_assert(offsetof(RoomRecord, address) == 0x33 && sizeof(((RoomRecord *)0)->address) == 0x10, "scene.fields: RoomRecord.address");
@@ -2708,22 +2708,22 @@ _Static_assert(offsetof(RotKey, length) == 0x4 && sizeof(((RotKey *)0)->length) 
 _Static_assert(offsetof(RotKey, rotation) == 0x8 && sizeof(((RotKey *)0)->rotation) == 0x10, "scene.fields: RotKey.rotation");
 _Static_assert(offsetof(RotKey, step) == 0x18 && sizeof(((RotKey *)0)->step) == 0x10, "scene.fields: RotKey.step");
 _Static_assert(sizeof(RotKey) == 0x28, "scene.fields: size of RotKey");
-_Static_assert(offsetof(Manager, blockSize) == 0x4 && sizeof(((Manager *)0)->blockSize) == 0x4, "scene.fields: Manager.blockSize");
-_Static_assert(offsetof(Manager, block) == 0x8 && sizeof(((Manager *)0)->block) == 0x4, "scene.fields: Manager.block");
-_Static_assert(offsetof(Manager, ownsBlock) == 0xc && sizeof(((Manager *)0)->ownsBlock) == 0x4, "scene.fields: Manager.ownsBlock");
-_Static_assert(offsetof(Manager, dir) == 0x10 && sizeof(((Manager *)0)->dir) == 0x100, "scene.fields: Manager.dir");
-_Static_assert(offsetof(Manager, source) == 0x110 && sizeof(((Manager *)0)->source) == 0x4, "scene.fields: Manager.source");
-_Static_assert(offsetof(Manager, capacity) == 0x114 && sizeof(((Manager *)0)->capacity) == 0x4, "scene.fields: Manager.capacity");
-_Static_assert(offsetof(Manager, nodes) == 0x118 && sizeof(((Manager *)0)->nodes) == 0x4, "scene.fields: Manager.nodes");
-_Static_assert(offsetof(Manager, items) == 0x11c && sizeof(((Manager *)0)->items) == 0x4, "scene.fields: Manager.items");
-_Static_assert(offsetof(Manager, count) == 0x120 && sizeof(((Manager *)0)->count) == 0x4, "scene.fields: Manager.count");
-_Static_assert(offsetof(Manager, dataSize) == 0x124 && sizeof(((Manager *)0)->dataSize) == 0x4, "scene.fields: Manager.dataSize");
-_Static_assert(offsetof(Manager, data) == 0x128 && sizeof(((Manager *)0)->data) == 0x4, "scene.fields: Manager.data");
-_Static_assert(offsetof(Manager, dataUsed) == 0x12c && sizeof(((Manager *)0)->dataUsed) == 0x4, "scene.fields: Manager.dataUsed");
-_Static_assert(offsetof(Manager, textureSuffix) == 0x130 && sizeof(((Manager *)0)->textureSuffix) == 0x100, "scene.fields: Manager.textureSuffix");
-_Static_assert(offsetof(Manager, bindFlags) == 0x230 && sizeof(((Manager *)0)->bindFlags) == 0x4, "scene.fields: Manager.bindFlags");
-_Static_assert(offsetof(Manager, tint) == 0x234 && sizeof(((Manager *)0)->tint) == 0x18, "scene.fields: Manager.tint");
-_Static_assert(sizeof(Manager) == 0x24c, "scene.fields: size of Manager");
+_Static_assert(offsetof(ShapeManager, blockSize) == 0x4 && sizeof(((ShapeManager *)0)->blockSize) == 0x4, "scene.fields: ShapeManager.blockSize");
+_Static_assert(offsetof(ShapeManager, block) == 0x8 && sizeof(((ShapeManager *)0)->block) == 0x4, "scene.fields: ShapeManager.block");
+_Static_assert(offsetof(ShapeManager, ownsBlock) == 0xc && sizeof(((ShapeManager *)0)->ownsBlock) == 0x4, "scene.fields: ShapeManager.ownsBlock");
+_Static_assert(offsetof(ShapeManager, dir) == 0x10 && sizeof(((ShapeManager *)0)->dir) == 0x100, "scene.fields: ShapeManager.dir");
+_Static_assert(offsetof(ShapeManager, source) == 0x110 && sizeof(((ShapeManager *)0)->source) == 0x4, "scene.fields: ShapeManager.source");
+_Static_assert(offsetof(ShapeManager, capacity) == 0x114 && sizeof(((ShapeManager *)0)->capacity) == 0x4, "scene.fields: ShapeManager.capacity");
+_Static_assert(offsetof(ShapeManager, nodes) == 0x118 && sizeof(((ShapeManager *)0)->nodes) == 0x4, "scene.fields: ShapeManager.nodes");
+_Static_assert(offsetof(ShapeManager, items) == 0x11c && sizeof(((ShapeManager *)0)->items) == 0x4, "scene.fields: ShapeManager.items");
+_Static_assert(offsetof(ShapeManager, count) == 0x120 && sizeof(((ShapeManager *)0)->count) == 0x4, "scene.fields: ShapeManager.count");
+_Static_assert(offsetof(ShapeManager, dataSize) == 0x124 && sizeof(((ShapeManager *)0)->dataSize) == 0x4, "scene.fields: ShapeManager.dataSize");
+_Static_assert(offsetof(ShapeManager, data) == 0x128 && sizeof(((ShapeManager *)0)->data) == 0x4, "scene.fields: ShapeManager.data");
+_Static_assert(offsetof(ShapeManager, dataUsed) == 0x12c && sizeof(((ShapeManager *)0)->dataUsed) == 0x4, "scene.fields: ShapeManager.dataUsed");
+_Static_assert(offsetof(ShapeManager, textureSuffix) == 0x130 && sizeof(((ShapeManager *)0)->textureSuffix) == 0x100, "scene.fields: ShapeManager.textureSuffix");
+_Static_assert(offsetof(ShapeManager, bindFlags) == 0x230 && sizeof(((ShapeManager *)0)->bindFlags) == 0x4, "scene.fields: ShapeManager.bindFlags");
+_Static_assert(offsetof(ShapeManager, tint) == 0x234 && sizeof(((ShapeManager *)0)->tint) == 0x18, "scene.fields: ShapeManager.tint");
+_Static_assert(sizeof(ShapeManager) == 0x24c, "scene.fields: size of ShapeManager");
 _Static_assert(offsetof(SkelManager, blockSize) == 0x4 && sizeof(((SkelManager *)0)->blockSize) == 0x4, "scene.fields: SkelManager.blockSize");
 _Static_assert(offsetof(SkelManager, block) == 0x8 && sizeof(((SkelManager *)0)->block) == 0x4, "scene.fields: SkelManager.block");
 _Static_assert(offsetof(SkelManager, ownsBlock) == 0xc && sizeof(((SkelManager *)0)->ownsBlock) == 0x4, "scene.fields: SkelManager.ownsBlock");
@@ -2957,18 +2957,18 @@ _Static_assert(offsetof(BoosterType, lean) == 0x1800 && sizeof(((BoosterType *)0
 _Static_assert(offsetof(BoosterType, times) == 0x1804 && sizeof(((BoosterType *)0)->times) == 0xc, "scene.fields: BoosterType.times");
 _Static_assert(offsetof(BoosterType, speeds) == 0x1810 && sizeof(((BoosterType *)0)->speeds) == 0x10, "scene.fields: BoosterType.speeds");
 _Static_assert(sizeof(BoosterType) == 0x1820, "scene.fields: size of BoosterType");
-_Static_assert(offsetof(CollisionPlane, flags) == 0x0 && sizeof(((CollisionPlane *)0)->flags) == 0x4, "scene.fields: CollisionPlane.flags");
-_Static_assert(offsetof(CollisionPlane, cornerPoints) == 0x4 && sizeof(((CollisionPlane *)0)->cornerPoints) == 0x24, "scene.fields: CollisionPlane.cornerPoints");
-_Static_assert(offsetof(CollisionPlane, edges) == 0x28 && sizeof(((CollisionPlane *)0)->edges) == 0x24, "scene.fields: CollisionPlane.edges");
-_Static_assert(offsetof(CollisionPlane, normal) == 0x4c && sizeof(((CollisionPlane *)0)->normal) == 0xc, "scene.fields: CollisionPlane.normal");
-_Static_assert(offsetof(CollisionPlane, dist) == 0x58 && sizeof(((CollisionPlane *)0)->dist) == 0x4, "scene.fields: CollisionPlane.dist");
-_Static_assert(offsetof(CollisionPlane, edgePlanes) == 0x5c && sizeof(((CollisionPlane *)0)->edgePlanes) == 0x30, "scene.fields: CollisionPlane.edgePlanes");
-_Static_assert(offsetof(CollisionPlane, unit) == 0x8c && sizeof(((CollisionPlane *)0)->unit) == 0x4, "scene.fields: CollisionPlane.unit");
-_Static_assert(offsetof(CollisionPlane, part) == 0x90 && sizeof(((CollisionPlane *)0)->part) == 0x4, "scene.fields: CollisionPlane.part");
-_Static_assert(offsetof(CollisionPlane, cornerIndices) == 0x94 && sizeof(((CollisionPlane *)0)->cornerIndices) == 0xc, "scene.fields: CollisionPlane.cornerIndices");
-_Static_assert(offsetof(CollisionPlane, listNext) == 0xa0 && sizeof(((CollisionPlane *)0)->listNext) == 0x4, "scene.fields: CollisionPlane.listNext");
-_Static_assert(offsetof(CollisionPlane, listPrev) == 0xa4 && sizeof(((CollisionPlane *)0)->listPrev) == 0x4, "scene.fields: CollisionPlane.listPrev");
-_Static_assert(sizeof(CollisionPlane) == 0xac, "scene.fields: size of CollisionPlane");
+_Static_assert(offsetof(CollisionTri, flags) == 0x0 && sizeof(((CollisionTri *)0)->flags) == 0x4, "scene.fields: CollisionTri.flags");
+_Static_assert(offsetof(CollisionTri, cornerPoints) == 0x4 && sizeof(((CollisionTri *)0)->cornerPoints) == 0x24, "scene.fields: CollisionTri.cornerPoints");
+_Static_assert(offsetof(CollisionTri, edges) == 0x28 && sizeof(((CollisionTri *)0)->edges) == 0x24, "scene.fields: CollisionTri.edges");
+_Static_assert(offsetof(CollisionTri, normal) == 0x4c && sizeof(((CollisionTri *)0)->normal) == 0xc, "scene.fields: CollisionTri.normal");
+_Static_assert(offsetof(CollisionTri, dist) == 0x58 && sizeof(((CollisionTri *)0)->dist) == 0x4, "scene.fields: CollisionTri.dist");
+_Static_assert(offsetof(CollisionTri, edgePlanes) == 0x5c && sizeof(((CollisionTri *)0)->edgePlanes) == 0x30, "scene.fields: CollisionTri.edgePlanes");
+_Static_assert(offsetof(CollisionTri, unit) == 0x8c && sizeof(((CollisionTri *)0)->unit) == 0x4, "scene.fields: CollisionTri.unit");
+_Static_assert(offsetof(CollisionTri, part) == 0x90 && sizeof(((CollisionTri *)0)->part) == 0x4, "scene.fields: CollisionTri.part");
+_Static_assert(offsetof(CollisionTri, cornerIndices) == 0x94 && sizeof(((CollisionTri *)0)->cornerIndices) == 0xc, "scene.fields: CollisionTri.cornerIndices");
+_Static_assert(offsetof(CollisionTri, listNext) == 0xa0 && sizeof(((CollisionTri *)0)->listNext) == 0x4, "scene.fields: CollisionTri.listNext");
+_Static_assert(offsetof(CollisionTri, listPrev) == 0xa4 && sizeof(((CollisionTri *)0)->listPrev) == 0x4, "scene.fields: CollisionTri.listPrev");
+_Static_assert(sizeof(CollisionTri) == 0xac, "scene.fields: size of CollisionTri");
 _Static_assert(offsetof(TimeSync, vtable) == 0x0 && sizeof(((TimeSync *)0)->vtable) == 0x4, "scene.fields: TimeSync.vtable");
 _Static_assert(offsetof(TimeSync, started) == 0x4 && sizeof(((TimeSync *)0)->started) == 0x4, "scene.fields: TimeSync.started");
 _Static_assert(offsetof(TimeSync, frames) == 0x8 && sizeof(((TimeSync *)0)->frames) == 0x4, "scene.fields: TimeSync.frames");

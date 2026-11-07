@@ -1612,7 +1612,7 @@ int (lobby_announceArena)(void)
 	}
 	g_arenaGameSetUp = 1;
 	special_map(g_arenaName, (u8 *)ADDR(g_arenaMap));
-	ServerRecord *packet = g_arenaPacket;
+	ArenaRecord *packet = g_arenaPacket;
 	packet->kind = 0x18;
 	packet->rotation = g_arenaRotation;
 	packet->timeLimit = g_arenaTimeLimit;

@@ -7,7 +7,7 @@
 #define ST ((Stage *)s)   /* the stage (s in each function) by its fields (src/scene.fields) */
 
 #define K(address) ((const float *)RELOC(address))
-#define AC ((Player *)a)   /* the same by its fields (src/scene.fields) */
+#define AC ((Actor *)a)   /* the same by its fields (src/scene.fields) */
 #define AF(offset) GAME_VAR(float, a + (offset))
 #define AU(offset) GAME_VAR(u32, a + (offset))
 /* point k of path r: trigger r's way point k */
@@ -322,7 +322,7 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 	}
 	ObjectList *model = (ObjectList *)(AC->slot == 4 ? (u8 *)&AC->weaponModel4 : AC->slot == 5 ? (u8 *)&AC->weaponModel5 : (u8 *)&AC->weaponModel);
 	memcpy(AC->pos, a + (AC->state == 1 ? 0x180 : 0x4e0), 12);
-	memcpy(a + offsetof(Player, pitch), a + offsetof(Player, nextPitch), 32);   /* pitch .. : the next motion state taken */
+	memcpy(a + offsetof(Actor, pitch), a + offsetof(Actor, nextPitch), 32);   /* pitch .. : the next motion state taken */
 	if (AC->controlledBy == ST->playerActor) {   /* (to chunk N: the local team's actors) */
 		if (ST->kingOfTheHill == 1) {
 			if (AC->isKing == 1)
@@ -605,13 +605,13 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 			/* the turns towards the view, at most the turn rate (turnRate) a second */
 			float rate = f32(fmul_m(fld_m(dt), &AC->turnRate));
 			for (int c = 0; c < 2; c++) {
-				long double r = angle_turn(AU(offsetof(Player, pitch) + c * 4), AU(offsetof(Player, botLookPitch) + c * 4));
+				long double r = angle_turn(AU(offsetof(Actor, pitch) + c * 4), AU(offsetof(Actor, botLookPitch) + c * 4));
 				float rr = (float)r;
-				AF(offsetof(Player, inPitch) + c * 4) = rr;
+				AF(offsetof(Actor, inPitch) + c * 4) = rr;
 				if (r > rate)
-					AU(offsetof(Player, inPitch) + c * 4) = BITS(rate);
+					AU(offsetof(Actor, inPitch) + c * 4) = BITS(rate);
 				else if (!(rr >= -fld_m(&rate)))
-					AF(offsetof(Player, inPitch) + c * 4) = (float)-fld_m(&rate);
+					AF(offsetof(Actor, inPitch) + c * 4) = (float)-fld_m(&rate);
 			}
 		}
 		if (AC->bot == 1)
@@ -781,7 +781,7 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 		AC->nextPitch = f32(fadd_m(fmul_m(FSUB(AC->netPitch, AC->pitch), &k), &AC->pitch));
 		AC->nextYaw = f32(angle_stepTowards(BITS(AC->nextYaw), BITS(AC->netYaw), BITS(k)));
 		for (int c = 0; c < 5; c++)   /* nextForward..nextRun */
-			AF(offsetof(Player, nextForward) + c * 4) = f32(fadd_m(fmul_m(FSUB(AC->netMotion[c], AF(offsetof(Player, forward) + c * 4)), &k), &AF(offsetof(Player, forward) + c * 4)));
+			AF(offsetof(Actor, nextForward) + c * 4) = f32(fadd_m(fmul_m(FSUB(AC->netMotion[c], AF(offsetof(Actor, forward) + c * 4)), &k), &AF(offsetof(Actor, forward) + c * 4)));
 	}
 	if (AC->fireAnim > 0 && weapon) {   /* the firing cycle, wrapping at 1 */
 		long double v = fadd_m(fdiv_m(fld_m(dt), &weapon->cycleTime), &AC->fireCycle);
@@ -1105,7 +1105,7 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 			if (b->active != 1)
 				continue;
 			b->hitActor = f[1];
-			b->hit = (struct CollisionPlane *)array_recordAt(f[2], (*(int *)&ST->space.planes.records), 0xac);
+			b->hit = (struct CollisionTri *)array_recordAt(f[2], (*(int *)&ST->space.planes.records), 0xac);
 			if (f[3] == 1)
 				b->life = f32(fsub_m(fld_m(&b->age), dt));
 			memcpy(b->netPoint, f + 4, 12);
@@ -1265,7 +1265,7 @@ timers:
 			f |= 0x4000;
 		AC->stateFlags = f;
 	}
-	static const u16 parts[7] = { offsetof(Player, headModel), offsetof(Player, chestModel), offsetof(Player, armsModel), offsetof(Player, legsModel), offsetof(Player, boosterModel), offsetof(Player, weaponModel4), offsetof(Player, weaponModel5) };
+	static const u16 parts[7] = { offsetof(Actor, headModel), offsetof(Actor, chestModel), offsetof(Actor, armsModel), offsetof(Actor, legsModel), offsetof(Actor, boosterModel), offsetof(Actor, weaponModel4), offsetof(Actor, weaponModel5) };
 	if (AC->partListsBound < 7) {   /* one more part list's textures bound a frame */
 		if (AC->partListsBound >= 0)
 			ObjectList_bindTextures(a + parts[AC->partListsBound]);

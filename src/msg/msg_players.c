@@ -46,7 +46,7 @@ void THISCALL (msg_kill)(Scene *scene, int victim, int killer)
 	if (g_language != KOREAN && g_language != ENGLISH)
 		return;
 	int english = g_language == ENGLISH;
-	Player *v = &scene->players[victim];
+	Actor *v = &scene->players[victim];
 	if (victim == killer) {
 		int colour = victim == scene->localPlayer ? 4 : 0;
 		msg_print(scene, colour, (const char *)(RELOC(english) ? STR(0x4c4924, "%s killed himself.") : STR(0x4c48f4, "%s\264\324\300\314 \300\332\306\370\307\337\275\300\264\317\264\331.")), v->name);

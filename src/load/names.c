@@ -102,7 +102,7 @@ int THISCALL (tex_getIdByName)(TextureManager *manager, const char *name, u32 fl
    first). Its callers ignore the eax it leaves */
 void THISCALL (shape_bindTextureBy)(u8 *shape, const char *suffix, int flags, int h1, int s1, int v1, int h2, int s2, int v2)
 {
-	Model *md = (Model *)shape;
+	Shape *md = (Shape *)shape;
 	for (int i = 0; i < md->partCount; i++) {
 		u8 *part = md->parts + i * 0x80;
 		ShapePart *sp = (ShapePart *)part;

@@ -10,7 +10,7 @@
 static void weapon_cycle(Stage *stage, int i, int step)
 {
 	u8 *actor = (u8 *)(u8 *)&((Stage *)stage)->actors[i];
-	Player *ac = (Player *)actor;
+	Actor *ac = (Actor *)actor;
 	const PlayerRecord *record = &stage->playerRecords[ac->player];
 	int slot = (ac->slot + step) % 6;
 	for (int k = 0; k < 6; k++, slot = (slot + step) % 6) {
@@ -34,7 +34,7 @@ void THISCALL (actor_prevWeapon)(Stage *stage, int i) { weapon_cycle(stage, i, 5
 void THISCALL (actor_setWeaponSlot)(Stage *stage, int i, int slot)
 {
 	u8 *actor = (u8 *)(u8 *)&stage->actors[i];
-	Player *ac = (Player *)actor;
+	Actor *ac = (Actor *)actor;
 	int player = ac->player;
 	if (ac->slot != slot) {
 		ac->slot = slot;
@@ -48,7 +48,7 @@ void THISCALL (actor_setWeaponSlot)(Stage *stage, int i, int slot)
    unless it is the slot in use, when its player record holds a weapon there of a known type */
 void THISCALL (actor_selectWeapon)(Stage *stage, int i, int slot)
 {
-	Player *actor = (&stage->actors[i]);
+	Actor *actor = (&stage->actors[i]);
 	if (actor->slot == slot)
 		return;
 	int weapon = stage->playerRecords[actor->player].items[slot];
@@ -64,7 +64,7 @@ void THISCALL (actor_selectWeapon)(Stage *stage, int i, int slot)
    heightTime 0, burstPause and burstFire from botParams[3] / botParams[4] */
 void THISCALL (actor_pickRandomWeapon)(Stage *stage, int i)
 {
-	Player *actor = (&stage->actors[i]);
+	Actor *actor = (&stage->actors[i]);
 	if (actor->state != 1)
 		return;
 	u32 r = g_randPos;
@@ -90,7 +90,7 @@ void THISCALL (actor_takeDamage)(u8 *scene, int attacker, int target, int mode, 
 	Stage *st = (Stage *)scene;
 #define ACTOR(i) ((u8 *)&st->actors[i])
 	static const u8 group[10] = { 0, 0, 1, 1, 1, 2, 2, 1, 3, 3 };   /* (the stat by shot mode) */
-	Player *ac = (Player *)ACTOR(target), *atk = (Player *)ACTOR(attacker);
+	Actor *ac = (Actor *)ACTOR(target), *atk = (Actor *)ACTOR(attacker);
 	if (ac->state != 1 || ac->invulnerable == 1)
 		return;
 	int character = atk->active == 1 ? atk->character : -1;
@@ -162,7 +162,7 @@ void THISCALL (actor_pickPathPoint)(u8 *scene, int p)
 {
 	Stage *st = (Stage *)scene;
 	u8 *a = (u8 *)&st->actors[p];
-	Player *ac = (Player *)a;
+	Actor *ac = (Actor *)a;
 	const float *from = ac->pos, *range = &ac->pathRange;
 	int lists[5], points[5], clear[5], n = 0;
 	u8 out[12];
@@ -278,7 +278,7 @@ void THISCALL (bullet_init)(u8 *s, int slot, int id, int owner, int homingTarget
 		end[1] = f32(FADD(sy, from[1]));
 		end[2] = f32(fadd_m(sz, &from[2]));
 		float hit[3];
-		BU->hit = (struct CollisionPlane *)collision_rayTrace(s, from, end, hit);
+		BU->hit = (struct CollisionTri *)collision_rayTrace(s, from, end, hit);
 		if (BU->hit) {
 			memcpy(end, hit, 12);
 			if (*speed > 0) {
@@ -572,13 +572,13 @@ static void decal(u8 *s, u8 *b, const u8 *w, u32 *r, const u8 *h, const float *N
 		uv[q * 2] = f32(fdiv_m((fmul_m(f2, &e[2]) + fmul_m(f1, &e[1])) + fmul_m(f0, &e[0]), &le));
 		uv[q * 2 + 1] = f32(((fmul_m(f2, &c2) + f1 * c1) + f0 * c0) / lc);
 	}
-	const int *obj = &((const CollisionPlane *)h)->unit->index;   /* (its unit's map object number) */
+	const int *obj = &((const CollisionTri *)h)->unit->index;   /* (its unit's map object number) */
 	if (obj) {
-		const ShapePart *part = (const ShapePart *)ST->objects[*obj].model->parts + ((const CollisionPlane *)h)->part;
+		const ShapePart *part = (const ShapePart *)ST->objects[*obj].model->parts + ((const CollisionTri *)h)->part;
 		float tri[9];
 		for (int k = 0; k < 3; k++)
-			memcpy(tri + k * 3, (const float *)part->vertices + ((const CollisionPlane *)h)->cornerIndices[k] * 3, 12);
-		effect(s, r, WI->shotMode + 0x28, 0, imp, N, (u32)ST->objects[((const CollisionPlane *)h)->unit->index].matrix, (u32)tri, (u32)uv, 0, 0);
+			memcpy(tri + k * 3, (const float *)part->vertices + ((const CollisionTri *)h)->cornerIndices[k] * 3, 12);
+		effect(s, r, WI->shotMode + 0x28, 0, imp, N, (u32)ST->objects[((const CollisionTri *)h)->unit->index].matrix, (u32)tri, (u32)uv, 0, 0);
 	} else
 		effect(s, r, WI->shotMode + 0x28, 0, imp, N, 0, (u32)P, (u32)uv, effect_size(w), 0);
 }
@@ -592,8 +592,8 @@ static void hit_surface(u8 *s, u8 *b, const u8 *w, u32 *r)
 	if (!h)
 		return;
 	float N[3], P[9];
-	const float *n = ((const CollisionPlane *)h)->normal, *p = &((const CollisionPlane *)h)->cornerPoints[0][0];
-	const int *obj = &((const CollisionPlane *)h)->unit->index;   /* (its unit's map object number) */
+	const float *n = ((const CollisionTri *)h)->normal, *p = &((const CollisionTri *)h)->cornerPoints[0][0];
+	const int *obj = &((const CollisionTri *)h)->unit->index;   /* (its unit's map object number) */
 	if (obj) {
 		const float *M = ST->objects[*obj].relMatrix;
 		N[0] = f32((FMUL(n[2], M[8]) + FMUL(n[1], M[4])) + FMUL(n[0], M[0]));
@@ -745,7 +745,7 @@ static void fly_local(u8 *s, u8 *b, const u8 *w, const float *dt)
 	if (WI->guidance > 0 && BU->hitActor < 0) {
 		float h[3];
 		int r = collision_rayTrace(s, prev, cur, h);
-		BU->hit = (struct CollisionPlane *)r;
+		BU->hit = (struct CollisionTri *)r;
 		if (r) {
 			memcpy(BU->impact, h, 12);
 			h[0] = f32(FSUB(h[0], prev[0]));

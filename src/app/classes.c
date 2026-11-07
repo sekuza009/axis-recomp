@@ -19,7 +19,7 @@ static int clear(void *p, int dwords)
 /* ---- member blocks cleared, each the size of its class ---- */
 /* TextureManager: all 8 words (vtable, banks[6], count) */
 int THISCALL (TextureManager_clear)(void *self) { return clear(self, 0x8); }       /* TextureBank */
-int THISCALL (Model_clear)(void *self) { return clear(self, 0x13); }      /* Model */
+int THISCALL (Model_clear)(void *self) { return clear(self, 0x13); }      /* Shape */
 int THISCALL (ShapeManager_clear)(void *self) { return clear(self, 0x93); }       /* ShapeManager */
 int THISCALL (SkeletonManager_clear)(void *self) { return clear(self, 0x4c); }       /* SkeletonManager */
 int THISCALL (collisionPlane_clear)(void *self) { return clear(self, 0x2b); }
@@ -176,8 +176,8 @@ int THISCALL (CollisionVolume_dtor)(u32 *self) { self[0] = STR(0x4aa254, "\2607F
 DELETING(CollisionVolume, CollisionVolume_dtor)
 
 /* Model (vtable 0x4aa250) */
-void *THISCALL (Model_ctor)(u32 *self) { self[0] = VT(Model, 0x4aa250); Model_clear(self); return self; }
-int THISCALL (Model_dtor)(u32 *self) { self[0] = VT(Model, 0x4aa250); return Model_release(self); }
+void *THISCALL (Model_ctor)(u32 *self) { self[0] = VT(Shape, 0x4aa250); Model_clear(self); return self; }
+int THISCALL (Model_dtor)(u32 *self) { self[0] = VT(Shape, 0x4aa250); return Model_release(self); }
 DELETING(Model, Model_dtor)
 
 /* ShapeManager (vtable 0x4aa244), SkeletonManager (vtable 0x4aa240) */
@@ -225,7 +225,7 @@ void *THISCALL (ResourceSet_ctor)(u8 *self)
 typedef int (THISCALL *Release)(void *entry);
 static int release_all(u8 *self, int stride, Release release)
 {
-	Manager *mg = (Manager *)self;
+	ShapeManager *mg = (ShapeManager *)self;
 	if (mg->count > 0) {
 		for (int i = 0; i < mg->count; i++)
 			release(mg->items + i * stride);
@@ -247,7 +247,7 @@ int THISCALL (SkeletonManager_releaseSkeletons)(u8 *self) { return release_all(s
    Returns the last call's eax */
 u32 THISCALL (actor_destroyPartLists)(u8 *self)
 {
-	static const u32 members[8] = { offsetof(Player, weaponModel5), offsetof(Player, weaponModel4), offsetof(Player, weaponModel), offsetof(Player, boosterModel), offsetof(Player, legsModel), offsetof(Player, armsModel), offsetof(Player, chestModel), offsetof(Player, headModel) };
+	static const u32 members[8] = { offsetof(Actor, weaponModel5), offsetof(Actor, weaponModel4), offsetof(Actor, weaponModel), offsetof(Actor, boosterModel), offsetof(Actor, legsModel), offsetof(Actor, armsModel), offsetof(Actor, chestModel), offsetof(Actor, headModel) };
 	u32 r = 0;
 	for (int k = 0; k < 8; k++)
 		r = UnitPoseInfo_dtor(self + members[k]);

@@ -96,7 +96,7 @@ void fix_shapeRead(void *shape, void *file, void *at, int room)
 	if (!g_markedPending)
 		return;
 	g_markedPending = 0;
-	Model *model = (Model *)shape;
+	Shape *model = (Shape *)shape;
 	for (int i = 0; i < model->partCount; i++) {
 		char *tex = ((ShapePart *)model->parts)[i].texName;
 		size_t len = strlen(tex);

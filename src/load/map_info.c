@@ -64,7 +64,7 @@ int THISCALL (catalogue_loadItemInfoFrom)(u8 *scene, const char *path)
 	fclose(f);
 	for (int i = 0; i < *count; i++) {
 		ItemType *item = &st->itemTypes[i];
-		item->model = (Model *)(((u8 *)item)[0] ? shape_getByName((u8 *)&st->itemShapes, item->shapeName, 1) : 0);
+		item->model = (Shape *)(((u8 *)item)[0] ? shape_getByName((u8 *)&st->itemShapes, item->shapeName, 1) : 0);
 	}
 	return 1;
 }

@@ -100,7 +100,7 @@ else:
 		prop = cands[0] if len(cands) == 1 else ('?' + '|'.join(cands[:4]) if cands else '?')
 		v = int(old[3:], 16)
 		if len(cands) != 1 and v >= 0x1000:
-			alt = [s + ':' + sorted(flat[s][v], key=len)[0] for s in ('Scene', 'Stage', 'Player', 'PlayerRecord') if v in flat[s]]
+			alt = [s + ':' + sorted(flat[s][v], key=len)[0] for s in ('Scene', 'Stage', 'Actor', 'PlayerRecord') if v in flat[s]]
 			if alt:
 				prop += ' {' + ', '.join(alt) + '}'
 		print('%d %s:%d %s -> %s | ...%s[%s]%s' % (i, os.path.basename(p), line, old, prop, before[-55:], old, after))

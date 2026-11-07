@@ -22,7 +22,7 @@ static void copy_through_fpu(float *dst, const float *src) { *dst = (float)fld_m
 int THISCALL (collisionTri_setup)(u8 *self, int flags, const float *v0, const float *v1, const float *v2, int unit, int part,
                            int corner0, int corner1, int corner2)
 {
-	CollisionPlane *tp = (CollisionPlane *)self;
+	CollisionTri *tp = (CollisionTri *)self;
 	collisionPlane_clear(self);
 	tp->flags = flags;
 	memcpy(tp->cornerPoints[0], v0, 12);
@@ -73,7 +73,7 @@ int THISCALL (collisionTri_setup)(u8 *self, int flags, const float *v0, const fl
 
 /* 0x47fb80: the segment p0 -> p1 against the triangle: crossing its face plane at a point inside its three edge
    planes. On a hit: the point in *hit, its distance to p1 in *dist, returns 1 */
-int THISCALL (collisionTri_traceSegment)(const CollisionPlane *self, const float *p0, const float *p1, float *hit, float *dist)
+int THISCALL (collisionTri_traceSegment)(const CollisionTri *self, const float *p0, const float *p1, float *hit, float *dist)
 {
 	const float *n = self->normal;
 	X zero = k_0f;
@@ -264,7 +264,7 @@ int THISCALL (collision_moveSphere)(u8 *stage, float r, const float *pos, const 
 		at[0] = f32(fadd_m(mul(fld_m(&m[8]), &pos[2]) + mul(fld_m(&m[4]), &pos[1]) + mul(fld_m(&m[0]), &pos[0]), &m[12]));
 		at[1] = f32(fadd_m(mul(fld_m(&m[1]), &pos[0]) + mul(fld_m(&m[9]), &pos[2]) + mul(fld_m(&m[5]), &pos[1]), &m[13]));
 		at[2] = f32(fadd_m(mul(fld_m(&m[2]), &pos[0]) + mul(fld_m(&m[10]), &pos[2]) + mul(fld_m(&m[6]), &pos[1]), &m[14]));
-		const Model *md = obj->model;
+		const Shape *md = obj->model;
 		int inside = 1;
 		for (int c = 0; c < 3 && inside; c++)
 			inside = !(fld_m(&md->low[c]) - reach >= at[c]);
@@ -399,7 +399,7 @@ static void respond(float *w, const float *v, const float *d, float k, const flo
    touch, puts the centre there (outPos), its distance from pos + vel (outDist), the response (outVel: the remaining
    move slid along the contact, scaled by k, about axis when there is one) and the contact plane (normal and
    distance). Returns 1 on a contact */
-int THISCALL (collisionTri_sweepSphere)(CollisionPlane *tri, float r, const float *pos, const float *vel, float k, float *outPos,
+int THISCALL (collisionTri_sweepSphere)(CollisionTri *tri, float r, const float *pos, const float *vel, float k, float *outPos,
                                       float *outVel, float *outDist, float *plane, const float *axis)
 {
 	const float *n = tri->normal, *dist = &tri->dist;

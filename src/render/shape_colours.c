@@ -6,14 +6,14 @@
 #define FIELD(type, obj, offset) GAME_VAR(type, (u8 *)RELOC(obj) + (offset))
 
 /* a shape (Model): its parts (ShapePart, each with its material: texture) */
-#define PART_COUNT(shape) (((Model *)(shape))->partCount)
-#define PART(shape, i) ((ShapePart *)((Model *)(shape))->parts + (i))
+#define PART_COUNT(shape) (((Shape *)(shape))->partCount)
+#define PART(shape, i) ((ShapePart *)((Shape *)(shape))->parts + (i))
 #define MATERIAL_SET(m) FIELD(void *, (*(u8 **)&g_textures), ((m) / 512) * 4 + 4)
 
 /* a model (a shape Manager): its shapes (items, 0x4c bytes each, count of them); its tint (tint[6]), on while bit 1 of
    bindFlags is set */
-#define SHAPE_COUNT(model) (((Manager *)(model))->count)
-#define SHAPE(model, i) (((Manager *)(model))->items + (i) * 0x4c)
+#define SHAPE_COUNT(model) (((ShapeManager *)(model))->count)
+#define SHAPE(model, i) (((ShapeManager *)(model))->items + (i) * 0x4c)
 
 /* 0x466560: each part's material marked changed */
 void THISCALL (shape_markMaterialsChanged)(void *shape)
@@ -39,7 +39,7 @@ void THISCALL (shape_setMaterialTints)(void *shape, u32 h1, u32 s1, u32 v1, u32 
 }
 
 /* 0x467660: the model tinted, every shape with it */
-void THISCALL (shape_setTint)(Manager *model, u32 h1, u32 s1, u32 v1, u32 h2, u32 s2, u32 v2)
+void THISCALL (shape_setTint)(ShapeManager *model, u32 h1, u32 s1, u32 v1, u32 h2, u32 s2, u32 v2)
 {
 	BITS(model->tint[0]) = h1;
 	model->bindFlags |= 2;
@@ -56,7 +56,7 @@ void THISCALL (shape_setTint)(Manager *model, u32 h1, u32 s1, u32 v1, u32 h2, u3
    materials marked changed (shape_markMaterialsChanged). The materials keep flag 2 and their tints
    (tex_markMaterialChanged keeps bits 0x11111113), so a reload still tints them. Only reached from
    shape_setTextureSuffix without flag 2, and its one caller (playerRecord_setPartColour) always passes 2 */
-void THISCALL (shape_clearTint)(Manager *model)
+void THISCALL (shape_clearTint)(ShapeManager *model)
 {
 	model->bindFlags &= ~2;
 	for (int k = 0; k < 6; k++)
@@ -77,7 +77,7 @@ void (shape_addColour)(u8 *px, int mode, const void *shape, const u8 *colour)
 
 /* 0x467580: a shape manager's texture-name suffix (textureSuffix, e.g. "_T<player>") and bindFlags set; with flag 2
    its tint (two HSV colours, shape_setTint), else shape_clearTint */
-void THISCALL (shape_setTextureSuffix)(Manager *model, const char *suffix, int flags, u32 h1, u32 s1, u32 v1, u32 h2, u32 s2,
+void THISCALL (shape_setTextureSuffix)(ShapeManager *model, const char *suffix, int flags, u32 h1, u32 s1, u32 v1, u32 h2, u32 s2,
                                     u32 v2)
 {
 	strcpy(model->textureSuffix, suffix);
@@ -108,7 +108,7 @@ int THISCALL (tex_tintRgba)(u8 *rgba, u32 dh, u32 ds, u32 dv)
    with the factors and the matrix. Returns the part count */
 int (shape_shadingColours)(float *out, int first, u8 *shape, void *factors, int matrix)
 {
-	Model *md = (Model *)shape;
+	Shape *md = (Shape *)shape;
 	for (int i = 0; i < md->partCount; i++) {
 		ShapePart *part = (ShapePart *)(md->parts + i * 0x80);
 		GAME_FN(shape_getShadingColorBufferBy, 0x463b80, void, float *, int, void *, void *, int)(out + part->colourBase, first, (u8 *)part, factors,
