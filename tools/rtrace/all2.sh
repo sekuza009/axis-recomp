@@ -3,7 +3,8 @@
 D=/c/Users/ALEXAN~1/AppData/Local/Temp/claude/fca37c0dc9bd4171/3a18fdb3-2d6d-49f5-93d8-8cffd7d6280e/scratchpad/rtrace; T=/c/Users/ALEXAN~1/AppData/Local/Temp/claude/C--Users-Alexander-Desktop-Axis/a529c516-7b14-4d0b-88d6-38bdabdd7de7/scratchpad/trace; G=/c/Users/Alexander/Desktop/Axis; R=$G/recomp
 cd $R
 grab() { for f in $G/rtrace_*.tsv; do test -e $f && mv $f $D/runs2/$1_$(basename $f); done; rm -f $G/rtrace_*.tmp; }
-restore() { diff -r $D/bak2/Save $G/Save >/dev/null || { rm -rf $G/Save; cp -r $D/bak2/Save $G/Save; echo "  saves restored"; }; cmp -s $D/bak2/axis.cfg $G/initdata/axis.cfg || { cp -p $D/bak2/axis.cfg $G/initdata/axis.cfg; echo "  axis.cfg restored"; }; }
+restore() { diff -r $D/bak2/Save $G/Save >/dev/null || { if ls "$D/bak2/Save"/*.axs >/dev/null 2>&1; then if ls "$D/bak2/Save"/*.axs >/dev/null 2>&1; then rm -rf "$G/Save"; cp -r "$D/bak2/Save" "$G/Save"; else echo "NO SAVE BACKUP in $D/bak2/Save: Save left as it is"; fi; else echo "NO SAVE BACKUP in $D/bak2/Save: Save left as it is"; fi; echo "  saves restored"; }; cmp -s $D/bak2/axis.cfg $G/initdata/axis.cfg || { cp -p $D/bak2/axis.cfg $G/initdata/axis.cfg; echo "  axis.cfg restored"; }; }
+rm -rf $D/bak2; mkdir -p $D/bak2; cp -rp $G/Save $D/bak2/Save && cp -p $G/initdata/axis.cfg $D/bak2/axis.cfg || { echo "backup failed - stop"; exit 1; }   # (what restore puts back)
 echo "== skirmish"; rm -f $G/rtrace_*; RC_EXE=$R/build/AxisRC_rtrace.exe bash $T/play_trace.sh rt2 2>&1 | grep -E 'running|EXITED|IN MATCH|CHANGED|unchanged|CRASH' | tr '\n' ' '; echo; grab skirmish; restore
 eval "$(sed -n '/^declare -A S/,/^S\[replay\]/p' standalone/suite.sh)"
 for n in profile mainmenu setup multi ladder armc replay; do echo "== $n"; rm -f $G/rtrace_*; RC_EXE=$R/build/AxisRC_rtrace.exe timeout 500 bash standalone/keys.sh "rt2_$n" ${S[$n]} 2>&1 | grep -E 'running|EXITED|CHANGED|unchanged|CRASH' | tr '\n' ' '; echo; grab $n; restore; done

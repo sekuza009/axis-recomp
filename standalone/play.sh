@@ -37,7 +37,7 @@ release_keys 0x0D 0x49 0x4B 0x25 0x4F 0x1B
 for i in 1 2 3 4 5 6 7 8 9 10; do sleep 1; rm -f "$G/AxisRC.exe" 2>/dev/null && test ! -e "$G/AxisRC.exe" && break; done
 cmp -s "$R/game.exe" "$G/AxisGL.exe" && echo "installed AxisGL.exe unchanged" || echo "AXISGL.EXE CHANGED"
 diff -r "$R/Save.bak" "$G/Save" >/dev/null && echo "saves unchanged" || {
-	echo "SAVES CHANGED (put back as they were)"; rm -rf "$G/Save"; cp -rp "$R/Save.bak" "$G/Save"; }
+	echo "SAVES CHANGED (put back as they were)"; if ls "$R/Save.bak"/*.axs >/dev/null 2>&1; then rm -rf "$G/Save"; cp -rp "$R/Save.bak" "$G/Save"; else echo "NO SAVE BACKUP in $R/Save.bak: Save left as it is"; fi; }
 # axis.cfg as the run left it, compared (the settings read and written back unchanged), then the player's put back
 cmp -s "$R/axis.cfg.bak" "$G/initdata/axis.cfg" && echo "axis.cfg unchanged" || { echo "AXIS.CFG CHANGED:"; diff "$R/axis.cfg.bak" "$G/initdata/axis.cfg"; }
 cp -p "$R/axis.cfg.bak" "$G/initdata/axis.cfg"

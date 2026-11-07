@@ -34,7 +34,7 @@ powershell -NoProfile -Command "Stop-Process -Name AxisRC -Force -ErrorAction Si
 for i in 1 2 3 4 5 6 7 8 9 10; do sleep 1; rm -f "$G/AxisRC.exe" 2>/dev/null; test ! -e "$G/AxisRC.exe" && break; done
 for f in $G/rtrace_*.tsv; do mv $f /c/Users/ALEXAN~1/AppData/Local/Temp/claude/fca37c0dc9bd4171/3a18fdb3-2d6d-49f5-93d8-8cffd7d6280e/scratchpad/rtrace/runs/host-${tag}_$(basename $f); done; rm -f $G/rtrace_*.tmp; rm -f "$G/standalone.log"
 cp -p "$SP/hbak/axis.cfg" "$G/initdata/axis.cfg"; cp -p "$SP/hbak/axisnet.ini" "$G/axisnet.ini"
-diff -r "$SP/hbak/Save" "$G/Save" >/dev/null || { rm -rf "$G/Save"; cp -r "$SP/hbak/Save" "$G/Save"; echo "$tag: saves restored"; }
+diff -r "$SP/hbak/Save" "$G/Save" >/dev/null || { if ls "$SP/hbak/Save"/*.axs >/dev/null 2>&1; then if ls "$SP/hbak/Save"/*.axs >/dev/null 2>&1; then rm -rf "$G/Save"; cp -r "$SP/hbak/Save" "$G/Save"; else echo "NO SAVE BACKUP in $SP/hbak/Save: Save left as it is"; fi; else echo "NO SAVE BACKUP in $SP/hbak/Save: Save left as it is"; fi; echo "$tag: saves restored"; }
 cmp -s "$R/installed.exe" "$G/AxisGL.exe" || echo "AXISGL.EXE CHANGED"
 ls "$G"/*.dmp 2>/dev/null && echo "CRASH DUMPS"
 echo "$tag done"

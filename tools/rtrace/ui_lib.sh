@@ -23,6 +23,6 @@ end_game() {
 	for i in 1 2 3 4 5 6 7 8 9 10; do sleep 1; rm -f "$G/AxisRC.exe" "$G/AxisRC2.exe" 2>/dev/null; test ! -e "$G/AxisRC.exe" -a ! -e "$G/AxisRC2.exe" && break; done
 	for f in $G/rtrace_*.tsv; do test -e $f && mv $f $D/runs2/$1_$(basename $f); done; rm -f $G/rtrace_*.tmp "$G/standalone.log"
 	cp -p "$D/ubak/axis.cfg" "$G/initdata/axis.cfg"; cp -p "$D/ubak/axisnet.ini" "$G/axisnet.ini"
-	diff -r "$D/ubak/Save" "$G/Save" >/dev/null && echo "saves unchanged" || { rm -rf "$G/Save"; cp -r "$D/ubak/Save" "$G/Save"; echo "saves restored"; }
+	diff -r "$D/ubak/Save" "$G/Save" >/dev/null && echo "saves unchanged" || { if ls "$D/ubak/Save"/*.axs >/dev/null 2>&1; then rm -rf "$G/Save"; cp -r "$D/ubak/Save" "$G/Save"; else echo "NO SAVE BACKUP in $D/ubak/Save: Save left as it is"; fi; echo "saves restored"; }
 	cmp -s "$R/installed.exe" "$G/AxisGL.exe" && echo "installed exe unchanged"; ls "$G"/*.dmp 2>/dev/null; echo "$1 done"
 }
