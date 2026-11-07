@@ -65,7 +65,12 @@ u32 (gfx_fillRect)(int x0, int y0, int x1, int y1)
 	glGetFloatv(0x0ba2, vp);   /* GL_VIEWPORT */
 	glViewport(0, 0, g_glWidth, g_glHeight);
 	fill_rect(x0, y0, x1, y1);
+#ifdef AXIS_NATIVE
+	glViewport((int)vp[0], (int)vp[1], (int)vp[2], (int)vp[3]);   /* (kept: fixes/screen.c) */
+	return 0;
+#else
 	return IMPORT(0x4a91d4, u32, int, int, int, int)((int)vp[0], (int)vp[1], (int)vp[2], (int)vp[3]);   /* glViewport */
+#endif
 }
 
 /* 0x4685d0: the frame finished and shown (SwapBuffers' result) */

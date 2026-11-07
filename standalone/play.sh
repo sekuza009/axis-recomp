@@ -32,7 +32,8 @@ python "$R/tools/inmatch.py" --any "$P-match1.png" "$P-match2.png" | sed -E 's# 
 powershell -NoProfile -Command "Stop-Process -Name AxisRC -Force"
 for i in 1 2 3 4 5 6 7 8 9 10; do sleep 1; rm -f "$G/AxisRC.exe" 2>/dev/null && test ! -e "$G/AxisRC.exe" && break; done
 cmp -s "$R/installed.exe" "$G/AxisGL.exe" && echo "installed AxisGL.exe unchanged" || echo "AXISGL.EXE CHANGED"
-diff -r "$R/Save.bak" "$G/Save" >/dev/null && echo "saves unchanged" || echo "SAVES CHANGED"
+diff -r "$R/Save.bak" "$G/Save" >/dev/null && echo "saves unchanged" || {
+	echo "SAVES CHANGED (put back as they were)"; rm -rf "$G/Save"; cp -rp "$R/Save.bak" "$G/Save"; }
 # axis.cfg as the run left it, compared (the settings read and written back unchanged), then the player's put back
 cmp -s "$R/axis.cfg.bak" "$G/initdata/axis.cfg" && echo "axis.cfg unchanged" || { echo "AXIS.CFG CHANGED:"; diff "$R/axis.cfg.bak" "$G/initdata/axis.cfg"; }
 cp -p "$R/axis.cfg.bak" "$G/initdata/axis.cfg"

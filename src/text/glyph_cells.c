@@ -201,7 +201,9 @@ u32 (font_penDraw)(int x, int y, int font, const char *format, ...)
 	glEnable(GL_TEXTURE_2D);
 	tex_bind(g_textures->banks[g_penFontTexture / 512], g_penFontTexture % 512);
 	glBegin(GL_QUADS);
-#ifndef AXIS_NATIVE   /* (for the patch layer's HUD: it knows the pen's text by this) */
+#ifdef AXIS_NATIVE   /* (for the HUD remap: the power-up countdown, fixes/hud.c) */
+	g_fixPenDraw = 1;
+#else   /* (for the patch layer's HUD: it knows the pen's text by this) */
 	*g_wide->penDraw = 1;
 #endif
 	for (const char *p = text; *p; p++) {
@@ -224,7 +226,9 @@ u32 (font_penDraw)(int x, int y, int font, const char *format, ...)
 			x += widths[g];
 		}
 	}
-#ifndef AXIS_NATIVE
+#ifdef AXIS_NATIVE
+	g_fixPenDraw = 0;
+#else
 	*g_wide->penDraw = 0;
 #endif
 	glEnd();

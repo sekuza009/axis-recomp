@@ -12,6 +12,7 @@
    hook), keeping 4:3 proportions. It used to recognise the parts by the return addresses of the original's calls;
    this rebuild names each part as it draws it instead (part(), wide.h). */
 #include "../game.h"
+#include "../fixes/fixes.h"
 #include <string.h>
 #include "hud.h"
 #include "../wide.h"
@@ -258,7 +259,11 @@ static void main_timers(Scene *scene, Player *player)
 			int seconds = ftol(left);
 			int ty = ftol(hy(32.0f) + yf);
 			int tx = ftol((wx(32.0f) - 22.0f) * 0.5f + xf);
+#ifdef AXIS_NATIVE
+			fix_powerUpText(tx, ty, 1, STR_2D, seconds);   /* font_penDraw, scaled and centred on its icon (fixes/hud.c) */
+#else
 			SITE_CALL(0x49395f, font_penDraw, void, int, int, int, const char *, int)(tx, ty, 1, STR_2D, seconds);   /* font_penDraw */
+#endif
 		}
 	}
 }
@@ -427,7 +432,11 @@ static void main_cornerMark(int x, int texture, float s0, float s1)
 }
 
 /* the part of the HUD drawn next, for the patch DLL (HUD_*) */
+#ifdef AXIS_NATIVE
+static void part(int anchor) { g_fixHudPart = anchor; }   /* (fixes/hud.c) */
+#else
 static void part(int anchor) { *g_wide->hudPart = anchor; }
+#endif
 
 static void main_draw(Scene *scene)
 {
@@ -511,7 +520,11 @@ static void main_draw(Scene *scene)
 /* 0x4926f0: the main HUD of the local player while playing (else of the watched player) */
 void THISCALL (hud_drawMain)(Scene *scene)
 {
+#ifdef AXIS_NATIVE
+	int was = g_fixHudPart;
+#else
 	int was = *g_wide->hudPart;
+#endif
 	main_draw(scene);
 	part(was);
 }

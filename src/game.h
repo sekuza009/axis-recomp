@@ -38,6 +38,11 @@
 #define glTexCoord2d(s, t) IMPORT(0x4a9208, void, double, double)(s, t)
 #define glBindTexture(target, id) IMPORT(0x4a9264, void, u32, u32)(target, id)
 #define glVertex2i(x, y) IMPORT(0x4a91f4, void, int, int)(x, y)
+#ifdef AXIS_NATIVE   /* (the native build remaps the HUD's vertices: fixes/hud.c) */
+void fix_hudVertex(int x, int y);
+#undef glVertex2i
+#define glVertex2i(x, y) fix_hudVertex(x, y)
+#endif
 #define glDisable(cap) IMPORT(0x4a922c, void, u32)(cap)
 #define GL_FOG_DENSITY 0x0b62
 #define GL_FOG_START 0x0b63

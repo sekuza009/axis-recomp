@@ -30,6 +30,21 @@ void fix_asciiPass(void *pass, int x, int y, const char *text);   /* a font's AS
 const float *fix_digitHeight(void);         /* the HUD digits' height factor */
 void STDCALL fix_digitTexCoord(u32 s, u32 t);   /* their texture corners, half a texel inside each cell */
 
+/* hud.c */
+extern int g_fixHudPart;                    /* the main HUD's part drawing (HUD_* of wide.h) */
+extern int g_fixPenDraw;                    /* font_penDraw is drawing */
+void fix_hudVertex(int x, int y);           /* glVertex2i, the HUD's vertices remapped */
+void fix_drawPlayerMarkers(Scene *scene);   /* hud_drawPlayerMarkers, sized for 4:3 over the whole screen */
+void fix_drawLockOn(Scene *scene);          /* hud_drawLockOn, the same */
+void fix_drawMainHud(Scene *scene);         /* hud_drawMain, fix_drawFps, fix_drawRanking: their area told */
+void fix_drawFps(Scene *scene);
+void fix_drawRanking(Scene *scene);
+int fix_overlayBegin(int area);             /* the replay's overlay: one of its parts drawing (returns what to end with) */
+void fix_overlayEnd(int was);
+#define OVERLAY(area, call) do { int was_ = fix_overlayBegin(area); call; fix_overlayEnd(was_); } while (0)
+void fix_powerUpText(int x, int y, int font, const char *format, int value);   /* font_penDraw for the power-up countdown */
+void fix_labelText(int x1, int y, int x2, const char *name, int size);       /* text_drawCentred for a name label */
+
 /* kyrie.c */
 int fix_catalogueLoad(void *stage, const char *path);   /* catalogue_loadComponents, then the KYRIE parts */
 void *fix_shapeFind(const char *name);                  /* shapeDat_getItemFileBy, the MARKED\ prefix dropped */

@@ -204,9 +204,11 @@ int THISCALL (match_playFrame)(u8 *s)
 	match_frame(s);
 	if (SC->matchState == 2)
 #ifdef AXIS_NATIVE
-		g_fixInHud++;   /* (the in-match 2D pass: fixes/screen.c) */
+	{
+		g_fixInHud++;   /* (the in-match 2D pass: fixes/hud.c) */
 		SITE_THISCALL(0x48b386, match_drawFrame, void, void *)(s);
 		g_fixInHud--;
+	}
 #else
 		SITE_THISCALL(0x48b386, match_drawFrame, void, void *)(s);   /* match_drawFrame; the patch DLL calls its hud_pass_wrap here */
 #endif
@@ -1245,28 +1247,61 @@ u32 THISCALL (replay_frame)(u8 *s)
 	/* the overlay */
 	if (SC->hudHidden == 0) {
 		char text[0xf0];
-		/* (the patch DLL retargets these calls for wide screens) */
+		/* (the patch DLL retargets these calls for wide screens; the native build tells its HUD remap which part draws:
+		   fixes/hud.c) */
+#ifdef AXIS_NATIVE
+		fix_drawPlayerMarkers((Scene *)s);
+#else
 		SITE_THISCALL(0x48a19c, hud_drawPlayerMarkers, void, void *)(s);                                 /* hud_drawPlayerMarkers */
+#endif
 		if (SC->messagesHidden == 0 && SC->msgFade > 0)
+#ifdef AXIS_NATIVE
+			OVERLAY(FIX_AREA_OVERLAY_CENTRE, hud_drawMessageBox((Scene *)s));
+#else
 			SITE_THISCALL(0x48a1c0, hud_drawMessageBox, void, void *)(s);                             /* hud_drawMessageBox */
+#endif
 		if (SC->watchedPlayer >= 0) {
 			glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
+#ifdef AXIS_NATIVE
+			OVERLAY(FIX_AREA_OVERLAY_LEFT, hud_drawIcon((Scene *)s, 0x10, 0x10, 6));
+#else
 			SITE_THISCALL(0x48a1f7, hud_drawIcon, void, void *, int, int, int)(s, 0x10, 0x10, 6);   /* hud_drawIcon */
+#endif
 			text_setColor(1.0f, 1.0f, 1.0f, 1.0f);
 			int n = SC->cameraMode;
 			sprintf(text, (const char *)STR(0x4b0320, "%d"), n > 0 ? n : n + 10);
+#ifdef AXIS_NATIVE
+			OVERLAY(FIX_AREA_OVERLAY_LEFT, text_drawSized(0x28, 0x10, text, 0x10));
+#else
 			SITE_CALL(0x48a259, text_drawSized, void, int, int, const char *, int)(0x28, 0x10, text, 0x10);   /* text_drawSized */
+#endif
 		}
 		if (!(SC->secondFraction >= 0.5f)) {
 			glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
+#ifdef AXIS_NATIVE
+			OVERLAY(FIX_AREA_OVERLAY_RIGHT, hud_drawIcon((Scene *)s, 0x20e, 0x10, 5));
+#else
 			SITE_THISCALL(0x48a299, hud_drawIcon, void, void *, int, int, int)(s, 0x20e, 0x10, 5);   /* hud_drawIcon */
+#endif
 			text_setColor(1.0f, 1.0f, 1.0f, 1.0f);
 			sprintf(text, (const char *)STR(0x4c7cd8, "%02d:%02d"), SC->wholeSeconds / 60, SC->wholeSeconds % 60);
+#ifdef AXIS_NATIVE
+			OVERLAY(FIX_AREA_OVERLAY_RIGHT, text_drawSized(0x226, 0x10, text, 0x10));
+#else
 			SITE_CALL(0x48a2ff, text_drawSized, void, int, int, const char *, int)(0x226, 0x10, text, 0x10);   /* text_drawSized */
+#endif
 		}
+#ifdef AXIS_NATIVE
+		OVERLAY(FIX_AREA_OVERLAY_CENTRE, hud_drawWatchedName((Scene *)s));
+#else
 		SITE_THISCALL(0x48a309, hud_drawWatchedName, void, void *)(s);                                 /* hud_drawWatchedName */
+#endif
 		if (SC->rankingKey == 1)
+#ifdef AXIS_NATIVE
+			OVERLAY(FIX_AREA_RANKING, SITE_THISCALL(0x48a318, hud_drawRanking, void, void *)(s));
+#else
 			SITE_THISCALL(0x48a318, hud_drawRanking, void, void *)(s);                             /* hud_drawRanking */
+#endif
 	}
 	if (SC->noticeTimer > 0)
 		hud_drawCentreNotice((Scene *)s);

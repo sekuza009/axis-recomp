@@ -109,7 +109,11 @@ void THISCALL (hud_drawPlayerMarkers)(Scene *scene)
 			int left = marker_hudX(player->screenPos[0]);
 			/* through the original call site: the patch DLL retargets it (label_text) to centre the name on the player
 			   and keep its letters 4:3 on wide screens */
+#ifdef AXIS_NATIVE
+			fix_labelText(left, y, right, name, 8);   /* text_drawCentred, centred on the player (fixes/hud.c) */
+#else
 			SITE_CALL(0x491c2d, text_drawCentred, void, int, int, int, const char *, int)(left, y, right, name, 8);   /* text_drawCentred */
+#endif
 			int centre = marker_hudX(player->screenPos[0]), half;
 #ifdef AXIS_NATIVE
 			half = fix_labelHalfWidth(name);   /* the text's own half width (fixes/input.c) */
