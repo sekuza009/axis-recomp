@@ -33,13 +33,14 @@ printf '\t# gamedata.bin %s\n\t.section .rdata,"dr"\n\t.globl _g_gamedata\n\t.p2
 	"$(sha1sum build/gamedata.bin | cut -c1-40)" > build/gamedata.s
 $CC -c -o build/gamedata.o build/gamedata.s
 $CC -c -O2 -Wall $NDEF -o build/standalone_main$NSUF.o standalone/main.c
+PLAT=; if [ -n "$NATIVE" ]; then $CC -c -O2 -Wall -o build/standalone_platform.o standalone/platform.c; PLAT=build/standalone_platform.o; fi
 $CC -c -O2 -Wall -o build/standalone_crt.o standalone/crt.c
 $CC -c -O2 -Istandalone -o build/standalone_hooks.o build/standalone_hooks.c
 $CC -c -O2 -DAXIS_STANDALONE $NDEF -fno-omit-frame-pointer -I../axisnet -Ibuild -w -o build/standalone_axisnet$NSUF.o axisnet_recomp.c
 IV=../axisnet/iv32
 # (-Wl,--subsystem,windows, not -mwindows: zig ignores -mwindows, and a console exe opens a console window)
 $CC -O2 -Wl,--subsystem,windows -Wl,--image-base=0x10000 -Wl,--stack=0x100000 -o build/$OUT \
-	build/standalone_main$NSUF.o build/standalone_crt.o build/gamedata.o build/standalone_hooks.o build/standalone_axisnet$NSUF.o $OBJD/*.o $NEXTRA \
+	build/standalone_main$NSUF.o build/standalone_crt.o build/gamedata.o build/standalone_hooks.o build/standalone_axisnet$NSUF.o $OBJD/*.o $PLAT $NEXTRA \
 	$IV/iv32.o $IV/indeo3.o $IV/hpeldsp.o -lws2_32 -lole32 -loleaut32 -luser32 -lwinmm -lgdi32
 python - build/$OUT <<'EOF'
 import sys, struct, pefile

@@ -594,6 +594,9 @@ int WINAPI WinMain(HINSTANCE inst, HINSTANCE prev, LPSTR cmd, int show)
 	fprintf(g_log, "the original's range 0x%x .. 0x%x and g_image's data part left inaccessible (guarded); "
 	        "the data in g_rdata %p, g_data %p\n", GAME_BASE, GAME_BASE + GAME_SIZE, (void *)g_rdata, (void *)g_data);
 	resolve_imports();
+#ifdef AXIS_NATIVE
+	{ void platform_loadSettings(void); platform_loadSettings(); }   /* (the fixes' settings: axisnet.ini) */
+#endif
 	axisnet_attach(inst, DLL_PROCESS_ATTACH, NULL);
 	{	/* what the patch layer changed in the game's code (to compare the built-in data with the exe file) */
 		DWORD n = 0, hash = 2166136261u;

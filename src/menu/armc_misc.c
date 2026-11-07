@@ -163,7 +163,13 @@ void THISCALL (armc_drawPreview3D)(Scene *scene, const u32 *eye, const u32 *forw
 	                                                                                                       BITS(fov), w, h, BITS(near), BITS(far), x44);   /* stage_setupView */
 	ViewVolume_captureMatrices(vv, 0, scene->modelview);
 	ViewVolume_reset(vv);
+#ifdef AXIS_NATIVE
+	/* the cursor is in 640 x 480 units, so its offset from the centre is taken against 640 x 480, not the screen's
+	   pixels (with those the mech turned only part of the way on a big screen) */
+	int W = 640, H = 480;
+#else
 	int fix = *g_wide->rotFix, W = fix ? 640 : w, H = fix ? 480 : h;
+#endif
 	if (g_mouse2Down) {   /* the right button held */
 		scene->mouseY = g_mouseY;
 		scene->mouseX = g_mouseX;

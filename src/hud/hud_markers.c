@@ -1,6 +1,7 @@
 /* hud_markers.c: the marks over the other players in view, placed in screen pixels around each player's projected
    point (Player.screenPos[0], Player.tagTopLeft[1]; OpenGL's y runs up, hence height - y). */
 #include "../game.h"
+#include "../fixes/fixes.h"
 #include <string.h>
 #include "hud.h"
 
@@ -110,10 +111,14 @@ void THISCALL (hud_drawPlayerMarkers)(Scene *scene)
 			   and keep its letters 4:3 on wide screens */
 			SITE_CALL(0x491c2d, text_drawCentred, void, int, int, int, const char *, int)(left, y, right, name, 8);   /* text_drawCentred */
 			int centre = marker_hudX(player->screenPos[0]), half;
+#ifdef AXIS_NATIVE
+			half = fix_labelHalfWidth(name);   /* the text's own half width (fixes/input.c) */
+#else
 			if (PATCHED_BLOCK(0x491c58, 0x491c52, "52 8d 44 24 3c 50 e8 ?? ?? ?? ?? 59 5a 2b d0 90 90 90 90 90 90"))
 				half = PATCHED_CALL(0x491c58, int, const char *, int)(name, centre);   /* the patch DLL measures the name */
 			else
 				half = (int)(strlen(name) >> 1) * 8;                                  /* 8 units per character */
+#endif
 			int x = centre - half;
 			glColor4f(1.0f, 1.0f, 1.0f, alpha);
 			if (scene->ladderGame == 1) {

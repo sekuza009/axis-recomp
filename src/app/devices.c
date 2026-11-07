@@ -2,6 +2,7 @@
    objects released when the game closes. */
 #include "../game.h"
 #include "../wide.h"
+#include "../fixes/fixes.h"
 #include <string.h>
 
 #define DI_ACQUIRE 0x1c
@@ -156,7 +157,11 @@ void (input_updateMouse)(void)
 {
 	const int *state = g_mouseState;   /* DIMOUSESTATE: x, y, wheel, buttons */
 	input_reacquireMouse();          /* input_reacquireMouse */
+#ifdef AXIS_NATIVE
+	fix_readMouse();                 /* input_readMouse, buttons after alt-tab, the menu pointer's speed (fixes/input.c) */
+#else
 	SITE_CALL(0x445c69, input_readMouse, int, void)();        /* input_readMouse */
+#endif
 	int x = (int)((u32)g_mouseX + (u32)state[0]), y = (int)((u32)g_mouseY + (u32)state[1]), z = state[2];
 	g_mouseWheelTurned = 0;
 	g_mouseX = x;
@@ -165,6 +170,10 @@ void (input_updateMouse)(void)
 		g_mouseWheelTurned = 1;
 	g_mouseWheel = z / -120;
 	if (g_screen != 0x270f) {
+#ifdef AXIS_NATIVE
+		fix_cursorClamp();   /* the whole width of a wide screen (fixes/input.c) */
+	}
+#else
 		if (*g_wide->cursorClampFix) {
 			g_wide->cursorClamp();
 		} else {
@@ -178,6 +187,8 @@ void (input_updateMouse)(void)
 				g_mouseY = 0;
 		}
 	}
+#endif
+
 	const u8 *buttons = (const u8 *)(OBJ(g_mouseState) + 0xc);
 	for (int i = 0; i < 3; i++) {
 		int held = buttons[i] & 0x80;
@@ -273,6 +284,9 @@ int (input_isDown)(int key)
 int (input_justPressed)(int key)
 {
 	if (key >= 0xfa && key <= 0xfc) {
+#ifdef AXIS_NATIVE
+		return fix_mousePressed(key);   /* they latch like keys (fixes/input.c) */
+#endif
 		if (*g_wide->pressedFix)
 			return g_wide->mousePressed(key);
 		int *flag = (int *)((OBJ(g_keySeen) + 0x3e8) + (key - 0xfa) * 4);

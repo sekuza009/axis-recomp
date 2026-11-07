@@ -1,6 +1,7 @@
 /* app_frameByScreen.c: one frame of the game. WinMain's message loop calls app_frame whenever no window message is
    waiting; it runs either a match frame or the front end's menus. */
 #include "../game.h"
+#include "../fixes/fixes.h"
 #include <string.h>
 
 /* 0x4202d0 (app_frame): the frame: the music, the menus' key guard counted down, then app_frameByScreen */
@@ -347,8 +348,13 @@ void THISCALL (match_combatInput)(u8 *s)
 		}
 	} else if (SC->escMenuOpen == 1) {
 		mouse_offset(s, 0);
+#ifdef AXIS_NATIVE
+		if (g_settings.menuSens > 0)
+			fix_menuNav(SC);   /* steps by mouse travel (fixes/input.c) */
+#else
 		if (PATCHED_BLOCK(0x49ddcc, 0x49ddcb, "56 e8 ?? ?? ?? ?? 59 e9"))
 			PATCHED_CALL(0x49ddcc, void, void *)(s);   /* the patch DLL's menu_nav; its block then jumps on to 0x49de23 */
+#endif
 		else {
 			const float *down = (const float *)ADDR(k_m50f), *up = (const float *)ADDR(k_50f);
 			if (!(SC->mouseDy >= *down) || !(SC->mouseDx >= *down))
