@@ -79,7 +79,7 @@ long double (angle_wrap)(float a)
 #define HALF_TURN k_1800f   /* 1800 */
 long double (angle_turn)(u32 a, u32 b)
 {
-	float B = (float)FUN_0046c100_bits(b), A = (float)FUN_0046c100_bits(a);
+	float B = (float)angle_wrap_bits(b), A = (float)angle_wrap_bits(a);
 	if (B > A) {
 		X d = FSUB(B, A);
 		if (d > HALF_TURN)
@@ -96,8 +96,8 @@ long double (angle_turn)(u32 a, u32 b)
    wrapped back into 0 .. 3600; returned unrounded */
 long double (angle_stepTowards)(u32 a, u32 b, float t)
 {
-	float B = (float)FUN_0046c100_bits(b);
-	X A = FUN_0046c100_bits(a);
+	float B = (float)angle_wrap_bits(b);
+	X A = angle_wrap_bits(a);
 	if (B > A) {
 		X d = fld_m(&B) - A;
 		if (!(d > HALF_TURN))

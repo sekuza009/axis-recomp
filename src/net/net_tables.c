@@ -1632,7 +1632,7 @@ static int scaled(const void *v, u32 k)
 /* an angle wrapped into a turn (angle_wrap, given the float's bits) times k_0_0711111f, truncated */
 static int angle_byte(const void *v)
 {
-	return ftol(fmul_m(FUN_0046c100_bits(*(const u32 *)RELOC(v)), k_0_0711111f));
+	return ftol(fmul_m(angle_wrap_bits(*(const u32 *)RELOC(v)), k_0_0711111f));
 }
 
 /* 0x48e2c0 (thiscall on the game): player p's state sent (packet 0; the actor at players + p x 0x8888): its

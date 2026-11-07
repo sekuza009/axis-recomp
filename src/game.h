@@ -314,7 +314,7 @@ typedef struct { u32 vtable; void *banks[6]; i32 count; } TextureManager;   /* t
 #define collision_rayTrace(scene, from, p1, hit) GAME_THISFN(collision_rayTrace, 0x471740, int, void *, const float *, const float *, void *)(scene, from, p1, hit)   /* 0: nothing in the way */
 #define crt_ftell(f) GAME_CDECL(0x49efdd, long, void *)(f)
 #define shape_computeBounds(shape) GAME_THISFN(shape_computeBounds, 0x4666d0, void, void *)(shape)
-#define FUN_0046c100_bits(bits) GAME_FN(angle_wrap, 0x46c100, long double, u32)(bits)   /* (the angle passed as its bits) */
+#define angle_wrap_bits(bits) GAME_FN(angle_wrap, 0x46c100, long double, u32)(bits)   /* (the angle passed as its bits) */
 #define space_buildUnit(space, id, shape, matrix) GAME_THISFN(space_buildUnit, 0x4823c0, u32, void *, int, void *, const float *)(space, id, shape, matrix)
 #define space_getNextFreeUnitPtr(space) GAME_THISFN(space_getNextFreeUnitPtr, 0x4817f0, u32 *, void *)(space)
 #define space_addUnitTriangle(space, flags, owner, part, i0, i1, i2, v0, v1, v2) GAME_THISFN(space_addUnitTriangle, 0x482320, void, void *, u32, void *, u32, u32, u32, u32, const float *, const float *, const float *)(space, flags, owner, part, i0, i1, i2, v0, v1, v2)
