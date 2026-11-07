@@ -50,7 +50,7 @@ typedef struct ItemModelSet {
 	u8 _pad00012a8[0x180];
 	u8 skelNames[3][0x80];   /* +0x1428: .. and their names (0x40 apart; actor_loadWeapon) */
 	u8 _pad00015a8[0xcc];
-	float muzzle[3][3];   /* +0x1674: the muzzle (muzzle_camera) */
+	float muzzle[3][3];   /* +0x1674: per variant (Player.variantLoaded): the muzzle point (x, y, z) in the frame of the arm's weapon joint (ArmType.weaponJoints); only muzzle_camera reads it (camera preset 1 at the muzzle) */
 	float grip[3][3];   /* +0x1698: where the actor holds it (actor_processFrame: hold) */
 } ItemModelSet;
 
@@ -199,12 +199,12 @@ typedef struct Player {
 	i32 timePlayed;   /* +0xfc: seconds */
 	float timeFraction;   /* +0x100: timePlayed's part second: dt added each frame, and once over 1 its whole seconds are moved out into timePlayed; sent with it in the game packet (kind 1: GamePacket +0x15); cleared with the scores */
 	i32 id;   /* +0x104: (by use; seen running) its id (the next serial, or the network's) */
-	i32 active;   /* +0x108: 1: the slot is in use (0 for the local player's: "press fire" may be shown) */
+	i32 active;   /* +0x108: 1: the actor slot is in use (actor_setupFromParts; 0 by actor_deactivate, stage_clearActorSlots); while the local player's is 0 (not spawned) "press fire" may be shown */
 	i32 player;   /* +0x10c: (by use; seen running) the player record it belongs to (stride 0x47fd2; -1 none); the ranking shows that player's flag (unless Scene.network) */
 	i32 controlledBy;   /* +0x110: the player slot whose machine runs it (actor_setupFromParts' a3): the local machine's actors are those equal to Stage.playerActor */
 	i32 character;   /* +0x114: its player's pilot character (0 .. 8: CHARACTER SELECT's; its CharacterProfile's stats give bonuses) */
 	i32 team;   /* +0x118: its team (-1 none: not joined / only watching; set for every actor of the player by player_setTeam, cleared with the scores): 0 / 1 in team games; outside them the local player takes its own player slot (match_frame: scene_setLocalTeam(localPlayer)) so every other is an enemy; map players' from the map file; scene_claimTeamSlot maps it to a side; same-team hits do no damage (actor_takeDamage); Stage.frags / teamCommanders by it */
-	i32 bot;   /* +0x11c: (by use; seen running) not 0: run by the game (targets, following) */
+	i32 bot;   /* +0x11c: (by use; seen running) 0 a player's; 1 run by the game (targets, following: the map's actors but the first, from the spawn); 2 (never set) would also fire without spending ammunition */
 	float spawnAge;   /* +0x120: seconds since it spawned: the first 3 s it fades in and cannot fire or be hit; dropAge is kept 10 s on from it */
 	float dropAge;   /* +0x124: the spawnAge past which the actor is dropped (actor_deactivate): kept 10 s ahead while it is alive and run here or heard from (each network state), so a silent network copy goes after 10 s; 1 at setup; a dead one's (state 3) spawnAge is set to it, so it goes the next frame */
 	i32 armor;   /* +0x128: (by use; seen running) shown bottom left (ARMOR) */
@@ -243,7 +243,7 @@ typedef struct Player {
 	i32 netFired;   /* +0x1e8: (by use; seen running) 1: rounds received this frame (fired by the others' copy) */
 	i32 firing;   /* +0x1ec: (by use; seen running) 1: firing this frame */
 	i32 burstLeft;   /* +0x1f0: (by use; seen running) rounds of the current burst still to fire */
-	float burstTime;   /* +0x1f4: (by use; seen running) the time to the burst's next round */
+	float burstTime;   /* +0x1f4: (by use; seen running) seconds since the burst's last round (counted up by dt; a round each burstGap, the rest kept; 0 when the burst is done: actor_processFrame) */
 	ShotRecord shots[5];   /* +0x1f8: (by use; seen running) its rounds as sent (another machine's actor: netFired) */
 	FiredRound rounds[5];   /* +0x298: (by use; seen running) its rounds' records (ResourceSets: actor_checkDataLoss builds them; actor_processFrame fills one as each round fires) */
 	i32 shotBullets[5];   /* +0x360: the bullets they made (-1 none) */
@@ -288,14 +288,14 @@ typedef struct Player {
 	float slotIconTime;   /* +0x494: seconds the selected slot's icon stays up at the bottom centre (its 64 x 64 cell of the menu box texture by slot, main_slotIcon): 2 when a weapon switch starts (actor_selectWeapon), counted down; its alpha, at most 1; 0 when set up */
 	i32 switchSlot;   /* +0x498: the weapon slot it is switching to (actor_selectWeapon sets it with weaponLowering 1; once weaponRaise is down to 0 actor_processFrame makes it the slot (actor_setWeaponSlot) and loads its item); another machine's actor: set to slot (and its item loaded) when slot changes; 0 when set up */
 	i32 variantLoaded;   /* +0x49c: (by use; seen running) the parts' variant loaded (0 for the selected actor, else detail + 1) */
-	i32 firePrev;   /* +0x4a0: (by use; seen running) the fire key the frame before (a held key fires one round) */
+	i32 firePrev;   /* +0x4a0: inFire of the frame before (kept at the end of the firing code): the OUT OF AMMO! message and click, the switch to the next weapon when out of ammunition and the muzzle-in-a-wall click happen only when it is 0 (a fresh press) */
 	float effectScale;   /* +0x4a4: (by use; seen running) the emitters' scale by the speed (0.5 .. 3) */
 	float footstepTime;   /* +0x4a8: (by use; seen running) a footstep every third of a second */
 	float energy;   /* +0x4ac: the booster energy LEFT, 0 .. 1 (1: full, as set up): running with the booster (inBooster and a move key, unless OVERED BOOSTER) spends 1/boostTime a second; after staminaRest is back to 1 it refills at 1/rechargeTime a second; 0 sets overheat, <= 0.2 warned; the energy bar's length (main_energy) */
 	float staminaRest;   /* +0x4b0: (by use; seen running) the rest after running (back to 1) */
 	i32 overheat;   /* +0x4b4: 1: the energy ran out (set when energy reaches 0, cleared once it is back to 0.5): the booster input is dropped (inBooster 0), the energy bar is red, the local player's out-of-breath sound */
 	i32 warned;   /* +0x4b8: 1: energy at or under 0.2 (set every frame): the energy bar blinks red (twice a second, by spawnAge), the local player's out-of-breath sound with the footsteps (unless OVERED BOOSTER) */
-	i32 lastHitMode;   /* +0x4bc: (by use; seen running) the last hit's mode (0 armour first, 1 shield first) */
+	i32 lastHitDamageType;   /* +0x4bc: the last hit's damage type (ActorItem.damageType: 0 IMPACT, 1 ENERGY; actor_takeDamage); -1 at setup; written, never read */
 	i32 lastAttacker;   /* +0x4c0: (by use; seen running) the actor that hit it last (credited with the kill) */
 	i32 lastHitWeapon;   /* +0x4c4: (by use; seen running) the last hit's weapon (an actorItems index: the kill message names it, "crushed X(SG-18)"; was named mechType) */
 	u8 _pad00004c8[0x4];
@@ -306,15 +306,15 @@ typedef struct Player {
 	i32 isCommander;   /* +0x4dc: 1: its team's commander (Platoon: the most time; scene_updateRanking; YOUR COMMANDER .. HAS BEEN KILLED): the team's icon after its ranking row and over it */
 	float deathPos[3];   /* +0x4e0: (by use; seen running) where it died (its position while not in play) */
 	float glow;   /* +0x4ec: (by use; seen running) a fresh shot's flash (and speed unless cloaked) */
-	u8 tint[4];   /* +0x4f0: (by use; seen running) its tint (r g b a: a cloaked actor's; alpha <= 0x10 also lights it faintly) */
+	u8 tint[4];   /* +0x4f0: (by use; seen running) the colour it is drawn with this frame (r g b a: actor_drawIntoView): cloaked white (alpha 0x40 to itself, 0x10 to others), the spawn fade of the first 3 s, or glow (white) plus hitFlash (red-orange); alpha <= 0x10 also lights it with lightMatrix */
 	char message[0x40];   /* +0x4f4: (by use; seen running) a message for the local player ("OUT OF AMMO!") */
 	float messageTime;   /* +0x534: 0 on the frame a message is set (item_pickup, the warp; OUT OF AMMO! sets it to the frame time, taken off later that frame): that frame the local player's message is printed and its state sent (net_sendPlayerState); then the frame time is taken off each frame; -10000 at setup */
-	i32 lastWarp;   /* +0x538: (by use; seen running) the warp zone (item) it came through last (-1 none: not kept off it) */
+	i32 lastWarp;   /* +0x538: the warp zone it was last sent to (the taken one's warpTo: item_pickup); no warp from it until it stands on no warp zone (item_update: -1 when onWarp is 0); -1 none */
 	i32 onWarp;   /* +0x53c: 1: touching a warp zone this frame */
 	float warpWait;   /* +0x540: seconds before it can warp again (2) */
 	float shieldRegenTime;   /* +0x544: (by use; seen running) seconds towards the next shield regained */
 	float whiteFlash;   /* +0x548: > 0: a white flash over the screen at this alpha (hud_main main_draw, playing): 1 when the actor is set up / spawns (actor_setupFromParts) and when it warps (item_pickup, WARP ZONE); counted down by dt */
-	i32 breakUp;   /* +0x54c: (by use; seen running) the parts' break-up step (one a frame, to 7) */
+	i32 partListsBound;   /* +0x54c: the part lists whose textures are bound so far: 0 at setup (actor_setupFromParts), one more a frame (actor_processFrame: ObjectList_bindTextures of head, chest, arms, legs, booster, weapon 4, weapon 5) up to 7; actor_drawIntoView draws only the lists up to it */
 	i32 viewMarked;   /* +0x550: 1 for the player the view is inside this frame (camera mode 2 while playing, or the watched player on camera slot 2): set by match_frame, match_drawFrame and replay_frame; its booster (part list 4) is not drawn and its legs' / booster's emitters are skipped (actor_processFrame); cleared once drawn (actor_drawIntoView) */
 	ObjectList headModel;   /* +0x554: (by use; seen running) the posed part models (ObjectList each, their entries following inside): the head (on the chest's neck joint; x5 with stateFlags 0x1000) */
 	u8 headModelMem[0x7d0];   /* +0x584: its block's memory: the entries (100 bytes each), then the skeleton pointers (ObjectList_load's mem; its size the limit) */
@@ -336,7 +336,7 @@ typedef struct Player {
 	float tagTopLeft[3];   /* +0x87c8: (by use; seen running) its radius box's top-left corner on the screen (x, y: the marks stand on y), the depth */
 	float tagBottomRight[3];   /* +0x87d4: the box's bottom-right corner (tag_narrow: the width from these) */
 	i32 onScreen;   /* +0x87e0: 1: seen this frame (stage_setupView, alive actors only): inside the view's clip box, not the selected (viewing) actor, and a clear line from the camera (collision_rayTrace); 0 otherwise or when taken out; the HUD's markers and lock-on boxes need it */
-	float facingCos;   /* +0x87e4: (by use; seen running) the cosine of its angle off the local player's view (render: who faces it); written, never read */
+	float facingCos;   /* +0x87e4: (by use; seen running) the cosine of its angle off the local player's view axis (its eye-space position: -z / length), written before the detection-cone test against g_cosTable (render/objects.c); never read */
 	float aimTime;   /* +0x87e8: seconds this enemy has been seen within the local player's detection cone (its detectionAngle off the view's axis: g_cosTable) while the local player's selected item has targetingTime > 0 (stage_setupView; 0 otherwise, out of sight, or cloaked at the local player's rank or above); past the local player's lockOnTime x targetingTime the lock is made (actor_processFrame); > 0: hud_drawLockOn's aiming box */
 	float lockAnim;   /* +0x87ec: 0.25 when the local player's lock on it is made, counting down: the HUD's box closes in */
 	float labelFade;   /* +0x87f0: > 0: the name label is up (alpha labelFade / 3) */
@@ -412,7 +412,7 @@ typedef struct MapObject {
 	float animInverse[16];   /* +0x1b4: the inverse of animMatrix (identity at setup; mapObject_frame); written, never read */
 	float relMatrix[16];   /* +0x1f4: matrix x placeInverse */
 	float relInverse[16];   /* +0x234: the inverse of relMatrix (object_initObjectBy, mapObject_frame); handed with relMatrix to the collision tests of an animated object (collision_moveSphere, collision_rayTrace: nearObjects) */
-	u32 glowSize;   /* +0x274: a float's bits: the glow flare's half-size (particle kind 4; objects with flag 1 while 3D items are on) */
+	u32 glowSize;   /* +0x274: the glow flare's half-size (particle kind 4; objects with flag 1 while 3D items are on) */
 	u32 glowColour;   /* +0x278: the glow flare's colour (RGB; its alpha from the glow) */
 	Model *model;   /* +0x27c: its shape (object_initObjectBy: shape_getByName in objectShapes by the type's name): drawn (stage_drawObject), shaded (shape_shadingColours), its collision unit (space_buildUnit), box for animated collisions */
 	u32 colourRuns[2];   /* +0x280: (by use; seen running) two pointers, kept as u32, to its runs of colourCount shading colours in Stage.objectColours (object_initObjectBy): [0] lit by the map lights, [1] [0] re-shaded with the dynamic lights each frame */
@@ -439,7 +439,7 @@ typedef struct ObjectType {
 	char animName[0x40];   /* +0x4c: its animation (empty: none) */
 	float place[3];   /* +0x8c: its position (the object file's): copied to MapObject.place, the translation of placeMatrix (object_initObjectBy) */
 	float rotation[4];   /* +0x98: a quaternion */
-	u32 glowSize;   /* +0xa8: a float's bits: the glow flare's half-size (particle kind 4; objects with flag 1 while 3D items are on) */
+	u32 glowSize;   /* +0xa8: the glow flare's half-size (particle kind 4; objects with flag 1 while 3D items are on) */
 	u32 glowColour;   /* +0xac: the glow flare's colour (RGB; its alpha from the glow) */
 } ObjectType;
 
@@ -448,7 +448,7 @@ typedef struct ItemType {
 	char name[0x40];   /* +0x0: (by use; seen running) its name (empty: an unused kind) */
 	i32 respawnSound;   /* +0x40: (by use; seen running) played as a taken item comes back (frame_loops: item_sound) */
 	i32 pickSound;   /* +0x44: played as it is taken (a warp zone: as it warps) */
-	float respawnTime;   /* +0x48: (by use; seen running) a taken item comes back once its fade passes this */
+	float respawnTime;   /* +0x48: (by use; seen running) a taken item comes back once its MapItem.timer passes this (seconds; item_update) */
 	char shapeName[0x40];   /* +0x4c: its shape (catalogue_loadItemInfoFrom: shape_getByName into model) */
 	Model *model;   /* +0x8c: its shape when items are drawn in 3D (none: not drawn) */
 } ItemType;
@@ -481,7 +481,7 @@ typedef struct Particle {
 	u32 colour;   /* +0x78: (its byte 0x7b: the alpha, set as it fades) */
 	float lightRadius;   /* +0x7c: the radius of the white point light it casts at pos (stage_refillLights, when above 0): 0 at its start, then (1 - age / life)^2 x 3000 (kind 2), 5000 (3), 2000 (25, 26), 1000 (30, 31), 1500 (32 .. 34, 37, 38), 5000 (35), 3000 (36) (particle_update); 0 for other kinds */
 	float baseSize;   /* +0x80: the descriptor's size */
-	union { float fade; float markPoints[3][3]; };   /* +0x84: fade: (kind 9, debris) the wait to its next puff (0.1 s); */
+	union { float puffWait; float markPoints[3][3]; };   /* +0x84: puffWait: (kind 9, debris) seconds to its next smoke puff (0.1; 1 in 10 an explosion that ends it); */
 	u8 _pad00000a8[0xc];
 	float markUv[6];   /* +0xb4: (kinds 40 .. 49, a hit mark) the hit triangle's three corners' texture coordinates (u, v), the mark's texture centred (0.5, 0.5) on the impact: corner offsets (ParticleDesc.markCoords, weapons.c decal's uv) x 0.005 + 0.5, or (offset / (baseSize + 200 / 400) + 1) / 2 */
 	u8 _pad00000cc[0x8];
@@ -589,12 +589,12 @@ typedef struct PartInfo {
 	i32 damage;   /* +0x54: DAMAGE (ActorItem.damage, part_info); shown with the pilot's skill bonus for the ammo type (damage x stats / 100, armc_drawWeaponsScreen) */
 	float range;   /* +0x58: range x 0.01: "m" */
 	float speed;   /* +0x5c: velocity x 0.01: "m/s" */
-	float spread;   /* +0x60: ActorItem.spread x 0.1 (k_tenthsToDegrees): shown "%.1f" with message 752 "'" (DISPERSION ANGLE) */
+	float spread;   /* +0x60: ActorItem.spread x 0.1 (k_0_1f): shown "%.1f" with message 752 "'" (DISPERSION ANGLE) */
 	float hitRange;   /* +0x64: x 0.01: "m" (HIT RANGE) */
 	float splashRadius;   /* +0x68: x 0.01: "m" */
 	i32 splashBorderDamage;   /* +0x6c: (SPLASH BORDER DAMAGE) */
 	float cycleTime;   /* +0x70: x 1000: "ms" */
-	float guidance;   /* +0x74: ActorItem.guidance x 0.1 (k_tenthsToDegrees): shown "%.1f" with message 752 "'" (GUIDANCE) */
+	float guidance;   /* +0x74: ActorItem.guidance x 0.1 (k_0_1f): shown "%.1f" with message 752 "'" (GUIDANCE) */
 	float targetingTime;   /* +0x78: x 1000: "ms" (TARGETING TIME) */
 	float weight;   /* +0x7c: ActorItem.weight (part_info); shown with 1 decimal and message 755 "t" (armc_drawWeaponsScreen) */
 } PartInfo;
@@ -991,7 +991,7 @@ typedef struct Manager {
 	i32 dataUsed;   /* +0x12c: bytes of data used: each loaded shape's blockSize added (shape_getByName); 0 again when its shapes are released (ShapeManager_releaseModels: release_all) */
 	char textureSuffix[0x100];   /* +0x130: (shapes) a suffix for its parts' texture names (playerRecord_setPartColour via shape_setTextureSuffix: "_T<player>"; empty: none): shape_bindTextureBy appends "*" and it to each part's name before tex_getIdByName, with bindFlags and the tint */
 	u32 bindFlags;   /* +0x230: (shapes) given to shape_bindTextureBy with the tint; bit 1: tinted (shape_setTint) */
-	u32 tint[6];   /* +0x234: two hue / saturation / value triples (floats' bits) */
+	u32 tint[6];   /* +0x234: two hue / saturation / value triples (shape_setTint; passed as bits to shape_bindTextureBy) */
 } Manager;
 
 /* a skeleton manager (skel_data.c: SkeletonManager_initBy): Manager's first 0x130 bytes, without the textures and tint */
@@ -1100,8 +1100,8 @@ typedef struct TextureBank {
 	i32 slotCount;   /* +0xcd130: at most 0x200 */
 	u8 *oldest;   /* +0xcd134: the slot to reuse next */
 	i32 loadCount;   /* +0xcd138: textures loaded into the cache (tex_bind); cleared by tex_initBy / tex_clearSetCounters; written, never read */
-	i32 counterB;   /* +0xcd13c: written, never read */
-	i32 counterC;   /* +0xcd140: written, never read */
+	i32 clearedCd13c;   /* +0xcd13c: only cleared (tex_initBy, tex_clearSetCounters with loadCount); never read */
+	i32 clearedCd140;   /* +0xcd140: only cleared (tex_initBy, tex_clearSetCounters with loadCount); never read */
 } TextureBank;
 
 /* a layer of the ground (Stage.groundLayers; map_info.c, shading.c): a height grid read from the map, drawn as strips */
@@ -1491,14 +1491,14 @@ typedef struct Stage {
 	i32 particleCount;   /* +0x20f2da0: slots up to the highest in use + 1 (free ones among them; shrinks past free slots at the end: stage_freeParticle) */
 	i32 particleFreeHint;   /* +0x20f2da4: (by use; seen running) the lowest free particle slot */
 	i32 particleSerial;   /* +0x20f2da8: the next particle's id */
-	u32 thrustShapes[3][8];   /* +0x20f2dac: (by use; seen running) the thrust effects' shapes: plasma, ion, gravity (eight frames each) */
+	u32 thrustShapes[3][8];   /* +0x20f2dac: the thrust effects' shapes Effect\PlasmaThrust-n, IonThrust-n, GravityThrust-n (eight frames each), loaded by effect_initShapes; never read (the thrust puffs, particle kinds 5 .. 7, are drawn as smoke quads) */
 	u8 _pad20f2e0c[0x68];
 	u32 effectShapes[8];   /* +0x20f2e74: Effect\Shell-Fire, Shell-Bullet, Rail-Fire, Blade-Fire, Rail-Bullet, Lightning-, Missile-, Homing-Bullet */
 	u8 _pad20f2e94[0xa8];
 	i32 itemTextures[3];   /* +0x20f2f3c: (by use; seen running) the items' animated textures: damage map, booster, shield (stage_build; [0] cleared first by effect_initShapes) */
-	float lightMatrix[16];   /* +0x20f2f48: (by use; seen running) an identity (stage_build): a faintly tinted actor's light (actor_drawIntoView) */
+	float faintActorMatrix[16];   /* +0x20f2f48: an identity (stage_build): the extra matrix actor_drawIntoView gives ObjectList_queue for an actor whose tint alpha is 0x10 or less (a cloaked actor of a hacking level not below the viewer's, or the start of a spawn fade-in); a mesh with any extra matrix is drawn by the view volume's transparent path (draw_transparent), not draw_opaque */
 	float overlayMatrix[16];   /* +0x20f2f88: a 1.1 scale: the item-effect overlay pass's extra matrix (actor_drawIntoView: flags 0x100 / 0xc00 draw the actor's lists again with the damage map / booster / shield textures through ObjectList_queue, 10% larger) */
-	float baseMatrix[16];   /* +0x20f2fc8: (by use; seen running) the stage's identity matrix (stage_resetMatrixAndPoints) */
+	float baseMatrix[16];   /* +0x20f2fc8: an identity (stage_resetMatrixAndPoints); never read */
 	i32 pointCount;   /* +0x20f3008: written, never read */
 	float points[200][3];   /* +0x20f300c: 200 points set to the origin (stage_resetMatrixAndPoints; Console_ctor's vector constructor); nothing else writes or reads them */
 	u32 defaultColour;   /* +0x20f396c: written, never read */
@@ -1533,7 +1533,7 @@ typedef struct Stage {
 	i32 startCount;   /* +0x20fadf4: multiplayer starts read (map_loadPlayInfoFrom: play-info records of kind 1, more than 32 fatal; 0 at scene_reset); spawn_point picks one of them at random (Scene.spawnPointCount) */
 	MapItem items[200];   /* +0x20fadf8: the map's items (power-ups, ammo): play-info records of kind 2 (map_loadPlayInfoFrom; more than 200 fatal); picked up (item_update), drawn (stage_drawItems), their taken states sent and received (net_sendItemStates, net_processGamePacket) */
 	i32 itemCount;   /* +0x20fcd38: items read (map_loadPlayInfoFrom; 0 at scene_reset): match_frame clears their taken / timer at a new round; the network item states cover the first 124 */
-	i32 lastPickup;   /* +0x20fcd3c: (by use; seen running) the last item taken that ends something (a supply at its cap, a power-up; -1 after the map is read) */
+	i32 lastPickup;   /* +0x20fcd3c: the map item (Stage.items index) taken last of the big pickups: an extended armour / shield or a 30-s power-up (item_pickup); the next game packet sends it (net_sendGamePacket, then -1) so the other machines mark it taken; -1 none (map load) */
 	i32 clockSeconds;   /* +0x20fcd40: (by use; seen running) the match clock: whole seconds (triggers' times) */
 	float clockFraction;   /* +0x20fcd44: and the part of a second */
 	i32 botsHoldFire;   /* +0x20fcd48: not 0: the bots do not fire (set at the round's end: Scene.botsHoldFire; cleared with the clock) */
@@ -1561,7 +1561,7 @@ typedef struct Stage {
 /* one of a tunnel ring's six flares (TunnelRing.flares) */
 typedef struct Flare {
 	float corners[4][4];   /* +0x0: x, y, z (+ pad) */
-	float pos[3];   /* +0x40: where it is drawn (flares, menu_tunnel.c: translated there, then turned by spin): x, y 0; z the cage's z - 50 + its index x k_tenthsToDegrees (tunnelRing_build) */
+	float pos[3];   /* +0x40: where it is drawn (flares, menu_tunnel.c: translated there, then turned by spin): x, y 0; z the cage's z - 50 + its index x k_0_1f (tunnelRing_build) */
 	u8 _pad000004c[0x4];
 	float spin;   /* +0x50: degrees about z */
 	float spinSpeed;   /* +0x54: per time unit */
@@ -1577,7 +1577,7 @@ typedef struct TunnelRing {
 	float spin;   /* +0x1930: the outer band's turn in degrees about the tunnel's axis (outer_bands): + spinSpeed x g_frameTime (x 5 while g_menuCameraMove is 1 or 3, when inner_bands moves it too), at 360 back to -360; the ring before's at tunnelRing_build */
 	float spinSpeed;   /* +0x1934: spin's speed per time unit (0.2: tunnelRing_build) */
 	i32 cleared1938;   /* +0x1938: only cleared (tunnelRing_build); never read */
-	i32 moveSteps;   /* +0x193c: menuTunnel_advance: the distance moved so far in this ring's move (+= 30 x the frame time), in or out; at the ring's length (1100; 950 entering the menus; 2200 in the ARM CENTER) the move ends and it restarts at 0 */
+	i32 moveSteps;   /* +0x193c: menuTunnel_advance: the distance moved so far in this ring's move (+= g_tunnelStep, the frame time x 30 truncated), in or out; at the ring's length (1100; 950 entering the menus; 2200 leaving for a match, g_leavingForMatch) the move ends and it restarts at 0 */
 	float depthShift;   /* +0x1940: menuTunnel_advance: -1100 a ring moved in (-2200 with g_leavingForMatch), +1100 a ring moved out (the rings' spacing in depth); read only to add to itself */
 	float inner[2][201][4];   /* +0x1944: the inner band (written as outer) */
 	float innerSpin;   /* +0x3264: the inner band's turn in degrees (inner_bands): + innerSpeed x g_frameTime except while g_menuCameraMove is 1 or 3, at 360 back to -360; 360, or the ring before's, at tunnelRing_build */
@@ -1735,7 +1735,7 @@ typedef struct Scene {
 	float presetTime;   /* +0x233cc3c: (by use; seen running) seconds on the camera preset (replay viewer: cameraMode; spectating in a match: cameraSlot); a random one after 7 unless manualPick[1] */
 	float msgFade;   /* +0x233cc40: message box fade, seconds (1 or more: opaque) */
 	i32 unused233cc44;   /* +0x233cc44: (by use; seen running) only written: 0 by scene_startSession */
-	float respawnTime;   /* +0x233cc48: (by use; seen running) the local player's wait to respawn (10 s) */
+	float respawnTime;   /* +0x233cc48: seconds the local player (with a team) has been without an active actor (dead or not yet spawned), counted up by frameTime while no chat line is typed and the round is not over or being left; at 10 it respawns (spawnPending) and this is 0 again */
 	float restartTimer;   /* +0x233cc4c: > 0: the match restarts when it runs out (5 s; packet kind 13): a beep each second, then the scores, frags and items reset and the local player spawns */
 	float scoreCommitTimer;   /* +0x233cc50: a Ladder game's seconds to the next commit of the local player's kills / deaths / score into the Ladder record (g_ladderKills, g_ladderDeaths, g_ladderExp) and its send (ladder_sendRecord): ladder_addMatchScores, every 300 s */
 	float gamePacketTimer;   /* +0x233cc54: seconds to the local player's next game packet (sendFlags[local][0] -> net_sendGamePacket: the room's map / mode, clock, scores, the type table samples); every 3 s; 3 at scene_startSession and match_setupOrStartRound */
@@ -1746,7 +1746,7 @@ typedef struct Scene {
 	i32 watchedPlayer;   /* +0x2340c64: the player a spectator watches */
 	i32 manualPick[3];   /* +0x2340c68: picked by hand while watching: [0] the followed player (followTime stops), [1] the camera preset (presetTime stops), [2] no one: the free camera */
 	float sendTimer;   /* +0x2340c74: (by use; seen running) seconds since the local player's state was sent (again past 0.05) */
-	i32 packetsSent;   /* +0x2340c78: this frame's packets out and in (send_packet: every net_send* packet; the receive loops in match_frame and the loading's stage 2) */
+	i32 packetsSent;   /* +0x2340c78: packets sent this frame (send_packet: every net_send* packet); match_frame adds it to windowSent and clears it */
 	i32 packetsReceived;   /* +0x2340c7c: packets received this frame (+ 1 each in match_frame's and the loading's receive loops, game_processLoadingMode); match_frame adds it to windowReceived and clears it */
 	i32 windowSent;   /* +0x2340c80: summed over the window (about a second), then rates */
 	i32 windowReceived;   /* +0x2340c84: packets received summed over the window (match_frame); match_playFrame makes receiveRate of it / windowTime about every second, then clears it */
@@ -1798,15 +1798,15 @@ typedef struct Scene {
 	i32 startCountdownShown;   /* +0x23423c5: (by use; seen running) the countdown's second last shown (-1 none) */
 	i32 typeCheckTurn;   /* +0x23423c9: (by use; seen running) the part type table the next game packet checks (net_sendGamePacket: this % 5, then one on; 0 at a later round) */
 	i32 typeTablePickUnread[6];   /* +0x23423cd: a random dword index (below count x record dwords) into each of the six tables (head, chest, arm, leg, booster types and actorItems), picked at each round's start (round_start); never read */
-	i32 typeTablePerRow[6];   /* +0x23423e5: (by use; seen running) the six type tables' entries per row (headTypes .. boosterTypes, actorItems) (6 3 6 7 10 0x18: Console_ctor; net_sendGamePacket's checks) */
+	i32 typeTablePerRow[6];   /* +0x23423e5: per type table (headTypes .. boosterTypes, actorItems), how many leading dwords of each record the network data check samples: a check word w picks record (w / n) % count, dword w % n (net_sendGamePacket: sample; net_processGamePacket: table_ok); 6 3 6 7 10 0x18 (Console_ctor) */
 	i32 dataLossPending;   /* +0x23423fd: 1: a data mismatch found (in a network game each machine's own check of its live local player's parts every 20 s, actor_checkDataLoss: code 0; or a host game packet's map number / part-table / actorItems sample: codes 1, 2, 3 in dataLossCode): match_frame then shows msg_dataLoss and leaves (matchLeaving, quitDelay 3) */
 	i32 dataLossCode;   /* +0x2342401: why a game ends for lost data (msg_dataLoss): 0 the own player's parts check failed (every 20 s), 1 the host's map number differs, 2 a part table's check, 3 the actorItems table's; -1 none (match start) */
-	float partsCheckTime;   /* +0x2342405: (by use; seen running) the local player's parts checked every 20 s (network) */
+	float partsCheckTime;   /* +0x2342405: seconds to the next check of the local player's parts (actor_checkDataLoss; a failure is dataLossCode 0): counted down by frameTime in a network game (sessionMode 1) and set back to 20 after a check; the check runs only while the local player's actor is alive (state 1), so it goes below 0 while it is dead or watching */
 	float previewTurn;   /* +0x2342409: the ARM CENTER preview's heading for the mech (Player.nextYaw), set while the right button is held: the cursor's offset from the screen's centre as -1800 .. 1800 (dx / w * 3600) less the preview's angle (g_armcAngle mod 3600); kept otherwise (armc_drawPreview3D) */
 	i32 localPlayer;   /* +0x234240d: the player at this machine (index into players) */
 	i32 localRecordSet;   /* +0x2342411: 1: the local player's record is set this match (local_spawn does it once; cleared at a new match / team change) */
 	i32 playAsked;   /* +0x2342415: 1: the local player asked to play from the Esc menu (START in a game without teams; a team picked on the team page in a solo game): like a fire press it gives the team (or opens the team page) and spawnPending, then is cleared */
-	i32 statsTaken;   /* +0x2342419: (by use; seen running) 1: the local player's starting kills / deaths set */
+	i32 statsTaken;   /* +0x2342419: 1: the local player's starting grade (level: grade, levelShown) and score (levelPoints: score, scoreCounted) given to its actor (match_frame, once a match); 0 at scene_startSession */
 	i32 chosenTeam;   /* +0x234241d: (by use; seen running) the team asked for (< 0: none) */
 	i32 flagLoadTried;   /* +0x2342421: 1: the local player's flag load done for this session (Save\<name>.BMP via playerRecord_loadFlag, network games only; whether it was found goes to playerRecords[local].flagChanged); 0 at scene_startSession */
 	float flagUploadTimer;   /* +0x2342425: seconds to the flag atlas's upload (5 after a flag was loaded or received; flag_uploadAtlas) */
@@ -2177,7 +2177,7 @@ _Static_assert(offsetof(Player, energy) == 0x4ac && sizeof(((Player *)0)->energy
 _Static_assert(offsetof(Player, staminaRest) == 0x4b0 && sizeof(((Player *)0)->staminaRest) == 0x4, "scene.fields: Player.staminaRest");
 _Static_assert(offsetof(Player, overheat) == 0x4b4 && sizeof(((Player *)0)->overheat) == 0x4, "scene.fields: Player.overheat");
 _Static_assert(offsetof(Player, warned) == 0x4b8 && sizeof(((Player *)0)->warned) == 0x4, "scene.fields: Player.warned");
-_Static_assert(offsetof(Player, lastHitMode) == 0x4bc && sizeof(((Player *)0)->lastHitMode) == 0x4, "scene.fields: Player.lastHitMode");
+_Static_assert(offsetof(Player, lastHitDamageType) == 0x4bc && sizeof(((Player *)0)->lastHitDamageType) == 0x4, "scene.fields: Player.lastHitDamageType");
 _Static_assert(offsetof(Player, lastAttacker) == 0x4c0 && sizeof(((Player *)0)->lastAttacker) == 0x4, "scene.fields: Player.lastAttacker");
 _Static_assert(offsetof(Player, lastHitWeapon) == 0x4c4 && sizeof(((Player *)0)->lastHitWeapon) == 0x4, "scene.fields: Player.lastHitWeapon");
 _Static_assert(offsetof(Player, ammoKind) == 0x4cc && sizeof(((Player *)0)->ammoKind) == 0x4, "scene.fields: Player.ammoKind");
@@ -2195,7 +2195,7 @@ _Static_assert(offsetof(Player, onWarp) == 0x53c && sizeof(((Player *)0)->onWarp
 _Static_assert(offsetof(Player, warpWait) == 0x540 && sizeof(((Player *)0)->warpWait) == 0x4, "scene.fields: Player.warpWait");
 _Static_assert(offsetof(Player, shieldRegenTime) == 0x544 && sizeof(((Player *)0)->shieldRegenTime) == 0x4, "scene.fields: Player.shieldRegenTime");
 _Static_assert(offsetof(Player, whiteFlash) == 0x548 && sizeof(((Player *)0)->whiteFlash) == 0x4, "scene.fields: Player.whiteFlash");
-_Static_assert(offsetof(Player, breakUp) == 0x54c && sizeof(((Player *)0)->breakUp) == 0x4, "scene.fields: Player.breakUp");
+_Static_assert(offsetof(Player, partListsBound) == 0x54c && sizeof(((Player *)0)->partListsBound) == 0x4, "scene.fields: Player.partListsBound");
 _Static_assert(offsetof(Player, viewMarked) == 0x550 && sizeof(((Player *)0)->viewMarked) == 0x4, "scene.fields: Player.viewMarked");
 _Static_assert(offsetof(Player, headModel) == 0x554 && sizeof(((Player *)0)->headModel) == 0x30, "scene.fields: Player.headModel");
 _Static_assert(offsetof(Player, headModelMem) == 0x584 && sizeof(((Player *)0)->headModelMem) == 0x7d0, "scene.fields: Player.headModelMem");
@@ -2340,7 +2340,7 @@ _Static_assert(offsetof(Particle, age) == 0x74 && sizeof(((Particle *)0)->age) =
 _Static_assert(offsetof(Particle, colour) == 0x78 && sizeof(((Particle *)0)->colour) == 0x4, "scene.fields: Particle.colour");
 _Static_assert(offsetof(Particle, lightRadius) == 0x7c && sizeof(((Particle *)0)->lightRadius) == 0x4, "scene.fields: Particle.lightRadius");
 _Static_assert(offsetof(Particle, baseSize) == 0x80 && sizeof(((Particle *)0)->baseSize) == 0x4, "scene.fields: Particle.baseSize");
-_Static_assert(offsetof(Particle, fade) == 0x84 && sizeof(((Particle *)0)->fade) <= 0x24, "scene.fields: Particle.fade");
+_Static_assert(offsetof(Particle, puffWait) == 0x84 && sizeof(((Particle *)0)->puffWait) <= 0x24, "scene.fields: Particle.puffWait");
 _Static_assert(offsetof(Particle, markPoints) == 0x84 && sizeof(((Particle *)0)->markPoints) <= 0x24, "scene.fields: Particle.markPoints");
 _Static_assert(offsetof(Particle, markUv) == 0xb4 && sizeof(((Particle *)0)->markUv) == 0x18, "scene.fields: Particle.markUv");
 _Static_assert(offsetof(Particle, markColours) == 0xd4 && sizeof(((Particle *)0)->markColours) == 0xc, "scene.fields: Particle.markColours");
@@ -2810,8 +2810,8 @@ _Static_assert(offsetof(TextureBank, slots) == 0xcd12c && sizeof(((TextureBank *
 _Static_assert(offsetof(TextureBank, slotCount) == 0xcd130 && sizeof(((TextureBank *)0)->slotCount) == 0x4, "scene.fields: TextureBank.slotCount");
 _Static_assert(offsetof(TextureBank, oldest) == 0xcd134 && sizeof(((TextureBank *)0)->oldest) == 0x4, "scene.fields: TextureBank.oldest");
 _Static_assert(offsetof(TextureBank, loadCount) == 0xcd138 && sizeof(((TextureBank *)0)->loadCount) == 0x4, "scene.fields: TextureBank.loadCount");
-_Static_assert(offsetof(TextureBank, counterB) == 0xcd13c && sizeof(((TextureBank *)0)->counterB) == 0x4, "scene.fields: TextureBank.counterB");
-_Static_assert(offsetof(TextureBank, counterC) == 0xcd140 && sizeof(((TextureBank *)0)->counterC) == 0x4, "scene.fields: TextureBank.counterC");
+_Static_assert(offsetof(TextureBank, clearedCd13c) == 0xcd13c && sizeof(((TextureBank *)0)->clearedCd13c) == 0x4, "scene.fields: TextureBank.clearedCd13c");
+_Static_assert(offsetof(TextureBank, clearedCd140) == 0xcd140 && sizeof(((TextureBank *)0)->clearedCd140) == 0x4, "scene.fields: TextureBank.clearedCd140");
 _Static_assert(sizeof(TextureBank) == 0xcd144, "scene.fields: size of TextureBank");
 _Static_assert(offsetof(GroundLayer, kind) == 0x0 && sizeof(((GroundLayer *)0)->kind) == 0x4, "scene.fields: GroundLayer.kind");
 _Static_assert(offsetof(GroundLayer, origin) == 0x4 && sizeof(((GroundLayer *)0)->origin) == 0xc, "scene.fields: GroundLayer.origin");
@@ -3130,7 +3130,7 @@ _Static_assert(offsetof(Stage, particleSerial) == 0x20f2da8 && sizeof(((Stage *)
 _Static_assert(offsetof(Stage, thrustShapes) == 0x20f2dac && sizeof(((Stage *)0)->thrustShapes) == 0x60, "scene.fields: Stage.thrustShapes");
 _Static_assert(offsetof(Stage, effectShapes) == 0x20f2e74 && sizeof(((Stage *)0)->effectShapes) == 0x20, "scene.fields: Stage.effectShapes");
 _Static_assert(offsetof(Stage, itemTextures) == 0x20f2f3c && sizeof(((Stage *)0)->itemTextures) == 0xc, "scene.fields: Stage.itemTextures");
-_Static_assert(offsetof(Stage, lightMatrix) == 0x20f2f48 && sizeof(((Stage *)0)->lightMatrix) == 0x40, "scene.fields: Stage.lightMatrix");
+_Static_assert(offsetof(Stage, faintActorMatrix) == 0x20f2f48 && sizeof(((Stage *)0)->faintActorMatrix) == 0x40, "scene.fields: Stage.faintActorMatrix");
 _Static_assert(offsetof(Stage, overlayMatrix) == 0x20f2f88 && sizeof(((Stage *)0)->overlayMatrix) == 0x40, "scene.fields: Stage.overlayMatrix");
 _Static_assert(offsetof(Stage, baseMatrix) == 0x20f2fc8 && sizeof(((Stage *)0)->baseMatrix) == 0x40, "scene.fields: Stage.baseMatrix");
 _Static_assert(offsetof(Stage, pointCount) == 0x20f3008 && sizeof(((Stage *)0)->pointCount) == 0x4, "scene.fields: Stage.pointCount");

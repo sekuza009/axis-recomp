@@ -319,8 +319,8 @@ void THISCALL (tex_initBy)(u8 *tm, const char *dir, int slots, int format, int w
 		slot[4] = (u32)(TM->slots + (i + 1) % TM->slotCount * 0x14);
 	}
 	TM->loadCount = 0;
-	TM->counterB = 0;
-	TM->counterC = 0;
+	TM->clearedCd13c = 0;
+	TM->clearedCd140 = 0;
 	TM->oldest = TM->slots;
 	TM->ready = 1;
 #undef fatal

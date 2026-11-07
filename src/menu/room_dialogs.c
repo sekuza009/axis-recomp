@@ -344,8 +344,8 @@ static void highlight_choice(int choice, int x, int y)
 	g_pointerGliding = 1;
 	(*(u32 *)&g_pointerGlideTime) = 0x41a00000;   /* g_pointerGlideTime 20 */
 	(*(u32 *)&g_unusedHighlightAlpha) = 0x3ecccccd;   /* g_unusedHighlightAlpha 0.4 */
-	g_highlightX = x;
-	g_highlightY = y;
+	g_pointerGlideX = x;
+	g_pointerGlideY = y;
 }
 
 /* 0x43df80: the Ladder login dialog's update (its panel at g_roomLoginLeft): a password to retype (g_retypePassword: the settings back and
@@ -1069,7 +1069,7 @@ u32 (ranking_drawTable)(void)
 	}
 	if (g_rankingWaiting) {   /* loading: blinking in ten steps */
 		int step = ftol(fmul_m(fld_m((const float *)ADDR(g_lobbyBlinkClock)), k_0_333333f)) % 10;
-		float alpha = f32(fsubr_m(fmul_m((long double)step, (const float *)ADDR(k_tenthsToDegrees)), (const float *)ADDR(k_1f)));
+		float alpha = f32(fsubr_m(fmul_m((long double)step, (const float *)ADDR(k_0_1f)), (const float *)ADDR(k_1f)));
 		set_colour_bits(g_textColour, 0, 0x3f800000, 0, BITS(alpha));
 		text_drawCentredLines16(X0, Y0 + 0xc8, X1, (const char *)MSG(423, "DOWNLOADING RANKING DATA"));
 	}

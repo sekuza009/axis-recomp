@@ -95,7 +95,7 @@
 #define k_0_0711111f ((float *)IMG(0x4aa49c))   /* float[1]; 0.0711111 */
 #define k_m1_5f ((float *)IMG(0x4aa500))   /* float[1]; -1.5 */
 #define g_tan10Table ((float *)IMG(0xa106b0))   /* float[18]; tan of 85, 75 .. -85 degrees (10-degree steps, x87 fptan; math_initMathFunction); never read (0x48 bytes, up to g_randTable) */
-#define g_randTable ((int *)IMG(0xa106f8))   /* int[4096]; to the tan table (0x4000 bytes) */
+#define g_randTable ((int *)IMG(0xa106f8))   /* int[4096]; the game's random table (rand() values 0 .. 32767): each draw takes entry g_randPos & 0xfff (rand_below and the match's random helpers); 0x4000 bytes up to g_tanTable */
 #define g_tanTable ((float *)IMG(0xa146f8))   /* float[3600]; by tenths of a degree (to the cos table) */
 #define g_cosTable ((float *)IMG(0xa17f38))   /* float[3600]; (to the sin table) */
 #define g_sinTable ((float *)IMG(0xa1b778))   /* float[3600] */
@@ -216,10 +216,10 @@
 #define g_mapListRects ((int *)IMG(0x4d9358))   /* int[104]; mapList_hitTest's 26 hit rectangles (hit_tests.c) */
 #define g_playerSetupRects ((int *)IMG(0x4db588))   /* int[24]; playerSetup_hitTest's 6 hit rectangles (hit_tests.c) */
 #define g_createArenaRects ((int *)IMG(0x4db5e8))   /* int[64]; createArena_hitTest's 16 hit rectangles (hit_tests.c) */
-#define g_createArena2Rects ((int *)IMG(0x4db6e8))   /* int[8]; createArena_hitTest's 2 hit rectangles (hit_tests.c) */
+#define g_hostErrorBoxRects ((int *)IMG(0x4db6e8))   /* int[8]; the create-arena screen's NETWORK INITIALIZE ERROR box's two buttons (createArena_layout; createArena_hitTest numbers them 16 / 17 while g_hostErrorBox is up) */
 #define g_arenaGameListRects ((int *)IMG(0x4db720))   /* int[72]; arenaGameList_hitTest's 18 hit rectangles (hit_tests.c) */
-#define g_arenaDialogBoxRects ((int *)IMG(0x4dbad0))   /* int[4]; arenaDialogBox_hitTest's 1 hit rectangles (hit_tests.c) */
-#define g_arenaCreateRects ((int *)IMG(0x4dbb80))   /* int[8]; arenaUpdateNotice_hitTest's 2 hit rectangles (hit_tests.c) */
+#define g_arenaDialogBoxRects ((int *)IMG(0x4dbad0))   /* int[4]; the arena list's CONNECTING TO THE GAME SERVER box's CANCEL button, MSG(116) (arenaDialogBox_layout; arenaDialogBox_hitTest) */
+#define g_arenaUpdateNoticeRects ((int *)IMG(0x4dbb80))   /* int[8]; the arena lobby's THIS PROGRAM HAS BEEN UPDATED notice's two buttons (arenaUpdateNotice_layout; arenaUpdateNotice_hitTest) */
 #define g_armcWeaponsPageRects ((int *)IMG(0x4dbc88))   /* int[60]; armcWeaponsPage_hitTest's 15 hit rectangles (hit_tests.c) */
 #define g_armcPartsPageRects ((int *)IMG(0x4dc2a8))   /* int[68]; armcPartsPage_hitTest's 17 hit rectangles (hit_tests.c) */
 #define g_armcColourRects ((int *)IMG(0x4dcb38))   /* int[72]; armcColour_hitTest's 18 hit rectangles (hit_tests.c) */
@@ -229,7 +229,7 @@
 #define g_setupControlRects ((int *)IMG(0x4ddea8))   /* int[72]; setupControl_hitTest's 18 hit rectangles (hit_tests.c) */
 #define g_gameListRects ((int *)IMG(0x9dcd48))   /* int[60]; gameList_hitTest's 15 hit rectangles (hit_tests.c) */
 #define g_newIdFormRects ((int *)IMG(0x9dce50))   /* int[28]; newIdForm_hitTest's 7 hit rectangles (hit_tests.c) */
-#define g_gameListStopRects ((int *)IMG(0x9dd308))   /* int[4]; gameListJoinBox_hitTest's 1 hit rectangles (hit_tests.c) */
+#define g_gameListJoinBoxRects ((int *)IMG(0x9dd308))   /* int[4]; the game room list's CONNECTING TO THE GAME SERVER box's CANCEL button (gameListJoinBox_layout; gameListJoinBox_hitTest) */
 #define g_updateNoticeRects ((int *)IMG(0x9dd390))   /* int[8]; updateNotice_hitTest's 2 hit rectangles (hit_tests.c) */
 #define g_newIdConfirmRects ((int *)IMG(0x9dd3b8))   /* int[8]; newIdConfirm_hitTest's 2 hit rectangles (hit_tests.c) */
 #define g_accountRects ((int *)IMG(0x9dd400))   /* int[24]; account_hitTest's 6 hit rectangles (hit_tests.c) */
@@ -410,7 +410,7 @@
 #define g_arenaOnOff ((char *)IMG(0x4dbb14))   /* char[40]; OFF / ON; 0x14 bytes each (messages 444; 445; arena_initOptionTexts); never read - the new-arena form draws from the second copy g_rotationOnOff */
 #define g_rotationOnOff ((char *)IMG(0x4dbba4))   /* char[40]; OFF / ON (messages 444; 445; 0x14 bytes each) for the new-arena form's map rotation (GameSettings.rotation; arena_createDraw's Form.rotationNames) */
 #define g_lobbyTopRects ((int *)IMG(0x4dbb40))   /* int[8]; lobbyTop_layout's two rectangles (written there only; never read) */
-#define g_lobbySlideEase ((float *)IMG(0x4dbb60))   /* float[1]; the arena lobby's tunnel-slide value (menu_slide: eased toward k_setupPanelTarget while g_lobbyPanelsSliding, each step also pushing g_arenaTunnelDepth back); 0 on entering (menuState400_enter) */
+#define g_lobbySlideEase ((float *)IMG(0x4dbb60))   /* float[1]; the arena lobby's tunnel-slide value (menu_slide: eased toward k_panelSlideTarget while g_lobbyPanelsSliding, each step also pushing g_arenaTunnelDepth back); 0 on entering (menuState400_enter) */
 #define g_colourDepthTexts ((char *)IMG(0x4ddbbc))   /* char[100]; COLOR DEPTH: 16BIT COLOR / 32BIT COLOR (messages 431; 432) */
 #define g_fxStatusTexts ((char *)IMG(0x4dda64))   /* char[100]; F/X STATUS: OFF / ON (messages 433; 434) */
 #define g_linearFilterTexts ((char *)IMG(0x4ddc84))   /* char[100]; LINEAR FILTERING: OFF / ON (messages 435; 436) */

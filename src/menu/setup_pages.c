@@ -448,10 +448,10 @@ void (setup_drawTunnel)(void)
 	glEnable(GL_TEXTURE_2D);
 	if (g_setupCameraMode == 1)
 		g_setupTunnelAlpha = f32(fsubr_m(fmul_m(fmul_m(fsub_m(fld_m(&g_setupTunnelAlpha), k_0_3f), frame),
-		                                   (const float *)ADDR(k_tenthsToDegrees)), &g_setupTunnelAlpha));
+		                                   (const float *)ADDR(k_0_1f)), &g_setupTunnelAlpha));
 	else if (g_setupCameraMode == 0)
 		g_setupTunnelAlpha = f32(fadd_m(fmul_m(fmul_m(fsub_m(fld_m((const float *)ADDR(k_0_5f)), &g_setupTunnelAlpha), frame),
-		                                  (const float *)ADDR(k_tenthsToDegrees)), &g_setupTunnelAlpha));
+		                                  (const float *)ADDR(k_0_1f)), &g_setupTunnelAlpha));
 	glColor4f(1.0f, 1.0f, 1.0f, g_setupTunnelAlpha);
 	for (int layer = 0; layer < 4; layer++) {
 		/* the strip of the texture: s from s_near (+ ds) to s_far, t from t0 / t1 on by the wall's parity */
@@ -512,7 +512,7 @@ void (setup_drawTunnel)(void)
 				float fp = (float)parity;
 				float ta = f32(fmul_m((long double)parity, (const float *)ADDR(k_0_25f)));
 				float z0 = f32(fsub_m(fld_m(k_40f), &x)), z1 = f32(fsub_m(fld_m(&x), k_40f));
-				float wx = f32(fsub_m(fmul_m((long double)layer, (const float *)ADDR(k_tenthsToDegrees)), k_30f));
+				float wx = f32(fsub_m(fmul_m((long double)layer, (const float *)ADDR(k_0_1f)), k_30f));
 				float tb = f32(fmul_m(fadd_m(fld_m(&fp), (const float *)ADDR(k_1f)), (const float *)ADDR(k_0_25f)));
 				glTexCoord2f(0.0f, ta);
 				glVertex3f(wx, top, z0);
@@ -527,7 +527,7 @@ void (setup_drawTunnel)(void)
 				float ta = f32(pk);
 				float u0 = f32(fadd_m(pk, &t0));
 				float z0 = f32(fsub_m(fld_m(k_m40f), &x)), z1 = f32(fadd_m(fld_m(&x), k_40f));
-				float wx = f32(fsubr_m(fmul_m((long double)layer, (const float *)ADDR(k_tenthsToDegrees)), k_30f));
+				float wx = f32(fsubr_m(fmul_m((long double)layer, (const float *)ADDR(k_0_1f)), k_30f));
 				float s1 = f32(FADD(s_far, ds));
 				float u1 = f32(FADD(ta, t1));
 				glTexCoord2f(ds, u0);
@@ -612,7 +612,7 @@ static void menu_tunnel(const Tunnel *t, const Highlight *h)
 				if (!t->layer2)
 					continue;
 				if (wall == hovered)
-					glColor4f(h->glow[0], h->glow[1], h->glow[2], f32(fsubr_m(fmul_m(fld_m(&g_panelGlow), (const float *)ADDR(k_clockRate)), (const float *)ADDR(k_1f))));
+					glColor4f(h->glow[0], h->glow[1], h->glow[2], f32(fsubr_m(fmul_m(fld_m(&g_panelGlow), (const float *)ADDR(k_0_025f)), (const float *)ADDR(k_1f))));
 				else
 					glColor4f(0.0f, 0.0f, 0.0f, 0.0f);
 			} else if (!h->layer3)
@@ -650,7 +650,7 @@ static void menu_tunnel(const Tunnel *t, const Highlight *h)
 				float fp = (float)place;
 				float ta = f32(fmul_m(fld_m(&fp), t->step));   /* 0.15625 a place */
 				float z0 = f32(fsub_m(fld_m(k_40f), &x)), z1 = f32(fsub_m(fld_m(&x), k_40f));
-				float wx = f32(fsub_m(fmul_m((long double)layer, (const float *)ADDR(k_tenthsToDegrees)), k_30f));
+				float wx = f32(fsub_m(fmul_m((long double)layer, (const float *)ADDR(k_0_1f)), k_30f));
 				float tb = f32(fmul_m(fadd_m(fld_m(&fp), (const float *)ADDR(k_1f)), t->step));
 				glTexCoord2f(0.0f, ta);
 				glVertex3f(wx, top, z0);
@@ -665,7 +665,7 @@ static void menu_tunnel(const Tunnel *t, const Highlight *h)
 				float ta = f32(pk);
 				float u0 = f32(fadd_m(pk, &t0));
 				float z0 = f32(fsub_m(fld_m(k_m40f), &x)), z1 = f32(fadd_m(fld_m(&x), k_40f));
-				float wx = f32(fsubr_m(fmul_m((long double)layer, (const float *)ADDR(k_tenthsToDegrees)), k_30f));
+				float wx = f32(fsubr_m(fmul_m((long double)layer, (const float *)ADDR(k_0_1f)), k_30f));
 				float s1 = f32(FADD(s_far, ds));
 				float u1 = f32(FADD(ta, t1));
 				glTexCoord2f(ds, u0);
@@ -826,7 +826,7 @@ void (mainmenu_drawMenu)(void)
 		}
 	}
 	if (g_tunnelFlyingIn) {   /* (no calls: before the tunnel's projection and texturing as in the original) */
-		long double step = fmul_m(fmul_m(fadd_m(fld_m(&g_mainMenuDepth), (const float *)ADDR(k_550f)), frame), (const float *)ADDR(k_tenthsToDegrees));
+		long double step = fmul_m(fmul_m(fadd_m(fld_m(&g_mainMenuDepth), (const float *)ADDR(k_550f)), frame), (const float *)ADDR(k_0_1f));
 		g_mainMenuFrames++;
 		if (g_mainMenuDepth > k_m549_9f)
 			g_mainMenuDepth = f32(fld_m(&g_mainMenuDepth) - step);
@@ -867,16 +867,16 @@ void (mainmenu_drawMenu)(void)
 #undef g_tunnelPulse
 
 /* 0x4277c0: the setup panel eased in (g_setupPanelMoving while it moves): its position (g_setupPanelPos) moves the rest of the
-   way to k_setupPanelTarget times g_frameTime x k_tenthsToDegrees; the distance left (g_setupTunnelDepth) runs down by the same step, and once it
-   is no longer above the double at k_setupPanelEnd the motion stops and the distance is set to -1650 */
+   way to k_panelSlideTarget times g_frameTime x k_0_1f; the distance left (g_setupTunnelDepth) runs down by the same step, and once it
+   is no longer above the double at k_panelSlideEnd the motion stops and the distance is set to -1650 */
 void (setup_easePanel)(void)
 {
 	typedef long double X;
 	if (!g_setupPanelMoving)
 		return;
-	X d = ((X)k_setupPanelTarget - g_setupPanelPos) * g_frameTime * k_tenthsToDegrees;
+	X d = ((X)k_panelSlideTarget - g_setupPanelPos) * g_frameTime * k_0_1f;
 	g_setupPanelPos = (float)((X)g_setupPanelPos + d);
-	if (!((X)g_setupTunnelDepth > (X)k_setupPanelEnd)) {
+	if (!((X)g_setupTunnelDepth > (X)k_panelSlideEnd)) {
 		g_setupPanelMoving = 0;
 		(*(u32 *)&g_setupTunnelDepth) = 0xc4ce4000;
 		return;

@@ -1637,7 +1637,7 @@ static int angle_byte(const void *v)
 
 /* 0x48e2c0 (thiscall on the game): player p's state sent (packet 0; the actor at players + p x 0x8888): its
    flags word (stateFlags), a byte of p and its mode (chatIcon: 0 with slot, 1, 2; bit 0 in play state), the position
-   (nextPos, x k_tenthsToDegrees, words), two angles (nextPitch, nextYaw) and two tilts (nextForward, nextStrafe), two nibbles (nextClimb,
+   (nextPos, x k_0_1f, words), two angles (nextPitch, nextYaw) and two tilts (nextForward, nextStrafe), two nibbles (nextClimb,
    nextRun), a third angle (nextLean); a pending hit (hitPending: cleared) as 0x80 alive / 0xc0 dead with the attacker
    (lastAttacker) and value (lastHitWeapon); then its five shot slots (shotBullets, nine bytes each): a slot whose shot (0x4e8 bytes
    from the stage's bullets) is gone is cleared (-1); else flags (1, 3 for a new one: shots[].isNew + slot x 0x20 cleared; 4 aimed
@@ -1658,14 +1658,14 @@ static void THISCALL __attribute__((used)) net_sendPlayerState_body(u8 *g, int p
 	if (pl->state == 1)
 		packet[4] |= 1;
 	for (int c = 0; c < 3; c++) {
-		w = (u16)scaled(&pl->nextPos[c], ADDR(k_tenthsToDegrees));
+		w = (u16)scaled(&pl->nextPos[c], ADDR(k_0_1f));
 		memcpy(packet + 5 + c * 2, &w, 2);
 	}
 	packet[0xb] = (u8)angle_byte(&pl->nextPitch);
 	packet[0xc] = (u8)angle_byte(&pl->nextYaw);
 	packet[0xd] = (u8)scaled(&pl->nextForward, ADDR(k_10f));
 	packet[0xe] = (u8)scaled(&pl->nextStrafe, ADDR(k_10f));
-	packet[0xf] = (u8)(scaled(&pl->nextClimb, ADDR(k_clockRate3)) << 4) | (u8)scaled(&pl->nextRun, ADDR(k_clockRate3));
+	packet[0xf] = (u8)(scaled(&pl->nextClimb, ADDR(k_15f)) << 4) | (u8)scaled(&pl->nextRun, ADDR(k_15f));
 	packet[0x10] = (u8)angle_byte(&pl->nextLean);
 	packet[0x11] = 0;
 	if (pl->hitPending == 1) {
@@ -1704,7 +1704,7 @@ static void THISCALL __attribute__((used)) net_sendPlayerState_body(u8 *g, int p
 			o[0] |= 8;
 		u8 *at = (u8 *)(ended && (*(void * *)&shot->hit) ? shot->impact : shot->pos);
 		for (int c = 0; c < 3; c++) {
-			w = (u16)scaled(at + c * 4, ADDR(k_tenthsToDegrees));
+			w = (u16)scaled(at + c * 4, ADDR(k_0_1f));
 			memcpy(o + 3 + c * 2, &w, 2);
 		}
 	}

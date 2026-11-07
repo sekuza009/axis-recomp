@@ -230,7 +230,7 @@ static int up_to(long double progress, int limit)
 /* the fading lines' alpha: 1 - frames x the frame time / 10, 0 once below */
 static float fading(void)
 {
-	long double a = frame_progress((const float *)ADDR(k_tenthsToDegrees));
+	long double a = frame_progress((const float *)ADDR(k_0_1f));
 	return a > k_1f ? 0.0f : f32(fsubr_m(a, (const float *)ADDR(k_1f)));   /* 1 - a */
 }
 

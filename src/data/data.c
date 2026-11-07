@@ -95,7 +95,7 @@ u8 g_arenaCorporation_v[4] __attribute__((aligned(16)));   /* 0x4db580 */
 u8 g_arenaCustomize_v[4] __attribute__((aligned(16)));   /* 0x4db584 */
 int g_playerSetupRects_v[24] __attribute__((aligned(16)));   /* 0x4db588 */
 int g_createArenaRects_v[64] __attribute__((aligned(16)));   /* 0x4db5e8 */
-int g_createArena2Rects_v[8] __attribute__((aligned(16)));   /* 0x4db6e8 */
+int g_hostErrorBoxRects_v[8] __attribute__((aligned(16)));   /* 0x4db6e8 */
 u8 g_sessionFound_v[4] __attribute__((aligned(16)));   /* 0x4db708 */
 u8 g_typingArenaJoinPassword_v[4] __attribute__((aligned(16)));   /* 0x4db70c */
 u8 g_arenaJoinRow_v[4] __attribute__((aligned(16)));   /* 0x4db710 */
@@ -151,7 +151,7 @@ u8 g_playerSetupTop_v[4] __attribute__((aligned(16)));   /* 0x4dbb6c */
 u8 g_playerSetupRight_v[4] __attribute__((aligned(16)));   /* 0x4dbb70 */
 u8 g_playerSetupBottom_v[4] __attribute__((aligned(16)));   /* 0x4dbb74 */
 u8 g_joinTimedOut_v[4] __attribute__((aligned(16)));   /* 0x4dbb78 */
-int g_arenaCreateRects_v[8] __attribute__((aligned(16)));   /* 0x4dbb80 */
+int g_arenaUpdateNoticeRects_v[8] __attribute__((aligned(16)));   /* 0x4dbb80 */
 u8 g_unusedArenaFloat_v[4] __attribute__((aligned(16)));   /* 0x4dbba0 */
 char g_rotationOnOff_v[40] __attribute__((aligned(16)));   /* 0x4dbba4 */
 u8 g_typingArenaPlayerName_v[4] __attribute__((aligned(16)));   /* 0x4dbbd0 */
@@ -523,9 +523,9 @@ u8 g_dikLShift_v[4] __attribute__((aligned(16)));   /* 0x67ef24 */
 u8 g_dikApps_v[4] __attribute__((aligned(16)));   /* 0x67ef28 */
 u8 g_dikEnter_2_v[4] __attribute__((aligned(16)));   /* 0x67ef2c */
 u8 g_gameCount_v[4] __attribute__((aligned(16)));   /* 0x67ef30 */
-u8 g_highlightX_v[4] __attribute__((aligned(16)));   /* 0x67ef34 */
+u8 g_pointerGlideX_v[4] __attribute__((aligned(16)));   /* 0x67ef34 */
 char g_chatHistory_v[3072] __attribute__((aligned(16)));   /* 0x67ef38 */
-u8 g_highlightY_v[4] __attribute__((aligned(16)));   /* 0x67fb38 */
+u8 g_pointerGlideY_v[4] __attribute__((aligned(16)));   /* 0x67fb38 */
 u8 g_menuTunnel_v[4] __attribute__((aligned(16)));   /* 0x67fb3c */
 u8 g_dikPrintScreen_v[4] __attribute__((aligned(16)));   /* 0x67fb40 */
 char g_gameTitle_v[32] __attribute__((aligned(16)));   /* 0x67fb44 */
@@ -700,7 +700,7 @@ u8 g_roomMechKept_v[11] __attribute__((aligned(16)));   /* 0x9dd260 */
 float g_roomColoursKept_v[36] __attribute__((aligned(16)));   /* 0x9dd26b */
 u8 g_rankingPrevSort_v[4] __attribute__((aligned(16)));   /* 0x9dd300 */
 u8 g_editingEmail_v[4] __attribute__((aligned(16)));   /* 0x9dd304 */
-int g_gameListStopRects_v[4] __attribute__((aligned(16)));   /* 0x9dd308 */
+int g_gameListJoinBoxRects_v[4] __attribute__((aligned(16)));   /* 0x9dd308 */
 u8 g_rankingPrevRank_v[4] __attribute__((aligned(16)));   /* 0x9dd328 */
 u8 g_unusedLoginWord_v[4] __attribute__((aligned(16)));   /* 0x9dd32c */
 u8 g_gameListLoaded_v[4] __attribute__((aligned(16)));   /* 0x9dd330 */
@@ -1265,7 +1265,7 @@ const DataPiece g_splitObjects[] = {
 	{ 0x4db584, g_arenaCustomize_v, 4 },
 	{ 0x4db588, g_playerSetupRects_v, 96 },
 	{ 0x4db5e8, g_createArenaRects_v, 256 },
-	{ 0x4db6e8, g_createArena2Rects_v, 32 },
+	{ 0x4db6e8, g_hostErrorBoxRects_v, 32 },
 	{ 0x4db708, g_sessionFound_v, 4 },
 	{ 0x4db70c, g_typingArenaJoinPassword_v, 4 },
 	{ 0x4db710, g_arenaJoinRow_v, 4 },
@@ -1321,7 +1321,7 @@ const DataPiece g_splitObjects[] = {
 	{ 0x4dbb70, g_playerSetupRight_v, 4 },
 	{ 0x4dbb74, g_playerSetupBottom_v, 4 },
 	{ 0x4dbb78, g_joinTimedOut_v, 4 },
-	{ 0x4dbb80, g_arenaCreateRects_v, 32 },
+	{ 0x4dbb80, g_arenaUpdateNoticeRects_v, 32 },
 	{ 0x4dbba0, g_unusedArenaFloat_v, 4 },
 	{ 0x4dbba4, g_rotationOnOff_v, 40 },
 	{ 0x4dbbd0, g_typingArenaPlayerName_v, 4 },
@@ -1693,9 +1693,9 @@ const DataPiece g_splitObjects[] = {
 	{ 0x67ef28, g_dikApps_v, 4 },
 	{ 0x67ef2c, g_dikEnter_2_v, 4 },
 	{ 0x67ef30, g_gameCount_v, 4 },
-	{ 0x67ef34, g_highlightX_v, 4 },
+	{ 0x67ef34, g_pointerGlideX_v, 4 },
 	{ 0x67ef38, g_chatHistory_v, 3072 },
-	{ 0x67fb38, g_highlightY_v, 4 },
+	{ 0x67fb38, g_pointerGlideY_v, 4 },
 	{ 0x67fb3c, g_menuTunnel_v, 4 },
 	{ 0x67fb40, g_dikPrintScreen_v, 4 },
 	{ 0x67fb44, g_gameTitle_v, 32 },
@@ -1870,7 +1870,7 @@ const DataPiece g_splitObjects[] = {
 	{ 0x9dd26b, g_roomColoursKept_v, 144 },
 	{ 0x9dd300, g_rankingPrevSort_v, 4 },
 	{ 0x9dd304, g_editingEmail_v, 4 },
-	{ 0x9dd308, g_gameListStopRects_v, 16 },
+	{ 0x9dd308, g_gameListJoinBoxRects_v, 16 },
 	{ 0x9dd328, g_rankingPrevRank_v, 4 },
 	{ 0x9dd32c, g_unusedLoginWord_v, 4 },
 	{ 0x9dd330, g_gameListLoaded_v, 4 },

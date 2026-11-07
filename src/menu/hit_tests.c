@@ -19,7 +19,7 @@ int (mapList_hitTest)(int x, int y) { return hit(x, y, g_mapListRects, 26); }   
 int (playerSetup_hitTest)(int x, int y) { return hit(x, y, g_playerSetupRects, 6); }   /* 0x404460 */
 int (arenaGameList_hitTest)(int x, int y) { return hit(x, y, g_arenaGameListRects, 18); }   /* 0x4044a0 */
 int (arenaDialogBox_hitTest)(int x, int y) { return hit(x, y, g_arenaDialogBoxRects, 1); }   /* 0x4044e0 */
-int (arenaUpdateNotice_hitTest)(int x, int y) { return hit(x, y, g_arenaCreateRects, 2); }   /* 0x4045a0 */
+int (arenaUpdateNotice_hitTest)(int x, int y) { return hit(x, y, g_arenaUpdateNoticeRects, 2); }   /* 0x4045a0 */
 int (armcPartsPage_hitTest)(int x, int y) { return hit(x, y, g_armcPartsPageRects, 17); }   /* 0x40e450 */
 int (armcWeaponsPage_hitTest)(int x, int y) { return hit(x, y, g_armcWeaponsPageRects, 15); }   /* 0x40e490 */
 int (armcColour_hitTest)(int x, int y) { return hit(x, y, g_armcColourRects, 18); }   /* 0x40e4d0 */
@@ -33,7 +33,7 @@ int (newIdForm_hitTest)(int x, int y) { return hit(x, y, g_newIdFormRects, 7); }
 int (newIdConfirm_hitTest)(int x, int y) { return hit(x, y, g_newIdConfirmRects, 2); }   /* 0x432280 */
 int (account_hitTest)(int x, int y) { return hit(x, y, g_accountRects, 6); }   /* 0x4322c0 */
 int (gameList_hitTest)(int x, int y) { return hit(x, y, g_gameListRects, 15); }   /* 0x432300 */
-int (gameListJoinBox_hitTest)(int x, int y) { return hit(x, y, g_gameListStopRects, 1); }   /* 0x432340 */
+int (gameListJoinBox_hitTest)(int x, int y) { return hit(x, y, g_gameListJoinBoxRects, 1); }   /* 0x432340 */
 int (roomSettings_hitTest)(int x, int y) { return hit(x, y, g_roomSettingsRects, 14); }   /* 0x432380 */
 int (ranking_hitTest)(int x, int y) { return hit(x, y, g_rankingRects, 9); }   /* 0x4323c0 */
 int (replaySelect_hitTest)(int x, int y) { return hit(x, y, g_replaySelectRects, 18); }   /* 0x440b70 */
@@ -51,7 +51,7 @@ int (pilotSelect_hitTest)(int x, int y) { return hit(x, y, g_pilotSelectRects, 1
 int (createArena_hitTest)(int x, int y)
 {
 	if (g_hostErrorBox != 0) {
-		int i = hit(x, y, g_createArena2Rects, 2);
+		int i = hit(x, y, g_hostErrorBoxRects, 2);
 		return i < 0 ? -1 : i + 16;
 	}
 	return hit(x, y, g_createArenaRects, 16);

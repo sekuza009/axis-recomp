@@ -831,12 +831,12 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 	/* the matrices: the body at the actor, turned and leant, the head on its neck, the arms */
 	glPushMatrix();
 	glTranslatef_bits(BITS(AC->pos[0]), BITS(AC->pos[1]), BITS(AC->pos[2]));
-	glRotatef(f32(FMUL(AC->yaw, k_tenthsToDegrees)), 0, 1, 0);
-	glRotatef(f32(FMUL(AC->lean, k_tenthsToDegrees)), 1, 0, 0);
+	glRotatef(f32(FMUL(AC->yaw, k_0_1f)), 0, 1, 0);
+	glRotatef(f32(FMUL(AC->lean, k_0_1f)), 1, 0, 0);
 	glGetFloatv(0xba6, AC->bodyMatrix);
 	ObjectList_poseBones((u8 *)&AC->chestModel, AC->bodyMatrix);
 	glLoadMatrixf((const float *)(uintptr_t)((u32)AC->chestModel.entries + chest->legsJoint[AC->lowDetail] * 100 + 0xc));
-	glRotatef(f32(FMUL(AC->pose[2], k_tenthsToDegrees)), 0, 1, 0);
+	glRotatef(f32(FMUL(AC->pose[2], k_0_1f)), 0, 1, 0);
 	ObjectList_poseBones((u8 *)&AC->legsModel, 0);
 	glLoadMatrixf(part_matrix((u8 *)&AC->chestModel.entries, chest->armsJoint, AC->lowDetail));
 	ObjectList_poseBones((u8 *)&AC->armsModel, 0);
@@ -846,7 +846,7 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 	ObjectList_poseBones((u8 *)&AC->headModel, 0);
 	glLoadMatrixf(part_matrix((u8 *)&AC->chestModel.entries, chest->boosterJoint, AC->lowDetail));
 	glRotatef(f32(fmul_m(fld_m(&AC->pose[0]), k_0_05f)), 0, 0, 1);
-	glRotatef(f32(FMUL(AC->pose[1], k_tenthsToDegrees)), 1, 0, 0);
+	glRotatef(f32(FMUL(AC->pose[1], k_0_1f)), 1, 0, 0);
 	ObjectList_poseBones((u8 *)&AC->boosterModel, 0);
 	memcpy(grip, &g_vecZero, 12);   /* where the weapon is held, for the local player's view */
 	glLoadMatrixf(part_matrix((u8 *)&AC->armsModel.entries, arms->weaponJoints[0], AC->lowDetail));
@@ -1266,9 +1266,9 @@ timers:
 		AC->stateFlags = f;
 	}
 	static const u16 parts[7] = { offsetof(Player, headModel), offsetof(Player, chestModel), offsetof(Player, armsModel), offsetof(Player, legsModel), offsetof(Player, boosterModel), offsetof(Player, weaponModel4), offsetof(Player, weaponModel5) };
-	if (AC->breakUp < 7) {   /* the parts' break-up, one a frame */
-		if (AC->breakUp >= 0)
-			ObjectList_bindTextures(a + parts[AC->breakUp]);
-		AC->breakUp++;
+	if (AC->partListsBound < 7) {   /* the parts' break-up, one a frame */
+		if (AC->partListsBound >= 0)
+			ObjectList_bindTextures(a + parts[AC->partListsBound]);
+		AC->partListsBound++;
 	}
 }

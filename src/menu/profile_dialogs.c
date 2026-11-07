@@ -29,8 +29,8 @@ static void ask(int kind, int x, int y)
 	g_dialogFocus = 0;
 	g_pointerGlideTime = 20.0f;
 	g_unusedHighlightAlpha = 0.2f;
-	g_highlightX = x + 0x9c;   /* the pointer glides to its left button */
-	g_highlightY = y + 0x4a;
+	g_pointerGlideX = x + 0x9c;   /* the pointer glides to its left button */
+	g_pointerGlideY = y + 0x4a;
 }
 
 /* 0x44b670, 0x44b6e0: question 3 over the pilot panel, question 5 (log out) over its own panel */
@@ -300,7 +300,7 @@ static void stat_bars(int x, int y, int step, const float *scale, float grey)
 	for (int k = 0; k < 9; k++) {
 		glBegin(GL_QUADS);
 		glColor4f(grey, grey, grey, 1.0f);
-		long double eased = fadd_m(fmul_m(fmul_m(FSUB(target[k], bar[k]), frame), (const float *)ADDR(k_tenthsToDegrees)), &bar[k]);
+		long double eased = fadd_m(fmul_m(fmul_m(FSUB(target[k], bar[k]), frame), (const float *)ADDR(k_0_1f)), &bar[k]);
 		bar[k] = f32(eased);
 		long double end = fadd_m(fmul_m(eased, (const float *)ADDR(k_0_01f)), k_0_05f);
 		float s = f32(end);
@@ -388,7 +388,7 @@ void (profile_drawPilotSelect)(void)
 	glEnable(GL_TEXTURE_2D);
 	texture = g_fontAsciiLarge;
 	tex_bind(g_textures->banks[texture / 512], texture % 512);
-	glColor4f(1.0f, 1.0f, 1.0f, f32(fsubr_m(FMUL(g_profileFrameAlpha, k_clockRate), &k_1f)));
+	glColor4f(1.0f, 1.0f, 1.0f, f32(fsubr_m(FMUL(g_profileFrameAlpha, k_0_025f), &k_1f)));
 	glBegin(GL_QUADS);
 	glTexCoord2f(0.0f, 0.5f);
 	y0 = ftol(fsub_m(fadd_m((long double)(Y0 + 0x4c), &y), &k_5f));

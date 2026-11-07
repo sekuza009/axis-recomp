@@ -1,0 +1,112 @@
+== g1 recheck of NEWLY_RUN (111): OK 107, RENAME 1, COMMENT 3 (applied), PARAMS 0, UNSURE 0
+account_clicks | OK | code matches the run (screen 800 Ladder forms / Ladder match); run: s800 5028x, room_clicksByState x5028
+account_drawPanel | OK | code matches the run (screen 800 Ladder forms / Ladder match); run: s800 5584x, account_page x5584
+account_editEmail | OK | opened by Tab stepping from account_page (g_fieldStep) - consistent; run: s800 1x, account_page x1
+account_editOldPassword | OK | code matches the run (screen 800 Ladder forms / Ladder match); run: s800 1x, account_clicks x1
+account_editPassword | OK | Tab stepping from account_page; run: s800 1x, account_page x1
+account_editPasswordRepeat | OK | Tab stepping from account_page; run: s800 1x, account_page x1
+account_hasBadChar | OK | code matches the run (screen 800 Ladder forms / Ladder match); run: s800 6x, newIdForm_check x6
+account_hitTest | OK | code matches the run (screen 800 Ladder forms / Ladder match); run: s800 5587x, account_drawPanel x5584, account_clicks x3
+account_keys | OK | code matches the run (screen 800 Ladder forms / Ladder match); run: s800 2322x, room_keysByState x2322
+account_layout | OK | code matches the run (screen 800 Ladder forms / Ladder match); run: s800 2x, menuState800_enterGameRoom x2
+account_page | OK | code matches the run (screen 800 Ladder forms / Ladder match); run: s800 5900x, menuState800_gameRoom x5900
+account_sendChange | OK | code matches the run (screen 800 Ladder forms / Ladder match); run: s800 1x, account_clicks x1
+account_takeRank | OK | code matches the run (screen 800 Ladder forms / Ladder match); run: s800 1x, account_page x1
+answer_reply | OK | code matches the run (screen 800 Ladder forms / Ladder match); run: s800 2x, net_recv x2
+call_keeping_ebp | OK | code matches the run (screen 800 Ladder forms / Ladder match); run: s800 5600x, menuState800_gameRoom x5600
+clear_unused | OK | inlined in room_settingsClicks via mapList_startEdit (ADVANCED button); run: s800 1x, room_settingsClicks x1
+default_mech | OK | code matches the run (screen 800 Ladder forms / Ladder match); run: s800 6x, newId_register x6
+dialog_opened | OK | inlined in room_openNewIdForm / room_openNewIdConfirm (reported as their callers); run: s800 4x, roomLogin_clicks x2, newIdForm_check x2
+edit_account | OK | code matches the run (screen 800 Ladder forms / Ladder match); run: s800 4x, account_editOldPassword x1, account_editPassword x1, account_editPasswordRepeat x1, account_editEmail x1
+form_buttons | OK | code matches the run (screen 800 Ladder forms / Ladder match); run: s800 851x, room_keysByState x851
+gameListStop_layout | RENAME -> gameListJoinBox_layout | its one rect (0x104,0x118 .. 0x17c,0x138) is the CONNECTING box's CANCEL that gameListJoinBox_hitTest tests (renamed in the first pass from gameListStop_hitTest); the list's STOP is button 2 of gameList_layout. Global g_gameListStopRects should follow (globals pass); run: s800 2x, menuState800_enterGameRoom x2
+gameList_layout | OK | code matches the run (screen 800 Ladder forms / Ladder match); run: s800 2x, menuState800_enterGameRoom x2
+has_any | OK | code matches the run (screen 800 Ladder forms / Ladder match); run: s800 6x, newIdForm_check x6
+highlight_choice | OK | code matches the run (screen 800 Ladder forms / Ladder match); run: s800 2x, newIdForm_update x2
+hud_drawEmblem | OK | grade badge from the HUD atlas; run only in the Ladder match (roomF, m2, ranking_row): the grade exists only in Ladder play - consistent; run: m2 4932x, ranking_row x4932
+line_clear | OK | code matches the run (screen 800 Ladder forms / Ladder match); run: s800 14x, newIdForm_update x8, roomLogin_update x2, account_editOldPassword x1, account_editPassword x1, account_editPasswordRepeat x1, account_editEmail x1
+mapList_draw | OK | code matches the run (screen 800 Ladder forms / Ladder match); run: s800 1436x, roomSettings_page x1436
+mapList_hitTest | OK | code matches the run (screen 800 Ladder forms / Ladder match); run: s800 1437x, mapList_draw x1436, mapList_mouse x1
+mapList_keys | OK | code matches the run (screen 800 Ladder forms / Ladder match); run: s800 1436x, room_keysByState x1436
+mapList_mouse | OK | code matches the run (screen 800 Ladder forms / Ladder match); run: s800 1436x, room_clicksByState x1436
+mapList_startEdit | OK | code matches the run (screen 800 Ladder forms / Ladder match); run: s800 1x, room_settingsClicks x1
+map_buttons | OK | code matches the run (screen 800 Ladder forms / Ladder match); run: s800 2872x, mapList_draw x2872
+map_cell | OK | 28720 = 1436 map-list frames x 20 cells, inlined into roomSettings_page; run: s800 28720x, roomSettings_page x28720
+mech_unpackFromRecord | COMMENT | name right; comment said "network / profile record ... then the colours" -> fixed: the Ladder account's g_roomMech (five parts, six item slots; from the login reply or the new ID's defaults) plus g_roomColours into the saved mech; run agrees: room_setLadderDefaults after the new ID; run: s800 2x, room_setLadderDefaults x2
+menuState800_enterGameRoom | OK | code matches the run (screen 800 Ladder forms / Ladder match); run: s800 2x, menu_enterState x2
+menuState800_gameRoom | COMMENT | name right; comment called state 2 "the room" -> fixed to "the create-game page (CREATE LADDER GAME)" (roomSettings_page); run: s800 36612x, menu_frame x36612
+net_addPlayerRecord | OK | code matches the run (screen 800 Ladder forms / Ladder match); run: s800 52x, net_receivePlayerListReply x52
+net_clearPlayerList | OK | player list cleared before a request (net_send x6: the ranking page requests) - consistent; run: s800 6x, net_send x6
+net_receivePlayerListReply | OK | code matches the run (screen 800 Ladder forms / Ladder match); run: s800 58x, net_recv x58
+newIdConfirm_clicks | OK | code matches the run (screen 800 Ladder forms / Ladder match); run: s800 1773x, room_clicksByState x1773
+newIdConfirm_draw | OK | code matches the run (screen 800 Ladder forms / Ladder match); run: s800 1775x, menuState800_gameRoom x1775
+newIdConfirm_hitTest | OK | code matches the run (screen 800 Ladder forms / Ladder match); run: s800 1654x, newIdConfirm_draw x1652, newIdConfirm_clicks x2
+newIdConfirm_keys | OK | code matches the run (screen 800 Ladder forms / Ladder match); run: s800 1773x, room_keysByState x1773
+newIdConfirm_layout | OK | code matches the run (screen 800 Ladder forms / Ladder match); run: s800 2x, room_openNewIdConfirm x2
+newIdConfirm_update | OK | code matches the run (screen 800 Ladder forms / Ladder match); run: s800 1775x, menuState800_gameRoom x1775
+newIdForm_check | OK | code matches the run (screen 800 Ladder forms / Ladder match); run: s800 2x, newIdForm_keys x2
+newIdForm_clicks | OK | code matches the run (screen 800 Ladder forms / Ladder match); run: s800 4650x, room_clicksByState x4650
+newIdForm_draw | OK | code matches the run (screen 800 Ladder forms / Ladder match); run: s800 4650x, menuState800_gameRoom x4650
+newIdForm_endTyping | OK | code matches the run (screen 800 Ladder forms / Ladder match); run: s800 2x, newIdForm_check x2
+newIdForm_hitTest | OK | code matches the run (screen 800 Ladder forms / Ladder match); run: s800 4565x, newIdForm_draw x4565
+newIdForm_keys | OK | code matches the run (screen 800 Ladder forms / Ladder match); run: s800 851x, room_keysByState x851
+newIdForm_layout | OK | code matches the run (screen 800 Ladder forms / Ladder match); run: s800 2x, room_openNewIdForm x2
+newIdForm_openField | OK | code matches the run (screen 800 Ladder forms / Ladder match); run: s800 8x, newIdForm_update x8
+newIdForm_update | OK | code matches the run (screen 800 Ladder forms / Ladder match); run: s800 4650x, menuState800_gameRoom x4650
+newId_register | OK | code matches the run (screen 800 Ladder forms / Ladder match); run: s800 2x, newIdConfirm_update x2
+pilotRecord_syncCopies | OK | run m0 from match_enter x1 at the Ladder match start - consistent with "the pilot record's copies reconciled"; run: m0 1x, match_enter x1
+rank_badge | OK | code matches the run (screen 800 Ladder forms / Ladder match); run: s800 53532x, ranking_drawTable x47948, account_drawPanel x5584
+rank_value | OK | code matches the run (screen 800 Ladder forms / Ladder match); run: s800 98x, ranking_fillPage x98
+ranking_clicks | OK | code matches the run (screen 800 Ladder forms / Ladder match); run: s800 5915x, room_clicksByState x5915
+ranking_cycleSort | OK | the sort (OPTION) button 2, cycles 0..2; run: s800 3x, ranking_clicks x3
+ranking_drawTable | OK | code matches the run (screen 800 Ladder forms / Ladder match); run: s800 5600x, ranking_page x5600
+ranking_enter | OK | code matches the run (screen 800 Ladder forms / Ladder match); run: s800 1x, room_keys x1
+ranking_fillPage | OK | code matches the run (screen 800 Ladder forms / Ladder match); run: s800 6x, ranking_page x6
+ranking_hitTest | OK | code matches the run (screen 800 Ladder forms / Ladder match); run: s800 5606x, ranking_drawTable x5600, ranking_clicks x6
+ranking_keys | OK | code matches the run (screen 800 Ladder forms / Ladder match); run: s800 5915x, room_keysByState x5915
+ranking_layout | OK | code matches the run (screen 800 Ladder forms / Ladder match); run: s800 2x, menuState800_enterGameRoom x2
+ranking_nextPage | OK | code matches the run (screen 800 Ladder forms / Ladder match); run: s800 1x, ranking_clicks x1
+ranking_page | OK | code matches the run (screen 800 Ladder forms / Ladder match); run: s800 5916x, menuState800_gameRoom x5916
+ranking_prevPage | OK | code matches the run (screen 800 Ladder forms / Ladder match); run: s800 1x, ranking_clicks x1
+ranking_requestPage | OK | 5 = prev 1 + next 1 + cycleSort 3, inlined into ranking_clicks; run: s800 5x, ranking_clicks x5
+reg_writeLadderSettings | OK | code matches the run (screen 800 Ladder forms / Ladder match); run: s800 3x, newIdConfirm_update x2, settings_store x1
+roomLogin_clicks | OK | code matches the run (screen 800 Ladder forms / Ladder match); run: s800 2984x, room_clicksByState x2984
+roomLogin_draw | OK | code matches the run (screen 800 Ladder forms / Ladder match); run: s800 2982x, menuState800_gameRoom x2982
+roomLogin_editPassword | OK | code matches the run (screen 800 Ladder forms / Ladder match); run: s800 2x, roomLogin_update x2
+roomLogin_hitTest | OK | code matches the run (screen 800 Ladder forms / Ladder match); run: s800 2984x, roomLogin_draw x2982, roomLogin_clicks x2
+roomLogin_keys | OK | only 2 calls over 2982 login frames: menu_processKeys skips keys while a text field is open (the login opens the password field on entry) - consistent; run: s800 2x, room_keysByState x2
+roomLogin_layout | OK | code matches the run (screen 800 Ladder forms / Ladder match); run: s800 2x, menuState800_enterGameRoom x2
+roomLogin_update | OK | code matches the run (screen 800 Ladder forms / Ladder match); run: s800 2982x, menuState800_gameRoom x2982
+roomSettings_hitTest | OK | code matches the run (screen 800 Ladder forms / Ladder match); run: s800 10860x, room_drawGameSettings x10850, room_settingsClicks x10
+roomSettings_keys | OK | code matches the run (screen 800 Ladder forms / Ladder match); run: s800 9370x, room_keysByState x9370
+roomSettings_layout | OK | code matches the run (screen 800 Ladder forms / Ladder match); run: s800 2x, menuState800_enterGameRoom x2
+roomSettings_page | OK | code matches the run (screen 800 Ladder forms / Ladder match); run: s800 11484x, menuState800_gameRoom x11484
+room_announceGame | OK | code matches the run (screen 800 Ladder forms / Ladder match); run: s800 1x, roomSettings_keys x1
+room_camera | OK | code matches the run (screen 800 Ladder forms / Ladder match); run: s800 23300x, menuState800_gameRoom x23300
+room_clicksByState | OK | code matches the run (screen 800 Ladder forms / Ladder match); run: s800 35591x, menu_processMouse x35591
+room_copyAccountRecord | OK | code matches the run (screen 800 Ladder forms / Ladder match); run: s800 4x, menuState800_enterGameRoom x2, roomLogin_update x2
+room_drawGameSettings | OK | code matches the run (screen 800 Ladder forms / Ladder match); run: s800 10850x, roomSettings_page x10850
+room_drawMapPreview | OK | code matches the run (screen 800 Ladder forms / Ladder match); run: s800 10850x, room_drawGameSettings x10850
+room_drawMenu | OK | code matches the run (screen 800 Ladder forms / Ladder match); run: s800 3754x, menuState800_gameRoom x3754
+room_drawTunnel | OK | code matches the run (screen 800 Ladder forms / Ladder match); run: s800 23300x, roomSettings_page x11484, ranking_page x5916, account_page x5900
+room_drawWhiteFade | OK | code matches the run (screen 800 Ladder forms / Ladder match); run: m0,s800 153x, menuState800_gameRoom x153
+room_editGameName | OK | code matches the run (screen 800 Ladder forms / Ladder match); run: s800 1x, room_settingsClicks x1
+room_editPassword | OK | code matches the run (screen 800 Ladder forms / Ladder match); run: s800 1x, room_settingsClicks x1
+room_enterAccountPage | OK | code matches the run (screen 800 Ladder forms / Ladder match); run: s800 1x, room_keys x1
+room_enterCreatePage | OK | code matches the run (screen 800 Ladder forms / Ladder match); run: s800 2x, room_keys x2
+room_hostingStep | OK | 2 frames while the host answer was awaited, then the Ladder match started (roomF); run: s800 2x, roomSettings_page x2
+room_keepSettings | OK | code matches the run (screen 800 Ladder forms / Ladder match); run: s800 1x, room_announceGame x1
+room_keys | OK | code matches the run (screen 800 Ladder forms / Ladder match); run: s800 3450x, room_keysByState x3450
+room_keysByState | OK | code matches the run (screen 800 Ladder forms / Ladder match); run: s800 25428x, menu_processKeys x25428
+room_loadMapPreview | OK | code matches the run (screen 800 Ladder forms / Ladder match); run: s800 4x, map_preview_box x4
+room_loadSettingsRecord | OK | code matches the run (screen 800 Ladder forms / Ladder match); run: s800 2x, room_enterCreatePage x2
+room_openNewIdConfirm | OK | code matches the run (screen 800 Ladder forms / Ladder match); run: s800 2x, newIdForm_check x2
+room_openNewIdForm | OK | code matches the run (screen 800 Ladder forms / Ladder match); run: s800 2x, roomLogin_clicks x2
+room_pageClicks | OK | code matches the run (screen 800 Ladder forms / Ladder match); run: s800 3449x, room_clicksByState x3449
+room_setLadderDefaults | OK | code matches the run (screen 800 Ladder forms / Ladder match); run: s800 2x, newIdConfirm_update x2
+room_settingsClicks | COMMENT | name right; comment fixed: button 13 is ADVANCED (opens the map list; run: mapList_startEdit x1 from it) and the password field is room_editPassword (was a raw address); run: s800 10046x, room_clicksByState x10046
+room_slideMenu | OK | code matches the run (screen 800 Ladder forms / Ladder match); run: s800 3906x, menuState800_gameRoom x3906
+room_stepMap | OK | code matches the run (screen 800 Ladder forms / Ladder match); run: s800 2x, room_settingsClicks x2
+set_box | OK | inlined in the same dialog openers; run: s800 4x, roomLogin_clicks x2, newIdForm_check x2
+typing_end | OK | code matches the run (screen 800 Ladder forms / Ladder match); run: s800 2x, newIdForm_endTyping x2
+updateNotice_layout | OK | code matches the run (screen 800 Ladder forms / Ladder match); run: s800 2x, menuState800_enterGameRoom x2

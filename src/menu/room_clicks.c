@@ -598,9 +598,9 @@ u32 (ranking_clicks)(void)
 
 /* 0x436400: the game room's settings page clicked (no field being typed in, the room camera arrived (g_roomCameraMode 2), no message
    box; a right click closes the page). Buttons (roomSettings_hitTest): 0 / 1 type the room's name or password
-   (room_editGameName / 433a80), 3 the players +2 (4 .. 16, then 2), 5 the game type on (with a turn key held back) through
+   (room_editGameName / room_editPassword), 3 the players +2 (4 .. 16, then 2), 5 the game type on (with a turn key held back) through
    0 .. 9, 6 / 7 the frag and time limits +5 (up to 50 / 60, then 5), 8 start (room_announceGame; not while connecting),
-   9 close, 11 / 2, 10, 12 the map back / on (room_stepMap), 13 the map list (mapList_startEdit). Returns what the original
+   9 close, 11 / 2, 10, 12 the map back / on (room_stepMap), 13 ADVANCED: the map list (mapList_startEdit). Returns what the original
    leaves in eax (for the byte settings, its low byte the new value) */
 u32 (room_settingsClicks)(void)
 {
@@ -826,7 +826,7 @@ u32 (account_page)(void)
 }
 
 /* ---- the new-ID form's keys: its text fields (g_dialogFocus: 0 .. 2), the text cursor placed in the one typed
-   into (g_highlightX / g_highlightY) ---- */
+   into (g_pointerGlideX / g_pointerGlideY) ---- */
 #define g_loginField g_dialogFocus
 
 /* the cursor into field to at (x, y) */
@@ -836,8 +836,8 @@ static void login_field(int to, int x, int y)
 	g_pointerGliding = 1;
 	(*(u32 *)&g_pointerGlideTime) = 0x41a00000;   /* 20 */
 	(*(u32 *)&g_unusedHighlightAlpha) = 0x3ecccccd;   /* 0.4 */
-	g_highlightX = x;
-	g_highlightY = y;
+	g_pointerGlideX = x;
+	g_pointerGlideY = y;
 	g_fieldStep = 0;
 }
 

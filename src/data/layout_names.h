@@ -32,8 +32,6 @@ extern struct GameData g_data;
 #define g_arenaCameraMode (*(int *)g_arenaCameraMode_v)
 #undef g_arenaCorporation
 #define g_arenaCorporation (*(int *)g_arenaCorporation_v)
-#undef g_arenaCreateRects
-#define g_arenaCreateRects ((int *)g_arenaCreateRects_v)
 #undef g_arenaCustomize
 #define g_arenaCustomize (*(int *)g_arenaCustomize_v)
 #undef g_arenaDialogBoxRects
@@ -144,6 +142,8 @@ extern struct GameData g_data;
 #define g_arenaTunnelDepth (*(float *)g_arenaTunnelDepth_v)
 #undef g_arenaUpdateNotice
 #define g_arenaUpdateNotice (*(int *)g_arenaUpdateNotice_v)
+#undef g_arenaUpdateNoticeRects
+#define g_arenaUpdateNoticeRects ((int *)g_arenaUpdateNoticeRects_v)
 #undef g_argCount
 #define g_argCount (*(int *)g_argCount_v)
 #undef g_armCount
@@ -410,8 +410,6 @@ extern struct GameData g_data;
 #define g_convertHangul (*(int *)g_convertHangul_v)
 #undef g_cosTable
 #define g_cosTable ((float *)g_cosTable_v)
-#undef g_createArena2Rects
-#define g_createArena2Rects ((int *)g_createArena2Rects_v)
 #undef g_createArenaRects
 #define g_createArenaRects ((int *)g_createArenaRects_v)
 #undef g_crosshairEdit
@@ -898,6 +896,8 @@ extern struct GameData g_data;
 #define g_gameListClickArmed (*(int *)g_gameListClickArmed_v)
 #undef g_gameListClickTimer
 #define g_gameListClickTimer (*(float *)g_gameListClickTimer_v)
+#undef g_gameListJoinBoxRects
+#define g_gameListJoinBoxRects ((int *)g_gameListJoinBoxRects_v)
 #undef g_gameListLoaded
 #define g_gameListLoaded (*(int *)g_gameListLoaded_v)
 #undef g_gameListRects
@@ -906,8 +906,6 @@ extern struct GameData g_data;
 #define g_gameListRefreshClicked (*(int *)g_gameListRefreshClicked_v)
 #undef g_gameListRow
 #define g_gameListRow (*(int *)g_gameListRow_v)
-#undef g_gameListStopRects
-#define g_gameListStopRects ((int *)g_gameListStopRects_v)
 #undef g_gameListTop
 #define g_gameListTop (*(int *)g_gameListTop_v)
 #undef g_gameRunning
@@ -1044,16 +1042,14 @@ extern struct GameData g_data;
 #define g_headTargetKeepTime (*(float *)g_headTargetKeepTime_v)
 #undef g_headWeight
 #define g_headWeight (*(float *)g_headWeight_v)
-#undef g_highlightX
-#define g_highlightX (*(int *)g_highlightX_v)
-#undef g_highlightY
-#define g_highlightY (*(int *)g_highlightY_v)
 #undef g_hostAddressBlock
 #define g_hostAddressBlock (*(void * *)g_hostAddressBlock_v)
 #undef g_hostAnswer
 #define g_hostAnswer (*(int *)g_hostAnswer_v)
 #undef g_hostErrorBox
 #define g_hostErrorBox (*(int *)g_hostErrorBox_v)
+#undef g_hostErrorBoxRects
+#define g_hostErrorBoxRects ((int *)g_hostErrorBoxRects_v)
 #undef g_hostGoneMessageFlag
 #define g_hostGoneMessageFlag (*(int *)((u8 *)g_hostLeavingMsg_v + 0x4))
 #undef g_hostLeavingMsg
@@ -1956,6 +1952,10 @@ extern struct GameData g_data;
 #define g_playerSlotFlags ((int *)g_playerSlotFlags_v)
 #undef g_pointerGlideTime
 #define g_pointerGlideTime (*(float *)g_pointerGlideTime_v)
+#undef g_pointerGlideX
+#define g_pointerGlideX (*(int *)g_pointerGlideX_v)
+#undef g_pointerGlideY
+#define g_pointerGlideY (*(int *)g_pointerGlideY_v)
 #undef g_pointerGliding
 #define g_pointerGliding (*(int *)g_pointerGliding_v)
 #undef g_primarySoundBuffer
@@ -2888,12 +2888,16 @@ extern struct GameData g_data;
 #define k_0_0078125f (g_rdata.k_0_0078125f_)
 #undef k_0_01f
 #define k_0_01f (g_rdata.k_0_01f_)
+#undef k_0_025f
+#define k_0_025f (g_rdata.k_0_025f_)
 #undef k_0_03f
 #define k_0_03f (g_rdata.k_0_03f_)
 #undef k_0_06666667f
 #define k_0_06666667f (g_rdata.k_0_06666667f_)
 #undef k_0_07f
 #define k_0_07f (g_rdata.k_0_07f_)
+#undef k_0_1f
+#define k_0_1f (g_rdata.k_0_1f_)
 #undef k_0_25f
 #define k_0_25f (g_rdata.k_0_25f_)
 #undef k_0_28125f
@@ -3022,8 +3026,6 @@ extern struct GameData g_data;
 #define k_armcDistanceRoom (g_rdata.k_armcDistanceRoom_)
 #undef k_cameraSnapDistance
 #define k_cameraSnapDistance (g_rdata.k_cameraSnapDistance_)
-#undef k_clockRate
-#define k_clockRate (g_rdata.k_clockRate_)
 #undef k_m0_001f
 #define k_m0_001f (g_rdata.k_m0_001f_)
 #undef k_m0_002f
@@ -3058,23 +3060,21 @@ extern struct GameData g_data;
 #define k_m549f (g_rdata.k_m549f_)
 #undef k_m890f
 #define k_m890f (g_rdata.k_m890f_)
+#undef k_panelSlideTarget
+#define k_panelSlideTarget (g_rdata.k_panelSlideTarget_)
 #undef k_pi
 #define k_pi (g_rdata.k_pi_)
-#undef k_setupPanelTarget
-#define k_setupPanelTarget (g_rdata.k_setupPanelTarget_)
 #undef k_tenth
 #define k_tenth (g_rdata.k_tenth_)
-#undef k_tenthsToDegrees
-#define k_tenthsToDegrees (g_rdata.k_tenthsToDegrees_)
 /* names that are no member of their own type: at IMG()'s place */
-#undef k_setupPanelEnd
-#define k_setupPanelEnd (*(double *)IMG(0x4a9440))
+#undef k_panelSlideEnd
+#define k_panelSlideEnd (*(double *)IMG(0x4a9440))
 #undef k_degToRad
 #define k_degToRad (*(double *)IMG(0x4aa290))
 #undef k_tenthDegreeRad
 #define k_tenthDegreeRad (*(double *)IMG(0x4aa298))
-#undef k_clockRate3
-#define k_clockRate3 (*(float *)IMG(0x4aa498))
+#undef k_15f
+#define k_15f (*(float *)IMG(0x4aa498))
 #undef k_oneOver180
 #define k_oneOver180 (*(double *)IMG(0x4a9540))
 #undef k_3600f

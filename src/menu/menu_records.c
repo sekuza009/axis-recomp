@@ -106,8 +106,8 @@ void (mech_setEmpty)(void)
 		memcpy((void *)RELOC(p), colour, 24);
 }
 
-/* 0x40ddb0: the mech unpacked from the network / profile record at g_roomMech (signed bytes: five parts, the weapons,
-   then the colours) */
+/* 0x40ddb0: the Ladder account's mech (g_roomMech: signed bytes, five parts, then the six item slots; from the login
+   reply or the new ID's defaults) and its colours (g_roomColours) unpacked into the saved mech */
 void (mech_unpackFromRecord)(void)
 {
 	const signed char *rec = (const signed char *)OBJ(g_roomMech);

@@ -714,10 +714,10 @@ g_ladderId
 g_mapListRects
 g_playerSetupRects
 g_createArenaRects
-g_createArena2Rects
+g_hostErrorBoxRects
 g_arenaGameListRects
 g_arenaDialogBoxRects
-g_arenaCreateRects
+g_arenaUpdateNoticeRects
 g_armcWeaponsPageRects
 g_armcPartsPageRects
 g_armcColourRects
@@ -727,7 +727,7 @@ g_setupGraphicRects
 g_setupControlRects
 g_gameListRects
 g_newIdFormRects
-g_gameListStopRects
+g_gameListJoinBoxRects
 g_updateNoticeRects
 g_newIdConfirmRects
 g_accountRects
@@ -842,8 +842,8 @@ g_glWindowMade
 g_hEditField
 g_glWindowDc
 g_unusedHighlightAlpha
-g_highlightX
-g_highlightY
+g_pointerGlideX
+g_pointerGlideY
 g_keyboardReady
 g_language
 g_timerLastCount

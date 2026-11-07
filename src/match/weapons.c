@@ -123,7 +123,7 @@ void THISCALL (actor_takeDamage)(u8 *scene, int attacker, int target, int mode, 
 			ac->armor = 0;
 		if (ac->shield < 0)
 			ac->shield = 0;
-		ac->lastHitMode = mode;
+		ac->lastHitDamageType = mode;
 		ac->lastAttacker = attacker;
 		ac->lastHitWeapon = weapon;
 		ac->hitPending = 1;
@@ -666,7 +666,7 @@ static void home(u8 *s, u8 *b, const u8 *w)
 		BITS(rate) = BITS(WI->guidance);
 	} else {
 		long double x = fsub_m(FMUL(BU->age, k_4f), &k_1f);   /* 4 age - 1 */
-		spd = f32(fmul_m(fadd_m(((x * x) * x) * x, &k_tenthsToDegrees), &WI->velocity));
+		spd = f32(fmul_m(fadd_m(((x * x) * x) * x, &k_0_1f), &WI->velocity));
 		long double y = FADD(BU->age, k_1f);
 		rate = f32(fdivr_m((y * y) * y, &WI->guidance));
 	}

@@ -339,7 +339,7 @@ void (tunnelRing_build)(u8 *o, int index)
 			BITS(f->corners[i / 3][i % 3]) = corner[i] > 0 ? 0x42480000 : corner[i] < 0 ? 0xc2480000 : 0;
 		BITS(f->pos[0]) = BITS(f->pos[1]) = 0;
 		BITS(f->spin) = 0;
-		f->pos[2] = (float)(y - ((X)k_1f - (X)j * k_tenthsToDegrees));
+		f->pos[2] = (float)(y - ((X)k_1f - (X)j * k_0_1f));
 		BITS(f->spinSpeed) = speed[j];
 	}
 	tr->alpha = 1.0f;

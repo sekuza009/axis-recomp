@@ -180,7 +180,7 @@ void (menuState800_enterGameRoom)(void)
 	roomLogin_layout();
 	account_layout();
 	gameList_layout();
-	gameListStop_layout();
+	gameListJoinBox_layout();
 	roomSettings_layout();
 	ranking_layout();
 	updateNotice_layout();

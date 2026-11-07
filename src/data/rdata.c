@@ -260,7 +260,7 @@ struct GameRdata g_rdata __attribute__((aligned(4096))) = {
 	.k_cameraSnapDistance_ = 0.1,
 	.k_69_9_ = 69.9,
 	.k_0f_ = 0x00000000,
-	.k_tenthsToDegrees_ = 0.1f,
+	.k_0_1f_ = 0.1f,
 	.k_200f_ = 200.0f,
 	.k_100f_ = 100.0f,
 	.k_38f_ = 38.0f,
@@ -272,7 +272,7 @@ struct GameRdata g_rdata __attribute__((aligned(4096))) = {
 	.k_0_25f_ = 0.25f,
 	.k_0_01f_ = 0.01f,
 	.k_1f_ = 1.0f,
-	.k_clockRate_ = 0.025f,
+	.k_0_025f_ = 0.025f,
 	.k_0_5f_ = {
 		0.5f, 0.003f, 0.0667f,
 	},
@@ -282,11 +282,11 @@ struct GameRdata g_rdata __attribute__((aligned(4096))) = {
 	.d_4a943c = {
 		0.015f,
 	},
-	.k_setupPanelEnd_ = 0xa0000000,
+	.k_panelSlideEnd_ = 0xa0000000,
 	.d_4a9444 = {
 		-4.805615f,
 	},
-	.k_setupPanelTarget_ = 250.0f,
+	.k_panelSlideTarget_ = 250.0f,
 	.k_20f_ = 20.0f,
 	.k_500f_ = 500.0f,
 	.k_armcDistance_ = 0xc3e10000,
@@ -650,7 +650,7 @@ struct GameRdata g_rdata __attribute__((aligned(4096))) = {
 	.k_14_11765f_ = 0x4161e1e2,
 	.k_0_06666667f_ = 0.06666667f,
 	.k_14_0625f_ = 14.0625f,
-	.k_clockRate3_ = {
+	.k_15f_ = {
 		15.0f, 0.07111111f,
 	},
 	.k_m0_001f_ = -0.001f,

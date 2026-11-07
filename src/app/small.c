@@ -177,7 +177,7 @@ u32 (tunnel_restart)(void) { g_tunnelRings = 0; return tunnel_appendRing((void *
 void (text_setColor)(u32 r, u32 g, u32 b, u32 a) { set_colour_bits(g_textColour, r, g, b, a); }
 /* 0x404120, 0x431db0, 0x44b080: a dialog's box rectangle */
 void (arenaDialogBox_layout)(void) { rect_set(0x104, 0x118, 0x17c, 0x138, g_arenaDialogBoxRects); }
-void (gameListStop_layout)(void) { rect_set(0x104, 0x118, 0x17c, 0x138, g_gameListStopRects); }
+void (gameListJoinBox_layout)(void) { rect_set(0x104, 0x118, 0x17c, 0x138, g_gameListJoinBoxRects); }
 void (profileDialogBox_layout)(void) { rect_set(0x1d7, 0xf6, 0x226, 0x114, g_profileMessageClickBox); }
 /* 0x45dfb0: the cockpit actor (cockpitActor: the one the camera sits in) set to i when actor i is in play (state 1).
    A negative i is stored as it is (callers pass -1: none) */
@@ -203,8 +203,8 @@ void THISCALL (tex_clearSetCounters)(TextureManager *self)
 	for (int k = 1; k <= 6; k++) {
 		TextureBank *o = (TextureBank *)self->banks[k - 1];
 		o->loadCount = 0;
-		o->counterB = 0;
-		o->counterC = 0;
+		o->clearedCd13c = 0;
+		o->clearedCd140 = 0;
 	}
 }
 /* 0x473470: player record p's flag image (flag, 16 x 24 pixels) filled with g_defaultColour, and its state reset:
@@ -459,15 +459,15 @@ void THISCALL (player_setTeam)(Stage *stage, int p, int team)
 }
 
 /* 0x496e40: unless a script holds play (scriptMode with scriptHoldsPlay 1), the sky layers' texture scroll
-   (layerScroll u, v) advanced by dt x k_clockRate, wrapping at 1 and counting the turns (layerTurns). With floorMode
-   2 (the animated floor), its clock (floorClock) is advanced by dt x k_clockRate3, stepping floorFrame 0 .. 15 at
+   (layerScroll u, v) advanced by dt x k_0_025f, wrapping at 1 and counting the turns (layerTurns). With floorMode
+   2 (the animated floor), its clock (floorClock) is advanced by dt x k_15f, stepping floorFrame 0 .. 15 at
    each 1 */
 void THISCALL (stage_advanceClocks)(Stage *stage, float dt)
 {
 	typedef long double X;
 	if (stage->scriptMode && stage->scriptHoldsPlay == 1)
 		return;
-	X d = (X)dt * k_clockRate, one = k_1f;
+	X d = (X)dt * k_0_025f, one = k_1f;
 	for (int k = 0; k < 2; k++) {
 		X a = d + stage->layerScroll[k];
 		stage->layerScroll[k] = (float)a;
@@ -478,7 +478,7 @@ void THISCALL (stage_advanceClocks)(Stage *stage, float dt)
 	}
 	if (stage->floorMode != 2)
 		return;
-	X e = (X)dt * k_clockRate3 + stage->floorClock;
+	X e = (X)dt * k_15f + stage->floorClock;
 	stage->floorClock = (float)e;
 	if (e >= one) {
 		stage->floorFrame = (stage->floorFrame + 1) % 16;

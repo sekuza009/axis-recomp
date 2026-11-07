@@ -418,7 +418,7 @@ void THISCALL (stage_build)(u8 *s, u32 stageDir, u32 mapDir, const char *texture
 		st->itemTextures[k] = tex_getIdByName((*(void **)&g_textures), name, 0, 0, 0, 0, 0, 0, 0);
 	}
 	for (int k = 0; k < 16; k++) {
-		BITS(st->lightMatrix[k]) = k % 5 == 0 ? 0x3f800000 : 0;
+		BITS(st->faintActorMatrix[k]) = k % 5 == 0 ? 0x3f800000 : 0;
 		BITS(st->overlayMatrix[k]) = k == 15 ? 0x3f800000 : k % 5 == 0 ? 0x3f8ccccd : 0;   /* 1.1 */
 	}
 	glGenTextures(1, &st->flagGlTexture);   /* glGenTextures */

@@ -445,15 +445,15 @@ static void debris(u8 *s, u8 *p, float dt)
 	glRotatef(f32(fmul_m(fld_m(&pr->drawAge), (const float *)ADDR(k_3600f))), 0.0f, 0.0f, 1.0f);
 	glGetFloatv(0xba6, pr->matrix);
 	glPopMatrix();
-	long double wait = FSUB(pr->fade, dt);
-	pr->fade = f32(wait);
+	long double wait = FSUB(pr->puffWait, dt);
+	pr->puffWait = f32(wait);
 	if (wait > 0)
 		return;
 	u32 at = g_randPos;
 	u32 r = (*(u32 *)&g_randTable[at & 0xfff]) % 10;
 	g_randPos = at + 1;
 	spawn_at(s, r ? 0 : 2, pos);
-	pr->fade = 0.1f;
+	pr->puffWait = 0.1f;
 	if (!r)
 		BITS(pr->life) = BITS(pr->drawAge);
 }
@@ -841,7 +841,7 @@ void THISCALL (particle_init)(u8 *s, int slot, const u8 *desc)
 	case 5: case 6: case 7: (*(int *)&PR->life) = 0; break;
 	case 9:
 		PR->life = 2.0f;
-		PR->fade = 0.1f;
+		PR->puffWait = 0.1f;
 		break;
 	case 10: case 11: case 18:
 		PR->life = 0.01f;

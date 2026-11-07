@@ -209,7 +209,7 @@ static void preview(int posed, int part)   /* posed: the mech posed for part */
 	gluPerspective(g_viewAngle, g_viewAspect, 100.0, 20000.0);
 	glEnable(GL_DEPTH_TEST);
 	glMatrixMode(GL_MODELVIEW);
-	float turn = f32(fmul_m(fld_m(&g_armcAngle), (const float *)ADDR(k_tenthsToDegrees)));
+	float turn = f32(fmul_m(fld_m(&g_armcAngle), (const float *)ADDR(k_0_1f)));
 	gl_rotateXYZ(0, BITS(turn), 0);
 	u32 eye[3] = { g_originBits[0], g_originBits[1], g_originBits[2] };   /* the eye at the origin */
 	u32 forward[3] = { 0, 0, 0xbf800000 }, up[3] = { 0, 0x3f800000, 0 };   /* (0, 0, -1), (0, 1, 0), on the stack as the original's */
@@ -340,7 +340,7 @@ void (menuState700_armCenter)(void)
 		text_drawCentredLines16(105, 244, 535, (const char *)MSG(298, "PLEASE WAIT"));
 		g_armcSessionDue = 1;
 	}
-	long double zoom = fsubr_m(fmul_m(fld_m(&g_frameTime), (const float *)ADDR(k_tenthsToDegrees)), &g_unusedArmcViewCountdown);
+	long double zoom = fsubr_m(fmul_m(fld_m(&g_frameTime), (const float *)ADDR(k_0_1f)), &g_unusedArmcViewCountdown);
 	g_unusedArmcViewCountdown = zoom;
 	if (!(zoom >= k_m2f))
 		g_unusedArmcViewCountdown = -2.0f;

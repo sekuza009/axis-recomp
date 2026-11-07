@@ -2,10 +2,10 @@
 0x4aa298,double,k_tenthDegreeRad
 0x4aa290,double,k_degToRad
 0x4a955c,float,k_tenth
-0x4a9428,float,k_clockRate
-0x4aa498,float,k_clockRate3
-0x4a9448,float,k_setupPanelTarget
-0x4a9440,double,k_setupPanelEnd
+0x4a9428,float,k_0_025f
+0x4aa498,float,k_15f
+0x4a9448,float,k_panelSlideTarget
+0x4a9440,double,k_panelSlideEnd
 0x4a93d8,double,k_cameraSnapDistance
 0x9dd868,u32,g_editOldProc
 0x5b1958,int,g_arenaFileSecret

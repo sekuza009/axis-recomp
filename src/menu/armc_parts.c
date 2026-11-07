@@ -10,7 +10,7 @@ static const short copied[6][2] = { { offsetof(PartInfo, slotType), offsetof(Act
 
 /* and those scaled by a constant of the game (PartInfo field, ActorItem field, constant's address) */
 static const struct { short dst, src; u32 scale; } scaled[8] = {
-	{ offsetof(PartInfo, range), offsetof(ActorItem, range), ADDR(k_0_01f) }, { offsetof(PartInfo, speed), offsetof(ActorItem, velocity), ADDR(k_0_01f) }, { offsetof(PartInfo, spread), offsetof(ActorItem, spread), ADDR(k_tenthsToDegrees) }, { offsetof(PartInfo, hitRange), offsetof(ActorItem, hitRange), ADDR(k_0_01f) }, { offsetof(PartInfo, splashRadius), offsetof(ActorItem, splashRadius), ADDR(k_0_01f) }, { offsetof(PartInfo, cycleTime), offsetof(ActorItem, cycleTime), OBJ(k_1000f) }, { offsetof(PartInfo, guidance), offsetof(ActorItem, guidance), ADDR(k_tenthsToDegrees) }, { offsetof(PartInfo, targetingTime), offsetof(ActorItem, targetingTime), OBJ(k_1000f) } };
+	{ offsetof(PartInfo, range), offsetof(ActorItem, range), ADDR(k_0_01f) }, { offsetof(PartInfo, speed), offsetof(ActorItem, velocity), ADDR(k_0_01f) }, { offsetof(PartInfo, spread), offsetof(ActorItem, spread), ADDR(k_0_1f) }, { offsetof(PartInfo, hitRange), offsetof(ActorItem, hitRange), ADDR(k_0_01f) }, { offsetof(PartInfo, splashRadius), offsetof(ActorItem, splashRadius), ADDR(k_0_01f) }, { offsetof(PartInfo, cycleTime), offsetof(ActorItem, cycleTime), OBJ(k_1000f) }, { offsetof(PartInfo, guidance), offsetof(ActorItem, guidance), ADDR(k_0_1f) }, { offsetof(PartInfo, targetingTime), offsetof(ActorItem, targetingTime), OBJ(k_1000f) } };
 
 /* record rec for actor type idx; idx -1: the record emptied (its slotType -1) */
 static void part_info(u8 *rec, int idx)
@@ -81,7 +81,7 @@ u8 *(armc_readMechStats)(void)
 	s = x87_fsqrt(s);
 	s = s * k_0_01;
 	g_mechDetectionRange = (float)s;
-	mulf(ADDR(g_mechDetectionAngle), &A->detectionAngle, (const float *)ADDR(k_tenthsToDegrees));
+	mulf(ADDR(g_mechDetectionAngle), &A->detectionAngle, (const float *)ADDR(k_0_1f));
 	g_mechHackingLevel = A->hackingLevel;
 	mulf(ADDR(g_mechLockOnTime), &A->lockOnTime, (const float *)ADDR(k_100f));
 	mulf(ADDR(g_mechTargetKeepTime), &A->targetKeepTime, k_1000f);
@@ -140,7 +140,7 @@ int (armc_readPartPanels)(void)
 	const HeadType *head = &st->headTypes[player->parts[0]];   /* head */
 	panel_name(OBJ(g_headPanelName), head->name);
 	mulf(ADDR(g_headDetectionRange), &head->detectionRange, (const float *)ADDR(k_0_01f));
-	mulf(ADDR(g_headDetectionAngle), &head->detectionAngle, (const float *)ADDR(k_tenthsToDegrees));
+	mulf(ADDR(g_headDetectionAngle), &head->detectionAngle, (const float *)ADDR(k_0_1f));
 	g_headHackingLevel = head->hackingLevel;
 	mulf(ADDR(g_headLockOnTime), &head->lockOnTime, (const float *)ADDR(k_100f));
 	mulf(ADDR(g_headTargetKeepTime), &head->targetKeepTime, k_1000f);

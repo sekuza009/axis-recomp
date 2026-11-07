@@ -61,7 +61,7 @@ void (music_stop)(void)
 }
 
 /* 0x456de0: with sound on (g_soundOn), v times the volume setting (g_soundVolume) as 0 .. 100 becomes the attenuation
-   (g_soundBaseVolume): below 0 -1000, above 100 0, else (p * 5 - 500) * 20 * the factor at k_tenthsToDegrees. Returns what the
+   (g_soundBaseVolume): below 0 -1000, above 100 0, else (p * 5 - 500) * 20 * the factor at k_0_1f. Returns what the
    original leaves in eax */
 int (sound_setVolume)(int v)
 {
@@ -76,7 +76,7 @@ int (sound_setVolume)(int v)
 		g_soundBaseVolume = 0;
 		return p;
 	}
-	int r = ftol(fmul_m((long double)((p * 5 - 500) * 20), (const float *)ADDR(k_tenthsToDegrees)));
+	int r = ftol(fmul_m((long double)((p * 5 - 500) * 20), (const float *)ADDR(k_0_1f)));
 	g_soundBaseVolume = r;
 	return r;
 }

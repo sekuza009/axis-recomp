@@ -502,20 +502,20 @@ void (ladder_sendRecord)(void)
 		ladder_checkAndSendRecord();
 }
 
-/* a panel sliding in: while flag is set, eased moves a tenth of the way to the constant at k_setupPanelTarget per time unit
-   and slid moves back by the same step, until slid is no longer above the double at k_setupPanelEnd (then the flag drops
+/* a panel sliding in: while flag is set, eased moves a tenth of the way to the constant at k_panelSlideTarget per time unit
+   and slid moves back by the same step, until slid is no longer above the double at k_panelSlideEnd (then the flag drops
    and slid is set to -1650). Afterwards, while leaving for a match (g_leavingForMatch), the camera's move 1 (menuCamera_setMove) and the next
    screen 9999 (returns 1) */
 static int menu_slide(u32 flag, u32 eased, u32 slid)
 {
 	if (GAME_VAR(int, flag)) {
-		volatile long double d = (long double)k_setupPanelTarget - GAME_VAR(float, eased);
+		volatile long double d = (long double)k_panelSlideTarget - GAME_VAR(float, eased);
 		d = d * g_frameTime;
-		d = d * k_tenthsToDegrees;
+		d = d * k_0_1f;
 		volatile long double e = (long double)GAME_VAR(float, eased) + d;
 		GAME_VAR(float, eased) = (float)e;
 		long double s = GAME_VAR(float, slid);
-		if (s > k_setupPanelEnd) {
+		if (s > k_panelSlideEnd) {
 			volatile long double t = s - d;
 			GAME_VAR(float, slid) = (float)t;
 		} else {
@@ -643,8 +643,8 @@ u32 (game_returnToGameRoom)(void)
 }
 
 /* 0x43ef70: the game room's frame. While the pointer glides (g_pointerGliding) it moves a quarter of the way to
-   g_highlightX / Y per time unit until g_pointerGlideTime runs out. Then by g_roomState: 0 account, 1 game list, 2
-   the room, 4 ranking -- over the background with the room's camera; 66 login, 77 new-ID form, 88 new-ID
+   g_pointerGlideX / Y per time unit until g_pointerGlideTime runs out. Then by g_roomState: 0 account, 1 game list, 2
+   the create-game page (CREATE LADDER GAME), 4 ranking -- over the background with the room's camera; 66 login, 77 new-ID form, 88 new-ID
    confirmation: updated, background, drawn; 99 the room's menu: panels slid (room_slideMenu), background, then the
    white fade (room_drawWhiteFade) while leaving for a match with the camera arrived, else room_drawMenu. Returns the
    last call's eax, or the page */
@@ -652,8 +652,8 @@ u32 (menuState800_gameRoom)(void)
 {
 	if (g_pointerGliding) {
 		int *mouse = (int *)ADDR(g_mouseX);
-		mouse[0] += ftol(fmul_m(fmul_m((long double)(g_highlightX - mouse[0]), (const float *)ADDR(g_frameTime)), (const float *)ADDR(k_0_25f)));
-		mouse[1] += ftol(fmul_m(fmul_m((long double)(g_highlightY - mouse[1]), (const float *)ADDR(g_frameTime)), (const float *)ADDR(k_0_25f)));
+		mouse[0] += ftol(fmul_m(fmul_m((long double)(g_pointerGlideX - mouse[0]), (const float *)ADDR(g_frameTime)), (const float *)ADDR(k_0_25f)));
+		mouse[1] += ftol(fmul_m(fmul_m((long double)(g_pointerGlideY - mouse[1]), (const float *)ADDR(g_frameTime)), (const float *)ADDR(k_0_25f)));
 		long double size = fsub_m(fld_m((const float *)ADDR(g_pointerGlideTime)), (const float *)ADDR(g_frameTime));
 		g_pointerGlideTime = f32(size);
 		if (!(size >= 0))   /* below 0, or not a number */

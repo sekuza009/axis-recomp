@@ -1,0 +1,795 @@
+GROUP D1: 794 names; OK 777, RENAME 3, TYPE 5, COMMENT 9, UNSURE 0; not seen running 235
+MessageSlot.speaker | OK | code: 1 uses: script_pushMessage; run: NOT SEEN: a mission script command 26 (MESSAGE); no scripted session ran one
+MessageSlot.text | OK | code: 12 uses of the name (shared with 2 structs; its own read by hand); run: NOT SEEN: a mission script command 26 (MESSAGE); no scripted session ran one
+MessageSlot.colour | OK | code: 26 uses of the name (shared with 4 structs; its own read by hand); run: NOT SEEN: a mission script command 26 (MESSAGE); no scripted session ran one
+MessageSlot.unusedC | OK | code: 1 uses: script_pushMessage; run: NOT SEEN: a mission script command 26 (MESSAGE); no scripted session ran one
+MessageSlot.unused10 | OK | code: 1 uses: script_pushMessage; run: NOT SEEN: a mission script command 26 (MESSAGE); no scripted session ran one
+EventLine.type | OK | code: 30 uses of the name (shared with 3 structs; its own read by hand); run: int 1 .. 4; values 0, 1, 3, 4; non-zero in 4% of samples
+EventLine.text | OK | code: 12 uses of the name (shared with 2 structs; its own read by hand); in msg_print, hud_drawMessageBox; run: strings: e.g. "Time limit(1 minutes) reached."; non-zero in 0% of samples
+EventLine.timeLeft | OK | code: 3 uses: events_age, msg_print; run: float -0.00824881 .. 60; values 0, 56.1913, 56.2668, 56.325, 56.3333, 56.3583, 56.375, 56.4497, 56.45, 56.4524, 56.4916, 56.5168 ...; non-zero in 13%
+FiredRound.received | OK | code: 3 uses: actor_processFrame, bullet_init; run: int 1 .. 1; values 0, 1; non-zero in 0% of samples
+FiredRound.weapon | OK | code: 8 uses of the name (shared with 2 structs; its own read by hand); run: int 2 .. 36; values 0, 2, 3, 4, 8, 10, 11, 13, 14, 19, 20, 36; non-zero in 0% of samples
+FiredRound.from | OK | code: 6 uses of the name (shared with 2 structs; its own read by hand); run: float -37224.5 .. 50707.8; values 0, 300.034, 1764.17, 9128.6, 9190.86, 9296.54, 9361.88, 9588.12, 11984.8, 11984.8, 11993, 12031.8 ...; non-zero in 0
+FiredRound.hitPlane | OK | code: 3 uses of the name (shared with 2 structs; its own read by hand); run: int -1 .. 4403; values 0, 440, 1375, 1397, 1981, 2077, 2207, 2264, 4005, 4361, 4403, -1; non-zero in 0% of samples
+FiredRound.dir | OK | code: 17 uses of the name (shared with 4 structs; its own read by hand); in bullet_init; run: float -33620 .. 45550; values 0, 0.118345, 0.199368, 0.390731, 11600, 11630, 12090, 17310, 17400, 17790, 18840, 19100 ...; non-zero in 0% of samples
+FiredRound.muzzle | OK | code: 7 uses of the name (shared with 3 structs; its own read by hand); run: int 368192524 .. 370284584; values 0, 368192524, 368192724, 368198672, 368227576, 368326080, 369997148, 370040120, 370074872, 370081120, 370109724, 37
+ShotRecord.inUse | OK | code: 1 uses: actor_setupFromParts; run: int 1 .. 1; values 0, 1; non-zero in 0% of samples
+ShotRecord.isNew | OK | code: 5 uses: actor_processFrame, actor_setupFromParts, angle_byte; run: int 1 .. 1; values 0, 1; non-zero in 0% of samples
+ShotRecord.hitActor | OK | code: 13 uses of the name (shared with 2 structs; its own read by hand); run: int -1 .. 1; values 0, 1, -1; non-zero in 0% of samples
+ShotRecord.hitPlane | OK | code: 3 uses of the name (shared with 2 structs; its own read by hand); run: int -1 .. 4403; values 0, 440, 1375, 1397, 1981, 2077, 2207, 2264, 4005, 4361, 4403, -1; non-zero in 0% of samples
+ShotRecord.ended | OK | code: 0 uses: by offset / pointer arithmetic; run: int 1 .. 1; values 0, 1; non-zero in 0% of samples
+ShotRecord.point | OK | code: 0 uses: by offset / pointer arithmetic; run: float -50310 .. 138440; values 0, 11600, 11630, 12090, 17310, 17400, 17790, 18840, 19100, 29180, 29670, 38250 ...; non-zero in 0% of samples
+ItemModelSet.shapeCount | OK | code: 2 uses: part_load, actor_loadWeapon; run: int 1 .. 1499027929; values 0, 1, 2, 3, 4, 5, 6, 7, 9, 1499027800, 1499027801, 1499027802; non-zero in 55% of samples
+ItemModelSet.shapeNames | OK | code: 9 uses: add_kyrie, part_load, actor_loadWeapon; run: int 25 .. 255; values 45, 49, 55, 87, 92, 97, 99, 101, 103, 104, 107, 109 ...; non-zero in 3% of samples
+ItemModelSet.skelCount | OK | code: 8 uses of the name (shared with 2 structs; its own read by hand); run: int 1 .. 1499027929; values 0, 1, 1499027801, 1499027929; non-zero in 55% of samples
+ItemModelSet.skelNames | OK | code: 2 uses: part_load, actor_loadWeapon; run: int 40 .. 255; values 48, 65, 68, 69, 73, 76, 84, 87, 92, 97, 101, 109 ...; non-zero in 11% of samples
+ItemModelSet.muzzle | COMMENT | "the muzzle (muzzle_camera)" says too little: per variant (variantLoaded) a point (x, y, z) that muzzle_camera transforms by the arm's weapon joint matrix (ArmType.weaponJoints) to place camera preset 1; the rounds start from the muzzle entry's matrix instead (FiredRound.muzzle). run: coordinates 2 .. 100 in live records
+ItemModelSet.grip | OK | code: 3 uses: actor_processFrame; run: float -1.14497e+35 .. 3.06864e+34; values 0, 41.5531, 45.2221, 85.5592, 86.6217, 89.3262, 98.6257, 100.145, 100.354, 100.607, 100.779, 101.304 ...; no
+ActorItem.sets | OK | code: 8 uses: muzzle_camera, actor_processFrame, actor_loadWeapon; run: (a record / array of records: see its fields)
+ActorItem.burstStep | OK | code: 3 uses: actor_processFrame; run: float -500 .. 3.82364e+15; values 0, 300, 500, 3.82364e+15, -300, -500; non-zero in 4% of samples
+ActorItem.weight | OK | code: 9 uses of the name (shared with 2 structs; its own read by hand); in mech_stats; run: float -7.31299e+34 .. 8.09184e+34; values 0, 3, 4, 5, 6, 7, 8, 10, 11, 12, 13, 15 ...; non-zero in 72% of samples
+ActorItem.slotType | OK | code: 6 uses of the name (shared with 2 structs; its own read by hand); run: int 1 .. 1499027929; values 0, 1, 1499027801, 1499027929; non-zero in 36% of samples
+ActorItem.splashBorderDamage | OK | code: 2 uses of the name (shared with 2 structs; its own read by hand); run: int 1 .. 1499027801; values 0, 1, 5, 10, 13, 15, 40, 60, 1499027801; non-zero in 20% of samples
+ActorItem.damageType | OK | code: 4 uses of the name (shared with 2 structs; its own read by hand); in actor_takeDamage; run: int 1 .. 1499027929; values 0, 1, 1499027801, 1499027929; non-zero in 20% of samples
+ActorItem.damage | OK | code: 5 uses of the name (shared with 2 structs; its own read by hand); run: int 11 .. 1499027925; values 11, 12, 16, 17, 18, 22, 25, 36, 37, 40, 46, 60 ...; non-zero in 56% of samples
+ActorItem.hitSound | OK | code: 4 uses: hit_actor, hit_surface; run: int 160 .. 1499027801; values 0, 160, 161, 162, 164, 1499027720, 1499027721, 1499027801; non-zero in 56% of samples
+ActorItem.push | OK | code: 12 uses of the name (shared with 2 structs; its own read by hand); run: float -2.03641e+36 .. 3.82364e+15; values 0, 500, 600, 1000, 2000, 3000, 4000, 5000, 5500, 8000, 10000, 15000; non-zero in 50% of samples
+ActorItem.ammoType | OK | code: 16 uses of the name (shared with 2 structs; its own read by hand); run: int -1499027802 .. 1499027801; values 0, 1, 2, 3, 1499027800, 1499027801, -1499027802, -1; non-zero in 66% of samples
+ActorItem.ammoPerShot | OK | code: 10 uses of the name (shared with 2 structs; its own read by hand); in actor_processFrame, armc_viewedPartRecord; run: int 1 .. 1499027929; values 0, 1, 2, 4, 6, 1499027800, 1499027801, 1499027929; non-zero in 52% of samples (checker: 772 .. 780 are message numbers, not values)
+ActorItem.burst | OK | code: 3 uses of the name (shared with 2 structs; its own read by hand); run: int 1 .. 1499027931; values 0, 1, 2, 3, 4, 5, 1499027801, 1499027929, 1499027931; non-zero in 56% of samples
+ActorItem.burstGap | OK | code: 1 uses: actor_processFrame; run: float -48959.7 .. 3.82364e+15; values 0, 0.06, 0.08, 0.09, 0.1, 3.82364e+15, -48959.7; non-zero in 24% of samples
+ActorItem.range | OK | code: 4 uses of the name (shared with 2 structs; its own read by hand); in bullet_init; run: float -4.78841e+35 .. 4.12796e+37; values 0, 3500, 4000, 8000, 10000, 30000, 40000, 50000, 60000, 90000, 100000, 200000 ...; non-zero in 56% of sample
+ActorItem.velocity | OK | code: 12 uses of the name (shared with 2 structs; its own read by hand); run: float -4.05443e+37 .. 1.19966e+37; values 0, 4000, 28000, 50000, 60000, 75000, 80000, 85000, 120000, 140000, 250000, 600000 ...; non-zero in 48% of sa
+ActorItem.spread | OK | code: 4 uses of the name (shared with 2 structs; its own read by hand); in bullet_init; run: float -6.53415e+34 .. 3.82364e+15; values 0, 7, 8, 10, 20, 25, 40, 50, 70, 75, 90, 100 ...; non-zero in 36% of samples
+ActorItem.hitRange | OK | code: 11 uses of the name (shared with 2 structs; its own read by hand); in fly_local, math_segmentSphere; run: float -6.53415e+34 .. 1.53618e+34; values 10, 30, 40, 50, 60, 80, 100, 140, 150, 160, 180, 250 ...; non-zero in 56% of samples
+ActorItem.splashRadius | OK | code: 6 uses of the name (shared with 2 structs; its own read by hand); in hit_actor, actor_processFrame; run: float 2000 .. 3.82364e+15; values 0, 2000, 2500, 3000, 5000, 3.82364e+15; non-zero in 20% of samples
+ActorItem.shotMode | OK | code: 11 uses: bullet_init, draw_shot, hit_actor, decal; run: int 1 .. 1499027803; values 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 1499027801, 1499027803; non-zero in 42% of samples
+ActorItem.sound | OK | code: 1 uses: bullet_init; run: int 60 .. 1499027966; values 60, 61, 62, 63, 64, 65, 67, 75, 76, 77, 78, 79 ...; non-zero in 56% of samples
+ActorItem.cycleTime | OK | code: 5 uses of the name (shared with 2 structs; its own read by hand); run: float 0.066 .. 6.55082e+34; values 0.066, 0.08, 0.095, 0.125, 0.21, 0.22, 0.25, 0.47, 0.6, 0.61, 0.8, 0.95 ...; non-zero in 56% of samples
+ActorItem.guidance | OK | code: 8 uses of the name (shared with 2 structs; its own read by hand); run: float 33.3333 .. 3.82364e+15; values 0, 33.3333, 53.3333, 73.3333, 86.6667, 333.333, 400, 3.82364e+15; non-zero in 16% of samples
+ActorItem.name | OK | code: 94 uses of the name (shared with 22 structs; its own read by hand); run: strings: e.g. "ITEM\ICA-6000", some unterminated; non-zero in 0% of samples
+ActorItem.targetingTime | OK | code: 6 uses of the name (shared with 2 structs; its own read by hand); in actor_processFrame, stage_setupView; run: float 0.7005 .. 3.82364e+15; values 0, 0.7005, 0.8002, 1.0005, 1.2, 1.3, 2.5, 3.82364e+15; non-zero in 16% of samples
+BlockOwner.blockSize | OK | code: 32 uses of the name (shared with 9 structs; its own read by hand); in take_block, operator_new; run: NOT SEEN: the common head only; sampled through Model / ObjectList / Manager / Space / ViewVolume
+BlockOwner.block | OK | code: 49 uses of the name (shared with 9 structs; its own read by hand); in take_block, free_owned, Model_release, Skeleton_release; run: NOT SEEN: the common head only; sampled through Model / ObjectList / Manager / Space / ViewVolume
+BlockOwner.ownsBlock | OK | code: 15 uses of the name (shared with 8 structs; its own read by hand); run: NOT SEEN: the common head only; sampled through Model / ObjectList / Manager / Space / ViewVolume
+Model.blockSize | OK | code: 32 uses of the name (shared with 9 structs; its own read by hand); in take_block; run: int 392 .. 109452; values 0, 980, 1076, 1460, 1532, 1892, 1916, 2032, 2156, 2204, 2492, 2612 ...; non-zero in 95% of samples
+Model.block | OK | code: 49 uses of the name (shared with 9 structs; its own read by hand); in take_block, shape_read, model_loadObjFormatFrom; run: pointer: 563527 valid, 0 original-image addresses, 0 unmapped; non-zero in 95% of samples
+Model.ownsBlock | OK | code: 15 uses of the name (shared with 8 structs; its own read by hand); run: NOT SEEN: 0 for every shape read into its manager's data memory; 1 only for a shape with its own block (Manager.data 0)
+Model.partCount | OK | code: 30 uses of the name (shared with 1 structs; its own read by hand); in shape_read, model_loadObjFormatFrom, ground_buildLayerModels; run: int 1 .. 13; values 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11; non-zero in 95% of samples
+Model.parts | OK | code: 68 uses of the name (shared with 2 structs; its own read by hand); run: pointer: 593045 valid, 0 original-image addresses, 0 unmapped; non-zero in 99% of samples
+Model.centre | OK | code: 15 uses of the name (shared with 2 structs; its own read by hand); in shape_computeBounds, shape_read, model_loadObjFormatFrom; run: float -66020.4 .. 45685.1; values 0, 1.90735e-06, 7.62939e-06, 0.241348, 5, 120, 150, 153.008, 185, -1.90735e-06, -3.8147e-06, -7.62939e-06 ...; non-z
+Model.version | OK | code: 4 uses: ptx_read, glWindow_setupPixelFormat, shape_read, shape_computeBounds; run: int 1896940288 .. 1896940288; values 0, 1896940288; non-zero in 95% of samples
+Model.low | OK | code: 7 uses of the name (shared with 2 structs; its own read by hand); run: float -307424 .. 42512; values 0, -21.0797, -29.4008, -50, -74.2, -100, -100, -120, -125, -147.811, -148.12, -150 ...; non-zero in 86% of samples
+Model.high | OK | code: 9 uses of the name (shared with 2 structs; its own read by hand); in shape_read, model_loadObjFormatFrom, collision_moveSphere, collision_rayTrace; run: float -64084 .. 307424; values 0, 21.0797, 29.4008, 50, 100, 120, 147.811, 148.12, 150, 157.414, 160, 200 ...; non-zero in 94% of samples
+Model.colourCount | OK | code: 17 uses of the name (shared with 2 structs; its own read by hand); in ObjectList_load, object_initObjectBy, ground_buildLayerModels; run: int 12 .. 4656; values 0, 36, 42, 48, 60, 72, 84, 96, 105, 108, 132, 138 ...; non-zero in 95% of samples
+Model.triangleCount | OK | code: 12 uses of the name (shared with 2 structs; its own read by hand); in model_loadObjFormatFrom, ground_buildLayerModels; run: int 4 .. 1552; values 0, 12, 14, 16, 20, 24, 28, 32, 35, 36, 44, 46 ...; non-zero in 95% of samples
+Model.radius | OK | code: 20 uses of the name (shared with 3 structs; its own read by hand); run: float 78.5723 .. 461136; values 0, 168.557, 204.188, 206.155, 207.846, 209.019, 210.314, 217.926, 218.403, 221.416, 227.422, 253.283 ...; non-zero in
+ShapePart.flags | OK | code: 34 uses of the name (shared with 5 structs; its own read by hand); in space_buildUnit; run: NOT SEEN: the sampler does not follow Model.parts into the shapes' blocks
+ShapePart.texName | OK | code: 1 uses: fix_shapeRead; run: strings: e.g. ""; non-zero in 0% of samples
+ShapePart.texture | OK | code: 12 uses of the name (shared with 2 structs; its own read by hand); in tex_getIdByName, shape_bindTextureBy, shape_read; run: NOT SEEN: the sampler does not follow Model.parts into the shapes' blocks
+ShapePart.colourBase | OK | code: 5 uses: model_loadObjFormatFrom, ground_buildLayerModels, shape_shadingColours, ViewVolume_queueModel; run: NOT SEEN: the sampler does not follow Model.parts into the shapes' blocks
+ShapePart.vertexCount | OK | code: 23 uses of the name (shared with 1 structs; its own read by hand); in shape_read, view_volume; run: NOT SEEN: the sampler does not follow Model.parts into the shapes' blocks
+ShapePart.vertices | OK | code: 18 uses of the name (shared with 1 structs; its own read by hand); run: NOT SEEN: the sampler does not follow Model.parts into the shapes' blocks
+ShapePart.normals | OK | code: 12 uses: map_loadGroundInfoFrom, shape_read, obj_corner, model_loadObjFormatFrom; run: NOT SEEN: the sampler does not follow Model.parts into the shapes' blocks
+ShapePart.colours | OK | code: 38 uses of the name (shared with 5 structs; its own read by hand); run: NOT SEEN: the sampler does not follow Model.parts into the shapes' blocks
+ShapePart.texCoords | OK | code: 8 uses: shape_read, obj_corner, model_loadObjFormatFrom, ground_buildLayerModels; run: NOT SEEN: the sampler does not follow Model.parts into the shapes' blocks
+ShapePart.primCount | OK | code: 12 uses: shape_read, model_loadObjFormatFrom, space_buildUnit, ground_buildLayerModels; run: NOT SEEN: the sampler does not follow Model.parts into the shapes' blocks
+ShapePart.prims | OK | code: 11 uses: shape_read, model_loadObjFormatFrom, space_buildUnit, ground_buildLayerModels; run: NOT SEEN: the sampler does not follow Model.parts into the shapes' blocks
+ShapePart.box | OK | code: 14 uses of the name (shared with 1 structs; its own read by hand); run: NOT SEEN: the sampler does not follow Model.parts into the shapes' blocks
+ShapePrim.kind | OK | code: 28 uses of the name (shared with 11 structs; its own read by hand); in GL_POINTS; run: NOT SEEN: the sampler does not follow ShapePart.prims
+ShapePrim.indexCount | OK | code: 16 uses of the name (shared with 1 structs; its own read by hand); in shape_read, ground_buildLayerModels, space_buildUnit; run: NOT SEEN: the sampler does not follow ShapePart.prims
+ShapePrim.indices | OK | code: 6 uses: map_loadGroundInfoFrom, shape_read, space_buildUnit, ground_buildLayerModels; run: NOT SEEN: the sampler does not follow ShapePart.prims
+ListedObject.shape | OK | code: 11 uses: ObjectList_poseBones, relight, ObjectList_relight, ObjectList_queue; run: pointer: 86069 valid, 0 original-image addresses, 0 unmapped; non-zero in 100% of samples
+ListedObject.colours | OK | code: 38 uses of the name (shared with 5 structs; its own read by hand); in ObjectList_load; run: NOT SEEN: only a pre-lit list has colours (preLit 1)
+ListedObject.scale | OK | code: 2 uses: ObjectList_poseBones, part_info; run: float 1 .. 1; values 1; non-zero in 100% of samples
+ListedObject.matrix | OK | code: 25 uses of the name (shared with 4 structs; its own read by hand); run: float -57089.1 .. 51821.7; values 0, 0.000532802, 0.000796295, 0.000796297, 0.00159259, 0.00159259, 0.00752219, 0.00993968, 0.0299954, 0.0299955, 0.03
+ListedObject.pos | OK | code: 144 uses of the name (shared with 9 structs; its own read by hand); in ObjectList_poseBones; run: float -57089.1 .. 51821.7; values 0, 38.4037, 48.3607, 48.7629, 89.418, 204.933, 206.772, 207.023, 207.129, 241.218, 249.055, 272.284 ...; non-zero in
+ListedObject.centre | OK | code: 15 uses of the name (shared with 2 structs; its own read by hand); run: float -57101.2 .. 51831.5; values 0, 31.7067, 63.9868, 68.917, 69.085, 122.868, 130.374, 153.413, 153.864, 155.275, 155.464, 181.474 ...; non-zero in
+ObjectList.blockSize | OK | code: 32 uses of the name (shared with 9 structs; its own read by hand); in ObjectList_load; run: int 104 .. 1404; values 0, 104, 204, 304, 404, 504, 604, 704, 804, 904, 1004, 1104; non-zero in 1% of samples
+ObjectList.block | OK | code: 49 uses of the name (shared with 9 structs; its own read by hand); in ObjectList_load, partList_release; run: pointer: 172138 valid, 0 original-image addresses, 0 unmapped; non-zero in 1% of samples
+ObjectList.ownsBlock | OK | code: 15 uses of the name (shared with 8 structs; its own read by hand); run: NOT SEEN: the actors' part lists use the memory given (Player.headModelMem ..): 0
+ObjectList.count | OK | code: 68 uses of the name (shared with 5 structs; its own read by hand); in ObjectList_load, ObjectList_queue, ObjectList_relight, ObjectList_bindTextures; run: int 1 .. 14; values 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11; non-zero in 1% of samples
+ObjectList.entries | OK | code: 22 uses of the name (shared with 2 structs; its own read by hand); in ObjectList_load, ObjectList_poseBones, ObjectList_queue, actor_processFrame; run: pointer: 172138 valid, 0 original-image addresses, 0 unmapped; non-zero in 1% of samples
+ObjectList.colourCount | OK | code: 17 uses of the name (shared with 2 structs; its own read by hand); run: int 84 .. 1527; values 0, 84, 102, 108, 180, 210, 234, 246, 264, 282, 300, 333 ...; non-zero in 1% of samples
+ObjectList.skelCount | OK | code: 8 uses of the name (shared with 2 structs; its own read by hand); in ObjectList_load, ObjectList_poseBones, ObjectList_queue; run: int 1 .. 1; values 0, 1; non-zero in 1% of samples
+ObjectList.skeletons | OK | code: 8 uses: anim_setTime, ObjectList_load, ObjectList_poseBones, actor_processFrame; run: pointer: 172138 valid, 0 original-image addresses, 0 unmapped; non-zero in 1% of samples
+ObjectList.skel | OK | code: 3 uses: anim_setTime, ObjectList_poseBones, ObjectList_queue; run: NOT SEEN: always 0 (actor_processFrame picks skeleton 0)
+ObjectList.animTick | OK | code: 2 uses: anim_setTime, ObjectList_poseBones; run: int 1 .. 3300; values 0, 4, 10, 16, 23, 49, 83, 115, 132, 148, 181, 214 ...; non-zero in 0% of samples
+ObjectList.preLit | OK | code: 5 uses: ObjectList_load, ObjectList_queue; run: NOT SEEN: no pre-lit object list in the sessions
+Player.pathRange | OK | code: 4 uses: actor_setupFromParts, actor_pickPathPoint; run: float 1500 .. 7593.75; values 0, 1500, 2250, 3375, 7593.75; non-zero in 13% of samples
+Player.bodyMatrix | OK | code: 2 uses: actor_processFrame; run: float -56925.9 .. 51595.6; values 0, 0.000796297, 0.00105026, 0.00106874, 0.00159259, 0.0055884, 0.00559108, 0.00752854, 0.0299955, 0.0390297, 0.03942
+Player.headModel | OK | code: 9 uses: SkeletonManager_releaseSkeletons, actor_destroyPartLists, actor_initPartLists, actor_processFrame; run: (a record / array of records: see its fields)
+Player.headModelMem | OK | code: 0 uses: by offset / pointer arithmetic; run: int 1 .. 255; values 0, 3, 5, 6, 10, 19, 21, 26, 30, 31, 32, 34 ...; non-zero in 0% of samples
+Player.chestModel | OK | code: 12 uses: actor_destroyPartLists, actor_initPartLists, actor_processFrame, playerRecord_setPartColour; run: (a record / array of records: see its fields)
+Player.chestModelMem | OK | code: 0 uses: by offset / pointer arithmetic; run: int 1 .. 255; values 0, 3, 5, 12, 17, 21, 24, 25, 27, 29, 31, 32 ...; non-zero in 0% of samples
+Player.armsModel | OK | code: 12 uses: actor_destroyPartLists, muzzle_camera, actor_initPartLists, actor_processFrame; run: (a record / array of records: see its fields)
+Player.armsModelMem | OK | code: 0 uses: by offset / pointer arithmetic; run: int 1 .. 255; values 0, 5, 11, 15, 16, 21, 22, 27, 32, 34, 43, 44 ...; non-zero in 0% of samples
+Player.legsModel | OK | code: 9 uses: actor_destroyPartLists, actor_initPartLists, actor_processFrame, playerRecord_setPartColour; run: (a record / array of records: see its fields)
+Player.legsModelMem | OK | code: 0 uses: by offset / pointer arithmetic; run: int 1 .. 255; values 0, 7, 10, 12, 14, 16, 20, 21, 23, 28, 37, 38 ...; non-zero in 0% of samples
+Player.boosterModel | OK | code: 9 uses: actor_destroyPartLists, actor_initPartLists, actor_processFrame, playerRecord_setPartColour; run: (a record / array of records: see its fields)
+Player.boosterModelMem | OK | code: 0 uses: by offset / pointer arithmetic; run: int 1 .. 255; values 0, 3, 4, 5, 12, 20, 21, 29, 31, 32, 34, 36 ...; non-zero in 0% of samples
+Player.weaponModel | OK | code: 10 uses: actor_destroyPartLists, actor_initPartLists, actor_processFrame, actor_loadWeapon; run: (a record / array of records: see its fields)
+Player.weaponModelMem | OK | code: 0 uses: by offset / pointer arithmetic; run: int 1 .. 255; values 0, 2, 4, 11, 12, 21, 22, 24, 29, 32, 34, 37 ...; non-zero in 0% of samples
+Player.weaponModel4 | OK | code: 10 uses: actor_destroyPartLists, actor_initPartLists, actor_processFrame, actor_loadWeapon; run: (a record / array of records: see its fields)
+Player.weaponModel4Mem | OK | code: 0 uses: by offset / pointer arithmetic; run: int 1 .. 255; values 0, 3, 5, 12, 21, 22, 26, 31, 32, 34, 43, 49 ...; non-zero in 0% of samples
+Player.weaponModel5 | OK | code: 10 uses: actor_destroyPartLists, actor_initPartLists, actor_processFrame, actor_loadWeapon; run: (a record / array of records: see its fields)
+Player.weaponModel5Mem | OK | code: 0 uses: by offset / pointer arithmetic; run: int 1 .. 255; values 0, 3, 5, 12, 21, 22, 31, 32, 34, 43, 48, 51 ...; non-zero in 0% of samples
+Player.lastHitMode | RENAME -> lastHitDamageType | actor_takeDamage stores its mode argument here, and every caller passes the weapon's ActorItem.damageType (hit_actor / splash: WI->damageType; cheat 4: 1): 0 IMPACT = the shield takes the damage first, the excess the armour; 1 ENERGY = the armour also loses 0.7 x it. The comment had it backwards ("0 armour first, 1 shield first") and it is no mode of its own; -1 at setup (filled with lastAttacker, lastHitWeapon); written, never read. run: -1, 0, 1 agree
+Player.invulnerable | OK | code: 4 uses: actor_setupFromParts, script_processCommandBy, actor_takeDamage; run: NOT SEEN: script command 14 in a mission map
+Player.hitPending | OK | code: 3 uses: actor_takeDamage, angle_byte; run: int 1 .. 1; values 0, 1; non-zero in 1% of samples
+Player.accuracy | OK | code: 3 uses: mech_stats, totals_agree, bullet_init; run: int 1 .. 4; values 0, 1, 2, 3, 4; non-zero in 13% of samples
+Player.lastWeaponSlot | OK | code: 5 uses: actor_processFrame, actor_setupFromParts, actor_setWeaponSlot, mech_setAll; run: int 1 .. 3; values 0, 1, 2, 3; non-zero in 1% of samples
+Player.shots | OK | code: 6 uses: actor_processFrame, actor_setupFromParts, angle_byte, net_processGamePacket; run: (a record / array of records: see its fields)
+Player.rounds | OK | code: 3 uses: actor_processFrame, actor_checkDataLoss; run: (a record / array of records: see its fields)
+Player.shotBullets | OK | code: 6 uses: actor_processFrame, bullet_free, actor_setupFromParts, angle_byte; run: int -1 .. 6; values 0, 1, 2, 3, 4, 5, 6, -1; non-zero in 13% of samples
+Player.firePrev | COMMENT | "(a held key fires one round)" is wrong: firing does not test it (the cycle / burst code fires while inFire is held). It is inFire of the frame before, read only so that the OUT OF AMMO! message and click, the switch to the next weapon when out of ammunition, and the muzzle-in-a-wall click happen once per press. run: 0 / 1 agree
+Player.levelShown | OK | code: 4 uses: match_frame, net_processGamePacket; run: int 1 .. 1; values 0, 1; non-zero in 12% of samples
+Player.scoreCounted | OK | code: 3 uses: match_frame, ladder_addMatchScores; run: NOT SEEN: a Ladder match (ladder_addMatchScores)
+Player.sendNow | OK | code: 5 uses: match_frame, actor_processFrame, actor_setupFromParts, fly_local; run: int 1 .. 1; values 0, 1; non-zero in 0% of samples
+Player.killPending | OK | code: 6 uses: replay_frame, match_frame, actor_dies, actor_setupFromParts; run: int 1 .. 1; values 0, 1; non-zero in 0% of samples
+Player.lastWarp | COMMENT | item_pickup sets it to the warp zone the actor was sent TO (mi->warpTo) and skips a warp from that item, so arriving does not bounce it back; item_update sets -1 once it touches no warp zone (onWarp 0). "came through last" names the wrong item. run: -1 only (no warp taken)
+Player.onWarp | OK | code: 4 uses: actor_setupFromParts, item_pickup, item_update; run: NOT SEEN: stand on a warp zone item (host-h2 had warp items, warpTo 14 / 15, none touched)
+Player.warpWait | OK | code: 3 uses: actor_processFrame, item_pickup; run: NOT SEEN: take a warp zone
+Player.hackingLevel | OK | code: 14 uses of the name (shared with 1 structs; its own read by hand); run: int 1 .. 8; values 0, 1, 2, 3, 4, 5, 8; non-zero in 13% of samples
+Player.lockOnTime | OK | code: 6 uses: actor_processFrame, mech_stats, totals_agree, armc_readMechStats; run: float 0.4 .. 1.4; values 0, 0.4, 0.6, 0.7, 0.8, 1, 1.2, 1.3, 1.4; non-zero in 13% of samples
+Player.targetKeepTime | OK | code: 6 uses: actor_processFrame, mech_stats, totals_agree, armc_readMechStats; run: float 0.5 .. 8; values 0, 0.5, 1, 1.5, 2, 2.5, 3.5, 8; non-zero in 13% of samples
+Player.loadMax | OK | code: 7 uses: mech_stats, totals_agree, armc_readMechStats; run: float 73.5 .. 228; values 0, 73.5, 84, 85.5, 91.2, 95, 98, 99.75, 105, 126, 190, 228; non-zero in 13% of samples
+Player.load | OK | code: 10 uses: game_processLoadingMode, mech_stats, totals_agree, armc_readMechStats; run: float 58 .. 195; values 0, 58, 59, 61, 62, 68, 69, 74, 87, 89, 90, 148; non-zero in 13% of samples
+Player.ammoFactor | OK | code: 3 uses: mech_stats; run: float 1 .. 1.3; values 0, 1, 1.3; non-zero in 13% of samples
+Player.ammoBonus | OK | code: 6 uses: mech_stats; run: int 100 .. 100; values 0, 100; non-zero in 0% of samples
+Player.rangeBonus | OK | code: 3 uses: mech_stats; run: float 10000 .. 10000; values 0, 10000; non-zero in 0% of samples
+Player.lockOnTimeFactor | OK | code: 3 uses: mech_stats; run: float 0.5 .. 1; values 0, 0.5, 1; non-zero in 13% of samples
+Player.targetKeepFactor | OK | code: 3 uses: mech_stats; run: float 1 .. 2; values 0, 1, 2; non-zero in 13% of samples
+Player.hackingBonus | OK | code: 3 uses: mech_stats; run: int 3 .. 3; values 0, 3; non-zero in 0% of samples
+Player.boostTimeFactor | OK | code: 3 uses: mech_stats; run: float 1 .. 1.5; values 0, 1, 1.5; non-zero in 13% of samples
+Player.rechargeTimeFactor | OK | code: 2 uses: mech_stats; run: float 0.5 .. 1; values 0, 0.5, 1; non-zero in 13% of samples
+Player.restTimeFactor | OK | code: 2 uses: mech_stats; run: float 0.5 .. 1; values 0, 0.5, 1; non-zero in 13% of samples
+Player.loadFactor | OK | code: 2 uses: mech_stats; run: float 1 .. 1.2; values 0, 1, 1.2; non-zero in 13% of samples
+Player.shieldFactor | OK | code: 3 uses: mech_stats; run: float 1 .. 1.3; values 0, 1, 1.3; non-zero in 13% of samples
+Player.tint | COMMENT | actor_drawIntoView writes it on every draw: a cloaked actor's white (alpha 0x40 to itself, 0x10 to others), the spawn fade of the first 3 s (spawnAge x 170 ..), else a shot's glow (white) plus a hit's flash (red-orange, hitFlash); none otherwise. The comment names only the cloaked case. run: bytes 0 .. 255 agree
+Player.message | OK | code: 6 uses: match_frame, set_part, actor_processFrame, actor_setupFromParts; run: strings: e.g. "+40 E-PACK CELLS"; non-zero in 0% of samples
+Player.messageTime | OK | code: 7 uses: match_frame, actor_processFrame, actor_setupFromParts, item_pickup; run: float -10185 .. -0.00832952; values 0, -10000, -10000, -10000, -10000, -10000, -10000, -10000, -10000, -10000, -10000, -10000 ...; non-zero in 13% of
+Player.dropAge | OK | code: 6 uses: actor_processFrame, actor_setupFromParts, net_processGamePacket; run: float 1 .. 185.401; values 0, 1, 10, 10.0084, 10.0084, 10.0084, 10.0084, 10.0084, 10.0199, 10.0203, 10.0204, 10.0204 ...; non-zero in 13% of samples
+Player.effectScale | OK | code: 7 uses: actor_processFrame; run: float 0.5 .. 3; values 0, 0.5, 0.500184, 0.500325, 0.531292, 0.582825, 0.583512, 0.583612, 0.588393, 0.666172, 0.666821, 0.66692 ...; non-zero in 13%
+Player.cheat | OK | code: 4 uses: actor_processFrame, actor_setupFromParts, chat_matchCheatCode; run: int -1 .. 4; values 0, 2, 3, 4, -1; non-zero in 14% of samples (0 only in unused slots; -1 at setup; 2 .. 4 from the typed codes, as the comment says)
+Player.bigHead | OK | code: 5 uses: actor_processFrame, actor_resetSlot, stage_newRound; run: NOT SEEN: type the big-head cheat ("give me a big head") while alive (sessA's cheat 2 was seen in Player.cheat)
+Player.pathReverse | OK | code: 3 uses: actor_processFrame, actor_setupFromParts, actor_pickPathPoint; run: int 1 .. 1; values 0, 1; non-zero in 0% of samples
+Player.botWait | OK | code: 6 uses: actor_processFrame, actor_setupFromParts, script_processCommandBy; run: NOT SEEN: script command 4 (missions)
+Player.botWaitTrigger | OK | code: 6 uses: actor_processFrame, actor_setupFromParts, script_processCommandBy; run: int -1 .. -1; values 0, -1; non-zero in 13% of samples
+Player.lookActor | OK | code: 7 uses: actor_processFrame, actor_setupFromParts, script_processCommandBy; run: int -1 .. -1; values 0, -1; non-zero in 13% of samples
+Player.lookPath | OK | code: 4 uses: actor_processFrame, script_processCommandBy; run: int -1 .. -1; values 0, -1; non-zero in 13% of samples
+Player.lookPoint | OK | code: 3 uses: actor_processFrame, script_processCommandBy; run: int -1 .. -1; values 0, -1; non-zero in 13% of samples
+Player.scanTime | OK | code: 4 uses: actor_processFrame, actor_setupFromParts; run: float -0.00833229 .. 0.5; values 0, 0.210754, 0.224994, 0.233323, 0.233335, 0.24164, 0.241669, 0.250003, 0.25001, 0.466661, 0.474986, 0.48332 ...; non
+Player.burstPause | OK | code: 4 uses: actor_processFrame, actor_pickRandomWeapon; run: float -2.00831 .. 1; values 0, 0.210746, 0.216683, 0.452414, 0.458334, 0.702404, 0.716665, 0.958333, 0.966675, -0.0416627, -0.0475853, -0.283314 ...;
+Player.burstFire | OK | code: 4 uses: actor_processFrame, actor_pickRandomWeapon; run: float -0.00833338 .. 2; values 0, 0.208325, 0.208341, 0.208345, 0.449992, 0.458342, 0.466668, 0.708338, 0.716671, 0.716685, 0.724992, 0.949988 ...; no
+Player.dodgeTime | OK | code: 4 uses: actor_processFrame, actor_pickRandomWeapon; run: float 3.68804e-07 .. 0.991668; values 0, 0.0333397, 0.0333631, 0.283345, 0.29167, 0.500015, 0.50835, 0.525, 0.533329, 0.758322, 0.766692, 0.783328 ...
+Player.heightTime | OK | code: 5 uses: actor_processFrame, actor_setupFromParts, actor_pickRandomWeapon; run: float 3.68804e-07 .. 0.991668; values 0, 0.0333397, 0.0333631, 0.283345, 0.29167, 0.500015, 0.50835, 0.525, 0.533329, 0.758322, 0.766692, 0.783328 ...
+Player.cleared8838 | OK | code: 1 uses: actor_setupFromParts; run: NOT SEEN: only zeroed (actor_setupFromParts)
+Player.lookTime | OK | code: 4 uses: actor_processFrame, actor_setupFromParts; run: float 1.75831 .. 2; values 0, 1.94999, 1.94999, 1.95832, 1.96666, 1.96915, 1.97189, 1.975, 1.98582, 1.99166, 1.99166, 1.99166 ...; non-zero in 0% of s
+Player.stuckTime | OK | code: 4 uses: actor_processFrame, actor_setupFromParts; run: float 9.31323e-10 .. 1; values 0, 0.827409, 0.833331, 0.835743, 0.841654, 0.841665, 0.841672, 0.841684, 0.844081, 0.849985, 0.849987, 0.850002 ...; no
+Player.stuckPath | OK | code: 4 uses: actor_processFrame, actor_setupFromParts, actor_pickPathPoint; run: int -1 .. 13; values 0, 5, 13, -1; non-zero in 13% of samples
+Player.stuckMove | OK | code: 4 uses: actor_processFrame, actor_setupFromParts; run: float -316239 .. 230415; values 0, 1.38867, 2.24023, 4.16016, 8.31445, 13.8516, 20.7734, 29.0742, 38.7598, 43, 197.843, 451.637 ...; non-zero in 1% of
+Player.mobility | OK | code: 7 uses: actor_processFrame, mech_stats, totals_agree, armc_readMechStats; run: float 5.95 .. 10.2143; values 0, 5.95, 7.2, 7.475, 8, 8.57143, 8.8, 8.94737, 9.18, 9.35, 10, 10.2; non-zero in 13% of samples
+Player.moveAccel | OK | code: 4 uses: actor_processFrame, mech_stats, totals_agree; run: float 27960.5 .. 95486.1; values 0, 27960.5, 31250, 39170.8, 49000, 51041.7, 52250, 59000, 59523.8, 60500, 67666.7, 79444.4; non-zero in 13% of sample
+Player.boosterTilt | OK | code: 2 uses: actor_processFrame, mech_stats; run: NOT SEEN: 0.0 in every booster of Component.dat
+Player.boostTime | OK | code: 5 uses: actor_processFrame, mech_stats, totals_agree, armc_readMechStats; run: float 2.5 .. 10; values 0, 2.5, 3, 4, 4.5, 5, 6, 8, 9, 10; non-zero in 13% of samples
+Player.rechargeTime | OK | code: 5 uses: actor_processFrame, mech_stats, totals_agree, armc_readMechStats; run: float 0.25 .. 3; values 0, 0.25, 0.5, 1, 1.5, 2, 3; non-zero in 13% of samples
+Player.restTime | OK | code: 5 uses: actor_processFrame, mech_stats, totals_agree, armc_readMechStats; run: float 0.05 .. 0.6; values 0, 0.05, 0.15, 0.3, 0.5, 0.6; non-zero in 13% of samples
+Player.runTop | OK | code: 18 uses of the name (shared with 1 structs; its own read by hand); in key_axis; run: float -6.808 .. 6.808; values 0, 1.088, 1.24795, 1.36364, 1.4144, 1.7734, 2, 2.04167, 2.05714, 2.25, 2.39407, 2.67429 ...; non-zero in 13% of samples
+Player.forward | OK | code: 4 uses: actor_processFrame, actor_setupFromParts; run: float -2.39407 .. 6.99336; values 0, 0.000720015, 0.00399243, 0.0221413, 0.0745089, 0.0835826, 0.12279, 0.167002, 0.249175, 0.250336, 0.333665, 0.4169
+Player.strafe | OK | code: 3 uses: actor_processFrame; run: float -2.82353 .. 2.82353; values 0, 5.93347e-07, 3.29035e-06, 1.82461e-05, 5.49944e-05, 0.00010713, 0.000322881, 0.000561079, 0.00179045, 0.00311165,
+Player.climb | OK | code: 4 uses: actor_processFrame; run: float 2.26883e-11 .. 1; values 0, 0.000471479, 0.00276822, 0.0153452, 0.0803981, 0.133355, 0.167161, 0.23459, 0.235181, 0.252527, 0.266704, 0.3059 ...
+Player.lean | OK | code: 3 uses: actor_processFrame, mech_stats; run: float -142.619 .. 1300.94; values 0, 0.164395, 0.911556, 5.05532, 17.5315, 18.8061, 28.0356, 37.5754, 56.3256, 75.0747, 93.821, 112.573 ...; non-zero
+Player.run | OK | code: 3 uses: emit, actor_processFrame; run: float 1.12104e-44 .. 1; values 0, 5.8561e-06, 3.06739e-05, 8.20447e-05, 0.000180096, 0.000454979, 0.000998527, 0.00103696, 0.0023831, 0.00543059, 0.00
+Player.nextPos | OK | code: 31 uses of the name (shared with 1 structs; its own read by hand); in actor_processFrame, collision_moveSphere, net_sendPlayerState; run: float -56938.9 .. 51658; values 0, 10, 1357, 1457, 2199.83, 3057, 3200, 4457, 4667.33, 6557, 9377.22, 10569.9 ...; non-zero in 7% of samples
+Player.nextPitch | OK | code: 17 uses of the name (shared with 1 structs; its own read by hand); in actor_processFrame, item_pickup; run: float -890 .. 890; values 0, 0.361837, 0.834895, 20.8711, 35.4721, 150.007, 207.655, 215.015, 301.878, 390.814, 448.833, -11.82 ...; non-zero in 0% of
+Player.nextYaw | OK | code: 9 uses: match_mechTestFrame, actor_processFrame, actor_setupFromParts, item_pickup; run: float -8071.86 .. 8256.41; values 0, 172.88, 229.018, 506.25, 523.543, 535.674, 899.544, 2221.88, 2326.69, 2531.84, 2534.71, 2549.4 ...; non-zero in 7
+Player.nextStrafe | OK | code: 2 uses: actor_processFrame, angle_byte; run: float -2.82353 .. 2.82353; values 0, 5.60409e-07, 3.10768e-06, 1.72321e-05, 5.19387e-05, 0.000101184, 0.000304961, 0.000529889, 0.00169109, 0.00293894
+Player.nextClimb | OK | code: 2 uses: actor_processFrame, angle_byte; run: float 2.14275e-11 .. 1; values 0, 0.0144937, 0.0759347, 0.0816116, 0.124745, 0.127936, 0.152852, 0.157874, 0.170315, 0.222107, 0.266709, 0.400083 ...;
+Player.nextLean | OK | code: 6 uses: actor_processFrame, angle_byte; run: float -142.599 .. 1304.49; values 0, 0.155251, 0.860967, 4.77459, 18.8061, 20.4782, 26.4785, 37.5754, 56.3256, 75.0747, 76.6418, 93.821 ...; non-zero
+Player.nextRun | OK | code: 5 uses: actor_processFrame, angle_byte; run: float 1.12104e-44 .. 1; values 0, 5.53107e-06, 2.89695e-05, 7.74924e-05, 0.000170102, 0.000429719, 0.000943132, 0.000979412, 0.00225077, 0.00512904, 0
+Player.netPos | OK | code: 7 uses: actor_processFrame, actor_setupFromParts, net_processGamePacket; run: float -57160 .. 52720; values 0, 10, 1357, 1457, 2199.83, 3057, 3200, 4457, 4667.33, 6557, 9377.22, 9500 ...; non-zero in 7% of samples
+Player.netPitch | OK | code: 3 uses: actor_processFrame, actor_setupFromParts, net_processGamePacket; run: float -618.75 .. 478.125; values 0, 14.0625, 28.125, 42.1875, 56.25, 70.3125, 84.375, 98.4375, 182.812, 295.312, 337.5, -28.125 ...; non-zero in 0% of
+Player.netYaw | OK | code: 3 uses: actor_processFrame, actor_setupFromParts, net_processGamePacket; run: float -3088.24 .. 3529.69; values 0, 182.812, 478.125, 506.25, 576.562, 618.75, 899.544, 2221.88, 2250, 2531.25, 2545.31, 2812.5 ...; non-zero in 7% o
+Player.netMotion | OK | code: 8 uses: actor_processFrame, actor_setupFromParts, net_processGamePacket; run: float -98.8235 .. 931.765; values 0, 0.1, 0.2, 0.3, 0.466667, 0.6, 0.8, 1, 1.8, 3.3, 5.8, 6.8 ...; non-zero in 0% of samples
+Player.botGoal | OK | code: 7 uses: actor_processFrame, actor_setupFromParts; run: float -54150 .. 42245.1; values 0, 10, 1357, 1457, 2199.83, 3057, 3200, 4457, 4667.33, 6070, 6557, 7600 ...; non-zero in 7% of samples
+Player.botLookPitch | OK | code: 4 uses: aim_at, actor_processFrame, actor_setupFromParts; run: float -899.068 .. 892.319; values 0, 0.361837, 0.834895, 163.98, 309.375, 390.814, 448.833, -0, -15.3086, -15.9908, -72.3498, -115.474 ...; non-zero i
+Player.botLookYaw | OK | code: 3 uses: aim_at, actor_processFrame, actor_setupFromParts; run: float -3088.24 .. 3093.75; values 0, 188.121, 296.689, 506.25, 562.5, 578.888, 899.544, 2221.88, 2728.12, 3093.75, -17.1887, -488.365 ...; non-zero in
+Player.netFired | OK | code: 4 uses: actor_processFrame, actor_setupFromParts, net_processGamePacket; run: NOT SEEN: rounds received from another machine's actor (mp with the other side firing)
+Player.firing | OK | code: 4 uses: match_frame, actor_processFrame; run: int 1 .. 1; values 0, 1; non-zero in 0% of samples
+Player.velocity | OK | code: 12 uses of the name (shared with 2 structs; its own read by hand); run: float -28207 .. 28248.1; values 0, 4.46993, 166.492, 247.253, 324.776, 332.66, 357.195, 396.051, 498.657, 664.645, 765.544, 1116.72 ...; non-zero in 5
+Player.move | OK | code: 15 uses of the name (shared with 1 structs; its own read by hand); run: float -3017.32 .. 2006.19; values 0, 0.445312, 0.517578, 1.01953, 1.38867, 2.34766, 2.77148, 4.15234, 4.1543, 4.30469, 4.6875, 5.33594 ...; non-zero i
+Player.pose | OK | code: 14 uses of the name (shared with 1 structs; its own read by hand); in anim_setTime; run: float -450 .. 450; values 0, 0.0400208, 0.19869, 0.200327, 0.229894, 0.250022, 0.250115, 0.250442, 0.250639, 0.253543, 0.25866, 0.259802 ...; non-zero
+Player.radius | OK | code: 20 uses of the name (shared with 3 structs; its own read by hand); run: float 500 .. 500; values 0, 500; non-zero in 13% of samples
+Player.footstepTime | OK | code: 4 uses: actor_processFrame, actor_setupFromParts; run: float 1e-07 .. 0.333362; values 0, 1e-07, 0.00835053, 0.00835153, 0.00835319, 0.00835371, 0.00835449, 0.00835476, 0.0199025, 0.0202605, 0.0203615, 0.0
+Player.deathPos | OK | code: 3 uses: killer_view, actor_dies, actor_setupFromParts; run: float -54150 .. 40718.8; values 0, 10, 1357, 1457, 2199.83, 3057, 3200, 4457, 4667.33, 6070, 6557, 7600 ...; non-zero in 7% of samples
+Player.push | OK | code: 12 uses of the name (shared with 2 structs; its own read by hand); run: float -143708 .. 149451; values 0, 1337.12, 1427.83, 3505.94, 3506.54, 3773.44, 7233.43, 13094.5, 19513.6, 22471.8, 40329.8, -176.807 ...; non-zero in
+Player.stateTime | OK | code: 5 uses: actor_dies, actor_processFrame, actor_setupFromParts; run: float 1e-07 .. 175.401; values 0, 1e-07, 0.00835053, 0.00835153, 0.00835319, 0.00835371, 0.00835449, 0.00835476, 0.0199025, 0.0202605, 0.0203615, 0.02
+Player.burstTime | COMMENT | it counts UP (+= dt) and a round is due each burstGap of it; set to the time already past the burst's last round (r - (m - 1) x gap), 0 when the burst is done: "the time to the burst's next round" says the opposite. run: 0 .. 0.1 (burstGap 0.06 .. 0.1) agree
+Player.shieldRegen | OK | code: 6 uses: actor_processFrame, mech_stats, totals_agree; run: int 4 .. 4; values 0, 4; non-zero in 11% of samples
+Player.staminaRest | OK | code: 6 uses: actor_processFrame, actor_setupFromParts; run: float 0.00666657 .. 1; values 0, 0.0833295, 0.0833485, 0.150032, 0.18335, 0.216688, 0.250012, 0.299992, 0.416682, 0.499929, 0.583356, 0.799972 ...; no
+Player.glow | OK | code: 19 uses of the name (shared with 2 structs; its own read by hand); run: float 0.1 .. 1.58001; values 0, 0.1, 0.100065, 0.116565, 0.116722, 0.117679, 0.133234, 0.133384, 0.133764, 0.149906, 0.150045, 0.161579 ...; non-zero
+Player.shieldRegenTime | OK | code: 6 uses: actor_processFrame, actor_setupFromParts; run: float 3.69549e-06 .. 0.999998; values 0, 0.00832815, 0.0166605, 0.0249935, 0.0333265, 0.0416598, 0.0499934, 0.0583265, 0.0666585, 0.074991, 0.0833239,
+Player.breakUp | RENAME -> partListsBound | nothing breaks up: actor_setupFromParts sets 0 right after loading the parts; each actor_processFrame binds one more part list's textures (ObjectList_bindTextures of parts[breakUp]: head, chest, arms, legs, booster, weapon 4, weapon 5) and counts it up to 7; actor_drawIntoView draws only the lists up to it (k > 0 && n < k: stop). run: 0 .. 7 agree
+Player.botNeeds | OK | code: 8 uses: actor_processFrame, actor_setupFromParts; run: int 1 .. 1; values 0, 1; non-zero in 0% of samples
+Player.botTargetTime | OK | code: 6 uses: actor_processFrame, actor_setupFromParts; run: float 1.33341 .. 10.4917; values 0, 8.72499, 8.96665, 9.225, 9.47497, 9.72501, 9.79168, 9.97498, 10.0333, 10.2166, 10.2917, 10.3083 ...; non-zero in 0
+Player.beepTimer | OK | code: 5 uses: actor_processFrame, actor_setupFromParts; run: NOT SEEN: a guided round fired by another machine homing on the local player
+Player.id | OK | code: 15 uses of the name (shared with 5 structs; its own read by hand); run: int 1 .. 117; values 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11 ...; non-zero in 7% of samples
+Player.character | OK | code: 18 uses of the name (shared with 2 structs; its own read by hand); run: int 1 .. 8; values 0, 1, 2, 3, 4, 5, 6, 8; non-zero in 0% of samples
+Player.yaw | OK | code: 15 uses of the name (shared with 1 structs; its own read by hand); run: float -8071.86 .. 8266.41; values 0, 162.876, 229.017, 506.25, 520.656, 538.566, 899.544, 2221.88, 2313.83, 2531.88, 2534.92, 2550.46 ...; non-zero in
+Player.lowDetail | OK | code: 16 uses of the name (shared with 1 structs; its own read by hand); run: NOT SEEN: an actor far away (name tag under 30 px wide)
+Player.lowDetailLoaded | OK | code: 2 uses: actor_processFrame; run: NOT SEEN: an actor far away (name tag under 30 px wide)
+Player.switchSlot | OK | code: 6 uses: actor_processFrame, actor_setupFromParts, actor_selectWeapon; run: int 1 .. 4; values 0, 1, 2, 3, 4; non-zero in 0% of samples
+Player.variantLoaded | OK | code: 25 uses of the name (shared with 1 structs; its own read by hand); run: int 1 .. 1; values 0, 1; non-zero in 8% of samples
+Player.lastAttacker | OK | code: 17 uses of the name (shared with 1 structs; its own read by hand); run: int -1 .. 7; values 0, 1, 2, 3, 4, 5, 6, 7, -1; non-zero in 13% of samples
+Player.controlledBy | OK | code: 19 uses of the name (shared with 1 structs; its own read by hand); in actor_setupFromParts; run: int 1 .. 2; values 0, 1, 2; non-zero in 0% of samples
+Player.bot | COMMENT | set from the spawn (actor_setupFromParts: spawn[1]; 0 a player, 1 the map's actors but the first); actor_processFrame also tests 2: no out-of-ammunition check and no ammunition spent (never set by the shipped code). run: 0 / 1 agree
+Player.pos | OK | code: 144 uses of the name (shared with 9 structs; its own read by hand); run: float -56925.9 .. 51595.6; values 0, 10, 1357, 1457, 2199.83, 3057, 3200, 4457, 4667.33, 6557, 9377.22, 10569.9 ...; non-zero in 7% of samples
+Player.pitch | OK | code: 19 uses of the name (shared with 2 structs; its own read by hand); run: float -890 .. 890; values 0, 0.355961, 0.809924, 19.6186, 35.9038, 137.488, 207.815, 209.115, 302.264, 389.24, 446.639, -10.8612 ...; non-zero in 0% o
+Player.nextForward | OK | code: 13 uses of the name (shared with 1 structs; its own read by hand); run: float -2.40448 .. 6.99373; values 0, 0.000679966, 0.00377086, 0.0209117, 0.0835826, 0.0870322, 0.115971, 0.167002, 0.170315, 0.250336, 0.333665, 0.416
+Player.fireCycle | OK | code: 9 uses: actor_processFrame, actor_setupFromParts; run: float 0.00333108 .. 0.99972; values 0, 0.00333249, 0.00333297, 0.0066643, 0.00671537, 0.00999322, 0.0100477, 0.0133255, 0.0133797, 0.0167149, 0.023370
+Player.burstLeft | OK | code: 11 uses: actor_processFrame, actor_setupFromParts; run: int 1 .. 4; values 0, 1, 2, 3, 4; non-zero in 0% of samples
+Player.weaponLowering | OK | code: 7 uses: actor_processFrame, actor_setupFromParts, actor_selectWeapon; run: int 1 .. 1; values 0, 1; non-zero in 0% of samples
+Player.weaponRaise | OK | code: 17 uses of the name (shared with 1 structs; its own read by hand); in actor_processFrame; run: float 5.90924e-06 .. 1; values 0, 0.200033, 0.250026, 0.274985, 0.274996, 0.300931, 0.350028, 0.375014, 0.400071, 0.425008, 0.425042, 0.449953 ...; no
+Player.followTarget | OK | code: 8 uses: actor_processFrame, script_processCommandBy; run: int -1 .. -1; values 0, -1; non-zero in 13% of samples
+Player.botTarget | OK | code: 28 uses of the name (shared with 1 structs; its own read by hand); run: int -1 .. 7; values 0, 1, 2, 3, 4, 5, 6, 7, -1; non-zero in 13% of samples
+Player.detectionRangeSq | OK | code: 6 uses: actor_processFrame, actor_applySpawnRecord, mech_stats, totals_agree; run: float 4e+08 .. 1.69e+10; values 0, 4e+08, 4.84e+08, 8.41e+08, 3.6e+09, 4.9e+09, 1e+10, 1.69e+10; non-zero in 13% of samples
+Player.armorMax | OK | code: 15 uses of the name (shared with 1 structs; its own read by hand); in actor_startingValues; run: int 150 .. 220; values 0, 150, 153, 165, 171, 200, 214, 220; non-zero in 13% of samples
+Player.shieldMax | OK | code: 17 uses of the name (shared with 1 structs; its own read by hand); in mech_stats, actor_checkDataLoss; run: int 100 .. 270; values 0, 100, 121, 135, 165, 200, 214, 270; non-zero in 13% of samples
+Player.ammoMax | OK | code: 12 uses: match_mechTestFrame, actor_processFrame, actor_startingValues, mech_stats; run: int 40 .. 555; values 0, 40, 50, 60, 70, 80, 90, 100, 120, 150, 200, 250; non-zero in 13% of samples
+Player.speed | OK | code: 26 uses of the name (shared with 2 structs; its own read by hand); run: float 2796.05 .. 8458.33; values 0, 2796.05, 3125, 4166.67, 4958.33, 5000, 5500, 5555.56, 5952.38, 6944.44, 8458.33; non-zero in 13% of samples
+Player.unused1c | OK | code: 2 uses: actor_applySpawnRecord, mech_stats; run: int 100 .. 100; values 0, 100; non-zero in 12% of samples
+Player.baseSpeed | OK | code: 4 uses: actor_applySpawnRecord, mech_stats, totals_agree, script_processCommandBy; run: float 2796.05 .. 8458.33; values 0, 2796.05, 3125, 4166.67, 4958.33, 5000, 5500, 5555.56, 5952.38, 6944.44, 8458.33; non-zero in 13% of samples
+Player.turnRate | OK | code: 3 uses: actor_processFrame, actor_applySpawnRecord, mech_stats; run: float 900 .. 2200; values 0, 900, 1200, 1500, 1800, 2200; non-zero in 13% of samples
+Player.unused34 | TYPE -> float | holds float bits: every value seen is a float (0.5, 1, 3) and mech_stats writes 0x40400000 "/* 3 */"; copied with the spawn record (SpawnRecord.unused34, also float bits); never read. Keep the copies as BITS()
+Player.aimError | OK | code: 6 uses: actor_processFrame, actor_applySpawnRecord, mech_stats; run: int 10 .. 30; values 0, 10, 20, 30; non-zero in 13% of samples
+Player.scriptFlag | OK | code: 4 uses: actor_applySpawnRecord, mech_stats, script_processCommandBy; run: NOT SEEN: script commands 10 / 11
+Player.dodgeSpread | OK | code: 4 uses: actor_processFrame, actor_applySpawnRecord, mech_stats; run: float 1000 .. 5000; values 0, 1000, 5000; non-zero in 12% of samples
+Player.climbSpread | OK | code: 4 uses: actor_processFrame, actor_applySpawnRecord, mech_stats; run: float 500 .. 5000; values 0, 500, 5000; non-zero in 12% of samples
+Player.botParams | OK | code: 14 uses of the name (shared with 1 structs; its own read by hand); run: float 1 .. 4000; values 0, 1, 2, 5, 10, 4000; non-zero in 13% of samples
+Player.inForward | OK | code: 6 uses: actor_processFrame, actor_setupFromParts; run: int 1 .. 1; values 0, 1; non-zero in 0% of samples
+Player.inBackward | OK | code: 5 uses: actor_processFrame; run: int 1 .. 1; values 0, 1; non-zero in 0% of samples
+Player.inStepLeft | OK | code: 4 uses: actor_processFrame; run: int 1 .. 1; values 0, 1; non-zero in 0% of samples
+Player.inStepRight | OK | code: 4 uses: actor_processFrame; run: int 1 .. 1; values 0, 1; non-zero in 0% of samples
+Player.inPitch | OK | code: 5 uses: actor_processFrame; run: float -140.038 .. 18.3612; values 0, 0.00587526, 0.0231934, 0.0249707, 0.0310059, 0.168213, 0.250244, 0.309814, 1.57455, 2.19363, 12.5192, -0 ...; non
+Player.inYaw | OK | code: 2 uses: actor_processFrame; run: float -374.956 .. 18.3905; values 0, 0.000823975, 10.0045, 10.0154, 15.0173, -0, -0.0214844, -10.0045, -10.0116, -10.0154, -12.5144, -12.5192 ...; non
+Player.inFire | OK | code: 5 uses: actor_processFrame, script_processCommandBy; run: int 1 .. 1; values 0, 1; non-zero in 0% of samples
+Player.inAltitude | OK | code: 4 uses: actor_processFrame; run: int 1 .. 1; values 0, 1; non-zero in 0% of samples
+Player.inBooster | OK | code: 9 uses: actor_processFrame, actor_setupFromParts; run: int 1 .. 1; values 0, 1; non-zero in 0% of samples
+Player.inWeaponSlot | OK | code: 4 uses: actor_processFrame, actor_setupFromParts; run: int -1 .. 5; values 0, 1, 2, 3, 4, 5, -1; non-zero in 15% of samples
+Player.inPrevWeapon | OK | code: 3 uses: actor_processFrame, actor_setupFromParts; run: int 1 .. 1; values 0, 1; non-zero in 0% of samples
+Player.inNextWeapon | OK | code: 2 uses: actor_processFrame; run: int 1 .. 1; values 0, 1; non-zero in 0% of samples
+Player.path | OK | code: 26 uses of the name (shared with 1 structs; its own read by hand); in actor_pickPathPoint; run: int -1 .. 40; values 0, 1, 2, 3, 4, 5, 6, 7, 12, 13, 18, 21 ...; non-zero in 13% of samples
+Player.pathPoint | OK | code: 17 uses of the name (shared with 1 structs; its own read by hand); in script_processCommandBy; run: int -1 .. 26; values 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 17 ...; non-zero in 13% of samples
+Player.outOfPlay | OK | code: 10 uses: actor_processFrame, actor_setInput, script_holdActor, actor_drawIntoView; run: NOT SEEN: script command 24
+Player.detectionAngle | OK | code: 6 uses: main_ring, mech_stats, totals_agree, armc_readMechStats; run: float 90 .. 260; values 0, 90, 114, 120, 130, 150, 160, 180, 200, 260; non-zero in 13% of samples
+Player.score | OK | code: 6 uses: match_frame, main_score, award, ladder_addMatchScores; run: int 5 .. 60; values 0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55; non-zero in 0% of samples
+Player.active | COMMENT | set 1 by actor_setupFromParts, 0 by actor_deactivate and stage_clearActorSlots: the actor slot in use. "(0 for the local player's ...)" reads as if the local player's were always 0; it means while the local player's is 0 (not spawned) "press fire" may be shown. run: 0 / 1 agree
+Player.spawnAge | OK | code: 17 uses of the name (shared with 1 structs; its own read by hand); run: float 1e-07 .. 175.401; values 0, 1e-07, 0.00835053, 0.00835153, 0.00835319, 0.00835371, 0.00835449, 0.00835476, 0.0199025, 0.0202605, 0.0203615, 0.02
+Player.armor | OK | code: 27 uses of the name (shared with 1 structs; its own read by hand); run: int 1 .. 220; values 0, 33, 46, 54, 66, 85, 107, 135, 137, 142, 150, 153 ...; non-zero in 12% of samples
+Player.shield | OK | code: 26 uses of the name (shared with 1 structs; its own read by hand); run: int 2 .. 270; values 0, 2, 35, 41, 53, 62, 92, 94, 100, 105, 107, 121 ...; non-zero in 13% of samples
+Player.ammo | OK | code: 18 uses of the name (shared with 1 structs; its own read by hand); run: int 1 .. 277; values 0, 20, 25, 30, 35, 40, 45, 50, 60, 75, 85, 90 ...; non-zero in 13% of samples
+Player.slot | OK | code: 49 uses of the name (shared with 3 structs; its own read by hand); run: int 1 .. 5; values 0, 1, 2, 3, 4, 5; non-zero in 3% of samples
+Player.heldItem | OK | code: 7 uses: main_snapshot, main_draw, actor_setWeaponSlot, stage_setupView; run: int -1 .. 36; values 0, 2, 3, 4, 8, 10, 11, 13, 14, 16, 17, 18 ...; non-zero in 13% of samples
+Player.fireAnim | OK | code: 10 uses: main_crosshair, actor_processFrame, actor_setupFromParts; run: float 0.0001 .. 0.999979; values 0, 0.0001, 0.00333249, 0.00333297, 0.0066643, 0.00671537, 0.00999322, 0.0100477, 0.0133255, 0.0133797, 0.020038, 0.02
+Player.stateFlags | OK | code: 24 uses of the name (shared with 1 structs; its own read by hand); in actor_processFrame, net_processGamePacket, item_pickup, flag_texture; run: int 1 .. 24704; values 0, 1, 5, 32, 33, 35, 37, 1285, 2048, 8192, 8224, 10240 ...; non-zero in 12% of samples
+Player.timers | OK | code: 20 uses of the name (shared with 1 structs; its own read by hand); in item_pickup, main_timers; run: float 26.0084 .. 1000; values 0, 29.8833, 29.8917, 29.9, 29.9083, 29.9167, 29.925, 29.9333, 29.9417, 29.95, 29.9583, 29.9667 ...; non-zero in 0% of sa
+Player.slotIconTime | OK | code: 5 uses: main_slotIcon, main_draw, actor_processFrame, actor_setupFromParts; run: float 1.06217e-05 .. 1.99167; values 0, 0.0583476, 0.31669, 0.516705, 0.566665, 0.766687, 0.816698, 1.00834, 1.06667, 1.26669, 1.30832, 1.51668 ...; n
+Player.energy | OK | code: 11 uses: main_energy, actor_processFrame, actor_setupFromParts; run: float 5.2104e-06 .. 1; values 0, 0.780966, 0.863104, 0.872219, 0.880961, 0.908736, 0.925601, 0.931552, 0.934716, 0.945241, 0.947495, 0.950401 ...; non
+Player.overheat | OK | code: 7 uses: main_energy, actor_processFrame, actor_setupFromParts; run: int 1 .. 1; values 0, 1; non-zero in 0% of samples
+Player.warned | OK | code: 4 uses: main_energy, actor_processFrame, actor_setupFromParts; run: int 1 .. 1; values 0, 1; non-zero in 0% of samples
+Player.lastHitWeapon | OK | code: 5 uses: actor_setupFromParts, actor_takeDamage, msg_kill, angle_byte; run: int -1 .. 20; values 0, 2, 4, 8, 10, 13, 14, 19, 20, -1; non-zero in 12% of samples
+Player.ammoKind | OK | code: 4 uses: main_ammo, actor_processFrame, actor_loadWeapon; run: int 1 .. 3; values 0, 1, 2, 3; non-zero in 12% of samples
+Player.whiteFlash | OK | code: 4 uses: main_draw, actor_processFrame, actor_setupFromParts, item_pickup; run: float 4.63799e-07 .. 1; values 0, 0.00868061, 0.026904, 0.0763605, 0.183332, 0.267019, 0.285242, 0.327906, 0.334702, 0.433332, 0.508676, 0.5269 ...; n
+Player.hitFlash | OK | code: 12 uses: main_draw, actor_processFrame, actor_drawIntoView, actor_setupFromParts; run: float 3.23169e-07 .. 0.5; values 0, 0.0416658, 0.0416868, 0.0833279, 0.158363, 0.216633, 0.233345, 0.249996, 0.283342, 0.29167, 0.300003, 0.308347 ...
+Player.homedOn | OK | code: 6 uses: main_ring, main_draw, actor_processFrame, actor_setupFromParts; run: NOT SEEN: a guided round fired by another machine homing on the local player
+Player.name | OK | code: 94 uses of the name (shared with 22 structs; its own read by hand); in actor_setupFromParts, player_setName, scene_restoreNames, msg_players; run: strings: e.g. "Alex"; non-zero in 0% of samples
+Player.grade | OK | code: 15 uses of the name (shared with 1 structs; its own read by hand); in level_fromPoints, hud_drawEmblem; run: int 1 .. 1; values 0, 1; non-zero in 12% of samples
+Player.inPlay | OK | code: 14 uses of the name (shared with 1 structs; its own read by hand); in actor_setupFromParts, bot_spawns; run: int 1 .. 1; values 0, 1; non-zero in 11% of samples
+Player.kills | OK | code: 35 uses of the name (shared with 6 structs; its own read by hand); in actor_dies, scene_updateRanking; run: int 1 .. 12; values 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11; non-zero in 0% of samples
+Player.deaths | OK | code: 26 uses of the name (shared with 6 structs; its own read by hand); in actor_dies, esc_resetScore, team_change, scene_updateRanking; run: int 1 .. 8; values 0, 1, 2, 3, 4, 5, 6, 7, 8; non-zero in 1% of samples
+Player.killsCounted | OK | code: 8 uses: match_frame, esc_resetScore, stage_newRound, ladder_addMatchScores; run: NOT SEEN: a Ladder match (ladder_addMatchScores)
+Player.deathsCounted | OK | code: 7 uses: match_frame, stage_newRound, ladder_addMatchScores, scene_resetScores; run: NOT SEEN: a Ladder match (ladder_addMatchScores)
+Player.timePlayed | OK | code: 10 uses of the name (shared with 2 structs; its own read by hand); run: int 1 .. 260; values 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11 ...; non-zero in 11% of samples
+Player.timeFraction | OK | code: 10 uses of the name (shared with 2 structs; its own read by hand); run: float 1e-07 .. 0.999998; values 0, 1e-07, 0.00835053, 0.00835153, 0.00835319, 0.00835371, 0.00835449, 0.00835476, 0.0199025, 0.0202605, 0.0203615, 0.0
+Player.player | OK | code: 32 uses of the name (shared with 2 structs; its own read by hand); run: int -1 .. 7; values 0, 1, 2, 3, 4, 5, 6, 7, -1; non-zero in 86% of samples
+Player.team | OK | code: 62 uses of the name (shared with 2 structs; its own read by hand); in player_setTeam, match_frame, scene_setLocalTeam, scene_claimTeamSlot; run: int -1 .. 2; values 0, 1, 2, -1; non-zero in 89% of samples
+Player.state | OK | code: 59 uses of the name (shared with 1 structs; its own read by hand); in actor_setupFromParts, bot_spawns, player_setTeam; run: int 1 .. 3; values 0, 1, 2, 3; non-zero in 11% of samples
+Player.screenPos | OK | code: 12 uses: hud_drawLockOn, marker_big, hud_drawPlayerMarkers, actor_setupFromParts; run: float -1.59414e+09 .. 3.10739e+09; values 0, 1.68083, 1.69172, 1.69307, 1.69522, 1.69527, 1.6965, 1.72509, 8.41916, 581.011, 592.19, 641.112 ...; NaN/ (NaN / huge values: actors behind the camera, w near 0)
+Player.tagTopLeft | OK | code: 11 uses: marker_big, hud_drawPlayerMarkers, actor_drawIntoView, tag_narrow; run: float -79127.9 .. 3718.46; values 0, 255.51, 302.548, 309.683, 316.669, 379.198, 461.209, 461.21, 461.21, 461.21, 461.21, 517.612 ...; non-zero in 1%
+Player.tagBottomRight | OK | code: 6 uses: actor_drawIntoView, actor_setupFromParts, to_screen, tag_narrow; run: float -79127.9 .. 5519.24; values 0, 556.8, 581.13, 591.176, 606.59, 814.391, 1599.62, 1698.79, 1698.79, 1698.79, 1698.79, 1780.8 ...; non-zero in 1%
+Player.onScreen | OK | code: 7 uses: hud_drawLockOn, hud_drawPlayerMarkers, actor_deactivate, stage_setupView; run: int 1 .. 1; values 0, 1; non-zero in 0% of samples
+Player.facingCos | COMMENT | the value is -e[2] / |e| of its eye-space position: the cosine of its angle off the local player's view axis, written just before the detection-cone test against g_cosTable; "(render: who faces it)" misdescribes it. run: 0.65 .. 1 agree
+Player.aimTime | OK | code: 9 uses: hud_drawLockOn, actor_processFrame, actor_deactivate, actor_setupFromParts; run: NOT SEEN: a lock-on weapon (targetingTime > 0) aimed at an enemy in view
+Player.lockAnim | OK | code: 2 uses: hud_drawLockOn, actor_processFrame; run: NOT SEEN: a lock made with a lock-on weapon
+Player.labelFade | OK | code: 5 uses: hud_drawPlayerMarkers, actor_processFrame, actor_deactivate, stage_setupView; run: float 0.0329173 .. 3; values 0, 0.100014, 0.358356, 0.60833, 0.858313, 1.10828, 1.35834, 1.60833, 1.85001, 2.10834, 2.34999, 2.59999 ...; non-zero in
+Player.chatIcon | OK | code: 10 uses: chat_keys, hud_drawPlayerMarkers, actor_setupFromParts, angle_byte; run: int 1 .. 2; values 0, 1, 2; non-zero in 2% of samples
+Player.isKing | OK | code: 12 uses: main_draw, hud_drawPlayerMarkers, hud_drawRanking, actor_dies; run: int 1 .. 1; values 0, 1; non-zero in 0% of samples
+Player.viewMarked | OK | code: 10 uses: replay_frame, match_frame, match_drawFrame, actor_processFrame; run: int 1 .. 1; values 0, 1; non-zero in 0% of samples
+Player.isCommander | OK | code: 10 uses: match_frame, main_draw, hud_drawPlayerMarkers, hud_drawRanking; run: int 1 .. 1; values 0, 1; non-zero in 0% of samples
+Factor.index | OK | code: 15 uses of the name (shared with 2 structs; its own read by hand); in factor_addFactorBy; run: int 1 .. 176; values 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11 ...; non-zero in 1% of samples
+Factor.used | OK | code: 27 uses of the name (shared with 5 structs; its own read by hand); run: int 1 .. 1; values 0, 1; non-zero in 1% of samples
+Factor.kind | OK | code: 28 uses of the name (shared with 11 structs; its own read by hand); run: int 1 .. 2; values 0, 1, 2; non-zero in 1% of samples
+Factor.colour | OK | code: 26 uses of the name (shared with 4 structs; its own read by hand); run: int 4278190080 .. 4294967295; values 0, 4278190080, 4278190143, 4278190335, 4278206335, 4278215679, 4278222592, 4278255360, 4278255487, 4278255615, 42
+Factor.pos | OK | code: 144 uses of the name (shared with 9 structs; its own read by hand); run: float -2.55545e+38 .. 130496; values 0, 7.06351e-40, 1.82135e-37, 1.82139e-37, 179.34, 497.8, 695.54, 1000, 1300, 3146.23, 3200, 3464.64 ...; non-zero
+Factor.dir | OK | code: 17 uses of the name (shared with 4 structs; its own read by hand); run: float -5890.18 .. 1660.84; values 0, 1.4013e-45, 2.24208e-44, 2.94273e-44, 4.48416e-44, 5.74532e-44, 8.37275e-27, 9.66017e-27, 9.66964e-27, 9.69488e-2
+Factor.radius | OK | code: 20 uses of the name (shared with 3 structs; its own read by hand); run: float 1.74083e-10 .. 6499.5; values 0, 350.468, 806.751, 1000, 1041.71, 1306.69, 1450.05, 1500, 2000, 2500, 2750, 2782.1 ...; non-zero in 1% of sample
+LightFactors.records | OK | code: 40 uses of the name (shared with 2 structs; its own read by hand); in LightFactors_read; run: (a record / array of records: see its fields)
+LightFactors.count | OK | code: 68 uses of the name (shared with 5 structs; its own read by hand); run: int 1 .. 177; values 0, 1, 2, 3, 4, 5, 6, 7, 8, 10, 11, 12 ...; non-zero in 72% of samples
+LightFactors.nextFree | OK | code: 3 uses: Light_clearCounts, LightFactors_read, factor_addFactorBy; run: int 1 .. 177; values 0, 1, 2, 3, 4, 5, 6, 7, 8, 10, 11, 12 ...; non-zero in 72% of samples
+LightFactors.enabled | OK | code: 4 uses: LightFactors_read, factor_addFactorBy, ObjectList_relight, ObjectList_queue; run: int 1 .. 1; values 0, 1; non-zero in 73% of samples
+MapObject.trigger | OK | code: 2 uses of the name (shared with 2 structs; its own read by hand); in mapObject_frame; run: NOT SEEN: 0 in every shipped map
+MapObject.animPeriod | OK | code: 1 uses of the name (shared with 2 structs; its own read by hand); in anim_start, object_setAnimation; run: NOT SEEN: 0 in the sessions' maps' object files
+MapObject.animTime | OK | code: 6 uses: anim_reset, mapObject_frame; run: float 0.000725 .. 0.999071; values 0, 0.000770833, 0.00132143, 0.00142308, 0.00154167, 0.00168182, 0.0018125, 0.00264286, 0.00310714, 0.00334615, 0.00
+MapObject.poseStale | OK | code: 4 uses: object_initObjectBy, mapObject_frame; run: NOT SEEN: set and cleared within one mapObject_frame
+MapObject.glow | OK | code: 19 uses of the name (shared with 2 structs; its own read by hand); in object_glow; run: float 0.0330955 .. 1; values 0, 0.0330955, 0.100035, 0.166641, 0.233364, 0.300003, 0.366619, 0.433326, 0.633166, 0.633381, 0.641645, 0.766685 ...; non
+MapObject.clip | OK | code: 6 uses of the name (shared with 2 structs; its own read by hand); run: float -178240 .. 71494.1; values 0, 181.78, 509.888, 765.953, 965.78, 1757.2, 1773.27, 1774.28, 1787.46, 1818.15, 1917.86, 1972.9 ...; non-zero in 0%
+MapObject.waitTime | OK | code: 4 uses: object_initObjectBy, mapObject_frame; run: NOT SEEN: a timed object (flag 0x10); none in the shipped maps
+MapObject.id | OK | code: 15 uses of the name (shared with 5 structs; its own read by hand); run: int 1 .. 247; values 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11 ...; non-zero in 4% of samples
+MapObject.nameIndex | OK | code: 1 uses: object_initObjectBy; run: int 1 .. 98; values 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11 ...; non-zero in 3% of samples
+MapObject.animPath | OK | code: 2 uses: object_initObjectBy, anim_start; run: strings: e.g. ""; non-zero in 0% of samples
+MapObject.place | OK | code: 10 uses of the name (shared with 2 structs; its own read by hand); run: float -138414 .. 92438.3; values 0, 0.36, 2.34, 142, 179, 500, 545.36, 1064, 1153.38, 1751, 2196, 2223 ...; non-zero in 3% of samples
+MapObject.rotation | OK | code: 54 uses of the name (shared with 9 structs; its own read by hand); run: float -1 .. 1; values 0, 0.000796274, 0.00579624, 0.0856911, 0.193767, 0.281143, 0.285952, 0.309816, 0.40776, 0.412321, 0.413046, 0.475032 ...; non-ze
+MapObject.placeMatrix | OK | code: 4 uses: object_initObjectBy, mapObject_frame; run: float -138414 .. 92438.3; values 0, 0.000796258, 0.0168369, 0.0998334, 0.36, 0.380188, 0.539632, 0.589145, 0.659983, 0.696707, 0.717356, 0.75128 ...;
+MapObject.placeInverse | OK | code: 3 uses: object_initObjectBy, mapObject_frame; run: float -105187 .. 138414; values 0, 0.000796259, 0.0998334, 0.380188, 0.539632, 0.589145, 0.659983, 0.696707, 0.717356, 0.75128, 0.808028, 0.841901 ...
+MapObject.matrixInverse | OK | code: 7 uses: collision_moveSphere, collision_rayTrace, object_initObjectBy, mapObject_frame; run: float -105187 .. 138414; values 0, 0.000796259, 0.0998334, 0.380188, 0.539632, 0.589145, 0.659983, 0.696707, 0.717356, 0.75128, 0.808028, 0.841901 ...
+MapObject.animMatrix | OK | code: 4 uses: object_initObjectBy, mapObject_frame; run: float -0.999998 .. 1; values 0, 0.00761589, 0.00951981, 0.0152313, 0.028556, 0.999592, 0.999884, 0.999955, 0.999971, 1, -0.00381514, -0.00761589 ...;
+MapObject.animInverse | OK | code: 2 uses: object_initObjectBy, mapObject_frame; run: float -0.999998 .. 1; values 0, 0.00761589, 0.00951981, 0.0152313, 0.028556, 0.999592, 0.999884, 0.999955, 0.999971, 1, -0, -0.00761589 ...; non-zero
+MapObject.relMatrix | OK | code: 7 uses: collision_moveSphere, collision_rayTrace, object_initObjectBy, hit_surface; run: float -2195.31 .. 1288.27; values 0, 1.07455e-11, 1.07469e-11, 5.19556e-11, 3.59028e-10, 5.2174e-10, 6.16706e-10, 6.53794e-10, 1.08569e-08, 1.54725e-0
+MapObject.relInverse | OK | code: 4 uses: collision_moveSphere, collision_rayTrace, object_initObjectBy, mapObject_frame; run: float -2195.31 .. 1097.65; values 0, 1.07455e-11, 1.07469e-11, 5.19556e-11, 3.34419e-10, 6.16706e-10, 1.08569e-08, 1.54725e-08, 1.71266e-08, 2.77236e-
+MapObject.glowSize | TYPE -> float | a float (500, 1000, 2000 seen; the comment says so); copied from ObjectType.glowSize and into the flare descriptor's word 5 as bits (those two copies become BITS())
+MapObject.glowColour | OK | code: 2 uses of the name (shared with 2 structs; its own read by hand); run: int 4283519487 .. 4294967295; values 0, 4283519487, 4286644223, 4293455871, 4294967295; non-zero in 4% of samples
+MapObject.active | OK | code: 60 uses of the name (shared with 4 structs; its own read by hand); run: int 1 .. 1; values 0, 1; non-zero in 4% of samples
+MapObject.flags | OK | code: 34 uses of the name (shared with 5 structs; its own read by hand); in object_glow, mapObject_frame, stage_drawObject, mapObject_frame; run: int 2 .. 7; values 0, 2, 3, 7; non-zero in 0% of samples
+MapObject.matrix | OK | code: 25 uses of the name (shared with 4 structs; its own read by hand); run: float -138414 .. 92438.3; values 0, 0.000796258, 0.0168369, 0.0998334, 0.36, 0.380188, 0.539632, 0.589145, 0.659983, 0.696707, 0.717356, 0.75128 ...;
+MapObject.model | OK | code: 15 uses of the name (shared with 2 structs; its own read by hand); in object_initObjectBy, shape_getByName, stage_drawObject, shape_shadingColours; run: pointer: 607685 valid, 0 original-image addresses, 0 unmapped; non-zero in 4% of samples
+MapObject.colourRuns | OK | code: 6 uses: object_initObjectBy, stage_drawObject, mapObject_frame; run: int 353854640 .. 356062128; values 0, 353854640, 353855504, 353856368, 353857232, 353858096, 353858960, 353859824, 353860688, 353861552, 353862416, 35
+MapObject.colourSide | OK | code: 3 uses: object_initObjectBy, stage_drawObject, mapObject_frame; run: int 1 .. 1; values 0, 1; non-zero in 4% of samples
+MapObject.unit | OK | code: 14 uses of the name (shared with 1 structs; its own read by hand); run: pointer: 519239 valid, 0 original-image addresses, 0 unmapped; non-zero in 3% of samples
+MapObject.animated | OK | code: 5 uses: collision_moveSphere, collision_rayTrace, space_enableUnit, object_setAnimation; run: int 1 .. 1; values 0, 1; non-zero in 0% of samples
+MapObject.skeleton | OK | code: 2 uses: object_setAnimation, mapObject_frame; run: pointer: 3456 valid, 0 original-image addresses, 0 unmapped; non-zero in 0% of samples
+MapObject.animRate | OK | code: 12 uses: object_setAnimation, anim_reset, mapObject_frame; run: float 0.00416667 .. 0.025; values 0, 0.00416667, 0.00714286, 0.00769231, 0.00833333, 0.00909091, 0.0142857, 0.025; non-zero in 0% of samples
+MapObject.animMode | OK | code: 2 uses: object_setAnimation, mapObject_frame; run: int 2 .. 2; values 0, 2; non-zero in 0% of samples (0 / 2 seen: mode 2, looping, in host-h2; the checker misread "1 once")
+MapObject.pos | OK | code: 144 uses of the name (shared with 9 structs; its own read by hand); run: float -138414 .. 105917; values 0, 0.00195312, 0.356094, 0.359023, 0.36, 498.312, 500, 500.001, 500.001, 566.214, 1380.48, 2273.68 ...; non-zero in 4%
+ObjectType.name | OK | code: 94 uses of the name (shared with 22 structs; its own read by hand); run: NOT SEEN: the map object file's records exist only while a map loads (map_loadObjectInfoFrom)
+ObjectType.flags | OK | code: 34 uses of the name (shared with 5 structs; its own read by hand); run: NOT SEEN: the map object file's records exist only while a map loads (map_loadObjectInfoFrom)
+ObjectType.trigger | OK | code: 2 uses of the name (shared with 2 structs; its own read by hand); in object_initObjectBy; run: NOT SEEN: the map object file's records exist only while a map loads (map_loadObjectInfoFrom)
+ObjectType.animPeriod | OK | code: 1 uses of the name (shared with 2 structs; its own read by hand); run: NOT SEEN: the map object file's records exist only while a map loads (map_loadObjectInfoFrom)
+ObjectType.animName | OK | code: 2 uses: object_initObjectBy; run: NOT SEEN: the map object file's records exist only while a map loads (map_loadObjectInfoFrom)
+ObjectType.place | OK | code: 10 uses of the name (shared with 2 structs; its own read by hand); in object_initObjectBy; run: NOT SEEN: the map object file's records exist only while a map loads (map_loadObjectInfoFrom)
+ObjectType.rotation | OK | code: 54 uses of the name (shared with 9 structs; its own read by hand); run: NOT SEEN: the map object file's records exist only while a map loads (map_loadObjectInfoFrom)
+ObjectType.glowSize | TYPE -> float | the same float as MapObject.glowSize (500 .. 2000); copied as bits (BITS())
+ObjectType.glowColour | OK | code: 2 uses of the name (shared with 2 structs; its own read by hand); run: NOT SEEN: the map object file's records exist only while a map loads (map_loadObjectInfoFrom)
+ItemType.name | OK | code: 94 uses of the name (shared with 22 structs; its own read by hand); run: strings: e.g. "GravityArmor"; non-zero in 0% of samples
+ItemType.shapeName | OK | code: 1 uses: catalogue_loadItemInfoFrom; run: strings: e.g. "Item\Special\gravityarmor"; non-zero in 0% of samples
+ItemType.respawnSound | OK | code: 1 uses: item_update; run: int 152 .. 154; values 0, 152, 153, 154; non-zero in 11% of samples
+ItemType.pickSound | OK | code: 2 uses: item_pickup; run: int 140 .. 159; values 0, 140, 142, 143, 144, 145, 146, 147, 148, 149, 150, 151 ...; non-zero in 11% of samples
+ItemType.respawnTime | COMMENT | item_update compares MapItem.timer with it (mi->timer > t->respawnTime); there is no "fade" field. run: 6 .. 240 s agree
+ItemType.model | OK | code: 15 uses of the name (shared with 2 structs; its own read by hand); run: pointer: 339457 valid, 0 original-image addresses, 0 unmapped; non-zero in 11% of samples
+MapItem.pitch | OK | code: 19 uses of the name (shared with 2 structs; its own read by hand); in map_loadPlayInfoFrom; run: float -767.763 .. -120.321; values 0, -120.321, -189.076, -211.994, -217.724, -229.183, -240.642, -280.749, -292.208, -297.938, -309.397, -389.611 ...
+MapItem.warpTo | OK | code: 3 uses: map_loadPlayInfoFrom, item_pickup; run: int 14 .. 15; values 0, 14, 15; non-zero in 0% of samples
+MapItem.warpPitch | OK | code: 2 uses: map_loadPlayInfoFrom, item_pickup; run: NOT SEEN: a warp zone with a non-zero pitch
+MapItem.type | OK | code: 30 uses of the name (shared with 3 structs; its own read by hand); run: int 1 .. 37; values 0, 1, 2, 3, 4, 10, 11, 12, 13, 14, 15, 16 ...; non-zero in 11% of samples
+MapItem.pos | OK | code: 144 uses of the name (shared with 9 structs; its own read by hand); in map_loadPlayInfoFrom, item_update, stage_drawItems, item_pickup; run: float -75603.7 .. 56865.8; values 0, 57, 665.95, 1224.25, 2040.85, 2065, 2157, 4610, 5108.36, 5557, 5757, 5913.2 ...; non-zero in 11% of samples
+MapItem.angle | OK | code: 13 uses of the name (shared with 1 structs; its own read by hand); run: float -2698.63 .. 161506; values 0, 83.5705, 96.1698, 106.228, 111.326, 124.535, 126.235, 136.629, 176.432, 181.983, 186.027, 234.55 ...; non-zero in
+MapItem.taken | OK | code: 12 uses: match_frame, map_loadPlayInfoFrom, item_pickup, item_update; run: int 1 .. 1; values 0, 1; non-zero in 0% of samples
+MapItem.timer | OK | code: 22 uses of the name (shared with 1 structs; its own read by hand); in item_update, stage_drawItems, net_sendItemStates; run: float 0.00834172 .. 269.14; values 0, 0.139284, 0.160283, 0.177046, 0.185544, 0.207559, 0.210392, 0.227714, 0.276637, 0.294053, 0.310044, 0.390917 ...
+Particle.id | OK | code: 15 uses of the name (shared with 5 structs; its own read by hand); in particle_init, particle_draw; run: int 1 .. 515070; values 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11 ...; non-zero in 16% of samples
+Particle.kind | OK | code: 28 uses of the name (shared with 11 structs; its own read by hand); run: int 2 .. 50; values 0, 2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 14 ...; non-zero in 15% of samples
+Particle.owner | OK | code: 26 uses of the name (shared with 2 structs; its own read by hand); in particle_beam; run: int 1 .. 8192; values 0, 1, 2, 3, 4, 5, 6, 7, 19, 43, 67, 84 ...; non-zero in 13% of samples
+Particle.pos | OK | code: 144 uses of the name (shared with 9 structs; its own read by hand); in particle_init, particle_placeAtMatrix, particle_draw; run: float -123087 .. 135893; values 0, 45.6189, 82.5779, 82.5926, 82.6035, 137.748, 174.602, 174.613, 174.621, 303.717, 303.733, 303.745 ...; non-zero in
+Particle.target | OK | code: 10 uses: debris, particle_aim, particle_beam, particle_init; run: float -129605 .. 9.4815e+32; values 0, 5.60519e-45, 2.64816e-37, 2.64822e-37, 9.74062e-25, 9.85371e-25, 1.66667e-08, 0.00331708, 0.00332365, 0.0033767 (NaN in slots of other kinds: its meaning is by kind)
+Particle.matrixFrom | OK | code: 5 uses: particle_spin, particle_init, particle_draw; run: int 357974952 .. 370284584; values 0, 357974952, 357979248, 358023640, 358061084, 358114068, 359732252, 359785236, 368185628, 368186028, 368189476, 36
+Particle.matrix | OK | code: 25 uses of the name (shared with 4 structs; its own read by hand); in particle_init, particle_spin, particle_aim, particle_beam; run: float -149140 .. 190763; values 0, 0.044568, 0.0599651, 0.0628089, 0.113568, 0.113594, 0.113613, 0.116272, 0.140609, 0.178311, 0.180382, 0.322171 ...;
+Particle.drawAge | OK | code: 14 uses of the name (shared with 1 structs; its own read by hand); run: float 0.000416604 .. 2.00834; values 0, 0.00776661, 0.00798048, 0.00818425, 0.00832356, 0.00832814, 0.00832832, 0.00832847, 0.008329, 0.00832954, 0.00
+Particle.life | OK | code: 35 uses of the name (shared with 2 structs; its own read by hand); run: float 0.01 .. 2; values 0, 0.01, 0.416654, 0.483326, 0.5, 0.508353, 0.608329, 0.624992, 0.799986, 1, 1.02497, 1.02502 ...; non-zero in 0% of samples
+Particle.age | OK | code: 21 uses of the name (shared with 3 structs; its own read by hand); in particle_init, particle_update; run: float 0.000416448 .. 2.00834; values 0, 0.00818425, 0.00832582, 0.00832814, 0.00832847, 0.00832912, 0.00832953, 0.00832954, 0.00832962, 0.00832965, 0.
+Particle.colour | OK | code: 26 uses of the name (shared with 4 structs; its own read by hand); run: int 16777215 .. 4294967295; values 0, 16777215, 33554431, 50331647, 67108863, 83886079, 100663295, 117440511, 134217727, 150994943, 167772159, 1845493
+Particle.lightRadius | OK | code: 4 uses: particle_update, particle_init, stage_refillLights; run: float 1.74083e-10 .. 4917.02; values 0, 2.78566e-06, 10.422, 15.0025, 50.6363, 60.0058, 70.4119, 81.6982, 127.598, 135.01, 166.69, 166.703 ...; non-ze
+Particle.baseSize | OK | code: 10 uses: particle_aim, particle_beam, particle_mark, particle_init; run: float 10 .. 350; values 0, 10, 30, 40, 60, 80, 100, 140, 150, 250, 300, 350; non-zero in 0% of samples
+Particle.fade | RENAME -> puffWait | no fade: debris (kind 9, frame_loops debris) counts it down by dt and at <= 0 drops a smoke puff (kind 0; 1 in 10 an explosion, kind 2, which also ends the debris) and sets it back to 0.1; particle_init sets 0.1 for kind 9. run: 0.008 .. 0.1 in live debris slots agree (the large values are the markPoints view of the union)
+Particle.markPoints | OK | code: 4 uses: particle_mark, particle_draw; run: float -41502.5 .. 41701.4; values 0, 0.0002, 0.0005, 0.00831906, 0.0166603, 0.0249768, 0.0333196, 0.0583274, 0.0583345, 0.0666681, 0.0666685, 0.074998 (union view over puffWait / fade; set from ParticleDesc.markCorners in particle_init, drawn by ViewVolume_addTriangle)
+Particle.markUv | OK | code: 5 uses: particle_mark, particle_draw; run: float -37.6183 .. 42.8535; values 0, 0.0115762, 0.5, 0.557095, 0.878237, 1.44941, 1.4626, 1.51875, 1.56263, 1.66441, 1.68235, 1.74433 ...; non-zero in
+Particle.markColours | OK | code: 3 uses: particle_mark, particle_draw; run: int 16777215 .. 4294967295; values 0, 16777215, 218103807, 402653183, 536870911, 553648127, 973078527, 1124073471, 1291845631, 1409286143, 1476395007,
+Particle.quadTexture | OK | code: 2 uses: particle_init, particle_draw; run: int 2569 .. 2569; values 0, 2569; non-zero in 0% of samples
+Particle.quadUv0 | OK | code: 1 uses: particle_draw; run: float 0.01 .. 0.49; values 0, 0.01, 0.115, 0.135, 0.24, 0.26, 0.365, 0.385, 0.49; non-zero in 0% of samples
+Particle.quadUv1 | OK | code: 1 uses: particle_draw; run: float 0.00803101 .. 12.5; values 0, 0.0290999, 0.0625, 0.0898215, 0.1875, 0.192482, 0.199622, 0.201297, 0.261667, 0.3125, 0.4375, 3.3511 ...; non-zero
+Particle.quadColour | OK | code: 1 uses: particle_draw; run: int 4294967295 .. 4294967295; values 0, 4294967295; non-zero in 0% of samples
+Particle.quadPoints | OK | code: 5 uses: particle_init, particle_draw; run: float -34425.9 .. 31066.2; values 0, 3387.42, 3388.67, 3389.91, 9234.04, 9274.02, 9314, 9588.12, 9628.11, 13158.6, 13158.7, 13312.2 ...; non-zero in 0
+Particle.active | OK | code: 60 uses of the name (shared with 4 structs; its own read by hand); run: int 1 .. 1; values 0, 1; non-zero in 15% of samples
+Bullet.homeTimer | OK | code: 4 uses: bullet_init, home, fly_local; run: float 2.82191e-06 .. 0.0666667; values 0, 5.30463e-05, 0.00831464, 0.00833508, 0.00834154, 0.0166604, 0.0249971, 0.0333271, 0.0333375, 0.041664, 0.041
+Bullet.struck | OK | code: 4 uses: bullet_init, hit_actor, hit_surface, splash; run: int 1 .. 1; values 0, 1; non-zero in 0% of samples
+Bullet.trail | OK | code: 13 uses of the name (shared with 1 structs; its own read by hand); run: float -34411.2 .. 30784; values 0, 3387.42, 9314, 9548.14, 9588.12, 9628.11, 13118.9, 13158.5, 13158.7, 13198.3, 13308.7, 13312.2 ...; non-zero in 0%
+Bullet.trailAge | OK | code: 4 uses: beam, trail, bullet_drawTrail; run: float 6.42481 .. 10000; values 0, 23.2799, 35.6296, 71.8572, 88.5235, 114.317, 153.985, 159.698, 161.038, 2680.88, 3355.39, 3950.71 ...; non-zero in 0
+Bullet.trailCount | OK | code: 5 uses: bullet_init, trail, bullet_drawTrail; run: NOT SEEN: a kind 3 round (shotMode 3, the missiles); the sessions' trails were beams (kind 7 fills trail[0 .. 1], trailAge[0] only)
+Bullet.id | OK | code: 15 uses of the name (shared with 5 structs; its own read by hand); in bullet_spawn; run: int 1 .. 1138; values 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11 ...; non-zero in 0% of samples
+Bullet.active | OK | code: 60 uses of the name (shared with 4 structs; its own read by hand); run: int 1 .. 1; values 0, 1; non-zero in 0% of samples
+Bullet.weapon | OK | code: 8 uses of the name (shared with 2 structs; its own read by hand); run: int 2 .. 36; values 0, 2, 3, 4, 8, 10, 11, 13, 14, 19, 20, 36; non-zero in 0% of samples
+Bullet.owner | OK | code: 26 uses of the name (shared with 2 structs; its own read by hand); run: int 1 .. 7; values 0, 1, 2, 3, 4, 5, 6, 7; non-zero in 0% of samples
+Bullet.muzzle | OK | code: 7 uses of the name (shared with 3 structs; its own read by hand); in bullet_init; run: int 368192524 .. 370284584; values 0, 368192524, 368192724, 368198672, 368227576, 368326080, 369997148, 370040120, 370074872, 370081120, 370109724, 37
+Bullet.from | OK | code: 6 uses of the name (shared with 2 structs; its own read by hand); run: float -36570.6 .. 50707.8; values 0, 300.034, 1764.17, 9145.23, 9190.86, 9296.54, 9361.88, 9588.12, 11984.8, 11984.8, 11993, 12031.8 ...; non-zero in
+Bullet.impact | OK | code: 14 uses of the name (shared with 1 structs; its own read by hand); in bullet_init, fly_local, fly_local, actor_processFrame; run: float -173042 .. 203028; values 0, 3388.67, 4680.26, 9274.02, 9472.96, 9498.64, 9503.28, 11600, 11607.6, 11630, 11638.1, 12090 ...; non-zero in 0% of
+Bullet.hit | OK | code: 14 uses of the name (shared with 1 structs; its own read by hand); in bullet_init, fly_local, actor_processFrame, bullet_init; run: pointer: 3406 valid, 0 original-image addresses, 0 unmapped; non-zero in 0% of samples
+Bullet.age | OK | code: 21 uses of the name (shared with 3 structs; its own read by hand); run: float 0.00830808 .. 1.64995; values 0, 0.00832911, 0.0083318, 0.00833209, 0.0083326, 0.00833264, 0.00833282, 0.00833293, 0.00833296, 0.00833301, 0.008
+Bullet.life | OK | code: 35 uses of the name (shared with 2 structs; its own read by hand); in bullet_init, fly_local, actor_processFrame; run: float -0.00834349 .. 10; values 0, 6.98492e-08, 0.000334354, 0.00120731, 0.00150304, 0.00508247, 0.00712825, 0.00833341, 0.0083335, 0.00833535, 0.0087
+Bullet.prev | OK | code: 18 uses of the name (shared with 1 structs; its own read by hand); run: float -123087 .. 198128; values 0, 9145.23, 9190.86, 9296.54, 9361.88, 9588.12, 11984.8, 11984.8, 11993, 12031.8, 12032, 12039.7 ...; non-zero in 0% o
+Bullet.pos | OK | code: 144 uses of the name (shared with 9 structs; its own read by hand); run: float -129605 .. 203028; values 0, 3388.67, 4680.26, 9274.02, 9472.96, 9498.64, 9503.28, 11600, 11607.6, 11630, 11638.1, 12090 ...; non-zero in 0% of
+Bullet.netPoint | OK | code: 3 uses: actor_processFrame, bullet_update; run: float -50310 .. 138440; values 0, 11600, 11630, 12090, 17310, 17400, 17790, 18840, 19100, 29180, 29670, 38250 ...; non-zero in 0% of samples
+Bullet.moved | OK | code: 6 uses: actor_processFrame, bullet_init, fly_local, bullet_update; run: int 1 .. 1; values 0, 1; non-zero in 0% of samples
+Bullet.vel | OK | code: 3 uses: bullet_init, home, fly_local; run: float -1.62007e+06 .. 1.99321e+06; values 0, 956.417, 967.085, 1183.46, 1186.58, 1206.75, 3907.31, 4605.51, 59810.4, 63975.7, 64875, 1.17275e+06 ...;
+Bullet.step | OK | code: 10 uses of the name (shared with 2 structs; its own read by hand); in fly_local, bullet_update; run: float -18747.8 .. 36373.4; values 0, 1.42969, 1.4375, 1.44531, 1.46094, 1.48828, 77.4512, 78.5938, 498.379, 498.401, 498.506, 1032.4 ...; non-zero in
+Bullet.hitActor | OK | code: 13 uses of the name (shared with 2 structs; its own read by hand); run: int -1 .. 7; values 0, 1, 2, 3, 4, 5, 6, 7, -1; non-zero in 0% of samples
+Bullet.homingTarget | OK | code: 3 uses: actor_processFrame, bullet_init, home; run: int -1 .. 7; values 0, 1, 2, 3, 4, 5, 6, 7, -1; non-zero in 0% of samples
+Bullet.homingPoint | OK | code: 2 uses: bullet_init, home; run: NOT SEEN: a guided round fired by the local player without a lock
+SpacePool.count | OK | code: 68 uses of the name (shared with 5 structs; its own read by hand); run: int 1000 .. 160000; values 1000, 10000, 40000, 160000; non-zero in 100% of samples
+SpacePool.records | OK | code: 40 uses of the name (shared with 2 structs; its own read by hand); in space_initBy, reset_pool; run: pointer: 59036 valid, 0 original-image addresses, 0 unmapped; non-zero in 100% of samples
+SpacePool.freeHead | OK | code: 14 uses of the name (shared with 1 structs; its own read by hand); run: pointer: 59036 valid, 0 original-image addresses, 0 unmapped; non-zero in 100% of samples
+SpacePool.used | OK | code: 27 uses of the name (shared with 5 structs; its own read by hand); run: int 2 .. 101338; values 0, 2, 6, 10, 18, 22, 30, 34, 42, 43, 46, 50 ...; non-zero in 35% of samples
+SpaceNode.item | OK | code: 11 uses: space_collideBlock, space_addUnitTriangle, space_insertItem, space_traceBlock; run: NOT SEEN: the sampler does not walk the space's pool block (Space.nodes.records)
+SpaceNode.block | OK | code: 49 uses of the name (shared with 9 structs; its own read by hand); in space_insertItem; run: NOT SEEN: the sampler does not walk the space's pool block (Space.nodes.records)
+SpaceNode.newer | OK | code: 2 uses: space_addUnitTriangle, space_insertItem; run: NOT SEEN: the sampler does not walk the space's pool block (Space.nodes.records)
+SpaceNode.next | OK | code: 36 uses of the name (shared with 1 structs; its own read by hand); run: NOT SEEN: the sampler does not walk the space's pool block (Space.nodes.records)
+SpaceBlock.low | OK | code: 7 uses of the name (shared with 2 structs; its own read by hand); in space_getNextFreeBlockPtrBy, make_octant, space_insertItem, space_traceBlock; run: NOT SEEN: the sampler does not walk the space's pool block (Space.blocks.records)
+SpaceBlock.high | OK | code: 9 uses of the name (shared with 2 structs; its own read by hand); in space_getNextFreeBlockPtrBy, space_insertItem, collisionTri_meetsBox; run: NOT SEEN: the sampler does not walk the space's pool block (Space.blocks.records)
+SpaceBlock.items | OK | code: 56 uses of the name (shared with 4 structs; its own read by hand); run: NOT SEEN: the sampler does not walk the space's pool block (Space.blocks.records)
+SpaceBlock.itemCount | OK | code: 13 uses of the name (shared with 1 structs; its own read by hand); run: NOT SEEN: the sampler does not walk the space's pool block (Space.blocks.records)
+SpaceBlock.split | OK | code: 5 uses: space_collideAt, drop_if_empty, space_insertItem, space_traceBlock; run: NOT SEEN: the sampler does not walk the space's pool block (Space.blocks.records)
+SpaceBlock.children | OK | code: 3 uses: space_collideAt, space_insertItem, space_traceBlock; run: NOT SEEN: the sampler does not walk the space's pool block (Space.blocks.records)
+SpaceBlock.poolPrev | OK | code: 1 uses: space_resetUnits; run: NOT SEEN: the sampler does not walk the space's pool block (Space.blocks.records)
+SpaceBlock.poolNext | OK | code: 1 uses: space_resetUnits; run: NOT SEEN: the sampler does not walk the space's pool block (Space.blocks.records)
+Space.blockSize | OK | code: 32 uses of the name (shared with 9 structs; its own read by hand); in space_initBy; run: int 10262000 .. 10262000; values 10262000; non-zero in 100% of samples
+Space.block | OK | code: 49 uses of the name (shared with 9 structs; its own read by hand); in space_initBy, match_setup, CollisionVolume_release; run: pointer: 14759 valid, 0 original-image addresses, 0 unmapped; non-zero in 100% of samples
+Space.ownsBlock | OK | code: 15 uses of the name (shared with 8 structs; its own read by hand); run: NOT SEEN: Stage.spaceData is given (match_setup): 0
+Space.planes | OK | code: 8 uses: take_free, space_getNextFreeBlockPtrBy, space_initBy, actor_processFrame; run: (a record / array of records: see its fields)
+Space.nodes | OK | code: 13 uses of the name (shared with 3 structs; its own read by hand); run: (a record / array of records: see its fields)
+Space.units | OK | code: 14 uses of the name (shared with 1 structs; its own read by hand); run: (a record / array of records: see its fields)
+Space.blocks | OK | code: 14 uses of the name (shared with 1 structs; its own read by hand); run: (a record / array of records: see its fields)
+Space.cellCapacity | OK | code: 5 uses: space_setBy, space_initBy; run: int 1000 .. 1000; values 1000; non-zero in 100% of samples
+Space.cells | OK | code: 16 uses of the name (shared with 1 structs; its own read by hand); run: pointer: 14759 valid, 0 original-image addresses, 0 unmapped; non-zero in 100% of samples
+Space.cellCount | OK | code: 1 uses: space_setBy; run: int 1 .. 1000; values 1, 1000; non-zero in 100% of samples
+Space.min | OK | code: 7 uses: space_setBy, space_collideAt, space_insertTriangle, space_traceCells; run: float -100000 .. -100000; values -100000; non-zero in 100% of samples
+Space.max | OK | code: 10 uses: space_setBy, space_collideAt, space_insertItem, space_insertTriangle; run: float 100000 .. 100000; values 100000; non-zero in 100% of samples
+Space.cellsZ | OK | code: 9 uses: space_setBy, space_collideAt, space_insertTriangle, space_traceCells; run: int 1 .. 10; values 1, 10; non-zero in 100% of samples
+Space.cellsX | OK | code: 9 uses: space_setBy, space_collideAt, space_insertTriangle, space_traceCells; run: int 1 .. 10; values 1, 10; non-zero in 100% of samples
+Space.cellsY | OK | code: 7 uses: space_setBy, space_collideAt, space_insertTriangle, space_traceCells; run: int 1 .. 10; values 1, 10; non-zero in 100% of samples
+Space.cellSize | OK | code: 9 uses: map_loadGroundInfoFrom, space_addUnitTriangle, space_setBy, space_collideAt; run: float 20000 .. 200000; values 20000, 200000; non-zero in 100% of samples
+Space.margin | TYPE -> float | 500.0 (seen only 0 / 0x43fa0000); its readers cast &margin to float *; collisionTri_meetsBox takes it as bits (BITS() there)
+Space.splitCount | OK | code: 2 uses: space_setBy, space_insertItem; run: int 16 .. 16; values 0, 16; non-zero in 35% of samples
+Space.depth | OK | code: 6 uses: space_setBy, space_insertTriangle, outer_bands, inner_bands; run: int 3 .. 3; values 0, 3; non-zero in 35% of samples
+Space.lastHit | OK | code: 1 uses: space_collideAt; run: int 1 .. 1; values 0, 1; non-zero in 2% of samples
+PartInfo.name | OK | code: 94 uses of the name (shared with 22 structs; its own read by hand); run: NOT SEEN: g_partRecords / g_viewedPart are not sampled as PartInfo (its alias g_viewedPartAmmoType was seen 0 .. 3, -1)
+PartInfo.slotType | OK | code: 6 uses of the name (shared with 2 structs; its own read by hand); in part_info; run: NOT SEEN: g_partRecords / g_viewedPart are not sampled as PartInfo (its alias g_viewedPartAmmoType was seen 0 .. 3, -1)
+PartInfo.ammoType | OK | code: 16 uses of the name (shared with 2 structs; its own read by hand); run: NOT SEEN: g_partRecords / g_viewedPart are not sampled as PartInfo (its alias g_viewedPartAmmoType was seen 0 .. 3, -1)
+PartInfo.ammoPerShot | OK | code: 10 uses of the name (shared with 2 structs; its own read by hand); in armc_viewedPartRecord; run: NOT SEEN: g_partRecords / g_viewedPart are not sampled as PartInfo (its alias g_viewedPartAmmoType was seen 0 .. 3, -1)
+PartInfo.burst | OK | code: 3 uses of the name (shared with 2 structs; its own read by hand); run: NOT SEEN: g_partRecords / g_viewedPart are not sampled as PartInfo (its alias g_viewedPartAmmoType was seen 0 .. 3, -1)
+PartInfo.damageType | OK | code: 4 uses of the name (shared with 2 structs; its own read by hand); run: NOT SEEN: g_partRecords / g_viewedPart are not sampled as PartInfo (its alias g_viewedPartAmmoType was seen 0 .. 3, -1)
+PartInfo.damage | OK | code: 5 uses of the name (shared with 2 structs; its own read by hand); in part_info, armc_drawWeaponsScreen; run: NOT SEEN: g_partRecords / g_viewedPart are not sampled as PartInfo (its alias g_viewedPartAmmoType was seen 0 .. 3, -1)
+PartInfo.range | OK | code: 4 uses of the name (shared with 2 structs; its own read by hand); run: NOT SEEN: g_partRecords / g_viewedPart are not sampled as PartInfo (its alias g_viewedPartAmmoType was seen 0 .. 3, -1)
+PartInfo.speed | OK | code: 26 uses of the name (shared with 2 structs; its own read by hand); run: NOT SEEN: g_partRecords / g_viewedPart are not sampled as PartInfo (its alias g_viewedPartAmmoType was seen 0 .. 3, -1)
+PartInfo.spread | OK | code: 4 uses of the name (shared with 2 structs; its own read by hand); run: NOT SEEN: g_partRecords / g_viewedPart are not sampled as PartInfo (its alias g_viewedPartAmmoType was seen 0 .. 3, -1)
+PartInfo.hitRange | OK | code: 11 uses of the name (shared with 2 structs; its own read by hand); run: NOT SEEN: g_partRecords / g_viewedPart are not sampled as PartInfo (its alias g_viewedPartAmmoType was seen 0 .. 3, -1)
+PartInfo.splashRadius | OK | code: 6 uses of the name (shared with 2 structs; its own read by hand); run: NOT SEEN: g_partRecords / g_viewedPart are not sampled as PartInfo (its alias g_viewedPartAmmoType was seen 0 .. 3, -1)
+PartInfo.splashBorderDamage | OK | code: 2 uses of the name (shared with 2 structs; its own read by hand); run: NOT SEEN: g_partRecords / g_viewedPart are not sampled as PartInfo (its alias g_viewedPartAmmoType was seen 0 .. 3, -1)
+PartInfo.cycleTime | OK | code: 5 uses of the name (shared with 2 structs; its own read by hand); run: NOT SEEN: g_partRecords / g_viewedPart are not sampled as PartInfo (its alias g_viewedPartAmmoType was seen 0 .. 3, -1)
+PartInfo.guidance | OK | code: 8 uses of the name (shared with 2 structs; its own read by hand); run: NOT SEEN: g_partRecords / g_viewedPart are not sampled as PartInfo (its alias g_viewedPartAmmoType was seen 0 .. 3, -1)
+PartInfo.targetingTime | OK | code: 6 uses of the name (shared with 2 structs; its own read by hand); run: NOT SEEN: g_partRecords / g_viewedPart are not sampled as PartInfo (its alias g_viewedPartAmmoType was seen 0 .. 3, -1)
+PartInfo.weight | OK | code: 9 uses of the name (shared with 2 structs; its own read by hand); in part_info, armc_drawWeaponsScreen; run: NOT SEEN: g_partRecords / g_viewedPart are not sampled as PartInfo (its alias g_viewedPartAmmoType was seen 0 .. 3, -1)
+Mission.unused0 | OK | code: 2 uses: mission_loadAxisMis, missions_clear; run: int 101 .. 202; values 0, 101, 202; non-zero in 0% of samples
+Mission.name | OK | code: 94 uses of the name (shared with 22 structs; its own read by hand); run: strings: e.g. "TEST MISSION TWO"; non-zero in 0% of samples
+Mission.title | OK | code: 3 uses: mission_loadAxisMis, missions_clear, missionList_draw; run: strings: e.g. "TITLE TWO"; non-zero in 0% of samples
+Mission.briefing | OK | code: 3 uses: mission_loadAxisMis, missions_clear, missionList_draw; run: strings: e.g. "Briefing line of test mission two."; non-zero in 0% of samples
+Mission.number | OK | code: 3 uses of the name (shared with 2 structs; its own read by hand); run: int 7 .. 8; values 0, 7, 8; non-zero in 0% of samples
+Mission.unusedE8 | OK | code: 2 uses: mission_loadAxisMis, missions_clear; run: int 286331153 .. 858993459; values 0, 286331153, 858993459; non-zero in 0% of samples
+Mission.result | OK | code: 4 uses: mission_loadAxisMis, missions_clear, missionList_draw; run: int 1 .. 2; values 0, 1, 2; non-zero in 0% of samples
+Mission.unusedF0 | OK | code: 2 uses: mission_loadAxisMis, missions_clear; run: int -1 .. 1145324612; values 0, 572662306, 1145324612, -1; non-zero in 1% of samples
+Mission.blockSize | OK | code: 32 uses of the name (shared with 9 structs; its own read by hand); run: int 57 .. 111; values 0, 57, 111; non-zero in 0% of samples
+NetPacketMessage.kind | OK | code: 28 uses of the name (shared with 11 structs; its own read by hand); in net_handleMessage; run: int 7 .. 7; values 0, 7; non-zero in 29% of samples
+NetPacketMessage.slot | OK | code: 49 uses of the name (shared with 3 structs; its own read by hand); in net_sendPacketData; run: int 1 .. 1; values 0, 1; non-zero in 3% of samples
+NetPacketMessage.size | OK | code: 23 uses of the name (shared with 3 structs; its own read by hand); run: int 64 .. 64; values 0, 64; non-zero in 28% of samples
+NetPacketMessage.data | OK | code: 13 uses of the name (shared with 3 structs; its own read by hand); in net_packets; run: int 1 .. 255; values 0, 1, 2, 4, 6, 12, 17, 20, 21, 22, 36, 37 ...; non-zero in 0% of samples
+NetSlot.used | OK | code: 27 uses of the name (shared with 5 structs; its own read by hand); in net_takePlayerSlot, net_handleMessage, net_freeAllSlots, net_freeSlotsOf; run: int 1 .. 1; values 0, 1; non-zero in 2% of samples
+NetSlot.id | OK | code: 15 uses of the name (shared with 5 structs; its own read by hand); run: int 1096296225 .. 1096318562; values 0, 1096296225, 1096302545, 1096312097, 1096313841, 1096314081, 1096317073, 1096318561, 1096318562; mostly float b (the checker's float-like values are DirectPlay player ids, 0x4158xxxx, not floats: keep u32)
+NetSlot.waiting | OK | code: 5 uses: net_freeSlotsOf, netq_receive, net_handleMessage; run: NOT SEEN: a packet queued between receive and read (mp)
+NetSlot.size | OK | code: 23 uses of the name (shared with 3 structs; its own read by hand); in net_handleMessage, netq_receive; run: int 64 .. 64; values 0, 64; non-zero in 0% of samples
+NetSlot.packet | OK | code: 7 uses: netq_receive, net_takePlayerSlot, net_freeAllSlots, net_handleMessage; run: int 1 .. 255; values 0, 1, 2, 5, 12, 13, 15, 20, 21, 36, 37, 48 ...; non-zero in 0% of samples
+DPSessionDesc2.size | OK | code: 23 uses of the name (shared with 3 structs; its own read by hand); run: int 80 .. 80; values 0, 80; non-zero in 29% of samples
+DPSessionDesc2.flags | OK | code: 34 uses of the name (shared with 5 structs; its own read by hand); run: int 68 .. 68; values 0, 68; non-zero in 26% of samples
+DPSessionDesc2.instance | OK | code: 6 uses of the name (shared with 2 structs; its own read by hand); run: int 4 .. 233; values 0, 4, 12, 15, 17, 29, 41, 51, 54, 75, 78, 83 ...; non-zero in 27% of samples
+DPSessionDesc2.application | OK | code: 3 uses of the name (shared with 2 structs; its own read by hand); run: int 17 .. 229; values 0, 17, 65, 69, 80, 91, 98, 103, 106, 133, 142, 150; non-zero in 27% of samples
+DPSessionDesc2.maxPlayers | OK | code: 18 uses of the name (shared with 6 structs; its own read by hand); run: int 8 .. 8; values 0, 8; non-zero in 26% of samples
+DPSessionDesc2.players | OK | code: 161 uses of the name (shared with 5 structs; its own read by hand); run: NOT SEEN: the game never sets dwCurrentPlayers
+DPSessionDesc2.name | OK | code: 94 uses of the name (shared with 22 structs; its own read by hand); run: pointer: 3901 valid, 0 original-image addresses, 0 unmapped; non-zero in 26% of samples
+DPSessionDesc2.password | OK | code: 23 uses of the name (shared with 7 structs; its own read by hand); run: NOT SEEN: no password set when hosting
+DPSessionDesc2.reserved1 | OK | code: 0 uses: by offset / pointer arithmetic; run: NOT SEEN: never set
+DPSessionDesc2.reserved2 | OK | code: 0 uses: by offset / pointer arithmetic; run: NOT SEEN: never set
+DPSessionDesc2.user1 | OK | code: 2 uses: dplay_enumSessionsCallback, dplay_hostSession; run: int 3 .. 256; values 0, 3, 5, 10, 15, 20, 256; non-zero in 23% of samples
+DPSessionDesc2.user2 | OK | code: 2 uses: dplay_enumSessionsCallback, dplay_hostSession; run: int 1 .. 13; values 0, 1, 12, 13; non-zero in 13% of samples
+DPSessionDesc2.user3 | OK | code: 3 uses: dplay_enumSessionsCallback, dplay_hostSession; run: int 2570 .. 5121; values 0, 2570, 5120, 5121; non-zero in 26% of samples
+DPSessionDesc2.user4 | OK | code: 2 uses: dplay_enumSessionsCallback, dplay_hostSession; run: int 2887307265 .. 2887307265; values 0, 2887307265; non-zero in 26% of samples
+ServerRecord.kind | OK | code: 28 uses of the name (shared with 11 structs; its own read by hand); in lobby_announceArena, arena_info, send_leave, net_addServerRecord; run: NOT SEEN: needs the lobby server's arena list (g_serverList) / hosting an arena through the lobby server
+ServerRecord.name | OK | code: 94 uses of the name (shared with 22 structs; its own read by hand); in lobby_announceArena, arena_mergeReceivedSessions; run: NOT SEEN: needs the lobby server's arena list (g_serverList) / hosting an arena through the lobby server
+ServerRecord.address | OK | code: 26 uses of the name (shared with 5 structs; its own read by hand); run: NOT SEEN: needs the lobby server's arena list (g_serverList) / hosting an arena through the lobby server
+ServerRecord.map | OK | code: 27 uses of the name (shared with 6 structs; its own read by hand); in lobby_announceArena, arena_mergeReceivedSessions; run: NOT SEEN: needs the lobby server's arena list (g_serverList) / hosting an arena through the lobby server
+ServerRecord.maxPlayers | OK | code: 18 uses of the name (shared with 6 structs; its own read by hand); in lobby_announceArena; run: NOT SEEN: needs the lobby server's arena list (g_serverList) / hosting an arena through the lobby server
+ServerRecord.players | OK | code: 161 uses of the name (shared with 5 structs; its own read by hand); in lobby_announceArena, arena_info, send_leave; run: NOT SEEN: needs the lobby server's arena list (g_serverList) / hosting an arena through the lobby server
+ServerRecord.gameMode | OK | code: 22 uses of the name (shared with 5 structs; its own read by hand); in lobby_announceArena; run: NOT SEEN: needs the lobby server's arena list (g_serverList) / hosting an arena through the lobby server
+ServerRecord.fragLimit | OK | code: 31 uses of the name (shared with 5 structs; its own read by hand); in lobby_announceArena; run: NOT SEEN: needs the lobby server's arena list (g_serverList) / hosting an arena through the lobby server
+ServerRecord.timeLimit | OK | code: 29 uses of the name (shared with 5 structs; its own read by hand); in lobby_announceArena; run: NOT SEEN: needs the lobby server's arena list (g_serverList) / hosting an arena through the lobby server
+ServerRecord.rotation | OK | code: 54 uses of the name (shared with 9 structs; its own read by hand); run: NOT SEEN: needs the lobby server's arena list (g_serverList) / hosting an arena through the lobby server
+ServerRecord.replyKind | OK | code: 0 uses of the name (shared with 2 structs; its own read by hand); in net_receiveLobbyReply; run: NOT SEEN: needs the lobby server's arena list (g_serverList) / hosting an arena through the lobby server
+ServerRecord.locked | OK | code: 15 uses of the name (shared with 4 structs; its own read by hand); in lobby_announceArena; run: NOT SEEN: needs the lobby server's arena list (g_serverList) / hosting an arena through the lobby server
+ServerRecord.password | OK | code: 23 uses of the name (shared with 7 structs; its own read by hand); in lobby_announceArena; run: NOT SEEN: needs the lobby server's arena list (g_serverList) / hosting an arena through the lobby server
+RoomRecord.kind | OK | code: 28 uses of the name (shared with 11 structs; its own read by hand); in room_announceGame, room_info, send_leave; run: NOT SEEN: needs the game server's room list (g_roomList) / a Ladder game room
+RoomRecord.name | OK | code: 94 uses of the name (shared with 22 structs; its own read by hand); in room_announceGame, net_addRoomRecord, room_mergeReceivedSessions; run: strings: e.g. ""; non-zero in 0% of samples
+RoomRecord.address | OK | code: 26 uses of the name (shared with 5 structs; its own read by hand); in room_announceGame, room_mergeReceivedSessions; run: strings: e.g. ""; non-zero in 0% of samples
+RoomRecord.hostName | OK | code: 5 uses: room_announceGame, game_postMatch, net_addRoomRecord, room_info; run: strings: e.g. ""; non-zero in 0% of samples
+RoomRecord.map | OK | code: 27 uses of the name (shared with 6 structs; its own read by hand); in room_announceGame, room_info, send_leave, room_mergeReceivedSessions; run: NOT SEEN: needs the game server's room list (g_roomList) / a Ladder game room
+RoomRecord.maxPlayers | OK | code: 18 uses of the name (shared with 6 structs; its own read by hand); in room_announceGame, room_info, send_leave, room_mergeReceivedSessions; run: NOT SEEN: needs the game server's room list (g_roomList) / a Ladder game room
+RoomRecord.players | OK | code: 161 uses of the name (shared with 5 structs; its own read by hand); in room_announceGame, room_info; run: NOT SEEN: needs the game server's room list (g_roomList) / a Ladder game room
+RoomRecord.gameMode | OK | code: 22 uses of the name (shared with 5 structs; its own read by hand); in room_announceGame, room_info, send_leave, room_mergeReceivedSessions; run: NOT SEEN: needs the game server's room list (g_roomList) / a Ladder game room
+RoomRecord.fragLimit | OK | code: 31 uses of the name (shared with 5 structs; its own read by hand); in room_announceGame, room_info, send_leave, room_mergeReceivedSessions; run: NOT SEEN: needs the game server's room list (g_roomList) / a Ladder game room
+RoomRecord.timeLimit | OK | code: 29 uses of the name (shared with 5 structs; its own read by hand); in room_announceGame, room_info, send_leave, room_mergeReceivedSessions; run: NOT SEEN: needs the game server's room list (g_roomList) / a Ladder game room
+RoomRecord.rotation | OK | code: 54 uses of the name (shared with 9 structs; its own read by hand); run: NOT SEEN: needs the game server's room list (g_roomList) / a Ladder game room
+RoomRecord.replyKind | OK | code: 0 uses of the name (shared with 2 structs; its own read by hand); in net_receiveGameServerReply; run: NOT SEEN: needs the game server's room list (g_roomList) / a Ladder game room
+RoomRecord.locked | OK | code: 15 uses of the name (shared with 4 structs; its own read by hand); in room_announceGame, room_info, send_leave, room_mergeReceivedSessions; run: NOT SEEN: needs the game server's room list (g_roomList) / a Ladder game room
+RoomRecord.password | OK | code: 23 uses of the name (shared with 7 structs; its own read by hand); in room_announceGame, room_info, send_leave; run: strings: e.g. ""; non-zero in 0% of samples
+SessionDesc.guid | OK | code: 11 uses of the name (shared with 2 structs; its own read by hand); in dplay_join; run: int 241683368 .. 241683368; values 241683368; non-zero in 100% of samples
+SessionDesc.instance | OK | code: 6 uses of the name (shared with 2 structs; its own read by hand); run: int 4 .. 216; values 4, 15, 20, 29, 41, 51, 75, 83, 119, 124, 149, 150; non-zero in 100% of samples
+SessionDesc.application | OK | code: 3 uses of the name (shared with 2 structs; its own read by hand); run: int 17 .. 229; values 0, 17, 65, 69, 80, 91, 98, 103, 106, 133, 142, 150; non-zero in 93% of samples
+SessionDesc.map | OK | code: 27 uses of the name (shared with 6 structs; its own read by hand); run: NOT SEEN: map index 0 in the mp session (0 is a real map)
+SessionDesc.rotation | OK | code: 54 uses of the name (shared with 9 structs; its own read by hand); run: int 1 .. 1; values 1; non-zero in 100% of samples
+SessionDesc.maxPlayers | OK | code: 18 uses of the name (shared with 6 structs; its own read by hand); run: int 8 .. 8; values 8; non-zero in 100% of samples
+SessionDesc.gameMode | OK | code: 22 uses of the name (shared with 5 structs; its own read by hand); run: int 1 .. 1; values 1; non-zero in 100% of samples
+SessionDesc.fragLimit | OK | code: 31 uses of the name (shared with 5 structs; its own read by hand); in dplay_hostSession; run: int 20 .. 20; values 20; non-zero in 100% of samples (checker: 8 .. 15 are bit positions)
+SessionDesc.timeLimit | OK | code: 29 uses of the name (shared with 5 structs; its own read by hand); in dplay_hostSession, arenaList_rebuild, arena_joinAnswer; run: NOT SEEN: time limit 0 in the mp session
+SessionDesc.players | OK | code: 161 uses of the name (shared with 5 structs; its own read by hand); run: int 1 .. 1; values 1; non-zero in 100% of samples
+SessionDesc.name | OK | code: 94 uses of the name (shared with 22 structs; its own read by hand); run: strings: e.g. "Alex Server"; non-zero in 0% of samples
+SessionDesc.address | OK | code: 26 uses of the name (shared with 5 structs; its own read by hand); run: strings: e.g. "1.0.0.127"; non-zero in 0% of samples
+SessionSlot.used | OK | code: 27 uses of the name (shared with 5 structs; its own read by hand); in net_addSession, net_findFreeSession, net_freeSessionList, net_getSession; run: int 1 .. 1; values 0, 1; non-zero in 0% of samples
+SessionSlot.desc | OK | code: 8 uses: net_findFreeSession, net_getSession, net_freeSessionList, net_addSession; run: pointer: 502 valid, 0 original-image addresses, 0 unmapped; non-zero in 0% of samples
+SessionEntry.guid | OK | code: 11 uses of the name (shared with 2 structs; its own read by hand); run: int 241683368 .. 241683368; values 0, 241683368; non-zero in 0% of samples
+SessionEntry.name | OK | code: 94 uses of the name (shared with 22 structs; its own read by hand); in arenaList_rebuild, game_rows, take_session, room_joinAnswer; run: strings: e.g. "Alex Server"; non-zero in 0% of samples
+SessionEntry.rotation | OK | code: 54 uses of the name (shared with 9 structs; its own read by hand); run: int 1 .. 1; values 0, 1; non-zero in 0% of samples
+SessionEntry.map | OK | code: 27 uses of the name (shared with 6 structs; its own read by hand); in game_rows, take_session, room_joinAnswer; run: NOT SEEN: map 0 in the mp session
+SessionEntry.maxPlayers | OK | code: 18 uses of the name (shared with 6 structs; its own read by hand); in game_rows; run: NOT SEEN: the mp client joined by typed address (arena_joinAnswer row 99999 copies no maxPlayers / players / ping / locked); the LAN list (arenaList_rebuild) fills them
+SessionEntry.players | OK | code: 161 uses of the name (shared with 5 structs; its own read by hand); in game_rows; run: NOT SEEN: as maxPlayers: the typed-address join does not copy it
+SessionEntry.ping | OK | code: 5 uses: game_rows, arena_clearSessionEntry, merge, sessionList_sort; run: NOT SEEN: 0 from DirectPlay; only a lobby-server list sets it
+SessionEntry.gameMode | OK | code: 22 uses of the name (shared with 5 structs; its own read by hand); in game_rows, take_session, room_joinAnswer; run: int 1 .. 1; values 0, 1; non-zero in 0% of samples
+SessionEntry.fragLimit | OK | code: 31 uses of the name (shared with 5 structs; its own read by hand); in take_session, room_joinAnswer, arena_joinSession, arena_joinAnswer; run: int 20 .. 20; values 0, 20; non-zero in 0% of samples
+SessionEntry.timeLimit | OK | code: 29 uses of the name (shared with 5 structs; its own read by hand); in take_session, room_joinAnswer, arena_joinSession; run: NOT SEEN: time limit 0 in the mp session
+SessionEntry.address | OK | code: 26 uses of the name (shared with 5 structs; its own read by hand); in dplay_openConnection; run: strings: e.g. ""; non-zero in 0% of samples
+SessionEntry.password | OK | code: 23 uses of the name (shared with 7 structs; its own read by hand); in gameList_pageFrame, arena_gamesPageFrame; run: strings: e.g. ""; non-zero in 0% of samples
+SessionEntry.locked | OK | code: 15 uses of the name (shared with 4 structs; its own read by hand); run: NOT SEEN: a locked game in a lobby list
+FileEntry.name | OK | code: 94 uses of the name (shared with 22 structs; its own read by hand); in autoplay_listFiles, scene_startSession; run: strings: e.g. "lilly.ape"; non-zero in 0% of samples
+FileEntry.picked | OK | code: 8 uses: scene_startSession, replaySelect_allOut, replaySelect_toggle, replaySelect_allIn; run: int 1 .. 1; values 0, 1; non-zero in 0% of samples
+MapChoice.chosen | OK | code: 18 uses of the name (shared with 1 structs; its own read by hand); run: int 1 .. 1; values 0, 1; non-zero in 0% of samples
+MapChoice.type | OK | code: 30 uses of the name (shared with 3 structs; its own read by hand); run: NOT SEEN: type 0 in the sessions' map lists
+AccountPacket.kind | OK | code: 28 uses of the name (shared with 11 structs; its own read by hand); run: NOT SEEN: sent only at a Ladder login / new ID (requests 14 / 15)
+AccountPacket.name | OK | code: 94 uses of the name (shared with 22 structs; its own read by hand); in login_send, newId_register; run: NOT SEEN: sent only at a Ladder login / new ID (requests 14 / 15)
+AccountPacket.password | OK | code: 23 uses of the name (shared with 7 structs; its own read by hand); in login_send, newId_register; run: NOT SEEN: sent only at a Ladder login / new ID (requests 14 / 15)
+AccountPacket.email | OK | code: 2 uses of the name (shared with 2 structs; its own read by hand); in newId_register; run: NOT SEEN: sent only at a Ladder login / new ID (requests 14 / 15)
+AccountPacket.address | OK | code: 26 uses of the name (shared with 5 structs; its own read by hand); in net_tables; run: NOT SEEN: sent only at a Ladder login / new ID (requests 14 / 15)
+AccountPacket.mech | OK | code: 1 uses: newId_register; run: NOT SEEN: sent only at a Ladder login / new ID (requests 14 / 15)
+AccountPacket.colours | OK | code: 38 uses of the name (shared with 5 structs; its own read by hand); in default_mech; run: NOT SEEN: sent only at a Ladder login / new ID (requests 14 / 15)
+AccountForm.name | OK | code: 94 uses of the name (shared with 22 structs; its own read by hand); in account_sendChange; run: NOT SEEN: sent only by the account form's change (message 0x1c)
+AccountForm.password | OK | code: 23 uses of the name (shared with 7 structs; its own read by hand); in account_sendChange; run: NOT SEEN: sent only by the account form's change (message 0x1c)
+AccountForm.email | OK | code: 2 uses of the name (shared with 2 structs; its own read by hand); in account_sendChange; run: NOT SEEN: sent only by the account form's change (message 0x1c)
+GameSettings.name | OK | code: 94 uses of the name (shared with 22 structs; its own read by hand); in settings_store, dplay_host, room_announceGame; run: NOT SEEN: the settings records are not sampled as GameSettings
+GameSettings.map | OK | code: 27 uses of the name (shared with 6 structs; its own read by hand); in dplay_host, arena_takeHostAnswer; run: NOT SEEN: the settings records are not sampled as GameSettings
+GameSettings.maxPlayers | OK | code: 18 uses of the name (shared with 6 structs; its own read by hand); run: NOT SEEN: the settings records are not sampled as GameSettings
+GameSettings.rotation | OK | code: 54 uses of the name (shared with 9 structs; its own read by hand); run: NOT SEEN: the settings records are not sampled as GameSettings
+GameSettings.mode | OK | code: 18 uses of the name (shared with 2 structs; its own read by hand); in dplay_host, arena_takeHostAnswer; run: NOT SEEN: the settings records are not sampled as GameSettings
+GameSettings.limit | OK | code: 11 uses: part_load, item_pickup, settings_store, room_announceGame; run: NOT SEEN: the settings records are not sampled as GameSettings
+GameSettings.password | OK | code: 23 uses of the name (shared with 7 structs; its own read by hand); in settings_store, room_announceGame; run: NOT SEEN: the settings records are not sampled as GameSettings
+GameSettings.locked | OK | code: 15 uses of the name (shared with 4 structs; its own read by hand); in settings_store; run: NOT SEEN: the settings records are not sampled as GameSettings
+RankedPlayer.name | OK | code: 94 uses of the name (shared with 22 structs; its own read by hand); in ranking_fillPage, net_addPlayerRecord; run: strings: e.g. "pilot02"; non-zero in 0% of samples
+RankedPlayer.kind | OK | code: 28 uses of the name (shared with 11 structs; its own read by hand); in net_addPlayerRecord; run: NOT SEEN: not reached by the scripted sessions
+RankedPlayer.games | OK | code: 7 uses of the name (shared with 4 structs; its own read by hand); run: int 2 .. 13; values 0, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12; non-zero in 3% of samples
+RankedPlayer.kills | OK | code: 35 uses of the name (shared with 6 structs; its own read by hand); run: int 10 .. 87; values 0, 10, 17, 24, 31, 38, 45, 52, 59, 66, 73, 80; non-zero in 3% of samples
+RankedPlayer.deaths | OK | code: 26 uses of the name (shared with 6 structs; its own read by hand); run: int 5 .. 38; values 0, 5, 8, 11, 14, 17, 20, 23, 26, 29, 32, 35; non-zero in 3% of samples
+RankedPlayer.exp | OK | code: 9 uses of the name (shared with 4 structs; its own read by hand); run: int 50 .. 1150; values 0, 50, 150, 250, 350, 450, 550, 650, 750, 850, 950, 1050; non-zero in 3% of samples
+RankedPlayer.level | OK | code: 15 uses of the name (shared with 4 structs; its own read by hand); run: int 1 .. 4; values 0, 1, 2, 3, 4; non-zero in 3% of samples
+RankedPlayer.power | OK | code: 7 uses of the name (shared with 4 structs; its own read by hand); run: float 0.25 .. 16.75; values 0, 0.25, 1.75, 3.25, 4.75, 6.25, 7.75, 9.25, 10.75, 12.25, 13.75, 15.25; non-zero in 3% of samples
+RankedPlayer.rate | OK | code: 6 uses of the name (shared with 2 structs; its own read by hand); run: float 66.6667 .. 69.6; values 0, 66.6667, 68, 68.5714, 68.8889, 69.0909, 69.2308, 69.3333, 69.4118, 69.4737, 69.5238, 69.5652; non-zero in 3% of sampl
+RankRow.rank | OK | code: 16 uses of the name (shared with 2 structs; its own read by hand); run: int 1 .. 12; values 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11; non-zero in 3% of samples
+RankRow.name | OK | code: 94 uses of the name (shared with 22 structs; its own read by hand); run: strings: e.g. "pilot02"; non-zero in 0% of samples
+RankRow.exp | OK | code: 9 uses of the name (shared with 4 structs; its own read by hand); run: int 50 .. 1150; values 0, 50, 150, 250, 350, 450, 550, 650, 750, 850, 950, 1050; non-zero in 3% of samples
+RankRow.games | OK | code: 7 uses of the name (shared with 4 structs; its own read by hand); run: int 2 .. 13; values 0, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12; non-zero in 3% of samples
+RankRow.kills | OK | code: 35 uses of the name (shared with 6 structs; its own read by hand); run: int 10 .. 87; values 0, 10, 17, 24, 31, 38, 45, 52, 59, 66, 73, 80; non-zero in 3% of samples
+RankRow.deaths | OK | code: 26 uses of the name (shared with 6 structs; its own read by hand); in ranking_drawTable, ranking_fillPage, ranking_enter; run: int 5 .. 38; values 0, 5, 8, 11, 14, 17, 20, 23, 26, 29, 32, 35; non-zero in 3% of samples
+RankRow.rate | OK | code: 6 uses of the name (shared with 2 structs; its own read by hand); run: float 66.6667 .. 69.6; values 0, 66.6667, 68, 68.5714, 68.8889, 69.0909, 69.2308, 69.3333, 69.4118, 69.4737, 69.5238, 69.5652; non-zero in 3% of sampl
+RankRow.level | OK | code: 15 uses of the name (shared with 4 structs; its own read by hand); run: int 1 .. 4; values 0, 1, 2, 3, 4; non-zero in 3% of samples
+RankRow.power | OK | code: 7 uses of the name (shared with 4 structs; its own read by hand); run: float 0.25 .. 16.75; values 0, 0.25, 1.75, 3.25, 4.75, 6.25, 7.75, 9.25, 10.75, 12.25, 13.75, 15.25; non-zero in 3% of samples
+CharacterProfile.name | OK | code: 94 uses of the name (shared with 22 structs; its own read by hand); in profile_drawPilotSelect, profile_drawChosenPilot; run: strings: e.g. "Sonien"; non-zero in 0% of samples
+CharacterProfile.corporation | OK | code: 2 uses: profile_drawPilotSelect, profile_drawChosenPilot; run: strings: e.g. "Nitro"; non-zero in 0% of samples
+CharacterProfile.sex | OK | code: 2 uses: profile_drawPilotSelect, profile_drawChosenPilot; run: int 1 .. 2; values 0, 1, 2; non-zero in 98% of samples
+CharacterProfile.age | OK | code: 21 uses of the name (shared with 3 structs; its own read by hand); run: int 15 .. 37; values 0, 15, 18, 24, 25, 26, 27, 29, 30, 37; non-zero in 98% of samples
+CharacterProfile.stats | OK | code: 14 uses of the name (shared with 1 structs; its own read by hand); in actor_takeDamage, character_factor; run: int -20 .. 30; values 0, 5, 8, 10, 13, 15, 20, 30, -20, -15, -12, -10; non-zero in 71% of samples
+GamePacket.number | OK | code: 3 uses of the name (shared with 2 structs; its own read by hand); run: NOT SEEN: a match packet in flight (net_sendGamePacket / net_processGamePacket) is not sampled
+GamePacket.kind | OK | code: 28 uses of the name (shared with 11 structs; its own read by hand); run: NOT SEEN: a match packet in flight (net_sendGamePacket / net_processGamePacket) is not sampled
+GamePacket.player | OK | code: 32 uses of the name (shared with 2 structs; its own read by hand); in net_sendGamePacket; run: NOT SEEN: a match packet in flight (net_sendGamePacket / net_processGamePacket) is not sampled
+GamePacket.map | OK | code: 27 uses of the name (shared with 6 structs; its own read by hand); run: NOT SEEN: a match packet in flight (net_sendGamePacket / net_processGamePacket) is not sampled
+GamePacket.nextMap | OK | code: 8 uses: match_frame, make_rotation, match_setup, net_processGamePacket; run: NOT SEEN: a match packet in flight (net_sendGamePacket / net_processGamePacket) is not sampled
+GamePacket.mode | OK | code: 18 uses of the name (shared with 2 structs; its own read by hand); in game_setGameTypeFlags; run: NOT SEEN: a match packet in flight (net_sendGamePacket / net_processGamePacket) is not sampled
+GamePacket.nextMode | OK | code: 8 uses: match_frame, make_rotation, match_setup, net_processGamePacket; run: NOT SEEN: a match packet in flight (net_sendGamePacket / net_processGamePacket) is not sampled
+GamePacket.mapNumber | OK | code: 4 uses: game_processLoadingMode, map_loadGroundInfoFrom, sample, net_processGamePacket; run: NOT SEEN: a match packet in flight (net_sendGamePacket / net_processGamePacket) is not sampled
+GamePacket.elapsed | OK | code: 11 uses: slow_end, match_frame, hud_drawMatchCounters, esc_retry; run: NOT SEEN: a match packet in flight (net_sendGamePacket / net_processGamePacket) is not sampled
+GamePacket.clockFraction | OK | code: 15 uses of the name (shared with 1 structs; its own read by hand); run: NOT SEEN: a match packet in flight (net_sendGamePacket / net_processGamePacket) is not sampled
+GamePacket.timePlayed | OK | code: 10 uses of the name (shared with 2 structs; its own read by hand); run: NOT SEEN: a match packet in flight (net_sendGamePacket / net_processGamePacket) is not sampled
+GamePacket.timeFraction | OK | code: 10 uses of the name (shared with 2 structs; its own read by hand); run: NOT SEEN: a match packet in flight (net_sendGamePacket / net_processGamePacket) is not sampled
+GamePacket.resendAsked | OK | code: 2 uses: net_processGamePacket; run: NOT SEEN: a match packet in flight (net_sendGamePacket / net_processGamePacket) is not sampled
+GamePacket.kills | OK | code: 35 uses of the name (shared with 6 structs; its own read by hand); run: NOT SEEN: a match packet in flight (net_sendGamePacket / net_processGamePacket) is not sampled
+GamePacket.deaths | OK | code: 26 uses of the name (shared with 6 structs; its own read by hand); run: NOT SEEN: a match packet in flight (net_sendGamePacket / net_processGamePacket) is not sampled
+GamePacket.teamScores | OK | code: 15 uses of the name (shared with 1 structs; its own read by hand); run: NOT SEEN: a match packet in flight (net_sendGamePacket / net_processGamePacket) is not sampled
+GamePacket.lastPickup | OK | code: 6 uses: map_loadPlayInfoFrom, item_pickup, scene_reset, sample; run: NOT SEEN: a match packet in flight (net_sendGamePacket / net_processGamePacket) is not sampled
+GamePacket.checkTable | OK | code: 0 uses: by offset / pointer arithmetic; run: NOT SEEN: a match packet in flight (net_sendGamePacket / net_processGamePacket) is not sampled
+GamePacket.checkIndex | OK | code: 1 uses: net_processGamePacket; run: NOT SEEN: a match packet in flight (net_sendGamePacket / net_processGamePacket) is not sampled
+GamePacket.checkValue | OK | code: 1 uses: net_processGamePacket; run: NOT SEEN: a match packet in flight (net_sendGamePacket / net_processGamePacket) is not sampled
+GamePacket.checkIndex2 | OK | code: 1 uses: net_processGamePacket; run: NOT SEEN: a match packet in flight (net_sendGamePacket / net_processGamePacket) is not sampled
+GamePacket.checkValue2 | OK | code: 1 uses: net_processGamePacket; run: NOT SEEN: a match packet in flight (net_sendGamePacket / net_processGamePacket) is not sampled
+PlayerRecordPacket.name | OK | code: 94 uses of the name (shared with 22 structs; its own read by hand); run: NOT SEEN: sent only to the game server after a Ladder match (record_send)
+PlayerRecordPacket.games | OK | code: 7 uses of the name (shared with 4 structs; its own read by hand); run: NOT SEEN: sent only to the game server after a Ladder match (record_send)
+PlayerRecordPacket.kills | OK | code: 35 uses of the name (shared with 6 structs; its own read by hand); in record_send; run: NOT SEEN: sent only to the game server after a Ladder match (record_send)
+PlayerRecordPacket.deaths | OK | code: 26 uses of the name (shared with 6 structs; its own read by hand); in record_send; run: NOT SEEN: sent only to the game server after a Ladder match (record_send)
+PlayerRecordPacket.exp | OK | code: 9 uses of the name (shared with 4 structs; its own read by hand); in ladder_checkAndSendRecord; run: NOT SEEN: sent only to the game server after a Ladder match (record_send)
+PlayerRecordPacket.level | OK | code: 15 uses of the name (shared with 4 structs; its own read by hand); in level_fromPoints; run: NOT SEEN: sent only to the game server after a Ladder match (record_send)
+PlayerRecordPacket.power | OK | code: 7 uses of the name (shared with 4 structs; its own read by hand); in power_from_rate; run: NOT SEEN: sent only to the game server after a Ladder match (record_send)
+PilotStats.level | OK | code: 15 uses of the name (shared with 4 structs; its own read by hand); in level_fromPoints, record_send; run: NOT SEEN: the Ladder login reply's stats (g_pilotLevel ..) are not sampled as PilotStats
+PilotStats.exp | OK | code: 9 uses of the name (shared with 4 structs; its own read by hand); in record_send, pilotRecord_syncCopies; run: NOT SEEN: the Ladder login reply's stats (g_pilotLevel ..) are not sampled as PilotStats
+PilotStats.rank | OK | code: 16 uses of the name (shared with 2 structs; its own read by hand); run: NOT SEEN: the Ladder login reply's stats (g_pilotLevel ..) are not sampled as PilotStats
+PilotStats.power | OK | code: 7 uses of the name (shared with 4 structs; its own read by hand); in power_from_rate; run: NOT SEEN: the Ladder login reply's stats (g_pilotLevel ..) are not sampled as PilotStats
+PilotStats.games | OK | code: 7 uses of the name (shared with 4 structs; its own read by hand); run: NOT SEEN: the Ladder login reply's stats (g_pilotLevel ..) are not sampled as PilotStats
+PilotStats.kills | OK | code: 35 uses of the name (shared with 6 structs; its own read by hand); in record_send, take_back; run: NOT SEEN: the Ladder login reply's stats (g_pilotLevel ..) are not sampled as PilotStats
+PilotStats.deaths | OK | code: 26 uses of the name (shared with 6 structs; its own read by hand); in record_send; run: NOT SEEN: the Ladder login reply's stats (g_pilotLevel ..) are not sampled as PilotStats
+PilotStats.killRate | OK | code: 2 uses: stats_copy, record_send; run: NOT SEEN: the Ladder login reply's stats (g_pilotLevel ..) are not sampled as PilotStats
+SkirmishInfo.gameMode | OK | code: 22 uses of the name (shared with 5 structs; its own read by hand); in skirmish_startRound; run: NOT SEEN: g_skirmishInfo is not sampled as SkirmishInfo
+SkirmishInfo.timeLimit | OK | code: 29 uses of the name (shared with 5 structs; its own read by hand); in skirmish_startRound, make_rotation; run: NOT SEEN: g_skirmishInfo is not sampled as SkirmishInfo
+SkirmishInfo.fragLimit | OK | code: 31 uses of the name (shared with 5 structs; its own read by hand); in skirmish_startRound, make_rotation; run: NOT SEEN: g_skirmishInfo is not sampled as SkirmishInfo
+ViewQuad.texture | OK | code: 12 uses of the name (shared with 2 structs; its own read by hand); run: NOT SEEN: the sampler does not follow ViewVolume.quads
+ViewQuad.uv0 | OK | code: 2 uses: quad_fields; run: NOT SEEN: the sampler does not follow ViewVolume.quads
+ViewQuad.uv1 | OK | code: 3 uses: quad_fields, fix_hudVertex; run: NOT SEEN: the sampler does not follow ViewVolume.quads
+ViewQuad.colour | OK | code: 26 uses of the name (shared with 4 structs; its own read by hand); in quad_fields; run: NOT SEEN: the sampler does not follow ViewVolume.quads
+ViewQuad.points | OK | code: 9 uses of the name (shared with 2 structs; its own read by hand); run: NOT SEEN: the sampler does not follow ViewVolume.quads
+ViewQuad.kind | OK | code: 28 uses of the name (shared with 11 structs; its own read by hand); run: NOT SEEN: the sampler does not follow ViewVolume.quads
+ViewTriangle.points | OK | code: 9 uses of the name (shared with 2 structs; its own read by hand); in ViewVolume_addTriangle; run: NOT SEEN: the sampler does not follow ViewVolume.triangles
+ViewTriangle.matrix | OK | code: 25 uses of the name (shared with 4 structs; its own read by hand); run: NOT SEEN: the sampler does not follow ViewVolume.triangles
+ViewTriangle.kind | OK | code: 28 uses of the name (shared with 11 structs; its own read by hand); run: NOT SEEN: the sampler does not follow ViewVolume.triangles
+ViewVolume.blockSize | OK | code: 32 uses of the name (shared with 9 structs; its own read by hand); in ViewVolume_initBy; run: int 1240000 .. 1240000; values 1240000; non-zero in 100% of samples
+ViewVolume.block | OK | code: 49 uses of the name (shared with 9 structs; its own read by hand); in ViewVolume_initBy, operator_new, ViewVolume_release; run: pointer: 14759 valid, 0 original-image addresses, 0 unmapped; non-zero in 100% of samples
+ViewVolume.ownsBlock | OK | code: 15 uses of the name (shared with 8 structs; its own read by hand); run: NOT SEEN: not reached by the scripted sessions
+ViewVolume.glArrays | OK | code: 4 uses: ViewVolume_release, draw_opaque; run: pointer: 44277 valid, 0 original-image addresses, 0 unmapped; non-zero in 100% of samples
+ViewVolume.entryPointsSet | OK | code: 1 uses: ViewVolume_release; run: int 1 .. 1; values 1; non-zero in 100% of samples
+ViewVolume.materialOrder | OK | code: 2 uses: ViewVolume_queueModel, ViewVolume_draw; run: int 2 .. 2625; values 0, 7, 8, 9, 10, 17, 513, 514, 515, 516, 517, 1542 ...; non-zero in 0% of samples
+ViewVolume.materialCount | OK | code: 4 uses: ViewVolume_reset, ViewVolume_queueModel, ViewVolume_draw; run: int 1 .. 34; values 0, 1, 2, 3, 5, 6, 7, 8, 9, 10, 11, 12 ...; non-zero in 29% of samples
+ViewVolume.materialHeads | OK | code: 4 uses: ViewVolume_reset, ViewVolume_queueModel, ViewVolume_draw; run: pointer: 26586 valid, 0 original-image addresses, 0 unmapped; non-zero in 0% of samples
+ViewVolume.materialTails | OK | code: 3 uses: ViewVolume_reset, ViewVolume_queueModel; run: pointer: 26592 valid, 0 original-image addresses, 0 unmapped; non-zero in 0% of samples
+ViewVolume.entryLimit | OK | code: 3 uses: ViewVolume_initBy, ViewVolume_queueModel; run: int 10000 .. 10000; values 10000; non-zero in 100% of samples
+ViewVolume.entries | OK | code: 22 uses of the name (shared with 2 structs; its own read by hand); in ViewVolume_queueModel; run: pointer: 14759 valid, 0 original-image addresses, 0 unmapped; non-zero in 100% of samples
+ViewVolume.entryCount | OK | code: 3 uses: ViewVolume_reset, ViewVolume_queueModel; run: int 1 .. 224; values 0, 1, 2, 3, 6, 9, 17, 26, 31, 32, 33, 34 ...; non-zero in 29% of samples
+ViewVolume.matrixLimit | OK | code: 3 uses: ViewVolume_initBy, ViewVolume_queueModel; run: int 1000 .. 1000; values 1000; non-zero in 100% of samples
+ViewVolume.matrices | OK | code: 2 uses: ViewVolume_initBy, ViewVolume_queueModel; run: pointer: 14759 valid, 0 original-image addresses, 0 unmapped; non-zero in 100% of samples
+ViewVolume.matrixCount | OK | code: 3 uses: ViewVolume_reset, ViewVolume_queueModel; run: int 5 .. 73; values 0, 5, 18, 48, 50, 51, 52, 53, 54, 55, 56, 57 ...; non-zero in 1% of samples
+ViewVolume.colourLimit | OK | code: 3 uses: ViewVolume_initBy, fits; run: int 20000 .. 20000; values 20000; non-zero in 100% of samples
+ViewVolume.colours | OK | code: 38 uses of the name (shared with 5 structs; its own read by hand); in item_colours; run: pointer: 14759 valid, 0 original-image addresses, 0 unmapped; non-zero in 100% of samples
+ViewVolume.colourMost | OK | code: 3 uses: fits, ViewVolume_draw; run: int 63 .. 343; values 0, 63, 80, 113, 124, 134, 146, 165, 166, 175, 185, 241; non-zero in 29% of samples
+ViewVolume.triangleLimit | OK | code: 4 uses: ViewVolume_initBy, ViewVolume_addTriangle; run: int 4000 .. 4000; values 4000; non-zero in 100% of samples
+ViewVolume.triangles | OK | code: 4 uses: ViewVolume_initBy, ViewVolume_addTriangle, ViewVolume_draw; run: pointer: 14759 valid, 0 original-image addresses, 0 unmapped; non-zero in 100% of samples
+ViewVolume.triangleCount | OK | code: 12 uses of the name (shared with 2 structs; its own read by hand); in ViewVolume_addTriangle, ViewVolume_draw, ViewVolume_reset; run: int 1 .. 1462; values 0, 2, 8, 95, 102, 125, 201, 281, 284, 296, 309, 344 ...; non-zero in 2% of samples
+ViewVolume.triangleOrder | OK | code: 6 uses: ViewVolume_initBy, ViewVolume_draw; run: pointer: 14759 valid, 0 original-image addresses, 0 unmapped; non-zero in 100% of samples
+ViewVolume.triangleOrderCount | OK | code: 7 uses: ViewVolume_draw; run: int 1 .. 1462; values 0, 6, 80, 95, 284, 292, 296, 344, 362, 364, 393, 405 ...; non-zero in 2% of samples
+ViewVolume.quadLimit | OK | code: 2 uses: ViewVolume_initBy; run: int 400 .. 400; values 400; non-zero in 100% of samples
+ViewVolume.quads | OK | code: 2 uses: ViewVolume_initBy, ViewVolume_draw; run: pointer: 14759 valid, 0 original-image addresses, 0 unmapped; non-zero in 100% of samples
+ViewVolume.quadCount | OK | code: 4 uses: ViewVolume_reset, ViewVolume_addQuad, ViewVolume_addBillboard, ViewVolume_draw; run: int 2 .. 255; values 0, 3, 9, 27, 29, 37, 61, 63, 65, 69, 70, 71 ...; non-zero in 1% of samples
+ViewVolume.quadOrderA | OK | code: 5 uses: ViewVolume_initBy, ViewVolume_draw; run: pointer: 14759 valid, 0 original-image addresses, 0 unmapped; non-zero in 100% of samples
+ViewVolume.quadOrderACount | OK | code: 4 uses: ViewVolume_draw; run: int 2 .. 255; values 0, 9, 27, 29, 37, 46, 55, 61, 63, 65, 69, 70 ...; non-zero in 1% of samples
+ViewVolume.quadOrderB | OK | code: 4 uses: ViewVolume_initBy, ViewVolume_draw; run: pointer: 14759 valid, 0 original-image addresses, 0 unmapped; non-zero in 100% of samples
+ViewVolume.quadOrderBCount | OK | code: 3 uses: ViewVolume_draw; run: int 1 .. 5; values 0, 1, 2, 3, 4, 5; non-zero in 0% of samples
+ViewVolume.segmentLimit | OK | code: 1 uses: ViewVolume_initBy; run: int 10000 .. 10000; values 10000; non-zero in 100% of samples
+ViewVolume.segments | OK | code: 2 uses: ViewVolume_initBy, ViewVolume_draw; run: pointer: 14759 valid, 0 original-image addresses, 0 unmapped; non-zero in 100% of samples
+ViewVolume.segmentCount | OK | code: 3 uses: ViewVolume_reset, ViewVolume_addSegment, ViewVolume_draw; run: NOT SEEN: not reached by the scripted sessions
+ViewVolume.entriesFull | OK | code: 2 uses: ViewVolume_reset, ViewVolume_queueModel; run: NOT SEEN: not reached by the scripted sessions
+ViewVolume.matricesFull | OK | code: 2 uses: ViewVolume_reset, ViewVolume_queueModel; run: NOT SEEN: not reached by the scripted sessions
+ViewVolume.trianglesFull | OK | code: 2 uses: ViewVolume_reset, ViewVolume_addTriangle; run: NOT SEEN: not reached by the scripted sessions
+ViewVolume.quadsFull | OK | code: 1 uses: ViewVolume_reset; run: NOT SEEN: not reached by the scripted sessions
+ViewVolume.segmentsFull | OK | code: 1 uses: ViewVolume_reset; run: NOT SEEN: not reached by the scripted sessions
+ViewVolume.trianglesDrawn | OK | code: 7 uses: ViewVolume_clearDrawCounts, draw_opaque, ViewVolume_draw; run: int 220 .. 36964291; values 0, 220, 415, 494, 518, 519, 550, 684, 926, 1017, 1193, 1205 ...; non-zero in 49% of samples
+ViewVolume.meshesDrawn | OK | code: 2 uses: ViewVolume_clearDrawCounts, ViewVolume_draw; run: int 5 .. 1036916; values 0, 5, 10, 11, 21, 31, 32, 33, 36, 40, 44, 45 ...; non-zero in 49% of samples
+ViewVolume.textureBinds | OK | code: 2 uses: ViewVolume_clearDrawCounts, bind; run: int 3 .. 608959; values 0, 4, 5, 6, 8, 13, 15, 17, 19, 20, 21, 22 ...; non-zero in 49% of samples
+ViewVolume.projection | OK | code: 8 uses: ViewVolume_captureMatrices, match_drawFrame, stage_setupView, ViewVolume_addBillboard; run: float -201.005 .. 11.4301; values 0, 0.5625, 0.974279, 1, 1.14073, 1.27849, 1.35817, 1.37483, 1.37491, 1.37494, 1.42821, 1.73205 ...; non-zero in 15%
+ViewVolume.modelview | OK | code: 11 uses: game_processLoadingMode, match_mechTestFrame, replay_frame, ViewVolume_captureMatrices; run: float -50216.9 .. 50270.8; values 0, 0.000669958, 0.00174542, 0.0174395, 0.0174524, 0.0296661, 0.038382, 0.389124, 0.453991, 0.48786, 0.489382, 0.5750
+ViewVolume.clip | OK | code: 6 uses of the name (shared with 2 structs; its own read by hand); run: float -193168 .. 50216.9; values 0, 0.0302284, 0.0664795, 0.389124, 0.389202, 0.442313, 0.453991, 0.454081, 0.475311, 0.476795, 0.489382, 0.48948 ...;
+Skeleton.blockSize | OK | code: 32 uses of the name (shared with 9 structs; its own read by hand); in take_block, skel_loadFromFile, skel_loadAseFrom, skel_getSkeletonPtrBy; run: NOT SEEN: the sampler does not walk the skeleton managers' items
+Skeleton.block | OK | code: 49 uses of the name (shared with 9 structs; its own read by hand); run: NOT SEEN: the sampler does not walk the skeleton managers' items
+Skeleton.ownsBlock | OK | code: 15 uses of the name (shared with 8 structs; its own read by hand); run: NOT SEEN: the sampler does not walk the skeleton managers' items
+Skeleton.boneCount | OK | code: 11 uses: skel_loadFromFile, skel_getBoneMatrix, ObjectList_poseBones, skel_loadAseFrom; run: NOT SEEN: the sampler does not walk the skeleton managers' items
+Skeleton.bones | OK | code: 9 uses: skel_loadFromFile, skel_getBoneMatrix, ObjectList_poseBones, skel_loadAseFrom; run: NOT SEEN: the sampler does not walk the skeleton managers' items
+Skeleton.posKeyTotal | OK | code: 3 uses: skel_loadAseFrom; run: NOT SEEN: the sampler does not walk the skeleton managers' items
+Skeleton.rotKeyTotal | OK | code: 3 uses: skel_loadAseFrom; run: NOT SEEN: the sampler does not walk the skeleton managers' items
+Skeleton.duration | OK | code: 3 uses: skel_getBoneMatrix, ObjectList_poseBones, skel_loadAseFrom; run: NOT SEEN: the sampler does not walk the skeleton managers' items
+Bone.parent | OK | code: 6 uses: ObjectList_poseBones, skel_loadAseFrom; run: NOT SEEN: the sampler does not follow Skeleton.bones
+Bone.pos | OK | code: 144 uses of the name (shared with 9 structs; its own read by hand); run: NOT SEEN: the sampler does not follow Skeleton.bones
+Bone.rotation | OK | code: 54 uses of the name (shared with 9 structs; its own read by hand); run: NOT SEEN: the sampler does not follow Skeleton.bones
+Bone.posKeyCount | OK | code: 12 uses: skel_loadFromFile, skel_getBoneMatrix, ObjectList_poseBones, skel_loadAseFrom; run: NOT SEEN: the sampler does not follow Skeleton.bones
+Bone.posKeys | OK | code: 9 uses: skel_loadFromFile, skel_getBoneMatrix, ObjectList_poseBones, skel_loadAseFrom; run: NOT SEEN: the sampler does not follow Skeleton.bones
+Bone.rotKeyCount | OK | code: 14 uses of the name (shared with 1 structs; its own read by hand); run: NOT SEEN: the sampler does not follow Skeleton.bones
+Bone.rotKeys | OK | code: 9 uses: skel_loadFromFile, skel_getBoneMatrix, ObjectList_poseBones, skel_loadAseFrom; run: NOT SEEN: the sampler does not follow Skeleton.bones
+PosKey.time | OK | code: 9 uses of the name (shared with 2 structs; its own read by hand); run: NOT SEEN: the sampler does not follow Bone.posKeys
+PosKey.length | OK | code: 7 uses of the name (shared with 2 structs; its own read by hand); run: NOT SEEN: the sampler does not follow Bone.posKeys
+PosKey.pos | OK | code: 144 uses of the name (shared with 9 structs; its own read by hand); in skel_loadAseFrom, skel_getBoneMatrix, ObjectList_poseBones; run: NOT SEEN: the sampler does not follow Bone.posKeys
+PosKey.delta | OK | code: 5 uses: free_camera, ObjectList_poseBones, skel_loadAseFrom; run: NOT SEEN: the sampler does not follow Bone.posKeys
+RotKey.time | OK | code: 9 uses of the name (shared with 2 structs; its own read by hand); run: NOT SEEN: the sampler does not follow Bone.rotKeys
+RotKey.length | OK | code: 7 uses of the name (shared with 2 structs; its own read by hand); run: NOT SEEN: the sampler does not follow Bone.rotKeys
+RotKey.rotation | OK | code: 54 uses of the name (shared with 9 structs; its own read by hand); run: NOT SEEN: the sampler does not follow Bone.rotKeys
+RotKey.step | OK | code: 10 uses of the name (shared with 2 structs; its own read by hand); run: NOT SEEN: the sampler does not follow Bone.rotKeys
+Manager.blockSize | OK | code: 32 uses of the name (shared with 9 structs; its own read by hand); in ShapeManager_initBy, take_block; run: int 32000 .. 3000000; values 32000, 64000, 80000, 1000000, 3000000; non-zero in 100% of samples
+Manager.block | OK | code: 49 uses of the name (shared with 9 structs; its own read by hand); run: pointer: 2390958 valid, 0 original-image addresses, 0 unmapped; non-zero in 100% of samples
+Manager.ownsBlock | OK | code: 15 uses of the name (shared with 8 structs; its own read by hand); run: NOT SEEN: not reached by the scripted sessions
+Manager.dir | OK | code: 17 uses of the name (shared with 4 structs; its own read by hand); in item_path; run: strings: e.g. "SHAPE"; non-zero in 0% of samples
+Manager.source | OK | code: 5 uses of the name (shared with 2 structs; its own read by hand); run: int 2 .. 2; values 2; non-zero in 100% of samples
+Manager.capacity | OK | code: 8 uses of the name (shared with 2 structs; its own read by hand); run: int 8 .. 600; values 8, 16, 20, 400, 600; non-zero in 100% of samples
+Manager.nodes | OK | code: 13 uses of the name (shared with 3 structs; its own read by hand); run: pointer: 2390958 valid, 0 original-image addresses, 0 unmapped; non-zero in 100% of samples
+Manager.items | OK | code: 56 uses of the name (shared with 4 structs; its own read by hand); run: pointer: 2390958 valid, 0 original-image addresses, 0 unmapped; non-zero in 100% of samples
+Manager.count | OK | code: 68 uses of the name (shared with 5 structs; its own read by hand); run: int 1 .. 97; values 0, 1, 2, 3, 4, 5, 6, 8, 9, 13, 15, 17 ...; non-zero in 5% of samples
+Manager.dataSize | OK | code: 5 uses of the name (shared with 2 structs; its own read by hand); run: int 30784 .. 2908800; values 30784, 61568, 76960, 939200, 2908800; non-zero in 100% of samples
+Manager.data | OK | code: 13 uses of the name (shared with 3 structs; its own read by hand); in ShapeManager_initBy, shape_getByName; run: pointer: 2390958 valid, 0 original-image addresses, 0 unmapped; non-zero in 100% of samples
+Manager.dataUsed | OK | code: 8 uses of the name (shared with 2 structs; its own read by hand); in shape_getByName, ShapeManager_releaseModels, release_all; run: int 1040 .. 549376; values 0, 1724, 1916, 2036, 3664, 4760, 5444, 7076, 7504, 9664, 9692, 9992 ...; non-zero in 5% of samples
+Manager.textureSuffix | OK | code: 3 uses: ShapeManager_initBy, shape_getByName, shape_setTextureSuffix; run: strings: e.g. "_T0"; non-zero in 0% of samples
+Manager.bindFlags | OK | code: 5 uses: ShapeManager_initBy, shape_getByName, shape_setTint, shape_clearTint; run: int 2 .. 2; values 0, 2; non-zero in 4% of samples
+Manager.tint | TYPE -> float | two hue / saturation / value triples, every value float bits (0.25, 0.4, 0.5 .., hue degrees); written from shape_setTint's arguments and passed to shape_bindTextureBy as bits (BITS() at both)
+SkelManager.blockSize | OK | code: 32 uses of the name (shared with 9 structs; its own read by hand); in SkeletonManager_initBy, take_block; run: int 2000 .. 100000; values 2000, 4000, 40000, 100000; non-zero in 100% of samples
+SkelManager.block | OK | code: 49 uses of the name (shared with 9 structs; its own read by hand); run: pointer: 2390958 valid, 0 original-image addresses, 0 unmapped; non-zero in 100% of samples
+SkelManager.ownsBlock | OK | code: 15 uses of the name (shared with 8 structs; its own read by hand); run: NOT SEEN: not reached by the scripted sessions
+SkelManager.dir | OK | code: 17 uses of the name (shared with 4 structs; its own read by hand); in item_path; run: strings: e.g. "Skeleton"; non-zero in 0% of samples
+SkelManager.source | OK | code: 5 uses of the name (shared with 2 structs; its own read by hand); in skelDat_getItemFileBy; run: int 2 .. 2; values 2; non-zero in 100% of samples
+SkelManager.capacity | OK | code: 8 uses of the name (shared with 2 structs; its own read by hand); run: int 2 .. 100; values 2, 100; non-zero in 100% of samples
+SkelManager.nodes | OK | code: 13 uses of the name (shared with 3 structs; its own read by hand); run: pointer: 2390958 valid, 0 original-image addresses, 0 unmapped; non-zero in 100% of samples
+SkelManager.items | OK | code: 56 uses of the name (shared with 4 structs; its own read by hand); run: pointer: 2390958 valid, 0 original-image addresses, 0 unmapped; non-zero in 100% of samples
+SkelManager.count | OK | code: 68 uses of the name (shared with 5 structs; its own read by hand); run: int 1 .. 24; values 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11 ...; non-zero in 5% of samples
+SkelManager.dataSize | OK | code: 5 uses of the name (shared with 2 structs; its own read by hand); run: int 1776 .. 88800; values 1776, 3776, 28800, 88800; non-zero in 100% of samples
+SkelManager.data | OK | code: 13 uses of the name (shared with 3 structs; its own read by hand); in SkeletonManager_initBy, skel_getSkeletonPtrBy; run: pointer: 2390958 valid, 0 original-image addresses, 0 unmapped; non-zero in 100% of samples
+SkelManager.dataUsed | OK | code: 8 uses of the name (shared with 2 structs; its own read by hand); in skel_getSkeletonPtrBy, SkeletonManager_releaseSkeletons, release_all; run: int 112 .. 14576; values 0, 112, 296, 464, 832, 920, 992, 1152, 1248, 1376, 1552, 1584 ...; non-zero in 5% of samples
+PlayerRecord.used | OK | code: 27 uses of the name (shared with 5 structs; its own read by hand); in playerRecord_markUsed; run: int 1 .. 1; values 0, 1; non-zero in 4% of samples
+PlayerRecord.partHue | OK | code: 4 uses: record_clearPartsItems, playerRecord_setPartColour, send_packet; run: int -124 .. 119; values 0, 6, 27, 31, 63, 70, 118, 119, 132, 157, 164, 168; non-zero in 1% of samples
+PlayerRecord.partSaturation | OK | code: 3 uses: record_clearPartsItems, playerRecord_setPartColour; run: int -128 .. 127; values 0, 51, 60, 64, 74, 76, 102, 107, 127, 128, 133; non-zero in 3% of samples
+PlayerRecord.partValue | OK | code: 3 uses: record_clearPartsItems, playerRecord_setPartColour; run: int 31 .. 127; values 0, 31, 64, 67, 74, 76, 102, 123, 124, 127; non-zero in 3% of samples
+PlayerRecord.flag | OK | code: 10 uses: playerRecord_loadFlag, flag_uploadAtlas, playerRecord_resetFlag, item_pickup; run: NOT SEEN: not reached by the scripted sessions
+PlayerRecord.flagChanged | OK | code: 8 uses: flag_uploadAtlas, match_frame, playerRecord_resetFlag, dplay_enumConnections; run: NOT SEEN: not reached by the scripted sessions
+PlayerRecord.flagSent | OK | code: 12 uses: match_frame, playerRecord_resetFlag, catalogue_loadComponents, replay_startRecording; run: int 384 .. 384; values 384; non-zero in 100% of samples
+PlayerRecord.name | OK | code: 94 uses of the name (shared with 22 structs; its own read by hand); run: strings: e.g. "Alex"; non-zero in 0% of samples
+PlayerRecord.character | OK | code: 18 uses of the name (shared with 2 structs; its own read by hand); run: int 1 .. 8; values 0, 1, 2, 3, 4, 5, 6, 8; non-zero in 1% of samples
+PlayerRecord.team | OK | code: 62 uses of the name (shared with 2 structs; its own read by hand); in player_setTeam, stage_resetPlayerRecords, stage_newRound, actor_setupFromParts; run: int -1 .. 2; values 0, 1, 2, -1; non-zero in 96% of samples
+PlayerRecord.partNames | OK | code: 6 uses: playerRecord_set, record_clearPartsItems; run: strings: e.g. "KYRIE\BOOSTER"; non-zero in 0% of samples
+PlayerRecord.itemNames | OK | code: 3 uses: actor_setActorTypeItemInfoBy, record_clearPartsItems; run: strings: e.g. "ITEM\SH-4"; non-zero in 0% of samples
+PlayerRecord.parts | OK | code: 68 uses of the name (shared with 2 structs; its own read by hand); run: int -1 .. 20; values 0, 1, 2, 3, 4, 5, 6, 7, 8, 11, 12, 13; non-zero in 99% of samples
+PlayerRecord.items | OK | code: 56 uses of the name (shared with 4 structs; its own read by hand); in actor_setActorTypeItemInfoBy; run: int -1 .. 36; values 0, 1, 2, 3, 4, 8, 10, 11, 13, 14, 16, 17 ...; non-zero in 99% of samples
+PlayerRecord.headShapes | OK | code: 6 uses: ResourceSet_ctor, ResourceSet_dtor, playerRecord_set, playerRecord_setPartColour; run: (a record / array of records: see its fields)
+PlayerRecord.headShapeData | OK | code: 0 uses: by offset / pointer arithmetic; run: int 1 .. 255; values 0, 32, 65, 68, 69, 71, 72, 73, 75, 76, 77, 79 ...; non-zero in 2% of samples
+PlayerRecord.chestShapes | OK | code: 6 uses: ResourceSet_ctor, ResourceSet_dtor, playerRecord_set, playerRecord_setPartColour; run: (a record / array of records: see its fields)
+PlayerRecord.chestShapeData | OK | code: 0 uses: by offset / pointer arithmetic; run: int 1 .. 255; values 0, 65, 67, 68, 69, 71, 72, 73, 75, 76, 77, 79 ...; non-zero in 3% of samples
+PlayerRecord.armShapes | OK | code: 6 uses: ResourceSet_ctor, ResourceSet_dtor, playerRecord_set, playerRecord_setPartColour; run: (a record / array of records: see its fields)
+PlayerRecord.armShapeData | OK | code: 0 uses: by offset / pointer arithmetic; run: int 1 .. 255; values 0, 65, 68, 69, 71, 72, 73, 75, 76, 77, 79, 82 ...; non-zero in 2% of samples
+PlayerRecord.legShapes | OK | code: 6 uses: ResourceSet_ctor, ResourceSet_dtor, playerRecord_set, playerRecord_setPartColour; run: (a record / array of records: see its fields)
+PlayerRecord.legShapeData | OK | code: 0 uses: by offset / pointer arithmetic; run: int 1 .. 255; values 0, 4, 48, 49, 65, 68, 69, 71, 73, 75, 76, 77 ...; non-zero in 2% of samples
+PlayerRecord.boosterShapes | OK | code: 6 uses: ResourceSet_ctor, ResourceSet_dtor, playerRecord_set, playerRecord_setPartColour; run: (a record / array of records: see its fields)
+PlayerRecord.boosterShapeData | OK | code: 0 uses: by offset / pointer arithmetic; run: int 1 .. 255; values 0, 65, 66, 68, 69, 71, 73, 75, 76, 77, 79, 82 ...; non-zero in 1% of samples
+PlayerRecord.headSkels | OK | code: 3 uses: ResourceSet_ctor, ResourceSet_dtor, playerRecord_set; run: (a record / array of records: see its fields)
+PlayerRecord.headSkelData | OK | code: 0 uses: by offset / pointer arithmetic; run: int 1 .. 255; values 0, 40, 45, 65, 66, 67, 68, 69, 72, 73, 78, 79 ...; non-zero in 0% of samples
+PlayerRecord.chestSkels | OK | code: 3 uses: ResourceSet_ctor, ResourceSet_dtor, playerRecord_set; run: (a record / array of records: see its fields)
+PlayerRecord.chestSkelData | OK | code: 0 uses: by offset / pointer arithmetic; run: int 1 .. 255; values 0, 45, 66, 67, 69, 71, 72, 73, 75, 76, 79, 82 ...; non-zero in 1% of samples
+PlayerRecord.armSkels | OK | code: 3 uses: ResourceSet_ctor, ResourceSet_dtor, playerRecord_set; run: (a record / array of records: see its fields)
+PlayerRecord.armSkelData | OK | code: 0 uses: by offset / pointer arithmetic; run: int 1 .. 255; values 0, 8, 45, 65, 69, 71, 73, 75, 76, 77, 79, 82 ...; non-zero in 1% of samples
+PlayerRecord.legSkels | OK | code: 3 uses: ResourceSet_ctor, ResourceSet_dtor, playerRecord_set; run: (a record / array of records: see its fields)
+PlayerRecord.legSkelData | OK | code: 0 uses: by offset / pointer arithmetic; run: int 1 .. 255; values 0, 9, 32, 45, 69, 71, 73, 75, 76, 79, 82, 84 ...; non-zero in 1% of samples
+PlayerRecord.boosterSkels | OK | code: 3 uses: ResourceSet_ctor, ResourceSet_dtor, playerRecord_set; run: (a record / array of records: see its fields)
+PlayerRecord.boosterSkelData | OK | code: 0 uses: by offset / pointer arithmetic; run: int 1 .. 255; values 0, 9, 45, 66, 69, 71, 73, 75, 76, 79, 82, 83 ...; non-zero in 1% of samples
+PlayerRecord.flagShown | OK | code: 9 uses: flag_uploadAtlas, playerRecord_resetFlag, main_score, hud_drawPlayerMarkers; run: int 1 .. 1; values 0, 1; non-zero in 2% of samples
+TreeNode.name | OK | code: 94 uses of the name (shared with 22 structs; its own read by hand); in path_normalize, tree_lookup, item_path; run: NOT SEEN: the sampler does not walk Manager.nodes
+TreeNode.index | OK | code: 15 uses of the name (shared with 2 structs; its own read by hand); run: NOT SEEN: the sampler does not walk Manager.nodes
+TreeNode.left | OK | code: 10 uses: tree_lookup, label, value, after_value; run: NOT SEEN: the sampler does not walk Manager.nodes
+TreeNode.right | OK | code: 2 uses: tree_lookup, ranking_drawTable; run: NOT SEEN: the sampler does not walk Manager.nodes
+TexRecord.name | OK | code: 94 uses of the name (shared with 22 structs; its own read by hand); in tex_getIdBy, path_normalize, texRecord_init; run: strings: e.g. "IFTEX\CHARACTER"; non-zero in 0% of samples
+TexRecord.slot | OK | code: 49 uses of the name (shared with 3 structs; its own read by hand); in tex_bind; run: int -1 .. 79; values 0, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35 ...; non-zero in 2% of samples
+TexRecord.flags | OK | code: 34 uses of the name (shared with 5 structs; its own read by hand); in tex_bind, tex_upload, match_start, tex_applyTintMask; run: int 1 .. 2; values 0, 1, 2; non-zero in 0% of samples
+TexRecord.colours | OK | code: 38 uses of the name (shared with 5 structs; its own read by hand); run: float -123.75 .. 170; values 0, 0.398438, 0.4, 0.46875, 0.5, 0.835938, 0.960938, 0.96875, 0.992188, 0.999, 167.344, 170; non-zero in 0% of samples
+TexRecord.scrollMode | OK | code: 4 uses: texRecord_init, tex_scroll; run: int 1 .. 4; values 0, 1, 3, 4; non-zero in 0% of samples
+TexRecord.changed | OK | code: 8 uses: tex_markMaterialChanged, shape_bindTextureBy, tex_bind, tex_setMaterialTint; run: int 1 .. 1; values 0, 1; non-zero in 0% of samples

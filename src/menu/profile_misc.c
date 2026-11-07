@@ -335,15 +335,15 @@ u32 (profile_create)(void)
 	return profile_resetStatBars();  /* profile_resetStatBars */
 }
 
-/* a profile screen page with a panel: while the pointer glides (g_pointerGliding) it is pulled towards its target (g_highlightX,
-   g_highlightY) by the frame time times rate, until the glide's timer (g_pointerGlideTime) runs out; the screen drawn, then the
+/* a profile screen page with a panel: while the pointer glides (g_pointerGliding) it is pulled towards its target (g_pointerGlideX,
+   g_pointerGlideY) by the frame time times rate, until the glide's timer (g_pointerGlideTime) runs out; the screen drawn, then the
    dialog's frame (at frame: x0, y0, x1, y1) if one is open, else the panel. Returns what the original leaves in eax */
 static u32 glide_page(const float *rate, const u32 *frame, u32 panel)
 {
 	if (g_pointerGliding) {
-		int step = ftol(fmul_m(fmul_m((long double)(g_highlightX - g_mouseX), &g_frameTime), rate));
+		int step = ftol(fmul_m(fmul_m((long double)(g_pointerGlideX - g_mouseX), &g_frameTime), rate));
 		g_mouseX += step;
-		step = ftol(fmul_m(fmul_m((long double)(g_highlightY - g_mouseY), &g_frameTime), rate));
+		step = ftol(fmul_m(fmul_m((long double)(g_pointerGlideY - g_mouseY), &g_frameTime), rate));
 		g_mouseY += step;
 		long double t = fsub_m(fld_m((const float *)ADDR(g_pointerGlideTime)), &g_frameTime);
 		g_pointerGlideTime = (float)t;

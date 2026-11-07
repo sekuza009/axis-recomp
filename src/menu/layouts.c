@@ -71,7 +71,7 @@ static void armc_tabs(u32 rec)
 	rect_spec(rec + 3 * 16, rec + 5 * 16, 0x64, b);     /* .. then two */
 }
 
-void (arenaUpdateNotice_layout)(void) { rects_fixedRow(OBJ(g_arenaCreateRects), OBJ(g_arenaCreateRects) + 2 * 16, 0xb4); }
+void (arenaUpdateNotice_layout)(void) { rects_fixedRow(OBJ(g_arenaUpdateNoticeRects), OBJ(g_arenaUpdateNoticeRects) + 2 * 16, 0xb4); }
 
 void (updateNotice_layout)(void) { rects_fixedRow(OBJ(g_updateNoticeRects), OBJ(g_updateNoticeRects) + 2 * 16, 0xb4); }
 
@@ -273,7 +273,7 @@ void (createArena_layout)(void)
 	options_panel(OBJ(g_createArenaRects), 0, ADDR(g_newArenaFormLeft), ADDR(g_newArenaFormTop), ADDR(g_newArenaFormRight));
 	rect_spec((OBJ(g_createArenaRects) + 0x80), (OBJ(g_createArenaRects) + 0xa0), 0xfa, a); rect_spec((OBJ(g_createArenaRects) + 0xa0), (OBJ(g_createArenaRects) + 0xc0), 0xfa, b);
 	options_panel(0, (OBJ(g_createArenaRects) + 0xc0), ADDR(g_newArenaFormLeft), ADDR(g_newArenaFormTop), ADDR(g_newArenaFormRight));
-	rects_fixedRow(OBJ(g_createArena2Rects), OBJ(g_createArena2Rects) + 2 * 16, 0xb4);
+	rects_fixedRow(OBJ(g_hostErrorBoxRects), OBJ(g_hostErrorBoxRects) + 2 * 16, 0xb4);
 }
 
 void (profileList_layout)(void)       /* a column: 13 rows 0x14 apart */

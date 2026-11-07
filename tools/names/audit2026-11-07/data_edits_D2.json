@@ -1,0 +1,74 @@
+{
+ "TextureBank.counterB": {
+  "name": "clearedCd13c",
+  "comment": "only cleared (tex_initBy, tex_clearSetCounters with loadCount); never read"
+ },
+ "TextureBank.counterC": {
+  "name": "clearedCd140",
+  "comment": "only cleared (tex_initBy, tex_clearSetCounters with loadCount); never read"
+ },
+ "SpawnRecord.unused34": {
+  "type": "float"
+ },
+ "Stage.lightMatrix": {
+  "name": "faintActorMatrix",
+  "comment": "an identity (stage_build): the extra matrix actor_drawIntoView gives ObjectList_queue for an actor whose tint alpha is 0x10 or less (a cloaked actor of a hacking level not below the viewer's, or the start of a spawn fade-in); a mesh with any extra matrix is drawn by the view volume's transparent path (draw_transparent), not draw_opaque"
+ },
+ "Stage.clearColour": {
+  "type": "float"
+ },
+ "Stage.baseMatrix": {
+  "comment": "an identity (stage_resetMatrixAndPoints); never read"
+ },
+ "Stage.lastPickup": {
+  "comment": "the map item (Stage.items index) taken last of the big pickups: an extended armour / shield or a 30-s power-up (item_pickup); the next game packet sends it (net_sendGamePacket, then -1) so the other machines mark it taken; -1 none (map load)"
+ },
+ "Stage.thrustShapes": {
+  "comment": "the thrust effects' shapes Effect\\PlasmaThrust-n, IonThrust-n, GravityThrust-n (eight frames each), loaded by effect_initShapes; never read (the thrust puffs, particle kinds 5 .. 7, are drawn as smoke quads)"
+ },
+ "Stage.glFogColour": {
+  "type": "float"
+ },
+ "Stage.glFogStart": {
+  "type": "float"
+ },
+ "Stage.glFogEnd": {
+  "type": "float"
+ },
+ "Stage.glFogDensity": {
+  "type": "float"
+ },
+ "TunnelRing.moveSteps": {
+  "comment": "menuTunnel_advance: the distance moved so far in this ring's move (+= g_tunnelStep, the frame time x 30 truncated), in or out; at the ring's length (1100; 950 entering the menus; 2200 leaving for a match, g_leavingForMatch) the move ends and it restarts at 0"
+ },
+ "Scene.respawnTime": {
+  "comment": "seconds the local player (with a team) has been without an active actor (dead or not yet spawned), counted up by frameTime while no chat line is typed and the round is not over or being left; at 10 it respawns (spawnPending) and this is 0 again"
+ },
+ "Scene.partsCheckTime": {
+  "comment": "seconds to the next check of the local player's parts (actor_checkDataLoss; a failure is dataLossCode 0): counted down by frameTime in a network game (sessionMode 1) and set back to 20 after a check; the check runs only while the local player's actor is alive (state 1), so it goes below 0 while it is dead or watching"
+ },
+ "Scene.statsTaken": {
+  "comment": "1: the local player's starting grade (level: grade, levelShown) and score (levelPoints: score, scoreCounted) given to its actor (match_frame, once a match); 0 at scene_startSession"
+ },
+ "Scene.packetsSent": {
+  "comment": "packets sent this frame (send_packet: every net_send* packet); match_frame adds it to windowSent and clears it"
+ },
+ "Scene.typeTablePerRow": {
+  "comment": "per type table (headTypes .. boosterTypes, actorItems), how many leading dwords of each record the network data check samples: a check word w picks record (w / n) % count, dword w % n (net_sendGamePacket: sample; net_processGamePacket: table_ok); 6 3 6 7 10 0x18 (Console_ctor)"
+ },
+ "Scene.cameraSaved": {
+  "type": "float"
+ },
+ "Scene.cameraPos": {
+  "type": "float"
+ },
+ "Scene.clearColour": {
+  "type": "float"
+ },
+ "Scene.fogColour": {
+  "type": "float"
+ },
+ "Scene.fogParams": {
+  "type": "float"
+ }
+}

@@ -1,7 +1,7 @@
 # globals, batch 8 (address,type,name)
 0x4a9548,double,k_pi
 0x4a9540,double,k_oneOver180
-0x4a93ec,float,k_tenthsToDegrees
+0x4a93ec,float,k_0_1f
 0x4dbbf8,const u8 *,g_receivedSession
 0xa0b32c,u8 *,g_roomInfoPacket
 0xa0b330,u8 *,g_roomLeavePacket

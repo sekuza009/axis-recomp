@@ -1,0 +1,683 @@
+GROUP D2: 682 names; OK 658, RENAME 3, TYPE 11, COMMENT 9, UNSURE 1; not seen running 201
+TexSlot.index | OK | code: 15 uses (names, objects, skel_data, weapons); NOT SEEN: the sampler does not follow TextureBank.slots (a heap block); walk slots[0 .. slotCount-1] of a bank
+TexSlot.record | OK | code: 3 uses (names); NOT SEEN: the sampler does not follow TextureBank.slots (a heap block); walk slots[0 .. slotCount-1] of a bank
+TexSlot.glTexture | OK | code: 3 uses (names); NOT SEEN: the sampler does not follow TextureBank.slots (a heap block); walk slots[0 .. slotCount-1] of a bank
+TexSlot.next | OK | code: 36 uses (collision_tris, lists, menu_tunnel, names, sound_basic, space_pools); NOT SEEN: the sampler does not follow TextureBank.slots (a heap block); walk slots[0 .. slotCount-1] of a bank
+TexSlot.prev | OK | code: 18 uses (names, trails, weapons); NOT SEEN: the sampler does not follow TextureBank.slots (a heap block); walk slots[0 .. slotCount-1] of a bank
+TextureBank.ready | OK | code: 8 uses (names, statics); run: int 1 .. 1; values 1; nz 100% of samples
+TextureBank.dir | OK | code: 17 uses (actor_frame, factors, names, shading, skel_data, weapons); run: strings: e.g. ""; nz 0% of samples
+TextureBank.indexCount | OK | code: 16 uses (names, object_list, shading, skel_data, space_pools); run: int 12 .. 549; values 12, 212, 242, 397, 482, 549; nz 100% of samples
+TextureBank.index | OK | code: 15 uses (names, objects, skel_data, weapons); run: pointer: 88554 valid, 0 original-image addresses, 0 unmapped; nz 100% of samples
+TextureBank.file | OK | code: 20 uses (classes, names); run: pointer: 88554 valid, 0 original-image addresses, 0 unmapped; nz 100% of samples
+TextureBank.image | OK | code: 6 uses (names); run: int 1 .. 255; values 0, 1, 4, 8, 14, 23, 24, 28, 163, 170, 173, 183 ...; nz 59% of samples
+TextureBank.alphaImage | OK | code: 4 uses (names); run: int 1 .. 255; values 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 11, 12 ...; nz 53% of samples
+TextureBank.colourMask | OK | code: 4 uses (names); run: int 1 .. 255; values 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 13 ...; nz 33% of samples
+TextureBank.format | OK | code: 5 uses (names, sound_basic); NOT SEEN: never non-zero in the scripted sessions (see its comment for what sets it)
+TextureBank.width | OK | code: 18 uses (classes, names, tex_colours); run: int 64 .. 256; values 64, 128, 256; nz 100% of samples
+TextureBank.height | OK | code: 22 uses (classes, names, setup_pages, tex_colours, win32); run: int 64 .. 256; values 64, 128, 256; nz 100% of samples
+TextureBank.mipmaps | OK | code: 2 uses (names); run: int 1 .. 1; values 1; nz 100% of samples
+TextureBank.linear | OK | code: 3 uses (names); run: int 1 .. 1; values 1; nz 100% of samples
+TextureBank.records | OK | code: 40 uses (actor_frame, classes, factors, files, main_loop, names ..); NOT SEEN: a record array: its leaves are checked under the record type
+TextureBank.recordCount | OK | code: 6 uses (names); run: int 1 .. 65; values 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11 ...; nz 63% of samples
+TextureBank.slots | OK | code: 7 uses (names); run: pointer: 88554 valid, 0 original-image addresses, 0 unmapped; nz 100% of samples
+TextureBank.slotCount | OK | code: 7 uses (names); run: int 40 .. 80; values 40, 80; nz 100% of samples
+TextureBank.oldest | OK | code: 4 uses (names); run: pointer: 88554 valid, 0 original-image addresses, 0 unmapped; nz 100% of samples
+TextureBank.loadCount | OK | code: 4 uses (names, small); original: inc in tex_bind, stores in tex_initBy / tex_clearSetCounters; no other read; run: int 1 .. 57; values 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11 ...; nz 36% of samples
+TextureBank.counterB | RENAME -> clearedCd13c | only ever set to 0 (tex_initBy, tex_clearSetCounters; original: 7 stores at +0xcd13c in those two, no read): not a counter. Comment: "only cleared (tex_initBy, tex_clearSetCounters); never read"
+TextureBank.counterC | RENAME -> clearedCd140 | as counterB: only stores of 0 at +0xcd140 (tex_initBy, tex_clearSetCounters), no reader in the original or C
+GroundLayer.kind | OK | code: 28 uses (collision_tris, factors, frame_loops, lobby_states, net_tables, object_list ..); NOT SEEN: every map played had groundLayerCount 0: play a map whose ground info has a layer
+GroundLayer.origin | OK | code: 2 uses (shading); NOT SEEN: every map played had groundLayerCount 0: play a map whose ground info has a layer
+GroundLayer.rows | OK | code: 22 uses (collision_tris, factors, map_info, net_tables, object_list, shading); NOT SEEN: every map played had groundLayerCount 0: play a map whose ground info has a layer
+GroundLayer.cols | OK | code: 34 uses (collision_tris, factors, glyph_cells, map_info, object_list, shading); NOT SEEN: every map played had groundLayerCount 0: play a map whose ground info has a layer
+GroundLayer.cellSize | OK | code: 9 uses (map_info, shading, space_pools); NOT SEEN: every map played had groundLayerCount 0: play a map whose ground info has a layer
+GroundLayer.heightScale | OK | code: 1 uses (map_info); NOT SEEN: every map played had groundLayerCount 0: play a map whose ground info has a layer
+GroundLayer.texScale | OK | code: 4 uses (map_info, shading); NOT SEEN: every map played had groundLayerCount 0: play a map whose ground info has a layer
+GroundLayer.water | OK | code: 4 uses (object_list, shading); NOT SEEN: every map played had groundLayerCount 0: play a map whose ground info has a layer
+GroundLayer.texture | OK | code: 12 uses (map_info, names, object_list, shape_colours, skel_data, view_volume); NOT SEEN: every map played had groundLayerCount 0: play a map whose ground info has a layer
+GroundLayer.heights | OK | code: 1 uses (map_info); NOT SEEN: every map played had groundLayerCount 0: play a map whose ground info has a layer
+GroundLayer.drawnCells | OK | code: 2 uses (map_info, shading); NOT SEEN: every map played had groundLayerCount 0: play a map whose ground info has a layer
+GroundLayer.points | OK | code: 9 uses (classes, collision_tris, map_info, object_list, small, view_volume); NOT SEEN: every map played had groundLayerCount 0: play a map whose ground info has a layer
+GroundLayer.normals | OK | code: 12 uses (map_info, shading, skel_data); NOT SEEN: every map played had groundLayerCount 0: play a map whose ground info has a layer
+GroundLayer.colours | OK | code: 38 uses (factors, lobby_states, map_info, names, object_list, shading ..); NOT SEEN: every map played had groundLayerCount 0: play a map whose ground info has a layer
+GroundLayer.uv | OK | code: 2 uses (map_info, object_list); NOT SEEN: every map played had groundLayerCount 0: play a map whose ground info has a layer
+GroundLayer.indexCapacity | OK | code: 3 uses (map_info, shading); NOT SEEN: every map played had groundLayerCount 0: play a map whose ground info has a layer
+GroundLayer.indices | OK | code: 6 uses (map_info, object_list, shading, skel_data, space_pools); NOT SEEN: every map played had groundLayerCount 0: play a map whose ground info has a layer
+GroundLayer.indexCount | OK | code: 16 uses (names, object_list, shading, skel_data, space_pools); NOT SEEN: every map played had groundLayerCount 0: play a map whose ground info has a layer
+GroundLayer.stripCapacity | OK | code: 3 uses (map_info, shading); NOT SEEN: every map played had groundLayerCount 0: play a map whose ground info has a layer
+GroundLayer.strips | OK | code: 3 uses (map_info, object_list, shading); NOT SEEN: every map played had groundLayerCount 0: play a map whose ground info has a layer
+GroundLayer.stripCount | OK | code: 6 uses (shading); NOT SEEN: every map played had groundLayerCount 0: play a map whose ground info has a layer
+GroundLayer.waterPoints | OK | code: 1 uses (object_list); NOT SEEN: every map played had groundLayerCount 0: play a map whose ground info has a layer
+GroundLayer.waterColours | OK | code: 4 uses (object_list, shading); NOT SEEN: every map played had groundLayerCount 0: play a map whose ground info has a layer
+GroundLayer.waterUv | OK | code: 1 uses (object_list); NOT SEEN: every map played had groundLayerCount 0: play a map whose ground info has a layer
+GroundLayer.waterIndices | OK | code: 2 uses (object_list); NOT SEEN: every map played had groundLayerCount 0: play a map whose ground info has a layer
+GroundLayer.waterPrims | OK | code: 4 uses (object_list); NOT SEEN: every map played had groundLayerCount 0: play a map whose ground info has a layer
+WayPoint.pos | OK | code: 144 uses (actor_frame, actor_slots, armc_misc, factors, frame_loops, items ..); run: float -151591 .. 158233; values 0, 35.91, 158, 893.65, 1260.07, 3057, 3261.34, 3966.22, 5541.27, 7115.62, 7331.33, 8927.73 ...; nz 8% of samples
+WayPoint.commandCount | OK | code: 6 uses (files, frame_loops, map_info); run: int 4 .. 5; values 0, 4, 5; nz 0% of samples
+WayPoint.commands | OK | code: 3 uses (files, frame_loops, map_info); run: pointer: 1211103 valid, 0 original-image addresses, 0 unmapped; nz 8% of samples
+Trigger.wayPointCount | OK | code: 6 uses (actor_frame, map_info, weapons); run: int 1 .. 45; values 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11; nz 4% of samples
+Trigger.wayPoints | OK | code: 8 uses (actor_frame, classes, frame_loops, map_info, weapons); run: pointer: 129208 valid, 0 original-image addresses, 0 unmapped; nz 4% of samples
+Trigger.armed | OK | code: 4 uses (frame_loops); run: int 1 .. 1; values 0, 1; nz 0% of samples
+Trigger.flags | OK | code: 34 uses (collision_tris, frame_loops, names, net_tables, object_list, objects ..); run: int 1 .. 1; values 0, 1; nz 0% of samples
+Trigger.time | OK | code: 9 uses (frame_loops, skel_data); NOT SEEN: never non-zero in the scripted sessions (see its comment for what sets it)
+Trigger.radiusSq | OK | code: 3 uses (frame_loops, map_info); NOT SEEN: never non-zero in the scripted sessions (see its comment for what sets it)
+Trigger.fired | OK | code: 6 uses (frame_loops); run: int 1 .. 1; values 0, 1; nz 0% of samples
+StartPoint.pos | OK | code: 144 uses (actor_frame, actor_slots, armc_misc, factors, frame_loops, items ..); run: float -54516.4 .. 41790.3; values 0, 10, 215.03, 1008.15, 1418, 1457, 1569.74, 2657.94, 2854.84, 3057, 3200, 3556.36 ...; nz 12% of samples
+StartPoint.angle | OK | code: 13 uses (armc_misc, frame_loops, items, main_loop, map_info); run: float -3139.81 .. 3449.21; values 0, 51.5662, 108.862, 148.969, 492.744, 578.687, 681.82, 762.034, 888.085, 899.544, 939.651, 1059.97; nz 5% of samples
+MapPlayer.character | OK | code: 18 uses (actor_slots, armc_mech, main_loop, map_info, match_start, net_tables ..); run: int 1 .. 8; values 0, 1, 2, 3, 5, 6, 8; nz 1% of samples
+MapPlayer.name | OK | code: 94 uses (actor_frame, actor_slots, armc_parts, classes, files, frame_loops ..); run: strings: e.g. "SONIEN"; nz 0% of samples
+MapPlayer.team | OK | code: 62 uses (actor_frame, actor_slots, hud_escmenu, hud_main, hud_markers, hud_overlay ..); run: int 1 .. 1; values 0, 1; nz 1% of samples
+MapPlayer.parts | OK | code: 68 uses (actor_frame, actor_slots, armc_parts, kyrie, main_loop, match_start ..); run: int 1 .. 12; values 0, 1, 2, 3, 4, 5, 6, 7, 11, 12; nz 2% of samples
+MapPlayer.items | OK | code: 56 uses (actor_frame, actor_slots, classes, collision_tris, frame_loops, items ..); run: int -1 .. 19; values 0, 2, 4, 8, 10, 13, 14, 19, -1; nz 2% of samples
+SpawnRecord.player | OK | code: 32 uses (actor_frame, actor_slots, armc_parts, frame_loops, hud_markers, hud_ranking ..); run: int 1 .. 7; values 0, 1, 2, 3, 4, 5, 6, 7; nz 0% of samples
+SpawnRecord.pos | OK | code: 144 uses (actor_frame, actor_slots, armc_misc, factors, frame_loops, items ..); run: float -79310.3 .. 4257; values 0, 4257, -19905, -20609.6, -21408.3, -21524.1, -22322.7, -23121.4, -24019.9, -77120.6, -77313.5, -77359.9; nz 0% of samples
+SpawnRecord.pitch | OK | code: 19 uses (actor_frame, actor_slots, main_loop, map_info); NOT SEEN: never non-zero in the scripted sessions (see its comment for what sets it)
+SpawnRecord.yaw | OK | code: 15 uses (actor_frame, actor_slots, main_loop); NOT SEEN: never non-zero in the scripted sessions (see its comment for what sets it)
+SpawnRecord.bot | OK | code: 17 uses (actor_frame, actor_slots, main_loop, map_info); run: int 1 .. 1; values 0, 1; nz 0% of samples
+SpawnRecord.unused1c | OK | code: 2 uses (actor_slots); run: int 100 .. 100; values 0, 100; nz 0% of samples
+SpawnRecord.armor | OK | code: 27 uses (actor_frame, actor_slots, frame_loops, hud_main, net_tables, weapons); run: int 150 .. 200; values 0, 150, 200; nz 0% of samples
+SpawnRecord.shield | OK | code: 26 uses (actor_frame, actor_slots, frame_loops, hud_main, weapons); run: int 100 .. 200; values 0, 100, 200; nz 0% of samples
+SpawnRecord.speed | OK | code: 26 uses (actor_frame, actor_slots, armc_misc, armc_parts, armc_screens, frame_loops ..); run: float 150 .. 250; values 0, 150, 180, 200, 250; nz 0% of samples
+SpawnRecord.turnRate | OK | code: 3 uses (actor_frame, actor_slots); run: float 120 .. 220; values 0, 120, 150, 180, 220; nz 0% of samples
+SpawnRecord.range | OK | code: 4 uses (actor_slots, armc_parts, armc_screens, weapons); run: float 200 .. 200; values 0, 200; nz 0% of samples
+SpawnRecord.unused34 | TYPE -> float | holds float bits only (0.5, 1.0 seen; 3.0 for a player's mech per its own comment); copied as a word to Player.unused34, never read
+SpawnRecord.aimError | OK | code: 6 uses (actor_frame, actor_slots); run: float 1 .. 3; values 0, 1, 2, 3; nz 0% of samples
+SpawnRecord.scriptFlag | OK | code: 4 uses (actor_slots, frame_loops); NOT SEEN: never non-zero in the scripted sessions (see its comment for what sets it)
+SpawnRecord.dodgeSpread | OK | code: 4 uses (actor_frame, actor_slots); run: float 50 .. 50; values 0, 50; nz 0% of samples
+SpawnRecord.climbSpread | OK | code: 4 uses (actor_frame, actor_slots); run: float 50 .. 50; values 0, 50; nz 0% of samples
+SpawnRecord.botParams | OK | code: 14 uses (actor_frame, actor_slots, weapons); run: float 1 .. 10; values 0, 1, 2, 10; nz 0% of samples
+BmpFile.vtable | OK | code: 2 uses (classes, names); NOT SEEN: a stack record (playerRecord_loadFlag, tex_textureFileExist, tex_loadImage): break in them
+BmpFile.file | OK | code: 20 uses (classes, names); NOT SEEN: a stack record (playerRecord_loadFlag, tex_textureFileExist, tex_loadImage): break in them
+BmpFile.type | OK | code: 30 uses (arena_maps, classes, frame_loops, items, lobby_states, map_info ..); NOT SEEN: a stack record (playerRecord_loadFlag, tex_textureFileExist, tex_loadImage): break in them
+BmpFile.fileSize | OK | code: no use by name in C (written by the copy loops / file reads only); the comment says written only, the original agrees; NOT SEEN: a stack record (playerRecord_loadFlag, tex_textureFileExist, tex_loadImage): break in them
+BmpFile.dataOffset | OK | code: 1 uses (classes); NOT SEEN: a stack record (playerRecord_loadFlag, tex_textureFileExist, tex_loadImage): break in them
+BmpFile.infoSize | OK | code: 2 uses (classes); NOT SEEN: a stack record (playerRecord_loadFlag, tex_textureFileExist, tex_loadImage): break in them
+BmpFile.bmpWidth | OK | code: 2 uses (classes); NOT SEEN: a stack record (playerRecord_loadFlag, tex_textureFileExist, tex_loadImage): break in them
+BmpFile.bmpHeight | OK | code: 2 uses (classes); NOT SEEN: a stack record (playerRecord_loadFlag, tex_textureFileExist, tex_loadImage): break in them
+BmpFile.planes | OK | code: 8 uses (actor_frame, net_tables, space_pools, weapons); NOT SEEN: a stack record (playerRecord_loadFlag, tex_textureFileExist, tex_loadImage): break in them
+BmpFile.bitCount | OK | code: 2 uses (classes); NOT SEEN: a stack record (playerRecord_loadFlag, tex_textureFileExist, tex_loadImage): break in them
+BmpFile.compression | OK | code: 2 uses (classes); NOT SEEN: a stack record (playerRecord_loadFlag, tex_textureFileExist, tex_loadImage): break in them
+BmpFile.width | OK | code: 18 uses (classes, names, tex_colours); NOT SEEN: a stack record (playerRecord_loadFlag, tex_textureFileExist, tex_loadImage): break in them
+BmpFile.height | OK | code: 22 uses (classes, names, setup_pages, tex_colours, win32); NOT SEEN: a stack record (playerRecord_loadFlag, tex_textureFileExist, tex_loadImage): break in them
+HeadType.shapeCount | OK | code: 2 uses (actor_slots); run: int 1 .. 1499027929; values 0, 1, 1499027929; nz 42% of samples
+HeadType.shapeNames | OK | code: 9 uses (actor_slots, kyrie); run: strings: e.g. "MARKED\Geolite\Head\KYRIE black-HEAD", some unterminated; nz 0% of samples
+HeadType.skelCount | OK | code: 8 uses (actor_slots, object_list, skel_data, small); run: int 1 .. 1499027929; values 0, 1, 1499027929; nz 42% of samples
+HeadType.skelNames | OK | code: 2 uses (actor_slots); run: strings: e.g. "Head\NITRO-BASIC-HEAD", some unterminated; nz 0% of samples
+HeadType.name | OK | code: 94 uses (actor_frame, actor_slots, armc_parts, classes, files, frame_loops ..); run: strings: e.g. "KYRIE\HEAD", some unterminated; nz 0% of samples
+HeadType.weight | OK | code: 9 uses (actor_slots, armc_parts, armc_screens); run: float 2 .. 8.09184e+34; values 0, 2, 3, 4, 5, 6, 7, 15, 4.45723e+34, 7.05338e+34, 8.09184e+34; nz 42% of samples
+HeadType.detectionRange | OK | code: 2 uses (actor_slots, armc_parts); run: float -3.0688e+35 .. 3.6388e+35; values 0, 10000, 20000, 22000, 23000, 25000, 28000, 29000, 30000, 35000, 40000, 55000 ...; nz 42% of samples
+HeadType.detectionAngle | OK | code: 6 uses (actor_slots, armc_parts, globals, hud_main); tenths of a degree (g_trig index, hud_main.c:58); the huge values are unused slots; run: float -6.53415e+34 .. 1.4875e+34; values 0, 10, 80, 90, 100, 110, 120, 130, 150, 160, 180, 200 ...; nz 42% of samples
+HeadType.hackingLevel | OK | code: 14 uses (actor_frame, actor_slots, armc_parts, globals, objects); run: int 1 .. 1499027931; values 0, 1, 2, 3, 4, 5, 1499027800, 1499027929, 1499027931; nz 40% of samples
+HeadType.lockOnTime | OK | code: 6 uses (actor_frame, actor_slots, armc_parts, globals); run: float -19146.8 .. 4.45723e+34; values 0, 0.4, 0.5, 0.6, 0.7, 0.8, 1, 1.2, 1.3, 1.4, 2.5, 5; nz 42% of samples
+HeadType.targetKeepTime | OK | code: 6 uses (actor_frame, actor_slots, armc_parts, globals); run: float -13910.3 .. 7.05338e+34; values 0, 0.01, 0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 6, 8 ...; nz 42% of samples
+ChestType.shapeCount | OK | code: 2 uses (actor_slots); run: int 5 .. 5; values 0, 5; nz 30% of samples
+ChestType.shapeNames | OK | code: 9 uses (actor_slots, kyrie); run: strings: e.g. "MARKED\Geolite\Chest\kyrie-ubody"; nz 0% of samples
+ChestType.skelCount | OK | code: 8 uses (actor_slots, object_list, skel_data, small); run: int 1 .. 1; values 0, 1; nz 30% of samples
+ChestType.skelNames | OK | code: 2 uses (actor_slots); run: strings: e.g. "Chest\geolite-kyrie-body"; nz 0% of samples
+ChestType.armsJoint | OK | code: 1 uses (actor_frame); run: int 1 .. 2; values 0, 1, 2; nz 26% of samples
+ChestType.legsJoint | OK | code: 1 uses (actor_frame); run: int 1 .. 4; values 0, 1, 4; nz 24% of samples
+ChestType.headJoint | OK | code: 1 uses (actor_frame); run: int 1 .. 4; values 0, 1, 2, 3, 4; nz 30% of samples
+ChestType.boosterJoint | OK | code: 1 uses (actor_frame); run: int 2 .. 4; values 0, 2, 3, 4; nz 30% of samples
+ChestType.name | OK | code: 94 uses (actor_frame, actor_slots, armc_parts, classes, files, frame_loops ..); run: strings: e.g. "KYRIE\CHEST"; nz 0% of samples
+ChestType.weightLimit | OK | code: 2 uses (actor_slots, armc_parts); run: float 70 .. 190; values 0, 70, 80, 90, 95, 98, 100, 105, 190; nz 30% of samples
+ChestType.maxArmor | OK | code: 2 uses (actor_slots, armc_parts); run: int 140 .. 260; values 0, 140, 150, 170, 180, 190, 195, 220, 260; nz 30% of samples
+ChestType.maxShield | OK | code: 2 uses (actor_slots, armc_parts); run: int 50 .. 320; values 0, 50, 90, 110, 150, 160, 170, 180, 190, 200, 210, 300; nz 30% of samples
+ArmType.shapeCount | OK | code: 2 uses (actor_slots); run: int 10 .. 1499027804; values 0, 10, 1499027804; nz 38% of samples
+ArmType.shapeNames | OK | code: 9 uses (actor_slots, kyrie); run: strings: e.g. "MARKED\Geolite\Arm\rsho", some unterminated; nz 0% of samples
+ArmType.skelCount | OK | code: 8 uses (actor_slots, object_list, skel_data, small); run: int 1 .. 1499027929; values 0, 1, 1499027929; nz 38% of samples
+ArmType.skelNames | OK | code: 2 uses (actor_slots); run: strings: e.g. "Arm\geolite-kyrie-arm", some unterminated; nz 0% of samples
+ArmType.weaponJoints | OK | code: 6 uses (actor_frame, main_loop); run: int 3 .. 1499027933; values 0, 3, 7, 8, 9, 1499027805, 1499027928, 1499027930, 1499027933; nz 38% of samples
+ArmType.name | OK | code: 94 uses (actor_frame, actor_slots, armc_parts, classes, files, frame_loops ..); run: strings: e.g. "KYRIE\ARM", some unterminated; nz 0% of samples
+ArmType.weight | OK | code: 9 uses (actor_slots, armc_parts, armc_screens); run: float -7.83222e+34 .. 1.63354e+34; values 0, 11, 12, 13, 14, 15, 16, 17, 18, 28, 40, -4.71685e+34 ...; nz 38% of samples
+ArmType.stats | OK | code: 14 uses (actor_slots, armc_parts, armc_screens, armc_stats, files, menu_states ..); run: int 1 .. 1499060598; values 0, 1, 2, 3, 30, 40, 50, 60, 70, 80, 90, 100 ...; nz 35% of samples
+LegType.shapeCount | OK | code: 2 uses (actor_slots); run: int 3 .. 1499027933; values 0, 3, 7, 8, 9, 1499027805, 1499027928, 1499027930, 1499027933; nz 42% of samples
+LegType.shapeNames | OK | code: 9 uses (actor_slots, kyrie); run: strings: e.g. "MARKED\Geolite\Leg\lleg01", some unterminated; nz 0% of samples
+LegType.skelCount | OK | code: 8 uses (actor_slots, object_list, skel_data, small); run: int 1 .. 1499027929; values 0, 1, 1499027929; nz 42% of samples
+LegType.skelNames | OK | code: 2 uses (actor_slots); run: strings: e.g. "Leg\geolite-kyrie-leg", some unterminated; nz 0% of samples
+LegType.emitters | OK | code: 2 uses (actor_frame); run: int 1 .. 1499027931; values 0, 1, 2, 3, 4, 5, 6, 7, 8, 1499027800, 1499027801, 1499027803 ...; nz 2% of samples
+LegType.emitterCount | OK | code: 2 uses (actor_frame); run: int 2 .. 1499027803; values 0, 2, 4, 1499027800, 1499027803; nz 42% of samples
+LegType.emitterCountCopy | OK | code: no use by name in C (written by the copy loops / file reads only); the comment says written only, the original agrees; run: int 2 .. 1499027803; values 0, 2, 4, 1499027800, 1499027803; nz 42% of samples
+LegType.name | OK | code: 94 uses (actor_frame, actor_slots, armc_parts, classes, files, frame_loops ..); run: strings: e.g. "KYRIE\LEG", some unterminated; nz 0% of samples
+LegType.weight | OK | code: 9 uses (actor_slots, armc_parts, armc_screens); run: float -8.09184e+34 .. 30; values 0, 10, 11, 12, 13, 14, 15, 16, 30, -4.97646e+34, -5.23607e+34, -6.27453e+34 ...; nz 42% of samples
+LegType.agility | OK | code: 2 uses (actor_slots, armc_parts); run: float -8.09184e+34 .. 5.7553e+34; values 0, 6.5, 7, 7.2, 7.5, 8, 8.5, 9, 10, 12, 5.23607e+34, 5.49569e+34 ...; nz 42% of samples
+LegType.inertia | OK | code: 4 uses (actor_slots, armc_parts, globals); run: float -7.05338e+34 .. 5.49569e+34; values 0, 7, 7.5, 7.9, 8, 9, 10, 11, 5.23607e+34, 5.42754e+34, 5.49569e+34, -6.27453e+34; nz 42% of samples
+LegType.speedCorrection | OK | code: 2 uses (armc_parts); run: float -48959.2 .. 3.82364e+15; values 0, 4.80066e-35, 0.1, 0.2, 0.25, 0.37, 0.45, 9814.34, 10906.6, 16335.8, 17328.5, 3.82364e+15 ...; nz 36% of samples
+LegType.forwardBoostCorrection | OK | code: 2 uses (armc_parts); run: float -65343.2 .. 3.82364e+15; values 0, 8.03415e-35, 0.05, 0.1, 0.15, 0.2, 0.25, 0.4, 9814.34, 12239.8, 16335.8, 27338.8 ...; nz 32% of samples
+LegType.backBoostCorrection | OK | code: 2 uses (armc_parts); run: float -65343.2 .. 3.82364e+15; values 0, 2.88417e-35, 4.80066e-35, 0.05, 0.1, 0.15, 0.2, 0.4, 12239.8, 16335.8, 27338.8, 3.82364e+15 ...; nz 36% of samples
+LegType.sideBoostCorrection | OK | code: 2 uses (armc_parts); run: float -65343.2 .. 3.82364e+15; values 0, 4.80066e-35, 8.03415e-35, 0.05, 0.1, 0.15, 0.2, 0.25, 9814.34, 16335.8, 27338.8, 3.82364e+15 ...; nz 28% of samples
+BoosterType.shapeCount | OK | code: 2 uses (actor_slots); run: int 5 .. 1499027933; values 0, 5, 6, 7, 8, 9, 11, 12, 14, 1499027802, 1499027806, 1499027807 ...; nz 34% of samples
+BoosterType.shapeNames | OK | code: 9 uses (actor_slots, kyrie); run: strings: e.g. "MARKED\Geolite\Booster\mw", some unterminated; nz 0% of samples
+BoosterType.skelCount | OK | code: 8 uses (actor_slots, object_list, skel_data, small); run: int 1 .. 1499027929; values 0, 1, 1499027929; nz 34% of samples
+BoosterType.skelNames | OK | code: 2 uses (actor_slots); run: strings: e.g. "Booster\geolite-kyrie-booster", some unterminated; nz 0% of samples
+BoosterType.emitters | OK | code: 2 uses (actor_frame); run: int 1 .. 1499027932; values 0, 1, 2, 3, 4, 5, 6, 7, 8, 10, 11, 1499027801 ...; nz 3% of samples
+BoosterType.emitterCount | OK | code: 2 uses (actor_frame); run: int 1 .. 1499027931; values 0, 1, 2, 3, 4, 5, 1499027800, 1499027803, 1499027928, 1499027929, 1499027931; nz 34% of samples
+BoosterType.emitterCountCopy | OK | code: no use by name in C (written by the copy loops / file reads only); the comment says written only, the original agrees; run: int 1 .. 1499027931; values 0, 1, 2, 3, 4, 5, 1499027800, 1499027803, 1499027928, 1499027929, 1499027931; nz 34% of samples
+BoosterType.name | OK | code: 94 uses (actor_frame, actor_slots, armc_parts, classes, files, frame_loops ..); run: strings: e.g. "KYRIE\BOOSTER", some unterminated; nz 0% of samples
+BoosterType.weight | OK | code: 9 uses (actor_slots, armc_parts, armc_screens); run: float -8.09184e+34 .. 28; values 0, 10, 12, 15, 16, 17, 18, 20, 22, 24, 28, -4.19762e+34 ...; nz 34% of samples
+BoosterType.thrustType | OK | code: 4 uses (actor_frame, armc_parts); run: int 1 .. 1499027929; values 0, 1, 2, 1499027800, 1499027801, 1499027929; nz 24% of samples
+BoosterType.lean | OK | code: 3 uses (actor_frame, actor_slots); run: float 3.82364e+15 .. 3.82364e+15; values 0, 3.82364e+15; nz 0% of samples
+BoosterType.times | OK | code: 4 uses (actor_slots, armc_parts); run: float -7.83229e+34 .. 8.0919e+34; values 0, 0.05, 0.15, 0.5, 0.7, 1, 1.5, 2, 2.5, 4, 5, 6 ...; nz 30% of samples
+BoosterType.speeds | OK | code: 5 uses (actor_slots, armc_parts); run: float -1.8884e+36 .. 6.54623e+35; values 4722.22, 5555.56, 5833.33, 6111.11, 6388.89, 6944.44, 7777.78, 11111.1, 11666.7, 12500, 12777.8, 13333.3 ...; nz 34% of samples
+CollisionPlane.flags | OK | code: 34 uses (collision_tris, frame_loops, names, net_tables, object_list, objects ..); run: int 16 .. 16; values 0, 16; nz 7% of samples
+CollisionPlane.cornerPoints | OK | code: 9 uses (collision_tris, weapons); run: float -42090.9 .. 44433.5; values 561.716, 1266.67, 1742.45, 1907.21, 2900, 6031.66, 6116.09, 6800, 7461.12, 7685.84, 9491.26, 10718.1 ...; nz 99% of samples
+CollisionPlane.edges | OK | code: 7 uses (collision_tris); run: float -1 .. 1; values 0, 0.0842354, 0.150211, 0.201385, 0.214779, 0.362457, 0.43992, 0.501989, 0.581562, 0.582937, 0.615561, 0.623268 ...; nz 91% of samples
+CollisionPlane.normal | OK | code: 6 uses (collision_tris, weapons); run: float -1 .. 1; values 0, 0.109353, 0.130756, 0.149749, 0.277019, 0.319543, 0.329448, 0.371391, 0.440484, 0.606515, 0.620855, 0.652255 ...; nz 97% of samples
+CollisionPlane.dist | OK | code: 3 uses (collision_tris, main_loop); run: float -40501.1 .. 44167.2; values 0, 705.803, 760.771, 2608.07, 3320.81, 4651.42, 4876.13, 10467.7, 10467.8, 12106.4, 12563.1, 18625 ...; nz 99% of samples
+CollisionPlane.edgePlanes | OK | code: 3 uses (collision_tris); run: float -49169.9 .. 45471.7; values 0.00936449, 0.100008, 0.328787, 0.338787, 0.357877, 0.436716, 0.453171, 0.501061, 0.553596, 0.566662, 0.582416, 0.599013 ...; nz 96% of 
+CollisionPlane.unit | OK | code: 14 uses (collision_tris, frame_loops, map_objects, objects, space_pools, weapons); run: pointer: 2584 valid, 0 original-image addresses, 0 unmapped; nz 99% of samples
+CollisionPlane.part | OK | code: 4 uses (actor_slots, collision_tris, weapons); run: int 1 .. 3; values 0, 1, 2, 3; nz 13% of samples
+CollisionPlane.cornerIndices | OK | code: 4 uses (collision_tris, weapons); run: int 1 .. 487; values 1, 2, 3, 4, 5, 6, 11, 12, 14, 22, 24, 25 ...; nz 99% of samples
+CollisionPlane.listNext | OK | code: 3 uses (space_pools); run: pointer: 2594 valid, 0 original-image addresses, 0 unmapped; nz 99% of samples
+CollisionPlane.listPrev | OK | code: 3 uses (map_objects, space_pools); run: pointer: 2594 valid, 0 original-image addresses, 0 unmapped; nz 99% of samples
+TimeSync.vtable | OK | code: 2 uses (classes, names); NOT SEEN: never non-zero in the scripted sessions (see its comment for what sets it)
+TimeSync.started | OK | code: 2 uses (timer); run: int 1 .. 1; values 0, 1; nz 50% of samples
+TimeSync.frames | OK | code: 3 uses (timer); run: int 1 .. 120; values 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11 ...; nz 50% of samples
+TimeSync.frequency | OK | code: 2 uses (timer); run: int 10000000 .. 10000000; values 0, 10000000; nz 50% of samples
+TimeSync.lastCount | OK | code: 3 uses (timer); run: int 4454996165157 .. 4503670951504; values 0, 4454996165157, 4455032984899, 4455035484900, 4455037984956, 4455040485004, 4455042984798, 4455045484788, 4455047984825, 4455
+TimeSync.rise | OK | code: 1 uses (timer); run: int 1 .. 449197; values 0, 1, 78617, 79545, 82886, 82987, 83004, 83113, 83121, 83139, 83167, 83169 ...; nz 50% of samples
+TimeSync.riseSum | OK | code: 4 uses (timer); run: int 1 .. 9999999; values 0, 1, 166667, 166844, 166889, 249888, 278570, 416607, 416619, 500026, 500085, 500696 ...; nz 50% of samples
+TimeSync.fps | OK | code: 3 uses (hud_overlay, timer); run: float 0.462029 .. 122.16; values 0, 0.462029, 0.550675, 0.59187, 0.593292, 0.593421, 0.734369, 0.739677, 0.74884, 0.81204, 90.2525, 114.998 ...; nz 49% of samples
+TimeSync.frameTime | OK | code: 54 uses (armc_misc, hud_escmenu, loading, main_loop, timer); run: float 1e-07 .. 0.0449197; values 0, 1e-07, 0.0078617, 0.0079545, 0.0082886, 0.0082987, 0.0083004, 0.0083113, 0.0083121, 0.0083139, 0.0083167, 0.0083169 ...; nz 50% of sam
+TimeSync.maxFrame | OK | code: 4 uses (timer); run: float 0.0666667 .. 0.0666667; values 0, 0.0666667; nz 50% of samples
+SpaceUnit.index | OK | code: 15 uses (names, objects, skel_data, weapons); run: int 1 .. 121; values 1, 2, 3, 4, 5, 6, 7, 8, 11, 22, 26, 28 ...; nz 100% of samples
+SpaceUnit.lastPlane | OK | code: 5 uses (map_objects, space_pools); run: pointer: 2314 valid, 0 original-image addresses, 0 unmapped; nz 100% of samples
+SpaceUnit.lastNode | OK | code: 9 uses (collision_tris, space_pools); run: pointer: 2314 valid, 0 original-image addresses, 0 unmapped; nz 100% of samples
+SpaceUnit.poolPrev | OK | code: 1 uses (small); NOT SEEN: never non-zero in the scripted sessions (see its comment for what sets it)
+SpaceUnit.poolNext | OK | code: 1 uses (small); NOT SEEN: never non-zero in the scripted sessions (see its comment for what sets it)
+ParticleDesc.kind | OK | code: 28 uses (collision_tris, factors, frame_loops, lobby_states, net_tables, object_list ..); NOT SEEN: a stack record of particle_spawn callers: break in particle_init
+ParticleDesc.owner | OK | code: 26 uses (actor_frame, actor_slots, frame_loops, objects, weapons); NOT SEEN: a stack record of particle_spawn callers: break in particle_init
+ParticleDesc.pos | OK | code: 144 uses (actor_frame, actor_slots, armc_misc, factors, frame_loops, items ..); NOT SEEN: a stack record of particle_spawn callers: break in particle_init
+ParticleDesc.target | OK | code: 10 uses (frame_loops, objects); NOT SEEN: a stack record of particle_spawn callers: break in particle_init
+ParticleDesc.matrixFrom | OK | code: 5 uses (frame_loops, objects); NOT SEEN: a stack record of particle_spawn callers: break in particle_init
+ParticleDesc.markCorners | OK | code: 3 uses (frame_loops); NOT SEEN: a stack record of particle_spawn callers: break in particle_init
+ParticleDesc.markCoords | OK | code: 1 uses (frame_loops); NOT SEEN: a stack record of particle_spawn callers: break in particle_init
+ParticleDesc.size | OK | code: 23 uses (files, frame_loops, kyrie, match_start, net_packets, net_tables ..); NOT SEEN: a stack record of particle_spawn callers: break in particle_init
+ParticleDesc.isQuad | OK | code: 1 uses (frame_loops); NOT SEEN: a stack record of particle_spawn callers: break in particle_init
+ParticleDesc.quad | OK | code: 1 uses (frame_loops); NOT SEEN: a stack record of particle_spawn callers: break in particle_init
+ParticleDesc.quadPoints | OK | code: 5 uses (frame_loops, objects); NOT SEEN: a stack record of particle_spawn callers: break in particle_init
+ScenePath.opened | OK | code: 1 uses (small); NOT SEEN: never non-zero in the scripted sessions (see its comment for what sets it)
+Stage.scenePath | OK | code: 9 uses (actor_slots, classes, small, statics); NOT SEEN: never non-zero in the scripted sessions (see its comment for what sets it)
+Stage.pathSound | OK | code: 1 uses (small); run: strings: e.g. ""; nz 0% of samples
+Stage.viewDepth | OK | code: 1 uses (small); run: float -5.03799e+06 .. 5.0006e+06; values 0, 8819.88, 15429.5, 23375, 33003.5, 33283, 33562.5, 34307.6, 34825.7, 35348.6, 35990.2, 36412.1 ...; nz 33% of samples
+Stage.built | OK | code: 2 uses (classes, match_start); run: int 1 .. 1; values 1; nz 100% of samples
+Stage.lightMatrix | RENAME -> faintActorMatrix | not a light: the identity (stage_build) actor_drawIntoView passes as ObjectList_queue's extraMatrix when the actor's tint alpha is <= 0x10 (a cloaked actor of hackingLevel >= the viewer's: alpha 0x10; the first instants of a spawn fade); ViewVolume draws any meshes with an extra matrix by draw_transparent (alpha sorted) instead of draw_opaque. run: 1.0 diagonal only
+Stage.overlayMatrix | OK | code: 3 uses (actor_slots, match_start); run: float 1 .. 1.1; values 0, 1, 1.1; nz 25% of samples
+Stage.nearObjects | OK | code: 6 uses (collision_tris, space_pools); NOT SEEN: never non-zero in the scripted sessions (see its comment for what sets it)
+Stage.stageDir | OK | code: 1 uses (frame_loops); run: strings: e.g. "STAGE"; nz 0% of samples
+Stage.mapDir | OK | code: 7 uses (map_info); run: strings: e.g. "MAP"; nz 0% of samples
+Stage.textureDir | OK | code: no use by name in C (written by the copy loops / file reads only); the comment says written only, the original agrees; run: strings: e.g. "TEXTURE"; nz 0% of samples
+Stage.shapeDir | OK | code: 1 uses (match_start); run: strings: e.g. "SHAPE"; nz 0% of samples
+Stage.skeletonDir | OK | code: 1 uses (match_start); run: strings: e.g. "SKELETON"; nz 0% of samples
+Stage.actorDir | OK | code: no use by name in C (written by the copy loops / file reads only); the comment says written only, the original agrees; run: strings: e.g. "ACTOR"; nz 0% of samples
+Stage.bulletDir | OK | code: no use by name in C (written by the copy loops / file reads only); the comment says written only, the original agrees; run: strings: e.g. "BULLET"; nz 0% of samples
+Stage.effectDir | OK | code: no use by name in C (written by the copy loops / file reads only); the comment says written only, the original agrees; run: strings: e.g. "EFFECT"; nz 0% of samples
+Stage.sceneDir | OK | code: 1 uses (frame_loops); run: strings: e.g. "SCENE"; nz 0% of samples
+Stage.spaceData | OK | code: 1 uses (match_start); run: int 1 .. 255; values 0, 1, 2, 3, 4, 5, 17, 18, 19, 20, 21, 22 ...; nz 31% of samples
+Stage.layerParts | OK | code: 1 uses (match_start); NOT SEEN: never non-zero in the scripted sessions (see its comment for what sets it)
+Stage.waterParts | OK | code: 1 uses (match_start); NOT SEEN: a record array: its leaves are checked under the record type
+Stage.objectShapeData | OK | code: 1 uses (match_start); run: int 1 .. 252; values 0, 1, 8, 21, 34, 35, 36, 45, 48, 49, 50, 65 ...; nz 6% of samples
+Stage.objectSkeletonData | OK | code: 1 uses (match_start); run: int 1 .. 159; values 0, 45, 65, 67, 69, 71, 73, 76, 78, 79, 80, 82 ...; nz 0% of samples
+Stage.itemShapeData | OK | code: 1 uses (match_start); run: int 1 .. 255; values 0, 45, 48, 65, 67, 69, 70, 72, 76, 77, 80, 82 ...; nz 32% of samples
+Stage.itemSkeletonData | OK | code: 1 uses (match_start); run: int 1 .. 252; values 0, 49, 65, 68, 69, 73, 76, 78, 79, 80, 82, 83 ...; nz 1% of samples
+Stage.snapshotTex | OK | code: 4 uses (hud_main, match_start); run: int -1 .. 518; values 518, -1; nz 100% of samples
+Stage.stageName | OK | code: 6 uses (frame_loops, map_info, small); run: strings: e.g. "CENTROPOLIS"; nz 0% of samples
+Stage.clearOn | OK | code: 4 uses (hud_pass, main_loop, map_info, match_start); run: int 1 .. 1; values 0, 1; nz 35% of samples
+Stage.clearColour | TYPE -> float[4] | every word holds float bits (run: 0, 0.278431, 0.298039); declared u32 with "floats' bits" in its comment - a float type (BITS() kept at the copies that must stay bit-exact) says what it is
+Stage.fogOn | OK | code: 3 uses (hud_pass, main_loop, map_info); NOT SEEN: never non-zero in the scripted sessions (see its comment for what sets it)
+Stage.objectShapes | OK | code: 6 uses (classes, frame_loops, map_info, match_start); NOT SEEN: a record array: its leaves are checked under the record type
+Stage.objectSkeletons | OK | code: 6 uses (classes, map_info, map_objects, match_start); NOT SEEN: a record array: its leaves are checked under the record type
+Stage.itemShapes | OK | code: 8 uses (actor_slots, classes, frame_loops, map_info, match_start); NOT SEEN: a record array: its leaves are checked under the record type
+Stage.itemSkeletons | OK | code: 5 uses (actor_slots, classes, match_start); NOT SEEN: a record array: its leaves are checked under the record type
+Stage.mapLights | OK | code: 12 uses (classes, frame_loops, main_loop, map_info, match_start, objects ..); NOT SEEN: a record array: its leaves are checked under the record type
+Stage.dynamicLightsSet | OK | code: 2 uses (small, teams); original: two stores, no read; run: int 1 .. 1; values 0, 1; nz 33% of samples
+Stage.dynamicLights | OK | code: 7 uses (classes, objects, small, teams); NOT SEEN: a record array: its leaves are checked under the record type
+Stage.actorLights | OK | code: 6 uses (actor_slots, classes, match_start); NOT SEEN: a record array: its leaves are checked under the record type
+Stage.itemTypeCount | OK | code: 2 uses (map_info, match_start); run: int 200 .. 200; values 0, 200; nz 49% of samples
+Stage.pool | OK | code: 1 uses (map_info); NOT SEEN: never non-zero in the scripted sessions (see its comment for what sets it)
+Stage.poolUsed | OK | code: 12 uses (map_info, match_start); NOT SEEN: never non-zero in the scripted sessions (see its comment for what sets it)
+Stage.effectTextures | OK | code: 4 uses (hud_escmenu, hud_icons, hud_lockon, hud_main, hud_markers, match_start ..); [1] = Scene.hudTexture 2566, [3 .. 6] = hudBar / marker / icon / menuBox textures 2568 .. 2571 (aliases agree); run: int 2565 .. 2572; values 0, 2565, 2566, 2567, 2568, 2569, 2570, 2571, 2572; nz 88% of samples
+Stage.teamCommanders | OK | code: 5 uses (actor_frame, actor_slots, match_start, scores); scene_updateRanking sets it (scores.c:136), death / deactivate clear; run: int -1 .. -1; values 0, -1; nz 99% of samples
+Stage.botsHoldFire | OK | code: 4 uses (actor_frame, hud_escmenu, main_loop, match_start); run: int 1 .. 1; values 0, 1; nz 10% of samples
+Stage.lockTimes | OK | code: 2 uses (actor_frame); actor_frame.c:897-901 sorted copy of lockHeld; NOT SEEN: never non-zero in the scripted sessions (see its comment for what sets it)
+Stage.lockIds | OK | code: 3 uses (actor_frame); NOT SEEN: never non-zero in the scripted sessions (see its comment for what sets it)
+Stage.lastDeath | OK | code: 3 uses (actor_frame, main_loop); actor_frame.c:250; match_frame reads it for the slowed end; run: int -1 .. 7; values 0, 1, 2, 3, 4, 5, 6, 7, -1; nz 99% of samples
+Stage.lastCameraPos | OK | code: 3 uses (match_start, objects); run: float -50270.8 .. 48070; values 0, 10, 203.207, 399.83, 500, 655.49, 868.08, 1524.46, 1550.21, 1779.1, 1833.94, 2200.83 ...; nz 34% of samples
+Stage.modelview | OK | code: 11 uses (armc_misc, hud_pass, loading, main_loop, match_start, objects ..); run: float -50229.7 .. 50270.8; values 0, 0.000669958, 0.00174542, 0.0174395, 0.0174524, 0.0296661, 0.038382, 0.389124, 0.453991, 0.48786, 0.489382, 0.575005 ...; nz 34% of sa
+Stage.lastModelview | OK | code: 2 uses (match_start, objects); run: float -50216.9 .. 50270.8; values 0, 0.000669958, 0.00174542, 0.0174395, 0.0174524, 0.0296661, 0.038382, 0.389124, 0.453991, 0.48786, 0.489382, 0.575005 ...; nz 34% of sa
+Stage.fov | OK | code: 2 uses (objects); run: float 10 .. 90; values 0, 10, 18.0027, 26.4998, 42.9941, 44.9947, 47.4963, 52.4962, 60, 90; nz 49% of samples
+Stage.nearPlane | OK | code: 2 uses (objects); run: float 100 .. 100; values 0, 100; nz 49% of samples
+Stage.farPlane | OK | code: 2 uses (objects); run: float 1e+06 .. 1e+06; values 0, 1e+06; nz 49% of samples
+Stage.projection | OK | code: 8 uses (hud_pass, objects, view_volume); run: float -200.02 .. 11.4301; values 0, 0.5625, 0.974279, 1, 1.14073, 1.27849, 1.35817, 1.42821, 1.73205, 2.02797, 2.27287, 2.38887; nz 15% of samples
+Stage.viewProjection | OK | code: 3 uses (objects, small); run: float -193168 .. 50229.7; values 0, 0.00174528, 0.00174563, 0.0302284, 0.0664795, 0.389124, 0.389202, 0.442313, 0.453991, 0.454081, 0.475311, 0.476795 ...; nz 26% of samp
+Stage.layerModel | OK | code: 11 uses (classes, match_start, object_list, shading); NOT SEEN: a record array: its leaves are checked under the record type
+Stage.waterModel | OK | code: 11 uses (classes, match_start, object_list, shading); NOT SEEN: a record array: its leaves are checked under the record type
+Stage.silentActor | OK | code: 2 uses (actor_frame, small); actor_frame.c:1165 skips its footstep sound; run: int -1 .. -1; values 0, -1; nz 85% of samples
+Stage.layerTurns | OK | code: 2 uses (match_start, small); run: int 1 .. 6; values 0, 1, 2, 3, 4, 5, 6; nz 24% of samples
+Stage.floorClock | OK | code: 4 uses (match_start, small); NOT SEEN: never non-zero in the scripted sessions (see its comment for what sets it)
+Stage.baseMatrix | COMMENT | only written: stage_resetMatrixAndPoints stores the 16 words (original: 16 stores at +0x20f2fc8, no read anywhere) -> "an identity set by stage_resetMatrixAndPoints; never read"
+Stage.pointCount | OK | code: 1 uses (small); NOT SEEN: never non-zero in the scripted sessions (see its comment for what sets it)
+Stage.points | OK | code: 9 uses (classes, collision_tris, map_info, object_list, small, view_volume); NOT SEEN: never non-zero in the scripted sessions (see its comment for what sets it)
+Stage.defaultColour | OK | code: 1 uses (small); NOT SEEN: never non-zero in the scripted sessions (see its comment for what sets it)
+Stage.messages | OK | code: 1 uses (replay_message, small); NOT SEEN: a record array: its leaves are checked under the record type
+Stage.msgWrite | OK | code: 4 uses (classes, replay_message, small); NOT SEEN: never non-zero in the scripted sessions (see its comment for what sets it)
+Stage.msgRead | OK | code: 5 uses (classes, replay_message, small); NOT SEEN: never non-zero in the scripted sessions (see its comment for what sets it)
+Stage.levelLow | OK | code: 10 uses (actor_frame, classes, collision_tris, main_loop, map_info, match_start ..); map_loadGroundInfoFrom reads it; space_setBy / collision_initVolume span it; free camera and actors clamped to it (main_loop.c, actor_frame.c); run: float -100000 .. -100000; values -100000; nz 100% of samples
+Stage.levelHigh | OK | code: 13 uses (actor_frame, classes, collision_tris, main_loop, map_info, match_start ..); as levelLow; every map played kept 100000; run: float 100000 .. 100000; values 100000; nz 100% of samples
+Stage.worldLow | OK | code: 4 uses (classes, collision_tris, map_info, match_start); collision_moveSphere clamps by it (collision_tris.c:240); map values -1 .. -100000; run: float -100000 .. -1; values -1, -10, -11075, -24000, -30000, -35131, -40000, -41551, -44000, -45400, -50000, -56000; nz 100% of samples
+Stage.worldHigh | OK | code: 7 uses (classes, collision_tris, map_info, match_start); run: float 9400 .. 120000; values 9400, 24000, 30000, 35000, 44491, 45000, 54000, 54648, 56000, 60000, 63000, 70000; nz 100% of samples
+Stage.unused9ef934 | OK | code: 2 uses (classes, map_info, match_start); original: stores in stage_build / scene_startSession, the file read in map_loadGroundInfoFrom; no read; run: float 0.6 .. 1.3; values 0.6, 0.7, 1, 1.2, 1.3; nz 100% of samples
+Stage.mapNumber | OK | code: 4 uses (loading, map_info, net_tables); run: int 3 .. 20; values 0, 3, 5, 10, 11, 13, 15, 20; nz 23% of samples
+Stage.musicKind | OK | code: 2 uses (map_info, sound_basic); run: int 1 .. 4; values 0, 1, 3, 4; nz 35% of samples
+Stage.flagGlTexture | OK | code: 4 uses (classes, hud_icons, match_start); run: int 281 .. 281; values 281; nz 100% of samples
+Stage.flagAtlas | OK | code: 4 uses (classes, match_start); NOT SEEN: never non-zero in the scripted sessions (see its comment for what sets it)
+Stage.headTypes | OK | code: 6 uses (actor_slots, armc_parts, files, kyrie, net_tables, small); NOT SEEN: a record array: its leaves are checked under the record type
+Stage.headTypeCount | OK | code: 4 uses (armc_mech, files, kyrie, main_loop, match_start, net_tables ..); run: int 20 .. 21; values 20, 21; nz 100% of samples
+Stage.chestTypes | OK | code: 7 uses (actor_frame, actor_slots, armc_parts, files, kyrie, net_tables ..); NOT SEEN: a record array: its leaves are checked under the record type
+Stage.chestTypeCount | OK | code: 4 uses (armc_mech, files, kyrie, main_loop, match_start, net_tables ..); run: int 14 .. 15; values 14, 15; nz 100% of samples
+Stage.armTypes | OK | code: 8 uses (actor_frame, actor_slots, armc_parts, files, kyrie, main_loop ..); NOT SEEN: a record array: its leaves are checked under the record type
+Stage.armTypeCount | OK | code: 4 uses (armc_mech, files, kyrie, main_loop, match_start, net_tables ..); run: int 18 .. 19; values 18, 19; nz 100% of samples
+Stage.legTypes | OK | code: 8 uses (actor_frame, actor_slots, armc_parts, files, kyrie, net_tables ..); NOT SEEN: a record array: its leaves are checked under the record type
+Stage.legTypeCount | OK | code: 4 uses (armc_mech, files, kyrie, main_loop, match_start, net_tables ..); run: int 20 .. 21; values 20, 21; nz 100% of samples
+Stage.boosterTypes | OK | code: 8 uses (actor_frame, actor_slots, armc_parts, files, kyrie, net_tables ..); NOT SEEN: a record array: its leaves are checked under the record type
+Stage.boosterTypeCount | OK | code: 4 uses (armc_mech, files, kyrie, main_loop, match_start, net_tables ..); run: int 16 .. 17; values 16, 17; nz 100% of samples
+Stage.mapPlayers | OK | code: 2 uses (map_info); NOT SEEN: a record array: its leaves are checked under the record type
+Stage.mapPlayerCount | OK | code: 5 uses (map_info); run: int 8 .. 8; values 0, 8; nz 5% of samples
+Stage.mapActors | OK | code: 5 uses (classes, frame_loops, main_loop, map_info); NOT SEEN: a record array: its leaves are checked under the record type
+Stage.mapActorCount | OK | code: 4 uses (main_loop, map_info); run: int 8 .. 8; values 0, 8; nz 5% of samples
+Stage.gameType | OK | code: 8 uses (actor_slots, dplay_slots, files, game_lists, hud_ranking, loading ..); run: int 1 .. 13; values 0, 1, 12, 13; nz 23% of samples
+Stage.teamGame | OK | code: 23 uses (actor_frame, hud_clock, hud_escmenu, hud_markers, hud_pass, hud_ranking ..); run: int 1 .. 1; values 0, 1; nz 20% of samples
+Stage.shotgunArena | OK | code: 1 uses (map_info); NOT SEEN: never non-zero in the scripted sessions (see its comment for what sets it)
+Stage.ionCannonArena | OK | code: 1 uses (map_info); NOT SEEN: never non-zero in the scripted sessions (see its comment for what sets it)
+Stage.rocketArena | OK | code: 3 uses (actor_slots, map_info); NOT SEEN: never non-zero in the scripted sessions (see its comment for what sets it)
+Stage.gladiator | OK | code: 3 uses (map_info, match_start); NOT SEEN: never non-zero in the scripted sessions (see its comment for what sets it)
+Stage.platoon | OK | code: 7 uses (actor_frame, hud_main, hud_markers, main_loop, match_start, scores); run: int 1 .. 1; values 0, 1; nz 2% of samples
+Stage.startPos | OK | code: 2 uses (hud_escmenu, main_loop, map_info, match_start); run: float -33223.9 .. 48070; values 0, 200, 500, 655.49, 868.08, 3300, 3560.36, 5660.1, 6091, 7082, 7395.87, 8900; nz 35% of samples
+Stage.startAngle | OK | code: 4 uses (hud_escmenu, main_loop, map_info, match_start); run: float -1529.8 .. 230; values 0, 230, -292.208, -607.335, -1529.8; nz 6% of samples
+Stage.starts | OK | code: 2 uses (classes, main_loop, map_info); NOT SEEN: a record array: its leaves are checked under the record type
+Stage.startCount | OK | code: 5 uses (main_loop, map_info, match_start); run: int 7 .. 18; values 0, 7, 8, 9, 10, 13, 14, 16, 18; nz 35% of samples
+Stage.lastPickup | COMMENT | not "an item that ends something": item_pickup sets it to the map item's index (Stage.items) for the extended armour / shield (k_supplies over != 0) and the 30-s power-ups; net_sendGamePacket sends its low word (packet +0x29) and sets it back to -1; the receivers mark that item taken (net_processGamePacket). run: 60 and -1 (item index)
+Stage.speakers | OK | code: 1 uses (frame_loops); NOT SEEN: never non-zero in the scripted sessions (see its comment for what sets it)
+Stage.texts | OK | code: 1 uses (frame_loops, replay_message); NOT SEEN: never non-zero in the scripted sessions (see its comment for what sets it)
+Stage.clanTexture | OK | code: 1 uses (hud_icons, map_info); run: int 517 .. 517; values 0, 517; nz 5% of samples
+Stage.objectColours | OK | code: 4 uses (classes, frame_loops, map_info); run: int 4278190080 .. 4294967295; values 0, 4278731702, 4278782217, 4278860698, 4278928558, 4278928559, 4278986360, 4278994354, 4279241489, 4279254178, 4279307282, 4279780515
+Stage.objectColourCount | OK | code: 10 uses (actor_slots, frame_loops, map_info, match_start); run: int 4824 .. 99450; values 0, 4824, 10512, 11208, 11376, 13656, 14400, 15216, 17256, 18048, 19536, 21198; nz 35% of samples
+Stage.shadingCached | OK | code: 4 uses (frame_loops, map_info); NOT SEEN: never non-zero in the scripted sessions (see its comment for what sets it)
+Stage.objectNames | OK | code: 2 uses (frame_loops); run: strings: e.g. "centropolis\poket_walladd"; nz 0% of samples
+Stage.objectNameCount | OK | code: 5 uses (frame_loops, map_info, match_start); run: int 6 .. 99; values 0, 6, 8, 9, 13, 15, 17, 18, 19, 20, 22, 34; nz 35% of samples
+Stage.thrustShapes | COMMENT | loaded but never read: effect_initShapes is the only code touching +0x20f2dac (original: 3 lea in effect_initShapes only, C: frame_loops.c:213 store); the thrust puffs (particle kinds 5 .. 7) are drawn as smoke quads (objects.c smoke), not shapes -> add "loaded by effect_initShapes; never read"
+Stage.effectShapes | OK | code: 6 uses (frame_loops, objects); run: int 365112064 .. 366996756; values 365112064, 365112140, 365112216, 365112292, 365112368, 365112444, 365112520, 365112596, 365120256, 365120332, 365120408, 365120484; nz 
+Stage.itemTextures | OK | code: 4 uses (actor_slots, frame_loops, match_start); Texture\Item_damagemap_ani0 / booster / shield (stage_build); flag_texture picks by stateFlags 0x100 / 0x800; run: int 1 .. 3; values 1, 2, 3; nz 100% of samples
+Stage.clockSeconds | OK | code: 4 uses (frame_loops, hud_clock, hud_escmenu, main_loop, match_start, net_tables ..); run: int 1 .. 189; values 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11 ...; nz 34% of samples
+Stage.clockFraction | OK | code: 15 uses (frame_loops, hud_clock, hud_escmenu, hud_pass, main_loop, match_start ..); run: float 0.0225673 .. 0.988469; values 0, 0.044036, 0.0440401, 0.0440508, 0.0600151, 0.0600247, 0.060037, 0.0820155, 0.082021, 0.09036, 0.139284, 0.140897 ...; nz 35% of sam
+Stage.scriptName | OK | code: 2 uses (small); run: strings: e.g. ""; nz 0% of samples
+Stage.scriptMode | OK | code: 12 uses (actor_slots, frame_loops, hud_pass, objects, small); NOT SEEN: never non-zero in the scripted sessions (see its comment for what sets it)
+Stage.scriptHoldsPlay | OK | code: 5 uses (frame_loops, objects, small); NOT SEEN: never non-zero in the scripted sessions (see its comment for what sets it)
+Stage.actorItems | OK | code: 26 uses (actor_frame, actor_slots, armc_parts, classes, files, hud_main ..); NOT SEEN: a record array: its leaves are checked under the record type
+Stage.actorItemCount | OK | code: 6 uses (files, main_loop, match_start, net_tables, small); run: int 37 .. 37; values 37; nz 100% of samples
+Stage.commands | OK | code: 3 uses (files, frame_loops, map_info); run: int 2 .. 240; values 0, 2, 28, 36, 37, 45, 66, 67, 97, 99, 101, 111 ...; nz 0% of samples
+Stage.commandCount | OK | code: 6 uses (files, frame_loops, map_info); run: int 9 .. 9; values 0, 9; nz 2% of samples
+Stage.wayPoints | OK | code: 8 uses (actor_frame, classes, frame_loops, map_info, weapons); NOT SEEN: a record array: its leaves are checked under the record type
+Stage.wayPointCount | OK | code: 6 uses (actor_frame, map_info, weapons); run: int 183 .. 511; values 0, 183, 224, 282, 347, 511; nz 28% of samples
+Stage.triggers | OK | code: 12 uses (actor_frame, frame_loops, map_info, weapons); NOT SEEN: a record array: its leaves are checked under the record type
+Stage.triggerFired | OK | code: 3 uses (actor_frame, frame_loops); NOT SEEN: never non-zero in the scripted sessions (see its comment for what sets it)
+Stage.triggerCount | OK | code: 3 uses (frame_loops, map_info, weapons); run: int 16 .. 42; values 0, 16, 21, 32, 41, 42; nz 28% of samples
+Stage.objectFreeHint | OK | code: 3 uses (actor_slots, frame_loops, match_start); run: int 5 .. 248; values 0, 5, 7, 16, 18, 22, 30, 36, 42, 46, 48, 50; nz 35% of samples
+Stage.objectSerial | OK | code: 3 uses (actor_slots, frame_loops, match_start); run: int 6 .. 248; values 0, 6, 8, 16, 18, 22, 30, 36, 42, 46, 48, 50; nz 35% of samples
+Stage.playerRecordCount | OK | code: 7 uses (actor_slots, map_info, match_start, small); run: int 1 .. 8; values 0, 1, 2, 3, 8; nz 49% of samples
+Stage.actorFreeHint | OK | code: 4 uses (actor_slots); run: int 1 .. 8; values 0, 1, 2, 7, 8; nz 22% of samples
+Stage.actorSerial | OK | code: 3 uses (actor_slots, frame_loops); run: int 1 .. 118; values 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11 ...; nz 34% of samples
+Stage.heldActor | OK | code: 1 uses (actor_slots); run: int -1 .. -1; values -1; nz 100% of samples
+Stage.heldMode | OK | code: 3 uses (actor_slots); original: three stores, no read; run: int -1 .. -1; values -1; nz 100% of samples
+Stage.rankingDirty | OK | code: 8 uses (actor_frame, actor_slots, main_loop, small); run: int 1 .. 1; values 0, 1; nz 66% of samples
+Stage.lockHeld | OK | code: 9 uses (actor_frame, actor_slots, hud_lockon, match_start); NOT SEEN: never non-zero in the scripted sessions (see its comment for what sets it)
+Stage.bulletSlotsUsed | OK | code: 8 uses (actor_frame, actor_slots, frame_loops); a count of slots (FLAGS' "flag" warning is a false alarm); run: int 1 .. 7; values 0, 1, 2, 3, 4, 5, 6, 7; nz 0% of samples
+Stage.bulletFreeHint | OK | code: 4 uses (actor_slots, frame_loops); run: int 1 .. 5; values 0, 1, 2, 3, 4, 5; nz 0% of samples
+Stage.bulletSerial | OK | code: 2 uses (actor_slots, weapons); run: int 1 .. 1132; values 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11 ...; nz 8% of samples
+Stage.particleFreeHint | OK | code: 4 uses (actor_slots, frame_loops); run: int 1 .. 999; values 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11 ...; nz 29% of samples
+Stage.particleSerial | OK | code: 2 uses (actor_slots, frame_loops); run: int 14 .. 515071; values 0, 14, 21, 30, 35, 42, 54, 88, 116, 132, 133, 148 ...; nz 35% of samples
+Stage.printText | OK | code: 2 uses (main_loop, match_start, notices); run: strings: e.g. ""; nz 0% of samples
+Stage.kingActor | OK | code: 5 uses (actor_frame, actor_slots, match_start, scores); run: int -1 .. -1; values 0, -1; nz 98% of samples
+Stage.groundLayers | OK | code: 5 uses (classes, collision_tris, map_info, object_list, shading); NOT SEEN: a record array: its leaves are checked under the record type
+Stage.groundLayerCount | UNSURE | code agrees (map_loadGroundInfoFrom count; layers built / collided / drawn by it) but its comment's "0 / 1 seen" is not backed: never non-zero in any session run. Settle: find which shipped maps' ground info has layers (the ground section of each map file) and say so in the comment
+Stage.playerRecords | OK | code: 50 uses (actor_frame, actor_slots, armc_colours, armc_parts, classes, files ..); NOT SEEN: a record array: its leaves are checked under the record type
+Stage.space | OK | code: 12 uses (actor_frame, classes, collision_tris, main_loop, match_start, net_tables ..); NOT SEEN: a record array: its leaves are checked under the record type
+Stage.cockpitActor | OK | code: 17 uses (actor_frame, actor_slots, armc_mech, hud_main, objects, small ..); run: int -1 .. 1; values 0, 1, -1; nz 88% of samples
+Stage.frags | OK | code: 5 uses (actor_frame, hud_clock, hud_overlay, hud_ranking, main_loop, net_tables ..); run: int 1 .. 25; values 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11 ...; nz 0% of samples
+Stage.lockCount | OK | code: 3 uses (actor_frame, match_start); NOT SEEN: never non-zero in the scripted sessions (see its comment for what sets it)
+Stage.viewWidth | OK | code: 3 uses (objects); run: int 3840 .. 3840; values 0, 3840; nz 49% of samples
+Stage.viewHeight | OK | code: 3 uses (objects); run: int 2160 .. 2160; values 0, 2160; nz 49% of samples
+Stage.showExp | OK | code: 7 uses (actor_frame, match_start); run: int 1 .. 1; values 0, 1; nz 2% of samples
+Stage.suddenDeath | OK | code: 3 uses (actor_frame, map_info); NOT SEEN: never non-zero in the scripted sessions (see its comment for what sets it)
+Stage.kingOfTheHill | OK | code: 7 uses (actor_frame, hud_main, hud_markers, main_loop, scores); run: int 1 .. 1; values 0, 1; nz 2% of samples
+Stage.bullets | OK | code: 15 uses (actor_frame, actor_slots, classes, frame_loops, net_tables, trails ..); NOT SEEN: a record array: its leaves are checked under the record type
+Stage.cullMargin | OK | code: 11 uses (actor_slots, items, main_loop, map_info, objects, shading ..); run: float 20000 .. 1e+07; values 0, 20000, 30000, 50000, 5e+06, 1e+07; nz 35% of samples
+Stage.billboards | OK | code: 1 uses (items); run: int 2573 .. 2573; values 2573; nz 100% of samples
+Stage.glFogColour | TYPE -> float[4] | every word holds float bits (run: 0, 0.27451, 0.278431, 0.298039, 0.431373, 0.568627); declared u32 with "floats' bits" in its comment - a float type (BITS() kept at the copies that must stay bit-exact) says what it is
+Stage.glFogStart | TYPE -> float | every word holds float bits (run: 0, 3000, 10000, 15000); declared u32 with "floats' bits" in its comment - a float type (BITS() kept at the copies that must stay bit-exact) says what it is
+Stage.glFogEnd | TYPE -> float | every word holds float bits (run: 0, 19000, 25000, 28000, 30000, 190000); declared u32 with "floats' bits" in its comment - a float type (BITS() kept at the copies that must stay bit-exact) says what it is
+Stage.glFogDensity | TYPE -> float | every word holds float bits (run: 0, 0.1, 0.35); declared u32 with "floats' bits" in its comment - a float type (BITS() kept at the copies that must stay bit-exact) says what it is
+Stage.skyMode | OK | code: 7 uses (map_info, sky); run: int 2 .. 2; values 0, 2; nz 15% of samples
+Stage.skyTextures | OK | code: 4 uses (map_info, match_start, sky); run: int -1 .. 2613; values 6, 7, 8, 9, 10, 2602, 2603, 2608, 2609, 2610, 2611, 2612; nz 100% of samples
+Stage.skySphere | OK | code: 4 uses (classes, match_start, sky); run: float -0.57735 .. 0.57735; values 0, 0.19245, 0.19245, 0.19245, 0.3849, 0.3849, 0.3849, 0.57735, 0.57735, 0.57735, -2.52368e-08, -0.19245 ...; nz 94% of samples
+Stage.layerMode | OK | code: 5 uses (map_info, match_start, sky); run: int 1 .. 2; values 0, 1, 2; nz 27% of samples
+Stage.skyLayerTextures | OK | code: 4 uses (map_info, match_start, sky); run: int -1 .. 1558; values 1541, 1542, 1558, -1; nz 100% of samples
+Stage.layer | OK | code: 3 uses (classes, match_start, sky); run: float -0.866025 .. 0.866025; values 0, 1.19209e-07, 0.17101, 0.321394, 0.433013, 0.663414, -0.0301535, -0.0301536, -0.116978, -0.116978, -0.17101, -0.25 ...; nz 90% of sa
+Stage.layerScroll | OK | code: 7 uses (sky, small); run: float 0.00108738 .. 0.999497; values 0, 0.0031691, 0.00381343, 0.00442615, 0.0046386, 0.00505111, 0.00518897, 0.00569286, 0.00735132, 0.00758261, 0.0077511, 0.00956427 ..
+Stage.sideMode | OK | code: 4 uses (map_info, sky); run: int 2 .. 2; values 0, 2; nz 20% of samples
+Stage.sideTextures | OK | code: 3 uses (map_info, match_start, sky); run: int -1 .. 2057; values 11, 12, 13, 14, 15, 19, 20, 21, 22, 23, 2048, 2049; nz 100% of samples
+Stage.sides | OK | code: 4 uses (classes, match_start, sky); run: float -1 .. 1; values 0, 0.173648, 0.34202, 0.5, 0.642788, 0.642788, 0.766044, 0.866025, 0.866025, 0.939693, 0.984808, 0.984808 ...; nz 80% of samples
+Stage.floorMode | OK | code: 6 uses (collision_tris, map_info, match_start, sky, small); NOT SEEN: never non-zero in the scripted sessions (see its comment for what sets it)
+Stage.floorTextures | OK | code: 3 uses (map_info, match_start, sky); run: int -1 .. -1; values -1; nz 100% of samples
+Stage.floor | OK | code: 3 uses (classes, match_start, sky); run: float -1 .. 1; values 0, 0.2, 0.4, 0.6, 0.8, 1, -0.2, -0.4, -0.6, -0.8, -1; nz 60% of samples
+Stage.floorFrame | OK | code: 3 uses (match_start, sky, small); NOT SEEN: never non-zero in the scripted sessions (see its comment for what sets it)
+Stage.objects | OK | code: 19 uses (actor_slots, classes, collision_tris, frame_loops, map_objects, objects ..); NOT SEEN: a record array: its leaves are checked under the record type
+Stage.objectCount | OK | code: 9 uses (actor_slots, collision_tris, frame_loops, match_start, objects, space_pools); run: int 6 .. 248; values 0, 6, 8, 16, 18, 22, 30, 36, 42, 46, 48, 50; nz 35% of samples
+Stage.actors | OK | code: 111 uses (actor_frame, actor_slots, armc_mech, armc_misc, armc_parts, classes ..); NOT SEEN: a record array: its leaves are checked under the record type
+Stage.particles | OK | code: 13 uses (actor_slots, classes, frame_loops, objects, teams); NOT SEEN: a record array: its leaves are checked under the record type
+Stage.particleCount | OK | code: 8 uses (actor_slots, frame_loops, objects, teams); run: int 2 .. 1000; values 0, 2, 3, 4, 6, 7, 9, 10, 11, 13, 14, 15 ...; nz 32% of samples
+Stage.itemTypes | OK | code: 4 uses (frame_loops, items, map_info); NOT SEEN: a record array: its leaves are checked under the record type
+Stage.items | OK | code: 56 uses (actor_frame, actor_slots, classes, collision_tris, frame_loops, items ..); NOT SEEN: a record array: its leaves are checked under the record type
+Stage.itemCount | OK | code: 13 uses (frame_loops, items, main_loop, map_info, match_start, net_tables ..); run: int 54 .. 73; values 0, 54, 62, 64, 65, 69, 71, 73; nz 35% of samples
+Stage.actorCount | OK | code: 30 uses (actor_frame, actor_slots, frame_loops, main_loop, objects, small ..); run: int 1 .. 8; values 0, 1, 2, 3, 8; nz 33% of samples
+Stage.playerActor | OK | code: 49 uses (actor_frame, actor_slots, armc_misc, classes, frame_loops, match_start ..); run: int -1 .. 1; values 0, 1, -1; nz 69% of samples
+Stage.cameraPos | OK | code: 41 uses (actor_frame, actor_slots, classes, frame_loops, hud_escmenu, items ..); run: float -50270.8 .. 48070; values 0, 10, 203.207, 399.83, 500, 655.49, 868.08, 1524.46, 1550.21, 1780.77, 1836.57, 2200.83 ...; nz 34% of samples
+Stage.viewDir | OK | code: 9 uses (actor_frame, frame_loops, objects, sky, weapons); run: float -48492.1 .. 17574.3; values 0, 0.00174528, 0.147809, 0.161604, 0.199368, 0.265556, 0.389124, 0.447759, 0.453991, 0.466339, 0.472551, 0.489382 ...; nz 40% of samples
+Stage.viewUp | OK | code: 3 uses (objects, sky); run: float -0.12543 .. 1; values 0, 0.00760853, 0.0174524, 0.038382, 0.0488505, 0.0581777, 0.142422, 0.24171, 0.389124, 0.921185, 0.970296, 0.986856 ...; nz 36% of samples
+Flare.corners | OK | code: 23 uses (armc_misc, menu_tunnel); run: float -3.33634e+38 .. 3.84395e+08; values 0, 2.29595e-39, 1.92858e-38, 1.94692e-38, 3.48968e-38, 4.53678e-38, 1.02126e-37, 1.35188e-37, 1.49882e-37, 3.10053e-37, 3.45318e
+Flare.pos | OK | code: 144 uses (actor_frame, actor_slots, armc_misc, factors, frame_loops, items ..); run: float -2800 .. -599.5; values 0, -599.5, -599.6, -599.7, -599.8, -599.9, -600, -1699.5, -1699.6, -1699.7, -1699.8, -1699.9 ...; nz 33% of samples
+Flare.spin | OK | code: 14 uses (menu_tunnel); run: float -360 .. 360; values 0, 0.15, 0.18, 1.5, 1.8956, 2.01756, 2.27472, 2.42107, 2.45336, 2.48042, 2.5319, 2.53342 ...; nz 99% of samples
+Flare.spinSpeed | OK | code: 5 uses (menu_tunnel); run: float -1.5 .. 1.5; values 0.15, 0.18, 1.5, -0.18, -0.35, -1.5; nz 100% of samples
+TunnelRing.cleared0 | OK | code: 1 uses (menu_tunnel); NOT SEEN: only cleared, never set
+TunnelRing.cleared4 | OK | code: 1 uses (menu_tunnel); NOT SEEN: only cleared, never set
+TunnelRing.depth | OK | code: 6 uses (menu_tunnel, setup_pages, space_pools); run: float -2200 .. 0; values -0, -1100, -2200; nz 100% of samples
+TunnelRing.outer | OK | code: 2 uses (menu_tunnel); run: float -3.4028e+38 .. 1.61335e+38; values 0, 8.26531e-40, 6.97961e-39, 9.91838e-39, 2.21327e-38, 3.23277e-37, 8.99336e-37, 1.56976, 3.13333, 4.68453, 6.21725, 24.2146 ...;
+TunnelRing.spin | OK | code: 14 uses (menu_tunnel); run: float -360 .. 360.191; values 0, 0.2, 2.52747, 2.69008, 3.27115, 3.30722, 3.37587, 3.3779, 3.44787, 3.45215, 3.46654, 3.47617 ...; nz 99% of samples
+TunnelRing.spinSpeed | OK | code: 5 uses (menu_tunnel); run: float 0.2 .. 0.2; values 0.2; nz 100% of samples
+TunnelRing.cleared1938 | OK | code: 1 uses (menu_tunnel); NOT SEEN: only cleared, never set
+TunnelRing.moveSteps | COMMENT | the ring lengths are 1100, 950 while g_enteringMenus and 2200 while g_leavingForMatch (menuTunnel_advance: ringLength 0x898 if g_leavingForMatch) - the comment says "2200 in the ARM CENTER"; also the step is the whole-number g_tunnelStep (frame time x 30, truncated). run 15 .. 2099 agrees
+TunnelRing.depthShift | OK | code: 3 uses (menu_tunnel); run: float -3300 .. 2200; values 0, 1100, 2200, -1100, -2200, -3300; nz 52% of samples
+TunnelRing.inner | OK | code: 2 uses (menu_tunnel); run: float -3.4028e+38 .. 2.09757e+37; values 0, 3.94902e-38, 2.454e-37, 6.05418e-37, 4.60838e-36, 4.72593e-36, 1.93597e-32, 1.51643e-30, 2.76171e-30, 1.44418, 2.88266, 4.3097
+TunnelRing.innerSpin | OK | code: 6 uses (menu_tunnel); run: float -7947.26 .. 360; values 245.024, 245.075, 245.091, 245.324, 245.517, 245.535, 245.738, 245.765, 245.77, 246.181, 246.238, 246.277 ...; nz 100% of samples
+TunnelRing.innerSpeed | OK | code: 2 uses (menu_tunnel); run: float -0.5 .. -0.5; values -0.5; nz 100% of samples
+TunnelRing.cleared326c | OK | code: 1 uses (menu_tunnel); NOT SEEN: only cleared, never set
+TunnelRing.cage | OK | code: 7 uses (menu_tunnel); run: float -3.32304e+38 .. 50; values 0, 1.92863e-39, 2.84694e-39, 8.90818e-39, 1.83674e-38, 3.1776e-38, 4.68372e-38, 1.44005e-37, 1.75595e-37, 5.84846e-37, 9.22846e-37, 9.405
+TunnelRing.cagePos | OK | code: 3 uses (menu_tunnel); run: float -2750 .. -550; values 0, -550, -1650, -2750; nz 33% of samples
+TunnelRing.cageSpin | OK | code: 5 uses (menu_tunnel); run: float -1668.04 .. -0.0999792; values 0, -0.1, -1.26374, -1.34504, -1.63557, -1.65361, -1.68794, -1.68895, -1.72394, -1.72608, -1.73327, -1.73809 ...; nz 99% of samples
+TunnelRing.cageSpeed | OK | code: 2 uses (menu_tunnel); run: float -0.1 .. -0.1; values -0.1; nz 100% of samples
+TunnelRing.flares | OK | code: 2 uses (menu_tunnel); NOT SEEN: only cleared, never set
+TunnelRing.alpha | OK | code: 5 uses (menu_tunnel); run: float 1 .. 1; values 1; nz 100% of samples
+TunnelRing.ringIndex | OK | code: 1 uses (menu_tunnel); run: int 1 .. 2; values 0, 1, 2; nz 38% of samples
+TunnelRing.cells | OK | code: 16 uses (menu_tunnel, space_pools); run: int 100 .. 100; values 100; nz 100% of samples
+TunnelRing.back | OK | code: 11 uses (lists, menu_tunnel, room_clicks); run: pointer: 10088 valid, 0 original-image addresses, 0 unmapped; nz 38% of samples
+TunnelRing.next | OK | code: 36 uses (collision_tris, lists, menu_tunnel, names, sound_basic, space_pools); run: pointer: 16741 valid, 0 original-image addresses, 0 unmapped; nz 64% of samples
+Round.map | OK | code: 27 uses (game_lists, globals, lobby_states, main_loop, match_start, menu_records ..); run: int 1 .. 31; values 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11 ...; nz 2% of samples
+Round.mode | OK | code: 18 uses (globals, lobby_states, main_loop, match_start, menu_cameras, settings_form); run: int 1 .. 13; values 0, 1, 2, 12, 13; nz 2% of samples
+Round.fragLimit | OK | code: 31 uses (hud_clock, lobby_states, main_loop, match_start, menu_records, msg_system ..); run: int 10 .. 30; values 0, 10, 15, 20, 25, 30; nz 2% of samples
+Round.timeLimit | OK | code: 29 uses (classes, hud_clock, lobby_states, main_loop, match_start, menu_records ..); run: int 1 .. 10; values 0, 1, 10; nz 0% of samples
+Scene.chatMacros | OK | code: 3 uses (files); run: strings: e.g. "........"; nz 0% of samples
+Scene.itemLevelsTaken | OK | code: 3 uses (classes, net_tables); net_tables.c:2200-2215; run: int 1 .. 1; values 0, 1; nz 3% of samples
+Scene.previewTurn | OK | code: 3 uses (armc_misc, classes); NOT SEEN: never non-zero in the scripted sessions (see its comment for what sets it)
+Scene.replayVersion | OK | code: 5 uses (classes, loading, net_tables); run: int 4609 .. 4609; values 0, 4609; nz 1% of samples
+Scene.mapName | OK | code: 2 uses (loading, small); run: strings: e.g. "Centropolis"; nz 0% of samples
+Scene.unusedBe2ffc | OK | code: 1 uses (classes, map_info, match_start); run: float 0.6 .. 1.3; values 0.6, 0.7, 1, 1.2, 1.3; nz 100% of samples
+Scene.musicKind | OK | code: 2 uses (map_info, sound_basic); run: int 1 .. 4; values 0, 1, 3, 4; nz 35% of samples
+Scene.mapNumber | OK | code: 4 uses (loading, map_info, net_tables); run: int 3 .. 20; values 0, 3, 5, 10, 11, 13, 15, 20; nz 23% of samples
+Scene.unused233ca00 | OK | code: 1 uses (classes); NOT SEEN: never non-zero in the scripted sessions (see its comment for what sets it)
+Scene.unused233cc44 | OK | code: 1 uses (classes); NOT SEEN: never non-zero in the scripted sessions (see its comment for what sets it)
+Scene.loadStage | OK | code: 4 uses (loading); run: int 1 .. 8; values 0, 1, 2, 3, 4, 5, 6, 7, 8; nz 35% of samples
+Scene.unused233cc2c | OK | code: 9 uses (loading); NOT SEEN: never non-zero in the scripted sessions (see its comment for what sets it)
+Scene.loadLines | OK | code: 3 uses (loading); run: strings: e.g. "END LOADING PROCESS"; nz 0% of samples
+Scene.loadLineCount | OK | code: 3 uses (loading); run: int 1 .. 8; values 0, 1, 2, 3, 4, 5, 6, 7, 8; nz 36% of samples
+Scene.timer | OK | code: 22 uses (armc_misc, classes, frame_loops, hud_overlay, items, main_loop ..); NOT SEEN: a record array: its leaves are checked under the record type
+Scene.frameTimes | OK | code: 3 uses (classes, timer); run: float 1e-07 .. 0.0666667; values 0, 1e-07, 5.8e-06, 8.8e-06, 9.3e-06, 9.8e-06, 1.05e-05, 1.07e-05, 1.11e-05, 1.12e-05, 1.35e-05, 0.0014972 ...; nz 99% of samples
+Scene.frameTimeNext | OK | code: 3 uses (classes, timer); run: int 1 .. 9; values 0, 1, 2, 3, 4, 5, 6, 7, 8, 9; nz 46% of samples
+Scene.sendFlags | OK | code: 17 uses (files, main_loop, net_tables, notices); [0] / [1] -> net_sendGamePacket / net_sendPlayerInfo, [2] / [3] sent as bit masks (net_tables.c:1782); run: int 1 .. 1; values 0, 1; nz 0% of samples
+Scene.connectPlayer | OK | code: 2 uses (net_tables, notices); run: int 1 .. 1; values 0, 1; nz 3% of samples
+Scene.connectName | OK | code: 2 uses (net_tables, notices); run: strings: e.g. "Alex"; nz 0% of samples
+Scene.connectPending | OK | code: 5 uses (net_tables, notices); NOT SEEN: never non-zero in the scripted sessions (see its comment for what sets it)
+Scene.quitPlayer | OK | code: 2 uses (net_tables, notices); NOT SEEN: never non-zero in the scripted sessions (see its comment for what sets it)
+Scene.quitPending | OK | code: 4 uses (net_tables, notices); NOT SEEN: never non-zero in the scripted sessions (see its comment for what sets it)
+Scene.chatPlayer | OK | code: 2 uses (net_tables, notices); run: int 1 .. 1; values 0, 1; nz 1% of samples
+Scene.chatLine | OK | code: 2 uses (net_tables, notices); run: strings: e.g. "gg"; nz 0% of samples
+Scene.chatTeam | OK | code: 2 uses (net_tables, notices); run: int -1 .. -1; values 0, -1; nz 1% of samples
+Scene.chatPending | OK | code: 5 uses (net_tables, notices); run: int 1 .. 1; values 0, 1; nz 0% of samples
+Scene.joinPlayer | OK | code: 2 uses (net_tables, notices); run: int 1 .. 1; values 0, 1; nz 2% of samples
+Scene.joinTeam | OK | code: 2 uses (net_tables, notices); run: int 1 .. 1; values 0, 1; nz 2% of samples
+Scene.joinName | OK | code: 2 uses (net_tables, notices); run: strings: e.g. "Alex"; nz 0% of samples
+Scene.joinPending | OK | code: 5 uses (net_tables, notices); run: int 1 .. 1; values 0, 1; nz 0% of samples
+Scene.changePlayer | OK | code: 1 uses (notices); original: one store, no read; NOT SEEN: never non-zero in the scripted sessions (see its comment for what sets it)
+Scene.changeTeam | OK | code: 2 uses (net_tables, notices); NOT SEEN: never non-zero in the scripted sessions (see its comment for what sets it)
+Scene.changeName | OK | code: 2 uses (net_tables, notices); run: strings: e.g. ""; nz 0% of samples
+Scene.changePending | OK | code: 5 uses (net_tables, notices); NOT SEEN: never non-zero in the scripted sessions (see its comment for what sets it)
+Scene.endEvents | OK | code: 8 uses (net_tables, notices, small); run: int 1 .. 1; values 0, 1; nz 0% of samples
+Scene.restartPending | OK | code: 2 uses (net_tables); NOT SEEN: never non-zero in the scripted sessions (see its comment for what sets it)
+Scene.cheatPlayer | OK | code: 1 uses (net_tables); NOT SEEN: never non-zero in the scripted sessions (see its comment for what sets it)
+Scene.cheatCode | OK | code: 1 uses (net_tables); NOT SEEN: never non-zero in the scripted sessions (see its comment for what sets it)
+Scene.cheatPending | OK | code: 3 uses (net_tables, notices); NOT SEEN: never non-zero in the scripted sessions (see its comment for what sets it)
+Scene.replayFiles | OK | code: 2 uses (classes, loading); run: strings: e.g. "lilly.ape"; nz 0% of samples
+Scene.replayCount | OK | code: 4 uses (classes, main_loop); run: int 5 .. 5; values 0, 5; nz 1% of samples
+Scene.replayIndex | OK | code: 5 uses (classes, loading, main_loop); run: int 1 .. 1; values 0, 1; nz 0% of samples
+Scene.spaceMargin | OK | code: 4 uses (actor_frame, classes, collision_tris, main_loop, match_start, net_tables ..); run: float 500 .. 500; values 0, 500; nz 35% of samples
+Scene.rankingDirty | OK | code: 8 uses (actor_frame, actor_slots, main_loop, small); run: int 1 .. 1; values 0, 1; nz 66% of samples
+Scene.centreNotice | OK | code: 3 uses (main_loop, match_start, notices); run: strings: e.g. ""; nz 0% of samples
+Scene.respawnTime | COMMENT | counts UP, it is not a wait counted down: match_frame adds frameTime while the local player (with a team) has no active actor and no chat line / end / leaving; at 10 it is cleared and spawnPending set; 0 otherwise (main_loop.c:1785-1794). run 0.008 .. 9.99994
+Scene.rankingTimer | OK | code: 3 uses (classes, main_loop); run: float 5 .. 5; values 0, 5; nz 50% of samples
+Scene.infoSendTimer | OK | code: 4 uses (classes, main_loop); run: float 2.28435e-05 .. 15; values 0, 14.8274, 14.8333, 14.8357, 14.8417, 14.8417, 14.8417, 14.8441, 14.85, 14.85, 14.85, 14.85 ...; nz 50% of samples
+Scene.cleared2340ca4 | OK | code: 1 uses (classes); NOT SEEN: never non-zero in the scripted sessions (see its comment for what sets it)
+Scene.debugGrid | OK | code: 3 uses (classes, globals, main_loop); run: int 1 .. 1; values 0, 1; nz 50% of samples
+Scene.markLights | OK | code: 2 uses (classes, main_loop); NOT SEEN: never non-zero in the scripted sessions (see its comment for what sets it)
+Scene.endNoticeTime | OK | code: 5 uses (main_loop); run: float 0.00832147 .. 0.508333; values 0, 0.00884167, 0.00888416, 0.00897889, 0.00899107, 0.00906146, 0.0171698, 0.0172232, 0.0175384, 0.0175717, 0.0176839, 0.0255007 ...; 
+Scene.partsCheckTime | COMMENT | a countdown, not "checked every 20 s" alone: in a network game it drops by frameTime every frame and is reset to 20 only after a check, which runs only while the local player's actor is alive (state 1) - so it runs far below 0 while dead / spectating (run: -0.027 .. -269, 20). main_loop.c:1884-1892
+Scene.statsTaken | COMMENT | wrong content: the code gives the local player's actor grade / levelShown = level and score / scoreCounted = levelPoints once (main_loop.c:1732-1737), not kills / deaths
+Scene.flagLoadTried | OK | code: 3 uses (classes, main_loop); run: int 1 .. 1; values 0, 1; nz 28% of samples
+Scene.flagUploadTimer | OK | code: 7 uses (main_loop, net_tables); run: float 4.02294e-05 .. 5; values 0, 4.80779, 4.81373, 4.81595, 4.81612, 4.81629, 4.82419, 4.82428, 4.82445, 4.82462, 4.82462, 4.82496 ...; nz 1% of samples
+Scene.holdUp | OK | code: 5 uses (main_loop); run: int 1 .. 1; values 0, 1; nz 0% of samples
+Scene.holdDown | OK | code: 5 uses (main_loop); run: int 1 .. 1; values 0, 1; nz 0% of samples
+Scene.firePressed | OK | code: 3 uses (main_loop); run: int 1 .. 1; values 0, 1; nz 0% of samples
+Scene.holdBooster | OK | code: 6 uses (classes, main_loop); run: int 1 .. 1; values 0, 1; nz 0% of samples
+Scene.holdZoom | OK | code: 3 uses (classes, main_loop); run: int 1 .. 1; values 0, 1; nz 0% of samples
+Scene.turnLeftHeld | OK | code: 2 uses (main_loop); NOT SEEN: never non-zero in the scripted sessions (see its comment for what sets it)
+Scene.turnRightHeld | OK | code: 2 uses (main_loop); NOT SEEN: never non-zero in the scripted sessions (see its comment for what sets it)
+Scene.upKeyHeld | OK | code: 3 uses (main_loop); NOT SEEN: never non-zero in the scripted sessions (see its comment for what sets it)
+Scene.downKeyHeld | OK | code: 3 uses (main_loop); NOT SEEN: never non-zero in the scripted sessions (see its comment for what sets it)
+Scene.fKeys | OK | code: 8 uses (main_loop); NOT SEEN: never non-zero in the scripted sessions (see its comment for what sets it)
+Scene.prevWeaponPressed | OK | code: 3 uses (main_loop); run: int 1 .. 1; values 0, 1; nz 0% of samples
+Scene.nextWeaponPressed | OK | code: 3 uses (main_loop); run: int 1 .. 1; values 0, 1; nz 0% of samples
+Scene.partStepDownPressed | OK | code: 2 uses (main_loop); NOT SEEN: never non-zero in the scripted sessions (see its comment for what sets it)
+Scene.partStepUpPressed | OK | code: 2 uses (main_loop); NOT SEEN: never non-zero in the scripted sessions (see its comment for what sets it)
+Scene.talkPressed | OK | code: 2 uses (main_loop); run: int 1 .. 1; values 0, 1; nz 0% of samples
+Scene.teamTalkPressed | OK | code: 2 uses (main_loop); run: int 1 .. 1; values 0, 1; nz 0% of samples
+Scene.helpPressed | OK | code: 3 uses (classes, main_loop); run: int 1 .. 1; values 0, 1; nz 0% of samples
+Scene.replaySlow | OK | code: 2 uses (main_loop); NOT SEEN: never non-zero in the scripted sessions (see its comment for what sets it)
+Scene.replaySkip | OK | code: 2 uses (main_loop); NOT SEEN: never non-zero in the scripted sessions (see its comment for what sets it)
+Scene.lastDeath | OK | code: 3 uses (actor_frame, main_loop); run: int -1 .. 7; values 0, 1, 2, 3, 4, 5, 6, 7, -1; nz 99% of samples
+Scene.mapActorCount | OK | code: 4 uses (main_loop, map_info); run: int 8 .. 8; values 0, 8; nz 5% of samples
+Scene.endReason | OK | code: 9 uses (classes, main_loop, net_tables); run: int -1 .. 1; values 0, 1, -1; nz 50% of samples
+Scene.startCountdown | OK | code: 5 uses (main_loop); run: float 4.33438e-06 .. 3; values 0, 2.82741, 2.83333, 2.83574, 2.84165, 2.84166, 2.84168, 2.84408, 2.84998, 2.84999, 2.85, 2.85001 ...; nz 0% of samples
+Scene.startCountdownShown | OK | code: 3 uses (main_loop); holds a second 2 .. 0 or -1 (FLAGS' "flag" warning is a false alarm); run: int -1 .. 2; values 0, 1, 2, -1; nz 0% of samples
+Scene.lastMissionWon | OK | code: 1 uses (main_loop); original: two stores, no read; NOT SEEN: never non-zero in the scripted sessions (see its comment for what sets it)
+Scene.mouseX | OK | code: 10 uses (armc_misc, main_loop); run: int 310 .. 2520; values 0, 310, 1920, 2370, 2520; nz 35% of samples
+Scene.mouseY | OK | code: 11 uses (armc_misc, main_loop); run: int 230 .. 1080; values 0, 230, 856, 930, 1080; nz 35% of samples
+Scene.mouseDy | OK | code: 21 uses (armc_misc, input, main_loop); run: float -850 .. -150; values 0, -150, -224, -850; nz 0% of samples
+Scene.mouseDx | OK | code: 19 uses (armc_misc, input, main_loop); run: float -600 .. 1610; values 0, 1610, -0, -450, -600; nz 26% of samples
+Scene.holdAltitude | OK | code: 13 uses (classes, main_loop, small); run: int 1 .. 1; values 0, 1; nz 0% of samples
+Scene.holdForward | OK | code: 10 uses (globals, main_loop); run: int 1 .. 1; values 0, 1; nz 0% of samples
+Scene.holdBackward | OK | code: 10 uses (globals, main_loop); run: int 1 .. 1; values 0, 1; nz 0% of samples
+Scene.holdStepLeft | OK | code: 7 uses (globals, main_loop); run: int 1 .. 1; values 0, 1; nz 0% of samples
+Scene.holdStepRight | OK | code: 7 uses (globals, main_loop); run: int 1 .. 1; values 0, 1; nz 0% of samples
+Scene.holdFire | OK | code: 5 uses (main_loop); run: int 1 .. 1; values 0, 1; nz 0% of samples
+Scene.weaponKey | OK | code: 9 uses (classes, main_loop, small); slots 0 .. 5 (HAND WEAPON 1 .. 4, R / L SHOULDER) and -1 seen, as the comment says (FLAGS compared message numbers); run: int -1 .. 5; values 0, 1, 2, 3, 4, 5, -1; nz 50% of samples
+Scene.followKey | OK | code: 5 uses (main_loop, small); run: int -1 .. -1; values 0, -1; nz 36% of samples
+Scene.zoomInHeld | OK | code: 4 uses (main_loop); NOT SEEN: never non-zero in the scripted sessions (see its comment for what sets it)
+Scene.zoomOutHeld | OK | code: 4 uses (main_loop); NOT SEEN: never non-zero in the scripted sessions (see its comment for what sets it)
+Scene.cameraReset | OK | code: 9 uses (main_loop); run: int 1 .. 1; values 0, 1; nz 0% of samples
+Scene.followNextAsked | OK | code: 4 uses (main_loop); NOT SEEN: never non-zero in the scripted sessions (see its comment for what sets it)
+Scene.presetNextAsked | OK | code: 5 uses (main_loop, small); NOT SEEN: never non-zero in the scripted sessions (see its comment for what sets it)
+Scene.stateFrames | OK | code: 14 uses (classes, loading, main_loop, net_tables); run: int 1 .. 32289; values 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11 ...; nz 35% of samples
+Scene.followTime | OK | code: 8 uses (main_loop); run: float 0.0075035 .. 239.122; values 0, 0.0266673, 0.0266676, 0.0266676, 0.0266677, 0.0266677, 0.0266677, 0.0266677, 0.0266678, 0.026668, 0.0300011, 0.0508987 ...; nz 35% o
+Scene.presetTime | OK | code: 7 uses (main_loop); run: float 0.0075035 .. 239.122; values 0, 0.0266673, 0.0266676, 0.0266676, 0.0266677, 0.0266677, 0.0266677, 0.0266677, 0.0266678, 0.026668, 0.0300011, 0.0508987 ...; nz 35% o
+Scene.playerCount | OK | code: 6 uses (actor_frame, actor_slots, frame_loops, main_loop, objects, small ..); run: int 1 .. 8; values 0, 1, 2, 3, 4, 5, 6, 7, 8; nz 34% of samples
+Scene.spawnPoints | OK | code: 2 uses (classes, main_loop, map_info); NOT SEEN: a record array: its leaves are checked under the record type
+Scene.spawnPointCount | OK | code: 3 uses (main_loop, map_info, match_start); run: int 7 .. 18; values 0, 7, 8, 9, 10, 13, 14, 16, 18; nz 35% of samples
+Scene.scenePaused | OK | code: 3 uses (main_loop); NOT SEEN: never non-zero in the scripted sessions (see its comment for what sets it)
+Scene.replayFile | OK | code: 29 uses (files, loading, main_loop, net_tables); run: pointer: 244 valid, 0 original-image addresses, 0 unmapped; nz 1% of samples
+Scene.replayTime | OK | code: 4 uses (main_loop); run: float 0.0075035 .. 45.0191; values 0, 0.0300011, 0.0581103, 0.083705, 0.106209, 0.126064, 0.143418, 0.158273, 0.170628, 0.180482, 0.187837, 0.196024 ...; nz 1% of samples
+Scene.entryMenuShown | OK | code: 4 uses (main_loop); run: int 1 .. 1; values 0, 1; nz 20% of samples
+Scene.client | OK | code: 8 uses (classes, main_loop, match_start, net_tables); run: int -1 .. 1; values 0, 1, -1; nz 52% of samples
+Scene.rotation | OK | code: 54 uses (frame_loops, game_lists, globals, lobby_states, main_loop, match_start ..); NOT SEEN: a record array: its leaves are checked under the record type
+Scene.rotationCount | OK | code: 14 uses (classes, main_loop, match_start, net_tables); run: int 1 .. 29; values 0, 1, 15, 29; nz 31% of samples
+Scene.rotationAt | OK | code: 11 uses (main_loop, match_start, net_tables); run: int 11 .. 11; values 0, 11; nz 5% of samples
+Scene.awaitingHostRound | OK | code: 9 uses (classes, loading, match_start, net_tables); run: int 1 .. 1; values 0, 1; nz 0% of samples
+Scene.nextMap | OK | code: 8 uses (main_loop, match_start, net_tables); run: int -1 .. 20; values 0, 1, 3, 5, 10, 13, 15, 16, 20, -1; nz 33% of samples
+Scene.nextMode | OK | code: 8 uses (main_loop, match_start, net_tables); run: int -1 .. 13; values 0, 1, 12, 13, -1; nz 17% of samples
+Scene.scoreCommitTimer | OK | code: 5 uses (classes, frame_loops, main_loop, match_start); run: float 204.71 .. 300; values 0, 299.807, 299.815, 299.823, 299.831, 299.839, 299.847, 299.854, 299.863, 299.875, 299.89, 299.907 ...; nz 50% of samples
+Scene.level | OK | code: 15 uses (lobby_states, main_loop, match_start, menu_records, net_tables, room_dialogs); run: int 1 .. 1; values 0, 1; nz 34% of samples
+Scene.levelPoints | OK | code: 5 uses (main_loop, match_start); NOT SEEN: never non-zero in the scripted sessions (see its comment for what sets it)
+Scene.sendTimer | OK | code: 6 uses (main_loop, match_start); run: float -0.00833576 .. 269.068; values 0, 0.0186219, 0.0191733, 0.0194097, 0.0194204, 0.0194544, 0.019511, 0.0203035, 0.0203224, 0.0266673, 0.0266676, 0.0266676 ...; nz 32%
+Scene.packetsSent | COMMENT | only packets OUT: send_packet counts it (net_tables.c:1450), match_frame adds it to windowSent; the "in" side is packetsReceived
+Scene.packetsReceived | OK | code: 4 uses (loading, main_loop); run: int 1 .. 56; values 0, 1, 2, 38, 56; nz 0% of samples
+Scene.windowSent | OK | code: 3 uses (main_loop); run: int 1 .. 19; values 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11 ...; nz 18% of samples
+Scene.windowReceived | OK | code: 3 uses (main_loop); run: int 1 .. 111; values 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11 ...; nz 5% of samples
+Scene.sendRate | OK | code: 2 uses (main_loop); run: float 0.963792 .. 19.0006; values 0, 0.963792, 0.968633, 0.968795, 0.968948, 0.968953, 0.96927, 0.969385, 0.999687, 0.999933, 0.999983, 0.999986 ...; nz 20% of samples
+Scene.receiveRate | OK | code: 2 uses (main_loop); run: float 0.999998 .. 107.73; values 0, 0.999998, 1.00001, 1.00001, 1.00002, 1.00003, 3.00002, 5.96145, 15.0002, 15.9997, 15.9999, 15.9999 ...; nz 6% of samples
+Scene.windowTime | OK | code: 3 uses (main_loop); run: float 0.00803137 .. 1.02923; values 0, 0.03, 0.03, 0.0566673, 0.0566676, 0.0566676, 0.0566677, 0.0566677, 0.0566677, 0.0566678, 0.0566678, 0.056668 ...; nz 34% of samples
+Scene.packetLossTimer | OK | code: 4 uses (main_loop, match_start); NOT SEEN: never non-zero in the scripted sessions (see its comment for what sets it)
+Scene.lostTime | OK | code: 6 uses (classes, loading, main_loop, match_start); NOT SEEN: never non-zero in the scripted sessions (see its comment for what sets it)
+Scene.playerActor | OK | code: 49 uses (actor_frame, actor_slots, armc_misc, classes, frame_loops, match_start ..); run: int -1 .. 1; values 0, 1, -1; nz 69% of samples
+Scene.typeCheckTurn | OK | code: 4 uses (classes, match_start, net_tables); run: int 1 .. 89; values 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11 ...; nz 33% of samples
+Scene.typeTablePickUnread | OK | code: 2 uses (classes, match_start); original: 12 stores (round_start, scene_startSession), no read; run: int 3396 .. 19169; values 0, 3396, 4145, 6334, 11478, 15724, 19169; nz 33% of samples
+Scene.typeTablePerRow | COMMENT | "entries per row" says nothing: it is n, the leading dwords of each record the data check covers - a 16-bit check word w picks record (w / n) % count, dword w % n (net_sendGamePacket's sample, net_processGamePacket's table_ok); 6 3 6 7 10 0x18 (run: 3, 6, 7, 10, 24)
+Scene.dataLossPending | OK | code: 8 uses (classes, main_loop, match_start, net_tables); run: int 1 .. 1; values 0, 1; nz 0% of samples
+Scene.wholeSeconds | OK | code: 6 uses (classes, main_loop, match_start); run: int 1 .. 269; values 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11 ...; nz 35% of samples
+Scene.gamePacketTimer | OK | code: 5 uses (classes, main_loop, match_start); run: float 3.21306e-07 .. 3; values 0, 2.78945, 2.79242, 2.79258, 2.79761, 2.79779, 2.79795, 2.80075, 2.80237, 2.80595, 2.80629, 2.80629 ...; nz 50% of samples
+Scene.cameraPresets | OK | code: 5 uses (classes, main_loop, match_start); run: int 1 .. 3294691328; values 0, 1, 1092616192, 1112014848, 1133903872, 1147207680, 1155596288, 1161527296, 3267887104, 3294691328; mostly float bits: 0, 1.4013e-45, 10, 50
+Scene.cameraSettings | OK | code: 28 uses (main_loop, match_start); run: int 1 .. 3294691328; values 0, 1, 1092616192, 1112014848, 1133903872, 1147207680, 1155596288, 1161527296, 3267887104, 3294691328; mostly float bits: 0, 1.4013e-45, 10, 50
+Scene.manualPick | OK | code: 19 uses (classes, main_loop, match_start); NOT SEEN: never non-zero in the scripted sessions (see its comment for what sets it)
+Scene.localRecordSet | OK | code: 5 uses (classes, main_loop, match_start); run: int 1 .. 1; values 0, 1; nz 18% of samples
+Scene.respawnCameraMode | OK | code: 3 uses (main_loop, match_start); run: int 1 .. 3; values 0, 1, 2, 3; nz 33% of samples
+Scene.keyGuard | OK | code: 7 uses (main_loop, match_start); 0.1 s set at main_loop.c:2245, count_down; run: float 2.82768e-05 .. 0.1; values 0, 0.00821602, 0.0158354, 0.0241588, 0.0324885, 0.0408375, 0.0491628, 0.0574806, 0.0658083, 0.0741487, 0.0824708, 0.0909567 ...; nz 5% of
+Scene.endTime | OK | code: 10 uses (main_loop, match_start, net_tables); 10 at the result (main_loop.c:1597, net_tables.c:1882), counted down; run: float 7.05924e-05 .. 10; values 0, 9.88333, 9.88334, 9.88334, 9.88334, 9.88335, 9.89166, 9.89167, 9.89167, 9.89167, 9.89168, 9.89168 ...; nz 2% of samples
+Scene.quitDelay | OK | code: 10 uses (main_loop, match_start, net_tables); NOT SEEN: never non-zero in the scripted sessions (see its comment for what sets it)
+Scene.sessionMode | OK | code: 59 uses (classes, hud_escmenu, hud_icons, hud_main, hud_markers, hud_ranking ..); run: int -1 .. 3; values 0, 1, 2, 3, -1; nz 94% of samples
+Scene.view | OK | code: 31 uses (armc_misc, classes, hud_pass, loading, main_loop, objects); NOT SEEN: a record array: its leaves are checked under the record type
+Scene.frameTime | OK | code: 54 uses (armc_misc, hud_escmenu, loading, main_loop, timer); run: float 0.00612024 .. 0.0300011; values 0, 0.00612024, 0.00667262, 0.0069089, 0.00692024, 0.00695354, 0.00695516, 0.00735459, 0.00750535, 0.00750647, 0.00750764, 0.00757105
+Scene.cameraSaved | TYPE -> float[5] | every word holds float bits (run: 0, 200, 230, 500, 655.49, 868.08); declared u32 with "floats' bits" in its comment - a float type (BITS() kept at the copies that must stay bit-exact) says what it is
+Scene.cameraPos | TYPE -> float[3] | every word holds float bits (run: 0, 10, 203.207, 399.83, 500, 655.49); declared u32 with "floats' bits" in its comment - a float type (BITS() kept at the copies that must stay bit-exact) says what it is
+Scene.cameraDir | OK | code: 13 uses (classes, main_loop); run: float -48742.8 .. 17693.6; values 0, 0.00174528, 0.161604, 0.199368, 0.389124, 0.447759, 0.452435, 0.453991, 0.455545, 0.45865, 0.461748, 0.466339 ...; nz 35% of samples
+Scene.cameraUp | OK | code: 8 uses (classes, main_loop); run: float -0.136081 .. 1; values 0, 0.0174524, 0.0244213, 0.0261162, 0.0295036, 0.0328403, 0.038382, 0.142422, 0.24171, 0.389124, 0.921185, 0.970296 ...; nz 20% of samples
+Scene.cameraAngle | OK | code: 54 uses (classes, hud_escmenu, main_loop, match_start); run: float -3088.24 .. 3318.72; values 0, 22.6343, 93.7485, 230, 506.25, 890, 899.544, 2070.2, 2717.6, 2739.52, 2760.22, 2779.77 ...; nz 11% of samples
+Scene.kingActor | OK | code: 5 uses (actor_frame, actor_slots, match_start, scores); run: int -1 .. -1; values 0, -1; nz 98% of samples
+Scene.teamCommanders | OK | code: 5 uses (actor_frame, actor_slots, match_start, scores); run: int -1 .. -1; values 0, -1; nz 99% of samples
+Scene.botsHoldFire | OK | code: 4 uses (actor_frame, hud_escmenu, main_loop, match_start); run: int 1 .. 1; values 0, 1; nz 10% of samples
+Scene.spawnPending | OK | code: 6 uses (hud_escmenu, main_loop); run: int 1 .. 1; values 0, 1; nz 0% of samples
+Scene.playAsked | OK | code: 7 uses (hud_escmenu, main_loop, match_start); NOT SEEN: never non-zero in the scripted sessions (see its comment for what sets it)
+Scene.chosenTeam | OK | code: 7 uses (classes, hud_escmenu, main_loop); run: int -1 .. 1; values 0, 1, -1; nz 36% of samples
+Scene.quitAsked | OK | code: 20 uses (hud_escmenu, main_loop); NOT SEEN: never non-zero in the scripted sessions (see its comment for what sets it)
+Scene.menuKeys | OK | code: 20 uses (classes, hud_escmenu, input, main_loop); run: int 1 .. 1; values 0, 1; nz 0% of samples
+Scene.actorItems | OK | code: 26 uses (actor_frame, actor_slots, armc_parts, classes, files, hud_main ..); NOT SEEN: a record array: its leaves are checked under the record type
+Scene.actorItemCount | OK | code: 6 uses (files, main_loop, match_start, net_tables, small); run: int 37 .. 37; values 37; nz 100% of samples
+Scene.playerRecords | OK | code: 50 uses (actor_frame, actor_slots, armc_colours, armc_parts, classes, files ..); NOT SEEN: a record array: its leaves are checked under the record type
+Scene.snapshotTex | OK | code: 4 uses (hud_main, match_start); run: int -1 .. 518; values 518, -1; nz 100% of samples
+Scene.hudBarTexture | OK | code: 2 uses (hud_main, match_start, objects, trails, weapons); run: int 2568 .. 2568; values 2568; nz 100% of samples
+Scene.markerTexture | OK | code: 4 uses (hud_main, hud_markers, match_start, objects, trails, weapons); run: int 2569 .. 2569; values 2569; nz 100% of samples
+Scene.iconTexture | OK | code: 5 uses (hud_icons, hud_main, match_start, objects, trails, weapons); run: int 2570 .. 2570; values 2570; nz 100% of samples
+Scene.menuBoxTexture | OK | code: 3 uses (hud_escmenu, hud_main, match_start, objects, trails, weapons); run: int 2571 .. 2571; values 2571; nz 100% of samples
+Scene.clearOn | OK | code: 4 uses (hud_pass, main_loop, map_info, match_start); run: int 1 .. 1; values 0, 1; nz 35% of samples
+Scene.clearColour | TYPE -> float[3] | every word holds float bits (run: 0, 0.278431, 0.298039); declared u32 with "floats' bits" in its comment - a float type (BITS() kept at the copies that must stay bit-exact) says what it is
+Scene.fogOn | OK | code: 3 uses (hud_pass, main_loop, map_info); NOT SEEN: never non-zero in the scripted sessions (see its comment for what sets it)
+Scene.fogColour | TYPE -> float[4] | every word holds float bits (run: 0, 0.27451, 0.278431, 0.298039, 0.431373, 0.568627); declared u32 with "floats' bits" in its comment - a float type (BITS() kept at the copies that must stay bit-exact) says what it is
+Scene.fogParams | TYPE -> float[3] | every word holds float bits (run: 0, 0.1, 0.35, 3000, 10000, 15000); declared u32 with "floats' bits" in its comment - a float type (BITS() kept at the copies that must stay bit-exact) says what it is
+Scene.viewMemory | OK | code: 1 uses (classes); run: int 1 .. 255; values 0, 2, 3, 5, 7, 9, 10, 14, 16, 20, 21, 22 ...; nz 15% of samples
+Scene.renderMode | OK | code: 6 uses (classes, hud_pass, loading, main_loop); NOT SEEN: never non-zero in the scripted sessions (see its comment for what sets it)
+Scene.hudTexture | OK | code: 7 uses (hud_lockon, hud_main, hud_markers, match_start, objects, trails ..); run: int 2566 .. 2566; values 2566; nz 100% of samples
+Scene.players | OK | code: 161 uses (actor_frame, actor_slots, armc_mech, armc_misc, armc_parts, classes ..); NOT SEEN: a record array: its leaves are checked under the record type
+Scene.lockHeld | OK | code: 9 uses (actor_frame, actor_slots, hud_lockon, match_start); NOT SEEN: never non-zero in the scripted sessions (see its comment for what sets it)
+Scene.cockpitActor | OK | code: 17 uses (actor_frame, actor_slots, armc_mech, hud_main, objects, small ..); run: int -1 .. 1; values 0, 1, -1; nz 88% of samples
+Scene.teamScores | OK | code: 15 uses (actor_frame, hud_clock, hud_overlay, hud_ranking, main_loop, net_tables ..); run: int 1 .. 25; values 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11 ...; nz 0% of samples
+Scene.modelview | OK | code: 11 uses (armc_misc, hud_pass, loading, main_loop, match_start, objects ..); run: float -50291.8 .. 50270.8; values 0, 0.000669958, 0.00174542, 0.0174395, 0.0174524, 0.0296661, 0.038382, 0.389124, 0.453991, 0.48786, 0.489382, 0.575005 ...; nz 34% of sa
+Scene.projection | OK | code: 8 uses (hud_pass, objects, view_volume); run: float -200.02 .. 11.4301; values 0, 0.5625, 0.974279, 1, 1.00448, 1.00449, 1.0361, 1.03611, 1.06924, 1.06928, 1.10406, 1.10413 ...; nz 15% of samples
+Scene.showExp | OK | code: 7 uses (actor_frame, match_start); run: int 1 .. 1; values 0, 1; nz 2% of samples
+Scene.elapsed | OK | code: 11 uses (frame_loops, hud_clock, hud_escmenu, main_loop, match_start, net_tables ..); run: int 1 .. 189; values 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11 ...; nz 34% of samples
+Scene.clockFraction | OK | code: 15 uses (frame_loops, hud_clock, hud_escmenu, hud_pass, main_loop, match_start ..); run: float 2.10572e-06 .. 0.999999; values 0, 0.0266676, 0.0266676, 0.0266677, 0.0266677, 0.0266677, 0.0266677, 0.0266678, 0.026668, 0.0454451, 0.0508987, 0.0512981 ...; nz 35
+Scene.flagGlTexture | OK | code: 4 uses (classes, hud_icons, match_start); run: int 281 .. 281; values 281; nz 100% of samples
+Scene.flagTexture | OK | code: 2 uses (hud_icons, map_info); run: int 517 .. 517; values 0, 517; nz 5% of samples
+Scene.gameMode | OK | code: 22 uses (actor_slots, dplay_slots, files, game_lists, hud_ranking, loading ..); run: int 1 .. 13; values 0, 1, 12, 13; nz 23% of samples
+Scene.teamGame | OK | code: 23 uses (actor_frame, hud_clock, hud_escmenu, hud_markers, hud_pass, hud_ranking ..); run: int 1 .. 1; values 0, 1; nz 20% of samples
+Scene.kingOfTheHill | OK | code: 7 uses (actor_frame, hud_main, hud_markers, main_loop, scores); run: int 1 .. 1; values 0, 1; nz 2% of samples
+Scene.platoon | OK | code: 7 uses (actor_frame, hud_main, hud_markers, main_loop, match_start, scores); run: int 1 .. 1; values 0, 1; nz 2% of samples
+Scene.msgText | OK | code: 1 uses (frame_loops, replay_message); run: strings: e.g. ""; nz 0% of samples
+Scene.msgRing | OK | code: 2 uses (replay_message, small); NOT SEEN: a record array: its leaves are checked under the record type
+Scene.msgWrite | OK | code: 4 uses (classes, replay_message, small); NOT SEEN: never non-zero in the scripted sessions (see its comment for what sets it)
+Scene.msgRead | OK | code: 5 uses (classes, replay_message, small); NOT SEEN: never non-zero in the scripted sessions (see its comment for what sets it)
+Scene.scriptMode | OK | code: 12 uses (actor_slots, frame_loops, hud_pass, objects, small); NOT SEEN: never non-zero in the scripted sessions (see its comment for what sets it)
+Scene.matchDrawing | OK | code: 8 uses (classes, hud_pass, loading, main_loop, match_start); run: int 1 .. 1; values 0, 1; nz 35% of samples
+Scene.crosshairTexture | OK | code: 2 uses (hud_main, loading); run: int 6 .. 18; values 0, 6, 8, 9, 13, 18; nz 35% of samples
+Scene.playing | OK | code: 44 uses (classes, hud_escmenu, hud_main, hud_markers, hud_pass, main_loop ..); run: int 1 .. 1; values 0, 1; nz 19% of samples
+Scene.ladderGame | OK | code: 14 uses (classes, globals, hud_escmenu, hud_main, hud_markers, hud_ranking ..); run: int 1 .. 1; values 0, 1; nz 2% of samples
+Scene.cameraMode | OK | code: 42 uses (classes, hud_pass, main_loop, match_start); the cameraSettings column 0 .. 9; seen 1, 2, 3, 6, 9; run: int 1 .. 9; values 1, 2, 3, 6, 9; nz 100% of samples
+Scene.cameraTarget | OK | code: 7 uses (main_loop); run: float -41087.7 .. 46958.1; values 0, 3561.8, 5326.97, 6167.98, 6195.97, 6618.88, 6687.85, 6820.67, 9231.09, 10041.6, 10742.3, 11478.4 ...; nz 5% of samples
+Scene.matchState | OK | code: 19 uses (classes, loading, main_loop, net_tables); run: int 1 .. 4; values 0, 1, 2, 3, 4; nz 50% of samples
+Scene.secondFraction | OK | code: 12 uses (classes, hud_overlay, main_loop, match_start); run: float 1.66893e-06 .. 0.999997; values 0, 0.0266673, 0.0266676, 0.0266676, 0.0266677, 0.0266677, 0.0266677, 0.0266677, 0.0266678, 0.026668, 0.03, 0.03 ...; nz 36% of sampl
+Scene.restartTimer | OK | code: 9 uses (hud_messages, hud_pass, main_loop, net_tables); NOT SEEN: never non-zero in the scripted sessions (see its comment for what sets it)
+Scene.msgFade | OK | code: 15 uses (classes, hud_pass, main_loop, match_start, msg_print, notices ..); run: float 3.18326e-06 .. 5; values 0, 4.81925, 4.82743, 4.82904, 4.83335, 4.83576, 4.83827, 4.84169, 4.84169, 4.84171, 4.84409, 4.84711 ...; nz 7% of samples
+Scene.watchedPlayer | OK | code: 49 uses (classes, hud_escmenu, hud_main, hud_markers, hud_messages, hud_pass ..); run: int -1 .. -1; values 0, -1; nz 95% of samples
+Scene.hudHidden | OK | code: 8 uses (hud_pass, main_loop); run: int 1 .. 1; values 0, 1; nz 0% of samples
+Scene.messagesHidden | OK | code: 8 uses (hud_pass, main_loop); run: int 1 .. 1; values 0, 1; nz 2% of samples
+Scene.helpOpen | OK | code: 8 uses (hud_escmenu, hud_pass, main_loop); run: int 1 .. 1; values 0, 1; nz 2% of samples
+Scene.escTimer | OK | code: 5 uses (hud_escmenu); run: float 0.00833168 .. 32.1081; values 0, 0.00833168, 0.00833631, 0.00833655, 0.00833746, 0.00833867, 0.00833885, 0.00833901, 0.00834186, 0.00837163, 0.0166641, 0.016667 ...
+Scene.escMenuOpen | OK | code: 10 uses (hud_escmenu, hud_pass, main_loop); run: int 1 .. 1; values 0, 1; nz 3% of samples
+Scene.escPage | OK | code: 6 uses (hud_escmenu, input); run: int 1 .. 3; values 0, 1, 3; nz 15% of samples
+Scene.escCursor | OK | code: 20 uses (hud_escmenu); run: int 1 .. 4; values 0, 1, 2, 3, 4; nz 5% of samples
+Scene.rankingShown | OK | code: 6 uses (classes, hud_pass, main_loop, match_start); run: int 1 .. 1; values 0, 1; nz 12% of samples
+Scene.recordName | OK | code: 2 uses (files, hud_clock); run: strings: e.g. ""; nz 0% of samples
+Scene.recording | OK | code: 12 uses (classes, files, hud_escmenu, hud_pass, main_loop, net_tables); NOT SEEN: never non-zero in the scripted sessions (see its comment for what sets it)
+Scene.recordTime | OK | code: 11 uses (files, hud_clock, main_loop, net_tables); run: float 6.51397e-06 .. 45.0162; values 0, 0.00908372, 2.34985, 2.65819, 2.72427, 2.78318, 2.84154, 2.8999, 2.96652, 3.03318, 3.09985, 3.16651 ...; nz 1% of samples
+Scene.chatMode | OK | code: 14 uses (classes, hud_overlay, hud_pass, main_loop, match_start); run: int 1 .. 2; values 0, 1, 2; nz 5% of samples
+Scene.matchOver | OK | code: 23 uses (hud_pass, main_loop, match_start, net_tables); run: int 1 .. 1; values 0, 1; nz 2% of samples
+Scene.stageCleared | OK | code: 9 uses (hud_escmenu, main_loop, match_start); NOT SEEN: never non-zero in the scripted sessions (see its comment for what sets it)
+Scene.teamIds | OK | code: 9 uses (hud_escmenu, small, teams); run: int -1 .. 4; values 0, 1, 2, 3, 4, -1; nz 40% of samples
+Scene.fragLimit | OK | code: 31 uses (hud_clock, lobby_states, main_loop, match_start, menu_records, msg_system ..); run: int 10 .. 25; values 0, 10, 20, 25; nz 34% of samples
+Scene.timeLimit | OK | code: 29 uses (classes, hud_clock, lobby_states, main_loop, match_start, menu_records ..); run: int 1 .. 10; values 0, 1, 10; nz 20% of samples
+Scene.dataLossCode | OK | code: 6 uses (main_loop, match_start, msg_system, net_tables); run: int -1 .. 3; values 0, 3, -1; nz 34% of samples
+Scene.winnerTeam | OK | code: 5 uses (hud_clock, main_loop, net_tables); run: int -1 .. 1; values 0, 1, -1; nz 3% of samples
+Scene.matchLeaving | OK | code: 25 uses (frame_loops, hud_pass, main_loop, match_start, net_tables); NOT SEEN: never non-zero in the scripted sessions (see its comment for what sets it)
+Scene.localPlayer | OK | code: 167 uses (armc_colours, armc_mech, armc_misc, armc_parts, classes, files ..); run: int -1 .. 1; values 0, 1, -1; nz 4% of samples
+Scene.localName | OK | code: 13 uses (armc_mech, hud_escmenu, main_loop, match_start); run: strings: e.g. "Alex"; nz 0% of samples
+Scene.character | OK | code: 18 uses (actor_slots, armc_mech, main_loop, map_info, match_start, net_tables ..); NOT SEEN: never non-zero in the scripted sessions (see its comment for what sets it)
+Scene.mechParts | OK | code: 13 uses (armc_mech, main_loop, match_start); run: int 14 .. 20; values 0, 14, 16, 18, 20; nz 46% of samples
+Scene.mechItems | OK | code: 4 uses (armc_mech, main_loop, match_start); run: int -1 .. 36; values 0, 2, 3, 4, 8, 13, 14, 17, 18, 19, 22, 28 ...; nz 48% of samples
+Scene.mechColours | OK | code: 3 uses (main_loop, match_start); run: float 0.4 .. 170; values 0, 0.4, 0.6, 1, 170; nz 22% of samples
+Scene.headCount | OK | code: 5 uses (armc_mech, files, kyrie, main_loop, match_start, net_tables ..); run: int 20 .. 21; values 20, 21; nz 100% of samples
+Scene.chestCount | OK | code: 5 uses (armc_mech, files, kyrie, main_loop, match_start, net_tables ..); run: int 14 .. 15; values 14, 15; nz 100% of samples
+Scene.armCount | OK | code: 5 uses (armc_mech, files, kyrie, main_loop, match_start, net_tables ..); run: int 18 .. 19; values 18, 19; nz 100% of samples
+Scene.legCount | OK | code: 5 uses (armc_mech, files, kyrie, main_loop, match_start, net_tables ..); run: int 20 .. 21; values 20, 21; nz 100% of samples
+Scene.boosterCount | OK | code: 5 uses (armc_mech, files, kyrie, main_loop, match_start, net_tables ..); run: int 16 .. 1499027793; values 16, 17, 1499027793; nz 100% of samples
+Scene.localTeam | OK | code: 36 uses (armc_mech, hud_escmenu, hud_pass, main_loop, msg_players, scores); run: int -1 .. 1; values 0, 1, -1; nz 18% of samples
+Scene.cameraSlot | OK | code: 21 uses (hud_main, hud_markers, hud_pass, main_loop, match_start); run: int -1 .. 3; values 0, 3, -1; nz 33% of samples
+Scene.ranking | OK | code: 14 uses (hud_clock, hud_pass, hud_ranking, main_loop, scores, teams); run: int -1 .. 7; values 0, 1, 2, 3, 4, 5, 6, 7, -1; nz 34% of samples
+Scene.rank | OK | code: 16 uses (hud_main, hud_markers, lobby_states, main_loop, menu_records, room_dialogs ..); run: int -1 .. 8; values 0, 1, 2, 3, 4, 5, 6, 7, 8, -1; nz 35% of samples
+Scene.rankCount | OK | code: 13 uses (hud_clock, hud_main, hud_ranking, main_loop, scores, teams); run: int 1 .. 8; values 0, 1, 2, 3, 8; nz 19% of samples
+Scene.localRank | OK | code: 5 uses (main_loop, match_start, scores); run: int -1 .. 8; values 0, 1, 2, 3, 4, 5, 6, 7, 8, -1; nz 33% of samples
+Scene.redTeamCount | OK | code: 6 uses (hud_escmenu, hud_overlay, main_loop, scores); scene_updateRanking: team slot 0; hud_overlay draws red / green (noTeamCount) / blue; run: int 1 .. 4; values 0, 1, 4; nz 19% of samples
+Scene.blueTeamCount | OK | code: 6 uses (hud_escmenu, hud_overlay, main_loop, scores); run: int 1 .. 4; values 0, 1, 4; nz 9% of samples
+Scene.noTeamCount | OK | code: 3 uses (hud_overlay, scores); a count (FLAGS' "flag" warning is a false alarm): players in use without a team; drawn green; run: int 1 .. 2; values 0, 1, 2; nz 15% of samples
+Scene.noticeTimer | OK | code: 7 uses (hud_pass, main_loop, notices); run: float 1.85054e-06 .. 2; values 0, 1.82743, 1.83335, 1.83576, 1.84169, 1.84169, 1.84171, 1.84409, 1.85001, 1.85002, 1.85002, 1.85003 ...; nz 1% of samples
+Scene.noticeText | OK | code: 3 uses (hud_messages, notices); run: strings: e.g. "FIGHT!"; nz 0% of samples
+Scene.cleared2343323 | OK | code: 2 uses (small); only memset (match_resetInputState) and used as the end address of its input loop; NOT SEEN: never non-zero in the scripted sessions (see its comment for what sets it)
+Scene.helpLines | OK | code: 6 uses (classes, hud_messages); run: strings: e.g. "         QUIT = ESC"; nz 0% of samples
+Scene.rankingKey | OK | code: 6 uses (hud_pass, main_loop); run: int 1 .. 1; values 0, 1; nz 0% of samples
+Scene.events | OK | code: 6 uses (msg_print, notices, replay_message); NOT SEEN: a record array: its leaves are checked under the record type
+Scene.eventCount | OK | code: 10 uses (msg_print, notices, replay_message); run: int 1 .. 48; values 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11 ...; nz 21% of samples
+Scene.eventFirst | OK | code: 8 uses (msg_print, notices, replay_message); run: int 1 .. 44; values 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11 ...; nz 8% of samples
+Scene.eventTime | OK | code: 2 uses (msg_print, notices); run: float 60 .. 60; values 0, 60; nz 35% of samples
+Scene.playerNames | OK | code: 3 uses (notices); run: strings: e.g. "Alex"; nz 0% of samples
+Scene.announcePending | OK | code: 12 uses (main_loop, net_tables, notices, small); run: int 1 .. 1; values 0, 1; nz 0% of samples
+ColourChoice.first | OK | code: 11 uses (lobby_states, match_start, menu_records, menu_states, shading); NOT SEEN: g_savedColourChoices etc. are not typed by the sampler
+ColourChoice.second | OK | code: 1 uses (match_start); NOT SEEN: g_savedColourChoices etc. are not typed by the sampler
+ProfileRecord.number | OK | code: 3 uses (files, menu_init, mission_list); run: int 1 .. 7; values 0, 1, 2, 3, 4, 5, 6, 7; nz 5% of samples
+ProfileRecord.name | OK | code: 94 uses (actor_frame, actor_slots, armc_parts, classes, files, frame_loops ..); run: strings: e.g. "the guy"; nz 0% of samples
+ProfileRecord.pilot | OK | code: 4 uses (files, profile_misc); run: int 2 .. 8; values 0, 2, 4, 7, 8; nz 5% of samples
+ArchiveEntry.name | OK | code: 94 uses (actor_frame, actor_slots, armc_parts, classes, files, frame_loops ..); NOT SEEN: heap index records (TextureBank.index, the managers' index): walk them
+ArchiveEntry.offset | OK | code: 3 uses (armc_misc, files); NOT SEEN: heap index records (TextureBank.index, the managers' index): walk them
+MenuOutline.points | OK | code: 9 uses (classes, collision_tris, map_info, object_list, small, view_volume); NOT SEEN: static outline tables (g_lobbyTopOutlines ..): sampler does not type them
+MenuOutline.x | OK | code: 20 uses (armc_misc, axis, game_lists, hud, screen, view_volume); NOT SEEN: static outline tables (g_lobbyTopOutlines ..): sampler does not type them
+MenuOutline.y | OK | code: 6 uses (hud, room_dialogs, screen, view_volume); NOT SEEN: static outline tables (g_lobbyTopOutlines ..): sampler does not type them

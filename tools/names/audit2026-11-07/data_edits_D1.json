@@ -1,0 +1,59 @@
+{
+ "ItemModelSet.muzzle": {
+  "comment": "per variant (Player.variantLoaded): the muzzle point (x, y, z) in the frame of the arm's weapon joint (ArmType.weaponJoints); only muzzle_camera reads it (camera preset 1 at the muzzle)"
+ },
+ "Player.lastHitMode": {
+  "name": "lastHitDamageType",
+  "comment": "the last hit's damage type (ActorItem.damageType: 0 IMPACT, 1 ENERGY; actor_takeDamage); -1 at setup; written, never read"
+ },
+ "Player.firePrev": {
+  "comment": "inFire of the frame before (kept at the end of the firing code): the OUT OF AMMO! message and click, the switch to the next weapon when out of ammunition and the muzzle-in-a-wall click happen only when it is 0 (a fresh press)"
+ },
+ "Player.lastWarp": {
+  "comment": "the warp zone it was last sent to (the taken one's warpTo: item_pickup); no warp from it until it stands on no warp zone (item_update: -1 when onWarp is 0); -1 none"
+ },
+ "Player.tint": {
+  "comment": "(by use; seen running) the colour it is drawn with this frame (r g b a: actor_drawIntoView): cloaked white (alpha 0x40 to itself, 0x10 to others), the spawn fade of the first 3 s, or glow (white) plus hitFlash (red-orange); alpha <= 0x10 also lights it with lightMatrix"
+ },
+ "Player.burstTime": {
+  "comment": "(by use; seen running) seconds since the burst's last round (counted up by dt; a round each burstGap, the rest kept; 0 when the burst is done: actor_processFrame)"
+ },
+ "Player.breakUp": {
+  "name": "partListsBound",
+  "comment": "the part lists whose textures are bound so far: 0 at setup (actor_setupFromParts), one more a frame (actor_processFrame: ObjectList_bindTextures of head, chest, arms, legs, booster, weapon 4, weapon 5) up to 7; actor_drawIntoView draws only the lists up to it"
+ },
+ "Player.bot": {
+  "comment": "(by use; seen running) 0 a player's; 1 run by the game (targets, following: the map's actors but the first, from the spawn); 2 (never set) would also fire without spending ammunition"
+ },
+ "Player.unused34": {
+  "type": "float"
+ },
+ "Player.active": {
+  "comment": "1: the actor slot is in use (actor_setupFromParts; 0 by actor_deactivate, stage_clearActorSlots); while the local player's is 0 (not spawned) \"press fire\" may be shown"
+ },
+ "Player.facingCos": {
+  "comment": "(by use; seen running) the cosine of its angle off the local player's view axis (its eye-space position: -z / length), written before the detection-cone test against g_cosTable (render/objects.c); never read"
+ },
+ "MapObject.glowSize": {
+  "type": "float",
+  "comment": "the glow flare's half-size (particle kind 4; objects with flag 1 while 3D items are on)"
+ },
+ "ObjectType.glowSize": {
+  "type": "float",
+  "comment": "the glow flare's half-size (particle kind 4; objects with flag 1 while 3D items are on)"
+ },
+ "ItemType.respawnTime": {
+  "comment": "(by use; seen running) a taken item comes back once its MapItem.timer passes this (seconds; item_update)"
+ },
+ "Particle.fade": {
+  "name": "puffWait",
+  "comment": "puffWait: (kind 9, debris) seconds to its next smoke puff (0.1; a puff, or 1 in 10 an explosion that ends it: frame_loops debris);"
+ },
+ "Space.margin": {
+  "type": "float"
+ },
+ "Manager.tint": {
+  "type": "float",
+  "comment": "two hue / saturation / value triples (shape_setTint; passed as bits to shape_bindTextureBy)"
+ }
+}

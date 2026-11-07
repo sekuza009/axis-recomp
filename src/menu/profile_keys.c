@@ -10,8 +10,8 @@ static void dialog_select(int choice, int x, int y)
 	g_pointerGliding = 1;
 	g_pointerGlideTime = 20.0f;
 	g_unusedHighlightAlpha = 0.4f;
-	g_highlightX = x + (choice ? 0x114 : 0x9c);
-	g_highlightY = y + 0x4a;
+	g_pointerGlideX = x + (choice ? 0x114 : 0x9c);
+	g_pointerGlideY = y + 0x4a;
 	sound_playMenu(2);
 }
 /* the arrow and toggle keys of a two-button dialog; answers whether one moved the highlight */

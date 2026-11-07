@@ -166,7 +166,7 @@ static void menu_camera2(const MenuCam2 *m)
 	if (mode != 0)
 		return;
 	int fast = g_menuCameraLookZ > k_m549f;
-	X c = fast ? k_tenthsToDegrees : k_0_5f;
+	X c = fast ? k_0_1f : k_0_5f;
 	I(m->flag) = 1;
 	for (int i = 0; i < 6; i++)
 		F(cam[i]) = (float)((X)F(cam[i]) - ((X)F(cam[i]) - F(home[i])) * g_frameTime * c);
@@ -236,7 +236,7 @@ void (armc_cameraStep)(void)
 	if (mode != 0)
 		return;
 	int fast = !((X)base + k_1f >= g_menuCameraLookZ);
-	X c = fast ? k_tenthsToDegrees : k_0_5f;
+	X c = fast ? k_0_1f : k_0_5f;
 	g_armcCameraTravelling = 1;
 	for (int i = 0; i < 6; i++)
 		F(cam[i]) = (float)((X)F(cam[i]) - ((X)F(cam[i]) - F(home[i])) * g_frameTime * c);

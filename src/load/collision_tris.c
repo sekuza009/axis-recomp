@@ -626,7 +626,7 @@ int THISCALL (space_collideBlock)(SpaceBlock *self, float r, const float *pos, c
 		memcpy(from, outPos, 12);
 		memcpy(step, outVel, 12);
 		BITS(*outDist) = BITS(best);
-		if (pass != 0 && mul(fld_m(&r), (const float *)ADDR(k_tenthsToDegrees)) > best)
+		if (pass != 0 && mul(fld_m(&r), (const float *)ADDR(k_0_1f)) > best)
 			return result;
 		if (pass + 1 > 5)
 			return result;

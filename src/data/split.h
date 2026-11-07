@@ -415,9 +415,9 @@ extern int g_playerSetupRects_v[24];
 extern int g_createArenaRects_v[64];
 #endif
 #ifdef AXIS_FENCE
-#define g_createArena2Rects_v ((int *)(AXIS_FENCE == 2 ? g_fence + 0xb0000 : g_fence + 0xaffe0))
+#define g_hostErrorBoxRects_v ((int *)(AXIS_FENCE == 2 ? g_fence + 0xb0000 : g_fence + 0xaffe0))
 #else
-extern int g_createArena2Rects_v[8];
+extern int g_hostErrorBoxRects_v[8];
 #endif
 #ifdef AXIS_FENCE
 #define g_sessionFound_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xb2000 : g_fence + 0xb1ffc))
@@ -695,9 +695,9 @@ extern u8 g_playerSetupBottom_v[4];
 extern u8 g_joinTimedOut_v[4];
 #endif
 #ifdef AXIS_FENCE
-#define g_arenaCreateRects_v ((int *)(AXIS_FENCE == 2 ? g_fence + 0x120000 : g_fence + 0x11ffe0))
+#define g_arenaUpdateNoticeRects_v ((int *)(AXIS_FENCE == 2 ? g_fence + 0x120000 : g_fence + 0x11ffe0))
 #else
-extern int g_arenaCreateRects_v[8];
+extern int g_arenaUpdateNoticeRects_v[8];
 #endif
 #ifdef AXIS_FENCE
 #define g_unusedArenaFloat_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0x122000 : g_fence + 0x121ffc))
@@ -2555,9 +2555,9 @@ extern u8 g_dikEnter_2_v[4];
 extern u8 g_gameCount_v[4];
 #endif
 #ifdef AXIS_FENCE
-#define g_highlightX_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0x5a3000 : g_fence + 0x5a2ffc))
+#define g_pointerGlideX_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0x5a3000 : g_fence + 0x5a2ffc))
 #else
-extern u8 g_highlightX_v[4];
+extern u8 g_pointerGlideX_v[4];
 #endif
 #ifdef AXIS_FENCE
 #define g_chatHistory_v ((char *)(AXIS_FENCE == 2 ? g_fence + 0x5a5000 : g_fence + 0x5a4400))
@@ -2565,9 +2565,9 @@ extern u8 g_highlightX_v[4];
 extern char g_chatHistory_v[3072];
 #endif
 #ifdef AXIS_FENCE
-#define g_highlightY_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0x5a7000 : g_fence + 0x5a6ffc))
+#define g_pointerGlideY_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0x5a7000 : g_fence + 0x5a6ffc))
 #else
-extern u8 g_highlightY_v[4];
+extern u8 g_pointerGlideY_v[4];
 #endif
 #ifdef AXIS_FENCE
 #define g_menuTunnel_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0x5a9000 : g_fence + 0x5a8ffc))
@@ -3440,9 +3440,9 @@ extern u8 g_rankingPrevSort_v[4];
 extern u8 g_editingEmail_v[4];
 #endif
 #ifdef AXIS_FENCE
-#define g_gameListStopRects_v ((int *)(AXIS_FENCE == 2 ? g_fence + 0xa5c000 : g_fence + 0xa5bff0))
+#define g_gameListJoinBoxRects_v ((int *)(AXIS_FENCE == 2 ? g_fence + 0xa5c000 : g_fence + 0xa5bff0))
 #else
-extern int g_gameListStopRects_v[4];
+extern int g_gameListJoinBoxRects_v[4];
 #endif
 #ifdef AXIS_FENCE
 #define g_rankingPrevRank_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xa5e000 : g_fence + 0xa5dffc))

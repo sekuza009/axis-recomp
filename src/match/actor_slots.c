@@ -465,11 +465,11 @@ void THISCALL (actor_loadWeapon)(u8 *scene, int a, int slot, int variant)
 }
 
 
-/* a hue as the colour code keeps it: wrapped (angle_wrap of it x k_10f, then x k_tenthsToDegrees), brought down by
+/* a hue as the colour code keeps it: wrapped (angle_wrap of it x k_10f, then x k_0_1f), brought down by
    k_360f when over k_180f (*h updated); its byte ((h - k_m180f) x k_0_7083333f - k_128f) */
 static u8 hue_byte(float *h)
 {
-	long double v = fmul_m(angle_wrap(f32(fmul_m(fld_m(h), &k_10f))), &k_tenthsToDegrees);
+	long double v = fmul_m(angle_wrap(f32(fmul_m(fld_m(h), &k_10f))), &k_0_1f);
 	*h = f32(v);
 	if (v > *&k_180f)
 		*h = f32(fsub_m(fld_m(h), &k_360f));
@@ -578,7 +578,7 @@ void THISCALL (actor_drawIntoView)(u8 *s, int a, void *vv, int draw)
 		tint[3] = 0xff;
 	} else
 		tint = NULL;
-	u32 light = tint && tint[3] <= 0x10 ? (u32)st->lightMatrix : 0;
+	u32 light = tint && tint[3] <= 0x10 ? (u32)st->faintActorMatrix : 0;
 	u8 *lights = (u8 *)&st->actorLights;
 	int ok = 1;
 	u32 f;
@@ -604,7 +604,7 @@ void THISCALL (actor_drawIntoView)(u8 *s, int a, void *vv, int draw)
 		if (lists && g_highDetail != 1 && tint && tint[3] <= 0x10)
 			lists = 0;
 		if (lists) {
-			int n = AC->breakUp;
+			int n = AC->partListsBound;
 			if (n < 0)
 				return;
 			for (int k = 0; k < 8; k++) {
@@ -865,7 +865,7 @@ void THISCALL (actor_setupFromParts)(u8 *s, int a, int id, u32 controlledBy, con
 	fill_dwords(ac + offsetof(Player, firePrev), 3, 0);   /* firePrev .. footstepTime */
 	BITS(AC->energy) = BITS(AC->staminaRest) = 0x3f800000;
 	AC->overheat = AC->warned = 0;
-	fill_dwords(ac + offsetof(Player, lastHitMode), 3, (u32)-1);   /* lastHitMode .. lastHitWeapon */
+	fill_dwords(ac + offsetof(Player, lastHitDamageType), 3, (u32)-1);   /* lastHitMode .. lastHitWeapon */
 	AC->cheat = -1;
 	memcpy(AC->deathPos, AC->pos, 12);
 	AC->glow = 0.0f;
@@ -874,7 +874,7 @@ void THISCALL (actor_setupFromParts)(u8 *s, int a, int id, u32 controlledBy, con
 	AC->lastWarp = -1;
 	fill_dwords(ac + offsetof(Player, onWarp), 3, 0);   /* onWarp .. shieldRegenTime */
 	AC->whiteFlash = 1.0f;
-	AC->breakUp = 0;
+	AC->partListsBound = 0;
 	actor_loadHead(s, a);
 	actor_loadChest(s, a);
 	actor_loadArms(s, a);
@@ -918,7 +918,7 @@ static int close_enough(const float *a, const float *b)
 	long double d = fsub_m(fld_m(a), b);
 	if (!(d >= 0))
 		d = -d;
-	return !(d > *&k_tenthsToDegrees);
+	return !(d > *&k_0_1f);
 }
 
 /* whether actor ac's stats agree with mine, worked out again from its player's record (mech_stats in check mode,
@@ -955,7 +955,7 @@ static int totals_agree(u8 *s, u8 *ac, u8 *me)
 	if (!close_enough(&AC->baseSpeed, &act->speed))
 		return 0;
 	int d = AC->shieldRegen - act->shieldRegen;
-	if ((long double)(d < 0 ? -d : d) > *&k_tenthsToDegrees)
+	if ((long double)(d < 0 ? -d : d) > *&k_0_1f)
 		return 0;
 	if (AC->armor > AC->armorMax + 100 || AC->shield > AC->shieldMax + 100 || AC->ammo[0] > AC->ammoMax[0] ||
 	    AC->ammo[1] > AC->ammoMax[1] || AC->ammo[2] > AC->ammoMax[2] || AC->ammo[3] > AC->ammoMax[3] || AC->shieldRegen > 8)

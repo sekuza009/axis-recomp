@@ -56,3 +56,4 @@ static_emptyCtorSkelData8,static_emptyInit_46b940
 static_emptyCtorTimeSync1,static_emptyInit_487b70
 static_emptyCtorTimeSync2,static_emptyInit_487b90
 app_spoilDataFiles,app_invalidateLauncherMarks,merge
+gameListStop_layout,gameListJoinBox_layout

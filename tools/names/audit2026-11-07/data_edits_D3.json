@@ -1,0 +1,79 @@
+{
+ "g_pixelFormatFilled": {
+  "comment": "bit 0 set once gfx_setPixelFormat has filled the game's pixel format descriptor (0x4b1020: (g_videoDepth + 1) x 16 colour bits, 16 depth bits)"
+ },
+ "k_clockRate": {
+  "name": "k_0_025f"
+ },
+ "k_setupPanelEnd": {
+  "name": "k_panelSlideEnd",
+  "comment": "the double -1649.9: a menu panel slide ends once the tunnel depth is no longer above it (setup_easePanel; menu_slide for the arena lobby and the game room); the depth is then set to -1650"
+ },
+ "k_setupPanelTarget": {
+  "name": "k_panelSlideTarget",
+  "comment": "250.0: the value a menu panel slide eases toward (setup_easePanel's g_setupPanelPos; menu_slide's g_lobbySlideEase / g_unusedRoomPanelEase)"
+ },
+ "k_clockRate3": {
+  "name": "k_15f"
+ },
+ "g_coloursChanged": {
+  "comment": "a colour slider was set where the pointer clicked (armc_colours.c: the hue / saturation / value setters set 1, on a click only); armc_updatePartsPreview then applies the colour slot (armc_applyColourSlot) and clears it"
+ },
+ "k_tenthsToDegrees": {
+  "name": "k_0_1f"
+ },
+ "g_viewFov": {
+  "comment": "the match view's vertical field of view in degrees (gluPerspective fovy in gfx_setMatchProjection; stage_setupView); 90 in the exe's data; view_fov / view_setFov; zoom_view moves it within 10 .. 60"
+ },
+ "g_mapTop": {
+  "comment": "the first map shown in the arena's map rotation list (up to 10 rows from it; arena_maps.c, scrolled by its arrows)"
+ },
+ "g_armcAngle": {
+  "comment": "the ARM CENTER preview's turn in tenths of a degree, 0 .. 3600: + frame time x 8 while g_armcSpin, back to 0 at 3600; drawn as x 0.1 degrees (armc_misc.c preview, armc_drawPreview3D)"
+ },
+ "g_highlightX": {
+  "name": "g_pointerGlideX"
+ },
+ "g_highlightY": {
+  "name": "g_pointerGlideY"
+ },
+ "g_repeatUp": {
+  "comment": "time units until a held Up key steps again (key_repeat: 4 after a step, less g_frameTime, 0 when released; g_repeatDown the Down key's): replaySelect_keys, missions_listKeys, profileList_keys; cleared by menuState900_enterMissions"
+ },
+ "g_pickedGame": {
+  "comment": "the game picked in the arena lobby's / game room's game list: an index into g_sessionList (g_gameListTop + g_gameListRow); joined with arena_joinSession / room_joinListed, its password and lock checked"
+ },
+ "g_missionTop": {
+  "comment": "the first mission shown in the (unused) mission list: up to 8 rows from it (missionList_draw), g_missionPicked = it + g_missionRow; 0 from menuState900_enterMissions"
+ },
+ "g_logOutDialogX": {
+  "comment": "left of page 5's (log-out question) dialog frame, 120 (menuState210_enter); with g_logOutDialogY / Right / Bottom; logOutDialog_layout places its buttons from it"
+ },
+ "g_profileDialogX": {
+  "comment": "left of page 3's (delete question) dialog frame, 120 (menuState210_enter); with g_profileDialogY / Right / Bottom; deleteDialog_layout places its buttons from it"
+ },
+ "g_desktopW": {
+  "comment": "the desktop's width before the first mode switch (glWindow_setDisplayModeBy: GetDeviceCaps HORZRES); put back by glWindow_restoreDisplayMode (with g_desktopH, g_desktopBits)"
+ },
+ "g_white": {
+  "comment": "the packed opaque white colour ff ff ff ff as one word (the same four bytes as objects.h g_packedWhite, colour_initPackedWhite): point and mark colours (skel_data.c, frame_loops.c)"
+ },
+ "g_randTable": {
+  "comment": "int[4096]; the game's random table (rand() values 0 .. 32767): each draw takes entry g_randPos & 0xfff (rand_below and the match's random helpers); 0x4000 bytes up to g_tanTable"
+ },
+ "g_createArena2Rects": {
+  "name": "g_hostErrorBoxRects",
+  "comment": "int[8]; the create-arena screen's NETWORK INITIALIZE ERROR box's two buttons (createArena_layout; createArena_hitTest numbers them 16 / 17 while g_hostErrorBox is up)"
+ },
+ "g_arenaDialogBoxRects": {
+  "comment": "int[4]; the arena list's CONNECTING TO THE GAME SERVER box's CANCEL button, MSG(116) (arenaDialogBox_layout; arenaDialogBox_hitTest)"
+ },
+ "g_arenaCreateRects": {
+  "name": "g_arenaUpdateNoticeRects",
+  "comment": "int[8]; the arena lobby's THIS PROGRAM HAS BEEN UPDATED notice's two buttons (arenaUpdateNotice_layout; arenaUpdateNotice_hitTest)"
+ },
+ "g_gameListStopRects": {
+  "name": "g_gameListJoinBoxRects",
+  "comment": "int[4]; the game room list's CONNECTING TO THE GAME SERVER box's CANCEL button (gameListJoinBox_layout; gameListJoinBox_hitTest)"
+ }
+}

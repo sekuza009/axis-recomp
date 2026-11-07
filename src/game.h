@@ -1249,7 +1249,7 @@ void fix_glViewport(int x, int y, int w, int h);
 #define roomLogin_layout() GAME_FN(roomLogin_layout, 0x431ae0, void, void)()
 #define account_layout() GAME_FN(account_layout, 0x431c50, void, void)()
 #define gameList_layout() GAME_FN(gameList_layout, 0x431ce0, void, void)()
-#define gameListStop_layout() GAME_FN(gameListStop_layout, 0x431db0, void, void)()
+#define gameListJoinBox_layout() GAME_FN(gameListJoinBox_layout, 0x431db0, void, void)()
 #define roomSettings_layout() GAME_FN(roomSettings_layout, 0x431de0, void, void)()
 #define ranking_layout() GAME_FN(ranking_layout, 0x432040, void, void)()
 #define updateNotice_layout() GAME_FN(updateNotice_layout, 0x431aa0, void, void)()
