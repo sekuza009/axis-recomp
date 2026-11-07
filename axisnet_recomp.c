@@ -2434,7 +2434,7 @@ BOOL WINAPI DllMain(HINSTANCE inst, DWORD reason, LPVOID reserved) {
     real_IcmpSendEcho = hook_import(exe, "ICMP.dll", "IcmpSendEcho", hook_IcmpSendEcho);
     real_connect = hook_import_ex(exe, "WS2_32.dll", "connect", 4, hook_connect);  /* Axis imports Winsock by ordinal */
 #ifdef AXIS_NATIVE
-    /* NATIVE BUILD (AxisRC_native.exe): the game fixes below are written into the game's own code (src/fixes/,
+    /* AxisRC.exe (AXIS_NATIVE): the game fixes below are written into the game's own code (src/fixes/,
        standalone/platform.c); this layer keeps the networking above and the debug preview of other screen sizes */
     if (g_fakew) real_GetSystemMetrics = hook_import(exe, "USER32.dll", "GetSystemMetrics", fake_GetSystemMetrics);
     logf("axisnet (native build): %s mode, hub port %d, game-list port %d, hooks: dplay %s ping %s connect %s, dpi-aware %s",

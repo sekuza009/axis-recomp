@@ -26,7 +26,7 @@ shot menu0
 "$M/k_rc.sh" - 4 0x49; shot menu2
 "$M/k_rc.sh" - 4 0x4B; shot menu3
 "$M/k_rc.sh" - 1.5 0x25 0x25 0x25; shot menu4
-"$M/k_rc.sh" - 12 0x4F; "$M/k_rc.sh" - 2 0x1B 0x0D; "$M/k_rc.sh" - 6 0x0D
+"$M/k_rc.sh" - 20 0x4F; "$M/k_rc.sh" - 2 0x1B 0x0D; "$M/k_rc.sh" - 6 0x0D
 shot match1
 sleep 30
 shot match2

@@ -1,15 +1,19 @@
 #!/usr/bin/env bash
 # standalone/build.sh: build/AxisRC.exe, the rebuilt game as its own program (see main.c). Links the objects
-# build.sh made for recomp.dll (run that first), the hook table generated from recomp.c, and the patch layer
-# (axisnet_recomp.c with AXIS_STANDALONE, plus the movie decoder objects of ../axisnet/iv32).
+# build.sh made for recomp.dll (run that first), the hook table generated from recomp.c, the network layer
+# (axisnet_recomp.c with AXIS_STANDALONE) and the Windows platform code (platform.c, plus the movie decoder objects
+# of ../axisnet/iv32).
 # Linked at 0x10000 with ASLR off, so that main.c's g_space covers the game's 0x400000..; checked below.
 set -e
 cd "$(dirname "$0")/.."
-# NATIVE=1: build/AxisRC_native.exe - the test build with the patch DLL's game fixes written into the game's own
-# code (AXIS_NATIVE: src/fixes/, standalone/platform.c; the patch layer keeps only its networking and platform
-# parts); its objects in build/obj_native. Without NATIVE nothing here changes.
-if [ -n "$NATIVE" ]; then OBJD=build/obj_native; NDEF=-DAXIS_NATIVE; OUT=AxisRC_native.exe; NSUF=_native;
-else OBJD=build/obj_direct; NDEF=; OUT=AxisRC.exe; NSUF=; fi
+# AxisRC.exe carries the game fixes in the game's own code (AXIS_NATIVE: src/fixes/, standalone/platform.c); the
+# patch layer is only its network layer.
+# PATCHLAYER=1: build/AxisRC_patchlayer.exe - the earlier AxisRC.exe, where the patch layer (axisnet_recomp.c)
+# applies the fixes from outside as the patch DLL does to AxisGL.exe (its objects in build/obj_patchlayer), for
+# comparison. recomp.dll (build.sh) is unaffected either way: it is checked against AxisGL.exe and its patch DLL.
+if [ -n "$NATIVE" ]; then echo "(NATIVE=1 is the default now: building AxisRC.exe)"; fi
+if [ -n "$PATCHLAYER" ]; then OBJD=build/obj_patchlayer; NDEF=; OUT=AxisRC_patchlayer.exe; NSUF=_patchlayer;
+else OBJD=build/obj_direct; NDEF=-DAXIS_NATIVE; OUT=AxisRC.exe; NSUF=; fi
 export OBJD NDEF
 CC="python -m ziglang cc -target x86-windows-gnu"
 test -n "$(ls build/obj/*.o 2>/dev/null)" || { echo "no build/obj: run build.sh first"; exit 1; }
@@ -33,7 +37,7 @@ printf '\t# gamedata.bin %s\n\t.section .rdata,"dr"\n\t.globl _g_gamedata\n\t.p2
 	"$(sha1sum build/gamedata.bin | cut -c1-40)" > build/gamedata.s
 $CC -c -o build/gamedata.o build/gamedata.s
 $CC -c -O2 -Wall $NDEF -o build/standalone_main$NSUF.o standalone/main.c
-PLAT=; if [ -n "$NATIVE" ]; then $CC -c -O2 -Wall -o build/standalone_platform.o standalone/platform.c; PLAT=build/standalone_platform.o; fi
+PLAT=; if [ -z "$PATCHLAYER" ]; then $CC -c -O2 -Wall -o build/standalone_platform.o standalone/platform.c; PLAT=build/standalone_platform.o; fi
 $CC -c -O2 -Wall -o build/standalone_crt.o standalone/crt.c
 $CC -c -O2 -Istandalone -o build/standalone_hooks.o build/standalone_hooks.c
 $CC -c -O2 -DAXIS_STANDALONE $NDEF -fno-omit-frame-pointer -I../axisnet -Ibuild -w -o build/standalone_axisnet$NSUF.o axisnet_recomp.c
