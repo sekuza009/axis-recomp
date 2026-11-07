@@ -2,6 +2,7 @@
    members), destructors (the vtable set back, an owned buffer freed), the "deleting" destructors, and the helpers
    that clear a block of members. Most return what the original leaves in eax (usually 0 or the object). */
 #include "../game.h"
+#include "../fixes/fixes.h"
 #include <string.h>
 #define GS ((Scene *)g)   /* the scene (g in each function) by its fields (src/scene.fields) */
 
@@ -544,7 +545,11 @@ u8 *THISCALL (Console_ctor)(u8 *g)
 	                                                                                GS->viewMemory, sizeof GS->viewMemory);   /* ViewVolume_initBy */
 	stage_build(s, STR(0x4c45a8, "Stage"), STR(0x4b1784, "Map"), STR(0x4c45b0, "Texture"), STR(0x4c45b8, "Shape"),
 	                                                                                  STR(0x4c45c0, "Skeleton"), STR(0x4c45cc, "Actor"), STR(0x4c45d4, "Bullet"), STR(0x4c45dc, "Effect"), STR(0x4c45e4, "Scene"));   /* stage_build */
+#ifdef AXIS_NATIVE
+	if (!fix_catalogueLoad(s, (const char *)STR(0x4b4418, "Data/Component.dat")))   /* catalogue_loadComponents, the KYRIE parts added (fixes/kyrie.c) */
+#else
 	if (!SITE_THISCALL(0x460920, catalogue_loadComponents, int, void *, const char *)(s, (const char *)STR(0x4b4418, "Data/Component.dat")))   /* catalogue_loadComponents (the patch DLL adds the KYRIE parts here) */
+#endif
 		sys_fatalErrorN((char *)OBJ(g_logConsole), (const char *)STR(0x4c4598, "file damaged!"));
 	if (!catalogue_loadItemInfoFrom(s, (const char *)STR(0x4c4588, "Data/Item.dat")))   /* catalogue_loadItemInfoFrom */
 		sys_fatalErrorN((char *)OBJ(g_logConsole), (const char *)STR(0x4c4598, "file damaged!"));

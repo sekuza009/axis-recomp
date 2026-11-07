@@ -2,6 +2,7 @@
 #include <stdarg.h>
 #include <string.h>
 #include "../game.h"
+#include "../fixes/fixes.h"
 #include "../wide.h"
 
 #define MCI_PAUSE 0x809
@@ -724,7 +725,9 @@ long STDCALL (game_wndProc)(void *wnd, u32 msg, u32 w, u32 l)
 			return 0;
 		case 99:
 			app_spoilDataFiles();
-#ifdef AXIS_DIRECT
+#ifdef AXIS_NATIVE
+			platform_playMovie(NULL, (const char *)STR(0x4b2a24, "initdata/battle.sra"), g_desktopWidth, g_desktopHeight);   /* movie_playEnding's replacement (standalone/platform.c) */
+#elif defined(AXIS_DIRECT)
 			if (g_wide->playEnding)   /* (AxisRC.exe: the patch layer's player, which replaces movie_playEnding) */
 				g_wide->playEnding(NULL, (const char *)STR(0x4b2a24, "initdata/battle.sra"), g_desktopWidth, g_desktopHeight);
 #else

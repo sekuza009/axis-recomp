@@ -1,6 +1,7 @@
 /* skel_data.c: a skeleton's data block: its header read or set, then one block (allocated, or the caller's memory
    when it is big enough, else a fatal message: the record out and the two messages given) laid out as the bones' records followed by their tables. */
 #include "../game.h"
+#include "../fixes/fixes.h"
 #include <string.h>
 
 #define AT(type, p, offset) GAME_VAR(type, (u8 *)RELOC(p) + (offset))
@@ -417,7 +418,11 @@ u8 *THISCALL (shape_getByName)(u8 *cache, const char *name, int bind)
 		int room = mem ? mg->dataSize - mg->dataUsed : 0;
 		if (((int)mg->source) == 2)
 			/* (the original's first of its four copies of this pair: the patch DLL retargets all four, for the KYRIE models) */
+#ifdef AXIS_NATIVE
+			fix_shapeRead(shape, fix_shapeFind(key), at, room);   /* shape_read (shapeDat_getItemFileBy): the KYRIE models (fixes/kyrie.c) */
+#else
 			SITE_THISCALL(0x466eb8, shape_read, void, void *, void *, void *, int)(shape, SITE_CALL(0x466ea9, shapeDat_getItemFileBy, void *, const char *)(key), at, room);   /* shape_read (shapeDat_getItemFileBy) */
+#endif
 		else {
 			char path[0x100];
 			item_path(path, cache, own, STR(0x4c4d68, "shp"), STR(0x4c4d6c, "obj"), (char *)OBJ(g_logShapeManager), STR(0x4c4d70, "invalid file format(%s)-getShapePtrBy()"));

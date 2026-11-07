@@ -1,5 +1,6 @@
 /* names.c: looking resources up by name in the managers' sorted name tables (0x44-byte entries), and file names. */
 #include "../game.h"
+#include "../fixes/fixes.h"
 
 #define TM ((TextureBank *)tm)   /* the texture bank (tm in each function) by its fields (src/scene.fields) */
 #include <string.h>
@@ -447,7 +448,11 @@ void THISCALL (tex_loadImage)(u8 *m, int i)
 		} else
 			alpha_from(m, 0);
 		tex_path(m, path, STR(0x4b4044, "%s\\%s_COLOR"), STR(0x4b4038, "%s_COLOR"), name);
+#ifdef AXIS_NATIVE
+		if (fix_maskFind(m, path) >= 0) {   /* tex_findByName, the KYRIE masks falling back to the originals (fixes/kyrie.c) */
+#else
 		if (SITE_THISCALL(0x45636e, tex_findByName, int, void *, const u8 *)(m, (const u8 *)path) >= 0) {   /* tex_findByName (the patch DLL: the KYRIE masks) */
+#endif
 			ptx_decode(tex_getItemFileBy(m, path), mg->colourMask, &bpp, &w, &h);
 			size_check(m, w, h);
 		} else

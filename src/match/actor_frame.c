@@ -2,6 +2,7 @@
    collisions, the body's pose and matrices, firing, the lock-on warnings, stamina, footsteps and effects, death and
    its score, and the timers. */
 #include "../game.h"
+#include "../fixes/fixes.h"
 #include <string.h>
 #define ST ((Stage *)s)   /* the stage (s in each function) by its fields (src/scene.fields) */
 
@@ -1180,7 +1181,11 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 			AC->state = 3;
 			AC->stateTime = 0.0f;
 			if (i == ST->playerActor)   /* the patch DLL's cat_wrap */
+#ifdef AXIS_NATIVE
+				fix_catalogueLoad(s, (const char *)(*(u32 *)&g_componentDatPath));   /* (the KYRIE parts added: fixes/kyrie.c) */
+#else
 				SITE_THISCALL(0x45c638, catalogue_loadComponents, void, void *, u32)(s, (*(u32 *)&g_componentDatPath));
+#endif
 		}
 	} else if (AC->state == 3)
 		BITS(AC->spawnAge) = BITS(AC->dropAge);

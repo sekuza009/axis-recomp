@@ -27,5 +27,6 @@ unsigned platform_ticks(void);                 /* milliseconds (GetTickCount) */
 int platform_texNearest(int saved[2]);          /* the bound 2D texture's filters to GL_NEAREST (the old ones into saved;
                                                   0: not available) */
 void platform_texRestore(const int saved[2]);   /* its filters back */
+void platform_playMovie(void *owner, const char *file, int w, int h);   /* the ending movie (movie_playEnding) */
 
 #endif

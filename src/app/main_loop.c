@@ -1709,7 +1709,11 @@ void THISCALL (match_frame)(u8 *s)
 	}
 	/* joining: the network's slot for the local player */
 	if (SC->localPlayer < 0 && net_hasSlot()) {
+#ifdef AXIS_NATIVE
+		fix_catalogueLoad(stage, g_catalogueFile);   /* (the KYRIE parts added: fixes/kyrie.c) */
+#else
 		SITE_THISCALL(0x498dd8, catalogue_loadComponents, u32, void *, const char *)(stage, g_catalogueFile);   /* catalogue_loadComponents */
+#endif
 		SC->localPlayer = net_localSlot();
 		actor_resetSlot((Stage *)stage, SC->localPlayer);
 		player_setName((Stage *)stage, SC->localPlayer, (const char *)SC->localName);
@@ -2003,7 +2007,11 @@ void THISCALL (match_frame)(u8 *s)
 	}
 	/* the round's end */
 	if (SC->endTime > 0) {
+#ifdef AXIS_NATIVE
+		fix_catalogueLoad(stage, g_catalogueFile);   /* (the KYRIE parts added: fixes/kyrie.c) */
+#else
 		SITE_THISCALL(0x49a54f, catalogue_loadComponents, u32, void *, const char *)(stage, g_catalogueFile);   /* catalogue_loadComponents */
+#endif
 		if (SC->sessionMode == 1 && SC->client == 0) {   /* the server's end notices, every half second */
 			if (SC->endNoticeTime > 0.5f) {
 				SC->endNoticeTime = 0.0f;

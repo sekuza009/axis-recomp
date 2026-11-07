@@ -3,9 +3,12 @@
    (axisnet_recomp.c: load_config, main_subproc, bg_*, menu_speed), where it reached the game by addresses. */
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
+#include <mmsystem.h>
+#include <digitalv.h>
 #include <stdlib.h>
 #include <string.h>
 #include "../src/fixes/settings.h"
+#include "../../axisnet/iv32/iv32.h"
 
 Settings g_settings = { 1, 1, 16.0f / 9.0f, 1, 1.0f };
 
@@ -186,4 +189,107 @@ void platform_texRestore(const int saved[2])
 {
 	g_texParameteri(0x0de1, 0x2800, saved[0]);
 	g_texParameteri(0x0de1, 0x2801, saved[1]);
+}
+
+/* ---- the ending movie (after the last mission): played in a black full-screen window, centred with its aspect kept,
+   Esc to skip, the window's messages handled while it plays. The game's own routine left the MCI window's style
+   unset, ignored errors and busy-waited without handling messages after the game window was already gone, which
+   crashed or hung the game; and the movies are Indeo 3, which Windows no longer decodes (iv32 adds a decoder). ---- */
+static LRESULT CALLBACK movie_window(HWND w, UINT m, WPARAM wp, LPARAM lp)
+{
+	if (m == WM_SETCURSOR) {
+		SetCursor(NULL);
+		return TRUE;
+	}
+	return DefWindowProcA(w, m, wp, lp);
+}
+
+void platform_playMovie(void *owner, const char *file, int w, int h)
+{
+	(void)w;
+	(void)h;
+	char path[MAX_PATH];
+	if (!GetFullPathNameA(file, sizeof path, path, NULL))
+		lstrcpynA(path, file, sizeof path);
+	iv32_install();
+	/* MCIAVI scales the rectangles it is given by the display scaling (DESKTOPHORZRES / HORZRES) */
+	HDC screen = GetDC(NULL);
+	int physW = GetDeviceCaps(screen, DESKTOPHORZRES), logW = GetDeviceCaps(screen, HORZRES);
+	ReleaseDC(NULL, screen);
+	if (physW <= 0 || logW <= 0)
+		physW = logW = 1;
+	int sw = GetSystemMetrics(SM_CXSCREEN), sh = GetSystemMetrics(SM_CYSCREEN);
+	WNDCLASSA wc = { 0 };
+	wc.lpfnWndProc = movie_window;
+	wc.hInstance = GetModuleHandleA(NULL);
+	wc.hbrBackground = GetStockObject(BLACK_BRUSH);
+	wc.lpszClassName = "AxisMovie";
+	RegisterClassA(&wc);
+	HWND win = CreateWindowExA(WS_EX_TOPMOST, wc.lpszClassName, "Axis", WS_POPUP | WS_VISIBLE, 0, 0, sw, sh, (HWND)owner,
+	                           NULL, wc.hInstance, NULL);
+	MCI_DGV_OPEN_PARMSA open = { 0 };
+	open.lpstrDeviceType = "AVIVideo";
+	open.lpstrElementName = path;
+	MCIERROR e = win ? mciSendCommandA(0, MCI_OPEN, MCI_OPEN_TYPE | MCI_OPEN_ELEMENT, (DWORD_PTR)&open) : MCIERR_INTERNAL;
+	if (e) {
+		if (win)
+			DestroyWindow(win);
+		UnregisterClassA(wc.lpszClassName, wc.hInstance);
+		return;
+	}
+	MCIDEVICEID dev = open.wDeviceID;
+	MCI_DGV_RECT_PARMS source = { 0 };   /* (MCI rectangles: x, y, width, height) */
+	int vw = 4, vh = 3;
+	if (!mciSendCommandA(dev, MCI_WHERE, MCI_DGV_WHERE_SOURCE, (DWORD_PTR)&source) && source.rc.right > 0 && source.rc.bottom > 0) {
+		vw = source.rc.right;
+		vh = source.rc.bottom;
+	}
+	int dw = sw, dh = sw * vh / vw;
+	if (dh > sh) {
+		dh = sh;
+		dw = sh * vw / vh;
+	}
+	MCI_DGV_WINDOW_PARMSA window = { 0 };
+	window.hWnd = win;
+	mciSendCommandA(dev, MCI_WINDOW, MCI_DGV_WINDOW_HWND, (DWORD_PTR)&window);
+	MCI_DGV_PUT_PARMS put = { 0 };
+	put.rc.left = MulDiv((sw - dw) / 2, logW, physW);
+	put.rc.top = MulDiv((sh - dh) / 2, logW, physW);
+	put.rc.right = MulDiv(dw, logW, physW);
+	put.rc.bottom = MulDiv(dh, logW, physW);
+	mciSendCommandA(dev, MCI_PUT, MCI_DGV_PUT_DESTINATION | MCI_DGV_RECT, (DWORD_PTR)&put);
+	SetForegroundWindow(win);
+	MCI_DGV_PLAY_PARMS play = { 0 };
+	e = mciSendCommandA(dev, MCI_PLAY, 0, (DWORD_PTR)&play);
+	DWORD start = GetTickCount();
+	int quit = 0, played = 0;
+	WPARAM quitCode = 0;
+	while (!e) {
+		MSG msg;
+		while (PeekMessageA(&msg, NULL, 0, 0, PM_REMOVE)) {
+			if (msg.message == WM_QUIT) {
+				quit = 1;
+				quitCode = msg.wParam;
+				continue;
+			}
+			TranslateMessage(&msg);
+			DispatchMessageA(&msg);
+		}
+		if (GetAsyncKeyState(VK_ESCAPE) & 0x8000)
+			break;
+		MCI_STATUS_PARMS status = { 0 };
+		status.dwItem = MCI_STATUS_MODE;
+		if (mciSendCommandA(dev, MCI_STATUS, MCI_STATUS_ITEM, (DWORD_PTR)&status))
+			break;
+		if (status.dwReturn == MCI_MODE_PLAY)
+			played = 1;
+		else if (status.dwReturn != MCI_MODE_SEEK && (played || GetTickCount() - start > 3000))
+			break;
+		Sleep(15);
+	}
+	mciSendCommandA(dev, MCI_CLOSE, 0, 0);
+	DestroyWindow(win);
+	UnregisterClassA(wc.lpszClassName, wc.hInstance);
+	if (quit)
+		PostQuitMessage((int)quitCode);
 }

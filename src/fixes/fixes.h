@@ -30,5 +30,11 @@ void fix_asciiPass(void *pass, int x, int y, const char *text);   /* a font's AS
 const float *fix_digitHeight(void);         /* the HUD digits' height factor */
 void STDCALL fix_digitTexCoord(u32 s, u32 t);   /* their texture corners, half a texel inside each cell */
 
+/* kyrie.c */
+int fix_catalogueLoad(void *stage, const char *path);   /* catalogue_loadComponents, then the KYRIE parts */
+void *fix_shapeFind(const char *name);                  /* shapeDat_getItemFileBy, the MARKED\ prefix dropped */
+void fix_shapeRead(void *shape, void *file, void *at, int room);   /* shape_read, a marked model's textures moved */
+int fix_maskFind(void *manager, char *name);            /* tex_findByName, a marked mask falling back to the original's */
+
 #endif
 #endif
