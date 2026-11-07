@@ -194,7 +194,7 @@ DELETING(BMPRGBFile, BMPRGBFile_dtor)
 void THISCALL (ErrorLog_dtor)(u32 *self) { self[0] = VT(ErrorLog, 0x4aa2a0); }
 DELETING(ErrorLog, ErrorLog_dtor)
 void (static_endSoundLog)(void) { ErrorLog_dtor(g_logSound); }
-void *THISCALL (ErrorLog_ctor)(u32 *self, const char *name, int cleanupHook)
+void *THISCALL (ErrorLog_ctor)(u32 *self, const char *name, Cleanup cleanupHook)
 {
 	self[0] = VT(ErrorLog, 0x4aa2a0);
 	self[1] = (u32)name;

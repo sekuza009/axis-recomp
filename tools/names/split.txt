@@ -7,7 +7,7 @@ g_sinTable
 # (not g_netSlots: the pilot profiles' stats check runs over 103 records of 0x4c from 0x9f9040, through the
 #  slots' memory - the original's own aliasing)
 g_briefingText
-g_chatLine
+g_inputLine
 g_keySeen
 g_messages
 g_ptxPixels
@@ -77,7 +77,7 @@ g_chosenPilot
 g_clockCheckQuits
 g_clockCheckTick
 g_clockCheckTickSeconds
-g_colourChanged
+g_retintAllParts
 g_coloursChanged
 g_componentDatPath
 g_connectionCopy
@@ -118,7 +118,7 @@ g_freeCamLookY
 g_fullScreen
 g_gameListClickTimer
 g_gameRunning
-g_hudProjMode
+g_matchProjMode
 g_glColourBits
 g_hangulLeadGlyph
 g_hangulTailGlyph
@@ -347,7 +347,7 @@ g_slotTextures
 g_timerClocks
 g_mouseClicked
 g_mouseButtonsHeld
-g_mechPartStats
+g_mechMaxima
 g_armcBright
 g_legsStats
 g_armsStats
@@ -375,7 +375,7 @@ g_armsWeight
 g_dpMaxBufferSize
 g_dpMaxQueueSize
 g_dpTimeout
-g_unusedEmptySlot0Flag
+g_emptySlot0Asked
 g_hostAddressBlock
 g_isHost
 g_itemBonusActiveTime
@@ -395,7 +395,7 @@ g_unlockedLevel
 g_unusedMechStat
 # freed when a file's same-named tables were each reviewed (split_tables.py name@line) and a base inside a
 # record split whole reaches no further than it (split_candidates.py), 2026-11-01
-g_accountNotice
+g_accountRankDue
 g_accountPanelBottom
 g_accountPanelLeft
 g_accountPanelRight
@@ -438,7 +438,7 @@ g_gameListRefreshClicked
 g_gameListLoaded
 g_gameServerAnswer
 g_newIdAnswer
-g_gameServerPending
+g_gameServerReportsOff
 g_gameServerStatus
 g_itemBonusLockOn
 g_itemBonusRechargeTime
@@ -607,7 +607,7 @@ g_joinThroughServer
 g_skirmishInfoCount
 g_launchedForNetGame
 g_timeLimit
-g_timerHigh
+g_perfCounterHigh
 g_tunnelFlyingIn
 g_lineToLoginId
 g_unusedMainMenuWord
@@ -815,7 +815,7 @@ g_armcPartSlot
 g_armcSessionDue
 g_editCaretX
 g_editCaretY
-g_chatLength
+g_inputLineLength
 g_ptxClamp
 g_glWindowContext
 g_netqCursor
@@ -928,13 +928,13 @@ g_logOutDialogBottom
 g_logOutDialogRight
 g_logOutDialogX
 g_logOutDialogY
-g_profileDialogBottom
-g_profileDialogRight
-g_profileDialogX
-g_profileDialogY
+g_deleteDialogBottom
+g_deleteDialogRight
+g_deleteDialogX
+g_deleteDialogY
 g_profileQuitting
 g_roomLoginRight
-g_unusedRoomPanelEase
+g_roomSlideEase
 g_missionRow
 # freed by reviewing the numpad key tables, ARM CENTER extra_len, the mission MenuCam2, 2026-11-01
 g_dikNumLock
@@ -1102,9 +1102,9 @@ g_statBars
 g_statBarTargets
 g_profileMessageClickBox
 g_chatHistory
-g_keyTable1
+g_unusedStartupTable
 g_mouseState
-g_keyTable2
+g_unusedKeyTable2
 g_asyncKeySeen
 g_mouseWasDown
 # the arena lobby's texts, top rects and ease (objects38.csv)

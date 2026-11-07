@@ -462,11 +462,11 @@ void (freeCam_keys)(void)
 	if (g_watchChatOpen) {
 		if (g_textFieldOpen)
 			return;
-		if (strlen(g_chatLine)) {
-			net_sendChat(g_chatLine);
+		if (strlen(g_inputLine)) {
+			net_sendChat(g_inputLine);
 			g_watchChatOpen = 0;
 			g_lastChatLineSet = 1;
-			(*(u32 *)&g_lastChatLine) = OBJ(g_chatLine);
+			(*(u32 *)&g_lastChatLine) = OBJ(g_inputLine);
 		} else {
 			g_watchChatOpen = 0;
 			g_lastChatLineSet = 0;

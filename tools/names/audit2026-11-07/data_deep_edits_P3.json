@@ -1,0 +1,29 @@
+{
+ "HeadType.detectionRange": {
+  "comment": "DETECTION RANGE (message 601), 1/100 m (the panel shows x 0.01 m): x the pilot character's skill factor (stats[7] x 0.01 + 1), + the item bonus rangeBonus, squared = the actor's detectionRangeSq (mech_stats)"
+ },
+ "BoosterType.thrustType": {
+  "comment": "THRUST TYPE (message 641): 0 PLASMA THRUST ENGINE, 1 ION THRUST ENGINE, 2 GRAVITY ION ENGINE (section_booster shows MSG(651 + it) via g_boosterThrustType, armc_readPartPanels); its puffs are particle kind 5 + it (emit, actor_frame.c); its step sound every third of a second is sound it, + 3 while inBooster (actor_processFrame); also copied to g_unusedMechStat (armc_readMechStats)"
+ },
+ "CollisionPlane.flags": {
+  "comment": "0x10: takes no marks (a transparent part's triangle, or the background floor's; read by hit_surface); 1: its unit disabled (space_disableUnit sets it, space_enableUnit clears it), skipped by the ray and sphere traces; else 0 (collisionTri_setup)"
+ },
+ "Stage.lastCameraPos": {
+  "comment": "(by use; seen running) the camera's position the frame before (stage_setupView copies cameraPos here first; scene_reset: = cameraPos); written, never read"
+ },
+ "Stage.fov": {
+  "comment": "the view's vertical angle in degrees: stage_setupView's fov, given to gluPerspective (10 .. 90 seen)"
+ },
+ "Stage.silentActor": {
+  "comment": "(by use; seen running) the actor whose footstep sounds are not played (actor_processFrame); -1 none (scene_resetActors, stage_newRound); stage_setSilentActor sets it (0 at the scene's start)"
+ },
+ "Stage.frags": {
+  "comment": "(by use; seen running) each team's frags by team id (= Scene.teamScores): +1 to the killer's team for a kill, -1 to a team's own for a suicide in a team game, + the team's size to the other team when a platoon commander dies (actor_processFrame); compared with fragLimit, sent in the game packet; cleared together (stage_clearFrags)"
+ },
+ "Stage.cullMargin": {
+  "comment": "(by use; seen running) the map's drawing range (from the ground info, map_loadGroundInfoFrom; 20000 .. 1e7 by map): things within it of cameraPos on each axis are drawn: map objects and actors (with their radius added), items, particles, bullet trails, ground cells and the water surface's extent (ground_buildDrawLists); stage_setCullMargin also derives viewDepth from it"
+ },
+ "Stage.viewDir": {
+  "comment": "(by use; seen running) the camera's look vector (stage_setupView: gluLookAt looks at cameraPos + it; not normalized: the chase view passes the actor's position - the camera's); the sky's look-at (sky.c) and the listener's facing for sound_play3D"
+ }
+}

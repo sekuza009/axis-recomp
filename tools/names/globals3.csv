@@ -3,7 +3,7 @@
 0x4dc878,int,g_savedMechHead
 0x4dcf18,int,g_savedMechItemSlot4
 0x4dcc58,int,g_mechChanged
-0x4dbc80,int,g_unusedEmptySlot0Flag
+0x4dbc80,int,g_emptySlot0Asked
 0x680cd0,int,g_mapPreviewChanged
 0x9da324,int,g_mapPreviewTexture
 0x4dfa00,int,g_characterTexture
@@ -43,7 +43,7 @@
 0xa0b35c,int,g_playerListCount
 0xa0b358,int,g_roomListCount
 0xa0b350,int,g_playerListDone
-0xa0b364,int,g_gameServerPending
+0xa0b364,int,g_gameServerReportsOff
 0xa0b380,int,g_connectedServer
 0xa0b428,u32,g_localPlayerData
 0x9fd954,u8,g_localSlot

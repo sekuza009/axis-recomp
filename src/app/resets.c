@@ -4,20 +4,20 @@
 #include <string.h>
 
 /* 0x431590: the 256 key press latches (g_keySeen) cleared (a key still held then counts as just pressed
-   again), the menu keys held off (g_menuKeyGuard 5), the input line emptied (g_lineMaxLength, g_chatLength 0) */
+   again), the menu keys held off (g_menuKeyGuard 5), the input line emptied (g_lineMaxLength, g_inputLineLength 0) */
 void (input_resetKeys)(void)
 {
 	memset((void *)OBJ(g_keySeen), 0, 0x100 * 4);
 	(*(u32 *)&g_menuKeyGuard) = 0x40a00000;   /* 5.0 */
 	g_lineMaxLength = 0;
-	g_chatLength = 0;
+	g_inputLineLength = 0;
 }
 
-/* 0x401780: the second key table (g_keyTable2) and its state cleared */
+/* 0x401780: the second key table (g_unusedKeyTable2) and its state cleared */
 void (input_clearKeyTable2)(void)
 {
 	g_unusedKeyTable2Flags = 0x8000;
-	memset((void *)OBJ(g_keyTable2), 0, 0x100 * 4);
+	memset((void *)OBJ(g_unusedKeyTable2), 0, 0x100 * 4);
 	g_unusedKeyTable2Word1 = 0;
 	g_unusedKeyTable2Word0 = 0;
 	g_unusedKeyTable2Word2 = 0;
@@ -63,6 +63,6 @@ void (account_takeRank)(void)
 	g_pilotRank = v;
 	g_accountRank = v;
 	g_rankReplyIn = 0;
-	g_accountNotice = 0;
+	g_accountRankDue = 0;
 	g_roomAwaitingServer = 0;
 }

@@ -1,6 +1,6 @@
 # the network receive buffers (step 3b; --records): each read or cleared whole at its size
 0xa05260,u8,91,g_lobbyReplyRecord,a lobby reply (0x5b bytes read from the lobby socket; its kind at +0x4a: g_lobbyReplyKind)
 0xa052c0,u8,34,g_rankReply,the notice received (cleared as 0x22 bytes: g_rankReplyCode, g_outOfRank, the clan g_receivedRank)
-0xa052e8,u8,62,g_playerListReply,the game server's 62-byte reply (its kind at +0x1e: g_serverReplyKind)
+0xa052e8,u8,62,g_playerListReply,the game server's 62-byte reply (its kind at +0x1e: g_playerListReplyKind)
 0xa0b280,u8,121,g_gameServerReply,a game server's reply (0x79 bytes; its kind at +0x68: g_gameServerReplyKind)
 0xa05638,u8,267,g_profileReply,the receive buffer (cleared as 0x10b bytes; g_profileReplyResult its start, the joined title's name at +4)

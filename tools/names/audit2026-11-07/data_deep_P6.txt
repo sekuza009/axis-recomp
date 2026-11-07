@@ -1,0 +1,394 @@
+PART P6: 393 names; OK 385, RENAME 2, TYPE 1, COMMENT 5, UNSURE 0; not seen running 115
+g_texture128x64Vtable | OK | code: written VT(Texture,0x4a956c) by static_initTex128x64; the set's address (this word's) taken by static_destroyTex128x64 / app_startupLoad as the object (ecx / push); run: 1512812 = 0x4a956c always
+g_screenCentreY | OK | code: written height/2 by app_startupLoad only, never read (addr_access: 1 write); run: 1080 (desktop 2160 high at DESKTOP resolution)
+g_texture256x64Vtable | OK | code: static_initTex256x64 writes 0x4a956c; static_destroyTex256x64 / app_startupLoad use the address as the object; run: 0x4a956c always
+g_menuLookHomeX | OK | code: written by menuState400_enter / menuState600_enterSetup (lx), armc_open / armc_cameraStep (0), camera_pointsAtLookZ; read by arena_camera / armc_cameraStep / setup_camera / menu_camera (camera eased back toward it, copied into g_menuCameraLook); NOT SEEN non-zero: every writer stores 0 in practice (look-at X 0); reach: none known
+g_menuLookHomeY | OK | code: same writers / readers as g_menuLookHomeX (Y); NOT SEEN non-zero: always 0 in the screens played
+g_menuLookHomeZ | OK | code: writers menuState400_enter, menuState600_enterSetup, armc_open, armc_cameraStep (-1650), camera_pointsAtLookZ; readers arena_camera, armc_cameraStep, setup_camera, menu_camera; run: 0, -550, -1650 as the comment says
+g_editFieldLength | OK | code: written chars by editField_createEdit, never read (1 write); run: 3..56 (12, 16, 20, 30 ... field widths)
+g_texture128x128Vtable | OK | code: static_initTex128x128 writes 0x4a956c; destroy / app_startupLoad take the address; run: 0x4a956c always
+g_texture256x256Vtable | OK | code: static_initTex256x256 writes 0x4a956c; destroy / app_startupLoad take the address; run: 0x4a956c always
+g_skirmishInfoCount | OK | code: fread into it and loop bound in data_loadSkirmishInfo only; run: 15 (skirmish.dat entries)
+g_texture256x128Vtable | OK | code: static_initTex256x128 writes 0x4a956c; destroy / app_startupLoad take the address; run: 0x4a956c always
+g_menuEyeHomeX | OK | code: written by menuState400_enter / menuState600_enterSetup / camera_pointsAtLookZ (current eye), armc_open / armc_cameraStep (0); read by arena_camera / armc_cameraStep / setup_camera / menu_camera (eye eased back to it); NOT SEEN non-zero: eye X is 0 in every screen played
+g_menuEyeHomeY | OK | code: as g_menuEyeHomeX (Y); NOT SEEN non-zero: eye Y 0 in every screen played
+g_menuEyeHomeZ | OK | code: as g_menuEyeHomeX; armc_cameraStep stores -1550, armc_open the computed Z; run: 0, -450, -1550 as the comment says
+g_roomFormLeft | OK | code: written 40 by menuState800_enterGameRoom; read by roomSettings_layout (buttons), room_editGameName (carets), room_drawGameSettings, roomSettings_page (frame); run: 40 in formsB / roomF (create-game page MSG(396) CREATE LADDER GAME)
+g_roomFormTop | OK | code: written 30 by menuState800_enterGameRoom; read by roomSettings_layout, room_drawMapPreview (map_preview_box rect base), the form / frame; run: 30
+g_roomFormRight | OK | code: written 600 by menuState800_enterGameRoom; read by roomSettings_layout, room_drawMapPreview, the frame; run: 600
+g_roomFormBottom | OK | code: written 450 by menuState800_enterGameRoom; read by roomSettings_layout, room_drawGameSettings, roomSettings_page; run: 450
+g_pilotPowerKept | OK | code: written by pilotRecord_syncCopies (from g_ladderPower / the other copy) and record_send in ladder_checkAndSendRecord (kept[1] + power); read by pilotRecord_syncCopies (copy compare); NOT SEEN: only after a Ladder login (account record) - play a Ladder match on the ladder server and finish it
+g_pilotDeathsKept | OK | code: written by room_copyAccountRecord (from g_pilotDeaths), pilotRecord_syncCopies, record_send (ladder_checkAndSendRecord), newId_register (0); read by pilotRecord_syncCopies, ladder_checkAndSendRecord (take_back); NOT SEEN: needs a Ladder account with deaths (log in to the ladder server with an ID that has died in a Ladder match)
+g_gameListRefreshClicked | OK | code: written 1 by gameList_mouse (REFRESH button) / gameList_keys (R), 0 by room_enterGameList; never read (3 writes); NOT SEEN: click REFRESH in the Ladder game room's game list
+g_pilotDeaths | OK | code: written by login_takeAccountRecord (reply +0xfb), pilotRecord_syncCopies, record_send (ladder_checkAndSendRecord), newId_register (0); read by room_copyAccountRecord, login_takeAccountRecord (into g_ladderDeaths), account_drawPanel (count shown); NOT SEEN: Ladder account with deaths (log in after dying in a Ladder match)
+g_pilotKillRate | OK | code: written by login_takeAccountRecord (reply +0x107), pilotRecord_syncCopies, record_send (kill_rate result), newId_register (0); read by room_copyAccountRecord, account_drawPanel ("%.2f"); NOT SEEN: Ladder account with kills (log in after a Ladder match with a kill)
+g_languageId | OK | code: written GetSystemDefaultLangID by game_WinMain, never read; run: 1033 (en-US)
+g_clockCheckSeconds | OK | code: written by sys_checkClockTampering only (seconds the clock moved); run: 1..82
+g_clockCheckTick | OK | code: written timeGetTime by sys_checkClockTampering only; run: 445462782..450268473 (ms tick counts)
+g_clockCheckTickSeconds | OK | code: written by sys_checkClockTampering only (tick seconds since g_startTicks); run: 1..81, tracking g_clockCheckSeconds (1..82)
+g_progressSeen | COMMENT | code: written g_progress by profile_makeCurrent; read and caught up by menuState500_enterSkirmish (g_progress > it raises g_skirmishNewPartsNotice); run: 16; the comment names "menuState500_enter", which does not exist -> "the campaign progress the skirmish screen has already announced: set from g_progress when a profile is made current (profile_makeCurrent); menuState500_enterSkirmish raises the briefing (g_skirmishNewPartsNotice) when g_progress has passed it, then catches it up"
+g_skirmishChosen | OK | code: written by menuState500_enterSkirmish (g_progress, at most 14) and skirmish_roundChosen (clicked round); never read; run: 11..14 in skirmish
+g_netClaimedSlot | OK | code: dword 0 by net_resetState, byte = net_claimPlayerSlot() by net_handleSystemMessage, then the message sent; run: 1 in mp (the client's slot)
+g_lobbyReplyKind | OK | code: read only by net_receiveLobbyReply's switch (0 net_addServerRecord, 1 ping thread + g_lobbyListAnswer 0xca, 2 0xcb, 3 0x29); filled by reply_read into g_lobbyReplyRecord; NOT SEEN non-zero: needs the arena lobby server's list end (open the internet arena list against a lobby server)
+g_serverReplyKind | RENAME -> g_playerListReplyKind | code: the +0x1e word of g_playerListReply, read only by net_receivePlayerListReply (0 net_addPlayerRecord, 1 list end / g_playerListDone); run: 0,1 in formsB. "server reply" is every reply; the sibling words are g_lobbyReplyKind / g_gameServerReplyKind (the room list), so this one should say which reply (name unused in src)
+g_netAccountRequest | OK | code: alloc 0x1e by net_resetConnection, ID copied in by room_enterAccountPage, sent by net_send (request 29), freed by net_freeBuffers; run: valid heap pointer in Ladder sessions
+g_gameServerReplyKind | OK | code: read only by net_receiveGameServerReply's switch (0 net_addRoomRecord, 1 list end, 2/3 refused) after reply_read into g_gameServerReply; NOT SEEN non-zero: the Ladder game-room list's end reply (open the game list on the ladder server with rooms)
+g_lobbyKeepAlive | OK | code: alloc 0x10 by net_resetConnection; net_send kind 23 copies g_arenaPacket's ServerRecord.address into it and sends it to g_lobbySocket; freed by net_freeBuffers; run: valid pointer
+g_gameServerKeepAlive | OK | code: alloc 0x10 by net_resetConnection; net_send kind 24 lstrcpyA g_localAddress into it and sends it to g_gameServerSocket; freed by net_freeBuffers; run: valid pointer
+g_netKindBuffer | OK | code: alloc 4 by net_resetConnection; net_send writes the kind word and ws_send's it first; freed by net_freeBuffers; run: valid pointer
+g_arenaInfoPacket | OK | code: alloc 0x5b by net_resetConnection; filled by net_handleSystemMessage / arena_info (g_arenaPacket + player count); sent as kind 12 by net_send; run: valid pointer
+g_arenaListRequest | OK | code: alloc 4 by net_resetConnection; lobby_openConnection stores 0x180001; sent as kind 13 by net_send; freed by net_freeBuffers; run: valid pointer
+g_netRankingBuffer | OK | code: alloc 8 by net_resetConnection; ranking_page writes sort code + first rank; net_send kind 21 sends it; run: valid pointer
+g_netPlayerRecordPacket | OK | code: alloc 0x36 by net_resetConnection; filled by record_send (ladder_checkAndSendRecord: name, games, kills, deaths, exp, power, level); sent as kind 17; run: valid pointer
+g_netLeaveBuffer | OK | code: alloc 0x1e by net_resetConnection; room_leave copies g_ladderId; net_send kind 25 sends it; run: valid pointer
+g_netSelectionPacket | OK | code: alloc 0xb9 by net_resetConnection; armc_sendSelectionToNet fills ID / 11 mech bytes / colours; net_send kind 27; run: valid pointer
+g_netAccountBuffer | OK | code: alloc 0x5c by net_resetConnection; account_sendChange fills the AccountForm; net_send kind 28; run: valid pointer
+g_lobbyStatus | OK | code: net_recv writes 0x29 / 0x67 / 0x66 (status_reply); game_wndProc's switch maps it to g_hostAnswer; run: 102 (0x66) in host-h2 / mp / sessA
+g_gameServerStatus | OK | code: net_recv writes 0x28 / 0x67 / 0x66; game_wndProc maps it; run: 102 in roomF
+g_arenaJoinTimer | OK | code: written the SetTimer(0x378, 2000) id by arena_joinListed and room_joinListed (0x434dd0; addr_access's old csv name room_joinSession), never read; run: 888 (0x378) in mp
+g_dpTimeout | OK | code: written DPCAPS.dwTimeout by dplay_initConnection, never read; run: 5000
+g_dpMaxBufferSize | OK | code: written DPCAPS.dwMaxBufferSize by dplay_initConnection, never read; run: 65000
+g_dpMaxQueueSize | OK | code: written DPCAPS.dwMaxQueueSize by dplay_initConnection, never read; NOT SEEN non-zero: the TCP/IP provider reports 0 (no queue limit); no action changes it
+g_musicEndHigh | OK | code: written by music_play (GetDuration's 64-bit STREAM_TIME high dword, via g_musicDuration), read by music_loopIfEnded (high halves compared before the low); NOT SEEN non-zero: a duration under 2^32 x 100 ns (7 min 9 s) leaves it 0 - only music longer than that sets it
+g_mciCallback | OK | code: written by the original movie_playEnding, read by movie_pauseEnding (MCI_PAUSE params[0]); NOT SEEN: AxisRC.exe plays the ending movie with the patch layer's player, so the MCI path is not run (only the original exe, ending movie + Esc)
+g_mciFrom | OK | code: as g_mciCallback (params[1]); NOT SEEN: same (original exe's ending movie)
+g_mciTo | OK | code: as g_mciCallback (params[2]); NOT SEEN: same
+g_mciDevice | OK | code: written the AVIVideo device id by the original movie_playEnding, read by movie_pauseEnding (mciSendCommandA target); NOT SEEN: same
+g_cursorPosY | OK | code: written GetCursorPos y by input_getCursorPos (with g_cursorX), read through the returned pointer (cursor[1]) by the matchState 3 mech test frame (main_loop.c 0x48a370); NOT SEEN: only that test mode calls input_getCursorPos (play never reaches it; g_cursorX is not seen either). Name is fine (g_cursorX's partner; g_cursorY would only be style)
+k_armcDistance | RENAME -> k_m450f | the -450.0 constant at 0x4a9454 is read by armc_open (fld, the ARM CENTER camera's distance) AND by actor_processFrame twice (fcom: the pose clamp to -450 tenths of a degree, written as clamp450's -450.0L literal in the rebuild); a shared float constant is named by value (README: "the game's float constants by value"); run: always 0xc3e10000 = -450; k_m450f is unused
+k_armcDistanceRoom | OK | code: read only by armc_open (fld, -1550 when opened from a game room; armc_misc.c part_in_view's distance choice); run: always -1550 bits
+g_newArenaMap | OK | code: written by lobby_loadArenaSettings, arena_stepMap (steps, wraps, 21); read by lobby_keepArenaSettings, arena_stepMap, arena_loadMapPreview; run: 3..31 map indices in formsC / host / sessA
+g_newArenaMaxPlayers | OK | code: written by lobby_loadArenaSettings, arena_createClick (+2, back to 2); read by lobby_keepArenaSettings, arena_createDraw; run: 8, 10
+g_newArenaRotation | OK | code: written by lobby_loadArenaSettings, arena_createClick (toggle); read by arena_stepMap (no step when on), arena_createClick, arena_drawMapPreview, arena_createDraw, lobby_keepArenaSettings; run: 0 / 1
+g_newArenaMode | OK | code: written by lobby_loadArenaSettings (from g_arenaGameType), arena_createClick (steps, 0xd / 14 limits); read by lobby_keepArenaSettings, arena_createClick; run: 0..13
+g_newArenaPassword | OK | code: cleared by lobby_loadArenaSettings, typed line copied by arenaCreate_keys; address read by lobby_keepArenaSettings / arena_createDraw; run: 30576 = "pw" typed in formsC
+g_armcViewedPartTexture | OK | code: g_slotTextures[6], set via armc_loadSnapshotTexture(6), read only by armc_drawWeaponsScreen (bind_texture in the part box); run: texture ids 512..541 in formsC / itemsD
+g_keyForward | OK | code: written by input_setDefaultBindings (DIK W) / cfg_readKeyBindings; read by cfg_writeKeyBindings, freeCam_keys, replay_frame, match_combatInput (Scene.holdForward), the setup control tab (g_controls base); run: 17 = DIK_W
+g_keyBackward | OK | code: same writers; read by freeCam_keys, replay_frame, match_combatInput (holdBackward), cfg_writeKeyBindings; run: 31 = DIK_S
+g_keyStepLeft | OK | code: same writers; read by freeCam_keys (freeCam_stepLeft), replay_frame, match_combatInput (holdStepLeft); run: 30 = DIK_A
+g_keyStepRight | OK | code: same writers; read by freeCam_keys (freeCam_stepRight), replay_frame, match_combatInput (holdStepRight); run: 32 = DIK_D
+g_camPoint1X | OK | code: written 35 by menuState400_enter / lobby_enterArenaList / menuState600_enterSetup, 20 by menuState800_enterGameRoom / room_initCameraPoints; read through g_camPoints[i] by arena_camera (indexed); run: 0, 20, 35
+g_camPoint1Z | OK | code: written g_menuCameraLookZ by lobby_enterArenaList, menuState400_enter, menuState600_enterSetup, menuState800_enterGameRoom, room_initCameraPoints; read indexed by arena_camera; run: -1650
+g_camPoint2X | OK | code: written -35 by menuState400_enter / lobby_enterCreate / menuState600_enterSetup, 20 by the room's; read indexed by arena_camera; run: -35, 20
+g_camPoint2Y | OK | code: written 0 (lobby_enterCreate, 400 / 600) or 10 (the room's); read indexed by arena_camera; run: 0, 10
+g_camPoint2Z | OK | code: written the look-at z by lobby_enterCreate and the screen entries; read indexed by arena_camera; run: -1650
+g_arenaFileMap | OK | code: written atoi("map") by arena_loadSettings, low byte read by arena_startFromLauncher into g_arenaMap; NOT SEEN: start the game from the launcher with an arena settings file (arena_loadSettings / arena_startFromLauncher)
+g_arenaFilePlayers | OK | code: written atoi("maxplayer") by arena_loadSettings, low byte read by arena_startFromLauncher into g_arenaMaxPlayers; NOT SEEN: same launcher start
+g_arenaFileGameType | OK | code: written atoi("gametype") by arena_loadSettings, low byte read by arena_startFromLauncher into g_arenaGameType; NOT SEEN: launcher start with an arena settings file
+g_arenaFileFragLimit | OK | code: written atoi("fraglimit") by arena_loadSettings, low byte read by arena_startFromLauncher into g_arenaFragLimit; NOT SEEN: launcher start with an arena settings file
+g_camAim1X | OK | code: written -70 by menuState400_enter, lobby_enterArenaList, menuState600_enterSetup, menuState800_enterGameRoom, room_initCameraPoints; read indexed through g_camAims by arena_camera; run: -70
+g_camAim1Y | OK | code: written -35 (menuState400_enter, lobby_enterArenaList, menuState600_enterSetup) or 0 (the room's two); read indexed by arena_camera; run: 0, -35
+g_camAim1Z | OK | code: written the look-at z by the same five; read indexed by arena_camera; run: -1650
+g_camAim2X | OK | code: written 70 (menuState400_enter, lobby_enterCreate, menuState600_enterSetup) or -70 (room's); read indexed by arena_camera; run: 70, -70
+g_camAim2Y | OK | code: written 35 or -55 (room's); read indexed by arena_camera; run: 35, -55
+g_camAim2Z | OK | code: written the look-at z by lobby_enterCreate and the screen entries; read indexed by arena_camera; run: -1650
+g_pilotGamesKept | COMMENT | code: written by room_copyAccountRecord (g_pilotGames), pilotRecord_syncCopies, record_send in ladder_checkAndSendRecord, newId_register (0); READ by pilotRecord_syncCopies and by ladder_checkAndSendRecord (take_back: the kept copy's games taken back), so "not otherwise read" is wrong; NOT SEEN: needs a Ladder account with games -> "the kept copy of the pilot's games played (with g_pilotLevelKept ..): room_copyAccountRecord copies g_pilotGames in, pilotRecord_syncCopies sets it to g_ladderGames, record_send (ladder_checkAndSendRecord) stores the record's, and take_back reads it back when the record's kills are 300 past the copy's; newId_register clears it"
+g_pilotGames | OK | code: written by login_takeAccountRecord (reply +0xf3), pilotRecord_syncCopies, record_send (ladder_checkAndSendRecord), newId_register (0); read by room_copyAccountRecord, login_takeAccountRecord (into g_ladderGames), take_back; NOT SEEN: Ladder account with games played (log in after a Ladder match)
+g_menuLookKeptX | OK | code: written 0 by game_returnToMainMenu / ArenaLobby / GameRoom / Skirmish (reset_menus), kept / restored by menuTunnel_advance (reads at the move's end); NOT SEEN non-zero: the tunnel camera's look X is always 0
+g_menuLookKeptY | OK | code: as g_menuLookKeptX (Y); NOT SEEN non-zero: always 0
+g_menuLookKeptZ | OK | code: written 400 / -550 by the game_returnTo* resets, kept and moved a ring (+-1100) by menuTunnel_advance (fld / fadd); run: 400, -550, -1650, -2750, -3850 (ring steps of 1100)
+g_menuEyeKeptX | OK | code: as g_menuLookKeptX for the eye; NOT SEEN non-zero: eye X always 0
+g_menuEyeKeptY | OK | code: as g_menuEyeKeptX (Y); NOT SEEN non-zero: always 0
+g_menuEyeKeptZ | OK | code: written 500 / -450 by the resets, kept / moved by menuTunnel_advance; run: 500, -450, -1550, -2650, -3750
+g_mainMenuFrames | OK | code: 0 by menuState300_enter, incremented by mainmenu_drawMenu while the tunnel flies in (its own ++ is the only read); run: 2..155
+g_matchChatCaretY | OK | code: written y by chat_openTextField (0x44ac90; csv name chat_textField) only, never read; NOT SEEN: open the chat line in a match (Enter in a skirmish / hosted match) - its y may still be 0 if the caller passes 0
+g_matchChatCaretX | OK | code: written x by chat_openTextField only, never read; NOT SEEN: open the match chat line (Enter in a match)
+g_textHitBottom | OK | code: set 1 by text_ascii8Pass / 16 / 32 when stopped at g_textBottom; cleared by app_startupLoad, mission_loadBriefing, briefing_nextPage / prevPage; read by briefing_nextPage, briefing_typeOut, missionBriefing_draw (NEXT lit); run: 1 in missions
+g_armcSlot | OK | code: written by armc_open, armc_openWeaponsPage (0 / -1), armc_pickSlot, armc_takeCursorItem (-1); read by armc_showCursorItem, armc_takeCursorItem, the page keys / clicks (slot 0 / >3 checks); run: 0..5 in formsC / itemsD
+g_armcFrom | COMMENT | code: written 1 by menuState400_enter (entering the arena lobby) and the main menu's ARM CENTER entries (menu_tunnel / menu_records), 0 by lobby_enterPlayerScreen and menu_camera2's ARM CENTER exit, 2 by lobby_playerScreenClicks, 3 by the game room's clicks (room_clicks); read by armc_open, armc_exit, armc_cameraStep, armc_buildPartLists (3: level unlock); run: 0, 1, 2. Name fine; the comment misses menuState400_enter's 1 -> "where the ARM CENTER was opened from: 1 the main menu (menu_tunnel / menu_records; menuState400_enter also sets 1 on entering the arena lobby), 2 the arena's player screen (lobby_playerScreenClicks), 3 the game room (room_clicks), 0 cleared (lobby_enterPlayerScreen, the camera's way back); armc_exit picks the way back and what a confirm does by it"
+g_armcCursor | OK | code: written by armc_openWeaponsPage, armc_pickSlot, armc_showCursorItem (wraps to the list's count); read by armc_takeCursorItem, armc_showCursorItem, the item draws (g_weaponList / g_extraList index); run: 0..19
+g_armcPageRight | OK | code: written 630 by armc_open; read by the armc page layouts, armc_set*FromPointer (slider = mouse - right + 184), the frame; run: 630
+g_armcSpin | OK | code: 1 by armc_open, toggled by armc_*PageClicks / armc_*PageKeys; read by the preview turn (g_armcAngle) and the ROTATE label; run: 0 / 1
+g_unusedArmcViewCountdown | OK | code: written 1 by armc_open, armc_partsPageClicks, armc_partsPageKeys, armc_readPartPanels; menuState700_armCenter (part_in_view) lowers it by 0.1 x frame time and clamps at -2 - its only read is that self-update (addr_access: no other reader); run: -2 .. 1 in armc / itemsD
+g_setupPressedClock | OK | code: 0 by setup_select*Tab, 5 by setup_soundTabClicks (volume arrows) and setup_sliderClicks (sensitivity arrows); run down by setup_drawSoundPage and the controls page's slider draw (setup_pages.c mouse_tab), which then set g_setupArrowPressed -1; run: 3.99934 in setupE
+g_setupArrowPressed | COMMENT | code: -1 by setup_select*Tab and the two draws when the glow ends; 0 / 1 by setup_soundTabClicks (volume_down / up) AND setup_sliderClicks (slider_press, the controls tab's mouse-sensitivity minus / plus); read by setup_drawSoundPage (cases 0 .. 3; 2 / 3 are never written) and the controls page's slider draw; run: -1, 0. The comment only names the sound tab -> "the setup arrow last pressed: the sound tab's volume arrows (volume_down / up) or the controls tab's mouse-sensitivity minus / plus (slider_press): 0 down / minus, 1 up / plus; -1 none (a tab opened, or its glow g_setupPressedClock ran out). setup_drawSoundPage also has lit arrows a row lower for 2 / 3, which nothing sets"
+g_setupTunnelAlpha | OK | code: 0.7 by setup_selectSoundTab / GraphicTab / ControlTab; eased toward 0.3 / 0.5 and used as glColor alpha by setup_drawTunnel; run: 0.30 .. 0.58 in setup / setupE
+g_bindRow | OK | code: -1 by setup_selectControlTab; Up / Down in setup_controlTabKeys; the hovered row - 7 in the controls page draw; read by setup_bindKey, setup_controlTabClicks; run: -1, 0, 1, 4
+g_menuEyeY | OK | code: written by arena_camera, armc_snapCameraToPoint0, the menu cameras (ease / copy from g_camPoints, -200 for the briefing camera), armc approach; read by menu_box (glTranslatef / gluLookAt), menuState400_enter (copied to home); run: -200 .. 550 easing values
+g_menuEyeZ | OK | code: 500 at start (app_startupLoad), eased / set by arena_camera, the menu cameras, armc approach, the tunnel (+10 in main_loop); read by menu_box and the screen entries; run: -3750 .. 1600 along the tunnel
+g_gameCount | OK | code: 0 by menuState400_enter, lobby_enterArenaList, lobby_openConnection, arenaGames_mouse (refresh); set by arena_mergeReceivedSessions / arenaList_rebuild; read by sessionList_sort, arena_clearSessionEntry, the game list draws and keys (rows, join bounds); NOT SEEN: open the LAN arena list (or the Ladder game list) while another machine hosts a game, so one session is listed
+g_menuTunnel | OK | code: list head pushed by tunnel_restart / tunnel_addRing (tunnel_appendRing), freed ring by ring by menu_returnToMainFromRoom, menu_returnToArenaLobbyViaMain, match_enter; read by menuTunnel_advance, menu_drawBackground; run: valid heap pointer
+g_briefingStart | OK | code: 0 by mission_loadBriefing, page start by briefing_nextPage / prevPage; read by briefing_typeOut (copy offset); run: 0, 65 in missions
+g_briefingSource | OK | code: malloc'd block stored by mission_loadBriefing (old one freed), read by briefing_typeOut; run: valid pointer in missions
+g_briefingShown | OK | code: 0 by mission_loadBriefing / briefing_nextPage / prevPage; ++ by briefing_typeOut (CR LF and 0x80 bytes skip together); read by briefing_nextPage; run: 2..66
+g_missionCount | OK | code: 0 by missions_clear; fread from the mission file by mission_loadAxisMis; read by mission_loadBriefing, missions_cursorDown, missions_clickRow, missionList_draw (up to 8); run: 2 in missions
+g_missionPicked | OK | code: 0 by menuState900_enterMissions, stepped by missions_cursorUp / Down, set by missions_clickRow; read by missions_listClicks / missions_listKeys (mission_loadBriefing), missionList_draw (lit row, briefing line); run: 0, 1
+g_missionsWindowLeft | OK | code: 10 by menuState900_enterMissions; read by missionList_layout, briefing_layout, missionList_draw, the frame; run: 10
+g_missionsWindowTop | OK | code: 20 by menuState900_enterMissions; read by missionList_layout, missionList_draw, briefing text position; run: 20
+g_briefingClock | OK | code: 0 by mission_loadBriefing; frame time added by briefing_typeOut, back to 0 past k_1_4 (1.4); run: 0.5 / 1.0 steps (frame time 0.5) - never above 1.4, as it should
+g_skirmishRoundShown | OK | code: written by menuState500_enterSkirmish (g_progress, at most 14), skirmish_clicks (arrows), skirmish_roundKeys (Left / Right); read by skirmish_startRound and the screen's draw; run: 11..14
+g_profileFrameAlpha | OK | code: 40 by pilotSelect_reset, profile_resetStatBars, pilotSelect_loadStats, profile_loadPilotStats; profile_drawPilotSelect adds g_profileFrameStep x frame time (bounces 2 .. 38) and draws the frame with alpha 1 - it x 0.025; run: only 40 seen (the pulse runs only while the pilot select is drawn); the RUNTIME comment's "k_clockRate" is stale, globals.h's k_0_025f is right
+g_netQueueOnline | OK | code: 1 by dplay_openConnection, 0 by dplay_leaveSession; read by netq_poll and netq_online; run: 0 / 1 in host / mp / sessA
+g_bitStream | OK | code: set by ptx_startBitReader, read by ptx_readBits; run: valid pointer
+g_imp_wsprintfA | OK | code: the IAT slot, called through by net_formatChatLine only; run: valid pointer
+g_componentDatPath | OK | code: read by actor_processFrame only (the catalogue load's path argument); run: pointer to "Data/Component.dat"
+g_insertCdMessage | OK | code: read by scene_startSession only (sys_fatalErrorN text); run: valid pointer
+g_unusedKeyTable2Word0 | OK | code: only written 0 by input_clearKeyTable2 (addr_access: 1 write); NOT SEEN non-zero: never anything but 0
+g_unusedKeyTable2Flags | OK | code: only written 0x8000 by input_clearKeyTable2 (1 write); run: 32768
+g_unusedKeyTable2Word1 | OK | code: only written 0 by input_clearKeyTable2; NOT SEEN non-zero: only ever 0
+g_unusedKeyTable2Word2 | OK | code: only written 0 by input_clearKeyTable2; NOT SEEN non-zero: only ever 0
+g_mapEntry22On | OK | code: only written 0 by mapList_init (g_mapChoiceKeptTable[22].chosen; the table is read indexed elsewhere); NOT SEEN non-zero: mapList_init always turns maps 22 .. 24 off
+g_mapEntry23On | OK | code: as g_mapEntry22On (entry 23); NOT SEEN non-zero: always off
+g_mapEntry24On | OK | code: as g_mapEntry22On (entry 24); NOT SEEN non-zero: always off
+g_arenaJoinPassword | OK | code: cleared by arena_editJoinPassword; arena_gamesPageFrame copies the typed line in and strcmp's it with the session's password; arena_drawGameList draws it; NOT SEEN: join a password-locked arena game from the LAN list and type its password
+g_arenaJoinPassword4 | OK | code: cleared by arena_editJoinPassword and arena_gamesPageFrame (the 8-byte memset); NOT SEEN: type a join password longer than 4 characters for a locked arena game
+g_newArenaPassword4 | OK | code: cleared by lobby_loadArenaSettings and arenaCreate_keys (memset 8 before the strcpy); NOT SEEN: type a create-arena password of 5+ characters
+g_arenaListPlayers | OK | code: 0 by lobby_openConnection; arena_mergeReceivedSessions adds each entry's players; no other reader; NOT SEEN: the internet arena list merged with a server that has players (lobby server)
+g_typedArenaAddress | OK | code: cleared by arena_editAddress; filled by arena_gamesPageFrame (typed line) and arena_startFromLauncher (g_serverAddressArg); its address passed by arena_joinListed(99999); run: "137." first word in mp
+g_typedArenaAddress4 | OK | code: cleared by arena_editAddress (the rest is written through the 24-byte memset / strcpy); run: second word of the typed address in mp
+g_unusedArmcWord4 | OK | code: only written 0 by armc_open (1 write); NOT SEEN non-zero: only ever 0
+g_chestMaxArmor | OK | code: written chest->maxArmor by armc_readPartPanels; read by armc_drawStatsPanel (section_chest: "%d" and fimul for the skill bonus); run: 150
+g_chestMaxShield | OK | code: written chest->maxShield by armc_readPartPanels; read by armc_drawStatsPanel (MAX SHIELD with skill + item bonus); run: 150
+g_viewedPartAmmoType | OK | code: written by armc_viewedPartRecord; read by armc_drawWeaponsScreen (-1 special weapon branch); run: -1 .. 3
+g_viewedPartAmmoPerShot | OK | code: written by armc_viewedPartRecord (ammoPerShot, or the actorItems index for a special item); read by armc_drawWeaponsScreen; run: 1, 2, 4, 6 (per shot) and 27 .. 35 (item indices) - both uses seen
+g_panel0Speed | OK | code: written 0.15 by armc_initPanels; armc_drawPanels reads speeds indexed from this address but k runs 1 .. 5, so panel 0's is never read; run: 0.15
+g_panel1Speed | OK | code: written -0.35 by armc_initPanels; read as g_panels[1].speed by armc_drawPanels (indexed from g_panel0Speed's address); run: -0.35
+g_panel2Speed | OK | code: written -1.5 by armc_initPanels; read indexed by armc_drawPanels; run: -1.5
+g_panel3Speed | OK | code: written 1.5 by armc_initPanels; read indexed by armc_drawPanels; run: 1.5
+g_panel4Speed | OK | code: written -0.18 by armc_initPanels; read indexed by armc_drawPanels; run: -0.18
+g_panel5Speed | OK | code: written 0.18 by armc_initPanels; read indexed by armc_drawPanels; run: 0.18
+g_unusedArmcWord1 | OK | code: only written 0 by armc_openWeaponsPage; NOT SEEN non-zero: only ever 0
+g_unusedArmcPoint0Y | OK | code: only written 300 by armc_initCameraPoints; addr_access over 0x4dca30 .. +0x5c: 18 writes, no reads; run: 300
+g_unusedArmcPoint3Y | OK | code: only written -500 by armc_initCameraPoints (table never read); run: -500
+g_unusedArmcPoint5Y | OK | code: only written 350 by armc_initCameraPoints (table never read); run: 350
+g_mechDetectionRange | OK | code: written sqrt(Player.detectionRangeSq) x 0.01 by armc_readMechStats; read by armc_drawStatsPanel (section_mech "%.1f(m)"); run: 220, 600, 700
+g_mechHackingLevel | OK | code: written Player.hackingLevel by armc_readMechStats; read by armc_drawStatsPanel ("%d(Lv)"); run: 1, 5, 8
+g_unusedMechStat | OK | code: only written (the booster type's thrustType) by armc_readMechStats; run: 2 (the same as g_boosterThrustType)
+g_mechMaxSpeedBwd | OK | code: written -(g_mechNormalSpeed x runTop[1]) by armc_readMechStats; read by armc_drawStatsPanel (MAX SPEED's last); run: 685.3, 765.9
+g_mechWeaponSlot0 | OK | code: written by armc_loadSavedMech, armc_takeCursorItem; read by armc_makeSession, armc_saveSelection, armc_sendSelectionToNet, armc_openWeaponsPage, armc_pickSlot, menuState700_armCenter; run: item ids 1 .. 36
+g_mechWeaponSlot1 | OK | code: same writers / readers as slot 0 (slot 1); run: 3
+g_mechWeaponSlot2 | OK | code: same (slot 2); run: 4
+g_mechWeaponSlot3 | OK | code: same (slot 3); run: 22
+g_unusedArmcWord3 | OK | code: only written 5 by armc_open; run: 5
+g_boosterThrustType | OK | code: written booster->thrustType by armc_readPartPanels; read by armc_drawStatsPanel (MSG(651 + it)); run: 2
+g_headHackingLevel | OK | code: written head->hackingLevel by armc_readPartPanels; read by armc_drawStatsPanel (HACKING LEVEL); run: 1, 5
+g_unusedArmcWord2 | OK | code: only written 1 by armc_openWeaponsPage; run: 1
+g_armcPanelDepth | OK | code: written 0 by armc_initCameraBox, read by armc_drawPanels (glTranslatef z); NOT SEEN non-zero: always 0 (only writer stores 0)
+g_unusedStartupWord3 | OK | code: only written 0 by app_startupLoad; NOT SEEN non-zero: only ever 0
+g_unusedStartupWord2 | OK | code: only written 0 by app_startupLoad; NOT SEEN non-zero: only ever 0
+g_setupResolution | OK | code: written by setup_selectGraphicTab (copy of g_graphicInUse), setup_graphicTabClicks / Keys (step with wrap); read by setup_drawGraphicPage (g_resolutionNames[it]); run: 7 (DESKTOP)
+g_freeCamLookY | OK | code: never written in the original (addr_access: 3 reads); freeCam_keys reads it for the eye's y (+10), the look-at's y (+ g_freeCamTilt) and the local slot camera's y; the y of the (g_freeCamLookX, Y, Z) point; NOT SEEN non-zero: nothing sets it
+g_unusedFreeCamMoveWord | OK | code: only written 30.0 bits by freeCam_mouseLook; NOT SEEN: click in the free camera (spectating in a hosted arena, sessA's free camera with a mouse click)
+g_unusedPostMatchFlag | OK | code: only written 1 by game_postMatch and freeCam_keys (Cancel); NOT SEEN: finish a match (game_postMatch) - the sampler may not have caught the post-match frame
+g_arenaPassword | OK | code: cleared / filled by arena_startFromLauncher; its address copied by lobby_keepArenaSettings and lobby_announceArena (packet->password); NOT SEEN: host an arena with a password (create-arena form's password) and announce it
+g_arenaPassword4 | OK | code: only written 0 by arena_startFromLauncher (the rest goes through the char[8] copies); NOT SEEN: launcher start with a 5+ character password
+g_arenaLocked | OK | code: written by lobby_keepArenaSettings and arena_startFromLauncher ("secret"); read by lobby_announceArena (packet->locked); NOT SEEN: host a password-locked arena game
+g_menuTunnelSpeed | OK | code: written 1.0 by menuState100_intro and menuState600_enterSetup only; read (fld) by every tunnel draw: lobbyTop_drawMenu, arena_drawTunnel, armc_drawTunnel, armc_drawPreviewTunnel, setup_drawMenu, setup_drawTunnel, room_drawMenu, room_drawTunnel, mainmenu_drawMenu (stripe scroll step); run: 1
+g_mouseSmooth | OK | code: written by input_setDefaultBindings (0) and cfg_readKeyBindings; read only by cfg_writeKeyBindings ("ON" / "OFF"); NOT SEEN: turn SMOOTH MOUSE ON on the setup screen's controls tab (and save)
+g_unusedMenuReturnWord | OK | code: only written 0 by menuState100_intro, the game_returnTo* resets (reset_menus) and profile_logIn (6 writes, no reads); NOT SEEN non-zero: only ever 0
+g_arenaFilePassword | OK | code: cleared and strcpy'd by arena_loadSettings; its address read by arena_startFromLauncher (copied into g_arenaPassword); NOT SEEN: launcher start with an arena file that has a password
+g_arenaFilePassword4 | OK | code: only cleared by arena_loadSettings (the rest written through the strcpy); NOT SEEN: launcher arena file with a 5+ character password
+g_unusedStartupWord1 | OK | code: only written 0 by app_startupLoad; NOT SEEN non-zero: only ever 0
+g_unusedRoomListWord | OK | code: only written 0 by lobby_openConnection and gameList_refresh (0x434d00; csv name gameList_open); NOT SEEN non-zero: only ever 0
+g_freeCamYaw | OK | code: freeCam_mouseLook adds the pointer offset x 0.28125 x frame time and wraps 0 .. 360; read by freeCam_stepLeft / Right (+90) and turn_update (sin / cos, slot record); NOT SEEN: in a hosted arena's free camera (screen 9999) move the mouse sideways
+g_unusedRoomWord | OK | code: only written 0 by menu_returnToMainFromRoom and menuState800_enterGameRoom; NOT SEEN non-zero: only ever 0
+g_unusedLoginWord | OK | code: only written 0 by newIdForm_openField and room_openLogin; NOT SEEN non-zero: only ever 0
+g_pilotRank | OK | code: only written by account_takeRank (from g_receivedRank, 0 out of rank); never read; NOT SEEN: open the Ladder account page with a ranked ID (rank reply in the first 1000)
+g_roomListPlayers | OK | code: 0 by room_enterGameList and gameList_refresh; room_mergeReceivedSessions adds each entry's players; no other reader; NOT SEEN: the Ladder game list with a room that has players
+g_unusedActive | OK | code: the WM_ACTIVATEAPP wParam stored by game_wndProc (installed exe's cursorfix path; addr_access sees only the address operand), never read; run: 0 / 1
+g_unusedInitWord | OK | code: only written 0 by app_init; NOT SEEN non-zero: only ever 0
+g_unusedReplayListWord1 | OK | code: only written 0 by replayList_open; NOT SEEN non-zero: only ever 0
+g_unusedReplayListWord2 | OK | code: only written 0 by replayList_open; NOT SEEN non-zero: only ever 0
+g_unusedMainMenuWord | OK | code: only written 0 by replaySelect_allOut; NOT SEEN non-zero: only ever 0
+g_missionsDrawBackground | OK | code: 1 by menuState900_enterMissions; written by missions_camera (menu_camera2's mode 0 / 1); read by menuState900_missions (draws the background); run: 1 in missions
+g_unusedBriefingWord | OK | code: only written 0 by mission_loadBriefing; NOT SEEN non-zero: only ever 0
+g_misHeader1 | OK | code: cleared by missions_clear, fread by mission_loadAxisMis (the 16-byte header); never read; NOT SEEN non-zero: axis.mis's header word is 0 (or the mission screen's sampler missed it)
+g_misHeader2 | OK | code: cleared by missions_clear, fread by mission_loadAxisMis; missionList_hitTest only compares a pointer with its address (an end bound, not a read); NOT SEEN non-zero: header word 0
+g_misHeader3 | OK | code: cleared by missions_clear, fread by mission_loadAxisMis; never read; NOT SEEN non-zero: header word 0
+g_unusedProfileCameraWord | OK | code: only written -1 by profile_quitGame; NOT SEEN: quit the game from the profile screen (the process ends right after)
+g_profileNoneAtEntry | OK | code: written by menuState210_enter (1 with g_profileCount 0, else 0); read by profile_listPage (runs profile_typeNewName); NOT SEEN: enter the profile screen with no profiles (an empty Save folder - back up Save first)
+g_netChatMessageKind | OK | code: written 0 then 1 by net_resetState only; never read; run: 1 in host / mp / sessA
+g_netChatMessageWord1 | OK | code: only written 0 by net_resetState; NOT SEEN non-zero: only ever 0
+g_netChatMessageFrom | OK | code: only written 0 by net_resetState; NOT SEEN non-zero: only ever 0
+g_netChatMessageText | OK | code: only written 0 by net_resetState; NOT SEEN non-zero: only ever 0
+g_netSlotMessageKind | OK | code: 0 then 6 by net_resetState; its address sent by net_handleSystemMessage (net_sendMessage of g_netSlotMsg); run: 6
+g_netPacketMessageKind | OK | code: net_resetState clears 0x103 words from it and sets 7; its address sent by net_sendPacketData and used by netq_receive; run: 7
+g_receivedRank | OK | code: read only by account_takeRank (into g_pilotRank / g_accountRank unless g_outOfRank); filled by the rank reply's recv into g_rankReply; NOT SEEN: open the Ladder account page with a ranked ID
+g_unusedNetResetWord | OK | code: only written 0 by net_resetConnection; NOT SEEN non-zero: only ever 0
+g_lobbyTcpPort | OK | code: RegQueryValueExA "TcpPort" by reg_readServerSettings, 0 by net_clearServerSettings, low word read by net_resetConnection(100) into g_serverPort; run: 2020
+g_ladderPort | OK | code: RegQueryValueExA "LadderPort" by reg_readServerSettings, 0 by net_clearServerSettings, low word read by net_resetConnection(101); run: 2040
+g_profileReplyResult | OK | code: net_resetConnection clears the reply; net_recv reads the 0x10b answer into it and switches on this first dword; run: 33 = 0x21 (login ok) in formsB / roomF
+g_roomListRequest | TYPE -> u32 * | code: a heap pointer (net_resetConnection stores the 4-byte alloc, net_freeBuffers frees it, gameList_refresh writes 0x180001 THROUGH it, net_send(19) sends what it points at); run: values 334880024 .. 336469120 are heap addresses; its twin g_arenaListRequest is already u32 *. Uses to change: room_dialogs.c gameList_refresh "GAME_VAR(u32, g_roomListRequest) = 0x180001" -> "*g_roomListRequest = 0x180001"; the ADDR() uses in frees.c / net_tables.c stay; comment "points (kept as u32) at" -> "the 4-byte body of request 19 ..."
+g_unusedSessionWord | OK | code: only written 0 by dplay_openConnection; NOT SEEN non-zero: only ever 0
+g_unusedDplayWord1 | OK | code: only written 0 by dplay_init; NOT SEEN non-zero: only ever 0
+g_unusedDplayWord2 | OK | code: only written 0 by dplay_init; NOT SEEN non-zero: only ever 0
+g_unusedDplayWord3 | OK | code: only written 0 by dplay_init; NOT SEEN non-zero: only ever 0
+g_unusedDplayWord4 | OK | code: only written 0 by dplay_init; NOT SEEN non-zero: only ever 0
+g_unusedPingWord1 | OK | code: only written 0 by net_pingServer; NOT SEEN non-zero: only ever 0
+g_unusedPingWord2 | OK | code: only written 0 by net_pingServer; NOT SEEN non-zero: only ever 0
+g_vecOrigin | OK | code: written 0 by vec_initOrigin only; read as a point / copy by armc_updatePartsPreview, armc_updateWeaponsPreview, actor_processFrame, stage_remakePlayerActor, scene_startSession, ObjectList_poseBones, particle_placeAtMatrix; NOT SEEN non-zero: always 0 by design
+g_vecUnitZ | OK | code: written (0, 0, 1) by vec_initAxisZ; read by actor_processFrame (shot direction), scene_startSession (camera direction negated) and particle_draw (the flare's world z axis); NOT SEEN non-zero: this is the X word (0); the comment could add particle_draw
+g_vecZero | OK | code: written 0 by vec_initZero; copied by actor_setupFromParts, actor_processFrame, particle_update, collision (outVel), free camera moves; NOT SEEN non-zero: always 0 by design
+g_penInitialized | OK | code: never written (addr_access: 1 read), read by pen_init's guard; NOT SEEN non-zero: nothing sets it
+g_packedRed | OK | code: bytes ff 00 00 ff by colour_initPackedRed; read by tex_loadImage (colour mask fill), address passed by the mech-test frame's grid segments; run: 0xff0000ff
+k_5f | OK | code: 5.0 read by mapList_mouse, arenaGames_mouse / keys (repeat clock), arena_camera, armc_drawPanels, menu_frame, the loading wait ...; run: 5
+k_200f | OK | code: 200.0 read by the tunnel draws (stripe wrap), armc_drawPanels, actor pose (strafe x 200), particle marks, match_start grids; run: 200
+k_38f | OK | code: 38.0 read by the tunnel glows and profile_drawPilotSelect's pulse bound; run: 38
+k_0_01f | OK | code: the constant (value 0.01) is only read, by armc_cameraStep, armc_drawStatsPanel, lobbyTop_drawMenu - matches its name; run: 0.01 always
+k_500f | OK | code: the constant (value 500) is only read, by actor_processFrame, armc_easeCamera - matches its name; run: 500 always
+k_0_07f | OK | code: the constant (value 0.07) is only read, by armc_cameraStep, missions_camera, skirmish_camera - matches its name; run: 0.07 always
+k_45f | OK | code: the constant (value 45) is only read, by menuTunnel_advance, menu_frame - matches its name; run: 45 always
+k_1000000f | OK | code: the constant (value 1e+06) is only read, by actor_processFrame, menu_frame, ranking_fillPage - matches its name; run: 1e+06 always
+k_0_2f | OK | code: the constant (value 0.2) is only read, by actor_processFrame, actor_setupFromParts, menu_drawBackground3D, menu_titleEmblemTransition, profile_drawManagementWindow, profile_logOutPage, setup_drawTunnel - matches its name; run: 0.2 always
+k_640f | OK | code: the constant (value 640) is only read, by actor_drawIntoView, hud_drawPlayerMarkers, menu_drawFrame, stage_setupView - matches its name; run: 640 always
+k_3f | OK | code: the constant (value 3) is only read, by actor_processFrame, freeCam_keys, freeCam_stepLeft, freeCam_stepRight, mainmenu_drawMenu, menu_titleEmblemTransition - matches its name; run: 3 always
+k_0_95f | OK | code: the constant (value 0.95) is only read, by menu_drawBackground3D, profile_drawChosenPilot, profile_drawPilotSelect - matches its name; run: 0.95 always
+k_90f | OK | code: the constant (value 90) is only read, by freeCam_stepLeft, freeCam_stepRight, menuTunnel_advance, profile_drawPilotSelect - matches its name; run: 90 always
+k_2000f | OK | code: the constant (value 2000) is only read, by freeCam_mouseLook, match_frame, particle_draw, particle_update, replay_frame - matches its name; run: 2000 always
+k_m50f | OK | code: the constant (value -50) is only read, by freeCam_mouseLook, match_combatInput, particle_draw - matches its name; run: -50 always
+k_0_28125f | OK | code: the constant (value 0.28125) is only read, by freeCam_mouseLook - matches its name; run: 0.28125 always
+k_120f | OK | code: the constant (value 120) is only read, by mainmenu_drawMenu - matches its name; run: 120 always
+k_m549_9f | OK | code: the constant (value -549.9) is only read, by mainmenu_drawMenu - matches its name; run: -549.9 always
+k_m549_99f | OK | code: the constant (value -549.99) is only read, by missions_camera, skirmish_camera - matches its name; run: -549.99 always
+k_m549f | OK | code: the constant (value -549) is only read, by missions_camera, skirmish_camera - matches its name; run: -549 always
+k_m890f | OK | code: the constant (value -890) is only read, by actor_processFrame, match_frame, match_freeCamFrame, replay_frame - matches its name; run: -890 always
+k_890f | OK | code: the constant (value 890) is only read, by actor_processFrame, armc_drawPreview3D, match_frame, match_freeCamFrame, replay_frame - matches its name; run: 890 always
+k_8 | OK | code: the constant (value 8) is only read, by ptx_initDequantTables, ptx_initFdctDivisors - matches its name; run: 8 always
+k_100 | OK | code: the constant (value 100) is only read, by ptx_initFdctDivisors - matches its name; run: 100 always
+k_27 | OK | code: the constant (value 27) is only read, by stage_build - matches its name; run: 27 always
+g_arenaKeptCamX | OK | code: written by arena_camera (menu_camera's snap: the eye's x) and read by armc_cameraStep (menu_camera2: the eye put back on return to the lobby); run: -35, 35
+g_arenaKeptCamY | OK | code: written by arena_camera (eye y), read by armc_cameraStep; NOT SEEN non-zero: the lobby points' eye y is 0
+g_arenaKeptCamZ | OK | code: written by arena_camera (eye z), read by armc_cameraStep; arenaGameList_hitTest only compares a pointer with its address (end bound); run: -1650
+g_arenaKeptLookX | OK | code: written by arena_camera (g_menuCameraLook kept at the snap), read by armc_cameraStep (put back); run: -70, 70
+g_arenaKeptLookY | OK | code: as g_arenaKeptLookX (y); run: -35, 35
+g_arenaKeptLookZ | OK | code: as g_arenaKeptLookX (z); run: -1650
+g_chestWeightLimit | OK | code: written chest->weightLimit by armc_readPartPanels; read by armc_drawStatsPanel (WEIGHT LIMIT "%.1f" + skill 4 / item bonus); run: 190
+g_itemBonusCapacityPerLevel | OK | code: 0 / 0.3 by armc_applyExtraItemBonuses (item 27); read by armc_drawStatsPanel (section_arms: level x it + base); run: 0.3 in itemsD
+g_itemBonusDetectionRange | OK | code: 0 / 100 by armc_applyExtraItemBonuses (item 32); read by armc_drawStatsPanel (section_head fadd); run: 100 in itemsD
+g_legsSpeedCorrection | OK | code: written leg->speedCorrection x 100 by armc_readPartPanels; read by armc_drawStatsPanel (section_legs line and section_booster's percent); run: -20
+g_legsWeight | OK | code: written leg->weight by armc_readPartPanels; read by armc_drawStatsPanel (WEIGHT) and armc_drawWeightLine (sum); run: 30
+g_armsFcsLevel | OK | code: written by armc_readPartPanels (g_armsStats[0]); read by armc_drawStatsPanel ("%d(Lv)"); run: 4
+g_armsWeight | OK | code: written arm->weight by armc_readPartPanels; read by armc_drawStatsPanel and armc_drawWeightLine; run: 40
+g_itemBonusTargetKeep | OK | code: 0 / 1 by armc_applyExtraItemBonuses (item 32); read by armc_drawStatsPanel (TARGET KEEPING TIME bonus); run: 1 in itemsD
+g_itemBonusRechargeTime | OK | code: 0 / -0.1 by armc_applyExtraItemBonuses (item 33); read by armc_drawStatsPanel (booster RECHARGE TIME bonus); run: -0.1 in itemsD
+g_itemBonusLockOn | OK | code: 0 / 0.5 by armc_applyExtraItemBonuses (item 32); read by armc_drawStatsPanel (LOCK ON EFFICIENCY bonus); run: 0.5 in itemsD
+g_mechMobility | OK | code: written Player.mobility by armc_readMechStats; read by armc_drawStatsPanel ("%.2f"); run: 8.95, 10
+g_mechBoostTime | OK | code: written Player.boostTime x 1000 by armc_readMechStats; read by armc_drawStatsPanel ("%.1f/" of BOOSTER ENERGY); run: 3000, 4500
+g_mechBoosterRecharge | OK | code: written Player.rechargeTime x 1000 by armc_readMechStats; read by armc_drawStatsPanel ("%.1f("); run: 250, 500
+g_mechNormalSpeed | OK | code: written Player.speed x 0.036 by armc_readMechStats, which reads it back for the top speeds; read by armc_drawStatsPanel (NORMAL SPEED km/h); run: 100.66, 112.5
+g_itemBonusShield | OK | code: 0 / 0.3 by armc_applyExtraItemBonuses (item 35); read by armc_drawStatsPanel (MAX SHIELD bonus); run: 0.3
+g_hasItemCapacity | OK | code: only written (0 / 1, item 27) by armc_applyExtraItemBonuses (3 writes); run: 1 in itemsD
+g_hasItemEpak | OK | code: only written (item 28) by armc_applyExtraItemBonuses; run: 1 in itemsD
+g_hasItem30mm | OK | code: only written (item 29) by armc_applyExtraItemBonuses; run: 1 in itemsD
+g_hasItem60mm | OK | code: only written (item 30) by armc_applyExtraItemBonuses; run: 1 in itemsD
+g_hasItemMissile | OK | code: only written (item 31) by armc_applyExtraItemBonuses; run: 1 in itemsD
+g_hasItemSensor | OK | code: only written (item 32) by armc_applyExtraItemBonuses; run: 1 in itemsD
+g_hasItemBooster | OK | code: written (item 33) and compared by armc_applyExtraItemBonuses (its only reader); run: 1 in itemsD
+g_hasItemWeight | OK | code: written (item 34) and compared by armc_applyExtraItemBonuses (its only reader); run: 1
+g_hasItemShield | OK | code: written (item 35) and compared by armc_applyExtraItemBonuses; mech_unpackFromRecord / armc_sendSelectionToNet only compare pointers with its address (a loop end); run: 1
+g_itemBonusActiveTime | OK | code: 0 / 0.5 by armc_applyExtraItemBonuses (item 33); read by armc_drawStatsPanel (ACTIVE TIME bonus); run: 0.5 in itemsD
+g_boosterActiveTime | OK | code: written times[0] x 1000 by armc_readPartPanels; read by armc_drawStatsPanel (ACTIVE TIME / 1000 + bonus); run: 3000
+g_boosterRechargeTime | OK | code: written times[1] x 1000 by armc_readPartPanels; read by armc_drawStatsPanel (RECHARGE TIME + bonus); run: 500
+g_boosterRechargeDelay | OK | code: written times[2] x 1000 by armc_readPartPanels; read by armc_drawStatsPanel (DELAY FOR RECHARGE); run: 600
+g_boosterNormalSpeed | OK | code: written speeds[0] x 0.036 by armc_readPartPanels; read by armc_drawStatsPanel (NORMAL SPEED, bonus, compare); run: 150
+g_boosterWeight | OK | code: written booster->weight by armc_readPartPanels; read by armc_drawStatsPanel ("%.1f(Ton)") and armc_drawWeightLine; run: 28
+g_itemBonusWeightLimit | OK | code: 0 / 0.2 by armc_applyExtraItemBonuses (item 34); read by armc_drawStatsPanel (WEIGHT LIMIT bonus); run: 0.2
+g_itemBonusHacking | OK | code: 0 / 3 by armc_applyExtraItemBonuses (item 32); read by armc_drawStatsPanel (HACKING LEVEL bonus); run: 3 in itemsD
+g_headDetectionRange | OK | code: written detectionRange x 0.01 by armc_readPartPanels; read by armc_drawStatsPanel (DETECTION RANGE + bonus); run: 220, 600
+g_headDetectionAngle | OK | code: written detectionAngle x 0.1 by armc_readPartPanels; read by armc_drawStatsPanel (DETECTION ANGLE); run: 15, 18
+g_headLockOnTime | OK | code: written lockOnTime x 100 by armc_readPartPanels; read by armc_drawStatsPanel (fdiv: 100 / it x 100 percent); run: 80, 140
+g_headTargetKeepTime | OK | code: written targetKeepTime x 1000 by armc_readPartPanels; read by armc_drawStatsPanel (TARGET KEEPING TIME); run: 1000
+g_headWeight | OK | code: written head->weight by armc_readPartPanels; read by armc_drawStatsPanel and armc_drawWeightLine; run: 2, 15
+g_fpsSecondStart | OK | code: menu_frame reads it (now - it) and resets it to now once a second passes; run: 1 .. 300 s (the junk in the value list is the sampler's double read)
+g_lastFrameClock | OK | code: 0 by menuState100_intro; menu_frame reads it for 1 / (now - it) and stores now; run: 0.6 .. 300.7 s
+g_fpsFrameClock | OK | code: written now by menu_frame only (1 write), never read; run: same seconds as g_lastFrameClock
+g_frameRate | OK | code: written 1 / (now - g_lastFrameClock) by menu_frame only (1 write; the frame time is worked from the register, not from it); run: 0.05 .. 341
+g_fpsSecondSoFar | COMMENT | code: written (fst) by menu_frame and READ BACK right away by menu_frame (fdiv qword: g_fps = frames / it), so "never read" is wrong; run: 0.008 .. 22.7 s -> "seconds since g_fpsSecondStart, as of this frame (menu_frame, only while g_showFps); menu_frame divides the frames counted by it for g_fps"
+g_fps | OK | code: written frames / g_fpsSecondSoFar by menu_frame once a second, no reader (1 write); run: 3.4 .. 120.7
+g_freeCamMoveStarted | OK | code: read and set 1 by freeCam_mouseLook on the first click only; NOT SEEN: click the mouse once in a hosted arena's free camera (screen 9999)
+g_freeCamMoveEyeX | OK | code: only written (sin x 2000 + slot x) by freeCam_mouseLook's first click; NOT SEEN: same first click in the free camera
+g_freeCamMoveEyeY | OK | code: only written (the slot's y) by freeCam_mouseLook's first click; NOT SEEN: same (and the slot y is non-zero)
+g_freeCamMoveEyeZ | OK | code: only written (cos x 2000 + slot z) by freeCam_mouseLook's first click; NOT SEEN: same first click
+g_freeCamTurnSin | OK | code: written sin(g_freeCamYaw) by freeCam_mouseLook (turn_update); read by freeCam_mouseLook (first-click eye) and freeCam_keys (moves, eye x - it x 50); NOT SEEN non-zero: the yaw stays 0 unless the mouse turns the free camera (move the mouse sideways in a hosted arena's free camera)
+g_freeCamTilt | OK | code: freeCam_mouseLook moves it by the pointer's y offset x 0.1 x frame time within -50 .. 50; freeCam_keys reads it for the look-at y; NOT SEEN: move the mouse up / down in the free camera
+g_freeCamTurnCos | OK | code: written cos(g_freeCamYaw) by freeCam_mouseLook; read by freeCam_mouseLook and freeCam_keys; NOT SEEN: never sampled in a free-camera frame (cos 0 = 1 would be non-zero, so the free camera itself was not reached while sampling) - enter the free camera in a hosted arena (sessA's free camera key)
+g_freeCamMoveTargetX | OK | code: only written (the slot's x) by freeCam_mouseLook's first click; NOT SEEN: first click in the free camera
+g_freeCamMoveTargetY | OK | code: only written (the slot's y) by freeCam_mouseLook's first click; NOT SEEN: first click in the free camera
+g_freeCamMoveTargetZ | OK | code: only written (the slot's z) by freeCam_mouseLook's first click; NOT SEEN: first click in the free camera
+g_ladderPassword | OK | code: cleared by menuState800_enterGameRoom and login_send, the typed password strcpy'd in by login_send; account_sendChange strcmp's it with the old-password field; NOT SEEN: log in to the Ladder server with a non-empty password
+g_ladderPassword4 | OK | code: cleared by menuState800_enterGameRoom and login_send (the rest through the strcpy); NOT SEEN: Ladder login with a 5+ character password
+g_ladderPassword8 | OK | code: cleared by menuState800_enterGameRoom and login_send; NOT SEEN: Ladder login with a 9+ character password
+g_replaySelectDimR | OK | code: 0.3 by menuState300_enter; read by replaySelect_drawDialog (dim rows); replaySelect_layout only compares with its address; run: 0.3
+g_replaySelectDimG | OK | code: 0.7 by menuState300_enter; read by replaySelect_drawDialog; run: 0.7
+g_replaySelectDimB | OK | code: 0.7 by menuState300_enter; read by replaySelect_drawDialog (replaySelect_hitTest only compares with its address); run: 0.7
+g_replaySelectDimA | OK | code: 1 by menuState300_enter; read by replaySelect_drawDialog; run: 1
+g_replaySelectLitR | OK | code: 0 by menuState300_enter; read by replaySelect_drawDialog (title / hovered row); NOT SEEN non-zero: the lit colour is (0, 1, 1, 1), R is always 0
+g_replaySelectLitG | OK | code: 1 by menuState300_enter; read by replaySelect_drawDialog; run: 1
+g_replaySelectLitB | OK | code: 1 by menuState300_enter; read by replaySelect_drawDialog; run: 1
+g_replaySelectLitA | OK | code: 1 by menuState300_enter; read by replaySelect_drawDialog; run: 1
+g_keptChatLine | OK | code: the address of g_keptChat used by chat_endTyping (memset + copy), match_frame (sends it / cheat check) and escMenu_update (replay name); run: 'g', 'h', 'y' first bytes in mp / sessA / skirmish
+g_rankReplyCode | OK | code: cleared by net_resetConnection, filled by net_recv (recv 0x22) and tested there (non-zero -> g_rankReplyIn); run: 1 in formsB
+g_arenaGameListLeft | OK | code: 20 by menuState400_enter; read by arenaGameList_layout, arena_editJoinPassword / arena_editAddress (carets), arena_drawGameList; run: 20
+g_arenaGameListTop | OK | code: 20 by menuState400_enter; read by the same; run: 20
+g_arenaGameListRight | OK | code: 610 by menuState400_enter; read by arena_drawGameList and the frame; run: 610
+g_arenaGameListBottom | OK | code: 450 by menuState400_enter; read by arenaGameList_layout, arena_drawGameList; run: 450
+g_armcPageLeft | OK | code: 10 by armc_open; read by the armc page layouts, tabs, panels, frame; run: 10
+g_armcPageTop | OK | code: 10 by armc_open; read by the armc layouts, the tabs, the weight line, the panels; run: 10
+g_armcPageBottom | OK | code: 470 by armc_open; read by the armc layouts, panels, frame; run: 470
+g_setupSoundLeft | OK | code: 50 by menuState600_enterSetup; read by setupSound_layout rects, setup_drawSoundPage, the volume slider's pointer x (volume_at_pointer); run: 50
+g_setupSoundRight | OK | code: 590 by menuState600_enterSetup; read by setup_drawSoundPage; run: 590
+g_setupGraphicTop | OK | code: 30 by menuState600_enterSetup; read by setupGraphic_layout and setup_drawGraphicPage; run: 30
+g_setupControlLeft | OK | code: 40 by menuState600_enterSetup; read by setupControl_layout, the slider rects, slider_press (pointer x), the controls page draw; run: 40
+g_setupControlTop | OK | code: 30 by menuState600_enterSetup; read by the same layouts / draw; run: 30
+g_setupControlRight | OK | code: 590 by menuState600_enterSetup; read by setupControl_layout and the controls page draw; run: 590
+g_sensitivitySlider | OK | code: 50 by setup_defaultBindings, copied in by setup_selectControlTab; stepped / set by setup_sliderClicks (slider_press); read by the controls page's bar; run: 47 .. 50 in setupE
+g_ladderExp | OK | code: written by login_takeAccountRecord, newId_register, ladder_addMatchScores (+ score), ladder_checkAndSendRecord (cut to 2 a kill); read by match_startRound (levelPoints), pilotRecord_syncCopies, ladder_checkAndSendRecord; NOT SEEN: score in a Ladder match (or log in with an ID that has exp)
+g_ladderPower | OK | code: written by login_takeAccountRecord / newId_register (from g_pilotPower) and ladder_checkAndSendRecord (power_from_rate); read by pilotRecord_syncCopies and record_send; NOT SEEN: finish a Ladder match with a kill (or log in with an ID that has power)
+g_ladderGames | OK | code: written by login_takeAccountRecord, newId_register, match_startRound (+1, match_setup), match_frame (+1 next round / restart), ladder_checkAndSendRecord; read by pilotRecord_syncCopies, record_send; run: 1 in roomF
+g_ladderKills | OK | code: written by login_takeAccountRecord, newId_register, ladder_addMatchScores (+ new kills), ladder_checkAndSendRecord (take_back); read by the kill rate, pilotRecord_syncCopies; NOT SEEN: kill someone in a Ladder match
+g_ladderDeaths | OK | code: as g_ladderKills with deaths (ladder_addMatchScores + new deaths); NOT SEEN: die in a Ladder match
+g_menuFramePhase | OK | code: 1 by menuState210_enter (and the screen entries), stepped 1 -> 2 -> 3 by menu_drawFrameOpening, which reads it; run: 0 .. 3
+g_gameListRow | OK | code: 0 by menuState400_enter, lobby_enterArenaList, lobby_openConnection, room_enterGameList, gameList_refresh; moved by arenaGames_keys / mouse and gameList_keys / mouse; NOT SEEN: pick the second row (or below) of the LAN / Ladder game list
+g_gameListTop | OK | code: same writers as g_gameListRow, read by arena_drawGameList and gameList_draw too; NOT SEEN: scroll a game list of more than nine games
+g_menuFrameCounter | OK | code: 0 by the screen entries, +1 a frame and read (fild) by menu_drawFrameOpening; run: 1 .. 20
+g_clockNow | OK | code: cleared by timer_init, advanced by timer_now, stored by menu_frame; read by timer_now; run: 0.1 .. 300.7 s
+g_fieldStep | OK | code: 20 / 10 by editField_editProc (Enter, Tab, Shift+Tab), 0 by the forms; read and cleared by roomLogin_keys / roomLogin_update, newIdForm_keys / update / check, account_page; run: 0, 20
+g_roomLoginLeft | OK | code: 50 by menuState800_enterGameRoom; read by roomLogin_layout, roomLogin_draw, the login fields; run: 50
+g_roomLoginTop | OK | code: 110 by menuState800_enterGameRoom; read by the same; run: 110
+g_roomLoginBottom | OK | code: 370 by menuState800_enterGameRoom; read by the layout and the button placement; run: 370
+g_accountPanelLeft | OK | code: 60 by menuState800_enterGameRoom; read by account_layout, account_drawPanel, the account fields, the frame; run: 60
+g_accountPanelTop | OK | code: 30 by menuState800_enterGameRoom; read by account_layout, account_drawPanel; run: 30
+g_accountPanelRight | OK | code: 580 by menuState800_enterGameRoom; read by account_layout, account_drawPanel; run: 580
+g_accountPanelBottom | OK | code: 450 by menuState800_enterGameRoom; read by account_layout, account_drawPanel, the frame; run: 450
+g_roomGameListLeft | OK | code: 20 by menuState800_enterGameRoom; read by gameList_layout, gameList_draw, gameList_pageFrame, the join-password caret; run: 20
+g_roomGameListTop | OK | code: 40 by menuState800_enterGameRoom; read by the same; run: 40
+g_roomGameListRight | OK | code: 620 by menuState800_enterGameRoom; read by gameList_draw and the frame; run: 620
+g_roomGameListBottom | OK | code: 440 by menuState800_enterGameRoom; read by gameList_layout, gameList_draw; run: 440
+g_newIdFormLeft | OK | code: 30 by room_openNewIdForm only; read by newIdForm_layout, newIdForm_draw, newIdForm_openField (carets), the buttons; run: 30 in formsB / roomF
+g_newIdFormRight | OK | code: 610 by room_openNewIdForm, read by newIdForm_draw (frame x1); NOT SEEN, although its only writer also wrote g_newIdFormLeft (seen 30) in the same call - a sampler gap, not a naming problem; reach: open CREATE NEW ID in the Ladder game room
+g_newIdFormBottom | OK | code: 430 by room_openNewIdForm, read by newIdForm_layout, newIdForm_draw / keys (buttons 0x2c / 0x30 above); NOT SEEN: same sampler gap; reach: open CREATE NEW ID
+g_replaySelectLeft | OK | code: 80 by replayList_open; read by replaySelect_layout, the dialog draws; run: 80 in replay
+g_replaySelectTop | OK | code: 40 by replayList_open; read by the layout and draws; run: 40
+g_replaySelectRight | OK | code: 560 by replayList_open; read by the layout and replaySelect_drawDialog; run: 560
+g_replaySelectBottom | OK | code: 440 by replayList_open; read by the layout and replaySelect_drawDialog; run: 440
+g_menuHintStep | OK | code: 0.05 by menuState300_enter; set +-0.05 and read by mainmenu_drawMenu (hint fade step); run: -0.05, 0.05
+g_menuIdleTime | OK | code: 0 by menuState300_enter; mainmenu_drawMenu adds the frame time, clears it on a hover, compares with 120; run: 0.5 .. 1274
+g_menuHintFade | OK | code: 0 by menuState300_enter; mainmenu_drawMenu adds step x frame time, bounces 0 .. 3, draws the hint with it; run: 0 .. 3
+g_mainMenuDepth | OK | code: -300 by menuState300_enter; mainmenu_drawMenu flies it toward -550 (stops past -549.9) and passes it to menu_tunnel; run: -550 .. -300
+g_missionsWindowRight | OK | code: 630 by menuState900_enterMissions; read by missionList_layout / briefing_layout, missionList_draw, the frame; run: 630
+g_missionsWindowBottom | OK | code: 460 by menuState900_enterMissions; read by the layouts and draws; run: 460
+g_skirmishRectLeft | OK | code: 40 by menuState500_enterSkirmish; read by skirmish_layout and skirmish.c's draws; run: 40
+g_skirmishRectTop | OK | code: 10 by menuState500_enterSkirmish; read by the same; run: 10
+g_pilotSelectBottom | OK | code: 450 by menuState210_enter; read by pilotSelect_layout and the dialog draw; run: 450
+g_pilotSelectRight | OK | code: 610 by menuState210_enter; read by the dialog draw / frame; run: 610
+g_profileListTop | OK | code: written by menuState210_enter, profile_create, profile_deleteChosen (dec), profileList_mouse / keys (scroll), profile_writeCleared; fread / fwrite in axisuser.dat (profile_readHeader, profile_writeFile ...); read by the list draw; NOT SEEN non-zero: needs more than 13 profiles scrolled down (create 14 pilots, scroll the list - back up Save first)
+g_pilotSelectTop | OK | code: 20 by menuState210_enter; read by pilotSelect_layout (portraits 86 apart) and the dialog draw; run: 20
+g_pilotSelectLeft | OK | code: 30 by menuState210_enter; read by pilotSelect_layout and the dialog draw; run: 30
+g_profileListRow | OK | code: written by menuState210_enter (0 .. 12), profile_create, profile_deleteChosen, profileList_mouse / keys, profile_writeCleared; fread / fwrite with axisuser.dat's header; read by the list draw / keys; NOT SEEN non-zero: needs the cursor on the second profile or below (two or more pilots, pick the second)
+g_profileChosen | OK | code: written by menuState210_enter, profile_create, profile_deleteChosen, profileList_mouse / keys; read by profile_makeCurrent, profile_saveProgress, profile_writeFile, profile_newCampaign, profile_loadPilotStats, profileList_drawNames, profile_drawChosenPilot; NOT SEEN non-zero: only one pilot (index 0) in the sampled Save - pick the second pilot of two
+g_profilePageLeft | OK | code: 60 by menuState210_enter; read by profileList_layout, profile_listPage frame, profileList_drawNames, profile_drawManagementWindow / profile_drawChosenPilot; run: 60
+g_profilePageTop | OK | code: 60 by menuState210_enter; read by the same; run: 60
+g_profilePageRight | OK | code: 580 by menuState210_enter; read by profile_drawManagementWindow and the frame; run: 580
+g_profilePageBottom | OK | code: 420 by menuState210_enter; read by the layout and draws; run: 420
+g_newNameDialogTop | OK | code: 150 by menuState210_enter; read by newNameDialog_layout, the REGISTRY PROFILE dialog / message window draws, the name caret (+0x38); run: 150
+g_newNameDialogLeft | OK | code: 120 by menuState210_enter; read by newNameDialog_layout, the dialog draws, the caret (+0x24); run: 120
+g_newNameDialogRight | OK | code: 520 by menuState210_enter; read by the dialog / message window draws; run: 520
+g_newNameDialogBottom | OK | code: 280 by menuState210_enter; read by the dialog / message window draws; run: 280
+g_ptxHuffSet | OK | code: 0 by ptx_initTables; set per plane (p == 1 || p == 2) by ptx_read (ptx_open / ptx_decode); read by ptx_readDcDiff / ptx_readAcSymbol to pick the table; run: 0 / 1
+g_dikNumpad4 | OK | code: 0x4b by input_initDikCodes; read by match_combatInput (spectate preset) and replay_frame (camera mode); run: 75
+g_dikNumpad3 | OK | code: 0x51 by input_initDikCodes; read by match_combatInput and replay_frame; run: 81
+g_dikNumpad6 | OK | code: 0x4d by input_initDikCodes; read by match_combatInput and replay_frame; run: 77
+g_dikNumpad5 | OK | code: 0x4c by input_initDikCodes; read by match_combatInput and replay_frame; run: 76
+g_dikNumpad8 | OK | code: 0x48 by input_initDikCodes; read by match_combatInput and replay_frame; run: 72
+g_dikNumpad7 | OK | code: 0x47 by input_initDikCodes; read by match_combatInput and replay_frame; run: 71
+g_dikNumpad9 | OK | code: 0x49 by input_initDikCodes; read by match_combatInput and replay_frame; run: 73

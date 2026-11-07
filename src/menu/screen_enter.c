@@ -158,7 +158,7 @@ void (menuState600_enterSetup)(void)
 void (menuState800_enterGameRoom)(void)
 {
 	static const Store layout[] = {
-		{ ADDR(g_roomTunnelDepth), 0xc4af0000 }, { ADDR(g_roomPanelsSliding), 1 }, { ADDR(g_unusedRoomPanelEase), 0 }, { ADDR(g_roomCameraMode), 2 }, { ADDR(g_unusedRoomFloat), 0x3f333333 },
+		{ ADDR(g_roomTunnelDepth), 0xc4af0000 }, { ADDR(g_roomPanelsSliding), 1 }, { ADDR(g_roomSlideEase), 0 }, { ADDR(g_roomCameraMode), 2 }, { ADDR(g_unusedRoomFloat), 0x3f333333 },
 		{ ADDR(g_roomState), 0x42 }, { ADDR(g_connectionAwaited), 0 }, { ADDR(g_roomLoginLeft), 0x32 }, { ADDR(g_roomLoginTop), 0x6e }, { ADDR(g_roomLoginRight), 0x24e },
 		{ ADDR(g_roomLoginBottom), 0x172 }, { ADDR(g_accountPanelLeft), 0x3c }, { ADDR(g_accountPanelTop), 0x1e }, { ADDR(g_accountPanelRight), 0x244 }, { ADDR(g_accountPanelBottom), 0x1c2 },
 		{ ADDR(g_roomGameListLeft), 0x14 }, { ADDR(g_roomGameListTop), 0x28 }, { ADDR(g_roomGameListRight), 0x26c }, { ADDR(g_roomGameListBottom), 0x1b8 }, { ADDR(g_roomFormLeft), 0x28 },
@@ -329,9 +329,9 @@ int (menuState500_enterSkirmish)(void)
 u32 (menuState210_enter)(void)
 {
 	static const Store layout[] = {
-		{ ADDR(g_profilePageLeft), 0x3c }, { ADDR(g_profilePageTop), 0x3c }, { ADDR(g_profileDialogBottom), 0x10e }, { ADDR(g_logOutDialogBottom), 0x10e }, { ADDR(g_profilePageRight), 0x244 },
+		{ ADDR(g_profilePageLeft), 0x3c }, { ADDR(g_profilePageTop), 0x3c }, { ADDR(g_deleteDialogBottom), 0x10e }, { ADDR(g_logOutDialogBottom), 0x10e }, { ADDR(g_profilePageRight), 0x244 },
 		{ ADDR(g_profilePageBottom), 0x1a4 }, { ADDR(g_newNameDialogLeft), 0x78 }, { ADDR(g_newNameDialogTop), 0x96 }, { ADDR(g_newNameDialogRight), 0x208 }, { ADDR(g_newNameDialogBottom), 0x118 },
-		{ ADDR(g_profileDialogX), 0x78 }, { ADDR(g_profileDialogY), 0x96 }, { ADDR(g_profileDialogRight), 0x208 }, { ADDR(g_logOutDialogX), 0x78 }, { ADDR(g_logOutDialogY), 0x96 },
+		{ ADDR(g_deleteDialogX), 0x78 }, { ADDR(g_deleteDialogY), 0x96 }, { ADDR(g_deleteDialogRight), 0x208 }, { ADDR(g_logOutDialogX), 0x78 }, { ADDR(g_logOutDialogY), 0x96 },
 		{ ADDR(g_logOutDialogRight), 0x208 }, { ADDR(g_pilotSelectLeft), 0x1e }, { ADDR(g_pilotSelectTop), 0x14 }, { ADDR(g_pilotSelectRight), 0x262 }, { ADDR(g_pilotSelectBottom), 0x1c2 } };
 	static const u32 cleared[] = { ADDR(g_profileNoneAtEntry), ADDR(g_profileLogInAsked), ADDR(g_profileListTop), ADDR(g_profileListRow), ADDR(g_profileChosen), ADDR(g_currentProfile), ADDR(g_repeatDown), ADDR(g_repeatUp),
 	                               ADDR(g_pointerGliding) };

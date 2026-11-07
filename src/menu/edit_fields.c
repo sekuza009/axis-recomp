@@ -1,5 +1,5 @@
 /* edit_fields.c: opening a text field for typing, on the arena screens and in the game room. Typing goes through a
-   hidden EDIT control (editField_createEdit) into the shared line g_chatLine, drawn with a caret at
+   hidden EDIT control (editField_createEdit) into the shared line g_inputLine, drawn with a caret at
    (g_editCaretX, g_editCaretY); the menu keys wait meanwhile (g_textFieldOpen, g_menuKeyGuard). Each field starts from its
    current text (copied in) or empty, and raises its own "being edited" flag. */
 #include "../game.h"
@@ -28,21 +28,21 @@ static void edit_start(int maxLength)
 static void line_clear(void)
 {
 	for (int i = 0; i < 0x100; i++)
-		((u32 *)g_chatLine)[i] = 0;
+		((u32 *)g_inputLine)[i] = 0;
 }
 
 static void line_set(const char *text)
 {
 	int i = 0;
 	do
-		g_chatLine[i] = text[i];
+		g_inputLine[i] = text[i];
 	while (text[i++] != '\0');
 }
 
 static int line_length(void)
 {
 	int n = 0;
-	while (g_chatLine[n] != '\0')
+	while (g_inputLine[n] != '\0')
 		n++;
 	return n;
 }
@@ -63,7 +63,7 @@ void (arena_editPlayerName)(void)
 	line_set(g_arenaPlayerName);
 	caret(PANEL_X(PLAYER_SETUP) + 0xc2, PANEL_Y(PLAYER_SETUP) + 100);
 	g_menuKeyGuard = 5.0f;
-	g_chatLength = line_length();
+	g_inputLineLength = line_length();
 	g_typingArenaPlayerName = 1;
 	g_inputLineHidden = 0;
 	editField_createEdit(0x10);
@@ -77,7 +77,7 @@ void (arena_editGameName)(void)
 	line_set(g_newArenaName);
 	caret(PANEL_X(ARENA_SETUP) + 0xa4, PANEL_Y(ARENA_SETUP) + 0x32);
 	g_menuKeyGuard = 5.0f;
-	g_chatLength = line_length();
+	g_inputLineLength = line_length();
 	g_editingNewArenaName = 1;
 	g_inputLineHidden = 0;
 	editField_createEdit(0x1e);
@@ -92,7 +92,7 @@ static void edit_limit(int value, int y, int *editing)
 	line_set(digits);
 	caret(PANEL_X(ARENA_SETUP) + 0xa4, PANEL_Y(ARENA_SETUP) + y);
 	g_menuKeyGuard = 5.0f;
-	g_chatLength = line_length();
+	g_inputLineLength = line_length();
 	*editing = 1;
 	g_inputLineHidden = 0;
 	editField_createEdit(3);
@@ -113,7 +113,7 @@ void (arena_editPassword)(void)
 {
 	edit_start(8);
 	caret(PANEL_X(ARENA_SETUP) + 0xa4, PANEL_Y(ARENA_SETUP) + 0x54);
-	g_chatLength = line_length();
+	g_inputLineLength = line_length();
 	g_menuKeyGuard = 5.0f;
 	g_typingArenaPassword = 1;
 	g_inputLineHidden = 1;
@@ -127,7 +127,7 @@ void (arena_editJoinPassword)(void)
 	line_clear();
 	g_arenaJoinPassword = 0;
 	caret(PANEL_X(ARENA_JOIN) + 0xd8, PANEL_Y(ARENA_JOIN) + 0xd0);
-	g_chatLength = line_length();
+	g_inputLineLength = line_length();
 	g_arenaJoinPassword4 = 0;
 	g_menuKeyGuard = 5.0f;
 	g_typingArenaJoinPassword = 1;
@@ -143,7 +143,7 @@ void (room_editGameName)(void)
 	line_set(g_roomSettingsName);
 	caret(PANEL_X(ROOM_TOP) + 0xa4, PANEL_Y(ROOM_TOP) + 0x32);
 	g_menuKeyGuard = 5.0f;
-	g_chatLength = line_length();
+	g_inputLineLength = line_length();
 	g_editingRoomName = 1;
 	g_inputLineHidden = 0;
 	editField_createEdit(0x1e);
@@ -154,7 +154,7 @@ void (room_editPassword)(void)
 {
 	edit_start(8);
 	caret(PANEL_X(ROOM_TOP) + 0xa4, PANEL_Y(ROOM_TOP) + 0x54);
-	g_chatLength = line_length();
+	g_inputLineLength = line_length();
 	g_menuKeyGuard = 5.0f;
 	g_editingRoomPassword = 1;
 	g_inputLineHidden = 1;
@@ -169,7 +169,7 @@ void (roomLogin_editId)(void)
 	line_set(g_accountName);
 	caret(PANEL_X(ROOM_LOGIN) + 200, PANEL_Y(ROOM_LOGIN) + 0x58);
 	g_menuKeyGuard = 5.0f;
-	g_chatLength = line_length();
+	g_inputLineLength = line_length();
 	g_typingLoginId = 1;
 	g_typingLoginPassword = 0;
 	g_inputLineHidden = 0;
@@ -184,7 +184,7 @@ void (roomLogin_editPassword)(void)
 	if (g_retypePassword == 0)
 		line_set(g_accountPassword);
 	caret(PANEL_X(ROOM_LOGIN) + 200, PANEL_Y(ROOM_LOGIN) + 0x88);
-	g_chatLength = line_length();
+	g_inputLineLength = line_length();
 	g_menuKeyGuard = 5.0f;
 	g_typingLoginId = 0;
 	g_typingLoginPassword = 1;
@@ -201,7 +201,7 @@ static void edit_account(int field, const char *text, int y, int maxLength, int 
 	line_set(text);
 	caret(PANEL_X(ACCOUNT) + 0x98, PANEL_Y(ACCOUNT) + y);
 	g_menuKeyGuard = 5.0f;
-	g_chatLength = line_length();
+	g_inputLineLength = line_length();
 	g_editingOldPassword = field == 0;
 	g_editingAccountPassword = field == 1;
 	g_editingPasswordRepeat = field == 2;
@@ -222,7 +222,7 @@ void (room_editJoinPassword)(void)
 	line_clear();
 	g_roomJoinPassword = 0;
 	caret(PANEL_X(ROOM_JOIN) + 0xd8, PANEL_Y(ROOM_JOIN) + 0xd0);
-	g_chatLength = line_length();
+	g_inputLineLength = line_length();
 	g_roomJoinPassword4 = 0;
 	g_menuKeyGuard = 5.0f;
 	g_typingRoomJoinPassword = 1;
@@ -250,8 +250,8 @@ void (editField_readTyping)(void)
 	if (g_textFieldOpen == 0)
 		return;
 	int n = GetWindowTextLengthA(g_hEditField);
-	GetWindowTextA(g_hEditField, g_chatLine, n + 1);
-	g_chatLength = line_length();
+	GetWindowTextA(g_hEditField, g_inputLine, n + 1);
+	g_inputLineLength = line_length();
 }
 
 /* 0x433e60: the new-ID form's field k opened for typing: the name (16 typed, a 30-byte buffer), the password and its
@@ -283,6 +283,6 @@ int (newIdForm_openField)(int k)
 	}
 	caret(g_newIdFormLeft + 0x94, PANEL_Y(ADDR(g_newIdFormLeft)) + row * 0x30 + 0x3c);
 	g_menuKeyGuard = 5.0f;
-	g_chatLength = line_length();
+	g_inputLineLength = line_length();
 	return 0;
 }

@@ -1,0 +1,397 @@
+PART P2: 396 names; OK 373, RENAME 0, TYPE 0, COMMENT 23, UNSURE 0; not seen running 175
+Bullet.homeTimer | OK | code: writers bullet_init 0, home() 1/15, fly_local counts it down by dt; reader fly_local (home() when it runs out, guided weapons only); run: 0 .. 0.0667 (skirmish)
+Bullet.struck | OK | code: writers bullet_init 0, hit_actor / hit_surface 1; reader splash (only when 1); run: 0/1 (mp, replay, skirmish)
+Bullet.trail | OK | code: writers trail() (shotMode 3: ring slot trailCount % 20, 4 corners), beam() (shotMode 7: sections 0 and 1); readers beam() (particle corners), bullet_drawTrail (quads); run: world coordinates (skirmish)
+Bullet.trailAge | OK | code: writers trail() (Bullet.age per section), beam() [0] = beam length (never read back); reader bullet_drawTrail (age - 1 > trailAge ends the trail); run: 6.4 .. 10000 (beam lengths in [0]; skirmish)
+Bullet.trailCount | OK | code: writers bullet_init 0, trail() ++; readers trail() (% 20 ring slot), bullet_drawTrail (sections drawn, i <= trailCount - 18 end cap); NOT SEEN (although trail[] was): fire a rocket / trail weapon (ActorItem.shotMode 3)
+Bullet.id | OK | code: writer bullet_init (id argument, else Stage.bulletSerial++; bullet_spawn callers pass -1); reader beam() (id % 4: texture quarter); run: 0 .. 1138 rising serials
+Bullet.active | OK | code: writers bullet_init 1, bullet_free 0, stage_clearBullets / bullet_spawn 0; readers bullet_updateAll, stage_drawBullets, bullet_spawn (free slot), bullet_free, actor_processFrame, net_tables shot packing (1 = live); run: 0/1
+Bullet.weapon | OK | code: writer bullet_init (FiredRound.weapon); readers bullet_update (ST->actorItems[weapon]), splash (actor_takeDamage weapon), bullet_drawTrail (shotMode); run: 2 .. 36 (actorItems indices)
+Bullet.owner | OK | code: writer bullet_init; readers draw_shot, hit_actor / splash (actor_takeDamage attacker), fly_local (skips itself), bullet_update (controlledBy, sendNow), bullet_free (shotBullets), actor_processFrame (aimed-at test, bot retarget); run: 0 .. 7
+Bullet.muzzle | OK | code: writer bullet_init (FiredRound.muzzle, a matrix pointer); reader bullet_init (muzzle flash ParticleDesc rec[8], matrixFrom); run: 368M .. 370M (heap pointers in a u32, as the comment says)
+Bullet.from | OK | code: writer bullet_init (shot origin); readers bullet_init (range end, life distance, vel for speed-0 weapons); run: world coordinates
+Bullet.impact | OK | code: writers bullet_init (range end / trace hit / network point), fly_local (actor hit point, guided world hit), actor_processFrame (network point); readers fly_local (speed-0 / end-of-life point), hit_actor / hit_surface / decal (effect point), net shot packing (ended + hit); run: world coordinates
+Bullet.hit | OK | code: writers bullet_init (collision_rayTrace / network plane index), fly_local (0 on an actor hit, guided trace), actor_processFrame (array_recordAt of planes); readers hit_surface (impact, mark flag 0x10, sound), net shot packing (plane index + 1); run: valid pointers
+Bullet.age | OK | code: writers bullet_init 0, bullet_update += dt; readers bullet_update (age > life ends it), draw_shot (first 0.03 s), home() (shotMode 3 curves), trail() (trailAge), fly_local (life = age), bullet_drawTrail, actor_processFrame (life = age - dt), net packing; run: 0 .. 1.65 s
+Bullet.life | OK | code: writers bullet_init (distance / speed, kept 0 .. 10; network 10), fly_local (age on an actor hit, guided hit time), actor_processFrame (age - dt); readers bullet_update / fly_local / net packing (age > life ends); run: -0.008 .. 10
+Bullet.prev | OK | code: writers bullet_init (origin), bullet_update (copy of pos each frame); readers fly_local, home(), look_inverse / beam / trail, draw_shot, bullet_drawTrail cull test, homingPoint base; run: world coordinates
+Bullet.pos | OK | code: writers bullet_init, fly_local (prev + step / impact / actor hit point), bullet_update (netPoint or prev + step); readers draw_shot, hit_actor (push direction), splash (distance), net packing; run: world coordinates
+Bullet.netPoint | OK | code: writer actor_processFrame (received point f + 4); reader bullet_update (other players' rounds move to it); run: world coordinates (mp, replay only)
+Bullet.moved | OK | code: writers bullet_init 0, fly_local 1, actor_processFrame 1, bullet_update 0 after the frame; reader bullet_update (draw, follow netPoint); run: 0/1 (mp, replay)
+Bullet.vel | OK | code: writers bullet_init (speed x direction, or impact - from), home() (turned, speed x T); readers fly_local (step = dt x vel, speed for life), home(); run: up to 2e6 units/s
+Bullet.step | OK | code: writers bullet_init 0, fly_local (dt x vel / vel), bullet_update (unit direction to netPoint); readers fly_local (move, actor test direction), bullet_update (prev + step); run: plausible
+Bullet.hitActor | OK | code: writers bullet_init -1, fly_local (nearest actor j), actor_processFrame (network f[1]); readers bullet_update -> hit_actor (damage target), fly_local / splash (skip), net packing (flag 4 + index); run: -1 .. 7
+Bullet.homingTarget | OK | code: writer bullet_init (4th argument); readers home() (target actor's nextPos; < 0: homingPoint), actor_processFrame (bullets aimed at actor i: homedOn, bot retarget, warning beep); run: -1 .. 7
+Bullet.homingPoint | OK | code: writer bullet_init (prev + aim x 200000, the local player's own guided round without a target); reader home() (when homingTarget < 0); NOT SEEN: the local player fires a guided weapon (ActorItem.guidance > 0) with no locked target
+SpacePool.count | OK | code: writer space_initBy (planes 40000, nodes 160000, units 1000, blocks 10000 from match_start's call); readers reset_pool / space_resetUnits (loops), take_free / space_getNextFreeBlockPtrBy (fatal message sizes); run: 1000, 10000, 40000, 160000
+SpacePool.records | OK | code: writer space_initBy (laid out in Space.block); readers reset_pool, space_resetUnits, space_collideAt / space_traceCells / space_insertTriangle (blocks by cell index), bullet_init / actor_processFrame / net packing (planes by index); run: valid pointers
+SpacePool.freeHead | OK | code: writers space_initBy, reset_pool, space_resetUnits, take_free / space_getNextFreeBlockPtrBy (move on), space_freeNode / space_freeBlock push_front (head at +0x28 / +0x48); readers the take functions; run: valid pointers
+SpacePool.used | OK | code: writers reset_pool / space_resetUnits 0, take_free / space_getNextFreeBlockPtrBy ++, push_front (space_freeNode / space_freeBlock) --; readers the fatal "not enoush free ..." messages; run: 0 .. 101338
+SpaceNode.item | COMMENT | code: writers space_insertItem, space_addUnitTriangle (the plane); readers space_insertItem (already-first test, split re-insert), space_collideBlock / space_traceBlock (traced; flag test rec[0] & 1), space_addUnitTriangle (listNext / listPrev). The flag is bit 0 (value 1: space_disableUnit *p |= 1), the comment says "bit 1" -> "the CollisionPlane it holds (a block's item or one of a unit's planes); the plane's flags bit 0 (value 1, space_disableUnit): left out of the static space's tests (space_collideBlock / space_traceBlock skip it only outside the moving units' lists)"; NOT SEEN (records inside Space.block are not walked by the sampler): any match
+SpaceNode.block | OK | code: writer space_insertItem (node->block = block); no reader (as the comment says); NOT SEEN (inside Space.block): any match
+SpaceNode.newer | OK | code: writers space_insertItem (old head's newer = node), space_addUnitTriangle, take_free (new free head's back link 0, +8), space_freeNode push_front (+8); never read; NOT SEEN (inside Space.block): any match
+SpaceNode.next | OK | code: writers space_insertItem, space_addUnitTriangle, reset_pool / push_front (free list +0xc); readers take_free (next free), space_insertItem (split walk), space_traceBlock / space_collideBlock (list walk); NOT SEEN (inside Space.block): any match
+SpaceBlock.low | OK | code: writer space_getNextFreeBlockPtrBy (mn); readers space_insertItem (collisionTri_meetsBox, make_octant), space_traceBlock (box halves); NOT SEEN (inside Space.block): any match
+SpaceBlock.high | OK | code: writer space_getNextFreeBlockPtrBy (mx); readers space_insertItem (meetsBox, make_octant), space_traceBlock; NOT SEEN (inside Space.block): any match
+SpaceBlock.items | OK | code: writers space_insertItem (push; NULL after a split); readers space_insertItem (first test, split walk), space_traceBlock / space_collideBlock (leaf list); NOT SEEN (inside Space.block): any match
+SpaceBlock.itemCount | COMMENT | code: writer space_insertItem (++ per item, 0 after a split); readers space_insertItem (> Space.splitCount with depth left: split), drop_if_empty (<= 0 and no split: freed). The comment gives only the split rule -> "items in its list (space_insertItem); over Space.splitCount with depth left it splits (then 0); a child left with none and no split is freed (drop_if_empty)"; NOT SEEN (inside Space.block): any match
+SpaceBlock.split | OK | code: writer space_insertItem 1 when it splits (0 from spaceBlock_clear); readers space_insertItem, drop_if_empty, space_collideAt (leaf at 0), space_traceBlock (== 1: walk children); NOT SEEN (inside Space.block): any match
+SpaceBlock.children | OK | code: writers space_insertItem (make_octant; NULL via drop_if_empty); readers space_insertItem, space_collideAt (xu + zu*2 + yu*4), space_traceBlock (x + 2z + 4y); NOT SEEN (inside Space.block): any match
+SpaceBlock.poolPrev | COMMENT | code: writers reset_pool (link +0x48), space_getNextFreeBlockPtrBy (new head's = 0), space_freeBlock push_front; never read. "its links in the blocks' pool" -> "its back link in the blocks' free list (reset_pool, space_freeBlock; the new head's cleared when one is taken: space_getNextFreeBlockPtrBy); written, never read"; NOT SEEN (inside Space.block): any match
+SpaceBlock.poolNext | OK | code: writers reset_pool, space_freeBlock push_front; reader space_getNextFreeBlockPtrBy (the new head); NOT SEEN (inside Space.block): any match
+Space.blockSize | COMMENT | code: writer space_initBy (planes x 0xac + nodes x 0x10 + units x 0x14 + blocks x 0x50 + cells x 2); reader space_initBy (operator_new size, fatal message); run: 10262000 = exactly that sum for 40000 / 160000 / 1000 / 10000 / 1000. The comment calls it the memory -> "its pools' memory size in bytes (planes x 0xac + nodes x 0x10 + units x 0x14 + blocks x 0x50 + cells x 2: space_initBy; 10262000 in a match)"
+Space.block | OK | code: writer space_initBy (Stage.spaceData or operator_new); readers space_initBy (layout), free_owned via CollisionVolume_release; run: valid pointer
+Space.ownsBlock | OK | code: writers space_initBy 1 (only with no memory given), free_owned 0; reader free_owned (CollisionVolume_release); NOT SEEN: the only caller (match_start.c) always passes Stage.spaceData, so it is 0 in the game
+Space.planes | OK | code: space_initBy / reset_pool / take_free (the 0xac-byte CollisionPlane pool), bullet_init / actor_processFrame / net packing (planes.records by index); run: see SpacePool
+Space.nodes | OK | code: space_initBy, space_resetNodes, space_getNextFreeNodePtr, space_freeNode (head +0x28, used +0x2c): the 0x10-byte SpaceNode pool; run: see SpacePool
+Space.units | OK | code: space_initBy, space_resetUnits (small.c), space_getNextFreeUnitPtr: the 0x14-byte SpaceUnit pool; run: see SpacePool
+Space.blocks | OK | code: space_initBy, space_resetBlocks, space_getNextFreeBlockPtrBy, space_freeBlock, blocks.records by cell root (space_collideAt, space_traceCells, space_insertTriangle); run: see SpacePool
+Space.cellCapacity | OK | code: writer space_initBy (0x3e8 from match_start); readers space_setBy (overflow fatal, memset), space_initBy (layout); run: 1000
+Space.cells | OK | code: writer space_initBy (after the blocks); space_setBy (0xff fill), space_insertTriangle (root made), space_collideAt / space_traceCells (root lookup); run: valid pointer
+Space.cellCount | OK | code: writer space_setBy (cz x cx x cy; the check uses the local copy); no reader; run: 1, 1000
+Space.min | OK | code: writer space_setBy (mn = Stage.levelLow); readers space_setBy (cellSize), space_collideAt, space_insertTriangle, space_traceCells; run: -100000
+Space.max | OK | code: writer space_setBy (levelHigh); readers space_setBy (cellSize), space_collideAt, space_insertTriangle (bounds widened by margin); run: 100000
+Space.cellsZ | OK | code: writer space_setBy (cz: collision_initVolume's z extent / size_z); readers space_setBy (cellSize[0]), space_collideAt, space_insertTriangle, space_traceCells (index (cellsZ * y + z) * cellsX + x); run: 1, 10
+Space.cellsX | OK | code: writer space_setBy (cx); readers space_setBy, space_collideAt, space_insertTriangle, space_traceCells; run: 1, 10
+Space.cellsY | OK | code: writer space_setBy (cy); readers as cellsX; run: 1, 10
+Space.cellSize | OK | code: writer space_setBy ([0] z, [1] x, [2] y extent over the counts); readers space_collideAt, space_insertTriangle, space_traceCells (size_z = [0], size_x = [1], size_y = [2]); run: 20000, 200000
+Space.margin | OK | code: writer space_setBy (margin argument: 500.0's bits); readers space_collideAt, space_insertTriangle, space_insertItem (collisionTri_meetsBox); run: float bits of 500 (its type is handled elsewhere)
+Space.splitCount | OK | code: writer space_setBy (16, loading.c); reader space_insertItem (split threshold); run: 16
+Space.depth | OK | code: writer space_setBy (depth; over 8 a fatal message); reader space_insertTriangle (space_insertItem's depth); run: 3
+Space.lastHit | OK | code: writer space_collideAt (space_collideBlock's result); no reader; run: 0/1 (mp, sessA, skirmish)
+PartInfo.name | OK | code: writer part_info (actorItems[idx].name after its last slash; 0 for idx -1); readers armc_drawWeaponsScreen (slot names, viewed name, strlen <= 1 = empty), armc_misc.c armc_loadSnapshotTexture (texture by name); NOT SEEN (g_partRecords is an object the sampler does not type): ARM CENTER weapons page, pick a slot and scroll the parts
+PartInfo.slotType | OK | code: writer part_info (ActorItem.slotType; -1 for idx -1); readers armc_drawWeaponsScreen (-1: EMPTY SLOT; MSG(321) + it: HAND / SHOULDER), armc_misc.c:279 (empty slot test); NOT SEEN: as name
+PartInfo.ammoType | OK | code: writer part_info (ActorItem.ammoType); readers armc_viewedPartRecord (g_viewedPartAmmoType), armc_drawWeaponsScreen (-1: SPECIAL WEAPON; MSG(323) + it: 30mm, 60mm, E-PAK, ROCKET, as listed; skill index); NOT SEEN: as name
+PartInfo.ammoPerShot | OK | code: writers part_info (ActorItem.ammoPerShot), armc_viewedPartRecord (the actorItems index for special items); reader armc_drawWeaponsScreen (MSG 303 BULLET CONSUMPTION, "cell"; MSG(745) + it for specials); NOT SEEN: as name
+PartInfo.burst | COMMENT | code: writer part_info (ActorItem.burst); reader armc_drawWeaponsScreen (4th stat: label MSG 304 "FIRE AT THE SAME TIME", unit MSG 758 "Round"); comment is only ""Round"" -> "FIRE AT THE SAME TIME (ActorItem.burst: rounds a burst), shown with message 758 "Round""; NOT SEEN: as name
+PartInfo.damageType | COMMENT | code: writer part_info (ActorItem.damageType); reader armc_drawWeaponsScreen (MSG(327) + it under MSG 305 DAMAGE TYPE; 327 IMPACT, 328 ENERGY) -> "DAMAGE TYPE (ActorItem.damageType): message 327 + this: 0 IMPACT, 1 ENERGY"; NOT SEEN: as name
+PartInfo.damage | OK | code: writer part_info (ActorItem.damage); reader armc_drawWeaponsScreen (MSG 306 DAMAGE POINT, plus the pilot's skill bonus damage x stats / 100); NOT SEEN: as name
+PartInfo.range | COMMENT | code: writer part_info (ActorItem.range x 0.01); reader armc_drawWeaponsScreen ("%.0f" + "m" under MSG 307 SHOOTING RANGE) -> "SHOOTING RANGE: ActorItem.range x 0.01, shown "%.0f" with message 751 "m""; NOT SEEN: as name
+PartInfo.speed | COMMENT | code: writer part_info (ActorItem.velocity x 0.01); reader armc_drawWeaponsScreen ("%.0f" "m/s" under MSG 308 BULLET SPEED) -> "BULLET SPEED: ActorItem.velocity x 0.01, shown "%.0f" with message 759 "m/s""; NOT SEEN: as name
+PartInfo.spread | OK | code: writer part_info (ActorItem.spread x 0.1); reader armc_drawWeaponsScreen ("%.1f" "'" under MSG 309 DISPERSION ANGLE); NOT SEEN: as name
+PartInfo.hitRange | OK | code: writer part_info (ActorItem.hitRange x 0.01); reader armc_drawWeaponsScreen ("%.1f" "m", MSG 310 HIT RANGE); NOT SEEN: as name
+PartInfo.splashRadius | COMMENT | code: writer part_info (ActorItem.splashRadius x 0.01); reader armc_drawWeaponsScreen ("%.1f" "m" under MSG 311 SPLASH DAMAGE RANGE) -> "SPLASH DAMAGE RANGE: ActorItem.splashRadius x 0.01, shown "%.1f" with message 751 "m""; NOT SEEN: as name
+PartInfo.splashBorderDamage | OK | code: writer part_info (ActorItem.splashBorderDamage, copied as is); reader armc_drawWeaponsScreen (stat_int under MSG 312 SPLASH BORDER DAMAGE); NOT SEEN: as name
+PartInfo.cycleTime | COMMENT | code: writer part_info (ActorItem.cycleTime x 1000); reader armc_drawWeaponsScreen ("%.0f" "ms" under MSG 313 FIRING DELAY) -> "FIRING DELAY: ActorItem.cycleTime x 1000, shown "%.0f" with message 754 "ms""; NOT SEEN: as name
+PartInfo.guidance | OK | code: writer part_info (ActorItem.guidance x 0.1); reader armc_drawWeaponsScreen ("%.1f" "'" under MSG 314 GUIDANCE); NOT SEEN: as name
+PartInfo.targetingTime | COMMENT | code: writer part_info (ActorItem.targetingTime x 1000); reader armc_drawWeaponsScreen: "%.1f" (not "%.0f") with "ms" under MSG 315 TARGETING TIME -> "TARGETING TIME: ActorItem.targetingTime x 1000, shown "%.1f" with message 754 "ms""; NOT SEEN: as name
+PartInfo.weight | OK | code: writer part_info (ActorItem.weight bits); readers armc_drawWeaponsScreen ("%.1f" "t", MSG 316 WEIGHT), armc_misc.c weights table (g_partRecords + 0x7c + slot x 0x80: the load total); NOT SEEN: as name
+Mission.unused0 | OK | code: writers mission_loadAxisMis (first word of an axis.mis entry), missions_clear 0; no reader in src; run: 101, 202 (test axis.mis, missions session)
+Mission.name | OK | code: writers mission_loadAxisMis (0x40 bytes), missions_clear (0); reader missionList_draw (first column, text_draw8); run: "TEST MISSION TWO"
+Mission.title | OK | code: writers mission_loadAxisMis (0x20), missions_clear; reader missionList_draw (second column, centred); run: "TITLE TWO"
+Mission.briefing | OK | code: writers mission_loadAxisMis (0x80), missions_clear; reader missionList_draw (g_missions[g_missionPicked].briefing under MSG 516 MISSION BRIEFING); run: "Briefing line of test mission two."
+Mission.number | OK | code: writers mission_loadAxisMis, missions_clear 0; reader missionList_draw (itoa: third column); run: 7, 8
+Mission.unusedE8 | OK | code: writers mission_loadAxisMis, missions_clear 0; no reader; run: test-file filler values only
+Mission.result | OK | code: writers mission_loadAxisMis, missions_clear 0; reader missionList_draw (MSG(511) + result x 0x80: 511 DON'T, 512 SUCCEED, 513 FAILED); run: 0, 1, 2
+Mission.unusedF0 | OK | code: writers mission_loadAxisMis, missions_clear -1; no reader; run: -1 and test-file filler
+Mission.blockSize | COMMENT | code: writers mission_loadAxisMis (read after all the entries), missions_clear 0; readers mission_loadBriefing (sum of the earlier ones = the file offset; crt_malloc / crt_fread size; g_briefingEnd). It is a size, the comment says "its block" -> "its briefing block's size in bytes in axis.mis (read after all the entries: mission_loadAxisMis); mission_loadBriefing adds up the earlier ones for the offset, reads this many bytes into g_briefingSource and keeps it as g_briefingEnd; the record's last four bytes (+0xf8) are never touched"; run: 57, 111
+NetPacketMessage.kind | OK | code: writers net_resetState (g_netPacketMessageKind 7 / g_netSlotMessageKind 6 words of the sent messages); reader net_handleMessage (switch 1 chat, 2 host gone, 6 slot given, 7 slot data); run: 7
+NetPacketMessage.slot | OK | code: writers net_sendPacketData / netq_receive's resend (g_localSlot; byte at 0x9f942c per addr_access), net_handleSystemMessage (g_netClaimedSlot in g_netSlotMsg); reader net_handleMessage (6: g_localSlot; 7: g_netSlots index); run: 0, 1 (mp)
+NetPacketMessage.size | OK | code: writers net_sendPacketData (dword, movsx of the size: disx 0x4a8393), netq_receive resend (0x40); reader net_handleMessage (kind 7: only 0x40 stored); run: 64
+NetPacketMessage.data | OK | code: writers net_sendPacketData (the 64-byte packet, data[0] the number), netq_receive (history copy); reader net_handleMessage (memcpy into NetSlot.packet); run: byte values
+NetSlot.used | OK | code: writers net_takePlayerSlot / net_handleMessage 1, net_freeAllSlots / net_freeSlotsOf / net_clearSlots / leave_game 0; readers net_playerInUse (ranking, netq_receive), net_handleMessage (kind 7); run: 0/1
+NetSlot.id | OK | code: writers net_takePlayerSlot (id), net_handleMessage (from), net_freeSlotsOf / leave_game 0; reader net_freeSlotsOf (== id: free); run: large ids (the sampler reads some as float bits; DirectPlay ids are arbitrary dwords)
+NetSlot.waiting | OK | code: writers net_handleMessage 1 (kind 7 stored), netq_receive 0 (taken); reader netq_receive (== 1: a packet to take); NOT SEEN (set and taken within one poll): a network match with another player sending packets (mp)
+NetSlot.size | OK | code: writers net_handleMessage (0x40), net_freeSlotsOf 0; never read (netq_receive uses 0x40); run: 64 (mp)
+NetSlot.packet | OK | code: writers net_takePlayerSlot (first 10 shorts reset, +0x22 g_localPlayerData), net_handleMessage (received data); readers netq_receive (copied out; byte 0 number / bit 7 resend, byte 1 resend target); run: byte values
+DPSessionDesc2.size | OK | code: writers session_desc, dplay_enumSessions (sizeof = 0x50); read by DirectPlay; run: 80
+DPSessionDesc2.flags | OK | code: writer dplay_hostSession (0x44); read by DirectPlay; run: 68 (0x44)
+DPSessionDesc2.instance | OK | code: writers session_desc (guid), dplay_enumSessions (g_providerGuid); reader dplay_enumSessionsCallback (GUID_NULL / repeat test, SessionDesc.instance copy); run: GUID bytes
+DPSessionDesc2.application | OK | code: writers session_desc / dplay_enumSessions (k_axisAppGuid); reader dplay_enumSessionsCallback (SessionDesc.application); run: GUID bytes
+DPSessionDesc2.maxPlayers | OK | code: writer dplay_hostSession; reader dplay_enumSessionsCallback (SessionDesc.maxPlayers); run: 8
+DPSessionDesc2.players | OK | code: no writer in the game (DirectPlay fills it); reader dplay_enumSessionsCallback (SessionDesc.players); NOT SEEN (the enumerated desc is DirectPlay's own memory): a client listing a hosted LAN arena (arena list over TCP/IP)
+DPSessionDesc2.name | OK | code: writer dplay_hostSession (session name); reader dplay_enumSessionsCallback (crt_strncpy into SessionDesc.name); run: valid pointers
+DPSessionDesc2.password | OK | code: never set or read by the game (zeroed with the record); NOT SEEN: unreachable (the game never passes a DirectPlay password)
+DPSessionDesc2.reserved1 | OK | code: zeroed by memset (session_desc, dplay_enumSessions), never set or read; NOT SEEN: unreachable
+DPSessionDesc2.reserved2 | OK | code: as reserved1; NOT SEEN: unreachable
+DPSessionDesc2.user1 | OK | code: writer dplay_hostSession (user1: arena_takeHostAnswer / host_arena pass rotation << 8 | map; room_hostingStep passes room[0x23], the mode); reader dplay_enumSessionsCallback (2 bytes into SessionDesc.map / rotation); run: 3 .. 20, 256 (= map 0, rotation 1)
+DPSessionDesc2.user2 | OK | code: writer dplay_hostSession (game mode: me[0x23] / g_arenaGameType / room[0x23]); reader dplay_enumSessionsCallback (SessionDesc.gameMode); run: 0, 1, 12, 13
+DPSessionDesc2.user3 | OK | code: writer dplay_hostSession (hi << 8 | lo = frag << 8 | time); reader dplay_enumSessionsCallback (fragLimit = >> 8, timeLimit = low byte); run: 2570 (10/10), 5120 (20/0), 5121
+DPSessionDesc2.user4 | OK | code: writer dplay_hostSession (net_parseAddress, TCP only); reader dplay_enumSessionsCallback (net_formatAddress -> SessionDesc.address); run: one address dword
+ServerRecord.kind | OK | code: writers lobby_announceArena 0x18, arena_info (g_arenaPacket[0] passed in), send_leave 1, net_addServerRecord (copied); never read; NOT SEEN (g_serverList / packets are objects or heap buffers the sampler does not type): host an arena on the lobby server, and list arenas from it
+ServerRecord.name | OK | code: writers lobby_announceArena (g_arenaName), arena_info / send_leave (copied), net_addServerRecord; reader arena_mergeReceivedSessions (SessionEntry.name); NOT SEEN: as kind
+ServerRecord.address | OK | code: writers lobby_announceArena (g_localAddress), arena_info / send_leave, net_addServerRecord (also g_pingAddresses); readers net_send 23 (keep-alive), arena_mergeReceivedSessions (SessionEntry.address); NOT SEEN: as kind
+ServerRecord.map | OK | code: writers lobby_announceArena (g_arenaMap), arena_info / send_leave, net_addServerRecord; reader merge (s[-6] -> SessionEntry.map); NOT SEEN: as kind
+ServerRecord.maxPlayers | OK | code: writers lobby_announceArena (g_arenaMaxPlayers), arena_info / send_leave, net_addServerRecord; reader merge (SessionEntry.maxPlayers); NOT SEEN: as kind
+ServerRecord.players | OK | code: writers lobby_announceArena 1, arena_info (g_playerCount - !joined), send_leave 1 (flagged 0x45), net_addServerRecord; reader merge (SessionEntry.players, g_arenaListPlayers sum); NOT SEEN: as kind
+ServerRecord.gameMode | OK | code: writers lobby_announceArena (g_arenaGameType), arena_info / send_leave, net_addServerRecord; reader merge (SessionEntry.gameMode); NOT SEEN: as kind
+ServerRecord.fragLimit | OK | code: writers lobby_announceArena (g_arenaFragLimit), arena_info / send_leave, net_addServerRecord; reader merge; NOT SEEN: as kind
+ServerRecord.timeLimit | OK | code: writers lobby_announceArena (g_arenaTimeLimit), arena_info / send_leave, net_addServerRecord; reader merge; NOT SEEN: as kind
+ServerRecord.rotation | OK | code: writers lobby_announceArena (g_arenaRotation = g_arenaName + 0x22, GameSettings.rotation), arena_info / send_leave, net_addServerRecord; reader merge (key byte s[0] -> SessionEntry.rotation); NOT SEEN: as kind
+ServerRecord.replyKind | OK | code: in g_lobbyReplyRecord (0xa05260 + 0x4a = g_lobbyReplyKind 0xa052aa): written by reply_read, read by net_receiveLobbyReply (0 server, 1 end, 2/3 state); NOT SEEN: list arenas from the lobby server
+ServerRecord.locked | OK | code: writers lobby_announceArena (g_arenaLocked), arena_info / send_leave, net_addServerRecord; reader merge (s[9] -> SessionEntry.locked); NOT SEEN: as kind
+ServerRecord.password | OK | code: writers lobby_announceArena (g_arenaPassword), arena_info / send_leave, net_addServerRecord; reader merge (s + 0xa -> SessionEntry.password); NOT SEEN: as kind
+RoomRecord.kind | OK | code: writers room_announceGame 0x18, room_info (1 joined / g_roomPacket[0]), send_leave and net_send 22 (1), net_addRoomRecord; never read; NOT SEEN (heap buffers / object): host a Ladder game on the game server and list rooms
+RoomRecord.name | OK | code: writers room_announceGame (g_roomRecName), net_addRoomRecord; reader room_mergeReceivedSessions (SessionEntry.name); not in room_info / send_leave (checked); run: strings only, empty
+RoomRecord.address | OK | code: writers room_announceGame (g_localAddress), room_info, send_leave, game-leave copy (menu_states.c), net_addRoomRecord (and g_pingAddresses); reader merge (SessionEntry.address); run: empty strings
+RoomRecord.hostName | OK | code: writers room_announceGame (strncpy g_ladderId, 0x1e), room_info, send_leave, menu_states.c leave copy, net_addRoomRecord; no reader of the listed copy; run: empty strings
+RoomRecord.map | OK | code: writers room_announceGame (GameSettings.map of g_roomRecName), room_info / send_leave, net_addRoomRecord; reader merge (s[-6]); NOT SEEN: as kind
+RoomRecord.maxPlayers | OK | code: writers room_announceGame, room_info / send_leave, net_addRoomRecord; reader merge; NOT SEEN: as kind
+RoomRecord.players | COMMENT | code: writers room_announceGame 1, room_info (g_playerCount, or - 1 when a player left), send_leave 1 (flagged 0x63), net_addRoomRecord; reader merge (SessionEntry.players, g_roomListPlayers). The comment leaves out the leave packet's 1 -> "players in the game: 1 at room_announceGame and in the leave packet (send_leave), g_playerCount (less one when a player left) in the info packet (room_info); received: SessionEntry.players, summed into g_roomListPlayers"; NOT SEEN: as kind
+RoomRecord.gameMode | OK | code: writers room_announceGame (GameSettings.mode), room_info / send_leave, net_addRoomRecord; reader merge; NOT SEEN: as kind
+RoomRecord.fragLimit | OK | code: writers room_announceGame (limit[0]), room_info / send_leave, net_addRoomRecord; reader merge; NOT SEEN: as kind
+RoomRecord.timeLimit | OK | code: writers room_announceGame (limit[1]), room_info / send_leave, net_addRoomRecord; reader merge; NOT SEEN: as kind
+RoomRecord.rotation | OK | code: writers room_announceGame (GameSettings.rotation), room_info / send_leave, net_addRoomRecord; reader merge (key byte s[0]); NOT SEEN: as kind
+RoomRecord.replyKind | OK | code: in g_gameServerReply (0xa0b280 + 0x68 = g_gameServerReplyKind 0xa0b2e8): read by net_receiveGameServerReply (0 a room, 1 end, 2/3 refused); NOT SEEN: list rooms on the game server
+RoomRecord.locked | OK | code: writers room_announceGame (GameSettings.locked), room_info / send_leave, net_addRoomRecord; reader merge (s[9]); NOT SEEN: as kind
+RoomRecord.password | OK | code: writers room_announceGame, room_info, send_leave, net_addRoomRecord; reader merge (SessionEntry.password); run: empty strings
+SessionDesc.guid | OK | code: writer dplay_enumSessionsCallback (GlobalAlloc'd GUID copy); readers arenaList_rebuild (SessionEntry.guid), arena_joinAnswer / room_joinAnswer (g_receivedSession->guid), dplay_join; run: one pointer value (mp)
+SessionDesc.instance | OK | code: writer dplay_enumSessionsCallback (guidInstance); reader dplay_enumSessionsCallback (repeat test over g_sessionTable); run: GUID bytes
+SessionDesc.application | OK | code: writer dplay_enumSessionsCallback (guidApplication); never read (a mirror of DirectPlay's field, as named); run: GUID bytes
+SessionDesc.map | OK | code: writer dplay_enumSessionsCallback (user1 low byte); readers arenaList_rebuild, arena_joinAnswer (SessionEntry.map); NOT SEEN (map 0 hosted): host an arena on a map other than the first and list it over LAN
+SessionDesc.rotation | OK | code: writer dplay_enumSessionsCallback (user1 byte 1); readers arenaList_rebuild, arena_joinAnswer; run: 1
+SessionDesc.maxPlayers | OK | code: writer dplay_enumSessionsCallback (u8 dwMaxPlayers); readers arenaList_rebuild, dplay_join (full test); run: 8
+SessionDesc.gameMode | OK | code: writer dplay_enumSessionsCallback (user2); readers arenaList_rebuild, arena_joinAnswer; run: 1
+SessionDesc.fragLimit | OK | code: writer dplay_enumSessionsCallback (user3 >> 8); readers arenaList_rebuild, arena_joinAnswer; run: 20
+SessionDesc.timeLimit | OK | code: writer dplay_enumSessionsCallback (user3 low byte); readers arenaList_rebuild, arena_joinAnswer; NOT SEEN (time limit 0 hosted): host a LAN arena with a time limit and list it
+SessionDesc.players | OK | code: writer dplay_enumSessionsCallback (dwCurrentPlayers); readers arenaList_rebuild (SessionEntry.players), dplay_join (full test); run: 1
+SessionDesc.name | OK | code: writer dplay_enumSessionsCallback (strncpy 0x46); readers arenaList_rebuild, arena_joinAnswer; run: "Alex Server"
+SessionDesc.address | COMMENT | code: writer dplay_enumSessionsCallback (crt_strncpy of g_dottedAddress from net_formatAddress(user4), connection kind 0 only); no reader (arenaList_rebuild does not copy it; the joins use the list entry's address or g_typedArenaAddress) -> "(TCP, connection kind 0) the host's address as text (net_formatAddress of dwUser4); written, never read"; run: "1.0.0.127" (the byte order net_formatAddress gives)
+SessionSlot.used | OK | code: writers net_addSession 1, net_freeSessionList 0; readers net_findFreeSession, net_getSession, net_freeSessionList; run: 0/1 (mp)
+SessionSlot.desc | OK | code: writer net_addSession (malloc'd copy); readers net_getSession, dplay_enumSessionsCallback (instance compare), net_freeSessionList (free); run: valid pointers (mp)
+SessionEntry.guid | OK | code: writers arenaList_rebuild (SessionDesc.guid), arena_joinAnswer / room_joinAnswer (received session's guid); readers arena_joinSession / arena_joinAnswer / room_joinAnswer (dplay_join); run: one value (mp)
+SessionEntry.name | OK | code: writers arenaList_rebuild, merge, arena_clearSessionEntry, arena_joinAnswer; readers game_rows (32 chars), take_session / room_joinAnswer (g_gameTitle); run: "Alex Server"
+SessionEntry.rotation | OK | code: writers arenaList_rebuild, merge (key byte), arena_joinAnswer; readers game_rows (MSG 455 ROTATION instead of the map), take_session / room_joinAnswer (g_mapRotation); run: 0/1
+SessionEntry.map | OK | code: writers arenaList_rebuild, merge, arena_clearSessionEntry, arena_joinAnswer; readers game_rows (g_mapNames + map x 0x20), take_session / room_joinAnswer (g_mapIndex); NOT SEEN (map 0): list a game hosted on another map
+SessionEntry.maxPlayers | OK | code: writers arenaList_rebuild, merge, arena_clearSessionEntry; reader game_rows ("players / most"); NOT SEEN (the sampler missed the listed entry; it is 8 in SessionDesc): open the arena list with a hosted game
+SessionEntry.players | OK | code: writers arenaList_rebuild, merge (and the total), arena_clearSessionEntry; reader game_rows; NOT SEEN: as maxPlayers
+SessionEntry.ping | COMMENT | code: writers merge (g_serverPing of the received game), arenaList_rebuild 0, arena_clearSessionEntry 0; readers sessionList_sort (sort key), game_rows (shown when pings). The comment leaves out where it comes from and that it is shown -> "the host's ping: g_serverPing of a received game (merge; only ping > 0 are listed), 0 for DirectPlay's (arenaList_rebuild); the list is sorted by it (sessionList_sort) and shows it when pings are on (game_rows)"; NOT SEEN (LAN only, 0): list arenas from the lobby server / rooms from the game server
+SessionEntry.gameMode | OK | code: writers arenaList_rebuild, merge, arena_clearSessionEntry, arena_joinAnswer; readers game_rows (mode string), take_session / room_joinAnswer (g_chosenGameMode); run: 0, 1
+SessionEntry.fragLimit | OK | code: writers arenaList_rebuild, merge, arena_joinAnswer; readers arena_joinSession / arena_joinAnswer / room_joinAnswer (g_arenaFragLimit / g_roomRecFragLimit), take_session (g_fragLimit); run: 20
+SessionEntry.timeLimit | OK | code: writers arenaList_rebuild, merge, arena_joinAnswer; readers arena_joinSession (returned), arena_joinAnswer / room_joinAnswer, take_session (g_timeLimit); NOT SEEN (0 hosted): join a LAN arena with a time limit
+SessionEntry.address | OK | code: writer merge (received record's); readers room_dialogs.c (dplay_openConnection(0, address), the join's address); run: empty (LAN entries leave it)
+SessionEntry.password | OK | code: writer merge; readers gameList_pageFrame (room, game_lists.c:424) and arena_gamesPageFrame (game_lists.c:800) strcmp with the typed one; run: empty
+SessionEntry.locked | OK | code: writer merge (s[9]); readers game_rows (lock icon), room_clicks.c:46 / 89 (password asked); NOT SEEN: list a password-locked game from a server
+FileEntry.name | OK | code: writer autoplay_listFiles (strcpy found.name); readers replay list draw (menu_records.c), scene_startSession (classes.c: picked names copied); run: "lilly.ape"
+FileEntry.picked | OK | code: writers replaySelect_toggle / allIn, resets.c (all out), menu_init.c reset; readers replay list draw (red bar), replaySelect_ok (menu_states.c), scene_startSession (== 1); run: 0/1 (replay)
+MapChoice.chosen | OK | code: writers mapList_init (lobby_states.c), arena_maps.c (startEdit copy, select all, none, toggle, maps 22 .. 24 off, OK copy); readers make_rotation (== 1: in the rotation), arena_maps.c (draw red bar, OK test); run: 0/1
+MapChoice.type | OK | code: writers mapList_init 0, arena_maps.c (startEdit / OK copies, none 0, mapList_stepGameType 0 .. 13 wrapping); readers make_rotation (the round's mode when g_chosenGameMode >= 14), map list draw (g_gameTypeNames + type x 20); NOT SEEN: arena create form > ADVANCED map list, step a map's game type
+AccountPacket.kind | OK | code: writers newId_register (*(int *)record = 0x18), login send (room_clicks.c account->kind = 0x18); read by the server; NOT SEEN (heap buffer the sampler does not type): log in to the Ladder game server
+AccountPacket.name | OK | code: writers newId_register (g_accountName), login (room_clicks.c, memset + strcpy); sent (net_send 14 / 15); NOT SEEN: as kind
+AccountPacket.password | OK | code: writers newId_register, login (g_accountPassword); sent; NOT SEEN: as kind
+AccountPacket.email | OK | code: writer newId_register only (g_accountEmail); sent; NOT SEEN: register a new Ladder ID
+AccountPacket.address | OK | code: writer net_send case 14 / 15 (g_localAddress just before send_buffer); sent; NOT SEEN: as kind
+AccountPacket.mech | OK | code: writer newId_register -> default_mech (11 bytes 0,0,0,0,0,0xff,0x11,0,2,8,0xff); sent; NOT SEEN: register a new Ladder ID
+AccountPacket.colours | OK | code: writer default_mech (six 0x18-byte entries of (0, 1, 0.6) twice); sent; NOT SEEN: register a new Ladder ID
+AccountForm.name | OK | code: writer account_sendChange (g_accountName); sent as message 0x1c (g_netAccountBuffer, 0x5c bytes); NOT SEEN: Ladder account panel, change the password
+AccountForm.password | OK | code: writer account_sendChange (g_accountPassword after the old-password and repeat checks); sent; NOT SEEN: as name
+AccountForm.email | OK | code: writer account_sendChange (g_accountEmail); sent; NOT SEEN: as name
+GameSettings.name | OK | code: writers settings_store (copy_string), the forms' TITLE edit (room_clicks.c strcpy into g_roomSettingsName); readers draw_values / draw_hover, dplay_host (session name), room_announceGame / lobby_announceArena (record name), arena_takeHostAnswer (g_gameTitle); NOT SEEN (objects the sampler does not type): Ladder room CREATE form or the arena create form
+GameSettings.map | OK | code: writers settings_store, the forms' preview arrows; readers map_name (g_mapAbouts + map x 0x50), dplay_host user1 low byte, arena_takeHostAnswer / room_hostingStep (g_mapIndex), room_announceGame (RoomRecord.map); NOT SEEN: as name
+GameSettings.maxPlayers | OK | code: writers settings_store, the forms (NO OF PLAYER row); readers draw_values / draw_hover (itoa), dplay_host maxPlayers, room_announceGame; NOT SEEN: as name
+GameSettings.rotation | OK | code: writers settings_store, the forms (MAP ROTATION row); readers draw_values (CUSTOM instead of the map), rotation_text, draw_hover, dplay_host user1 high byte, g_mapRotation (arena_takeHostAnswer / room_hostingStep), room_announceGame; NOT SEEN: as name
+GameSettings.mode | OK | code: writers settings_store, the forms (TYPE row); readers mode_name (0x80 apart), dplay_host user2, g_chosenGameMode, room_announceGame (RoomRecord.gameMode); NOT SEEN: as name
+GameSettings.limit | COMMENT | code: writers settings_store, the forms' FRAG LIMIT / TIME LIMIT edits (room_clicks.c limit[] table: g_roomFragLimit, g_roomTimeLimit); readers draw_values / draw_hover (rows 6, 7: MSG 403 FRAG LIMIT, 404 TIME LIMIT), dplay_host (hi, lo = user3), room_announceGame ([0] fragLimit, [1] timeLimit), room_hostingStep (g_fragLimit / g_timeLimit). Comment "frag, time" -> "[0] the frag limit (FRAG LIMIT row), [1] the time limit in minutes (TIME LIMIT row): dplay_host's dwUser3 high / low byte, g_fragLimit / g_timeLimit when hosting, RoomRecord.fragLimit / timeLimit (room_announceGame)"; NOT SEEN: as name
+GameSettings.password | OK | code: writers settings_store, the PASSWORD edit (room_clicks.c rs->password); readers stars(), settings_store (locked), room_announceGame / lobby_announceArena (record password); NOT SEEN: as name
+GameSettings.locked | OK | code: writer settings_store (password[0] != 0, in both records); readers room_announceGame (RoomRecord.locked), g_arenaLocked (lobby_announceArena, axis.cfg "secret"); NOT SEEN: as name
+RankedPlayer.name | OK | code: writers net_receivePlayerListReply (recv), net_addPlayerRecord (lstrcpyA); readers ranking_fillPage (empty ends the page; RankRow.name); run: "pilot02" (formsB)
+RankedPlayer.kind | OK | code: g_playerListReply + 0x1e = g_serverReplyKind (0xa05306): read by net_receivePlayerListReply (0 add, 1 end); not copied into g_netPlayerList; NOT SEEN (only in the reply buffer, read as g_serverReplyKind): open the Ladder ranking page (formsB already loads it; the sampler reads the list, where it stays 0)
+RankedPlayer.games | OK | code: writer net_addPlayerRecord; reader ranking_fillPage (RankRow.games, never shown); run: 2 .. 13
+RankedPlayer.kills | COMMENT | code: writer net_addPlayerRecord; reader ranking_fillPage (RankRow.kills: the KILL column, sort 1). Comment "the columns of the ranking table (RankRow)" names no column -> "the KILL column (sort 1): copied by net_addPlayerRecord, then to RankRow.kills"; run: 10 .. 87
+RankedPlayer.deaths | OK | code: writer net_addPlayerRecord; reader ranking_fillPage (RankRow.deaths: DEATH column); run: 5 .. 38
+RankedPlayer.exp | OK | code: writer net_addPlayerRecord; reader ranking_fillPage (RankRow.exp: EXP column, sort 2); run: 50 .. 1150
+RankedPlayer.level | OK | code: writer net_addPlayerRecord; reader ranking_fillPage (RankRow.level: GRADE badge); run: 1 .. 4
+RankedPlayer.power | OK | code: writer net_addPlayerRecord (bits); reader ranking_fillPage (RankRow.power: POWER column, sort 0); run: 0.25 .. 16.75 (test server values)
+RankedPlayer.rate | OK | code: writer net_addPlayerRecord (bits); reader ranking_fillPage (RankRow.rate: RATE column, sort 3); run: 66.7 .. 69.6 (percent)
+RankRow.rank | OK | code: writers ranking_fillPage (page x 10 + place + 1, or the row before's on a tie), ranking_enter / fillPage clear 0; readers ranking_drawTable (RANK column), ranking_fillPage (next row's tie, g_rankingPrevRank); run: 1 .. 12
+RankRow.name | OK | code: writers ranking_fillPage (strcpy; cleared); reader ranking_drawTable (ID column; empty ends the list, g_rankingLastPage); run: "pilot02"
+RankRow.exp | OK | code: writers ranking_fillPage (and 0); readers ranking_drawTable (EXP column), rank_value (sort 2); run: 50 .. 1150
+RankRow.games | OK | code: writers ranking_fillPage (and 0); never read; run: 2 .. 13
+RankRow.kills | OK | code: writers ranking_fillPage (and 0); readers ranking_drawTable (KILL column), rank_value (sort 1); run: 10 .. 87
+RankRow.deaths | OK | code: writers ranking_fillPage, ranking_enter (cleared); reader ranking_drawTable (DEATH column); run: 5 .. 38
+RankRow.rate | OK | code: writers ranking_fillPage (bits; 0); readers ranking_drawTable ("%3.2f" RATE), rank_value (sort 3); run: 66.7 .. 69.6
+RankRow.level | OK | code: writers ranking_fillPage / ranking_enter (1 when cleared), player level; reader ranking_drawTable (rank_badge); run: 1 .. 4
+RankRow.power | OK | code: writer ranking_fillPage (bits; not cleared: ranking_enter's memset stops at level, fillPage leaves it); readers ranking_drawTable ("%8.1f" POWER), rank_value (sort 0); run: 0.25 .. 16.75
+CharacterProfile.name | OK | code: writer data_loadCharacterProfiles (decoded records); readers profile_drawPilotSelect / profile_drawChosenPilot; run: "Sonien"
+CharacterProfile.corporation | OK | code: writer data_loadCharacterProfiles; readers profile_drawPilotSelect / profile_drawChosenPilot; run: "Nitro"
+CharacterProfile.sex | OK | code: writer data_loadCharacterProfiles; reader profile dialogs (MSG(545) + it: 546 MALE, 547 FEMALE); run: 1, 2
+CharacterProfile.age | OK | code: writer data_loadCharacterProfiles; reader profile dialogs (AGE row); run: 15 .. 37
+CharacterProfile.stats | COMMENT | code: writer data_loadCharacterProfiles (eight above 30 and [7] above 50 become 0); readers actor_takeDamage ([0 .. 3] by shot-mode group), armc_drawWeaponsScreen ([0 .. 3] bonus by ammo type), actor_slots.c character_factor ([4 + k]) and LEG() ([5]), armc_stats.c SKILL(k), pilot_stats / load_stat_bars (all nine), menu_states.c range check; run: -20 .. 30. The comment is right, but scene.fields carries a stray second comment line under it ("ARM CENTER factors x 0.01), [5] the legs'; [7] at most 50, the others 30") left from an older text -> keep only the first line: "percentages, the CHARACTER SELECT rows MSG(536 ..): [0] BULLET.LV, [1] ENERGY.LV, [2] BOMB.LV, [3] MELEE.LV (the weapon groups' damage: actor_takeDamage, the ARM CENTER's bonus), [4] MOBILITY, [5] SPEED (the legs': LEG()), [6] DEFENSE, [7] SCANNING, [8] MAX.LOAD ([4] .. as character_factor / SKILL(k): stats[4 + k] x 0.01 + 1); [7] at most 50, the others 30 (else 0)"
+GamePacket.number | OK | code: writer net_sendPacketData (g_nextNumber[slot] into data[0]); readers netq_receive (& 0x7f order, bit 7 resend); NOT SEEN (stack packets): any network match (host + client), a game packet every 3 s
+GamePacket.kind | OK | code: writer net_sendGamePacket_body (packet[1] = 1); reader net_processGamePacket (switch b[1], case 1; matchState 1 passes only kind 1); NOT SEEN: as number
+GamePacket.player | OK | code: writer net_sendGamePacket_body (p); reader net_processGamePacket (> 0x10 dropped; == 0 host-only parts; ACTOR(b[2]) gets timePlayed, kills, deaths); NOT SEEN: as number
+GamePacket.map | OK | code: writer net_sendGamePacket_body (rotation[rotationAt].map, 0xff without rotation / during endTime); reader net_processGamePacket (g_mapIndex switch, mapNumber check); NOT SEEN: as number
+GamePacket.nextMap | OK | code: writer net_sendGamePacket_body (s[0x1f1cb4] = Scene.nextMap); reader net_processGamePacket (GS->nextMap); NOT SEEN: as number
+GamePacket.mode | OK | code: writer net_sendGamePacket_body (rotation entry's mode); reader net_processGamePacket (game_setGameTypeFlags on a map switch); NOT SEEN: as number
+GamePacket.nextMode | OK | code: writer net_sendGamePacket_body (s[0x1f1cb8] = Scene.nextMode); reader net_processGamePacket (GS->nextMode); NOT SEEN: as number
+GamePacket.mapNumber | OK | code: writer net_sendGamePacket_body (Scene.mapNumber); reader net_processGamePacket (same map, other number: dataLossCode 1); NOT SEEN: as number
+GamePacket.elapsed | OK | code: writer net_sendGamePacket_body (Scene.elapsed); reader net_processGamePacket (player 0: GS->elapsed); NOT SEEN: as number
+GamePacket.clockFraction | OK | code: writer net_sendGamePacket_body (f32 Scene.clockFraction); reader net_processGamePacket (player 0); NOT SEEN: as number
+GamePacket.timePlayed | OK | code: writer net_sendGamePacket_body (players[p].timePlayed); reader net_processGamePacket (the sender's actor); NOT SEEN: as number
+GamePacket.timeFraction | OK | code: writer net_sendGamePacket_body; reader net_processGamePacket (bits into the actor); NOT SEEN: as number
+GamePacket.resendAsked | OK | code: writer net_sendGamePacket_body (bit i from sendFlags[i][2] / [3], cleared); reader net_processGamePacket ([0] my bit: sendFlags[me][1] = 1; [1] my bit: PlayerRecord.flagSent = 0); NOT SEEN: as number
+GamePacket.kills | OK | code: writer net_sendGamePacket_body (2 bytes of players[p].kills); reader net_processGamePacket (actor kills); NOT SEEN: as number
+GamePacket.deaths | OK | code: writer net_sendGamePacket_body; reader net_processGamePacket (actor deaths); NOT SEEN: as number
+GamePacket.teamScores | OK | code: writer net_sendGamePacket_body (2 bytes each of Scene.teamScores[0] / [1]); reader net_processGamePacket (player 0 only); NOT SEEN: as number
+GamePacket.lastPickup | COMMENT | code: writer net_sendGamePacket_body (Stage.lastPickup, then set back to -1); reader net_processGamePacket (item >= 0 and not taken: MapItem.taken 1, timer 0; not for replays before 0x1202). The comment "the stage's (-1 none)" says nothing of what it is -> "the map item (Stage.items index) the sender last picked up (Stage.lastPickup, -1 after each send; -1 none): the receiver marks it taken (MapItem.taken 1, timer 0)"; NOT SEEN: as number
+GamePacket.checkTable | OK | code: writer net_sendGamePacket_body (typeCheckTurn % 5); reader net_processGamePacket (part <= 4: the table checked); NOT SEEN: as number
+GamePacket.checkIndex | OK | code: writer sample() (table_rand() % 100000 cut to u16); reader table_ok (row w / perRow % count, column w % perRow); NOT SEEN: as number
+GamePacket.checkValue | OK | code: writer net_sendGamePacket_body (sample's entry); reader table_ok (mismatch: dataLossCode 2); NOT SEEN: as number
+GamePacket.checkIndex2 | OK | code: writer sample() for actorItems; reader table_ok; NOT SEEN: as number
+GamePacket.checkValue2 | OK | code: writer net_sendGamePacket_body; reader table_ok (mismatch: dataLossCode 3); NOT SEEN: as number
+PlayerRecordPacket.name | OK | code: writer record_send (g_ladderName when asked); sent as packet 0x11; NOT SEEN (heap buffer): finish a Ladder match (ladder_checkAndSendRecord)
+PlayerRecordPacket.games | OK | code: writer record_send (g_ladderGames); sent; NOT SEEN: as name
+PlayerRecordPacket.kills | OK | code: writer record_send (g_ladderKills); sent; NOT SEEN: as name
+PlayerRecordPacket.deaths | OK | code: writer record_send (g_ladderDeaths); sent; NOT SEEN: as name
+PlayerRecordPacket.exp | OK | code: writer record_send (g_ladderExp; cut to kills x 2 by ladder_checkAndSendRecord when above kills x 150); sent; NOT SEEN: as name
+PlayerRecordPacket.level | OK | code: writer record_send (level_fromPoints(g_ladderExp)); sent; NOT SEEN: as name
+PlayerRecordPacket.power | OK | code: writer record_send (f32 g_ladderPower = rate x 0.01 x exp, power_from_rate); sent; NOT SEEN: as name
+PilotStats.level | OK | code: writers login_takeAccountRecord (+0xef), newId_register 1, record_send (level_fromPoints), stats_copy / pilotRecord_syncCopies; readers armc_parts.c unlocked level (g_pilotLevel - 1), armc_misc.c new-parts test, account panel; NOT SEEN (g_pilotStats / g_pilotStatsKept are objects): log in to the Ladder game server
+PilotStats.exp | OK | code: writers login_takeAccountRecord (+0xff), record_send, stats_copy, syncCopies; readers pilotRecord_syncCopies (compare), take_back, account panel; NOT SEEN: as level
+PilotStats.rank | OK | code: writer account_takeRank (g_receivedRank, 0 when g_outOfRank) into both copies (g_pilotRank; the kept copy's is g_accountRank); reader room_dialogs.c account panel (g_accountRank: 0 shows OUT OF RANK(1000)); not copied by stats_copy; NOT SEEN: open the Ladder account page (rank request 29)
+PilotStats.power | OK | code: writers login_takeAccountRecord (+0x103), record_send, stats_copy, syncCopies; reader account panel ("%.2f"); NOT SEEN: as level
+PilotStats.games | OK | code: writers login_takeAccountRecord (+0xf3), record_send, stats_copy, syncCopies; readers take_back, room_copyAccountRecord (g_ladderGames); NOT SEEN: as level
+PilotStats.kills | OK | code: writers login_takeAccountRecord (+0xf7), record_send, stats_copy, syncCopies; readers pilotRecord_syncCopies, take_back (+300 test), account panel; NOT SEEN: as level
+PilotStats.deaths | OK | code: writers login_takeAccountRecord (+0xfb), record_send, stats_copy, syncCopies; readers take_back, account panel; NOT SEEN: as level
+PilotStats.killRate | OK | code: writers login_takeAccountRecord (+0x107), record_send (kill_rate), stats_copy, room_copyAccountRecord; reader account panel ("%.2f"); NOT SEEN: as level
+SkirmishInfo.gameMode | OK | code: writer data_loadSkirmishInfo (skirmish.dat); readers skirmish screen draw (record[0x48 / 4], MSG(471) + it: DEATH MATCH, TEAM DEATCH MATCH, SUDDEN DEATH), skirmish_startRound (g_chosenGameMode), make_rotation; NOT SEEN (g_skirmishInfo is an object): open the SKIRMISH screen
+SkirmishInfo.timeLimit | OK | code: writer data_loadSkirmishInfo; readers skirmish screen (TIME .. MIN / UNLIMITED), skirmish_startRound (g_timeLimit), make_rotation; NOT SEEN: as gameMode
+SkirmishInfo.fragLimit | OK | code: writer data_loadSkirmishInfo; readers skirmish screen (OBJECTIVE .. FRAGS / UNLIMITED), skirmish_startRound (g_fragLimit), make_rotation; NOT SEEN: as gameMode
+ViewQuad.texture | OK | code: writer quad_fields (id; ViewVolume_addQuad / addBillboard); readers ViewVolume_draw (r[0] != cur: use_texture; cur >= 0 textured); NOT SEEN (records inside the view block are not walked): any match frame with effects (trails, billboards)
+ViewQuad.uv0 | OK | code: writer quad_fields (only when id >= 0); reader billboard() (points[3] at uv0; (uv1[0], uv0[1]) for points[2]; (uv0[0], uv1[1]) for points[0]) as the comment says; NOT SEEN: as texture
+ViewQuad.uv1 | OK | code: writer quad_fields; reader billboard() (points[1], and the mixed corners); NOT SEEN: as texture
+ViewQuad.colour | OK | code: writer quad_fields (*colour); reader billboard() (glColor4ubv r + 5); NOT SEEN: as texture
+ViewQuad.points | OK | code: writers ViewVolume_addQuad (clip x points), ViewVolume_addBillboard (projection x camera-space corners); readers quad_outside (cull), ViewVolume_draw (depth key -(p0.z + p1.z) / 2), billboard() (glVertex4fv); NOT SEEN: as texture
+ViewQuad.kind | OK | code: writer quad_fields (kind argument); reader ViewVolume_draw (2 -> quadOrderA, merged with triangles; 3 -> quadOrderB, drawn last unfogged without depth test; others never drawn); NOT SEEN: as texture
+ViewTriangle.points | OK | code: writer ViewVolume_addTriangle (clip-space points; raw 1: the given points with w 1); readers ViewVolume_addTriangle cull, ViewVolume_draw (depth key, triangle(): glVertex3fv for raw 1 under its matrix, glVertex4fv for the sorted ones); NOT SEEN: transparent meshes / effects in a match
+ViewTriangle.matrix | OK | code: writer ViewVolume_addTriangle (r[0x16] = M); reader ViewVolume_draw (kind 1 pass: glMultMatrixf when set); NOT SEEN: as points
+ViewTriangle.kind | COMMENT | code: writer ViewVolume_addTriangle (r[0x17] = its raw argument; draw_transparent passes 2); readers ViewVolume_draw (== 1: drawn first under its matrix; == 2: listed in triangleOrder, depth-sorted). The comment gives only 2 -> "ViewVolume_addTriangle's raw: 1 drawn first as given under its matrix (ViewVolume_draw), 2 depth-sorted (triangleOrder) and merged back to front with the kind-2 quads (draw_transparent's); others never drawn"; NOT SEEN: as points
+ViewVolume.blockSize | COMMENT | code: writer ViewVolume_initBy (entries x 0x1c + matrices x 0x40 + colours x 4 + triangles x 0x68 + quads x 0x64 + segments x 0x24); readers ViewVolume_initBy (operator_new size, fatal messages); run: 1240000 = that sum for 10000 / 1000 / 20000 / 4000 / 400 / 10000. A size, not the memory -> "its lists' memory size in bytes: entries x 0x1c + matrices x 0x40 + colours x 4 + triangles x 0x68 + quads x 0x64 + segments x 0x24 (ViewVolume_initBy; 1240000 for Scene.view)"
+ViewVolume.block | OK | code: writer ViewVolume_initBy (operator_new or mem); readers ViewVolume_initBy (layout), ViewVolume_release (operator_delete when owned); run: valid pointer
+ViewVolume.ownsBlock | OK | code: writers ViewVolume_initBy 1 (no memory given), ViewVolume_release 0; reader ViewVolume_release; NOT SEEN: never 1 in the game (Scene.view gets Scene.viewMemory)
+ViewVolume.glArrays | OK | code: writer ViewVolume_release (wglGetProcAddress x 3 when GL_EXT_vertex_array); reader draw_opaque (fn or the GL 1.1 call); run: valid pointers
+ViewVolume.entryPointsSet | OK | code: writer ViewVolume_release (1); never read; run: 1
+ViewVolume.materialOrder | OK | code: writer ViewVolume_queueModel (list = material or part texture, + 1, on its first entry); reader ViewVolume_draw (id: bind id - 1 when > 0; head lookup); run: 0 .. 2625 (texture ids + 1)
+ViewVolume.materialCount | OK | code: writers ViewVolume_queueModel (++), ViewVolume_reset (0); reader ViewVolume_draw (loop); run: 0 .. 34
+ViewVolume.materialHeads | OK | code: writer ViewVolume_queueModel (first entry); readers ViewVolume_queueModel (== 0: new list), ViewVolume_draw (chain start); run: valid pointers
+ViewVolume.materialTails | OK | code: writer ViewVolume_queueModel; reader ViewVolume_queueModel (tail[6] = e: linking on); run: valid pointers
+ViewVolume.entryLimit | OK | code: writer ViewVolume_initBy; readers ViewVolume_initBy (layout), ViewVolume_queueModel (full test); run: 10000
+ViewVolume.entries | OK | code: writer ViewVolume_initBy; reader ViewVolume_queueModel (0x1c-byte entries); run: valid pointer
+ViewVolume.entryCount | OK | code: writers ViewVolume_queueModel ++, ViewVolume_reset 0; reader ViewVolume_queueModel; run: 0 .. 224
+ViewVolume.matrixLimit | OK | code: writer ViewVolume_initBy; readers layout, ViewVolume_queueModel (full test); run: 1000
+ViewVolume.matrices | OK | code: writer ViewVolume_initBy; reader ViewVolume_queueModel (slot for the GL modelview); run: valid pointer
+ViewVolume.matrixCount | OK | code: writers ViewVolume_queueModel ++, ViewVolume_reset 0; reader ViewVolume_queueModel; run: 0 .. 73
+ViewVolume.colourLimit | OK | code: writer ViewVolume_initBy; readers layout, fits(); run: 20000
+ViewVolume.colours | OK | code: writer ViewVolume_initBy; reader item_colours (buffer for lit / tinted colours); run: valid pointer
+ViewVolume.colourMost | OK | code: writers ViewVolume_draw 0, fits() (max); never read otherwise; run: 0 .. 343
+ViewVolume.triangleLimit | OK | code: writer ViewVolume_initBy; readers layout, ViewVolume_addTriangle (full test); run: 4000
+ViewVolume.triangles | OK | code: writer ViewVolume_initBy; readers ViewVolume_addTriangle, ViewVolume_draw; run: valid pointer
+ViewVolume.triangleCount | OK | code: writers ViewVolume_addTriangle (++, -- when culled), ViewVolume_reset 0; readers ViewVolume_addTriangle, ViewVolume_draw (kind 1 pass, sort list); run: 0 .. 1462
+ViewVolume.triangleOrder | OK | code: writer ViewVolume_initBy (after the triangles); readers ViewVolume_draw (pairs, render_depthSortTriangles, merge); run: valid pointer
+ViewVolume.triangleOrderCount | OK | code: writer ViewVolume_draw (0, ++ per kind 2); reader ViewVolume_draw (sort, merge); run: 0 .. 1462
+ViewVolume.quadLimit | OK | code: writer ViewVolume_initBy; readers layout, next_record (addQuad / addBillboard full test); run: 400
+ViewVolume.quads | OK | code: writer ViewVolume_initBy; readers next_record, ViewVolume_draw; run: valid pointer
+ViewVolume.quadCount | OK | code: writers next_record ++, addQuad / addBillboard -- when culled, ViewVolume_reset 0; reader ViewVolume_draw; run: 0 .. 255
+ViewVolume.quadOrderA | OK | code: writer ViewVolume_initBy; reader ViewVolume_draw (kind 2 pairs, render_depthSortBillboards, merge); run: valid pointer
+ViewVolume.quadOrderACount | OK | code: writer ViewVolume_draw (0, ++); reader ViewVolume_draw; run: 0 .. 255
+ViewVolume.quadOrderB | OK | code: writer ViewVolume_initBy; reader ViewVolume_draw (kind 3, drawn last without fog / depth test); run: valid pointer
+ViewVolume.quadOrderBCount | OK | code: writer ViewVolume_draw; reader ViewVolume_draw; run: 0 .. 5 (replay)
+ViewVolume.segmentLimit | OK | code: writer ViewVolume_initBy; readers layout, next_record (addSegment); run: 10000
+ViewVolume.segments | OK | code: writer ViewVolume_initBy; readers next_record, ViewVolume_draw (GL_LINES); run: valid pointer
+ViewVolume.segmentCount | OK | code: writers next_record ++ (ViewVolume_addSegment; -- when culled), ViewVolume_reset 0; reader ViewVolume_draw; NOT SEEN: only the mech-test view (match_mechTestFrame with Scene.debugGrid 1) or Scene.markLights (never set) add lines
+ViewVolume.entriesFull | OK | code: writer ViewVolume_queueModel (1 when full), reset; never read; NOT SEEN: needs over 10000 queued parts in a frame (not reachable in normal play)
+ViewVolume.matricesFull | OK | code: writer ViewVolume_queueModel; never read; NOT SEEN: needs over 1000 matrices a frame
+ViewVolume.trianglesFull | OK | code: writer ViewVolume_addTriangle; never read; NOT SEEN: needs over 4000 queued triangles a frame
+ViewVolume.quadsFull | OK | code: writer next_record (addQuad / addBillboard); never read; NOT SEEN: needs over 400 quads a frame (heavy effects: many trails and explosions at once)
+ViewVolume.segmentsFull | OK | code: writer next_record (addSegment); never read; NOT SEEN: needs over 10000 lines a frame
+ViewVolume.trianglesDrawn | OK | code: writers ViewVolume_clearDrawCounts 0, draw_opaque / ViewVolume_draw (+= per primitive / triangle / billboard 2); never read; run: grows to 37M outside matches, as the comment says
+ViewVolume.meshesDrawn | OK | code: writers clearDrawCounts 0, ViewVolume_draw (++ per item); never read; run: up to 1M
+ViewVolume.textureBinds | OK | code: writers clearDrawCounts 0, bind() ++; never read; run: up to 609K
+ViewVolume.projection | OK | code: writer ViewVolume_captureMatrices; readers ViewVolume_draw (load_matrices, fog mapping [10], [11], [14], [15]), ViewVolume_addBillboard; run: projection values
+ViewVolume.modelview | OK | code: writer ViewVolume_captureMatrices (Scene.modelview); readers ViewVolume_draw, ViewVolume_addBillboard; run: view values
+ViewVolume.clip | OK | code: writer ViewVolume_captureMatrices (projection x modelview); readers ViewVolume_addSegment / addQuad / addTriangle, ViewVolume_queueModel (Mat4_multiply for culling); run: values
+Skeleton.blockSize | OK | code: writers skel_loadFromFile (the header's), skel_loadAseFrom (bones x 0x70 + rotKeyTotal x 0x28 + posKeyTotal x 0x20); readers take_block, skel_getSkeletonPtrBy (dataUsed +=); NOT SEEN (skeletons live in SkelManager item blocks the sampler does not walk): any match or ARM CENTER (skeletons loaded)
+Skeleton.block | OK | code: writer take_block / skel_loadAseFrom; readers skel_loadFromFile (bones, key tables), skel_loadAseFrom; NOT SEEN: as blockSize
+Skeleton.ownsBlock | OK | code: writers take_block (1 / 0), skel_loadAseFrom; reader free_owned (Skeleton_release); NOT SEEN: as blockSize (always 0 with a manager's data memory)
+Skeleton.boneCount | OK | code: writers header read, skel_loadAseFrom (GEOMOBJECTs); readers skel_loadFromFile, skel_getBoneMatrix (past it: identity), ObjectList_poseBones; NOT SEEN: as blockSize
+Skeleton.bones | OK | code: writers skel_loadFromFile / skel_loadAseFrom (block start); readers skel_getBoneMatrix, ObjectList_poseBones, skel_loadAseFrom (parent lookup by name); NOT SEEN: as blockSize
+Skeleton.posKeyTotal | OK | code: writers header, skel_loadAseFrom (count); reader skel_loadAseFrom (block size); NOT SEEN: as blockSize
+Skeleton.rotKeyTotal | OK | code: writers header, skel_loadAseFrom; reader skel_loadAseFrom (block size); NOT SEEN: as blockSize
+Skeleton.duration | OK | code: writers header, skel_loadAseFrom (ms x SCENE_LASTFRAME); readers skel_getBoneMatrix (frame = t x duration, clamped), ObjectList_poseBones (animTick % (duration + 1)); the 3300 / 1650 values in the comment are from the data files, not checked here; NOT SEEN: as blockSize
+Bone.parent | OK | code: writers skel_loadFromFile (record), skel_loadAseFrom (-1, NODE_PARENT index); readers ObjectList_poseBones (parent's matrix), skel_loadAseFrom (relative bones, missing parent fatal); NOT SEEN: as Skeleton
+Bone.pos | OK | code: writers skel_loadFromFile, skel_loadAseFrom (TM_POS, y / z swapped); readers skel_getBoneMatrix (no position keys), ObjectList_poseBones; NOT SEEN: as Skeleton
+Bone.rotation | OK | code: writers skel_loadFromFile, skel_loadAseFrom (TM_ROTAXIS / TM_ROTANGLE); readers skel_getBoneMatrix (rotate(angle x 57.2958, axis): radians), ObjectList_poseBones; NOT SEEN: as Skeleton
+Bone.posKeyCount | OK | code: writers skel_loadFromFile (record), skel_loadAseFrom (++); readers skel_loadFromFile (table size), skel_getBoneMatrix / ObjectList_poseBones (key_at); NOT SEEN: as Skeleton
+Bone.posKeys | OK | code: writers skel_loadFromFile / skel_loadAseFrom (block + offset); readers key_at callers, skel_loadAseFrom; NOT SEEN: as Skeleton
+Bone.rotKeyCount | OK | code: as posKeyCount for rotation keys; NOT SEEN: as Skeleton
+Bone.rotKeys | OK | code: as posKeys for rotation keys; NOT SEEN: as Skeleton
+PosKey.time | OK | code: writers skel_loadFromFile, skel_loadAseFrom (ase_time: ms); readers key_at (binary search), skel_getBoneMatrix ((frame - time) / length); NOT SEEN: as Skeleton
+PosKey.length | OK | code: writers file / skel_loadAseFrom spans; reader skel_getBoneMatrix (fraction; 0: none); NOT SEEN: as Skeleton
+PosKey.pos | OK | code: writers file / skel_loadAseFrom (y / z swapped); readers skel_getBoneMatrix (key[2..4]), ObjectList_poseBones; NOT SEEN: as Skeleton
+PosKey.delta | OK | code: writers file / skel_loadAseFrom (to the next key); readers skel_getBoneMatrix (key[5..7] x fraction), ObjectList_poseBones; NOT SEEN: as Skeleton
+RotKey.time | OK | code: as PosKey.time (key_at, fraction); NOT SEEN: as Skeleton
+RotKey.length | OK | code: writers file / skel_loadAseFrom; reader skel_getBoneMatrix (fraction); NOT SEEN: as Skeleton
+RotKey.rotation | OK | code: writers file / skel_loadAseFrom (composed); readers skel_getBoneMatrix (rotate rotation[0] about [1..3]), ObjectList_poseBones; NOT SEEN: as Skeleton
+RotKey.step | OK | code: writers file / skel_loadAseFrom; readers skel_getBoneMatrix (rotate f x step[0] about step[1..3]), ObjectList_poseBones; NOT SEEN: as Skeleton
+Manager.blockSize | OK | code: writer ShapeManager_initBy (n x 0x98 + extra); readers take_block (allocation / check); run: 32000 .. 3000000 (e.g. 8 x 0x98 + 30784 = 32000)
+Manager.block | OK | code: writer take_block; readers ShapeManager_initBy (layout), free_owned; run: valid pointers
+Manager.ownsBlock | OK | code: writers take_block (1 without memory), free_owned 0; reader free_owned; NOT SEEN: every caller in the game gives memory (match_start: objectShapeData, itemShapeData, the player records' ShapeData)
+Manager.dir | OK | code: writer ShapeManager_initBy (dir upper-cased, or empty); reader item_path (sources 0 / 1 only); run: "SHAPE"
+Manager.source | OK | code: writer ShapeManager_initBy; readers shape_getByName (== 2: the dat), item_path; run: 2
+Manager.capacity | OK | code: writer ShapeManager_initBy; readers tree_lookup (0 fatal, full fatal), layout, release loops; run: 8, 16, 20, 400, 600
+Manager.nodes | OK | code: writer ShapeManager_initBy; readers tree_lookup, shape_getByName (node name for item_path); run: valid pointers
+Manager.items | OK | code: writer ShapeManager_initBy; readers shape_getByName, release_all, render/objects.c, shape_colours.c SHAPE(); run: valid pointers
+Manager.count | OK | code: writers shape_getByName ++, release_all 0; readers tree_lookup (empty / full), shape_setTint loop, render/objects.c (i % count); run: 0 .. 97
+Manager.dataSize | OK | code: writer ShapeManager_initBy (extra); reader shape_getByName (room = dataSize - dataUsed); run: 30784 .. 2908800
+Manager.data | OK | code: writer ShapeManager_initBy (block + n x 0x98); reader shape_getByName (data + dataUsed); run: valid pointers
+Manager.dataUsed | OK | code: writers shape_getByName (+= blockSize), release_all (0); reader shape_getByName; run: 0 .. 549376
+Manager.textureSuffix | OK | code: writers ShapeManager_initBy (empty), shape_setTextureSuffix ("_T<p>" from playerRecord_setPartColour); reader shape_getByName (shape_bindTextureBy suffix); run: "_T0"
+Manager.bindFlags | OK | code: writers ShapeManager_initBy 0, shape_setTextureSuffix (flags), shape_setTint (|= 2), shape_clearTint (bit 1 off); reader shape_getByName (shape_bindTextureBy); run: 0, 2
+Manager.tint | OK | code: writers shape_setTint (h1 s1 v1 h2 s2 v2 bits), ShapeManager_initBy / shape_clearTint 0; reader shape_getByName (as bits to shape_bindTextureBy); run: float bits (type change handled elsewhere)
+SkelManager.blockSize | OK | code: writer SkeletonManager_initBy (n x 0x70 + extra); reader take_block; run: 2000 .. 100000 (2 x 0x70 + 1776 = 2000)
+SkelManager.block | OK | code: writer take_block; readers SkeletonManager_initBy (layout), free_owned; run: valid pointers
+SkelManager.ownsBlock | OK | code: writers take_block (1 without memory), free_owned; reader free_owned; NOT SEEN: every caller gives memory (match_start, model_sets)
+SkelManager.dir | OK | code: writer SkeletonManager_initBy (dir or "."); reader item_path (sources 0 / 1 only); run: "Skeleton"
+SkelManager.source | OK | code: writer SkeletonManager_initBy; readers skel_getSkeletonPtrBy (== 2), item_path; run: 2
+SkelManager.capacity | OK | code: writer SkeletonManager_initBy; readers tree_lookup, layout, release loop; run: 2, 100
+SkelManager.nodes | OK | code: writer SkeletonManager_initBy; readers tree_lookup, skel_getSkeletonPtrBy; run: valid pointers
+SkelManager.items | OK | code: writer SkeletonManager_initBy; readers skel_getSkeletonPtrBy, release_all; run: valid pointers
+SkelManager.count | OK | code: writers skel_getSkeletonPtrBy ++, release_all 0; reader tree_lookup; run: 0 .. 24
+SkelManager.dataSize | OK | code: writer SkeletonManager_initBy (extra); reader skel_getSkeletonPtrBy (room); run: 1776 .. 88800
+SkelManager.data | OK | code: writer SkeletonManager_initBy (block + n x 0x70); reader skel_getSkeletonPtrBy; run: valid pointers
+SkelManager.dataUsed | OK | code: writers skel_getSkeletonPtrBy (+= blockSize), release_all 0; reader skel_getSkeletonPtrBy; run: 0 .. 14576
+PlayerRecord.used | OK | code: writers playerRecord_markUsed 1 / markFree 0, actor_slots.c resets 0; readers net / scene code (in-use tests); run: 0/1
+PlayerRecord.partHue | COMMENT | code: writers playerRecord_setPartColour (hue_byte: the hue wrapped to -180 .. 180, (h + 180) x 0.7083333 - 128), record_clearPartsItems 0; readers net_sendPlayerInfo (30 bytes from here, packet 2), playerRecord_applyNetColours (signed byte x 1.40625 back to degrees); run: -124 .. 119. The comment does not give the scale -> "per part its two tints' hue as a signed byte: hue_byte (the hue wrapped to -180 .. 180, (h + 180) x 0.7083333 - 128, about 256 / 360 a degree; playerRecord_setPartColour); sent in packet 2 (net_sendPlayerInfo, 30 bytes from here) and read back signed x 1.40625 (playerRecord_applyNetColours)"
+PlayerRecord.partSaturation | OK | code: writers playerRecord_setPartColour (level_byte), record_clearPartsItems; readers net_sendPlayerInfo, playerRecord_applyNetColours (x 0.0078125); run: -128 .. 127
+PlayerRecord.partValue | OK | code: as partSaturation; run: 31 .. 127
+PlayerRecord.flag | OK | code: writers playerRecord_loadFlag (Save\<name>.BMP, 24 x 16), net_processGamePacket kind 12 (16 pixels a piece, alpha 0 for black); readers flag_uploadAtlas (into the atlas), net_sendFlagPiece (RGB); NOT SEEN (the sampler does not cover it): a network match with a Save\<name>.BMP flag picture
+PlayerRecord.flagChanged | OK | code: writers main_loop (playerRecord_loadFlag's result), net_processGamePacket kind 12 (1), flag_uploadAtlas (0), small.c reset 0; readers flag_uploadAtlas, net_sendFlagPiece, kind 12 handler; NOT SEEN: as flag
+PlayerRecord.flagSent | OK | code: writers small.c reset / map_info.c 0x180, main_loop / files.c / kind 1 resendAsked / kind 12 (0), net_sendFlagPiece (+16, 0x180); readers main_loop (< 0x180: send a piece; == 0x180 test), net_sendFlagPiece; run: 384 (0x180)
+PlayerRecord.name | COMMENT | code: writers player_setName (also its actors' names), actor_slots.c clear; readers playerRecord_loadFlag (Save\%s.BMP: the flag picture, not a screenshot), notices.c RECORD_NAME, msg_players.c PLAYER_NAME; run: "Alex". "(its screenshot: Save\\<name>.BMP)" is wrong -> "its name (player_setName, which also names its actors); its flag picture is Save\\<name>.BMP (playerRecord_loadFlag); shown in notices and messages"
+PlayerRecord.character | OK | code: writers player_setCharacter (also its actors'), actor_slots.c clears 0; readers actor_takeDamage (attacker's stats), character_factor / LEG() (stats[pr->character]); run: 1 .. 8
+PlayerRecord.team | OK | code: writers player_setTeam, stage_resetPlayerRecords / stage_newRound -1; readers actor_setupFromParts, net_sendPlayerInfo, bot spawns; run: -1 .. 2
+PlayerRecord.partNames | OK | code: writers set_part (type name), record_clearPartsItems; never read (as the comment says); run: "KYRIE\BOOSTER"
+PlayerRecord.itemNames | OK | code: writers actor_setActorTypeItemInfoBy (small.c: ActorItem name or empty), record_clearPartsItems; never read; run: "ITEM\SH-4"
+PlayerRecord.parts | OK | code: writers set_part (type), record_clearPartsItems -1; readers set_part (same type), part_load (actor_slots.c model_at), net_sendPlayerInfo; run: -1 .. 20
+PlayerRecord.items | OK | code: writers actor_setActorTypeItemInfoBy, record_clearPartsItems -1; readers weapons.c (items[slot]), actor_frame.c (ammo checks, FiredRound.weapon), main_loop, frame_loops.c, net packet 2 (+1); run: -1 .. 36
+PlayerRecord.headShapes | OK | code: ResourceSet_ctor (vtable, clear), model_sets / ShapeManager_initBy (8 shapes over headShapeData), set_part (release), part_load, playerRecord_setPartColour / armc_colours.c (suffix, tint), render/objects.c; run: see Manager
+PlayerRecord.headShapeData | OK | code: model_sets (the manager's memory: 8 x 0x98 + 0x7840 = 0x7d00); run: shape bytes
+PlayerRecord.chestShapes | OK | code: as headShapes (8 shapes); run: see Manager
+PlayerRecord.chestShapeData | OK | code: as headShapeData (0x7d00); run: shape bytes
+PlayerRecord.armShapes | OK | code: as headShapes (16 shapes); run: see Manager
+PlayerRecord.armShapeData | OK | code: model_sets (16 x 0x98 + 0xf080 = 0xfa00); run: shape bytes
+PlayerRecord.legShapes | OK | code: as headShapes (16 shapes); run: see Manager
+PlayerRecord.legShapeData | OK | code: model_sets (0xfa00); run: shape bytes
+PlayerRecord.boosterShapes | OK | code: as headShapes (20 shapes); run: see Manager
+PlayerRecord.boosterShapeData | OK | code: model_sets (20 x 0x98 + 0x12ca0 = 0x13880); run: shape bytes
+PlayerRecord.headSkels | OK | code: ResourceSet_ctor, model_sets / SkeletonManager_initBy (2 skeletons over headSkelData), set_part (release), part_load; run: see SkelManager
+PlayerRecord.headSkelData | OK | code: model_sets (2 x 0x70 + 0x6f0 = 0x7d0); run: skeleton bytes
+PlayerRecord.chestSkels | OK | code: as headSkels; run: see SkelManager
+PlayerRecord.chestSkelData | OK | code: as headSkelData (0x7d0); run: skeleton bytes
+PlayerRecord.armSkels | OK | code: as headSkels; run: see SkelManager
+PlayerRecord.armSkelData | OK | code: model_sets (2 x 0x70 + 0xec0 = 0xfa0); run: skeleton bytes
+PlayerRecord.legSkels | OK | code: as headSkels; run: see SkelManager
+PlayerRecord.legSkelData | OK | code: as armSkelData (0xfa0); run: skeleton bytes
+PlayerRecord.boosterSkels | OK | code: as headSkels; run: see SkelManager
+PlayerRecord.boosterSkelData | OK | code: as armSkelData (0xfa0); run: skeleton bytes
+PlayerRecord.flagShown | OK | code: writers flag_uploadAtlas 1, map_loadActorInfoFrom 1, small.c reset 0; readers hud_drawMain, hud_markers, hud_ranking, net_sendFlagPiece, kind 12 handler; run: 0/1 (skirmish)
+TreeNode.name | OK | code: writer tree_lookup (strcpy of the path_normalize'd key); readers tree_lookup (strcmp), shape_getByName / skel_getSkeletonPtrBy (item_path); NOT SEEN (inside manager blocks): any shape / skeleton load
+TreeNode.index | OK | code: writer tree_lookup (count, 0 for the root); reader tree_lookup (found: its index); NOT SEEN: as name
+TreeNode.left | OK | code: writer tree_lookup (link at +0x44 for strcmp < 0; 0 for a new node); reader tree_lookup (walk); NOT SEEN: as name
+TreeNode.right | OK | code: writer tree_lookup (+0x48); reader tree_lookup; NOT SEEN: as name
+TexRecord.name | OK | code: writer texRecord_init (strcpy of the normalised key); readers tex_getIdBy (strcmp), texRecord_init (suffix), names.c:432 (name list); run: "IFTEX\CHARACTER"
+TexRecord.slot | OK | code: writers texRecord_init (-1), tex_bind (cache slot; -1 when evicted); reader tex_bind (< 0: load); run: -1 .. 79
+TexRecord.flags | OK | code: writers texRecord_init, tex_getIdBy, tex_setMaterialTint (| 2), tex_markMaterialChanged (& 0x11111113); readers tex_bind (bit 0 clamp, bit 1 tint), tex_applyTintMask, tex_getIdBy (same test); run: 0, 1, 2
+TexRecord.colours | OK | code: writers texRecord_init, tex_setMaterialTint (two h, s, v sets); readers tex_applyTintMask (tex_tintRgba), tex_getIdBy / tex_setMaterialTint (compare); run: -123.75 .. 170 (hues), 0 .. 0.999
+TexRecord.scrollMode | OK | code: writer texRecord_init (name suffix _ANI / _ANI0 .. _ANI3 -> 1 .. 4); reader view_volume.c tex_scroll (draw_opaque / draw_transparent: 1 v +, 2 u +, 3 v -, 4 u -); run: 0, 1, 3, 4
+TexRecord.changed | OK | code: writers texRecord_init 0, tex_setMaterialTint 1, tex_markMaterialChanged 1, tex_bind 0 (after reload); reader tex_bind (== 1: reload); run: 0/1 (itemsD)

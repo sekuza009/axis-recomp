@@ -1,0 +1,80 @@
+{
+ "g_roomMech": {
+  "comment": "u8[11]; the Ladder account's mech (signed bytes): the five parts (head, chest, arm, leg, booster), item slots 4 / 5, then slots 2 .. 5; from the login reply (login_takeAccountRecord, g_profileReply + 0x54) or the new ID's defaults (newId_register), set from the ARM CENTER by armc_sendSelectionToNet; unpacked into the saved mech by mech_unpackFromRecord"
+ },
+ "g_roomColours": {
+  "comment": "float[36]; the Ladder account's colour choices (six ColourChoice slots of 0x18 bytes: hue, saturation, value twice): from the login reply (g_profileReply + 0x5f) or the new ID's defaults, set from g_armcColours by armc_sendSelectionToNet and sent with the mech; mech_unpackFromRecord copies them to g_savedColourChoices"
+ },
+ "g_ptxData": {
+  "comment": "u8[262144]; the image decoder's input: a .ptx file's compressed planes after the header (ptx_read reads 0x10000 bytes; each plane's bit reader starts where the last one ended)"
+ },
+ "g_graphicSettings": {
+  "comment": "int[7]; the graphics settings in use, in the setup page's order: VIDEO MODE (g_videoMode), COLOR DEPTH (g_videoDepth), F/X STATUS (axis.cfg HIGH / LOW, g_highDetail), then axis.cfg's four switches LINEAR FILTERING, MIP MAPPING, VIEW FPS, SIMPLE MENU (g_cfgSwitches); setup_keys.c copies all 7"
+ },
+ "g_mechPartStats": {
+  "name": "g_mechMaxima",
+  "comment": "int[7]; the whole mech's figures on the ARM CENTER's mech panel (section_mech): MAX ARMOR, MAX SHIELD, FCS level, then WEAPON LOAD for 30MM / 60MM / E-PAK / MISSILE - the local Player's armorMax, shieldMax, accuracy, ammoMax[4] (armc_readMechStats)"
+ },
+ "g_armsStats": {
+  "comment": "int[5]; the arm part's figures for the arms panel (section_arms): the FIRE CONTROL SYSTEM level (g_armsFcsLevel), then the CAPACITY FOR 30MM, 60MM, E-PAK and MISSILE (ArmType.stats, copied by armc_readPartPanels)"
+ },
+ "g_controls": {
+  "comment": "int[68]; axis.cfg's control settings: the key bindings 0 .. 0x3f (DIK codes, two slots per action: [2a] the key, [2a + 1] the second key), then the mouse lines 0x40 .. 0x43 (g_mouseSettings: invert, smooth, sensitivity, crosshair)"
+ },
+ "g_armcCameraBox": {
+  "comment": "u32[38]; an ARM CENTER box: eight corners of a 1400-unit cube (+-700 as float bits, 16 bytes apart; never read), then the panels' origin point at +0x80 (0: y +0x84 read by armc_drawPanels, z +0x88 = g_armcPanelDepth); all written once by armc_initCameraBox"
+ },
+ "g_pilotStatsKept": {
+  "comment": "int[8]; the pilot's record kept (g_pilotStats' layout: level (g_pilotLevelKept), exp, rank (unused here), power (float), games, kills, deaths, kill rate (float, +0x1c)): room_copyAccountRecord / newId_register / pilotRecord_syncCopies"
+ },
+ "g_textureSets": {
+  "type": "TextureManager *"
+ },
+ "g_mousePos": {
+  "comment": "int[2]; the pointer (g_mouseX, g_mouseY): in the menus 640 x 480 units (input_updateMouse's clamp, wider with the wide patch); in a match window pixels, put back to the window's centre each frame"
+ },
+ "g_hanJongRight": {
+  "comment": "float[120]; the Hangul final-consonant (jongseong) glyphs on the g_fontHanJungJong texture (7 rows of 16 from texel row 0x60; index final + set x 28, at most 111; 112 of the 120 set by font_initHangulGrids): the cells' right edges"
+ },
+ "g_sortBounds": {
+  "comment": "int[8192]; the two depth sorts' partition stacks (depth_sort.c QsGlobals): A's lo (+0) and hi (+0x2000), B's lo (+0x4000) and hi (+0x6000), 2048 entries each"
+ },
+ "g_packedBlue": {
+  "comment": "u8[4]; a packed colour (00 00 ff ff: colour_initPackedBlue); never read"
+ },
+ "g_packedGrey": {
+  "comment": "u8[4]; a packed colour (7f 7f 7f ff: colour_initPackedGrey); never read"
+ },
+ "g_packedGreen": {
+  "comment": "u8[4]; a packed colour (00 ff 00 ff: colour_initPackedGreen); never read"
+ },
+ "g_realBlue": {
+  "comment": "float[4]; a RealColor (0, 0, 1, 1: colour_initRealBlue); never read"
+ },
+ "g_realGreen": {
+  "comment": "float[4]; a RealColor (0, 1, 0, 1: colour_initRealGreen); never read"
+ },
+ "g_realRed": {
+  "comment": "float[4]; a RealColor (1, 0, 0, 1: colour_initRealRed); never read"
+ },
+ "g_realBlack": {
+  "comment": "float[4]; a RealColor (0, 0, 0, 1: colour_initRealBlack); never read"
+ },
+ "g_realYellow": {
+  "comment": "float[4]; a RealColor (1, 1, 0, 1: colour_initRealYellow); never read"
+ },
+ "g_realGrey": {
+  "comment": "float[4]; a RealColor (0.5, 0.5, 0.5, 1: colour_initRealGrey); never read"
+ },
+ "g_keyTable1": {
+  "name": "g_unusedStartupTable",
+  "comment": "int[256]; cleared (0x400 bytes) by the start-up load (app_startupLoad) and never read"
+ },
+ "g_keyTable2": {
+  "name": "g_unusedKeyTable2",
+  "comment": "int[256]; cleared by input_clearKeyTable2 (with g_unusedKeyTable2Word0 ..) and never read"
+ },
+ "g_slotCams": {
+  "comment": "float[352]; per local slot (g_localSlot) a 0x58-byte free (watching) camera record: +0 .. +8 the camera's look point (freeCam_keys), +0x28 its heading in degrees (g_freeCamYaw, written by freeCam_mouseLook's turn_update, never read back); the first click copies the point into g_freeCamMoveTarget / g_freeCamMoveEye. Only these offsets are used; 0x4dff9c .. 0x4e0458 is never referenced"
+ }
+}

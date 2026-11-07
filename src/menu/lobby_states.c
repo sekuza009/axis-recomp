@@ -343,7 +343,7 @@ u32 (newId_register)(void)
 	static const u32 zero2[] = { ADDR(g_ladderExp), ADDR(g_ladderKills), ADDR(g_ladderDeaths), ADDR(g_ladderGames) };
 	for (int k = 0; k < 4; k++)
 		GAME_VAR(int, zero2[k]) = 0;
-	AccountPacket *record = (*(AccountPacket **)&g_accountPacket);
+	AccountPacket *record = g_accountPacket;
 	strcpy(record->name, g_accountName);
 	strcpy(record->password, g_accountPassword);
 	strcpy(record->email, g_accountEmail);
@@ -588,11 +588,11 @@ u32 (arena_editAddress)(void)
 	input_releaseKeyboard();
 	g_textFieldOpen = 1;
 	menu_clearInputBuffer(0x14);
-	memset((void *)OBJ(g_chatLine), 0, 0x400);
+	memset((void *)OBJ(g_inputLine), 0, 0x400);
 	g_typedArenaAddress = 0;
 	g_editCaretX = g_arenaGameListLeft + 0xd8;
 	g_editCaretY = g_arenaGameListTop + 0xd0;
-	g_chatLength = (int)strlen(g_chatLine);
+	g_inputLineLength = (int)strlen(g_inputLine);
 	g_typedArenaAddress4 = 0;
 	(*(u32 *)&g_menuKeyGuard) = 0x40a00000;   /* 5 */
 	/* editField_createEdit(20); the original also leaves the 20 it gave menu_clearInputBuffer on the stack as a second
@@ -908,7 +908,7 @@ u32 (lobbyPlayer_keys)(void)
 	if (g_typingArenaPlayerName) {
 		if (g_textFieldOpen)
 			return page;
-		const char *typed = g_chatLine;
+		const char *typed = g_inputLine;
 		u32 length = strlen(typed);
 		g_typingArenaPlayerName = 0;
 		if (!length)
@@ -1112,7 +1112,7 @@ u32 (arenaCreate_keys)(void)
 	u32 mode = (*(u32 *)&g_arenaCameraMode);
 	if (mode == 1 || mode == 0 || g_frameOpening)
 		return mode;
-	const char *line = g_chatLine;
+	const char *line = g_inputLine;
 	if (g_editingNewArenaName) {   /* the arena's name */
 		if (g_textFieldOpen)
 			return mode;
@@ -1612,7 +1612,7 @@ int (lobby_announceArena)(void)
 	}
 	g_arenaGameSetUp = 1;
 	special_map(g_arenaName, (u8 *)ADDR(g_arenaMap));
-	ServerRecord *packet = (ServerRecord *)g_arenaPacket;
+	ServerRecord *packet = g_arenaPacket;
 	packet->kind = 0x18;
 	packet->rotation = g_arenaRotation;
 	packet->timeLimit = g_arenaTimeLimit;
@@ -1623,9 +1623,9 @@ int (lobby_announceArena)(void)
 	packet->maxPlayers = g_arenaMaxPlayers;
 	packet->locked = g_arenaLocked;
 	lstrcpyA(packet->password, (const char *)ADDR(g_arenaPassword));
-	lstrcpyA(((ServerRecord *)g_arenaPacket)->name, g_arenaName);
+	lstrcpyA(g_arenaPacket->name, g_arenaName);
 	jmp_net_getLocalAddress();
-	lstrcpyA(((ServerRecord *)g_arenaPacket)->address, g_localAddress);
+	lstrcpyA(g_arenaPacket->address, g_localAddress);
 	g_connectionAwaited = 1;
 	g_hostAnswer = 2;
 	net_send(0xa, 0x64);
@@ -1640,9 +1640,9 @@ void (room_announceGame)(void)
 {
 	room_keepSettings();
 	special_map(g_roomRecName, (u8 *)ADDR(g_roomRecMap));
-	RoomRecord *packet = (RoomRecord *)g_roomPacket;
+	RoomRecord *packet = g_roomPacket;
 	GAME_CDECL(0x49ea80, char *, char *, const char *, int)(packet->hostName, g_ladderId, 0x1e);   /* strncpy */
-	packet = (RoomRecord *)g_roomPacket;
+	packet = g_roomPacket;
 	const GameSettings *room = (const GameSettings *)OBJ(g_roomRecName);
 	packet->kind = 0x18;
 	packet->rotation = room->rotation;
@@ -1654,9 +1654,9 @@ void (room_announceGame)(void)
 	packet->maxPlayers = room->maxPlayers;
 	packet->locked = room->locked;
 	lstrcpyA(packet->password, ((const GameSettings *)OBJ(g_roomRecName))->password);
-	lstrcpyA(((RoomRecord *)g_roomPacket)->name, g_roomRecName);
+	lstrcpyA(g_roomPacket->name, g_roomRecName);
 	jmp_net_getLocalAddress();
-	lstrcpyA(((RoomRecord *)g_roomPacket)->address, g_localAddress);
+	lstrcpyA(g_roomPacket->address, g_localAddress);
 	g_connectionAwaited = 1;
 	g_hostAnswer = 2;
 	net_send(0x12, 0x65);

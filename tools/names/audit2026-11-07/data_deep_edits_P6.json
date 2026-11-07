@@ -1,0 +1,29 @@
+{
+ "k_armcDistance": {
+  "name": "k_m450f",
+  "comment": "-450.0 (a float's bits): the ARM CENTER camera's distance (armc_open) and the pose clamp's lower bound in actor_processFrame (tenths of a degree)"
+ },
+ "g_serverReplyKind": {
+  "name": "g_playerListReplyKind",
+  "comment": "the game server's player-list reply's kind (g_playerListReply +0x1e; net_receivePlayerListReply): 0 a player (net_addPlayerRecord), 1 the list's end (g_playerListDone set)"
+ },
+ "g_roomListRequest": {
+  "type": "u32 *",
+  "comment": "the 4-byte body of request 19 (list rooms; 01 00 18 00 = 0x180001, written through it by gameList_refresh), sent to the game server by net_send(19); allocated by net_resetConnection, freed by net_freeBuffers"
+ },
+ "g_progressSeen": {
+  "comment": "the campaign progress the skirmish screen has already announced: set from g_progress when a profile is made current (profile_makeCurrent); menuState500_enterSkirmish raises the briefing (g_skirmishNewPartsNotice) when g_progress has passed it, then catches it up"
+ },
+ "g_pilotGamesKept": {
+  "comment": "the kept copy of the pilot's games played (with g_pilotLevelKept ..): room_copyAccountRecord copies g_pilotGames in, pilotRecord_syncCopies sets it to g_ladderGames, record_send (ladder_checkAndSendRecord) stores the record's, and take_back reads it back when the record's kills are 300 past the copy's; newId_register clears it"
+ },
+ "g_armcFrom": {
+  "comment": "where the ARM CENTER was opened from: 1 the main menu (menu_tunnel / menu_records; menuState400_enter also sets 1 on entering the arena lobby), 2 the arena's player screen (lobby_playerScreenClicks), 3 the game room (room_clicks), 0 cleared (lobby_enterPlayerScreen, the camera's way back); armc_exit picks the way back and what a confirm does by it"
+ },
+ "g_setupArrowPressed": {
+  "comment": "the setup arrow last pressed: the sound tab's volume arrows (volume_down / up) or the controls tab's mouse-sensitivity minus / plus (slider_press): 0 down / minus, 1 up / plus; -1 none (a tab opened, or its glow g_setupPressedClock ran out). setup_drawSoundPage also has lit arrows a row lower for 2 / 3, which nothing sets"
+ },
+ "g_fpsSecondSoFar": {
+  "comment": "seconds since g_fpsSecondStart, as of this frame (menu_frame, only while g_showFps); menu_frame divides the frames counted by it for g_fps"
+ }
+}

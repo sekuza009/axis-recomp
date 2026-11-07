@@ -77,7 +77,7 @@ void (profile_deleteKeys)(void)
 		g_profilePage = 1;
 		return;
 	}
-	dialog_keys(g_profileDialogX, g_profileDialogY);
+	dialog_keys(g_deleteDialogX, g_deleteDialogY);
 }
 
 /* 0x44ca90 (profile_logOutKeys): page 5, "log out, are you sure?": OK or a click on the left button confirms

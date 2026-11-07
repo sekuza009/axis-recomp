@@ -37,14 +37,14 @@ void (app_setDataPaths)(void)
 	copy_name(OBJ(g_stageDir), 0x105, (const char *)STR(0x4b0498, "stage/"));
 }
 
-/* ---- the chat input line (0x400 bytes at g_chatLine) and its three-line history ---- */
-/* 0x431560: the input line (g_chatLine, 0x400 bytes) emptied for a text field max characters long (g_lineMaxLength =
-   max; g_chatLength 0). Callers: every text field's opening (account_edit*, arena_edit*, room_edit*, roomLogin_edit*,
+/* ---- the chat input line (0x400 bytes at g_inputLine) and its three-line history ---- */
+/* 0x431560: the input line (g_inputLine, 0x400 bytes) emptied for a text field max characters long (g_lineMaxLength =
+   max; g_inputLineLength 0). Callers: every text field's opening (account_edit*, arena_edit*, room_edit*, roomLogin_edit*,
    newIdForm_openField, profile_typeNewName, chat_openTextField, freeCam_keys) */
 void (menu_clearInputBuffer)(int max)
 {
-	memset((void *)OBJ(g_chatLine), 0, 0x400);
-	g_chatLength = 0;
+	memset((void *)OBJ(g_inputLine), 0, 0x400);
+	g_inputLineLength = 0;
 	g_lineMaxLength = max;
 }
 
@@ -53,7 +53,7 @@ void (menu_pushInputHistory)(void)
 {
 	memcpy((void *)(OBJ(g_chatHistory) + 0x800), (void *)(OBJ(g_chatHistory) + 0x400), 0x400);
 	memcpy((void *)(OBJ(g_chatHistory) + 0x400), (void *)OBJ(g_chatHistory), 0x400);
-	memcpy((void *)OBJ(g_chatHistory), (void *)OBJ(g_chatLine), 0x400);
+	memcpy((void *)OBJ(g_chatHistory), (void *)OBJ(g_inputLine), 0x400);
 }
 
 /* 0x41ee40: message i of the 0x80-byte table at g_messages shown in the message box */
@@ -527,7 +527,7 @@ u32 (skirmish_clicks)(void)
 	return button;
 }
 
-/* 0x431600: the open text field's input line (g_chatLine) closed: kept (pushed onto the history, menu_pushInputHistory)
+/* 0x431600: the open text field's input line (g_inputLine) closed: kept (pushed onto the history, menu_pushInputHistory)
    when ok, else its g_lineMaxLength bytes wiped; typing off (g_textFieldOpen 0), the keyboard re-initialised, the key
    delay g_menuKeyGuard 10. Callers editField_editProc (x3), roomLogin_endTyping, login_send, newIdForm_endTyping. Returns
    what the original leaves in eax */
@@ -541,12 +541,12 @@ u32 (menu_closeInputLine)(int ok)
 		r = menu_pushInputHistory();   /* menu_pushInputHistory: into the history */
 	} else {
 		if (g_lineMaxLength > 0)
-			memset((void *)OBJ(g_chatLine), 0, g_lineMaxLength);
+			memset((void *)OBJ(g_inputLine), 0, g_lineMaxLength);
 		input_resetKeys();
 		r = (u32)input_initKeyboard(g_mainWindow);
 	}
 	g_lineMaxLength = 0;
-	g_chatLength = 0;
+	g_inputLineLength = 0;
 	(*(u32 *)&g_menuKeyGuard) = 0x41200000;   /* 10 */
 	return r;
 }

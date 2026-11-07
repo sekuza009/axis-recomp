@@ -109,6 +109,7 @@ void fix_hudVertex(int x, int y);
 /* the 3D background (menu_tunnel.c) */
 #define g_flareTextures ((const int *)(OBJ(g_spiralTextures) + 0x14))     /* flare k's texture is g_flareTextures[-k] */
 /* ---- textures ---- */
+typedef void (*Cleanup)(void);   /* a fatal error's clean-up before exit(1) (g_errorCleanupHook) */
 typedef struct { u32 vtable; void *banks[6]; i32 count; } TextureManager;   /* the game's TextureManager (0x83a5e0): six texture banks (the game's class Texture, one per size: TextureBank); a texture id names banks[id / 512], slot id % 512 */
 #define tex_bind(manager, slot) GAME_THISFN(tex_bind, 0x4566c0, void, void *, int)(manager, slot)
 #define gfx_getWidth() GAME_FN(gfx_getWidth, 0x4685b0, int, void)()
@@ -958,7 +959,7 @@ typedef struct { float r, g, b, a; } Colour;
 #define ladder_checkAndSendRecord() GAME_FN(ladder_checkAndSendRecord, 0x4327f0, void, void)()
 
 /* ---- start-up objects (app/statics.c) ---- */
-#define ErrorLog_ctor(self, name, cleanupHook) GAME_THISFN(ErrorLog_ctor, 0x46c5a0, void *, void *, const char *, int)(self, name, cleanupHook)   /* a named record (vtable 0x4aa2a0) */
+#define ErrorLog_ctor(self, name, cleanupHook) GAME_THISFN(ErrorLog_ctor, 0x46c5a0, void *, void *, const char *, Cleanup)(self, name, cleanupHook)   /* a named record (vtable 0x4aa2a0) */
 #define atexit(f) GAME_CDECL(0x49ef9c, int, void (*)(void))(f)
 
 /* ---- small classes (app/classes.c) ---- */

@@ -1,0 +1,411 @@
+PART P3: 410 names; OK 401, RENAME 0, TYPE 0, COMMENT 9, UNSURE 0; not seen running 101
+TexSlot.index | OK | code: writers: tex_initBy (slot[0] = i, its position in slots); readers: tex_bind (texture->slot = slot->index, the record's cache slot); run: NOT SEEN (heap ring; the sampler does not walk slots): any texture load (main menu)
+TexSlot.record | OK | code: writers: tex_initBy (slot[1] = -1), tex_bind (= i, the record bound); readers: tex_bind (records[OLDEST->record].slot = -1 when the oldest slot is taken over); run: NOT SEEN (heap ring): any texture load
+TexSlot.glTexture | OK | code: writers: tex_initBy (glGenTextures into slot[2]); readers: tex_bind (tex_upload's id, glBindTexture); run: NOT SEEN (heap ring): any texture load
+TexSlot.next | OK | code: writers: tex_initBy (slot[3] = slot (i - 1) mod n), tex_bind (relink: slot->next = oldest, neighbour's next = slot); readers: tex_bind (mg->oldest = slot->next when the oldest is reused; unlink). From the oldest, next walks to ever newer slots, the newest's next is the oldest: fits; run: NOT SEEN (heap ring): any texture load
+TexSlot.prev | OK | code: writers: tex_initBy (slot[4] = slot (i + 1) mod n), tex_bind (unlink / insert before the oldest); readers: tex_bind (OLDEST->prev = the newest); inverse of next in every write: fits; run: NOT SEEN (heap ring): any texture load
+TextureBank.ready | OK | code: writers: static_initTex* (0), tex_initBy (1); readers: tex_initBy (1: fatal "duplicate initialization"); run: always 1
+TextureBank.dir | OK | code: writers: tex_initBy (strcpy of dir unless ".", path_normalize); readers: tex_textureFileExist, tex_path (tex_loadImage), tex_initBy (Data\ path); run: always "" (every caller passes ".", as the comment says)
+TextureBank.indexCount | OK | code: writers: tex_initBy (fread from the dat's head; 0 for formats 1/2); readers: tex_findByName (search bound), tex_initBy (allocation size); run: 12 .. 549 per bank, constant
+TextureBank.index | OK | code: writers: tex_initBy (operator_new + fread of indexCount 0x44-byte entries, or NULL); readers: tex_findByName (binary search), tex_getItemFileBy (offset at +0x40), Texture_dtor (free, orig 0x455043); run: valid heap pointer always
+TextureBank.file | OK | code: writers: tex_initBy (fopen Data\ImageN.dat or NULL); readers: tex_initBy (fread), tex_getItemFileBy (fseek, returned to tex_loadImage); run: valid pointer always
+TextureBank.image | OK | code: writers: tex_loadImage (decoded RGBA), alpha_from (alpha bytes), tex_applyTintMask; readers: tex_upload (glTexImage2D / gluBuild2DMipmaps); run: pixel bytes 0 .. 255
+TextureBank.alphaImage | OK | code: writers: tex_loadImage (the _ALPHA image); readers: alpha_from (grey -> image alpha); run: pixel bytes
+TextureBank.colourMask | OK | code: writers: tex_loadImage (the _COLOR image), colour_fill (g_packedRed); readers: tex_applyTintMask; run: pixel bytes, non-zero 33%
+TextureBank.format | OK | code: writers: tex_initBy (its format argument); readers: tex_textureFileExist (path pattern / check), tex_loadImage (switch 0 / 1 / 2); orig 0xc0114: only these three; run: NOT SEEN (always 0, the dat format, as the comment says; formats 1/2 unreachable in game)
+TextureBank.width | OK | code: writers: tex_initBy; readers: TextureManager_setBanks (size check), tex_upload, tex_textureFileExist, size_check, alpha_from / colour_fill (W()); run: 64, 128, 256
+TextureBank.height | OK | code: as width; run: 64, 128, 256
+TextureBank.mipmaps | OK | code: writers: tex_initBy (its mipmaps argument); readers: tex_upload (== 1: mipmapped filter + gluBuild2DMipmaps); run: 1 (user's config has mipmaps on)
+TextureBank.linear | OK | code: writers: tex_initBy; readers: tex_upload (== 1: GL_LINEAR filters); run: 1
+TextureBank.records | OK | code: writers: tex_getIdBy (texRecord_init of a new record; flags; tex_setMaterialTint), tex_bind (records[].slot); readers: tex_getIdBy (name / flags / colours match), tex_bind, tex_loadImage (name), tex_scroll (scrollMode); run: (record array; its members sampled under TexRecord)
+TextureBank.recordCount | OK | code: writers: tex_initBy (0), tex_getIdBy (+1 per new record); readers: tex_getIdBy (search bound, 0x200 limit, < slotCount: bind at once); run: 0 .. 65
+TextureBank.slots | OK | code: writers: tex_initBy (operator_new(slotCount x 0x14), ring set up); readers: tex_bind (slots + texture->slot), tex_initBy; run: valid pointer
+TextureBank.slotCount | OK | code: writers: tex_initBy (min(slots, 0x200)); readers: tex_initBy (ring size), tex_getIdBy (bind at once while recordCount below it); run: 40, 80
+TextureBank.oldest | OK | code: writers: tex_initBy (= slots), tex_bind (= slot->next when the oldest was taken); readers: tex_bind (slot to reuse; insertion point); run: valid pointer
+TextureBank.loadCount | OK | code: writers: tex_initBy / tex_clearSetCounters (0), tex_bind (++ twice; orig 0x45671e inc, 0x456774/0x45677b the second ++'s load/store); no other reader in the original: "written, never read" fits; run: 0 .. 57
+TextureBank.clearedCd13c | OK | code: orig 0xcd13c: only writes (tex_initBy 0x455495, tex_clearSetCounters x6); run: NOT SEEN (always 0, as its name says)
+TextureBank.clearedCd140 | OK | code: orig 0xcd140: only writes (tex_initBy 0x45549b, tex_clearSetCounters x6); run: NOT SEEN (always 0)
+GroundLayer.kind | OK | code: writers: map_loadGroundInfoFrom (the 0x20c record read whole from the map file); readers: map_loadGroundInfoFrom (== 1 negates normals), light_computeLayerLightBy (2: white, unlit; 1: water lit from -1), ground_buildLayerModels (flags 0 / 8 / 6 = none / front faces culled / unlit + not culled), collision tris builder (only 0 / 1 collided; winding by kind); run: NOT SEEN (Stage.groundLayerCount was 0 in every sampled map): load a map whose map file has ground layers
+GroundLayer.origin | OK | code: writers: map file record; readers: map_loadGroundInfoFrom (points), ground_buildDrawLists (cell range culling, water height origin[1]); run: NOT SEEN (Stage.groundLayerCount was 0 in every sampled map): load a map whose map file has ground layers
+GroundLayer.rows | OK | code: writers: map file record; readers: map_loadGroundInfoFrom (all heap sizes, index / strip capacities), ground_buildDrawLists, ground_computeLighting, light_computeLayerLightBy, ground_buildLayerModels (vertexCount), collision builder (collision_tris.c); run: NOT SEEN (Stage.groundLayerCount was 0 in every sampled map): load a map whose map file has ground layers
+GroundLayer.cols | OK | code: as rows (row width cols + 1 everywhere); run: NOT SEEN (Stage.groundLayerCount was 0 in every sampled map): load a map whose map file has ground layers
+GroundLayer.cellSize | OK | code: writers: map file record; readers: map_loadGroundInfoFrom (point x / z), ground_buildDrawLists (visible cell range); run: NOT SEEN (Stage.groundLayerCount was 0 in every sampled map): load a map whose map file has ground layers
+GroundLayer.heightScale | OK | code: writers: map file record; readers: map_loadGroundInfoFrom only (grey x heightScale + origin[1]); run: NOT SEEN (Stage.groundLayerCount was 0 in every sampled map): load a map whose map file has ground layers
+GroundLayer.texScale | OK | code: readers: map_loadGroundInfoFrom (uv = x / texScale, z / texScale), water_point (water uv); run: NOT SEEN (Stage.groundLayerCount was 0 in every sampled map): load a map whose map file has ground layers
+GroundLayer.water | OK | code: readers: light_computeLayerLightBy (== 1: waterColours), ground_buildDrawLists (== 1: water surface, else waterModel part primCount 0), ground_buildLayerModels (primCount 4 / 0); run: NOT SEEN (Stage.groundLayerCount was 0 in every sampled map): load a map whose map file has ground layers
+GroundLayer.texture | OK | code: writers: map_loadGroundInfoFrom (ground_tex "%s/Ground%dMap"); readers: ground_buildLayerModels (both parts' texture); run: NOT SEEN (Stage.groundLayerCount was 0 in every sampled map): load a map whose map file has ground layers
+GroundLayer.heights | OK | code: writers: map_loadGroundInfoFrom (pool_take, map image greys); readers: map_loadGroundInfoFrom (heights[at] x heightScale, through its local) only; run: NOT SEEN (Stage.groundLayerCount was 0 in every sampled map): load a map whose map file has ground layers
+GroundLayer.drawnCells | OK | code: writers: map_loadGroundInfoFrom (1 when all four corner pixels are grey); readers: ground_buildDrawLists (& 1: cell in a strip); collision builder takes every cell: fits; run: NOT SEEN (Stage.groundLayerCount was 0 in every sampled map): load a map whose map file has ground layers
+GroundLayer.points | OK | code: writers: map_loadGroundInfoFrom (origin + c x cellSize, grey x heightScale, r x cellSize); readers: normals / uv computation, ground_buildLayerModels (part vertices), collision builder (ground_triangle); run: NOT SEEN (Stage.groundLayerCount was 0 in every sampled map): load a map whose map file has ground layers
+GroundLayer.normals | OK | code: writers: map_loadGroundInfoFrom (edges g_vecUnitY, inside the 4 triangle normals summed, negated for kind 1); readers: light_computeLayerLightBy; run: NOT SEEN (Stage.groundLayerCount was 0 in every sampled map): load a map whose map file has ground layers
+GroundLayer.colours | OK | code: writers: light_computeLayerLightBy via ground_computeLighting (light_mix RGBA; 0xff for kind 2); readers: ground_buildDrawLists / ground_buildLayerModels (part colours); run: NOT SEEN (Stage.groundLayerCount was 0 in every sampled map): load a map whose map file has ground layers
+GroundLayer.uv | OK | code: writers: map_loadGroundInfoFrom; readers: ground_buildLayerModels (texCoords); run: NOT SEEN (Stage.groundLayerCount was 0 in every sampled map): load a map whose map file has ground layers
+GroundLayer.indexCapacity | OK | code: writers: map_loadGroundInfoFrom ((cols + 200) x rows x 2); readers: strip_pair (overflow fatal); run: NOT SEEN (Stage.groundLayerCount was 0 in every sampled map): load a map whose map file has ground layers
+GroundLayer.indices | OK | code: writers: map_loadGroundInfoFrom (pool heap); readers: ground_buildDrawLists (prim[2] = indices + indexCount); run: NOT SEEN (Stage.groundLayerCount was 0 in every sampled map): load a map whose map file has ground layers
+GroundLayer.indexCount | OK | code: writers: ground_buildDrawLists (0), strip_pair (+2); readers: strip_pair (capacity check), ground_buildDrawLists (strip start); run: NOT SEEN (Stage.groundLayerCount was 0 in every sampled map): load a map whose map file has ground layers
+GroundLayer.stripCapacity | OK | code: writers: map_loadGroundInfoFrom (rows x 200 + 4); readers: ground_buildDrawLists (fatal past it); run: NOT SEEN (Stage.groundLayerCount was 0 in every sampled map): load a map whose map file has ground layers
+GroundLayer.strips | OK | code: writers: map_loadGroundInfoFrom; readers: ground_buildDrawLists (prims written), ground_buildLayerModels (part prims); run: NOT SEEN (Stage.groundLayerCount was 0 in every sampled map): load a map whose map file has ground layers
+GroundLayer.stripCount | OK | code: writers: ground_buildDrawLists (0, ++ per strip); readers: same (overflow check, part->primCount); run: NOT SEEN (Stage.groundLayerCount was 0 in every sampled map): load a map whose map file has ground layers
+GroundLayer.waterPoints | OK | code: writers: water_point (from ground_buildDrawLists: 0..3 the (+-range) square, 4..11 eight at 1.5 x the far plane h = view_farPlane()); readers: ground_buildLayerModels (A->vertices) -> the view volume; run: NOT SEEN (Stage.groundLayerCount was 0 in every sampled map): load a map whose map file has ground layers
+GroundLayer.waterColours | OK | code: writers: light_computeLayerLightBy (light from above / below; 0xff for kind 2); readers: ground_buildLayerModels (A->colours); run: NOT SEEN (Stage.groundLayerCount was 0 in every sampled map): load a map whose map file has ground layers
+GroundLayer.waterUv | OK | code: writers: water_point (x / texScale, z / texScale); readers: ground_buildLayerModels (A->texCoords); run: NOT SEEN (Stage.groundLayerCount was 0 in every sampled map): load a map whose map file has ground layers
+GroundLayer.waterIndices | OK | code: writers: ground_buildLayerModels (memcpy of the four 5-index fans); readers: its waterPrims[].indices -> view volume; run: NOT SEEN (Stage.groundLayerCount was 0 in every sampled map): load a map whose map file has ground layers
+GroundLayer.waterPrims | OK | code: writers: ground_buildLayerModels (kind 6 fan, 5 indices, indices = waterIndices[f]); readers: A->prims (waterModel drawing); run: NOT SEEN (Stage.groundLayerCount was 0 in every sampled map): load a map whose map file has ground layers
+WayPoint.pos | OK | code: writers: map_loadWayPointInfoFrom (records read whole); readers: script_processTriggers (a trigger's first point: player distance), actor_pickPathPoint (points within pathRange), actor_processFrame (PATH_POINT: bot path); run: map coordinates (host-h2, mp, sessA, skirmish)
+WayPoint.commandCount | OK | code: writers: map file; readers: map_loadWayPointInfoFrom (run lengths, total vs Stage.commandCount), script_processCommandBy (loop bound); run: 0, 4, 5
+WayPoint.commands | OK | code: writers: map_loadWayPointInfoFrom (= Stage.commands[total]); readers: script_processCommandBy (0x30-byte commands, opcode c[0]); run: valid pointers
+Trigger.wayPointCount | OK | code: writers: map file; readers: map_loadTriggerInfoFrom (run lengths vs Stage.wayPointCount), actor_pickPathPoint (scan), actor_processFrame (path end: at < wayPointCount - 1); run: 0 .. 45
+Trigger.wayPoints | OK | code: writers: map_loadTriggerInfoFrom (&Stage.wayPoints[total]); readers: script_processTriggers (first point), script_processCommandBy (entry), actor_pickPathPoint, PATH_POINT; run: valid pointers
+Trigger.armed | OK | code: writers: map file, script_processTriggers (0 after firing), script_processCommandBy (commands 0 / 1); readers: script_processTriggers (!= 1: skipped); run: 0 / 1
+Trigger.flags | OK | code: writers: map file; readers: script_processTriggers (bit 1: time, bit 2: player within radius); run: 0, 1 (host-h2)
+Trigger.time | OK | code: writers: map file; readers: script_processTriggers (clockSeconds + clockFraction >= time, flag 1); run: NOT SEEN (0 in every sampled map; flag-1 triggers seen with time 0): play a mission with a timed trigger
+Trigger.radiusSq | OK | code: writers: map file (a radius), map_loadTriggerInfoFrom (r x r x k_10000f); readers: script_processTriggers (squared distance < radiusSq, flag 2); run: NOT SEEN (no flag-2 trigger in sampled maps): play a mission whose trigger fires on the player's approach
+Trigger.fired | OK | code: writers: script_processTriggers (1 on time / approach; 0 after running), script_processCommandBy (commands 2, 8); readers: script_processTriggers (== 1: script_processCommandBy(-1, i, 0), disarm, triggerFired[i]); run: 0 / 1
+StartPoint.pos | OK | code: writers: map_loadPlayInfoFrom (kind-1 record +0x10, up to 32); readers: spawn_point (main_loop.c, local_spawn's rec position; bots); run: map coordinates
+StartPoint.angle | OK | code: writers: map_loadPlayInfoFrom (records' two angles x k_10f); readers: local_spawn path in main_loop.c (pitch / heading into the claim record); run: -3139 .. 3449 (tenths of a degree): fits
+MapPlayer.character | OK | code: writers: map_loadActorInfoFrom (file record; --character, 1-based -> 0-based); readers: map_loadActorInfoFrom (>= 0: colour scheme k_scheme*[character] for all five parts), playerRecord_setFromMapPlayer (player_setCharacter); run: 0 .. 8 (skirmish)
+MapPlayer.name | OK | code: writers: map file; readers: playerRecord_setFromMapPlayer (player_setName); run: strings ("SONIEN")
+MapPlayer.team | OK | code: writers: map file; readers: playerRecord_setFromMapPlayer (player_setTeam); run: 0 / 1
+MapPlayer.parts | OK | code: writers: map file; readers: playerRecord_setFromMapPlayer (actor_setActorType{Head,Chest,Arm,Leg,Booster}InfoBy, parts[0..4]); run: 0 .. 12 (part type indices)
+MapPlayer.items | OK | code: writers: map file, map_loadActorInfoFrom (game type 2..11: items[0] fixed, items[1] 0x17 for the last pair; slots but [4] set -1); readers: playerRecord_setFromMapPlayer (actor_setActorTypeItemInfoBy per slot); run: -1 .. 19
+SpawnRecord.player | OK | code: writers: map file; readers: actor_applySpawnRecord (spawn[0] -> stage_setupActorSlot), bot_spawns (playerRecords[rec->player]: team colours, msg_playerJoinedTeam); run: 0 .. 7
+SpawnRecord.pos | OK | code: writers: map file; bot_spawns overwrites in its copy (spawn_point / cameraSaved); readers: actor_applySpawnRecord (spawn[2..4]); run: map coordinates
+SpawnRecord.pitch | OK | code: writers: map file; readers: actor_applySpawnRecord (spawn[5] -> stage_setupActorSlot); run: NOT SEEN (0 in sampled maps' actors): a mission map whose actors face up/down
+SpawnRecord.yaw | OK | code: as pitch (spawn[6]); run: NOT SEEN (0 in sampled maps' actors): a mission map with turned spawns
+SpawnRecord.bot | OK | code: writers: map file, map_loadActorInfoFrom (1 for every actor but the first); readers: actor_applySpawnRecord (spawn[1]), bot_spawns (!= 1: skipped); run: 0 / 1
+SpawnRecord.unused1c | OK | code: writers: map file; readers: actor_applySpawnRecord only (copied to Player.unused1c, which nothing reads); run: 100 (as the comment says)
+SpawnRecord.armor | OK | code: readers: actor_applySpawnRecord (armorMax and armor); run: 150, 200
+SpawnRecord.shield | OK | code: readers: actor_applySpawnRecord (shieldMax and shield); run: 100, 200
+SpawnRecord.speed | OK | code: readers: actor_applySpawnRecord (baseSpeed = speed = x k_27_7778f: km/h -> cm/s); run: 150 .. 250
+SpawnRecord.turnRate | OK | code: readers: actor_applySpawnRecord (Player.turnRate = x k_10f); run: 120 .. 220
+SpawnRecord.range | OK | code: readers: actor_applySpawnRecord (detectionRangeSq = r x r x k_10000f); run: 200
+SpawnRecord.unused34 | OK | code: readers: actor_applySpawnRecord only (BITS copy to Player.unused34, never read); run: float 0.5 / 1 (type handled elsewhere)
+SpawnRecord.aimError | OK | code: readers: actor_applySpawnRecord (Player.aimError = ftol(x k_10f)); run: 1 .. 3 degrees
+SpawnRecord.scriptFlag | OK | code: readers: actor_applySpawnRecord (Player.scriptFlag; only set otherwise by script commands 10 / 11, never read); run: NOT SEEN (0 in sampled maps): a mission map actor with the flag set
+SpawnRecord.dodgeSpread | OK | code: readers: actor_applySpawnRecord (Player.dodgeSpread = x k_100f); run: 50
+SpawnRecord.climbSpread | OK | code: readers: actor_applySpawnRecord (Player.climbSpread = x k_100f); run: 50
+SpawnRecord.botParams | OK | code: readers: actor_applySpawnRecord (BITS copy to Player.botParams[0..4]); run: 1, 2, 10 (seconds / [2] a distance)
+BmpFile.vtable | OK | code: writers: playerRecord_loadFlag, tex_textureFileExist, tex_loadImage (VT 0x4a96f8), BMPRGBFile_dtor; readers: none but the deleting destructor's dispatch; run: NOT SEEN (a stack local, not sampled): a match start (tex_textureFileExist) or the Save\<name>.BMP flag load (playerRecord_loadFlag)
+BmpFile.file | OK | code: writers: users (0), image_initBy / image_tryOpen (crt_fopen); readers: image_initBy / image_tryOpen (close the last), image_copyTo (fseek / fread), BMPRGBFile_close, BMPRGBFile_dtor; run: NOT SEEN (a stack local, not sampled): a match start (tex_textureFileExist) or the Save\<name>.BMP flag load (playerRecord_loadFlag)
+BmpFile.type | OK | code: writers: image_initBy / image_tryOpen (fread of the 14-byte BITMAPFILEHEADER starting here); readers: none (the "BM" never checked); run: NOT SEEN (a stack local, not sampled): a match start (tex_textureFileExist) or the Save\<name>.BMP flag load (playerRecord_loadFlag)
+BmpFile.fileSize | OK | code: writers: the header fread only; readers: none ("written, never read" fits); run: NOT SEEN (a stack local, not sampled): a match start (tex_textureFileExist) or the Save\<name>.BMP flag load (playerRecord_loadFlag)
+BmpFile.dataOffset | OK | code: writers: header fread; readers: image_copyTo (fseek to dataOffset + row offset); run: NOT SEEN (a stack local, not sampled): a match start (tex_textureFileExist) or the Save\<name>.BMP flag load (playerRecord_loadFlag)
+BmpFile.infoSize | OK | code: writers: image_initBy / image_tryOpen (fread of the 0x28-byte BITMAPINFOHEADER starting here); readers: none; run: NOT SEEN (a stack local, not sampled): a match start (tex_textureFileExist) or the Save\<name>.BMP flag load (playerRecord_loadFlag)
+BmpFile.bmpWidth | OK | code: writers: info header fread; readers: image_initBy / image_tryOpen (-> width); run: NOT SEEN (a stack local, not sampled): a match start (tex_textureFileExist) or the Save\<name>.BMP flag load (playerRecord_loadFlag)
+BmpFile.bmpHeight | OK | code: as bmpWidth (-> height); run: NOT SEEN (a stack local, not sampled): a match start (tex_textureFileExist) or the Save\<name>.BMP flag load (playerRecord_loadFlag)
+BmpFile.planes | OK | code: writers: info header fread; readers: none; run: NOT SEEN (a stack local, not sampled): a match start (tex_textureFileExist) or the Save\<name>.BMP flag load (playerRecord_loadFlag)
+BmpFile.bitCount | OK | code: readers: image_initBy (!= 24: fatal), image_tryOpen (!= 24: 0); run: NOT SEEN (a stack local, not sampled): a match start (tex_textureFileExist) or the Save\<name>.BMP flag load (playerRecord_loadFlag)
+BmpFile.compression | OK | code: readers: image_initBy / image_tryOpen (!= 0 rejected); run: NOT SEEN (a stack local, not sampled): a match start (tex_textureFileExist) or the Save\<name>.BMP flag load (playerRecord_loadFlag)
+BmpFile.width | OK | code: writers: image_initBy / image_tryOpen; readers: image_copyTo (clip, row offset), playerRecord_loadFlag (>= 23), tex_textureFileExist (== bank width); run: NOT SEEN (a stack local, not sampled): a match start (tex_textureFileExist) or the Save\<name>.BMP flag load (playerRecord_loadFlag)
+BmpFile.height | OK | code: writers: image_initBy / image_tryOpen; readers: image_copyTo (clip, bottom-up row), playerRecord_loadFlag (>= 15), tex_textureFileExist; run: NOT SEEN (a stack local, not sampled): a match start (tex_textureFileExist) or the Save\<name>.BMP flag load (playerRecord_loadFlag)
+HeadType.shapeCount | OK | code: writers: Component.dat record (files.c type tables loader); readers: part_load (ObjectList_load's shape count by Player.lowDetail); run: 1 (junk 1499027929 = unused slots)
+HeadType.shapeNames | OK | code: readers: part_load (ObjectList_load names, 0x44 apart), kyrie.c fix (name rewrite); run: "MARKED\Geolite\Head\KYRIE black-HEAD"
+HeadType.skelCount | OK | code: readers: part_load (ObjectList_load skeleton count); run: 1
+HeadType.skelNames | OK | code: readers: part_load (0x80 per detail level); run: "Head\NITRO-BASIC-HEAD"
+HeadType.name | OK | code: readers: set_part (PlayerRecord.partNames[0]), armc_readPartPanels (panel_name); run: "KYRIE\HEAD"
+HeadType.weight | OK | code: readers: mech_stats (load sum), armc_readPartPanels (g_headWeight, MSG 606 WEIGHT row); run: 2 .. 15 tons
+HeadType.detectionRange | COMMENT | code: readers: mech_stats (factor(stats[7]) x it + rangeBonus, squared into Player.detectionRangeSq), armc_readPartPanels (x 0.01 -> g_headDetectionRange, MSG 601); run: 10000 .. 55000. The comment names the result "the actor's radiusSq": no such Player field, it is detectionRangeSq -> "DETECTION RANGE (message 601), 1/100 m (the panel shows x 0.01 m): x the pilot character's skill factor (stats[7] x 0.01 + 1), + the item bonus rangeBonus, squared = the actor's detectionRangeSq (mech_stats)"
+HeadType.detectionAngle | OK | code: readers: mech_stats (x factor(stats[7]) -> Player.detectionAngle), armc_readPartPanels (x 0.1, MSG 602); run: 10 .. 200 (tenths of a degree)
+HeadType.hackingLevel | OK | code: readers: mech_stats (+ hackingBonus -> Player.hackingLevel), armc_readPartPanels (g_headHackingLevel, MSG 603); run: 1 .. 5
+HeadType.lockOnTime | OK | code: readers: mech_stats (x lockOnTimeFactor -> Player.lockOnTime; actor_processFrame compares lockOnTime x weapon->targetingTime with aimTime), armc_readPartPanels (x 100; section_head shows 100 / it x 100 %, MSG 604); run: 0.4 .. 5
+HeadType.targetKeepTime | OK | code: readers: mech_stats (x targetKeepFactor -> Player.targetKeepTime, the lock's hold in actor_processFrame), armc_readPartPanels (x 1000, MSG 605); run: 0.01 .. 8 s
+ChestType.shapeCount | OK | code: readers: part_load; run: 5
+ChestType.shapeNames | OK | code: readers: part_load, kyrie.c; run: "MARKED\Geolite\Chest\kyrie-ubody"
+ChestType.skelCount | OK | code: readers: part_load; run: 1
+ChestType.skelNames | OK | code: readers: part_load; run: "Chest\geolite-kyrie-body"
+ChestType.armsJoint | OK | code: readers: actor_processFrame (part_matrix on chestModel entries -> armsModel posed there); run: 1, 2
+ChestType.legsJoint | OK | code: readers: actor_processFrame (glLoadMatrixf of that entry's matrix, glRotatef pose[2], legsModel posed); run: 1, 4
+ChestType.headJoint | OK | code: readers: actor_processFrame (part_matrix -> headModel; x5 scale with stateFlags 0x1000); run: 1 .. 4
+ChestType.boosterJoint | OK | code: readers: actor_processFrame (part_matrix, then pose[0] / pose[1] rotations -> boosterModel); run: 2 .. 4
+ChestType.name | OK | code: readers: set_part (partNames[1]), armc_readPartPanels (panel_name); run: "KYRIE\CHEST"
+ChestType.weightLimit | OK | code: readers: mech_stats (x factor(stats[8]) x loadFactor -> loadMax), armc_readPartPanels (g_chestWeightLimit, MSG 611); run: 70 .. 190
+ChestType.maxArmor | OK | code: readers: mech_stats (x factor(stats[6]) rounded -> armorMax), armc_readPartPanels (g_chestMaxArmor, MSG 612); run: 140 .. 260
+ChestType.maxShield | OK | code: readers: mech_stats (x factor(stats[6]) x shieldFactor -> shieldMax), armc_readPartPanels (MSG 613); run: 50 .. 320
+ArmType.shapeCount | OK | code: readers: part_load; run: 10
+ArmType.shapeNames | OK | code: readers: part_load, kyrie.c; run: "MARKED\Geolite\Arm\rsho"
+ArmType.skelCount | OK | code: readers: part_load; run: 1
+ArmType.skelNames | OK | code: readers: part_load; run: "Arm\geolite-kyrie-arm"
+ArmType.weaponJoints | OK | code: readers: actor_processFrame (part_matrix on armsModel: [0] weaponModel for slots 0..3, [1] weaponModel4 slot 4, [2] weaponModel5 slot 5), muzzle_camera (same choice by slot); run: 3, 7, 8, 9
+ArmType.name | OK | code: readers: set_part (partNames[2]), armc_readPartPanels; run: "KYRIE\ARM"
+ArmType.weight | OK | code: readers: mech_stats (load), armc_readPartPanels (g_armsWeight, MSG 626); run: 11 .. 40
+ArmType.stats | OK | code: readers: mech_stats ([0] -> accuracy, [1..4] x ammoFactor + ammoBonus -> ammoMax), armc_readPartPanels (g_armsStats, MSG 621 .. 625); run: 1 .. 3 and 30 .. 100+
+LegType.shapeCount | OK | code: readers: part_load; run: 3 .. 9
+LegType.shapeNames | OK | code: readers: part_load, kyrie.c; run: "MARKED\Geolite\Leg\lleg01"
+LegType.skelCount | OK | code: readers: part_load; run: 1
+LegType.skelNames | OK | code: readers: part_load; run: "Leg\geolite-kyrie-leg"
+LegType.emitters | OK | code: readers: emit (actor_processFrame: [0][k] the legsModel entry, [1][k] == 1 only while run > 0); run: entries 0 .. 8 and flags
+LegType.emitterCount | OK | code: readers: emit (loop count; orig 0x45c1a6 / 0x45c2ab); run: 2, 4
+LegType.emitterCountCopy | OK | code: no use in src; orig 0x13d4: no access at all; run: 2, 4 = emitterCount, as the comment says
+LegType.name | OK | code: readers: set_part (partNames[3]), armc_readPartPanels; run: "KYRIE\LEG"
+LegType.weight | OK | code: readers: mech_stats (load), armc_readPartPanels (g_legsWeight, MSG 637); run: 10 .. 30
+LegType.agility | OK | code: readers: mech_stats (x factor(stats[4]) x (1 - overload) -> mobility, >= 0, / 3 in the rocket arena), armc_readPartPanels (g_legsStats[0], MSG 631); run: 6.5 .. 12
+LegType.inertia | OK | code: readers: mech_stats (x speed -> moveAccel), armc_readPartPanels (MSG 632); run: 7 .. 11
+LegType.speedCorrection | OK | code: readers: mech_stats (LEG(): stats[5] x 0.01 + it + 1, x boost->speeds[0] x (1 - overload) -> speed, min 100), armc_readPartPanels (x 100, MSG 633); run: 0.1 .. 0.45
+LegType.forwardBoostCorrection | OK | code: readers: mech_stats (x speeds[1] / speed -> runTop[0]), armc_readPartPanels (MSG 634 F.BOOST SPD CORRECTION); run: 0.05 .. 0.4
+LegType.backBoostCorrection | OK | code: readers: mech_stats (x speeds[2], negated -> runTop[1]), armc_readPartPanels (MSG 636 B.BOOST); run: 0.05 .. 0.4
+LegType.sideBoostCorrection | OK | code: readers: mech_stats (x speeds[3] -> runTop[2], runTop[3] its negation), armc_readPartPanels (MSG 635 S.BOOST); run: 0.05 .. 0.25
+BoosterType.shapeCount | OK | code: readers: part_load; run: 5 .. 14
+BoosterType.shapeNames | OK | code: readers: part_load, kyrie.c; run: "MARKED\Geolite\Booster\mw"
+BoosterType.skelCount | OK | code: readers: part_load; run: 1
+BoosterType.skelNames | OK | code: readers: part_load; run: "Booster\geolite-kyrie-booster"
+BoosterType.emitters | OK | code: readers: emit (boosterModel entries; [1] run-only flags); run: 0 .. 11
+BoosterType.emitterCount | OK | code: readers: emit (orig 0x45c2d0 / 0x45c3db); run: 1 .. 5
+BoosterType.emitterCountCopy | OK | code: orig 0x17f4: no access at all; run: = emitterCount (1 .. 5)
+BoosterType.name | OK | code: readers: set_part (partNames[4]), armc_readPartPanels; run: "KYRIE\BOOSTER"
+BoosterType.weight | OK | code: readers: mech_stats (load), armc_readPartPanels (g_boosterWeight, drawn as MSG 647 WEIGHT); run: 10 .. 28
+BoosterType.thrustType | COMMENT | code: readers: emit (particle kind 5 + it), actor_processFrame footstep sound (it, + 3 boosting), armc_readMechStats (g_unusedMechStat), armc_readPartPanels (g_boosterThrustType: section_booster prints MSG(651 + it) on the THRUST TYPE row, MSG 641); run: 0, 1, 2. The comment misses what the panel calls it -> "THRUST TYPE (message 641): 0 PLASMA THRUST ENGINE, 1 ION THRUST ENGINE, 2 GRAVITY ION ENGINE (section_booster shows MSG(651 + it) via g_boosterThrustType, armc_readPartPanels); its puffs are particle kind 5 + it (emit, actor_frame.c); its step sound every third of a second is sound it, + 3 while inBooster (actor_processFrame); also copied to g_unusedMechStat (armc_readMechStats)"
+BoosterType.lean | OK | code: readers: mech_stats (BITS copy -> Player.boosterTilt), actor_checkDataLoss (orig 0x45f57a); run: 0 (3.8e15 only in an unused slot), as "0.0 in every booster"
+BoosterType.times | OK | code: readers: mech_stats (x boostTimeFactor / rechargeTimeFactor / restTimeFactor -> boostTime, rechargeTime, restTime), armc_readPartPanels (x 1000, MSG 642 .. 644); run: 0.05 .. 6 s
+BoosterType.speeds | OK | code: readers: mech_stats (speeds[0] -> speed, [1..3] -> runTop), armc_readPartPanels (x 0.036 km/h, MSG 645 / 646); run: 4722 .. 13333 (170 .. 480 km/h)
+CollisionPlane.flags | COMMENT | code: writers: collisionTri_setup (the flags given: 0x10 from space_buildUnit for a part flagged 1 (space_pools.c "part[0] & 1 ? 0x10 : 0") and the background floor's ground_triangle, else 0), unit_parts_flag (space_disableUnit ORs 1, space_enableUnit clears 1; orig 0x480469 "or ecx, 1"); readers: the static-plane loops of collision_rayTrace / space_traceBlock (space_pools.c "!(rec[0] & 1)") and the sphere sweep (collision_tris.c "!(*item & 1)"): bit 1 skips the plane; hit_surface (& 0x10: no decal); run: 0 / 16. The comment says "2: its unit disabled": the bit is 1 -> "0x10: takes no marks (a transparent part's triangle, or the background floor's; read by hit_surface); 1: its unit disabled (space_disableUnit sets it, space_enableUnit clears it), skipped by the ray and sphere traces; else 0 (collisionTri_setup)"
+CollisionPlane.cornerPoints | OK | code: writers: collisionTri_setup (v0, v1, v2); readers: collisionTri_setup (edges, dist), edge tests (collision_tris.c 476), hit_surface (corners into the world); run: world coordinates
+CollisionPlane.edges | OK | code: writers: collisionTri_setup (corner i + 1 - corner i, Vec3_normalize); readers: collisionTri_setup (normal, edge planes), collision_tris.c 477; run: -1 .. 1
+CollisionPlane.normal | OK | code: writers: collisionTri_setup ((-edge 0) x edge 1, normalized); readers: collisionTri_sweepSphere, plane side test (collision_tris.c 78), hit_surface; run: -1 .. 1
+CollisionPlane.dist | OK | code: writers: collisionTri_setup (normal . corner 0); readers: collisionTri_sweepSphere; run: world-scale values
+CollisionPlane.edgePlanes | OK | code: writers: collisionTri_setup (normal x edge k normalized, distance through corner k); readers: collision_tris.c 91 (inside test), collisionTri_sweepSphere; run: unit normals and distances
+CollisionPlane.unit | OK | code: writers: collisionTri_setup (space_addUnitTriangle's owner; 0 for ground_triangle); readers: hit_surface / decal (unit->index: the map object's matrix, part vertices); run: valid pointers
+CollisionPlane.part | OK | code: writers: collisionTri_setup; readers: decal (weapons.c: objects[unit->index].model->parts + part); run: 0 .. 3
+CollisionPlane.cornerIndices | OK | code: writers: collisionTri_setup; readers: decal (the part's vertices for the mark triangle); run: 1 .. 487
+CollisionPlane.listNext | OK | code: writers: space_addUnitTriangle (previous last's next = the new plane), take_free / reset_pool (the free list's prev link at +0xa0); readers: free pool only; run: valid pointers
+CollisionPlane.listPrev | OK | code: writers: space_addUnitTriangle (= unit's lastPlane), reset_pool / take_free (free chain at +0xa4); readers: unit_parts_flag (walk back from SpaceUnit.lastPlane; orig 0x48046e), take_free (next free plane); run: valid pointers
+TimeSync.vtable | OK | code: writers: TimeSync_ctor / _dtor (VT 0x4aa46c), TimeSync_clear (zeroes it from +0); readers: none but the deleting destructor; run: NOT SEEN (0 after TimeSync_clear, as the comment says; the load timer's set only by TimeSync_dtor at exit)
+TimeSync.started | OK | code: writers: TimeSync_frameTime (1), TimeSync_clear (0); readers: TimeSync_frameTime (== 0: frequency / start read); run: 0 / 1
+TimeSync.frames | OK | code: writers/readers: TimeSync_frameTime (++, fps = freq x frames / sum, 0 after a second); run: 0 .. 120
+TimeSync.frequency | OK | code: writers: TimeSync_frameTime (QueryPerformanceFrequency); readers: TimeSync_frameTime (second test, dt = rise / freq); run: 10000000
+TimeSync.lastCount | OK | code: writers/readers: TimeSync_frameTime (QueryPerformanceCounter, rise = now - lastCount); run: counter values
+TimeSync.rise | OK | code: writers: TimeSync_frameTime; readers: only right after in the same call (riseSum, dt); run: 78617 .. 449197 (counts of 100 ns)
+TimeSync.riseSum | OK | code: writers/readers: TimeSync_frameTime (+= rise, > frequency: fps, cleared in two halves); run: 0 .. 9999999
+TimeSync.fps | OK | code: writers: TimeSync_frameTime; readers: hud_overlay (viewfps "%4.1f"); run: 0.46 .. 122
+TimeSync.frameTime | OK | code: writers: TimeSync_frameTime (rise / freq, capped at maxFrame); readers: TimeSync_frameTime's return (scene_averageFrameTime, loading.c fade / waits, match_start); run: 1e-7 .. 0.045 s
+TimeSync.maxFrame | OK | code: writers: TimeSync_frameTime (1/15 when not positive), TimeSync_clear (0); readers: TimeSync_frameTime (cap); run: 0.0666667
+SpaceUnit.index | OK | code: writers: space_buildUnit (the map object number), spaceSlot_clear (-1); readers: hit_surface / decal via CollisionPlane.unit; run: 1 .. 121
+SpaceUnit.lastPlane | OK | code: writers: space_addUnitTriangle; readers: space_addUnitTriangle (link), unit_parts_flag (space_disableUnit / space_enableUnit walk back); run: valid pointers
+SpaceUnit.lastNode | OK | code: writers: space_addUnitTriangle; readers: space_addUnitTriangle, collision_tris.c 259 and space_pools.c 888 / 933 (moving objects' planes -> Stage.nearObjects); run: valid pointers
+SpaceUnit.poolPrev | OK | code: writers: space_resetUnits (the unit before), take_free (the new free head's prev = 0); readers: none beyond the pool; run: NOT SEEN (cleared by spaceSlot_clear when taken; live units have 0): a map load with units still free
+SpaceUnit.poolNext | OK | code: writers: space_resetUnits (the unit after); readers: take_free (next = +0x10: the new free head); run: NOT SEEN (cleared when taken): a map load with free units
+ParticleDesc.kind | OK | code: writers: effect() (weapons.c), emit (5 + thrustType), the particle_spawn callers' records; readers: particle_init (Particle.kind, then the life / sound / spin / aim / beam / mark switch); run: NOT SEEN (stack record): any match with shots and boosters
+ParticleDesc.owner | OK | code: writers: effect() (owner arg), emit (a random 0 .. 7); readers: particle_init (Particle.owner); run: NOT SEEN (stack record): a match with shots
+ParticleDesc.pos | OK | code: writers: effect() (at), emit (a joint's centre); readers: particle_init (Particle.pos); run: NOT SEEN (stack record): a match with shots
+ParticleDesc.target | OK | code: writers: effect() (dir), emit (scale / alpha scratch); readers: particle_init (Particle.target; kind 4 its colour from target[1]); run: NOT SEEN (stack record): a match with shots
+ParticleDesc.matrixFrom | OK | code: writers: effect() (x0: e.g. a map object's matrix for marks), emit (the entry's matrix); readers: particle_init (Mat4_copy into Particle.matrix when set); run: NOT SEEN (stack record): a match with shots
+ParticleDesc.markCorners | OK | code: writers: decal via effect() (x1 = tri); readers: particle_mark (markPoints[0..2]); run: NOT SEEN (stack record): shoot a wall with high detail on (marks)
+ParticleDesc.markCoords | OK | code: writers: decal via effect() (x2 = uv); readers: particle_mark (q[0], q[2..5]; q[1] unused, markUv[1] 0.5); run: NOT SEEN (stack record): shoot a wall with marks on
+ParticleDesc.size | OK | code: writers: effect() (size: effect_size = hitRange ...); readers: particle_init (BITS -> Particle.baseSize), particle_mark (via baseSize); run: NOT SEEN (stack record): a match with shots
+ParticleDesc.isQuad | OK | code: writers: weapons.c beam record; readers: particle_init (== 1: kind 0x32 quad); run: NOT SEEN (stack record): fire a beam weapon
+ParticleDesc.quad | OK | code: readers: particle_init (memcpy 0x18 bytes to Particle.quadTexture ..); run: NOT SEEN (stack record): fire a beam weapon
+ParticleDesc.quadPoints | OK | code: readers: particle_init (Particle.quadPoints[0..3]); run: NOT SEEN (stack record): fire a beam weapon
+ScenePath.opened | OK | code: readers: stage_advanceScenePath (0: scenePath_openStub; orig 0x48fd63 reads Stage+0x2148ee0); no writer anywhere (Scene_ctor sets only the vtable): stays 0, as the comment says; run: NOT SEEN (always 0)
+Stage.scenePath | OK | code: Scene_ctor / Scene_dtor, stage_advanceScenePath (open / advance stubs), script_notifyObject (notify stub), small.c 241 (shared_emptyFunction); run: (an object; its only field opened stays 0)
+Stage.pathSound | OK | code: readers: stage_advanceScenePath (orig 0x48fda1 / 0x48fda7: first byte, then sprintf "scenePath\%s"); no writer in the original: "never written" fits; run: "" always
+Stage.viewDepth | OK | code: writers: stage_setCullMargin (orig 0x4722fc, the only access); run: changes with the view: "written, never read" fits
+Stage.built | OK | code: writers: Console_ctor (classes.c: 0), stage_build (1); readers: none; run: 1
+Stage.faintActorMatrix | OK | code: writers: stage_build (identity); readers: actor_drawIntoView (passed when tint[3] <= 0x10); run: 0 / 1 (identity)
+Stage.overlayMatrix | OK | code: writers: stage_build (diag 1.1, [15] 1); readers: actor_drawIntoView (the item overlay passes, actor_slots.c 590 / 624); run: 1, 1.1
+Stage.nearObjects | OK | code: writers: collision_tris.c 275-277 (planes node, relMatrix, relInverse of each moving object), space_pools.c 932; readers: space_testSphere / space_traceCells (passed with the count); run: NOT SEEN (no animated object with planes near a move in the sampled maps): move or shoot near a moving map object (lift, door)
+Stage.stageDir | OK | code: writers: stage_setFolders ("STAGE"); readers: mapObject anim path (frame_loops.c 362), script command 28 (s + 8, frame_loops.c 313); run: "STAGE"
+Stage.mapDir | OK | code: writers: stage_setFolders; readers: every map_info.c loader ("%s/%s", shading cache path); run: "MAP"
+Stage.textureDir | OK | code: writers: stage_setFolders only; orig 0x208 / Scene 0x1f38d0: no reader (0x208 hits are other records); run: "TEXTURE"
+Stage.shapeDir | OK | code: writers: stage_setFolders; readers: stage_build (ShapeManager_initBy for objectShapes); run: "SHAPE"
+Stage.skeletonDir | OK | code: writers: stage_setFolders; readers: stage_build (SkeletonManager_initBy for objectSkeletons); run: "SKELETON"
+Stage.actorDir | OK | code: writers: stage_setFolders only; orig 0x508 / 0x1f3bd0: no read; run: "ACTOR"
+Stage.bulletDir | OK | code: writers: stage_setFolders only; orig 0x608 hits are PlayerRecord.flagChanged, 0x1f3cd0 none; run: "BULLET"
+Stage.effectDir | OK | code: writers: stage_setFolders only; orig 0x708 / 0x1f3dd0: no read; run: "EFFECT"
+Stage.sceneDir | OK | code: writers: stage_setFolders; readers: script_processCommandBy command 27 ("%s/%s.scp"); run: "SCENE"
+Stage.spaceData | OK | code: readers: stage_build (space_initBy block and size); run: bytes of the space
+Stage.layerParts | OK | code: readers: stage_build (layerModel.parts = it), then ground_buildLayerModels / ground_buildDrawLists through layerModel.parts; run: NOT SEEN (no ground layers in the sampled maps): a map with ground layers
+Stage.waterParts | OK | code: readers: stage_build (waterModel.parts), ground_buildLayerModels through waterModel.parts; run: (record array; no ground layers in sampled maps)
+Stage.objectShapeData | OK | code: readers: stage_build (ShapeManager_initBy block); run: bytes
+Stage.objectSkeletonData | OK | code: readers: stage_build (SkeletonManager_initBy block); run: bytes (host-h2)
+Stage.itemShapeData | OK | code: readers: stage_build (ShapeManager_initBy); run: bytes
+Stage.itemSkeletonData | OK | code: readers: stage_build (SkeletonManager_initBy); run: bytes
+Stage.snapshotTex | OK | code: writers: scene_reset (memset -1), hud_main.c 300 (Scene view: tex_getIdByName on first show); readers: hud_main.c 298 / 302 (the held item's snapshot); run: -1, 518
+Stage.stageName | OK | code: writers: stage_setName; readers: map_loadActorInfoFrom (Stage\%s\Clan), script commands 28 / 29 (frame_loops.c 313 / 317), mapObject anim path; run: "CENTROPOLIS"
+Stage.clearOn | OK | code: writers: map_loadGroundInfoFrom, stage_build memset; readers: match draw (main_loop.c 1209), hud_pass.c 19 (== 1: glClearColor_stored + colour clear); run: 0 / 1
+Stage.clearColour | OK | code: writers: map_loadGroundInfoFrom (16 bytes); readers: glClearColor_stored (main_loop.c 1210, hud_pass.c 20: [0..2], alpha forced 1.0); run: float bits 0.278, 0.298 (type handled elsewhere)
+Stage.fogOn | OK | code: writers: map_loadGroundInfoFrom; readers: match draw (main_loop.c 1243), hud_pass.c 46 (== 1: stage_setFog + GL_FOG); run: NOT SEEN (0 in every sampled map): a map with fog
+Stage.objectShapes | OK | code: Console_ctor / dtor, stage_build (ShapeManager_initBy), map_info.c 115 (release), mapObject setup (shape_getByName); run: (object)
+Stage.objectSkeletons | OK | code: Console_ctor / dtor, stage_build, map_info.c 116, map_objects.c 55 (skel_getSkeletonPtrBy); run: (object)
+Stage.itemShapes | OK | code: stage_build, catalogue_loadItemInfoFrom (ItemType.model), actor_loadWeapon path (ObjectList_load), effect_initShapes; run: (object)
+Stage.itemSkeletons | OK | code: stage_build, ObjectList_load in actor_slots.c 458 (weapons) only; run: (object)
+Stage.mapLights | OK | code: writers: LightFactors_read (map file), stage_build (clear + ambient white); readers: light_computeLayerLightBy, map object shading (frame_loops.c 406, objects.c 147), markLights stars (main_loop.c 1231); run: (record)
+Stage.dynamicLightsSet | OK | code: writers: stage_refillLights (1, orig 0x47231d), stage_resetLights (0, orig 0x4723e0); no reader: "never read" fits; run: 0 / 1
+Stage.dynamicLights | OK | code: writers: stage_resetDynamicLights (clear), stage_refillLights (teams.c 69); readers: objects.c 158 (map objects' second colour run); run: (record)
+Stage.actorLights | OK | code: writers: stage_build (clear, grey ambient, white from above); readers: actor_drawIntoView (lights for ObjectList_queue); run: (record)
+Stage.itemTypeCount | OK | code: writers: catalogue_loadItemInfoFrom (fread target, orig 0x487632 lea), scene_reset (0, orig 0x470c3a); no other access: "not read after" fits; run: 200 / 0
+Stage.pool | OK | code: readers: pool_take (pool + poolUsed) in map_loadGroundInfoFrom; run: NOT SEEN (no ground layers in the sampled maps): a map with ground layers
+Stage.poolUsed | OK | code: writers: stage_build / map_loadGroundInfoFrom (0; += each block); readers: pool_take (fatal past 4000000); run: NOT SEEN (stays 0 without ground layers): a map with ground layers
+Stage.effectTextures | OK | code: writers: stage_build (tex_getIdByName "<dir>\0k", clamped past 7); readers: objects.c TEX(k), weapons.c 427, trails.c 82, HUD through the Scene aliases (hudTexture [1], hudBarTexture [3], markerTexture [4] ...); run: 2565 .. 2572
+Stage.teamCommanders | OK | code: writers: scene_reset (memset -1), scores.c 136 (team leader), actor_frame.c 222 / actor_slots.c 269 (-1 when it dies / leaves); readers: actor_slots.c 268; run: -1 (no commander game sampled)
+Stage.botsHoldFire | OK | code: writers: main_loop.c 1595 (1 at the round's end), scene_reset (0), hud_escmenu.c 365 (0); readers: actor_frame.c 430 (bots fire only when 0); run: 0 / 1
+Stage.lockTimes | OK | code: writers: actor_frame.c 897 (lock[j] of each locked actor), sort (901); readers: the sort and the HUD lock list; run: NOT SEEN: lock on to an enemy with a lock-on weapon
+Stage.lockIds | OK | code: writers: actor_frame.c 898; readers: sort (909), actor_frame.c 1046 (the lock-cycling target); run: NOT SEEN: lock on to an enemy
+Stage.lastDeath | OK | code: writers: actor_frame.c 250 (the dying actor); readers: main_loop.c 1573 (its state 2), killer_view (main_loop.c 2214); run: -1 .. 7
+Stage.lastCameraPos | COMMENT | code: writers: stage_setupView (memcpy of the old cameraPos), scene_reset (= cameraPos); orig 0x20f3994 (range 8) / Scene 0x22e705c: only these two address-takes, never read -> "the camera's position the frame before (stage_setupView copies cameraPos here first; scene_reset: = cameraPos); written, never read"
+Stage.modelview | OK | code: writers: stage_setupView (gluLookAt -> glGetFloatv), scene_reset (identity); readers: ViewVolume_captureMatrices (main_loop.c, loading.c, hud_pass.c, armc_misc.c), stage_setupView (viewProjection); run: matrix values
+Stage.lastModelview | OK | code: writers: stage_setupView (Mat4_copy), scene_reset (orig 0x470bd2); no read: fits; run: matrix values
+Stage.fov | COMMENT | code: writers: stage_setupView (its fov argument); readers: stage_setupView (gluPerspective fovy); run: 10 .. 90. The comment "the view's angle, near and far planes" reads as if it held all three; near / far have their own fields -> "the view's vertical angle in degrees: stage_setupView's fov, given to gluPerspective (10 .. 90 seen)"
+Stage.nearPlane | OK | code: writers/readers: stage_setupView (gluPerspective); run: 100
+Stage.farPlane | OK | code: writers/readers: stage_setupView; run: 1e6
+Stage.projection | OK | code: writers: stage_setupView (glGetFloatv GL_PROJECTION_MATRIX); readers: stage_setupView (product), hud_pass.c 30 (ViewVolume_captureMatrices); run: perspective values (1.73 = cot 30)
+Stage.viewProjection | OK | code: writers: stage_setupView (Mat4_multiply(pr, mv)); readers: stage_setCullMargin (viewDepth), objects.c 77 (map object screen test); run: matrix values
+Stage.layerModel | OK | code: Console_ctor / dtor, stage_build (parts), ground_buildLayerModels / ground_buildDrawLists (parts, counts), ViewVolume_queueModel; run: (record)
+Stage.waterModel | OK | code: as layerModel (partCount = groundLayerCount; primCount 4 only for water); run: (record)
+Stage.silentActor | COMMENT | code: writers: stage_setSilentActor (0 at scene start: classes.c 625), scene_resetActors / stage_newRound (-1: the six-word reset from playerActor; orig 0x470a83 / 0x470cc6); readers: actor_processFrame (orig 0x45c456: no footstep sound for that actor); run: -1. The comment "stage_setSilentActor's value" says nothing of its use -> "the actor whose footstep sounds are not played (actor_processFrame); -1 none (scene_resetActors, stage_newRound); stage_setSilentActor sets it (0 at the scene's start)"
+Stage.layerTurns | OK | code: writers: stage_advanceClocks (++ when layerScroll wraps), stage_build memset; readers: none beyond the increment; run: 0 .. 6
+Stage.floorClock | OK | code: writers/readers: stage_advanceClocks (dt x 15, wraps at 1 stepping floorFrame), stage_build (0); run: NOT SEEN (no floorMode-2 map sampled): a map with the animated floor (floorMode 2)
+Stage.baseMatrix | OK | code: writers: stage_resetMatrixAndPoints (orig 0x48fe19, the only access); run: 0 / 1 (identity)
+Stage.pointCount | OK | code: writers: stage_resetMatrixAndPoints (orig 0x48fec5, the only access); run: NOT SEEN (always 0)
+Stage.points | OK | code: writers: stage_resetMatrixAndPoints (origin), Console_ctor (VECTOR, orig 0x46081e); no reader; run: NOT SEEN (all zero)
+Stage.defaultColour | OK | code: writers: stage_resetMatrixAndPoints (orig 0x48fed2, the only access); run: NOT SEEN (never non-zero in samples)
+Stage.messages | OK | code: writers: script_pushMessage (small.c 226); readers: hud_drawMessageBox (replay_message.c 35, Scene.msgRing view); run: (record array; no message pushed in sampled sessions)
+Stage.msgWrite | OK | code: writers: stage_clearMessages (classes.c 43, orig 0x48fc32), script_pushMessage (++); readers: script_pushMessage, hud_drawMessageBox (replay_message.c 33, Scene view: msgRead < msgWrite); run: NOT SEEN: a mission map whose script shows a MESSAGE (command 26)
+Stage.msgRead | OK | code: writers: stage_clearMessages (0), script_pushMessage (++ when the ring is full); readers: script_pushMessage, hud_drawMessageBox (the message shown: msgRing[msgRead & 31]; orig 0x49520a); run: NOT SEEN: a mission map with script messages
+Stage.levelLow | OK | code: writers: map_loadGroundInfoFrom (limits[0]), stage_build / scene_startSession (-100000); readers: stage_initSpaceOneCell (space_setBy), collision builder floor (collision_tris.c 653), actor_frame.c 720 (actors kept inside), free camera clamp (main_loop.c 764); run: -100000
+Stage.levelHigh | OK | code: as levelLow (+100000; main_loop.c 766 clamp, actor_frame.c 720); run: 100000
+Stage.worldLow | OK | code: writers: map file (limits[2]), stage_build / scene_startSession (= levelLow); readers: collision_moveSphere's clamp (collision_tris.c 240); run: -100000 .. -1 by map
+Stage.worldHigh | OK | code: as worldLow; run: 9400 .. 120000
+Stage.unused9ef934 | OK | code: writers: map_loadGroundInfoFrom (fread target, orig 0x48bf94 lea), stage_build (1.0, orig 0x4705dd), scene_startSession (Scene alias 0xbe2ffc, orig 0x460e3c); no read anywhere; run: 0.6 .. 1.3 (the comment's "0.5 .. 1.3 by map" is near enough; 0.6 is the lowest seen)
+Stage.mapNumber | OK | code: writers: map_loadGroundInfoFrom; readers: loading.c 461 (!= g_mapIndex: "file damaged!"), net_tables.c 1761 (sent), 2015 (compared); run: 3 .. 20
+Stage.musicKind | OK | code: writers: map_loadGroundInfoFrom; readers: sound_basic.c 376 (Scene.musicKind - 1: the match music); run: 1, 3, 4
+Stage.flagGlTexture | OK | code: writers: stage_build (glGenTextures); readers: flag_uploadAtlas (glBindTexture), hud_icons.c 55; run: 281
+Stage.flagAtlas | OK | code: writers: stage_build (g_defaultColour fill), flag_uploadAtlas (24 x 16 per player, four to a row); readers: flag_uploadAtlas (glTexImage2D 128 x 64); run: NOT SEEN (all 0: no player had a flag BMP): a player whose Save\<name>.BMP flag exists
+Stage.headTypes | OK | code: writers: catalogue_loadComponents (files.c 1358 table); readers: mech_stats, armc_readPartPanels, part_load, set_part, kyrie.c, net_tables.c 2021; run: (records; members sampled under HeadType)
+Stage.headTypeCount | OK | code: writers: catalogue_loadComponents, stage_build (0, match_start.c 394 table); readers: set_part checks (small.c 820), Scene.headCount pickers (armc_mech.c 42, main_loop.c 418), net_tables.c 2064; run: 20, 21
+Stage.chestTypes | OK | code: as headTypes (chest); run: (records)
+Stage.chestTypeCount | OK | code: as headTypeCount; run: 14, 15
+Stage.armTypes | OK | code: as headTypes (+ muzzle_camera); run: (records)
+Stage.armTypeCount | OK | code: as headTypeCount; run: 18, 19
+Stage.legTypes | OK | code: as headTypes; run: (records)
+Stage.legTypeCount | OK | code: as headTypeCount; run: 20, 21
+Stage.boosterTypes | OK | code: as headTypes (+ emit, footsteps); run: (records)
+Stage.boosterTypeCount | OK | code: as headTypeCount; run: 16, 17
+Stage.mapPlayers | OK | code: writers: map_loadActorInfoFrom; readers: map_loadActorInfoFrom / playerRecord_setFromMapPlayer; run: (records; see MapPlayer)
+Stage.mapPlayerCount | OK | code: writers: map_loadActorInfoFrom; readers: same (loops, playerRecordCount = it, flagShown / flagSent); run: 0 / 8
+Stage.mapActors | OK | code: writers: map_loadActorInfoFrom (+ bot = 1 from 1); readers: bot_spawns, script command 15 (actor_applySpawnRecord); run: (records; see SpawnRecord)
+Stage.mapActorCount | OK | code: writers: map_loadActorInfoFrom; readers: same, bot_spawns (main_loop.c 1440); run: 0 / 8
+Stage.gameType | OK | code: writers: game_setGameTypeFlags; readers: actor_startingValues, map_loadActorInfoFrom, mech_stats (item weight outside 2 .. 11), small.c 872, actor_slots.c 932; Scene.gameMode alias (HUD titles, loading "PLAY TYPE"); run: 0, 1, 12, 13
+Stage.teamGame | OK | code: writers: game_setGameTypeFlags (odd types); readers: ~20 places (team colours, scoring, HUD, Esc menu, net); run: 0 / 1
+Stage.shotgunArena | OK | code: writers: game_setGameTypeFlags (types 4, 5); readers: remap_item only (kinds 0 .. 9 -> 2); run: NOT SEEN: host a SHOTGUN game (types 4 / 5)
+Stage.ionCannonArena | OK | code: writers: game_setGameTypeFlags (6, 7); readers: remap_item (0 .. 9 -> 3; 15 .. 19 -> 10 .. 14); run: NOT SEEN: host an ION CANNON game (6 / 7)
+Stage.rocketArena | OK | code: writers: game_setGameTypeFlags (8, 9); readers: remap_item (-> 5), mech_stats (mobility, moveAccel x 0.333); run: NOT SEEN: host a ROCKET ARENA game (8 / 9)
+Stage.gladiator | OK | code: writers: game_setGameTypeFlags (10, 11); readers: remap_item (0 .. 9 -> -1); run: NOT SEEN: host a GLADIATOR game (10 / 11)
+Stage.platoon | OK | code: writers: game_setGameTypeFlags (13); readers: actor_frame.c 199 (commander kill scoring), scores.c 109, hud_main.c 502, hud_markers.c 90, main_loop.c 1796; run: 0 / 1 (host-h2)
+Stage.startPos | OK | code: writers: map_loadPlayInfoFrom (kind-0 record; default g_vecOrigin); readers: through Scene.cameraSaved (retry / spawn fallback: main_loop.c 628, 1420, 1451, hud_escmenu.c 368, match_start.c 164); run: map coordinates
+Stage.startAngle | OK | code: writers: map_loadPlayInfoFrom (x k_10f; 0 default); readers: Scene.cameraSaved[3..4] (cameraAngle); run: -1529.8 .. 230 (tenths of a degree)
+Stage.starts | OK | code: writers: map_loadPlayInfoFrom; readers: spawn_point (Scene.spawnPoints view); run: (records; see StartPoint)
+Stage.startCount | OK | code: writers: map_loadPlayInfoFrom, scene_reset (0); readers: spawn_point (Scene.spawnPointCount); run: 7 .. 18
+Stage.lastPickup | OK | code: writers: item pickup (frame_loops.c 591), map load / scene_reset (-1), net_sendGamePacket (-1 after sending); readers: net_tables.c 1794 (packet +0x29); run: -1, 60
+Stage.speakers | OK | code: readers: script command 26 (frame_loops.c 302: first dword not 0); no writer; run: NOT SEEN (never written)
+Stage.texts | OK | code: readers: command 26 (frame_loops.c 304), hud_drawMessageBox via Scene.msgText (replay_message.c 44); no writer; run: NOT SEEN (never written)
+Stage.clanTexture | OK | code: writers: map_loadActorInfoFrom (tex_getIdByName "Stage\%s\Clan"); readers: hud_icons.c 53 (Scene.flagTexture view); run: 517
+Stage.objectColours | OK | code: writers: map_loadObjectInfoFrom (cache fread), shape_shadingColours into the runs; readers: cache write (map_info.c 160), MapObject.colourRuns (frame_loops.c 388); run: RGBA words
+Stage.objectColourCount | OK | code: writers: cache read / 0, object_initObjectBy (+= colourCount, fatal past 1000000), stage_build, actor_slots.c 52; readers: same, cache write; run: 4824 .. 99450
+Stage.shadingCached | OK | code: writers: map_loadObjectInfoFrom (0, 1 when the cache was read); readers: map_info.c 155 (write the cache in mode 1), frame_loops.c 405 (shade only when 0); run: NOT SEEN (no Temp-*-objectShadingInfo.dat cache): load a map a second time after a mode-1 load wrote its shading cache
+Stage.objectNames | OK | code: writers/readers: object_initObjectBy (strcmp / strcpy); run: "centropolis\poket_walladd"
+Stage.objectNameCount | OK | code: writers: map_loadObjectInfoFrom / stage_build (0), object_initObjectBy (++); readers: object_initObjectBy; run: 6 .. 99
+Stage.thrustShapes | OK | code: writers: effect_initShapes (orig 0x48ec4a..: address-takes only); Scene alias 0x22e6474: none; no reader: "never read" fits; run: shape pointers
+Stage.effectShapes | OK | code: writers: effect_initShapes; readers: particle drawing (objects.c 609 .. 667); run: shape pointers
+Stage.itemTextures | OK | code: writers: stage_build, effect_initShapes ([0] = 0); readers: flag_texture (actor_slots.c 522: 0x100 [0], 0x800 [2], else [1]); run: 1 .. 3
+Stage.clockSeconds | OK | code: writers: match clock (frame_loops.c 82), scene_reset, main_loop.c 2110 / 2306, hud_escmenu.c 366, net (Scene.elapsed); readers: script_processTriggers, objects.c 126 (animation ms), time limit (main_loop.c 1569 / 2170), hud_clock.c, net packets; run: 0 .. 189
+Stage.clockFraction | OK | code: writers: frame_loops.c 79 / 83, resets, net_tables.c 1999; readers: script_processTriggers, ViewVolume_draw, hud_clock.c 12 (blink), objects.c 126, net 1765; run: 0 .. 0.99
+Stage.scriptName | OK | code: writers: script_startScenePath; readers: stage_advanceScenePath (scenePath_openStub only); run: "" (no shipped map has command 27)
+Stage.scriptMode | OK | code: writers: script_startScenePath, script_reset (small.c 243), stage_advanceScenePath (0 on its first frame); readers: paused(), stage_advanceClocks, stage_setupView, hud_pass.c, actor_slots.c 125; run: NOT SEEN (no map runs command 27): a mission map that runs script command 27
+Stage.scriptHoldsPlay | OK | code: writers: script_startScenePath (1 for mode 1, else 0), script_reset; readers: paused(), stage_advanceClocks, stage_setupView; run: NOT SEEN: script command 27 mode 1 (no shipped map)
+Stage.actorItems | OK | code: writers: catalogue_loadComponents (sixth table); readers: weapons.c, actor_frame.c, mech_stats, hud_main.c, armc_parts.c, msg_players.c ...; run: (records; see ActorItem)
+Stage.actorItemCount | OK | code: writers: catalogue_loadComponents; readers: main_loop.c 553, small.c 879 (bounds), match_start.c 153; run: 37
+Stage.commands | OK | code: writers: map_readCommands (files.c 14); readers: map_loadWayPointInfoFrom (WayPoint.commands), script_processCommandBy; run: command bytes (host-h2)
+Stage.commandCount | OK | code: writers: map_readCommands; readers: map_loadWayPointInfoFrom (total check); run: 0 / 9
+Stage.wayPoints | OK | code: writers: map_loadWayPointInfoFrom; readers: map_loadTriggerInfoFrom (Trigger.wayPoints), via the triggers; run: (records)
+Stage.wayPointCount | OK | code: writers: map_loadWayPointInfoFrom (fread of the count); readers: map_loadWayPointInfoFrom (records read, loop), map_loadTriggerInfoFrom (runs' total must equal it, else fatal); run: 183 .. 511
+Stage.triggers | OK | code: writers: map_loadTriggerInfoFrom, script commands; readers: script_processTriggers, actor_pickPathPoint, PATH_POINT, actor_frame.c 479; run: (records)
+Stage.triggerFired | OK | code: writers: script_processTriggers (1 / 0 per trigger each frame); readers: actor_frame.c 493 (a bot waiting on it, botWaitTrigger); run: NOT SEEN (no trigger fired while sampled): a mission where a trigger fires
+Stage.triggerCount | OK | code: writers: map_loadTriggerInfoFrom; readers: script_processTriggers, actor_pickPathPoint; run: 16 .. 42
+Stage.objectFreeHint | OK | code: writers: stage_clearMapObjects / stage_build (0), object slot taking (frame_loops.c 118); readers: same; run: 5 .. 248
+Stage.objectSerial | OK | code: writers: 0 at clears, object_initObjectBy (mo->id = it++); run: 6 .. 248
+Stage.playerRecordCount | OK | code: writers: player_seen (small.c 837: p + 1), map_loadActorInfoFrom, resets (0); readers: same; run: 0 .. 8
+Stage.actorFreeHint | OK | code: writers: resets (0), actor_slots.c 272 (a freed lower slot), 299; readers: actor slot taking; run: 0 .. 8
+Stage.actorSerial | OK | code: writers: resets (0), actor_slots.c 810 / frame_loops.c 570 (id = it++); run: 0 .. 118
+Stage.heldActor | OK | code: writers: script_holdActor, scene_resetActors / stage_newRound (-1, orig 0x470a89 / 0x470ccc); readers: script_holdActor only (orig 0x45dff0: let the last one go); run: -1
+Stage.heldMode | OK | code: writers: script_holdActor, scene_resetActors / stage_newRound; orig 0x202e8e4: three writes, no read; run: -1
+Stage.rankingDirty | OK | code: writers: actor spawn / death / take-out / reset / round / team set (1), main_loop.c 2003 (0); readers: main_loop.c 1998 (scene_updateRanking); run: 0 / 1
+Stage.lockHeld | OK | code: writers: actor_frame.c 866 .. (set / count down), 0 on death / deactivation / reset; readers: actor_frame.c (sort into lockTimes), hud_lockon.c 28; run: NOT SEEN: lock on to an enemy with a lock-on weapon
+Stage.bulletSlotsUsed | OK | code: writers: bullet slot taking (frame_loops.c 92), freeing (actor_slots.c 175 .. 182), reset; readers: loops over bullets; run: 0 .. 7
+Stage.bulletFreeHint | OK | code: writers: reset (0), actor_slots.c 174 (a freed lower slot), slot taking; run: 0 .. 5
+Stage.bulletSerial | OK | code: writers: reset, weapons.c 238 (id = it++); run: 0 .. 1132
+Stage.particleFreeHint | OK | code: writers: reset, actor_slots.c 78, particle_spawn; run: 0 .. 999
+Stage.particleSerial | OK | code: writers: reset, particle_init (id = it++); run: up to 515071
+Stage.printText | OK | code: writers: stage_printText (notices.c 115 vsprintf), scene_reset (cleared); readers: match_frame through Scene.centreNotice (main_loop.c 1994-1996: shown, cleared); run: "" (sampled after clearing)
+Stage.kingActor | OK | code: writers: scores.c 99 (the leader), actor_frame.c 189 / actor_slots.c 266 / scene_reset (-1); readers: actor_slots.c 265, HUD / scoring via Scene.kingActor; run: -1
+Stage.groundLayers | OK | code: as GroundLayer (map_loadGroundInfoFrom, ground_buildLayerModels, ground_buildDrawLists, collision builder); run: (records; none in sampled maps)
+Stage.groundLayerCount | OK | code: writers: map_loadGroundInfoFrom, stage_build (0); readers: collision builder (collision_tris.c 670), ground_buildLayerModels, ground_buildDrawLists; run: NOT SEEN (0 in every sampled map; the comment's "1 seen" was not met in these sessions): a map with ground layers
+Stage.playerRecords | OK | code: (the player records; Scene.playerRecords); run: (records)
+Stage.space | OK | code: space_initBy (stage_build), stage_initSpaceOneCell, collision traces, CollisionVolume_dtor; run: (record)
+Stage.cockpitActor | OK | code: writers: stage_setCockpitActor (small.c 187), actor_frame.c 278 (-1 when it dies); readers: actor drawing / weapon hold / effects (actor_frame.c, actor_slots.c, weapons.c 508, objects.c), hud_main.c 484; run: -1 .. 1
+Stage.frags | COMMENT | code: writers: stage_clearFrags (0), actor_frame.c 238 (frags[killer's team]++), 244 (frags[own team]-- for a team-game suicide), 219 / 221 (platoon: the other team += the dead commander's team size); readers: Scene.teamScores (fragLimit checks main_loop.c 2155, HUD hud_overlay.c / hud_clock.c / hud_ranking.c, game packet net_tables.c 1792); run: 0 .. 25. The comment's "(a kill counts for the other team's slot)" is only the platoon case; an ordinary kill counts for the killer's own team -> "each team's frags by team id (= Scene.teamScores): +1 to the killer's team for a kill, -1 to a team's own for a suicide in a team game, + the team's size to the other team when a platoon commander dies (actor_processFrame); compared with fragLimit, sent in the game packet; cleared together (stage_clearFrags)"
+Stage.lockCount | OK | code: writers: actor_frame.c 867 (count of locks), scene_reset (0); readers: actor_frame.c 1045 (lock cycling); run: NOT SEEN: lock on to an enemy
+Stage.viewWidth | OK | code: writers: stage_setupView (w); readers: stage_setupView (aspect), to_screen (objects.c 219); orig 0x20f3a24 reads only in stage_setupView: fits; run: 3840
+Stage.viewHeight | OK | code: as viewWidth (h; objects.c 220); run: 2160
+Stage.showExp | OK | code: writers: match_setup (1 for a Ladder game, else 0), stage_build (0); readers: actor_frame.c 185 / 190 / 212 / 231 (kill report texts with EXP); run: 0 / 1 (roomF)
+Stage.suddenDeath | OK | code: writers: game_setGameTypeFlags (2, 3); readers: remap_item, actor_frame.c 177 / 226 (half points); run: NOT SEEN: host a SUDDEN DEATH game (types 2 / 3)
+Stage.kingOfTheHill | OK | code: writers: game_setGameTypeFlags (12); readers: actor_frame.c 172 / 327, scores.c 89, hud_main.c 495, hud_markers.c 83 / 90, main_loop.c 2001; run: 0 / 1 (host-h2)
+Stage.bullets | OK | code: bullet slots (weapons.c, actor_frame.c, actor_slots.c, trails.c, net_tables.c 1684); run: (records)
+Stage.cullMargin | COMMENT | code: writers: map_loadGroundInfoFrom (map_info.c 399), stage_setCullMargin (its own value back, main_loop.c 2241); readers: objects (objects.c 17: + radius), actors (actor_slots.c 546: + radius), items (items.c 22), particles (objects.c 519), trails (trails.c 73), ground cells (ground_buildDrawLists), viewDepth; run: 20000 .. 1e7 by map. It is the map's drawing range about the camera, not only an objects' margin -> "the map's drawing range (from the ground info, map_loadGroundInfoFrom; 20000 .. 1e7 by map): things within it of cameraPos on each axis are drawn: map objects and actors (with their radius added), items, particles, bullet trails, ground cells and the water surface's extent (ground_buildDrawLists); stage_setCullMargin also derives viewDepth from it"
+Stage.billboards | OK | code: writers: stage_build ("09" effect texture); readers: stage_drawItems (ViewVolume_addBillboard); run: 2573
+Stage.glFogColour | OK | code: writers: map_loadGroundInfoFrom, stage_setFog (fog.c 9); readers: stage_setFog (glFogfv), match draw, sky.c 143, hud_pass.c 47 (Scene.fogColour); run: float bits (type handled elsewhere)
+Stage.glFogStart | OK | code: writers: map file, stage_setFog; readers: stage_setFog (GL_FOG_START); run: 3000 .. 15000 (float bits)
+Stage.glFogEnd | OK | code: as glFogStart (GL_FOG_END); run: 19000 .. 190000
+Stage.glFogDensity | OK | code: as glFogStart (GL_FOG_DENSITY); run: 0.1, 0.35
+Stage.skyMode | OK | code: writers: map file; readers: map_loadGroundInfoFrom (sphere textures for 1 / 2), sky.c 50 / 56 / 59 / 177; run: 0 / 2
+Stage.skyTextures | OK | code: writers: map_loadGroundInfoFrom (Sphere*), stage_build (-1); readers: sky.c 38; run: texture ids, -1
+Stage.skySphere | OK | code: writers: stage_build (cube faces); readers: sky.c 48 / 51 (x 10000); run: -0.577 .. 0.577
+Stage.layerMode | OK | code: writers: map file, stage_build (0); readers: map_loadGroundInfoFrom, sky.c 105 / 179; run: 0 .. 2
+Stage.skyLayerTextures | OK | code: writers: map_loadGroundInfoFrom, stage_build (-1); readers: sky.c 70; run: 1541, 1542, 1558, -1
+Stage.layer | OK | code: writers: stage_build (dome grid); readers: sky.c 77; run: -0.87 .. 0.87
+Stage.layerScroll | OK | code: writers: stage_advanceClocks (+ dt x 0.025, wraps at 1); readers: sky.c 81 / 88; run: 0 .. 0.9995
+Stage.sideMode | OK | code: writers: map file, stage_build; readers: map_loadGroundInfoFrom (1 / 2: textures), sky.c 118 (1: 2094 high, else 4188), 188; run: 0 / 2
+Stage.sideTextures | OK | code: writers: map_loadGroundInfoFrom, stage_build (-1); readers: sky.c 121; run: texture ids
+Stage.sides | OK | code: writers: stage_build; readers: sky.c 124; run: -1 .. 1
+Stage.floorMode | OK | code: writers: map file, stage_build (0); readers: map_loadGroundInfoFrom (textures), stage_advanceClocks (2), collision builder (collision_tris.c 660), sky.c 193; run: NOT SEEN (0 in sampled maps): a map with a sky floor
+Stage.floorTextures | OK | code: writers: map_loadGroundInfoFrom (FloorAni01 ..), stage_build (-1); readers: sky.c 148; run: -1
+Stage.floor | OK | code: writers: stage_build (11 x 11 grid); readers: sky.c 155; run: -1 .. 1
+Stage.floorFrame | OK | code: writers: stage_advanceClocks (+1 % 16), stage_build (0); readers: sky.c 148; run: NOT SEEN: a map with floorMode 2
+Stage.objects | OK | code: map object slots (object_addObjectBy / object_initObjectBy, object_activate, collision builder, drawing); run: (records)
+Stage.objectCount | OK | code: writers: object slot taking (frame_loops.c 117), stage_clearMapObjects, stage_build; readers: every objects loop; run: 6 .. 248
+Stage.actors | OK | code: the actor slots (= Scene.players); run: (records)
+Stage.particles | OK | code: particle_spawn / particle_init / update / draw / stage_freeParticle; run: (records)
+Stage.particleCount | OK | code: writers: particle_spawn, stage_freeParticle (shrinks), reset; readers: particle loops; run: 0 .. 1000
+Stage.itemTypes | OK | code: writers: catalogue_loadItemInfoFrom; readers: item drawing / pickup; run: (records)
+Stage.items | OK | code: writers: map_loadPlayInfoFrom (kind-2 records); readers: item_update, stage_drawItems, net item states; run: (records)
+Stage.itemCount | OK | code: writers: map_loadPlayInfoFrom, scene_reset; readers: main_loop.c 2295 (new round), frame_loops.c 610, items.c 16, net_tables.c 1467 / 2202 (first 0x7c = 124); run: 54 .. 73
+Stage.actorCount | OK | code: writers: resets (0), actor slot taking, actor_slots.c 277 (shrinks past free slots); readers: ~30 actor loops; run: 0 .. 8
+Stage.playerActor | OK | code: writers: scene_resetActors (-1), stage_claimPlayerActor ...; readers: actor_frame.c, actor_applySpawnRecord, script_processTriggers ...; run: -1 .. 1
+Stage.cameraPos | OK | code: writers: stage_setupView, scene_reset; readers: culling (objects.c, items.c, shading.c), sound_play3D listener, water_point, cameraSaved paths; run: world coordinates
+Stage.viewDir | COMMENT | code: writers: stage_setupView (memcpy of its dir: Scene.cameraDir; the chase view passes actor - camera, main_loop.c 579, not normalized); readers: stage_setupView (gluLookAt centre = cameraPos + it), sky.c 174, sound_play3D's listener facing (actor_frame.c 1170, frame_loops.c 521 / 834, weapons.c 343 / 529 / 620); run: -48492 .. 17574 (not a unit vector). The comment "the camera's direction (the sky's look-at)" misses that it is unnormalized and the sounds' listener facing -> "the camera's look vector (stage_setupView: gluLookAt looks at cameraPos + it; not normalized: the chase view passes the actor's position - the camera's); the sky's look-at (sky.c) and the listener's facing for sound_play3D"
+Stage.viewUp | OK | code: writers: stage_setupView; readers: gluLookAt, sky.c 174; run: -0.13 .. 1
+Flare.corners | OK | code: writers: tunnelRing_build (+-50 squares, pads kept), square() (flares 2 / 3 resized); readers: flares() (glVertex); run: x, y +-50 (pads hold junk, as the comment says)
+Flare.pos | OK | code: writers: tunnelRing_build (0, 0, cage z - 49 - (1 - j x 0.1)); readers: flares() (glTranslatef_stored); run: -599.5 .. -600, -1699.5 ..: fits "cage z - 50 + index x 0.1"
+Flare.spin | OK | code: writers: tunnelRing_build (0), flares() (+ spinSpeed x frame time); readers: flares() (gfx_rotateXYZ about z); run: -360 .. 360
+Flare.spinSpeed | OK | code: writers: tunnelRing_build (0.15, -0.35, -1.5, 1.5, -0.18, 0.18); readers: flares(); run: exactly those six values
+TunnelRing.cleared0 | OK | code: writers: tunnelRing_build (0) only; run: NOT SEEN (always 0)
+TunnelRing.cleared4 | OK | code: writers: tunnelRing_build (0) only; run: NOT SEEN (always 0)
+TunnelRing.depth | OK | code: writers: tunnelRing_build (index x -1100); readers: outer_bands / inner_bands (glTranslatef z); run: 0, -1100, -2200
+TunnelRing.outer | OK | code: writers: tunnelRing_build (radius 25 circles at z +-500); readers: band_quads via outer_bands; run: circle coordinates (pads junk)
+TunnelRing.spin | OK | code: writers: tunnelRing_build (0 / the ring before's), outer_bands / inner_bands (spun); readers: outer_bands; run: -360 .. 360
+TunnelRing.spinSpeed | OK | code: writers: tunnelRing_build (0.2); readers: spun(); run: 0.2
+TunnelRing.cleared1938 | OK | code: orig 0x1938: one write (tunnelRing_build 0x440edd), no read; run: NOT SEEN (always 0)
+TunnelRing.moveSteps | OK | code: writers/readers: menuTunnel_advance (+= step, >= ringLength: 0), tunnelRing_build (0); run: 0 .. 2099
+TunnelRing.depthShift | OK | code: writers: tunnelRing_build (0), menuTunnel_advance (-1100 / -2200 in, +1100 out); readers: only its own update; run: -3300 .. 2200
+TunnelRing.inner | OK | code: writers: tunnelRing_build (radius 23); readers: inner_bands; run: circle coordinates
+TunnelRing.innerSpin | OK | code: writers: tunnelRing_build (360 / the ring before's), inner_bands (+ innerSpeed x frame time; wraps only at >= 360); readers: inner_bands; run: -7947 .. 360 (innerSpeed -0.5 runs it down; the wrap never fires going down: fits the code)
+TunnelRing.innerSpeed | OK | code: writers: tunnelRing_build (-0.5); readers: inner_bands; run: -0.5
+TunnelRing.cleared326c | OK | code: orig 0x326c / 0x3270 / 0x3274: one write each in tunnelRing_build, no read; run: NOT SEEN (always 0)
+TunnelRing.cage | OK | code: writers: tunnelRing_build (+-50, +-49 corners); readers: cages drawing; run: +-50 (pads junk)
+TunnelRing.cagePos | OK | code: writers: tunnelRing_build (0, 0, -1100 x index - 550); readers: cages (translate); run: -550, -1650, -2750
+TunnelRing.cageSpin | OK | code: writers: tunnelRing_build (0), cages (+ cageSpeed x time, wraps only at >= 360); readers: cages; run: -1668 .. -0.1 (runs down unbounded with -0.1: fits)
+TunnelRing.cageSpeed | OK | code: writers: tunnelRing_build (-0.1); readers: cages; run: -0.1
+TunnelRing.flares | OK | code: writers: tunnelRing_build; readers: flares(); run: (records; see Flare)
+TunnelRing.alpha | OK | code: writers: tunnelRing_build, tunnel_addRing, menuTunnel_advance, menu_tunnel.c 272 (always 1.0); readers: flares() (glColor4f alpha; orig 0x42a380); run: 1
+TunnelRing.ringIndex | OK | code: writers: tunnelRing_build (orig 0x441114, the only write; no read); run: 0 .. 2
+TunnelRing.cells | OK | code: writers: tunnelRing_build (100); readers: band_quads, tunnelRing_build loops; run: 100
+TunnelRing.back | OK | code: writers: tunnel list append (lists.c 41); readers: outer_bands / inner_bands (walk back), tunnelRing_build (spin copies); run: valid pointers
+TunnelRing.next | OK | code: writers: lists.c 40 / 43, ring removal (menu_tunnel.c 261); readers: last_ring, menu_drawBackground3D, menu_tunnel.c 271 / 409; run: valid pointers / 0

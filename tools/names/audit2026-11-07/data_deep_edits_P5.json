@@ -1,0 +1,54 @@
+{
+ "g_hudProjMode": {
+  "name": "g_matchProjMode"
+ },
+ "g_itemSlot4": {
+  "comment": "g_armcSlotItems[0]: the item in slot 4, one of the extra list (g_extraListTable; -1 none; values seen 13 .. 34; the special items 27 .. 35 give bonuses, armc_applyExtraItemBonuses); from g_savedMechItemSlot4 by armc_loadSavedMech, kept back by armc_saveSelection"
+ },
+ "g_colourChanged": {
+  "name": "g_retintAllParts",
+  "comment": "1: the ARM CENTER's parts all re-tinted with their own slots' colours on the next armc_retintParts (which clears it); set only by armc_makeSession when the scene session is made (the slider changes are g_coloursChanged)"
+ },
+ "g_errorHook": {
+  "comment": "the error hook (stamp, text) every error report ends in (error_log.c report: its eax returned): sys_messageBoxOverActive (0x46c580) in the image; nothing assigns it at run time"
+ },
+ "g_arenaCustomize": {
+  "comment": "the lobby player's customize switch (axis.cfg's set_player customize ON 1 / OFF 0): 0 by arena_defaultPlayer, from / to g_playerCustomize (arena_loadPlayerSettings / arena_savePlayerSettings); nothing else reads it"
+ },
+ "g_bestProgressSolo": {
+  "comment": "the highest solo progress (g_progress) the ARM CENTER has been opened with (armc_open): a higher g_progress sets g_progressWentUp, then it is raised"
+ },
+ "g_bestLevelNet": {
+  "comment": "the highest pilot level the ARM CENTER has been opened with from a game room (armc_open: a higher g_pilotLevel sets g_progressWentUp, then it is raised); set to g_pilotLevel by login_takeAccountRecord and newId_register\"; run: 1"
+ },
+ "g_arenaPacket": {
+  "type": "ServerRecord *"
+ },
+ "g_accountPacket": {
+  "type": "AccountPacket *"
+ },
+ "g_roomPacket": {
+  "type": "RoomRecord *"
+ },
+ "g_progressWentUp": {
+  "comment": "1 when the ARM CENTER opens (armc_open) with the pilot's level (from a game room) or progress (solo) above its best so far (g_bestLevelNet / g_bestProgressSolo); 0 at each armc_open and when a profile is made current (profile_makeCurrent); never read"
+ },
+ "g_accountNotice": {
+  "name": "g_accountRankDue",
+  "comment": "the rank reply is in and the account page is to take it: set by game_wndProc when g_rankReplyIn; account_page then calls account_takeRank, which clears it; cleared by room_enterAccountPage"
+ },
+ "g_rankReplyIn": {
+  "comment": "the reply to request 29 (the rank) has arrived: set by net_recv when g_rankReplyCode is not 0; game_wndProc then sets g_accountRankDue; cleared by account_takeRank"
+ },
+ "g_errorCleanupHook": {
+  "type": "Cleanup",
+  "comment": "function run before exit(1) by the fatal error reporters (error_log.c terminate: sys_errorTerminate, sys_fatalError); set from ErrorLog_ctor's cleanupHook; 0 none (Cleanup: typedef void (*)(void), to move from error_log.c to game.h)"
+ },
+ "g_tunnelStep": {
+  "comment": "the menu tunnel's step this frame: frame time x 30, truncated (menuTunnel_advance, which loads it back as the float g_tunnelStepF; a ring's moveSteps grows by it)"
+ },
+ "g_timerHigh": {
+  "name": "g_perfCounterHigh",
+  "comment": "the last QueryPerformanceCounter reading's high word (timer_now; the low word in g_perfCounterLow); never read"
+ }
+}

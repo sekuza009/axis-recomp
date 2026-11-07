@@ -95,7 +95,7 @@ void (armc_takeCursorItem)(void)
 /* 0x40e5d0: the screen's session made once the "please wait" box has been shown (menuState700_armCenter,
    g_armcSessionDue): the scene's session started (scene_startSession(0, 2): the CD checked), the mech handed to it
    (mech_setAll with g_cfgPlayerName), the player's actor made again (stage_remakePlayerActor), the preview on,
-   g_armcSessionMade set, a full re-tint asked (g_colourChanged) */
+   g_armcSessionMade set, a full re-tint asked (g_retintAllParts) */
 void (armc_makeSession)(void)
 {
 	scene_startSession(g_scene, 0, 2);
@@ -103,7 +103,7 @@ void (armc_makeSession)(void)
 	stage_remakePlayerActor(STAGE(g_scene));
 	g_armcPreview = 1;
 	g_armcSessionMade = 1;
-	g_colourChanged = 1;
+	g_retintAllParts = 1;
 }
 
 /* 0x40f220: the weapons page: every slot's item handed to the parts list, the cursor on slot 0's weapon (its first

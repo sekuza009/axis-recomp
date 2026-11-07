@@ -1,0 +1,53 @@
+{
+ "MessageSlot.speaker": {
+  "comment": "its speaker (Stage.speakers; script_processCommandBy checks it exists); written, never read (hud_drawMessageBox shows only text and colour)"
+ },
+ "ListedObject.colours": {
+  "comment": "its shading colours (Model.colourCount dwords in the list's block): a pre-lit list's only (ObjectList_load; 0 otherwise or without a shape); the game's lists (part_load, actor_loadWeapon) are never pre-lit, so always 0"
+ },
+ "ObjectList.ownsBlock": {
+  "comment": "1: allocated here (ObjectList_load without memory; the game's lists all get the Player's memory, so 0)"
+ },
+ "ObjectList.preLit": {
+  "comment": "1: lit here, drawn with its own colours (ObjectList_load's lit; part_load and actor_loadWeapon pass 0, so never 1 in this game)"
+ },
+ "Player.runTop": {
+  "comment": "(by use; seen running) the top key values running, as multiples of speed (forward x speed is the wanted speed): forward, back (negative), step left, step right (= -[2]) (the left-step key, A, drives nextStrafe toward [2]: key_axis); walking's are 1 / -1"
+ },
+ "Player.nextLean": {
+  "comment": "the body's lean taken next (tenths of a degree): from nextForward and nextPitch (back up to 150, forward up to 450, and running forward past 1 adds (nextForward - 1) / (runTop[0] - 1) x nextPitch: seen up to 1304), then x (nextRun + 1) / 2 x (1 - climb) (actor_processFrame); copied to lean, sent as a byte"
+ },
+ "Player.pose": {
+  "comment": "(by use; seen running) the body's pose: [0] and [1] turn the booster (swing and tilt), [2] turns the legs; [3] the head's, chest's and arms' animation frame ((pitch - lean + 900) / 1800), [4] the legs' (stride), [5] the booster's (run) (anim_setTime)"
+ },
+ "Player.unused1c": {
+  "name": "unused64"
+ },
+ "Player.unused34": {
+  "name": "unused70"
+ },
+ "Player.detectionAngle": {
+  "comment": "DETECTION ANGLE (ARM CENTER), tenths of a degree: the head's detectionAngle x the pilot's skill factor (mech_stats); the local player's lock-on cone (stage_setupView: an enemy's facingCos must exceed g_cosTable[this]), the HUD alert ring's size, actor_checkDataLoss"
+ },
+ "Player.score": {
+  "comment": "its points (frag points: award adds g_fragPoints by the victim's grade; the local player starts from Scene.levelPoints); its grade is level_fromPoints of it; shown top left; what it gained is added to the Ladder exp (ladder_addMatchScores)"
+ },
+ "LightFactors.enabled": {
+  "comment": "1: a light was added (factor_addFactorBy) or read with the pool (LightFactors_read); never cleared. Only ObjectList_queue reads it: a pre-lit list is re-lit with these factors when it is 1 (or a tint is given)"
+ },
+ "MapItem.warpTo": {
+  "comment": "a warp zone's: the item it leads to (item_pickup puts the local machine's actor at that item's pos, pitch its warpPitch x 10 and heading its angle)"
+ },
+ "MapItem.warpPitch": {
+  "comment": "the pitch an actor arriving here by a warp takes (x 10 into nextPitch; item_pickup reads the destination item's)"
+ },
+ "MapItem.pos": {
+  "comment": "where it lies (map_loadPlayInfoFrom); an actor in play within 1.5 x the actor's own radius of it on every axis picks it up (item_update); drawn there (stage_drawItems); a warp zone's destination point (item_pickup)"
+ },
+ "MapItem.angle": {
+  "comment": "its turn, tenths of a degree: the play file's second angle x 10, then turned 600 a second while not taken (item_update, kind 0x22 excepted; never wrapped); drawn turned by it (stage_drawItems); a warp destination's heading for the arriving actor (item_pickup)"
+ },
+ "Particle.owner": {
+  "comment": "by kind: the actor it belongs to (muzzle flashes; glows halve for the cockpit actor's), 1 for a shot drawn from the cockpit actor's own first 0.03 s (kinds 20 .. 26: 22 / 25 / 26 then not drawn, nor particle_beam's dots; kinds 20 / 21 are drawn only when it differs from cockpitActor: the original compares the flag with an actor index), the hit actor's 0x2000 flag (kind 8: texture 4), the dead actor's player record (kind 9 debris), the flare's alpha 0 .. 255 (kind 4), a random 0 .. 7 (puffs 5 .. 7, unused)"
+ }
+}

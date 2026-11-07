@@ -128,7 +128,7 @@ void (profile_quitGame)(void)
 	g_profilePage = 1;
 }
 
-/* 0x44b870: does a profile with the typed name (g_chatLine) exist, ignoring case? (The original's trailing-space trim
+/* 0x44b870: does a profile with the typed name (g_inputLine) exist, ignoring case? (The original's trailing-space trim
    can't run: it is skipped whenever the length is >= 0. Its compare buffer keeps the tail of a longer earlier
    name, as here.) */
 int (profile_nameExists)(void)
@@ -136,7 +136,7 @@ int (profile_nameExists)(void)
 	char typed[1024], name[1024];
 	memset(name, 0, sizeof name);
 	memset(typed, 0, sizeof typed);
-	const char *s = g_chatLine;
+	const char *s = g_inputLine;
 	for (int i = 0, n = (int)strlen(s); i < n; i++)
 		typed[i] = s[i] >= 'A' && s[i] <= 'Z' ? s[i] + 0x20 : s[i];
 	for (int e = 0; e < g_profileCount; e++) {
@@ -314,7 +314,7 @@ int (pilotSelect_clicks)(void)
 u32 (profile_create)(void)
 {
 	int n = g_profileCount;
-	strcpy((char *)(OBJ(g_profileNames) + n * 0x48), g_chatLine);
+	strcpy((char *)(OBJ(g_profileNames) + n * 0x48), g_inputLine);
 	g_profileRecords[(u32)n].pilot = g_pilotSelectCursor;
 	if (chdir_((const char *)STR(0x4b2adc, "save"))) {
 		mkdir_((const char *)STR(0x4b2adc, "save"));
@@ -359,7 +359,7 @@ static u32 glide_page(const float *rate, const u32 *frame, u32 panel)
 /* 0x44f5f0: the delete question's page (profile_drawDeleteQuestion) */
 u32 (profile_deletePage)(void)
 {
-	static const u32 frame[4] = { ADDR(g_profileDialogX), ADDR(g_profileDialogY), ADDR(g_profileDialogRight), ADDR(g_profileDialogBottom) };
+	static const u32 frame[4] = { ADDR(g_deleteDialogX), ADDR(g_deleteDialogY), ADDR(g_deleteDialogRight), ADDR(g_deleteDialogBottom) };
 	return glide_page((const float *)ADDR(k_0_25f), frame, FN_ADDR(profile_drawDeleteQuestion, 0x44e180));
 }
 /* 0x44f740: the log-out question's page (profile_drawLogOutQuestion), gliding at its own rate */
@@ -391,13 +391,13 @@ u32 (profileList_drawNames)(void)
 
 /* 0x44f4b0: the new-name page: the management window (profile_drawManagementWindow), then while the dialog opens
    its frame (menu_drawFrameOpening), with the "NAME ALREADY REGISTRED" message up its window, while typing the name
-   dialog; once the typed name (g_chatLine) is in: empty cancels, a blank one (name_isBlank) is refused with sound 6,
+   dialog; once the typed name (g_inputLine) is in: empty cancels, a blank one (name_isBlank) is refused with sound 6,
    one with a bad character (profile_nameHasBadChar) too with message 0x81, one that exists (profile_nameExists)
    brings up the message; any other goes on to the pilot grid (page 6, pilotSelect_reset). Returns the last
    call's eax */
 u32 (profile_newNamePage)(void)
 {
-	const char *typed = g_chatLine;
+	const char *typed = g_inputLine;
 	profile_drawManagementWindow();
 	if (g_frameOpening)
 		return menu_drawFrameOpening(g_newNameDialogLeft, g_newNameDialogTop,
@@ -493,7 +493,7 @@ static void line_wipe(void)
 {
 	int n = g_lineMaxLength;
 	if (n > 0)
-		memset((void *)OBJ(g_chatLine), 0, n);
+		memset((void *)OBJ(g_inputLine), 0, n);
 }
 
 /* 0x44c190: the new-name dialog's clicks (page 2). While the name-taken message is up (g_profileMessage): any click
@@ -505,7 +505,7 @@ static void line_wipe(void)
    leaves in eax */
 u32 (newNameDialog_clicks)(void)
 {
-	const char *typed = g_chatLine;
+	const char *typed = g_inputLine;
 	g_menuRepeatClock = 0.0f;
 	u32 r = 0;
 	if (g_profileMessage) {

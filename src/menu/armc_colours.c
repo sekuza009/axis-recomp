@@ -84,14 +84,14 @@ void (armc_applyColourSlot)(void)
 		tint_part(part, g_armcColourSlot);
 }
 
-/* 0x41d280: after a change (g_colourChanged) every part takes its own slot's colours; then the part in view is tinted
+/* 0x41d280: after a change (g_retintAllParts) every part takes its own slot's colours; then the part in view is tinted
    again with its slot */
 void (armc_retintParts)(void)
 {
-	if (g_colourChanged) {
+	if (g_retintAllParts) {
 		for (int part = 0; part < 5; part++)
 			tint_part(part, part);
-		g_colourChanged = 0;
+		g_retintAllParts = 0;
 	}
 	int slot = g_armcPartSlot;
 	if (slot >= 0 && slot <= 4)

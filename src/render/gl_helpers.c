@@ -10,7 +10,7 @@ void (gl_rotateXYZ)(u32 x, u32 y, u32 z)
 }
 
 /* 0x4685f0: the in-match projection switch (the HUD's): the model view reset, then, unless mode is the one set
-   already (g_hudProjMode), the 3D projection (1: the view's angle, an aspect of width * scale / height, the near and far
+   already (g_matchProjMode), the 3D projection (1: the view's angle, an aspect of width * scale / height, the near and far
    planes) or the HUD's 2D one (0: width * scale x height units). As the installed exe has it (hudfix.py: code in
    the .axnet section's tail, entered at 0x468671 and 0x4686af), the 3D projection takes the full screen and the 2D
    one the centred 16:9 box, unless the screen is at most 8 pixels wider; both make the menus' switch (g_projMode)
@@ -18,18 +18,18 @@ void (gl_rotateXYZ)(u32 x, u32 y, u32 z)
 void (gfx_setMatchProjection)(int mode, float scale)
 {
 	glLoadIdentity();
-	if (mode == g_hudProjMode)
+	if (mode == g_matchProjMode)
 		return;
-	g_hudProjMode = mode;
+	g_matchProjMode = mode;
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-	if (g_hudProjMode == 1) {
+	if (g_matchProjMode == 1) {
 		gluPerspective(g_viewFov, (double)(fmul_m((long double)g_glWidth, &scale) / g_glHeight),
 		               g_viewNear, g_viewFar);
 		glViewport(0, 0, g_glWidth, g_glHeight);
 		g_projMode = -1;
 		glEnable(GL_DEPTH_TEST);
-	} else if (g_hudProjMode == 0) {
+	} else if (g_matchProjMode == 0) {
 		gluOrtho2D(0.0, (double)fmul_m((long double)g_glWidth, &scale), 0.0, (double)g_glHeight);
 		int h = g_glHeight, w = g_glWidth, x = 0;
 		u32 box = ((u32)h << 4) / 9;

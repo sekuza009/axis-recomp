@@ -268,7 +268,7 @@ void (net_receivePlayerListReply)(void)
 		if (n > 0)
 			got += n;
 	} while (GetTickCount() - start <= 3000 && got < 0x3e);
-	switch (g_serverReplyKind) {
+	switch (g_playerListReplyKind) {
 	case 0:
 		net_addPlayerRecord(reply);
 		break;
@@ -1053,7 +1053,7 @@ static int send_leave(u32 from, u32 to, const u8 *bytes, int nbytes, int flagged
 
 static void arena_info(u8 *dst, u8 kind, u8 count)
 {
-	const ServerRecord *src = (*(const ServerRecord **)&g_arenaPacket);
+	const ServerRecord *src = g_arenaPacket;
 	ServerRecord *to = (ServerRecord *)dst;
 	to->kind = kind;
 	to->rotation = src->rotation;
@@ -1072,7 +1072,7 @@ static void arena_info(u8 *dst, u8 kind, u8 count)
 
 static void room_info(u8 *dst, u8 kind, u8 count)
 {
-	const RoomRecord *src = (*(const RoomRecord **)&g_roomPacket);
+	const RoomRecord *src = g_roomPacket;
 	RoomRecord *to = (RoomRecord *)dst;
 	to->kind = kind;
 	to->rotation = src->rotation;
@@ -1095,7 +1095,7 @@ static void room_info(u8 *dst, u8 kind, u8 count)
    g_netClaimedSlot) and sent to it (net_sendMessage), the message's count kept and the info sent (a Ladder room's then
    with kind 1; an arena's keeps its own kind). Only while
    hosting (g_isHost) over TCP/IP (g_connectionKind = 0) with the right socket open (200: the arena on the lobby's, 201: the
-   Ladder room on the game server's) and nothing pending (g_lobbyReportsOff / g_gameServerPending). The original leaves eax to callers that
+   Ladder room on the game server's) and nothing pending (g_lobbyReportsOff / g_gameServerReportsOff). The original leaves eax to callers that
    ignore it */
 void (net_handleSystemMessage)(const u32 *msg)
 {
@@ -1116,7 +1116,7 @@ void (net_handleSystemMessage)(const u32 *msg)
 		return;
 	switch (g_connectedServer) {
 	case 201:
-		if (g_gameServerPending || !g_gameServerSocket)
+		if (g_gameServerReportsOff || !g_gameServerSocket)
 			return;
 		if (joined)
 			g_playerCount = msg[3];
@@ -1125,7 +1125,7 @@ void (net_handleSystemMessage)(const u32 *msg)
 		if (joined)
 			room_info(g_roomInfoPacket, 1, (u8)g_playerCount);
 		else
-			room_info(g_roomInfoPacket, (*(const u8 **)&g_roomPacket)[0], (u8)(g_playerCount - 1));
+			room_info(g_roomInfoPacket, g_roomPacket->kind, (u8)(g_playerCount - 1));
 		break;
 	case 200:
 		if (g_lobbyReportsOff || !(*(int *)&g_lobbySocket))
@@ -1134,7 +1134,7 @@ void (net_handleSystemMessage)(const u32 *msg)
 			g_playerCount = msg[3];
 		if (!g_arenaInfoPacket)
 			return;
-		arena_info(g_arenaInfoPacket, (*(const u8 **)&g_arenaPacket)[0], (u8)(g_playerCount - !joined));
+		arena_info(g_arenaInfoPacket, g_arenaPacket->kind, (u8)(g_playerCount - !joined));
 		break;
 	}
 }
@@ -1201,7 +1201,7 @@ int (net_connect)(int mode)
 
 /* 0x451e60: leaving the network (while connected, g_netConnected = 1): on the lobby's socket (g_lobbySocket) the hosted
    arena's record (g_arenaPacket into g_lobbyLeavePacket, message 0xb) unless g_lobbyReportsOff, on the game server's (g_gameServerSocket) the room record
-   (g_roomPacket into g_roomLeavePacket, message 0x16) unless g_gameServerPending; each socket closed. Without a send buffer it stops there
+   (g_roomPacket into g_roomLeavePacket, message 0x16) unless g_gameServerReportsOff; each socket closed. Without a send buffer it stops there
    (0). Then the connection flags cleared. Returns what the original leaves in eax */
 u32 (net_disconnect)(void)
 {
@@ -1216,7 +1216,7 @@ u32 (net_disconnect)(void)
 		r = socket_close(ADDR(g_lobbySocket));
 	}
 	if (g_gameServerSocket) {
-		if (!g_gameServerPending && !send_leave(ADDR(g_roomPacket), ADDR(g_roomLeavePacket), roomBytes, 8, 0x63, roomNames, 0x16, 0x65))
+		if (!g_gameServerReportsOff && !send_leave(ADDR(g_roomPacket), ADDR(g_roomLeavePacket), roomBytes, 8, 0x63, roomNames, 0x16, 0x65))
 			return 0;
 		r = socket_close(ADDR(g_gameServerSocket));
 	}
@@ -1277,7 +1277,7 @@ void (net_send)(int kind, int to)
 		return;
 	case 23: {
 		char *name = g_lobbyKeepAlive;
-		const char *from = (*(const char **)&g_arenaPacket);
+		const char *from = (const char *)g_arenaPacket;
 		if (!name || !from)
 			return;
 		strcpy(name, ((const ServerRecord *)from)->address);
@@ -1286,10 +1286,10 @@ void (net_send)(int kind, int to)
 	}
 	case 14: case 15:
 		g_netLastRequest = kind;
-		if (!(*(void **)&g_accountPacket))
+		if (!g_accountPacket)
 			return;
 		jmp_net_getLocalAddress();
-		lstrcpyA((*(AccountPacket **)&g_accountPacket)->address, g_localAddress);
+		lstrcpyA(g_accountPacket->address, g_localAddress);
 		send_buffer(ADDR(g_gameServerSocket), ADDR(g_accountPacket), 0x10b);
 		return;
 	case 19:

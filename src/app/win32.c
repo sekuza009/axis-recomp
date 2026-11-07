@@ -60,7 +60,7 @@ u32 (app_registerWindowClassEx)(const u32 *cls)
 
 /* 0x468450: the GL window resized to width x height (g_glWidth, g_glHeight): the viewport set and, in full screen
    (g_fullScreen), the display mode changed to match (glWindow_setDisplayModeBy; failing that, a message and 0). The cached state
-   g_hudProjMode is reset; returns 1 */
+   g_matchProjMode is reset; returns 1 */
 int (glWindow_resize)(int width, int height)
 {
 	g_glWidth = width;
@@ -71,7 +71,7 @@ int (glWindow_resize)(int width, int height)
 		sys_errorMessageNoName((const char *)STR(0x4c500c, "glWindow screen resolution change fai..."));   /* sys_errorMessageNoName */
 		return 0;
 	}
-	g_hudProjMode = -1;
+	g_matchProjMode = -1;
 	return 1;
 }
 
@@ -133,7 +133,7 @@ void *(glWindow_init)(const char *title, int width, int height, int colourBits, 
 		glWindow_resize(width, height);
 	}
 	gfx_resetState();   /* gfx_resetState */
-	g_hudProjMode = -1;
+	g_matchProjMode = -1;
 	return g_glWindow;
 }
 
@@ -302,7 +302,7 @@ int (gfx_setPixelFormat)(void *dc)
    addresses, the e-mail, chat), `chars` letters wide (g_editFieldLength): a 12-pixel Fixedsys font (0x4b29b0,
    g_inputFont) and an edit control (g_hEditField, id 0xca, style 0x40000400, not visible) on the main window at the
    field's caret (g_editCaretX - 5, g_editCaretY + 0x21), subclassed by editField_editProc (the old procedure in
-   g_editOldProc), focused, holding the typed line (g_chatLine) with the caret at its end. Returns the last
+   g_editOldProc), focused, holding the typed line (g_inputLine) with the caret at its end. Returns the last
    SendMessageA's eax (EM_SETSEL) */
 int (editField_createEdit)(int chars)
 {
@@ -324,8 +324,8 @@ int (editField_createEdit)(int chars)
 	}
 	g_editOldProc = SetWindowLongA(edit, -4, FN_ADDR(editField_editProc, 0x440840));   /* SetWindowLongA(GWL_WNDPROC) */
 	SetFocus(g_hEditField);   /* SetFocus */
-	u32 length = strlen(g_chatLine);
-	SendMessageA(g_hEditField, 0xc, 0, OBJ(g_chatLine));   /* WM_SETTEXT */
+	u32 length = strlen(g_inputLine);
+	SendMessageA(g_hEditField, 0xc, 0, OBJ(g_inputLine));   /* WM_SETTEXT */
 	return SendMessageA(g_hEditField, 0xb1, length, length);   /* EM_SETSEL */
 }
 
@@ -482,7 +482,7 @@ long STDCALL (glWindow_wndProc)(void *wnd, u32 msg, u32 w, u32 l)
 static void edit_close(void *edit, int sent)
 {
 	if (sent)
-		SendMessageA(edit, 0xd, 0x80, OBJ(g_chatLine));   /* WM_GETTEXT */
+		SendMessageA(edit, 0xd, 0x80, OBJ(g_inputLine));   /* WM_GETTEXT */
 	SendMessageA(edit, 0xc, 0, 0);                 /* WM_SETTEXT "" */
 	DestroyWindow(g_hEditField);   /* DestroyWindow */
 	SetFocus(g_mainWindow);   /* SetFocus */
@@ -837,7 +837,7 @@ long STDCALL (game_wndProc)(void *wnd, u32 msg, u32 w, u32 l)
 		if (g_playerListDone)
 			g_rankingListIn = 1;
 		if (g_rankReplyIn)
-			g_accountNotice = 1;
+			g_accountRankDue = 1;
 		return 1;
 	}
 	return DefWindowProcA(wnd, msg, w, l);   /* DefWindowProcA */

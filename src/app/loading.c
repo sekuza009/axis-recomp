@@ -195,7 +195,7 @@ void (menu_loadTextures)(void)
 }
 #undef T
 
-/* 0x430400: the start-up load: the key tables (g_keyTable1, g_keySeen) cleared, the settings, tables and lists loaded,
+/* 0x430400: the start-up load: the key tables (g_unusedStartupTable, g_keySeen) cleared, the settings, tables and lists loaded,
    the text area the whole screen, the timer; DirectInput made once (g_directInputMade; failure: a message box, 0); unless
    g_launchedForNetGame the data files checked (failure: the message 0x4b04b0, 0); the sound (g_soundOn: it works; then the menu
    sounds); the pointer at 310, 230, the keys' table; the CD (failure: a message box, 0); the six texture banks (with the
@@ -204,7 +204,7 @@ void (menu_loadTextures)(void)
    then the camera and menu defaults. Returns 1 (0 on a failure) */
 int (app_startupLoad)(void *instance)
 {
-	memset((void *)OBJ(g_keyTable1), 0, 0x400);
+	memset((void *)OBJ(g_unusedStartupTable), 0, 0x400);
 	memset((void *)OBJ(g_keySeen), 0, 0x400);
 	g_roomConnected = 0;
 	net_clearServerSettings();

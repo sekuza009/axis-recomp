@@ -402,7 +402,7 @@ static void section_mech(Panel *p)
 	label(p, ROW(0), MSG(671, "DETECTION RANGE"));
 	sprintf(p->t.line, FMT(STR(0x4b0274, "%.1f(m)")), (double)g_mechDetectionRange);
 	value(p, ROW(0));
-	static const u32 ints[4][2] = { { STR(0x4b02e8, "%d(Lv)"), ADDR(g_mechHackingLevel) }, { STR(0x4b0320, "%d"), OBJ(g_mechPartStats) }, { STR(0x4b0320, "%d"), (OBJ(g_mechPartStats) + 0x4) }, { STR(0x4b02e8, "%d(Lv)"), (OBJ(g_mechPartStats) + 0x8) } };
+	static const u32 ints[4][2] = { { STR(0x4b02e8, "%d(Lv)"), ADDR(g_mechHackingLevel) }, { STR(0x4b0320, "%d"), OBJ(g_mechMaxima) }, { STR(0x4b0320, "%d"), (OBJ(g_mechMaxima) + 0x4) }, { STR(0x4b02e8, "%d(Lv)"), (OBJ(g_mechMaxima) + 0x8) } };
 	for (int k = 0; k < 4; k++) {
 		label(p, ROW(k + 1), MSG(672, "HACKING LEVEL") + k * 0x80);
 		sprintf(p->t.line, FMT(ints[k][0]), I(ints[k][1]));
@@ -410,7 +410,7 @@ static void section_mech(Panel *p)
 	}
 	label(p, ROW(5), MSG(676, "WEAPON LOAD"));
 	for (int k = 0; k < 4; k++) {
-		sprintf(p->t.bonus, FMT(k < 3 ? STR(0x4b0270, "%d/") : STR(0x4b0320, "%d")), I((OBJ(g_mechPartStats) + 0xc) + k * 4));
+		sprintf(p->t.bonus, FMT(k < 3 ? STR(0x4b0270, "%d/") : STR(0x4b0320, "%d")), I((OBJ(g_mechMaxima) + 0xc) + k * 4));
 		append(p->t.line, p->t.bonus);
 	}
 	value(p, ROW(5));

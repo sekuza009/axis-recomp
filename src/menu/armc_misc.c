@@ -249,8 +249,8 @@ void (armc_updatePartsPreview)(void)
 		g_mechChanged = 0;
 		armc_retintParts();
 	}
-	if (g_unusedEmptySlot0Flag == 1)
-		g_unusedEmptySlot0Flag = 0;
+	if (g_emptySlot0Asked == 1)
+		g_emptySlot0Asked = 0;
 	if (g_coloursChanged) {
 		armc_applyColourSlot();
 		g_coloursChanged = 0;
@@ -262,14 +262,14 @@ void (armc_updatePartsPreview)(void)
 	}
 }
 
-/* 0x41d8a0: the weapons page's preview: item slot 0 emptied first when asked (g_unusedEmptySlot0Flag). It poses the
+/* 0x41d8a0: the weapons page's preview: item slot 0 emptied first when asked (g_emptySlot0Asked). It poses the
    item slot being picked (slots 4 / 5 as 6 / 7, the weapon slots as 5; none when that slot's record is empty) */
 void (armc_updateWeaponsPreview)(void)
 {
 	gfx_setProjection2D3D(1);
-	if (g_unusedEmptySlot0Flag == 1) {
+	if (g_emptySlot0Asked == 1) {
 		armc_itemSlotRecord(0, 0);
-		g_unusedEmptySlot0Flag = 0;
+		g_emptySlot0Asked = 0;
 	}
 	int slot;
 	switch (g_armcMode) {
@@ -367,7 +367,7 @@ u32 (armc_open)(void)
 	g_armcUnusedFlag = 0;
 	g_menuEyeBits[0] = 0;
 	g_menuEyeBits[1] = 0;
-	u32 distance = fromRoom ? k_armcDistanceRoom : k_armcDistance;   /* -1550, -450 */
+	u32 distance = fromRoom ? k_armcDistanceRoom : k_m450f;   /* -1550, -450 */
 	g_menuAt[0] = 0;
 	g_menuAt[1] = 0;
 	g_menuEyeBits[2] = distance;

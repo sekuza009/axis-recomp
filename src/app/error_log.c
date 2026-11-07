@@ -8,7 +8,6 @@
 #define vsprintf_game(out, format, args) GAME_CDECL(0x49ed2e, int, char *, const char *, va_list)(out, format, args)
 #define fprintf_game ((int (CDECL *)(void *, const char *, ...))IMG(0x49f135))
 typedef int (CDECL *ErrorHook)(char *stamp, char *text);
-typedef void (*Cleanup)(void);
 
 #define fseek(f, offset, whence) GAME_CDECL(0x49e91e, int, void *, int, int)(f, offset, whence)
 
@@ -40,7 +39,7 @@ static int report(u32 flag, const u8 *object, u32 timeFormat, const char *format
 /* the cleanup hook, if any, then exit(1) */
 static void terminate(void)
 {
-	Cleanup cleanup = (*(Cleanup *)&g_errorCleanupHook);
+	Cleanup cleanup = g_errorCleanupHook;
 	if (cleanup)
 		cleanup();
 	crt_exit(1);   /* exit */

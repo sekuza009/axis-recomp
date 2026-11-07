@@ -32,7 +32,7 @@ struct __attribute__((packed)) GameRdata {
 	float k_panelSlideTarget_;
 	float k_20f_;
 	float k_500f_;
-	u32 k_armcDistance_;
+	u32 k_m450f_;
 	u32 k_armcDistanceRoom_;
 	float k_180f_;
 	float k_360f_[3];
@@ -1242,7 +1242,7 @@ _Static_assert(offsetof(struct GameRdata, d_4a9444) == 0x444, "d_4a9444");
 _Static_assert(offsetof(struct GameRdata, k_panelSlideTarget_) == 0x448, "k_panelSlideTarget_");
 _Static_assert(offsetof(struct GameRdata, k_20f_) == 0x44c, "k_20f_");
 _Static_assert(offsetof(struct GameRdata, k_500f_) == 0x450, "k_500f_");
-_Static_assert(offsetof(struct GameRdata, k_armcDistance_) == 0x454, "k_armcDistance_");
+_Static_assert(offsetof(struct GameRdata, k_m450f_) == 0x454, "k_m450f_");
 _Static_assert(offsetof(struct GameRdata, k_armcDistanceRoom_) == 0x458, "k_armcDistanceRoom_");
 _Static_assert(offsetof(struct GameRdata, k_180f_) == 0x45c, "k_180f_");
 _Static_assert(offsetof(struct GameRdata, k_360f_) == 0x460, "k_360f_");

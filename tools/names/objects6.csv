@@ -10,7 +10,7 @@
 0x9db980,u32,4,g_timerClocks,the timer's two doubles (now, last), cleared as four words
 0x4ded88,int,3,g_mouseClicked,the three mouse buttons' click pulses (0xfa .. 0xfc)
 0x4ded94,int,3,g_mouseButtonsHeld,the three mouse buttons held (devices.c's loop of 3)
-0x4dcab4,int,7,g_mechPartStats,the mech stats copied from a part (armc_parts' loop of 7)
+0x4dcab4,int,7,g_mechMaxima,the mech stats copied from a part (armc_parts' loop of 7)
 0x4dbc58,u32,4,g_armcBright,ARM CENTER's chosen tab colour (armc_misc's loop of 4)
 0x4de1c0,int,2,g_mouseSwitchesEdit,two setup on / off values (setup_pages' loop of 2)
 0x4dc228,float,2,g_legsStats,two leg values (armc_stats' loop of 2)

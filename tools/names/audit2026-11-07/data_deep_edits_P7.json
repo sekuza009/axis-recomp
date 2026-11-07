@@ -1,0 +1,45 @@
+{
+ "g_chatLength": {
+  "name": "g_inputLineLength",
+  "comment": "characters in the input line (g_inputLine): set from the field's text when a text field opens (edit_fields.c, arena_editAddress), 0 when it is emptied or closed (menu_clearInputBuffer, menu_closeInputLine); menu_drawInputLine puts the caret at x + it x 8"
+ },
+ "g_chatLine": {
+  "name": "g_inputLine",
+  "comment": "char[1024]; the input line: the text being typed in any text field (names, passwords, numbers, the IP address, the e-mail, the replay file name, chat; edit_fields.c / editField_readTyping / editField_editProc), drawn by menu_drawInputLine; memset 0x400"
+ },
+ "g_profileDialogX": {
+  "name": "g_deleteDialogX",
+  "comment": "left of page 3's (delete question) dialog frame, 120 (menuState210_enter); with g_deleteDialogY / Right / Bottom; deleteDialog_layout places its buttons from it (profile_askDelete, profile_drawDeleteQuestion, profile_deletePage)"
+ },
+ "g_profileDialogY": {
+  "name": "g_deleteDialogY",
+  "comment": "top of page 3's (delete question) dialog frame, 150 (menuState210_enter; see g_deleteDialogX); also places the buttons and the pointer's glide target"
+ },
+ "g_profileDialogRight": {
+  "name": "g_deleteDialogRight",
+  "comment": "right edge of page 3's (delete question) dialog frame, 520 (menuState210_enter; see g_deleteDialogX)"
+ },
+ "g_profileDialogBottom": {
+  "name": "g_deleteDialogBottom",
+  "comment": "bottom of page 3's (delete question) dialog frame, 270 (menuState210_enter; see g_deleteDialogX)"
+ },
+ "g_unusedRoomPanelEase": {
+  "name": "g_roomSlideEase",
+  "comment": "the game room's tunnel-slide value (room_slideMenu / menu_slide: eased toward k_panelSlideTarget while g_roomPanelsSliding; each step, (250 - it) x g_frameTime x 0.1, also pushes g_roomTunnelDepth back); 0 on entering (menuState800_enterGameRoom). Twin of g_lobbySlideEase"
+ },
+ "g_profileReveal": {
+  "comment": "CHARACTER SELECT: the chosen pilot's portrait cell grown by twice this (menu units) a side, 0 .. 8 (one more each time g_profileRevealClock passes 1); 0 when the pilot cursor moves (pilotSelect_keys, pilotSelect_clicks) or the selection resets (pilotSelect_reset)"
+ },
+ "g_profileRevealClock": {
+  "comment": "time units since g_profileReveal last stepped (+ g_frameTime while it is below 8; past 1 it goes back to 0 and g_profileReveal steps; profile_drawPilotSelect); 0 when the pilot cursor moves (pilotSelect_keys, pilotSelect_clicks) or the selection resets (pilotSelect_reset)"
+ },
+ "g_modeChanged": {
+  "comment": "glWindow's display mode was switched (glWindow_setDisplayModeBy; the desktop's mode, g_desktopW / H / Bits, kept before it; put back and cleared by glWindow_restoreDisplayMode). Only on glWindow's full-screen path, which the game never takes (its own switch is app_setDisplayMode, g_displayModeChanged)"
+ },
+ "g_textColour": {
+  "comment": "Colour[1]; the text passes' current colour (text_setColor / set_colour_bits; bound by every text pass, text_begin and text_codes.c: the menus, the HUD and the message box)"
+ },
+ "g_vecUnitX": {
+  "comment": "float[3]; (1 0 0: vec_initAxisX); never read"
+ }
+}

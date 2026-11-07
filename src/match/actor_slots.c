@@ -379,7 +379,7 @@ void THISCALL (actor_applySpawnRecord)(u8 *scene, int a, const u8 *rec)
 	u8 *actor = (u8 *)&STS->actors[a];
 	Player *act = (Player *)actor;
 #define AC act   /* the same by its fields (src/scene.fields) */
-	AC->unused1c = SR->unused1c;
+	AC->unused64 = SR->unused1c;
 	AC->armorMax = SR->armor;
 	AC->shieldMax = SR->shield;
 	AC->armor = SR->armor;
@@ -388,7 +388,7 @@ void THISCALL (actor_applySpawnRecord)(u8 *scene, int a, const u8 *rec)
 	AC->turnRate = (float)(SR->turnRate * (long double)k_10f);
 	long double radius = SR->range;
 	AC->detectionRangeSq = (float)(radius * radius * k_10000f);
-	BITS(AC->unused34) = BITS(SR->unused34);
+	BITS(AC->unused70) = BITS(SR->unused34);
 	AC->aimError = ftol(SR->aimError * (long double)k_10f);
 	AC->scriptFlag = SR->scriptFlag;
 	AC->dodgeSpread = (float)(SR->dodgeSpread * (long double)k_100f);
@@ -770,10 +770,10 @@ static void mech_stats(u8 *s, u8 *ac, u8 *p, int check)
 		AC->runTop[2] = 0.0f;
 #undef LEG
 	AC->runTop[3] = f32(-fld_m(&AC->runTop[2]));
-	AC->unused1c = 100;
+	AC->unused64 = 100;
 	BITS(AC->baseSpeed) = BITS(AC->speed);
 	AC->turnRate = 900.0f;   /* 900 */
-	AC->unused34 = 3.0f;
+	AC->unused70 = 3.0f;
 	AC->aimError = 10;
 	AC->scriptFlag = 0;
 	AC->dodgeSpread = 1000.0f;   /* 1000 */

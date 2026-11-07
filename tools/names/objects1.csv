@@ -1,6 +1,6 @@
 # the ErrorLog records of the classes (a vtable and the name): ErrorLog_ctor in app/statics.c
 # texts and records
-0x9dc92c,char,0x400,g_chatLine,the chat line being typed (memset 0x400)
+0x9dc92c,char,0x400,g_inputLine,the chat line being typed (memset 0x400)
 0x9dd570,char,0x1e,g_ladderId,the joined game's title record: the name (laid out as 0x4de700)
 0x4de700,char,0x1e,g_ladderName,the title record's name (+0x1e the level: g_ladderLevel)
 0x9dd1d8,char,0x1e,g_accountName,the login form's name (30 bytes)

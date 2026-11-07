@@ -1,0 +1,72 @@
+{
+ "SpaceNode.item": {
+  "comment": "the CollisionPlane it holds (a block's item or one of a unit's planes); the plane's flags bit 0 (value 1, space_disableUnit): left out of the static space's tests (space_collideBlock / space_traceBlock skip it only outside the moving units' lists)"
+ },
+ "SpaceBlock.itemCount": {
+  "comment": "items in its list (space_insertItem); over Space.splitCount with depth left it splits (then 0); a child left with none and no split is freed (drop_if_empty)"
+ },
+ "SpaceBlock.poolPrev": {
+  "comment": "its back link in the blocks' free list (reset_pool, space_freeBlock; the new head's cleared when one is taken: space_getNextFreeBlockPtrBy); written, never read"
+ },
+ "Space.blockSize": {
+  "comment": "its pools' memory size in bytes (planes x 0xac + nodes x 0x10 + units x 0x14 + blocks x 0x50 + cells x 2: space_initBy; 10262000 in a match)"
+ },
+ "PartInfo.burst": {
+  "comment": "FIRE AT THE SAME TIME (ActorItem.burst: rounds a burst), shown with message 758 \"Round\""
+ },
+ "PartInfo.damageType": {
+  "comment": "DAMAGE TYPE (ActorItem.damageType): message 327 + this: 0 IMPACT, 1 ENERGY"
+ },
+ "PartInfo.range": {
+  "comment": "SHOOTING RANGE: ActorItem.range x 0.01, shown \"%.0f\" with message 751 \"m\""
+ },
+ "PartInfo.speed": {
+  "comment": "BULLET SPEED: ActorItem.velocity x 0.01, shown \"%.0f\" with message 759 \"m/s\""
+ },
+ "PartInfo.splashRadius": {
+  "comment": "SPLASH DAMAGE RANGE: ActorItem.splashRadius x 0.01, shown \"%.1f\" with message 751 \"m\""
+ },
+ "PartInfo.cycleTime": {
+  "comment": "FIRING DELAY: ActorItem.cycleTime x 1000, shown \"%.0f\" with message 754 \"ms\""
+ },
+ "PartInfo.targetingTime": {
+  "comment": "TARGETING TIME: ActorItem.targetingTime x 1000, shown \"%.1f\" with message 754 \"ms\""
+ },
+ "Mission.blockSize": {
+  "comment": "its briefing block's size in bytes in axis.mis (read after all the entries: mission_loadAxisMis); mission_loadBriefing adds up the earlier ones for the offset, reads this many bytes into g_briefingSource and keeps it as g_briefingEnd; the record's last four bytes (+0xf8) are never touched"
+ },
+ "RoomRecord.players": {
+  "comment": "players in the game: 1 at room_announceGame and in the leave packet (send_leave), g_playerCount (less one when a player left) in the info packet (room_info); received: SessionEntry.players, summed into g_roomListPlayers"
+ },
+ "SessionDesc.address": {
+  "comment": "(TCP, connection kind 0) the host's address as text (net_formatAddress of dwUser4); written, never read"
+ },
+ "SessionEntry.ping": {
+  "comment": "the host's ping: g_serverPing of a received game (merge; only ping > 0 are listed), 0 for DirectPlay's (arenaList_rebuild); the list is sorted by it (sessionList_sort) and shows it when pings are on (game_rows)"
+ },
+ "GameSettings.limit": {
+  "comment": "[0] the frag limit (FRAG LIMIT row), [1] the time limit in minutes (TIME LIMIT row): dplay_host's dwUser3 high / low byte, g_fragLimit / g_timeLimit when hosting, RoomRecord.fragLimit / timeLimit (room_announceGame)"
+ },
+ "RankedPlayer.kills": {
+  "comment": "the KILL column (sort 1): copied by net_addPlayerRecord, then to RankRow.kills"
+ },
+ "CharacterProfile.stats": {
+  "comment": "percentages, the CHARACTER SELECT rows MSG(536 ..): [0] BULLET.LV, [1] ENERGY.LV, [2] BOMB.LV, [3] MELEE.LV (the weapon groups' damage: actor_takeDamage, the ARM CENTER's bonus), [4] MOBILITY, [5] SPEED (the legs': LEG()), [6] DEFENSE, [7] SCANNING, [8] MAX.LOAD ([4] .. as character_factor / SKILL(k): stats[4 + k] x 0.01 + 1); [7] at most 50, the others 30 (else 0)",
+  "note": "drop the stray continuation comment line under it in scene.fields (\"ARM CENTER factors x 0.01), [5] the legs'; [7] at most 50, the others 30\")"
+ },
+ "GamePacket.lastPickup": {
+  "comment": "the map item (Stage.items index) the sender last picked up (Stage.lastPickup, -1 after each send; -1 none): the receiver marks it taken (MapItem.taken 1, timer 0)"
+ },
+ "ViewTriangle.kind": {
+  "comment": "ViewVolume_addTriangle's raw: 1 drawn first as given under its matrix (ViewVolume_draw), 2 depth-sorted (triangleOrder) and merged back to front with the kind-2 quads (draw_transparent's); others never drawn"
+ },
+ "ViewVolume.blockSize": {
+  "comment": "its lists' memory size in bytes: entries x 0x1c + matrices x 0x40 + colours x 4 + triangles x 0x68 + quads x 0x64 + segments x 0x24 (ViewVolume_initBy; 1240000 for Scene.view)"
+ },
+ "PlayerRecord.partHue": {
+  "comment": "per part its two tints' hue as a signed byte: hue_byte (the hue wrapped to -180 .. 180, (h + 180) x 0.7083333 - 128, about 256 / 360 a degree; playerRecord_setPartColour); sent in packet 2 (net_sendPlayerInfo, 30 bytes from here) and read back signed x 1.40625 (playerRecord_applyNetColours)"
+ },
+ "PlayerRecord.name": {
+  "comment": "its name (player_setName, which also names its actors); its flag picture is Save\\\\<name>.BMP (playerRecord_loadFlag); shown in notices and messages"
+ }
+}

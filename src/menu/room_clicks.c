@@ -271,7 +271,7 @@ static void load_map_preview(u32 selected)
 void (room_loadMapPreview)(void) { load_map_preview(ADDR(g_roomMap)); }
 void (arena_loadMapPreview)(void) { load_map_preview(ADDR(g_newArenaMap)); }
 
-/* 0x433d30: the typed line (g_chatLine) committed to the new-ID form's field being edited (when the keyboard was let go for it,
+/* 0x433d30: the typed line (g_inputLine) committed to the new-ID form's field being edited (when the keyboard was let go for it,
    g_textFieldOpen: the edit window g_hEditField destroyed and the focus back on the main window first): the ID
    (g_accountForm, 30 bytes), the password and its repeat (g_accountPassword, g_accountPasswordRepeat, 12 bytes) or the e-mail (g_accountEmail, 50 bytes).
    Returns what the original leaves in eax */
@@ -291,7 +291,7 @@ u32 (newIdForm_endTyping)(void)
 	static const struct { u32 editing, field, size; } fields[4] = {
 		{ ADDR(g_typingAccountName), OBJ(g_accountName), 30 }, { ADDR(g_typingAccountPassword), OBJ(g_accountPassword), 12 }, { ADDR(g_typingAccountRepeat), OBJ(g_accountPasswordRepeat), 12 }, { ADDR(g_typingAccountEmail), OBJ(g_accountEmail), 50 } };
 	u32 r = typing_end();
-	const char *typed = g_chatLine;
+	const char *typed = g_inputLine;
 	for (int k = 0; k < 4; k++) {
 		if (GAME_VAR(int, fields[k].editing) != 1)
 			continue;
@@ -539,7 +539,7 @@ u32 (login_send)(void)
 	memset((void *)OBJ(g_ladderId), 0, 30 + 12);
 	strcpy(g_ladderId, name);
 	strcpy((char *)ADDR(g_ladderPassword), password);
-	AccountPacket *account = (*(AccountPacket **)&g_accountPacket);
+	AccountPacket *account = g_accountPacket;
 	memset(account->name, 0, 30);
 	memset(account->password, 0, 12);
 	strcpy(account->name, name);
@@ -690,7 +690,7 @@ u32 (roomSettings_keys)(void)
 		return (*(u32 *)&g_frameOpening);
 	if (g_textFieldOpen)
 		return 0;
-	const char *line = g_chatLine;
+	const char *line = g_inputLine;
 	if (g_editingRoomName) {   /* the room's name */
 		if (!strlen(line) || name_isBlank(line) == 1) {   /* name_isBlank: blank */
 			u32 r = strlen(line) ? sound_playMenu(6) : 0;
@@ -783,7 +783,7 @@ u32 (room_drawMapPreview)(void) { return map_preview_box((const int *)ADDR(g_roo
 u32 (arena_drawMapPreview)(void) { return map_preview_box((const int *)ADDR(g_newArenaFormTop), ADDR(g_newArenaRotation), FN_ADDR(arena_loadMapPreview, 0x40b420)); }
 
 /* 0x43e7b0: the account page (room page 0; the room camera arrived (g_roomCameraMode 2), not page 99): with a message box only its
-   frame; else the page (account_takeRank when g_accountNotice, then account_drawPanel) and, once a field's typing has ended, the typed
+   frame; else the page (account_takeRank when g_accountRankDue, then account_drawPanel) and, once a field's typing has ended, the typed
    line taken into it (the name, password, its repeat (12 bytes each) or the e-mail (50)) and the key that ended it
    (g_fieldStep: 0xa back, 0x14 on) opening the field before or after (account_editOldPassword .. 434260). Returns what the
    original leaves in eax */
@@ -799,7 +799,7 @@ u32 (account_page)(void)
 	if (g_frameOpening)
 		return menu_drawFrameOpening(g_accountPanelLeft, g_accountPanelTop,
 		                                                     g_accountPanelRight, g_accountPanelBottom);
-	if (g_accountNotice)
+	if (g_accountRankDue)
 		account_takeRank();
 	u32 r = account_drawPanel();   /* account_drawPanel: the page */
 	if (g_roomAwaitingServer == 1)
@@ -812,7 +812,7 @@ u32 (account_page)(void)
 		memset((void *)RELOC(fields[k].field), 0, fields[k].size);
 		GAME_VAR(int, fields[k].editing) = 0;
 		g_inputLineHidden = 0;
-		strcpy((char *)RELOC(fields[k].field), g_chatLine);
+		strcpy((char *)RELOC(fields[k].field), g_inputLine);
 		u32 key = (*(u32 *)&g_fieldStep);
 		u32 next = key == 0xa ? fields[k].back : key == 0x14 ? fields[k].on : 0;
 		if (!next)

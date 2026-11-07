@@ -48,7 +48,7 @@ u8 g_replayWrap_v[4] __attribute__((aligned(16)));   /* 0x4b2a7c */
 u8 g_musicVolumeSetting_v[4] __attribute__((aligned(16)));   /* 0x4b42dc */
 u8 g_componentDatPath_v[4] __attribute__((aligned(16)));   /* 0x4b4414 */
 u8 g_insertCdMessage_v[4] __attribute__((aligned(16)));   /* 0x4b4568 */
-u8 g_hudProjMode_v[4] __attribute__((aligned(16)));   /* 0x4c4de8 */
+u8 g_matchProjMode_v[4] __attribute__((aligned(16)));   /* 0x4c4de8 */
 u8 g_viewFov_v[4] __attribute__((aligned(16)));   /* 0x4c4dec */
 u8 g_viewNear_v[4] __attribute__((aligned(16)));   /* 0x4c4df0 */
 u8 g_viewFar_v[4] __attribute__((aligned(16)));   /* 0x4c4df4 */
@@ -61,7 +61,7 @@ float g_ptxFdctBase_v[128] __attribute__((aligned(16)));   /* 0x4c6bb0 */
 int g_ptxQuantBase_v[128] __attribute__((aligned(16)));   /* 0x4c6db0 */
 int g_sortBounds_v[8192] __attribute__((aligned(16)));   /* 0x4c83c4 */
 u8 g_catalogueFile_v[4] __attribute__((aligned(16)));   /* 0x4d05a4 */
-int g_keyTable1_v[256] __attribute__((aligned(16)));   /* 0x4d1688 */
+int g_unusedStartupTable_v[256] __attribute__((aligned(16)));   /* 0x4d1688 */
 int g_mouseState_v[4] __attribute__((aligned(16)));   /* 0x4d1a88 */
 int g_keySeen_v[256] __attribute__((aligned(16)));   /* 0x4d1a98 */
 u8 g_keyState_v[256] __attribute__((aligned(16)));   /* 0x4d1e9c */
@@ -71,7 +71,7 @@ u8 g_unusedKeyTable2Word0_v[4] __attribute__((aligned(16)));   /* 0x4d1fb0 */
 u8 g_unusedKeyTable2Flags_v[2] __attribute__((aligned(16)));   /* 0x4d1fba */
 u8 g_unusedKeyTable2Word1_v[4] __attribute__((aligned(16)));   /* 0x4d1fbc */
 u8 g_unusedKeyTable2Word2_v[4] __attribute__((aligned(16)));   /* 0x4d1fc0 */
-int g_keyTable2_v[256] __attribute__((aligned(16)));   /* 0x4d1fc4 */
+int g_unusedKeyTable2_v[256] __attribute__((aligned(16)));   /* 0x4d1fc4 */
 u8 g_textEndX_v[4] __attribute__((aligned(16)));   /* 0x4d23c8 */
 u8 g_textEndY_v[4] __attribute__((aligned(16)));   /* 0x4d23cc */
 u8 g_convertHangul_v[4] __attribute__((aligned(16)));   /* 0x4d23d0 */
@@ -173,7 +173,7 @@ u8 g_itemBonusCapacityPerLevel_v[4] __attribute__((aligned(16)));   /* 0x4dbc70 
 u8 g_itemBonusShieldUnread_v[4] __attribute__((aligned(16)));   /* 0x4dbc74 */
 u8 g_itemBonusDetectionRange_v[4] __attribute__((aligned(16)));   /* 0x4dbc78 */
 u8 g_armCursor_v[4] __attribute__((aligned(16)));   /* 0x4dbc7c */
-u8 g_unusedEmptySlot0Flag_v[4] __attribute__((aligned(16)));   /* 0x4dbc80 */
+u8 g_emptySlot0Asked_v[4] __attribute__((aligned(16)));   /* 0x4dbc80 */
 int g_armcWeaponsPageRects_v[60] __attribute__((aligned(16)));   /* 0x4dbc88 */
 int g_boosterList_v[50] __attribute__((aligned(16)));   /* 0x4dbd7c */
 u8 g_armcSlot_v[4] __attribute__((aligned(16)));   /* 0x4dbe48 */
@@ -226,7 +226,7 @@ u8 g_mechDetectionAngle_v[4] __attribute__((aligned(16)));   /* 0x4dcaa4 */
 u8 g_mechHackingLevel_v[4] __attribute__((aligned(16)));   /* 0x4dcaa8 */
 u8 g_mechLockOnTime_v[4] __attribute__((aligned(16)));   /* 0x4dcaac */
 u8 g_mechTargetKeepTime_v[4] __attribute__((aligned(16)));   /* 0x4dcab0 */
-int g_mechPartStats_v[7] __attribute__((aligned(16)));   /* 0x4dcab4 */
+int g_mechMaxima_v[7] __attribute__((aligned(16)));   /* 0x4dcab4 */
 u8 g_mechMobility_v[4] __attribute__((aligned(16)));   /* 0x4dcad0 */
 u8 g_mechLegsInertia_v[4] __attribute__((aligned(16)));   /* 0x4dcad4 */
 u8 g_mechLegsSpeedCorrection_v[4] __attribute__((aligned(16)));   /* 0x4dcad8 */
@@ -277,7 +277,7 @@ u8 g_chestCursor_v[4] __attribute__((aligned(16)));   /* 0x4dcf3c */
 u32 g_armcCameraBox_v[38] __attribute__((aligned(16)));   /* 0x4dcf40 */
 u8 g_unusedArmcViewCountdown_v[4] __attribute__((aligned(16)));   /* 0x4dcfd8 */
 float g_savedColourChoices_v[36] __attribute__((aligned(16)));   /* 0x4dcfe0 */
-u8 g_colourChanged_v[4] __attribute__((aligned(16)));   /* 0x4dd074 */
+u8 g_retintAllParts_v[4] __attribute__((aligned(16)));   /* 0x4dd074 */
 u8 g_armcHideInterface_v[4] __attribute__((aligned(16)));   /* 0x4dd078 */
 u8 g_unusedClock3_v[8] __attribute__((aligned(16)));   /* 0x4dd080 */
 u8 g_fpsSecondStart_v[8] __attribute__((aligned(16)));   /* 0x4dd0a0 */
@@ -490,7 +490,7 @@ u8 g_projMode_v[4] __attribute__((aligned(16)));   /* 0x5ae9bc */
 u8 g_dikEnd_v[4] __attribute__((aligned(16)));   /* 0x5ae9c0 */
 u8 g_matchMode_v[4] __attribute__((aligned(16)));   /* 0x5ae9c4 */
 u8 g_perfCounterLow_v[4] __attribute__((aligned(16)));   /* 0x5ae9c8 */
-u8 g_timerHigh_v[4] __attribute__((aligned(16)));   /* 0x5ae9cc */
+u8 g_perfCounterHigh_v[4] __attribute__((aligned(16)));   /* 0x5ae9cc */
 char g_mapAbouts_v[8000] __attribute__((aligned(16)));   /* 0x5ae9d0 */
 float g_hanChoTop_v[256] __attribute__((aligned(16)));   /* 0x5b0910 */
 float g_hanChoLeft_v[256] __attribute__((aligned(16)));   /* 0x5b0d10 */
@@ -674,9 +674,9 @@ u8 g_pixelFormatFilled_v[1] __attribute__((aligned(16)));   /* 0x9dbefc */
 u8 g_timerRepeatCount_v[4] __attribute__((aligned(16)));   /* 0x9dbf00 */
 u8 g_timerLastCount_v[4] __attribute__((aligned(16)));   /* 0x9dbf08 */
 u8 g_directInputMade_v[4] __attribute__((aligned(16)));   /* 0x9dbf0c */
-u8 g_chatLength_v[4] __attribute__((aligned(16)));   /* 0x9dbf10 */
+u8 g_inputLineLength_v[4] __attribute__((aligned(16)));   /* 0x9dbf10 */
 u8 g_fieldStep_v[4] __attribute__((aligned(16)));   /* 0x9dc428 */
-char g_chatLine_v[1024] __attribute__((aligned(16)));   /* 0x9dc92c */
+char g_inputLine_v[1024] __attribute__((aligned(16)));   /* 0x9dc92c */
 u8 g_lineMaxLength_v[4] __attribute__((aligned(16)));   /* 0x9dcd30 */
 u8 g_gameListClickTimer_v[4] __attribute__((aligned(16)));   /* 0x9dcd40 */
 int g_gameListRects_v[60] __attribute__((aligned(16)));   /* 0x9dcd48 */
@@ -708,7 +708,7 @@ float g_roomDim_v[4] __attribute__((aligned(16)));   /* 0x9dd338 */
 u8 g_typingAccountName_v[4] __attribute__((aligned(16)));   /* 0x9dd348 */
 u8 g_gameListClickArmed_v[4] __attribute__((aligned(16)));   /* 0x9dd34c */
 u8 g_rankingRequestPending_v[4] __attribute__((aligned(16)));   /* 0x9dd350 */
-u8 g_accountNotice_v[4] __attribute__((aligned(16)));   /* 0x9dd354 */
+u8 g_accountRankDue_v[4] __attribute__((aligned(16)));   /* 0x9dd354 */
 u8 g_roomLoginLeft_v[4] __attribute__((aligned(16)));   /* 0x9dd358 */
 u8 g_roomLoginTop_v[4] __attribute__((aligned(16)));   /* 0x9dd35c */
 u8 g_roomLoginRight_v[4] __attribute__((aligned(16)));   /* 0x9dd360 */
@@ -737,7 +737,7 @@ u8 g_roomGameListBottom_v[4] __attribute__((aligned(16)));   /* 0x9dd4b4 */
 u8 g_rankingLastPage_v[4] __attribute__((aligned(16)));   /* 0x9dd4b8 */
 u8 g_gameListRefreshClicked_v[4] __attribute__((aligned(16)));   /* 0x9dd4bc */
 int g_rankingRects_v[36] __attribute__((aligned(16)));   /* 0x9dd4c0 */
-u8 g_unusedRoomPanelEase_v[4] __attribute__((aligned(16)));   /* 0x9dd560 */
+u8 g_roomSlideEase_v[4] __attribute__((aligned(16)));   /* 0x9dd560 */
 u8 g_typingAccountRepeat_v[4] __attribute__((aligned(16)));   /* 0x9dd564 */
 u8 g_editingTimeLimit_v[4] __attribute__((aligned(16)));   /* 0x9dd568 */
 u8 g_roomJoinStarted_v[4] __attribute__((aligned(16)));   /* 0x9dd56c */
@@ -904,15 +904,15 @@ float g_statBarTargets_v[9] __attribute__((aligned(16)));   /* 0x9f8ec0 */
 u8 g_profileRevealClock_v[4] __attribute__((aligned(16)));   /* 0x9f8ee4 */
 int g_logOutDialogRects_v[8] __attribute__((aligned(16)));   /* 0x9f8ee8 */
 u8 g_profileFrameAlpha_v[4] __attribute__((aligned(16)));   /* 0x9f8f08 */
-u8 g_profileDialogY_v[4] __attribute__((aligned(16)));   /* 0x9f8f0c */
+u8 g_deleteDialogY_v[4] __attribute__((aligned(16)));   /* 0x9f8f0c */
 u8 g_profilePage_v[4] __attribute__((aligned(16)));   /* 0x9f8f10 */
 u8 g_unusedProfileCameraZoom_v[4] __attribute__((aligned(16)));   /* 0x9f8f14 */
 u8 g_profileRowClickTime_v[4] __attribute__((aligned(16)));   /* 0x9f8f18 */
-u8 g_profileDialogX_v[4] __attribute__((aligned(16)));   /* 0x9f8f1c */
+u8 g_deleteDialogX_v[4] __attribute__((aligned(16)));   /* 0x9f8f1c */
 u8 g_newNameDialogRight_v[4] __attribute__((aligned(16)));   /* 0x9f8f20 */
 u8 g_newNameDialogBottom_v[4] __attribute__((aligned(16)));   /* 0x9f8f24 */
-u8 g_profileDialogBottom_v[4] __attribute__((aligned(16)));   /* 0x9f8f28 */
-u8 g_profileDialogRight_v[4] __attribute__((aligned(16)));   /* 0x9f8f2c */
+u8 g_deleteDialogBottom_v[4] __attribute__((aligned(16)));   /* 0x9f8f28 */
+u8 g_deleteDialogRight_v[4] __attribute__((aligned(16)));   /* 0x9f8f2c */
 u8 g_unusedProfileCameraTime_v[4] __attribute__((aligned(16)));   /* 0x9f8f30 */
 u8 g_profileMessage_v[4] __attribute__((aligned(16)));   /* 0x9f8f34 */
 int g_pilotSelectRects_v[44] __attribute__((aligned(16)));   /* 0x9f8f38 */
@@ -984,7 +984,7 @@ u8 g_rankReplyIn_v[4] __attribute__((aligned(16)));   /* 0xa0b354 */
 u8 g_roomListCount_v[4] __attribute__((aligned(16)));   /* 0xa0b358 */
 u8 g_playerListCount_v[4] __attribute__((aligned(16)));   /* 0xa0b35c */
 u8 g_lobbyReportsOff_v[4] __attribute__((aligned(16)));   /* 0xa0b360 */
-u8 g_gameServerPending_v[4] __attribute__((aligned(16)));   /* 0xa0b364 */
+u8 g_gameServerReportsOff_v[4] __attribute__((aligned(16)));   /* 0xa0b364 */
 u8 g_serverListCount_v[4] __attribute__((aligned(16)));   /* 0xa0b368 */
 u8 g_lobbyListAnswer_v[4] __attribute__((aligned(16)));   /* 0xa0b36c */
 u8 g_lobbyStatus_v[4] __attribute__((aligned(16)));   /* 0xa0b370 */
@@ -1218,7 +1218,7 @@ const DataPiece g_splitObjects[] = {
 	{ 0x4b42dc, g_musicVolumeSetting_v, 4 },
 	{ 0x4b4414, g_componentDatPath_v, 4 },
 	{ 0x4b4568, g_insertCdMessage_v, 4 },
-	{ 0x4c4de8, g_hudProjMode_v, 4 },
+	{ 0x4c4de8, g_matchProjMode_v, 4 },
 	{ 0x4c4dec, g_viewFov_v, 4 },
 	{ 0x4c4df0, g_viewNear_v, 4 },
 	{ 0x4c4df4, g_viewFar_v, 4 },
@@ -1231,7 +1231,7 @@ const DataPiece g_splitObjects[] = {
 	{ 0x4c6db0, g_ptxQuantBase_v, 512 },
 	{ 0x4c83c4, g_sortBounds_v, 32768 },
 	{ 0x4d05a4, g_catalogueFile_v, 4 },
-	{ 0x4d1688, g_keyTable1_v, 1024 },
+	{ 0x4d1688, g_unusedStartupTable_v, 1024 },
 	{ 0x4d1a88, g_mouseState_v, 16 },
 	{ 0x4d1a98, g_keySeen_v, 1024 },
 	{ 0x4d1e9c, g_keyState_v, 256 },
@@ -1241,7 +1241,7 @@ const DataPiece g_splitObjects[] = {
 	{ 0x4d1fba, g_unusedKeyTable2Flags_v, 2 },
 	{ 0x4d1fbc, g_unusedKeyTable2Word1_v, 4 },
 	{ 0x4d1fc0, g_unusedKeyTable2Word2_v, 4 },
-	{ 0x4d1fc4, g_keyTable2_v, 1024 },
+	{ 0x4d1fc4, g_unusedKeyTable2_v, 1024 },
 	{ 0x4d23c8, g_textEndX_v, 4 },
 	{ 0x4d23cc, g_textEndY_v, 4 },
 	{ 0x4d23d0, g_convertHangul_v, 4 },
@@ -1343,7 +1343,7 @@ const DataPiece g_splitObjects[] = {
 	{ 0x4dbc74, g_itemBonusShieldUnread_v, 4 },
 	{ 0x4dbc78, g_itemBonusDetectionRange_v, 4 },
 	{ 0x4dbc7c, g_armCursor_v, 4 },
-	{ 0x4dbc80, g_unusedEmptySlot0Flag_v, 4 },
+	{ 0x4dbc80, g_emptySlot0Asked_v, 4 },
 	{ 0x4dbc88, g_armcWeaponsPageRects_v, 240 },
 	{ 0x4dbd7c, g_boosterList_v, 200 },
 	{ 0x4dbe48, g_armcSlot_v, 4 },
@@ -1396,7 +1396,7 @@ const DataPiece g_splitObjects[] = {
 	{ 0x4dcaa8, g_mechHackingLevel_v, 4 },
 	{ 0x4dcaac, g_mechLockOnTime_v, 4 },
 	{ 0x4dcab0, g_mechTargetKeepTime_v, 4 },
-	{ 0x4dcab4, g_mechPartStats_v, 28 },
+	{ 0x4dcab4, g_mechMaxima_v, 28 },
 	{ 0x4dcad0, g_mechMobility_v, 4 },
 	{ 0x4dcad4, g_mechLegsInertia_v, 4 },
 	{ 0x4dcad8, g_mechLegsSpeedCorrection_v, 4 },
@@ -1447,7 +1447,7 @@ const DataPiece g_splitObjects[] = {
 	{ 0x4dcf40, g_armcCameraBox_v, 152 },
 	{ 0x4dcfd8, g_unusedArmcViewCountdown_v, 4 },
 	{ 0x4dcfe0, g_savedColourChoices_v, 144 },
-	{ 0x4dd074, g_colourChanged_v, 4 },
+	{ 0x4dd074, g_retintAllParts_v, 4 },
 	{ 0x4dd078, g_armcHideInterface_v, 4 },
 	{ 0x4dd080, g_unusedClock3_v, 8 },
 	{ 0x4dd0a0, g_fpsSecondStart_v, 8 },
@@ -1660,7 +1660,7 @@ const DataPiece g_splitObjects[] = {
 	{ 0x5ae9c0, g_dikEnd_v, 4 },
 	{ 0x5ae9c4, g_matchMode_v, 4 },
 	{ 0x5ae9c8, g_perfCounterLow_v, 4 },
-	{ 0x5ae9cc, g_timerHigh_v, 4 },
+	{ 0x5ae9cc, g_perfCounterHigh_v, 4 },
 	{ 0x5ae9d0, g_mapAbouts_v, 8000 },
 	{ 0x5b0910, g_hanChoTop_v, 1024 },
 	{ 0x5b0d10, g_hanChoLeft_v, 1024 },
@@ -1844,9 +1844,9 @@ const DataPiece g_splitObjects[] = {
 	{ 0x9dbf00, g_timerRepeatCount_v, 4 },
 	{ 0x9dbf08, g_timerLastCount_v, 4 },
 	{ 0x9dbf0c, g_directInputMade_v, 4 },
-	{ 0x9dbf10, g_chatLength_v, 4 },
+	{ 0x9dbf10, g_inputLineLength_v, 4 },
 	{ 0x9dc428, g_fieldStep_v, 4 },
-	{ 0x9dc92c, g_chatLine_v, 1024 },
+	{ 0x9dc92c, g_inputLine_v, 1024 },
 	{ 0x9dcd30, g_lineMaxLength_v, 4 },
 	{ 0x9dcd40, g_gameListClickTimer_v, 4 },
 	{ 0x9dcd48, g_gameListRects_v, 240 },
@@ -1878,7 +1878,7 @@ const DataPiece g_splitObjects[] = {
 	{ 0x9dd348, g_typingAccountName_v, 4 },
 	{ 0x9dd34c, g_gameListClickArmed_v, 4 },
 	{ 0x9dd350, g_rankingRequestPending_v, 4 },
-	{ 0x9dd354, g_accountNotice_v, 4 },
+	{ 0x9dd354, g_accountRankDue_v, 4 },
 	{ 0x9dd358, g_roomLoginLeft_v, 4 },
 	{ 0x9dd35c, g_roomLoginTop_v, 4 },
 	{ 0x9dd360, g_roomLoginRight_v, 4 },
@@ -1907,7 +1907,7 @@ const DataPiece g_splitObjects[] = {
 	{ 0x9dd4b8, g_rankingLastPage_v, 4 },
 	{ 0x9dd4bc, g_gameListRefreshClicked_v, 4 },
 	{ 0x9dd4c0, g_rankingRects_v, 144 },
-	{ 0x9dd560, g_unusedRoomPanelEase_v, 4 },
+	{ 0x9dd560, g_roomSlideEase_v, 4 },
 	{ 0x9dd564, g_typingAccountRepeat_v, 4 },
 	{ 0x9dd568, g_editingTimeLimit_v, 4 },
 	{ 0x9dd56c, g_roomJoinStarted_v, 4 },
@@ -2074,15 +2074,15 @@ const DataPiece g_splitObjects[] = {
 	{ 0x9f8ee4, g_profileRevealClock_v, 4 },
 	{ 0x9f8ee8, g_logOutDialogRects_v, 32 },
 	{ 0x9f8f08, g_profileFrameAlpha_v, 4 },
-	{ 0x9f8f0c, g_profileDialogY_v, 4 },
+	{ 0x9f8f0c, g_deleteDialogY_v, 4 },
 	{ 0x9f8f10, g_profilePage_v, 4 },
 	{ 0x9f8f14, g_unusedProfileCameraZoom_v, 4 },
 	{ 0x9f8f18, g_profileRowClickTime_v, 4 },
-	{ 0x9f8f1c, g_profileDialogX_v, 4 },
+	{ 0x9f8f1c, g_deleteDialogX_v, 4 },
 	{ 0x9f8f20, g_newNameDialogRight_v, 4 },
 	{ 0x9f8f24, g_newNameDialogBottom_v, 4 },
-	{ 0x9f8f28, g_profileDialogBottom_v, 4 },
-	{ 0x9f8f2c, g_profileDialogRight_v, 4 },
+	{ 0x9f8f28, g_deleteDialogBottom_v, 4 },
+	{ 0x9f8f2c, g_deleteDialogRight_v, 4 },
 	{ 0x9f8f30, g_unusedProfileCameraTime_v, 4 },
 	{ 0x9f8f34, g_profileMessage_v, 4 },
 	{ 0x9f8f38, g_pilotSelectRects_v, 176 },
@@ -2154,7 +2154,7 @@ const DataPiece g_splitObjects[] = {
 	{ 0xa0b358, g_roomListCount_v, 4 },
 	{ 0xa0b35c, g_playerListCount_v, 4 },
 	{ 0xa0b360, g_lobbyReportsOff_v, 4 },
-	{ 0xa0b364, g_gameServerPending_v, 4 },
+	{ 0xa0b364, g_gameServerReportsOff_v, 4 },
 	{ 0xa0b368, g_serverListCount_v, 4 },
 	{ 0xa0b36c, g_lobbyListAnswer_v, 4 },
 	{ 0xa0b370, g_lobbyStatus_v, 4 },
@@ -4191,7 +4191,7 @@ static const char d_4c4d70[] = "invalid file format(%s)-getShapePtrBy()";
 static const char d_4c4d98[] = "sizeOfShapeBuffer is zero-getShapePtrBy()";
 static const char d_4c4dc4[] = "SoundBuffer create error";
 static const char d_4c4de0[] = "Error";
-static const u32 init_g_hudProjMode[] = { 0xffffffff };
+static const u32 init_g_matchProjMode[] = { 0xffffffff };
 static const float init_g_viewFov[] = { 90.0f };
 static const float init_g_viewNear[] = { 100.0f };
 static const float init_g_viewFar[] = { 1000000.0f };
@@ -6171,7 +6171,7 @@ const DataPiece g_dataPieces[] = {
 	{ 0x4c4d98, d_4c4d98, sizeof d_4c4d98 },
 	{ 0x4c4dc4, d_4c4dc4, sizeof d_4c4dc4 },
 	{ 0x4c4de0, d_4c4de0, sizeof d_4c4de0 },
-	{ 0x4c4de8, init_g_hudProjMode, sizeof init_g_hudProjMode },
+	{ 0x4c4de8, init_g_matchProjMode, sizeof init_g_matchProjMode },
 	{ 0x4c4dec, init_g_viewFov, sizeof init_g_viewFov },
 	{ 0x4c4df0, init_g_viewNear, sizeof init_g_viewNear },
 	{ 0x4c4df4, init_g_viewFar, sizeof init_g_viewFar },

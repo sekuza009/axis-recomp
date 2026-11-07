@@ -17,7 +17,7 @@
 0x9dd8e0,u32,g_clockCheckTick
 0x9dd860,int,g_clockCheckSeconds
 0x9dd8ec,u32,g_clockCheckTickSeconds
-0x5ae9cc,u32,g_timerHigh
+0x5ae9cc,u32,g_perfCounterHigh
 # MCI (the CD music)
 0xa1efc8,u32,g_mciCallback
 0xa1efcc,u32,g_mciFrom
@@ -68,7 +68,7 @@
 0xa0b344,char *,g_netAccountBuffer
 0xa0b324,int *,g_netRankingBuffer
 0xa055e0,char *,g_netAccountRequest
-0xa05306,int,g_serverReplyKind
+0xa05306,int,g_playerListReplyKind
 0xa052aa,u32,g_lobbyReplyKind
 0xa0b2e8,u32,g_gameServerReplyKind
 0xa0b370,int,g_lobbyStatus

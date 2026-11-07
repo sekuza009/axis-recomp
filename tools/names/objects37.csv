@@ -13,8 +13,8 @@
 0x67ef38,char,3072,g_chatHistory,the chat line's three-line history of 0x400 bytes; newest first (frontEnd_startUp clears 0x300 dwords)
 0x9eeadc,int,50,g_briefingPageStarts,the skirmish settings' undo values (0xc8 bytes cleared; g_briefingStart follows)
 0x9dd5a6,char,30,g_ladderEmail,the registry's copy of the account e-mail (30 bytes cleared; up to 39 copied in)
-0x4d1688,int,256,g_keyTable1,a key table only cleared at start-up
+0x4d1688,int,256,g_unusedStartupTable,a key table only cleared at start-up
 0x4d1a88,int,4,g_mouseState,DIMOUSESTATE: x; y; wheel movement; four button bytes
-0x4d1fc4,int,256,g_keyTable2,the second key table (only cleared)
+0x4d1fc4,int,256,g_unusedKeyTable2,the second key table (only cleared)
 0xae2f24,int,256,g_asyncKeySeen,input_asyncKeyPressed's seen flags by virtual key
 0x9f1704,int,3,g_mouseWasDown,the three mouse buttons down last frame

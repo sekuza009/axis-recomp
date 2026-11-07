@@ -622,12 +622,12 @@ u32 THISCALL (match_mechTestFrame)(u8 *s)
 #define S(type, offset) GAME_VAR(type, s + (offset))
 #define SC ((Scene *)s)   /* the same scene by its fields (src/scene.fields) */
 
-/* the camera back at the map's start view (cameraSaved: position, pitch, heading) */
+/* the camera back at the map's start view (mapStart: position, pitch, heading) */
 static void start_view(u8 *s)
 {
-	memcpy(SC->cameraPos, SC->cameraSaved, 12);
-	BITS(SC->cameraAngle[0]) = BITS(SC->cameraSaved[3]);
-	BITS(SC->cameraAngle[1]) = BITS(SC->cameraSaved[4]);
+	memcpy(SC->cameraPos, SC->mapStart, 12);
+	BITS(SC->cameraAngle[0]) = BITS(SC->mapStart[3]);
+	BITS(SC->cameraAngle[1]) = BITS(SC->mapStart[4]);
 }
 
 /* the current camera preset (cameraMode) back from its stored one: six fields of ten */
@@ -1417,8 +1417,8 @@ static void local_spawn(u8 *s)
 		rec[5] = BITS(pitch);
 		rec[6] = BITS(heading);
 	} else {
-		memcpy(rec + 2, SC->cameraSaved, 12);
-		float pitch = (float)fld_m(&SC->cameraSaved[3]), heading = (float)fld_m(&SC->cameraSaved[4]);
+		memcpy(rec + 2, SC->mapStart, 12);
+		float pitch = (float)fld_m(&SC->mapStart[3]), heading = (float)fld_m(&SC->mapStart[4]);
 		rec[5] = BITS(pitch);
 		rec[6] = BITS(heading);
 	}
@@ -1448,7 +1448,7 @@ static void bot_spawns(u8 *s)
 		u32 copy[0x17];
 		memcpy(copy, rec, 0x5c);
 		const u8 *at = spawn_point(s, 1);
-		memcpy(copy + 1, at ? at : (const u8 *)SC->cameraSaved, 12);
+		memcpy(copy + 1, at ? at : (const u8 *)SC->mapStart, 12);
 		actor_applySpawnRecord((u8 *)SCENE_STAGE(s), j, copy);
 		if (SC->players[j].inPlay == 0)
 			msg_playerJoinedTeam((Scene *)s, GAME_VAR(int, rec), player->team);

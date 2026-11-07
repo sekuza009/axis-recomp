@@ -68,7 +68,7 @@ static void copyf(u32 dst, const float *src) { GAME_VAR(float, dst) = (float)fld
 
 /* armc_readMechStats (0x41c510): the ARM CENTER's mech stats from the local player's Player (*g_scene): the detection
    range (root of detectionRangeSq x 0.01), detection angle, hacking level, lock-on and target-keep times, the seven
-   maxima (g_mechPartStats), mobility, the leg type's inertia and corrections, the booster type's thrust type
+   maxima (g_mechMaxima), mobility, the leg type's inertia and corrections, the booster type's thrust type
    (g_unusedMechStat), boost / recharge / rest times, the speeds and load (g_mechSpeeds); every product extended
    precision, rounded once on store, the second factor from memory as in the original. Returns the scene */
 u8 *(armc_readMechStats)(void)
@@ -86,7 +86,7 @@ u8 *(armc_readMechStats)(void)
 	mulf(ADDR(g_mechLockOnTime), &A->lockOnTime, (const float *)ADDR(k_100f));
 	mulf(ADDR(g_mechTargetKeepTime), &A->targetKeepTime, k_1000f);
 	for (int i = 0; i < 7; i++)
-		g_mechPartStats[i] = ((const int *)&A->armorMax)[i];   /* armorMax, shieldMax, +0x24, ammoMax[4] */
+		g_mechMaxima[i] = ((const int *)&A->armorMax)[i];   /* armorMax, shieldMax, +0x24, ammoMax[4] */
 	copyf(ADDR(g_mechMobility), &A->mobility);
 	const PlayerRecord *player = &sc->playerRecords[A->player];
 	const LegType *leg = &st->legTypes[player->parts[3]];

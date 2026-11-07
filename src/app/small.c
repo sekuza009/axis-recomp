@@ -567,15 +567,15 @@ u32 (reg_writeLadderSettings)(void)
 u32 (reg_writeEndMode)(u32 value) { return reg_write(value, (const char *)STR(0x4b0450, "EndMode")); }
 u32 (reg_writeStartMode)(u32 value) { return reg_write(value, (const char *)STR(0x4b29dc, "StartMode")); }
 
-/* 0x44ace0: the chat line's typing ended. g_keptChat (0x400 bytes) is cleared and, when the typed line (g_chatLine)
+/* 0x44ace0: the chat line's typing ended. g_keptChat (0x400 bytes) is cleared and, when the typed line (g_inputLine)
    is not empty, the whole buffer is copied into it and g_chatTyping cleared. The text field is closed
    (g_textFieldOpen 0), the key state reset (input_resetKeys) and the keyboard taken again (input_initKeyboard).
    Returns that call's eax */
 u32 (chat_endTyping)(void)
 {
 	memset((void *)OBJ(g_keptChat), 0, 0x400);
-	if (strlen(g_chatLine)) {
-		memcpy((void *)OBJ(g_keptChat), (const void *)OBJ(g_chatLine), 0x400);
+	if (strlen(g_inputLine)) {
+		memcpy((void *)OBJ(g_keptChat), (const void *)OBJ(g_inputLine), 0x400);
 		g_chatTyping = 0;
 	}
 	g_textFieldOpen = 0;

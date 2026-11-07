@@ -45,7 +45,7 @@ long double (timer_now)(void)
 	u32 counter[2];
 	IMPORT(0x4a9140, int, u32 *)(counter);   /* QueryPerformanceCounter */
 	int shift = g_timerShift;
-	g_timerHigh = counter[1];
+	g_perfCounterHigh = counter[1];
 	g_perfCounterLow = counter[0];
 	u32 count = counter[1] << ((32 - shift) & 31) | counter[0] >> (shift & 31);   /* (x86 shift counts, mod 32) */
 	if (g_timerFirstCall) {

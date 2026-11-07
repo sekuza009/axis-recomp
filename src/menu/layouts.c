@@ -75,7 +75,7 @@ void (arenaUpdateNotice_layout)(void) { rects_fixedRow(OBJ(g_arenaUpdateNoticeRe
 
 void (updateNotice_layout)(void) { rects_fixedRow(OBJ(g_updateNoticeRects), OBJ(g_updateNoticeRects) + 2 * 16, 0xb4); }
 
-void (deleteDialog_layout)(void) { rects_row(OBJ(g_deleteDialogRects), OBJ(g_deleteDialogRects) + 2 * 16, ADDR(g_profileDialogX), ADDR(g_profileDialogY), 0x6e, 0xce, 0x3c, 0x5c, 0x78); }
+void (deleteDialog_layout)(void) { rects_row(OBJ(g_deleteDialogRects), OBJ(g_deleteDialogRects) + 2 * 16, ADDR(g_deleteDialogX), ADDR(g_deleteDialogY), 0x6e, 0xce, 0x3c, 0x5c, 0x78); }
 
 void (logOutDialog_layout)(void) { rects_row(OBJ(g_logOutDialogRects), OBJ(g_logOutDialogRects) + 2 * 16, ADDR(g_logOutDialogX), ADDR(g_logOutDialogY), 0x6e, 0xce, 0x3c, 0x5c, 0x78); }
 

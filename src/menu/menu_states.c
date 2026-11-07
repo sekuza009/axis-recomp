@@ -534,7 +534,7 @@ static int menu_slide(u32 flag, u32 eased, u32 slid)
    g_arenaTunnelDepth); while leaving for a match (g_leavingForMatch) the camera's move 1 and next screen 9999
    (returns 1). Caller menuState400_frame */
 int (lobby_slidePanels)(void) { return menu_slide(ADDR(g_lobbyPanelsSliding), OBJ(g_lobbySlideEase), ADDR(g_arenaTunnelDepth)); }
-int (room_slideMenu)(void) { return menu_slide(ADDR(g_roomPanelsSliding), ADDR(g_unusedRoomPanelEase), ADDR(g_roomTunnelDepth)); }
+int (room_slideMenu)(void) { return menu_slide(ADDR(g_roomPanelsSliding), ADDR(g_roomSlideEase), ADDR(g_roomTunnelDepth)); }
 
 /* ---- back to the menus after a game: the arena session left (dplay_leaveSession) and, unless kept, the connection closed;
    the player slots (0x410 bytes from g_netSlots) emptied ---- */
@@ -732,7 +732,7 @@ u32 (game_postMatch)(void)
 	case 2:
 		if (g_isHost) {
 			send_host_leaving();
-			RoomRecord *to = (*(RoomRecord **)&g_roomLeavePacket), *from = (*(RoomRecord **)&g_roomPacket);
+			RoomRecord *to = (*(RoomRecord **)&g_roomLeavePacket), *from = g_roomPacket;
 			lstrcpyA(to->hostName, from->hostName);
 			lstrcpyA(to->address, from->address);
 			net_send(0x16, 0x65);   /* net_send */

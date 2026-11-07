@@ -355,11 +355,11 @@ u32 (menu_drawInputLine)(int x, int y)
 	if (g_frameOpening)
 		return (u32)g_frameOpening;
 	Color4_set_bits((void *)OBJ(g_textColour), 0, 0x3f800000, 0, 0x3f800000);
-	menu_drawTextCursor(x + g_chatLength * 8, y);   /* menu_drawTextCursor: the cursor */
+	menu_drawTextCursor(x + g_inputLineLength * 8, y);   /* menu_drawTextCursor: the cursor */
 	if (!g_inputLineHidden)
-		return text_draw8(x, y, g_chatLine);   /* text_draw8 */
+		return text_draw8(x, y, g_inputLine);   /* text_draw8 */
 	char stars[0x30];   /* the original zeroes 30 bytes of its frame here: a longer password (the fields take 20) would run over */
-	int n = (int)strlen(g_chatLine);
+	int n = (int)strlen(g_inputLine);
 	memset(stars, 0, 30);
 	if (n > 0)
 		memset(stars, '*', n);

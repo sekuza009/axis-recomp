@@ -2,7 +2,7 @@
    the harness, its place in AxisRC.exe (IMG; in AxisRC.exe a member of g_rdata / g_data, src/data/layout.h).
    OBJ(name) is its address as a number (src/axis.h). Element type, count: the extent known (see the note) */
 #pragma once
-#define g_chatLine ((char *)IMG(0x9dc92c))   /* char[1024]; the line being typed in any text field (names, passwords, numbers, addresses, the e-mail, chat; edit_fields.c / editField_readTyping), memset 0x400 */
+#define g_inputLine ((char *)IMG(0x9dc92c))   /* char[1024]; the input line: the text being typed in any text field (names, passwords, numbers, the IP address, the e-mail, the replay file name, chat; edit_fields.c / editField_readTyping / editField_editProc), drawn by menu_drawInputLine; memset 0x400 */
 #define g_ladderId ((char *)IMG(0x9dd570))   /* char[54]; the Ladder login: the ID (30 bytes; the registry's "Name", default "AxisPlayer"), then its password at +0x1e (g_ladderPassword; 12 at most), up to the registry's e-mail copy at 0x9dd5a6 */
 #define g_ladderName ((char *)IMG(0x4de700))   /* char[30]; the logged-in pilot's Ladder record: the ID, then from +0x1e its level, exp, power, games, kills and deaths (g_ladderLevel ..) */
 #define g_accountForm ((u8 *)IMG(0x9dd1d8))   /* u8[104]; the account / Ladder login / new-ID forms' fields: the name (+0; 30); the password (+0x1e; 12); its repeat (+0x2a; 12); the e-mail (+0x36; 50, up to g_pilotStatsKept at 0x9dd240). room_openNewIdForm's clear of 0x54 bytes covers the name, both passwords and the e-mail's first 30 bytes */
@@ -21,14 +21,14 @@
 #define g_localAddress ((char *)IMG(0xa0b43c))   /* char[16]; the local IP address text (memset 16) */
 #define g_dataDir ((char *)IMG(0x9dae7c))   /* char[0x105]; the data folder's path (app_setDataPaths clears 0x105 bytes; 0x9daf88 next) */
 #define g_savedColourChoices ((float *)IMG(0x4dcfe0))   /* float[36]; the ARM CENTER's colour choices kept: six slots of 0x18 bytes (hue, saturation, value of the first tint, then of the second), copied whole (0x90) from g_armcColours / g_roomColours / the campaign record */
-#define g_textColour ((Colour *)IMG(0x76d438))   /* Colour[1]; the menus' text colour */
+#define g_textColour ((Colour *)IMG(0x76d438))   /* Colour[1]; the text passes' current colour (text_setColor / set_colour_bits; bound by every text pass, text_begin and text_codes.c: the menus, the HUD and the message box) */
 #define g_rectColour ((Colour *)IMG(0x9da480))   /* Colour[1]; the 2D menu drawing colour: menu_drawRect's and menu_drawLine's (set by the draw functions before each frame / box) */
 #define g_roomBright ((float *)IMG(0x9dcec0))   /* float[4]; the game room's bright colour (RGBA: 0, 1, 1, 1 cyan; menuState800_enterGameRoom) */
 #define g_roomDim ((float *)IMG(0x9dd338))   /* float[4]; the game room's dim colour (RGBA 0.3, 0.7, 0.7, 1) */
 #define g_profileColour ((float *)IMG(0x9f8eb0))   /* float[4]; the profile screen's bright colour (RGBA 0, 1, 1, 1 cyan; menuState210_enter); g_profileDim the dim one */
 #define g_vecZero2 ((float *)IMG(0xa0e7b8))   /* float[3]; a zero vector (vec_initZero2) */
 #define g_vecUnitY ((float *)IMG(0xa0e7d8))   /* float[3]; (0 1 0: vec_initUp) */
-#define g_vecUnitX ((float *)IMG(0xa0e7f8))   /* float[3]; (1 0 0: vec_initAxisX) */
+#define g_vecUnitX ((float *)IMG(0xa0e7f8))   /* float[3]; (1 0 0: vec_initAxisX); never read */
 #define g_logTexture ((u32 *)IMG(0xa0dff8))   /* u32[2]; vtable + class name */
 #define g_logTextureManager ((u32 *)IMG(0xa0e000))   /* u32[2]; vtable + class name */
 #define g_logSound ((u32 *)IMG(0xa0e020))   /* u32[2]; vtable + class name */
@@ -103,8 +103,8 @@
 #define g_netPlayerList ((RankedPlayer *)IMG(0xa05330))   /* RankedPlayer[10]; one ranking page as the server sends it (net_addPlayerRecord appends, unbounded; net_clearPlayerList clears 10 = 0x9b dwords; ranking_fillPage reads 10); net_resetConnection clears 0x2aa bytes (11 records' space up to g_lobbyReplyCode) */
 #define g_keySeen ((int *)IMG(0x4d1a98))   /* int[256]; a key's press seen until released (0x400 bytes) */
 #define g_briefingText ((char *)IMG(0x9f1064))   /* char[1600]; the briefing's text (memset 0x640) */
-#define g_roomMech ((u8 *)IMG(0x9dd5f8))   /* u8[11]; the room's copy of the mech bytes (11) */
-#define g_roomColours ((float *)IMG(0x9dd603))   /* float[36]; the room's copy of the colour choices (0x90 bytes) */
+#define g_roomMech ((u8 *)IMG(0x9dd5f8))   /* u8[11]; the Ladder account's mech (signed bytes): the five parts (head, chest, arm, leg, booster), item slots 4 / 5, then slots 2 .. 5; from the login reply (login_takeAccountRecord, g_profileReply + 0x54) or the new ID's defaults (newId_register), set from the ARM CENTER by armc_sendSelectionToNet; unpacked into the saved mech by mech_unpackFromRecord */
+#define g_roomColours ((float *)IMG(0x9dd603))   /* float[36]; the Ladder account's colour choices (six ColourChoice slots of 0x18 bytes: hue, saturation, value twice): from the login reply (g_profileReply + 0x5f) or the new ID's defaults, set from g_armcColours by armc_sendSelectionToNet and sent with the mech; mech_unpackFromRecord copies them to g_savedColourChoices */
 #define g_armcColours ((float *)IMG(0x4dc4b8))   /* float[36]; the ARM CENTER's colour choices (0x90 bytes: six values per slot) */
 #define g_accountOldPassword ((char *)IMG(0x9dd6d8))   /* char[12]; the account page's old-password field as typed (account_editOldPassword; account_sendChange checks it against g_ladderPassword; room_enterAccountPage / account_page clear its 12 bytes) */
 #define g_packedWhite ((u8 *)IMG(0xa1f23c))   /* u8[4]; a packed colour (ff ff ff ff: colour_initPackedWhite) */
@@ -118,7 +118,7 @@
 #define g_characterProfiles ((CharacterProfile *)IMG(0x9f9040))   /* CharacterProfile[9]; CHARACTER SELECT's cursor 0 .. 8; menuState210_frame checks 9); data_loadCharacterProfiles' stats check walks 103 records (version word - 0x115c), to 0x9faed4, so it runs over g_netSlots (the original's aliasing) */
 #define g_messages ((char *)IMG(0x74de24))   /* char[128256]; the message table: 0x80 bytes a line from msgeng.dat (data_loadMessages) */
 #define g_ptxPixels ((u8 *)IMG(0xa21708))   /* u8[262144]; the image decoder's output: the planes converted to RGB / RGBA pixels (ptx_toRgb / ptx_toRgba; at most 64K pixels x 4 bytes), then laid out as rows by ptx_layoutBlocks */
-#define g_ptxData ((u8 *)IMG(0xaa2e98))   /* u8[262144]; the image decoder's input */
+#define g_ptxData ((u8 *)IMG(0xaa2e98))   /* u8[262144]; the image decoder's input: a .ptx file's compressed planes after the header (ptx_read reads 0x10000 bytes; each plane's bit reader starts where the last one ended) */
 #define g_roomList ((RoomRecord *)IMG(0x9fd960))   /* RoomRecord[256]; the server's room list: 256 rooms of 0x79 bytes (net_clearRoomList: 0x1e40 dwords) */
 #define g_missions ((Mission *)IMG(0x9ef2d0))   /* Mission[30]; the missions of axis.mis (missions_clear's loop pointer runs from +0x44 to 0x9f109c: the 30 records end at 0x9f1058) */
 #define g_pingAddresses ((char *)IMG(0xa0bf20))   /* char[256][20]; each listed arena's / room's host address as text (ServerRecord.address / RoomRecord.address, copied by net_addServerRecord / net_addRoomRecord), pinged in turn by net_pingAllServers (results g_serverPing); net_clearServers zeroes 0x500 dwords */
@@ -138,7 +138,7 @@
 #define g_ctrlMenuTextures ((int *)IMG(0x5b1978))   /* int[2]; ctrlmenu01 / 02 (the setup tunnel) */
 #define g_ladderMenuTextures ((int *)IMG(0x4df904))   /* int[2]; laddermenu01 / 02 (the room's and the ARM CENTER preview's tunnel) */
 #define g_spiralTextures ((int *)IMG(0x9da45c))   /* int[6]; the six spirals */
-#define g_graphicSettings ((int *)IMG(0x83a9c0))   /* int[7]; the graphics settings in use: video mode, colour depth, polygon detail (HIGH), then axis.cfg's four switches (setup_keys.c copies all 7) */
+#define g_graphicSettings ((int *)IMG(0x83a9c0))   /* int[7]; the graphics settings in use, in the setup page's order: VIDEO MODE (g_videoMode), COLOR DEPTH (g_videoDepth), F/X STATUS (axis.cfg HIGH / LOW, g_highDetail), then axis.cfg's four switches LINEAR FILTERING, MIP MAPPING, VIEW FPS, SIMPLE MENU (g_cfgSwitches); setup_keys.c copies all 7 */
 #define g_cfgSwitches (g_graphicSettings + 3)   /* int[4]; axis.cfg's graphics switches: linear filtering, mip mapping, view fps, simple menu (cfg_readGraphics / cfg_writeGraphic: lines 3 .. 6) */
 #define g_armcParts ((int *)IMG(0x4dc760))   /* int[5]; the mech's chosen parts in the ARM CENTER: head, chest, arm, leg, booster (armc_stepPart; kept into g_savedMechPartIds by armc_saveSelection) */
 #define g_savedMechPartIds ((int *)IMG(0x4dc878))   /* int[5]; the saved mech's parts: head (g_savedMechHead), chest, arm, leg, booster (match_setupOrStartRound's loop of 5; mech_unpackFromRecord / mech_loadFromProfile / armc_saveSelection write) */
@@ -148,14 +148,14 @@
 #define g_timerClocks ((double *)IMG(0x9db980))   /* double[2]; the timer's two doubles: the time now (g_clockNow) and the time last returned (g_lastTime); timer_init clears them as four dwords */
 #define g_mouseClicked ((int *)IMG(0x4ded88))   /* int[3]; the three mouse buttons' click pulses (0xfa .. 0xfc) */
 #define g_mouseButtonsHeld ((int *)IMG(0x4ded94))   /* int[3]; the three mouse buttons held (devices.c's loop of 3) */
-#define g_mechPartStats ((int *)IMG(0x4dcab4))   /* int[7]; the stats panel's copy of the local mech's Player maxima: armorMax, shieldMax, the +0x24 word (accuracy), ammoMax[4] (armc_readMechStats' loop of 7; armc_drawPartsScreen reads) */
+#define g_mechMaxima ((int *)IMG(0x4dcab4))   /* int[7]; the whole mech's figures on the ARM CENTER's mech panel (section_mech): MAX ARMOR, MAX SHIELD, FCS level, then WEAPON LOAD for 30MM / 60MM / E-PAK / MISSILE - the local Player's armorMax, shieldMax, accuracy, ammoMax[4] (armc_readMechStats) */
 #define g_armcBright ((float *)IMG(0x4dbc58))   /* float[4]; the ARM CENTER's bright colour (RGBA 0, 1, 1, 1): the chosen tab, slot and button, labels (armc_open) */
 #define g_legsStats ((float *)IMG(0x4dc228))   /* float[7]; the legs' stats for the panel: agility, inertia, speed correction x 100 (g_legsSpeedCorrection), forward / side / back boost corrections x 100 (+0xc .. +0x14), the weight (g_legsWeight) (armc_readPartPanels) */
-#define g_armsStats ((int *)IMG(0x4dc290))   /* int[5]; the arms' stats copied from the part (armc_parts' loop of 5) */
+#define g_armsStats ((int *)IMG(0x4dc290))   /* int[5]; the arm part's figures for the arms panel (section_arms): the FIRE CONTROL SYSTEM level (g_armsFcsLevel), then the CAPACITY FOR 30MM, 60MM, E-PAK and MISSILE (ArmType.stats, copied by armc_readPartPanels) */
 #define g_dpConnections ((int *)IMG(0xa0bae0))   /* int[4]; the DirectPlay connection data by kind (TCP, IPX, modem, serial): pointers to GlobalAlloc'ed copies (dplay_enumConnections, g_connectionCopy); net_connectionAvailable: below 4 and non-zero */
 #define g_camPoints ((float *)IMG(0x4df870))   /* float[20]; the menu camera's five target positions, 16 bytes apart (x y z; the fourth float never used): room_initCameraPoints / the screens' enter functions write, the *_camera functions ease toward them */
 #define g_camAims ((float *)IMG(0x76d388))   /* float[20]; the menu camera's five look-at points (x, y, z and a fourth word each) */
-#define g_controls ((int *)IMG(0x4def00))   /* int[68]; axis.cfg's control settings: the key bindings (two slots per action) */
+#define g_controls ((int *)IMG(0x4def00))   /* int[68]; axis.cfg's control settings: the key bindings 0 .. 0x3f (DIK codes, two slots per action: [2a] the key, [2a + 1] the second key), then the mouse lines 0x40 .. 0x43 (g_mouseSettings: invert, smooth, sensitivity, crosshair) */
 #define g_controlsEdit ((int *)IMG(0x4de0c0))   /* int[68]; setup's edited copy of g_controls (copied in when the control tab opens, setup_selectControlTab; back on OK): bindings 0 .. 0x3f, then the mouse switches (g_mouseSwitchesEdit), sensitivity (g_sensitivitySlider), crosshair (g_crosshairEdit) */
 #define g_mouseSettings (g_controls + 0x40)   /* int[4]; axis.cfg's mouse lines 0x40 .. 0x43: invert, smooth, sensitivity, crosshair */
 #define g_mouseSwitchesEdit (g_controlsEdit + 0x40)   /* int[2]; setup's edited INVERT MOUSE / SMOOTH MOUSE switches (g_controlsEdit's 0x40 / 0x41: axis.cfg's convertmouse, smoothmouse; setup_pages' loop of 2 draws them ON / OFF) */
@@ -166,14 +166,14 @@
 #define g_armcDim ((float *)IMG(0x4dc1d0))   /* float[4]; the ARM CENTER's dim colour (RGBA 0, 0.6, 0.6, 1): tabs, slots and buttons not chosen (armc_open) */
 #define g_mechSpeeds ((float *)IMG(0x4dcaf8))   /* float[6]; the stats panel's speeds and load: normal speed (g_mechNormalSpeed, x 0.036), top forward (x runTop[0]), top backward (g_mechMaxSpeedBwd), top sideways (x runTop[2]), the load (Player.load), the most load (g_loadLimit = Player.loadMax) (armc_readMechStats) */
 #define g_boosterStats ((float *)IMG(0x4dce80))   /* float[9]; the booster's stats for the panel: [0] its thrust type (an int: g_boosterThrustType), active / recharge time / recharge delay x 1000, four speeds x 0.036, the weight (g_boosterWeight) (armc_readPartPanels) */
-#define g_armcCameraBox ((u32 *)IMG(0x4dcf40))   /* u32[38]; ARM CENTER's camera box corners (+-700 or 0 as floats; armc_initCameraBox writes them from 0x4dcf00 + 0x40 ..) */
+#define g_armcCameraBox ((u32 *)IMG(0x4dcf40))   /* u32[38]; an ARM CENTER box: eight corners of a 1400-unit cube (+-700 as float bits, 16 bytes apart; never read), then the panels' origin point at +0x80 (0: y +0x84 read by armc_drawPanels, z +0x88 = g_armcPanelDepth); all written once by armc_initCameraBox */
 #define g_setupSoundRect ((int *)IMG(0x4ddad0))   /* int[4]; the setup sound panel's window: left (g_setupSoundLeft) */
 #define g_graphicEdited ((u32 *)IMG(0x4ddba0))   /* u32[7]; the graphics tab's seven values being edited: the screen size (g_setupResolution) then six choices (copied from / to g_graphicInUse) */
 #define g_setupControlRect ((int *)IMG(0x4dde80))   /* int[4]; the setup control panel's window: left (g_setupControlLeft) */
 #define g_soundEdited ((int *)IMG(0x4dde98))   /* int[4]; the sound tab's four values being edited: the volume (g_setupEffectVolume) */
 #define g_newArenaForm ((int *)IMG(0x4dbb00))   /* int[4]; the create-arena form's window: left (g_newArenaFormLeft) */
 #define g_pilotStats ((int *)IMG(0x9dd5d8))   /* int[8]; the pilot's record from the server: level (g_pilotLevel), exp, rank (g_pilotRank), power (a float), games, kills, deaths, kill rate (a float) (login_takeAccountRecord) */
-#define g_pilotStatsKept ((int *)IMG(0x9dd240))   /* int[8]; the pilot's record as kept: level (g_pilotLevelKept) .. deaths */
+#define g_pilotStatsKept ((int *)IMG(0x9dd240))   /* int[8]; the pilot's record kept (g_pilotStats' layout: level (g_pilotLevelKept), exp, rank (unused here), power (float), games, kills, deaths, kill rate (float, +0x1c)): room_copyAccountRecord / newId_register / pilotRecord_syncCopies */
 #define g_roomForm ((int *)IMG(0x9dd1b8))   /* int[4]; the game room settings form's window: left (g_roomFormLeft) */
 #define g_menuLookKept ((float *)IMG(0x9dd918))   /* float[3]; the menu camera's look-at point kept at the start of a tunnel move (menuTunnel_advance's camera_keep); the move ends at it +- a ring's length on z; game_returnTo* set it */
 #define g_menuEyeKept ((float *)IMG(0x9dd930))   /* float[3]; the menu camera's position kept at the start of a tunnel move (g_menuEyeKeptX .. Z; menuTunnel_advance's camera_keep, menu_tunnel's EYE_KEPT) */
@@ -182,7 +182,7 @@
 #define g_skirmishRect ((int *)IMG(0x9f6308))   /* int[4]; the skirmish screen's window: left (g_skirmishRectLeft) */
 #define g_skirmishColourLit ((float *)IMG(0x9f6318))   /* float[4]; the skirmish screen's lit text colour, RGBA (0, 1, 1, 1): the title and the hovered button / arrow (menuState500_enterSkirmish) */
 #define g_skirmishColourDim ((float *)IMG(0x9f62e8))   /* float[4]; the skirmish screen's dim text colour, RGBA (0, 0.6, 0.6, 1): buttons not hovered */
-#define g_keptChat ((char *)IMG(0x9f63e4))   /* char[1024]; the typed chat line kept for the match (chat_endTyping: cleared, then copied whole (0x400) from g_chatLine; match_frame / escMenu_update read it; g_keptChatLine its first byte) */
+#define g_keptChat ((char *)IMG(0x9f63e4))   /* char[1024]; the typed chat line kept for the match (chat_endTyping: cleared, then copied whole (0x400) from g_inputLine; match_frame / escMenu_update read it; g_keptChatLine its first byte) */
 #define g_netSendPacket ((NetPacketMessage *)IMG(0x9f9428))   /* NetPacketMessage[1]; the packet message being sent (cleared as 0x103 words): kind (g_netPacketMessageKind) */
 #define g_pilotSave ((u8 *)IMG(0x9f1718))   /* u8[940]; the pilot's save record (0x3ac bytes, the middle of the .axs file, scrambled with key 0x7e): +0 the signature 'AXIS USER PROFILE DATA Master ver 1.0', +0x80 the pilot's name, +0x100 its value, +0x104 the progress (g_progress), +0x2d8 .. the mech's parts and colours (mech_storeToProfile / mech_loadFromProfile) */
 #define g_pilotSaveColours ((float *)(g_pilotSave + 0x31c))   /* float[36]; the save record's colour choices: six ColourChoice records (+0x31c .. +0x3ac; g_savedColourChoices' copy: mech_loadFromProfile / mech_storeToProfile) */
@@ -195,7 +195,7 @@
 #define g_netSlotMsg ((u32 *)IMG(0x9f9420))   /* u32[2]; an 8-byte message sent (net_sendMessage): kind (g_netSlotMessageKind) */
 #define g_lobbyReplyRecord ((u8 *)IMG(0xa05260))   /* u8[91]; a lobby reply (0x5b bytes read from the lobby socket; its kind at +0x4a: g_lobbyReplyKind) */
 #define g_rankReply ((u8 *)IMG(0xa052c0))   /* u8[34]; the game server's rank reply (request 29; 0x22 bytes, net_recv): +0 non-zero once it has arrived (g_rankReplyCode), +1 set when out of the first 1000 (g_outOfRank), +0x16 the rank (g_receivedRank; account_takeRank) */
-#define g_playerListReply ((u8 *)IMG(0xa052e8))   /* u8[62]; the game server's 62-byte player-list reply (request 21, g_gameServerSocket): its kind at +0x1e (g_serverReplyKind): 0 a player record (net_addPlayerRecord), 1 the end of the list */
+#define g_playerListReply ((u8 *)IMG(0xa052e8))   /* u8[62]; the game server's 62-byte player-list reply (request 21, g_gameServerSocket): its kind at +0x1e (g_playerListReplyKind): 0 a player record (net_addPlayerRecord), 1 the end of the list */
 #define g_gameServerReply ((u8 *)IMG(0xa0b280))   /* u8[121]; the game server's room-list reply (request 19; 0x79 bytes; its kind at +0x68: g_gameServerReplyKind): 0 a room record (net_addRoomRecord), 1 the end of the list, 2 / 3 refused */
 #define g_profileReply ((u8 *)IMG(0xa05638))   /* u8[267]; the game server's 0x10b-byte answer to requests 14 / 15 (net_recv's answer_reply; net_resetConnection clears 0x42 dwords + a word + a byte): its first word is the answer code (g_profileReplyResult), followed by the account record (login_takeAccountRecord reads +4 .. +0x10a) */
 #define g_texture64x64 ((u8 *)IMG(0x4e1878))   /* u8[840004]; the 64 x 64 texture set (a Texture: g_texture64x64Vtable its vtable word) */
@@ -246,7 +246,7 @@
 #define g_logOutDialogRects ((int *)IMG(0x9f8ee8))   /* int[8]; logOutDialog_hitTest's 2 hit rectangles (hit_tests.c) */
 #define g_pilotSelectRects ((int *)IMG(0x9f8f38))   /* int[44]; pilotSelect_hitTest's 11 hit rectangles (hit_tests.c) */
 #define g_newNameDialogRects ((int *)IMG(0x9f9020))   /* int[8]; newNameDialog_hitTest's 2 hit rectangles (hit_tests.c) */
-#define g_mousePos ((int *)IMG(0x4ded68))   /* int[2]; the mouse pointer in 640 x 480 units (x g_mouseX, y g_mouseY) */
+#define g_mousePos ((int *)IMG(0x4ded68))   /* int[2]; the pointer (g_mouseX, g_mouseY): in the menus 640 x 480 units (input_updateMouse's clamp, wider with the wide patch); in a match window pixels, put back to the window's centre each frame */
 #define g_bindRows ((int *)IMG(0x4b04ec))   /* int[3]; the row counts of controls pages 0 .. 2 (8, 10, 9), the Down-key limit in setup_controlTabKeys. Page 3 reads its count from the next word, g_lastCrosshair (0x4b04f8), so on that page Down stops at g_lastCrosshair - 1 */
 #define g_setupGraphicRect ((int *)IMG(0x4dddd0))   /* int[4]; the setup screen's GRAPHIC page window: left, top (g_setupGraphicTop), right, bottom (100, 30, 540, 450: menuState600_enterSetup) */
 #define g_lobbyTopRect ((int *)IMG(0x4dba70))   /* int[4]; the lobby top menu's window: left, top, right, bottom (80, 150, 560, 350: menuState400_enter); only left and top are read (lobbyTop_layout places g_lobbyTopRects from them) */
@@ -327,7 +327,7 @@
 #define g_hanJongBottom ((float *)IMG(0x83a7e0))   /* float[120]; the Hangul final-consonant (jongseong) glyphs on the g_fontHanJungJong texture (7 rows of 16 from texel row 0x60; index final + set x 28, at most 111; 112 of the 120 set by font_initHangulGrids): the cells' bottom edges */
 #define g_hanJongTop ((float *)IMG(0x4df638))   /* float[120]; the Hangul final-consonant (jongseong) glyphs on the g_fontHanJungJong texture (7 rows of 16 from texel row 0x60; index final + set x 28, at most 111; 112 of the 120 set by font_initHangulGrids): the cells' top edges */
 #define g_hanJongLeft ((float *)IMG(0x4df458))   /* float[120]; the Hangul final-consonant (jongseong) glyphs on the g_fontHanJungJong texture (7 rows of 16 from texel row 0x60; index final + set x 28, at most 111; 112 of the 120 set by font_initHangulGrids): the cells' left edges */
-#define g_hanJongRight ((float *)IMG(0x83a600))   /* the Hangul final-consonant (jongseong) glyphs on the g_fontHanJungJong texture (7 rows of 16 from texel row 0x60; index final + set x 28, at most 111; 112 of the 120 set by font_initHangulGrids): the cells' right edges */
+#define g_hanJongRight ((float *)IMG(0x83a600))   /* float[120]; the Hangul final-consonant (jongseong) glyphs on the g_fontHanJungJong texture (7 rows of 16 from texel row 0x60; index final + set x 28, at most 111; 112 of the 120 set by font_initHangulGrids): the cells' right edges */
 #define g_penFixedTopLeft ((float *)IMG(0xa0f498))   /* float[210]; the fixed set's top left corners */
 #define g_penFixedTopRight ((float *)IMG(0xa10018))   /* float[210]; the fixed set's top right corners */
 #define g_penFixedBottomRight ((float *)IMG(0xa0f150))   /* float[210]; the fixed set's bottom right corners */
@@ -337,20 +337,20 @@
 #define g_penPropBottomRight ((float *)IMG(0xa0ee08))   /* float[210]; the proportional set's bottom right corners */
 #define g_penPropBottomLeft ((float *)IMG(0xa0f7e0))   /* float[210]; the proportional set's bottom left corners */
 #define g_penFixedWidths ((int *)IMG(0xa0fb28))   /* int[105]; the fixed set's glyph widths (all 8) */
-#define g_sortBounds ((int *)IMG(0x4c83c4))   /* int[8192]; the two sorts' lo / hi arrays: A lo */
+#define g_sortBounds ((int *)IMG(0x4c83c4))   /* int[8192]; the two depth sorts' partition stacks (depth_sort.c QsGlobals): A's lo (+0) and hi (+0x2000), B's lo (+0x4000) and hi (+0x6000), 2048 entries each */
 #define g_sortState ((u8 *)IMG(0xae3338))   /* u8[49176]; the two depth sorts' state (depth_sort.c QsGlobals): per sort an i, j and pivot array of 0x2000 bytes (A: +0, +0x4008, +0xa018; B: +0x8018, +0x6018, +0x2008), the stack depth (A +0x2000, B +0x2004) and two words of swap space (A +0x6008, B +0x6010) */
-#define g_packedBlue ((u8 *)IMG(0xa1f200))   /* u8[4]; packed blue (colour_initPackedBlue) */
-#define g_packedGrey ((u8 *)IMG(0xa1f204))   /* u8[4]; packed grey */
+#define g_packedBlue ((u8 *)IMG(0xa1f200))   /* u8[4]; a packed colour (00 00 ff ff: colour_initPackedBlue); never read */
+#define g_packedGrey ((u8 *)IMG(0xa1f204))   /* u8[4]; a packed colour (7f 7f 7f ff: colour_initPackedGrey); never read */
 #define g_packedYellow ((u8 *)IMG(0xa1f208))   /* u8[4]; packed yellow: the map lights' stars drawn as view-volume segments by replay_frame (0x487f00; addr_access labels those reads hud_cycleF11Mode, functions.csv's size for replay_frame being short) */
-#define g_packedGreen ((u8 *)IMG(0xa1f2ec))   /* u8[4]; packed green */
+#define g_packedGreen ((u8 *)IMG(0xa1f2ec))   /* u8[4]; a packed colour (00 ff 00 ff: colour_initPackedGreen); never read */
 #define g_realClear ((float *)IMG(0xa1f210))   /* float[4]; real clear: (0, 0, 0, 0) (colour_initRealClear); never read */
-#define g_realBlue ((float *)IMG(0xa1f228))   /* float[4]; real blue */
+#define g_realBlue ((float *)IMG(0xa1f228))   /* float[4]; a RealColor (0, 0, 1, 1: colour_initRealBlue); never read */
 #define g_realWhite ((float *)IMG(0xa1f240))   /* float[4]; real white (1, 1, 1, 1): written by its static initialiser (colour_initRealWhite) only, never read */
-#define g_realGreen ((float *)IMG(0xa1f258))   /* float[4]; real green */
-#define g_realRed ((float *)IMG(0xa1f268))   /* float[4]; real red */
-#define g_realBlack ((float *)IMG(0xa1f280))   /* float[4]; real black */
-#define g_realYellow ((float *)IMG(0xa1f2d8))   /* float[4]; real yellow */
-#define g_realGrey ((float *)IMG(0xa1f2f0))   /* float[4]; real grey */
+#define g_realGreen ((float *)IMG(0xa1f258))   /* float[4]; a RealColor (0, 1, 0, 1: colour_initRealGreen); never read */
+#define g_realRed ((float *)IMG(0xa1f268))   /* float[4]; a RealColor (1, 0, 0, 1: colour_initRealRed); never read */
+#define g_realBlack ((float *)IMG(0xa1f280))   /* float[4]; a RealColor (0, 0, 0, 1: colour_initRealBlack); never read */
+#define g_realYellow ((float *)IMG(0xa1f2d8))   /* float[4]; a RealColor (1, 1, 0, 1: colour_initRealYellow); never read */
+#define g_realGrey ((float *)IMG(0xa1f2f0))   /* float[4]; a RealColor (0.5, 0.5, 0.5, 1: colour_initRealGrey); never read */
 #define k_teamHue ((float *)IMG(0x4a97fc))   /* float[5]; the team colours by side: hue (0 red, 240 blue, 120 green, 0, 0) */
 #define k_teamSaturation ((float *)IMG(0x4a9810))   /* float[5]; saturation (1, 1, 1, -1, -1: the last two keep the part's own) */
 #define k_teamValue ((float *)IMG(0x4a9824))   /* float[5]; value (1, 1, 1, 1, 0) */
@@ -400,9 +400,9 @@
 #define g_chatHistory ((char *)IMG(0x67ef38))   /* char[3072]; the chat line's three-line history of 0x400 bytes; newest first (frontEnd_startUp clears 0x300 dwords) */
 #define g_briefingPageStarts ((int *)IMG(0x9eeadc))   /* int[50]; the briefing's page start offsets (0xc8 bytes cleared; g_briefingStart follows) */
 #define g_ladderEmail ((char *)IMG(0x9dd5a6))   /* char[30]; the logged-in Ladder account's e-mail: from the server's account record (+0x22, login_takeAccountRecord), copied from / to the account page's g_accountEmail (reg_writeLadderSettings, room_copyAccountRecord, newId_register); cleared (30 bytes) by menuState800_enterGameRoom. Not kept in the registry */
-#define g_keyTable1 ((int *)IMG(0x4d1688))   /* int[256]; a key table only cleared at start-up */
+#define g_unusedStartupTable ((int *)IMG(0x4d1688))   /* int[256]; cleared (0x400 bytes) by the start-up load (app_startupLoad) and never read */
 #define g_mouseState ((int *)IMG(0x4d1a88))   /* int[4]; DIMOUSESTATE: x; y; wheel movement; four button bytes */
-#define g_keyTable2 ((int *)IMG(0x4d1fc4))   /* int[256]; the second key table (only cleared) */
+#define g_unusedKeyTable2 ((int *)IMG(0x4d1fc4))   /* int[256]; cleared by input_clearKeyTable2 (with g_unusedKeyTable2Word0 ..) and never read */
 #define g_asyncKeySeen ((int *)IMG(0xae2f24))   /* int[256]; input_asyncKeyPressed's seen flags by virtual key */
 #define g_mouseWasDown ((int *)IMG(0x9f1704))   /* int[3]; the three mouse buttons down last frame */
 #define g_teamNames ((char *)IMG(0x4db860))   /* char[60]; RED / BLUE / YELLOW; 0x14 bytes each (messages 441 .. 443) */
@@ -443,7 +443,7 @@
 #define g_skirmishInfo ((u8 *)IMG(0x9db998))   /* u8[1380]; skirmish.dat's 15 records of 0x5c (to 0x9dbefc) */
 #define g_soundTable ((u32 *)IMG(0xa0e02c))   /* u32[400]; the sound table's buffers by index (sound_initSoundTable; to 0xa0e66c) */
 #define g_menuSoundBuffers ((u32 *)IMG(0x4dd4d4))   /* u32[10]; the ten menu sounds: a Sound pointer each (sound_loadWav; read as g_menuSounds) (sound_loadMenuSounds) */
-#define g_slotCams ((float *)IMG(0x4dfa1c))   /* float[352]; per local slot (g_localSlot) a 0x58-byte camera record: +0 .. +8 the free camera's point (freeCam_keys), +0x28 the ARM CENTER turn (freeCam_mouseLook's turn_update); a click moves the camera to +0 / +4. Only these offsets are used; 0x4dff9c .. 0x4e0458 is never referenced */
+#define g_slotCams ((float *)IMG(0x4dfa1c))   /* float[352]; per local slot (g_localSlot) a 0x58-byte free (watching) camera record: +0 .. +8 the camera's look point (freeCam_keys), +0x28 its heading in degrees (g_freeCamYaw, written by freeCam_mouseLook's turn_update, never read back); the first click copies the point into g_freeCamMoveTarget / g_freeCamMoveEye. Only these offsets are used; 0x4dff9c .. 0x4e0458 is never referenced */
 #define g_unlockTablesSolo ((u8 *)IMG(0x4ad5f0))   /* u8[5600]; armc_buildPartLists' seven 0x320-byte Unlock tables for every ARM CENTER visit not from the Ladder room (g_armcFrom != 3: campaign, skirmish and the arena) (to 0x4aebd0) */
 #define g_unlockTablesNet ((u8 *)IMG(0x4aebd0))   /* u8[5600]; the same for network play (to 0x4b01b0) */
 #define g_setupWallTurns ((float *)IMG(0x4b04c4))   /* float[2]; the setup tunnel's wall turn by parity (-35; 35) */

@@ -1,0 +1,77 @@
+{
+ "Scene.joinName": {
+  "comment": "kind 10's text: the local player's name (localName: net_announceJoinedTeam), sent from byte 4 (net_sendMatchEvent)"
+ },
+ "Scene.holdUp": {
+  "comment": "(by use; seen running) held: move up (axis.cfg's moveup; Q in the mech test mode, match_mechTestFrame)"
+ },
+ "Scene.holdDown": {
+  "comment": "held: move down (axis.cfg's movedown, default F; E in the mech test mode, match_mechTestFrame)"
+ },
+ "Scene.holdBooster": {
+  "comment": "held: booster (the booster binding: match_combatInput; shift in the mech test mode, match_mechTestFrame); actor_setInput's booster, and free_keys' 3x move"
+ },
+ "Scene.turnLeftHeld": {
+  "comment": "left held (the mech test mode, match_mechTestFrame): the camera turns left"
+ },
+ "Scene.upKeyHeld": {
+  "comment": "Up held without Ctrl (the mech test mode, match_mechTestFrame): cameraAngle[0] down toward -890, so the camera orbits up over the actor and looks down at it"
+ },
+ "Scene.downKeyHeld": {
+  "comment": "Down held without Ctrl (the mech test mode): cameraAngle[0] up toward 890, the camera orbits down under the actor and looks up at it"
+ },
+ "Scene.fKeys": {
+  "comment": "F1 .. F6 held (the mech test mode, match_mechTestFrame): the parts F1 head .. F5 booster and F6 the weapon that Z / X step through"
+ },
+ "Scene.partStepDownPressed": {
+  "comment": "Z pressed (or held with shift; the mech test mode, match_mechTestFrame): the parts held by F1 .. F5 (F6 the weapon) step down their tables"
+ },
+ "Scene.zoomInHeld": {
+  "comment": "Ctrl + up held (the mech test mode, match_mechTestFrame): the camera preset's distance shrinks (to 500); replay_frame reads it too but nothing sets it there (always 0)"
+ },
+ "Scene.cameraReset": {
+  "comment": "1 this frame: the camera put back: match_frame copies all ten presets into cameraSettings, replay_frame the current one (preset_reset); in the mech test mode (Space, match_mechTestFrame) only the zoom (2000) and the angles (0) are reset. Set by local_spawn, a spectator's right click or numpad preset key (match_combatInput), the replay viewer's right click / numpad keys"
+ },
+ "Scene.stateFrames": {
+  "comment": "frames in the current state (matchState), counted by its frame function: 0 on the first, which sets the state up (match_setupOrStartRound; the loading's reset; the mech test mode's and replay viewer's start)"
+ },
+ "Scene.replayFile": {
+  "comment": "the replay file: read by the replay viewer (game_processLoadingMode opens AutoPlay/<name> rb; replay_frame reads its records) or written while a match is recorded (replay_startRecording wb; send_packet / net_processGamePacket add the packets; replay_closeRecording closes it)"
+ },
+ "Scene.nextMap": {
+  "comment": "the next round's map (make_rotation, match_frame from the rotation; a client's from the host's game packet byte 4, net_processGamePacket; -1 none): with no rotation match_frame takes g_mapIndex from it, then -1"
+ },
+ "Scene.cameraSettings": {
+  "comment": "the working camera presets, six fields by ten camera modes as cameraPresets ([0] pitch, [1] heading, [2] distance: floats' bits; [3] look at the actor, [4] fixed pitch, [5] fixed heading: ints); copied from cameraPresets at the mech test mode's start (match_mechTestFrame), by preset_reset (replay viewer), on cameraReset (match_frame) and at each round's start (round_start); pitch / heading moved by the mouse, the distance by the zoom keys"
+ },
+ "Scene.cameraSaved": {
+  "name": "mapStart",
+  "comment": "the map's player start (= Stage.startPos and startAngle, map_loadPlayInfoFrom): position, then pitch and heading (floats' bits); the camera starts there (start_view, round_start, esc_retry), and a spawn with no free spawn point uses it (local_spawn, bot_spawns)"
+ },
+ "Scene.markerTexture": {
+  "comment": "texture id of the solo / team marks over players (main_draw, hud_drawPlayerMarkers); also the beam's (beam) and kind 8 particles' with an owner (particle_draw TEX(4)) (= Stage.effectTextures[4])"
+ },
+ "Scene.iconTexture": {
+  "comment": "texture id (bank * 512 + slot) of the HUD's icon atlas: the grade badges (10 a row from texel 224; hud_drawEmblem), the counter and timer icons (8 a row from 96; hud_drawIcon); also an eight-phase particle's (particle_draw TEX(5)) (= Stage.effectTextures[5])"
+ },
+ "Scene.hudTexture": {
+  "comment": "texture id of the HUD marks (the lock-on boxes, hud_drawLockOn; the player markers, hud_drawPlayerMarkers; main_draw's corner mark) and of the bullet trails (bullet_drawTrail) (= Stage.effectTextures[1])"
+ },
+ "Scene.matchState": {
+  "comment": "the match's state (match_frameByState): 0 over (game_postMatch), 1 loading, 2 playing (match_playFrame), 3 the mech test mode (match_mechTestFrame; the ARM CENTER's session, sessionMode 2, starts in it, but the ARM CENTER never runs match frames), 4 replay (replay_frame)"
+ },
+ "ProfileRecord.number": {
+  "comment": "its number when the saves were scanned (profile_scanSaves: 0, 1 .. in file order; 0 in a freed slot, profile_deleteChosen, which moves later records down without renumbering them); written out with the record (axisuser.dat), never read"
+ },
+ "MenuOutline.points": {
+  "comment": "its edges (4): menu_pointInPolygon tests corner i to i + 1 for i < this, so x / y hold this + 1 points, the last the first again (a closed quad)"
+ },
+ "g_unusedEmptySlot0Flag": {
+  "name": "g_emptySlot0Asked",
+  "comment": "1 asks the weapons preview to empty item slot 0 (armc_updateWeaponsPreview: armc_itemSlotRecord(0, 0), then 0; armc_updatePartsPreview only clears it); never set to 1 (0 in .bss), so it never happens"
+ },
+ "g_gameServerPending": {
+  "name": "g_gameServerReportsOff",
+  "comment": "1: nothing about the hosted room goes to the game server (net_handleSystemMessage's room-info updates, net_disconnect's leave packet 0x16), as g_lobbyReportsOff does for the lobby; never set (only written 0: gameList_mouse 0x436020 / 0x43616f, gameList_keys 0x4374e2; .bss), so those sends always go"
+ }
+}

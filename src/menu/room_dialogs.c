@@ -185,7 +185,7 @@ int (gameList_refresh)(void)
 	g_gameListTop = 0;
 	g_gameListRow = 0;
 	arena_clearSessionEntry();   /* arena_clearSessionEntry */
-	GAME_VAR(u32, g_roomListRequest) = 0x180001;
+	*g_roomListRequest = 0x180001;
 	net_send(0x13, 0x65);   /* net_send */
 	g_roomListPlayers = 0;
 	g_listRefreshPeriod = 0x1e;
@@ -324,13 +324,13 @@ u32 (roomLogin_endTyping)(void)
 	if (g_lineToLoginId == 1) {
 		memset((void *)OBJ(g_accountName), 0, 30);
 		g_lineToLoginId = 0;
-		strcpy(g_accountName, g_chatLine);
+		strcpy(g_accountName, g_inputLine);
 		return 0;
 	}
 	if (g_lineToLoginPassword == 1) {
 		memset((void *)OBJ(g_accountPassword), 0, 12);
 		g_inputLineHidden = 0;
-		strcpy(g_accountPassword, g_chatLine);
+		strcpy(g_accountPassword, g_inputLine);
 		g_lineToLoginPassword = 0;
 		return 0;
 	}
@@ -373,7 +373,7 @@ void (roomLogin_update)(void)
 			return;
 		g_typingLoginId = 0;
 		memset((void *)OBJ(g_accountName), 0, 30);
-		strcpy(g_accountName, g_chatLine);
+		strcpy(g_accountName, g_inputLine);
 		if (g_fieldStep == 10) {
 			highlight_choice(3, g_roomLoginLeft + 0x1a2, g_roomLoginBottom - 0x30);
 			g_lineToLoginId = 0;
@@ -392,7 +392,7 @@ void (roomLogin_update)(void)
 			return;
 		memset((void *)OBJ(g_accountPassword), 0, 12);
 		g_typingLoginPassword = 0;
-		strcpy(g_accountPassword, g_chatLine);
+		strcpy(g_accountPassword, g_inputLine);
 		g_inputLineHidden = 0;
 		if (g_fieldStep == 10) {
 			g_lineToLoginId = 1;
@@ -453,7 +453,7 @@ void (newIdForm_update)(void)
 			k++;
 		if (k < 4) {
 			memset((void *)RELOC(field[k].text), 0, field[k].size);
-			strcpy((char *)RELOC(field[k].text), g_chatLine);
+			strcpy((char *)RELOC(field[k].text), g_inputLine);
 			if (key == 10 && k == 0)
 				highlight_choice(2, g_newIdFormLeft + 0x172, g_newIdFormBottom - 0x2c);
 			else {
@@ -583,7 +583,7 @@ u32 (room_enterAccountPage)(void)
 	memset(message, 0, 30);
 	strcpy(message, g_ladderId);
 	u32 r = net_send(0x1d, 0x65);
-	g_accountNotice = 0;
+	g_accountRankDue = 0;
 	g_roomAwaitingServer = 1;
 	return r;
 }

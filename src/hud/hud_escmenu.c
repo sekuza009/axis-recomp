@@ -58,7 +58,7 @@ static void esc_yesNo(Scene *scene, float alpha)
      games, multiplayer, while playing), RECORD / STOP RECORDING (multiplayer), HELP, QUIT; the column is placed
      higher the more items it has
    1 the team choice: RED / BLUE
-   2 the replay's file name being typed (g_chatLine)
+   2 the replay's file name being typed (g_inputLine)
    3 RETRY? ("MISSION FAILED, RETRY" when a mission ends on the stage reached) / 4 QUIT?, with YES / NO */
 void THISCALL (hud_drawEscMenu)(Scene *scene)
 {
@@ -118,7 +118,7 @@ void THISCALL (hud_drawEscMenu)(Scene *scene)
 	case 2:
 		esc_title(scene, 0.5f, alpha, 0xdc, "INPUT FILE NAME");
 		esc_box(scene, 1.0f, alpha, 0x104);
-		strcpy(text, g_chatLine);
+		strcpy(text, g_inputLine);
 		text_setColor(1.0f, 1.0f, 1.0f, alpha);
 		text_drawCentred(0x140, 0x104, 0x140, text, 16);
 		break;
@@ -365,8 +365,8 @@ static int esc_retry(Scene *scene)
 	scene->botsHoldFire = 0;
 	scene->elapsed = 0;
 	scene->clockFraction = 0.0f;
-	memcpy(scene->cameraPos, scene->cameraSaved, sizeof scene->cameraPos);
-	memcpy(scene->cameraAngle, scene->cameraSaved + 3, sizeof scene->cameraAngle);
+	memcpy(scene->cameraPos, scene->mapStart, sizeof scene->cameraPos);
+	memcpy(scene->cameraAngle, scene->mapStart + 3, sizeof scene->cameraAngle);
 	music_playMatch(scene);
 	return 1;
 }

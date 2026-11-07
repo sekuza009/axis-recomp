@@ -44,10 +44,10 @@ void THISCALL (hud_drawChatInput)(Scene *scene)
 	hud_fillRect(0x50, 0x158, 0x230, 0x188);
 	text_setColor(1.0f, 1.0f, 1.0f, 1.0f);
 	if (scene->secondFraction >= 0.5f) {
-		sprintf(text, "%s_", g_chatLine);
+		sprintf(text, "%s_", g_inputLine);
 		text_drawSized(0x60, 0x168, text, 8);
 	} else {
-		text_drawSized(0x60, 0x168, g_chatLine, 8);
+		text_drawSized(0x60, 0x168, g_inputLine, 8);
 	}
 }
 

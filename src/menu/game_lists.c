@@ -420,7 +420,7 @@ void (gameList_pageFrame)(void)
 		return;
 	g_typingRoomJoinPassword = 0;
 	memset((void *)ADDR(g_roomJoinPassword), 0, 8);
-	strcpy((char *)ADDR(g_roomJoinPassword), g_chatLine);
+	strcpy((char *)ADDR(g_roomJoinPassword), g_inputLine);
 	if (strcmp(g_sessionList[g_pickedGame].password, (const char *)ADDR(g_roomJoinPassword)) != 0) {
 		menu_showMessage(0x27);
 		g_roomJoinStarted = 0;
@@ -531,7 +531,7 @@ static int games_leave(void)
 	sound_playMenu(0);
 	g_roomListAnswer = 0;
 	g_roomCameraMode = 0;
-	g_gameServerPending = 0;
+	g_gameServerReportsOff = 0;
 	g_netListDone = 1;
 	return 1;
 }
@@ -553,7 +553,7 @@ void (gameList_mouse)(void)
 		sound_playMenu(0);
 		g_roomListAnswer = 0;
 		g_roomCameraMode = 0;
-		g_gameServerPending = 0;
+		g_gameServerReportsOff = 0;
 		return;
 	}
 	if (g_mouseClick) {
@@ -796,7 +796,7 @@ void (arena_gamesPageFrame)(void)
 			return;
 		memset((void *)ADDR(g_arenaJoinPassword), 0, 8);
 		g_typingArenaJoinPassword = 0;
-		strcpy((char *)ADDR(g_arenaJoinPassword), g_chatLine);
+		strcpy((char *)ADDR(g_arenaJoinPassword), g_inputLine);
 		int wrong = strcmp(g_sessionList[g_pickedGame].password, (const char *)ADDR(g_arenaJoinPassword)) != 0;
 		if (wrong)
 			g_lobbyJoinStarted = 0;
@@ -810,7 +810,7 @@ void (arena_gamesPageFrame)(void)
 			return;
 		g_typingArenaAddress = 0;
 		memset((void *)ADDR(g_typedArenaAddress), 0, 6 * 4);
-		strcpy((char *)ADDR(g_typedArenaAddress), g_chatLine);
+		strcpy((char *)ADDR(g_typedArenaAddress), g_inputLine);
 		if ((*(char *)&g_typedArenaAddress))
 			arena_joinListed(99999);
 	}

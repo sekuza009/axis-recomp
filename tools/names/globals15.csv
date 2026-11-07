@@ -34,7 +34,7 @@
 0x4dcc88,int,g_armcViewedPartTexture
 0x9eeab0,int,g_mainMenuFrames
 0x4a9458,u32,k_armcDistanceRoom
-0x4a9454,u32,k_armcDistance
+0x4a9454,u32,k_m450f
 0x4def00,int,g_keyForward
 0x4def08,int,g_keyBackward
 0x4def10,int,g_keyStepLeft

@@ -180,9 +180,9 @@ extern u8 g_componentDatPath_v[4];
 extern u8 g_insertCdMessage_v[4];
 #endif
 #ifdef AXIS_FENCE
-#define g_hudProjMode_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0x49000 : g_fence + 0x48ffc))
+#define g_matchProjMode_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0x49000 : g_fence + 0x48ffc))
 #else
-extern u8 g_hudProjMode_v[4];
+extern u8 g_matchProjMode_v[4];
 #endif
 #ifdef AXIS_FENCE
 #define g_viewFov_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0x4b000 : g_fence + 0x4affc))
@@ -245,9 +245,9 @@ extern int g_sortBounds_v[8192];
 extern u8 g_catalogueFile_v[4];
 #endif
 #ifdef AXIS_FENCE
-#define g_keyTable1_v ((int *)(AXIS_FENCE == 2 ? g_fence + 0x6a000 : g_fence + 0x69c00))
+#define g_unusedStartupTable_v ((int *)(AXIS_FENCE == 2 ? g_fence + 0x6a000 : g_fence + 0x69c00))
 #else
-extern int g_keyTable1_v[256];
+extern int g_unusedStartupTable_v[256];
 #endif
 #ifdef AXIS_FENCE
 #define g_mouseState_v ((int *)(AXIS_FENCE == 2 ? g_fence + 0x6c000 : g_fence + 0x6bff0))
@@ -295,9 +295,9 @@ extern u8 g_unusedKeyTable2Word1_v[4];
 extern u8 g_unusedKeyTable2Word2_v[4];
 #endif
 #ifdef AXIS_FENCE
-#define g_keyTable2_v ((int *)(AXIS_FENCE == 2 ? g_fence + 0x7e000 : g_fence + 0x7dc00))
+#define g_unusedKeyTable2_v ((int *)(AXIS_FENCE == 2 ? g_fence + 0x7e000 : g_fence + 0x7dc00))
 #else
-extern int g_keyTable2_v[256];
+extern int g_unusedKeyTable2_v[256];
 #endif
 #ifdef AXIS_FENCE
 #define g_textEndX_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0x80000 : g_fence + 0x7fffc))
@@ -805,9 +805,9 @@ extern u8 g_itemBonusDetectionRange_v[4];
 extern u8 g_armCursor_v[4];
 #endif
 #ifdef AXIS_FENCE
-#define g_unusedEmptySlot0Flag_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0x14c000 : g_fence + 0x14bffc))
+#define g_emptySlot0Asked_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0x14c000 : g_fence + 0x14bffc))
 #else
-extern u8 g_unusedEmptySlot0Flag_v[4];
+extern u8 g_emptySlot0Asked_v[4];
 #endif
 #ifdef AXIS_FENCE
 #define g_armcWeaponsPageRects_v ((int *)(AXIS_FENCE == 2 ? g_fence + 0x14e000 : g_fence + 0x14df10))
@@ -1070,9 +1070,9 @@ extern u8 g_mechLockOnTime_v[4];
 extern u8 g_mechTargetKeepTime_v[4];
 #endif
 #ifdef AXIS_FENCE
-#define g_mechPartStats_v ((int *)(AXIS_FENCE == 2 ? g_fence + 0x1b6000 : g_fence + 0x1b5fe4))
+#define g_mechMaxima_v ((int *)(AXIS_FENCE == 2 ? g_fence + 0x1b6000 : g_fence + 0x1b5fe4))
 #else
-extern int g_mechPartStats_v[7];
+extern int g_mechMaxima_v[7];
 #endif
 #ifdef AXIS_FENCE
 #define g_mechMobility_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0x1b8000 : g_fence + 0x1b7ffc))
@@ -1325,9 +1325,9 @@ extern u8 g_unusedArmcViewCountdown_v[4];
 extern float g_savedColourChoices_v[36];
 #endif
 #ifdef AXIS_FENCE
-#define g_colourChanged_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0x21c000 : g_fence + 0x21bffc))
+#define g_retintAllParts_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0x21c000 : g_fence + 0x21bffc))
 #else
-extern u8 g_colourChanged_v[4];
+extern u8 g_retintAllParts_v[4];
 #endif
 #ifdef AXIS_FENCE
 #define g_armcHideInterface_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0x21e000 : g_fence + 0x21dffc))
@@ -2390,9 +2390,9 @@ extern u8 g_matchMode_v[4];
 extern u8 g_perfCounterLow_v[4];
 #endif
 #ifdef AXIS_FENCE
-#define g_timerHigh_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0x493000 : g_fence + 0x492ffc))
+#define g_perfCounterHigh_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0x493000 : g_fence + 0x492ffc))
 #else
-extern u8 g_timerHigh_v[4];
+extern u8 g_perfCounterHigh_v[4];
 #endif
 #ifdef AXIS_FENCE
 #define g_mapAbouts_v ((char *)(AXIS_FENCE == 2 ? g_fence + 0x495000 : g_fence + 0x4940c0))
@@ -3310,9 +3310,9 @@ extern u8 g_timerLastCount_v[4];
 extern u8 g_directInputMade_v[4];
 #endif
 #ifdef AXIS_FENCE
-#define g_chatLength_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xa28000 : g_fence + 0xa27ffc))
+#define g_inputLineLength_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xa28000 : g_fence + 0xa27ffc))
 #else
-extern u8 g_chatLength_v[4];
+extern u8 g_inputLineLength_v[4];
 #endif
 #ifdef AXIS_FENCE
 #define g_fieldStep_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xa2a000 : g_fence + 0xa29ffc))
@@ -3320,9 +3320,9 @@ extern u8 g_chatLength_v[4];
 extern u8 g_fieldStep_v[4];
 #endif
 #ifdef AXIS_FENCE
-#define g_chatLine_v ((char *)(AXIS_FENCE == 2 ? g_fence + 0xa2c000 : g_fence + 0xa2bc00))
+#define g_inputLine_v ((char *)(AXIS_FENCE == 2 ? g_fence + 0xa2c000 : g_fence + 0xa2bc00))
 #else
-extern char g_chatLine_v[1024];
+extern char g_inputLine_v[1024];
 #endif
 #ifdef AXIS_FENCE
 #define g_lineMaxLength_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xa2e000 : g_fence + 0xa2dffc))
@@ -3480,9 +3480,9 @@ extern u8 g_gameListClickArmed_v[4];
 extern u8 g_rankingRequestPending_v[4];
 #endif
 #ifdef AXIS_FENCE
-#define g_accountNotice_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xa6c000 : g_fence + 0xa6bffc))
+#define g_accountRankDue_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xa6c000 : g_fence + 0xa6bffc))
 #else
-extern u8 g_accountNotice_v[4];
+extern u8 g_accountRankDue_v[4];
 #endif
 #ifdef AXIS_FENCE
 #define g_roomLoginLeft_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xa6e000 : g_fence + 0xa6dffc))
@@ -3625,9 +3625,9 @@ extern u8 g_gameListRefreshClicked_v[4];
 extern int g_rankingRects_v[36];
 #endif
 #ifdef AXIS_FENCE
-#define g_unusedRoomPanelEase_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xaa6000 : g_fence + 0xaa5ffc))
+#define g_roomSlideEase_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xaa6000 : g_fence + 0xaa5ffc))
 #else
-extern u8 g_unusedRoomPanelEase_v[4];
+extern u8 g_roomSlideEase_v[4];
 #endif
 #ifdef AXIS_FENCE
 #define g_typingAccountRepeat_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xaa8000 : g_fence + 0xaa7ffc))
@@ -4460,9 +4460,9 @@ extern int g_logOutDialogRects_v[8];
 extern u8 g_profileFrameAlpha_v[4];
 #endif
 #ifdef AXIS_FENCE
-#define g_profileDialogY_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xc09000 : g_fence + 0xc08ffc))
+#define g_deleteDialogY_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xc09000 : g_fence + 0xc08ffc))
 #else
-extern u8 g_profileDialogY_v[4];
+extern u8 g_deleteDialogY_v[4];
 #endif
 #ifdef AXIS_FENCE
 #define g_profilePage_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xc0b000 : g_fence + 0xc0affc))
@@ -4480,9 +4480,9 @@ extern u8 g_unusedProfileCameraZoom_v[4];
 extern u8 g_profileRowClickTime_v[4];
 #endif
 #ifdef AXIS_FENCE
-#define g_profileDialogX_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xc11000 : g_fence + 0xc10ffc))
+#define g_deleteDialogX_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xc11000 : g_fence + 0xc10ffc))
 #else
-extern u8 g_profileDialogX_v[4];
+extern u8 g_deleteDialogX_v[4];
 #endif
 #ifdef AXIS_FENCE
 #define g_newNameDialogRight_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xc13000 : g_fence + 0xc12ffc))
@@ -4495,14 +4495,14 @@ extern u8 g_newNameDialogRight_v[4];
 extern u8 g_newNameDialogBottom_v[4];
 #endif
 #ifdef AXIS_FENCE
-#define g_profileDialogBottom_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xc17000 : g_fence + 0xc16ffc))
+#define g_deleteDialogBottom_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xc17000 : g_fence + 0xc16ffc))
 #else
-extern u8 g_profileDialogBottom_v[4];
+extern u8 g_deleteDialogBottom_v[4];
 #endif
 #ifdef AXIS_FENCE
-#define g_profileDialogRight_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xc19000 : g_fence + 0xc18ffc))
+#define g_deleteDialogRight_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xc19000 : g_fence + 0xc18ffc))
 #else
-extern u8 g_profileDialogRight_v[4];
+extern u8 g_deleteDialogRight_v[4];
 #endif
 #ifdef AXIS_FENCE
 #define g_unusedProfileCameraTime_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xc1b000 : g_fence + 0xc1affc))
@@ -4860,9 +4860,9 @@ extern u8 g_playerListCount_v[4];
 extern u8 g_lobbyReportsOff_v[4];
 #endif
 #ifdef AXIS_FENCE
-#define g_gameServerPending_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xcb5000 : g_fence + 0xcb4ffc))
+#define g_gameServerReportsOff_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xcb5000 : g_fence + 0xcb4ffc))
 #else
-extern u8 g_gameServerPending_v[4];
+extern u8 g_gameServerReportsOff_v[4];
 #endif
 #ifdef AXIS_FENCE
 #define g_serverListCount_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xcb7000 : g_fence + 0xcb6ffc))

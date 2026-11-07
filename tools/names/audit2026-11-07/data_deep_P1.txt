@@ -1,0 +1,397 @@
+PART P1: 396 names; OK 379, RENAME 2, TYPE 0, COMMENT 15, UNSURE 0; not seen running 61
+MessageSlot.speaker | COMMENT | code: written only by script_pushMessage (command 26's c[1]); script_processCommandBy (not "script_processCommand") checks Stage.speakers[c[1]] exists before; hud_drawMessageBox reads only text/colour. NOT SEEN -> "its speaker (Stage.speakers; script_processCommandBy checks it exists); written, never read (hud_drawMessageBox shows only text and colour)"
+MessageSlot.text | OK | code: writer script_pushMessage (command 26's c[2], checked against Stage.texts by script_processCommandBy); reader hud_drawMessageBox (&scene->msgText[text][line x 0x41]); NOT SEEN: a mission script MESSAGE (command 26)
+MessageSlot.colour | OK | code: writer script_pushMessage (c[3]); reader hud_drawMessageBox: < 16 -> g_textColours[colour], else text_setColor(1,1,1,0); NOT SEEN: a mission script MESSAGE
+MessageSlot.unusedC | OK | code: only written (script_pushMessage, d); no reader in src; NOT SEEN: a mission script MESSAGE
+MessageSlot.unused10 | OK | code: only written (script_pushMessage, same d); no reader; NOT SEEN: a mission script MESSAGE
+EventLine.type | OK | code: writer msg_print (colour arg: 0,1,2,3,4 and msg_players' colour); reader hud_drawMessageBox -> event_setColour (0 green,1 white,2 blue,3 red,4/5 yellow); run: 0,1,3,4
+EventLine.text | OK | code: writer msg_print (vsprintf); reader hud_drawMessageBox (text_drawSized x 0x20, y 0x28 + 16 a line); run: "Time limit(1 minutes) reached."
+EventLine.timeLeft | OK | code: writer msg_print (= Scene.eventTime); events_age subtracts dt and drops eventFirst when !(t > 0); run: 56..60, -0.008
+FiredRound.received | OK | code: writers actor_processFrame (0 own fire, 1 another machine's shot slot); reader bullet_init (0: aim+spread+trace, else aim at dir point / hitPlane); run 0/1 (mp, replay)
+FiredRound.weapon | OK | code: writer actor_processFrame (pr->items[slot]); readers bullet_init (actorItems[weapon], Bullet.weapon), frame_loops bullet spawn check (< 0); run 2..36
+FiredRound.from | OK | code: writer actor_processFrame (shot_at, the muzzle point); reader bullet_init (Bullet.from, trace start); run world coords
+FiredRound.hitPlane | OK | code: writer actor_processFrame (-1 own; ShotRecord.hitPlane received); reader bullet_init received branch (target = hitPlane); run -1 .. 4403
+FiredRound.dir | OK | code: writer actor_processFrame (shot_dir own / ShotRecord.point received); reader bullet_init (aim dir + spread; received: dir = point - from); run unit vectors and world points
+FiredRound.muzzle | OK | code: writer actor_processFrame (&entries[bone].matrix); reader bullet_init -> Bullet.muzzle (later particle matrixFrom, weapons.c); run pointer values 0x15xxxxxx
+ShotRecord.inUse | OK | code: writers net_processGamePacket (slot[0] = flag bit 1, 0 if team < 0), actor_slots reset 0; reader actor_processFrame received path (f[-1] != 1 skip); run 0/1 mp
+ShotRecord.isNew | OK | code: writers actor_processFrame (1 on own fire; 0 once bullet made), net_processGamePacket (flag bit 2), reset 0; readers net_sendPlayerState (flag 3, clears), actor_processFrame (make bullet); run 0/1
+ShotRecord.hitActor | OK | code: writer net_processGamePacket (v when flag 4, else -1); reader actor_processFrame (Bullet.hitActor = f[1]); run -1,0,1
+ShotRecord.hitPlane | OK | code: writer net_processGamePacket (v - 1 when not flag 4, else -1); readers actor_processFrame (Bullet.hit via array_recordAt; FiredRound.hitPlane); run -1..4403
+ShotRecord.ended | OK | code: writer net_processGamePacket (flag 8); reader actor_processFrame (b->life = age - dt); run 0/1
+ShotRecord.point | OK | code: writer net_processGamePacket (three shorts x10, tens()); readers actor_processFrame (Bullet.netPoint, impact; FiredRound.dir); run world coords
+ItemModelSet.shapeCount | OK | code: reader actor_loadWeapon (ObjectList_load's ns, sets[set].shapeCount[variant]); loaded with Component.dat; run 0..9 per variant
+ItemModelSet.shapeNames | OK | code: reader actor_loadWeapon (ObjectList_load's names, 0x44 apart = name + scale float read into ListedObject.scale); run ASCII name bytes
+ItemModelSet.skelCount | OK | code: reader actor_loadWeapon (ObjectList_load's nk); run 0/1
+ItemModelSet.skelNames | OK | code: reader actor_loadWeapon (ObjectList_load's skeleton names); run ASCII bytes
+ItemModelSet.muzzle | OK | code: only reader muzzle_camera (main_loop.c: v = sets[0/1].muzzle[variantLoaded], transformed by armsModel.entries[weaponJoints[..]].matrix); run 2.4 .. 83 coords
+ItemModelSet.grip | OK | code: reader actor_processFrame -> hold() (cockpit actor only: the weapon model translated by -grip, x shifted 600 x (1 - weaponRaise)); the shift is then undone for shot_at (ungrip); run 41 .. 101
+ActorItem.sets | OK | code: readers actor_loadWeapon (shapes/skeletons), actor_processFrame (grip), muzzle_camera (muzzle); [1] for slot 5 only; run (model sets present)
+ActorItem.burstStep | OK | code: reader actor_processFrame (scratch = (n % burst) x burstStep, through grip_shift and the muzzle matrix into shot_at); run 0, +-300, +-500 (few items)
+ActorItem.weight | OK | code: readers mech_stats (actor_slots.c: load += items' weight when gameType < 2 or > 11), armc part_info (PartInfo.weight, WEIGHT "t"); run 3 .. 15
+ActorItem.slotType | OK | code: readers armc part_info (PartInfo.slotType -> MSG(321 + this) "HAND"..), main_loop F-key item test (slotType ? slot 4 : 0); run 0/1
+ActorItem.splashBorderDamage | OK | code: only reader armc part_info -> armc_screens stat_int (SPLASH BORDER DAMAGE); weapons.c splash uses 1 - d/r/2 not this; run 0..60
+ActorItem.damageType | OK | code: readers hit_actor / splash (actor_takeDamage's type), armc part_info (MSG(327 + this) IMPACT/ENERGY); run 0/1
+ActorItem.damage | OK | code: readers hit_actor (actor_takeDamage), splash (x (1 - d/r/2)), armc part_info/armc_screens; run 11 .. 60+
+ActorItem.hitSound | OK | code: readers hit_actor and the surface-hit path (weapons.c: sound_play3D when >= 0); run 160..164
+ActorItem.push | OK | code: readers hit_actor (push = -push x dir x 10, dir from actor to bullet) and splash (x f); run 500 .. 15000
+ActorItem.ammoType | OK | code: readers actor_processFrame (ammo[ammoType] checks, -= ammoPerShot; ammoKind), actor_loadWeapon (ammoKind), weapons.c item pickup/ammo checks (< 0 special), armc (MSG(323 + this)); run -1, 0..3
+ActorItem.ammoPerShot | OK | code: readers actor_processFrame (out of ammo test, ammo -= this), weapons.c ammo test, armc part_info (BULLET CONSUMPTION; overwritten for special items); run 0,1,2,4,6
+ActorItem.burst | OK | code: readers actor_processFrame (shots = burst x (n + 1) + burstLeft; n % burst for burstStep), armc (Round); run 1..5
+ActorItem.burstGap | OK | code: reader actor_processFrame (gap: burstLeft/burstTime spread over frames; 0 all at once); run 0, 0.06 .. 0.1
+ActorItem.range | OK | code: readers bullet_init (end = from + range x dir; life = range / velocity), armc part_info (x0.01, "m"); run 3500 .. 200000
+ActorItem.velocity | OK | code: readers bullet_init (life = dist / velocity; 0: life 0), home (speed; shotMode 3 by age), weapons.c 707/713 (guided / moving), armc (PartInfo.speed x0.01); run 4000 .. 600000
+ActorItem.spread | OK | code: readers bullet_init ((spread - accuracy x 10) x K(0x4aa448), >= 0), armc (x0.1, "'"); run 0 .. 100
+ActorItem.hitRange | OK | code: readers fly_local (actor radius + this: math_segmentSphere), effect sizes (weapons.c 333/372/405/466), armc (x0.01 m); run 10 .. 250
+ActorItem.splashRadius | OK | code: readers splash (weapons.c: len < r, factor 1 - len/r/2), actor_processFrame (a bot swaps weapon when target within it), armc (x0.01 m); run 0, 2000 .. 5000
+ActorItem.shotMode | OK | code: readers bullet_init (3: cone + homing), hit_actor/effects (+0x1e, +0x28), home (3), trails.c (3 a trail), actor_takeDamage arg; run 0..9
+ActorItem.sound | OK | code: reader bullet_init (firing sound, < 0 none); run 60 .. 79+
+ActorItem.cycleTime | OK | code: readers actor_processFrame (fireCycle += dt / this; shots per frame), armc (x1000 "ms"); run 0.066 .. 0.95+
+ActorItem.guidance | OK | code: readers home (turn rate; shotMode 3: guidance / (age+1)^3), weapons.c 707 (guided when > 0 and velocity > 0), armc (x0.1); run 0, 33.3 .. 400
+ActorItem.name | OK | code: readers hud_main snapshot ("Actor/%s/SnapShot"), armc part_info (name after the last slash), loaders; run "ITEM\ICA-6000"
+ActorItem.targetingTime | OK | code: readers actor_processFrame (lock when lockOnTime x this < aimTime), hud_main (lock ring when > 0), stage_setupView (render/objects.c aimTime counted when > 0), armc (x1000 ms); run 0, 0.7 .. 2.5
+BlockOwner.blockSize | OK | code: writers shape_read (header; + 0x18 a part for old files), model_loadObjFormatFrom, ObjectList_load, the skeleton read (bones x 0x70 + keys), space pools; reader take_block (operator_new size / given memory checked, fatal messages); NOT SEEN as BlockOwner (a view type; seen through Model.blockSize 392 .. 109452, ObjectList.blockSize 104 .. 1404)
+BlockOwner.block | OK | code: writer take_block (operator_new or the memory given); readers the loaders (parts / entries / bones at its start), free_owned (classes.c / small.c: operator_delete when ownsBlock 1, cleared); NOT SEEN as BlockOwner (seen as Model.block, ObjectList.block pointers)
+BlockOwner.ownsBlock | OK | code: writer take_block (1 allocated, 0 given when own_flag); readers the release functions (classes.c 77, small.c 105, view_volume.c 234: delete when 1); NOT SEEN: every block in play is given memory (manager / Player memory)
+Model.blockSize | OK | code: writers shape_read (file header, +0x18 a part for old ones), model_loadObjFormatFrom ((colourCount x 3 + triangleCount) x 0xc + parts x 0x8c); readers take_block, the shape manager's dataUsed (skel_data.c 432); run 392 .. 109452
+Model.block | OK | code: writer take_block / model_loadObjFormatFrom; readers shape_read / the OBJ loader (parts and tables laid out from it), Model_release; run valid heap pointers
+Model.ownsBlock | OK | code: writers take_block, model_loadObjFormatFrom (1 allocated, 0 given); reader Model_release (freed when 1); NOT SEEN: shapes are loaded into the managers' memory (mem given)
+Model.partCount | OK | code: writers shape_read (header), the OBJ loader (usemtl count), ground_buildLayerModels; readers every part loop (shape_read, ViewVolume_queueModel, space_buildUnit, shape_colours, trails, the kyrie fix); run 1 .. 13
+Model.parts | OK | code: writer shape_read / the OBJ loader (= block); readers the part loops (view_volume, space_pools, shape_colours, names.c texture binding, trails); run valid pointers
+Model.centre | OK | code: writers shape_read (header), shape_computeBounds, trails.c (middle of the box); readers shape_read / the OBJ loader (box starts from it), object_initObjectBy and mapObject_frame (MapObject.pos = matrix x centre), ObjectList_poseBones (ListedObject.centre); run -66020 .. 45685
+Model.version | OK | code: reader shape_read (== 0x71110300 current; else 0x68-byte parts, blockSize grown); writer trails.c (0x71110300); run 0x71110300 only
+Model.low | OK | code: writers shape_read / the OBJ loader (centre, then the parts' box minima), trails; readers collision_tris 270 (animated object reach test), space_pools 891 (collision box); run -307424 .. 42512
+Model.high | OK | code: as low, the maxima; readers collision_tris 272, space_pools 891; run -64084 .. 307424
+Model.colourCount | OK | code: writers the .shp header (shape_read), the OBJ loader (+3 / +6 a face), ground_buildLayerModels (vertex counts summed); readers ObjectList_load (colour buffer sizes), object_initObjectBy (Stage.objectColours runs), mapObject_frame (colours copied), relight; run 36 .. 4656, all multiples of 3
+Model.triangleCount | OK | code: writers the .shp header, the OBJ loader (+1 / +2 a face), ground_buildLayerModels (0); reader the OBJ loader's blockSize; run 12 .. 1552 (= colourCount / 3)
+Model.radius | OK | code: writers the .shp header, trails.c (sqrt of the largest r2); reader stage_drawObject (render/objects.c: cull box radius + cullMargin); run 78 .. 461136
+ShapePart.flags | OK | code: writers the .shp file, the OBJ loader (0), ground_buildLayerModels (0 / 8 / 6 by layer kind); readers draw_opaque (4 no cull, 8 front culled, 0x10 no depth test), space_buildUnit (0x20 skipped, 1 -> triangle kind 0x10), shading.c (2 unlit), the view volume's transparent path (1); NOT SEEN: the sampler does not follow Model.parts
+ShapePart.texName | OK | code: writers the .shp file, the OBJ loader (the material's last "_" piece); readers shape_bindTextureBy (names.c: tex_getIdByName), the kyrie fix; NOT SEEN (sampler: strings empty)
+ShapePart.texture | OK | code: writers shape_read (-1), the OBJ loader (0, then -1 per usemtl), shape_bindTextureBy (tex_getIdByName), ground layers (the layer's texture); readers ViewVolume_queueModel (list = texture + 1), object_list.c 148; NOT SEEN: the sampler does not follow Model.parts
+ShapePart.colourBase | OK | code: writers the .shp file, the OBJ loader (running corner count), ground_buildLayerModels; readers ViewVolume_queueModel (colours + colourBase), shape_colours (out + colourBase); NOT SEEN: the sampler does not follow Model.parts
+ShapePart.vertexCount | OK | code: writers the .shp file, the OBJ loader (corners), ground layers ((rows+1)(cols+1), 12 water); readers shape_read (table sizes), draw_opaque (GL arrays), trails, ground colourCount; NOT SEEN: the sampler does not follow Model.parts
+ShapePart.vertices | OK | code: writers shape_read / the OBJ loader (block offsets); readers draw_opaque (glVertexPointer), space_buildUnit, trails; NOT SEEN: the sampler does not follow Model.parts
+ShapePart.normals | OK | code: writers shape_read / obj_corner; readers shape_shadingColours; NOT SEEN: the sampler does not follow Model.parts
+ShapePart.colours | OK | code: writers shape_read / the OBJ loader; readers shading.c (unlit parts copy them), view_volume.c (returned colours); NOT SEEN: the sampler does not follow Model.parts
+ShapePart.texCoords | OK | code: writers shape_read / obj_corner; reader draw_opaque (glTexCoordPointer, scrolled copy); NOT SEEN: the sampler does not follow Model.parts
+ShapePart.primCount | OK | code: writers shape_read, the OBJ loader (1), ground_buildDrawLists (stripCount), water (4 / 0); readers ViewVolume_queueModel (<= 0 skipped), draw_opaque, space_buildUnit; NOT SEEN: the sampler does not follow Model.parts
+ShapePart.prims | OK | code: writers shape_read / the OBJ loader; readers draw_opaque (glDrawElements), space_buildUnit; NOT SEEN: the sampler does not follow Model.parts
+ShapePart.box | OK | code: writers the .shp file, trails.c (min / max of the vertices), shape_computeBounds; readers shape_read / the OBJ loader (Model.low / high), ViewVolume_queueModel (cull test on 8 corners); NOT SEEN: the sampler does not follow Model.parts
+ShapePrim.kind | OK | code: writers the .shp file, the OBJ loader (4); readers draw_opaque (glDrawElements mode), space_buildUnit (6 fan, 5 strip, 4 list; others skipped); NOT SEEN: the sampler does not follow Model.parts
+ShapePrim.indexCount | OK | code: writers the .shp file, the OBJ loader (vertexCount), water (5); readers shape_read (index table size), draw_opaque (count), space_buildUnit; NOT SEEN: the sampler does not follow Model.parts
+ShapePrim.indices | OK | code: writers shape_read / the OBJ loader; readers draw_opaque, space_buildUnit (IDX); NOT SEEN: the sampler does not follow Model.parts
+ListedObject.shape | OK | code: writer ObjectList_load (shape_getByName); readers ObjectList_relight / ObjectList_queue (skip none), ObjectList_poseBones (centre); run valid pointers
+ListedObject.colours | COMMENT | code: writer ObjectList_load (block + offset when preLit 1, else 0); readers relight / ObjectList_queue (pre-lit only). Both callers (part_load, actor_loadWeapon) pass lit 0, so it is always 0 in this game. NOT SEEN -> "its shading colours (Model.colourCount dwords in the list's block): a pre-lit list's only (ObjectList_load; 0 otherwise or without a shape); the game's lists (part_load, actor_loadWeapon) are never pre-lit, so always 0"
+ListedObject.scale | OK | code: writer ObjectList_load (the float at name + 0x40); reader ObjectList_poseBones (bone translation x this); run 1.0
+ListedObject.matrix | OK | code: writer ObjectList_poseBones (glGetFloatv); readers ObjectList_queue / relight, actor_processFrame (muzzle q, part_matrix joints), muzzle_camera; run matrices
+ListedObject.pos | OK | code: writer ObjectList_poseBones (origin through matrix); reader poseBones (centre without a shape); run world coords
+ListedObject.centre | OK | code: writer ObjectList_poseBones (the shape's centre through matrix); reader emit (actor_frame.c: a puff at the joint entry's centre); run world coords
+ObjectList.blockSize | OK | code: writer ObjectList_load ((count x 25 + skelCount) x 4, + colours when preLit); reader ObjectList_load (alloc / memory check); run 104 .. 1404
+ObjectList.block | OK | code: writer ObjectList_load (memory given or allocated); readers ObjectList_load (entries / skeletons), partList_release; run pointers (into Player memory)
+ObjectList.ownsBlock | COMMENT | code: writer ObjectList_load (1 when allocated; not touched when memory is given); reader partList_release. Both callers pass the Player's own memory, so never 1. NOT SEEN -> "1: allocated here (ObjectList_load without memory; the game's lists all get the Player's memory, so 0)"
+ObjectList.count | OK | code: writer ObjectList_load (ns); readers ObjectList_relight, ObjectList_queue, ObjectList_poseBones, ObjectList_bindTextures; run 1 .. 14
+ObjectList.entries | OK | code: writer ObjectList_load (= block); readers poseBones, queue, relight, actor_processFrame (part_matrix, muzzle), muzzle_camera; run pointers
+ObjectList.colourCount | OK | code: writer ObjectList_load (the shapes' colourCount summed); reader ObjectList_load (block size when preLit); run 84 .. 1527
+ObjectList.skelCount | OK | code: writer ObjectList_load (nk); readers poseBones / queue (<= 0 nothing), anim_setTime (i < skelCount); run 0 / 1
+ObjectList.skeletons | OK | code: writer ObjectList_load (block after the entries, skel_getSkeletonPtrBy); readers poseBones, queue, anim_setTime, actor_processFrame (skeletons[0] for the muzzle bone); run pointers
+ObjectList.skel | OK | code: writer anim_setTime (i; every caller, actor_processFrame, passes 0); readers poseBones, ObjectList_queue; NOT SEEN: always 0 in this game
+ObjectList.animTick | OK | code: writer anim_setTime (Skeleton.duration (ms) x t); reader ObjectList_poseBones (% (duration + 1)); run 0 .. 3300 (Skeleton.dat duration 3300)
+ObjectList.preLit | COMMENT | code: writer ObjectList_load (lit); readers ObjectList_load (colour block), ObjectList_queue. Both callers pass 0. NOT SEEN -> "1: lit here, drawn with its own colours (ObjectList_load's lit; part_load and actor_loadWeapon pass 0, so never 1 in this game)"
+Player.pathRange | OK | code: writers actor_setupFromParts reset (1500), actor_pickPathPoint (1500 when found, x1.5 when none); reader actor_pickPathPoint (within() box per axis); run 1500, 2250, 3375, 7593.75
+Player.bodyMatrix | OK | code: writer actor_processFrame (glGetFloatv after translate to pos, yaw, lean); reader actor_processFrame (ObjectList_poseBones of chestModel); run matrices
+Player.headModel | OK | code: writers part_load / actor_loadHead (ObjectList_load into it); readers actor_processFrame (anim_setTime pose[3], poseBones on the chest's headJoint, x5 scale with stateFlags 0x1000), actor_drawIntoView, bindTextures; run lists present
+Player.headModelMem | OK | code: passed as ObjectList_load's mem (part_load: actor + self + sizeof(ObjectList), size limit 0x7d0); run byte contents
+Player.chestModel | OK | code: ObjectList_load (part_load); actor_processFrame poses it at bodyMatrix and reads its entries for legsJoint / armsJoint / headJoint / boosterJoint; run lists
+Player.chestModelMem | OK | code: ObjectList_load's mem (0x7d0); run byte contents
+Player.armsModel | OK | code: ObjectList_load (part_load); actor_processFrame (pose, weaponJoints from its entries), muzzle_camera (entries[weaponJoints]); run lists
+Player.armsModelMem | OK | code: ObjectList_load's mem (0xfa0); run byte contents
+Player.legsModel | OK | code: ObjectList_load (part_load); actor_processFrame (anim_setTime pose[4], posed on legsJoint turned by pose[2]), emit (legs emitters); run lists
+Player.legsModelMem | OK | code: ObjectList_load's mem (0xfa0); run byte contents
+Player.boosterModel | OK | code: ObjectList_load (part_load); actor_processFrame (anim_setTime pose[5], posed on boosterJoint turned by pose[0], pose[1]), emit (booster emitters); not drawn when viewMarked; run lists
+Player.boosterModelMem | OK | code: ObjectList_load's mem (0xbb8); run byte contents
+Player.weaponModel | OK | code: actor_loadWeapon (slots 0 .. 3, the selected one); actor_processFrame (posed on weaponJoints[0], muzzle matrix, anim by fireAnim); run lists
+Player.weaponModelMem | OK | code: actor_loadWeapon's ObjectList_load mem (0x1770); run byte contents
+Player.weaponModel4 | OK | code: actor_loadWeapon (slot 4, sets[0]); actor_processFrame (weaponJoints[1]); run lists
+Player.weaponModel4Mem | OK | code: actor_loadWeapon's mem (0x1770); run byte contents
+Player.weaponModel5 | OK | code: actor_loadWeapon (slot 5, sets[1]); actor_processFrame (weaponJoints[2]); run lists
+Player.weaponModel5Mem | OK | code: actor_loadWeapon's mem (0x1770); run byte contents
+Player.lastHitDamageType | OK | code: writers actor_takeDamage (mode = ActorItem.damageType), actor_setupFromParts (-1, with lastAttacker / lastHitWeapon); no reader; run -1, 0, 1
+Player.invulnerable | OK | code: writers script_processCommandBy (14: 1; 12: 0), actor_setupFromParts (0); reader actor_takeDamage (returns at once when 1); NOT SEEN: a mission script with command 14
+Player.hitPending | OK | code: writer actor_takeDamage (1); reader net_sendPlayerState (0x80 / 0xc0 hit byte, then cleared); run 0/1 (skirmish)
+Player.accuracy | OK | code: writer mech_stats (arms->stats[0]); readers bullet_init (spread - accuracy x 10), actor_checkDataLoss list; run 0 .. 4
+Player.lastWeaponSlot | OK | code: writers actor_setWeaponSlot (weapons.c 42), actor_setupFromParts (0); readers actor_processFrame (actor_loadWeapon on a detail change), armc_mech.c 118; run 0 .. 3
+Player.shots | OK | code: see ShotRecord: net_processGamePacket fills them, actor_processFrame (received path) and net_sendPlayerState read isNew; run (mp, replay)
+Player.rounds | OK | code: writer actor_processFrame (FiredRound per slot k as a round fires / is received); reader bullet_init via bullet_spawn; run (mp, replay, skirmish)
+Player.shotBullets | OK | code: writers actor_processFrame (bullet_spawn's slot), bullet free (actor_slots.c 166: -1), reset -1, net_sendPlayerState (-1 when gone); readers actor_processFrame (free slot k), net_sendPlayerState; run -1 .. 6
+Player.firePrev | OK | code: writer actor_processFrame (= inFire at the end of the firing code), reset 0; readers actor_processFrame (OUT OF AMMO! / next weapon / wall click only when 0); run 0/1
+Player.levelShown | OK | code: writers match start (main_loop 1734: Scene.level), main_loop 1989 (= grade when it changes, the LEVEL UP notice), net_tables 2087 (= grade); reader main_loop 1988; run 0/1
+Player.scoreCounted | OK | code: writers main_loop 1736 (Scene.levelPoints at the match start), ladder_addMatchScores (frame_loops 194: = score); reader ladder_addMatchScores (g_ladderExp += score - this); NOT SEEN: a profile with Ladder points or a Ladder match's end
+Player.sendNow | OK | code: writers the bullet frame (weapons.c 797: 1 when a round of its runs out), actor_processFrame / setup (0); reader main_loop 2040 (send its state now); run 0/1
+Player.killPending | OK | code: writer actor_dies (1), setup 0; readers match frame and replay frame (main_loop 1169 / 1953: msg_kill(i, lastAttacker), cleared); run 0/1
+Player.lastWarp | OK | code: writers item_pickup warp (frame_loops 565: = warpTo), item_update (652: -1 when onWarp 0), setup -1; reader item_pickup (no warp from the item it arrived on); run -1 (no warp taken in the runs)
+Player.onWarp | OK | code: writers item_update (573: 1 on a warp zone; 608: 0 each frame), setup 0; reader item_update (651); NOT SEEN: step on a WARP ZONE item
+Player.warpWait | OK | code: writers item_pickup warp (2.0), countdown in actor_processFrame; reader item_pickup (!(warpWait > 0)); NOT SEEN: take a WARP ZONE
+Player.hackingLevel | OK | code: writer mech_stats (head->hackingLevel + hackingBonus); readers the cloak tests (stateFlags 0x200: actor_processFrame bot targeting, emitters, stage_setupView, actor_drawIntoView), actor_checkDataLoss, armc_readMechStats; run 0 .. 8
+Player.lockOnTime | OK | code: writer mech_stats (head->lockOnTime x lockOnTimeFactor); readers actor_processFrame (lock when lockOnTime x targetingTime < aimTime), armc (x100); run 0.4 .. 1.4
+Player.targetKeepTime | OK | code: writer mech_stats (head x targetKeepFactor); readers actor_processFrame (Stage.lockHeld[j] = this when locked, then counted down), armc (x1000); run 0.5 .. 8
+Player.loadMax | OK | code: writer mech_stats (character factor 4 x chest weightLimit x loadFactor); readers mech_stats (overload), armc (g_loadLimit), checkDataLoss; run 73.5 .. 228
+Player.load | OK | code: writer mech_stats (booster + legs + arms + head weights, + items' outside game types 2 .. 11); readers mech_stats (over = (load - loadMax) / loadMax x 4 cuts mobility, speed, runTop), armc; run 58 .. 195
+Player.ammoFactor | OK | code: writer actor_computeStats (1, +0.3 per item kind); reader mech_stats (ammoMax = stats x this + ammoBonus); run 1, 1.3
+Player.ammoBonus | OK | code: writer actor_computeStats (0; +100 for item kinds 0x1c .. 0x1f); reader mech_stats (ammoMax); run 0, 100 (itemsD)
+Player.rangeBonus | OK | code: writer actor_computeStats (0; +10000 for its item); reader mech_stats (detectionRange x factor + this, squared); run 0, 10000 (itemsD)
+Player.lockOnTimeFactor | OK | code: writer actor_computeStats (1, -0.5 per item 0x20); reader mech_stats (lockOnTime); run 0.5, 1
+Player.targetKeepFactor | OK | code: writer actor_computeStats (1, +1 per item 0x20); reader mech_stats; run 1, 2
+Player.hackingBonus | OK | code: writer actor_computeStats (0, +3 per item 0x20); reader mech_stats (hackingLevel); run 0, 3
+Player.boostTimeFactor | OK | code: writer actor_computeStats (1, +0.5 per item 0x21); reader mech_stats (boostTime = booster times[0] x this); run 1, 1.5
+Player.rechargeTimeFactor | OK | code: writer actor_computeStats (1, -0.5 per item 0x21); reader mech_stats (rechargeTime); run 0.5, 1
+Player.restTimeFactor | OK | code: writer actor_computeStats (1, -0.5 per item 0x21); reader mech_stats (restTime); run 0.5, 1
+Player.loadFactor | OK | code: writer actor_computeStats (1, +0.2 per item 0x22); reader mech_stats (loadMax); run 1, 1.2
+Player.shieldFactor | OK | code: writer actor_computeStats (1, +0.3 per item 0x23, which also adds 4 to shieldRegen); reader mech_stats (shieldMax); run 1, 1.3
+Player.tint | OK | code: writer actor_drawIntoView (actor_slots.c 554: cloak / spawn fade / glow + hitFlash colour); reader the same (the part lists' colour); run bytes 0 .. 255
+Player.message | OK | code: writers actor_processFrame ("OUT OF AMMO!"), item_pickup ("WARP ZONE", the pickup texts such as "+40 E-PACK CELLS"), setup (empty); reader the match frame (main_loop 1962: notice_printCentre when messageTime is 0); run "+40 E-PACK CELLS"
+Player.messageTime | OK | code: writers item_pickup (0), actor_processFrame (OUT OF AMMO!: dt; then -= dt each frame), setup -10000; readers main_loop 1961 (print when exactly 0) and 2039 (send state when 0); run -10185 .. -0.008
+Player.dropAge | OK | code: writers actor_processFrame (spawnAge + dt + 10 while alive and run here / held), net_processGamePacket (spawnAge + 10), setup 1; readers actor_processFrame (spawnAge > dropAge: actor_deactivate; state 3 sets spawnAge = it); run 1 .. 185
+Player.effectScale | OK | code: writer actor_processFrame (nextForward clamped 0.5 .. 3); readers emit (scratch[0] scale), glow (speed part); run 0.5 .. 3
+Player.cheat | OK | code: writers chat_matchCheatCode (k + 2: 2 .. 4), actor_processFrame / setup (-1); reader actor_processFrame switch (0 refill, 1 ammo, 2 / 3 bigHead, 4 suicide: deaths++ and actor_takeDamage); run -1, 2, 3, 4
+Player.bigHead | OK | code: writers actor_processFrame (cheats 2 / 3), reset 0; reader actor_processFrame 1260 (stateFlags 0x1000: head scaled x5); NOT SEEN (cheat 2 / 3 were seen in sessA, so it was set briefly; the samples missed it): type the big-head code in chat during a match and stay
+Player.pathReverse | OK | code: writers actor_pickPathPoint (rand & 1), setup 0; reader actor_processFrame (pathPoint stepped back when 1); run 0/1
+Player.botWait | OK | code: writers script command 4 (raw float bits c[1]), command 12 / setup (0), actor_processFrame (-= dt); readers actor_processFrame (no goal / look while > 0); NOT SEEN: a mission script with command 4 (wait)
+Player.botWaitTrigger | OK | code: writers script command 5 (c[1]), command 12 / setup (-1), actor_processFrame (-1 once Stage.triggerFired[it]); reader actor_processFrame; run -1
+Player.lookActor | OK | code: writers script commands 18 / 12, actor_processFrame (-1 when its actor is not alive); reader actor_processFrame (aim_at its pos); run -1
+Player.lookPath | OK | code: writers script commands 19 / 12; reader actor_processFrame (aim_at PATH_POINT); run -1
+Player.lookPoint | OK | code: writers script commands 19 (c[2]) / 12 (-1); reader actor_processFrame (PATH_POINT(lookPath, this)); run -1
+Player.scanTime | OK | code: writers actor_processFrame (-= dt; 0.5 after a scan), setup 0; reader actor_processFrame (bot target scan when <= 0); run 0 .. 0.5
+Player.burstPause | OK | code: writers actor_processFrame (-= dt; = botParams[3]), actor_pickRandomWeapon (weapons.c 76); reader actor_processFrame (bot fire bursts); run -2 .. 1
+Player.burstFire | OK | code: writers actor_processFrame (-= dt; = botParams[4]), weapons.c 77; reader actor_processFrame (bot inFire while > 0); run 0 .. 2
+Player.dodgeTime | OK | code: writers actor_processFrame (-= dt; = botParams[0]), weapons.c 74 (0); reader actor_processFrame (a new sideways goal when <= 0); run 0 .. 1
+Player.heightTime | OK | code: writers actor_processFrame (-= dt; = botParams[1]), weapons.c 75 (0), setup 0; reader actor_processFrame (new height goal); run 0 .. 1
+Player.cleared8838 | OK | code: only zeroed (actor_setupFromParts memcpy g_vecZero); no reader or other writer in src; NOT SEEN (always 0, as the comment says; its "(by use; seen running)" tag has no runtime support)
+Player.lookTime | OK | code: writers actor_processFrame (-= dt; 2 after a random look), setup 0; reader actor_processFrame (random botLookPitch / Yaw when <= 0); run 1.76 .. 2
+Player.stuckTime | OK | code: writers actor_processFrame (-= dt; 1 each second), setup 1; reader actor_processFrame (the stuck check: stuckMove^2 < 250000 drops the path); run 0 .. 1
+Player.stuckPath | OK | code: writers actor_processFrame (= path when stuck), actor_pickPathPoint / setup (-1); reader actor_pickPathPoint (skips it); run -1, 5, 13
+Player.stuckMove | OK | code: writers actor_processFrame (+= move; zeroed each second), setup; reader actor_processFrame (length^2 vs 250000); run sums
+Player.mobility | OK | code: writer mech_stats (character factor 0 x legs agility x (1 - over); x 0.333 in the rocket arena; >= 0); readers actor_processFrame (key step = dt x this), armc; run 5.95 .. 10.2
+Player.moveAccel | OK | code: writer mech_stats (legs inertia x speed, x0.333 rocket arena); reader actor_processFrame (velocity step = dt x this); run 27960 .. 95486
+Player.boosterTilt | OK | code: writer mech_stats (BoosterType.lean); reader actor_processFrame (pose[1] = (1 - climb) x (pitch + 900) / 1800 x this); NOT SEEN: 0.0 in every booster of Component.dat (unreachable without a modded booster)
+Player.boostTime | OK | code: writer mech_stats (booster times[0] x boostTimeFactor); readers actor_processFrame (energy -= dt / this), armc (x1000); run 2.5 .. 10
+Player.rechargeTime | OK | code: writer mech_stats (times[1] x factor); readers actor_processFrame (energy += dt / this), armc; run 0.25 .. 3
+Player.restTime | OK | code: writer mech_stats (times[2] x factor); readers actor_processFrame (staminaRest += dt / this), armc; run 0.05 .. 0.6
+Player.runTop | COMMENT | code: writer mech_stats (booster speeds[1..3] x the legs' corrections / speed x (1 - over); [3] = -[2]); readers actor_processFrame (key_axis tops with the booster; nextLean). They are multiples of speed (want = forward x speed), not speeds: run -6.8 .. 6.8 -> "(by use; seen running) the top key values running, as multiples of speed (forward x speed is the wanted speed): forward, back (negative), step left, step right (= -[2]) (the left-step key, A, drives nextStrafe toward [2]: key_axis); walking's are 1 / -1"
+Player.forward | OK | code: copied from nextForward each frame (actor_processFrame, the 32-byte pitch .. copy); readers actor_processFrame (want[1] = forward x speed; pose[4]), netMotion easing; run -2.39 .. 6.99
+Player.strafe | OK | code: copied from nextStrafe; readers actor_processFrame (want[0], pose[0] / pose[2] = strafe x -200 / 200); run -2.8 .. 2.8
+Player.climb | OK | code: copied from nextClimb; readers actor_processFrame (want's pitch (1 - climb), pose[1], pose[4], nextLean); run 0 .. 1
+Player.lean | OK | code: copied from nextLean; readers actor_processFrame (glRotatef lean x 0.1 about x; pose[3] = pitch - lean); run -142 .. 1300
+Player.run | OK | code: copied from nextRun; readers actor_processFrame (pose[4], pose[5] = run, emitters only while > 0); run 0 .. 1
+Player.nextPos | OK | code: writers actor_processFrame (pos + move, slid, collision_moveSphere, level box; remote eased to netPos), item_pickup (warp); readers actor_processFrame (-> pos), net_sendPlayerState, hit_actor dir, splash; run world coords
+Player.nextPitch | OK | code: writers actor_processFrame (pitch + inPitch kept to +-890; remote eased to netPitch), item_pickup warp; readers the frame copy (-> pitch), net_sendPlayerState (angle_byte), nextLean; run -890 .. 890
+Player.nextYaw | OK | code: writers actor_processFrame (yaw + inYaw; remote angle_stepTowards netYaw), item_pickup warp; readers frame copy (-> yaw), net_sendPlayerState; run -8072 .. 8256 (not wrapped)
+Player.nextStrafe | OK | code: writers key_axis (inStepLeft / inStepRight, tops 1 / runTop[2..3]), remote easing to netMotion[1]; readers frame copy, net_sendPlayerState (x10); run -2.8 .. 2.8
+Player.nextClimb | OK | code: writers key_ramp (inAltitude), remote easing; readers frame copy, net_sendPlayerState (nibble x15); run 0 .. 1
+Player.nextLean | COMMENT | code: writer actor_processFrame: back 150 x m x (900 - pitch) / 1800; forward pitched down 450 x m x (pitch + 900) / 900; forward level/up 450 x m, and when nextForward > 1 plus (nextForward - 1) / (runTop[0] - 1) x nextPitch; then x (nextRun + 1) / 2 x (1 - climb). So "up to 450 forward" is wrong running uphill: run 1304 -> "the body's lean taken next (tenths of a degree): from nextForward and nextPitch (back up to 150, forward up to 450, and running forward past 1 adds (nextForward - 1) / (runTop[0] - 1) x nextPitch: seen up to 1304), then x (nextRun + 1) / 2 x (1 - climb) (actor_processFrame); copied to lean, sent as a byte"
+Player.nextRun | OK | code: writers key_ramp (inBooster), remote easing; readers frame copy, net_sendPlayerState, the 3D footstep sound (> 0 running step); run 0 .. 1
+Player.netPos | OK | code: writer net_processGamePacket (position words x10); reader actor_processFrame (remote nextPos eased to it); run world coords
+Player.netPitch | OK | code: writers net_processGamePacket (byte angle), actor_setupFromParts (= pitch); reader actor_processFrame (remote easing); run multiples of 14.0625
+Player.netYaw | OK | code: writers net_processGamePacket, setup (= yaw); reader actor_processFrame (angle_stepTowards); run multiples of 14.0625 / 3600 steps
+Player.netMotion | OK | code: writer net_processGamePacket (forward, strafe / 10, climb, run nibbles / 15, lean byte); reader actor_processFrame (nextForward .. nextRun eased, 5 floats); run -98.8 .. 931 (lean)
+Player.botGoal | OK | code: writers actor_processFrame (bot: follow target, target offset x botParams[2], dodge / climb goals, path point); reader actor_processFrame (move keys towards it); run world coords
+Player.botLookPitch | OK | code: writers aim_at, actor_processFrame (random -450 .. 449 every 2 s); reader actor_processFrame (angle_turn -> inPitch, limited by turnRate); run -899 .. 892
+Player.botLookYaw | OK | code: writers aim_at, random 0 .. 3599; reader actor_processFrame (-> inYaw); run -3088 .. 3093
+Player.netFired | OK | code: writers net_processGamePacket (1 on a state packet), actor_processFrame end (0); reader actor_processFrame (received shot path); NOT SEEN in the samples (set and cleared within a frame; its "(by use; seen running)" tag has no runtime support) -> receive a client's shots in an mp session, sample between packet and frame
+Player.firing | OK | code: writer actor_processFrame (0, then 1 when fire may go); readers actor_processFrame (shots), main_loop 2040 (send state when firing); run 0/1
+Player.velocity | OK | code: writer actor_processFrame (towards want by accel = dt x moveAccel), setup 0; reader actor_processFrame (move = step x velocity); run -28207 .. 28248
+Player.move | OK | code: writer actor_processFrame (step x velocity, push, slides); readers actor_processFrame (nextPos, stuckMove, collision_moveSphere); run small moves
+Player.pose | COMMENT | code: writer actor_processFrame: [0] = strafe x -200 (clamped 450), [1] = (1 - climb) x (pitch + 900) / 1800 x boosterTilt, [2] = strafe x 200, [3] = (pitch - lean + 900) / 1800, [4] = legs stride frame, [5] = run; readers the same: glRotatef [0] x 0.05 about z and [1] x 0.1 about x for the booster, [2] x 0.1 about y for the legs; anim_setTime [3] for head, chest AND arms, [4] legs, [5] booster -> "(by use; seen running) the body's pose: [0] and [1] turn the booster (swing and tilt), [2] turns the legs; [3] the head's, chest's and arms' animation frame ((pitch - lean + 900) / 1800), [4] the legs' (stride), [5] the booster's (run) (anim_setTime)"
+Player.radius | OK | code: writer setup (500); readers collision_moveSphere, actor sliding (x0.75 summed), bullet hit radius (+ hitRange), item pickup reach (x1.5), cameras (main_loop), cull margin, tag box; run 500
+Player.footstepTime | OK | code: writer actor_processFrame (+= dt, 0 after a step), setup 0; reader the same (> 0.333: footstep / breath sound); run 0 .. 0.333
+Player.deathPos | OK | code: writers actor_dies, setup (= pos); readers actor_processFrame (pos taken from it while state != 1), death camera (main_loop 1462); run world coords
+Player.push | OK | code: writers hit_actor / splash (weapons.c: 10 x push away from the hit), setup 0; reader actor_processFrame (local actor: move += step x push x hitFlash^2); run -143708 .. 149451
+Player.stateTime | OK | code: writers actor_dies (0), actor_processFrame (+= dt; 0 at state 3), setup 0; reader actor_processFrame (dying > 2 s -> state 3); run 0 .. 175
+Player.burstTime | OK | code: writer actor_processFrame (burst bookkeeping); reader the same; run 0.0017 .. 0.1
+Player.shieldRegen | OK | code: writer actor_computeStats (0, +4 per item 0x23); readers actor_processFrame (shield += whole seconds x this), actor_checkDataLoss (> 8 flagged); run 0, 4
+Player.staminaRest | OK | code: writers actor_processFrame (0 while boosting; += dt / restTime to 1), setup 1; reader the energy refill (only once >= 1); run 0 .. 1
+Player.glow | OK | code: writers actor_processFrame (fresh shot (0.5 - fireAnim) x 2, + effectScale x 0.2, cloaked only the part over 1), setup 0; readers actor_drawIntoView (white tint x 255), teams.c 75; run 0.1 .. 1.58
+Player.shieldRegenTime | OK | code: writer actor_processFrame (+= dt, whole seconds taken out); reader the same; run 0 .. 1
+Player.partListsBound | OK | code: writers setup (0), actor_processFrame (+1 a frame to 7 with ObjectList_bindTextures); reader actor_drawIntoView (actor_slots.c 607: lists up to it); run 0 .. 7
+Player.botNeeds | OK | code: writer actor_processFrame (bit 0 armour < 0.3 x armorMax, bit 1 both weapons empty); readers actor_processFrame (path pick, target drop); run 0/1
+Player.botTargetTime | OK | code: writers actor_processFrame (10.5 on a new target, 0 on loss), countdown, setup 0; reader actor_processFrame (target dropped when <= 0); run 1.3 .. 10.5
+Player.beepTimer | OK | code: writer actor_processFrame (local player: -= dt while homedOn, 0.5 after sound 0x11; 0 otherwise), setup 0; reader the same; NOT SEEN: be targeted by another machine's guided round (mp)
+Player.id | OK | code: writers actor_setupFromParts (id >= 0 ? id : actorSerial++), item_pickup warp (new serial); readers actor_processFrame (id % 2 -> stateFlags 0x4000), net; run 0 .. 117
+Player.character | OK | code: writers actor_setupFromParts (0 .. 8 else 0), player_setCharacter (small.c 261), reset; reader actor_takeDamage (CharacterProfile stats by shot mode); run 0 .. 8
+Player.yaw | OK | code: copied from nextYaw; readers actor_processFrame (glRotatef, want, bot aim), cameras; run -8072 .. 8266
+Player.lowDetail | OK | code: writer stage_setupView (render/objects.c 311: tag_narrow(30)); readers actor_processFrame (reload parts, variantLoaded = it + 1), part_load (shape set), joint tables [lowDetail], muzzle_camera; NOT SEEN: an enemy far away (its tag under 30 px wide)
+Player.lowDetailLoaded | OK | code: writer actor_processFrame (= lowDetail after reloading the five parts); reader the same comparison; NOT SEEN: as lowDetail
+Player.switchSlot | OK | code: writers actor_selectWeapon (weapons.c 57), actor_processFrame (remote: = slot), setup 0; reader actor_processFrame (actor_setWeaponSlot / actor_loadWeapon once lowered); run 0 .. 4
+Player.variantLoaded | OK | code: writer actor_processFrame (0 for the cockpit actor, else lowDetail + 1, reloading weapons); readers actor_loadWeapon calls, hold (grip), muzzle_camera, muzzle bone tables; run 0/1
+Player.lastAttacker | OK | code: writers actor_takeDamage, net_processGamePacket, setup -1; readers msg_kill (main_loop killPending), bot retarget, net_sendPlayerState, main_loop 2184; run -1 .. 7
+Player.controlledBy | OK | code: writer actor_setupFromParts (a3); readers actor_processFrame (== Stage.playerActor: run here), award, takeDamage, item code; run 0 .. 2 (mp, replay)
+Player.bot | OK | code: writers actor_setupFromParts (spawn[1]: map actors 1), reset; readers actor_processFrame (bot AI, inBooster 1, ammo spent unless 2, input cleared), main_loop 1443 respawn; run 0/1
+Player.pos | OK | code: writer actor_processFrame (from nextPos or deathPos); readers everywhere (rays, cameras, bots, splash); run world coords
+Player.pitch | OK | code: copied from nextPitch; readers actor_processFrame (want, pose, bot aim), cameras; run -890 .. 890
+Player.nextForward | OK | code: writers key_axis (inForward / inBackward, tops 1 / -1 or runTop), remote easing; readers frame copy, nextLean, effectScale, net_sendPlayerState (x10); run -2.4 .. 6.99
+Player.fireCycle | OK | code: writer actor_processFrame (+= dt / cycleTime, 0 at 1); reader the same (fireAnim follows it); run 0 .. 1
+Player.burstLeft | OK | code: writer actor_processFrame (burst - m, 0); reader the same (rounds next frames); run 0 .. 4
+Player.weaponLowering | OK | code: writers actor_selectWeapon (1), actor_processFrame (0 once raise reaches 0); readers actor_processFrame (lower / raise, firing allowed only at 0); run 0/1
+Player.weaponRaise | OK | code: writers actor_processFrame (-3 / s lowering, +3 / 2.25 (item 3) / 1.95 (item 11) raising), setup 1; readers firing (>= 1), hold (600 x (1 - this)), muzzle_camera; run 0 .. 1
+Player.followTarget | OK | code: writers script commands 21 / 12, actor_processFrame (-1 when not alive); readers actor_processFrame (goal towards it over 3000, aim_at); run -1
+Player.botTarget | OK | code: writers actor_processFrame (scan, retarget on hit / homing), weapons.c, setup -1; readers actor_processFrame (aim, fire, goal), script commands 8 / 9; run -1 .. 7
+Player.detectionRangeSq | OK | code: writers mech_stats ((head range x factor + rangeBonus)^2), actor_applySpawnRecord ((range x 100)^2); readers actor_processFrame (bot target within it), armc (sqrt); run 4e8 .. 1.69e10
+Player.armorMax | OK | code: writers mech_stats, spawn record, fixed-energy game types (10 / 150); readers actor_startingValues, cheat 0, stateFlags 1 / 2, pickups (+100 EXTENDED), botNeeds, checkDataLoss; run 150 .. 220
+Player.shieldMax | OK | code: as armorMax (chest maxShield x factor x shieldFactor); readers regen cap, stateFlags 4 / 8, pickups, cheat 0; run 100 .. 270
+Player.ammoMax | OK | code: writer mech_stats (arms stats x ammoFactor + ammoBonus; 100 in fixed types); readers startingValues (ammo = half), cheat 1, stateFlags 0x10 << k, pickups, checkDataLoss; run 40 .. 555
+Player.speed | OK | code: writers mech_stats (legs / booster, >= 100), spawn record (km/h x 27.7778), script commands 12 (baseSpeed) / 13; readers actor_processFrame (want = forward / strafe x speed), moveAccel, runTop; run 2796 .. 8458
+Player.unused1c | RENAME -> unused64 | only written (actor_applySpawnRecord copies SpawnRecord.unused1c; mech_stats sets 100); no reader. The name carries the spawn record's offset (+0x1c), not the Player's own +0x64, so it reads as a wrong offset; run 0 / 100
+Player.baseSpeed | OK | code: writers spawn record, mech_stats (= speed); readers script command 12 (speed restored), actor_checkDataLoss (close_enough); run 2796 .. 8458
+Player.turnRate | OK | code: writers spawn record (x10), mech_stats (900); reader actor_processFrame (bot turn limit dt x this); run 900 .. 2200
+Player.unused34 | RENAME -> unused70 | only written (spawn record bits; mech_stats 3.0); no reader. As unused1c: the name is the spawn record's offset (+0x34), the Player's is +0x70 (its float type is handled elsewhere); run 0.5, 1, 3 as floats
+Player.aimError | OK | code: writers spawn record (x10, whole), mech_stats (10); reader actor_processFrame (bot shot dir: pitch / yaw - aimError + rand_below(2 x aimError)); run 10, 20, 30
+Player.scriptFlag | OK | code: writers spawn record, mech_stats (0), script commands 10 / 11 (0 / 1); no reader; NOT SEEN: a mission script with command 11
+Player.dodgeSpread | OK | code: writers spawn record (x100), mech_stats (1000); reader actor_processFrame (sideways goal rand(2 x this) - this); run 1000, 5000
+Player.climbSpread | OK | code: writers spawn record (x100), mech_stats (500); reader actor_processFrame (botGoal[1] = pos[1] + rand - this); run 500, 5000
+Player.botParams | OK | code: writers spawn record, mech_stats (2, 1, 4000, 5, 1); readers actor_processFrame ([0] dodgeTime, [1] heightTime, [2] distance kept, [3] burstPause, [4] burstFire), weapons.c 76 / 77; run 1 .. 4000
+Player.inForward | OK | code: writers actor_setInput, bot goal code; readers key_axis, energy spend; run 0/1
+Player.inBackward | OK | code: writers actor_setInput, bot goal; readers key_axis (to runTop[1] / -1), energy; run 0/1
+Player.inStepLeft | OK | code: writers actor_setInput, bot goal (G > 0); readers key_axis, energy; run 0/1
+Player.inStepRight | OK | code: writers actor_setInput, bot goal; readers key_axis, energy; run 0/1
+Player.inPitch | OK | code: writers match_frame (mouse), bot turn (angle_turn limited by turnRate); reader actor_processFrame (nextPitch = pitch + this); run -140 .. 18
+Player.inYaw | OK | code: writers match_frame (mouse x turn rate), bot turn; reader actor_processFrame (nextYaw = yaw + this); run -375 .. 18
+Player.inFire | OK | code: writers actor_setInput, bot bursts, script command 20; readers actor_processFrame (firing), firePrev; run 0/1
+Player.inAltitude | OK | code: writers actor_setInput, bot goal (vertical); reader key_ramp (nextClimb); run 0/1
+Player.inBooster | OK | code: writers actor_setInput, bots 1, overheat clears; readers key step x2, runTop tops, key_ramp nextRun, energy, footstep sound; run 0/1
+Player.inWeaponSlot | OK | code: writer actor_setInput; reader actor_processFrame (actor_selectWeapon when >= 0); run -1 .. 5
+Player.inPrevWeapon | OK | code: writer actor_setInput; reader actor_processFrame (actor_prevWeapon); run 0/1
+Player.inNextWeapon | OK | code: writer actor_setInput; reader actor_processFrame (actor_nextWeapon); run 0/1
+Player.path | OK | code: writers actor_pickPathPoint, script commands 7 / 22 / 23, actor_processFrame (-1 stuck or at the end); readers actor_processFrame (path point, script_processCommandBy), actor_pickPathPoint; run -1 .. 40
+Player.pathPoint | OK | code: writers actor_pickPathPoint, script commands, actor_processFrame (stepped); readers actor_processFrame (PATH_POINT, command run within 1000); run -1 .. 26
+Player.outOfPlay | OK | code: writer script_holdActor (command 24 value; 25 clears); readers actor_processFrame (skip weapons etc.: goto tail; others slide through), actor_drawIntoView (1: not drawn), splash (1 spared), bullet hit test (!= 0 missed); NOT SEEN: a mission script with command 24
+Player.detectionAngle | COMMENT | code: writer mech_stats (head detectionAngle x character factor 3); readers hud_main 58 (alert ring size), armc (x0.1), actor_checkDataLoss, and stage_setupView (render/objects.c 321 reads it raw as "me + 4": the lock-on cone g_cosTable[this % 3600]). The comment omits that main use (and objects.c's raw +4 read should name it) -> "DETECTION ANGLE (ARM CENTER), tenths of a degree: the head's detectionAngle x the pilot's skill factor (mech_stats); the local player's lock-on cone (stage_setupView: an enemy's facingCos must exceed g_cosTable[this]), the HUD alert ring's size, actor_checkDataLoss"
+Player.score | COMMENT | code: writers award (+ g_fragPoints[victim's grade], x5 for the King), match start (main_loop 1735: Scene.levelPoints); readers hud_main 133 (top left after the grade badge), award (grade = level_fromPoints(score)), ladder_addMatchScores (g_ladderExp += score - scoreCounted); run 0 .. 60 in steps of 5 -> "its points (frag points: award adds g_fragPoints by the victim's grade; the local player starts from Scene.levelPoints); its grade is level_fromPoints of it; shown top left; what it gained is added to the Ladder exp (ladder_addMatchScores)"
+Player.active | OK | code: writers actor_setupFromParts (1), actor_deactivate / stage_clearActorSlots (0); readers actor_loadWeapon / part_load (skip when 0), main_loop (press fire), many loops; run 0/1
+Player.spawnAge | OK | code: writers actor_processFrame (+= dt; = dropAge at state 3), setup; readers firing (> 3 s), bullet hits (> 3), emitters fade, HUD blink, dropAge; run 0 .. 175
+Player.armor | OK | code: writers actor_takeDamage, startingValues, pickups, cheat 0, command 16, net; readers HUD (ARMOR), death check (<= 0), botNeeds, stateFlags; run 0 .. 220
+Player.shield | OK | code: writers actor_takeDamage, regen, pickups, cheat 0; readers HUD (SHIELD), stateFlags; run 0 .. 270
+Player.ammo | OK | code: writers startingValues (half of ammoMax), shots (-= ammoPerShot), pickups, cheat 1; readers HUD counters, out-of-ammo tests, stateFlags; run 0 .. 277
+Player.slot | OK | code: writer actor_setWeaponSlot; readers actor_processFrame (items[slot]), HUD slot icon cell (slot % 3, slot / 3 + 2), net_sendPlayerState, main_loop; run 0 .. 5
+Player.heldItem | OK | code: writer actor_setWeaponSlot (weapons.c 43: items[slot]); readers hud_main (snapshot texture, lock ring), stage_setupView (targetingTime); run -1 .. 36
+Player.fireAnim | OK | code: writers actor_processFrame (0.0001 when a round goes, then the cycle); readers anim_setTime (weapon model), firing gate (!(> 0)), glow, hud_main crosshair (0x48 and alpha 0.75 when > 0); run 0 .. 1
+Player.stateFlags | OK | code: writers actor_processFrame (worked out each frame), net_processGamePacket, setup (id % 2 -> 0x4000); readers cloak tests 0x200, 0x100 damage amp, 0x800 armour, 0x400 booster, 0x1000 big head, 0x2000 hit flash texture, hud_main timer icons (0x100 << k), net_sendPlayerState; run 0 .. 24704
+Player.timers | OK | code: writers item_pickup (30 s), the King (1000 / capped), countdown; readers hud_main (icons; [2] blue energy bar), breath sound ([2]), stateFlags bits, checkDataLoss; run 0 .. 1000
+Player.slotIconTime | OK | code: writers actor_selectWeapon (2.0), countdown, setup 0; readers hud_main 198 / 479 (icon alpha); run 0 .. 2
+Player.energy | OK | code: writer actor_processFrame (spent dt / boostTime, refilled dt / rechargeTime), setup 1; readers warned (<= 0.2), overheat (0 / 0.5), hud_main energy bar; run 0 .. 1
+Player.overheat | OK | code: writer actor_processFrame (1 at energy 0, 0 once >= 0.5), setup 0; readers inBooster cleared, hud_main red bar, breath sound; run 0/1
+Player.warned | OK | code: writer actor_processFrame (energy <= 0.2), setup 0; readers hud_main blink, breath sound; run 0/1
+Player.lastHitWeapon | OK | code: writers actor_takeDamage (weapon), net_processGamePacket (b[0x12]), setup -1; readers net_sendPlayerState (packet 0x12), msg_kill's weapon name; run -1 .. 20
+Player.ammoKind | OK | code: writers actor_loadWeapon (selected slot's ammoType or -1), actor_processFrame (switched weapon); readers hud_main (lit counter); run 0 .. 3
+Player.whiteFlash | OK | code: writers setup (1), item_pickup warp (1), countdown; reader hud_main 450 (white overlay); run 0 .. 1
+Player.hitFlash | OK | code: writers actor_takeDamage / net (0.5), countdown; readers hud_main (red at x0.5), actor_drawIntoView tint, push (squared), bot retarget; run 0 .. 0.5
+Player.homedOn | OK | code: writer actor_processFrame (aimed: a guided round of another machine homing on it), setup 0; readers hud_main (alert ring, beep), bot retarget; NOT SEEN: be targeted by a guided round from another machine (mp)
+Player.name | OK | code: writers actor_setupFromParts / player_setName / scene_restoreNames (small.c 438), main_loop 1759; readers kill / event messages, hud_markers, hud_ranking, hud_messages, the match log; run "Alex"
+Player.grade | OK | code: writers award (level_fromPoints), match start (Scene.level), net (m[0x13]); readers hud_drawEmblem (HUD, markers, ranking), frag points (g_fragPoints[grade]), levelShown, net packet 0x15; run 0/1
+Player.inPlay | OK | code: writers actor_setupFromParts (1), scores reset / spectator (0); readers main_loop (entry menu, spectating, Esc menu item), net_tables 1861; run 0/1
+Player.kills | OK | code: writers award (+1 / +5 King), actor_dies (-1 own hand), resets; readers fragLimit (main_loop 2163), ranking, hud_ranking, hud_clock, log, net; run 0 .. 12
+Player.deaths | OK | code: writers actor_dies, cheat 4, esc_resetScore (hud_escmenu 245), resets; readers ranking ties, hud_ranking, log, net; run 0 .. 8
+Player.killsCounted | OK | code: writers ladder_addMatchScores (frame_loops 192: = kills), resets (0); reader ladder_addMatchScores (g_ladderKills += kills - this); NOT SEEN: a Ladder match with a kill, at its end
+Player.deathsCounted | OK | code: writers ladder_addMatchScores (= deaths), resets; reader ladder_addMatchScores (g_ladderDeaths); NOT SEEN: a Ladder match with a death, at its end
+Player.timePlayed | OK | code: writers actor_processFrame (whole seconds from timeFraction), net (GamePacket), resets; readers hud_ranking (TIME mm:ss), scores.c 119 (Platoon commander), log, net packet; run 0 .. 260
+Player.timeFraction | OK | code: writers actor_processFrame (+= dt; whole seconds moved out), net, resets; readers scores.c 119, net packet 0x15; run 0 .. 1
+Player.player | OK | code: writers actor_setupFromParts, main_loop 1760; readers playerRecords[player] lookups (actor_loadWeapon, part_load, muzzle_camera), team / flag code; run -1 .. 7
+Player.team | OK | code: writers player_setTeam, scene_setLocalTeam, scene_updateRanking (King: 0 / 1), resets; readers takeDamage (team != team), bot targeting, spectating (main_loop), net (shots of a teamless actor dropped); run -1 .. 2 (2: a player slot outside team games, as the comment says)
+Player.state | OK | code: writers actor_setupFromParts (1), actor_dies (2), actor_processFrame (3 after 2 s), player_setTeam (0); readers everywhere (alive tests, bot_spawns, death camera, net bit 0); run 0 .. 3
+Player.screenPos | OK | code: writer stage_setupView (to_screen x, y; depth); readers hud_lockon (box centre), hud_markers; run pixel coords (NaN / huge when behind)
+Player.tagTopLeft | OK | code: writer stage_setupView (radius box corner); readers hud_markers (marks above it), tag_narrow (width); run screen coords
+Player.tagBottomRight | OK | code: writer stage_setupView; reader tag_narrow (width = bottomRight[0] - topLeft[0]); run screen coords
+Player.onScreen | OK | code: writers stage_setupView (0 / 1), reset; readers hud_lockon, hud_markers; run 0/1
+Player.facingCos | OK | code: only writer stage_setupView (-e[2] / |e|); no reader (the test uses the local cosv); run 0.65 .. 1
+Player.aimTime | OK | code: writers stage_setupView (+= dt in the cone with a lock-on item; else 0), reset; readers actor_processFrame (lock made), hud_lockon (aim box); NOT SEEN: hold a lock-on weapon (targetingTime > 0) on an enemy in the detection cone
+Player.lockAnim | OK | code: writer actor_processFrame (0.25 when the lock is made, counted down); reader hud_lockon (box grows by it x 4); NOT SEEN: complete a lock-on (aimTime past lockOnTime x targetingTime)
+Player.labelFade | OK | code: writers stage_setupView (3 when the tag is >= 40 px), countdown, reset; reader hud_markers (alpha / 3); run 0 .. 3
+Player.chatIcon | OK | code: writers main_loop (chat to all 1 / team 2 / done 0), net_processGamePacket, setup; readers hud_markers (icon row), net_sendPlayerState; run 0 .. 2
+Player.isKing | OK | code: writers scene_updateRanking (scores.c 97 / 103), resets; readers frag x5 (award), timers kept, hud_main / markers / ranking marks, checkDataLoss; run 0/1 (host-h2)
+Player.viewMarked | OK | code: writers match_frame / match_drawFrame / replay_frame / hud_pass (1), actor_drawIntoView (0 once drawn); readers actor_drawIntoView (booster list skipped), actor_processFrame (emitters skipped); run 0/1
+Player.isCommander | OK | code: writers scene_updateRanking (scores.c 130 / 132); readers actor_frame 200 (commander frag), hud marks, main_loop 1796; run 0/1 (host-h2)
+Factor.index | OK | code: writer factor_addFactorBy (slot[0] = nextFree), LightFactors_read (file); no reader in src (shading reads from kind on); run 0 .. 176
+Factor.used | OK | code: writer factor_addFactorBy (slot[1] = 1; a new slot's 0); reader factor_addFactorBy (next free = first with used 0); run 0/1
+Factor.kind | OK | code: writers factors_addAmbient (0) / addDirectional (1) / addPointLight (2), file; readers shape_shadingColours (Light.type switch: 0, 1, 2, 3), light_computeLayerLightBy (1 only; 0 / 2 skipped; others fatal); run 0, 1, 2 (3 only in the shading code)
+Factor.colour | OK | code: writers the three add functions (*colour), file; readers shading (R, G, B; ambient copied), light_mix; run 0xff...... packed colours
+Factor.pos | OK | code: writer factors_addPointLight (pos), file; readers shading cases 2 / 3 (through m); run world coords (others: stack leftovers, as the add functions leave them)
+Factor.dir | OK | code: writer factors_addDirectional, file; readers shading case 1, light_computeLayerLightBy; run small vectors (junk in non-directional records: left as the stack held it)
+Factor.radius | OK | code: writer factors_addPointLight (radius: particle lightRadius, map lights), file; readers shading cases 2 / 3 (reach test, fall-off); run 350 .. 6499
+LightFactors.records | OK | code: writers factor_addFactorBy, LightFactors_read (count x 0x2c); readers shape_shadingColours (factors + 4), light_computeLayerLightBy, main_loop 1232; run records
+LightFactors.count | OK | code: writers Light_clearCounts (0), factor_addFactorBy (+1 when nextFree == count), LightFactors_read; readers shading LIGHT_COUNT, light_computeLayerLightBy; run 0 .. 177
+LightFactors.nextFree | OK | code: writers Light_clearCounts, factor_addFactorBy (next unused), LightFactors_read; reader factor_addFactorBy (overflow at 0x400); run 0 .. 177
+LightFactors.enabled | COMMENT | code: writers factor_addFactorBy (1), LightFactors_read (file); never cleared; only reader ObjectList_queue (a pre-lit list is re-lit when tint given, no factors, or this == 1; no pre-lit list exists in this game). The comment's "a pre-lit object list uses them without point lights" does not match -> "1: a light was added (factor_addFactorBy) or read with the pool (LightFactors_read); never cleared. Only ObjectList_queue reads it: a pre-lit list is re-lit with these factors when it is 1 (or a tint is given)"; run 0/1
+MapObject.trigger | OK | code: writer object_initObjectBy (copied with flags, animPeriod); reader mapObject_frame (x100: flag 8 radius, flag 0x10 wait vs waitTime); NOT SEEN (0 in every shipped map, as the comment says)
+MapObject.animPeriod | OK | code: writer object_initObjectBy (type's); reader anim_start (x +-0.001 as object_setAnimation's period); NOT SEEN: 0 in the shipped maps' object files (an object with flag 8 / 0x10)
+MapObject.animTime | OK | code: writers mapObject_frame (+= dt x animRate; mode 1 held at 1, mode 2 by the clock), anim_reset (0); reader skel_getBoneMatrix (t); run 0 .. 1
+MapObject.poseStale | OK | code: writers mapObject_frame (1 while animated; 0 after use), object_initObjectBy memset; reader mapObject_frame; NOT SEEN: set and cleared in the same call (always 0 between frames)
+MapObject.glow | OK | code: writers object_glow (+-4 a second, 0 .. 1), object_initObjectBy (0); readers mapObject_frame (flare alpha, > 0 spawns kind 4); run 0 .. 1
+MapObject.clip | OK | code: writer object_glow (place x viewProjection); reader object_glow (on-screen test); run clip coords
+MapObject.waitTime | OK | code: writers mapObject_frame (+= dt until trigger x 100, then 0), object_initObjectBy (0); reader mapObject_frame; NOT SEEN: a timed object (flag 0x10) in a map
+MapObject.id | OK | code: writer object_initObjectBy (Stage.objectSerial++); no reader seen beyond it; run 0 .. 247
+MapObject.nameIndex | OK | code: only writer object_initObjectBy (index into Stage.objectNames); no reader; run 0 .. 98
+MapObject.animPath | OK | code: writer object_initObjectBy ("%s/%s/%s" stageDir, stageName, animName; else empty); reader anim_start (object_setAnimation's name); run "" (no shipped map names one)
+MapObject.place | OK | code: writer object_initObjectBy (type's place); readers object_initObjectBy (placeMatrix translation; pos without a shape), object_glow (projected), mapObject_frame (flare, proximity distances); run world coords
+MapObject.rotation | OK | code: writer object_initObjectBy (type's quaternion); reader object_initObjectBy (Mat4_fromQuat into placeMatrix); run -1 .. 1
+MapObject.placeMatrix | OK | code: writer object_initObjectBy (translation x rotation); readers object_initObjectBy / mapObject_frame (matrix = placeMatrix x animMatrix); run matrices
+MapObject.placeInverse | OK | code: writer object_initObjectBy; readers object_initObjectBy / mapObject_frame (relMatrix = matrix x placeInverse); run matrices
+MapObject.matrixInverse | OK | code: writers object_initObjectBy, mapObject_frame; readers shape_shadingColours (both colour runs), collision tests; run matrices
+MapObject.animMatrix | OK | code: writers object_initObjectBy (identity), mapObject_frame (skel_getBoneMatrix bone 0); reader mapObject_frame (matrix, animInverse); run rotation-like values
+MapObject.animInverse | OK | code: only written (object_initObjectBy identity, mapObject_frame Mat4_invert); no reader; run inverse values
+MapObject.relMatrix | OK | code: writers object_initObjectBy, mapObject_frame; readers collision_moveSphere / collision_rayTrace (animated objects); run small matrices
+MapObject.relInverse | OK | code: writers object_initObjectBy, mapObject_frame; readers the collision tests (nearObjects); run small matrices
+MapObject.glowSize | OK | code: writer object_initObjectBy (type's bits); reader mapObject_frame (flare[5]: the kind 4 particle's target[0], its size); run 500, 1000, 2000 as floats (type handled elsewhere)
+MapObject.glowColour | OK | code: writer object_initObjectBy; reader mapObject_frame (flare[6] -> the particle's target[1] -> colour); run 0xff...... colours
+MapObject.active | OK | code: writers object_initObjectBy (1), object removal (map_objects.c 0); readers stage_setupView (glow), collision volume / space (active == 1), frame loops; run 0/1
+MapObject.flags | OK | code: writer object_initObjectBy (type's flags); readers stage_drawObject (2), mapObject_frame (1 light / 2 / 8 / 0x10), stage_setupView (1), collision_initVolume (4); run 2, 3, 7
+MapObject.matrix | OK | code: writers object_initObjectBy (placeMatrix), mapObject_frame (placeMatrix x animMatrix); readers stage_drawObject (ViewVolume_queueModel), hit marks (particle matrixFrom), space_buildUnit; run matrices
+MapObject.model | OK | code: writer object_initObjectBy (shape_getByName in objectShapes); readers stage_drawObject, shading, collision, space_pools box; run valid pointers
+MapObject.colourRuns | OK | code: writer object_initObjectBy (two runs in Stage.objectColours); readers shading (run 0 map lights, run 1 dynamic), stage_drawObject; run pointers as u32
+MapObject.colourSide | OK | code: only writer object_initObjectBy (1); readers mapObject_frame (re-shade run 1), stage_drawObject (which run); run 1
+MapObject.unit | OK | code: writers space_buildUnit / collision_initVolume (its unit), object_initObjectBy memset; readers object_setAnimation / anim_reset (space_disableUnit / enableUnit), space_pools 888; run pointers
+MapObject.animated | OK | code: writers object_setAnimation (1), anim_reset (0); readers collision_tris 257, space_pools 888, map_objects removal; run 0/1 (host-h2)
+MapObject.skeleton | OK | code: writer object_setAnimation (skel_getSkeletonPtrBy in objectSkeletons); reader mapObject_frame (skel_getBoneMatrix); run pointers (host-h2)
+MapObject.animRate | OK | code: writers object_setAnimation (1 / period, +-1 near 0; 0 to stop), anim_reset / mode 1 end (0); readers mapObject_frame (time step, modes, flag 8 / 0x10 restarts at +1 / -1); run 0.004 .. 0.025
+MapObject.animMode | OK | code: writer object_setAnimation (mode); reader mapObject_frame switch (1 once, 2 clock loop, 3 reset outside 0 .. 1); run 2
+MapObject.pos | OK | code: writers object_initObjectBy, mapObject_frame (matrix x Model.centre; place without a shape); reader stage_drawObject (cull box); run world coords
+ObjectType.name | OK | code: writer the objects file (map_loadObjectInfoFrom reads 56-record blocks into a stack array); reader object_initObjectBy (Stage.objectNames, shape_getByName); NOT SEEN: a stack-local block during map load (seen through MapObject.nameIndex / model)
+ObjectType.flags | OK | code: file; reader object_initObjectBy (memcpy 12 bytes: flags, trigger, animPeriod into MapObject); NOT SEEN: stack-local (MapObject.flags 2 / 3 / 7 come from it)
+ObjectType.trigger | OK | code: file; reader object_initObjectBy (the 12-byte copy); NOT SEEN: stack-local (0 in every shipped map)
+ObjectType.animPeriod | OK | code: file; reader object_initObjectBy (the 12-byte copy); NOT SEEN: stack-local
+ObjectType.animName | OK | code: file; reader object_initObjectBy (animPath when not empty); NOT SEEN: stack-local
+ObjectType.place | OK | code: file; reader object_initObjectBy (MapObject.place, placeMatrix translation); NOT SEEN: stack-local (MapObject.place seen)
+ObjectType.rotation | OK | code: file; reader object_initObjectBy (MapObject.rotation); NOT SEEN: stack-local
+ObjectType.glowSize | OK | code: file; reader object_initObjectBy (MapObject.glowSize bits); NOT SEEN: stack-local (type handled elsewhere)
+ObjectType.glowColour | OK | code: file; reader object_initObjectBy (MapObject.glowColour); NOT SEEN: stack-local
+ItemType.name | OK | code: writer catalogue_loadItemInfoFrom (Item.dat); reader the same (first byte: a model looked up or none); run "GravityArmor"
+ItemType.shapeName | OK | code: writer Item.dat; reader catalogue_loadItemInfoFrom (shape_getByName into model); run "Item\Special\gravityarmor"
+ItemType.respawnSound | OK | code: writer Item.dat; reader item_update (item_sound when a taken item comes back); run 152 .. 154
+ItemType.pickSound | OK | code: writer Item.dat; reader item_pickup (item_sound, a warp only when it warps); run 140 .. 159
+ItemType.respawnTime | OK | code: writer Item.dat; reader item_update (taken item back once timer > this); run 6 .. 240
+ItemType.model | OK | code: writer catalogue_loadItemInfoFrom; reader stage_drawItems (render/items.c 40: drawn in 3D when set); run pointers
+MapItem.pitch | OK | code: only writer map_loadPlayInfoFrom (rf[7] x scale); no reader; run -767 .. -120
+MapItem.warpTo | COMMENT | code: writer map_loadPlayInfoFrom (r[2]); reader item_pickup (not item_update): the local machine's actor goes to items[warpTo].pos with nextPitch = that item's warpPitch x 10 and nextYaw = that item's angle; lastWarp = it; run 14, 15 (host-h2) -> "a warp zone's: the item it leads to (item_pickup puts the local machine's actor at that item's pos, pitch its warpPitch x 10 and heading its angle)"
+MapItem.warpPitch | COMMENT | code: writer map_loadPlayInfoFrom (r[3], an int); reader item_pickup, for the DESTINATION item (to->warpPitch x 10 -> nextPitch). NOT SEEN (0 in the maps) -> "the pitch an actor arriving here by a warp takes (x 10 into nextPitch; item_pickup reads the destination item's)"
+MapItem.type | OK | code: writer map_loadPlayInfoFrom (r[1], remap_item); readers item_update (itemTypes[type]; < 0 skipped), item_pickup (kind), stage_drawItems, net item states; run 0 .. 37
+MapItem.pos | COMMENT | code: writer map_loadPlayInfoFrom; readers item_update (|actor pos - this| < 1.5 x the ACTOR's radius on every axis), stage_drawItems, item_pickup (warp destination); run world coords. "within 1.5 x its radius" reads as the item's radius -> "where it lies (map_loadPlayInfoFrom); an actor in play within 1.5 x the actor's own radius of it on every axis picks it up (item_update); drawn there (stage_drawItems); a warp zone's destination point (item_pickup)"
+MapItem.angle | COMMENT | code: writer map_loadPlayInfoFrom (rf[8] x scale); item_update adds 600 a second while it lies there (all kinds but 0x22), never wrapped; readers stage_drawItems (glRotatef x 0.1), item_pickup (a warp destination's heading -> nextYaw); run -2698 .. 161506 -> "its turn, tenths of a degree: the play file's second angle x 10, then turned 600 a second while not taken (item_update, kind 0x22 excepted; never wrapped); drawn turned by it (stage_drawItems); a warp destination's heading for the arriving actor (item_pickup)"
+MapItem.taken | OK | code: writers item_pickup (1), item_update (0 on respawn), map load / reset, net (net_tables 2053 / 2209 / 2211); readers item_update, stage_drawItems (not drawn), net_sendItemStates; run 0/1
+MapItem.timer | OK | code: writers item_update (+= dt; 0 on pickup / respawn), net (n x 10); readers item_update (respawnTime), stage_drawItems (fade-in alpha under 1), net_sendItemStates (timer / 10 + 1); run 0 .. 269
+Particle.id | OK | code: writer particle_init (particleSerial++); reader particle_draw (kind 0: frame id % 8); run 0 .. 515070
+Particle.kind | OK | code: writer particle_init (descriptor kind; 50 for a quad); readers particle_init / particle_update / particle_draw switches, light radii; run 0 .. 50
+Particle.owner | COMMENT | code: writer particle_init (descriptor owner: an actor for flashes, the shot flag for 20 .. 26 (weapons.c draw: flag), the 0x2000 flag for 8, a player record for 9, the flare alpha for 4); readers particle_draw: 20 / 21 drawn only when owner != cockpitActor (a 0 / 1 flag compared with an actor index, as the original), 22 / 25 / 26 skipped when 1, 8 texture 4 when non-zero, 4 alpha, 9 cache; particle_beam (1: no dots); run 0 .. 7, 8192 -> append "(kinds 20 / 21 are drawn only when it differs from cockpitActor: the original compares the flag with an actor index)" to the present comment
+Particle.pos | OK | code: writers particle_init, particle_placeAtMatrix, debris; readers particle_draw, culling, sounds, stage_refillLights (light at pos); run world coords
+Particle.target | OK | code: writer particle_init (descriptor target); readers particle_aim / particle_beam (aim point), impacts (normal), debris (velocity), smoke puff scale / alpha, kind 4 (target[0] size, target[1] colour); run mixed by kind (junk words where unused)
+Particle.matrixFrom | OK | code: writer particle_init (descriptor: a muzzle entry's / joint's / map object's matrix pointer); readers particle_init (copied into matrix), particle_draw (hit marks drawn through it); run pointers as u32
+Particle.matrix | OK | code: writers particle_init copy, particle_spin, particle_aim, particle_beam, debris; reader particle_draw; run matrices
+Particle.drawAge | OK | code: writers particle_init (0), particle_update (= age at the step's start); readers particle_draw (fades, marks' alpha after 1 s); run 0 .. 2
+Particle.life | OK | code: writers particle_init (per kind: 0.01 .. 2), particle_beam; reader particle_update (freed past it); run 0.01 .. 2
+Particle.age | OK | code: writers particle_init (0), particle_update (+= dt); readers particle_update (life), drawAge, fades; run 0 .. 2
+Particle.colour | OK | code: writers particle_init (g_white; kind 4: target[1]), particle_beam (colour), particle_draw (ALPHA byte as it fades); readers particle_draw (billboards, shapes); run packed colours
+Particle.lightRadius | OK | code: writers particle_init (0), particle_update (frame_loops 498: (1 - age / life)^2 x size by kind); reader stage_refillLights (teams.c 81: factors_addPointLight when > 0); run 0 .. 4917
+Particle.baseSize | OK | code: writer particle_init (descriptor size); readers particle_draw (square sizes), particle_mark; run 10 .. 350
+Particle.markUv | OK | code: writer particle_mark (corner uv from markCoords); reader particle_draw (hit mark triangle); run -37 .. 43, 0.5 centre
+Particle.markColours | OK | code: writer particle_mark (g_white), particle_draw (alpha (2 - drawAge) x 256 after 1 s); reader particle_draw; run colours with fading alpha
+Particle.quadTexture | OK | code: writer particle_init (quad copy 0x18 bytes); reader particle_draw (ViewVolume_addQuad texture); run 2569 (skirmish)
+Particle.quadUv0 | OK | code: writer particle_init (quad copy); reader particle_draw (ViewVolume_addQuad); run 0.01 .. 0.49
+Particle.quadUv1 | OK | code: writer particle_init (quad copy); reader particle_draw; run 0.008 .. 12.5
+Particle.quadColour | OK | code: writer particle_init (quad copy); reader particle_draw (ViewVolume_addQuad colour); run 0xffffffff
+Particle.quadPoints | OK | code: writer particle_init (four corners from ParticleDesc.quadPoints, life 0.01); reader particle_draw (one quad); run world coords
+Particle.active | OK | code: writers particle_init (1), particle_update (0 past life); readers stage_drawParticles, stage_refillLights, particle_spawn slot search; run 0/1

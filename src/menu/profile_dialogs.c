@@ -34,7 +34,7 @@ static void ask(int kind, int x, int y)
 }
 
 /* 0x44b670, 0x44b6e0: question 3 over the pilot panel, question 5 (log out) over its own panel */
-void (profile_askDelete)(void) { ask(3, g_profileDialogX, g_profileDialogY); }
+void (profile_askDelete)(void) { ask(3, g_deleteDialogX, g_deleteDialogY); }
 void (profile_askLogOut)(void) { ask(5, g_logOutDialogX, g_logOutDialogY); }
 
 /* 0x44f810: the profile screen's page 6, CHARACTER SELECT: only the dialog frame while it opens (g_pilotSelect* box),
@@ -126,7 +126,7 @@ static u32 two_buttons(const TwoButtons *d)
    question MSG(128, "ARE YOU SURE?")) */
 u32 (profile_drawDeleteQuestion)(void)
 {
-	static const TwoButtons d = { ADDR(g_profileDialogX), ADDR(g_profileDialogY), ADDR(g_profileDialogRight), ADDR(g_profileDialogBottom), FN_ADDR(deleteDialog_hitTest, 0x44b320), MSG(127, "ARE YOU SURE?") };
+	static const TwoButtons d = { ADDR(g_deleteDialogX), ADDR(g_deleteDialogY), ADDR(g_deleteDialogRight), ADDR(g_deleteDialogBottom), FN_ADDR(deleteDialog_hitTest, 0x44b320), MSG(127, "ARE YOU SURE?") };
 	return two_buttons(&d);
 }
 u32 (profile_drawLogOutQuestion)(void)
@@ -137,7 +137,7 @@ u32 (profile_drawLogOutQuestion)(void)
 
 /* 0x44de00: the new-profile dialog (g_newNameDialogLeft, 0x9f8ea8 .. 0x9f8f20, g_newNameDialogBottom): the frame, the title MSG(125, "REGISTRY PROFILE"), the
    name field, the two buttons side by side (the hovered one, by newNameDialog_hitTest, bright; OK dimmed while no name has
-   been typed, g_chatLine) and the border. Returns the border call's eax */
+   been typed, g_inputLine) and the border. Returns the border call's eax */
 u32 (profile_drawNewDialog)(void)
 {
 #define X0 g_newNameDialogLeft
@@ -168,7 +168,7 @@ u32 (profile_drawNewDialog)(void)
 		glColor4f(1.0f, 1.0f, 1.0f, k == hovered ? 1.0f : 0.4f);
 		menu_drawWideButton(x + 0xa0, Y0 + 0x5a, x + 0x100, Y0 + 0x7a, 1);
 		set_colour_bits(g_textColour, colour[0], colour[1], colour[2], colour[3]);
-		if (strlen(g_chatLine) == 0 && k == 0) {
+		if (strlen(g_inputLine) == 0 && k == 0) {
 			glColor4f(1.0f, 1.0f, 1.0f, 0.4f);
 			menu_drawWideButton(X0 + 0xa0, Y0 + 0x5a, X0 + 0x100, Y0 + 0x7a, 1);
 			set_colour_bits(g_textColour, dim[0], dim[1], dim[2], dim[3]);
