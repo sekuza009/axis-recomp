@@ -11,6 +11,9 @@ G="C:/Users/Alexander/Desktop/Axis"
 P="$S/$1"
 M="C:/Users/ALEXAN~1/AppData/Local/Temp/claude/C--Users-Alexander-Desktop-Axis/33e72afb-5455-4cef-9fc9-6e39a57131ea/scratchpad"   # gshot/k.sh copies that look for the AxisRC process
 shot() { powershell -NoProfile -ExecutionPolicy Bypass -File "$M/gshot_rc.ps1" "$P-$1.png" 0.5 | tail -1; }
+# keys the game may have quit in the middle of (its window gone before the key-up): released, so none stays held in
+# Windows (a stuck Esc cancelled every later run's loading)
+release_keys() { powershell -NoProfile -Command "Add-Type -Namespace W -Name Rel -MemberDefinition '[DllImport(\"user32.dll\")] public static extern void keybd_event(byte vk, byte scan, int flags, System.IntPtr extra);'; foreach (\$k in '$*'.Split(' ')) { if (\$k) { [W.Rel]::keybd_event([byte][int]\$k, 0, 2, [IntPtr]::Zero) } }"; }
 set -e
 cmp -s "$G/AxisGL.exe" "$R/installed.exe" || { echo "installed exe differs from recomp/installed.exe - stop"; exit 1; }
 test ! -e "$G/recomp.dll" || { echo "a recomp.dll is in the game folder (a harness run?) - stop"; exit 1; }
@@ -24,7 +27,9 @@ shot menu0
 # the steps: <key> <wait> <shot name> ... (key: a virtual-key code, "-" for none, or "@<command>" for a WinDrive
 # command such as "@click 2060 1140": the window's pixels, twice a 0.5 screenshot's)
 shift
+USED=""
 while [ $# -ge 3 ]; do
+	case "$1" in 0x*) USED="$USED $1";; esac
 	if [ "${1:0:1}" = "@" ]; then
 		timeout 30 "$O/um.sh" win drive --proc AxisRC focus "${1:1}" >/dev/null; sleep "$2"
 	else
@@ -35,10 +40,12 @@ while [ $# -ge 3 ]; do
 done
 powershell -NoProfile -Command "if (Get-Process AxisRC -ErrorAction SilentlyContinue) { 'game still running' } else { 'GAME EXITED' }"
 powershell -NoProfile -Command "Stop-Process -Name AxisRC -Force"
+release_keys $USED
 for i in 1 2 3 4 5 6 7 8 9 10; do sleep 1; rm -f "$G/AxisRC.exe" 2>/dev/null && test ! -e "$G/AxisRC.exe" && break; done
 cmp -s "$R/installed.exe" "$G/AxisGL.exe" && echo "installed AxisGL.exe unchanged" || echo "AXISGL.EXE CHANGED"
 diff -r "$R/Save.bak" "$G/Save" >/dev/null && echo "saves unchanged" || {
-	echo "SAVES CHANGED (put back as they were)"; rm -rf "$G/Save"; cp -rp "$R/Save.bak" "$G/Save"; }
+	echo "SAVES CHANGED (put back as they were; as the run left them: <prefix>-Save)"
+	rm -rf "$P-Save"; cp -rp "$G/Save" "$P-Save"; rm -rf "$G/Save"; cp -rp "$R/Save.bak" "$G/Save"; }
 # axis.cfg as the run left it, compared (the settings read and written back unchanged), then the player's put back
 cmp -s "$R/axis.cfg.bak" "$G/initdata/axis.cfg" && echo "axis.cfg unchanged" || { echo "AXIS.CFG CHANGED:"; diff "$R/axis.cfg.bak" "$G/initdata/axis.cfg"; }
 cp -p "$R/axis.cfg.bak" "$G/initdata/axis.cfg"
