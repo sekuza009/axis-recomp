@@ -104,8 +104,7 @@ void fix_cursorClamp(void)
 /* ---- the Esc menu in a match, by mouse (match_frame). The original turned any frame's offset over 50 into a step
    up or down: built for 30 fps and 400 dpi mice, at 120 fps a gentle slide raced through the items. Now the travel
    adds up along the page's own direction - up and down on the main page's column, left and right on the side by side
-   pairs (the team's RED / BLUE, RETRY's and QUIT's YES / NO; a step either way there picks the other item, round
-   and round), the other direction ignored - and each step takes a
+   pairs (the team's RED / BLUE, RETRY's and QUIT's YES / NO), the other direction ignored - and each step takes a
    quarter of the screen's height of movement at the Windows pointer speed (divided by [input] escmenusens). ---- */
 static float g_menuTravel;
 static unsigned g_menuTick;
@@ -133,10 +132,11 @@ void fix_menuNav(Scene *scene)
 	g_menuTravel += d;
 	float sens = platform_pointerSpeed() * g_settings.menuSens * (g_settings.escMenuSens > 0 ? g_settings.escMenuSens : 1);
 	float step = (h > 0 ? h : 480) / 4.0f / sens;
-	if (g_menuTravel <= -step || g_menuTravel >= step) {
-		/* a pair wraps round: a step either way picks the other item (the page's up / down keys pick item 0 / 1) */
-		int down = across ? scene->escCursor == 0 : g_menuTravel > 0;
-		scene->menuKeys[down ? 1 : 0] = 1;
+	if (g_menuTravel <= -step) {
+		scene->menuKeys[0] = 1;
+		g_menuTravel = 0;
+	} else if (g_menuTravel >= step) {
+		scene->menuKeys[1] = 1;
 		g_menuTravel = 0;
 	}
 }
