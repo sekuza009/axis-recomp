@@ -389,7 +389,7 @@ void THISCALL (object_initObjectBy)(Stage *s, int i, const ObjectType *type)
 		ST->objectColourCount += mo->model->colourCount;
 	}
 	mo->colourSide = 1;
-	mo->glowSize = type->glowSize;
+	BITS(mo->glowSize) = BITS(type->glowSize);
 	mo->glowColour = type->glowColour;
 	memset(obj + offsetof(MapObject, unit), 0, 7 * 4);   /* unit .. poseStale */
 	if (shape) {

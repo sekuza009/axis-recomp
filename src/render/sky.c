@@ -140,7 +140,7 @@ static void sky_sides(Stage *stage)
    of its animation; the texture lies still on the ground (its coordinates follow the camera position) */
 static void sky_floor(Stage *stage, float scale)
 {
-	stage_setFog(stage, stage->glFogColour, stage->glFogStart, stage->glFogEnd, stage->glFogDensity);
+	stage_setFog(stage, stage->glFogColour, BITS(stage->glFogStart), BITS(stage->glFogEnd), BITS(stage->glFogDensity));
 	glEnable(GL_FOG);
 	glDisable(GL_CULL_FACE);
 	glEnable(GL_TEXTURE_2D);

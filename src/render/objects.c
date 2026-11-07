@@ -167,7 +167,7 @@ void THISCALL (mapObject_frame)(u8 *s, int i, float dt)
 			flare[2] = BITS(MO->place[0]);
 			flare[3] = BITS(MO->place[1]);
 			flare[4] = BITS(MO->place[2]);
-			flare[5] = MO->glowSize;
+			flare[5] = BITS(MO->glowSize);
 			flare[6] = MO->glowColour;
 			for (int k = 8; k < 13; k++)
 				flare[k] = 0;

@@ -161,9 +161,9 @@ static void round_start(Scene *s)
 	BITS(s->secondFraction) = 0;
 	s->gamePacketTimer = 3.0f;
 	for (int k = 0; k < 3; k++)
-		s->cameraPos[k] = s->cameraSaved[k];
-	BITS(s->cameraAngle[0]) = s->cameraSaved[3];
-	BITS(s->cameraAngle[1]) = s->cameraSaved[4];
+		BITS(s->cameraPos[k]) = BITS(s->cameraSaved[k]);
+	BITS(s->cameraAngle[0]) = BITS(s->cameraSaved[3]);
+	BITS(s->cameraAngle[1]) = BITS(s->cameraSaved[4]);
 	for (s->cameraMode = 0; s->cameraMode < 10; s->cameraMode++)
 		for (int t = 0; t < 6; t++)
 			s->cameraSettings[t][s->cameraMode] = s->cameraPresets[t][s->cameraMode];

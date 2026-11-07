@@ -180,7 +180,7 @@ typedef struct Player {
 	u32 unused1c;   /* +0x64: copied with the spawn record (+0x1c to the actor's +0x64; 100 for a player's mech, the maps' spawns 100, 1000 netsphere, 10 gigantic-core); never read */
 	float baseSpeed;   /* +0x68: the speed as set up (spawn record or mech_stats; see speed): trigger command 12 puts speed back to it, actor_checkDataLoss (totals_agree) compares it with the speed worked out again */
 	float turnRate;   /* +0x6c: a bot's most pitch / yaw turn a second toward its look (botLookPitch / botLookYaw -> inPitch / inYaw; actor_processFrame), tenths of a degree (Vec3_rotateAxis units); the spawn record's +0x2c x 10 (900 = 90 degrees a second for a player's mech) */
-	u32 unused34;   /* +0x70: copied with the spawn record (+0x34 to the actor's +0x70; 3.0 for a player's mech); not read */
+	float unused34;   /* +0x70: copied with the spawn record (+0x34 to the actor's +0x70; 3.0 for a player's mech); not read */
 	i32 aimError;   /* +0x74: a bot's shots wander by -this .. +this - 1 about pitch and yaw, tenths of a degree (actor_processFrame, rand_below(2 x this)); the spawn record's +0x38 (degrees) x 10, whole; 10 for a player's mech */
 	u32 scriptFlag;   /* +0x78: copied with the spawn record (+0x3c to the actor's +0x78); set 0 / 1 by trigger commands 10 / 11; not read */
 	float dodgeSpread;   /* +0x7c: (by use; seen running) a bot's sideways step about its target: up to +- this (the spawn record's +0x40 x 100) */
@@ -412,7 +412,7 @@ typedef struct MapObject {
 	float animInverse[16];   /* +0x1b4: the inverse of animMatrix (identity at setup; mapObject_frame); written, never read */
 	float relMatrix[16];   /* +0x1f4: matrix x placeInverse */
 	float relInverse[16];   /* +0x234: the inverse of relMatrix (object_initObjectBy, mapObject_frame); handed with relMatrix to the collision tests of an animated object (collision_moveSphere, collision_rayTrace: nearObjects) */
-	u32 glowSize;   /* +0x274: the glow flare's half-size (particle kind 4; objects with flag 1 while 3D items are on) */
+	float glowSize;   /* +0x274: the glow flare's half-size (particle kind 4; objects with flag 1 while 3D items are on) */
 	u32 glowColour;   /* +0x278: the glow flare's colour (RGB; its alpha from the glow) */
 	Model *model;   /* +0x27c: its shape (object_initObjectBy: shape_getByName in objectShapes by the type's name): drawn (stage_drawObject), shaded (shape_shadingColours), its collision unit (space_buildUnit), box for animated collisions */
 	u32 colourRuns[2];   /* +0x280: (by use; seen running) two pointers, kept as u32, to its runs of colourCount shading colours in Stage.objectColours (object_initObjectBy): [0] lit by the map lights, [1] [0] re-shaded with the dynamic lights each frame */
@@ -439,7 +439,7 @@ typedef struct ObjectType {
 	char animName[0x40];   /* +0x4c: its animation (empty: none) */
 	float place[3];   /* +0x8c: its position (the object file's): copied to MapObject.place, the translation of placeMatrix (object_initObjectBy) */
 	float rotation[4];   /* +0x98: a quaternion */
-	u32 glowSize;   /* +0xa8: the glow flare's half-size (particle kind 4; objects with flag 1 while 3D items are on) */
+	float glowSize;   /* +0xa8: the glow flare's half-size (particle kind 4; objects with flag 1 while 3D items are on) */
 	u32 glowColour;   /* +0xac: the glow flare's colour (RGB; its alpha from the glow) */
 } ObjectType;
 
@@ -571,7 +571,7 @@ typedef struct Space {
 	i32 cellsX;   /* +0x78: the grid's cells along x (pos[0]) */
 	i32 cellsY;   /* +0x7c: the grid's cells along y (pos[1]) */
 	float cellSize[3];   /* +0x80: a cell's size, stored (z, x, y): cellSize[0] = (max[2] - min[2]) / cellsZ, [1] = x extent / cellsX, [2] = y extent / cellsY */
-	u32 margin;   /* +0x8c: a float (500.0, loading.c): how far the space's box, the grid cells and the blocks' boxes are widened for a triangle put in (space_insertTriangle, space_insertItem) and a point looked up (space_collideAt); also Scene.spaceMargin, the free camera's step cap */
+	float margin;   /* +0x8c: 500.0 (loading.c): how far the space's box, the grid cells and the blocks' boxes are widened for a triangle put in (space_insertTriangle, space_insertItem) and a point looked up (space_collideAt); also Scene.spaceMargin, the free camera's step cap */
 	i32 splitCount;   /* +0x90: items a block holds before it splits (space_setBy; 16, loading.c; space_insertItem) */
 	i32 depth;   /* +0x94: the blocks' recursion depth (at most 8) */
 	i32 lastHit;   /* +0x98: space_collideAt's last result; written, never read */
@@ -991,7 +991,7 @@ typedef struct Manager {
 	i32 dataUsed;   /* +0x12c: bytes of data used: each loaded shape's blockSize added (shape_getByName); 0 again when its shapes are released (ShapeManager_releaseModels: release_all) */
 	char textureSuffix[0x100];   /* +0x130: (shapes) a suffix for its parts' texture names (playerRecord_setPartColour via shape_setTextureSuffix: "_T<player>"; empty: none): shape_bindTextureBy appends "*" and it to each part's name before tex_getIdByName, with bindFlags and the tint */
 	u32 bindFlags;   /* +0x230: (shapes) given to shape_bindTextureBy with the tint; bit 1: tinted (shape_setTint) */
-	u32 tint[6];   /* +0x234: two hue / saturation / value triples (shape_setTint; passed as bits to shape_bindTextureBy) */
+	float tint[6];   /* +0x234: two hue / saturation / value triples (shape_setTint; passed as bits to shape_bindTextureBy) */
 } Manager;
 
 /* a skeleton manager (skel_data.c: SkeletonManager_initBy): Manager's first 0x130 bytes, without the textures and tint */
@@ -1183,7 +1183,7 @@ typedef struct SpawnRecord {
 	float speed;   /* +0x28: km/h: x 27.7778 (to cm/s) the actor's speed and baseSpeed (actor_applySpawnRecord) */
 	float turnRate;   /* +0x2c: x 10: the actor's turnRate */
 	float range;   /* +0x30: its detection range (squared, x 10000: the actor's detectionRangeSq) */
-	u32 unused34;   /* +0x34: copied to the actor's +0x70 (actor_applySpawnRecord; 3.0 for a player's mech); never read */
+	float unused34;   /* +0x34: copied to the actor's +0x70 (actor_applySpawnRecord; 3.0 for a player's mech); never read */
 	float aimError;   /* +0x38: the actor's aimError in degrees (actor_applySpawnRecord: x 10, whole, into Player.aimError) */
 	u32 scriptFlag;   /* +0x3c: copied to the actor's +0x78 (Player.scriptFlag; actor_applySpawnRecord); not read */
 	float dodgeSpread;   /* +0x40: x 100 */
@@ -1387,12 +1387,12 @@ typedef struct Stage {
 	LightFactors dynamicLights;   /* +0x9d8010: (by use; seen running) the lights cleared each frame (stage_resetDynamicLights); the objects' second colours */
 	LightFactors actorLights;   /* +0x9e3020: (by use; seen running) the actors' light: a grey ambient one and one from above (actor_slots.c) */
 	i32 clearOn;   /* +0x9ee030: (by use; seen running) the clear colour read from the ground info: on */
-	u32 clearColour[4];   /* +0x9ee034: r g b (floats' bits; glClearColor's alpha is always 1): read with clearOn from the ground info (map_loadGroundInfoFrom, 16 bytes); the fourth word is read but never used */
+	float clearColour[4];   /* +0x9ee034: r g b a (glClearColor's alpha is always 1): read with clearOn from the ground info (map_loadGroundInfoFrom, 16 bytes); the fourth word is read but never used */
 	i32 fogOn;   /* +0x9ee044: the fog read from the ground info: 1 on (stage_setFog: glFogColour ..; match_drawFrame and the scene pass check it) */
-	u32 glFogColour[4];   /* +0x9ee048: the fog OpenGL draws with (stage_setFog): r, g, b, a (floats, kept as bits) */
-	u32 glFogStart;   /* +0x9ee058: (floats, kept as bits) */
-	u32 glFogEnd;   /* +0x9ee05c: (a float, kept as bits) */
-	u32 glFogDensity;   /* +0x9ee060: (a float, kept as bits) */
+	float glFogColour[4];   /* +0x9ee048: the fog OpenGL draws with (stage_setFog): r, g, b, a */
+	float glFogStart;   /* +0x9ee058: where the fog starts (GL_FOG_START; from the ground info: map_loadGroundInfoFrom) */
+	float glFogEnd;   /* +0x9ee05c: where the fog is full (GL_FOG_END; from the ground info) */
+	float glFogDensity;   /* +0x9ee060: the fog density (GL_FOG_DENSITY; from the ground info; linear fog ignores it) */
 	i32 skyMode;   /* +0x9ee064: the sky sphere: 0 none, 1 the upper half, 2 whole (render/sky.c) */
 	i32 skyTextures[6];   /* +0x9ee068: one per face (texture ids) */
 	float skySphere[6][7][7][3];   /* +0x9ee080: per face a 7 x 7 grid of points (scaled 10000 when drawn) */
@@ -1639,11 +1639,11 @@ typedef struct Scene {
 	i32 menuBoxTexture;   /* +0xbc06b4: texture id of the menu box cells (3 x 3 of 32 texels, hud_drawMenuBox) and the weapon slot icons (3 x 2 cells of 64 from row 128; hud_drawMain) (= Stage.effectTextures[6]) */
 	u8 _pad0bc06b8[0x21040];
 	i32 clearOn;   /* +0xbe16f8: = Stage.clearOn (the same word): 1: the screen is cleared to clearColour (the map\'s ground info) */
-	u32 clearColour[3];   /* +0xbe16fc: = Stage.clearColour (its r, g, b; floats' bits): the clear colour (the map's 4th value is never read) */
+	float clearColour[3];   /* +0xbe16fc: = Stage.clearColour (its r, g, b): the clear colour (the map's 4th value is never read) */
 	u8 _pad0be1708[0x4];
 	i32 fogOn;   /* +0xbe170c: = Stage.fogOn (the same word): 1: fog on (the map\'s ground info), for the objects\' pass */
-	u32 fogColour[4];   /* +0xbe1710: = Stage.glFogColour (the same words): the fog's r, g, b, a (floats' bits) */
-	u32 fogParams[3];   /* +0xbe1720: = Stage.glFogStart, glFogEnd, glFogDensity (floats' bits) */
+	float fogColour[4];   /* +0xbe1710: = Stage.glFogColour (the same words): the fog's r, g, b, a */
+	float fogParams[3];   /* +0xbe1720: = Stage.glFogStart, glFogEnd, glFogDensity */
 	u8 _pad0be172c[0x18d0];
 	float unusedBe2ffc;   /* +0xbe2ffc: (= Stage.unused9ef934) a float read with the ground file's limits (0.5 .. 1.3 by map), 1.0 from scene_startSession; never read */
 	i32 mapNumber;   /* +0xbe3000: (by use; seen running) the map's own number from its ground section (= Stage.mapNumber): checked against g_mapIndex while loading ("file damaged!") and sent in the game packets, where a client with another for the same map has data loss */
@@ -1688,7 +1688,7 @@ typedef struct Scene {
 	i32 kingOfTheHill;   /* +0x22e719c: = Stage.kingOfTheHill (the same word, game type 12): the ranking's leader is the king (isKing, team 0; the others team 1; scene_updateRanking); no team mate arrows or leader marks */
 	i32 platoon;   /* +0x22e71a0: = Stage.platoon (the same word, game type 13): each team's commander (isCommander: the most time played; scene_updateRanking, teamCommanders) replaces the leader mark / rank */
 	u8 _pad22e71a4[0x7084];
-	u32 cameraSaved[5];   /* +0x22ee228: (by use; seen running) the camera a retry restarts from (floats' bits): position into cameraPos, pitch / heading into cameraAngle (= Stage.startPos and startAngle) */
+	float cameraSaved[5];   /* +0x22ee228: (by use; seen running) the camera a retry restarts from: position into cameraPos, pitch / heading into cameraAngle (= Stage.startPos and startAngle) */
 	StartPoint spawnPoints[32];   /* +0x22ee23c: (by use; seen running) the spawn points (scene_pickSpawnPoint: the first one no actor stands near) (= Stage.starts) */
 	i32 spawnPointCount;   /* +0x22ee4bc: (by use; seen running) spawn points from 0x22ee23c, 0x14 bytes each (= Stage.startCount) */
 	u8 _pad22ee4c0[0x1f48];
@@ -1717,7 +1717,7 @@ typedef struct Scene {
 	i32 crosshairTexture;   /* +0x233c9f8: texture id of "Texture/Crosshair/Crosshair<g_crosshairSetting>" (game_processLoadingMode, loading stage 6); main_crosshair binds it */
 	i32 playing;   /* +0x233c9fc: 1: the view is a player's: in a match the local player plays (0: spectating watchedPlayer by cameraSlot); in a replay a player is followed (0: the free camera) */
 	i32 unused233ca00;   /* +0x233ca00: (by use; seen running) only written: 0 by scene_startSession */
-	u32 cameraPos[3];   /* +0x233ca04: (by use; seen running) the camera's position (floats' bits; scene_startSession: the origin) */
+	float cameraPos[3];   /* +0x233ca04: (by use; seen running) the camera's position (scene_startSession: the origin) */
 	float cameraDir[3];   /* +0x233ca10: its direction (-Z) */
 	float cameraUp[3];   /* +0x233ca1c: its up (Y) */
 	float cameraAngle[2];   /* +0x233ca28: its pitch (within +-890) and heading (wrapped at 3600; the free camera) */

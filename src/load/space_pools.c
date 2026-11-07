@@ -164,7 +164,7 @@ void THISCALL (space_setBy)(u8 *space, const u32 *mn, const u32 *mx, int cz, int
 	else if (cells > SP->cellCapacity)
 		sys_fatalErrorN((char *)OBJ(g_logCollisionVolume), (const char *)STR(0x4c79bc, "blockIndexTable overflow((%dx%dx%d=%d..."), cz, cx, cy, cells, SP->cellCapacity);
 	SP->splitCount = splitCount;
-	SP->margin = margin;
+	BITS(SP->margin) = margin;
 	SP->depth = depth;
 	SP->cellSize[0] = (float)(((long double)SP->max[2] - SP->min[2]) / SP->cellsZ);
 	SP->cellSize[1] = (float)(((long double)SP->max[0] - SP->min[0]) / SP->cellsX);
@@ -273,7 +273,7 @@ int THISCALL (space_collideAt)(u8 *grid, u32 r, const float *pos, const float *v
 		to[c] = f32(FADD(pos[c], vel[c]));
 	memcpy(outPos, to, sizeof to);
 	const float *low = sp->min, *high = sp->max;
-	const float *margin = (const float *)&sp->margin;
+	const float *margin = &sp->margin;
 	const float *size_z = &sp->cellSize[0], *size_x = &sp->cellSize[1], *size_y = &sp->cellSize[2];
 	for (int c = 0; c < 3; c++)
 		if (fsub_m(fld_m(&low[c]), margin) >= outPos[c])
@@ -358,7 +358,7 @@ int THISCALL (space_insertItem)(u8 *space, u8 *block, u8 *item, int depth)
 	SpaceBlock *bk = (SpaceBlock *)block;
 	Space *sp = (Space *)space;
 	const float *low = (const float *)block, *high = bk->high;
-	if (!collisionTri_meetsBox(item, low, high, sp->margin))
+	if (!collisionTri_meetsBox(item, low, high, BITS(sp->margin)))
 		return 0;
 	SpaceNode *first = bk->items;
 	if (first && first->item == item)
@@ -421,7 +421,7 @@ u8 *THISCALL (space_insertTriangle)(u8 *space, u32 flags, const float *v0, const
 				((u32 *)low)[c] = ((const u32 *)others[k])[c];
 		}
 	const float *grid_low = sp->min, *grid_high = sp->max;
-	const float *margin = (const float *)&sp->margin;
+	const float *margin = &sp->margin;
 	const float *size_z = sp->cellSize, *size_x = &sp->cellSize[1], *size_y = &sp->cellSize[2];
 	for (int c = 0; c < 3; c++)
 		if (!(fadd_m(fld_m(&grid_high[c]), margin) > low[c]))

@@ -559,7 +559,7 @@ u32 THISCALL (match_mechTestFrame)(u8 *s)
 		actor_setActorTypeItemInfoBy((Stage *)stage, 0, slot, item);
 		actor_selectWeapon((Stage *)stage, 0, slot);
 	}
-	float *cam = (float *)SC->cameraPos, *dir = SC->cameraDir, *up = SC->cameraUp;
+	float *cam = SC->cameraPos, *dir = SC->cameraDir, *up = SC->cameraUp;
 	cam[0] = cam[1] = 0;
 	cam[2] = f32(fld_m((const float *)&SC->cameraSettings[2][SC->cameraMode]));
 	Vec3_rotateAxis(cam, 1, ftol(fld_m(SC->cameraAngle)));
@@ -626,8 +626,8 @@ u32 THISCALL (match_mechTestFrame)(u8 *s)
 static void start_view(u8 *s)
 {
 	memcpy(SC->cameraPos, SC->cameraSaved, 12);
-	BITS(SC->cameraAngle[0]) = SC->cameraSaved[3];
-	BITS(SC->cameraAngle[1]) = SC->cameraSaved[4];
+	BITS(SC->cameraAngle[0]) = BITS(SC->cameraSaved[3]);
+	BITS(SC->cameraAngle[1]) = BITS(SC->cameraSaved[4]);
 }
 
 /* the current camera preset (cameraMode) back from its stored one: six fields of ten */
@@ -752,7 +752,7 @@ typedef struct { float out[3], delta[3], dist, plane[4]; } Move;
 
 static void free_camera(u8 *s, const float *mv, u32 filter, Move *m)
 {
-	float *cam = (float *)SC->cameraPos, *out = m->out, *delta = m->delta;
+	float *cam = SC->cameraPos, *out = m->out, *delta = m->delta;
 	int hit = collision_moveSphere((u8 *)SCENE_STAGE(s), 500.0f, cam, mv, 0x43fa0000, 0, out, delta, &m->dist, m->plane, filter);
 	memcpy(cam, out, 12);
 	if (hit == 1) {
@@ -793,7 +793,7 @@ static void preset_angles(u8 *s, const u8 *t, u32 preset)
    eye 0), short of what is in the way, at most 300 off; facing (0, 0, 1) */
 static void orbit_from(u8 *s, const u8 *t, u32 preset, int eye)
 {
-	float *cam = (float *)SC->cameraPos, a[3] = { 0, 0, 0 }, b[3], to[3], d[3];
+	float *cam = SC->cameraPos, a[3] = { 0, 0, 0 }, b[3], to[3], d[3];
 	if (eye) {
 		a[1] = f32(FMUL(((const Player *)t)->radius, k_0_85f));   /* 0.85 */
 		Vec3_rotateAxis(a, 1, ftol(fld_m(SC->cameraAngle)));
@@ -840,7 +840,7 @@ static void orbit_camera(u8 *s, int i)
 static void pair_camera(u8 *s)
 {
 	int me = SC->watchedPlayer, best = -1, n = SC->playerCount;
-	float *mid = SC->cameraTarget, *cam = (float *)SC->cameraPos, *dir = SC->cameraDir, d[3], t[3];
+	float *mid = SC->cameraTarget, *cam = SC->cameraPos, *dir = SC->cameraDir, d[3], t[3];
 	float nearest;
 	BITS(nearest) = 0x7f7fffff;
 	for (int j = 0; j < n; j++)
@@ -898,7 +898,7 @@ static void look_toward(u8 *s, const float *p)
 static void watch_camera(u8 *s)
 {
 	int me = SC->watchedPlayer;
-	float *mid = SC->cameraTarget, *cam = (float *)SC->cameraPos, hit[3];
+	float *mid = SC->cameraTarget, *cam = SC->cameraPos, hit[3];
 	look_toward(s, &SC->players[me].pos[0]);
 	if (collision_rayTrace((u8 *)SCENE_STAGE(s), cam, mid, hit)) {
 		me = SC->watchedPlayer;
@@ -1191,7 +1191,7 @@ u32 THISCALL (replay_frame)(u8 *s)
 				watch_camera(s);
 			float *dir = SC->cameraDir, *up = SC->cameraUp;
 			for (int k = 0; k < 3; k++)
-				dir[k] = f32(fsub_m(fld_m(SC->cameraTarget + k), (const float *)SC->cameraPos + k));
+				dir[k] = f32(fsub_m(fld_m(SC->cameraTarget + k), SC->cameraPos + k));
 			Vec3_normalize(dir);
 			up[1] = 1.0f;
 			up[0] = up[2] = 0;
@@ -1200,7 +1200,7 @@ u32 THISCALL (replay_frame)(u8 *s)
 	float far = view_farPlane(), near = view_nearPlane();
 	int h = gfx_getHeight(), w = gfx_getWidth();
 	float fov = view_fov();
-	stage_setupView(stage, (float *)SC->cameraPos, SC->cameraDir,
+	stage_setupView(stage, SC->cameraPos, SC->cameraDir,
 	              SC->cameraUp, BITS(fov), w, h, BITS(near), BITS(far), BITS(SC->frameTime));   /* stage_setupView */
 	SC->stateFrames++;
 
@@ -1241,7 +1241,7 @@ u32 THISCALL (replay_frame)(u8 *s)
 			}
 		}
 	if (SC->fogOn == 1) {
-		stage_setFog((Stage *)stage, st->glFogColour, st->glFogStart, st->glFogEnd, st->glFogDensity);
+		stage_setFog((Stage *)stage, st->glFogColour, BITS(st->glFogStart), BITS(st->glFogEnd), BITS(st->glFogDensity));
 		glEnable(GL_FOG);
 	}
 	ViewVolume_draw(view, SC->renderMode, SC->clockFraction);
@@ -1418,7 +1418,7 @@ static void local_spawn(u8 *s)
 		rec[6] = BITS(heading);
 	} else {
 		memcpy(rec + 2, SC->cameraSaved, 12);
-		float pitch = (float)fld_m((const float *)&SC->cameraSaved[3]), heading = (float)fld_m((const float *)&SC->cameraSaved[4]);
+		float pitch = (float)fld_m(&SC->cameraSaved[3]), heading = (float)fld_m(&SC->cameraSaved[4]);
 		rec[5] = BITS(pitch);
 		rec[6] = BITS(heading);
 	}
@@ -1459,7 +1459,7 @@ static void bot_spawns(u8 *s)
 static void killer_view(u8 *s, const u8 *t)
 {
 	Player *act = (Player *)t;
-	float *cam = (float *)SC->cameraPos, *head = (float *)((const Player *)t)->deathPos, d[3], p[3];
+	float *cam = SC->cameraPos, *head = (float *)((const Player *)t)->deathPos, d[3], p[3];
 	int k = act->lastAttacker;
 	for (int j = 0; j < 3; j++)
 		d[j] = f32(FSUB(((Player *)ACTOR_AT(k))->pos[j], head[j]));
@@ -1491,7 +1491,7 @@ static void look_at(u8 *s, const float *p)
 	float *dir = SC->cameraDir, *up = SC->cameraUp;
 	look_toward(s, p);
 	for (int k = 0; k < 3; k++)
-		dir[k] = f32(fsub_m(fld_m(SC->cameraTarget + k), (const float *)SC->cameraPos + k));
+		dir[k] = f32(fsub_m(fld_m(SC->cameraTarget + k), SC->cameraPos + k));
 	Vec3_normalize(dir);
 	up[0] = 0;
 	up[1] = 1.0f;
@@ -1552,7 +1552,7 @@ static void muzzle_camera(u8 *s, const u8 *t)
 	float dy = f32(FSUB(P[1], E[1])), dz = f32(FSUB(P[2], E[2]));
 	long double hx = fmul_m(dx, &f);
 	float hy = f32(FMUL(dy, f)), hz = f32(FMUL(dz, f));
-	float *cam = (float *)SC->cameraPos, *dir = SC->cameraDir;
+	float *cam = SC->cameraPos, *dir = SC->cameraDir;
 	cam[0] = f32(fadd_m(hx, &E[0]));
 	cam[1] = f32(FADD(hy, E[1]));
 	cam[2] = f32(FADD(hz, E[2]));
@@ -2196,7 +2196,7 @@ void THISCALL (match_frame)(u8 *s)
 						watch_camera(s);
 					float *dir = SC->cameraDir, *up = SC->cameraUp;
 					for (int k = 0; k < 3; k++)
-						dir[k] = f32(fsub_m(fld_m(SC->cameraTarget + k), (const float *)SC->cameraPos + k));
+						dir[k] = f32(fsub_m(fld_m(SC->cameraTarget + k), SC->cameraPos + k));
 					Vec3_normalize(dir);
 					up[1] = 1.0f;
 					up[0] = up[2] = 0;
@@ -2236,7 +2236,7 @@ void THISCALL (match_frame)(u8 *s)
 	float far = view_farPlane(), near = view_nearPlane();
 	int h = gfx_getHeight(), w = gfx_getWidth();
 	float fov = view_fov();
-	stage_setupView(stage, (float *)SC->cameraPos, SC->cameraDir,
+	stage_setupView(stage, SC->cameraPos, SC->cameraDir,
 	              SC->cameraUp, BITS(fov), w, h, BITS(near), BITS(far), BITS(SC->frameTime));   /* stage_setupView */
 	stage_setCullMargin(stage, BITS(st->cullMargin));
 	if (SC->localPlayer >= 0)

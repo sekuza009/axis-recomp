@@ -41,13 +41,13 @@ void THISCALL (shape_setMaterialTints)(void *shape, u32 h1, u32 s1, u32 v1, u32 
 /* 0x467660: the model tinted, every shape with it */
 void THISCALL (shape_setTint)(Manager *model, u32 h1, u32 s1, u32 v1, u32 h2, u32 s2, u32 v2)
 {
-	model->tint[0] = h1;
+	BITS(model->tint[0]) = h1;
 	model->bindFlags |= 2;
-	model->tint[3] = h2;
-	model->tint[1] = s1;
-	model->tint[2] = v1;
-	model->tint[4] = s2;
-	model->tint[5] = v2;
+	BITS(model->tint[3]) = h2;
+	BITS(model->tint[1]) = s1;
+	BITS(model->tint[2]) = v1;
+	BITS(model->tint[4]) = s2;
+	BITS(model->tint[5]) = v2;
 	for (int i = 0; i < SHAPE_COUNT((u8 *)model); i++)
 		shape_setMaterialTints(SHAPE((u8 *)model, i), h1, s1, v1, h2, s2, v2);
 }

@@ -44,7 +44,7 @@ void THISCALL (match_drawFrame)(Scene *scene)
 		stage_drawParticles(STAGE(scene), &scene->view);
 		stage_drawItems(STAGE(scene), &scene->view);
 		if (scene->fogOn == 1) {
-			stage_setFog(STAGE(scene), &scene->fogColour, scene->fogParams[0], scene->fogParams[1], scene->fogParams[2]);
+			stage_setFog(STAGE(scene), &scene->fogColour, BITS(scene->fogParams[0]), BITS(scene->fogParams[1]), BITS(scene->fogParams[2]));
 			glEnable(GL_FOG);
 		}
 		ViewVolume_draw(&scene->view, scene->renderMode, scene->clockFraction);

@@ -430,8 +430,8 @@ u8 *THISCALL (shape_getByName)(u8 *cache, const char *name, int bind)
 		}
 		if (mem)
 			mg->dataUsed += md->blockSize;
-		shape_bindTextureBy(shape, mg->textureSuffix, mg->bindFlags, mg->tint[0], mg->tint[1],
-		                    mg->tint[2], mg->tint[3], mg->tint[4], mg->tint[5]);
+		shape_bindTextureBy(shape, mg->textureSuffix, mg->bindFlags, BITS(mg->tint[0]), BITS(mg->tint[1]),
+		                    BITS(mg->tint[2]), BITS(mg->tint[3]), BITS(mg->tint[4]), BITS(mg->tint[5]));
 		mg->count++;
 	}
 	if (bind == 1)
