@@ -1,0 +1,15 @@
+static	src/app/main_loop.c:984:k_replayHeld	k_replayHeld	the replay viewer's held controls: each binding's two keys and the hold flag they set (altitude, step left / right, forward, backward, up, down)
+static	src/app/main_loop.c:990:k_star	k_star	the eight lines of a map light's marker star (markLights): each line's far end, +-100 by these signs
+static	src/app/store_tables.c:39:k_input_initVkTable	k_vkTable	the scan code -> key table (g_vkTable, never read): scan codes 1 .. 0x39 in order, letters / digits / punctuation as their ASCII characters, Esc, Back, Tab, Enter, Shift (0x10), Space; 0 for Ctrl / Alt
+static	src/fixes/input.c:44:g_heldMask	g_buttonsAwaitingRelease	the mouse buttons ignored until seen released (all four while the window is in the background)
+static	src/match/actor_slots.c:344:g_parts	k_partModels	
+static	src/match/actor_slots.c:515:k_partLists	k_partLists	the actor's eight object lists (the five parts, then the three weapon models)
+static	src/menu/screen_enter.c:268:briefing_camera	briefing_camera	the skirmish and mission screens' camera: the eye at (0, 0, -450) looking at (0, 0, -550), that its home, one target point (0, 0, 100) looking at the origin
+static	src/match/match_start.c:154:rows	row_len	(the records in dwords)
+static	src/net/net_tables.c:2020:parts	parts	each part kind's type table, its typeTablePerRow (the dwords sampled per record), its count, its record in dwords
+static	src/menu/lobby_states.c:295:rect	from_reply	
+static	src/menu/lobby_states.c:303:title	to_ladder	
+static	src/menu/lobby_states.c:1473:kept	records	
+static	src/menu/screen_enter.c:124:colours	colours_tunnel	
+static	src/menu/screen_enter.c:338:colours	colours_state	
+static	src/menu/settings_form.c:194:grey	dim_value	

@@ -250,8 +250,8 @@ u32 (profile_listPage)(void)
    what the original leaves in eax */
 u32 (profile_screenClicks)(void)
 {
-	int intro = g_profileQuitting;
-	if (intro && g_profileQuitSkip != 5) {
+	int quitting = g_profileQuitting;
+	if (quitting && g_profileQuitSkip != 5) {
 		u32 r = g_mouseClick ? (u32)g_mouseClick : (*(u32 *)&g_rightClick);
 		if (r) {
 			g_profileQuitSkip = 5;
@@ -261,8 +261,8 @@ u32 (profile_screenClicks)(void)
 		}
 		return r;
 	}
-	if (g_frameOpening || intro)
-		return (u32)intro;
+	if (g_frameOpening || quitting)
+		return (u32)quitting;
 	u32 page = (*(u32 *)&g_profilePage) - 1;
 	switch (page) {
 	case 0: return profileList_mouse();
@@ -444,18 +444,18 @@ u32 (profile_newNamePage)(void)
    written and shown again (profile_resetStatBars). Returns the last call's eax */
 u32 (profile_deleteChosen)(void)
 {
-	int current = g_profileChosen;
-	u8 *records = g_profiles;   /* 0x48 bytes each: +0 a word, +4 the name, +0x44 the pilot */
+	int chosen = g_profileChosen;
+	u8 *records = g_profiles;   /* 0x48 bytes each: +0 the number (ProfileRecord.number), +4 the name, +0x44 the pilot */
 	if (crt_chdir((const char *)STR(0x4b2adc, "save")) == 0) {   /* chdir("save") */
 		char path[0x80];
 		memset(path, 0, sizeof path);
-		strcpy(path, (const char *)(records + current * 0x48 + 4));
+		strcpy(path, (const char *)(records + chosen * 0x48 + 4));
 		strcat(path, (const char *)STR(0x4b2afc, ".axs"));
 		if (!((int)DeleteFileA(path)))   /* DeleteFileA */
 			DeleteFileA(path);
 		crt_chdir((const char *)STR(0x4b2a80, ".."));   /* chdir("..") */
 	}
-	int count = g_profileCount - 1, last = current;
+	int count = g_profileCount - 1, last = chosen;
 	for (; last < count; last++)
 		memcpy(records + last * 0x48, records + (last + 1) * 0x48, 0x48);
 	u8 *freed = records + last * 0x48;

@@ -447,12 +447,12 @@ u32 (menuState900_missions)(void)
 	if (g_frameOpening)
 		return menu_drawFrameOpening(g_missionsWindowLeft, g_missionsWindowTop,
 		                                                     g_missionsWindowRight, g_missionsWindowBottom);   /* menu_drawFrameOpening */
-	int screen = g_missionsPage;
-	if (screen == 10)
+	int page = g_missionsPage;
+	if (page == 10)
 		return missions_frameList();   /* missionList_draw */
-	if (screen == 20)
+	if (page == 20)
 		return missions_frameBriefing();   /* missionBriefing_draw */
-	return screen;
+	return page;
 }
 
 /* 0x444070: the mission list's briefing keys: A does nothing more, C or Esc back to the mission list (page 10), N / P the
@@ -585,7 +585,7 @@ u32 (title_keyDismiss)(void)
 }
 
 /* 0x442d10: the replay list's visible names: up to 10 rows, 20 pixels apart, from the first shown (g_replaySelectFirst) of the
-   g_replayFileCount replays (0x44-byte records from g_replayList): a flagged one (flag) on a red bar with yellow text, the others
+   g_replayFileCount replays (0x44-byte records from g_replayList): a picked one (picked) on a red bar with yellow text, the others
    pale blue. Returns the last text_draw8's eax (0 with no rows) */
 u32 (replaySelect_drawNames)(void)
 {

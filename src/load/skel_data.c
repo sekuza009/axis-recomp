@@ -265,7 +265,7 @@ static void rotate(long double angle, const float *axis)
 	glRotatef_bits(abits, xbits, ((const u32 *)axis)[1], ((const u32 *)axis)[2]);
 }
 
-/* 0x46ab30 (thiscall on a skeleton): bone's matrix at time t (0 .. 1 of the frames frames) into out, worked out on
+/* 0x46ab30 (thiscall on a skeleton): bone's matrix at time t (0 .. 1 of the duration) into out, worked out on
    the GL modelview matrix (saved, then put back): the identity, then the position (the bone's pos, or its keys
    from posKeys, posKeyCount of them, 0x20 bytes: base +8 and delta delta over the key's length +4), then the rotation (the
    angle rotation[0] in k_57_2958f units about rotation[1..3]; or its keys from rotKeys, rotKeyCount of them, 0x28 bytes: a base rotation
@@ -279,33 +279,33 @@ void THISCALL (skel_getBoneMatrix)(u8 *sk, u32 *out, int bone, float t)
 			out[k] = k % 5 == 0 ? 0x3f800000 : 0;   /* 1.0 on the diagonal */
 		return;
 	}
-	const float *unit = k_57_2958f;
+	const float *toDegrees = k_57_2958f;
 	float saved[16];
 	glGetFloatv(0xba6, saved);   /* GL_MODELVIEW_MATRIX */
-	int frames = sko->duration;
-	int frame = ftol(fmul_m(frames, &t));
-	if (frame < 0)
-		frame = 0;
-	else if (frame >= frames)
-		frame = frames;
+	int duration = sko->duration;
+	int animTime = ftol(fmul_m(duration, &t));
+	if (animTime < 0)
+		animTime = 0;
+	else if (animTime >= duration)
+		animTime = duration;
 	glLoadIdentity();
 	u8 *b = sko->bones + bone * 0x70;
 	Bone *bn = (Bone *)b;
 	if (bn->posKeyCount > 0) {
-		float *key = (float *)key_at(bn->posKeys, bn->posKeyCount, 0x20, &frame);
+		float *key = (float *)key_at(bn->posKeys, bn->posKeyCount, 0x20, &animTime);
 		int length = ((int *)key)[1];
-		long double f = length > 0 ? (long double)(frame - ((int *)key)[0]) / length : fld_m((const float *)ADDR(k_0f));
+		long double f = length > 0 ? (long double)(animTime - ((int *)key)[0]) / length : fld_m((const float *)ADDR(k_0f));
 		glTranslatef(fadd_m(fmul_m(f, &key[5]), &key[2]), fadd_m(fmul_m(f, &key[6]), &key[3]), fadd_m(fmul_m(f, &key[7]), &key[4]));
 	} else
 		glTranslatef_bits(BITS(bn->pos[0]), BITS(bn->pos[1]), BITS(bn->pos[2]));
 	if (bn->rotKeyCount > 0) {
-		RotKey *key = (RotKey *)key_at(bn->rotKeys, bn->rotKeyCount, 0x28, &frame);
+		RotKey *key = (RotKey *)key_at(bn->rotKeys, bn->rotKeyCount, 0x28, &animTime);
 		int length = key->length;
-		float f = length > 0 ? f32((long double)(frame - key->time) / length) : 0;
-		rotate(fmul_m(fld_m(&key->rotation[0]), unit), &key->rotation[1]);
-		rotate(fmul_m(FMUL(f, key->step[0]), unit), &key->step[1]);
+		float f = length > 0 ? f32((long double)(animTime - key->time) / length) : 0;
+		rotate(fmul_m(fld_m(&key->rotation[0]), toDegrees), &key->rotation[1]);
+		rotate(fmul_m(FMUL(f, key->step[0]), toDegrees), &key->step[1]);
 	} else
-		rotate(fmul_m(fld_m(&bn->rotation[0]), unit), &bn->rotation[1]);
+		rotate(fmul_m(fld_m(&bn->rotation[0]), toDegrees), &bn->rotation[1]);
 	glGetFloatv(0xba6, (float *)out);
 	glLoadMatrixf(saved);
 }
@@ -532,20 +532,20 @@ void THISCALL (ObjectList_poseBones)(u8 *list, const float *base)
 	u8 **entry = ((u8 **)ol->skeletons) + ol->skel;
 	if (!*entry)
 		return;
-	const float *unit = k_57_2958f, *point = (const float *)ADDR(g_vecOrigin);
+	const float *toDegrees = k_57_2958f, *point = (const float *)ADDR(g_vecOrigin);
 	for (int i = 0; i < ol->count; i++) {
 		Skeleton *sk = (Skeleton *)(*entry);
 		ListedObject *out = (ListedObject *)(((u8 *)ol->entries) + i * 0x64);
 		u8 *b = sk->bones + i * 0x70;
 		Bone *bn = (Bone *)b;
-		int frame = ol->animTick % (sk->duration + 1);
+		int animTime = ol->animTick % (sk->duration + 1);
 		if (i >= sk->boneCount)
 			break;
 		int parent = bn->parent;
 		glLoadMatrixf(parent < 0 ? root : (const float *)(((u8 *)ol->entries) + parent * 0x64 + 0xc));
 		const float *scale = &out->scale;
 		if (bn->posKeyCount > 0) {
-			int at = frame;
+			int at = animTime;
 			PosKey *key = (PosKey *)key_at(bn->posKeys, bn->posKeyCount, 0x20, &at);
 			int length = key->length;
 			long double f = length > 0 ? (long double)(at - key->time) / length : fld_m((const float *)ADDR(k_0f));
@@ -555,23 +555,23 @@ void THISCALL (ObjectList_poseBones)(u8 *list, const float *base)
 			glTranslatef(fmul_m(fld_m(&bn->pos[0]), scale), fmul_m(fld_m(&bn->pos[1]), scale),
 			             fmul_m(fld_m(&bn->pos[2]), scale));
 		if (bn->rotKeyCount > 0) {
-			int at = frame;
+			int at = animTime;
 			RotKey *key = (RotKey *)key_at(bn->rotKeys, bn->rotKeyCount, 0x28, &at);
 			int length = key->length;
 			float f = length > 0 ? f32((long double)(at - key->time) / length) : 0;
-			rotate(fmul_m(fld_m(&key->rotation[0]), unit), &key->rotation[1]);
-			rotate(fmul_m(FMUL(f, key->step[0]), unit), &key->step[1]);
+			rotate(fmul_m(fld_m(&key->rotation[0]), toDegrees), &key->rotation[1]);
+			rotate(fmul_m(FMUL(f, key->step[0]), toDegrees), &key->step[1]);
 		} else
-			rotate(fmul_m(fld_m(&bn->rotation[0]), unit), &bn->rotation[1]);
+			rotate(fmul_m(fld_m(&bn->rotation[0]), toDegrees), &bn->rotation[1]);
 		float *m = out->matrix;
 		glGetFloatv(0xba6, m);
 		transform(out->pos, m, &point[0], &point[1], &point[2]);
-		const Model *own = out->shape;
-		if (own) {
+		const Model *shape = out->shape;
+		if (shape) {
 			for (int r = 0; r < 3; r++)   /* (here the z, x, y terms in that order for the y and z rows) */
 				out->centre[r] = r == 0
-					? f32(fadd_m(FMUL(m[8], own->centre[2]) + FMUL(m[4], own->centre[1]) + FMUL(m[0], own->centre[0]), &m[12]))
-					: f32(fadd_m(FMUL(m[8 + r], own->centre[2]) + FMUL(m[r], own->centre[0]) + FMUL(m[4 + r], own->centre[1]), &m[12 + r]));
+					? f32(fadd_m(FMUL(m[8], shape->centre[2]) + FMUL(m[4], shape->centre[1]) + FMUL(m[0], shape->centre[0]), &m[12]))
+					: f32(fadd_m(FMUL(m[8 + r], shape->centre[2]) + FMUL(m[r], shape->centre[0]) + FMUL(m[4 + r], shape->centre[1]), &m[12 + r]));
 		} else
 			memcpy(out->centre, out->pos, 12);
 	}
@@ -644,7 +644,7 @@ void THISCALL (skel_loadAseFrom)(u8 *sk, void *f, u8 *mem, int memSize)
 		sko->ownsBlock = 0;
 	}
 	sko->bones = sko->block;
-	int keys = sko->boneCount * 0x70;   /* where the next key list goes, after the bones */
+	int keyAt = sko->boneCount * 0x70;   /* where the next key list goes, after the bones */
 	crt_fseek(f, 0, 0);
 	int frames = 0, ms = 0x21, ticks = 0xa0, skip = -1, index = -1, at = -0x70;
 	Bone *b = NULL;
@@ -693,7 +693,7 @@ void THISCALL (skel_loadAseFrom)(u8 *sk, void *f, u8 *mem, int memSize)
 		} else if (!strcmp(t, (const char *)STR(0x4c5398, "TM_ROTANGLE")))   /* TM_ROTANGLE */
 			b->rotation[0] = ase_float(LINE_END, 1);
 		else if (!strcmp(t, (const char *)STR(0x4c5388, "CONTROL_POS_TCB")) || !strcmp(t, (const char *)STR(0x4c5374, "CONTROL_POS_BEZIER"))) {   /* CONTROL_POS_TCB / _BEZIER */
-			b->posKeys = sko->block + keys;
+			b->posKeys = sko->block + keyAt;
 			while (crt_fgets(line, 0x100, f)) {
 				t = crt_strtok(line, (const char *)STR(0x4c535c, "* \t\n"));
 				if (!strcmp(t, (const char *)STR(0x4c5478, "CONTROL_TCB_POS_KEY")) || !strcmp(t, (const char *)STR(0x4c5460, "CONTROL_BEZIER_POS_KEY"))) {
@@ -706,9 +706,9 @@ void THISCALL (skel_loadAseFrom)(u8 *sk, void *f, u8 *mem, int memSize)
 				} else if (t && t[0] == '}')
 					break;
 			}
-			keys += b->posKeyCount * 0x20;
+			keyAt += b->posKeyCount * 0x20;
 		} else if (!strcmp(t, (const char *)STR(0x4c5364, "CONTROL_ROT_TCB"))) {   /* CONTROL_ROT_TCB */
-			b->rotKeys = sko->block + keys;
+			b->rotKeys = sko->block + keyAt;
 			while (crt_fgets(line, 0x100, f)) {
 				t = crt_strtok(line, (const char *)STR(0x4c535c, "* \t\n"));
 				if (!strcmp(t, (const char *)STR(0x4c544c, "CONTROL_TCB_ROT_KEY"))) {
@@ -727,7 +727,7 @@ void THISCALL (skel_loadAseFrom)(u8 *sk, void *f, u8 *mem, int memSize)
 				} else if (t && t[0] == '}')
 					break;
 			}
-			keys += b->rotKeyCount * 0x28;
+			keyAt += b->rotKeyCount * 0x28;
 		}
 	}
 	u8 *all = ((Skeleton *)sk)->bones;

@@ -4,20 +4,20 @@
 #include "../game.h"
 #include <string.h>
 
-/* one screen's received games: flag says new ones arrived; records of stride bytes from base (s = a record's key
+/* one screen's received games: listCount the address of its listed count (nonzero: entries to merge); records of stride bytes from base (s = a record's key
    byte, its rotation flag: its map, most players, players, game mode, frag and time limits the six bytes before, its
-   lock after 9 and password after 10; its name at s + nameOff, its address at s + str2Off); total sums the entries'
+   lock after 9 and password after 10; its name at s + nameOff, its address at s + addressOff); total sums the entries'
    player counts; the three words of clear are cleared when nothing more is coming (g_netListDone 0) */
 typedef struct {
-	u32 flag, base;
-	int stride, nameOff, str2Off;
+	u32 listCount, base;
+	int stride, nameOff, addressOff;
 	u32 total;
 	u32 clear[3];
 } Received;
 
 static void merge(const Received *g)
 {
-	if (GAME_VAR(int, g->flag)) {
+	if (GAME_VAR(int, g->listCount)) {
 		for (int i = 0; i < g_serverPingCount; i++) {
 			if ((*(int *)&((u32 *)g_serverPinged)[i]) != 1)   /* not new */
 				continue;
@@ -41,7 +41,7 @@ static void merge(const Received *g)
 				memset(e->password, 0, 8);
 				strcpy(e->password, (const char *)s + 0xa);
 				memset(e->address, 0, 16);
-				strcpy(e->address, (const char *)s + g->str2Off);
+				strcpy(e->address, (const char *)s + g->addressOff);
 				GAME_VAR(int, g->total) += e->players;
 				g_gameCount = k + 1;
 				sessionList_sort();   /* the list sorted again */

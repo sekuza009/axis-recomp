@@ -36,12 +36,12 @@ static int scan(const char *format, u8 *isDouble, int room)
 					p++;
 			}
 		}
-		int wide = 0;
+		int isInt64 = 0;
 		for (;;) {
 			if (*p == 'h' || *p == 'l' || *p == 'L' || *p == 'F' || *p == 'N' || *p == 'w')
 				p++;
 			else if (p[0] == 'I' && p[1] == '6' && p[2] == '4')
-				p += 3, wide = 1;
+				p += 3, isInt64 = 1;
 			else
 				break;
 		}
@@ -54,7 +54,7 @@ static int scan(const char *format, u8 *isDouble, int room)
 			n += 2;
 			break;
 		case 'd': case 'i': case 'o': case 'u': case 'x': case 'X':
-			n += wide ? 2 : 1;
+			n += isInt64 ? 2 : 1;
 			break;
 		case 'c': case 'C': case 's': case 'S': case 'Z': case 'p': case 'n':
 			n++;

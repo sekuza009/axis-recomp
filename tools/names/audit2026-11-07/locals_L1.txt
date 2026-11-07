@@ -1,0 +1,26 @@
+GROUP L1: 698 locals checked; RENAME 25, COMMENT 0, UNSURE 0
+src/app/classes.c:372 | flag_uploadAtlas | uploaded | RENAME -> newFlag | it is set before any upload, when a player's flag goes into the atlas for the first time (flagShown 0 -> 1), and it decides whether the atlas is uploaded; it never means "uploaded"
+src/app/main_loop.c:74 | menu_frame | blink | RENAME -> repeatClock | it holds g_menuRepeatClock + g_frameTime (the menus' hold-to-repeat clock, reset to 100 past 1e6); nothing blinks
+src/app/main_loop.c:371 | match_combatInput | down | RENAME -> low | the -50 limit; mouseDy/mouseDx below it (the pointer moved up or left) set menuKeys[0] = KEY_UP, so "down" names the wrong way
+src/app/main_loop.c:371 | match_combatInput | up | RENAME -> high | the +50 limit; past it (moved down or right) menuKeys[1] = KEY_DOWN is set (the pair is named backwards; not in the list)
+src/app/main_loop.c:456 | match_mechTestFrame | player | RENAME -> playerRecord | a PlayerRecord * (&SC->playerRecords[act->player]); its parts and items are stepped. "player" reads as the Player actor, which is act / actor here
+src/app/main_loop.c:489 | match_mechTestFrame | slow | RENAME -> zoomFactor | 1 - frameTime x 0.6, used only to multiply (zoom in) or divide (zoom out) the preset's zoom cameraSettings[2][..]; nothing is slowed
+src/app/main_loop.c:1442 | bot_spawns | state | RENAME -> active | it holds SC->players[j].active, tested next to SC->players[j].state (== 3) in the same condition, so "state" names the other field
+src/app/main_loop.c:1445 | bot_spawns | player | RENAME -> playerRecord | a PlayerRecord * (&SC->playerRecords[rec->player]); only its team is read. "player" reads as an actor or an index (rec->player is the index)
+src/app/main_loop.c:1462 | killer_view | head | RENAME -> diedAt | it points to Player.deathPos ("where it died (its position while not in play)"); it is not a head position (the function's comment "behind its head (deathPos)" carries the same guess)
+src/app/ptx_decode.c:267 | ptx_read | bits | RENAME -> bitPos | it holds ptx_readBlock's return, g_ptxBitPos (the bit position in the plane's data), and the next plane starts at (bitPos + 7) / 8 bytes; it is not a set of bits
+src/app/ptx_tables.c:43 | ptx_initYCbCrTables | l10 | RENAME -> bCb | named by a stack offset; table 5 (p + 0xc00), 0x807fff + 0x8000 a step: libjpeg's B -> Cb share (0.5, + the 128 centre and rounding), shared with R -> Cr
+src/app/ptx_tables.c:43 | ptx_initYCbCrTables | l14 | RENAME -> gCr | table 6 (p + 0x1000), -0x6b2f a step = -0.41869: G -> Cr
+src/app/ptx_tables.c:43 | ptx_initYCbCrTables | l18 | RENAME -> bCr | table 7 (p + 0x1400), -0x14d1 a step = -0.08131: B -> Cr
+src/app/ptx_tables.c:43 | ptx_initYCbCrTables | c | RENAME -> rY | table 0, 0x4c8b a step = 0.299: R -> Y (not in the list; one letter, same function, renamed with the others)
+src/app/ptx_tables.c:43 | ptx_initYCbCrTables | d | RENAME -> gY | table 1, 0x9646 = 0.587: G -> Y
+src/app/ptx_tables.c:43 | ptx_initYCbCrTables | s | RENAME -> bY | table 2, starts at 0x8000 (rounding), 0x1d2f = 0.114: B -> Y
+src/app/ptx_tables.c:43 | ptx_initYCbCrTables | e | RENAME -> rCb | table 3, -0x2b33 = -0.16874: R -> Cb
+src/app/ptx_tables.c:43 | ptx_initYCbCrTables | b | RENAME -> gCb | table 4, -0x54cd = -0.33126: G -> Cb
+src/app/small.c:407 | anim_setTime | frame | RENAME -> skeleton | it is ((int **)ol->skeletons)[i], the chosen skeleton (animation) record; frame[8] is its duration in ms (the function's comment: "Skeleton +0x20"), not a frame
+src/app/small.c:870 | actor_setActorTypeItemInfoBy | type | RENAME -> record | a PlayerRecord * (&st->playerRecords[p]) whose items[slot] and itemNames[slot] are set; "type" clashes with the part/item type sense of the setActorType* family
+src/app/timer.c:133 | scene_averageFrameTime | now | RENAME -> dt | it holds TimeSync_frameTime's answer, the frame's duration in seconds (stored into frameTimes[]); it is not a time of day / clock reading
+src/crt/crt_format.c:39 | scan | wide | RENAME -> isInt64 | set only by the "I64" size prefix and makes an integer conversion take 2 argument words; "wide" in printf terms means wide characters (the w / l prefixes, which are skipped)
+src/fixes/kyrie.c:22 | k_slots (struct field) | names | RENAME -> nameCount | a count (8, 8, 16, 16, 20: the models per set, looped i < names * 2); next to the shapeNames offset, "names" reads as names
+src/hud/hud_lockon.c:29 | hud_drawLockOn | timer | RENAME -> holdLeft | lockHeld[i] x 4: the seconds the lock still holds, used as the box's alpha as it runs out (min with fade); the function's "timer" next to "fade" swaps the roles (fade = 1 - grow is the fade-in)
+src/load/files.c:546 | cfg_writeServer | me | RENAME -> arena | it is OBJ(g_arenaName), the arena record (name, then map +0x20, players +0x21, rotation +0x22, game type +0x23, limits +0x24/+0x25); not a player or "self"

@@ -264,7 +264,7 @@ static int ptx_read(void *f, u8 *out, int *fmt, int *width, int *height, int clo
 	ptx_initDequantTables(head.quality);
 	u8 *data = g_ptxData;
 	ptx_fread(data, 1, 0x10000, f);
-	int pos = 0, bits = 0;
+	int pos = 0, bitPos = 0;
 	for (int p = 0; p < planes; p++) {
 		if (p <= 3)
 			g_table = p == 1 || p == 2;
@@ -273,11 +273,11 @@ static int ptx_read(void *f, u8 *out, int *fmt, int *width, int *height, int clo
 		if (w * h > 0)
 			for (unsigned n = (unsigned)(w * h + 0x3f) >> 6; n; n--) {
 				int block[64];
-				bits = ptx_readBlock(block);
+				bitPos = ptx_readBlock(block);
 				ptx_inverseDct(block, plane);
 				plane += 0x40;
 			}
-		pos += (bits + 7) / 8;
+		pos += (bitPos + 7) / 8;
 	}
 	if (close)
 		fclose(f);

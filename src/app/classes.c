@@ -369,7 +369,7 @@ int THISCALL (playerRecord_loadFlag)(Stage *stage, int p)
 void THISCALL (flag_uploadAtlas)(u8 *scene)
 {
 	Stage *st = (Stage *)scene;
-	int uploaded = 0;
+	int newFlag = 0;
 	for (int p = 0; p < 16; p++) {
 		PlayerRecord *pr = &st->playerRecords[p];
 		if (pr->flagChanged != 1)
@@ -382,10 +382,10 @@ void THISCALL (flag_uploadAtlas)(u8 *scene)
 		pr->flagChanged = 0;
 		if (!pr->flagShown) {
 			pr->flagShown = 1;
-			uploaded = 1;
+			newFlag = 1;
 		}
 	}
-	if (uploaded != 1)
+	if (newFlag != 1)
 		return;
 	glPixelStorei(0xcf5, 1);   /* GL_UNPACK_ALIGNMENT */
 	glBindTexture(0xde1, st->flagGlTexture);

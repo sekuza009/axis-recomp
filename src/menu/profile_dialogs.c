@@ -65,16 +65,16 @@ u32 (profile_drawMessageWindow)(void)
 	glLoadIdentity();
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 	menu_drawTextureFlipped(X0, Y0, X1, Y1, g_dialogFrameTexture);
-	int button = X0 + (X1 - X0) / 2 - 0x32;
+	int buttonX = X0 + (X1 - X0) / 2 - 0x32;
 	set_colour_bits(g_textColour, colour[0], colour[1], colour[2], colour[3]);
 	text_drawCentredLines16(X0, Y0 + 0x20, X1, (const char *)MSG(126, "NAME ALREADY REGISTRED"));
 	glEnable(GL_TEXTURE_2D);
 	int texture = g_buttonTexture;
 	tex_bind(g_textures->banks[texture / 512], texture % 512);
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
-	menu_drawWideButton(button, Y0 + 0x50, button + 0x60, Y0 + 0x70, 1);
+	menu_drawWideButton(buttonX, Y0 + 0x50, buttonX + 0x60, Y0 + 0x70, 1);
 	set_colour_bits(g_textColour, colour[0], colour[1], colour[2], colour[3]);
-	text_drawCentredLines16(button, Y0 + 0x58, button + 0x60, (const char *)MSG(115, "$[0] O K"));
+	text_drawCentredLines16(buttonX, Y0 + 0x58, buttonX + 0x60, (const char *)MSG(115, "$[0] O K"));
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 	return GAME_FN(menu_drawTopRightOrnament, 0x428b50, u32, int, int, int, int)(X0, Y0, X1, Y1);   /* the border */
 #undef X0
@@ -290,7 +290,7 @@ static void pilot_stats(int pilot, int x, int y, int step)
    the bar by scale (negative: to the right), in grey; each the button texture's strip 0.05 .. 0.95 (by length) */
 static void stat_bars(int x, int y, int step, const float *scale, float grey)
 {
-	const float *frame = (const float *)ADDR(g_frameTime);
+	const float *frameTime = (const float *)ADDR(g_frameTime);
 	float *bar = g_statBars;
 	const float *target = g_statBarTargets;
 	glEnable(GL_TEXTURE_2D);
@@ -300,7 +300,7 @@ static void stat_bars(int x, int y, int step, const float *scale, float grey)
 	for (int k = 0; k < 9; k++) {
 		glBegin(GL_QUADS);
 		glColor4f(grey, grey, grey, 1.0f);
-		long double eased = fadd_m(fmul_m(fmul_m(FSUB(target[k], bar[k]), frame), (const float *)ADDR(k_0_1f)), &bar[k]);
+		long double eased = fadd_m(fmul_m(fmul_m(FSUB(target[k], bar[k]), frameTime), (const float *)ADDR(k_0_1f)), &bar[k]);
 		bar[k] = f32(eased);
 		long double end = fadd_m(fmul_m(eased, (const float *)ADDR(k_0_01f)), k_0_05f);
 		float s = f32(end);

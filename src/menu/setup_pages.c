@@ -192,21 +192,21 @@ static void key_tab(int tab)
 	for (int r = 0; r < rows[tab]; r++)
 		text_draw8(X0 + 0x30, Y0 + 0x5c + r * 0x18, (const char *)(RELOC(labels[tab]) + r * 0x80));
 	for (int r = 0; r < rows[tab]; r++) {
-		const int *slot = (const int *)(OBJ(g_controlsEdit) + key_rows[tab][r] * 8);
+		const int *pair = (const int *)(OBJ(g_controlsEdit) + key_rows[tab][r] * 8);
 		int y = Y0 + 0x5c + r * 0x18;
 		if (tab == 2 && (r == 4 || r == 9)) {
 			set_colour_bits(g_textColour, 0x3f800000, 0, 0, 0x3f800000);   /* red */
-			if (slot[0] != none) {
-				text_draw16(X0 + 0xc8, y, key_name[slot[0]]);
-				text_draw16(X0 + 0x14a, y, key_name[slot[0]]);
+			if (pair[0] != none) {
+				text_draw16(X0 + 0xc8, y, key_name[pair[0]]);
+				text_draw16(X0 + 0x14a, y, key_name[pair[0]]);
 			}
 			if (r == 4)
 				set_colour_bits(g_textColour, bright[0], bright[1], bright[2], bright[3]);
 			continue;
 		}
 		for (int k = 0; k < 2; k++)
-			if (slot[k] != none)
-				text_draw8(X0 + (k ? 0x14a : 0xc8), y, key_name[slot[k]]);
+			if (pair[k] != none)
+				text_draw8(X0 + (k ? 0x14a : 0xc8), y, key_name[pair[k]]);
 	}
 #undef X0
 #undef Y0
@@ -454,7 +454,7 @@ void (setup_drawTunnel)(void)
 		                                  (const float *)ADDR(k_0_1f)), &g_setupTunnelAlpha));
 	glColor4f(1.0f, 1.0f, 1.0f, g_setupTunnelAlpha);
 	for (int layer = 0; layer < 4; layer++) {
-		/* the strip of the texture: s from s_near (+ ds) to s_far, t from t0 / t1 on by the wall's parity */
+		/* the strip of the texture: s from s0 (+ ds) to s_far, t from t0 / t1 on by the wall's parity */
 		float s0 = 0, ds = 0.5f, t0 = 0, t1 = 0.25f, s_far = 0.5f;
 		if (layer == 3)
 			s0 = 0.5f, ds = 0, t0 = 0.5f, t1 = 0.75f, s_far = 1.0f;
@@ -842,9 +842,9 @@ void (mainmenu_drawMenu)(void)
 		if (!g_menuCameraMove)
 			caption(MSG(71, "SKIRMISH PLAY|Hotkey is $[5] K"), on);
 	} else if (!g_menuCameraMove && !g_replaySelectOpen && g_menuIdleTime > k_120f) {
-		long double hint = fadd_m(fmul_m(fld_m((const float *)&g_hintStep), frame), &g_menuHintFade);
-		g_menuHintFade = f32(hint);
-		if (hint > k_3f) {
+		long double hintFade = fadd_m(fmul_m(fld_m((const float *)&g_hintStep), frame), &g_menuHintFade);
+		g_menuHintFade = f32(hintFade);
+		if (hintFade > k_3f) {
 			g_menuHintFade = 1.0f;
 			g_hintStep = 0xbd4ccccd;   /* -0.05 */
 		} else if (!(g_menuHintFade >= k_0f)) {

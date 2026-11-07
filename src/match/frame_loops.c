@@ -154,9 +154,9 @@ void THISCALL (script_processTriggers)(u8 *s)
 			if (now >= t->time)
 				t->fired = 1;
 		}
-		int player = ST->playerActor;
-		if (flags & 2 && player >= 0) {
-			const float *at = ST->actors[player].pos;
+		int localActor = ST->playerActor;
+		if (flags & 2 && localActor >= 0) {
+			const float *at = ST->actors[localActor].pos;
 			const float *point = ((const float *)t->wayPoints);
 			long double dx = (long double)at[0] - point[0], dy = (long double)at[1] - point[1], dz = (long double)at[2] - point[2];
 			if (!(dz * dz + dy * dy + dx * dx >= t->radiusSq))
@@ -474,28 +474,28 @@ void THISCALL (particle_update)(u8 *s, int slot, float dt)
 	}
 	float t = pr->life > 0 ? f32(FDIV(age, pr->life)) : 0.0f;
 	int k = pr->kind;
-	u32 size = 0;   /* where the size constant is */
+	u32 radius = 0;   /* where the radius constant is */
 	switch (k / 5) {
 	case 0:
-		size = k == 2 ? ADDR(k_3000f) : k == 3 ? ADDR(k_5000f) : 0;
+		radius = k == 2 ? ADDR(k_3000f) : k == 3 ? ADDR(k_5000f) : 0;
 		break;
 	case 1:
 		if (k == 9)
 			debris(s, p, dt);
 		break;
 	case 5:
-		size = k == 25 || k == 26 ? ADDR(k_2000f) : 0;
+		radius = k == 25 || k == 26 ? ADDR(k_2000f) : 0;
 		break;
 	case 6:
-		size = k <= 31 ? OBJ(k_1000f) : ADDR(k_1500f);
+		radius = k <= 31 ? OBJ(k_1000f) : ADDR(k_1500f);
 		break;
 	case 7:
-		size = k == 35 ? ADDR(k_5000f) : k == 36 ? ADDR(k_3000f) : k <= 38 ? ADDR(k_1500f) : 0;
+		radius = k == 35 ? ADDR(k_5000f) : k == 36 ? ADDR(k_3000f) : k <= 38 ? ADDR(k_1500f) : 0;
 		break;
 	}
-	if (size) {
+	if (radius) {
 		long double u = fsub_m(fld_m((const float *)ADDR(k_1f)), &t);
-		pr->lightRadius = f32(fmul_m(u * u, (const float *)RELOC(size)));
+		pr->lightRadius = f32(fmul_m(u * u, (const float *)RELOC(radius)));
 	}
 	pr->age = f32(FADD(dt, pr->age));
 }
@@ -529,7 +529,7 @@ static void item_pickup(u8 *s, u8 *ac, u8 *it, int i, u8 *t, int type)
 {
 	MapItem *mi = (MapItem *)it;
 	u32 text, *timer = NULL;
-	int last = 0;
+	int bigPickup = 0;
 	switch (type / 10) {
 	case 0:
 	case 1: {
@@ -545,7 +545,7 @@ static void item_pickup(u8 *s, u8 *ac, u8 *it, int i, u8 *t, int type)
 		if (A(int, k_supplies[k].count) > limit)
 			A(int, k_supplies[k].count) = limit;
 		text = k_supplies[k].text;
-		last = k_supplies[k].over != 0;
+		bigPickup = k_supplies[k].over != 0;
 		break;
 	}
 	case 2:
@@ -579,7 +579,7 @@ static void item_pickup(u8 *s, u8 *ac, u8 *it, int i, u8 *t, int type)
 			return;
 		}
 		*timer = 0x41f00000;   /* 30 */
-		last = 1;
+		bigPickup = 1;
 		break;
 	default:
 		GAME_FN(sys_errorMessage, 0x46c5f0, void, char *, const char *, int)((char *)OBJ(g_logStage), (const char *)STR(0x4c81d0, "can't figure out the item type (%d) -..."), type);
@@ -587,7 +587,7 @@ static void item_pickup(u8 *s, u8 *ac, u8 *it, int i, u8 *t, int type)
 	}
 	strcpy(AC->message, (const char *)RELOC(text));
 	AC->messageTime = 0.0f;
-	if (last)
+	if (bigPickup)
 		ST->lastPickup = i;
 	item_sound(s, ((ItemType *)t)->pickSound, it);
 	mi->taken = 1;

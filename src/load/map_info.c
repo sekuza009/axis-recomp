@@ -456,11 +456,11 @@ int THISCALL (map_loadGroundInfoFrom)(u8 *s, const char *name)
 			}
 		st->poolUsed += count;
 		int cells = gl->cols * gl->rows;
-		u8 *flat = gl->drawnCells = pool_take(s, cells);
+		u8 *drawn = gl->drawnCells = pool_take(s, cells);
 		for (int r = 0; r < gl->rows; r++)
 			for (int c = 0; c < gl->cols; c++) {
 				const u8 *px = image + r * 0x300 + c * 3;
-				flat[gl->cols * r + c] = grey(px) >= 0 && grey(px + 0x300) >= 0 && grey(px + 0x303) >= 0 && grey(px + 3) >= 0;
+				drawn[gl->cols * r + c] = grey(px) >= 0 && grey(px + 0x300) >= 0 && grey(px + 0x303) >= 0 && grey(px + 3) >= 0;
 			}
 		st->poolUsed += cells;
 		int size = (gl->cols + 1) * (gl->rows + 1) * 12;

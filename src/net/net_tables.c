@@ -644,10 +644,10 @@ u32 (net_pingAllServers)(void)
 	(*(int *)&g_pingTime) = 0;
 	if (g_serverPingCount > 0) {
 		for (int i = 0; i < g_serverPingCount && g_netListDone != 1; i++) {
-			const char *name = (const char *)(OBJ(g_pingAddresses) + i * 20);
-			if ((int)strlen(name) <= 0)
+			const char *address = (const char *)(OBJ(g_pingAddresses) + i * 20);
+			if ((int)strlen(address) <= 0)
 				continue;
-			if (net_pingServer(name, i)) {   /* net_pingServer */
+			if (net_pingServer(address, i)) {   /* net_pingServer */
 				int time = (*(int *)&g_pingTime);
 				if (time > 1000)
 					(*(int *)&g_pingTime) = time -= 400;
@@ -1276,11 +1276,11 @@ void (net_send)(int kind, int to)
 		send_buffer(ADDR(g_lobbySocket), ADDR(g_arenaListRequest), 4);
 		return;
 	case 23: {
-		char *name = g_lobbyKeepAlive;
+		char *address = g_lobbyKeepAlive;
 		const char *from = (const char *)g_arenaPacket;
-		if (!name || !from)
+		if (!address || !from)
 			return;
-		strcpy(name, ((const ServerRecord *)from)->address);
+		strcpy(address, ((const ServerRecord *)from)->address);
 		send_buffer(ADDR(g_lobbySocket), ADDR(g_lobbyKeepAlive), 0x10);
 		return;
 	}
@@ -1735,7 +1735,7 @@ static u32 sample(u8 *s, u32 per_row, u32 rows, int row_len, u32 base, u8 *at)
 /* 0x48dbf0 (thiscall on the scene): player p's game packet (1), sent when flagged (sendFlags + p x 0x10, cleared):
    the room's game (its map and modes from rotation / nextMap ..; 0xff and 0xffff without one, or once the end
    countdown endTime is running), the clock (elapsed, clockFraction), the player's two scores (players[].timePlayed,
-   players[].timeFraction of its actor), which of the players in use (net_playerInUse) were flagged twice (sendFlags[][2],
+   players[].timeFraction of its actor), which of the players in use (net_playerInUse) asked for a resend (resendAsked: sendFlags[][2],
    sendFlags[][3]: cleared, one bit each), the actor's two counts (players[].kills / deaths) and the team scores (teamScores[0] /
    [1]), the last pickup (lastPickup, set back to -1), then two random checks of the data: one of the five part type
    tables in turn (typeCheckTurn counting; its number in byte 0x2b) and the sixth, each a position and the entry there.
@@ -1774,7 +1774,7 @@ static void THISCALL __attribute__((used)) net_sendGamePacket_body(u8 *s, int p,
 	memcpy(packet + 0x34, &v, 4);
 	memcpy(packet + 0x11, &sc->players[p].timePlayed, 4);
 	memcpy(packet + 0x15, &sc->players[p].timeFraction, 4);
-	u32 twice[2] = { 0, 0 };
+	u32 resendAsked[2] = { 0, 0 };
 	for (int i = 0; i < 16; i++) {
 		if (net_playerInUse(i) != 1)
 			continue;
@@ -1782,11 +1782,11 @@ static void THISCALL __attribute__((used)) net_sendGamePacket_body(u8 *s, int p,
 			int *f = &sc->sendFlags[i][2 + k];
 			if (*f == 1) {
 				*f = 0;
-				twice[k] |= 1u << i;
+				resendAsked[k] |= 1u << i;
 			}
 		}
 	}
-	memcpy(packet + 0x19, twice, 8);
+	memcpy(packet + 0x19, resendAsked, 8);
 	memcpy(packet + 0x21, &sc->players[p].kills, 2);
 	memcpy(packet + 0x23, &sc->players[p].deaths, 2);
 	memcpy(packet + 0x25, &sc->teamScores[0], 2);
@@ -1905,7 +1905,7 @@ void THISCALL (net_processGamePacket)(u8 *g, u32 from, int size, const char *pkt
 	const u8 *b = (const u8 *)pkt;
 	switch (b[1]) {
 	case 0: {
-		int weapon = (b[4] >> 1) & 7, i = b[4] >> 4;
+		int itemSlot = (b[4] >> 1) & 7, i = b[4] >> 4;
 		float x = tens(*(const short *)(pkt + 5)), y = tens(*(const short *)(pkt + 7)), z = tens(*(const short *)(pkt + 9));
 		long double h = fmul_m((long double)b[0xb], &k_14_0625f);
 		float pitch = f32(h);   /* b[0xb]: the pitch, b[0xc]: the heading (nextPitch, nextYaw) */
@@ -1933,13 +1933,13 @@ void THISCALL (net_processGamePacket)(u8 *g, u32 from, int size, const char *pkt
 		ac->netFired = 1;
 		ac->dropAge = f32(FADD(ac->spawnAge, k_10f));
 		BITS(ac->stateFlags) = *(const u16 *)(pkt + 2);
-		if (weapon == 6)
+		if (itemSlot == 6)
 			ac->chatIcon = 1;
-		else if (weapon == 7)
+		else if (itemSlot == 7)
 			ac->chatIcon = 2;
 		else {
 			ac->chatIcon = 0;
-			actor_setWeaponSlot(STAGE, i, weapon);   /* actor_setWeaponSlot */
+			actor_setWeaponSlot(STAGE, i, itemSlot);   /* actor_setWeaponSlot */
 		}
 		ac->netPos[0] = x;
 		ac->netPos[1] = y;
@@ -1998,8 +1998,8 @@ void THISCALL (net_processGamePacket)(u8 *g, u32 from, int size, const char *pkt
 			GS->elapsed = ((const GamePacket *)pkt)->elapsed;
 			BITS(GS->clockFraction) = BITS(((const GamePacket *)pkt)->clockFraction);
 			if (pkt[3] >= 0) {
-				int round = g_mapIndex;
-				if (round != pkt[3] && (round < 0 || GS->awaitingHostRound == 1 || GS->elapsed > 0x1e)) {
+				int mapIndex = g_mapIndex;
+				if (mapIndex != pkt[3] && (mapIndex < 0 || GS->awaitingHostRound == 1 || GS->elapsed > 0x1e)) {
 					g_mapIndex = pkt[3];
 					GS->nextMap = pkt[4];
 					GS->nextMode = pkt[6];
@@ -2017,7 +2017,7 @@ void THISCALL (net_processGamePacket)(u8 *g, u32 from, int size, const char *pkt
 					GS->dataLossCode = 1;
 				}
 			}
-			static const u32 parts[5][4] = {   /* each part kind's size table, its entries a row, its count, its record in dwords */
+			static const u32 parts[5][4] = {   /* each part kind's type table, its typeTablePerRow (dwords sampled a record), its count, its record in dwords */
 				{ SCENE_STAGE_AT + offsetof(Stage, headTypes), offsetof(Scene, typeTablePerRow[0]), offsetof(Scene, headCount), sizeof(HeadType) / 4 },
 				{ SCENE_STAGE_AT + offsetof(Stage, chestTypes), offsetof(Scene, typeTablePerRow[1]), offsetof(Scene, chestCount), sizeof(ChestType) / 4 },
 				{ SCENE_STAGE_AT + offsetof(Stage, armTypes), offsetof(Scene, typeTablePerRow[2]), offsetof(Scene, armCount), sizeof(ArmType) / 4 },

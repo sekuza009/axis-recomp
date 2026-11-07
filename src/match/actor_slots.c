@@ -35,11 +35,11 @@ void THISCALL (actor_setInput)(Stage *stage, int i, int v0, int v1, int v2, int 
    uses commands 21 .. 27) */
 void THISCALL (script_holdActor)(Stage *stage, int i, int mode, int value)
 {
-	int *target = &stage->heldActor;
-	if (*target > -1)
-		stage->actors[*target].outOfPlay = 0;
+	int *held = &stage->heldActor;
+	if (*held > -1)
+		stage->actors[*held].outOfPlay = 0;
 	if (i < 0 || stage->actors[i].state == 1) {
-		*target = i;
+		*held = i;
 		stage->heldMode = mode;
 		stage->actors[i].outOfPlay = value;
 	}
@@ -315,16 +315,16 @@ void THISCALL (playerRecord_applyNetColours)(void *scene, int p, int part, int h
 }
 
 /* The five parts' models loaded (0x45e1f0 .. 0x45e530): where each part's model and its own fields are. An actor's part
-   type (its type record at playerRecords, 0x47fd2 bytes each, by the actor's player) names the part's model (by +model_at
+   type (its type record at playerRecords, 0x47fd2 bytes each, by the actor's player) names the part's model (by +type_at
    in that record); the actor's detail level (lowDetail) picks the model's set of shapes */
 typedef struct {
-	int model_at;      /* the part's type in the player record (parts[k]) */
-	u32 models;        /* the types' table in the stage, */
-	int model_size;    /* and each one's size */
+	int type_at;      /* the part's type in the player record (parts[k]) */
+	u32 types;        /* the types' table in the stage, */
+	int type_size;    /* and each one's size */
 	int shapes_n, names, name_size, skels_n, knames;   /* in the type: per detail level (shapeCount, shapeNames, skelCount, skelNames) */
-	int data, skels;   /* the player record's shape and skeleton caches handed over */
-	int self;          /* the actor's ObjectList for this part (its memory right after it) */
-	u32 limit;
+	int shapes, skels;   /* the player record's shape and skeleton caches handed over */
+	int list_at;          /* the actor's ObjectList for this part (its memory right after it) */
+	u32 mem_size;
 } PartModel;
 
 static void part_load(u8 *scene, int a, const PartModel *m)
@@ -333,15 +333,15 @@ static void part_load(u8 *scene, int a, const PartModel *m)
 	Player *act = (Player *)actor;
 	if (!act->active)
 		return;
-	u8 *type = (u8 *)&STS->playerRecords[act->player];
-	u8 *model = scene + m->models + GAME_VAR(int, type + m->model_at) * m->model_size;
-	int pose = act->lowDetail;
-	ObjectList_load(actor + m->self, type + m->data, type + m->skels, GAME_VAR(u32, model + m->shapes_n + pose * 4),
-	                     model + m->names + pose * m->name_size, GAME_VAR(u32, model + m->skels_n + pose * 4),
-	                     model + m->knames + pose * 0x80, 0, 0, 0, actor + m->self + sizeof(ObjectList), m->limit);
+	u8 *record = (u8 *)&STS->playerRecords[act->player];
+	u8 *partType = scene + m->types + GAME_VAR(int, record + m->type_at) * m->type_size;
+	int detail = act->lowDetail;
+	ObjectList_load(actor + m->list_at, record + m->shapes, record + m->skels, GAME_VAR(u32, partType + m->shapes_n + detail * 4),
+	                     partType + m->names + detail * m->name_size, GAME_VAR(u32, partType + m->skels_n + detail * 4),
+	                     partType + m->knames + detail * 0x80, 0, 0, 0, actor + m->list_at + sizeof(ObjectList), m->mem_size);
 }
 
-static const PartModel g_parts[5] = {
+static const PartModel k_partModels[5] = {
 #define PART(k, T, part, model) { offsetof(PlayerRecord, parts[k]), offsetof(Stage, part##Types), sizeof(T), offsetof(T, shapeCount), offsetof(T, shapeNames), \
 	sizeof ((T *)0)->shapeNames[0], offsetof(T, skelCount), offsetof(T, skelNames), offsetof(PlayerRecord, part##Shapes), offsetof(PlayerRecord, part##Skels), \
 	offsetof(Player, model), sizeof ((Player *)0)->model##Mem }
@@ -351,11 +351,11 @@ static const PartModel g_parts[5] = {
 };
 
 /* (thiscall on the scene; their callers ignore the eax they leave) */
-void THISCALL (actor_loadHead)(u8 *scene, int a) { part_load(scene, a, &g_parts[0]); }
-void THISCALL (actor_loadChest)(u8 *scene, int a) { part_load(scene, a, &g_parts[1]); }
-void THISCALL (actor_loadArms)(u8 *scene, int a) { part_load(scene, a, &g_parts[2]); }
-void THISCALL (actor_loadLegs)(u8 *scene, int a) { part_load(scene, a, &g_parts[3]); }
-void THISCALL (actor_loadBooster)(u8 *scene, int a) { part_load(scene, a, &g_parts[4]); }
+void THISCALL (actor_loadHead)(u8 *scene, int a) { part_load(scene, a, &k_partModels[0]); }
+void THISCALL (actor_loadChest)(u8 *scene, int a) { part_load(scene, a, &k_partModels[1]); }
+void THISCALL (actor_loadArms)(u8 *scene, int a) { part_load(scene, a, &k_partModels[2]); }
+void THISCALL (actor_loadLegs)(u8 *scene, int a) { part_load(scene, a, &k_partModels[3]); }
+void THISCALL (actor_loadBooster)(u8 *scene, int a) { part_load(scene, a, &k_partModels[4]); }
 
 /* 0x45de20 (thiscall on the scene): actor a spawned from a map record (SpawnRecord), controlled by the player's actor
    (playerActor; none: a fatal message): set up from its parts (stage_setupActorSlot with the record's player record,
@@ -367,9 +367,9 @@ void THISCALL (actor_loadBooster)(u8 *scene, int a) { part_load(scene, a, &g_par
 void THISCALL (actor_applySpawnRecord)(u8 *scene, int a, const u8 *rec)
 {
 #define SR ((SpawnRecord *)rec)   /* the same by its fields (src/scene.fields) */
-	int player = STS->playerActor;
-	if (player < 0)
-		sys_fatalError((char *)OBJ(g_logStage), (const char *)STR(0x4b4538, "invalid player actor slot(%d) - spawn..."), player);
+	int localActor = STS->playerActor;
+	if (localActor < 0)
+		sys_fatalError((char *)OBJ(g_logStage), (const char *)STR(0x4b4538, "invalid player actor slot(%d) - spawn..."), localActor);
 	u32 spawn[7] = { SR->player, SR->bot, BITS(SR->pos[0]), BITS(SR->pos[1]), BITS(SR->pos[2]) };
 	((float *)RELOC(spawn))[5] = f32(fld_m(&SR->pitch));
 	((float *)RELOC(spawn))[6] = f32(fld_m(&SR->yaw));
@@ -386,8 +386,8 @@ void THISCALL (actor_applySpawnRecord)(u8 *scene, int a, const u8 *rec)
 	AC->shield = SR->shield;
 	AC->baseSpeed = AC->speed = (float)(SR->speed * (long double)k_27_7778f);
 	AC->turnRate = (float)(SR->turnRate * (long double)k_10f);
-	long double radius = SR->range;
-	AC->detectionRangeSq = (float)(radius * radius * k_10000f);
+	long double range = SR->range;
+	AC->detectionRangeSq = (float)(range * range * k_10000f);
 	BITS(AC->unused70) = BITS(SR->unused34);
 	AC->aimError = ftol(SR->aimError * (long double)k_10f);
 	AC->scriptFlag = SR->scriptFlag;
@@ -440,27 +440,27 @@ void THISCALL (actor_loadWeapon)(u8 *scene, int a, int slot, int variant)
 	Player *pl = (Player *)actor;
 	if (!pl->active)
 		return;
-	PlayerRecord *type = (PlayerRecord *)((u8 *)&STS->playerRecords[pl->player]);
-	int item = type->items[slot];
+	PlayerRecord *record = (PlayerRecord *)((u8 *)&STS->playerRecords[pl->player]);
+	int item = record->items[slot];
 	u8 *it = item >= 0 ? (u8 *)&STS->actorItems[item] : NULL;
 	ActorItem *info = (ActorItem *)it;
-	int self, set = 0;
+	int listAt, set = 0;
 	if (slot == 4)
-		self = offsetof(Player, weaponModel4);
+		listAt = offsetof(Player, weaponModel4);
 	else if (slot == 5) {
-		self = offsetof(Player, weaponModel5);
+		listAt = offsetof(Player, weaponModel5);
 		set = 1;
 	} else if (slot == pl->slot)
-		self = offsetof(Player, weaponModel);
+		listAt = offsetof(Player, weaponModel);
 	else
 		return;
 	if (it)
-		ObjectList_load(actor + self, (u8 *)&STS->itemShapes, (u8 *)&STS->itemSkeletons, info->sets[set].shapeCount[variant],
+		ObjectList_load(actor + listAt, (u8 *)&STS->itemShapes, (u8 *)&STS->itemSkeletons, info->sets[set].shapeCount[variant],
 		                     info->sets[set].shapeNames[variant], info->sets[set].skelCount[variant], info->sets[set].skelNames[variant],
-		                     0, 0, 0, actor + self + sizeof(ObjectList), 0x1770);   /* (its memory right after it) */
+		                     0, 0, 0, actor + listAt + sizeof(ObjectList), 0x1770);   /* (its memory right after it) */
 	else
-		partList_release(actor + self);
-	if (self == offsetof(Player, weaponModel))
+		partList_release(actor + listAt);
+	if (listAt == offsetof(Player, weaponModel))
 		pl->ammoKind = it ? info->ammoType : -1;
 }
 
@@ -500,10 +500,10 @@ void THISCALL (playerRecord_setPartColour)(Stage *scene, int p, int part, float 
 	pr->partHue[part][1] = hue_byte(&h2);
 	pr->partSaturation[part][1] = level_byte(&s2);
 	pr->partValue[part][1] = level_byte(&v2);
-	char dir[0x100];
-	sprintf(dir, (const char *)STR(0x4c77f8, "_T%d"), p);
+	char suffix[0x100];
+	sprintf(suffix, (const char *)STR(0x4c77f8, "_T%d"), p);
 	if ((unsigned)part <= 4)
-		shape_setTextureSuffix((u8 *)pr + shapes[part], dir, 2, *(u32 *)&h1, *(u32 *)&s1, *(u32 *)&v1,
+		shape_setTextureSuffix((u8 *)pr + shapes[part], suffix, 2, *(u32 *)&h1, *(u32 *)&s1, *(u32 *)&v1,
 		                    *(u32 *)&h2, *(u32 *)&s2, *(u32 *)&v2);
 }
 
@@ -511,7 +511,7 @@ void THISCALL (playerRecord_setPartColour)(Stage *scene, int p, int part, float 
 #define A(type, offset) GAME_VAR(type, ac + (offset))
 #define AC ((Player *)ac)   /* the same by its fields (src/scene.fields) */
 
-/* the actor's eight object lists (the body, the parts, the weapons) */
+/* the actor's eight object lists (the five parts, then the three weapon models) */
 static const u32 k_partLists[8] = { offsetof(Player, headModel), offsetof(Player, chestModel), offsetof(Player, armsModel), offsetof(Player, legsModel),
                                      offsetof(Player, boosterModel), offsetof(Player, weaponModel4), offsetof(Player, weaponModel5), offsetof(Player, weaponModel) };
 
@@ -578,13 +578,13 @@ void THISCALL (actor_drawIntoView)(u8 *s, int a, void *vv, int draw)
 		tint[3] = 0xff;
 	} else
 		tint = NULL;
-	u32 light = tint && tint[3] <= 0x10 ? (u32)st->faintActorMatrix : 0;
+	u32 faintMatrix = tint && tint[3] <= 0x10 ? (u32)st->faintActorMatrix : 0;
 	u8 *lights = (u8 *)&st->actorLights;
 	int ok = 1;
 	u32 f;
 	if (a == st->cockpitActor) {
 		if (draw) {
-			ok = ObjectList_queue(weapon_list(ac), vv, lights, tint, 1, (u32)-1, light) & 1;
+			ok = ObjectList_queue(weapon_list(ac), vv, lights, tint, 1, (u32)-1, faintMatrix) & 1;
 			f = ((u32)AC->stateFlags);
 			if ((f & 0x100) || (f & 0xc00))
 				ok &= ObjectList_queue(weapon_list(ac), vv, lights, tint, 1, flag_texture(s, f), (u32)st->overlayMatrix);
@@ -612,7 +612,7 @@ void THISCALL (actor_drawIntoView)(u8 *s, int a, void *vv, int draw)
 					return;
 				if (k == 4 && AC->viewMarked)
 					continue;
-				int r = ObjectList_queue(ac + k_partLists[k], vv, lights, tint, 1, (u32)-1, light);
+				int r = ObjectList_queue(ac + k_partLists[k], vv, lights, tint, 1, (u32)-1, faintMatrix);
 				ok = k ? ok & r : r & 1;
 			}
 		}
@@ -926,22 +926,22 @@ static int close_enough(const float *a, const float *b)
 static int totals_agree(u8 *s, u8 *ac, u8 *me)
 {
 	Stage *st = (Stage *)s;
-	Player *act = (Player *)me;
+	Player *mine = (Player *)me;
 	u8 *p = (u8 *)&st->playerRecords[AC->player];
 	mech_stats(s, me, p, 1);
 	unsigned mode = st->gameType - 2;
 	if (mode <= 9) {
 		int pair = mode / 2;
-		act->armorMax = act->shieldMax = pair == 0 ? 10 : 150;
+		mine->armorMax = mine->shieldMax = pair == 0 ? 10 : 150;
 		if (pair < 4)
-			act->ammoMax[pair] = 100;
+			mine->ammoMax[pair] = 100;
 	}
 	static const u8 floats1[] = { offsetof(Player, detectionRangeSq), offsetof(Player, detectionAngle) }, ints[] = { offsetof(Player, armorMax), offsetof(Player, shieldMax), offsetof(Player, accuracy), offsetof(Player, ammoMax[0]), offsetof(Player, ammoMax[1]), offsetof(Player, ammoMax[2]), offsetof(Player, ammoMax[3]) };
 	static const u8 floats2[] = { offsetof(Player, lockOnTime), offsetof(Player, targetKeepTime), offsetof(Player, loadMax), offsetof(Player, load) }, floats3[] = { offsetof(Player, mobility), offsetof(Player, boostTime), offsetof(Player, rechargeTime), offsetof(Player, restTime), offsetof(Player, speed), offsetof(Player, moveAccel), offsetof(Player, runTop[0]), offsetof(Player, runTop[1]), offsetof(Player, runTop[2]), offsetof(Player, runTop[3]) };
 	for (int k = 0; k < 2; k++)
 		if (!close_enough((const float *)(ac + floats1[k]), (const float *)(me + floats1[k])))
 			return 0;
-	if (AC->hackingLevel != act->hackingLevel)
+	if (AC->hackingLevel != mine->hackingLevel)
 		return 0;
 	for (int k = 0; k < 4; k++)
 		if (!close_enough((const float *)(ac + floats2[k]), (const float *)(me + floats2[k])))
@@ -952,17 +952,17 @@ static int totals_agree(u8 *s, u8 *ac, u8 *me)
 	for (int k = 0; k < 10; k++)
 		if (!close_enough((const float *)(ac + floats3[k]), (const float *)(me + floats3[k])))
 			return 0;
-	if (!close_enough(&AC->baseSpeed, &act->speed))
+	if (!close_enough(&AC->baseSpeed, &mine->speed))
 		return 0;
-	int d = AC->shieldRegen - act->shieldRegen;
+	int d = AC->shieldRegen - mine->shieldRegen;
 	if ((long double)(d < 0 ? -d : d) > *&k_0_1f)
 		return 0;
 	if (AC->armor > AC->armorMax + 100 || AC->shield > AC->shieldMax + 100 || AC->ammo[0] > AC->ammoMax[0] ||
 	    AC->ammo[1] > AC->ammoMax[1] || AC->ammo[2] > AC->ammoMax[2] || AC->ammo[3] > AC->ammoMax[3] || AC->shieldRegen > 8)
 		return 0;
-	const float *heat = k_30f;
-	if ((AC->isKing == 0 && AC->timers[0] > *heat) || AC->timers[1] > *heat || (AC->isKing == 0 && AC->timers[2] > *heat) ||
-	    AC->timers[3] > *heat)
+	const float *powerUpLimit = k_30f;
+	if ((AC->isKing == 0 && AC->timers[0] > *powerUpLimit) || AC->timers[1] > *powerUpLimit || (AC->isKing == 0 && AC->timers[2] > *powerUpLimit) ||
+	    AC->timers[3] > *powerUpLimit)
 		return 0;
 	return 1;
 }

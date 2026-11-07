@@ -40,24 +40,24 @@ void (ptx_initColourTables)(void)
 /* 0x46efd0: RGB -> YCbCr, eight tables of 256 (each component's share of Y, Cb and Cr) */
 void (ptx_initYCbCrTables)(void)
 {
-	int c = 0, d = 0, s = 0x8000, e = 0, b = 0, l10 = 0x807fff, l14 = 0, l18 = 0;
+	int rY = 0, gY = 0, bY = 0x8000, rCb = 0, gCb = 0, bCb = 0x807fff, gCr = 0, bCr = 0;
 	for (u32 p = OBJ(g_ptxYCbCrTables) + 0x800; p <= OBJ(g_ptxYCbCrTables) + 0xbfc; p += 4) {   /* (the third table; the others around it) */
-		I32(p - 0x800) = c;
-		I32(p - 0x400) = d;
-		I32(p) = s;
-		I32(p + 0x400) = e;
-		I32(p + 0x800) = b;
-		I32(p + 0xc00) = l10;
-		I32(p + 0x1000) = l14;
-		I32(p + 0x1400) = l18;
-		l10 += 0x8000;
-		l14 -= 0x6b2f;
-		c += 0x4c8b;
-		d += 0x9646;
-		s += 0x1d2f;
-		e -= 0x2b33;
-		b -= 0x54cd;
-		l18 -= 0x14d1;
+		I32(p - 0x800) = rY;
+		I32(p - 0x400) = gY;
+		I32(p) = bY;
+		I32(p + 0x400) = rCb;
+		I32(p + 0x800) = gCb;
+		I32(p + 0xc00) = bCb;
+		I32(p + 0x1000) = gCr;
+		I32(p + 0x1400) = bCr;
+		bCb += 0x8000;
+		gCr -= 0x6b2f;
+		rY += 0x4c8b;
+		gY += 0x9646;
+		bY += 0x1d2f;
+		rCb -= 0x2b33;
+		gCb -= 0x54cd;
+		bCr -= 0x14d1;
 	}
 }
 

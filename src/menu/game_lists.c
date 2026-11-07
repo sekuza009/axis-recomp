@@ -86,12 +86,12 @@ static void game_rows(int x0, int y0, int y, int end, int locks, u32 kinds, int 
 static void answered_count(int x1, int y, int total)
 {
 	set_colour_bits(g_textColour, 0x3f800000, 0x3f800000, 0x3f800000, 0x3f800000);
-	char page[50] = { 0 }, pages[10] = { 0 };
-	itoa(g_listAnswered, page, 10);
-	strcat(page, (const char *)STR(0x4ad564, "/"));
-	itoa(total, pages, 10);
-	strcat(page, pages);
-	text_draw16(x1 - (int)strlen(page) * 13 - 0x3c, y, page);
+	char text[50] = { 0 }, totalText[10] = { 0 };
+	itoa(g_listAnswered, text, 10);
+	strcat(text, (const char *)STR(0x4ad564, "/"));
+	itoa(total, totalText, 10);
+	strcat(text, totalText);
+	text_draw16(x1 - (int)strlen(text) * 13 - 0x3c, y, text);
 }
 
 /* ---- the arena lobby's ---- */
@@ -118,7 +118,7 @@ static void info_box(u32 line, int named)
 
 /* 0x40a070: the arena's game list: the window, its title MSG(141, "JOIN ARENA"), three tabs (MSG(142, "SEARCH $[0] IPX"); the one under the pointer,
    by arenaGameList_hitTest, lit unless a box is up), five column heads; the rows and page when there is a list (g_arenaLanListBuilt,
-   or the full one g_arenaServerList); three buttons (MSG(149, "$[0] JOIN"): join needs a game, and while searching only the second
+   or the lobby server's, g_arenaServerList); three buttons (MSG(149, "$[0] JOIN"): join needs a game, and while searching only the second
    lights; all dimmed under the address / password boxes); the scroll arrows (15 / 16); the blinking MSG(152, "SEARCHING FOR THE GAME SERVER") while
    searching or g_lobbyRefreshing; the password and address boxes, the join confirmation (MSG(153, "CONNECTING TO THE GAME SERVER") / MSG(154, "PLEASE WAIT"), its button
    MSG(116, "$[0] CANCEL") by arenaDialogBox_hitTest) and the program-updated notice (the original asks arenaUpdateNotice_hitTest but lights its buttons by the
@@ -151,8 +151,8 @@ void (arena_drawGameList)(void)
 	menu_drawLine(X0 + 0x10, Y0 + 0x6e, X1 - 0x10, Y0 + 0x6e);
 	menu_drawLine(X0 + 0x10, Y1 - 0x54, X1 - 0x10, Y1 - 0x54);
 	if (g_arenaLanListBuilt || g_arenaServerList) {
-		int full = g_arenaServerList;
-		game_rows(X0, Y0, 0x78, 0x150, full, OBJ(g_gameTypeNames), 20, full);
+		int serverList = g_arenaServerList;
+		game_rows(X0, Y0, 0x78, 0x150, serverList, OBJ(g_gameTypeNames), 20, serverList);
 		answered_count(X1, Y1 - 0x4c, g_arenaLanListBuilt ? g_gameCount : g_serverListCount);
 	}
 	RECT(0, 0x3f800000, 0x3f800000, 0x3f800000);
@@ -350,7 +350,7 @@ void (gameList_draw)(void)
    (message 0x27 when wrong) */
 void (gameList_pageFrame)(void)
 {
-	const float *step = (const float *)ADDR(g_lobbyBlinkRate), *blinkFloor = (const float *)ADDR(k_10f);
+	const float *blinkRate = (const float *)ADDR(g_lobbyBlinkRate), *blinkFloor = (const float *)ADDR(k_10f);
 	if (g_gameListClickArmed) {
 		long double t = FADD(g_frameTime, g_gameListClickTimer);
 		g_gameListClickTimer = f32(t);
@@ -385,7 +385,7 @@ void (gameList_pageFrame)(void)
 			g_roomSearchAnswerIn = 0;
 			g_roomRefreshing = 1;
 		}
-		long double blink = fsubr_m(fmul_m(fld_m(step), &g_frameTime), &g_lobbyBlinkClock);
+		long double blink = fsubr_m(fmul_m(fld_m(blinkRate), &g_frameTime), &g_lobbyBlinkClock);
 		g_lobbyBlinkClock = f32(blink);
 		if (!(blink >= *blinkFloor))
 			(*(u32 *)&g_lobbyBlinkClock) = 0x447a0000;   /* 1000 */
@@ -398,7 +398,7 @@ void (gameList_pageFrame)(void)
 			(*(int *)&g_roomListRefreshTimer) = 0;
 			g_listRefreshPeriod = 5;
 		}
-		long double blink = fsubr_m(fmul_m(fld_m(step), &g_frameTime), &g_lobbyBlinkClock);
+		long double blink = fsubr_m(fmul_m(fld_m(blinkRate), &g_frameTime), &g_lobbyBlinkClock);
 		g_lobbyBlinkClock = f32(blink);
 		if (!(blink >= *blinkFloor))
 			(*(u32 *)&g_lobbyBlinkClock) = 0x447a0000;

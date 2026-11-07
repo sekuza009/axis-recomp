@@ -237,13 +237,13 @@ leave:
 	armc_exit(0);
 }
 
-/* 0x410ab0: the arm screen's keys (in its modes other than 0 / 1, without a message box): the keys g_dikLCtrl and
+/* 0x410ab0: the arm screen's keys (in its states other than 0 / 1, without a message box): the keys g_dikLCtrl and
    g_dikLAlt held with g_dikM pressed switch g_armcHideInterface; else the page's own keys (g_armcMode: 1 .. 3; page 4's are
    an empty function). The caller ignores the eax it leaves */
 void (armc_processInput)(void)
 {
-	int mode = g_armcState;
-	if (mode == 1 || mode == 0 || g_frameOpening)
+	int state = g_armcState;
+	if (state == 1 || state == 0 || g_frameOpening)
 		return;
 	if (input_isDown(g_dikLCtrl) && input_isDown(g_dikLAlt) && input_justPressed(g_dikM)) {
 		g_armcHideInterface = 1 - g_armcHideInterface;

@@ -74,24 +74,24 @@ void (room_enterGameList)(void)
 
 #define sound(id) GAME_FN(sound_playMenu, 0x41e760, u32, int)(id)   /* sound_playMenu, its eax */
 
-/* 0x4378e0: the game room's keys, by state (g_roomState): 0 .. 2, 4 and 99 while no dialog is open (g_roomPanelsSliding; 2: the map
+/* 0x4378e0: the game room's keys, by state (g_roomState): 0 .. 2, 4 and 99 unless the panels are sliding in (g_roomPanelsSliding; 2: the map
    list's keys when open), 66 and 88 (the update notice, g_roomUpdateNotice, first), 77. Returns what the handler leaves in eax */
 u32 (room_keysByState)(void)
 {
 	u32 state = (*(u32 *)&g_roomState);
-	int dialog = g_roomPanelsSliding;
+	int sliding = g_roomPanelsSliding;
 	switch (state) {
-	case 0: return dialog ? (u32)dialog : account_keys();   /* account_keys */
-	case 1: return dialog ? (u32)dialog : gameList_keys();
+	case 0: return sliding ? (u32)sliding : account_keys();   /* account_keys */
+	case 1: return sliding ? (u32)sliding : gameList_keys();
 	case 2:
-		if (dialog)
-			return (u32)dialog;
+		if (sliding)
+			return (u32)sliding;
 		return g_mapListOpen ? mapList_keys() : roomSettings_keys();
-	case 4: return dialog ? (u32)dialog : ranking_keys();
+	case 4: return sliding ? (u32)sliding : ranking_keys();
 	case 66: return g_roomUpdateNotice == 1 ? roomUpdateNotice_keys() : roomLogin_keys();
 	case 77: return newIdForm_keys();
 	case 88: return g_roomUpdateNotice == 1 ? roomUpdateNotice_keys() : newIdConfirm_keys();
-	case 99: return dialog ? (u32)dialog : room_keys();
+	case 99: return sliding ? (u32)sliding : room_keys();
 	}
 	return state;
 }
@@ -201,8 +201,8 @@ u32 (arena_joinListed)(int i)
 	g_lanJoinRequest = 0;
 	if (g_lanSearchStarted)
 		dplay_leaveSession();
-	void *session = i == 99999 ? (void *)ADDR(g_typedArenaAddress) : (void *)g_sessionList[i].address;
-	if (!dplay_openConnection(0, session)) {
+	void *address = i == 99999 ? (void *)ADDR(g_typedArenaAddress) : (void *)g_sessionList[i].address;
+	if (!dplay_openConnection(0, address)) {
 		menu_showMessage(0x3f);
 		return dplay_leaveSession();
 	}
@@ -222,22 +222,22 @@ u32 (arena_joinListed)(int i)
 u32 (room_clicksByState)(void)
 {
 	u32 state = (*(u32 *)&g_roomState);
-	int dialog = g_roomPanelsSliding;
+	int sliding = g_roomPanelsSliding;
 	switch (state) {
-	case 0: return dialog ? (u32)dialog : account_clicks();   /* account_clicks */
+	case 0: return sliding ? (u32)sliding : account_clicks();   /* account_clicks */
 	case 1:
-		if (dialog)
-			return (u32)dialog;
+		if (sliding)
+			return (u32)sliding;
 		return g_joinConnecting ? gameList_stopJoin() : gameList_mouse();
 	case 2:
-		if (dialog)
-			return (u32)dialog;
+		if (sliding)
+			return (u32)sliding;
 		return g_mapListOpen ? mapList_mouse() : room_settingsClicks();
-	case 4: return dialog ? (u32)dialog : ranking_clicks();
+	case 4: return sliding ? (u32)sliding : ranking_clicks();
 	case 66: return g_roomUpdateNotice ? updateNotice_clicks() : roomLogin_clicks();
 	case 77: return newIdForm_clicks();   /* newIdForm_clicks */
 	case 88: return g_roomUpdateNotice ? updateNotice_clicks() : newIdConfirm_clicks();
-	case 99: return dialog ? (u32)dialog : room_pageClicks();
+	case 99: return sliding ? (u32)sliding : room_pageClicks();
 	}
 	return state;
 }
@@ -350,7 +350,7 @@ static void highlight_choice(int choice, int x, int y)
 
 /* 0x43df80: the Ladder login dialog's update (its panel at g_roomLoginLeft): a password to retype (g_retypePassword: the settings back and
    the password opened again), the login to send (g_loginToSend); once typing has ended (g_textFieldOpen clear), the line taken
-   into the ID (g_typingLoginId; 30 bytes at g_accountForm) or password (g_typingLoginPassword; 12 at g_accountPassword) and the key that
+   into the ID (g_typingLoginId; 30 bytes at g_accountName) or password (g_typingLoginPassword; 12 at g_accountPassword) and the key that
    ended it (g_fieldStep: 10 back, 20 on) moving to the other field or the dialog's buttons; else the server's answer
    to the request (g_gameServerAnswer, awaited: g_roomRequestOut): 33 accepted (state 99, the settings written and taken), 42 the
    program out of date (the update notice, g_roomUpdateNotice), 31 / 32 / 34 a message (31 / 32 / 35), anything else message 42 */
@@ -446,19 +446,19 @@ void (newIdForm_update)(void)
 	}
 	if (g_dialogPending || g_textFieldOpen)
 		return;
-	int key = g_fieldStep;
-	if (key == 20 || key == 10) {
+	int step = g_fieldStep;
+	if (step == 20 || step == 10) {
 		int k = 0;
 		while (k < 4 && EDITING(k) != 1)
 			k++;
 		if (k < 4) {
 			memset((void *)RELOC(field[k].text), 0, field[k].size);
 			strcpy((char *)RELOC(field[k].text), g_inputLine);
-			if (key == 10 && k == 0)
+			if (step == 10 && k == 0)
 				highlight_choice(2, g_newIdFormLeft + 0x172, g_newIdFormBottom - 0x2c);
 			else {
 				EDITING(k) = 0;
-				if (key == 10)
+				if (step == 10)
 					EDITING(k - 1) = 1;
 				else if (k < 3)
 					EDITING(k + 1) = 1;
@@ -598,7 +598,7 @@ static void stars(char *out, int size, const char *password)
 }
 
 /* 0x4399c0: the new-ID form ("CREATE NEW ID"; 0x9dd6e8 .. 0x9dd6f4; only its frame while a message box is open): the title
-   MSG(341, "CREATE NEW ID"), four labelled lines (MSG(342, "INPUT ID"), 0x80 apart) with underlines, the values (the name g_accountForm, the two
+   MSG(341, "CREATE NEW ID"), four labelled lines (MSG(342, "INPUT ID"), 0x80 apart) with underlines, the values (the name g_accountName, the two
    passwords g_accountPassword / g_accountPasswordRepeat as stars, g_accountEmail), each left out while its field is being typed in (g_typingAccountName /
    g_typingAccountPassword / g_typingAccountRepeat / g_typingAccountEmail, with the keys taken), the two buttons (the one under the pointer, 4 / 5 by
    newIdForm_hitTest, bright) and the border. Returns the frame's or the border's eax */
@@ -737,7 +737,7 @@ u32 (newIdConfirm_draw)(void)
 }
 
 /* 0x4392c0: the room login dialog (0x9dd358 .. 0x9dd364; only its frame while a message box is open): the title
-   MSG(331, "LADDER GAME ID MANAGER") and its rule, two labelled dark boxes (MSG(332, "YOUR ID"), 0x80 apart) with the name g_accountForm and the password
+   MSG(331, "LADDER GAME ID MANAGER") and its rule, two labelled dark boxes (MSG(332, "YOUR ID"), 0x80 apart) with the name g_accountName and the password
    g_accountPassword as stars (each left out while it is being typed in: g_typingLoginId / g_typingLoginPassword), three buttons (MSG(334, "LOG$[0] IN"); the
    one under the pointer, 2 .. 4 by roomLogin_hitTest, bright unless connecting), while connecting (g_roomRequestOut) a box with
    two lines (MSG(49, "CHECKING YOUR ID. PLEASE WAIT."), MSG(50, "PRESS ESC-KEY TO CANCEL")), the update notice (g_roomUpdateNotice) and the border. Returns the frame's or the border's
@@ -807,10 +807,10 @@ u32 (roomLogin_draw)(void)
 
 /* a rank's badge (rank 1 .. : cell rank - 1 of the 10-wide grid of the font texture g_fontAscii, bound) 24 x 16 at
    (x, y) */
-static void rank_badge(int rank, int x, int y)
+static void rank_badge(int level, int x, int y)
 {
 	const float *col_w = k_0_09375f, *row_h = k_0_0625f;
-	int cell = rank - 1;
+	int cell = level - 1;
 	float u0 = f32(fmul_m((long double)(cell % 10), col_w));
 	float v0 = f32(fadd_m(fmul_m((long double)(cell / 10), row_h), k_0_875f));
 	glBegin(GL_QUADS);
@@ -829,7 +829,7 @@ static void rank_badge(int rank, int x, int y)
 
 /* 0x43a420: the pilot's account panel (0x9dd368 .. 0x9dd374); while waiting for the server (g_roomAwaitingServer = 1) only a
    box with two lines (MSG(423, "DOWNLOADING RANKING DATA"), MSG(50, "PRESS ESC-KEY TO CANCEL")). The title MSG(361, "USER INFOMATION"), five labels for the fields (MSG(362, "USER ID"), 0x80 apart) and
-   seven for the record (MSG(367, "LEVEL")); four dark boxes with the name g_accountForm, three passwords as stars (g_accountOldPassword,
+   seven for the record (MSG(367, "LEVEL")); four dark boxes with the name g_accountName, three passwords as stars (g_accountOldPassword,
    g_accountPassword, g_accountPasswordRepeat; each left out while it is being typed in: g_editingOldPassword / g_editingAccountPassword / g_editingPasswordRepeat) and g_accountEmail (left
    out while g_editingEmail); the level g_pilotLevel with its rank badge (cell (level - 1) % 10, / 10 of the texture g_fontAscii),
    the rank g_accountRank (MSG(374, "OUT OF RANK(1000)") when none), two ratios ("%.2f": g_pilotPower, g_pilotKillRate) and three counts (g_pilotKills,
@@ -965,16 +965,16 @@ u32 (ranking_drawTable)(void)
 	menu_drawLeftArrow(X0 + 0xb0, Y0 + 0x26, X0 + 0xe4, Y0 + 0x3e, hovered == 0);
 	menu_drawRightArrow(X0 + 0x146, Y0 + 0x26, X0 + 0x17a, Y0 + 0x3e, hovered != 0 && hovered == 1);
 	glColor4f(1.0f, 1.0f, 1.0f, 0.7f);
-	char page[64], last[64];
+	char range[64], last[64];
 	int first = g_rankingPage * 10 + 1;
 	g_rankingFirst = first;
 	g_rankingLast = (g_rankingPage * 5 + 5) * 2;
-	itoa(first, page, 10);
+	itoa(first, range, 10);
 	itoa(g_rankingLast, last, 10);
-	strcat(page, (const char *)STR(0x4b278c, " ~ "));
-	strcat(page, last);
+	strcat(range, (const char *)STR(0x4b278c, " ~ "));
+	strcat(range, last);
 	menu_drawWideButton(X0 + 0xe6, Y0 + 0x24, X0 + 0x146, Y0 + 0x40, 1);
-	text_drawCentred8(X0 + 0xe6, Y0 + 0x2a, X0 + 0x146, page);
+	text_drawCentred8(X0 + 0xe6, Y0 + 0x2a, X0 + 0x146, range);
 	text_drawCentredLines16(X1 - 0x78, Y0 + 0x10, X1 - 0x14, (const char *)MSG(412, "OPTION"));
 	glEnable(GL_TEXTURE_2D);
 	texture = g_buttonTexture;
@@ -1100,7 +1100,7 @@ static void roomLogin_leave(void)
    leaves eax to callers that ignore it */
 void (roomLogin_keys)(void)
 {
-	int dialogX = g_roomLoginLeft, dialogBottom = g_roomLoginBottom - 0x30;
+	int dialogX = g_roomLoginLeft, buttonRowY = g_roomLoginBottom - 0x30;
 	if (g_roomRequestOut || g_roomLoginDue) {
 		if (input_justPressed(g_keyCancel2)) {
 			g_roomRequestOut = 0;
@@ -1177,16 +1177,16 @@ void (roomLogin_keys)(void)
 			g_lineToLoginPassword = 1;
 			g_inputLineHidden = 1;
 		} else if (choice == 2)
-			highlight_choice(1, dialogX + 0x62, dialogBottom);
+			highlight_choice(1, dialogX + 0x62, buttonRowY);
 		else if (choice == 3)
-			highlight_choice(2, dialogX + 0x102, dialogBottom);
+			highlight_choice(2, dialogX + 0x102, buttonRowY);
 		else
 			return;
 	} else {
 		if (choice == 1)
-			highlight_choice(2, dialogX + 0x102, dialogBottom);
+			highlight_choice(2, dialogX + 0x102, buttonRowY);
 		else if (choice == 2)
-			highlight_choice(3, dialogX + 0x1a2, dialogBottom);
+			highlight_choice(3, dialogX + 0x1a2, buttonRowY);
 		else if (choice == 3) {
 			highlight_choice(3, dialogX + 0x180, g_roomLoginTop + 0x88);
 			roomLogin_editId();

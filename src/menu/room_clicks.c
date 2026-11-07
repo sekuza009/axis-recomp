@@ -166,13 +166,13 @@ u32 (room_keys)(void)
    menu (the keyboard taken back if it was let go, the connection closed), 4 NEW ID (room_openNewIdForm). Returns the action's eax */
 u32 (roomLogin_clicks)(void)
 {
-	u32 open = (*(u32 *)&g_roomLoginDue);
-	if (open)
-		return open;
-	if ((open = (*(u32 *)&g_roomRequestOut)))
-		return open;
-	if ((open = (*(u32 *)&g_rightClick)))
-		return open;
+	u32 busy = (*(u32 *)&g_roomLoginDue);
+	if (busy)
+		return busy;
+	if ((busy = (*(u32 *)&g_roomRequestOut)))
+		return busy;
+	if ((busy = (*(u32 *)&g_rightClick)))
+		return busy;
 	if (!g_mouseClick)
 		return 0;
 	u32 button = ((u32)roomLogin_hitTest(g_mouseX, g_mouseY));
@@ -189,8 +189,8 @@ u32 (roomLogin_clicks)(void)
 		g_lineToLoginPassword = 1;
 		return r;
 	case 2:
-		if ((open = (*(u32 *)&g_roomLoginDue)))
-			return open;
+		if ((busy = (*(u32 *)&g_roomLoginDue)))
+			return busy;
 		sound_playMenu(0);
 		g_loginToSend = 1;
 		g_roomLoginDue = 1;
@@ -222,9 +222,9 @@ u32 (roomLogin_clicks)(void)
 u32 (room_pageClicks)(void)
 {
 	static const u32 actions[6] = { FN_ADDR(room_enterAccountPage, 0x4334c0), FN_ADDR(room_enterGameList, 0x433590), FN_ADDR(room_enterCreatePage, 0x433790), 0, FN_ADDR(ranking_enter, 0x433800), FN_ADDR(room_leave, 0x435a40) };
-	u32 page = (*(u32 *)&g_roomCameraMode);
-	if (page == 1 || page == 0)
-		return page;
+	u32 cameraMode = (*(u32 *)&g_roomCameraMode);
+	if (cameraMode == 1 || cameraMode == 0)
+		return cameraMode;
 	if (g_frameOpening)
 		return g_frameOpening;
 	if (g_mouseClick) {
@@ -245,9 +245,9 @@ u32 (room_pageClicks)(void)
 	int right = g_rightClick;
 	if (!right)
 		return 0;
-	int allowed = g_tunnelRings;
-	if (allowed <= 0)
-		return allowed;
+	int rings = g_tunnelRings;
+	if (rings <= 0)
+		return rings;
 	sound_playMenu(0);
 	return room_leave();   /* room_leave */
 }
@@ -273,7 +273,7 @@ void (arena_loadMapPreview)(void) { load_map_preview(ADDR(g_newArenaMap)); }
 
 /* 0x433d30: the typed line (g_inputLine) committed to the new-ID form's field being edited (when the keyboard was let go for it,
    g_textFieldOpen: the edit window g_hEditField destroyed and the focus back on the main window first): the ID
-   (g_accountForm, 30 bytes), the password and its repeat (g_accountPassword, g_accountPasswordRepeat, 12 bytes) or the e-mail (g_accountEmail, 50 bytes).
+   (g_accountName, 30 bytes), the password and its repeat (g_accountPassword, g_accountPasswordRepeat, 12 bytes) or the e-mail (g_accountEmail, 50 bytes).
    Returns what the original leaves in eax */
 /* typing closed if it was on: the hidden EDIT control destroyed, the focus back to the game window and the line
    closed (menu_closeInputLine); returns that call's eax, or 0 */
@@ -309,10 +309,10 @@ u32 (newIdForm_endTyping)(void)
 u32 (room_hostingStep)(void)
 {
 	const u8 *room = (const u8 *)OBJ(g_roomRecName);
-	u32 step = (*(u32 *)&g_hostAnswer);
-	if (step == 2)
+	u32 answer = (*(u32 *)&g_hostAnswer);
+	if (answer == 2)
 		return 2;
-	if (step == 1) {
+	if (answer == 1) {
 		g_connectionAwaited = 0;
 		g_leavingForMatch = 1;
 		g_netRole = 1;
@@ -328,10 +328,10 @@ u32 (room_hostingStep)(void)
 		g_mapRotation = (signed char)room[0x22];
 		g_fragLimit = room[0x24];
 		g_timeLimit = room[0x25];
-		step = (*(u32 *)&g_hostAnswer);
+		answer = (*(u32 *)&g_hostAnswer);
 		g_arenaGameSetUp = 1;
 	}
-	switch (step) {
+	switch (answer) {
 	case 3:
 		g_arenaUpdateNotice = 1;
 		/* fall through */
@@ -339,14 +339,14 @@ u32 (room_hostingStep)(void)
 		g_connectionAwaited = 0;
 		g_arenaGameSetUp = 0;
 		g_hostAnswer = 2;
-		return step;
+		return answer;
 	case 4:
 		g_connectionAwaited = 0;
 		g_hostAnswer = 2;
 		g_arenaGameSetUp = 0;
 		return menu_showMessage(0x2a);   /* the message */
 	}
-	return step;
+	return answer;
 }
 
 /* 0x434e70: the join's wait ended in the game room (WM_TIMER 0x378 in game_wndProc when g_screen is 800, after 30
@@ -399,7 +399,7 @@ u32 (room_joinAnswer)(void)
 	return row * sizeof(SessionEntry);   /* (the original's eax: the entry's offset) */
 }
 
-/* 0x4346c0: the new-ID form checked (name g_accountForm, password g_accountPassword and its repeat g_accountPasswordRepeat, e-mail g_accountEmail):
+/* 0x4346c0: the new-ID form checked (name g_accountName, password g_accountPassword and its repeat g_accountPasswordRepeat, e-mail g_accountEmail):
    a blank name, a bad name or password character, a missing or mismatched password and a bad e-mail each give
    their message and reopen the field; all good, its confirmation (room_openNewIdConfirm). Returns that call's eax */
 u32 (newIdForm_check)(void)
@@ -569,11 +569,11 @@ u32 (ranking_clicks)(void)
 	if (button > 8 || button == 6 || (button == 3 ? !g_rankingWaiting : g_rankingWaiting != 0))
 		return button;
 	u32 r = sound_playMenu(0);   /* the click sound */
-	static const u32 page[3] = { FN_ADDR(ranking_prevPage, 0x435970), FN_ADDR(ranking_nextPage, 0x4359b0), FN_ADDR(ranking_cycleSort, 0x4359f0) };
+	static const u32 actions[3] = { FN_ADDR(ranking_prevPage, 0x435970), FN_ADDR(ranking_nextPage, 0x4359b0), FN_ADDR(ranking_cycleSort, 0x4359f0) };
 	int column;
 	switch (button) {
 	case 0: case 1: case 2:
-		return GAME_CDECL(page[button], u32, void)();
+		return GAME_CDECL(actions[button], u32, void)();
 	case 3:
 		g_rankingHaveList = 1;
 		g_rankingWaiting = 0;
@@ -813,12 +813,12 @@ u32 (account_page)(void)
 		GAME_VAR(int, fields[k].editing) = 0;
 		g_inputLineHidden = 0;
 		strcpy((char *)RELOC(fields[k].field), g_inputLine);
-		u32 key = (*(u32 *)&g_fieldStep);
-		u32 next = key == 0xa ? fields[k].back : key == 0x14 ? fields[k].on : 0;
+		u32 step = (*(u32 *)&g_fieldStep);
+		u32 next = step == 0xa ? fields[k].back : step == 0x14 ? fields[k].on : 0;
 		if (!next)
-			return key;
+			return step;
 		r = GAME_CDECL(next, u32, void)();
-		if (!(k == 2 && key == 0xa))   /* (the original keeps the key there) */
+		if (!(k == 2 && step == 0xa))   /* (the original keeps the step there) */
 			g_fieldStep = 0;
 		return r;
 	}

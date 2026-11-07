@@ -157,10 +157,10 @@ void THISCALL (armc_drawPreview3D)(Scene *scene, const u32 *eye, const u32 *forw
 	Light_clearCounts(light);
 	u8 white[4] = { 0xff, 0xff, 0xff, 0xff }, dim[4] = { 0xf0, 0xc0, 0xc0, 0x60 };
 	scene_averageFrameTime(scene);
-	u32 x44 = BITS(scene->frameTime);
+	u32 frameTime = BITS(scene->frameTime);
 	float far = view_farPlane(), near = view_nearPlane(), fov = view_fov();
 	stage_setupView(stage, eye, forward, up,
-	                                                                                                       BITS(fov), w, h, BITS(near), BITS(far), x44);   /* stage_setupView */
+	                                                                                                       BITS(fov), w, h, BITS(near), BITS(far), frameTime);   /* stage_setupView */
 	ViewVolume_captureMatrices(vv, 0, scene->modelview);
 	ViewVolume_reset(vv);
 #ifdef AXIS_NATIVE
@@ -340,9 +340,9 @@ void (menuState700_armCenter)(void)
 		text_drawCentredLines16(105, 244, 535, (const char *)MSG(298, "PLEASE WAIT"));
 		g_armcSessionDue = 1;
 	}
-	long double zoom = fsubr_m(fmul_m(fld_m(&g_frameTime), (const float *)ADDR(k_0_1f)), &g_unusedArmcViewCountdown);
-	g_unusedArmcViewCountdown = zoom;
-	if (!(zoom >= k_m2f))
+	long double countdown = fsubr_m(fmul_m(fld_m(&g_frameTime), (const float *)ADDR(k_0_1f)), &g_unusedArmcViewCountdown);
+	g_unusedArmcViewCountdown = countdown;
+	if (!(countdown >= k_m2f))
 		g_unusedArmcViewCountdown = -2.0f;
 }
 
@@ -376,10 +376,10 @@ u32 (armc_open)(void)
 	g_armcPageTop = 10;
 	g_armcPageRight = 0x276;
 	g_armcPageBottom = 0x1d6;
-	static const u32 colourA[4] = { 0, 0x3f800000, 0x3f800000, 0x3f800000 }, colourB[4] = { 0, 0x3f19999a, 0x3f19999a, 0x3f800000 };
+	static const u32 bright[4] = { 0, 0x3f800000, 0x3f800000, 0x3f800000 }, dim[4] = { 0, 0x3f19999a, 0x3f19999a, 0x3f800000 };
 	for (int i = 0; i < 4; i++) {
-		((u32 *)g_armcBright)[i] = colourA[i];
-		((u32 *)g_armcDim)[i] = colourB[i];
+		((u32 *)g_armcBright)[i] = bright[i];
+		((u32 *)g_armcDim)[i] = dim[i];
 	}
 	g_progressWentUp = 0;
 	u32 *point = (u32 *)ADDR(g_camPoint0X), *pointAt = (u32 *)ADDR(g_camAim0X);   /* the ARM CENTER's camera point */
@@ -725,9 +725,9 @@ u32 (armc_saveSelection)(void)
 
 /* 0x40e930: the selection sent to the others in the room: the colour choices (0x90 bytes from g_armcColours, through the
    FPU: a signalling NaN arrives quiet) kept (g_savedColourChoices) and in the room's copy (g_roomColours); the part lists
-   (armc_resetSeraphimParts) unless g_pilotLevel is 0x14; the parts (g_armcParts) and six settings (g_itemSlot4) kept as in
+   (armc_resetSeraphimParts) unless g_pilotLevel is 0x14; the parts (g_armcParts) and six item slots (g_itemSlot4) kept as in
    armc_saveSelection (the range checks jumped over again); their low bytes into the room's copy (g_roomMech: the five
-   parts, then settings 4 / 5, then 0 .. 3); then the packet at g_netSelectionPacket: the name (g_ladderId), those 11 bytes from
+   parts, then item slots 4 / 5, then 0 .. 3); then the packet at g_netSelectionPacket: the name (g_ladderId), those 11 bytes from
    +0x1e, the colours from +0x29; sent as kind 0x1b to the game server (0x65). The original returns net_send's eax
    to a caller that ignores it */
 void (armc_sendSelectionToNet)(void)
@@ -742,9 +742,9 @@ void (armc_sendSelectionToNet)(void)
 	memcpy((void *)ADDR(g_savedMechHead), (const void *)OBJ(g_armcParts), 5 * 4);
 	memcpy((void *)ADDR(g_savedMechItemSlot4), (const void *)ADDR(g_itemSlot4), 6 * 4);
 	u8 *room = g_roomMech;
-	const int *parts = (const int *)ADDR(g_savedMechHead), *settings = (const int *)ADDR(g_savedMechItemSlot4);
+	const int *parts = (const int *)ADDR(g_savedMechHead), *itemSlots = (const int *)ADDR(g_savedMechItemSlot4);
 	for (int i = 0; i < 4; i++)
-		room[7 + i] = (u8)settings[2 + i];
+		room[7 + i] = (u8)itemSlots[2 + i];
 	room[5] = (u8)g_itemSlot4;
 	room[6] = (u8)g_itemSlot5;
 	for (int i = 0; i < 5; i++)

@@ -26,14 +26,14 @@ void THISCALL (hud_drawLockOn)(Scene *scene)
 		if (i == scene->localPlayer || player->state != 1 || player->onScreen != 1)
 			continue;
 		if (scene->lockHeld[i] > 0.0f) {
-			float grow = player->lockAnim * 4.0f, timer = scene->lockHeld[i] * 4.0f;
+			float grow = player->lockAnim * 4.0f, holdLeft = scene->lockHeld[i] * 4.0f;
 			float units = ((long double)grow * 5.0f + 1.0f) * 64.0f;
 			int size = ftol(units / ((long double)640.0f / gfx_getWidth())), half = size / 2;
 			int x = ftol(player->screenPos[0]) - half, y = ftol(player->screenPos[1]) - half;
 			glEnable(GL_TEXTURE_2D);
 			tex_bind(g_textures->banks[scene->hudTexture / 512], scene->hudTexture % 512);
 			long double fade = 1.0L - grow;                       /* compared before it is rounded to a float */
-			glColor4f(1.0f, 1.0f, 1.0f, fade >= timer ? timer : (float)fade);
+			glColor4f(1.0f, 1.0f, 1.0f, fade >= holdLeft ? holdLeft : (float)fade);
 			glBegin(GL_QUADS);
 			lockon_quad(x, y, size, 0.25f, 0.5f, 0.5f, 0.75f);
 		} else if (player->aimTime > 0.0f) {

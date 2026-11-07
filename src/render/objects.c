@@ -235,7 +235,7 @@ static int tag_narrow(u8 *ac, u32 k)
    screen position and depth (screenPos); another than the viewer (cockpitActor) that is in view with a clear line of
    sight also gets its name-tag corners (its radius radius out), a too-small flag (lowDetail), and unless cloaked at the
    local player's rank or above, when the local player faces it (its facingCos against the table g_cosTable by
-   the local player's heading +4), a timer (aimTime: the lock-on's) for enemies of a player with a weapon, and its name label shown (labelFade
+   the local player's detectionAngle), a timer (aimTime: the lock-on's) for enemies of a player with a weapon, and its name label shown (labelFade
    3) when the tag is wide enough; onScreen marks it in view. Its callers ignore the eax it leaves */
 void THISCALL (stage_setupView)(u8 *s, const float *pos, const float *dir, const float *up, float fov, int w, int h, float nr,
                                  float fr, float dt)
@@ -318,15 +318,15 @@ void THISCALL (stage_setupView)(u8 *s, const float *pos, const float *dir, const
 		}
 		long double cosv = -fld_m(&e[2]) / x87_fsqrt(FMUL(e[2], e[2]) + FMUL(e[1], e[1]) + FMUL(e[0], e[0]));
 		AC->facingCos = f32(cosv);
-		int heading = ftol(fld_m((const float *)(me + 4)));
-		if (!(cosv > g_cosTable[(heading % 3600 + 3600) % 3600])) {
+		int detectionAngle = ftol(fld_m((const float *)(me + 4)));
+		if (!(cosv > g_cosTable[(detectionAngle % 3600 + 3600) % 3600])) {
 			AC->aimTime = 0.0f;
 			AC->onScreen = 1;
 			continue;
 		}
-		int weapon = act->heldItem;
-		if (ST->playerActor >= 0 && AC->team != act->team && weapon >= 0 &&
-		    ST->actorItems[weapon].targetingTime > 0)
+		int heldItem = act->heldItem;
+		if (ST->playerActor >= 0 && AC->team != act->team && heldItem >= 0 &&
+		    ST->actorItems[heldItem].targetingTime > 0)
 			AC->aimTime = f32(FADD(dt, AC->aimTime));
 		else
 			AC->aimTime = 0.0f;

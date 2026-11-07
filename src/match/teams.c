@@ -49,10 +49,10 @@ void *THISCALL (scene_topPlayer)(Scene *scene)
 {
 	int i;
 	if (scene->teamGame == 1) {
-		int behind = scene->teamScores[0] < scene->teamScores[1];
+		int leading = scene->teamScores[0] < scene->teamScores[1];
 		for (int k = 0; k < scene->rankCount; k++) {
 			int a = scene->ranking[k];
-			if (scene->players[a].team == behind)
+			if (scene->players[a].team == leading)
 				return (u8 *)&scene->players[a];
 		}
 		i = scene->localPlayer;
@@ -72,8 +72,8 @@ void THISCALL (stage_refillLights)(Stage *stage)
 	for (int i = 0; i < stage->actorCount; i++) {
 		Player *a = (Player *)((u8 *)&stage->actors[i]);
 		if (stage->actors[i].active == 1) {
-			float value = f32(fmul_m(fadd_m(fld_m(&a->glow), (const float *)ADDR(k_1f)), k_2500f));
-			factors_addPointLight(pool, OBJ(g_packedWhite), value, a->pos);   /* factors_addPointLight */
+			float radius = f32(fmul_m(fadd_m(fld_m(&a->glow), (const float *)ADDR(k_1f)), k_2500f));
+			factors_addPointLight(pool, OBJ(g_packedWhite), radius, a->pos);   /* factors_addPointLight */
 		}
 	}
 	for (int i = 0; i < stage->particleCount; i++) {

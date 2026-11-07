@@ -191,7 +191,7 @@ void (room_drawGameSettings)(void)
 {
 	static const Form form = { ADDR(g_roomFormLeft), (GameSettings *)OBJ(g_roomSettingsName), { ADDR(g_editingRoomName), ADDR(g_editingRoomPassword), ADDR(g_editingFragLimit), ADDR(g_editingTimeLimit) }, MSG(791, "DEATH MATCH"),
 	                           MSG(17, "DO NOT USE"), 0, 20 };
-	static const u32 grey[4] = { 0x3e99999a, 0x3f333333, 0x3f333333, 0x3f800000 };   /* 0.3, 0.7, 0.7, 1 */
+	static const u32 advancedDim[4] = { 0x3e99999a, 0x3f333333, 0x3f333333, 0x3f800000 };   /* 0.3, 0.7, 0.7, 1 */
 	const Form *f = &form;
 	const u32 *bright = ((u32 *)g_roomBright), *dim = ((u32 *)g_roomDim);
 	int editing = g_textFieldOpen, open = editing || g_arenaUpdateNotice;
@@ -217,7 +217,7 @@ void (room_drawGameSettings)(void)
 	}
 	room_drawMapPreview(f->s->map);
 	preview_controls(f, hovered == 11 && !open, hovered == 12 && !open,
-	                 hovered == 13 && !editing && !g_mapListOpen, grey);
+	                 hovered == 13 && !editing && !g_mapListOpen, advancedDim);
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 	menu_drawCornerOrnaments(X0, Y0, X1, Y1);
 }
@@ -284,7 +284,7 @@ void (arena_createDraw)(void)
 		GAME_FN(menu_drawTopRightOrnament, 0x428b50, void, int, int, int, int)(0x64, 0xb4, 0x21c, 0x140);   /* menu_drawTopRightOrnament */
 	}
 	if (updateNotice) {
-		int choice = arenaUpdateNotice_hitTest(g_mouseX, g_mouseY);
+		int noticeHovered = arenaUpdateNotice_hitTest(g_mouseX, g_mouseY);
 		set_colour_bits(g_rectColour, 0x3dcccccd, 0x3dcccccd, 0x3dcccccd, 0x3ecccccd);   /* 0.1, 0.4: the screen dimmed */
 		menu_drawRect(0, 0, 0x280, 0x1e0, 1);
 		set_colour_bits(g_rectColour, 0x3dcccccd, 0x3dcccccd, 0x3dcccccd, 0x3f4ccccd);
@@ -294,7 +294,7 @@ void (arena_createDraw)(void)
 		white();
 		text_drawCentredLines16(0x64, 0xc8, 0x21c, (const char *)MSG(3, "THIS PROGRAM HAS BEEN UPDATED"));
 		text_drawCentredLines16(0x64, 0xdc, 0x21c, (const char *)MSG(4, "DO DOWNLOAD A NEW VERSION"));
-		box_buttons(choice, 0);
+		box_buttons(noticeHovered, 0);
 	}
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 	menu_drawCornerOrnaments(X0, Y0, X1, Y1);

@@ -36,7 +36,7 @@ static const Store k_lobbyTopOutlines[44] = {
 
 void (lobbyTop_initOutlines)(void) { apply_stores(k_lobbyTopOutlines, 44); }   /* 0x42f500: the lobby top menu's button outlines */
 
-static const Store k_input_initVkTable[57] = {
+static const Store k_vkTable[57] = {
 	{ OBJ(g_vkTable), 0x1b }, { (OBJ(g_vkTable) + 0x4), 0x31 }, { (OBJ(g_vkTable) + 0x8), 0x32 }, { (OBJ(g_vkTable) + 0xc), 0x33 }, { (OBJ(g_vkTable) + 0x10), 0x34 },
 	{ (OBJ(g_vkTable) + 0x14), 0x35 }, { (OBJ(g_vkTable) + 0x18), 0x36 }, { (OBJ(g_vkTable) + 0x1c), 0x37 }, { (OBJ(g_vkTable) + 0x20), 0x38 }, { (OBJ(g_vkTable) + 0x24), 0x39 },
 	{ (OBJ(g_vkTable) + 0x28), 0x30 }, { (OBJ(g_vkTable) + 0x2c), 0x2d }, { (OBJ(g_vkTable) + 0x30), 0x3d }, { (OBJ(g_vkTable) + 0x34), 0x8 }, { (OBJ(g_vkTable) + 0x38), 0x9 },
@@ -50,7 +50,7 @@ static const Store k_input_initVkTable[57] = {
 	{ (OBJ(g_vkTable) + 0xc8), 0x2c }, { (OBJ(g_vkTable) + 0xcc), 0x2e }, { (OBJ(g_vkTable) + 0xd0), 0x2f }, { (OBJ(g_vkTable) + 0xd4), 0x10 }, { (OBJ(g_vkTable) + 0xd8), 0x2a },
 	{ (OBJ(g_vkTable) + 0xdc), 0x0 }, { (OBJ(g_vkTable) + 0xe0), 0x20 } };
 
-void (input_initVkTable)(void) { apply_stores(k_input_initVkTable, 57); }   /* 0x431680 scan-code row -> virtual key table */
+void (input_initVkTable)(void) { apply_stores(k_vkTable, 57); }   /* 0x431680 the scan code -> key table (g_vkTable) */
 
 static const Store k_textColours[64] = {
 	{ OBJ(g_textColours), 0x3f800000 }, { (OBJ(g_textColours) + 0x4), 0x3f800000 }, { (OBJ(g_textColours) + 0x8), 0x3f800000 }, { (OBJ(g_textColours) + 0xc), 0x3f800000 }, { (OBJ(g_textColours) + 0x10), 0x3f73f3f4 },

@@ -319,9 +319,9 @@ void (tunnelRing_build)(u8 *o, int index)
 		BITS(tr->innerSpin) = BITS(tr->back->innerSpin);
 	tr->innerSpeed = -0.5f;
 	BITS(tr->cleared326c[0]) = BITS(tr->cleared326c[1]) = BITS(tr->cleared326c[2]) = 0;
-	X y = H * k_m1100f - k_550f;
-	tr->cagePos[2] = (float)y;
-	y -= k_49f;
+	X z = H * k_m1100f - k_550f;
+	tr->cagePos[2] = (float)z;
+	z -= k_49f;
 	static const signed char cx[8] = { -1, 1, 1, -1, -1, 1, 1, -1 }, cy[8] = { 1, 1, -1, -1, 1, 1, -1, -1 };
 	for (int k = 0; k < 8; k++) {   /* (their pads kept) */
 		BITS(tr->cage[k][0]) = cx[k] > 0 ? 0x42480000 : 0xc2480000;   /* +-50 */
@@ -339,7 +339,7 @@ void (tunnelRing_build)(u8 *o, int index)
 			BITS(f->corners[i / 3][i % 3]) = corner[i] > 0 ? 0x42480000 : corner[i] < 0 ? 0xc2480000 : 0;
 		BITS(f->pos[0]) = BITS(f->pos[1]) = 0;
 		BITS(f->spin) = 0;
-		f->pos[2] = (float)(y - ((X)k_1f - (X)j * k_0_1f));
+		f->pos[2] = (float)(z - ((X)k_1f - (X)j * k_0_1f));
 		BITS(f->spinSpeed) = speed[j];
 	}
 	tr->alpha = 1.0f;

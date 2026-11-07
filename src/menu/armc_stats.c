@@ -262,20 +262,20 @@ static void section_chest(Panel *p)
 /* slot 2, the arms: a level, four levels each raised by its own figure (count x g_itemBonusCapacityPerLevel + base, from 1 shown), a figure */
 static void section_arms(Panel *p)
 {
-	static const u32 levels[4][3] = { { MSG(622, "CAPACITY FOR 30MM"), (OBJ(g_armsStats) + 0x4), ADDR(g_itemBonus30mm) }, { MSG(623, "CAPACITY FOR 60MM"), (OBJ(g_armsStats) + 0x8), ADDR(g_itemBonus60mm) },
+	static const u32 capacities[4][3] = { { MSG(622, "CAPACITY FOR 30MM"), (OBJ(g_armsStats) + 0x4), ADDR(g_itemBonus30mm) }, { MSG(623, "CAPACITY FOR 60MM"), (OBJ(g_armsStats) + 0x8), ADDR(g_itemBonus60mm) },
 	                                  { MSG(624, "CAPACITY FOR E-PAK"), (OBJ(g_armsStats) + 0xc), ADDR(g_itemBonusEpak) }, { MSG(625, "CAPACITY FOR MISSLE"), (OBJ(g_armsStats) + 0x10), ADDR(g_itemBonusMissile) } };
 	label(p, ROW(0), MSG(621, "FIRE CONTROL SYSTEM"));
 	sprintf(p->t.line, FMT(STR(0x4b02e8, "%d(Lv)")), g_armsFcsLevel);
 	value(p, ROW(0));
 	for (int k = 0; k < 4; k++) {
-		label(p, ROW(k + 1), levels[k][0]);
-		int level = I(levels[k][1]);
-		int n = ftol((X)level * g_itemBonusCapacityPerLevel + F(levels[k][2]));
+		label(p, ROW(k + 1), capacities[k][0]);
+		int capacity = I(capacities[k][1]);
+		int n = ftol((X)capacity * g_itemBonusCapacityPerLevel + F(capacities[k][2]));
 		if (n < 1)
-			sprintf(p->t.line, FMT(STR(0x4b02dc, "%d(")), level);
+			sprintf(p->t.line, FMT(STR(0x4b02dc, "%d(")), capacity);
 		else {
 			memset(p->t.bonus, 0, 20);
-			sprintf(p->t.line, FMT(STR(0x4b0320, "%d")), level);
+			sprintf(p->t.line, FMT(STR(0x4b0320, "%d")), capacity);
 			sprintf(p->t.bonus, FMT(STR(0x4b02e0, "+%d(")), n);
 			append(p->t.line, p->t.bonus);
 		}

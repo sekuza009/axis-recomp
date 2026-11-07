@@ -113,20 +113,20 @@ void THISCALL (space_addUnitTriangle)(void *space, u32 flags, u8 *owner, u32 par
 {
 #define PL(p) ((CollisionPlane *)(p))
 	SpaceUnit *un = (SpaceUnit *)owner;
-	u8 *planes = space_insertTriangle(space, flags, v0, v1, v2, owner, part, i0, i1, i2);
-	if (!planes)
+	u8 *plane = space_insertTriangle(space, flags, v0, v1, v2, owner, part, i0, i1, i2);
+	if (!plane)
 		return;
 	u8 *last = un->lastPlane;
 	if (last) {
-		PL(last)->listNext = planes;
-		PL(planes)->listPrev = un->lastPlane;
+		PL(last)->listNext = plane;
+		PL(plane)->listPrev = un->lastPlane;
 	}
-	un->lastPlane = planes;
+	un->lastPlane = plane;
 	SpaceNode *node = space_getNextFreeNodePtr(space);
-	node->item = planes;
+	node->item = plane;
 	SpaceNode *last_node = un->lastNode;
 	if (last_node) {
-		PL(last_node->item)->listNext = planes;
+		PL(last_node->item)->listNext = plane;
 		PL(node->item)->listPrev = un->lastNode->item;
 		RELOC(un->lastNode)->newer = node;
 		RELOC(node)->next = un->lastNode;
@@ -516,10 +516,10 @@ static void through(float *out, const float *m, const float *v, Rows rows)
 u32 *THISCALL (space_buildUnit)(u8 *space, u32 id, u8 *shape, const float *matrix)
 {
 	Model *md = (Model *)shape;
-	float own[16];
+	float modelview[16];
 	if (!matrix) {
-		glGetFloatv(0xba6, own);   /* GL_MODELVIEW_MATRIX */
-		matrix = own;
+		glGetFloatv(0xba6, modelview);   /* GL_MODELVIEW_MATRIX */
+		matrix = modelview;
 	}
 	u32 *unit = space_getNextFreeUnitPtr(space);
 	unit[0] = id;
@@ -528,7 +528,7 @@ u32 *THISCALL (space_buildUnit)(u8 *space, u32 id, u8 *shape, const float *matri
 		ShapePart *sp = (ShapePart *)part;
 		if (part[0] & 0x20)
 			continue;
-		u32 kind = part[0] & 1 ? 0x10 : 0;
+		u32 planeFlags = part[0] & 1 ? 0x10 : 0;
 		const float *verts = (const float *)(sp)->vertices;
 		for (int j = 0; j < sp->primCount; j++) {
 			ShapePrim *prim = (ShapePrim *)(sp->prims + j * 0xc);
@@ -545,7 +545,7 @@ u32 *THISCALL (space_buildUnit)(u8 *space, u32 id, u8 *shape, const float *matri
 					space_transformPoint(b, matrix, VERT(k - 1));
 					u32 i2 = IDX(k);
 					space_transformPoint(c, matrix, VERT(k));
-					space_addUnitTriangle(space, kind, unit, i, i0, i1, i2, a, b, c);
+					space_addUnitTriangle(space, planeFlags, unit, i, i0, i1, i2, a, b, c);
 				}
 				break;
 			case 5:   /* a strip */
@@ -564,7 +564,7 @@ u32 *THISCALL (space_buildUnit)(u8 *space, u32 id, u8 *shape, const float *matri
 						i1 = IDX(k - 1);
 						through(b, matrix, VERT(k - 1), k_oddNext);
 					}
-					space_addUnitTriangle(space, kind, unit, i, i0, i1, i2, a, b, c);
+					space_addUnitTriangle(space, planeFlags, unit, i, i0, i1, i2, a, b, c);
 				}
 				break;
 			case 4:   /* a list */
@@ -575,7 +575,7 @@ u32 *THISCALL (space_buildUnit)(u8 *space, u32 id, u8 *shape, const float *matri
 					through(b, matrix, VERT(k + 1), k_listNext);
 					u32 i2 = IDX(k + 2);
 					through(c, matrix, VERT(k + 2), k_listLast);
-					space_addUnitTriangle(space, kind, unit, i, i0, i1, i2, a, b, c);
+					space_addUnitTriangle(space, planeFlags, unit, i, i0, i1, i2, a, b, c);
 				}
 				break;
 			}

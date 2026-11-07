@@ -151,10 +151,10 @@ static int random_below(u32 n)
 static void round_start(Scene *s)
 {
 	const int *counts[6] = { &s->headCount, &s->chestCount, &s->armCount, &s->legCount, &s->boosterCount, &s->actorItemCount };
-	static const u32 rows[6] = { sizeof(HeadType) / 4, sizeof(ChestType) / 4, sizeof(ArmType) / 4, sizeof(LegType) / 4, sizeof(BoosterType) / 4, sizeof(ActorItem) / 4 };   /* (the records in dwords) */
+	static const u32 row_len[6] = { sizeof(HeadType) / 4, sizeof(ChestType) / 4, sizeof(ArmType) / 4, sizeof(LegType) / 4, sizeof(BoosterType) / 4, sizeof(ActorItem) / 4 };   /* (the records in dwords) */
 	s->typeCheckTurn = 0;
 	for (int k = 0; k < 6; k++)
-		s->typeTablePickUnread[k] = random_below(((u32)*counts[k] * rows[k] * 4) >> 2);
+		s->typeTablePickUnread[k] = random_below(((u32)*counts[k] * row_len[k] * 4) >> 2);
 	s->dataLossPending = 0;
 	s->dataLossCode = -1;
 	s->wholeSeconds = 0;
@@ -403,10 +403,10 @@ void THISCALL (stage_build)(u8 *s, u32 stageDir, u32 mapDir, const char *texture
 		PART(booster, 0x14, 0x12ca0, 0xec0) };
 #undef PART
 	for (int t = 0; t < 16; t++) {
-		u8 *type = (u8 *)&st->playerRecords[t];
+		u8 *record = (u8 *)&st->playerRecords[t];
 		for (int k = 0; k < 5; k++)
-			model_sets(type + parts[k].shapes, dir, parts[k].n, parts[k].extra, parts[k].size, type + parts[k].skels, skeletonDir, 2,
-			           parts[k].sextra, type + parts[k].smem, parts[k].ssize);
+			model_sets(record + parts[k].shapes, dir, parts[k].n, parts[k].extra, parts[k].size, record + parts[k].skels, skeletonDir, 2,
+			           parts[k].sextra, record + parts[k].smem, parts[k].ssize);
 	}
 	ShapeManager_initBy((u8 *)&st->itemShapes, dir, 0x258, 2, 0x2c6280, st->itemShapeData, sizeof st->itemShapeData);
 	SkeletonManager_initBy((u8 *)&st->itemSkeletons, skeletonDir, 0x64, 2, 0x15ae0, st->itemSkeletonData, sizeof st->itemSkeletonData);

@@ -263,7 +263,7 @@ u32 (menu_enterState)(void)
 }
 
 
-/* the skirmish and mission screens' camera: at (0, 0, -450) moving to (0, 0, -550), that place its home, one target
+/* the skirmish and mission screens' camera: the eye at (0, 0, -450) looking at (0, 0, -550), that its home, one target
    point (0, 0, 100) looking at the origin */
 static const Store briefing_camera[] = {
 	{ ADDR(g_menuEyeX), 0 }, { ADDR(g_menuEyeY), 0 }, { ADDR(g_menuEyeZ), 0xc3e10000 }, { ADDR(g_menuCameraLook), 0 }, { ADDR(g_menuCameraLookY), 0 },
@@ -309,9 +309,9 @@ int (menuState500_enterSkirmish)(void)
 	skirmish_layout();   /* skirmish_layout */
 	g_skirmishShowBackground = 1;
 	g_skirmishLeft = 0;
-	int mission = g_progress < 15 ? g_progress : 14;
-	g_skirmishRoundShown = mission;
-	g_skirmishChosen = mission;
+	int roundShown = g_progress < 15 ? g_progress : 14;
+	g_skirmishRoundShown = roundShown;
+	g_skirmishChosen = roundShown;
 	g_skirmishPreviewDue = 1;
 	sound_playMenu(4);
 	g_skirmishNewPartsNotice = 0;
@@ -403,9 +403,9 @@ void (match_enter)(void)
 		scene_startSession(scene, 0, 3);
 		return;
 	}
-	int loaded = map_fileExists(g_mapIndex);
+	int mapExists = map_fileExists(g_mapIndex);
 	int kind = g_matchMode;   /* (after the load, as the original reads it) */
-	if (!loaded) {
+	if (!mapExists) {
 		if (kind == 1)
 			g_menuState = 400;
 		else if (kind == 2)

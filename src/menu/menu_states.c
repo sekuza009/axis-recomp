@@ -654,9 +654,9 @@ u32 (menuState800_gameRoom)(void)
 		int *mouse = (int *)ADDR(g_mouseX);
 		mouse[0] += ftol(fmul_m(fmul_m((long double)(g_pointerGlideX - mouse[0]), (const float *)ADDR(g_frameTime)), (const float *)ADDR(k_0_25f)));
 		mouse[1] += ftol(fmul_m(fmul_m((long double)(g_pointerGlideY - mouse[1]), (const float *)ADDR(g_frameTime)), (const float *)ADDR(k_0_25f)));
-		long double size = fsub_m(fld_m((const float *)ADDR(g_pointerGlideTime)), (const float *)ADDR(g_frameTime));
-		g_pointerGlideTime = f32(size);
-		if (!(size >= 0))   /* below 0, or not a number */
+		long double timeLeft = fsub_m(fld_m((const float *)ADDR(g_pointerGlideTime)), (const float *)ADDR(g_frameTime));
+		g_pointerGlideTime = f32(timeLeft);
+		if (!(timeLeft >= 0))   /* below 0, or not a number */
 			g_pointerGliding = 0;
 	}
 	u32 page = (*(u32 *)&g_roomState);
@@ -723,7 +723,7 @@ u32 (game_postMatch)(void)
 	if (g_replayRunning)
 		g_matchMode = 0;
 	u32 r;
-	int mission;
+	int progress;
 	switch (g_matchMode) {
 	case 1:
 		send_host_leaving();
@@ -744,8 +744,8 @@ u32 (game_postMatch)(void)
 			game_returnToMainMenu();
 		break;
 	case 3:
-		mission = g_progress;
-		if (mission == 15) {
+		progress = g_progress;
+		if (progress == 15) {
 			g_progress = 16;
 			profile_saveProgress();
 			reg_writeEndMode(1);      /* reg_writeEndMode */
@@ -753,7 +753,7 @@ u32 (game_postMatch)(void)
 			r = ((u32)app_closeWindow(0x63));
 			goto message;
 		}
-		reg_writeEndMode(mission < 15 ? 0 : 1);
+		reg_writeEndMode(progress < 15 ? 0 : 1);
 		profile_saveProgress();
 		game_returnToSkirmish();         /* game_returnToSkirmish */
 		break;

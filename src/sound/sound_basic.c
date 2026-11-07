@@ -81,24 +81,24 @@ int (sound_setVolume)(int v)
 	return r;
 }
 
-/* 0x4572b0: the music segment (g_music) restarted from the start once it has played to its length (g_musicLength, 64
+/* 0x4572b0: the music stream (g_music) restarted from the start once it has played to its length (g_musicLength, 64
    bits). Returns what the original leaves in eax */
 u32 (music_loopIfEnded)(void)
 {
-	void *segment = g_music;
-	if (!segment)
+	void *stream = g_music;
+	if (!stream)
 		return 0;
 	u32 pos[2];
-	COM(segment, 0x20, u32, u32 *)(segment, pos);   /* the play position */
+	COM(stream, 0x20, u32, u32 *)(stream, pos);   /* the play position */
 	int hi = (int)pos[1], end_hi = g_musicEndHigh;
 	if (hi < end_hi)
 		return (u32)hi;
 	if (hi == end_hi && pos[0] < g_musicLength)
 		return g_musicLength;
-	segment = g_music;
-	COM(segment, 0x28, u32, u32, u32)(segment, 0, 0);
-	segment = g_music;
-	return COM(segment, 0x1c, u32, u32)(segment, 1);
+	stream = g_music;
+	COM(stream, 0x28, u32, u32, u32)(stream, 0, 0);
+	stream = g_music;
+	return COM(stream, 0x1c, u32, u32)(stream, 1);
 }
 
 /* 0x467dd0: the sound's next buffer (of eight, next) played with a pan (mode 1 or 2: value, within

@@ -270,8 +270,8 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 	float ungrip[16], grip_shift[16], muzzle_m[16], inv_ungrip[16], muzzle_inv[16], shot_at[3], shot_dir[3];
 	u32 fx[13];
 	u8 *a = (u8 *)&ST->actors[i];
-	u8 *player = (u8 *)&ST->playerRecords[AC->player];
-	PlayerRecord *pr = (PlayerRecord *)player;
+	u8 *record = (u8 *)&ST->playerRecords[AC->player];
+	PlayerRecord *pr = (PlayerRecord *)record;
 	if (AC->spawnAge > AC->dropAge) {   /* not run or heard from for 10 s, or dead: dropped */
 		actor_deactivate((Stage *)s, i);
 		if (ST->cockpitActor == i)
@@ -637,9 +637,9 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 		break;
 	}
 	AC->cheat = -1;
-	float speed = f32(fmul_m(fld_m(dt), &AC->mobility));
+	float keyRamp = f32(fmul_m(fld_m(dt), &AC->mobility));
 	if (AC->inBooster == 1)
-		speed = f32(fld_m(&speed) + fld_m(&speed));
+		keyRamp = f32(fld_m(&keyRamp) + fld_m(&keyRamp));
 	float accel = f32(fmul_m(fld_m(dt), &AC->moveAccel));
 	float want[3];   /* the wanted velocity from the keys, turned to the actor's facing */
 	want[2] = 0;
@@ -742,10 +742,10 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 			left = AC->runTop[2];
 			right = AC->runTop[3];
 		}
-		key_axis(&AC->nextForward, AC->inForward, AC->inBackward, fwd, back, speed);
-		key_axis(&AC->nextStrafe, AC->inStepLeft, AC->inStepRight, left, right, speed);
-		key_ramp(&AC->nextClimb, AC->inAltitude == 1, speed);
-		key_ramp(&AC->nextRun, AC->inBooster == 1, speed);
+		key_axis(&AC->nextForward, AC->inForward, AC->inBackward, fwd, back, keyRamp);
+		key_axis(&AC->nextStrafe, AC->inStepLeft, AC->inStepRight, left, right, keyRamp);
+		key_ramp(&AC->nextClimb, AC->inAltitude == 1, keyRamp);
+		key_ramp(&AC->nextRun, AC->inBooster == 1, keyRamp);
 		/* the body's lean (nextLean) from the forward speed and the pitch */
 		long double m, w;
 		if (!(AC->nextForward >= 0)) {
@@ -819,8 +819,8 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 	AC->pose[1] = f32(fmul_m(fmul_m(FSUB(k_1f, AC->climb) * FADD(AC->pitch, k_900f), &AC->boosterTilt), &k_0_0005555556f));
 	clamp450(&AC->pose[2], FMUL(AC->strafe, k_200f));
 	AC->pose[3] = f32(fmul_m(fadd_m(FSUB(AC->pitch, AC->lean), &k_900f), &k_0_0005555556f));
-	long double side = !(AC->forward >= -1.0f) ? -1.0L : AC->forward > 1.0f ? 1.0L : fld_m(&AC->forward);
-	AC->pose[4] = f32(fmul_m(fsubr_m(fmul_m(FADD(AC->run, k_1f), &k_0_5f) * FSUB(k_1f, AC->climb) * side, &k_1f), &k_0_5f));
+	long double forwardClamped = !(AC->forward >= -1.0f) ? -1.0L : AC->forward > 1.0f ? 1.0L : fld_m(&AC->forward);
+	AC->pose[4] = f32(fmul_m(fsubr_m(fmul_m(FADD(AC->run, k_1f), &k_0_5f) * FSUB(k_1f, AC->climb) * forwardClamped, &k_1f), &k_0_5f));
 	BITS(AC->pose[5]) = BITS(AC->run);
 	anim_setTime((u8 *)&AC->headModel, 0, BITS(AC->pose[3]));
 	anim_setTime((u8 *)&AC->chestModel, 0, BITS(AC->pose[3]));
@@ -867,21 +867,21 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 		int *count = &ST->lockCount;
 		if (weapon && weapon->targetingTime > 0) {
 			for (int j = 0; j < ST->actorCount; j++) {
-				float *seen = &ST->actors[j].lockAnim;
+				float *lockAnim = &ST->actors[j].lockAnim;
 				if (j == i || ST->actors[j].state != 1) {
 					lock[j] = 0;
 					continue;
 				}
-				if (*seen > 0) {
-					long double v = fsub_m(fld_m(seen), dt);
-					*seen = (float)v;
+				if (*lockAnim > 0) {
+					long double v = fsub_m(fld_m(lockAnim), dt);
+					*lockAnim = (float)v;
 					if (!(v >= 0))
-						*seen = 0;
+						*lockAnim = 0;
 				}
 				if (!(FMUL(AC->lockOnTime, weapon->targetingTime) >= ST->actors[j].aimTime) && AC->team != ST->actors[j].team) {
 					if (!(lock[j] > 0)) {
 						sound_playVolume(0x12, 0x64);
-						*seen = 0.25f;
+						*lockAnim = 0.25f;
 					}
 					BITS(lock[j]) = BITS(AC->targetKeepTime);
 				} else {
@@ -1061,13 +1061,13 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 		}
 	} else if (weapon && AC->netFired == 1) {   /* the others' rounds, as sent */
 		for (int k = 0; k < 5; k++) {   /* per slot (shots[k]): in use, a new round (its kind, owner, flag, direction) */
-			int *item = &AC->shotBullets[k];
+			int *bullet = &AC->shotBullets[k];
 			u32 *f = (u32 *)&AC->shots[k].isNew;
 			if (f[-1] != 1)
 				continue;
 			if (f[0] == 1) {
-				if (*item >= 0)
-					bullet_free(s, *item);
+				if (*bullet >= 0)
+					bullet_free(s, *bullet);
 				const int *muzzle = (const int *)(((u8 *)weapon) + (AC->slot == 5 ? 0x2ca4 : 0x15e8) + AC->variantLoaded * 64);
 				skel_getBoneMatrix(*(void **)model->skeletons, muzzle_m, muzzle[0], 0);
 				Mat4_invert(muzzle_inv, muzzle_m);
@@ -1093,7 +1093,7 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 				rec->hitPlane = f[2];
 				memcpy(rec->dir, f + 4, 12);
 				rec->muzzle = (u32)(uintptr_t)q;
-				*item = bullet_spawn(s, -1, i, -1, rec, 0);
+				*bullet = bullet_spawn(s, -1, i, -1, rec, 0);
 				AC->fireAnim = 0.0001f;
 				long double v = fadd_m(fdiv_m(fld_m(dt), &weapon->cycleTime), &AC->fireCycle);
 				AC->fireCycle = (float)v;
@@ -1101,7 +1101,7 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 					AC->fireCycle = 0;
 				f[0] = 0;
 			}
-			Bullet *b = &ST->bullets[*item];   /* the round's record, brought up to date */
+			Bullet *b = &ST->bullets[*bullet];   /* the round's record, brought up to date */
 			if (b->active != 1)
 				continue;
 			b->hitActor = f[1];

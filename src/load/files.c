@@ -543,29 +543,29 @@ u32 (cfg_writeServer)(void *f)
 #define FPUTS(s) GAME_CDECL(0x49f167, u32, const char *, void *)((const char *)RELOC(s), f)
 	static const u32 type[15] = { STR(0x4b1878, "DEATH MATCH\n"), STR(0x4b1988, "TEAM DEATH MATCH\n"), STR(0x4b1978, "SUDDEN DEATH\n"), STR(0x4b1964, "TEAM SUDDEN DEATH\n"), STR(0x4b1954, "SHOTGUN ARENA\n"), STR(0x4b1940, "TEAM SHOTGUN ARENA\n"), STR(0x4b192c, "IONCANNON ARENA\n"), STR(0x4b1914, "TEAM IONCANNON ARENA\n"),
 	                              STR(0x4b1904, "ROCKET ARENA\n"), STR(0x4b18f0, "TEAM ROCKET ARENA\n"), STR(0x4b18dc, "GLADIATOR ARENA\n"), STR(0x4b18c4, "TEAM GLADIATOR ARENA\n"), STR(0x4b18b0, "KING ON THE HILL\n"), STR(0x4b18a0, "PLATOON MODE\n"), STR(0x4b1888, "ACCEPT ADVANCED MODE\n") };
-	const u8 *me = (const u8 *)OBJ(g_arenaName);
+	const u8 *arena = (const u8 *)OBJ(g_arenaName);
 	char number[12];
 	FPUTS(STR(0x4b19f0, "set_server name "));
-	FPUTS(me);
+	FPUTS(arena);
 	crt_fprintf(f, (const char *)STR(0x4b182c, "\n"));   /* fprintf "\n" */
 	FPUTS(STR(0x4b19e0, "set_server map "));
-	itoa((signed char)me[0x20], number, 10);
+	itoa((signed char)arena[0x20], number, 10);
 	FPUTS(number);
 	FPUTS(STR(0x4b182c, "\n"));
 	FPUTS(STR(0x4b19c8, "set_server numofplayer "));
-	itoa((signed char)me[0x21], number, 10);
+	itoa((signed char)arena[0x21], number, 10);
 	FPUTS(number);
 	FPUTS(STR(0x4b182c, "\n"));
 	FPUTS(STR(0x4b19b0, "set_server customize "));
-	FPUTS(me[0x22] == 1 ? STR(0x4b17e4, "ON\n") : STR(0x4b17dc, "OFF\n"));
+	FPUTS(arena[0x22] == 1 ? STR(0x4b17e4, "ON\n") : STR(0x4b17dc, "OFF\n"));
 	FPUTS(STR(0x4b199c, "set_server type "));
-	u32 kind = (u32)(int)(signed char)me[0x23];
+	u32 kind = (u32)(int)(signed char)arena[0x23];
 	FPUTS(type[kind <= 14 ? kind : 0]);
-	itoa(me[0x24], number, 10);
+	itoa(arena[0x24], number, 10);
 	FPUTS(STR(0x4b1860, "set_server gameflag "));
 	FPUTS(number);
 	FPUTS(STR(0x4b182c, "\n"));
-	itoa(me[0x25], number, 10);
+	itoa(arena[0x25], number, 10);
 	FPUTS(STR(0x4b1848, "set_server timeflag "));
 	FPUTS(number);
 	return FPUTS(STR(0x4b1844, "\n\n"));

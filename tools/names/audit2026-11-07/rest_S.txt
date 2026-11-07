@@ -1,0 +1,428 @@
+GROUP S: 427 names; OK 412, RENAME 10, COMMENT 5, UNSURE 0
+src/app/classes.c:474 k_cameraPresets | OK | Console_ctor memcpy into Scene.cameraPresets[6][10] (six fields by ten camera modes); 0x42480000 etc. float bits
+src/app/main_loop.c:253 k_spectatePresetKeys | OK | match input while spectating: numpad 1..9,0 -> SC->cameraSlot 1..9,0 (+manualPick, cameraReset)
+src/app/main_loop.c:256 k_followKeys | OK | digit keys 1..9,0 -> followKey (k+1, first six +10 with left shift, then -1)
+src/app/main_loop.c:258 k_heldKeys | OK | held2(binding, binding+4) -> Scene hold* flags (altitude, step, forward/back, up/down, zoom, ranking key, booster)
+src/app/main_loop.c:263 k_weaponKeys | OK | bindings +0x78..+0x90, +0x68, +0x70 (HAND WEAPON 1..4, shoulders); last held -> weaponKey
+src/app/main_loop.c:417 k_partSteps | OK | match_mechTestFrame: fKeys[k] held + part step up/down -> actor_setActorType*InfoBy within headCount..boosterCount
+src/app/main_loop.c:424 k_mechTestKeys | OK | Windows VKs 2 (RBUTTON), A, D, W, S, Q, E, 1 (LBUTTON), 0x10 (SHIFT) by input_asyncKeyDown -> hold* flags, as the comment lists
+src/app/main_loop.c:984 k_replayHeld | COMMENT | used only in replay_frame (held2 of each binding's two keys -> holdAltitude, step L/R, forward, backward, up, down); no follow key in it (following is the mouse click) -> "the replay viewer's held controls: each binding's two keys and the hold flag they set (altitude, step left / right, forward, backward, up, down)"
+src/app/main_loop.c:988 k_presetKeys | OK | replay_frame: numpad 1..9,0 -> cameraMode (k+1)%10 (the camera presets are per camera mode, cameraPresets[6][10]); replay-only, a k_replayPresetKeys would match k_replayHeld but not needed
+src/app/main_loop.c:990 k_star | COMMENT | the shape is right (8 segments from p to p +-100 on each axis by these signs) but it is drawn for the map's lights (SC->markLights, mapLights.records, yellow), not a generic "debug marker" -> "the eight lines of a map light's marker star (markLights): each line's far end, +-100 by these signs"
+src/app/small.c:608 choice_order | OK | registry order i -> byte index at g_roomRecMap (Map 0, PlayerNum 1, GameType 3, FlagLimit 4, TimeLimit 5, Customize 2); reg_write/readLadderSettings
+src/app/small.c:609 choice_names | OK | the six registry value names (msg strings Map .. Customize) matching choice_order
+src/app/small.c:819 part_kinds | OK | set_part's per-kind record (parts[k], *TypeCount, fatal text, shape/skel caches, *Types + stride, partNames[k], actor_load*) for the five actor_setActorType*InfoBy
+src/app/store_tables.c:18 k_defaultColours | OK | colour_initDefaultColours: 16 RGBA byte colours into g_defaultColours
+src/app/store_tables.c:26 k_lobbyTopOutlines | OK | lobbyTop_initOutlines: stores into g_lobbyTopOutlines
+src/app/store_tables.c:39 k_input_initVkTable | RENAME -> k_vkTable | the only table named after its function (neighbours: k_<what>, e.g. k_dikCodes for the g_dik* stores, k_textColours for g_textColours); contents: entry k is scan code k+1 (Esc .. Space), values mostly ASCII characters ('-' 0x2d, '=' 0x3d, '[' 0x5b, ';' 0x3b, '`' 0x60, ',' 0x2c, '*' 0x2a ...) which are NOT the Windows VKs of those keys (0x2d is VK_INSERT, VK_OEM_MINUS is 0xbd); only Esc/Back/Tab/Enter/Shift/Space coincide; Ctrl/Alt 0. Comment: "the scan code -> key table (g_vkTable, never read): scan codes 1 .. 0x39 in order, letters / digits / punctuation as their ASCII characters, Esc, Back, Tab, Enter, Shift (0x10), Space; 0 for Ctrl / Alt". (g_vkTable's own 'virtual key' claim is the same doubt - for the objects audit)
+src/app/store_tables.c:55 k_textColours | OK | colour_initTextColours: 16 x RGBA floats into g_textColours
+src/app/store_tables.c:72 k_mainMenuOutlines | OK | menu_initMainOutlines: stores into g_mainMenuOutlines
+src/app/store_tables.c:90 k_roomOutlines | OK | room_initOutlines: stores into g_roomOutlines (same values as the main menu's)
+src/app/store_tables.c:108 k_dikCodes | OK | input_initDikCodes: every value checked against DIK_* (Esc 1, 1..0 2..0xb, A 0x1e .. Z 0x2c, F11 0x57, numpad 0x47..0x53, arrows 0xc8/0xd0/0xcb/0xcd, LWin 0xdb ...) - all right; plus the game's own mouse / wheel codes 0xfa..0xfe
+src/app/store_tables.c:136 k_defaultBindings | OK | input_setDefaultBindings: g_controls bindings from g_dik* (W/S/A/D, mouse 1/2, Space ...) then the 4 mouse settings (invert 0, smooth 0, sensitivity 50, crosshair 0). (Note: +0xa0 defaults to RCtrl here but LCtrl in the edit copy - a data difference, not a name issue)
+src/app/store_tables.c:157 k_defaultBindingsEdit | OK | setup_defaultBindings: the same defaults into g_controlsEdit + its mouse switches / slider / crosshair
+src/crt/crt_format.c:9 g_crtLib | OK | the CrtLib function table set by crt_setLib, used for vsprintf_
+src/fixes/hud.c:25 g_fixHudPart | OK | the main HUD's part drawing (HUD_*), read by anchor_of
+src/fixes/hud.c:26 g_fixPenSharp | OK | set around font_penDraw by fix_powerUpText; glyph_cells samples nearest while set
+src/fixes/hud.c:27 g_fixPenDraw | OK | set by font_penDraw (glyph_cells.c:208/233) while it draws; read by the vertex remap
+src/fixes/hud.c:32 g_markerW | OK | real g_glWidth kept while markers draw (0 when not), restored in markers_end
+src/fixes/hud.c:33 g_markerView | OK | the viewport found at markers_begin, restored at markers_end
+src/fixes/hud.c:89 g_overlayView | OK | the viewport found at fix_overlayBegin, put back by fix_overlayEnd
+src/fixes/hud.c:90 g_overlaySet | OK | 1 when fix_overlayBegin changed the viewport (so End restores it)
+src/fixes/hud.c:129 g_penText | OK | fix_powerUpText's flag (hudProportional) that the countdown text is being drawn, read by the vertex remap with g_fixPenDraw
+src/fixes/hud.c:129 g_penX | OK | the countdown text's x (scale origin)
+src/fixes/hud.c:129 g_penY | OK | the countdown text's y (scale origin)
+src/fixes/hud.c:167 g_label | OK | fix_labelText's flag: a name label is drawing (proportional on)
+src/fixes/hud.c:167 g_labelX | OK | the label's centre x in 640 units ((x1+x2)/2)
+src/fixes/hud.c:168 g_labelPx | OK | that centre in screen pixels (g_labelX * width / 640)
+src/fixes/input.c:12 g_buttonLatch | OK | fix_mousePressed: per mouse button, 1 once its click was answered, 0 when not clicked
+src/fixes/input.c:44 g_heldMask | RENAME -> g_buttonsAwaitingRelease | not the buttons held: set to 0x0f whenever the window is not in the foreground; a bit is cleared only when that button is seen released, and while set the button's state is zeroed - the mask of buttons ignored until seen released (the comment above: "each button now counts only once it has been seen released")
+src/fixes/input.c:45 g_carryX | OK | the menu pointer's fractional x carried to the next frame (menu_pointerSpeed)
+src/fixes/input.c:45 g_carryY | OK | the same for y
+src/fixes/input.c:109 g_menuTravel | OK | fix_menuNav: the Esc menu's accumulated mouse travel along the page's direction
+src/fixes/input.c:110 g_menuTick | OK | fix_menuNav: the last call's platform_ticks (over 250 ms: travel reset)
+src/fixes/input.c:111 g_menuPage | OK | fix_menuNav: the Esc page seen last (scene->escPage; another page resets travel)
+src/fixes/kyrie.c:84 g_markedPending | OK | fix_shapeFind sets it for a MARKED\ name; fix_shapeRead consumes it for the next shape read
+src/fixes/screen.c:12 g_fixView | OK | the viewport set last (fix_glViewport)
+src/fixes/screen.c:13 g_fixInHud | OK | the in-match 2D pass / overlay nesting count
+src/fixes/screen.c:13 g_fixHudArea | OK | which FIX_AREA_* draws
+src/fixes/screen.c:14 g_fixCursorOn | OK | the menu pointer is drawn over the whole screen (fix_drawCursor)
+src/fixes/screen.c:14 g_fixCursorX | OK | the box's left edge the pointer is placed in
+src/fixes/screen.c:14 g_fixCursorW | OK | that box's width
+src/fixes/screen.c:42 g_fullDepth | OK | fix_fullScreen's nesting depth
+src/fixes/screen.c:42 g_fullBoxX | OK | the menus' box x kept to restore
+src/fixes/screen.c:42 g_fullBoxW | OK | the menus' box width kept to restore
+src/fixes/screen.c:122 g_digitHeight | OK | fix_digitHeight's result (26, or height-based on wide screens)
+src/fixes/screen.c:131 g_digitCorner | OK | fix_digitTexCoord's running corner counter (& 3: TL, TR, BR, BL)
+src/load/map_info.c:262 k_schemeHue | OK | hues in degrees (240, 40, 90, 230 ...) passed to playerRecord_setPartColour for the two colours of each of ten schemes
+src/load/map_info.c:265 k_schemeSat | OK | saturations 0..1 (0.8, 0.5, 0.58 ...)
+src/load/map_info.c:269 k_schemeVal | OK | values 0..1 (0.5, 0.8, 0.3 ...)
+src/load/space_pools.c:484 k_fanFirst | OK | through() order for a fan's first vertex (space_buildUnit case 6)
+src/load/space_pools.c:485 k_evenFirst | OK | strip, even k: first vertex's product order
+src/load/space_pools.c:486 k_evenNext | OK | strip, even k: second vertex
+src/load/space_pools.c:487 k_evenLast | OK | strip, even k: third vertex
+src/load/space_pools.c:488 k_oddFirst | OK | strip, odd k: first vertex
+src/load/space_pools.c:489 k_oddNext | OK | strip, odd k: second vertex
+src/load/space_pools.c:490 k_oddLast | OK | strip, odd k: third vertex
+src/load/space_pools.c:491 k_listFirst | OK | triangle list: first vertex
+src/load/space_pools.c:492 k_listNext | OK | triangle list: second vertex
+src/load/space_pools.c:493 k_listLast | OK | triangle list: third vertex
+src/match/actor_slots.c:11 input_fields | OK | the 12 Player in* fields cleared (inWeaponSlot -1) / set by actor_clearInput / actor_setInput
+src/match/actor_slots.c:344 g_parts | RENAME -> k_partModels | a const file-local table of PartModel (one per part kind for part_load / actor_loadHead..Booster), but named like a game global (g_); its neighbours in the same file are k_partLists / k_listAt
+src/match/actor_slots.c:515 k_partLists | COMMENT | the eight ObjectLists queued (head, chest, arms, legs, booster, weaponModel4, weaponModel5, weaponModel); "(the body, the parts, the weapons)" reads as a body list besides the parts -> "(the five parts, then the three weapon models)"
+src/match/actor_slots.c:913 k_listAt | OK | the same eight part-list members, re-vtabled / cleared / dtor'd on the stack copy (981-987)
+src/match/frame_loops.c:509 k_supplies | OK | item_pickup kinds 0..5, 10..19: refusing stateFlags bit, ammo/armor/shield count + max, amount, extended overshoot, "+40 30MM CELLS" etc.
+src/menu/armc_colours.c:62 part_shapes | OK | the five PlayerRecord shape caches tinted by tint_part (shape_setTint)
+src/menu/armc_keys.c:7 slot_keys | OK | DIK H, E, S, G, B pick part slot / colour slot 0..4 (armc_partsPageKeys, colour page)
+src/menu/armc_parts.c:9 copied | OK | six PartInfo <- ActorItem fields copied as they are (slotType .. damage)
+src/menu/armc_parts.c:12 scaled | OK | eight PartInfo <- ActorItem floats times a game constant (0.01, 0.1, 1000)
+src/menu/armc_screens.c:16 bright | OK | g_armcBright (0,1,1,1) as bits, TEXT(bright) for the chosen items
+src/menu/armc_screens.c:16 dim | OK | g_armcDim (0,0.6,0.6,1) for the others
+src/menu/armc_stats.c:26 k_white | OK | (1,1,1,1)
+src/menu/armc_stats.c:27 k_cyan | OK | (0,1,1,1)
+src/menu/armc_stats.c:28 k_yellow | OK | (1,1,0,1)
+src/menu/game_lists.c:9 bright | OK | g_arenaBright, the arena lists' chosen row / heads
+src/menu/game_lists.c:9 dim | OK | g_arenaDim
+src/menu/game_lists.c:238 room_bright | OK | g_roomBright (0,1,1,1) for the room's lists
+src/menu/game_lists.c:238 room_dim | OK | g_roomDim (0.3,0.7,0.7,1)
+src/menu/menu_cameras.c:17 cam | OK | the menu camera's eye x,y,z and look-at x,y,z (eased)
+src/menu/menu_cameras.c:18 home | OK | their home values (g_menuEyeHome*, g_menuLookHome*)
+src/menu/menu_cameras.c:136 point0 | OK | target point 0 and look-at point 0 (g_camPoint0*, g_camAim0*), eased to in menu_camera2
+src/menu/mission_list.c:99 column_x0 | OK | the four column heads' / cells' left x from the window's left
+src/menu/mission_list.c:99 column_x1 | OK | their right x
+src/menu/screen_enter.c:42 camera4 | OK | camera points 0..3 = (35,0),(35,0),(-35,0),(-35,0) looking at (-70,35),(-70,-35),(70,35),(70,-35), as the comment says; stored by the lobby and setup enters (101, 135)
+src/menu/screen_enter.c:268 briefing_camera | COMMENT | the values: eye (0,0,-450), look-at (g_menuCameraLook*) (0,0,-550), home eye -450 / look -550, point 0 (0,0,100) aiming at the origin; nothing "moves to (0,0,-550)": that is the look-at point -> "the skirmish and mission screens' camera: the eye at (0, 0, -450) looking at (0, 0, -550), that its home, one target point (0, 0, 100) looking at the origin"
+src/menu/settings_form.c:49 k_white | OK | (1,1,1,1), white() for the form's text
+src/menu/setup_keys.c:186 bindings | OK | the 32 binding pairs of g_controlsEdit (primary, secondary), controls_fillPrimaryKeys / unbind
+src/menu/setup_keys.c:526 page_bindings | OK | binding index per row of the three key pages for setup_bindKey (-1 none)
+src/menu/setup_pages.c:173 key_rows | OK | the same mapping for drawing the rows (rows 4 and 9 of tab 3 = bindings 25 and 31 fixed, checked)
+src/menu/setup_pages.c:708 none | OK | Highlight with no glow (NULL) for the tunnels without a highlight
+src/menu/setup_pages.c:709 white | OK | (1,1,1) glow of the arena lobby's tunnel highlight
+src/menu/setup_pages.c:712 t | OK | (in-line function static) skirmish_drawTunnel's Tunnel (depth -550, main menu textures, six walls)
+src/menu/setup_pages.c:713 t | OK | missions_drawTunnel's Tunnel
+src/menu/setup_pages.c:714 t | OK | armc_drawTunnel's Tunnel
+src/menu/setup_pages.c:715 t | OK | armc_drawRoomTunnel's Tunnel (depth -1650, ladder menu textures)
+src/render/depth_sort.c:61 k_sortA | OK | depth_sort's globals for render_depthSortTriangles (A/B only tells the two apart; k_triangleSort would say more, not wrong)
+src/render/depth_sort.c:65 k_sortB | OK | the same for render_depthSortBillboards
+src/render/objects.c:368 k_glowUV | OK | the glow sprite's cell (0.5..0.625, 0.125..0.25) for glow / sized_glow
+src/render/objects.c:368 k_coreUV | OK | the bright core's cell for core()
+src/render/view_volume.c:541 k_texturedOrder | OK | through()'s summing order when the item is textured (id > 0)
+src/render/view_volume.c:542 k_plainOrder | OK | the order when untextured
+src/render/view_volume.c:628 k_third | OK | -1/3: a triangle's depth key = minus the mean z (sign in the comment)
+src/render/view_volume.c:628 k_half | OK | -1/2: a segment's depth key
+src/text/text_codes.c:199 ascii8 | OK | text_ascii8Pass's TextPass (text_quad8)
+src/text/text_codes.c:200 ascii16 | OK | text_ascii16Pass's (text_quad16)
+src/text/text_codes.c:201 ascii32 | OK | text_ascii32Pass's (text_quad32)
+src/text/text_codes.c:202 han13 | OK | text_hangul13Pass's (lead glyphs)
+src/text/text_codes.c:203 han13b | OK | text_hangul13LayeredPass's (vowel + tail glyphs, layered 1)
+src/text/text_codes.c:204 han31 | OK | text_hangul31Pass's
+src/text/text_codes.c:205 han31b | OK | text_hangul31LayeredPass's
+src/wide.c:6 off | OK | the 0 every *Fix / state pointer of the default table reads
+src/wide.c:7 unused | OK | a writable sink for hudPart / penDraw when no patch DLL reads them
+src/wide.c:11 no_latch | OK | mouseLatch's three latches in the default table
+src/wide.c:13 no_float | OK | the NULL digit-height pointer (26 used)
+src/wide.c:14 no_slot | OK | the NULL tex-coord slot (glTexCoord2f's import used)
+src/wide.c:15 none | OK | the default Wide table: everything off (g_wide until recomp_setWide)
+src/wide.c:18 g_wide | OK | the Wide table in use (patch DLL's or none)
+src/app/classes.c:209 shapes | OK | ResourceSet_ctor: the five PlayerRecord shape managers (headShapes .. boosterShapes) built in place
+src/app/classes.c:210 skels | OK | ResourceSet_ctor: the five skeleton managers (headSkels .. boosterSkels)
+src/app/classes.c:250 members | OK | actor_destroyPartLists: the eight part-list members, last first (weaponModel5 .. headModel), each UnitPoseInfo_dtor'd
+src/app/classes.c:261 skeletons | OK | ResourceSet_dtor: the skeleton managers, booster first
+src/app/classes.c:262 shapes | OK | ResourceSet_dtor: the shape managers, booster first
+src/app/frees.c:9 buffers | OK | net_freeBuffers: the 19 send-buffer pointers freed and cleared (same set net_resetConnection allocates)
+src/app/loading.c:160 intro | OK | iftex/m_intro1..4, m2_intro1..4 -> g_introTextures
+src/app/loading.c:161 frames | OK | iftex/corner, boxscreen -> g_menuFrameTextures
+src/app/loading.c:162 mainmenu | OK | iftex/mainmenu01/02 -> g_mainMenuTextures
+src/app/loading.c:162 arenamenu | OK | iftex/arenamenu01/02 -> g_arenaMenuTextures
+src/app/loading.c:163 ctrlmenu | OK | iftex/ctrlmenu01/02 -> g_ctrlMenuTextures
+src/app/loading.c:163 laddermenu | OK | iftex/laddermenu01/02 -> g_ladderMenuTextures
+src/app/loading.c:164 spiral | OK | iftex/spiral1..6 -> g_spiralTextures
+src/app/loading.c:187 rest | OK | the remaining seven textures, each name with its global (gameconnect .. character)
+src/app/main_loop.c:1334 k_teams | OK | write_log: team names RED / BLUE / NOTEAM by team (2 outside team games) written to axiswl.log
+src/app/small.c:296 lists | OK | actor_initPartLists: the eight Player part-list members (headModel .. weapons) each given the UnitPoseInfo vtable
+src/app/small.c:307 cleared | OK | ViewVolume_reset: the ten ViewVolume counters zeroed
+src/app/small.c:555 names | OK | registry value names Map, PlayerNum, GameType, FlagLimit, TimeLimit, Customize written under AxisArena\Character
+src/app/small.c:556 order | OK | which g_roomRecMap byte goes under each value name (the original's write order)
+src/app/small.c:637 defaults | OK | reg_readLadderSettings: the 6 ladder-game choice bytes' defaults (map 0, 8 players, ..., 10, 10) copied to g_roomRecMap
+src/app/small.c:707 sizes | OK | app_screenSizeForMode: width/height per video mode 0..6
+src/app/small.c:871 fixed | OK | actor_setActorTypeItemInfoBy: the item forced into slot 0 by game-type pair (types 2..11: (gameType-2)/2)
+src/app/win32.c:412 timers | OK | the three SetTimer ids with their periods (60 s, 30 s, 60 s)
+src/hud/hud_escmenu.c:215 up | OK | esc_mainCursor single-player: the item the cursor moves to on up by item (-1: past the hidden item 0)
+src/hud/hud_escmenu.c:215 dn | OK | the same on down
+src/hud/hud_escmenu.c:390 page | OK | escMenu_update: the five pages' key handlers by escPage (main, team, name, retry, quit)
+src/load/files.c:178 keys | OK | cfg_writeKeyBindings: each "set_key <action><n> " line with its binding index (64)
+src/load/files.c:245 sections | OK | cfg_writeAxisCfg: the five section writers (player, server, sound, graphic, key bindings)
+src/load/files.c:256 files | OK | app_invalidateLauncherMarks: initdata\profeng.dat, profkor.dat, skirmish.dat
+src/load/files.c:257 marks | OK | the words written over each file's mark at offset 2000
+src/load/files.c:367 offsets | OK | app_readLauncherCheck: the eight byte offsets read from axisplay.exe
+src/load/files.c:463 part | OK | mission_loadAxisMis: the eight pieces (offset, size) of a Mission entry read from axis.mis
+src/load/files.c:520 mode | OK | cfg_writeGraphic: the videomode text by g_videoMode 0..7
+src/load/files.c:521 switches | OK | the four set_graphic switch keywords (linearfiltering, mipmapping, viewfps, simplemenu) for g_cfgSwitches
+src/load/files.c:544 type | OK | cfg_writeServer: the game type names by g_arenaGameType 0..14 (0 DEATH MATCH)
+src/load/files.c:745 cleared | OK | the six g_pilotSave dwords zeroed (three of them then get [TRAP]/[NOPA]/[ROLO])
+src/load/files.c:943 limited | OK | the character profile stats capped at 30 (stats[7] separately at 50)
+src/load/files.c:999 numbers | OK | arena_loadSettings: the numeric keywords (gametype, maxplayer, map, fraglimit) with their globals
+src/load/files.c:1145 types | OK | cfg_readServer: game type names 1..14 (index + 1)
+src/load/files.c:1187 sizes | OK | cfg_readGraphics: the videomode names for modes 1..7 (else 0)
+src/load/files.c:1283 server | OK | the 6 default arena choice bytes (map 0, 8 players, rest 0) copied to g_arenaMap ..
+src/load/files.c:1357 tables | OK | catalogue_loadComponents: the six component tables (log text, count, records, record size)
+src/load/map_info.c:288 fixed | OK | map_loadActorInfoFrom: the item forced into slot 0 by game-type pair (same values as small.c:871)
+src/load/map_info.c:416 sphere | OK | the five background sphere texture names (ceiling, east, south, west, north) -> skyTextures[0..4]
+src/load/map_info.c:437 sizes | OK | the byte sizes of the seven area-limit fields read (4 x 12, 3 x 4)
+src/load/names.c:176 sizes | OK | TextureManager_setBanks: each bank's expected width / height and its mismatch message
+src/load/names.c:215 formats | OK | tex_textureFileExist: path formats by file format (plain, .BMP, .RAW), with / without directory
+src/load/names.c:266 names | OK | tex_initBy: the dat image name (Image0..5) by width x height
+src/load/skel_data.c:475 sizes | OK | bytes per vertex of the four arrays (vertices, normals, colours, texture coordinates)
+src/match/actor_frame.c:1268 parts | OK | the seven part lists whose textures are bound one a frame (partListsBound)
+src/match/actor_slots.c:242 cleared | OK | the per-actor Player ints zeroed for all 100 actors
+src/match/actor_slots.c:495 shapes | OK | playerRecord_setPartColour: the part's shape cache by part
+src/match/actor_slots.c:939 floats1 | OK | the first float stats compared (detectionRangeSq, detectionAngle)
+src/match/actor_slots.c:939 ints | OK | the int stats compared (armorMax, shieldMax, accuracy, ammoMax[0..3])
+src/match/actor_slots.c:940 floats2 | OK | float stats compared after hackingLevel (lockOnTime .. load)
+src/match/actor_slots.c:940 floats3 | OK | the ten movement float stats compared (mobility .. runTop[3])
+src/match/frame_loops.c:206 sets | OK | effect_initShapes: the three numbered thrust shape name formats (Plasma / Ion / Gravity) -> thrustShapes
+src/match/frame_loops.c:207 singles | OK | the eight single effect shape names -> effectShapes
+src/match/frame_loops.c:775 uv | OK | particle_mark: which markUv / markCoords index each of the five computed coordinates is (1 skipped)
+src/match/match_start.c:96 items | OK | the six saved mech weapon / item slot globals copied to mechItems
+src/match/match_start.c:154 rows | RENAME -> row_len | the values are each type table's record size in dwords (sizeof(HeadType)/4 ..), not a count of rows; in the same check's code (net_tables.c sample / tables[]) `rows` is the record COUNT and `row_len` the record size in dwords, so `rows` here says the opposite
+src/match/match_start.c:221 second | OK | game_setGameTypeFlags: the rule flag (besides teamGame) set by game type (suddenDeath .. platoon), 0 for none
+src/match/match_start.c:259 camera | OK | scene_reset: camera position 0,0,0, forward 0,0,-1, up 0,1,0 copied to cameraPos ..
+src/match/match_start.c:394 zero | OK | the ten Stage counters zeroed (objectNameCount .. playerRecordCount)
+src/match/match_start.c:401 parts | OK | each PlayerRecord part's shape / skeleton cache sizes for model_sets
+src/match/match_start.c:415 names | OK | the three item texture names (damagemap, booster, shield) -> itemTextures
+src/match/weapons.c:92 group | OK | actor_takeDamage: the attacker's character stat index applied by shot mode
+src/net/dplay_slots.c:151 close | OK | dplay_leaveSession: the four connection kinds' slot close functions
+src/net/dplay_slots.c:174 open | OK | dplay_openConnection: the four kinds' slot open functions
+src/net/net_sessions.c:62 room | OK | room_mergeReceivedSessions: the RoomRecord list's description for merge
+src/net/net_sessions.c:69 arena | OK | arena_mergeReceivedSessions: the ServerRecord (arena lobby) list's description
+src/net/net_tables.c:30 init | OK | net_takePlayerSlot: the first ten shorts of the slot's packet (two -1)
+src/net/net_tables.c:243 handles | OK | net_closeThreadHandles: the ping thread and its two events closed
+src/net/net_tables.c:287 sockets | OK | net_closeSockets: the lobby and game-server sockets
+src/net/net_tables.c:319 sockets | OK | net_resetConnection: the same two sockets
+src/net/net_tables.c:337 buffers | OK | net_resetConnection: each send buffer with its allocation size
+src/net/net_tables.c:466 strings | OK | net_addServerRecord: the ServerRecord string fields copied
+src/net/net_tables.c:467 bytes | OK | the ServerRecord byte fields copied
+src/net/net_tables.c:473 strings | OK | net_addRoomRecord: the RoomRecord string fields
+src/net/net_tables.c:474 bytes | OK | the RoomRecord byte fields
+src/net/net_tables.c:977 provider | OK | dplay_initConnection: the provider GUID by connection kind (TCP, IPX, modem, serial)
+src/net/net_tables.c:1208 lobbyBytes | OK | net_disconnect: the ServerRecord byte fields copied into the leave packet (8 used)
+src/net/net_tables.c:1209 roomBytes | OK | the RoomRecord byte fields for the room leave packet
+src/net/net_tables.c:1262 plain | OK | net_send: the requests sent as a whole buffer (buffer, size, lobby socket or not) by kind
+src/net/net_tables.c:1392 answers14 | OK | net_recv: the answer codes accepted for request 14 (g_gameServerAnswer)
+src/net/net_tables.c:1392 answers15 | OK | the answer codes accepted for request 15 (g_newIdAnswer)
+src/net/net_tables.c:1515 kinds | OK | dplay_enumConnections: provider name words (TCP, IPX, MODEM/Korean, SERIAL/Korean) with their GUID and connection slot
+src/net/net_tables.c:1555 flags | OK | the ten pending-event flags; any still 1 keeps announcePending
+src/net/net_tables.c:1746 tables | OK | net_sendGamePacket: per part table the sample's offsets (typeTablePerRow, count, record dwords, base) for sample()
+src/net/net_tables.c:2020 parts | COMMENT | the comment calls column 0 "size table" and column 1 "its entries a row"; they are the part's type table (headTypes ..) and typeTablePerRow[k] (how many leading dwords of a record the check samples) -> "each part kind's type table, its typeTablePerRow (the dwords sampled per record), its count, its record in dwords"
+src/net/net_tables.c:2076 setters | OK | the five actor_setActorType<Part>InfoBy functions by part
+src/render/objects.c:600 k_parts | OK | debris: the head/chest/arm/leg shape caches by i % 5 (4 = booster outside the table)
+src/render/object_list.c:85 sides | OK | ground_buildLayerModels: the four water fans' five indices each (into waterIndices)
+src/render/vecmath.c:238 limit | OK | level_fromPoints: the point thresholds per level
+src/render/view_volume.c:244 names | OK | the three GL_EXT_vertex_array entry point names -> glArrays
+src/render/view_volume.c:295 pick | OK | which bound (lo/hi) each of seven box corners takes on x, y, z
+src/sound/sound_basic.c:134 names | OK | the ten menu sound wav names -> g_menuSoundBuffers
+src/sound/sound_basic.c:372 kind1 | OK | music_playMatch: the four tracks for musicKind 1
+src/sound/sound_basic.c:373 kind3 | OK | the three tracks for musicKind 3
+src/sound/sound_basic.c:374 kind4 | OK | the three tracks for musicKind 4
+src/text/glyph_cells.c:39 grids | OK | font_initAsciiGrids: the three ASCII font grids (16, 8, 5 tables)
+src/text/glyph_cells.c:51 grids | OK | font_initHangulGrids: lead / vowel / tail grids
+src/text/glyph_cells.c:80 fixed | OK | pen_init: the fixed-width set's four corner tables (less a glyph)
+src/text/glyph_cells.c:81 proportional | OK | the proportional set's four corner tables
+src/text/glyph_cells.c:115 fixTexCoord | OK | native build: the digit texture-coordinate function (fix_digitTexCoord) used by hud_drawDigits
+src/menu/armc_items.c:188 flag | OK | the nine g_hasItem* flags, cleared then set by the item slots
+src/menu/armc_items.c:189 value | OK | the 14 g_itemBonus* values, zeroed before the bonuses are applied
+src/menu/armc_items.c:191 bonus | OK | item -> bonus variable and its bits, stored when the item flag is set
+src/menu/armc_items.c:200 items | OK | g_itemSlot5 / g_itemSlot4, the item slots read (minus 27 = item index)
+src/menu/armc_keys.c:94 item_keys | OK | g_dik1 .. g_dik6 pressed on the weapons page pick slot k
+src/menu/armc_misc.c:150 lists | OK | Player model-list offsets (head .. weaponModel5) drawn in the 3D preview
+src/menu/armc_misc.c:313 items | OK | the four g_mechWeaponSlot* and g_itemSlot4/5; armc_itemSlotRecord(slot, ...)
+src/menu/armc_misc.c:379 colourA | OK | (0,1,1,1) copied into g_armcBright; generic but not wrong (bright would match the target)
+src/menu/armc_misc.c:379 colourB | OK | (0,0.6,0.6,1) copied into g_armcDim
+src/menu/armc_misc.c:498 uv | OK | the quad corners' glTexCoord2f
+src/menu/armc_misc.c:541 height | OK | eye Y the camera eases to (approach g_menuEyeY) per part
+src/menu/armc_misc.c:542 distance | OK | eye Z the camera eases to (g_menuEyeZ) per part
+src/menu/armc_misc.c:579 corner | OK | offset + sign of the camera box corners (+-700) in g_armcCameraBox
+src/menu/armc_misc.c:593 corner | OK | signs of the panels' corners (+-600) into p->corners
+src/menu/armc_misc.c:602 speed | OK | g_panels[k].speed values 0.15 .. 0.18 as commented
+src/menu/armc_misc.c:660 weights | OK | ten float weights summed (part records +0x7c.. and g_*Weight)
+src/menu/armc_misc.c:815 page | OK | the three page buttons' handlers (parts, weapons, colour)
+src/menu/armc_misc.c:816 control | OK | the six hue/sat/value-from-pointer setters, buttons 11 ..
+src/menu/armc_parts.c:186 parts | OK | per part kind its cursor, count and list; stepped by dir
+src/menu/armc_parts.c:246 lists | OK | g_headList .. g_boosterList filled by append_parts
+src/menu/armc_parts.c:247 lengths | OK | g_headCount .. g_boosterCount, the lists' lengths
+src/menu/armc_parts.c:262 extra | OK | g_weaponListTable / g_extraListTable, the two lists starting with -1
+src/menu/armc_parts.c:263 extra_len | OK | g_weaponCount / g_extraCount, those lists' lengths
+src/menu/armc_screens.c:150 names | OK | g_headPanelName .. g_boosterPanelName drawn as the part rows
+src/menu/armc_screens.c:262 yellow | OK | (1,1,0,1) = yellow, TEXT(yellow)
+src/menu/armc_screens.c:263 white | OK | (1,1,1,1) = white
+src/menu/armc_screens.c:367 skill | OK | profile stat index by weapon kind (stats[skill[kind]]), as commented
+src/menu/armc_state.c:42 kinds | OK | per part kind cursor/count/list/chosen; the cursor synced to the chosen entry
+src/menu/armc_stats.c:93 en | OK | English bracket formats "+%.0f(" ..; picked when !p->korean
+src/menu/armc_stats.c:94 ko | OK | Korean bracket formats (leading space); picked when p->korean
+src/menu/armc_stats.c:215 formats | OK | speed change formats [korean][last][lost]
+src/menu/armc_stats.c:265 levels | OK | arms capacity rows: label, the level (g_armsStats) and the item bonus
+src/menu/armc_stats.c:366 speeds | OK | g_boosterStats speeds +0x14/+0x1c/+0x18 printed
+src/menu/armc_stats.c:366 bonuses | OK | g_legsStats +0xc.. added as the bonus to each speed
+src/menu/armc_stats.c:367 shown | OK | the "%03.0f/" formats for the speeds shown, [korean][k]
+src/menu/armc_stats.c:405 ints | OK | format + int variable pairs (hacking level, maxima)
+src/menu/armc_stats.c:424 speeds | OK | g_mechSpeeds +4/+0xc and g_mechMaxSpeedBwd printed
+src/menu/armc_stats.c:491 names | OK | part panel names drawn on the parts screen
+src/menu/armc_stats.c:509 sections | OK | section_head .. section_mech, the panel sections by slot
+src/menu/edit_fields.c:262 field | OK | the new-ID form fields: editing flag, text, buffer / max length
+src/menu/game_lists.c:145 heads | OK | arena game list column headings: x and text
+src/menu/game_lists.c:268 heads | OK | room game list column heading x positions (MSG 382 + c*0x80)
+src/menu/layouts.c:47 r | OK | generic: options panel rect offsets for rect1 (no claim)
+src/menu/layouts.c:50 q | OK | generic: second-column rect offsets (no claim)
+src/menu/layouts.c:68 a | OK | generic one-letter RArg/rect spec passed to rect_spec/rect1 in its *_layout function (no claim)
+src/menu/layouts.c:69 b | OK | generic one-letter RArg/rect spec passed to rect_spec/rect1 in its *_layout function (no claim)
+src/menu/layouts.c:90 a | OK | generic one-letter RArg/rect spec passed to rect_spec/rect1 in its *_layout function (no claim)
+src/menu/layouts.c:91 b | OK | generic one-letter RArg/rect spec passed to rect_spec/rect1 in its *_layout function (no claim)
+src/menu/layouts.c:97 a | OK | generic one-letter RArg/rect spec passed to rect_spec/rect1 in its *_layout function (no claim)
+src/menu/layouts.c:98 b | OK | generic one-letter RArg/rect spec passed to rect_spec/rect1 in its *_layout function (no claim)
+src/menu/layouts.c:104 a | OK | generic one-letter RArg/rect spec passed to rect_spec/rect1 in its *_layout function (no claim)
+src/menu/layouts.c:105 b | OK | generic one-letter RArg/rect spec passed to rect_spec/rect1 in its *_layout function (no claim)
+src/menu/layouts.c:111 a | OK | generic one-letter RArg/rect spec passed to rect_spec/rect1 in its *_layout function (no claim)
+src/menu/layouts.c:112 b | OK | generic one-letter RArg/rect spec passed to rect_spec/rect1 in its *_layout function (no claim)
+src/menu/layouts.c:118 a | OK | generic one-letter RArg/rect spec passed to rect_spec/rect1 in its *_layout function (no claim)
+src/menu/layouts.c:119 b | OK | generic one-letter RArg/rect spec passed to rect_spec/rect1 in its *_layout function (no claim)
+src/menu/layouts.c:125 a | OK | generic one-letter RArg/rect spec passed to rect_spec/rect1 in its *_layout function (no claim)
+src/menu/layouts.c:126 b | OK | generic one-letter RArg/rect spec passed to rect_spec/rect1 in its *_layout function (no claim)
+src/menu/layouts.c:132 a | OK | generic one-letter RArg/rect spec passed to rect_spec/rect1 in its *_layout function (no claim)
+src/menu/layouts.c:133 b | OK | generic one-letter RArg/rect spec passed to rect_spec/rect1 in its *_layout function (no claim)
+src/menu/layouts.c:139 a | OK | generic one-letter RArg/rect spec passed to rect_spec/rect1 in its *_layout function (no claim)
+src/menu/layouts.c:152 b | OK | generic one-letter RArg/rect spec passed to rect_spec/rect1 in its *_layout function (no claim)
+src/menu/layouts.c:158 a | OK | generic one-letter RArg/rect spec passed to rect_spec/rect1 in its *_layout function (no claim)
+src/menu/layouts.c:159 b | OK | generic one-letter RArg/rect spec passed to rect_spec/rect1 in its *_layout function (no claim)
+src/menu/layouts.c:160 c | OK | generic one-letter RArg/rect spec passed to rect_spec/rect1 in its *_layout function (no claim)
+src/menu/layouts.c:166 a | OK | generic one-letter RArg/rect spec passed to rect_spec/rect1 in its *_layout function (no claim)
+src/menu/layouts.c:167 b | OK | generic one-letter RArg/rect spec passed to rect_spec/rect1 in its *_layout function (no claim)
+src/menu/layouts.c:168 c | OK | generic one-letter RArg/rect spec passed to rect_spec/rect1 in its *_layout function (no claim)
+src/menu/layouts.c:169 d | OK | generic one-letter RArg/rect spec passed to rect_spec/rect1 in its *_layout function (no claim)
+src/menu/layouts.c:176 a | OK | generic one-letter RArg/rect spec passed to rect_spec/rect1 in its *_layout function (no claim)
+src/menu/layouts.c:177 r | OK | generic one-letter RArg/rect spec passed to rect_spec/rect1 in its *_layout function (no claim)
+src/menu/layouts.c:187 c | OK | generic one-letter RArg/rect spec passed to rect_spec/rect1 in its *_layout function (no claim)
+src/menu/layouts.c:197 c | OK | generic one-letter RArg/rect spec passed to rect_spec/rect1 in its *_layout function (no claim)
+src/menu/layouts.c:198 d | OK | generic one-letter RArg/rect spec passed to rect_spec/rect1 in its *_layout function (no claim)
+src/menu/layouts.c:199 e | OK | generic one-letter RArg/rect spec passed to rect_spec/rect1 in its *_layout function (no claim)
+src/menu/layouts.c:208 c | OK | generic one-letter RArg/rect spec passed to rect_spec/rect1 in its *_layout function (no claim)
+src/menu/layouts.c:219 a | OK | generic one-letter RArg/rect spec passed to rect_spec/rect1 in its *_layout function (no claim)
+src/menu/layouts.c:220 b | OK | generic one-letter RArg/rect spec passed to rect_spec/rect1 in its *_layout function (no claim)
+src/menu/layouts.c:221 c | OK | generic one-letter RArg/rect spec passed to rect_spec/rect1 in its *_layout function (no claim)
+src/menu/layouts.c:222 d | OK | generic one-letter RArg/rect spec passed to rect_spec/rect1 in its *_layout function (no claim)
+src/menu/layouts.c:223 e | OK | generic one-letter RArg/rect spec passed to rect_spec/rect1 in its *_layout function (no claim)
+src/menu/layouts.c:230 a | OK | generic one-letter RArg/rect spec passed to rect_spec/rect1 in its *_layout function (no claim)
+src/menu/layouts.c:231 b | OK | generic one-letter RArg/rect spec passed to rect_spec/rect1 in its *_layout function (no claim)
+src/menu/layouts.c:232 c | OK | generic one-letter RArg/rect spec passed to rect_spec/rect1 in its *_layout function (no claim)
+src/menu/layouts.c:241 a | OK | generic one-letter RArg/rect spec passed to rect_spec/rect1 in its *_layout function (no claim)
+src/menu/layouts.c:242 b | OK | generic one-letter RArg/rect spec passed to rect_spec/rect1 in its *_layout function (no claim)
+src/menu/layouts.c:243 r | OK | generic one-letter RArg/rect spec passed to rect_spec/rect1 in its *_layout function (no claim)
+src/menu/layouts.c:251 a | OK | generic one-letter RArg/rect spec passed to rect_spec/rect1 in its *_layout function (no claim)
+src/menu/layouts.c:252 r | OK | generic one-letter RArg/rect spec passed to rect_spec/rect1 in its *_layout function (no claim)
+src/menu/layouts.c:262 a | OK | generic one-letter RArg/rect spec passed to rect_spec/rect1 in its *_layout function (no claim)
+src/menu/layouts.c:271 a | OK | generic one-letter RArg/rect spec passed to rect_spec/rect1 in its *_layout function (no claim)
+src/menu/layouts.c:272 b | OK | generic one-letter RArg/rect spec passed to rect_spec/rect1 in its *_layout function (no claim)
+src/menu/lobby_states.c:38 cleared | OK | zeroed by clear_all on entering the arena list
+src/menu/lobby_states.c:110 cleared | OK | zeroed on entering create
+src/menu/lobby_states.c:148 cleared | OK | zeroed on entering the room create page
+src/menu/lobby_states.c:164 cleared | OK | zeroed on entering the ranking
+src/menu/lobby_states.c:220 copy | OK | pairs kept <- current (g_pilotLevelKept <- g_pilotLevel ..), room_copyAccountRecord
+src/menu/lobby_states.c:295 rect | RENAME -> from_reply | not a rect: pairs pilot variable <- g_profileReply field (+0xef level, +0xff exp ..) copied from the login reply
+src/menu/lobby_states.c:303 title | RENAME -> to_ladder | not a title: pairs g_ladder* <- g_pilot* (level, exp, kills, deaths, games, power): the Ladder record set from the pilot stats
+src/menu/lobby_states.c:315 bytes | OK | the 11 default mech bytes memcpy'd (function comment says so)
+src/menu/lobby_states.c:316 pair | OK | a colour pair (hue 0, sat 1, value 0.6) x2, copied six times
+src/menu/lobby_states.c:336 zero | OK | pilot stats (and kept copies) zeroed on registering
+src/menu/lobby_states.c:343 zero2 | OK | g_ladder* exp/kills/deaths/games zeroed
+src/menu/lobby_states.c:563 panels | OK | the open-field flags + g_frameOpening that block the notice clicks (comment: its other panels open, panel frame opening)
+src/menu/lobby_states.c:816 message | OK | message index per join answer 501 .. 505 (menu_showMessage)
+src/menu/lobby_states.c:1138 limit | OK | editing flag + value for frag / time limit
+src/menu/lobby_states.c:1165 close | OK | g_dikC / g_dikEscape_2 close the create form
+src/menu/lobby_states.c:1473 kept | RENAME -> records | holds both the pilot record (g_pilotLevel, PilotStats) AND its kept copy (g_pilotLevelKept); both written with the sent result
+src/menu/lobby_states.c:1517 rooms | OK | the special room names (4 spellings) and their hidden map 0x16..0x18
+src/menu/menu_cameras.c:118 room | OK | the room's MenuCam (g_roomCameraMode ..)
+src/menu/menu_cameras.c:125 arena | OK | the arena's MenuCam
+src/menu/menu_cameras.c:298 missions | OK | missions screen MenuCam2
+src/menu/menu_cameras.c:305 skirmish | OK | skirmish screen MenuCam2
+src/menu/menu_init.c:9 on | OK | per g_codeColours component 1.0 or 0 (on/off)
+src/menu/menu_init.c:29 copies | OK | destination <- message text copies (team names RED/BLUE/..)
+src/menu/menu_init.c:99 point | OK | camera point / aim variable and its float value (+-20, +-10; -+70, +-55)
+src/menu/menu_init.c:147 steps | OK | the front-end start-up calls (outlines inits, net_clearSlots)
+src/menu/menu_quads.c:32 plain | OK | wide button UV rect unlit
+src/menu/menu_quads.c:32 lit_ | OK | wide button UV rect lit
+src/menu/menu_quads.c:41 plain | OK | large button UV unlit
+src/menu/menu_quads.c:41 lit_ | OK | large button UV lit
+src/menu/menu_quads.c:48 plain | OK | left arrow UV unlit
+src/menu/menu_quads.c:48 lit_ | OK | left arrow UV lit
+src/menu/menu_quads.c:54 plain | OK | right arrow UV unlit
+src/menu/menu_quads.c:54 lit_ | OK | right arrow UV lit
+src/menu/menu_quads.c:60 plain | OK | up arrow UV unlit
+src/menu/menu_quads.c:60 lit_ | OK | up arrow UV lit
+src/menu/menu_quads.c:66 plain | OK | down arrow UV unlit
+src/menu/menu_quads.c:66 lit_ | OK | down arrow UV lit
+src/menu/menu_records.c:99 colour | OK | a colour choice entry (0,1,0, 0,1,0) copied into g_savedColourChoices
+src/menu/menu_records.c:557 keys | OK | Enter / Space / Escape close the message box
+src/menu/menu_records.c:573 keys | OK | Enter / Space / Escape dismiss the title
+src/menu/menu_records.c:695 key | OK | main menu hotkeys K M L S A X
+src/menu/menu_states.c:115 cleared | OK | zeroed at the intro
+src/menu/menu_states.c:123 clocks | OK | four double clocks zeroed (both halves)
+src/menu/menu_states.c:468 stats | OK | profile stat indexes in the order checked against 30 / 50
+src/menu/menu_states.c:473 pages | OK | g_profilePage 1..6 handlers profile_listPage .. pilotSelect_page
+src/menu/menu_tunnel.c:325 cx | OK | cage corner x signs (+-50)
+src/menu/menu_tunnel.c:325 cy | OK | cage corner y signs
+src/menu/menu_tunnel.c:334 corner | OK | flare corner x,y,z signs (+-50)
+src/menu/menu_tunnel.c:335 speed | OK | flare spinSpeed values
+src/menu/mission_list.c:78 grey | OK | (0.6,0.6,0.6,1) = grey, the greyed button label
+src/menu/profile_dialogs.c:129 d | OK | generic: the delete dialog TwoButtons
+src/menu/profile_dialogs.c:134 d | OK | generic: the log-out dialog TwoButtons
+src/menu/profile_misc.c:362 frame | OK | the delete dialog's frame edges glided
+src/menu/profile_misc.c:368 frame | OK | the log-out dialog's frame edges
+src/menu/room_clicks.c:224 actions | OK | the room page buttons' handlers (account, game list, create, -, ranking, leave)
+src/menu/room_clicks.c:291 fields | OK | new-ID fields: editing flag, field, size; text copied in
+src/menu/room_clicks.c:377 message | OK | message index per join answer 501 .. 505
+src/menu/room_clicks.c:438 fields | OK | account fields checked for bad chars
+src/menu/room_clicks.c:474 code | OK | ranking request code per sort column (0x25, 0x23, 0x26) into g_netRankingBuffer[0]
+src/menu/room_clicks.c:572 page | OK | ranking prev / next / sort handlers
+src/menu/room_clicks.c:607 typing | OK | the room form's editing flags; any set returns it
+src/menu/room_clicks.c:713 limit | OK | editing flag + value, frags / time
+src/menu/room_clicks.c:728 close | OK | C / Escape close
+src/menu/room_clicks.c:792 fields | OK | account page fields with editing flag, back / on (next field) links
+src/menu/room_dialogs.c:51 cleared | OK | login typing flags zeroed
+src/menu/room_dialogs.c:64 cleared | OK | game list state zeroed
+src/menu/room_dialogs.c:439 field | OK | new-ID form fields: editing flag, text, size
+src/menu/room_dialogs.c:574 cleared | OK | account password buffers (first dwords) and g_roomState zeroed
+src/menu/room_dialogs.c:579 cleared2 | OK | editing flags and more buffer dwords zeroed
+src/menu/room_dialogs.c:876 hidden | OK | password fields drawn as stars when not being typed
+src/menu/room_dialogs.c:908 counts | OK | kills / deaths / exp drawn with itoa
+src/menu/room_dialogs.c:952 white | OK | (1,1,1,1)
+src/menu/room_dialogs.c:953 yellow | OK | (1,1,0,1)
+src/menu/room_dialogs.c:985 sorted_by | OK | POWER / KILL / EXP / RATE by g_rankingSort
+src/menu/room_dialogs.c:996 heads | OK | ranking column headings: text, right edge, sort index
+src/menu/screen_enter.c:76 layout | OK | mostly the arena panels' rects (with g_lobbySubState 5, the slide ease)
+src/menu/screen_enter.c:80 cleared1 | OK | zeroed on entering the arena lobby
+src/menu/screen_enter.c:82 cleared2 | OK | zeroed later in the same function
+src/menu/screen_enter.c:83 state | OK | camera mode, last panel, bright/dim colours, flags: mixed state
+src/menu/screen_enter.c:120 layout | OK | setup tab, tunnel depth, panel motion and the sound / graphic / control rects
+src/menu/screen_enter.c:124 colours | RENAME -> colours_tunnel | holds g_setupColourLit/Dim AND the tunnel's stripe scroll, speed, pulse and pulse step (4 of 12 entries); neighbour scheme colours_camera
+src/menu/screen_enter.c:160 layout | OK | the room panels' rects (plus camera mode, room state)
+src/menu/screen_enter.c:167 colours_camera | OK | g_roomBright/Dim and the five camera points / aims (and g_hostAnswer 2)
+src/menu/screen_enter.c:175 cleared | OK | zeroed on entering the game room
+src/menu/screen_enter.c:279 setup | OK | missions window rect, colours, state and screen numbers
+src/menu/screen_enter.c:284 cleared | OK | mission list cursor and repeat flags zeroed
+src/menu/screen_enter.c:302 setup | OK | skirmish rect, colours, state, screen numbers
+src/menu/screen_enter.c:331 layout | OK | profile page and dialog rects
+src/menu/screen_enter.c:336 cleared | OK | pilot screen state zeroed
+src/menu/screen_enter.c:338 colours | RENAME -> colours_state | g_profileColour/Dim plus g_menuRepeatClock, g_replayZoomTime, g_profileQuitting, g_profileRowClicked, g_profileRowClickTime (5 of 13 are not colours)
+src/menu/screen_enter.c:342 rects | OK | the seven *_layout functions that set the screen's rectangles
+src/menu/settings_form.c:192 form | OK | the room settings Form
+src/menu/settings_form.c:194 grey | RENAME -> dim_value | (0.3,0.7,0.7,1) is not grey: it is the room's dim teal (the same value menuState800 stores in g_roomDim); the arena form passes g_arenaDim (same value) to preview_controls in its place
+src/menu/settings_form.c:245 form | OK | the create-arena Form
+src/menu/setup_keys.c:426 page_keys | OK | M / S / I / U set g_bindPage 0..3
+src/menu/setup_pages.c:118 names | OK | the graphic option value text tables (g_colourDepthTexts ..)
+src/menu/setup_pages.c:185 labels | OK | first label per key tab (FORWARD / FIRE / CHAT), rows + r*0x80
+src/menu/setup_pages.c:186 rows | OK | rows per tab 10 / 11 / 10
+src/menu/setup_pages.c:577 turns3 | OK | three panels' turn angles -40/0/40
+src/menu/setup_pages.c:577 turns2 | OK | two panels' angles -35/35
+src/menu/setup_pages.c:718 glow | OK | the Highlight glow colour (0.5,0.1,1)
+src/menu/setup_pages.c:719 h | OK | generic: the room tunnel's Highlight (none lit)
+src/menu/setup_pages.c:726 h | OK | generic: the arena tunnel's Highlight
+src/menu/setup_pages.c:765 glow | OK | glow colour (1,0.1,1) of the hovered room panel
+src/menu/skirmish.c:54 suffix | OK | ordinal suffixes ST / ND / RD / TH

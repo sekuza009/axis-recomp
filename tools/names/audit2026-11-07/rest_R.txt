@@ -1,0 +1,248 @@
+GROUP R: 238 names; OK 181, RENAME 20, COMMENT 36, UNSURE 1
+(87 scene.fields record types, 4 game typedefs of game.h (axis.h has only u8 .. u64), 133 .c/.h files under src (not src/data; axis.h gets two lines: name and header), 13 folders)
+
+## struct
+MessageSlot | OK | Scene.msgRing = Stage.messages[32]; script_pushMessage (command 26) fills speaker/text/colour, hud_drawMessageBox reads text and colour: a waiting script message
+EventLine | OK | Scene.events: msg_print writes type/text/timeLeft, events_age counts down, hud_drawMessageBox draws them: one event-list line
+FiredRound | OK | Player.rounds[5]: received flag, weapon, from, hitPlane, dir, muzzle; bullet_spawn / bullet_init take it: a round as fired (here or received)
+ShotRecord | OK | Player.shots[5]: inUse/isNew/hitActor/hitPlane/ended/point, filled by net_sendPlayerState / read by actor_processFrame's received path: a round as carried in the game packet
+ItemModelSet | OK | ActorItem.sets[2]: per variant shape/skeleton counts and names, muzzle, grip (actor_loadWeapon, muzzle_camera): an item's models
+ActorItem | OK | Stage.actorItems; Component.dat's item table read as "ActorItemInfo"; weapons (damageType, ammo ..) and special items 27+: the name follows the game's own
+BlockOwner | OK | the shared head {blockSize, block, ownsBlock} of Model / Manager / SkelManager / ObjectList: take_block and free_owned use it
+Model | RENAME -> Shape | the record is the game's class "Shape": model_loadFrom / shape_read report through g_logShape ("class Shape"), its managers are the game's ShapeManager, its parts are already ShapePart / ShapePrim and its own comment says "a shape"; "Model" is a third word for the same thing (functions mix shape_ / model_). grep: no type Shape in src || new comment: a shape (the game's class Shape, vtable 0x4aa250; shapes_skeletons.c: its 0x34-byte file header, then its box): a map object's model, an object list's entries, the ground layers' models ...
+ShapePart | OK | Model.parts: one material's vertices, colours and primitives (shape_read, shape_getShadingColorBufferBy)
+ShapePrim | OK | ShapePart's primitives: an index list each (ViewVolume_queueModel)
+ListedObject | OK | ObjectList.entries (100 bytes): shape, matrix, scale, bone (ObjectList_load / poseBones / queue)
+ObjectList | OK | the game's UnitPoseInfo (vtable 0x4a9754); used only as Player's eight part lists (headModel .. weaponModel5) with ObjectList_load / poseBones / queue / relight; a list of ListedObject entries, as named
+Player | RENAME -> Actor | it is an actor slot, not a player: Stage.actors[100] are Player records (0x8888 bytes, bots included; actor_* functions take its index), Scene.players[16] is only the first 16 of them; the player is PlayerRecord (Player.player points to it). The game's class for it is "Unit" (Unit_initLog). grep: no type Actor in src || new comment: an actor: a mech in play, a player's or a bot's (Stage.actors, 100 slots; Scene.players = the first 16, one per player); its player record is PlayerRecord (player)
+Factor | OK | LightFactors.records[0x400]: kind 0 ambient / 1 directional / 2 point, colour, direction or position (factors_add*, shading.c): a light factor
+LightFactors | OK | the game's class Light (Light_ctor / Light_clearCounts): 0x400 Factor records and counts; Stage.mapLights / dynamicLights / actorLights; shape_shadingColours takes it
+MapObject | OK | Scene.objects / Stage.objects: object_initObjectBy, mapObject_frame, stage_drawObject: animated scenery
+ObjectType | OK | map_loadObjectInfoFrom reads them from the map's object file, object_initObjectBy makes MapObjects from them
+ItemType | OK | Stage.itemTypes: catalogue_loadItemInfoFrom reads the item file's kinds (model, effect ..); MapItem refers to it
+MapItem | OK | Stage.items: item_update / stage_drawItems: power-ups and ammo lying on the map
+Particle | OK | Stage.particles[1000]: particle_init / update / draw, kinds 0 .. 50 (flashes, puffs, marks, quads)
+Bullet | OK | Stage.bullets[400]: bullet_init / bullet_update / bullet_drawTrail
+SpacePool | OK | Space.planes / nodes / units / blocks: count, records, freeHead, used (reset_pool, space_getNextFree*)
+SpaceNode | OK | Space.nodes' records: item, block, newer, next: the lists of SpaceBlock.items and SpaceUnit.lastNode
+SpaceBlock | OK | Space.blocks: low/high box, items, split, children[8]: an octree node (space_insertItem, space_traceBlock)
+Space | OK | the game's class CollisionVolume (CollisionVolume_clear 0x3d dwords) at Stage.space: the collision space; space_* thiscalls run on it
+PartInfo | OK | g_partRecords[7] / g_viewedPart: armc_itemSlotRecord / armc_viewedPartRecord fill them, the ARM CENTER panels draw them
+Mission | OK | g_missions[30]: mission_loadAxisMis reads axis.mis entries (name, title, briefing, number, result); missionList_draw shows them
+NetPacketMessage | OK | the DirectPlay message kinds 6 / 7 (net_handleMessage, net_sendPacketData): kind, slot, size, data
+NetSlot | OK | g_netSlots[16]: used, id, waiting, size, packet (net_takePlayerSlot, netq_receive): a player slot of the packet layer
+DPSessionDesc2 | OK | DirectPlay's own DPSESSIONDESC2 layout (dplay_hostSession / joinSession / enumSessions)
+ServerRecord | RENAME -> ArenaRecord | every field is an arena's (name, host address, map, players, mode, limits, lock, password: lobby_announceArena sends g_arenaPacket, net_addServerRecord lists them into g_serverList, arena_mergeReceivedSessions makes the JOIN ARENA list's entries); it is not a server's record, and its game-room twin is RoomRecord, so ArenaRecord pairs with it. grep: ArenaRecord unused || new comment: an arena as the lobby server lists it (g_serverList, 256; g_arenaPacket: the hosted arena's own, sent when it is set up; g_arenaInfoPacket / g_lobbyLeavePacket: its updates)
+RoomRecord | COMMENT | the record is not a game room: it is one game hosted from the game room (screen 800), as the game server lists it (room_announceGame sends the room form's GameSettings, net_addRoomRecord lists them, room_mergeReceivedSessions makes the AXIS LADDER GAME list's entries; fields "the room game's name", hostName) || new comment: a game hosted from the game room, as the game server lists it (g_roomList, 256; g_roomPacket: the hosted game's own, g_roomInfoPacket / g_roomLeavePacket its updates): an ArenaRecord with the host's name
+SessionDesc | OK | dplay_enumSessionsCallback's copy of a DPSESSIONDESC2 (guid, map, limits, name, address); SessionSlot.desc
+SessionSlot | OK | g_sessionTable[200]: used, desc (net_addSession, net_findFreeSession, net_getSession)
+SessionEntry | OK | g_sessionList[256]: the arena lobby's / game room's list rows (arenaList_rebuild, *_mergeReceivedSessions, game_rows)
+FileEntry | OK | g_replayList[1024]: name, picked (autoplay_listFiles, replaySelect_*): a replay file of the list; the comment says so
+MapChoice | OK | g_mapChoiceTable / g_mapChoiceKeptTable: chosen, type (mapList_*)
+AccountPacket | OK | g_accountPacket: kind, name, password, email, address, mech, colours; net_send requests 14 / 15
+AccountForm | OK | g_netAccountBuffer: name, new password, email (account_sendChange, message 0x1c)
+GameSettings | OK | g_arenaName / g_roomRecName / g_roomSettingsName / g_newArenaName: name, map, maxPlayers, rotation, mode, limits, password, locked; the settings form shows it
+RankedPlayer | OK | g_playerListReply / g_netPlayerList: one ranking player as the game server sends it (net_addPlayerRecord)
+RankRow | OK | g_rankingRows[10]: ranking_fillPage / ranking_drawTable
+CharacterProfile | OK | g_characterProfiles: name, corporation, sex, age, stats[9] from profeng/profkor.dat; indexed by a player's character
+GamePacket | OK | packet kind 1: net_sendGamePacket builds it, net_processGamePacket reads it: a player's game state
+PlayerRecordPacket | OK | g_netPlayerRecordPacket (packet 0x11): record_send / ladder_checkAndSendRecord: the Ladder record sent
+PilotStats | OK | g_pilotLevel .. (and the kept copy): level, exp, rank, power, games, kills, deaths, killRate from the login reply; the account panel shows them
+SkirmishInfo | OK | g_skirmishInfo[15]: data_loadSkirmishInfo reads skirmish.dat; gameMode / timeLimit / fragLimit (skirmish_startRound)
+ViewQuad | OK | ViewVolume.quads: ViewVolume_addQuad / addBillboard fill them
+ViewTriangle | OK | ViewVolume.triangles: ViewVolume_addTriangle
+ViewVolume | OK | the game's class ViewVolume (ViewVolume_dtor / _clear / _initBy): the frame's draw lists
+Skeleton | OK | skel_loadFromFile / skel_getBoneMatrix: header and block of bones and keys; the game's class Skeleton
+Bone | OK | Skeleton.bones: posKeys / rotKeys, parent (skel_getBoneMatrix)
+PosKey | OK | Bone.posKeys: time and position (key_at)
+RotKey | OK | Bone.rotKeys: time and rotation (key_at, rotate)
+Manager | RENAME -> ShapeManager | "Manager" alone does not say what it manages: it is the game's class ShapeManager (vtable 0x4aa244, ShapeManager_initBy / _dtor / _release; the fields headShapes .. itemShapes, objectShapes are of it); its prefix sibling SkelManager already names its kind. The type name ShapeManager is unused (only ShapeManager_* functions and VT(ShapeManager, ..) tokens) || new comment: a shape manager (the game's class ShapeManager; shapes_skeletons.c; a skeleton manager is its first 0x130 bytes: SkelManager): shapes loaded by name into one block, found through a name tree
+SkelManager | OK | the game's SkeletonManager (SkeletonManager_initBy): PlayerRecord.headSkels .., Stage.objectSkeletons / itemSkeletons
+PlayerRecord | OK | Stage.playerRecords[16]: name, character, team, parts, items, flag, shapes; player_set* and playerRecord_* take its index: a player of the match
+TreeNode | OK | Manager.nodes: tree_lookup's strcmp tree
+TexRecord | OK | TextureBank.records[512]: name, flags, tints (texRecord_init, tex_getIdBy, tex_setMaterialTint)
+TexSlot | OK | TextureBank.slots: the GL texture cache ring (tex_bind)
+TextureBank | OK | the game's class Texture, one per image size (TextureManager.banks): tex_initBy, tex_getIdBy, tex_bind, tex_loadImage
+GroundLayer | OK | Stage.groundLayers[4]: map_loadGroundInfoFrom, ground_buildLayerModels / ground_buildDrawLists: a height-grid layer
+WayPoint | OK | Trigger.wayPoints: place and actor commands (script_processCommandBy)
+Trigger | OK | Stage.triggers: map_loadTriggerInfoFrom, script_processTriggers
+StartPoint | OK | Stage.starts / Scene.spawnPoints[32]: pos and angles from the play file (map_loadPlayInfoFrom); spawn_point picks one
+MapPlayer | OK | Stage.mapPlayers[16]: map_loadActorInfoFrom; playerRecord_setFromMapPlayer
+SpawnRecord | OK | Stage.mapActors[100]: actor_applySpawnRecord copies it into an actor
+BmpFile | OK | the game's class BMPRGBFile (vtable 0x4a96f8): image_initBy / image_tryOpen / image_copyTo
+HeadType | OK | Stage.headTypes: Component.dat's head table; the ARM CENTER head panel and mech_stats
+ChestType | OK | Stage.chestTypes (joints, weightLimit, maxShield ..)
+ArmType | OK | Stage.armTypes (weaponJoints ..)
+LegType | OK | Stage.legTypes
+BoosterType | OK | Stage.boosterTypes (times[3] ..)
+CollisionPlane | RENAME -> CollisionTri | it is a triangle, not a plane: three corners, three edges, the face plane AND three edge planes, its unit, its shape part and its corners' vertex indices (collisionTri_setup fills it; collisionTri_traceSegment / sweepSphere / meetsBox run on it; collision_tris.c calls it "a triangle record"); Bullet.hit is the triangle hit. grep: CollisionTri unused as a type || new comment: a triangle of the collision space (Space.planes; collisionTri_setup): its corners, edges, face and edge planes, unit and part; a bullet's hit (Bullet.hit)
+TimeSync | OK | the game's class TimeSync (vtable 0x4aa46c): TimeSync_frameTime's counter state
+SpaceUnit | OK | Space.units: a map object's collision unit (space_buildUnit, space_disableUnit)
+ParticleDesc | OK | particle_spawn's argument record, copied by particle_init into a Particle
+ScenePath | OK | the game's class "Scene" (vtable 0x4aa258) at Stage.scenePath, opened / stepped by stage_advanceScenePath for a map script path; the comment says so
+Stage | COMMENT | the type's comment is cut off mid-sentence: '"this" of the' and nothing after it (scene.fields line 1169) || new comment: the stage: the scene's own object at Scene + 0x1f36c8 (STAGE()), "this" of the stage_* thiscalls (the game's class Stage): the map, its objects, items, actors, particles, bullets, lights, ground, sky and collision space
+Flare | OK | TunnelRing.flares[6] (tunnelRing_build, menu_tunnel.c)
+TunnelRing | OK | g_menuTunnel's chained rings (tunnel_appendRing / addRing / removeLastRing, menu_drawBackground3D)
+Round | OK | Scene.rotation[100]: map, mode, limits (make_rotation / set_round)
+Scene | COMMENT | not "of a match": the object (the game's class Console, Console_ctor) is built once at start-up (app_startupLoad, at g_scene; trace: Console_ctor only s0) and serves every session: a match, the ARM CENTER's preview (sessionMode 2) and replays (3). Note also that the game's own class "Scene" is ScenePath || new comment: the scene: the game object (the game's class Console, not its class "Scene", which is ScenePath), built once at start-up (app_startupLoad: Console_ctor, at g_scene) and holding a session's state: a match, the ARM CENTER's preview or the replays
+ColourChoice | OK | g_savedColourChoices / g_roomColours / g_pilotSaveColours: two HSV tints per part slot
+ProfileRecord | OK | g_profileRecords[128]: number, name, pilot (profile_scanSaves, profileList_drawNames)
+ArchiveEntry | OK | the .dat archives' index entries: name, offset (shapeDat_findByName, tex_findByName)
+MenuOutline | OK | g_lobbyTopOutlines / g_setupTopOutlines / g_mainMenuOutlines / g_roomOutlines: points, x[5], y[5]; menu_pointInPolygon
+
+## typedef
+Cleanup | OK | game.h: the type of g_errorCleanupHook / ErrorLog_ctor's hook, run by error_log.c terminate() before exit(1) (it sits under the "---- textures ----" banner, harmless)
+TextureManager | OK | game.h: {vtable, banks[6], count}: the game's TextureManager at g_textureManager (TextureManager_ctor / _setBanks / tex_getIdByName)
+Colour | COMMENT | the typedef has no comment (it sits bare under "---- globals ----"); it is the four-float RGBA colour Color4_set fills and g_textColour / g_rectColour / g_textColours / g_codeColours / g_clearColour are made of || new comment: an RGBA colour, four floats (Color4_set / set_colour_bits; g_textColour, g_textColours ...)
+Outline | RENAME -> MenuOutline | a second name for the same record: { int n, x[5], y[5] } is exactly scene.fields' MenuOutline (0x2c bytes: points, x[5], y[5]); Outline is used in lobby_states.c, menu_records.c, room_clicks.c, setup_keys.c, setup_pages.c and point_in_outline, MenuOutline in objects.h / store_tables.c / menu_init.c / setup_pages.c. Drop the typedef and use MenuOutline
+
+## file
+axis.h | OK | conventions header (GAME_FN, THISCALL, x87 rules) as it says
+axis.h (header comment) | UNSURE | its header says "(PRIVATE; never ship)" while the recomp repo was made public by the user on 2026-11-07; whether the note means the repo or shipping game binaries is the user's call
+calls.h | OK | generated plain-name calls (tools/plain_calls.py), as its header says
+game.h | OK | the original-address function macros, imports and a few types, as its header says
+globals.h | OK | fixed-address globals by name (name_globals.py), as said
+objects.h | OK | arrays / records at fixed addresses (name_objects.py), as said
+scene.h | OK | generated from scene.fields by mkscene.py, as said
+wide.c | OK | the patch DLL's widescreen table as the rebuilds see it (wide_* getters)
+wide.h | OK | the widescreen fix state shared with the patch DLL (HUD_* parts, wide_*)
+x87.h | OK | fsin / fcos / fsqrt .. one-instruction helpers
+app/app_quit.c | OK | app_closeWindow, app_quitGame: leaving the game
+app/classes.c | COMMENT | besides the classes' constructors / destructors / member clears it holds the BMP reader (image_initBy / image_tryOpen / image_copyTo), the players' flags (playerRecord_loadFlag, flag_uploadAtlas), the game object's construction (Console_ctor, ResourceSet_ctor) and scene_startSession, and one-line getters / setters / vector initialisers (net_sessionCount, gfx_getWidth, view_fov, armc_showPartsPage, ptx_startBitReader, menuCamera_setMove, music_setVolumeSetting, vec_init*); the header names only the class plumbing || new comment: classes.c: the game's C++ classes as the compiler built them: constructors (set the vtable, clear the members), destructors (the vtable set back, an owned buffer freed), the "deleting" destructors and member clears; the game object built (Console_ctor, ResourceSet_ctor) and a session started (scene_startSession); the BMP reader (BMPRGBFile: image_*) and the players' flags (playerRecord_loadFlag, flag_uploadAtlas); and one-line getters, setters and vector initialisers. Most return what the original leaves in eax (usually 0 or the object).
+app/devices.c | OK | input_* DirectInput keyboard / mouse and the release of DirectInput / DirectSound, as said (s* and m* screens)
+app/error_log.c | OK | sys_errorMessage* / sys_errorTerminate / sys_fatalError: the error reporters, as said
+app/frees.c | OK | net_freeBuffers, sound_freeAll, as said
+app/loading.c | COMMENT | the header names only the loading screen; the file also holds the start-up load (app_startupLoad, s0), the menus' textures (menu_loadTextures, s100) and a match's load stepped once a frame (game_processLoadingMode with next_stage / keep_alive, m1) || new comment: loading.c: loading: the start-up load (app_startupLoad) and the menus' textures (menu_loadTextures); a match's load, one step per frame (game_processLoadingMode: the stages, a network client kept alive meanwhile); and the loading screen between the menus and a match: a scrolling textured cylinder (Iftex/Cylinder) behind the status text lines, faded in from black and out to black (no progress bar).
+app/main_loop.c | COMMENT | its header calls the file "app_frameByScreen.c" (a function name); the file is main_loop.c and holds app_frame, app_frameByScreen, menu_frame, match_frameByState, match_playFrame, match_combatInput, match_mechTestFrame, replay_frame and match_frame || new comment: main_loop.c: one frame of the game. WinMain's message loop calls app_frame whenever no window message is waiting; it runs either a match frame (by the match's state: playing, the mech test mode, the replay viewer) or the front end's menus.
+app/math_tables.c | OK | MATHFUNC.TBL made / read, as said
+app/objects.c | RENAME -> app/destructors.c | the name says nothing of its content and repeats render/objects.c: it holds the compiler-made destructors (ViewVolume_dtor / _deletingDtor, Console_dtor / _deletingDtor, Stage_deletingDtor) plus the array constructor (crt_vectorConstructorIterator) and ViewVolume_captureMatrices, which the header leaves out. grep: destructors.c unused || new comment: destructors.c: C++ object plumbing the compiler made for the game's classes: the "deleting" destructors (the ones in the vtables: the plain destructor run, the object freed when bit 0 of flags is set) and plain destructors of the view volume and the game object, the array constructor (crt_vectorConstructorIterator), and a view volume's matrices captured (ViewVolume_captureMatrices).
+app/ptx_decode.c | OK | ptx_* PTX (JPEG-style) texture decoder, as said
+app/ptx_tables.c | OK | ptx_init* tables, as said
+app/resets.c | COMMENT | the header lists "the input line's length, the network buffers" but nothing here touches either: net_clearServerSettings clears the server names and ports, and account_takeRank (the rank reply taken into the pilot's records, s800) is no reset at all; messageBox_clickClose closes the box rather than resetting it || new comment: resets.c: state put back to its start: the key latches and the second key table, the server settings, the replay selection list; and two small handlers: a click closing the message box, the rank reply taken (account_takeRank).
+app/small.c | OK | one-line pieces from all over the game, as its header says
+app/statics.c | OK | class logs, static objects, atexit registrations, empty initialisers, constant colours (all s0), as said
+app/store_tables.c | OK | {address, value} initialisers (outlines, colours, key tables), as said
+app/timer.c | OK | timer_*, TimeSync_frameTime, scene_averageFrameTime: the clock, as said
+app/win32.c | COMMENT | "small Win32 / multimedia wrappers" understates it: it holds the program's entry (game_WinMain, app_init), both window procedures (game_wndProc, glWindow_wndProc), the GL window and display mode (glWindow_*, app_setDisplayMode, gfx_setPixelFormat), the hidden EDIT control and its procedure (editField_*), message boxes and the ending movie || new comment: win32.c: the game's Win32 side: the program (game_WinMain, app_init) and its window procedures, the GL window and the display mode, the text fields' hidden EDIT control, message boxes, the ending movie's MCI device and the current directory.
+crt/crt.h | OK | the standalone build's C runtime glue, as said
+crt/crt_atof.c | OK | crt_atof as VC6's, as said
+crt/crt_format.c | OK | crt_sprintf / crt_vsprintf as VC6's, as said
+fixes/fixes.h | OK | the native build's fixes' interface, as said
+fixes/hud.c | OK | the proportional HUD fix, as said
+fixes/input.c | OK | the input fixes, as said
+fixes/kyrie.c | OK | the KYRIE parts, as said
+fixes/screen.c | OK | the screen fixes (4:3 menu box, cursor, text, digits), as said
+fixes/settings.h | OK | the native build's settings, as said
+hud/hud.h | OK | HUD unit helpers shared by the hud files
+hud/hud_clock.c | OK | hud_drawMatchCounters (points needed, time left), hud_drawMatchResult, hud_drawRecordIndicator: the header says exactly that (all m2)
+hud/hud_escmenu.c | OK | hud_drawEscMenu, hud_drawMenuBox, escMenu_open / _update: the Esc menu (m2)
+hud/hud_icons.c | OK | hud_drawEmblem, hud_drawFlag, hud_drawIcon (m2)
+hud/hud_lockon.c | OK | hud_drawLockOn (m2)
+hud/hud_main.c | OK | hud_drawMain (m2)
+hud/hud_markers.c | OK | hud_drawPlayerMarkers (m2, m4)
+hud/hud_messages.c | COMMENT | the header leaves out hud_drawRectOutline (a screen-pixel rectangle outline, 0x46bd00) that lives here too || new comment: hud_messages.c: the HUD's centred texts (press fire, the watched player's name, the restart countdown), the help screen, and a rectangle's outline in screen pixels.
+hud/hud_overlay.c | OK | hud_fillRect, hud_drawFps, hud_drawChatInput, hud_drawTeamScores: small overlays, as said
+hud/hud_pass.c | OK | match_drawFrame: the in-match 2D pass, as said
+hud/hud_ranking.c | OK | hud_drawRanking, as said
+load/collision_tris.c | RENAME -> collision/collision_tris.c | runtime collision, not loading: collisionTri_traceSegment / sweepSphere, collision_moveSphere, space_collideBlock run every match frame (m2, m4); only setup / meetsBox / initVolume run at load (m1). Also its header gives the triangle record as 0xa0 bytes: the record (CollisionPlane, 0xac) carries its unit-list links at +0xa0 / +0xa4 (the pool's stride is 0xac: space_resetPlanes) || new comment: collision_tris.c: the collision space's triangles. A triangle record (CollisionTri, 0xac bytes) holds its flags, its three corners (+4), its three edges normalised (edges), its face plane (normal normal, distance dist), three edge planes (edgePlanes, 16 bytes each: the normal pointing inwards, the distance), its collision unit, its shape part, its corners' vertex indices and its unit-list links. The arithmetic is the original's: extended precision, rounded where it stores a float, and float operands taken straight from memory (fld_m / fmul_m, so a signalling NaN behaves as there).
+load/files.c | COMMENT | "small reads and writes: the scrambled data files' record blocks, the chat macros, the replay file closed" covers a fraction of its 1428 lines: it also writes and reads axis.cfg (cfg_*), the profiles' files (profile_*), axis.mis (mission_*), the data files (data_load*), the component catalogue, the command line and the launcher's files, and starts replay recording || new comment: files.c: the game's file reads and writes: the scrambled data files' record blocks (file_readScrambled / file_writeScrambled), axis.cfg (cfg_*), the pilot profiles' files (profile_*), axis.mis (mission_*), the message, character, map-info and skirmish data files (data_load*), the component catalogue, the chat macros (Chat.scp), the archives' item files, the replay file opened and closed, the launcher's files and the command line.
+load/lists.c | COMMENT | the header covers only the collision space's free lists; tunnel_appendRing (the menu tunnel's ring list, s100 .. s800) is here too || new comment: lists.c: list links: the free lists of the collision space's pools (a freed node or block pushed on the front of the doubly linked free list, the pool's count of nodes in use going down), and a ring appended to the menu tunnel's chain (tunnel_appendRing).
+load/map_info.c | COMMENT | not one "mission file": the functions read the map's mission file (way points, triggers), its object file, play file, actor file and ground file, and the item file (catalogue_loadItemInfoFrom) || new comment: map_info.c: a map's files read: the mission file's way points and triggers, the object, play, actor and ground files, and the item file; a section is a count and that many records, each record linked to its run in a shared table (the runs follow each other; the total must match the table's own count, else a fatal message).
+load/names.c | RENAME -> load/textures.c | 11 of its 14 functions are the texture bank / manager (tex_findByName, tex_getItemFileBy, tex_getIdByName, tex_bind, TextureManager_setBanks, tex_upload, tex_textureFileExist, tex_initBy, tex_getIdBy, tex_loadImage, shape_bindTextureBy); "names" fits only the name lookups (shapeDat_ / skelDat_findByName, path_stripExtension). scene.fields' TexSlot / TextureBank comments cite "names.c". grep: textures.c unused || new comment: textures.c: the texture banks (the game's class Texture) and their manager: set up, a texture looked up and loaded by name (PTX or BMP), uploaded and bound through the GL texture cache; and the archives' name lookups (sorted 0x44-byte index entries) and file names.
+load/skel_data.c | RENAME -> load/shapes_skeletons.c | only part of it is a skeleton's data block: it loads shapes too (ShapeManager_initBy, model_loadFrom, shape_read, shape_getByName, model_loadObjFormatFrom), runs both managers' name trees, and builds / poses object lists (ObjectList_load, ObjectList_poseBones); skel_* is about half. scene.fields' Model / Skeleton / Manager / SkelManager comments cite "skel_data.c". grep: unused || new comment: shapes_skeletons.c: shapes and skeletons: their files read (binary, 3ds Max ASE, Wavefront OBJ), their managers (items loaded by name into one block, a name tree), a bone's matrix at a time, and object lists loaded and posed. A record's data is one block (allocated, or the caller's memory when it is big enough, else a fatal message).
+load/space_pools.c | RENAME -> collision/collision_space.c | pools are its first seven functions only; it also builds the space (space_setBy, space_initBy, space_insertItem / insertTriangle / buildUnit / addUnitTriangle) and runs the match's collision tests (space_testSphere, space_collideAt, space_traceCells / traceBlock, collision_rayTrace: m2, m4). scene.fields' SpacePool / Space comments cite "space_pools.c". grep: unused || new comment: collision_space.c: the collision space (the game's class CollisionVolume): its pools of triangles, nodes, units and blocks (a count, an array of records and a free list; emptying clears every record and links them both ways), the octree built from the map objects' triangles, and the sphere and segment tests against it.
+match/actor_frame.c | OK | actor_processFrame and its pieces, as said
+match/actor_slots.c | COMMENT | the header covers selecting a slot, inputs and the pools emptied; most of the file is building and spawning actors (actor_load*, actor_applySpawnRecord, actor_startingValues, actor_setupFromParts, stage_setupActorSlot), their colours, drawing (actor_drawIntoView, stage_drawBullets), a round reset (stage_newRound) and the data-loss check || new comment: actor_slots.c: the stage's actor slots: set up and spawned (parts, weapon, starting values, spawn records), coloured, emptied and taken out, their input records and draw; the player records and a new round reset; the pools of map objects, particles and bullets emptied; the data-loss check.
+match/frame_loops.c | COMMENT | besides the per-frame slot loops it holds particle_spawn / particle_init / particle_update, bullet_spawn, object_addObjectBy / object_initObjectBy, script_processTriggers / script_processCommandBy, item_update, effect_initShapes and ladder_addMatchScores || new comment: frame_loops.c: the scene's per-frame passes over its slots (bullets, particles, objects, actors and triggers; each slot in use updated unless a script holds the actors) and what they run: particles spawned, set up and updated, bullets spawned, map objects added, the triggers' way-point commands, the items' frame; also the effects' shapes and the Ladder scores added.
+match/map_objects.c | OK | space_disableUnit / enableUnit, object_activate / deactivate / setAnimation, as said
+match/match_start.c | OK | match_setupOrStartRound, game_setGameTypeFlags, scene_reset, stage_build: starting a match
+match/notices.c | OK | name table, announcements, centre notice, event list, as said
+match/scores.c | COMMENT | "the players' scores at the start of a match" fits scene_resetScores only; scene_updateRanking runs every frame (m2, m4) || new comment: scores.c: the players' scores reset at a match's start, and the ranking worked out (team counts, order).
+match/teams.c | COMMENT | stage_refillLights (the dynamic lights refilled) has nothing to do with teams and is not mentioned || new comment: teams.c: the match's teams (team slots in Scene.teamIds: a slot picks its name, colour and score; the top player); also the stage's dynamic lights refilled (stage_refillLights).
+match/weapons.c | COMMENT | actor_pickPathPoint (a bot's next path target) is not weapons, damage or bullets || new comment: weapons.c: an actor's weapons (switching, picking), the damage a hit does, a bot's next path point, and the bullets (fired, flying, hitting).
+menu/arena_maps.c | RENAME -> menu/map_list.c | the map list (mapList_*) is not only the arena's: in the trace mapList_startEdit / draw / mouse ran only in the game room (s800), mapList_layout in both; 8 of 11 functions are mapList_*, plus arena_ / room_stepMap and arena_savePlayerSettings. grep: map_list.c unused || new comment: map_list.c: the map list (the settings form's ADVANCED list, the arena's and the game room's): per map whether it is in the rotation and its game type (0 .. 13), edited on a working copy (g_mapChoices) and kept on OK (g_mapChoicesKept); maps 22 .. 24 can never be chosen. Also the forms' map step and the lobby player's settings saved.
+menu/armc_colours.c | OK | armc_set*FromPointer, armc_applyColourSlot, armc_retintParts: colour sliders (s700)
+menu/armc_items.c | OK | armc_pickSlot / showCursorItem / takeCursorItem, weapons page, extra-item bonuses (s700)
+menu/armc_keys.c | COMMENT | the header says the keys "on its main (parts) page and its colour page"; the file also holds the weapons page's keys (armc_weaponsPageKeys) and the screen's key dispatch (armc_processInput) || new comment: armc_keys.c: the ARM CENTER's keys: its parts, weapons and colour pages and the dispatch by mode. Five keys pick a part or colour slot directly; up / down step through the six with wrap-around.
+menu/armc_mech.c | OK | mech_set*, armc_giveShownActorWeapon: the mech being edited (s700)
+menu/armc_misc.c | OK | small ARM CENTER pieces, as said (s700)
+menu/armc_parts.c | OK | PartInfo records, part lists and stepping (armc_itemSlotRecord, armc_stepPart, armc_buildPartLists: s700)
+menu/armc_screens.c | OK | armc_drawWeaponsScreen, armc_drawColourEditor: two of the pages, as said
+menu/armc_state.c | OK | the working copy (armc_loadSavedMech, armc_syncPartCursors ..), as said
+menu/armc_stats.c | RENAME -> menu/armc_parts_screen.c | the brief's own example: its one exported function is armc_drawPartsScreen (s700), and its header already says "the ARM CENTER's parts screen"; the stat lines are only the panel's stats box. Sits next to armc_screens.c (the weapons and colour pages). grep: armc_parts_screen.c unused
+menu/edit_fields.c | COMMENT | the header says "on the arena screens and in the game room"; it also opens the match's text field (chat_openTextField, m2) and reads the typing for every field (editField_readTyping, all screens) || new comment: edit_fields.c: opening a text field for typing (the arena screens, the game room's forms and the match's chat line) and the typed line read back. Typing goes through a hidden EDIT control (editField_createEdit) into the shared line g_inputLine, drawn with a caret at (g_editCaretX, g_editCaretY); the menu keys wait meanwhile (g_textFieldOpen, g_menuKeyGuard). Each field starts from its current text (copied in) or empty, and raises its own "being edited" flag.
+menu/game_lists.c | COMMENT | it also draws the lobby's SETUP PLAYER dialog (lobby_drawPlayerSetup), which is no game list || new comment: game_lists.c: the lists of games to join, the game room's (window 0x9dd4a8 .. 0x9dd4b4) and the arena lobby's (0x4db8c8 .. 0x4db8d4): the games (g_sessionList) from row g_gameListTop, the page, their boxes, keys and mouse; also the lobby's SETUP PLAYER dialog.
+menu/hit_tests.c | OK | *_hitTest and menu_pointInPolygon, as said
+menu/key_repeat.h | OK | the lists' held-key repeat, as said
+menu/layouts.c | OK | *_layout, as said
+menu/lobby_states.c | COMMENT | the header describes only the screens' entry set-ups; most of its 1666 lines are the lobby's and the game room's keys and clicks, hosting (lobby_hostArena*, arena_takeHostAnswer, lobby_announceArena, room_announceGame), joining (arena_joinSession / joinAnswer), the lobby frames, the Ladder record and account handling || new comment: lobby_states.c: the arena lobby and the game room: their screens set up as they are entered (camera target and look-at points, state cleared, the map list or the ranking reset), their keys and clicks by sub-screen, the lobby's frames, hosting and announcing an arena or a room game, joining an arena, and the Ladder account's and record's handling. The lobby's three sub-screens are 0 (the player's own record), 1 (the arena list) and 2 (creating an arena).
+menu/menu_2d.c | OK | menu_vertex / drawRect / drawLine, the 2D-3D switch, frame opening, message box, text cursor: the menus' 2D primitives
+menu/menu_cameras.c | COMMENT | the header covers the front end's camera only; freeCam_stepLeft / stepRight / mouseLook / keys are the watching camera of screen 9999 (in a match: menu_processKeys / processMouse case 9999) || new comment: menu_cameras.c: the front end's camera moving between its home and a screen's menu point, and the free (watching) camera of screen 9999. The menu camera is a position (g_menuEyeX) and a point it looks at (g_menuCameraLook), three floats each; the menu points are 16 bytes apart from OBJ(g_camPoints) (positions) and OBJ(g_camAims) (look-at points), the home at g_menuEyeHomeX / g_menuLookHomeX. Each frame the camera eases a share of the way (the frame's time times a rate) and snaps once close enough. The arithmetic is kept in the original's order and at x87 precision (long double).
+menu/menu_cursor.c | OK | menu_drawCursor
+menu/menu_init.c | COMMENT | replayList_open (the main menu's replay list opened, s300) is no start-up table || new comment: menu_init.c: front-end tables put to their start: colours, the camera points, the arena option texts, the mission list, the network state, the button outlines, the front end's start-up; also the replay list opened (replayList_open).
+menu/menu_keys.c | OK | menu_processKeys, profile_screenKeys: key dispatch
+menu/menu_quads.c | OK | menu_draw*Button / Arrow / Texture / Ornament
+menu/menu_records.c | RENAME -> menu/menu_misc.c | few of its functions are about records: it holds the title screen's clicks / keys, the main menu's clicks and keys (mainmenu_clicks, mainmenu_processKeys, menu_choice), the ranking's paging, the mission list's cursor, briefing paging and frame (menuState900_missions), the skirmish screen's start / clicks, the new-ID confirmation's keys, the input line and its history, the message box: a grab bag like armc_misc.c / profile_misc.c. grep: menu_misc.c unused || new comment: menu_misc.c: small pieces of the front end: the lobby player's name, the data paths, the input line and its history, the message box, the arena list's session records, the mech kept and loaded, the title screen's and the main menu's keys and clicks, the ranking's pages, the mission list's cursor and briefing pages (screen 900) and the skirmish screen's round.
+menu/menu_screens.c | OK | menuState500_skirmish, menuState200_title: single screens' frames
+menu/menu_states.c | COMMENT | it also holds the replay selection dialog (draw, ok, keys, mouse), the profile, setup and game-room frames (menuState210_frame, menuState600_setup, menuState800_gameRoom), the returns from a match (game_return*, game_postMatch), the sockets' close returns and the panels' slides || new comment: menu_states.c: the front end's screens' frames and dispatch: the intro, the main menu with its replay selection dialog, the profile, setup and game-room frames, the 3D background, the mission list's and skirmish screen's pages and keys, the panels sliding in, and the way back to the menus after a match or a lost server.
+menu/menu_title.c | OK | menu_titleEmblemTransition
+menu/menu_tunnel.c | OK | the tunnel background, as said
+menu/mission_list.c | OK | missions_listKeys, briefing_typeOut, missionList_draw, missionBriefing_draw (s900)
+menu/portrait.h | OK | a pilot portrait cell, as said
+menu/profile_dialogs.c | OK | profile_typeNewName, profile_ask*, profile_draw* (s210)
+menu/profile_keys.c | OK | profile_*Keys, pilotSelect_keys (s210)
+menu/profile_misc.c | COMMENT | the header (scrambling, name checks, "a profile's colour record loaded for the preview") misses most of it: the profile screen's clicks and pages (profile_screenClicks, profile_listPage, profile_logIn, profile_deletePage ..), making, deleting and naming profiles, the stat bars and the pilot grid || new comment: profile_misc.c: pieces of the pilot profile screen (210): its pages and clicks, profiles made, named and deleted, the stat bars and the pilot grid, the save files' byte scrambling and the name checks.
+menu/room_clicks.c | COMMENT | besides clicks it holds the game room's keys (room_keys, roomSettings_keys, newIdForm_keys), its pages (ranking_page, account_page), the hosting step, the login and new-ID sends, the map previews (also the arena's) and the mission list's clicks || new comment: room_clicks.c: the game room's handlers: its pages' clicks and keys, the Ladder login and new-ID forms checked and sent, the account change, the hosting step and the join's answer, the map previews (the room's and the arena's), the update notices, the join passwords, the white fade; also the mission list's clicks.
+menu/room_dialogs.c | COMMENT | it also draws the dialogs and pages (newIdForm_draw, roomLogin_draw, account_drawPanel, ranking_drawTable), handles their keys and clicks (by state) and joins listed games (room_joinListed, arena_joinListed) || new comment: room_dialogs.c: the game room's dialogs and pages: opened (each a box, its fields cleared, g_roomState set to it), updated and drawn, their keys and clicks by state; joining a listed game (the room's or the arena's) and the list refreshed.
+menu/screen_enter.c | COMMENT | menu_processMouse (the menus' mouse, every frame) is not a screen entry || new comment: screen_enter.c: the front end's screens set up as they are entered (the main menu, the arena lobby, the setup screen, the game room, the mission list, the skirmish screen, the pilot screen, the match): each lays out its panels, sets its colours, points the menu camera at the screen with its current place as home, and clears its state; also the menus' mouse dispatch (menu_processMouse).
+menu/settings_form.c | OK | room_drawGameSettings, arena_createDraw: the settings form, as said
+menu/setup_keys.c | OK | setup_* tabs, keys, clicks and binding (s600)
+menu/setup_pages.c | COMMENT | beyond the setup pages it draws the other screens' tunnels (skirmish_, missions_, armc_, room_, arena_drawTunnel) and menus (room_drawMenu, lobbyTop_drawMenu, mainmenu_drawMenu) || new comment: setup_pages.c: the setup screen's pages and menu drawn, the screens' tunnels (setup, skirmish, mission list, ARM CENTER, game room, arena lobby) and the menus of the main menu, the arena lobby's top page and the game room.
+menu/skirmish.c | OK | skirmish_drawRoundScreen / NewPartsNotice and their frames (s500)
+msg/msg_players.c | OK | msg_* player messages, chat_matchCheatCode (m2)
+msg/msg_print.c | OK | msg_print: the event list
+msg/msg_system.c | OK | msg_* system messages
+net/dplay_calls.c | OK | dplay_receive / send / closeSession / createObject / listSessions
+net/dplay_slots.c | OK | dplaySlot0..3_*, dplay_host / join / openConnection
+net/net_packets.c | OK | netq_* packet layer, as said
+net/net_servers.c | OK | net_pingServer, ping thread, as said
+net/net_sessions.c | OK | *_mergeReceivedSessions, sessionList_sort, arenaList_rebuild, as said
+net/net_tables.c | RENAME -> net/network.c | "the network code's fixed tables" is a sliver of its 2225 lines: it is the whole network core: the TCP lobby / game-server sockets (net_connect, net_disconnect, net_send, net_recv, net_receive*Reply), DirectPlay (dplay_init / create / hostSession / joinSession / enumSessions / release), the messages (net_sendMessage, net_handleMessage, net_handleSystemMessage, net_sendChat), the ping thread, addresses, and net_processGamePacket. grep: network.c unused || new comment: network.c: the game's network code: the TCP connections to the lobby and game servers (connect, send a request, read its reply, the lists received), DirectPlay (started, sessions hosted, joined and enumerated, messages sent and handled), the session table (200 SessionSlots at g_sessionTable) and the sixteen player slots (g_netSlots), the ping thread, this machine's address, and the match's game packets taken in (net_processGamePacket).
+net/winsock.h | OK | Winsock imports, as said
+render/depth_sort.c | OK | render_depthSortTriangles / Billboards
+render/factors.c | COMMENT | it also sizes a view volume (ViewVolume_initBy, s0) and the header's "a layer's lighting" is ground_computeLighting; ViewVolume_initBy is unmentioned || new comment: factors.c: the light factor pools' records built and added (factor_addFactorBy: a 0x2c-byte record of which only the kind, the colour and the kind's own fields are set; the rest is left as the stack holds it, as the originals leave it); a ground layer's lighting; a view volume sized (ViewVolume_initBy).
+render/fog.c | OK | stage_setFog
+render/gl_helpers.c | OK | gl_rotateXYZ, gfx_* small GL helpers
+render/items.c | OK | stage_drawItems
+render/object_list.c | COMMENT | ground_buildLayerModels (the ground's two models from its layers, m1) is no object list || new comment: object_list.c: an object list: shapes placed by their own matrices, each with a buffer of shading colours, lit by light factors (shape_shadingColours, through the inverse of the shape's matrix) and a tint colour (shape_addColour), its textures bound, handed to the view volume; also the ground's layer models built (ground_buildLayerModels).
+render/objects.c | COMMENT | mapObject_frame (a map object's animation step) and stage_setupView (the frame's camera) are not "handed to the view volume" || new comment: objects.c: the stage's map objects (animated scenery), actors and particles handed to the view volume, once per pass (each list walked up to its count, read again after every entry); also a map object's frame (mapObject_frame) and the frame's camera (stage_setupView).
+render/rotations.c | OK | quat_ / Mat4_ / angle_ / vec_ rotation helpers, as said
+render/shading.c | COMMENT | it also lights a ground layer (light_computeLayerLightBy) and builds the ground's draw lists (ground_buildDrawLists, m2 m4) || new comment: shading.c: vertex colours lit by the light factors: a shape part's, a ground layer's; and the ground's drawing lists for the frame.
+render/shape_colours.c | OK | shape_*Tint / Colour, tex_tintRgba: a model's tint, as said
+render/sky.c | OK | sky_draw
+render/tex_colours.c | OK | tex_tint* / color_rgbToHsv / texRecord_init / part_addColour, as said
+render/trails.c | OK | shape_computeBounds, bullet_drawTrail, as said
+render/vecmath.c | OK | Vec3_ / Mat4_ / color_hsvToRgb / level_fromPoints / rect_set ..., as said
+render/view_volume.c | COMMENT | besides the additions it releases a view volume, queues a whole model (ViewVolume_queueModel) and draws the lists (ViewVolume_draw) || new comment: view_volume.c: the view volume: things added to its lists (an object's two points, a triangle, a quad, a camera-facing quad, a whole model), and the lists drawn; points are transformed by its matrices (columns) into clip space in the original's order; with flag 1 an entry is dropped again when all its points are outside the same clip plane; a full list sets its overflow flag.
+replay/replay_message.c | RENAME -> hud/hud_message_box.c | its one function is hud_drawMessageBox, the HUD's message box drawn in matches and replays alike (m2 and m4); "replay" is wrong and leaves a folder for one file. grep: unused || new comment: hud_message_box.c: the message box at the top of the screen (matches and replays): one waiting message of up to four lines, or else the last events, fading out with scene->msgFade.
+sound/sound_basic.c | OK | sound_* / music_*: DirectSound buffers and DirectShow music, as said
+text/glyph_cells.c | COMMENT | it also loads the pen font (pen_init) and draws with it (font_penDraw) and draws the HUD's digits (hud_drawDigits) || new comment: glyph_cells.c: the font atlases' cell tables (for each glyph its texture coordinates; every value a texel number times 1/256), the pen font (the HUD's small text) loaded and drawn, and the HUD's digits.
+text/glyph_quads.c | OK | text_quad* / glyph_drawHangul*: one glyph quad, as said
+text/text_codes.c | RENAME -> text/text_passes.c | the text passes live here, not in text_passes.c: text_ascii5/8/16/32Pass and text_hangul13/31(Layered)Pass with their TextPass table are 8 of its 11 functions (game.h even cites "the Korean text passes (text/text_codes.c)"); the rest is the Johab split, the printable length and EUC-KR conversion || new comment: text_passes.c: drawing a line of text one font texture at a time: the ASCII passes (5, 8, 16, 32 pixels) and the Korean passes (lead glyphs, vowel and tail glyphs, at 13 and 31 units), colour and format codes read on the way; and what a line is made of: a Johab syllable split into its glyph rows, EUC-KR to Johab, the printable width.
+text/text_passes.c | RENAME -> text/text_draw.c | its functions are text_draw5/8/16/32, text_drawCentred5/8, text_drawCentredLines16/32: they draw a string in one font by calling the passes, which are in text_codes.c; the name takes the passes' place. grep: text_draw.c unused || new comment: text_draw.c: drawing a string in one of the four bitmap fonts, plain, centred or centred in lines. A string is drawn in up to three passes (text_passes.c), one per font texture: the Hangul initial consonants, the Hangul vowels and finals, and ASCII; each pass draws only its own characters. Colour codes "$[c]" inside a string take no room. The ASCII pass is a call the patch DLL wraps (nearest-texel sampling), so it is made through the original call site (PATCHED_CALL).
+text/text_size.c | OK | text_drawSized, text_drawCentred: by font size, as said
+
+## folder
+app/ | OK | program-level pieces: start-up, loop, Win32, classes, timer, decoders
+crt/ | OK | the C runtime replacements
+fixes/ | OK | the native build's fixes
+hud/ | OK | the in-match HUD (plus hud_message_box.c moved in, see replay/)
+load/ | RENAME -> load/ + collision/ | three of its seven files are the collision space, which runs every match frame (space_testSphere, collisionTri_sweepSphere ..: m2 m4), not loading: move collision_tris.c and space_pools.c (as collision_space.c) to a new collision/ folder; files.c, map_info.c, names.c (textures.c), skel_data.c (shapes_skeletons.c) stay. lists.c (two space free-list pushes and tunnel_appendRing) can stay
+match/ | OK | a match's game logic
+menu/ | OK | the front end's screens
+msg/ | OK | the match's messages
+net/ | OK | the network code
+render/ | OK | the 3D drawing and its math
+replay/ | RENAME -> (removed) | its only file is the HUD's message box (drawn in matches too), moved to hud/hud_message_box.c; no replay code lives here (replay_frame is in app/main_loop.c, replay_startRecording / closeRecording in load/files.c)
+sound/ | OK | sound and music
+text/ | OK | the bitmap fonts' text drawing

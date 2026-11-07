@@ -41,7 +41,7 @@ static int menu_boxWidth(int w, int h)
    scaled to about one screen pixel each (per axis) times the Windows pointer speed and [input] menusens; the
    fraction carries to the next frame. In a match the pointer is centred every frame and its offset is the turn
    rate, so aiming is untouched. */
-static u8 g_heldMask;
+static u8 g_buttonsAwaitingRelease;
 static float g_carryX, g_carryY;
 
 static void menu_pointerSpeed(int *move)
@@ -67,13 +67,13 @@ int fix_readMouse(void)
 	int r = ((int (CDECL *)(void))(void *)FN_input_readMouse)();
 	u8 *buttons = (u8 *)g_mouseState + 0xc;   /* DIMOUSESTATE.rgbButtons */
 	if (g_mainWindow && !platform_isForeground(g_mainWindow))
-		g_heldMask = 0x0f;
+		g_buttonsAwaitingRelease = 0x0f;
 	else {
 		platform_mouseButtons((buttons[0] >> 7) | (buttons[1] >> 7 << 1) | (buttons[2] >> 7 << 2));
 		for (int i = 0; i < 4; i++) {
 			if (!(buttons[i] & 0x80))
-				g_heldMask &= ~(1 << i);
-			else if (g_heldMask & (1 << i))
+				g_buttonsAwaitingRelease &= ~(1 << i);
+			else if (g_buttonsAwaitingRelease & (1 << i))
 				buttons[i] = 0;
 		}
 	}

@@ -198,7 +198,7 @@ static void menu_camera2(const MenuCam2 *m)
 
 /* 0x410b50 (the arm screen's camera, g_armcState: 1 out to the first menu point, 0
    back home, 2 there). Going out it eases there (the view's aspect narrowing) and snaps once its depth passes -1
-   (-1101 in network play, g_armcFrom 3): at (0, -200, 1500; 400 in network play) looking at (0, -200, 0), the dialog
+   (-1101 from the Ladder game room, g_armcFrom 3): at (0, -200, 1500; 400 from the game room) looking at (0, -200, 0), the dialog
    up. Coming home it eases fast while its depth is past -549 (-1649), else slowly, the aspect widening back, and
    snaps home once within 0.01 of -550 (-1650); then on to where it came from (g_armcFrom): 1 the main menu (300), 2 the
    arena lobby (400; the camera to its saved place, the home moved to (0, 0, -1550) looking at (0, 0, -1650)), 3 the
@@ -207,8 +207,8 @@ static void menu_camera2(const MenuCam2 *m)
 void (armc_cameraStep)(void)
 {
 	limit_frame_time(ADDR(k_10f));
-	int from = g_armcFrom, network = from == 3;
-	float base = network ? -1650.0f : -550.0f;
+	int from = g_armcFrom, fromRoom = from == 3;
+	float base = fromRoom ? -1650.0f : -550.0f;
 	int mode = g_armcState;
 	if (mode == 1) {
 		X k = g_frameTime, c = RATE;
@@ -219,11 +219,11 @@ void (armc_cameraStep)(void)
 		}
 		if (g_viewAspect > k_0f)
 			g_viewAspect = (float)((X)g_viewAspect - (X)g_frameTime * k_0_07f);
-		if (!(last > F(network ? ADDR(k_m1101f) : ADDR(k_m1f))))   /* (the depth before its rounding) */
+		if (!(last > F(fromRoom ? ADDR(k_m1101f) : ADDR(k_m1f))))   /* (the depth before its rounding) */
 			return;
 		(*(int *)&g_menuEyeX) = 0;
 		(*(u32 *)&g_menuEyeY) = 0xc3480000;   /* -200 */
-		(*(u32 *)&g_menuEyeZ) = network ? 0x43c80000 : 0x44bb8000;   /* 400 / 1500 */
+		(*(u32 *)&g_menuEyeZ) = fromRoom ? 0x43c80000 : 0x44bb8000;   /* 400 / 1500 */
 		g_frameOpening = 1;
 		(*(int *)&g_menuCameraLook) = 0;
 		(*(u32 *)&g_menuCameraLookY) = 0xc3480000;

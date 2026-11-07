@@ -11,10 +11,10 @@ static void weapon_cycle(Stage *stage, int i, int step)
 {
 	u8 *actor = (u8 *)(u8 *)&((Stage *)stage)->actors[i];
 	Player *ac = (Player *)actor;
-	const PlayerRecord *player = &stage->playerRecords[ac->player];
+	const PlayerRecord *record = &stage->playerRecords[ac->player];
 	int slot = (ac->slot + step) % 6;
 	for (int k = 0; k < 6; k++, slot = (slot + step) % 6) {
-		int weapon = player->items[slot];
+		int weapon = record->items[slot];
 		if (weapon < 0)
 			continue;
 		int type = stage->actorItems[weapon].ammoType;
@@ -242,7 +242,7 @@ void THISCALL (bullet_init)(u8 *s, int slot, int id, int owner, int homingTarget
 	BU->muzzle = rd->muzzle;
 	memcpy(BU->from, o, 12);
 	float dir[3];
-	const float *w2de8 = &w->velocity;
+	const float *speed = &w->velocity;
 	if (rd->received == 0) {
 		memcpy(dir, aim, 12);
 		if (w->spread > 0) {
@@ -281,14 +281,14 @@ void THISCALL (bullet_init)(u8 *s, int slot, int id, int owner, int homingTarget
 		BU->hit = (struct CollisionPlane *)collision_rayTrace(s, from, end, hit);
 		if (BU->hit) {
 			memcpy(end, hit, 12);
-			if (*w2de8 > 0) {
+			if (*speed > 0) {
 				float dx = f32(FSUB(hit[0], from[0]));
 				long double dy = FSUB(hit[1], from[1]), dz = FSUB(hit[2], from[2]);
-				BU->life = f32(fdiv_m(x87_fsqrt((FMUL(dx, dx) + dz * dz) + dy * dy), w2de8));
+				BU->life = f32(fdiv_m(x87_fsqrt((FMUL(dx, dx) + dz * dz) + dy * dy), speed));
 			} else
 				BU->life = 0.0f;
-		} else if (*w2de8 > 0)
-			BU->life = f32(fdiv_m(fld_m(range), w2de8));
+		} else if (*speed > 0)
+			BU->life = f32(fdiv_m(fld_m(range), speed));
 		else
 			BU->life = 0.0f;
 		if (!(BU->life >= 0) || BU->life > *&k_10f)
@@ -297,8 +297,8 @@ void THISCALL (bullet_init)(u8 *s, int slot, int id, int owner, int homingTarget
 		for (int k = 0; k < 3; k++)
 			dir[k] = f32(FSUB(aim[k], o[k]));
 		Vec3_normalize(dir);
-		int target = rd->hitPlane;
-		BITS(BU->hit) = target >= 0 ? (u32)ST->space.planes.records + target * 0xac : 0;
+		int hitPlane = rd->hitPlane;
+		BITS(BU->hit) = hitPlane >= 0 ? (u32)ST->space.planes.records + hitPlane * 0xac : 0;
 		memcpy(BU->impact, aim, 12);
 		BU->life = 10.0f;   /* 10 */
 	}
@@ -308,7 +308,7 @@ void THISCALL (bullet_init)(u8 *s, int slot, int id, int owner, int homingTarget
 	BU->moved = 0;
 	float *vel = BU->vel;
 	for (int k = 0; k < 3; k++)
-		vel[k] = *w2de8 > 0 ? f32(fmul_m(fld_m(w2de8), &dir[k])) : f32(fsub_m(fld_m(BU->impact + k), BU->from + k));
+		vel[k] = *speed > 0 ? f32(fmul_m(fld_m(speed), &dir[k])) : f32(fsub_m(fld_m(BU->impact + k), BU->from + k));
 	memcpy(BU->step, (const void *)ADDR(g_vecZero), 12);
 	BU->hitActor = -1;
 	BU->homeTimer = 0.0f;
@@ -424,7 +424,7 @@ static void beam(u8 *s, u8 *b, const u8 *w, u32 *r, int flying)
 	long double len = flying ? x87_fsqrt((dx * dx + dz * dz) + dy * dy) : x87_fsqrt((dz * dz + dy * dy) + dx * dx);
 	BU->trailAge[0] = (float)len;
 	float scale = f32(fmul_m(len, &k_0_00125f));   /* / 800 */
-	u32 colour = (u32)ST->effectTextures[4];
+	u32 texture = (u32)ST->effectTextures[4];
 	for (int k = 0; k < 4; k++) {
 		int quarter = BU->id % 4;
 		float v0, u;
@@ -440,7 +440,7 @@ static void beam(u8 *s, u8 *b, const u8 *w, u32 *r, int flying)
 		const u8 *side = (const u8 *)BU->trail + k * 0xc;   /* (corner k % 4 of section k / 4: the ring as one run) */
 		r[0] = (u32)-1;
 		r[12] = 1;
-		r[13] = colour;
+		r[13] = texture;
 		r[14] = 0;
 		r[15] = BITS(u);
 		r[16] = BITS(scale);
@@ -676,8 +676,8 @@ static void home(u8 *s, u8 *b, const u8 *w)
 	Vec3_normalize(T);
 	Vec3_normalize(vel);
 	long double dot = (FMUL(T[2], vel[2]) + FMUL(T[1], vel[1])) + FMUL(T[0], vel[0]);
-	int deg = ftol(fld_m(&rate));
-	if (fld_m(g_cosTable + deg) > dot) {
+	int cosIndex = ftol(fld_m(&rate));
+	if (fld_m(g_cosTable + cosIndex) > dot) {
 		float axis[3], rot[4], m[16];
 		axis[0] = f32(FMUL(T[2], vel[1]) - FMUL(T[1], vel[2]));
 		axis[1] = f32(FMUL(T[0], vel[2]) - FMUL(T[2], vel[0]));

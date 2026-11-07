@@ -114,19 +114,19 @@ void THISCALL (armc_giveShownActorWeapon)(u8 *game, int slot)
 	if (I < 0)
 		return;
 	u32 at[3] = { BITS(ACTOR.nextPos[0]), BITS(ACTOR.nextPos[1]), BITS(ACTOR.nextPos[2]) };
-	u32 angle0 = BITS(ACTOR.nextPitch), angle1 = BITS(ACTOR.nextYaw);   /* (copied as dwords, put back through the FPU) */
-	int other = ACTOR.lastWeaponSlot;
+	u32 pitch = BITS(ACTOR.nextPitch), yaw = BITS(ACTOR.nextYaw);   /* (copied as dwords, put back through the FPU) */
+	int lastSlot = ACTOR.lastWeaponSlot;
 	int chosen = slot >= 0 ? slot : ACTOR.slot;
 	ACTOR.variantLoaded = I != sc->cockpitActor;
 	Stage *stage = SCENE_STAGE(game);
 	stage_remakePlayerActor(stage);
 	for (int k = 0; k < 3; k++)
 		BITS(ACTOR.nextPos[k]) = at[k];
-	ACTOR.nextPitch = f32(fld_m((const float *)&angle0));
-	ACTOR.nextYaw = f32(fld_m((const float *)&angle1));
+	ACTOR.nextPitch = f32(fld_m((const float *)&pitch));
+	ACTOR.nextYaw = f32(fld_m((const float *)&yaw));
 	if (slot > 3) {
-		actor_setWeaponSlot(stage, I, other);
-		actor_loadWeapon(stage, I, other, ACTOR.variantLoaded);
+		actor_setWeaponSlot(stage, I, lastSlot);
+		actor_loadWeapon(stage, I, lastSlot, ACTOR.variantLoaded);
 	}
 	actor_setWeaponSlot(stage, I, chosen);
 	actor_loadWeapon(stage, I, chosen, ACTOR.variantLoaded);

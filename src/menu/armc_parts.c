@@ -88,14 +88,14 @@ u8 *(armc_readMechStats)(void)
 	for (int i = 0; i < 7; i++)
 		g_mechMaxima[i] = ((const int *)&A->armorMax)[i];   /* armorMax, shieldMax, +0x24, ammoMax[4] */
 	copyf(ADDR(g_mechMobility), &A->mobility);
-	const PlayerRecord *player = &sc->playerRecords[A->player];
-	const LegType *leg = &st->legTypes[player->parts[3]];
+	const PlayerRecord *record = &sc->playerRecords[A->player];
+	const LegType *leg = &st->legTypes[record->parts[3]];
 	copyf(ADDR(g_mechLegsInertia), &leg->inertia);
 	mulf(ADDR(g_mechLegsSpeedCorrection), &leg->speedCorrection, (const float *)ADDR(k_100f));
 	mulf(ADDR(g_mechLegsForwardBoost), &leg->forwardBoostCorrection, (const float *)ADDR(k_100f));
 	mulf(ADDR(g_mechLegsSideBoost), &leg->sideBoostCorrection, (const float *)ADDR(k_100f));
 	mulf(ADDR(g_mechLegsBackBoost), &leg->backBoostCorrection, (const float *)ADDR(k_100f));
-	g_unusedMechStat = st->boosterTypes[player->parts[4]].thrustType;
+	g_unusedMechStat = st->boosterTypes[record->parts[4]].thrustType;
 	mulf(ADDR(g_mechBoostTime), &A->boostTime, k_1000f);
 	mulf(ADDR(g_mechBoosterRecharge), &A->rechargeTime, k_1000f);
 	mulf(ADDR(g_mechBoosterRestTime), &A->restTime, k_1000f);
@@ -136,8 +136,8 @@ int (armc_readPartPanels)(void)
 	u8 *g = (*(u8 **)&g_scene);
 	Scene *sc = (Scene *)g;
 	Stage *st = SCENE_STAGE(g);   /* (the scene's stage) */
-	const PlayerRecord *player = &sc->playerRecords[sc->players[sc->localPlayer].player];
-	const HeadType *head = &st->headTypes[player->parts[0]];   /* head */
+	const PlayerRecord *record = &sc->playerRecords[sc->players[sc->localPlayer].player];
+	const HeadType *head = &st->headTypes[record->parts[0]];   /* head */
 	panel_name(OBJ(g_headPanelName), head->name);
 	mulf(ADDR(g_headDetectionRange), &head->detectionRange, (const float *)ADDR(k_0_01f));
 	mulf(ADDR(g_headDetectionAngle), &head->detectionAngle, (const float *)ADDR(k_0_1f));
@@ -145,17 +145,17 @@ int (armc_readPartPanels)(void)
 	mulf(ADDR(g_headLockOnTime), &head->lockOnTime, (const float *)ADDR(k_100f));
 	mulf(ADDR(g_headTargetKeepTime), &head->targetKeepTime, k_1000f);
 	copyf(ADDR(g_headWeight), &head->weight);
-	const ChestType *chest = &st->chestTypes[player->parts[1]];   /* chest */
+	const ChestType *chest = &st->chestTypes[record->parts[1]];   /* chest */
 	panel_name(OBJ(g_chestPanelName), chest->name);
 	copyf(ADDR(g_chestWeightLimit), &chest->weightLimit);
 	g_chestMaxArmor = chest->maxArmor;
 	g_chestMaxShield = chest->maxShield;
-	const ArmType *arm = &st->armTypes[player->parts[2]];   /* arm */
+	const ArmType *arm = &st->armTypes[record->parts[2]];   /* arm */
 	panel_name(OBJ(g_armPanelName), arm->name);
 	for (int i = 0; i < 5; i++)
 		g_armsStats[i] = arm->stats[i];
 	copyf(ADDR(g_armsWeight), &arm->weight);
-	const LegType *leg = &st->legTypes[player->parts[3]];   /* leg */
+	const LegType *leg = &st->legTypes[record->parts[3]];   /* leg */
 	panel_name(OBJ(g_legPanelName), leg->name);
 	copyf(OBJ(g_legsStats), &leg->agility);
 	copyf(OBJ(g_legsStats) + 4, &leg->inertia);
@@ -164,7 +164,7 @@ int (armc_readPartPanels)(void)
 	mulf(OBJ(g_legsStats) + 0x10, &leg->sideBoostCorrection, (const float *)ADDR(k_100f));
 	mulf(OBJ(g_legsStats) + 0x14, &leg->backBoostCorrection, (const float *)ADDR(k_100f));
 	copyf(ADDR(g_legsWeight), &leg->weight);
-	int boosterIndex = player->parts[4];
+	int boosterIndex = record->parts[4];
 	const BoosterType *booster = &st->boosterTypes[boosterIndex];
 	panel_name(OBJ(g_boosterPanelName), booster->name);
 	g_boosterThrustType = booster->thrustType;

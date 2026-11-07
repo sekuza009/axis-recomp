@@ -1,0 +1,57 @@
+GROUP L2: 685 locals checked; RENAME 56, COMMENT 0, UNSURE 0
+src/load/map_info.c:459 | map_loadGroundInfoFrom | flat | RENAME -> drawn | it is gl->drawnCells: 1 per cell when all four corner pixels are grey (the cell is drawn); nothing about flatness
+src/load/skel_data.c:282 | skel_getBoneMatrix | unit | RENAME -> toDegrees | k_57_2958f, the radians-to-degrees factor the key rotations are multiplied by before glRotatef
+src/load/skel_data.c:285 | skel_getBoneMatrix | frames | RENAME -> duration | = sko->duration, the animation's length in milliseconds (Skeleton.duration), not a frame count; the function comment's "(0 .. 1 of the frames frames)" should follow
+src/load/skel_data.c:286 | skel_getBoneMatrix | frame | RENAME -> animTime | duration x t: a time in ms compared with the keys' times (PosKey.time, ms), not a frame number
+src/load/skel_data.c:535 | ObjectList_poseBones | unit | RENAME -> toDegrees | k_57_2958f, as in skel_getBoneMatrix
+src/load/skel_data.c:541 | ObjectList_poseBones | frame | RENAME -> animTime | ol->animTick % (duration + 1): ObjectList.animTick is "the animation's time in milliseconds"
+src/load/skel_data.c:569 | ObjectList_poseBones | own | RENAME -> shape | = out->shape (the entry's Model, its centre carried through the matrix); "own" says nothing
+src/load/skel_data.c:647 | skel_loadAseFrom | keys | RENAME -> keyAt | a byte offset in the block where the next key list goes (its own comment), not keys or a key count (skel_loadFromFile calls the same offset `at`)
+src/load/space_pools.c:116 | space_addUnitTriangle | planes | RENAME -> plane | the one CollisionPlane space_insertTriangle returns (linked as lastPlane, put in node->item); not a pool or list
+src/load/space_pools.c:519 | space_buildUnit | own | RENAME -> modelview | the GL modelview matrix read when no matrix is given
+src/load/space_pools.c:531 | space_buildUnit | kind | RENAME -> planeFlags | 0x10 or 0: the triangles' CollisionPlane.flags (0x10 takes no marks) passed as space_addUnitTriangle's flags; prim->kind is the real kind in the same loop
+src/match/actor_frame.c:273 | actor_processFrame | player | RENAME -> record | &ST->playerRecords[AC->player]: the actor's PlayerRecord (typed alias pr), not a player/actor
+src/match/actor_frame.c:640 | actor_processFrame | speed | RENAME -> keyRamp | dt x AC->mobility (doubled boosting) = how far the key values ramp this frame (Player.mobility: "how fast the movement keys ramp"); used only as key_axis / key_ramp's step, while AC->speed is the real speed
+src/match/actor_frame.c:822 | actor_processFrame | side | RENAME -> forwardClamped | AC->forward clamped to -1 .. 1 (the forward speed) driving the legs' pose[4]; nothing sideways
+src/match/actor_frame.c:870 | actor_processFrame | seen | RENAME -> lockAnim | &actors[j].lockAnim: set 0.25 when the lock is made and counted down (the HUD lock box closing in); not a "seen" flag
+src/match/actor_frame.c:1064 | actor_processFrame | item | RENAME -> bullet | &AC->shotBullets[k]: a bullet slot (bullet_free / bullet_spawn / ST->bullets[*item]), not an item; also shadows the outer `item` (an actorItems index)
+src/match/actor_slots.c:38 | script_holdActor | target | RENAME -> held | &stage->heldActor (the actor held out of play); no target involved
+src/match/actor_slots.c:321 | (PartModel) | model_at | RENAME -> type_at | offsetof(PlayerRecord, parts[k]): where the part's TYPE index is in the record (its own comment says "the part's type")
+src/match/actor_slots.c:322 | (PartModel) | models | RENAME -> types | offsetof(Stage, headTypes ..): the part types' table ("the types' table in the stage")
+src/match/actor_slots.c:323 | (PartModel) | model_size | RENAME -> type_size | sizeof(HeadType ..): a type record's size
+src/match/actor_slots.c:325 | (PartModel) | data | RENAME -> shapes | offsetof(PlayerRecord, headShapes ..): the record's shape cache (passed as ObjectList_load's shapes, beside skels)
+src/match/actor_slots.c:326 | (PartModel) | self | RENAME -> list_at | offsetof(Player, headModel ..): the actor's ObjectList for the part
+src/match/actor_slots.c:327 | (PartModel) | limit | RENAME -> mem_size | sizeof Player.headModelMem ..: the list memory's size (ObjectList_load's size)
+src/match/actor_slots.c:336 | part_load | type | RENAME -> record | &STS->playerRecords[act->player]: the PlayerRecord (shape/skel caches and parts[] read from it), not a type
+src/match/actor_slots.c:337 | part_load | model | RENAME -> partType | the part's type record (HeadType ..: shapeCount/shapeNames read from it), not a model
+src/match/actor_slots.c:338 | part_load | pose | RENAME -> detail | = act->lowDetail, the detail level picking the type's shape set (the PartModel comment says so); no pose
+src/match/actor_slots.c:370 | actor_applySpawnRecord | player | RENAME -> localActor | STS->playerActor: an actor index (the local player's actor, the fatal message's "player actor slot")
+src/match/actor_slots.c:389 | actor_applySpawnRecord | radius | RENAME -> range | SR->range, squared into detectionRangeSq (the detection range)
+src/match/actor_slots.c:443 | actor_loadWeapon | type | RENAME -> record | (PlayerRecord *)&playerRecords[pl->player]: the player record holding items[slot]
+src/match/actor_slots.c:447 | actor_loadWeapon | self | RENAME -> listAt | offsetof(Player, weaponModel4/5/weaponModel): the slot's ObjectList offset in the actor
+src/match/actor_slots.c:503 | playerRecord_setPartColour | dir | RENAME -> suffix | "_T<p>", passed to shape_setTextureSuffix (the texture folder suffix); not a directory
+src/match/actor_slots.c:581 | actor_drawIntoView | light | RENAME -> faintMatrix | (u32)st->faintActorMatrix or 0: the extra matrix for a faint actor (Stage.lightMatrix was renamed faintActorMatrix); not a light (lights is the next local)
+src/match/actor_slots.c:929 | totals_agree | act | RENAME -> mine | (Player *)me, the stack actor recomputed by mech_stats; in this file `act` otherwise aliases the real actor, here AC is the real one
+src/match/actor_slots.c:963 | totals_agree | heat | RENAME -> powerUpLimit | k_30f compared with timers[0..3], the 30-s power-up timers (item_pickup sets 30); no heat
+src/match/frame_loops.c:157 | script_processTriggers | player | RENAME -> localActor | ST->playerActor: an actor index (actors[player].pos)
+src/match/frame_loops.c:477 | particle_update | size | RENAME -> radius | the address of the kind's light radius constant (3000 / 5000 ..) for lightRadius; its comment "where the size constant is" -> "where the light radius constant is"
+src/match/frame_loops.c:532 | item_pickup | last | RENAME -> bigPickup | 1 for an extended armour / shield or a power-up: then ST->lastPickup = i (Stage.lastPickup "taken last of the big pickups"); not the last item
+src/match/match_start.c:406 | stage_build | type | RENAME -> record | (u8 *)&st->playerRecords[t]: each player record's shape / skeleton sets
+src/match/teams.c:52 | scene_topPlayer | behind | RENAME -> leading | teamScores[0] < teamScores[1]: 1 when team 1 is AHEAD, and the returned player is of that team (the function comment: "the leading team"); the name says the opposite
+src/match/teams.c:75 | stage_refillLights | value | RENAME -> radius | (glow + 1) x 2500 passed to factors_addPointLight where particles pass their lightRadius: the light's radius
+src/match/weapons.c:14 | weapon_cycle | player | RENAME -> record | &stage->playerRecords[ac->player]: a PlayerRecord (items[] read)
+src/match/weapons.c:245 | bullet_init | w2de8 | RENAME -> speed | &w->velocity (ActorItem +0x2de8): an offset name left over; the weapon's bullet speed (life = distance / it, vel = it x dir)
+src/match/weapons.c:300 | bullet_init | target | RENAME -> hitPlane | rd->hitPlane: the CollisionPlane index the sender reported (-> BU->hit); not a target (homingTarget is the target)
+src/match/weapons.c:427 | beam | colour | RENAME -> texture | ST->effectTextures[4]: a texture id put in the strip record's texture word (r[13]); not a colour
+src/match/weapons.c:679 | home | deg | RENAME -> cosIndex | ftol(rate): tenths of a degree used as g_cosTable's index (the comment: "the cosine table g_cosTable's index"), not degrees
+src/menu/armc_keys.c:245 | armc_processInput | mode | RENAME -> state | = g_armcState (camera / state 0 .. 2); the page is g_armcMode, switched on in the same function; the function comment's "in its modes other than 0 / 1" -> "in its states other than 0 / 1"
+src/menu/armc_mech.c:117 | armc_giveShownActorWeapon | angle0 | RENAME -> pitch | BITS(ACTOR.nextPitch), put back into nextPitch
+src/menu/armc_mech.c:117 | armc_giveShownActorWeapon | angle1 | RENAME -> yaw | BITS(ACTOR.nextYaw), put back into nextYaw
+src/menu/armc_mech.c:118 | armc_giveShownActorWeapon | other | RENAME -> lastSlot | = ACTOR.lastWeaponSlot, selected first when slot > 3
+src/menu/armc_parts.c:91 | armc_readMechStats | player | RENAME -> record | &sc->playerRecords[A->player]: a PlayerRecord (parts[] read)
+src/menu/armc_parts.c:139 | armc_readPartPanels | player | RENAME -> record | &sc->playerRecords[...player]: a PlayerRecord
+src/menu/armc_misc.c:160 | armc_drawPreview3D | x44 | RENAME -> frameTime | BITS(scene->frameTime) passed as stage_setupView's last argument; an offset name left over
+src/menu/armc_misc.c:343 | menuState700_armCenter | zoom | RENAME -> countdown | the new g_unusedArmcViewCountdown (less frame time x 0.1, floor -2); never read for a zoom (the global was renamed from that idea)
+src/menu/armc_misc.c:379 | armc_open | colourA | RENAME -> bright | the four words copied into g_armcBright (the chosen tab's text colour)
+src/menu/armc_misc.c:379 | armc_open | colourB | RENAME -> dim | the four words copied into g_armcDim (the other tabs' text colour)
+src/menu/armc_misc.c:745 | armc_sendSelectionToNet | settings | RENAME -> itemSlots | (const int *)ADDR(g_savedMechItemSlot4): the six item slots (4, 5, weapons 0 .. 3) packed into g_roomMech; not settings (the function comment's "six settings" means the same slots)

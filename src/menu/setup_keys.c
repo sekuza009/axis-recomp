@@ -247,9 +247,9 @@ u32 (setup_topPageClicks)(void)
 	int right = g_rightClick;
 	if (!right)
 		return 0;
-	int allowed = g_tunnelRings;
-	if (allowed <= 0)
-		return allowed;
+	int rings = g_tunnelRings;
+	if (rings <= 0)
+		return rings;
 	sound_playMenu(0);
 	u32 r = menuCamera_setMove(4);   /* menuCamera_setMove */
 	g_nextScreen = 300;
@@ -264,13 +264,13 @@ u32 (setup_topPageClicks)(void)
    with its sound. Returns what the original leaves in eax (for a switch, its old or new value) */
 u32 (setup_graphicTabClicks)(void)
 {
-	u32 page = (*(u32 *)&g_setupCameraMode);
-	if (page == 1 || page == 0 || g_frameOpening)
-		return page;
+	u32 cameraMode = (*(u32 *)&g_setupCameraMode);
+	if (cameraMode == 1 || cameraMode == 0 || g_frameOpening)
+		return cameraMode;
 	if (g_rightClick)
 		g_setupCameraMode = 0;
 	if (!g_mouseClick)
-		return page;
+		return cameraMode;
 	u32 button = ((u32)setupGraphic_hitTest(g_mouseX, g_mouseY));   /* setupGraphic_hitTest */
 	u32 *edited = (u32 *)g_graphicEdited, old, mode;
 	switch (button) {
@@ -542,14 +542,14 @@ void (setup_bindKey)(int key)
 	int page = g_bindPage, row = g_bindRow;
 	int binding = page >= 0 && page <= 2 && (u32)row < 11 ? page_bindings[page][row] : -1;
 	if (binding >= 0) {
-		int *slot = (int *)(OBJ(g_controlsEdit) + binding * 8), none = g_dikNone;
-		if (slot[1] != none) {
-			slot[0] = key;
-			slot[1] = none;
-		} else if (slot[0] == none)
-			slot[0] = key;
-		else if (slot[0] != key)
-			slot[1] = key;
+		int *pair = (int *)(OBJ(g_controlsEdit) + binding * 8), none = g_dikNone;
+		if (pair[1] != none) {
+			pair[0] = key;
+			pair[1] = none;
+		} else if (pair[0] == none)
+			pair[0] = key;
+		else if (pair[0] != key)
+			pair[1] = key;
 	}
 	controls_fillPrimaryKeys();
 }

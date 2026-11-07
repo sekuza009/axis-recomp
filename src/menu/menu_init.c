@@ -138,7 +138,7 @@ u32 (replayList_open)(void)
 	return autoplay_listFiles();    /* autoplay_listFiles */
 }
 
-/* 0x430bf0: the front end's start-up: the chat history cleared and the colours set (menu_initColours), then six
+/* 0x430bf0: the front end's start-up: the input history cleared and the colours set (menu_initColours), then six
    progress steps (g_loadStep counted, frontEnd_drawProgress), each of the first five followed by a 2-frame wait
    (timer_waitFrames: 1/60 s frames) and one of menu_initMainOutlines, lobbyTop_initOutlines, room_initOutlines,
    setupTop_initOutlines, net_clearSlots. Only caller menuState100_intro. Returns the last progress drawing's eax */

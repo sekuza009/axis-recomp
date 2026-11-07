@@ -295,14 +295,14 @@ void (menu_drawFrameOpening)(int x0, int y0, int x1, int y1)
 	int dx = (x1 - x0) / 10, dy = (y1 - y0) / 10, n = g_frameCount;
 	long double grown = fmul_m((long double)(dy * n), &g_frameTime);
 	long double bottom = (long double)y0 + grown;
-	int right = ftol(fmul_m((long double)(dx * n), &g_frameTime));
+	int grownWidth = ftol(fmul_m((long double)(dx * n), &g_frameTime));
 	if ((long double)y1 < bottom || __builtin_isnan(bottom))
-		menu_drawRect(x0, y0, right + x0, y1, 1);
+		menu_drawRect(x0, y0, grownWidth + x0, y1, 1);
 	else
-		menu_drawRect(x0, y0, right + x0, ftol(grown) + y0, 1);
+		menu_drawRect(x0, y0, grownWidth + x0, ftol(grown) + y0, 1);
 	n = ++g_frameCount;
-	long double width = fmul_m((long double)(dx * n), &g_frameTime) + (long double)x0;
-	if (!((long double)x1 > width)) {
+	long double nextRight = fmul_m((long double)(dx * n), &g_frameTime) + (long double)x0;
+	if (!((long double)x1 > nextRight)) {
 		g_framePhase = 1;
 		g_frameCount = 0;
 		g_frameOpening = 0;

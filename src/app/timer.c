@@ -130,8 +130,8 @@ long double THISCALL (TimeSync_frameTime)(u8 *t)
 long double THISCALL (scene_averageFrameTime)(u8 *scene)
 {
 	Scene *sc = (Scene *)scene;
-	long double now = TimeSync_frameTime(scene + 0xc);
-	sc->frameTimes[sc->frameTimeNext] = (float)now;
+	long double dt = TimeSync_frameTime(scene + 0xc);
+	sc->frameTimes[sc->frameTimeNext] = (float)dt;
 	sc->frameTimeNext = (sc->frameTimeNext + 1) % 10;
 	long double sum = k_0f;   /* 0 */
 	for (int i = 0; i < 10; i++)

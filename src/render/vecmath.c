@@ -193,8 +193,8 @@ int (math_segmentSphere)(const float *p0, const float *p1, const float *dir, con
 		return 0;
 	X dot_b = (fmul_m(LD(by), &dir[1]) + fmul_m(bx_x, &dir[0])) + fmul_m(LD(bz), &dir[2]);
 	if (dot_b >= *K0) {
-		X len_b = (fmul_m(LD(bz), &bz) + fmul_m(LD(by), &by)) + fmul_m(LD(bx), &bx);
-		if (len_b >= r2)
+		X len2_b = (fmul_m(LD(bz), &bz) + fmul_m(LD(by), &by)) + fmul_m(LD(bx), &bx);
+		if (len2_b >= r2)
 			return 0;
 	}
 	X d2 = ((fmul_m(LD(az), &az) + fmul_m(LD(ay), &ay)) + fmul_m(LD(ax), &ax)) - fmul_m(LD(proj), &proj);

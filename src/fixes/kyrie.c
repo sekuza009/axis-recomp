@@ -19,7 +19,7 @@
    and the low-detail ones, 0x44 apart), the SERAPHIM part's number, the slot's unlock table */
 static const struct {
 	const char *slot;
-	u32 types, count, size, shapeNames, names, seraphim;
+	u32 types, count, size, shapeNames, nameCount, seraphim;
 } k_slots[5] = {
 	{ "HEAD", offsetof(Stage, headTypes), offsetof(Stage, headTypeCount), sizeof(HeadType), offsetof(HeadType, shapeNames), 8, 19 },
 	{ "CHEST", offsetof(Stage, chestTypes), offsetof(Stage, chestTypeCount), sizeof(ChestType), offsetof(ChestType, shapeNames), 8, 13 },
@@ -55,7 +55,7 @@ static void add_kyrie(u8 *stage)
 		memset(kyrie, 0, 0x40);
 		strcpy((char *)kyrie, "KYRIE\\");
 		strcat((char *)kyrie, k_slots[k].slot);
-		for (u32 i = 0; i < k_slots[k].names * 2; i++) {   /* the models, then the low-detail ones */
+		for (u32 i = 0; i < k_slots[k].nameCount * 2; i++) {   /* the models, then the low-detail ones */
 			char *name = (char *)kyrie + k_slots[k].shapeNames + i * 0x44;
 			size_t len = strlen(name);
 			if (!len || !strcmp(name, ".") || len + 7 >= 0x40)

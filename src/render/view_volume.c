@@ -753,7 +753,7 @@ void THISCALL (ViewVolume_draw)(u8 *vv, int mode, float b)
 	fog_set(fog, mapped);
 	render_depthSortTriangles(((u32 *)VV->triangleOrder), 0, VV->triangleOrderCount - 1);
 	render_depthSortBillboards(((u32 *)VV->quadOrderA), 0, VV->quadOrderACount - 1);
-	int ia = 0, ib = 0, triangles = 0;
+	int ia = 0, ib = 0, drawingTriangles = 0;
 	cur = -1;
 	glDisable(0xb44);
 	glDisable(GL_FOG);
@@ -762,12 +762,12 @@ void THISCALL (ViewVolume_draw)(u8 *vv, int mode, float b)
 	const float *q = VV->quadOrderACount > 0 ? ((const float *)VV->quadOrderA) : NULL;
 	while (a || q) {
 		if (a && (!q || !(fld_m(&a[1]) >= fld_m(&q[1])))) {
-			if (triangles != 1) {
+			if (drawingTriangles != 1) {
 				glEnd();
 				if (fog)
 					glEnable(GL_FOG);
 				glBegin(4);
-				triangles = 1;
+				drawingTriangles = 1;
 			}
 			const u32 *r = *(const u32 *const *)a;
 			if ((int)r[0] != cur) {
@@ -781,11 +781,11 @@ void THISCALL (ViewVolume_draw)(u8 *vv, int mode, float b)
 			ia++;
 			a = ia < VV->triangleOrderCount ? ((const float *)VV->triangleOrder) + ia * 2 : NULL;
 		} else {
-			if (triangles != 0) {
+			if (drawingTriangles != 0) {
 				glEnd();
 				glDisable(GL_FOG);
 				glBegin(GL_QUADS);
-				triangles = 0;
+				drawingTriangles = 0;
 			}
 			const u32 *r = *(const u32 *const *)q;
 			if ((int)r[0] != cur) {

@@ -71,9 +71,9 @@ static inline double f64(long double x)
    leaves eax to callers that ignore it */
 void (menu_frame)(void)
 {
-	long double blink = FADD(g_frameTime, g_menuRepeatClock);
-	g_menuRepeatClock = blink;
-	if (blink > k_1000000f)
+	long double repeatClock = FADD(g_frameTime, g_menuRepeatClock);
+	g_menuRepeatClock = repeatClock;
+	if (repeatClock > k_1000000f)
 		g_menuRepeatClock = 100.0f;
 	if (g_screen != g_lastScreen)
 		menu_enterState();
@@ -368,10 +368,10 @@ void THISCALL (match_combatInput)(u8 *s)
 			PATCHED_CALL(0x49ddcc, void, void *)(s);   /* the patch DLL's menu_nav; its block then jumps on to 0x49de23 */
 #endif
 		else {
-			const float *down = (const float *)ADDR(k_m50f), *up = (const float *)ADDR(k_50f);
-			if (!(SC->mouseDy >= *down) || !(SC->mouseDx >= *down))
+			const float *low = (const float *)ADDR(k_m50f), *high = (const float *)ADDR(k_50f);
+			if (!(SC->mouseDy >= *low) || !(SC->mouseDx >= *low))
 				SC->menuKeys[0] = 1;
-			if (SC->mouseDy > *up || SC->mouseDx > *up)
+			if (SC->mouseDy > *high || SC->mouseDx > *high)
 				SC->menuKeys[1] = 1;
 		}
 		if (pressed2((OBJ(g_controls) + 0x50), (OBJ(g_controls) + 0x54)))
@@ -453,7 +453,7 @@ u32 THISCALL (match_mechTestFrame)(u8 *s)
 	}
 	u8 *actor = (u8 *)&SC->players[SC->localPlayer];
 	Player *act = (Player *)actor;
-	PlayerRecord *player = &SC->playerRecords[act->player];
+	PlayerRecord *playerRecord = &SC->playerRecords[act->player];
 	for (int k = 0; k < 9; k++)
 		S(int, k_mechTestKeys[k][1]) = input_asyncKeyDown(k_mechTestKeys[k][0]) ? 1 : 0;
 	SC->weaponKey = -1;
@@ -486,7 +486,7 @@ u32 THISCALL (match_mechTestFrame)(u8 *s)
 	SC->partStepDownPressed = input_asyncKeyPressed('Z') || (input_asyncKeyDown(0x10) && input_asyncKeyDown('Z'));
 	SC->partStepUpPressed = input_asyncKeyPressed('X') || (input_asyncKeyDown(0x10) && input_asyncKeyDown('X'));
 	scene_averageFrameTime(s);
-	float slow = f32(fld_m((const float *)ADDR(k_1f)) - fmul_m(fld_m(&SC->frameTime), k_0_6f));
+	float zoomFactor = f32(fld_m((const float *)ADDR(k_1f)) - fmul_m(fld_m(&SC->frameTime), k_0_6f));
 	float turn = f32(fmul_m(fld_m(&SC->frameTime), k_750f));
 	long double look = fmul_m(fld_m(&SC->frameTime), (const float *)ADDR(k_100f));
 	float yaw = f32(look * SC->mouseDx), pitch = f32(look * SC->mouseDy);
@@ -518,13 +518,13 @@ u32 THISCALL (match_mechTestFrame)(u8 *s)
 	}
 	float *zoom = (float *)&SC->cameraSettings[2][SC->cameraMode];
 	if (SC->zoomInHeld) {
-		*zoom = f32(fmul_m(fld_m(&slow), zoom));
+		*zoom = f32(fmul_m(fld_m(&zoomFactor), zoom));
 		if (!(*zoom >= k_500f))
 			GAME_VAR(u32, zoom) = 0x43fa0000;   /* 500 */
 	}
 	zoom = (float *)&SC->cameraSettings[2][SC->cameraMode];
 	if (SC->zoomOutHeld) {
-		*zoom = f32(fdiv_m(fld_m(zoom), &slow));
+		*zoom = f32(fdiv_m(fld_m(zoom), &zoomFactor));
 		if (*zoom > k_10000f)
 			GAME_VAR(u32, zoom) = 0x461c4000;   /* 10000 */
 	}
@@ -537,19 +537,19 @@ u32 THISCALL (match_mechTestFrame)(u8 *s)
 	int item = -1;
 	if (SC->partStepDownPressed == 1) {
 		for (int k = 0; k < 5; k++)
-			if (S(int, k_partSteps[k][0]) == 1 && GAME_VAR(int, ((u8 *)player) + k_partSteps[k][1]) > 0)
-				GAME_THISCALL(k_partSteps[k][2], int, void *, int, int)(stage, act->player, GAME_VAR(int, ((u8 *)player) + k_partSteps[k][1]) - 1);
+			if (S(int, k_partSteps[k][0]) == 1 && GAME_VAR(int, ((u8 *)playerRecord) + k_partSteps[k][1]) > 0)
+				GAME_THISCALL(k_partSteps[k][2], int, void *, int, int)(stage, act->player, GAME_VAR(int, ((u8 *)playerRecord) + k_partSteps[k][1]) - 1);
 		if (SC->fKeys[5] == 1) {
-			int it = player->items[act->slot];
+			int it = playerRecord->items[act->slot];
 			if (it > 0)
 				item = it - 1;
 		}
 	} else if (SC->partStepUpPressed == 1) {
 		for (int k = 0; k < 5; k++)
-			if (S(int, k_partSteps[k][0]) == 1 && GAME_VAR(int, ((u8 *)player) + k_partSteps[k][1]) < S(int, k_partSteps[k][3]) - 1)
-				GAME_THISCALL(k_partSteps[k][2], int, void *, int, int)(stage, act->player, GAME_VAR(int, ((u8 *)player) + k_partSteps[k][1]) + 1);
+			if (S(int, k_partSteps[k][0]) == 1 && GAME_VAR(int, ((u8 *)playerRecord) + k_partSteps[k][1]) < S(int, k_partSteps[k][3]) - 1)
+				GAME_THISCALL(k_partSteps[k][2], int, void *, int, int)(stage, act->player, GAME_VAR(int, ((u8 *)playerRecord) + k_partSteps[k][1]) + 1);
 		if (SC->fKeys[5] == 1) {
-			int it = player->items[act->slot];
+			int it = playerRecord->items[act->slot];
 			if (it < SC->actorItemCount - 1)
 				item = it + 1;
 		}
@@ -980,13 +980,13 @@ static int run_down(u8 *s, u32 offset)
 	return !(v >= 0);
 }
 
-/* the free camera / follow keys: held pairs and the flag each sets */
+/* the replay viewer's held controls: each binding's two keys and the hold flag they set */
 static const u32 k_replayHeld[7][3] = { { (OBJ(g_controls) + 0x30), (OBJ(g_controls) + 0x34), offsetof(Scene, holdAltitude) }, { ADDR(g_keyStepLeft), (OBJ(g_controls) + 0x14), offsetof(Scene, holdStepLeft) }, { ADDR(g_keyStepRight), (OBJ(g_controls) + 0x1c), offsetof(Scene, holdStepRight) },
                                         { ADDR(g_keyForward), (OBJ(g_controls) + 0x4), offsetof(Scene, holdForward) }, { ADDR(g_keyBackward), (OBJ(g_controls) + 0xc), offsetof(Scene, holdBackward) }, { (OBJ(g_controls) + 0x40), (OBJ(g_controls) + 0x44), offsetof(Scene, holdUp) },
                                         { (OBJ(g_controls) + 0x48), (OBJ(g_controls) + 0x4c), offsetof(Scene, holdDown) } };
 /* the camera preset keys (presets 1 .. 9, 0) */
 static const u32 k_presetKeys[10] = { ADDR(g_dikNumpad1), ADDR(g_dikNumpad2), ADDR(g_dikNumpad3), ADDR(g_dikNumpad4), ADDR(g_dikNumpad5), ADDR(g_dikNumpad6), ADDR(g_dikNumpad7), ADDR(g_dikNumpad8), ADDR(g_dikNumpad9), ADDR(g_dikNumpad0) };
-/* the eight lines of a debug marker's star: the far corner's signs */
+/* the eight lines of a map light's marker star (markLights): each line's far end's signs (+-100) */
 static const signed char k_star[8][3] = { { 1, 1, 1 }, { -1, -1, -1 }, { 1, -1, 1 }, { -1, 1, -1 }, { -1, 1, 1 }, { 1, -1, -1 }, { -1, -1, 1 }, { 1, 1, -1 } };
 
 /* 0x487f00 (thiscall on the game object): the replay viewer's frame. On its first frame (stateFrames 0) the camera
@@ -1439,40 +1439,40 @@ static void bot_spawns(u8 *s)
 {
 	for (int j = 0; j < SC->mapActorCount; j++) {
 		const SpawnRecord *rec = &SCENE_STAGE(s)->mapActors[j];
-		int state = SC->players[j].active;
-		if (rec->bot != 1 || !(state == 0 || (state == 1 && SC->players[j].state == 3)))
+		int active = SC->players[j].active;
+		if (rec->bot != 1 || !(active == 0 || (active == 1 && SC->players[j].state == 3)))
 			continue;
-		PlayerRecord *player = &SC->playerRecords[rec->player];
+		PlayerRecord *playerRecord = &SC->playerRecords[rec->player];
 		if (SC->teamGame == 1)
-			team_colours(s, rec->player, player->team);
+			team_colours(s, rec->player, playerRecord->team);
 		u32 copy[0x17];
 		memcpy(copy, rec, 0x5c);
 		const u8 *at = spawn_point(s, 1);
 		memcpy(copy + 1, at ? at : (const u8 *)SC->mapStart, 12);
 		actor_applySpawnRecord((u8 *)SCENE_STAGE(s), j, copy);
 		if (SC->players[j].inPlay == 0)
-			msg_playerJoinedTeam((Scene *)s, GAME_VAR(int, rec), player->team);
+			msg_playerJoinedTeam((Scene *)s, GAME_VAR(int, rec), playerRecord->team);
 	}
 }
 
-/* the camera looking back at the actor t's killer (lastAttacker) from 2 heights behind its head (deathPos) */
+/* the camera looking back at the actor t's killer (lastAttacker) from 2 heights behind where it died (deathPos) */
 static void killer_view(u8 *s, const u8 *t)
 {
 	Player *act = (Player *)t;
-	float *cam = SC->cameraPos, *head = (float *)((const Player *)t)->deathPos, d[3], p[3];
+	float *cam = SC->cameraPos, *diedAt = (float *)((const Player *)t)->deathPos, d[3], p[3];
 	int k = act->lastAttacker;
 	for (int j = 0; j < 3; j++)
-		d[j] = f32(FSUB(((Player *)ACTOR_AT(k))->pos[j], head[j]));
+		d[j] = f32(FSUB(((Player *)ACTOR_AT(k))->pos[j], diedAt[j]));
 	Vec3_normalize(d);
 	long double r = FMUL(((const Player *)t)->radius, k_m2f);   /* -2 heights */
 	for (int j = 0; j < 3; j++)
 		p[j] = f32(fmul_m(r, &d[j]));
 	for (int j = 0; j < 3; j++)
-		p[j] = f32(FADD(p[j], head[j]));
-	if (collision_rayTrace((u8 *)SCENE_STAGE(s), head, p, cam) == 0)
+		p[j] = f32(FADD(p[j], diedAt[j]));
+	if (collision_rayTrace((u8 *)SCENE_STAGE(s), diedAt, p, cam) == 0)
 		memcpy(cam, p, 12);
 	for (int j = 0; j < 3; j++)
-		d[j] = f32(FSUB(cam[j], head[j]));
+		d[j] = f32(FSUB(cam[j], diedAt[j]));
 	if (Vec3_normalize(d) > 300.0f) {
 		long double dx = FMUL(d[0], k_300f);
 		float dy = f32(FMUL(d[1], k_300f)), dz = f32(FMUL(d[2], k_300f));

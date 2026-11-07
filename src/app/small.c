@@ -404,8 +404,8 @@ void THISCALL (anim_setTime)(u8 *anim, int i, float t)
 	if (!ol->skeletons || i >= ol->skelCount)
 		return;
 	ol->skel = i;
-	const int *frame = ((int **)ol->skeletons)[i];
-	ol->animTick = ftol(fmul_m((long double)frame[8], &t));
+	const int *skeleton = ((int **)ol->skeletons)[i];
+	ol->animTick = ftol(fmul_m((long double)skeleton[8], &t));
 }
 
 /* 0x4722e0: the stage's cull margin (cullMargin, the float's bits copied) set, and viewDepth = -v x
@@ -867,18 +867,18 @@ void THISCALL (actor_setActorTypeItemInfoBy)(Stage *stage, int p, int slot, int 
 {
 	u8 *scene = (u8 *)stage;
 	Stage *st = (Stage *)scene;
-	PlayerRecord *type = &st->playerRecords[p];
+	PlayerRecord *record = &st->playerRecords[p];
 	static const int fixed[5] = { 3, 5, 0x24, 0x19, 0x16 };
 	unsigned mode = st->gameType - 2;
 	if (mode <= 9)
 		item = slot == 0 ? fixed[mode / 2] : mode >= 8 && slot == 1 ? 0x17 : -1;
 	if (item >= 0)
-		strcpy(((PlayerRecord *)RELOC(type))->itemNames[slot], (const char *)(u8 *)&st->actorItems[item]);
+		strcpy(((PlayerRecord *)RELOC(record))->itemNames[slot], (const char *)(u8 *)&st->actorItems[item]);
 	else
-		type->itemNames[slot][0] = 0;
+		record->itemNames[slot][0] = 0;
 	if (item >= st->actorItemCount)
 		sys_fatalError((char *)OBJ(g_logStage), (const char *)STR(0x4c76f0, "invalid itemIndex(%d) - setActorTypeI..."), item);
-	type->items[slot] = item;
+	record->items[slot] = item;
 	for (int i = 0; i < st->actorCount; i++)
 		if (st->actors[i].player == p)
 			actor_loadWeapon(scene, i, slot, st->actors[i].variantLoaded);

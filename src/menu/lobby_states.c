@@ -292,18 +292,18 @@ void (login_takeAccountRecord)(void)
 		if (!(c->first[2] >= k_0f))
 			BITS(c->first[2]) = 0;
 	}
-	static const u32 rect[7][2] = { { ADDR(g_pilotLevel), (OBJ(g_profileReply) + 0xef) }, { ADDR(g_pilotExp), (OBJ(g_profileReply) + 0xff) }, { ADDR(g_pilotPower), (OBJ(g_profileReply) + 0x103) },
+	static const u32 replyStats[7][2] = { { ADDR(g_pilotLevel), (OBJ(g_profileReply) + 0xef) }, { ADDR(g_pilotExp), (OBJ(g_profileReply) + 0xff) }, { ADDR(g_pilotPower), (OBJ(g_profileReply) + 0x103) },
 	                                { ADDR(g_pilotKillRate), (OBJ(g_profileReply) + 0x107) }, { ADDR(g_pilotKills), (OBJ(g_profileReply) + 0xf7) }, { ADDR(g_pilotDeaths), (OBJ(g_profileReply) + 0xfb) },
 	                                { ADDR(g_pilotGames), (OBJ(g_profileReply) + 0xf3) } };
 	for (int k = 0; k < 7; k++)
-		GAME_VAR(int, rect[k][0]) = GAME_VAR(int, rect[k][1]);
+		GAME_VAR(int, replyStats[k][0]) = GAME_VAR(int, replyStats[k][1]);
 	room_copyAccountRecord();
 	memset((void *)OBJ(g_ladderName), 0, 7 * 4 + 2);
 	strcpy(g_ladderName, g_ladderId);
-	static const u32 title[6][2] = { { ADDR(g_ladderLevel), ADDR(g_pilotLevel) }, { ADDR(g_ladderExp), ADDR(g_pilotExp) }, { ADDR(g_ladderKills), ADDR(g_pilotKills) },
+	static const u32 ladderStats[6][2] = { { ADDR(g_ladderLevel), ADDR(g_pilotLevel) }, { ADDR(g_ladderExp), ADDR(g_pilotExp) }, { ADDR(g_ladderKills), ADDR(g_pilotKills) },
 	                                 { ADDR(g_ladderDeaths), ADDR(g_pilotDeaths) }, { ADDR(g_ladderGames), ADDR(g_pilotGames) }, { ADDR(g_ladderPower), ADDR(g_pilotPower) } };
 	for (int k = 0; k < 6; k++)
-		GAME_VAR(int, title[k][0]) = GAME_VAR(int, title[k][1]);
+		GAME_VAR(int, ladderStats[k][0]) = GAME_VAR(int, ladderStats[k][1]);
 	mech_unpackFromRecord();
 	g_bestLevelNet = g_pilotLevel;
 	g_roomConnected = 1;
@@ -560,10 +560,10 @@ u32 (room_leave)(void)
    arenaUpdateNotice_clicks. Returns what the original leaves in eax */
 u32 (createUpdateNotice_clicks)(void)
 {
-	static const u32 panels[5] = { ADDR(g_editingNewArenaName), ADDR(g_editingNewArenaFragLimit), ADDR(g_editingNewArenaTimeLimit), ADDR(g_typingArenaPassword), ADDR(g_frameOpening) };
+	static const u32 busyFlags[5] = { ADDR(g_editingNewArenaName), ADDR(g_editingNewArenaFragLimit), ADDR(g_editingNewArenaTimeLimit), ADDR(g_typingArenaPassword), ADDR(g_frameOpening) };
 	for (int k = 0; k < 5; k++)
-		if (GAME_VAR(int, panels[k]))
-			return GAME_VAR(u32, panels[k]);
+		if (GAME_VAR(int, busyFlags[k]))
+			return GAME_VAR(u32, busyFlags[k]);
 	if (g_rightClick)
 		g_arenaUpdateNotice = 0;
 	if (!g_mouseClick)
@@ -890,9 +890,9 @@ u32 (lobby_topPageClicks)(void)
 	int right = g_rightClick;
 	if (!right)
 		return 0;
-	int allowed = g_tunnelRings;
-	if (allowed <= 0)
-		return allowed;
+	int rings = g_tunnelRings;
+	if (rings <= 0)
+		return rings;
 	sound_playMenu(0);
 	return to_main_menu();
 }
@@ -902,12 +902,12 @@ u32 (lobby_topPageClicks)(void)
    it, D resets the name to the default (arena_defaultPlayer). Returns what the original leaves in eax */
 u32 (lobbyPlayer_keys)(void)
 {
-	u32 page = (*(u32 *)&g_arenaCameraMode);
-	if (page == 1 || page == 0 || g_frameOpening)
-		return page;
+	u32 mode = (*(u32 *)&g_arenaCameraMode);
+	if (mode == 1 || mode == 0 || g_frameOpening)
+		return mode;
 	if (g_typingArenaPlayerName) {
 		if (g_textFieldOpen)
-			return page;
+			return mode;
 		const char *typed = g_inputLine;
 		u32 length = strlen(typed);
 		g_typingArenaPlayerName = 0;
@@ -1027,9 +1027,9 @@ u32 (arena_startFromLauncher)(void)
    original leaves in eax */
 u32 (hostError_clicks)(void)
 {
-	u32 busy = (*(u32 *)&g_editingNewArenaName);
-	if (busy || g_editingNewArenaFragLimit || g_editingNewArenaTimeLimit || g_typingArenaPassword || g_frameOpening)
-		return busy;
+	u32 editingName = (*(u32 *)&g_editingNewArenaName);
+	if (editingName || g_editingNewArenaFragLimit || g_editingNewArenaTimeLimit || g_typingArenaPassword || g_frameOpening)
+		return editingName;
 	if (g_rightClick) {
 		g_hostErrorBox = 0;
 		return 0;
@@ -1069,7 +1069,7 @@ u32 (arena_takeHostAnswer)(void)
 	int state = g_hostAnswer;
 	if (state == 2)
 		return 2;
-	const u8 *me = (const u8 *)OBJ(g_arenaName);
+	const u8 *arena = (const u8 *)OBJ(g_arenaName);
 	if (state == 1) {
 		g_connectionAwaited = 0;
 		g_leavingForMatch = 1;
@@ -1077,15 +1077,15 @@ u32 (arena_takeHostAnswer)(void)
 		music_stop();
 		g_arenaCameraMode = 0;
 		GAME_FN(dplay_openConnection, 0x452ec0, void, int, int)(0, 0);   /* dplay_openConnection */
-		dplay_host(me, (const void *)OBJ(g_cfgPlayerName),
-			(int)(signed char)me[0x22] << 8 | (int)(signed char)me[0x20], (signed char)me[0x21], (signed char)me[0x23],
-			me[0x24], me[0x25], (*(u32 *)&g_playerCorporation));   /* dplay_host: host */
-		g_mapIndex = (signed char)me[0x20];
-		memcpy((void *)OBJ(g_gameTitle), me, 32);
-		g_mapRotation = (signed char)me[0x22];
-		g_chosenGameMode = (signed char)me[0x23];
-		g_fragLimit = me[0x24];
-		g_timeLimit = me[0x25];
+		dplay_host(arena, (const void *)OBJ(g_cfgPlayerName),
+			(int)(signed char)arena[0x22] << 8 | (int)(signed char)arena[0x20], (signed char)arena[0x21], (signed char)arena[0x23],
+			arena[0x24], arena[0x25], (*(u32 *)&g_playerCorporation));   /* dplay_host: host */
+		g_mapIndex = (signed char)arena[0x20];
+		memcpy((void *)OBJ(g_gameTitle), arena, 32);
+		g_mapRotation = (signed char)arena[0x22];
+		g_chosenGameMode = (signed char)arena[0x23];
+		g_fragLimit = arena[0x24];
+		g_timeLimit = arena[0x25];
 		state = g_hostAnswer;
 		g_arenaGameSetUp = 1;
 	}
@@ -1470,15 +1470,15 @@ static void record_send(u32 rate, int name)
 	packet->exp = R_EXP;
 	packet->power = f32(fld_m(&R_POWER));
 	packet->level = level_fromPoints(R_EXP);
-	static const u32 kept[2] = { ADDR(g_pilotLevel), ADDR(g_pilotLevelKept) };
+	static const u32 copies[2] = { ADDR(g_pilotLevel), ADDR(g_pilotLevelKept) };
 	for (int k = 0; k < 2; k++) {
-		GAME_VAR(int, kept[k] + offsetof(PilotStats, games)) = R_GAMES;
-		GAME_VAR(int, kept[k] + offsetof(PilotStats, kills)) = R_KILLS;
-		GAME_VAR(int, kept[k] + offsetof(PilotStats, deaths)) = R_DEATHS;
-		GAME_VAR(int, kept[k] + offsetof(PilotStats, exp)) = R_EXP;
-		GAME_VAR(int, kept[k] + offsetof(PilotStats, level)) = (signed char)level_fromPoints(R_EXP);
-		GAME_VAR(u32, kept[k] + offsetof(PilotStats, killRate)) = rate;
-		GAME_VAR(u32, kept[k] + offsetof(PilotStats, power)) = (*(u32 *)&R_POWER);
+		GAME_VAR(int, copies[k] + offsetof(PilotStats, games)) = R_GAMES;
+		GAME_VAR(int, copies[k] + offsetof(PilotStats, kills)) = R_KILLS;
+		GAME_VAR(int, copies[k] + offsetof(PilotStats, deaths)) = R_DEATHS;
+		GAME_VAR(int, copies[k] + offsetof(PilotStats, exp)) = R_EXP;
+		GAME_VAR(int, copies[k] + offsetof(PilotStats, level)) = (signed char)level_fromPoints(R_EXP);
+		GAME_VAR(u32, copies[k] + offsetof(PilotStats, killRate)) = rate;
+		GAME_VAR(u32, copies[k] + offsetof(PilotStats, power)) = (*(u32 *)&R_POWER);
 	}
 	net_send(0x11, 0x65);
 }

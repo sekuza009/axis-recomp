@@ -315,8 +315,8 @@ void (armc_drawWeaponsScreen)(void)
 		picture(x + 0x10, y + 0x11c, x + 0x90, y + 0x158);
 		TEXT(white);
 		armc_drawText(x + 5, y + 0x158, (const char *)OBJ(g_viewedPart));
-		int part = g_armcCursor;
-		int type = g_armcSlot > 3 ? (g_extraListTable)[part] : (g_weaponListTable)[part];
+		int cursor = g_armcCursor;
+		int type = g_armcSlot > 3 ? (g_extraListTable)[cursor] : (g_weaponListTable)[cursor];
 		TEXT(white);
 		armc_drawText(x + 5, y + 0x16a, (const char *)(MSG(711, "HV-PISTOL") + type * 0x80));
 	}
@@ -353,20 +353,20 @@ void (armc_drawWeaponsScreen)(void)
 	char text[50] = { 0 };
 	strcpy(text, (const char *)(MSG(321, "HAND") + PART->slotType * 0x80));
 	armc_drawTextRight(vx, y + 8, text);
-	char kind[50] = { 0 };
-	strcpy(kind, (const char *)(MSG(323, "30mm") + PART->ammoType * 0x80));
-	armc_drawTextRight(vx, y + 0x18, kind);
+	char ammoName[50] = { 0 };
+	strcpy(ammoName, (const char *)(MSG(323, "30mm") + PART->ammoType * 0x80));
+	armc_drawTextRight(vx, y + 0x18, ammoName);
 	stat_int(vx, y + 0x28, PART->ammoPerShot, MSG(756, "cell"));
 	stat_int(vx, y + 0x38, PART->burst, MSG(758, "Round"));
-	char name[50] = { 0 };
-	strcpy(name, (const char *)(MSG(327, "IMPACT") + PART->damageType * 0x80));
-	armc_drawTextRight(vx, y + 0x48, name);
+	char damageName[50] = { 0 };
+	strcpy(damageName, (const char *)(MSG(327, "IMPACT") + PART->damageType * 0x80));
+	armc_drawTextRight(vx, y + 0x48, damageName);
 	/* the sixth with the pilot's skill (of the part's kind) in percent of it as a bonus */
 	char value[50] = { 0 }, bonus[16];
 	itoa(PART->damage, value, 10);
 	static const u8 skill[5] = { 0, 0, 1, 2, 3 };   /* the profile's stat by kind; above 3 the last */
-	int kind_of = (unsigned)PART->ammoType <= 3 ? PART->ammoType : 4;
-	long double b = fmul_m((long double)((CharacterProfile *)g_characterProfiles)[g_selectedCharacter].stats[skill[kind_of]], (const float *)ADDR(k_0_01f));
+	int ammoKind = (unsigned)PART->ammoType <= 3 ? PART->ammoType : 4;
+	long double b = fmul_m((long double)((CharacterProfile *)g_characterProfiles)[g_selectedCharacter].stats[skill[ammoKind]], (const float *)ADDR(k_0_01f));
 	b *= (long double)PART->damage;
 	if (b >= k_0f)
 		sprintf(bonus, (const char *)STR(0x4b02f0, " +%d"), ftol(b));

@@ -19,7 +19,7 @@ typedef struct {
    light falling off with the square of the distance */
 typedef struct {
 	u32 _00, _04;
-	int type;
+	int kind;
 	u8 colour[4];   /* +0xc */
 	float pos[3];   /* +0x10 */
 	float dir[3];   /* +0x1c */
@@ -84,7 +84,7 @@ void (shape_getShadingColorBufferBy)(u8 *out, int first, const Part *part, const
 		const Light *l = (const Light *)(factors + 4) + i;
 		int R = l->colour[0], G = l->colour[1], B = l->colour[2];
 		float p[3], d[3];
-		switch (l->type) {
+		switch (l->kind) {
 		case 0:   /* ambient */
 			if (first == 1) {
 				for (int j = 0; j < part->count; j++)
@@ -193,7 +193,7 @@ void (shape_getShadingColorBufferBy)(u8 *out, int first, const Part *part, const
 			break;
 		}
 		default:
-			sys_errorTerminate((const char *)STR(0x4c4a4c, "light factor type(%d) not yet impleme..."), l->type);
+			sys_errorTerminate((const char *)STR(0x4c4a4c, "light factor type(%d) not yet impleme..."), l->kind);
 		}
 	}
 }
@@ -253,10 +253,10 @@ void THISCALL (light_computeLayerLightBy)(Stage *stage, u8 *layer, u8 *colours, 
 		if (gl->water == 1) {
 			const float *above = gl->kind == 1 ? &k_m1f : &k_1f;
 			int i = light_level(MUL(above, &dir[1]));
-			u8 sky[4];
-			light_mix(sky, light, i, first == 1 ? NULL : (const u8 *)gl->waterColours);
+			u8 waterColour[4];
+			light_mix(waterColour, light, i, first == 1 ? NULL : (const u8 *)gl->waterColours);
 			for (int k = 0; k < 12; k++)
-				memcpy(&gl->waterColours[k], sky, 4);
+				memcpy(&gl->waterColours[k], waterColour, 4);
 		}
 		first = 0;
 	}
@@ -366,8 +366,8 @@ void THISCALL (ground_buildDrawLists)(u8 *s, void *view, float h)
 				water_point(s, layer, water, at, tex_at, v, angle);
 			}
 		u32 out = 0;
-		float r2 = f32(fmul_m(fld_m(&h), k_m1_5f));
-		memcpy(&out, &r2, 4);
+		float ringRadius = f32(fmul_m(fld_m(&h), k_m1_5f));
+		memcpy(&out, &ringRadius, 4);
 		for (int k = 0, angle = 0; k < 8; k++, angle += 450) {
 			float v[3];
 			v[1] = f32(fld_m(&gl->origin[1]));
