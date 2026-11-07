@@ -10,6 +10,7 @@
 #define WIDE_H
 #include "axis.h"
 
+#ifndef AXIS_NATIVE   /* (the native build: only the HUD parts below, for fixes/hud.c) */
 typedef struct {
 	int size;                          /* sizeof (Wide): the two sides were built from the same layout */
 	const volatile int *menuFix;       /* the menus' full-screen effects are on (menu43 and its hooks installed) */
@@ -47,6 +48,7 @@ typedef struct {
 void *wide_callSite(u32 site);
 /* 1 when the patch DLL's rewritten block at `at` (whose call is at `site`) is in; else code_matches(at, pattern) */
 int wide_callAdded(u32 site, u32 at, const char *pattern);
+#endif
 
 /* what the main HUD's vertices are anchored to on a screen wider than 4:3 (hudPart) */
 enum {
@@ -59,10 +61,12 @@ enum {
 	HUD_CORNER     /* fixed 64-pixel marks: sized in HUD units, at the top right corner of the HUD area */
 };
 
+#ifndef AXIS_NATIVE
 extern const Wide *g_wide;
 
 /* 1 when the rebuild at addr carries the patch DLL's in-memory change to that function (so it replaces the
    patched original); both hook installers (recomp.c, standalone/main.c) ask this */
 int wide_carries(u32 addr);
+#endif
 
 #endif

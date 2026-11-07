@@ -116,9 +116,13 @@ static const GUID IID_IUPnPNAT_  = {0xb171c812,0xcc76,0x485a,{0x94,0xd8,0xb6,0xb
 static char g_server[128], g_dir[MAX_PATH];
 static int g_port = 2020, g_mainport = 2020, g_log = 0, g_local = 1, g_hubport = 2300, g_discport = 2301, g_upnp = 1;
 static CRITICAL_SECTION g_logcs;
+#ifdef AXIS_NATIVE   /* (the native build reads the fixes' settings itself: standalone/platform.c) */
+static int g_fakew, g_fakeh;
+#else
 static int g_hudtrace, g_fakew, g_fakeh, g_hud43 = 1, g_watch, g_menu43 = 1, g_sharptext = 1;
 static double g_hudaspect = 16.0 / 9.0;
 static double g_menusens = 1.0;
+#endif
 
 static void logf(const char *fmt, ...) {
     if (!g_log) return;
@@ -151,6 +155,7 @@ static void load_config(void) {
     g_discport = GetPrivateProfileIntA("net", "discport", g_hubport + 1, ini);
     g_upnp = GetPrivateProfileIntA("net", "upnp", 1, ini);
     g_log = GetPrivateProfileIntA("net", "log", 0, ini);
+#ifndef AXIS_NATIVE
     g_hudtrace = GetPrivateProfileIntA("net", "hudtrace", 0, ini);
     g_watch = GetPrivateProfileIntA("net", "watch", 0, ini);
     g_hud43 = GetPrivateProfileIntA("hud", "proportional", 1, ini);
@@ -162,6 +167,7 @@ static void load_config(void) {
     char asp[32];  /* widest area the HUD spreads over; 0 = the whole screen */
     GetPrivateProfileStringA("hud", "maxaspect", "1.7778", asp, sizeof asp, ini);
     g_hudaspect = atof(asp);
+#endif
     char fake[32];  /* debug: fakeres=3440x1440 makes DESKTOP mode use that size (to preview other aspect ratios) */
     GetPrivateProfileStringA("net", "fakeres", "", fake, sizeof fake, ini);
     if (sscanf(fake, "%dx%d", &g_fakew, &g_fakeh) != 2 || g_fakew <= 0 || g_fakeh <= 0) g_fakew = g_fakeh = 0;
@@ -1128,6 +1134,7 @@ static void *lobby_vtbl[] = {
     LB_GetConnectionSettings, LU, LU, LU, LU, LU, LB_CreateCompoundAddress, LU, LU, LU, LU
 };
 
+#ifndef AXIS_NATIVE   /* (the native build: no patched call sites - the game calls its fixes itself) */
 /* ------------------------------------------------------------------ call sites
    The game's call instructions this layer retargets, and the ones its rewritten blocks add (from 0), with the
    function each calls in the game as shipped. In the game (and the harness) a retarget rewrites the instruction;
@@ -1227,6 +1234,7 @@ static void *__cdecl call_site(DWORD at) {
     return s->to ? s->to : s->from ? (void *)IMG(s->from) : NULL;
 }
 
+#endif
 /* ------------------------------------------------------------------ hooks */
 typedef HRESULT (WINAPI *COCREATE)(REFCLSID, void *, DWORD, REFIID, void **);
 typedef DWORD (WINAPI *ICMPSEND)(HANDLE, DWORD, void *, WORD, void *, void *, DWORD, DWORD);
@@ -1288,6 +1296,7 @@ static DWORD WINAPI hook_IcmpSendEcho(HANDLE h, DWORD dest, void *req, WORD reqs
     return 1;
 }
 
+#ifndef AXIS_NATIVE   /* (the native build: the ending movie, HUD, menus, input, text and KYRIE fixes are in src/fixes and standalone/platform.c) */
 /* ------------------------------------------------------------------ ending movie */
 static LRESULT CALLBACK movie_wndproc(HWND w, UINT m, WPARAM wp, LPARAM lp) {
     if (m == WM_SETCURSOR) { SetCursor(NULL); return TRUE; }
@@ -2286,6 +2295,8 @@ static DWORD WINAPI watch_thread(void *arg) {
     return 0;
 }
 
+#endif
+
 typedef int (WINAPI *GETSYSMETRICS)(int);
 static GETSYSMETRICS real_GetSystemMetrics;
 static int WINAPI fake_GetSystemMetrics(int i) {
@@ -2334,6 +2345,7 @@ static void *hook_import(HMODULE mod, const char *dll, const char *func, void *r
 
 __declspec(dllexport) int AxisNetVersion(void) { return 2; }
 
+#ifndef AXIS_NATIVE   /* (the native build: no widescreen state to hand over) */
 /* RECOMP TEST BUILD ONLY: the widescreen state the rebuilt game functions that carry these fixes need (menu_vertex,
    menu_drawRect, gfx_setProjection2D3D, hud_drawMain; recomp.dll src/wide.h has the same layout), handed over
    when recomp.dll is loaded */
@@ -2374,6 +2386,8 @@ static void wide_state_range(void) {
         if (!memcmp(s[i].Name, ".data", 6)) { g_wide.state = base + s[i].VirtualAddress; g_wide.stateSize = s[i].Misc.VirtualSize; }
 #endif
 }
+
+#endif
 
 static HMODULE g_recomp;   /* RECOMP TEST BUILD ONLY: recomp.dll, when loaded */
 
@@ -2429,7 +2443,7 @@ BOOL WINAPI DllMain(HINSTANCE inst, DWORD reason, LPVOID reserved) {
     if (!real_connect) real_connect = connect;
     if (!real_CoCreateInstance) real_CoCreateInstance = (COCREATE)CoCreateInstance;
     return TRUE;
-#endif
+#else
     int movie = hook_movie(exe);
     hook_marked();
     /* ARM CENTER mech rotation (right-drag, 0x461850): yaw/pitch come from the menu cursor's position relative
@@ -2594,4 +2608,5 @@ BOOL WINAPI DllMain(HINSTANCE inst, DWORD reason, LPVOID reserved) {
       int (*early)(void) = g_recomp ? (int (*)(void))GetProcAddress(g_recomp, "recomp_hookEarly") : NULL;
       if (early) logf("recomp: %d rebuilt functions switched in at start-up", early()); }
     return TRUE;
+#endif
 }

@@ -286,7 +286,7 @@ int (input_justPressed)(int key)
 	if (key >= 0xfa && key <= 0xfc) {
 #ifdef AXIS_NATIVE
 		return fix_mousePressed(key);   /* they latch like keys (fixes/input.c) */
-#endif
+#else
 		if (*g_wide->pressedFix)
 			return g_wide->mousePressed(key);
 		int *flag = (int *)((OBJ(g_keySeen) + 0x3e8) + (key - 0xfa) * 4);
@@ -296,6 +296,7 @@ int (input_justPressed)(int key)
 		}
 		*flag = 1;
 		return g_mouseClicked[key - 0xfa];
+#endif
 	}
 	if (key == 0xfd) {
 		int *latch = (int *)(OBJ(g_keySeen) + 0x3f4);

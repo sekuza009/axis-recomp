@@ -1,6 +1,7 @@
 /* wide.c: the patch DLL's widescreen state as the rebuilds see it (wide.h). Until the patch DLL hands over its
    table, and for good without one, everything reads 0: no fix, the original's drawing. */
 #include "wide.h"
+#ifndef AXIS_NATIVE   /* (the native build has no patch layer: its fixes are in src/fixes) */
 
 static const int off;
 static int unused;
@@ -90,3 +91,4 @@ int wide_fixes(void)
 {
 	return wide_menuFix() | *g_wide->pressedFix << 1 | *g_wide->cursorClampFix << 2 | *g_wide->rotFix << 3;
 }
+#endif

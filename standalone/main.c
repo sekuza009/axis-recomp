@@ -30,8 +30,10 @@
 #include "../fnsizes.h"
 
 BOOL WINAPI axisnet_attach(HINSTANCE inst, DWORD reason, LPVOID reserved);   /* axisnet_recomp.c */
+#ifndef AXIS_NATIVE
 int wide_present(void);    /* src/wide.c: the patch layer handed over its widescreen state */
 int wide_carries(unsigned addr);   /* the rebuild carries the patch layer's change to that function */
+#endif
 
 /* g_space: AxisRC.exe's .bss from below GAME_BASE (the exe is linked at 0x10000, see build.sh) to past the
    original's range: that range stays reserved (kept inaccessible, see 1. above) and the game's image, g_image,
@@ -364,6 +366,7 @@ static void resolve_imports(void)
 	fprintf(g_log, "%d imports resolved\n", n);
 }
 
+#ifndef AXIS_NATIVE   /* (the native build: no patch layer) */
 /* 1 when the code at addr (the whole function, by fnsizes.h) differs from the image as built other than where the
    patch DLL may retarget a call the rebuild follows (g_saPatchOk): the patch DLL changed that function in memory,
    so it keeps running (as recomp.c's hook() decides in play) */
@@ -384,6 +387,7 @@ static int patched_in_memory(DWORD addr)
 	}
 	return 0;
 }
+#endif
 
 static int install_hooks(void)
 {
@@ -397,17 +401,19 @@ static int install_hooks(void)
 		char key[128];
 		snprintf(key, sizeof key, ",%s,", h->name);
 		/* the same rules as recomp.c's hook() */
-#ifndef AXIS_NATIVE   /* (the native build has no patch layer watching return addresses) */
+#ifdef AXIS_NATIVE
+		const int folded = 0;   /* (the native build: no patch layer, it changes none of the game's code) */
+#else
 		if ((h->addr == 0x41ef90 || h->addr == 0x4926f0) && !wide_present()) {
 			fprintf(g_log, "  original %06x %s (the patch layer checks its return address)\n", h->addr, h->name);
 			continue;
 		}
-#endif
 		int folded = wide_carries(h->addr);
 		if (!folded && patched_in_memory(h->addr)) {
 			fprintf(g_log, "  original %06x %s (changed in memory by the patch layer)\n", h->addr, h->name);
 			continue;
 		}
+#endif
 		if (skip[1] && strstr(skip, key)) {
 			fprintf(g_log, "  original %06x %s (RECOMP_SKIP)\n", h->addr, h->name);
 			continue;
@@ -598,6 +604,9 @@ int WINAPI WinMain(HINSTANCE inst, HINSTANCE prev, LPSTR cmd, int show)
 	{ void platform_loadSettings(void); platform_loadSettings(); }   /* (the fixes' settings: axisnet.ini) */
 #endif
 	axisnet_attach(inst, DLL_PROCESS_ATTACH, NULL);
+#ifdef AXIS_NATIVE
+	fprintf(g_log, "network layer started\n");
+#else
 	{	/* what the patch layer changed in the game's code (to compare the built-in data with the exe file) */
 		DWORD n = 0, hash = 2166136261u;
 		for (DWORD a = 0x1000; a < 0xa9000; a++)
@@ -609,6 +618,7 @@ int WINAPI WinMain(HINSTANCE inst, HINSTANCE prev, LPSTR cmd, int show)
 		fprintf(g_log, "patch layer started (widescreen state %s; fixes %x; %lu code bytes changed, hash %08lx)\n",
 		        wide_present() ? "handed over" : "MISSING", wide_fixes(), n, hash);
 	}
+#endif
 	int n = install_hooks();
 	fprintf(g_log, "%d of %d rebuilt functions switched in; starting the game\n", n, g_saNhooks);
 	{

@@ -118,8 +118,10 @@ static inline long double fdivr_m(long double x, const float *m) { __asm__("fdiv
 #define FN_VIA(name, addr, stub) (stub)
 #endif
 /* a call the patch DLL may retarget at start-up (it rewrites the call instruction's target): the call goes to
-   whatever the instruction at the original call site targets now, as the original's would */
-#ifdef AXIS_DIRECT
+   whatever the instruction at the original call site targets now, as the original's would (not in the native
+   build: no patch DLL) */
+#ifdef AXIS_NATIVE
+#elif defined(AXIS_DIRECT)
 /* (AxisRC.exe: none of the game's code runs; the patch layer keeps its retargets in a table: src/wide.c) */
 void *wide_callSite(u32 site);
 int wide_callAdded(u32 site, u32 at, const char *pattern);
@@ -138,8 +140,6 @@ int wide_callAdded(u32 site, u32 at, const char *pattern);
 #ifdef AXIS_NATIVE
 #define SITE_CALL(site, fn, ret, ...) ((ret (CDECL *)(__VA_ARGS__))(void *)FN_##fn)
 #define SITE_THISCALL(site, fn, ret, ...) ((ret (THISCALL *)(__VA_ARGS__))(void *)FN_##fn)
-#undef PATCHED_BLOCK
-#define PATCHED_BLOCK(site, at, pattern) 0   /* (no patch DLL rewrites any block) */
 #else
 #define SITE_CALL(site, fn, ret, ...) PATCHED_CALL(site, ret, __VA_ARGS__)
 #define SITE_THISCALL(site, fn, ret, ...) PATCHED_THISCALL(site, ret, __VA_ARGS__)
