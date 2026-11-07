@@ -342,8 +342,6 @@ extern struct GameData g_data;
 #define g_characterProfiles ((CharacterProfile *)g_data.g_characterProfiles_)
 #undef g_characterTexture
 #define g_characterTexture (*(int *)g_characterTexture_v)
-#undef g_chatHistory
-#define g_chatHistory ((char *)g_chatHistory_v)
 #undef g_chatTyping
 #define g_chatTyping (*(int *)g_chatTyping_v)
 #undef g_chestCount
@@ -1060,6 +1058,8 @@ extern struct GameData g_data;
 #define g_hostLeavingMsg ((u32 *)g_hostLeavingMsg_v)
 #undef g_inputFont
 #define g_inputFont (*(void * *)g_inputFont_v)
+#undef g_inputHistory
+#define g_inputHistory ((char *)g_inputHistory_v)
 #undef g_inputLine
 #define g_inputLine ((char *)g_inputLine_v)
 #undef g_inputLineHidden

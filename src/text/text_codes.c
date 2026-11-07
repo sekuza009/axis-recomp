@@ -1,5 +1,5 @@
 /* text_codes.c: what a line of text is made of: a Korean (Johab) syllable split into the glyph rows of its three
-   parts, and the printable width of a chat line with its colour and format codes left out. */
+   parts, and the printable width of a line of text with its colour and format codes left out. */
 #include "../game.h"
 
 #define SC(a) ((int)GAME_VAR(signed char, a))

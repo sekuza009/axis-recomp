@@ -1178,7 +1178,7 @@ void room_enterCreatePage(void);
 /* lobby: create arena */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void lobby_enterCreate(void);
-/* menu camera/light positions (5 x 2 vectors) */
+/* the game room's camera / look-at points (5 x 2 vectors) */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void room_initCameraPoints(void);
 
@@ -3567,7 +3567,7 @@ void match_enter(void);
    actors and scene reset; +4 = 1 */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 THISCALL void stage_build(char *s, DWORD a1, DWORD a2, DWORD a3, DWORD a4, DWORD a5, DWORD a6, DWORD a7, DWORD a8, DWORD a9);
-/* batch 116 (lifted/grp62.c): menu text callers; text_draw8/5/drawBox16, gfx_setProjection2D3D and menu_drawRect
+/* batch 116 (lifted/grp62.c): menu text callers; text_draw8/5/drawCentredLines16, gfx_setProjection2D3D and menu_drawRect
    run natively (the patch DLL rewrites them in memory, so they stay the originals) */
 /* 0x4125c0 armc_drawText(x, y, s): text in the language's small font (Korean 2: text_draw5, else text_draw8) */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
@@ -3927,7 +3927,7 @@ DWORD ranking_page(void);
    drawn in a box; three buttons (0x7546a4), the border */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void setup_drawControlsPage(void);
-/* batch 144 (lifted/grp90.c): the armour screen's stats panel, the largest function in the game */
+/* batch 144 (lifted/grp90.c): the armour screen's parts page, the largest function in the game */
 /* 0x412650 armc_drawPartsScreen(): the armour screen with the stats of the part in slot 0x4dbc6c (0..5): the
    preview arrows, the slot buttons and their labels (as armc_drawColourEditor, part names when 0x4dbc68), three buttons, the
    weight button, the "detail" button 0x7568a4; then a panel of the part's stats (taller in Korean, 0x9dae74): one
@@ -4015,8 +4015,8 @@ void THISCALL hud_drawRecordIndicator(void *scene);
 void THISCALL hud_drawMatchResult(void *scene);
 /* batch 154 (lifted/grp100.c): the match loading screen */
 /* 0x469320 loading_draw(scroll): the match loading screen: clear to blue, a textured cylinder (texture 0xa0e980,
-   18 segments turned by Vec3_rotateAxis, its texture scrolled by scroll) in the HUD projection
-   (gfx_setMatchProjection, patched: native), then in yellow "TITLE : %s" (0x67fb44, game modes 1 / 3 of the game
+   18 segments turned by Vec3_rotateAxis, its texture scrolled by scroll) in the match's 3D projection
+   (gfx_setMatchProjection 1, patched: native), then in yellow "TITLE : %s" (0x67fb44, game modes 1 / 3 of the game
    0xa0ea8c +8), "ZONE : %s" (the round's map 0x907b30 or "ON RECEIVING" while +0x1f1cb0 == 1), "PLAY TYPE : %s"
    (the mode name 0x4c7030 + 0x40 * +0x22e7180, or "ON RECEIVING"), "FRAG LIMIT : %d" (0x4df8e8), "TIME LIMIT :
    %d" (0x76d408) and in grey the status line 0xa0e988 */
@@ -4220,9 +4220,9 @@ DWORD missions_briefingKeys(void);
    the selection (missions_cursorUp / 443d10) */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void missions_listKeys(void);
-/* 0x434320 room_editJoinPassword() / 0x405010 arena_editJoinPassword(): start typing in the chat line: keyboard
-   released, the input buffer cleared, an empty line at 0x9dc92c, the edit box placed by the room / arena chat
-   position (0x9dd4a8 / 0x4db8c8 + 0xd8, + 0xd0), typing on (0x9dd6c8 / 0x4db70c) and the edit window created */
+/* 0x434320 room_editJoinPassword() / 0x405010 arena_editJoinPassword(): start typing the join password in the input
+   line: keyboard released, the input buffer cleared, an empty line at 0x9dc92c, the edit box placed by the room /
+   arena join panel's position (0x9dd4a8 / 0x4db8c8 + 0xd8, + 0xd0), typing on (0x9dd6c8 / 0x4db70c) and the edit window created */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void room_editJoinPassword(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
@@ -4237,8 +4237,8 @@ void missions_pageKeys(void);
    the mission settings mouse (skirmish_clicks) */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void skirmish_screenClicks(void);
-/* 0x405200 arena_askJoinPassword() / 0x434da0 room_askJoinPassword(): typing allowed (0x908807 + 0x4a * the player 0x76d41c): start
-   the arena / room chat line (flag 0x4db8bc / 0x9dd6b4) */
+/* 0x405200 arena_askJoinPassword() / 0x434da0 room_askJoinPassword(): typing allowed (0x908807 + 0x4a * the player 0x76d41c): when
+   the picked game is locked, ask for its join password (flag 0x4db8bc / 0x9dd6b4, then arena_ / room_editJoinPassword) */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void arena_askJoinPassword(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
@@ -4990,7 +4990,7 @@ THISCALL void script_processTriggers(char *s);
    run (script_processTriggers), and the game clock (+0x20fcd40 whole seconds, +0x20fcd44 the fraction) moves on */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 THISCALL void stage_updateActorsAndTriggers(char *s, DWORD dt);
-/* 0x48a370 match_mechTestFrame() (thiscall on the scene): the free camera / test mode. On its first frame the ten
+/* 0x48a370 match_mechTestFrame() (thiscall on the scene): the mech test mode (the camera orbits the local actor). On its first frame the ten
    cameras reset and the cursor centred; then the keys (movement W/A/S/D/Q/E, speed, camera 1..6, zoom, the F1..F6
    setting cycles with shift, Esc) set the scene's input flags, the cursor's offset moves the view, the local
    player's (+0x234240d) settings step through their tables (0x473b10.. on the scene's 0x1f36c8 part, bounded by
@@ -5055,7 +5055,7 @@ int THISCALL match_frameByState(void *scene);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 DWORD WINAPI game_WinMain(DWORD inst, DWORD prev, DWORD cmd, DWORD show);
 /* batch 204 (lifted/grp163.c): the game's start-up load */
-/* 0x430400 app_startupLoad(inst): key tables 0x4d1688 / 0x4d1a98 cleared; the loaders (0x4515d0 .. 0x42fb40),
+/* 0x430400 app_startupLoad(inst): the never-read table 0x4d1688 and the key latches 0x4d1a98 cleared; the loaders (0x4515d0 .. 0x42fb40),
    the 640 x 480 cursor range, 0x4302d0; the CD check once (0x401410 with the main window; failure: a message box
    and 0); unless 0x76d410 the five checks (0x41e6d0 .. 0x41e670) each end it with their message; the window's
    GL state (0x467a50 -> 0xa0e80c, then 0x42bd40); the cursor at 310, 230; 0x431680, 0x401780; 0x401000 (failure: a
@@ -6954,9 +6954,9 @@ ST(crypt_record80, fill(BUF, 0x80); g_a[0] = irnd(0, 255);,
 static void name_str(void) { int letters = irnd(0, 1); fill_str(BUF, 16, letters ? 65 : 32, letters ? 90 : 126); }
 ST(account_hasBadChar, name_str();, CD(int, 0x434400, char *)(BUF), account_hasBadChar(BUF))
 ST(profile_nameHasBadChar, name_str();, CD(int, 0x44b7e0, char *)(BUF), profile_nameHasBadChar(BUF))
-static void room_page_setup(void) { G32(0x9dd6ac) = irnd(-2, 101); G32(0x9dd4b8) = irnd(0, 120); fill((void *)0x9dd1b4, 4); }
-ST(ranking_prevPage, room_page_setup();, (CD(void, 0x435970, void)(), 0), (ranking_prevPage(), 0))
-ST(ranking_nextPage, room_page_setup();, (CD(void, 0x4359b0, void)(), 0), (ranking_nextPage(), 0))
+static void ranking_page_setup(void) { G32(0x9dd6ac) = irnd(-2, 101); G32(0x9dd4b8) = irnd(0, 120); fill((void *)0x9dd1b4, 4); }
+ST(ranking_prevPage, ranking_page_setup();, (CD(void, 0x435970, void)(), 0), (ranking_prevPage(), 0))
+ST(ranking_nextPage, ranking_page_setup();, (CD(void, 0x4359b0, void)(), 0), (ranking_nextPage(), 0))
 ST(ranking_cycleSort, G32(0x9dd1d0) = irnd(-5, 5);, (CD(void, 0x4359f0, void)(), 0), (ranking_cycleSort(), 0))
 ST(app_setDataPaths, fill((void *)0x9dae7c, 0x110); fill((void *)0x4dedf8, 0x110); fill((void *)0x680bc4, 0x110);,
    (CD(void, 0x43f5a0, void)(), 0), (app_setDataPaths(), 0))
@@ -11233,7 +11233,7 @@ ST(tex_bind, texbind_setup();, (TC(void, 0x4566c0, char *, int)(BUF, g_a[0]), 0)
    before it have short names (tex_token, one sometimes texture i's). The name asked for is texture i's or an
    existing one, as stored or in lower case, or empty; flags and colours mostly a record's own (one changed half
    the time); bound at once below a random limit */
-static void texalloc_setup(void)
+static void texgetid_setup(void)
 {
 	texbind_setup();
 	char *tm = BUF; int i = g_a[0];
@@ -11257,13 +11257,13 @@ static void texalloc_setup(void)
 	if (irnd(0, 1)) { int k = irnd(1, 7); if (k == 1) g_a[1] = irnd(0, 3); else GF(&g_a[k]) = (float)irnd(-500, 500) / 100.0f; }
 	if (!irnd(0, 15)) { S32(tm, 0xcd128) = 0x200; nm[0] ^= 0x55; }   /* a full table (its own record renamed: a miss) */
 }
-ST(tex_getIdBy, texalloc_setup();,
+ST(tex_getIdBy, texgetid_setup();,
    TC(int, 0x4555b0, char *, int, int, int, int, int, int, int, int)(BUF, g_a[0], g_a[1], g_a[2], g_a[3], g_a[4], g_a[5], g_a[6], g_a[7]),
    tex_getIdBy(BUF, (DWORD)g_a[0], (DWORD)g_a[1], (DWORD)g_a[2], (DWORD)g_a[3], (DWORD)g_a[4], (DWORD)g_a[5], (DWORD)g_a[6], (DWORD)g_a[7]))
 /* the six managers' slots (BUF + 0x400000): the test manager in one of them, the others empty */
 static void texset_setup(void)
 {
-	texalloc_setup();
+	texgetid_setup();
 	char *set = BUF + 0x400000; int k = irnd(0, 5);
 	fill(set, 4);
 	for (int j = 0; j < 6; j++) S32(set, 4 + j * 4) = j == k ? (int)BUF : 0;
@@ -11274,7 +11274,7 @@ ST(tex_getIdByName, texset_setup();,
 /* batch 83 */
 /* a shape (BUF + 0x500000) of 0..4 parts in the texture set of tex_getIdByName's test (also at 0xa0e010). Binding
    by name: part names are the existing records' (some with a "*" tail), texture i's (new) or unknown ones, the
-   suffix empty or short (rarely too long); flags and colours from texalloc_setup */
+   suffix empty or short (rarely too long); flags and colours from texgetid_setup */
 static void shapebind_setup(void)
 {
 	texset_setup();
@@ -13642,7 +13642,7 @@ static void createarena_setup(void)
 	G32(0x4ded68) = irnd(0, 640); G32(0x4ded6c) = irnd(0, 480);
 	if (irnd(0, 1)) { G32(0x4ded68) = G32(0x4dbb00) + irnd(0x9f, 0x1a7); G32(0x4ded6c) = G32(0x4dbb04) + irnd(0x2f, 0x133); }
 }
-/* the form's hit test (createArena_hitTest), the confirmation box's (arenaUpdateNotice_hitTest) and the map preview (0x40b550; its
+/* the form's hit test (createArena_hitTest), the program-updated notice's (arenaUpdateNotice_hitTest) and the map preview (0x40b550; its
    missing picture ends the game) stubbed, each with its own test: any item or none */
 static void createarena_hover_setup(void)
 {
@@ -13724,11 +13724,11 @@ static void controls_hover_setup(void)
 /* its caller ignores the eax it leaves (tools/eaxuse.py) */
 ST(setup_drawControlsPage, controls_hover_setup();, (CALL_PLAIN(0x425cd0, 0, 0, 0, 0, 0), 0), (setup_drawControlsPage(), 0))
 /* batch 144 */
-/* the stats panel: pilotpanel_setup's pilots and texture set, positions, slots -1..6 (mostly 0..5), English or
+/* the parts page (with its stats panel): pilotpanel_setup's pilots and texture set, positions, slots -1..6 (mostly 0..5), English or
    Korean, every float the panel reads below 10000 (its sprintf targets hold 20 bytes), every count below a million,
    the two string-table indexes in range, every text it draws short (classified from its code: 45 floats, the
    printed ints, 57 strings) */
-static void statspanel_setup(void)
+static void partsscreen_setup(void)
 {
 	static const DWORD fl[] = { 0x4dbc48, 0x4dbc70, 0x4dbc78, 0x4dc228, 0x4dc22c, 0x4dc230, 0x4dc234, 0x4dc238, 0x4dc23c,
 		0x4dc240, 0x4dc248, 0x4dc2a4, 0x4dc548, 0x4dc78c, 0x4dc88c, 0x4dc894, 0x4dc898, 0x4dcaa0, 0x4dcad0, 0x4dcaec,
@@ -13760,7 +13760,7 @@ static void statspanel_setup(void)
 	if ((unsigned)pilot < 64) for (int k = 0; k < 5; k++) if (!irnd(0, 3)) G32(0x9f9078 + pilot * 0x4c + k * 4) = 0;
 }
 /* its caller ignores the eax it leaves (tools/eaxuse.py) */
-ST(armc_drawPartsScreen, statspanel_setup();, (CALL_PLAIN(0x412650, 0, 0, 0, 0, 0), 0), (armc_drawPartsScreen(), 0))
+ST(armc_drawPartsScreen, partsscreen_setup();, (CALL_PLAIN(0x412650, 0, 0, 0, 0, 0), 0), (armc_drawPartsScreen(), 0))
 /* batch 145 */
 /* stage_remakePlayerActor's player and actor (ownslot_setup: the actor is the player's own index), the game's lobby slot that
    player (sometimes none), local or not, and an item record for the slot asked (-1..7) and for the actor's stored
@@ -15672,7 +15672,7 @@ static void bulletframe_setup(void)
 	S32(b, 0xc) = irnd(0, 15); S32(b, 0xb4) = irnd(-1, 15); S32(b, 0x4e4) = irnd(0, 10);   /* owner actor, a second actor, the trail count (20 entries from +0x494) */
 	*(BYTE *)(BUF + 0x600) = (BYTE)irnd(0, 255); S32(b, 0x6c) = (int)(BUF + 0x600);
 	for (int w = 0; w < 8; w++) for (int k = 0; k < 0x80; k++) GF(BUF + 0x14d1ab4 + w * 0x2e18 + 4 * k) = (float)irnd(-1000, 1000) / 10.0f;
-	for (int w = 0; w < 8; w++) {   /* the kind (3 a trail, 7 a beam), the hit mode and damage, the hit sound (-1 none) as integers */
+	for (int w = 0; w < 8; w++) {   /* the kind (3 a trail, 7 a beam), the damage type and damage, the hit sound (-1 none) as integers */
 		char *wr = BUF + 0x14d1ab4 + w * 0x2e18; static const int kinds[] = { 0, 1, 2, 3, 3, 4, 5, 6, 7, 7 };
 		S32(wr, 0x2dfc) = kinds[irnd(0, 9)]; S32(wr, 0x2ddc) = irnd(0, 3); S32(wr, 0x2de0) = irnd(0, 100); S32(wr, 0x2e04) = irnd(-1, 5);
 	}

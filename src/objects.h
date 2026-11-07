@@ -397,7 +397,7 @@
 #define g_statBars ((float *)IMG(0x9f8d34))   /* float[9]; the profile screen's nine stat bars as drawn (eased a tenth a frame) */
 #define g_statBarTargets ((float *)IMG(0x9f8ec0))   /* float[9]; the stat bars' targets: the pilot character's nine stats + 50 (pilotSelect_loadStats / profile_loadPilotStats); g_statBars eases to them (profile_drawChosenPilot, profile_drawPilotSelect); cleared by pilotSelect_reset / profile_resetStatBars */
 #define g_profileMessageClickBox ((int *)IMG(0x9f9010))   /* int[4]; (left, top, right, bottom) = (471, 246, 550, 276), set by profileDialogBox_layout: profile_inDialogBox's rectangle, meant as where a click while the NAME ALREADY REGISTRED message is up (g_profileMessage, newNameDialog_clicks) closes it and starts typing again; but profile_inDialogBox answers 1 / -1 and the caller tests for nonzero, so any click does. Nothing drawn lies there (the message's OK button is 0x16e..0x1ce, 0xe6..0x106; the dialog ends at x 0x208) */
-#define g_chatHistory ((char *)IMG(0x67ef38))   /* char[3072]; the chat line's three-line history of 0x400 bytes; newest first (frontEnd_startUp clears 0x300 dwords) */
+#define g_inputHistory ((char *)IMG(0x67ef38))   /* char[3072]; the input line's three-line history of 0x400 bytes (menu_pushInputHistory: every confirmed text field, chat or not; never read); newest first (frontEnd_startUp clears 0x300 dwords) */
 #define g_briefingPageStarts ((int *)IMG(0x9eeadc))   /* int[50]; the briefing's page start offsets (0xc8 bytes cleared; g_briefingStart follows) */
 #define g_ladderEmail ((char *)IMG(0x9dd5a6))   /* char[30]; the logged-in Ladder account's e-mail: from the server's account record (+0x22, login_takeAccountRecord), copied from / to the account page's g_accountEmail (reg_writeLadderSettings, room_copyAccountRecord, newId_register); cleared (30 bytes) by menuState800_enterGameRoom. Not kept in the registry */
 #define g_unusedStartupTable ((int *)IMG(0x4d1688))   /* int[256]; cleared (0x400 bytes) by the start-up load (app_startupLoad) and never read */
@@ -430,7 +430,7 @@
 #define g_profileNames ((char *)(g_profiles + 4))   /* the profiles' names: +4 in each g_profiles record (0x48 apart, so name i is at + i x 0x48); +0x40 from here is the record's pilot (g_profiles +0x44) */
 #define g_profileRecords ((ProfileRecord *)g_profiles)   /* ProfileRecord[128]; g_profiles as its records (number, name, pilot) */
 #define g_saveFileNames ((char *)IMG(0x9f1ac4))   /* char[8192]; profile_scanSaves' *.axs names (0x40 apart; strcpy of any count: held) */
-#define g_joinPasswordAndRanking ((u8 *)IMG(0x9dcee8))   /* u8[684]; the room's typed password text (+0; 8 bytes cleared; a strcpy of the chat line) and the ranking's ten 0x44-byte rows from +4 (to 0x9dd194): the two overlap in the original */
+#define g_joinPasswordAndRanking ((u8 *)IMG(0x9dcee8))   /* u8[684]; the room's typed password text (+0; 8 bytes cleared; a strcpy of the input line, g_inputLine) and the ranking's ten 0x44-byte rows from +4 (to 0x9dd194): the two overlap in the original */
 #define g_roomJoinPassword (*(int *)g_joinPasswordAndRanking)   /* the typed password (text from here) */
 #define g_roomJoinPassword4 (*(int *)(g_joinPasswordAndRanking + 4))   /* the typed password's second dword, also the ranking rows' start */
 #define g_rankingRows ((RankRow *)(g_joinPasswordAndRanking + 4))   /* RankRow[10] */

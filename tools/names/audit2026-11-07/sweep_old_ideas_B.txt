@@ -1,0 +1,24 @@
+src\globals.h:20 | 30 when a list opens (... gameList_refresh ...) -> 30 when a list opens or is refreshed (...) | gameList_refresh refreshes, it does not open the list
+src\globals.h:993 | 13 (draw16 / box16), 26 (draw32), 18 (box32) -> 13 (draw16 / centredLines16), 26 (draw32), 18 (centredLines32) | text_drawBox16/32 renamed: no box is drawn
+src\globals.h:644 | (with the second key table g_unusedKeyTable2) -> (with g_unusedKeyTable2, a table never read) | nothing shows g_keyTable2 holds keys
+src\match\actor_frame.c:1269 | /* the parts' break-up, one a frame */ -> /* one more part list's textures bound a frame */ | Player.breakUp -> partListsBound: nothing breaks up
+src\match\actor_slots.c:535 | faint tint lights it with lightMatrix -> faint tint queues it with faintActorMatrix (drawn transparent) | Stage.lightMatrix -> faintActorMatrix: not a light
+src\match\actor_slots.c:536 | up to the count breakUp -> up to the count partListsBound | field renamed (break-up idea)
+src\match\frame_loops.c:796 | 9 a fade -> 9 (debris) its wait for the first smoke puff (puffWait 0.1) | Particle.fade -> puffWait: kind 9 sets the puff wait, no fade
+src\menu\arena_maps.c:38 | choose none (types back to 0) -> the map list's DEFAULT button (key D): every map unchosen and every game type back to 0 | mapList_chooseNone -> mapList_setDefault
+src\menu\armc_misc.c:10 | the mode tabs and the stats panel -> the mode tabs and the parts screen (armc_drawPartsScreen) | armc_drawStatsPanel -> armc_drawPartsScreen draws the whole parts page UI
+src\menu\armc_screens.c:256 | the mode box -> the ROTATE box | mode_box -> rotate_box
+src\menu\armc_stats.c:1-2 | the ARM CENTER's stats panel: the slot buttons and labels, the panel's buttons, and a section of stat lines for the part in the chosen slot -> the ARM CENTER's parts screen (armc_drawPartsScreen): the view buttons and labels, the page's buttons, and in its stats box a section of stat lines for the part in the chosen view | the file draws the whole parts page, not just the stats panel
+src\menu\menu_init.c:93 | the menu camera's five target points -> the game room's five menu camera target points | menuCamera_initPoints -> room_initCameraPoints: not a generic menu-camera init
+src\menu\menu_quads.c:45 | the small buttons, two cells each -> the arrow buttons (left, right, up, down), two cells each | menu_drawSmallButton1..4 -> menu_drawLeft/Right/Up/DownArrow
+src\menu\menu_records.c:40 | the chat input line (0x400 bytes at g_inputLine) -> the input line every text field types into (0x400 bytes at g_inputLine) | g_chatLine -> g_inputLine, chat_pushHistory -> menu_pushInputHistory
+src\menu\room_clicks.c:1 | starting the chat line -> asking for a join password | no chat in the file; the typed line it starts is the join password (room_askJoinPassword / arena_askJoinPassword) - old g_chatLine idea
+src\menu\room_clicks.c:682 | the game room's settings page after typing -> the game room's create-game page's keys (room_keysByState state 2; | room_settingsAfterTyping -> roomSettings_keys
+src\menu\room_dialogs.c:170 | the game room's list opened -> the game room's list refreshed (REFRESH, key R) | gameList_open -> gameList_refresh
+src\text\text_codes.c:2 | the printable width of a chat line -> the printable width of a line of text | text_printableLength serves any line (input line idea)
+src\objects.h:400 | the chat line's three-line history -> the input line's three-line history (menu_pushInputHistory: every confirmed text field, chat or not; never read) | g_chatLine -> g_inputLine / chat_pushHistory -> menu_pushInputHistory
+src\objects.h:433 | a strcpy of the chat line -> a strcpy of the input line, g_inputLine | g_chatLine -> g_inputLine (a password field)
+tools\ftrace\merge.py:3 | 3 free camera -> 3 mech test | match state 3 is match_mechTestFrame (was match_freeCamFrame)
+tools\mkscene.py:5 | union { float fade; float trailPoints[3][3]; } -> union { float puffWait; float markPoints[3][3]; } | example quoted the old Particle field; now matches scene.h
+PROPOSE | global g_chatHistory (objects.h, 0x67ef38) -> g_inputHistory: the history of the shared input line pushed by menu_pushInputHistory for every confirmed text field, not chat only
+PROPOSE | net_tables.c:1462 / frame_loops.c:599 call MapItem.timer "fade" ("its fade / 10 + 1", "timer fade"); not the renamed Particle.fade, so left, but the word could become "timer" in a later pass (files are in hits_B; left as out-of-idea)

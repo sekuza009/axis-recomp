@@ -2560,9 +2560,9 @@ extern u8 g_gameCount_v[4];
 extern u8 g_pointerGlideX_v[4];
 #endif
 #ifdef AXIS_FENCE
-#define g_chatHistory_v ((char *)(AXIS_FENCE == 2 ? g_fence + 0x5a5000 : g_fence + 0x5a4400))
+#define g_inputHistory_v ((char *)(AXIS_FENCE == 2 ? g_fence + 0x5a5000 : g_fence + 0x5a4400))
 #else
-extern char g_chatHistory_v[3072];
+extern char g_inputHistory_v[3072];
 #endif
 #ifdef AXIS_FENCE
 #define g_pointerGlideY_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0x5a7000 : g_fence + 0x5a6ffc))

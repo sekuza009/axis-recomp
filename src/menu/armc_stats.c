@@ -1,5 +1,5 @@
-/* armc_stats.c: the ARM CENTER's stats panel: the slot buttons and labels, the panel's buttons, and a section of
-   stat lines for the part in the chosen slot, in the English layout (label and value on one row, the value
+/* armc_stats.c: the ARM CENTER's parts screen (armc_drawPartsScreen): the view buttons and labels, the page's buttons,
+   and in its stats box a section of stat lines for the part in the chosen view, in the English layout (label and value on one row, the value
    right-aligned) or the Korean one (the value under its label, a bonus after it in yellow). A stat line is a base
    value, often with a bonus in brackets (the pilot's skill, 0x9f9078 .., scaling it), and a unit. */
 #include "../game.h"

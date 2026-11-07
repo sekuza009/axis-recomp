@@ -616,7 +616,7 @@ u32 STDCALL (game_WinMain)(void *inst, void *prev, const char *cmd, int show)
      again next time (g_projMode -1).
    - WM_PAINT: begun and ended. WM_CLOSE: the DC let go, the arena session left, the network closed, the three
      network timers stopped, the cursor put back, the window destroyed.
-   - WM_DESTROY: the screen saver back on, the DC and the chat line let go, the cursor shown, the game quits; then,
+   - WM_DESTROY: the screen saver back on, the DC and the text fields' EDIT control (g_hEditField) let go, the cursor shown, the game quits; then,
      by the exit mode (g_exitCode): 0 the start mode 0 and the launcher's marks invalidated (app_invalidateLauncherMarks; and g_gameRunning cleared), 1 the start
      mode 1 and AxisGL.exe started again, 2 / 3 the start mode 0, the marks invalidated and axispatch.exe ("nstower") /
      DServer.exe started, 99 the marks invalidated and the ending movie; the process ends.

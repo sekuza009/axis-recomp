@@ -512,7 +512,7 @@ typedef struct { u32 vtable; void *banks[6]; i32 count; } TextureManager;   /* t
 
 /* ---- the in-match 2D pass: the scene's view, its stage's overlay parts, the HUD elements ---- */
 #define gfx_setMatchProjection(mode, scale) GAME_FN(gfx_setMatchProjection, 0x4685f0, void, int, float)(mode, scale)
-#define gfx_setProjectionHud_bits(mode, scale) GAME_FN(gfx_setMatchProjection, 0x4685f0, void, int, u32)(mode, scale)   /* (the scale as its bits) */
+#define gfx_setMatchProjection_bits(mode, scale) GAME_FN(gfx_setMatchProjection, 0x4685f0, void, int, u32)(mode, scale)   /* (the scale as its bits) */
 #define factors_addPointLight(pool, colour, radius, pos) GAME_THISFN(factors_addPointLight, 0x483f00, int, void *, u32, float, void *)(pool, colour, radius, pos)   /* a light of radius at pos */
 #define factors_addPointLight_bits(pool, colour, strength, pos) GAME_THISFN(factors_addPointLight, 0x483f00, int, void *, u32, u32, void *)(pool, colour, strength, pos)   /* (the strength as its bits) */
 #define view_farPlane() GAME_FN(view_farPlane, 0x468700, float, void)()             /* view_farPlane: a float setting */
@@ -1231,7 +1231,7 @@ void fix_glViewport(int x, int y, int w, int h);
 #define dplay_openConnection(kind, host) GAME_FN(dplay_openConnection, 0x452ec0, int, u32, const char *)(kind, host)   /* a DirectPlay slot opened */
 #define lobby_openConnection() GAME_FN(lobby_openConnection, 0x4060f0, int, void)()   /* the lobby server connection opened: 1 done */
 #define arenaGameList_hitTest(x, y) GAME_FN(arenaGameList_hitTest, 0x4044a0, int, int, int)(x, y)   /* the arena lobby's button under (x, y), -1 none */
-#define arena_askJoinPassword() GAME_FN(arena_askJoinPassword, 0x405200, void, void)()   /* the arena screen's chat line opened */
+#define arena_askJoinPassword() GAME_FN(arena_askJoinPassword, 0x405200, void, void)()   /* the arena join password asked for when the picked game is locked (arena_editJoinPassword) */
 #define arena_editAddress() GAME_FN(arena_editAddress, 0x405230, void, void)()   /* the IP address field opened (a game joined by address) */
 #define menu_showMessage(i) GAME_FN(menu_showMessage, 0x41ee40, u32, int)(i)   /* message i in the message box */
 #define reg_writeLadderSettings() GAME_FN(reg_writeLadderSettings, 0x432400, u32, void)()

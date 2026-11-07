@@ -1,6 +1,6 @@
 r"""merge.py out.tsv runs/*.tsv: the function-trace runs merged, one line per function of src/:
 name  file  calls  contexts  sessions  callers (name xN; '+off' dropped)  - with the functions never seen as 'NOT RUN'.
-Contexts: s<screen> front-end screen, m<matchState> in a match (0 over, 1 loading, 2 playing, 3 free camera, 4 replay)."""
+Contexts: s<screen> front-end screen, m<matchState> in a match (0 over, 1 loading, 2 playing, 3 mech test, 4 replay)."""
 import collections, glob, os, re, sys
 
 R = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..')

@@ -1,4 +1,4 @@
-/* room_clicks.c: the game room's small handlers: clicks on its popups' buttons, starting the chat line, and the
+/* room_clicks.c: the game room's small handlers: clicks on its popups' buttons, asking for a join password, and the
    white fade over the screen. Buttons are hit-tested with the pointer (updateNotice_hitTest and its kind: the index of the
    button under it, or -1). */
 #include "../game.h"
@@ -679,7 +679,7 @@ u32 (room_settingsClicks)(void)
 	return button;
 }
 
-/* 0x437630: the game room's settings page after typing (not while typing or with a message box): a typed field is
+/* 0x437630: the game room's create-game page's keys (room_keysByState state 2; not while typing or with a message box): a typed field is
    taken (the room's name into g_roomSettingsName unless blank (sound 6); the password into 0x4df9ee; the frag and time limits
    as numbers into the bytes g_roomFragLimit / g_roomTimeLimit; an empty line changes nothing), else the keys: start (g_dikO;
    room_announceGame, not while connecting) and the two close keys (g_dikC, g_dikEscape_2). Returns what the original leaves

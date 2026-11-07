@@ -35,7 +35,7 @@ void (mapList_chooseAll)(void)
 	clear_unused();
 }
 
-/* 0x403530: choose none (types back to 0) */
+/* 0x403530: the map list's DEFAULT button (key D): every map unchosen and every game type back to 0 */
 void (mapList_setDefault)(void)
 {
 	sound_playMenu(0);

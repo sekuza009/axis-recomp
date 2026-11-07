@@ -79,7 +79,7 @@ def jump_table(insns, k, start, size):
         if p.mnemonic == 'cmp' and p.operands[0].type == X.X86_OP_REG and p.reg_name(p.operands[0].reg) == reg and p.operands[1].type == X.X86_OP_IMM:
             n = p.operands[1].imm + 1; break
         if p.mnemonic == 'cmp' and p.operands[0].type == X.X86_OP_REG and p.reg_name(p.operands[0].reg) == reg and p.operands[1].type == X.X86_OP_REG:
-            # "mov r2, N ... cmp r, r2; ja default" (profile_processInput): the bound from the last mov to r2
+            # "mov r2, N ... cmp r, r2; ja default" (profile_screenClicks): the bound from the last mov to r2
             r2 = p.reg_name(p.operands[1].reg)
             for q in reversed(insns[max(j - 40, 0):j]):
                 if q.operands and q.operands[0].type == X.X86_OP_REG and q.reg_name(q.operands[0].reg) == r2:
@@ -98,7 +98,7 @@ def jump_table(insns, k, start, size):
 
 def decode(start, size):
     # the function's instructions, skipping jump tables that lie inside it (a table right after its "jmp [r*4 +
-    # table]", with code after it again: profile_processInput); bounded tables only
+    # table]", with code after it again: profile_screenClicks); bounded tables only
     insns, pos, end, skip = [], start, start + size, {}
     while pos < end:
         if pos in skip: pos = skip[pos]; continue

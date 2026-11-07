@@ -167,7 +167,7 @@ u32 (room_joinListed)(int i)
 	return timer;
 }
 
-/* 0x434d00: the game room's list opened: its state reset, the session list cleared, the request for the server's
+/* 0x434d00: the game room's list refreshed (REFRESH, key R): its state reset, the session list cleared, the request for the server's
    room list sent (message 0x13, 0x65 bytes), the refresh period 30 (1/60 s). Returns 1 */
 int (gameList_refresh)(void)
 {

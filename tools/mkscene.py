@@ -2,7 +2,7 @@
 scene.fields holds sections "struct Name size" .. fields .. (one field per line: offset  size  declaration  # comment);
 types used by later sections come first. Fields are sorted by offset, the gaps become _padXXXXXXX arrays, overlaps
 are errors, and every field's offset and size is checked at compile time (_Static_assert). A field may be an
-anonymous union of views of the same bytes ("union { float fade; float trailPoints[3][3]; }"): each member is checked
+anonymous union of views of the same bytes ("union { float puffWait; float markPoints[3][3]; }"): each member is checked
 at the offset, none larger than the size."""
 import os, re
 here = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'src')

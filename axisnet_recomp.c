@@ -1839,10 +1839,10 @@ static void __cdecl cursor_draw(void) {
    exclusive DInput mouse is acquired while that button is down; its release could be missed and the
    button (fire / mouse 2) stayed held. After the game is back in the foreground each button now counts
    only once it has been seen released.
-   Chat: the chat line is an EDIT child of the game window (0x43f460, handle [0x9dd888], destroyed when
-   the line is sent/closed). Reactivating the window gave the focus to the window itself, so typing went
+   Text fields (chat, names, passwords ...): the input line is typed into an EDIT child of the game window
+   (0x43f460, handle [0x9dd888], destroyed when the line is sent/closed). Reactivating the window gave the focus to the window itself, so typing went
    nowhere; the game window is subclassed (from here, on whichever thread runs the loop) and hands the focus
-   back to the chat line when it gets activated / focused while the line exists. */
+   back to that EDIT control when it gets activated / focused while the line exists. */
 static BYTE g_btnmask;
 static HWND g_subwnd;
 static WNDPROC g_mainproc;
@@ -2576,7 +2576,7 @@ BOOL WINAPI DllMain(HINSTANCE inst, DWORD reason, LPVOID reserved) {
     if (call_is(0x445c69, 0x401730) &&   /* call 0x401730 (DInput mouse read) -> input_read */
         (code_is(0x401730, sig_jmp, 1) || code_is(0x401730, sig_mread, sizeof sig_mread))) {
         call_set(0x445c69, (void *)input_read);
-        logf("input: mouse buttons held across alt-tab ignored, chat line refocused");
+        logf("input: mouse buttons held across alt-tab ignored, text field refocused");
     }
     if (g_sharptext) hook_sharptext();
     hook_digits();

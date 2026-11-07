@@ -79,7 +79,7 @@ void (loading_draw)(u32 progress)
 	glClearColor_bits(0x3f000000, 0x3f000000, 0x3f800000, 0x3f800000);   /* glClearColor(0.5, 0.5, 1, 1) */
 	glClearDepth(1.0);
 	glClear(0x4100);   /* GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT */
-	gfx_setProjectionHud_bits(1, 0x3f800000);   /* gfx_setMatchProjection(1, 1.0) */
+	gfx_setMatchProjection_bits(1, 0x3f800000);   /* gfx_setMatchProjection(1, 1.0) */
 	glEnable(GL_TEXTURE_2D);
 	int texture = g_loadTexture;
 	tex_bind(g_textures->banks[texture / 512], texture % 512);
@@ -100,7 +100,7 @@ void (loading_draw)(u32 progress)
 		glEnd();
 	}
 	glDisable(GL_TEXTURE_2D);
-	gfx_setProjectionHud_bits(0, 0x3f800000);
+	gfx_setMatchProjection_bits(0, 0x3f800000);
 	text_setColor(1.0f, 1.0f, 0.0f, 1.0f);
 	char line[0x100];
 	int row = 2;
@@ -195,7 +195,7 @@ void (menu_loadTextures)(void)
 }
 #undef T
 
-/* 0x430400: the start-up load: the key tables (g_unusedStartupTable, g_keySeen) cleared, the settings, tables and lists loaded,
+/* 0x430400: the start-up load: g_unusedStartupTable and the key latches (g_keySeen) cleared, the settings, tables and lists loaded,
    the text area the whole screen, the timer; DirectInput made once (g_directInputMade; failure: a message box, 0); unless
    g_launchedForNetGame the data files checked (failure: the message 0x4b04b0, 0); the sound (g_soundOn: it works; then the menu
    sounds); the pointer at 310, 230, the keys' table; the CD (failure: a message box, 0); the six texture banks (with the

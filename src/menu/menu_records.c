@@ -37,7 +37,7 @@ void (app_setDataPaths)(void)
 	copy_name(OBJ(g_stageDir), 0x105, (const char *)STR(0x4b0498, "stage/"));
 }
 
-/* ---- the chat input line (0x400 bytes at g_inputLine) and its three-line history ---- */
+/* ---- the input line every text field types into (0x400 bytes at g_inputLine) and its three-line history ---- */
 /* 0x431560: the input line (g_inputLine, 0x400 bytes) emptied for a text field max characters long (g_lineMaxLength =
    max; g_inputLineLength 0). Callers: every text field's opening (account_edit*, arena_edit*, room_edit*, roomLogin_edit*,
    newIdForm_openField, profile_typeNewName, chat_openTextField, freeCam_keys) */
@@ -51,9 +51,9 @@ void (menu_clearInputBuffer)(int max)
 /* 0x4315c0: the line pushed onto the history (the oldest line dropped) */
 void (menu_pushInputHistory)(void)
 {
-	memcpy((void *)(OBJ(g_chatHistory) + 0x800), (void *)(OBJ(g_chatHistory) + 0x400), 0x400);
-	memcpy((void *)(OBJ(g_chatHistory) + 0x400), (void *)OBJ(g_chatHistory), 0x400);
-	memcpy((void *)OBJ(g_chatHistory), (void *)OBJ(g_inputLine), 0x400);
+	memcpy((void *)(OBJ(g_inputHistory) + 0x800), (void *)(OBJ(g_inputHistory) + 0x400), 0x400);
+	memcpy((void *)(OBJ(g_inputHistory) + 0x400), (void *)OBJ(g_inputHistory), 0x400);
+	memcpy((void *)OBJ(g_inputHistory), (void *)OBJ(g_inputLine), 0x400);
 }
 
 /* 0x41ee40: message i of the 0x80-byte table at g_messages shown in the message box */

@@ -119,9 +119,9 @@ for f in sorted(glob.glob('src/**/*.c', recursive=True)):
 	text = open(f, 'rb').read().decode('latin-1')
 	for i, l in enumerate(text.split('\n')):
 		ms = list(re.finditer(r'for \([^;]*?\b(\w+) = \(?((?:IMG|OBJ|ADDR|RELOC)\(\w+\))[^;]*; \1 (?:<|<=|!=) \(?((?:IMG|OBJ|ADDR|RELOC)\(\w+\))', l))
-		# (or a helper given a start and an end: layouts.c's rect_spec / rects_column / rects_row)
+		# (or a helper given a start and an end: layouts.c's rect_spec / rects_fixedRow / rects_row)
 		# (the start may be inside an object, (OBJ(x) + 0x90): the end must be in the same one)
-		ms += list(re.finditer(r'\b()(?:rect_spec|rects_column|rects_row)\(\(?(\w+\(\w+\))(?: \+ 0x[0-9a-f]+\))?, \(?(\w+\(\w+\))', l))
+		ms += list(re.finditer(r'\b()(?:rect_spec|rects_fixedRow|rects_row)\(\(?(\w+\(\w+\))(?: \+ 0x[0-9a-f]+\))?, \(?(\w+\(\w+\))', l))
 		for m in ms:
 			a, b = where(m.group(2)), where(m.group(3))
 			if a and b and a != b:

@@ -32,7 +32,7 @@ void (app_frameByScreen)(void)
 }
 
 /* 0x462050 (match_frameByState): the match's frame by its state; each state's handler answers the next state. The
-   playing, free-camera and replay states present the frame (playing only while matchDrawing is 1). */
+   playing, mech test and replay states present the frame (playing only while matchDrawing is 1). */
 int THISCALL (match_frameByState)(Scene *scene)
 {
 	switch (scene->matchState) {

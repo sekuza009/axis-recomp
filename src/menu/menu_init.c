@@ -90,7 +90,7 @@ void (setupTop_initOutlines)(void)
 	}
 }
 
-/* 0x433360: the menu camera's five target points (g_camPoints) and look-at points (g_camAims) set: x / y from a table
+/* 0x433360: the game room's five menu camera target points (g_camPoints) and look-at points (g_camAims) set: x / y from a table
    ((20, -10), (20, 0), (20, 10), (-20, -10), (-20, 0); look-at x -70 / 70, y 55, 0, -55 ..), their z all the current
    look-at's z (g_menuCameraLookZ); the home eye and look-at (g_menuEyeHome*, g_menuLookHome*) from where the camera
    is now; g_roomAwaitingServer cleared. Only caller armc_cameraStep, on the way back to the game room (800) */
@@ -145,7 +145,7 @@ u32 (replayList_open)(void)
 u32 (frontEnd_startUp)(void)
 {
 	static const u32 steps[5] = { FN_ADDR(menu_initMainOutlines, 0x42f2b0), FN_ADDR(lobbyTop_initOutlines, 0x42f500), FN_ADDR(room_initOutlines, 0x42f690), FN_ADDR(setupTop_initOutlines, 0x42f8e0), FN_ADDR(net_clearSlots, 0x430bd0) };
-	memset((void *)OBJ(g_chatHistory), 0, 0x300 * 4);
+	memset((void *)OBJ(g_inputHistory), 0, 0x300 * 4);
 	menu_initColours();   /* menu_initColours: the colours */
 	u32 r = 0;
 	for (int k = 0; ; k++) {

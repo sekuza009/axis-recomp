@@ -7,7 +7,7 @@
 
 /* 0x41dfb0: the parts page: the preview, the SERAPHIM parts reset unless entered from the room
    (armc_resetSeraphimParts, g_armcFrom not 3; a no-op in the patched game) and, unless the interface is hidden
-   (Ctrl+Alt+M), the mode tabs and the stats panel */
+   (Ctrl+Alt+M), the mode tabs and the parts screen (armc_drawPartsScreen) */
 void (armc_drawPartsPage)(void)
 {
 	if (g_armcPreview != 0)

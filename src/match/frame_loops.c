@@ -596,7 +596,7 @@ static void item_pickup(u8 *s, u8 *ac, u8 *it, int i, u8 *t, int type)
 
 /* 0x48ed90 (thiscall on the scene): the items' frame. Live actors' touch flags (onWarp) cleared; every item (0x28
    bytes from items, itemCount of them; its kind +0 into the 0x90-byte types at itemTypes, state taken, timer
-   fade, position pos): a taken one comes back after its type's time (respawnTime, with its sound respawnSound); a present one
+   timer, position pos): a taken one comes back after its type's time (respawnTime, with its sound respawnSound); a present one
    spins (angle, 600 a second, but kind 0x22) and the first live actor within 1.5 of its radius (radius) on every
    axis touches it (item_pickup). An actor touching no warp zone forgets the last one (lastWarp -1). Its callers ignore
    the eax it leaves */
@@ -793,7 +793,7 @@ static void particle_mark(u8 *p, const u8 *desc, u32 margin)
 /* 0x475070 (thiscall on the scene): particle slot (0x12c bytes from particles) set up from its descriptor: a
    serial id, in use. A descriptor flagged isQuad is a kind 50 effect (its 0x48 bytes from quad). Otherwise the
    kind (+0), owner, position, target, a matrix to copy, the size (size); then by kind its life (life) and: 2 / 3
-   a sound at the position; 4 its colour from +0x20; 9 a fade; 10 / 11 / 18 a random spin; 12 .. 17 the position
+   a sound at the position; 4 its colour from +0x20; 9 (debris) its wait for the first smoke puff (puffWait 0.1); 10 / 11 / 18 a random spin; 12 .. 17 the position
    from its matrix; 20 / 21 / 24 aimed at the target; 25 / 26 beams; 40 .. 49 hit marks */
 void THISCALL (particle_init)(u8 *s, int slot, const u8 *desc)
 {

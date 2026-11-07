@@ -1,4 +1,4 @@
-/* resets.c: input and screen state put back to its start: the key tables, the chat line's mode, the network
+/* resets.c: input and screen state put back to its start: the key tables, the input line's length, the network
    buffers, the replay selection list, the message box. */
 #include "../game.h"
 #include <string.h>

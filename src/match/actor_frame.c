@@ -1266,7 +1266,7 @@ timers:
 		AC->stateFlags = f;
 	}
 	static const u16 parts[7] = { offsetof(Player, headModel), offsetof(Player, chestModel), offsetof(Player, armsModel), offsetof(Player, legsModel), offsetof(Player, boosterModel), offsetof(Player, weaponModel4), offsetof(Player, weaponModel5) };
-	if (AC->partListsBound < 7) {   /* the parts' break-up, one a frame */
+	if (AC->partListsBound < 7) {   /* one more part list's textures bound a frame */
 		if (AC->partListsBound >= 0)
 			ObjectList_bindTextures(a + parts[AC->partListsBound]);
 		AC->partListsBound++;

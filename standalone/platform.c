@@ -50,7 +50,7 @@ static BYTE g_foregroundButtons;     /* the buttons in the last foreground read 
 static volatile BYTE g_realButtons;  /* the real buttons while in the background */
 static volatile LONG g_background;
 static DWORD g_watchThread;
-static void **g_mouseDevice, **g_chatLine;
+static void **g_mouseDevice, **g_editField;
 
 void platform_mouseButtons(int bits) { g_foregroundButtons = (BYTE)bits; }
 
@@ -129,8 +129,8 @@ static void activated(int active)
 	}
 }
 
-/* ---- the game window: activation as above; on activation or focus the chat line (an EDIT child of the window,
-   which exists while a line is typed) gets the focus back - otherwise typing went nowhere after alt-tab ---- */
+/* ---- the game window: activation as above; on activation or focus the text field's hidden EDIT control (g_hEditField, a
+   child of the window, which exists while any text field is typed in: names, passwords, chat ..) gets the focus back - otherwise typing went nowhere after alt-tab ---- */
 static HWND g_watched;
 static WNDPROC g_gameProc;
 
@@ -140,17 +140,17 @@ static LRESULT CALLBACK game_window(HWND w, UINT m, WPARAM wp, LPARAM lp)
 		activated(wp != 0);
 	LRESULT r = CallWindowProcA(g_gameProc, w, m, wp, lp);
 	if ((m == WM_ACTIVATE && LOWORD(wp) != WA_INACTIVE) || m == WM_SETFOCUS) {
-		HWND chat = g_chatLine ? (HWND)*g_chatLine : NULL;
-		if (chat && IsWindow(chat) && GetParent(chat) == w && GetFocus() != chat)
-			SetFocus(chat);
+		HWND edit = g_editField ? (HWND)*g_editField : NULL;
+		if (edit && IsWindow(edit) && GetParent(edit) == w && GetFocus() != edit)
+			SetFocus(edit);
 	}
 	return r;
 }
 
-void platform_watchWindow(void *window, void **chatLine, void **mouseDevice)
+void platform_watchWindow(void *window, void **editField, void **mouseDevice)
 {
 	HWND w = (HWND)window;
-	g_chatLine = chatLine;
+	g_editField = editField;
 	g_mouseDevice = mouseDevice;
 	if (!w || w == g_watched || !IsWindow(w))
 		return;

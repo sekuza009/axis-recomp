@@ -1,0 +1,26 @@
+recomp.c:1181 | "menu camera/light positions (5 x 2 vectors)" -> "the game room's camera / look-at points (5 x 2 vectors)" | above room_initCameraPoints: the room's five camera/look-at points, not a generic menu camera/lights
+recomp.c:3930 | "the armour screen's stats panel, the largest function" -> "the armour screen's parts page, the largest function" | armc_drawPartsScreen draws the whole parts page
+recomp.c:13727 | "the stats panel: pilotpanel_setup's pilots" -> "the parts page (with its stats panel): pilotpanel_setup's pilots" | test set-up of armc_drawPartsScreen
+recomp.c:13731/13763 | static statspanel_setup -> partsscreen_setup | same (old "stats panel" idea)
+recomp.c:6957-6959 | static room_page_setup -> ranking_page_setup | set-up for ranking_prevPage / nextPage (ranking_requestPage); nothing room-page about it
+recomp.c:11236/11260/11266/11277 | static texalloc_setup -> texgetid_setup | tex_getIdBy is a lookup, not an allocator
+recomp.c:3570 | "text_draw8/5/drawBox16" -> "text_draw8/5/drawCentredLines16" | stale old name; no box is drawn
+recomp.c:4018 | "a textured cylinder ... in the HUD projection (gfx_setMatchProjection, ...)" -> "in the match's 3D projection (gfx_setMatchProjection 1, ...)" | loading_draw calls it with mode 1 (3D perspective); "HUD" is only mode 0 (g_hudProjMode idea)
+recomp.c:4223 | "start typing in the chat line ... placed by the room / arena chat position" -> "start typing the join password in the input line ... placed by the room / arena join panel's position" | room/arena_editJoinPassword fill the shared input line (g_inputLine) at PANEL(ROOM_JOIN); not chat
+recomp.c:4241 | "start the arena / room chat line (flag 0x4db8bc / 0x9dd6b4)" -> "when the picked game is locked, ask for its join password (flag ..., then arena_ / room_editJoinPassword)" | flags are g_arena/roomJoinNeedsPassword
+recomp.c:4993 | "match_mechTestFrame(): the free camera / test mode" -> "the mech test mode (the camera orbits the local actor)" | the renamed thing itself
+recomp.c:5058 | "key tables 0x4d1688 / 0x4d1a98 cleared" -> "the never-read table 0x4d1688 and the key latches 0x4d1a98 cleared" | 0x4d1688 = g_unusedStartupTable, nothing shows it is a key table
+recomp.c:13645 | "the confirmation box's (arenaUpdateNotice_hitTest)" -> "the program-updated notice's (arenaUpdateNotice_hitTest)" | g_arenaCreateRects idea: those rects are the update notice's
+recomp.c:15675 | "the hit mode and damage" -> "the damage type and damage" | +0x2ddc is ActorItem.damageType (lastHitMode -> lastHitDamageType)
+src/app/main_loop.c:35 | "playing, free-camera and replay states" -> "playing, mech test and replay states" | state 3 = match_mechTestFrame
+src/app/loading.c:198 | "the key tables (g_unusedStartupTable, g_keySeen) cleared" -> "g_unusedStartupTable and the key latches (g_keySeen) cleared" | g_keyTable1 idea
+src/app/resets.c:1 | "the chat line's mode" -> "the input line's length" | input_resetKeys empties the shared input line (g_lineMaxLength, g_inputLineLength); no chat mode in the file
+src/app/win32.c:619 | "the DC and the chat line let go" -> "the DC and the text fields' EDIT control (g_hEditField) let go" | WM_DESTROY destroys g_hEditField, used by every text field
+src/game.h:1234 | "the arena screen's chat line opened" -> "the arena join password asked for when the picked game is locked (arena_editJoinPassword)" | arena_askJoinPassword
+src/README.txt:97 | "(Particle: fade / markPoints)" -> "(Particle: puffWait / markPoints)" | stale field name
+src/scene.fields:1020 | "(spawn_point; else cameraSaved)" -> "(spawn_point; else mapStart)" | stale field name (Scene.cameraSaved -> mapStart)
+axisnet_recomp.c:1842 | "Chat: the chat line is an EDIT child of the game window" -> "Text fields (chat, names, passwords ...): the input line is typed into an EDIT child of the game window" | the EDIT control serves every text field
+axisnet_recomp.c:1845 | "back to the chat line" -> "back to that EDIT control" | same
+PROPOSE | src/game.h:515 macro gfx_setProjectionHud_bits -> gfx_setMatchProjection_bits (alias of gfx_setMatchProjection with the scale as bits; "Hud" is only mode 0, loading.c:82 calls it with 1 for the 3D cylinder)
+PROPOSE | axisnet_recomp.c:2579 log string "chat line refocused" -> "text field refocused" (string literal = code change, left as is)
+PROPOSE | src/scene.fields:1554 Scene.cameraAngle comment "(...; the free camera)": also the mech test mode's orbit angles (match_mechTestFrame) - incomplete, not wrong; left

@@ -532,8 +532,8 @@ static u8 *weapon_list(u8 *ac)
    (cullMargin plus its radius radius) of the camera (cameraPos..) on every axis. Its tint (tint): a cloaked actor
    (flag 0x200) at the local player's rank or above white and faint (0x40 to itself, 0x10 to others); else for its
    first 3 s (spawnAge) a white flash fading in then out, or a shot's flash (glow, white) and a hit's (hitFlash, red-orange); a
-   faint tint lights it with lightMatrix. The viewing actor (cockpitActor), when draw is set, shows only the weapon in
-   hand; others, when draw is not 1, all their lists up to the count breakUp (the fifth unless viewMarked; flags 0xd00 skip
+   faint tint queues it with faintActorMatrix (drawn transparent). The viewing actor (cockpitActor), when draw is set, shows only the weapon in
+   hand; others, when draw is not 1, all their lists up to the count partListsBound (the fifth unless viewMarked; flags 0xd00 skip
    them without flares 0x83a9c8 or when too small on screen; faint ones only with flares); flags 0x100 / 0xc00 add a
    lit pass. A list that would not draw has them all reloaded (actor_loadHead / actor_loadChest / actor_loadArms /
    actor_loadLegs / actor_loadBooster / actor_loadWeapon). Its caller ignores the eax it leaves */

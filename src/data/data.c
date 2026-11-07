@@ -524,7 +524,7 @@ u8 g_dikApps_v[4] __attribute__((aligned(16)));   /* 0x67ef28 */
 u8 g_dikEnter_2_v[4] __attribute__((aligned(16)));   /* 0x67ef2c */
 u8 g_gameCount_v[4] __attribute__((aligned(16)));   /* 0x67ef30 */
 u8 g_pointerGlideX_v[4] __attribute__((aligned(16)));   /* 0x67ef34 */
-char g_chatHistory_v[3072] __attribute__((aligned(16)));   /* 0x67ef38 */
+char g_inputHistory_v[3072] __attribute__((aligned(16)));   /* 0x67ef38 */
 u8 g_pointerGlideY_v[4] __attribute__((aligned(16)));   /* 0x67fb38 */
 u8 g_menuTunnel_v[4] __attribute__((aligned(16)));   /* 0x67fb3c */
 u8 g_dikPrintScreen_v[4] __attribute__((aligned(16)));   /* 0x67fb40 */
@@ -1694,7 +1694,7 @@ const DataPiece g_splitObjects[] = {
 	{ 0x67ef2c, g_dikEnter_2_v, 4 },
 	{ 0x67ef30, g_gameCount_v, 4 },
 	{ 0x67ef34, g_pointerGlideX_v, 4 },
-	{ 0x67ef38, g_chatHistory_v, 3072 },
+	{ 0x67ef38, g_inputHistory_v, 3072 },
 	{ 0x67fb38, g_pointerGlideY_v, 4 },
 	{ 0x67fb3c, g_menuTunnel_v, 4 },
 	{ 0x67fb40, g_dikPrintScreen_v, 4 },

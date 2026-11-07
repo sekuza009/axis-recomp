@@ -42,7 +42,7 @@ void (menu_drawLargeButton)(int x0, int y0, int x1, int y1, int lit)
 	button(x0, y0, x1, y1, lit, plain, lit_);
 }
 
-/* 0x4284d0, 0x4285c0, 0x4286b0, 0x4287a0: the small buttons, two cells each */
+/* 0x4284d0, 0x4285c0, 0x4286b0, 0x4287a0: the arrow buttons (left, right, up, down), two cells each */
 void (menu_drawLeftArrow)(int x0, int y0, int x1, int y1, int lit)
 {
 	static const float plain[4] = { 0.0f, 0.25f, 0.25f, 0.375f }, lit_[4] = { 0.5f, 0.25f, 0.75f, 0.375f };

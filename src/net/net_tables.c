@@ -1459,7 +1459,7 @@ static void send_packet(u8 *s, u8 *packet)
 
 /* 0x48ead0 (thiscall on the scene): the map items' states sent (a 0x40-byte packet, kind 0xe in its second byte): one
    nibble each for up to 124 items (the stage's items, itemCount of them; two to a byte from the third, the even one
-   low), an item that is there (type not negative) and taken: its fade / 10 + 1, at most 15 (each byte cleared at its
+   low), an item that is there (type not negative) and taken: its timer / 10 + 1, at most 15 (each byte cleared at its
    even item). Sent by send_packet. Its caller ignores the eax it leaves */
 static void THISCALL __attribute__((used)) net_sendItemStates_body(u8 *s, u8 *packet)
 {

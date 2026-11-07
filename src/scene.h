@@ -1173,7 +1173,7 @@ typedef struct MapPlayer {
 /* an actor's spawn record (the map's actors, Stage.mapActors; actor_applySpawnRecord) */
 typedef struct SpawnRecord {
 	i32 player;   /* +0x0: its player record */
-	float pos[3];   /* +0x4: where it spawns (actor_applySpawnRecord, script command 15); bot_spawns puts a free start point's position (spawn_point; else cameraSaved) in a copy instead */
+	float pos[3];   /* +0x4: where it spawns (actor_applySpawnRecord, script command 15); bot_spawns puts a free start point's position (spawn_point; else mapStart) in a copy instead */
 	float pitch;   /* +0x10: the actor's starting pitch (actor_applySpawnRecord: via stage_setupActorSlot to actor_setupFromParts, Player.pitch) */
 	float yaw;   /* +0x14: the actor's starting heading (actor_applySpawnRecord: via stage_setupActorSlot to actor_setupFromParts, Player.yaw) */
 	i32 bot;   /* +0x18: 1: run by the game (the map's actors but the first; bot_spawns spawns these); copied to Player.bot (actor_applySpawnRecord) */
@@ -1720,7 +1720,7 @@ typedef struct Scene {
 	float cameraPos[3];   /* +0x233ca04: (by use; seen running) the camera's position (scene_startSession: the origin) */
 	float cameraDir[3];   /* +0x233ca10: its direction (-Z) */
 	float cameraUp[3];   /* +0x233ca1c: its up (Y) */
-	float cameraAngle[2];   /* +0x233ca28: its pitch (within +-890) and heading (wrapped at 3600; the free camera) */
+	float cameraAngle[2];   /* +0x233ca28: its pitch (within +-890) and heading (wrapped at 3600): the free camera's, and the mech test mode's orbit about the actor (match_mechTestFrame) */
 	u32 cameraPresets[6][10];   /* +0x233ca30: the camera presets: six fields by ten camera modes (classes.c k_cameraPresets, Console_ctor), copied into cameraSettings (replay_frame, the scene pass, match_mechTestFrame, match_setupOrStartRound) */
 	u32 cameraSettings[6][10];   /* +0x233cb20: the working camera presets, six fields by ten camera modes as cameraPresets ([0] pitch, [1] heading, [2] distance: floats' bits; [3] look at the actor, [4] fixed pitch, [5] fixed heading: ints); copied from cameraPresets at the mech test mode's start (match_mechTestFrame), by preset_reset (replay viewer), on cameraReset (match_frame) and at each round's start (round_start); pitch / heading moved by the mouse, the distance by the zoom keys */
 	i32 cameraMode;   /* +0x233cc10: the camera preset in use, 0 .. 9 (the cameraSettings column): 1 the cockpit (stage_setCockpitActor), 9 the round's end view; respawnCameraMode in play (match_frame); stepped or picked at random in replays (choose_followed); 1 at round_start */

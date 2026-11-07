@@ -10,7 +10,7 @@
 0x9f8d34,float,9,g_statBars,the profile screen's nine stat bars as drawn (eased a tenth a frame)
 0x9f8ec0,float,9,g_statBarTargets,the bars' targets (only cleared)
 0x9f9010,int,4,g_profileMessageClickBox,the profile dialog box (left; top; right; bottom)
-0x67ef38,char,3072,g_chatHistory,the chat line's three-line history of 0x400 bytes; newest first (frontEnd_startUp clears 0x300 dwords)
+0x67ef38,char,3072,g_inputHistory,the chat line's three-line history of 0x400 bytes; newest first (frontEnd_startUp clears 0x300 dwords)
 0x9eeadc,int,50,g_briefingPageStarts,the skirmish settings' undo values (0xc8 bytes cleared; g_briefingStart follows)
 0x9dd5a6,char,30,g_ladderEmail,the registry's copy of the account e-mail (30 bytes cleared; up to 39 copied in)
 0x4d1688,int,256,g_unusedStartupTable,a key table only cleared at start-up
