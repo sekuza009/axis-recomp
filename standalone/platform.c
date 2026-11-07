@@ -10,7 +10,7 @@
 #include "../src/fixes/settings.h"
 #include "../../axisnet/iv32/iv32.h"
 
-Settings g_settings = { 1, 1, 16.0f / 9.0f, 1, 1.0f };
+Settings g_settings = { 1, 1, 16.0f / 9.0f, 1, 1.0f, 1.0f };
 
 void platform_loadSettings(void)
 {
@@ -25,6 +25,8 @@ void platform_loadSettings(void)
 	g_settings.hudMaxAspect = (float)atof(v);
 	GetPrivateProfileStringA("input", "menusens", "1", v, sizeof v, ini);
 	g_settings.menuSens = (float)atof(v);
+	GetPrivateProfileStringA("input", "escmenusens", "1", v, sizeof v, ini);
+	g_settings.escMenuSens = (float)atof(v);
 }
 
 int platform_isForeground(void *window) { return GetForegroundWindow() == (HWND)window; }

@@ -10,6 +10,8 @@ typedef struct {
 	float hudMaxAspect;    /* [hud] maxaspect: the widest area the HUD spreads over, width / height (0: the screen) */
 	int sharpText;         /* [hud] sharptext: menu / chat text sampled pixel-sharp */
 	float menuSens;        /* [input] menusens: the menu pointer's speed (1: the Windows pointer's; 0: the original's) */
+	float escMenuSens;     /* [input] escmenusens: how little mouse travel moves the in-match (Esc) menu's cursor (1: a
+	                          quarter of the screen's height a step at the Windows pointer speed; 2: half that) */
 } Settings;
 
 extern Settings g_settings;

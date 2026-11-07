@@ -102,32 +102,42 @@ void fix_cursorClamp(void)
 }
 
 /* ---- the Esc menu in a match, by mouse (match_frame). The original turned any frame's offset over 50 into a step
-   up or down: built for 30 fps and 400 dpi mice, at 120 fps a gentle slide raced through the items. Now the
-   vertical travel adds up and each item takes about one item spacing (screen height / 12) of movement at the
-   Windows pointer speed. ---- */
+   up or down: built for 30 fps and 400 dpi mice, at 120 fps a gentle slide raced through the items. Now the travel
+   adds up along the page's own direction - up and down on the main page's column, left and right on the side by side
+   pairs (the team's RED / BLUE, RETRY's and QUIT's YES / NO), the other direction ignored - and each step takes a
+   quarter of the screen's height of movement at the Windows pointer speed (divided by [input] escmenusens). ---- */
 static float g_menuTravel;
 static unsigned g_menuTick;
+static int g_menuPage;
 
 void fix_menuNav(Scene *scene)
 {
 	unsigned now = platform_ticks();
-	if (now - g_menuTick > 250)   /* the menu just (re)opened */
+	int page = scene->escPage, across = page == 1 || page == 3 || page == 4;
+	if (now - g_menuTick > 250 || page != g_menuPage)   /* the menu just (re)opened, or another page */
 		g_menuTravel = 0;
 	g_menuTick = now;
+	g_menuPage = page;
 	int s = g_mouseSensitivity, h = g_screenH;
-	float f = ((s * 0.02f) * (s * 0.02f) + 1) * 0.5f, y = scene->mouseDy / f;   /* back to the raw counts */
-	if (g_mouseInvert)   /* (the menu follows the hand) */
-		y = -y;
-	if (y * g_menuTravel < 0)   /* turned round */
+	float f = ((s * 0.02f) * (s * 0.02f) + 1) * 0.5f, d;   /* (the offsets back to the raw counts) */
+	if (across)
+		d = scene->mouseDx / f;   /* (right: the second item) */
+	else {
+		d = scene->mouseDy / f;
+		if (g_mouseInvert)   /* (the menu follows the hand) */
+			d = -d;
+	}
+	if (d * g_menuTravel < 0)   /* turned round */
 		g_menuTravel = 0;
-	g_menuTravel += y;
-	float step = (h > 0 ? h : 480) / 12.0f / (platform_pointerSpeed() * g_settings.menuSens);
+	g_menuTravel += d;
+	float sens = platform_pointerSpeed() * g_settings.menuSens * (g_settings.escMenuSens > 0 ? g_settings.escMenuSens : 1);
+	float step = (h > 0 ? h : 480) / 4.0f / sens;
 	if (g_menuTravel <= -step) {
 		scene->menuKeys[0] = 1;
-		g_menuTravel += step;
+		g_menuTravel = 0;
 	} else if (g_menuTravel >= step) {
 		scene->menuKeys[1] = 1;
-		g_menuTravel -= step;
+		g_menuTravel = 0;
 	}
 }
 
