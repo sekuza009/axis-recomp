@@ -230,7 +230,7 @@
 #define chat_loadMacros(scene) GAME_THISFN(chat_loadMacros, 0x4617f0, void, void *)(scene)
 #define Light_ctor(self) GAME_THISFN(Light_ctor, 0x462560, void, void *)(self)
 #define msg_playerLeft(scene, actor) GAME_THISFN(msg_playerLeft, 0x462bc0, void, void *, int)(scene, actor)
-#define Model_ctor(self) GAME_THISFN(Model_ctor, 0x462cf0, void, void *)(self)
+#define Shape_ctor(self) GAME_THISFN(Shape_ctor, 0x462cf0, void, void *)(self)
 #define CollisionVolume_ctor(self) GAME_THISFN(CollisionVolume_ctor, 0x463790, void, void *)(self)
 #define Scene_ctor(self) GAME_THISFN(Scene_ctor, 0x4637f0, void, void *)(self)
 #define shapeDat_findByName(name) GAME_FN(shapeDat_findByName, 0x466ce0, int, const char *)(name)

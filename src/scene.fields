@@ -67,7 +67,7 @@ struct ActorItem 0x2e18                                         # an item record
 
 struct BlockOwner 0x10                                          # the head Model, Manager, SkelManager and ObjectList share: their data block (take_block)
 4          4          i32 blockSize                                   # bytes the block needs, set by the owner before take_block: operator_new'd at this size (none: a fatal message) or the memory given checked against it (too small: a fatal message)
-8          4          u8 *block                                       # the data block: allocated (ownsBlock 1) or the caller's memory (take_block); freed and cleared when owned (free_owned: Model_release, Skeleton_release, partList_release, CollisionVolume_release ..)
+8          4          u8 *block                                       # the data block: allocated (ownsBlock 1) or the caller's memory (take_block); freed and cleared when owned (free_owned: Shape_release, Skeleton_release, partList_release, CollisionVolume_release ..)
 0xc        4          i32 ownsBlock                              # 1: allocated here (freed with it)
 
 struct Shape 0x4c                                               # a shape (the game's class Shape; shapes_skeletons.c: its 0x34-byte file header, then its box): a map object's model, an object list's entries ...

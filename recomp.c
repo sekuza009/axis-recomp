@@ -1544,7 +1544,7 @@ float view_farPlane(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 int THISCALL TextureManager_clear(void *self);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-int THISCALL Model_clear(void *self);
+int THISCALL Shape_clear(void *self);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 int THISCALL ShapeManager_clear(void *self);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
@@ -1681,7 +1681,7 @@ int TextureManager_ctor(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void *THISCALL Light_ctor(void *self);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-void *THISCALL Model_ctor(void *self);
+void *THISCALL Shape_ctor(void *self);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void *THISCALL CollisionVolume_ctor(void *self);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
@@ -2020,7 +2020,7 @@ void *THISCALL ErrorLog_deletingDtor(void *self, int flags);
 void *THISCALL TimeSync_deletingDtor(void *self, int flags);
 /* release functions: free the owned buffer (+8, owned when +0xc == 1), then the class clear (EAX = 0) */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-int THISCALL Model_release(void *self);
+int THISCALL Shape_release(void *self);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 int THISCALL ShapeManager_release(void *self);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
@@ -2111,7 +2111,7 @@ int static_startTimeSyncLog(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 int static_startSceneLog(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-int THISCALL Model_dtor(void *self);
+int THISCALL Shape_dtor(void *self);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 int THISCALL ShapeManager_dtor(void *self);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
@@ -2210,7 +2210,7 @@ void *THISCALL Texture_deletingDtor(void *self, int flags);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void *THISCALL BMPRGBFile_deletingDtor(void *self, int flags);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-void *THISCALL Model_deletingDtor(void *self, int flags);
+void *THISCALL Shape_deletingDtor(void *self, int flags);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void *THISCALL ShapeManager_deletingDtor(void *self, int flags);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
@@ -8109,7 +8109,7 @@ ST(view_fov, fill((void *)0x4c4dec, 4);, ld_hash(CD(long double, 0x4686d0, void)
 ST(view_nearPlane, fill((void *)0x4c4df0, 4);, ld_hash(CD(long double, 0x4686f0, void)()), ld_hash(view_nearPlane()))
 ST(view_farPlane, fill((void *)0x4c4df4, 4);, ld_hash(CD(long double, 0x468700, void)()), ld_hash(view_farPlane()))
 ST(TextureManager_clear, fill(BUF, 0x40);, TC(int, 0x4569a0, char *)(BUF + 0x10), TextureManager_clear(BUF + 0x10))
-ST(Model_clear, fill(BUF, 0x6c);, TC(int, 0x464bb0, char *)(BUF + 0x10), Model_clear(BUF + 0x10))
+ST(Shape_clear, fill(BUF, 0x6c);, TC(int, 0x464bb0, char *)(BUF + 0x10), Shape_clear(BUF + 0x10))
 ST(ShapeManager_clear, fill(BUF, 0x26c);, TC(int, 0x466a20, char *)(BUF + 0x10), ShapeManager_clear(BUF + 0x10))
 ST(SkeletonManager_clear, fill(BUF, 0x150);, TC(int, 0x46ae70, char *)(BUF + 0x10), SkeletonManager_clear(BUF + 0x10))
 ST(collisionPlane_clear, fill(BUF, 0xcc);, TC(int, 0x47db50, char *)(BUF + 0x10), collisionPlane_clear(BUF + 0x10))
@@ -8180,7 +8180,7 @@ V0(static_endTimeSync, 0x468740, fill((void *)0xa0e948, 8);)
 ST(TextureManager_reset, fill(BUF, 0x40);, TC(int, 0x4569b0, char *)(BUF + 0x10), TextureManager_reset(BUF + 0x10))
 ST(TextureManager_ctor, fill((void *)0x83a5e0, 0x30);, CD(int, 0x42b330, void)(), TextureManager_ctor())
 #define CT(name, addr, n) ST(name, fill(BUF, (n));, TC(void *, addr, char *)(BUF + 0x10), name((DWORD *)(BUF + 0x10)))
-CT(Light_ctor, 0x462560, 0xb020) CT(Model_ctor, 0x462cf0, 0x80) CT(CollisionVolume_ctor, 0x463790, 0x120)
+CT(Light_ctor, 0x462560, 0xb020) CT(Shape_ctor, 0x462cf0, 0x80) CT(CollisionVolume_ctor, 0x463790, 0x120)
 CT(Scene_ctor, 0x4637f0, 0x20) CT(TimeSync_ctor, 0x487430, 0x60)
 ST(Light_dtor, fill(BUF, 0xb020);, TC(int, 0x483d50, char *)(BUF + 0x10), Light_dtor((DWORD *)(BUF + 0x10)))
 ST(stage_resetDynamicLights, fill(BUF + 0x9d8000, 0x20); fill(BUF + 0x9e3010, 0x10);, TC(int, 0x4723e0, char *)(BUF), stage_resetDynamicLights(BUF))
@@ -8726,7 +8726,7 @@ ST(Light_deletingDtor, fill(BUF, 0x100); g_a[0] = irnd(0, 3);, (DWORD)TC(char *,
 ST(Scene_deletingDtor, fill(BUF, 0x100); g_a[0] = irnd(0, 3);, (DWORD)TC(char *, 0x463810, char *, DWORD)(BUF + 0x10, (DWORD)g_a[0]), (DWORD)Scene_deletingDtor(BUF + 0x10, (DWORD)g_a[0]))
 ST(ErrorLog_deletingDtor, fill(BUF, 0x100); g_a[0] = irnd(0, 3);, (DWORD)TC(char *, 0x46c5c0, char *, DWORD)(BUF + 0x10, (DWORD)g_a[0]), (DWORD)ErrorLog_deletingDtor(BUF + 0x10, (DWORD)g_a[0]))
 ST(TimeSync_deletingDtor, fill(BUF, 0x100); g_a[0] = irnd(0, 3);, (DWORD)TC(char *, 0x487450, char *, DWORD)(BUF + 0x10, (DWORD)g_a[0]), (DWORD)TimeSync_deletingDtor(BUF + 0x10, (DWORD)g_a[0]))
-ST(Model_release, fill(BUF, 0x300); S32(BUF + 0x10, 0xc) = irnd(0, 2);, TC(int, 0x464bc0, char *)(BUF + 0x10), Model_release(BUF + 0x10))
+ST(Shape_release, fill(BUF, 0x300); S32(BUF + 0x10, 0xc) = irnd(0, 2);, TC(int, 0x464bc0, char *)(BUF + 0x10), Shape_release(BUF + 0x10))
 ST(ShapeManager_release, fill(BUF, 0x300); S32(BUF + 0x10, 0xc) = irnd(0, 2);, TC(int, 0x466a30, char *)(BUF + 0x10), ShapeManager_release(BUF + 0x10))
 ST(Skeleton_release, fill(BUF, 0x300); S32(BUF + 0x10, 0xc) = irnd(0, 2);, TC(int, 0x4699a0, char *)(BUF + 0x10), Skeleton_release(BUF + 0x10))
 ST(SkeletonManager_release, fill(BUF, 0x300); S32(BUF + 0x10, 0xc) = irnd(0, 2);, TC(int, 0x46ae80, char *)(BUF + 0x10), SkeletonManager_release(BUF + 0x10))
@@ -8800,7 +8800,7 @@ ST(static_startLightLog, , CD(DWORD, 0x483cf0, void)(), static_startLightLog())
 ST(static_startViewVolumeLog, , CD(DWORD, 0x483f50, void)(), static_startViewVolumeLog())
 ST(static_startTimeSyncLog, , CD(DWORD, 0x4873d0, void)(), static_startTimeSyncLog())
 ST(static_startSceneLog, , CD(DWORD, 0x48b3b0, void)(), static_startSceneLog())
-ST(Model_dtor, fill(BUF, 0x300); S32(BUF + 0x10, 0xc) = irnd(0, 2);, TC(int, 0x464ba0, char *)(BUF + 0x10), Model_dtor((DWORD *)(BUF + 0x10)))
+ST(Shape_dtor, fill(BUF, 0x300); S32(BUF + 0x10, 0xc) = irnd(0, 2);, TC(int, 0x464ba0, char *)(BUF + 0x10), Shape_dtor((DWORD *)(BUF + 0x10)))
 ST(ShapeManager_dtor, fill(BUF, 0x300); S32(BUF + 0x10, 0xc) = irnd(0, 2);, TC(int, 0x466a10, char *)(BUF + 0x10), ShapeManager_dtor((DWORD *)(BUF + 0x10)))
 ST(SkeletonManager_dtor, fill(BUF, 0x300); S32(BUF + 0x10, 0xc) = irnd(0, 2);, TC(int, 0x46ae60, char *)(BUF + 0x10), SkeletonManager_dtor((DWORD *)(BUF + 0x10)))
 ST(UnitPoseInfo_dtor, fill(BUF, 0x300); S32(BUF + 0x10, 0xc) = irnd(0, 2);, TC(int, 0x46f470, char *)(BUF + 0x10), UnitPoseInfo_dtor((DWORD *)(BUF + 0x10)))
@@ -8936,7 +8936,7 @@ ST(mem_free, g_a[0] = irnd(0, 1) ? (int)(BUF + 0x100) : 0;, CD(DWORD, 0x467d60, 
 /* batch 46 */
 ST(Texture_deletingDtor, fill(BUF, 0x300); S32(BUF + 0x10, 0xc) = irnd(0, 2); S32(BUF + 0x10, 0x108) = irnd(-2, 2); S32(BUF + 0x10, 4) = 0; S32(BUF + 0x10, 0x110) = 0; g_a[0] = irnd(0, 3);, (DWORD)TC(char *, 0x42b150, char *, DWORD)(BUF + 0x10, (DWORD)g_a[0]), (DWORD)Texture_deletingDtor(BUF + 0x10, (DWORD)g_a[0]))
 ST(BMPRGBFile_deletingDtor, fill(BUF, 0x300); S32(BUF + 0x10, 0xc) = irnd(0, 2); S32(BUF + 0x10, 0x108) = irnd(-2, 2); S32(BUF + 0x10, 4) = 0; S32(BUF + 0x10, 0x110) = 0; g_a[0] = irnd(0, 3);, (DWORD)TC(char *, 0x455a80, char *, DWORD)(BUF + 0x10, (DWORD)g_a[0]), (DWORD)BMPRGBFile_deletingDtor(BUF + 0x10, (DWORD)g_a[0]))
-ST(Model_deletingDtor, fill(BUF, 0x300); S32(BUF + 0x10, 0xc) = irnd(0, 2); S32(BUF + 0x10, 0x108) = irnd(-2, 2); S32(BUF + 0x10, 4) = 0; S32(BUF + 0x10, 0x110) = 0; g_a[0] = irnd(0, 3);, (DWORD)TC(char *, 0x462d10, char *, DWORD)(BUF + 0x10, (DWORD)g_a[0]), (DWORD)Model_deletingDtor(BUF + 0x10, (DWORD)g_a[0]))
+ST(Shape_deletingDtor, fill(BUF, 0x300); S32(BUF + 0x10, 0xc) = irnd(0, 2); S32(BUF + 0x10, 0x108) = irnd(-2, 2); S32(BUF + 0x10, 4) = 0; S32(BUF + 0x10, 0x110) = 0; g_a[0] = irnd(0, 3);, (DWORD)TC(char *, 0x462d10, char *, DWORD)(BUF + 0x10, (DWORD)g_a[0]), (DWORD)Shape_deletingDtor(BUF + 0x10, (DWORD)g_a[0]))
 ST(ShapeManager_deletingDtor, fill(BUF, 0x300); S32(BUF + 0x10, 0xc) = irnd(0, 2); S32(BUF + 0x10, 0x108) = irnd(-2, 2); S32(BUF + 0x10, 4) = 0; S32(BUF + 0x10, 0x110) = 0; g_a[0] = irnd(0, 3);, (DWORD)TC(char *, 0x463010, char *, DWORD)(BUF + 0x10, (DWORD)g_a[0]), (DWORD)ShapeManager_deletingDtor(BUF + 0x10, (DWORD)g_a[0]))
 ST(CollisionVolume_deletingDtor, fill(BUF, 0x300); S32(BUF + 0x10, 0xc) = irnd(0, 2); S32(BUF + 0x10, 0x108) = irnd(-2, 2); S32(BUF + 0x10, 4) = 0; S32(BUF + 0x10, 0x110) = 0; g_a[0] = irnd(0, 3);, (DWORD)TC(char *, 0x4637b0, char *, DWORD)(BUF + 0x10, (DWORD)g_a[0]), (DWORD)CollisionVolume_deletingDtor(BUF + 0x10, (DWORD)g_a[0]))
 ST(SkeletonManager_deletingDtor, fill(BUF, 0x300); S32(BUF + 0x10, 0xc) = irnd(0, 2); S32(BUF + 0x10, 0x108) = irnd(-2, 2); S32(BUF + 0x10, 4) = 0; S32(BUF + 0x10, 0x110) = 0; g_a[0] = irnd(0, 3);, (DWORD)TC(char *, 0x4637d0, char *, DWORD)(BUF + 0x10, (DWORD)g_a[0]), (DWORD)SkeletonManager_deletingDtor(BUF + 0x10, (DWORD)g_a[0]))
@@ -17302,7 +17302,7 @@ static const STest g_stests[] = {
 	T(view_setFov, 1, 4, 300), T(static_initTex64x64, 0, 4, 0), T(static_initTex128x64, 0, 4, 0), T(static_initTex256x64, 0, 4, 0),
 	T(static_initTex128x128, 0, 4, 0), T(static_initTex256x128, 0, 4, 0), T(static_initTex256x256, 0, 4, 0), T(net_sessionCount, 1, 4, 300),
 	T(gfx_getWidth, 1, 4, 300), T(gfx_getHeight, 1, 4, 300), T(view_fov, 1, 4, 300), T(view_nearPlane, 1, 4, 300),
-	T(view_farPlane, 1, 4, 300), T(TextureManager_clear, 1, 4, 300), T(Model_clear, 1, 4, 300), T(ShapeManager_clear, 1, 4, 300),
+	T(view_farPlane, 1, 4, 300), T(TextureManager_clear, 1, 4, 300), T(Shape_clear, 1, 4, 300), T(ShapeManager_clear, 1, 4, 300),
 	T(SkeletonManager_clear, 1, 4, 300), T(collisionPlane_clear, 1, 4, 300), T(spaceBlock_clear, 1, 4, 300), T(CollisionVolume_clear, 1, 4, 300),
 	T(ViewVolume_clear, 1, 4, 300), T(TimeSync_clear, 1, 4, 300), T(spaceNode_clear, 1, 4, 300), T(Light_clearCounts, 1, 4, 300),
 	T(stage_clearMessages, 1, 4, 300), T(ErrorLog_dtor, 0, 4, 300), T(TimeSync_dtor, 0, 4, 300), T(Scene_dtor, 0, 4, 300),
@@ -17323,7 +17323,7 @@ static const STest g_stests[] = {
 	T(static_endUnitLog, 0, 6, 0), T(static_endStageLog, 0, 6, 0), T(static_endCollisionVolumeLog, 0, 6, 0), T(static_endLightLog, 0, 6, 0),
 	T(static_endViewVolumeLog, 0, 6, 0), T(static_endTimeSyncLog, 0, 6, 0), T(static_endSceneLog, 0, 6, 0), T(static_endSoundLog, 0, 4, 0),
 	T(static_endTimeSync, 0, 4, 0), T(TextureManager_reset, 1, 4, 300), T(TextureManager_ctor, 1, 4, 0), T(Light_ctor, 1, 4, 100),
-	T(Model_ctor, 1, 4, 300), T(CollisionVolume_ctor, 1, 4, 300), T(Scene_ctor, 1, 4, 300), T(TimeSync_ctor, 1, 4, 300),
+	T(Shape_ctor, 1, 4, 300), T(CollisionVolume_ctor, 1, 4, 300), T(Scene_ctor, 1, 4, 300), T(TimeSync_ctor, 1, 4, 300),
 	T(Light_dtor, 1, 4, 100), T(stage_resetDynamicLights, 1, 4, 300), T(ResourceSet_ctor, 1, 4, 20), T(space_resetPlanes, 1, 4, 1000),
 	T(space_resetNodes, 1, 4, 1000), T(space_resetBlocks, 1, 4, 1000), T(script_reset, 1, 4, 300), T(script_notifyObject, 1, 4, 1000),
 	T(lobby_slidePanels, 1, 40, 0), T(room_slideMenu, 1, 40, 0), T(arenaList_rebuild, 0, 40, 0),
@@ -17361,7 +17361,7 @@ static const STest g_stests[] = {
 	T(static_registerUnitPoseInfoLogDtor, 1, 2, 0), T(static_registerUnitLogDtor, 1, 2, 0), T(static_registerStageLogDtor, 1, 2, 0), T(static_registerCollisionVolumeLogDtor, 1, 2, 0),
 	T(static_registerLightLogDtor, 1, 2, 0), T(static_registerViewVolumeLogDtor, 1, 2, 0), T(static_registerTimeSyncLogDtor, 1, 2, 0), T(static_registerSceneLogDtor, 1, 2, 0),
 	T(TextureManager_deletingDtor, 1, 4, 300), T(Light_deletingDtor, 1, 4, 300), T(Scene_deletingDtor, 1, 4, 300), T(ErrorLog_deletingDtor, 1, 4, 300),
-	T(TimeSync_deletingDtor, 1, 4, 300), T(Model_release, 1, 4, 300), T(ShapeManager_release, 1, 4, 300), T(Skeleton_release, 1, 4, 300),
+	T(TimeSync_deletingDtor, 1, 4, 300), T(Shape_release, 1, 4, 300), T(ShapeManager_release, 1, 4, 300), T(Skeleton_release, 1, 4, 300),
 	T(SkeletonManager_release, 1, 4, 300), T(partList_release, 1, 4, 300), T(CollisionVolume_release, 1, 4, 300), T(net_freeBuffers, 1, 300, 0),
 	T(net_freeSessionList, 1, 300, 0), T(net_addSession, 1, 300, 0), T(tunnel_removeLastRing, 1, 4, 1000), T(tunnel_appendRing, 1, 30, 0),
 	/* batch 44 */
@@ -17372,7 +17372,7 @@ static const STest g_stests[] = {
 	T(static_startBMPRGBFileLog, 1, 2, 0), T(static_startRealColorLog, 1, 2, 0), T(static_startPackedColorLog, 1, 2, 0), T(static_startUnitPartInfoLog, 1, 2, 0),
 	T(static_startUnitPoseInfoLog, 1, 2, 0), T(static_startUnitLog, 1, 2, 0), T(static_startStageLog, 1, 2, 0), T(static_startCollisionVolumeLog, 1, 2, 0),
 	T(static_startLightLog, 1, 2, 0), T(static_startViewVolumeLog, 1, 2, 0), T(static_startTimeSyncLog, 1, 2, 0), T(static_startSceneLog, 1, 2, 0),
-	T(Model_dtor, 1, 4, 300), T(ShapeManager_dtor, 1, 4, 300), T(SkeletonManager_dtor, 1, 4, 300), T(UnitPoseInfo_dtor, 1, 4, 300), T(UnitPoseInfo_deletingDtor, 1, 4, 300),
+	T(Shape_dtor, 1, 4, 300), T(ShapeManager_dtor, 1, 4, 300), T(SkeletonManager_dtor, 1, 4, 300), T(UnitPoseInfo_dtor, 1, 4, 300), T(UnitPoseInfo_deletingDtor, 1, 4, 300),
 	T(CollisionVolume_dtor, 1, 4, 300), T(tunnel_restart, 1, 30, 0), T(tunnel_addRing, 1, 30, 0), T(ShapeManager_releaseModels, 1, 4, 1000),
 	T(SkeletonManager_releaseSkeletons, 1, 4, 1000),
 	/* batch 45 */
@@ -17383,7 +17383,7 @@ static const STest g_stests[] = {
 	T(app_parseCommandLine, 1, 100, 0), T(mission_loadAxisMis, 1, 100, 0), T(cfg_readPlayer, 1, 150, 0), T(arena_loadSettings, 1, 150, 0),
 	T(image_tryOpen, 1, 4, 1000), T(mem_free, 1, 4, 300),
 	/* batch 46 */
-	T(Texture_deletingDtor, 1, 4, 300), T(BMPRGBFile_deletingDtor, 1, 4, 300), T(Model_deletingDtor, 1, 4, 300), T(ShapeManager_deletingDtor, 1, 4, 300),
+	T(Texture_deletingDtor, 1, 4, 300), T(BMPRGBFile_deletingDtor, 1, 4, 300), T(Shape_deletingDtor, 1, 4, 300), T(ShapeManager_deletingDtor, 1, 4, 300),
 	T(CollisionVolume_deletingDtor, 1, 4, 300), T(SkeletonManager_deletingDtor, 1, 4, 300), T(static_destroyTex64x64, 1, 30, 0), T(static_destroyTex128x64, 1, 30, 0),
 	T(static_destroyTex256x64, 1, 30, 0), T(static_destroyTex128x128, 1, 30, 0), T(static_destroyTex256x128, 1, 30, 0), T(static_destroyTex256x256, 1, 30, 0),
 	T(sound_freeAll, 1, 40, 0), T(map_readCommands, 1, 4, 1000), T(LightFactors_read, 1, 4, 1000), T(actor_destroyPartLists, 1, 4, 300),
@@ -18231,7 +18231,7 @@ static const struct { DWORD addr; void *fn; const char *name; } g_hooks3[] = {
 	{ 0x4685b0, (void *)gfx_getWidth, "gfx_getWidth" }, { 0x4685c0, (void *)gfx_getHeight, "gfx_getHeight" },
 	{ 0x4686d0, (void *)view_fov, "view_fov" }, { 0x4686f0, (void *)view_nearPlane, "view_nearPlane" },
 	{ 0x468700, (void *)view_farPlane, "view_farPlane" }, { 0x4569a0, (void *)TextureManager_clear, "TextureManager_clear" },
-	{ 0x464bb0, (void *)Model_clear, "Model_clear" }, { 0x466a20, (void *)ShapeManager_clear, "ShapeManager_clear" },
+	{ 0x464bb0, (void *)Shape_clear, "Shape_clear" }, { 0x466a20, (void *)ShapeManager_clear, "ShapeManager_clear" },
 	{ 0x46ae70, (void *)SkeletonManager_clear, "SkeletonManager_clear" }, { 0x47db50, (void *)collisionPlane_clear, "collisionPlane_clear" },
 	{ 0x4804a0, (void *)spaceBlock_clear, "spaceBlock_clear" }, { 0x4813a0, (void *)CollisionVolume_clear, "CollisionVolume_clear" },
 	{ 0x483fc0, (void *)ViewVolume_clear, "ViewVolume_clear" }, { 0x487480, (void *)TimeSync_clear, "TimeSync_clear" },
@@ -18270,7 +18270,7 @@ static const struct { DWORD addr; void *fn; const char *name; } g_hooks3[] = {
 	{ 0x48b3f0, (void *)static_endSceneLog, "static_endSceneLog" }, { 0x456cc0, (void *)static_endSoundLog, "static_endSoundLog" },
 	{ 0x468740, (void *)static_endTimeSync, "static_endTimeSync" }, { 0x4569b0, (void *)TextureManager_reset, "TextureManager_reset" },
 	{ 0x42b330, (void *)TextureManager_ctor, "TextureManager_ctor" }, { 0x462560, (void *)Light_ctor, "Light_ctor" },
-	{ 0x462cf0, (void *)Model_ctor, "Model_ctor" }, { 0x463790, (void *)CollisionVolume_ctor, "CollisionVolume_ctor" },
+	{ 0x462cf0, (void *)Shape_ctor, "Shape_ctor" }, { 0x463790, (void *)CollisionVolume_ctor, "CollisionVolume_ctor" },
 	{ 0x4637f0, (void *)Scene_ctor, "Scene_ctor" }, { 0x487430, (void *)TimeSync_ctor, "TimeSync_ctor" },
 	{ 0x483d50, (void *)Light_dtor, "Light_dtor" }, { 0x4723e0, (void *)stage_resetDynamicLights, "stage_resetDynamicLights" },
 	{ 0x463850, (void *)ResourceSet_ctor, "ResourceSet_ctor" }, { 0x481520, (void *)space_resetPlanes, "space_resetPlanes" },
@@ -18326,7 +18326,7 @@ static const struct { DWORD addr; void *fn; const char *name; } g_hooks3[] = {
 	{ 0x487400, (void *)static_registerTimeSyncLogDtor, "static_registerTimeSyncLogDtor" }, { 0x48b3e0, (void *)static_registerSceneLogDtor, "static_registerSceneLogDtor" },
 	{ 0x42b350, (void *)TextureManager_deletingDtor, "TextureManager_deletingDtor" }, { 0x462580, (void *)Light_deletingDtor, "Light_deletingDtor" },
 	{ 0x463810, (void *)Scene_deletingDtor, "Scene_deletingDtor" }, { 0x46c5c0, (void *)ErrorLog_deletingDtor, "ErrorLog_deletingDtor" },
-	{ 0x487450, (void *)TimeSync_deletingDtor, "TimeSync_deletingDtor" }, { 0x464bc0, (void *)Model_release, "Model_release" },
+	{ 0x487450, (void *)TimeSync_deletingDtor, "TimeSync_deletingDtor" }, { 0x464bc0, (void *)Shape_release, "Shape_release" },
 	{ 0x466a30, (void *)ShapeManager_release, "ShapeManager_release" }, { 0x4699a0, (void *)Skeleton_release, "Skeleton_release" },
 	{ 0x46ae80, (void *)SkeletonManager_release, "SkeletonManager_release" }, { 0x46f4b0, (void *)partList_release, "partList_release" },
 	{ 0x4813b0, (void *)CollisionVolume_release, "CollisionVolume_release" }, { 0x4519b0, (void *)net_freeBuffers, "net_freeBuffers" },
@@ -18347,7 +18347,7 @@ static const struct { DWORD addr; void *fn; const char *name; } g_hooks3[] = {
 	{ 0x46ff10, (void *)static_startStageLog, "static_startStageLog" }, { 0x481330, (void *)static_startCollisionVolumeLog, "static_startCollisionVolumeLog" },
 	{ 0x483cf0, (void *)static_startLightLog, "static_startLightLog" }, { 0x483f50, (void *)static_startViewVolumeLog, "static_startViewVolumeLog" },
 	{ 0x4873d0, (void *)static_startTimeSyncLog, "static_startTimeSyncLog" }, { 0x48b3b0, (void *)static_startSceneLog, "static_startSceneLog" },
-	{ 0x464ba0, (void *)Model_dtor, "Model_dtor" }, { 0x466a10, (void *)ShapeManager_dtor, "ShapeManager_dtor" },
+	{ 0x464ba0, (void *)Shape_dtor, "Shape_dtor" }, { 0x466a10, (void *)ShapeManager_dtor, "ShapeManager_dtor" },
 	{ 0x46ae60, (void *)SkeletonManager_dtor, "SkeletonManager_dtor" }, { 0x46f470, (void *)UnitPoseInfo_dtor, "UnitPoseInfo_dtor" }, { 0x45ff10, (void *)UnitPoseInfo_deletingDtor, "UnitPoseInfo_deletingDtor" },
 	{ 0x481390, (void *)CollisionVolume_dtor, "CollisionVolume_dtor" }, { 0x4411e0, (void *)tunnel_restart, "tunnel_restart" },
 	{ 0x441200, (void *)tunnel_addRing, "tunnel_addRing" }, { 0x467520, (void *)ShapeManager_releaseModels, "ShapeManager_releaseModels" },
@@ -18366,7 +18366,7 @@ static const struct { DWORD addr; void *fn; const char *name; } g_hooks3[] = {
 	{ 0x46cdc0, (void *)image_tryOpen, "image_tryOpen" }, { 0x467d60, (void *)mem_free, "mem_free" },
 	/* batch 46 */
 	{ 0x42b150, (void *)Texture_deletingDtor, "Texture_deletingDtor" }, { 0x455a80, (void *)BMPRGBFile_deletingDtor, "BMPRGBFile_deletingDtor" },
-	{ 0x462d10, (void *)Model_deletingDtor, "Model_deletingDtor" }, { 0x463010, (void *)ShapeManager_deletingDtor, "ShapeManager_deletingDtor" },
+	{ 0x462d10, (void *)Shape_deletingDtor, "Shape_deletingDtor" }, { 0x463010, (void *)ShapeManager_deletingDtor, "ShapeManager_deletingDtor" },
 	{ 0x4637b0, (void *)CollisionVolume_deletingDtor, "CollisionVolume_deletingDtor" }, { 0x4637d0, (void *)SkeletonManager_deletingDtor, "SkeletonManager_deletingDtor" },
 	{ 0x42b180, (void *)static_destroyTex64x64, "static_destroyTex64x64" }, { 0x42b1d0, (void *)static_destroyTex128x64, "static_destroyTex128x64" },
 	{ 0x42b220, (void *)static_destroyTex256x64, "static_destroyTex256x64" }, { 0x42b270, (void *)static_destroyTex128x128, "static_destroyTex128x128" },

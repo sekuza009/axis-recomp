@@ -21,7 +21,7 @@ static int clear(void *p, int dwords)
 /* ---- member blocks cleared, each the size of its class ---- */
 /* TextureManager: all 8 words (vtable, banks[6], count) */
 int THISCALL (TextureManager_clear)(void *self) { return clear(self, 0x8); }       /* TextureBank */
-int THISCALL (Model_clear)(void *self) { return clear(self, 0x13); }      /* Shape */
+int THISCALL (Shape_clear)(void *self) { return clear(self, 0x13); }      /* Shape */
 int THISCALL (ShapeManager_clear)(void *self) { return clear(self, 0x93); }       /* ShapeManager */
 int THISCALL (SkeletonManager_clear)(void *self) { return clear(self, 0x4c); }       /* SkeletonManager */
 int THISCALL (collisionPlane_clear)(void *self) { return clear(self, 0x2b); }
@@ -84,7 +84,7 @@ static void free_owned(void *self)
 }
 
 /* 0x464bc0, 0x466a30, 0x46ae80, 0x4813b0: the buffer freed, then the members cleared */
-int THISCALL (Model_release)(void *self) { free_owned(self); Model_clear(self); return 0; }
+int THISCALL (Shape_release)(void *self) { free_owned(self); Shape_clear(self); return 0; }
 int THISCALL (ShapeManager_release)(void *self) { free_owned(self); ShapeManager_clear(self); return 0; }
 int THISCALL (SkeletonManager_release)(void *self) { free_owned(self); SkeletonManager_clear(self); return 0; }
 int THISCALL (CollisionVolume_release)(void *self) { free_owned(self); CollisionVolume_clear(self); return 0; }
@@ -178,9 +178,9 @@ int THISCALL (CollisionVolume_dtor)(u32 *self) { self[0] = STR(0x4aa254, "\2607F
 DELETING(CollisionVolume, CollisionVolume_dtor)
 
 /* Model (vtable 0x4aa250) */
-void *THISCALL (Model_ctor)(u32 *self) { self[0] = VT(Shape, 0x4aa250); Model_clear(self); return self; }
-int THISCALL (Model_dtor)(u32 *self) { self[0] = VT(Shape, 0x4aa250); return Model_release(self); }
-DELETING(Model, Model_dtor)
+void *THISCALL (Shape_ctor)(u32 *self) { self[0] = VT(Shape, 0x4aa250); Shape_clear(self); return self; }
+int THISCALL (Shape_dtor)(u32 *self) { self[0] = VT(Shape, 0x4aa250); return Shape_release(self); }
+DELETING(Shape, Shape_dtor)
 
 /* ShapeManager (vtable 0x4aa244), SkeletonManager (vtable 0x4aa240) */
 int THISCALL (ShapeManager_dtor)(u32 *self) { self[0] = VT(ShapeManager, 0x4aa244); return ShapeManager_release(self); }
@@ -238,7 +238,7 @@ static int release_all(u8 *self, int stride, Release release)
 		mg->dataUsed = 0;
 	return r;
 }
-static int THISCALL release_model(void *e) { return Model_release(e); }
+static int THISCALL release_model(void *e) { return Shape_release(e); }
 static int THISCALL release_skeleton(void *e) { return Skeleton_release(e); }
 /* 0x467520: a shape manager's models (0x4c bytes) */
 int THISCALL (ShapeManager_releaseModels)(u8 *self) { return release_all(self, 0x4c, release_model); }
@@ -276,7 +276,7 @@ u32 THISCALL (ResourceSet_dtor)(u8 *self)
 /* 0x46ff70: the stage destroyed, its members last first: Scene_dtor (scenePath), the 100 actors (actors,
    0x8888 bytes each, actor_destroyPartLists), the item skeleton and shape managers, the 16 resource sets
    (playerRecords, 0x47fd2 bytes each, ResourceSet_dtor), the object skeleton and shape managers, the two models
-   (waterModel, layerModel: Model_dtor), the three light pools (actorLights, dynamicLights, mapLights: Light_dtor) and
+   (waterModel, layerModel: Shape_dtor), the three light pools (actorLights, dynamicLights, mapLights: Light_dtor) and
    space (CollisionVolume_dtor). Returns the last destructor's eax */
 u32 THISCALL (Stage_dtor)(u8 *self)
 {
@@ -289,8 +289,8 @@ u32 THISCALL (Stage_dtor)(u8 *self)
 	eh_vector_destructor((u8 *)stage->playerRecords, 0x47fd2, 16, FN_ADDR(ResourceSet_dtor, 0x463960));
 	SkeletonManager_dtor((u8 *)&stage->objectSkeletons);
 	ShapeManager_dtor((u8 *)&stage->objectShapes);
-	Model_dtor((u8 *)&stage->waterModel);
-	Model_dtor((u8 *)&stage->layerModel);
+	Shape_dtor((u8 *)&stage->waterModel);
+	Shape_dtor((u8 *)&stage->layerModel);
 	Light_dtor((u8 *)&stage->actorLights);
 	Light_dtor((u8 *)&stage->dynamicLights);
 	Light_dtor((u8 *)&stage->mapLights);
@@ -511,8 +511,8 @@ u8 *THISCALL (Console_ctor)(u8 *g)
 	VECTOR((u8 *)st->sides, 0xc, 0x30);
 	VECTOR((u8 *)st->floor, 0xc, 0x79);
 	VECTOR((u8 *)st->groundLayers, 0x20c, 4);
-	Model_ctor((u8 *)&st->layerModel);   /* Model_ctor */
-	Model_ctor((u8 *)&st->waterModel);
+	Shape_ctor((u8 *)&st->layerModel);   /* Shape_ctor */
+	Shape_ctor((u8 *)&st->waterModel);
 	VECTOR((u8 *)st->wayPoints, 0x14, 0x3e8);
 	VTABLE((u8 *)&st->objectShapes, VT(ShapeManager, 0x4aa244));
 	ShapeManager_clear((u8 *)&st->objectShapes);

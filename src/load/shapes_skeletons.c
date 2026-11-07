@@ -98,8 +98,8 @@ void THISCALL (ShapeManager_initBy)(u8 *self, const char *dir, int n, u32 source
 	mg->nodes = mg->block;
 	mg->items = mg->block + n * 0x4c;
 	for (int i = 0; i < mg->capacity; i++) {
-		Model_clear(mg->items + i * 0x4c);
-		Model_release(mg->items + i * 0x4c);
+		Shape_clear(mg->items + i * 0x4c);
+		Shape_release(mg->items + i * 0x4c);
 	}
 	mg->textureSuffix[0] = 0;
 	mg->data = mg->block + n * 0x98;
@@ -440,7 +440,7 @@ u8 *THISCALL (shape_getByName)(u8 *cache, const char *name, int bind)
 	return shape;
 }
 
-/* 0x466120 (thiscall on a shape): read from f. Its old data released (Model_release), the 0x34-byte header (block size
+/* 0x466120 (thiscall on a shape): read from f. Its old data released (Shape_release), the 0x34-byte header (block size
    +4, part count partCount, a point centre, the version version: 0x71110300 the current format; an older file has a 0x30-byte
    header and 0x68-byte parts, its block grown by 0x18 a part, the position put back as it was), the block (+8, as
    take_block). The 0x80-byte parts (parts) at the block's start, then each part's tables after them: vertices,
@@ -451,7 +451,7 @@ u8 *THISCALL (shape_getByName)(u8 *cache, const char *name, int bind)
 void THISCALL (shape_read)(u8 *shape, void *f, void *mem, int size)
 {
 	Shape *md = (Shape *)shape;
-	Model_release(shape);
+	Shape_release(shape);
 	crt_fread(shape, 0x34, 1, f);
 	int current = md->version == 0x71110300;
 	if (!current) {
@@ -826,7 +826,7 @@ static int obj_corner(u8 *part, int i, char *corner, const float *vs, const floa
 	return 1;
 }
 
-/* 0x464db0 (thiscall on a shape): a shape from a Wavefront OBJ text file. The old one released (Model_release);
+/* 0x464db0 (thiscall on a shape): a shape from a Wavefront OBJ text file. The old one released (Shape_release);
    pass 1 counts the parts (usemtl), positions (v), normals (vn), texture coordinates (vt) and the corners of the
    faces (colourCount: a face of 3 or 4 corners, 3 or 6; fewer are fatal; triangleCount triangles); the data memory is taken
    (allocated with three temporary arrays, or given: too small is fatal); pass 2 counts each part's corners and lays
@@ -841,7 +841,7 @@ void THISCALL (model_loadObjFormatFrom)(u8 *sh, void *f, u8 *mem, int memSize)
 	Shape *md = (Shape *)sh;
 	char line[0x100], last[0x100], c[4][0x20];
 	int nv = 0, nvn = 0, nvt = 0;
-	Model_release(sh);
+	Shape_release(sh);
 	md->partCount = 0;
 	while (crt_fgets(line, 0x100, f)) {
 		char *t = TOK(line, SPACE);

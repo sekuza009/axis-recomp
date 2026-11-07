@@ -500,7 +500,7 @@ struct GameRdata g_rdata __attribute__((aligned(4096))) = {
 	.d_4aa138 = "good bye friends",
 	.d_4aa238 = {
 		FN_ADDR(Console_deletingDtor, 0x460c20), FN_ADDR(Stage_deletingDtor, 0x463830), FN_ADDR(SkeletonManager_deletingDtor, 0x4637d0), FN_ADDR(ShapeManager_deletingDtor, 0x463010), FN_ADDR(Light_deletingDtor, 0x462580), FN_ADDR(ViewVolume_deletingDtor, 0x463430),
-		FN_ADDR(Model_deletingDtor, 0x462d10), FN_ADDR(CollisionVolume_deletingDtor, 0x4637b0), FN_ADDR(Scene_deletingDtor, 0x463810),
+		FN_ADDR(Shape_deletingDtor, 0x462d10), FN_ADDR(CollisionVolume_deletingDtor, 0x4637b0), FN_ADDR(Scene_deletingDtor, 0x463810),
 	},
 	.k_0_04f_ = 0x3d23d70b,
 	.k_256f_ = 256.0f,

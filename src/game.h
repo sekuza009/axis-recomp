@@ -967,7 +967,7 @@ typedef struct { float r, g, b, a; } Colour;   /* an RGBA colour, four floats (C
 #define arena_loadSettings(path) GAME_FN(arena_loadSettings, 0x40d4e0, int, const char *)(path)   /* an arena settings file; 0 if missing */
 #define str_dropLast(s) GAME_FN(str_dropLast, 0x44ac70, int, char *)(s)   /* s without its last character; its old length (app/small.c) */
 #define TextureManager_clear(self) GAME_THISFN(TextureManager_clear, 0x4569a0, int, void *)(self)
-#define Model_clear(self) GAME_THISFN(Model_clear, 0x464bb0, int, void *)(self)
+#define Shape_clear(self) GAME_THISFN(Shape_clear, 0x464bb0, int, void *)(self)
 #define ShapeManager_clear(self) GAME_THISFN(ShapeManager_clear, 0x466a20, int, void *)(self)
 #define SkeletonManager_clear(self) GAME_THISFN(SkeletonManager_clear, 0x46ae70, int, void *)(self)
 #define CollisionVolume_clear(self) GAME_THISFN(CollisionVolume_clear, 0x4813a0, int, void *)(self)
@@ -977,11 +977,11 @@ typedef struct { float r, g, b, a; } Colour;   /* an RGBA colour, four floats (C
 #define ShapeManager_release(self) GAME_THISFN(ShapeManager_release, 0x466a30, int, void *)(self)
 #define SkeletonManager_release(self) GAME_THISFN(SkeletonManager_release, 0x46ae80, int, void *)(self)
 #define CollisionVolume_release(self) GAME_THISFN(CollisionVolume_release, 0x4813b0, int, void *)(self)
-#define Model_release(self) GAME_THISFN(Model_release, 0x464bc0, int, void *)(self)
+#define Shape_release(self) GAME_THISFN(Shape_release, 0x464bc0, int, void *)(self)
 #define TextureManager_dtor(self) GAME_THISFN(TextureManager_dtor, 0x456990, int, void *)(self)
 #define Light_dtor(self) GAME_THISFN(Light_dtor, 0x483d50, int, void *)(self)
 #define CollisionVolume_dtor(self) GAME_THISFN(CollisionVolume_dtor, 0x481390, int, void *)(self)
-#define Model_dtor(self) GAME_THISFN(Model_dtor, 0x464ba0, int, void *)(self)
+#define Shape_dtor(self) GAME_THISFN(Shape_dtor, 0x464ba0, int, void *)(self)
 #define ShapeManager_dtor(self) GAME_THISFN(ShapeManager_dtor, 0x466a10, int, void *)(self)
 #define SkeletonManager_dtor(self) GAME_THISFN(SkeletonManager_dtor, 0x46ae60, int, void *)(self)
 #define TimeSync_dtor(self) GAME_THISFN(TimeSync_dtor, 0x487470, void, void *)(self)

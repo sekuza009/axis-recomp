@@ -86,7 +86,7 @@ typedef struct ActorItem {
 typedef struct BlockOwner {
 	u8 _pad0000000[0x4];
 	i32 blockSize;   /* +0x4: bytes the block needs, set by the owner before take_block: operator_new'd at this size (none: a fatal message) or the memory given checked against it (too small: a fatal message) */
-	u8 *block;   /* +0x8: the data block: allocated (ownsBlock 1) or the caller's memory (take_block); freed and cleared when owned (free_owned: Model_release, Skeleton_release, partList_release, CollisionVolume_release ..) */
+	u8 *block;   /* +0x8: the data block: allocated (ownsBlock 1) or the caller's memory (take_block); freed and cleared when owned (free_owned: Shape_release, Skeleton_release, partList_release, CollisionVolume_release ..) */
 	i32 ownsBlock;   /* +0xc: 1: allocated here (freed with it) */
 } BlockOwner;
 
