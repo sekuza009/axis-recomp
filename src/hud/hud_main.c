@@ -395,10 +395,18 @@ static void main_crosshair(Scene *scene, Player *player)
 {
 	int size = player->fireAnim > 0.0f ? 0x48 : 0x40;
 	int w = hud_toScreenX(size), h = hud_toScreenY(size);
+#ifdef AXIS_NATIVE   /* (pixel-sharp: sized a whole multiple of its image, in screen pixels: fixes/hud.c) */
+	int wasPart = g_fixHudPart;
+	if (fix_crosshairSize(size, &w, &h))
+		g_fixHudPart = HUD_PIXELS;
+#endif
 	int top = gfx_getHeight() / 2 - h / 2;
 	int left = gfx_getWidth() / 2 - w / 2;
 	glEnable(GL_TEXTURE_2D);
 	tex_bind(g_textures->banks[scene->crosshairTexture / 512], scene->crosshairTexture % 512);
+#ifdef AXIS_NATIVE   /* (pixel-sharp, [hud] sharptext: the 64-texel image was blurred when enlarged) */
+	int sharp[2], sharpOn = g_settings.sharpText && platform_texNearest(sharp);
+#endif
 	glColor4f(1.0f, 1.0f, 1.0f, player->fireAnim > 0.0f ? 0.75f : 1.0f);
 	glBegin(GL_QUADS);
 	glTexCoord2f(0.0f, 0.0f);
@@ -410,6 +418,11 @@ static void main_crosshair(Scene *scene, Player *player)
 	glTexCoord2f(0.0f, 1.0f);
 	glVertex2i(left, gfx_getHeight() - top - h);
 	glEnd();
+#ifdef AXIS_NATIVE
+	if (sharpOn)
+		platform_texRestore(sharp);
+	g_fixHudPart = wasPart;
+#endif
 	glDisable(GL_TEXTURE_2D);
 }
 

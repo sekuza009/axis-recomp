@@ -257,4 +257,21 @@ void fix_hudVertex(int x, int y)
 	}
 	real_glVertex2i(x, y);
 }
+
+/* ---- the crosshair (size 64 units, 72 firing), drawn pixel-sharp ([hud] sharptext): its 64-texel image enlarged by a
+   whole number each way, the nearest to the size it had (at 1080p 2 x, 128 pixels, for 144), so that every texel
+   covers the same number of pixels (at 2.25 x some were 2 pixels and some 3: uneven arms). Firing it grows by the
+   same 72 / 64 as before. The size is in screen pixels (drawn as HUD_PIXELS: the remap leaves it as it is); returns 0
+   (the size as it was) without sharptext. ---- */
+int fix_crosshairSize(int size, int *w, int *h)
+{
+	int W = g_glWidth, H = g_glHeight;
+	if (!g_settings.sharpText || W <= 0 || H <= 0)
+		return 0;
+	double sx = g_settings.hudProportional && W * 3 > H * 4 ? H / 480.0 : W / 640.0, sy = H / 480.0;   /* (pixels a unit) */
+	int kx = (int)(sx + 0.5), ky = (int)(sy + 0.5);
+	*w = (kx > 0 ? kx : 1) * size;
+	*h = (ky > 0 ? ky : 1) * size;
+	return 1;
+}
 #endif

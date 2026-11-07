@@ -44,6 +44,7 @@ int fix_overlayBegin(int area);             /* the replay's overlay: one of its 
 void fix_overlayEnd(int was);
 #define OVERLAY(area, call) do { int was_ = fix_overlayBegin(area); call; fix_overlayEnd(was_); } while (0)
 void fix_powerUpText(int x, int y, int font, const char *format, int value);   /* font_penDraw for the power-up countdown */
+int fix_crosshairSize(int size, int *w, int *h);   /* the crosshair's size in screen pixels when drawn pixel-sharp */
 void fix_labelText(int x1, int y, int x2, const char *name, int size);       /* text_drawCentred for a name label */
 
 /* kyrie.c */
