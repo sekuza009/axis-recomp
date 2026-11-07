@@ -24,5 +24,8 @@ void platform_watchWindow(void *window, void **chatLine, void **mouseDevice);
 void platform_mouseButtons(int bits);          /* the buttons down in the last foreground read (bit 0 L, 1 R, 2 M) */
 float platform_pointerSpeed(void);             /* the Windows pointer speed (Control Panel slider) as a factor */
 unsigned platform_ticks(void);                 /* milliseconds (GetTickCount) */
+int platform_texNearest(int saved[2]);          /* the bound 2D texture's filters to GL_NEAREST (the old ones into saved;
+                                                  0: not available) */
+void platform_texRestore(const int saved[2]);   /* its filters back */
 
 #endif

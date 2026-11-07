@@ -114,7 +114,11 @@ void (menu_frame)(void)
 		menu_drawInputLine(g_editCaretX, g_editCaretY);
 	glLoadIdentity();
 	if (g_screen != 9999 && !g_profileQuitting)
+#ifdef AXIS_NATIVE
+		fix_drawCursor();   /* menu_drawCursor over the whole screen (fixes/screen.c) */
+#else
 		SITE_CALL(0x41fc28, menu_drawCursor, void, void)();   /* menu_drawCursor; the patch DLL draws its own cursor here */
+#endif
 	glDisable(0xbe2);   /* GL_BLEND */
 	glFinish();
 	SwapBuffers(g_windowDC);
@@ -199,7 +203,13 @@ int THISCALL (match_playFrame)(u8 *s)
 	match_combatInput(s);
 	match_frame(s);
 	if (SC->matchState == 2)
+#ifdef AXIS_NATIVE
+		g_fixInHud++;   /* (the in-match 2D pass: fixes/screen.c) */
+		SITE_THISCALL(0x48b386, match_drawFrame, void, void *)(s);
+		g_fixInHud--;
+#else
 		SITE_THISCALL(0x48b386, match_drawFrame, void, void *)(s);   /* match_drawFrame; the patch DLL calls its hud_pass_wrap here */
+#endif
 	if (SC->quitAsked == 1) {
 		music_stop();
 		return 0;

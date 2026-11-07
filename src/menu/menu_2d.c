@@ -9,6 +9,30 @@
 #include "../wide.h"
 #include <string.h>
 
+/* the widescreen fixes' state: the patch layer's (wide.h), or in the native build the game's own (fixes/screen.c) */
+#ifdef AXIS_NATIVE
+#include "../fixes/fixes.h"
+#define MENU_FIX g_settings.menu43          /* the menus' full-screen effects are on */
+#define MENU43 g_settings.menu43            /* the menus in a centred 4:3 box */
+#define MENU_BOX43 g_settings.menu43
+#define IN_HUD g_fixInHud
+#define HUD_AREA g_fixHudArea
+#define CURSOR_ON g_fixCursorOn
+#define CURSOR_X g_fixCursorX
+#define CURSOR_W g_fixCursorW
+#define FULL_SCREEN(on) fix_fullScreen(on)
+#else
+#define MENU_FIX (*g_wide->menuFix)
+#define MENU43 (*g_wide->menu43)
+#define MENU_BOX43 (*g_wide->menuBox43)
+#define IN_HUD (*g_wide->inHud)
+#define HUD_AREA (*g_wide->hudArea)
+#define CURSOR_ON (*g_wide->cursorOn)
+#define CURSOR_X (*g_wide->cursorX)
+#define CURSOR_W (*g_wide->cursorW)
+#define FULL_SCREEN(on) g_wide->fullScreen(on)
+#endif
+
 #define g_menuColour ((const u32 *)OBJ(g_rectColour))     /* RGBA floats */
 
 /* the menu cursor's x (px = x * the scale, pixels) on the full screen, placed as it would be in the viewport it is
@@ -18,7 +42,7 @@ static int cursor_x(float px)
 	int W = (int)f32(f32((long double)640.0f * g_menuScaleX) + 0.5f);
 	if (W <= 0)
 		return (int)px;
-	return *g_wide->cursorX + (int)f32(f32((long double)px * f32(*g_wide->cursorW)) / f32(W));
+	return CURSOR_X + (int)f32(f32((long double)px * f32(CURSOR_W)) / f32(W));
 }
 
 /* 0x41ef60: a vertex at menu units (x, y), y down from the top. With the patch DLL's menu fix this is the version
@@ -27,9 +51,9 @@ static int cursor_x(float px)
    by a pixel now and then. */
 void (menu_vertex)(int x, int y)
 {
-	if (*g_wide->menuFix) {
+	if (MENU_FIX) {
 		float px = f32((long double)f32(x) * g_menuScaleX);
-		int vx = *g_wide->cursorOn ? cursor_x(px) : (int)px;
+		int vx = CURSOR_ON ? cursor_x(px) : (int)px;
 		glVertex2i(vx, g_screenH - (int)f32((long double)f32(y) * g_menuScaleY));
 		return;
 	}
@@ -42,9 +66,9 @@ void (menu_vertex)(int x, int y)
    over the full screen while the menus' box is narrower */
 void (menu_drawRect)(int x0, int y0, int x1, int y1, int filled)
 {
-	int full = *g_wide->menuFix && x0 <= 0 && y0 <= 0 && x1 >= 640 && y1 >= 480;
+	int full = MENU_FIX && x0 <= 0 && y0 <= 0 && x1 >= 640 && y1 >= 480;
 	if (full)
-		g_wide->fullScreen(1);
+		FULL_SCREEN(1);
 	glColor4f_stored(g_menuColour);
 	if (filled) {
 		glBegin(GL_QUADS);
@@ -65,7 +89,7 @@ void (menu_drawRect)(int x0, int y0, int x1, int y1, int filled)
 	}
 	glEnd();
 	if (full)
-		g_wide->fullScreen(0);
+		FULL_SCREEN(0);
 }
 
 /* the menus' box: centred, h * 16 / 9 wide (h * 4 / 3 when the patch DLL rewrote the cave's "shl eax, 4 / mov ebx, 9"
@@ -74,7 +98,7 @@ static void menu_box(int *x, int *w)
 {
 	u32 h = (u32)g_screenH;
 #ifdef AXIS_DIRECT
-	u32 box = *g_wide->menuBox43 ? (h << 2) / 3 : (h << 4) / 9;   /* (AxisRC.exe: the patch layer's state) */
+	u32 box = MENU_BOX43 ? (h << 2) / 3 : (h << 4) / 9;   /* (AxisRC.exe: the patch layer's state) */
 #else
 	u32 box = code_matches(0x4a8fbb, "c1 e0 02 bb 03 00 00 00") ? (h << 2) / 3 : (h << 4) / 9;
 #endif
@@ -97,8 +121,8 @@ void (gfx_setProjection2D3D)(int mode)
 	/* during the in-match 2D pass (which draws through this switch: the player name labels, the HUD's text) the
 	   menus' 4:3 box would clip the HUD: it gets the old 16:9 box back, or the full screen when that is narrower
 	   or while the player markers draw (they are placed at screen pixels) */
-	if (*g_wide->menu43 && *g_wide->inHud && h > 0) {
-		int sw = 2 * x + w, w16 = h * 16 / 9, area = *g_wide->hudArea;
+	if (MENU43 && IN_HUD && h > 0) {
+		int sw = 2 * x + w, w16 = h * 16 / 9, area = HUD_AREA;
 		if (w16 + 8 >= sw || area == 1 || area == 5) {
 			x = 0;
 			w = sw;

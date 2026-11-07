@@ -1106,6 +1106,11 @@ typedef struct { float r, g, b, a; } Colour;
 #define GL_MODELVIEW 0x1700
 #define GL_PROJECTION 0x1701
 #define glViewport(x, y, w, h) IMPORT(0x4a91d4, void, int, int, int, int)(x, y, w, h)
+#ifdef AXIS_NATIVE   /* (the native build keeps the viewport: fixes/screen.c) */
+void fix_glViewport(int x, int y, int w, int h);
+#undef glViewport
+#define glViewport(x, y, w, h) fix_glViewport(x, y, w, h)
+#endif
 #define glMatrixMode(mode) IMPORT(0x4a91fc, void, u32)(mode)
 #define gluPerspective(angle, aspect, zNear, zFar) ((void (STDCALL *)(double, double, double, double))*(const u32 *)STR(0x4a9048, "j\300\n"))(angle, aspect, zNear, zFar)
 #define gluOrtho2D(left, right, bottom, top) ((void (STDCALL *)(double, double, double, double))*(const u32 *)STR(0x4a9050, "|\300\n"))(left, right, bottom, top)

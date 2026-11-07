@@ -1,5 +1,6 @@
 /* menu_screens.c: the frames of single front-end screens. */
 #include "../game.h"
+#include "../fixes/fixes.h"
 #include <string.h>
 
 /* 0x44aa40: the skirmish screen (500): the background (g_skirmishShowBackground), the tunnel (skirmish_drawTunnel)
@@ -38,7 +39,11 @@ void (menuState200_title)(void)
 		g_menuKeyGuard = 5.0f;
 	}
 	menu_drawBackground();
+#ifdef AXIS_NATIVE
+	fix_titleEmblemTransition();   /* over the whole screen (fixes/screen.c) */
+#else
 	SITE_CALL(0x41f903, menu_titleEmblemTransition, void, void)();        /* menu_titleEmblemTransition */
+#endif
 	Color4_set(g_textColour, 1.0f, 1.0f, 1.0f, 1.0f);
 	text_draw5(5, 0x1d6, STR_COPYRIGHT);
 	text_draw5((0x69 - (int)strlen(STR_VERSION)) * 6, 0x1d6, STR_VERSION);

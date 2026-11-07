@@ -156,3 +156,34 @@ void platform_watchWindow(void *window, void **chatLine, void **mouseDevice)
 	}
 	g_watched = w;
 }
+
+/* ---- the bound 2D texture's filters (pixel-sharp text): glTexParameteri / glGetTexParameteriv, which the game does
+   not import ---- */
+typedef void (WINAPI *TEXPARAMI)(unsigned, unsigned, int);
+typedef void (WINAPI *GETTEXPARAMIV)(unsigned, unsigned, int *);
+static TEXPARAMI g_texParameteri;
+static GETTEXPARAMIV g_getTexParameteriv;
+
+int platform_texNearest(int saved[2])
+{
+	if (!g_texParameteri) {
+		HMODULE gl = GetModuleHandleA("opengl32.dll");
+		g_texParameteri = gl ? (TEXPARAMI)GetProcAddress(gl, "glTexParameteri") : NULL;
+		g_getTexParameteriv = gl ? (GETTEXPARAMIV)GetProcAddress(gl, "glGetTexParameteriv") : NULL;
+		if (!g_texParameteri || !g_getTexParameteriv) {
+			g_texParameteri = NULL;
+			return 0;
+		}
+	}
+	g_getTexParameteriv(0x0de1, 0x2800, &saved[0]);   /* GL_TEXTURE_2D: GL_TEXTURE_MAG_FILTER */
+	g_getTexParameteriv(0x0de1, 0x2801, &saved[1]);   /* GL_TEXTURE_MIN_FILTER */
+	g_texParameteri(0x0de1, 0x2800, 0x2600);          /* GL_NEAREST */
+	g_texParameteri(0x0de1, 0x2801, 0x2600);
+	return 1;
+}
+
+void platform_texRestore(const int saved[2])
+{
+	g_texParameteri(0x0de1, 0x2800, saved[0]);
+	g_texParameteri(0x0de1, 0x2801, saved[1]);
+}

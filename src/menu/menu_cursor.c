@@ -1,5 +1,6 @@
 /* menu_cursor.c: the front end's mouse pointer, an animated sprite of 15 frames in a 4 x 4 sheet. */
 #include "../game.h"
+#include "../fixes/fixes.h"
 
 /* 0x429bc0: the pointer at (g_mouseX, g_mouseY): a 47-unit quad with its tip at the top left, textured with the
    current frame's cell (a quarter of the sheet each way); then the animation clock: every 5 units of frame time the
@@ -20,10 +21,18 @@ void (menu_drawCursor)(void)
 	menu_vertex(x, y);
 	float s1 = (left + 1.0f) * 0.25f;
 	glTexCoord2f(s1, t0);
+#ifdef AXIS_NATIVE
+	fix_cursorVertex(x + 0x2f, y);   /* (its proportions kept: fixes/screen.c) */
+#else
 	SITE_CALL(0x429cc3, menu_vertex, void, int, int)(x + 0x2f, y);                /* menu_vertex */
+#endif
 	float t1 = (top + 1.0f) * 0.25f;
 	glTexCoord2f(s1, t1);
+#ifdef AXIS_NATIVE
+	fix_cursorVertex(x + 0x2f, y + 0x2f);
+#else
 	SITE_CALL(0x429cf0, menu_vertex, void, int, int)(x + 0x2f, y + 0x2f);         /* menu_vertex */
+#endif
 	glTexCoord2f(s0, t1);
 	menu_vertex(x, y + 0x2f);
 	glEnd();

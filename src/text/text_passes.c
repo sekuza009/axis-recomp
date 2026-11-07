@@ -5,6 +5,15 @@
 #include "../game.h"
 #include <string.h>
 
+/* an ASCII pass through its call site in the game (the patch DLL wraps it there), or in the native build the pass
+   itself, pixel-sharp (fixes/screen.c) */
+#ifdef AXIS_NATIVE
+#include "../fixes/fixes.h"
+#define ASCII_PASS(site, fn, x, y, text) fix_asciiPass((void *)FN_##fn, x, y, text)
+#else
+#define ASCII_PASS(site, fn, x, y, text) SITE_CALL(site, fn, void, int, int, const char *)(x, y, text)
+#endif
+
 /* the pass functions: (x, y, text) */
 
 /* every pass: the character width set, the 2D projection, texturing on, the current text colour */
@@ -38,7 +47,7 @@ static void text_passes8(int x, int y, const char *text, u32 asciiCallSite)
 	text_bindFont(g_fontHanJungJong);
 	text_hangul13LayeredPass(x, y, text);
 	text_bindFont(g_fontAscii);
-	SITE_CALL(asciiCallSite, text_ascii8Pass, void, int, int, const char *)(x, y, text);   /* text_ascii8Pass */
+	ASCII_PASS(asciiCallSite, text_ascii8Pass, x, y, text);   /* text_ascii8Pass */
 }
 
 /* 0x403170: text in the 5-unit font (ASCII only), 6 units per character */
@@ -46,7 +55,7 @@ void (text_draw5)(int x, int y, const char *text)
 {
 	text_begin(6);
 	text_bindFont(g_fontAscii);
-	SITE_CALL(0x4031f1, text_ascii5Pass, void, int, int, const char *)(x, y, text);   /* text_ascii5Pass */
+	ASCII_PASS(0x4031f1, text_ascii5Pass, x, y, text);   /* text_ascii5Pass */
 	glDisable(GL_TEXTURE_2D);
 }
 
@@ -67,7 +76,7 @@ void (text_draw16)(int x, int y, const char *text)
 	text_bindFont(g_fontHanJungJong);
 	text_hangul13LayeredPass(x, y, text);
 	text_bindFont(g_fontAsciiLarge);
-	SITE_CALL(0x4029b0, text_ascii16Pass, void, int, int, const char *)(x, y, text);   /* text_ascii16Pass */
+	ASCII_PASS(0x4029b0, text_ascii16Pass, x, y, text);   /* text_ascii16Pass */
 	glDisable(GL_TEXTURE_2D);
 }
 
@@ -80,7 +89,7 @@ void (text_draw32)(int x, int y, const char *text)
 	text_bindFont(g_fontHanJungJong);
 	text_hangul31LayeredPass(x, y, text);
 	text_bindFont(g_fontAsciiLarge);
-	SITE_CALL(0x402d90, text_ascii32Pass, void, int, int, const char *)(x, y, text);   /* text_ascii32Pass */
+	ASCII_PASS(0x402d90, text_ascii32Pass, x, y, text);   /* text_ascii32Pass */
 	glDisable(GL_TEXTURE_2D);
 }
 
@@ -99,7 +108,7 @@ void (text_drawCentred5)(int x0, int y, int x1, const char *text)
 	int x = x0 + (x1 - x0) / 2 - text_visibleLength(text) * 3;
 	text_begin(6);
 	text_bindFont(g_fontAscii);
-	SITE_CALL(0x4032e6, text_ascii5Pass, void, int, int, const char *)(x, y, text);   /* text_ascii5Pass */
+	ASCII_PASS(0x4032e6, text_ascii5Pass, x, y, text);   /* text_ascii5Pass */
 	glDisable(GL_TEXTURE_2D);
 }
 
@@ -146,7 +155,7 @@ static void text_drawBoxLines(int x0, int y, int x1, const char *text, int large
 			text_bindFont(g_fontHanJungJong);
 			text_hangul13LayeredPass(x, y, line);
 			text_bindFont(g_fontAsciiLarge);
-			SITE_CALL(0x402be8, text_ascii16Pass, void, int, int, const char *)(x, y, line);   /* text_ascii16Pass */
+			ASCII_PASS(0x402be8, text_ascii16Pass, x, y, line);   /* text_ascii16Pass */
 			y += 0x11;
 		} else {
 			text_begin(18);
@@ -156,7 +165,7 @@ static void text_drawBoxLines(int x0, int y, int x1, const char *text, int large
 			text_bindFont(g_fontHanJungJong);
 			text_hangul31LayeredPass(x, y, line);
 			text_bindFont(g_fontAsciiLarge);
-			SITE_CALL(0x402fbd, text_ascii32Pass, void, int, int, const char *)(x, y, line);   /* text_ascii32Pass */
+			ASCII_PASS(0x402fbd, text_ascii32Pass, x, y, line);   /* text_ascii32Pass */
 			y += 0x21;
 		}
 		glDisable(GL_TEXTURE_2D);

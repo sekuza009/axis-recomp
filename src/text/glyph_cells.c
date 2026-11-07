@@ -2,6 +2,7 @@
    (the same across the row) and a column's left and right. Every value is a texel number times the constant at
    k_0_00390625f (1/256). */
 #include "../game.h"
+#include "../fixes/fixes.h"
 #include "../wide.h"
 #include <stdarg.h>
 
@@ -109,7 +110,12 @@ int (pen_init)(const char *name)
 u32 (hud_drawDigits)(int x, int y, float scale, int value, int count, int padded)
 {
 	const float *texel = (const float *)ADDR(k_0_00390625f);                         /* 1/256 */
-#ifdef AXIS_DIRECT
+#ifdef AXIS_NATIVE
+	/* (the native build: its own, fixes/screen.c) */
+	static void (STDCALL *const fixTexCoord)(u32, u32) = fix_digitTexCoord;
+	const float *heightFactor = fix_digitHeight();
+	void (STDCALL *const *texCoord)(u32, u32) = &fixTexCoord;
+#elif defined(AXIS_DIRECT)
 	/* (AxisRC.exe: the patch layer's two changes as its state, Wide) */
 	const float *heightFactor = *g_wide->digitHeight ? *g_wide->digitHeight : (const float *)ADDR(k_26f);   /* 26 */
 	void (STDCALL *const *texCoord)(u32, u32) = *g_wide->digitTexCoord
@@ -195,7 +201,9 @@ u32 (font_penDraw)(int x, int y, int font, const char *format, ...)
 	glEnable(GL_TEXTURE_2D);
 	tex_bind(g_textures->banks[g_penFontTexture / 512], g_penFontTexture % 512);
 	glBegin(GL_QUADS);
+#ifndef AXIS_NATIVE   /* (for the patch layer's HUD: it knows the pen's text by this) */
 	*g_wide->penDraw = 1;
+#endif
 	for (const char *p = text; *p; p++) {
 		int c = (signed char)*p;
 		if (c == '\n') {
@@ -216,7 +224,9 @@ u32 (font_penDraw)(int x, int y, int font, const char *format, ...)
 			x += widths[g];
 		}
 	}
+#ifndef AXIS_NATIVE
 	*g_wide->penDraw = 0;
+#endif
 	glEnd();
 	return IMPORT(0x4a922c, u32, u32)(GL_TEXTURE_2D);   /* glDisable */
 }
