@@ -138,7 +138,7 @@ static unsigned g_visit[8192], g_visitPass[8192];
 static int g_depth;
 void rt_follow(unsigned ptr, int type, unsigned size)
 {
-	if (!ptr || ptr - 0x400000u < 0x76b000u || g_depth >= 2 || size > (4u << 20))
+	if (!ptr || ptr - 0x400000u < 0x76b000u || g_depth >= 4 || size > (4u << 20))
 		return;
 	unsigned h = (ptr * 2654435761u) >> 19;
 	for (int k = 0; k < 8; k++, h = (h + 1) & 8191) {
@@ -150,6 +150,31 @@ void rt_follow(unsigned ptr, int type, unsigned size)
 	if (rt_copy((const void *)(uintptr_t)ptr, buf, size)) {
 		g_depth++;
 		rt_walk_any(type, buf);
+		g_depth--;
+	}
+	free(buf);
+}
+
+/* count records of size bytes at ptr (a pointer whose length is another field: Model.parts, the space's pools ..),
+   at most cap of them, each walked */
+void rt_follow_n(unsigned ptr, int count, int cap, int type, unsigned size)
+{
+	if (count <= 0 || !ptr || ptr - 0x400000u < 0x76b000u || g_depth >= 4)
+		return;
+	unsigned n = count < cap ? (unsigned)count : (unsigned)cap;
+	if (n * size > (4u << 20))
+		n = (4u << 20) / size;
+	unsigned h = (ptr * 2654435761u) >> 19;
+	for (int k = 0; k < 8; k++, h = (h + 1) & 8191) {
+		if (g_visitPass[h] == (unsigned)g_pass && g_visit[h] == ptr) return;
+		if (g_visitPass[h] != (unsigned)g_pass) { g_visitPass[h] = g_pass; g_visit[h] = ptr; break; }
+	}
+	rt_u8 *buf = malloc(n * size);
+	if (!buf) return;
+	if (rt_copy((const void *)(uintptr_t)ptr, buf, n * size)) {
+		g_depth++;
+		for (unsigned i = 0; i < n; i++)
+			rt_walk_any(type, buf + i * size);
 		g_depth--;
 	}
 	free(buf);

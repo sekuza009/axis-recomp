@@ -36,3 +36,8 @@ start_game / end_game (saves, axis.cfg and axisnet.ini backed up BEFORE anything
   mp_loss.sh the two-copy game with each copy suspended 5 s (suspend.ps1): no packet was lost (DirectPlay
             delivers them late), so the skipped-packet path stays unreached
 The fast pass also samples the local player's small fields (its one-frame inputs). 2386 of 3036 seen.
+
+Fourth round (2026-11-07, the deep name audit): gen.py's COUNTED table follows pointers whose length is another
+field of the record (Model.parts, ShapePart.prims, Skeleton.bones, Bone.posKeys / rotKeys, ViewVolume.quads, the
+managers' items and name nodes) and the collision space's four pools (rt_follow_n; up to 4 levels deep). One hosted
+DEATH MATCH with it: 66 names never seen before seen non-zero (tools/names/audit2026-11-07/data_deep_newly_seen.txt).
