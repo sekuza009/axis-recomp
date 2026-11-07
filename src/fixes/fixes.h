@@ -32,6 +32,7 @@ void STDCALL fix_digitTexCoord(u32 s, u32 t);   /* their texture corners, half a
 
 /* hud.c */
 extern int g_fixHudPart;                    /* the main HUD's part drawing (HUD_* of wide.h) */
+extern int g_fixPenSharp;                   /* font_penDraw samples pixel-sharp ([hud] sharptext) */
 extern int g_fixPenDraw;                    /* font_penDraw is drawing */
 void fix_hudVertex(int x, int y);           /* glVertex2i, the HUD's vertices remapped */
 void fix_drawPlayerMarkers(Scene *scene);   /* hud_drawPlayerMarkers, sized for 4:3 over the whole screen */

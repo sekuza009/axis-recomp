@@ -23,6 +23,7 @@
 #define real_glViewport(x, y, w, h) IMPORT(0x4a91d4, void, int, int, int, int)(x, y, w, h)
 
 int g_fixHudPart;              /* the main HUD's part drawing (HUD_*: hud_main.c) */
+int g_fixPenSharp;             /* font_penDraw samples pixel-sharp (the power-up countdown) */
 int g_fixPenDraw;              /* font_penDraw is drawing (glyph_cells.c) */
 
 enum { ANCHOR_NONE, ANCHOR_LEFT, ANCHOR_CENTRE, ANCHOR_RIGHT };
@@ -154,7 +155,9 @@ void fix_powerUpText(int x, int y, int font, const char *format, int value)
 	g_penX = x;
 	g_penY = y;
 	g_penText = g_settings.hudProportional;
+	g_fixPenSharp = 1;   /* (sampled pixel-sharp like the menu text: the next glyph's column showed as a thin line) */
 	((void (CDECL *)(int, int, int, const char *, int))(void *)FN_font_penDraw)(x, y, font, format, value);
+	g_fixPenSharp = 0;
 	g_penText = 0;
 }
 

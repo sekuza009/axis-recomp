@@ -200,6 +200,9 @@ u32 (font_penDraw)(int x, int y, int font, const char *format, ...)
 	int left = x;
 	glEnable(GL_TEXTURE_2D);
 	tex_bind(g_textures->banks[g_penFontTexture / 512], g_penFontTexture % 512);
+#ifdef AXIS_NATIVE   /* (the power-up countdown pixel-sharp: fixes/hud.c) */
+	int sharp[2], sharpOn = g_fixPenSharp && g_settings.sharpText && platform_texNearest(sharp);
+#endif
 	glBegin(GL_QUADS);
 #ifdef AXIS_NATIVE   /* (for the HUD remap: the power-up countdown, fixes/hud.c) */
 	g_fixPenDraw = 1;
@@ -232,5 +235,9 @@ u32 (font_penDraw)(int x, int y, int font, const char *format, ...)
 	*g_wide->penDraw = 0;
 #endif
 	glEnd();
+#ifdef AXIS_NATIVE
+	if (sharpOn)
+		platform_texRestore(sharp);
+#endif
 	return IMPORT(0x4a922c, u32, u32)(GL_TEXTURE_2D);   /* glDisable */
 }

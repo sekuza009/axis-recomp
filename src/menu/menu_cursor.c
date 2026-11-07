@@ -14,6 +14,9 @@ void (menu_drawCursor)(void)
 	glEnable(GL_TEXTURE_2D);
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 	tex_bind(g_textures->banks[g_cursorTexture / 512], g_cursorTexture % 512);
+#ifdef AXIS_NATIVE   /* (pixel-sharp: the linear filter blended in the next frame's cell, a thin line at its edge) */
+	int sharp[2], sharpOn = g_settings.sharpText && platform_texNearest(sharp);
+#endif
 	glBegin(GL_QUADS);
 	float left = (float)column, top = (float)row;
 	float s0 = left * 0.25f, t0 = top * 0.25f;
@@ -36,6 +39,10 @@ void (menu_drawCursor)(void)
 	glTexCoord2f(s0, t1);
 	menu_vertex(x, y + 0x2f);
 	glEnd();
+#ifdef AXIS_NATIVE
+	if (sharpOn)
+		platform_texRestore(sharp);
+#endif
 	glDisable(GL_TEXTURE_2D);
 
 	g_cursorFrameTime = g_frameTime + g_cursorFrameTime;
