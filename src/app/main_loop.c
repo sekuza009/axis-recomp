@@ -113,7 +113,7 @@ void (menu_frame)(void)
 		menu_drawInputLine(g_editCaretX, g_editCaretY);
 	glLoadIdentity();
 	if (g_screen != 9999 && !g_profileQuitting)
-		PATCHED_CALL(0x41fc28, void, void)();   /* menu_drawCursor; the patch DLL draws its own cursor here */
+		SITE_CALL(0x41fc28, menu_drawCursor, void, void)();   /* menu_drawCursor; the patch DLL draws its own cursor here */
 	glDisable(0xbe2);   /* GL_BLEND */
 	glFinish();
 	SwapBuffers(g_windowDC);
@@ -198,7 +198,7 @@ int THISCALL (match_playFrame)(u8 *s)
 	match_combatInput(s);
 	match_frame(s);
 	if (SC->matchState == 2)
-		PATCHED_THISCALL(0x48b386, void, void *)(s);   /* match_drawFrame; the patch DLL calls its hud_pass_wrap here */
+		SITE_THISCALL(0x48b386, match_drawFrame, void, void *)(s);   /* match_drawFrame; the patch DLL calls its hud_pass_wrap here */
 	if (SC->quitAsked == 1) {
 		music_stop();
 		return 0;
@@ -1230,27 +1230,27 @@ u32 THISCALL (replay_frame)(u8 *s)
 	if (SC->hudHidden == 0) {
 		char text[0xf0];
 		/* (the patch DLL retargets these calls for wide screens) */
-		PATCHED_THISCALL(0x48a19c, void, void *)(s);                                 /* hud_drawPlayerMarkers */
+		SITE_THISCALL(0x48a19c, hud_drawPlayerMarkers, void, void *)(s);                                 /* hud_drawPlayerMarkers */
 		if (SC->messagesHidden == 0 && SC->msgFade > 0)
-			PATCHED_THISCALL(0x48a1c0, void, void *)(s);                             /* hud_drawMessageBox */
+			SITE_THISCALL(0x48a1c0, hud_drawMessageBox, void, void *)(s);                             /* hud_drawMessageBox */
 		if (SC->watchedPlayer >= 0) {
 			glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
-			PATCHED_THISCALL(0x48a1f7, void, void *, int, int, int)(s, 0x10, 0x10, 6);   /* hud_drawIcon */
+			SITE_THISCALL(0x48a1f7, hud_drawIcon, void, void *, int, int, int)(s, 0x10, 0x10, 6);   /* hud_drawIcon */
 			text_setColor(1.0f, 1.0f, 1.0f, 1.0f);
 			int n = SC->cameraMode;
 			sprintf(text, (const char *)STR(0x4b0320, "%d"), n > 0 ? n : n + 10);
-			PATCHED_CALL(0x48a259, void, int, int, const char *, int)(0x28, 0x10, text, 0x10);   /* text_drawSized */
+			SITE_CALL(0x48a259, text_drawSized, void, int, int, const char *, int)(0x28, 0x10, text, 0x10);   /* text_drawSized */
 		}
 		if (!(SC->secondFraction >= 0.5f)) {
 			glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
-			PATCHED_THISCALL(0x48a299, void, void *, int, int, int)(s, 0x20e, 0x10, 5);   /* hud_drawIcon */
+			SITE_THISCALL(0x48a299, hud_drawIcon, void, void *, int, int, int)(s, 0x20e, 0x10, 5);   /* hud_drawIcon */
 			text_setColor(1.0f, 1.0f, 1.0f, 1.0f);
 			sprintf(text, (const char *)STR(0x4c7cd8, "%02d:%02d"), SC->wholeSeconds / 60, SC->wholeSeconds % 60);
-			PATCHED_CALL(0x48a2ff, void, int, int, const char *, int)(0x226, 0x10, text, 0x10);   /* text_drawSized */
+			SITE_CALL(0x48a2ff, text_drawSized, void, int, int, const char *, int)(0x226, 0x10, text, 0x10);   /* text_drawSized */
 		}
-		PATCHED_THISCALL(0x48a309, void, void *)(s);                                 /* hud_drawWatchedName */
+		SITE_THISCALL(0x48a309, hud_drawWatchedName, void, void *)(s);                                 /* hud_drawWatchedName */
 		if (SC->rankingKey == 1)
-			PATCHED_THISCALL(0x48a318, void, void *)(s);                             /* hud_drawRanking */
+			SITE_THISCALL(0x48a318, hud_drawRanking, void, void *)(s);                             /* hud_drawRanking */
 	}
 	if (SC->noticeTimer > 0)
 		hud_drawCentreNotice((Scene *)s);
@@ -1693,7 +1693,7 @@ void THISCALL (match_frame)(u8 *s)
 	}
 	/* joining: the network's slot for the local player */
 	if (SC->localPlayer < 0 && net_hasSlot()) {
-		PATCHED_THISCALL(0x498dd8, u32, void *, const char *)(stage, g_catalogueFile);   /* catalogue_loadComponents */
+		SITE_THISCALL(0x498dd8, catalogue_loadComponents, u32, void *, const char *)(stage, g_catalogueFile);   /* catalogue_loadComponents */
 		SC->localPlayer = net_localSlot();
 		actor_resetSlot((Stage *)stage, SC->localPlayer);
 		player_setName((Stage *)stage, SC->localPlayer, (const char *)SC->localName);
@@ -1987,7 +1987,7 @@ void THISCALL (match_frame)(u8 *s)
 	}
 	/* the round's end */
 	if (SC->endTime > 0) {
-		PATCHED_THISCALL(0x49a54f, u32, void *, const char *)(stage, g_catalogueFile);   /* catalogue_loadComponents */
+		SITE_THISCALL(0x49a54f, catalogue_loadComponents, u32, void *, const char *)(stage, g_catalogueFile);   /* catalogue_loadComponents */
 		if (SC->sessionMode == 1 && SC->client == 0) {   /* the server's end notices, every half second */
 			if (SC->endNoticeTime > 0.5f) {
 				SC->endNoticeTime = 0.0f;

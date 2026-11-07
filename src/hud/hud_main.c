@@ -258,7 +258,7 @@ static void main_timers(Scene *scene, Player *player)
 			int seconds = ftol(left);
 			int ty = ftol(hy(32.0f) + yf);
 			int tx = ftol((wx(32.0f) - 22.0f) * 0.5f + xf);
-			PATCHED_CALL(0x49395f, void, int, int, int, const char *, int)(tx, ty, 1, STR_2D, seconds);   /* font_penDraw */
+			SITE_CALL(0x49395f, font_penDraw, void, int, int, int, const char *, int)(tx, ty, 1, STR_2D, seconds);   /* font_penDraw */
 		}
 	}
 }

@@ -38,7 +38,7 @@ void (menuState200_title)(void)
 		g_menuKeyGuard = 5.0f;
 	}
 	menu_drawBackground();
-	PATCHED_CALL(0x41f903, void, void)();        /* menu_titleEmblemTransition */
+	SITE_CALL(0x41f903, menu_titleEmblemTransition, void, void)();        /* menu_titleEmblemTransition */
 	Color4_set(g_textColour, 1.0f, 1.0f, 1.0f, 1.0f);
 	text_draw5(5, 0x1d6, STR_COPYRIGHT);
 	text_draw5((0x69 - (int)strlen(STR_VERSION)) * 6, 0x1d6, STR_VERSION);

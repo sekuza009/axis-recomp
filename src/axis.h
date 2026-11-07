@@ -132,6 +132,18 @@ int wide_callAdded(u32 site, u32 at, const char *pattern);
 #define PATCHED_THISCALL(site, ret, ...) ((ret (THISCALL *)(__VA_ARGS__))(RELOC(site) + 5 + *(const i32 *)(RELOC(site) + 1)))
 #define PATCHED_BLOCK(site, at, pattern) code_matches(at, pattern)
 #endif
+/* a call at one of the game's call sites the patch DLL may retarget, naming the function the game as shipped calls
+   there: SITE_CALL(site, fn, ret, arg types)(args). The native build (AXIS_NATIVE: the fixes in the game's own code)
+   calls fn itself; the others go through the call site (PATCHED_CALL) */
+#ifdef AXIS_NATIVE
+#define SITE_CALL(site, fn, ret, ...) ((ret (CDECL *)(__VA_ARGS__))(void *)FN_##fn)
+#define SITE_THISCALL(site, fn, ret, ...) ((ret (THISCALL *)(__VA_ARGS__))(void *)FN_##fn)
+#undef PATCHED_BLOCK
+#define PATCHED_BLOCK(site, at, pattern) 0   /* (no patch DLL rewrites any block) */
+#else
+#define SITE_CALL(site, fn, ret, ...) PATCHED_CALL(site, ret, __VA_ARGS__)
+#define SITE_THISCALL(site, fn, ret, ...) PATCHED_THISCALL(site, ret, __VA_ARGS__)
+#endif
 /* 1 when the game's code at addr currently reads as pattern (hex bytes separated by spaces, "??" for any byte): for
    a block the patch DLL rewrites at start-up, so the rebuild follows whichever version is in memory */
 static inline int code_matches(u32 addr, const char *pattern)

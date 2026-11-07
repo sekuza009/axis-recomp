@@ -397,10 +397,12 @@ static int install_hooks(void)
 		char key[128];
 		snprintf(key, sizeof key, ",%s,", h->name);
 		/* the same rules as recomp.c's hook() */
+#ifndef AXIS_NATIVE   /* (the native build has no patch layer watching return addresses) */
 		if ((h->addr == 0x41ef90 || h->addr == 0x4926f0) && !wide_present()) {
 			fprintf(g_log, "  original %06x %s (the patch layer checks its return address)\n", h->addr, h->name);
 			continue;
 		}
+#endif
 		int folded = wide_carries(h->addr);
 		if (!folded && patched_in_memory(h->addr)) {
 			fprintf(g_log, "  original %06x %s (changed in memory by the patch layer)\n", h->addr, h->name);

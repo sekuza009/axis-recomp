@@ -20,10 +20,10 @@ void (menu_drawCursor)(void)
 	menu_vertex(x, y);
 	float s1 = (left + 1.0f) * 0.25f;
 	glTexCoord2f(s1, t0);
-	PATCHED_CALL(0x429cc3, void, int, int)(x + 0x2f, y);                /* menu_vertex */
+	SITE_CALL(0x429cc3, menu_vertex, void, int, int)(x + 0x2f, y);                /* menu_vertex */
 	float t1 = (top + 1.0f) * 0.25f;
 	glTexCoord2f(s1, t1);
-	PATCHED_CALL(0x429cf0, void, int, int)(x + 0x2f, y + 0x2f);         /* menu_vertex */
+	SITE_CALL(0x429cf0, menu_vertex, void, int, int)(x + 0x2f, y + 0x2f);         /* menu_vertex */
 	glTexCoord2f(s0, t1);
 	menu_vertex(x, y + 0x2f);
 	glEnd();

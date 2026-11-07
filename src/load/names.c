@@ -447,7 +447,7 @@ void THISCALL (tex_loadImage)(u8 *m, int i)
 		} else
 			alpha_from(m, 0);
 		tex_path(m, path, STR(0x4b4044, "%s\\%s_COLOR"), STR(0x4b4038, "%s_COLOR"), name);
-		if (PATCHED_THISCALL(0x45636e, int, void *, const u8 *)(m, (const u8 *)path) >= 0) {   /* tex_findByName (the patch DLL: the KYRIE masks) */
+		if (SITE_THISCALL(0x45636e, tex_findByName, int, void *, const u8 *)(m, (const u8 *)path) >= 0) {   /* tex_findByName (the patch DLL: the KYRIE masks) */
 			ptx_decode(tex_getItemFileBy(m, path), mg->colourMask, &bpp, &w, &h);
 			size_check(m, w, h);
 		} else

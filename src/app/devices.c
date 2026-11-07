@@ -156,7 +156,7 @@ void (input_updateMouse)(void)
 {
 	const int *state = g_mouseState;   /* DIMOUSESTATE: x, y, wheel, buttons */
 	input_reacquireMouse();          /* input_reacquireMouse */
-	PATCHED_CALL(0x445c69, int, void)();        /* input_readMouse */
+	SITE_CALL(0x445c69, input_readMouse, int, void)();        /* input_readMouse */
 	int x = (int)((u32)g_mouseX + (u32)state[0]), y = (int)((u32)g_mouseY + (u32)state[1]), z = state[2];
 	g_mouseWheelTurned = 0;
 	g_mouseX = x;

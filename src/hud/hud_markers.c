@@ -108,7 +108,7 @@ void THISCALL (hud_drawPlayerMarkers)(Scene *scene)
 			int left = marker_hudX(player->screenPos[0]);
 			/* through the original call site: the patch DLL retargets it (label_text) to centre the name on the player
 			   and keep its letters 4:3 on wide screens */
-			PATCHED_CALL(0x491c2d, void, int, int, int, const char *, int)(left, y, right, name, 8);   /* text_drawCentred */
+			SITE_CALL(0x491c2d, text_drawCentred, void, int, int, int, const char *, int)(left, y, right, name, 8);   /* text_drawCentred */
 			int centre = marker_hudX(player->screenPos[0]), half;
 			if (PATCHED_BLOCK(0x491c58, 0x491c52, "52 8d 44 24 3c 50 e8 ?? ?? ?? ?? 59 5a 2b d0 90 90 90 90 90 90"))
 				half = PATCHED_CALL(0x491c58, int, const char *, int)(name, centre);   /* the patch DLL measures the name */

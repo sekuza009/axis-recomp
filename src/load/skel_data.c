@@ -417,7 +417,7 @@ u8 *THISCALL (shape_getByName)(u8 *cache, const char *name, int bind)
 		int room = mem ? mg->dataSize - mg->dataUsed : 0;
 		if (((int)mg->source) == 2)
 			/* (the original's first of its four copies of this pair: the patch DLL retargets all four, for the KYRIE models) */
-			PATCHED_THISCALL(0x466eb8, void, void *, void *, void *, int)(shape, PATCHED_CALL(0x466ea9, void *, const char *)(key), at, room);   /* shape_read (shapeDat_getItemFileBy) */
+			SITE_THISCALL(0x466eb8, shape_read, void, void *, void *, void *, int)(shape, SITE_CALL(0x466ea9, shapeDat_getItemFileBy, void *, const char *)(key), at, room);   /* shape_read (shapeDat_getItemFileBy) */
 		else {
 			char path[0x100];
 			item_path(path, cache, own, STR(0x4c4d68, "shp"), STR(0x4c4d6c, "obj"), (char *)OBJ(g_logShapeManager), STR(0x4c4d70, "invalid file format(%s)-getShapePtrBy()"));

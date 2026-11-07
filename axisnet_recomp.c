@@ -2386,8 +2386,10 @@ void recomp_setWide(const void *wide);
 BOOL WINAPI axisnet_attach(HINSTANCE inst, DWORD reason, LPVOID reserved) {
     if (reason != DLL_PROCESS_ATTACH) return TRUE;
     (void)inst;
+#ifndef AXIS_NATIVE   /* (the native build: the game's own code carries the fixes; no table handed over) */
     wide_state_range();
     recomp_setWide(&g_wide);
+#endif
 #else
 #define GetModuleHandleA_exe() GetModuleHandleA(NULL)
 BOOL WINAPI DllMain(HINSTANCE inst, DWORD reason, LPVOID reserved) {
@@ -2417,6 +2419,17 @@ BOOL WINAPI DllMain(HINSTANCE inst, DWORD reason, LPVOID reserved) {
     real_CoCreateInstance = hook_import(exe, "ole32.dll", "CoCreateInstance", hook_CoCreateInstance);
     real_IcmpSendEcho = hook_import(exe, "ICMP.dll", "IcmpSendEcho", hook_IcmpSendEcho);
     real_connect = hook_import_ex(exe, "WS2_32.dll", "connect", 4, hook_connect);  /* Axis imports Winsock by ordinal */
+#ifdef AXIS_NATIVE
+    /* NATIVE BUILD (AxisRC_native.exe): the game fixes below are written into the game's own code (src/fixes/,
+       standalone/platform.c); this layer keeps the networking above and the debug preview of other screen sizes */
+    if (g_fakew) real_GetSystemMetrics = hook_import(exe, "USER32.dll", "GetSystemMetrics", fake_GetSystemMetrics);
+    logf("axisnet (native build): %s mode, hub port %d, game-list port %d, hooks: dplay %s ping %s connect %s, dpi-aware %s",
+         g_local ? "local" : "server", g_hubport, g_mainport, real_CoCreateInstance ? "ok" : "MISSING",
+         real_IcmpSendEcho ? "ok" : "MISSING", real_connect ? "ok" : "MISSING", dpi_ok ? "yes" : "no");
+    if (!real_connect) real_connect = connect;
+    if (!real_CoCreateInstance) real_CoCreateInstance = (COCREATE)CoCreateInstance;
+    return TRUE;
+#endif
     int movie = hook_movie(exe);
     hook_marked();
     /* ARM CENTER mech rotation (right-drag, 0x461850): yaw/pitch come from the menu cursor's position relative

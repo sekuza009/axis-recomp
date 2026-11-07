@@ -544,7 +544,7 @@ u8 *THISCALL (Console_ctor)(u8 *g)
 	                                                                                GS->viewMemory, sizeof GS->viewMemory);   /* ViewVolume_initBy */
 	stage_build(s, STR(0x4c45a8, "Stage"), STR(0x4b1784, "Map"), STR(0x4c45b0, "Texture"), STR(0x4c45b8, "Shape"),
 	                                                                                  STR(0x4c45c0, "Skeleton"), STR(0x4c45cc, "Actor"), STR(0x4c45d4, "Bullet"), STR(0x4c45dc, "Effect"), STR(0x4c45e4, "Scene"));   /* stage_build */
-	if (!PATCHED_THISCALL(0x460920, int, void *, const char *)(s, (const char *)STR(0x4b4418, "Data/Component.dat")))   /* catalogue_loadComponents (the patch DLL adds the KYRIE parts here) */
+	if (!SITE_THISCALL(0x460920, catalogue_loadComponents, int, void *, const char *)(s, (const char *)STR(0x4b4418, "Data/Component.dat")))   /* catalogue_loadComponents (the patch DLL adds the KYRIE parts here) */
 		sys_fatalErrorN((char *)OBJ(g_logConsole), (const char *)STR(0x4c4598, "file damaged!"));
 	if (!catalogue_loadItemInfoFrom(s, (const char *)STR(0x4c4588, "Data/Item.dat")))   /* catalogue_loadItemInfoFrom */
 		sys_fatalErrorN((char *)OBJ(g_logConsole), (const char *)STR(0x4c4598, "file damaged!"));
