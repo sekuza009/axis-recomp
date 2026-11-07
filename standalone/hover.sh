@@ -11,7 +11,7 @@ P="$S/$1"
 M="C:/Users/ALEXAN~1/AppData/Local/Temp/claude/C--Users-Alexander-Desktop-Axis/33e72afb-5455-4cef-9fc9-6e39a57131ea/scratchpad"   # gshot/k.sh copies that look for the AxisRC process
 shot() { powershell -NoProfile -ExecutionPolicy Bypass -File "$M/gshot_rc.ps1" "$P-$1.png" 0.5 | tail -1; }
 set -e
-cmp -s "$G/AxisGL.exe" "$R/installed.exe" || { echo "installed exe differs from recomp/installed.exe - stop"; exit 1; }
+cmp -s "$G/AxisGL.exe" "$R/game.exe" || { echo "installed exe differs from recomp/game.exe - stop"; exit 1; }
 test ! -e "$G/recomp.dll" || { echo "a recomp.dll is in the game folder (a harness run?) - stop"; exit 1; }
 rm -rf "$R/Save.bak"; cp -r "$G/Save" "$R/Save.bak"; rm -f "$G/standalone.log"
 cp -p "$G/initdata/axis.cfg" "$R/axis.cfg.bak"   # (the player's settings: put back after the run)
@@ -30,7 +30,7 @@ hover -640 0 ladder      # (then LADDER, lower left)
 powershell -NoProfile -Command "if (Get-Process AxisRC -ErrorAction SilentlyContinue) { 'game still running' } else { 'GAME EXITED' }"
 powershell -NoProfile -Command "Stop-Process -Name AxisRC -Force"
 for i in 1 2 3 4 5 6 7 8 9 10; do sleep 1; rm -f "$G/AxisRC.exe" 2>/dev/null && test ! -e "$G/AxisRC.exe" && break; done
-cmp -s "$R/installed.exe" "$G/AxisGL.exe" && echo "installed AxisGL.exe unchanged" || echo "AXISGL.EXE CHANGED"
+cmp -s "$R/game.exe" "$G/AxisGL.exe" && echo "installed AxisGL.exe unchanged" || echo "AXISGL.EXE CHANGED"
 diff -r "$R/Save.bak" "$G/Save" >/dev/null && echo "saves unchanged" || echo "SAVES CHANGED"
 # axis.cfg as the run left it, compared (the settings read and written back unchanged), then the player's put back
 cmp -s "$R/axis.cfg.bak" "$G/initdata/axis.cfg" && echo "axis.cfg unchanged" || { echo "AXIS.CFG CHANGED:"; diff "$R/axis.cfg.bak" "$G/initdata/axis.cfg"; }

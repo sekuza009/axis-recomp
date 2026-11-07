@@ -15,7 +15,7 @@ shot() { powershell -NoProfile -ExecutionPolicy Bypass -File "$M/gshot_rc.ps1" "
 # Windows (a stuck Esc cancelled every later run's loading)
 release_keys() { powershell -NoProfile -Command "Add-Type -Namespace W -Name Rel -MemberDefinition '[DllImport(\"user32.dll\")] public static extern void keybd_event(byte vk, byte scan, int flags, System.IntPtr extra);'; foreach (\$k in '$*'.Split(' ')) { if (\$k) { [W.Rel]::keybd_event([byte][int]\$k, 0, 2, [IntPtr]::Zero) } }"; }
 set -e
-cmp -s "$G/AxisGL.exe" "$R/installed.exe" || { echo "installed exe differs from recomp/installed.exe - stop"; exit 1; }
+cmp -s "$G/AxisGL.exe" "$R/game.exe" || { echo "installed exe differs from recomp/game.exe - stop"; exit 1; }
 test ! -e "$G/recomp.dll" || { echo "a recomp.dll is in the game folder (a harness run?) - stop"; exit 1; }
 rm -rf "$R/Save.bak"; cp -r "$G/Save" "$R/Save.bak"; rm -f "$G/standalone.log"
 cp -p "$G/initdata/axis.cfg" "$R/axis.cfg.bak"   # (the player's settings: put back after the run)
@@ -42,7 +42,7 @@ powershell -NoProfile -Command "if (Get-Process AxisRC -ErrorAction SilentlyCont
 powershell -NoProfile -Command "Stop-Process -Name AxisRC -Force"
 release_keys $USED
 for i in 1 2 3 4 5 6 7 8 9 10; do sleep 1; rm -f "$G/AxisRC.exe" 2>/dev/null && test ! -e "$G/AxisRC.exe" && break; done
-cmp -s "$R/installed.exe" "$G/AxisGL.exe" && echo "installed AxisGL.exe unchanged" || echo "AXISGL.EXE CHANGED"
+cmp -s "$R/game.exe" "$G/AxisGL.exe" && echo "installed AxisGL.exe unchanged" || echo "AXISGL.EXE CHANGED"
 diff -r "$R/Save.bak" "$G/Save" >/dev/null && echo "saves unchanged" || {
 	echo "SAVES CHANGED (put back as they were; as the run left them: <prefix>-Save)"
 	rm -rf "$P-Save"; cp -rp "$G/Save" "$P-Save"; rm -rf "$G/Save"; cp -rp "$R/Save.bak" "$G/Save"; }

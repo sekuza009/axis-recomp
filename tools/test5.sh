@@ -10,7 +10,7 @@ G="C:/Users/Alexander/Desktop/Axis"
 P="$S/$1"
 shot() { powershell -NoProfile -ExecutionPolicy Bypass -File "$O/gshot.ps1" "$P-$1.png" 0.5 | tail -1; }
 set -e
-cmp -s "$G/AxisGL.exe" "$R/installed.exe" || { echo "installed exe differs from recomp/installed.exe - stop"; exit 1; }
+cmp -s "$G/AxisGL.exe" "$R/game.exe" || { echo "installed exe differs from recomp/game.exe - stop"; exit 1; }
 rm -rf "$R/Save.bak"; cp -r "$G/Save" "$R/Save.bak"; rm -f "$G/recomp.log"
 test -f "$R/recomp.passed" || { echo "no recomp/recomp.passed: run test4.sh first"; exit 1; }
 cp "$R/build/AxisGL.exe" "$G/AxisGL.exe"; cp "$R/recomp.dll" "$G/recomp.dll"; cp "$R/recomp.passed" "$G/recomp.passed"
@@ -31,8 +31,8 @@ sleep 30
 shot match2
 powershell -NoProfile -Command "if (Get-Process AxisGL -ErrorAction SilentlyContinue) { 'game still running' } else { 'GAME EXITED' }"
 powershell -NoProfile -Command "Stop-Process -Name AxisGL -Force"
-for i in 1 2 3 4 5 6 7 8 9 10; do sleep 1; cp "$R/installed.exe" "$G/AxisGL.exe" 2>/dev/null && break; done
-cmp -s "$R/installed.exe" "$G/AxisGL.exe" && echo "installed AxisGL.exe restored (identical)" || echo "AXISGL.EXE NOT RESTORED"
+for i in 1 2 3 4 5 6 7 8 9 10; do sleep 1; cp "$R/game.exe" "$G/AxisGL.exe" 2>/dev/null && break; done
+cmp -s "$R/game.exe" "$G/AxisGL.exe" && echo "installed AxisGL.exe restored (identical)" || echo "AXISGL.EXE NOT RESTORED"
 rm -f "$G/recomp.dll"
 diff -r "$R/Save.bak" "$G/Save" >/dev/null && echo "saves unchanged" || echo "SAVES CHANGED"
 grep "KEPT ORIGINAL\|replaces the patch" "$G/recomp_early.log"
