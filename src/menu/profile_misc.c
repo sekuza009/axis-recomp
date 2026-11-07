@@ -217,7 +217,7 @@ u32 (profile_logIn)(void)
 /* 0x44f410: the profile screen's page 1, the list (menuState210_frame's table, with profile_newNamePage /
    profile_deletePage / profile_logIn / profile_logOutPage / pilotSelect_page): the row click's timer
    (g_profileRowClickTime, to k_20f; then g_profileRowClicked clears); while a dialog frame opens, its frame
-   (menu_drawFrame) and, entered with no profiles (g_profileNoneAtEntry), the new-name typing (profile_typeNewName);
+   (menu_drawFrameOpening) and, entered with no profiles (g_profileNoneAtEntry), the new-name typing (profile_typeNewName);
    else the stat bars loaded when stale and the management window drawn. Returns what the original leaves in eax */
 u32 (profile_listPage)(void)
 {
@@ -230,7 +230,7 @@ u32 (profile_listPage)(void)
 		}
 	}
 	if (g_frameOpening) {
-		menu_drawFrame(g_profilePageLeft, g_profilePageTop, g_profilePageRight, g_profilePageBottom);
+		menu_drawFrameOpening(g_profilePageLeft, g_profilePageTop, g_profilePageRight, g_profilePageBottom);
 		if (g_frameOpening)
 			return (u32)g_frameOpening;
 		if (!g_profileNoneAtEntry)
@@ -248,7 +248,7 @@ u32 (profile_listPage)(void)
    quits on the next frame anyway); else, with no dialog frame opening, by page (g_profilePage): 1 the list
    (profileList_mouse), 2 the new-name dialog, 3 delete, 5 log out, 6 the pilot grid (pilotSelect_clicks). Returns
    what the original leaves in eax */
-u32 (profile_processInput)(void)
+u32 (profile_screenClicks)(void)
 {
 	int intro = g_profileQuitting;
 	if (intro && g_profileQuitSkip != 5) {
@@ -352,8 +352,8 @@ static u32 glide_page(const float *rate, const u32 *frame, u32 panel)
 	}
 	profile_drawManagementWindow();   /* profile_drawManagementWindow */
 	if (g_frameOpening)
-		return menu_drawFrame(GAME_VAR(int, frame[0]), GAME_VAR(int, frame[1]),
-		                                                     GAME_VAR(int, frame[2]), GAME_VAR(int, frame[3]));   /* menu_drawFrame */
+		return menu_drawFrameOpening(GAME_VAR(int, frame[0]), GAME_VAR(int, frame[1]),
+		                                                     GAME_VAR(int, frame[2]), GAME_VAR(int, frame[3]));   /* menu_drawFrameOpening */
 	return CALL(panel);
 }
 /* 0x44f5f0: the delete question's page (profile_drawDeleteQuestion) */
@@ -390,7 +390,7 @@ u32 (profileList_drawNames)(void)
 }
 
 /* 0x44f4b0: the new-name page: the management window (profile_drawManagementWindow), then while the dialog opens
-   its frame (menu_drawFrame), with the "NAME ALREADY REGISTRED" message up its window, while typing the name
+   its frame (menu_drawFrameOpening), with the "NAME ALREADY REGISTRED" message up its window, while typing the name
    dialog; once the typed name (g_chatLine) is in: empty cancels, a blank one (name_isBlank) is refused with sound 6,
    one with a bad character (profile_nameHasBadChar) too with message 0x81, one that exists (profile_nameExists)
    brings up the message; any other goes on to the pilot grid (page 6, pilotSelect_reset). Returns the last
@@ -400,7 +400,7 @@ u32 (profile_newNamePage)(void)
 	const char *typed = g_chatLine;
 	profile_drawManagementWindow();
 	if (g_frameOpening)
-		return menu_drawFrame(g_newNameDialogLeft, g_newNameDialogTop,
+		return menu_drawFrameOpening(g_newNameDialogLeft, g_newNameDialogTop,
 		                                                     g_newNameDialogRight, g_newNameDialogBottom);
 	if (g_profileMessage)
 		return profile_drawMessageWindow();
@@ -604,7 +604,7 @@ static void key_down(void) { list_down(); }
 
 /* 0x44c600: the profile list's keys: up / down held (with the menu's key repeat) move the cursor, scrolling the list
    at its ends (sound 2); N starts a new profile (profile_typeNewName); g_dikD / g_dikDelete delete it
-   (profile_askDelete) when there is one; g_dikI logs in (the pilot grid: g_profileLogInAsked, page 4), or starts a new
+   (profile_askDelete) when there is one; g_dikI logs in (g_profileLogInAsked, page 4: profile_logIn), or starts a new
    profile when there are none; OK / the second cancel key ask to log out (profile_askLogOut). The original leaves eax to
    callers that ignore it */
 void (profileList_keys)(void)
@@ -634,9 +634,9 @@ void (profileList_keys)(void)
 		profile_askLogOut();   /* profile_askLogOut */
 }
 /* 0x44be00: the profile list's mouse: a click (g_mouseClicked) on the page's buttons (profilePage_hitTest): 0 NEW: a new name typed
-   (profile_typeNewName), 1 DELETE asked (profile_askDelete) when there is one, 2 LOG IN: the pilot grid opened (page 4; with
-   no profiles a new name typed instead), 3 LOG OUT asked (profile_askLogOut), 4 the list: a row (profileList_hitTest) chosen, or the
-   chosen row clicked again (g_profileRowClicked) opens the dialog; 5 / 6 a row up / down. Then with the button held
+   (profile_typeNewName), 1 DELETE asked (profile_askDelete) when there is one, 2 LOG IN: logs in (g_profileLogInAsked, page 4:
+   profile_logIn; with no profiles a new name typed instead), 3 LOG OUT asked (profile_askLogOut), 4 the list: a row
+   (profileList_hitTest) chosen, or the chosen row clicked again (g_profileRowClicked) logs in the same way; 5 / 6 a row up / down. Then with the button held
    (g_mouseButtonsHeld) on the arrows they step again once the blink clock (g_menuRepeatClock) reaches 5. The original leaves eax to
    callers that ignore it */
 void (profileList_mouse)(void)

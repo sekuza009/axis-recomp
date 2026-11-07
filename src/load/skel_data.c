@@ -50,8 +50,8 @@ void THISCALL (skel_loadFromFile)(u8 *self, void *f, void *mem, int size)
 	}
 }
 
-/* 0x46aeb0 (thiscall on a skeleton set): set up for n skeletons from the directory dir (dir; none: 0x4b1304), a at
-   source, n at capacity, extra bytes (dataSize) after them: the block (+8, its size n x 0x70 + extra at +4) holds the
+/* 0x46aeb0 (thiscall on a skeleton set): set up for n skeletons from the directory dir (dir; none: 0x4b1304), the
+   source (where the skeletons load from: 0 / 1 loose files, 2 Skeleton.dat) at source, n at capacity, extra bytes (dataSize) after them: the block (+8, its size n x 0x70 + extra at +4) holds the
    skeletons' 0x4c-byte records (nodes), then their 0x24-byte skeletons (items, each created and released), then the
    rest (data). Its callers ignore the eax it leaves */
 void THISCALL (SkeletonManager_initBy)(u8 *self, const char *dir, int n, u32 source, int extra, void *mem, int size)
@@ -243,7 +243,7 @@ static u8 *key_at(u8 *keys, int n, int size, int *frame)
 				lo = mid;
 		}
 	return keys + lo * size;
-#undef KEY_FRAME
+#undef KEY_TIME
 }
 
 /* does the FPU compare v with 0 as equal (as fcomp's C3 says: also for a NaN)? */
@@ -514,16 +514,16 @@ static void transform(float *out, const float *m, const float *px, const float *
 		out[r] = f32(fadd_m(fmul_m(fld_m(pz), &m[8 + r]) + fmul_m(fld_m(py), &m[4 + r]) + fmul_m(fld_m(px), &m[r]), &m[12 + r]));
 }
 
-/* 0x46f8c0 (thiscall on an object's skeleton pose): its skeleton (the pointer at frames, entry frame; none: nothing)
-   posed at frame animTick (modulo the skeleton's frames frames + 1) for each of its bones (0x70 bytes from its bones;
-   at most the object's count): on the GL modelview matrix (saved and put back) the parent bone's matrix is loaded
-   (its record matrix; none: base, or the matrix there was), the position translated (the bone's pos, or its keys as
-   in skel_getBoneMatrix; times the bone record's scale +4), the rotation as in skel_getBoneMatrix; the result read back
-   into the bone's 0x64-byte record (matrix), with two points carried through it: g_vecOrigin (to pos) and the record's
-   own point (+0, its +0x20 ..; none: the first again, to centre). Its callers ignore the eax it leaves */
-void THISCALL (ObjectList_poseBones)(u8 *pose, const float *base)
+/* 0x46f8c0 (thiscall on an object list): its current skeleton (skeletons[skel]; none: nothing) posed at frame
+   animTick (modulo the skeleton's duration + 1) for each of its bones (0x70 bytes from its bones; at most the list's
+   count): on the GL modelview matrix (saved and put back) the parent bone's matrix is loaded (its entry's matrix;
+   none: base, or the matrix there was), the position translated (the bone's pos, or its keys as in
+   skel_getBoneMatrix; times the entry's scale), the rotation as in skel_getBoneMatrix; the result read back into the
+   bone's 0x64-byte entry (matrix), with two points carried through it: g_vecOrigin (to pos) and the entry's shape's
+   centre (none: pos again, to centre). Its callers ignore the eax it leaves */
+void THISCALL (ObjectList_poseBones)(u8 *list, const float *base)
 {
-	ObjectList *ol = (ObjectList *)pose;
+	ObjectList *ol = (ObjectList *)list;
 	if (ol->skelCount <= 0)
 		return;
 	float saved[16], root[16];

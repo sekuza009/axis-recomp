@@ -82,7 +82,7 @@ static void briefing_button(int x0, int x1, int lit, const u32 *colour, const ch
 	if (!colour)
 		colour = grey;
 	set_colour_bits(g_textColour, colour[0], colour[1], colour[2], colour[3]);
-	text_drawBox16(x0, BY1 - 0x28, x1, label);
+	text_drawCentredLines16(x0, BY1 - 0x28, x1, label);
 }
 
 static void bind_button_texture(void)
@@ -146,7 +146,7 @@ void (missionList_draw)(void)
 		menu_drawWideButton(x0, BY1 - 0x40, x1, BY1 - 0x20, lit);
 		const u32 *colour = lit ? g_panelColour : g_dimColour;
 		set_colour_bits(g_textColour, colour[0], colour[1], colour[2], colour[3]);
-		text_drawBox16(x0, BY1 - 0x38, x1, (const char *)(MSG(517, "RESERVED") + k * 0x80));
+		text_drawCentredLines16(x0, BY1 - 0x38, x1, (const char *)(MSG(517, "RESERVED") + k * 0x80));
 	}
 }
 #undef mission

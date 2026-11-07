@@ -115,9 +115,9 @@ void (text_drawCentred5)(int x0, int y, int x1, const char *text)
 /* the printable (non-space) characters of a line (0x402590): with the visible length, the centring correction, in units of 3 */
 #define text_printableLength(s) GAME_FN(text_printableLength, 0x402590, int, const char *)(s)
 
-/* text_drawBox16 / text_drawBox32: text centred between x0 and x1, broken into lines at each "|" ("||" is a plain
+/* text_drawCentredLines16 / text_drawCentredLines32: text centred between x0 and x1, broken into lines at each "|" ("||" is a plain
    "|"; in a match no line breaks), one line under the other */
-static void text_drawBoxLines(int x0, int y, int x1, const char *text, int large)
+static void text_drawCentredLines(int x0, int y, int x1, const char *text, int large)
 {
 	char work[100], line[100], rest[100];
 	memset(work, 0, sizeof work);
@@ -175,13 +175,13 @@ static void text_drawBoxLines(int x0, int y, int x1, const char *text, int large
 }
 
 /* 0x4029d0: text in the 16-unit font centred between x0 and x1, in lines (13 units per character, 0x11 apart) */
-void (text_drawBox16)(int x0, int y, int x1, const char *text)
+void (text_drawCentredLines16)(int x0, int y, int x1, const char *text)
 {
-	text_drawBoxLines(x0, y, x1, text, 0);
+	text_drawCentredLines(x0, y, x1, text, 0);
 }
 
 /* 0x402db0: the same in the 32-unit font (18 units per character, 0x21 apart) */
-void (text_drawBox32)(int x0, int y, int x1, const char *text)
+void (text_drawCentredLines32)(int x0, int y, int x1, const char *text)
 {
-	text_drawBoxLines(x0, y, x1, text, 1);
+	text_drawCentredLines(x0, y, x1, text, 1);
 }

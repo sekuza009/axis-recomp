@@ -1,0 +1,379 @@
+GROUP g2: 331 functions; OK 296, RENAME 15, COMMENT 18, PARAMS 2, UNSURE 0; NOT RUN 66
+
+== src/menu/menu_2d.c
+cursor_x | OK | code: the cursor's x mapped into the patch layer's cursor viewport (widescreen fix helper, no original address); run: not in the trace (inlined static / rebuild-only helper)
+menu_box | OK | code: the menus' centred 16:9 / 4:3 box (x, w) on a wide screen (widescreen fix helper, no original address); run: not in the trace (inlined static / rebuild-only helper)
+menu_vertex | OK | code: glVertex2i of a 640x480 menu-unit point scaled to the screen; run: 204226256 calls, m0,m1,m2,m4,s100,s200,s210,s300,s400,s500,s600,s700,s900, all sessions; callers menu_drawRect x2329727, menu_drawCursor x528774, picture x386254
+menu_drawRect | OK | code: filled or outlined rect in g_rectColour (full screen when it covers 640x480); run: 884342 calls, m0,s100,s210,s300,s400,s500,s600,s700,s900, all sessions; callers frontEnd_drawProgress x260832, profile_drawManagementWindow x109324, armc_drawWeaponsScreen x63247
+gfx_setProjection2D3D | OK | code: viewport + perspective (mode 1) or ortho 2D, unless already set (g_projMode); run: 7471414 calls, m0,m1,m2,m4,s100,s200,s210,s300,s400,s500,s600,s700,s900, all sessions; callers text_begin x6303875, fix_drawCursor x264385, menu_drawCursor x264385
+menu_drawLine | OK | code: GL_LINES pair in g_rectColour; run: 51055 calls, s400,s600,s900, missions,mp,multi,setup,setupE; callers setup_drawControlsPage x31626, arena_drawGameList x11740, missionBriefing_draw x5172
+gfx_setup3DView | OK | code: viewport w x h + gluPerspective; called at GL init and on WM_SIZE; run: 46 calls, m2,s0, all sessions; callers game_wndProc x24, gfx_initGLState x22
+menu_frameBegin | OK | code: clear colour/depth, white, alpha blending: start of each menu frame; run: 264396 calls, m0,s100,s200,s210,s300,s400,s500,s600,s700,s900, all sessions; callers menu_frame x264396
+menu_drawWhiteFade | OK | code: g_whiteFade grows, full-screen white rect at that alpha (leaving for a match); run: 1218 calls, m0,s300,s400, host-h2_1,host-h2_2,host-h2_3,host-h2_4,mp..; callers menuState400_frame x1065, menuState300_frame x153
+gfx_setMenuCamera | OK | code: gluLookAt from g_menuEye* to g_menuCameraLook*; run: 5593130 calls, m0,s200,s210,s300,s400,s500,s600,s700,s900, all sessions; callers menu_tunnel x2164280, flares x1962624, outer_bands x327104
+frame_progress | OK | code: frame counter x frame time x scale (menu_drawFrame helper); run: 7578 calls, s210,s300,s400,s500,s600,s700,s900, all sessions; callers menu_drawFrame x2524, profile_listPage x2340, lobbyCreate_frame x660
+up_to | OK | code: progress clamped to a limit; run: 2527 calls, s210,s300,s400,s500,s600,s700,s900, all sessions; callers menu_drawFrame x2527
+fading | OK | code: 1 - counter x frame time / 10, alpha of the fading lines; run: 2524 calls, s210,s300,s400,s500,s600,s700,s900, all sessions; callers menu_drawFrame x2524
+line | OK | code: one GL_LINES segment in menu units; run: 8838 calls, s210,s300,s400,s500,s600,s700,s900, all sessions; callers profile_listPage x4096, lobbyCreate_frame x1150, glide_page x864
+phase_done | OK | code: counter++ and next phase once counter*64*frameTime > 640; run: 2527 calls, s210,s300,s400,s500,s600,s700,s900, all sessions; callers profile_listPage x1170, lobbyCreate_frame x330, glide_page x246
+menu_drawFrame | RENAME -> menu_drawFrameOpening | draws only the dialog frame's opening animation (3 phases of growing/fading lines + growing panel) and clears g_frameOpening when done; every caller calls it only while g_frameOpening (profile_listPage, glide_page, lobbyCreate_frame, menuState500/700/900 ...: 3788 calls, all during openings); 'drawFrame' reads like the finished frame/border, which is drawn elsewhere (menu_drawCornerOrnaments); run: 3788 calls, s210,s300,s400,s500,s600,s700,s900, all sessions; callers profile_listPage x1757, lobbyCreate_frame x494, glide_page x369
+menu_drawMessageBox | OK | code: blue panel + g_messageBoxLine + "PRESS ENTER OR CLICK MOUSE" while g_dialogPending; run: 2675 calls, s300, formsB,ladder,ladderserver; callers menu_frame x2675
+menu_drawTextCursor | OK | code: blinking green 7x15 bar (g_cursorBlinkTimer); run: 3494 calls, s210,s400, formsC,mp,profile; callers menu_drawInputLine x3494
+menu_drawInputLine | OK | code: the open text field's line (g_chatLine, or stars if hidden) + cursor; run: 3553 calls, s210,s400, formsC,mp,profile; callers menu_frame x3553
+
+== src/menu/menu_cameras.c
+limit_frame_time | COMMENT | comment says "the frame time limited to 1 second (above the constant at limit)"; code sets g_frameTime to 1.0 when it is above the constant (5 or 10): "frame time reset to 1 when above limit (k_5f / k_10f)"; run: s400/s500/s700/s900 from arena_camera, skirmish_camera, missions_camera, armc_cameraStep
+ease_from | OK | code: a -= (a - target) * frameTime * rate; run: 10014 calls, s400, formsC,host-h2_1,host-h2_2,host-h2_3,host-h2_4..; callers menu_camera x10014
+menu_camera | OK | code: room/arena camera eased to menu point idx (mode 1) or home (mode 0), snapped (mode 2); run: 24762 calls, s400, formsC,host-h2_1,host-h2_2,host-h2_3,host-h2_4..; callers arena_camera x24762
+room_camera | OK | code: menu_camera on the game room's state (g_roomCameraMode / g_roomState); run: trace: NOT RUN (NOT RUN: game room (800, LADDER GAME) pages 0/1/2/4: menuState800_gameRoom)
+arena_camera | OK | code: menu_camera on the arena lobby's g_arenaCameraMode / g_lobbySubState; run: 24762 calls, s400, formsC,host-h2_1,host-h2_2,host-h2_3,host-h2_4..; callers menuState400_frame x24762
+menu_camera2 | OK | code: camera to point 0 then (0,-200,1500) or home and back to state 300 (missions/skirmish); run: 19507 calls, s500,s900, formsB,missions,skirmish; callers skirmish_camera x11493, missions_camera x8014
+armc_cameraStep | OK | code: ARM CENTER camera out to point 0 / back home, then to g_armcFrom's screen (300/400/800); run: 41512 calls, s700, armc,formsC,itemsD; callers menuState700_armCenter x41512
+missions_camera | OK | code: menu_camera2 on g_missionsState; run: 8014 calls, s900, missions; callers menuState900_missions x8014
+skirmish_camera | OK | code: menu_camera2 on g_skirmishState; run: 11493 calls, s500, formsB,skirmish; callers menuState500_skirmish x11493
+heading | OK | code: (g_freeCamYaw + 90) wrapped, in radians; run: trace: NOT RUN (NOT RUN: freeCam_stepLeft/Right only (dead, see freeCam_keys))
+freeCam_stepLeft | OK | code: free camera point + menu eye stepped sideways along the heading; run: trace: NOT RUN (NOT RUN: dead path: only freeCam_keys (A key) via menu_processKeys case 9999, which menu_frame never runs on (app_frameByScreen sends screen 9999 to the match); code-confirmed only)
+freeCam_stepRight | OK | code: opposite of freeCam_stepLeft; run: trace: NOT RUN (NOT RUN: dead path: freeCam_keys (D key), see freeCam_stepLeft)
+turn_update | OK | code: sin/cos of g_freeCamYaw kept, yaw into the local slot's g_slotCams record; run: trace: NOT RUN (NOT RUN: freeCam_mouseLook only (dead path))
+freeCam_mouseLook | OK | code: pointer offset from (320,240) turns/tilts the free camera; run: trace: NOT RUN (NOT RUN: dead path: menu_processMouse case 9999, never reached (menu_frame does not run on screen 9999))
+setup_camera | OK | code: setup screen camera to the tab's point (mode 1) or home (mode 0), snapped (mode 2); run: 16978 calls, s600, setup,setupE; callers menuState600_setup x16978
+freeCam_keys | OK | code: chat line, Esc leave (game_returnToMainMenu), WASD move, zoom / debug keys for the free camera; run: trace: NOT RUN (NOT RUN: dead path: menu_processKeys case 9999 never reached (menu_frame does not run on screen 9999); the in-match free camera is match_freeCamFrame, not this)
+
+== src/menu/menu_cursor.c
+menu_drawCursor | OK | code: animated 15-frame pointer sprite at (g_mouseX, g_mouseY); run: 264387 calls, s200,s210,s300,s400,s500,s600,s700,s900, all sessions; callers fix_drawCursor x264387
+
+== src/menu/menu_init.c
+menu_initColours | OK | code: seven RGBA 0/1 colours into g_codeColours; run: 22 calls, s100, all sessions; callers frontEnd_startUp x22
+armc_initCameraPoints | OK | code: g_armcViewPoints zeroed, three y's set (never read); run: 3 calls, s300,s400, armc,formsC,itemsD; callers armc_open x3
+arena_initOptionTexts | OK | code: team names, OFF/ON, rotation OFF/ON and game type names copied from the MSG table; run: 22 calls, s0, all sessions; callers app_startupLoad x22
+missions_clear | OK | code: 30 g_missions entries emptied; run: 1 calls, s900, missions; callers mission_loadAxisMis x1
+net_resetState | OK | code: network message kinds cleared then set 1/2/6/7; run: 7 calls, s400, host-h2_1,host-h2_2,host-h2_3,host-h2_4,mp..; callers dplay_resetAndCreate x7
+setupTop_initOutlines | OK | code: setup top outlines (and g_outlinesCopy) copied from the lobby top outlines; run: 22 calls, s100, all sessions; callers frontEnd_startUp x22
+menuCamera_initPoints | RENAME -> room_initCameraPoints | sets exactly the game room's five camera / look-at points ((+-20,+-10) looking at (-+70,+-55)) - the same table menuState800_enterGameRoom stores - plus home from the current camera and clears g_roomAwaitingServer (a room flag); only caller armc_cameraStep when returning to the game room (800). Not a generic menu-camera init; run: trace: NOT RUN (NOT RUN: reached by leaving ARM CENTER opened from the game room (Ladder, g_armcFrom 3))
+replayList_open | OK | code: replay select dialog layout, g_replayList cleared, replay files listed (F1 on main menu); run: 1 calls, s300, replay; callers mainmenu_processKeys x1
+frontEnd_startUp | OK | code: chat history cleared, colours, 6 progress steps with outline inits; run: 22 calls, s100, all sessions; callers menuState100_intro x22
+
+== src/menu/menu_keys.c
+menu_processKeys | OK | code: per-frame key dispatch by g_screen (message box first); run: 264404 calls, s100,s200,s210,s300,s400,s500,s600,s700,s900, all sessions; callers menu_frame x264404
+profile_screenKeys | OK | code: profile screen keys by g_profilePage; run: 55074 calls, s210, all sessions; callers menu_processKeys x55074
+
+== src/menu/menu_quads.c
+textured_quad | OK | code: 4 texcoord/vertex pairs in menu units; run: 1530951 calls, s210,s300,s400,s500,s600,s700,s900, all sessions; callers menu_drawWideButton x885250, menu_drawCornerOrnaments x206760, menu_drawTexture x103380
+button | OK | code: one button cell (lit/plain) of the bound sheet as a quad (static helper); run: 1260613 calls, s210,s300,s400,s500,s600,s700,s900, all sessions; callers profile_drawManagementWindow x327924, armc_drawModeTabs x121653, armc_drawStatsPanel x81164
+menu_drawWideButton | OK | code: wide text-button cell of the button sheet; run: 885269 calls, s210,s300,s400,s500,s600,s700,s900, all sessions; callers armc_drawWeaponsScreen x264536, profile_drawManagementWindow x218648, armc_drawModeTabs x121653
+menu_drawLargeButton | OK | code: large cell (field / label background); run: 45972 calls, s210,s700, armc,formsC,itemsD,profile; callers armc_drawStatsPanel x44904, profile_drawNewDialog x1068
+menu_drawSmallButton1 | RENAME -> menu_drawLeftArrow | cell 0..0.25 of the sheet's arrow row; every caller draws it as the LEFT one of a side-by-side pair with menu_drawSmallButton2 (skirmish round arrows, settings form map preview arrows, setup mouse slider '-', room dialog, ARM CENTER) and hit-tests it as previous / down (e.g. skirmish 2 = round down); setup_drawSoundPage draws the same cell as 'the arrows'. The number says nothing; run: 68299 calls, s400,s500,s600,s700, armc,formsB,formsC,host-h2_1,host-h2_2..; callers armc_drawWeaponsScreen x33067, preview_controls x12802, skirmish_roundScreen x10518
+menu_drawSmallButton2 | RENAME -> menu_drawRightArrow | always the RIGHT one of the side-by-side pair with menu_drawSmallButton1 (next / up: skirmish round up, map preview right, slider '+'); run: 68284 calls, s400,s500,s600,s700, armc,formsB,formsC,host-h2_1,host-h2_2..; callers armc_drawWeaponsScreen x33067, preview_controls x12802, skirmish_roundScreen x10518
+menu_drawSmallButton3 | RENAME -> menu_drawUpArrow | always the UPPER of a vertically stacked pair with menu_drawSmallButton4: list scroll up (replaySelect hit 0 -> maps_up, profile list 5 -> list_up, game lists, arena map list); run: 59777 calls, s210,s300,s400, all sessions; callers profile_drawManagementWindow x54660, arena_drawGameList x2935, replaySelect_drawDialog x2182
+menu_drawSmallButton4 | RENAME -> menu_drawDownArrow | always the LOWER of the stacked pair: list scroll down (replaySelect 1 -> maps_down, profile list 6 -> list_down); run: 59769 calls, s210,s300,s400, all sessions; callers profile_drawManagementWindow x54652, arena_drawGameList x2935, replaySelect_drawDialog x2182
+bind | OK | code: glEnable texture + tex_bind (static; evidence merges every file's 'bind'); run: 15983345 calls, m0,m2,m4,s200,s210,s300,s400,s500,s600,s700,s900, all sessions; callers ViewVolume_draw x8980768, match_drawFrame x2581538, menu_drawBackground3D x2494615
+menu_drawTexture | OK | code: whole texture on a rect (panel background); run: 103378 calls, s210,s300,s400,s500,s600, all sessions; callers profile_drawManagementWindow x54656, arena_createDraw x12802, setup_drawControlsPage x10542
+menu_drawTextureFlipped | OK | code: whole texture upside down; run: 16728 calls, s210, ladderserver,profile,quit; callers two_buttons x15660, profile_drawNewDialog x1068
+menu_drawCornerOrnaments | OK | code: ornament quarters at top-left and bottom-right of a panel; run: 103376 calls, s210,s300,s400,s500,s600, all sessions; callers profile_drawManagementWindow x54654, arena_createDraw x12802, setup_drawControlsPage x10542
+menu_drawTopRightOrnament | OK | code: ornament at a panel's top-right (x0 unused); run: 16729 calls, s210, ladderserver,profile,quit; callers two_buttons x15661, profile_drawNewDialog x1068
+
+== src/menu/menu_records.c
+copy_name | OK | code: clear then strcpy (names and data paths); run: 70 calls, s0,s400, all sessions; callers app_setDataPaths x66, arena_loadPlayerSettings x3, arena_defaultPlayer x1
+arena_defaultPlayer | COMMENT | code sets the name "PLAYER", g_arenaCorporation 0 and g_arenaCustomize 0; the comment (and section header) says "corporation and sex 0" - the field is the customize setting (globals.h: axis.cfg "set_player customize"), not sex; run: 1 calls, s400, formsC; callers lobby_playerScreenClicks x1
+arena_loadPlayerSettings | COMMENT | copies g_cfgPlayerName, g_playerCorporation, g_playerCustomize; comment says "player name, corporation and sex" -> "name, corporation and customize setting"; run: 3 calls, s400, formsC,multi; callers lobby_enterPlayerScreen x3
+app_setDataPaths | OK | code: "initdata/" x2 and "stage/" into the data path buffers; run: 22 calls, s0, all sessions; callers app_init x22
+menu_clearInputBuffer | OK | code: g_chatLine emptied for a field of max chars; run: 16 calls, m2,s210,s400, formsC,host-h2_1,host-h2_3,mp,profile..; callers chat_textField x9, edit_limit x2, arena_editPlayerName x1
+chat_pushHistory | RENAME -> menu_pushInputHistory | pushes g_chatLine onto a 3-line history; only caller menu_closeInputLine(ok), i.e. EVERY confirmed text field (new profile name on s210, arena name/password/address on s400, in-match chat m2); the history (g_chatHistory) is never read. 'chat_' claims chat only; run: 13 calls, m2,s400, formsC,mp,sessA,skirmish; callers menu_closeInputLine x13
+menu_showMessage | OK | code: message i from the MSG table into the message box, g_dialogPending; run: 3 calls, s300, formsB,ladder,ladderserver; callers menu_choice x3
+sessionList_swap | OK | code: two SessionEntry records swapped; run: trace: NOT RUN (NOT RUN: session list sort (net_sessions.c) while the arena game list is refreshed with 2+ sessions)
+arena_clearSessionEntry | OK | code: g_sessionList[g_gameCount] fields cleared (menuState400_enter, menuState800_enterGameRoom); run: 9 calls, s400, formsC,host-h2_1,host-h2_2,host-h2_3,host-h2_4..; callers menuState400_enter x9
+mech_setEmpty | OK | code: saved mech parts 0, slots -1, default colours (start-up); run: 22 calls, s0, all sessions; callers app_startupLoad x22
+mech_unpackFromRecord | OK | code: saved mech from the signed-byte record at g_roomMech + its colours; run: trace: NOT RUN (NOT RUN: ARM CENTER / lobby player screen with a received mech record (armc_misc.c, lobby_states.c))
+mech_loadFromProfile | OK | code: saved mech from the profile record fields; run: 23 calls, s210,s700, all sessions; callers profile_makeCurrent x20, armc_open x3
+mech_storeToProfile | OK | code: saved mech into the profile record fields; run: 1 calls, s300, mainmenu; callers profile_saveProgress x1
+menu_cameraToPoint0 | OK | code: eye/look snapped to g_camPoint0 / g_camAim0; run: 4 calls, s500,s900, formsB,missions,skirmish; callers skirmish_leave x3, missions_leave x1
+title_clickDismiss | OK | code: title screen's per-frame mouse poll: a click starts the title closing once; run: 24089 calls, s200, all sessions; callers menu_processMouse x24089
+room_pageChanged | RENAME -> ranking_requestPage | static helper of the ranking pages only (ranking_prevPage/nextPage/cycleSort): raises g_rankingRequestPending and clears the received ranking/player list; nothing 'room' about it beyond living in the game room; run: trace: NOT RUN (NOT RUN: ranking page (game room, Ladder) page/sort buttons)
+ranking_prevPage | OK | code: page-- with the new page requested; run: trace: NOT RUN (NOT RUN: game room RANKING page (state 4) previous-page button/key)
+ranking_nextPage | OK | code: page++ (<= last, < 99) with the new page requested; run: trace: NOT RUN (NOT RUN: game room RANKING next-page button/key)
+ranking_cycleSort | OK | code: sort column 0..2 cycled, page requested, tie compare restarted; run: trace: NOT RUN (NOT RUN: game room RANKING sort button)
+rank_value | OK | code: row's power/kills/exp/rate by sort mode; run: trace: NOT RUN (NOT RUN: ranking_fillPage)
+ranking_fillPage | COMMENT | code fills g_rankingRows (10 RankRow) from g_netPlayerList with tie ranks; comment says the rows are "0x44 bytes from g_roomJoinPassword4" - name the rows g_rankingRows (the alias) instead of the password dword; run: trace: NOT RUN (NOT RUN: a ranking list arriving from the Ladder server (game room RANKING page))
+missions_cursorUp | OK | code: mission list cursor up/scroll; run: 1 calls, s900, missions; callers list_up x1
+missions_cursorDown | OK | code: mission list cursor down/scroll; run: 2 calls, s900, missions; callers list_down x2
+missions_clickRow | OK | code: row clicked chosen; run: trace: NOT RUN (NOT RUN: clicking a row on the (unused) mission list (missions_listClicks))
+briefing_nextPage | OK | code: next briefing page once the page is full; run: 2 calls, s900, missions; callers missions_briefingKeys x2
+briefing_prevPage | OK | code: previous briefing page; run: 1 calls, s900, missions; callers missions_briefingKeys x1
+missions_briefingClicks | OK | code: briefing hit test: back / next / prev; run: 5172 calls, s900, missions; callers missions_pageClicks x5172
+leave_settings | OK | code: screen state cleared, camera pulled out, sound 4, camera to point 0 (static, missions/skirmish leave); run: 4 calls, s500,s900, formsB,missions,skirmish; callers skirmish_roundKeys x2, missions_listKeys x1, skirmish_startRound x1
+missions_leave | OK | code: leave_settings on g_missionsState; run: 1 calls, s900, missions; callers missions_listKeys x1
+skirmish_leave | OK | code: leave_settings on g_skirmishState; run: 3 calls, s500, formsB,skirmish; callers skirmish_roundKeys x2, skirmish_startRound x1
+newIdConfirm_keys | OK | code: O -> g_newIdConfirmChoice 1, C -> 2; run: trace: NOT RUN (NOT RUN: game room new Ladder ID confirmation (g_roomState 88, room_dialogs.c))
+menuState900_missions | OK | code: mission list screen frame: background, tunnel, camera, frame/list/briefing; run: 8014 calls, s900, missions; callers menu_frame x8014
+missions_briefingKeys | OK | code: C/Esc back, N/P pages; run: 5172 calls, s900, missions; callers missions_pageKeys x5172
+skirmish_startRound | OK | code: shown round's map + skirmish.dat values set, screen left, match mode 3; run: 1 calls, s500, skirmish; callers skirmish_roundKeys x1
+skirmish_clicks | COMMENT | comment is truncated ("0x447a50: ... 2 and 3 step the round ..."); should read: the skirmish round screen's clicks: nothing while the frame opens; right click leaves; skirmish_hitTest 0 OK starts the round (skirmish_startRound), 1 CANCEL leaves, 2 / 3 the arrows step g_skirmishRoundShown down / up (0 .. g_progress and 14); run: s500 skirmish_screenClicks x11307
+menu_closeInputLine | OK | code: text field closed: kept into history or wiped, keyboard back, key guard 10; run: 14 calls, m2,s210,s400, formsC,mp,profile,sessA,skirmish; callers edit_close x14
+messageBox_keyClose | OK | code: Enter/Space/Esc close the message box; run: 2675 calls, s300, formsB,ladder,ladderserver; callers menu_processKeys x2675
+title_keyDismiss | OK | code: Enter/Space/Esc start the title closing; run: 24067 calls, s200, all sessions; callers menu_processKeys x24067
+replaySelect_drawNames | OK | code: 10 visible replay names, picked ones on a red bar; run: 2182 calls, s300, replay; callers replaySelect_drawDialog x2182
+to_pilot_screen | OK | code: camera move 4, next screen 210, progress saved (main menu EXIT); run: 1 calls, s300, mainmenu; callers mainmenu_processKeys x1
+menu_choice | OK | code: main menu choice 0..5 (SKIRMISH, MULTIPLAY, LADDER, SETUP, CUSTOMIZE, EXIT); run: 23 calls, s300, armc,formsB,formsC,host-h2_1,host-h2_2..; callers mainmenu_processKeys x20, mainmenu_clicks x3
+mainmenu_clicks | OK | code: main menu per-frame mouse: six outlines -> menu_choice, right click back; run: 53669 calls, s300, all sessions; callers menu_processMouse x53669
+mainmenu_processKeys | OK | code: main menu keys K M L S A X, Esc, F1 replay list; run: 53667 calls, s300, all sessions; callers menu_processKeys x53667
+
+== src/menu/menu_screens.c
+menuState500_skirmish | OK | code: skirmish screen frame (background, tunnel, camera, notice / round screen); run: 11493 calls, s500, formsB,skirmish; callers menu_frame x11493
+menuState200_title | OK | code: title screen frame; 19 frames after dismissal -> screen 210; run: 24089 calls, s200, all sessions; callers menu_frame x24089
+
+== src/menu/menu_states.c
+draw_logo | COMMENT | the 'first' argument sets alpha 0.6 but the following glColor4f(1,1,1,1) before the quad (also in the original, 0x41f5ab then 0x41f5e8) overrides it: the logo is never dimmed; say so (param has no visible effect); run: 858 calls, s100, all sessions; callers frontEnd_drawProgress x836, menuState100_intro x22
+unit | OK | code: clamp to 0..1 (NaN -> 0); run: 521664 calls, s100, all sessions; callers menu_loadTextures x325248, frontEnd_startUp x141504, menuState100_intro x2112
+bar_column | OK | code: one 1-unit column of the progress bar; run: 260832 calls, s100, all sessions; callers menu_loadTextures x162624, frontEnd_startUp x70752, menuState100_intro x1056
+frontEnd_drawProgress | OK | code: logo + coloured progress bar (g_loadStep x 16 columns), SwapBuffers; run: 836 calls, s100, all sessions; callers menu_loadTextures x616, frontEnd_startUp x132, menuState100_intro x44
+menuState100_intro | COMMENT | code: logo, 4 progress steps around tunnel_restart / menu_loadTextures / frontEnd_startUp, then screen 200, state cleared, music. Comment says "the start-up logo shown once (dimmed)" - it is not dimmed (draw_logo's 0.6 alpha is overridden, see draw_logo); run: 22 calls, s100, all sessions; callers menu_frame x22
+menu_drawBackground | OK | code: tunnel advanced (menuTunnel_advance) and drawn in 3D; run: 204931 calls, s200,s210,s300,s400,s500,s600,s700,s900, all sessions; callers menuState300_frame x60958, menuState210_frame x56437, menuState400_frame x38045
+replaySelect_drawDialog | OK | code: "SELECT RECORDED GAME" dialog: list, arrows, AUTO REPEAT / RANDOM PLAY, ALL FILES / DEFAULT / OK / CANCEL; run: 2182 calls, s300, replay; callers mainmenu_drawReplaySelect x2182
+mainmenu_drawReplaySelect | OK | code: replay dialog's opening frame or the dialog; run: 2244 calls, s300, replay; callers menuState300_frame x2244
+menuState300_frame | OK | code: main menu frame (+ replay dialog, white fade when leaving for a match); run: 60958 calls, s300, all sessions; callers menu_frame x60958
+missions_pageClicks | OK | code: mission list clicks by page 10/20; run: 8013 calls, s900, missions; callers menu_processMouse x8013
+missions_pageKeys | OK | code: mission list keys by page 10/20; run: 8013 calls, s900, missions; callers menu_processKeys x8013
+skirmish_roundChosen | PARAMS | code: g_skirmishChosen = arg, preview due, sound 2; callers pass g_skirmishRoundShown (the round), so param 'mission' -> 'round' (comment "mission chosen" -> "round chosen"); run: s500 skirmish_roundKeys x3
+skirmish_screenClicks | OK | code: skirmish screen mouse: new-parts notice close or skirmish_clicks; run: 11490 calls, s500, formsB,skirmish; callers menu_processMouse x11490
+newPartsNotice_keys | OK | code: Esc or Enter closes the new-parts notice; run: trace: NOT RUN (NOT RUN: reached when a newly unlocked round is entered (g_progress > g_progressSeen) on the skirmish screen)
+skirmish_roundKeys | OK | code: Esc/C leave, O start, arrows step round, cheat unlock; run: 10521 calls, s500, formsB,skirmish; callers skirmish_keys x10521
+skirmish_keys | OK | code: skirmish screen keys: notice or round keys; run: 11492 calls, s500, formsB,skirmish; callers menu_processKeys x11492
+menu_returnToArenaLobbyViaMain | COMMENT | caller is win32.c message 0x40a = the LOBBY's socket (g_lobbySocket, net_asyncSelect 100) FD_CLOSE; the comment says "the game server's socket closed (WndProc 0x40a ...)" - should say the lobby server's socket; run: trace: NOT RUN (NOT RUN: lobby server connection dropping while in the menus)
+menu_returnToMainFromRoom | COMMENT | code fine; comment should name its trigger: win32.c 0x40c FD_CLOSE (the game server's socket, g_gameServerSocket) while not in a match; run: trace: NOT RUN (NOT RUN: game (Ladder) server connection dropping while in the game room)
+replaySelect_ok | OK | code: picked replays -> show started, dialog closed; run: 1 calls, s300, replay; callers replaySelect_keys x1
+maps_up | RENAME -> replaySelect_scrollUp | static: scrolls the REPLAY selection list up one (g_replaySelectFirst--); nothing to do with maps (comment above it already says 'the replay selection dialog's list'); run: trace: NOT RUN (NOT RUN: replay dialog up arrow / up key)
+maps_down | RENAME -> replaySelect_scrollDown | static: scrolls the replay selection list down one; run: trace: NOT RUN (NOT RUN: replay dialog down arrow / down key)
+replaySelect_keys | OK | code: replay dialog keys (Esc/C close, O ok, R random, D/A all out/in, up/down); run: 2244 calls, s300, replay; callers mainmenu_processKeys x2244
+replaySelect_mouse | OK | code: replay dialog clicks and held arrows; run: 2244 calls, s300, replay; callers mainmenu_clicks x2244
+menuState210_frame | OK | code: profile screen frame: quit if confirmed, background, page by g_profilePage; run: 56429 calls, s210, all sessions; callers menu_frame x56429
+menuState600_setup | OK | code: setup screen frame by tab; run: 23830 calls, s600, setup,setupE; callers menu_frame x23830
+ladder_sendRecord | OK | code: g_ladderId into g_ladderName, record sent when non-empty; run: trace: NOT RUN (NOT RUN: game_postMatch after a Ladder game (g_matchMode 2 with g_gameServerSocket))
+menu_slide | OK | code: panel ease-in by flag; leaving for a match -> camera move 1, screen 9999; run: 13283 calls, s400, formsC,host-h2_1,host-h2_2,host-h2_3,host-h2_4..; callers lobby_slidePanels x13283
+lobby_slidePanels | OK | code: menu_slide on the lobby's panels (menuState400_frame); run: 13284 calls, s400, formsC,host-h2_1,host-h2_2,host-h2_3,host-h2_4..; callers menuState400_frame x13284
+room_slideMenu | OK | code: menu_slide on the room's panels; run: trace: NOT RUN (NOT RUN: game room menu (g_roomState 99))
+leave_game | OK | code: DirectPlay session left, maybe disconnect, slots emptied; run: trace: NOT RUN (NOT RUN: any match ending (game_returnTo*))
+reset_menus | PARAMS | code: eye at (0,0,farZ), look-at at (0,0,nearZ) (+ kept copies), g_menuCameraMove = blocked, g_enteringMenus, g_inputLineHidden cleared if asked. 'farZ'/'nearZ' are the eye's and the look-at's z, not two cameras: farZ -> eyeZ, nearZ -> lookZ; blocked -> cameraMove (it is the camera move state, which also blocks keys); clear_chat_field -> showInputLine (it clears g_inputLineHidden). Comment "the menu cameras placed (both..., the far one ..., the near one ...)" -> "the menu camera's eye at eyeZ looking at lookZ"; run: trace: NOT RUN (NOT RUN: a match ending)
+game_returnToSkirmish | OK | code: after a skirmish: screen 500, tunnel restarted, menus reset; run: trace: NOT RUN (NOT RUN: finishing a skirmish match (game_postMatch mode 3); traces always killed the game mid-match)
+game_returnToMainMenu | OK | code: to main menu 300, cameras in front; run: trace: NOT RUN (NOT RUN: ending a non-ranked match / Esc in freeCam / game server socket drop)
+game_returnToArenaLobby | OK | code: to arena lobby (next 400 via 300); run: trace: NOT RUN (NOT RUN: finishing an arena match (mode 1) or lobby socket drop)
+game_returnToGameRoom | OK | code: to game room 800, room flags cleared; run: trace: NOT RUN (NOT RUN: finishing a Ladder match with the game server connected)
+menuState800_gameRoom | OK | code: game room frame by g_roomState (0/1/2/4 pages, 66 login, 77/88 new ID, 99 menu); run: trace: NOT RUN (NOT RUN: main menu LADDER GAME with a reachable Ladder server (no s800 in any trace))
+send_host_leaving | OK | code: host sends g_netHostLeftMessageKind; run: trace: NOT RUN (NOT RUN: game_postMatch as host)
+game_postMatch | OK | code: after a match: by g_matchMode back to lobby/room/skirmish/main, campaign end; run: trace: NOT RUN (NOT RUN: a match's frame answering 0 (match over), app_frameByScreen)
+
+== src/menu/menu_title.c
+bind | OK | code: tex_bind (static); run: 15983345 calls, m0,m2,m4,s200,s210,s300,s400,s500,s600,s700,s900, all sessions; callers ViewVolume_draw x8980768, match_drawFrame x2581538, menu_drawBackground3D x2494615
+picture | OK | code: whole texture quad in menu units (static); run: 421690 calls, s200,s210,s700, all sessions; callers armc_drawWeaponsScreen x228563, menu_titleEmblemTransition x193127
+quarters | OK | code: four quarter pictures pushed out by spread; run: 48178 calls, s200,s210, all sessions; callers fix_titleEmblemTransition x48178
+menu_titleEmblemTransition | OK | code: title emblem quarters (pulsing / spreading on close) and logo fade; run: 24089 calls, s200,s210, all sessions; callers fix_titleEmblemTransition x24089
+
+== src/menu/menu_tunnel.c
+bind | OK | code: tex_bind (static); run: 15983345 calls, m0,m2,m4,s200,s210,s300,s400,s500,s600,s700,s900, all sessions; callers ViewVolume_draw x8980768, match_drawFrame x2581538, menu_drawBackground3D x2494615
+last_ring | OK | code: chain's last ring + count; run: 819724 calls, m0,s200,s210,s300,s400,s500,s600,s700,s900, all sessions; callers menu_drawBackground3D x819724
+band_quads | OK | code: ring band quads between its two circles; run: 654208 calls, m0,s200,s210,s300,s400,s500,s600,s700,s900, all sessions; callers outer_bands x327104, inner_bands x327104
+spun | OK | code: spin + frameTime x speed (x5 while moving in/out); run: 2943857 calls, m0,s200,s210,s300,s400,s500,s600,s700,s900, all sessions; callers menu_drawBackground3D x2943864
+outer_bands | OK | code: outer bands drawn, spin advanced; run: 204926 calls, m0,s200,s210,s300,s400,s500,s600,s700,s900, all sessions; callers menu_drawBackground3D x204926
+inner_bands | OK | code: inner bands drawn, spin advanced; run: 204928 calls, m0,s200,s210,s300,s400,s500,s600,s700,s900, all sessions; callers menu_drawBackground3D x204928
+pulse | OK | code: g_pulse bounced 0.05..0.95; run: 204925 calls, m0,s200,s210,s300,s400,s500,s600,s700,s900, all sessions; callers menu_drawBackground3D x204925
+square | OK | code: flare corners set to a square of half-size size (evidence merges other files' 'square'); run: 5346429 calls, m0,m2,m4,s200,s210,s300,s400,s500,s600,s700,s900, all sessions; callers particle_draw x4624775, flares x654206, bolt x33868
+flares | OK | code: six flares per ring drawn and spun; run: 204934 calls, m0,s200,s210,s300,s400,s500,s600,s700,s900, all sessions; callers menu_drawBackground3D x204934
+breathe | OK | code: flare sizes A/B grow/shrink 10..48; run: 204929 calls, m0,s200,s210,s300,s400,s500,s600,s700,s900, all sessions; callers menu_drawBackground3D x204929
+cages | OK | code: ring cage boxes drawn and spun; run: 204928 calls, m0,s200,s210,s300,s400,s500,s600,s700,s900, all sessions; callers menu_drawBackground3D x204928
+menu_drawBackground3D | OK | code: outer/inner bands, pulse, flares, breathe, cages; run: 204935 calls, m0,s200,s210,s300,s400,s500,s600,s700,s900, all sessions; callers menu_drawBackground x204935
+tunnel_removeLastRing | OK | code: last ring unlinked and freed; run: 44 calls, m0,s300,s400,s600, armc,formsB,formsC,host-h2_1,host-h2_2..; callers match_enter x33, menuTunnel_advance x11
+tunnel_addRing | OK | code: g_tunnelRings++, ring appended, others alpha 1; run: 40 calls, s300,s400, all sessions; callers menuTunnel_advance x40
+tunnelRing_build | OK | code: ring geometry, spins, cage, flares initialised; run: 62 calls, s100,s300,s400, all sessions; callers tunnel_appendRing x62
+camera_keep | OK | code: eye/look copied to the kept place; run: 116 calls, m0,s200,s210,s300,s400,s600, all sessions; callers menu_drawBackground x116
+swing | OK | code: view angle widened to 90, then move state 'next'; run: 1973 calls, s300,s400,s600, all sessions; callers menuTunnel_advance x1973
+lower_view | OK | code: view angle eased down toward 45; run: 199508 calls, s200,s210,s300,s400,s500,s600,s700,s900, all sessions; callers menuTunnel_advance x199508
+menuTunnel_advance | COMMENT | code: camera moved along the tunnel by g_menuCameraMove. Comment says "The frame time is held at 2 at most"; code sets g_frameTime to 2 only when it is above 10 (k_10f) -> "a frame time above 10 is taken as 2"; run: 204920 calls, s200,s210,s300,s400,s500,s600,s700,s900, all sessions; callers menu_drawBackground x204920
+
+== src/menu/mission_list.c
+list_up | OK | code: missions_cursorUp for key_repeat (static; evidence 'list_up' s900 is this one); run: 1 calls, s900, missions; callers key_repeat x1
+list_down | OK | code: missions_cursorDown for key_repeat (static); run: 2 calls, s900, missions; callers key_repeat x2
+missions_listKeys | OK | code: A/Enter brief, C/Esc leave, up/down; run: 2518 calls, s900, missions; callers missions_pageKeys x2518
+briefing_typeOut | OK | code: briefing typed a char per 1.4 clock, drawn with cursor bar; run: 5172 calls, s900, missions; callers missionBriefing_draw x5172
+briefing_button | OK | code: briefing window bottom button with label (grey when unusable); run: 20688 calls, s900, missions; callers missions_frameBriefing x10344, missionBriefing_draw x10344
+bind_button_texture | OK | code: button texture bound, white; run: 25722 calls, s900, missions; callers missions_frameBriefing x20688, missions_frameList x5034
+missionList_draw | OK | code: mission list window, columns, rows, description, two buttons; run: 2517 calls, s900, missions; callers missions_frameList x2517
+missionBriefing_draw | OK | code: "MISSION BRIEFING" window, typed text, ACCEPT/CANCEL/NEXT/PREV; run: 5172 calls, s900, missions; callers missions_frameBriefing x5172
+missions_frameList | OK | code: jump to missionList_draw; run: 2517 calls, s900, missions; callers menuState900_missions x2517
+missions_frameBriefing | OK | code: jump to missionBriefing_draw; run: 5172 calls, s900, missions; callers menuState900_missions x5172
+
+== src/menu/profile_dialogs.c
+profile_typeNewName | OK | code: text field (16) opened for a new profile name, page 2; run: 1 calls, s210, profile; callers profileList_keys x1
+ask | OK | code: two-button question page opened, pointer glides to its left button (static); run: 6 calls, s210, ladderserver,profile,quit; callers profileList_keys x6
+profile_askDelete | OK | code: ask(3) DELETE question; run: 1 calls, s210, profile; callers profileList_keys x1
+profile_askLogOut | OK | code: ask(5) LOG OUT question; run: 5 calls, s210, ladderserver,profile,quit; callers profileList_keys x5
+pilotSelect_page | OK | code: page 6: frame while opening, else stat bars + CHARACTER SELECT grid; run: trace: NOT RUN (NOT RUN: NEW profile name accepted (profile_newNamePage -> page 6))
+profile_drawMessageWindow | OK | code: "NAME ALREADY REGISTRED" window with OK; run: trace: NOT RUN (NOT RUN: typing an existing profile name (profile_newNamePage g_profileMessage))
+two_buttons | OK | code: two-button question window (static); run: 15661 calls, s210, ladderserver,profile,quit; callers profile_drawLogOutQuestion x14601, profile_drawDeleteQuestion x1060
+profile_drawDeleteQuestion | OK | code: "ARE YOU SURE?" delete question; run: 1060 calls, s210, profile; callers glide_page x1060
+profile_drawLogOutQuestion | OK | code: "ARE YOU SURE?" log-out question; run: 14600 calls, s210, ladderserver,profile,quit; callers glide_page x14600
+profile_drawNewDialog | OK | code: "REGISTRY PROFILE" name dialog; run: 1068 calls, s210, profile; callers profile_newNamePage x1068
+profile_drawManagementWindow | OK | code: "PROFILE MANAGEMENT" window: NEW/DELETE/LOG IN/LOG OUT, list, details; run: 54653 calls, s210, all sessions; callers profile_listPage x37495, glide_page x16030, profile_newNamePage x1128
+pilot_stats | OK | code: nine stats as "n%"; run: 54654 calls, s210, all sessions; callers profile_drawChosenPilot x54655
+stat_bars | OK | code: nine eased stat bars; run: 54656 calls, s210, all sessions; callers profile_drawChosenPilot x54656
+profile_drawPilotSelect | OK | code: "CHARACTER SELECT" grid, chosen pilot details, OK/CANCEL; run: trace: NOT RUN (NOT RUN: new profile's pilot choice (page 6))
+profile_drawChosenPilot | OK | code: chosen profile's pilot details beside the list; run: 54660 calls, s210, all sessions; callers profile_drawManagementWindow x54660
+
+== src/menu/profile_keys.c
+dialog_select | OK | code: two-button dialog highlight moved, pointer glides there; run: trace: NOT RUN (NOT RUN: arrow / Tab keys in the delete or log-out question)
+dialog_keys | OK | code: Left/Right/Tab move a two-button dialog's highlight; run: 15662 calls, s210, ladderserver,profile,quit; callers profile_logOutKeys x14602, profile_deleteKeys x1060
+profile_messageKeys | COMMENT | code: page 2's keys act only while the name-taken message is up: Enter (g_keyClick) or O closes it and reopens typing. Comment says "a click or OK" - it is the Enter key (g_keyClick = g_dikEnter), not a mouse click; run: trace: NOT RUN (NOT RUN: typing an existing name then pressing Enter/O)
+profile_deleteKeys | OK | code: O or Enter on left button deletes, right/C/Esc keeps; arrows; run: 1061 calls, s210, profile; callers profile_screenKeys x1061
+profile_logOutKeys | OK | code: O or Enter on left button quits (profile_quitGame), else back; run: 14604 calls, s210, ladderserver,profile,quit; callers profile_screenKeys x14604
+pilotSelect_keys | OK | code: CHARACTER SELECT grid keys: O create, C/Esc back, arrows move 3x3; run: trace: NOT RUN (NOT RUN: new profile's pilot grid with the keyboard)
+
+== src/menu/profile_misc.c
+crypt_bytes | OK | code: xor with an incrementing key (static); run: 217 calls, s0,s210,s300, all sessions; callers profile_scanSaves x176, campaign_signed x20, profile_makeCurrent x20
+crypt_record104 | OK | code: 0x104-byte record (un)scrambled (profile_scanSaves); run: 176 calls, s0, all sessions; callers profile_scanSaves x176
+crypt_record80 | OK | code: 0x80-byte record (un)scrambled (campaign_signed); run: 20 calls, s210, all sessions; callers campaign_signed x20
+has_any | OK | code: any char of s in bad (static); run: trace: NOT RUN (NOT RUN: account_hasBadChar / profile_nameHasBadChar)
+account_hasBadChar | OK | code: Ladder account field bad-char check; run: trace: NOT RUN (NOT RUN: Ladder account / new ID forms (room_clicks.c) submit)
+profile_nameHasBadChar | OK | code: profile name file-name bad-char check; run: trace: NOT RUN (NOT RUN: typing a profile name with \/:*?"<>)
+load_stat_bars | OK | code: stat bar targets from a pilot's stats (static); run: 29 calls, s210, all sessions; callers profile_listPage x29
+pilotSelect_loadStats | OK | code: stat bars for the grid cursor's pilot; run: trace: NOT RUN (NOT RUN: CHARACTER SELECT page)
+profile_loadPilotStats | OK | code: stat bars for the chosen profile's pilot; run: 29 calls, s210, all sessions; callers profile_listPage x29
+save_cryptRecord | OK | code: 0x3ac-byte profile save record (un)scrambled; run: 21 calls, s210,s300, all sessions; callers profile_makeCurrent x20, pilot_write x1
+crypt_countingKey | OK | code: 0x4c-byte record xor with counting key (character profiles); run: 261 calls, m0,s0, all sessions; callers data_loadCharacterProfiles x261
+str_invert | OK | code: bytes inverted (map info); run: 1408 calls, s0, all sessions; callers data_loadMapInfo x1408
+name_isBlank | OK | code: only spaces/control chars; run: 1 calls, s400, formsC; callers arenaCreate_keys x1
+profile_inDialogBox | OK | code: point in g_profileMessageClickBox -> 1 / -1; run: trace: NOT RUN (NOT RUN: clicking while the name-taken message is up)
+profile_resetStatBars | OK | code: stat bars cleared and stale; run: 29 calls, s210, all sessions; callers menuState210_enter x29
+pilotSelect_reset | OK | code: stat bars reset, grid cursor 0, reveal 0; run: trace: NOT RUN (NOT RUN: accepting a new profile name)
+profile_quitGame | OK | code: g_profileQuitting set (next frame app_quitGame), page 1; run: trace: NOT RUN (NOT RUN: LOG OUT question answered yes (the quit session should reach it: its absence suggests the trace lost the last records at exit))
+profile_nameExists | OK | code: case-insensitive compare of g_chatLine with the profile names; run: trace: NOT RUN (NOT RUN: typing a new profile name and pressing OK)
+profile_deleteClicks | OK | code: delete question clicks; run: 1061 calls, s210, profile; callers profile_processInput x1061
+profile_logOutClicks | OK | code: log-out question clicks; run: 14605 calls, s210, ladderserver,profile,quit; callers profile_processInput x14605
+profile_logIn | OK | code: page 4: chosen profile made current, main menu, axis.cfg written; run: 20 calls, s210, all sessions; callers menuState210_frame x20
+profile_listPage | OK | code: page 1 frame: row-click timer, opening frame / new-name typing, management window; run: 39254 calls, s210, all sessions; callers menuState210_frame x39254
+profile_processInput | RENAME -> profile_screenClicks | the profile screen's MOUSE dispatch only (by g_profilePage: profileList_mouse, newNameDialog_clicks, profile_deleteClicks, profile_logOutClicks, pilotSelect_clicks); only caller menu_processMouse (56432x, s210); its keys counterpart is profile_screenKeys. 'processInput' claims keys too; run: 56432 calls, s210, all sessions; callers menu_processMouse x56432
+pilotSelect_clicks | OK | code: CHARACTER SELECT clicks: pick pilot, OK create, CANCEL; run: trace: NOT RUN (NOT RUN: clicking in the new profile's pilot grid)
+profile_create | OK | code: new profile from g_chatLine + chosen pilot, save folder, list scrolled, saved; run: trace: NOT RUN (NOT RUN: OK in CHARACTER SELECT)
+glide_page | OK | code: pointer glide + management window + question frame / panel (static); run: 16031 calls, s210, ladderserver,profile,quit; callers profile_logOutPage x14908, profile_deletePage x1123
+profile_deletePage | OK | code: delete question page; run: 1123 calls, s210, profile; callers menuState210_frame x1123
+profile_logOutPage | OK | code: log-out question page; run: 14908 calls, s210, ladderserver,profile,quit; callers menuState210_frame x14908
+profileList_drawNames | OK | code: 13 profile names, chosen one bright; run: 54654 calls, s210, all sessions; callers profile_drawManagementWindow x54654
+profile_newNamePage | OK | code: page 2: name dialog / checks / message, then pilot grid; run: 1128 calls, s210, profile; callers menuState210_frame x1128
+profile_deleteChosen | OK | code: chosen profile's save deleted, list compacted and written; run: trace: NOT RUN (NOT RUN: DELETE question answered yes)
+keyboard_back | OK | code: key state reset and keyboard re-initialised (static); run: trace: NOT RUN (NOT RUN: newNameDialog_clicks OK/CANCEL)
+line_wipe | OK | code: g_chatLine emptied over g_lineMaxLength (static); run: trace: NOT RUN (NOT RUN: newNameDialog_clicks CANCEL / right click)
+newNameDialog_clicks | OK | code: new-name dialog clicks: OK checks, CANCEL, message close; run: 1068 calls, s210, profile; callers profile_processInput x1068
+list_moved | OK | code: chosen profile from the cursor, bars stale, sound 2 (static); run: trace: NOT RUN (NOT RUN: profile list up/down)
+list_up | OK | code: profile list cursor up/scroll (static; evidence 'list_up' is mission_list.c's); run: 1 calls, s900, missions; callers key_repeat x1
+list_down | OK | code: profile list cursor down/scroll (static); run: 2 calls, s900, missions; callers key_repeat x2
+key_up | OK | code: list_up for key_repeat (static); run: trace: NOT RUN (NOT RUN: holding Up on the profile list)
+key_down | OK | code: list_down for key_repeat (static); run: trace: NOT RUN (NOT RUN: holding Down on the profile list)
+profileList_keys | COMMENT | code: up/down, N new, D/Delete ask delete, I log in (g_profileLogInAsked, page 4 = profile_logIn), O/Esc ask log out. Comment says "g_dikI logs in (the pilot grid: g_profileLogInAsked, page 4)" - page 4 is the log-in page (profile_logIn), the pilot grid is page 6; run: 37503 calls, s210, all sessions; callers profile_screenKeys x37503
+profileList_mouse | COMMENT | code fine; comment says "2 LOG IN: the pilot grid opened (page 4 ...)" and "the chosen row clicked again ... opens the dialog" - both set g_profileLogInAsked + page 4 = LOG IN (profile_logIn), not the pilot grid / a dialog; run: 37526 calls, s210, all sessions; callers profile_processInput x37526
+
+== src/menu/screen_enter.c
+store_all | OK | code: (address, value) table stored (static); run: 102 calls, s210,s300,s400,s600, all sessions; callers menu_enterState x94, menu_choice x8
+clear_all | OK | code: address table zeroed (static; not in evidence: inlined); run: 58 calls, s210,s400,s900, all sessions; callers menu_enterState x47, lobbyTop_keys x10, menu_choice x1
+camera_heights | RENAME -> camera_pointsAtLookZ | static: sets the z of camera points 0..n-1 and their look-at points to the look-at's current z (g_menuCameraLookZ: the depth along the tunnel, not a height) and the home eye to the current eye; the name and its comment ("at its height") call z a height (file header too: "all at the camera's height"); run: 12 calls, s400,s600, formsC,host-h2_1,host-h2_2,host-h2_3,host-h2_4..; callers menuState400_enter x9, menuState600_enterSetup x3
+menuState300_enter | OK | code: main menu entered: depth, flare sizes, hint, replay dialog colours, match mode 0; run: 24 calls, s300, all sessions; callers menu_enterState x24
+menuState400_enter | OK | code: arena lobby entered: layout, camera points, state cleared; run: 9 calls, s400, formsC,host-h2_1,host-h2_2,host-h2_3,host-h2_4..; callers menu_enterState x9
+menuState600_enterSetup | OK | code: setup entered: layout, camera, colours, option texts; run: 3 calls, s600, setup,setupE; callers menu_enterState x3
+menuState800_enterGameRoom | COMMENT | code: game room layout, colours, camera points, login fields, state cleared, g_rankingLastPage = 999. Comment ends "999 rooms" -> "the ranking's last page 999 (g_rankingLastPage)"; run: trace: NOT RUN (NOT RUN: main menu LADDER GAME with a reachable server (no s800 in traces))
+menu_processMouse | OK | code: per-frame mouse read + dispatch by screen; run: 264405 calls, s100,s200,s210,s300,s400,s500,s600,s700,s900, all sessions; callers menu_frame x264405
+menu_enterState | OK | code: screen set-up by g_menuState, g_lastScreen kept; run: 96 calls, m0,s100,s210,s300,s400,s600, all sessions; callers menu_frame x87, app_frameByScreen x9
+menuState900_enterMissions | OK | code: mission list entered: briefing camera, window, axis.mis loaded (the 'missions' trace reached it through a test hook in tools/ftrace/build.sh replacing menu_choice 0); run: 1 calls, s300, missions; callers menu_choice x1
+menuState500_enterSkirmish | OK | code: skirmish screen entered, round = progress, new-parts notice; run: 3 calls, s300, formsB,skirmish; callers menu_choice x3
+menuState210_enter | OK | code: profile screen entered: layout, header read, frame opening; run: 29 calls, s210, all sessions; callers menu_enterState x29
+check_profiles | OK | code: profeng/profkor.dat checks (stubs returning 1), else "Run AxisPlay.exe" and exit; run: 9 calls, m0, host-h2_1,host-h2_2,host-h2_3,host-h2_4,mp..; callers match_enter x9
+match_name | OK | code: g_matchPlayerName set; run: 8 calls, m0, host-h2_1,host-h2_2,host-h2_3,host-h2_4,mp..; callers menu_enterState x8
+match_enter | OK | code: match started: tunnel freed, display opened, map loaded, scene_startSession by g_matchMode; run: 9 calls, m0, host-h2_1,host-h2_2,host-h2_3,host-h2_4,mp..; callers menu_enterState x9
+
+== src/menu/settings_form.c
+field_box | OK | code: value box: black fill, cyan border; run: 102416 calls, s400, formsC,host-h2_1,host-h2_2,host-h2_3,host-h2_4..; callers arena_createDraw x102416
+hover_text | OK | code: hovered value: shadow + yellow; run: 2833 calls, s400, formsC; callers arena_createDraw x2833
+colour | OK | code: text colour set (static; not in evidence: inlined); run: 378011 calls, s400,s700, armc,formsC,host-h2_1,host-h2_2,host-h2_3..; callers lobbyCreate_frame x115218, arena_createDraw x102416, section_mech x70448
+bind_buttons | OK | code: button texture bound (static; inlined); run: 101180 calls, s400, formsC,host-h2_1,host-h2_2,host-h2_3,host-h2_4..; callers arena_createDraw x64010, lobbyPlayer_draw x19560, arena_gamesPageFrame x17610
+stars | OK | code: password as stars (static; inlined); run: 12811 calls, s400, formsC,host-h2_1,host-h2_2,host-h2_3,host-h2_4..; callers arena_createDraw x12811
+map_name | OK | code: map's about-name by s->map; run: 7937 calls, s400, formsC,host-h2_1,host-h2_2,host-h2_3,host-h2_4..; callers arena_createDraw x7937
+mode_name | OK | code: game mode name; run: 13506 calls, s400, formsC,host-h2_1,host-h2_2,host-h2_3,host-h2_4..; callers arena_createDraw x13506
+rotation_text | OK | code: fifth row text (fixed or OFF/ON); run: 13163 calls, s400, formsC,host-h2_1,host-h2_2,host-h2_3,host-h2_4..; callers draw_values x12802, draw_hover x361
+draw_values | OK | code: eight value boxes; run: 12802 calls, s400, formsC,host-h2_1,host-h2_2,host-h2_3,host-h2_4..; callers arena_createDraw x12802
+draw_hover | OK | code: hovered value redrawn; run: 11488 calls, s400, formsC,host-h2_1,host-h2_2,host-h2_3,host-h2_4..; callers arena_createDraw x11488
+button | OK | code: textured button with label lit/dim (static; not in evidence: inlined); run: 1260613 calls, s210,s300,s400,s500,s600,s700,s900, all sessions; callers profile_drawManagementWindow x327924, armc_drawModeTabs x121653, armc_drawStatsPanel x81164
+preview_controls | OK | code: preview arrows + ADVANCED button; run: 12802 calls, s400, formsC,host-h2_1,host-h2_2,host-h2_3,host-h2_4..; callers arena_createDraw x12802
+room_drawGameSettings | OK | code: "CREATE LADDER GAME" form; run: trace: NOT RUN (NOT RUN: game room's create-game page (g_roomState 2))
+box_buttons | OK | code: two buttons in the host-error / update notice box (static); run: trace: NOT RUN (NOT RUN: arena create form with the network-init error box or the program-updated notice)
+arena_createDraw | OK | code: "CREATE ARENA" form (+ error box, update notice); run: 12802 calls, s400, formsC,host-h2_1,host-h2_2,host-h2_3,host-h2_4..; callers lobbyCreate_frame x12802
+
+== src/menu/setup_keys.c
+setup_tabClicks | OK | code: setup mouse by tab; run: 23467 calls, s600, setup,setupE; callers menu_processMouse x23467
+setup_processTabKeys | OK | code: setup keys by tab; run: 23467 calls, s600, setup,setupE; callers menu_processKeys x23467
+leave | OK | code: camera move 4, next screen 300 (static); run: 3 calls, s600, setup,setupE; callers setup_processTabKeys x3
+setup_topPageKeys | COMMENT | code: Esc (g_keyCancel2, with tunnel rings) leaves, S sound tab, G graphics tab, C (g_keyBack) CONTROLS tab, X leaves. Comment says "the back key (when a tunnel ring is behind) or the leave key goes back" - the back key C opens the controls tab; it is Esc that leaves; run: 6493 calls, s600, setup,setupE; callers setup_processTabKeys x6493
+sound_ok | OK | code: sound tab values taken, volume, axis.cfg written, music restarted (static); run: 1 calls, s600, setupE; callers setup_tabClicks x1
+setup_soundTabKeys | OK | code: A ok, C/Esc close; run: 4434 calls, s600, setup,setupE; callers setup_processTabKeys x4434
+graphics_apply | COMMENT | code: edited graphics into use, axis.cfg written; if video mode / colour depth / linear filter / mipmap changed, app_closeWindow(1) closes the game window (exit code 1, a restart) instead of closing the page. Comment says "the front end is told (message 1)" - it is the main window closed with exit code 1; run: trace: NOT RUN (NOT RUN: OK (A key or button 7) on the graphics tab)
+setup_graphicTabKeys | OK | code: A apply, C/Esc close; run: 1185 calls, s600, setup; callers setup_processTabKeys x1185
+with_page | OK | code: setup tunnel + page or its opening frame (static); run: 16978 calls, s600, setup,setupE; callers menuState600_setup x16978
+page_sound | OK | code: setup_drawSoundPage wrapper (static); run: 3923 calls, s600, setup,setupE; callers menuState600_setup x3923
+page_graphic | OK | code: setup_drawGraphicPage wrapper (static); run: 930 calls, s600, setup; callers menuState600_setup x930
+page_controls | OK | code: setup_drawControlsPage wrapper (static); run: 10542 calls, s600, setup,setupE; callers menuState600_setup x10542
+setup_frameSoundPage | OK | code: with_page(sound); run: 4557 calls, s600, setup,setupE; callers menuState600_setup x4557
+setup_frameGraphicPage | OK | code: with_page(graphics); run: 1246 calls, s600, setup; callers menuState600_setup x1246
+setup_frameControlsPage | OK | code: with_page(controls); run: 11175 calls, s600, setup,setupE; callers menuState600_setup x11175
+tab_opened | OK | code: page state, tunnel depth/alpha, nothing pressed (static); run: 5 calls, s600, setup,setupE; callers setup_topPageKeys x4, setup_topPageClicks x1
+setup_selectSoundTab | OK | code: sound settings copied, tab 0 opened; run: 2 calls, s600, setup,setupE; callers setup_topPageClicks x1, setup_topPageKeys x1
+setup_selectGraphicTab | OK | code: graphics settings copied, tab 1 opened; run: 1 calls, s600, setup; callers setup_topPageKeys x1
+setup_selectControlTab | OK | code: bindings copied, tab 2 opened; run: 2 calls, s600, setup,setupE; callers setup_topPageKeys x2
+controls_fillPrimaryKeys | OK | code: pair with no primary gets its secondary; run: 3 calls, s600, setupE; callers setup_bindKey x3
+setup_unbindKey | OK | code: key taken off the other bindings; run: 3 calls, s600, setupE; callers setup_bindKey x3
+setup_topPageClicks | OK | code: top page outlines: sound/graphics/controls/back; right click back; run: 6494 calls, s600, setup,setupE; callers setup_tabClicks x6494
+setup_graphicTabClicks | OK | code: graphics tab buttons toggled / apply / close; run: 1185 calls, s600, setup; callers setup_tabClicks x1185
+volume_down | OK | code: effect volume -1, arrow glow (static); run: 3 calls, s600, setupE; callers setup_tabClicks x3
+volume_up | OK | code: effect volume +1, arrow glow (static); run: 3 calls, s600, setupE; callers setup_tabClicks x3
+volume_at_pointer | OK | code: effect volume from pointer x on the slider (static); run: trace: NOT RUN (NOT RUN: clicking the sound tab's volume track (hit 2))
+setup_soundTabClicks | OK | code: sound tab clicks and held arrows; run: 4433 calls, s600, setup,setupE; callers setup_tabClicks x4433
+setup_controlTabKeys | COMMENT | code fine; comment says OK takes the bindings "(the copy at g_controlsEdit into g_keyForward, axis.cfg read)" - they go into g_controls and axis.cfg is WRITTEN (cfg_writeAxisCfg); run: 11052 calls, s600, setup,setupE; callers setup_processTabKeys x11052
+setup_controlTabClicks | COMMENT | same error: "kept in g_keyForward, axis.cfg read" -> copied into g_controls, axis.cfg written (cfg_writeAxisCfg); run: 11052 calls, s600, setup,setupE; callers setup_tabClicks x11052
+setup_bindKey | OK | code: key bound to the edited row's pair; run: 3 calls, s600, setupE; callers setup_controlTabKeys x3
+slider_press | OK | code: mouse sensitivity slider -/+/track (static); run: 3 calls, s600, setupE; callers setup_sliderClicks x3
+setup_sliderClicks | OK | code: slider pressed on click or held; run: 3 calls, s600, setupE; callers setup_controlTabClicks x3
+
+== src/menu/setup_pages.c
+tex_quad | OK | code: textured quad (static); run: 24547 calls, s600, setup,setupE; callers setup_drawSoundPage x15721, settings_tab x8826
+setup_drawSoundPage | OK | code: "SETUP SOUND" page; run: 3923 calls, s600, setup,setupE; callers setup_frameSoundPage x3923
+setup_drawGraphicPage | OK | code: "SETUP GRAPHIC" page; run: 930 calls, s600, setup; callers setup_frameGraphicPage x930
+key_tab | OK | code: a key tab's rows and key names (static); run: 6129 calls, s600, setup,setupE; callers setup_drawControlsPage x6129
+settings_tab | RENAME -> mouse_tab | static: draws the controls page's fourth tab, titled MSG(205) "MOUSE" (labels INVERT MOUSE ..., CROSSHAIRS, sensitivity slider); its sibling is key_tab; 'settings_tab' is vague and collides in meaning with the settings form / setup screen; run: 4413 calls, s600, setupE; callers setup_drawControlsPage x4413
+setup_drawControlsPage | OK | code: controls page: tabs, rows, buttons, help; run: 10542 calls, s600, setup,setupE; callers setup_frameControlsPage x10542
+stripes | OK | code: scrolling stripe walls; run: 618450 calls, m0,s210,s300,s400,s500,s600,s700,s900, all sessions; callers menu_tunnel x541070, setup_drawTunnel x67912, skirmish_drawTunnel x4752
+tunnel_advance | RENAME -> tunnel_stepPulseScroll | static: only steps g_tunnelPulse (0..100 bounce) and g_tunnelStripeScroll (wrap at 200); it does not move any tunnel. 'advance' collides with menuTunnel_advance, which really moves the camera along the ring tunnel; run: 123347 calls, m0,s210,s300,s400,s500,s600,s700,s900, all sessions; callers menu_tunnel x104791, setup_drawTunnel x16978, skirmish_drawTunnel x792
+setup_drawTunnel | OK | code: setup screen's 4-wall tunnel; run: 16978 calls, s600, setup,setupE; callers setup_frameControlsPage x11175, setup_frameSoundPage x4557, setup_frameGraphicPage x1246
+menu_tunnel | OK | code: the menus' panel tunnel by Tunnel/Highlight (static); run: 106367 calls, m0,s210,s300,s400,s500,s600,s700,s900, all sessions; callers mainmenu_drawMenu x60957, arena_drawTunnel x24762, lobbyTop_drawMenu x12218
+skirmish_drawTunnel | OK | code: menu_tunnel for the skirmish screen; run: 792 calls, s500, formsB,skirmish; callers menuState500_skirmish x792
+missions_drawTunnel | OK | code: menu_tunnel for the mission list; run: 264 calls, s900, missions; callers menuState900_missions x264
+armc_drawTunnel | OK | code: menu_tunnel when ARM CENTER was opened from the main menu (g_armcFrom 1); run: 522 calls, s700, armc,itemsD; callers menuState700_armCenter x522
+armc_drawPreviewTunnel | RENAME -> armc_drawRoomTunnel | only caller menuState700_armCenter draws it when g_armcFrom == 3 (ARM CENTER opened from the game room), with the game room's deep tunnel look (Ladder textures, 1650 back) - armc_drawTunnel is the g_armcFrom == 1 (main menu) one. Nothing 'preview' about it; the comment ("ARM CENTER's deep one") should say this too; run: trace: NOT RUN (NOT RUN: open ARM CENTER from the game room (Ladder))
+room_drawTunnel | OK | code: game room's deep tunnel; run: trace: NOT RUN (NOT RUN: game room pages (room_clicks.c, room_dialogs.c, game_lists.c))
+arena_drawTunnel | OK | code: arena lobby's 4-wall tunnel; run: 24762 calls, s400, formsC,host-h2_1,host-h2_2,host-h2_3,host-h2_4..; callers lobbyCreate_frame x15349, lobbyPlayer_draw x5841, arena_gamesPageFrame x3572
+caption | OK | code: hovered panel caption at the bottom (static); run: 4765 calls, s300,s400,s600, formsB,formsC,itemsD,setupE; callers mainmenu_drawMenu x2714, setup_drawMenu x1266, lobbyTop_drawMenu x785
+hovered_panel | OK | code: panel outline under the pointer, glow restarted (static); run: 19070 calls, s300,s400,s600, formsC,host-h2_1,host-h2_2,host-h2_3,host-h2_4..; callers lobbyTop_drawMenu x12218, setup_drawMenu x6852
+room_drawMenu | OK | code: game room menu panels + caption; run: trace: NOT RUN (NOT RUN: game room menu (g_roomState 99))
+lobbyTop_drawMenu | OK | code: arena lobby top menu panels + caption; run: 12218 calls, s300,s400, formsC,host-h2_1,host-h2_2,host-h2_3,host-h2_4..; callers menuState400_frame x12218
+setup_drawMenu | OK | code: setup top menu panels + caption; run: 6852 calls, s300,s600, setup,setupE; callers menuState600_setup x6852
+mainmenu_drawMenu | OK | code: main menu panels, fly-in, caption / AUTOPLAY hint; run: 60958 calls, m0,s210,s300,s400,s600, all sessions; callers menuState300_frame x60958
+setup_easePanel | OK | code: setup panel eased in, depth run down; run: 6852 calls, s300,s600, setup,setupE; callers menuState600_setup x6852
+
+== src/menu/skirmish.c
+white_text | OK | code: white text colour (static); run: 11101 calls, s500, formsB,skirmish; callers skirmish_drawRoundScreen x11101
+bind | OK | code: tex_bind (static); run: 15983345 calls, m0,m2,m4,s200,s210,s300,s400,s500,s600,s700,s900, all sessions; callers ViewVolume_draw x8980768, match_drawFrame x2581538, menu_drawBackground3D x2494615
+value_line | OK | code: "label : value unit" or none text (static; inlined); run: 21036 calls, s500, formsB,skirmish; callers skirmish_roundScreen x21036
+skirmish_roundScreen | OK | code: round screen: title, preview, arrows, values, allies, enemies, OK/CANCEL (static); run: 10518 calls, s500, formsB,skirmish; callers skirmish_drawRoundScreen x10518
+skirmish_drawRoundScreen | OK | code: round screen with hit-tested highlight; run: 10518 calls, s500, formsB,skirmish; callers skirmish_frameRoundScreen x10518
+skirmish_drawNewPartsNotice | OK | code: round screen dimmed + "YOU'VE GOT NEW PARTS AND WEAPONS"; run: trace: NOT RUN (NOT RUN: entering the skirmish screen after unlocking a new round (g_progress > g_progressSeen))
+skirmish_frameRoundScreen | OK | code: jump to skirmish_drawRoundScreen; run: 10518 calls, s500, formsB,skirmish; callers menuState500_skirmish x10518
+skirmish_frameNewPartsNotice | OK | code: jump to skirmish_drawNewPartsNotice; run: trace: NOT RUN (NOT RUN: same as skirmish_drawNewPartsNotice)
+
+NOTES
+- Evidence merges same-named statics across files (bind, list_up, list_down, square, line, button): the run text for those is the merged line.
+- freeCam_* (menu_cameras.c) are reached only through menu_processKeys / menu_processMouse case 9999, but menu_frame never runs on screen 9999 (app_frameByScreen sends it to the match), so they are dead code; names are right for the code. Not the in-match free camera (match_freeCamFrame).
+- No s800 (game room) context appears anywhere in the trace: every game-room-only function (room_camera, room_drawMenu, room_drawTunnel, room_slideMenu, menuState800_*, ranking_*) is code-confirmed only.
+- profile_quitGame is NOT RUN although the 'quit' session quit from the log-out question; profile_logOutKeys/Clicks did run there. Likely the tracer lost its last records at exit; worth checking the tracer flush.
+- File header comments to fix with the renames: screen_enter.c header says the camera points are "all at the camera's height" (z is the tunnel depth); setup_pages.c comment above skirmish_drawTunnel calls armc_drawPreviewTunnel "the ARM CENTER's deep one" (it is the one drawn when ARM CENTER was opened from the game room).

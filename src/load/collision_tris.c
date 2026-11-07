@@ -1,7 +1,7 @@
-/* collision_tris.c: the collision space's triangles. A triangle record (0xa0 bytes) holds its id, its three corners
+/* collision_tris.c: the collision space's triangles. A triangle record (0xa0 bytes) holds its flags, its three corners
    (+4), its three edges normalised (edges), its face plane (normal normal, distance dist), three edge planes (edgePlanes,
-   16 bytes each: the normal pointing inwards, the distance) and five values of the map's (object). The arithmetic is
-   the original's: extended precision, rounded where it stores a float, and float operands taken straight from
+   16 bytes each: the normal pointing inwards, the distance) and five values: its collision unit, its shape part and its
+   corners' vertex indices. The arithmetic is the original's: extended precision, rounded where it stores a float, and float operands taken straight from
    memory (fld_m / fmul_m, so a signalling NaN behaves as there). */
 #include "../game.h"
 #include <string.h>
@@ -16,9 +16,10 @@ static X mul(X a, const float *m) { return fmul_m(a, m); }
 /* *src copied through the FPU (a signalling NaN comes out quiet) */
 static void copy_through_fpu(float *dst, const float *src) { *dst = (float)fld_m(src); }
 
-/* 0x47db60: triangle (v0, v1, v2) set up in the record: its flags (0x10: no marks), edges and planes, its map object and shape part and
-   its corners' vertex indices; returns the second index (what the original leaves in eax) */
-int THISCALL (collisionTri_setup)(u8 *self, int flags, const float *v0, const float *v1, const float *v2, int object, int part,
+/* 0x47db60: triangle (v0, v1, v2) set up in the record: its flags (0x10: no marks), edges and planes, its collision unit (the SpaceUnit
+   of space_addUnitTriangle; 0 for the ground's triangles), its shape part and its corners' vertex indices; returns
+   the second index (what the original leaves in eax) */
+int THISCALL (collisionTri_setup)(u8 *self, int flags, const float *v0, const float *v1, const float *v2, int unit, int part,
                            int corner0, int corner1, int corner2)
 {
 	CollisionPlane *tp = (CollisionPlane *)self;
@@ -62,7 +63,7 @@ int THISCALL (collisionTri_setup)(u8 *self, int flags, const float *v0, const fl
 		copy_through_fpu(plane + 2, &p[2]);
 		plane[3] = (float)pd;
 	}
-	tp->unit = (struct SpaceUnit *)(uintptr_t)(u32)object;
+	tp->unit = (struct SpaceUnit *)(uintptr_t)(u32)unit;
 	tp->part = part;
 	tp->cornerIndices[0] = corner0;
 	tp->cornerIndices[1] = corner1;
@@ -96,7 +97,8 @@ int THISCALL (collisionTri_traceSegment)(const CollisionPlane *self, const float
 	return 1;
 }
 
-/* ---- collisionTri_meetsBox: does the triangle touch the box from P - r to S + r? (r, P and S as the collision code passes them).
+/* ---- collisionTri_meetsBox: does the triangle touch the box from low - margin to high + margin? (low, high and
+   margin as the collision code passes them: a block's or a grid cell's box, the space's margin).
    1. every corner of the triangle outside one face of the box: no; all inside: yes;
    2. all eight box corners on one side of the face plane: no;
    3. an edge of the triangle crossing a face of the box (its other two coordinates within it): yes;
@@ -127,21 +129,21 @@ static int edges_cross(const float *T, const float *at, int a, int b, int c, con
 	return 0;
 }
 
-/* 0x47fce0 (thiscall on a triangle record): does the triangle touch the box from P - r to S + r? 1. every corner ...
-   (keep the existing 4-step text) */
-int THISCALL (collisionTri_meetsBox)(const float *T, const float *P, const float *S, float r)
+/* 0x47fce0 (thiscall on a triangle record): does the triangle touch the box from low - margin to high + margin?
+   1 or 0 by the four steps above */
+int THISCALL (collisionTri_meetsBox)(const float *tri, const float *low, const float *high, float margin)
 {
 	float lo[3];
 	for (int a = 0; a < 3; a++)
-		lo[a] = f32(FSUB(P[a], r));
+		lo[a] = f32(FSUB(low[a], margin));
 	unsigned all = 0x111111, any = 0;
 	for (int i = 0; i < 3; i++) {
-		const float *v = T + 1 + i * 3;
+		const float *v = tri + 1 + i * 3;
 		unsigned code = 0;
 		for (int a = 0; a < 3; a++) {
 			if (!(v[a] > lo[a]))
 				code |= 1u << (a * 8);
-			else if (!(FADD(r, S[a]) > v[a]))
+			else if (!(FADD(margin, high[a]) > v[a]))
 				code |= 0x10u << (a * 8);
 		}
 		all &= code;
@@ -153,16 +155,16 @@ int THISCALL (collisionTri_meetsBox)(const float *T, const float *P, const float
 		return 1;
 	float hi[3];
 	for (int a = 0; a < 3; a++)
-		hi[a] = f32(FADD(r, S[a]));
+		hi[a] = f32(FADD(margin, high[a]));
 	const float corner[8][3] = { { lo[0], lo[1], lo[2] }, { hi[0], lo[1], lo[2] }, { lo[0], lo[1], hi[2] },
 	                             { hi[0], lo[1], hi[2] }, { lo[0], hi[1], lo[2] }, { hi[0], hi[1], lo[2] },
 	                             { lo[0], hi[1], hi[2] }, { hi[0], hi[1], hi[2] } };
 	X zero = k_0f;
 	int side = -1;
 	for (int k = 0; ; k++) {   /* the corners against the face plane */
-		X d = FMUL(corner[k][2], T[0x15]) + FMUL(corner[k][0], T[0x13]);
-		d = d + FMUL(corner[k][1], T[0x14]);
-		d = fsub_m(d, &T[0x16]);
+		X d = FMUL(corner[k][2], tri[0x15]) + FMUL(corner[k][0], tri[0x13]);
+		d = d + FMUL(corner[k][1], tri[0x14]);
+		d = fsub_m(d, &tri[0x16]);
 		if (d > zero) {
 			if (side == 1)
 				break;
@@ -177,28 +179,28 @@ int THISCALL (collisionTri_meetsBox)(const float *T, const float *P, const float
 		if (k >= 7)
 			return 0;
 	}
-	if (edges_cross(T, &lo[0], 0, 1, 2, &lo[1], &hi[1], &lo[2], &hi[2]) ||
-	    edges_cross(T, &hi[0], 0, 1, 2, &lo[1], &hi[1], &lo[2], &hi[2]) ||
-	    edges_cross(T, &lo[1], 1, 2, 0, &lo[2], &hi[2], &lo[0], &hi[0]) ||
-	    edges_cross(T, &hi[1], 1, 2, 0, &lo[2], &hi[2], &lo[0], &hi[0]) ||
-	    edges_cross(T, &lo[2], 2, 0, 1, &lo[0], &hi[0], &lo[1], &hi[1]) ||
-	    edges_cross(T, &hi[2], 2, 0, 1, &lo[0], &hi[0], &lo[1], &hi[1]))
+	if (edges_cross(tri, &lo[0], 0, 1, 2, &lo[1], &hi[1], &lo[2], &hi[2]) ||
+	    edges_cross(tri, &hi[0], 0, 1, 2, &lo[1], &hi[1], &lo[2], &hi[2]) ||
+	    edges_cross(tri, &lo[1], 1, 2, 0, &lo[2], &hi[2], &lo[0], &hi[0]) ||
+	    edges_cross(tri, &hi[1], 1, 2, 0, &lo[2], &hi[2], &lo[0], &hi[0]) ||
+	    edges_cross(tri, &lo[2], 2, 0, 1, &lo[0], &hi[0], &lo[1], &hi[1]) ||
+	    edges_cross(tri, &hi[2], 2, 0, 1, &lo[0], &hi[0], &lo[1], &hi[1]))
 		return 1;
 	for (int k = 0; k < 8; k++) {   /* a corner inside the three edge planes */
 		const float *c = corner[k];
-		X d = FMUL(T[0x19], c[2]) + FMUL(c[1], T[0x18]);
-		d = d + FMUL(T[0x17], c[0]);
-		d = fsub_m(d, &T[0x1a]);
+		X d = FMUL(tri[0x19], c[2]) + FMUL(c[1], tri[0x18]);
+		d = d + FMUL(tri[0x17], c[0]);
+		d = fsub_m(d, &tri[0x1a]);
 		if (d > zero)
 			continue;
-		d = FMUL(T[0x1c], c[1]) + FMUL(T[0x1d], c[2]);
-		d = d + FMUL(T[0x1b], c[0]);
-		d = fsub_m(d, &T[0x1e]);
+		d = FMUL(tri[0x1c], c[1]) + FMUL(tri[0x1d], c[2]);
+		d = d + FMUL(tri[0x1b], c[0]);
+		d = fsub_m(d, &tri[0x1e]);
 		if (d > zero)
 			continue;
-		d = FMUL(T[0x20], c[1]) + FMUL(T[0x21], c[2]);
-		d = d + FMUL(T[0x1f], c[0]);
-		d = fsub_m(d, &T[0x22]);
+		d = FMUL(tri[0x20], c[1]) + FMUL(tri[0x21], c[2]);
+		d = d + FMUL(tri[0x1f], c[0]);
+		d = fsub_m(d, &tri[0x22]);
 		if (!(d > zero))
 			return 1;
 	}
@@ -221,8 +223,11 @@ static int clamp_to(float *v, const float *low, const float *high)
 }
 
 /* 0x471400 (thiscall on the stage): a sphere's move (radius r from pos along vel) for this frame: an actor's
-   (actor_processFrame) or the free camera's (radius 500: free_camera in match_frame and hud_cycleF11Mode). outPos is
-   ... (rest unchanged) */
+   (actor_processFrame) or the free camera's (radius 500: free_camera in match_frame and hud_cycleF11Mode). outPos
+   gets pos + vel held to the world box (worldLow .. worldHigh; the move shortened to it when held); every active,
+   animated map object with a collision unit whose model box, widened by |move| + r, holds pos (taken into the
+   object's frame) goes in as a sub-model (nearObjects: its unit's list, relMatrix, relInverse). Then the sweep
+   (space_testSphere), which fills outPos, outVel, outDist and outPlane; returns its answer */
 int THISCALL (collision_moveSphere)(u8 *stage, float r, const float *pos, const float *vel, u32 step, u32 k, float *outPos,
                                    u32 outVel, u32 outDist, u32 outPlane, u32 axis)
 {
@@ -552,8 +557,9 @@ static float row_dir(const float *m, const float *p, int i)
 /* 0x4804b0 (thiscall on a leaf block of the octree): the sphere of radius r moving from pos by vel against the triangles of the
    block's item list (items: nodes {record, ., ., next next}; records whose first byte has bit 0 set are skipped there)
    and of nsubs sub-models (subs: {list, model-to-world matrix, world-to-model matrix}; pos and vel are taken into
-   the model, the contact back out; an empty sub-model list crashes the original, as it would here). The farthest
-   contact along the move wins (collisionTri_sweepSphere's outDist), the record that gave it is skipped next time;
+   the model, the contact back out; an empty sub-model list crashes the original, as it would here). The first
+   contact along the move wins (the largest collisionTri_sweepSphere outDist: the contact farthest from the move's
+   end), the record that gave it is skipped next time;
    then the move slides on: up to 6 passes, ending when a pass's distance is under r / 10, or (contact, outVel the
    g_vecZero axis, outDist 0) when the response turns back against vel. outPos starts as pos + vel. Returns 1 when
    anything was hit */

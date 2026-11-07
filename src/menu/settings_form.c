@@ -157,7 +157,7 @@ static void button(int lit, float a_lit, int x0, int y0, int x1, int y1, int ty,
 	glColor4f(1.0f, 1.0f, 1.0f, lit ? a_lit : 0.4f);
 	menu_drawWideButton(x0, y0, x1, y1, 1);
 	colour(lit ? bright : dim);
-	text_drawBox16(x0, ty, x1, (const char *)RELOC(text));
+	text_drawCentredLines16(x0, ty, x1, (const char *)RELOC(text));
 }
 
 /* the preview's arrows (lit as given) and the ADVANCED button (the rotation's map list): lit in white, else at 0.4 in the colour other */
@@ -166,8 +166,8 @@ static void preview_controls(const Form *f, int left, int right, int rotation, c
 	bind_buttons();
 	glEnable(GL_TEXTURE_2D);
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
-	menu_drawSmallButton1(X1 - 0x8c, Y0 + 0xd7, X1 - 0x5c, Y0 + 0xef, left);
-	menu_drawSmallButton2(X1 - 0x50, Y0 + 0xd7, X1 - 0x20, Y0 + 0xef, right);
+	menu_drawLeftArrow(X1 - 0x8c, Y0 + 0xd7, X1 - 0x5c, Y0 + 0xef, left);
+	menu_drawRightArrow(X1 - 0x50, Y0 + 0xd7, X1 - 0x20, Y0 + 0xef, right);
 	glEnable(GL_TEXTURE_2D);
 	bind_buttons();
 	if (rotation) {
@@ -178,7 +178,7 @@ static void preview_controls(const Form *f, int left, int right, int rotation, c
 		colour(other);
 	}
 	menu_drawWideButton(X1 - 0x96, Y0 + 0xf5, X1 - 0x16, Y0 + 0x111, 1);
-	text_drawBox16(X1 - 0x96, Y0 + 0xfb, X1 - 0x16, (const char *)MSG(501, "ADVANCED"));
+	text_drawCentredLines16(X1 - 0x96, Y0 + 0xfb, X1 - 0x16, (const char *)MSG(501, "ADVANCED"));
 }
 
 /* 0x43bfe0: the game room's settings form (0x9dd1b8 .. 0x9dd1c4) for g_roomSettingsName: the title MSG(396, "CREATE LADDER GAME"), a cyan line, the
@@ -277,8 +277,8 @@ void (arena_createDraw)(void)
 		glColor4f(0.7f, 0.0f, 1.0f, 1.0f);
 		menu_drawTextureFlipped(0x64, 0xb4, 0x21c, 0x140, g_dialogFrameTexture);
 		white();
-		text_drawBox16(0x64, 0xc8, 0x21c, (const char *)MSG(168, "$[0] CANCEL"));
-		text_drawBox16(0x64, 0xdc, 0x21c, (const char *)MSG(169, "NETWORK INITIALIZE ERROR"));
+		text_drawCentredLines16(0x64, 0xc8, 0x21c, (const char *)MSG(168, "$[0] CANCEL"));
+		text_drawCentredLines16(0x64, 0xdc, 0x21c, (const char *)MSG(169, "NETWORK INITIALIZE ERROR"));
 		box_buttons(hovered, 15);
 		glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 		GAME_FN(menu_drawTopRightOrnament, 0x428b50, void, int, int, int, int)(0x64, 0xb4, 0x21c, 0x140);   /* menu_drawTopRightOrnament */
@@ -292,8 +292,8 @@ void (arena_createDraw)(void)
 		set_colour_bits(g_rectColour, 0, 0x3f800000, 0x3f800000, 0x3f800000);
 		menu_drawRect(0x68, 0xb8, 0x218, 0x13c, 0);
 		white();
-		text_drawBox16(0x64, 0xc8, 0x21c, (const char *)MSG(3, "THIS PROGRAM HAS BEEN UPDATED"));
-		text_drawBox16(0x64, 0xdc, 0x21c, (const char *)MSG(4, "DO DOWNLOAD A NEW VERSION"));
+		text_drawCentredLines16(0x64, 0xc8, 0x21c, (const char *)MSG(3, "THIS PROGRAM HAS BEEN UPDATED"));
+		text_drawCentredLines16(0x64, 0xdc, 0x21c, (const char *)MSG(4, "DO DOWNLOAD A NEW VERSION"));
 		box_buttons(choice, 0);
 	}
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);

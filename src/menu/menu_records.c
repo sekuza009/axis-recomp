@@ -11,8 +11,8 @@ static void copy_name(u32 dst, int clear_bytes, const char *src)
 	strcpy((char *)RELOC(dst), src);
 }
 
-/* ---- the lobby player record (g_arenaPlayerName, its corporation and sex) ---- */
-/* 0x4050f0: the name "PLAYER", corporation and sex 0 */
+/* ---- the lobby player record (g_arenaPlayerName, its corporation and customize setting) ---- */
+/* 0x4050f0: the name "PLAYER", corporation and customize setting (g_arenaCustomize) 0 */
 void (arena_defaultPlayer)(void)
 {
 	copy_name(OBJ(g_arenaPlayerName), 32, (const char *)STR(0x4ad4b0, "PLAYER"));
@@ -20,7 +20,8 @@ void (arena_defaultPlayer)(void)
 	g_arenaCustomize = 0;
 }
 
-/* 0x404930: axis.cfg's player name, corporation and sex (g_cfgPlayerName ..) */
+/* 0x404930: axis.cfg's player name, corporation and customize setting (g_cfgPlayerName, g_playerCorporation,
+   g_playerCustomize) */
 void (arena_loadPlayerSettings)(void)
 {
 	g_arenaCustomize = g_playerCustomize;
@@ -39,7 +40,7 @@ void (app_setDataPaths)(void)
 /* ---- the chat input line (0x400 bytes at g_chatLine) and its three-line history ---- */
 /* 0x431560: the input line (g_chatLine, 0x400 bytes) emptied for a text field max characters long (g_lineMaxLength =
    max; g_chatLength 0). Callers: every text field's opening (account_edit*, arena_edit*, room_edit*, roomLogin_edit*,
-   newIdForm_openField, profile_typeNewName, chat_textField, freeCam_keys) */
+   newIdForm_openField, profile_typeNewName, chat_openTextField, freeCam_keys) */
 void (menu_clearInputBuffer)(int max)
 {
 	memset((void *)OBJ(g_chatLine), 0, 0x400);
@@ -48,7 +49,7 @@ void (menu_clearInputBuffer)(int max)
 }
 
 /* 0x4315c0: the line pushed onto the history (the oldest line dropped) */
-void (chat_pushHistory)(void)
+void (menu_pushInputHistory)(void)
 {
 	memcpy((void *)(OBJ(g_chatHistory) + 0x800), (void *)(OBJ(g_chatHistory) + 0x400), 0x400);
 	memcpy((void *)(OBJ(g_chatHistory) + 0x400), (void *)OBJ(g_chatHistory), 0x400);
@@ -188,7 +189,7 @@ void (title_clickDismiss)(void)
 }
 
 /* ---- the ranking's pages: page g_rankingPage of g_rankingLastPage (at most 99), the page before in g_rankingPrevPage ---- */
-static void room_pageChanged(void)
+static void ranking_requestPage(void)
 {
 	g_rankingRequestPending = 1;
 	g_rankingHaveList = 0;
@@ -204,7 +205,7 @@ void (ranking_prevPage)(void)
 	if (*page > 0) {
 		g_rankingPrevPage = *page;
 		(*page)--;
-		room_pageChanged();
+		ranking_requestPage();
 	}
 }
 
@@ -214,7 +215,7 @@ void (ranking_nextPage)(void)
 	if (*page < g_rankingLastPage && *page < 99) {
 		g_rankingPrevPage = *page;
 		(*page)++;
-		room_pageChanged();
+		ranking_requestPage();
 	}
 }
 
@@ -224,7 +225,7 @@ void (ranking_cycleSort)(void)
 {
 	int mode = g_rankingSort;
 	g_rankingPrevSort = mode;
-	room_pageChanged();
+	ranking_requestPage();
 	g_rankingPrevRank = 0;
 	(*(u32 *)&g_rankingPrevValue) = 0x4b189680;   /* 10000000.0f */
 	g_rankingSort = (mode + 1) % 3;
@@ -247,7 +248,7 @@ static int rank_value(const RankRow *row, int mode, long double *value)
 	return 1;
 }
 
-/* 0x435770: the ranking's page of ten rows (0x44 bytes from g_roomJoinPassword4) filled from the players received (62-byte
+/* 0x435770: the ranking's page of ten rows (g_rankingRows, 0x44 bytes each) filled from the players received (62-byte
    records from g_netPlayerList, up to the first without a name): each row its rank (page g_rankingPage * 10 + its place) or,
    when its value (rank_value) equals the row's before, that row's rank; the page before's last value and rank
    (g_rankingPrevValue, g_rankingPrevRank) start the comparison, and this page's are kept there for the next */
@@ -444,8 +445,8 @@ u32 (menuState900_missions)(void)
 	if (state == 1 || state == 0)
 		return state;
 	if (g_frameOpening)
-		return menu_drawFrame(g_missionsWindowLeft, g_missionsWindowTop,
-		                                                     g_missionsWindowRight, g_missionsWindowBottom);   /* menu_drawFrame */
+		return menu_drawFrameOpening(g_missionsWindowLeft, g_missionsWindowTop,
+		                                                     g_missionsWindowRight, g_missionsWindowBottom);   /* menu_drawFrameOpening */
 	int screen = g_missionsPage;
 	if (screen == 10)
 		return missions_frameList();   /* missionList_draw */
@@ -493,7 +494,10 @@ u32 (skirmish_startRound)(void)
 	return r;
 }
 
-/* 0x447a50: ... 2 and 3 step the round shown (g_skirmishRoundShown) down and up (from 0 to at most g_progress and 14) ... */
+/* 0x447a50: the skirmish round screen's clicks: nothing while the dialog frame opens; a right click leaves
+   (skirmish_leave); a left click on skirmish_hitTest's 0 (OK) starts the round (skirmish_startRound), 1 (CANCEL)
+   leaves, 2 and 3 (the arrows) step the round shown (g_skirmishRoundShown) down and up (from 0 to at most g_progress
+   and 14, skirmish_roundChosen). Returns what the original leaves in eax */
 u32 (skirmish_clicks)(void)
 {
 	if (g_frameOpening)
@@ -523,7 +527,7 @@ u32 (skirmish_clicks)(void)
 	return button;
 }
 
-/* 0x431600: the open text field's input line (g_chatLine) closed: kept (pushed onto the history, chat_pushHistory)
+/* 0x431600: the open text field's input line (g_chatLine) closed: kept (pushed onto the history, menu_pushInputHistory)
    when ok, else its g_lineMaxLength bytes wiped; typing off (g_textFieldOpen 0), the keyboard re-initialised, the key
    delay g_menuKeyGuard 10. Callers editField_editProc (x3), roomLogin_endTyping, login_send, newIdForm_endTyping. Returns
    what the original leaves in eax */
@@ -534,7 +538,7 @@ u32 (menu_closeInputLine)(int ok)
 	if (ok) {
 		input_resetKeys();
 		input_initKeyboard(g_mainWindow);
-		r = chat_pushHistory();   /* chat_pushHistory: into the history */
+		r = menu_pushInputHistory();   /* menu_pushInputHistory: into the history */
 	} else {
 		if (g_lineMaxLength > 0)
 			memset((void *)OBJ(g_chatLine), 0, g_lineMaxLength);

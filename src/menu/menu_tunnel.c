@@ -383,7 +383,7 @@ static void lower_view(const float *rate)
 }
 
 /* 0x441260: one frame of the tunnel camera's move, worked on the ring before the last of the chain at ring. The
-   frame time is held at 2 at most; a step is 30 frame times (g_tunnelStep, and as a float g_tunnelStepF); a ring is 1100
+   frame time is taken as 2 when above 10; a step is 30 frame times (g_tunnelStep, and as a float g_tunnelStepF); a ring is 1100
    steps (950 when entering the menus, g_enteringMenus, which starts the eye and look point at 0; 2200 while leaving for a match,
    g_leavingForMatch). Still (0): the flares at full alpha, the view lowered, the camera kept once asked (g_keepCameraAsked), and the
    menus entered when the network is ready (g_launchedForNetGame, g_launchStartStep 0x65). Moving in (1) / out (3): eye and look point a

@@ -362,7 +362,7 @@ done:
 }
 
 /* 0x4a4fe7: the mantissa's bits after position n (counted from the top) all clear */
-static int zero_after(const u32 *man, int n)
+static int zero_tail(const u32 *man, int n)
 {
 	int w = n / 32, r = n % 32;
 	if (man[w] & ~(0xffffffffu << (31 - r)))
@@ -390,7 +390,7 @@ static int round_man(u32 *man, int precision)
 	int keep = precision, w = keep / 32, shift = 31 - keep % 32;
 	int carry = 0;
 	if (man[w] & (1u << shift)) {
-		if (!zero_after(man, keep + 1))
+		if (!zero_tail(man, keep + 1))
 			carry = inc_man(man, precision - 1);
 	}
 	man[w] &= 0xffffffffu << shift;

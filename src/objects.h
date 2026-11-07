@@ -141,19 +141,19 @@
 #define g_graphicSettings ((int *)IMG(0x83a9c0))   /* int[7]; the graphics settings in use: video mode, colour depth, polygon detail (HIGH), then axis.cfg's four switches (setup_keys.c copies all 7) */
 #define g_cfgSwitches (g_graphicSettings + 3)   /* int[4]; axis.cfg's graphics switches: linear filtering, mip mapping, view fps, simple menu (cfg_readGraphics / cfg_writeGraphic: lines 3 .. 6) */
 #define g_armcParts ((int *)IMG(0x4dc760))   /* int[5]; the mech's chosen parts in the ARM CENTER: head, chest, arm, leg, booster (armc_stepPart; kept into g_savedMechPartIds by armc_saveSelection) */
-#define g_savedMechPartIds ((int *)IMG(0x4dc878))   /* int[5]; the saved mech's parts: head (g_savedMechHead), chest, arm, leg, booster (match_startRound's loop of 5; mech_unpackFromRecord / mech_loadFromProfile / armc_saveSelection write) */
+#define g_savedMechPartIds ((int *)IMG(0x4dc878))   /* int[5]; the saved mech's parts: head (g_savedMechHead), chest, arm, leg, booster (match_setupOrStartRound's loop of 5; mech_unpackFromRecord / mech_loadFromProfile / armc_saveSelection write) */
 #define g_armcSlotItems ((int *)IMG(0x4dcb18))   /* int[6]; the ARM CENTER mech's items by slot: [0] / [1] the two extra items (slots 4 / 5: g_itemSlot4 / g_itemSlot5; items 27 .. 35), [2] .. [5] the four weapons (slots 0 .. 3: g_mechWeaponSlot0 .. 3); kept into g_savedMechSlotItems (armc_saveSelection) */
 #define g_savedMechSlotItems ((int *)IMG(0x4dcf18))   /* int[6]; the saved mech's items in g_armcSlotItems' order: [0] / [1] the extra items (slots 4 / 5), [2] .. [5] the weapons (slots 0 .. 3); mech_unpackFromRecord's loop writes the four weapons from record bytes 7 .. 10 (bytes 5 / 6 the extras); mech_setEmpty: weapon slot 0 = 0, the rest -1 */
-#define g_slotTextures ((int *)IMG(0x4dcc70))   /* int[7]; ARM CENTER's snapshot textures by part record (armc_snapshot(i): the six slots, then the part looked at - g_armcViewedPartTexture, the seventh) */
+#define g_slotTextures ((int *)IMG(0x4dcc70))   /* int[7]; ARM CENTER's snapshot textures by part record (armc_loadSnapshotTexture(i): the six slots, then the part looked at - g_armcViewedPartTexture, the seventh) */
 #define g_timerClocks ((double *)IMG(0x9db980))   /* double[2]; the timer's two doubles: the time now (g_clockNow) and the time last returned (g_lastTime); timer_init clears them as four dwords */
 #define g_mouseClicked ((int *)IMG(0x4ded88))   /* int[3]; the three mouse buttons' click pulses (0xfa .. 0xfc) */
 #define g_mouseButtonsHeld ((int *)IMG(0x4ded94))   /* int[3]; the three mouse buttons held (devices.c's loop of 3) */
-#define g_mechPartStats ((int *)IMG(0x4dcab4))   /* int[7]; the stats panel's copy of the local mech's Player maxima: armorMax, shieldMax, the +0x24 word (accuracy), ammoMax[4] (armc_readMechStats' loop of 7; armc_drawStatsPanel reads) */
+#define g_mechPartStats ((int *)IMG(0x4dcab4))   /* int[7]; the stats panel's copy of the local mech's Player maxima: armorMax, shieldMax, the +0x24 word (accuracy), ammoMax[4] (armc_readMechStats' loop of 7; armc_drawPartsScreen reads) */
 #define g_armcBright ((float *)IMG(0x4dbc58))   /* float[4]; the ARM CENTER's bright colour (RGBA 0, 1, 1, 1): the chosen tab, slot and button, labels (armc_open) */
 #define g_legsStats ((float *)IMG(0x4dc228))   /* float[7]; the legs' stats for the panel: agility, inertia, speed correction x 100 (g_legsSpeedCorrection), forward / side / back boost corrections x 100 (+0xc .. +0x14), the weight (g_legsWeight) (armc_readPartPanels) */
 #define g_armsStats ((int *)IMG(0x4dc290))   /* int[5]; the arms' stats copied from the part (armc_parts' loop of 5) */
 #define g_dpConnections ((int *)IMG(0xa0bae0))   /* int[4]; the DirectPlay connection data by kind (TCP, IPX, modem, serial): pointers to GlobalAlloc'ed copies (dplay_enumConnections, g_connectionCopy); net_connectionAvailable: below 4 and non-zero */
-#define g_camPoints ((float *)IMG(0x4df870))   /* float[20]; the menu camera's five target positions, 16 bytes apart (x y z; the fourth float never used): menuCamera_initPoints / the screens' enter functions write, the *_camera functions ease toward them */
+#define g_camPoints ((float *)IMG(0x4df870))   /* float[20]; the menu camera's five target positions, 16 bytes apart (x y z; the fourth float never used): room_initCameraPoints / the screens' enter functions write, the *_camera functions ease toward them */
 #define g_camAims ((float *)IMG(0x76d388))   /* float[20]; the menu camera's five look-at points (x, y, z and a fourth word each) */
 #define g_controls ((int *)IMG(0x4def00))   /* int[68]; axis.cfg's control settings: the key bindings (two slots per action) */
 #define g_controlsEdit ((int *)IMG(0x4de0c0))   /* int[68]; setup's edited copy of g_controls (copied in when the control tab opens, setup_selectControlTab; back on OK): bindings 0 .. 0x3f, then the mouse switches (g_mouseSwitchesEdit), sensitivity (g_sensitivitySlider), crosshair (g_crosshairEdit) */
@@ -229,7 +229,7 @@
 #define g_setupControlRects ((int *)IMG(0x4ddea8))   /* int[72]; setupControl_hitTest's 18 hit rectangles (hit_tests.c) */
 #define g_gameListRects ((int *)IMG(0x9dcd48))   /* int[60]; gameList_hitTest's 15 hit rectangles (hit_tests.c) */
 #define g_newIdFormRects ((int *)IMG(0x9dce50))   /* int[28]; newIdForm_hitTest's 7 hit rectangles (hit_tests.c) */
-#define g_gameListStopRects ((int *)IMG(0x9dd308))   /* int[4]; gameListStop_hitTest's 1 hit rectangles (hit_tests.c) */
+#define g_gameListStopRects ((int *)IMG(0x9dd308))   /* int[4]; gameListJoinBox_hitTest's 1 hit rectangles (hit_tests.c) */
 #define g_updateNoticeRects ((int *)IMG(0x9dd390))   /* int[8]; updateNotice_hitTest's 2 hit rectangles (hit_tests.c) */
 #define g_newIdConfirmRects ((int *)IMG(0x9dd3b8))   /* int[8]; newIdConfirm_hitTest's 2 hit rectangles (hit_tests.c) */
 #define g_accountRects ((int *)IMG(0x9dd400))   /* int[24]; account_hitTest's 6 hit rectangles (hit_tests.c) */
@@ -260,7 +260,7 @@
 #define g_dplaySlots ((int *)IMG(0xa0d7a4))   /* int[4]; four DirectPlay connection slots: 1 while open */
 #define g_spinPanels ((u8 *)IMG(0x4dc550))   /* u8[528]; ARM CENTER's six spinning background panels, 0x58 bytes each: four corners (x, y, z, pad; +-600 in x and z), the x offset (+0x40), the angle (+0x50), the speed (+0x54: 0.15, -0.35, -1.5, 1.5, -0.18, 0.18). armc_initPanels sets all six; armc_drawPanels draws and turns panels 1 .. 5 with the spiral textures (panel 0 is never drawn) */
 #define g_mapChoiceTable ((MapChoice *)IMG(0x4d7358))   /* MapChoice[1024]; the arena map list's working copy while editing (mapList_startEdit copies it from g_mapChoiceKeptTable, mapList_toggle / mapList_stepGameType / mapList_choose* change it, mapList_ok keeps it, mapList_draw shows it) */
-#define g_mapChoiceKeptTable ((MapChoice *)IMG(0x4d9508))   /* MapChoice[1024]; the map choices kept (chosen: in the rotation; type: its game type 0 .. 13): mapList_init sets them, mapList_ok stores the working copy into them, mapList_startEdit copies them out; match_startRound picks the rotation from them */
+#define g_mapChoiceKeptTable ((MapChoice *)IMG(0x4d9508))   /* MapChoice[1024]; the map choices kept (chosen: in the rotation; type: its game type 0 .. 13): mapList_init sets them, mapList_ok stores the working copy into them, mapList_startEdit copies them out; match_setupOrStartRound picks the rotation from them */
 #define g_packetQueue ((u8 *)IMG(0xaef660))   /* u8[139328]; the packet queue: g_unused16, g_history, g_ahead (one object: netq_receive
    reads g_ahead[-1], the history's last word, while player 0's next number is -1, and when that word is 1 copies the 64
    bytes before g_history, g_unused16) */

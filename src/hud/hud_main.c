@@ -1,5 +1,5 @@
 /* hud_main.c: the main HUD of the player the view follows (hud_drawMain): screen flashes, the alert ring, the
-   counters and weapon slots, the gauge, the four timers, the actor's snapshot panel, the energy bar, the
+   counters and ammunition counters, the selected slot's icon, the four timers, the actor's snapshot panel, the energy bar, the
    crosshair, and the mark or rank at the top right.
 
    Positions are worked out as the original does, each time from the screen size: a length of k HUD units is
@@ -134,8 +134,9 @@ static void main_score(Scene *scene, Player *player, int p)
 	text_drawSized(x + 0x18, 8, text, 16);
 }
 
-/* the four weapon slots along the bottom right, 61 units apart: the selected one lit, each with its ammunition */
-static void main_weapons(Scene *scene, Player *player)
+/* the four ammunition counters (ammo[0 .. 3]: 30MM, 60MM, E-PACK and MISSILE cells) along the bottom right, 61 units
+   apart: the selected weapon's kind (ammoKind) lit, each with its count */
+static void main_ammo(Scene *scene, Player *player)
 {
 	for (int i = 0, across = 0; across < 0xf4; i++, across += 0x3d) {
 		float h = hf();
@@ -183,9 +184,9 @@ static void main_weapons(Scene *scene, Player *player)
 	}
 }
 
-/* the gauge at the bottom centre: the selected slot's cell of the menu texture (3 x 3 cells of 64 texels), its alpha the
-   gauge (at most 1) */
-static void main_gauge(Scene *scene, Player *player)
+/* the selected weapon slot's icon at the bottom centre: the slot's cell of the menu texture (3 x 3 cells of 64
+   texels), fading out with slotIconTime (2 s from a weapon switch; its alpha, at most 1) */
+static void main_slotIcon(Scene *scene, Player *player)
 {
 	float h = hf();
 	h = f32(h - hy(8.0f));
@@ -194,8 +195,8 @@ static void main_gauge(Scene *scene, Player *player)
 	int x = ftol(centre - wx(32.0f));
 	glEnable(GL_TEXTURE_2D);
 	tex_bind(g_textures->banks[scene->menuBoxTexture / 512], scene->menuBoxTexture % 512);
-	float gauge = player->slotIconTime;
-	glColor4f(1.0f, 1.0f, 1.0f, gauge > 1.0f ? 1.0f : gauge);
+	float fade = player->slotIconTime;
+	glColor4f(1.0f, 1.0f, 1.0f, fade > 1.0f ? 1.0f : fade);
 	glBegin(GL_QUADS);
 	glTexCoord2f(tex255(player->slot % 3 * 64), tex255((player->slot / 3 + 2) * 64));
 	glVertex2i(x, gfx_getHeight() - y);
@@ -472,11 +473,11 @@ static void main_draw(Scene *scene)
 			main_score(scene, player, p);
 		part(HUD_RIGHT);
 		if (scene->playing == 1)
-			main_weapons(scene, player);
+			main_ammo(scene, player);
 	}
 	part(HUD_CENTRE);
 	if (player->slotIconTime > 0.0f && scene->playing == 1)
-		main_gauge(scene, player);
+		main_slotIcon(scene, player);
 	part(HUD_RIGHT);
 	if (scene->playing == 1)
 		main_timers(scene, player);

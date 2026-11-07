@@ -1,0 +1,363 @@
+GROUP g6: 337 functions; OK 315, RENAME 1, COMMENT 9, PARAMS 12, UNSURE 0; NOT RUN 89
+== src/fixes/hud.c
+markers_begin | OK | code: render width set to 4:3 (4H/3) and full-screen viewport for the markers / lock-on, old ones kept; run: m2,m4 inside fix_drawPlayerMarkers / fix_drawLockOn (match_drawFrame, replay_frame), per frame
+markers_end | OK | code: render width and viewport put back; run: m2,m4 same callers, per frame
+fix_drawPlayerMarkers | OK | code: hud_drawPlayerMarkers with g_fixHudArea=MARKERS between markers_begin/end; run: m2 match_drawFrame x130103, m4 replay_frame x6458
+fix_drawLockOn | OK | code: hud_drawLockOn the same way (area LOCKON); run: m2 match_drawFrame x74760
+in_area | OK | code: a HUD part (thiscall on the scene) called with g_fixHudArea set, then restored; run: m2 match_drawFrame (the three wrappers below inlined)
+fix_drawMainHud | OK | code: in_area(MAIN, hud_drawMain); run: m2 match_drawFrame x73878
+fix_drawFps | OK | code: in_area(FPS, hud_drawFps); run: m2 match_drawFrame x138499
+fix_drawRanking | OK | code: in_area(RANKING, hud_drawRanking); run: m2 match_drawFrame x49542
+fix_overlayBegin | OK | code: a replay overlay part counted as HUD (g_fixInHud++, area set), viewport to the centred 16:9 box, returns the previous area; run: m4 replay_frame x25794 only
+fix_overlayEnd | OK | code: viewport put back, g_fixInHud--, area restored (was = fix_overlayBegin's return); run: m4 replay_frame x25784
+fix_powerUpText | OK | code: font_penDraw for the power-up countdown, centred on its icon and flagged for fix_hudVertex's glyph scaling; caller hud_main.c:263 (NOT RUN: pick up a timed power-up in a match so its countdown is drawn)
+fix_labelText | OK | code: text_drawCentred for a marker's name label, 4:3 width, no wrapping; run: m2,m4 hud_drawPlayerMarkers x1819
+anchor_of | OK | code: HUD area / main-HUD part -> left / right / centre / none anchor; run: m2 inside fix_hudVertex
+fix_hudVertex | OK | code: the game's glVertex2i: HUD vertices re-anchored on wide screens, markers mapped 1:1, the rest passed through; run: every context (menu_vertex x204M, fill_rect, icon_quad, font_penDraw) - as its comment says, every 2D vertex
+== src/fixes/input.c
+fix_mousePressed | OK | code: a mouse button (key 0xfa..0xfc) answered once per click (latched); run: m2 input_justPressed x115596
+menu_boxWidth | OK | code: the menus' 4:3 (or 16:9) box width in pixels; run: s100..s900 inside fix_readMouse / input_updateMouse
+menu_pointerSpeed | OK | code: the menu pointer's counts scaled to about a screen pixel x Windows speed x menusens, fraction carried (skipped on g_screen 0x270f); run: all contexts from fix_readMouse x387440
+fix_readMouse | OK | code: input_readMouse, buttons held over alt-tab dropped, the menu pointer speed; run: m1,m2,m4,s100..s900 input_updateMouse x387440
+fix_cursorClamp | OK | code: the menu pointer clamped to the whole wide-screen width; run: s100..s900 input_updateMouse
+fix_menuNav | COMMENT | name right (the Esc menu's steps by mouse travel; run m2 only, x8733). The comment says it is called from "(match_frame)" -> the caller is match_combatInput (main_loop.c:365; evidence match_combatInput x8733)
+fix_labelHalfWidth | OK | code: half a name label's text width, colour codes not counted; run: m2,m4 hud_drawPlayerMarkers x1822
+== src/fixes/kyrie.c
+same_prefix | OK | code: case-insensitive prefix test; run: inside fix_shapeFind / fix_maskFind (shape_getByName, tex_loadImage)
+add_kyrie | OK | code: a KYRIE copy of each SERAPHIM part (MARKED\ model names) appended to the stock catalogue and to the level-15 unlocks; run: m2,s0 inside fix_catalogueLoad
+fix_catalogueLoad | OK | code: catalogue_loadComponents then add_kyrie; run: s0 Console_ctor x22, m2 match_frame x8407 (the join branch reloads the catalogue every frame until the slot comes - the original's behaviour)
+fix_shapeFind | OK | code: shapeDat_getItemFileBy with MARKED\ dropped, the pending flag set; run: m1,m2,m4,s0,s700 shape_getByName x2147
+fix_shapeRead | OK | code: shape_read, then a marked model's part textures moved under Shape\Geolite\MARK\; run: shape_getByName x2147
+fix_maskFind | OK | code: tex_findByName, a missing MARK\..._COLOR falling back to the unmarked mask; run: tex_loadImage x1857
+== src/fixes/screen.c
+fix_glViewport | OK | code: glViewport with the viewport kept in g_fixView; run: all contexts (gfx_setProjection2D3D, gfx_setMatchProjection, ...)
+menu_box | OK | code: the menus' box x / width (the viewport kept, else the 4:3 / 16:9 rule); run: s100..s900 menu_drawCursor, text_begin ...
+screen_w | OK | code: the full screen width from g_menuScaleX; run: s200..s900
+fix_fullScreen | OK | code: nested switch of the viewport to the whole screen and back to the box; run: m0,s200..s400 fix_titleEmblemTransition, menu_drawRect
+fix_titleEmblemTransition | OK | code: menu_titleEmblemTransition between fix_fullScreen(1) / (0); run: s200,s210 menuState200_title x24089
+fix_drawCursor | OK | code: menu_drawCursor over the whole screen, placed as in the box; run: s200..s900 menu_frame x264398 (per frame)
+cursor_x | OK | code: the pointer's x on the full screen as placed in the box; run: menu_drawCursor
+fix_cursorVertex | OK | code: the pointer sprite's right-hand corners kept in proportion; run: s200..s900 menu_drawCursor x528784
+fix_asciiPass | OK | code: a font's ASCII pass with nearest sampling ([hud] sharptext), filters restored; run: all text drawing (text_passes8, text_draw5 ...)
+fix_digitHeight | OK | code: the HUD digits' height factor, height-based on wide screens; run: m2 hud_drawDigits
+fix_digitTexCoord | OK | code: glTexCoord2f half a texel inside each digit cell corner; run: m2 hud_drawDigits x5.3M
+== src/net/dplay_calls.c
+dplay_receive | OK | code: IDirectPlay4::Receive (0 without g_dplay); run: m1,m2 net_receiveAll x124216
+dplay_send | OK | code: IDirectPlay4::Send; run: m2 net_sendMessage x8518
+dplay_closeSession | OK | code: Close + Release of a DirectPlay object; run: s400 dplay_initConnection x7 (the old g_dplay)
+dplay_createObject | OK | code: CoCreateInstance(CLSID_DirectPlay, IID_IDirectPlay4A); run: s400 dplay_create, dplay_initConnection
+dplay_listSessions | OK | code: the enum of the slot of g_connectionKind; run: s400 arena_joinListed, game_wndProc
+== src/net/dplay_slots.c
+slot_close | OK | code: slot marked closed and dplay_release (0 when not open) (NOT RUN: leave an arena session - dplay_leaveSession -> dplaySlotN_close with the slot open)
+slot_open | OK | code: dplay_init, the kind's availability, dplay_initConnection, slot marked open; run: s400 dplaySlot0_open x7
+slot_enum | OK | code: dplay_enumSessions when the slot is open; run: s400 x2
+slot_host | OK | code: dplay_hostSession when open; run: s400 x6
+slot_join | OK | code: dplay_joinSession when open, else 0x1f4; run: s400 x1
+close0 | OK | code: dplaySlot0_close (slot_open's close callback) (NOT RUN: opening slot 0 when TCP/IP is not available)
+close1 | OK | code: dplaySlot1_close (NOT RUN: opening slot 1 when IPX is not available)
+close2 | OK | code: dplaySlot2_close (NOT RUN: opening slot 2 when the modem is not available)
+close3 | OK | code: dplaySlot3_close (NOT RUN: opening slot 3 when serial is not available)
+dplaySlot0_open | OK | code: slot 0 (TCP/IP) opened afresh with the host address; run: s400 dplay_openConnection x7
+dplaySlot1_open | OK | code: slot 1 opened afresh (NOT RUN: arena screen with connection kind 1, IPX)
+dplaySlot2_open | OK | code: slot 2 opened unless open (NOT RUN: connection kind 2, modem)
+dplaySlot3_open | OK | code: slot 3 opened unless open (NOT RUN: connection kind 3, serial)
+dplaySlot0_close | OK | code: slot_close(0) (NOT RUN: leave a hosted / joined TCP/IP arena - dplay_leaveSession with a session open)
+dplaySlot1_close | OK | code: slot_close(1) (NOT RUN: leave an IPX session)
+dplaySlot2_close | OK | code: slot_close(2) (NOT RUN: leave a modem session)
+dplaySlot3_close | OK | code: slot_close(3) (NOT RUN: leave a serial session)
+dplaySlot0_enum | OK | code: slot_enum(0); run: s400 dplay_listSessions x2
+dplaySlot1_enum | OK | code: slot_enum(1) (NOT RUN: session search over IPX)
+dplaySlot2_enum | OK | code: slot_enum(2) (NOT RUN: session search over modem)
+dplaySlot3_enum | OK | code: slot_enum(3) (NOT RUN: session search over serial)
+dplaySlot0_host | OK | code: slot_host(0); run: s400 dplay_host x6
+dplaySlot1_host | OK | code: slot_host(1) (NOT RUN: host over IPX)
+dplaySlot2_host | OK | code: slot_host(2) (NOT RUN: host over modem)
+dplaySlot3_host | OK | code: slot_host(3) (NOT RUN: host over serial)
+dplaySlot0_join | OK | code: slot_join(0); run: s400 dplay_join x1
+dplaySlot1_join | OK | code: slot_join(1) (NOT RUN: join over IPX)
+dplaySlot2_join | OK | code: slot_join(2) (NOT RUN: join over modem)
+dplaySlot3_join | OK | code: slot_join(3) (NOT RUN: join over serial)
+dplay_resetAndCreate | OK | code: net_resetState + dplay_create (released on failure), always 0; run: s400 dplay_init x7
+dplay_host | OK | code: host through the slot of g_connectionKind; run: s400 arena_connectionOutcome x6
+dplay_join | OK | code: listed session n joined through the slot (0x1f7 none, 0x1f5 full); run: s400 arena_joinAnswer x1
+dplay_leaveSession | OK | code: the host announces leaving, the slot closed, the session list freed, flags cleared; run: s400 arenaCreate_keys x2, arenaGames_keys x1
+dplay_openConnection | OK | code: player slots freed, host resolved, old session left, the kind's slot opened, session list marked open; run: s400 arena_connectionOutcome x6, arena_joinListed x1 (its comment leaves out the first net_freeAllSlots and g_arenaSessionOpen = 1; minor)
+== src/net/net_packets.c
+netq_reset | OK | code: packet layer reset (ahead flags, numbers -1, cursor, skipped count; host flag); run: m2 match_setup x7 (once a match)
+netq_poll | OK | code: net_receiveAll while online; run: m1,m2 match_frame (per frame)
+net_sendPacketData | OK | code: a 64-byte packet numbered, kept in the history, sent to all; run: m2 send_packet x8593
+taken | OK | code: a player's due packet consumed (ahead flag cleared, next number); run: m1,m2 inside netq_receive
+netq_receive | OK | code: the next due packet of any player (1), a resend request answered (2), none (0); run: m1,m2 match_frame (per frame)
+netq_online | OK | code: g_netQueueOnline; run: netq_receive
+net_hasSlot | OK | code: g_slotTakenFlag; run: m1,m2 match_frame, net_sendPacketData
+net_hostGone | OK | code: g_netHostGone (set by message 2, the host leaving, and by net_closeSockets); run: m2 match_combatInput x138667
+net_localSlot | OK | code: g_localSlot; run: m2 match_frame x1 (the join branch)
+net_playerInUse | OK | code: g_netSlots[i].used; run: m1,m2,m4 match_frame, netq_receive, hud_drawRanking
+netq_clearSkipped | OK | code: g_packetsSkipped = 0 (NOT RUN: no caller in src; only reachable from the original's code)
+netq_skippedCount | OK | code: g_packetsSkipped; run: m1,m2 match_frame
+== src/net/net_servers.c
+net_pingServer | OK | code: one listed server pinged by dotted address (1 s), 1 when it answered (NOT RUN: lobby / game server list completes -> ping thread -> net_pingAllServers)
+net_clearServers | OK | code: ping tables cleared and the ping thread's handles closed; run: s300,s400 net_resetConnection x10
+net_pingThreadProc | OK | code: ping thread loop: start event -> net_pingAllServers, stop event -> ExitThread (NOT RUN: a lobby / game server list reply of kind 1 starts it)
+net_stopPingThread | OK | code: start event reset, stop event set (NOT RUN: the end of net_pingAllServers)
+== src/net/net_sessions.c
+merge | OK | code: the newly pinged received games appended to g_sessionList (sorted by ping), counts updated, the refresh flags cleared when done (NOT RUN: arena / room list refreshing with servers listed)
+room_mergeReceivedSessions | OK | code: merge for the game server's RoomRecords (NOT RUN: the Ladder game room's game list refreshing with rooms listed by a game server)
+arena_mergeReceivedSessions | OK | code: merge for the lobby's ServerRecords (NOT RUN: the arena list fed by the lobby server, g_lobbyRefreshing)
+sessionList_sort | OK | code: bubble sort of g_sessionList by ping (NOT RUN: from merge / arenaList_rebuild)
+arenaList_rebuild | OK | code: g_sessionList rebuilt from DirectPlay's sessions (LAN search) and sorted (NOT RUN: the arena list's LAN search, key I, running out its timer)
+== src/net/net_tables.c
+net_findFreeSession | OK | code: the first unused of the 200 session slots; run: s400 net_addSession
+net_getSession | OK | code: session i's desc (bound taken inclusive, as the original); run: s400 game_wndProc, dplay_join
+net_takePlayerSlot | OK | code: player slot marked used by id, its packet head reset; run: m1,m2,s400 net_claimLocalSlot, net_handleMessage
+net_freeAllSlots | OK | code: claim flags and slot headers cleared; run: s400 dplay_openConnection
+net_claimPlayerSlot | OK | code: the first free slot flag claimed (0xff none); run: s400 net_claimLocalSlot, m2 net_handleSystemMessage
+net_claimLocalSlot | OK | code: on the host, a slot claimed for the local player; run: s400 dplay_hostSession x6
+net_freeSessionList | OK | code: the session table freed and its count reset (NOT RUN: leaving a session with the list open - dplay_leaveSession / message 2)
+net_parseAddress | OK | code: g_localAddress "a.b.c.d" -> its 32-bit value (the hosted session's user4); run: s400 dplay_hostSession x6
+net_formatAddress | OK | code: 32-bit address -> "a.b.c.d" in g_dottedAddress; run: s400 dplay_enumSessionsCallback
+net_addSession | OK | code: a found session copied into the table; run: s400 dplay_enumSessionsCallback x1
+dplay_enumSessionsCallback | OK | code: EnumSessions callback: the session described and added; run: s400 DP_EnumSessions x3
+net_inetAddr | OK | code: Winsock inet_addr (NOT RUN: net_pingServer during the server pings)
+net_sendMessage | OK | code: a DirectPlay message by type (2 / 6 guaranteed, 8 bytes; 7 size bytes); run: m2 net_sendPacketData
+net_asyncSelect | OK | code: WSAAsyncSelect for socket 100 (lobby, 0x40a) / 101 (game server, 0x40c); run: s400 lobby_announceArena x6
+dplay_init | OK | code: tables cleared, CoInitialize, dplay_resetAndCreate; run: s400 dplaySlot0_open x7
+net_closeThreadHandles | OK | code: the ping thread's and events' handles closed; run: s300,s400 net_clearServers
+net_receivePlayerListReply | OK | code: a 62-byte player-list reply read: a player added, or the list's end (NOT RUN: the Ladder ranking list request 21 answered by a game server)
+net_closeSockets | OK | code: both server sockets shut and closed, flags cleared (NOT RUN: no caller seen in a run; the network's shut-down)
+alloc_clear | OK | code: malloc + memset 0; run: s300,s400 net_resetConnection
+net_resetConnection | OK | code: server table and sockets closed, the server's address taken (100 lobby / 101 Ladder), every network buffer allocated anew; run: s300,s400 net_connect x10
+global_free | OK | code: GlobalUnlock + GlobalFree by pointer (NOT RUN: dplay_release, net_formatChatLine)
+dplay_release | OK | code: lobby released, local player destroyed, session closed, buffers freed, CoUninitialize (NOT RUN: leaving a session - slot_close - or dplay_init failing)
+net_resolveHost | OK | code: host name -> dotted address in g_resolvedAddress; run: s300,s400 net_resetConnection, dplay_openConnection
+dplay_enumSessions | COMMENT | name right (run: s400 dplaySlot0_enum x2). The comment says it asks "once more while g_connectionKind is 1" -> EnumSessions is called once, and only for connection kind 0 or 1; kinds 2 / 3 return 1 without enumerating
+list_append | COMMENT | name right (NOT RUN: lobby / game server list replies of kind 0). The comment says "its strings (each also as the list's name ...)" -> only the string at offset `name` (both callers pass the record's address) is also copied into g_pingAddresses, as the address to ping; and the param name -> pingAddress (it is the address field, not a name)
+net_addServerRecord | OK | code: a ServerRecord appended to g_serverList (its address to the ping list) (NOT RUN: a lobby server answering the arena list request 13)
+net_addRoomRecord | OK | code: a RoomRecord appended to g_roomList (NOT RUN: a game server answering the room list request 19)
+net_formatChatLine | OK | code: "<name> > <text>" in a global block (NOT RUN: a DirectPlay chat message, type 1 - net_handleMessage / net_sendChat)
+text_findSubstring | OK | code: substring search, case-sensitive or not; run: s400 dplay_enumConnections x21
+net_startPingThread | OK | code: events and the ping thread created, start event set (NOT RUN: lobby / game server list complete, reply kind 1)
+net_addPlayerRecord | OK | code: a RankedPlayer appended to g_netPlayerList (NOT RUN: the Ladder player list reply of kind 0)
+net_getLocalAddress | OK | code: this machine's first address as text in g_localAddress; run: s400 dplay_hostSession, jmp_net_getLocalAddress
+net_sendChat | OK | code: a chat line formatted and sent as DirectPlay message type 1 (NOT RUN: no caller in src; match chat goes through net_sendMatchEvent)
+net_ping | OK | code: ICMP echo, round trip (at least 1) in g_pingTime (NOT RUN: the server pings)
+dplay_getPlayerName | OK | code: GetPlayerName into a new global block (NOT RUN: net_formatChatLine)
+net_pingAllServers | OK | code: every listed server pinged, times kept, then net_stopPingThread (NOT RUN: the ping thread's start event)
+reply_read | OK | code: recv of up to size bytes within 3 s (NOT RUN: net_receiveLobbyReply / net_receiveGameServerReply)
+net_receiveLobbyReply | OK | code: a 0x5b-byte lobby reply: a server added, list complete (ping thread), or answer codes (NOT RUN: the arena list request 13 answered by a lobby server)
+net_receiveGameServerReply | OK | code: a 0x79-byte game server reply: a room added, list complete, or 0x28 (NOT RUN: the room list request 19 answered)
+global_free_r | OK | code: global_free returning GlobalFree's eax; run: m1,m2 net_receiveAll
+net_receiveAll | OK | code: DirectPlay messages received: system ones handled, the first player message to net_handleMessage; run: m1,m2 jmp_net_receiveAll (per frame)
+jmp_net_receiveAll | OK | code: the jump to net_receiveAll; run: m1,m2 netq_poll
+jmp_net_getLocalAddress | OK | code: the jump to net_getLocalAddress; run: s400 lobby_announceArena x6
+session_desc | OK | code: g_sessionDesc cleared with its size, instance and application GUIDs; run: s400 dplaySlot0_host / join
+create_player | OK | code: CreatePlayer with a short name; run: s400 dplaySlot0_host / join
+dplay_hostSession | OK | code: Open(DPOPEN_CREATE) with the session words, local player created, host flag, slot claimed; run: s400 dplaySlot0_host x6
+dplay_joinSession | OK | code: Open(DPOPEN_JOIN), local player created, result codes 0x1f4..0x1fb; run: s400 dplaySlot0_join x1
+dplay_lobbyConnect | OK | code: a lobby-launched connection (GetConnectionSettings / ConnectEx / CreatePlayer); run: s400 dplay_create x7 (stops early: not lobby-launched)
+dplay_create | OK | code: lobby connect, a plain DirectPlay object, EnumConnections; run: s400 dplay_resetAndCreate x7
+net_handleMessage | OK | code: a player message by type (1 chat, 2 host gone, 6 own slot, 7 slot data); run: m1,m2 net_receiveAll x3743
+dplay_initConnection | OK | code: a fresh DirectPlay object on provider kind 0..3 (TCP compound address), InitializeConnection, caps kept; run: s400 dplaySlot0_open x7
+socket_close | OK | code: a server socket shut down and closed, buffers freed; run: s300 net_disconnect x3
+send_leave | OK | code: the leave record built from the hosted record and sent, then 1 s wait; run: s300 net_disconnect x3
+arena_info | PARAMS | name right (the arena's player-count update to the lobby; run: m2 net_handleSystemMessage x1). first -> kind (stored as the record's kind byte: the arena packet's own kind)
+room_info | PARAMS | name right (the Ladder room's player-count update to the game server). first -> kind (stored as the record's kind byte: 1 on a join, else the room packet's own) (NOT RUN: hosting a Ladder room over TCP/IP while a player joins or leaves)
+net_handleSystemMessage | COMMENT | name right (run: m2 net_receiveAll x1). The comment says "(an arena's then starts with 1)" -> it is the Ladder room's info (room_info; RoomRecord offsets 0x63..0x67 after `mov byte ptr [eax], 1` at 0x450e8f in the original) that starts with kind 1 on a join; the arena's keeps g_arenaPacket's own kind byte
+connect_socket | OK | code: TCP socket connected to g_serverHost:g_serverPort (1, 2 refused, 0 failed); run: s300,s400 net_connect
+net_connect | OK | code: reset, then the lobby's (100) or game server's (0x65) socket connected; run: s300 menu_choice x4, s400 lobby_announceArena x6
+net_disconnect | OK | code: leave records sent, server sockets closed, flags cleared; run: s300,s400 connect_socket, arena_joinAnswer, arenaGames_keys
+send_buffer | OK | code: a kept buffer sent over a kept socket; run: net_send
+net_send | COMMENT | name right (run: m2,s300,s400 game_wndProc x16, lobby_announceArena x6, send_leave, arena_info). Comment: "13 the hello" -> 13 the arena list request (g_arenaListRequest, 4 bytes, after the server list is cleared); "23 the name (0x10)" -> 23 the hosted arena's address (ServerRecord.address copied into g_lobbyKeepAlive, 0x10 bytes)
+recv_all | OK | code: recv until size bytes have come or 3 s passed; run: s400 status_reply
+status_reply | OK | code: a 4-byte status reply -> its code (0x67 closed, 0x66 refused, the timeout code); run: s400 net_recv x6
+answer_reply | OK | code: the game server's 0x10b-byte answer, its code kept when listed (NOT RUN: Ladder account / new-ID requests 14 / 15 answered)
+net_recv | OK | code: the reply to g_netLastRequest read and dispatched; run: s400 game_wndProc x6 (the socket's read message)
+send_packet | OK | code: a match packet sent and counted, written to the replay when recording; run: m2 from all six net_send*_body
+net_sendItemStates_body | OK | code: packet 0xe: a nibble per map item (taken, fade level); run: m2 (mp) x1 - net_processGamePacket kind 8 on the host
+net_sendPlayerInfo_body | OK | code: packet 2: player p's name, team, character, grade, parts, items, colours, when flagged; run: m2 x42
+dplay_enumConnections | OK | code: EnumConnections callback: the provider's GUID and connection by name (TCP, IPX, MODEM, SERIAL); run: s400 DP_EnumConnections x14
+net_sendMatchEvent_body | OK | code: the first pending match event as its packet (kinds 3..13); run: m2 x144
+net_sendFlagPiece_body | OK | code: packet 0xc: 16 pixels of player p's flag from flagSent; run: m2 x7
+scaled | OK | code: a float times a constant, truncated (packet fields); run: m2 net_sendPlayerState_body (evidence merges sky.c's own static `scaled`)
+angle_byte | OK | code: a wrapped angle x k_0_0711111f truncated (a byte); run: m2 x24048
+net_sendPlayerState_body | OK | code: packet 0: player p's state, aim, hit and five shot slots; run: m2 x8016 (mp / hosted)
+table_rand | OK | code: the next of the game's 4096 rand values; run: m2 net_sendGamePacket_body (the same static name in match/weapons.c)
+sample | OK | code: a random entry (and its position) of a type table, for the check; run: m2 net_sendGamePacket_body x766
+net_sendGamePacket_body | OK | code: packet 1: rotation, clock, scores, flags, two table checks; run: m1,m2 x431
+thiscall8_ecx | OK | code: asm thunk: a thiscall with 8 args, returning ecx (naked helper, not traced)
+tens | OK | code: int x 10 as a float; run: m2,m4 inside net_processGamePacket
+table_ok | OK | code: a type-table entry compared with the packet's checksum; run: m2,m4 net_processGamePacket x120
+actor_name | OK | code: a name copied into the actor, its player index noted; run: m2,m4 net_processGamePacket x3
+team_change | OK | code: packet kinds 10 / 11: team, team colours, name, notice; leaving the teams kills; run: m2,m4 x2
+match_limit | OK | code: kinds 4 / 5: frag / time limit notice and match over with the team winner (NOT RUN: a client receiving the host's frag / time-limit packet in a mp match)
+net_processGamePacket | COMMENT | name right (run: m1,m2,m4 match_frame x3688, replay_frame x1090). The comment says "13 a pause timer" -> 13 is the restart (restartTimer = 5 s; sent from net_sendMatchEvent's restartPending)
+== src/render/depth_sort.c
+depth_sort | OK | code: explicit-stack quicksort of {id, key} ascending, its state in the game's globals; run: m1,m2,m4,s700 through the two wrappers
+render_depthSortTriangles | OK | code: depth_sort on the triangle order list; run: ViewVolume_draw x324394 (once a draw)
+render_depthSortBillboards | OK | code: depth_sort (second state set) on quadOrderA and quadOrderB; run: ViewVolume_draw x648815 (twice a draw - matches). Note: the lists also hold ViewVolume_addQuad quads (trails, kind-50 particles), drawn by the same billboard() code
+== src/render/factors.c
+factors_addAmbient | PARAMS | name right (kind 0; run: s0 stage_build x44). a -> colour
+factors_addDirectional | PARAMS | name right (kind 1; run: s0 stage_build, s700 armc_drawPreview3D). a -> colour, p -> dir
+factors_addPointLight | PARAMS | name right (kind 2; run: m2 stage_refillLights x450571). a -> colour, x -> radius, p -> pos
+ground_computeLighting | PARAMS | name right (light_computeLayerLightBy over the whole layer). scene -> stage (its comment and its caller map_loadGroundInfoFrom: thiscall on the stage) (NOT RUN: loading a map whose ground info has layers, map_info.c:511)
+factor_addFactorBy | OK | code: a record into the factor pool's next free slot (the original's message "addFactorBy()"); run: s0,m2,s700 the three adders
+ViewVolume_initBy | OK | code: the view volume's tables sized and laid out in one block (message "...dataMemory... initBy()"); run: s0 Console_ctor x22
+== src/render/fog.c
+stage_setFog | OK | code: linear GL fog from colour / start / end / density kept in the stage (NOT RUN: a replay of a map with fogOn, main_loop.c:1240, or sky_floor)
+== src/render/gl_helpers.c
+gl_rotateXYZ | OK | code: glRotatef about x, then y, then z; run: s200..s900 menu_tunnel, armc panels
+gfx_setMatchProjection | OK | code: the match's 3D (full screen) or HUD 2D (16:9 box) projection switch; run: m1,m2,m4 match_drawFrame, replay_frame, loading_draw
+fill_rect | OK | code: a GL_QUADS rectangle (y down); run: gfx_fillRect
+gfx_fillRect | OK | code: a filled rectangle; the whole screen over the full window; run: m1,m2,m4 hud_drawTeamScores, fade_frame ...
+gfx_swapBuffers | OK | code: glFinish + SwapBuffers; run: m1,m2,m4 per frame
+default_gl_state | OK | code: the default GL state; run: m0,s0 gfx_initGLState, gfx_resetState
+gfx_resetState | OK | code: default_gl_state; run: m0 glWindow_init x9
+gfx_initGLState | OK | code: defaults, projection, gfx_setup3DView for a new window; run: s0 game_wndProc x22 (window creation)
+== src/render/items.c
+texel | OK | code: a texel count x the per-texel size as a float (inlined)
+stage_drawItems | OK | code: map items near the camera queued as models or billboards; run: m2,m4 per frame
+== src/render/object_list.c
+relight | OK | code: one entry's colours from the factors and / or the tint (NOT RUN: a pre-lit object list - ObjectList_load / ObjectList_queue with preLit 1)
+ObjectList_relight | OK | code: relight for every entry (NOT RUN: ObjectList_load of a preLit list, skel_data.c:226)
+ObjectList_queue | OK | code: the list's entries queued in the view volume (pre-lit ones recoloured); run: m2,m4 actor_drawIntoView, s700 armc_drawPreview3D
+ground_buildLayerModels | OK | code: the layer and water models' parts set up from the ground layers; run: m1 map_loadGroundInfoFrom x10
+ObjectList_bindTextures | OK | code: shape_bindPartTextures for each entry; run: m2 actor_processFrame x903
+shape_bindPartTextures | OK | code: each part's texture bound, texturing on; run: m1,m2,m4,s0,s700 ObjectList_bindTextures, shape_getByName
+== src/render/objects.c
+stage_drawObject | OK | code: a map object queued when its sphere is near the camera; run: m2,m4 stage_drawObjects
+stage_drawObjects | OK | code: every active map object; run: m2,m4 per frame
+stage_drawActors | OK | code: every active actor through actor_drawIntoView; run: m2,m4 per frame
+stage_drawParticles | OK | code: every active particle through particle_draw; run: m2,m4 per frame
+anim_reset | OK | code: an object's animation stopped at its start, its collision unit back (NOT RUN: a map object in animation mode 1 / 3 running past its range)
+anim_start | OK | code: object_setAnimation with the period-scaled speed (NOT RUN: a proximity (flag 8) or timed (flag 0x10) map object triggered)
+object_glow | OK | code: a map light's glow grows while on screen in clear view, else fades; run: m2,m4 mapObject_frame, stage_setupView
+mapObject_frame | OK | code: a map object's animation, pose, shading, glow / flare and triggers for the frame; run: m2,m4 stage_updateObjects
+to_screen | OK | code: clip x / w, y / w -> screen point; run: m2,m4,s700 stage_setupView
+tag_narrow | OK | code: the name tag's screen width under a threshold; run: m2,m4 stage_setupView
+stage_setupView | OK | code: the frame's camera matrices, light glows, actors' screen positions / tags / lock-on timers; run: m2 match_frame, m4 replay_frame, s700 armc preview
+clamp255 | OK | code: clamp to 0..255 (objects.c); run: the particle helpers (evidence merges shading.c's clamp255)
+quad | OK | code: ViewVolume_addBillboard with the particle's colour; run: m2,m4 particle helpers
+square | OK | code: billboard offsets +-h (inlined)
+shape | OK | code: an effect model queued under the particle's matrix; run: m2,m4 particle_draw
+glow | OK | code: the particle's glow billboard faded by a squared; run: m2,m4
+sized_glow | OK | code: the glow sized by baseSize + add, halved for the viewer's own; run: m2,m4
+core | OK | code: a bright core billboard then the glow; run: m2,m4
+flare | OK | code: a flare core sized by fade squared x (radius + 200), then the sized glow; run: m2,m4
+bolt | OK | code: an 8-frame rising bolt billboard then the sized glow; run: m2,m4
+frame16 | OK | code: uv of frame n of 4 x 4; run: m2
+frame16_turned | OK | code: uv of frame n of 8 x 2 from the fourth row, turned by i % 4; run: m2,m4
+smoke | OK | code: ten smoke puffs along the particle's backward axis; run: m2,m4 x444178
+particle_draw | OK | code: one particle drawn by its kind; run: m2,m4 stage_drawParticles
+== src/render/rotations.c
+quat_fromAxisAngle | OK | code: the quaternion of {angle, axis}; run: m2 Mat4_fromAxisAngle x48
+Mat4_fromAxisAngle | OK | code: the matrix of {angle, axis} through its quaternion; run: m2 home x48
+vec3_negate | OK | code: v = -v (NOT RUN: no caller in src)
+vec_rotate | OK | code: (x, y) turned by tenths of a degree from the tables (NOT RUN: hud_main.c main_ring, the alert ring)
+vec3_scaleCopy | OK | code: v scaled in place and copied to out (NOT RUN: no caller in src)
+angle_wrap | OK | code: an angle wrapped into 0..3600; run: m1,m2,m4 angle_turn, angle_stepTowards, angle_byte
+angle_turn | OK | code: the shorter signed turn from a to b; run: m2 actor_processFrame
+angle_stepTowards | OK | code: a moved part t of the shorter way to b; run: m2,m4 actor_processFrame
+space_transformPoint | OK | code: a point through a 4x4 matrix (xyz) (NOT RUN: the collision space built from transformed shapes, space_pools.c:545)
+math_triangleNormal | OK | code: a triangle's unit normal (NOT RUN: map_loadGroundInfoFrom's ground normals, map_info.c:497)
+Mat4_fromQuat | OK | code: the rotation matrix of a quaternion; run: m1,m2 object_initObjectBy, Mat4_fromAxisAngle
+quat_fromMatrix | OK | code: the quaternion of a matrix's rotation (NOT RUN: axisAngle_fromMatrix)
+crt_acos | OK | code: the CRT's _CIacos (NOT RUN: quat_toAxisAngle)
+quat_toAxisAngle | OK | code: (angle, axis) of a quaternion (NOT RUN: axisAngle_fromMatrix)
+axisAngle_combine | OK | code: (angle, axis) of the product of two rotations (NOT RUN: skeleton load converting rotation keys, skel_data.c:723)
+axisAngle_fromMatrix | OK | code: (angle, axis) of a matrix via its quaternion (NOT RUN: skeleton bone / rotation-key set-up, skel_data.c:751 / 774)
+== src/render/shading.c
+clamp255 | OK | code: min(v, 255) (shading.c); run: shape_getShadingColorBufferBy
+mul | OK | code: a 32-bit wrapping product (inlined)
+facing | OK | code: (1 - dot) x 128, not below 0; run: shape_getShadingColorBufferBy
+offset | OK | code: a vertex minus the light's position, its squared length; run: shape_getShadingColorBufferBy
+put | OK | code: a vertex colour written or added, clamped; run: shape_getShadingColorBufferBy
+shape_getShadingColorBufferBy | COMMENT | name confirmed by the original's message "...-getShapeRenderingInfoShadingColorBufferBy()" (run: m1,m2,m4,s700 shape_shadingColours, item_colours). Comment, kind 2: "full within a quarter of its squared radius" -> within 0.2 (k_0_2f, a fifth) of the squared radius; kind 3: "beyond a fifth (k_0_04f) of the squared radius" -> beyond 0.04 of the squared radius (a fifth of the radius)
+light_mix | OK | code: a light's colour x intensity / 256 added to the base, clamped (NOT RUN: light_computeLayerLightBy)
+light_level | OK | code: (1 - d) x 128, at least 0 (NOT RUN: light_computeLayerLightBy)
+light_computeLayerLightBy | COMMENT | name confirmed by the message "...-computeLayerLightBy()". The comment says "A kind-2 layer only clears its light map (colours) and box colours" -> it fills them white (memset 0xff); params: scene -> stage (it is a Stage *), cols -> colours (the output buffer, not a column count) (NOT RUN: loading a map with ground layers - ground_computeLighting)
+strip_pair | OK | code: an edge's two grid indices appended to the open strip, overflow fatal (NOT RUN: ground_buildDrawLists on a map with drawn ground cells in range)
+water_point | OK | code: a water ring vertex turned, moved to the camera, with its uv (NOT RUN: a map with a water ground layer)
+ground_buildDrawLists | OK | code: the ground's strips (and water) for the frame, both models queued (the original's message "processRenderingBy()"); run: m2,m4 match_drawFrame / replay_frame per frame
+== src/render/shape_colours.c
+shape_markMaterialsChanged | OK | code: each part's material marked changed (NOT RUN: only from shape_clearTint, unreachable as its comment says)
+shape_setMaterialTints | OK | code: each part's material given the two HSV tints; run: m2,m4,s700 shape_setTint
+shape_setTint | OK | code: the manager's tint record set and every shape tinted; run: m1,m2,m4,s700 shape_setTextureSuffix, armc_retintParts
+shape_clearTint | OK | code: tint record cleared, materials marked changed (NOT RUN: shape_setTextureSuffix without flag 2 - never, its one caller passes 2)
+shape_addColour | OK | code: one RGBA colour added to / set on each part's colours (NOT RUN: relight of a pre-lit object list with a tint)
+shape_setTextureSuffix | PARAMS | name right (run: m1,m2,m4 playerRecord_setPartColour x435). folder -> suffix (it is strcpy'd into textureSuffix, e.g. "_T<player>")
+tex_tintRgba | OK | code: RGBA bytes -> floats, tex_tintHsv, back; run: m2,m4,s700 tex_applyTintMask
+shape_shadingColours | OK | code: shape_getShadingColorBufferBy for each part at its colourBase; run: m1,m2,m4 mapObject_frame, object_initObjectBy
+== src/render/sky.c
+bind | OK | code: tex_bind by id (sky.c); run: the sky parts
+scaled | OK | code: a grid vertex x k, rounded to floats (sky.c); run: m2,m4 sky_sphere, sky_layer
+inset | OK | code: 0.01 / -0.01 at the face edges; run: m2,m4 sky_sphere
+sky_sphere | OK | code: the six-faced sky sphere; run: m2,m4 sky_draw
+sky_layer | OK | code: one cloud layer; run: m2,m4 sky_layers
+sky_layers | OK | code: the cloud layers (the second when layerMode 2); run: m2,m4 sky_draw
+sky_sides | OK | code: the side walls; run: m2,m4 sky_draw
+sky_floor | OK | code: the fogged animated floor (NOT RUN: a map with floorMode != 0)
+sky_draw | OK | code: the sky's parts around the camera, modelview saved; run: m2,m4 match_drawFrame / replay_frame per frame
+== src/render/tex_colours.c
+part_addColour | PARAMS | name right (run: m2,m4,s700 item_colours x3M). img -> part (a ShapePart: flags img[0], vertexCount img[0x13]; the callers pass the mesh / part)
+color_rgbToHsv | OK | code: RGB -> HSV; run: m2,m4,s700 tex_tintHsv
+tex_tintHsv | OK | code: rgb given hue dh, saturation / value offset; run: tex_tintRgba
+same | OK | code: two float bit patterns equal or unordered; run: tex_setMaterialTint
+tex_setMaterialTint | OK | code: a material's two tints stored, flag 2, changed when different; run: m2,m4,s700 shape_setMaterialTints
+tex_applyTintMask | OK | code: the tints applied where the _COLOR mask is red / green >= 200; run: m2,m4,s700 tex_bind x116
+texRecord_init | OK | code: a texture record from name, slot, flags, tints; _ANIn scroll mode; run: all contexts tex_allocIdBy x1748
+== src/render/trails.c
+as_float | OK | code: bits -> float (NOT RUN: inlined in shape_computeBounds)
+shape_computeBounds | OK | code: the parts' boxes, the shape's centre and radius (NOT RUN: shape load, skel_data.c:494 / 1071)
+bullet_drawTrail | OK | code: a type-3 bullet's ring trail as quads; run: m2,m4 stage_drawBullets x6220
+== src/render/vecmath.c
+Vec3_set | OK | code: v = (x, y, z) (NOT RUN: no caller in src)
+Vec3_normalize | OK | code: v / |v|, (1, 0, 0) when near zero; run: collisionTri_setup, actor_processFrame ...
+Vec3_cross | OK | code: this x b (NOT RUN: no caller in src)
+Vec3_dot | OK | code: the dot product (NOT RUN: no caller in src)
+Vec3_add | OK | code: out = b + this (NOT RUN: no caller in src)
+Vec3_sub | OK | code: out = this - b (NOT RUN: no caller in src)
+Vec3_scale | OK | code: out = this x s (NOT RUN: no caller in src)
+Vec4_set | OK | code: v = (x, y, z, w) (NOT RUN: no caller in src)
+Vec3_rotateAxis | OK | code: rotation about an axis by tenths of a degree; run: m1,m2,m4,s0,s700 actor_processFrame, turn_view ...
+Mat4_multiply | OK | code: the 4x4 product; run: m1,m2,m4,s700 ViewVolume_queueModel ...
+Mat4_transformPoint | OK | code: m x (p, 1) into 4 floats; run: ViewVolume_addTriangle, ViewVolume_queueModel
+Mat4_minor | OK | code: the 3x3 left without a row and a column; run: Mat4_invert, Mat4_determinant
+det3 | OK | code: a 3x3 determinant; run: Mat4_invert, Mat4_determinant
+Mat4_determinant | OK | code: the 4x4 determinant along the first row; run: Mat4_invert
+Mat4_invert | OK | code: the inverse, 0 when singular; run: m1,m2,m4,s700 item_colours, mapObject_frame ...
+math_segmentSphere | OK | code: a segment / ray against a sphere, entry point and t; run: m2 actor_processFrame, fly_local
+color_hsvToRgb | OK | code: HSV -> RGB; run: tex_tintHsv
+actor_levelFromValue | RENAME -> level_fromPoints | a points -> level 1..20 table, not an actor's: the callers set an actor's grade from its score (actor_frame.c:139), the round's starting level (match_start.c:87) and the Ladder level from a record's exp (lobby_states.c:1470 / 1477); only m2 actor_dies x40 was seen, but the code's callers include the Ladder records. "actor_" and "Value" say less / other than what it is
+Color4_set | COMMENT | name right (run: every context: menus, profile, progress). The comment says "r goes through the FPU (fld / fstp, so a signalling NaN comes out quiet)" - true of the original (0x41f0e8 fld, 0x41f0fa fstp), but the rebuild copies r as raw bits (c[0] = r); either the comment should say so or the code should load / store r through the FPU
+rect_set | PARAMS | name right (run: s210..s900 the layout functions). a, b, c, d -> left, top, right, bottom (as its own comment names them)
+Vec3_length | OK | code: |v| unrounded (NOT RUN: no caller in src)
+== src/render/view_volume.c
+outcode | OK | code: a clip-space point's outcode bits per axis; run: draw_transparent, ViewVolume_addBillboard ...
+all_outside | OK | code: the common outcode puts all points outside one plane; run: addBillboard / addQuad
+next_record | OK | code: a list's next record, or its overflow flag set; run: addBillboard / addQuad
+ViewVolume_addSegment | OK | code: a line into the segment list (NOT RUN: replay_frame's debug lines, main_loop.c:601 / 606)
+quad_fields | OK | code: a quad record's texture, uv pairs, colour and kind; run: addBillboard / addQuad
+quad_outside | OK | code: the quad's four points all outside one plane; run: addBillboard / addQuad
+ViewVolume_addQuad | PARAMS | name right (run: m2 particle_draw x1800 (kind 50), bullet_drawTrail). extra -> kind (stored as the record's kind: 2 depth-sorted, 3 drawn last; ViewVolume_draw lists by it)
+ViewVolume_addBillboard | PARAMS | name right (run: m2,m4 particle helpers, stage_drawItems). extra -> kind (as addQuad)
+row | OK | code: ((a ma + b mb) + c mc) + t in the original's order (inlined)
+ViewVolume_addTriangle | OK | code: a triangle into the triangle list, transformed to clip space (raw 1 keeps the points); run: m2,m4 draw_transparent, particle_draw
+ViewVolume_release | OK | code: owned block freed, lists cleared, the GL_EXT_vertex_array entry points looked up; run: s0 ViewVolume_initBy x22 (the destructor path not seen: the game was killed)
+corner | OK | code: a box corner through the clip matrix; run: ViewVolume_queueModel
+ViewVolume_queueModel | PARAMS | name right (run: m2,m4,s700 stage_drawObject, stage_drawItems, ObjectList_queue ...). extra -> colours (the model's colour buffer: entry +4 = extra + part->colourBase; "extra" is easily confused with extraMatrix)
+fog_set | OK | code: fog range put back with fog on, or fog off; run: ViewVolume_draw
+load_matrices | OK | code: projection and modelview loaded; run: ViewVolume_draw
+identity_matrices | OK | code: both matrices identity; run: ViewVolume_draw
+bind | OK | code: a texture bound and counted in textureBinds (view_volume.c); run: ViewVolume_draw
+use_texture | OK | code: bind, or texturing off; run: ViewVolume_draw
+tex_scroll | OK | code: a texture record's scrollMode; run: ViewVolume_draw
+scroll | OK | code: uv moved by the scroll kind; run: m2 draw_transparent
+fits | OK | code: room in the colour buffer, the most kept; run: ViewVolume_draw
+invert | OK | code: Mat4_invert, or the identity; run: ViewVolume_draw
+item_colours | OK | code: a queued item's vertex colours (own / lit / tinted); run: ViewVolume_draw per item
+draw_opaque | OK | code: an opaque mesh from vertex arrays; run: ViewVolume_draw
+through | OK | code: a point through M in a given term order (inlined)
+draw_transparent | OK | code: a transparent mesh's triangles into the triangle list; run: ViewVolume_draw
+triangle | OK | code: a queued triangle's GL calls; run: ViewVolume_draw
+billboard | OK | code: a queued quad record's GL calls; run: ViewVolume_draw
+ViewVolume_draw | OK | code: everything queued drawn (opaque meshes, triangles, lines, depth-sorted triangles and quads); run: m1,m2,m4 match_drawFrame, replay_frame, s700 armc_drawPreview3D

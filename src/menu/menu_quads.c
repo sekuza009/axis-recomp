@@ -35,7 +35,7 @@ void (menu_drawWideButton)(int x0, int y0, int x1, int y1, int lit)
 
 /* 0x4283e0: the large button cell (0.625 x 0.156 of the sheet), lit or plain; every caller passes lit 1 (a label /
    field background): profile_drawNewDialog, newIdForm_draw (room_dialogs.c), armc_drawColourEditor (armc_screens.c),
-   armc_drawStatsPanel (armc_stats.c) */
+   armc_drawPartsScreen (armc_stats.c) */
 void (menu_drawLargeButton)(int x0, int y0, int x1, int y1, int lit)
 {
 	static const float plain[4] = { 0.0f, 0.5f, 0.625f, 0.65625f }, lit_[4] = { 0.0f, 0.65625f, 0.625f, 0.8125f };
@@ -43,25 +43,25 @@ void (menu_drawLargeButton)(int x0, int y0, int x1, int y1, int lit)
 }
 
 /* 0x4284d0, 0x4285c0, 0x4286b0, 0x4287a0: the small buttons, two cells each */
-void (menu_drawSmallButton1)(int x0, int y0, int x1, int y1, int lit)
+void (menu_drawLeftArrow)(int x0, int y0, int x1, int y1, int lit)
 {
 	static const float plain[4] = { 0.0f, 0.25f, 0.25f, 0.375f }, lit_[4] = { 0.5f, 0.25f, 0.75f, 0.375f };
 	button(x0, y0, x1, y1, lit, plain, lit_);
 }
 
-void (menu_drawSmallButton2)(int x0, int y0, int x1, int y1, int lit)
+void (menu_drawRightArrow)(int x0, int y0, int x1, int y1, int lit)
 {
 	static const float plain[4] = { 0.25f, 0.25f, 0.5f, 0.375f }, lit_[4] = { 0.75f, 0.25f, 1.0f, 0.375f };
 	button(x0, y0, x1, y1, lit, plain, lit_);
 }
 
-void (menu_drawSmallButton3)(int x0, int y0, int x1, int y1, int lit)
+void (menu_drawUpArrow)(int x0, int y0, int x1, int y1, int lit)
 {
 	static const float plain[4] = { 0.75f, 0.375f, 0.875f, 0.625f }, lit_[4] = { 0.875f, 0.375f, 1.0f, 0.625f };
 	button(x0, y0, x1, y1, lit, plain, lit_);
 }
 
-void (menu_drawSmallButton4)(int x0, int y0, int x1, int y1, int lit)
+void (menu_drawDownArrow)(int x0, int y0, int x1, int y1, int lit)
 {
 	static const float plain[4] = { 0.75f, 0.625f, 0.875f, 0.875f }, lit_[4] = { 0.875f, 0.625f, 1.0f, 0.875f };
 	button(x0, y0, x1, y1, lit, plain, lit_);

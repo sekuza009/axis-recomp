@@ -78,24 +78,24 @@ void THISCALL (actor_pickRandomWeapon)(Stage *stage, int i)
 }
 
 /* 0x460000 (thiscall on the scene): actor target hit by actor attacker for damage, when it is in play (state 1) and
-   not invulnerable. For weapon kinds 0 .. 9 the damage is scaled by the attacker's pilot character's stat for the kind's group
+   not invulnerable. For shot modes 0 .. 9 (the weapon's shotMode) the damage is scaled by the attacker's pilot character's stat for the mode's group
    (g_characterProfiles[character].stats[0 .. 3] + 100, per cent, rounded); doubled by the attacker's timer flag 0x100 and
    halved by the target's 0x800. Unless both are on one team (and not the same actor) it comes off: mode 0 the shield
    first, the rest off the armour; mode 1 the shield, the armour losing 0.7 of it as well, and once the shield is
-   gone the rest off the armour; neither below 0; the hit recorded (lastHitMode, lastAttacker, lastHitWeapon,
-   hitPending). The hit flash 0.5 either way, and a sound when the target is the local player. Its callers ignore
+   gone the rest off the armour; neither below 0; the hit recorded (lastHitMode, lastAttacker, lastHitWeapon the
+   weapon, hitPending). The hit flash 0.5 either way, and a sound when the target is the local player. Its callers ignore
    the eax it leaves */
-void THISCALL (actor_takeDamage)(u8 *scene, int attacker, int target, int mode, int damage, int kind, u32 value)
+void THISCALL (actor_takeDamage)(u8 *scene, int attacker, int target, int mode, int damage, int shotMode, u32 weapon)
 {
 	Stage *st = (Stage *)scene;
 #define ACTOR(i) ((u8 *)&st->actors[i])
-	static const u8 group[10] = { 0, 0, 1, 1, 1, 2, 2, 1, 3, 3 };   /* (the stat by weapon kind) */
+	static const u8 group[10] = { 0, 0, 1, 1, 1, 2, 2, 1, 3, 3 };   /* (the stat by shot mode) */
 	Player *ac = (Player *)ACTOR(target), *atk = (Player *)ACTOR(attacker);
 	if (ac->state != 1 || ac->invulnerable == 1)
 		return;
 	int character = atk->active == 1 ? atk->character : -1;
-	if ((unsigned)kind <= 9) {
-		int percent = ((CharacterProfile *)g_characterProfiles)[character].stats[group[kind]] + 100;
+	if ((unsigned)shotMode <= 9) {
+		int percent = ((CharacterProfile *)g_characterProfiles)[character].stats[group[shotMode]] + 100;
 		damage = ftol(fadd_m(fmul_m((long double)percent * damage, (const float *)ADDR(k_0_01f)), (const float *)ADDR(k_0_5f)));
 	}
 	if (((u32)atk->stateFlags) & 0x100)
@@ -125,7 +125,7 @@ void THISCALL (actor_takeDamage)(u8 *scene, int attacker, int target, int mode, 
 			ac->shield = 0;
 		ac->lastHitMode = mode;
 		ac->lastAttacker = attacker;
-		ac->lastHitWeapon = value;
+		ac->lastHitWeapon = weapon;
 		ac->hitPending = 1;
 	}
 	ac->hitFlash = 0.5f;

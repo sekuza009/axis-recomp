@@ -17,7 +17,7 @@ typedef long double X;
 static const u32 cam[6] = { ADDR(g_menuEyeX), ADDR(g_menuEyeY), ADDR(g_menuEyeZ), ADDR(g_menuCameraLook), ADDR(g_menuCameraLookY), ADDR(g_menuCameraLookZ) };
 static const u32 home[6] = { ADDR(g_menuEyeHomeX), ADDR(g_menuEyeHomeY), ADDR(g_menuEyeHomeZ), ADDR(g_menuLookHomeX), ADDR(g_menuLookHomeY), ADDR(g_menuLookHomeZ) };
 
-/* the frame time limited to 1 second (above the constant at limit) */
+/* a frame time above the constant at limit (k_5f / k_10f) taken as 1 */
 static void limit_frame_time(u32 limit)
 {
 	if (g_frameTime > F(limit))
@@ -202,7 +202,7 @@ static void menu_camera2(const MenuCam2 *m)
    up. Coming home it eases fast while its depth is past -549 (-1649), else slowly, the aspect widening back, and
    snaps home once within 0.01 of -550 (-1650); then on to where it came from (g_armcFrom): 1 the main menu (300), 2 the
    arena lobby (400; the camera to its saved place, the home moved to (0, 0, -1550) looking at (0, 0, -1650)), 3 the
-   game room (800, menuCamera_initPoints); a launcher-started game (reply 0x67, g_launchStartStep) then starts (arena_startFromLauncher). The caller
+   game room (800, room_initCameraPoints); a launcher-started game (reply 0x67, g_launchStartStep) then starts (arena_startFromLauncher). The caller
    ignores the eax it leaves */
 void (armc_cameraStep)(void)
 {
@@ -286,7 +286,7 @@ void (armc_cameraStep)(void)
 		g_nextScreen = state;
 		g_armcFrom = 0;
 		if (state == 800)
-			menuCamera_initPoints();   /* menuCamera_initPoints */
+			room_initCameraPoints();   /* room_initCameraPoints */
 	}
 	if (g_launchedForNetGame == 1 && g_launchStartStep == 0x67)
 		arena_startFromLauncher();

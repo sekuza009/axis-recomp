@@ -339,9 +339,9 @@ void *THISCALL (image_tryOpen)(u8 *image, const char *path)
    playerRecords, 0x47fd2 bytes each; the name from +4 by 0x4c74e8) read into a local image; at least 23 x 15 of it: its
    24 x 16 corner copied as RGBA into the record (flag), black pixels made clear and the rest opaque, and 1
    returned; else 0 */
-int THISCALL (playerRecord_loadFlag)(Stage *scene, int p)
+int THISCALL (playerRecord_loadFlag)(Stage *stage, int p)
 {
-	PlayerRecord *record = &scene->playerRecords[p];
+	PlayerRecord *record = &stage->playerRecords[p];
 	BmpFile image;
 	image.vtable = VT(BMPRGBFile, 0x4a96f8);   /* (its vtable) */
 	BITS(image.file) = 0;      /* (no file yet) */
@@ -480,7 +480,7 @@ static const u32 k_cameraPresets[6][10] = {
 	{ 0, 0, 0, 0, 0, 0, 0, 0, 0, 1 } };
 
 /* 0x460570 (thiscall: the game object's constructor): its clock (TimeSync_ctor at timer), view volume (view) and the
-   stage (+0x1f36c8) with all its member arrays built (the CRT's vector constructors crt_arrayConstruct / 0x49fd2d with their
+   stage (+0x1f36c8) with all its member arrays built (the CRT's vector constructors crt_vectorConstructorIterator / 0x49fd2d with their
    element constructors) and vtables set; the factor tables sized (ViewVolume_initBy into the block at viewMemory); the
    parts (stage_build with nine names), the component catalogue and the items loaded (failing: a fatal
    message); the ten camera presets, the stage's player slots reset (stage_setCockpitActor -1), the part type tables' check sizes; the
@@ -489,7 +489,7 @@ static const u32 k_cameraPresets[6][10] = {
    unwinding a failed construction, is not reproduced.) Returns the object */
 u8 *THISCALL (Console_ctor)(u8 *g)
 {
-#define VECTOR(at, size, count) ((void (STDCALL *)(void *, int, int, u32))FN_ADDR(crt_arrayConstruct, 0x401290))(at, size, count, FN_ADDR(class_emptyCtor, 0x45fff0))   /* (the CRT's iterators are stdcall) */
+#define VECTOR(at, size, count) ((void (STDCALL *)(void *, int, int, u32))FN_ADDR(crt_vectorConstructorIterator, 0x401290))(at, size, count, FN_ADDR(class_emptyCtor, 0x45fff0))   /* (the CRT's iterators are stdcall) */
 #define VTABLE(at, vt) (GAME_VAR(u32, at) = (vt))
 	u8 *s = (u8 *)SCENE_STAGE(g);
 	Stage *st = (Stage *)s;
@@ -595,8 +595,9 @@ static void zero_dwords(u8 *at, int n)
 /* 0x460cb0 (thiscall on the game object): a session started in mode (+4 client, +8 sessionMode: 0 solo, 1 network, 2 the ARM CENTER, 3 replays). With no CD found a fatal
    message. Its counters cleared; in mode 3 the names of the replay list's entries flagged flag (g_replayList, 0x44-byte
    records, g_replayListCount of them) copied to replayFiles (0x40 each, count replayCount); actors and scene reset; mode 2 also
-   clears the armour cache, the view box (the stage's levelLow .. levelHigh: -100000 .. 100000, twice), and sets the game type flags for type
-   0; the camera from 0xa0e7a8.. (direction negated), the HUD mode matchState (mode 2 -> 3, 3 -> 1, else 2) and its
+   sets silentActor and playerActor to 0 (stage_setSilentActor), the level and world boxes (levelLow .. levelHigh,
+   worldLow .. worldHigh) to -100000 .. 100000, and the game type flags for type 0; the camera at g_vecOrigin,
+   facing -g_vecUnitZ, up g_vecUnitY, the HUD mode matchState (mode 2 -> 3, 3 -> 1, else 2) and its
    defaults, the match state (teams_setup), the notices (net_clearAnnouncements) and the lobby slots (localPlayer -1 in modes 1
    and 3). Its callers ignore the eax it leaves */
 void THISCALL (scene_startSession)(u8 *g, u32 client, int mode)

@@ -130,13 +130,14 @@ static void emit(u8 *s, u8 *a, const int (*joint)[0x20], const int *count, const
 #define stage_print(...) GAME_FN(stage_printText, 0x473450, int, void *, const char *, ...)(__VA_ARGS__)
 #define FRAG_POINTS(level) GAME_VAR(int, OBJ(g_fragPoints) + (level) * 4)   /* g_fragPoints[level]: a kill's points by the victim's level */
 
-/* the killer's points and level (the level shown for the local team only) */
+/* the killer's frags and points; its grade worked out again when this machine controls it (controlledBy is
+   playerActor: the local player and its bots) */
 static void award(u8 *s, int k, int frags, int points)
 {
 	ST->actors[k].kills += frags;
 	ST->actors[k].score += points;
 	if (ST->actors[k].controlledBy == ST->playerActor)
-		ST->actors[k].grade = actor_levelFromValue(ST->actors[k].score);
+		ST->actors[k].grade = level_fromPoints(ST->actors[k].score);
 }
 
 /* armour gone: the burst, the debris, the score */

@@ -83,7 +83,7 @@ static void game_rows(int x0, int y0, int y, int end, int locks, u32 kinds, int 
 
 /* "answered / listed" (g_listAnswered, the games heard from, over total) in white, right-aligned (13 a character) 0x3c
    in from x1 at y */
-static void game_page(int x1, int y, int total)
+static void answered_count(int x1, int y, int total)
 {
 	set_colour_bits(g_textColour, 0x3f800000, 0x3f800000, 0x3f800000, 0x3f800000);
 	char page[50] = { 0 }, pages[10] = { 0 };
@@ -107,7 +107,7 @@ static void info_box(u32 line, int named)
 	RECT(0x3e4ccccd, 0x3e4ccccd, 0x3f333333, 0x3f333333);   /* 0.2, 0.2, 0.7, 0.7 */
 	menu_drawRect(X0 + 0x64, Y0 + 0x96, X1 - 0x64, Y0 + 0x116, 1);
 	set_colour_bits(g_textColour, 0x3f800000, 0x3f800000, 0x3f800000, 0x3f800000);
-	text_drawBox16(X0 + 0x64, Y0 + 0xa6, X1 - 0x64, (const char *)RELOC(line));
+	text_drawCentredLines16(X0 + 0x64, Y0 + 0xa6, X1 - 0x64, (const char *)RELOC(line));
 	RECT(0, 0, 0, 0x3f000000);
 	menu_drawRect(X0 + 0xc8, Y0 + 0xc8, X1 - 0xc8, Y0 + 0xe8, 1);
 	RECT(0, 0x3f800000, 0x3f800000, 0x3f000000);
@@ -139,7 +139,7 @@ void (arena_drawGameList)(void)
 		bind_buttons();
 		int x = X0 + k * 0xb4;
 		button(hovered == k && !boxed, x + 0x23, Y0 + 0x30, x + 0xc3, Y0 + 0x50, 0.4f);
-		text_drawBox16(x + 0x25, Y0 + 0x38, x + 0xc1, (const char *)(MSG(142, "SEARCH $[0] IPX") + k * 0x80));
+		text_drawCentredLines16(x + 0x25, Y0 + 0x38, x + 0xc1, (const char *)(MSG(142, "SEARCH $[0] IPX") + k * 0x80));
 	}
 	TEXT(bright);
 	static const struct { int x; u32 text; } heads[5] = {
@@ -153,7 +153,7 @@ void (arena_drawGameList)(void)
 	if (g_arenaLanListBuilt || g_arenaServerList) {
 		int full = g_arenaServerList;
 		game_rows(X0, Y0, 0x78, 0x150, full, OBJ(g_gameTypeNames), 20, full);
-		game_page(X1, Y1 - 0x4c, g_arenaLanListBuilt ? g_gameCount : g_serverListCount);
+		answered_count(X1, Y1 - 0x4c, g_arenaLanListBuilt ? g_gameCount : g_serverListCount);
 	}
 	RECT(0, 0x3f800000, 0x3f800000, 0x3f800000);
 	menu_drawLine(X0 + 0x10, Y1 - 0x32, X1 - 0x10, Y1 - 0x32);
@@ -170,19 +170,19 @@ void (arena_drawGameList)(void)
 		button(lit, x, Y1 - 0x2c, x + 0x78, Y1 - 0xc, 0.4f);
 		if (g_typingArenaAddress || g_arenaJoinNeedsPassword)
 			button(0, x, Y1 - 0x2c, x + 0x78, Y1 - 0xc, 0.4f);
-		text_drawBox16(x, Y1 - 0x24, x + 0x78, (const char *)(MSG(149, "$[0] JOIN") + k * 0x80));
+		text_drawCentredLines16(x, Y1 - 0x24, x + 0x78, (const char *)(MSG(149, "$[0] JOIN") + k * 0x80));
 	}
 	glEnable(GL_TEXTURE_2D);
 	int texture = g_buttonTexture;
 	tex_bind(g_textures->banks[texture / 512], texture % 512);
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
-	menu_drawSmallButton3(X0 + 0x21e, Y0 + 0xa0, X0 + 0x23e, Y0 + 0xe0, hovered == 0xf);
-	menu_drawSmallButton4(X0 + 0x21e, Y0 + 0xf0, X0 + 0x23e, Y0 + 0x130, hovered != 0xf && hovered == 0x10);
+	menu_drawUpArrow(X0 + 0x21e, Y0 + 0xa0, X0 + 0x23e, Y0 + 0xe0, hovered == 0xf);
+	menu_drawDownArrow(X0 + 0x21e, Y0 + 0xf0, X0 + 0x23e, Y0 + 0x130, hovered != 0xf && hovered == 0x10);
 	if (g_searching || g_lobbyRefreshing) {   /* blinking in fifteen steps */
 		int step = ftol(fmul_m(fld_m((const float *)ADDR(g_lobbyBlinkClock)), k_0_333333f)) % 15;
 		float alpha = f32(fmul_m((long double)step, k_0_0667f));
 		set_colour_bits(g_textColour, 0, 0x3f800000, 0, BITS(alpha));
-		text_drawBox16(X0, Y1 - 0x4a, X1, (const char *)MSG(152, "SEARCHING FOR THE GAME SERVER"));
+		text_drawCentredLines16(X0, Y1 - 0x4a, X1, (const char *)MSG(152, "SEARCHING FOR THE GAME SERVER"));
 	}
 	glDisable(GL_TEXTURE_2D);
 	if (g_arenaJoinNeedsPassword)
@@ -194,14 +194,14 @@ void (arena_drawGameList)(void)
 		RECT(0x3e4ccccd, 0x3e4ccccd, 0x3f333333, 0x3f333333);
 		menu_drawRect(0x64, 0xc8, 0x21c, 0x140, 1);
 		set_colour_bits(g_textColour, 0x3f800000, 0x3f800000, 0, 0x3f800000);
-		text_drawBox16(0x69, 0xdc, 0x217, (const char *)MSG(153, "CONNECTING TO THE GAME SERVER"));
-		text_drawBox16(0x69, 0xf4, 0x217, (const char *)MSG(154, "PLEASE WAIT"));
+		text_drawCentredLines16(0x69, 0xdc, 0x217, (const char *)MSG(153, "CONNECTING TO THE GAME SERVER"));
+		text_drawCentredLines16(0x69, 0xf4, 0x217, (const char *)MSG(154, "PLEASE WAIT"));
 		glEnable(GL_TEXTURE_2D);
 		texture = g_buttonTexture;
 		tex_bind(g_textures->banks[texture / 512], texture % 512);
 		glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 		button(on == 0, 0x104, 0x118, 0x17c, 0x138, 0.7f);
-		text_drawBox16(0x104, 0x120, 0x17c, (const char *)MSG(116, "$[0] CANCEL"));
+		text_drawCentredLines16(0x104, 0x120, 0x17c, (const char *)MSG(116, "$[0] CANCEL"));
 	}
 	if (g_arenaUpdateNotice) {
 		arenaUpdateNotice_hitTest(g_mouseX, g_mouseY);   /* arenaUpdateNotice_hitTest (unused) */
@@ -212,13 +212,13 @@ void (arena_drawGameList)(void)
 		RECT(0, 0x3f800000, 0x3f800000, 0x3f800000);
 		menu_drawRect(0x68, 0xb8, 0x218, 0x13c, 0);
 		set_colour_bits(g_textColour, 0x3f800000, 0x3f800000, 0x3f800000, 0x3f800000);
-		text_drawBox16(0x64, 0xc8, 0x21c, (const char *)MSG(3, "THIS PROGRAM HAS BEEN UPDATED"));
-		text_drawBox16(0x64, 0xdc, 0x21c, (const char *)MSG(4, "DO DOWNLOAD A NEW VERSION"));
+		text_drawCentredLines16(0x64, 0xc8, 0x21c, (const char *)MSG(3, "THIS PROGRAM HAS BEEN UPDATED"));
+		text_drawCentredLines16(0x64, 0xdc, 0x21c, (const char *)MSG(4, "DO DOWNLOAD A NEW VERSION"));
 		for (int k = 0; k < 2; k++) {
 			bind_buttons();
 			int x = 0xb4 + k * 0xa0;
 			button(hovered == k, x, 0x104, x + 0x78, 0x124, 0.4f);
-			text_drawBox16(x, 0x10c, x + 0x78, (const char *)(MSG(115, "$[0] O K") + k * 0x80));
+			text_drawCentredLines16(x, 0x10c, x + 0x78, (const char *)(MSG(115, "$[0] O K") + k * 0x80));
 		}
 	}
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
@@ -253,7 +253,7 @@ static void room_button(int lit, int x0, int y0, int x1, int y1, float dim_alpha
    the one under the pointer, by gameList_hitTest, lit: the first only with games, and while searching (g_roomSearching) only
    the third; all dimmed while joining, g_roomJoinNeedsPassword); the scroll arrows (13 / 14); the blinking MSG(391, "SEARCHING FOR THE GAME SERVER") while
    searching or g_roomRefreshing; the joining box (MSG(38, "TYPE GAME PASSWORD") and the typed password g_roomJoinPassword); the join confirmation (MSG(153, "CONNECTING TO THE GAME SERVER") /
-   MSG(154, "PLEASE WAIT"), its button MSG(116, "$[0] CANCEL") by gameListStop_hitTest); the border. The original leaves eax to callers that ignore it */
+   MSG(154, "PLEASE WAIT"), its button MSG(116, "$[0] CANCEL") by gameListJoinBox_hitTest); the border. The original leaves eax to callers that ignore it */
 void (gameList_draw)(void)
 {
 	int hovered = gameList_hitTest(g_mouseX, g_mouseY);
@@ -273,7 +273,7 @@ void (gameList_draw)(void)
 	menu_drawLine(X0 + 0x10, Y1 - 0x5e, X1 - 0x10, Y1 - 0x5e);
 	if (g_gameListLoaded && g_gameCount) {
 		game_rows(X0, Y0, 0x60, 0x138, 1, MSG(811, "DM"), 0x80, 1);
-		game_page(X1, Y1 - 0x58, g_roomListCount);
+		answered_count(X1, Y1 - 0x58, g_roomListCount);
 	}
 	RECT(0, 0x3f800000, 0x3f800000, 0x3f800000);
 	menu_drawLine(X0 + 0x10, Y1 - 0x40, X1 - 0x10, Y1 - 0x40);
@@ -290,26 +290,26 @@ void (gameList_draw)(void)
 		room_button(lit, x, Y1 - 0x32, x + 0x78, Y1 - 0x12, 0.4f);
 		if (g_roomJoinNeedsPassword)
 			room_button(0, x, Y1 - 0x32, x + 0x78, Y1 - 0x12, 0.4f);
-		text_drawBox16(x, Y1 - 0x2a, x + 0x78, (const char *)(MSG(387, "$[0] JOIN") + k * 0x80));
+		text_drawCentredLines16(x, Y1 - 0x2a, x + 0x78, (const char *)(MSG(387, "$[0] JOIN") + k * 0x80));
 	}
 	glEnable(GL_TEXTURE_2D);
 	int texture = g_buttonTexture;
 	tex_bind(g_textures->banks[texture / 512], texture % 512);
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
-	menu_drawSmallButton3(X0 + 0x226, Y0 + 0x6e, X0 + 0x246, Y0 + 0xae, hovered == 0xd);
-	menu_drawSmallButton4(X0 + 0x226, Y0 + 0xbe, X0 + 0x246, Y0 + 0xfe, hovered != 0xd && hovered == 0xe);
+	menu_drawUpArrow(X0 + 0x226, Y0 + 0x6e, X0 + 0x246, Y0 + 0xae, hovered == 0xd);
+	menu_drawDownArrow(X0 + 0x226, Y0 + 0xbe, X0 + 0x246, Y0 + 0xfe, hovered != 0xd && hovered == 0xe);
 	glDisable(GL_TEXTURE_2D);
 	if (g_roomSearching || g_roomRefreshing) {   /* blinking in fifteen steps */
 		int step = ftol(fmul_m(fld_m((const float *)ADDR(g_lobbyBlinkClock)), k_0_333333f)) % 15;
 		float alpha = f32(fmul_m((long double)step, k_0_0667f));
 		set_colour_bits(g_textColour, 0, 0x3f800000, 0, BITS(alpha));
-		text_drawBox16(X0, Y1 - 0x57, X1, (const char *)MSG(391, "SEARCHING FOR THE GAME SERVER"));
+		text_drawCentredLines16(X0, Y1 - 0x57, X1, (const char *)MSG(391, "SEARCHING FOR THE GAME SERVER"));
 	}
 	if (g_roomJoinNeedsPassword) {
 		RECT(0x3e4ccccd, 0x3e4ccccd, 0x3f333333, 0x3f333333);   /* 0.2, 0.2, 0.7, 0.7 */
 		menu_drawRect(X0 + 0x64, Y0 + 0x96, X1 - 0x64, Y0 + 0x116, 1);
 		set_colour_bits(g_textColour, 0x3f800000, 0x3f800000, 0x3f800000, 0x3f800000);
-		text_drawBox16(X0 + 0x64, Y0 + 0xa6, X1 - 0x64, (const char *)MSG(38, "TYPE GAME PASSWORD"));
+		text_drawCentredLines16(X0 + 0x64, Y0 + 0xa6, X1 - 0x64, (const char *)MSG(38, "TYPE GAME PASSWORD"));
 		RECT(0, 0, 0, 0x3f000000);
 		menu_drawRect(X0 + 0xc8, Y0 + 0xc8, X1 - 0xc8, Y0 + 0xe8, 1);
 		RECT(0, 0x3f800000, 0x3f800000, 0x3f000000);
@@ -319,19 +319,19 @@ void (gameList_draw)(void)
 	}
 	if (g_joinConnecting) {
 		glDisable(GL_TEXTURE_2D);
-		int on = gameListStop_hitTest(g_mouseX, g_mouseY);
+		int on = gameListJoinBox_hitTest(g_mouseX, g_mouseY);
 		RECT(0x3e4ccccd, 0x3e4ccccd, 0x3f333333, 0x3f333333);
 		menu_drawRect(0x64, 0xc8, 0x21c, 0x140, 1);
 		set_colour_bits(g_textColour, 0x3f800000, 0x3f800000, 0, 0x3f800000);
-		text_drawBox16(0x69, 0xdc, 0x217, (const char *)MSG(153, "CONNECTING TO THE GAME SERVER"));
-		text_drawBox16(0x69, 0xf4, 0x217, (const char *)MSG(154, "PLEASE WAIT"));
+		text_drawCentredLines16(0x69, 0xdc, 0x217, (const char *)MSG(153, "CONNECTING TO THE GAME SERVER"));
+		text_drawCentredLines16(0x69, 0xf4, 0x217, (const char *)MSG(154, "PLEASE WAIT"));
 		glEnable(GL_TEXTURE_2D);
 		texture = g_buttonTexture;
 		tex_bind(g_textures->banks[texture / 512], texture % 512);
 		glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 		room_button(on == 0, 0x104, 0x118, 0x17c, 0x138, 0.7f);
 		glDisable(GL_TEXTURE_2D);
-		text_drawBox16(0x104, 0x120, 0x17c, (const char *)MSG(116, "$[0] CANCEL"));
+		text_drawCentredLines16(0x104, 0x120, 0x17c, (const char *)MSG(116, "$[0] CANCEL"));
 	}
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 	menu_drawCornerOrnaments(X0, Y0, X1, Y1);
@@ -364,7 +364,7 @@ void (gameList_pageFrame)(void)
 	if (mode == 1 || mode == 0 || g_roomState == 99)
 		return;
 	if (g_frameOpening) {
-		menu_drawFrame(g_roomGameListLeft, g_roomGameListTop, g_roomGameListRight, g_roomGameListBottom);
+		menu_drawFrameOpening(g_roomGameListLeft, g_roomGameListTop, g_roomGameListRight, g_roomGameListBottom);
 		return;
 	}
 	if (g_roomSearching) {
@@ -413,7 +413,7 @@ void (gameList_pageFrame)(void)
 	if (!g_roomJoinStarted)
 		return;
 	if (!g_roomJoinNeedsPassword) {
-		room_joinSession(g_pickedGame);
+		room_joinListed(g_pickedGame);
 		return;
 	}
 	if (!g_typingRoomJoinPassword || g_textFieldOpen)
@@ -440,7 +440,7 @@ static void shadowed(int x, int y, const char *text)
 }
 
 /* 0x409bc0: the SETUP PLAYER dialog: the window, a cyan frame, the title MSG(131, "SETUP PLAYER"), two labels (MSG(132, "PLAYER NAME :"), MSG(134, "MOVE TO ARM-CENTER"))
-   and the name g_arenaPlayerName (hidden while it is typed in, g_textFieldOpen); without a message (g_typingArenaPlayerName) the name or the
+   and the name g_arenaPlayerName (hidden while it is typed in, g_textFieldOpen); while the name is not being typed (g_typingArenaPlayerName clear) the name or the
    second label under the pointer (playerSetup_hitTest's 0 / 2) shadowed in yellow; three buttons (MSG(135, "$[0] O K"), 0x80 apart;
    3 .. 5, lit under the pointer), the border. The original leaves eax to callers that ignore it */
 void (lobby_drawPlayerSetup)(void)
@@ -473,7 +473,7 @@ void (lobby_drawPlayerSetup)(void)
 		bind_buttons();
 		glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 		button(hovered == k + 3 && !g_typingArenaPlayerName, x + 0x32, y + 0xdc, x + 0x96, y + 0xfc, 0.4f);
-		text_drawBox16(x + 0x32, g_playerSetupTop + 0xe4, x + 0x96, (const char *)(MSG(135, "$[0] O K") + k * 0x80));
+		text_drawCentredLines16(x + 0x32, g_playerSetupTop + 0xe4, x + 0x96, (const char *)(MSG(135, "$[0] O K") + k * 0x80));
 	}
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 	menu_drawCornerOrnaments(g_playerSetupLeft, g_playerSetupTop, g_playerSetupRight, g_playerSetupBottom);
@@ -538,8 +538,8 @@ static int games_leave(void)
 
 /* 0x435fc0: the game room's list of games, its mouse (with the room camera arrived, g_roomCameraMode 2; not while joining, g_roomJoinNeedsPassword,
    or with a message box): a right click leaves the list (unless searching, g_roomSearching). A click (gameList_hitTest) on: 0
-   join (not while searching or refreshing, g_roomRefreshing, and only with games; else sound 6), 1 search, 2 stop or
-   refresh, 3 leave, 13 / 14 one row up / down, or a row (4 .. 12): selects it, or on the selected row again within
+   join (not while searching or refreshing, g_roomRefreshing, and only with games; else sound 6), 1 REFRESH (the list asked for, gameList_refresh), 2 STOP
+   (the search or refresh ended), 3 CANCEL (leaves the list), 13 / 14 one row up / down, or a row (4 .. 12): selects it, or on the selected row again within
    the double-click time (g_gameListClickArmed) joins it. Holding the button on the arrows scrolls once the blink clock reaches
    5. The original leaves eax to callers that ignore it */
 void (gameList_mouse)(void)
@@ -577,7 +577,7 @@ void (gameList_mouse)(void)
 				return;
 			g_roomListCount = 0;
 			g_listAnswered = 0;
-			if (gameList_open() == 1) {
+			if (gameList_refresh() == 1) {
 				sound_playMenu(0);
 				g_roomSearching = 1;
 				g_gameListRefreshClicked = 1;
@@ -670,7 +670,7 @@ void (gameList_keys)(void)
 		}
 		g_roomListCount = 0;
 		g_listAnswered = 0;
-		if (gameList_open() == 1) {
+		if (gameList_refresh() == 1) {
 			g_roomSearching = 1;
 			g_gameListRefreshClicked = 1;
 			sound_playMenu(0);
@@ -740,7 +740,7 @@ void (arena_gamesPageFrame)(void)
 	if (mode == 1 || mode == 0 || g_lobbySubState == 5)
 		return;
 	if (g_frameOpening) {
-		menu_drawFrame(g_arenaGameListLeft, g_arenaGameListTop, g_arenaGameListRight, g_arenaGameListBottom);
+		menu_drawFrameOpening(g_arenaGameListLeft, g_arenaGameListTop, g_arenaGameListRight, g_arenaGameListBottom);
 		return;
 	}
 	if (g_lanSearch) {
@@ -841,8 +841,9 @@ static void lobby_join(void)
 	}
 }
 
-/* the lobby left for the arena screen's first page (g_lobbyBlinkClock 1; g_serverAnswerIn set) */
-static void lobby_leave(void)
+/* the running search ended: the list's answer dropped, the blink clock 1, g_serverAnswerIn set (STOP and CANCEL; CANCEL's
+   caller then leaves) */
+static void lobby_stopSearch(void)
 {
 	g_lobbyListAnswer = 0;
 	sound_playMenu(0);
@@ -852,9 +853,9 @@ static void lobby_leave(void)
 
 /* 0x406c30 (the arena lobby's list of games, its mouse: with the arena camera arrived (g_arenaCameraMode 2), not
    while joining, with the address box or a message box). A right click (not while searching or connecting) drops the
-   connection and the mode. A click (arenaGameList_hitTest) on: 0 search the network (DirectPlay, dplay_openConnection), 1 connect to
-   the lobby server (lobby_openConnection), 2 a game's IP address typed (arena_editAddress), 3 join (with games; not while busy), 4 back (a
-   refresh in progress ended), 5 leave the lobby (mode 0), 15 / 16 one row up / down, or a row (6 .. 14): selects
+   connection and the mode. A click (arenaGameList_hitTest) on: 0 SEARCH IPX (DirectPlay, dplay_openConnection), 1 SEARCH TCP
+   (the lobby server, lobby_openConnection), 2 DIRECT IP (a game's address typed, arena_editAddress), 3 JOIN (with games; not while
+   busy), 4 STOP (the search or a refresh in progress ended), 5 CANCEL (leaves the list, mode 0), 15 / 16 one row up / down, or a row (6 .. 14): selects
    it, or on the selected row again (g_arenaListClickArmed) joins it. A busy lobby answers sound 6. Holding the button on the
    arrows scrolls once the blink clock reaches 5. The caller ignores the eax it leaves */
 void (arenaGames_mouse)(void)
@@ -936,7 +937,7 @@ void (arenaGames_mouse)(void)
 		case 4:
 			if (g_typingArenaAddress)
 				return;
-			lobby_leave();
+			lobby_stopSearch();
 			g_searchResult = -1;
 			g_lobbyConnectionOpen = 0;
 			dplay_leaveSession();
@@ -955,7 +956,7 @@ void (arenaGames_mouse)(void)
 			}
 			if (g_typingArenaAddress)
 				return;
-			lobby_leave();
+			lobby_stopSearch();
 			dplay_leaveSession();
 			net_disconnect();
 			g_arenaCameraMode = 0;

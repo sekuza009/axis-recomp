@@ -4,7 +4,8 @@
 #include "key_repeat.h"
 
 /* ---- the start-up screen: the logo (texture g_logoTexture, on a quad 320 x 256 at (160, 60)) over the clear colour
-   g_clearColour, blended ---- */
+   g_clearColour, blended. first sets alpha 0.6, but the white (1, 1, 1, 1) set before the quad overrides it (in the
+   original too): the logo is never dimmed ---- */
 static void draw_logo(int first)
 {
 	const u32 *clear = (const u32 *)OBJ(g_clearColour);
@@ -83,7 +84,7 @@ int (frontEnd_drawProgress)(void)
 	return SwapBuffers(g_windowDC);
 }
 
-/* 0x41f540: the intro: the start-up logo shown once (dimmed), then the loading picture stepped four times (g_loadStep) around the start-up loads, with
+/* 0x41f540: the intro: the start-up logo shown once (draw_logo's dimming has no effect), then the loading picture stepped four times (g_loadStep) around the start-up loads, with
    waits of 5 and 2 (1/60 s); then the title screen (200) with the front end's state reset, the pointer at
    (310, 230), the Netsphere music and the frame clocks cleared */
 void (menuState100_intro)(void)
@@ -159,8 +160,8 @@ void (replaySelect_drawDialog)(void)
 	int texture = g_buttonTexture;
 	tex_bind(g_textures->banks[texture / 512], texture % 512);
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
-	menu_drawSmallButton3(X1 - 0x32, Y0 + 0x48, X1 - 0x12, Y0 + 0x88, hovered == 0);
-	menu_drawSmallButton4(X1 - 0x32, Y0 + 0xac, X1 - 0x12, Y0 + 0xec, hovered != 0 && hovered == 1);
+	menu_drawUpArrow(X1 - 0x32, Y0 + 0x48, X1 - 0x12, Y0 + 0x88, hovered == 0);
+	menu_drawDownArrow(X1 - 0x32, Y0 + 0xac, X1 - 0x12, Y0 + 0xec, hovered != 0 && hovered == 1);
 	glDisable(GL_TEXTURE_2D);
 	const int *ticked[2] = { (const int *)ADDR(g_replayWrap), (const int *)ADDR(g_replayRandomOrder) };
 	for (int k = 0; k < 2; k++) {
@@ -185,7 +186,7 @@ void (replaySelect_drawDialog)(void)
 			menu_drawWideButton(x + 0x64, y, x + 0xdc, y + 0x20, 1);
 			const u32 *colour = lit ? bright : dim;
 			set_colour_bits(g_textColour, colour[0], colour[1], colour[2], colour[3]);
-			text_drawBox16(x + 0x64, y + 8, x + 0xdc, (const char *)(MSG(24, "$[0] ALL FILES") + row * 0x100 + k * 0x80));
+			text_drawCentredLines16(x + 0x64, y + 8, x + 0xdc, (const char *)(MSG(24, "$[0] ALL FILES") + row * 0x100 + k * 0x80));
 		}
 	if (hovered > 7 && hovered < 0x12) {
 		set_colour_bits(g_rectColour, 0x3dcccccd, 0x3e99999a, 0x3f800000, 0x3e99999a);   /* 0.1, 0.3, 1, 0.3 */
@@ -204,7 +205,7 @@ void (replaySelect_drawDialog)(void)
 void (mainmenu_drawReplaySelect)(void)
 {
 	if (g_frameOpening != 0)
-		menu_drawFrame(g_replaySelectLeft, g_replaySelectTop, g_replaySelectRight, g_replaySelectBottom);
+		menu_drawFrameOpening(g_replaySelectLeft, g_replaySelectTop, g_replaySelectRight, g_replaySelectBottom);
 	else
 		replaySelect_drawDialog();
 }
@@ -248,10 +249,10 @@ void (missions_pageKeys)(void)
 		missions_briefingKeys();
 }
 
-/* 0x4479b0: mission chosen (sound 2) */
-void (skirmish_roundChosen)(int mission)
+/* 0x4479b0: round chosen (g_skirmishChosen), its map preview to be loaded, sound 2 */
+void (skirmish_roundChosen)(int round)
 {
-	g_skirmishChosen = mission;
+	g_skirmishChosen = round;
 	g_skirmishPreviewDue = 1;
 	sound_playMenu(2);
 }
@@ -312,7 +313,7 @@ void (skirmish_keys)(void)
 		skirmish_roundKeys();
 }
 
-/* 0x41edc0: the game server's socket closed (WndProc 0x40a FD_CLOSE, not in a match): the background tunnel freed
+/* 0x41edc0: the lobby server's socket closed (WndProc 0x40a FD_CLOSE on g_lobbySocket, not in a match): the background tunnel freed
    ring by ring, then game_returnToArenaLobby (screen 300 for now, next screen 400, the camera's move 2 into it),
    g_screen 300 */
 void (menu_returnToArenaLobbyViaMain)(void)
@@ -323,7 +324,8 @@ void (menu_returnToArenaLobbyViaMain)(void)
 	g_screen = 300;
 }
 
-/* 0x41ed70: back to the main menu from the game room: the background tunnel freed, the menus entered again, the
+/* 0x41ed70: the game server's socket closed (WndProc 0x40c FD_CLOSE on g_gameServerSocket, not in a match): back to
+   the main menu from the game room: the background tunnel freed, the menus entered again, the
    room's state cleared, state 300 */
 void (menu_returnToMainFromRoom)(void)
 {
@@ -354,14 +356,14 @@ void (replaySelect_ok)(void)
 }
 
 /* ---- the replay selection dialog's list: 10 rows shown from replay g_replaySelectFirst of the g_replayFileCount ---- */
-static void maps_up(void)
+static void replaySelect_scrollUp(void)
 {
 	if (g_replaySelectFirst > 0) {
 		g_replaySelectFirst--;
 		sound_playMenu(2);
 	}
 }
-static void maps_down(void)
+static void replaySelect_scrollDown(void)
 {
 	if (g_replaySelectFirst + 10 < g_replayFileCount) {
 		g_replaySelectFirst++;
@@ -403,8 +405,8 @@ void (replaySelect_keys)(void)
 		replaySelect_allIn();
 		return;
 	}
-	if (!key_repeat(g_keyUp, &g_repeatUp, maps_up))
-		key_repeat(g_keyDown, &g_repeatDown, maps_down);
+	if (!key_repeat(g_keyUp, &g_repeatUp, replaySelect_scrollUp))
+		key_repeat(g_keyDown, &g_repeatDown, replaySelect_scrollDown);
 }
 
 /* 0x441810: the replay selection dialog's mouse: a click (the blink clock restarted) on the arrows (0 / 1), the two
@@ -417,9 +419,9 @@ void (replaySelect_mouse)(void)
 		g_menuRepeatClock = 0.0f;
 		int on = replaySelect_hitTest(g_mouseX, g_mouseY);
 		if (on == 0)
-			maps_up();
+			replaySelect_scrollUp();
 		else if (on == 1)
-			maps_down();
+			replaySelect_scrollDown();
 		else if (on == 2)
 			g_replayWrap = 1 - g_replayWrap;
 		else if (on == 3)
@@ -442,9 +444,9 @@ void (replaySelect_mouse)(void)
 	int on = replaySelect_hitTest(g_mouseX, g_mouseY);
 	if ((on == 0 || on == 1) && g_menuRepeatClock >= *repeat) {
 		if (on == 0)
-			maps_up();
+			replaySelect_scrollUp();
 		else
-			maps_down();
+			replaySelect_scrollDown();
 		g_menuRepeatClock = 0.0f;
 	}
 }
@@ -549,31 +551,32 @@ static void leave_game(u32 matchMode, int disconnect)
 		p->id = 0;
 	}
 }
-/* the menu cameras placed (both at (0, 0, z), the far one at farZ, the near one at nearZ: float bits), the keys
-   blocked as given, g_enteringMenus set (and g_inputLineHidden cleared when asked), the menu state cleared and the keyboard taken back if it was let go. Returns
-   what the original leaves in eax: input_initKeyboard's, or g_textFieldOpen's value */
-static u32 reset_menus(u32 farZ, u32 nearZ, int blocked, int entering, int clear_chat_field)
+/* the menu camera placed: its eye at (0, 0, eyeZ) looking at (0, 0, lookZ) (float bits; the kept place too), its move
+   state g_menuCameraMove = cameraMove (which also holds off the menus' keys and mouse), g_enteringMenus set, and
+   g_inputLineHidden cleared when showInputLine; the menu state cleared and the keyboard taken back if it was let go.
+   Returns what the original leaves in eax: input_initKeyboard's, or g_textFieldOpen's value */
+static u32 reset_menus(u32 eyeZ, u32 lookZ, int cameraMove, int entering, int showInputLine)
 {
 	u32 typing = (*(u32 *)&g_textFieldOpen);
 	(*(u32 *)&g_menuEyeY) = 0;
 	(*(u32 *)&g_menuEyeX) = 0;
-	(*(u32 *)&g_menuEyeZ) = farZ;
+	(*(u32 *)&g_menuEyeZ) = eyeZ;
 	(*(u32 *)&g_menuCameraLook) = 0;
 	(*(u32 *)&g_menuCameraLookY) = 0;
-	(*(u32 *)&g_menuCameraLookZ) = nearZ;
-	g_menuCameraMove = blocked;
+	(*(u32 *)&g_menuCameraLookZ) = lookZ;
+	g_menuCameraMove = cameraMove;
 	g_unusedMenuReturnWord = 0;
 	(*(u32 *)&g_menuEyeKeptX) = 0;
 	(*(u32 *)&g_menuEyeKeptY) = 0;
-	(*(u32 *)&g_menuEyeKeptZ) = farZ;
+	(*(u32 *)&g_menuEyeKeptZ) = eyeZ;
 	(*(u32 *)&g_menuLookKeptX) = 0;
 	(*(u32 *)&g_menuLookKeptY) = 0;
-	(*(u32 *)&g_menuLookKeptZ) = nearZ;
+	(*(u32 *)&g_menuLookKeptZ) = lookZ;
 	g_enteringMenus = entering;
 	g_replayRunning = 0;
 	(*(int *)&g_menuRepeatClock) = 0;
 	(*(int *)&g_replayZoomTime) = 0;
-	if (clear_chat_field)
+	if (showInputLine)
 		g_inputLineHidden = 0;
 	if (typing != 1)
 		return typing;
@@ -581,8 +584,8 @@ static u32 reset_menus(u32 farZ, u32 nearZ, int blocked, int entering, int clear
 	input_resetKeys();
 	return ((u32)input_initKeyboard(g_mainWindow));   /* input_initKeyboard */
 }
-#define FAR_BACK 0xc3e10000u    /* -450 */
-#define NEAR_BACK 0xc4098000u   /* -550 */
+#define FAR_BACK 0xc3e10000u    /* -450: the eye's z */
+#define NEAR_BACK 0xc4098000u   /* -550: the look-at's z */
 
 /* 0x41ec50: back to the skirmish screen (screen 500) */
 u32 (game_returnToSkirmish)(void)

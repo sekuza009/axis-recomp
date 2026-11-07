@@ -36,7 +36,7 @@ void (mapList_chooseAll)(void)
 }
 
 /* 0x403530: choose none (types back to 0) */
-void (mapList_chooseNone)(void)
+void (mapList_setDefault)(void)
 {
 	sound_playMenu(0);
 	for (int i = 0; i < g_mapCount; i++) {
@@ -87,7 +87,7 @@ void (mapList_ok)(void)
 	g_mapListKept = 1;
 }
 
-/* 0x4050a0: the lobby player's name, sex and corporation kept as axis.cfg's (g_cfgPlayerName ..) and the configuration written */
+/* 0x4050a0: the lobby player's name, customize setting (g_arenaCustomize into g_playerCustomize) and corporation kept as axis.cfg's (g_cfgPlayerName ..) and the configuration written */
 void (arena_savePlayerSettings)(void)
 {
 	g_playerCustomize = g_arenaCustomize;
@@ -156,7 +156,7 @@ static void map_buttons(int hovered, int first, int y, int label)
 			set_colour_bits(g_textColour, 0x3e99999a, 0x3f333333, 0x3f333333, 0x3f800000);   /* 0.3, 0.7, 0.7, 1 */
 		}
 		menu_drawWideButton(x, y, x + 0x8c, y + 0x20, 1);
-		text_drawBox16(x, y + 8, x + 0x8c, (const char *)(RELOC(label) + k * 0x80));
+		text_drawCentredLines16(x, y + 8, x + 0x8c, (const char *)(RELOC(label) + k * 0x80));
 	}
 }
 
@@ -202,15 +202,15 @@ void (mapList_draw)(void)
 	int texture = g_buttonTexture;
 	tex_bind(g_textures->banks[texture / 512], texture % 512);
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
-	menu_drawSmallButton3(0x1c2, 0x96, 0x1e0, 0xca, hovered == 0x14);
-	menu_drawSmallButton4(0x1c2, 0xdc, 0x1e0, 0x110, hovered != 0x14 && hovered == 0x15);
+	menu_drawUpArrow(0x1c2, 0x96, 0x1e0, 0xca, hovered == 0x14);
+	menu_drawDownArrow(0x1c2, 0xdc, 0x1e0, 0x110, hovered != 0x14 && hovered == 0x15);
 	map_buttons(hovered, 0x16, 0x15e, MSG(506, "$[0] DEFAULT"));
 	map_buttons(hovered, 0x18, 0x186, MSG(504, "$[0] O K"));
 }
 #undef cyan_text
 
 /* 0x4036c0: the map list's mouse: a click (the blink clock restarted) on a row's map (0 .. 9) or game type (10 ..
-   19), the arrows (20 / 21: one row up / down), none, every map, OK, or close (25); in mode 2 (g_arenaCameraMode) holding an
+   19), the arrows (20 / 21: one row up / down), DEFAULT (22: no map chosen, types 0), SELECT ALL (23), OK (24) or CANCEL (25); in mode 2 (g_arenaCameraMode) holding an
    arrow scrolls once the clock reaches 5 (k_5f), restarting it. The original leaves eax to callers that ignore
    it */
 void (mapList_mouse)(void)
@@ -232,7 +232,7 @@ void (mapList_mouse)(void)
 			if (g_mapTop + 10 < g_mapCount)
 				g_mapTop++;
 		} else if (on == 22)
-			mapList_chooseNone();
+			mapList_setDefault();
 		else if (on == 23)
 			mapList_chooseAll();
 		else if (on == 24)

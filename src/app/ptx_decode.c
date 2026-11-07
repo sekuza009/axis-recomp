@@ -301,7 +301,7 @@ static int ptx_read(void *f, u8 *out, int *fmt, int *width, int *height, int clo
 
 /* 0x46eb00: the image read from the file at path (a failed open is fatal: ptx_crtlError), which is closed before
    the conversion. Returns 0, or the type less 0x82 for an unknown type */
-int (ptx_open)(const char *path, u8 *out, int *fmt, int *width, int *height)
+int (ptx_decodeFile)(const char *path, u8 *out, int *fmt, int *width, int *height)
 {
 	void *f = crt_fopen(path, (const char *)STR(0x4ad170, "rb"));
 	if (!f)

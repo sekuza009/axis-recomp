@@ -57,7 +57,7 @@ static void skirmish_roundScreen(int hovered)
 	strcat(title, (const char *)STR(0x4b2b18, "  [ "));
 	strcat(title, map_name);
 	strcat(title, (const char *)STR(0x4b2b14, " ]"));
-	text_drawBox16(X0, Y0 + 8, X1, title);
+	text_drawCentredLines16(X0, Y0 + 8, X1, title);
 	/* the preview, looked up when asked for: "<g_stageDir><map>/<map>" */
 	if (g_skirmishPreviewDue) {
 		char path[128] = { 0 }, name[64];
@@ -89,8 +89,8 @@ static void skirmish_roundScreen(int hovered)
 	bind(g_buttonTexture);
 	glEnable(GL_TEXTURE_2D);
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
-	menu_drawSmallButton1(X0 + 0x98, Y0 + 0x4c, X0 + 0xd0, Y0 + 0x74, g_skirmishRoundShown > 0 && hovered == 2);
-	menu_drawSmallButton2(X0 + 0x160, Y0 + 0x4c, X0 + 0x198, Y0 + 0x74,
+	menu_drawLeftArrow(X0 + 0x98, Y0 + 0x4c, X0 + 0xd0, Y0 + 0x74, g_skirmishRoundShown > 0 && hovered == 2);
+	menu_drawRightArrow(X0 + 0x160, Y0 + 0x4c, X0 + 0x198, Y0 + 0x74,
 	                        g_skirmishRoundShown < g_progress && hovered == 3 && g_skirmishRoundShown < 14);
 	white_text();
 	/* the kind and the two values */
@@ -104,7 +104,7 @@ static void skirmish_roundScreen(int hovered)
 	/* the allies (+0x24 of them, faces from +0x28) in red frames */
 	if (record[0x24 / 4]) {
 		white_text();
-		text_drawBox16(X0, Y0 + 0xf2, X1, (const char *)MSG(558, "FRIENDLY"));
+		text_drawCentredLines16(X0, Y0 + 0xf2, X1, (const char *)MSG(558, "FRIENDLY"));
 		glEnable(GL_TEXTURE_2D);
 		bind(g_characterTexture);
 		glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
@@ -117,7 +117,7 @@ static void skirmish_roundScreen(int hovered)
 			menu_drawRect(x0 + i * 0x40, Y0 + 0x104, x0 + i * 0x40 + 0x30, Y0 + 0x134, 0);
 	}
 	/* the enemies (+0 of them, faces from +4; outside 0 .. 8 "???") in blue frames */
-	text_drawBox16(X0, Y0 + 0x142, X1, (const char *)MSG(559, "ENEMY"));
+	text_drawCentredLines16(X0, Y0 + 0x142, X1, (const char *)MSG(559, "ENEMY"));
 	glEnable(GL_TEXTURE_2D);
 	int x0 = 0x146 - record[0] * 0x20;
 	for (int i = 0; i < record[0]; i++) {
@@ -127,7 +127,7 @@ static void skirmish_roundScreen(int hovered)
 		if (face >= 0 && face <= 8)
 			portrait(face, x, Y0 + 0x154, 0x30);
 		else
-			text_drawBox16(x, Y0 + 0x164, x + 0x30, (const char *)STR(0x4b2b0c, "???"));
+			text_drawCentredLines16(x, Y0 + 0x164, x + 0x30, (const char *)STR(0x4b2b0c, "???"));
 	}
 	glDisable(GL_TEXTURE_2D);
 	set_colour_bits(g_rectColour, 0x3dcccccd, 0x3dcccccd, 0x3f800000, 0x3f800000);   /* 0.1, 0.1, 1, 1 */
@@ -142,7 +142,7 @@ static void skirmish_roundScreen(int hovered)
 		menu_drawWideButton(x + 0x96, Y1 - 0x30, x + 0x10e, Y1 - 0x10, 1);
 		const u32 *colour = lit ? bright : dim;
 		set_colour_bits(g_textColour, colour[0], colour[1], colour[2], colour[3]);
-		text_drawBox16(x + 0x96, Y1 - 0x28, x + 0x10e, (const char *)(MSG(561, "$[0] O K") + k * 0x80));
+		text_drawCentredLines16(x + 0x96, Y1 - 0x28, x + 0x10e, (const char *)(MSG(561, "$[0] O K") + k * 0x80));
 	}
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 	menu_drawCornerOrnaments(X0, Y0, X1, Y1);
@@ -169,8 +169,8 @@ void (skirmish_drawNewPartsNotice)(void)
 	set_colour_bits(g_rectColour, 0, 0x3f800000, 0x3f800000, 0x3f800000);
 	menu_drawRect(0x41, 0xcd, 0x23f, 0x11d, 0);
 	set_colour_bits(g_textColour, 0x3f800000, 0x3f800000, 0, 0x3f800000);
-	text_drawBox16(0x46, 0xdc, 0x23a, (const char *)MSG(563, "YOU'VE GOT NEW PARTS AND WEAPONS"));
-	text_drawBox16(0x46, 0xf5, 0x23a, (const char *)MSG(0, "PRESS ENTER OR CLICK MOUSE"));
+	text_drawCentredLines16(0x46, 0xdc, 0x23a, (const char *)MSG(563, "YOU'VE GOT NEW PARTS AND WEAPONS"));
+	text_drawCentredLines16(0x46, 0xf5, 0x23a, (const char *)MSG(0, "PRESS ENTER OR CLICK MOUSE"));
 }
 
 /* 0x44aa20, 0x44aa30: jumps to skirmish_drawRoundScreen and skirmish_drawNewPartsNotice (the skirmish screen's states'

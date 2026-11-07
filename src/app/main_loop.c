@@ -44,7 +44,7 @@ int THISCALL (match_frameByState)(Scene *scene)
 			gfx_swapBuffers();
 		break;
 	case 3:
-		scene->matchState = match_freeCamFrame(scene);
+		scene->matchState = match_mechTestFrame(scene);
 		gfx_swapBuffers();
 		break;
 	case 4:
@@ -63,9 +63,9 @@ static inline double f64(long double x)
 }
 
 
-/* 0x41fa40: the menus' frame: the cursor blink clock (100 past 1e6), the screen's set-up when it changed, its keys
-   (unless g_launchStartStep is 0x68 / 0x69); a direct start from the main menu zooms in (aspect down to 0.01, the camera
-   back) and starts the match after 100; the screen's frame, the message box, the input line (menu_drawInputLine) while a text field is open, the cursor
+/* 0x41fa40: the menus' frame: the hold-to-repeat clock (g_menuRepeatClock; back to 100 past 1e6), the screen's set-up
+   when it changed, its keys (unless g_launchStartStep is 0x68 / 0x69); during the picked replays' show
+   (g_replayShowOn) the main menu zooms in (aspect down to 0.01, the camera back) and starts the replay after 100; the screen's frame, the message box, the input line (menu_drawInputLine) while a text field is open, the cursor
    (not over a match or the profile intro), the buffers swapped; the view angle stepped; then the time: the FPS
    counter (frames over each second, g_fps) and the frame time (60 / the frame rate, 1 past 20). The original
    leaves eax to callers that ignore it */
@@ -169,7 +169,7 @@ static void count_down(u8 *s, u32 offset, const float *dt)
 }
 
 /* 0x48b200 (thiscall on the scene): the playing state's frame. The match set up first when it is not yet
-   (stateFrames 0: match_startRound); scene_averageFrameTime (its answer dropped); the frame's time (frameTime) added to the
+   (stateFrames 0: match_setupOrStartRound); scene_averageFrameTime (its answer dropped); the frame's time (frameTime) added to the
    second's fraction (secondFraction) and to the FPS window (windowTime); three countdowns (msgFade, readyTimer,
    keyGuard). Past a whole second the seconds (wholeSeconds) take it, and the frame and packet counts of the window
    (windowSent / windowReceived) become rates (sendRate / receiveRate; 0 for an empty window), the window cleared. Then
@@ -180,7 +180,7 @@ int THISCALL (match_playFrame)(u8 *s)
 #define SC ((Scene *)s)
 	const float *dt = &SC->frameTime;
 	if (SC->stateFrames == 0)
-		match_startRound(s);
+		match_setupOrStartRound(s);
 	(void)scene_averageFrameTime(s);
 	long double second = fadd_m(fld_m(dt), &SC->secondFraction);
 	SC->secondFraction = f32(second);
@@ -424,16 +424,20 @@ static const u32 k_partSteps[5][4] = {   /* the F key, the part in the player re
 static const u32 k_freeKeys[9][2] = { { 2, offsetof(Scene, holdAltitude) }, { 0x41, offsetof(Scene, holdStepLeft) }, { 0x44, offsetof(Scene, holdStepRight) }, { 0x57, offsetof(Scene, holdForward) }, { 0x53, offsetof(Scene, holdBackward) },
                                       { 0x51, offsetof(Scene, holdUp) }, { 0x45, offsetof(Scene, holdDown) }, { 1, offsetof(Scene, holdFire) }, { 0x10, offsetof(Scene, holdBooster) } };
 
-/* 0x48a370 (thiscall on the game object): the free camera / test mode's frame. On its first frame the camera
+/* 0x48a370 (thiscall on the game object): matchState 3, a mech test mode that play never reaches (only
+   sessionMode 2, armc_makeSession's session, starts in state 3, and the ARM CENTER never leaves screen 700, so
+   match_frameByState does not run it). The local mech is driven (W / A / S / D / Q / E, the mouse, the buttons, shift:
+   actor_setInput), its parts are stepped with F1 .. F6 + Z / X, and the camera orbits it. On its first frame the camera
    presets (cameraPresets, ten of six fields) copied to the working set (cameraSettings), the game clock read and the
    cursor centred. The keys (Windows virtual keys) set the input flags; ctrl with up / down zooms, else up / down /
-   left / right turn the camera (cameraAngle pitch within +-890, cameraAngle[1] heading wrapped at 3600); space resets it;
-   Z / X (or shift with them) step the local player's (localPlayer) parts held by F1 .. F6 down / up through their
-   tables (the weapon slot by its item, selected again); the camera is placed behind the actor (stage_setupView);
+   left / right turn the camera about the actor (cameraAngle pitch within +-890, cameraAngle[1] heading wrapped at 3600);
+   space resets it; Z / X (or shift with them) step the local player's (localPlayer) parts held by F1 .. F6 down / up
+   through their tables (the weapon slot by its item, selected again); the camera is placed at the actor plus the
+   preset's zoom turned by cameraAngle (stage_setupView);
    unless scenePaused (never set) the actors, bullets and particles move and the actor's ammunition is halved; the
    scene is drawn, with a 100 x 150 grid of lines about the actor when debugGrid. Returns 0 once Esc was pressed,
    else 3 (this mode again) */
-u32 THISCALL (match_freeCamFrame)(u8 *s)
+u32 THISCALL (match_mechTestFrame)(u8 *s)
 {
 	u8 *stage = (u8 *)SCENE_STAGE(s);
 	if (SC->stateFrames == 0) {
@@ -876,8 +880,6 @@ static void pair_camera(u8 *s)
 		cam[k] = f32(FADD(t[k], mid[k]));
 }
 
-/* the other presets: the look point (cameraTarget) moved half way to the followed player; when the view to it is
-   blocked, the camera goes behind the player's head (its height back along its own heading and pitch) */
 /* the look point (cameraTarget) moved half way to p */
 static void look_toward(u8 *s, const float *p)
 {
@@ -891,6 +893,8 @@ static void look_toward(u8 *s, const float *p)
 	mid[2] = f32(FADD(hz, mid[2]));
 }
 
+/* the other presets: the look point (cameraTarget) moved half way to the followed player; when the view to it is
+   blocked, the camera goes behind the player's head (its height back along its own heading and pitch) */
 static void watch_camera(u8 *s)
 {
 	int me = SC->watchedPlayer;
@@ -1602,8 +1606,8 @@ static void round_over(u8 *s, int time_limit)
 	g_writeMatchLog = 1;
 }
 
-/* the local player's camera chat keys: T (all, talkPressed) / Y (team, teamTalkPressed) open the line, its end sends it
-   (a cheat code, a macro or the text) */
+/* the local player's chat keys: the chat binding (g_keyChat, default Enter: talkPressed, to all) or the team chat
+   binding (default C: teamTalkPressed) opens the line; its end sends it (a cheat code, a macro or the text) */
 static void chat_keys(u8 *s)
 {
 	char line[0x100];
@@ -1611,11 +1615,11 @@ static void chat_keys(u8 *s)
 	if (mode == 0) {
 		if (SC->talkPressed == 1) {
 			SC->chatMode = 1;
-			chat_textField(0, 0, 0x38);
+			chat_openTextField(0, 0, 0x38);
 			SC->players[SC->localPlayer].chatIcon = 1;
 		} else if (SC->teamTalkPressed == 1) {
 			SC->chatMode = 2;
-			chat_textField(0, 0, 0x38);
+			chat_openTextField(0, 0, 0x38);
 			SC->players[SC->localPlayer].chatIcon = 2;
 		}
 		return;

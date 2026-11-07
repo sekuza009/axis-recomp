@@ -49,14 +49,14 @@ void (room_askJoinPassword)(void)
 	}
 }
 
-/* 0x435f40: the game list's stop button (gameListStop_hitTest; with the room camera arrived): the join being waited
+/* 0x435f40: the CONNECTING TO THE GAME SERVER box's CANCEL over the game list (gameListJoinBox_hitTest; with the room camera arrived): the join being waited
    for given up: its flags off, the session left (dplay_leaveSession) and its timer (0x378) killed */
 void (gameList_stopJoin)(void)
 {
 	if (g_frameOpening != 0 || g_mouseClick == 0 || g_roomCameraMode != 2)
 		return;
 	g_menuRepeatClock = 0.0f;
-	if (gameListStop_hitTest(g_mouseX, g_mouseY) == 0) {
+	if (gameListJoinBox_hitTest(g_mouseX, g_mouseY) == 0) {
 		sound_playMenu(0);
 		g_joinPollTicks = 0;
 		g_joinTimedOut = 0;
@@ -494,7 +494,7 @@ u32 (ranking_page)(void)
 		return mode;
 	if (g_frameOpening) {
 		const int *box = g_rankingRect;
-		menu_drawFrame(box[0], box[1], box[2], box[3]);   /* the message box */
+		menu_drawFrameOpening(box[0], box[1], box[2], box[3]);   /* the message box */
 		if (g_frameOpening)
 			return (*(u32 *)&g_frameOpening);
 		g_rankingRequestPending = 1;
@@ -551,8 +551,8 @@ u32 (login_send)(void)
 }
 
 /* 0x436620: the ranking page's clicks (the room camera arrived (g_roomCameraMode 2), no message box open; a right click closes the
-   page unless waiting for an answer). Not waiting (g_rankingWaiting): buttons 0 .. 2 open the room's other pages
-   (ranking_prevPage / 4359b0 / 4359f0), 4 closes the page, 5 / 7 / 8 sort by column 0 / 1 / 2 (the old column kept in
+   page unless waiting for an answer). Not waiting (g_rankingWaiting): buttons 0 .. 2 the page arrows and the sort button
+   (ranking_prevPage / ranking_nextPage / ranking_cycleSort), 4 closes the page, 5 / 7 / 8 sort by column 0 / 1 / 2 (the old column kept in
    g_rankingPrevSort and a request made, the list's state cleared). While waiting, button 3 cancels it (the column and page
    put back from g_rankingPrevSort / g_rankingPrevPage). Each with the click sound. Returns what the original leaves in eax */
 u32 (ranking_clicks)(void)
@@ -684,7 +684,7 @@ u32 (room_settingsClicks)(void)
    as numbers into the bytes g_roomFragLimit / g_roomTimeLimit; an empty line changes nothing), else the keys: start (g_dikO;
    room_announceGame, not while connecting) and the two close keys (g_dikC, g_dikEscape_2). Returns what the original leaves
    in eax */
-u32 (room_settingsAfterTyping)(void)
+u32 (roomSettings_keys)(void)
 {
 	if (g_frameOpening)
 		return (*(u32 *)&g_frameOpening);
@@ -751,7 +751,7 @@ static u32 map_preview_box(const int *panel, u32 rotation, u32 reload)
 		Color4_set(g_rectColour, 0.0f, 0.0f, 0.0f, 0.4f);
 		menu_drawRect(X0, Y0, X1, Y1, 1);
 		Color4_set(g_textColour, 1.0f, 1.0f, 0.0f, 1.0f);
-		text_drawBox16(X0, panel[0] + 0x88, X1, (const char *)STR(0x4ad56c, "CUSTOM"));
+		text_drawCentredLines16(X0, panel[0] + 0x88, X1, (const char *)STR(0x4ad56c, "CUSTOM"));
 	} else {
 		glEnable(GL_TEXTURE_2D);
 		int texture = g_mapPreviewTexture;
@@ -797,7 +797,7 @@ u32 (account_page)(void)
 	if (mode == 1 || mode == 0 || g_roomState == 99)
 		return mode;
 	if (g_frameOpening)
-		return menu_drawFrame(g_accountPanelLeft, g_accountPanelTop,
+		return menu_drawFrameOpening(g_accountPanelLeft, g_accountPanelTop,
 		                                                     g_accountPanelRight, g_accountPanelBottom);
 	if (g_accountNotice)
 		account_takeRank();

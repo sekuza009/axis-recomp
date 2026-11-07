@@ -1,7 +1,7 @@
 /* screen_enter.c: the front end's screens set up as they are entered: the main menu (state 300), the arena lobby
    (400), the setup screen (600) and the game room (800). Each lays out its panels (origins in menu units, then the
    screen's rectangle builders), sets its colours (RGBA floats), points the menu camera's target and look-at points
-   at the screen (all at the camera's height) with the camera's current place as home, and clears its state. */
+   at the screen (all at the look-at's current z, its depth in the tunnel) with the camera's current place as home, and clears its state. */
 #include "../game.h"
 #include <string.h>
 
@@ -24,9 +24,9 @@ static void clear_all(const u32 *a, int n)
 #define STORE_ALL(table) store_all(table, sizeof table / sizeof table[0])
 #define CLEAR_ALL(table) clear_all(table, sizeof table / sizeof table[0])
 
-/* the camera's target points 0 .. n-1 (16 bytes apart from g_camPoint0X, look-at points from g_camAim0X) at its height,
-   and the current position as home (g_menuEyeHomeX) */
-static void camera_heights(int n)
+/* the camera's target points 0 .. n-1 (16 bytes apart from g_camPoint0X, look-at points from g_camAim0X) given
+   the look-at's current z (g_menuCameraLookZ: the depth along the tunnel), and the current eye as home (g_menuEyeHomeX) */
+static void camera_pointsAtLookZ(int n)
 {
 	int z = (*(int *)&g_menuCameraLookZ);
 	for (int i = 0; i < n; i++) {
@@ -95,7 +95,7 @@ void (menuState400_enter)(void)
 	g_arenaGameListBottom = 0x1c2;
 	g_newArenaFormBottom = 0x1c2;
 	g_lobbyPanelsSliding = 1;
-	camera_heights(4);
+	camera_pointsAtLookZ(4);
 	int lx = (*(int *)&g_menuCameraLook), ly = (*(int *)&g_menuCameraLookY), lz = (*(int *)&g_menuCameraLookZ);
 	STORE_ALL(layout);
 	STORE_ALL(camera4);
@@ -129,7 +129,7 @@ void (menuState600_enterSetup)(void)
 	g_setupControlTop = 0x1e;
 	g_setupSoundRight = 0x24e;
 	g_setupControlRight = 0x24e;
-	camera_heights(4);
+	camera_pointsAtLookZ(4);
 	int lx = (*(int *)&g_menuCameraLook), ly = (*(int *)&g_menuCameraLookY), lz = (*(int *)&g_menuCameraLookZ);
 	STORE_ALL(layout);
 	STORE_ALL(camera4);
@@ -153,7 +153,8 @@ void (menuState600_enterSetup)(void)
 }
 
 /* 0x432ff0: the game room: all its panels laid out, colours, the five camera points ((+-20, +-10) looking at
-   (-+70, +-55)), the room's record and state cleared, 999 rooms */
+   (-+70, +-55)), the room's record and state cleared, the ranking's last page
+   999 (g_rankingLastPage) */
 void (menuState800_enterGameRoom)(void)
 {
 	static const Store layout[] = {
@@ -184,7 +185,7 @@ void (menuState800_enterGameRoom)(void)
 	ranking_layout();
 	updateNotice_layout();
 	STORE_ALL(colours_camera);
-	camera_heights(5);
+	camera_pointsAtLookZ(5);
 	(*(int *)&g_menuLookHomeX) = (*(int *)&g_menuCameraLook);
 	(*(int *)&g_menuLookHomeY) = (*(int *)&g_menuCameraLookY);
 	(*(int *)&g_menuLookHomeZ) = (*(int *)&g_menuCameraLookZ);
@@ -220,7 +221,7 @@ u32 (menu_processMouse)(void)
 	int state = g_menuState;
 	switch (state) {
 	case 200: return title_clickDismiss();
-	case 210: return profile_processInput();   /* profile_processInput */
+	case 210: return profile_screenClicks();   /* profile_screenClicks */
 	case 300: return mainmenu_clicks();
 	case 400: return lobby_clicks();   /* lobby_clicks */
 	case 500: return skirmish_screenClicks();

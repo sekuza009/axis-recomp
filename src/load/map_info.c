@@ -371,7 +371,8 @@ static int grey(const u8 *px)
    skyMode, sky layerMode, sides sideMode, floor floorMode) and their textures, the area limits (levelLow .. worldHigh, then an unread float (unused9ef934), the map number and the music kind),
    and the layers (groundLayerCount; 0x20c-byte records from groundLayers: rows rows, columns cols, origin +4, cell cellSize,
    height scale heightScale, texture size texScale): each its texture "<dir>/Ground<i>Map" and a 256 x 256 RGB height map
-   (grey pixels are heights) giving, in the pool, its heights (heights), flat cells (flat), vertices (points), normals
+   (grey pixels are heights) giving, in the pool, its heights (heights), its drawn cells (drawnCells: 1 when all four corner
+   pixels are grey), vertices (points), normals
    (normals: the four triangles about each inner vertex, flipped by +0 1; the border the default g_vecUnitY), light map
    (colours, ground_computeLighting), texture coordinates (uv), index (indexCapacity / indices) and primitive (stripCapacity / strips) heaps;
    last the layer meshes (ground_buildLayerModels). Returns 1 */

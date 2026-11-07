@@ -112,7 +112,7 @@ void (shape_getShadingColorBufferBy)(u8 *out, int first, const Part *part, const
 				first = 0;
 			break;
 		}
-		case 2: {   /* a point light, full within a quarter of its squared radius and fading out to the radius */
+		case 2: {   /* a point light, full within 0.2 (k_0_2f) of its squared radius and fading out to the radius */
 			if (m) {
 				p[0] = f32(((MUL(&m[8], &l->pos[2]) + MUL(&m[4], &l->pos[1])) + MUL(&m[0], &l->pos[0])) + m[12]);
 				p[1] = f32(((MUL(&m[1], &l->pos[0]) + MUL(&m[9], &l->pos[2])) + MUL(&m[5], &l->pos[1])) + m[13]);
@@ -156,8 +156,8 @@ void (shape_getShadingColorBufferBy)(u8 *out, int first, const Part *part, const
 				first = 0;
 			break;
 		}
-		case 3: {   /* a point light falling off with the squared distance beyond a fifth (k_0_04f) of the squared
-		               radius, its colour by how the normals face it */
+		case 3: {   /* a point light falling off with the squared distance beyond 0.04 (k_0_04f) of the squared
+		               radius (a fifth of the radius), its colour by how the normals face it */
 			if (m) {
 				p[0] = f32(((MUL(&m[8], &l->pos[2]) + MUL(&m[4], &l->pos[1])) + MUL(&l->pos[0], &m[0])) + m[12]);
 				p[1] = f32(((MUL(&m[9], &l->pos[2]) + MUL(&m[5], &l->pos[1])) + MUL(&m[1], &l->pos[0])) + m[13]);
@@ -215,14 +215,14 @@ static int light_level(long double d)
 	return i < 0 ? 0 : i;
 }
 
-/* 0x472400 (thiscall on the scene): a ground layer's vertex colours (RGBA into cols) over rows r0 .. r1 and columns
-   c0 .. c1 of its grid (cols + 1 wide; normals at normals): for each directional light (the scene's 0x2c-byte light
+/* 0x472400 (thiscall on the stage): a ground layer's vertex colours (RGBA into colours) over rows r0 .. r1 and columns
+   c0 .. c1 of its grid (cols + 1 wide; normals at normals): for each directional light (the stage's 0x2c-byte light
    records from mapLights.records[].kind, mapLights.count of them: kind 1; 0 and 2 are skipped, another kind is a fatal message) the
    intensity from the normal against its direction (dir), the first written (first == 1), the rest added; a water
    layer (water 1) gets the light from straight above (from below, -1, for a layer of kind 1) in its 12 box colours
-   (waterColours) too. A kind-2 layer only clears its light map (colours) and box colours. Its caller ignores the
-   eax it leaves */
-void THISCALL (light_computeLayerLightBy)(Stage *scene, u8 *layer, u8 *cols, int first, int r0, int c0, int r1, int c1)
+   (waterColours) too. A kind-2 layer only fills its light map (the layer's colours) and box colours white. Its
+   caller ignores the eax it leaves */
+void THISCALL (light_computeLayerLightBy)(Stage *stage, u8 *layer, u8 *colours, int first, int r0, int c0, int r1, int c1)
 {
 	GroundLayer *gl = (GroundLayer *)layer;
 	if (gl->kind == 2) {
@@ -231,7 +231,7 @@ void THISCALL (light_computeLayerLightBy)(Stage *scene, u8 *layer, u8 *cols, int
 			memset(gl->waterColours, 0xff, 12 * 4);
 		return;
 	}
-	const LightFactors *lights = &scene->mapLights;
+	const LightFactors *lights = &stage->mapLights;
 	for (int li = 0; li < lights->count; li++) {
 		const Factor *fc = &lights->records[li];
 		const u8 *light = (const u8 *)&fc->kind;   /* (light_mix takes the factor from its kind on) */
@@ -248,7 +248,7 @@ void THISCALL (light_computeLayerLightBy)(Stage *scene, u8 *layer, u8 *cols, int
 				int v = (gl->cols + 1) * row + col;
 				const float *n = ((const float *)(gl)->normals) + v * 3;
 				int i = light_level(MUL(&n[1], &dir[1]) + MUL(&n[2], &dir[2]) + MUL(&dir[0], &n[0]));
-				light_mix(cols + v * 4, light, i, first == 1 ? NULL : cols + v * 4);
+				light_mix(colours + v * 4, light, i, first == 1 ? NULL : colours + v * 4);
 			}
 		if (gl->water == 1) {
 			const float *above = gl->kind == 1 ? &k_m1f : &k_1f;

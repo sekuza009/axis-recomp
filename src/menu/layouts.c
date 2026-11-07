@@ -23,8 +23,9 @@ static void rect_spec(u32 rec, u32 end, int step, const RArg *a)
 	}
 }
 
-/* a column of buttons 0x78 wide at y 0x104 .. 0x124, 0xa0 apart from x */
-static void rects_column(u32 rec, u32 end, int x)
+/* a row of buttons at a fixed place: 0x78 wide at y 0x104 .. 0x124, 0xa0 apart from x (the notices' and the host-error
+   box's OK / CANCEL) */
+static void rects_fixedRow(u32 rec, u32 end, int x)
 {
 	for (; rec < end; rec += 16, x += 0xa0)
 		rect_set(x, 0x104, x + 0x78, 0x124, (int *)RELOC(rec));
@@ -56,7 +57,8 @@ static void options_panel(u32 rec, u32 rec2, u32 gx, u32 gy, u32 gx2)
 			rect1(rec2 + k * 16, gx2, q[k][0], gy, q[k][1], gx2, q[k][2], gy, q[k][3]);
 }
 
-/* the ARM CENTER's layout origin (x, y, right, bottom) and its tab rows (3 tabs 0x64 apart, two rows) */
+/* the ARM CENTER's layout origin (x, y, right, bottom) and the rects every page shares: its three tabs at the top, then the OK / CANCEL pair at the
+   bottom (0x64 apart) */
 #define AX ADDR(g_armcPageLeft)
 #define AY ADDR(g_armcPageTop)
 #define AX2 ADDR(g_armcPageRight)
@@ -69,9 +71,9 @@ static void armc_tabs(u32 rec)
 	rect_spec(rec + 3 * 16, rec + 5 * 16, 0x64, b);     /* .. then two */
 }
 
-void (arenaUpdateNotice_layout)(void) { rects_column(OBJ(g_arenaCreateRects), OBJ(g_arenaCreateRects) + 2 * 16, 0xb4); }
+void (arenaUpdateNotice_layout)(void) { rects_fixedRow(OBJ(g_arenaCreateRects), OBJ(g_arenaCreateRects) + 2 * 16, 0xb4); }
 
-void (updateNotice_layout)(void) { rects_column(OBJ(g_updateNoticeRects), OBJ(g_updateNoticeRects) + 2 * 16, 0xb4); }
+void (updateNotice_layout)(void) { rects_fixedRow(OBJ(g_updateNoticeRects), OBJ(g_updateNoticeRects) + 2 * 16, 0xb4); }
 
 void (deleteDialog_layout)(void) { rects_row(OBJ(g_deleteDialogRects), OBJ(g_deleteDialogRects) + 2 * 16, ADDR(g_profileDialogX), ADDR(g_profileDialogY), 0x6e, 0xce, 0x3c, 0x5c, 0x78); }
 
@@ -271,7 +273,7 @@ void (createArena_layout)(void)
 	options_panel(OBJ(g_createArenaRects), 0, ADDR(g_newArenaFormLeft), ADDR(g_newArenaFormTop), ADDR(g_newArenaFormRight));
 	rect_spec((OBJ(g_createArenaRects) + 0x80), (OBJ(g_createArenaRects) + 0xa0), 0xfa, a); rect_spec((OBJ(g_createArenaRects) + 0xa0), (OBJ(g_createArenaRects) + 0xc0), 0xfa, b);
 	options_panel(0, (OBJ(g_createArenaRects) + 0xc0), ADDR(g_newArenaFormLeft), ADDR(g_newArenaFormTop), ADDR(g_newArenaFormRight));
-	rects_column(OBJ(g_createArena2Rects), OBJ(g_createArena2Rects) + 2 * 16, 0xb4);
+	rects_fixedRow(OBJ(g_createArena2Rects), OBJ(g_createArena2Rects) + 2 * 16, 0xb4);
 }
 
 void (profileList_layout)(void)       /* a column: 13 rows 0x14 apart */

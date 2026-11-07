@@ -292,7 +292,7 @@ static int esc_main(Scene *scene)
 			return 1;
 		}
 		escMenu_open(scene, 2, 0);   /* the replay's name typed */
-		chat_textField(0, 0, 16);
+		chat_openTextField(0, 0, 16);
 		return 0;
 	case 3:
 		scene->helpOpen = 1;

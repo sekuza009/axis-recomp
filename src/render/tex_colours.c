@@ -13,18 +13,18 @@ typedef long double X;
 #define TURN k_360f       /* 360 degrees */
 #define TINY k_1em8f       /* 1e-8 */
 
-/* 0x464a70: colour c added to a shape part's vertex colours px (count: the part's vertexCount, img[0x13]), each
+/* 0x464a70: colour c added to a shape part's vertex colours px (count: the part's vertexCount, part[0x13]), each
    channel kept to 255 at most and the alpha to c's at most. Mode 1, or an unlit part (flags bit 1), fills them with c
    instead */
-void (part_addColour)(u8 *px, int mode, const u32 *img, const u8 *c)
+void (part_addColour)(u8 *px, int mode, const u32 *part, const u8 *c)
 {
-	if (mode == 1 || (img[0] & 2)) {
-		for (int i = 0; i < (int)img[0x13]; i++)
+	if (mode == 1 || (part[0] & 2)) {
+		for (int i = 0; i < (int)part[0x13]; i++)
 			((u32 *)px)[i] = *(const u32 *)c;
 		return;
 	}
 	int r = c[0], g = c[1], b = c[2];
-	for (int i = 0; i < (int)img[0x13]; i++, px += 4) {
+	for (int i = 0; i < (int)part[0x13]; i++, px += 4) {
 		int x = px[0] + r, y = px[1] + g, z = px[2] + b;
 		px[0] = (u8)(x > 255 ? 255 : x);
 		px[1] = (u8)(y > 255 ? 255 : y);

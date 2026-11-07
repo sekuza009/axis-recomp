@@ -43,7 +43,7 @@ void (profile_askLogOut)(void) { ask(5, g_logOutDialogX, g_logOutDialogY); }
 void (pilotSelect_page)(void)
 {
 	if (g_frameOpening != 0) {
-		menu_drawFrame(g_pilotSelectLeft, g_pilotSelectTop, g_pilotSelectRight, g_pilotSelectBottom);
+		menu_drawFrameOpening(g_pilotSelectLeft, g_pilotSelectTop, g_pilotSelectRight, g_pilotSelectBottom);
 		return;
 	}
 	if (g_statBarsStale != 0)
@@ -67,14 +67,14 @@ u32 (profile_drawMessageWindow)(void)
 	menu_drawTextureFlipped(X0, Y0, X1, Y1, g_dialogFrameTexture);
 	int button = X0 + (X1 - X0) / 2 - 0x32;
 	set_colour_bits(g_textColour, colour[0], colour[1], colour[2], colour[3]);
-	text_drawBox16(X0, Y0 + 0x20, X1, (const char *)MSG(126, "NAME ALREADY REGISTRED"));
+	text_drawCentredLines16(X0, Y0 + 0x20, X1, (const char *)MSG(126, "NAME ALREADY REGISTRED"));
 	glEnable(GL_TEXTURE_2D);
 	int texture = g_buttonTexture;
 	tex_bind(g_textures->banks[texture / 512], texture % 512);
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 	menu_drawWideButton(button, Y0 + 0x50, button + 0x60, Y0 + 0x70, 1);
 	set_colour_bits(g_textColour, colour[0], colour[1], colour[2], colour[3]);
-	text_drawBox16(button, Y0 + 0x58, button + 0x60, (const char *)MSG(115, "$[0] O K"));
+	text_drawCentredLines16(button, Y0 + 0x58, button + 0x60, (const char *)MSG(115, "$[0] O K"));
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 	return GAME_FN(menu_drawTopRightOrnament, 0x428b50, u32, int, int, int, int)(X0, Y0, X1, Y1);   /* the border */
 #undef X0
@@ -102,7 +102,7 @@ static u32 two_buttons(const TwoButtons *d)
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 	menu_drawTextureFlipped(X0, Y0, X1, Y1, g_dialogFrameTexture);
 	set_colour_bits(g_textColour, panel[0], panel[1], panel[2], panel[3]);
-	text_drawBox16(X0, Y0 + 0x10, X1, (const char *)d->question);
+	text_drawCentredLines16(X0, Y0 + 0x10, X1, (const char *)d->question);
 	for (int k = 0; k < 2; k++) {
 		glEnable(GL_TEXTURE_2D);
 		int texture = g_buttonTexture;
@@ -112,7 +112,7 @@ static u32 two_buttons(const TwoButtons *d)
 		glColor4f(1.0f, 1.0f, 1.0f, k == hovered ? 1.0f : 0.4f);
 		menu_drawWideButton(X0 + k * 0x78 + 0x6e, Y0 + 0x3c, X0 + k * 0x78 + 0xce, Y0 + 0x5c, 1);
 		set_colour_bits(g_textColour, colour[0], colour[1], colour[2], colour[3]);
-		text_drawBox16(X0 + k * 0x78 + 0x6e, Y0 + 0x44, X0 + k * 0x78 + 0xce, (const char *)(MSG(115, "$[0] O K") + k * 0x80));
+		text_drawCentredLines16(X0 + k * 0x78 + 0x6e, Y0 + 0x44, X0 + k * 0x78 + 0xce, (const char *)(MSG(115, "$[0] O K") + k * 0x80));
 	}
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 	return GAME_FN(menu_drawTopRightOrnament, 0x428b50, u32, int, int, int, int)(X0, Y0, X1, Y1);   /* the border */
@@ -173,7 +173,7 @@ u32 (profile_drawNewDialog)(void)
 			menu_drawWideButton(X0 + 0xa0, Y0 + 0x5a, X0 + 0x100, Y0 + 0x7a, 1);
 			set_colour_bits(g_textColour, dim[0], dim[1], dim[2], dim[3]);
 		}
-		text_drawBox16(x + 0xa0, Y0 + 0x62, x + 0x100, (const char *)(MSG(115, "$[0] O K") + k * 0x80));
+		text_drawCentredLines16(x + 0xa0, Y0 + 0x62, x + 0x100, (const char *)(MSG(115, "$[0] O K") + k * 0x80));
 	}
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 	return GAME_FN(menu_drawTopRightOrnament, 0x428b50, u32, int, int, int, int)(X0, Y0, X1, Y1);   /* the border */
@@ -242,15 +242,15 @@ void (profile_drawManagementWindow)(void)
 		int texture = g_buttonTexture;
 		tex_bind(g_textures->banks[texture / 512], texture % 512);
 		menu_drawWideButton(x + 0x28, Y1 - 0x30, x + 0x88, Y1 - 0x10, 1);
-		text_drawBox16(x + 0x28, Y1 - 0x28, x + 0x88, (const char *)(MSG(121, "$[0] NEW") + k * 0x80));
+		text_drawCentredLines16(x + 0x28, Y1 - 0x28, x + 0x88, (const char *)(MSG(121, "$[0] NEW") + k * 0x80));
 	}
 	profileList_drawNames();   /* the pilot list */
 	glEnable(GL_TEXTURE_2D);
 	int texture = g_buttonTexture;
 	tex_bind(g_textures->banks[texture / 512], texture % 512);
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
-	menu_drawSmallButton3(X0 + 0xe0, Y0 + 0x50, X0 + 0xf8, Y0 + 0x80, hovered == 5);
-	menu_drawSmallButton4(X0 + 0xe0, Y0 + 0xb4, X0 + 0xf8, Y0 + 0xe4, hovered != 5 && hovered == 6);
+	menu_drawUpArrow(X0 + 0xe0, Y0 + 0x50, X0 + 0xf8, Y0 + 0x80, hovered == 5);
+	menu_drawDownArrow(X0 + 0xe0, Y0 + 0xb4, X0 + 0xf8, Y0 + 0xe4, hovered != 5 && hovered == 6);
 	glDisable(GL_TEXTURE_2D);
 	profile_drawChosenPilot();   /* the details */
 	if (PAGE == 1)
@@ -442,7 +442,7 @@ text_draw8(X0 + 0x184, Y0 + 0x48, PILOT(g_pilot)->name);
 		menu_drawWideButton(bx + 0xaa, Y1 - 0x40, bx + 0x122, Y1 - 0x20, 1);
 		const u32 *colour = lit ? panel : dim;
 		set_colour_bits(g_textColour, colour[0], colour[1], colour[2], colour[3]);
-		text_drawBox16(bx + 0xaa, Y1 - 0x38, bx + 0x122, (const char *)(MSG(115, "$[0] O K") + k * 0x80));
+		text_drawCentredLines16(bx + 0xaa, Y1 - 0x38, bx + 0x122, (const char *)(MSG(115, "$[0] O K") + k * 0x80));
 	}
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 	menu_drawCornerOrnaments(X0, Y0, X1, Y1);

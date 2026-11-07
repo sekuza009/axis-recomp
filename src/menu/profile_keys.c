@@ -33,7 +33,7 @@ static int dialog_keys(int x, int y)
 }
 
 /* 0x44c850: page 2 (the new pilot's name) keys: only while its message is up (g_profileMessage, NAME ALREADY
-   REGISTRED): a click or OK closes it and the name is typed again (profile_typeNewName) */
+   REGISTRED): Enter (g_keyClick) or O (g_keyOk) closes it and the name is typed again (profile_typeNewName) */
 void (profile_messageKeys)(void)
 {
 	g_menuRepeatClock = 0.0f;

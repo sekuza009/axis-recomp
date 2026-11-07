@@ -13,7 +13,8 @@ static void set_box(u32 box, int left, int top, int right, int bottom)
 	b[3] = bottom;
 }
 
-/* the cursor, the picked field and the key repeat of a dialog cleared */
+/* a dialog opened: the room's state set to it, its frame opening (g_frameOpening 1), the login typing flags, the hidden
+   line and the open text field cleared */
 static void dialog_opened(int state)
 {
 	g_roomState = state;
@@ -56,7 +57,7 @@ void (room_openLogin)(void)
 	strcpy(g_accountName, g_ladderId);
 }
 
-/* 0x433590: the game list page (state 1) entered: brightness 0.7, the list merged every 30 (1/60 s: half a second), no panel (999), the
+/* 0x433590: the game list page (state 1) entered: g_unusedRoomFloat 0.7 (never read), the list merged every 30 (1/60 s: half a second), no panel (999), the
    rest cleared */
 void (room_enterGameList)(void)
 {
@@ -85,7 +86,7 @@ u32 (room_keysByState)(void)
 	case 2:
 		if (dialog)
 			return (u32)dialog;
-		return g_mapListOpen ? mapList_keys() : room_settingsAfterTyping();
+		return g_mapListOpen ? mapList_keys() : roomSettings_keys();
 	case 4: return dialog ? (u32)dialog : ranking_keys();
 	case 66: return g_roomUpdateNotice == 1 ? roomUpdateNotice_keys() : roomLogin_keys();
 	case 77: return newIdForm_keys();
@@ -145,7 +146,7 @@ u32 (newIdForm_clicks)(void)
 /* 0x434dd0: joining session i of the list: its DirectPlay connection (dplay_openConnection) and the join (dplay_listSessions); a failure
    shows message 0x3f or 0x40 and stops the search; on success the join's wait starts (timer 0x378, 2 s, its id
    kept). Returns what the original leaves in eax */
-u32 (room_joinSession)(int i)
+u32 (room_joinListed)(int i)
 {
 	g_roomJoinStarted = 0;
 	if (!dplay_openConnection(0, g_sessionList[i].address)) {
@@ -168,7 +169,7 @@ u32 (room_joinSession)(int i)
 
 /* 0x434d00: the game room's list opened: its state reset, the session list cleared, the request for the server's
    room list sent (message 0x13, 0x65 bytes), the refresh period 30 (1/60 s). Returns 1 */
-int (gameList_open)(void)
+int (gameList_refresh)(void)
 {
 	g_connectionAwaited = 1;
 	g_hostAnswer = 2;
@@ -216,8 +217,8 @@ u32 (arena_joinListed)(int i)
 	return timer;
 }
 
-/* 0x436800: the game room's clicks, by state (g_roomState), as room_keysByState does the keys (state 1: the stop button
-   while a join is waited for, g_joinConnecting). Returns what the handler leaves in eax */
+/* 0x436800: the game room's clicks, by state (g_roomState), as room_keysByState does the keys (state 1: the CONNECTING box's
+   CANCEL while a join is waited for, g_joinConnecting: gameList_stopJoin). Returns what the handler leaves in eax */
 u32 (room_clicksByState)(void)
 {
 	u32 state = (*(u32 *)&g_roomState);
@@ -291,8 +292,8 @@ u32 (roomSettings_page)(void)
 	if (mode == 1 || mode == 0 || g_roomState == 0x63)
 		return (u32)mode;
 	if (g_frameOpening)
-		return menu_drawFrame(g_roomFormLeft, g_roomFormTop,
-		                                                     g_roomFormRight, g_roomFormBottom);   /* menu_drawFrame */
+		return menu_drawFrameOpening(g_roomFormLeft, g_roomFormTop,
+		                                                     g_roomFormRight, g_roomFormBottom);   /* menu_drawFrameOpening */
 	signed char players = g_roomRecMaxPlayers;
 	if (players < 0 || players > 0x10)
 		(*(u8 *)&g_roomRecMaxPlayers) = 8;
@@ -351,8 +352,8 @@ static void highlight_choice(int choice, int x, int y)
    the password opened again), the login to send (g_loginToSend); once typing has ended (g_textFieldOpen clear), the line taken
    into the ID (g_typingLoginId; 30 bytes at g_accountForm) or password (g_typingLoginPassword; 12 at g_accountPassword) and the key that
    ended it (g_fieldStep: 10 back, 20 on) moving to the other field or the dialog's buttons; else the server's answer
-   to the request (g_gameServerAnswer, awaited: g_roomRequestOut): 33 accepted (state 99, the settings written and taken), 42 done
-   (g_roomUpdateNotice), 31 / 32 / 34 a message (31 / 32 / 35), anything else message 42 */
+   to the request (g_gameServerAnswer, awaited: g_roomRequestOut): 33 accepted (state 99, the settings written and taken), 42 the
+   program out of date (the update notice, g_roomUpdateNotice), 31 / 32 / 34 a message (31 / 32 / 35), anything else message 42 */
 void (roomLogin_update)(void)
 {
 	if (g_retypePassword) {
@@ -530,7 +531,7 @@ u32 (newIdConfirm_update)(void)
 }
 
 /* 0x437810: the ranking page's keys: S cancels the request out (g_rankingWaiting; the page and
-   sort put back); C, with no request out, closes the page (g_roomCameraMode 0); Esc, with none out, leaves the screen. Returns what the
+   sort put back); C, with no request out, closes the page (g_roomCameraMode 0); Esc, with none out, closes the page too (the list's flags left). Returns what the
    original leaves in eax */
 u32 (ranking_keys)(void)
 {
@@ -565,7 +566,7 @@ u32 (ranking_keys)(void)
 	return r;
 }
 
-/* 0x4334c0: the account page (state 0) entered: the account fields and their flags cleared (brightness 0.7), and the
+/* 0x4334c0: the account page (state 0) entered: the account fields and their flags cleared (g_unusedRoomFloat 0.7, never read), and the
    account's details asked for: the logged-in ID (g_ladderId, 30 bytes) as message 0x1d, the server awaited.
    Returns net_send's eax */
 u32 (room_enterAccountPage)(void)
@@ -608,7 +609,7 @@ u32 (newIdForm_draw)(void)
 #define X1 g_newIdFormRight
 #define Y1 g_newIdFormBottom
 	if (g_frameOpening)
-		return menu_drawFrame(X0, Y0, X1, Y1);   /* the frame */
+		return menu_drawFrameOpening(X0, Y0, X1, Y1);   /* the frame */
 	const u32 *bright = ((u32 *)g_roomBright), *dim = ((u32 *)g_roomDim);
 	int hovered = newIdForm_hitTest(g_mouseX, g_mouseY);
 	gfx_setProjection2D3D(2);
@@ -644,7 +645,7 @@ u32 (newIdForm_draw)(void)
 		glColor4f(1.0f, 1.0f, 1.0f, hovered == k + 4 ? 1.0f : 0.4f);
 		menu_drawLargeButton(X0 + x + 0x5a, Y1 - 0x40, X0 + x + 0xfa, Y1 - 0x20, 1);
 		set_colour_bits(g_textColour, colour[0], colour[1], colour[2], colour[3]);
-		text_drawBox16(X0 + x + 0x5a, Y1 - 0x38, X0 + x + 0xfa, (const char *)(MSG(115, "$[0] O K") + k * 0x80));
+		text_drawCentredLines16(X0 + x + 0x5a, Y1 - 0x38, X0 + x + 0xfa, (const char *)(MSG(115, "$[0] O K") + k * 0x80));
 	}
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 	return menu_drawCornerOrnaments(X0, Y0, X1, Y1);   /* the border */
@@ -666,8 +667,8 @@ static void update_notice(void)
 	set_colour_bits(g_rectColour, 0, 0x3f800000, 0x3f800000, 0x3f800000);
 	menu_drawRect(0x68, 0xb8, 0x218, 0x13c, 0);
 	set_colour_bits(g_textColour, 0x3f800000, 0x3f800000, 0x3f800000, 0x3f800000);
-	text_drawBox16(0x64, 0xc8, 0x21c, (const char *)MSG(3, "THIS PROGRAM HAS BEEN UPDATED"));
-	text_drawBox16(0x64, 0xdc, 0x21c, (const char *)MSG(4, "DO DOWNLOAD A NEW VERSION"));
+	text_drawCentredLines16(0x64, 0xc8, 0x21c, (const char *)MSG(3, "THIS PROGRAM HAS BEEN UPDATED"));
+	text_drawCentredLines16(0x64, 0xdc, 0x21c, (const char *)MSG(4, "DO DOWNLOAD A NEW VERSION"));
 	for (int k = 0; k < 2; k++) {
 		glEnable(GL_TEXTURE_2D);
 		int texture = g_buttonTexture;
@@ -679,7 +680,7 @@ static void update_notice(void)
 			set_colour_bits(g_textColour, 0, 0x3f800000, 0x3f800000, 0x3f800000);
 		else
 			set_colour_bits(g_textColour, 0x3e99999a, 0x3f333333, 0x3f333333, 0x3f800000);   /* 0.3, 0.7, 0.7, 1 */
-		text_drawBox16(x, 0x10c, x + 0x78, (const char *)(MSG(115, "$[0] O K") + k * 0x80));
+		text_drawCentredLines16(x, 0x10c, x + 0x78, (const char *)(MSG(115, "$[0] O K") + k * 0x80));
 	}
 }
 
@@ -694,7 +695,7 @@ u32 (newIdConfirm_draw)(void)
 #define X1 (g_newIdConfirmBox[2])
 #define Y1 (g_newIdConfirmBox[3])
 	if (g_frameOpening)
-		return menu_drawFrame(X0, Y0, X1, Y1);   /* menu_drawFrame */
+		return menu_drawFrameOpening(X0, Y0, X1, Y1);   /* menu_drawFrameOpening */
 	const u32 *bright = ((u32 *)g_roomBright), *dim = ((u32 *)g_roomDim);
 	int hovered = newIdConfirm_hitTest(g_mouseX, g_mouseY);
 	gfx_setProjection2D3D(2);
@@ -711,9 +712,9 @@ u32 (newIdConfirm_draw)(void)
 	set_colour_bits(g_rectColour, 0, 0x3f800000, 0, 0x3f800000);
 	menu_drawRect(X0 + 0x30, Y0 + 0x40, X1 - 0x30, Y0 + 0x60, 0);
 	set_colour_bits(g_textColour, 0x3f800000, 0x3f800000, 0, 0x3f800000);
-	text_drawBox16(X0 + 0x30, Y0 + 0x48, X1 - 0x30, g_accountName);
+	text_drawCentredLines16(X0 + 0x30, Y0 + 0x48, X1 - 0x30, g_accountName);
 	set_colour_bits(g_textColour, bright[0], bright[1], bright[2], bright[3]);
-	text_drawBox16(X0, Y0 + 0x8c, X1, (const char *)MSG(352, "NEW ID ON REGISTRATION"));
+	text_drawCentredLines16(X0, Y0 + 0x8c, X1, (const char *)MSG(352, "NEW ID ON REGISTRATION"));
 	for (int k = 0; k < 2; k++) {
 		glEnable(GL_TEXTURE_2D);
 		int texture = g_buttonTexture;
@@ -723,7 +724,7 @@ u32 (newIdConfirm_draw)(void)
 		menu_drawWideButton(x + 0x64, Y1 - 0x40, x + 0xdc, Y1 - 0x20, 1);
 		const u32 *colour = hovered == k ? bright : dim;
 		set_colour_bits(g_textColour, colour[0], colour[1], colour[2], colour[3]);
-		text_drawBox16(x + 0x64, Y1 - 0x38, x + 0xdc, (const char *)(MSG(354, "$[0] O K") + k * 0x80));
+		text_drawCentredLines16(x + 0x64, Y1 - 0x38, x + 0xdc, (const char *)(MSG(354, "$[0] O K") + k * 0x80));
 	}
 	if (g_roomUpdateNotice)
 		update_notice();
@@ -748,7 +749,7 @@ u32 (roomLogin_draw)(void)
 #define X1 g_roomLoginRight
 #define Y1 g_roomLoginBottom
 	if (g_frameOpening)
-		return menu_drawFrame(X0, Y0, X1, Y1);   /* menu_drawFrame */
+		return menu_drawFrameOpening(X0, Y0, X1, Y1);   /* menu_drawFrameOpening */
 	const u32 *bright = ((u32 *)g_roomBright), *dim = ((u32 *)g_roomDim);
 	int hovered = roomLogin_hitTest(g_mouseX, g_mouseY);
 	gfx_setProjection2D3D(2);
@@ -785,14 +786,14 @@ u32 (roomLogin_draw)(void)
 		menu_drawWideButton(x + 0x30, Y1 - 0x40, x + 0xa8, Y1 - 0x20, 1);
 		const u32 *colour = lit ? bright : dim;
 		set_colour_bits(g_textColour, colour[0], colour[1], colour[2], colour[3]);
-		text_drawBox16(x + 0x30, Y1 - 0x38, x + 0xa8, (const char *)(MSG(334, "LOG$[0] IN") + k * 0x80));
+		text_drawCentredLines16(x + 0x30, Y1 - 0x38, x + 0xa8, (const char *)(MSG(334, "LOG$[0] IN") + k * 0x80));
 	}
 	if (g_roomRequestOut) {
 		set_colour_bits(g_rectColour, 0x3e4ccccd, 0x3e4ccccd, 0x3f333333, 0x3f333333);   /* 0.2, 0.2, 0.7, 0.7 */
 		menu_drawRect(0x64, 0xc8, 0x21c, 0x140, 1);
 		set_colour_bits(g_textColour, 0x3f800000, 0x3f800000, 0, 0x3f800000);
-		text_drawBox16(0x69, 0xdc, 0x217, (const char *)MSG(49, "CHECKING YOUR ID. PLEASE WAIT."));
-		text_drawBox16(0x69, 0xf4, 0x217, (const char *)MSG(50, "PRESS ESC-KEY TO CANCEL"));
+		text_drawCentredLines16(0x69, 0xdc, 0x217, (const char *)MSG(49, "CHECKING YOUR ID. PLEASE WAIT."));
+		text_drawCentredLines16(0x69, 0xf4, 0x217, (const char *)MSG(50, "PRESS ESC-KEY TO CANCEL"));
 	}
 	if (g_roomUpdateNotice)
 		update_notice();
@@ -849,8 +850,8 @@ void (account_drawPanel)(void)
 		set_colour_bits(g_rectColour, 0x3e4ccccd, 0x3e4ccccd, 0x3f333333, 0x3f333333);   /* 0.2, 0.2, 0.7, 0.7 */
 		menu_drawRect(0x50, 0xc8, 0x230, 0x118, 1);
 		set_colour_bits(g_textColour, 0x3f800000, 0x3f800000, 0, 0x3f800000);
-		text_drawBox16(0x50, 0xdc, 0x230, (const char *)MSG(423, "DOWNLOADING RANKING DATA"));
-		text_drawBox16(0x50, 0xf0, 0x230, (const char *)MSG(50, "PRESS ESC-KEY TO CANCEL"));
+		text_drawCentredLines16(0x50, 0xdc, 0x230, (const char *)MSG(423, "DOWNLOADING RANKING DATA"));
+		text_drawCentredLines16(0x50, 0xf0, 0x230, (const char *)MSG(50, "PRESS ESC-KEY TO CANCEL"));
 		return;
 	}
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
@@ -919,7 +920,7 @@ void (account_drawPanel)(void)
 		menu_drawWideButton(x + 0x7d, Y1 - 0x30, x + 0xf5, Y1 - 0x10, 1);
 		const u32 *colour = lit ? bright : dim;
 		set_colour_bits(g_textColour, colour[0], colour[1], colour[2], colour[3]);
-		text_drawBox16(x + 0x7d, Y1 - 0x28, x + 0xf5, (const char *)(MSG(115, "$[0] O K") + k * 0x80));
+		text_drawCentredLines16(x + 0x7d, Y1 - 0x28, x + 0xf5, (const char *)(MSG(115, "$[0] O K") + k * 0x80));
 	}
 	set_colour_bits(g_rectColour, 0, 0x3f800000, 0x3f800000, 0x3f800000);
 	menu_drawLine(X0 + 0x10, Y1 - 0x40, X1 - 0x10, Y1 - 0x40);
@@ -961,8 +962,8 @@ u32 (ranking_drawTable)(void)
 	int texture = g_buttonTexture;
 	tex_bind(g_textures->banks[texture / 512], texture % 512);
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
-	menu_drawSmallButton1(X0 + 0xb0, Y0 + 0x26, X0 + 0xe4, Y0 + 0x3e, hovered == 0);
-	menu_drawSmallButton2(X0 + 0x146, Y0 + 0x26, X0 + 0x17a, Y0 + 0x3e, hovered != 0 && hovered == 1);
+	menu_drawLeftArrow(X0 + 0xb0, Y0 + 0x26, X0 + 0xe4, Y0 + 0x3e, hovered == 0);
+	menu_drawRightArrow(X0 + 0x146, Y0 + 0x26, X0 + 0x17a, Y0 + 0x3e, hovered != 0 && hovered == 1);
 	glColor4f(1.0f, 1.0f, 1.0f, 0.7f);
 	char page[64], last[64];
 	int first = g_rankingPage * 10 + 1;
@@ -974,7 +975,7 @@ u32 (ranking_drawTable)(void)
 	strcat(page, last);
 	menu_drawWideButton(X0 + 0xe6, Y0 + 0x24, X0 + 0x146, Y0 + 0x40, 1);
 	text_drawCentred8(X0 + 0xe6, Y0 + 0x2a, X0 + 0x146, page);
-	text_drawBox16(X1 - 0x78, Y0 + 0x10, X1 - 0x14, (const char *)MSG(412, "OPTION"));
+	text_drawCentredLines16(X1 - 0x78, Y0 + 0x10, X1 - 0x14, (const char *)MSG(412, "OPTION"));
 	glEnable(GL_TEXTURE_2D);
 	texture = g_buttonTexture;
 	tex_bind(g_textures->banks[texture / 512], texture % 512);
@@ -1064,13 +1065,13 @@ u32 (ranking_drawTable)(void)
 			TEXT(bright);
 		else
 			TEXT(dim);
-		text_drawBox16(x + 0x7d, Y1 - 0x28, x + 0x11d, (const char *)(MSG(421, "$[0] STOP") + k * 0x80));
+		text_drawCentredLines16(x + 0x7d, Y1 - 0x28, x + 0x11d, (const char *)(MSG(421, "$[0] STOP") + k * 0x80));
 	}
 	if (g_rankingWaiting) {   /* loading: blinking in ten steps */
 		int step = ftol(fmul_m(fld_m((const float *)ADDR(g_lobbyBlinkClock)), k_0_333333f)) % 10;
 		float alpha = f32(fsubr_m(fmul_m((long double)step, (const float *)ADDR(k_tenthsToDegrees)), (const float *)ADDR(k_1f)));
 		set_colour_bits(g_textColour, 0, 0x3f800000, 0, BITS(alpha));
-		text_drawBox16(X0, Y0 + 0xc8, X1, (const char *)MSG(423, "DOWNLOADING RANKING DATA"));
+		text_drawCentredLines16(X0, Y0 + 0xc8, X1, (const char *)MSG(423, "DOWNLOADING RANKING DATA"));
 	}
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 	return menu_drawCornerOrnaments(X0, Y0, X1, Y1);   /* the border */
@@ -1081,8 +1082,8 @@ u32 (ranking_drawTable)(void)
 #undef Y1
 }
 
-/* the Ladder login dialog closed, back to the room's page 99 (keys blocked, the room's state 300) */
-static void creategame_close(void)
+/* the Ladder login left for the main menu (screen 300; the camera's move 4 blocking keys, g_roomState 99) */
+static void roomLogin_leave(void)
 {
 	menuCamera_setMove(4);
 	g_roomState = 99;
@@ -1107,7 +1108,7 @@ void (roomLogin_keys)(void)
 			g_roomLoginDue = 0;
 			g_inputLineHidden = 0;
 			g_textFieldOpen = 0;
-			creategame_close();
+			roomLogin_leave();
 			g_pointerGliding = 0;
 			net_disconnect();
 		}
@@ -1127,7 +1128,7 @@ void (roomLogin_keys)(void)
 		if (on == 3) {
 			sound_playMenu(0);
 			g_textFieldOpen = 0;
-			creategame_close();
+			roomLogin_leave();
 			g_inputLineHidden = 0;
 			g_pointerGliding = 0;
 			net_disconnect();
@@ -1154,7 +1155,7 @@ void (roomLogin_keys)(void)
 			return;
 		g_inputLineHidden = 0;
 		sound_playMenu(0);
-		creategame_close();
+		roomLogin_leave();
 		return;
 	}
 	if (input_justPressed(g_dikN) == 1) {

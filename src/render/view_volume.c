@@ -63,7 +63,7 @@ void THISCALL (ViewVolume_addSegment)(u8 *vv, const u32 *colour, const float *p,
 
 /* a quad record's fields besides its points: the texture id, two uv pairs (when it has a texture), the colour and its
    kind */
-static void quad_fields(float *r, int id, const u32 *uv0, const u32 *uv1, const u32 *colour, u32 extra)
+static void quad_fields(float *r, int id, const u32 *uv0, const u32 *uv1, const u32 *colour, u32 kind)
 {
 	((ViewQuad *)r)->texture = id;
 	if (id >= 0) {
@@ -73,7 +73,7 @@ static void quad_fields(float *r, int id, const u32 *uv0, const u32 *uv1, const 
 		BITS(((ViewQuad *)r)->uv1[1]) = uv1[1];
 	}
 	((ViewQuad *)r)->colour = *colour;
-	((ViewQuad *)r)->kind = (int)extra;
+	((ViewQuad *)r)->kind = (int)kind;
 }
 
 /* whether the quad's four clip-space points (from r + 6) are all outside one plane */
@@ -85,8 +85,9 @@ static int quad_outside(const float *r)
 	return all_outside(common);
 }
 
-/* 0x4848e0: a quad of four points p (into the 92-byte records of the list at quads) */
-void THISCALL (ViewVolume_addQuad)(u8 *vv, int id, const u32 *uv0, const u32 *uv1, const u32 *colour, const float *p, u32 extra,
+/* 0x4848e0: a quad of four points p (into the 92-byte records of the list at quads; kind 2 depth-sorted, 3 drawn
+   last) */
+void THISCALL (ViewVolume_addQuad)(u8 *vv, int id, const u32 *uv0, const u32 *uv1, const u32 *colour, const float *p, u32 kind,
                            int flag)
 {
 	float *r = next_record(vv, 0x9070, 0x909c, 92);
@@ -104,14 +105,14 @@ void THISCALL (ViewVolume_addQuad)(u8 *vv, int id, const u32 *uv0, const u32 *uv
 		VV->quadCount--;
 		return;
 	}
-	quad_fields(r, id, uv0, uv1, colour, extra);
+	quad_fields(r, id, uv0, uv1, colour, kind);
 }
 
 /* 0x484ca0: a camera-facing quad at p: p to camera space (the matrix at modelview; x and y rounded, z not), its corners
    (x + A.x, y + A.y), (x + B.x, y + A.y), (x + B.x, y + B.y), (x + A.x, y + B.y) at depth z + dz projected by the
    matrix at projection. Corners 0 and 3 are rounded to floats first, 1 and 2 are not, as in the original */
 void THISCALL (ViewVolume_addBillboard)(u8 *vv, int id, const u32 *uv0, const u32 *uv1, float dz, const u32 *colour, const float *A,
-                           const float *B, const float *p, u32 extra, int flag)
+                           const float *B, const float *p, u32 kind, int flag)
 {
 	float *r = next_record(vv, 0x9070, 0x909c, 92);
 	if (!r)
@@ -137,7 +138,7 @@ void THISCALL (ViewVolume_addBillboard)(u8 *vv, int id, const u32 *uv0, const u3
 		VV->quadCount--;
 		return;
 	}
-	quad_fields(r, id, uv0, uv1, colour, extra);
+	quad_fields(r, id, uv0, uv1, colour, kind);
 }
 
 /* ((a * *ma + b * *mb) + c * *mc) + *t, each product a register times a float from memory */
@@ -262,9 +263,9 @@ static void corner(float *out, const float *m, const float *px, long double y, l
    of the clip volume (through the projection clip times the matrix) is left out. Each queued part goes to the end
    of its material's list (material, or the part's texture; plus one; the volume's 0x1c-byte entries entries, entryCount
    used of entryLimit: full sets entriesFull; a material's first entry is listed at materialOrder, materialCount of them; heads materialHeads,
-   tails materialTails): the part, its colours (from extra, by the part's colourBase), the light factors, the colour (a tint added), the matrix,
+   tails materialTails): the part, its colours (from colours, by the part's colourBase), the light factors, the colour (a tint added), the matrix,
    an extra matrix (multiplied after it; 0 none) */
-void THISCALL (ViewVolume_queueModel)(u8 *view, u8 *model, u32 *extra, const float *matrix, u32 factors, u32 colour, int cull,
+void THISCALL (ViewVolume_queueModel)(u8 *view, u8 *model, u32 *colours, const float *matrix, u32 factors, u32 colour, int cull,
                                          int material, u32 extraMatrix)
 {
 	Model *md = (Model *)model;
@@ -335,7 +336,7 @@ void THISCALL (ViewVolume_queueModel)(u8 *view, u8 *model, u32 *extra, const flo
 			tail[6] = (u32)e;
 		vw->materialTails[list] = (u8 *)e;
 		e[0] = (u32)part;
-		e[1] = extra ? (u32)(extra + sp->colourBase) : 0;
+		e[1] = colours ? (u32)(colours + sp->colourBase) : 0;
 		e[2] = factors;
 		e[3] = colour;
 		e[4] = (u32)m;

@@ -617,9 +617,9 @@ u32 STDCALL (game_WinMain)(void *inst, void *prev, const char *cmd, int show)
    - WM_PAINT: begun and ended. WM_CLOSE: the DC let go, the arena session left, the network closed, the three
      network timers stopped, the cursor put back, the window destroyed.
    - WM_DESTROY: the screen saver back on, the DC and the chat line let go, the cursor shown, the game quits; then,
-     by the exit mode (g_exitCode): 0 the start mode 0 and the data files spoilt (and g_gameRunning cleared), 1 the start
-     mode 1 and AxisGL.exe started again, 2 / 3 the start mode 0, the files spoilt and axispatch.exe ("nstower") /
-     DServer.exe started, 99 the files spoilt and the ending movie; the process ends.
+     by the exit mode (g_exitCode): 0 the start mode 0 and the launcher's marks invalidated (app_invalidateLauncherMarks; and g_gameRunning cleared), 1 the start
+     mode 1 and AxisGL.exe started again, 2 / 3 the start mode 0, the marks invalidated and axispatch.exe ("nstower") /
+     DServer.exe started, 99 the marks invalidated and the ending movie; the process ends.
    - WM_ACTIVATEAPP: the activation kept (g_unusedActive). As the installed exe has it (cursorfix.py, through 0x44037c ->
      0x4a8ec1): the Windows cursor hidden while active and shown while not (counted down / up until it is), and the
      window restored when the game comes back (borderless); then (widefix.py's handler at 0x4a8ecb) a display mode
@@ -702,7 +702,7 @@ long STDCALL (game_wndProc)(void *wnd, u32 msg, u32 w, u32 l)
 		switch (g_exitMode) {
 		case 0:
 			reg_writeStartMode(0);   /* reg_writeStartMode */
-			app_spoilDataFiles();   /* app_spoilDataFiles */
+			app_invalidateLauncherMarks();   /* app_invalidateLauncherMarks */
 			g_gameRunning = 0;
 			ExitProcess(0);
 			return 0;
@@ -713,18 +713,18 @@ long STDCALL (game_wndProc)(void *wnd, u32 msg, u32 w, u32 l)
 			return 0;
 		case 2:
 			reg_writeStartMode(0);
-			app_spoilDataFiles();
+			app_invalidateLauncherMarks();
 			ShellExecuteA(NULL, (const char *)STR(0x4b2a5c, "open"), (const char *)STR(0x4b2a44, "axispatch.exe"), (const char *)STR(0x4b2a54, "nstower"), NULL, 10);
 			ExitProcess(0);
 			return 0;
 		case 3:
 			reg_writeStartMode(0);
-			app_spoilDataFiles();
+			app_invalidateLauncherMarks();
 			ShellExecuteA(NULL, (const char *)STR(0x4b2a5c, "open"), (const char *)STR(0x4b2a38, "DServer.exe"), (const char *)STR(0x4b13ec, "1"), NULL, 10);
 			ExitProcess(0);
 			return 0;
 		case 99:
-			app_spoilDataFiles();
+			app_invalidateLauncherMarks();
 #ifdef AXIS_NATIVE
 			platform_playMovie(NULL, (const char *)STR(0x4b2a24, "initdata/battle.sra"), g_desktopWidth, g_desktopHeight);   /* movie_playEnding's replacement (standalone/platform.c) */
 #elif defined(AXIS_DIRECT)

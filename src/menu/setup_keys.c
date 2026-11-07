@@ -45,8 +45,8 @@ static void leave(void)
 	shared_emptyFunction(NULL);
 }
 
-/* 0x422b70: the top page: a tab key opens its tab; the back key (when a tunnel ring is behind: g_tunnelRings > 0) or the leave key goes
-   back to the main menu */
+/* 0x422b70: the top page's keys: S opens the sound tab, G the graphics tab, C (g_keyBack) the controls tab; Esc
+   (g_keyCancel2, when a tunnel ring is behind: g_tunnelRings > 0) or X goes back to the main menu */
 void (setup_topPageKeys)(void)
 {
 	if (input_justPressed(g_keyCancel2) && g_tunnelRings > 0) {
@@ -95,7 +95,8 @@ void (setup_soundTabKeys)(void)
 }
 
 /* the graphics tab's OK: the edited values taken and axis.cfg written; if the four that need a restart changed
-   (all but the third and the last two), the front end is told (message 1) instead of closing the page. Returns the
+   (all but the third and the last two), the game's window is closed with exit code 1 (app_closeWindow: a restart)
+   instead of closing the page. Returns the
    last call's eax */
 static u32 graphics_apply(void)
 {
@@ -131,7 +132,7 @@ static void with_page(void (*draw)(void), const int frame[4])
 	if (g_frameOpening == 0)
 		draw();
 	else
-		menu_drawFrame(frame[0], frame[1], frame[2], frame[3]);
+		menu_drawFrameOpening(frame[0], frame[1], frame[2], frame[3]);
 }
 
 static void page_sound(void) { setup_drawSoundPage(); }
@@ -374,7 +375,7 @@ void (setup_soundTabClicks)(void)
 
 /* 0x422e10: the controls tab's keys. F1 (g_dikF1) only gives a sound. While a row waits: cancel stops waiting, any
    other key (codes 2 .. 0xdd) is bound to it. Otherwise: fire selects (row 10 toggles), up / down move along the
-   page's rows, four keys pick the page, OK takes the bindings (the copy at g_controlsEdit into g_keyForward, axis.cfg read)
+   page's rows, four keys pick the page, OK takes the bindings (the copy at g_controlsEdit into g_controls, axis.cfg written)
    and closes, back or cancel closes, g_dikD puts the defaults back (the original leaves eax to callers that
    ignore it) */
 void (setup_controlTabKeys)(void)
@@ -451,7 +452,7 @@ void (setup_controlTabKeys)(void)
 
 /* 0x422830: the controls tab's mouse (an open page, no message box). While a row waits for its key, a right click,
    the wheel (up g_dikWheelUp, down g_dikWheelDown) or a click binds that button to it; otherwise a right click closes the page
-   (and goes on). A click picks a page (0 .. 3), OK (the bindings at g_controlsEdit kept in g_keyForward, axis.cfg read; the
+   (and goes on). A click picks a page (0 .. 3), OK (the bindings at g_controlsEdit copied into g_controls, axis.cfg written; the
    page closed), close, the defaults; on page 3 rows 7 / 8 toggle their setting (0x4de1c0 / 0x4de1c4), 9 drags the
    slider and 10 / 11 step g_crosshairEdit (0 .. 7); any other row control with a row selected makes it wait for a key.
    Holding the button on page 3's slider (once the blink clock passes 1) drags it. The original leaves eax to

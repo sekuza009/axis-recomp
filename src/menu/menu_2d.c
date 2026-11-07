@@ -260,7 +260,7 @@ static int phase_done(int next)
    (0, 0, 0.5, 0.3) grows from (x0, y0) by a tenth of the frame a frame, and once it is as wide as the frame the
    phase goes back to 1 and the frame-opening flag (g_frameOpening) is cleared. Other phases draw nothing. The callers pass
    on the eax it leaves to menu_frame, which ignores it */
-void (menu_drawFrame)(int x0, int y0, int x1, int y1)
+void (menu_drawFrameOpening)(int x0, int y0, int x1, int y1)
 {
 	gfx_setProjection2D3D(2);
 	glLoadIdentity();
@@ -320,8 +320,8 @@ u32 (menu_drawMessageBox)(void)
 	Color4_set_bits((void *)OBJ(g_rectColour), 0x3e4ccccd, 0x3e4ccccd, 0x3f333333, 0x3f333333);
 	menu_drawRect(0x50, 0xc8, 0x230, 0x118, 1);
 	Color4_set_bits((void *)OBJ(g_textColour), 0x3f800000, 0x3f800000, 0, 0x3f800000);
-	text_drawBox16(0x69, 0xdc, 0x217, g_messageBoxLine);
-	return text_drawBox16(0x69, 0xf4, 0x217, (const char *)MSG(0, "PRESS ENTER OR CLICK MOUSE"));
+	text_drawCentredLines16(0x69, 0xdc, 0x217, g_messageBoxLine);
+	return text_drawCentredLines16(0x69, 0xf4, 0x217, (const char *)MSG(0, "PRESS ENTER OR CLICK MOUSE"));
 }
 
 /* 0x428890: the text cursor at (x, y), a green bar 7 x 15 menu units, its alpha 1 - a timer (g_cursorBlinkTimer: grows by the

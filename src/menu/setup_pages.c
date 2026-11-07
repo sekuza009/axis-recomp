@@ -94,7 +94,7 @@ void (setup_drawSoundPage)(void)
 		menu_drawWideButton(bx + 0x90, Y0 + 0x113, bx + 0x108, Y0 + 0x133, 1);
 		const u32 *colour = lit ? bright : dim;
 		set_colour_bits(g_textColour, colour[0], colour[1], colour[2], colour[3]);
-		text_drawBox16(bx + 0x90, Y0 + 0x11b, bx + 0x108, (const char *)(MSG(178, "$[0] ACCEPT") + k * 0x80));
+		text_drawCentredLines16(bx + 0x90, Y0 + 0x11b, bx + 0x108, (const char *)(MSG(178, "$[0] ACCEPT") + k * 0x80));
 	}
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 	menu_drawCornerOrnaments(X0, Y0, X1, Y1);
@@ -155,7 +155,7 @@ void (setup_drawGraphicPage)(void)
 		menu_drawWideButton(bx + 0x64, Y1 - 0x40, bx + 0xdc, Y1 - 0x20, 1);
 		const u32 *colour = lit ? bright : dim;
 		set_colour_bits(g_textColour, colour[0], colour[1], colour[2], colour[3]);
-		text_drawBox16(bx + 0x64, Y1 - 0x38, bx + 0xdc, (const char *)(MSG(189, "$[0] ACCEPT") + k * 0x80));
+		text_drawCentredLines16(bx + 0x64, Y1 - 0x38, bx + 0xdc, (const char *)(MSG(189, "$[0] ACCEPT") + k * 0x80));
 	}
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 	menu_drawCornerOrnaments(X0, Y0, X1, Y1);
@@ -216,7 +216,7 @@ static void key_tab(int tab)
    MSG(119, "ON"), off MSG(118, "OFF")), the sensitivity slider (g_sensitivitySlider, its arrows lit while g_setupPressedClock runs down: g_setupArrowPressed 0 /
    1) and the crosshair g_crosshairEdit: when it changed (from g_lastCrosshair) its texture looked up again (0 .. 7: the path
    "texture/crosshair/crosshair<n>"; others keep the path in g_crosshairName) into g_crosshairTexture, drawn in a box */
-static void settings_tab(void)
+static void mouse_tab(void)
 {
 #define X0 g_setupControlLeft
 #define Y0 g_setupControlTop
@@ -232,8 +232,8 @@ static void settings_tab(void)
 	tex_bind(g_textures->banks[texture / 512], texture % 512);
 	glEnable(GL_TEXTURE_2D);
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
-	menu_drawSmallButton1(X0 + 0xc8, Y0 + 0x88, X0 + 0x108, Y0 + 0xa0, 0);   /* the arrows */
-	menu_drawSmallButton2(X0 + 0x1d0, Y0 + 0x88, X0 + 0x210, Y0 + 0xa0, 0);
+	menu_drawLeftArrow(X0 + 0xc8, Y0 + 0x88, X0 + 0x108, Y0 + 0xa0, 0);   /* the arrows */
+	menu_drawRightArrow(X0 + 0x1d0, Y0 + 0x88, X0 + 0x210, Y0 + 0xa0, 0);
 	tex_quad(0.0f, 0.0f, 1.0f, 0.125f, X0 + 0x108, Y0 + 0x88, X0 + 0x1d0, Y0 + 0xa0);   /* the track */
 	long double sensitivity = (long double)g_sensitivitySlider;
 	float s = f32(fmul_m(sensitivity, k_0_01f_4a9504));
@@ -242,9 +242,9 @@ static void settings_tab(void)
 	const float *zero = (const float *)ADDR(k_0f);
 	if (g_setupPressedClock > *zero) {
 		if (g_setupArrowPressed == 0)
-			menu_drawSmallButton1(X0 + 0xc8, Y0 + 0x88, X0 + 0x108, Y0 + 0xa0, 1);
+			menu_drawLeftArrow(X0 + 0xc8, Y0 + 0x88, X0 + 0x108, Y0 + 0xa0, 1);
 		else if (g_setupArrowPressed == 1)
-			menu_drawSmallButton2(X0 + 0x1d0, Y0 + 0x88, X0 + 0x210, Y0 + 0xa0, 1);
+			menu_drawRightArrow(X0 + 0x1d0, Y0 + 0x88, X0 + 0x210, Y0 + 0xa0, 1);
 	}
 	int crosshair = g_crosshairEdit;
 	if (crosshair != g_lastCrosshair) {
@@ -324,7 +324,7 @@ void (setup_drawControlsPage)(void)
 	if (tab >= 0 && tab <= 2)
 		key_tab(tab);
 	else if (tab == 3)
-		settings_tab();
+		mouse_tab();
 	for (int k = 0; k < 3; k++) {
 		glEnable(GL_TEXTURE_2D);
 		int texture = g_buttonTexture;
@@ -335,13 +335,13 @@ void (setup_drawControlsPage)(void)
 		menu_drawWideButton(bx, Y1 - 0x30, bx + 0x78, Y1 - 0x10, 1);
 		const u32 *c = lit ? bright : dim;
 		set_colour_bits(g_textColour, c[0], c[1], c[2], c[3]);
-		text_drawBox16(bx, Y1 - 0x28, bx + 0x78, (const char *)(MSG(209, "$[0] ACCEPT") + k * 0x80));
+		text_drawCentredLines16(bx, Y1 - 0x28, bx + 0x78, (const char *)(MSG(209, "$[0] ACCEPT") + k * 0x80));
 	}
 	set_colour_bits(g_textColour, 0x3f800000, 0x3f800000, 0x3f800000, 0x3f800000);
 	if (over_row && !editing)
-		text_drawBox16(0, 0x1bc, 0x280, (const char *)MSG(212, "Press ENTER or CLICK to change"));
+		text_drawCentredLines16(0, 0x1bc, 0x280, (const char *)MSG(212, "Press ENTER or CLICK to change"));
 	if (editing)
-		text_drawBox16(0, 0x1bc, 0x280, (const char *)MSG(213, "Press NEW-KEY to set |Press ESC to ca..."));
+		text_drawCentredLines16(0, 0x1bc, 0x280, (const char *)MSG(213, "Press NEW-KEY to set |Press ESC to ca..."));
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 	menu_drawCornerOrnaments(X0, Y0, X1, Y1);
 #undef X0
@@ -411,7 +411,7 @@ static void stripes(int right, float h)
 
 /* the panels' pulse bounced between 0 and 100 (by g_tunnelPulseStep a frame; turn_only: only turned round, not clamped there)
    and the stripes scrolled on (g_menuTunnelSpeed a frame, back to 0 at 200) */
-static void tunnel_advance(int turn_only)
+static void tunnel_stepPulseScroll(int turn_only)
 {
 	const float *frame = (const float *)ADDR(g_frameTime);
 	long double pulse = fadd_m(fmul_m(fld_m(frame), (const float *)&g_tunnelPulseStep), &g_tunnelPulse);
@@ -543,7 +543,7 @@ void (setup_drawTunnel)(void)
 		}
 	}
 	glDisable(GL_TEXTURE_2D);
-	tunnel_advance(0);
+	tunnel_stepPulseScroll(0);
 }
 /* the menus' tunnel (the skirmish screen, the mission list, ARM CENTER): four layers of six walls (each under the menu camera,
    pushed back 550 and turned by -40 / 0 / 40, the far three the other way): layer 0 the panels (texture g_menuTunnelTexture,
@@ -698,11 +698,12 @@ static void menu_tunnel(const Tunnel *t, const Highlight *h)
 			(*(u32 *)&g_panelGlowStep) = 0xbf800000;
 		}
 	}
-	tunnel_advance(t->turn_only);
+	tunnel_stepPulseScroll(t->turn_only);
 }
 
 /* 0x448140: the skirmish screen's tunnel; missions_drawTunnel / armc_drawTunnel: the mission list's and ARM CENTER's (the glow
-   clamped); armc_drawPreviewTunnel: the ARM CENTER's deep one (1650 back, its pulse only turned round); room_drawTunnel: the game room's
+   clamped); armc_drawRoomTunnel: the one behind ARM CENTER when it was opened from the game room (g_armcFrom 3; the
+   room's deep look, 1650 back, its pulse only turned round); room_drawTunnel: the game room's
    (as deep as g_roomTunnelDepth). The originals leave eax to callers that ignore it */
 static const Highlight none = { -1, NULL, 0, 0, 0 };
 static const float white[3] = { 1.0f, 1.0f, 1.0f };
@@ -711,7 +712,7 @@ static const float white[3] = { 1.0f, 1.0f, 1.0f };
 void (skirmish_drawTunnel)(void) { static const Tunnel t = { 0xc4098000, OBJ(g_mainMenuTextures) + 12, 0, 0, 0, 0, SIX_WALLS }; menu_tunnel(&t, &none); }
 void (missions_drawTunnel)(void) { static const Tunnel t = { 0xc4098000, OBJ(g_mainMenuTextures) + 12, 0, 0, 1, 0, SIX_WALLS }; menu_tunnel(&t, &none); }
 void (armc_drawTunnel)(void) { static const Tunnel t = { 0xc4098000, OBJ(g_mainMenuTextures) + 12, 0, 0, 1, 0, SIX_WALLS }; menu_tunnel(&t, &none); }
-void (armc_drawPreviewTunnel)(void) { static const Tunnel t = { 0xc4ce4000, OBJ(g_ladderMenuTextures) + 12, 1, 1, 0, 1, SIX_WALLS }; menu_tunnel(&t, &none); }
+void (armc_drawRoomTunnel)(void) { static const Tunnel t = { 0xc4ce4000, OBJ(g_ladderMenuTextures) + 12, 1, 1, 0, 1, SIX_WALLS }; menu_tunnel(&t, &none); }
 void (room_drawTunnel)(void)
 {
 	static const float glow[3] = { 0.5f, 0.1f, 1.0f };   /* (no wall glows: the original compares with -1) */
@@ -733,7 +734,7 @@ static void caption(u32 captions, int on)
 	gfx_setProjection2D3D(2);
 	glLoadIdentity();
 	set_colour_bits(g_textColour, 0x3f800000, 0x3f800000, 0x3f800000, 0x3f800000);
-	text_drawBox16(0, 0x1bc, 0x280, (const char *)(RELOC(captions) + on * 0x80));
+	text_drawCentredLines16(0, 0x1bc, 0x280, (const char *)(RELOC(captions) + on * 0x80));
 }
 
 /* the menu panel under the pointer: the first of count outlines (menu_pointInPolygon's, 0x2c bytes apart from outlines)
@@ -855,7 +856,7 @@ void (mainmenu_drawMenu)(void)
 		glLoadIdentity();
 		float alpha = g_menuHintFade > k_1f ? 1.0f : g_menuHintFade;
 		set_colour_bits(g_textColour, 0x3f800000, 0x3f800000, 0x3f800000, BITS(alpha));
-		text_drawBox16(0, 0x1d0, 0x280, (const char *)STR(0x4b2a98, "AUTOPLAY-F1"));
+		text_drawCentredLines16(0, 0x1d0, 0x280, (const char *)STR(0x4b2a98, "AUTOPLAY-F1"));
 	}
 	glDisable(GL_TEXTURE_2D);
 #undef g_hintStep

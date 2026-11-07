@@ -15,7 +15,7 @@ static void clear(void *p, int dwords)
 
 /* ---- empty methods (their arguments unused) and trivial returns ---- */
 /* 0x45fff0: the empty constructor (mov eax, ecx; ret: returns this) that every class without a constructor body
-   shares (the compiler folded them into one). It is crt_arrayConstruct's element constructor for 18 of Console_ctor's
+   shares (the compiler folded them into one). It is crt_vectorConstructorIterator's element constructor for 18 of Console_ctor's
    arrays (the lights' Factors, sky / layer / side / floor vertices, ground layers, way points, object colours,
    objects, actor items, map actors, bullets, particles, points, starts, items, the flag atlas). It is also called
    directly for the stack actor's five rounds (actor_checkDataLoss) and armc_drawPreview3D's Light's 0x400 entries */
@@ -86,7 +86,7 @@ void THISCALL (stage_deactivateActors)(Stage *stage)
 		actor_deactivate(stage, i);
 }
 /* 0x4723e0: the stage's lights reset */
-int THISCALL (stage_resetLights)(Stage *stage)
+int THISCALL (stage_resetDynamicLights)(Stage *stage)
 {
 	stage->dynamicLightsSet = 0;
 	return Light_clearCounts((u8 *)&stage->dynamicLights);
@@ -342,8 +342,10 @@ void THISCALL (match_resetInputState)(Scene *scene)
 /* ---- the no-CD build (patched to return at once; the original checks are still behind the ret) ---- */
 /* 0x401000: the CD drive found */
 u32 (cd_findDrive)(void) { return 1; }
-/* 0x41e550, 0x41e5b0, 0x41e610, 0x41e670, 0x41e6d0: the data files on the CD (Korean profile, skirmish, game,
-   game data, English profile) found */
+/* 0x41e550, 0x41e5b0, 0x41e610, 0x41e670, 0x41e6d0: the launcher's mark checked in a local data file
+   (initdata\profkor.dat, initdata\skirmish.dat, save\axisgame.dat, game.dat, initdata\profeng.dat): the original
+   reads the dword at offset 2000 and compares it with that file's mark (0xbde31, 0xd9038 .. ), which
+   app_invalidateLauncherMarks overwrites (or deletes the file) at exit. Patched to answer 1 */
 u32 (app_checkFile_profkor)(void) { return 1; }
 u32 (app_checkFile_skirmish)(void) { return 1; }
 u32 (app_checkFile_axisgame)(void) { return 1; }

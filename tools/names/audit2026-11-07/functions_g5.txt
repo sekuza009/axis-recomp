@@ -1,0 +1,234 @@
+GROUP g5: 214 functions; OK 202, RENAME 5, COMMENT 4, PARAMS 3, UNSURE 0; NOT RUN 20
+== src/hud/hud_clock.c
+clock_setColour | OK | code: text colour white, or red blinking off (alpha 0) in the second half of each second when low; run: m2, only from match_drawFrame (inlined hud_drawMatchCounters), per frame
+hud_drawMatchCounters | OK | code: top centre frags still needed by the leader (icon 1) and time left mm:ss (icon 2), red when 1 frag / 10 s left; run: m2 per frame from match_drawFrame (130110) in skirmish + all hosted arenas
+hud_drawMatchResult | OK | code: team games "RED/BLUE TEAM WIN!"/"DRAW GAME!" on a grey band, else "Top Player: name"; run: m2 only in host-h2_1..4 (matches that reached their end), from match_drawFrame when matchOver
+hud_drawRecordIndicator | OK | code: while recording, blinking record icon, mm:ss recorded and "AutoPlay\name" (NOT RUN: Esc menu > RECORD in a multiplayer match, type a file name; match_drawFrame draws it while scene->recording)
+== src/hud/hud_escmenu.c
+esc_itemColour | OK | code: item text yellow-white when selected else grey; run: m2, from hud_drawEscMenu x25028 (same count as esc_item)
+esc_box | OK | code: one menu box 0xe0..0x1a0, 16 high, at y in a grey/alpha (hud_drawMenuBox); run: m2 from hud_drawEscMenu (inlined callers)
+esc_title | OK | code: a page title box + centred white text; run: m2, once per Esc-menu frame (8733 = hud_drawEscMenu count)
+esc_item | OK | code: a main-page item (white box + label, lit when escCursor == item); run: m2 from hud_drawEscMenu
+esc_yesNo | OK | code: YES / NO pair under a question (pages 3 RETRY? / 4 QUIT?) (NOT RUN: Esc > QUIT, or the mission RETRY? page)
+hud_drawEscMenu | OK | code: draws the in-match Esc menu page escPage (main, TEAM, INPUT FILE NAME, RETRY, QUIT), fading in over 0.25 s; run: m2 from match_drawFrame (8733 = escMenu_update count), sessA/arenas/skirmish
+hud_drawMenuBox | OK | code: 9-quad bordered box from menuBoxTexture; run: m2, from esc_item/esc_title/hud_drawEscMenu
+escMenu_open | OK | code: opens the Esc menu on a page with an item selected, timer 0; run: m2 from match_frame (Esc key, 11) and esc_main (5: TEAM/JOIN/QUIT sub-pages)
+esc_mainCursor | OK | code: main page cursor up/down skipping hidden items; run: m2 skirmish x2 (cursor keys on the main page)
+esc_pairCursor | OK | code: two-item page cursor (up 0, down 1); run: m2 x1909, host-h2_2/h2_4/mp/skirmish (team page; same count as esc_team)
+esc_resetScore | OK | code: a team change's cost: Ladder scores committed first, local kills 0, deaths +1 (NOT RUN: in a network team match change from one team to the other, or go SPECTATOR from Esc)
+esc_main | OK | code: main page keys: SPECTATOR/START/JOIN, TEAM, RECORD/STOP, HELP, QUIT; returns 1 when the menu closes; run: m2 from escMenu_update (6333)
+esc_team | OK | code: page 1 RED/BLUE: local team set, joined/changed announced, spawnPending; run: m2 x1909 (TDM h2_2, platoon h2_4, mp, skirmish team game); net_announceJoinedTeam x5 from it agrees
+esc_name | OK | code: page 2: after typing ends, recording starts under the typed name (NOT RUN: Esc > RECORD in multiplayer, type a name, Enter)
+esc_retry | OK | code: page 3 RETRY?: YES resets the clock/camera/music, NO sets quitAsked (NOT RUN: escPage 3 is opened when a mission ends - the mission mode is unused)
+esc_quit | OK | code: page 4 QUIT?: YES sets quitAsked (NOT RUN: Esc > QUIT > Enter; runs were killed, never quit through the menu)
+escMenu_update | OK | code: per-frame Esc-menu key handling once faded in, page dispatch, key sound, escTimer += frameTime; run: m2 from match_frame (8733 frames while open)
+== src/hud/hud_icons.c
+icon_quad | OK | code: one textured quad in screen pixels (y flipped) then texture off; run: m2/m4 from hud_drawIcon / hud_drawFlag
+texel | OK | code: texel count x per-texel to a float tex coord; run: per frame from the icon/flag/counter draws
+hud_drawEmblem | OK | code: grade badge (grade 1..) from the icon atlas, 10 per row from texel 224 (NOT RUN: only called when scene->ladderGame is 1 - main_score, hud_drawPlayerMarkers, ranking_row; play a Ladder (game room) match)
+hud_drawFlag | OK | code: player's 24x16 flag from the map flag texture (solo) or the players' flag atlas; run: m2 skirmish from ranking_row / hud_drawPlayerMarkers
+hud_drawIcon | OK | code: icon n (32x32 cell) from the HUD icon atlas at (x, y-8); run: m2/m4 from match counters, fps, ranking, replay, camera-slot icon
+== src/hud/hud_lockon.c
+lockon_quad | OK | code: vertices of one size x size textured quad (inside glBegin); helper of hud_drawLockOn (NOT RUN: hold a lock-on weapon (targetingTime > 0) on another player so aimTime / lockHeld > 0; same reason main_ring is NOT RUN)
+hud_drawLockOn | OK | code: per other on-screen player, the lock box (lockHeld) or aim box (aimTime); run: m2 per frame via fix_drawLockOn (74754), all arenas + skirmish (drew nothing: no locks in the runs)
+== src/hud/hud_main.c
+wx | OK | code: k HUD units across in pixels (width/640*k, unrounded); run: m2 main_draw/main_energy, per frame
+hy | OK | code: k HUD units down in pixels; run: same
+wf | OK | code: screen width as float; run: main_draw
+hf | OK | code: screen height as float; run: main_draw / main_energy
+tex256 | OK | code: texel/256 rounded to float; run: main_draw, hud_drawMain
+tex255 | OK | code: texel/255 rounded to float; run: main_draw (timers, slot icon) in skirmish / host-h2_3
+main_ring | OK | code: green/red quad-strip ring about the centre sized by detectionAngle, shown while homedOn or holding a targeting weapon (NOT RUN: hold a lock-on weapon (ActorItem.targetingTime > 0), or be homed on in a network game)
+main_counters | OK | code: bottom-left plate with armor and shield digits; run: m2 from main_draw x73880 (every main-HUD frame)
+main_score | OK | code: top-left flag, grade badge, score icon and player->score (NOT RUN: only when scene->ladderGame is 1 - play a Ladder match)
+main_weapons | RENAME -> main_ammo | the four bottom-right cells are the four AMMUNITION kinds, not weapon slots: it loops i 0..3 over player->ammo[i] and lights the cell where player->ammoKind == i (ammoKind = the selected weapon's ActorItem.ammoType; weapon slots go 0..5). Comment "the four weapon slots ... the selected one lit, each with its ammunition" -> "the four ammunition counters (ammo[0..3]: 30MM, 60MM, E-PACK, MISSILE cells, item_pickup's texts), the selected weapon's kind lit"; run: m2 per main-HUD frame
+main_gauge | RENAME -> main_slotIcon | not a gauge: it draws the selected weapon slot's 64x64 cell of the menu box texture (by player->slot) with alpha = slotIconTime, which actor_selectWeapon sets to 2 s at a weapon switch and actor_processFrame counts down (scene.fields already calls it "the selected slot's icon"); run: only 1095 frames, skirmish only = shortly after weapon switches (actor_selectWeapon/actor_nextWeapon ran there). Comment "the gauge ... its alpha the gauge" -> "the selected slot's icon at the bottom centre, fading out with slotIconTime"
+main_timers | OK | code: power-up timers (DAMAGE AMP, CLOAK, BOOSTER, GRAVITY = timers[0..3], stateFlags bit 8+k) icons on the right, seconds once <= 30; run: m2 per main-HUD frame
+main_snapshot | OK | code: the actor type's SnapShot picture at bottom right when not in cockpit view (or spectator camera 2); run: m2 skirmish 10079 frames
+energy_top | OK | code: y of the energy bar's top (optionally cut); run: main_energy
+energy_bottom | OK | code: y of the energy bar's bottom; run: main_energy
+energy_right | OK | code: x of the energy bar's right edge; run: main_energy
+main_energy | OK | code: left booster-energy bar (background, fill coloured by boost/overheat/warning, outline); run: m2 per main-HUD frame
+main_crosshair | OK | code: centre crosshair 64 (72 while firing); run: m2 per main-HUD frame
+main_cornerMark | OK | code: 64-px mark in the top right (king/commander/leader); run: m2 host-h2_3 (KOTH) / h2_4 (platoon) only - agrees
+part | OK | code: tells the wide-screen fix which HUD part is drawn next; run: per HUD part from hud_drawMain / fix_drawMainHud
+main_draw | OK | code: the whole main HUD of the followed player (flashes, ring, counters, score, ammo, slot icon, timers, snapshot, energy, crosshair, corner mark / rank); run: m2 from hud_drawMain
+hud_drawMain | OK | code: main HUD of the local (playing) or watched player, saving/restoring the HUD part; run: m2 via fix_drawMainHud, per frame
+== src/hud/hud_markers.c
+marker_quad | OK | code: textured quad at alpha in screen pixels; run: m2/m4 replay+skirmish from hud_drawPlayerMarkers
+texel256 | OK | code: texel/256 as float; run: m4 replay (inlined into fix_drawPlayerMarkers)
+marker_hudX | OK | code: screen x to 640-wide HUD units; run: name label placement
+marker_hudY | OK | code: screen y to 480-high HUD units; run: same
+marker_big | OK | code: a 64-unit mark standing on a player's point (king/commander/leader); run: m2/m4 skirmish/replay
+hud_drawPlayerMarkers | OK | code: marks over other on-screen players: king/commander, team arrow, leader, name label + badge + flag, chat icon; run: m2/m4 per frame via fix_drawPlayerMarkers
+== src/hud/hud_messages.c
+hud_drawPressFire | OK | code: "Press fire button to start"; run: m2 skirmish only, 1176 frames (local player with a team but not active)
+hud_drawWatchedName | OK | code: watched player's name or "FREE CAMERA"; run: m2 (spectating, playing 0) and m4 replay
+hud_drawCentreNotice | OK | code: restart countdown "READY n"/"START!" or the centred notice text; run: m2 5604 frames (while noticeTimer > 0)
+hud_drawHelp | OK | code: darkened screen with 30 help lines; run: m2 sessA/skirmish (Esc > HELP)
+hud_drawRectOutline | OK | code: GL line-loop rectangle outline in screen pixels; run: m2 from main_energy and hud_drawTeamScores
+== src/hud/hud_overlay.c
+hud_scaleX | OK | code: HUD units to screen pixels across (units * width / 640); run: everywhere in the HUD
+hud_scaleY | OK | code: HUD units to pixels down; run: same
+hud_fillRect | OK | code: filled rectangle in HUD units; run: ranking, message box, chat input, match result
+hud_drawFps | OK | code: fps icon + rate top right; run: m2 via fix_drawFps (g_showFps)
+hud_drawChatInput | OK | code: chat line being typed with blinking "_" cursor; run: m2 while chatMode != 0 (sessA chat cheat codes, mp)
+hud_drawTeamScores | OK | code: two team score boxes (red/blue), own team outlined, and the red/none/blue player counts; run: m2 only TDM h2_2, platoon h2_4, mp, skirmish team games - agrees with teamGame
+== src/hud/hud_pass.c
+match_drawFrame | OK | code: the in-match frame: 3D scene, actors' pass 1, script 2D notify, then each HUD element by state; run: m2 from match_playFrame every frame (138661)
+== src/hud/hud_ranking.c
+ranking_row | OK | code: one ranking row (bar, name, badge, flag, KILL/DEATH, TIME); run: m2 from hud_drawRanking (the comment's "flagOwner the player whose flag is shown" describes a local, not a parameter - harmless)
+hud_drawRanking | OK | code: "<MODE> RANKING" table, leading team's side first, then teamless players in green; run: m2 via fix_drawRanking (ranking key / match over)
+== src/match/actor_frame.c
+rand_below | OK | code: next g_randTable value mod n; run: no line in EVIDENCE (inlined); only caller actor_dies (ran 40x) - code-confirmed
+aim_at | OK | code: bot look pitch/yaw (botLookPitch/botLookYaw) towards a point; run: m2 skirmish only (bots) 138565 - agrees
+key_axis | OK | code: a key-driven speed ramped to top/bottom by step, else back to 0; run: actor_processFrame
+key_ramp | OK | code: value ramped up to 1 while on, down to 0 while off; run: actor_processFrame
+clamp450 | OK | code: rounds to float and clamps to +-450 (tenths of a degree); run: per actor frame (incl. s700 ARM CENTER preview)
+part_matrix | OK | code: pointer to a part's joint matrix in a model's matrix block for a pose; run: per actor frame
+hold | OK | code: translate to the (negated) weapon grip, drawn back by 600 while raising/lowering; run: m2 63805 (cockpit weapon)
+emit | OK | code: spawns a thrust puff particle at each leg/booster emitter joint (some only while running); run: m2/m4/s700, particle_spawn's main caller (1176067)
+award | COMMENT | name right (adds frags/points to killer k, grade recomputed). Comment "(the level shown for the local team only)" is wrong: the grade is recomputed when the killer is controlled by this machine (controlledBy == playerActor: the local player and its bots); nothing about teams; run: 40 = actor_dies count
+actor_dies | OK | code: armour gone: burst + 20 debris particles, death sound, state 2, frags/points per mode (KOTH/platoon/normal) with "+1 FRAG" texts; run: m2 skirmish x40
+countdown | OK | code: timer down to 0 by dt; run: actor_processFrame many per frame
+actor_processFrame | OK | code: one actor's whole frame (bot AI, movement, pose, firing, locks, stamina, death, timers); run: m2/m4 from stage_updateActorsAndTriggers, s700 from armc_drawPreview3D
+== src/match/actor_slots.c
+actor_clearInput | OK | code: the actor's 12 input fields zeroed (weapon slot -1); run: m2/m4 from actor_processFrame for non-local / bot actors
+actor_setInput | OK | code: the actor's 12 input fields set; run: m2 from match_frame (local player's keys) 84577
+script_holdActor | OK | code: script commands 24/25: hold actor i out of play (outOfPlay) and let go of the previous one (NOT RUN: a map script using command 24/25; no shipped map does, per its comment)
+stage_clearMapObjects | OK | code: 1000 map object slots freed, counters 0; run: scene_reset / map_loadObjectInfoFrom
+stage_clearParticles | OK | code: 1000 particle slots freed; run: scene_reset
+stage_freeParticle | OK | code: particle slot freed, free hint and used count updated; run: particle_update when a particle's life ends
+stage_clearBullets | OK | code: 400 bullet slots freed; run: scene_reset, match_frame
+actor_resetSlot | OK | code: actor slot emptied (no name/player/team, counters/marks 0); run: scene_resetActors x3500 (=35x100), match_setup
+stage_drawBullets | OK | code: each bullet in use drawn (bullet_drawTrail); run: m2/m4 from match_drawFrame / replay_frame per frame
+script_notifyObject | OK | code: while scriptMode, tells the scene-path object (scenePath_notifyStub), returns b (NOT RUN: a .scp scene script running in a match (script command 27); match_drawFrame calls it when scriptMode != 0)
+scene_resetActors | OK | code: the six slot numbers -1, frags cleared, player records reset, actor slots cleared, 100 slots reset; run: stage_build (s0), scene_startSession, replay_next
+stage_clearActorSlots | OK | code: 100 actor slots marked unused, counts 0, lockHeld 0; run: scene_resetActors / stage_newRound
+bullet_free | OK | code: bullet slot freed and owner's shotBullets refs dropped; run: bullet_update x1229 (~ bullet_init count)
+player_clear | RENAME -> record_clearPartsItems | it clears a PlayerRecord, not a player/actor: partNames, parts, itemNames, items and the 5x2 colour grid (its argument is the record + 0x44; param e -> character, or better pass the record). "player_" reads as the Player (actor) struct, which it never touches; run: scene_resetActors x560 (=35x16), match_frame x112 (stage_newRound inlined, 7x16)
+stage_resetPlayerRecords | COMMENT | name right (16 records unused, no name, team -1, parts/items/colours cleared, flag reset). The comment's "with their colour grids; none seen" is unclear -> "...their parts, items and colour grids cleared and their flags reset (playerRecord_resetFlag: none shown)"; run: scene_resetActors x35
+stage_newRound | OK | code: next round's reset: slot numbers -1, frags, records cleared (names kept), actor slots, each actor's round counters; run: m2 match_frame x7 only in hosted arenas / sessA (a match over, next map in rotation or restart) - agrees
+actor_deactivate | OK | code: actor taken out of play, king/commander refs dropped, slot freed; run: stage_deactivateActors, net packet, actor_processFrame (dropped actor), esc_main SPECTATOR
+stage_setupActorSlot | PARAMS | name right (slot i grown into the used range, free hint updated, actor_setupFromParts). Param parts -> spawn: it is a pointer to the 7-dword spawn descriptor (player record, bot, pos[3], pitch, yaw - see actor_applySpawnRecord's spawn[7]), not parts; run: stage_claimPlayerActor x140, actor_applySpawnRecord x44, net x6
+playerRecord_applyNetColours | OK | code: six signed bytes from the network scaled into playerRecord_setPartColour; run: m2/m4 mp + replay only (network/replayed colour packets) - agrees
+part_load | OK | code: one part's model (head..booster) loaded into the actor's ObjectList for its detail level; run: from the five actor_load* wrappers
+actor_loadHead | OK | code: head part model loaded (part_load); run: actor_setupFromParts x190 and actor_drawIntoView (reload when a list fails to queue) - "load" is right
+actor_loadChest | OK | code: chest model loaded; run: same
+actor_loadArms | OK | code: arms model loaded; run: same
+actor_loadLegs | OK | code: legs model loaded; run: same
+actor_loadBooster | OK | code: booster model loaded; run: same
+actor_applySpawnRecord | OK | code: actor a set up from a map SpawnRecord (stage_setupActorSlot) and given its bot settings; run: m2 skirmish bot_spawns x44 (+ script command 15). Note: the original's fatal text calls it spawnActorBy() (0x4b4538 "invalid player actor slot(%d) - spawnActorBy()"); the current name is accurate, no rename needed
+actor_startingValues | OK | code: armour/shield/ammo at spawn by game type (special arenas fixed values, else max / half ammo); run: actor_setupFromParts x190
+actor_loadWeapon | OK | code: weapon model for a slot (4, 5, or the selected) loaded, ammoKind set; run: setup, drawIntoView reload, ARM CENTER
+hue_byte | OK | code: hue wrapped and turned into its colour-code byte; run: playerRecord_setPartColour (x2 per call)
+level_byte | OK | code: saturation/value clamped -1..0.999 and turned into a byte; run: playerRecord_setPartColour (x4 per call)
+playerRecord_setPartColour | OK | code: a record's part colours stored as bytes and the part's shapes tinted with "_T<p>"; run: team_colours, net, map_loadActorInfoFrom
+flag_texture | OK | code: overlay texture by state flags (damage map / shield / booster); run: m2 host-h2_3 only (KOTH stateFlags) via stage_drawActors/actor_drawIntoView
+weapon_list | OK | code: the ObjectList of the weapon in hand by slot; run: stage_drawActors (inlined drawIntoView, cockpit view)
+actor_drawIntoView | OK | code: actor's lists queued into the view volume with its tint, models reloaded when a queue fails; run: stage_drawActors per frame
+fill_dwords | OK | code: n dwords set to v; run: setup functions
+character_factor | OK | code: pilot character stat k as 1 + stat/100; run: actor_setupFromParts / totals_agree
+mech_stats | OK | code: the mech's stats from parts, items, character; run: actor_setupFromParts x190, totals_agree x27
+actor_setupFromParts | PARAMS | name right (actor built from its player record's parts, stats and state reset). Param pp -> spawn (the same 7-dword spawn descriptor: pp[0] record, pp[1] bot, pp+2 position, pp[5]/pp[6] pitch/yaw); run: stage_setupActorSlot x190
+close_enough | OK | code: |a-b| <= 0.1; run: actor_checkDataLoss (inlined totals_agree) in hosted/mp sessions
+totals_agree | OK | code: recomputes the local actor's stats and compares + limits; run: actor_checkDataLoss x27
+actor_checkDataLoss | OK | code: "data loss" anti-cheat check of the local actor every 20 s; run: m2 match_frame x27, only in network sessions (host-h2_*, mp) - agrees
+== src/match/frame_loops.c
+paused | OK | code: scriptMode && scriptHoldsPlay == 1; run: match_frame / replay_frame per frame
+bullet_updateAll | OK | code: each bullet in use updated unless paused; run: m2/m4 per frame
+stage_updateParticles | OK | code: each particle updated unless paused; run: per frame
+stage_updateObjects | OK | code: each map object's frame unless paused; run: per frame
+particle_spawn | OK | code: next free particle slot, particle_init; returns slot; run: emit, mapObject_frame, bullets, debris
+stage_updateActorsAndTriggers | OK | code: actors' frames, triggers, clock seconds; run: match_frame / replay_frame per frame
+bullet_spawn | OK | code: next free bullet slot, bullet_init; run: actor_processFrame x1231 (firing)
+object_addObjectBy | OK | code: map object added into the next free slot (object_initObjectBy); the original's own text names it "addObjectBy()" (0x4c8398); run: m1 map_loadObjectInfoFrom
+script_processTriggers | OK | code: armed triggers fire on time or player proximity, then their commands run; run: per frame from stage_updateActorsAndTriggers
+ladder_addMatchScores | OK | code: local kills/deaths/score since last count added to the Ladder record, record sent, commit timer 300 (NOT RUN: a Ladder (game room) match: every 300 s, or a team change in one (esc_resetScore))
+effect_initShapes | OK | code: thrust and effect shapes looked up ("Effect\PlasmaThrust-%d", "Effect\Shell-Fire"...); run: s0 stage_build once per start
+script_processCommandBy | OK | code: runs a way point's script commands (the original's text: "processCommandBy()" 0x4c7a8c); run: m2 actor_processFrame (path points) x1399, script_processTriggers x134
+identity4 | OK | code: 4x4 identity as float bits; run: m1 object_addObjectBy (inlined init)
+object_initObjectBy | OK | code: map object set up from its type (the original's text: "initObjectBy()" 0x4c8364 / 0x4c8314); run: m1 x1119 = object_addObjectBy
+spawn_at | OK | code: a particle of a kind at a point; run: debris (particle_update) skirmish
+debris | OK | code: a kind-9 debris piece falls, stops on the ground, spins, leaves trail particles; run: particle_update x53119 skirmish (after actor_dies)
+particle_update | OK | code: a particle's frame: freed past its life, debris moved, light radius by age; run: stage_updateParticles
+item_sound | OK | code: an item's sound in 3D from the camera; run: item_update, match_frame, replay_frame
+item_pickup | OK | code: an actor touching an item: supply/power-up taken, warp zone; run: item_update x523 (skirmish/replay)
+item_update | OK | code: map items' frame: respawn, spin, touch by actors (item_pickup), warp reset; the original's text calls it processItemStateBy() (0x4c81d0); current name accurate; run: m2/m4 per frame
+table_rand_below | OK | code: next g_randTable value mod n; run: particle_init (particle_spin)
+particle_heading | RENAME -> particle_placeAtMatrix | it computes no heading/direction: PR->pos = matrix x g_vecOrigin, and g_vecOrigin is the origin (0,0,0) (globals.h: "set only by vec_initOrigin"), so the particle is PLACED at its matrix's origin (e.g. the muzzle, for flashes). Its comment "the particle's direction (pos, ...)" -> "the particle's position: its matrix's origin". Also fix particle_spin's and particle_init's comments (below); run: particle_init x408, particle_spin x561
+particle_spin | COMMENT | name right (matrixFrom turned by a random whole degree about z). "and the direction" -> "and its position (particle_heading / placeAtMatrix)"; run: particle_init x561 (kinds 10/11/18)
+particle_aim | OK | code: particle matrix = inverse look from pos to target, scaled; run: particle_init x2000
+particle_beam | OK | code: beam kinds 25/26: matrix and small particles along it; run: particle_init x150
+particle_mark | OK | code: hit-mark (decal) particle kinds 40..49: triangle and UVs; run: particle_init x427 (= decal count)
+particle_init | COMMENT | name right (particle slot set up from its descriptor, by kind). "12 .. 17 the heading through its matrix" -> "12 .. 17 the position from its matrix"; run: particle_spawn every call
+== src/match/map_objects.c
+unit_parts_flag | OK | code: a collision unit's planes flagged out of / back into collisions; run: m2 host-h2_1 from object_setAnimation
+space_disableUnit | OK | code: unit out of collisions; run: object_setAnimation x9 (script command 28) in host-h2_1
+space_enableUnit | OK | code: unit back into collisions (NOT RUN: script command 30 (object_activate) on an animated object)
+object_activate | OK | code: map object switched on (with its unit) (NOT RUN: map script command 30)
+object_deactivate | OK | code: map object switched off (with its unit) (NOT RUN: map script command 31)
+object_setAnimation | OK | code: script command 28: object animation started/stopped, unit out of collisions; run: m2 host-h2_1 script_processCommandBy x9
+== src/match/match_start.c
+set_round | OK | code: one rotation entry's map/mode/limits; run: match_setup x49
+make_rotation | OK | code: the match's map rotation (solo 15 stages, host chosen maps, client none); run: match_setup x8
+match_setup | OK | code: match setup before any map: Ladder flag, rotation, limits, mech, level (its fatal text "processGameMode_init()"), local player; run: match_startRound x8
+random_below | OK | code: next g_randTable value mod n (0 for none); run: round_start x48 (=6x8)
+round_start | OK | code: a round started on the loaded map: type-table check picks, camera, volumes, scores, events, teams; run: match_startRound x8
+match_startRound | RENAME -> match_firstPlayFrame | only half of it starts a round: when matchDrawing is 0 (before any map is loaded) it sets up the whole MATCH (match_setup: Ladder game, rotation, limits, mech, level, local player - the original's own fatal text there is "processGameMode_init()", match_frame being processGameMode), and only once a map has loaded does it start the round (round_start). run: 16 calls from match_playFrame = 8 match_setup + 8 round_start, i.e. two per match, each on the playing state's first frame (stateFrames 0). "startRound" hides the match setup; match_firstPlayFrame says when it runs and covers both (alternative: match_initPlayState)
+game_setGameTypeFlags | OK | code: gameType and its rule flags (teamGame, suddenDeath .. platoon); run: stage_build, match_setup, net packet, map rotation
+identity | OK | code: 4x4 identity as bits; run: scene_reset (inlined callers)
+scene_reset | OK | code: the stage's per-session state reset (lights, locks, objects, bullets, particles, camera, items, scripts); run: stage_build, scene_startSession, loading mode, replay_next
+model_sets | OK | code: a shape and skeleton manager initialised into their blocks; run: s0 Console_ctor (stage_build inlined) x1760 (=22x80)
+stage_build | OK | code: the stage built once (folders, space, effect textures, lights, sky, floor, managers, flag atlas); run: s0 once per start (Console_ctor x22 = 22 sessions)
+== src/match/notices.c
+scene_saveNames | OK | code: 16 player names saved to playerNames; run: match_frame x7 (around stage_newRound)
+scene_restoreNames | OK | code: names copied back into records and players; run: match_frame x7
+events_clear | OK | code: message-box event list emptied, line time set, msgFade/noticeTimer 0; run: round_start, match_frame, replay_frame
+net_clearAnnouncements | OK | code: all queued network sends/announcements dropped; run: scene_startSession, match_frame
+net_announcePlayerConnected | OK | code: queues the "player connected" announcement; run: m2 mp x1 (client connected)
+net_announcePlayerQuit | OK | code: queues "player quit" (NOT RUN: a client leaving a hosted match)
+net_announceChatLine | OK | code: queues a chat line; run: chat_keys x3 (mp, skirmish)
+net_announceJoinedTeam | OK | code: queues "joined a team"; run: esc_team x5, match_frame x2
+net_announceChangedTeam | OK | code: queues "changed team" (NOT RUN: in a network match switch team or go SPECTATOR from the Esc menu)
+notice_printCentre | OK | code: formats the centred notice, 2 s; run: match_frame, local_spawn, mark_notice
+stage_printText | OK | code: formats into the stage's printText (the kill report) (NOT RUN in the trace: actor_dies calls it through GAME_FN 0x473450 for the "+1 FRAG" / "-1 FRAG" texts; reached when the local player frags)
+events_age | OK | code: message lines' times run down, the oldest dropped; run: per frame
+== src/match/scores.c
+scene_resetScores | OK | code: every player's kills/deaths/time/team cleared, frags cleared, ranking redone; run: round_start x8, match_frame x7
+mark_notice | OK | code: king/commander notice + sound (you / %s); run: host-h2_3 (KOTH), h2_4 (platoon) only - agrees
+scene_updateRanking | OK | code: team counts, ranking by kills/deaths, king and commander marks; run: match_frame, local_spawn, net
+== src/match/teams.c
+scene_findTeam | OK | code: slot holding a team id or -1; run: scene_claimTeamSlot
+scene_claimTeamSlot | OK | code: slot of a team id, taking the first free one when absent; run: HUD/ranking callers (the claim side effect is real code)
+teams_setup | OK | code: team slots free (local team game) or 0..4; run: scene_startSession, round_start
+scene_topPlayer | OK | code: top player (leading team's best ranked, or ranking[0]); run: m2 match_frame (end camera), hud_drawMatchResult; only hosted arenas/sessA (matches that ended)
+stage_refillLights | OK | code: dynamic lights refilled from active actors and lit particles; run: match_frame per frame
+== src/match/weapons.c
+weapon_cycle | OK | code: next usable weapon slot step-wise round six; run: actor_nextWeapon / actor_prevWeapon
+actor_nextWeapon | OK | code: next usable weapon; run: actor_processFrame x282 (out of ammo / key)
+actor_prevWeapon | OK | code: previous usable weapon; run: actor_processFrame x1
+actor_setWeaponSlot | OK | code: slot set immediately, heldItem updated; run: net packets, setup, ARM CENTER, actor_processFrame
+actor_selectWeapon | OK | code: starts a weapon switch (lowering, switchSlot, slot icon 2 s); run: actor_pickRandomWeapon, actor_processFrame, weapon_cycle, armc_pickSlot
+actor_pickRandomWeapon | OK | code: slot 0 four times in five else slot 4, bot timers restarted; run: actor_processFrame x234 skirmish (bots)
+actor_takeDamage | PARAMS | name right (damage to target by attacker, shield/armour, hit recorded, flash, sound). Param value -> weapon: it is stored as lastHitWeapon and both callers pass the bullet's weapon (hit_actor's weapon, splash's BU->weapon); kind -> shotMode would also be clearer (callers pass WI->shotMode; it picks the pilot-stat group); run: hit_actor x616, splash x38 (skirmish)
+table_rand | OK | code: next g_randTable value; run: actor_processFrame, net_sendGamePacket_body (inlined users)
+within | OK | code: |p - from| <= range on one axis; run: actor_processFrame (inlined actor_pickPathPoint) skirmish
+actor_pickPathPoint | OK | code: a bot picks a random reachable way point within pathRange as its path target; run: actor_processFrame x581 skirmish (bots)
+next_rand | OK | code: next g_randTable value mod n; run: bullet_spawn (inlined bullet_init)
+bullet_init | OK | code: bullet slot set up: spread, cone, range trace, life, velocity, homing point, muzzle flash and sound; run: bullet_spawn x1231
+effect | OK | code: fills particle_spawn's record and spawns; run: bullet_update, hit_surface
+effect_size | OK | code: weapon hitRange as float bits; run: bullet_update
+look_inverse | OK | code: inverse of gluLookAt from prev to pos; run: beam
+offset_point | OK | code: p + off rounded; run: beam
+beam | OK | code: beam shot (shotMode 7) as four textured strip particles; run: draw_shot x239 skirmish
+trail | OK | code: trail cross-section ring for shotMode 3 shots (NOT RUN: fire a weapon whose shotMode is 3)
+draw_shot | OK | code: the shot's visual by shotMode (trail, beam or a particle kind+0x14) - builds geometry/particles drawn later; run: bullet_update x3626
+hit_actor | OK | code: bullet hit an actor: damage (if controlled here), sparks, sound, push; run: bullet_update x618
+through | OK | code: one row of matrix x point + translation; run: no line in EVIDENCE (inlined into hit_surface, which ran x1229) - code-confirmed
+decal | OK | code: hit mark particle on the surface (kind + 0x28); run: hit_surface x427
+hit_surface | OK | code: surface hit: impact particle, decal, hit sound; run: bullet_update x1229
+splash | OK | code: splash damage and push to actors controlled here within splashRadius; run: bullet_update
+home | OK | code: homing: velocity turned towards target by at most the guidance rate; run: fly_local x83 skirmish
+fly_local | OK | code: a bullet of a locally controlled owner moves and finds actor/world hits; run: bullet_update x3503
+bullet_update | OK | code: a bullet's frame (hit actor, fly, draw, age; afterwards surface hit, splash, free); run: bullet_updateAll per frame

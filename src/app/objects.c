@@ -35,9 +35,9 @@ void *THISCALL (Stage_deletingDtor)(Stage *stage, int flags)
 	return stage;
 }
 
-/* 0x401290 (crt_arrayConstruct): the compiler's array constructor: construct (thiscall) on count objects of size bytes
+/* 0x401290 (crt_vectorConstructorIterator): the compiler's array constructor: construct (thiscall) on count objects of size bytes
    from first (stdcall) */
-void STDCALL (crt_arrayConstruct)(u8 *first, int size, int count, void (THISCALL *construct)(void *))
+void STDCALL (crt_vectorConstructorIterator)(u8 *first, int size, int count, void (THISCALL *construct)(void *))
 {
 	for (int i = 0; i < count; i++, first += size)
 		construct(first);

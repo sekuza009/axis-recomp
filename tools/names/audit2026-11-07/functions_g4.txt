@@ -1,0 +1,273 @@
+GROUP g4: 246 functions; OK 230, RENAME 4, COMMENT 9, PARAMS 2, UNSURE 1; NOT RUN 51
+
+== load/collision_tris.c
+mul | OK | code: a * *m through the FPU (fmul_m), local helper; run: every collision / lighting user (static name shared with other files in the trace)
+copy_through_fpu | OK | code: float copied via fld (quiets an sNaN); run: space_insertTriangle (inlined collisionTri_setup) x744864, m1
+collisionTri_setup | PARAMS | object -> unit: the value is stored in CollisionPlane.unit and every caller passes the SpaceUnit pointer (space_addUnitTriangle's owner = the unit from space_buildUnit; ground_triangle passes 0), not a map object. Its comment's "its map object and shape part" -> "its collision unit (SpaceUnit) and shape part". Name OK (fills the triangle record: edges, face plane, edge planes); run: space_insertTriangle x62072, m1 loading
+collisionTri_traceSegment | OK | code: segment p0->p1 vs the face plane inside the three edge planes; hit point and its distance to p1; run: space_traceBlock x285M, m2/m4 (line of sight)
+edges_cross | OK | code: does a triangle edge cross one box face within the other two ranges; run: collisionTri_meetsBox, m1
+collisionTri_meetsBox | COMMENT | comment holds an editing leftover: "1. every corner ... (keep the existing 4-step text)" -> put the 4-step text there (it sits in the block comment above edges_cross). Params T, P, S, r say nothing: T -> tri, P -> low, S -> high, r -> margin (callers pass a block's / cell's low and high and Space.margin). Name OK; run: space_insertItem x3.3M, space_insertTriangle x99K, m1 (octree build)
+clamp_to | OK | code: one coordinate clamped to the world box, 1 when moved; run: inside collision_moveSphere (reported as actor_processFrame / free_camera), m2/m4
+collision_moveSphere | COMMENT | comment ends in an editing leftover "outPos is ... (rest unchanged)" -> say what the outputs are (outPos = pos + vel clamped to worldLow / worldHigh, then space_testSphere's outPos / outVel / outDist / outPlane) and that the unit lists of near, active, animated map objects go in as sub-models (nearObjects). Name OK; run: actor_processFrame x249804, free_camera x53909, m2/m4/s700 (ARM CENTER preview)
+vset | OK | code: o = (x, y, z); run: collisionTri_sweepSphere etc., m2/m4
+cross3 | OK | code: a x b in the original's product order; run: collisionTri_sweepSphere, respond
+dot_zyx | OK | code: dot product summed z, y, x; run: collisionTri_sweepSphere, slide_helpers
+dot_xyz | OK | code: dot product summed x, y, z; run: collisionTri_sweepSphere
+absx | OK | code: |x| with the original's NaN compare; run: space_collideBlock, collisionTri_sweepSphere
+small | OK | code: |value| < 1e-8 (or NaN); run: collisionTri_sweepSphere, space_collideBlock
+vsub | OK | code: a - b rounded per component; run: collisionTri_sweepSphere
+len2 | OK | code: squared length; run: collisionTri_sweepSphere
+nearer_root | OK | code: the root nearer 0, held to -1..1; run: collisionTri_sweepSphere x53983
+contact_centre | OK | code: pos + vel * t; run: collisionTri_sweepSphere
+slide_inline | OK | code: slide response along y (inline-arithmetic copy); run: respond x53983
+slide_helpers | OK | code: the same through the vector helpers (face case); run: collisionTri_sweepSphere
+respond | OK | code: response and contact plane of a corner / edge contact; run: collisionTri_sweepSphere x53983
+collisionTri_sweepSphere | OK | code: moving sphere vs one triangle (face / edge / corner): contact centre, distance, response, plane; run: space_collideBlock x11.5M, m2/m4
+row_point | OK | code: affine row of a point through a 4x4 matrix (sub-model in / out) (NOT RUN: an actor / free-camera move ending near an active animated map object with a collision unit - collision_moveSphere passes it as a sub-model)
+row_dir | OK | code: the same without translation, for the move vector (NOT RUN: as row_point)
+space_collideBlock | COMMENT | "The farthest contact along the move wins (collisionTri_sweepSphere's outDist)" is wrong: the contact kept is the one with the LARGEST outDist, and outDist is the contact centre's distance from pos + vel, so it is the EARLIEST contact along the move -> "the first contact along the move (largest outDist: farthest from the move's end) wins". Name OK (thiscall on a SpaceBlock leaf: sphere vs its items + sub-models, up to 6 slide passes); run: space_collideAt x240521, m2/m4
+ground_triangle | OK | code: a floor / ground-layer triangle inserted with no unit (unit 0, part and indices -1) (NOT RUN: a map with floorMode set or ground layers of kind 0/1 - no traced map had either; map_loadGroundInfoFrom's grey / pool_take are NOT RUN too)
+collision_initVolume | OK | code: the stage's collision space laid out (space_setBy) over levelLow..levelHigh, then floor, ground-layer triangles and each active object's unit (space_buildUnit); logs "init. collision volume"; run: game_processLoadingMode x10, m1 only (once per match load)
+
+== load/files.c
+map_readCommands | OK | code: Stage.commandCount and the 0x30-byte commands read scrambled; run: map_loadMissionInfoFrom x8 (after the "load command" log line), m1
+LightFactors_read | OK | code: LightFactors count, nextFree, records, enabled read scrambled; run: map_loadGroundInfoFrom x10 ("load light"), m1
+chat_saveMacros | OK | code: the 100 chat macros written to Chat.scp (NOT RUN: in a match chat, type "/N=text" - chat_applyMacro's store path; or start without Chat.scp, chat_loadMacros)
+chat_applyMacro | OK | code: "/N=text" stores macro N and saves, "/N" / "/NN" expands it; run: chat_keys x3, m2 (mp, skirmish)
+replay_closeRecording | OK | code: the replay being recorded closed, recording = 0; run: match_frame x7, m2 (hosted sessions)
+file_existsf | OK | code: printf-formatted path opened "rb", 1 if it exists; run: music_play x45
+file_readScrambled | OK | code: fread, then each byte xor 0x59 and rotated left; run: catalogue_loadComponents, sound_initSoundTable, the map loaders (m1 / s0)
+dat_entry | OK | code: a .dat archive's entry by index: file seeked to its offset, else fatal "can't find item(%s) - getItemFileBy()"; run: shapeDat / skelDat_getItemFileBy
+shapeDat_getItemFileBy | OK | code: Shape.dat's file positioned at the named item (original message getItemFileBy()); run: fix_shapeFind x2147 (shape_getByName)
+skelDat_getItemFileBy | OK | code: the same for Skeleton.dat; run: skel_getSkeletonPtrBy x193
+chat_loadMacros | OK | code: Chat.scp read into chatMacros, or all cleared and saved; run: Console_ctor x22, s0
+file_writeScrambled | OK | code: bytes scrambled (rotate right, xor 0x59), fwrite, put back (NOT RUN: recording a replay - replay_startRecording and the net_tables.c replay writes - or map_loadObjectInfoFrom mode 1 saving the shading file)
+cfg_writePlayer | COMMENT | "the name, the corporation (0..2) and the sex" -> the code writes "set_player name", "set_player color" (RED / BLUE / YELLOW from g_playerCorporation) and "set_player customize" ON / OFF (g_playerCustomize); nothing there is a sex (globals.h: g_playerCustomize is axis.cfg's customize switch). Name OK; run: cfg_writeAxisCfg x29 (s300/s400/s600)
+cfg_writeKeyBindings | OK | code: 64 "set_key <action><1|2>" lines and the set_mouse lines; run: cfg_writeAxisCfg x29
+cfg_writeAxisCfg | OK | code: axis.cfg written (header + five sections); run: profile_logIn x20, settings_store x6, setup_controlTabClicks, setup_soundTabClicks, arena_savePlayerSettings (s300/s400/s600)
+app_spoilDataFiles | UNSURE | code: writes marker words 0xa1a2a3a4 / 0xb1b2b3b4 / 0xc1c2c3c4 at offset 2000 of profeng.dat / profkor.dat / skirmish.dat, deletes save\axisgame.dat and game.dat. "spoil" is not shown by the code: offset 2000 lies in padding every loader skips (data_loadCharacterProfiles reads from 0x80 + 0x1046a, data_loadSkirmishInfo from 0x80 + 25000), so the game still loads those files afterwards; the marks are presumably for the launcher (AxisPlay.exe). What AxisPlay does with them would settle the name (candidate: app_markDataFiles). Called on every WM_DESTROY exit path (app/win32.c, g_exitMode 0, 2, 3, 99) (NOT RUN: closing the game normally; the traced runs were killed, and the quit session did not get that far)
+dat_open | OK | code: a .dat archive opened once: count and 0x44-byte index (fatal "can't open file(%s) - initBy()"); run: shapeDat_initBy / skelDat_initBy x22 each, s0
+shapeDat_initBy | OK | code: Data\Shape.dat opened (original message initBy()); run: app_startupLoad x22, s0
+skelDat_initBy | OK | code: Data\Skeleton.dat opened; run: app_startupLoad x22, s0
+cfg_writeSound | OK | code: set_sound effectvolume / musicvolume / 3dsound / stereoreverse; run: cfg_writeAxisCfg x29
+map_fileExists | OK | code: "map/<name>.bfd" opens; run: match_enter x8, m0
+autoplay_listFiles | OK | code: autoplay\*.ape names appended to g_replayList; run: replayList_open x1 (replay session, s300)
+app_readLauncherCheck | OK | code: 8 bytes of axisplay.exe at fixed offsets into g_launcherCheck; run: game_WinMain x22, s0
+profiles_path | OK | code: g_dataDir + "\axisuser.dat"; run: profile-screen and start-up callers
+profiles_create | OK | code: axisuser.dat created "wb" (g_currentProfile = g_profileChosen; no file: count 0); run: profile_writeCleared, profile_makeCurrent, profile_saveProgress
+profiles_write | OK | code: magic, count, current, list top / row, name, 0x48-byte profiles; fclose; run: the same callers
+profile_writeCleared | OK | code: axisuser.dat written with `count` profiles and current / top / row 0; run: profile_scanSaves x22, s0
+profile_writeFile | OK | code: axisuser.dat written as the profiles stand, g_profileName the current one's (NOT RUN: deleting a pilot on the profile screen - menu/profile_misc.c:472 / 480)
+mis_open | OK | code: g_dataDir\axis.mis opened rb; run: missions_listKeys, menuState900_enterMissions, s900
+mission_loadAxisMis | OK | code: the mission list (header, entries, block sizes) from axis.mis; run: menuState900_enterMissions x1, s900 (missions session)
+mission_loadBriefing | OK | code: mission k's block into g_briefingSource, briefing state reset, page 20; run: missions_listKeys x2, s900
+cfg_writeGraphic | OK | code: set_graphic videomode / colordepth / polygondetail and four switches; run: cfg_writeAxisCfg x29
+cfg_writeServer | COMMENT | garbled leftovers of offset -> name rewrites: "(signed bytes g_arenaMap / 41)" -> "(signed bytes g_arenaMap / g_arenaMaxPlayers)"; "the game and time flags (bytes g_arenaFragLimit / 45)" -> "the frag and time limits (g_arenaFragLimit / g_arenaTimeLimit, keywords gameflag / timeflag)"; "from the player's record (g_arenaName)" -> "from the arena record (g_arenaName ..)". Name OK; run: cfg_writeAxisCfg x29
+app_parseCommandLine | OK | code: command line split at spaces; "-net" (with axiswl.dat) / "-ip x <server>" flags set; run: game_WinMain x22, s0
+data_missing | OK | code: MessageBox "ERROR", exit(-1) (NOT RUN: start the game with msg*.dat / skirmish.dat / prof*.dat / mapinfo.dat missing or bad)
+data_open | OK | code: folder + name opened, data_missing when absent; run: the four data_load* (s0, match_enter)
+data_loadMessages | OK | code: msgeng.dat / msgkor.dat lines into the MSG table; run: app_init x22, s0
+set_current_name | OK | code: g_profileName = the current profile's name; run: profile_logIn x40, menu_choice x1
+enter_save_folder | OK | code: chdir "save", made when missing; run: profile_makeCurrent, profile_saveProgress
+pilot_path | OK | code: chosen pilot's name + ".axs"; run: profile_logIn, menu_choice
+pilot_write | OK | code: noise, the 0x3ac-byte g_pilotSave scrambled (key 0x7e), noise; run: profile_saveProgress x1 (s300)
+profile_saveProgress | OK | code: axisuser.dat and the pilot's .axs rewritten with the progress; run: menu_choice x1 (s300); src callers: stage cleared with g_mapIndex == g_progress (main_loop.c:2174), skirmish result (menu_states.c), ARM CENTER (armc_misc.c), menu_records.c
+campaign_new | OK | code: a fresh g_pilotSave (signature, name, default parts [TRAP] / [NOPA] / [ROLO], settings) (NOT RUN: a new pilot (profile_newCampaign), or logging in a pilot whose .axs is missing or unsigned)
+profile_newCampaign | OK | code: axisuser.dat written, a new record made, the pilot's .axs written (NOT RUN: creating a new pilot on the profile screen - menu/profile_misc.c:334)
+campaign_signed | OK | code: the .axs is there and its header decrypts to the signature; run: profile_makeCurrent x20, s210
+profile_makeCurrent | OK | code: the chosen pilot made current: axisuser.dat written, .axs read (or made), mech loaded; run: profile_logIn x20, s210
+profile_readHeader | OK | code: axisuser.dat's header read back, the current profile found by name; run: menuState210_enter x29, profile_scanSaves x22
+data_loadSkirmishInfo | OK | code: skirmish.dat checked and its records read into g_skirmishInfo; run: app_startupLoad x22, s0
+data_loadCharacterProfiles | OK | code: prof*.dat pilots decoded into g_characterProfiles, stats capped; run: app_startupLoad x22, match_enter x7
+data_loadMapInfo | OK | code: mapinfo.dat names and descriptions (str_invert), trailing spaces cut; run: app_startupLoad x22, s0
+arena_loadSettings | OK | code: an arena settings text file (gamename / secret / password / gametype / maxplayer / map / fraglimit / timelimit) (NOT RUN: a launcher start with "-net" and axiswl.dat present - menu/lobby_states.c:999)
+read_value | OK | code: an axis.cfg line's value words joined; run: cfg_readSound x88, cfg_readPlayer x66
+skip_line | OK | code: one line read past; run: cfg_init (inlined readers) x44
+cfg_readPlayer | OK | code: set_player name / color / customize read back; run: cfg_init x22, s0
+cfg_readSound | OK | code: set_sound lines read back; run: cfg_init x22, s0
+read_into | OK | code: the same into the stack-shaped CfgBuf; run: cfg_readKeyBindings / cfg_readServer / cfg_readGraphics
+named | OK | code: index (1..) of a value among strings, 0 none; run: cfg_readServer, cfg_readGraphics
+cfg_readServer | OK | code: set_server lines read back (name, map, players, customize, type, limits); run: cfg_init x22, s0
+cfg_readGraphics | OK | code: set_graphic lines read back; run: cfg_init x22, s0
+read_binding | OK | code: key line -> binding index (the menu's order); run: cfg_init x704 (inlined cfg_readKeyBindings)
+cfg_readKeyBindings | OK | code: 64 key lines and 4 mouse lines read back; run: cfg_init x22, s0
+cfg_init | OK | code: axis.cfg read, or defaults set and written; run: app_init x22, s0
+profile_scanSaves | OK | code: save\*.axs scanned into g_profiles (bad ones deleted), axisuser.dat rewritten; run: app_startupLoad x22, s0
+catalogue_loadComponents | OK | code: Component.dat's six tables, heads .. items (original loadActorComponentInfoFrom()); run: fix_catalogueLoad x8430, s0 and m2 (the game reloads it when the local player's actor dies and while joining: actor_frame.c:1185, main_loop.c:1748)
+replay_startRecording | OK | code: AutoPlay\<name>.ape opened, its header written, players flagged to send (NOT RUN: in a match, Esc menu -> replay-name page, type a name - hud/hud_escmenu.c:351)
+
+== load/lists.c
+push_front | OK | code: a record pushed on a pool's free list, the used count down; run: space_freeBlock / space_freeNode, m1
+space_freeNode | OK | code: a node back to the nodes pool's free list; run: space_insertItem x92361 (a block splitting), m1
+space_freeBlock | OK | code: a block back to the blocks pool's free list; run: drop_if_empty (space_insertItem) x762992, m1
+tunnel_appendRing | OK | code: a new 0x3538-byte ring appended to the list and built (tunnelRing_build); run: tunnel_addRing x40, tunnel_restart x22 (the menus' tunnel, s100/s300/s400)
+
+== load/map_info.c
+map_loadWayPointInfoFrom | OK | code: way points read, each given its run of commands (message ...-loadWayPointInfoFrom()); run: map_loadMissionInfoFrom x8, m1
+map_loadTriggerInfoFrom | OK | code: triggers read, each given its run of way points, radius squared (message ...-loadTriggerInfoFrom()); run: map_loadMissionInfoFrom x8, m1
+catalogue_loadItemInfoFrom | OK | code: the item types file (version 0x1201) and their shapes (message loadItemInfoFrom()); run: Console_ctor x22, s0
+map_loadMissionInfoFrom | OK | code: the mission file: commands, way points, triggers (message loadMissionInfoFrom()); run: game_processLoadingMode x8, m1
+map_loadObjectInfoFrom | OK | code: the shading cache and the object types added (message loadObjectInfoFrom()); run: game_processLoadingMode x10, m1
+remap_item | OK | code: an item point's kind changed by the arena options (sudden death .. gladiator); run: map_loadPlayInfoFrom x653, m1
+map_loadPlayInfoFrom | OK | code: player start, multiplayer starts, item points (message loadPlayInfoFrom()); run: game_processLoadingMode x10, m1
+map_loadActorInfoFrom | OK | code: the map's players and actors, their colours and items, the clan texture (message loadActorInfoFrom()); run: game_processLoadingMode x1, m1 (skirmish)
+pool_take | OK | code: the next n bytes of the stage's 4,000,000-byte layer pool, fatal "layer data heap overflow" (NOT RUN: a map with ground layers - none of the traced maps had any)
+ground_tex | OK | code: texture id of "<dir>/<what>" (+ number); run: map_loadGroundInfoFrom x70 (sky / side / floor textures), m1
+grey | OK | code: grey value of an RGB pixel, -1 if not grey (NOT RUN: as pool_take)
+map_loadGroundInfoFrom | COMMENT | "flat cells (flat)" -> the per-cell bytes are drawnCells: 1 when all four corner pixels of the map image are grey (scene.fields: ground_buildDrawLists draws only those); "flat" claims a flatness the code does not test. Name OK (message loadGroundInfoFrom()); run: game_processLoadingMode x10, m1
+
+== load/names.c
+name_search | OK | code: binary search of a .dat name table; run: shapeDat_findByName x2147, skelDat_findByName x193
+shapeDat_findByName | OK | code: Shape.dat's index by name; run: shapeDat_getItemFileBy x2147
+skelDat_findByName | OK | code: Skeleton.dat's index by name; run: skelDat_getItemFileBy x193
+path_stripExtension | OK | code: copy without the last ".ext"; run: map_loadObjectInfoFrom x20
+tex_findByName | OK | code: a texture bank's index entry by name (binary search); run: tex_textureFileExist x19282, tex_getItemFileBy, fix_maskFind, tex_loadImage
+tex_getItemFileBy | OK | code: the bank's dat file positioned at the item (message getItemFileBy()); run: tex_loadImage x3221
+tex_getIdByName | OK | code: each of the six banks asked in turn (tex_allocIdBy), bank * 512 + index; fatal "can't find texture object (%s) - getIdBy()"; run: shape_bindTextureBy x3477, stage_build, menu_loadTextures, app_startupLoad, pen_init
+shape_bindTextureBy | OK | code: each part's texture id by its name (+ "*suffix") (message bindTextureBy()); run: shape_getByName x2147
+tex_bind | OK | code: a texture bound through the GL slot cache, loaded and uploaded on a miss; run: 35.9M calls from every draw function, every screen (per frame)
+TextureManager_setBanks | OK | code: the six banks kept after their size checks; run: app_startupLoad x22, s0
+tex_upload | OK | code: the bank's image uploaded to a GL texture (wrap, filter, mipmaps); run: tex_bind x1857
+tex_textureFileExist | OK | code: is the named texture there in the bank's format and size (message textureFileExist()); run: tex_allocIdBy x19282
+tex_initBy | OK | code: a bank set up: dir, format, size, dat index, GL slot ring (messages init() / initBy()); run: app_startupLoad x132, s0
+tex_allocIdBy | RENAME -> tex_getIdBy | "alloc" is the rare case: it first looks the name up among the bank's records and returns the existing index (recolouring it only when flags / colours differ); only a miss whose file is in this bank adds a record. The original names it: its overflow message (0x4b3fa8) reads "[%dx%d] object buffer overflow(%d) - getIdBy()". Run: tex_getIdByName x22417 (it asks the six banks in turn; 19282 of those calls went on to tex_textureFileExist, mostly misses in the wrong bank) against 1857 loads - a lookup, not an allocator. (Name also in game.h, scene.fields, and the frame-depth note in the user's memory file.)
+tex_path | OK | code: a texture path with or without the bank's directory; run: tex_loadImage x5571
+size_check | OK | code: a decoded image must be the bank's size (fatal "...-bindBy()"); run: tex_loadImage
+alpha_from | OK | code: alpha bytes from the _ALPHA image's grey, or 0xff; run: tex_loadImage x1857
+colour_fill | OK | code: colour mask filled with g_packedRed when there is no _COLOR image; run: tex_loadImage x1726
+tex_loadImage | OK | code: image, _ALPHA and _COLOR loaded by the bank's format (dat / BMP / RAW); run: tex_bind x1857
+
+== load/skel_data.c
+take_block | OK | code: a data block allocated, or the caller's memory (size checked); run: shape_read, ShapeManager_initBy, SkeletonManager_initBy, skel_loadFromFile
+skel_loadFromFile | OK | code: a binary skeleton read from an open file (header, bones, keys; messages ...-loadFrom()); run: skel_getSkeletonPtrBy x193
+SkeletonManager_initBy | COMMENT | "set up for n skeletons from the directory dir (dir; none: 0x4b1304), a at source, n at capacity" - "a at source" is garbled -> "the source (0 / 1 loose files, 2 Skeleton.dat) at source", as ShapeManager_initBy's comment has it. Name OK; run: stage_build x1804, s0
+ShapeManager_initBy | OK | code: a shape cache set up (dir, source, capacity, block: nodes, items, data); run: stage_build x1804, s0
+file_format | OK | code: 0 / 1 / -1 by the file's three-letter extension (NOT RUN: model_loadFrom / skel_loadFrom - a cache with source 0/1, i.e. loose .shp / .obj / .ske / .ase files; the shipped caches all use source 2, the .dat archives)
+model_loadFrom | OK | code: a shape loaded from a .shp / .obj path (message loadFrom()) (NOT RUN: as file_format)
+skel_loadFrom | OK | code: a skeleton loaded from a .ske / .ase path (NOT RUN: as file_format)
+ObjectList_load | OK | code: an object list filled: shapes by name from the cache, skeletons, the colour block (messages ...-loadFrom()); run: part_load x194711, actor_loadWeapon x72543, m2/m4/s700 (the game rebuilds the parts' lists every frame via actor_drawIntoView; the lookups are cache hits)
+key_at | OK | code: a bone's key at or before the frame (binary search); run: ObjectList_poseBones, skel_getBoneMatrix. (Code nit, not the name: its "#undef KEY_FRAME" should be "#undef KEY_TIME")
+zero_or_nan | OK | code: equal to 0 as fcomp says (NaN too); run: ObjectList_poseBones, skel_getBoneMatrix
+rotate | OK | code: glRotatef unless the axis is all zero; run: ObjectList_poseBones x21M, skel_getBoneMatrix
+skel_getBoneMatrix | OK | code: one bone's matrix at time t (GL modelview saved and put back); run: mapObject_frame x106560, actor_processFrame x1920, m2/m4
+tree_lookup | OK | code: a name in the cache's name tree, added when missing; run: shape_getByName x1.07M, skel_getSkeletonPtrBy x267K
+item_path | OK | code: "dir\name.ext" by the cache's source (NOT RUN: as file_format)
+skel_getSkeletonPtrBy | OK | code: a skeleton by name, loaded on first use (messages ...-getSkeletonPtrBy()); run: ObjectList_load x267221, object_setAnimation x9
+shape_getByName | OK | code: a shape by name, loaded and its textures looked up on first use (original getShapePtrBy()); run: ObjectList_load x1.5M, object_initObjectBy, effect_initShapes, catalogue_loadItemInfoFrom
+shape_read | OK | code: a binary shape read from an open file (old 0x68-byte parts converted); run: fix_shapeRead x2147
+transform | OK | code: a point through a 4x4 matrix, rows summed z, y, x, then the translation; run: ObjectList_poseBones x12.5M
+ObjectList_poseBones | PARAMS | pose -> list: the `this` is the ObjectList (ObjectList *ol = pose; it reads skelCount, skeletons, skel, entries, animTick), the record ObjectList_load calls `list`; the comment's "thiscall on an object's skeleton pose" -> "thiscall on an object list". Name OK (each bone's matrix and points into the list's entries); run: actor_processFrame x2.3M, m2/m4/s700
+ase_float | OK | code: the line's next number as a float, negated or not (NOT RUN: skel_loadAseFrom, a loose .ase skeleton)
+ase_time | OK | code: a key's time from ticks (NOT RUN: as ase_float)
+translation | OK | code: a 4x4 translation matrix (NOT RUN: as ase_float)
+skel_loadAseFrom | OK | code: a skeleton from a 3ds Max ASE text file (message loadAseFormatFrom()) (NOT RUN: a skeleton cache with source 1 and a loose .ase file)
+face_start | OK | code: a face's first corner token, "\" continuing it (NOT RUN: model_loadObjFormatFrom)
+obj_corner | OK | code: one "v/vt/vn" corner into the part (NOT RUN: as face_start)
+model_loadObjFormatFrom | OK | code: a shape from a Wavefront OBJ file (message loadObjFormatFrom()) (NOT RUN: a shape cache with source 1 and a loose .obj file)
+
+== load/space_pools.c
+reset_pool | OK | code: a pool's records cleared, chained, all free; run: space_reset* x77 each
+clear_plane | OK | code: thiscall adapter to collisionPlane_clear; run: reset_pool, take_free
+clear_node | OK | code: adapter to spaceNode_clear; run: reset_pool, take_free
+clear_block | OK | code: adapter to spaceBlock_clear; run: reset_pool
+space_resetPlanes | OK | code: the planes pool emptied; run: space_setBy x55, space_initBy x22
+space_resetNodes | OK | code: the nodes pool emptied; run: the same
+space_resetBlocks | OK | code: the blocks pool emptied; run: the same
+take_free | OK | code: a record from a pool's free list, fatal with all pools' sizes when empty; run: space_getNextFree{Node,Plane,Unit}Ptr
+clear_unit | OK | code: adapter to spaceSlot_clear; run: take_free x984
+space_getNextFreePlanePtr | OK | code: original message "not enoush free plane-getNextFreePlanePtr()"; run: space_insertTriangle x62072, m1
+space_getNextFreeNodePtr | OK | code: the same for nodes (message ...getNextFreeNodePtr()); run: space_insertItem, space_addUnitTriangle, m1
+space_getNextFreeUnitPtr | OK | code: the same for units; run: space_buildUnit x984, m1
+space_getNextFreeBlockPtrBy | OK | code: a block from the free list given its bounds (message getNextFreeBlockPtrBy()); run: make_octant x794015, space_insertTriangle, m1
+space_addUnitTriangle | OK | code: a triangle inserted and linked into its unit's plane and node lists; run: space_buildUnit x66903, m1
+space_setBy | OK | code: the space emptied and laid out as a grid (messages ...-setBy()); run: stage_initSpaceOneCell x45, collision_initVolume x10
+space_initBy | OK | code: the pools' memory set up (messages ...-initBy()); run: stage_build x22, s0
+space_testSphere | OK | code: a sphere's move split into whole steps, each looked up (space_collideAt) until a hit; run: collision_moveSphere x303714, m2/m4/s700
+space_collideAt | OK | code: the cell and octree leaf at pos + vel found and its triangles tested (space_collideBlock); run: space_testSphere x303802
+make_octant | OK | code: a new child block for octant i; run: space_insertItem x794015, m1
+drop_if_empty | OK | code: an empty childless child block freed and forgotten; run: space_insertItem x2.5M, m1
+space_insertItem | OK | code: a triangle put into a block's octree, full leaves split; run: space_insertItem x3.2M (recursion), space_insertTriangle x96509, m1
+space_insertTriangle | OK | code: a plane record made and put into every grid cell it meets; run: space_addUnitTriangle x66903, m1
+through | OK | code: a vertex through the unit's matrix in a per-call product order; run: space_buildUnit x200709 (other files' same-named static also counted in the trace)
+space_buildUnit | OK | code: a shape's triangles (lists / strips / fans) added as one collision unit; run: collision_initVolume x984, m1
+cell_of | OK | code: a coordinate's grid cell, clamped; run: space_traceCells
+cell_edge | OK | code: the boundary c * size + low; run: space_traceCells (reported under collision_rayTrace)
+space_traceCells | OK | code: a segment walked cell by cell, each cell's octree traced; run: collision_rayTrace x1.33M, m2/m4
+half_of | OK | code: which half of a block a coordinate is in; run: space_traceBlock
+cut_at | OK | code: the segment cut at a child's boundary plane; run: space_traceBlock
+through_m | OK | code: a point through a 4x3 matrix (into a sub-model) (NOT RUN: a line of sight (collision_rayTrace) crossing an active animated map object's box - space_traceBlock's sub-model path)
+space_traceBlock | COMMENT | "the segment from -> to traced for the furthest hit (by the t collisionTri_traceSegment gives, from -FLT_MAX in dist" is wrong: collisionTri_traceSegment gives the hit's distance to `to` (not a t) and the largest is kept, so it is the hit NEAREST `from` -> "for the hit nearest `from` (the largest distance to `to` that collisionTri_traceSegment gives, from -FLT_MAX in *dist)". Name OK; run: space_traceBlock x12.5M (recursion), space_traceCells x2.1M, m2/m4
+side | OK | code: outcode bits of a coordinate against lo..hi; run: collision_rayTrace (reported as orbit_from / stage_setupView), host-h2_1
+direction | OK | code: d = b - a rounded (NOT RUN: a line of sight with an end outside an animated object's box - collision_rayTrace's clipping)
+clip_start | OK | code: the segment's start moved onto a box plane (NOT RUN: as direction)
+clip_end | OK | code: the segment's end moved back onto a box plane (NOT RUN: as direction)
+collision_rayTrace | OK | code: a line of sight through the animated objects (sub-models) and the level grid; returns the hit record; run: object_glow x1.2M, debris, stage_setupView, orbit_from, actor_processFrame, killer_view, bullet_init, m2/m4
+
+== text/glyph_cells.c
+glyph_grid | OK | code: one font's four texture-coordinate tables filled; run: font_initAsciiGrids / font_initHangulGrids x66 each, s0
+font_initAsciiGrids | OK | code: the g_font16 / 8 / 5 cell tables; run: app_startupLoad x22, s0
+font_initHangulGrids | OK | code: the g_hanCho / Jung / Jong cell tables; run: app_startupLoad x22, s0
+pen_cell | OK | code: one pen-font glyph's four corner (s, t) pairs; run: pen_init x4620
+pen_init | OK | code: the pen font's texture and its fixed / proportional glyph tables (message penInit()); run: app_startupLoad x22, s0
+hud_drawDigits | OK | code: a number drawn in the HUD's digit cells, right to left; run: main_weapons x295504, main_counters x147752, m2 (per frame in a match)
+font_penDraw | COMMENT | "the pen font (the HUD's small text: the power-up countdown, the ranking...)" - its only callers are the loading screen's log lines (app/loading.c:545; run: game_processLoadingMode x192, m1) and the power-up countdown (hud/hud_main.c:263 via fix_powerUpText); nothing draws a ranking with it -> "(the loading screen's log lines and the power-up countdown)". Name OK
+
+== text/glyph_quads.c
+glyph_quad | OK | code: one glyph as a textured quad in menu units; run: text_quad8 / 16 / 5 / 32 (47M, every screen drawing text)
+glyph_drawHangulLead13 | OK | code: a Hangul lead-consonant glyph, 13 units (NOT RUN: Korean text (double-byte characters, g_language 1) through the 8 / 16-unit passes)
+glyph_drawHangulLead31 | OK | code: the same at 31 units (NOT RUN: Korean text through text_draw32 / the 32-unit centred text)
+text_quad8 | OK | code: an 8-unit font character quad; run: text_pass (ascii8) x23.5M
+text_quad16 | OK | code: a 16-unit font character quad; run: text_pass (ascii16) x12.5M
+text_quad32 | OK | code: a 32-unit character (the 16-font tables at 23 x 31); run: text_pass (ascii32) x24020, m2 host-h2_2 / h2_4
+text_quad5 | OK | code: a 5-unit font character quad; run: text_ascii5Pass x11M (s200/s210/s700)
+glyph_drawHangulVowelTail13 | OK | code: vowel and tail glyph layers, 13 units (NOT RUN: Korean text through the 8 / 16-unit passes)
+glyph_drawHangulVowelTail31 | OK | code: the same at 31 units (NOT RUN: Korean text through the 32-unit passes)
+
+== text/text_codes.c
+hangul_glyphs | OK | code: a Johab syllable split into lead / vowel / tail glyph indices (NOT RUN: any text with a double-byte character in a Korean pass)
+text_printableLength | OK | code: non-space characters with "|", "$[c]", "$#c" codes and double-byte characters left out; run: text_drawBoxLines x1.36M (centring). (Its comment names text_drawBox16 / 32: follow the renames below)
+text_ascii5Pass | OK | code: the 5-unit font pass ("|" breaks, "$[n]" colours); run: fix_asciiPass (text_draw5) x1.14M, s200/s210/s700
+text_pass | OK | code: the shared loop of the 8 / 16 / 32-unit ASCII and Korean passes; run: every text_*Pass wrapper x15.5M
+text_ascii8Pass | OK | code: ASCII pass, 8-unit font; run: fix_asciiPass x3.06M
+text_ascii16Pass | OK | code: ASCII pass, 16-unit font; run: fix_asciiPass x2.1M
+text_ascii32Pass | OK | code: ASCII pass, 32-unit font; run: fix_asciiPass x2402, m2
+text_hangul13Pass | OK | code: Korean lead glyphs, 13 units (draws nothing for ASCII text, yet is called for every string); run: text_passes8, text_drawBoxLines, text_draw16 x5.16M
+text_hangul13LayeredPass | OK | code: Korean vowel / tail layers, 13 units; run: the same callers x5.16M
+text_hangul31Pass | OK | code: Korean lead glyphs, 31 units; run: text_drawBoxLines x2402, m2
+text_hangul31LayeredPass | OK | code: Korean vowel / tail layers, 31 units; run: text_drawBoxLines x2402, m2
+ks_row | OK | code: a KS X 1001 row pair to Johab (NOT RUN: text_hangulConvert)
+text_hangulConvert | OK | code: one EUC-KR character to Johab (NOT RUN: Korean text with g_convertHangul 1)
+
+== text/text_passes.c
+text_begin | OK | code: character width, 2D projection, texturing on, the text colour; run: every text_draw* x6.3M
+text_bindFont | OK | code: a font texture bound by id (bank id / 512, slot id % 512); run: text_draw* and other inlined users x16.6M
+text_visibleLength | OK | code: the length less 5 per "$[c]" code; run: text_drawBox16, missionList_draw, armc_drawWeaponsScreen, text_drawCentred
+text_passes8 | OK | code: the 8-unit font's three passes; run: text_draw8 x3.03M, text_drawCentred8 x27381
+text_draw5 | OK | code: text in the 5-unit font (ASCII only); run: armc_drawText, menuState200_title, profile_drawManagementWindow ... s200/s210/s700
+text_draw8 | OK | code: text in the 8-unit font; run: profile_drawChosenPilot, pilot_stats, profileList_drawNames, text_drawSized ...
+text_draw16 | OK | code: text in the 16-unit font; run: text_drawSized, armc_drawWeightLine, setup_drawControlsPage ...
+text_draw32 | OK | code: text in the 32-unit font (NOT RUN: text_drawSized with size 32 - no traced caller asked for it)
+text_drawCentred8 | OK | code: 8-unit text centred between x0 and x1; run: missionList_draw x22653, armc_drawWeaponsScreen, text_drawCentred
+text_drawCentred5 | OK | code: 5-unit text centred between x0 and x1 (NOT RUN: text_drawCentred with size 5)
+text_drawBoxLines | RENAME -> text_drawCentredLines | it draws no box: the text is broken at "|" into lines, each centred between x0 and x1 (centre - visible * 4 - printable * 3), one under the other - as its own comment says ("text centred between x0 and x1, broken into lines"). Run: text_drawBox16 x1.35M, text_drawBox32 x2402
+text_drawBox16 | RENAME -> text_drawCentredLines16 | no box is drawn: centred multi-line text in the 16-unit font; text_drawCentred dispatches size 16 to it beside text_drawCentred8 / text_drawCentred5 for sizes 8 / 5. Run: text_drawCentred x572113, profile_drawManagementWindow, armc_drawModeTabs, skirmish_roundScreen, two_buttons, setup_drawControlsPage (labels centred in their width)
+text_drawBox32 | RENAME -> text_drawCentredLines32 | the same in the 32-unit font; run: text_drawCentred x2402 (m2, host-h2_2 / h2_4)
+
+== text/text_size.c
+text_drawSized | OK | code: text_draw5 / 8 / 16 / 32 by size; run: hud_drawMatchCounters, ranking_row, hud_drawFps, hud_drawMessageBox, loading_draw ... m1/m2/m4
+text_drawCentred | OK | code: centred text by size (5, 8, 16, 32); run: hud_drawTeamScores, hud_drawWatchedName, hud_drawRanking, esc_item ... m2/m4
+
+== wide.c (harness / patch-layer glue, not game code; compiled out of the native build, so never in the trace)
+no_fullScreen | OK | code: no-op stand-in for the absent patch DLL's full-screen hook (NOT RUN: patch-layer build without the DLL's table)
+no_mousePressed | OK | code: stand-in returning 0 (NOT RUN: as no_fullScreen)
+no_cursorClamp | OK | code: no-op stand-in (NOT RUN: as no_fullScreen)
+recomp_setWide | OK | code: DLL export taking the patch DLL's Wide table when its size matches (looked up by name, GetProcAddress in axisnet_recomp.c) (NOT RUN: patch-layer build)
+wide_callSite | OK | code: the target of the game's call at site (the patch DLL's answer, else the decoded E8 rel32) (NOT RUN: patch-layer build; PATCHED_CALL)
+wide_callAdded | OK | code: 1 when the patch DLL's rewritten block (with its call at site) is in, else code_matches(at, pattern); wide.h's comment agrees (NOT RUN: patch-layer build; PATCHED_BLOCK)
+wide_menuFix | OK | code: the patch DLL is there and its menu_vertex / menu_drawRect replacement is on (NOT RUN: harness)
+wide_present | OK | code: the patch DLL handed its table over (NOT RUN: harness)
+wide_testCursor | OK | code: sets the patch DLL's cursor state for the harness's tests (NOT RUN: harness tests)
+wide_carries | OK | code: does the rebuild carry the patch DLL's change to the function at addr (NOT RUN: harness)
+wide_state | OK | code: the patch DLL's writable data and its size (NOT RUN: harness)
+wide_testMouseLatch | OK | code: sets the patch DLL's mouse-button latch i (NOT RUN: harness tests)
+wide_fixes | OK | code: bitmask of the installed patch-DLL fixes, for the log (NOT RUN: harness)

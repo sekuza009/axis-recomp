@@ -77,10 +77,10 @@ void (shape_addColour)(u8 *px, int mode, const void *shape, const u8 *colour)
 
 /* 0x467580: a shape manager's texture-name suffix (textureSuffix, e.g. "_T<player>") and bindFlags set; with flag 2
    its tint (two HSV colours, shape_setTint), else shape_clearTint */
-void THISCALL (shape_setTextureSuffix)(Manager *model, const char *folder, int flags, u32 h1, u32 s1, u32 v1, u32 h2, u32 s2,
+void THISCALL (shape_setTextureSuffix)(Manager *model, const char *suffix, int flags, u32 h1, u32 s1, u32 v1, u32 h2, u32 s2,
                                     u32 v2)
 {
-	strcpy(model->textureSuffix, folder);
+	strcpy(model->textureSuffix, suffix);
 	model->bindFlags = flags;
 	if (flags & 2)
 		shape_setTint((u8 *)model, h1, s1, v1, h2, s2, v2);

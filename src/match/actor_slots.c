@@ -183,11 +183,12 @@ void THISCALL (bullet_free)(Stage *stage, int b)
 	} while (n > 0);
 }
 
-/* a player record's per-match state cleared (e = the record + 0x44, its character): its name kept or not by the caller;
-   the five part names and parts, the six item names and items, the 5 x 2 colour grid's three layers */
-static void player_clear(u8 *e)
+/* a player record's parts, items and colours cleared (character = the record's character field, record + 0x44): its
+   name kept or not by the caller; the five part names and parts, the six item names and items, the 5 x 2 colour
+   grid's three layers */
+static void record_clearPartsItems(u8 *character)
 {
-	PlayerRecord *pr = (PlayerRecord *)(e - 0x44);
+	PlayerRecord *pr = (PlayerRecord *)(character - 0x44);
 	for (int k = 0; k < 5; k++)
 		pr->partNames[k][0] = 0;
 	for (int k = 0; k < 5; k++)
@@ -204,7 +205,8 @@ static void player_clear(u8 *e)
 		}
 }
 
-/* 0x474480: the 16 player records reset (unused, no name, no actor) with their colour grids; none seen */
+/* 0x474480: the 16 player records reset (unused, no name, no team), their parts, items and colour grids cleared and
+   their flags reset (playerRecord_resetFlag: none shown) */
 void THISCALL (stage_resetPlayerRecords)(Stage *stage)
 {
 	for (int p = 0; p < 16; p++) {
@@ -214,7 +216,7 @@ void THISCALL (stage_resetPlayerRecords)(Stage *stage)
 		pr->name[0] = 0;
 		pr->character = 0;
 		pr->team = -1;
-		player_clear(e);
+		record_clearPartsItems(e);
 		playerRecord_resetFlag(stage, p);
 	}
 	stage->playerRecordCount = 0;
@@ -233,7 +235,7 @@ void THISCALL (stage_newRound)(Stage *stage)
 		u8 *e = (u8 *)&pr->character;
 		pr->used = 0;
 		pr->team = -1;
-		player_clear(e);
+		record_clearPartsItems(e);
 	}
 	stage->playerRecordCount = 0;
 	stage_clearActorSlots(stage);
@@ -279,8 +281,9 @@ void THISCALL (actor_deactivate)(Stage *stage, int i)
 
 /* 0x45dc00 (thiscall on the scene): actor slot i (at most 99) set up from its parts (actor_setupFromParts): the
    slots up to it are added first (each new one marked free, active), and the first free slot (searched up to and
-   including the count, as the original does) kept as the next free (actorFreeHint). Returns i, or -1 */
-int THISCALL (stage_setupActorSlot)(Stage *scene, int i, u32 id, u32 controlledBy, u32 parts)
+   including the count, as the original does) kept as the next free (actorFreeHint). spawn: the spawn descriptor
+   (player record, bot, position, pitch, yaw). Returns i, or -1 */
+int THISCALL (stage_setupActorSlot)(Stage *scene, int i, u32 id, u32 controlledBy, u32 spawn)
 {
 #define COUNT STS->actorCount
 #define USED(k) STS->actors[k].active
@@ -296,7 +299,7 @@ int THISCALL (stage_setupActorSlot)(Stage *scene, int i, u32 id, u32 controlledB
 			scene->actorFreeHint = k;
 			break;
 		}
-	actor_setupFromParts((u8 *)scene, i, id, controlledBy, parts);
+	actor_setupFromParts((u8 *)scene, i, id, controlledBy, spawn);
 	return i;
 #undef COUNT
 #undef USED
@@ -782,8 +785,9 @@ static void mech_stats(u8 *s, u8 *ac, u8 *p, int check)
 	AC->botParams[4] = 1.0f;
 }
 
-/* 0x457330 (thiscall on the scene): actor a built from the player record pp[0] (0x47fd2 bytes from playerRecords; its
-   parts head, chest, arms, legs, booster), with bot pp[1], the position pp + 2 and pitch / yaw pp[5] / pp[6];
+/* 0x457330 (thiscall on the scene): actor a built from its spawn descriptor: the player record spawn[0] (0x47fd2 bytes from
+   playerRecords; its parts head, chest, arms, legs, booster), with bot spawn[1], the position spawn + 2 and pitch /
+   yaw spawn[5] / spawn[6];
    controlledBy from the argument. The mech's stats (mech_stats): the special items in its six slots (items; kinds
    0x1b .. 0x23 with a negative ammoType) raise the ammo factors and bonuses, the detection range / lock-on /
    target-keep / hacking, the booster times, the load limit, or the shield factor and regeneration; then the head's
@@ -794,23 +798,23 @@ static void mech_stats(u8 *s, u8 *ac, u8 *p, int check)
    (actor_setWeaponSlot), the starting values (actor_startingValues), the position history, timers and flags reset,
    its lists loaded (actor_loadHead .. actor_loadBooster, actor_loadWeapon; variantLoaded 1 unless it is the cockpit
    actor), and the ranking redone (rankingDirty). Its caller ignores the eax it leaves */
-void THISCALL (actor_setupFromParts)(u8 *s, int a, int id, u32 controlledBy, const u32 *pp)
+void THISCALL (actor_setupFromParts)(u8 *s, int a, int id, u32 controlledBy, const u32 *spawn)
 {
 	Stage *st = (Stage *)s;
 	u8 *ac = (u8 *)&st->actors[a];
-	u8 *p = (u8 *)&st->playerRecords[pp[0]];
+	u8 *p = (u8 *)&st->playerRecords[spawn[0]];
 	PlayerRecord *pr = (PlayerRecord *)p;
 	mech_stats(s, ac, p, 0);
 	AC->inPlay = 1;
 	strcpy(AC->name, (const char *)RELOC(p) + 4);
 	AC->id = id >= 0 ? id : st->actorSerial++;
 	AC->active = 1;
-	AC->player = pp[0];
+	AC->player = spawn[0];
 	AC->controlledBy = controlledBy;
 	int character = pr->character;
 	AC->character = character >= 0 && character < 9 ? character : 0;
 	AC->team = ((u32)pr->team);
-	AC->bot = pp[1];
+	AC->bot = spawn[1];
 	AC->spawnAge = 0.0f;
 	AC->dropAge = 1.0f;
 	AC->armor = ((u32)AC->armorMax);
@@ -822,9 +826,9 @@ void THISCALL (actor_setupFromParts)(u8 *s, int a, int id, u32 controlledBy, con
 	actor_startingValues(s, a);   /* actor_startingValues */
 	AC->state = 1;
 	AC->stateTime = 0.0f;
-	memcpy(AC->pos, pp + 2, 12);
-	BITS(AC->pitch) = pp[5];
-	BITS(AC->yaw) = pp[6];
+	memcpy(AC->pos, spawn + 2, 12);
+	BITS(AC->pitch) = spawn[5];
+	BITS(AC->yaw) = spawn[6];
 	fill_dwords(ac + offsetof(Player, forward), 6, 0);   /* forward .. fireAnim */
 	/* the next, sent and bot-goal states start at the place and the heading */
 	memcpy(AC->nextPos, AC->pos, 12);

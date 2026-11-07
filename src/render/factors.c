@@ -5,46 +5,46 @@
 
 typedef struct { u8 bytes[0x2c]; } FactorRecord;
 
-/* 0x483e90 (thiscall on the pool): an ambient light (kind 0) of the colour *a. Its callers ignore the eax it leaves */
-void THISCALL (factors_addAmbient)(void *pool, const u32 *a)
+/* 0x483e90 (thiscall on the pool): an ambient light (kind 0) of the colour *colour. Its callers ignore the eax it leaves */
+void THISCALL (factors_addAmbient)(void *pool, const u32 *colour)
 {
 	Factor r;
 	__asm__("" : "=m"(r));   /* (left as the stack holds it) */
 	r.kind = 0;
-	r.colour = *a;
+	r.colour = *colour;
 	factor_addFactorBy(pool, &r);
 }
 
-/* 0x483ec0: a directional light (kind 1) of the colour *a along the direction p */
-void THISCALL (factors_addDirectional)(void *pool, const u32 *a, const u32 *p)
+/* 0x483ec0: a directional light (kind 1) of the colour *colour along the direction dir */
+void THISCALL (factors_addDirectional)(void *pool, const u32 *colour, const u32 *dir)
 {
 	Factor r;
 	__asm__("" : "=m"(r));
 	r.kind = 1;
-	r.colour = *a;
+	r.colour = *colour;
 	for (int i = 0; i < 3; i++)
-		BITS(r.dir[i]) = p[i];
+		BITS(r.dir[i]) = dir[i];
 	factor_addFactorBy(pool, &r);
 }
 
-/* 0x483f00: a point light (kind 2) of the colour *a at p, reaching the radius x */
-void THISCALL (factors_addPointLight)(void *pool, const u32 *a, u32 x, const u32 *p)
+/* 0x483f00: a point light (kind 2) of the colour *colour at pos, reaching the radius radius */
+void THISCALL (factors_addPointLight)(void *pool, const u32 *colour, u32 radius, const u32 *pos)
 {
 	Factor r;
 	__asm__("" : "=m"(r));
 	r.kind = 2;
-	r.colour = *a;
+	r.colour = *colour;
 	for (int i = 0; i < 3; i++)
-		BITS(r.pos[i]) = p[i];
-	BITS(r.radius) = x;
+		BITS(r.pos[i]) = pos[i];
+	BITS(r.radius) = radius;
 	factor_addFactorBy(pool, &r);
 }
 
 /* 0x4728e0 (thiscall on the stage): the layer's lighting computed into its colours over all its vertices
    (light_computeLayerLightBy, rows 0 .. rows, columns 0 .. cols, first 1). Its caller ignores the eax it leaves */
-void THISCALL (ground_computeLighting)(void *scene, const GroundLayer *layer)
+void THISCALL (ground_computeLighting)(void *stage, const GroundLayer *layer)
 {
-	light_computeLayerLightBy(scene, (const u8 *)layer, (u32)layer->colours, 1, 0, 0, layer->rows, layer->cols);
+	light_computeLayerLightBy(stage, (const u8 *)layer, (u32)layer->colours, 1, 0, 0, layer->rows, layer->cols);
 }
 
 /* 0x483dd0 (thiscall on the pool): the record copied into the next free slot (nextFree; 0x2c-byte slots from +4,

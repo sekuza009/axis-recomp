@@ -19,7 +19,7 @@ void (text_drawCentred)(int x0, int y, int x1, const char *text, int size)
 	switch (size) {
 	case 5: text_drawCentred5(x0, y, x1, text); break;
 	case 8: text_drawCentred8(x0, y, x1, text); break;
-	case 16: text_drawBox16(x0, y, x1, text); break;
-	case 32: text_drawBox32(x0, y, x1, text); break;
+	case 16: text_drawCentredLines16(x0, y, x1, text); break;
+	case 32: text_drawCentredLines32(x0, y, x1, text); break;
 	}
 }

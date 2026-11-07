@@ -159,8 +159,9 @@ static void count_bonus(Panel *p, int dy, int n)
 	value(p, dy);
 }
 
-/* the wear on a part (g_totalWeight over the limit g_loadLimit: the share over it, four times, of f taken off; else 0) */
-static X wear(float f)
+/* the loss to a figure f when the mech is overloaded (g_totalWeight over the limit g_loadLimit: the share over it, four
+   times, of f taken off; else 0) */
+static X overload_loss(float f)
 {
 	if (g_totalWeight > g_loadLimit)
 		return neg(((X)g_totalWeight - g_loadLimit) / g_loadLimit * FOUR * f);
@@ -168,7 +169,7 @@ static X wear(float f)
 }
 
 /* the same for a speed: the share taken off the speed f with its bonus a */
-static X speed_wear(float f, X a)
+static X speed_overload_loss(float f, X a)
 {
 	if (g_totalWeight > g_loadLimit)
 		return neg(((X)g_totalWeight - g_loadLimit) / g_loadLimit * FOUR * ((X)f + a));
@@ -177,7 +178,7 @@ static X speed_wear(float f, X a)
 
 /* the base value is in the line: a bonus of two decimals with no brackets, "+v" / "v" (a loss at most the base f),
    none for 0; Korean in yellow with a space before it */
-static void wear_bonus(Panel *p, int dy, X v, float f)
+static void decimal_bonus(Panel *p, int dy, X v, float f)
 {
 	if (p->korean)
 		value(p, dy);
@@ -201,7 +202,7 @@ static void wear_bonus(Panel *p, int dy, X v, float f)
 		value(p, dy);
 }
 
-/* a speed's change after wear, its size at most the speed f: "+%03.0f" / "-%03.0f" (English) or "+%3.0f" /
+/* a speed's change after the overload loss, its size at most the speed f: "+%03.0f" / "-%03.0f" (English) or "+%3.0f" /
    "-%3.0f" (Korean), with "/" after all but the last */
 static void speed_change(char *out, X v, float f, int korean, int last)
 {
@@ -286,7 +287,7 @@ static void section_arms(Panel *p)
 	value_unit(p, ROW(5), g_armsWeight, MSG(755, "t"));
 }
 
-/* slot 3, the legs: two figures with skill 0 less the wear, four signed figures, a figure */
+/* slot 3, the legs: two figures with skill 0 less the overload loss, four signed figures, a figure */
 static void section_legs(Panel *p)
 {
 	for (int k = 0; k < 2; k++) {
@@ -294,7 +295,7 @@ static void section_legs(Panel *p)
 		label(p, ROW(k), k ? MSG(632, "INERTIA") : MSG(631, "AGILITY"));
 		sprintf(p->t.line, FMT(STR(0x4b0334, "%.1f")), (double)F(f));
 		X a = SKILL(0) * HUNDREDTH * F(f);
-		wear_bonus(p, ROW(k), a + wear(F(f)), F(f));
+		decimal_bonus(p, ROW(k), a + overload_loss(F(f)), F(f));
 	}
 	for (int k = 0; k < 4; k++) {
 		float f = F(ADDR(g_legsSpeedCorrection) + k * 4);
@@ -308,7 +309,7 @@ static void section_legs(Panel *p)
 	value_unit(p, ROW(6), g_legsWeight, MSG(755, "t"));
 }
 
-/* slot 4, the booster: the type's name, two figures, a third, the speed with skill 1 less the wear, the three speeds
+/* slot 4, the booster: the type's name, two figures, a third, the speed with skill 1 less the overload loss, the three speeds
    and their changes, the weight */
 static void section_booster(Panel *p)
 {
@@ -328,7 +329,7 @@ static void section_booster(Panel *p)
 	float speed = g_boosterNormalSpeed;
 	sprintf(p->t.line, FMT(STR(0x4b0354, "%.0f")), (double)speed);
 	X a = SKILL(1) * HUNDREDTH * speed + (X)g_legsSpeedCorrection * HUNDREDTH * speed;
-	X v = a + speed_wear(speed, a);
+	X v = a + speed_overload_loss(speed, a);
 	if (p->korean) {   /* rounded first; none for 0 */
 		value(p, ROW(4));
 		int n = ftol(v);
@@ -376,7 +377,7 @@ static void section_booster(Panel *p)
 	for (int k = 0; k < 3; k++) {
 		float f = F(speeds[k]);
 		X b = SKILL(1) * HUNDREDTH * f + (X)F(bonuses[k]) * HUNDREDTH * f;
-		speed_change(k ? p->t.bonus : p->t.line, b + speed_wear(f, b), f, p->korean, k == 2);
+		speed_change(k ? p->t.bonus : p->t.line, b + speed_overload_loss(f, b), f, p->korean, k == 2);
 		if (k == 2 && !p->korean)
 			append(p->t.bonus, (const char *)MSG(757, "Km/h"));
 		if (k)
@@ -445,7 +446,7 @@ static void section_mech(Panel *p)
    13, no action) between its two arrows (14 / 15: armc_stepPart), the ROTATE button (16: MSG(287, "$[0] ROTATE") with
    MSG(118, "OFF") + 0x80 x g_armcSpin); then the stats box (taller for Korean, g_language 1) and the view's section
    (head, chest, arms, legs, booster, 5 the whole mech). The caller ignores the eax it leaves */
-void (armc_drawStatsPanel)(void)
+void (armc_drawPartsScreen)(void)
 {
 	int slot = g_armcPartSlot, korean = g_language == 1;
 	const u32 *bright = ((u32 *)g_armcBright), *dim = ((u32 *)g_armcDim);
@@ -464,8 +465,8 @@ void (armc_drawStatsPanel)(void)
 	}
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 	menu_drawWideButton(PANEL_X0 + 0x114, PANEL_Y1 - 0x20, PANEL_X0 + 0x174, PANEL_Y1, 1);
-	menu_drawSmallButton1(PANEL_X0 + 0xe4, PANEL_Y1 - 0x1c, PANEL_X0 + 0x114, PANEL_Y1 - 4, hovered == 14);
-	menu_drawSmallButton2(PANEL_X0 + 0x174, PANEL_Y1 - 0x1c, PANEL_X0 + 0x1a4, PANEL_Y1 - 6, hovered == 15);
+	menu_drawLeftArrow(PANEL_X0 + 0xe4, PANEL_Y1 - 0x1c, PANEL_X0 + 0x114, PANEL_Y1 - 4, hovered == 14);
+	menu_drawRightArrow(PANEL_X0 + 0x174, PANEL_Y1 - 0x1c, PANEL_X0 + 0x1a4, PANEL_Y1 - 6, hovered == 15);
 	glColor4f(1.0f, 1.0f, 1.0f, 0.7f);
 	menu_drawWideButton(PANEL_X1 - 0xa0, PANEL_Y1 - 0x20, PANEL_X1, PANEL_Y1, 1);
 	glDisable(GL_TEXTURE_2D);
@@ -482,7 +483,7 @@ void (armc_drawStatsPanel)(void)
 		const u32 *c = slot == i ? bright : dim;
 		set_colour_bits(g_textColour, c[0], c[1], c[2], c[3]);
 		if (i == 5)
-			text_drawBox16(PANEL_X0 + 0x10, PANEL_Y0 + 0x13d, PANEL_X0 + 0xb0, (const char *)MSG(286, "VIEW $[0] ALL"));
+			text_drawCentredLines16(PANEL_X0 + 0x10, PANEL_Y0 + 0x13d, PANEL_X0 + 0xb0, (const char *)MSG(286, "VIEW $[0] ALL"));
 		else
 			text_draw8(PANEL_X0 + 0x18, PANEL_Y0 + 0x44 + i * 0x30, (const char *)(MSG(281, "$[0] HEAD") + i * 0x80));
 	}
@@ -494,16 +495,16 @@ void (armc_drawStatsPanel)(void)
 	}
 	for (int i = 0; i < 2; i++) {
 		colour(hovered == i + 3 ? bright : dim);
-		text_drawBox16(PANEL_X0 + 0x10 + i * 100, PANEL_Y1 - 0x18, PANEL_X0 + 0x70 + i * 100, (const char *)(MSG(115, "$[0] O K") + i * 0x80));
+		text_drawCentredLines16(PANEL_X0 + 0x10 + i * 100, PANEL_Y1 - 0x18, PANEL_X0 + 0x70 + i * 100, (const char *)(MSG(115, "$[0] O K") + i * 0x80));
 	}
 	colour(bright);
 	memset(p->t.line, 0, 50);
 	strcpy(p->t.line, (const char *)MSG(287, "$[0] ROTATE"));
 	append(p->t.line, FMT(STR(0x4b035c, " ")));
 	append(p->t.line, (const char *)(MSG(118, "OFF") + g_armcSpin * 0x80));
-	text_drawBox16(PANEL_X1 - 0xa0, PANEL_Y1 - 0x18, PANEL_X1, p->t.line);
+	text_drawCentredLines16(PANEL_X1 - 0xa0, PANEL_Y1 - 0x18, PANEL_X1, p->t.line);
 	colour(bright);
-	text_drawBox16(PANEL_X0 + 0x114, PANEL_Y1 - 0x18, PANEL_X0 + 0x174, (const char *)MSG(277, "SELECT"));
+	text_drawCentredLines16(PANEL_X0 + 0x114, PANEL_Y1 - 0x18, PANEL_X0 + 0x174, (const char *)MSG(277, "SELECT"));
 
 	static void (*const sections[6])(Panel *) = { section_head, section_chest, section_arms, section_legs, section_booster, section_mech };
 	if ((u32)slot < 6)

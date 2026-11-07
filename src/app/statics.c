@@ -65,16 +65,20 @@ int (static_registerTimeSyncLogDtor)(void) { return atexit((void (*)(void))FN_AD
 int (static_registerSceneLogDtor)(void) { return atexit((void (*)(void))FN_ADDR(static_endSceneLog, 0x48b3f0)); }
 
 /* ---- empty functions ---- */
-void (static_emptyCtorSkelData1)(void) { }   /* 0x46b860 */
-void (static_emptyCtorSkelData2)(void) { }   /* 0x46b880 */
-void (static_emptyCtorSkelData3)(void) { }   /* 0x46b8a0 */
-void (static_emptyCtorSkelData4)(void) { }   /* 0x46b8c0 */
-void (static_emptyCtorSkelData5)(void) { }   /* 0x46b8e0 */
-void (static_emptyCtorSkelData6)(void) { }   /* 0x46b900 */
-void (static_emptyCtorSkelData7)(void) { }   /* 0x46b920 */
-void (static_emptyCtorSkelData8)(void) { }   /* 0x46b940 */
-void (static_emptyCtorTimeSync1)(void) { }   /* 0x487b70 */
-void (static_emptyCtorTimeSync2)(void) { }   /* 0x48b420: an empty function ("ret") shared by every empty function of the game (identical code folded): called
+/* ten empty start-up initialisers (each a bare "ret", run once from crt_start's initialiser table): the eight at
+   0x46b860 .. 0x46b940 follow the skeleton data code (skelDat_), the two at 0x487b70 / 0x487b90 the item / play info
+   loaders; an empty body names no object, so they are named by address */
+void (static_emptyInit_46b860)(void) { }   /* 0x46b860 */
+void (static_emptyInit_46b880)(void) { }   /* 0x46b880 */
+void (static_emptyInit_46b8a0)(void) { }   /* 0x46b8a0 */
+void (static_emptyInit_46b8c0)(void) { }   /* 0x46b8c0 */
+void (static_emptyInit_46b8e0)(void) { }   /* 0x46b8e0 */
+void (static_emptyInit_46b900)(void) { }   /* 0x46b900 */
+void (static_emptyInit_46b920)(void) { }   /* 0x46b920 */
+void (static_emptyInit_46b940)(void) { }   /* 0x46b940 */
+void (static_emptyInit_487b70)(void) { }   /* 0x487b70 */
+void (static_emptyInit_487b90)(void) { }   /* 0x487b90 */
+/* 0x48b420: an empty function ("ret") shared by every empty function of the game (identical code folded): called
    as a cdecl one-argument trace (net_processGamePacket pushes the packet and pops 4), as an empty thiscall method
    (Scene_ctor, stage_build, script_reset with &stage->scenePath, match_drawFrame) and with no arguments from the menus' key
    / click handlers (lobby_topPageClicks, lobbyTop_keys, armc_processInput, menuState100_intro, setup_topPageClicks /

@@ -68,7 +68,7 @@ void (armc_showCursorItem)(void)
 		item = g_extraList[g_armcCursor];
 	}
 	armc_viewedPartRecord(item);
-	armc_snapshot(6);
+	armc_loadSnapshotTexture(6);
 	armc_giveShownActorWeapon(g_scene, g_armcSlot);
 	armc_readMechStats();
 }
@@ -85,7 +85,7 @@ void (armc_takeCursorItem)(void)
 	}
 	g_armcChanged = 1;
 	armc_itemSlotRecord(g_armcSlot, item);
-	armc_snapshot(g_armcSlot);
+	armc_loadSnapshotTexture(g_armcSlot);
 	slot = g_armcSlot;
 	set_mech(g_matchPlayerName);
 	g_armcSlot = -1;
@@ -123,7 +123,7 @@ void (armc_openWeaponsPage)(void)
 		}
 	armc_viewedPartRecord(g_weaponList[g_armcCursor]);
 	for (int k = 0; k < 7; k++)
-		armc_snapshot(k);
+		armc_loadSnapshotTexture(k);
 	g_armcChanged = 0;
 	g_unusedArmcWord2 = 1;
 	g_armcSlot = -1;

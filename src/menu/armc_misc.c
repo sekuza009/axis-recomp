@@ -16,7 +16,7 @@ void (armc_drawPartsPage)(void)
 		armc_resetSeraphimParts();
 	if (g_armcHideInterface == 0) {
 		armc_drawModeTabs();
-		armc_drawStatsPanel();
+		armc_drawPartsScreen();
 	}
 }
 
@@ -297,7 +297,7 @@ void (menuState700_armCenter)(void)
 		menu_drawBackground();
 	if (g_armcState != 2) {
 		if (g_armcFrom == 3)
-			armc_drawPreviewTunnel();
+			armc_drawRoomTunnel();
 		if (g_armcFrom == 1)
 			armc_drawTunnel();
 	}
@@ -306,7 +306,7 @@ void (menuState700_armCenter)(void)
 	if (state == 1 || state == 0)
 		return;
 	if (g_frameOpening) {
-		menu_drawFrame(g_armcPageLeft, g_armcPageTop, g_armcPageRight, g_armcPageBottom);
+		menu_drawFrameOpening(g_armcPageLeft, g_armcPageTop, g_armcPageRight, g_armcPageBottom);
 		return;
 	}
 	if (g_armcSessionDue && !g_armcSessionMade) {
@@ -336,8 +336,8 @@ void (menuState700_armCenter)(void)
 		set_colour_bits(g_rectColour, 0x3e4ccccd, 0x3e4ccccd, 0x3f333333, 0x3f333333);
 		menu_drawRect(100, 200, 540, 280, 1);
 		set_colour_bits(g_textColour, 0x3f800000, 0x3f800000, 0, 0x3f800000);   /* yellow */
-		text_drawBox16(105, 220, 535, (const char *)MSG(297, "LOADING MECHANIC DATA.."));
-		text_drawBox16(105, 244, 535, (const char *)MSG(298, "PLEASE WAIT"));
+		text_drawCentredLines16(105, 220, 535, (const char *)MSG(297, "LOADING MECHANIC DATA.."));
+		text_drawCentredLines16(105, 244, 535, (const char *)MSG(298, "PLEASE WAIT"));
 		g_armcSessionDue = 1;
 	}
 	long double zoom = fsubr_m(fmul_m(fld_m(&g_frameTime), (const float *)ADDR(k_tenthsToDegrees)), &g_unusedArmcViewCountdown);
@@ -631,9 +631,9 @@ u32 (armc_mouse)(void)
 	return page;
 }
 
-/* 0x419000: catalogue item i's snapshot texture ("Actor/item/<name>/snapshot"; the name 0x80 bytes a slot at
+/* 0x419000: item record i's snapshot texture (0 .. 5 the item slots, 6 the item looked at) ("Actor/item/<name>/snapshot"; the name 0x80 bytes a slot at
    g_partRecords) loaded into g_slotTextures[i]; nothing for a name shorter than 2 letters. g_armcChanged cleared either way */
-void (armc_snapshot)(int i)
+void (armc_loadSnapshotTexture)(int i)
 {
 	const char *name = (const char *)(OBJ(g_partRecords) + i * 0x80);
 	if (strlen(name) <= 1) {
@@ -703,7 +703,7 @@ int (armc_drawModeTabs)(void)
 		const u32 *c = (const u32 *)(g_armcMode == i + 1 ? OBJ(g_armcBright) : OBJ(g_armcDim));
 		set_colour_bits(g_textColour, c[0], c[1], c[2], c[3]);
 		int x = g_armcPageLeft;
-		text_drawBox16(x + i * 100 + 0x10, g_armcPageTop, x + i * 100 + 0x70, (const char *)(MSG(271, "$[0] PARTS") + i * 0x80));
+		text_drawCentredLines16(x + i * 100 + 0x10, g_armcPageTop, x + i * 100 + 0x70, (const char *)(MSG(271, "$[0] PARTS") + i * 0x80));
 	}
 	return 3;
 }
@@ -758,7 +758,7 @@ void (armc_sendSelectionToNet)(void)
 
 /* 0x40fb20: the ARM CENTER's parts page clicked (armcPartsPage_hitTest's buttons 1 .. 16): 1 / 2 the weapons and colour pages
    (armc_openWeaponsPage / armc_showColourPage, unless already there), 3 / 4 the screen's two exits (armc_exit), 6 .. 11 the mech
-   view 0 .. 5 (g_armcPartSlot; its zoom g_unusedArmcViewCountdown back to 1), 14 / 15 the view's two turns (armc_stepPart; not in view 5),
+   view 0 .. 5 (g_armcPartSlot; its zoom g_unusedArmcViewCountdown back to 1), 14 / 15 the SELECT arrows stepping the part back / on (armc_stepPart; not in view 5),
    16 the rotation toggle (g_armcSpin). Each with its sound. Returns what the original leaves in eax */
 u32 (armc_partsPageClicks)(void)
 {
@@ -805,7 +805,7 @@ u32 (armc_partsPageClicks)(void)
 
 /* 0x40ff40: the colour page clicked (armcColour_hitTest's buttons 0 .. 17): 0 .. 2 the parts, weapons and colour pages
    (armc_showPartsPage / armc_openWeaponsPage / armc_showColourPage, unless already there), 3 / 4 the two exits (armc_exit), 5 .. 10 the colour slot
-   0 .. 5 (g_armcColourSlot; slot 5 also armc_seedAllColourSlot), 11 .. 16 the slider and swatch buttons (armc_setPrimaryHueFromPointer .. armc_setSecondaryHueFromPointer), 17 the
+   0 .. 5 (g_armcColourSlot; slot 5 also armc_seedAllColourSlot), 11 .. 16 the six sliders (armc_setPrimaryHueFromPointer .. armc_setSecondaryValueFromPointer), 17 the
    rotation toggle. Returns what the original leaves in eax */
 u32 (armc_colourPageClicks)(void)
 {

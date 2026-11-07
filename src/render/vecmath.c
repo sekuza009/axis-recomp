@@ -232,8 +232,8 @@ void (color_hsvToRgb)(float hue, float sat, float val, float *r, float *g, float
 
 /* 0x4326f0: the level (1 .. 20) a points total reaches, thresholds 100 .. 1200000: an actor's grade from its score
    (the local team's, on each kill award), the Ladder level from exp (ladder_checkAndSendRecord, lobby records) and
-   the starting level (match_startRound). The original returns the full EAX */
-int (actor_levelFromValue)(int v)
+   the starting level (match_setupOrStartRound). The original returns the full EAX */
+int (level_fromPoints)(int v)
 {
 	static const int limit[] = { 100, 350, 850, 1700, 3200, 5800, 10000, 16000, 25000, 40000, 60000, 90000,
 	                             135000, 200000, 300000, 440000, 650000, 950000, 1200000 };
@@ -243,11 +243,12 @@ int (actor_levelFromValue)(int v)
 	return lvl;
 }
 
-/* 0x41f0e0 Color4_set(c, r, g, b, a): g, b, a copied as bits; r goes through the FPU (fld / fstp, so a signalling NaN
-   comes out quiet); store order g, b, r, a */
+/* 0x41f0e0 Color4_set(c, r, g, b, a): r, g, b, a copied as bits, in the
+   original's store order g, b, r, a (the original moves r through the FPU, fld / fstp, which would make a signalling
+   NaN quiet; here it is copied as it is) */
 void (Color4_set)(u32 *c, u32 r, u32 g, u32 b, u32 a) { c[1] = g; c[2] = b; c[0] = r; c[3] = a; }
 /* 0x42eeb0 rect_set(left, top, right, bottom, out): a button / hit rectangle's four corners stored */
-void (rect_set)(u32 a, u32 b, u32 c, u32 d, u32 *out) { out[0] = a; out[1] = b; out[2] = c; out[3] = d; }
+void (rect_set)(u32 left, u32 top, u32 right, u32 bottom, u32 *out) { out[0] = left; out[1] = top; out[2] = right; out[3] = bottom; }
 
 /* 0x480400 the length of a Vec3, returned unrounded in ST0 */
 X THISCALL (Vec3_length)(const float *v)

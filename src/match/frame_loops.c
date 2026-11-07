@@ -666,8 +666,8 @@ static u32 table_rand_below(u32 n)
 	return r;
 }
 
-/* the particle's direction (pos, from g_vecOrigin through its matrix matrix) */
-static void particle_heading(u8 *p)
+/* the particle placed at its matrix's origin (pos: the origin g_vecOrigin through its matrix) */
+static void particle_placeAtMatrix(u8 *p)
 {
 	const float *m = PR->matrix, *v = (const float *)ADDR(g_vecOrigin);
 	for (int r = 0; r < 3; r++)
@@ -675,7 +675,7 @@ static void particle_heading(u8 *p)
 		                                    &m[12 + r]));
 }
 
-/* a matrix from the particle's own (matrixFrom) turned by a random whole degree about z (its matrix), and the direction */
+/* a matrix from the particle's own (matrixFrom) turned by a random whole degree about z (its matrix), and its position from it */
 static void particle_spin(u8 *p)
 {
 	glPushMatrix();
@@ -684,7 +684,7 @@ static void particle_spin(u8 *p)
 	glRotatef((float)table_rand_below(360), 0.0f, 0.0f, 1.0f);
 	glGetFloatv(0xba6, PR->matrix);
 	glPopMatrix();
-	particle_heading(p);
+	particle_placeAtMatrix(p);
 }
 
 /* the particle's matrix the inverse of a look from its position (pos) to its target (target), stretched by their
@@ -793,8 +793,8 @@ static void particle_mark(u8 *p, const u8 *desc, u32 margin)
 /* 0x475070 (thiscall on the scene): particle slot (0x12c bytes from particles) set up from its descriptor: a
    serial id, in use. A descriptor flagged isQuad is a kind 50 effect (its 0x48 bytes from quad). Otherwise the
    kind (+0), owner, position, target, a matrix to copy, the size (size); then by kind its life (life) and: 2 / 3
-   a sound at the position; 4 its colour from +0x20; 9 a fade; 10 / 11 / 18 a random spin; 12 .. 17 the heading
-   through its matrix; 20 / 21 / 24 aimed at the target; 25 / 26 beams; 40 .. 49 hit marks */
+   a sound at the position; 4 its colour from +0x20; 9 a fade; 10 / 11 / 18 a random spin; 12 .. 17 the position
+   from its matrix; 20 / 21 / 24 aimed at the target; 25 / 26 beams; 40 .. 49 hit marks */
 void THISCALL (particle_init)(u8 *s, int slot, const u8 *desc)
 {
 	const ParticleDesc *pd = (const ParticleDesc *)desc;
@@ -849,11 +849,11 @@ void THISCALL (particle_init)(u8 *s, int slot, const u8 *desc)
 		break;
 	case 12: case 13: case 17:
 		PR->life = 0.01f;
-		particle_heading(p);
+		particle_placeAtMatrix(p);
 		break;
 	case 14: case 15: case 16:
 		PR->life = 0.5f;
-		particle_heading(p);
+		particle_placeAtMatrix(p);
 		break;
 	case 20: case 21:
 		PR->life = 0.01f;

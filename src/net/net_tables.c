@@ -418,7 +418,8 @@ int (net_resolveHost)(const char *host)
 }
 
 /* 0x453fd0: the sessions asked for (DirectPlay EnumSessions, async with the callback dplay_enumSessionsCallback, flags 0x12): of the
-   game's application (GUID at k_axisAppGuid), on the instance at *g_providerGuid; once more while g_connectionKind is 1. 1 on success,
+   game's application (GUID at k_axisAppGuid), on the instance at *g_providerGuid; asked once, and only for connection kinds 0 and 1 (2 and 3 ask
+   nothing and return 1). 1 on success,
    0 without DirectPlay or on a failure */
 int (dplay_enumSessions)(void)
 {
@@ -443,15 +444,15 @@ int (dplay_enumSessions)(void)
 
 #define lstrcpyA(dst, src) IMPORT(0x4a911c, char *, char *, const char *)(dst, src)
 
-/* ---- a received record appended to a list: its strings (each also as the list's name, 20 bytes a slot at
-   g_pingAddresses) and single bytes copied into the next slot, the count advanced. Returns the slot's offset in the list
-   (the original's eax) ---- */
-static int list_append(u32 count, u32 base, int size, const u8 *rec, const u8 *strings, int nstrings, int name,
+/* ---- a received record appended to a list: its strings and single bytes copied into the next slot, and its
+   address (the string at pingAddress) also into the ping list (20 bytes a slot at g_pingAddresses); the count
+   advanced. Returns the slot's offset in the list (the original's eax) ---- */
+static int list_append(u32 count, u32 base, int size, const u8 *rec, const u8 *strings, int nstrings, int pingAddress,
                        const u8 *bytes, int nbytes)
 {
 	for (int k = 0; k < nstrings; k++)
 		lstrcpyA((char *)(RELOC(base) + GAME_VAR(int, count) * size + strings[k]), (const char *)RELOC(rec) + strings[k]);
-	lstrcpyA((char *)(OBJ(g_pingAddresses) + GAME_VAR(int, count) * 20), (const char *)RELOC(rec) + name);
+	lstrcpyA((char *)(OBJ(g_pingAddresses) + GAME_VAR(int, count) * 20), (const char *)RELOC(rec) + pingAddress);
 	int i = GAME_VAR(int, count);
 	u8 *slot = (u8 *)(RELOC(base) + i * size);
 	for (int k = 0; k < nbytes; k++)
@@ -1050,11 +1051,11 @@ static int send_leave(u32 from, u32 to, const u8 *bytes, int nbytes, int flagged
 /* ---- the info sent to the server when a player comes or goes while hosting over TCP/IP: the arena's (g_arenaPacket into
    the packet g_arenaInfoPacket, to the lobby server) or the Ladder room's (g_roomPacket into g_roomInfoPacket, to the game server), the player count (g_playerCount) included ---- */
 
-static void arena_info(u8 *dst, u8 first, u8 count)
+static void arena_info(u8 *dst, u8 kind, u8 count)
 {
 	const ServerRecord *src = (*(const ServerRecord **)&g_arenaPacket);
 	ServerRecord *to = (ServerRecord *)dst;
-	to->kind = first;
+	to->kind = kind;
 	to->rotation = src->rotation;
 	to->timeLimit = src->timeLimit;
 	to->fragLimit = src->fragLimit;
@@ -1069,11 +1070,11 @@ static void arena_info(u8 *dst, u8 first, u8 count)
 	net_send(0xc, 0x64);
 }
 
-static void room_info(u8 *dst, u8 first, u8 count)
+static void room_info(u8 *dst, u8 kind, u8 count)
 {
 	const RoomRecord *src = (*(const RoomRecord **)&g_roomPacket);
 	RoomRecord *to = (RoomRecord *)dst;
-	to->kind = first;
+	to->kind = kind;
 	to->rotation = src->rotation;
 	to->fragLimit = src->fragLimit;
 	to->gameMode = src->gameMode;
@@ -1091,8 +1092,8 @@ static void room_info(u8 *dst, u8 first, u8 count)
 /* 0x450c20 (a DirectPlay system message): 5 (DPSYS_DESTROYPLAYERORGROUP), a player gone: its slots freed
    (net_freeSlotsOf, unless the host is gone), then the info sent with the count less one; 3
    (DPSYS_CREATEPLAYERORGROUP), a player joined (the host only): a slot claimed for it (net_claimPlayerSlot into
-   g_netClaimedSlot) and sent to it (net_sendMessage), the message's count kept and the info sent (an arena's then starts
-   with 1). Only while
+   g_netClaimedSlot) and sent to it (net_sendMessage), the message's count kept and the info sent (a Ladder room's then
+   with kind 1; an arena's keeps its own kind). Only while
    hosting (g_isHost) over TCP/IP (g_connectionKind = 0) with the right socket open (200: the arena on the lobby's, 201: the
    Ladder room on the game server's) and nothing pending (g_lobbyReportsOff / g_gameServerPending). The original leaves eax to callers that
    ignore it */
@@ -1242,7 +1243,8 @@ static void send_buffer(u32 socket, u32 buffer, int size)
 
 /* 0x4521c0: packet `kind` sent to `to` (100 the lobby, 101 the game server; another value sends only the packet
    itself): its kind word (in g_netKindBuffer; none: nothing at all), then the kind's buffer: 10 .. 12 to the lobby (0x5b
-   bytes), 13 the hello (the game list cleared), 23 the name (0x10), 14 / 15 the address request (this machine's
+   bytes), 13 the arena list request (the server list cleared first), 23 the hosted arena's address (0x10, in
+   g_lobbyKeepAlive), 14 / 15 the address request (this machine's
    address at address), 17 .. 22 and 24 .. 29 to the game server (19 and 21 / 26 after clearing the server or player
    tables, 22 with its first byte set). Most kinds are kept as the last request (g_netLastRequest). The callers ignore the
    eax it leaves */
@@ -1885,8 +1887,8 @@ static void match_limit(u8 *g, int state, u32 notice)
    (byte 1): 0 a player's state (position, aim, weapon, lights, the five weapon slots; a player not yet set up is
    asked for); 1 the game state (round, time, map change, the checksums of the part and item tables, scores, items);
    2 a player joining with his mech; 3 the server ending the game; 4 / 5 the frag / time limit; 6 a cheat notice; 7
-   a chat line; 8 a player connecting; 9 one leaving; 10 / 11 team changes; 12 a player's flag rows; 13 a pause
-   timer; 14 the items' states. Anything else goes to shared_emptyFunction (nothing) */
+   a chat line; 8 a player connecting; 9 one leaving; 10 / 11 team changes; 12 a player's flag rows; 13 a restart
+   (restartTimer 5 s; net_sendMatchEvent's restartPending); 14 the items' states. Anything else goes to shared_emptyFunction (nothing) */
 void THISCALL (net_processGamePacket)(u8 *g, u32 from, int size, const char *pkt)
 {
 	if (size != 0x40)

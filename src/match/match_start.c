@@ -84,7 +84,7 @@ static void match_setup(Scene *s)
 	s->character = g_selectedCharacter;
 	if (s->ladderGame == 1) {
 		s->levelPoints = g_ladderExp;
-		s->level = actor_levelFromValue(s->levelPoints);
+		s->level = level_fromPoints(s->levelPoints);
 		if (s->level < 1 || s->level > 20)
 			sys_fatalError((char *)OBJ(g_logConsole), (const char *)STR(0x4d0710, "incorrect level(%d) - processGameMode..."), s->level);
 	} else {
@@ -204,7 +204,7 @@ static void round_start(Scene *s)
    rotation, limits, mech, local player); once a map has loaded (loading stage 8 sets matchDrawing 1 and stateFrames 0
    again) the round on it starts (round_start: type table check, camera, volumes, scores, events, teams). Its caller
    ignores the eax it leaves */
-void THISCALL (match_startRound)(Scene *s)
+void THISCALL (match_setupOrStartRound)(Scene *s)
 {
 	if (s->matchDrawing)
 		round_start(s);
@@ -241,7 +241,7 @@ static void identity(u32 *m)
 		m[k] = k % 5 == 0 ? 0x3f800000 : 0;
 }
 
-/* 0x470ad0 (thiscall on the scene): the scene's subsystems reset (stage_resetLights; the 100 dwords at lockHeld and
+/* 0x470ad0 (thiscall on the scene): the scene's subsystems reset (stage_resetDynamicLights; the 100 dwords at lockHeld and
    lockCount cleared; the object list, stage_clearBullets, stage_clearParticles, stage_resetMatrixAndPoints), the camera at the origin looking down
    -z (cameraPos .. lastCameraPos[2]) with identity matrices (modelview, lastModelview), the start and item points none, the
    team commanders (teamCommanders) and snapshot textures (snapshotTex) all -1, then the scripts (stage_clearMessages, script_reset) and stage_initSpaceOneCell. Its
@@ -249,7 +249,7 @@ static void identity(u32 *m)
 void THISCALL (scene_reset)(u8 *s)
 {
 	Stage *st = (Stage *)s;
-	stage_resetLights(s);
+	stage_resetDynamicLights(s);
 	memset(st->lockHeld, 0, 0x64 * 4);
 	st->lockCount = 0;
 	stage_clearMapObjects(s);
@@ -306,7 +306,7 @@ void THISCALL (stage_build)(u8 *s, u32 stageDir, u32 mapDir, const char *texture
 	}
 	Light_clearCounts((u8 *)&st->mapLights);
 	factors_addAmbient((u8 *)&st->mapLights, (const void *)OBJ(g_packedWhite));
-	stage_resetLights(s);
+	stage_resetDynamicLights(s);
 	Light_clearCounts((u8 *)&st->actorLights);
 	u8 grey[4] = { 0x40, 0x40, 0x40, 0xff };
 	factors_addAmbient((u8 *)&st->actorLights, grey);

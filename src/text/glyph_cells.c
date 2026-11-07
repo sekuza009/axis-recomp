@@ -174,7 +174,7 @@ u32 (hud_drawDigits)(int x, int y, float scale, int value, int count, int padded
 	return IMPORT(0x4a922c, u32, u32)(GL_TEXTURE_2D);   /* glDisable */
 }
 
-/* 0x46bb00: text in the pen font (the HUD's small text: the power-up countdown, the ranking...), printf-style, at
+/* 0x46bb00: text in the pen font (the loading screen's log lines, the power-up countdown), printf-style, at
    (x, y) (y down from the top): font 1 the proportional set (14 tall, widths from g_penPropWidths), else the fixed one (8 x
    8). A newline goes back to x one line lower, a tab moves 64 right, other characters outside ' ' .. '~' are left
    out. Each glyph's four corners take their texture coordinates from the font's four cell tables (glyph 1 = ' ').

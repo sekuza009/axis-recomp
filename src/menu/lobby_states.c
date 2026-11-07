@@ -158,7 +158,7 @@ void (room_enterCreatePage)(void)
 }
 
 /* 0x433800: the ranking page (state 4) entered: its ten 0x44-byte rows cleared (each marked empty), the paging and
-   selection cleared, the distance limit 10,000,000, 999 rooms */
+   selection cleared, g_rankingPrevValue 10,000,000, the last page unknown (g_rankingLastPage 999) */
 void (ranking_enter)(void)
 {
 	static const u32 cleared[] = { ADDR(g_rankingPage), ADDR(g_rankingRequestPending), ADDR(g_rankingListIn), ADDR(g_rankingWaiting), ADDR(g_rankingHaveList), ADDR(g_playerListDone), ADDR(g_playerListCount), ADDR(g_rankingPrevPage),
@@ -376,7 +376,7 @@ u32 (createUpdateNotice_keys)(void)
 
 /* 0x40cf80: the lobby's player screen drawn: the arena tunnel, then in camera modes other than 0 and 1
    (g_arenaCameraMode) and not on sub-screen 5, the SETUP PLAYER dialog (lobby_drawPlayerSetup), or while its frame is
-   opening (g_frameOpening) just the frame (menu_drawFrame). Returns what the original leaves in eax */
+   opening (g_frameOpening) just the frame (menu_drawFrameOpening). Returns what the original leaves in eax */
 u32 (lobbyPlayer_draw)(void)
 {
 	arena_drawTunnel();   /* arena_drawTunnel: the tunnel */
@@ -385,8 +385,8 @@ u32 (lobbyPlayer_draw)(void)
 		return mode;
 	if (!g_frameOpening)
 		return lobby_drawPlayerSetup();   /* lobby_drawPlayerSetup */
-	return menu_drawFrame(g_playerSetupLeft, g_playerSetupTop,
-	                                                     g_playerSetupRight, g_playerSetupBottom);   /* menu_drawFrame */
+	return menu_drawFrameOpening(g_playerSetupLeft, g_playerSetupTop,
+	                                                     g_playerSetupRight, g_playerSetupBottom);   /* menu_drawFrameOpening */
 }
 
 /* 0x4081f0: the lobby's keys, by sub-screen (g_lobbySubState): 0 the player screen (lobbyPlayer_keys), 1 the game
@@ -522,7 +522,7 @@ u32 (arenaJoinBox_clicks)(void)
 }
 
 /* 0x403870: the map list's keys: O takes the list (mapList_ok; a second O test right after, closing the list with a
-   sound, is never reached in practice), A chooses all maps (mapList_chooseAll), D none (mapList_chooseNone). Returns
+   sound, is never reached in practice), A chooses all maps (mapList_chooseAll), D none (mapList_setDefault). Returns
    what the original leaves in eax */
 u32 (mapList_keys)(void)
 {
@@ -537,7 +537,7 @@ u32 (mapList_keys)(void)
 		return mapList_chooseAll();   /* mapList_chooseAll */
 	u32 r = input_justPressed(g_dikD);
 	if (r)
-		return mapList_chooseNone();   /* mapList_chooseNone */
+		return mapList_setDefault();   /* mapList_setDefault */
 	return r;
 }
 
@@ -636,7 +636,7 @@ u32 (room_keepSettings)(void) { return settings_store((GameSettings *)OBJ(g_room
 /* 0x40d390: the create-arena page's frame: the tunnel, then (camera modes other than 0 and 1, not on sub-screen 5)
    just the form's frame while it opens (g_frameOpening), else the arena record kept in range (players 0 .. 16 else 8,
    the two limits at most 250 else 30, the game type 0 .. 14 else 0), the form (arena_createDraw), the map list when
-   open, and while a hosting answer is awaited (g_connectionAwaited) its outcome handled (arena_connectionOutcome).
+   open, and while a hosting answer is awaited (g_connectionAwaited) its outcome handled (arena_takeHostAnswer).
    Returns what the original leaves in eax */
 u32 (lobbyCreate_frame)(void)
 {
@@ -645,8 +645,8 @@ u32 (lobbyCreate_frame)(void)
 	if (mode == 1 || mode == 0 || g_lobbySubState == 5)
 		return (u32)mode;
 	if (g_frameOpening)
-		return menu_drawFrame(g_newArenaFormLeft, g_newArenaFormTop,
-		                                                     g_newArenaFormRight, g_newArenaFormBottom);   /* menu_drawFrame */
+		return menu_drawFrameOpening(g_newArenaFormLeft, g_newArenaFormTop,
+		                                                     g_newArenaFormRight, g_newArenaFormBottom);   /* menu_drawFrameOpening */
 	signed char players = (*(signed char *)&g_arenaMaxPlayers);
 	if (players < 0 || players > 0x10)
 		g_arenaMaxPlayers = 8;
@@ -662,7 +662,7 @@ u32 (lobbyCreate_frame)(void)
 		mapList_draw();   /* mapList_draw: the map list */
 	if (!g_connectionAwaited)
 		return 0;
-	return arena_connectionOutcome();   /* arena_connectionOutcome */
+	return arena_takeHostAnswer();   /* arena_takeHostAnswer */
 }
 
 /* 0x408110: the "NETWORK INITIALIZE ERROR" box's keys (hosting failed; not while a panel frame opens, g_frameOpening): C closes it, O starts the arena anyway:
@@ -897,7 +897,8 @@ u32 (lobby_topPageClicks)(void)
 	return to_main_menu();
 }
 
-/* 0x407840: ... otherwise Escape (cancel2) and back close the page, O applies (arena_savePlayerSettings) and closes
+/* 0x407840: the SETUP PLAYER page's keys (camera arrived, no panel frame opening): a finished typing of the name is
+   taken first (the typed line into g_arenaPlayerName unless empty); otherwise Escape (cancel2) and back close the page, O applies (arena_savePlayerSettings) and closes
    it, D resets the name to the default (arena_defaultPlayer). Returns what the original leaves in eax */
 u32 (lobbyPlayer_keys)(void)
 {
@@ -1063,7 +1064,7 @@ u32 (hostError_clicks)(void)
    those settings taken for the game, g_arenaGameSetUp set; then (as the state stands after) 0 closed, 3 the program
    out of date (the update notice, g_arenaUpdateNotice), 4 refused (message 0x46): the connection closed
    (net_disconnect), the state back to 2. Returns what the original leaves in eax */
-u32 (arena_connectionOutcome)(void)
+u32 (arena_takeHostAnswer)(void)
 {
 	int state = g_hostAnswer;
 	if (state == 2)
@@ -1177,7 +1178,8 @@ u32 (arenaCreate_keys)(void)
    the arena). Buttons (createArena_hitTest): 0 / 1 / 6 / 7 type a field (arena_editGameName, arena_editPassword, arena_editFragLimit, arena_editTimeLimit), 2 / 12 /
    14 the map on and 13 back (arena_stepMap), 3 the players +2 (to 16, then 2), 4 the map rotation on / off (g_newArenaRotation; the game
    type kept in range), 5 the game type on (with a turn key held back) through 0 .. 13 (0 .. 14 with the rotation on), 8
-   create and 9 join (unless connecting), 11 leave, 15 the rotation's map list (with the rotation on; mapList_startEdit). Returns what
+   IPX GAME (lobby_hostArenaIpx) and 9 TCP/IP GAME (lobby_announceArena, else lobby_hostArenaTcpIp), both hosting, unless a
+   game is set up (g_arenaGameSetUp); 10 SERVER SERVICE does nothing, 11 CANCEL leaves, 15 the rotation's map list (with the rotation on; mapList_startEdit). Returns what
    the original leaves in eax (for the byte settings, its low byte the new value) */
 u32 (arena_createClick)(void)
 {
@@ -1467,14 +1469,14 @@ static void record_send(u32 rate, int name)
 	packet->deaths = R_DEATHS;
 	packet->exp = R_EXP;
 	packet->power = f32(fld_m(&R_POWER));
-	packet->level = actor_levelFromValue(R_EXP);
+	packet->level = level_fromPoints(R_EXP);
 	static const u32 kept[2] = { ADDR(g_pilotLevel), ADDR(g_pilotLevelKept) };
 	for (int k = 0; k < 2; k++) {
 		GAME_VAR(int, kept[k] + offsetof(PilotStats, games)) = R_GAMES;
 		GAME_VAR(int, kept[k] + offsetof(PilotStats, kills)) = R_KILLS;
 		GAME_VAR(int, kept[k] + offsetof(PilotStats, deaths)) = R_DEATHS;
 		GAME_VAR(int, kept[k] + offsetof(PilotStats, exp)) = R_EXP;
-		GAME_VAR(int, kept[k] + offsetof(PilotStats, level)) = (signed char)actor_levelFromValue(R_EXP);
+		GAME_VAR(int, kept[k] + offsetof(PilotStats, level)) = (signed char)level_fromPoints(R_EXP);
 		GAME_VAR(u32, kept[k] + offsetof(PilotStats, killRate)) = rate;
 		GAME_VAR(u32, kept[k] + offsetof(PilotStats, power)) = (*(u32 *)&R_POWER);
 	}

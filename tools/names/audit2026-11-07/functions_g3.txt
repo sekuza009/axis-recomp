@@ -1,0 +1,607 @@
+GROUP g3: 547 functions; OK 520, RENAME 5, COMMENT 10, PARAMS 3, UNSURE 9; NOT RUN 150
+
+== src/app/app_quit.c
+app_closeWindow | OK | code: g_exitCode = code, PostMessage(WM_CLOSE) to the main window; run: - (NOT RUN: quitting: app_quitGame (profile log-out YES) or the arena update notice O (lobby_states.c, code 2); the quit session ended before the trace was written)
+app_quitGame | OK | code: app_closeWindow(0); run: - (NOT RUN: the profile screen's log-out question answered to quit (menu_states.c:460); trace lost at exit)
+
+== src/app/classes.c
+clear | OK | code: n dwords zeroed (static helper); run: m0,m1,m2,m4,s0,s700 x17780935; ResourceSet_ctor x1408, Console_ctor x66, TimeSync_ctor x44
+TextureManager_clear | OK | code: 8 dwords of a TextureManager zeroed; run: s0 x44; TextureManager_ctor x22, TextureManager_reset x22
+Model_clear | OK | code: 0x13 dwords of a Model zeroed; run: m1,m2,m4,s0,s700 x94108; Model_release x48128, ShapeManager_initBy x45936, Model_ctor x44
+ShapeManager_clear | OK | code: 0x93 dwords of a ShapeManager zeroed; run: s0 x3608; ShapeManager_release x1804, ResourceSet_ctor x1760, Console_ctor x44
+SkeletonManager_clear | OK | code: 0x4c dwords of a SkeletonManager zeroed; run: s0 x3608; SkeletonManager_release x1804, ResourceSet_ctor x1760, Console_ctor x44
+collisionPlane_clear | OK | code: 0x2b dwords of a collision plane zeroed; run: m0,m1,m4,s0,s700 x3204144; clear_plane x3142072, collisionTri_setup x62072
+spaceBlock_clear | OK | code: 0x14 dwords of a space block zeroed; run: m0,m1,m4,s0,s700 x1564764; space_getNextFreeBlockPtrBy x794764, clear_block x770000
+CollisionVolume_clear | OK | code: 0x3d dwords of a CollisionVolume zeroed; run: s0 x44; CollisionVolume_ctor x22, CollisionVolume_release x22
+ViewVolume_clear | OK | code: 0x245c dwords of a ViewVolume zeroed; run: s0 x44; Console_ctor x22, ViewVolume_release x22
+TimeSync_clear | OK | code: 0xe dwords of a TimeSync zeroed (vtable too); run: s0 x66; TimeSync_ctor x44, Console_ctor x22
+spaceNode_clear | OK | code: 4 dwords of a space node zeroed; run: m0,m1,m4,s0,s700 x12910448; clear_node x12910448
+Light_clearCounts | OK | code: LightFactors count and nextFree = 0; run: m0,m1,m2,m4,s0,s700 x259171; stage_refillLights x137351, armc_drawPreview3D x81096, Light_dtor x40548
+stage_clearMessages | OK | code: Stage msgWrite / msgRead = 0; run: m0,m1,m4,s0,s700 x45; scene_reset x45
+ViewVolume_clearDrawCounts | OK | code: trianglesDrawn, meshesDrawn, textureBinds = 0; run: m2,s0 x138690; match_drawFrame x138668, ViewVolume_initBy x22
+Vec3_setNoReturn | OK | code: three dwords stored at this (ret 0xc; Vec3_set is the returning one); run: - (NOT RUN: collisionTri_sweepSphere's branch when all three edge tests fail (decomp 00470000.c:7836))
+TextureManager_reset | OK | code: TextureManager_clear then count 0; run: s0 x22; TextureManager_setBanks x22
+free_owned | OK | code: BlockOwner block freed when ownsBlock is 1 (static helper); run: m1,m2,m4,s0,s700 x366120; ObjectList_load x267221, ShapeManager_initBy x47740, actor_loadWeapon x38806
+Model_release | OK | code: owned block freed, Model_clear; run: m1,m2,m4,s0,s700 x48128; ShapeManager_initBy x45936, shape_read x2147, ShapeManager_releaseModels x45
+ShapeManager_release | OK | code: owned block freed, ShapeManager_clear; run: s0 x1804; ShapeManager_initBy x1804
+SkeletonManager_release | OK | code: owned block freed, SkeletonManager_clear; run: s0 x1804; SkeletonManager_initBy x1804
+CollisionVolume_release | OK | code: owned block freed, CollisionVolume_clear; run: s0 x22; space_initBy x22
+net_sessionCount | OK | code: returns g_dplaySessionCount; run: - (NOT RUN: arenaList_rebuild (net_sessions.c:93): the DirectPlay arena list)
+gfx_getWidth | OK | code: returns g_glWidth; run: m1,m2,m4 x6799752; hud_scaleX x859780, hud_drawTeamScores x353990, hud_fillRect x274348
+gfx_getHeight | OK | code: returns g_glHeight; run: m1,m2,m4 x19763222; fill_rect x1663520, mouse_offset x232932, replay_frame x12922
+view_fov | OK | code: returns g_viewFov; run: m2,m4,s700 x620986; zoom_view x290224, match_frame x277299, armc_drawPreview3D x40548
+view_nearPlane | OK | code: returns g_viewNear; run: m2,m4,s700 x185666; match_frame x138659, armc_drawPreview3D x40548, replay_frame x6459
+view_farPlane | OK | code: returns g_viewFar; run: m2,m4,s700 x475873; match_drawFrame x277306, match_frame x138646, armc_drawPreview3D x40548
+armc_showPartsPage | OK | code: g_armcMode = 1 (the parts page); run: - (NOT RUN: ARM CENTER: P key / the parts tab button from the weapons or colour page (armc_keys.c, armc_items.c); armc_open sets mode 1 itself)
+armc_showColourPage | OK | code: g_armcMode = 3, g_armcColourSlot = 5 (the colour page); run: - (NOT RUN: ARM CENTER: L key / the colour tab button)
+ptx_startBitReader | OK | code: g_bitStream = v, bit position and last DC reset; run: m1,m2,m4,s0,s100,s200,s210,s400,s500,s600,s700 x12884; ptx_read x12884
+menuCamera_setMove | OK | code: g_menuCameraMove set (returned); run: m0,s300,s400,s600 x1241; menu_slide x1065, menuState300_frame x153, menu_choice x13
+music_setVolumeSetting | OK | code: g_musicVolumeSetting set (returned; never read); run: m2 x8; round_start x8
+set3 | OK | code: three dwords at addr set (static helper); run: s0 x132; crt_start x132
+vec_initOrigin | OK | code: g_vecOrigin = 0,0,0; run: s0 x22; crt_start x22
+vec_initZero2 | OK | code: g_vecZero2 = 0,0,0; run: s0 x22; crt_start x22
+vec_initAxisZ | OK | code: g_vecUnitZ = 0,0,1; run: s0 x22; crt_start x22
+vec_initUp | OK | code: g_vecUnitY = 0,1,0; run: s0 x22; crt_start x22
+vec_initZero | OK | code: g_vecZero = 0,0,0; run: s0 x22; crt_start x22
+vec_initAxisX | OK | code: g_vecUnitX = 1,0,0; run: s0 x22; crt_start x22
+Texture_dtor | OK | code: Texture vtable back, name index freed, image file closed; run: - (NOT RUN: static_destroyTex* at exit)
+Texture_deletingDtor | OK | code: Texture_dtor, delete when flags & 1; run: - (NOT RUN: vtable slot 0: the object deleted (only at shutdown))
+static_destroyTex64x64 | OK | code: Texture_dtor of the global texture bank (atexit); run: - (NOT RUN: atexit at a normal exit (the game was killed))
+static_destroyTex128x64 | OK | code: Texture_dtor of the global texture bank (atexit); run: - (NOT RUN: atexit at a normal exit (the game was killed))
+static_destroyTex256x64 | OK | code: Texture_dtor of the global texture bank (atexit); run: - (NOT RUN: atexit at a normal exit (the game was killed))
+static_destroyTex128x128 | OK | code: Texture_dtor of the global texture bank (atexit); run: - (NOT RUN: atexit at a normal exit (the game was killed))
+static_destroyTex256x128 | OK | code: Texture_dtor of the global texture bank (atexit); run: - (NOT RUN: atexit at a normal exit (the game was killed))
+static_destroyTex256x256 | OK | code: Texture_dtor of the global texture bank (atexit); run: - (NOT RUN: atexit at a normal exit (the game was killed))
+TimeSync_ctor | OK | code: vtable 0x4aa46c set, TimeSync_clear; run: s0 x44; static_initTimeSync x22, Console_ctor x22
+TimeSync_dtor | OK | code: vtable set back; run: - (NOT RUN: Console_dtor / static_endTimeSync at exit)
+TimeSync_deletingDtor | OK | code: TimeSync_dtor, delete when flags & 1; run: - (NOT RUN: vtable slot 0: the object deleted (only at shutdown))
+static_endTimeSync | OK | code: TimeSync_dtor of g_loadTimer (atexit); run: - (NOT RUN: atexit at a normal exit (the game was killed))
+TextureManager_ctor | OK | code: g_textureManager vtable set, members cleared; run: s0 x22; static_startTextureManager x22
+TextureManager_dtor | OK | code: vtable back, TextureManager_reset; run: - (NOT RUN: static_endTextureManager at exit)
+TextureManager_deletingDtor | OK | code: TextureManager_dtor, delete when flags & 1; run: - (NOT RUN: vtable slot 0: the object deleted (only at shutdown))
+static_endTextureManager | OK | code: TextureManager_dtor of g_textureManager (atexit); run: - (NOT RUN: atexit at a normal exit (the game was killed))
+Scene_ctor | OK | code: game class Scene (our ScenePath) vtable set, the shared empty method called; run: s0 x22; Console_ctor x22
+Scene_dtor | OK | code: vtable set back; run: - (NOT RUN: Stage_dtor at exit)
+Scene_deletingDtor | OK | code: Scene_dtor, delete when flags & 1; run: - (NOT RUN: vtable slot 0: the object deleted (only at shutdown))
+Light_ctor | OK | code: vtable set, Light_clearCounts; run: s0 x22; Console_ctor x22
+Light_dtor | OK | code: vtable set back, Light_clearCounts; run: s700 x40548; armc_drawPreview3D x40548
+Light_deletingDtor | OK | code: Light_dtor, delete when flags & 1; run: - (NOT RUN: vtable slot 0: the object deleted (only at shutdown))
+CollisionVolume_ctor | OK | code: vtable set, CollisionVolume_clear; run: s0 x22; Console_ctor x22
+CollisionVolume_dtor | OK | code: vtable back, CollisionVolume_release; run: - (NOT RUN: Stage_dtor at exit (g_scene deleted by app_shutdown on WM_CLOSE))
+CollisionVolume_deletingDtor | OK | code: CollisionVolume_dtor, delete when flags & 1; run: - (NOT RUN: vtable slot 0: the object deleted (only at shutdown))
+Model_ctor | OK | code: vtable set, Model_clear; run: s0 x44; Console_ctor x44
+Model_dtor | OK | code: vtable back, Model_release; run: - (NOT RUN: Stage_dtor at exit)
+Model_deletingDtor | OK | code: Model_dtor, delete when flags & 1; run: - (NOT RUN: vtable slot 0: the object deleted (only at shutdown))
+ShapeManager_dtor | OK | code: vtable back, ShapeManager_release; run: - (NOT RUN: Stage_dtor / ResourceSet_dtor at exit)
+ShapeManager_deletingDtor | OK | code: ShapeManager_dtor, delete when flags & 1; run: - (NOT RUN: vtable slot 0: the object deleted (only at shutdown))
+SkeletonManager_dtor | OK | code: vtable back, SkeletonManager_release; run: - (NOT RUN: Stage_dtor / ResourceSet_dtor at exit)
+SkeletonManager_deletingDtor | OK | code: SkeletonManager_dtor, delete when flags & 1; run: - (NOT RUN: vtable slot 0: the object deleted (only at shutdown))
+BMPRGBFile_dtor | OK | code: vtable back, its file closed; run: m1,m2,m4,s0,s100,s200,s210,s400,s500,s600,s700 x24860; tex_textureFileExist x19282, tex_loadImage x5571, playerRecord_loadFlag x7
+BMPRGBFile_deletingDtor | OK | code: BMPRGBFile_dtor, delete when flags & 1; run: - (NOT RUN: vtable slot 0: the object deleted (only at shutdown))
+ErrorLog_dtor | OK | code: vtable set back; run: - (NOT RUN: static_end*Log at exit)
+ErrorLog_deletingDtor | OK | code: ErrorLog_dtor, delete when flags & 1; run: - (NOT RUN: vtable slot 0: the object deleted (only at shutdown))
+static_endSoundLog | OK | code: ErrorLog_dtor of g_logSound (atexit); run: - (NOT RUN: atexit at a normal exit)
+ErrorLog_ctor | OK | code: vtable set, the class name kept, g_errorCleanupHook set; run: s0 x440; Texture_initLog x22, TextureManager_initLog x22, Sound_initLog x22
+ResourceSet_ctor | OK | code: a PlayerRecord's 5 ShapeManagers + 5 SkeletonManagers built (vtables, cleared); run: s0 x352; vector_construct x352
+release_all | OK | code: a manager's items each released, count 0 (static helper); run: m1,m2,m4,s700 x252; set_part x232, map_loadObjectInfoFrom x20
+release_model | OK | code: Model_release adapter (static); run: m1,m4,s700 x45; set_part x23, map_loadObjectInfoFrom x22
+release_skeleton | OK | code: Skeleton_release adapter (static); run: m4,s700 x6; set_part x6
+ShapeManager_releaseModels | OK | code: every Model of a ShapeManager released; run: m1,m2,m4,s700 x126; set_part x116, map_loadObjectInfoFrom x10
+SkeletonManager_releaseSkeletons | OK | code: every Skeleton of a SkeletonManager released; run: m1,m2,m4,s700 x126; set_part x116, map_loadObjectInfoFrom x10
+actor_destroyPartLists | OK | code: the actor's 8 part models destroyed (UnitPoseInfo_dtor): the stage actors' element destructor; run: - (NOT RUN: Stage_dtor at exit)
+ResourceSet_dtor | OK | code: 5 SkeletonManager_dtor + 5 ShapeManager_dtor (reverse order); run: - (NOT RUN: Stage_dtor at exit (eh vector destructor))
+Stage_dtor | OK | code: the Stage's members destroyed in reverse order; run: - (NOT RUN: Console_dtor at exit)
+image_initBy | OK | code: 24-bit BMP opened, headers read (fatal "...-initBy()" messages), size kept; run: - (NOT RUN: a .BMP texture: tex_textureFileExist / tex_loadImage (names.c:235, 463) - the traced textures were all PTX)
+image_tryOpen | OK | code: as image_initBy without the fatal messages; run: m2 x7; playerRecord_loadFlag x7
+playerRecord_loadFlag | PARAMS | scene -> stage: declared Stage *scene and used as the stage (scene->playerRecords is Stage.playerRecords). Name OK: Save\<name>.BMP into player p's flag; run: m2 match_frame x7 (hosted arenas, mp)
+flag_uploadAtlas | OK | code: changed player flags copied into the 128x64 atlas, uploaded when one is new; run: m2,m4 x10; match_frame x8, replay_frame x2
+image_copyTo | OK | code: a clipped block of the open BMP copied as RGB / RGBA ("copyTo()" message); run: - (NOT RUN: playerRecord_loadFlag with a Save\<name>.BMP of at least 23x15)
+Console_ctor | OK | code: the game object (class Console) built: members, stage_build, catalogue, items, Help.txt, chat macros; run: s0 x22; app_startupLoad x22
+zero_dwords | OK | code: n dwords zeroed (static helper); run: m0,m1,m2,s700 x132; match_enter x99, armc_makeSession x33
+scene_startSession | COMMENT | 'mode 2 also clears the armour cache' - no such thing in the code: mode 2 sets silentActor 0 (stage_setSilentActor: the actor without footstep sounds), playerActor 0, the level / world box +-100000, unusedBe2ffc 1, game_setGameTypeFlags(0). Also 'the camera from 0xa0e7a8..' -> g_vecOrigin / -g_vecUnitZ / g_vecUnitY. Name OK: code sets client / sessionMode and resets for a session; run: m0 match_enter x9, s700 armc_makeSession x3
+
+== src/app/devices.c
+input_reacquireKeyboard | OK | code: keyboard Acquire when ready; run: m1,m2,m4,s100,s200,s210,s300,s400,s500,s600,s700,s900 x383869; menu_processKeys x260848, app_frameByScreen x123021
+input_reacquireMouse | OK | code: mouse Acquire (Unacquire while g_mouseTaken is 0); run: m1,m2,m4,s100,s200,s210,s300,s400,s500,s600,s700,s900 x387440; input_updateMouse x387440
+input_releaseKeyboard | OK | code: keyboard Unacquire + Release, ready 0 (so a text field gets the keys); run: m2,s210,s400 x16; chat_textField x9, edit_limit x2, arena_editPlayerName x1
+input_releaseMouse | OK | code: mouse Unacquire + Release, ready 0; run: - (NOT RUN: input_releaseAll at shutdown)
+input_releaseAll | OK | code: keyboard, mouse and IDirectInput released; run: - (NOT RUN: app_shutdown (WM_CLOSE))
+sound_releaseDirectSound | OK | code: IDirectSound released; run: - (NOT RUN: app_shutdown)
+read_keys | OK | code: GetDeviceState into g_keyState, reacquired on DIERR_INPUTLOST (static); run: m1,m2,m4,s200,s210,s300,s400,s500,s600,s700,s900 x11874796; input_justPressed x8145395, input_isDown x3729401
+input_keyHeld | OK | code: 1 while DIK key held (read < 0: 0); run: m1,m2,m4,s200,s210,s300,s400,s500,s600,s700,s900 x4073046; input_justPressed x4073046
+input_keyHeldChecked | OK | code: same, 0 unless the read returned exactly 0; run: m1,m2,m4,s200,s210,s300,s400,s500,s600,s700,s900 x7802181; input_justPressed x4072566, input_isDown x3729615
+input_createDirectInput | OK | code: DirectInputCreateA, then keyboard and mouse created; run: s0 x22; app_startupLoad x22
+input_readMouse | OK | code: mouse state into g_mouseState (cleared when not in front / failed); run: m1,m2,m4,s100,s200,s210,s300,s400,s500,s600,s700,s900 x387432; fix_readMouse x387432
+input_updateMouse | OK | code: per-frame pointer move, wheel, clamp, buttons held / click pulses; run: m1,m2,m4,s100,s200,s210,s300,s400,s500,s600,s700,s900 x387417; menu_processMouse x264397, app_frameByScreen x123020
+input_setCursorPos | OK | code: SetCursorPos while the game window is in front; run: m4 x2; replay_frame x2
+input_asyncKeyDown | OK | code: GetAsyncKeyState(key) down, game window in front only; run: - (NOT RUN: match_freeCamFrame (matchState 3))
+input_getCursorPos | OK | code: GetCursorPos into g_cursorX / g_cursorPosY (in front only); run: - (NOT RUN: match_freeCamFrame (matchState 3))
+input_asyncKeyPressed | OK | code: GetAsyncKeyState press edge (latched in g_asyncKeySeen); run: m1 x82; game_processLoadingMode x82
+input_isDown | OK | code: a bound key (DIK, mouse 0xfa..0xfc, wheel 0xfd / 0xfe) held; run: m2,m4,s210,s300,s400,s500,s700,s900 x3910812; held2 x3673966, key_repeat x169028, armc_processInput x40554
+input_justPressed | OK | code: a bound key pressed this frame (latched per key); run: m1,m2,m4,s200,s210,s300,s400,s500,s600,s700,s900 x4188464; mainmenu_processKeys x409675, profileList_keys x225017, title_keyDismiss x72201
+input_createMouse | OK | code: DirectInput mouse device created (exclusive, foreground); run: s0 x22; input_createDirectInput x22
+input_initKeyboard | OK | code: DirectInput keyboard device created + acquired, g_keySeen cleared; run: m2,s0,s210,s400 x43; input_createDirectInput x22, menu_closeInputLine x14, chat_endTyping x7
+
+== src/app/error_log.c
+report | OK | code: time-stamped message to ERROR.TXT (when on) and g_errorHook (static); run: - (NOT RUN: any error report (sys_error* / sys_fatalError))
+terminate | OK | code: cleanup hook, then exit(1) (static); run: - (NOT RUN: a fatal error)
+sys_errorMessageNoName | OK | code: "Error Message at ..." reported; run: - (NOT RUN: glWindow errors (glWindow_init / resize))
+sys_errorMessage | OK | code: "Error in %s - Message at ..." reported; run: - (NOT RUN: an object error message)
+sys_errorTerminate | OK | code: "Error Termination at ..." reported, then exit; run: - (NOT RUN: MATHFUNC.TBL unwritable / unreadable)
+sys_fatalError | OK | code: "Error in %s - Termination at ..." reported, then exit; run: - (NOT RUN: a fatal error (bad part index, damaged file))
+
+== src/app/frees.c
+net_freeBuffers | OK | code: the 19 network send buffers freed; run: s300 x3; socket_close x3
+sound_freeAll | OK | code: every loaded sound in g_soundTable freed; run: s0 x22; sound_initSoundTable x22
+
+== src/app/loading.c
+fade_frame | OK | code: one fade frame of the loading screen (static); run: m1 x2443; loading_drawScreen x2443
+loading_drawScreen | OK | code: the loading screen as the log hook (-1 fade in, -2 fade out, else one frame); run: m1 x1320; log_message x1320
+cylinder_vertex | OK | code: a vertex on the backdrop cylinder (static); run: m1 x269496; loading_draw x269496
+info_line | OK | code: one text line of the loading screen (static); run: m1 x18283; fade_frame x11970, loading_drawScreen x6313
+loading_draw | OK | code: the loading screen: textured cylinder, TITLE / ZONE / PLAY TYPE / limits, status line; run: m1 x3743; fade_frame x2443, loading_drawScreen x1300
+texture_named | OK | code: tex_getIdByName on a stack copy (static); run: s0,s100 x770; menuState100_intro x682, app_init x88
+next_step | OK | code: g_loadStep++ and frontEnd_drawProgress (static); run: s100 x616; menuState100_intro x616
+menu_loadTextures | OK | code: the menus' textures looked up by name, a progress step between them; run: s100 x22; menuState100_intro x22
+app_startupLoad | OK | code: start-up load: settings, tables, DirectInput, sound, texture banks, scene, defaults; run: s0 x22; app_init x22
+next_stage | OK | code: loadStage set, its line added (static); run: m1 x70; match_frameByState x70
+no_next | OK | code: "next submode not defined" fatal (static); run: - (NOT RUN: an unknown session mode while loading)
+keep_alive | OK | code: a network client sends a game packet while loading (static); run: m1 x80; match_frameByState x80
+bfd_name | OK | code: "<mapName>.bfd" (static); run: m1 x39; match_frameByState x39
+game_processLoadingMode | OK | code: one step of match loading by loadStage (log hook = loading screen), returns matchState; run: m1 x82; match_frameByState x82
+
+== src/app/main_loop.c
+app_frame | OK | code: music loop, menu key guard counted down, app_frameByScreen; run: m0,m1,m2,m4,s100,s200,s210,s300,s400,s500,s600,s700,s900 x409608; game_WinMain x409608
+app_frameByScreen | OK | code: the menus' frame, or the match's (input + match_frameByState); run: m0,m1,m2,m4,s100,s200,s210,s300,s400,s500,s600,s700,s900 x409625; app_frame x409625
+match_frameByState | OK | code: dispatch by matchState 1..4, swap buffers; run: m1,m2,m4 x145226; app_frameByScreen x145226
+f64 | OK | code: a value rounded through a double (static); run: m0,s200,s210,s300,s400,s500,s600,s700,s900 x264384; app_frameByScreen x264384
+menu_frame | COMMENT | 'the cursor blink clock (100 past 1e6)' -> g_menuRepeatClock is the menus' hold-to-repeat clock; 'a direct start from the main menu zooms in' -> the picked replays' show (g_replayShowOn, set by replaySelect_ok) zooms in on screen 300 and starts the replay (g_replayRunning, screen 9999). Name OK: the menus' frame; run: s100..s900 app_frameByScreen x264408
+count_down | OK | code: a scene float counted down to 0 (static); run: m2 x416028; match_playFrame x416028
+match_playFrame | OK | code: matchState 2: clocks, rates, input, match_frame, HUD; run: m2 x138663; match_frameByState x138663
+pressed2 | OK | code: either key of a binding pressed (static); run: m2,m4 x876127; match_combatInput x869668, replay_frame x6459
+held2 | OK | code: either key of a binding held (static); run: m2,m4 x1842650; match_combatInput x1790986, replay_frame x51664
+mouse_offset | OK | code: mouse offset from the centre scaled, pointer recentred (static); run: m2 x116457; match_combatInput x116457
+match_combatInput | OK | code: the frame's match input into the scene's flags (fire, moves, weapons, menu, chat, spectating); run: m2 x138671; match_playFrame x138671
+far_point | OK | code: (0,10000,0) rotated by pitch / yaw (static); run: - (NOT RUN: match_freeCamFrame)
+about | OK | code: point offset by the actor's position (static); run: - (NOT RUN: match_freeCamFrame)
+match_freeCamFrame | RENAME -> match_mechTestFrame | the camera is not free: it sits at the local actor's nextPos plus the zoom (cameraSettings[2]) rotated by cameraAngle, i.e. it orbits the actor (scene.fields upKeyHeld: 'the camera orbits up over the actor'); W/A/S/D/Q/E + mouse drive the local actor (actor_setInput), F1..F6 with Z/X step the local player's head..booster types and weapon (actor_setActorType*InfoBy), ammo kept at half, a red debug sphere (debugGrid). The real free camera (seen in sessA) is match_frame's free_camera / free_keys. State 3 is set only for sessionMode 2 (scene_startSession / game_processLoadingMode: armc_makeSession's session), and the ARM CENTER never leaves screen 700, so match_frameByState never reaches it (evidence: match_frameByState only m1, m2, m4). Name checked unused. (NOT RUN: matchState 3 with g_screen 9999 - no play path; would need a sessionMode 2 match)
+start_view | OK | code: camera back at cameraSaved (static); run: m2,m4 x9; match_frame x7, match_frameByState x2
+preset_reset | OK | code: current camera preset restored from cameraPresets (static); run: m4 x20; match_frameByState x20
+unfollow | OK | code: watchedPlayer -1, playing 0, start view (static); run: - (NOT RUN: spectating: following past the last player)
+rand_below | OK | code: game random table value mod n (static); run: m2,m4 x5637; stage_updateActorsAndTriggers x3702, actor_processFrame x1870, bot_spawns x44
+zoom_view | OK | code: g_viewFov narrowed / widened within 10..60 (static); run: m2,m4 x145120; match_frame x138661, replay_frame x6459
+replay_next | OK | code: next replay file, or quit at the end (static); run: m4 x1; replay_frame x1
+choose_followed | OK | code: followed player and camera preset chosen (static); run: m4 x6458; replay_frame x6458
+free_camera | OK | code: free camera moved by mv with collision, kept in the level box (static); run: m2,m4 x53899; match_frame x53586, replay_frame x313
+preset_angles | OK | code: camera pitch / heading from the preset (plus the actor's) (static); run: m2,m4 x83412; match_frame x80048, replay_frame x3364
+orbit_from | OK | code: camera pulled back from the actor by the preset zoom, collision-limited (static); run: m2,m4 x19612; match_frame x16248, replay_frame x3364
+orbit_camera | OK | code: preset_angles + orbit_from on watchedPlayer (static); run: m4 x3364; match_frameByState x3364
+pair_camera | OK | code: preset 1: camera on the line through the followed and nearest player (static); run: m4 x2781; replay_frame x2781
+look_toward | COMMENT | the two-part comment above it starts with watch_camera's description ('the other presets: the look point moved half way ... when the view to it is blocked, the camera goes behind the player's head') - that belongs on watch_camera (which has none); look_toward only moves cameraTarget half way to p. run: m2 killer_view x5015 (+ watch_camera / look_at)
+watch_camera | OK | code: look_toward the followed player, behind its head when blocked (static); run: - (NOT RUN: spectate / replay with a preset whose cameraSettings[3] != 0 (not 1))
+turn_view | OK | code: dir / up rotated by cameraAngle (static); run: m2,m4 x137309; match_frame x133632, replay_frame x3677
+free_keys | OK | code: free camera move vector and mouse turn from held keys (static); run: m2,m4 x53908; match_frame x53594, replay_frame x314
+run_down | OK | code: a scene countdown; 1 when it ran out (static); run: m2,m4 x274735; match_frame x255361, replay_frame x19374
+replay_frame | OK | code: matchState 4: the replay viewer frame (keys, packets from the file, camera, draw, overlay); run: m4 x6460; match_frameByState x6460
+team_game | OK | code: g_chosenGameMode odd up to 11 (static); run: - (NOT RUN: write_log (net-launched game end))
+write_log | OK | code: axiswl.log written (title, map, ranking) (static); run: - (NOT RUN: match end with g_launchedForNetGame (DServer launch))
+spawn_point | OK | code: a free random spawn point (static); run: m2 x52; bot_spawns x44, local_spawn x8
+team_colours | OK | code: player p's parts tinted in its team colours (static); run: m2 x50; bot_spawns x44, local_spawn x6
+local_spawn | OK | code: local player's record, colours, spawn, PREPARE THE BATTLE (static); run: m2 x8; match_frame x8
+bot_spawns | OK | code: waiting bots placed on free spawn points (static); run: m2 x20513; match_frame x20513
+killer_view | OK | code: camera looks from the dead actor at its killer (static); run: m2 x5015; match_frame x5015
+look_at | OK | code: look_toward p, dir and up set (static); run: - (NOT RUN: match_frame playing with a preset whose cameraSettings[3] != 0)
+mrow | OK | code: one row of matrix x vector (static); run: m2 x191406; muzzle_camera x191406
+muzzle_camera | OK | code: camera preset 1: at the weapon muzzle (static); run: m2 x63802; match_frame x63802
+slow_end | OK | code: round-end slow motion condition (static); run: m2 x147067; match_frame x147067
+winning_team | OK | code: winnerTeam from teamScores (static); run: m2 x2; match_frame x2
+round_over | OK | code: round end: matchOver, endTime 10, music stop, frag / time limit message (static); run: m2 x7; match_frame x7
+chat_keys | COMMENT | 'the local player's camera chat keys: T (all) / Y (team)' is wrong: talkPressed / teamTalkPressed come from the bindings g_keyChat (+ g_controls+0xac; default Enter) and g_controls+0xb0 (default C) in match_combatInput (store_tables.c defaults), and nothing about a camera; should read 'the local player's chat keys: the chat binding (all) / the team chat binding open the line ...'. Name OK; run: m2 match_frame x138661, cheat codes in sessA
+match_frame | OK | code: the match's frame: Esc menu, spawns, network, scene, round end, camera, chat; run: m2 x138671; match_playFrame x138671
+
+== src/app/math_tables.c
+math_makeMathFunctionTableFile | OK | code: sin / cos / tan / rand tables made and MATHFUNC.TBL written (message text names makeMathFunctionTableFile); run: - (NOT RUN: start-up with MATHFUNC.TBL missing)
+math_initMathFunction | OK | code: MATHFUNC.TBL read (made when missing), tan10 table; run: s0 x22; app_startupLoad x22
+
+== src/app/objects.c
+ViewVolume_dtor | OK | code: vtable back, ViewVolume_release; run: - (NOT RUN: Console_dtor at exit)
+ViewVolume_deletingDtor | OK | code: ViewVolume_dtor, delete when flags & 1; run: - (NOT RUN: vtable slot 0 of a ViewVolume)
+Console_deletingDtor | OK | code: Console_dtor, delete when flags & 1; run: - (NOT RUN: app_shutdown deleting g_scene)
+Stage_deletingDtor | OK | code: Stage_dtor, delete when flags & 1; run: - (NOT RUN: vtable slot 0 of the Stage)
+crt_arrayConstruct | RENAME -> crt_vectorConstructorIterator | it is MSVC's compiler helper `vector constructor iterator' (??_H: stdcall first, size, count, ctor; the eh variant at 0x49fd2d is `eh vector constructor iterator'); the brief asks CRT routines to carry the runtime's name. run: s0 Console_ctor x264 (VECTOR macro). Name checked unused
+Console_dtor | OK | code: the game object's members destroyed (stage, view volume, timer); run: - (NOT RUN: app_shutdown)
+ViewVolume_captureMatrices | OK | code: projection / modelview copied or read from GL, product kept; run: m1,m2,m4,s700 x185750; match_drawFrame x138670, armc_drawPreview3D x40548, replay_frame x6460
+
+== src/app/ptx_decode.c
+ptx_readBits | OK | code: next n bits of the stream; run: m1,m2,m4,s0,s100,s200,s210,s400,s500,s600,s700 x91692471; ptx_readAcSymbol x80016204, ptx_readDcDiff x11676267
+huff_value | OK | code: n-bit JPEG magnitude value (static); run: m1,m2,m4,s0,s100,s200,s210,s400,s500,s600,s700 x54115284; ptx_readBlock x54115284
+ptx_readDcDiff | OK | code: Huffman DC difference; run: m1,m2,m4,s0,s100,s200,s210,s400,s500,s600,s700 x9416448; ptx_readBlock x9416448
+ptx_readAcSymbol | OK | code: Huffman AC run / size symbol; run: m1,m2,m4,s0,s100,s200,s210,s400,s500,s600,s700 x44698836; ptx_readBlock x44698836
+ptx_readBlock | OK | code: one 8x8 block's coefficients (zigzag); run: m1,m2,m4,s0,s100,s200,s210,s400,s500,s600,s700 x9416448; ptx_read x9416448
+ptx_toRgb | OK | code: YCbCr planes to RGB; run: - (NOT RUN: a 3-plane (type 0x81) PTX texture)
+ptx_toRgba | OK | code: YCbCrA planes to RGBA; run: m1,m2,m4,s0,s100,s200,s210,s400,s500,s600,s700 x3221; ptx_read x3221
+ptx_layoutBlocks | OK | code: 8x8 blocks laid out as rows; run: m1,m2,m4,s0,s100,s200,s210,s400,s500,s600,s700 x3221; ptx_read x3221
+idct_mul | OK | code: fixed-point multiply (static); run: m1,m2,m4,s0,s100,s200,s210,s400,s500,s600,s700 x420401170; ptx_read x420401170
+ptx_inverseDct | OK | code: jpeg_idct_ifast of one block; run: m1,m2,m4,s0,s100,s200,s210,s400,s500,s600,s700 x9416448; ptx_read x9416448
+ptx_crtlError | OK | code: "CRTL ERROR: " + errno text + message to stderr, exit; run: - (NOT RUN: ptx_open with a missing file)
+ptx_error | OK | code: "ERROR: " + message to stderr, exit; run: - (NOT RUN: a bad PTX header)
+ptx_read | OK | code: PTX header, planes decoded, converted, laid out (static); run: m1,m2,m4,s0,s100,s200,s210,s400,s500,s600,s700 x3221; ptx_decode x3221
+ptx_open | RENAME -> ptx_decodeFile | it opens path, decodes the whole PTX image (ptx_read) and closes the file - the decode counterpart of ptx_decode (open file); 'open' says less than it does. Name checked unused. (NOT RUN: no caller in src; tex loading uses ptx_decode)
+ptx_decode | OK | code: PTX image read from an open file; run: m1,m2,m4,s0,s100,s200,s210,s400,s500,s600,s700 x3221; tex_loadImage x3221
+
+== src/app/ptx_tables.c
+ptx_initClampTable | OK | code: the clamp table; run: s0 x22; ptx_initTables x22
+ptx_initColourTables | OK | code: YCbCr -> RGB tables; run: s0 x22; ptx_initTables x22
+ptx_initYCbCrTables | OK | code: RGB -> YCbCr tables; run: s0 x22; ptx_initTables x22
+ptx_initDequantTables | OK | code: dequantisation multipliers for quality q; run: m1,m2,m4,s0,s100,s200,s210,s400,s500,s600,s700 x3243; ptx_read x3221, ptx_initTables x22
+ptx_initFdctDivisors | OK | code: forward DCT divisors for quality q (unused by the decoder); run: s0 x22; ptx_initTables x22
+ptx_initTables | OK | code: every PTX table for quality 100; run: s0 x22; tex_loadImage x22
+
+== src/app/resets.c
+input_resetKeys | OK | code: g_keySeen cleared, key guard 5, input line length 0; run: m2,s210,s400 x21; menu_closeInputLine x14, chat_endTyping x7
+input_clearKeyTable2 | OK | code: g_keyTable2 and its words cleared; run: s0 x22; app_startupLoad x22
+net_clearServerSettings | OK | code: server names and ports zeroed; run: s0 x22; app_startupLoad x22
+replaySelect_allOut | OK | code: every replay unpicked, show options default; run: - (NOT RUN: the replay selection dialog opened / reset)
+messageBox_clickClose | OK | code: a left or right click closes the message box; run: s300 x2675; menu_processMouse x2675
+account_takeRank | OK | code: rank reply taken into the pilot records; run: - (NOT RUN: Ladder rank reply (message 29) in the account page)
+
+== src/app/small.c
+clear | OK | code: n dwords zeroed (static helper); run: m0,m1,m2,m4,s0,s700 x17780935; ResourceSet_ctor x1408, Console_ctor x66, TimeSync_ctor x44
+class_emptyCtor | OK | code: mov eax, ecx; ret: the folded empty constructor (crt_arrayConstruct element ctor); run: m2,s0,s700 x63845523; armc_drawPreview3D x41521152, crt_arrayConstruct x22324236, actor_checkDataLoss x135
+scenePath_advanceStub | OK | code: ScenePath step method: returns 0 (empty); run: - (NOT RUN: a map script with command 27 (scriptMode set))
+scenePath_openStub | OK | code: empty two-argument method (ScenePath open; folded); run: m2 x3; chat_keys x3
+scenePath_notifyStub | OK | code: empty four-argument method (ScenePath notify); run: - (NOT RUN: script_notifyObject (actor_slots.c:127))
+reg_readStartMode | OK | code: returns 1 (patched); run: s0 x22; game_WinMain x22
+text_setWrapX | OK | code: g_textWrapX set; run: s0,s900 x15400; briefing_typeOut x10344, missionList_draw x5034, app_startupLoad x22
+text_setBottom | OK | code: g_textBottom set; run: s0,s900 x10366; briefing_typeOut x10344, app_startupLoad x22
+view_setFov | OK | code: g_viewFov set (float bits); run: m2,m4 x290028; zoom_view x290028
+array_recordAt | OK | code: base + i * stride (0 for i < 0); run: m2,m4 x263375; space_collideAt x263252, actor_processFrame x123
+array_indexOf | OK | code: (p - base) / stride (-1 for NULL); run: m1,m2 x764; space_insertTriangle x749, net_sendPlayerState_body x15
+str_length | OK | code: strlen; run: s0 x66; str_dropLast x66
+str_dropLast | OK | code: last character cut, old length returned; run: s0 x66; cfg_readServer x44, cfg_readPlayer x22
+net_announceServerEnd | OK | code: endEvents[0] = 1, announcePending; run: - (NOT RUN: the host ending the game)
+net_announceFragLimit | OK | code: endEvents[1] = 1, announcePending; run: - (NOT RUN: a hosted match reaching the frag limit)
+net_announceTimeLimit | OK | code: endEvents[2] = 1, announcePending; run: m2 x133; match_frame x133
+scene_teamIdAt | OK | code: returns teamIds[i]; run: m2 x327116; hud_drawTeamScores x166038, match_frame x132508, hud_drawRanking x28562
+playerRecord_markUsed | OK | code: playerRecords[p].used = 1; run: m1,m2,m4,s700 x100; mech_setAll x61, net_processGamePacket x25, playerRecord_set x7
+playerRecord_markFree | OK | code: used 0, flag reset; run: m2 x1; net_processGamePacket x1
+stage_clearFrags | OK | code: frags[100] zeroed; run: m0,m2,m4,s0,s700 x57; scene_resetActors x35, scene_resetScores x15, stage_newRound x7
+stage_deactivateActors | OK | code: actor_deactivate on every actor in use; run: m2 x7; match_frame x7
+stage_resetLights | RENAME -> stage_resetDynamicLights | only dynamicLights is cleared (Light_clearCounts) and dynamicLightsSet set 0; mapLights / actorLights are untouched; the comment 'the stage's lights reset' says more than it does. run: scene_reset x45, stage_build x22. Name checked unused
+spaceSlot_clear | OK | code: slot -1 and four zeros; run: m0,m1,m4,s0,s700 x77984; space_resetUnits x77000, clear_unit x984
+Skeleton_clear | OK | code: Skeleton members 1..7 zeroed; run: m2,m4,s0,s700 x16039; Skeleton_release x8119, SkeletonManager_initBy x7920
+partList_clear | OK | code: part list (UnitPoseInfo) members 1..11 zeroed except the sixth; run: m2,m4,s0,s700 x324059; partList_release x306243, actor_initPartLists x17600, actor_checkDataLoss x216
+free_owned | OK | code: BlockOwner block freed when ownsBlock is 1 (static helper); run: m1,m2,m4,s0,s700 x366120; ObjectList_load x267221, ShapeManager_initBy x47740, actor_loadWeapon x38806
+Skeleton_release | OK | code: owned block freed, Skeleton_clear; run: m2,m4,s0,s700 x8119; SkeletonManager_initBy x7920, skel_loadFromFile x193, SkeletonManager_releaseSkeletons x6
+partList_release | OK | code: owned block freed, partList_clear; run: m2,m4,s700 x306281; ObjectList_load x267254, actor_loadWeapon x38811, UnitPoseInfo_dtor x216
+UnitPoseInfo_dtor | OK | code: vtable 0x4a9754 back, partList_release; run: m2 x216; actor_checkDataLoss x216
+UnitPoseInfo_deletingDtor | OK | code: UnitPoseInfo_dtor, delete when flags & 1; run: - (NOT RUN: vtable slot 0: deleting a UnitPoseInfo)
+BMPRGBFile_close | OK | code: its file closed; run: - (NOT RUN: covered by playerRecord_loadFlag (ran) - inlined in the trace?)
+mem_free | OK | code: operator delete when not NULL; run: - (NOT RUN: sound_playFile / app_shutdown / frees)
+net_clearServerList | OK | code: g_serverList zeroed; run: - (NOT RUN: net_tables.c (server list reply))
+net_clearRoomList | OK | code: g_roomList zeroed; run: - (NOT RUN: net_tables.c (room list reply))
+net_clearPlayerList | OK | code: g_netPlayerList zeroed; run: - (NOT RUN: net_tables.c (Ladder player list reply))
+path_normalize | OK | code: upper-cased, / to \; run: m1,m2,m4,s0,s100,s400,s500,s600,s700 x1817946; tex_allocIdBy x22417, ShapeManager_initBy x1804, stage_setFolders x198
+net_freeSlotsOf | OK | code: network slots of id emptied (slot 0: host gone); run: - (NOT RUN: a player leaving a hosted game (net_tables.c:1104))
+net_clearSlots | OK | code: 16 network slots marked unused; run: s100 x22; frontEnd_startUp x22
+net_connectionAvailable | OK | code: connection kind i (0..3) available; run: s400 x7; dplaySlot0_open x7
+replaySelect_toggle | OK | code: replay i's picked flag flipped; run: - (NOT RUN: replay selection dialog: clicking a replay)
+replaySelect_allIn | OK | code: every replay picked; run: s300 x1; replaySelect_keys x1
+newPartsNotice_clickClose | OK | code: a click closes the skirmish screen's new-parts notice; run: - (NOT RUN: the skirmish screen's new-parts notice clicked away)
+tunnel_restart | OK | code: g_tunnelRings 0, ring 0 appended to the menu tunnel; run: s100 x22; menuState100_intro x22
+text_setColor | OK | code: g_textColour set (float bits); run: m1,m2,m4 x1164350; hud_drawTeamScores x415140, hud_drawMatchCounters x200873, hud_drawFps x100455
+arenaDialogBox_layout | OK | code: g_arenaDialogBoxRects set; run: s400 x9; menuState400_enter x9
+gameListStop_layout | OK | code: g_gameListStopRects set; run: - (NOT RUN: screen_enter.c:182: the game list's stop box set-up)
+profileDialogBox_layout | OK | code: g_profileMessageClickBox set; run: s210 x29; menuState210_enter x29
+stage_setCockpitActor | OK | code: cockpitActor = i when actor i is in play (or i < 0); run: m2,m4,s0 x138700; match_frame x138668, Console_ctor x22, round_start x8
+tex_markMaterialChanged | OK | code: material m's flags masked, changed = 1; run: - (NOT RUN: shape_colours.c re-tint of a material)
+tex_clearSetCounters | OK | code: three counters of each of the six texture banks zeroed; run: m2,m4 x145121; match_drawFrame x138662, replay_frame x6459
+playerRecord_resetFlag | OK | code: player p's flag filled with g_defaultColour, flag state reset; run: m0,m2,m4,s0,s700 x561; stage_resetPlayerRecords x560, playerRecord_markFree x1
+script_pushMessage | OK | code: map script command 26: message into the stage ring of 32; run: - (NOT RUN: map script command 26)
+script_reset | OK | code: the map script's state cleared; run: m0,m1,m4,s0,s700 x45; scene_reset x45
+player_seen | OK | code: playerRecordCount raised to cover p (static); run: m1,m2,m4,s700 x337; scene_setLocalTeam x80, net_processGamePacket x79, mech_setName x61
+player_setCharacter | OK | code: player p's character set, on its actors too; run: m1,m2,m4,s700 x101; mech_setCharacter x61, net_processGamePacket x26, playerRecord_set x7
+stage_resetMatrixAndPoints | OK | code: baseMatrix identity, 200 points at the origin, pointCount 0, defaultColour; run: m0,m1,m4,s0,s700 x45; scene_reset x45
+Mat4_copy | OK | code: 4x4 copied; run: m1,m2,m4,s700 x3896109; ObjectList_poseBones x2207456, particle_init x1177491, ViewVolume_captureMatrices x324388
+Mat4_transpose | OK | code: 4x4 copied transposed; run: - (NOT RUN: skel_data.c:771 (ASE skeleton loading))
+actor_initPartLists | OK | code: the actor's 8 part lists (UnitPoseInfo) built: the stage actors' element constructor; run: s0 x2200; vector_construct x2200
+ViewVolume_reset | OK | code: view volume material lists and counters emptied; run: m1,m2,m4,s700 x324412; match_drawFrame x277333, armc_drawPreview3D x40548, replay_frame x6459
+space_resetUnits | OK | code: collision space's unit pool emptied and chained; run: m0,m1,m4,s0,s700 x77; space_setBy x55, space_initBy x22
+match_resetInputState | OK | code: the scene's input flags cleared (weaponKey / followKey -1); run: m2,m4 x145129; match_combatInput x138670, replay_frame x6459
+cd_findDrive | OK | code: returns 1 (no-CD patch); run: m0,s0,s700 x56; game_WinMain x22, app_startupLoad x22, scene_startSession x12
+app_checkFile_profkor | COMMENT | 'the data files on the CD ... found' is wrong: the original (behind the patched 'mov eax,1; ret') opens initdata\profkor.dat (push 0x4b03dc), reads the dword at offset 2000 and compares it with a launcher mark (0xbde31) - local data files whose mark app_spoilDataFiles overwrites at exit, not CD files. Name OK (the file is profkor.dat); run: s0 app_init x44, game_WinMain x22, check_profiles x36
+app_checkFile_skirmish | COMMENT | as app_checkFile_profkor: initdata\skirmish.dat (push 0x4b03f4) checked for the launcher mark at offset 2000, not a CD file; returns 1 (patched). Name OK; run: s0 app_init x44, game_WinMain x22, app_startupLoad x22
+app_checkFile_axisgame | COMMENT | as app_checkFile_profkor: save\axisgame.dat (push 0x4b040c) checked, not a CD file; returns 1 (patched). Name OK; run: s0 app_init x44, game_WinMain x22, app_startupLoad x22
+app_checkFile_game | COMMENT | as app_checkFile_profkor: game.dat (push 0x4b0420) checked, not a CD file; returns 1 (patched). Name OK; run: s0 app_init x44, game_WinMain x22, app_startupLoad x22
+app_checkFile_profeng | COMMENT | as app_checkFile_profkor: initdata\profeng.dat (push 0x4b03c4) checked, not a CD file; returns 1 (patched). Name OK; run: s0/m0 app_init x44, game_WinMain x22, check_profiles x9
+armc_resetSeraphimParts | OK | code: empty (unlockfix.py jumped all ten SERAPHIM part resets); run: m0,s700 x7491; armc_drawPartsPage x7484, match_enter x7
+stage_triggerActionNone | OK | code: empty map-script action (commands 3, 9); run: - (NOT RUN: map script commands 3 / 9)
+stage_setSilentActor | OK | code: silentActor set (actor_frame skips its footstep sounds); run: s700 x3; scene_startSession x3
+static_initTimeSync | OK | code: TimeSync_ctor on g_loadTimer; run: s0 x22; static_startTimeSync x22
+stage_setName | OK | code: stageName set and normalised; run: m1,m2 x21; scene_setMapName x21
+scene_setMapName | OK | code: mapName and stage name set; run: m1,m2 x21; game_processLoadingMode x12, match_enter x8, net_processGamePacket x1
+script_startScenePath | OK | code: map script command 27: scriptName / scriptMode kept; run: - (NOT RUN: map script command 27)
+anim_setTime | OK | code: a part list's animation i at fraction t; run: m2,m4,s700 x1760826; actor_processFrame x1760826
+stage_setCullMargin | OK | code: cullMargin set, viewDepth computed; run: m2 x138654; match_frame x138654
+player_setName | OK | code: player p's name set, on its actors too; run: m1,m2,m4,s700 x112; mech_setName x61, net_processGamePacket x27, match_setup x7
+player_setTeam | OK | code: player p's team set, on its actors too, rankingDirty; run: m1,m2,m4,s700 x124; scene_setLocalTeam x80, net_processGamePacket x26, playerRecord_set x7
+stage_advanceClocks | OK | code: sky layer scroll and animated floor clocks advanced; run: m2,m4 x143810; match_frame x137351, replay_frame x6459
+stage_setFolders | OK | code: the stage's nine folder names set, normalised; run: s0 x22; stage_build x22
+stage_initSpaceOneCell | OK | code: collision space set up as one cell over the level; run: m0,m1,m4,s0,s700 x45; scene_reset x45
+log_message | OK | code: formatted message to g_logHook; run: m1,m2,s0 x51900; catalogue_loadComponents x50580, map_loadGroundInfoFrom x78, game_processLoadingMode x34
+reg_write | OK | code: a DWORD written under SOFTWARE\AxisArena\Launcher (static); run: - (NOT RUN: reg_writeEndMode / reg_writeStartMode)
+reg_writeLadderSettings | OK | code: Ladder ID / e-mail / room settings copied and written under ...\Character; run: - (NOT RUN: room_keepSettings / room dialog OK (room_dialogs.c:417))
+reg_writeEndMode | OK | code: "EndMode" written; run: - (NOT RUN: mission end (menu_states.c:748))
+reg_writeStartMode | OK | code: "StartMode" written; run: - (NOT RUN: WM_DESTROY at exit)
+chat_endTyping | OK | code: typed line kept in g_keptChat, field closed, keys reset, keyboard re-made; run: m2 x7; chat_keys x7
+app_reportDisplayModeError | OK | code: ChangeDisplaySettings code shown as its MSG text box; run: s0 x22; app_init x22
+choice_dword | OK | code: a room choice as its registry DWORD (static); run: - (NOT RUN: reg_readLadderSettings with the Character key new or a value missing)
+read_string | OK | code: registry string read, or written as default (static); run: s0 x44; reg_readLadderSettings x44
+reg_readLadderSettings | OK | code: Ladder ID / room settings read from ...\Character (defaults written); run: s0 x22; app_startupLoad x22
+reg_readServerSettings | OK | code: TcpDNS / LadderDNS and ports read from ...\SelectServer; run: s0 x22; app_startupLoad x22
+app_screenSizeForMode | OK | code: g_screenW / H by g_videoMode, g_simpleMenu set; run: s0 x22; app_init x22
+sys_checkClockTampering | OK | code: system clock vs timeGetTime; "Unauthorized program" message when set back; run: m0,s0,s100 x53; game_WinMain x22, app_init x22, match_enter x9
+stage_advanceScenePath | OK | code: map script ScenePath opened / stepped (empty stubs), its sound played; run: m2 x137338; match_frame x137338
+playerRecord_setFromMapPlayer | OK | code: player p set from a map actor record; run: m1 x7; map_loadActorInfoFrom x7
+playerRecord_set | OK | code: player p set from its pieces; run: m2 x7; local_spawn x7
+set_part | OK | code: player p's part of a kind set, caches emptied, actors reloaded (static); run: m1,m2,m4,s700 x506; actor_setActorTypeHeadInfoBy x102, actor_setActorTypeChestInfoBy x101, actor_setActorTypeArmInfoBy x101
+actor_setActorTypeHeadInfoBy | OK | code: player p's head type set (fatal text 'setActorTypeHeadInfoBy'); run: m1,m2,m4,s700 x102; mech_setHeadIndex x62, net_processGamePacket x26, playerRecord_set x7
+actor_setActorTypeChestInfoBy | OK | code: player p's chest type set (fatal text 'setActorTypeChestInfoBy'); run: m1,m2,m4,s700 x101; mech_setChestIndex x61, net_processGamePacket x26, playerRecord_set x7
+actor_setActorTypeArmInfoBy | OK | code: player p's arm type set (fatal text 'setActorTypeArmInfoBy'); run: m1,m2,m4,s700 x101; mech_setArmIndex x61, net_processGamePacket x26, playerRecord_set x7
+actor_setActorTypeLegInfoBy | OK | code: player p's leg type set (fatal text 'setActorTypeLegInfoBy'); run: m1,m2,m4,s700 x101; mech_setLegIndex x61, net_processGamePacket x26, playerRecord_set x7
+actor_setActorTypeBoosterInfoBy | OK | code: player p's booster type set (fatal text 'setActorTypeBoosterInfoBy'); run: m1,m2,m4,s700 x101; mech_setBoosterIndex x61, net_processGamePacket x26, playerRecord_set x7
+actor_setActorTypeItemInfoBy | OK | code: player p's item in a slot set (fatal text 'setActorTypeItemInfoBy'); run: m1,m2,m4,s700 x606; mech_setItem x366, net_processGamePacket x156, playerRecord_set x42
+
+== src/app/statics.c
+Texture_initLog | OK | code: ErrorLog_ctor for "Texture" into g_logTexture (class-name record); run: s0 x22; static_startTextureLog x22
+TextureManager_initLog | OK | code: ErrorLog_ctor for "TextureManager" into g_logTextureManager (class-name record); run: s0 x22; static_startTextureManagerLog x22
+Sound_initLog | OK | code: ErrorLog_ctor for "Sound" into g_logSound (class-name record); run: s0 x22; static_startSoundLog x22
+Console_initLog | OK | code: ErrorLog_ctor for "Console" into g_logConsole (class-name record); run: s0 x22; static_startConsoleLog x22
+Shape_initLog | OK | code: ErrorLog_ctor for "Shape" into g_logShape (class-name record); run: s0 x22; static_startShapeLog x22
+ShapeManager_initLog | OK | code: ErrorLog_ctor for "ShapeManager" into g_logShapeManager (class-name record); run: s0 x22; static_startShapeManagerLog x22
+Skeleton_initLog | OK | code: ErrorLog_ctor for "Skeleton" into g_logSkeleton (class-name record); run: s0 x22; static_startSkeletonLog x22
+SkeletonManager_initLog | OK | code: ErrorLog_ctor for "SkeletonManager" into g_logSkeletonManager (class-name record); run: s0 x22; static_startSkeletonManagerLog x22
+BMPRGBFile_initLog | OK | code: ErrorLog_ctor for "BMPRGBFile" into g_logBMPRGBFile (class-name record); run: s0 x22; static_startBMPRGBFileLog x22
+RealColor_initLog | OK | code: ErrorLog_ctor for "RealColor" into g_logRealColor (class-name record); run: s0 x22; static_startRealColorLog x22
+PackedColor_initLog | OK | code: ErrorLog_ctor for "PackedColor" into g_logPackedColor (class-name record); run: s0 x22; static_startPackedColorLog x22
+UnitPartInfo_initLog | OK | code: ErrorLog_ctor for "UnitPartInfo" into g_logUnitPartInfo (class-name record); run: s0 x22; static_startUnitPartInfoLog x22
+UnitPoseInfo_initLog | OK | code: ErrorLog_ctor for "UnitPoseInfo" into g_logUnitPoseInfo (class-name record); run: s0 x22; static_startUnitPoseInfoLog x22
+Unit_initLog | OK | code: ErrorLog_ctor for "Unit" into g_logUnit (class-name record); run: s0 x22; static_startUnitLog x22
+Stage_initLog | OK | code: ErrorLog_ctor for "Stage" into g_logStage (class-name record); run: s0 x22; static_startStageLog x22
+CollisionVolume_initLog | OK | code: ErrorLog_ctor for "CollisionVolume" into g_logCollisionVolume (class-name record); run: s0 x22; static_startCollisionVolumeLog x22
+Light_initLog | OK | code: ErrorLog_ctor for "Light" into g_logLight (class-name record); run: s0 x22; static_startLightLog x22
+ViewVolume_initLog | OK | code: ErrorLog_ctor for "ViewVolume" into g_logViewVolume (class-name record); run: s0 x22; static_startViewVolumeLog x22
+TimeSync_initLog | OK | code: ErrorLog_ctor for "TimeSync" into g_logTimeSync (class-name record); run: s0 x22; static_startTimeSyncLog x22
+Scene_initLog | OK | code: ErrorLog_ctor for "Scene" into g_logScene (class-name record); run: s0 x22; static_startSceneLog x22
+static_initTex64x64 | OK | code: global Texture object: vtable 0x4a956c, ready 0; run: s0 x22; static_startTex64x64 x22
+static_initTex128x64 | OK | code: global Texture object: vtable 0x4a956c, ready 0; run: s0 x22; static_startTex128x64 x22
+static_initTex256x64 | OK | code: global Texture object: vtable 0x4a956c, ready 0; run: s0 x22; static_startTex256x64 x22
+static_initTex128x128 | OK | code: global Texture object: vtable 0x4a956c, ready 0; run: s0 x22; static_startTex128x128 x22
+static_initTex256x128 | OK | code: global Texture object: vtable 0x4a956c, ready 0; run: s0 x22; static_startTex256x128 x22
+static_initTex256x256 | OK | code: global Texture object: vtable 0x4a956c, ready 0; run: s0 x22; static_startTex256x256 x22
+static_registerTex64x64Dtor | OK | code: atexit(its object's destructor); run: s0 x22; static_startTex64x64 x22
+static_registerTex128x64Dtor | OK | code: atexit(its object's destructor); run: s0 x22; static_startTex128x64 x22
+static_registerTex256x64Dtor | OK | code: atexit(its object's destructor); run: s0 x22; static_startTex256x64 x22
+static_registerTex128x128Dtor | OK | code: atexit(its object's destructor); run: s0 x22; static_startTex128x128 x22
+static_registerTex256x128Dtor | OK | code: atexit(its object's destructor); run: s0 x22; static_startTex256x128 x22
+static_registerTex256x256Dtor | OK | code: atexit(its object's destructor); run: s0 x22; static_startTex256x256 x22
+static_registerTextureManagerDtor | OK | code: atexit(its object's destructor); run: s0 x22; static_startTextureManager x22
+static_registerTextureLogDtor | OK | code: atexit(its object's destructor); run: s0 x22; static_startTextureLog x22
+static_registerTextureManagerLogDtor | OK | code: atexit(its object's destructor); run: s0 x22; static_startTextureManagerLog x22
+static_registerSoundLogDtor | OK | code: atexit(its object's destructor); run: s0 x22; static_startSoundLog x22
+static_registerConsoleLogDtor | OK | code: atexit(its object's destructor); run: s0 x22; static_startConsoleLog x22
+static_registerShapeLogDtor | OK | code: atexit(its object's destructor); run: s0 x22; static_startShapeLog x22
+static_registerShapeManagerLogDtor | OK | code: atexit(its object's destructor); run: s0 x22; static_startShapeManagerLog x22
+static_registerTimeSyncDtor | OK | code: atexit(its object's destructor); run: s0 x22; static_startTimeSync x22
+static_registerSkeletonLogDtor | OK | code: atexit(its object's destructor); run: s0 x22; static_startSkeletonLog x22
+static_registerSkeletonManagerLogDtor | OK | code: atexit(its object's destructor); run: s0 x22; static_startSkeletonManagerLog x22
+static_registerBMPRGBFileLogDtor | OK | code: atexit(its object's destructor); run: s0 x22; static_startBMPRGBFileLog x22
+static_registerRealColorLogDtor | OK | code: atexit(its object's destructor); run: s0 x22; static_startRealColorLog x22
+static_registerPackedColorLogDtor | OK | code: atexit(its object's destructor); run: s0 x22; static_startPackedColorLog x22
+static_registerUnitPartInfoLogDtor | OK | code: atexit(its object's destructor); run: s0 x22; static_startUnitPartInfoLog x22
+static_registerUnitPoseInfoLogDtor | OK | code: atexit(its object's destructor); run: s0 x22; static_startUnitPoseInfoLog x22
+static_registerUnitLogDtor | OK | code: atexit(its object's destructor); run: s0 x22; static_startUnitLog x22
+static_registerStageLogDtor | OK | code: atexit(its object's destructor); run: s0 x22; static_startStageLog x22
+static_registerCollisionVolumeLogDtor | OK | code: atexit(its object's destructor); run: s0 x22; static_startCollisionVolumeLog x22
+static_registerLightLogDtor | OK | code: atexit(its object's destructor); run: s0 x22; static_startLightLog x22
+static_registerViewVolumeLogDtor | OK | code: atexit(its object's destructor); run: s0 x22; static_startViewVolumeLog x22
+static_registerTimeSyncLogDtor | OK | code: atexit(its object's destructor); run: s0 x22; static_startTimeSyncLog x22
+static_registerSceneLogDtor | OK | code: atexit(its object's destructor); run: s0 x22; static_startSceneLog x22
+static_emptyCtorSkelData1 | UNSURE | body is a bare 'ret' (0x46b860) run once from crt_start's initialiser table (s0 crt_start x22); 'SkelData' only reflects its address (right after SkeletonManager_releaseSkeletons, in the skelDat_ unit) - the code names no object. 'Ctor' (an empty dynamic initialiser) fits. Settle it from the unit's globals (what skel data array / object the initialiser belonged to), else name by address
+static_emptyCtorSkelData2 | UNSURE | body is a bare 'ret' (0x46b880) run once from crt_start's initialiser table (s0 crt_start x22); 'SkelData' only reflects its address (right after SkeletonManager_releaseSkeletons, in the skelDat_ unit) - the code names no object. 'Ctor' (an empty dynamic initialiser) fits. Settle it from the unit's globals (what skel data array / object the initialiser belonged to), else name by address
+static_emptyCtorSkelData3 | UNSURE | body is a bare 'ret' (0x46b8a0) run once from crt_start's initialiser table (s0 crt_start x22); 'SkelData' only reflects its address (right after SkeletonManager_releaseSkeletons, in the skelDat_ unit) - the code names no object. 'Ctor' (an empty dynamic initialiser) fits. Settle it from the unit's globals (what skel data array / object the initialiser belonged to), else name by address
+static_emptyCtorSkelData4 | UNSURE | body is a bare 'ret' (0x46b8c0) run once from crt_start's initialiser table (s0 crt_start x22); 'SkelData' only reflects its address (right after SkeletonManager_releaseSkeletons, in the skelDat_ unit) - the code names no object. 'Ctor' (an empty dynamic initialiser) fits. Settle it from the unit's globals (what skel data array / object the initialiser belonged to), else name by address
+static_emptyCtorSkelData5 | UNSURE | body is a bare 'ret' (0x46b8e0) run once from crt_start's initialiser table (s0 crt_start x22); 'SkelData' only reflects its address (right after SkeletonManager_releaseSkeletons, in the skelDat_ unit) - the code names no object. 'Ctor' (an empty dynamic initialiser) fits. Settle it from the unit's globals (what skel data array / object the initialiser belonged to), else name by address
+static_emptyCtorSkelData6 | UNSURE | body is a bare 'ret' (0x46b900) run once from crt_start's initialiser table (s0 crt_start x22); 'SkelData' only reflects its address (right after SkeletonManager_releaseSkeletons, in the skelDat_ unit) - the code names no object. 'Ctor' (an empty dynamic initialiser) fits. Settle it from the unit's globals (what skel data array / object the initialiser belonged to), else name by address
+static_emptyCtorSkelData7 | UNSURE | body is a bare 'ret' (0x46b920) run once from crt_start's initialiser table (s0 crt_start x22); 'SkelData' only reflects its address (right after SkeletonManager_releaseSkeletons, in the skelDat_ unit) - the code names no object. 'Ctor' (an empty dynamic initialiser) fits. Settle it from the unit's globals (what skel data array / object the initialiser belonged to), else name by address
+static_emptyCtorSkelData8 | UNSURE | body is a bare 'ret' (0x46b940) run once from crt_start's initialiser table (s0 crt_start x22); 'SkelData' only reflects its address (right after SkeletonManager_releaseSkeletons, in the skelDat_ unit) - the code names no object. 'Ctor' (an empty dynamic initialiser) fits. Settle it from the unit's globals (what skel data array / object the initialiser belonged to), else name by address
+static_emptyCtorTimeSync1 | UNSURE | body is a bare 'ret' (0x487b70) in crt_start's initialiser table (s0 crt_start x22); 'Ctor' fits (a compiler-made dynamic initialiser whose constructor was empty) but 'TimeSync' only comes from its address (after map_loadPlayInfoFrom, before input_asyncKeyDown); the code names no object. Settle it from the .CRT$XCU table order / the global after the TimeSync unit's data, else name by address
+static_emptyCtorTimeSync2 | COMMENT | its comment is shared_emptyFunction's ('0x48b420: an empty function ... shared by every empty function ...', the menu / Scene_ctor callers) - wrong: this one is at 0x487b90 (build/fn_syms.h, jump stub 0x487b80), a separate plain 'ret' run once from crt_start's initialiser table (s0 crt_start x22); the comment should be just '0x487b90'. The 'TimeSync' in the name is a guess from the address (it sits after map_loadPlayInfoFrom in the TimeSync / catalogue unit); an empty initialiser names no object, so the name is UNSURE (static_emptyInit_487b90 would claim nothing)
+shared_emptyFunction | OK | code: the folded empty 'ret' at 0x48b420, called directly (menus, Scene_ctor, script_reset, match_drawFrame); run: m0,m1,m2,m4,s0,s100,s300,s400,s600,s700 x138638; match_drawFrame x138516, script_reset x45, Scene_ctor x22
+static_startTex64x64 | OK | code: one global made (init / ctor) and its destructor registered; run: s0 x22; crt_start x22
+static_startTex128x64 | OK | code: one global made (init / ctor) and its destructor registered; run: s0 x22; crt_start x22
+static_startTex256x64 | OK | code: one global made (init / ctor) and its destructor registered; run: s0 x22; crt_start x22
+static_startTex128x128 | OK | code: one global made (init / ctor) and its destructor registered; run: s0 x22; crt_start x22
+static_startTex256x128 | OK | code: one global made (init / ctor) and its destructor registered; run: s0 x22; crt_start x22
+static_startTex256x256 | OK | code: one global made (init / ctor) and its destructor registered; run: s0 x22; crt_start x22
+static_startTextureManager | OK | code: one global made (init / ctor) and its destructor registered; run: s0 x22; crt_start x22
+static_startTextureLog | OK | code: one global made (init / ctor) and its destructor registered; run: s0 x22; crt_start x22
+static_startTextureManagerLog | OK | code: one global made (init / ctor) and its destructor registered; run: s0 x22; crt_start x22
+static_startSoundLog | OK | code: one global made (init / ctor) and its destructor registered; run: s0 x22; crt_start x22
+static_startConsoleLog | OK | code: one global made (init / ctor) and its destructor registered; run: s0 x22; crt_start x22
+static_startShapeLog | OK | code: one global made (init / ctor) and its destructor registered; run: s0 x22; crt_start x22
+static_startShapeManagerLog | OK | code: one global made (init / ctor) and its destructor registered; run: s0 x22; crt_start x22
+static_startTimeSync | OK | code: one global made (init / ctor) and its destructor registered; run: s0 x22; crt_start x22
+static_startSkeletonLog | OK | code: one global made (init / ctor) and its destructor registered; run: s0 x22; crt_start x22
+static_startSkeletonManagerLog | OK | code: one global made (init / ctor) and its destructor registered; run: s0 x22; crt_start x22
+static_startBMPRGBFileLog | OK | code: one global made (init / ctor) and its destructor registered; run: s0 x22; crt_start x22
+static_startRealColorLog | OK | code: one global made (init / ctor) and its destructor registered; run: s0 x22; crt_start x22
+static_startPackedColorLog | OK | code: one global made (init / ctor) and its destructor registered; run: s0 x22; crt_start x22
+static_startUnitPartInfoLog | OK | code: one global made (init / ctor) and its destructor registered; run: s0 x22; crt_start x22
+static_startUnitPoseInfoLog | OK | code: one global made (init / ctor) and its destructor registered; run: s0 x22; crt_start x22
+static_startUnitLog | OK | code: one global made (init / ctor) and its destructor registered; run: s0 x22; crt_start x22
+static_startStageLog | OK | code: one global made (init / ctor) and its destructor registered; run: s0 x22; crt_start x22
+static_startCollisionVolumeLog | OK | code: one global made (init / ctor) and its destructor registered; run: s0 x22; crt_start x22
+static_startLightLog | OK | code: one global made (init / ctor) and its destructor registered; run: s0 x22; crt_start x22
+static_startViewVolumeLog | OK | code: one global made (init / ctor) and its destructor registered; run: s0 x22; crt_start x22
+static_startTimeSyncLog | OK | code: one global made (init / ctor) and its destructor registered; run: s0 x22; crt_start x22
+static_startSceneLog | OK | code: one global made (init / ctor) and its destructor registered; run: s0 x22; crt_start x22
+colour_initPackedBlue | OK | code: packed RGBA constant set (Blue); run: s0 x22; crt_start x22
+colour_initPackedGrey | OK | code: packed RGBA constant set (Grey); run: s0 x22; crt_start x22
+colour_initPackedYellow | OK | code: packed RGBA constant set (Yellow); run: s0 x22; crt_start x22
+colour_initPackedClear | OK | code: packed RGBA constant set (Clear); run: s0 x22; crt_start x22
+colour_initPackedRed | OK | code: packed RGBA constant set (Red); run: s0 x22; crt_start x22
+colour_initPackedWhite | OK | code: packed RGBA constant set (White); run: s0 x22; crt_start x22
+colour_initPackedBlack | OK | code: packed RGBA constant set (Black); run: s0 x22; crt_start x22
+colour_initPackedGreen | OK | code: packed RGBA constant set (Green); run: s0 x22; crt_start x22
+colour_initRealClear | OK | code: four-float colour constant set (Clear); run: s0 x22; crt_start x22
+colour_initRealBlue | OK | code: four-float colour constant set (Blue); run: s0 x22; crt_start x22
+colour_initRealWhite | OK | code: four-float colour constant set (White); run: s0 x22; crt_start x22
+colour_initRealGreen | OK | code: four-float colour constant set (Green); run: s0 x22; crt_start x22
+colour_initRealRed | OK | code: four-float colour constant set (Red); run: s0 x22; crt_start x22
+colour_initRealBlack | OK | code: four-float colour constant set (Black); run: s0 x22; crt_start x22
+colour_initRealYellow | OK | code: four-float colour constant set (Yellow); run: s0 x22; crt_start x22
+colour_initRealGrey | OK | code: four-float colour constant set (Grey); run: s0 x22; crt_start x22
+static_endTextureLog | OK | code: guarded ErrorLog_dtor of the class-name record (atexit); run: - (NOT RUN: atexit at a normal exit (the game was killed))
+static_endTextureManagerLog | OK | code: guarded ErrorLog_dtor of the class-name record (atexit); run: - (NOT RUN: atexit at a normal exit (the game was killed))
+static_endConsoleLog | OK | code: guarded ErrorLog_dtor of the class-name record (atexit); run: - (NOT RUN: atexit at a normal exit (the game was killed))
+static_endShapeLog | OK | code: guarded ErrorLog_dtor of the class-name record (atexit); run: - (NOT RUN: atexit at a normal exit (the game was killed))
+static_endShapeManagerLog | OK | code: guarded ErrorLog_dtor of the class-name record (atexit); run: - (NOT RUN: atexit at a normal exit (the game was killed))
+static_endSkeletonLog | OK | code: guarded ErrorLog_dtor of the class-name record (atexit); run: - (NOT RUN: atexit at a normal exit (the game was killed))
+static_endSkeletonManagerLog | OK | code: guarded ErrorLog_dtor of the class-name record (atexit); run: - (NOT RUN: atexit at a normal exit (the game was killed))
+static_endBMPRGBFileLog | OK | code: guarded ErrorLog_dtor of the class-name record (atexit); run: - (NOT RUN: atexit at a normal exit (the game was killed))
+static_endRealColorLog | OK | code: guarded ErrorLog_dtor of the class-name record (atexit); run: - (NOT RUN: atexit at a normal exit (the game was killed))
+static_endPackedColorLog | OK | code: guarded ErrorLog_dtor of the class-name record (atexit); run: - (NOT RUN: atexit at a normal exit (the game was killed))
+static_endUnitPartInfoLog | OK | code: guarded ErrorLog_dtor of the class-name record (atexit); run: - (NOT RUN: atexit at a normal exit (the game was killed))
+static_endUnitPoseInfoLog | OK | code: guarded ErrorLog_dtor of the class-name record (atexit); run: - (NOT RUN: atexit at a normal exit (the game was killed))
+static_endUnitLog | OK | code: guarded ErrorLog_dtor of the class-name record (atexit); run: - (NOT RUN: atexit at a normal exit (the game was killed))
+static_endStageLog | OK | code: guarded ErrorLog_dtor of the class-name record (atexit); run: - (NOT RUN: atexit at a normal exit (the game was killed))
+static_endCollisionVolumeLog | OK | code: guarded ErrorLog_dtor of the class-name record (atexit); run: - (NOT RUN: atexit at a normal exit (the game was killed))
+static_endLightLog | OK | code: guarded ErrorLog_dtor of the class-name record (atexit); run: - (NOT RUN: atexit at a normal exit (the game was killed))
+static_endViewVolumeLog | OK | code: guarded ErrorLog_dtor of the class-name record (atexit); run: - (NOT RUN: atexit at a normal exit (the game was killed))
+static_endTimeSyncLog | OK | code: guarded ErrorLog_dtor of the class-name record (atexit); run: - (NOT RUN: atexit at a normal exit (the game was killed))
+static_endSceneLog | OK | code: guarded ErrorLog_dtor of the class-name record (atexit); run: - (NOT RUN: atexit at a normal exit (the game was killed))
+
+== src/app/store_tables.c
+apply_stores | OK | code: address / value stores applied (static); run: s0,s100 x154; frontEnd_startUp x66, crt_start x44, app_init x22
+apply_cstores | OK | code: stores with copied sources applied (static); run: s600 x1; setup_defaultBindings x1
+colour_initDefaultColours | OK | code: g_defaultColours (16 packed RGBA); run: s0 x22; crt_start x22
+lobbyTop_initOutlines | OK | code: lobby top menu's button outlines; run: s100 x22; frontEnd_startUp x22
+input_initVkTable | OK | code: scan-code row -> virtual key table (g_vkTable); run: s0 x22; app_startupLoad x22
+colour_initTextColours | OK | code: g_textColours (16 x 4 floats); run: s0 x22; crt_start x22
+menu_initMainOutlines | OK | code: main menu's button outlines; run: s100 x22; frontEnd_startUp x22
+room_initOutlines | OK | code: game room's button outlines; run: s100 x22; frontEnd_startUp x22
+input_initDikCodes | OK | code: DIK_* codes into their globals; run: s0 x22; app_init x22
+input_setDefaultBindings | OK | code: default key bindings into g_controls; run: - (NOT RUN: start-up without axis.cfg (files.c:1287))
+setup_defaultBindings | OK | code: setup's DEFAULT: default bindings into g_controlsEdit; run: s600 x1; setup_controlTabClicks x1
+
+== src/app/timer.c
+timer_init | OK | code: performance counter frequency scaled to <= 2 MHz, tick length; run: s0 x22; app_startupLoad x22
+timer_waitFrames | OK | code: busy-wait n 1/60 s; run: s100 x176; frontEnd_startUp x110, menuState100_intro x44, menu_loadTextures x22
+timer_now | OK | code: time in seconds from the performance counter (g_clockNow); run: m0,s100,s200,s210,s300,s400,s500,s600,s700,s900 x191791770; timer_waitFrames x191527385, menu_frame x264385
+TimeSync_frameTime | OK | code: a TimeSync's frame time (max 1/15 s) and fps; run: m1,m2,m4,s700 x189458; scene_averageFrameTime x185685, fade_frame x2443, loading_drawScreen x1320
+scene_averageFrameTime | PARAMS | t -> scene: it is the Scene (sc = (Scene *)t; t + 0xc is its timer). Name OK: frameTime = average of the last ten TimeSync_frameTime; run: m2/m4/s700 match_playFrame x138660, armc_drawPreview3D x40548
+
+== src/app/win32.c
+app_readCurrentDirectory | OK | code: GetCurrentDirectoryA into an unused buffer; run: s0 x22; app_init x22
+sys_messageBoxOverActive | OK | code: MessageBox over the active window; run: - (NOT RUN: g_errorHook's initial value (data.c init_g_errorHook): any sys_error* / sys_fatalError report)
+movie_pauseEnding | OK | code: MCI_PAUSE to the ending movie's device; run: - (NOT RUN: Esc during the ending movie)
+sys_messageBox | OK | code: printf message box "User Message ^_^;"; run: - (NOT RUN: clock tampering / missing files / server list)
+app_registerWindowClassEx | OK | code: RegisterClassExA from a WNDCLASSA-like record; run: - (NOT RUN: app_init when GetVersion reports Win9x)
+glWindow_resize | OK | code: viewport (and full-screen mode) for a size; run: m0 x9; glWindow_init x9
+glWindow_init | OK | code: the glWindow made or adopted, GL state reset; run: m0 x9; match_enter x9
+display_mode | OK | code: a DEVMODEA filled (static); run: - (NOT RUN: app_setDisplayMode with a non-desktop size / glWindow mode switch)
+glWindow_restoreDisplayMode | OK | code: desktop's mode back after a switch; run: - (NOT RUN: glWindow WM_DESTROY)
+glWindow_setDisplayModeBy | OK | code: display switched to w x h (bits); run: - (NOT RUN: glWindow_init / resize in full screen)
+app_setDisplayMode | OK | code: display mode set (desktop size: restored); run: s0 x22; app_init x22
+app_shutdown | OK | code: scene deleted, display, input, music, sounds released; run: - (NOT RUN: WM_CLOSE (normal quit))
+glWindow_setupPixelFormat | OK | code: glWindow's pixel format chosen and set; run: - (NOT RUN: glWindow WM_CREATE (own window))
+gfx_setPixelFormat | OK | code: the game window's pixel format set; run: s0 x22; game_wndProc x22
+editField_createEdit | OK | code: hidden EDIT control for typing created and focused; run: m2,s210,s400 x16; chat_textField x9, edit_limit x2, arena_editPlayerName x1
+files_present | OK | code: the five app_checkFile_* checks (static); run: s0 x66; game_WinMain x44, crt_start x22
+app_init | OK | code: window class, display mode, window, timers, start-up load; run: s0 x22; game_WinMain x22
+glWindow_wndProc | OK | code: glWindow's window procedure; run: - (NOT RUN: glWindow_init without a given window)
+edit_close | OK | code: text field edit closed, line sent or dropped (static); run: m2,s210,s400 x14; editField_editProc x14
+editField_editProc | OK | code: the hidden edit's subclass procedure (Enter / Esc / Tab, keep-alive timers); run: m2,s210,s400 x52177; Ordinal2713 x52177
+game_WinMain | OK | code: program entry: launcher / clock / file checks, app_init, message loop; run: s0 x22; crt_start x22
+game_wndProc | OK | code: main window procedure; run: m2,m4,s0,s100,s200,s210,s300,s400,s500,s600,s700,s900 x2626; Ordinal2713 x2626
+
+== src/crt/crt_atof.c
+addl | OK | code: VC6 __addl: 32-bit add with carry (static); run: - (NOT RUN: crt_atof)
+add12 | OK | code: VC6 ___add_12 (static); run: - (NOT RUN: crt_atof)
+shl12 | OK | code: VC6 ___shl_12 (static); run: - (NOT RUN: crt_atof)
+shr12 | OK | code: VC6 ___shr_12 (static); run: - (NOT RUN: crt_atof)
+mtold12 | OK | code: VC6 ___mtold12 (static); run: - (NOT RUN: crt_atof)
+ld12mul | OK | code: VC6 ___ld12mul (static); run: - (NOT RUN: crt_atof)
+multtenpow12 | OK | code: VC6 ___multtenpow12 (static); run: - (NOT RUN: crt_atof)
+strgtold12 | OK | code: VC6 ___strgtold12 (static); run: - (NOT RUN: crt_atof)
+zero_after | RENAME -> zero_tail | VC6 _ZeroTail (0x4a4fe7: the mantissa bits after position n all zero), the routine round_man (_RoundMan) calls; the file's other helpers already carry their runtime names (inc_man _IncMan, shr_man _ShrMan, ld12mul __ld12mul ...). Name checked unused. (NOT RUN: crt_atof not called in the traced runs; reached by skel_data.c's ASE number parsing)
+inc_man | OK | code: VC6 _IncMan (static); run: - (NOT RUN: crt_atof)
+round_man | OK | code: VC6 _RoundMan (static); run: - (NOT RUN: crt_atof)
+shr_man | OK | code: VC6 _ShrMan (static); run: - (NOT RUN: crt_atof)
+ld12tod | OK | code: VC6 _ld12tod (= _ld12cvt with the double format) (static); run: - (NOT RUN: crt_atof)
+crt_atof | OK | code: VC6 atof (0x49fe7a); run: - (NOT RUN: skel_data.c ASE parsing (skel_loadAseFrom))
+
+== src/crt/crt_format.c
+crt_setLib | OK | code: msvcrt function table kept (rebuild harness); run: s0 x22; crt_install x22
+scan | OK | code: format scanned for argument dwords and doubles (static); run: m1,m2,m4,s0,s100,s200,s210,s300,s400,s500,s600,s700 x1569634; crt_fixArgs x1569635
+crt_fixArgs | OK | code: argument copy with -0.0 and SNaN doubles made as VC6 prints them (rebuild helper); run: m1,m2,m4,s0,s100,s200,s210,s300,s400,s500,s600,s700 x1569637; crt_vsprintf x1569579, crt_fprintf x58
+crt_vsprintf | OK | code: VC6 vsprintf (0x49ed2e); run: m1,m2,m4,s0,s100,s200,s210,s300,s400,s500,s600,s700 x1569732; crt_sprintf x1568063, log_message x1320, font_penDraw x192
+crt_sprintf | OK | code: VC6 sprintf (0x49e9dd); run: m1,m2,m4,s0,s100,s200,s210,s400,s500,s600,s700 x1567808; tex_textureFileExist x19282, tex_path x5571, section_mech x4144
+
+== src/msg/msg_players.c
+msg_playerLeft | OK | code: "%s has left the game."; run: - (NOT RUN: a player leaving a network match)
+msg_cheatUsed | OK | code: "%s has used cheat code(%s)."; run: m2 x3; chat_keys x3
+msg_playerConnected | OK | code: "%s has been connected." + sound 10; run: m2 x2; net_processGamePacket x1, match_frame x1
+msg_kill | OK | code: "%s killed himself." / "%s has crushed %s(%s)."; run: m2 x40; match_frame x40
+msg_chatLine | OK | code: "[%s]%s" chat line by team, sound 9; run: m2 x4; chat_keys x3, net_processGamePacket x1
+msg_playerJoinedTeam | OK | code: "%s has joined %s team." / "%s has joined the battle."; run: m2,m4 x9; esc_team x5, match_frame x2, team_change x2
+chat_matchCheatCode | OK | code: typed text matched against cheat codes 2..4; run: m2 x5; chat_keys x5
+msg_playerChangedTeam | OK | code: "%s has changed team to %s." / "%s becomes a spectator"; run: - (NOT RUN: team change in a network match)
+
+== src/msg/msg_print.c
+msg_print | OK | code: formatted line into the event ring, message box up; run: m2,m4 x65; msg_kill x40, msg_playerJoinedTeam x9, say_number x7
+
+== src/msg/msg_system.c
+say | OK | code: a fixed system line + sound (static); run: - (NOT RUN: msg_serverEndsGame and the other fixed lines)
+say_number | OK | code: a system line with a number + sound (static); run: m2 x7; msg_timeLimitReached x7
+msg_serverEndsGame | OK | code: "The server ends the game."; run: - (NOT RUN: host ends a network game)
+msg_userEndsGame | OK | code: "The user ends the game."; run: - (NOT RUN: a user ends the game)
+msg_connectionLost | OK | code: "The network connection lost. The game ends."; run: - (NOT RUN: network loss in a match)
+msg_networkUnstable | OK | code: "The network state is not stable. ..."; run: - (NOT RUN: unstable network end)
+msg_fragLimitReached | OK | code: "Frag limit(%d) reached."; run: - (NOT RUN: frag limit reached)
+msg_timeLimitReached | OK | code: "Time limit(%d minutes) reached."; run: m2 x7; round_over x7
+msg_dataLoss | OK | code: "Game end caused by data loss(code %d)."; run: - (NOT RUN: actor_checkDataLoss end)
+
+== src/replay/replay_message.c
+event_setColour | OK | code: text colour by event type (static); run: m2,m4 x88552; hud_drawMessageBox x88552
+hud_drawMessageBox | OK | code: the top message box: waiting script message or last events; run: m2,m4 x31085; match_drawFrame x30488, replay_frame x597
+
+== src/sound/sound_basic.c
+sound_playNext | OK | code: a Sound's next of 8 buffers played; run: m2,s210,s300,s400,s500,s600,s700,s900 x2381; sound_playVolume x2136, armc_weaponsPageClicks x57, swing x43
+sound_setNextVolume | OK | code: volume of a Sound's next buffer; run: m2,m4,s210,s300,s400,s500,s600,s700,s900 x7830; sound_play3D x5449, sound_playVolume x2136, armc_weaponsPageClicks x57
+sound_playMenu | OK | code: menu sound id at g_menuVolume; run: s210,s300,s400,s500,s600,s700,s900 x245; armc_weaponsPageClicks x57, swing x43, menu_choice x26
+music_stop | OK | code: music stream released, CoUninitialize; run: m1,m2,s300,s400,s600,s700 x32; game_processLoadingMode x10, music_play x7, round_over x7
+sound_setVolume | OK | code: g_soundBaseVolume from v x g_soundVolume; run: m2,s0 x30; sound_initSoundTable x22, round_start x8
+music_loopIfEnded | OK | code: music restarted when it reached its length; run: m0,m1,m2,m4,s100,s200,s210,s300,s400,s500,s600,s700,s900 x409606; app_frame x409606
+sound_playPanned | OK | code: next buffer SetPan then Play; run: m2,m4 x5450; sound_play3D x5450
+sound_loadMenuSounds | OK | code: ten if_*.wav menu sounds loaded; run: s0 x22; app_startupLoad x22
+sound_playFile | OK | code: a .wav loaded, played once, freed; run: - (NOT RUN: stage_advanceScenePath with pathSound set (never written))
+sound_initSoundTable | OK | code: Data/Sound.dat read, sounds loaded into g_soundTable; run: s0 x22; app_startupLoad x22
+sound_playVolume | OK | code: sound index at volume 0..100; run: m2 x2136; actor_processFrame x1988, match_frame x43, actor_takeDamage x40
+sound_play3D | OK | code: sound index at a position: distance volume and pan; run: m2,m4 x7034; actor_processFrame x4178, bullet_init x949, particle_init x805
+sound_loadWav | OK | code: a PCM .wav into a Sound of 8 duplicated buffers; run: s0 x1958; sound_initSoundTable x1738, sound_loadMenuSounds x220
+sound_init | OK | code: DirectSound created, primary buffer 44.1 kHz 16-bit stereo; run: s0 x22; app_startupLoad x22
+music_playMatch | PARAMS | stage -> scene: the parameter is a Scene * (reads Scene.musicKind; called with the game object by game_processLoadingMode / match_frame). Name OK; run: m1/m2 game_processLoadingMode x10, match_frame x7
+music_play | OK | code: mp3 played through the DirectShow multimedia stream; run: m1,m2,s200,s300,s400,s600,s700 x46; menuState100_intro x22, music_playMatch x17, armc_open x3
+
+== evidence lines filed under these files but defined elsewhere (not counted)
+net_sendMatchEvent, net_sendFlagPiece, net_sendPlayerInfo, net_sendPlayerState, net_sendGamePacket: EVIDENCE.tsv lists them as app/main_loop.c / app/loading.c (their call sites); they are defined in src/net/net_tables.c (PACKET_ENTRY) - review there.
+
+== notes (no verdict change)
+image_initBy / image_tryOpen / image_copyTo: thiscall on the game class BMPRGBFile (vtable 0x4a96f8; BMPRGBFile_close / _dtor use the class prefix); the original texts say initBy() / copyTo(). BMPRGBFile_initBy / _tryOpen / _copyTo would follow the Record_ scheme - style only, so not proposed.
+partList_clear / partList_release / UnitPoseInfo_dtor / actor_initPartLists / anim_setTime: one record (vtable 0x4a9754) called partList, UnitPoseInfo and ObjectList in different places - consistent naming would help, not wrong.
+actor_setActorType*InfoBy: original method names (their fatal texts); they set player record p (not an actor) and reload its actors.
+loading_draw: inline comment "gfx_setMatchProjection(1, 1.0)" beside a gfx_setProjectionHud_bits call - check which it is.
+BMPRGBFile_close shows NOT RUN although playerRecord_loadFlag (its caller) ran 7 times: probably below the tracer (tiny / inlined); same for UnitPoseInfo_dtor callers.
+armc_showPartsPage / armc_showColourPage NOT RUN although sessD walked the ARM CENTER: armc_open sets the parts page itself (g_armcMode = 1) and the colour page was never opened.

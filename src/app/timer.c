@@ -127,10 +127,10 @@ long double THISCALL (TimeSync_frameTime)(u8 *t)
 /* 0x461210 (thiscall on the scene): the frame's time (TimeSync_frameTime of its timer, timer) kept in a ring of
    ten (frameTimes, next at frameTimeNext), their average (the sum times k_tenth, 0.1) in frameTime; the average is also left on the
    FPU stack, as the original leaves it (its callers pop it) */
-long double THISCALL (scene_averageFrameTime)(u8 *t)
+long double THISCALL (scene_averageFrameTime)(u8 *scene)
 {
-	Scene *sc = (Scene *)t;
-	long double now = TimeSync_frameTime(t + 0xc);
+	Scene *sc = (Scene *)scene;
+	long double now = TimeSync_frameTime(scene + 0xc);
 	sc->frameTimes[sc->frameTimeNext] = (float)now;
 	sc->frameTimeNext = (sc->frameTimeNext + 1) % 10;
 	long double sum = k_0f;   /* 0 */

@@ -81,14 +81,14 @@ void *THISCALL (tex_getItemFileBy)(TextureBank *manager, const char *name)
 }
 
 /* 0x456be0 (thiscall on the texture manager): a texture's id by name: each of the six banks (+4 ..) asked in turn
-   (tex_allocIdBy, with the flags and the two colours' hue, saturation, value); the first answer k x 512 + its index. None: a fatal message, -1 */
+   (tex_getIdBy, with the flags and the two colours' hue, saturation, value); the first answer k x 512 + its index. None: a fatal message, -1 */
 int THISCALL (tex_getIdByName)(TextureManager *manager, const char *name, u32 flags, u32 h1, u32 s1, u32 v1, u32 h2, u32 s2, u32 v2)
 {
 	for (int k = 0; k < 6; k++) {
 		void *bank = manager->banks[k];
 		if (!bank)
 			continue;
-		int i = tex_allocIdBy(bank, (u32)name, flags, h1, s1, v1, h2, s2, v2);
+		int i = tex_getIdBy(bank, (u32)name, flags, h1, s1, v1, h2, s2, v2);
 		if (i >= 0)
 			return k * 512 + i;
 	}
@@ -332,7 +332,7 @@ void THISCALL (tex_initBy)(u8 *tm, const char *dir, int slots, int format, int w
    else takes them and is recoloured (tex_setMaterialTint). A miss whose file is there (tex_textureFileExist; else
    -1) gets a new record (at most 512: a fatal message), bound at once (tex_bind) while the count is below slotCount.
    Returns the record's index */
-int THISCALL (tex_allocIdBy)(u8 *tm, const char *name, u32 flags, u32 h1, u32 s1, u32 v1, u32 h2, u32 s2, u32 v2)
+int THISCALL (tex_getIdBy)(u8 *tm, const char *name, u32 flags, u32 h1, u32 s1, u32 v1, u32 h2, u32 s2, u32 v2)
 {
 	/* the two colours (h1 s1 v1, h2 s2 v2) read where the caller put them, through a volatile pointer: clang would
 	   otherwise copy them into the frame. The frame then holds only the name and is as deep as the original's (0x50
@@ -483,7 +483,7 @@ void THISCALL (tex_loadImage)(u8 *m, int i)
 			g_ptxTablesReady = 1;
 		}
 		tex_path(m, path, STR(0x4b4000, "%s\\%s.RAW"), STR(0x4b3ff8, "%s.RAW"), name);
-		ptx_open(path, mg->image, &bpp, &w, &h);
+		ptx_decodeFile(path, mg->image, &bpp, &w, &h);
 		size_check(m, w, h);
 		tex_path(m, path, STR(0x4b40f4, "%s\\%s_ALPHA.RAW"), STR(0x4b40e4, "%s_ALPHA.RAW"), name);
 		void *f = crt_fopen(path, (const char *)STR(0x4ad170, "rb"));

@@ -1,6 +1,6 @@
-/* armc_colours.c: the ARM CENTER's colour sliders, dragged with the pointer. Each colour slot holds two colours of
+/* armc_colours.c: the ARM CENTER's colour sliders, set where the pointer clicks (armc_colourPageClicks, on a click only). Each colour slot holds two colours of
    three values (hue, then saturation and value); a slider's position is the pointer's x from the slider's left edge
-   (g_armcPageRight, less 184 units), 0.00625 per unit, so 0 .. 1 across 160 units. Dragging marks the mech's colours as
+   (g_armcPageRight, less 184 units), 0.00625 per unit, so 0 .. 1 across 160 units. Setting one marks the mech's colours as
    changed (g_coloursChanged). */
 #include "../game.h"
 

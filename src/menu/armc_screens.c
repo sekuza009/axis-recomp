@@ -17,7 +17,7 @@ static const u32 *const bright = ((u32 *)g_armcBright), *const dim = ((u32 *)g_a
 #define TEXT(c) set_colour_bits(g_textColour, (c)[0], (c)[1], (c)[2], (c)[3])
 
 /* the box at the bottom right: "<MSG(287, "$[0] ROTATE")> <the name of g_armcSpin (MSG(118, "OFF"))>" (the texture bound) */
-static void mode_box(void)
+static void rotate_box(void)
 {
 	glColor4f(1.0f, 1.0f, 1.0f, 0.7f);
 	menu_drawWideButton(X1 - 0xa0, Y1 - 0x20, X1, Y1, 1);
@@ -26,7 +26,7 @@ static void mode_box(void)
 	strcpy(text, (const char *)MSG(287, "$[0] ROTATE"));
 	strcat(text, (const char *)STR(0x4b035c, " "));
 	strcat(text, (const char *)(MSG(118, "OFF") + g_armcSpin * 0x80));
-	text_drawBox16(X1 - 0xa0, Y1 - 0x18, X1, text);
+	text_drawCentredLines16(X1 - 0xa0, Y1 - 0x18, X1, text);
 }
 
 /* a hue (degrees) turned half way round */
@@ -103,7 +103,7 @@ static void marker(float pos, int y)
 }
 
 /* 0x41a280: the colour editor: two boxes (MSG(491, "PRIMARY COLOR") / MSG(492, "SECONDARY COLOR")) of three lines each, the current slot's hue
-   (turned half round, as 0 .. 50 by 0.278) and saturation and value (percent; the second colour's from -1 .. 1);
+   (turned half round, as 0 .. 100 by 0.278) and saturation and value (percent; the second colour's from -1 .. 1);
    the six slot buttons (the current one, g_armcColourSlot, bright; the sixth MSG(286, "VIEW $[0] ALL")) with the parts' names beside them
    when g_armcPreview is set; the sliders' tracks, bars and hue markers; two buttons (MSG(115, "$[0] O K"); 3 / 4 under the pointer,
    by armcColour_hitTest, lit) and the box "<MSG(287, "$[0] ROTATE")> <MSG(118, "OFF") name of g_armcSpin>". The original leaves eax to callers
@@ -142,7 +142,7 @@ void (armc_drawColourEditor)(void)
 		else
 			TEXT(dim);
 		if (k == 5)
-			text_drawBox16(X0 + 0x10, Y0 + 0x13d, X0 + 0xb0, (const char *)MSG(286, "VIEW $[0] ALL"));
+			text_drawCentredLines16(X0 + 0x10, Y0 + 0x13d, X0 + 0xb0, (const char *)MSG(286, "VIEW $[0] ALL"));
 		else
 			text_draw8(X0 + 0x18, Y0 + k * 0x30 + 0x44, (const char *)(MSG(281, "$[0] HEAD") + k * 0x80));
 	}
@@ -199,12 +199,12 @@ void (armc_drawColourEditor)(void)
 			TEXT(bright);
 		else
 			TEXT(dim);
-		text_drawBox16(X0 + k * 0x64 + 0x10, Y1 - 0x18, X0 + k * 0x64 + 0x70, (const char *)(MSG(115, "$[0] O K") + k * 0x80));
+		text_drawCentredLines16(X0 + k * 0x64 + 0x10, Y1 - 0x18, X0 + k * 0x64 + 0x70, (const char *)(MSG(115, "$[0] O K") + k * 0x80));
 	}
 	glEnable(GL_TEXTURE_2D);
 	texture = g_buttonTexture;
 	tex_bind(g_textures->banks[texture / 512], texture % 512);
-	mode_box();
+	rotate_box();
 }
 
 /* ---- the weapons page ---- */
@@ -271,7 +271,7 @@ void (armc_drawWeaponsScreen)(void)
 			TEXT(bright);
 		else
 			TEXT(dim);
-		text_drawBox16(x + 0x10, Y1 - 0x18, x + 0x70, (const char *)(MSG(115, "$[0] O K") + k * 0x80));
+		text_drawCentredLines16(x + 0x10, Y1 - 0x18, x + 0x70, (const char *)(MSG(115, "$[0] O K") + k * 0x80));
 	}
 	glEnable(GL_TEXTURE_2D);
 	bind_texture(g_buttonTexture);
@@ -281,7 +281,7 @@ void (armc_drawWeaponsScreen)(void)
 		menu_drawWideButton(X0 + 0x10, Y0 + k * 0x3f + 0x28, X0 + 0xa0, Y0 + k * 0x3f + 0x54, 1);
 	}
 	if (g_armcChanged)
-		armc_snapshot(g_armcSlot);
+		armc_loadSnapshotTexture(g_armcSlot);
 	glEnable(GL_TEXTURE_2D);
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 	for (int k = 0; k < 6; k++)
@@ -323,9 +323,9 @@ void (armc_drawWeaponsScreen)(void)
 	glEnable(GL_TEXTURE_2D);
 	bind_texture(g_buttonTexture);
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
-	menu_drawSmallButton1(x - 0x28, y + 0x13a, x, y + 0x15a, hovered == 0xc);
-	menu_drawSmallButton2(x + 0xa0, y + 0x13a, x + 0xc8, y + 0x15a, hovered != 0xc && hovered == 0xd);
-	mode_box();
+	menu_drawLeftArrow(x - 0x28, y + 0x13a, x, y + 0x15a, hovered == 0xc);
+	menu_drawRightArrow(x + 0xa0, y + 0x13a, x + 0xc8, y + 0x15a, hovered != 0xc && hovered == 0xd);
+	rotate_box();
 	/* the stats panel */
 	glDisable(GL_TEXTURE_2D);
 	set_colour_bits(g_rectColour, 0x3dcccccd, 0x3e4ccccd, 0x3f000000, 0x3f333333);   /* 0.1, 0.2, 0.5, 0.7 */
@@ -334,7 +334,7 @@ void (armc_drawWeaponsScreen)(void)
 	menu_drawRect(x + 4, y + 4, x + 0xc4, y + 0x10a, 0);
 	if (PART->slotType == -1) {
 		TEXT(yellow);
-		text_drawBox16(x, y + 0x40, x + 0xc8, (const char *)MSG(319, "EMPTY SLOT"));
+		text_drawCentredLines16(x, y + 0x40, x + 0xc8, (const char *)MSG(319, "EMPTY SLOT"));
 		return;
 	}
 	if (PART->ammoType == -1) {

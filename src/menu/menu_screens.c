@@ -17,7 +17,7 @@ void (menuState500_skirmish)(void)
 	if (g_skirmishState == 1 || g_skirmishState == 0)
 		return;
 	if (g_frameOpening) {
-		menu_drawFrame(g_skirmishBox[0], g_skirmishBox[1], g_skirmishBox[2], g_skirmishBox[3]);
+		menu_drawFrameOpening(g_skirmishBox[0], g_skirmishBox[1], g_skirmishBox[2], g_skirmishBox[3]);
 		return;
 	}
 	if (g_skirmishLeft)

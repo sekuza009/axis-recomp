@@ -33,7 +33,7 @@ int (newIdForm_hitTest)(int x, int y) { return hit(x, y, g_newIdFormRects, 7); }
 int (newIdConfirm_hitTest)(int x, int y) { return hit(x, y, g_newIdConfirmRects, 2); }   /* 0x432280 */
 int (account_hitTest)(int x, int y) { return hit(x, y, g_accountRects, 6); }   /* 0x4322c0 */
 int (gameList_hitTest)(int x, int y) { return hit(x, y, g_gameListRects, 15); }   /* 0x432300 */
-int (gameListStop_hitTest)(int x, int y) { return hit(x, y, g_gameListStopRects, 1); }   /* 0x432340 */
+int (gameListJoinBox_hitTest)(int x, int y) { return hit(x, y, g_gameListStopRects, 1); }   /* 0x432340 */
 int (roomSettings_hitTest)(int x, int y) { return hit(x, y, g_roomSettingsRects, 14); }   /* 0x432380 */
 int (ranking_hitTest)(int x, int y) { return hit(x, y, g_rankingRects, 9); }   /* 0x4323c0 */
 int (replaySelect_hitTest)(int x, int y) { return hit(x, y, g_replaySelectRects, 18); }   /* 0x440b70 */

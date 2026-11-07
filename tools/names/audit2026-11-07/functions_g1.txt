@@ -1,0 +1,424 @@
+GROUP g1: 387 functions; OK 347, RENAME 17, COMMENT 23, PARAMS 0, UNSURE 0; NOT RUN 190
+(file-local statics are marked "static" in their verdict text; RENAMES CSV lists statics too - key_hit / clear_all style names are per file)
+Global-name notes (not functions, for the globals pass): g_arenaCreateRects holds the arena UPDATE NOTICE's two buttons (laid out by arenaUpdateNotice_layout, tested by arenaUpdateNotice_hitTest) -> g_arenaUpdateNoticeRects; g_coloursChanged's note says "dragged" (set on a click). The whole Ladder room (screen 800) never ran in the traces: every room_/roomLogin_/newId*/account_/ranking_/gameList_ function is code-confirmed only.
+
+== src/menu/arena_maps.c
+clear_unused | OK | code: unchosen flags of maps 22..24 cleared (the never-offered maps) (NOT RUN: any map-list edit (CREATE ARENA, MAP ROTATION on, map-list button 15))
+mapList_startEdit | OK | code: working map list copied from the kept one, list opened (g_mapListOpen) (NOT RUN: CREATE ARENA with MAP ROTATION on, click button 15 (arena_createClick), or the Ladder create page's button 13)
+mapList_chooseAll | OK | code: every map chosen (the SELECT ALL button 23, MSG 507; key A) (NOT RUN: map list open, click SELECT ALL or key A)
+mapList_chooseNone | RENAME -> mapList_setDefault | it is the map list's DEFAULT button (hit 22, label MSG 506 "$[0] DEFAULT"; key D): every map unchosen AND every game type reset to 0; "chooseNone" says less than it does and not the button the player sees (NOT RUN: map list open, click DEFAULT or key D)
+mapList_toggle | OK | code: map i in/out of the rotation (22..24 forced out), clicked rows 0..9 (NOT RUN: map list open, click a map row)
+mapList_stepGameType | OK | code: map i's game type +1 (Shift/Ctrl: -1) round 0..13 (NOT RUN: map list open, click a TYPE cell)
+mapList_ok | OK | code: list kept (g_mapChoicesKept) and closed if at least one map is chosen (OK button 24, MSG 504; key O) (NOT RUN: map list open, OK)
+arena_savePlayerSettings | COMMENT | name right (run: s400 lobby_playerScreenClicks x1 = SETUP PLAYER OK); comment says "name, sex and corporation": the code copies g_arenaCustomize to g_playerCustomize (axis.cfg "set_player customize", CUSTOMIZING ON/OFF), the name and the corporation, then cfg_writeAxisCfg -> "customize setting", not "sex"
+map_step | OK | code: map choice +-1 round g_mapCount skipping 22..24, nothing while the rotation is on (param lock = the rotation byte), g_mapPreviewChanged set; run: s400 arena_stepMap x2
+arena_stepMap | OK | code: CREATE ARENA form's map arrows (g_newArenaMap, locked by g_newArenaRotation); run: s400 arena_createClick x2
+room_stepMap | OK | code: the Ladder room's CREATE LADDER GAME form's map arrows (g_roomMap / g_roomRotation) (NOT RUN: Ladder login (screen 800), create page (key C), map arrows)
+map_cell | OK | code: a chosen map's cell on a red bar (yellow text), else cyan text (NOT RUN: map list open (mapList_draw))
+map_buttons | OK | code: one row of two map-list buttons (DEFAULT / SELECT ALL, OK / CANCEL) lit under the pointer (NOT RUN: map list open)
+mapList_draw | OK | code: the map list overlay (MAP / TYPE heads, 10 rows, arrows, DEFAULT / SELECT ALL / OK / CANCEL) (NOT RUN: map list open (lobbyCreate_frame / roomSettings_page draw it while g_mapListOpen))
+mapList_mouse | COMMENT | name right; comment names the buttons "none, every map, OK, or close (25)" -> the labels are DEFAULT (22: none and types 0), SELECT ALL (23), OK (24), CANCEL (25) (NOT RUN: map list open, click)
+
+== src/menu/armc_colours.c
+slider_pos | OK | code: pointer x from the slider's left edge (g_armcPageRight - 184) x 0.00625 -> 0..1 (NOT RUN: ARM CENTER COLOR page (tab 2 / key L), click a slider (buttons 11..16))
+slider_hue | OK | code: hue 0..359 from the pointer, stored half a turn round, g_coloursChanged set (NOT RUN: COLOR page, click a HUE slider)
+armc_setPrimaryHueFromPointer | COMMENT | name right (PRIMARY COLOR box, HUE line, MSG 491 / 493); the file header (and g_coloursChanged's note) say the sliders are "dragged": the six setters run only on a click (armc_colourPageClicks returns at once without g_mouseClick) -> "set from the pointer on a click" (NOT RUN: COLOR page, click the primary HUE slider (button 11))
+armc_setPrimarySaturationFromPointer | OK | code: slot value [1] = slider 0..1 (label MSG 494 "CHROMA"; saturation is its HSV meaning) (NOT RUN: COLOR page, button 12)
+armc_setPrimaryValueFromPointer | OK | code: slot value [2] = slider 0..1 (label MSG 495 VALUE) (NOT RUN: COLOR page, button 13)
+armc_setSecondaryHueFromPointer | OK | code: SECONDARY COLOR (MSG 492) hue, slot value [3] (NOT RUN: COLOR page, button 14)
+armc_setSecondarySaturationFromPointer | OK | code: slot value [4] = slider x 2 - 1 (-1..1) (NOT RUN: COLOR page, button 15)
+armc_setSecondaryValueFromPointer | OK | code: slot value [5] = slider x 2 - 1 (NOT RUN: COLOR page, button 16)
+tint_part | OK | code: shape_setTint of the local player's part shape cache with a colour slot's six values; run: s700 armc_retintParts path
+armc_applyColourSlot | OK | code: the edited colour slot tinted onto its part; slot 5 (VIEW ALL) spread to slots 0..4 and every part tinted (NOT RUN: COLOR page, a slider click (g_coloursChanged), next armc_updatePartsPreview)
+armc_retintParts | OK | code: after g_colourChanged all five parts re-tinted with their own slots, then the part in view; run: s700 armc_updatePartsPreview x4 (per mech change, not per frame)
+
+== src/menu/armc_items.c
+slot_item | OK | code: address of item slot 0..3 (g_mechWeaponSlot0..) or 4..5 (g_itemSlot4..); run: s700
+set_mech | OK | code: mech_setAll with the working parts, six items and a name; run: s700
+find | OK | code: g_armcCursor onto an item in a list (last match); run: s700
+armc_pickSlot | OK | code: item slot picked (cursor onto its item, weapon selected on the preview actor, item shown); run: s700 weapons page keys / clicks
+armc_showCursorItem | OK | code: cursor wrapped, its item in the viewed record, snapshot 6, preview actor given the weapon, mech stats read; run: s700
+armc_takeCursorItem | OK | code: the cursor's item stored in the picked slot, record and snapshot, mech handed over, slot picked again; run: s700 weapons page arrows (x58)
+armc_makeSession | OK | code: scene_startSession(0, 2), mech handed over with g_cfgPlayerName, actor remade, preview on, g_armcSessionMade; run: once per ARM CENTER visit (x3) from menuState700_armCenter
+armc_openWeaponsPage | OK | code: page 2 (WEAPON tab, MSG 272) opened: slot records, cursor, seven snapshots, slot 0 picked, camera eased; run: armc_partsPageKeys (key W) x2
+armc_weaponsPageClicks | OK | code: the weapons page's click dispatch (tabs, OK / CANCEL, slots, arrows, ROTATE); run: per frame from armc_mouse (returns at once without a click)
+armc_applyExtraItemBonuses | OK | code: flags and bonus values of the two extra-item slots recomputed (items 27..35); run: every ARM CENTER frame (x40554 from menuState700_armCenter), recomputed each frame (the name does not claim once)
+
+== src/menu/armc_keys.c
+armc_partsPageKeys | COMMENT | name right (run: s700 via armc_processInput); comment says "(slot keys, g_dikA the weapons)": A sets g_armcPartSlot 5 = VIEW ALL (the whole mech), not the weapons
+armc_weaponsPageKeys | COMMENT | name right (run: s700); comment says slots 4 / 5 "skip a colour part already in the other slot": armc_extraItemEquipped skips a special item (actorItems 27 and up) already in the other item slot
+armc_colourPageKeys | OK | code: COLOR page keys (OK, back, P / W tabs, H / E / S / G / B slots, A = VIEW ALL seeded, up / down, R) (NOT RUN: ARM CENTER, COLOR tab (key L), any key)
+armc_processInput | OK | code: ARM CENTER keys only (Ctrl+Alt+M hides the interface, else the page's keys); run: s700 from menu_processKeys every frame
+
+== src/menu/armc_mech.c
+mech_setName | OK | code: scene->localName set and handed to the local player; run: s700 via mech_setAll
+mech_setCharacter | OK | code: the pilot character set on the scene and the local player; run: s700
+scene_setLocalTeam | OK | code: scene->localTeam set and handed to the local player; run: s700 mech_setAll and m2 round_start / match_frame / esc_team (in matches too, so the scene_ prefix is right)
+wrap | OK | code: index modulo count (negative from the end); run: s700
+mech_setHeadIndex | OK | code: mechParts[0] wrapped, actor head type set; run: s700
+mech_setChestIndex | OK | code: mechParts[1], chest type; run: s700
+mech_setArmIndex | OK | code: mechParts[2], arm type; run: s700
+mech_setLegIndex | OK | code: mechParts[3], leg type; run: s700
+mech_setBoosterIndex | OK | code: mechParts[4], booster type; run: s700
+mech_setItem | OK | code: mechItems[slot] and the actor's item; run: x366 = 61 mech_setAll x 6
+mech_setAll | OK | code: name, character, team, five parts, six items, record marked used; run: s700 set_mech x61
+armc_giveShownActorWeapon | OK | code: the preview actor remade keeping position / angles, weapon slot selected and loaded; run: s700 armc_showCursorItem / armc_updatePartsPreview
+
+== src/menu/armc_misc.c
+armc_drawPartsPage | OK | code: PARTS page pass: preview, SERAPHIM reset, tabs and the parts screen; run: s700 per frame in mode 1
+armc_drawWeaponsPage | OK | code: WEAPON page pass; run: s700 per frame in mode 2
+armc_drawColourPage | OK | code: COLOR page pass (preview, tabs, colour editor) (NOT RUN: ARM CENTER, COLOR tab (key L / tab 2))
+armc_setup3DView | OK | code: projection, white, textures, menu camera; run: s700 per frame
+armc_drawText | OK | code: text in the 5-px font for language 2, else 8-px; run: s700 weapons screen
+armc_drawTextRight | OK | code: the same, right-aligned; run: s700 stat values
+stage_remakePlayerActor | OK | code: the player's actor slot claimed again at the origin (stage_claimPlayerActor); run: s700
+armc_exit | OK | code: the ARM CENTER left (confirmed: saved to the profile or sent to the room), camera reset, Netsphere music; run: s700 keys OK / back (x3)
+armc_drawPreview3D | OK | code: the preview mech's 3D pass (view, right-drag turn, lit or part-highlighted lists); run: s700 per frame (via preview)
+preview | OK | code: perspective and turn, armc_drawPreview3D, spin advanced; run: s700 per frame
+part_in_view | OK | code: g_armcPartSlot, -1 for VIEW ALL; run: s700
+armc_updatePartsPreview | OK | code: a part change put on the preview mech (panels / stats / tint), a colour change applied, preview drawn; run: s700 per frame from armc_drawPartsPage (the colour page uses it too)
+armc_updateWeaponsPreview | OK | code: the weapons page's preview posing the picked slot; run: s700 per frame
+menuState700_armCenter | OK | code: screen 700's frame; run: s700 only, menu_frame every frame
+armc_open | OK | code: entering the ARM CENTER (music, page 1, camera, layouts, part lists, saved mech); run: s300 menu_choice x2, s400 lobby_playerScreenClicks x1 (MOVE TO ARM-CENTER)
+panel_resize | OK | code: a spinning panel's square corners from a half width; run: s700
+armc_drawPanels | OK | code: the five spinning spiral panels behind the mech; run: s700 per frame
+approach | OK | code: v eased a tenth of the way to target per time unit; run: s700
+armc_easeCamera | OK | code: menu eye Y / Z eased to the part in view; run: s700 per frame
+stage_claimPlayerActor | OK | code: stage_setupActorSlot, playerActor, weapon slot 0; run: s700 and m2 local_spawn (match too: the stage_ prefix is right)
+armc_rightClickLeave | OK | code: a right click leaves (camera back, state 0) (NOT RUN: only through armc_mouse page 4 (g_armcMode 4), which nothing sets - unreachable in play)
+armc_initCameraBox | OK | code: camera box corners +-700; run: armc_open x3
+armc_initPanels | OK | code: the spinning panels' corners, speeds, breathing sizes; run: armc_open x3
+armc_mouse | OK | code: ARM CENTER mouse dispatch by page; run: s700 menu_processMouse per frame
+armc_snapshot | RENAME -> armc_loadSnapshotTexture | the body loads a premade texture "Actor/item/<name>/snapshot" (tex_getIdByName) for item record i (0..5 the slots, 6 the item looked at) into g_slotTextures[i]; "snapshot" as a verb reads as taking a picture of the mech. The comment's "catalogue item i" is wrong too -> "item slot record i (6: the item looked at)". run: s700 x197 from armc_showCursorItem / armc_takeCursorItem / armc_openWeaponsPage
+armc_drawWeightLine | OK | code: WEIGHT label, total weight against the load limit (red / green); run: s700 per frame
+armc_drawModeTabs | OK | code: the PARTS / WEAPON / COLOR tabs (MSG 271..273); run: s700 per frame
+armc_saveSelection | OK | code: colours, parts and items kept into the saved copies, profile_saveProgress (NOT RUN: ARM CENTER from the main menu or the lobby, OK (armc_exit confirmed, g_armcFrom 1 / 2); the runs left with CANCEL / back)
+armc_sendSelectionToNet | OK | code: the selection kept and sent to the game server (kind 0x1b) (NOT RUN: ARM CENTER from the Ladder room (g_armcFrom 3), OK)
+armc_partsPageClicks | COMMENT | name right (run: s700 per frame from armc_mouse); comment calls buttons 14 / 15 "the view's two turns": they are the SELECT arrows that step the part (armc_stepPart: previous / next part), not turns
+armc_colourPageClicks | COMMENT | name right; comment calls 11..16 "the slider and swatch buttons": they are the six sliders only (hue / chroma / value x 2), there is no swatch (NOT RUN: ARM CENTER, COLOR tab, click)
+
+== src/menu/armc_parts.c
+part_info | OK | code: PartInfo record filled from actorItems[idx] (name after the last slash, 6 copied, 8 scaled), -1 emptied; run: s700
+armc_itemSlotRecord | OK | code: an item slot's PartInfo record filled from actorItems[idx]; run: s700
+armc_viewedPartRecord | OK | code: the viewed item's record (a special item's description index in ammoPerShot); run: s700
+mulf | OK | code: float store of a product (x87 order); run: s700
+copyf | OK | code: float copy through the FPU; run: s700
+armc_readMechStats | OK | code: whole-mech stats (VIEW ALL section) from the local Player; run: s700 armc_showCursorItem / armc_updatePartsPreview
+panel_name | OK | code: a part's name with \ and / as -, into a 64-byte field; run: s700
+armc_readPartPanels | OK | code: the five parts' names and stats for the parts screen; run: s700 armc_updatePartsPreview x4
+armc_stepPart | OK | code: a part's cursor -1 (dir 1) / +1 (dir 2) round its unlocked list, part chosen, g_mechChanged; run: s700 armc_partsPageKeys x1
+append_parts | OK | code: an unlock level's parts appended to a list; run: armc_open
+unlocked_level | OK | code: the unlock level (net: pilot level - 1; solo: progress clamped); run: armc_open
+armc_buildPartLists | OK | code: the unlocked part / weapon / item lists; run: armc_open x3
+
+== src/menu/armc_screens.c
+mode_box | RENAME -> rotate_box | static: it draws the "$[0] ROTATE" (MSG 287) + OFF / ON (g_armcSpin) box; "mode" is a guess (the page mode is g_armcMode, unrelated). run: s700 weapons screen x33067
+turned | OK | code: a hue (int degrees) turned half round (NOT RUN: COLOR page (armc_drawColourEditor))
+turned_f | OK | code: the same on a long double (NOT RUN: COLOR page)
+percent | OK | code: 0..1 as 0..99 (NOT RUN: COLOR page)
+half_percent | OK | code: -1..1 as 0..99 (NOT RUN: COLOR page)
+value_line | OK | code: a "<HUE / CHROMA / VALUE> [n]" line (the trace's skirmish_roundScreen caller is another file's static of the same name)
+track | OK | code: a slider's track quad (NOT RUN: COLOR page)
+bar | OK | code: a chroma / value slider's bar filled to pos (NOT RUN: COLOR page)
+marker | OK | code: a hue slider's marker (NOT RUN: COLOR page)
+armc_drawColourEditor | COMMENT | name right; comment says the hue is shown "as 0 .. 50 by 0.278": turned() gives 0..360 and x 0.2777778 gives 0..100 -> "0 .. 100" (NOT RUN: ARM CENTER, COLOR tab (armc_drawColourPage))
+bind_texture | OK | code: tex_bind of a texture id; run: s700
+picture | OK | code: a texture's whole quad (the trace also counts menu_titleEmblemTransition's own static "picture"); run: s700
+stat_int | OK | code: an int and its unit right-aligned; run: s700
+stat_float | OK | code: a formatted float and its unit right-aligned; run: s700
+armc_drawWeaponsScreen | OK | code: the WEAPON page's buttons, six slots, item box and stats; run: s700 per frame from armc_drawWeaponsPage
+
+== src/menu/armc_state.c
+copy | OK | code: n dwords copied; run: s700
+armc_seedAllColourSlot | OK | code: VIEW ALL colour slot 5 seeded from slot 1 (chest) (NOT RUN: COLOR page, key A / VIEW ALL button / up past slot 0)
+armc_spreadAllColourSlot | OK | code: slot 5 copied into slots 0..4 (NOT RUN: COLOR page with VIEW ALL, a slider click)
+armc_syncPartCursors | OK | code: each part list's cursor onto the chosen part; run: armc_open x3
+armc_snapCameraToPoint0 | OK | code: menu eye / look set to camera point 0, preview off; run: armc_exit x2
+armc_loadSavedMech | OK | code: saved parts / items / colours into the working copy; run: armc_open x3
+armc_extraItemEquipped | OK | code: 1 if extra-list entry i is a special item already in item slot 4 or 5; run: s700 weapons page arrows
+
+== src/menu/armc_stats.c
+colour | OK | code: text colour from four bits; run: s700
+row | OK | code: a stat row's y (English / Korean layout); the trace's huge counts are another file's "row"
+label | OK | code: a stat label, white; run: s700
+value | OK | code: the line drawn as the label's value, cyan; run: s700
+after_value | OK | code: Korean: the bonus after the value (NOT RUN: Korean language (g_language 1), parts screen)
+append | OK | code: strcat as the original's inlined copy; run: s700
+neg | OK | code: fchs negation (NOT RUN: LEGS / BOOSTER sections with an overweight mech)
+none | OK | code: 0 or NaN test; run: s700 section_head
+bracket_bonus | OK | code: "+v(unit)" bonus after the value; run: s700
+level_bonus | OK | code: "+n(Lv)" bonus; run: s700
+value_unit | OK | code: "%.1f(unit)"; run: s700
+count_bonus | OK | code: "+n" bonus (NOT RUN: parts screen, CHEST view)
+wear | RENAME -> overload_loss | static: nothing wears; it is the loss when the mech is over its weight limit (g_totalWeight above g_loadLimit: (over / limit) x 4 x f, negated). Its comment "the wear on a part" -> "the overload loss" (NOT RUN: parts screen, LEGS view with an overweight mech)
+speed_wear | RENAME -> speed_overload_loss | static: the same overload loss for a speed (f and its bonus) (NOT RUN: parts screen, BOOSTER view)
+wear_bonus | RENAME -> decimal_bonus | static: prints a two-decimal signed bonus ("+%.2f"), a loss capped at the base; nothing about wear in it (NOT RUN: parts screen, LEGS view)
+speed_change | OK | code: a speed's change ("+%03.0f/" ..) (NOT RUN: parts screen, BOOSTER view)
+section_head | OK | code: the HEAD view's six lines (MSG 601..606); run: s700
+section_chest | OK | code: the CHEST view's three lines (MSG 611..613) (NOT RUN: parts screen, key E / CHEST)
+section_arms | OK | code: the ARMS view (MSG 621..626) (NOT RUN: parts screen, key S / ARMS)
+section_legs | OK | code: the LEGS view (MSG 631..637) (NOT RUN: parts screen, key G / LEGS)
+section_booster | OK | code: the BOOSTER view (MSG 641..647) (NOT RUN: parts screen, key B / BOOSTER)
+section_mech | OK | code: VIEW ALL's whole-mech lines (MSG 671..680); run: s700
+armc_drawStatsPanel | RENAME -> armc_drawPartsScreen | it draws the whole PARTS page UI, not just the stats panel: six view buttons and labels, part names, OK / CANCEL, the SELECT box and its arrows, the ROTATE box, then the stats box; its counterparts are armc_drawWeaponsScreen / armc_drawColourEditor. run: s700 x7484 = armc_drawPartsPage x7484 (every parts-page frame)
+
+== src/menu/edit_fields.c
+edit_start | OK | code: keyboard released, field open, input buffer cleared; run: s400
+line_clear | OK | code: g_chatLine zeroed (NOT RUN: a join password or Ladder field opened)
+line_set | OK | code: text copied into g_chatLine; run: s400
+line_length | OK | code: strlen of g_chatLine (the trace shows it inlined in game_WinMain's typing read)
+caret | OK | code: caret position set; run: s400
+arena_editPlayerName | OK | code: SETUP PLAYER name field opened; run: s400 lobby_playerScreenClicks x1
+arena_editGameName | OK | code: CREATE ARENA GAME NAME field; run: s400 arena_createClick
+edit_limit | OK | code: a limit field opened (3 digits); run: s400
+arena_editFragLimit | OK | code: FRAG LIMIT field; run: s400 arena_createClick
+arena_editTimeLimit | OK | code: TIME LIMIT field; run: s400 arena_createClick
+arena_editPassword | OK | code: PASSWORD field (hidden); run: s400 arena_createClick
+arena_editJoinPassword | OK | code: the join password field (locked game) (NOT RUN: JOIN ARENA via SEARCH TCP, JOIN a locked game (arena_askJoinPassword))
+room_editGameName | OK | code: CREATE LADDER GAME TITLE field (NOT RUN: Ladder room (800), create page, TITLE)
+room_editPassword | OK | code: the room create page's PASSWORD field (NOT RUN: Ladder create page, PASSWORD)
+roomLogin_editId | OK | code: LADDER GAME ID MANAGER's ID field (NOT RUN: main menu LADDER (screen 800 login), click the ID)
+roomLogin_editPassword | OK | code: the login's PASSWORD field (NOT RUN: Ladder login, click PASSWORD)
+edit_account | OK | code: one of the account page's four fields opened (NOT RUN: Ladder room account page (key P))
+account_editOldPassword | OK | code: OLD PASSWORD field (MSG 363) (NOT RUN: Ladder account page, field 0)
+account_editPassword | OK | code: NEW PASSWORD field (MSG 364) (NOT RUN: Ladder account page, field 1)
+account_editPasswordRepeat | OK | code: CONFIRM field (MSG 365) (NOT RUN: Ladder account page, field 2)
+account_editEmail | OK | code: E-MAIL field (MSG 366) (NOT RUN: Ladder account page, field 3)
+room_editJoinPassword | OK | code: the room's join password field (NOT RUN: Ladder game list, JOIN a locked game)
+chat_textField | RENAME -> chat_openTextField | it opens the in-match chat field (keyboard released, typing flags, caret, EDIT control made); the other openers in the file are verbs (edit*, openField) and "textField" alone reads as the field itself. run: m2 chat_keys x9 (the chat key in a match)
+editField_readTyping | OK | code: while a field is open, the EDIT control's text read into g_chatLine; run: every frame (x409629 from game_WinMain), returning at once when closed - a per-frame poll as the name implies
+newIdForm_openField | OK | code: CREATE NEW ID form field k opened (NOT RUN: Ladder login, NEW ID, click a field)
+
+== src/menu/game_lists.c
+bind_buttons | OK | code: the button texture bound; run: s400
+button | OK | code: a lit / dimmed wide button and the text colour (the trace merges other files' "button")
+game_rows | OK | code: up to nine game rows (lock, name, map / ROTATION, mode, players, ping) (NOT RUN: JOIN ARENA with a list (SEARCH IPX / SEARCH TCP; the mp run joined by DIRECT IP, so no rows were listed), or the Ladder game list)
+game_page | RENAME -> answered_count | static: it draws "answered / total" (g_listAnswered over the list's total), not a page (NOT RUN: as game_rows)
+info_box | OK | code: the TYPE GAME PASSWORD / INPUT IP-ADDRESS box over the list; run: s400 mp x784
+arena_drawGameList | OK | code: the JOIN ARENA (MSG 141) window, tabs, rows, JOIN / STOP / CANCEL, boxes; run: s400 per frame from arena_gamesPageFrame
+room_button | OK | code: a room-coloured button (NOT RUN: Ladder game list)
+gameList_draw | OK | code: the Ladder room's AXIS LADDER GAME list (MSG 381), JOIN / REFRESH / STOP / CANCEL (gameList_ is the room's list; the arena's is arena_drawGameList) (NOT RUN: Ladder room, key J / game list button)
+gameList_pageFrame | OK | code: the room game-list page's frame (search / refresh clocks, list, join) (NOT RUN: Ladder room game list (screen 800, state 1))
+shadowed | OK | code: shadowed yellow text; run: s400
+lobby_drawPlayerSetup | COMMENT | name right (SETUP PLAYER, MSG 131; run: s400 x4890 from lobbyPlayer_draw); comment says "without a message (g_typingArenaPlayerName)": that flag is the name being typed, not a message -> "while the name is not being typed"
+games_up | OK | code: the selection one row up (the list scrolls at the top) (NOT RUN: a game list's up arrow)
+games_down | OK | code: one row down (NOT RUN: a game list's down arrow)
+games_stop | OK | code: the Ladder list's STOP (button 2, MSG 389; key S): search / refresh ended (NOT RUN: Ladder game list, STOP)
+games_leave | OK | code: the Ladder list's CANCEL (button 3) (NOT RUN: Ladder game list, CANCEL)
+gameList_mouse | COMMENT | name right; comment says "1 search, 2 stop or refresh, 3 leave": the buttons are 1 REFRESH (MSG 388; starts the request), 2 STOP (MSG 389), 3 CANCEL (NOT RUN: Ladder game list, click)
+gameList_keys | OK | code: the Ladder game list's keys (J join, R refresh, S stop, back, up / down) (NOT RUN: Ladder game list, keys)
+blink_down | OK | code: the blink clock run down, back to 1000; run: s400 (NOT RUN: see callers)
+arena_gamesPageFrame | OK | code: the arena lobby's JOIN ARENA page frame (LAN poll, server answer, refresh, list, join); run: s400 menuState400_frame (sub-screen 1)
+lobby_busy | OK | code: a LAN search, server search or refresh running (NOT RUN: JOIN ARENA, click while busy)
+lobby_join | OK | code: the selected game joined (server: its password asked for; LAN: g_lanJoinRequest) (NOT RUN: JOIN ARENA, JOIN button / double click)
+lobby_leave | RENAME -> lobby_stopSearch | static: it only drops the list answer, resets the blink and forces g_serverAnswerIn (ending the running search); it serves the STOP button (4, MSG 150), which stays on the list, and CANCEL (5), whose caller does the leaving (dplay_leaveSession, net_disconnect, camera mode 0). Its comment "the lobby left for the arena screen's first page" is wrong too (NOT RUN: JOIN ARENA, STOP or CANCEL)
+arenaGames_mouse | COMMENT | name right (run: s400 x3327 from lobby_clicks); comment calls button 4 "back (a refresh in progress ended)": it is STOP (MSG 150); 0 / 1 / 2 are the tabs SEARCH IPX / SEARCH TCP / DIRECT IP, 3 JOIN, 5 CANCEL
+
+== src/menu/hit_tests.c
+hit | OK | code: the first rectangle holding the point; run: every screen
+mapList_hitTest | OK | code: g_mapListRects (26) (NOT RUN: map list open)
+playerSetup_hitTest | OK | code: SETUP PLAYER rects; run: s400 lobby_drawPlayerSetup
+arenaGameList_hitTest | OK | code: JOIN ARENA rects; run: s400 arena_drawGameList
+arenaDialogBox_hitTest | OK | code: the CONNECTING box's CANCEL; run: s400 mp arena_drawGameList while connecting
+arenaUpdateNotice_hitTest | OK | code: the arena update notice's OK / CANCEL. Its table is misnamed g_arenaCreateRects (arenaUpdateNotice_layout lays it out as the notice's two buttons): a global to rename, the function is right (NOT RUN: the lobby server answers "program updated" (search result 3))
+armcPartsPage_hitTest | OK | code: PARTS page rects; run: s700
+armcWeaponsPage_hitTest | OK | code: WEAPON page rects; run: s700
+armcColour_hitTest | OK | code: COLOR page rects (NOT RUN: COLOR page)
+setupSound_hitTest | OK | code: SETUP SOUND rects; run: s600
+setupGraphic_hitTest | OK | code: SETUP GRAPHIC rects; run: s600
+setupControl_hitTest | OK | code: the controls page's rects; run: s600
+setupSlider_hitTest | OK | code: the controls page's slider rects; run: s600 slider_press
+updateNotice_hitTest | OK | code: the room's update notice buttons (NOT RUN: Ladder login answered "updated" (0x2a))
+roomLogin_hitTest | OK | code: Ladder login rects (NOT RUN: Ladder login)
+newIdForm_hitTest | OK | code: CREATE NEW ID form rects (NOT RUN: Ladder NEW ID)
+newIdConfirm_hitTest | OK | code: the new-ID confirmation's OK / CANCEL (NOT RUN: NEW ID form OK)
+account_hitTest | OK | code: account page rects (NOT RUN: Ladder account page)
+gameList_hitTest | OK | code: Ladder game list rects (NOT RUN: Ladder game list)
+gameListStop_hitTest | RENAME -> gameListJoinBox_hitTest | its one rectangle is the CONNECTING TO THE GAME SERVER box's CANCEL (drawn by gameList_draw while g_joinConnecting, used by gameList_stopJoin), not the list's STOP button (button 2 of gameList_hitTest, MSG 389): the name points at the wrong button; the arena twin is arenaDialogBox_hitTest / arenaJoinBox_clicks (NOT RUN: Ladder list, JOIN, then CANCEL while connecting)
+roomSettings_hitTest | OK | code: CREATE LADDER GAME rects (NOT RUN: Ladder create page)
+ranking_hitTest | OK | code: LADDER GAME RANKING rects (NOT RUN: Ladder ranking (key R))
+replaySelect_hitTest | OK | code: replay dialog rects; run: s300 replay
+missionList_hitTest | OK | code: mission list rects; run: s900
+briefing_hitTest | OK | code: briefing rects; run: s900
+skirmish_hitTest | OK | code: skirmish rects; run: s500
+profilePage_hitTest | OK | code: profile page rects; run: s210
+newNameDialog_hitTest | OK | code: the new-profile dialog; run: s210 profile_drawNewDialog
+deleteDialog_hitTest | OK | code: the delete dialog; run: s210
+logOutDialog_hitTest | OK | code: the log-out dialog; run: s210 (quit session)
+profileList_hitTest | OK | code: the profile list's rows (13) (NOT RUN: s210, click in the profile list (only its layout ran))
+pilotSelect_hitTest | OK | code: the pilot select grid and two buttons (NOT RUN: profile screen, pilot select dialog)
+createArena_hitTest | OK | code: CREATE ARENA rects, or the NETWORK INITIALIZE ERROR box's two (16 / 17) while it is up; run: s400 arena_createDraw / arena_createClick
+menu_pointInPolygon | OK | code: a point inside a convex 5-sided outline; run: s300 / s400 / s600 menu drawing and clicks
+
+== src/menu/layouts.c
+rect1 | OK | code: one rect from globals and constants; run: enters
+rect_spec | OK | code: a row / column of rects with a running offset; run: enters
+rects_column | RENAME -> rects_fixedRow | static: x grows by 0xa0 a rectangle at a fixed y (0x104..0x124): a row of buttons, not a column (its comment says "column" too); used for the update notices' and the host-error box's OK / CANCEL pairs. run: s400 enter
+rects_row | OK | code: a row relative to a movable origin; run: s210 / s400 enters
+options_panel | OK | code: a create form's eight field rows and four right-hand controls; run: s400 enter
+armc_tabs | COMMENT | static; comment "its tab rows (3 tabs 0x64 apart, two rows)": the second row is the OK / CANCEL pair at the page bottom (AY2 - 0x20), not tabs -> "the three tabs, then the OK / CANCEL buttons". run: armc_open
+arenaUpdateNotice_layout | OK | code: the arena update notice's two buttons (table misnamed g_arenaCreateRects); run: menuState400_enter
+updateNotice_layout | OK | code: the room's update notice buttons (NOT RUN: entering screen 800)
+deleteDialog_layout | OK | code: the delete dialog's buttons; run: menuState210_enter
+logOutDialog_layout | OK | code: the log-out dialog; run: s210 enter
+newNameDialog_layout | OK | code: the new-name dialog; run: s210 enter
+newIdConfirm_layout | OK | code: the new-ID confirmation's buttons (NOT RUN: NEW ID form OK (room_openNewIdConfirm))
+lobbyTop_layout | OK | code: the lobby top's two rects; run: menuState400_enter
+setupGraphic_layout | OK | code: SETUP GRAPHIC rects; run: s600 enter
+newIdForm_layout | OK | code: NEW ID form rects (NOT RUN: room_openNewIdForm)
+playerSetup_layout | OK | code: SETUP PLAYER rects; run: s400 enter
+roomLogin_layout | OK | code: Ladder login rects (NOT RUN: entering screen 800)
+missionList_layout | OK | code: the mission list; run: s900 enter
+account_layout | OK | code: the account page (NOT RUN: entering screen 800)
+briefing_layout | OK | code: the briefing; run: s900
+skirmish_layout | OK | code: skirmish; run: s500
+pilotSelect_layout | OK | code: the pilot select grid; run: s210 enter
+gameList_layout | OK | code: the Ladder game list (NOT RUN: entering screen 800)
+arenaGameList_layout | OK | code: JOIN ARENA; run: s400 enter
+profilePage_layout | OK | code: the profile page; run: s210
+armcWeaponsPage_layout | OK | code: WEAPON page; run: armc_open
+armcColour_layout | OK | code: COLOR page; run: armc_open
+armcPartsPage_layout | OK | code: PARTS page; run: armc_open
+replaySelect_layout | OK | code: the replay dialog; run: replayList_open
+setupControl_layout | OK | code: the controls page and its slider; run: s600
+setupSound_layout | OK | code: SETUP SOUND; run: s600
+ranking_layout | OK | code: the ranking page (NOT RUN: entering screen 800)
+roomSettings_layout | OK | code: CREATE LADDER GAME (NOT RUN: entering screen 800)
+createArena_layout | OK | code: CREATE ARENA and the host-error box; run: s400 enter
+profileList_layout | OK | code: the profile list's rows; run: s210
+mapList_layout | OK | code: the map list's rects; run: mapList_init (create page entry)
+
+== src/menu/lobby_states.c
+clear_all | OK | code: listed dwords zeroed (the trace merges other files' clear_all); run: s400
+lobby_enterPlayerScreen | OK | code: lobby sub-screen 0 (SETUP PLAYER) entered; run: s400 lobbyTop_keys (key P)
+lobby_enterArenaList | OK | code: sub-screen 1 (JOIN ARENA) entered; run: s400 lobbyTop_keys (key J)
+lobby_loadArenaSettings | OK | code: the arena record into the new-arena form; run: lobby_enterCreate
+mapList_init | OK | code: the kept map list made once, the list laid out; run: lobby_enterCreate
+lobby_enterCreate | OK | code: sub-screen 2 (CREATE ARENA) entered; run: lobbyTop_keys (key C)
+room_loadSettingsRecord | OK | code: the room's settings record into its form (NOT RUN: Ladder room, create page)
+room_enterCreatePage | OK | code: room state 2 (CREATE LADDER GAME) entered (NOT RUN: Ladder room, key C / button)
+ranking_enter | COMMENT | name right; comment ends "999 rooms": the 999 is g_rankingLastPage (no last page known yet), not rooms (NOT RUN: Ladder room, key R / RANKING button)
+room_setLadderDefaults | OK | code: the room's default settings ("Axis Ladder Game") in form and record (NOT RUN: NEW ID registered (server answer 33))
+room_copyAccountRecord | OK | code: the account record into the room's working / kept copies (NOT RUN: Ladder login accepted)
+stats_copy | OK | code: PilotStats fields copied (NOT RUN: a Ladder match's start (pilotRecord_syncCopies))
+pilotRecord_syncCopies | OK | code: the pilot record's two copies reconciled and capped by the Ladder record (NOT RUN: starting a Ladder room match (screen_enter.c, kind 2))
+login_takeAccountRecord | OK | code: the login reply's account record taken (NOT RUN: Ladder login accepted (answer 0x21))
+default_mech | OK | code: default mech bytes and colour pairs (NOT RUN: NEW ID registered)
+newId_register | OK | code: the new ID's defaults, the account packet sent (0x18) (NOT RUN: NEW ID confirmation OK)
+createUpdateNotice_keys | OK | code: the CREATE ARENA page's update notice keys (C close, O quit to update) (NOT RUN: CREATE ARENA, the server answers "updated" (host answer 3))
+lobbyPlayer_draw | OK | code: the SETUP PLAYER sub-screen drawn; run: s400 per frame
+lobby_processKeys | OK | code: the lobby's keys by sub-screen; run: s400 menu_processKeys per frame
+arenaUpdateNotice_clicks | OK | code: JOIN ARENA's update notice OK (quit) / CANCEL (NOT RUN: JOIN ARENA, search result 3)
+menuState400_frame | OK | code: screen 400's frame by sub-screen; run: s400 per frame
+lobby_clicks | OK | code: the lobby's clicks by sub-screen; run: s400 per frame
+arenaJoinBox_clicks | OK | code: the CONNECTING box's CANCEL; run: s400 mp while connecting x243
+mapList_keys | OK | code: the map list's keys O / A / D (NOT RUN: map list open, keys)
+room_leave | OK | code: the Ladder room left (log-out packet 0x19, main menu, disconnect) (NOT RUN: Ladder room, X / Esc / leave button)
+createUpdateNotice_clicks | OK | code: CREATE ARENA's update notice clicks (NOT RUN: CREATE ARENA, host answer 3)
+arena_editAddress | OK | code: the DIRECT IP address field opened; run: s400 mp arenaGames_keys x1 (key P)
+copy_string | OK | code: string copy; run: s400 hosting
+settings_store | OK | code: GameSettings stored with the locked flag, then the follow-up; run: s400 hosting
+lobby_keepArenaSettings | OK | code: the new arena kept as the arena record, axis.cfg written; run: lobby_announceArena (hosting)
+room_keepSettings | OK | code: the room's settings kept, registry written (NOT RUN: Ladder create page, start (room_announceGame))
+lobbyCreate_frame | OK | code: the CREATE ARENA sub-screen's frame; run: s400 per frame
+hostError_keys | OK | code: the NETWORK INITIALIZE ERROR box's keys (C close, O single play) (NOT RUN: IPX GAME with hosting failing (g_hostErrorBox))
+lobby_playerScreenClicks | OK | code: SETUP PLAYER clicks; run: s400 per frame in sub-screen 0
+take_session | OK | code: the joined session's settings taken for the match; run: s400 mp
+arena_joinSession | OK | code: a LAN session joined (dplay_join), settings taken (NOT RUN: JOIN ARENA via SEARCH IPX, JOIN a listed game (g_lanJoinRequest))
+arena_joinAnswer | OK | code: the arena join answered from the join timer; run: s400 mp game_wndProc x1
+key_hit | OK | code: a bound key just pressed, sound played (this file's and room_clicks.c's copies are merged in the trace); run: s400
+to_main_menu | OK | code: camera move 4, next screen 300; run: s400 x1
+lobbyTop_keys | OK | code: the lobby top's keys (C, P, J, X, Esc); run: s400 per frame
+lobby_topPageClicks | OK | code: the lobby top's clicks; run: s400
+lobbyPlayer_keys | COMMENT | name right (run: s400 x5489 via lobby_processKeys); the comment starts "... otherwise": its first part is missing (first a finished name typing is taken into g_arenaPlayerName, otherwise ...)
+lobby_openConnection | OK | code: the lobby server connection opened and the list request sent (NOT RUN: JOIN ARENA, SEARCH TCP tab (button 1 / key T); the mp run joined by DIRECT IP instead)
+arena_startFromLauncher | OK | code: a launcher-started arena game (host from axiswl.dat or join the given address) (NOT RUN: starting the game from the launcher with a net-game argument (g_launchedForNetGame))
+hostError_clicks | OK | code: the NETWORK INITIALIZE ERROR box's clicks (NOT RUN: IPX GAME with hosting failing)
+arena_connectionOutcome | RENAME -> arena_takeHostAnswer | it acts on the lobby server's answer to the hosting request (g_hostAnswer, asked by lobby_announceArena): 1 hosts the arena (dplay_host) and takes its settings, 0 / 3 / 4 disconnect (3 the update notice, 4 message 0x46); "connectionOutcome" is vague and suggests a connection attempt's result. run: s400 host-h2_1..4 / sessA x12 from lobbyCreate_frame while g_connectionAwaited
+arenaCreate_keys | OK | code: CREATE ARENA keys (typed field taken, I IPX, T TCP/IP, C / Esc leave); run: s400 per frame
+arena_createClick | COMMENT | name right (run: s400 per frame from lobby_clicks); comment says "8 create and 9 join": 8 is IPX GAME (MSG 165, lobby_hostArenaIpx), 9 is TCP/IP GAME (MSG 166: lobby_announceArena, else lobby_hostArenaTcpIp) - both host, neither joins; 10 SERVER SERVICE has no action, 11 CANCEL
+arenaGames_keys | OK | code: JOIN ARENA keys; run: s400 x2768
+kill_rate | OK | code: kills x 100 / (kills + deaths) (NOT RUN: ladder_sendRecord)
+power_from_rate | OK | code: power = rate x 0.01 x exp (NOT RUN: ladder_sendRecord)
+take_back | OK | code: a kept copy taken back when kills jumped by more than 300 (NOT RUN: ladder_sendRecord)
+record_send | OK | code: the record packet sent (0x11) and kept (NOT RUN: ladder_sendRecord)
+ladder_checkAndSendRecord | OK | code: the Ladder record checked and sent (NOT RUN: the end of a Ladder room match (ladder_sendRecord, menu_states.c))
+special_map | OK | code: special room names give the hidden maps 22..24; run: lobby_announceArena
+host_arena | OK | code: dplay_host with the arena record (NOT RUN: IPX GAME / the TCP/IP fallback)
+take_arena | OK | code: the hosted arena's settings taken for the match (NOT RUN: as host_arena)
+lobby_hostArenaIpx | OK | code: IPX GAME hosted directly (NOT RUN: CREATE ARENA, IPX GAME (button 8 / key I))
+lobby_hostArenaTcpIp | OK | code: a TCP/IP game hosted without the lobby server (NOT RUN: TCP/IP GAME with the lobby server unreachable, or the launcher's host path)
+lobby_announceArena | OK | code: the arena announced to the lobby server (hello 0x18 sent as kind 10); run: s400 host sessions x6 from arenaCreate_keys (key T)
+room_announceGame | OK | code: the Ladder room's game announced to the game server (NOT RUN: Ladder create page, OK (button 8 / key O))
+
+== src/menu/room_clicks.c
+updateNotice_clicks | OK | code: the room's update notice OK (quit) / CANCEL (NOT RUN: Ladder login / new ID answered "updated")
+newIdConfirm_clicks | OK | code: the confirmation's OK (1) / CANCEL (2) chosen (NOT RUN: NEW ID form OK)
+room_askJoinPassword | OK | code: the join password asked for when the picked game is locked (NOT RUN: Ladder list JOIN)
+gameList_stopJoin | COMMENT | name right; comment calls its button "the game list's stop button": it is the CONNECTING TO THE GAME SERVER box's CANCEL (MSG 116), not the list's STOP (button 2) (NOT RUN: Ladder list JOIN, CANCEL while connecting)
+room_drawWhiteFade | OK | code: the white fade over the screen (the room's copy; menu_drawWhiteFade is the lobby / main menu one) (NOT RUN: Ladder room, leaving for a match)
+arena_askJoinPassword | OK | code: the arena join password asked for when locked (NOT RUN: JOIN ARENA (server list), JOIN)
+update_notice_keys | OK | code: an update notice's keys (back closes, OK quits) (NOT RUN: an update notice up)
+roomUpdateNotice_keys | OK | code: the room's notice (NOT RUN: the room's notice up)
+arenaUpdateNotice_keys | OK | code: JOIN ARENA's notice (NOT RUN: JOIN ARENA's notice up)
+missions_listClicks | OK | code: the mission list's clicks; run: s900 missions_pageClicks
+key_hit | OK | code: a copy of the bound-key test (the trace keys it to lobby_states.c's copy) (NOT RUN: Ladder room menu keys, room_keys)
+room_keys | OK | code: the room's top keys (P, J, C, R, A, X, Esc) (NOT RUN: Ladder room menu (state 99), keys)
+roomLogin_clicks | OK | code: Ladder login clicks (ID, PASSWORD, LOG IN, CANCEL, NEW ID) (NOT RUN: Ladder login)
+room_pageClicks | OK | code: the room's top page clicks (NOT RUN: Ladder room menu)
+load_map_preview | OK | code: a map preview texture loaded; run: arena_loadMapPreview
+room_loadMapPreview | OK | code: the room's map preview (NOT RUN: Ladder create page)
+arena_loadMapPreview | OK | code: CREATE ARENA's map preview; run: s400 x10 (on a map change)
+typing_end | OK | code: the EDIT control destroyed, focus back, line closed (NOT RUN: NEW ID / login send)
+newIdForm_endTyping | OK | code: the typed line into the new-ID field being edited (NOT RUN: NEW ID form)
+room_hostingStep | OK | code: the room's host answer (1 hosts; 0 / 3 / 4 back to 2) (NOT RUN: Ladder create page OK, server answer)
+room_joinAnswer | OK | code: the room join answered from the join timer (NOT RUN: Ladder list JOIN)
+newIdForm_check | OK | code: the new-ID form checked, the confirmation opened (NOT RUN: NEW ID form OK)
+account_sendChange | OK | code: the account change sent (0x1c) (NOT RUN: Ladder account page OK)
+call_keeping_ebp | OK | code: harness helper keeping ebp around a call (NOT RUN: ranking_page)
+ranking_page | OK | code: the ranking page's frame (request, list, table) (NOT RUN: Ladder room ranking)
+login_send | OK | code: the login sent (0x18) (NOT RUN: Ladder login LOG IN)
+ranking_clicks | COMMENT | name right; comment says buttons 0..2 "open the room's other pages (ranking_prevPage / 4359b0 / 4359f0)": they are the page arrows and the sort button (ranking_prevPage / ranking_nextPage / ranking_cycleSort) (NOT RUN: Ladder ranking, click)
+room_settingsClicks | OK | code: CREATE LADDER GAME clicks (NOT RUN: Ladder create page, click)
+room_settingsAfterTyping | RENAME -> roomSettings_keys | it is the create-game page's key handler (room_keysByState state 2 calls it; its arena twin is arenaCreate_keys): a finished typed field taken, else O starts (room_announceGame), C / Esc close; "AfterTyping" names only its first branch (NOT RUN: Ladder create page, keys)
+map_preview_box | OK | code: the map preview box (CUSTOM with the rotation on); run: s400
+room_drawMapPreview | OK | code: the room's preview box (NOT RUN: Ladder create page (settings_form.c))
+arena_drawMapPreview | OK | code: CREATE ARENA's preview; run: s400 arena_createDraw per frame
+account_page | OK | code: the account page's frame (NOT RUN: Ladder room account page (key P))
+login_field | OK | code: focus / highlight moved to a field (NOT RUN: NEW ID form Tab)
+form_buttons | OK | code: the NEW ID form's OK / CANCEL by key (NOT RUN: NEW ID form keys)
+newIdForm_keys | OK | code: the NEW ID form's keys (NOT RUN: NEW ID form)
+
+== src/menu/room_dialogs.c
+set_box | OK | code: four box ints set (NOT RUN: NEW ID form / confirmation opened)
+dialog_opened | COMMENT | static; comment "the cursor, the picked field and the key repeat of a dialog cleared": it sets g_roomState to the dialog's state, starts the frame opening (g_frameOpening 1) and clears the login typing flags, the hidden-line and field-open flags (NOT RUN: NEW ID form / confirmation opened)
+room_openNewIdConfirm | OK | code: the confirmation (state 88) opened (NOT RUN: NEW ID form OK)
+room_openNewIdForm | OK | code: the NEW ID form (state 77) opened (NOT RUN: Ladder login NEW ID)
+room_openLogin | OK | code: the Ladder login (state 66) opened (NOT RUN: NEW ID form CANCEL)
+room_enterGameList | COMMENT | name right; comment says "brightness 0.7": the 0.7 goes to g_unusedRoomFloat, never read (same wording in room_enterAccountPage) (NOT RUN: Ladder room key J)
+room_keysByState | OK | code: the room's keys by g_roomState (NOT RUN: screen 800)
+account_keys | OK | code: the account page's keys (NOT RUN: Ladder account page)
+newIdForm_clicks | OK | code: the NEW ID form's clicks (NOT RUN: NEW ID form)
+room_joinSession | RENAME -> room_joinListed | it connects to listed game i (dplay_openConnection with its address), enumerates the sessions and starts the 2 s join timer - arena_joinListed's job; the join itself (dplay_join) is room_joinAnswer. Its name clashes with arena_joinSession, which IS the dplay_join step (NOT RUN: Ladder list JOIN (gameList_pageFrame))
+gameList_open | RENAME -> gameList_refresh | it does not open the list (room_enterGameList does): it resets the list and sends the server's room-list request (0x13); its callers are the REFRESH button (1, MSG 388) and key R (NOT RUN: Ladder game list REFRESH / R)
+arena_joinListed | OK | code: connect to listed arena i (or the typed address, 99999), enumerate, join timer; run: s400 mp arena_gamesPageFrame x1
+room_clicksByState | COMMENT | name right; comment "state 1: the stop button while a join is waited for" -> the CONNECTING box's CANCEL (gameList_stopJoin) (NOT RUN: screen 800)
+account_clicks | OK | code: the account page's clicks (NOT RUN: Ladder account page)
+roomSettings_page | OK | code: the room create page's frame (NOT RUN: Ladder create page)
+roomLogin_endTyping | OK | code: login typing ended, the line into the ID or password (NOT RUN: Ladder login)
+highlight_choice | OK | code: dialog focus / highlight set (NOT RUN: login Tab)
+roomLogin_update | COMMENT | name right; comment lists answer "42 done (g_roomUpdateNotice)": 0x2a raises the program-updated notice, it is not "done" (NOT RUN: Ladder login)
+newIdForm_update | OK | code: the NEW ID form's per-frame field handling (NOT RUN: NEW ID form)
+newIdConfirm_update | OK | code: the confirmation's choice and the server's answer (NOT RUN: NEW ID confirmation)
+ranking_keys | COMMENT | name right; comment says Esc "leaves the screen": the code sets g_roomCameraMode 0, closing the ranking page as C does (only without clearing the list flags) (NOT RUN: Ladder ranking keys)
+room_enterAccountPage | COMMENT | name right; "(brightness 0.7)" is g_unusedRoomFloat, never read (NOT RUN: Ladder room key P)
+stars | OK | code: a password as stars; run: s400 arena_createDraw
+newIdForm_draw | OK | code: the CREATE NEW ID form drawn (NOT RUN: NEW ID form)
+update_notice | OK | code: the room's update notice drawn (NOT RUN: the room's notice up)
+newIdConfirm_draw | OK | code: the confirmation drawn (NOT RUN: NEW ID confirmation)
+roomLogin_draw | OK | code: LADDER GAME ID MANAGER drawn (NOT RUN: Ladder login)
+rank_badge | OK | code: a rank badge quad from the font texture (NOT RUN: account page / ranking)
+account_drawPanel | OK | code: the USER INFOMATION panel (NOT RUN: Ladder account page)
+ranking_drawTable | OK | code: the LADDER GAME RANKING table (NOT RUN: Ladder ranking)
+creategame_close | RENAME -> roomLogin_leave | static: used only by roomLogin_keys (cancel, the CANCEL click, back) to leave the Ladder login for the main menu (g_nextScreen 300; roomLogin_clicks' CANCEL does the same inline); nothing about creating a game. Its comment "back to the room's page 99 ... the room's state 300" -> "to the main menu (screen 300)" (NOT RUN: Ladder login, back / Esc)
+roomLogin_keys | OK | code: the Ladder login's keys (NOT RUN: Ladder login)

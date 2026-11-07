@@ -712,8 +712,9 @@ static void through_m(float *out, const float *m, const float *p, int yx)
 	}
 }
 
-/* 0x4809f0 (thiscall on an octree node: box low +0, high high): the segment from -> to traced for the furthest hit
-   (by the t collisionTri_traceSegment gives, from -FLT_MAX in dist; the hit point to hit). A split node (split 1) walks
+/* 0x4809f0 (thiscall on an octree node: box low +0, high high): the segment from -> to traced for the hit nearest
+   from (the largest distance to `to` that collisionTri_traceSegment gives, from -FLT_MAX in *dist; the hit point to
+   hit). A split node (split 1) walks
    its eight children (children, x by 1, z by 2, y by 4) the segment passes through in order, cut at each child's
    boundary planes (the z planes spaced by the x half and the x planes by the z half: the original's slip, harmless
    on cubes), and returns the first child's hit. A leaf traces its list (items; nodes: record +0, next next; records

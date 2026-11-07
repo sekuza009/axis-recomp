@@ -26,7 +26,7 @@ int (hangul_glyphs)(u32 hi, u32 lo)
 
 /* 0x402590: the printable characters of a line of text (spaces not counted): outside a match "|x" is a code ("||" a
    '|'), "$[c]" before a character colours it, and in a match or the lobby (screens 9999 / 400) "$#c" too; a
-   double-byte character is not counted (its second byte skipped). Used to centre box text (text_drawBox16 / 32) */
+   double-byte character is not counted (its second byte skipped). Used to centre box text (text_drawCentredLines16 / 32) */
 int (text_printableLength)(const char *s)
 {
 	int n = 0, state = g_menuState;

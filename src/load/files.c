@@ -151,8 +151,9 @@ u32 (file_writeScrambled)(u8 *p, u32 size, u32 count, void *f)
 	return r;
 }
 
-/* 0x42c650: the player's section of axis.cfg written: its header, the name, the corporation (0..2) and the sex, by
-   their keywords. Returns the last fputs */
+/* 0x42c650: the player's section of axis.cfg written, each after its keyword: the name (g_cfgPlayerName, with an
+   extra line break by fprintf), the colour (g_playerCorporation: RED, BLUE or YELLOW) and the customize switch
+   (g_playerCustomize: ON / OFF), then an empty line. Returns the last fputs */
 u32 (cfg_writePlayer)(void *f)
 {
 #define FPUTS(s) GAME_CDECL(0x49f167, u32, const char *, void *)((const char *)RELOC(s), f)
@@ -247,9 +248,10 @@ u32 (cfg_writeAxisCfg)(void)
 	return fclose(f);
 }
 
-/* 0x43f8b0: the data files spoilt: a marker word (0xa1a2a3a4, 0xb1b2b3b4, 0xc1c2c3c4) written at offset 2000 of
-   three files, then two more deleted. Returns the last DeleteFileA's eax */
-u32 (app_spoilDataFiles)(void)
+/* 0x43f8b0: the launcher's marks made invalid at exit: other words (0xa1a2a3a4, 0xb1b2b3b4, 0xc1c2c3c4) written over
+   the marks at offset 2000 of three data files, save\axisgame.dat and game.dat deleted (the files and marks the
+   app_checkFile_* checks read). Returns the last DeleteFileA's eax */
+u32 (app_invalidateLauncherMarks)(void)
 {
 	static const u32 files[3] = { STR(0x4b03c4, "initdata\\profeng.dat"), STR(0x4b03dc, "initdata\\profkor.dat"), STR(0x4b03f4, "initdata\\skirmish.dat") };
 	static const u32 marks[3] = { 0xa1a2a3a4, 0xb1b2b3b4, 0xc1c2c3c4 };
@@ -532,10 +534,10 @@ u32 (cfg_writeGraphic)(void *f)
 #undef FPUTS
 }
 
-/* 0x42c6f0: the server section of axis.cfg written from the player's record (g_arenaName): the name (with an extra
-   line break by fprintf), the map and player count (signed bytes g_arenaMap / 41), customize on/off (g_arenaRotation), the
-   game type (g_arenaGameType: 1 .. 14 by name, any other DEATH MATCH) and the game and time flags (bytes g_arenaFragLimit / 45).
-   Returns the last fputs */
+/* 0x42c6f0: the server section of axis.cfg written from the arena record (g_arenaName ..): the name (with an extra
+   line break by fprintf), the map and the player count (signed bytes g_arenaMap / g_arenaMaxPlayers), customize on/off
+   (g_arenaRotation), the game type (g_arenaGameType: 1 .. 14 by name, any other DEATH MATCH) and the frag and time
+   limits (bytes g_arenaFragLimit / g_arenaTimeLimit, keywords gameflag / timeflag). Returns the last fputs */
 u32 (cfg_writeServer)(void *f)
 {
 #define FPUTS(s) GAME_CDECL(0x49f167, u32, const char *, void *)((const char *)RELOC(s), f)

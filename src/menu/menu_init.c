@@ -94,7 +94,7 @@ void (setupTop_initOutlines)(void)
    ((20, -10), (20, 0), (20, 10), (-20, -10), (-20, 0); look-at x -70 / 70, y 55, 0, -55 ..), their z all the current
    look-at's z (g_menuCameraLookZ); the home eye and look-at (g_menuEyeHome*, g_menuLookHome*) from where the camera
    is now; g_roomAwaitingServer cleared. Only caller armc_cameraStep, on the way back to the game room (800) */
-void (menuCamera_initPoints)(void)
+void (room_initCameraPoints)(void)
 {
 	static const u32 point[][2] = {
 		{ ADDR(g_camPoint0X), 0x41a00000 }, { ADDR(g_camPoint0Y), 0xc1200000 }, { ADDR(g_camAim0X), 0xc28c0000 }, { ADDR(g_camAim0Y), 0x425c0000 },

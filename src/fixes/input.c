@@ -101,7 +101,7 @@ void fix_cursorClamp(void)
 	if (g_mouseY < 0) g_mouseY = 0;
 }
 
-/* ---- the Esc menu in a match, by mouse (match_frame). The original turned any frame's offset over 50 into a step
+/* ---- the Esc menu in a match, by mouse (match_combatInput). The original turned any frame's offset over 50 into a step
    up or down: built for 30 fps and 400 dpi mice, at 120 fps a gentle slide raced through the items. Now the travel
    adds up along the page's own direction - up and down on the main page's column, left and right on the side by side
    pairs (the team's RED / BLUE, RETRY's and QUIT's YES / NO), the other direction ignored - and each step takes a
