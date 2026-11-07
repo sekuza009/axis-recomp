@@ -1,5 +1,7 @@
-/* arena_maps.c: the arena's map list: per map whether it is in the rotation and its game type (0 .. 13), edited on
-   a working copy (g_mapChoices) and kept on OK (g_mapChoicesKept). Maps 22 .. 24 can never be chosen. */
+/* map_list.c: the map list (the settings form's ADVANCED list, the arena's and the game room's): per map whether it
+   is in the rotation and its game type (0 .. 13), edited on a working copy (g_mapChoices) and kept on OK
+   (g_mapChoicesKept); maps 22 .. 24 can never be chosen. Also the forms' map step and the lobby player's settings
+   saved. */
 #include "../game.h"
 #include <string.h>
 

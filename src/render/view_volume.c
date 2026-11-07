@@ -1,7 +1,7 @@
-/* view_volume.c: things added to the view volume's lists for drawing: an object's two points, a quad of four points,
-   and a camera-facing quad (a billboard). Points are transformed by the view volume's matrices (columns) into clip
-   space, in the original's order of additions; with flag 1 the entry is dropped again when all its points are
-   outside the same clip plane. A full list sets its overflow flag instead. */
+/* view_volume.c: the view volume: things added to its lists (an object's two points, a triangle, a quad, a
+   camera-facing quad, a whole model), and the lists drawn; points are transformed by its matrices (columns) into clip
+   space in the original's order; with flag 1 an entry is dropped again when all its points are outside the same clip
+   plane; a full list sets its overflow flag. */
 #include "../game.h"
 #include <string.h>
 

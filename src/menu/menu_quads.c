@@ -35,7 +35,7 @@ void (menu_drawWideButton)(int x0, int y0, int x1, int y1, int lit)
 
 /* 0x4283e0: the large button cell (0.625 x 0.156 of the sheet), lit or plain; every caller passes lit 1 (a label /
    field background): profile_drawNewDialog, newIdForm_draw (room_dialogs.c), armc_drawColourEditor (armc_screens.c),
-   armc_drawPartsScreen (armc_stats.c) */
+   armc_drawPartsScreen (armc_parts_screen.c) */
 void (menu_drawLargeButton)(int x0, int y0, int x1, int y1, int lit)
 {
 	static const float plain[4] = { 0.0f, 0.5f, 0.625f, 0.65625f }, lit_[4] = { 0.0f, 0.65625f, 0.625f, 0.8125f };

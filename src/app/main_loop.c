@@ -1,5 +1,6 @@
-/* app_frameByScreen.c: one frame of the game. WinMain's message loop calls app_frame whenever no window message is
-   waiting; it runs either a match frame or the front end's menus. */
+/* main_loop.c: one frame of the game. WinMain's message loop calls app_frame whenever no window message is waiting;
+   it runs either a match frame (by the match's state: playing, the mech test mode, the replay viewer) or the front
+   end's menus. */
 #include "../game.h"
 #include "../fixes/fixes.h"
 #include <string.h>

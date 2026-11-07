@@ -1,5 +1,6 @@
-/* map_info.c: sections of a map's mission file read: a count and that many records, each record linked to its run
-   in a shared table (the runs follow each other; the total must match the table's own count, else a fatal message). */
+/* map_info.c: a map's files read: the mission file's way points and triggers, the object, play, actor and ground
+   files, and the item file; a section is a count and that many records, each record linked to its run in a shared
+   table (the runs follow each other; the total must match the table's own count, else a fatal message). */
 #include "../game.h"
 #include <string.h>
 

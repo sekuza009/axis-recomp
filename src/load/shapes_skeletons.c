@@ -1,5 +1,6 @@
-/* skel_data.c: a skeleton's data block: its header read or set, then one block (allocated, or the caller's memory
-   when it is big enough, else a fatal message: the record out and the two messages given) laid out as the bones' records followed by their tables. */
+/* shapes_skeletons.c: shapes and skeletons: their files read (binary, 3ds Max ASE, Wavefront OBJ), their managers
+   (items loaded by name into one block, a name tree), a bone's matrix at a time, and object lists loaded and posed. A
+   record's data is one block (allocated, or the caller's memory when it is big enough, else a fatal message). */
 #include "../game.h"
 #include "../fixes/fixes.h"
 #include <string.h>

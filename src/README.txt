@@ -18,8 +18,8 @@ Layout (by subsystem; each file's first comment says what it holds)
   hud/          the in-match HUD: the pass that draws it, the clock, icons, lock-on, markers, messages, the ranking,
                 the Esc menu, overlays
   load/         loading: data files and axis.cfg (files.c), the map's info files (map_info.c), texture / shape /
-                skeleton lookups and loaders (names.c, skel_data.c), the collision space and its triangles
-                (space_pools.c, collision_tris.c), linked lists
+                skeleton lookups and loaders (textures.c, shapes_skeletons.c), the collision space and its triangles
+                (collision_space.c, collision_tris.c), linked lists
   match/        the match's rules: rounds (match_start.c), actors' slots and frames (actor_slots.c, actor_frame.c),
                 weapons, bullets and damage (weapons.c), the per-frame passes over bullets / particles / objects /
                 items / triggers and the script (frame_loops.c), map objects, teams, scores, the announcements
@@ -30,7 +30,7 @@ Layout (by subsystem; each file's first comment says what it holds)
                 and the background tunnel, text fields, button layouts and hit tests
   msg/          the match's message box lines (players' and system messages)
   net/          DirectPlay (connection slots, sessions, Receive / Send), the game's own TCP server code and the match's
-                packets (net_tables.c: sending and handling them), the packet layer (net_packets.c)
+                packets (network.c: sending and handling them), the packet layer (net_packets.c)
   render/       the stage drawn: the view volume (queues and draws), objects / actors / particles, the sky, the
                 ground's shading, light factors, textures' tints, trails, depth sorting, vector / matrix maths
   replay/       the message box (drawn by the HUD in matches and replays)

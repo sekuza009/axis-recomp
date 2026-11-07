@@ -1,4 +1,4 @@
-/* scores.c: the players' scores at the start of a match. */
+/* scores.c: the players' scores reset at a match's start, and the ranking worked out (team counts, order). */
 #include "../game.h"
 
 /* 0x4620e0 (thiscall on the scene): every player's kills, deaths, the counted copies, time and inPlay cleared and the

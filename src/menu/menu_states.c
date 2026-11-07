@@ -1,5 +1,6 @@
-/* menu_states.c: small pieces of the front end's screens: the main menu's frame, the 3D background behind the
-   menus, the mission list's and skirmish screen's page dispatch, and the skirmish screen's keys. */
+/* menu_states.c: the front end's screens' frames and dispatch: the intro, the main menu with its replay selection
+   dialog, the profile, setup and game-room frames, the 3D background, the mission list's and skirmish screen's pages
+   and keys, the panels sliding in, and the way back to the menus after a match or a lost server. */
 #include "../game.h"
 #include "key_repeat.h"
 

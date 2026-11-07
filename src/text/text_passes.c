@@ -1,187 +1,257 @@
-/* text_passes.c: drawing a string in one of the four bitmap fonts. A string is drawn in up to three passes, one per
-   font texture: the Hangul initial consonants, the Hangul vowels and finals, and ASCII; each pass draws only its
-   own characters. Colour codes "$[c]" inside a string take no room. The ASCII pass is a call the patch DLL wraps
-   (nearest-texel sampling), so it is made through the original call site (PATCHED_CALL). */
+/* text_passes.c: drawing a line of text one font texture at a time: the ASCII passes (5, 8, 16, 32 pixels) and the
+   Korean passes (lead glyphs, vowel and tail glyphs, at 13 and 31 units), colour and format codes read on the way;
+   and what a line is made of: a Johab syllable split into its glyph rows, EUC-KR to Johab, the printable width. */
 #include "../game.h"
-#include <string.h>
 
-/* an ASCII pass through its call site in the game (the patch DLL wraps it there), or in the native build the pass
-   itself, pixel-sharp (fixes/screen.c) */
-#ifdef AXIS_NATIVE
-#include "../fixes/fixes.h"
-#define ASCII_PASS(site, fn, x, y, text) fix_asciiPass((void *)FN_##fn, x, y, text)
-#else
-#define ASCII_PASS(site, fn, x, y, text) SITE_CALL(site, fn, void, int, int, const char *)(x, y, text)
-#endif
+#define SC(a) ((int)GAME_VAR(signed char, a))
 
-/* the pass functions: (x, y, text) */
-
-/* every pass: the character width set, the 2D projection, texturing on, the current text colour */
-static void text_begin(int charWidth)
+/* 0x4017d0: the two bytes of a Johab syllable (hi, lo; the original rebuilds the word over its first argument): its
+   lead consonant, vowel and tail consonant (5 bits each) mapped to glyph indices, and each part's glyph set picked
+   by the others (with or without a tail, by the vowel's shape). Returns the tail's glyph */
+int (hangul_glyphs)(u32 hi, u32 lo)
 {
-	g_textCharWidth = charWidth;
-	gfx_setProjection2D3D(2);
-	glEnable(GL_TEXTURE_2D);
-	glColor4f_stored(g_textColour);
-}
-/* a font texture by its id: manager id / 512 of the texture set, slot id % 512 */
-static void text_bindFont(int id)
-{
-	tex_bind(g_textures->banks[id / 512], id % 512);
-}
-/* the room a string takes, in characters: its length less five for each colour code */
-static int text_visibleLength(const char *text)
-{
-	int length = (int)strlen(text), codes = 0;
-	for (int i = 0; i < length; i++)
-		if (text[i] == '$' && text[i + 1] == '[' && text[i + 3] == ']' && text[i + 5] != 0)
-			codes++;
-	return length - codes * 5;
-}
-
-/* the 8-unit font's three passes (also text_drawCentred8's) */
-static void text_passes8(int x, int y, const char *text, u32 asciiCallSite)
-{
-	text_bindFont(g_fontHanCho);
-	text_hangul13Pass(x, y, text);
-	text_bindFont(g_fontHanJungJong);
-	text_hangul13LayeredPass(x, y, text);
-	text_bindFont(g_fontAscii);
-	ASCII_PASS(asciiCallSite, text_ascii8Pass, x, y, text);   /* text_ascii8Pass */
-}
-
-/* 0x403170: text in the 5-unit font (ASCII only), 6 units per character */
-void (text_draw5)(int x, int y, const char *text)
-{
-	text_begin(6);
-	text_bindFont(g_fontAscii);
-	ASCII_PASS(0x4031f1, text_ascii5Pass, x, y, text);   /* text_ascii5Pass */
-	glDisable(GL_TEXTURE_2D);
-}
-
-/* 0x402620: text in the 8-unit font */
-void (text_draw8)(int x, int y, const char *text)
-{
-	text_begin(8);
-	text_passes8(x, y, text, 0x402720);
-	glDisable(GL_TEXTURE_2D);
-}
-
-/* 0x4028b0: text in the 16-unit font, 13 units per character */
-void (text_draw16)(int x, int y, const char *text)
-{
-	text_begin(13);
-	text_bindFont(g_fontHanCho);
-	text_hangul13Pass(x, y, text);
-	text_bindFont(g_fontHanJungJong);
-	text_hangul13LayeredPass(x, y, text);
-	text_bindFont(g_fontAsciiLarge);
-	ASCII_PASS(0x4029b0, text_ascii16Pass, x, y, text);   /* text_ascii16Pass */
-	glDisable(GL_TEXTURE_2D);
-}
-
-/* 0x402c90: text in the 32-unit font, 26 units per character */
-void (text_draw32)(int x, int y, const char *text)
-{
-	text_begin(26);
-	text_bindFont(g_fontHanCho);
-	text_hangul31Pass(x, y, text);
-	text_bindFont(g_fontHanJungJong);
-	text_hangul31LayeredPass(x, y, text);
-	text_bindFont(g_fontAsciiLarge);
-	ASCII_PASS(0x402d90, text_ascii32Pass, x, y, text);   /* text_ascii32Pass */
-	glDisable(GL_TEXTURE_2D);
-}
-
-/* 0x402740: text in the 8-unit font centred between x0 and x1 (8 units per character) */
-void (text_drawCentred8)(int x0, int y, int x1, const char *text)
-{
-	int x = x0 + (x1 - x0) / 2 - text_visibleLength(text) * 4;
-	text_begin(8);
-	text_passes8(x, y, text, 0x40288c);
-	glDisable(GL_TEXTURE_2D);
-}
-
-/* 0x403210 (text_drawCentred5): text in the 5-unit font centred between x0 and x1 (6 units per character) */
-void (text_drawCentred5)(int x0, int y, int x1, const char *text)
-{
-	int x = x0 + (x1 - x0) / 2 - text_visibleLength(text) * 3;
-	text_begin(6);
-	text_bindFont(g_fontAscii);
-	ASCII_PASS(0x4032e6, text_ascii5Pass, x, y, text);   /* text_ascii5Pass */
-	glDisable(GL_TEXTURE_2D);
-}
-
-/* the printable (non-space) characters of a line (0x402590): with the visible length, the centring correction, in units of 3 */
-#define text_printableLength(s) GAME_FN(text_printableLength, 0x402590, int, const char *)(s)
-
-/* text_drawCentredLines16 / text_drawCentredLines32: text centred between x0 and x1, broken into lines at each "|" ("||" is a plain
-   "|"; in a match no line breaks), one line under the other */
-static void text_drawCentredLines(int x0, int y, int x1, const char *text, int large)
-{
-	char work[100], line[100], rest[100];
-	memset(work, 0, sizeof work);
-	strcpy(work, text);
-	for (;;) {
-		int length = (int)strlen(work), split = 0, i = 0;
-		memset(line, 0, sizeof line);
-		memset(rest, 0, sizeof rest);
-		if (g_screen != 9999) {
-			for (i = 0; i < length; i++) {
-				if (work[i] != '|')
-					continue;
-				if (work[i + 1] != '|') {
-					split = 1;
-					break;
-				}
-				i++;
-			}
-		}
-		if (split) {
-			strncpy(line, work, i);
-			strncpy(rest, &work[i + 1], length - i - 1);
-			memset(work, 0, sizeof work);
-			strcpy(work, rest);
-		} else {
-			strncpy(line, work, length);
-		}
-		int centre = x0 + (x1 - x0) / 2;
-		int visible = text_visibleLength(line), printable = text_printableLength(line);
-		if (!large) {
-			text_begin(13);
-			int x = centre - visible * 4 - printable * 3;
-			text_bindFont(g_fontHanCho);
-			text_hangul13Pass(x, y, line);
-			text_bindFont(g_fontHanJungJong);
-			text_hangul13LayeredPass(x, y, line);
-			text_bindFont(g_fontAsciiLarge);
-			ASCII_PASS(0x402be8, text_ascii16Pass, x, y, line);   /* text_ascii16Pass */
-			y += 0x11;
-		} else {
-			text_begin(18);
-			int x = centre - visible * 8 - printable * 3 + 4;
-			text_bindFont(g_fontHanCho);
-			text_hangul31Pass(x, y, line);
-			text_bindFont(g_fontHanJungJong);
-			text_hangul31LayeredPass(x, y, line);
-			text_bindFont(g_fontAsciiLarge);
-			ASCII_PASS(0x402fbd, text_ascii32Pass, x, y, line);   /* text_ascii32Pass */
-			y += 0x21;
-		}
-		glDisable(GL_TEXTURE_2D);
-		if (!split)
-			return;
+	u32 v = (hi & 0xffff0000u) | (hi & 0xff) << 8 | (lo & 0xff);
+	int vowel = SC(OBJ(g_hangulVowelIndex) + ((v >> 5) & 31)), tail = SC(OBJ(g_hangulTailIndex) + (v & 31)), lead = SC(OBJ(g_hangulLeadIndex) + ((v >> 10) & 31));
+	int tailSet = SC(OBJ(g_hangulTailSet) + vowel), leadSet, vowelSet;
+	if (!tail) {
+		leadSet = SC(OBJ(g_hangulLeadSetPlain) + lead);
+		vowelSet = SC(OBJ(g_hangulVowelSetPlain) + vowel);
+	} else {
+		leadSet = SC(OBJ(g_hangulLeadSetTail) + lead);
+		vowelSet = SC(OBJ(g_hangulVowelSetTail) + vowel);
 	}
+	g_hangulLeadGlyph = lead + vowelSet * 20;
+	g_hangulVowelGlyph = vowel + leadSet * 22;
+	return g_hangulTailGlyph = tail + tailSet * 28;
 }
 
-/* 0x4029d0: text in the 16-unit font centred between x0 and x1, in lines (13 units per character, 0x11 apart) */
-void (text_drawCentredLines16)(int x0, int y, int x1, const char *text)
+/* 0x402590: the printable characters of a line of text (spaces not counted): outside a match "|x" is a code ("||" a
+   '|'), "$[c]" before a character colours it, and in a match or the lobby (screens 9999 / 400) "$#c" too; a
+   double-byte character is not counted (its second byte skipped). Used to centre box text (text_drawCentredLines16 / 32) */
+int (text_printableLength)(const char *s)
 {
-	text_drawCentredLines(x0, y, x1, text, 0);
+	int n = 0, state = g_menuState;
+	char c = *s;
+	if (!c)
+		return 0;
+	const char *p = s;
+	do {
+		p++;
+		if (state != 9999 && c == '|') {
+			if (*p != '|') {
+				p++;
+				goto next;
+			}
+			c = '|';
+			p++;
+		} else if (c == '$' && p[0] == '[' && p[2] == ']' && p[4]) {
+			c = p[4];
+			p += 5;
+		}
+		if ((state == 9999 || state == 400) && c == '$' && p[0] == '#' && p[2]) {
+			c = p[2];
+			p += 3;
+		}
+		if (c & 0x80) {
+			p++;
+			goto next;
+		}
+		if (c != ' ')
+			n++;
+	next:
+		c = *p;
+	} while (c);
+	return n;
 }
 
-/* 0x402db0: the same in the 32-unit font (18 units per character, 0x21 apart) */
-void (text_drawCentredLines32)(int x0, int y, int x1, const char *text)
+/* 0x403060: text drawn with the 5-pixel font as quads from (x, y), 6 pixels a letter: "|" a new line 10 pixels down
+   ("||" a "|"; unless g_screen is 9999), "$[n]?c" letter c in colour n of the table at g_codeColours, otherwise the
+   default colour (g_textColour); a byte with the top bit set and the next one are skipped (16 pixels). Returns
+   glEnd's eax */
+u32 (text_ascii5Pass)(int x, int y, const u8 *s)
 {
-	text_drawCentredLines(x0, y, x1, text, 1);
+	int left = x;
+	glBegin(7);   /* GL_QUADS */
+	for (u8 c = *s; c; c = *s) {
+		glColor4f_stored((const u32 *)OBJ(g_textColour));
+		s++;
+		if (g_menuState != 9999 && c == '|') {
+			if (*s != '|') {
+				y += 10;
+				x = left;
+				continue;
+			}
+			s++;
+		} else if (c == '$' && s[0] == '[' && s[2] == ']' && s[4]) {
+			const u32 *colour = (const u32 *)(OBJ(g_codeColours) + ((signed char)s[1] - '0') * 16);
+			c = s[4];
+			s += 5;
+			glColor4f_stored(colour);
+		}
+		if (c & 0x80) {
+			s++;
+			x += 16;
+		} else {
+			text_quad5(x, y, c);   /* text_quad5 */
+			x += 6;
+		}
+	}
+	return IMPORT(0x4a9220, u32, void)();   /* glEnd */
+}
+
+/* ---- the larger text passes, one quad per character (colour g_textColour): "|" breaks the line outside a match
+   (screen 9999; "||" is a '|'), as does "\r\n"; "$[c]" colours the next character with colour c (16 bytes a slot
+   at g_codeColours); the 13-unit passes also take "$#c" in a match or the arena lobby (screens 9999 / 400): colour c
+   kept for the rest of the text, a later "$[c]" changing it. Lines are `line` apart, wrap at x g_textWrapX and stop
+   at y g_textBottom. The ASCII passes draw the single-byte characters (a double-byte one is skipped, `wide` across),
+   then keep where they ended (g_textEndX / g_textEndY; g_textHitBottom set when stopped). The Korean passes draw only the
+   double-byte syllables, each split by hangul_glyphs (after the conversion text_hangulConvert when g_convertHangul is 1): the lead
+   glyph alone (g_hangulLeadGlyph) or the vowel and tail glyphs as two layers (g_hangulVowelGlyph / g_hangulTailGlyph); other characters move
+   `space` for a space, else g_textCharWidth. Returns glEnd's eax, or glDisable's for the passes that end texturing ---- */
+typedef struct {
+	int line, wide;
+	int sticky;                  /* "$#c" understood */
+	u32 glyph;                   /* the quad: (x, y, c), or (x, y, i[, j]) for Korean */
+	int korean, layered;
+	int space, narrow, other;    /* the ASCII advance for ' ', for 'I' / 'i', for the rest (Korean: space only) */
+	int untexture;               /* glDisable(GL_TEXTURE_2D) after */
+} TextPass;
+
+static u32 text_pass(int x, int y, const u8 *s, const TextPass *pass)
+{
+	int left = x, kept = 0, colour = 0;
+	glBegin(7);   /* GL_QUADS */
+	for (u8 c = *s; c; c = *s) {
+		int screen = g_menuState, special = pass->sticky && (screen == 9999 || screen == 400);
+		s++;
+		if (special && c == '$' && s[0] == '#' && s[2]) {
+			colour = (signed char)s[1] - '0';
+			kept = 1;
+			c = s[2];
+			s += 3;
+		}
+		glColor4f_stored(special && kept ? (const u32 *)(OBJ(g_codeColours) + colour * 16) : (const u32 *)OBJ(g_textColour));
+		if (g_menuState != 9999 && c == '|') {
+			if (*s != '|') {
+				y += pass->line;
+				x = left;
+				continue;
+			}
+			s++;
+		} else if (c == '$' && s[0] == '[' && s[2] == ']' && s[4]) {
+			int code = (signed char)s[1] - '0';
+			if (pass->sticky)
+				colour = code;
+			c = s[4];
+			s += 5;
+			glColor4f_stored((const u32 *)(OBJ(g_codeColours) + code * 16));
+		}
+		if (c == '\r' && *s == '\n') {
+			s++;
+			y += pass->line;
+			x = left;
+			continue;
+		}
+		if (x >= g_textWrapX) {
+			x = left;
+			y += pass->line;
+		}
+		if (y >= g_textBottom) {
+			if (!pass->korean)
+				g_textHitBottom = 1;
+			break;
+		}
+		if (!pass->korean) {
+			if (c & 0x80) {
+				s++;
+				x += pass->wide;
+				continue;
+			}
+			GAME_CDECL(pass->glyph, void, int, int, int)(x, y, c);
+			x += c == ' ' ? pass->space : c == 'I' || c == 'i' ? pass->narrow : pass->other;
+			continue;
+		}
+		if (!(c & 0x80)) {
+			x += c == ' ' ? pass->space : g_textCharWidth;
+			continue;
+		}
+		u8 hi = c, lo = *s++;
+		if (g_convertHangul == 1) {
+			u32 code = text_hangulConvert((u32)hi << 8 | lo);
+			hi = (u8)(code >> 8);
+			lo = (u8)code;
+		}
+		hangul_glyphs(hi, lo);   /* hangul_glyphs */
+		if (pass->layered)
+			GAME_CDECL(pass->glyph, void, int, int, int, int)(x, y, g_hangulVowelGlyph, g_hangulTailGlyph);
+		else
+			GAME_CDECL(pass->glyph, void, int, int, int)(x, y, g_hangulLeadGlyph);
+		x += pass->wide;
+	}
+	if (!pass->korean) {
+		g_textEndX = x;
+		g_textEndY = y;
+	}
+	u32 r = IMPORT(0x4a9220, u32, void)();   /* glEnd */
+	return pass->untexture ? IMPORT(0x4a922c, u32, u32)(0xde1) : r;   /* glDisable(GL_TEXTURE_2D) */
+}
+
+/*                              line  wide  sticky glyph     korean layered space narrow other untexture */
+static const TextPass ascii8 =  { 0x11, 0x10, 1, FN_ADDR(text_quad8, 0x428030), 0, 0, 8,    8,    8,    0 };
+static const TextPass ascii16 = { 0x11, 0x10, 1, FN_ADDR(text_quad16, 0x4280e0), 0, 0, 8,    0xb,  0xd,  1 };
+static const TextPass ascii32 = { 0x21, 0x20, 0, FN_ADDR(text_quad32, 0x428190), 0, 0, 0x10, 0x10, 0x16, 1 };
+static const TextPass han13 =   { 0x11, 0x10, 1, FN_ADDR(glyph_drawHangulLead13, 0x427c30), 1, 0, 8,    0,    0,    0 };
+static const TextPass han13b =  { 0x11, 0x10, 1, FN_ADDR(glyph_drawHangulVowelTail13, 0x427ce0), 1, 1, 8,    0,    0,    0 };
+static const TextPass han31 =   { 0x21, 0x20, 0, FN_ADDR(glyph_drawHangulLead31, 0x427e30), 1, 0, 0x10, 0,    0,    0 };
+static const TextPass han31b =  { 0x21, 0x20, 0, FN_ADDR(glyph_drawHangulVowelTail31, 0x427ee0), 1, 1, 0x10, 0,    0,    0 };
+
+/* 0x402010, 0x402210, 0x402420: the 8, 16 and 32-pixel fonts (0x402010 also notes where it starts first, which the
+   end overwrites) */
+u32 (text_ascii8Pass)(int x, int y, const u8 *s) { return text_pass(x, y, s, &ascii8); }
+u32 (text_ascii16Pass)(int x, int y, const u8 *s) { return text_pass(x, y, s, &ascii16); }
+u32 (text_ascii32Pass)(int x, int y, const u8 *s) { return text_pass(x, y, s, &ascii32); }
+/* 0x401870, 0x401aa0: Korean at 13 units, the lead glyphs and the vowel and tail glyphs; text_hangul31Pass, text_hangul31LayeredPass: the
+   same at 31 units */
+u32 (text_hangul13Pass)(int x, int y, const u8 *s) { return text_pass(x, y, s, &han13); }
+u32 (text_hangul13LayeredPass)(int x, int y, const u8 *s) { return text_pass(x, y, s, &han13b); }
+u32 (text_hangul31Pass)(int x, int y, const u8 *s) { return text_pass(x, y, s, &han31); }
+u32 (text_hangul31LayeredPass)(int x, int y, const u8 *s) { return text_pass(x, y, s, &han31b); }
+
+/* a pair of KS X 1001 rows (first, first + 1, ...) to a Johab lead byte (from base) and trail byte */
+static int ks_row(int hi, int lo, int base, int first)
+{
+	int r = hi - first;
+	u8 b = (u8)lo;
+	if (!(r % 2)) {
+		b = (u8)(lo - 0x70);
+		if (b > 0x7e)
+			b += 0x12;
+	}
+	return (r / 2 + base) * 256 + b;
+}
+
+/* 0x44aac0: one EUC-KR (KS X 1001) character to Johab, 0 for none: the jamo row (0xa4) by g_ksJamoCodes
+   (its codes g_ksJamoJohab; the upper half of EAX is left at 0x004b, and a miss gives 0x4b8761), the symbol rows in
+   pairs, the syllables (0xb0 .. 0xc8) by g_ksSyllableJohab, the hanja rows in pairs */
+int (text_hangulConvert)(u32 code)
+{
+	int hi = (code >> 8) & 0xff, lo = code & 0xff;
+	if (hi == 0xa4) {
+		for (int k = 0; k < 39; k++)
+			if ((u16)code == GAME_VAR(u16, OBJ(g_ksJamoCodes) + k * 2))
+				return (OBJ(g_unlockTablesNet) + 0x1430) | GAME_VAR(u16, OBJ(g_ksJamoJohab) + k * 2);
+		return IMG(0x4b8761);
+	}
+	int ok = lo >= 0xa1 && lo <= 0xfe;
+	if (hi >= 0xa1 && hi <= 0xac)
+		return ok ? ks_row(hi, lo, 0xd9, 0xa1) : 0;
+	if (hi == 0xad)
+		return ok ? (u8)(lo - 0x21) + 0xd400 : 0;
+	if (hi == 0xae)
+		return lo >= 0xa1 && lo <= 0xc1 ? (u8)(lo + 0x3d) + 0xd400 : 0;
+	if (hi >= 0xb0 && hi <= 0xc8)
+		return ok ? GAME_VAR(u16, OBJ(g_ksSyllableJohab) - (0xb0 * 94 + 0xa1) * 2 + (lo + hi * 94) * 2) : 0;
+	if (hi >= 0xca && hi <= 0xfd)
+		return ok ? ks_row(hi, lo, 0xe0, 0xca) : 0;
+	return 0;
 }

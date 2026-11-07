@@ -1,7 +1,8 @@
-/* lobby_states.c: the arena lobby's and the game room's screens set up as they are entered: the camera's target point
-   for the screen (and its look-at point), the screen's state cleared, the lobby's menu depth
-   (g_arenaTunnelDepth -1650) or the room's g_unusedRoomFloat (0.7, never read), and for the lists the map list or the ranking reset. The lobby's
-   three sub-screens are 0 (the player's own record), 1 (the arena list) and 2 (creating an arena). */
+/* lobby_states.c: the arena lobby and the game room: their screens set up as they are entered (camera target and
+   look-at points, state cleared, the map list or the ranking reset), their keys and clicks by sub-screen, the lobby's
+   frames, hosting and announcing an arena or a room game, joining an arena, and the Ladder account's and record's
+   handling. The lobby's three sub-screens are 0 (the player's own record), 1 (the arena list) and 2 (creating an
+   arena). */
 #include "../game.h"
 #include <string.h>
 

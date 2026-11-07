@@ -131,13 +131,13 @@
 #define g_pingStartEvent GAME_VAR(void *, 0xa0bb10)   /* the ping thread's wake-up event: set to make net_pingThreadProc ping the listed servers; reset when the thread is told to end (g_pingStopEvent) */
 #define g_ptxTablesReady GAME_VAR(int, 0xa0e00c)   /* 1 once the PTX decoder's tables are set up (ptx_initTables on the first texture-dat image loaded by tex_loadImage) */
 #define g_fullScreen GAME_VAR(int, 0xa0e920)   /* the GL window's full-screen flag (glWindow_init's argument): with 1 the display mode is changed to the window size (glWindow_setDisplayModeBy; cleared when that fails at init); checked again by glWindow_resize */
-#define g_textWrapX GAME_VAR(int, 0x4ad490)   /* the text drawing's wrap x in pixels (text_setWrapX: 640 at start-up): text_codes.c starts a new line past it */
-#define g_textBottom GAME_VAR(int, 0x4ad494)   /* the text drawing's bottom y in pixels (text_setBottom: 480 at start-up): text_codes.c stops drawing there */
+#define g_textWrapX GAME_VAR(int, 0x4ad490)   /* the text drawing's wrap x in pixels (text_setWrapX: 640 at start-up): text_passes.c starts a new line past it */
+#define g_textBottom GAME_VAR(int, 0x4ad494)   /* the text drawing's bottom y in pixels (text_setBottom: 480 at start-up): text_passes.c stops drawing there */
 #define g_lastCrosshair GAME_VAR(int, 0x4b04f8)   /* the crosshair whose texture the setup screen looked up last (-1 when the controls tab opens): a different g_crosshairEdit loads texture/crosshair/crosshairN into g_crosshairTexture */
 #define g_timerFirstCall GAME_VAR(int, 0x4b1048)   /* 1 until timer_now's first call, which only takes the performance counter reading (g_timerLastCount) and clears it */
 #define g_keepCameraAsked GAME_VAR(int, 0x4b2a70)   /* 1 after the menu tunnel camera finished a ring move (menuTunnel_advance): the next still frame keeps the camera again (camera_keep) and clears it */
 #define g_matchProjMode GAME_VAR(int, 0x4c4de8)   /* the projection gfx_setMatchProjection set last (1 the 3D one, 0 the HUD's 2D one; -1 none: glWindow_init / glWindow_resize) */
-#define g_convertHangul GAME_VAR(int, 0x4d23d0)   /* 1 (set at start-up, app_startupLoad): text drawing converts double-byte Korean syllables (text_hangulConvert) before splitting them into glyphs (text_codes.c) */
+#define g_convertHangul GAME_VAR(int, 0x4d23d0)   /* 1 (set at start-up, app_startupLoad): text drawing converts double-byte Korean syllables (text_hangulConvert) before splitting them into glyphs (text_passes.c) */
 #define g_newArenaFragLimit GAME_VAR(u8, 0x4db54c)   /* the new arena form's frag limit (g_newArenaName record +0x24, GameSettings.limit[0]; 0 .. 250) */
 #define g_newArenaTimeLimit GAME_VAR(u8, 0x4db54d)   /* the new arena form's time limit (g_newArenaName record +0x25, GameSettings.limit[1]; 0 .. 250) */
 #define g_arenaListRefreshTimer GAME_VAR(float, 0x4dbaf0)   /* the arena list's refresh timer in 1/60 s: grows by g_frameTime while g_lobbyRefreshing; past g_listRefreshPeriod arena_mergeReceivedSessions runs and it goes back to 0; 0 on entering the arena list */
@@ -306,7 +306,7 @@
 #define g_freeCamZoom GAME_VAR(int, 0x4e0464)   /* the free camera's zoom (Z in freeCam_keys toggles 1 / 2): 1 narrows g_viewAngle by 5 each menu frame down to 5, 2 widens it by 5 up to 45 (menu_frame, after SwapBuffers); other values leave it */
 #define g_projMode GAME_VAR(int, 0x5ae9bc)   /* projection set last by gfx_setProjection2D3D (skipped when the same): 1 the 3D perspective (g_viewAngle, depth 1 .. 20000), other the menus' 2D ortho; -1 forces a reset (game_wndProc WM_CREATE / WM_SIZE, gfx_setMatchProjection); 1 after gfx_initGLState */
 #define g_mapCount GAME_VAR(int, 0x67ef00)   /* mapinfo.dat's map count (data_loadMapInfo); g_mapNames / g_mapAbouts hold that many */
-#define g_leavingForMatch GAME_VAR(int, 0x67ef14)   /* 1 while the menus are being left for a match: set when an arena / room game is hosted or joined (lobby_hostArenaTcpIp, lobby_hostArenaIpx, arena_takeHostAnswer, arena_joinAnswer, room_hostingStep, room_clicks) or a skirmish / mission starts (menu_records.c:481); the menu tunnel then runs 2200-step rings, the white fade (g_whiteFade) runs, the top pages ignore keys / clicks and menu_slide moves to screen 9999. Cleared at start-up (app_startupLoad), on a host failure (lobby_hostArenaIpx), and by leave_game on the way back */
+#define g_leavingForMatch GAME_VAR(int, 0x67ef14)   /* 1 while the menus are being left for a match: set when an arena / room game is hosted or joined (lobby_hostArenaTcpIp, lobby_hostArenaIpx, arena_takeHostAnswer, arena_joinAnswer, room_hostingStep, room_clicks) or a skirmish / mission starts (menu_misc.c:481); the menu tunnel then runs 2200-step rings, the white fade (g_whiteFade) runs, the top pages ignore keys / clicks and menu_slide moves to screen 9999. Cleared at start-up (app_startupLoad), on a host failure (lobby_hostArenaIpx), and by leave_game on the way back */
 #define g_menuCameraLookZ GAME_VAR(float, 0x680380)   /* the menu camera's look-at point: z (gluLookAt centre z; g_menuCameraLook / g_menuCameraLookY the x / y) */
 #define g_menuScaleX GAME_VAR(float, 0x680bac)   /* the menus' 640-column coordinates to screen pixels: g_screenW / 640 (app_startupLoad); used by menu_vertex and the menus' 4:3 box */
 #define g_arenaUpdateNotice GAME_VAR(int, 0x907b2c)   /* the THIS PROGRAM HAS BEEN UPDATED notice is up in the arena lobby (server answer 3: arena_takeHostAnswer, gameList_pageFrame, arena_gamesPageFrame, room_hostingStep); takes keys / clicks (createUpdateNotice_keys / _clicks ...), which clear it */
@@ -991,7 +991,7 @@
 #define g_keyboardReady GAME_VAR(int, 0x4d1fa8)   /* 1 once the DirectInput keyboard is made and acquired (input_initKeyboard); 0 when released (input_releaseKeyboard: while a text field takes typing through Windows, and at shutdown); while 0 the key reads give 0 */
 #define g_mouseReady GAME_VAR(int, 0x4d1fac)   /* 1 once the DirectInput mouse device is made and set up (input_createMouse, which returns at once while it is set); 0 when released (input_releaseMouse) */
 #define g_textCharWidth GAME_VAR(int, 0x4d23d8)   /* the Korean passes' advance for a single-byte character other than a space (text_pass); set per call by text_begin: 8 (draw8 / centred8), 13 (draw16 / centredLines16), 26 (draw32), 18 (centredLines32), 6 (draw5 / centred5) */
-#define g_mapTop GAME_VAR(int, 0x4d7350)   /* the first map shown in the arena's map rotation list (up to 10 rows from it; arena_maps.c, scrolled by its arrows) */
+#define g_mapTop GAME_VAR(int, 0x4d7350)   /* the first map shown in the arena's map rotation list (up to 10 rows from it; map_list.c, scrolled by its arrows) */
 #define g_mapListKept GAME_VAR(int, 0x4d94fc)   /* 1 once a list has been kept (mapList_ok); never read */
 #define g_lobbySubState GAME_VAR(int, 0x4db51c)   /* the lobby's page: 5 the top menu, 0 player setup, 1 join, 2 create */
 #define g_armcAngle GAME_VAR(float, 0x4dbc04)   /* the ARM CENTER preview's turn in tenths of a degree, 0 .. 3600: + frame time x 8 while g_armcSpin, back to 0 at 3600; drawn as x 0.1 degrees (armc_misc.c preview, armc_drawPreview3D) */
@@ -1098,7 +1098,7 @@
 #define g_loadFade GAME_VAR(float, 0xa0e984)   /* the fade's time, 0 .. 1 s */
 #define g_loadScroll GAME_VAR(float, 0xa0ea88)   /* the loading screen's time (TimeSync_frameTime summed since loading_drawScreen(-1)): the backdrop cylinder's texture v runs from it to it + 10, so it scrolls; not a progress fraction */
 #define g_loadGame GAME_VAR(Scene *, 0xa0ea8c)   /* the game object being loaded (game_processLoadingMode's this): loading_draw reads its sessionMode (+8), awaitingHostRound, gameMode */
-#define g_white GAME_VAR(u32, 0xa1f23c)   /* the packed opaque white colour ff ff ff ff as one word (the same four bytes as objects.h g_packedWhite, colour_initPackedWhite): point and mark colours (skel_data.c, frame_loops.c) */
+#define g_white GAME_VAR(u32, 0xa1f23c)   /* the packed opaque white colour ff ff ff ff as one word (the same four bytes as objects.h g_packedWhite, colour_initPackedWhite): point and mark colours (shapes_skeletons.c, frame_loops.c) */
 #define g_unlit GAME_VAR(u32, 0xa1f278)   /* the colour of a vertex out of a light's reach */
 #define g_ptxClamp GAME_VAR(const u8 *, 0xa1f300)   /* the PTX decoder's clamp: points 0x100 into g_ptxClampTable (ptx_initClampTable), so g_ptxClamp[v] is v limited to 0 .. 255 for v from -0x100 (ptx_toRgb / ptx_toRgba; ptx_inverseDct from +0x80) */
 #define g_netqCursor GAME_VAR(int, 0xb116e0)   /* the player netq_receive looks at first (turns 0..15) */

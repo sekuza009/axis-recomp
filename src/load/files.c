@@ -1,5 +1,7 @@
-/* files.c: small reads and writes of the game's files: the scrambled data files' record blocks (fread_scrambled:
-   each byte rotated and xored), the chat macros, the replay file closed. */
+/* files.c: the game's file reads and writes: the scrambled data files' record blocks (file_readScrambled /
+   file_writeScrambled), axis.cfg (cfg_*), the pilot profiles' files (profile_*), axis.mis (mission_*), the message,
+   character, map-info and skirmish data files (data_load*), the component catalogue, the chat macros (Chat.scp), the
+   archives' item files, the replay file opened and closed, the launcher's files and the command line. */
 #include "../game.h"
 #include <string.h>
 #include <stdarg.h>

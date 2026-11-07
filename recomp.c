@@ -1804,7 +1804,7 @@ THISCALL int ViewVolume_addTriangle(char *vv, int id, const DWORD *info6, const 
    by k, along `axis` if given), outPlane = contact plane (normal, distance). Branches: behind/away from the face or
    outside an edge plane -> 0; inside all edge planes -> face contact; else the first edge plane the centre is
    outside of decides edge or vertex contact, each solving its quadratic and clamping the root to [-1, 1].
-   Rebuilt in src/load/collision_tris.c. */
+   Rebuilt in src/collision/collision_tris.c. */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 THISCALL int collisionTri_sweepSphere(void *self, DWORD r, DWORD pos, DWORD vel, DWORD k, DWORD outPos,
                                      DWORD outVel, DWORD outDist, DWORD outPlane, DWORD axis);
@@ -11678,7 +11678,7 @@ static void datalist_setup(void)
 	g_paintStacks = 1;
 	/* (the skeleton loading takes 32 bytes from stack it never wrote: the earlier callees' leftovers. The rebuild's
 	   frame was 4 bytes deeper than the original's, which gave those reads other values now and then (2 in 400 in the
-	   2026-10-31 play tests, the play test then keeping the original); its frame now matches (src/load/skel_data.c)) */
+	   2026-10-31 play tests, the play test then keeping the original); its frame now matches (src/load/shapes_skeletons.c)) */
 }
 ST(ObjectList_load, datalist_setup();,
    (TC(void, 0x46f4e0, char *, int, int, int, int, int, int, int, int, int, int, int)(BUF + 0x8f0000, g_dl[0], g_dl[1], g_dl[2], g_dl[3],

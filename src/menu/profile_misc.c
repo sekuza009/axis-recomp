@@ -1,5 +1,5 @@
-/* profile_misc.c: small pieces of the pilot profiles: the save files' byte scrambling, name checks, and a profile's
-   colour record loaded for the preview. */
+/* profile_misc.c: pieces of the pilot profile screen (210): its pages and clicks, profiles made, named and deleted,
+   the stat bars and the pilot grid, the save files' byte scrambling and the name checks. */
 #include "../game.h"
 #include <string.h>
 #include "key_repeat.h"

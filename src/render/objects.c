@@ -1,5 +1,6 @@
-/* objects.c: the stage's map objects (animated scenery), actors and particles handed to the view volume, once
-   per pass. Each list is walked up to its count, read again after every entry. */
+/* objects.c: the stage's map objects (animated scenery), actors and particles handed to the view volume, once per
+   pass (each list walked up to its count, read again after every entry); also a map object's frame (mapObject_frame)
+   and the frame's camera (stage_setupView). */
 #include "../game.h"
 #include <string.h>
 #define ST ((Stage *)s)   /* the stage (s in each function) by its fields (src/scene.fields) */

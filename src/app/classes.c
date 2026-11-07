@@ -1,6 +1,8 @@
-/* classes.c: the game's small C++ classes as the compiler built them: constructors (set the vtable, clear the
-   members), destructors (the vtable set back, an owned buffer freed), the "deleting" destructors, and the helpers
-   that clear a block of members. Most return what the original leaves in eax (usually 0 or the object). */
+/* classes.c: the game's C++ classes as the compiler built them: constructors (set the vtable, clear the members),
+   destructors (the vtable set back, an owned buffer freed), the "deleting" destructors and member clears; the game
+   object built (Console_ctor, ResourceSet_ctor) and a session started (scene_startSession); the BMP reader
+   (BMPRGBFile: image_*) and the players' flags (playerRecord_loadFlag, flag_uploadAtlas); and one-line getters,
+   setters and vector initialisers. Most return what the original leaves in eax (usually 0 or the object). */
 #include "../game.h"
 #include "../fixes/fixes.h"
 #include <string.h>

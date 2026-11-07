@@ -474,7 +474,7 @@ struct Bullet 0x4e8                                             # a bullet in fl
 0xbc       4          i32 homingTarget                          # the actor a guided round homes on (bullet_init's fourth argument; < 0 none: the local player's own round follows the aim point)
 0xc4       0xc        float homingPoint[3]                      # the point a guided round homes on without a target actor (the local player's own: 200000 along the aim)
 
-struct SpacePool 0x10                                           # one of the collision space's pools (space_pools.c): an array of records and its free list
+struct SpacePool 0x10                                           # one of the collision space's pools (collision_space.c): an array of records and its free list
 0          4          i32 count                                 # records
 4          4          u8 *records                                     # the pool's array of count records, laid out in Space.block (space_initBy); cleared and chained into the free list (reset_pool); planes and blocks are also found by index in it (cells, network hit planes)
 8          4          u8 *freeHead                              # the first free record (each free one links on)
@@ -498,7 +498,7 @@ struct SpaceBlock 0x50                                          # a block of the
 0x48       4          u8 *poolPrev                              # its back link in the blocks' free list (reset_pool, space_freeBlock; the new head's cleared when one is taken: space_getNextFreeBlockPtrBy); written, never read
 0x4c       4          u8 *poolNext                                    # its next in the blocks' free list (reset_pool links them, space_freeBlock pushes it on the front); space_getNextFreeBlockPtrBy moves the head to it
 
-struct Space 0xf4                                               # the collision space (space_pools.c; 0xf4 bytes: CollisionVolume_clear zeroes 0x3d dwords, Stage.spaceData follows it; only the fields used)
+struct Space 0xf4                                               # the collision space (collision_space.c; 0xf4 bytes: CollisionVolume_clear zeroes 0x3d dwords, Stage.spaceData follows it; only the fields used)
 4          4          i32 blockSize                             # its pools' memory size in bytes (planes x 0xac + nodes x 0x10 + units x 0x14 + blocks x 0x50 + cells x 2: space_initBy; 10262000 in a match)
 8          4          u8 *block                                       # its pools' memory: planes, nodes, units, blocks and the cells' table in that order (space_initBy: Stage.spaceData given by match_setup, else allocated); freed by CollisionVolume_release when owned
 0xc        4          i32 ownsBlock                              # 1: allocated here
@@ -565,7 +565,7 @@ struct NetSlot 0x410                                             # one of the si
 0x10       0x400      u8 packet[0x400]                           # the packet received (64 bytes: its first byte the number, bit 7 a resend request
                                                                  # for the player in the second)
 
-struct DPSessionDesc2 0x50                                       # DirectPlay's DPSESSIONDESC2 (dplay.h; ANSI): hosting, joining and enumerating (net_tables.c)
+struct DPSessionDesc2 0x50                                       # DirectPlay's DPSESSIONDESC2 (dplay.h; ANSI): hosting, joining and enumerating (network.c)
 0          4          u32 size                                   # dwSize (0x50)
 4          4          u32 flags                                  # dwFlags
 8          0x10       u8 instance[16]                            # guidInstance
@@ -821,7 +821,7 @@ struct ViewVolume 0x9170                                        # the view volum
 0x90f0     0x40       float modelview[16]                             # the view matrix: copied from the one given (Scene.modelview) or read from GL (ViewVolume_captureMatrices); loaded back to draw (ViewVolume_draw); puts billboards in camera space (ViewVolume_addBillboard)
 0x9130     0x40       float clip[16]                            # projection x modelview: points to clip space
 
-struct Skeleton 0x24                                            # a skeleton (skel_data.c): its 0x24-byte header and the block its bones and their tables are in
+struct Skeleton 0x24                                            # a skeleton (shapes_skeletons.c): its 0x24-byte header and the block its bones and their tables are in
 4          4          i32 blockSize                                   # its block's size: bones x 0x70 + rotKeyTotal x 0x28 + posKeyTotal x 0x20 (the .ske header's, take_block in skel_loadFromFile; worked out by skel_loadAseFrom); added to the manager's dataUsed (skel_getSkeletonPtrBy)
 8          4          u8 *block                                 # its bones (from the start) and their key tables
 0xc        4          i32 ownsBlock                             # 1: allocated here (freed with it)
@@ -869,7 +869,7 @@ struct ShapeManager 0x24c                                       # a shape manage
 0x230      4          u32 bindFlags                              # (shapes) given to shape_bindTextureBy with the tint; bit 1: tinted (shape_setTint)
 0x234      0x18       float tint[6]                             # two hue / saturation / value triples (shape_setTint; passed as bits to shape_bindTextureBy)
 
-struct SkelManager 0x130                                        # a skeleton manager (skel_data.c: SkeletonManager_initBy): Manager's first 0x130 bytes, without the textures and tint
+struct SkelManager 0x130                                        # a skeleton manager (shapes_skeletons.c: SkeletonManager_initBy): Manager's first 0x130 bytes, without the textures and tint
 4          4          i32 blockSize                                   # its block's size: capacity x 0x70 (a 0x4c-byte name node and a 0x24-byte skeleton each) + dataSize (SkeletonManager_initBy); take_block allocates it or checks the memory given against it
 8          4          u8 *block                                 # the name nodes, then the items, then the data memory
 0xc        4          i32 ownsBlock                             # 1: allocated here
@@ -933,14 +933,14 @@ struct TexRecord 0x68                                           # a texture bank
 0x60       4          i32 scrollMode                            # its texture coordinates' scrolling by the name's suffix: "_ANI" / "_ANI0" 1, "_ANI1" 2, "_ANI2" 3, "_ANI3" 4 (another "_ANI<c>": left as it was), else 0; ViewVolume_draw shifts them: 1 v +, 2 u +, 3 v -, 4 u - (view_volume.c tex_scroll)
 0x64       4          i32 changed                               # 1: its image to be loaded again at its next tex_bind (set by tex_setMaterialTint when a tint differs and by tex_markMaterialChanged; tex_bind reloads and clears it; texRecord_init 0)
 
-struct TexSlot 0x14                                             # a slot of a texture bank's GL texture cache (names.c tex_bind)
+struct TexSlot 0x14                                             # a slot of a texture bank's GL texture cache (textures.c tex_bind)
 0          4          i32 index                                  # its own index
 4          4          i32 record                                 # the record (texture) in it
 8          4          u32 glTexture                              # its GL texture id
 0xc        4          u8 *next                                   # the ring: the next slot (from the oldest on)
 0x10       4          u8 *prev                                        # the ring: the previous slot (tex_initBy); tex_bind unlinks a reused slot and puts it back just before the oldest (the newest)
 
-struct TextureBank 0xcd144                                   # a texture bank (the game's class Texture, one per image size; names.c; TextureManager.banks): up to 512 materials and their GL texture slots
+struct TextureBank 0xcd144                                   # a texture bank (the game's class Texture, one per image size; textures.c; TextureManager.banks): up to 512 materials and their GL texture slots
 4          4          i32 ready                                 # 1: set up (tex_initBy)
 8          0x100      char dir[0x100]                                 # the folder its files are looked for under (tex_initBy, upper-cased; "." gives empty: none): "<dir>\Data\Image<n>.dat", "<dir>\<name>" (tex_path, tex_textureFileExist); every caller passes "."
 0x108      4          i32 indexCount                            # the image file's name index: indexCount entries of 0x44 bytes

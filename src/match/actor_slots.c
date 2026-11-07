@@ -1,5 +1,6 @@
-/* actor_slots.c: the stage's actor slots: selecting one, the camera's target, an actor's input record, and the
-   stage's pools of map objects, particles and bullets emptied. */
+/* actor_slots.c: the stage's actor slots: set up and spawned (parts, weapon, starting values, spawn records),
+   coloured, emptied and taken out, their input records and draw; the player records and a new round reset; the pools
+   of map objects, particles and bullets emptied; the data-loss check. */
 #include "../game.h"
 #include <string.h>
 #define STS ((Stage *)scene)   /* the stage (named scene in these functions) by its fields */

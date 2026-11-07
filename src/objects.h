@@ -21,7 +21,7 @@
 #define g_localAddress ((char *)IMG(0xa0b43c))   /* char[16]; the local IP address text (memset 16) */
 #define g_dataDir ((char *)IMG(0x9dae7c))   /* char[0x105]; the data folder's path (app_setDataPaths clears 0x105 bytes; 0x9daf88 next) */
 #define g_savedColourChoices ((float *)IMG(0x4dcfe0))   /* float[36]; the ARM CENTER's colour choices kept: six slots of 0x18 bytes (hue, saturation, value of the first tint, then of the second), copied whole (0x90) from g_armcColours / g_roomColours / the campaign record */
-#define g_textColour ((Colour *)IMG(0x76d438))   /* Colour[1]; the text passes' current colour (text_setColor / set_colour_bits; bound by every text pass, text_begin and text_codes.c: the menus, the HUD and the message box) */
+#define g_textColour ((Colour *)IMG(0x76d438))   /* Colour[1]; the text passes' current colour (text_setColor / set_colour_bits; bound by every text pass, text_begin and text_passes.c: the menus, the HUD and the message box) */
 #define g_rectColour ((Colour *)IMG(0x9da480))   /* Colour[1]; the 2D menu drawing colour: menu_drawRect's and menu_drawLine's (set by the draw functions before each frame / box) */
 #define g_roomBright ((float *)IMG(0x9dcec0))   /* float[4]; the game room's bright colour (RGBA: 0, 1, 1, 1 cyan; menuState800_enterGameRoom) */
 #define g_roomDim ((float *)IMG(0x9dd338))   /* float[4]; the game room's dim colour (RGBA 0.3, 0.7, 0.7, 1) */

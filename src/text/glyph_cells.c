@@ -1,6 +1,5 @@
-/* glyph_cells.c: the font atlases' cell tables: for each glyph its texture coordinates, a row's top and bottom
-   (the same across the row) and a column's left and right. Every value is a texel number times the constant at
-   k_0_00390625f (1/256). */
+/* glyph_cells.c: the font atlases' cell tables (for each glyph its texture coordinates; every value a texel number
+   times 1/256), the pen font (the HUD's small text) loaded and drawn, and the HUD's digits. */
 #include "../game.h"
 #include "../fixes/fixes.h"
 #include "../wide.h"

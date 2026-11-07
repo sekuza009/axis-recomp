@@ -1,5 +1,6 @@
-/* lists.c: the free lists of the collision space's pools: a freed node pushed on the front of the doubly linked free
-   list, the pool's count of nodes in use going down. */
+/* lists.c: list links: the free lists of the collision space's pools (a freed node or block pushed on the front of
+   the doubly linked free list, the pool's count of nodes in use going down), and a ring appended to the menu tunnel's
+   chain (tunnel_appendRing). */
 #include "../game.h"
 
 #define FIELD(type, obj, offset) GAME_VAR(type, (u8 *)RELOC(obj) + (offset))

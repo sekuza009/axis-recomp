@@ -1,4 +1,5 @@
-/* setup_pages.c: the setup screen's pages drawn */
+/* setup_pages.c: the setup screen's pages and menu drawn, the screens' tunnels (setup, skirmish, mission list, ARM
+   CENTER, game room, arena lobby) and the menus of the main menu, the arena lobby's top page and the game room. */
 #include "../game.h"
 #include <string.h>
 

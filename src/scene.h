@@ -523,7 +523,7 @@ typedef struct Bullet {
 	i32 trailCount;   /* +0x4e4: the cross-sections made (the ring's next: % 20) */
 } Bullet;
 
-/* one of the collision space's pools (space_pools.c): an array of records and its free list */
+/* one of the collision space's pools (collision_space.c): an array of records and its free list */
 typedef struct SpacePool {
 	i32 count;   /* +0x0: records */
 	u8 *records;   /* +0x4: the pool's array of count records, laid out in Space.block (space_initBy); cleared and chained into the free list (reset_pool); planes and blocks are also found by index in it (cells, network hit planes) */
@@ -552,7 +552,7 @@ typedef struct SpaceBlock {
 	u8 *poolNext;   /* +0x4c: its next in the blocks' free list (reset_pool links them, space_freeBlock pushes it on the front); space_getNextFreeBlockPtrBy moves the head to it */
 } SpaceBlock;
 
-/* the collision space (space_pools.c; 0xf4 bytes: CollisionVolume_clear zeroes 0x3d dwords, Stage.spaceData follows it; only the fields used) */
+/* the collision space (collision_space.c; 0xf4 bytes: CollisionVolume_clear zeroes 0x3d dwords, Stage.spaceData follows it; only the fields used) */
 typedef struct Space {
 	u8 _pad0000000[0x4];
 	i32 blockSize;   /* +0x4: its pools' memory size in bytes (planes x 0xac + nodes x 0x10 + units x 0x14 + blocks x 0x50 + cells x 2: space_initBy; 10262000 in a match) */
@@ -630,7 +630,7 @@ typedef struct NetSlot {
 	u8 packet[0x400];   /* +0x10: the packet received (64 bytes: its first byte the number, bit 7 a resend request */
 } NetSlot;
 
-/* DirectPlay's DPSESSIONDESC2 (dplay.h; ANSI): hosting, joining and enumerating (net_tables.c) */
+/* DirectPlay's DPSESSIONDESC2 (dplay.h; ANSI): hosting, joining and enumerating (network.c) */
 typedef struct DPSessionDesc2 {
 	u32 size;   /* +0x0: dwSize (0x50) */
 	u32 flags;   /* +0x4: dwFlags */
@@ -933,7 +933,7 @@ typedef struct ViewVolume {
 	float clip[16];   /* +0x9130: projection x modelview: points to clip space */
 } ViewVolume;
 
-/* a skeleton (skel_data.c): its 0x24-byte header and the block its bones and their tables are in */
+/* a skeleton (shapes_skeletons.c): its 0x24-byte header and the block its bones and their tables are in */
 typedef struct Skeleton {
 	u8 _pad0000000[0x4];
 	i32 blockSize;   /* +0x4: its block's size: bones x 0x70 + rotKeyTotal x 0x28 + posKeyTotal x 0x20 (the .ske header's, take_block in skel_loadFromFile; worked out by skel_loadAseFrom); added to the manager's dataUsed (skel_getSkeletonPtrBy) */
@@ -994,7 +994,7 @@ typedef struct ShapeManager {
 	float tint[6];   /* +0x234: two hue / saturation / value triples (shape_setTint; passed as bits to shape_bindTextureBy) */
 } ShapeManager;
 
-/* a skeleton manager (skel_data.c: SkeletonManager_initBy): Manager's first 0x130 bytes, without the textures and tint */
+/* a skeleton manager (shapes_skeletons.c: SkeletonManager_initBy): Manager's first 0x130 bytes, without the textures and tint */
 typedef struct SkelManager {
 	u8 _pad0000000[0x4];
 	i32 blockSize;   /* +0x4: its block's size: capacity x 0x70 (a 0x4c-byte name node and a 0x24-byte skeleton each) + dataSize (SkeletonManager_initBy); take_block allocates it or checks the memory given against it */
@@ -1069,7 +1069,7 @@ typedef struct TexRecord {
 	i32 changed;   /* +0x64: 1: its image to be loaded again at its next tex_bind (set by tex_setMaterialTint when a tint differs and by tex_markMaterialChanged; tex_bind reloads and clears it; texRecord_init 0) */
 } TexRecord;
 
-/* a slot of a texture bank's GL texture cache (names.c tex_bind) */
+/* a slot of a texture bank's GL texture cache (textures.c tex_bind) */
 typedef struct TexSlot {
 	i32 index;   /* +0x0: its own index */
 	i32 record;   /* +0x4: the record (texture) in it */
@@ -1078,7 +1078,7 @@ typedef struct TexSlot {
 	u8 *prev;   /* +0x10: the ring: the previous slot (tex_initBy); tex_bind unlinks a reused slot and puts it back just before the oldest (the newest) */
 } TexSlot;
 
-/* a texture bank (the game's class Texture, one per image size; names.c; TextureManager.banks): up to 512 materials and their GL texture slots */
+/* a texture bank (the game's class Texture, one per image size; textures.c; TextureManager.banks): up to 512 materials and their GL texture slots */
 typedef struct TextureBank {
 	u8 _pad0000000[0x4];
 	i32 ready;   /* +0x4: 1: set up (tex_initBy) */

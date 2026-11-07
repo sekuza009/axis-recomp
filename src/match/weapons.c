@@ -1,4 +1,5 @@
-/* weapons.c: an actor's weapons (switching, picking), the damage a hit does, and the bullets (fired, flying, hitting). */
+/* weapons.c: an actor's weapons (switching, picking), the damage a hit does, a bot's next path point, and the bullets
+   (fired, flying, hitting). */
 #include "../game.h"
 #include <string.h>
 #define ST ((Stage *)s)   /* the stage (s in each function) by its fields (src/scene.fields) */

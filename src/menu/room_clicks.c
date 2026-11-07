@@ -1,6 +1,6 @@
-/* room_clicks.c: the game room's small handlers: clicks on its popups' buttons, asking for a join password, and the
-   white fade over the screen. Buttons are hit-tested with the pointer (updateNotice_hitTest and its kind: the index of the
-   button under it, or -1). */
+/* room_clicks.c: the game room's handlers: its pages' clicks and keys, the Ladder login and new-ID forms checked and
+   sent, the account change, the hosting step and the join's answer, the map previews (the room's and the arena's),
+   the update notices, the join passwords, the white fade; also the mission list's clicks. */
 #include "../game.h"
 #include <string.h>
 

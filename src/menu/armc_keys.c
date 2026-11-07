@@ -1,5 +1,5 @@
-/* armc_keys.c: the ARM CENTER's keys on its main (parts) page and its colour page. Five keys pick a part or colour
-   slot directly; up / down step through the six with wrap-around. */
+/* armc_keys.c: the ARM CENTER's keys: its parts, weapons and colour pages and the dispatch by mode. Five keys pick a
+   part or colour slot directly; up / down step through the six with wrap-around. */
 #include "../game.h"
 
 

@@ -1,5 +1,6 @@
 /* game_lists.c: the lists of games to join, the game room's (window 0x9dd4a8 .. 0x9dd4b4) and the arena lobby's
-   (0x4db8c8 .. 0x4db8d4): the games (g_sessionList) from row g_gameListTop, the page, and their boxes */
+   (0x4db8c8 .. 0x4db8d4): the games (g_sessionList) from row g_gameListTop, the page, their boxes, keys and mouse;
+   also the lobby's SETUP PLAYER dialog. */
 #include "../game.h"
 #include <string.h>
 

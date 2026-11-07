@@ -1,4 +1,5 @@
-/* hud_messages.c: the HUD's centred texts and the help screen. */
+/* hud_messages.c: the HUD's centred texts (press fire, the watched player's name, the restart countdown), the help
+   screen, and a rectangle's outline in screen pixels. */
 #include "../game.h"
 
 /* 0x495140: "Press fire button to start", centred */

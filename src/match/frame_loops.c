@@ -1,5 +1,7 @@
-/* frame_loops.c: the scene's per-frame passes over its slots: each slot in use (its first dword 1) updated, unless
-   a script holds the actors (scriptMode set with scriptHoldsPlay 1). The count is read again after each slot. */
+/* frame_loops.c: the scene's per-frame passes over its slots (bullets, particles, objects, actors and triggers; each
+   slot in use updated unless a script holds the actors) and what they run: particles spawned, set up and updated,
+   bullets spawned, map objects added, the triggers' way-point commands, the items' frame; also the effects' shapes
+   and the Ladder scores added. */
 #include "../game.h"
 #include <string.h>
 #define ST ((Stage *)s)   /* the stage (s in each function) by its fields (src/scene.fields) */

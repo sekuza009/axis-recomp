@@ -1,4 +1,6 @@
-/* names.c: looking resources up by name in the managers' sorted name tables (0x44-byte entries), and file names. */
+/* textures.c: the texture banks (the game's class Texture) and their manager: set up, a texture looked up and loaded
+   by name (PTX or BMP), uploaded and bound through the GL texture cache; and the archives' name lookups (sorted
+   0x44-byte index entries) and file names. */
 #include "../game.h"
 #include "../fixes/fixes.h"
 

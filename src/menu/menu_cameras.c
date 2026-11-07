@@ -1,8 +1,9 @@
-/* menu_cameras.c: the front end's camera moving between its home and a screen's menu point. The camera is a
-   position (g_menuEyeX) and a point it looks at (g_menuCameraLook), three floats each; the menu points are 16 bytes apart
-   from OBJ(g_camPoints) (positions) and OBJ(g_camAims) (look-at points), the home at g_menuEyeHomeX / g_menuLookHomeX. Each frame the camera
-   eases a share of the way (the frame's time times a rate) and snaps once close enough. The arithmetic is kept in
-   the original's order and at x87 precision (long double). */
+/* menu_cameras.c: the front end's camera moving between its home and a screen's menu point, and the free (watching)
+   camera of screen 9999. The menu camera is a position (g_menuEyeX) and a point it looks at (g_menuCameraLook), three
+   floats each; the menu points are 16 bytes apart from OBJ(g_camPoints) (positions) and OBJ(g_camAims) (look-at
+   points), the home at g_menuEyeHomeX / g_menuLookHomeX. Each frame the camera eases a share of the way (the frame's
+   time times a rate) and snaps once close enough. The arithmetic is kept in the original's order and at x87 precision
+   (long double). */
 #include "../game.h"
 #include <string.h>
 

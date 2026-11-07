@@ -1,6 +1,7 @@
-/* menu_records.c: the front end's small records: the lobby player name, the data paths, the chat input line and
-   its history, the message box line, the session records of the arena list, the saved mech, and the paged lists
-   of the room screen and the mission list (screen 900). */
+/* menu_misc.c: small pieces of the front end: the lobby player's name, the data paths, the input line and its
+   history, the message box, the arena list's session records, the mech kept and loaded, the title screen's and the
+   main menu's keys and clicks, the ranking's pages, the mission list's cursor and briefing pages (screen 900) and the
+   skirmish screen's round. */
 #include "../game.h"
 #include <string.h>
 

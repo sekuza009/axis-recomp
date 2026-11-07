@@ -1,5 +1,6 @@
-/* room_dialogs.c: the room screen's dialogs opened and its state reset: each dialog a box (left, top, right,
-   bottom), its fields cleared, the screen's sub-state (g_roomState) set to the dialog's. */
+/* room_dialogs.c: the game room's dialogs and pages: opened (each a box, its fields cleared, g_roomState set to it),
+   updated and drawn, their keys and clicks by state; joining a listed game (the room's or the arena's) and the list
+   refreshed. */
 #include "../game.h"
 #include <string.h>
 

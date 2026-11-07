@@ -854,8 +854,8 @@ typedef struct { float r, g, b, a; } Colour;   /* an RGBA colour, four floats (C
 #define app_quitGame() GAME_FN(app_quitGame, 0x44f850, void, void)()   /* quit (app/app_quit.c) */
 #define net_resetConnection(kind) GAME_FN(net_resetConnection, 0x451600, void, int)(kind)   /* every socket closed before connecting */
 #define net_send(kind, socket) GAME_FN(net_send, 0x4521c0, u32, int, int)(kind, socket)   /* a packet (0xc room, 0x14 arena...) to the lobby (100) / game server (0x65) */
-#define net_connect(mode) GAME_FN(net_connect, 0x451b80, int, int)(mode)   /* 100 the lobby, 0x65 the game server (net/net_tables.c) */
-#define net_disconnect() GAME_FN(net_disconnect, 0x451e60, u32, void)()   /* leaving the network (net/net_tables.c) */
+#define net_connect(mode) GAME_FN(net_connect, 0x451b80, int, int)(mode)   /* 100 the lobby, 0x65 the game server (net/network.c) */
+#define net_disconnect() GAME_FN(net_disconnect, 0x451e60, u32, void)()   /* leaving the network (net/network.c) */
 #define GetModuleHandleA(name) IMPORT(0x4a915c, void *, const char *)(name)
 #define glWindow_resize(width, height) GAME_FN(glWindow_resize, 0x468450, int, int, int)(width, height)   /* app/win32.c */
 #define TimeSync_frameTime(timer) GAME_THISFN(TimeSync_frameTime, 0x487490, long double, void *)(timer)   /* seconds since its last call */
@@ -885,7 +885,7 @@ typedef struct { float r, g, b, a; } Colour;   /* an RGBA colour, four floats (C
 #define ResetEvent(event) IMPORT(0x4a9168, int, void *)(event)
 #define SetEvent(event) IMPORT(0x4a9178, int, void *)(event)
 
-/* ---- objects, Win32, GL helpers (app/objects.c, app/win32.c, render/gl_helpers.c) ---- */
+/* ---- objects, Win32, GL helpers (app/destructors.c, app/win32.c, render/gl_helpers.c) ---- */
 #define ViewVolume_release(view) GAME_THISFN(ViewVolume_release, 0x483fd0, int, void *)(view)   /* the view volume's release: its owned block freed, its lists cleared (ViewVolume_clear), GL_EXT_vertex_array looked up again */
 #define ViewVolume_dtor(view) GAME_THISFN(ViewVolume_dtor, 0x483fb0, int, void *)(view)
 #define Console_dtor(console) GAME_THISFN(Console_dtor, 0x460c40, void, void *)(console)
@@ -1121,7 +1121,7 @@ void fix_glViewport(int x, int y, int w, int h);
 #define gluPerspective(angle, aspect, zNear, zFar) ((void (STDCALL *)(double, double, double, double))*(const u32 *)STR(0x4a9048, "j\300\n"))(angle, aspect, zNear, zFar)
 #define gluOrtho2D(left, right, bottom, top) ((void (STDCALL *)(double, double, double, double))*(const u32 *)STR(0x4a9050, "|\300\n"))(left, right, bottom, top)
 
-/* ---- small methods and resets (app/small.c, app/classes.c, match/actor_slots.c, load/space_pools.c, render/rotations.c) ---- */
+/* ---- small methods and resets (app/small.c, app/classes.c, match/actor_slots.c, collision/collision_space.c, render/rotations.c) ---- */
 #define path_normalize(path) GAME_FN(path_normalize, 0x46cb60, char *, char *)(path)   /* upper-cased in place, '/' -> '\' */
 #define stage_setName(self, folder) GAME_THISFN(stage_setName, 0x470f80, char *, void *, const char *)(self, folder)
 #define TimeSync_ctor(self) GAME_THISFN(TimeSync_ctor, 0x487430, void *, void *)(self)
@@ -1136,7 +1136,7 @@ void fix_glViewport(int x, int y, int w, int h);
 #define quat_fromAxisAngle(q, rotation) GAME_THISFN(quat_fromAxisAngle, 0x47d0b0, void, float *, const float *)(q, rotation)
 #define Mat4_fromQuat(m, q) GAME_FN(Mat4_fromQuat, 0x47d8a0, void, float *, const float *)(m, q)   /* quaternion -> matrix */
 
-/* ---- (render/shape_colours.c, app/small.c, menu/menu_records.c callers) ---- */
+/* ---- (render/shape_colours.c, app/small.c, menu/menu_misc.c callers) ---- */
 #define shape_setTint(model, h1, s1, v1, h2, s2, v2) GAME_THISFN(shape_setTint, 0x467660, void, void *, u32, u32, u32, u32, u32, u32)(model, h1, s1, v1, h2, s2, v2)
 #define shape_clearTint(model) GAME_THISFN(shape_clearTint, 0x4675f0, void, void *)(model)   /* the model's shapes' own colours back */
 #define script_reset(stage) GAME_THISFN(script_reset, 0x48fca0, int, Stage *)(stage)
@@ -1160,7 +1160,7 @@ void fix_glViewport(int x, int y, int w, int h);
 #define sessionList_swap(a, b) GAME_FN(sessionList_swap, 0x4065a0, void, void *, void *)(a, b)   /* two session records swapped */
 #define Vec3_normalize(v) GAME_THISFN(Vec3_normalize, 0x467760, long double, float *)(v)   /* returns the length, unrounded */
 
-/* ---- (load/lists.c, render/shape_colours.c, net/net_tables.c, match/map_objects.c, menu/lobby_states.c) ---- */
+/* ---- (load/lists.c, render/shape_colours.c, net/network.c, match/map_objects.c, menu/lobby_states.c) ---- */
 #define crt_malloc(size) GAME_CDECL(0x49eeb0, void *, u32)(size)
 #define net_clearServers() GAME_FN(net_clearServers, 0x454690, void, void)()                  /* the server table cleared */
 #define net_resolveHost(host) GAME_FN(net_resolveHost, 0x4547d0, int, const char *)(host)   /* 1: resolved (into 0xa0d320) */
@@ -1261,7 +1261,7 @@ void fix_glViewport(int x, int y, int w, int h);
 
 #define Mat4_transformPoint(out, m, p) GAME_FN(Mat4_transformPoint, 0x484860, void, float *, const float *, const float *)(out, m, p)
 
-/* ---- (app/devices.c, net/net_tables.c, app/small.c, render/object_list.c, menu/armc_misc.c) ---- */
+/* ---- (app/devices.c, net/network.c, app/small.c, render/object_list.c, menu/armc_misc.c) ---- */
 #define dplay_send(from, to, flags, data, size) GAME_FN(dplay_send, 0x450bf0, int, u32, u32, u32, const void *, u32)(from, to, flags, data, size)   /* a DirectPlay message sent */
 #define space_setBy(space, mn, mx, cz, cx, cy, margin, splitCount, depth) GAME_THISFN(space_setBy, 0x4819b0, u32, void *, void *, void *, int, int, int, int, int, int)(space, mn, mx, cz, cx, cy, margin, splitCount, depth)
 #define shape_bindPartTextures(shape) GAME_THISFN(shape_bindPartTextures, 0x466650, u32, void *)(shape)   /* a shape's textures bound */
@@ -1283,7 +1283,7 @@ typedef struct { int n, x[5], y[5]; } Outline;   /* a MenuOutline (scene.fields)
    same 0x2c bytes, not packed (aligned loads, as the original) */
 #define point_in_outline(x, y, outline) GAME_FN(menu_pointInPolygon, 0x41eea0, int, int, int, Outline)(x, y, outline)   /* menu_pointInPolygon */
 
-/* the Korean text passes (text/text_codes.c): the lead glyphs, and the vowel and tail glyphs, at 13 and 31 units */
+/* the Korean text passes (text/text_passes.c): the lead glyphs, and the vowel and tail glyphs, at 13 and 31 units */
 #define text_hangul13Pass(x, y, s) GAME_FN(text_hangul13Pass, 0x401870, void, int, int, const char *)(x, y, s)
 #define text_hangul13LayeredPass(x, y, s) GAME_FN(text_hangul13LayeredPass, 0x401aa0, void, int, int, const char *)(x, y, s)
 #define text_hangul31Pass(x, y, s) GAME_FN(text_hangul31Pass, 0x401ce0, void, int, int, const char *)(x, y, s)

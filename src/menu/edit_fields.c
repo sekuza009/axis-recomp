@@ -1,7 +1,8 @@
-/* edit_fields.c: opening a text field for typing, on the arena screens and in the game room. Typing goes through a
-   hidden EDIT control (editField_createEdit) into the shared line g_inputLine, drawn with a caret at
-   (g_editCaretX, g_editCaretY); the menu keys wait meanwhile (g_textFieldOpen, g_menuKeyGuard). Each field starts from its
-   current text (copied in) or empty, and raises its own "being edited" flag. */
+/* edit_fields.c: opening a text field for typing (the arena screens, the game room's forms and the match's chat line)
+   and the typed line read back. Typing goes through a hidden EDIT control (editField_createEdit) into the shared line
+   g_inputLine, drawn with a caret at (g_editCaretX, g_editCaretY); the menu keys wait meanwhile (g_textFieldOpen,
+   g_menuKeyGuard). Each field starts from its current text (copied in) or empty, and raises its own "being edited"
+   flag. */
 #include "../game.h"
 
 /* where each screen's panel is (its top left, menu units); the fields sit at fixed offsets from it */

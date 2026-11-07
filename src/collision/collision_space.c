@@ -1,6 +1,6 @@
-/* space_pools.c: the collision space's pools of planes, nodes and blocks. A pool is a count, an array of records
-   and a free list (head, then a used count, at +8 / used from the count); emptying it clears every record, links
-   them both ways (prev, then next, at the same offset in each) and puts the whole array on the free list. */
+/* collision_space.c: the collision space (the game's class CollisionVolume): its pools of triangles, nodes, units and
+   blocks (a count, an array of records and a free list; emptying clears every record and links them both ways), the
+   octree built from the map objects' triangles, and the sphere and segment tests against it. */
 #include "../game.h"
 #include <string.h>
 

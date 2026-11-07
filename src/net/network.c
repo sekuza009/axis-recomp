@@ -1,5 +1,7 @@
-/* net_tables.c: the network code's fixed tables: the 200 sessions found (g_sessionTable at 0xa0b470: SessionSlot;
-   their count in g_dplaySessionCount) and the sixteen player slot records (0x410 bytes from g_netSlots). */
+/* network.c: the game's network code: the TCP connections to the lobby and game servers (connect, send a request,
+   read its reply, the lists received), DirectPlay (started, sessions hosted, joined and enumerated, messages sent and
+   handled), the session table (200 SessionSlots at g_sessionTable) and the sixteen player slots (g_netSlots), the
+   ping thread, this machine's address, and the match's game packets taken in (net_processGamePacket). */
 #include "../game.h"
 #include "winsock.h"
 #include <string.h>

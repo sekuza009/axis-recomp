@@ -1,5 +1,7 @@
-/* objects.c: the C++ destructors the compiler made for the game's classes: the "deleting" destructor (the one in
-   the vtable) runs the plain one and frees the object when bit 0 of flags is set. */
+/* destructors.c: C++ object plumbing the compiler made for the game's classes: the "deleting" destructors (the ones
+   in the vtables: the plain destructor run, the object freed when bit 0 of flags is set) and plain destructors of the
+   view volume and the game object, the array constructor (crt_vectorConstructorIterator), and a view volume's
+   matrices captured (ViewVolume_captureMatrices). */
 #include "../game.h"
 
 /* 0x483fb0: a ViewVolume's destructor: its own vtable back, then released (ViewVolume_release: its owned block

@@ -1,5 +1,5 @@
-/* resets.c: input and screen state put back to its start: the key tables, the input line's length, the network
-   buffers, the replay selection list, the message box. */
+/* resets.c: state put back to its start: the key latches and the second key table, the server settings, the replay
+   selection list; and two small handlers: a click closing the message box, the rank reply taken (account_takeRank). */
 #include "../game.h"
 #include <string.h>
 

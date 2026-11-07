@@ -1,8 +1,9 @@
-/* collision_tris.c: the collision space's triangles. A triangle record (0xa0 bytes) holds its flags, its three corners
-   (+4), its three edges normalised (edges), its face plane (normal normal, distance dist), three edge planes (edgePlanes,
-   16 bytes each: the normal pointing inwards, the distance) and five values: its collision unit, its shape part and its
-   corners' vertex indices. The arithmetic is the original's: extended precision, rounded where it stores a float, and float operands taken straight from
-   memory (fld_m / fmul_m, so a signalling NaN behaves as there). */
+/* collision_tris.c: the collision space's triangles. A triangle record (CollisionTri, 0xac bytes) holds its flags,
+   its three corners (+4), its three edges normalised (edges), its face plane (normal normal, distance dist), three
+   edge planes (edgePlanes, 16 bytes each: the normal pointing inwards, the distance), its collision unit, its shape
+   part, its corners' vertex indices and its unit-list links. The arithmetic is the original's: extended precision,
+   rounded where it stores a float, and float operands taken straight from memory (fld_m / fmul_m, so a signalling NaN
+   behaves as there). */
 #include "../game.h"
 #include <string.h>
 

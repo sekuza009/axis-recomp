@@ -1,5 +1,5 @@
-/* teams.c: the match's teams: up to five team ids, each in a slot of Scene.teamIds (a free slot is negative); a
-   team's slot picks its name, colour and score. */
+/* teams.c: the match's teams (team slots in Scene.teamIds: a slot picks its name, colour and score; the top player);
+   also the stage's dynamic lights refilled (stage_refillLights). */
 #include "../game.h"
 
 

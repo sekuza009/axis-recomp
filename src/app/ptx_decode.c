@@ -1,5 +1,5 @@
 /* ptx_decode.c: the PTX image decoder (the game's compressed textures: name.RAW, name_ALPHA.RAW, name_COLOR.RAW in
-   the texture archives; tex loading in load/names.c), JPEG-style: a bit stream read most significant bit first,
+   the texture archives; tex loading in load/textures.c), JPEG-style: a bit stream read most significant bit first,
    Huffman-coded DC differences and AC run / size symbols for each 8 x 8 block of coefficients in zigzag order, then
    the decoded planes (Y, Cb, Cr and alpha, 0x10000 bytes apart) turned into RGB(A) through the tables of
    ptx_tables.c, and the 8 x 8 blocks laid out as image rows. */

@@ -1288,7 +1288,7 @@ through the original address (so the harness stubs still apply and the installed
 defined as "void (name)(...)" so its own call macro does not expand there; float compares are written so NaN
 takes the original's branch; ftol() is the original __ftol. recomp.c declares the src functions and its tests
 call them directly. Pilot (6, all bit-exact first time): src/text/text_size.c (text_drawSized, hud_44ae10),
-src/hud/hud_overlay.c (hud_4950a0, hud_drawFps, hud_4953d0), src/replay/replay_message.c (replay_drawMessage).
+src/hud/hud_overlay.c (hud_4950a0, hud_drawFps, hud_4953d0), src/hud/hud_message_box.c (replay_drawMessage).
 Reference = the game as built (patches\build_exes.py chain), not retail: 181 code ranges differ from retail (e.g.
   unlockfix.py makes armc_40d990 a no-op). Check a candidate against the patched build before rebuilding it.
 test3.sh (RECOMP_QUICK=1 bash test3.sh for a quick run, RECOMP_NANAUDIT=1 for the NaN audit) = test2.sh, but waits for "recomp: done" in recomp.log before driving the menus.

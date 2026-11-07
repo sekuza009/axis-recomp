@@ -1,4 +1,4 @@
-/* replay_message.c: the message box at the top of the screen (match and replay): one waiting message of up to
+/* hud_message_box.c: the message box at the top of the screen (matches and replays): one waiting message of up to
    four lines, or else the last events, fading out with scene->msgFade. */
 #include "../game.h"
 #include <string.h>

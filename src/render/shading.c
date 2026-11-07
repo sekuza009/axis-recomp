@@ -1,4 +1,5 @@
-/* shading.c: a shape part's vertex colours lit by the scene's light factors */
+/* shading.c: vertex colours lit by the light factors: a shape part's, a ground layer's; and the ground's drawing
+   lists for the frame. */
 #include "../game.h"
 #include <string.h>
 

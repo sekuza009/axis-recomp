@@ -1,5 +1,6 @@
-/* menu_init.c: front-end tables put to their start: colours, the camera points, the arena option texts, the
-   skirmish player rows, the network state. */
+/* menu_init.c: front-end tables put to their start: colours, the camera points, the arena option texts, the mission
+   list, the network state, the button outlines, the front end's start-up; also the replay list opened
+   (replayList_open). */
 #include "../game.h"
 #include <string.h>
 

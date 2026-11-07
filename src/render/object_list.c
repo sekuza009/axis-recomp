@@ -1,6 +1,7 @@
 /* object_list.c: an object list: shapes placed by their own matrices, each with a buffer of shading colours, lit by
-   light factors (shape_shadingColours, through the inverse of the shape's matrix) and a tint colour (shape_addColour),
-   and handed to the view volume. */
+   light factors (shape_shadingColours, through the inverse of the shape's matrix) and a tint colour
+   (shape_addColour), its textures bound, handed to the view volume; also the ground's layer models built
+   (ground_buildLayerModels). */
 #include "../game.h"
 #include <string.h>
 

@@ -1,4 +1,6 @@
-/* win32.c: small Win32 / multimedia wrappers. */
+/* win32.c: the game's Win32 side: the program (game_WinMain, app_init) and its window procedures, the GL window and
+   the display mode, the text fields' hidden EDIT control, message boxes, the ending movie's MCI device and the
+   current directory. */
 #include <stdarg.h>
 #include <string.h>
 #include "../game.h"

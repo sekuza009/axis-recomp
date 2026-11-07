@@ -1,7 +1,7 @@
-/* screen_enter.c: the front end's screens set up as they are entered: the main menu (state 300), the arena lobby
-   (400), the setup screen (600) and the game room (800). Each lays out its panels (origins in menu units, then the
-   screen's rectangle builders), sets its colours (RGBA floats), points the menu camera's target and look-at points
-   at the screen (all at the look-at's current z, its depth in the tunnel) with the camera's current place as home, and clears its state. */
+/* screen_enter.c: the front end's screens set up as they are entered (the main menu, the arena lobby, the setup
+   screen, the game room, the mission list, the skirmish screen, the pilot screen, the match): each lays out its
+   panels, sets its colours, points the menu camera at the screen with its current place as home, and clears its
+   state; also the menus' mouse dispatch (menu_processMouse). */
 #include "../game.h"
 #include <string.h>
 

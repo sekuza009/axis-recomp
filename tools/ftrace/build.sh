@@ -12,17 +12,17 @@ t=open('standalone/main.c',encoding='latin-1',newline='').read()
 assert '\tcrt_start();' in t
 t=t.replace('\tcrt_start();','\t{ void trace_start(void); trace_start(); }\n\tcrt_start();',1)
 open('$O/main_trace.c','w',encoding='latin-1',newline='').write(t)
-t=open('src/menu/menu_records.c',encoding='latin-1',newline='').read()
+t=open('src/menu/menu_misc.c',encoding='latin-1',newline='').read()
 a='*r = menuState500_enterSkirmish();'
 assert t.count(a)==1
 t=t.replace(a,'{ extern int g_testMissions; *r = g_testMissions ? (u32)menuState900_enterMissions() : menuState500_enterSkirmish(); }',1).replace('#include "../','#include "')
-open('$O/menu_records_test.c','w',encoding='latin-1',newline='').write(t)
+open('$O/menu_misc_test.c','w',encoding='latin-1',newline='').write(t)
 PY
 export CC O
 find src -name '*.c' | sort | xargs -P "$(nproc)" -I{} sh -c '
 	f={}; o="$O/$(echo "${f#src/}" | tr "/" "_" | sed "s/\.c$/.o/")"
 	$CC -c -O2 -finstrument-functions -mno-sse -mno-sse2 -mfpmath=387 -fno-builtin -fno-strict-aliasing -w -DAXIS_DIRECT -DAXIS_NATIVE -Ibuild -o "$o" "$f" || exit 255'
-$CC -c -O2 -finstrument-functions -mno-sse -mno-sse2 -mfpmath=387 -fno-builtin -fno-strict-aliasing -w -DAXIS_DIRECT -DAXIS_NATIVE -Ibuild -Isrc -Isrc/menu -o $O/menu_menu_records.o $O/menu_records_test.c
+$CC -c -O2 -finstrument-functions -mno-sse -mno-sse2 -mfpmath=387 -fno-builtin -fno-strict-aliasing -w -DAXIS_DIRECT -DAXIS_NATIVE -Ibuild -Isrc -Isrc/menu -o $O/menu_menu_misc.o $O/menu_misc_test.c
 $CC -c -O2 -Wall -DAXIS_NATIVE -Istandalone -o $O/main_trace.o $O/main_trace.c
 $CC -c -O2 -Wall -o $O/ftrace_rt.o $F/ftrace.c
 IV=../axisnet/iv32

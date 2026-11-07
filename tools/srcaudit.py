@@ -10,7 +10,7 @@ src = {f: open(f).read() for f in glob.glob('src/**/*.c', recursive=True)}
 names = set()
 for t in src.values(): names |= set(re.findall(r'^\w[\w \*]*?\((\w+)\)\(', t, re.M))
 for t in src.values(): names |= set(m + '_deletingDtor' for m in re.findall(r'^DELETING\((\w+), ', t, re.M))
-for t in src.values(): names |= set(re.findall(r'^PACKET_ENTRY\((\w+), ', t, re.M))   # net_tables.c's entry stubs
+for t in src.values(): names |= set(re.findall(r'^PACKET_ENTRY\((\w+), ', t, re.M))   # network.c's entry stubs
 bad = 0
 for n in sorted(names):
     if re.search(r'LIFT_PLAIN8?\(%s,' % n, s) or re.search(r'static [^\n;]*\b%s\((char|DWORD|void|int)[^;\n]*(\{|$)' % n, s, re.M):

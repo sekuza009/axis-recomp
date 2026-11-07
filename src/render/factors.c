@@ -1,6 +1,6 @@
-/* factors.c: the factor pool's records built and added (factor_addFactorBy): a 0x2c-byte record of which only the
-   kind, the colour and the kind's own fields are set (Factor); the rest is left as the stack holds it, as the
-   originals leave it (they add the whole record). Also a layer's lighting. */
+/* factors.c: the light factor pools' records built and added (factor_addFactorBy: a 0x2c-byte record of which only
+   the kind, the colour and the kind's own fields are set; the rest is left as the stack holds it, as the originals
+   leave it); a ground layer's lighting; a view volume sized (ViewVolume_initBy). */
 #include "../game.h"
 
 typedef struct { u8 bytes[0x2c]; } FactorRecord;

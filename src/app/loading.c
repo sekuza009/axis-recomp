@@ -1,5 +1,7 @@
-/* loading.c: the loading screen between the menus and a match: a scrolling textured cylinder (Iftex/Cylinder) behind
-   the status text lines, faded in from black and out to black (no progress bar). */
+/* loading.c: loading: the start-up load (app_startupLoad) and the menus' textures (menu_loadTextures); a match's
+   load, one step per frame (game_processLoadingMode: the stages, a network client kept alive meanwhile); and the
+   loading screen between the menus and a match: a scrolling textured cylinder (Iftex/Cylinder) behind the status text
+   lines, faded in from black and out to black (no progress bar). */
 #include "../game.h"
 #include <string.h>
 
