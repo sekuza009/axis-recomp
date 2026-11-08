@@ -521,9 +521,9 @@ void (log_message)(int a, int b, int c, const char *format, ...)
 }
 
 /* ---- the registry: a DWORD value under HKCU\<the game's key> (0x4b0458) ---- */
-#define RegOpenKeyExA(root, key, options, access, out) IMPORT(0x4a9004, int, u32, const char *, u32, u32, u32 *)(root, key, options, access, out)
-#define RegSetValueExA(key, name, reserved, type, data, size) IMPORT(0x4a9000, int, u32, const char *, u32, u32, const void *, u32)(key, name, reserved, type, data, size)
-#define RegCloseKey(key) IMPORT(0x4a900c, u32, u32)(key)
+#define RegOpenKeyExA(root, key, options, access, out) IMPORT_FN(RegOpenKeyExA, int, u32, const char *, u32, u32, u32 *)(root, key, options, access, out)
+#define RegSetValueExA(key, name, reserved, type, data, size) IMPORT_FN(RegSetValueExA, int, u32, const char *, u32, u32, const void *, u32)(key, name, reserved, type, data, size)
+#define RegCloseKey(key) IMPORT_FN(RegCloseKey, u32, u32)(key)
 
 /* value written as name (a REG_DWORD); returns RegCloseKey's answer. The key's handle goes into the argument's own
    slot, so when the key can't be opened the original closes whatever RegOpenKeyExA left there */
@@ -602,7 +602,7 @@ int (app_reportDisplayModeError)(int code)
 }
 
 
-#define RegQueryValueExA(key, name, reserved, type, data, size) IMPORT(0x4a9008, int, u32, const char *, u32, u32 *, void *, u32 *)(key, name, reserved, type, data, size)
+#define RegQueryValueExA(key, name, reserved, type, data, size) IMPORT_FN(RegQueryValueExA, int, u32, const char *, u32, u32 *, void *, u32 *)(key, name, reserved, type, data, size)
 
 /* the six choices (0x5b1b50 ..) in the order the registry keeps them, with their value names; the fourth and fifth
    (the flag and time limits) are unsigned */
@@ -640,7 +640,7 @@ void (reg_readLadderSettings)(void)
 	u32 key, disposition, type, value;
 	char buf[0x400];
 	__asm__("" : "=m"(disposition));   /* left as the stack has it when the key can't be created, as in the original */
-	IMPORT(0x4a9010, int, u32, const char *, u32, const char *, u32, u32, void *, u32 *, u32 *)
+	IMPORT_FN(RegCreateKeyExA, int, u32, const char *, u32, const char *, u32, u32, void *, u32 *, u32 *)
 		(0x80000001, (const char *)STR(0x4b179c, "SOFTWARE\\AxisArena\\Character"), 0, NULL, 0, 0xf003f, NULL, &key, &disposition);   /* RegCreateKeyExA */
 	signed char *choice = (signed char *)ADDR(g_roomRecMap);
 	if (disposition == 1) {   /* REG_CREATED_NEW_KEY */
@@ -818,11 +818,11 @@ typedef struct {
 	u32 reload;
 } PartKind;
 static const PartKind part_kinds[5] = {
-	{ offsetof(PlayerRecord, parts[0]), offsetof(Stage, headTypeCount), STR(0x4c75f0, "invalid headIndex(%d) - setActorTypeH..."), offsetof(PlayerRecord, headShapes), offsetof(PlayerRecord, headSkels), offsetof(Stage, headTypes), sizeof(HeadType), offsetof(PlayerRecord, partNames[0]), FN_ADDR(actor_loadHead, 0x45e1f0) },     /* head */
-	{ offsetof(PlayerRecord, parts[1]), offsetof(Stage, chestTypeCount), STR(0x4c7624, "invalid chestIndex(%d) - setActorType..."), offsetof(PlayerRecord, chestShapes), offsetof(PlayerRecord, chestSkels), offsetof(Stage, chestTypes), sizeof(ChestType), offsetof(PlayerRecord, partNames[1]), FN_ADDR(actor_loadChest, 0x45e2c0) },    /* chest (actor_loadChest) */
-	{ offsetof(PlayerRecord, parts[2]), offsetof(Stage, armTypeCount), STR(0x4c7658, "invalid armIndex(%d) - setActorTypeAr..."), offsetof(PlayerRecord, armShapes), offsetof(PlayerRecord, armSkels), offsetof(Stage, armTypes), sizeof(ArmType), offsetof(PlayerRecord, partNames[2]), FN_ADDR(actor_loadArms, 0x45e390) },  /* arms */
-	{ offsetof(PlayerRecord, parts[3]), offsetof(Stage, legTypeCount), STR(0x4c7688, "invalid legIndex(%d) - setActorTypeLe..."), offsetof(PlayerRecord, legShapes), offsetof(PlayerRecord, legSkels), offsetof(Stage, legTypes), sizeof(LegType), offsetof(PlayerRecord, partNames[3]), FN_ADDR(actor_loadLegs, 0x45e460) }, /* legs */
-	{ offsetof(PlayerRecord, parts[4]), offsetof(Stage, boosterTypeCount), STR(0x4c76b8, "invalid boosterIndex(%d) - setActorTy..."), offsetof(PlayerRecord, boosterShapes), offsetof(PlayerRecord, boosterSkels), offsetof(Stage, boosterTypes), sizeof(BoosterType), offsetof(PlayerRecord, partNames[4]), FN_ADDR(actor_loadBooster, 0x45e530) }, /* booster */
+	{ offsetof(PlayerRecord, parts[0]), offsetof(Stage, headTypeCount), STR(0x4c75f0, "invalid headIndex(%d) - setActorTypeH..."), offsetof(PlayerRecord, headShapes), offsetof(PlayerRecord, headSkels), offsetof(Stage, headTypes), sizeof(HeadType), offsetof(PlayerRecord, partNames[0]), FN(actor_loadHead) },     /* head */
+	{ offsetof(PlayerRecord, parts[1]), offsetof(Stage, chestTypeCount), STR(0x4c7624, "invalid chestIndex(%d) - setActorType..."), offsetof(PlayerRecord, chestShapes), offsetof(PlayerRecord, chestSkels), offsetof(Stage, chestTypes), sizeof(ChestType), offsetof(PlayerRecord, partNames[1]), FN(actor_loadChest) },    /* chest (actor_loadChest) */
+	{ offsetof(PlayerRecord, parts[2]), offsetof(Stage, armTypeCount), STR(0x4c7658, "invalid armIndex(%d) - setActorTypeAr..."), offsetof(PlayerRecord, armShapes), offsetof(PlayerRecord, armSkels), offsetof(Stage, armTypes), sizeof(ArmType), offsetof(PlayerRecord, partNames[2]), FN(actor_loadArms) },  /* arms */
+	{ offsetof(PlayerRecord, parts[3]), offsetof(Stage, legTypeCount), STR(0x4c7688, "invalid legIndex(%d) - setActorTypeLe..."), offsetof(PlayerRecord, legShapes), offsetof(PlayerRecord, legSkels), offsetof(Stage, legTypes), sizeof(LegType), offsetof(PlayerRecord, partNames[3]), FN(actor_loadLegs) }, /* legs */
+	{ offsetof(PlayerRecord, parts[4]), offsetof(Stage, boosterTypeCount), STR(0x4c76b8, "invalid boosterIndex(%d) - setActorTy..."), offsetof(PlayerRecord, boosterShapes), offsetof(PlayerRecord, boosterSkels), offsetof(Stage, boosterTypes), sizeof(BoosterType), offsetof(PlayerRecord, partNames[4]), FN(actor_loadBooster) }, /* booster */
 };
 
 /* player p's part of kind k set to type (its record at playerRecords, 0x47fd2 bytes each): none for a negative type (0);

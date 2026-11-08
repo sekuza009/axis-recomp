@@ -149,7 +149,7 @@ u32 (armc_weaponsPageClicks)(void)
 			return button;
 		sound_playMenu(2);
 		armc_pickSlot(0);
-		return GAME_CDECL(button == 0 ? FN_ADDR(armc_showPartsPage, 0x40f200) : FN_ADDR(armc_showColourPage, 0x40f320), u32, void)();
+		return GAME_CDECL(button == 0 ? FN(armc_showPartsPage) : FN(armc_showColourPage), u32, void)();
 	case 3: case 4:
 		sound_playMenu(0);
 		return armc_exit(button == 3);

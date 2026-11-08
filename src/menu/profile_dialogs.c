@@ -79,7 +79,7 @@ u32 (profile_drawMessageWindow)(void)
 	set_colour_bits(g_textColour, colour[0], colour[1], colour[2], colour[3]);
 	text_drawCentredLines16(buttonX, Y0 + 0x58, buttonX + 0x60, (const char *)MSG(115, "$[0] O K"));
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
-	return GAME_FN(menu_drawTopRightOrnament, 0x428b50, u32, int, int, int, int)(X0, Y0, X1, Y1);   /* the border */
+	return CALL_FN(menu_drawTopRightOrnament, u32, int, int, int, int)(X0, Y0, X1, Y1);   /* the border */
 #undef X0
 #undef Y0
 #undef X1
@@ -118,7 +118,7 @@ static u32 two_buttons(const TwoButtons *d)
 		text_drawCentredLines16(X0 + k * 0x78 + 0x6e, Y0 + 0x44, X0 + k * 0x78 + 0xce, (const char *)(MSG(115, "$[0] O K") + k * 0x80));
 	}
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
-	return GAME_FN(menu_drawTopRightOrnament, 0x428b50, u32, int, int, int, int)(X0, Y0, X1, Y1);   /* the border */
+	return CALL_FN(menu_drawTopRightOrnament, u32, int, int, int, int)(X0, Y0, X1, Y1);   /* the border */
 #undef X0
 #undef Y0
 #undef X1
@@ -129,12 +129,12 @@ static u32 two_buttons(const TwoButtons *d)
    question MSG(128, "ARE YOU SURE?")) */
 u32 (profile_drawDeleteQuestion)(void)
 {
-	static const TwoButtons d = { ADDR(g_deleteDialogX), ADDR(g_deleteDialogY), ADDR(g_deleteDialogRight), ADDR(g_deleteDialogBottom), FN_ADDR(deleteDialog_hitTest, 0x44b320), MSG(127, "ARE YOU SURE?") };
+	static const TwoButtons d = { ADDR(g_deleteDialogX), ADDR(g_deleteDialogY), ADDR(g_deleteDialogRight), ADDR(g_deleteDialogBottom), FN(deleteDialog_hitTest), MSG(127, "ARE YOU SURE?") };
 	return two_buttons(&d);
 }
 u32 (profile_drawLogOutQuestion)(void)
 {
-	static const TwoButtons d = { ADDR(g_logOutDialogX), ADDR(g_logOutDialogY), ADDR(g_logOutDialogRight), ADDR(g_logOutDialogBottom), FN_ADDR(logOutDialog_hitTest, 0x44b360), MSG(128, "ARE YOU SURE?") };
+	static const TwoButtons d = { ADDR(g_logOutDialogX), ADDR(g_logOutDialogY), ADDR(g_logOutDialogRight), ADDR(g_logOutDialogBottom), FN(logOutDialog_hitTest), MSG(128, "ARE YOU SURE?") };
 	return two_buttons(&d);
 }
 
@@ -179,7 +179,7 @@ u32 (profile_drawNewDialog)(void)
 		text_drawCentredLines16(x + 0xa0, Y0 + 0x62, x + 0x100, (const char *)(MSG(115, "$[0] O K") + k * 0x80));
 	}
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
-	return GAME_FN(menu_drawTopRightOrnament, 0x428b50, u32, int, int, int, int)(X0, Y0, X1, Y1);   /* the border */
+	return CALL_FN(menu_drawTopRightOrnament, u32, int, int, int, int)(X0, Y0, X1, Y1);   /* the border */
 #undef X0
 #undef Y0
 #undef X1

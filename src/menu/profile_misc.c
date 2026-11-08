@@ -360,13 +360,13 @@ static u32 glide_page(const float *rate, const u32 *frame, u32 panel)
 u32 (profile_deletePage)(void)
 {
 	static const u32 frame[4] = { ADDR(g_deleteDialogX), ADDR(g_deleteDialogY), ADDR(g_deleteDialogRight), ADDR(g_deleteDialogBottom) };
-	return glide_page((const float *)ADDR(k_0_25f), frame, FN_ADDR(profile_drawDeleteQuestion, 0x44e180));
+	return glide_page((const float *)ADDR(k_0_25f), frame, FN(profile_drawDeleteQuestion));
 }
 /* 0x44f740: the log-out question's page (profile_drawLogOutQuestion), gliding at its own rate */
 u32 (profile_logOutPage)(void)
 {
 	static const u32 frame[4] = { ADDR(g_logOutDialogX), ADDR(g_logOutDialogY), ADDR(g_logOutDialogRight), ADDR(g_logOutDialogBottom) };
-	return glide_page((const float *)ADDR(k_0_2f), frame, FN_ADDR(profile_drawLogOutQuestion, 0x44e3e0));
+	return glide_page((const float *)ADDR(k_0_2f), frame, FN(profile_drawLogOutQuestion));
 }
 
 /* 0x44ce90: the profile list's names drawn (13 rows from the top entry g_profileListTop, 20 units apart in the panel at

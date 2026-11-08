@@ -127,7 +127,7 @@ static void emit(u8 *s, u8 *a, const int (*joint)[0x20], const int *count, const
 	}
 }
 
-#define stage_print(...) GAME_FN(stage_printText, 0x473450, int, void *, const char *, ...)(__VA_ARGS__)
+#define stage_print(...) CALL_FN(stage_printText, int, void *, const char *, ...)(__VA_ARGS__)
 #define FRAG_POINTS(level) GAME_VAR(int, OBJ(g_fragPoints) + (level) * 4)   /* g_fragPoints[level]: a kill's points by the victim's level */
 
 /* the killer's frags and points; its grade worked out again when this machine controls it (controlledBy is

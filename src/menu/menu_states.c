@@ -472,7 +472,7 @@ void (menuState210_frame)(void)
 		for (int f = 0; f < 9; f++)
 			if (((CharacterProfile *)g_characterProfiles)[p].stats[stats[f]] > (stats[f] == 7 ? 50 : 30))
 				data_loadCharacterProfiles();
-	static const u32 pages[6] = { FN_ADDR(profile_listPage, 0x44f410), FN_ADDR(profile_newNamePage, 0x44f4b0), FN_ADDR(profile_deletePage, 0x44f5f0), FN_ADDR(profile_logIn, 0x44f6c0), FN_ADDR(profile_logOutPage, 0x44f740), FN_ADDR(pilotSelect_page, 0x44f810) };
+	static const u32 pages[6] = { FN(profile_listPage), FN(profile_newNamePage), FN(profile_deletePage), FN(profile_logIn), FN(profile_logOutPage), FN(pilotSelect_page) };
 	u32 page = (*(u32 *)&g_profilePage) - 1;
 	if (page <= 5)
 		GAME_CDECL(pages[page], void, void)();   /* profile_listPage .. pilotSelect_page */
@@ -694,7 +694,6 @@ u32 (menuState800_gameRoom)(void)
 	return page;
 }
 
-#define lstrcpyA(dst, src) IMPORT(0x4a911c, char *, char *, const char *)(dst, src)
 
 /* the host leaving announced to the others (the host only): message g_netHostLeftMessageKind with its flag word g_hostGoneMessageFlag raised
    while it goes out (net_sendMessage) */
@@ -703,7 +702,7 @@ static void send_host_leaving(void)
 	if (!g_isHost)
 		return;
 	g_hostGoneMessageFlag = 1;
-	GAME_FN(net_sendMessage, 0x451270, int, void *, u32, u32)((void *)ADDR(g_netHostLeftMessageKind), 0, 0);
+	CALL_FN(net_sendMessage, int, void *, u32, u32)((void *)ADDR(g_netHostLeftMessageKind), 0, 0);
 	g_hostGoneMessageFlag = 0;
 }
 

@@ -417,11 +417,11 @@ static void about(float *out, const float *v, const u8 *actor)
 
 /* the mech test mode's part steps (match_mechTestFrame): the flag (F1 .. F5 held), the player's part field, the setter, the table size */
 static const u32 k_partSteps[5][4] = {   /* the F key, the part in the player record, its setter, the types' count */
-	{ offsetof(Scene, fKeys[0]), offsetof(PlayerRecord, parts[0]), FN_ADDR(actor_setActorTypeHeadInfoBy, 0x473b10), offsetof(Scene, headCount) },
-	{ offsetof(Scene, fKeys[1]), offsetof(PlayerRecord, parts[1]), FN_ADDR(actor_setActorTypeChestInfoBy, 0x473c20), offsetof(Scene, chestCount) },
-	{ offsetof(Scene, fKeys[2]), offsetof(PlayerRecord, parts[2]), FN_ADDR(actor_setActorTypeArmInfoBy, 0x473d30), offsetof(Scene, armCount) },
-	{ offsetof(Scene, fKeys[3]), offsetof(PlayerRecord, parts[3]), FN_ADDR(actor_setActorTypeLegInfoBy, 0x473e40), offsetof(Scene, legCount) },
-	{ offsetof(Scene, fKeys[4]), offsetof(PlayerRecord, parts[4]), FN_ADDR(actor_setActorTypeBoosterInfoBy, 0x473f50), offsetof(Scene, boosterCount) } };
+	{ offsetof(Scene, fKeys[0]), offsetof(PlayerRecord, parts[0]), FN(actor_setActorTypeHeadInfoBy), offsetof(Scene, headCount) },
+	{ offsetof(Scene, fKeys[1]), offsetof(PlayerRecord, parts[1]), FN(actor_setActorTypeChestInfoBy), offsetof(Scene, chestCount) },
+	{ offsetof(Scene, fKeys[2]), offsetof(PlayerRecord, parts[2]), FN(actor_setActorTypeArmInfoBy), offsetof(Scene, armCount) },
+	{ offsetof(Scene, fKeys[3]), offsetof(PlayerRecord, parts[3]), FN(actor_setActorTypeLegInfoBy), offsetof(Scene, legCount) },
+	{ offsetof(Scene, fKeys[4]), offsetof(PlayerRecord, parts[4]), FN(actor_setActorTypeBoosterInfoBy), offsetof(Scene, boosterCount) } };
 /* the mech test mode's held keys and their flags: right button, A, D, W, S, Q, E, left button, shift */
 static const u32 k_mechTestKeys[9][2] = { { 2, offsetof(Scene, holdAltitude) }, { 0x41, offsetof(Scene, holdStepLeft) }, { 0x44, offsetof(Scene, holdStepRight) }, { 0x57, offsetof(Scene, holdForward) }, { 0x53, offsetof(Scene, holdBackward) },
                                       { 0x51, offsetof(Scene, holdUp) }, { 0x45, offsetof(Scene, holdDown) }, { 1, offsetof(Scene, holdFire) }, { 0x10, offsetof(Scene, holdBooster) } };

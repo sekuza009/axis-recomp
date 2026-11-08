@@ -367,7 +367,7 @@ struct GameRdata g_rdata __attribute__((aligned(4096))) = {
 	.k_0_28125f_ = 0.28125f,
 	.k_0_03f_ = 0.03f,
 	.d_4a956c = {
-		FN_ADDR(Texture_deletingDtor, 0x42b150), FN_ADDR(TextureManager_deletingDtor, 0x42b350), 0x3b088889,
+		FN(Texture_deletingDtor), FN(TextureManager_deletingDtor), 0x3b088889,
 	},
 	.d_4a9578 = {
 		0.0015625f,
@@ -434,7 +434,7 @@ struct GameRdata g_rdata __attribute__((aligned(4096))) = {
 	},
 	.d_4a96e0 = "\xbf\xc7""DEST",
 	.d_4a96e8 = {
-		0x456a6a41, 0x11d4e585, 0x50006296, 0x675b8eda, FN_ADDR(BMPRGBFile_deletingDtor, 0x455a80),
+		0x456a6a41, 0x11d4e585, 0x50006296, 0x675b8eda, FN(BMPRGBFile_deletingDtor),
 	},
 	.k_m1500f_ = -1500.0f,
 	.k_1500f_4a9700_ = 1500.0f,
@@ -460,7 +460,7 @@ struct GameRdata g_rdata __attribute__((aligned(4096))) = {
 		170.0f, 1.5f,
 	},
 	.k_27_7778f_ = {
-		0x41de38e4, FN_ADDR(Unit_deletingDtor, 0x45ff10),
+		0x41de38e4, FN(Unit_deletingDtor),
 	},
 	.d_4a9758 = "333?\xc0\xfb\xbb\xf6",
 	.d_4a976c = "\xc3\xbb\xbb\xf6",
@@ -499,8 +499,8 @@ struct GameRdata g_rdata __attribute__((aligned(4096))) = {
 	.d_4aa038 = "get back my head",
 	.d_4aa138 = "good bye friends",
 	.d_4aa238 = {
-		FN_ADDR(Console_deletingDtor, 0x460c20), FN_ADDR(Stage_deletingDtor, 0x463830), FN_ADDR(SkeletonManager_deletingDtor, 0x4637d0), FN_ADDR(ShapeManager_deletingDtor, 0x463010), FN_ADDR(Light_deletingDtor, 0x462580), FN_ADDR(ViewVolume_deletingDtor, 0x463430),
-		FN_ADDR(Shape_deletingDtor, 0x462d10), FN_ADDR(CollisionVolume_deletingDtor, 0x4637b0), FN_ADDR(Scene_deletingDtor, 0x463810),
+		FN(Console_deletingDtor), FN(Stage_deletingDtor), FN(SkeletonManager_deletingDtor), FN(ShapeManager_deletingDtor), FN(Light_deletingDtor), FN(ViewVolume_deletingDtor),
+		FN(Shape_deletingDtor), FN(CollisionVolume_deletingDtor), FN(Scene_deletingDtor),
 	},
 	.k_0_04f_ = 0x3d23d70b,
 	.k_256f_ = 256.0f,
@@ -529,7 +529,7 @@ struct GameRdata g_rdata __attribute__((aligned(4096))) = {
 		0.8617011f,
 	},
 	.d_4aa2a0 = {
-		FN_ADDR(ErrorLog_deletingDtor, 0x46c5c0),
+		FN(ErrorLog_deletingDtor),
 	},
 	.d_4aa2a4 = {
 		0.003921569f,
@@ -640,7 +640,7 @@ struct GameRdata g_rdata __attribute__((aligned(4096))) = {
 		0.1928465f,
 	},
 	.d_4aa468 = {
-		0xbeaaaaab, FN_ADDR(TimeSync_deletingDtor, 0x487450),
+		0xbeaaaaab, FN(TimeSync_deletingDtor),
 	},
 	.k_m0_002f_ = -0.002f,
 	.k_30000f_ = 30000.0f,

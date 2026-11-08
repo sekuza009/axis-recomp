@@ -102,6 +102,7 @@ static inline long double fdivr_m(long double x, const float *m) { __asm__("fdiv
    where the harness's tests can stand a mock or the original in for it; in AxisRC.exe (built with AXIS_DIRECT) a
    direct call to the C function, its address checked against the hook table at compile time (build/fn_syms.h,
    tools/hooktable.py) */
+#include "fn_addrs.h"   /* FNADDR_<name>: each rebuilt function's original address */
 #ifdef AXIS_DIRECT
 #include "fn_syms.h"
 #define FN_CHECK(name, addr) (void)sizeof(char[(addr) == FNADDR_##name ? 1 : -1])
@@ -117,6 +118,11 @@ static inline long double fdivr_m(long double x, const float *m) { __asm__("fdiv
 #define FN_ADDR(name, addr) (addr)
 #define FN_VIA(name, addr, stub) (stub)
 #endif
+/* the same by name alone, the address from src/fn_addrs.h: FN(net_pingThreadProc) as a value (a callback, a
+   handler table's entry); CALL_FN / CALL_THISFN(name, ret, arg types...)(args) a call with the caller's own types */
+#define FN(name) FN_ADDR(name, FNADDR_##name)
+#define CALL_FN(name, ret, ...) GAME_FN(name, FNADDR_##name, ret, __VA_ARGS__)
+#define CALL_THISFN(name, ret, ...) GAME_THISFN(name, FNADDR_##name, ret, __VA_ARGS__)
 /* a call the patch DLL may retarget at start-up (it rewrites the call instruction's target): the call goes to
    whatever the instruction at the original call site targets now, as the original's would (not in the native
    build: no patch DLL) */
@@ -167,6 +173,9 @@ static inline int code_matches(u32 addr, const char *pattern)
 
 /* an import, through the game's import table slot */
 #define IMPORT(slot, ret, ...) ((ret (STDCALL *)(__VA_ARGS__))*(const u32 *)RELOC(slot))
+/* the same by the function's name (its slot: IMP_<name>, src/imports.h): IMPORT_FN(GlobalLock, void *, void *)(h) */
+#include "imports.h"
+#define IMPORT_FN(name, ret, ...) IMPORT(IMP_##name, ret, __VA_ARGS__)
 /* a global of the game at its address (an original one or, for memory reached through a pointer, any) */
 #define GAME_VAR(type, addr) (*(type *)RELOC(addr))
 /* a named global's address (src/globals.h): the original's in the harness, its place in AxisRC.exe - a constant

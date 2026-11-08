@@ -4,6 +4,7 @@
 set -e
 cd "$(dirname "$0")"
 python tools/mkscene.py >/dev/null
+python tools/hooktable.py --addrs >/dev/null   # (src/fn_addrs.h: rewritten only when the hook table changed)
 CC="python -m ziglang cc -target x86-windows-gnu"
 mkdir -p build/obj
 objs=()

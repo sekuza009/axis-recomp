@@ -584,7 +584,7 @@ static void item_pickup(u8 *s, u8 *ac, u8 *it, int i, u8 *t, int type)
 		bigPickup = 1;
 		break;
 	default:
-		GAME_FN(sys_errorMessage, 0x46c5f0, void, char *, const char *, int)((char *)OBJ(g_logStage), (const char *)STR(0x4c81d0, "can't figure out the item type (%d) -..."), type);
+		CALL_FN(sys_errorMessage, void, char *, const char *, int)((char *)OBJ(g_logStage), (const char *)STR(0x4c81d0, "can't figure out the item type (%d) -..."), type);
 		return;
 	}
 	strcpy(AC->message, (const char *)RELOC(text));

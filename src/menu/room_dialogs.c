@@ -76,7 +76,7 @@ void (room_enterGameList)(void)
 	g_listRefreshPeriod = 30;
 }
 
-#define sound(id) GAME_FN(sound_playMenu, 0x41e760, u32, int)(id)   /* sound_playMenu, its eax */
+#define sound(id) CALL_FN(sound_playMenu, u32, int)(id)   /* sound_playMenu, its eax */
 
 /* 0x4378e0: the game room's keys, by state (g_roomState): 0 .. 2, 4 and 99 unless the panels are sliding in (g_roomPanelsSliding; 2: the map
    list's keys when open), 66 and 88 (the update notice, g_roomUpdateNotice, first), 77. Returns what the handler leaves in eax */
@@ -734,7 +734,7 @@ u32 (newIdConfirm_draw)(void)
 	if (g_roomUpdateNotice)
 		update_notice();
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
-	return GAME_FN(menu_drawTopRightOrnament, 0x428b50, u32, int, int, int, int)(X0, Y0, X1, Y1);   /* the border */
+	return CALL_FN(menu_drawTopRightOrnament, u32, int, int, int, int)(X0, Y0, X1, Y1);   /* the border */
 #undef X0
 #undef Y0
 #undef X1
@@ -1093,7 +1093,7 @@ static void roomLogin_leave(void)
 	menuCamera_setMove(4);
 	g_roomState = 99;
 	g_nextScreen = 300;
-	GAME_FN(shared_emptyFunction, 0x48b420, void, void)();   /* shared_emptyFunction */
+	CALL_FN(shared_emptyFunction, void, void)();   /* shared_emptyFunction */
 }
 
 /* 0x436990: the Ladder login dialog's keys. While its request is out (g_roomRequestOut) or the login is due (g_roomLoginDue)

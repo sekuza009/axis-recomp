@@ -148,7 +148,7 @@ u32 (sound_playFile)(const char *name, int volume)
 		return 0;
 	char copy[0x104];
 	strcpy(copy, name);
-	void *sound = GAME_FN(sound_loadWav, 0x467b90, void *, const char *)(copy);
+	void *sound = CALL_FN(sound_loadWav, void *, const char *)(copy);
 	if (!sound)
 		return 0;
 	int attenuation;
@@ -158,8 +158,8 @@ u32 (sound_playFile)(const char *name, int volume)
 		attenuation = g_soundBaseVolume;
 	else
 		attenuation = ftol(fmul_m((long double)volume, k_0_01f_4a9504) * (g_soundBaseVolume + 10000)) - 10000;
-	GAME_FN(sound_setNextVolume, 0x467db0, void, void *, int)(sound, attenuation);   /* sound_setNextVolume */
-	GAME_FN(sound_playNext, 0x467d70, void, void *)(sound);                     /* sound_playNext */
+	CALL_FN(sound_setNextVolume, void, void *, int)(sound, attenuation);   /* sound_setNextVolume */
+	CALL_FN(sound_playNext, void, void *)(sound);                     /* sound_playNext */
 	return mem_free(sound);
 }
 
@@ -206,8 +206,8 @@ u32 (sound_playVolume)(int index, int volume)
 		level = g_soundBaseVolume;
 	else
 		level = ftol(fmul_m((long double)volume, k_0_01f_4a9504) * (long double)(g_soundBaseVolume + 10000)) - 10000;
-	GAME_FN(sound_setNextVolume, 0x467db0, void, void *, int)(sound, level);   /* sound_setNextVolume */
-	return GAME_FN(sound_playNext, 0x467d70, u32, void *)(GAME_VAR(void *, OBJ(g_soundTable) + index * 4));   /* sound_playNext */
+	CALL_FN(sound_setNextVolume, void, void *, int)(sound, level);   /* sound_setNextVolume */
+	return CALL_FN(sound_playNext, u32, void *)(GAME_VAR(void *, OBJ(g_soundTable) + index * 4));   /* sound_playNext */
 }
 
 /* 0x456ed0: sound index played at pos as heard from listener (side: the listener's right, the listener's up at
@@ -240,7 +240,7 @@ void (sound_play3D)(int index, const float *pos, const float *listener, const fl
 	long double across = FMUL(c[1], side[1]) + FMUL(c[2], side[2]);
 	across = across + FMUL(c[0], side[0]);
 	int pan = ftol(fmul_m(across, (const float *)(g_stereoReverse ? ADDR(k_m1500f) : ADDR(k_1500f_4a9700))));
-	GAME_FN(sound_setNextVolume, 0x467db0, void, void *, int)(GAME_VAR(void *, OBJ(g_soundTable) + index * 4), volume);   /* sound_setNextVolume */
+	CALL_FN(sound_setNextVolume, void, void *, int)(GAME_VAR(void *, OBJ(g_soundTable) + index * 4), volume);   /* sound_setNextVolume */
 	sound_playPanned(GAME_VAR(void *, OBJ(g_soundTable) + index * 4) /* g_soundTable[index] */, (pan > 0) + 1, pan);
 }
 
@@ -250,10 +250,10 @@ void (sound_play3D)(int index, const float *pos, const float *listener, const fl
 #define DSB_UNLOCK 0x4c
 #undef CreateFileA
 #define CreateFileA(name, access, share, security, how, attributes, tmpl) \
-	IMPORT(0x4a91b4, void *, const char *, u32, u32, void *, u32, u32, void *)(name, access, share, security, how, attributes, tmpl)
-#define ReadFile(file, out, size, done, overlapped) IMPORT(0x4a9068, int, void *, void *, u32, u32 *, void *)(file, out, size, done, overlapped)
+	IMPORT_FN(CreateFileA, void *, const char *, u32, u32, void *, u32, u32, void *)(name, access, share, security, how, attributes, tmpl)
+#define ReadFile(file, out, size, done, overlapped) IMPORT_FN(ReadFile, int, void *, void *, u32, u32 *, void *)(file, out, size, done, overlapped)
 #undef CloseHandle
-#define CloseHandle(handle) IMPORT(0x4a91b0, int, void *)(handle)
+#define CloseHandle(handle) IMPORT_FN(CloseHandle, int, void *)(handle)
 
 /* the buffer's format and description as the original lays them out on its stack: the description starts where
    the format's cbSize would be (so that reads as the description's size, 0x24) */
@@ -331,7 +331,7 @@ Sound *(sound_loadWav)(const char *name)
    released again when the buffer will not play) */
 int (sound_init)(void *hwnd)
 {
-	if (IMPORT(0x4a9020, int, void *, void **, void *)(NULL, (void **)ADDR(g_directSound), NULL))   /* DirectSoundCreate */
+	if (DirectSoundCreate(NULL, (void **)ADDR(g_directSound), NULL))   /* DirectSoundCreate */
 		return 0;
 	void *ds = g_directSound;
 	if (COM(ds, 0x18, int, void *, u32)(ds, hwnd, 2))   /* SetCooperativeLevel(DSSCL_PRIORITY) */

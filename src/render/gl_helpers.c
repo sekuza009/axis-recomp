@@ -55,7 +55,7 @@ static u32 fill_rect(int x0, int y0, int x1, int y1)
 	glVertex2i(x1 + 1, gfx_getHeight() - y0);
 	glVertex2i(x1 + 1, gfx_getHeight() - y1 - 1);
 	glVertex2i(x0, gfx_getHeight() - y1 - 1);
-	return IMPORT(0x4a9220, u32, void)();   /* glEnd */
+	return IMPORT_FN(glEnd, u32, void)();   /* glEnd */
 }
 u32 (gfx_fillRect)(int x0, int y0, int x1, int y1)
 {
@@ -69,7 +69,7 @@ u32 (gfx_fillRect)(int x0, int y0, int x1, int y1)
 	glViewport((int)vp[0], (int)vp[1], (int)vp[2], (int)vp[3]);   /* (kept: fixes/screen.c) */
 	return 0;
 #else
-	return IMPORT(0x4a91d4, u32, int, int, int, int)((int)vp[0], (int)vp[1], (int)vp[2], (int)vp[3]);   /* glViewport */
+	return IMPORT_FN(glViewport, u32, int, int, int, int)((int)vp[0], (int)vp[1], (int)vp[2], (int)vp[3]);   /* glViewport */
 #endif
 }
 
@@ -106,7 +106,7 @@ static u32 default_gl_state(void)
 	glPolygonMode(0x408, 0x1b02);           /* glPolygonMode(GL_FRONT_AND_BACK, GL_FILL) */
 	glFrontFace(0x901);                         /* glFrontFace(GL_CCW) */
 	glCullFace(0x405);                         /* glCullFace(GL_BACK) */
-	return IMPORT(0x4a922c, u32, u32)(0xb44);                   /* glDisable(GL_CULL_FACE) */
+	return IMPORT_FN(glDisable, u32, u32)(0xb44);                   /* glDisable(GL_CULL_FACE) */
 }
 u32 (gfx_resetState)(void) { return default_gl_state(); }
 

@@ -145,7 +145,7 @@ u32 (replayList_open)(void)
    setupTop_initOutlines, net_clearSlots. Only caller menuState100_intro. Returns the last progress drawing's eax */
 u32 (frontEnd_startUp)(void)
 {
-	static const u32 steps[5] = { FN_ADDR(menu_initMainOutlines, 0x42f2b0), FN_ADDR(lobbyTop_initOutlines, 0x42f500), FN_ADDR(room_initOutlines, 0x42f690), FN_ADDR(setupTop_initOutlines, 0x42f8e0), FN_ADDR(net_clearSlots, 0x430bd0) };
+	static const u32 steps[5] = { FN(menu_initMainOutlines), FN(lobbyTop_initOutlines), FN(room_initOutlines), FN(setupTop_initOutlines), FN(net_clearSlots) };
 	memset((void *)OBJ(g_inputHistory), 0, 0x300 * 4);
 	menu_initColours();   /* menu_initColours: the colours */
 	u32 r = 0;

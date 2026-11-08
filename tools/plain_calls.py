@@ -60,39 +60,15 @@ for a, n in re.findall(r'\{ (0x[0-9a-f]+), "([^"]+)" \}', ct):
 for a, n in re.findall(r'jump\((0x[0-9a-f]+), (\w+)\);', ct):
 	crt.setdefault(int(a, 16), n if n.startswith('crt_') else 'crt_' + n)
 
-# the game's imports by their slot (IMPORT(0x4a9344, ...): its import table; winsock.h's WS_ names for wsock32's
-# ordinals)
-imports, ws_slot = {}, {}
-import struct
-_b = open('installed.exe', 'rb').read()
-_pe = struct.unpack_from('<I', _b, 0x3c)[0]
-_nsec = struct.unpack_from('<H', _b, _pe + 6)[0]; _opt = struct.unpack_from('<H', _b, _pe + 20)[0]
-_secs = [struct.unpack_from('<8sIIII', _b, _pe + 24 + _opt + 40 * i) for i in range(_nsec)]
-def _rva(r):
-	for nm, vs, va, rs, rp in _secs:
-		if va <= r < va + max(vs, rs):
-			return rp + r - va
-_imp = struct.unpack_from('<I', _b, _pe + 24 + 0x68)[0]
-_d = _rva(_imp)
-while True:
-	oft, _, _, name_rva, ft = struct.unpack_from('<IIIII', _b, _d)
-	if not name_rva:
-		break
-	k, src = 0, _rva(oft or ft)
-	while True:
-		e = struct.unpack_from('<I', _b, src + 4 * k)[0]
-		if not e:
-			break
-		if not e & 0x80000000:
-			o = _rva(e) + 2
-			imports[0x400000 + ft + 4 * k] = _b[o:_b.index(b'\0', o)].decode()
-		k += 1
-	_d += 20
-for n, a, what in re.findall(r'#define (WS_\w+) (0x[0-9a-f]+) +/\* ordinal \d+ (\w+)', open('src/net/winsock.h').read()):
-	imports[int(a, 16)] = ('ws_' + what) if what[0].islower() else what   # (bind, send ...: too common as macros)
-	ws_slot[int(a, 16)] = n
+# the game's imports by their slot: src/imports.h (tools/mkimports.py), IMP_<name>; Winsock's lower-case names get a
+# ws_ prefix as macros (bind, send ...: too common)
+imports, imp_slot = {}, {}
+fn_addr = {n: int(a, 16) for n, a in re.findall(r'#define FNADDR_(\w+) (0x[0-9a-f]+)', open('src/fn_addrs.h').read())}
+for n, a, dll in re.findall(r'#define IMP_(\w+) (0x[0-9a-f]+) +/\* (\S+)', open('src/imports.h').read()):
+	imports[int(a, 16)] = ('ws_' + n) if dll == 'WS2_32.dll' and n[0].islower() else n
+	imp_slot[int(a, 16)] = n
 
-HEAD = re.compile(r'\b(GAME_FN|GAME_THISFN|IMPORT)\(|\bGAME_CDECL\((?=0x)')
+HEAD = re.compile(r'\b(CALL_FN|CALL_THISFN|GAME_FN|GAME_THISFN|IMPORT_FN|IMPORT)\(|\bGAME_CDECL\((?=0x)')
 
 
 def parse_call(t, m):
@@ -102,11 +78,13 @@ def parse_call(t, m):
 	if close >= len(t) or t[close] != '(':
 		return None
 	inner = split_top(t[open_ + 1:close - 1])
+	if kind in ('CALL_FN', 'CALL_THISFN'):   # (by name: the address from src/fn_addrs.h)
+		kind = kind.replace('CALL_', 'GAME_')
+		inner.insert(1, hex(fn_addr.get(inner[0], 0)))
+	if kind == 'IMPORT_FN':
+		kind, inner[0] = 'IMPORT', hex({v: k for k, v in imp_slot.items()}.get(inner[0], 0))
 	if kind in ('GAME_CDECL', 'IMPORT'):
 		addr, types, name = inner[0], inner[1:], None
-		ws = {v: k for k, v in ws_slot.items()}
-		if addr in ws:
-			addr = hex(ws[addr])
 	else:
 		name, addr, types = inner[0], inner[1], inner[2:]
 	try:
@@ -126,7 +104,7 @@ def is_ptr(s):
 
 headers = sorted(h for h in glob.glob('src/**/*.h', recursive=True) if os.sep + 'data' + os.sep not in h and not h.endswith('calls.h'))
 files = sorted(f for f in glob.glob('src/**/*.c', recursive=True) if os.sep + 'data' + os.sep not in f)
-DEF = re.compile(r'^#define (\w+)\(([^)]*)\) +(?=GAME_FN\(|GAME_THISFN\(|GAME_CDECL\(0x|IMPORT\()', re.M)
+DEF = re.compile(r'^#define (\w+)\(([^)]*)\) +(?=CALL_FN\(|CALL_THISFN\(|GAME_FN\(|GAME_THISFN\(|GAME_CDECL\(0x|IMPORT_FN\(|IMPORT\()', re.M)
 
 
 def header_macros(t):
@@ -204,9 +182,9 @@ def fits(sig, c):
 
 def head_text(kind, name, addr, types):
 	if kind == 'IMPORT':
-		return 'IMPORT(%s, %s)' % (ws_slot.get(addr, '0x%x' % addr), ', '.join(types))
+		return 'IMPORT_FN(%s, %s)' % (imp_slot[addr], ', '.join(types))
 	return ('GAME_CDECL(0x%x, %s)' % (addr, ', '.join(types))) if kind == 'GAME_CDECL' else \
-	       '%s(%s, 0x%x, %s)' % (kind, name, addr, ', '.join(types))
+	       '%s(%s, %s)' % (kind.replace('GAME_', 'CALL_'), name, ', '.join(types))
 
 
 # 3. the macro of each function: an existing one (respelled to the signature) or a new one

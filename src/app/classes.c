@@ -283,10 +283,10 @@ u32 THISCALL (Stage_dtor)(u8 *self)
 	Stage *stage = (Stage *)self;
 	*(u32 *)self = STR(0x4aa23c, "08F");   /* the vtable */
 	Scene_dtor((u8 *)&stage->scenePath);
-	eh_vector_destructor((u8 *)stage->actors, 0x8888, 100, FN_ADDR(actor_destroyPartLists, 0x45ff30));
+	eh_vector_destructor((u8 *)stage->actors, 0x8888, 100, FN(actor_destroyPartLists));
 	SkeletonManager_dtor((u8 *)&stage->itemSkeletons);   /* SkeletonManager_dtor */
 	ShapeManager_dtor((u8 *)&stage->itemShapes);   /* ShapeManager_dtor */
-	eh_vector_destructor((u8 *)stage->playerRecords, 0x47fd2, 16, FN_ADDR(ResourceSet_dtor, 0x463960));
+	eh_vector_destructor((u8 *)stage->playerRecords, 0x47fd2, 16, FN(ResourceSet_dtor));
 	SkeletonManager_dtor((u8 *)&stage->objectSkeletons);
 	ShapeManager_dtor((u8 *)&stage->objectShapes);
 	Shape_dtor((u8 *)&stage->waterModel);
@@ -491,7 +491,7 @@ static const u32 k_cameraPresets[6][10] = {
    unwinding a failed construction, is not reproduced.) Returns the object */
 u8 *THISCALL (Console_ctor)(u8 *g)
 {
-#define VECTOR(at, size, count) ((void (STDCALL *)(void *, int, int, u32))FN_ADDR(crt_vectorConstructorIterator, 0x401290))(at, size, count, FN_ADDR(class_emptyCtor, 0x45fff0))   /* (the CRT's iterators are stdcall) */
+#define VECTOR(at, size, count) ((void (STDCALL *)(void *, int, int, u32))FN(crt_vectorConstructorIterator))(at, size, count, FN(class_emptyCtor))   /* (the CRT's iterators are stdcall) */
 #define VTABLE(at, vt) (GAME_VAR(u32, at) = (vt))
 	u8 *s = (u8 *)SCENE_STAGE(g);
 	Stage *st = (Stage *)s;
@@ -521,13 +521,13 @@ u8 *THISCALL (Console_ctor)(u8 *g)
 	SkeletonManager_clear((u8 *)&st->objectSkeletons);
 	VECTOR((u8 *)st->objects, 0x2cc, 0x3e8);
 	VECTOR((u8 *)st->actorItems, 0x2e18, 0x32);
-	((void (STDCALL *)(void *, int, int, u32, u32))IMG(0x49fd2d))((u8 *)st->playerRecords, 0x47fd2, 0x10, FN_ADDR(ResourceSet_ctor, 0x463850), FN_ADDR(ResourceSet_dtor, 0x463960));
+	((void (STDCALL *)(void *, int, int, u32, u32))IMG(0x49fd2d))((u8 *)st->playerRecords, 0x47fd2, 0x10, FN(ResourceSet_ctor), FN(ResourceSet_dtor));
 	VTABLE((u8 *)&st->itemShapes, VT(ShapeManager, 0x4aa244));
 	ShapeManager_clear((u8 *)&st->itemShapes);
 	VTABLE((u8 *)&st->itemSkeletons, VT(SkeletonManager, 0x4aa240));
 	SkeletonManager_clear((u8 *)&st->itemSkeletons);
 	VECTOR((u8 *)st->mapActors, 0x5c, 0x64);
-	((void (STDCALL *)(void *, int, int, u32, u32))IMG(0x49fd2d))((u8 *)st->actors, 0x8888, 0x64, FN_ADDR(actor_initPartLists, 0x463a40), FN_ADDR(actor_destroyPartLists, 0x45ff30));
+	((void (STDCALL *)(void *, int, int, u32, u32))IMG(0x49fd2d))((u8 *)st->actors, 0x8888, 0x64, FN(actor_initPartLists), FN(actor_destroyPartLists));
 	VECTOR((u8 *)st->bullets, 0x4e8, 0x190);
 	VECTOR((u8 *)st->particles, 0x12c, 0x3e8);
 	VECTOR((u8 *)st->points, 0xc, 0xc8);

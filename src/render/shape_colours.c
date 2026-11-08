@@ -111,7 +111,7 @@ int (shape_shadingColours)(u32 *out, int first, u8 *shape, void *factors, const 
 	Shape *md = (Shape *)shape;
 	for (int i = 0; i < md->partCount; i++) {
 		ShapePart *part = (ShapePart *)(md->parts + i * 0x80);
-		GAME_FN(shape_getShadingColorBufferBy, 0x463b80, void, u32 *, int, void *, void *, const float *)(out + part->colourBase, first, (u8 *)part, factors,
+		shape_getShadingColorBufferBy(out + part->colourBase, first, (u8 *)part, factors,
 		                                                                matrix);   /* shape_getShadingColorBufferBy */
 	}
 	return md->partCount;

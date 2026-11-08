@@ -210,7 +210,7 @@ def generate(region_name, section, base, d, comment):
 			w = struct.unpack_from('<I', d, o)[0]
 			t = typed(a)
 			if w in hooked:
-				items.append((a, 'u32', 'FN_ADDR(%s, 0x%x)' % (hooked[w], w), 4)); o += 4; continue
+				items.append((a, 'u32', 'FN(%s)' % hooked[w], 4)); o += 4; continue
 			if w in stubs:
 				items.append((a, 'u32', 'FN_VIA(%s, 0x%x, 0x%x)' % (hooked[stubs[w]], stubs[w], w), 4)); o += 4; continue
 			if is_pointer(w):   # an address in the game's image: IMG() puts it where AxisRC.exe keeps the image

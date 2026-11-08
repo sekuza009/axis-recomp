@@ -551,7 +551,7 @@ u32 (room_leave)(void)
 	Sleep(500);                   /* Sleep */
 	menuCamera_setMove(4);
 	g_nextScreen = 300;
-	GAME_FN(shared_emptyFunction, 0x48b420, void, void)();                 /* shared_emptyFunction */
+	CALL_FN(shared_emptyFunction, void, void)();                 /* shared_emptyFunction */
 	net_disconnect();                 /* net_disconnect */
 	g_roomConnected = 0;
 	return mech_loadFromProfile();
@@ -598,7 +598,7 @@ u32 (arena_editAddress)(void)
 	(*(u32 *)&g_menuKeyGuard) = 0x40a00000;   /* 5 */
 	/* editField_createEdit(20); the original also leaves the 20 it gave menu_clearInputBuffer on the stack as a second
 	   argument */
-	u32 r = GAME_FN(editField_createEdit, 0x43f460, u32, int, int)(0x14, 0x14);
+	u32 r = CALL_FN(editField_createEdit, u32, int, int)(0x14, 0x14);
 	g_typingArenaAddress = 1;
 	return r;
 }
@@ -630,9 +630,9 @@ static u32 settings_store(GameSettings *from, GameSettings *to, u32 then)
 }
 /* 0x405140: the arena being created (g_newArenaName) kept as the arena settings (g_arenaName), its locked flag set
    from the password, then axis.cfg written (cfg_writeAxisCfg) */
-u32 (lobby_keepArenaSettings)(void) { return settings_store((GameSettings *)OBJ(g_newArenaName), (GameSettings *)OBJ(g_arenaName), FN_ADDR(cfg_writeAxisCfg, 0x42d730)); }
+u32 (lobby_keepArenaSettings)(void) { return settings_store((GameSettings *)OBJ(g_newArenaName), (GameSettings *)OBJ(g_arenaName), FN(cfg_writeAxisCfg)); }
 /* 0x433640: the room's settings kept (g_roomRecName) and written to the registry (reg_writeLadderSettings) */
-u32 (room_keepSettings)(void) { return settings_store((GameSettings *)OBJ(g_roomSettingsName), (GameSettings *)OBJ(g_roomRecName), FN_ADDR(reg_writeLadderSettings, 0x432400)); }
+u32 (room_keepSettings)(void) { return settings_store((GameSettings *)OBJ(g_roomSettingsName), (GameSettings *)OBJ(g_roomRecName), FN(reg_writeLadderSettings)); }
 
 /* 0x40d390: the create-arena page's frame: the tunnel, then (camera modes other than 0 and 1, not on sub-screen 5)
    just the form's frame while it opens (g_frameOpening), else the arena record kept in range (players 0 .. 16 else 8,
@@ -837,7 +837,7 @@ static u32 to_main_menu(void)
 {
 	u32 r = menuCamera_setMove(4);   /* menuCamera_setMove: keys blocked */
 	g_nextScreen = 300;
-	GAME_FN(shared_emptyFunction, 0x48b420, void, void)();          /* shared_emptyFunction */
+	CALL_FN(shared_emptyFunction, void, void)();          /* shared_emptyFunction */
 	return r;
 }
 
@@ -1077,7 +1077,7 @@ u32 (arena_takeHostAnswer)(void)
 		g_netRole = 1;
 		music_stop();
 		g_arenaCameraMode = 0;
-		GAME_FN(dplay_openConnection, 0x452ec0, void, int, int)(0, 0);   /* dplay_openConnection */
+		CALL_FN(dplay_openConnection, void, int, int)(0, 0);   /* dplay_openConnection */
 		dplay_host(arena, (const void *)OBJ(g_cfgPlayerName),
 			(int)(signed char)arena[0x22] << 8 | (int)(signed char)arena[0x20], (signed char)arena[0x21], (signed char)arena[0x23],
 			arena[0x24], arena[0x25], (*(u32 *)&g_playerCorporation));   /* dplay_host: host */
@@ -1512,7 +1512,6 @@ void (ladder_checkAndSendRecord)(void)
 #undef R_DEATHS
 
 /* ---- hosting under a name: the special rooms ---- */
-#define lstrcpyA(dst, src) IMPORT(0x4a911c, char *, char *, const char *)(dst, src)
 
 /* a game named like one of the special rooms gets its hidden map (22 .. 24, which the map list never offers):
    JamieSystem 0x18, Operator Room 0x16, Developer Room 0x17 (each in Korean and three spellings) */
@@ -1645,7 +1644,7 @@ void (room_announceGame)(void)
 	room_keepSettings();
 	special_map(g_roomRecName, (u8 *)ADDR(g_roomRecMap));
 	RoomRecord *packet = g_roomPacket;
-	GAME_CDECL(0x49ea80, char *, char *, const char *, int)(packet->hostName, g_ladderId, 0x1e);   /* strncpy */
+	crt_strncpy(packet->hostName, g_ladderId, 0x1e);   /* strncpy */
 	packet = g_roomPacket;
 	const GameSettings *room = (const GameSettings *)OBJ(g_roomRecName);
 	packet->kind = 0x18;

@@ -119,7 +119,7 @@ u32 (hud_drawDigits)(int x, int y, float scale, int value, int count, int padded
 	const float *heightFactor = *g_wide->digitHeight ? *g_wide->digitHeight : (const float *)ADDR(k_26f);   /* 26 */
 	void (STDCALL *const *texCoord)(u32, u32) = *g_wide->digitTexCoord
 		? (void (STDCALL *const *)(u32, u32))*g_wide->digitTexCoord
-		: (void (STDCALL *const *)(u32, u32))RELOC(0x4a920c);   /* glTexCoord2f's import */
+		: (void (STDCALL *const *)(u32, u32))RELOC(IMP_glTexCoord2f);   /* glTexCoord2f's import */
 #else
 	const float *heightFactor = *(const float *const *)IMG(0x46bddc);          /* (the fmul's operand) */
 	void (STDCALL *const *texCoord)(u32, u32) = *(void (STDCALL *const *const *)(u32, u32))IMG(0x46be98);   /* (mov ebx, [..]) */
@@ -170,7 +170,7 @@ u32 (hud_drawDigits)(int x, int y, float scale, int value, int count, int padded
 		glVertex2i(left, gfx_getHeight() - top - h);
 	}
 	glEnd();
-	return IMPORT(0x4a922c, u32, u32)(GL_TEXTURE_2D);   /* glDisable */
+	return IMPORT_FN(glDisable, u32, u32)(GL_TEXTURE_2D);   /* glDisable */
 }
 
 /* 0x46bb00: text in the pen font (the loading screen's log lines, the power-up countdown), printf-style, at
@@ -238,5 +238,5 @@ u32 (font_penDraw)(int x, int y, int font, const char *format, ...)
 	if (sharpOn)
 		platform_texRestore(sharp);
 #endif
-	return IMPORT(0x4a922c, u32, u32)(GL_TEXTURE_2D);   /* glDisable */
+	return IMPORT_FN(glDisable, u32, u32)(GL_TEXTURE_2D);   /* glDisable */
 }

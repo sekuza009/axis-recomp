@@ -114,10 +114,10 @@ int (input_createDirectInput)(void *window, void *instance)
 }
 
 /* ---- the cursor and the keys through Win32, only while the game's window (if there is one) is in front ---- */
-#define GetForegroundWindow() IMPORT(0x4a92fc, void *, void)()
-#define GetAsyncKeyState(key) IMPORT(0x4a92f8, u32, int)(key)
-#define GetCursorPos(p) IMPORT(0x4a9300, u32, int *)(p)
-#define SetCursorPos(x, y) IMPORT(0x4a9304, u32, int, int)(x, y)
+#define GetForegroundWindow() IMPORT_FN(GetForegroundWindow, void *, void)()
+#define GetAsyncKeyState(key) IMPORT_FN(GetAsyncKeyState, u32, int)(key)
+#define GetCursorPos(p) IMPORT_FN(GetCursorPos, u32, int *)(p)
+#define SetCursorPos(x, y) IMPORT_FN(SetCursorPos, u32, int, int)(x, y)
 
 /* 0x401730: the mouse read into the DIMOUSESTATE at g_mouseState (16 bytes: movement x, y, wheel, 4 buttons), once per
    frame; when the input was lost the mouse is taken again and read again. As the installed exe has it (mousefix.py

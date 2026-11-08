@@ -43,7 +43,7 @@ long double (timer_now)(void)
 {
 #define g_time g_clockNow
 	u32 counter[2];
-	IMPORT(0x4a9140, int, u32 *)(counter);   /* QueryPerformanceCounter */
+	IMPORT_FN(QueryPerformanceCounter, int, u32 *)(counter);   /* QueryPerformanceCounter */
 	int shift = g_timerShift;
 	g_perfCounterHigh = counter[1];
 	g_perfCounterLow = counter[0];
@@ -87,7 +87,7 @@ long double THISCALL (TimeSync_frameTime)(u8 *t)
 {
 	TimeSync *ts = (TimeSync *)t;
 #undef QueryPerformanceCounter
-#define QueryPerformanceCounter(out) IMPORT(0x4a9140, int, u64 *)(out)
+#define QueryPerformanceCounter(out) IMPORT_FN(QueryPerformanceCounter, int, u64 *)(out)
 #define fatal() sys_fatalErrorN((char *)OBJ(g_logTimeSync), (const char *)STR(0x4c7b80, "invalid system time"))
 	if (ts->started == 0) {
 		if (!QueryPerformanceFrequency(&ts->frequency))

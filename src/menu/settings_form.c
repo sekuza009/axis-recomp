@@ -281,7 +281,7 @@ void (arena_createDraw)(void)
 		text_drawCentredLines16(0x64, 0xdc, 0x21c, (const char *)MSG(169, "NETWORK INITIALIZE ERROR"));
 		box_buttons(hovered, 15);
 		glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
-		GAME_FN(menu_drawTopRightOrnament, 0x428b50, void, int, int, int, int)(0x64, 0xb4, 0x21c, 0x140);   /* menu_drawTopRightOrnament */
+		CALL_FN(menu_drawTopRightOrnament, void, int, int, int, int)(0x64, 0xb4, 0x21c, 0x140);   /* menu_drawTopRightOrnament */
 	}
 	if (updateNotice) {
 		int noticeHovered = arenaUpdateNotice_hitTest(g_mouseX, g_mouseY);

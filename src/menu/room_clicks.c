@@ -207,7 +207,7 @@ u32 (roomLogin_clicks)(void)
 		g_roomState = 0x63;
 		g_nextScreen = 300;
 		g_inputLineHidden = 0;
-		GAME_FN(shared_emptyFunction, 0x48b420, void, void)();          /* shared_emptyFunction */
+		CALL_FN(shared_emptyFunction, void, void)();          /* shared_emptyFunction */
 		return net_disconnect();
 	case 4:
 		sound_playMenu(0);
@@ -221,7 +221,7 @@ u32 (roomLogin_clicks)(void)
    g_tunnelRings > 0) leaves too. Returns what the original leaves in eax */
 u32 (room_pageClicks)(void)
 {
-	static const u32 actions[6] = { FN_ADDR(room_enterAccountPage, 0x4334c0), FN_ADDR(room_enterGameList, 0x433590), FN_ADDR(room_enterCreatePage, 0x433790), 0, FN_ADDR(ranking_enter, 0x433800), FN_ADDR(room_leave, 0x435a40) };
+	static const u32 actions[6] = { FN(room_enterAccountPage), FN(room_enterGameList), FN(room_enterCreatePage), 0, FN(ranking_enter), FN(room_leave) };
 	u32 cameraMode = (*(u32 *)&g_roomCameraMode);
 	if (cameraMode == 1 || cameraMode == 0)
 		return cameraMode;
@@ -318,7 +318,7 @@ u32 (room_hostingStep)(void)
 		g_netRole = 1;
 		music_stop();
 		g_roomCameraMode = 0;
-		GAME_FN(dplay_openConnection, 0x452ec0, int, int, int)(0, 0);   /* dplay_openConnection */
+		CALL_FN(dplay_openConnection, int, int, int)(0, 0);   /* dplay_openConnection */
 		dplay_host(
 			room, g_ladderId, (signed char)room[0x23], (signed char)room[0x21], (signed char)room[0x23],
 			room[0x24], room[0x25], 0);   /* dplay_host: host */
@@ -514,7 +514,7 @@ u32 (ranking_page)(void)
 		if (!(blink >= 0))
 			g_listBlinkClock = 1000.0f;
 	}
-	return call_keeping_ebp(FN_ADDR(ranking_drawTable, 0x43d060));   /* ranking_drawTable: the table */
+	return call_keeping_ebp(FN(ranking_drawTable));   /* ranking_drawTable: the table */
 }
 
 /* 0x434490: the login sent: typing closed and the form's flags cleared; a name or password with a character the
@@ -569,7 +569,7 @@ u32 (ranking_clicks)(void)
 	if (button > 8 || button == 6 || (button == 3 ? !g_rankingWaiting : g_rankingWaiting != 0))
 		return button;
 	u32 r = sound_playMenu(0);   /* the click sound */
-	static const u32 actions[3] = { FN_ADDR(ranking_prevPage, 0x435970), FN_ADDR(ranking_nextPage, 0x4359b0), FN_ADDR(ranking_cycleSort, 0x4359f0) };
+	static const u32 actions[3] = { FN(ranking_prevPage), FN(ranking_nextPage), FN(ranking_cycleSort) };
 	int column;
 	switch (button) {
 	case 0: case 1: case 2:
@@ -779,8 +779,8 @@ static u32 map_preview_box(const int *panel, u32 rotation, u32 reload)
 
 /* 0x43bde0: the game room's (panel g_roomFormTop, map rotation g_roomRotation, room_loadMapPreview); arena_drawMapPreview: the arena screen's
    (g_newArenaFormTop, g_newArenaRotation, arena_loadMapPreview) */
-u32 (room_drawMapPreview)(void) { return map_preview_box((const int *)ADDR(g_roomFormTop), ADDR(g_roomRotation), FN_ADDR(room_loadMapPreview, 0x43bcb0)); }
-u32 (arena_drawMapPreview)(void) { return map_preview_box((const int *)ADDR(g_newArenaFormTop), ADDR(g_newArenaRotation), FN_ADDR(arena_loadMapPreview, 0x40b420)); }
+u32 (room_drawMapPreview)(void) { return map_preview_box((const int *)ADDR(g_roomFormTop), ADDR(g_roomRotation), FN(room_loadMapPreview)); }
+u32 (arena_drawMapPreview)(void) { return map_preview_box((const int *)ADDR(g_newArenaFormTop), ADDR(g_newArenaRotation), FN(arena_loadMapPreview)); }
 
 /* 0x43e7b0: the account page (room page 0; the room camera arrived (g_roomCameraMode 2), not page 99): with a message box only its
    frame; else the page (account_takeRank when g_accountRankDue, then account_drawPanel) and, once a field's typing has ended, the typed
@@ -790,8 +790,8 @@ u32 (arena_drawMapPreview)(void) { return map_preview_box((const int *)ADDR(g_ne
 u32 (account_page)(void)
 {
 	static const struct { u32 editing, field, size, back, on; } fields[4] = {
-		{ ADDR(g_editingOldPassword), OBJ(g_accountOldPassword), 12, 0, FN_ADDR(account_editPassword, 0x4340e0) }, { ADDR(g_editingAccountPassword), OBJ(g_accountPassword), 12, FN_ADDR(account_editOldPassword, 0x434020), FN_ADDR(account_editPasswordRepeat, 0x4341a0) },
-		{ ADDR(g_editingPasswordRepeat), OBJ(g_accountPasswordRepeat), 12, FN_ADDR(account_editPassword, 0x4340e0), FN_ADDR(account_editEmail, 0x434260) }, { ADDR(g_editingEmail), OBJ(g_accountEmail), 50, FN_ADDR(account_editPasswordRepeat, 0x4341a0), 0 } };
+		{ ADDR(g_editingOldPassword), OBJ(g_accountOldPassword), 12, 0, FN(account_editPassword) }, { ADDR(g_editingAccountPassword), OBJ(g_accountPassword), 12, FN(account_editOldPassword), FN(account_editPasswordRepeat) },
+		{ ADDR(g_editingPasswordRepeat), OBJ(g_accountPasswordRepeat), 12, FN(account_editPassword), FN(account_editEmail) }, { ADDR(g_editingEmail), OBJ(g_accountEmail), 50, FN(account_editPasswordRepeat), 0 } };
 	room_drawTunnel();   /* room_drawTunnel: the tunnel */
 	u32 mode = (*(u32 *)&g_roomCameraMode);
 	if (mode == 1 || mode == 0 || g_roomState == 99)

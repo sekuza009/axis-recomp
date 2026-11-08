@@ -1,7 +1,8 @@
 r"""hooktable.py: the rebuilt functions the loaders switch in, (original address, C name), read from recomp.c as
 tools/mkhooks.py reads them (HIT_TESTS, g_hooks3, install_hooks' own list); and each one's linker symbol.
 As a script: hooktable.py <out.h> writes build/fn_syms.h for AXIS_DIRECT builds (see src/axis.h): per function
-"extern void FN_name(void) __asm__("symbol");" and "enum { FNADDR_name = 0x... };"."""
+"extern void FN_name(void) __asm__("symbol");"; hooktable.py --addrs writes src/fn_addrs.h, for both builds: per
+function "#define FNADDR_name 0x..." (its original address; FN(name) in src/axis.h)."""
 import glob, os, re, struct, sys
 
 ROOT = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..')
@@ -46,14 +47,24 @@ def symbols(objdir):
 	return sym
 
 
-if __name__ == '__main__' and len(sys.argv) > 1 and sys.argv[1] != '-':
+if __name__ == '__main__' and sys.argv[1:] == ['--addrs']:
+	lines = ['/* fn_addrs.h (tools/hooktable.py --addrs, run by build.sh): each rebuilt function\'s original address, by',
+	         '   name - FN(name) in src/axis.h uses it (the address in the harness, the C function in AxisRC.exe) */',
+	         '#pragma once']
+	lines += ['#define FNADDR_%s 0x%x' % (n, a) for a, n in sorted(hooks())]
+	path = os.path.join(ROOT, 'src', 'fn_addrs.h')
+	new = '\n'.join(lines) + '\n'
+	if not os.path.exists(path) or open(path, newline='').read() != new:   # (rewritten only when changed)
+		open(path, 'w', newline='\n').write(new)
+	print(len(lines) - 3, 'functions')
+elif __name__ == '__main__' and len(sys.argv) > 1 and sys.argv[1] != '-':
 	sym = symbols(os.path.join(ROOT, 'build', 'obj'))
 	lines = ['/* fn_syms.h (tools/hooktable.py): the rebuilt functions by linker symbol, for AXIS_DIRECT builds */']
 	missing = []
 	for a, n in sorted(hooks()):
 		if n not in sym:
 			missing.append(n); continue
-		lines.append('extern void FN_%s(void) __asm__("%s"); enum { FNADDR_%s = 0x%x };' % (n, sym[n], n, a))
+		lines.append('extern void FN_%s(void) __asm__("%s");' % (n, sym[n]))
 	if missing:
 		sys.exit('no symbol for: ' + ', '.join(missing))
 	open(sys.argv[1], 'w', newline='\n').write('\n'.join(lines) + '\n')

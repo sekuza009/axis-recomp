@@ -244,7 +244,7 @@ u32 (cfg_writeAxisCfg)(void)
 	void *f = crt_fopen(path, (const char *)STR(0x4b21a4, "wt"));
 	crt_fputs((const char *)STR(0x4b0f50, "AXIS CONFIGURATION FILE Master ver 1...."), f);   /* fputs */
 	crt_fputs((const char *)STR(0x4b182c, "\n"), f);
-	static const u32 sections[5] = { FN_ADDR(cfg_writePlayer, 0x42c650), FN_ADDR(cfg_writeServer, 0x42c6f0), FN_ADDR(cfg_writeSound, 0x42c910), FN_ADDR(cfg_writeGraphic, 0x42c9f0), FN_ADDR(cfg_writeKeyBindings, 0x42cba0) };   /* player .. key bindings */
+	static const u32 sections[5] = { FN(cfg_writePlayer), FN(cfg_writeServer), FN(cfg_writeSound), FN(cfg_writeGraphic), FN(cfg_writeKeyBindings) };   /* player .. key bindings */
 	for (int k = 0; k < 5; k++)
 		GAME_CDECL(sections[k], u32, void *)(f);
 	return fclose(f);

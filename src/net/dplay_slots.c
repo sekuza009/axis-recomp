@@ -148,12 +148,12 @@ int (dplay_join)(int session, int guid, int player, int data)
    freed (net_freeSessionList, whose eax it returns) and the session state cleared. 1 when there is no session */
 u32 (dplay_leaveSession)(void)
 {
-	static const u32 close[4] = { FN_ADDR(dplaySlot0_close, 0x4549a0), FN_ADDR(dplaySlot1_close, 0x454ac0), FN_ADDR(dplaySlot2_close, 0x454bd0), FN_ADDR(dplaySlot3_close, 0x454ce0) };
+	static const u32 close[4] = { FN(dplaySlot0_close), FN(dplaySlot1_close), FN(dplaySlot2_close), FN(dplaySlot3_close) };
 	if (g_dplaySessionOpen != 1 || !g_sessionListOpen)
 		return 1;
 	if (g_isHost) {
 		g_hostGoneMessageFlag = 1;
-		GAME_FN(net_sendMessage, 0x451270, int, void *, u32, u32)((void *)ADDR(g_netHostLeftMessageKind), 0, 0);   /* net_sendMessage: send */
+		CALL_FN(net_sendMessage, int, void *, u32, u32)((void *)ADDR(g_netHostLeftMessageKind), 0, 0);   /* net_sendMessage: send */
 	}
 	u32 kind = (*(u32 *)&g_connectionKind);
 	(*(u32 *)&g_connectionKind) = 4;
@@ -171,7 +171,7 @@ u32 (dplay_leaveSession)(void)
    dplaySlot1_open / dplaySlot2_open / dplaySlot3_open). The slot's answer (and the session marked open), or 0 */
 int (dplay_openConnection)(u32 kind, const char *host)
 {
-	static const u32 open[4] = { FN_ADDR(dplaySlot0_open, 0x454940), FN_ADDR(dplaySlot1_open, 0x454a50), FN_ADDR(dplaySlot2_open, 0x454b70), FN_ADDR(dplaySlot3_open, 0x454c80) };
+	static const u32 open[4] = { FN(dplaySlot0_open), FN(dplaySlot1_open), FN(dplaySlot2_open), FN(dplaySlot3_open) };
 	char address[16] = { 0 };
 	net_freeAllSlots();
 	g_dplaySessionOpen = 1;

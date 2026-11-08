@@ -109,9 +109,12 @@ Readable C: the conventions
   Globals     globals.h: every fixed-address global by name; the game's float constants by value (k_1f, k_0_5f,
               k_1500f_4a9700 when the value's name is taken), used as &k_1f.
   Calls       by name through game.h / calls.h; *_bits variants pass floats as their bits (the original passes
-              them as integers). An inline GAME_FN / IMPORT is left only where a name would be wrong: an OpenGL
-              import whose eax the caller returns, a function the same file rebuilds (a direct call skips the
-              harness's mock at the original address), an argument-count mismatch kept from the original.
+              them as integers). An inline CALL_FN / IMPORT_FN (by name, with the caller's own types) is left only
+              where a plain name would be wrong: an OpenGL import whose eax the caller returns, a function the
+              same file rebuilds (a direct call skips the harness's mock at the original address), an
+              argument-count mismatch kept from the original. No addresses in the calls: a rebuilt function's
+              is in fn_addrs.h (FNADDR_name; FN(name) as a value, tools/hooktable.py --addrs, run by build.sh),
+              an import's slot in imports.h (IMP_name; tools/mkimports.py, from game.exe's import directory).
   Pointers    a byte pointer used through one struct gets that type, or a typed alias (Stage *st = (Stage *)s);
               u32 * locals indexed as words stay.
   GAME_VAR    left in the helpers that take a global's address from a table of addresses (clears, copies, saves of

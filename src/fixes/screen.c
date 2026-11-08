@@ -6,8 +6,8 @@
 #include "../game.h"
 #include "fixes.h"
 
-#define real_glViewport(x, y, w, h) IMPORT(0x4a91d4, void, int, int, int, int)(x, y, w, h)
-#define real_glVertex2i(x, y) IMPORT(0x4a91f4, void, int, int)(x, y)
+#define real_glViewport(x, y, w, h) IMPORT_FN(glViewport, void, int, int, int, int)(x, y, w, h)
+#define real_glVertex2i(x, y) IMPORT_FN(glVertex2i, void, int, int)(x, y)
 
 FixView g_fixView = { 0, 0, 1, 0 };
 int g_fixInHud, g_fixHudArea;

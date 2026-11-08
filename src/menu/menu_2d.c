@@ -155,7 +155,7 @@ u32 (menu_drawLine)(int x0, int y0, int x1, int y1)
 	glBegin(GL_LINES);
 	menu_vertex(x0, y0);
 	menu_vertex(x1, y1);
-	return IMPORT(0x4a9220, u32, void)();   /* glEnd */
+	return IMPORT_FN(glEnd, u32, void)();   /* glEnd */
 }
 
 /* 0x42f0f0: the 3D view over w x h pixels (from the corner): the projection from the view's angle and aspect.
@@ -166,7 +166,7 @@ u32 (gfx_setup3DView)(int w, int h)
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
 	gluPerspective(g_viewAngle, g_viewAspect, 1.0, 20000.0);
-	return IMPORT(0x4a91fc, u32, u32)(GL_MODELVIEW);
+	return IMPORT_FN(glMatrixMode, u32, u32)(GL_MODELVIEW);
 }
 
 /* 0x41f820: a menu frame begun: the screen cleared to black (colour and depth), white, blending by alpha. Returns
@@ -178,7 +178,7 @@ u32 (menu_frameBegin)(void)
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 	glEnable(0x0be2);   /* GL_BLEND */
-	return IMPORT(0x4a91ec, u32, u32, u32)(0x302, 0x303);   /* glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA) */
+	return IMPORT_FN(glBlendFunc, u32, u32, u32)(0x302, 0x303);   /* glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA) */
 }
 
 /* 0x40ce70: the white fade over the screen while the menus are left for a match (g_whiteFade grows by the frame time
@@ -207,7 +207,7 @@ u32 (gfx_setMenuCamera)(void)
 	glTranslatef(x, y, z);   /* glTranslatef */
 	glLoadIdentity();
 	const float *eye = (const float *)ADDR(g_menuEyeX), *at = (const float *)ADDR(g_menuCameraLook);
-	return IMPORT(0x4a904c, u32, double, double, double, double, double, double, double, double, double)(
+	return IMPORT_FN(gluLookAt, u32, double, double, double, double, double, double, double, double, double)(
 		eye[0], eye[1], eye[2], at[0], at[1], at[2], 0.0, 1.0, 0.0);   /* gluLookAt */
 }
 
@@ -345,7 +345,7 @@ u32 (menu_drawTextCursor)(int x, int y)
 	menu_vertex(x + 7, y);
 	menu_vertex(x + 7, y + 15);
 	menu_vertex(x, y + 15);
-	return IMPORT(0x4a9220, u32, void)();   /* glEnd */
+	return IMPORT_FN(glEnd, u32, void)();   /* glEnd */
 }
 
 /* 0x428940: the input line at (x, y) in green with its cursor after the typed characters (8 units each); a password

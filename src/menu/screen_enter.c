@@ -339,7 +339,7 @@ u32 (menuState210_enter)(void)
 		{ OBJ(g_profileColour), 0 }, { (OBJ(g_profileColour) + 0x4), ONE }, { (OBJ(g_profileColour) + 0x8), ONE }, { (OBJ(g_profileColour) + 0xc), ONE }, { OBJ(g_profileDim), 0 },
 		{ (OBJ(g_profileDim) + 0x4), 0x3f19999a }, { (OBJ(g_profileDim) + 0x8), 0x3f19999a }, { (OBJ(g_profileDim) + 0xc), ONE }, { ADDR(g_menuRepeatClock), 0 }, { ADDR(g_replayZoomTime), 0 },
 		{ ADDR(g_profileQuitting), 0 }, { ADDR(g_profileRowClicked), 0 }, { ADDR(g_profileRowClickTime), 0 } };
-	static const u32 rects[7] = { FN_ADDR(profilePage_layout, 0x44af30), FN_ADDR(newNameDialog_layout, 0x44b030), FN_ADDR(profileDialogBox_layout, 0x44b080), FN_ADDR(deleteDialog_layout, 0x44b0b0), FN_ADDR(logOutDialog_layout, 0x44b100), FN_ADDR(profileList_layout, 0x44b150), FN_ADDR(pilotSelect_layout, 0x44b1a0) };
+	static const u32 rects[7] = { FN(profilePage_layout), FN(newNameDialog_layout), FN(profileDialogBox_layout), FN(deleteDialog_layout), FN(logOutDialog_layout), FN(profileList_layout), FN(pilotSelect_layout) };
 	STORE_ALL(layout);
 	CLEAR_ALL(cleared);
 	profile_readHeader();   /* profile_readHeader: the header read back */

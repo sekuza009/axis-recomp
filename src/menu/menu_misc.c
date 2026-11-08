@@ -398,7 +398,7 @@ void (missions_briefingClicks)(void)
 /* ---- leaving the mission list (missions_leave) or the skirmish screen (skirmish_leave): the screen's state cleared, the
    view squeezed (aspect 0.1) to open out again, the camera to (?, 0, 1600) looking ahead, a sound, the menu camera
    put back. Both return what that leaves in eax ---- */
-#define put_camera_back() GAME_FN(menu_cameraToPoint0, 0x447910, u32, void)()   /* menu_cameraToPoint0 */
+#define put_camera_back() CALL_FN(menu_cameraToPoint0, u32, void)()   /* menu_cameraToPoint0 */
 static u32 leave_settings(u32 state)
 {
 	GAME_VAR(int, state) = 0;
@@ -615,7 +615,7 @@ static u32 to_pilot_screen(void)
 	g_enteringMenus = 1;
 	g_nextScreen = 210;
 	profile_saveProgress();
-	return GAME_FN(shared_emptyFunction, 0x48b420, u32, void)();
+	return CALL_FN(shared_emptyFunction, u32, void)();
 }
 
 /* main menu choice i (with its sound; g_menuRepeatClock cleared): 0 SKIRMISH PLAY (menuState500_enterSkirmish), 1 MULTIPLAY VIA
@@ -709,7 +709,7 @@ u32 (mainmenu_processKeys)(void)
 		menuCamera_setMove(4);
 		g_enteringMenus = 1;
 		g_nextScreen = 210;
-		return GAME_FN(shared_emptyFunction, 0x48b420, u32, void)();
+		return CALL_FN(shared_emptyFunction, u32, void)();
 	}
 	u32 r = (u32)input_justPressed(g_dikF1);
 	if (r != 1)

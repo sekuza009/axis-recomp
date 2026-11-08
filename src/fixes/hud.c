@@ -19,8 +19,8 @@
 #include "fixes.h"
 #include <string.h>
 
-#define real_glVertex2i(x, y) IMPORT(0x4a91f4, void, int, int)(x, y)
-#define real_glViewport(x, y, w, h) IMPORT(0x4a91d4, void, int, int, int, int)(x, y, w, h)
+#define real_glVertex2i(x, y) IMPORT_FN(glVertex2i, void, int, int)(x, y)
+#define real_glViewport(x, y, w, h) IMPORT_FN(glViewport, void, int, int, int, int)(x, y, w, h)
 
 int g_fixHudPart;              /* the main HUD's part drawing (HUD_*: hud_main.c) */
 int g_fixPenSharp;             /* font_penDraw samples pixel-sharp (the power-up countdown) */

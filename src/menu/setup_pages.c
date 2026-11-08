@@ -167,7 +167,7 @@ void (setup_drawGraphicPage)(void)
 }
 
 /* ---- the controls page ---- */
-#define glTexCoord2i(s, t) IMPORT(0x4a91d8, void, int, int)(s, t)
+#define glTexCoord2i(s, t) IMPORT_FN(glTexCoord2i, void, int, int)(s, t)
 
 /* the binding each key row of the first three tabs shows (as setup_bindKey edits them, setup_keys.c);
    rows 4 and 9 of the third tab (bindings 25 and 31) are fixed keys */
@@ -353,7 +353,7 @@ void (setup_drawControlsPage)(void)
 #undef glTexCoord2i
 
 /* ---- the tunnel behind the setup pages ---- */
-#define glVertex3f(x, y, z) IMPORT(0x4a9210, void, float, float, float)(x, y, z)
+#define glVertex3f(x, y, z) IMPORT_FN(glVertex3f, void, float, float, float)(x, y, z)
 
 /* a wall of scrolling stripes at x = -29.9 (or 29.9 on the right), h either side of the floor, two quads either
    side of the moving seam z = 40 - 0.4 scroll */

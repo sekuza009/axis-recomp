@@ -238,7 +238,7 @@ u32 (setup_topPageClicks)(void)
 				sound_playMenu(0);
 				g_nextScreen = 300;
 				(*(int *)&g_menuRepeatClock) = 0;
-				GAME_FN(shared_emptyFunction, 0x48b420, void, void)();   /* shared_emptyFunction */
+				CALL_FN(shared_emptyFunction, void, void)();   /* shared_emptyFunction */
 				break;
 			}
 			break;
@@ -254,7 +254,7 @@ u32 (setup_topPageClicks)(void)
 	u32 r = menuCamera_setMove(4);   /* menuCamera_setMove */
 	g_nextScreen = 300;
 	(*(int *)&g_menuRepeatClock) = 0;
-	GAME_FN(shared_emptyFunction, 0x48b420, void, void)();
+	CALL_FN(shared_emptyFunction, void, void)();
 	return r;
 }
 

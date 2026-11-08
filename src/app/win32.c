@@ -100,7 +100,7 @@ void *(glWindow_init)(const char *title, int width, int height, int colourBits, 
 	if (window == NULL && other == NULL) {
 		u32 wc[10];   /* WNDCLASSA */
 		wc[0] = 0;                 /* style */
-		wc[1] = FN_ADDR(glWindow_wndProc, 0x4680d0);
+		wc[1] = FN(glWindow_wndProc);
 		wc[2] = 0;
 		wc[3] = 0;
 		wc[4] = (u32)GetModuleHandleA(NULL);
@@ -118,7 +118,7 @@ void *(glWindow_init)(const char *title, int width, int height, int colourBits, 
 			sys_errorMessageNoName((const char *)STR(0x4c4f50, "glWindow full screen mode failed, win..."));   /* glWindow_setDisplayModeBy failed */
 			g_fullScreen = 0;
 		}
-		g_glWindow = IMPORT(0x4a9350, void *, u32, const char *, const char *, u32, int, int, int, int, void *, void *, void *, void *)(
+		g_glWindow = IMPORT_FN(CreateWindowExA, void *, u32, const char *, const char *, u32, int, int, int, int, void *, void *, void *, void *)(
 			0, g_glTitle, g_glTitle, 0x86000000, 0, 0, g_glWidth, g_glHeight, NULL, NULL,
 			GetModuleHandleA(NULL), NULL);                                                             /* CreateWindowExA: WS_POPUP | WS_CLIPSIBLINGS | WS_CLIPCHILDREN */
 		if (g_glWindow == NULL) {
@@ -139,7 +139,7 @@ void *(glWindow_init)(const char *title, int width, int height, int colourBits, 
 	return g_glWindow;
 }
 
-#define GetDeviceCaps(dc, index) IMPORT(0x4a9034, int, void *, int)(dc, index)
+#define GetDeviceCaps(dc, index) IMPORT_FN(GetDeviceCaps, int, void *, int)(dc, index)
 #define g_glDc g_glWindowDc
 
 /* a DEVMODEA asking for width x height (and bits). (The original fills only these fields and leaves the
@@ -247,8 +247,8 @@ typedef struct {
 	u32 layerMask, visibleMask, damageMask;
 } PixelFormat;
 _Static_assert(sizeof(PixelFormat) == 0x28, "PixelFormat");
-#define ChoosePixelFormat(dc, pfd) IMPORT(0x4a902c, int, void *, const void *)(dc, pfd)
-#define SetPixelFormat(dc, format, pfd) IMPORT(0x4a9030, int, void *, int, const void *)(dc, format, pfd)
+#define ChoosePixelFormat(dc, pfd) IMPORT_FN(ChoosePixelFormat, int, void *, const void *)(dc, pfd)
+#define SetPixelFormat(dc, format, pfd) IMPORT_FN(SetPixelFormat, int, void *, int, const void *)(dc, format, pfd)
 
 /* 0x467e60: the GL window's pixel format chosen and set: double-buffered (flags 0x21) RGBA with g_glColourBits colour and
    g_glDepthBits depth bits. A message and 0 when there is none, it needs a palette, or it cannot be set; 1 when set.
@@ -298,7 +298,7 @@ int (gfx_setPixelFormat)(void *dc)
 	return SetPixelFormat(dc, format, pfd) != 0;
 }
 
-#define SendMessageA(hwnd, msg, w, l) IMPORT(0x4a92ec, int, void *, u32, u32, u32)(hwnd, msg, w, l)
+#define SendMessageA(hwnd, msg, w, l) IMPORT_FN(SendMessageA, int, void *, u32, u32, u32)(hwnd, msg, w, l)
 
 /* 0x43f460: the hidden EDIT control that every text field types into (names, passwords, numbers,
    addresses, the e-mail, chat), `chars` letters wide (g_editFieldLength): a 12-pixel Fixedsys font (0x4b29b0,
@@ -316,7 +316,7 @@ int (editField_createEdit)(int chars)
 	strcpy(font.face, (const char *)STR(0x4b29b0, "Fixedsys"));
 	g_editFieldLength = chars;
 	g_inputFont = CreateFontIndirectA(&font);   /* CreateFontIndirectA */
-	void *edit = IMPORT(0x4a9350, void *, u32, const char *, const char *, u32, int, int, int, int, void *, u32, void *, void *)(
+	void *edit = IMPORT_FN(CreateWindowExA, void *, u32, const char *, const char *, u32, int, int, int, int, void *, u32, void *, void *)(
 		0, (const char *)STR(0x4b29a8, "EDIT"), NULL, 0x40000400, g_editCaretX - 5, g_editCaretY + 0x21,
 		chars * 8, 0x18, g_mainWindow, 0xca, g_hInstance, NULL);   /* CreateWindowExA("EDIT") */
 	g_hEditField = edit;
@@ -324,7 +324,7 @@ int (editField_createEdit)(int chars)
 		SendMessageA(edit, 0x30, (*(u32 *)&g_inputFont), 0);   /* WM_SETFONT */
 		edit = g_hEditField;
 	}
-	g_editOldProc = SetWindowLongA(edit, -4, FN_ADDR(editField_editProc, 0x440840));   /* SetWindowLongA(GWL_WNDPROC) */
+	g_editOldProc = SetWindowLongA(edit, -4, FN(editField_editProc));   /* SetWindowLongA(GWL_WNDPROC) */
 	SetFocus(g_hEditField);   /* SetFocus */
 	u32 length = strlen(g_inputLine);
 	SendMessageA(g_hEditField, 0xc, 0, OBJ(g_inputLine));   /* WM_SETTEXT */
@@ -332,8 +332,8 @@ int (editField_createEdit)(int chars)
 }
 
 /* ---- the start-up ---- */
-#define GetSystemMetrics(index) IMPORT(0x4a9358, int, int)(index)
-#define GetVersion() IMPORT(0x4a90fc, u32, void)()
+#define GetSystemMetrics(index) IMPORT_FN(GetSystemMetrics, int, int)(index)
+#define GetVersion() IMPORT_FN(GetVersion, u32, void)()
 
 /* the files the game checks for (each failing: "Run AxisPlay.exe" and 0) */
 static int files_present(void)
@@ -384,7 +384,7 @@ int (app_init)(void *inst, int show)
 
 	struct { u32 style; u32 proc; int cls_extra, wnd_extra; void *inst, *icon, *cursor, *brush; const char *menu, *name; } wc;
 	wc.style = 0;
-	wc.proc = FN_ADDR(game_wndProc, 0x440070);   /* WndProc */
+	wc.proc = FN(game_wndProc);   /* WndProc */
 	wc.cls_extra = wc.wnd_extra = 0;
 	wc.inst = inst;
 	wc.icon = LoadIconA(inst, NULL);   /* LoadIconA */
@@ -401,11 +401,11 @@ int (app_init)(void *inst, int show)
 	if (extended) {
 		if (!app_registerWindowClassEx(&wc))
 			return 0;
-	} else if (!(u16)IMPORT(0x4a92b8, u32, void *)(&wc))   /* RegisterClassA */
+	} else if (!(u16)IMPORT_FN(RegisterClassA, u32, void *)(&wc))   /* RegisterClassA */
 		return 0;
 
 	memcpy((void *)OBJ(g_windowClass), &wc, sizeof wc);
-	g_mainWindow = IMPORT(0x4a9350, void *, u32, const char *, const char *, u32, int, int, int, int, void *, void *, void *, void *)
+	g_mainWindow = IMPORT_FN(CreateWindowExA, void *, u32, const char *, const char *, u32, int, int, int, int, void *, void *, void *, void *)
 		(0, (const char *)STR(0x4b0714, "AXIS"), (const char *)STR(0x4b2874, "AXIS"), 0x86000000, 0, -1, g_screenW, g_screenH + 1, NULL, NULL, inst, NULL);   /* CreateWindowExA: WS_POPUP | WS_CLIPSIBLINGS | WS_CLIPCHILDREN */
 	if (!g_mainWindow)
 		return 0;
@@ -437,7 +437,7 @@ long STDCALL (glWindow_wndProc)(void *wnd, u32 msg, u32 w, u32 l)
 {
 #define g_dc g_glWindowDc
 #undef PostQuitMessage
-#define PostQuitMessage(code) IMPORT(0x4a932c, void, int)(code)
+#define PostQuitMessage(code) IMPORT_FN(PostQuitMessage, void, int)(code)
 	u32 rect[4], paint[0x10];
 	switch (msg) {
 	case 1:   /* WM_CREATE */
@@ -447,7 +447,7 @@ long STDCALL (glWindow_wndProc)(void *wnd, u32 msg, u32 w, u32 l)
 			PostQuitMessage(0);
 		g_glWindowContext = wglCreateContext(g_dc);   /* wglCreateContext */
 		wglMakeCurrent(g_dc, g_glWindowContext);   /* wglMakeCurrent */
-		IMPORT(0x4a9310, int, void *, u32 *)(wnd, rect);   /* GetClientRect */
+		IMPORT_FN(GetClientRect, int, void *, u32 *)(wnd, rect);   /* GetClientRect */
 		return 0;
 	case 0xf:   /* WM_PAINT */
 		BeginPaint(wnd, paint);   /* BeginPaint */
@@ -477,7 +477,7 @@ long STDCALL (glWindow_wndProc)(void *wnd, u32 msg, u32 w, u32 l)
 #undef PostQuitMessage
 }
 
-#define CallWindowProcA(proc, wnd, msg, w, l) IMPORT(0x4a930c, long, u32, u32, u32, u32, u32)(proc, wnd, msg, w, l)
+#define CallWindowProcA(proc, wnd, msg, w, l) IMPORT_FN(CallWindowProcA, long, u32, u32, u32, u32, u32)(proc, wnd, msg, w, l)
 
 /* the text field's line closed by a key: its text kept (Enter) or dropped, the edit destroyed, the main window focused again
    and the line closed (menu_closeInputLine, sent or not) */
@@ -544,7 +544,7 @@ long STDCALL (editField_editProc)(void *wnd, u32 msg, u32 w, u32 l)
    SDK's) */
 u32 STDCALL (game_WinMain)(void *inst, void *prev, const char *cmd, int show)
 {
-#define FindWindowA(cls, name) IMPORT(0x4a92cc, void *, const char *, const char *)(cls, name)
+#define FindWindowA(cls, name) IMPORT_FN(FindWindowA, void *, const char *, const char *)(cls, name)
 	app_parseCommandLine(cmd);
 	void *launcher = FindWindowA((const char *)STR(0x4b2834, "#32770"), (const char *)STR(0x4b2854, "\364\270\315\366\361\375\340\362\312\245\341\334\320\357"));
 	if (launcher) {
@@ -642,13 +642,13 @@ long STDCALL (game_wndProc)(void *wnd, u32 msg, u32 w, u32 l)
 {
 #define g_exitMode g_exitCode
 #undef PostQuitMessage
-#define PostQuitMessage(code) IMPORT(0x4a932c, void, int)(code)
+#define PostQuitMessage(code) IMPORT_FN(PostQuitMessage, void, int)(code)
 #undef GetClientRect
-#define GetClientRect(wnd, rect) IMPORT(0x4a9310, int, void *, int *)(wnd, rect)
-#define ExitProcess(code) IMPORT(0x4a90f8, void, u32)(code)
+#define GetClientRect(wnd, rect) IMPORT_FN(GetClientRect, int, void *, int *)(wnd, rect)
+#define ExitProcess(code) IMPORT_FN(ExitProcess, void, u32)(code)
 #undef ShellExecuteA
 #define ShellExecuteA(wnd, verb, file, args, dir, show) \
-	IMPORT(0x4a92b0, void *, void *, const char *, const char *, const char *, const char *, int)(wnd, verb, file, args, dir, show)
+	IMPORT_FN(ShellExecuteA, void *, void *, const char *, const char *, const char *, const char *, int)(wnd, verb, file, args, dir, show)
 #define GAME_HEIGHT(h) ((h) - 1 == g_screenH ? (h) - 1 : (h))   /* widefix.py: the client's extra row taken back */
 	u16 now[8];
 	int rect[4];

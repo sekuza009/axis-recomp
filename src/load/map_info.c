@@ -284,7 +284,7 @@ static const u32 k_schemeVal[10][2] = {
 void THISCALL (map_loadActorInfoFrom)(u8 *scene, const char *name)
 {
 	Stage *st = (Stage *)scene;
-#define setPartColor(p, part, s) GAME_THISFN(playerRecord_setPartColour, 0x474b50, void, void *, int, int, u32, u32, u32, u32, u32, u32)(scene, p, part, \
+#define setPartColor(p, part, s) CALL_THISFN(playerRecord_setPartColour, void, void *, int, int, u32, u32, u32, u32, u32, u32)(scene, p, part, \
 	k_schemeHue[s][0], k_schemeSat[s][0], k_schemeVal[s][0], k_schemeHue[s][1], k_schemeSat[s][1], k_schemeVal[s][1])
 	static const int fixed[5] = { 3, 5, 0x24, 0x19, 0x16 };
 	char path[0x100];

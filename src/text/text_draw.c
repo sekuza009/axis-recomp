@@ -114,7 +114,7 @@ void (text_drawCentred5)(int x0, int y, int x1, const char *text)
 }
 
 /* the printable (non-space) characters of a line (0x402590): with the visible length, the centring correction, in units of 3 */
-#define text_printableLength(s) GAME_FN(text_printableLength, 0x402590, int, const char *)(s)
+#define text_printableLength(s) CALL_FN(text_printableLength, int, const char *)(s)
 
 /* text_drawCentredLines16 / text_drawCentredLines32: text centred between x0 and x1, broken into lines at each "|" ("||" is a plain
    "|"; in a match no line breaks), one line under the other */

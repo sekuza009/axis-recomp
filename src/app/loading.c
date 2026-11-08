@@ -392,7 +392,7 @@ u32 THISCALL (game_processLoadingMode)(u8 *g)
 			fread_scrambled((void *)ADDR(g_timeLimit), 4, 1, GS->replayFile);
 			game_setGameTypeFlags((Stage *)STAGE(g), g_chosenGameMode);
 		}
-		(*(u32 *)&g_logHook) = FN_ADDR(loading_drawScreen, 0x469730);
+		(*(u32 *)&g_logHook) = FN(loading_drawScreen);
 		log_message((int)STAGE(g), -1, 0, (const char *)STR(0x4c521c, ".start loading process"));
 		scene_reset(STAGE(g));
 		mode = GS->sessionMode;
