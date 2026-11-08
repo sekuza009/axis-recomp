@@ -1336,10 +1336,10 @@ void (profile_scanSaves)(void)
 			DeleteFileA(files[i]);   /* DeleteFileA */
 			continue;
 		}
-		u8 *profile = g_profiles + valid * 0x48;
-		strcpy((char *)profile + 4, name);
-		*(u32 *)(profile + 0x44) = *(const u32 *)(header + 0x100);   /* the pilot */
-		*(int *)profile = valid++;
+		ProfileRecord *profile = (ProfileRecord *)g_profiles + valid;
+		strcpy(profile->name, name);
+		profile->pilot = *(const i32 *)(header + 0x100);   /* (the file's pilot) */
+		profile->number = valid++;
 	}
 	crt_chdir((const char *)STR(0x4b2a80, ".."));
 	profile_readHeader();

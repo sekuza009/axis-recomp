@@ -144,14 +144,14 @@ void *(glWindow_init)(const char *title, int width, int height, int colourBits, 
 
 /* a DEVMODEA asking for width x height (and bits). (The original fills only these fields and leaves the
    rest as the stack had it; here it is zeroed.) */
-static void display_mode(u8 *mode, int width, int height, int bits, u32 fields)
+static void display_mode(DevModeA *mode, int width, int height, int bits, u32 fields)
 {
-	memset(mode, 0, 0x94);
-	*(u16 *)(mode + 0x24) = 0x94;                         /* dmSize */
-	*(u32 *)(mode + 0x28) = fields;                       /* dmFields (0x1c0000: DM_BITSPERPEL | DM_PELSWIDTH | DM_PELSHEIGHT) */
-	*(u32 *)(mode + 0x68) = bits;                         /* dmBitsPerPel */
-	*(u32 *)(mode + 0x6c) = width;                        /* dmPelsWidth */
-	*(u32 *)(mode + 0x70) = height;                       /* dmPelsHeight */
+	memset(mode, 0, sizeof *mode);
+	mode->dmSize = sizeof *mode;
+	mode->dmFields = fields;   /* (0x1c0000: DM_BITSPERPEL | DM_PELSWIDTH | DM_PELSHEIGHT) */
+	mode->dmBitsPerPel = bits;
+	mode->dmPelsWidth = width;
+	mode->dmPelsHeight = height;
 }
 
 /* 0x468050: the desktop's mode put back after a switch (failing that, a message and 0); 1 */
@@ -159,9 +159,9 @@ int (glWindow_restoreDisplayMode)(void)
 {
 	if (g_modeChanged != 1)
 		return 1;
-	u8 mode[0x94];
-	display_mode(mode, g_desktopW, g_desktopH, g_desktopBits, 0x1c0000);
-	if (ChangeDisplaySettingsA(mode, 0)) {
+	DevModeA mode;
+	display_mode(&mode, g_desktopW, g_desktopH, g_desktopBits, 0x1c0000);
+	if (ChangeDisplaySettingsA(&mode, 0)) {
 		sys_errorMessageNoName((const char *)STR(0x4c4ed4, "glWindow ChangeDisplaySettings() fail..."));   /* sys_errorMessageNoName */
 		return 0;
 	}
@@ -186,9 +186,9 @@ int (glWindow_setDisplayModeBy)(int width, int height, int bits)
 	if (GetDeviceCaps(dc, 8) == width && GetDeviceCaps(g_glDc, 10) == height &&
 	    (!bits || GetDeviceCaps(g_glDc, 12) == bits))
 		return 1;
-	u8 mode[0x94];
-	display_mode(mode, width, height, bits, bits ? 0x1c0000 : 0x180000);
-	if (ChangeDisplaySettingsA(mode, 0)) {
+	DevModeA mode;
+	display_mode(&mode, width, height, bits, bits ? 0x1c0000 : 0x180000);
+	if (ChangeDisplaySettingsA(&mode, 0)) {
 		sys_errorMessageNoName((const char *)STR(0x4c4e94, "glWindow ChangeDisplaySettings() fail..."));
 		return 0;
 	}
@@ -213,10 +213,10 @@ int (app_setDisplayMode)(int width, int height, u32 flags, int bits)
 	g_otherModeWidth = width;
 	g_otherModeHeight = height;
 	g_displayModeChanged = 1;
-	u8 mode[0x94];
-	display_mode(mode, width, height, 32, 0x1c0000);
-	*(u16 *)(mode + 0x3c) = 0x800;   /* dmColor (as the original leaves it) */
-	return ChangeDisplaySettingsA(mode, flags);
+	DevModeA mode;
+	display_mode(&mode, width, height, 32, 0x1c0000);
+	mode.dmColor = 0x800;   /* (as the original leaves it) */
+	return ChangeDisplaySettingsA(&mode, flags);
 }
 
 /* 0x4314e0: the game shut down: the object at g_scene deleted (it stays set), the screen restored (app_setDisplayMode with

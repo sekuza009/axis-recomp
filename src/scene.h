@@ -917,6 +917,21 @@ typedef struct SelectionPacket {
 	float colours[0x24];   /* +0x29: the colour choices (g_roomColours) */
 } SelectionPacket;
 
+/* Windows' DEVMODEA as the game fills it for ChangeDisplaySettingsA (win32.c display_mode): only these fields */
+typedef struct DevModeA {
+	u8 _pad0000000[0x24];
+	u16 dmSize;   /* +0x24: 0x94, the record's size */
+	u8 _pad0000026[0x2];
+	u32 dmFields;   /* +0x28: the fields given: 0x1c0000 (DM_BITSPERPEL | DM_PELSWIDTH | DM_PELSHEIGHT) */
+	u8 _pad000002c[0x10];
+	short dmColor;   /* +0x3c: 0x800 in app_setDisplayMode's request (as the original leaves it) */
+	u8 _pad000003e[0x2a];
+	u32 dmBitsPerPel;   /* +0x68: the colour depth (32) */
+	u32 dmPelsWidth;   /* +0x6c: the width in pixels */
+	u32 dmPelsHeight;   /* +0x70: the height in pixels */
+	u8 _pad0000074[0x20];
+} DevModeA;
+
 /* the player's Ladder record sent to the game server (g_netPlayerRecordPacket, packet 0x11: lobby_states.c record_send) */
 typedef struct PlayerRecordPacket {
 	char name[0x1e];   /* +0x0: the Ladder name (written only when asked) */
@@ -2747,6 +2762,13 @@ _Static_assert(offsetof(SelectionPacket, ladderId) == 0x0 && sizeof(((SelectionP
 _Static_assert(offsetof(SelectionPacket, mech) == 0x1e && sizeof(((SelectionPacket *)0)->mech) == 0xb, "scene.fields: SelectionPacket.mech");
 _Static_assert(offsetof(SelectionPacket, colours) == 0x29 && sizeof(((SelectionPacket *)0)->colours) == 0x90, "scene.fields: SelectionPacket.colours");
 _Static_assert(sizeof(SelectionPacket) == 0xb9, "scene.fields: size of SelectionPacket");
+_Static_assert(offsetof(DevModeA, dmSize) == 0x24 && sizeof(((DevModeA *)0)->dmSize) == 0x2, "scene.fields: DevModeA.dmSize");
+_Static_assert(offsetof(DevModeA, dmFields) == 0x28 && sizeof(((DevModeA *)0)->dmFields) == 0x4, "scene.fields: DevModeA.dmFields");
+_Static_assert(offsetof(DevModeA, dmColor) == 0x3c && sizeof(((DevModeA *)0)->dmColor) == 0x2, "scene.fields: DevModeA.dmColor");
+_Static_assert(offsetof(DevModeA, dmBitsPerPel) == 0x68 && sizeof(((DevModeA *)0)->dmBitsPerPel) == 0x4, "scene.fields: DevModeA.dmBitsPerPel");
+_Static_assert(offsetof(DevModeA, dmPelsWidth) == 0x6c && sizeof(((DevModeA *)0)->dmPelsWidth) == 0x4, "scene.fields: DevModeA.dmPelsWidth");
+_Static_assert(offsetof(DevModeA, dmPelsHeight) == 0x70 && sizeof(((DevModeA *)0)->dmPelsHeight) == 0x4, "scene.fields: DevModeA.dmPelsHeight");
+_Static_assert(sizeof(DevModeA) == 0x94, "scene.fields: size of DevModeA");
 _Static_assert(offsetof(PlayerRecordPacket, name) == 0x0 && sizeof(((PlayerRecordPacket *)0)->name) == 0x1e, "scene.fields: PlayerRecordPacket.name");
 _Static_assert(offsetof(PlayerRecordPacket, games) == 0x1e && sizeof(((PlayerRecordPacket *)0)->games) == 0x4, "scene.fields: PlayerRecordPacket.games");
 _Static_assert(offsetof(PlayerRecordPacket, kills) == 0x22 && sizeof(((PlayerRecordPacket *)0)->kills) == 0x4, "scene.fields: PlayerRecordPacket.kills");

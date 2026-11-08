@@ -445,11 +445,11 @@ u32 (profile_newNamePage)(void)
 u32 (profile_deleteChosen)(void)
 {
 	int chosen = g_profileChosen;
-	u8 *records = g_profiles;   /* 0x48 bytes each: +0 the number (ProfileRecord.number), +4 the name, +0x44 the pilot */
+	ProfileRecord *records = (ProfileRecord *)g_profiles;
 	if (crt_chdir((const char *)STR(0x4b2adc, "save")) == 0) {   /* chdir("save") */
 		char path[0x80];
 		memset(path, 0, sizeof path);
-		strcpy(path, (const char *)(records + chosen * 0x48 + 4));
+		strcpy(path, records[chosen].name);
 		strcat(path, (const char *)STR(0x4b2afc, ".axs"));
 		if (!((int)DeleteFileA(path)))   /* DeleteFileA */
 			DeleteFileA(path);
@@ -457,11 +457,11 @@ u32 (profile_deleteChosen)(void)
 	}
 	int count = g_profileCount - 1, last = chosen;
 	for (; last < count; last++)
-		memcpy(records + last * 0x48, records + (last + 1) * 0x48, 0x48);
-	u8 *freed = records + last * 0x48;
-	memset(freed + 4, 0, 0x40);
-	*(int *)freed = 0;
-	*(int *)(freed + 0x44) = -1;
+		memcpy(&records[last], &records[last + 1], sizeof *records);
+	ProfileRecord *freed = &records[last];
+	memset(freed->name, 0, sizeof freed->name);
+	freed->number = 0;
+	freed->pilot = -1;
 	g_profileCount = count;
 	if (g_profileChosen >= count) {
 		if (count <= 0) {
