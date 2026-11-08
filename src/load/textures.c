@@ -29,8 +29,8 @@ static int name_search(u32 count, u32 table, const char *name)
 
 /* 0x466ce0: an entry's index in Shape.dat's table by name (binary search, -1 none); skelDat_findByName
    (0x46b0c0): the same in the skeleton archive */
-int (shapeDat_findByName)(const char *name) { return name_search(OBJ(g_shapeDat), (OBJ(g_shapeDat) + 0x4), name); }
-int (skelDat_findByName)(const char *name) { return name_search(OBJ(g_skelDat), (OBJ(g_skelDat) + 0x4), name); }
+int (shapeDat_findByName)(const char *name) { return name_search(OBJ(g_shapeDat), (u32)&g_shapeDat[1], name); }
+int (skelDat_findByName)(const char *name) { return name_search(OBJ(g_skelDat), (u32)&g_skelDat[1], name); }
 
 /* 0x46cad0: src without its extension (from the last '.') copied to dst */
 void (path_stripExtension)(const char *src, char *dst)

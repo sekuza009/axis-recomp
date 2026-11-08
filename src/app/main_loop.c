@@ -257,12 +257,12 @@ static const u32 k_spectatePresetKeys[10][2] = { { ADDR(g_dikNumpad1), 1 }, { AD
 /* the follow keys, 1 .. 9, 0 (into followKey, one less than the player; the first six 10 more with left shift) */
 static const u32 k_followKeys[10] = { ADDR(g_dik1), ADDR(g_dik2), ADDR(g_dik3), ADDR(g_dik4), ADDR(g_dik5), ADDR(g_dik6), ADDR(g_dik7), ADDR(g_dik8), ADDR(g_dik9), ADDR(g_dik0) };
 /* the held controls: the binding's two keys and the flag they set */
-static const u32 k_heldKeys[10][2] = { { (OBJ(g_controls) + 0x30), offsetof(Scene, holdAltitude) }, { ADDR(g_keyStepLeft), offsetof(Scene, holdStepLeft) }, { ADDR(g_keyStepRight), offsetof(Scene, holdStepRight) },
-                                       { ADDR(g_keyForward), offsetof(Scene, holdForward) }, { ADDR(g_keyBackward), offsetof(Scene, holdBackward) }, { (OBJ(g_controls) + 0x40), offsetof(Scene, holdUp) },
-                                       { (OBJ(g_controls) + 0x48), offsetof(Scene, holdDown) }, { (OBJ(g_controls) + 0x98), offsetof(Scene, holdZoom) }, { (OBJ(g_controls) + 0xe0), offsetof(Scene, rankingKey) },
-                                       { (OBJ(g_controls) + 0x38), offsetof(Scene, holdBooster) } };
+static const u32 k_heldKeys[10][2] = { { (u32)&g_controls[12], offsetof(Scene, holdAltitude) }, { ADDR(g_keyStepLeft), offsetof(Scene, holdStepLeft) }, { ADDR(g_keyStepRight), offsetof(Scene, holdStepRight) },
+                                       { ADDR(g_keyForward), offsetof(Scene, holdForward) }, { ADDR(g_keyBackward), offsetof(Scene, holdBackward) }, { (u32)&g_controls[16], offsetof(Scene, holdUp) },
+                                       { (u32)&g_controls[18], offsetof(Scene, holdDown) }, { (u32)&g_controls[38], offsetof(Scene, holdZoom) }, { (u32)&g_controls[56], offsetof(Scene, rankingKey) },
+                                       { (u32)&g_controls[14], offsetof(Scene, holdBooster) } };
 /* the weapon slot keys: HAND WEAPON 1 .. 4, R / L SHOULDER (bindings 15 .. 18, 13, 14): the slot of the last held into weaponKey, else -1 */
-static const u32 k_weaponKeys[6] = { (OBJ(g_controls) + 0x78), (OBJ(g_controls) + 0x80), (OBJ(g_controls) + 0x88), (OBJ(g_controls) + 0x90), (OBJ(g_controls) + 0x68), (OBJ(g_controls) + 0x70) };
+static const u32 k_weaponKeys[6] = { (u32)&g_controls[30], (u32)&g_controls[32], (u32)&g_controls[34], (u32)&g_controls[36], (u32)&g_controls[26], (u32)&g_controls[28] };
 
 /* 0x49d290 (thiscall on the game object): the match's input for this frame (match_resetInputState first; nothing
    more before the match is drawn, matchDrawing). With no chat line or menu open: spectating (playing 0) and out
@@ -282,7 +282,7 @@ void THISCALL (match_combatInput)(u8 *s)
 	if (SC->chatMode == 0 && SC->escMenuOpen == 0) {
 		if (SC->playing == 0) {
 			if (SC->entryMenuShown == 0 || (SC->sessionMode == 0 && SC->players[SC->localPlayer].inPlay == 0)) {
-				if (pressed2((OBJ(g_controls) + 0x50), (OBJ(g_controls) + 0x54)))
+				if (pressed2((u32)&g_controls[20], (u32)&g_controls[21]))
 					SC->quitAsked = 1;
 			} else {
 				if (g_mouseClick) {
@@ -307,9 +307,9 @@ void THISCALL (match_combatInput)(u8 *s)
 				SC->followKey--;
 			}
 		} else {
-			if (held2((OBJ(g_controls) + 0x50), (OBJ(g_controls) + 0x54)))
+			if (held2((u32)&g_controls[20], (u32)&g_controls[21]))
 				SC->holdFire = 1;
-			if (pressed2((OBJ(g_controls) + 0x50), (OBJ(g_controls) + 0x54)))
+			if (pressed2((u32)&g_controls[20], (u32)&g_controls[21]))
 				SC->firePressed = 1;
 		}
 		for (int k = 0; k < 10; k++)
@@ -336,17 +336,17 @@ void THISCALL (match_combatInput)(u8 *s)
 		}
 		if (pressed2(ADDR(g_keyGameMenu), ADDR(g_keyGameMenu2)) && !(SC->keyGuard > 0))
 			SC->quitAsked = 1;
-		if (pressed2((OBJ(g_controls) + 0x58), (OBJ(g_controls) + 0x5c)))
+		if (pressed2((u32)&g_controls[22], (u32)&g_controls[23]))
 			SC->prevWeaponPressed = 1;
-		if (pressed2((OBJ(g_controls) + 0x60), (OBJ(g_controls) + 0x64)))
+		if (pressed2((u32)&g_controls[24], (u32)&g_controls[25]))
 			SC->nextWeaponPressed = 1;
-		if (pressed2((OBJ(g_controls) + 0xf0), (OBJ(g_controls) + 0xf4)))
+		if (pressed2((u32)&g_controls[60], (u32)&g_controls[61]))
 			SC->respawnCameraMode = SC->cameraMode == 1 ? 2 : SC->cameraMode == 2 ? 3 : 1;
-		if (pressed2(ADDR(g_keyChat), (OBJ(g_controls) + 0xac)) && !(SC->keyGuard > 0))
+		if (pressed2(ADDR(g_keyChat), (u32)&g_controls[43]) && !(SC->keyGuard > 0))
 			SC->talkPressed = 1;
-		else if (pressed2((OBJ(g_controls) + 0xb0), (OBJ(g_controls) + 0xb4)) && !(SC->keyGuard > 0))
+		else if (pressed2((u32)&g_controls[44], (u32)&g_controls[45]) && !(SC->keyGuard > 0))
 			SC->teamTalkPressed = 1;
-		if (pressed2((OBJ(g_controls) + 0xf8), (OBJ(g_controls) + 0xfc)))
+		if (pressed2((u32)&g_controls[62], (u32)&g_controls[63]))
 			SC->helpPressed = 1;
 		if (input_justPressed(g_dikF11)) {
 			if (SC->messagesHidden == 0) {
@@ -376,7 +376,7 @@ void THISCALL (match_combatInput)(u8 *s)
 			if (SC->mouseDy > *high || SC->mouseDx > *high)
 				SC->menuKeys[1] = 1;
 		}
-		if (pressed2((OBJ(g_controls) + 0x50), (OBJ(g_controls) + 0x54)))
+		if (pressed2((u32)&g_controls[20], (u32)&g_controls[21]))
 			SC->menuKeys[2] = 1;
 		(*(int *)&SC->mouseDy) = (*(int *)&SC->mouseDx) = 0;
 		if (input_justPressed(g_dikLeft) || input_justPressed(g_dikUp))
@@ -984,9 +984,9 @@ static int run_down(u8 *s, u32 offset)
 }
 
 /* the replay viewer's held controls: each binding's two keys and the hold flag they set */
-static const u32 k_replayHeld[7][3] = { { (OBJ(g_controls) + 0x30), (OBJ(g_controls) + 0x34), offsetof(Scene, holdAltitude) }, { ADDR(g_keyStepLeft), (OBJ(g_controls) + 0x14), offsetof(Scene, holdStepLeft) }, { ADDR(g_keyStepRight), (OBJ(g_controls) + 0x1c), offsetof(Scene, holdStepRight) },
-                                        { ADDR(g_keyForward), (OBJ(g_controls) + 0x4), offsetof(Scene, holdForward) }, { ADDR(g_keyBackward), (OBJ(g_controls) + 0xc), offsetof(Scene, holdBackward) }, { (OBJ(g_controls) + 0x40), (OBJ(g_controls) + 0x44), offsetof(Scene, holdUp) },
-                                        { (OBJ(g_controls) + 0x48), (OBJ(g_controls) + 0x4c), offsetof(Scene, holdDown) } };
+static const u32 k_replayHeld[7][3] = { { (u32)&g_controls[12], (u32)&g_controls[13], offsetof(Scene, holdAltitude) }, { ADDR(g_keyStepLeft), (u32)&g_controls[5], offsetof(Scene, holdStepLeft) }, { ADDR(g_keyStepRight), (u32)&g_controls[7], offsetof(Scene, holdStepRight) },
+                                        { ADDR(g_keyForward), (u32)&g_controls[1], offsetof(Scene, holdForward) }, { ADDR(g_keyBackward), (u32)&g_controls[3], offsetof(Scene, holdBackward) }, { (u32)&g_controls[16], (u32)&g_controls[17], offsetof(Scene, holdUp) },
+                                        { (u32)&g_controls[18], (u32)&g_controls[19], offsetof(Scene, holdDown) } };
 /* the camera preset keys (presets 1 .. 9, 0) */
 static const u32 k_presetKeys[10] = { ADDR(g_dikNumpad1), ADDR(g_dikNumpad2), ADDR(g_dikNumpad3), ADDR(g_dikNumpad4), ADDR(g_dikNumpad5), ADDR(g_dikNumpad6), ADDR(g_dikNumpad7), ADDR(g_dikNumpad8), ADDR(g_dikNumpad9), ADDR(g_dikNumpad0) };
 /* the eight lines of a map light's marker star (markLights): each line's far end's signs (+-100) */
@@ -1061,7 +1061,7 @@ u32 THISCALL (replay_frame)(u8 *s)
 	follow--;
 	SC->replaySlow = input_isDown(g_dikSpace) ? 1 : 0;
 	SC->replaySkip = input_isDown(g_dikEnter) ? 1 : 0;
-	if (held2((OBJ(g_controls) + 0xe0), (OBJ(g_controls) + 0xe4)))
+	if (held2((u32)&g_controls[56], (u32)&g_controls[57]))
 		SC->rankingKey = 1;
 	if (input_justPressed(g_dikF11)) {
 		const char *mode;

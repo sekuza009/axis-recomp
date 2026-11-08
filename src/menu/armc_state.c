@@ -40,9 +40,9 @@ void (armc_spreadAllColourSlot)(void)
 void (armc_syncPartCursors)(void)
 {
 	static const struct { u32 cursor, count, list, chosen; } kinds[] = {
-		{ ADDR(g_headCursor), ADDR(g_headCount), OBJ(g_headList), OBJ(g_armcParts) }, { ADDR(g_chestCursor), ADDR(g_chestCount), OBJ(g_chestList), (OBJ(g_armcParts) + 0x4) },
-		{ ADDR(g_armCursor), ADDR(g_armCount), OBJ(g_armList), (OBJ(g_armcParts) + 0x8) }, { ADDR(g_legCursor), ADDR(g_legCount), OBJ(g_legList), (OBJ(g_armcParts) + 0xc) },
-		{ ADDR(g_boosterCursor), ADDR(g_boosterCount), OBJ(g_boosterList), (OBJ(g_armcParts) + 0x10) } };   /* head, chest, arm, leg, booster */
+		{ ADDR(g_headCursor), ADDR(g_headCount), OBJ(g_headList), OBJ(g_armcParts) }, { ADDR(g_chestCursor), ADDR(g_chestCount), OBJ(g_chestList), (u32)&g_armcParts[1] },
+		{ ADDR(g_armCursor), ADDR(g_armCount), OBJ(g_armList), (u32)&g_armcParts[2] }, { ADDR(g_legCursor), ADDR(g_legCount), OBJ(g_legList), (u32)&g_armcParts[3] },
+		{ ADDR(g_boosterCursor), ADDR(g_boosterCount), OBJ(g_boosterList), (u32)&g_armcParts[4] } };   /* head, chest, arm, leg, booster */
 	for (int k = 0; k < 5; k++) {
 		int *cursor = (int *)kinds[k].cursor;
 		const int *list = (const int *)kinds[k].list;

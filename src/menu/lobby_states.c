@@ -36,7 +36,7 @@ void (lobby_enterPlayerScreen)(void)
 /* 0x404b30: sub-screen 1, the arena list: its 24 state words cleared, 999 (no selection), the refresh period 30 (1/60 s: half a second) */
 void (lobby_enterArenaList)(void)
 {
-	static const u32 cleared[] = { (OBJ(g_camPoints) + 0x14), ADDR(g_joinThroughServer), ADDR(g_lobbyRefreshing), ADDR(g_lanSearchStarted), ADDR(g_serverSearching), ADDR(g_lobbyJoinStarted), ADDR(g_lanJoinRequest), ADDR(g_lanSearch),
+	static const u32 cleared[] = { (u32)&g_camPoints[5], ADDR(g_joinThroughServer), ADDR(g_lobbyRefreshing), ADDR(g_lanSearchStarted), ADDR(g_serverSearching), ADDR(g_lobbyJoinStarted), ADDR(g_lanJoinRequest), ADDR(g_lanSearch),
 	                               ADDR(g_lobbySearching), ADDR(g_arenaLanListBuilt), ADDR(g_arenaServerList), ADDR(g_gameCount), ADDR(g_listBlinkClock), ADDR(g_pickedGame), ADDR(g_gameListTop), ADDR(g_gameListRow),
 	                               ADDR(g_arenaListClickArmed), ADDR(g_arenaListClickTimer), ADDR(g_lobbyPanelsSliding), ADDR(g_joinConnecting), ADDR(g_lobbyConnectionOpen), ADDR(g_arenaUpdateNotice), ADDR(g_arenaListRefreshTimer), ADDR(g_typingArenaAddress) };
 	int z = (*(int *)&g_menuCameraLookZ);
@@ -218,7 +218,7 @@ void (room_copyAccountRecord)(void)
 	g_roomTimeLimit = g_roomRecTimeLimit;
 	memcpy((void *)OBJ(g_roomMechKept), (void *)OBJ(g_roomMech), 11);
 	memcpy((void *)OBJ(g_roomColoursKept), (void *)OBJ(g_roomColours), 0x90);
-	static const u32 copy[6][2] = { { ADDR(g_pilotLevelKept), ADDR(g_pilotLevel) }, { ADDR(g_pilotExpKept), ADDR(g_pilotExp) }, { (OBJ(g_pilotStatsKept) + 0x1c), ADDR(g_pilotKillRate) },
+	static const u32 copy[6][2] = { { ADDR(g_pilotLevelKept), ADDR(g_pilotLevel) }, { ADDR(g_pilotExpKept), ADDR(g_pilotExp) }, { (u32)&g_pilotStatsKept[7], ADDR(g_pilotKillRate) },
 	                                { ADDR(g_pilotKillsKept), ADDR(g_pilotKills) }, { ADDR(g_pilotDeathsKept), ADDR(g_pilotDeaths) }, { ADDR(g_pilotGamesKept), ADDR(g_pilotGames) } };
 	for (int k = 0; k < 6; k++)
 		GAME_VAR(int, copy[k][0]) = GAME_VAR(int, copy[k][1]);
@@ -335,7 +335,7 @@ u32 (newId_register)(void)
 	g_pilotLevel = 1;
 	memset((void *)OBJ(g_ladderName), 0, 7 * 4 + 2);
 	static const u32 zero[] = { ADDR(g_pilotExp), ADDR(g_pilotKills), ADDR(g_pilotDeaths), ADDR(g_pilotGames), ADDR(g_pilotKillRate), ADDR(g_pilotExpKept), ADDR(g_pilotKillsKept), ADDR(g_pilotDeathsKept),
-	                            ADDR(g_pilotGamesKept), (OBJ(g_pilotStatsKept) + 0x1c) };
+	                            ADDR(g_pilotGamesKept), (u32)&g_pilotStatsKept[7] };
 	for (unsigned k = 0; k < sizeof zero / sizeof zero[0]; k++)
 		GAME_VAR(int, zero[k]) = 0;
 	strcpy(g_ladderName, g_ladderId);

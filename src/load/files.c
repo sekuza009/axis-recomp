@@ -112,12 +112,12 @@ static void *dat_entry(int index, const char *name, u32 table, u32 file, u32 log
 /* 0x466d60: in Shape.dat */
 void *(shapeDat_getItemFileBy)(const char *name)
 {
-	return dat_entry(shapeDat_findByName(name), name, (OBJ(g_shapeDat) + 0x4), (OBJ(g_shapeDat) + 0x8), OBJ(g_logShapeManager));
+	return dat_entry(shapeDat_findByName(name), name, (u32)&g_shapeDat[1], (u32)&g_shapeDat[2], OBJ(g_logShapeManager));
 }
 /* 0x46b140: in the skeleton archive */
 void *(skelDat_getItemFileBy)(const char *name)
 {
-	return dat_entry(skelDat_findByName(name), name, (OBJ(g_skelDat) + 0x4), (OBJ(g_skelDat) + 0x8), OBJ(g_logSkeletonManager));
+	return dat_entry(skelDat_findByName(name), name, (u32)&g_skelDat[1], (u32)&g_skelDat[2], OBJ(g_logSkeletonManager));
 }
 
 /* 0x4617f0: the chat macros (chatMacros: 100 of 0x39 bytes) read from Chat.scp; without the file, all 100 emptied

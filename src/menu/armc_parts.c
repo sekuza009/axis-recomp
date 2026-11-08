@@ -100,11 +100,11 @@ u8 *(armc_readMechStats)(void)
 	mulf(ADDR(g_mechBoosterRecharge), &A->rechargeTime, k_1000f);
 	mulf(ADDR(g_mechBoosterRestTime), &A->restTime, k_1000f);
 	mulf(ADDR(g_mechNormalSpeed), &A->speed, k_0_036f);
-	mulf((OBJ(g_mechSpeeds) + 0x4), (const float *)ADDR(g_mechNormalSpeed), &A->runTop[0]);
+	mulf((u32)&g_mechSpeeds[1], (const float *)ADDR(g_mechNormalSpeed), &A->runTop[0]);
 	g_mechMaxSpeedBwd = (float)-fmul_m(fld_m((const float *)ADDR(g_mechNormalSpeed)), &A->runTop[1]);
-	mulf((OBJ(g_mechSpeeds) + 0xc), (const float *)ADDR(g_mechNormalSpeed), &A->runTop[2]);
+	mulf((u32)&g_mechSpeeds[3], (const float *)ADDR(g_mechNormalSpeed), &A->runTop[2]);
 	copyf(ADDR(g_loadLimit), &A->loadMax);
-	copyf(OBJ(g_mechSpeeds) + 0x10, &A->load);
+	copyf((u32)&g_mechSpeeds[4], &A->load);
 	return g;
 }
 
@@ -158,11 +158,11 @@ int (armc_readPartPanels)(void)
 	const LegType *leg = &st->legTypes[record->parts[3]];   /* leg */
 	panel_name(OBJ(g_legPanelName), leg->name);
 	copyf(OBJ(g_legsStats), &leg->agility);
-	copyf(OBJ(g_legsStats) + 4, &leg->inertia);
+	copyf((u32)&g_legsStats[1], &leg->inertia);
 	mulf(ADDR(g_legsSpeedCorrection), &leg->speedCorrection, (const float *)ADDR(k_100f));
-	mulf(OBJ(g_legsStats) + 0xc, &leg->forwardBoostCorrection, (const float *)ADDR(k_100f));
-	mulf(OBJ(g_legsStats) + 0x10, &leg->sideBoostCorrection, (const float *)ADDR(k_100f));
-	mulf(OBJ(g_legsStats) + 0x14, &leg->backBoostCorrection, (const float *)ADDR(k_100f));
+	mulf((u32)&g_legsStats[3], &leg->forwardBoostCorrection, (const float *)ADDR(k_100f));
+	mulf((u32)&g_legsStats[4], &leg->sideBoostCorrection, (const float *)ADDR(k_100f));
+	mulf((u32)&g_legsStats[5], &leg->backBoostCorrection, (const float *)ADDR(k_100f));
 	copyf(ADDR(g_legsWeight), &leg->weight);
 	int boosterIndex = record->parts[4];
 	const BoosterType *booster = &st->boosterTypes[boosterIndex];

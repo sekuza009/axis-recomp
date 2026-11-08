@@ -47,11 +47,11 @@ static void menu_camera(const MenuCam *m)
 		X k = g_frameTime, c = RATE;
 		g_menuEyeX = (float)(((X)F(i + OBJ(g_camPoints)) - g_menuEyeX) * k * c + g_menuEyeX);
 		if (!m->arena)
-			g_menuEyeY = (float)(((X)F(i + (OBJ(g_camPoints) + 0x4)) - g_menuEyeY) * k * c + g_menuEyeY);
-		g_menuEyeZ = (float)(((X)F(i + (OBJ(g_camPoints) + 0x8)) - g_menuEyeZ) * k * c + g_menuEyeZ);
+			g_menuEyeY = (float)(((X)F(i + (u32)&g_camPoints[1]) - g_menuEyeY) * k * c + g_menuEyeY);
+		g_menuEyeZ = (float)(((X)F(i + (u32)&g_camPoints[2]) - g_menuEyeZ) * k * c + g_menuEyeZ);
 		X look = ((X)F(i + OBJ(g_camAims)) - g_menuCameraLook) * k * c + g_menuCameraLook;
 		g_menuCameraLook = (float)look;
-		g_menuCameraLookY = (float)(((X)F(i + (OBJ(g_camAims) + 0x4)) - g_menuCameraLookY) * k * c + g_menuCameraLookY);
+		g_menuCameraLookY = (float)(((X)F(i + (u32)&g_camAims[1]) - g_menuCameraLookY) * k * c + g_menuCameraLookY);
 		if (!(look >= k_0f))
 			look = -look;
 		if (!(look > k_69_9))
@@ -60,23 +60,23 @@ static void menu_camera(const MenuCam *m)
 		if (!m->arena) {
 			I(m->mode) = 2;
 			(*(int *)&g_menuEyeX) = I(i + OBJ(g_camPoints));
-			(*(int *)&g_menuEyeY) = I(i + (OBJ(g_camPoints) + 0x4));
-			(*(int *)&g_menuEyeZ) = I(i + (OBJ(g_camPoints) + 0x8));
+			(*(int *)&g_menuEyeY) = I(i + (u32)&g_camPoints[1]);
+			(*(int *)&g_menuEyeZ) = I(i + (u32)&g_camPoints[2]);
 			(*(int *)&g_menuCameraLook) = I(i + OBJ(g_camAims));
-			(*(int *)&g_menuCameraLookY) = I(i + (OBJ(g_camAims) + 0x4));
-			(*(int *)&g_menuCameraLookZ) = I(i + (OBJ(g_camAims) + 0x8));
+			(*(int *)&g_menuCameraLookY) = I(i + (u32)&g_camAims[1]);
+			(*(int *)&g_menuCameraLookZ) = I(i + (u32)&g_camAims[2]);
 			g_frameOpening = 1;
 		} else {
 			g_frameOpening = 1;
-			(*(int *)&g_menuEyeY) = I(i + (OBJ(g_camPoints) + 0x4));
-			(*(int *)&g_menuEyeZ) = I(i + (OBJ(g_camPoints) + 0x8));
+			(*(int *)&g_menuEyeY) = I(i + (u32)&g_camPoints[1]);
+			(*(int *)&g_menuEyeZ) = I(i + (u32)&g_camPoints[2]);
 			volatile X x = F(i + OBJ(g_camPoints));   /* fld / fst / fstp */
 			(*(int *)&g_arenaKeptCamY) = (*(int *)&g_menuEyeY);
 			g_menuEyeX = (float)x;
 			(*(int *)&g_menuCameraLook) = I(i + OBJ(g_camAims));
-			(*(int *)&g_menuCameraLookY) = I(i + (OBJ(g_camAims) + 0x4));
+			(*(int *)&g_menuCameraLookY) = I(i + (u32)&g_camAims[1]);
 			g_arenaKeptCamX = (float)x;
-			(*(int *)&g_menuCameraLookZ) = I(i + (OBJ(g_camAims) + 0x8));
+			(*(int *)&g_menuCameraLookZ) = I(i + (u32)&g_camAims[2]);
 			(*(int *)&g_arenaKeptCamZ) = (*(int *)&g_menuEyeZ);
 			I(m->mode) = 2;
 			(*(int *)&g_arenaKeptLookX) = (*(int *)&g_menuCameraLook);
@@ -413,10 +413,10 @@ void (setup_camera)(void)
 	if (mode == 1) {
 		int i = g_setupTab * 16;
 		g_menuEyeX = (float)(((X)F(i + OBJ(g_camPoints)) - g_menuEyeX) * k * c + g_menuEyeX);
-		g_menuEyeZ = (float)(((X)F(i + (OBJ(g_camPoints) + 0x8)) - g_menuEyeZ) * k * c + g_menuEyeZ);
+		g_menuEyeZ = (float)(((X)F(i + (u32)&g_camPoints[2]) - g_menuEyeZ) * k * c + g_menuEyeZ);
 		X look = ((X)F(i + OBJ(g_camAims)) - g_menuCameraLook) * k * c + g_menuCameraLook;
 		g_menuCameraLook = (float)look;
-		g_menuCameraLookY = (float)(((X)F(i + (OBJ(g_camAims) + 0x4)) - g_menuCameraLookY) * k * c + g_menuCameraLookY);
+		g_menuCameraLookY = (float)(((X)F(i + (u32)&g_camAims[1]) - g_menuCameraLookY) * k * c + g_menuCameraLookY);
 		if (!(look >= k_0f))
 			look = -look;
 		if (!(look > k_69_9))

@@ -189,7 +189,7 @@ void (input_updateMouse)(void)
 	}
 #endif
 
-	const u8 *buttons = (const u8 *)(OBJ(g_mouseState) + 0xc);
+	const u8 *buttons = (const u8 *)((u32)&g_mouseState[3]);
 	for (int i = 0; i < 3; i++) {
 		int held = buttons[i] & 0x80;
 		int *pulse = (int *)(OBJ(g_mouseClicked) + i * 4), *was = (int *)(OBJ(g_mouseWasDown) + i * 4);
@@ -289,7 +289,7 @@ int (input_justPressed)(int key)
 #else
 		if (*g_wide->pressedFix)
 			return g_wide->mousePressed(key);
-		int *flag = (int *)((OBJ(g_keySeen) + 0x3e8) + (key - 0xfa) * 4);
+		int *flag = (int *)(((u32)&g_keySeen[250]) + (key - 0xfa) * 4);
 		if (*flag) {
 			*flag = 0;
 			return 0;
@@ -299,7 +299,7 @@ int (input_justPressed)(int key)
 #endif
 	}
 	if (key == 0xfd) {
-		int *latch = (int *)(OBJ(g_keySeen) + 0x3f4);
+		int *latch = (int *)((u32)&g_keySeen[253]);
 		if (g_mouseWheel >= 0) {
 			*latch = 0;
 			return 0;

@@ -183,10 +183,10 @@ void (setup_selectControlTab)(void)
 }
 
 /* ---- the control bindings: 32 pairs (primary, secondary), "none" being the value at g_dikNone ---- */
-static const u32 bindings[32] = { OBJ(g_controlsEdit), (OBJ(g_controlsEdit) + 0x8), (OBJ(g_controlsEdit) + 0x10), (OBJ(g_controlsEdit) + 0x18), (OBJ(g_controlsEdit) + 0x20), (OBJ(g_controlsEdit) + 0x28), (OBJ(g_controlsEdit) + 0x30), (OBJ(g_controlsEdit) + 0x38),
-                                  (OBJ(g_controlsEdit) + 0x40), (OBJ(g_controlsEdit) + 0x48), (OBJ(g_controlsEdit) + 0x50), (OBJ(g_controlsEdit) + 0x58), (OBJ(g_controlsEdit) + 0x60), (OBJ(g_controlsEdit) + 0x78), (OBJ(g_controlsEdit) + 0x80), (OBJ(g_controlsEdit) + 0x88),
-                                  (OBJ(g_controlsEdit) + 0x90), (OBJ(g_controlsEdit) + 0x68), (OBJ(g_controlsEdit) + 0x70), (OBJ(g_controlsEdit) + 0x98), (OBJ(g_controlsEdit) + 0xa0), (OBJ(g_controlsEdit) + 0xa8), (OBJ(g_controlsEdit) + 0xb0), (OBJ(g_controlsEdit) + 0xb8),
-                                  (OBJ(g_controlsEdit) + 0xc0), (OBJ(g_controlsEdit) + 0xc8), (OBJ(g_controlsEdit) + 0xd0), (OBJ(g_controlsEdit) + 0xd8), (OBJ(g_controlsEdit) + 0xe0), (OBJ(g_controlsEdit) + 0xe8), (OBJ(g_controlsEdit) + 0xf0), (OBJ(g_controlsEdit) + 0xf8) };
+static const u32 bindings[32] = { OBJ(g_controlsEdit), (u32)&g_controlsEdit[2], (u32)&g_controlsEdit[4], (u32)&g_controlsEdit[6], (u32)&g_controlsEdit[8], (u32)&g_controlsEdit[10], (u32)&g_controlsEdit[12], (u32)&g_controlsEdit[14],
+                                  (u32)&g_controlsEdit[16], (u32)&g_controlsEdit[18], (u32)&g_controlsEdit[20], (u32)&g_controlsEdit[22], (u32)&g_controlsEdit[24], (u32)&g_controlsEdit[30], (u32)&g_controlsEdit[32], (u32)&g_controlsEdit[34],
+                                  (u32)&g_controlsEdit[36], (u32)&g_controlsEdit[26], (u32)&g_controlsEdit[28], (u32)&g_controlsEdit[38], (u32)&g_controlsEdit[40], (u32)&g_controlsEdit[42], (u32)&g_controlsEdit[44], (u32)&g_controlsEdit[46],
+                                  (u32)&g_controlsEdit[48], (u32)&g_controlsEdit[50], (u32)&g_controlsEdit[52], (u32)&g_controlsEdit[54], (u32)&g_controlsEdit[56], (u32)&g_controlsEdit[58], (u32)&g_controlsEdit[60], (u32)&g_controlsEdit[62] };
 #define KEY_NONE g_dikNone
 
 /* 0x421350: a pair with no primary key gets its secondary as the primary */

@@ -262,8 +262,8 @@ static void section_chest(Panel *p)
 /* slot 2, the arms: a level, four levels each raised by its own figure (count x g_itemBonusCapacityPerLevel + base, from 1 shown), a figure */
 static void section_arms(Panel *p)
 {
-	static const u32 capacities[4][3] = { { MSG(622, "CAPACITY FOR 30MM"), (OBJ(g_armsStats) + 0x4), ADDR(g_itemBonus30mm) }, { MSG(623, "CAPACITY FOR 60MM"), (OBJ(g_armsStats) + 0x8), ADDR(g_itemBonus60mm) },
-	                                  { MSG(624, "CAPACITY FOR E-PAK"), (OBJ(g_armsStats) + 0xc), ADDR(g_itemBonusEpak) }, { MSG(625, "CAPACITY FOR MISSLE"), (OBJ(g_armsStats) + 0x10), ADDR(g_itemBonusMissile) } };
+	static const u32 capacities[4][3] = { { MSG(622, "CAPACITY FOR 30MM"), (u32)&g_armsStats[1], ADDR(g_itemBonus30mm) }, { MSG(623, "CAPACITY FOR 60MM"), (u32)&g_armsStats[2], ADDR(g_itemBonus60mm) },
+	                                  { MSG(624, "CAPACITY FOR E-PAK"), (u32)&g_armsStats[3], ADDR(g_itemBonusEpak) }, { MSG(625, "CAPACITY FOR MISSLE"), (u32)&g_armsStats[4], ADDR(g_itemBonusMissile) } };
 	label(p, ROW(0), MSG(621, "FIRE CONTROL SYSTEM"));
 	sprintf(p->t.line, FMT(STR(0x4b02e8, "%d(Lv)")), g_armsFcsLevel);
 	value(p, ROW(0));
@@ -363,7 +363,7 @@ static void section_booster(Panel *p)
 	}
 
 	/* the three speeds (0x4dce94, 0x4dce9c, 0x4dce98) and below them their changes (with 0x4dc234 .. 0x4dc23c) */
-	static const u32 speeds[3] = { (OBJ(g_boosterStats) + 0x14), (OBJ(g_boosterStats) + 0x1c), (OBJ(g_boosterStats) + 0x18) }, bonuses[3] = { (OBJ(g_legsStats) + 0xc), (OBJ(g_legsStats) + 0x10), (OBJ(g_legsStats) + 0x14) };
+	static const u32 speeds[3] = { (u32)&g_boosterStats[5], (u32)&g_boosterStats[7], (u32)&g_boosterStats[6] }, bonuses[3] = { (u32)&g_legsStats[3], (u32)&g_legsStats[4], (u32)&g_legsStats[5] };
 	static const u32 shown[2][3] = { { STR(0x4b0228, "%03.0f/"), STR(0x4b021c, " %03.0f/"), STR(0x4b0214, " %03.0f") },
 	                                 { STR(0x4b02bc, "%.0f/"), STR(0x4b02b4, " %.0f/"), STR(0x4b02a8, " %.0f(km/h)") } };
 	label(p, ROW(5), MSG(646, "MAX SPEED FWD/SWD/BWD"));
@@ -402,7 +402,7 @@ static void section_mech(Panel *p)
 	label(p, ROW(0), MSG(671, "DETECTION RANGE"));
 	sprintf(p->t.line, FMT(STR(0x4b0274, "%.1f(m)")), (double)g_mechDetectionRange);
 	value(p, ROW(0));
-	static const u32 ints[4][2] = { { STR(0x4b02e8, "%d(Lv)"), ADDR(g_mechHackingLevel) }, { STR(0x4b0320, "%d"), OBJ(g_mechMaxima) }, { STR(0x4b0320, "%d"), (OBJ(g_mechMaxima) + 0x4) }, { STR(0x4b02e8, "%d(Lv)"), (OBJ(g_mechMaxima) + 0x8) } };
+	static const u32 ints[4][2] = { { STR(0x4b02e8, "%d(Lv)"), ADDR(g_mechHackingLevel) }, { STR(0x4b0320, "%d"), OBJ(g_mechMaxima) }, { STR(0x4b0320, "%d"), (u32)&g_mechMaxima[1] }, { STR(0x4b02e8, "%d(Lv)"), (u32)&g_mechMaxima[2] } };
 	for (int k = 0; k < 4; k++) {
 		label(p, ROW(k + 1), MSG(672, "HACKING LEVEL") + k * 0x80);
 		sprintf(p->t.line, FMT(ints[k][0]), I(ints[k][1]));
@@ -410,7 +410,7 @@ static void section_mech(Panel *p)
 	}
 	label(p, ROW(5), MSG(676, "WEAPON LOAD"));
 	for (int k = 0; k < 4; k++) {
-		sprintf(p->t.bonus, FMT(k < 3 ? STR(0x4b0270, "%d/") : STR(0x4b0320, "%d")), I((OBJ(g_mechMaxima) + 0xc) + k * 4));
+		sprintf(p->t.bonus, FMT(k < 3 ? STR(0x4b0270, "%d/") : STR(0x4b0320, "%d")), I(((u32)&g_mechMaxima[3]) + k * 4));
 		append(p->t.line, p->t.bonus);
 	}
 	value(p, ROW(5));
@@ -421,7 +421,7 @@ static void section_mech(Panel *p)
 	sprintf(p->t.line, FMT(p->korean ? STR(0x4b025c, "%.0f(km/h)") : STR(0x4b01e0, "%.1f(km/h)")), (double)g_mechNormalSpeed);
 	value(p, ROW(7));
 	label(p, ROW(8), MSG(679, "MAX SPEED"));
-	static const u32 speeds[3] = { (OBJ(g_mechSpeeds) + 0x4), (OBJ(g_mechSpeeds) + 0xc), ADDR(g_mechMaxSpeedBwd) };
+	static const u32 speeds[3] = { (u32)&g_mechSpeeds[1], (u32)&g_mechSpeeds[3], ADDR(g_mechMaxSpeedBwd) };
 	for (int k = 0; k < 3; k++) {
 		u32 format = p->korean ? (k < 2 ? STR(0x4b02bc, "%.0f/") : STR(0x4b025c, "%.0f(km/h)")) : (k < 2 ? STR(0x4b0254, "%.1f/") : STR(0x4b01e0, "%.1f(km/h)"));
 		sprintf(p->t.bonus, FMT(format), (double)F(speeds[k]));

@@ -712,22 +712,22 @@ static const Highlight none = { -1, NULL, 0, 0, 0 };
 static const float white[3] = { 1.0f, 1.0f, 1.0f };
 #define SIX_WALLS 6, (const float *)ADDR(k_10f), k_0_15625f, 0.46875f, 0.625f
 #define FOUR_WALLS 4, k_12f, (const float *)ADDR(k_0_25f), 0.5f, 0.75f
-void (skirmish_drawTunnel)(void) { static const Tunnel t = { 0xc4098000, OBJ(g_mainMenuTextures) + 12, 0, 0, 0, 0, SIX_WALLS }; menu_tunnel(&t, &none); }
-void (missions_drawTunnel)(void) { static const Tunnel t = { 0xc4098000, OBJ(g_mainMenuTextures) + 12, 0, 0, 1, 0, SIX_WALLS }; menu_tunnel(&t, &none); }
-void (armc_drawTunnel)(void) { static const Tunnel t = { 0xc4098000, OBJ(g_mainMenuTextures) + 12, 0, 0, 1, 0, SIX_WALLS }; menu_tunnel(&t, &none); }
-void (armc_drawRoomTunnel)(void) { static const Tunnel t = { 0xc4ce4000, OBJ(g_ladderMenuTextures) + 12, 1, 1, 0, 1, SIX_WALLS }; menu_tunnel(&t, &none); }
+void (skirmish_drawTunnel)(void) { static const Tunnel t = { 0xc4098000, (u32)&g_mainMenuTextures[3], 0, 0, 0, 0, SIX_WALLS }; menu_tunnel(&t, &none); }
+void (missions_drawTunnel)(void) { static const Tunnel t = { 0xc4098000, (u32)&g_mainMenuTextures[3], 0, 0, 1, 0, SIX_WALLS }; menu_tunnel(&t, &none); }
+void (armc_drawTunnel)(void) { static const Tunnel t = { 0xc4098000, (u32)&g_mainMenuTextures[3], 0, 0, 1, 0, SIX_WALLS }; menu_tunnel(&t, &none); }
+void (armc_drawRoomTunnel)(void) { static const Tunnel t = { 0xc4ce4000, (u32)&g_ladderMenuTextures[3], 1, 1, 0, 1, SIX_WALLS }; menu_tunnel(&t, &none); }
 void (room_drawTunnel)(void)
 {
 	static const float glow[3] = { 0.5f, 0.1f, 1.0f };   /* (no wall glows: the original compares with -1) */
 	static const Highlight h = { -1, glow, 0, 0, 0 };
-	Tunnel t = { (*(u32 *)&g_roomTunnelDepth), OBJ(g_ladderMenuTextures) + 12, 1, 1, 1, 0, SIX_WALLS };
+	Tunnel t = { (*(u32 *)&g_roomTunnelDepth), (u32)&g_ladderMenuTextures[3], 1, 1, 1, 0, SIX_WALLS };
 	menu_tunnel(&t, &h);
 }
 /* 0x4091b0: the arena lobby's (as deep as g_arenaTunnelDepth; four walls) */
 void (arena_drawTunnel)(void)
 {
 	static const Highlight h = { -1, white, 0, 0, 0 };
-	Tunnel t = { (*(u32 *)&g_arenaTunnelDepth), OBJ(g_arenaMenuTextures) + 12, 0, 1, 1, 0, FOUR_WALLS };
+	Tunnel t = { (*(u32 *)&g_arenaTunnelDepth), (u32)&g_arenaMenuTextures[3], 0, 1, 1, 0, FOUR_WALLS };
 	menu_tunnel(&t, &h);
 }
 
@@ -767,7 +767,7 @@ void (room_drawMenu)(void)
 {
 	static const float glow[3] = { 1.0f, 0.1f, 1.0f };
 	Highlight h = { hovered_panel(OBJ(g_roomOutlines), 6, g_roomPanelsSliding), glow, 0, 0, 0 };
-	Tunnel t = { (*(u32 *)&g_roomTunnelDepth), OBJ(g_ladderMenuTextures) + 12, 1, 1, 1, 0, SIX_WALLS };
+	Tunnel t = { (*(u32 *)&g_roomTunnelDepth), (u32)&g_ladderMenuTextures[3], 1, 1, 1, 0, SIX_WALLS };
 	menu_tunnel(&t, &h);
 	if (h.on != -1 && g_roomCameraMode == 2)
 		caption(MSG(91, "SETUP ID|Hotkey is $[5] P"), h.on);
@@ -779,7 +779,7 @@ void (room_drawMenu)(void)
 void (lobbyTop_drawMenu)(void)
 {
 	Highlight h = { hovered_panel(OBJ(g_lobbyTopOutlines), 4, g_lobbyPanelsSliding), white, 1, 0, 0 };
-	Tunnel t = { (*(u32 *)&g_arenaTunnelDepth), OBJ(g_arenaMenuTextures) + 12, 0, 1, 1, 0, FOUR_WALLS };
+	Tunnel t = { (*(u32 *)&g_arenaTunnelDepth), (u32)&g_arenaMenuTextures[3], 0, 1, 1, 0, FOUR_WALLS };
 	menu_tunnel(&t, &h);
 	if (h.on != -1 && g_arenaCameraMode == 2 && !g_menuCameraMove)
 		caption(MSG(86, "SETUP PLAYER FOR THE MULTIPLAY|Hotkey..."), h.on);
@@ -791,7 +791,7 @@ void (lobbyTop_drawMenu)(void)
 void (setup_drawMenu)(void)
 {
 	Highlight h = { hovered_panel(OBJ(g_setupTopOutlines), 4, g_setupPanelMoving), white, 1, 0, 0 };
-	Tunnel t = { (*(u32 *)&g_setupTunnelDepth), OBJ(g_ctrlMenuTextures) + 12, 0, 1, 1, 0, FOUR_WALLS };
+	Tunnel t = { (*(u32 *)&g_setupTunnelDepth), (u32)&g_ctrlMenuTextures[3], 0, 1, 1, 0, FOUR_WALLS };
 	menu_tunnel(&t, &h);
 	if (h.on != -1 && g_setupCameraMode == 2 && !g_menuCameraMove)
 		caption(MSG(81, "SETUP SOUND SYSTEM|Hotkey is $[5] S"), h.on);
@@ -839,7 +839,7 @@ void (mainmenu_drawMenu)(void)
 		}
 	}
 	Highlight h = { on, white, 1, 1, 1 };
-	Tunnel t = { (*(u32 *)&g_mainMenuDepth), OBJ(g_mainMenuTextures) + 12, 0, 1, 1, 0, SIX_WALLS };
+	Tunnel t = { (*(u32 *)&g_mainMenuDepth), (u32)&g_mainMenuTextures[3], 0, 1, 1, 0, SIX_WALLS };
 	menu_tunnel(&t, &h);
 	if (on != -1) {
 		if (!g_menuCameraMove)
