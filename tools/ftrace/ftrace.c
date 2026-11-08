@@ -6,6 +6,7 @@
 #include <windows.h>
 #include <dbghelp.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
 #define NI __attribute__((no_instrument_function))
@@ -38,6 +39,7 @@ static NI unsigned context(void)
 }
 
 static DWORD WINAPI dump_thread(void *unused);
+static NI void exit_dump(void);
 int g_testMissions;
 extern unsigned char g_rdata[];
 static NI HWND WINAPI find_window(LPCSTR cls, LPCSTR name)
@@ -57,6 +59,11 @@ NI void trace_start(void)
 		VirtualProtect(slot, 4, old, &old);
 	}
 	CreateThread(NULL, 0, dump_thread, NULL, 0, NULL);
+	{   /* msvcrt's own atexit (the game's exit() is msvcrt's): registered before the game's, it runs after its destructors */
+		int (__cdecl *ms_atexit)(void (__cdecl *)(void)) = (int (__cdecl *)(void (__cdecl *)(void)))GetProcAddress(LoadLibraryA("msvcrt.dll"), "atexit");
+		if (ms_atexit)
+			ms_atexit(exit_dump);
+	}
 }
 
 NI void __cyg_profile_func_enter(void *fn, void *site)
@@ -136,6 +143,9 @@ static NI DWORD WINAPI dump_thread(void *unused)
 	}
 	return 0;
 }
+
+/* the game's exit(): one last dump, run after the game's own atexit destructors (registered before them) */
+static NI void exit_dump(void) { if (g_symReady) dump(); }
 
 /* the game's own exit (ExitProcess): one last dump, so the shut-down path (destructors, app_shutdown) is counted
    (the other threads are gone by then) */

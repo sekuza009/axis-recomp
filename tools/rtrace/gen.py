@@ -52,7 +52,9 @@ COUNTED = {('Shape', 'parts'): ('partCount', 'ShapePart', 256), ('ShapePart', 'p
            ('Skeleton', 'bones'): ('boneCount', 'Bone', 256), ('Bone', 'posKeys'): ('posKeyCount', 'PosKey', 256),
            ('Bone', 'rotKeys'): ('rotKeyCount', 'RotKey', 256), ('ViewVolume', 'quads'): ('quadLimit', 'ViewQuad', 512),
            ('ShapeManager', 'items'): ('count', 'Shape', 512), ('SkelManager', 'items'): ('count', 'Skeleton', 512),
-           ('ShapeManager', 'nodes'): ('count', 'TreeNode', 512), ('SkelManager', 'nodes'): ('count', 'TreeNode', 512)}
+           ('ShapeManager', 'nodes'): ('count', 'TreeNode', 512), ('SkelManager', 'nodes'): ('count', 'TreeNode', 512),
+           ('TextureBank', 'slots'): ('slotCount', 'TexSlot', 512),
+           ('ViewVolume', 'triangles'): ('triangleCount', 'ViewTriangle', 4096)}
 # the collision space's pools: (offset in Space, element)
 POOLS = [(0x10, 'CollisionTri'), (0x20, 'SpaceNode'), (0x30, 'SpaceUnit'), (0x40, 'SpaceBlock')]
 leaves = []       # (name, kind, esz, strlen)
@@ -164,6 +166,21 @@ for line in open(R + 'objects.h', encoding='latin-1'):
         gl.append('\trt_O(%d, (const u8 *)%s, %d, %d);' % (leaf(name, k, esz), name, min(n, 4096), esz))
     else:
         skipped.append('object %s: type %s' % (name, t))
+# records the game keeps in raw buffers (typed as bytes / words in objects.h): (base expression, record, count)
+VIEWS = [('(const u8 *)g_partRecords', 'PartInfo', 7), ('(const u8 *)g_skirmishInfo', 'SkirmishInfo', 15),
+         ('(const u8 *)g_savedColourChoices', 'ColourChoice', 6), ('(const u8 *)g_roomColours', 'ColourChoice', 6),
+         ('(const u8 *)g_armcColours', 'ColourChoice', 6), ('(const u8 *)g_pilotSaveColours', 'ColourChoice', 6),
+         ('(const u8 *)g_arenaName', 'GameSettings', 1), ('(const u8 *)g_roomRecName', 'GameSettings', 1),
+         ('(const u8 *)g_roomSettingsName', 'GameSettings', 1), ('(const u8 *)g_lobbyTopOutlines', 'MenuOutline', 4),
+         ('(const u8 *)g_mainMenuOutlines', 'MenuOutline', 6), ('(const u8 *)g_roomOutlines', 'MenuOutline', 6),
+         ('(const u8 *)g_setupTopOutlines', 'MenuOutline', 4), ('(const u8 *)&g_pilotLevel', 'PilotStats', 1),
+         ('(const u8 *)&g_pilotLevelKept', 'PilotStats', 1)]
+for base, rec, n in VIEWS:
+    gl.append('\tfor (int i = 0; i < %d; i++) w_%s(%s + i * 0x%x);' % (n, rec, base, structs[rec]['size']))
+for g, rec in (('g_netPlayerRecordPacket', 'PlayerRecordPacket'), ('g_netAccountBuffer', 'AccountForm')):   # a word holding a record's address
+    gl.append('\tROOT(%s, %s, 0x%x);' % (g, rec, structs[rec]['size']))
+for g in ('g_shapeDat', 'g_skelDat'):   # the .dat archives' index: { count, table, FILE }
+    gl.append('\t{ u32 h[2]; if (rt_copy(%s, h, 8)) rt_follow_n(h[1], (int)h[0], 4096, FOLLOW_ArchiveEntry); }' % g)
 out.append('void rt_walk_static(void)\n{')
 out += gl
 out.append('}')

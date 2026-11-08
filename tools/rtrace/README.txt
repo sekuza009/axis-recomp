@@ -41,3 +41,13 @@ Fourth round (2026-11-07, the deep name audit): gen.py's COUNTED table follows p
 field of the record (Model.parts, ShapePart.prims, Skeleton.bones, Bone.posKeys / rotKeys, ViewVolume.quads, the
 managers' items and name nodes) and the collision space's four pools (rt_follow_n; up to 4 levels deep). One hosted
 DEATH MATCH with it: 66 names never seen before seen non-zero (tools/names/audit2026-11-07/data_deep_newly_seen.txt).
+
+Fifth round (2026-11-07, in-game evidence for the names only the code confirmed): tools/ftrace/build_both.sh builds
+build/AxisRC_trace2.exe with both traces (function trace + range sampler) so each session runs once. ftrace's last
+dump now runs from msvcrt's atexit (registered before the game's own), so the shut-down path is counted. gen.py's VIEWS
+read the records the game keeps in raw buffers (part records, skirmish info, colour choices, game settings, menu
+outlines, pilot stats, the Ladder packets, the .dat indexes) and COUNTED follows the texture slots and queued
+triangles. Sessions: two copies through the arena list and the lobby server, Ladder games on DServer with seeded
+account stats (a locked room, a new ID registered, records sent at the round's end), profile create / delete, ARM
+CENTER colour sliders, a recorded replay played back, exit through the profile screen. Of the 700 data names and 448
+functions never seen before, 251 and 192 were reached (tools/names/audit2026-11-07/evidence_*).
