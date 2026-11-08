@@ -32,20 +32,20 @@ static int dialog_keys(int x, int y)
 	return 0;
 }
 
-/* 0x44c850: page 2 (the new pilot's name) keys: only while its message is up (g_profileMessage, NAME ALREADY
+/* 0x44c850: page 2 (the new pilot's name) keys: only while its message is up (g_profileNameTakenShown, NAME ALREADY
    REGISTRED): Enter (g_keyClick) or O (g_keyOk) closes it and the name is typed again (profile_typeNewName) */
 void (profile_messageKeys)(void)
 {
 	g_menuRepeatClock = 0.0f;
-	if (!g_profileMessage)
+	if (!g_profileNameTakenShown)
 		return;
 	if (input_justPressed(g_keyClick) == 1) {
-		g_profileMessage = 0;
+		g_profileNameTakenShown = 0;
 		g_textFieldOpen = 1;
 		profile_typeNewName();
 	}
 	if (input_justPressed(g_keyOk) == 1) {
-		g_profileMessage = 0;
+		g_profileNameTakenShown = 0;
 		g_textFieldOpen = 1;
 		profile_typeNewName();
 	}

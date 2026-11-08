@@ -25,7 +25,7 @@ static void slider_hue(float *hue)
 		*hue = (float)(v + 360.0f);
 }
 
-/* 0x40f5d0, 0x40f670, 0x40f6b0: the first colour's hue, saturation and value (0 .. 1) */
+/* 0x40f5d0, 0x40f670, 0x40f6b0: the first colour's hue (degrees, slider_hue), saturation and value (the slider's 0 .. 1) */
 void (armc_setPrimaryHueFromPointer)(void) { slider_hue(&g_armcColours[g_armcColourSlot * 6]); }
 
 void (armc_setPrimarySaturationFromPointer)(void)

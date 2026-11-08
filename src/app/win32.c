@@ -61,14 +61,14 @@ u32 (app_registerWindowClassEx)(const u32 *cls)
 }
 
 /* 0x468450: the GL window resized to width x height (g_glWidth, g_glHeight): the viewport set and, in full screen
-   (g_fullScreen), the display mode changed to match (glWindow_setDisplayModeBy; failing that, a message and 0). The cached state
+   (g_glFullScreen), the display mode changed to match (glWindow_setDisplayModeBy; failing that, a message and 0). The cached state
    g_matchProjMode is reset; returns 1 */
 int (glWindow_resize)(int width, int height)
 {
 	g_glWidth = width;
 	g_glHeight = height;
 	glViewport(0, 0, width, height);   /* glViewport */
-	if (g_fullScreen == 1 &&
+	if (g_glFullScreen == 1 &&
 	    !glWindow_setDisplayModeBy(g_glWidth, g_glHeight, 0)) {
 		sys_errorMessageNoName((const char *)STR(0x4c500c, "glWindow screen resolution change fai..."));   /* sys_errorMessageNoName */
 		return 0;
@@ -79,13 +79,13 @@ int (glWindow_resize)(int width, int height)
 
 
 /* 0x468250: the game's GL window made, once (a second call: a message and NULL), with title, width x height and
-   colour / depth bits (g_glWidth, g_glHeight, g_glColourBits, g_glDepthBits) kept. Without a given window (window and other
-   NULL): its class registered (glWindow_wndProc, the icon named as the title, arrow cursor), the display mode
+   colour / depth bits (g_glWidth, g_glHeight, g_glColourBits, g_glDepthBits) kept. Without a given window (window and
+   dc NULL): its class registered (glWindow_wndProc, the icon named as the title, arrow cursor), the display mode
    switched in full screen (failing that, a message and windowed), a pop-up window of that size made, shown and
-   focused; otherwise the given window (and other, g_glWindowDc) taken and resized. Then the GL state (gfx_resetState);
+   focused; otherwise the given window and its DC (g_glWindowDc) taken and resized. Then the GL state (gfx_resetState);
    returns the window */
 void *(glWindow_init)(const char *title, int width, int height, int colourBits, int depthBits, int fullscreen,
-                      void *window, void *other)
+                      void *window, void *dc)
 {
 	if (g_glWindowMade == 1) {
 		sys_errorMessageNoName((const char *)STR(0x4c4fd8, "glWindow duplicate initialization - g..."));   /* sys_errorMessageNoName */
@@ -94,10 +94,10 @@ void *(glWindow_init)(const char *title, int width, int height, int colourBits, 
 	strcpy(g_glTitle, title);
 	g_glColourBits = colourBits;
 	g_glDepthBits = depthBits;
-	g_fullScreen = fullscreen;
+	g_glFullScreen = fullscreen;
 	g_glWidth = width;
 	g_glHeight = height;
-	if (window == NULL && other == NULL) {
+	if (window == NULL && dc == NULL) {
 		u32 wc[10];   /* WNDCLASSA */
 		wc[0] = 0;                 /* style */
 		wc[1] = FN(glWindow_wndProc);
@@ -113,10 +113,10 @@ void *(glWindow_init)(const char *title, int width, int height, int colourBits, 
 			sys_errorMessageNoName((const char *)STR(0x4c4fa4, "glWindow RegisterClass() failed - glW..."));
 			return NULL;
 		}
-		if (g_fullScreen == 1 &&
+		if (g_glFullScreen == 1 &&
 		    !glWindow_setDisplayModeBy(g_glWidth, g_glHeight, g_glColourBits)) {
 			sys_errorMessageNoName((const char *)STR(0x4c4f50, "glWindow full screen mode failed, win..."));   /* glWindow_setDisplayModeBy failed */
-			g_fullScreen = 0;
+			g_glFullScreen = 0;
 		}
 		g_glWindow = IMPORT_FN(CreateWindowExA, void *, u32, const char *, const char *, u32, int, int, int, int, void *, void *, void *, void *)(
 			0, g_glTitle, g_glTitle, 0x86000000, 0, 0, g_glWidth, g_glHeight, NULL, NULL,
@@ -131,7 +131,7 @@ void *(glWindow_init)(const char *title, int width, int height, int colourBits, 
 		g_glWindowMade = 1;
 	} else {
 		g_glWindow = window;
-		g_glWindowDc = other;   /* the GL window's DC (g_glWindowDc below) */
+		g_glWindowDc = dc;   /* the GL window's DC (g_glWindowDc below) */
 		glWindow_resize(width, height);
 	}
 	gfx_resetState();   /* gfx_resetState */
@@ -303,7 +303,7 @@ int (gfx_setPixelFormat)(void *dc)
 /* 0x43f460: the hidden EDIT control that every text field types into (names, passwords, numbers,
    addresses, the e-mail, chat), `chars` letters wide (g_editFieldLength): a 12-pixel Fixedsys font (0x4b29b0,
    g_inputFont) and an edit control (g_hEditField, id 0xca, style 0x40000400, not visible) on the main window at the
-   field's caret (g_editCaretX - 5, g_editCaretY + 0x21), subclassed by editField_editProc (the old procedure in
+   field's caret (g_inputLineX - 5, g_inputLineY + 0x21), subclassed by editField_editProc (the old procedure in
    g_editOldProc), focused, holding the typed line (g_inputLine) with the caret at its end. Returns the last
    SendMessageA's eax (EM_SETSEL) */
 int (editField_createEdit)(int chars)
@@ -317,7 +317,7 @@ int (editField_createEdit)(int chars)
 	g_editFieldLength = chars;
 	g_inputFont = CreateFontIndirectA(&font);   /* CreateFontIndirectA */
 	void *edit = IMPORT_FN(CreateWindowExA, void *, u32, const char *, const char *, u32, int, int, int, int, void *, u32, void *, void *)(
-		0, (const char *)STR(0x4b29a8, "EDIT"), NULL, 0x40000400, g_editCaretX - 5, g_editCaretY + 0x21,
+		0, (const char *)STR(0x4b29a8, "EDIT"), NULL, 0x40000400, g_inputLineX - 5, g_inputLineY + 0x21,
 		chars * 8, 0x18, g_mainWindow, 0xca, g_hInstance, NULL);   /* CreateWindowExA("EDIT") */
 	g_hEditField = edit;
 	if (edit) {

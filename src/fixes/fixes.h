@@ -10,7 +10,7 @@
 int fix_mousePressed(int key);              /* input_justPressed for the mouse buttons (0xfa .. 0xfc): they latch like keys */
 int fix_readMouse(void);                    /* input_readMouse, then buttons after alt-tab, the menu pointer's speed */
 void fix_cursorClamp(void);                 /* the menu pointer over the whole width of a wide screen */
-void fix_menuNav(Scene *scene);             /* the Esc menu's steps by mouse travel */
+void fix_escMenuNav(Scene *scene);             /* the Esc menu's steps by mouse travel */
 int fix_labelHalfWidth(const char *name);   /* half a name label's text width (its icon's place) */
 
 /* screen.c */

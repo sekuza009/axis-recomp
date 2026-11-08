@@ -113,7 +113,7 @@ void THISCALL (map_loadObjectInfoFrom)(u8 *scene, const char *name, int mode)
 	char path[0x100], base[0x100];
 	ObjectInfo objects[56];
 	st->objectNameCount = 0;
-	ShapeManager_releaseModels((u8 *)&st->objectShapes);
+	ShapeManager_releaseShapes((u8 *)&st->objectShapes);
 	SkeletonManager_releaseSkeletons((u8 *)&st->objectSkeletons);
 	stage_clearMapObjects(scene);
 	st->shadingCached = 0;
@@ -342,15 +342,15 @@ void THISCALL (map_loadActorInfoFrom)(u8 *scene, const char *name)
 
 #define POOL_MAX 4000000
 
-/* the next n bytes of the layers' pool (pool, poolUsed used of 4,000,000: past it a fatal message); the
+/* the next n bytes of the layers' pool (layerPool, layerPoolUsed used of 4,000,000: past it a fatal message); the
    caller adds n once the block is filled */
 static u8 *pool_take(u8 *s, int n)
 {
 	Stage *st = (Stage *)s;
-	int used = st->poolUsed;
+	int used = st->layerPoolUsed;
 	if (used + n > POOL_MAX)
 		sys_fatalErrorN((char *)OBJ(g_logStage), (const char *)STR(0x4c7eb4, "layer data heap overflow(%d/%d)-loadD..."), used + n, POOL_MAX);
-	return st->pool + st->poolUsed;
+	return st->layerPool + st->layerPoolUsed;
 }
 
 /* texture id of "<dir>/<what>" (with an optional number) */
@@ -439,7 +439,7 @@ int THISCALL (map_loadGroundInfoFrom)(u8 *s, const char *name)
 	for (int k = 0; k < 7; k++)
 		fread_scrambled(limits[k], sizes[k], 1, f);
 	fread_scrambled(&st->groundLayerCount, 4, 1, f);
-	st->poolUsed = 0;
+	st->layerPoolUsed = 0;
 	for (int i = 0; i < st->groundLayerCount; i++) {
 		u8 *l = (u8 *)&st->groundLayers[i];
 		GroundLayer *gl = (GroundLayer *)l;
@@ -455,7 +455,7 @@ int THISCALL (map_loadGroundInfoFrom)(u8 *s, const char *name)
 				int g = grey(image + r * 0x300 + c * 3);
 				heights[(gl->cols + 1) * r + c] = g < 0 ? 0 : (u8)g;
 			}
-		st->poolUsed += count;
+		st->layerPoolUsed += count;
 		int cells = gl->cols * gl->rows;
 		u8 *drawn = gl->drawnCells = pool_take(s, cells);
 		for (int r = 0; r < gl->rows; r++)
@@ -463,7 +463,7 @@ int THISCALL (map_loadGroundInfoFrom)(u8 *s, const char *name)
 				const u8 *px = image + r * 0x300 + c * 3;
 				drawn[gl->cols * r + c] = grey(px) >= 0 && grey(px + 0x300) >= 0 && grey(px + 0x303) >= 0 && grey(px + 3) >= 0;
 			}
-		st->poolUsed += cells;
+		st->layerPoolUsed += cells;
 		int size = (gl->cols + 1) * (gl->rows + 1) * 12;
 		float *v = gl->points = (float *)pool_take(s, size);
 		const float *origin = (const float *)(l + 4), *cell = &gl->cellSize, *hs = &gl->heightScale;
@@ -477,7 +477,7 @@ int THISCALL (map_loadGroundInfoFrom)(u8 *s, const char *name)
 				p[1] = f32(y);
 				p[2] = f32(z);
 			}
-		st->poolUsed += size;
+		st->layerPoolUsed += size;
 		size = (gl->cols + 1) * (gl->rows + 1) * 12;
 		u8 *normals = (u8 *)(gl->normals = (float *)pool_take(s, size));
 		w = gl->cols + 1;
@@ -507,11 +507,11 @@ int THISCALL (map_loadGroundInfoFrom)(u8 *s, const char *name)
 					for (int k = 0; k < 3; k++)
 						out[k] = f32(-fld_m(&out[k]));
 			}
-		st->poolUsed += size;
+		st->layerPoolUsed += size;
 		size = (gl->cols + 1) * (gl->rows + 1) * 4;
 		gl->colours = (u32 *)pool_take(s, size);
 		ground_computeLighting(s, l);
-		st->poolUsed += size;
+		st->layerPoolUsed += size;
 		size = (gl->cols + 1) * (gl->rows + 1) * 8;
 		float *uv = gl->uv = (float *)pool_take(s, size);
 		for (int r = 0; r <= gl->rows; r++)
@@ -522,17 +522,17 @@ int THISCALL (map_loadGroundInfoFrom)(u8 *s, const char *name)
 				uv[at * 2] = f32(FDIV(p[0], gl->texScale));
 				uv[at * 2 + 1] = f32(tz);
 			}
-		st->poolUsed += size;
+		st->layerPoolUsed += size;
 		int indices = (gl->cols + 200) * gl->rows * 2;
 		u8 *heap = pool_take(s, indices * 4);
 		gl->indexCapacity = indices;
 		gl->indices = (u32 *)heap;
-		st->poolUsed += indices * 4;
+		st->layerPoolUsed += indices * 4;
 		int prims = gl->rows * 200 + 4;
 		heap = pool_take(s, prims * 12);
 		gl->stripCapacity = prims;
 		gl->strips = heap;
-		st->poolUsed += prims * 12;
+		st->layerPoolUsed += prims * 12;
 	}
 	ground_buildLayerModels(s);
 	fclose(f);

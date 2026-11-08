@@ -663,8 +663,8 @@ u32 (net_pingAllServers)(void)
 	return net_stopPingThread();   /* net_stopPingThread */
 }
 
-/* ---- a reply of size bytes read from socket into buf, waiting up to 3 s. Each recv lands at buf's start (as in the
-   original); the bytes are only counted ---- */
+/* ---- a reply of size bytes read from the socket kept at `socket` into buf, waiting up to 3 s. Each recv lands at
+   buf's start (as in the original); the bytes are only counted ---- */
 static void reply_read(u32 socket, void *buf, u32 size)
 {
 	u32 start = GetTickCount();   /* GetTickCount */
@@ -1053,7 +1053,7 @@ static int send_leave(u32 from, u32 to, const u8 *bytes, int nbytes, int flagged
 /* ---- the info sent to the server when a player comes or goes while hosting over TCP/IP: the arena's (g_arenaPacket into
    the packet g_arenaInfoPacket, to the lobby server) or the Ladder room's (g_roomPacket into g_roomInfoPacket, to the game server), the player count (g_playerCount) included ---- */
 
-static void arena_info(u8 *dst, u8 kind, u8 count)
+static void arena_sendInfo(u8 *dst, u8 kind, u8 count)
 {
 	const ArenaRecord *src = g_arenaPacket;
 	ArenaRecord *to = (ArenaRecord *)dst;
@@ -1072,7 +1072,7 @@ static void arena_info(u8 *dst, u8 kind, u8 count)
 	net_send(0xc, 0x64);
 }
 
-static void room_info(u8 *dst, u8 kind, u8 count)
+static void room_sendInfo(u8 *dst, u8 kind, u8 count)
 {
 	const RoomRecord *src = g_roomPacket;
 	RoomRecord *to = (RoomRecord *)dst;
@@ -1125,9 +1125,9 @@ void (net_handleSystemMessage)(const u32 *msg)
 		if (!g_roomInfoPacket)
 			return;
 		if (joined)
-			room_info(g_roomInfoPacket, 1, (u8)g_playerCount);
+			room_sendInfo(g_roomInfoPacket, 1, (u8)g_playerCount);
 		else
-			room_info(g_roomInfoPacket, g_roomPacket->kind, (u8)(g_playerCount - 1));
+			room_sendInfo(g_roomInfoPacket, g_roomPacket->kind, (u8)(g_playerCount - 1));
 		break;
 	case 200:
 		if (g_lobbyReportsOff || !(*(int *)&g_lobbySocket))
@@ -1136,7 +1136,7 @@ void (net_handleSystemMessage)(const u32 *msg)
 			g_playerCount = msg[3];
 		if (!g_arenaInfoPacket)
 			return;
-		arena_info(g_arenaInfoPacket, g_arenaPacket->kind, (u8)(g_playerCount - !joined));
+		arena_sendInfo(g_arenaInfoPacket, g_arenaPacket->kind, (u8)(g_playerCount - !joined));
 		break;
 	}
 }
@@ -1207,18 +1207,18 @@ int (net_connect)(int mode)
    (0). Then the connection flags cleared. Returns what the original leaves in eax */
 u32 (net_disconnect)(void)
 {
-	static const u8 lobbyBytes[9] = { offsetof(ArenaRecord, rotation), offsetof(ArenaRecord, fragLimit), offsetof(ArenaRecord, timeLimit), offsetof(ArenaRecord, gameMode), offsetof(ArenaRecord, players), offsetof(ArenaRecord, map), offsetof(ArenaRecord, maxPlayers), offsetof(ArenaRecord, locked) }, lobbyNames[3] = { offsetof(ArenaRecord, password), offsetof(ArenaRecord, address), offsetof(ArenaRecord, name) };
-	static const u8 roomBytes[9] = { offsetof(RoomRecord, rotation), offsetof(RoomRecord, fragLimit), offsetof(RoomRecord, gameMode), offsetof(RoomRecord, players), offsetof(RoomRecord, map), offsetof(RoomRecord, maxPlayers), offsetof(RoomRecord, timeLimit), offsetof(RoomRecord, locked) }, roomNames[3] = { offsetof(RoomRecord, password), offsetof(RoomRecord, hostName), offsetof(RoomRecord, address) };
+	static const u8 lobbyBytes[9] = { offsetof(ArenaRecord, rotation), offsetof(ArenaRecord, fragLimit), offsetof(ArenaRecord, timeLimit), offsetof(ArenaRecord, gameMode), offsetof(ArenaRecord, players), offsetof(ArenaRecord, map), offsetof(ArenaRecord, maxPlayers), offsetof(ArenaRecord, locked) }, lobbyStrings[3] = { offsetof(ArenaRecord, password), offsetof(ArenaRecord, address), offsetof(ArenaRecord, name) };
+	static const u8 roomBytes[9] = { offsetof(RoomRecord, rotation), offsetof(RoomRecord, fragLimit), offsetof(RoomRecord, gameMode), offsetof(RoomRecord, players), offsetof(RoomRecord, map), offsetof(RoomRecord, maxPlayers), offsetof(RoomRecord, timeLimit), offsetof(RoomRecord, locked) }, roomStrings[3] = { offsetof(RoomRecord, password), offsetof(RoomRecord, hostName), offsetof(RoomRecord, address) };
 	if (g_netConnected != 1)
 		return (*(u32 *)&g_netConnected);
 	u32 r = g_lobbySocket;
 	if ((*(int *)&g_lobbySocket)) {
-		if (!g_lobbyReportsOff && !send_leave(ADDR(g_arenaPacket), ADDR(g_lobbyLeavePacket), lobbyBytes, 8, 0x45, lobbyNames, 0xb, 0x64))
+		if (!g_lobbyReportsOff && !send_leave(ADDR(g_arenaPacket), ADDR(g_lobbyLeavePacket), lobbyBytes, 8, 0x45, lobbyStrings, 0xb, 0x64))
 			return 0;
 		r = socket_close(ADDR(g_lobbySocket));
 	}
 	if (g_gameServerSocket) {
-		if (!g_gameServerReportsOff && !send_leave(ADDR(g_roomPacket), ADDR(g_roomLeavePacket), roomBytes, 8, 0x63, roomNames, 0x16, 0x65))
+		if (!g_gameServerReportsOff && !send_leave(ADDR(g_roomPacket), ADDR(g_roomLeavePacket), roomBytes, 8, 0x63, roomStrings, 0x16, 0x65))
 			return 0;
 		r = socket_close(ADDR(g_gameServerSocket));
 	}
@@ -1947,7 +1947,7 @@ void THISCALL (net_processGamePacket)(u8 *g, u32 from, int size, const char *pkt
 			stage_setupActorSlot((Stage *)STAGE, i, -1, from, rec);
 			scene_updateRanking(g);   /* scene_updateRanking */
 		}
-		ac->netFired = 1;
+		ac->netStateReceived = 1;
 		ac->dropAge = f32(FADD(ac->spawnAge, k_10f));
 		BITS(ac->stateFlags) = ps->stateFlags;
 		if (itemSlot == 6)

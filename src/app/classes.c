@@ -1,6 +1,6 @@
 /* classes.c: the game's C++ classes as the compiler built them: constructors (set the vtable, clear the members),
    destructors (the vtable set back, an owned buffer freed), the "deleting" destructors and member clears; the game
-   object built (Console_ctor, ResourceSet_ctor) and a session started (scene_startSession); the BMP reader
+   object built (Console_ctor, PlayerRecord_ctor) and a session started (scene_startSession); the BMP reader
    (BMPRGBFile: image_*) and the players' flags (playerRecord_loadFlag, flag_uploadAtlas); and one-line getters,
    setters and vector initialisers. Most return what the original leaves in eax (usually 0 or the object). */
 #include "../game.h"
@@ -100,7 +100,7 @@ float (view_farPlane)(void) { return g_viewFar; }
 /* ---- setters ---- */
 void (armc_showPartsPage)(void) { g_armcMode = 1; g_armcUnusedFlag = 0; }   /* the ARM CENTER's parts page */
 void (armc_showColourPage)(void) { g_armcMode = 3; g_armcColourSlot = 5; }        /* its colour page */
-void (ptx_startBitReader)(int v) { (*(int *)&g_bitStream) = v; g_ptxBitPos = 0; g_ptxLastDc = 0; }
+void (ptx_startBitReader)(const u8 *data) { g_bitStream = data; g_ptxBitPos = 0; g_ptxLastDc = 0; }
 int (menuCamera_setMove)(int v) { g_menuCameraMove = v; return v; }
 int (music_setVolumeSetting)(int v) { g_musicVolumeSetting = v; return v; }
 
@@ -115,7 +115,7 @@ static void set3(u32 addr, u32 x, u32 y, u32 z)
 void (vec_initOrigin)(void) { set3(ADDR(g_vecOrigin), 0, 0, 0); }
 void (vec_initZero2)(void) { set3(OBJ(g_vecZero2), 0, 0, 0); }
 void (vec_initAxisZ)(void) { set3(ADDR(g_vecUnitZ), 0, 0, 0x3f800000u); }
-void (vec_initUp)(void) { set3(OBJ(g_vecUnitY), 0, 0x3f800000u, 0); }
+void (vec_initAxisY)(void) { set3(OBJ(g_vecUnitY), 0, 0x3f800000u, 0); }
 void (vec_initZero)(void) { set3(ADDR(g_vecZero), 0, 0, 0); }
 void (vec_initAxisX)(void) { set3(OBJ(g_vecUnitX), 0x3f800000u, 0, 0); }
 
@@ -204,9 +204,10 @@ void *THISCALL (ErrorLog_ctor)(u32 *self, const char *name, Cleanup cleanupHook)
 	return self;
 }
 
-/* 0x463850: a resource set (a PlayerRecord's part caches): five shape managers (vtable 0x4aa244) and five skeleton managers (0x4aa240) built in
-   place (the original's exception frame only matters if a constructor throws, and these cannot) */
-void *THISCALL (ResourceSet_ctor)(u8 *self)
+/* 0x463850: a PlayerRecord built (the element constructor of Stage.playerRecords, run by Console_ctor through the vector
+   constructor): its five shape managers (vtable 0x4aa244) and five skeleton managers (0x4aa240) built in place (the
+   original's exception frame only matters if a constructor throws, and these cannot) */
+void *THISCALL (PlayerRecord_ctor)(u8 *self)
 {
 	static const u32 shapes[5] = { offsetof(PlayerRecord, headShapes), offsetof(PlayerRecord, chestShapes), offsetof(PlayerRecord, armShapes), offsetof(PlayerRecord, legShapes), offsetof(PlayerRecord, boosterShapes) };
 	static const u32 skels[5] = { offsetof(PlayerRecord, headSkels), offsetof(PlayerRecord, chestSkels), offsetof(PlayerRecord, armSkels), offsetof(PlayerRecord, legSkels), offsetof(PlayerRecord, boosterSkels) };
@@ -238,10 +239,10 @@ static int release_all(u8 *self, int stride, Release release)
 		mg->dataUsed = 0;
 	return r;
 }
-static int THISCALL release_model(void *e) { return Shape_release(e); }
+static int THISCALL release_shape(void *e) { return Shape_release(e); }
 static int THISCALL release_skeleton(void *e) { return Skeleton_release(e); }
-/* 0x467520: a shape manager's models (0x4c bytes) */
-int THISCALL (ShapeManager_releaseModels)(u8 *self) { return release_all(self, 0x4c, release_model); }
+/* 0x467520: a shape manager's shapes (Shape, 0x4c bytes) */
+int THISCALL (ShapeManager_releaseShapes)(u8 *self) { return release_all(self, 0x4c, release_shape); }
 /* 0x46b7f0: a skeleton manager's skeletons (0x24 bytes) */
 int THISCALL (SkeletonManager_releaseSkeletons)(u8 *self) { return release_all(self, 0x24, release_skeleton); }
 
@@ -256,9 +257,9 @@ u32 THISCALL (actor_destroyPartLists)(u8 *self)
 	return r;
 }
 
-/* 0x463960: a resource set destroyed: its five skeleton managers, then its five shape managers, the last member first
-   (as ResourceSet_ctor built them). Returns the last destructor's eax */
-u32 THISCALL (ResourceSet_dtor)(u8 *self)
+/* 0x463960: a player record's part caches destroyed: its five skeleton managers, then its five shape managers, the
+   last member first (as PlayerRecord_ctor built them). Returns the last destructor's eax */
+u32 THISCALL (PlayerRecord_dtor)(u8 *self)
 {
 	static const u32 skeletons[5] = { offsetof(PlayerRecord, boosterSkels), offsetof(PlayerRecord, legSkels), offsetof(PlayerRecord, armSkels), offsetof(PlayerRecord, chestSkels), offsetof(PlayerRecord, headSkels) };
 	static const u32 shapes[5] = { offsetof(PlayerRecord, boosterShapes), offsetof(PlayerRecord, legShapes), offsetof(PlayerRecord, armShapes), offsetof(PlayerRecord, chestShapes), offsetof(PlayerRecord, headShapes) };
@@ -274,8 +275,8 @@ u32 THISCALL (ResourceSet_dtor)(u8 *self)
 	((void (STDCALL *)(void *, u32, int, u32))IMG(CRT(vectorDestruct)))(array, size, count, dtor)   /* `eh vector destructor iterator' (stdcall) */
 
 /* 0x46ff70: the stage destroyed, its members last first: Scene_dtor (scenePath), the 100 actors (actors,
-   0x8888 bytes each, actor_destroyPartLists), the item skeleton and shape managers, the 16 resource sets
-   (playerRecords, 0x47fd2 bytes each, ResourceSet_dtor), the object skeleton and shape managers, the two models
+   0x8888 bytes each, actor_destroyPartLists), the item skeleton and shape managers, the 16 player records
+   (playerRecords, 0x47fd2 bytes each, PlayerRecord_dtor), the object skeleton and shape managers, the two models
    (waterModel, layerModel: Shape_dtor), the three light pools (actorLights, dynamicLights, mapLights: Light_dtor) and
    space (CollisionVolume_dtor). Returns the last destructor's eax */
 u32 THISCALL (Stage_dtor)(u8 *self)
@@ -286,7 +287,7 @@ u32 THISCALL (Stage_dtor)(u8 *self)
 	eh_vector_destructor((u8 *)stage->actors, 0x8888, 100, FN(actor_destroyPartLists));
 	SkeletonManager_dtor((u8 *)&stage->itemSkeletons);   /* SkeletonManager_dtor */
 	ShapeManager_dtor((u8 *)&stage->itemShapes);   /* ShapeManager_dtor */
-	eh_vector_destructor((u8 *)stage->playerRecords, 0x47fd2, 16, FN(ResourceSet_dtor));
+	eh_vector_destructor((u8 *)stage->playerRecords, 0x47fd2, 16, FN(PlayerRecord_dtor));
 	SkeletonManager_dtor((u8 *)&stage->objectSkeletons);
 	ShapeManager_dtor((u8 *)&stage->objectShapes);
 	Shape_dtor((u8 *)&stage->waterModel);
@@ -521,7 +522,7 @@ u8 *THISCALL (Console_ctor)(u8 *g)
 	SkeletonManager_clear((u8 *)&st->objectSkeletons);
 	VECTOR((u8 *)st->objects, 0x2cc, 0x3e8);
 	VECTOR((u8 *)st->actorItems, 0x2e18, 0x32);
-	((void (STDCALL *)(void *, int, int, u32, u32))IMG(CRT(vectorConstruct)))((u8 *)st->playerRecords, 0x47fd2, 0x10, FN(ResourceSet_ctor), FN(ResourceSet_dtor));
+	((void (STDCALL *)(void *, int, int, u32, u32))IMG(CRT(vectorConstruct)))((u8 *)st->playerRecords, 0x47fd2, 0x10, FN(PlayerRecord_ctor), FN(PlayerRecord_dtor));
 	VTABLE((u8 *)&st->itemShapes, VT(ShapeManager));
 	ShapeManager_clear((u8 *)&st->itemShapes);
 	VTABLE((u8 *)&st->itemSkeletons, VT(SkeletonManager));
@@ -596,7 +597,7 @@ static void zero_dwords(u8 *at, int n)
 
 /* 0x460cb0 (thiscall on the game object): a session started in mode (+4 client, +8 sessionMode: 0 solo, 1 network, 2 the ARM CENTER, 3 replays). With no CD found a fatal
    message. Its counters cleared; in mode 3 the names of the replay list's entries flagged flag (g_replayList, 0x44-byte
-   records, g_replayListCount of them) copied to replayFiles (0x40 each, count replayCount); actors and scene reset; mode 2 also
+   records, g_replayListCount of them) copied to replayFiles (0x40 each, count replayCount); actors and stage reset (stage_resetActors, stage_reset); mode 2 also
    sets silentActor and playerActor to 0 (stage_setSilentActor), the level and world boxes (levelLow .. levelHigh,
    worldLow .. worldHigh) to -100000 .. 100000, and the game type flags for type 0; the camera at g_vecOrigin,
    facing -g_vecUnitZ, up g_vecUnitY, the match state matchState (session mode 2 -> 3 the mech test mode, 3 -> 1
@@ -621,8 +622,8 @@ void THISCALL (scene_startSession)(u8 *g, u32 client, int mode)
 	u8 *s = (u8 *)SCENE_STAGE(g);
 	Stage *st = (Stage *)s;
 	GS->replayIndex = GS->replayVersion = 0;
-	scene_resetActors(s);
-	scene_reset(s);
+	stage_resetActors(s);
+	stage_reset(s);
 	if (GS->sessionMode == 2) {
 		stage_setSilentActor(s, 0);   /* stage_setSilentActor */
 		GS->playerActor = 0;

@@ -1,8 +1,9 @@
 /* menu_keys.c: key handling of the front end: each screen has its own handler; these pick it. */
 #include "../game.h"
 
-/* 0x4319d0: the menus' keys, once per frame: none while the input is off, the keys are blocked or the screen is
-   still fading in; a message box takes them first; else the current screen's handler */
+/* 0x4319d0: the menus' keys, once per frame: none while a text field has them (g_textFieldOpen), the menu camera
+   moves (g_menuCameraMove) or the key guard runs (g_menuKeyGuard above 0; the keyboard reacquired before these two);
+   a message box (g_dialogPending) takes them first; else the current screen's handler (g_screen) */
 void (menu_processKeys)(void)
 {
 	if (g_textFieldOpen)

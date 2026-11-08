@@ -10,12 +10,12 @@
 0x4dcf28,int,g_savedMechWeaponSlot2
 0x4dcf2c,int,g_savedMechWeaponSlot3
 # the profile record's mech items 0 .. 5
-0x9f1a14,int,g_profileMechItem0
-0x9f1a18,int,g_profileMechItem1
-0x9f1a1c,int,g_profileMechItem2
-0x9f1a20,int,g_profileMechItem3
-0x9f1a24,int,g_profileMechItem4
-0x9f1a28,int,g_profileMechItem5
+0x9f1a14,int,g_profileMechItemSlot4
+0x9f1a18,int,g_profileMechItemSlot5
+0x9f1a1c,int,g_profileMechWeaponSlot0
+0x9f1a20,int,g_profileMechWeaponSlot1
+0x9f1a24,int,g_profileMechWeaponSlot2
+0x9f1a28,int,g_profileMechWeaponSlot3
 # the room settings record (0x5b1b30: a name, then these bytes)
 0x5b1b50,signed char,g_roomRecMap
 0x5b1b51,u8,g_roomRecMaxPlayers
@@ -48,8 +48,8 @@
 0x9dd6b8,int,g_rankingWaiting
 0x4dc4b4,int,g_bestLevelNet
 0x4dc1e0,int,g_bestProgressSolo
-0x9dd248,int,g_accountRank
-0x4de6e0,int,g_debugValue
+0x9dd248,int,g_pilotRankKept
+0x4de6e0,int,g_unusedFreeCamCounter
 0x4ded7c,int,g_mouseWheel
 0x4dd0b0,int,g_fpsFrameCount
 0x9dbf00,int,g_timerRepeatCount

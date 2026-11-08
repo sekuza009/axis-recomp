@@ -37,7 +37,7 @@ int (text_setWrapX)(int v) { g_textWrapX = v; return v; }
 int (text_setBottom)(int v) { g_textBottom = v; return v; }
 /* 0x4686e0: the view's vertical field of view in degrees (g_viewFov, gluPerspective's fovy; a float's bits) set and
    returned */
-int (view_setFov)(int v) { (*(int *)&g_viewFov) = v; return v; }
+int (view_setFov)(int fovBits) { (*(int *)&g_viewFov) = fovBits; return fovBits; }
 
 /* ---- index <-> pointer in an array of records ---- */
 /* 0x46cbc0: record i (base + i * stride), 0 for a negative index */
@@ -95,9 +95,9 @@ int THISCALL (stage_resetDynamicLights)(Stage *stage)
 /* ---- small objects ---- */
 /* 0x480440: an empty slot: -1 and four zeros */
 void THISCALL (spaceSlot_clear)(int *self) { self[1] = self[2] = self[3] = self[4] = 0; self[0] = -1; }
-/* 0x469980, 0x46f480: members cleared (partList_clear keeps the sixth) */
+/* 0x469980, 0x46f480: members cleared (ObjectList_clear keeps the sixth, colourCount) */
 void THISCALL (Skeleton_clear)(int *self) { for (int i = 1; i <= 7; i++) self[i] = 0; }
-void THISCALL (partList_clear)(int *self) { for (int i = 1; i <= 11; i++) if (i != 6) self[i] = 0; }
+void THISCALL (ObjectList_clear)(int *self) { for (int i = 1; i <= 11; i++) if (i != 6) self[i] = 0; }
 /* 0x4699a0, 0x46f4b0: the owned block (BlockOwner) freed, then the members cleared */
 static void free_owned(void *self)
 {
@@ -109,9 +109,9 @@ static void free_owned(void *self)
 	}
 }
 int THISCALL (Skeleton_release)(void *self) { free_owned(self); Skeleton_clear(self); return 0; }
-int THISCALL (partList_release)(void *self) { free_owned(self); partList_clear(self); return 0; }
+int THISCALL (ObjectList_release)(void *self) { free_owned(self); ObjectList_clear(self); return 0; }
 /* 0x46f470: the Unit class's destructor (vtable 0x4a9754; its methods log as "class Unit": an object list, ObjectList) */
-int THISCALL (Unit_dtor)(u32 *self) { self[0] = VT(Unit); return partList_release(self); }
+int THISCALL (Unit_dtor)(u32 *self) { self[0] = VT(Unit); return ObjectList_release(self); }
 /* 0x45ff10: its deleting destructor (the vtable's slot 0; compiler-made, which the decompile had not listed): the
    destructor, then the object freed when flags bit 0 is set; returns this */
 void *THISCALL (Unit_deletingDtor)(u32 *self, int flags)
@@ -178,7 +178,7 @@ void (text_setColor)(u32 r, u32 g, u32 b, u32 a) { set_colour_bits(g_textColour,
 /* 0x404120, 0x431db0, 0x44b080: a dialog's box rectangle */
 void (arenaDialogBox_layout)(void) { rect_set(0x104, 0x118, 0x17c, 0x138, g_arenaDialogBoxRects); }
 void (gameListJoinBox_layout)(void) { rect_set(0x104, 0x118, 0x17c, 0x138, g_gameListJoinBoxRects); }
-void (profileDialogBox_layout)(void) { rect_set(0x1d7, 0xf6, 0x226, 0x114, g_profileMessageClickBox); }
+void (profileDialogBox_layout)(void) { rect_set(0x1d7, 0xf6, 0x226, 0x114, g_profileNameTakenClickBox); }
 /* 0x45dfb0: the cockpit actor (cockpitActor: the one the camera sits in) set to i when actor i is in play (state 1).
    A negative i is stored as it is (callers pass -1: none) */
 void THISCALL (stage_setCockpitActor)(Stage *stage, int i)
@@ -219,16 +219,17 @@ void THISCALL (playerRecord_resetFlag)(Stage *stage, int p)
 	pr->flagChanged = 0;
 	pr->flagSent = 0x180;
 }
-/* 0x48fc40: a map script's message (command 26: speaker a, text b, colour c, d twice) put in the stage's message ring
-   of 32 (20 bytes each; Scene.msgRing shows them); when full the oldest is dropped */
-void THISCALL (script_pushMessage)(Stage *stage, int a, int b, int c, int d)
+/* 0x48fc40: a map script's message (command 26: its speaker, text and colour; its fourth argument stored twice, never
+   read) put in the stage's message ring of 32 (20 bytes each; Scene.msgRing shows them); when full the oldest is
+   dropped */
+void THISCALL (script_pushMessage)(Stage *stage, int speaker, int text, int colour, int unused)
 {
 	MessageSlot *e = &stage->messages[stage->msgWrite & 0x1f];
-	e->speaker = a;
-	e->text = (u32)b;
-	e->colour = c;
-	e->unusedC = d;
-	e->unused10 = d;
+	e->speaker = speaker;
+	e->text = (u32)text;
+	e->colour = colour;
+	e->unusedC = unused;
+	e->unused10 = unused;
 	int head = ++stage->msgWrite;
 	if (((stage->msgRead ^ head) & 0x1f) == 0)
 		stage->msgRead++;
@@ -296,7 +297,7 @@ void *THISCALL (actor_initPartLists)(u8 *self)
 	static const int lists[8] = { offsetof(Actor, headModel), offsetof(Actor, chestModel), offsetof(Actor, armsModel), offsetof(Actor, legsModel), offsetof(Actor, boosterModel), offsetof(Actor, weaponModel), offsetof(Actor, weaponModel4), offsetof(Actor, weaponModel5) };
 	for (int k = 0; k < 8; k++) {
 		FIELD(u32, self, lists[k]) = VT(Unit);
-		partList_clear(self + lists[k]);
+		ObjectList_clear(self + lists[k]);
 	}
 	return self;
 }
@@ -841,7 +842,7 @@ static int set_part(u8 *stage, int p, int type, const PartKind *k)
 		return 1;
 	if (type >= GAME_VAR(int, stage + k->count))
 		sys_fatalError((char *)OBJ(g_logStage), (const char *)(uintptr_t)k->message, type);
-	ShapeManager_releaseModels(pl + k->shapes);
+	ShapeManager_releaseShapes(pl + k->shapes);
 	SkeletonManager_releaseSkeletons(pl + k->skels);
 	strcpy((char *)pl + k->name, (const char *)stage + k->names + type * k->stride);
 	GAME_VAR(int, pl + k->field) = type;
@@ -866,8 +867,7 @@ int THISCALL (actor_setActorTypeBoosterInfoBy)(Stage *stage, int p, int type) { 
    actors then has the slot updated (actor_loadWeapon, with its variantLoaded). The callers ignore the eax it leaves */
 void THISCALL (actor_setActorTypeItemInfoBy)(Stage *stage, int p, int slot, int item)
 {
-	u8 *scene = (u8 *)stage;
-	Stage *st = (Stage *)scene;
+	Stage *st = stage;
 	PlayerRecord *record = &st->playerRecords[p];
 	static const int fixed[5] = { 3, 5, 0x24, 0x19, 0x16 };
 	unsigned mode = st->gameType - 2;
@@ -882,5 +882,5 @@ void THISCALL (actor_setActorTypeItemInfoBy)(Stage *stage, int p, int slot, int 
 	record->items[slot] = item;
 	for (int i = 0; i < st->actorCount; i++)
 		if (st->actors[i].player == p)
-			actor_loadWeapon(scene, i, slot, st->actors[i].variantLoaded);
+			actor_loadWeapon(stage, i, slot, st->actors[i].variantLoaded);
 }

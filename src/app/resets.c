@@ -33,13 +33,13 @@ void (net_clearServerSettings)(void)
 }
 
 /* 0x440df0: every replay of the replay selection list out (g_replayList's picked flags, 1024 entries)
-   and the show's options back to their defaults (g_replayWrap 1, g_replayRandomOrder 0; g_unusedMainMenuWord 0) */
+   and the show's options back to their defaults (g_replayWrap 1, g_replayRandomOrder 0; g_unusedReplaySelectWord 0) */
 void (replaySelect_allOut)(void)
 {
 	for (FileEntry *p = g_replayList; p < g_replayList + 1024; p++)
 		p->picked = 0;
 	g_replayWrap = 1;
-	g_unusedMainMenuWord = 0;
+	g_unusedReplaySelectWord = 0;
 	g_replayRandomOrder = 0;
 }
 
@@ -61,8 +61,8 @@ void (account_takeRank)(void)
 {
 	int v = g_outOfRank != 1 ? g_receivedRank : 0;
 	g_pilotRank = v;
-	g_accountRank = v;
+	g_pilotRankKept = v;
 	g_rankReplyIn = 0;
 	g_accountRankDue = 0;
-	g_roomAwaitingServer = 0;
+	g_accountRankAwaited = 0;
 }

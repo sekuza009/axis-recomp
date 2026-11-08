@@ -26,7 +26,7 @@ static void limit_frame_time(u32 limit)
 }
 
 /* a -= (a - target) * frame time * rate (fsub, fmul, fmul, fsubr) */
-static void ease_from(u32 a, u32 target)
+static void ease_towards(u32 a, u32 target)
 {
 	F(a) = (float)((X)F(a) - ((X)F(a) - F(target)) * g_frameTime * RATE);
 }
@@ -110,7 +110,7 @@ static void menu_camera(const MenuCam *m)
 		GAME_VAR(u32, m->v150) = 0x43160000;   /* 150.0 */
 	}
 	for (int k = 0; k < 6; k++)
-		ease_from(cam[k], home[k]);
+		ease_towards(cam[k], home[k]);
 }
 
 /* 0x437a10: the game room's camera */
@@ -455,7 +455,7 @@ void (setup_camera)(void)
    g_keyStepRight (A / D) step it sideways (freeCam_stepLeft / freeCam_stepRight); then the menu camera follows:
    look-at (g_freeCamLookX, g_menuCameraLookY = height + tilt, g_freeCamLookZ), eye 50 units behind along the heading at
    height + 10; the point is kept in the local slot's g_slotCams record (0x58 bytes, g_localSlot); g_dikZ_2 toggles
-   g_freeCamZoom 1 / 2, and 1 / 2 / 3 / 4 step g_debugValue by +1 / +10 / -1 / -10 (not below 1). The original leaves
+   g_freeCamZoom 1 / 2, and 1 / 2 / 3 / 4 step g_unusedFreeCamCounter by +1 / +10 / -1 / -10 (not below 1). The original leaves
    eax to callers that ignore it */
 void (freeCam_keys)(void)
 {
@@ -483,8 +483,8 @@ void (freeCam_keys)(void)
 		menu_clearInputBuffer(0x32);
 		g_watchChatOpen = 1;
 		(*(u32 *)&g_menuKeyGuard) = 0x41a00000;   /* 20 */
-		g_editCaretX = 0x32;
-		g_editCaretY = 0x1cc;
+		g_inputLineX = 0x32;
+		g_inputLineY = 0x1cc;
 		return;
 	}
 	if (input_justPressed(g_keyCancel2)) {
@@ -531,13 +531,13 @@ void (freeCam_keys)(void)
 	if (input_justPressed(g_dikZ_2) == 1)
 		g_freeCamZoom = g_freeCamZoom == 1 ? 2 : 1;
 	if (input_justPressed(g_dik1) == 1)
-		g_debugValue++;
+		g_unusedFreeCamCounter++;
 	if (input_justPressed(g_dik2) == 1)
-		g_debugValue += 10;
+		g_unusedFreeCamCounter += 10;
 	if (input_justPressed(g_dik3) == 1)
-		g_debugValue--;
+		g_unusedFreeCamCounter--;
 	if (input_justPressed(g_dik4) == 1)
-		g_debugValue -= 10;
-	if (g_debugValue < 1)
-		g_debugValue = 1;
+		g_unusedFreeCamCounter -= 10;
+	if (g_unusedFreeCamCounter < 1)
+		g_unusedFreeCamCounter = 1;
 }

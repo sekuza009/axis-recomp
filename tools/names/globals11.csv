@@ -1,7 +1,7 @@
 # the arena lobby / the room
 0x4dbb10,int,g_joinPollTicks
 0x4db55c,int,g_hostErrorBox
-0x9dd6d4,int,g_roomAwaitingServer
+0x9dd6d4,int,g_accountRankAwaited
 0x4dbab0,int,g_editingNewArenaName
 0x5b1b53,u8,g_roomRecGameMode
 0x4df9eb,u8,g_roomGameMode

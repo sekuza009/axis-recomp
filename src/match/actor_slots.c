@@ -131,7 +131,7 @@ int THISCALL (script_notifyObject)(Stage *stage, int a, int b, int c, int d)
 
 /* 0x470a70: every actor slot emptied: the six slot numbers from playerActor on (-1), rankingDirty 1, the scores, the
    16 player records and the stage's own reset, then the 100 slots */
-void THISCALL (scene_resetActors)(Stage *stage)
+void THISCALL (stage_resetActors)(Stage *stage)
 {
 	for (int k = 0; k < 6; k++)
 		FIELD(int, stage, offsetof(Stage, playerActor) + k * 4) = -1;   /* playerActor .. heldMode */
@@ -158,8 +158,8 @@ void THISCALL (stage_clearActorSlots)(Stage *stage)
 	}
 }
 
-/* 0x47cf10: bullet b is gone: its shooter's five target references to it dropped, its slot freed (the lowest free
-   slot and the used count kept up to date) */
+/* 0x47cf10: bullet b is gone: its shooter's entry for it among the five rounds it fired (shotBullets) set to -1, its
+   slot freed (the lowest free slot and the used count kept up to date) */
 void THISCALL (bullet_free)(Stage *stage, int b)
 {
 	Bullet *bu = &stage->bullets[b];
@@ -434,7 +434,7 @@ void THISCALL (actor_startingValues)(u8 *scene, int p)
 /* 0x45e600 (thiscall on the scene): actor a's weapon model: its item in slot (its player type record's items + slot x 4; negative:
    none) loaded, in the given variant, into the slot's loader: slots 4 and 5 their own (weaponModel4; weaponModel5, from the
    item's second set of tables), any other only when it is the selected one (slot: weaponModel, and weapon the item's
-   ammoType, -1 without). Without an item the loader is emptied (partList_release). Its callers ignore the eax it leaves */
+   ammoType, -1 without). Without an item the loader is emptied (ObjectList_release). Its callers ignore the eax it leaves */
 void THISCALL (actor_loadWeapon)(u8 *scene, int a, int slot, int variant)
 {
 	u8 *actor = (u8 *)&STS->actors[a];
@@ -460,7 +460,7 @@ void THISCALL (actor_loadWeapon)(u8 *scene, int a, int slot, int variant)
 		                     info->sets[set].shapeNames[variant], info->sets[set].skelCount[variant], info->sets[set].skelNames[variant],
 		                     0, 0, 0, actor + listAt + sizeof(ObjectList), 0x1770);   /* (its memory right after it) */
 	else
-		partList_release(actor + listAt);
+		ObjectList_release(actor + listAt);
 	if (listAt == offsetof(Actor, weaponModel))
 		pl->ammoKind = it ? info->ammoType : -1;
 }
@@ -535,8 +535,8 @@ static u8 *weapon_list(u8 *ac)
    first 3 s (spawnAge) a white flash fading in then out, or a shot's flash (glow, white) and a hit's (hitFlash, red-orange); a
    faint tint queues it with faintActorMatrix (drawn transparent). The viewing actor (cockpitActor), when draw is set, shows only the weapon in
    hand; others, when draw is not 1, all their lists up to the count partListsBound (the fifth unless viewMarked; flags 0xd00 skip
-   them without flares 0x83a9c8 or when too small on screen; faint ones only with flares); flags 0x100 / 0xc00 add a
-   lit pass. A list that would not draw has them all reloaded (actor_loadHead / actor_loadChest / actor_loadArms /
+   them at F/X STATUS LOW (g_highDetail 0) or when too small on screen; faint ones only at HIGH); flags 0x100 / 0xc00
+   add a lit pass. A list that would not draw has them all reloaded (actor_loadHead / actor_loadChest / actor_loadArms /
    actor_loadLegs / actor_loadBooster / actor_loadWeapon). Its caller ignores the eax it leaves */
 void THISCALL (actor_drawIntoView)(u8 *s, int a, void *vv, int draw)
 {
@@ -843,7 +843,7 @@ void THISCALL (actor_setupFromParts)(u8 *s, int a, int id, u32 controlledBy, con
 	BITS(AC->botLookYaw) = BITS(AC->yaw);
 	fill_dwords(ac + offsetof(Actor, nextForward), 6, 0);   /* nextForward .. fireCycle */
 	fill_dwords(ac + offsetof(Actor, netMotion), 5, 0);   /* netMotion */
-	fill_dwords(ac + offsetof(Actor, netFired), 3, 0);   /* netFired .. burstLeft */
+	fill_dwords(ac + offsetof(Actor, netStateReceived), 3, 0);   /* netStateReceived .. burstLeft */
 	AC->burstTime = 0.0f;
 	for (int k = 0; k < 5; k++) {
 		AC->shots[k].inUse = 0;
@@ -910,8 +910,9 @@ void THISCALL (actor_setupFromParts)(u8 *s, int a, int id, u32 controlledBy, con
 #define A(type, offset) GAME_VAR(type, ac + (offset))
 #define AC ((Actor *)ac)   /* the same by its fields (src/scene.fields) */
 
-/* the actor's eight part lists (constructed on the stack copy as the original does) */
-static const u16 k_listAt[8] = { offsetof(Actor, headModel), offsetof(Actor, chestModel), offsetof(Actor, armsModel), offsetof(Actor, legsModel), offsetof(Actor, boosterModel), offsetof(Actor, weaponModel), offsetof(Actor, weaponModel4), offsetof(Actor, weaponModel5) };
+/* the actor's eight object lists (the five parts, then the models of the weapon in hand and of slots 4 and 5;
+   constructed on the stack copy as the original does) */
+static const u16 k_modelLists[8] = { offsetof(Actor, headModel), offsetof(Actor, chestModel), offsetof(Actor, armsModel), offsetof(Actor, legsModel), offsetof(Actor, boosterModel), offsetof(Actor, weaponModel), offsetof(Actor, weaponModel4), offsetof(Actor, weaponModel5) };
 
 /* |a - b| (an x87 abs: a NaN stays) within 0.1 */
 static int close_enough(const float *a, const float *b)
@@ -970,22 +971,22 @@ static int totals_agree(u8 *s, u8 *ac, u8 *me)
 
 /* 0x45ee40 (thiscall on the scene): the "data loss" check match_frame runs every 20 s on the local
    player's actor a: one not in play (state) passes; else totals_agree. The original's stack actor (its five
-   resource sets and eight part lists constructed and destroyed again) is kept; its SEH frame is not reproduced.
+   round records and eight part lists constructed and destroyed again) is kept; its SEH frame is not reproduced.
    Returns 1 if all agree, else 0 */
 u32 THISCALL (actor_checkDataLoss)(u8 *s, int a)
 {
 	Stage *st = (Stage *)s;
 	u8 me[0x8888];   /* the stack actor (only the fields it computes are read) */
 	for (int k = 0; k < 5; k++)
-		class_emptyCtor((u8 *)&((Actor *)me)->rounds[k]);   /* class_emptyCtor: a resource set */
+		class_emptyCtor((u8 *)&((Actor *)me)->rounds[k]);   /* class_emptyCtor: a round record (FiredRound) */
 	for (int k = 0; k < 8; k++) {
-		GAME_VAR(u32, me + k_listAt[k]) = VT(Unit);
-		partList_clear(me + k_listAt[k]);
+		GAME_VAR(u32, me + k_modelLists[k]) = VT(Unit);
+		ObjectList_clear(me + k_modelLists[k]);
 	}
 	u8 *ac = (u8 *)&st->actors[a];
 	int ok = AC->state != 1 || totals_agree(s, ac, me);
 	for (int k = 7; k >= 0; k--)
-		Unit_dtor(me + k_listAt[k]);   /* Unit_dtor: a part list released */
+		Unit_dtor(me + k_modelLists[k]);   /* Unit_dtor: a part list released */
 	return ok;
 }
 #undef A

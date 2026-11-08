@@ -68,7 +68,7 @@ void (menu_showMessage)(int i)
 
 /* ---- session list entries (SessionEntry) ---- */
 /* 0x4065a0: entries a and b swapped */
-void (sessionList_swap)(void *a, void *b)
+void (sessionList_swap)(SessionEntry *a, SessionEntry *b)
 {
 	SessionEntry t;
 	memcpy(&t, a, sizeof t);
@@ -95,7 +95,7 @@ void (arena_clearSessionEntry)(void)
 /* 0x430390: the default mech (start-up, app_startupLoad): parts 0, weapon slot 0 item 0, weapon slots 1 .. 3 and item
    slots 4 / 5 -1 (none), and the first five of the six colour entries (24 bytes each) (0, 1, 0, 0, 1, 0); the sixth
    is left */
-void (mech_setEmpty)(void)
+void (mech_setDefault)(void)
 {
 	static const float colour[6] = { 0, 1, 0, 0, 1, 0 };
 	g_savedMechWeaponSlot1 = g_savedMechWeaponSlot2 = g_savedMechWeaponSlot3 =
@@ -133,12 +133,12 @@ void (mech_loadFromProfile)(void)
 	g_savedMechArm = g_profileMechArm;
 	g_savedMechBooster = g_profileMechBooster;
 	g_savedMechLeg = g_profileMechLeg;
-	g_savedMechWeaponSlot0 = g_profileMechItem2;
-	g_savedMechWeaponSlot2 = g_profileMechItem4;
-	g_savedMechWeaponSlot1 = g_profileMechItem3;
-	g_savedMechWeaponSlot3 = g_profileMechItem5;
-	g_savedMechItemSlot4 = g_profileMechItem0;
-	g_savedMechItemSlot5 = g_profileMechItem1;
+	g_savedMechWeaponSlot0 = g_profileMechWeaponSlot0;
+	g_savedMechWeaponSlot2 = g_profileMechWeaponSlot2;
+	g_savedMechWeaponSlot1 = g_profileMechWeaponSlot1;
+	g_savedMechWeaponSlot3 = g_profileMechWeaponSlot3;
+	g_savedMechItemSlot4 = g_profileMechItemSlot4;
+	g_savedMechItemSlot5 = g_profileMechItemSlot5;
 	for (int o = 0; o < 0x90; o += 0x18) {
 		ColourChoice *c = (ColourChoice *)(OBJ(g_pilotSaveColours) + o);
 		if (!(c->first[1] >= 0.0f))   /* the first tint's saturation and value: not below 0 */
@@ -157,12 +157,12 @@ void (mech_storeToProfile)(void)
 	g_profileMechLeg = g_savedMechLeg;
 	g_profileMechArm = g_savedMechArm;
 	g_profileMechBooster = g_savedMechBooster;
-	g_profileMechItem3 = g_savedMechWeaponSlot1;
-	g_profileMechItem2 = g_savedMechWeaponSlot0;
-	g_profileMechItem4 = g_savedMechWeaponSlot2;
-	g_profileMechItem1 = g_savedMechItemSlot5;
-	g_profileMechItem5 = g_savedMechWeaponSlot3;
-	g_profileMechItem0 = g_savedMechItemSlot4;
+	g_profileMechWeaponSlot1 = g_savedMechWeaponSlot1;
+	g_profileMechWeaponSlot0 = g_savedMechWeaponSlot0;
+	g_profileMechWeaponSlot2 = g_savedMechWeaponSlot2;
+	g_profileMechItemSlot5 = g_savedMechItemSlot5;
+	g_profileMechWeaponSlot3 = g_savedMechWeaponSlot3;
+	g_profileMechItemSlot4 = g_savedMechItemSlot4;
 	memcpy((void *)OBJ(g_pilotSaveColours), (void *)OBJ(g_savedColourChoices), 0x90);
 }
 
@@ -399,7 +399,7 @@ void (missions_briefingClicks)(void)
    view squeezed (aspect 0.1) to open out again, the camera to (?, 0, 1600) looking ahead, a sound, the menu camera
    put back. Both return what that leaves in eax ---- */
 #define put_camera_back() CALL_FN(menu_cameraToPoint0, u32, void)()   /* menu_cameraToPoint0 */
-static u32 leave_settings(u32 state)
+static u32 leave_screen(u32 state)
 {
 	GAME_VAR(int, state) = 0;
 	(*(u32 *)&g_viewAspect) = 0x3dcccccd;   /* g_viewAspect = 0.1 */
@@ -410,8 +410,8 @@ static u32 leave_settings(u32 state)
 	sound_playMenu(4);
 	return put_camera_back();
 }
-u32 (missions_leave)(void) { return leave_settings(ADDR(g_missionsState)); }
-u32 (skirmish_leave)(void) { return leave_settings(ADDR(g_skirmishState)); }
+u32 (missions_leave)(void) { return leave_screen(ADDR(g_missionsState)); }
+u32 (skirmish_leave)(void) { return leave_screen(ADDR(g_skirmishState)); }
 
 /* 0x4370e0: the new ID confirmation's keys: O chooses OK (g_newIdConfirmChoice 1), C CANCEL (2), each with the menu
    sound. Returns what the original leaves in eax */
@@ -614,7 +614,7 @@ static u32 to_pilot_screen(void)
 	menuCamera_setMove(4);
 	g_enteringMenus = 1;
 	g_nextScreen = 210;
-	profile_saveProgress();
+	profile_save();
 	return CALL_FN(shared_emptyFunction, u32, void)();
 }
 

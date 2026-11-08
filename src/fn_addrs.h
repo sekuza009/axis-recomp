@@ -331,7 +331,7 @@
 #define FNADDR_static_registerTextureManagerDtor 0x42b370
 #define FNADDR_static_endTextureManager 0x42b380
 #define FNADDR_str_invert 0x42b390
-#define FNADDR_crypt_countingKey 0x42b3c0
+#define FNADDR_crypt_record4c 0x42b3c0
 #define FNADDR_data_loadMessages 0x42b3e0
 #define FNADDR_data_loadCharacterProfiles 0x42b590
 #define FNADDR_data_loadMapInfo 0x42b830
@@ -368,7 +368,7 @@
 #define FNADDR_input_initDikCodes 0x42fd40
 #define FNADDR_timer_now 0x4301e0
 #define FNADDR_timer_init 0x4302d0
-#define FNADDR_mech_setEmpty 0x430390
+#define FNADDR_mech_setDefault 0x430390
 #define FNADDR_app_startupLoad 0x430400
 #define FNADDR_menu_initColours 0x430ab0
 #define FNADDR_net_clearSlots 0x430bd0
@@ -456,7 +456,7 @@
 #define FNADDR_newIdConfirm_clicks 0x435ce0
 #define FNADDR_room_pageClicks 0x435d30
 #define FNADDR_account_clicks 0x435e70
-#define FNADDR_gameList_stopJoin 0x435f40
+#define FNADDR_gameListJoinBox_clicks 0x435f40
 #define FNADDR_gameList_mouse 0x435fc0
 #define FNADDR_room_settingsClicks 0x436400
 #define FNADDR_ranking_clicks 0x436620
@@ -575,8 +575,8 @@
 #define FNADDR_mech_storeToProfile 0x4464b0
 #define FNADDR_profile_newCampaign 0x446590
 #define FNADDR_profile_makeCurrent 0x446a10
-#define FNADDR_profile_saveProgress 0x447010
-#define FNADDR_profile_writeFile 0x447320
+#define FNADDR_profile_save 0x447010
+#define FNADDR_profile_writeUserFile 0x447320
 #define FNADDR_profile_readHeader 0x4474a0
 #define FNADDR_skirmish_layout 0x447660
 #define FNADDR_skirmish_hitTest 0x447710
@@ -649,7 +649,7 @@
 #define FNADDR_profileList_drawNames 0x44ce90
 #define FNADDR_profile_drawChosenPilot 0x44cf70
 #define FNADDR_profile_drawManagementWindow 0x44d720
-#define FNADDR_profile_drawMessageWindow 0x44dc60
+#define FNADDR_profile_drawNameTakenMessage 0x44dc60
 #define FNADDR_profile_drawNewDialog 0x44de00
 #define FNADDR_profile_drawDeleteQuestion 0x44e180
 #define FNADDR_profile_drawLogOutQuestion 0x44e3e0
@@ -909,8 +909,8 @@
 #define FNADDR_Scene_ctor 0x4637f0
 #define FNADDR_Scene_deletingDtor 0x463810
 #define FNADDR_Stage_deletingDtor 0x463830
-#define FNADDR_ResourceSet_ctor 0x463850
-#define FNADDR_ResourceSet_dtor 0x463960
+#define FNADDR_PlayerRecord_ctor 0x463850
+#define FNADDR_PlayerRecord_dtor 0x463960
 #define FNADDR_actor_initPartLists 0x463a40
 #define FNADDR_static_startShapeLog 0x463b20
 #define FNADDR_Shape_initLog 0x463b30
@@ -921,8 +921,8 @@
 #define FNADDR_Shape_dtor 0x464ba0
 #define FNADDR_Shape_clear 0x464bb0
 #define FNADDR_Shape_release 0x464bc0
-#define FNADDR_model_loadFrom 0x464bf0
-#define FNADDR_model_loadObjFormatFrom 0x464db0
+#define FNADDR_shape_loadFrom 0x464bf0
+#define FNADDR_shape_readObj 0x464db0
 #define FNADDR_shape_read 0x466120
 #define FNADDR_shape_bindTextureBy 0x466430
 #define FNADDR_shape_markMaterialsChanged 0x466560
@@ -943,7 +943,7 @@
 #define FNADDR_shapeDat_findByName 0x466ce0
 #define FNADDR_shapeDat_getItemFileBy 0x466d60
 #define FNADDR_shape_getByName 0x466dc0
-#define FNADDR_ShapeManager_releaseModels 0x467520
+#define FNADDR_ShapeManager_releaseShapes 0x467520
 #define FNADDR_shape_setTextureSuffix 0x467580
 #define FNADDR_shape_clearTint 0x4675f0
 #define FNADDR_shape_setTint 0x467660
@@ -954,7 +954,7 @@
 #define FNADDR_vec_initZero 0x4678c0
 #define FNADDR_vec_initOrigin 0x4678f0
 #define FNADDR_vec_initAxisX 0x467920
-#define FNADDR_vec_initUp 0x467950
+#define FNADDR_vec_initAxisY 0x467950
 #define FNADDR_vec_initAxisZ 0x467980
 #define FNADDR_math_triangleNormal 0x4679a0
 #define FNADDR_sound_init 0x467a50
@@ -1064,7 +1064,7 @@
 #define FNADDR_colour_initRealGreen 0x46d410
 #define FNADDR_colour_initRealBlue 0x46d450
 #define FNADDR_colour_initRealYellow 0x46d490
-#define FNADDR_colour_initTextColours 0x46d4d0
+#define FNADDR_colour_initMessageColours 0x46d4d0
 #define FNADDR_tex_tintHsv 0x46d950
 #define FNADDR_static_startPackedColorLog 0x46da60
 #define FNADDR_PackedColor_initLog 0x46da70
@@ -1114,8 +1114,8 @@
 #define FNADDR_static_registerUnitLogDtor 0x46f440
 #define FNADDR_static_endUnitLog 0x46f450
 #define FNADDR_Unit_dtor 0x46f470
-#define FNADDR_partList_clear 0x46f480
-#define FNADDR_partList_release 0x46f4b0
+#define FNADDR_ObjectList_clear 0x46f480
+#define FNADDR_ObjectList_release 0x46f4b0
 #define FNADDR_ObjectList_load 0x46f4e0
 #define FNADDR_anim_setTime 0x46f770
 #define FNADDR_ObjectList_relight 0x46f7a0
@@ -1128,8 +1128,8 @@
 #define FNADDR_static_endStageLog 0x46ff50
 #define FNADDR_Stage_dtor 0x46ff70
 #define FNADDR_stage_build 0x4700a0
-#define FNADDR_scene_resetActors 0x470a70
-#define FNADDR_scene_reset 0x470ad0
+#define FNADDR_stage_resetActors 0x470a70
+#define FNADDR_stage_reset 0x470ad0
 #define FNADDR_stage_newRound 0x470cb0
 #define FNADDR_stage_setFolders 0x470de0
 #define FNADDR_stage_setName 0x470f80
@@ -1349,7 +1349,7 @@
 #define FNADDR_render_depthSortBillboards 0x491190
 #define FNADDR_hud_drawPlayerMarkers 0x4913a0
 #define FNADDR_hud_drawLockOn 0x491f50
-#define FNADDR_hud_drawEmblem 0x4922c0
+#define FNADDR_hud_drawGradeBadge 0x4922c0
 #define FNADDR_hud_drawFlag 0x4924d0
 #define FNADDR_hud_drawMain 0x4926f0
 #define FNADDR_hud_drawRanking 0x494930
@@ -1377,7 +1377,7 @@
 #define FNADDR_escMenu_open 0x49ca20
 #define FNADDR_escMenu_update 0x49ca70
 #define FNADDR_ladder_addMatchScores 0x49d150
-#define FNADDR_match_combatInput 0x49d290
+#define FNADDR_match_readInput 0x49d290
 #define FNADDR_match_setupOrStartRound 0x49df10
 #define FNADDR_netq_reset 0x4a8300
 #define FNADDR_netq_poll 0x4a8350

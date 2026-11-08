@@ -271,11 +271,11 @@ u32 (app_invalidateLauncherMarks)(void)
 /* ---- a .dat archive opened (unless already): its file (named by format), the entry count, then the 0x44-byte
    entries into a malloc'd table; a missing file or no memory is a fatal error (to log). Returns what the original
    leaves in eax ---- */
-static u32 dat_open(u32 count, const char *format, void *log)
+static u32 dat_open(u32 archive, const char *format, void *log)
 {
-	u32 table = count + 4, file = count + 8;
-	if (GAME_VAR(int, count) > 0)
-		return GAME_VAR(u32, count);
+	u32 table = archive + 4, file = archive + 8;
+	if (GAME_VAR(int, archive) > 0)
+		return GAME_VAR(u32, archive);
 	if (GAME_VAR(void *, file))
 		return GAME_VAR(u32, file);
 	char path[0x100];
@@ -283,11 +283,11 @@ static u32 dat_open(u32 count, const char *format, void *log)
 	GAME_VAR(void *, file) = crt_fopen(path, (const char *)STR(0x4ad170, "rb"));
 	if (!GAME_VAR(void *, file))
 		sys_fatalErrorN(log, (const char *)STR(0x4b3ee4, "can't open file(%s) - initBy()"), path);
-	crt_fread((void *)RELOC(count), 4, 1, GAME_VAR(void *, file));   /* fread */
-	GAME_VAR(void *, table) = crt_malloc(GAME_VAR(int, count) * 0x44);
+	crt_fread((void *)RELOC(archive), 4, 1, GAME_VAR(void *, file));   /* fread */
+	GAME_VAR(void *, table) = crt_malloc(GAME_VAR(int, archive) * 0x44);
 	if (!GAME_VAR(void *, table))
-		sys_fatalErrorN(log, (const char *)STR(0x4b3eb4, "insufficient memory for itemBuffer(%d..."), GAME_VAR(int, count));
-	return crt_fread(GAME_VAR(void *, table), 0x44, GAME_VAR(int, count),
+		sys_fatalErrorN(log, (const char *)STR(0x4b3eb4, "insufficient memory for itemBuffer(%d..."), GAME_VAR(int, archive));
+	return crt_fread(GAME_VAR(void *, table), 0x44, GAME_VAR(int, archive),
 	                                                          GAME_VAR(void *, file));
 }
 /* 0x466c00: Shape.dat; skelDat_initBy: the skeleton archive */
@@ -428,9 +428,9 @@ u32 (profile_writeCleared)(int count)
 	return profiles_write(f);
 }
 
-/* 0x447320: the file written as the profiles stand, the name g_profileName being the current profile's. Returns
-   fclose's eax (0 without the file) */
-u32 (profile_writeFile)(void)
+/* 0x447320: axisuser.dat (the profile list) written as the profiles stand, the name g_profileName being the current
+   profile's. Returns fclose's eax (0 without the file) */
+u32 (profile_writeUserFile)(void)
 {
 	void *f = profiles_create();
 	if (!f)
@@ -620,8 +620,9 @@ u32 (app_parseCommandLine)(char *line)
 	return strlen(args[2]) + 1;
 }
 
-/* the game ended with an error box (title "ERROR") */
-static void data_missing(u32 message)
+/* the game ended with an error box (title "ERROR"): a data file missing, too short, without its header or of the
+   wrong version */
+static void data_error(u32 message)
 {
 	MessageBoxA(NULL, (const char *)RELOC(message), (const char *)STR(0x4b141c, "ERROR"), 0);
 	crt_exit(-1);   /* exit */
@@ -639,7 +640,7 @@ static void *data_open(u32 folder, u32 name, u32 mode, u32 missing)
 	strcat(path, (const char *)RELOC(name));
 	void *f = crt_fopen(path, (const char *)RELOC(mode));
 	if (!f)
-		data_missing(missing);
+		data_error(missing);
 	return f;
 }
 
@@ -711,9 +712,10 @@ static void pilot_write(void *f)
 	crt_fwrite(noise, 4999, 1, f);
 }
 
-/* 0x447010: the campaign progress saved: axisuser.dat written (no file: nothing more), then the pilot's file with
-   the profile's record (gathered by mech_storeToProfile); g_selectedCharacter = the profile's pilot character. Returns the last chdir's eax */
-int (profile_saveProgress)(void)
+/* 0x447010: the profile saved: axisuser.dat written (no file: nothing more), then the pilot's file with the profile's
+   record (its progress, and the mech gathered by mech_storeToProfile); g_selectedCharacter = the profile's pilot
+   character. Returns the last chdir's eax */
+int (profile_save)(void)
 {
 	void *f = profiles_create();
 	if (!f)
@@ -732,8 +734,10 @@ int (profile_saveProgress)(void)
 	return crt_chdir((const char *)STR(0x4b2a80, ".."));
 }
 
-/* a new pilot's record: the signature, the name, the value; no progress, the default parts (0x4b2af4, 0x4b2aec,
-   0x4b2ae4) and settings, twelve (170, 0.4, 0) triples */
+/* a new pilot's record (g_pilotSave): the signature, the pilot's name, its character (g_selectedCharacter, from the
+   profile list); no progress; the tags "[TRAP]", "[NOPA]", "[ROLO]" before the mech's parts, after them and after its
+   items; the parts 0, the items (slots 4 / 5: -1 / 0x11; weapon slots 0 .. 3: 0 / 2 / 8 / -1); six colour choices of
+   two (170, 0.4, 0) tints */
 static void campaign_new(void)
 {
 	memset(g_pilotSave, 0, 0x80);
@@ -750,14 +754,14 @@ static void campaign_new(void)
 	strcpy((char *)(OBJ(g_pilotSave) + 0x2d8), (const char *)STR(0x4b2af4, "[TRAP]"));
 	strcpy((char *)(OBJ(g_pilotSave) + 0x2f4), (const char *)STR(0x4b2aec, "[NOPA]"));
 	strcpy((char *)(OBJ(g_pilotSave) + 0x314), (const char *)STR(0x4b2ae4, "[ROLO]"));
-	g_profileMechItem5 = -1;
-	g_profileMechItem0 = -1;
+	g_profileMechWeaponSlot3 = -1;
+	g_profileMechItemSlot4 = -1;
 	for (u32 a = ADDR(g_profileMechHead); a <= ADDR(g_profileMechBooster); a += 4)
 		GAME_VAR(int, a) = 0;
-	g_profileMechItem2 = 0;
-	g_profileMechItem3 = 2;
-	g_profileMechItem4 = 8;
-	g_profileMechItem1 = 0x11;
+	g_profileMechWeaponSlot0 = 0;
+	g_profileMechWeaponSlot1 = 2;
+	g_profileMechWeaponSlot2 = 8;
+	g_profileMechItemSlot5 = 0x11;
 	for (u32 *t = (u32 *)(OBJ(g_pilotSave) + 0x31c); t < (u32 *)(OBJ(g_pilotSave) + 0x3ac); t += 3) {
 		t[0] = 0x432a0000;   /* 170 */
 		t[1] = 0x3ecccccd;   /* 0.4 */
@@ -888,14 +892,14 @@ u32 (data_loadSkirmishInfo)(void)
 	crt_fseek(f, 0, 2);
 	if (((int)crt_ftell(f)) < 10000) {   /* ftell */
 		fclose(f);
-		data_missing(STR(0x4b1534, "Skirmish Data File Not Found"));
+		data_error(STR(0x4b1534, "Skirmish Data File Not Found"));
 	}
 	crt_fseek(f, 0, 0);
 	char header[0x80];
 	crt_fread(header, 0x80, 1, f);
 	if (str_order(header, (const char *)STR(0x4b1510, "AXIS SKIRMISH INFOMATION DATA FILE"))) {
 		fclose(f);
-		data_missing(STR(0x4b1534, "Skirmish Data File Not Found"));
+		data_error(STR(0x4b1534, "Skirmish Data File Not Found"));
 	}
 	crt_fseek(f, 25000, 1);
 	crt_fread((void *)ADDR(g_skirmishInfoCount), 4, 1, f);
@@ -916,14 +920,14 @@ void (data_loadCharacterProfiles)(void)
 	crt_fseek(f, 0, 2);
 	if (((int)crt_ftell(f)) < 10000) {   /* ftell */
 		fclose(f);
-		data_missing(STR(0x4b1480, "Character Profile Data File Not Found"));
+		data_error(STR(0x4b1480, "Character Profile Data File Not Found"));
 	}
 	crt_fseek(f, 0, 0);
 	char header[0x80];
 	crt_fread(header, 0x80, 1, f);
 	if (strcmp(header, (const char *)STR(0x4b145c, "AXIS CHARACTER PROFILE DATA FILE"))) {
 		fclose(f);
-		data_missing(STR(0x4b1480, "Character Profile Data File Not Found"));
+		data_error(STR(0x4b1480, "Character Profile Data File Not Found"));
 	}
 	crt_fseek(f, 0x1046a, 1);
 	int count, version;
@@ -931,12 +935,12 @@ void (data_loadCharacterProfiles)(void)
 	crt_fread(&version, 4, 1, f);
 	version -= 0x115c;
 	if (version != 0x67)
-		data_missing(STR(0x4b143c, "Character Profile wrong version"));
+		data_error(STR(0x4b143c, "Character Profile wrong version"));
 	u8 key = 'a';
 	for (int i = 0; i < count; i++) {
 		u8 record[0x4c];
 		crt_fread(record, 0x4c, 1, f);
-		crypt_countingKey(record, key++);
+		crypt_record4c(record, key++);
 		memcpy(&((CharacterProfile *)g_characterProfiles)[i], record, 0x4c);
 	}
 	fclose(f);
@@ -962,11 +966,11 @@ u32 (data_loadMapInfo)(void)
 	crt_fread(header, 0x80, 1, f);
 	if (str_order((const char *)header, (const char *)STR(0x4b14c0, "AXIS MAP INFOMATION DATA FILE"))) {   /* (the original compares a 0x30-byte copy) */
 		fclose(f);
-		data_missing(STR(0x4b14e0, "Map Infomation Data File Not Found"));
+		data_error(STR(0x4b14e0, "Map Infomation Data File Not Found"));
 	}
 	if (header[0x32] != 0x1a) {
 		fclose(f);
-		data_missing(STR(0x4b14e0, "Map Infomation Data File Not Found"));
+		data_error(STR(0x4b14e0, "Map Infomation Data File Not Found"));
 	}
 	crt_fread((void *)ADDR(g_mapCount), 4, 1, f);
 	for (int i = 0; i < g_mapCount; i++) {

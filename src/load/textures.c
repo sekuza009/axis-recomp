@@ -45,8 +45,9 @@ void (path_stripExtension)(const char *src, char *dst)
 	strcpy(dst, buf);
 }
 
-/* 0x4554c0: a texture bank's name, by binary search of its sorted 0x44-byte records (index, count indexCount): the
-   index or -1. The upper bound starts at the count, not count - 1, as in the original */
+/* 0x4554c0: a texture's entry in the bank's name index by its name, by binary search of the sorted 0x44-byte records
+   (index, count indexCount): the entry's number or -1. The upper bound starts at the count, not count - 1, as in the
+   original */
 int THISCALL (tex_findByName)(TextureBank *self, const u8 *name)
 {
 	int hi = self->indexCount, lo = 0;
@@ -208,8 +209,8 @@ void THISCALL (tex_upload)(u8 *tm, u32 id, int mode)
 		gluBuild2DMipmaps(0xde1, 4, TM->width, TM->height, 0x1908, 0x1401, TM->image);
 }
 
-/* 0x4557e0 (thiscall on a texture bank): is the texture name (up to a '*') there in the manager's format (format,
-   under its directory +8 when it has one) at its size (width x height)? 0: in the dat index (tex_findByName); 1: a
+/* 0x4557e0 (thiscall on a texture bank): is the texture name (up to a '*') there in the bank's format (format,
+   under its folder dir when it has one) at its size (width x height)? 0: in the dat index (tex_findByName); 1: a
    BMP of that size; 2: a RAW whose header (at 6, two shorts in 8-pixel units) gives it; else a fatal message. 1 or
    0, the local image (a BMPRGBFile) closed either way */
 int THISCALL (tex_textureFileExist)(u8 *tm, const char *name)
@@ -378,7 +379,7 @@ int THISCALL (tex_getIdBy)(u8 *tm, const char *name, u32 flags, u32 h1, u32 s1, 
 #define W(m) (((TextureBank *)RELOC(m))->width)
 #define H(m) (((TextureBank *)RELOC(m))->height)
 
-/* path: the texture name in the given format, under the manager's directory when it has one */
+/* path: the texture name in the given format, under the bank's directory when it has one */
 static void tex_path(u8 *m, char *path, u32 with_dir, u32 plain, const char *name)
 {
 	const TextureBank *tm = (const TextureBank *)m;
@@ -388,7 +389,7 @@ static void tex_path(u8 *m, char *path, u32 with_dir, u32 plain, const char *nam
 		sprintf(path, (const char *)RELOC(plain), name);
 }
 
-/* a decoded image of another size than the manager's is fatal */
+/* a decoded image of another size than the bank's is fatal */
 static void size_check(u8 *m, int w, int h)
 {
 	if (W(m) != w || H(m) != h)
@@ -416,7 +417,7 @@ static void colour_fill(u8 *m)
 }
 
 /* 0x455aa0 (thiscall on the texture bank): texture i's image (its name records + i * 0x68 cut at '*') loaded at
-   image, its alpha (alpha_from) and its colour mask at colourMask (or colour_fill), by the manager's format format:
+   image, its alpha (alpha_from) and its colour mask at colourMask (or colour_fill), by the bank's format (format):
    0 items of the texture dat (name, name_ALPHA, name_COLOR: tex_findByName / tex_getItemFileBy, the decoder's tables set
    up on first use, g_ptxTablesReady), 1 BMP files (name.BMP must open), 2 PTX files (name.RAW, name_ALPHA.RAW,
    name_COLOR.RAW); a PTX of another size than width x height is fatal. (The original's SEH frame, for its BMP

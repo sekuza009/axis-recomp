@@ -102,13 +102,13 @@ void THISCALL (mech_setAll)(Scene *scene, const char *name, int character, int t
 		playerRecord_markUsed(STAGE(scene), scene->localPlayer);
 }
 
-/* 0x461540 (thiscall on the game): the shown actor (localPlayer; none when negative) given a weapon slot (none given,
+/* 0x461540 (thiscall on the scene): the shown actor (localPlayer; none when negative) given a weapon slot (none given,
    negative: its current one, players[].slot) through the stage's refresh (stage_remakePlayerActor), its position and two angles kept
    across that; its players[].variantLoaded set unless it is the stage's own (cockpitActor). A slot over 3 first selects and updates
    its players[].lastWeaponSlot one. Its callers ignore the eax it leaves */
-void THISCALL (armc_giveShownActorWeapon)(u8 *game, int slot)
+void THISCALL (armc_giveShownActorWeapon)(u8 *scene, int slot)
 {
-	Scene *sc = (Scene *)game;
+	Scene *sc = (Scene *)scene;
 #define I (sc->localPlayer)
 #define ACTOR (sc->players[I])   /* the shown actor */
 	if (I < 0)
@@ -118,7 +118,7 @@ void THISCALL (armc_giveShownActorWeapon)(u8 *game, int slot)
 	int lastSlot = ACTOR.lastWeaponSlot;
 	int chosen = slot >= 0 ? slot : ACTOR.slot;
 	ACTOR.variantLoaded = I != sc->cockpitActor;
-	Stage *stage = SCENE_STAGE(game);
+	Stage *stage = SCENE_STAGE(scene);
 	stage_remakePlayerActor(stage);
 	for (int k = 0; k < 3; k++)
 		BITS(ACTOR.nextPos[k]) = at[k];

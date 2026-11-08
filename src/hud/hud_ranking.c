@@ -20,7 +20,7 @@ static void ranking_row(Scene *scene, int p, int *y)
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 	if (scene->ladderGame == 1) {
 		x = 0x58;
-		hud_drawEmblem(scene, player->grade, x, *y);
+		hud_drawGradeBadge(scene, player->grade, x, *y);
 	}
 	int flagOwner = scene->sessionMode ? p : player->player;
 	if (scene->playerRecords[flagOwner].flagShown == 1) {

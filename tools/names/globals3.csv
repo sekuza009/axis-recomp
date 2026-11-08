@@ -15,7 +15,7 @@
 0x9db990,int,g_replayRunning
 0x4b2a7c,int,g_replayWrap
 0x9dd8e8,u32,g_startTicks
-0xa0e920,int,g_fullScreen
+0xa0e920,int,g_glFullScreen
 0xa0e00c,int,g_ptxTablesReady
 # arena lobby
 0x76d484,int,g_searchResult
@@ -23,7 +23,7 @@
 0x4dbacc,int,g_typingArenaPassword
 0x4db710,int,g_joinRow
 0x4dbac8,int,g_arenaLanListBuilt
-0x4dbaa8,int,g_arenaServerList
+0x4dbaa8,int,g_arenaListFromServer
 0x4dbaf8,float,g_arenaListClickTimer
 0x4dbb68,int,g_playerSetupLeft
 0x4dbb70,int,g_playerSetupRight

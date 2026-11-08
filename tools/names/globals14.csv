@@ -23,7 +23,7 @@
 0xa1efcc,u32,g_mciFrom
 0xa1efd0,u32,g_mciTo
 0xa1efd8,u32,g_mciDevice
-0xa0e01c,int,g_musicEndHigh
+0xa0e01c,int,g_musicLengthHigh
 # the static textures' objects (their vtable words)
 0x4e1878,u32,g_texture64x64Vtable
 0x5b1db8,u32,g_texture128x64Vtable
@@ -86,4 +86,4 @@
 0x9f62fc,int,g_progressSeen
 0x9f6328,int,g_skirmishChosen
 0x90d1d8,int,g_skirmishInfoCount
-0x9dd4bc,int,g_gameListRefreshClicked
+0x9dd4bc,int,g_gameListRefreshSent

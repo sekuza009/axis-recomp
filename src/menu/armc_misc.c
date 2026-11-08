@@ -229,8 +229,9 @@ static int part_in_view(void)
 	return g_armcPartSlot == 5 ? -1 : g_armcPartSlot;
 }
 
-/* 0x41d600: the parts page's preview: a part changed (g_mechChanged) is put on the preview mech first (the item slots
-   too), a pending colour change (g_coloursChanged) applied */
+/* 0x41d600: the parts and colour pages' preview (armc_drawPartsPage, armc_drawColourPage): a part changed
+   (g_mechChanged) is put on the preview mech first (the item slots too), a pending colour change (g_coloursChanged)
+   applied; on the parts page the part slot in view is posed */
 void (armc_updatePartsPreview)(void)
 {
 	gfx_setProjection2D3D(1);
@@ -534,8 +535,9 @@ static void approach(float *v, float target)
 	*v = (float)(((long double)target - *v) * g_frameTime * 0.1f + *v);
 }
 
-/* 0x41b300: the preview camera eases towards the part being edited (on the parts and colour pages, by their part
-   slot: head, chest, arm, leg, booster, weapons) or the weapons (on the weapons page) */
+/* 0x41b300: the preview camera's height and distance (g_menuEyeY, g_menuEyeZ) ease towards the view of the slot in
+   view: on the parts and colour pages their slot (head, chest, arm, leg, booster, or 5: the whole mech, VIEW ALL), on
+   the weapons page slot 5's view */
 void (armc_easeCamera)(void)
 {
 	static const float height[6] = { 500.0f, 100.0f, -200.0f, -400.0f, -200.0f, 550.0f };
@@ -713,7 +715,7 @@ int (armc_drawModeTabs)(void)
    five part choices (g_armcParts into g_savedMechHead) and the six item slots (the six dwords from g_itemSlot4: slots
    4, 5, then weapons 0 .. 3, into g_savedMechItemSlot4), between two SERAPHIM-part resets (armc_resetSeraphimParts,
    no-ops in the patched game); the original then checked the choices' ranges, which the patched game jumps over. Then
-   the progress saved; returns profile_saveProgress's eax */
+   the progress saved; returns profile_save's eax */
 u32 (armc_saveSelection)(void)
 {
 	armc_resetSeraphimParts();
@@ -721,7 +723,7 @@ u32 (armc_saveSelection)(void)
 	memcpy((void *)ADDR(g_savedMechHead), (const void *)OBJ(g_armcParts), 5 * 4);
 	memcpy((void *)ADDR(g_savedMechItemSlot4), (const void *)ADDR(g_itemSlot4), 6 * 4);
 	armc_resetSeraphimParts();
-	return profile_saveProgress();   /* profile_saveProgress */
+	return profile_save();   /* profile_save */
 }
 
 /* 0x40e930: the selection sent to the others in the room: the colour choices (0x90 bytes from g_armcColours, through the

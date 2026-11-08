@@ -90,10 +90,10 @@ u32 (music_loopIfEnded)(void)
 		return 0;
 	u32 pos[2];
 	COM(stream, 0x20, u32, u32 *)(stream, pos);   /* the play position */
-	int hi = (int)pos[1], end_hi = g_musicEndHigh;
-	if (hi < end_hi)
+	int hi = (int)pos[1], length_hi = g_musicLengthHigh;
+	if (hi < length_hi)
 		return (u32)hi;
-	if (hi == end_hi && pos[0] < g_musicLength)
+	if (hi == length_hi && pos[0] < g_musicLength)
 		return g_musicLength;
 	stream = g_music;
 	COM(stream, 0x28, u32, u32, u32)(stream, 0, 0);
@@ -373,9 +373,9 @@ u32 THISCALL (music_playMatch)(Scene *scene)
 	static const u32 kind3[3] = { STR(0x4b4d6c, "Music/Forgotten.mp3"), STR(0x4b4e6c, "Music/desert wind.mp3"), STR(0x4b506c, "Music/ashes of past.mp3") };             /* Forgotten, desert wind, ashes of past */
 	static const u32 kind4[3] = { STR(0x4b516c, "Music/Speed of Light.mp3"), STR(0x4b536c, "Music/Fierce battle.mp3"), STR(0x4b546c, "Music/Valhalla.mp3") };             /* Speed of Light, Fierce battle, Valhalla */
 	const u32 *random = (const u32 *)OBJ(g_randTable);
-	u32 kind = (u32)scene->musicKind - 1;
+	u32 kindIndex = (u32)scene->musicKind - 1;
 	u32 n;
-	switch (kind) {
+	switch (kindIndex) {
 	case 0:
 		n = g_randPos++;
 		return music_play((const char *)RELOC(kind1[random[n & 0xfff] & 3]));   /* music_play */
@@ -385,9 +385,9 @@ u32 THISCALL (music_playMatch)(Scene *scene)
 	case 2:
 	case 3:
 		n = ++g_randPos;
-		return music_play((const char *)(RELOC(kind) == 2 ? kind3 : kind4)[random[n & 0xfff] % 3]);
+		return music_play((const char *)(RELOC(kindIndex) == 2 ? kind3 : kind4)[random[n & 0xfff] % 3]);
 	}
-	return kind;
+	return kindIndex;
 }
 
 /* 0x457150: the music file `name` played through DirectShow's multimedia stream (CoCreateInstance of k_CLSID_AMMultiMediaStream;

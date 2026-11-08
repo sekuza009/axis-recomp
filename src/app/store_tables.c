@@ -52,22 +52,22 @@ static const Store k_scanCharTable[57] = {
 
 void (input_initScanCharTable)(void) { apply_stores(k_scanCharTable, 57); }   /* 0x431680 the scan code -> character table (g_scanCharTable) */
 
-static const Store k_textColours[64] = {
-	{ OBJ(g_textColours), 0x3f800000 }, { (u32)&g_textColours[0].g, 0x3f800000 }, { (u32)&g_textColours[0].b, 0x3f800000 }, { (u32)&g_textColours[0].a, 0x3f800000 }, { (u32)&g_textColours[1].r, 0x3f73f3f4 },
-	{ (u32)&g_textColours[1].g, 0x3ea8a8a9 }, { (u32)&g_textColours[1].b, 0x3ea8a8a9 }, { (u32)&g_textColours[1].a, 0x3f800000 }, { (u32)&g_textColours[2].r, 0x3f7dfdfe }, { (u32)&g_textColours[2].g, 0x3f37b7b8 },
-	{ (u32)&g_textColours[2].b, 0x3f67e7e8 }, { (u32)&g_textColours[2].a, 0x3f800000 }, { (u32)&g_textColours[3].r, 0x3ecccccd }, { (u32)&g_textColours[3].g, 0x3ea8a8a9 }, { (u32)&g_textColours[3].b, 0x3f73f3f4 },
-	{ (u32)&g_textColours[3].a, 0x3f800000 }, { (u32)&g_textColours[4].r, 0x0 }, { (u32)&g_textColours[4].g, 0x3f4ccccd }, { (u32)&g_textColours[4].b, 0x3f800000 }, { (u32)&g_textColours[4].a, 0x3f800000 },
-	{ (u32)&g_textColours[5].r, 0x3e70f0f1 }, { (u32)&g_textColours[5].g, 0x3f53d3d4 }, { (u32)&g_textColours[5].b, 0x3e0c8c8d }, { (u32)&g_textColours[5].a, 0x3f800000 }, { (u32)&g_textColours[6].r, 0x3f4ccccd },
-	{ (u32)&g_textColours[6].g, 0x3f800000 }, { (u32)&g_textColours[6].b, 0x3f26a6a7 }, { (u32)&g_textColours[6].a, 0x3f800000 }, { (u32)&g_textColours[7].r, 0x3f800000 }, { (u32)&g_textColours[7].g, 0x3f70f0f1 },
-	{ (u32)&g_textColours[7].b, 0x0 }, { (u32)&g_textColours[7].a, 0x3f800000 }, { (u32)&g_textColours[8].r, 0x3f48c8c9 }, { (u32)&g_textColours[8].g, 0x3f48c8c9 }, { (u32)&g_textColours[8].b, 0x3f53d3d4 },
-	{ (u32)&g_textColours[8].a, 0x3f800000 }, { (u32)&g_textColours[9].r, 0x3f109091 }, { (u32)&g_textColours[9].g, 0x3f109091 }, { (u32)&g_textColours[9].b, 0x3f20a0a1 }, { (u32)&g_textColours[9].a, 0x3f800000 },
-	{ (u32)&g_textColours[10].r, 0x3f189899 }, { (u32)&g_textColours[10].g, 0x3f1a9a9b }, { (u32)&g_textColours[10].b, 0x3f058586 }, { (u32)&g_textColours[10].a, 0x3f800000 }, { (u32)&g_textColours[11].r, 0x3f058586 },
-	{ (u32)&g_textColours[11].g, 0x0 }, { (u32)&g_textColours[11].b, 0x0 }, { (u32)&g_textColours[11].a, 0x3f800000 }, { (u32)&g_textColours[12].r, 0x3d40c0c1 }, { (u32)&g_textColours[12].g, 0x0 },
-	{ (u32)&g_textColours[12].b, 0x3f800000 }, { (u32)&g_textColours[12].a, 0x3f800000 }, { (u32)&g_textColours[13].r, 0x3f52d2d3 }, { (u32)&g_textColours[13].g, 0x0 }, { (u32)&g_textColours[13].b, 0x3f800000 },
-	{ (u32)&g_textColours[13].a, 0x3f800000 }, { (u32)&g_textColours[14].r, 0x3e38b8b9 }, { (u32)&g_textColours[14].g, 0x3e48c8c9 }, { (u32)&g_textColours[14].b, 0x3e68e8e9 }, { (u32)&g_textColours[14].a, 0x3f800000 },
-	{ (u32)&g_textColours[15].r, 0x0 }, { (u32)&g_textColours[15].g, 0x3f800000 }, { (u32)&g_textColours[15].b, 0x3f22a2a3 }, { (u32)&g_textColours[15].a, 0x3f800000 } };
+static const Store k_messageColours[64] = {
+	{ OBJ(g_messageColours), 0x3f800000 }, { (u32)&g_messageColours[0].g, 0x3f800000 }, { (u32)&g_messageColours[0].b, 0x3f800000 }, { (u32)&g_messageColours[0].a, 0x3f800000 }, { (u32)&g_messageColours[1].r, 0x3f73f3f4 },
+	{ (u32)&g_messageColours[1].g, 0x3ea8a8a9 }, { (u32)&g_messageColours[1].b, 0x3ea8a8a9 }, { (u32)&g_messageColours[1].a, 0x3f800000 }, { (u32)&g_messageColours[2].r, 0x3f7dfdfe }, { (u32)&g_messageColours[2].g, 0x3f37b7b8 },
+	{ (u32)&g_messageColours[2].b, 0x3f67e7e8 }, { (u32)&g_messageColours[2].a, 0x3f800000 }, { (u32)&g_messageColours[3].r, 0x3ecccccd }, { (u32)&g_messageColours[3].g, 0x3ea8a8a9 }, { (u32)&g_messageColours[3].b, 0x3f73f3f4 },
+	{ (u32)&g_messageColours[3].a, 0x3f800000 }, { (u32)&g_messageColours[4].r, 0x0 }, { (u32)&g_messageColours[4].g, 0x3f4ccccd }, { (u32)&g_messageColours[4].b, 0x3f800000 }, { (u32)&g_messageColours[4].a, 0x3f800000 },
+	{ (u32)&g_messageColours[5].r, 0x3e70f0f1 }, { (u32)&g_messageColours[5].g, 0x3f53d3d4 }, { (u32)&g_messageColours[5].b, 0x3e0c8c8d }, { (u32)&g_messageColours[5].a, 0x3f800000 }, { (u32)&g_messageColours[6].r, 0x3f4ccccd },
+	{ (u32)&g_messageColours[6].g, 0x3f800000 }, { (u32)&g_messageColours[6].b, 0x3f26a6a7 }, { (u32)&g_messageColours[6].a, 0x3f800000 }, { (u32)&g_messageColours[7].r, 0x3f800000 }, { (u32)&g_messageColours[7].g, 0x3f70f0f1 },
+	{ (u32)&g_messageColours[7].b, 0x0 }, { (u32)&g_messageColours[7].a, 0x3f800000 }, { (u32)&g_messageColours[8].r, 0x3f48c8c9 }, { (u32)&g_messageColours[8].g, 0x3f48c8c9 }, { (u32)&g_messageColours[8].b, 0x3f53d3d4 },
+	{ (u32)&g_messageColours[8].a, 0x3f800000 }, { (u32)&g_messageColours[9].r, 0x3f109091 }, { (u32)&g_messageColours[9].g, 0x3f109091 }, { (u32)&g_messageColours[9].b, 0x3f20a0a1 }, { (u32)&g_messageColours[9].a, 0x3f800000 },
+	{ (u32)&g_messageColours[10].r, 0x3f189899 }, { (u32)&g_messageColours[10].g, 0x3f1a9a9b }, { (u32)&g_messageColours[10].b, 0x3f058586 }, { (u32)&g_messageColours[10].a, 0x3f800000 }, { (u32)&g_messageColours[11].r, 0x3f058586 },
+	{ (u32)&g_messageColours[11].g, 0x0 }, { (u32)&g_messageColours[11].b, 0x0 }, { (u32)&g_messageColours[11].a, 0x3f800000 }, { (u32)&g_messageColours[12].r, 0x3d40c0c1 }, { (u32)&g_messageColours[12].g, 0x0 },
+	{ (u32)&g_messageColours[12].b, 0x3f800000 }, { (u32)&g_messageColours[12].a, 0x3f800000 }, { (u32)&g_messageColours[13].r, 0x3f52d2d3 }, { (u32)&g_messageColours[13].g, 0x0 }, { (u32)&g_messageColours[13].b, 0x3f800000 },
+	{ (u32)&g_messageColours[13].a, 0x3f800000 }, { (u32)&g_messageColours[14].r, 0x3e38b8b9 }, { (u32)&g_messageColours[14].g, 0x3e48c8c9 }, { (u32)&g_messageColours[14].b, 0x3e68e8e9 }, { (u32)&g_messageColours[14].a, 0x3f800000 },
+	{ (u32)&g_messageColours[15].r, 0x0 }, { (u32)&g_messageColours[15].g, 0x3f800000 }, { (u32)&g_messageColours[15].b, 0x3f22a2a3 }, { (u32)&g_messageColours[15].a, 0x3f800000 } };
 
-void (colour_initTextColours)(void) { apply_stores(k_textColours, 64); }   /* 0x46d4d0: the 16 text colours (four floats each) */
+void (colour_initMessageColours)(void) { apply_stores(k_messageColours, 64); }   /* 0x46d4d0: the 16 message colours (g_messageColours, four floats each; hud_drawMessageBox colours each line by MessageSlot.colour) */
 
 static const Store k_mainMenuOutlines[66] = {
 	{ (u32)&g_mainMenuOutlines[12], 0xfffffefc }, { (u32)&g_mainMenuOutlines[15], 0xfffffefc }, { (u32)&g_mainMenuOutlines[16], 0xfffffefc }, { (u32)&g_mainMenuOutlines[13], 0xffffff81 }, { (u32)&g_mainMenuOutlines[14], 0xffffff81 },

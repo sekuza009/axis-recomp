@@ -85,7 +85,7 @@ g_connectionKind
 g_convertHangul
 g_crosshairTexture
 g_crtErrno
-g_debugValue
+g_unusedFreeCamCounter
 g_windowDC
 g_desktopDepth
 g_desktopWidth
@@ -115,7 +115,7 @@ g_fpsSecondStart
 g_frameCounter40
 g_frameRate
 g_freeCamLookY
-g_fullScreen
+g_glFullScreen
 g_gameListClickTimer
 g_gameRunning
 g_matchProjMode
@@ -167,7 +167,7 @@ g_netChatMessageText
 g_netChatMessageWord1
 g_netChatMessageFrom
 g_netHostGone
-g_openLoginName
+g_newIdFormOpenName
 g_otherModeHeight
 g_otherModeWidth
 g_panelGlow
@@ -434,7 +434,7 @@ g_editingPasswordRepeat
 g_editingRoomName
 g_editingRoomPassword
 g_gameListClickArmed
-g_gameListRefreshClicked
+g_gameListRefreshSent
 g_gameListLoaded
 g_gameServerAnswer
 g_newIdAnswer
@@ -462,7 +462,7 @@ g_rankingRequestPending
 g_rankingWaiting
 g_receivedSession
 g_newIdAnswerAwaited
-g_roomAwaitingServer
+g_accountRankAwaited
 g_roomJoinNeedsPassword
 g_roomConnected
 g_roomGameListBottom
@@ -556,7 +556,7 @@ g_netSendPacket
 # freed by the room / profile / mission records and single-value uses (an FPU operand, a 4-byte file read / write), 2026-11-01
 g_arenaKeptLookX
 g_arenaKeptLookY
-g_arenaServerList
+g_arenaListFromServer
 g_mapCount
 g_arenaListPlayers
 g_lanSearchStarted
@@ -610,7 +610,7 @@ g_timeLimit
 g_perfCounterHigh
 g_tunnelFlyingIn
 g_lineToLoginId
-g_unusedMainMenuWord
+g_unusedReplaySelectWord
 g_unusedReplayListWord1
 # the pilot save record, ARM CENTER view points, menu frame textures (objects13.csv), whole
 g_pilotSave
@@ -813,8 +813,8 @@ g_armcHideInterface
 g_armcMode
 g_armcPartSlot
 g_armcSessionDue
-g_editCaretX
-g_editCaretY
+g_inputLineX
+g_inputLineY
 g_inputLineLength
 g_ptxClamp
 g_glWindowContext
@@ -869,7 +869,7 @@ g_unusedProfileCameraSpeed
 g_profileQuitSkip
 g_unusedProfileCameraTime
 g_unusedProfileCameraZoom
-g_profileMessage
+g_profileNameTakenShown
 g_profilePage
 g_pulse
 g_pulseStep
@@ -954,7 +954,7 @@ g_skirmishState
 g_skirmishShowBackground
 g_weaponCount
 # the text colours (objects24.csv), whole
-g_textColours
+g_messageColours
 # named arrays that were pointer macros only (objects25.csv), whole
 g_keyState
 g_dplaySlots
@@ -1100,7 +1100,7 @@ g_tcpDns
 g_noAddress
 g_statBars
 g_statBarTargets
-g_profileMessageClickBox
+g_profileNameTakenClickBox
 g_inputHistory
 g_unusedStartupTable
 g_mouseState

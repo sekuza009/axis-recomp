@@ -45,7 +45,9 @@ static const Store camera4[] = {
 	{ ADDR(g_camPoint2X), 0xc20c0000 }, { ADDR(g_camPoint2Y), 0 }, { ADDR(g_camAim2X), 0x428c0000 }, { ADDR(g_camAim2Y), 0x420c0000 },
 	{ (u32)&g_camPoints[12], 0xc20c0000 }, { (u32)&g_camPoints[13], 0 }, { (u32)&g_camAims[12], 0x428c0000 }, { (u32)&g_camAims[13], 0xc20c0000 } };
 
-/* 0x440bb0: the main menu: its camera (-300), its limits, colours, fade */
+/* 0x440bb0: the main menu entered: the tunnel camera at depth -300 (g_mainMenuDepth), the tunnel flares' breathing
+   sizes and steps (g_flareSizeA / B 48 / 10, g_flareStepA / B -0.2 / 0.2), the repeat and idle clocks and the
+   AUTOPLAY-F1 hint's fade reset, the replay selection dialog closed with its lit / dim colours, g_matchMode 0 */
 void (menuState300_enter)(void)
 {
 	(*(u32 *)&g_mainMenuDepth) = 0xc3960000;   /* -300 */
@@ -78,7 +80,7 @@ void (menuState400_enter)(void)
 		{ ADDR(g_playerSetupRight), 0x21c }, { ADDR(g_playerSetupBottom), 0x190 }, { ADDR(g_arenaGameListRight), 0x262 }, { ADDR(g_newArenaFormLeft), 0x28 }, { ADDR(g_newArenaFormTop), 0x1e },
 		{ ADDR(g_newArenaFormRight), 0x258 } };
 	static const u32 cleared1[] = { ADDR(g_typingArenaPlayerName), ADDR(g_editingNewArenaName), ADDR(g_editingNewArenaFragLimit), ADDR(g_editingNewArenaTimeLimit), ADDR(g_typingArenaPassword), ADDR(g_lanSearch), ADDR(g_lobbySearching), ADDR(g_arenaLanListBuilt),
-	                                ADDR(g_arenaServerList), ADDR(g_gameCount), ADDR(g_listBlinkClock) };
+	                                ADDR(g_arenaListFromServer), ADDR(g_gameCount), ADDR(g_listBlinkClock) };
 	static const u32 cleared2[] = { ADDR(g_pickedGame), ADDR(g_gameListTop), ADDR(g_gameListRow), ADDR(g_lanSearchStarted), ADDR(g_serverSearching), OBJ(g_arenaBright), ADDR(g_arenaUpdateNotice), ADDR(g_hostingState) };
 	static const Store state[] = {
 		{ ADDR(g_arenaCameraMode), 2 }, { ADDR(g_lastPanel), 999 }, { (u32)&g_arenaBright[1], ONE }, { (u32)&g_arenaBright[2], ONE }, { (u32)&g_arenaBright[3], ONE },
@@ -172,7 +174,7 @@ void (menuState800_enterGameRoom)(void)
 		{ ADDR(g_camPoint2X), 0x41a00000 }, { ADDR(g_camPoint2Y), 0x41200000 }, { ADDR(g_camAim2X), 0xc28c0000 }, { ADDR(g_camAim2Y), 0xc25c0000 },
 		{ (u32)&g_camPoints[12], 0xc1a00000 }, { (u32)&g_camPoints[13], 0xc1200000 }, { (u32)&g_camAims[12], 0x428c0000 }, { (u32)&g_camAims[13], 0x425c0000 },
 		{ (u32)&g_camPoints[16], 0xc1a00000 }, { (u32)&g_camPoints[17], 0 }, { (u32)&g_camAims[16], 0x428c0000 }, { (u32)&g_camAims[17], 0 } };
-	static const u32 cleared[] = { ADDR(g_roomRequestOut), ADDR(g_newIdAnswerAwaited), ADDR(g_unusedRoomWord), ADDR(g_hostGameSetUp), ADDR(g_roomLoginDue), ADDR(g_rankingRequestPending), ADDR(g_roomConnected), ADDR(g_roomAwaitingServer),
+	static const u32 cleared[] = { ADDR(g_roomRequestOut), ADDR(g_newIdAnswerAwaited), ADDR(g_unusedRoomWord), ADDR(g_hostGameSetUp), ADDR(g_roomLoginDue), ADDR(g_rankingRequestPending), ADDR(g_roomConnected), ADDR(g_accountRankAwaited),
 	                               ADDR(g_roomUpdateNotice) };
 	g_matchMode = 2;
 	arena_clearSessionEntry();
@@ -382,8 +384,8 @@ static void match_name(const char *name)
 
 /* 0x41fd40 (the match started, state 9999): the menus' tunnel freed; outside the lobby
    (g_launchedForNetGame) the profile files checked; the display opened (aspect g_viewAspect, glWindow_init); a replay (g_replayRunning)
-   started at once (scene_startSession 0, 3); else the map (g_mapIndex) loaded (failing: message 6 and back to state 400 /
-   800 for the arena / room). By the kind of match (g_matchMode): 1 the arena, 2 the room (the pilots read, the
+   started at once (scene_startSession 0, 3); else the map's file (g_mapIndex) checked (map_fileExists; missing: message 6
+   and back to state 400 / 800 for the arena / room). By the kind of match (g_matchMode): 1 the arena, 2 the room (the pilots read, the
    player's name taken from the profile / the room, the part lists armc_resetSeraphimParts), 3 a skirmish (the name 0x9f1798),
    started with scene_startSession (a client unless g_netRole is 1, the host; 3: 0, 0); then the map's name announced. The caller
    ignores the eax it leaves */
@@ -404,7 +406,7 @@ void (match_enter)(void)
 		return;
 	}
 	int mapExists = map_fileExists(g_mapIndex);
-	int kind = g_matchMode;   /* (after the load, as the original reads it) */
+	int kind = g_matchMode;   /* (after the map file check, as the original reads it) */
 	if (!mapExists) {
 		if (kind == 1)
 			g_menuState = 400;

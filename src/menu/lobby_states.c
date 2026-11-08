@@ -37,7 +37,7 @@ void (lobby_enterPlayerScreen)(void)
 void (lobby_enterArenaList)(void)
 {
 	static const u32 cleared[] = { (u32)&g_camPoints[5], ADDR(g_joinThroughServer), ADDR(g_lobbyRefreshing), ADDR(g_lanSearchStarted), ADDR(g_serverSearching), ADDR(g_lobbyJoinStarted), ADDR(g_lanJoinRequest), ADDR(g_lanSearch),
-	                               ADDR(g_lobbySearching), ADDR(g_arenaLanListBuilt), ADDR(g_arenaServerList), ADDR(g_gameCount), ADDR(g_listBlinkClock), ADDR(g_pickedGame), ADDR(g_gameListTop), ADDR(g_gameListRow),
+	                               ADDR(g_lobbySearching), ADDR(g_arenaLanListBuilt), ADDR(g_arenaListFromServer), ADDR(g_gameCount), ADDR(g_listBlinkClock), ADDR(g_pickedGame), ADDR(g_gameListTop), ADDR(g_gameListRow),
 	                               ADDR(g_arenaListClickArmed), ADDR(g_arenaListClickTimer), ADDR(g_lobbyPanelsSliding), ADDR(g_joinConnecting), ADDR(g_lobbyConnectionOpen), ADDR(g_arenaUpdateNotice), ADDR(g_arenaListRefreshTimer), ADDR(g_typingArenaAddress) };
 	int z = (*(int *)&g_menuCameraLookZ);
 	(*(u32 *)&g_camPoint1X) = 0x420c0000;   /* 35.0 */
@@ -591,8 +591,8 @@ u32 (arena_editAddress)(void)
 	menu_clearInputBuffer(0x14);
 	memset((void *)OBJ(g_inputLine), 0, 0x400);
 	g_typedArenaAddress = 0;
-	g_editCaretX = g_arenaGameListLeft + 0xd8;
-	g_editCaretY = g_arenaGameListTop + 0xd0;
+	g_inputLineX = g_arenaGameListLeft + 0xd8;
+	g_inputLineY = g_arenaGameListTop + 0xd0;
 	g_inputLineLength = (int)strlen(g_inputLine);
 	g_typedArenaAddress4 = 0;
 	(*(u32 *)&g_menuKeyGuard) = 0x40a00000;   /* 5 */
@@ -968,7 +968,7 @@ int (lobby_openConnection)(void)
 	g_lobbyListAnswer = 0;
 	g_unusedRoomListWord = 0;
 	g_gameCount = 0;
-	g_arenaServerList = 1;
+	g_arenaListFromServer = 1;
 	g_arenaLanListBuilt = 0;
 	g_pickedGame = 0;
 	(*(u32 *)&g_listBlinkClock) = 0x447a0000;   /* 1000.0f */

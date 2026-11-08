@@ -225,7 +225,7 @@ void THISCALL (space_initBy)(u8 *space, int planes, int nodes, int units, int bl
    step (n = |vel| / step; the walk down the nodes, space_collideAt, from pos + i steps, i = 0 .. n - 1), then
    from pos + n steps over what is left of vel. 1 at the first hit, else what the last walk found (1 or 0); the
    outputs are the walks' */
-int THISCALL (space_testSphere)(void *grid, u32 r, const float *pos, const float *vel, float step, u32 k, u32 outPos,
+int THISCALL (space_testSphere)(void *space, u32 r, const float *pos, const float *vel, float step, u32 k, u32 outPos,
                                 u32 outVel, u32 outDist, u32 outPlane, u32 axis, u32 subs, u32 nsubs)
 {
 	float dir[3], d[3], p[3];
@@ -239,7 +239,7 @@ int THISCALL (space_testSphere)(void *grid, u32 r, const float *pos, const float
 		p[0] = f32(FADD(x, pos[0]));
 		p[1] = f32(FADD(y, pos[1]));
 		p[2] = f32(fadd_m(fmul_m(li, &d[2]), &pos[2]));
-		if (space_collideAt(grid, r, p, d, k, outPos, outVel, outDist, outPlane, axis, subs, nsubs) == 1)
+		if (space_collideAt(space, r, p, d, k, outPos, outVel, outDist, outPlane, axis, subs, nsubs) == 1)
 			return 1;
 	}
 	long double ln = n;
@@ -251,7 +251,7 @@ int THISCALL (space_testSphere)(void *grid, u32 r, const float *pos, const float
 	rest[0] = f32(FSUB(vel[0], x));
 	rest[1] = f32(FSUB(vel[1], y));
 	rest[2] = f32(fld_m(&vel[2]) - fmul_m(ln, &d[2]));
-	return space_collideAt(grid, r, p, rest, k, outPos, outVel, outDist, outPlane, axis, subs, nsubs) == 1;
+	return space_collideAt(space, r, p, rest, k, outPos, outVel, outDist, outPlane, axis, subs, nsubs) == 1;
 }
 
 
@@ -262,10 +262,10 @@ int THISCALL (space_testSphere)(void *grid, u32 r, const float *pos, const float
    nodes (blocks.records). From the cell's box the walk goes down into the eighth (children children .., x upper +4, z upper +8,
    y upper +0x10) holding the point until a leaf (split 0). 0 when there is none. The x middle is compared at full
    precision, the others as floats, as the original has them */
-int THISCALL (space_collideAt)(u8 *grid, u32 r, const float *pos, const float *vel, u32 k, float *outPos,
+int THISCALL (space_collideAt)(u8 *space, u32 r, const float *pos, const float *vel, u32 k, float *outPos,
                                       u32 outVel, u32 outDist, u32 outPlane, u32 axis, u32 subs, u32 nsubs)
 {
-	Space *sp = (Space *)grid;
+	Space *sp = (Space *)space;
 	if (sp->cellsZ <= 0 || sp->cellsX <= 0 || sp->cellsY <= 0)
 		return 0;
 	float to[3];

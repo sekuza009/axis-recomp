@@ -1,6 +1,6 @@
 /* profile_dialogs.c: the profile screen's drawing: the management window (the pilot list and the chosen pilot:
    profile_drawManagementWindow, profile_drawChosenPilot), CHARACTER SELECT's pilot grid (pilotSelect_page,
-   profile_drawPilotSelect), the message window, the new pilot's name typed (and its dialog), and the two yes / no
+   profile_drawPilotSelect), the 'name already taken' window, the new pilot's name typed (and its dialog), and the two yes / no
    questions. */
 #include "../game.h"
 #include <string.h>
@@ -12,12 +12,12 @@ void (profile_typeNewName)(void)
 	input_releaseKeyboard();
 	g_textFieldOpen = 1;
 	menu_clearInputBuffer(0x10);
-	g_editCaretX = g_newNameDialogLeft + 0x24;
-	g_editCaretY = g_newNameDialogTop + 0x38;
+	g_inputLineX = g_newNameDialogLeft + 0x24;
+	g_inputLineY = g_newNameDialogTop + 0x38;
 	g_menuKeyGuard = 5.0f;
 	g_profilePage = 2;
 	g_frameOpening = 1;
-	g_profileMessage = 0;
+	g_profileNameTakenShown = 0;
 	editField_createEdit(0x10);
 }
 
@@ -54,10 +54,10 @@ void (pilotSelect_page)(void)
 	profile_drawPilotSelect();
 }
 
-/* 0x44dc60: the profile message window (the panel g_newNameDialogLeft, 0x9f8ea8 .. 0x9f8f20, g_newNameDialogBottom): its frame (texture
+/* 0x44dc60: the profile screen's 'name already taken' window (page 2, while g_profileNameTakenShown; the panel g_newNameDialogLeft, 0x9f8ea8 .. 0x9f8f20, g_newNameDialogBottom): its frame (texture
    g_dialogFrameTexture), the message MSG(126, "NAME ALREADY REGISTRED") across the top in the panel's colour (g_profileColour), the OK button (texture
    g_buttonTexture, 0x60 wide, centred) with its label MSG(115, "$[0] O K"), and the border. Returns the border call's eax */
-u32 (profile_drawMessageWindow)(void)
+u32 (profile_drawNameTakenMessage)(void)
 {
 #define X0 g_newNameDialogLeft
 #define Y0 g_newNameDialogTop

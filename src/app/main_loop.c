@@ -112,7 +112,7 @@ void (menu_frame)(void)
 	if (g_dialogPending)
 		menu_drawMessageBox();
 	if (g_textFieldOpen)
-		menu_drawInputLine(g_editCaretX, g_editCaretY);
+		menu_drawInputLine(g_inputLineX, g_inputLineY);
 	glLoadIdentity();
 	if (g_screen != 9999 && !g_profileQuitting)
 #ifdef AXIS_NATIVE
@@ -202,7 +202,7 @@ int THISCALL (match_playFrame)(u8 *s)
 			(*(int *)&SC->sendRate) = (*(int *)&SC->receiveRate) = 0;
 		(*(int *)&SC->windowTime) = SC->windowSent = SC->windowReceived = 0;
 	}
-	match_combatInput(s);
+	match_readInput(s);
 	match_frame(s);
 	if (SC->matchState == 2)
 #ifdef AXIS_NATIVE
@@ -270,11 +270,11 @@ static const u32 k_weaponKeys[6] = { (u32)&g_controls[30], (u32)&g_controls[32],
    a click follows the next player, a right click the next preset, the numpad picks the preset (cameraSlot) and the number
    keys the player to follow (followKey); playing, the fire keys held / pressed; then every held control, the weapon keys,
    the mouse look (above 0.2 s of frame time it is still), the game menu (its keys once keyGuard is
-   over), the chat keys, the camera mode cycle (respawnCameraMode), the scoreboard keys, the message log toggle cycle
-   (messagesHidden / ce4 with their notices). In the in-match menu (escMenuOpen 1) the mouse moves the selection (the
+   over), the chat keys, the camera mode cycle (respawnCameraMode), the scoreboard keys, F11's display cycle
+   (messagesHidden, then hudHidden, then both back, each with its notice). In the in-match menu (escMenuOpen 1) the mouse moves the selection (the
    original's +-50 step, or the patch DLL's menu_nav where it replaced that block), and its keys choose. A network
    end (net_hostGone) quits. Its caller ignores the eax it leaves */
-void THISCALL (match_combatInput)(u8 *s)
+void THISCALL (match_readInput)(u8 *s)
 {
 	match_resetInputState(s);
 	if (!SC->matchDrawing)
@@ -364,7 +364,7 @@ void THISCALL (match_combatInput)(u8 *s)
 		mouse_offset(s, 0);
 #ifdef AXIS_NATIVE
 		if (g_settings.menuSens > 0)
-			fix_menuNav(SC);   /* steps by mouse travel (fixes/input.c) */
+			fix_escMenuNav(SC);   /* steps by mouse travel (fixes/input.c) */
 #else
 		if (PATCHED_BLOCK(0x49ddcc, 0x49ddcb, "56 e8 ?? ?? ?? ?? 59 e9"))
 			PATCHED_CALL(0x49ddcc, void, void *)(s);   /* the patch DLL's menu_nav; its block then jumps on to 0x49de23 */
@@ -408,8 +408,8 @@ static void far_point(float *v, int pitch, int yaw)
 	Vec3_rotateAxis(v, 2, yaw);
 }
 
-/* the point v about the actor's position */
-static void about(float *out, const float *v, const u8 *actor)
+/* out = v + the actor's position */
+static void add_actor_pos(float *out, const float *v, const u8 *actor)
 {
 	for (int k = 0; k < 3; k++)
 		out[k] = f32(FADD(v[k], ((const Actor *)actor)->pos[k]));
@@ -602,13 +602,13 @@ u32 THISCALL (match_mechTestFrame)(u8 *s)
 				float a[3], b[3], pa[3], pb[3];
 				far_point(a, pitch, yaw);
 				far_point(b, pitch + 100, yaw);
-				about(pb, b, actor);
-				about(pa, a, actor);
+				add_actor_pos(pb, b, actor);
+				add_actor_pos(pa, a, actor);
 				ViewVolume_addSegment(&SC->view, (const void *)ADDR(g_packedRed), pa, pb, 1);
 				far_point(a, pitch, yaw);
 				far_point(b, pitch, yaw + 150);
-				about(pb, b, actor);
-				about(pa, a, actor);
+				add_actor_pos(pb, b, actor);
+				add_actor_pos(pa, a, actor);
 				ViewVolume_addSegment(&SC->view, (const void *)ADDR(g_packedRed), pa, pb, 1);
 			}
 	stage_drawActors((Stage *)stage, &SC->view, -1);
@@ -673,13 +673,13 @@ static void zoom_view(u8 *s, const float *step)
 }
 
 /* the end of the replay file (or the skip key): the next replay (a random one with g_replayRandomOrder, else the next in
-   order, the list wrapping round with g_replayWrap) with the scene reset; 0 when the list is done (the viewer quits) */
+   order, the list wrapping round with g_replayWrap) with the actors and stage reset; 0 when the list is done (the viewer quits) */
 static int replay_next(u8 *s)
 {
 	u8 *stage = (u8 *)SCENE_STAGE(s);
 	if (g_replayRandomOrder == 1) {
-		scene_resetActors(stage);
-		scene_reset(stage);
+		stage_resetActors(stage);
+		stage_reset(stage);
 		SC->replayIndex = SC->replayCount > 0 ? rand_below(((u32)SC->replayCount)) : 0;
 	} else {
 		if (++SC->replayIndex >= SC->replayCount) {
@@ -689,8 +689,8 @@ static int replay_next(u8 *s)
 			}
 			SC->replayIndex = 0;
 		}
-		scene_resetActors(stage);
-		scene_reset(stage);
+		stage_resetActors(stage);
+		stage_reset(stage);
 	}
 	SC->matchState = 1;
 	SC->stateFrames = 0;
@@ -844,16 +844,16 @@ static void pair_camera(u8 *s)
 {
 	int me = SC->watchedPlayer, best = -1, n = SC->playerCount;
 	float *mid = SC->cameraTarget, *cam = SC->cameraPos, *dir = SC->cameraDir, d[3], t[3];
-	float nearest;
-	BITS(nearest) = 0x7f7fffff;
+	float nearestSq;
+	BITS(nearestSq) = 0x7f7fffff;
 	for (int j = 0; j < n; j++)
 		if (SC->players[j].active == 1 && j != me) {
 			for (int k = 0; k < 3; k++)
 				d[k] = f32(FSUB(SC->players[me].pos[k], SC->players[j].pos[k]));
-			long double dist = FMUL(d[2], d[2]) + FMUL(d[1], d[1]);
-			dist = dist + FMUL(d[0], d[0]);
-			if (!(dist >= nearest)) {
-				nearest = (float)dist;
+			long double distSq = FMUL(d[2], d[2]) + FMUL(d[1], d[1]);
+			distSq = distSq + FMUL(d[0], d[0]);
+			if (!(distSq >= nearestSq)) {
+				nearestSq = (float)distSq;
 				best = j;
 			}
 		}
@@ -873,9 +873,9 @@ static void pair_camera(u8 *s)
 	for (int k = 0; k < 3; k++)
 		t[k] = dir[k] = f32(FSUB(SC->players[me].pos[k], mid[k]));
 	long double len = Vec3_normalize(dir);
-	long double three = FMUL(SC->players[SC->watchedPlayer].radius, k_3f);
+	long double threeRadii = FMUL(SC->players[SC->watchedPlayer].radius, k_3f);
 	for (int k = 0; k < 3; k++)
-		dir[k] = f32(fmul_m(three, &dir[k]));
+		dir[k] = f32(fmul_m(threeRadii, &dir[k]));
 	for (int k = 0; k < 3; k++)
 		t[k] = f32(FADD(t[k], dir[k]));
 	Vec3_rotateAxis(t, 2, ftol(fmul_m(fsub_m(len, &k_30000f), &k_m0_002f)));   /* (len - 30000) * -0.002 */
@@ -1368,9 +1368,9 @@ static const u8 *spawn_point(u8 *s, int doubled)
 			for (int k = 0; k < 3; k++)
 				d[k] = f32(FSUB(pos[k], at[k]));
 			long double reach = doubled ? fld_m(&((Actor *)ACTOR_AT(j))->radius) * 2 : FMUL(((Actor *)ACTOR_AT(j))->radius, k_5f);
-			long double dist = FMUL(d[2], d[2]) + FMUL(d[1], d[1]);
-			dist = dist + FMUL(d[0], d[0]);
-			if (reach * reach > dist) {
+			long double distSq = FMUL(d[2], d[2]) + FMUL(d[1], d[1]);
+			distSq = distSq + FMUL(d[0], d[0]);
+			if (reach * reach > distSq) {
 				taken = 1;
 				break;
 			}
@@ -2178,7 +2178,7 @@ void THISCALL (match_frame)(u8 *s)
 	}
 	if (SC->stageCleared == 1 && g_mapIndex == g_progress) {   /* the campaign's progress */
 		g_progress++;
-		profile_saveProgress();
+		profile_save();
 	}
 	/* the camera */
 	if (SC->playing == 0) {

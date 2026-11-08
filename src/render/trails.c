@@ -90,8 +90,8 @@ void THISCALL (bullet_drawTrail)(Stage *stage, int b, void *view)
 		int prev = j % 20, cur = i % 20;
 		u32 colour = 0xffffffff;
 		float pts[12];
-		X age = (X)bu->age - ONE;
-		if (age > bu->trailAge[cur] || i <= bu->trailCount - 0x12) {
+		X cutoff = (X)bu->age - ONE;
+		if (cutoff > bu->trailAge[cur] || i <= bu->trailCount - 0x12) {
 			const float *p = ring + prev * 12;
 			X sx = (X)p[3] + p[0];
 			float sy = f32((X)p[4] + p[1]), sz = f32((X)p[5] + p[2]);

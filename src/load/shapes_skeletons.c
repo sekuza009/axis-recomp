@@ -128,9 +128,9 @@ static int file_format(const char *path, const char *first, const char *second)
 }
 
 /* 0x464bf0 (thiscall on a shape): loaded from the file path (a failed open is a fatal message) by its extension:
-   "shp" the binary format (shape_read), "obj" Wavefront text (model_loadObjFormatFrom), anything else a fatal
+   "shp" the binary format (shape_read), "obj" Wavefront text (shape_readObj), anything else a fatal
    message; the file closed. Its callers ignore the eax it leaves */
-void THISCALL (model_loadFrom)(u8 *shape, const char *path, void *mem, int size)
+void THISCALL (shape_loadFrom)(u8 *shape, const char *path, void *mem, int size)
 {
 	void *f = crt_fopen(path, (const char *)STR(0x4ad170, "rb"));
 	if (!f)
@@ -140,7 +140,7 @@ void THISCALL (model_loadFrom)(u8 *shape, const char *path, void *mem, int size)
 		shape_read(shape, f, mem, size);
 		break;
 	case 1:
-		model_loadObjFormatFrom(shape, f, mem, size);
+		shape_readObj(shape, f, mem, size);
 		break;
 	default:
 		sys_fatalError((char *)OBJ(g_logShape), (const char *)STR(0x4c4aa4, "can't figure out what the format of t..."), (int)path);
@@ -168,7 +168,7 @@ void THISCALL (skel_loadFrom)(u8 *sk, const char *path, void *mem, int size)
 	fclose(f);
 }
 
-/* 0x46f4e0 (thiscall on an object list): emptied (partList_release), then ns shapes (by the names 0x44 apart, each with
+/* 0x46f4e0 (thiscall on an object list): emptied (ObjectList_release), then ns shapes (by the names 0x44 apart, each with
    its bone's translation scale (a float) at +0x40; looked up in the shape cache, the first 64 once, any later ones again when the entries are
    filled) with their element counts summed (colourCount), and nk skeletons (by the names 0x40 apart). Its block (+8, size
    +4: 100 bytes a shape, 4 a skeleton, lit == 1 a colour per element too): allocated (owned, ownsBlock 1; none a fatal
@@ -179,7 +179,7 @@ void THISCALL (ObjectList_load)(u8 *list, void *shapes, void *skels, int ns, con
                                      int lit, u32 factors, u32 tint, void *mem, int size)
 {
 	ObjectList *ol = (ObjectList *)list;
-	partList_release(list);
+	ObjectList_release(list);
 	ol->count = ns;
 	ol->skelCount = nk;
 	ol->preLit = lit;
@@ -227,18 +227,18 @@ void THISCALL (ObjectList_load)(u8 *list, void *shapes, void *skels, int ns, con
 		ObjectList_relight(list, factors, tint);
 }
 
-/* the key for frame among a bone's n keys (size bytes each, their first dword the frame they start at): the last one
-   starting at or before it (a binary search); a frame before the first key is moved up to it */
-static u8 *key_at(u8 *keys, int n, int size, int *frame)
+/* the key for time (ms) among a bone's n keys (size bytes each, their first dword the time they start at): the last
+   one starting at or before it (a binary search); a time before the first key is moved up to it */
+static u8 *key_at(u8 *keys, int n, int size, int *time)
 {
 #define KEY_TIME(p) (((const PosKey *)RELOC(p))->time)   /* (PosKey and RotKey both start with it: ms) */
 	int lo = 0;
-	if (*frame < KEY_TIME(keys))
-		*frame = KEY_TIME(keys);
+	if (*time < KEY_TIME(keys))
+		*time = KEY_TIME(keys);
 	else
 		for (int hi = n - 1; lo < hi;) {
 			int mid = (hi + lo + 1) / 2;
-			if (*frame < KEY_TIME(keys + mid * size))
+			if (*time < KEY_TIME(keys + mid * size))
 				hi = mid - 1;
 			else
 				lo = mid;
@@ -399,7 +399,7 @@ u8 *THISCALL (skel_getSkeletonPtrBy)(u8 *cache, const char *name)
 
 /* 0x466dc0 (thiscall on a shape cache): the shape named name, as skel_getSkeletonPtrBy does it for skeletons: shape
    i (0x4c bytes each from items) loaded from the shape dat (shapeDat_getItemFileBy, shape_read) or a "shp" / "obj" file
-   (model_loadFrom), its textures looked up (shape_bindTextureBy with the cache's texture-name suffix (textureSuffix) and seven values
+   (shape_loadFrom), its textures looked up (shape_bindTextureBy with the cache's texture-name suffix (textureSuffix) and seven values
    bindFlags ..); bound (shape_bindPartTextures) when bind is 1, found or added */
 u8 *THISCALL (shape_getByName)(u8 *cache, const char *name, int bind)
 {
@@ -427,7 +427,7 @@ u8 *THISCALL (shape_getByName)(u8 *cache, const char *name, int bind)
 		else {
 			char path[0x100];
 			item_path(path, cache, own, STR(0x4c4d68, "shp"), STR(0x4c4d6c, "obj"), (char *)OBJ(g_logShapeManager), STR(0x4c4d70, "invalid file format(%s)-getShapePtrBy()"));
-			model_loadFrom(shape, path, at, room);
+			shape_loadFrom(shape, path, at, room);
 		}
 		if (mem)
 			mg->dataUsed += md->blockSize;
@@ -507,8 +507,8 @@ void THISCALL (shape_read)(u8 *shape, void *f, void *mem, int size)
 	}
 }
 
-/* point p (x, y, z; at stride step) through the 4 x 4 matrix m (column-major), each row summed as the original does:
-   z and y terms first, then x, then the translation */
+/* the point (*px, *py, *pz) through the 4 x 4 matrix m (column-major) into out (x, y, z), each row summed as the
+   original does: z and y terms first, then x, then the translation */
 static void transform(float *out, const float *m, const float *px, const float *py, const float *pz)
 {
 	for (int r = 0; r < 3; r++)
@@ -836,7 +836,7 @@ static int obj_corner(u8 *part, int i, char *corner, const float *vs, const floa
    colours, the temporaries freed, the parts' bounds (shape_computeBounds) and the shape's. As the original, a quad's
    second triangle copies its corners into the temporary arrays rather than the part's. Its caller ignores the eax
    it leaves */
-void THISCALL (model_loadObjFormatFrom)(u8 *sh, void *f, u8 *mem, int memSize)
+void THISCALL (shape_readObj)(u8 *sh, void *f, u8 *mem, int memSize)
 {
 	Shape *md = (Shape *)sh;
 	char line[0x100], last[0x100], c[4][0x20];

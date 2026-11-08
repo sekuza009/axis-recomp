@@ -59,7 +59,7 @@ void (profile_loadPilotStats)(void) { load_stat_bars(g_profileRecords[(u32)g_pro
 void (save_cryptRecord)(u8 *rec, u8 key) { crypt_bytes(rec, 0x3ac, key); }
 
 /* 0x42b3c0: a 0x4c-byte record scrambled with a key that just counts up (no reset); returns the count */
-int (crypt_countingKey)(u8 *p, u8 key)
+int (crypt_record4c)(u8 *p, u8 key)
 {
 	int i;
 	for (i = 0; i < 0x4c; i++)
@@ -86,10 +86,10 @@ int (name_isBlank)(const char *name)
 	return 1;
 }
 
-/* 0x44b2e0: 1 when (x, y) is in the dialog box rectangle at g_profileMessageClickBox (left, top, right, bottom), else -1 */
+/* 0x44b2e0: 1 when (x, y) is in the dialog box rectangle at g_profileNameTakenClickBox (left, top, right, bottom), else -1 */
 int (profile_inDialogBox)(int x, int y)
 {
-	const int *r = g_profileMessageClickBox;
+	const int *r = g_profileNameTakenClickBox;
 	return x >= r[0] && x <= r[2] && y >= r[1] && y <= r[3] ? 1 : -1;
 }
 
@@ -263,15 +263,15 @@ u32 (profile_screenClicks)(void)
 	}
 	if (g_frameOpening || quitting)
 		return (u32)quitting;
-	u32 page = (*(u32 *)&g_profilePage) - 1;
-	switch (page) {
+	u32 pageIndex = (*(u32 *)&g_profilePage) - 1;
+	switch (pageIndex) {
 	case 0: return profileList_mouse();
 	case 1: return newNameDialog_clicks();
 	case 2: return profile_deleteClicks();   /* profile_deleteClicks */
 	case 4: return profile_logOutClicks();   /* profile_logOutClicks */
 	case 5: return pilotSelect_clicks();   /* pilotSelect_clicks */
 	}
-	return page;
+	return pageIndex;
 }
 
 /* 0x44c480: the pilot grid's clicks (page 6, pilotSelect_hitTest): rows 0 .. 8 pick a pilot (with sound 2, its pilot panel reset), 9 makes the profile
@@ -402,13 +402,13 @@ u32 (profile_newNamePage)(void)
 	if (g_frameOpening)
 		return menu_drawFrameOpening(g_newNameDialogLeft, g_newNameDialogTop,
 		                                                     g_newNameDialogRight, g_newNameDialogBottom);
-	if (g_profileMessage)
-		return profile_drawMessageWindow();
+	if (g_profileNameTakenShown)
+		return profile_drawNameTakenMessage();
 	if (g_textFieldOpen)
 		return profile_drawNewDialog();
 	if (!strlen(typed)) {
 		g_frameOpening = 0;
-		g_profileMessage = 0;
+		g_profileNameTakenShown = 0;
 		g_profilePage = 1;
 		return profile_drawNewDialog();
 	}
@@ -416,19 +416,19 @@ u32 (profile_newNamePage)(void)
 		u32 r = sound_playMenu(6);              /* sound_playMenu */
 		g_profilePage = 1;
 		g_frameOpening = 0;
-		g_profileMessage = 0;
+		g_profileNameTakenShown = 0;
 		return r;
 	}
 	if (profile_nameHasBadChar(typed) == 1) {   /* profile_nameHasBadChar */
 		sound_playMenu(6);
 		g_frameOpening = 0;
-		g_profileMessage = 0;
+		g_profileNameTakenShown = 0;
 		g_profilePage = 1;
 		return menu_showMessage(0x81);             /* the message */
 	}
 	if (profile_nameExists()) {                     /* profile_nameExists */
 		sound_playMenu(6);
-		g_profileMessage = 1;
+		g_profileNameTakenShown = 1;
 		g_frameOpening = 1;
 		return profile_drawNewDialog();
 	}
@@ -439,7 +439,7 @@ u32 (profile_newNamePage)(void)
 
 /* 0x44ba60: the current profile (g_profileChosen) deleted: its save file ("save\<name>.axs") removed (DeleteFileA, tried
    twice), the later profiles moved down a slot and the freed last slot cleared (pilot -1), the count lowered.
-   With none left everything is reset and the list written (profile_writeFile); otherwise, if the current one was the
+   With none left everything is reset and the list written (profile_writeUserFile); otherwise, if the current one was the
    last, the selection steps back (the scrolled row g_profileListRow, else the list's top g_profileListTop), then the list is
    written and shown again (profile_resetStatBars). Returns the last call's eax */
 u32 (profile_deleteChosen)(void)
@@ -469,7 +469,7 @@ u32 (profile_deleteChosen)(void)
 			g_profileListTop = 0;
 			g_profileChosen = 0;
 			g_profileCount = 0;
-			return profile_writeFile();   /* profile_writeFile: the list written */
+			return profile_writeUserFile();   /* profile_writeUserFile: the list written */
 		}
 		if (g_profileListRow > 0)
 			g_profileListRow--;
@@ -477,7 +477,7 @@ u32 (profile_deleteChosen)(void)
 			g_profileListTop--;
 		g_profileChosen = g_profileListTop + g_profileListRow;
 	}
-	profile_writeFile();
+	profile_writeUserFile();
 	return profile_resetStatBars();   /* profile_resetStatBars */
 }
 
@@ -496,7 +496,7 @@ static void line_wipe(void)
 		memset((void *)OBJ(g_inputLine), 0, n);
 }
 
-/* 0x44c190: the new-name dialog's clicks (page 2). While the name-taken message is up (g_profileMessage): any click
+/* 0x44c190: the new-name dialog's clicks (page 2). While the name-taken message is up (g_profileNameTakenShown): any click
    (profile_inDialogBox returns 1 or -1 and the original only tests for nonzero, so where the click lands does not
    matter) or a right click closes it and typing starts again (profile_typeNewName). Otherwise (newNameDialog_hitTest)
    OK (0) refuses a blank name (sound 6), refuses one with a bad character (message 0x81, the dialog shut), brings the
@@ -508,17 +508,17 @@ u32 (newNameDialog_clicks)(void)
 	const char *typed = g_inputLine;
 	g_menuRepeatClock = 0.0f;
 	u32 r = 0;
-	if (g_profileMessage) {
+	if (g_profileNameTakenShown) {
 		if (g_mouseClick &&
 		    profile_inDialogBox(g_mouseX, g_mouseY)) {   /* profile_inDialogBox */
 			sound_playMenu(0);
-			g_profileMessage = 0;
+			g_profileNameTakenShown = 0;
 			g_textFieldOpen = 1;
 			r = profile_typeNewName();   /* profile_typeNewName: typing starts */
 		}
 		if (!g_rightClick)
 			return r;
-		g_profileMessage = 0;
+		g_profileNameTakenShown = 0;
 		r = profile_typeNewName();
 		g_textFieldOpen = 1;
 		return r;
@@ -532,7 +532,7 @@ u32 (newNameDialog_clicks)(void)
 			if (profile_nameHasBadChar(typed) == 1) {   /* profile_nameHasBadChar: a bad character */
 				sound_playMenu(6);
 				g_frameOpening = 0;
-				g_profileMessage = 0;
+				g_profileNameTakenShown = 0;
 				g_profilePage = 1;
 				menu_showMessage(0x81);
 				g_textFieldOpen = 0;
@@ -540,7 +540,7 @@ u32 (newNameDialog_clicks)(void)
 			}
 			if (profile_nameExists()) {   /* profile_nameExists: taken */
 				sound_playMenu(6);
-				g_profileMessage = 1;
+				g_profileNameTakenShown = 1;
 				g_frameOpening = 1;
 			} else
 				sound_playMenu(0);

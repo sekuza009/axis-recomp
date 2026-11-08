@@ -523,10 +523,11 @@ static void item_sound(u8 *s, int sound, u8 *it)
 	                                                                                ((const MapItem *)it)->pos, ST->viewDir, 0x47c35000);   /* (heard to 100000) */
 }
 
-/* actor ac touching item i (of kind type, its type record t): what it gives. Supplies the actor can use are taken;
-   power-ups (damage amp, cloak, booster, gravity armour: 30 s each) are taken; a warp zone (kind 24 / 34) sends the
-   local player, when not already warping and not just arrived from it, to the linked item's (+4) place and heading
-   without being taken; other kinds are an error message (0 .. 9: fatal) */
+/* actor ac touching item i (of kind type, its type record t): what it gives. Supplies (kinds 0 .. 5 and 10 .. 19)
+   the actor can use are taken; power-ups (2x / 3x: damage amp, cloak, booster, gravity armour: 30 s each) are taken;
+   a warp zone (kind 24 / 34) sends the local player, when not already warping and not just arrived from it, to the
+   linked item's (warpTo) place and heading without being taken; other 2x / 3x kinds are ignored; kinds 6 .. 9 are a
+   fatal message, kinds from 40 up an error message */
 static void item_pickup(u8 *s, u8 *ac, u8 *it, int i, u8 *t, int type)
 {
 	MapItem *mi = (MapItem *)it;

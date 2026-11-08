@@ -110,6 +110,6 @@ void (arenaList_rebuild)(void)
 	}
 	g_arenaLanListBuilt = 1;
 	g_pickedGame = 0;
-	g_arenaServerList = 0;
+	g_arenaListFromServer = 0;
 	sessionList_sort();
 }

@@ -45,7 +45,7 @@ void (room_openNewIdForm)(void)
 	newIdForm_layout();
 	memset((void *)OBJ(g_accountName), 0, 0x54);
 	dialog_opened(0x4d);
-	g_openLoginName = 1;
+	g_newIdFormOpenName = 1;
 	g_roomUpdateNotice = 0;
 }
 
@@ -66,7 +66,7 @@ void (room_openLogin)(void)
 void (room_enterGameList)(void)
 {
 	static const u32 cleared[] = { ADDR(g_roomRefreshing), ADDR(g_roomSearching), ADDR(g_gameListLoaded), ADDR(g_roomSearchAnswerIn), ADDR(g_gameCount), ADDR(g_listBlinkClock), ADDR(g_pickedGame), ADDR(g_gameListTop),
-	                               ADDR(g_gameListRow), ADDR(g_gameListRefreshClicked), ADDR(g_roomJoinStarted), ADDR(g_roomListRefreshTimer), ADDR(g_gameListClickArmed), ADDR(g_gameListClickTimer), ADDR(g_roomListPlayers) };
+	                               ADDR(g_gameListRow), ADDR(g_gameListRefreshSent), ADDR(g_roomJoinStarted), ADDR(g_roomListRefreshTimer), ADDR(g_gameListClickArmed), ADDR(g_gameListClickTimer), ADDR(g_roomListPlayers) };
 	(*(u32 *)&g_unusedRoomFloat) = 0x3f333333;   /* 0.7 */
 	g_roomState = 1;
 	g_roomCameraMode = 1;
@@ -100,13 +100,13 @@ u32 (room_keysByState)(void)
 	return state;
 }
 
-/* 0x437240: the account page's keys (unless typing): while the server is awaited (g_roomAwaitingServer) only Esc, leaving; else O
+/* 0x437240: the account page's keys (unless typing): while the server is awaited (g_accountRankAwaited) only Esc, leaving; else O
    sends the account change (account_sendChange; refused: sound 6 and message 5); C or Esc leave the page (g_roomCameraMode 0: back home). Returns what the original leaves in eax */
 u32 (account_keys)(void)
 {
 	if (g_textFieldOpen)
 		return (*(u32 *)&g_textFieldOpen);
-	if (g_roomAwaitingServer == 1) {
+	if (g_accountRankAwaited == 1) {
 		if (!input_justPressed(g_dikEscape_2))
 			return 0;
 	} else if (input_justPressed(g_dikO)) {
@@ -223,7 +223,7 @@ u32 (arena_joinListed)(int i)
 }
 
 /* 0x436800: the game room's clicks, by state (g_roomState), as room_keysByState does the keys (state 1: the CONNECTING box's
-   CANCEL while a join is waited for, g_joinConnecting: gameList_stopJoin). Returns what the handler leaves in eax */
+   CANCEL while a join is waited for, g_joinConnecting: gameListJoinBox_clicks). Returns what the handler leaves in eax */
 u32 (room_clicksByState)(void)
 {
 	u32 state = (*(u32 *)&g_roomState);
@@ -233,7 +233,7 @@ u32 (room_clicksByState)(void)
 	case 1:
 		if (sliding)
 			return (u32)sliding;
-		return g_joinConnecting ? gameList_stopJoin() : gameList_mouse();
+		return g_joinConnecting ? gameListJoinBox_clicks() : gameList_mouse();
 	case 2:
 		if (sliding)
 			return (u32)sliding;
@@ -253,7 +253,7 @@ u32 (room_clicksByState)(void)
 u32 (account_clicks)(void)
 {
 	int mode = g_roomCameraMode;
-	if (mode == 1 || mode == 0 || g_roomAwaitingServer == 1)
+	if (mode == 1 || mode == 0 || g_accountRankAwaited == 1)
 		return (u32)mode;
 	if (g_frameOpening)
 		return (u32)g_frameOpening;
@@ -434,7 +434,7 @@ void (roomLogin_update)(void)
 	g_roomLoginDue = 0;
 }
 
-/* 0x43e290: the new-ID form ("CREATE NEW ID"; its panel at g_newIdFormLeft): the name opened when asked (g_openLoginName); with no message box
+/* 0x43e290: the new-ID form ("CREATE NEW ID"; its panel at g_newIdFormLeft): the name opened when asked (g_newIdFormOpenName); with no message box
    (g_dialogPending) and typing ended, the line taken into the field being typed in (the first of the four flagged 1) and
    the key that ended it (g_fieldStep: 20 on, 10 back) moving to the next or previous field; on from the e-mail
    highlights the right button, back from the name the left one (the name's flag left set). Then the flagged field
@@ -444,9 +444,9 @@ void (newIdForm_update)(void)
 	static const struct { u32 editing, text; int size; } field[4] = {
 		{ ADDR(g_typingAccountName), OBJ(g_accountName), 30 }, { ADDR(g_typingAccountPassword), OBJ(g_accountPassword), 12 }, { ADDR(g_typingAccountRepeat), OBJ(g_accountPasswordRepeat), 12 }, { ADDR(g_typingAccountEmail), OBJ(g_accountEmail), 50 } };
 #define EDITING(k) GAME_VAR(int, field[k].editing)
-	if (g_openLoginName) {
+	if (g_newIdFormOpenName) {
 		newIdForm_openField(0);
-		g_openLoginName = 0;
+		g_newIdFormOpenName = 0;
 		return;
 	}
 	if (g_dialogPending || g_textFieldOpen)
@@ -589,7 +589,7 @@ u32 (room_enterAccountPage)(void)
 	strcpy(message, g_ladderId);
 	u32 r = net_send(0x1d, 0x65);
 	g_accountRankDue = 0;
-	g_roomAwaitingServer = 1;
+	g_accountRankAwaited = 1;
 	return r;
 }
 
@@ -832,12 +832,12 @@ static void rank_badge(int level, int x, int y)
 	glEnd();
 }
 
-/* 0x43a420: the pilot's account panel (0x9dd368 .. 0x9dd374); while waiting for the server (g_roomAwaitingServer = 1) only a
+/* 0x43a420: the pilot's account panel (0x9dd368 .. 0x9dd374); while waiting for the server (g_accountRankAwaited = 1) only a
    box with two lines (MSG(423, "DOWNLOADING RANKING DATA"), MSG(50, "PRESS ESC-KEY TO CANCEL")). The title MSG(361, "USER INFOMATION"), five labels for the fields (MSG(362, "USER ID"), 0x80 apart) and
-   seven for the record (MSG(367, "LEVEL")); four dark boxes with the name g_accountName, three passwords as stars (g_accountOldPassword,
+   seven for the record (MSG(367, "LEVEL")); the name g_accountName, and under it four dark boxes with three passwords as stars (g_accountOldPassword,
    g_accountPassword, g_accountPasswordRepeat; each left out while it is being typed in: g_editingOldPassword / g_editingAccountPassword / g_editingPasswordRepeat) and g_accountEmail (left
    out while g_editingEmail); the level g_pilotLevel with its rank badge (cell (level - 1) % 10, / 10 of the texture g_fontAscii),
-   the rank g_accountRank (MSG(374, "OUT OF RANK(1000)") when none), two ratios ("%.2f": g_pilotPower, g_pilotKillRate) and three counts (g_pilotKills,
+   the rank of the kept record g_pilotRankKept (MSG(374, "OUT OF RANK(1000)") when none), two ratios ("%.2f": g_pilotPower, g_pilotKillRate) and three counts (g_pilotKills,
    g_pilotDeaths, g_pilotExp); two buttons (MSG(115, "$[0] O K"); 4 / 5 under the pointer by account_hitTest, lit unless g_textFieldOpen), a
    rule and the border. The original leaves eax to callers that ignore it */
 void (account_drawPanel)(void)
@@ -851,7 +851,7 @@ void (account_drawPanel)(void)
 	int hovered = ((int)account_hitTest(g_mouseX, g_mouseY));   /* account_hitTest */
 	gfx_setProjection2D3D(2);
 	glLoadIdentity();
-	if (g_roomAwaitingServer == 1) {
+	if (g_accountRankAwaited == 1) {
 		set_colour_bits(g_rectColour, 0x3e4ccccd, 0x3e4ccccd, 0x3f333333, 0x3f333333);   /* 0.2, 0.2, 0.7, 0.7 */
 		menu_drawRect(0x50, 0xc8, 0x230, 0x118, 1);
 		set_colour_bits(g_textColour, 0x3f800000, 0x3f800000, 0, 0x3f800000);
@@ -900,10 +900,10 @@ void (account_drawPanel)(void)
 	set_colour_bits(g_rectColour, 0x3f800000, 0x3f800000, 0, 0x3e99999a);   /* 1, 1, 0, 0.3 */
 	menu_drawRect(X0 + 0xc1, Y0 + 0xbe, X0 + 0xd8, Y0 + 0xce, 0);
 	/* the record */
-	if (!g_accountRank)
+	if (!g_pilotRankKept)
 		text_draw8(X0 + 0x98, Y0 + 0xd6, (const char *)MSG(374, "OUT OF RANK(1000)"));
 	else {
-		itoa(g_accountRank, text, 10);
+		itoa(g_pilotRankKept, text, 10);
 		text_draw8(X0 + 0x98, Y0 + 0xd6, text);
 	}
 	sprintf(text, (const char *)STR(0x4b0268, "%.2f"), (double)g_pilotPower);

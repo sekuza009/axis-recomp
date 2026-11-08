@@ -64,9 +64,9 @@ void THISCALL (hud_drawTeamScores)(Scene *scene)
 	text_setColor(1.0f, 1.0f, 1.0f, 1.0f);
 	sprintf(text, "%d", scene->teamScores[scene_teamIdAt(scene, 0)]);
 	text_drawCentred(0x128, 9, 0x128, text, 16);
-	int right = boxWidth + left + 1;
+	int blueLeft = boxWidth + left + 1;
 	glColor4f(0.0f, 0.5f, 1.0f, 0.5f);
-	gfx_fillRect(right, top, boxWidth + right, boxHeight + top);
+	gfx_fillRect(blueLeft, top, boxWidth + blueLeft, boxHeight + top);
 	text_setColor(1.0f, 1.0f, 1.0f, 1.0f);
 	sprintf(text, "%d", scene->teamScores[scene_teamIdAt(scene, 1)]);
 	text_drawCentred(0x158, 9, 0x158, text, 16);

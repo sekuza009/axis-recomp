@@ -27,7 +27,7 @@
 #define g_roomDim ((float *)IMG(0x9dd338))   /* float[4]; the game room's dim colour (RGBA 0.3, 0.7, 0.7, 1) */
 #define g_profileColour ((float *)IMG(0x9f8eb0))   /* float[4]; the profile screen's bright colour (RGBA 0, 1, 1, 1 cyan; menuState210_enter); g_profileDim the dim one */
 #define g_vecZero2 ((float *)IMG(0xa0e7b8))   /* float[3]; a zero vector (vec_initZero2) */
-#define g_vecUnitY ((float *)IMG(0xa0e7d8))   /* float[3]; (0 1 0: vec_initUp) */
+#define g_vecUnitY ((float *)IMG(0xa0e7d8))   /* float[3]; (0 1 0: vec_initAxisY) */
 #define g_vecUnitX ((float *)IMG(0xa0e7f8))   /* float[3]; (1 0 0: vec_initAxisX); never read */
 #define g_logTexture ((u32 *)IMG(0xa0dff8))   /* u32[2]; vtable + class name */
 #define g_logTextureManager ((u32 *)IMG(0xa0e000))   /* u32[2]; vtable + class name */
@@ -143,7 +143,7 @@
 #define g_armcParts ((int *)IMG(0x4dc760))   /* int[5]; the mech's chosen parts in the ARM CENTER: head, chest, arm, leg, booster (armc_stepPart; kept into g_savedMechPartIds by armc_saveSelection) */
 #define g_savedMechPartIds ((int *)IMG(0x4dc878))   /* int[5]; the saved mech's parts: head (g_savedMechHead), chest, arm, leg, booster (match_setupOrStartRound's loop of 5; mech_unpackFromRecord / mech_loadFromProfile / armc_saveSelection write) */
 #define g_armcSlotItems ((int *)IMG(0x4dcb18))   /* int[6]; the ARM CENTER mech's items by slot: [0] / [1] the two extra items (slots 4 / 5: g_itemSlot4 / g_itemSlot5; items 27 .. 35), [2] .. [5] the four weapons (slots 0 .. 3: g_mechWeaponSlot0 .. 3); kept into g_savedMechSlotItems (armc_saveSelection) */
-#define g_savedMechSlotItems ((int *)IMG(0x4dcf18))   /* int[6]; the saved mech's items in g_armcSlotItems' order: [0] / [1] the extra items (slots 4 / 5), [2] .. [5] the weapons (slots 0 .. 3); mech_unpackFromRecord's loop writes the four weapons from record bytes 7 .. 10 (bytes 5 / 6 the extras); mech_setEmpty: weapon slot 0 = 0, the rest -1 */
+#define g_savedMechSlotItems ((int *)IMG(0x4dcf18))   /* int[6]; the saved mech's items in g_armcSlotItems' order: [0] / [1] the extra items (slots 4 / 5), [2] .. [5] the weapons (slots 0 .. 3); mech_unpackFromRecord's loop writes the four weapons from record bytes 7 .. 10 (bytes 5 / 6 the extras); mech_setDefault: weapon slot 0 = 0, the rest -1 */
 #define g_slotTextures ((int *)IMG(0x4dcc70))   /* int[7]; ARM CENTER's snapshot textures by part record (armc_loadSnapshotTexture(i): the six slots, then the part looked at - g_armcViewedPartTexture, the seventh) */
 #define g_timerClocks ((double *)IMG(0x9db980))   /* double[2]; the timer's two doubles: the time now (g_clockNow) and the time last returned (g_lastTime); timer_init clears them as four dwords */
 #define g_mouseClicked ((int *)IMG(0x4ded88))   /* int[3]; the three mouse buttons' click pulses (0xfa .. 0xfc) */
@@ -173,7 +173,7 @@
 #define g_soundEdited ((int *)IMG(0x4dde98))   /* int[4]; the sound tab's four values being edited: the volume (g_setupEffectVolume) */
 #define g_newArenaForm ((int *)IMG(0x4dbb00))   /* int[4]; the create-arena form's window: left (g_newArenaFormLeft) */
 #define g_pilotStats ((int *)IMG(0x9dd5d8))   /* int[8]; the pilot's record from the server: level (g_pilotLevel), exp, rank (g_pilotRank), power (a float), games, kills, deaths, kill rate (a float) (login_takeAccountRecord) */
-#define g_pilotStatsKept ((int *)IMG(0x9dd240))   /* int[8]; the pilot's record kept (g_pilotStats' layout: level (g_pilotLevelKept), exp, rank (unused here), power (float), games, kills, deaths, kill rate (float, +0x1c)): room_copyAccountRecord / newId_register / pilotRecord_syncCopies */
+#define g_pilotStatsKept ((int *)IMG(0x9dd240))   /* int[8]; the pilot's record kept (g_pilotStats' layout: level (g_pilotLevelKept), exp, rank (g_pilotRankKept: account_takeRank, shown by account_drawPanel), power (float), games, kills, deaths, kill rate (float, +0x1c)): room_copyAccountRecord / newId_register / pilotRecord_syncCopies */
 #define g_roomForm ((int *)IMG(0x9dd1b8))   /* int[4]; the game room settings form's window: left (g_roomFormLeft) */
 #define g_menuLookKept ((float *)IMG(0x9dd918))   /* float[3]; the menu camera's look-at point kept at the start of a tunnel move (menuTunnel_advance's camera_keep); the move ends at it +- a ring's length on z; game_returnTo* set it */
 #define g_menuEyeKept ((float *)IMG(0x9dd930))   /* float[3]; the menu camera's position kept at the start of a tunnel move (g_menuEyeKeptX .. Z; menuTunnel_advance's camera_keep, menu_tunnel's EYE_KEPT) */
@@ -184,7 +184,7 @@
 #define g_skirmishColourDim ((float *)IMG(0x9f62e8))   /* float[4]; the skirmish screen's dim text colour, RGBA (0, 0.6, 0.6, 1): buttons not hovered */
 #define g_keptChat ((char *)IMG(0x9f63e4))   /* char[1024]; the typed line kept for the match (the chat line, or the Esc menu's replay name; match_endTyping: cleared, then copied whole (0x400) from g_inputLine; match_frame / escMenu_update read it; g_keptChatLine its first byte) */
 #define g_netSendPacket ((NetPacketMessage *)IMG(0x9f9428))   /* NetPacketMessage[1]; the packet message being sent (cleared as 0x103 words): kind (g_netPacketMessageKind) */
-#define g_pilotSave ((u8 *)IMG(0x9f1718))   /* u8[940]; the pilot's save record (0x3ac bytes, the middle of the .axs file, scrambled with key 0x7e): +0 the signature 'AXIS USER PROFILE DATA Master ver 1.0', +0x80 the pilot's name, +0x100 its value, +0x104 the progress (g_progress), +0x2d8 .. the mech's parts and colours (mech_storeToProfile / mech_loadFromProfile) */
+#define g_pilotSave ((u8 *)IMG(0x9f1718))   /* u8[940]; the pilot's save record (0x3ac bytes, the middle of the .axs file, scrambled with key 0x7e): +0 the signature 'AXIS USER PROFILE DATA Master ver 1.0', +0x80 the pilot's name, +0x100 the pilot's character (g_selectedCharacter), +0x104 the progress (g_progress), +0x2d8 .. the mech's parts and colours (mech_storeToProfile / mech_loadFromProfile) */
 #define g_pilotSaveColours ((float *)(g_pilotSave + 0x31c))   /* float[36]; the save record's colour choices: six ColourChoice records (+0x31c .. +0x3ac; g_savedColourChoices' copy: mech_loadFromProfile / mech_storeToProfile) */
 #define g_armcViewPoints ((float *)IMG(0x4dca30))   /* float[24]; ARM CENTER's six points, 16 bytes each (x, y, z, unused): y = 300, 0, 0, -500, 0, 350; x and z 0 (armc_initCameraPoints; never read) */
 #define g_menuFrameTextures ((int *)IMG(0x4deb4c))   /* int[2]; the menu frames' textures (menu_loadTextures): [0] the panel corner ornaments (g_menuOrnamentTexture: menu_drawCornerOrnaments, menu_drawTopRightOrnament), [1] the dialog window frame (g_dialogFrameTexture: every dialog's draw) */
@@ -208,7 +208,7 @@
 #define g_vecOriginXyz ((float *)IMG(0xa0e7a8))   /* float[3]; the origin (0, 0, 0; vec_initOrigin): copied as a start point (armc_update*Preview, stage_remakePlayerActor, scene_startSession) and used as an operand in actor_processFrame / ObjectList_poseBones / particle_init (g_vecOrigin its first float) */
 #define g_vecUnitZXyz ((float *)IMG(0xa0e7c8))   /* float[3]; the unit z axis (0, 0, 1; vec_initAxisZ): negated as the scene camera's direction (classes.c), a shot's default direction (actor_frame.c) */
 #define g_vecZeroXyz ((float *)IMG(0xa0e7e8))   /* float[3]; the zero vector (0, 0, 0; vec_initZero): velocities / moves / steps are cleared from it (actor_setupFromParts, particle_update, bullet_init); collisionTri_sweepSphere's fallback axis */
-#define g_musicDuration ((u32 *)IMG(0xa0e018))   /* u32[2]; the music's duration (IAMMultiMediaStream::GetDuration's 64-bit STREAM_TIME, written in music_play: g_musicLength the low word, g_musicEndHigh the high; music_loopIfEnded compares the position with it) */
+#define g_musicDuration ((u32 *)IMG(0xa0e018))   /* u32[2]; the music's duration (IAMMultiMediaStream::GetDuration's 64-bit STREAM_TIME, written in music_play: g_musicLength the low word, g_musicLengthHigh the high; music_loopIfEnded compares the position with it) */
 #define g_resolutionNames ((u32 *)IMG(0x4b04cc))   /* u32[8]; the setup screen's screen size names (by g_setupResolution) */
 #define g_typedArenaAddressText ((char *)IMG(0x4dbbd4))   /* char[24]; the arena address typed (cleared as 24 bytes; its edit takes 20 characters; g_typedArenaAddress its first word) */
 #define g_partRecords ((u8 *)IMG(0x4dbe50))   /* u8[896]; ARM CENTER's part records: six slots then the part looked at */
@@ -255,7 +255,7 @@
 #define g_setupColourDim ((float *)IMG(0x4ddae0))   /* float[4]; setup's dim text colour, RGBA (0, 0.6, 0.6, 1): rows not hovered */
 #define g_missionsColourLit ((float *)IMG(0x9ef208))   /* float[4]; the mission list's lit text colour, RGBA (0, 1, 1, 1): titles, the picked row, hovered buttons (set by menuState900_enterMissions; mission_list.c's g_panelColour) */
 #define g_missionsColourDim ((float *)IMG(0x9eeac8))   /* float[4]; the mission list's dim text colour, RGBA (0, 0.6, 0.6, 1): rows and buttons that are not picked or hovered */
-#define g_textColours ((Colour *)IMG(0xa1f100))   /* Colour[16]; the 16 message colours (RGBA floats; colour_initTextColours fills them) */
+#define g_messageColours ((Colour *)IMG(0xa1f100))   /* Colour[16]; the 16 message colours (RGBA floats; colour_initMessageColours fills them) */
 #define g_keyState ((u8 *)IMG(0x4d1e9c))   /* u8[256]; the keyboard's 256 key bytes (0x80: held; DirectInput's GetDeviceState) */
 #define g_dplaySlots ((int *)IMG(0xa0d7a4))   /* int[4]; four DirectPlay connection slots: 1 while open */
 #define g_spinPanels ((u8 *)IMG(0x4dc550))   /* u8[528]; ARM CENTER's six spinning background panels, 0x58 bytes each: four corners (x, y, z, pad; +-600 in x and z), the x offset (+0x40), the angle (+0x50), the speed (+0x54: 0.15, -0.35, -1.5, 1.5, -0.18, 0.18). armc_initPanels sets all six; armc_drawPanels draws and turns panels 1 .. 5 with the spiral textures (panel 0 is never drawn) */
@@ -396,7 +396,7 @@
 #define g_noAddress ((char *)IMG(0xa0bb0c))   /* char[4]; the empty address DirectPlay's TCP connection gets without one (never written) */
 #define g_statBars ((float *)IMG(0x9f8d34))   /* float[9]; the profile screen's nine stat bars as drawn (eased a tenth a frame) */
 #define g_statBarTargets ((float *)IMG(0x9f8ec0))   /* float[9]; the stat bars' targets: the pilot character's nine stats + 50 (pilotSelect_loadStats / profile_loadPilotStats); g_statBars eases to them (profile_drawChosenPilot, profile_drawPilotSelect); cleared by pilotSelect_reset / profile_resetStatBars */
-#define g_profileMessageClickBox ((int *)IMG(0x9f9010))   /* int[4]; (left, top, right, bottom) = (471, 246, 550, 276), set by profileDialogBox_layout: profile_inDialogBox's rectangle, meant as where a click while the NAME ALREADY REGISTRED message is up (g_profileMessage, newNameDialog_clicks) closes it and starts typing again; but profile_inDialogBox answers 1 / -1 and the caller tests for nonzero, so any click does. Nothing drawn lies there (the message's OK button is 0x16e..0x1ce, 0xe6..0x106; the dialog ends at x 0x208) */
+#define g_profileNameTakenClickBox ((int *)IMG(0x9f9010))   /* int[4]; (left, top, right, bottom) = (471, 246, 550, 276), set by profileDialogBox_layout: profile_inDialogBox's rectangle, meant as where a click while the NAME ALREADY REGISTRED message is up (g_profileNameTakenShown, newNameDialog_clicks) closes it and starts typing again; but profile_inDialogBox answers 1 / -1 and the caller tests for nonzero, so any click does. Nothing drawn lies there (the message's OK button is 0x16e..0x1ce, 0xe6..0x106; the dialog ends at x 0x208) */
 #define g_inputHistory ((char *)IMG(0x67ef38))   /* char[3072]; the input line's three-line history of 0x400 bytes (menu_pushInputHistory: every confirmed text field, chat or not; never read); newest first (frontEnd_startUp clears 0x300 dwords) */
 #define g_briefingPageStarts ((int *)IMG(0x9eeadc))   /* int[50]; the briefing's page start offsets (0xc8 bytes cleared; g_briefingStart follows) */
 #define g_ladderEmail ((char *)IMG(0x9dd5a6))   /* char[30]; the logged-in Ladder account's e-mail: from the server's account record (+0x22, login_takeAccountRecord), copied from / to the account page's g_accountEmail (reg_writeLadderSettings, room_copyAccountRecord, newId_register); cleared (30 bytes) by menuState800_enterGameRoom. Not kept in the registry */

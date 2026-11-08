@@ -94,7 +94,7 @@ void (setupTop_initOutlines)(void)
 /* 0x433360: the game room's five menu camera target points (g_camPoints) and look-at points (g_camAims) set: x / y from a table
    ((20, -10), (20, 0), (20, 10), (-20, -10), (-20, 0); look-at x -70 / 70, y 55, 0, -55 ..), their z all the current
    look-at's z (g_menuCameraLookZ); the home eye and look-at (g_menuEyeHome*, g_menuLookHome*) from where the camera
-   is now; g_roomAwaitingServer cleared. Only caller armc_cameraStep, on the way back to the game room (800) */
+   is now; g_accountRankAwaited cleared. Only caller armc_cameraStep, on the way back to the game room (800) */
 void (room_initCameraPoints)(void)
 {
 	static const u32 point[][2] = {
@@ -117,7 +117,7 @@ void (room_initCameraPoints)(void)
 	(*(int *)&g_menuLookHomeX) = lx;
 	(*(int *)&g_menuLookHomeY) = ly;
 	(*(int *)&g_menuLookHomeZ) = lz;
-	g_roomAwaitingServer = 0;
+	g_accountRankAwaited = 0;
 }
 
 /* 0x440d70: the main menu's replay list opened: its state, a dialog open, its frame, the 1024 records (0x44 bytes

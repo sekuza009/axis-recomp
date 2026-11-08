@@ -29,7 +29,7 @@
 0x9fd95c,int,g_lastChatLineSet
 0x4b2a70,int,g_keepCameraAsked
 0x9dd380,int,g_editingRoomName
-0x9dd4a0,int,g_openLoginName
+0x9dd4a0,int,g_newIdFormOpenName
 0x9dd7d8,int,g_roomPanelsSliding
 0xa0b378,int,g_gameServerAnswer
 0x4de1cc,int,g_crosshairEdit

@@ -63,7 +63,7 @@ static void options_panel(u32 rec, u32 rec2, u32 gx, u32 gy, u32 gx2)
 #define AY ADDR(g_armcPageTop)
 #define AX2 ADDR(g_armcPageRight)
 #define AY2 ADDR(g_armcPageBottom)
-static void armc_tabs(u32 rec)
+static void armc_tabsAndOkCancel(u32 rec)
 {
 	static const RArg a[4] = { RA(AX, 0x10, 1), RA(AY, -8, 0), RA(AX, 0x70, 1), RA(AY, 0x18, 0) };
 	static const RArg b[4] = { RA(AX, 0x10, 1), RA(AY2, -0x20, 0), RA(AX, 0x70, 1), RA(AY2, 0, 0) };
@@ -185,7 +185,7 @@ void (profilePage_layout)(void)
 void (armcWeaponsPage_layout)(void)
 {
 	static const RArg c[4] = { RA(AX, 0x10, 0), RA(AY, 0x28, 1), RA(AX, 0xa0, 0), RA(AY, 0x54, 1) };
-	armc_tabs(OBJ(g_armcWeaponsPageRects));
+	armc_tabsAndOkCancel(OBJ(g_armcWeaponsPageRects));
 	rect_spec((u32)&g_armcWeaponsPageRects[24], (u32)&g_armcWeaponsPageRects[48], 0x3f, c);
 	rect1((u32)&g_armcWeaponsPageRects[48], AX2, -0xea, AY, 0x162, AX2, -0xc2, AY, 0x182);
 	rect1((u32)&g_armcWeaponsPageRects[52], AX2, -0x22, AY, 0x162, AX2, 6, AY, 0x182);
@@ -197,7 +197,7 @@ void (armcColour_layout)(void)
 	static const RArg c[4] = { RA(AX, 0x10, 0), RA(AY, 0x40, 1), RA(AX, 0xb0, 0), RA(AY, 0x6c, 1) };
 	static const RArg d[4] = { RA(AX2, -0xb8, 0), RA(AY, 0x58, 1), RA(AX2, -0x18, 0), RA(AY, 0x6c, 1) };
 	static const RArg e[4] = { RA(AX2, -0xb8, 0), RA(AY, 0x108, 1), RA(AX2, -0x18, 0), RA(AY, 0x11c, 1) };
-	armc_tabs(OBJ(g_armcColourRects));
+	armc_tabsAndOkCancel(OBJ(g_armcColourRects));
 	rect_spec((u32)&g_armcColourRects[20], (u32)&g_armcColourRects[44], 0x30, c);
 	rect_spec((u32)&g_armcColourRects[44], (u32)&g_armcColourRects[56], 0x30, d); rect_spec((u32)&g_armcColourRects[56], (u32)&g_armcColourRects[68], 0x30, e);
 	rect1((u32)&g_armcColourRects[68], AX2, -0xa0, AY2, -0x20, AX2, 0, AY2, 0);
@@ -206,7 +206,7 @@ void (armcColour_layout)(void)
 void (armcPartsPage_layout)(void)
 {
 	static const RArg c[4] = { RA(AX, 0x10, 0), RA(AY, 0x40, 1), RA(AX, 0xb0, 0), RA(AY, 0x6c, 1) };
-	armc_tabs(OBJ(g_armcPartsPageRects));
+	armc_tabsAndOkCancel(OBJ(g_armcPartsPageRects));
 	rect_spec((u32)&g_armcPartsPageRects[24], (u32)&g_armcPartsPageRects[48], 0x30, c);
 	rect1((u32)&g_armcPartsPageRects[52], AX, 0x114, AY2, -0x20, AX, 0x174, AY2, 0);
 	rect1((u32)&g_armcPartsPageRects[56], AX, 0xe4, AY2, -0x1c, AX, 0x114, AY2, -4);

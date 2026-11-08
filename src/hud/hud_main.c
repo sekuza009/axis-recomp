@@ -41,14 +41,16 @@ static float tex255(int n) { return f32((long double)n * (1.0f / 255)); }
 #define ENERGY_WIDTH  (*(const float *)RELOC(*(const u32 *)IMG(0x493f29)))   /* 8 on disk */
 #endif
 
-/* the alert ring: a quad strip around the screen centre, opaque at its inner edge and fading out 1.2 times further
-   out; its size by the player's detection angle (the view's tangent scaled by it), red while a round homes on it */
+/* the alert ring, drawn by main_draw while a round homes on the player (homedOn) or the held item is a lock-on weapon
+   (targetingTime above 0): a quad strip around the screen centre, a quarter opaque at its inner edge and fading out
+   1.2 times further out; its size by the player's detection angle (the view's tangent scaled by it); red while a
+   round homes on the player (its inner edge only in a network game, sessionMode 1), green otherwise */
 static void main_ring(Scene *scene, Actor *player)
 {
 	int t = ftol((long double)view_fov() * 5.0f);
-	float trig = g_trig[(t % 3600 + 3600) % 3600];
+	float tanHalfFov = g_trig[(t % 3600 + 3600) % 3600];
 	int half = gfx_getHeight() / 2;
-	float focal = f32(half / (long double)trig);
+	float focal = f32(half / (long double)tanHalfFov);
 	glBegin(GL_QUAD_STRIP);
 	for (int angle = 0; angle <= 3600; angle += 100) {
 		if (player->homedOn == 1 && scene->sessionMode == 1)
@@ -114,8 +116,10 @@ static void main_counters(Scene *scene, Actor *player)
 	}
 }
 
-/* the top left: flag, emblem, the score icon and the score */
-static void main_score(Scene *scene, Actor *player, int p)
+/* the top left in a Ladder game: the flag (when shown), the grade badge, the score icon and the score. Drawn only in
+   Ladder games (scene->ladderGame, main_draw); it sits at the top left of the 640-unit HUD, which on a wide screen
+   stays with the centred 4:3 area (part(HUD_CENTRE)) */
+static void main_ladderScore(Scene *scene, Actor *player, int p)
 {
 	char text[256];
 	int x = 4;
@@ -125,7 +129,7 @@ static void main_score(Scene *scene, Actor *player, int p)
 		x = 0x1c;
 	}
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
-	hud_drawEmblem(scene, player->grade, x, 8);
+	hud_drawGradeBadge(scene, player->grade, x, 8);
 	x += 0x18;
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 	hud_drawIcon(scene, x, 8, 0);
@@ -470,7 +474,7 @@ static void main_draw(Scene *scene)
 	if (scene->playing == 1) {
 		part(HUD_CENTRE);
 		if (scene->ladderGame == 1)
-			main_score(scene, player, p);
+			main_ladderScore(scene, player, p);
 		part(HUD_RIGHT);
 		if (scene->playing == 1)
 			main_ammo(scene, player);

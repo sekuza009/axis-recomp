@@ -51,7 +51,7 @@ void (room_askJoinPassword)(void)
 
 /* 0x435f40: the CONNECTING TO THE GAME SERVER box's CANCEL over the game list (gameListJoinBox_hitTest; with the room camera arrived): the join being waited
    for given up: its flags off, the session left (dplay_leaveSession) and its timer (0x378) killed */
-void (gameList_stopJoin)(void)
+void (gameListJoinBox_clicks)(void)
 {
 	if (g_frameOpening != 0 || g_mouseClick == 0 || g_roomCameraMode != 2)
 		return;
@@ -271,10 +271,6 @@ static void load_map_preview(u32 selected)
 void (room_loadMapPreview)(void) { load_map_preview(ADDR(g_roomMap)); }
 void (arena_loadMapPreview)(void) { load_map_preview(ADDR(g_newArenaMap)); }
 
-/* 0x433d30: the typed line (g_inputLine) committed to the new-ID form's field being edited (when the keyboard was let go for it,
-   g_textFieldOpen: the edit window g_hEditField destroyed and the focus back on the main window first): the ID
-   (g_accountName, 30 bytes), the password and its repeat (g_accountPassword, g_accountPasswordRepeat, 12 bytes) or the e-mail (g_accountEmail, 50 bytes).
-   Returns what the original leaves in eax */
 /* typing closed if it was on: the hidden EDIT control destroyed, the focus back to the game window and the line
    closed (menu_closeInputLine); returns that call's eax, or 0 */
 static u32 typing_end(void)
@@ -286,6 +282,10 @@ static u32 typing_end(void)
 	return menu_closeInputLine(1);   /* menu_closeInputLine */
 }
 
+/* 0x433d30: the typed line (g_inputLine) committed to the new-ID form's field being edited (when the keyboard was let go for it,
+   g_textFieldOpen: the edit window g_hEditField destroyed and the focus back on the main window first): the ID
+   (g_accountName, 30 bytes), the password and its repeat (g_accountPassword, g_accountPasswordRepeat, 12 bytes) or the e-mail (g_accountEmail, 50 bytes).
+   Returns what the original leaves in eax */
 u32 (newIdForm_endTyping)(void)
 {
 	static const struct { u32 editing, field, size; } fields[4] = {
@@ -802,7 +802,7 @@ u32 (account_page)(void)
 	if (g_accountRankDue)
 		account_takeRank();
 	u32 r = account_drawPanel();   /* account_drawPanel: the page */
-	if (g_roomAwaitingServer == 1)
+	if (g_accountRankAwaited == 1)
 		return r;
 	for (int k = 0; k < 4; k++) {
 		if (!GAME_VAR(int, fields[k].editing))
@@ -827,12 +827,11 @@ u32 (account_page)(void)
 
 /* ---- the new-ID form's keys: its text fields (g_dialogFocus: 0 .. 2), the text cursor placed in the one typed
    into (g_pointerGlideX / g_pointerGlideY) ---- */
-#define g_loginField g_dialogFocus
 
 /* the cursor into field to at (x, y) */
-static void login_field(int to, int x, int y)
+static void form_field(int to, int x, int y)
 {
-	g_loginField = to;
+	g_dialogFocus = to;
 	g_pointerGliding = 1;
 	(*(u32 *)&g_pointerGlideTime) = 0x41a00000;   /* 20 */
 	(*(u32 *)&g_unusedHighlightAlpha) = 0x3ecccccd;   /* 0.4 */
@@ -879,20 +878,19 @@ void (newIdForm_keys)(void)
 	if (input_isDown(g_dikLShift) == 1 || input_isDown(g_dikRShift) == 1)
 		g_fieldStep = 10;
 	if (g_fieldStep == 20) {
-		if (g_loginField == 1)
-			login_field(2, g_newIdFormLeft + 0x172, g_newIdFormBottom - 0x30);
-		else if (g_loginField == 2) {
+		if (g_dialogFocus == 1)
+			form_field(2, g_newIdFormLeft + 0x172, g_newIdFormBottom - 0x30);
+		else if (g_dialogFocus == 2) {
 			g_typingAccountName = 1;
 			g_typingAccountPassword = 0;
-			login_field(2, g_roomLoginLeft + 0x15c, g_roomLoginTop + 0x44);
+			form_field(2, g_roomLoginLeft + 0x15c, g_roomLoginTop + 0x44);
 		}
 	} else {
-		if (g_loginField == 1) {
+		if (g_dialogFocus == 1) {
 			g_typingAccountRepeat = 0;
 			g_typingAccountEmail = 1;
-			login_field(0, g_roomLoginLeft + 0x15c, g_roomLoginTop + 0xd4);
-		} else if (g_loginField == 2)
-			login_field(1, g_newIdFormLeft + 0xaa, g_newIdFormBottom - 0x30);
+			form_field(0, g_roomLoginLeft + 0x15c, g_roomLoginTop + 0xd4);
+		} else if (g_dialogFocus == 2)
+			form_field(1, g_newIdFormLeft + 0xaa, g_newIdFormBottom - 0x30);
 	}
 }
-#undef g_loginField

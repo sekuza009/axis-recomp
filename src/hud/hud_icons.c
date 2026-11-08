@@ -29,7 +29,7 @@ static float texel(int n, float perTexel)
 
 /* 0x4922c0: the badge of grade `grade` (1 up; 0 or less draws nothing) from the HUD's icon atlas (scene->iconTexture,
    256 texels wide): ten cells per row, the rows starting 224 texels down */
-void THISCALL (hud_drawEmblem)(Scene *scene, int grade, int x, int y)
+void THISCALL (hud_drawGradeBadge)(Scene *scene, int grade, int x, int y)
 {
 	if (grade <= 0)
 		return;

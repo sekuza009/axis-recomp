@@ -276,8 +276,9 @@ void (newPartsNotice_keys)(void)
 		g_skirmishNewPartsNotice = 0;
 }
 
-/* 0x447b40: the list's keys: Esc or back leaves, O starts the mission, left / right step through the missions
-   unlocked so far (g_progress), and Left Ctrl + Right Alt + Page Up unlocks them all */
+/* 0x447b40: the skirmish screen's round keys: Esc or back leaves (skirmish_leave), O starts the round shown
+   (skirmish_startRound), left / right step the round shown (g_skirmishRoundShown, 0 .. 14) through those unlocked so
+   far (g_progress), and Left Ctrl + Right Alt + Page Up unlocks them all (g_progress 16) */
 void (skirmish_roundKeys)(void)
 {
 	if (input_justPressed(g_keyCancel2) == 1) {
@@ -336,7 +337,7 @@ void (menu_returnToMainFromRoom)(void)
 	g_roomRequestOut = 0;
 	g_newIdAnswerAwaited = 0;
 	g_unusedRoomWord = 0;
-	g_roomAwaitingServer = 0;
+	g_accountRankAwaited = 0;
 	g_screen = 300;
 }
 
@@ -748,14 +749,14 @@ u32 (game_postMatch)(void)
 		progress = g_progress;
 		if (progress == 15) {
 			g_progress = 16;
-			profile_saveProgress();
+			profile_save();
 			reg_writeEndMode(1);      /* reg_writeEndMode */
 			music_stop();
 			r = ((u32)app_closeWindow(0x63));
 			goto message;
 		}
 		reg_writeEndMode(progress < 15 ? 0 : 1);
-		profile_saveProgress();
+		profile_save();
 		game_returnToSkirmish();         /* game_returnToSkirmish */
 		break;
 	default:

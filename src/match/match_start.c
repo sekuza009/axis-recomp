@@ -218,7 +218,7 @@ void THISCALL (match_setupOrStartRound)(Scene *s)
 void THISCALL (game_setGameTypeFlags)(u8 *scene, int t)
 {
 #define AT(field) (offsetof(Stage, field) - offsetof(Stage, gameType))
-	static const u16 second[14] = { 0, 0, AT(suddenDeath), AT(suddenDeath), AT(shotgunArena), AT(shotgunArena), AT(ionCannonArena),
+	static const u16 modeFlagOffset[14] = { 0, 0, AT(suddenDeath), AT(suddenDeath), AT(shotgunArena), AT(shotgunArena), AT(ionCannonArena),
 		AT(ionCannonArena), AT(rocketArena), AT(rocketArena), AT(gladiator), AT(gladiator), AT(kingOfTheHill), AT(platoon) };
 #undef AT
 	Stage *st = (Stage *)scene;
@@ -230,8 +230,8 @@ void THISCALL (game_setGameTypeFlags)(u8 *scene, int t)
 		return;
 	if (t % 2)
 		st->teamGame = 1;
-	if (second[t])
-		FIELD(int, flags, second[t]) = 1;
+	if (modeFlagOffset[t])
+		FIELD(int, flags, modeFlagOffset[t]) = 1;
 }
 
 /* a 4 x 4 identity matrix (floats, as their bits) */
@@ -241,12 +241,12 @@ static void identity(u32 *m)
 		m[k] = k % 5 == 0 ? 0x3f800000 : 0;
 }
 
-/* 0x470ad0 (thiscall on the scene): the scene's subsystems reset (stage_resetDynamicLights; the 100 dwords at lockHeld and
+/* 0x470ad0 (thiscall on the stage): the stage's subsystems reset (stage_resetDynamicLights; the 100 dwords at lockHeld and
    lockCount cleared; the object list, stage_clearBullets, stage_clearParticles, stage_resetMatrixAndPoints), the camera at the origin looking down
    -z (cameraPos .. lastCameraPos[2]) with identity matrices (modelview, lastModelview), the start and item points none, the
    team commanders (teamCommanders) and snapshot textures (snapshotTex) all -1, then the scripts (stage_clearMessages, script_reset) and stage_initSpaceOneCell. Its
    callers ignore the eax it leaves */
-void THISCALL (scene_reset)(u8 *s)
+void THISCALL (stage_reset)(u8 *s)
 {
 	Stage *st = (Stage *)s;
 	stage_resetDynamicLights(s);
@@ -291,7 +291,7 @@ static void model_sets(u8 *shapes, const char *dir, int n, int extra, int size, 
    six 4-point rings top and bottom (sides), an 11 x 11 ground grid (floor); the world box (+-100000), the
    layer lists cleared; the shape and skeleton sets of the stage, of each of the 16 player records (five parts each) and
    of the map; the effects and three textures (0x4c73f4 ..), an identity and a 1.1 scale matrix, the flag atlas
-   (a texture, filled with g_defaultColour); the game type 0, the actors and the scene reset; built (+4 1). Its caller
+   (a texture, filled with g_defaultColour); the game type 0, the actors and the stage reset (stage_resetActors, stage_reset); built (+4 1). Its caller
    ignores the eax it leaves */
 void THISCALL (stage_build)(u8 *s, u32 stageDir, u32 mapDir, const char *textureDir, u32 shapeDir, const char *skeletonDir, u32 actorDir,
                                   u32 bulletDir, u32 effectDir, u32 sceneDir)
@@ -382,7 +382,7 @@ void THISCALL (stage_build)(u8 *s, u32 stageDir, u32 mapDir, const char *texture
 	}
 	memcpy(st->worldLow, st->levelLow, 12);
 	st->unused9ef934 = 1.0f;
-	st->poolUsed = 0;
+	st->layerPoolUsed = 0;
 	memcpy(st->worldHigh, st->levelHigh, 12);
 	st->groundLayerCount = 0;
 	st->layerModel.parts = st->layerParts;
@@ -426,7 +426,7 @@ void THISCALL (stage_build)(u8 *s, u32 stageDir, u32 mapDir, const char *texture
 		st->flagAtlas[k / 128][k % 128] = (*(u32 *)&g_defaultColour);
 	st->showExp = 0;
 	game_setGameTypeFlags((Stage *)s, 0);
-	scene_resetActors(s);
-	scene_reset(s);
+	stage_resetActors(s);
+	stage_reset(s);
 	st->built = 1;
 }

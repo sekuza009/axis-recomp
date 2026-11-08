@@ -404,7 +404,7 @@ int THISCALL (collisionTri_sweepSphere)(CollisionTri *tri, float r, const float 
                                       float *outVel, float *outDist, float *plane, const float *axis)
 {
 	const float *n = tri->normal, *dist = &tri->dist;
-	float *o = outPos, edge[3], p[3], v[3], c[3], d[3], w[3], u[3], pv[3], r2, a;
+	float *o = outPos, edgeDist[3], p[3], v[3], c[3], d[3], w[3], u[3], pv[3], r2, a;
 	for (int i = 0; i < 3; i++)
 		o[i] = f32(FADD(pos[i], vel[i]));
 	if (mul(fld_m(&vel[2]), &n[2]) + mul(fld_m(&vel[1]), &n[1]) + mul(fld_m(&n[0]), &vel[0]) > *TINY)
@@ -414,7 +414,7 @@ int THISCALL (collisionTri_sweepSphere)(CollisionTri *tri, float r, const float 
 	for (int i = 0; i < 3; i++) {
 		const float *e = tri->edgePlanes[i];
 		X s = fsub_m(mul(fld_m(&e[0]), &o[0]) + mul(fld_m(&e[1]), &o[1]) + mul(fld_m(&e[2]), &o[2]), &e[3]);
-		edge[i] = (float)s;
+		edgeDist[i] = (float)s;
 		if (s >= r)
 			return 0;
 	}
@@ -430,7 +430,7 @@ int THISCALL (collisionTri_sweepSphere)(CollisionTri *tri, float r, const float 
 		v[2] = f32(FMUL(v[2], r));
 	}
 	int i = 0;
-	while (i < 3 && !(edge[i] > 0))
+	while (i < 3 && !(edgeDist[i] > 0))
 		i++;
 	if (i == 3) {   /* the face: the plane's equation solved along the move */
 		float nn[3], y[3], x[3], t;

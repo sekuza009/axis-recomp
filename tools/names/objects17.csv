@@ -2,4 +2,4 @@
 0xa0e7a8,float,3,g_vecOriginXyz,the origin (0, 0, 0) as three floats (g_vecOrigin its x; copied as 12 bytes: g_startPos)
 0xa0e7c8,float,3,g_vecUnitZXyz,the unit z axis (0, 0, 1) as three floats (g_vecUnitZ its x; read + k, copied as 12 bytes)
 0xa0e7e8,float,3,g_vecZeroXyz,the rest vector (0, 0, 0) (g_vecZero its x; copied as 12 bytes)
-0xa0e018,u32,2,g_musicDuration,the music's duration (GetDuration's 64-bit time: g_musicLength the low word, g_musicEndHigh the high)
+0xa0e018,u32,2,g_musicDuration,the music's duration (GetDuration's 64-bit time: g_musicLength the low word, g_musicLengthHigh the high)

@@ -36,7 +36,7 @@ void THISCALL (hud_drawMessageBox)(Scene *scene)
 		int y, offset = 0;
 		for (y = 0x28; y < 0x68; y += 0x10, offset += 0x41) {
 			if (msg->colour < 16) {
-				Colour *c = &g_textColours[msg->colour];
+				Colour *c = &g_messageColours[msg->colour];
 				text_setColor(c->r, c->g, c->b, alpha);
 			} else {
 				text_setColor(1.0f, 1.0f, 1.0f, 0.0f);

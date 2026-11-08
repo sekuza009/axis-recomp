@@ -213,7 +213,7 @@ int (app_startupLoad)(void *instance)
 	reg_readServerSettings();
 	math_initMathFunction();
 	reg_readLadderSettings();
-	mech_setEmpty();
+	mech_setDefault();
 	data_loadCharacterProfiles();
 	data_loadMapInfo();
 	data_loadSkirmishInfo();
@@ -351,7 +351,7 @@ static char *bfd_name(u8 *g, char *out)
 
 /* 0x468750 (thiscall on the game object): one step of loading per call. The first (stateFrames 0) resets the
    loading lines to the title. By the stage (loadStage): 0 the replay file's header (mode 3: version 0x1201, the
-   map, the players' names, the type), the scene reset; 1 the map named (g_mapIndex into g_mapNames: none ends it, g_mapMissing
+   map, the players' names, the type), the stage reset (stage_reset); 1 the map named (g_mapIndex into g_mapNames: none ends it, g_mapMissing
    set); 2 waiting for the stage's play information (the network drained into net_processGamePacket; a timeout
    lostTime against K k_5f, 0x80 or more packets out of turn (netq_skippedCount) or the game menu keys (g_keyGameMenu)
    stop it); 3 the ground; 4 the objects; 5 the collision volume; 6 the crosshair and the play information; 7 the
@@ -394,7 +394,7 @@ u32 THISCALL (game_processLoadingMode)(u8 *g)
 		}
 		(*(u32 *)&g_logHook) = FN(loading_drawScreen);
 		log_message((int)STAGE(g), -1, 0, (const char *)STR(0x4c521c, ".start loading process"));
-		scene_reset(STAGE(g));
+		stage_reset(STAGE(g));
 		mode = GS->sessionMode;
 		if (mode == 3)
 			next_stage(g, 1, STR(0x4c520c, ".LOAD AUTO PLAY"));   /* .LOAD AUTO PLAY */

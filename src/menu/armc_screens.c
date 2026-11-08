@@ -249,8 +249,8 @@ static void stat_float(int x, int y, float value, u32 format, u32 unit)
 	armc_drawTextRight(x, y, text);
 }
 
-/* 0x419160: the weapons page: two buttons (MSG(115, "$[0] O K"); 3 / 4 under the pointer, by armcWeaponsPage_hitTest, lit), the six part
-   slots (the chosen one, g_armcSlot, bright), a new snapshot of it when asked (g_armcSlotChanged), each slot's picture
+/* 0x419160: the weapons page: two buttons (MSG(115, "$[0] O K"); 3 / 4 under the pointer, by armcWeaponsPage_hitTest, lit), the six item
+   slots (four weapons, two extra items; the chosen one, g_armcSlot, bright), a new snapshot of it when asked (g_armcSlotChanged), each slot's picture
    (texture OBJ(g_slotTextures) + 4 k, when it has a name, g_partRecords) and label (MSG(291, "HAND-W1($[0] 1)")) with its name (or MSG(319, "EMPTY SLOT")); the part
    box: its picture (g_armcViewedPartTexture), name (0x4dc150) and type (MSG(711, "HV-PISTOL"), by g_weaponListTable / g_extraListTable of g_armcCursor), or
    MSG(320, "REMOVE WEAPON") without one; its arrows either side of it (0xc / 0xd lit); the ROTATE box; the stats panel: nothing chosen (0x4dc190 = -1: MSG(319, "EMPTY SLOT")), a part type only

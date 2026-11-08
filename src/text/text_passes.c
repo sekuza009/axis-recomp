@@ -122,15 +122,15 @@ static u32 text_pass(int x, int y, const u8 *s, const TextPass *pass)
 	int left = x, kept = 0, colour = 0;
 	glBegin(7);   /* GL_QUADS */
 	for (u8 c = *s; c; c = *s) {
-		int screen = g_menuState, special = pass->sticky && (screen == 9999 || screen == 400);
+		int screen = g_menuState, stickyOn = pass->sticky && (screen == 9999 || screen == 400);
 		s++;
-		if (special && c == '$' && s[0] == '#' && s[2]) {
+		if (stickyOn && c == '$' && s[0] == '#' && s[2]) {
 			colour = (signed char)s[1] - '0';
 			kept = 1;
 			c = s[2];
 			s += 3;
 		}
-		glColor4f_stored(special && kept ? (const u32 *)(OBJ(g_codeColours) + colour * 16) : (const u32 *)OBJ(g_textColour));
+		glColor4f_stored(stickyOn && kept ? (const u32 *)(OBJ(g_codeColours) + colour * 16) : (const u32 *)OBJ(g_textColour));
 		if (g_menuState != 9999 && c == '|') {
 			if (*s != '|') {
 				y += pass->line;
@@ -201,9 +201,9 @@ static const TextPass ascii8 =  { 0x11, 0x10, 1, FN(text_quad8), 0, 0, 8,    8, 
 static const TextPass ascii16 = { 0x11, 0x10, 1, FN(text_quad16), 0, 0, 8,    0xb,  0xd,  1 };
 static const TextPass ascii32 = { 0x21, 0x20, 0, FN(text_quad32), 0, 0, 0x10, 0x10, 0x16, 1 };
 static const TextPass han13 =   { 0x11, 0x10, 1, FN(glyph_drawHangulLead13), 1, 0, 8,    0,    0,    0 };
-static const TextPass han13b =  { 0x11, 0x10, 1, FN(glyph_drawHangulVowelTail13), 1, 1, 8,    0,    0,    0 };
+static const TextPass han13Layered =  { 0x11, 0x10, 1, FN(glyph_drawHangulVowelTail13), 1, 1, 8,    0,    0,    0 };
 static const TextPass han31 =   { 0x21, 0x20, 0, FN(glyph_drawHangulLead31), 1, 0, 0x10, 0,    0,    0 };
-static const TextPass han31b =  { 0x21, 0x20, 0, FN(glyph_drawHangulVowelTail31), 1, 1, 0x10, 0,    0,    0 };
+static const TextPass han31Layered =  { 0x21, 0x20, 0, FN(glyph_drawHangulVowelTail31), 1, 1, 0x10, 0,    0,    0 };
 
 /* 0x402010, 0x402210, 0x402420: the 8, 16 and 32-pixel fonts (0x402010 also notes where it starts first, which the
    end overwrites) */
@@ -213,9 +213,9 @@ u32 (text_ascii32Pass)(int x, int y, const u8 *s) { return text_pass(x, y, s, &a
 /* 0x401870, 0x401aa0: Korean at 13 units, the lead glyphs and the vowel and tail glyphs; text_hangul31Pass, text_hangul31LayeredPass: the
    same at 31 units */
 u32 (text_hangul13Pass)(int x, int y, const u8 *s) { return text_pass(x, y, s, &han13); }
-u32 (text_hangul13LayeredPass)(int x, int y, const u8 *s) { return text_pass(x, y, s, &han13b); }
+u32 (text_hangul13LayeredPass)(int x, int y, const u8 *s) { return text_pass(x, y, s, &han13Layered); }
 u32 (text_hangul31Pass)(int x, int y, const u8 *s) { return text_pass(x, y, s, &han31); }
-u32 (text_hangul31LayeredPass)(int x, int y, const u8 *s) { return text_pass(x, y, s, &han31b); }
+u32 (text_hangul31LayeredPass)(int x, int y, const u8 *s) { return text_pass(x, y, s, &han31Layered); }
 
 /* a pair of KS X 1001 rows (first, first + 1, ...) to a Johab lead byte (from base) and trail byte */
 static int ks_row(int hi, int lo, int base, int first)

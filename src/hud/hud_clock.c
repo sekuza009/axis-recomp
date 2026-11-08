@@ -4,7 +4,7 @@
 #include <string.h>
 
 /* the counters' colour: white, or when nearly out red, blinking off in the second half of each second */
-static void clock_setColour(int low, Scene *scene)
+static void counter_setColour(int low, Scene *scene)
 {
 	if (!low)
 		text_setColor(1.0f, 1.0f, 1.0f, 1.0f);
@@ -25,7 +25,7 @@ void THISCALL (hud_drawMatchCounters)(Scene *scene)
 			best = scene->players[scene->ranking[0]].kills;
 		else
 			best = 0;
-		clock_setColour(scene->fragLimit - best <= 1, scene);
+		counter_setColour(scene->fragLimit - best <= 1, scene);
 		sprintf(text, "%d", scene->fragLimit - best);
 		text_drawSized((0x15 - (int)strlen(text)) * 13, 8, text, 16);
 		glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
@@ -35,7 +35,7 @@ void THISCALL (hud_drawMatchCounters)(Scene *scene)
 		int left = scene->timeLimit * 60;
 		if (left > scene->elapsed)
 			left -= scene->elapsed;
-		clock_setColour(left <= 10, scene);
+		counter_setColour(left <= 10, scene);
 		sprintf(text, "%02d:%02d", left / 60, left % 60);
 		text_drawSized(0x187, 8, text, 16);
 		glColor4f(1.0f, 1.0f, 1.0f, 1.0f);

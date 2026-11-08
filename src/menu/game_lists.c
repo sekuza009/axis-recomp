@@ -119,7 +119,7 @@ static void info_box(u32 line, int named)
 
 /* 0x40a070: the arena's game list: the window, its title MSG(141, "JOIN ARENA"), three tabs (MSG(142, "SEARCH $[0] IPX"); the one under the pointer,
    by arenaGameList_hitTest, lit unless a box is up), five column heads; the rows and page when there is a list (g_arenaLanListBuilt,
-   or the lobby server's, g_arenaServerList); three buttons (MSG(149, "$[0] JOIN"): join needs a game, and while searching only the second
+   or the lobby server's, g_arenaListFromServer); three buttons (MSG(149, "$[0] JOIN"): join needs a game, and while searching only the second
    lights; all dimmed under the address / password boxes); the scroll arrows (15 / 16); the blinking MSG(152, "SEARCHING FOR THE GAME SERVER") while
    searching or g_lobbyRefreshing; the password and address boxes, the join confirmation (MSG(153, "CONNECTING TO THE GAME SERVER") / MSG(154, "PLEASE WAIT"), its button
    MSG(116, "$[0] CANCEL") by arenaDialogBox_hitTest) and the program-updated notice (the original asks arenaUpdateNotice_hitTest but lights its buttons by the
@@ -151,9 +151,9 @@ void (arena_drawGameList)(void)
 	RECT(0, 0x3f800000, 0x3f800000, 0x3f800000);
 	menu_drawLine(X0 + 0x10, Y0 + 0x6e, X1 - 0x10, Y0 + 0x6e);
 	menu_drawLine(X0 + 0x10, Y1 - 0x54, X1 - 0x10, Y1 - 0x54);
-	if (g_arenaLanListBuilt || g_arenaServerList) {
-		int serverList = g_arenaServerList;
-		game_rows(X0, Y0, 0x78, 0x150, serverList, OBJ(g_gameTypeNames), 20, serverList);
+	if (g_arenaLanListBuilt || g_arenaListFromServer) {
+		int fromServer = g_arenaListFromServer;
+		game_rows(X0, Y0, 0x78, 0x150, fromServer, OBJ(g_gameTypeNames), 20, fromServer);
 		answered_count(X1, Y1 - 0x4c, g_arenaLanListBuilt ? g_gameCount : g_serverListCount);
 	}
 	RECT(0, 0x3f800000, 0x3f800000, 0x3f800000);
@@ -581,7 +581,7 @@ void (gameList_mouse)(void)
 			if (gameList_refresh() == 1) {
 				sound_playMenu(0);
 				g_roomSearching = 1;
-				g_gameListRefreshClicked = 1;
+				g_gameListRefreshSent = 1;
 			}
 		} else if (on == 2)
 			games_stop();
@@ -673,7 +673,7 @@ void (gameList_keys)(void)
 		g_listAnswered = 0;
 		if (gameList_refresh() == 1) {
 			g_roomSearching = 1;
-			g_gameListRefreshClicked = 1;
+			g_gameListRefreshSent = 1;
 			sound_playMenu(0);
 		}
 		return;

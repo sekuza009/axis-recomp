@@ -1,6 +1,6 @@
 /* edit_fields.c: opening a text field for typing (the arena screens, the game room's forms and the match's chat line)
    and the typed line read back. Typing goes through a hidden EDIT control (editField_createEdit) into the shared line
-   g_inputLine, drawn with a caret at (g_editCaretX, g_editCaretY); the menu keys wait meanwhile (g_textFieldOpen,
+   g_inputLine, drawn with a caret at (g_inputLineX, g_inputLineY); the menu keys wait meanwhile (g_textFieldOpen,
    g_menuKeyGuard). Each field starts from its current text (copied in) or empty, and raises its own "being edited"
    flag. */
 #include "../game.h"
@@ -59,8 +59,8 @@ static int line_length(void)
 
 static void caret(int x, int y)
 {
-	g_editCaretX = x;
-	g_editCaretY = y;
+	g_inputLineX = x;
+	g_inputLineY = y;
 }
 
 /* ---- arena ---- */
