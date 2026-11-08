@@ -18,7 +18,7 @@ own `godot` branch) drives frame by frame. Decided 2026-11-08:
    the data lives in one block at the original's offsets (g_data / g_rdata, IMG()). A DLL is loaded anywhere: the
    image-range guard and the fixed link become optional (a debug build keeps them), and the data block is reached only
    through its symbols.
-2. **No original-program plumbing.** The test harness (`recomp.c`, AXIS_DIRECT without AXIS_NATIVE), the patch layer
+2. **No original-program plumbing.** *(done 2026-11-08: standalone/portable.c, below)* The test harness (`recomp.c`, AXIS_DIRECT without AXIS_NATIVE), the patch layer
    (`src/wide.c`, PATCHED_ / SITE_ call sites, code_matches), the per-function entry jumps and gamedata.bin's code
    bytes are not part of the portable build (they stay on master).
 3. **A platform interface.** Every OS / graphics / sound / input / network call goes through `src/plat/plat.h`
@@ -42,3 +42,11 @@ in Godot, then replaced piece by piece.
   original's range guarded: the skirmish, setup, profile, hosted-arena, two-copy, menu-tour and quit sessions ran
   with no original address used. `PORTABLE=2` (build/AxisRC_reloc.exe) makes the image an ordinary array and links
   with ASLR and relocations: loaded at 0x90000 (image at 0x19b000) it played the skirmish session. Next: stage 2.
+- 2026-11-08, stage 2: the portable builds use their own loader, `standalone/portable.c`, in place of main.c. Nothing
+  of AxisGL.exe is built in any more: no gamedata.bin (header bytes), no hook table or jumps at the original functions'
+  entries, no jumps for the C runtime - its 38 entries are a table (`g_crtFn`, `CRT_FN(name)` in src/axis.h, filled by
+  standalone/crt.c; the list is `CRT_ENTRIES` in crt_addrs.h, tools/mkcrt.py). The 228 imports are filled by name
+  from `src/import_list.h` (tools/mkimportlist.py, from imports.h), and the network layer hooks its slots by name
+  (axisnet_recomp.c's hook_import_ex with AXIS_PORTABLE). Of g_image only text_data's pages (DirectInput's object
+  formats) stay accessible; any other use is logged and stops the game. The patch layer's call sites (PATCHED_ /
+  SITE_, src/wide.c) already compile out of native builds; they stay in src/ for master.

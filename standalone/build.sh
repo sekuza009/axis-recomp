@@ -18,7 +18,7 @@ cd "$(dirname "$0")/.."
 if [ -n "$NATIVE" ]; then echo "(NATIVE=1 is the default now: building AxisRC.exe)"; fi
 if [ -n "$PATCHLAYER" ]; then OBJD=build/obj_patchlayer; NDEF=; OUT=AxisRC_patchlayer.exe; NSUF=_patchlayer;
 elif [ "$PORTABLE" = 2 ]; then OBJD=build/obj_portable; NDEF="-DAXIS_NATIVE -DAXIS_PORTABLE -DAXIS_RELOCATABLE"; OUT=AxisRC_reloc.exe; NSUF=_reloc;
-elif [ -n "$PORTABLE" ]; then OBJD=build/obj_portable; NDEF="-DAXIS_NATIVE -DAXIS_PORTABLE"; OUT=AxisRC_portable.exe; NSUF=;
+elif [ -n "$PORTABLE" ]; then OBJD=build/obj_portable; NDEF="-DAXIS_NATIVE -DAXIS_PORTABLE"; OUT=AxisRC_portable.exe; NSUF=_portable;
 else OBJD=build/obj_direct; NDEF=-DAXIS_NATIVE; OUT=AxisRC.exe; NSUF=; fi
 export OBJD NDEF
 CC="python -m ziglang cc -target x86-windows-gnu"
@@ -42,16 +42,24 @@ python tools/mkgamedata.py build/gamedata.bin
 printf '\t# gamedata.bin %s\n\t.section .rdata,"dr"\n\t.globl _g_gamedata\n\t.p2align 2\n_g_gamedata:\n\t.incbin "build/gamedata.bin"\n' \
 	"$(sha1sum build/gamedata.bin | cut -c1-40)" > build/gamedata.s
 $CC -c -o build/gamedata.o build/gamedata.s
-$CC -c -O2 -Wall $NDEF -o build/standalone_main$NSUF.o standalone/main.c
+# (the portable builds: their own loader, standalone/portable.c - no gamedata.bin, no hook table, no entry jumps)
+if [ -n "$PORTABLE" ]; then
+	python tools/mkimportlist.py > /dev/null
+	$CC -c -O2 -Wall $NDEF -o build/standalone_main$NSUF.o standalone/portable.c
+	LOADER="build/standalone_main$NSUF.o build/standalone_crt$NSUF.o"
+else
+	$CC -c -O2 -Wall $NDEF -o build/standalone_main$NSUF.o standalone/main.c
+	LOADER="build/standalone_main$NSUF.o build/standalone_crt$NSUF.o build/gamedata.o build/standalone_hooks.o"
+fi
 PLAT=; if [ -z "$PATCHLAYER" ]; then $CC -c -O2 -Wall -o build/standalone_platform.o standalone/platform.c; PLAT=build/standalone_platform.o; fi
-$CC -c -O2 -Wall -o build/standalone_crt.o standalone/crt.c
+$CC -c -O2 -Wall $NDEF -o build/standalone_crt$NSUF.o standalone/crt.c
 $CC -c -O2 -Istandalone -o build/standalone_hooks.o build/standalone_hooks.c
 $CC -c -O2 -DAXIS_STANDALONE $NDEF -fno-omit-frame-pointer -I../axisnet -Ibuild -w -o build/standalone_axisnet$NSUF.o axisnet_recomp.c
 IV=../axisnet/iv32
 # (-Wl,--subsystem,windows, not -mwindows: zig ignores -mwindows, and a console exe opens a console window)
 LINKBASE="-Wl,--image-base=0x10000"; test "$PORTABLE" = 2 && LINKBASE="-Wl,--dynamicbase"   # (PORTABLE=2: loaded anywhere)
 $CC -O2 -Wl,--subsystem,windows $LINKBASE -Wl,--stack=0x100000 -o build/$OUT \
-	build/standalone_main$NSUF.o build/standalone_crt.o build/gamedata.o build/standalone_hooks.o build/standalone_axisnet$NSUF.o $OBJD/*.o $PLAT $NEXTRA \
+	$LOADER build/standalone_axisnet$NSUF.o $OBJD/*.o $PLAT $NEXTRA \
 	$IV/iv32.o $IV/indeo3.o $IV/hpeldsp.o -lws2_32 -lole32 -loleaut32 -luser32 -lwinmm -lgdi32
 python - build/$OUT "$PORTABLE" <<'EOF'
 import sys, struct, pefile

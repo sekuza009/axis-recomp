@@ -213,7 +213,7 @@ void THISCALL (quat_fromMatrix)(float *q, const float *m)
 /* the game's CRT acos (_CIacos: the argument and result on the FPU stack) */
 static X crt_acos(X x)
 {
-	__asm__ volatile("call *%1" : "+t"(x) : "r"(IMG(CRT(CIacos))) : "eax", "ecx", "edx", "memory");
+	__asm__ volatile("call *%1" : "+t"(x) : "r"(CRT_FN(CIacos)) : "eax", "ecx", "edx", "memory");
 	return x;
 }
 

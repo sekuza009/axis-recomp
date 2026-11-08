@@ -39,3 +39,5 @@
 #define CRTADDR_CIacos 0x49ffc0
 #define CRTADDR_strstr 0x4a0090
 #define CRTADDR_strnicmp 0x4a8740
+/* every entry, as X(name) (the portable build's table of them, src/axis.h) */
+#define CRT_ENTRIES(X) X(fclose) X(fread) X(fseek) X(fopen) X(sprintf) X(strncpy) X(atoi) X(ftol) X(strtok) X(fgets) X(vsprintf) X(exit) X(free) X(malloc) X(operator_delete) X(atexit) X(ftell) X(fprintf) X(fputs) X(operator_new) X(fwrite) X(findfirst) X(findnext) X(findclose) X(chdir) X(rand) X(mkdir) X(strupr) X(itoa) X(strncmp) X(vectorDestruct) X(vectorConstruct) X(tolower) X(atof) X(vfprintf) X(CIacos) X(strstr) X(strnicmp)

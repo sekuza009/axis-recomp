@@ -4,9 +4,9 @@
 #include "../game.h"
 #include <stdarg.h>
 
-#define sprintf_game ((int (CDECL *)(char *, const char *, ...))IMG(CRT(sprintf)))
+#define sprintf_game ((int (CDECL *)(char *, const char *, ...))CRT_FN(sprintf))
 #define vsprintf_game(out, format, args) CRT_CALL(vsprintf, int, char *, const char *, va_list)(out, format, args)
-#define fprintf_game ((int (CDECL *)(void *, const char *, ...))IMG(CRT(fprintf)))
+#define fprintf_game ((int (CDECL *)(void *, const char *, ...))CRT_FN(fprintf))
 typedef int (CDECL *ErrorHook)(char *stamp, char *text);
 
 #define fseek(f, offset, whence) CRT_CALL(fseek, int, void *, int, int)(f, offset, whence)

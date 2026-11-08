@@ -68,12 +68,25 @@ static inline u32 img_reloc(u32 a) { return a - IMG_BASE < IMG_SIZE ? IMG(a) : a
    call (in AxisRC.exe standalone/crt.c puts msvcrt's or a rebuilt one there) */
 #include "crt_addrs.h"
 #define CRT(name) CRTADDR_##name
-#define CRT_CALL(name, ret, ...) ((ret (CDECL *)(__VA_ARGS__))IMG(CRTADDR_##name))
+#ifdef AXIS_PORTABLE
+/* (the portable build: the runtime entries are a table the loader fills - standalone/crt.c - not jumps in the
+   image) */
+enum { CRTIX_NONE = -1
+#define CRT_IX_(n) , CRTIX_##n
+CRT_ENTRIES(CRT_IX_)
+#undef CRT_IX_
+, CRT_COUNT };
+extern u32 g_crtFn[CRT_COUNT];
+#define CRT_FN(name) (g_crtFn[CRTIX_##name])
+#else
+#define CRT_FN(name) IMG(CRT(name))   /* an entry of the game's runtime as a value (to call through) */
+#endif
+#define CRT_CALL(name, ret, ...) ((ret (CDECL *)(__VA_ARGS__))CRT_FN(name))
 /* the game's __ftol: ST0 truncated to 64 bits, EDX:EAX; callers keep the low 32 bits */
 static inline int ftol(long double x)
 {
 	long long r;
-	__asm__ volatile("call *%1" : "=A"(r) : "r"(IMG(CRT(ftol))), "t"(x) : "ecx", "st", "memory");
+	__asm__ volatile("call *%1" : "=A"(r) : "r"(CRT_FN(ftol)), "t"(x) : "ecx", "st", "memory");
 	return (int)r;
 }
 

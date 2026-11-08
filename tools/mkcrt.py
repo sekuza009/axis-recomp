@@ -25,6 +25,8 @@ def main():
 	         '   CRT_CALL(name, ret, arg types...)(args) calls one, CRT(name) is its address (src/axis.h) */',
 	         '#pragma once']
 	lines += ['#define CRTADDR_%s 0x%x' % (n, a) for a, n in sorted(e.items())]
+	lines += ['/* every entry, as X(name) (the portable build\'s table of them, src/axis.h) */',
+	          '#define CRT_ENTRIES(X) ' + ' '.join('X(%s)' % n for a, n in sorted(e.items()))]
 	open(os.path.join(R, 'src', 'crt_addrs.h'), 'w', newline='\n').write('\n'.join(lines) + '\n')
 	print('%d runtime entries' % len(e))
 	if '--rewrite' not in sys.argv:

@@ -104,6 +104,42 @@ static void __cdecl checked_delete(void *p) { if (checked(p, __builtin_return_ad
 
 unsigned g_crtEntries[64];   /* the runtime entries pointed elsewhere (AXISRC_POISON keeps their jumps) */
 int g_ncrtEntries;
+#ifdef AXIS_PORTABLE
+/* (the portable build: no jumps in the image - the rebuilt code calls the entries through g_crtFn, src/axis.h's
+   CRT_FN, in crt_addrs.h's order) */
+#include "../src/crt_addrs.h"
+#define CRT_ADDR_(n) CRTADDR_##n,
+static const unsigned k_crtOrder[] = { CRT_ENTRIES(CRT_ADDR_) };
+#undef CRT_ADDR_
+unsigned g_crtFn[sizeof k_crtOrder / sizeof k_crtOrder[0]];
+static void jump(unsigned at, const void *to)
+{
+	for (unsigned i = 0; i < sizeof k_crtOrder / sizeof k_crtOrder[0]; i++)
+		if (k_crtOrder[i] == at) {
+			g_crtFn[i] = (unsigned)to;
+			g_crtEntries[g_ncrtEntries++] = at;
+			return;
+		}
+	sa_log("crt.c: runtime entry %x is not in crt_addrs.h (tools/mkcrt.py)", (int)at);
+	ExitProcess(3);
+}
+/* every entry filled: 0, else the address of one left empty */
+unsigned crt_missing(void)
+{
+	for (unsigned i = 0; i < sizeof k_crtOrder / sizeof k_crtOrder[0]; i++)
+		if (!g_crtFn[i])
+			return k_crtOrder[i];
+	return 0;
+}
+static unsigned crt_entry(unsigned at)
+{
+	for (unsigned i = 0; i < sizeof k_crtOrder / sizeof k_crtOrder[0]; i++)
+		if (k_crtOrder[i] == at)
+			return g_crtFn[i];
+	return 0;
+}
+#define CRT_EXIT(r) ((void (__cdecl *)(int))crt_entry(0x49edac))(r)   /* exit (msvcrt's) */
+#else
 static void jump(unsigned at, const void *to)
 {
 	BYTE *p = AT(at);
@@ -111,6 +147,8 @@ static void jump(unsigned at, const void *to)
 	p[0] = 0xE9;
 	*(DWORD *)(p + 1) = (DWORD)to - ((DWORD)p + 5);
 }
+#define CRT_EXIT(r) ((void (__cdecl *)(int))AT(0x49edac))(r)   /* exit (msvcrt's, through the runtime entry's jump) */
+#endif
 
 /* every runtime entry the rebuilds use pointed at its replacement; 0 and the missing export's name on a failure */
 const char *crt_install(int *count)
@@ -186,5 +224,5 @@ void crt_start(void)
 	int show = si.dwFlags & STARTF_USESHOWWINDOW ? si.wShowWindow : SW_SHOWDEFAULT;
 	int r = game_WinMain(GetModuleHandleA(NULL), NULL, cmd, show);   /* the rebuilt WinMain (0x43f9d0), called directly */
 	sa_log("WinMain returned %d", r);
-	((void (__cdecl *)(int))AT(0x49edac))(r);   /* exit (msvcrt's, through the runtime entry's jump) */
+	CRT_EXIT(r);
 }

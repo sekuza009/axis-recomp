@@ -272,7 +272,7 @@ u32 THISCALL (PlayerRecord_dtor)(u8 *self)
 }
 
 #define eh_vector_destructor(array, size, count, dtor) \
-	((void (STDCALL *)(void *, u32, int, u32))IMG(CRT(vectorDestruct)))(array, size, count, dtor)   /* `eh vector destructor iterator' (stdcall) */
+	((void (STDCALL *)(void *, u32, int, u32))CRT_FN(vectorDestruct))(array, size, count, dtor)   /* `eh vector destructor iterator' (stdcall) */
 
 /* 0x46ff70: the stage destroyed, its members last first: Scene_dtor (scenePath), the 100 actors (actors,
    0x8888 bytes each, actor_destroyPartLists), the item skeleton and shape managers, the 16 player records
@@ -522,13 +522,13 @@ u8 *THISCALL (Console_ctor)(u8 *g)
 	SkeletonManager_clear((u8 *)&st->objectSkeletons);
 	VECTOR((u8 *)st->objects, 0x2cc, 0x3e8);
 	VECTOR((u8 *)st->actorItems, 0x2e18, 0x32);
-	((void (STDCALL *)(void *, int, int, u32, u32))IMG(CRT(vectorConstruct)))((u8 *)st->playerRecords, 0x47fd2, 0x10, FN(PlayerRecord_ctor), FN(PlayerRecord_dtor));
+	((void (STDCALL *)(void *, int, int, u32, u32))CRT_FN(vectorConstruct))((u8 *)st->playerRecords, 0x47fd2, 0x10, FN(PlayerRecord_ctor), FN(PlayerRecord_dtor));
 	VTABLE((u8 *)&st->itemShapes, VT(ShapeManager));
 	ShapeManager_clear((u8 *)&st->itemShapes);
 	VTABLE((u8 *)&st->itemSkeletons, VT(SkeletonManager));
 	SkeletonManager_clear((u8 *)&st->itemSkeletons);
 	VECTOR((u8 *)st->mapActors, 0x5c, 0x64);
-	((void (STDCALL *)(void *, int, int, u32, u32))IMG(CRT(vectorConstruct)))((u8 *)st->actors, 0x8888, 0x64, FN(actor_initPartLists), FN(actor_destroyPartLists));
+	((void (STDCALL *)(void *, int, int, u32, u32))CRT_FN(vectorConstruct))((u8 *)st->actors, 0x8888, 0x64, FN(actor_initPartLists), FN(actor_destroyPartLists));
 	VECTOR((u8 *)st->bullets, 0x4e8, 0x190);
 	VECTOR((u8 *)st->particles, 0x12c, 0x3e8);
 	VECTOR((u8 *)st->points, 0xc, 0xc8);

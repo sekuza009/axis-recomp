@@ -2313,6 +2313,25 @@ static int WINAPI fake_GetSystemMetrics(int i) {
 #else
 #define RVA(base, rva) ((BYTE *)(base) + (rva))
 #endif
+#ifdef AXIS_PORTABLE
+/* (the portable build: the game's import slots by name - src/import_list.h - not through the original's import
+   directory, whose header bytes it does not have; mod is the game's image) */
+#include "src/imports.h"
+#include "src/import_list.h"
+static void *hook_import_ex(HMODULE mod, const char *dll, const char *func, WORD ord, void *repl) {
+    (void)mod; (void)ord;
+#define IMPORT_SLOT_(n, d) { #n, d, IMP_##n },
+    static const struct { const char *name, *dll; DWORD slot; } k[] = { IMPORT_LIST(IMPORT_SLOT_) };
+#undef IMPORT_SLOT_
+    for (unsigned i = 0; i < sizeof k / sizeof k[0]; i++)
+        if (!strcmp(k[i].name, func) && !lstrcmpiA(k[i].dll, dll)) {
+            void **slot = (void **)IMG(k[i].slot), *orig = *slot;
+            *slot = repl;
+            return orig;
+        }
+    return NULL;
+}
+#else
 static void *hook_import_ex(HMODULE mod, const char *dll, const char *func, WORD ord, void *repl) {
     BYTE *base = (BYTE *)mod;
     IMAGE_NT_HEADERS *nt = (IMAGE_NT_HEADERS *)(base + ((IMAGE_DOS_HEADER *)base)->e_lfanew);
@@ -2338,6 +2357,7 @@ static void *hook_import_ex(HMODULE mod, const char *dll, const char *func, WORD
     }
     return NULL;
 }
+#endif
 
 static void *hook_import(HMODULE mod, const char *dll, const char *func, void *repl) {
     return hook_import_ex(mod, dll, func, 0, repl);
