@@ -193,7 +193,9 @@ static inline int code_matches(u32 addr, const char *pattern)
    0x74de24, read from msgeng.dat at start-up). Both the address as IMG() gives it */
 #define STR(addr, text) IMG(addr)
 #define MSG(n, text) (OBJ(g_messages) + (n) * 0x80)   /* (g_messages: src/objects.h) */
-/* a class's vtable in .rdata, named after the class (tools/img_vtables.py): self[0] = VT(Scene, 0x4aa258) */
-#define VT(cls, addr) IMG(addr)
+/* a class's vtable in .rdata by the class's name (src/vtables.h: tools/img_vtables.py finds them,
+   tools/vtables_by_name.py lists them): self[0] = VT(Scene) */
+#include "vtables.h"
+#define VT(cls) IMG(VTADDR_##cls)
 
 #endif

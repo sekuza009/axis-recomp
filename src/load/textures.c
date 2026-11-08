@@ -216,7 +216,7 @@ int THISCALL (tex_textureFileExist)(u8 *tm, const char *name)
 {
 	static const u32 formats[3][2] = { { STR(0x4b3fdc, "%s\\%s"), STR(0x4b3fd8, "%s") }, { STR(0x4b3fec, "%s\\%s.BMP"), STR(0x4b3fe4, "%s.BMP") }, { STR(0x4b4000, "%s\\%s.RAW"), STR(0x4b3ff8, "%s.RAW") } };   /* "%s\%s" "%s", .BMP, .RAW */
 	BmpFile image;
-	image.vtable = VT(BMPRGBFile, 0x4a96f8);   /* (its vtable) */
+	image.vtable = VT(BMPRGBFile);   /* (its vtable) */
 	BITS(image.file) = 0;          /* (no file yet) */
 	char base[0x100], path[0x100];
 	strcpy(base, name);
@@ -426,7 +426,7 @@ void THISCALL (tex_loadImage)(u8 *m, int i)
 	TextureBank *mg = (TextureBank *)m;
 	u32 bmp[3][0x12];   /* BMP reader objects (vtable 0x4a96f8) for the image, the alpha, the mask */
 	for (int k = 0; k < 3; k++) {
-		bmp[k][0] = VT(BMPRGBFile, 0x4a96f8);
+		bmp[k][0] = VT(BMPRGBFile);
 		bmp[k][1] = 0;
 	}
 	char name[0x100], path[0x190];

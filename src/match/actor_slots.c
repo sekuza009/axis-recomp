@@ -979,7 +979,7 @@ u32 THISCALL (actor_checkDataLoss)(u8 *s, int a)
 	for (int k = 0; k < 5; k++)
 		class_emptyCtor((u8 *)&((Actor *)me)->rounds[k]);   /* class_emptyCtor: a resource set */
 	for (int k = 0; k < 8; k++) {
-		GAME_VAR(u32, me + k_listAt[k]) = VT(Unit, 0x4a9754);
+		GAME_VAR(u32, me + k_listAt[k]) = VT(Unit);
 		partList_clear(me + k_listAt[k]);
 	}
 	u8 *ac = (u8 *)&st->actors[a];

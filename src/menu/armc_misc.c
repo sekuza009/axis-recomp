@@ -153,7 +153,7 @@ void THISCALL (armc_drawPreview3D)(Scene *scene, const u32 *eye, const u32 *forw
 	                            factor_addFactorBy sets it); the original's frame holds it whole at +0x18 */
 	for (int i = 0; i < 0x400; i++)
 		class_emptyCtor((u8 *)RELOC(light) + 4 + i * 0x2c);
-	light[0] = VT(Light, 0x4aa248);
+	light[0] = VT(Light);
 	Light_clearCounts(light);
 	u8 white[4] = { 0xff, 0xff, 0xff, 0xff }, dim[4] = { 0xf0, 0xc0, 0xc0, 0x60 };
 	scene_averageFrameTime(scene);

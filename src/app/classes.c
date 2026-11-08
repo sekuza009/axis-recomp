@@ -131,7 +131,7 @@ void (vec_initAxisX)(void) { set3(OBJ(g_vecUnitX), 0x3f800000u, 0, 0); }
 u32 THISCALL (Texture_dtor)(u32 *self)
 {
 	u32 r = self[0x42];
-	self[0] = VT(Texture, 0x4a956c);
+	self[0] = VT(Texture);
 	if ((int)r >= 0) {
 		r = CRT_CALL(operator_delete, u32, void *)((void *)RELOC(self[0x43]));   /* operator delete, its eax kept */
 		self[0x42] = 0;
@@ -150,8 +150,8 @@ u32 (static_destroyTex256x128)(void) { return Texture_dtor((u32 *)OBJ(g_texture2
 u32 (static_destroyTex256x256)(void) { return Texture_dtor((u32 *)OBJ(g_texture256x256)); }
 
 /* TimeSync (vtable 0x4aa46c) */
-void *THISCALL (TimeSync_ctor)(u32 *self) { self[0] = VT(TimeSync, 0x4aa46c); TimeSync_clear(self); return self; }
-void THISCALL (TimeSync_dtor)(u32 *self) { self[0] = VT(TimeSync, 0x4aa46c); }
+void *THISCALL (TimeSync_ctor)(u32 *self) { self[0] = VT(TimeSync); TimeSync_clear(self); return self; }
+void THISCALL (TimeSync_dtor)(u32 *self) { self[0] = VT(TimeSync); }
 DELETING(TimeSync, TimeSync_dtor)
 void (static_endTimeSync)(void) { TimeSync_dtor((u32 *)OBJ(g_loadTimer)); }
 
@@ -163,13 +163,13 @@ void (static_endTextureManager)(void) { TextureManager_dtor((u32 *)ADDR(g_textur
 
 /* the game's class Scene (vtable 0x4aa258): our ScenePath (Stage.scenePath), not our Scene - that one is the game's
    class Console (Console_dtor). The class functions here keep the game's class names. */
-void *THISCALL (Scene_ctor)(u32 *self) { self[0] = VT(Scene, 0x4aa258); shared_emptyFunction(NULL); return self; }
-void THISCALL (Scene_dtor)(u32 *self) { self[0] = VT(Scene, 0x4aa258); }
+void *THISCALL (Scene_ctor)(u32 *self) { self[0] = VT(Scene); shared_emptyFunction(NULL); return self; }
+void THISCALL (Scene_dtor)(u32 *self) { self[0] = VT(Scene); }
 DELETING(Scene, Scene_dtor)
 
 /* Light (vtable 0x4aa248) */
-void *THISCALL (Light_ctor)(u32 *self) { self[0] = VT(Light, 0x4aa248); Light_clearCounts(self); return self; }
-int THISCALL (Light_dtor)(u32 *self) { self[0] = VT(Light, 0x4aa248); return Light_clearCounts(self); }
+void *THISCALL (Light_ctor)(u32 *self) { self[0] = VT(Light); Light_clearCounts(self); return self; }
+int THISCALL (Light_dtor)(u32 *self) { self[0] = VT(Light); return Light_clearCounts(self); }
 DELETING(Light, Light_dtor)
 
 /* CollisionVolume (vtable 0x4aa254) */
@@ -178,27 +178,27 @@ int THISCALL (CollisionVolume_dtor)(u32 *self) { self[0] = STR(0x4aa254, "\2607F
 DELETING(CollisionVolume, CollisionVolume_dtor)
 
 /* Shape (vtable 0x4aa250) */
-void *THISCALL (Shape_ctor)(u32 *self) { self[0] = VT(Shape, 0x4aa250); Shape_clear(self); return self; }
-int THISCALL (Shape_dtor)(u32 *self) { self[0] = VT(Shape, 0x4aa250); return Shape_release(self); }
+void *THISCALL (Shape_ctor)(u32 *self) { self[0] = VT(Shape); Shape_clear(self); return self; }
+int THISCALL (Shape_dtor)(u32 *self) { self[0] = VT(Shape); return Shape_release(self); }
 DELETING(Shape, Shape_dtor)
 
 /* ShapeManager (vtable 0x4aa244), SkeletonManager (vtable 0x4aa240) */
-int THISCALL (ShapeManager_dtor)(u32 *self) { self[0] = VT(ShapeManager, 0x4aa244); return ShapeManager_release(self); }
+int THISCALL (ShapeManager_dtor)(u32 *self) { self[0] = VT(ShapeManager); return ShapeManager_release(self); }
 DELETING(ShapeManager, ShapeManager_dtor)
-int THISCALL (SkeletonManager_dtor)(u32 *self) { self[0] = VT(SkeletonManager, 0x4aa240); return SkeletonManager_release(self); }
+int THISCALL (SkeletonManager_dtor)(u32 *self) { self[0] = VT(SkeletonManager); return SkeletonManager_release(self); }
 DELETING(SkeletonManager, SkeletonManager_dtor)
 
 /* BMPRGBFile (vtable 0x4a96f8): BMPRGBFile_dtor  closes its file */
-void THISCALL (BMPRGBFile_dtor)(u32 *self) { self[0] = VT(BMPRGBFile, 0x4a96f8); if (self[1]) fclose((void *)RELOC(self[1])); }
+void THISCALL (BMPRGBFile_dtor)(u32 *self) { self[0] = VT(BMPRGBFile); if (self[1]) fclose((void *)RELOC(self[1])); }
 DELETING(BMPRGBFile, BMPRGBFile_dtor)
 
 /* ErrorLog (vtable 0x4aa2a0): the class-name records */
-void THISCALL (ErrorLog_dtor)(u32 *self) { self[0] = VT(ErrorLog, 0x4aa2a0); }
+void THISCALL (ErrorLog_dtor)(u32 *self) { self[0] = VT(ErrorLog); }
 DELETING(ErrorLog, ErrorLog_dtor)
 void (static_endSoundLog)(void) { ErrorLog_dtor(g_logSound); }
 void *THISCALL (ErrorLog_ctor)(u32 *self, const char *name, Cleanup cleanupHook)
 {
-	self[0] = VT(ErrorLog, 0x4aa2a0);
+	self[0] = VT(ErrorLog);
 	self[1] = (u32)name;
 	g_errorCleanupHook = cleanupHook;
 	return self;
@@ -211,11 +211,11 @@ void *THISCALL (ResourceSet_ctor)(u8 *self)
 	static const u32 shapes[5] = { offsetof(PlayerRecord, headShapes), offsetof(PlayerRecord, chestShapes), offsetof(PlayerRecord, armShapes), offsetof(PlayerRecord, legShapes), offsetof(PlayerRecord, boosterShapes) };
 	static const u32 skels[5] = { offsetof(PlayerRecord, headSkels), offsetof(PlayerRecord, chestSkels), offsetof(PlayerRecord, armSkels), offsetof(PlayerRecord, legSkels), offsetof(PlayerRecord, boosterSkels) };
 	for (int i = 0; i < 5; i++) {
-		*(u32 *)(self + shapes[i]) = VT(ShapeManager, 0x4aa244);
+		*(u32 *)(self + shapes[i]) = VT(ShapeManager);
 		ShapeManager_clear(self + shapes[i]);
 	}
 	for (int i = 0; i < 5; i++) {
-		*(u32 *)(self + skels[i]) = VT(SkeletonManager, 0x4aa240);
+		*(u32 *)(self + skels[i]) = VT(SkeletonManager);
 		SkeletonManager_clear(self + skels[i]);
 	}
 	return self;
@@ -345,7 +345,7 @@ int THISCALL (playerRecord_loadFlag)(Stage *stage, int p)
 {
 	PlayerRecord *record = &stage->playerRecords[p];
 	BmpFile image;
-	image.vtable = VT(BMPRGBFile, 0x4a96f8);   /* (its vtable) */
+	image.vtable = VT(BMPRGBFile);   /* (its vtable) */
 	BITS(image.file) = 0;      /* (no file yet) */
 	char path[0x100];
 	sprintf(path, (const char *)STR(0x4c74e8, "Save\\%s.BMP"), ((u8 *)record) + 4);
@@ -500,10 +500,10 @@ u8 *THISCALL (Console_ctor)(u8 *g)
 	ViewVolume_clear((u8 *)&GS->view);
 	CollisionVolume_ctor((u8 *)&st->space);   /* CollisionVolume_ctor */
 	VECTOR((u8 *)(st)->mapLights.records, sizeof(Factor), 0x400);
-	VTABLE((u8 *)&st->mapLights, VT(Light, 0x4aa248));
+	VTABLE((u8 *)&st->mapLights, VT(Light));
 	Light_clearCounts((u8 *)&st->mapLights);
 	VECTOR((u8 *)(st)->dynamicLights.records, sizeof(Factor), 0x400);
-	VTABLE((u8 *)&st->dynamicLights, VT(Light, 0x4aa248));
+	VTABLE((u8 *)&st->dynamicLights, VT(Light));
 	Light_clearCounts((u8 *)&st->dynamicLights);
 	Light_ctor((u8 *)&st->actorLights);   /* Light_ctor */
 	VECTOR((u8 *)st->skySphere, 0xc, 0x126);
@@ -514,17 +514,17 @@ u8 *THISCALL (Console_ctor)(u8 *g)
 	Shape_ctor((u8 *)&st->layerModel);   /* Shape_ctor */
 	Shape_ctor((u8 *)&st->waterModel);
 	VECTOR((u8 *)st->wayPoints, 0x14, 0x3e8);
-	VTABLE((u8 *)&st->objectShapes, VT(ShapeManager, 0x4aa244));
+	VTABLE((u8 *)&st->objectShapes, VT(ShapeManager));
 	ShapeManager_clear((u8 *)&st->objectShapes);
 	VECTOR((u8 *)st->objectColours, 4, 1000000);
-	VTABLE((u8 *)&st->objectSkeletons, VT(SkeletonManager, 0x4aa240));
+	VTABLE((u8 *)&st->objectSkeletons, VT(SkeletonManager));
 	SkeletonManager_clear((u8 *)&st->objectSkeletons);
 	VECTOR((u8 *)st->objects, 0x2cc, 0x3e8);
 	VECTOR((u8 *)st->actorItems, 0x2e18, 0x32);
 	((void (STDCALL *)(void *, int, int, u32, u32))IMG(CRT(vectorConstruct)))((u8 *)st->playerRecords, 0x47fd2, 0x10, FN(ResourceSet_ctor), FN(ResourceSet_dtor));
-	VTABLE((u8 *)&st->itemShapes, VT(ShapeManager, 0x4aa244));
+	VTABLE((u8 *)&st->itemShapes, VT(ShapeManager));
 	ShapeManager_clear((u8 *)&st->itemShapes);
-	VTABLE((u8 *)&st->itemSkeletons, VT(SkeletonManager, 0x4aa240));
+	VTABLE((u8 *)&st->itemSkeletons, VT(SkeletonManager));
 	SkeletonManager_clear((u8 *)&st->itemSkeletons);
 	VECTOR((u8 *)st->mapActors, 0x5c, 0x64);
 	((void (STDCALL *)(void *, int, int, u32, u32))IMG(CRT(vectorConstruct)))((u8 *)st->actors, 0x8888, 0x64, FN(actor_initPartLists), FN(actor_destroyPartLists));
@@ -537,7 +537,7 @@ u8 *THISCALL (Console_ctor)(u8 *g)
 	Scene_ctor((u8 *)&st->scenePath);   /* Scene_ctor */
 	VTABLE(s, STR(0x4aa23c, "08F"));
 	st->built = 0;
-	VTABLE(g, VT(Console, 0x4aa238));
+	VTABLE(g, VT(Console));
 	GS->client = GS->sessionMode = -1;
 	TimeSync_clear((u8 *)&GS->timer);
 	for (int k = 0; k < 10; k++)

@@ -111,7 +111,7 @@ static void free_owned(void *self)
 int THISCALL (Skeleton_release)(void *self) { free_owned(self); Skeleton_clear(self); return 0; }
 int THISCALL (partList_release)(void *self) { free_owned(self); partList_clear(self); return 0; }
 /* 0x46f470: the Unit class's destructor (vtable 0x4a9754; its methods log as "class Unit": an object list, ObjectList) */
-int THISCALL (Unit_dtor)(u32 *self) { self[0] = VT(Unit, 0x4a9754); return partList_release(self); }
+int THISCALL (Unit_dtor)(u32 *self) { self[0] = VT(Unit); return partList_release(self); }
 /* 0x45ff10: its deleting destructor (the vtable's slot 0; compiler-made, which the decompile had not listed): the
    destructor, then the object freed when flags bit 0 is set; returns this */
 void *THISCALL (Unit_deletingDtor)(u32 *self, int flags)
@@ -295,7 +295,7 @@ void *THISCALL (actor_initPartLists)(u8 *self)
 {
 	static const int lists[8] = { offsetof(Actor, headModel), offsetof(Actor, chestModel), offsetof(Actor, armsModel), offsetof(Actor, legsModel), offsetof(Actor, boosterModel), offsetof(Actor, weaponModel), offsetof(Actor, weaponModel4), offsetof(Actor, weaponModel5) };
 	for (int k = 0; k < 8; k++) {
-		FIELD(u32, self, lists[k]) = VT(Unit, 0x4a9754);
+		FIELD(u32, self, lists[k]) = VT(Unit);
 		partList_clear(self + lists[k]);
 	}
 	return self;

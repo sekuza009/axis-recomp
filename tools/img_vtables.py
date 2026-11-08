@@ -1,5 +1,6 @@
 r"""img_vtables.py [--dry]: a vtable's address (an IMG(0x...) at a word of .rdata whose value is a rebuilt function's
-entry, named <Class>_deletingDtor / _dtor / ...) written VT(Class, 0x...) - the class named after that first entry
+entry, named <Class>_deletingDtor / _dtor / ...) written VT(Class, 0x...) - the class named after that first entry;
+tools/vtables_by_name.py then moves the address into src/vtables.h, leaving VT(Class)
 (src/axis.h: VT is IMG). For self[0] = VT(Scene, 0x4aa258) and the like."""
 import glob, os, re, struct, sys, importlib.util
 
