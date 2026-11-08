@@ -281,7 +281,7 @@ void (net_receivePlayerListReply)(void)
 	}
 }
 
-/* 0x4520e0: both sockets (g_lobbySocket, g_gameServerSocket) closed: a blocking call cancelled, sending shut down, the socket closed,
+/* 0x4520e0: both sockets (g_lobbySocket, g_gameServerSocket) closed: Winsock cleaned up (WSACleanup), sending shut down, the socket closed,
    the connection's state reset (net_freeBuffers); then the connection flags cleared. Returns what the original leaves
    in eax */
 u32 (net_closeSockets)(void)
@@ -312,7 +312,7 @@ static void *alloc_clear(u32 n)
 }
 
 /* 0x451600: the connection to `kind` (100 the lobby, 101 the game server) started afresh: the server table cleared,
-   both sockets closed (a blocking call cancelled, sending shut down; net_freeBuffers after each), the server's address
+   both sockets closed (Winsock cleaned up (WSACleanup), sending shut down; net_freeBuffers after each), the server's address
    taken (its host name, or what net_resolveHost made of it, into g_serverHost) with its port (g_serverPort); then every
    network table cleared and the packet buffers allocated anew, cleared. The caller ignores the eax it leaves */
 void (net_resetConnection)(int kind)

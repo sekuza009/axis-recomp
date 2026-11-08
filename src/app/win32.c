@@ -240,7 +240,7 @@ u32 (app_shutdown)(void)
 /* Windows' PIXELFORMATDESCRIPTOR */
 typedef struct {
 	u16 size, version;
-	u32 flags;                  /* 0x21: PFD_DRAW_TO_WINDOW | PFD_SUPPORT_OPENGL; 0x80 PFD_NEED_PALETTE */
+	u32 flags;                  /* 0x21: PFD_DOUBLEBUFFER | PFD_SUPPORT_OPENGL; 0x80 PFD_NEED_PALETTE */
 	u8 pixelType, colorBits;
 	u8 colorAndAccum[13];       /* cRedBits .. cAccumAlphaBits */
 	u8 depthBits, stencilBits, auxBuffers, layerType, reserved;
@@ -260,7 +260,7 @@ int (glWindow_setupPixelFormat)(void *dc)
 	memset(pfd, 0, sizeof *pfd);
 	pfd->size = sizeof *pfd;
 	pfd->version = 1;
-	pfd->flags = 0x21;   /* PFD_DRAW_TO_WINDOW | PFD_SUPPORT_OPENGL */
+	pfd->flags = 0x21;   /* PFD_DOUBLEBUFFER | PFD_SUPPORT_OPENGL */
 	pfd->colorBits = (*(u8 *)&g_glColourBits);
 	pfd->depthBits = (*(u8 *)&g_glDepthBits);
 	int format = ChoosePixelFormat(dc, pfd);

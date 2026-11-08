@@ -41,3 +41,11 @@ One-sided WRONG (not applied; a third reading would settle them)
 What it says about a single pass: of the 40 WRONG verdicts given (12 from C, 28 from O), 15 had the other reviewer find
 the same thing (as WRONG or as CLEARER). Each reviewer misses things the other finds - several one-sided items are plain facts (the PFD
 flags, WSACleanup) - so a one-sided verdict needs the third reading, not dismissal.
+
+Third reading (uncertain_tiebreak_verdicts.txt): one more reviewer checked the 24 one-sided items itself, both ways.
+22 confirmed WRONG and applied (comments, take_back's parameter -> stats, water_point's -> stage), plus the same
+mistakes it found elsewhere (net_resetConnection's WSACleanup, main_loop's "opening log", ground_buildDrawLists'
+"thiscall on the scene"). 2 only CLEARER, not applied: g_arenaUpdateNotice (the room also sets it, but nothing shows
+it there) and UnitPoseInfo_* (class Unit by its log; would be a whole-class rename).
+So of the 24 one-sided WRONG verdicts, 22 were right: a single reviewer's WRONG is usually right, but each reviewer
+misses about half of what the other finds.

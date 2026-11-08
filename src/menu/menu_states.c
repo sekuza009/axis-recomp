@@ -706,9 +706,9 @@ static void send_host_leaving(void)
 	g_hostGoneMessageFlag = 0;
 }
 
-/* 0x420100: after a match. Started from outside (g_launchedForNetGame = 1): the game quits (code 0) and the text mode is reset.
+/* 0x420100: after a match. Started from outside (g_launchedForNetGame = 1): the game quits (code 0) and g_screen is set to -1.
    Otherwise by the match's mode g_matchMode (0 after a replay, g_replayRunning): 1 the arena (the host's leaving sent; screen 400),
-   2 a network game (the host's leaving sent, the two players' names 0x43 / 0x33 into a game record, net_send 0x16; back to
+   2 a network game (the host's leaving sent, the host's name (+0x43) and address (+0x33) copied from g_roomPacket into the leave record (g_roomLeavePacket), net_send 0x16; back to
    the room when g_gameServerSocket, else the menus), 3 the campaign (the end mode set by the mission 0x9f181c and the
    progress saved; after the last mission, 15, the game quits with code 0x63 instead), any other the menus. Then
    the menu music, and message 6 when g_mapMissing asks for it. Returns what the original leaves in eax */

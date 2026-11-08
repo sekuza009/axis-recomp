@@ -397,7 +397,7 @@ void THISCALL (match_combatInput)(u8 *s)
 #define S(type, offset) GAME_VAR(type, s + (offset))
 #define SC ((Scene *)s)   /* the same scene by its fields (src/scene.fields) */
 
-/* (0, 10000, 0) turned about x by pitch, then about z by yaw (tenths of a degree) */
+/* (0, 10000, 0) turned about x by pitch, then about y by yaw (tenths of a degree) */
 static void far_point(float *v, int pitch, int yaw)
 {
 	v[0] = 0;
@@ -1328,7 +1328,7 @@ static int team_game(void)
 }
 
 /* axiswl.log: the game title, map, limits and date, then the ranking (ranking, rankCount of them): name, team
-   (none outside team games), play time, kills and deaths. The opening log passes its own stack word as the play
+   (none outside team games), play time, kills and deaths. The round-end log passes its own stack word as the play
    time (the original's: the same slot the network packets are read into later) */
 static void write_log(u8 *s, const char *format, int own_time, int stack_time)
 {
@@ -1666,7 +1666,7 @@ void THISCALL (match_frame)(u8 *s)
 	Stage *st = (Stage *)stage;
 	float mv[3];        /* the free camera's move (its keys may not have run: the original's stack then) */
 	Move move;          /* (the stubbed move may leave these as the stack had them) */
-	int from, size;     /* the network packet's sender and size, as the reader leaves them; the opening log's play
+	int from, size;     /* the network packet's sender and size, as the reader leaves them; the round-end log's play
 	                       time reads the sender's slot before it is ever written, as the original does */
 	u8 packet[0x130];
 	if (g_writeMatchLog != 0 && g_launchedForNetGame != 0) {

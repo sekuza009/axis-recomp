@@ -278,11 +278,11 @@ static void strip_pair(u8 *layer, u32 *idx, int *n, int r, int c, int w)
 
 /* a water vertex: v turned about the vertical by angle, moved to the camera, stored with its texture coordinates (its
    x and z over the layer's texture size texScale) */
-static void water_point(u8 *scene, u8 *layer, u8 *part, int at, int tex_at, float *v, int angle)
+static void water_point(u8 *stage, u8 *layer, u8 *part, int at, int tex_at, float *v, int angle)
 {
 	GroundLayer *gl = (GroundLayer *)layer;
 	ShapePart *sp = (ShapePart *)part;
-	Stage *st = (Stage *)scene;
+	Stage *st = (Stage *)stage;
 	Vec3_rotateAxis(v, 2, angle);
 	v[0] = f32(FADD(v[0], st->cameraPos[0]));
 	v[2] = f32(FADD(v[2], st->cameraPos[2]));
@@ -292,7 +292,7 @@ static void water_point(u8 *scene, u8 *layer, u8 *part, int at, int tex_at, floa
 	t[1] = f32(FDIV(v[2], gl->texScale));
 }
 
-/* 0x497d20 (thiscall on the scene): the ground's drawing lists for this frame. For each layer (0x20c bytes from
+/* 0x497d20 (thiscall on the stage): the ground's drawing lists for this frame. For each layer (0x20c bytes from
    groundLayers, groundLayerCount of them: origin +4, rows rows, columns cols, cell size cellSize, cell bitmap flat) the cells
    (bit 0 set) within the view range (cullMargin) of the camera (cameraPos / 78) become triangle strips (type 5, from the
    layer's primitive heap strips, stripCount of them, at most stripCapacity: a fatal message) of grid indices, into the part of the

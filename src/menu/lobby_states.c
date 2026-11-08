@@ -940,7 +940,7 @@ u32 (lobbyPlayer_keys)(void)
 
 /* 0x4060f0: the lobby server connection opened (unless open, g_lobbyConnectionOpen): the old one closed, net_connect(100) (0: no
    server, message 0x3d; 2: message 0x46) and the socket's messages sent to the main window (failing: 0x3e). Then
-   the lobby screen's state reset and the hello sent (0x180001, net_send(0xd, 100)). 1, or 0 on a failure */
+   the lobby screen's state reset and the arena list asked for (g_arenaListRequest = 0x180001, net_send(0xd, 100): request 13, which clears g_serverList first). 1, or 0 on a failure */
 int (lobby_openConnection)(void)
 {
 	if (!g_lobbyConnectionOpen) {
@@ -1446,9 +1446,9 @@ static void power_from_rate(u32 rate)
 
 /* a PilotStats record (the account record or its kept copy) taken back as the record, when the record's kills are
    more than 300 above it */
-static u32 take_back(u32 kept, u32 rate)
+static u32 take_back(u32 stats, u32 rate)
 {
-	const PilotStats *k = &GAME_VAR(PilotStats, kept);
+	const PilotStats *k = &GAME_VAR(PilotStats, stats);
 	if (R_KILLS <= k->kills + 300)
 		return rate;
 	R_EXP = k->exp;

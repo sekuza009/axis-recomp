@@ -625,7 +625,7 @@ typedef struct { float r, g, b, a; } Colour;   /* an RGBA colour, four floats (C
 #define updateNotice_hitTest(x, y) GAME_FN(updateNotice_hitTest, 0x4321c0, int, int, int)(x, y)
 #define newIdConfirm_hitTest(x, y) GAME_FN(newIdConfirm_hitTest, 0x432280, int, int, int)(x, y)
 #define gameListJoinBox_hitTest(x, y) GAME_FN(gameListJoinBox_hitTest, 0x432340, int, int, int)(x, y)
-#define room_editJoinPassword() GAME_FN(room_editJoinPassword, 0x434320, void, void)()   /* open the message field */
+#define room_editJoinPassword() GAME_FN(room_editJoinPassword, 0x434320, void, void)()   /* the join password field opened */
 #define app_closeWindow(code) GAME_FN(app_closeWindow, 0x41e7a0, int, int)(code)   /* quit the game with exit code (app/app_quit.c) */
 #define PostMessageA(hwnd, msg, w, l) IMPORT(0x4a9328, int, void *, u32, u32, u32)(hwnd, msg, w, l)
 #define pilotSelect_loadStats() GAME_FN(pilotSelect_loadStats, 0x44bc50, void, void)()
@@ -939,8 +939,8 @@ typedef struct { float r, g, b, a; } Colour;   /* an RGBA colour, four floats (C
 #define game_returnToMainMenu() GAME_FN(game_returnToMainMenu, 0x41e8b0, void, void)()
 #define net_sendChat(text) GAME_FN(net_sendChat, 0x4512c0, int, const char *)(text)   /* a chat line sent */
 #define input_resetKeys() GAME_FN(input_resetKeys, 0x431590, void, void)()
-#define freeCam_stepLeft() GAME_FN(freeCam_stepLeft, 0x42aa30, void, void)()   /* the free camera forward */
-#define freeCam_stepRight() GAME_FN(freeCam_stepRight, 0x42aad0, void, void)()   /* and back */
+#define freeCam_stepLeft() GAME_FN(freeCam_stepLeft, 0x42aa30, void, void)()   /* the free camera stepped sideways (left) */
+#define freeCam_stepRight() GAME_FN(freeCam_stepRight, 0x42aad0, void, void)()   /* and right */
 #define net_sendMessage(message, to, size) GAME_FN(net_sendMessage, 0x451270, void, void *, u32, int)(message, to, size)
 #define setup_camera() GAME_FN(setup_camera, 0x4230e0, void, void)()
 #define setup_easePanel() GAME_FN(setup_easePanel, 0x4277c0, void, void)()
@@ -1167,7 +1167,7 @@ void fix_glViewport(int x, int y, int w, int h);
 #define net_freeBuffers() GAME_FN(net_freeBuffers, 0x4519b0, u32, void)()
 #define net_clearServerList() GAME_FN(net_clearServerList, 0x452e60, void, void)()   /* the lobby's arena (server) list cleared (g_serverList: ArenaRecord, request 13) */
 #define net_receiveLobbyReply() GAME_FN(net_receiveLobbyReply, 0x452a30, void, void)()   /* the list of games received */
-#define net_receiveGameServerReply() GAME_FN(net_receiveGameServerReply, 0x452bd0, void, void)()   /* the server list received */
+#define net_receiveGameServerReply() GAME_FN(net_receiveGameServerReply, 0x452bd0, void, void)()   /* a game server reply: a room for the room list, its end, or a refusal */
 #define net_receivePlayerListReply() GAME_FN(net_receivePlayerListReply, 0x452d70, void, void)()   /* the player list received */
 #define net_clearRoomList() GAME_FN(net_clearRoomList, 0x452e80, void, void)()   /* the game server's room list cleared (g_roomList: RoomRecord, request 19) */
 #define net_clearPlayerList() GAME_FN(net_clearPlayerList, 0x452ea0, void, void)()   /* the player list cleared */
@@ -1189,18 +1189,18 @@ void fix_glViewport(int x, int y, int w, int h);
 #define net_getSession(i) GAME_FN(net_getSession, 0x4532b0, int, int)(i)   /* session i's record */
 
 #define room_copyAccountRecord() GAME_FN(room_copyAccountRecord, 0x432be0, void, void)()   /* the joined game's settings into the room screen */
-#define login_takeAccountRecord() GAME_FN(login_takeAccountRecord, 0x432db0, void, void)()   /* a received game's settings into the room */
+#define login_takeAccountRecord() GAME_FN(login_takeAccountRecord, 0x432db0, void, void)()   /* the login's account record (g_profileReply) taken: ID, e-mail, mech, colours, pilot stats, the Ladder record */
 #define roomLogin_editId() GAME_FN(roomLogin_editId, 0x433b00, u32, void)()   /* the Ladder login's ID opened for typing */
 #define roomLogin_editPassword() GAME_FN(roomLogin_editPassword, 0x433bb0, u32, void)()   /* the Ladder login's password opened for typing */
-#define roomLogin_endTyping() GAME_FN(roomLogin_endTyping, 0x433c70, void, void)()   /* the chat edit control closed, the line taken */
+#define roomLogin_endTyping() GAME_FN(roomLogin_endTyping, 0x433c70, void, void)()   /* the Ladder login's hidden EDIT control closed, its line taken into the ID or password */
 #define login_send() GAME_FN(login_send, 0x434490, void, void)()   /* the login sent */
 #define newIdForm_openField(k) GAME_FN(newIdForm_openField, 0x433e60, int, int)(k)   /* the new-ID form's field k opened for typing */
 #define room_drawTunnel() GAME_FN(room_drawTunnel, 0x4388e0, void, void)()   /* the game room's tunnel */
-#define room_mergeReceivedSessions() GAME_FN(room_mergeReceivedSessions, 0x434ff0, void, void)()   /* the list of games asked for again */
+#define room_mergeReceivedSessions() GAME_FN(room_mergeReceivedSessions, 0x434ff0, void, void)()   /* the pinged rooms' new games (g_roomList) merged into g_sessionList */
 #define gameList_draw() GAME_FN(gameList_draw, 0x43adc0, void, void)()   /* the game room's list of games drawn */
 #define room_joinListed(i) GAME_FN(room_joinListed, 0x434dd0, u32, int)(i)   /* game i of the list joined */
 #define gameList_hitTest(x, y) GAME_FN(gameList_hitTest, 0x432300, int, int, int)(x, y)   /* the game list's control at (x, y) */
-#define room_askJoinPassword() GAME_FN(room_askJoinPassword, 0x434da0, void, void)()   /* the selected game joined */
+#define room_askJoinPassword() GAME_FN(room_askJoinPassword, 0x434da0, void, void)()   /* a locked game's join password asked for (the join is room_joinListed) */
 #define gameList_refresh() GAME_FN(gameList_refresh, 0x434d00, int, void)()    /* the search asked for: 1 sent */
 #define roomLogin_hitTest(x, y) GAME_FN(roomLogin_hitTest, 0x432200, int, int, int)(x, y)   /* the Ladder login dialog's button at (x, y) */
 #define room_openNewIdForm() GAME_FN(room_openNewIdForm, 0x4338c0, u32, void)()
@@ -1211,7 +1211,7 @@ void fix_glViewport(int x, int y, int w, int h);
 #define arena_drawTunnel() GAME_FN(arena_drawTunnel, 0x4091b0, void, void)()   /* the arena's tunnel */
 #define dplay_listSessions() GAME_FN(dplay_listSessions, 0x453260, u32, void)()   /* DirectPlay's session list polled */
 #define arenaList_rebuild() GAME_FN(arenaList_rebuild, 0x406810, void, void)()
-#define arena_mergeReceivedSessions() GAME_FN(arena_mergeReceivedSessions, 0x406640, void, void)()   /* the list of games asked for again */
+#define arena_mergeReceivedSessions() GAME_FN(arena_mergeReceivedSessions, 0x406640, void, void)()   /* the pinged arena servers' new games (g_serverList) merged into g_sessionList */
 #define arena_drawGameList() GAME_FN(arena_drawGameList, 0x40a070, void, void)()   /* the arena's list of games drawn */
 #define arena_joinListed(i) GAME_FN(arena_joinListed, 0x406200, u32, int)(i)   /* game i joined (99999: the one typed) */
 #define arena_joinSession(session) GAME_FN(arena_joinSession, 0x405690, u32, int)(session)   /* session i joined */

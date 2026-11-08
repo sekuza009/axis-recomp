@@ -144,7 +144,7 @@ u32 (newIdForm_clicks)(void)
 	return button;
 }
 
-/* 0x434dd0: joining session i of the list: its DirectPlay connection (dplay_openConnection) and the join (dplay_listSessions); a failure
+/* 0x434dd0: joining session i of the list: its DirectPlay connection (dplay_openConnection) and the session search (dplay_listSessions: EnumSessions; the join itself follows in room_joinAnswer); a failure
    shows message 0x3f or 0x40 and stops the search; on success the join's wait starts (timer 0x378, 2 s, its id
    kept). Returns what the original leaves in eax */
 u32 (room_joinListed)(int i)

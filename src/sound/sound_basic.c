@@ -140,7 +140,7 @@ u32 (sound_loadMenuSounds)(void)
 }
 
 /* 0x457080: a sound file played once (with sound on): loaded under its name (sound_loadWav), at volume 0 .. 100 of the
-   sound setting (below 0: silent at -1000, above 100: the setting's attenuation), then the buffer released. Returns
+   sound setting (below 0: silent at -1000, above 100: the setting's attenuation), then the sound's record freed (mem_free; its DirectSound buffer is not released). Returns
    what the original leaves in eax */
 u32 (sound_playFile)(const char *name, int volume)
 {

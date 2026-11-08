@@ -234,7 +234,7 @@ static void esc_pairCursor(Scene *scene)
 		scene->escCursor = 1;
 }
 
-/* a team change's cost: in a Ladder game the scores so far committed to the title first (ladder_addMatchScores);
+/* a team change's cost: in a Ladder game the scores so far added to the Ladder record first (ladder_addMatchScores);
    the local player's kills dropped and one death added */
 static void esc_resetScore(Scene *scene)
 {

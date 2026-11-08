@@ -1787,7 +1787,7 @@ typedef struct Scene {
 	i32 matchOver;   /* +0x2342399: (by use; seen running) 1: the result is shown */
 	float endTime;   /* +0x234239d: (by use; seen running) seconds left of a round's end (10 from the result) */
 	i32 matchLeaving;   /* +0x23423a1: 1: the match is being left: back to the menu when quitDelay runs out (quit, data loss, lost connection, unstable network, the server ending the game, the last mission won); also lets ladder_sendRecord run */
-	float quitDelay;   /* +0x23423a5: (by use; seen running) seconds before leaving after the round is over (3) */
+	float quitDelay;   /* +0x23423a5: seconds before the match is left once matchLeaving is set (3; 0 for a client's quit and the last mission won): quit, data loss, lost connection, unstable network, the server ending the game; counted down by match_frame; 0 at a round start */
 	i32 stageCleared;   /* +0x23423a9: 1: the local player (or team) reached the score limit on the campaign's current stage (g_mapIndex == g_progress): the progress moves on; 0: MISSION FAILED, RETRY */
 	i32 fragLimit;   /* +0x23423ad: the frag limit (g_fragLimit; the round's): > 0: the round ends when a team's teamScores or the leading player's kills reach it (msg_fragLimitReached); the HUD shows the frags still needed */
 	i32 timeLimit;   /* +0x23423b1: minutes (g_timeLimit; the round's): > 0: the round ends when elapsed reaches timeLimit x 60 (msg_timeLimitReached); the HUD shows the time left */
