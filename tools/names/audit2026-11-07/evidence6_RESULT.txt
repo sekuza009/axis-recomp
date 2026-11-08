@@ -59,3 +59,19 @@ asm entry stubs), ~45 with no caller, ~55 behind code that never runs (the menus
 the IPX / modem DirectPlay slots without such providers, the .ase / .obj loaders), the error paths, the network
 faults and the game-server-only notices - and 289 data names, mostly the by-design unreachable, one-frame input
 flags, lock-on and the Ladder server's answers.
+
+Sessions r8 / r9 (2026-11-08, evidence8_*): lock-on and the server's answers.
+  r8_lock: ARM CENTER's weapon list read through (SPG-5 burst gun and RLC-100 homing laser have a targeting time);
+    SPG-5 put in hand slot 3 (the pilot's save restored after), skirmish round 1 swept slowly: the locks -
+    Actor.aimTime / lockAnim, Stage.lockTimes / lockIds / lockHeld / lockCount, Scene.lockHeld, lockon_quad.
+  r9: a test copy of DServer (tools/rtrace/mk_testserver.py; the user's DServer untouched): --ghost lists a made-up
+    locked room (its fields reached: RoomRecord.rotation ...), --outdated answers THIS PROGRAM HAS BEEN UPDATED to
+    the Ladder login and the new-ID request (the notice closed by key and by click); a DIRECT IP join to an address
+    with no game timed out (CONNETION TIME OUT, the 30 poll ticks).
+  Not reached, and why: listed games never show here - the game pings each listed host over a raw ICMP socket,
+  which Windows allows only with administrator rights (ping -1), so the list's rows, sorting and joins stay
+  unreached; the arena side's update notice needs the game's own lobby connection, which this build's TCP/IP
+  GAME skips (it hosts directly; pointing TcpDNS at the test server did not change that).
+  The Ladder ID in HKCU\SOFTWARE\AxisArena\Character was found left as "host" by the earlier Ladder sessions and put
+  back to the user's ("newb256", from the 2026-11-07 registry backup).
+19 more data names and 12 more functions; left: 270 data names, 188 functions (evidence8_still_unreached.txt).
