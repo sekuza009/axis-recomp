@@ -1093,7 +1093,7 @@ static const Store k_input_initVkTable[57] = {
 	{ 0x4df11c, 0x2c }, { 0x4df120, 0x2e }, { 0x4df124, 0x2f }, { 0x4df128, 0x10 }, { 0x4df12c, 0x2a },
 	{ 0x4df130, 0x0 }, { 0x4df134, 0x20 } };
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-void input_initVkTable(void);
+void input_initScanCharTable(void);
 static const Store k_replay_46d4d0[64] = {
 	{ 0xa1f100, 0x3f800000 }, { 0xa1f104, 0x3f800000 }, { 0xa1f108, 0x3f800000 }, { 0xa1f10c, 0x3f800000 }, { 0xa1f110, 0x3f73f3f4 },
 	{ 0xa1f114, 0x3ea8a8a9 }, { 0xa1f118, 0x3ea8a8a9 }, { 0xa1f11c, 0x3f800000 }, { 0xa1f120, 0x3f7dfdfe }, { 0xa1f124, 0x3f37b7b8 },
@@ -2117,9 +2117,9 @@ int THISCALL ShapeManager_dtor(void *self);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 int THISCALL SkeletonManager_dtor(void *self);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-int THISCALL UnitPoseInfo_dtor(void *self);
+int THISCALL Unit_dtor(void *self);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-void *THISCALL UnitPoseInfo_deletingDtor(void *self, int flags);
+void *THISCALL Unit_deletingDtor(void *self, int flags);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 int THISCALL CollisionVolume_dtor(void *self);
 /* 0x4411e0 tunnel_restart(): restart the intro camera path list at 0x67fb3c with one node (counter 0x9dae10 = 0) */
@@ -2241,7 +2241,7 @@ THISCALL DWORD map_readCommands(char *self, DWORD f);
    one more dword (+0xb00c), all scrambled */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 THISCALL DWORD LightFactors_read(char *self, DWORD f);
-/* 0x45ff30 (ECX) actor_destroyPartLists: destroy an actor's 8 sub-objects (UnitPoseInfo_dtor); 0x463960 ResourceSet_dtor:
+/* 0x45ff30 (ECX) actor_destroyPartLists: destroy an actor's 8 sub-objects (Unit_dtor); 0x463960 ResourceSet_dtor:
    a player's 5 skeleton and 5 shape managers; 0x46ff70 Stage_dtor: the stage (scene, 100 actors and 16 players via
    eh_vector_destructor_iterator, managers, models, lights, collision volume); 0x4617f0 chat_loadMacros (it loads
    them): Chat.scp into the 100 chat macros, else empty them and write the file. Lifted */
@@ -7622,7 +7622,7 @@ T0(stage_newRound, 0x470cb0, actors_setup(); fill(BUF + 0x202e8d0, 0x20); for (i
 static void fill_stores(const Store *s, int n) { for (int k = 0; k < n; k++) fill((void *)s[k].a, 4); }
 V0(colour_initDefaultColours, 0x46dc50, fill_stores(k_color_initDefaultColours, 16);)
 V0(lobbyTop_initOutlines, 0x42f500, fill_stores(k_intro_42f500, 44);)
-V0(input_initVkTable, 0x431680, fill_stores(k_input_initVkTable, 57);)
+V0(input_initScanCharTable, 0x431680, fill_stores(k_input_initVkTable, 57);)
 V0(colour_initTextColours, 0x46d4d0, fill_stores(k_replay_46d4d0, 64);)
 V0(menu_initMainOutlines, 0x42f2b0, fill_stores(k_intro_42f2b0, 66);)
 V0(room_initOutlines, 0x42f690, fill_stores(k_intro_42f690, 66);)
@@ -8803,8 +8803,8 @@ ST(static_startSceneLog, , CD(DWORD, 0x48b3b0, void)(), static_startSceneLog())
 ST(Shape_dtor, fill(BUF, 0x300); S32(BUF + 0x10, 0xc) = irnd(0, 2);, TC(int, 0x464ba0, char *)(BUF + 0x10), Shape_dtor((DWORD *)(BUF + 0x10)))
 ST(ShapeManager_dtor, fill(BUF, 0x300); S32(BUF + 0x10, 0xc) = irnd(0, 2);, TC(int, 0x466a10, char *)(BUF + 0x10), ShapeManager_dtor((DWORD *)(BUF + 0x10)))
 ST(SkeletonManager_dtor, fill(BUF, 0x300); S32(BUF + 0x10, 0xc) = irnd(0, 2);, TC(int, 0x46ae60, char *)(BUF + 0x10), SkeletonManager_dtor((DWORD *)(BUF + 0x10)))
-ST(UnitPoseInfo_dtor, fill(BUF, 0x300); S32(BUF + 0x10, 0xc) = irnd(0, 2);, TC(int, 0x46f470, char *)(BUF + 0x10), UnitPoseInfo_dtor((DWORD *)(BUF + 0x10)))
-ST(UnitPoseInfo_deletingDtor, fill(BUF, 0x300); S32(BUF + 0x10, 0xc) = irnd(0, 2); g_a[0] = irnd(0, 3);, (DWORD)TC(char *, 0x45ff10, char *, DWORD)(BUF + 0x10, (DWORD)g_a[0]), (DWORD)UnitPoseInfo_deletingDtor(BUF + 0x10, (DWORD)g_a[0]))
+ST(Unit_dtor, fill(BUF, 0x300); S32(BUF + 0x10, 0xc) = irnd(0, 2);, TC(int, 0x46f470, char *)(BUF + 0x10), Unit_dtor((DWORD *)(BUF + 0x10)))
+ST(Unit_deletingDtor, fill(BUF, 0x300); S32(BUF + 0x10, 0xc) = irnd(0, 2); g_a[0] = irnd(0, 3);, (DWORD)TC(char *, 0x45ff10, char *, DWORD)(BUF + 0x10, (DWORD)g_a[0]), (DWORD)Unit_deletingDtor(BUF + 0x10, (DWORD)g_a[0]))
 ST(CollisionVolume_dtor, fill(BUF, 0x300); S32(BUF + 0x10, 0xc) = irnd(0, 2);, TC(int, 0x481390, char *)(BUF + 0x10), CollisionVolume_dtor((DWORD *)(BUF + 0x10)))
 /* the intro path list: head 0x67fb3c -> 0..4 nodes in scratch */
 static void introlist_setup(void)
@@ -17256,7 +17256,7 @@ static const STest g_stests[] = {
 	T(lobby_loadArenaSettings, 0, 40, 0), T(arena_initOptionTexts, 0, 8, 0), T(mech_setName, 0, 4, 400), T(shape_addColour, 0, 4, 1000),
 	T(match_resetInputState, 0, 4, 50), T(stage_newRound, 0, 4, 20),
 	/* batch 12 */
-	T(colour_initDefaultColours, 0, 4, 0), T(lobbyTop_initOutlines, 0, 4, 0), T(input_initVkTable, 0, 4, 0), T(colour_initTextColours, 0, 4, 0),
+	T(colour_initDefaultColours, 0, 4, 0), T(lobbyTop_initOutlines, 0, 4, 0), T(input_initScanCharTable, 0, 4, 0), T(colour_initTextColours, 0, 4, 0),
 	T(menu_initMainOutlines, 0, 4, 0), T(room_initOutlines, 0, 4, 0), T(input_initDikCodes, 0, 4, 0),
 	/* batch 12 */
 	T(room_enterCreatePage, 0, 20, 0), T(lobby_enterCreate, 0, 20, 0), T(room_initCameraPoints, 0, 6, 0),
@@ -17372,7 +17372,7 @@ static const STest g_stests[] = {
 	T(static_startBMPRGBFileLog, 1, 2, 0), T(static_startRealColorLog, 1, 2, 0), T(static_startPackedColorLog, 1, 2, 0), T(static_startUnitPartInfoLog, 1, 2, 0),
 	T(static_startUnitPoseInfoLog, 1, 2, 0), T(static_startUnitLog, 1, 2, 0), T(static_startStageLog, 1, 2, 0), T(static_startCollisionVolumeLog, 1, 2, 0),
 	T(static_startLightLog, 1, 2, 0), T(static_startViewVolumeLog, 1, 2, 0), T(static_startTimeSyncLog, 1, 2, 0), T(static_startSceneLog, 1, 2, 0),
-	T(Shape_dtor, 1, 4, 300), T(ShapeManager_dtor, 1, 4, 300), T(SkeletonManager_dtor, 1, 4, 300), T(UnitPoseInfo_dtor, 1, 4, 300), T(UnitPoseInfo_deletingDtor, 1, 4, 300),
+	T(Shape_dtor, 1, 4, 300), T(ShapeManager_dtor, 1, 4, 300), T(SkeletonManager_dtor, 1, 4, 300), T(Unit_dtor, 1, 4, 300), T(Unit_deletingDtor, 1, 4, 300),
 	T(CollisionVolume_dtor, 1, 4, 300), T(tunnel_restart, 1, 30, 0), T(tunnel_addRing, 1, 30, 0), T(ShapeManager_releaseModels, 1, 4, 1000),
 	T(SkeletonManager_releaseSkeletons, 1, 4, 1000),
 	/* batch 45 */
@@ -18167,7 +18167,7 @@ static const struct { DWORD addr; void *fn; const char *name; } g_hooks3[] = {
 	{ 0x461f10, (void *)match_resetInputState, "match_resetInputState" }, { 0x470cb0, (void *)stage_newRound, "stage_newRound" },
 	/* batch 12 */
 	{ 0x46dc50, (void *)colour_initDefaultColours, "colour_initDefaultColours" }, { 0x42f500, (void *)lobbyTop_initOutlines, "lobbyTop_initOutlines" },
-	{ 0x431680, (void *)input_initVkTable, "input_initVkTable" }, { 0x46d4d0, (void *)colour_initTextColours, "colour_initTextColours" },
+	{ 0x431680, (void *)input_initScanCharTable, "input_initScanCharTable" }, { 0x46d4d0, (void *)colour_initTextColours, "colour_initTextColours" },
 	{ 0x42f2b0, (void *)menu_initMainOutlines, "menu_initMainOutlines" }, { 0x42f690, (void *)room_initOutlines, "room_initOutlines" },
 	{ 0x42fd40, (void *)input_initDikCodes, "input_initDikCodes" },
 	/* batch 12 */
@@ -18348,7 +18348,7 @@ static const struct { DWORD addr; void *fn; const char *name; } g_hooks3[] = {
 	{ 0x483cf0, (void *)static_startLightLog, "static_startLightLog" }, { 0x483f50, (void *)static_startViewVolumeLog, "static_startViewVolumeLog" },
 	{ 0x4873d0, (void *)static_startTimeSyncLog, "static_startTimeSyncLog" }, { 0x48b3b0, (void *)static_startSceneLog, "static_startSceneLog" },
 	{ 0x464ba0, (void *)Shape_dtor, "Shape_dtor" }, { 0x466a10, (void *)ShapeManager_dtor, "ShapeManager_dtor" },
-	{ 0x46ae60, (void *)SkeletonManager_dtor, "SkeletonManager_dtor" }, { 0x46f470, (void *)UnitPoseInfo_dtor, "UnitPoseInfo_dtor" }, { 0x45ff10, (void *)UnitPoseInfo_deletingDtor, "UnitPoseInfo_deletingDtor" },
+	{ 0x46ae60, (void *)SkeletonManager_dtor, "SkeletonManager_dtor" }, { 0x46f470, (void *)Unit_dtor, "Unit_dtor" }, { 0x45ff10, (void *)Unit_deletingDtor, "Unit_deletingDtor" },
 	{ 0x481390, (void *)CollisionVolume_dtor, "CollisionVolume_dtor" }, { 0x4411e0, (void *)tunnel_restart, "tunnel_restart" },
 	{ 0x441200, (void *)tunnel_addRing, "tunnel_addRing" }, { 0x467520, (void *)ShapeManager_releaseModels, "ShapeManager_releaseModels" },
 	{ 0x46b7f0, (void *)SkeletonManager_releaseSkeletons, "SkeletonManager_releaseSkeletons" },

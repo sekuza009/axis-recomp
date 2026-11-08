@@ -110,13 +110,13 @@ static void free_owned(void *self)
 }
 int THISCALL (Skeleton_release)(void *self) { free_owned(self); Skeleton_clear(self); return 0; }
 int THISCALL (partList_release)(void *self) { free_owned(self); partList_clear(self); return 0; }
-/* 0x46f470: UnitPoseInfo's destructor (vtable 0x4a9754) */
-int THISCALL (UnitPoseInfo_dtor)(u32 *self) { self[0] = VT(UnitPoseInfo, 0x4a9754); return partList_release(self); }
+/* 0x46f470: the Unit class's destructor (vtable 0x4a9754; its methods log as "class Unit": an object list, ObjectList) */
+int THISCALL (Unit_dtor)(u32 *self) { self[0] = VT(Unit, 0x4a9754); return partList_release(self); }
 /* 0x45ff10: its deleting destructor (the vtable's slot 0; compiler-made, which the decompile had not listed): the
    destructor, then the object freed when flags bit 0 is set; returns this */
-void *THISCALL (UnitPoseInfo_deletingDtor)(u32 *self, int flags)
+void *THISCALL (Unit_deletingDtor)(u32 *self, int flags)
 {
-	UnitPoseInfo_dtor(self);
+	Unit_dtor(self);
 	if (flags & 1)
 		operator_delete(self);
 	return self;
@@ -289,13 +289,13 @@ void (Mat4_transpose)(u32 *d, const u32 *s)
 }
 
 /* ---- objects put to their start ---- */
-/* 0x463a40: an actor's eight part lists (head .. the hand-held and shoulder weapons), each a UnitPoseInfo (vtable
+/* 0x463a40: an actor's eight part lists (head .. the hand-held and shoulder weapons), each a Unit object list (vtable
    0x4a9754) with its members cleared (the element constructor of the stage's actors) */
 void *THISCALL (actor_initPartLists)(u8 *self)
 {
 	static const int lists[8] = { offsetof(Actor, headModel), offsetof(Actor, chestModel), offsetof(Actor, armsModel), offsetof(Actor, legsModel), offsetof(Actor, boosterModel), offsetof(Actor, weaponModel), offsetof(Actor, weaponModel4), offsetof(Actor, weaponModel5) };
 	for (int k = 0; k < 8; k++) {
-		FIELD(u32, self, lists[k]) = VT(UnitPoseInfo, 0x4a9754);
+		FIELD(u32, self, lists[k]) = VT(Unit, 0x4a9754);
 		partList_clear(self + lists[k]);
 	}
 	return self;

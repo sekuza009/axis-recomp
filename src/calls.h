@@ -241,7 +241,7 @@
 #define skelDat_findByName(name) GAME_FN(skelDat_findByName, 0x46b0c0, int, const char *)(name)
 #define math_makeMathFunctionTableFile() GAME_FN(math_makeMathFunctionTableFile, 0x46c340, u32, void)()
 #define sys_errorMessageNoName(format) GAME_FN(sys_errorMessageNoName, 0x46c840, int, const char *)(format)
-#define UnitPoseInfo_dtor(self) GAME_THISFN(UnitPoseInfo_dtor, 0x46f470, u32, void *)(self)
+#define Unit_dtor(self) GAME_THISFN(Unit_dtor, 0x46f470, u32, void *)(self)
 #define stage_build(s, stageDir, mapDir, textureDir, shapeDir, skeletonDir, actorDir, bulletDir, effectDir, sceneDir) GAME_THISFN(stage_build, 0x4700a0, void, void *, u32, u32, u32, u32, u32, u32, u32, u32, u32)(s, stageDir, mapDir, textureDir, shapeDir, skeletonDir, actorDir, bulletDir, effectDir, sceneDir)
 #define stage_setupView(s, pos, dir, up, fov, w, h, nr, fr, dt) GAME_THISFN(stage_setupView, 0x4729b0, void, void *, const void *, const void *, const void *, u32, int, int, u32, u32, u32)(s, pos, dir, up, fov, w, h, nr, fr, dt)
 #define playerRecord_markFree(stage, p) GAME_THISFN(playerRecord_markFree, 0x4743b0, void, void *, int)(stage, p)

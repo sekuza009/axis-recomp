@@ -245,14 +245,14 @@ int THISCALL (ShapeManager_releaseModels)(u8 *self) { return release_all(self, 0
 /* 0x46b7f0: a skeleton manager's skeletons (0x24 bytes) */
 int THISCALL (SkeletonManager_releaseSkeletons)(u8 *self) { return release_all(self, 0x24, release_skeleton); }
 
-/* 0x45ff30: an object's eight member lists destroyed (UnitPoseInfo_dtor, the last member first: weaponModel5 .. headModel).
+/* 0x45ff30: an object's eight member lists destroyed (Unit_dtor, the last member first: weaponModel5 .. headModel).
    Returns the last call's eax */
 u32 THISCALL (actor_destroyPartLists)(u8 *self)
 {
 	static const u32 members[8] = { offsetof(Actor, weaponModel5), offsetof(Actor, weaponModel4), offsetof(Actor, weaponModel), offsetof(Actor, boosterModel), offsetof(Actor, legsModel), offsetof(Actor, armsModel), offsetof(Actor, chestModel), offsetof(Actor, headModel) };
 	u32 r = 0;
 	for (int k = 0; k < 8; k++)
-		r = UnitPoseInfo_dtor(self + members[k]);
+		r = Unit_dtor(self + members[k]);
 	return r;
 }
 

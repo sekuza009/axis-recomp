@@ -111,8 +111,9 @@ struct ListedObject 0x64                                        # an object list
 0x4c       0xc        float pos[3]                              # its bone's origin placed: (0, 0, 0) through matrix, the matrix's translation (ObjectList_poseBones); without a shape, centre is copied from it
 0x58       0xc        float centre[3]                            # its shape's centre placed (pos without a shape)
 
-struct ObjectList 0x30                                          # shapes placed by their own matrices (ObjectList_relight, ObjectList_queue): the game's UnitPoseInfo class (vtable
-                                                                 # 0x4a9754 at +0; its entries follow it where it is embedded, Actor's part lists; its full size is unknown)
+struct ObjectList 0x30                                          # shapes placed by their own matrices (ObjectList_relight, ObjectList_queue): the game's class Unit (vtable
+                                                                 # 0x4a9754 at +0; its entries follow it where it is embedded, Actor's part lists; its full size is unknown;
+                                                                 # "class Unit" by the log its methods use, g_logUnit)
 4          4          i32 blockSize                             # its block: the entries (100 bytes each), their colours when preLit, the skeletons (ObjectList_load)
 8          4          u8 *block                                       # its block (ObjectList_load: allocated, owned, or the memory given such as Actor.headModelMem): the entries, the pre-lit colours, the skeleton pointers; freed by partList_release when owned
 0xc        4          i32 ownsBlock                             # 1: allocated here (ObjectList_load without memory; the game's lists all get the Actor's memory, so 0)

@@ -460,7 +460,7 @@ struct GameRdata g_rdata __attribute__((aligned(4096))) = {
 		170.0f, 1.5f,
 	},
 	.k_27_7778f_ = {
-		0x41de38e4, FN_ADDR(UnitPoseInfo_deletingDtor, 0x45ff10),
+		0x41de38e4, FN_ADDR(Unit_deletingDtor, 0x45ff10),
 	},
 	.d_4a9758 = "333?\xc0\xfb\xbb\xf6",
 	.d_4a976c = "\xc3\xbb\xbb\xf6",

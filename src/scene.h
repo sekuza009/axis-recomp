@@ -140,7 +140,7 @@ typedef struct ListedObject {
 	float centre[3];   /* +0x58: its shape's centre placed (pos without a shape) */
 } ListedObject;
 
-/* shapes placed by their own matrices (ObjectList_relight, ObjectList_queue): the game's UnitPoseInfo class (vtable */
+/* shapes placed by their own matrices (ObjectList_relight, ObjectList_queue): the game's class Unit (vtable */
 typedef struct ObjectList {
 	u8 _pad0000000[0x4];
 	i32 blockSize;   /* +0x4: its block: the entries (100 bytes each), their colours when preLit, the skeletons (ObjectList_load) */

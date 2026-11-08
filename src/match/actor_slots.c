@@ -979,13 +979,13 @@ u32 THISCALL (actor_checkDataLoss)(u8 *s, int a)
 	for (int k = 0; k < 5; k++)
 		class_emptyCtor((u8 *)&((Actor *)me)->rounds[k]);   /* class_emptyCtor: a resource set */
 	for (int k = 0; k < 8; k++) {
-		GAME_VAR(u32, me + k_listAt[k]) = VT(UnitPoseInfo, 0x4a9754);
+		GAME_VAR(u32, me + k_listAt[k]) = VT(Unit, 0x4a9754);
 		partList_clear(me + k_listAt[k]);
 	}
 	u8 *ac = (u8 *)&st->actors[a];
 	int ok = AC->state != 1 || totals_agree(s, ac, me);
 	for (int k = 7; k >= 0; k--)
-		UnitPoseInfo_dtor(me + k_listAt[k]);   /* UnitPoseInfo_dtor: a part list released */
+		Unit_dtor(me + k_listAt[k]);   /* Unit_dtor: a part list released */
 	return ok;
 }
 #undef A
