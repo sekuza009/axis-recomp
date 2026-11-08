@@ -1,4 +1,4 @@
-src/ - AxisGL.exe rebuilt as readable C (PRIVATE; never ship)
+src/ - AxisGL.exe rebuilt as readable C
 
 Every function here replaces one function of the game and is checked bit-exact against the original by the recomp
 harness (../recomp.c runs the same random tests on both and compares memory, call logs and results), then played
@@ -119,6 +119,7 @@ Readable C: the conventions
   Names       by what the code does, checked line by line (2026-11-05): screens and dialogs by the titles and labels
               they draw (MSG texts), records by their fields' uses. Prefixes: the subsystem (room_, lobby_, armc_,
               profile_, net_, stage_ ...) or the record a thiscall runs on (ViewVolume_, TextureManager_ ...).
+              When a name counts as wrong, and when an audit is done: tools/names/NAMING_RULES.txt.
   Comments    name things (fields, globals, functions, MSG texts) rather than raw addresses / offsets; numbers stay
               only for byte layouts without a record type (packets, file formats, x87 extended reals).
   x87         the arithmetic keeps the original's memory operands and order (bit-exact with NaNs): FMUL(a, b) is

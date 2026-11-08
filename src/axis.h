@@ -1,4 +1,4 @@
-/* axis.h: conventions for the readable rebuild of AxisGL.exe (PRIVATE; never ship).
+/* axis.h: conventions for the readable rebuild of AxisGL.exe.
 
    Every function here is a rebuild of one function of the game, checked bit-exact against the original by the
    recomp harness (recomp.c: the same random tests the lifted versions passed). Its comment names the original

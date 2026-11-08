@@ -1,4 +1,4 @@
-﻿recomp - rebuilding AxisGL.exe function by function (PRIVATE test work; never ship)
+﻿recomp - rebuilding AxisGL.exe function by function
 
 Method: the original exe keeps running; rebuilt C versions of game functions live in recomp.dll. At start-up
 recomp.dll compares each original against its rebuilt version on random inputs (results in recomp.log next to

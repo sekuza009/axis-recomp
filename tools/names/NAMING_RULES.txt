@@ -1,0 +1,40 @@
+When a name is right, and when a name audit is done (agreed 2026-11-07)
+
+Every name in src/ (function, parameter, local, record type, field, global, object, constant, file) gets one of
+three verdicts. Only the first is a failure.
+
+  WRONG      must be fixed. The name, its type or its comment says something the code contradicts:
+             - it is a different thing (a "heading" that holds the detection angle),
+             - the opposite sense or the other half of a pair (a "behind" that is the leading team; up / down
+               swapped),
+             - a different kind or unit (a "count" that is an index, an int that holds float bits, ms called frames),
+             - a use or context it is not limited to (a "chat line" that every text field types into; a "network
+               play" branch that is only the game room's; a "free camera" that is the mech test mode),
+             - or it names a minor use and leaves out its main one.
+             A comment that claims what the code does not do is WRONG the same way.
+  CLEARER    optional. The name is true but could be more specific, shorter, in the file's style, or say the
+             game's own term. Applied only when cheap and safe; a pass that finds only these is a clean pass.
+  UNDECIDABLE  the code cannot settle it (an empty function known only by its address; a value never written).
+             The name then says only what is known (by address, "unused", "cleared") and the doubt is written in
+             its comment. Not a failure.
+
+Evidence a verdict needs
+  - Every use in the rebuilt code (tools/field_uses.py, grep), and the original's instructions where the rebuild
+    could differ (tools/addr_access.py, tools/disx.py; message texts tools/names/msgtext.py).
+  - What the game did in play where a traced session reached it (tools/names/audit2026-11-07/data_runtime.txt,
+    function_trace.tsv). A name never reached in play is "confirmed by the code only": acceptable, listed with how
+    to reach it in data_deep_reach.txt.
+  - Not the name's own comment or an earlier "(by use)" tag: those came from the same pass that chose the name.
+
+Uncertain names: two independent reviewers
+  A name is uncertain when a reviewer marked it UNDECIDABLE / unsure, two passes disagreed, or only the code
+  confirms it. Two reviewers judge each such name without seeing the other's verdict or the earlier audits: one
+  from the rebuilt C code, one starting from the original's instructions. A change is made only when both call it
+  WRONG for the same reason; the new name is one both proposals support (else the plainer). One-sided verdicts are
+  written down, not applied. The rate at which the two disagree is the measure of how far a single pass can be
+  trusted.
+
+When it is done
+  A set of names is done when a pass over it by every evidence above finds no WRONG name, and its uncertain names
+  have had the two-reviewer check. After any rename, run tools/names/sweep_old_ideas.py so the old idea does not
+  survive in comments and nearby names. A later CLEARER suggestion does not reopen the audit.
