@@ -38,7 +38,10 @@ void (room_openNewIdConfirm)(void)
 /* 0x4338c0: the new-ID form (state 0x4d = 77) opened: its window laid out, the account fields emptied (0x54 bytes) */
 void (room_openNewIdForm)(void)
 {
-	set_box(ADDR(g_newIdFormLeft), 0x1e, 0x32, 0x262, 0x1ae);
+	g_newIdFormLeft = 0x1e;   /* (the original writes the four as one box; here by name: some are split in AxisRC.exe) */
+	g_newIdFormTop = 0x32;
+	g_newIdFormRight = 0x262;
+	g_newIdFormBottom = 0x1ae;
 	newIdForm_layout();
 	memset((void *)OBJ(g_accountName), 0, 0x54);
 	dialog_opened(0x4d);

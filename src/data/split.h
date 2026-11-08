@@ -4670,9 +4670,9 @@ extern u8 g_serverPort_v[2];
 extern u8 g_unusedNetResetWord_v[4];
 #endif
 #ifdef AXIS_FENCE
-#define g_netPlayerList_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xc64000 : g_fence + 0xc63d94))
+#define g_netPlayerList_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xc64000 : g_fence + 0xc63d56))
 #else
-extern u8 g_netPlayerList_v[620];
+extern u8 g_netPlayerList_v[682];
 #endif
 #ifdef AXIS_FENCE
 #define g_lobbyReplyCode_v ((int *)(AXIS_FENCE == 2 ? g_fence + 0xc66000 : g_fence + 0xc65ffc))

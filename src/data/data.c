@@ -946,7 +946,7 @@ u8 g_netByteBuffer_v[4] __attribute__((aligned(16)));   /* 0xa052e4 */
 u8 g_playerListReply_v[62] __attribute__((aligned(16)));   /* 0xa052e8 */
 u8 g_serverPort_v[2] __attribute__((aligned(16)));   /* 0xa05326 */
 u8 g_unusedNetResetWord_v[4] __attribute__((aligned(16)));   /* 0xa05328 */
-u8 g_netPlayerList_v[620] __attribute__((aligned(16)));   /* 0xa05330 */
+u8 g_netPlayerList_v[682] __attribute__((aligned(16)));   /* 0xa05330 */
 int g_lobbyReplyCode_v[1] __attribute__((aligned(16)));   /* 0xa055dc */
 u8 g_netAccountRequest_v[4] __attribute__((aligned(16)));   /* 0xa055e0 */
 u8 g_lobbyTcpPort_v[4] __attribute__((aligned(16)));   /* 0xa055f4 */
@@ -2116,7 +2116,7 @@ const DataPiece g_splitObjects[] = {
 	{ 0xa052e8, g_playerListReply_v, 62 },
 	{ 0xa05326, g_serverPort_v, 2 },
 	{ 0xa05328, g_unusedNetResetWord_v, 4 },
-	{ 0xa05330, g_netPlayerList_v, 620 },
+	{ 0xa05330, g_netPlayerList_v, 682 },
 	{ 0xa055dc, g_lobbyReplyCode_v, 4 },
 	{ 0xa055e0, g_netAccountRequest_v, 4 },
 	{ 0xa055f4, g_lobbyTcpPort_v, 4 },

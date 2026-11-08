@@ -5,16 +5,25 @@
    flag. */
 #include "../game.h"
 
-/* where each screen's panel is (its top left, menu units); the fields sit at fixed offsets from it */
-#define PANEL_X(addr) GAME_VAR(int, addr)
-#define PANEL_Y(addr) GAME_VAR(int, (addr) + 4)
-#define ARENA_SETUP ADDR(g_newArenaFormLeft)      /* the arena settings (name, password, limits) */
-#define PLAYER_SETUP ADDR(g_playerSetupLeft)     /* the arena lobby's SETUP PLAYER dialog */
-#define ARENA_JOIN ADDR(g_arenaGameListLeft)    /* the game list (the join password) */
-#define ROOM_TOP ADDR(g_roomFormLeft)
-#define ROOM_LOGIN ADDR(g_roomLoginLeft)     /* the Ladder login (ID, password) */
-#define ACCOUNT ADDR(g_accountPanelLeft)       /* the account page */
-#define ROOM_JOIN ADDR(g_roomGameListLeft)     /* the game list (the join password) */
+/* where each screen's panel is (its top left, menu units); the fields sit at fixed offsets from it. Each panel's edges
+   are globals of their own (g_<panel>Left, g_<panel>Top ..): the original reads the top as the word after the left
+   (its globals lie side by side); here by name, since AxisRC.exe gives some of them places of their own (split) */
+#define PANEL_X(panel) panel##_X
+#define PANEL_Y(panel) panel##_Y
+#define ARENA_SETUP_X g_newArenaFormLeft      /* the arena settings (name, password, limits) */
+#define ARENA_SETUP_Y g_newArenaFormTop
+#define PLAYER_SETUP_X g_playerSetupLeft      /* the arena lobby's SETUP PLAYER dialog */
+#define PLAYER_SETUP_Y g_playerSetupTop
+#define ARENA_JOIN_X g_arenaGameListLeft      /* the game list (the join password) */
+#define ARENA_JOIN_Y g_arenaGameListTop
+#define ROOM_TOP_X g_roomFormLeft
+#define ROOM_TOP_Y g_roomFormTop
+#define ROOM_LOGIN_X g_roomLoginLeft          /* the Ladder login (ID, password) */
+#define ROOM_LOGIN_Y g_roomLoginTop
+#define ACCOUNT_X g_accountPanelLeft          /* the account page */
+#define ACCOUNT_Y g_accountPanelTop
+#define ROOM_JOIN_X g_roomGameListLeft        /* the game list (the join password) */
+#define ROOM_JOIN_Y g_roomGameListTop
 
 /* "being edited" flags, one per field */
 #define EDITING(addr) GAME_VAR(int, addr)
@@ -282,7 +291,7 @@ int (newIdForm_openField)(int k)
 		editField_createEdit(field[k].maxLength);
 		row = k;
 	}
-	caret(g_newIdFormLeft + 0x94, PANEL_Y(ADDR(g_newIdFormLeft)) + row * 0x30 + 0x3c);
+	caret(g_newIdFormLeft + 0x94, g_newIdFormTop + row * 0x30 + 0x3c);
 	g_menuKeyGuard = 5.0f;
 	g_inputLineLength = line_length();
 	return 0;

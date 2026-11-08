@@ -100,7 +100,7 @@
 #define g_cosTable ((float *)IMG(0xa17f38))   /* float[3600]; (to the sin table) */
 #define g_sinTable ((float *)IMG(0xa1b778))   /* float[3600] */
 #define g_netSlots ((NetSlot *)IMG(0x9f9840))   /* NetSlot[16] (net_clearSlots runs to 0x9fd940); data_loadCharacterProfiles' stats check walks 103 g_characterProfiles records (to 0x9faed4) and so reads / may zero its first 0x1694 bytes at start-up */
-#define g_netPlayerList ((RankedPlayer *)IMG(0xa05330))   /* RankedPlayer[10]; one ranking page as the server sends it (net_addPlayerRecord appends, unbounded; net_clearPlayerList clears 10 = 0x9b dwords; ranking_fillPage reads 10); net_resetConnection clears 0x2aa bytes (11 records' space up to g_lobbyReplyCode) */
+#define g_netPlayerList ((RankedPlayer *)IMG(0xa05330))   /* RankedPlayer[11]; one ranking page as the server sends it (net_addPlayerRecord appends, unbounded; net_clearPlayerList clears 10 = 0x9b dwords; ranking_fillPage reads 10); net_resetConnection clears 0x2aa bytes (11 records' space up to g_lobbyReplyCode) */
 #define g_keySeen ((int *)IMG(0x4d1a98))   /* int[256]; a key's press seen until released (0x400 bytes) */
 #define g_briefingText ((char *)IMG(0x9f1064))   /* char[1600]; the briefing's text (memset 0x640) */
 #define g_roomMech ((u8 *)IMG(0x9dd5f8))   /* u8[11]; the Ladder account's mech (signed bytes): the five parts (head, chest, arm, leg, booster), the extra items of slots 4 / 5, then weapon slots 0 .. 3; from the login reply (login_takeAccountRecord, g_profileReply + 0x54) or the new ID's defaults (newId_register), set from the ARM CENTER by armc_sendSelectionToNet; unpacked into the saved mech by mech_unpackFromRecord */
