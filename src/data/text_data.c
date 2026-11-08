@@ -186,7 +186,7 @@ static const u32 d_4509b4[] = {   /* 0x4509b4 */
 	0x0000000f, 0x80ffff0c, 0x00000000, 0x901825ff, 0x25ff004a, IMG(0x004a9048),
 	0x905025ff, 0x25ff004a, IMG(0x004a904c), 0xcccccccc, 0xcccccccc,
 };
-static const float d_b68ce0[] = { 8.0f, 160.0f };
+static const float init_g_energyBarWidth[] = { 8.0f, 160.0f };
 
 const DataPiece g_text_dataPieces[] = {
 	{ 0x44f950, d_44f950, sizeof d_44f950 },
@@ -194,6 +194,6 @@ const DataPiece g_text_dataPieces[] = {
 	{ 0x450994, d_450994, sizeof d_450994 },
 	{ 0x4509a4, d_4509a4, sizeof d_4509a4 },
 	{ 0x4509b4, d_4509b4, sizeof d_4509b4 },
-	{ 0xb68ce0, d_b68ce0, sizeof d_b68ce0 },
+	{ 0xb68ce0, init_g_energyBarWidth, sizeof init_g_energyBarWidth },
 	{ 0, 0, 0 }
 };

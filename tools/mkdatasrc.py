@@ -262,11 +262,12 @@ def generate(region_name, section, base, d, comment):
 		if d[o] == 0:
 			o += 1; continue
 		items.append((a, 'u8', '0x%02x' % d[o], 1)); o += 1
-	# runs: the same kind, consecutive, not across a named global
+	# runs: the same kind, consecutive, not across a named global (.text's pieces only by their runs: the start-up
+	# table stays one entry per run)
 	runs = []
 	for it in items:
 		a, kind, text, size = it
-		if (runs and kind == runs[-1]['kind'] and kind != 'char' and runs[-1]['end'] == a and a not in names):
+		if (runs and kind == runs[-1]['kind'] and kind != 'char' and runs[-1]['end'] == a and (a not in names or region_name == 't')):
 			runs[-1]['items'].append(it); runs[-1]['end'] = a + size
 		else:
 			runs.append({'kind': kind, 'start': a, 'end': a + size, 'items': [it]})

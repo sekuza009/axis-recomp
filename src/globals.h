@@ -432,6 +432,8 @@
 #define g_errorCleanupHook GAME_VAR(Cleanup, 0xa1efe8)   /* function run before exit(1) by the fatal error reporters (error_log.c terminate: sys_errorTerminate, sys_fatalError); set from ErrorLog_ctor's cleanupHook; 0 none */
 #define g_displayModeLeft GAME_VAR(u8, 0xb12a81)   /* the game's display mode was given up in the background: set 1 by game_wndProc's WM_ACTIVATEAPP (deactivated with g_displayModeChanged: desktop mode back, minimised); on reactivation cleared and g_otherModeWidth x g_otherModeHeight set again */
 #define g_otherModeHeight GAME_VAR(int, 0xb12a88)   /* height of the last non-desktop display mode set (app_setDisplayMode); set again with g_otherModeWidth when the game is reactivated (game_wndProc, g_displayModeLeft) */
+#define g_energyBarWidth GAME_VAR(float, 0xb68ce0)   /* 8: the HUD energy bar's left edge in HUD units, where the installed exe's patch moved it (its section .axnet); hud_main.c (in the test build read through the operand that uses it, the patch DLL may move it again) */
+#define g_energyBarHeight GAME_VAR(float, 0xb68ce4)   /* 160: the HUD energy bar's length in HUD units (see g_energyBarWidth) */
 #define k_69_9 GAME_VAR(double, 0x4a93e0)
 #define k_100f GAME_VAR(float, 0x4a93f4)
 #define k_10f GAME_VAR(float, 0x4a9418)
@@ -1062,6 +1064,7 @@
 #define g_tunnelPulse GAME_VAR(float, 0x9db978)   /* bounces 0 .. 100 */
 #define g_timerLastCount GAME_VAR(u32, 0x9dbf08)   /* timer_now's last counter reading (shifted by g_timerShift) */
 #define g_inputLineLength GAME_VAR(int, 0x9dbf10)   /* characters in the input line (g_inputLine): set from the field's text when a text field opens (edit_fields.c, arena_editAddress), 0 when it is emptied or closed (menu_clearInputBuffer, menu_closeInputLine); menu_drawInputLine puts the caret at x + it x 8 */
+#define g_skirmishInfo16Mode GAME_VAR(int, 0x9dbfa4)   /* where a 16th skirmish record's gameMode would be (g_skirmishInfo + 16 x 0x5c + 0x4c), past the 15 skirmish.dat fills: make_rotation's solo rotation reads it as the next mode (Scene.nextMode); an unnamed gap otherwise */
 #define g_hEditField GAME_VAR(void *, 0x9dd888)   /* the hidden EDIT control typing goes to */
 #define g_missionTop GAME_VAR(int, 0x9f16bc)   /* the first mission shown in the (unused) mission list: up to 8 rows from it (missionList_draw), g_missionPicked = it + g_missionRow; 0 from menuState900_enterMissions */
 #define g_skirmishNewPartsNotice GAME_VAR(int, 0x9f62e0)   /* 1: the skirmish screen shows the "YOU'VE GOT NEW PARTS AND WEAPONS" notice (skirmish_frameNewPartsNotice), raised when a new round is reached (menuState500_enter); a click (newPartsNotice_clickClose) or Esc / Enter (newPartsNotice_keys) closes it */

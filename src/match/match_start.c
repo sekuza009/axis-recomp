@@ -29,7 +29,7 @@ static void make_rotation(Scene *s)
 		}
 		s->rotationAt = g_mapIndex;
 		s->nextMap = k + 1;   /* (beyond the 15, as the original has it) */
-		s->nextMode = GAME_VAR(int, 0x9dbfa4);   /* "record 16"'s mode (0x9db9e4 + 16 * 0x5c): past g_skirmishInfo's 15, an unnamed gap */
+		s->nextMode = g_skirmishInfo16Mode;   /* (past the 15 records, as the original reads it) */
 		s->awaitingHostRound = 0;
 		return;
 	}

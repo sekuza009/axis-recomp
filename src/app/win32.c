@@ -734,7 +734,7 @@ long STDCALL (game_wndProc)(void *wnd, u32 msg, u32 w, u32 l)
 			if (g_wide->playEnding)   /* (AxisRC.exe: the patch layer's player, which replaces movie_playEnding) */
 				g_wide->playEnding(NULL, (const char *)STR(0x4b2a24, "initdata/battle.sra"), g_desktopWidth, g_desktopHeight);
 #else
-			GAME_CDECL(0x46c420, void, int, const char *, int, int)(0, (const char *)STR(0x4b2a24, "initdata/battle.sra"), g_desktopWidth, g_desktopHeight);   /* movie_playEnding: initdata\battle.sra */
+			movie_playEnding(0, (const char *)STR(0x4b2a24, "initdata/battle.sra"), g_desktopWidth, g_desktopHeight);
 #endif
 			ExitProcess(0);
 		}

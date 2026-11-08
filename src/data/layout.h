@@ -2147,7 +2147,9 @@ struct __attribute__((packed)) GameData {
 	void * g_glContext_;
 	u8 _gap_9087bc[0xd25e4];
 	u8 g_codeColours_[112];
-	u8 _gap_9dae10[0x2796];
+	u8 _gap_9dae10[0x1194];
+	int g_skirmishInfo16Mode_;
+	u8 _gap_9dbfa8[0x15fe];
 	char g_ladderEmail_[30];
 	u8 _gap_9dd5c4[0x114];
 	char g_accountOldPassword_[12];
@@ -2212,6 +2214,7 @@ _Static_assert(offsetof(struct GameData, g_dikSlash_) == 0x104974, "g_dikSlash")
 _Static_assert(offsetof(struct GameData, g_scene_) == 0x45b7b4, "g_scene");
 _Static_assert(offsetof(struct GameData, g_glContext_) == 0x45b7b8, "g_glContext");
 _Static_assert(offsetof(struct GameData, g_codeColours_) == 0x52dda0, "g_codeColours");
+_Static_assert(offsetof(struct GameData, g_skirmishInfo16Mode_) == 0x52efa4, "g_skirmishInfo16Mode");
 _Static_assert(offsetof(struct GameData, g_ladderEmail_) == 0x5305a6, "g_ladderEmail");
 _Static_assert(offsetof(struct GameData, g_accountOldPassword_) == 0x5306d8, "g_accountOldPassword");
 _Static_assert(offsetof(struct GameData, g_newIdFormRight_) == 0x5306f0, "g_newIdFormRight");

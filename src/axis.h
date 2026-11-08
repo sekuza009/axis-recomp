@@ -56,11 +56,16 @@ static inline u32 img_reloc(u32 a) { return a - IMG_BASE < IMG_SIZE ? IMG(a) : a
 #define RELOC(a) (a)
 #endif
 
+/* the game's C runtime by name (src/crt_addrs.h): CRT(name) its address, CRT_CALL(name, ret, arg types...)(args) a
+   call (in AxisRC.exe standalone/crt.c puts msvcrt's or a rebuilt one there) */
+#include "crt_addrs.h"
+#define CRT(name) CRTADDR_##name
+#define CRT_CALL(name, ret, ...) GAME_CDECL(CRTADDR_##name, ret, __VA_ARGS__)
 /* the game's __ftol: ST0 truncated to 64 bits, EDX:EAX; callers keep the low 32 bits */
 static inline int ftol(long double x)
 {
 	long long r;
-	__asm__ volatile("call *%1" : "=A"(r) : "r"(RELOC(0x49ec14)), "t"(x) : "ecx", "st", "memory");
+	__asm__ volatile("call *%1" : "=A"(r) : "r"(RELOC(CRT(ftol))), "t"(x) : "ecx", "st", "memory");
 	return (int)r;
 }
 

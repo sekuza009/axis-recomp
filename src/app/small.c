@@ -124,7 +124,7 @@ void *THISCALL (Unit_deletingDtor)(u32 *self, int flags)
 /* 0x46ce50: the object's file closed (fclose's result, 0 for none) */
 u32 THISCALL (BMPRGBFile_close)(u32 *self) { return self[1] ? fclose((void *)RELOC(self[1])) : 0; }
 /* 0x467d60: p freed (operator delete's eax; 0 for none) */
-u32 (mem_free)(void *p) { return p ? GAME_CDECL(0x49ef24, u32, void *)(p) : 0; }
+u32 (mem_free)(void *p) { return p ? CRT_CALL(operator_delete, u32, void *)(p) : 0; }
 
 /* ---- network tables cleared ---- */
 void (net_clearServerList)(void) { clear((void *)OBJ(g_serverList), 0x16c0); }

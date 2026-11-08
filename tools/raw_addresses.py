@@ -7,7 +7,7 @@ import collections, glob, os, re, sys
 os.chdir(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..'))
 c = collections.Counter(); ex = collections.defaultdict(list)
 for f in glob.glob('src/**/*.[ch]', recursive=True):
-	if os.path.basename(os.path.dirname(f)) == 'data' or f.endswith(('globals.h', 'scene.h', 'axis.h', 'imports.h', 'fn_addrs.h')):
+	if os.path.basename(os.path.dirname(f)) == 'data' or f.endswith(('globals.h', 'scene.h', 'axis.h', 'imports.h', 'fn_addrs.h', 'crt_addrs.h')):
 		continue
 	t = open(f, encoding='latin-1').read()
 	mask = re.sub(r'/\*.*?\*/|//[^\n]*|"(?:\\.|[^"\\\n])*"', lambda m: ' ' * len(m.group(0)), t, flags=re.S)

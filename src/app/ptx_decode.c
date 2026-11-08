@@ -242,7 +242,7 @@ int (ptx_error)(int code, const char *format, ...)
    fmt 2) or 0x82 = YCbCrA (4 planes, fmt 3), quality), then up to 64 KB of Huffman-coded 8 x 8 DCT blocks, each plane
    byte-aligned (planes 1 and 2 use the second table pair, g_ptxHuffSet); the planes decoded into g_ptxPlanes (64 KB
    each), converted to RGB(A) at g_ptxPixels and laid out as rows in out. A bad header is fatal (ptx_error) ---- */
-#define ptx_fread(p, size, count, f) GAME_CDECL(0x49e836, u32, void *, u32, u32, void *)(p, size, count, f)
+#define ptx_fread(p, size, count, f) CRT_CALL(fread, u32, void *, u32, u32, void *)(p, size, count, f)
 
 static int ptx_read(void *f, u8 *out, int *fmt, int *width, int *height, int close)
 {

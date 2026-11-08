@@ -1,0 +1,41 @@
+/* crt_addrs.h (tools/mkcrt.py, from standalone/crt.c): the game's C runtime entries by name, CRTADDR_<name> -
+   CRT_CALL(name, ret, arg types...)(args) calls one, CRT(name) is its address (src/axis.h) */
+#pragma once
+#define CRTADDR_fclose 0x49e7e0
+#define CRTADDR_fread 0x49e836
+#define CRTADDR_fseek 0x49e91e
+#define CRTADDR_fopen 0x49e9ca
+#define CRTADDR_sprintf 0x49e9dd
+#define CRTADDR_strncpy 0x49ea80
+#define CRTADDR_atoi 0x49ec09
+#define CRTADDR_ftol 0x49ec14
+#define CRTADDR_strtok 0x49ec3b
+#define CRTADDR_fgets 0x49ecd7
+#define CRTADDR_vsprintf 0x49ed2e
+#define CRTADDR_exit 0x49edac
+#define CRTADDR_free 0x49ee81
+#define CRTADDR_malloc 0x49eeb0
+#define CRTADDR_operator_delete 0x49ef24
+#define CRTADDR_atexit 0x49ef9c
+#define CRTADDR_ftell 0x49efdd
+#define CRTADDR_fprintf 0x49f135
+#define CRTADDR_fputs 0x49f167
+#define CRTADDR_operator_new 0x49f1aa
+#define CRTADDR_fwrite 0x49f58a
+#define CRTADDR_findfirst 0x49f694
+#define CRTADDR_findnext 0x49f75e
+#define CRTADDR_findclose 0x49f823
+#define CRTADDR_chdir 0x49f8a6
+#define CRTADDR_rand 0x49f92c
+#define CRTADDR_mkdir 0x49f94a
+#define CRTADDR_strupr 0x49fab5
+#define CRTADDR_itoa 0x49fb53
+#define CRTADDR_strncmp 0x49fbe0
+#define CRTADDR_vectorDestruct 0x49fc4f
+#define CRTADDR_vectorConstruct 0x49fd2d
+#define CRTADDR_tolower 0x49fdaf
+#define CRTADDR_atof 0x49fe7a
+#define CRTADDR_vfprintf 0x49fec7
+#define CRTADDR_CIacos 0x49ffc0
+#define CRTADDR_strstr 0x4a0090
+#define CRTADDR_strnicmp 0x4a8740

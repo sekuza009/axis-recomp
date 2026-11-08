@@ -4,12 +4,12 @@
 #include "../game.h"
 #include <stdarg.h>
 
-#define sprintf_game ((int (CDECL *)(char *, const char *, ...))IMG(0x49e9dd))
-#define vsprintf_game(out, format, args) GAME_CDECL(0x49ed2e, int, char *, const char *, va_list)(out, format, args)
-#define fprintf_game ((int (CDECL *)(void *, const char *, ...))IMG(0x49f135))
+#define sprintf_game ((int (CDECL *)(char *, const char *, ...))IMG(CRT(sprintf)))
+#define vsprintf_game(out, format, args) CRT_CALL(vsprintf, int, char *, const char *, va_list)(out, format, args)
+#define fprintf_game ((int (CDECL *)(void *, const char *, ...))IMG(CRT(fprintf)))
 typedef int (CDECL *ErrorHook)(char *stamp, char *text);
 
-#define fseek(f, offset, whence) GAME_CDECL(0x49e91e, int, void *, int, int)(f, offset, whence)
+#define fseek(f, offset, whence) CRT_CALL(fseek, int, void *, int, int)(f, offset, whence)
 
 /* the message reported: flag (g_errorReported a message, g_fatalReported fatal) set; the time line from timeFormat (with the
    name at object +4 first when there is an object). Returns the error hook's eax */

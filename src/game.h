@@ -14,6 +14,9 @@
 
 /* ---- OpenGL, through the import table ---- */
 #define GL_TEXTURE_2D 0x0de1
+/* the game's ending movie player, which no rebuild replaces (the patch layer and AxisRC.exe use their own): the test
+   build's only call into game code not rebuilt */
+#define movie_playEnding(zero, path, width, height) GAME_CDECL(0x46c420, void, int, const char *, int, int)(zero, path, width, height)
 #define glColor4f(r, g, b, a) IMPORT_FN(glColor4f, void, float, float, float, float)(r, g, b, a)
 /* a colour kept in memory, passed on bit for bit (the original copies the four values without the FPU, which
    would turn a signalling NaN into a quiet one) */
@@ -95,8 +98,8 @@ void fix_hudVertex(int x, int y);
 #define glRotatef(angle, x, y, z) IMPORT_FN(glRotatef, void, float, float, float, float)(angle, x, y, z)
 
 /* ---- C runtime of the game ---- */
-#define sprintf(...) GAME_CDECL(0x49e9dd, int, char *, const char *, ...)(__VA_ARGS__)
-#define vsprintf(out, format, args) GAME_CDECL(0x49ed2e, int, char *, const char *, va_list)(out, format, args)
+#define sprintf(...) CRT_CALL(sprintf, int, char *, const char *, ...)(__VA_ARGS__)
+#define vsprintf(out, format, args) CRT_CALL(vsprintf, int, char *, const char *, va_list)(out, format, args)
 
 /* ---- screen ---- */
 #define gfx_setProjection2D3D(mode) CALL_FN(gfx_setProjection2D3D, void, int)(mode)   /* 1: 3D, 2: the menus' 2D */
@@ -174,7 +177,7 @@ typedef struct { u32 vtable; void *banks[6]; i32 count; } TextureManager;   /* t
 #define net_sendFlagPiece(scene, p) CALL_THISFN(net_sendFlagPiece, void, void *, int)(scene, p)
 #define stage_advanceScenePath(stage, dtBits) CALL_THISFN(stage_advanceScenePath, void, void *, u32)(stage, dtBits)
 #define escMenu_update(scene) CALL_THISFN(escMenu_update, void, void *)(scene)
-#define crt_fprintf(...) GAME_CDECL(0x49f135, int, void *, const char *, ...)(__VA_ARGS__)
+#define crt_fprintf(...) CRT_CALL(fprintf, int, void *, const char *, ...)(__VA_ARGS__)
 #define net_localSlot() CALL_FN(net_localSlot, int, void)()   /* the local player's slot */
 #define netq_clearSkipped() CALL_FN(netq_clearSkipped, void, void)()
 #define actor_setPartColor_bits(stage, p, part, h1, s1, v1, h2, s2, v2) CALL_THISFN(playerRecord_setPartColour, u32, void *, int, int, u32, u32, u32, \
@@ -196,8 +199,8 @@ typedef struct { u32 vtable; void *banks[6]; i32 count; } TextureManager;   /* t
 #define particle_update(scene, slot, dt) CALL_THISFN(particle_update, void, void *, int, int)(scene, slot, dt)   /* one effect updated */
 #define mapObject_frame(scene, i, dt) CALL_THISFN(mapObject_frame, void, void *, int, int)(scene, i, dt)
 #define tex_findByName(manager, name) CALL_THISFN(tex_findByName, int, void *, const char *)(manager, name)   /* the item's index by name, < 0 none */
-#define crt_fseek(f, offset, origin) GAME_CDECL(0x49e91e, int, void *, int, int)(f, offset, origin)
-#define crt_strncpy(to, from, n) GAME_CDECL(0x49ea80, char *, char *, const char *, int)(to, from, n)
+#define crt_fseek(f, offset, origin) CRT_CALL(fseek, int, void *, int, int)(f, offset, origin)
+#define crt_strncpy(to, from, n) CRT_CALL(strncpy, char *, char *, const char *, int)(to, from, n)
 #define Mat4_copy(d, s) CALL_FN(Mat4_copy, void, void *, const void *)(d, s)   /* a 4 x 4 matrix copied */
 #define Mat4_multiply(out, a, b) CALL_FN(Mat4_multiply, void, float *, const float *, const float *)(out, a, b)
 #define space_getNextFreeNodePtr(space) CALL_THISFN(space_getNextFreeNodePtr, void *, void *)(space)
@@ -243,12 +246,12 @@ typedef struct { u32 vtable; void *banks[6]; i32 count; } TextureManager;   /* t
 #define setupSlider_hitTest(x, y) CALL_FN(setupSlider_hitTest, int, int, int)(x, y)   /* the slider's part under the cursor */
 #define actor_loadWeapon(scene, a, slot, variant) CALL_THISFN(actor_loadWeapon, void, void *, int, int, u32)(scene, a, slot, variant)
 #define gluBuild2DMipmaps(target, components, w, h, format, type, data) IMPORT_FN(gluBuild2DMipmaps, int, u32, int, int, int, u32, u32, const void *)(target, components, w, h, format, type, data)
-#define crt_tolower(c) GAME_CDECL(0x49fdaf, int, int)(c)
+#define crt_tolower(c) CRT_CALL(tolower, int, int)(c)
 #define shape_read(shape, f, mem, size) CALL_THISFN(shape_read, void, void *, void *, void *, int)(shape, f, mem, size)
 #define model_loadObjFormatFrom(shape, f, mem, memSize) CALL_THISFN(model_loadObjFormatFrom, void, void *, void *, void *, int)(shape, f, mem, memSize)
 #define skel_loadFromFile(self, f, mem, size) CALL_THISFN(skel_loadFromFile, void, void *, void *, void *, int)(self, f, mem, size)
 #define skel_loadAseFrom(sk, f, mem, memSize) CALL_THISFN(skel_loadAseFrom, void, void *, void *, void *, int)(sk, f, mem, memSize)
-#define crt_strupr(s) GAME_CDECL(0x49fab5, char *, char *)(s)
+#define crt_strupr(s) CRT_CALL(strupr, char *, char *)(s)
 #define text_findSubstring(text, word, exact) CALL_FN(text_findSubstring, const char *, const char *, const char *, int)(text, word, exact)
 #define file_existsf(format) CALL_FN(file_existsf, int, const char *)(format)
 #define space_collideAt(grid, r, pos, vel, k, outPos, outVel, outDist, outPlane, axis, subs, nsubs) \
@@ -312,7 +315,7 @@ typedef struct { u32 vtable; void *banks[6]; i32 count; } TextureManager;   /* t
 #define match_frame(scene) CALL_THISFN(match_frame, void, void *)(scene)
 #define match_drawFrame(scene) CALL_THISFN(match_drawFrame, void, void *)(scene)
 #define collision_rayTrace(scene, from, p1, hit) CALL_THISFN(collision_rayTrace, int, void *, const float *, const float *, void *)(scene, from, p1, hit)   /* 0: nothing in the way */
-#define crt_ftell(f) GAME_CDECL(0x49efdd, long, void *)(f)
+#define crt_ftell(f) CRT_CALL(ftell, long, void *)(f)
 #define shape_computeBounds(shape) CALL_THISFN(shape_computeBounds, void, void *)(shape)
 #define angle_wrap_bits(bits) CALL_FN(angle_wrap, long double, u32)(bits)   /* (the angle passed as its bits) */
 #define space_buildUnit(space, id, shape, matrix) CALL_THISFN(space_buildUnit, u32, void *, int, void *, const float *)(space, id, shape, matrix)
@@ -378,12 +381,12 @@ typedef struct { u32 vtable; void *banks[6]; i32 count; } TextureManager;   /* t
 #define space_traceCells(space, p0, p1, hit, subs, nsubs) CALL_THISFN(space_traceCells, u32, void *, const float *, const float *, void *, void *, int)(space, p0, p1, hit, subs, nsubs)
 #define match_resetInputState(scene) CALL_THISFN(match_resetInputState, void, void *)(scene)
 #define net_hostGone() CALL_FN(net_hostGone, int, void)()   /* the network says the match is over? */
-#define crt_fread(p, size, count, f) GAME_CDECL(0x49e836, u32, void *, u32, u32, void *)(p, size, count, f)
+#define crt_fread(p, size, count, f) CRT_CALL(fread, u32, void *, u32, u32, void *)(p, size, count, f)
 #define LightFactors_read(lights, f) CALL_THISFN(LightFactors_read, void, void *, void *)(lights, f)   /* the lights read */
 #define math_triangleNormal(out, p1, p0, p2) CALL_FN(math_triangleNormal, float *, float *, const float *, const float *, const float *)(out, p1, p0, p2)   /* a triangle's normal */
 #define ground_computeLighting(scene, layer) CALL_THISFN(ground_computeLighting, void, void *, void *)(scene, layer)   /* a layer's light map */
 #define ground_buildLayerModels(stage) CALL_THISFN(ground_buildLayerModels, void, void *)(stage)   /* the layer meshes */
-#define crt_atof(s) GAME_CDECL(0x49fe7a, double, const char *)(s)
+#define crt_atof(s) CRT_CALL(atof, double, const char *)(s)
 #define axisAngle_combine(out, a, b) CALL_FN(axisAngle_combine, float *, float *, const float *, const float *)(out, a, b)   /* two rotations combined */
 #define Mat4_transpose(out, s) CALL_FN(Mat4_transpose, void, float *, const float *)(out, s)   /* copied transposed */
 #define axisAngle_fromMatrix(out, m) CALL_THISFN(axisAngle_fromMatrix, u32, float *, const float *)(out, m)   /* matrix -> (angle, axis) */
@@ -592,7 +595,7 @@ typedef struct { float r, g, b, a; } Colour;   /* an RGBA colour, four floats (C
 #define input_releaseKeyboard() CALL_FN(input_releaseKeyboard, void, void)()
 #define menu_clearInputBuffer(max) CALL_FN(menu_clearInputBuffer, void, int)(max)
 #define editField_createEdit(chars) CALL_FN(editField_createEdit, void, int)(chars)   /* the hidden EDIT control typing goes to */
-#define itoa(value, out, radix) GAME_CDECL(0x49fb53, char *, int, char *, int)(value, out, radix)
+#define itoa(value, out, radix) CRT_CALL(itoa, char *, int, char *, int)(value, out, radix)
 #define g_missionProgress (*(int *)(g_pilotSave + 0x104))   /* the furthest stage reached */
 #define g_trig (g_tanTable)            /* 3600 values by tenths of a degree (the ring's focal length and radius) */
 #define g_showFps (*(int *)&g_cfgSwitches[2])           /* 1: the FPS counter is shown */
@@ -890,8 +893,8 @@ typedef struct { float r, g, b, a; } Colour;   /* an RGBA colour, four floats (C
 #define ViewVolume_dtor(view) CALL_THISFN(ViewVolume_dtor, int, void *)(view)
 #define Console_dtor(console) CALL_THISFN(Console_dtor, void, void *)(console)
 #define Stage_dtor(stage) CALL_THISFN(Stage_dtor, void, Stage *)(stage)
-#define operator_delete(p) GAME_CDECL(0x49ef24, void, void *)(p)
-#define operator_new(size) GAME_CDECL(0x49f1aa, void *, u32)(size)
+#define operator_delete(p) CRT_CALL(operator_delete, void, void *)(p)
+#define operator_new(size) CRT_CALL(operator_new, void *, u32)(size)
 #define GetCurrentDirectoryA(size, out) IMPORT_FN(GetCurrentDirectoryA, u32, u32, char *)(size, out)
 #define GetActiveWindow() IMPORT_FN(GetActiveWindow, void *, void)()
 #define MessageBoxA(hwnd, text, title, type) IMPORT_FN(MessageBoxA, int, void *, const char *, const char *, u32)(hwnd, text, title, type)
@@ -960,10 +963,10 @@ typedef struct { float r, g, b, a; } Colour;   /* an RGBA colour, four floats (C
 
 /* ---- start-up objects (app/statics.c) ---- */
 #define ErrorLog_ctor(self, name, cleanupHook) CALL_THISFN(ErrorLog_ctor, void *, void *, const char *, Cleanup)(self, name, cleanupHook)   /* a named record (vtable 0x4aa2a0) */
-#define atexit(f) GAME_CDECL(0x49ef9c, int, void (*)(void))(f)
+#define atexit(f) CRT_CALL(atexit, int, void (*)(void))(f)
 
 /* ---- small classes (app/classes.c) ---- */
-#define fclose(f) GAME_CDECL(0x49e7e0, u32, void *)(f)
+#define fclose(f) CRT_CALL(fclose, u32, void *)(f)
 #define arena_loadSettings(path) CALL_FN(arena_loadSettings, int, const char *)(path)   /* an arena settings file; 0 if missing */
 #define str_dropLast(s) CALL_FN(str_dropLast, int, char *)(s)   /* s without its last character; its old length (app/small.c) */
 #define TextureManager_clear(self) CALL_THISFN(TextureManager_clear, int, void *)(self)
@@ -1088,10 +1091,10 @@ typedef struct { float r, g, b, a; } Colour;   /* an RGBA colour, four floats (C
 #define shape_markMaterialsChanged(shape) CALL_THISFN(shape_markMaterialsChanged, void, void *)(shape)
 #define shape_setMaterialTints(shape, h1, s1, v1, h2, s2, v2) CALL_THISFN(shape_setMaterialTints, void, void *, u32, u32, u32, u32, u32, u32)(shape, h1, s1, v1, h2, s2, v2)
 
-#define crt_free(p) GAME_CDECL(0x49ee81, u32, void *)(p)
-#define crt_fopen(name, mode) GAME_CDECL(0x49e9ca, void *, const char *, const char *)(name, mode)
-#define crt_fwrite(p, size, count, f) GAME_CDECL(0x49f58a, u32, const void *, u32, u32, void *)(p, size, count, f)
-#define crt_rand() GAME_CDECL(0x49f92c, int, void)()
+#define crt_free(p) CRT_CALL(free, u32, void *)(p)
+#define crt_fopen(name, mode) CRT_CALL(fopen, void *, const char *, const char *)(name, mode)
+#define crt_fwrite(p, size, count, f) CRT_CALL(fwrite, u32, const void *, u32, u32, void *)(p, size, count, f)
+#define crt_rand() CRT_CALL(rand, int, void)()
 #define save_cryptRecord(rec, key) CALL_FN(save_cryptRecord, void, u8 *, u8)(rec, key)
 #define crypt_record104(rec, key) CALL_FN(crypt_record104, void, u8 *, u8)(rec, key)   /* a 0x104-byte record (un)scrambled */
 #define profile_writeCleared(count) CALL_FN(profile_writeCleared, u32, int)(count)
@@ -1161,7 +1164,7 @@ void fix_glViewport(int x, int y, int w, int h);
 #define Vec3_normalize(v) CALL_THISFN(Vec3_normalize, long double, float *)(v)   /* returns the length, unrounded */
 
 /* ---- (load/lists.c, render/shape_colours.c, net/network.c, match/map_objects.c, menu/lobby_states.c) ---- */
-#define crt_malloc(size) GAME_CDECL(0x49eeb0, void *, u32)(size)
+#define crt_malloc(size) CRT_CALL(malloc, void *, u32)(size)
 #define net_clearServers() CALL_FN(net_clearServers, void, void)()                  /* the server table cleared */
 #define net_resolveHost(host) CALL_FN(net_resolveHost, int, const char *)(host)   /* 1: resolved (into 0xa0d320) */
 #define net_freeBuffers() CALL_FN(net_freeBuffers, u32, void)()
@@ -1172,8 +1175,8 @@ void fix_glViewport(int x, int y, int w, int h);
 #define net_clearRoomList() CALL_FN(net_clearRoomList, void, void)()   /* the game server's room list cleared (g_roomList: RoomRecord, request 19) */
 #define net_clearPlayerList() CALL_FN(net_clearPlayerList, void, void)()   /* the player list cleared */
 #define jmp_net_getLocalAddress() CALL_FN(jmp_net_getLocalAddress, int, void)()   /* this machine's address (0xa0b43c) */
-#define crt_strtok(s, delimiters) GAME_CDECL(0x49ec3b, char *, char *, const char *)(s, delimiters)   /* the game's CRT strtok */
-#define crt_atoi(s) GAME_CDECL(0x49ec09, int, const char *)(s)
+#define crt_strtok(s, delimiters) CRT_CALL(strtok, char *, char *, const char *)(s, delimiters)   /* the game's CRT strtok */
+#define crt_atoi(s) CRT_CALL(atoi, int, const char *)(s)
 #define tunnelRing_build(node, index) CALL_FN(tunnelRing_build, u32, void *, int)(node, index)
 #define tex_tintHsv(rgb, dh, ds, dv) CALL_THISFN(tex_tintHsv, void, float *, u32, u32, u32)(rgb, dh, ds, dv)
 #define skel_getSkeletonPtrBy(cache, name) CALL_THISFN(skel_getSkeletonPtrBy, void *, void *, u32)(cache, name)

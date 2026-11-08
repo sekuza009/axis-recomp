@@ -158,7 +158,7 @@ u32 (file_writeScrambled)(u8 *p, u32 size, u32 count, void *f)
    (g_playerCustomize: ON / OFF), then an empty line. Returns the last fputs */
 u32 (cfg_writePlayer)(void *f)
 {
-#define FPUTS(s) GAME_CDECL(0x49f167, u32, const char *, void *)((const char *)RELOC(s), f)
+#define FPUTS(s) CRT_CALL(fputs, u32, const char *, void *)((const char *)RELOC(s), f)
 	FPUTS(STR(0x4b1830, "set_player name "));
 	FPUTS(OBJ(g_cfgPlayerName));
 	crt_fprintf(f, (const char *)STR(0x4b182c, "\n"));   /* fprintf */
@@ -176,7 +176,7 @@ u32 (cfg_writePlayer)(void *f)
    g_mouseInvert, g_mouseSmooth), the sensitivity (g_mouseSensitivity) and the crosshairs (g_crosshairSetting). Returns the last fputs */
 u32 (cfg_writeKeyBindings)(void *f)
 {
-#define FPUTS(s) GAME_CDECL(0x49f167, u32, const char *, void *)((const char *)RELOC(s), f)
+#define FPUTS(s) CRT_CALL(fputs, u32, const char *, void *)((const char *)RELOC(s), f)
 	static const struct { u32 line; u8 binding; } keys[64] = {
 		{ STR(0x4b2184, "set_key forward1 "), 0 }, { STR(0x4b2170, "set_key forward2 "), 1 },   /* forward */
 		{ STR(0x4b215c, "set_key backward1 "), 2 }, { STR(0x4b2148, "set_key backward2 "), 3 },   /* backward */
@@ -298,7 +298,7 @@ u32 (skelDat_initBy)(void) { return dat_open(OBJ(g_skelDat), (const char *)STR(0
    switches (g_sound3D, g_stereoReverse; 1 is on), each after its keyword. Returns the last fputs */
 u32 (cfg_writeSound)(void *f)
 {
-#define FPUTS(s) GAME_CDECL(0x49f167, u32, const char *, void *)((const char *)RELOC(s), f)
+#define FPUTS(s) CRT_CALL(fputs, u32, const char *, void *)((const char *)RELOC(s), f)
 	char number[12];
 	itoa(g_soundVolume, number, 10);
 	FPUTS(STR(0x4b1a4c, "set_sound effectvolume "));
@@ -335,9 +335,9 @@ int (map_fileExists)(int k)
 	return 1;
 }
 
-#define crt_findfirst(pattern, data) GAME_CDECL(0x49f694, int, const char *, void *)(pattern, data)
-#define crt_findnext(handle, data) GAME_CDECL(0x49f75e, int, int, void *)(handle, data)
-#define crt_findclose(handle) GAME_CDECL(0x49f823, int, int)(handle)
+#define crt_findfirst(pattern, data) CRT_CALL(findfirst, int, const char *, void *)(pattern, data)
+#define crt_findnext(handle, data) CRT_CALL(findnext, int, int, void *)(handle, data)
+#define crt_findclose(handle) CRT_CALL(findclose, int, int)(handle)
 
 /* 0x440c60: the autoplay folder's files (0x4b2a8c, pattern 0x4b2a84) appended to the replay list (0x44-byte records
    from g_replayList, count g_replayFileCount, at most 1023), then back to the parent folder (0x4b2a80). Returns the last chdir's
@@ -518,7 +518,7 @@ u32 (mission_loadBriefing)(int k)
    mipmapping, the frame counter and the simple menu, each line after its keyword. Returns the last fputs */
 u32 (cfg_writeGraphic)(void *f)
 {
-#define FPUTS(s) GAME_CDECL(0x49f167, u32, const char *, void *)((const char *)RELOC(s), f)
+#define FPUTS(s) CRT_CALL(fputs, u32, const char *, void *)((const char *)RELOC(s), f)
 	static const u32 mode[8] = { STR(0x4b1b6c, "640x480\n"), STR(0x4ac84c, "1280x720\n"), STR(0x4ac870, "1600x900\n"), STR(0x4ac894, "1920x1080\n"), STR(0x4ac8b8, "2560x1440\n"), STR(0x4ac8dc, "3840x2160\n"), STR(0x4ac900, "1024x768\n"), STR(0x4ac920, "DESKTOP\n") };
 	static const u32 switches[4] = { STR(0x4b1aac, "set_graphic linearfiltering "), STR(0x4b1a94, "set_graphic mipmapping "), STR(0x4b1a7c, "set_graphic viewfps "), STR(0x4b1a64, "set_graphic simplemenu ") };
 	FPUTS(STR(0x4b1b78, "set_graphic videomode "));
@@ -542,7 +542,7 @@ u32 (cfg_writeGraphic)(void *f)
    limits (bytes g_arenaFragLimit / g_arenaTimeLimit, keywords gameflag / timeflag). Returns the last fputs */
 u32 (cfg_writeServer)(void *f)
 {
-#define FPUTS(s) GAME_CDECL(0x49f167, u32, const char *, void *)((const char *)RELOC(s), f)
+#define FPUTS(s) CRT_CALL(fputs, u32, const char *, void *)((const char *)RELOC(s), f)
 	static const u32 type[15] = { STR(0x4b1878, "DEATH MATCH\n"), STR(0x4b1988, "TEAM DEATH MATCH\n"), STR(0x4b1978, "SUDDEN DEATH\n"), STR(0x4b1964, "TEAM SUDDEN DEATH\n"), STR(0x4b1954, "SHOTGUN ARENA\n"), STR(0x4b1940, "TEAM SHOTGUN ARENA\n"), STR(0x4b192c, "IONCANNON ARENA\n"), STR(0x4b1914, "TEAM IONCANNON ARENA\n"),
 	                              STR(0x4b1904, "ROCKET ARENA\n"), STR(0x4b18f0, "TEAM ROCKET ARENA\n"), STR(0x4b18dc, "GLADIATOR ARENA\n"), STR(0x4b18c4, "TEAM GLADIATOR ARENA\n"), STR(0x4b18b0, "KING ON THE HILL\n"), STR(0x4b18a0, "PLATOON MODE\n"), STR(0x4b1888, "ACCEPT ADVANCED MODE\n") };
 	const u8 *arena = (const u8 *)OBJ(g_arenaName);
@@ -627,7 +627,7 @@ static void data_missing(u32 message)
 	crt_exit(-1);   /* exit */
 }
 
-#define crt_fgets(line, size, f) GAME_CDECL(0x49ecd7, char *, char *, int, void *)(line, size, f)
+#define crt_fgets(line, size, f) CRT_CALL(fgets, char *, char *, int, void *)(line, size, f)
 
 /* a data file (in folder, the data folder g_dataDir or the maps' g_mapInfoDir) opened with mode; without it the game
    ends with a message box */

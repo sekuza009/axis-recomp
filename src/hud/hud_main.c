@@ -34,8 +34,8 @@ static float tex255(int n) { return f32((long double)n * (1.0f / 255)); }
    reads them, all to the same new address); read through the first of those operands */
 #ifdef AXIS_DIRECT
 /* (AxisRC.exe: where the installed exe's patch put them, its section .axnet: no patch DLL moves them now) */
-#define ENERGY_HEIGHT GAME_VAR(float, 0xb68ce4)   /* 160 on disk */
-#define ENERGY_WIDTH  GAME_VAR(float, 0xb68ce0)   /* 8 on disk */
+#define ENERGY_HEIGHT g_energyBarHeight
+#define ENERGY_WIDTH  g_energyBarWidth
 #else
 #define ENERGY_HEIGHT (*(const float *)RELOC(*(const u32 *)IMG(0x493db8)))   /* 160 on disk */
 #define ENERGY_WIDTH  (*(const float *)RELOC(*(const u32 *)IMG(0x493f29)))   /* 8 on disk */

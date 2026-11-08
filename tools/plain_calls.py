@@ -68,7 +68,9 @@ for n, a, dll in re.findall(r'#define IMP_(\w+) (0x[0-9a-f]+) +/\* (\S+)', open(
 	imports[int(a, 16)] = ('ws_' + n) if dll == 'WS2_32.dll' and n[0].islower() else n
 	imp_slot[int(a, 16)] = n
 
-HEAD = re.compile(r'\b(CALL_FN|CALL_THISFN|GAME_FN|GAME_THISFN|IMPORT_FN|IMPORT)\(|\bGAME_CDECL\((?=0x)')
+HEAD = re.compile(r'\b(CALL_FN|CALL_THISFN|GAME_FN|GAME_THISFN|IMPORT_FN|IMPORT|CRT_CALL)\(|\bGAME_CDECL\((?=0x)')
+crt_addr = {n: int(a, 16) for n, a in re.findall(r'#define CRTADDR_(\w+) (0x[0-9a-f]+)', open('src/crt_addrs.h').read())}
+crt_entry = {a: n for n, a in crt_addr.items()}
 
 
 def parse_call(t, m):
@@ -83,6 +85,8 @@ def parse_call(t, m):
 		inner.insert(1, hex(fn_addr.get(inner[0], 0)))
 	if kind == 'IMPORT_FN':
 		kind, inner[0] = 'IMPORT', hex({v: k for k, v in imp_slot.items()}.get(inner[0], 0))
+	if kind == 'CRT_CALL':   # (by name: the address from src/crt_addrs.h)
+		kind, inner[0] = 'GAME_CDECL', hex(crt_addr.get(inner[0], 0))
 	if kind in ('GAME_CDECL', 'IMPORT'):
 		addr, types, name = inner[0], inner[1:], None
 	else:
@@ -104,7 +108,7 @@ def is_ptr(s):
 
 headers = sorted(h for h in glob.glob('src/**/*.h', recursive=True) if os.sep + 'data' + os.sep not in h and not h.endswith('calls.h'))
 files = sorted(f for f in glob.glob('src/**/*.c', recursive=True) if os.sep + 'data' + os.sep not in f)
-DEF = re.compile(r'^#define (\w+)\(([^)]*)\) +(?=CALL_FN\(|CALL_THISFN\(|GAME_FN\(|GAME_THISFN\(|GAME_CDECL\(0x|IMPORT_FN\(|IMPORT\()', re.M)
+DEF = re.compile(r'^#define (\w+)\(([^)]*)\) +(?=CRT_CALL\(|CALL_FN\(|CALL_THISFN\(|GAME_FN\(|GAME_THISFN\(|GAME_CDECL\(0x|IMPORT_FN\(|IMPORT\()', re.M)
 
 
 def header_macros(t):
@@ -183,7 +187,7 @@ def fits(sig, c):
 def head_text(kind, name, addr, types):
 	if kind == 'IMPORT':
 		return 'IMPORT_FN(%s, %s)' % (imp_slot[addr], ', '.join(types))
-	return ('GAME_CDECL(0x%x, %s)' % (addr, ', '.join(types))) if kind == 'GAME_CDECL' else \
+	return ('CRT_CALL(%s, %s)' % (crt_entry[addr], ', '.join(types)) if addr in crt_entry else 'GAME_CDECL(0x%x, %s)' % (addr, ', '.join(types))) if kind == 'GAME_CDECL' else \
 	       '%s(%s, %s)' % (kind.replace('GAME_', 'CALL_'), name, ', '.join(types))
 
 

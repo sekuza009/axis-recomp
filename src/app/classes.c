@@ -133,7 +133,7 @@ u32 THISCALL (Texture_dtor)(u32 *self)
 	u32 r = self[0x42];
 	self[0] = VT(Texture, 0x4a956c);
 	if ((int)r >= 0) {
-		r = GAME_CDECL(0x49ef24, u32, void *)((void *)RELOC(self[0x43]));   /* operator delete, its eax kept */
+		r = CRT_CALL(operator_delete, u32, void *)((void *)RELOC(self[0x43]));   /* operator delete, its eax kept */
 		self[0x42] = 0;
 	}
 	if (self[0x44] != 0)
@@ -271,7 +271,7 @@ u32 THISCALL (ResourceSet_dtor)(u8 *self)
 }
 
 #define eh_vector_destructor(array, size, count, dtor) \
-	((void (STDCALL *)(void *, u32, int, u32))IMG(0x49fc4f))(array, size, count, dtor)   /* `eh vector destructor iterator' (stdcall) */
+	((void (STDCALL *)(void *, u32, int, u32))IMG(CRT(vectorDestruct)))(array, size, count, dtor)   /* `eh vector destructor iterator' (stdcall) */
 
 /* 0x46ff70: the stage destroyed, its members last first: Scene_dtor (scenePath), the 100 actors (actors,
    0x8888 bytes each, actor_destroyPartLists), the item skeleton and shape managers, the 16 resource sets
@@ -521,13 +521,13 @@ u8 *THISCALL (Console_ctor)(u8 *g)
 	SkeletonManager_clear((u8 *)&st->objectSkeletons);
 	VECTOR((u8 *)st->objects, 0x2cc, 0x3e8);
 	VECTOR((u8 *)st->actorItems, 0x2e18, 0x32);
-	((void (STDCALL *)(void *, int, int, u32, u32))IMG(0x49fd2d))((u8 *)st->playerRecords, 0x47fd2, 0x10, FN(ResourceSet_ctor), FN(ResourceSet_dtor));
+	((void (STDCALL *)(void *, int, int, u32, u32))IMG(CRT(vectorConstruct)))((u8 *)st->playerRecords, 0x47fd2, 0x10, FN(ResourceSet_ctor), FN(ResourceSet_dtor));
 	VTABLE((u8 *)&st->itemShapes, VT(ShapeManager, 0x4aa244));
 	ShapeManager_clear((u8 *)&st->itemShapes);
 	VTABLE((u8 *)&st->itemSkeletons, VT(SkeletonManager, 0x4aa240));
 	SkeletonManager_clear((u8 *)&st->itemSkeletons);
 	VECTOR((u8 *)st->mapActors, 0x5c, 0x64);
-	((void (STDCALL *)(void *, int, int, u32, u32))IMG(0x49fd2d))((u8 *)st->actors, 0x8888, 0x64, FN(actor_initPartLists), FN(actor_destroyPartLists));
+	((void (STDCALL *)(void *, int, int, u32, u32))IMG(CRT(vectorConstruct)))((u8 *)st->actors, 0x8888, 0x64, FN(actor_initPartLists), FN(actor_destroyPartLists));
 	VECTOR((u8 *)st->bullets, 0x4e8, 0x190);
 	VECTOR((u8 *)st->particles, 0x12c, 0x3e8);
 	VECTOR((u8 *)st->points, 0xc, 0xc8);
@@ -570,7 +570,7 @@ u8 *THISCALL (Console_ctor)(u8 *g)
 		GS->helpLines[k][0] = 0;
 	void *f = crt_fopen((const char *)STR(0x4c457c, "Help.txt"), (const char *)STR(0x4ad5e0, "rt"));
 	if (f) {
-#define crt_fgets(line, n, f) GAME_CDECL(0x49ecd7, char *, char *, int, void *)(line, n, f)
+#define crt_fgets(line, n, f) CRT_CALL(fgets, char *, char *, int, void *)(line, n, f)
 		if (crt_fgets(GS->helpLines[0], 0x3f, f))
 			for (int k = 1; k < 30 && crt_fgets(GS->helpLines[k], 0x3f, f); k++)
 				;

@@ -579,7 +579,7 @@ void THISCALL (ObjectList_poseBones)(u8 *list, const float *base)
 	glLoadMatrixf(saved);
 }
 
-#define crt_fgets(line, n, f) GAME_CDECL(0x49ecd7, char *, char *, int, void *)(line, n, f)
+#define crt_fgets(line, n, f) CRT_CALL(fgets, char *, char *, int, void *)(line, n, f)
 #define TOKEN(delims) crt_strtok(NULL, (const char *)RELOC(delims))
 #define SPACE STR(0x4ad5dc, " \t")
 #define LINE_END STR(0x4b4310, " \t\n")
@@ -786,7 +786,7 @@ void THISCALL (skel_loadAseFrom)(u8 *sk, void *f, u8 *mem, int memSize)
 #undef SPACE
 #undef LINE_END
 
-#define crt_fgets(line, n, f) GAME_CDECL(0x49ecd7, char *, char *, int, void *)(line, n, f)
+#define crt_fgets(line, n, f) CRT_CALL(fgets, char *, char *, int, void *)(line, n, f)
 #define TOK(s, delims) crt_strtok(s, (const char *)RELOC(delims))
 #define SPACE STR(0x4ad5dc, " \t")
 #define LINE_END STR(0x4b4310, " \t\n")

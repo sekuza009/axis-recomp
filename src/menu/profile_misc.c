@@ -305,8 +305,8 @@ int (pilotSelect_clicks)(void)
 	return g_rightClick;
 }
 
-#define chdir_(path) GAME_CDECL(0x49f8a6, int, const char *)(path)
-#define mkdir_(path) GAME_CDECL(0x49f94a, int, const char *)(path)
+#define chdir_(path) CRT_CALL(chdir, int, const char *)(path)
+#define mkdir_(path) CRT_CALL(mkdir, int, const char *)(path)
 
 /* 0x44b990: a new profile made from the typed name: it goes into the next slot (with the pilot chosen in the grid), the
    save folder is made if missing, the list scrolls to show it (13 rows), it is saved (profile_newCampaign) and the screen

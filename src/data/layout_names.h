@@ -2518,6 +2518,8 @@ extern struct GameData g_data;
 #define g_skirmishColourLit ((float *)g_skirmishColourLit_v)
 #undef g_skirmishInfo
 #define g_skirmishInfo ((u8 *)g_skirmishInfo_v)
+#undef g_skirmishInfo16Mode
+#define g_skirmishInfo16Mode (g_data.g_skirmishInfo16Mode_)
 #undef g_skirmishInfoCount
 #define g_skirmishInfoCount (*(int *)g_skirmishInfoCount_v)
 #undef g_skirmishLeft
@@ -3077,6 +3079,10 @@ extern struct GameData g_data;
 #define k_15f (*(float *)IMG(0x4aa498))
 #undef k_oneOver180
 #define k_oneOver180 (*(double *)IMG(0x4a9540))
+#undef g_energyBarWidth
+#define g_energyBarWidth (*(float *)IMG(0xb68ce0))
+#undef g_energyBarHeight
+#define g_energyBarHeight (*(float *)IMG(0xb68ce4))
 #undef k_3600f
 #define k_3600f (*(float *)IMG(0x4a94c8))
 #undef k_0f
