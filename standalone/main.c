@@ -39,8 +39,14 @@ int wide_carries(unsigned addr);   /* the rebuild carries the patch layer's chan
    original's range: that range stays reserved (kept inaccessible, see 1. above) and the game's image, g_image,
    lies in it right after (at the fixed address 0xb6b000 = GAME_BASE + GAME_SIZE: a link-time symbol, as src/data's
    IMG() words need; the exe has no ASLR anyway) */
+#ifdef AXIS_RELOCATABLE
+/* (PORTABLE=2: the game's image is an ordinary array and the exe is linked with ASLR - nothing reserves or guards
+   the original's range; see PORTING.md) */
+BYTE g_image[GAME_SIZE] __attribute__((aligned(4096)));
+#else
 static BYTE g_space[GAME_BASE + 2 * GAME_SIZE - 0x10000] __attribute__((aligned(4096)));
 __asm__(".globl _g_image\n\t.set _g_image, 0xb6b000");
+#endif
 static FILE *g_log;
 static char g_logPath[MAX_PATH];
 extern const BYTE g_gamedata[];   /* the header and code bytes (build/gamedata.bin, tools/mkgamedata.py), linked in by build.sh */
@@ -304,8 +310,10 @@ static void data_check(const char *path)
 /* the game's image in g_image: the header and code bytes built into AxisRC.exe, then src/data's pieces */
 static void map_game(void)
 {
+#ifndef AXIS_RELOCATABLE
 	if ((BYTE *)g_space > (BYTE *)GAME_BASE || (BYTE *)g_space + sizeof g_space < g_image + GAME_SIZE || g_image != (BYTE *)(GAME_BASE + GAME_SIZE))
 		fail("AxisRC.exe was linked so that g_space does not hold the original's range and g_image (%s)", "see build.sh");
+#endif
 	IMAGE_NT_HEADERS32 *nt = nt_of(g_gamedata + 8);   /* (the first piece: the header) */
 	if (nt->Signature != IMAGE_NT_SIGNATURE || nt->OptionalHeader.ImageBase != GAME_BASE || nt->OptionalHeader.SizeOfImage != GAME_SIZE)
 		fail("the built-in data is not the expected AxisGL.exe's (%s)", "an image of 0x76b000 bytes at 0x400000");
@@ -572,8 +580,13 @@ int WINAPI WinMain(HINSTANCE inst, HINSTANCE prev, LPSTR cmd, int show)
 		data_check(path);
 	/* the original's range, kept free by g_space, made inaccessible: nothing of the game may use it now */
 	DWORD old;
+#ifdef AXIS_RELOCATABLE
+	fprintf(g_log, "relocatable build: AxisRC.exe at %p, the game's image at %p; the original's range not reserved\n",
+	        (void *)GetModuleHandleA(NULL), (void *)g_image);
+#else
 	if (!VirtualProtect((void *)GAME_BASE, GAME_SIZE, PAGE_NOACCESS, &old))
 		fail("cannot protect the original's range (%s)", "VirtualProtect");
+#endif
 	AddVectoredExceptionHandler(1, guard_hit);
 	SetUnhandledExceptionFilter(crash_hit);
 	/* and g_image's own .rdata / .data part: those are g_rdata / g_data now, so nothing may use the copy's place */

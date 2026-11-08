@@ -14,7 +14,7 @@ own `godot` branch) drives frame by frame. Decided 2026-11-08:
 
 ## Stages
 
-1. **No fixed addresses.** AxisRC.exe is linked at 0x10000 with ASLR off and the original's range reserved as a guard;
+1. **No fixed addresses.** *(done 2026-11-08: PORTABLE=1 / PORTABLE=2 builds, below)* AxisRC.exe is linked at 0x10000 with ASLR off and the original's range reserved as a guard;
    the data lives in one block at the original's offsets (g_data / g_rdata, IMG()). A DLL is loaded anywhere: the
    image-range guard and the fixed link become optional (a debug build keeps them), and the data block is reached only
    through its symbols.
@@ -34,3 +34,11 @@ own `godot` branch) drives frame by frame. Decided 2026-11-08:
 
 The `godot` branch starts from stage 5: a GDExtension calling the same API, the drawing first recorded and replayed
 in Godot, then replaced piece by piece.
+
+## Progress
+
+- 2026-11-08, stage 1: `RELOC()` maps only compile-time constants in the portable build (src/data already writes
+  every pointer through `IMG()`). `PORTABLE=1 bash standalone/build.sh` (build/AxisRC_portable.exe) keeps the
+  original's range guarded: the skirmish, setup, profile, hosted-arena, two-copy, menu-tour and quit sessions ran
+  with no original address used. `PORTABLE=2` (build/AxisRC_reloc.exe) makes the image an ordinary array and links
+  with ASLR and relocations: loaded at 0x90000 (image at 0x19b000) it played the skirmish session. Next: stage 2.

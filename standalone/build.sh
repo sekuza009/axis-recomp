@@ -10,11 +10,14 @@ cd "$(dirname "$0")/.."
 # patch layer is only its network layer.
 # PORTABLE=1: build/AxisRC_portable.exe - the portable branch's build (src/ with AXIS_PORTABLE: RELOC maps nothing; see
 # PORTING.md). Still linked as AxisRC.exe is, so the original's range stays guarded and any original address left is caught.
+# PORTABLE=2: build/AxisRC_reloc.exe - the same with the image an ordinary array and the exe linked with ASLR (no
+# reserved or guarded range): the game loaded wherever Windows puts it.
 # PATCHLAYER=1: build/AxisRC_patchlayer.exe - the earlier AxisRC.exe, where the patch layer (axisnet_recomp.c)
 # applies the fixes from outside as the patch DLL does to AxisGL.exe (its objects in build/obj_patchlayer), for
 # comparison. recomp.dll (build.sh) is unaffected either way: it is checked against AxisGL.exe and its patch DLL.
 if [ -n "$NATIVE" ]; then echo "(NATIVE=1 is the default now: building AxisRC.exe)"; fi
 if [ -n "$PATCHLAYER" ]; then OBJD=build/obj_patchlayer; NDEF=; OUT=AxisRC_patchlayer.exe; NSUF=_patchlayer;
+elif [ "$PORTABLE" = 2 ]; then OBJD=build/obj_portable; NDEF="-DAXIS_NATIVE -DAXIS_PORTABLE -DAXIS_RELOCATABLE"; OUT=AxisRC_reloc.exe; NSUF=_reloc;
 elif [ -n "$PORTABLE" ]; then OBJD=build/obj_portable; NDEF="-DAXIS_NATIVE -DAXIS_PORTABLE"; OUT=AxisRC_portable.exe; NSUF=;
 else OBJD=build/obj_direct; NDEF=-DAXIS_NATIVE; OUT=AxisRC.exe; NSUF=; fi
 export OBJD NDEF
@@ -46,16 +49,24 @@ $CC -c -O2 -Istandalone -o build/standalone_hooks.o build/standalone_hooks.c
 $CC -c -O2 -DAXIS_STANDALONE $NDEF -fno-omit-frame-pointer -I../axisnet -Ibuild -w -o build/standalone_axisnet$NSUF.o axisnet_recomp.c
 IV=../axisnet/iv32
 # (-Wl,--subsystem,windows, not -mwindows: zig ignores -mwindows, and a console exe opens a console window)
-$CC -O2 -Wl,--subsystem,windows -Wl,--image-base=0x10000 -Wl,--stack=0x100000 -o build/$OUT \
+LINKBASE="-Wl,--image-base=0x10000"; test "$PORTABLE" = 2 && LINKBASE="-Wl,--dynamicbase"   # (PORTABLE=2: loaded anywhere)
+$CC -O2 -Wl,--subsystem,windows $LINKBASE -Wl,--stack=0x100000 -o build/$OUT \
 	build/standalone_main$NSUF.o build/standalone_crt.o build/gamedata.o build/standalone_hooks.o build/standalone_axisnet$NSUF.o $OBJD/*.o $PLAT $NEXTRA \
 	$IV/iv32.o $IV/indeo3.o $IV/hpeldsp.o -lws2_32 -lole32 -loleaut32 -luser32 -lwinmm -lgdi32
-python - build/$OUT <<'EOF'
+python - build/$OUT "$PORTABLE" <<'EOF'
 import sys, struct, pefile
+reloc = sys.argv[2:] == ['2']   # (PORTABLE=2: loaded anywhere)
 b = bytearray(open(sys.argv[1], 'rb').read()); pe = struct.unpack_from('<I', b, 0x3c)[0]
-o = pe + 0x18 + 0x46; struct.pack_into('<H', b, o, struct.unpack_from('<H', b, o)[0] & ~0x40)   # ASLR off
+o = pe + 0x18 + 0x46; flags = struct.unpack_from('<H', b, o)[0]
+struct.pack_into('<H', b, o, flags | 0x40 if reloc else flags & ~0x40)   # ASLR on for PORTABLE=2, else off
 open(sys.argv[1], 'wb').write(b)
 pe = pefile.PE(sys.argv[1])
 o = pe.OPTIONAL_HEADER
+if reloc:
+    assert o.DllCharacteristics & 0x40 and o.DATA_DIRECTORY[5].Size, 'not relocatable (no ASLR flag or no relocations)'
+    assert o.Subsystem == 2, 'not a GUI exe'
+    print('built %s: relocatable, %d bytes of relocations, ASLR on' % (sys.argv[1], o.DATA_DIRECTORY[5].Size))
+    sys.exit(0)
 assert o.ImageBase == 0x10000 and not o.DllCharacteristics & 0x40, 'not at a fixed 0x10000'
 assert o.Subsystem == 2, 'not a GUI exe (subsystem %d): it would open a console window' % o.Subsystem
 sym = None
