@@ -106,12 +106,12 @@ int THISCALL (tex_tintRgba)(u8 *rgba, u32 dh, u32 ds, u32 dv)
 
 /* 0x466910: every part's shading colours (shape_getShadingColorBufferBy) into out at the part's index (colourBase),
    with the factors and the matrix. Returns the part count */
-int (shape_shadingColours)(float *out, int first, u8 *shape, void *factors, int matrix)
+int (shape_shadingColours)(u32 *out, int first, u8 *shape, void *factors, const float *matrix)
 {
 	Shape *md = (Shape *)shape;
 	for (int i = 0; i < md->partCount; i++) {
 		ShapePart *part = (ShapePart *)(md->parts + i * 0x80);
-		GAME_FN(shape_getShadingColorBufferBy, 0x463b80, void, float *, int, void *, void *, int)(out + part->colourBase, first, (u8 *)part, factors,
+		GAME_FN(shape_getShadingColorBufferBy, 0x463b80, void, u32 *, int, void *, void *, const float *)(out + part->colourBase, first, (u8 *)part, factors,
 		                                                                matrix);   /* shape_getShadingColorBufferBy */
 	}
 	return md->partCount;

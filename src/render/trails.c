@@ -64,8 +64,9 @@ void THISCALL (shape_computeBounds)(u8 *shape)
 
 /* 0x47ca70: bullet b's trail: a ring of 20 slots (four points each, 0x30 bytes from the bullet's trail) with each
    slot's time at trailAge. Newest first, each live slot adds four quads joining it to the slot before; the first
-   expired one (or one 18 behind) adds an end cap fanning to the previous slot's centre, and the trail ends. Only for
-   bullets of weapon type 3 whose box (+0x78) is within the view's distance (cullMargin) of the camera (cameraPos) */
+   expired one (or one 18 behind) adds an end cap fanning to the midpoint of the previous slot's first two corners,
+   and the trail ends. Only for bullets of weapon type 3 whose box (+0x78) is within the view's distance (cullMargin)
+   of the camera (cameraPos) */
 void THISCALL (bullet_drawTrail)(Stage *stage, int b, void *view)
 {
 	u8 *bullet = (u8 *)(u8 *)&stage->bullets[b];
@@ -94,10 +95,10 @@ void THISCALL (bullet_drawTrail)(Stage *stage, int b, void *view)
 			const float *p = ring + prev * 12;
 			X sx = (X)p[3] + p[0];
 			float sy = f32((X)p[4] + p[1]), sz = f32((X)p[5] + p[2]);
-			float centre[3] = { (float)(sx * HALF), (float)((X)sy * HALF), (float)((X)sz * HALF) };
+			float capTip[3] = { (float)(sx * HALF), (float)((X)sy * HALF), (float)((X)sz * HALF) };
 			for (int k = 1; k <= 4; k++) {
-				memcpy(pts, centre, 12);
-				memcpy(pts + 9, centre, 12);
+				memcpy(pts, capTip, 12);
+				memcpy(pts + 9, capTip, 12);
 				memcpy(pts + 3, ring + (cur * 4 + k - 1) * 3, 12);
 				memcpy(pts + 6, ring + (cur * 4 + k % 4) * 3, 12);
 				ViewVolume_addQuad(view, texture, uv0, uv1, &colour, pts, 2, 1);

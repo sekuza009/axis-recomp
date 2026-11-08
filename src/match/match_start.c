@@ -146,8 +146,8 @@ static int random_below(u32 n)
 /* a round started on the loaded map (the first one too): a random position in each of the six type tables (the five part types', actorItems) (their counts at headCount .., rows of
    0x2aa .. 0xb86 dwords), the restart point, the round's tables copied (cameraMode counting through them, as in the
    original), the camera back to mode 1, nobody watched, the pointer centred, the volumes (g_soundVolume, g_musicVolume) set
-   again, the local player's inPlay cleared, the teams (scene_setLocalTeam), the camera and its slot, a typed chat line
-   kept (chat_endTyping) and the round's flags cleared */
+   again, the local player's inPlay cleared, the teams (scene_setLocalTeam), the camera and its slot, a typed line kept
+   (match_endTyping) and the round's flags cleared */
 static void round_start(Scene *s)
 {
 	const int *counts[6] = { &s->headCount, &s->chestCount, &s->armCount, &s->legCount, &s->boosterCount, &s->actorItemCount };
@@ -189,7 +189,7 @@ static void round_start(Scene *s)
 	events_clear(s, 60.0f);
 	s->chatMode = 0;
 	if (g_textFieldOpen)
-		chat_endTyping();
+		match_endTyping();
 	(*(int *)&s->keyGuard) = 0;
 	s->matchOver = 0;
 	(*(int *)&s->endTime) = 0;
@@ -285,7 +285,7 @@ static void model_sets(u8 *shapes, const char *dir, int n, int extra, int size, 
 }
 
 /* 0x4700a0 (thiscall on the stage): the stage built (its names passed on to stage_setFolders): the collision space (in its
-   block spaceData), the ten effect textures (effectTextures and billboards, by 0x4c7410 from the third name; the last two flagged), the light factors and
+   block spaceData), the ten effect textures (effectTextures and mapItemTexture, by 0x4c7410 from the third name; the last two flagged), the light factors and
    the default light (grey, from (-1, -1, -1)). The sky box (skySphere: six faces of 7 x 7 points, a cube of side
    1 / sqrt(k_27) turned to each face), the dome (layer: 7 x 7 points of the up vector turned by two angles),
    six 4-point rings top and bottom (sides), an 11 x 11 ground grid (floor); the world box (+-100000), the

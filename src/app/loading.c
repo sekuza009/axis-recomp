@@ -1,5 +1,5 @@
 /* loading.c: loading: the start-up load (app_startupLoad) and the menus' textures (menu_loadTextures); a match's
-   load, one step per frame (game_processLoadingMode: the stages, a network client kept alive meanwhile); and the
+   load, one step per frame (game_processLoadingMode: the stages, the host's game packet sent meanwhile); and the
    loading screen between the menus and a match: a scrolling textured cylinder (Iftex/Cylinder) behind the status text
    lines, faded in from black and out to black (no progress bar). */
 #include "../game.h"
@@ -8,8 +8,8 @@
 #define g_loadText g_loadStatusText
 #define ONE k_1f
 
-/* one frame of a fade: the screen at its progress, under a black quad (alpha 1 - time fading in, time fading out),
-   the fade's time advanced */
+/* one frame of a fade: the screen at its scroll (g_loadScroll), under a black quad (alpha 1 - time fading in, time
+   fading out), the fade's time advanced */
 static void fade_frame(int in)
 {
 	loading_draw_bits(BITS(g_loadScroll));
@@ -72,11 +72,11 @@ static void info_line(int row, const char *text)
 	text_drawSized(0x96, row * 16 + 0x46, text, 0x10);
 }
 
-/* 0x469320 (progress, as bits): the loading screen: cleared to blue, the backdrop (g_loadTexture) on the inside of a
-   cylinder of 18 segments, 25133 deep, its texture's v running from the progress to the progress + 10; then in
+/* 0x469320 (scroll, as bits): the loading screen: cleared to blue, the backdrop (g_loadTexture) on the inside of a
+   cylinder of 18 segments, 25133 deep, its texture's v running from the scroll to the scroll + 10; then in
    yellow the game's title (session modes 1 / 3: a network game, replays), zone, play type (both "on receiving" while awaitingHostRound is 1), frag and
    time limits, and in grey the status line g_loadStatusText */
-void (loading_draw)(u32 progress)
+void (loading_draw)(u32 scroll)
 {
 	glClearColor_bits(0x3f000000, 0x3f000000, 0x3f800000, 0x3f800000);   /* glClearColor(0.5, 0.5, 1, 1) */
 	glClearDepth(1.0);
@@ -86,14 +86,14 @@ void (loading_draw)(u32 progress)
 	int texture = g_loadTexture;
 	tex_bind(g_textures->banks[texture / 512], texture % 512);
 	glColor4f(0.5f, 0.5f, 1.0f, 0.5f);
-	float far = f32(fadd_m(fld_m((const float *)&progress), (const float *)ADDR(k_10f)));   /* progress + 10 */
+	float far = f32(fadd_m(fld_m((const float *)&scroll), (const float *)ADDR(k_10f)));   /* scroll + 10 */
 	for (int angle = 0, j = 0; angle < 0xfd20; angle += 0xe10, j++) {
 		glBegin(GL_QUADS);
 		float s0 = f32(fmul_m((long double)j, k_0_0555556f));        /* j / 18 */
-		glTexCoord2f_bits(BITS(s0), progress);
+		glTexCoord2f_bits(BITS(s0), scroll);
 		cylinder_vertex(angle / 18, 0);
 		float s1 = f32(fmul_m((long double)(j + 1), k_0_0555556f));
-		glTexCoord2f_bits(BITS(s1), progress);
+		glTexCoord2f_bits(BITS(s1), scroll);
 		cylinder_vertex((angle + 0xe10) / 18, 0);
 		glTexCoord2f_bits(BITS(s1), BITS(far));
 		cylinder_vertex((angle + 0xe10) / 18, 0xc6c4597c);   /* -25132.74 */
@@ -334,7 +334,8 @@ static void no_next(u8 *g)
 	                                                             GS->loadStage);
 }
 
-/* a network client (mode 1, local player 0) that is online keeps the host told it is still loading */
+/* the host of a network game (mode 1, local player 0) that holds its slot (net_hasSlot) sends its game packet
+   (net_sendGamePacket) while it loads */
 static void keep_alive(u8 *g)
 {
 	if (GS->sessionMode == 1 && GS->localPlayer == 0 && net_hasSlot() == 1)
@@ -352,10 +353,11 @@ static char *bfd_name(u8 *g, char *out)
    loading lines to the title. By the stage (loadStage): 0 the replay file's header (mode 3: version 0x1201, the
    map, the players' names, the type), the scene reset; 1 the map named (g_mapIndex into g_mapNames: none ends it, g_mapMissing
    set); 2 waiting for the stage's play information (the network drained into net_processGamePacket; a timeout
-   lostTime against K k_5f, too many players or the game menu keys (g_keyGameMenu) stop it); 3 the ground; 4 the
-   objects; 5 the collision volume; 6 the crosshair and the play information; 7 the mission and (mode 0) the actors; 8
-   the game started (matchState by the mode). Each stage adds a line (the next depends on the mode +8); every step but
-   the last draws the screen. Returns matchState, or 0 once Esc or the stop is seen or the map has no name */
+   lostTime against K k_5f, 0x80 or more packets out of turn (netq_skippedCount) or the game menu keys (g_keyGameMenu)
+   stop it); 3 the ground; 4 the objects; 5 the collision volume; 6 the crosshair and the play information; 7 the
+   mission and (mode 0) the actors; 8 the game started (matchState by the mode). Each stage adds a line (the next
+   depends on the mode +8); every step but the last draws the screen. Returns matchState, or 0 once Esc or the stop is
+   seen or the map has no name */
 u32 THISCALL (game_processLoadingMode)(u8 *g)
 {
 	char name[0x100], path[0x100];

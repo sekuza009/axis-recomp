@@ -13,4 +13,4 @@ g_accountPacket       # a pointer word: memset / [0] reach the block it points t
 g_pingThreadId        # net_tables.c: CreateThread's thread id out (4 bytes)
 g_menuTunnel          # the tunnel's ring list head: tunnel_appendRing / armc_freeRing / tunnel_removeLastRing update the one pointer
 g_frameTime           # many files: given to fld_m / fmul_m / fsub_m as one float (the frame's time)
-g_lobbyBlinkRate      # game_lists.c: step, given to fld_m (one float)
+g_listBlinkRate      # game_lists.c: step, given to fld_m (one float)

@@ -455,7 +455,8 @@ void (setup_drawTunnel)(void)
 		                                  (const float *)ADDR(k_0_1f)), &g_setupTunnelAlpha));
 	glColor4f(1.0f, 1.0f, 1.0f, g_setupTunnelAlpha);
 	for (int layer = 0; layer < 4; layer++) {
-		/* the strip of the texture: s from s0 (+ ds) to s_far, t from t0 / t1 on by the wall's parity */
+		/* layer 3's texture strip: s from 0 (near walls) / ds (far walls) to s_far (+ ds on the far walls); t from
+		   parity x 0.25, + t0 .. + t1 on the far walls; s0 only insets the quad (x 10 s0, y 12 s0) */
 		float s0 = 0, ds = 0.5f, t0 = 0, t1 = 0.25f, s_far = 0.5f;
 		if (layer == 3)
 			s0 = 0.5f, ds = 0, t0 = 0.5f, t1 = 0.75f, s_far = 1.0f;
@@ -580,7 +581,8 @@ static void menu_tunnel(const Tunnel *t, const Highlight *h)
 	gfx_setProjection2D3D(1);
 	glEnable(GL_TEXTURE_2D);
 	for (int layer = 0; layer < 4; layer++) {
-		/* layer 3's texture strip (s from s0 .. s0 + ds to s_far; t from t0 / t1 on by the wall's place) */
+		/* layers 2 and 3's texture strip (s from 0 (near walls) / ds (far walls) to s_far (+ ds on the far walls); t
+		   from place x t->step, + t0 .. + t1 on the far walls; s0 only insets the quad (x 10 s0, y height s0)) */
 		float s0 = 0, ds = 0.5f, t0 = 0, t1 = 0.25f, s_far = 0.5f;
 		if (layer > 1)
 			s0 = 0.5f, ds = 0, t0 = t->t0, t1 = t->t1, s_far = 1.0f;

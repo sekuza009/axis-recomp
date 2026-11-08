@@ -76,7 +76,7 @@
 0xa0bb00,u32,g_dpTimeout
 0xa0bb04,u32,g_dpMaxBufferSize
 0xa0bb08,u32,g_dpMaxQueueSize
-0xa0bad0,u32,g_arenaJoinTimer
+0xa0bad0,u32,g_joinTimer
 0x9f9424,int,g_netClaimedSlot
 # the ARM CENTER, the profile, missions
 0x4dc870,int,g_armcLevel

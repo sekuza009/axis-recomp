@@ -25,24 +25,24 @@ extern signed char g_hangulVowelIndex_v[32];
 extern signed char g_hangulTailIndex_v[32];
 #endif
 #ifdef AXIS_FENCE
-#define g_hangulVowelSetPlain_v ((signed char *)(AXIS_FENCE == 2 ? g_fence + 0x9000 : g_fence + 0x8fea))
+#define g_hangulLeadSetByVowel_v ((signed char *)(AXIS_FENCE == 2 ? g_fence + 0x9000 : g_fence + 0x8fea))
 #else
-extern signed char g_hangulVowelSetPlain_v[22];
+extern signed char g_hangulLeadSetByVowel_v[22];
 #endif
 #ifdef AXIS_FENCE
-#define g_hangulVowelSetTail_v ((signed char *)(AXIS_FENCE == 2 ? g_fence + 0xb000 : g_fence + 0xafea))
+#define g_hangulLeadSetByVowelTail_v ((signed char *)(AXIS_FENCE == 2 ? g_fence + 0xb000 : g_fence + 0xafea))
 #else
-extern signed char g_hangulVowelSetTail_v[22];
+extern signed char g_hangulLeadSetByVowelTail_v[22];
 #endif
 #ifdef AXIS_FENCE
-#define g_hangulLeadSetPlain_v ((signed char *)(AXIS_FENCE == 2 ? g_fence + 0xd000 : g_fence + 0xcfec))
+#define g_hangulVowelSetByLead_v ((signed char *)(AXIS_FENCE == 2 ? g_fence + 0xd000 : g_fence + 0xcfec))
 #else
-extern signed char g_hangulLeadSetPlain_v[20];
+extern signed char g_hangulVowelSetByLead_v[20];
 #endif
 #ifdef AXIS_FENCE
-#define g_hangulLeadSetTail_v ((signed char *)(AXIS_FENCE == 2 ? g_fence + 0xf000 : g_fence + 0xefec))
+#define g_hangulVowelSetByLeadTail_v ((signed char *)(AXIS_FENCE == 2 ? g_fence + 0xf000 : g_fence + 0xefec))
 #else
-extern signed char g_hangulLeadSetTail_v[20];
+extern signed char g_hangulVowelSetByLeadTail_v[20];
 #endif
 #ifdef AXIS_FENCE
 #define g_hangulTailSet_v ((signed char *)(AXIS_FENCE == 2 ? g_fence + 0x11000 : g_fence + 0x10fea))
@@ -60,19 +60,19 @@ extern u8 g_textWrapX_v[4];
 extern u8 g_textBottom_v[4];
 #endif
 #ifdef AXIS_FENCE
-#define g_lobbyBlinkRate_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0x17000 : g_fence + 0x16ffc))
+#define g_listBlinkRate_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0x17000 : g_fence + 0x16ffc))
 #else
-extern u8 g_lobbyBlinkRate_v[4];
+extern u8 g_listBlinkRate_v[4];
 #endif
 #ifdef AXIS_FENCE
-#define g_unlockTablesSolo_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0x19000 : g_fence + 0x18a20))
+#define g_unlockTablesByProgress_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0x19000 : g_fence + 0x18a20))
 #else
-extern u8 g_unlockTablesSolo_v[5600];
+extern u8 g_unlockTablesByProgress_v[5600];
 #endif
 #ifdef AXIS_FENCE
-#define g_unlockTablesNet_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0x1c000 : g_fence + 0x1ba20))
+#define g_unlockTablesLadder_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0x1c000 : g_fence + 0x1ba20))
 #else
-extern u8 g_unlockTablesNet_v[5600];
+extern u8 g_unlockTablesLadder_v[5600];
 #endif
 #ifdef AXIS_FENCE
 #define g_setupWallTurns_v ((float *)(AXIS_FENCE == 2 ? g_fence + 0x1f000 : g_fence + 0x1eff8))
@@ -430,9 +430,9 @@ extern u8 g_sessionFound_v[4];
 extern u8 g_typingArenaJoinPassword_v[4];
 #endif
 #ifdef AXIS_FENCE
-#define g_arenaJoinRow_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xb6000 : g_fence + 0xb5ffc))
+#define g_joinRow_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xb6000 : g_fence + 0xb5ffc))
 #else
-extern u8 g_arenaJoinRow_v[4];
+extern u8 g_joinRow_v[4];
 #endif
 #ifdef AXIS_FENCE
 #define g_typingArenaAddress_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xb8000 : g_fence + 0xb7ffc))
@@ -550,9 +550,9 @@ extern u8 g_arenaTunnelDepth_v[4];
 extern int g_lobbyTopRect_v[4];
 #endif
 #ifdef AXIS_FENCE
-#define g_lobbyBlinkClock_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xe6000 : g_fence + 0xe5ffc))
+#define g_listBlinkClock_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xe6000 : g_fence + 0xe5ffc))
 #else
-extern u8 g_lobbyBlinkClock_v[4];
+extern u8 g_listBlinkClock_v[4];
 #endif
 #ifdef AXIS_FENCE
 #define g_lanSearchStarted_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xe8000 : g_fence + 0xe7ffc))
@@ -730,9 +730,9 @@ extern u8 g_lobbyJoinStarted_v[4];
 extern u8 g_lanJoinRequest_v[4];
 #endif
 #ifdef AXIS_FENCE
-#define g_arenaLobbyState_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0x12e000 : g_fence + 0x12dffc))
+#define g_hostingState_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0x12e000 : g_fence + 0x12dffc))
 #else
-extern u8 g_arenaLobbyState_v[4];
+extern u8 g_hostingState_v[4];
 #endif
 #ifdef AXIS_FENCE
 #define g_receivedSession_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0x130000 : g_fence + 0x12fffc))
@@ -1830,9 +1830,9 @@ extern u8 g_mainWindow_v[4];
 extern char g_arenaName_v[48];
 #endif
 #ifdef AXIS_FENCE
-#define g_arenaGameSetUp_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0x2e6000 : g_fence + 0x2e5ffc))
+#define g_hostGameSetUp_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0x2e6000 : g_fence + 0x2e5ffc))
 #else
-extern u8 g_arenaGameSetUp_v[4];
+extern u8 g_hostGameSetUp_v[4];
 #endif
 #ifdef AXIS_FENCE
 #define g_timerTick_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0x2e8000 : g_fence + 0x2e7ff8))
@@ -4910,9 +4910,9 @@ extern u8 g_sessionListOpen_v[4];
 extern u8 g_netQueueOnline_v[4];
 #endif
 #ifdef AXIS_FENCE
-#define g_arenaSessionOpen_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xcc9000 : g_fence + 0xcc8ffc))
+#define g_dplaySessionOpen_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xcc9000 : g_fence + 0xcc8ffc))
 #else
-extern u8 g_arenaSessionOpen_v[4];
+extern u8 g_dplaySessionOpen_v[4];
 #endif
 #ifdef AXIS_FENCE
 #define g_dplayLobby_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xccb000 : g_fence + 0xccaffc))
@@ -5020,9 +5020,9 @@ extern u8 g_serialProviderGuid_v[16];
 extern u8 g_serviceProviderCount_v[4];
 #endif
 #ifdef AXIS_FENCE
-#define g_arenaJoinTimer_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xcf5000 : g_fence + 0xcf4ffc))
+#define g_joinTimer_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xcf5000 : g_fence + 0xcf4ffc))
 #else
-extern u8 g_arenaJoinTimer_v[4];
+extern u8 g_joinTimer_v[4];
 #endif
 #ifdef AXIS_FENCE
 #define g_providerGuid_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xcf7000 : g_fence + 0xcf6ffc))

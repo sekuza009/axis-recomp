@@ -41,7 +41,7 @@ void (app_setDataPaths)(void)
 /* ---- the input line every text field types into (0x400 bytes at g_inputLine) and its three-line history ---- */
 /* 0x431560: the input line (g_inputLine, 0x400 bytes) emptied for a text field max characters long (g_lineMaxLength =
    max; g_inputLineLength 0). Callers: every text field's opening (account_edit*, arena_edit*, room_edit*, roomLogin_edit*,
-   newIdForm_openField, profile_typeNewName, chat_openTextField, freeCam_keys) */
+   newIdForm_openField, profile_typeNewName, match_openTextField, freeCam_keys) */
 void (menu_clearInputBuffer)(int max)
 {
 	memset((void *)OBJ(g_inputLine), 0, 0x400);

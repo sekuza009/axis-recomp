@@ -1,8 +1,8 @@
 # globals, batch 9: flags read from the code around them (address,type,name)
-0x4ded54,int,g_arenaGameSetUp
+0x4ded54,int,g_hostGameSetUp
 0x4dba88,int,g_connectionAwaited
 0x68037c,u32,g_menuCameraLookY
-0x4dbbf4,int,g_arenaLobbyState
+0x4dbbf4,int,g_hostingState
 0x4dbbec,int,g_lobbyJoinStarted
 0x4dba84,int,g_lanSearchStarted
 0x4db854,int,g_serverSearching

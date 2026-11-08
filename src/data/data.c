@@ -17,16 +17,16 @@ u8 g_mouseTaken_v[4] __attribute__((aligned(16)));   /* 0x4ad17c */
 signed char g_hangulLeadIndex_v[32] __attribute__((aligned(16)));   /* 0x4ad3c4 */
 signed char g_hangulVowelIndex_v[32] __attribute__((aligned(16)));   /* 0x4ad3e4 */
 signed char g_hangulTailIndex_v[32] __attribute__((aligned(16)));   /* 0x4ad404 */
-signed char g_hangulVowelSetPlain_v[22] __attribute__((aligned(16)));   /* 0x4ad424 */
-signed char g_hangulVowelSetTail_v[22] __attribute__((aligned(16)));   /* 0x4ad43a */
-signed char g_hangulLeadSetPlain_v[20] __attribute__((aligned(16)));   /* 0x4ad450 */
-signed char g_hangulLeadSetTail_v[20] __attribute__((aligned(16)));   /* 0x4ad464 */
+signed char g_hangulLeadSetByVowel_v[22] __attribute__((aligned(16)));   /* 0x4ad424 */
+signed char g_hangulLeadSetByVowelTail_v[22] __attribute__((aligned(16)));   /* 0x4ad43a */
+signed char g_hangulVowelSetByLead_v[20] __attribute__((aligned(16)));   /* 0x4ad450 */
+signed char g_hangulVowelSetByLeadTail_v[20] __attribute__((aligned(16)));   /* 0x4ad464 */
 signed char g_hangulTailSet_v[22] __attribute__((aligned(16)));   /* 0x4ad478 */
 u8 g_textWrapX_v[4] __attribute__((aligned(16)));   /* 0x4ad490 */
 u8 g_textBottom_v[4] __attribute__((aligned(16)));   /* 0x4ad494 */
-u8 g_lobbyBlinkRate_v[4] __attribute__((aligned(16)));   /* 0x4ad498 */
-u8 g_unlockTablesSolo_v[5600] __attribute__((aligned(16)));   /* 0x4ad5f0 */
-u8 g_unlockTablesNet_v[5600] __attribute__((aligned(16)));   /* 0x4aebd0 */
+u8 g_listBlinkRate_v[4] __attribute__((aligned(16)));   /* 0x4ad498 */
+u8 g_unlockTablesByProgress_v[5600] __attribute__((aligned(16)));   /* 0x4ad5f0 */
+u8 g_unlockTablesLadder_v[5600] __attribute__((aligned(16)));   /* 0x4aebd0 */
 float g_setupWallTurns_v[2] __attribute__((aligned(16)));   /* 0x4b04c4 */
 u32 g_resolutionNames_v[8] __attribute__((aligned(16)));   /* 0x4b04cc */
 int g_bindRows_v[3] __attribute__((aligned(16)));   /* 0x4b04ec */
@@ -98,7 +98,7 @@ int g_createArenaRects_v[64] __attribute__((aligned(16)));   /* 0x4db5e8 */
 int g_hostErrorBoxRects_v[8] __attribute__((aligned(16)));   /* 0x4db6e8 */
 u8 g_sessionFound_v[4] __attribute__((aligned(16)));   /* 0x4db708 */
 u8 g_typingArenaJoinPassword_v[4] __attribute__((aligned(16)));   /* 0x4db70c */
-u8 g_arenaJoinRow_v[4] __attribute__((aligned(16)));   /* 0x4db710 */
+u8 g_joinRow_v[4] __attribute__((aligned(16)));   /* 0x4db710 */
 u8 g_typingArenaAddress_v[4] __attribute__((aligned(16)));   /* 0x4db714 */
 u8 g_lobbyConnectionOpen_v[4] __attribute__((aligned(16)));   /* 0x4db718 */
 u8 g_arenaListClickArmed_v[4] __attribute__((aligned(16)));   /* 0x4db71c */
@@ -122,7 +122,7 @@ u8 g_arenaGameListBottom_v[4] __attribute__((aligned(16)));   /* 0x4db8d4 */
 char g_gameTypeNames_v[300] __attribute__((aligned(16)));   /* 0x4db8d8 */
 u8 g_arenaTunnelDepth_v[4] __attribute__((aligned(16)));   /* 0x4dba68 */
 int g_lobbyTopRect_v[4] __attribute__((aligned(16)));   /* 0x4dba70 */
-u8 g_lobbyBlinkClock_v[4] __attribute__((aligned(16)));   /* 0x4dba80 */
+u8 g_listBlinkClock_v[4] __attribute__((aligned(16)));   /* 0x4dba80 */
 u8 g_lanSearchStarted_v[4] __attribute__((aligned(16)));   /* 0x4dba84 */
 u8 g_connectionAwaited_v[4] __attribute__((aligned(16)));   /* 0x4dba88 */
 u8 g_arenaListPlayers_v[4] __attribute__((aligned(16)));   /* 0x4dba8c */
@@ -158,7 +158,7 @@ u8 g_typingArenaPlayerName_v[4] __attribute__((aligned(16)));   /* 0x4dbbd0 */
 char g_typedArenaAddressText_v[24] __attribute__((aligned(16)));   /* 0x4dbbd4 */
 u8 g_lobbyJoinStarted_v[4] __attribute__((aligned(16)));   /* 0x4dbbec */
 u8 g_lanJoinRequest_v[4] __attribute__((aligned(16)));   /* 0x4dbbf0 */
-u8 g_arenaLobbyState_v[4] __attribute__((aligned(16)));   /* 0x4dbbf4 */
+u8 g_hostingState_v[4] __attribute__((aligned(16)));   /* 0x4dbbf4 */
 u8 g_receivedSession_v[4] __attribute__((aligned(16)));   /* 0x4dbbf8 */
 u8 g_unusedArmcWord4_v[4] __attribute__((aligned(16)));   /* 0x4dbc00 */
 u8 g_armcAngle_v[4] __attribute__((aligned(16)));   /* 0x4dbc04 */
@@ -378,7 +378,7 @@ u8 g_dikNumpad1_v[4] __attribute__((aligned(16)));   /* 0x4dec90 */
 u8 g_dikNumLock_v[4] __attribute__((aligned(16)));   /* 0x4dec94 */
 u8 g_mainWindow_v[4] __attribute__((aligned(16)));   /* 0x4ded18 */
 char g_arenaName_v[48] __attribute__((aligned(16)));   /* 0x4ded20 */
-u8 g_arenaGameSetUp_v[4] __attribute__((aligned(16)));   /* 0x4ded54 */
+u8 g_hostGameSetUp_v[4] __attribute__((aligned(16)));   /* 0x4ded54 */
 u8 g_timerTick_v[8] __attribute__((aligned(16)));   /* 0x4ded58 */
 u8 g_hostAnswer_v[4] __attribute__((aligned(16)));   /* 0x4ded60 */
 int g_mousePos_v[2] __attribute__((aligned(16)));   /* 0x4ded68 */
@@ -994,7 +994,7 @@ u8 g_newIdAnswer_v[4] __attribute__((aligned(16)));   /* 0xa0b37c */
 u8 g_connectedServer_v[4] __attribute__((aligned(16)));   /* 0xa0b380 */
 u8 g_sessionListOpen_v[4] __attribute__((aligned(16)));   /* 0xa0b384 */
 u8 g_netQueueOnline_v[4] __attribute__((aligned(16)));   /* 0xa0b388 */
-u8 g_arenaSessionOpen_v[4] __attribute__((aligned(16)));   /* 0xa0b390 */
+u8 g_dplaySessionOpen_v[4] __attribute__((aligned(16)));   /* 0xa0b390 */
 u8 g_dplayLobby_v[4] __attribute__((aligned(16)));   /* 0xa0b398 */
 u8 g_tcpProviderGuid_v[16] __attribute__((aligned(16)));   /* 0xa0b3a0 */
 u8 g_sessionDesc_v[80] __attribute__((aligned(16)));   /* 0xa0b3b0 */
@@ -1016,7 +1016,7 @@ u8 g_sessionTable_v[1600] __attribute__((aligned(16)));   /* 0xa0b470 */
 u8 g_connectionCopy_v[4] __attribute__((aligned(16)));   /* 0xa0bab0 */
 u8 g_serialProviderGuid_v[16] __attribute__((aligned(16)));   /* 0xa0bab8 */
 u8 g_serviceProviderCount_v[4] __attribute__((aligned(16)));   /* 0xa0bac8 */
-u8 g_arenaJoinTimer_v[4] __attribute__((aligned(16)));   /* 0xa0bad0 */
+u8 g_joinTimer_v[4] __attribute__((aligned(16)));   /* 0xa0bad0 */
 u8 g_providerGuid_v[4] __attribute__((aligned(16)));   /* 0xa0bad8 */
 u8 g_storedConnection_v[4] __attribute__((aligned(16)));   /* 0xa0badc */
 int g_dpConnections_v[4] __attribute__((aligned(16)));   /* 0xa0bae0 */
@@ -1187,16 +1187,16 @@ const DataPiece g_splitObjects[] = {
 	{ 0x4ad3c4, g_hangulLeadIndex_v, 32 },
 	{ 0x4ad3e4, g_hangulVowelIndex_v, 32 },
 	{ 0x4ad404, g_hangulTailIndex_v, 32 },
-	{ 0x4ad424, g_hangulVowelSetPlain_v, 22 },
-	{ 0x4ad43a, g_hangulVowelSetTail_v, 22 },
-	{ 0x4ad450, g_hangulLeadSetPlain_v, 20 },
-	{ 0x4ad464, g_hangulLeadSetTail_v, 20 },
+	{ 0x4ad424, g_hangulLeadSetByVowel_v, 22 },
+	{ 0x4ad43a, g_hangulLeadSetByVowelTail_v, 22 },
+	{ 0x4ad450, g_hangulVowelSetByLead_v, 20 },
+	{ 0x4ad464, g_hangulVowelSetByLeadTail_v, 20 },
 	{ 0x4ad478, g_hangulTailSet_v, 22 },
 	{ 0x4ad490, g_textWrapX_v, 4 },
 	{ 0x4ad494, g_textBottom_v, 4 },
-	{ 0x4ad498, g_lobbyBlinkRate_v, 4 },
-	{ 0x4ad5f0, g_unlockTablesSolo_v, 5600 },
-	{ 0x4aebd0, g_unlockTablesNet_v, 5600 },
+	{ 0x4ad498, g_listBlinkRate_v, 4 },
+	{ 0x4ad5f0, g_unlockTablesByProgress_v, 5600 },
+	{ 0x4aebd0, g_unlockTablesLadder_v, 5600 },
 	{ 0x4b04c4, g_setupWallTurns_v, 8 },
 	{ 0x4b04cc, g_resolutionNames_v, 32 },
 	{ 0x4b04ec, g_bindRows_v, 12 },
@@ -1268,7 +1268,7 @@ const DataPiece g_splitObjects[] = {
 	{ 0x4db6e8, g_hostErrorBoxRects_v, 32 },
 	{ 0x4db708, g_sessionFound_v, 4 },
 	{ 0x4db70c, g_typingArenaJoinPassword_v, 4 },
-	{ 0x4db710, g_arenaJoinRow_v, 4 },
+	{ 0x4db710, g_joinRow_v, 4 },
 	{ 0x4db714, g_typingArenaAddress_v, 4 },
 	{ 0x4db718, g_lobbyConnectionOpen_v, 4 },
 	{ 0x4db71c, g_arenaListClickArmed_v, 4 },
@@ -1292,7 +1292,7 @@ const DataPiece g_splitObjects[] = {
 	{ 0x4db8d8, g_gameTypeNames_v, 300 },
 	{ 0x4dba68, g_arenaTunnelDepth_v, 4 },
 	{ 0x4dba70, g_lobbyTopRect_v, 16 },
-	{ 0x4dba80, g_lobbyBlinkClock_v, 4 },
+	{ 0x4dba80, g_listBlinkClock_v, 4 },
 	{ 0x4dba84, g_lanSearchStarted_v, 4 },
 	{ 0x4dba88, g_connectionAwaited_v, 4 },
 	{ 0x4dba8c, g_arenaListPlayers_v, 4 },
@@ -1328,7 +1328,7 @@ const DataPiece g_splitObjects[] = {
 	{ 0x4dbbd4, g_typedArenaAddressText_v, 24 },
 	{ 0x4dbbec, g_lobbyJoinStarted_v, 4 },
 	{ 0x4dbbf0, g_lanJoinRequest_v, 4 },
-	{ 0x4dbbf4, g_arenaLobbyState_v, 4 },
+	{ 0x4dbbf4, g_hostingState_v, 4 },
 	{ 0x4dbbf8, g_receivedSession_v, 4 },
 	{ 0x4dbc00, g_unusedArmcWord4_v, 4 },
 	{ 0x4dbc04, g_armcAngle_v, 4 },
@@ -1548,7 +1548,7 @@ const DataPiece g_splitObjects[] = {
 	{ 0x4dec94, g_dikNumLock_v, 4 },
 	{ 0x4ded18, g_mainWindow_v, 4 },
 	{ 0x4ded20, g_arenaName_v, 48 },
-	{ 0x4ded54, g_arenaGameSetUp_v, 4 },
+	{ 0x4ded54, g_hostGameSetUp_v, 4 },
 	{ 0x4ded58, g_timerTick_v, 8 },
 	{ 0x4ded60, g_hostAnswer_v, 4 },
 	{ 0x4ded68, g_mousePos_v, 8 },
@@ -2164,7 +2164,7 @@ const DataPiece g_splitObjects[] = {
 	{ 0xa0b380, g_connectedServer_v, 4 },
 	{ 0xa0b384, g_sessionListOpen_v, 4 },
 	{ 0xa0b388, g_netQueueOnline_v, 4 },
-	{ 0xa0b390, g_arenaSessionOpen_v, 4 },
+	{ 0xa0b390, g_dplaySessionOpen_v, 4 },
 	{ 0xa0b398, g_dplayLobby_v, 4 },
 	{ 0xa0b3a0, g_tcpProviderGuid_v, 16 },
 	{ 0xa0b3b0, g_sessionDesc_v, 80 },
@@ -2186,7 +2186,7 @@ const DataPiece g_splitObjects[] = {
 	{ 0xa0bab0, g_connectionCopy_v, 4 },
 	{ 0xa0bab8, g_serialProviderGuid_v, 16 },
 	{ 0xa0bac8, g_serviceProviderCount_v, 4 },
-	{ 0xa0bad0, g_arenaJoinTimer_v, 4 },
+	{ 0xa0bad0, g_joinTimer_v, 4 },
 	{ 0xa0bad8, g_providerGuid_v, 4 },
 	{ 0xa0badc, g_storedConnection_v, 4 },
 	{ 0xa0bae0, g_dpConnections_v, 16 },
@@ -2446,7 +2446,7 @@ static const u32 d_4ad430[] = {   /* 0x4ad430 */
 };
 static const u32 init_g_textWrapX[] = { 0x00000280 };
 static const u32 init_g_textBottom[] = { 0x000001e0 };
-static const float init_g_lobbyBlinkRate[] = { 1.0f };
+static const float init_g_listBlinkRate[] = { 1.0f };
 static const char d_4ad49c[] = " room";
 static const char d_4ad4a4[] = "AXIS ARENA";
 static const char d_4ad4b0[] = "PLAYER";
@@ -5222,7 +5222,7 @@ const DataPiece g_dataPieces[] = {
 	{ 0x4ad430, d_4ad430, sizeof d_4ad430 },
 	{ 0x4ad490, init_g_textWrapX, sizeof init_g_textWrapX },
 	{ 0x4ad494, init_g_textBottom, sizeof init_g_textBottom },
-	{ 0x4ad498, init_g_lobbyBlinkRate, sizeof init_g_lobbyBlinkRate },
+	{ 0x4ad498, init_g_listBlinkRate, sizeof init_g_listBlinkRate },
 	{ 0x4ad49c, d_4ad49c, sizeof d_4ad49c },
 	{ 0x4ad4a4, d_4ad4a4, sizeof d_4ad4a4 },
 	{ 0x4ad4b0, d_4ad4b0, sizeof d_4ad4b0 },

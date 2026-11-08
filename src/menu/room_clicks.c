@@ -329,7 +329,7 @@ u32 (room_hostingStep)(void)
 		g_fragLimit = room[0x24];
 		g_timeLimit = room[0x25];
 		answer = (*(u32 *)&g_hostAnswer);
-		g_arenaGameSetUp = 1;
+		g_hostGameSetUp = 1;
 	}
 	switch (answer) {
 	case 3:
@@ -337,13 +337,13 @@ u32 (room_hostingStep)(void)
 		/* fall through */
 	case 0:
 		g_connectionAwaited = 0;
-		g_arenaGameSetUp = 0;
+		g_hostGameSetUp = 0;
 		g_hostAnswer = 2;
 		return answer;
 	case 4:
 		g_connectionAwaited = 0;
 		g_hostAnswer = 2;
-		g_arenaGameSetUp = 0;
+		g_hostGameSetUp = 0;
 		return menu_showMessage(0x2a);   /* the message */
 	}
 	return answer;
@@ -351,7 +351,7 @@ u32 (room_hostingStep)(void)
 
 /* 0x434e70: the join's wait ended in the game room (WM_TIMER 0x378 in game_wndProc when g_screen is 800, after 30
    polls or a session found). Timed out (g_joinTimedOut): the session left and message 0x44 (CONNETION TIME OUT). A
-   session found (g_sessionFound; its g_sessionList entry, row g_arenaJoinRow): the entry's guid from the session
+   session found (g_sessionFound; its g_sessionList entry, row g_joinRow): the entry's guid from the session
    received (g_receivedSession) and its frag and time limits taken, then joined (dplay_join); joined (0x1f4): the
    music stopped and the match's settings taken from the entry; otherwise a message by the result (0x43 / 0x42 / 0x42
    / 0x44 / 0x45) and the session left. Returns what the original leaves in eax */
@@ -367,7 +367,7 @@ u32 (room_joinAnswer)(void)
 	}
 	if (!g_sessionFound)
 		return 0;
-	u32 row = (*(u32 *)&g_arenaJoinRow);
+	u32 row = (*(u32 *)&g_joinRow);
 	SessionEntry *game = &g_sessionList[row];
 	game->guid = ((const SessionDesc *)g_receivedSession)->guid;
 	g_roomRecFragLimit = game->fragLimit;
@@ -465,7 +465,7 @@ static u32 call_keeping_ebp(u32 address)
    start waiting (g_rankingWaiting, the blink at 1000); column 3 just clears the request. Then the room's tunnel; with
    the room camera arrived (g_roomCameraMode 2) and outside page 99: while a panel frame opens (g_frameOpening) only it is drawn (a
    request made again once it closes), else while waiting an answer (g_rankingListIn) fills the list (ranking_fillPage) and
-   keeps the column and page, the blink counts down by g_frameTime * g_lobbyBlinkRate (from 1000 again below 0), and the
+   keeps the column and page, the blink counts down by g_frameTime * g_listBlinkRate (from 1000 again below 0), and the
    table is drawn (ranking_drawTable). Returns what the original leaves in eax */
 u32 (ranking_page)(void)
 {
@@ -485,7 +485,7 @@ u32 (ranking_page)(void)
 		out[1] = page * 10 + 1;
 		net_send(0x15, 0x65);   /* net_send */
 		g_rankingRequestPending = 0;
-		g_lobbyBlinkClock = 1000.0f;
+		g_listBlinkClock = 1000.0f;
 		g_rankingWaiting = 1;
 	}
 	room_drawTunnel();   /* room_drawTunnel: the tunnel */
@@ -509,10 +509,10 @@ u32 (ranking_page)(void)
 			g_rankingPrevSort = g_rankingSort;
 			g_rankingPrevPage = g_rankingPage;
 		}
-		long double blink = fld_m((const float *)ADDR(g_lobbyBlinkClock)) - fmul_m(fld_m((const float *)ADDR(g_frameTime)), (const float *)ADDR(g_lobbyBlinkRate));
-		g_lobbyBlinkClock = f32(blink);
+		long double blink = fld_m((const float *)ADDR(g_listBlinkClock)) - fmul_m(fld_m((const float *)ADDR(g_frameTime)), (const float *)ADDR(g_listBlinkRate));
+		g_listBlinkClock = f32(blink);
 		if (!(blink >= 0))
-			g_lobbyBlinkClock = 1000.0f;
+			g_listBlinkClock = 1000.0f;
 	}
 	return call_keeping_ebp(FN_ADDR(ranking_drawTable, 0x43d060));   /* ranking_drawTable: the table */
 }
@@ -664,8 +664,8 @@ u32 (room_settingsClicks)(void)
 			*time = 5;
 		return r;
 	case 8:
-		if (g_arenaGameSetUp)
-			return (*(u32 *)&g_arenaGameSetUp);
+		if (g_hostGameSetUp)
+			return (*(u32 *)&g_hostGameSetUp);
 		sound_playMenu(0);
 		return room_announceGame();   /* room_announceGame: start */
 	case 9:
@@ -720,7 +720,7 @@ u32 (roomSettings_keys)(void)
 			GAME_VAR(u8, limit[k][1]) = (u8)r;
 		return r;
 	}
-	if (input_justPressed(g_dikO) && !g_arenaGameSetUp) {
+	if (input_justPressed(g_dikO) && !g_hostGameSetUp) {
 		sound_playMenu(0);
 		return room_announceGame();   /* room_announceGame: start */
 	}
@@ -784,9 +784,9 @@ u32 (arena_drawMapPreview)(void) { return map_preview_box((const int *)ADDR(g_ne
 
 /* 0x43e7b0: the account page (room page 0; the room camera arrived (g_roomCameraMode 2), not page 99): with a message box only its
    frame; else the page (account_takeRank when g_accountRankDue, then account_drawPanel) and, once a field's typing has ended, the typed
-   line taken into it (the name, password, its repeat (12 bytes each) or the e-mail (50)) and the key that ended it
-   (g_fieldStep: 0xa back, 0x14 on) opening the field before or after (account_editOldPassword .. 434260). Returns what the
-   original leaves in eax */
+   line taken into it (the old password, the new password, its repeat (12 bytes each) or the e-mail (50)) and the key
+   that ended it (g_fieldStep: 0xa back, 0x14 on) opening the field before or after (account_editOldPassword ..
+   434260). Returns what the original leaves in eax */
 u32 (account_page)(void)
 {
 	static const struct { u32 editing, field, size, back, on; } fields[4] = {
@@ -842,7 +842,7 @@ static void login_field(int to, int x, int y)
 }
 
 /* OK (button 4 clicked, or the OK key) checks the form (newIdForm_check), cancel (button 5, or g_dikC) closes it, back to the login (room_openLogin);
-   neither while a message is up (g_textFieldOpen) */
+   neither while a text field has the keys (g_textFieldOpen) */
 static int form_buttons(void)
 {
 	int button = -1;

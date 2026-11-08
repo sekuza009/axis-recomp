@@ -3053,7 +3053,7 @@ void shape_getShadingColorBufferBy(BYTE *out, int first, const void *part, const
 /* 0x466910 shape_shadingColours(out, first, shape, factors, matrix): shape_getShadingColorBufferBy for every part (0x80 apart,
    count +0x10), each into out + its colour offset (+0x48) * 4 */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-int shape_shadingColours(float *out, int first, BYTE *shape, void *factors, int matrix);
+int shape_shadingColours(DWORD *out, int first, BYTE *shape, void *factors, const float *matrix);
 /* batch 71 (lifted/grp18.c) */
 /* 0x46f7a0 (thiscall) ObjectList_relight(factors, pixelLights): relight an object list's entries (count +0x10, 100 bytes
    apart from +0x14: shape, -, colour buffer, matrix): with neither, the colours (shape +0x18 dwords) are cleared;
@@ -4460,13 +4460,13 @@ void roomUpdateNotice_keys(void);
 DWORD createUpdateNotice_keys(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 DWORD newIdConfirm_keys(void);
-/* 0x44ac90 chat_openTextField(x, y, len): start typing (keyboard released, input cleared, the edit box at x / y) */
+/* 0x44ac90 match_openTextField(x, y, len): start typing (keyboard released, input cleared, the edit box at x / y) */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-void chat_openTextField(int x, int y, int maxLength);
-/* 0x44ace0 chat_endTyping(): stop typing: the typed line 0x9dc92c kept in 0x9f63e4 (flag 0x9f67e8), the input buffer
+void match_openTextField(int x, int y, int maxLength);
+/* 0x44ace0 match_endTyping(): stop typing: the typed line 0x9dc92c kept in 0x9f63e4 (flag 0x9f67e8), the input buffer
    reset, the keyboard back */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-DWORD chat_endTyping(void);
+DWORD match_endTyping(void);
 /* 0x441770 replaySelect_ok(): the first of the 0x9dd928 entries (0x44 bytes from 0x9ddac8) marked 1 opens its page */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void replaySelect_ok(void);
@@ -4706,7 +4706,7 @@ DWORD room_joinAnswer(void);
 void arena_joinAnswer(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void menuState100_intro(void);
-/* 0x440840 editField_editProc(hwnd, msg, wparam, lparam) (stdcall, ret 0x10): the chat edit's window proc: Enter
+/* 0x440840 editField_editProc(hwnd, msg, wparam, lparam) (stdcall, ret 0x10): the text fields' edit control's window proc: Enter
    sends the line, Esc / Tab / arrows handled, the room's timers send their requests, all else to the original
    proc (0x9dd868, CallWindowProcA) */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
@@ -10781,7 +10781,7 @@ ST(shape_getShadingColorBufferBy, shade_setup();,
    (shape_getShadingColorBufferBy((BYTE *)(BUF + 0x30000), (int)g_a[0], BUF + 0x200 + g_a[2] * 0x80, (const BYTE *)(BUF + 0x10000), (const float *)g_a[1]), 0))
 ST(shape_shadingColours, shade_setup();,
    (((void (__cdecl *)(char *, int, char *, char *, int))0x466910)(BUF + 0x30000, g_a[0], BUF + 0x100, BUF + 0x10000, g_a[1]), 0),
-   (shape_shadingColours((float *)(BUF + 0x30000), g_a[0], (BYTE *)(BUF + 0x100), BUF + 0x10000, g_a[1]), 0))
+   (shape_shadingColours((DWORD *)(BUF + 0x30000), g_a[0], (BYTE *)(BUF + 0x100), BUF + 0x10000, (const float *)g_a[1]), 0))
 /* batch 71 */
 /* shade_setup's shape and factor pool; the parts also get ViewVolume_queueModel's mesh fields (vv_setup's view
    volume); an object list (BUF + 0x50000) of up to 3 entries (shape or none, colour buffers, invertible matrices),
@@ -14386,7 +14386,7 @@ ST(missions_frameBriefing, callee_stubs(g_stubSkirmishDraw, 0);, (CALL_PLAIN(0x4
 ST(jmp_net_getLocalAddress, callee_stubs(g_stubLocalAddr, 0);, CALL_PLAIN(0x4532e0, 0, 0, 0, 0, 0), (DWORD)jmp_net_getLocalAddress())
 /* batch 165 */
 /* the profile screen: its variables (PROFILE_VARS), saves to load and delete (selectload_setup), the keyboard and
-   menu sounds, the chat edit's state; the three button tables with the cursor often on a button, clicks */
+   menu sounds, the text fields' edit control's state; the three button tables with the cursor often on a button, clicks */
 static void profilepage_setup(void)
 {
 	PROFILE_VARS
@@ -14629,8 +14629,8 @@ ST(arenaUpdateNotice_keys, small_setup(g_stubKeyClose);, CALL_PLAIN(0x407970, 0,
 ST(roomUpdateNotice_keys, small_setup(g_stubKeyClose);, CALL_PLAIN(0x436940, 0, 0, 0, 0, 0), (roomUpdateNotice_keys(), 0))
 ST(createUpdateNotice_keys, small_setup(g_stubKeyClose);, CALL_PLAIN(0x4080c0, 0, 0, 0, 0, 0), (DWORD)(createUpdateNotice_keys()))
 ST(newIdConfirm_keys, small_setup(g_stubKeyClose2);, CALL_PLAIN(0x4370e0, 0, 0, 0, 0, 0), (DWORD)(newIdConfirm_keys()))
-ST(chat_openTextField, small_setup(g_stubTypeOn);, CALL_PLAIN(0x44ac90, 0, g_a[0], g_a[1], g_a[2], 0), (chat_openTextField((DWORD)(g_a[0]), (DWORD)(g_a[1]), (DWORD)(g_a[2])), 0))
-ST(chat_endTyping, small_setup(g_stubTypeOff);, CALL_PLAIN(0x44ace0, 0, 0, 0, 0, 0), (DWORD)(chat_endTyping()))
+ST(match_openTextField, small_setup(g_stubTypeOn);, CALL_PLAIN(0x44ac90, 0, g_a[0], g_a[1], g_a[2], 0), (match_openTextField((DWORD)(g_a[0]), (DWORD)(g_a[1]), (DWORD)(g_a[2])), 0))
+ST(match_endTyping, small_setup(g_stubTypeOff);, CALL_PLAIN(0x44ace0, 0, 0, 0, 0, 0), (DWORD)(match_endTyping()))
 ST(replaySelect_ok, small_setup(g_stubSound);, CALL_PLAIN(0x441770, 0, 0, 0, 0, 0), (replaySelect_ok(), 0))
 ST(newIdConfirm_clicks, small_setup(g_stubRoomClose);, CALL_PLAIN(0x435ce0, 0, 0, 0, 0, 0), (newIdConfirm_clicks(), 0))
 /* batch 172 */
@@ -15118,7 +15118,7 @@ static const DWORD g_gs_41f540[] = { 0x41e730, 2, 0x41ef60, 2, 0x41ef90, 1, 0x41
 static const DWORD g_gi_41f540[] = { 0x4dd080, 0x4dd084, 0x4dd0a8, 0x4dd0ac, 0x4dd0c8, 0x4dd0cc, 0x4dd560, 0x4dd564, 0x4dda34, 0x4dda48, 0x4ded68, 0x4ded6c, 0x4deda8, 0x4df010, 0x4df01c, 0x4df03c, 0x4df8e0, 0x4df910, 0x4e0458, 0x4e14fc, 0x67ef0c, 0x680370, 0x76d350, 0x76d354, 0x76d358, 0x76d35c, 0x76d3e8, 0x76d3f0, 0x76d480, 0x9db978, 0xa0e010, 0 };
 static const DWORD g_gb_41f540[] = { 0x76d438, 0 };
 ST(menuState100_intro, gen_setup(g_gs_41f540, g_gi_41f540, g_gb_41f540); /* an inlined texture lookup: the set 0xa0e010 and the logo texture 0x76d3f0 from it */ G32(0x76d3f0) = menutex_fonts(menutex_setup());, (CALL_PLAIN(0x41f540, 0, g_a[0], g_a[1], g_a[2], g_a[3]), 0), (menuState100_intro(), 0))   /* its callers ignore the eax it leaves (tools/eaxuse.py) */
-/* the chat edit's subclass (stdcall: hwnd, msg, wparam, lparam): a key down (codes 9 .. 0x25: Enter sends the line,
+/* the text fields' edit control's subclass (stdcall: hwnd, msg, wparam, lparam): a key down (codes 9 .. 0x25: Enter sends the line,
    Esc, Tab, the arrows ...), the two room timers (0x29a, 0x115c) or another message, the original proc and the
    room / typing flags, the shift state; every callee stubbed. The 3D sound: sound 0..15 (the table 0xa0e02c), a
    source and a listener position (vectors in BUF), two values, the listener's ear vector, sound on or off */
@@ -17707,7 +17707,7 @@ static const STest g_stests[] = {
 	T(dplay_resetAndCreate, 0, 200, 0), T(input_releaseAll, 0, 200, 0), T(dplaySlot0_host, 0, 200, 0), T(dplaySlot1_host, 0, 200, 0),
 	T(dplaySlot0_join, 0, 200, 0), T(dplaySlot1_join, 0, 200, 0), T(mapList_setDefault, 0, 200, 0), T(mapList_chooseAll, 0, 200, 0),
 	T(arenaUpdateNotice_keys, 0, 200, 0), T(roomUpdateNotice_keys, 0, 200, 0), T(createUpdateNotice_keys, 0, 200, 0), T(newIdConfirm_keys, 0, 200, 0),
-	T(chat_openTextField, 0, 200, 0), T(chat_endTyping, 0, 200, 0), T(replaySelect_ok, 0, 200, 0), T(newIdConfirm_clicks, 0, 200, 0),
+	T(match_openTextField, 0, 200, 0), T(match_endTyping, 0, 200, 0), T(replaySelect_ok, 0, 200, 0), T(newIdConfirm_clicks, 0, 200, 0),
 	/* batch 172 */
 	T(arena_editPassword, 0, 200, 0), T(room_editPassword, 0, 200, 0), T(sound_playVolume, 0, 200, 0), T(menu_closeInputLine, 0, 200, 0),
 	T(messageBox_keyClose, 0, 200, 0), T(mapList_ok, 0, 200, 0), T(net_sendChat, 0, 200, 0), T(arena_editAddress, 0, 200, 0),
@@ -18801,7 +18801,7 @@ static const struct { DWORD addr; void *fn; const char *name; } g_hooks3[] = {
 	{ 0x403530, (void *)mapList_setDefault, "mapList_setDefault" }, { 0x4034e0, (void *)mapList_chooseAll, "mapList_chooseAll" },
 	{ 0x407970, (void *)arenaUpdateNotice_keys, "arenaUpdateNotice_keys" }, { 0x436940, (void *)roomUpdateNotice_keys, "roomUpdateNotice_keys" },
 	{ 0x4080c0, (void *)createUpdateNotice_keys, "createUpdateNotice_keys" }, { 0x4370e0, (void *)newIdConfirm_keys, "newIdConfirm_keys" },
-	{ 0x44ac90, (void *)chat_openTextField, "chat_openTextField" }, { 0x44ace0, (void *)chat_endTyping, "chat_endTyping" },
+	{ 0x44ac90, (void *)match_openTextField, "match_openTextField" }, { 0x44ace0, (void *)match_endTyping, "match_endTyping" },
 	{ 0x441770, (void *)replaySelect_ok, "replaySelect_ok" }, { 0x435ce0, (void *)newIdConfirm_clicks, "newIdConfirm_clicks" },
 	/* batch 172 */
 	{ 0x404f90, (void *)arena_editPassword, "arena_editPassword" }, { 0x433a80, (void *)room_editPassword, "room_editPassword" },

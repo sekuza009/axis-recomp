@@ -1,7 +1,8 @@
-/* tex_colours.c: colouring textures. A texture manager keeps per slot (0x68-byte records from +0xc0108) two HSV
-   tints and their flags; a texture's pixels (RGBA at image) are tinted where its colour mask (colourMask) is strong
-   in red (the first tint) or green (the second). A tint replaces the hue and offsets saturation and value.
-   Also: a colour added to RGBA pixels, RGB -> HSV, and a texture record set up from its name. */
+/* tex_colours.c: colouring textures. A texture bank (TextureBank, the game's class Texture) keeps per material
+   (TexRecord, 0x68 bytes, records from +0xc0128) two HSV tints and their flags; a texture's pixels (RGBA at image)
+   are tinted where its colour mask (colourMask) is strong in red (the first tint) or green (the second). A tint
+   replaces the hue and offsets saturation and value. Also: a colour added to RGBA pixels, RGB -> HSV, and a texture
+   record set up from its name. */
 #include "../game.h"
 #include <string.h>
 

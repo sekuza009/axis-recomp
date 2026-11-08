@@ -1,4 +1,7 @@
-/* profile_dialogs.c: the profile screen's dialogs: typing a new pilot's name, and the two yes / no questions. */
+/* profile_dialogs.c: the profile screen's drawing: the management window (the pilot list and the chosen pilot:
+   profile_drawManagementWindow, profile_drawChosenPilot), CHARACTER SELECT's pilot grid (pilotSelect_page,
+   profile_drawPilotSelect), the message window, the new pilot's name typed (and its dialog), and the two yes / no
+   questions. */
 #include "../game.h"
 #include <string.h>
 #include "portrait.h"

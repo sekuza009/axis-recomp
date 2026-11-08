@@ -410,9 +410,10 @@ void (replaySelect_keys)(void)
 		key_repeat(g_keyDown, &g_repeatDown, replaySelect_scrollDown);
 }
 
-/* 0x441810: the replay selection dialog's mouse: a click (the blink clock restarted) on the arrows (0 / 1), the two
-   toggles (g_replayWrap, g_replayRandomOrder), every replay in or out, OK, cancel (7), or a row's replay (8 .. 17); holding an arrow
-   scrolls once the clock reaches 5 (k_5f), restarting it. The original leaves eax to callers that ignore it */
+/* 0x441810: the replay selection dialog's mouse: a click (the repeat clock g_menuRepeatClock restarted) on the arrows
+   (0 / 1), the two toggles (g_replayWrap, g_replayRandomOrder), every replay in or out, OK, cancel (7), or a row's
+   replay (8 .. 17); holding an arrow scrolls once the clock reaches 5 (k_5f), restarting it. The original leaves eax
+   to callers that ignore it */
 void (replaySelect_mouse)(void)
 {
 	const float *repeat = (const float *)ADDR(k_5f);
@@ -546,7 +547,7 @@ static void leave_game(u32 matchMode, int disconnect)
 	dplay_leaveSession();
 	if (disconnect)
 		net_disconnect();   /* net_disconnect */
-	g_arenaLobbyState = 0;
+	g_hostingState = 0;
 	for (NetSlot *p = g_netSlots; p < g_netSlots + 16; p++) {
 		p->used = 0;
 		p->id = 0;
@@ -637,7 +638,7 @@ u32 (game_returnToGameRoom)(void)
 	tunnel_addRing();
 	u32 r = reset_menus(FAR_BACK, NEAR_BACK, 2, 0, 0);
 	g_retypePassword = 0;
-	g_arenaGameSetUp = 0;
+	g_hostGameSetUp = 0;
 	g_roomLoginDue = 0;
 	g_rankingRequestPending = 0;
 	return r;

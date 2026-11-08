@@ -12,17 +12,17 @@ int (hangul_glyphs)(u32 hi, u32 lo)
 {
 	u32 v = (hi & 0xffff0000u) | (hi & 0xff) << 8 | (lo & 0xff);
 	int vowel = SC(OBJ(g_hangulVowelIndex) + ((v >> 5) & 31)), tail = SC(OBJ(g_hangulTailIndex) + (v & 31)), lead = SC(OBJ(g_hangulLeadIndex) + ((v >> 10) & 31));
-	int tailSet = SC(OBJ(g_hangulTailSet) + vowel), leadSet, vowelSet;
+	int tailGlyphSet = SC(OBJ(g_hangulTailSet) + vowel), vowelGlyphSet, leadGlyphSet;
 	if (!tail) {
-		leadSet = SC(OBJ(g_hangulLeadSetPlain) + lead);
-		vowelSet = SC(OBJ(g_hangulVowelSetPlain) + vowel);
+		vowelGlyphSet = SC(OBJ(g_hangulVowelSetByLead) + lead);
+		leadGlyphSet = SC(OBJ(g_hangulLeadSetByVowel) + vowel);
 	} else {
-		leadSet = SC(OBJ(g_hangulLeadSetTail) + lead);
-		vowelSet = SC(OBJ(g_hangulVowelSetTail) + vowel);
+		vowelGlyphSet = SC(OBJ(g_hangulVowelSetByLeadTail) + lead);
+		leadGlyphSet = SC(OBJ(g_hangulLeadSetByVowelTail) + vowel);
 	}
-	g_hangulLeadGlyph = lead + vowelSet * 20;
-	g_hangulVowelGlyph = vowel + leadSet * 22;
-	return g_hangulTailGlyph = tail + tailSet * 28;
+	g_hangulLeadGlyph = lead + leadGlyphSet * 20;
+	g_hangulVowelGlyph = vowel + vowelGlyphSet * 22;
+	return g_hangulTailGlyph = tail + tailGlyphSet * 28;
 }
 
 /* 0x402590: the printable characters of a line of text (spaces not counted): outside a match "|x" is a code ("||" a
@@ -239,7 +239,7 @@ int (text_hangulConvert)(u32 code)
 	if (hi == 0xa4) {
 		for (int k = 0; k < 39; k++)
 			if ((u16)code == GAME_VAR(u16, OBJ(g_ksJamoCodes) + k * 2))
-				return (OBJ(g_unlockTablesNet) + 0x1430) | GAME_VAR(u16, OBJ(g_ksJamoJohab) + k * 2);
+				return (OBJ(g_unlockTablesLadder) + 0x1430) | GAME_VAR(u16, OBJ(g_ksJamoJohab) + k * 2);
 		return IMG(0x4b8761);
 	}
 	int ok = lo >= 0xa1 && lo <= 0xfe;

@@ -48,7 +48,7 @@ static void main_ring(Scene *scene, Actor *player)
 	int t = ftol((long double)view_fov() * 5.0f);
 	float trig = g_trig[(t % 3600 + 3600) % 3600];
 	int half = gfx_getHeight() / 2;
-	float radius = f32(half / (long double)trig);
+	float focal = f32(half / (long double)trig);
 	glBegin(GL_QUAD_STRIP);
 	for (int angle = 0; angle <= 3600; angle += 100) {
 		if (player->homedOn == 1 && scene->sessionMode == 1)
@@ -56,7 +56,7 @@ static void main_ring(Scene *scene, Actor *player)
 		else
 			glColor4f(0.0f, 1.0f, 0.0f, 0.25f);
 		int detect = ftol(player->detectionAngle);
-		float v[2] = { 0.0f, f32(g_trig[(detect % 3600 + 3600) % 3600] * (long double)radius) };
+		float v[2] = { 0.0f, f32(g_trig[(detect % 3600 + 3600) % 3600] * (long double)focal) };
 		vec_rotate(v, angle);
 		for (int pass = 0; pass < 2; pass++) {
 			if (pass == 1) {
@@ -269,8 +269,8 @@ static void main_timers(Scene *scene, Actor *player)
 	}
 }
 
-/* the actor's snapshot (Actor/<name>/SnapShot, loaded once per actor type) at the bottom right, while it is not the
-   selected actor (the cockpit view) (or for a spectator on camera 2) */
+/* the held item's snapshot (Actor/<item name>/SnapShot, loaded once per item into snapshotTex) at the bottom right,
+   while it is not the selected actor (the cockpit view) (or for a spectator on camera 2) */
 static void main_snapshot(Scene *scene, Actor *player)
 {
 	char name[256];

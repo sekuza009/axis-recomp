@@ -78,8 +78,8 @@ void (menuState400_enter)(void)
 		{ ADDR(g_playerSetupRight), 0x21c }, { ADDR(g_playerSetupBottom), 0x190 }, { ADDR(g_arenaGameListRight), 0x262 }, { ADDR(g_newArenaFormLeft), 0x28 }, { ADDR(g_newArenaFormTop), 0x1e },
 		{ ADDR(g_newArenaFormRight), 0x258 } };
 	static const u32 cleared1[] = { ADDR(g_typingArenaPlayerName), ADDR(g_editingNewArenaName), ADDR(g_editingNewArenaFragLimit), ADDR(g_editingNewArenaTimeLimit), ADDR(g_typingArenaPassword), ADDR(g_lanSearch), ADDR(g_lobbySearching), ADDR(g_arenaLanListBuilt),
-	                                ADDR(g_arenaServerList), ADDR(g_gameCount), ADDR(g_lobbyBlinkClock) };
-	static const u32 cleared2[] = { ADDR(g_pickedGame), ADDR(g_gameListTop), ADDR(g_gameListRow), ADDR(g_lanSearchStarted), ADDR(g_serverSearching), OBJ(g_arenaBright), ADDR(g_arenaUpdateNotice), ADDR(g_arenaLobbyState) };
+	                                ADDR(g_arenaServerList), ADDR(g_gameCount), ADDR(g_listBlinkClock) };
+	static const u32 cleared2[] = { ADDR(g_pickedGame), ADDR(g_gameListTop), ADDR(g_gameListRow), ADDR(g_lanSearchStarted), ADDR(g_serverSearching), OBJ(g_arenaBright), ADDR(g_arenaUpdateNotice), ADDR(g_hostingState) };
 	static const Store state[] = {
 		{ ADDR(g_arenaCameraMode), 2 }, { ADDR(g_lastPanel), 999 }, { (OBJ(g_arenaBright) + 0x4), ONE }, { (OBJ(g_arenaBright) + 0x8), ONE }, { (OBJ(g_arenaBright) + 0xc), ONE },
 		{ OBJ(g_arenaDim), 0x3e99999a }, { (OBJ(g_arenaDim) + 0x4), 0x3f333333 }, { (OBJ(g_arenaDim) + 0x8), 0x3f333333 }, { (OBJ(g_arenaDim) + 0xc), ONE }, { ADDR(g_unusedArenaWord), 0xf },
@@ -172,7 +172,7 @@ void (menuState800_enterGameRoom)(void)
 		{ ADDR(g_camPoint2X), 0x41a00000 }, { ADDR(g_camPoint2Y), 0x41200000 }, { ADDR(g_camAim2X), 0xc28c0000 }, { ADDR(g_camAim2Y), 0xc25c0000 },
 		{ (OBJ(g_camPoints) + 0x30), 0xc1a00000 }, { (OBJ(g_camPoints) + 0x34), 0xc1200000 }, { (OBJ(g_camAims) + 0x30), 0x428c0000 }, { (OBJ(g_camAims) + 0x34), 0x425c0000 },
 		{ (OBJ(g_camPoints) + 0x40), 0xc1a00000 }, { (OBJ(g_camPoints) + 0x44), 0 }, { (OBJ(g_camAims) + 0x40), 0x428c0000 }, { (OBJ(g_camAims) + 0x44), 0 } };
-	static const u32 cleared[] = { ADDR(g_roomRequestOut), ADDR(g_newIdAnswerAwaited), ADDR(g_unusedRoomWord), ADDR(g_arenaGameSetUp), ADDR(g_roomLoginDue), ADDR(g_rankingRequestPending), ADDR(g_roomConnected), ADDR(g_roomAwaitingServer),
+	static const u32 cleared[] = { ADDR(g_roomRequestOut), ADDR(g_newIdAnswerAwaited), ADDR(g_unusedRoomWord), ADDR(g_hostGameSetUp), ADDR(g_roomLoginDue), ADDR(g_rankingRequestPending), ADDR(g_roomConnected), ADDR(g_roomAwaitingServer),
 	                               ADDR(g_roomUpdateNotice) };
 	g_matchMode = 2;
 	arena_clearSessionEntry();

@@ -25,7 +25,7 @@ void *THISCALL (class_emptyCtor)(void *self) { return self; }
 int THISCALL (scenePath_advanceStub)(void *self, int a) { (void)self; (void)a; return 0; }
 /* 0x48b430: an empty two-argument method (ret 8). It is called as ScenePath's open (stage_advanceScenePath:
    scriptName, "Scene"). Because the compiler folded identical empty bodies, match_frame also calls it on the scene
-   after a cheat code (scene, localPlayer, code; app_frameByScreen.c:1582) */
+   after a cheat code (scene, localPlayer, code; chat_keys in main_loop.c) */
 void THISCALL (scenePath_openStub)(void *self, int a0, int a1) { (void)self; (void)a0; (void)a1; }
 /* 0x48b450: ScenePath's notify method (empty: ret 0x10). Only script_notifyObject calls it, with its four arguments */
 void THISCALL (scenePath_notifyStub)(void *self, int a0, int a1, int a2, int a3) { (void)self; (void)a0; (void)a1; (void)a2; (void)a3; }
@@ -567,11 +567,12 @@ u32 (reg_writeLadderSettings)(void)
 u32 (reg_writeEndMode)(u32 value) { return reg_write(value, (const char *)STR(0x4b0450, "EndMode")); }
 u32 (reg_writeStartMode)(u32 value) { return reg_write(value, (const char *)STR(0x4b29dc, "StartMode")); }
 
-/* 0x44ace0: the chat line's typing ended. g_keptChat (0x400 bytes) is cleared and, when the typed line (g_inputLine)
+/* 0x44ace0: the in-match text field's typing ended (the chat line, or the Esc menu's replay name). g_keptChat (0x400
+   bytes) is cleared and, when the typed line (g_inputLine)
    is not empty, the whole buffer is copied into it and g_chatTyping cleared. The text field is closed
    (g_textFieldOpen 0), the key state reset (input_resetKeys) and the keyboard taken again (input_initKeyboard).
    Returns that call's eax */
-u32 (chat_endTyping)(void)
+u32 (match_endTyping)(void)
 {
 	memset((void *)OBJ(g_keptChat), 0, 0x400);
 	if (strlen(g_inputLine)) {
@@ -753,14 +754,14 @@ int (sys_checkClockTampering)(void)
    ScenePath is opened when it is not yet (scenePath_openStub with scriptName and "Scene"; opened is never set, so
    every time) and stepped (scenePath_advanceStub, which answers 0, so scriptMode is cleared). With a sound named
    (pathSound, never written), "scenePath\<name>" is played at volume 100. Its caller ignores the eax it leaves */
-void THISCALL (stage_advanceScenePath)(u8 *scene, u32 path)
+void THISCALL (stage_advanceScenePath)(u8 *stage, u32 dtBits)
 {
-	Stage *st = (Stage *)scene;
+	Stage *st = (Stage *)stage;
 	if (!st->scriptMode)
 		return;
 	if (!st->scenePath.opened)
 		scenePath_openStub((u8 *)&st->scenePath, st->scriptName, (const void *)STR(0x4c45e4, "Scene"));
-	if (!scenePath_advanceStub((u8 *)&st->scenePath, path))
+	if (!scenePath_advanceStub((u8 *)&st->scenePath, dtBits))
 		st->scriptMode = 0;
 	const char *name = st->pathSound;
 	if (*name) {
@@ -828,9 +829,9 @@ static const PartKind part_kinds[5] = {
    the player count (playerRecordCount) grows to cover p; the same type again is 1 at once. A type past the count is a fatal
    message (the game exits); then the player's caches emptied, the type's name copied, the type
    stored, and each of the player's actors reloads the part; 1 */
-static int set_part(u8 *scene, int p, int type, const PartKind *k)
+static int set_part(u8 *stage, int p, int type, const PartKind *k)
 {
-	Stage *st = (Stage *)scene;
+	Stage *st = (Stage *)stage;
 	if (type < 0)
 		return 0;
 	u8 *pl = (u8 *)&st->playerRecords[p];
@@ -838,15 +839,15 @@ static int set_part(u8 *scene, int p, int type, const PartKind *k)
 		st->playerRecordCount = p + 1;
 	if (GAME_VAR(int, pl + k->field) == type)
 		return 1;
-	if (type >= GAME_VAR(int, scene + k->count))
+	if (type >= GAME_VAR(int, stage + k->count))
 		sys_fatalError((char *)OBJ(g_logStage), (const char *)(uintptr_t)k->message, type);
 	ShapeManager_releaseModels(pl + k->shapes);
 	SkeletonManager_releaseSkeletons(pl + k->skels);
-	strcpy((char *)pl + k->name, (const char *)scene + k->names + type * k->stride);
+	strcpy((char *)pl + k->name, (const char *)stage + k->names + type * k->stride);
 	GAME_VAR(int, pl + k->field) = type;
 	for (int i = 0; i < st->actorCount; i++)
 		if (st->actors[i].player == p)
-			GAME_THISCALL(k->reload, void, void *, int)(scene, i);
+			GAME_THISCALL(k->reload, void, void *, int)(stage, i);
 	return 1;
 }
 

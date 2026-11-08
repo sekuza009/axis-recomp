@@ -232,8 +232,8 @@ void (room_editJoinPassword)(void)
 
 /* ---- the match ---- */
 
-/* 0x44ac90: a text field in the match (the chat line), its caret at (x, y) */
-void (chat_openTextField)(int x, int y, int maxLength)
+/* 0x44ac90: a text field in the match (the chat line, or the Esc menu's replay name), its caret at (x, y) */
+void (match_openTextField)(int x, int y, int maxLength)
 {
 	input_releaseKeyboard();
 	g_textFieldOpen = 1;

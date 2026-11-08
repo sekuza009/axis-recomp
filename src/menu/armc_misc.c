@@ -585,7 +585,8 @@ void (armc_initCameraBox)(void)
 		GAME_VAR(u32, OBJ(g_armcCameraBox) - 0x40 + corner[k].offset) = corner[k].sign > 0 ? 0x442f0000 : corner[k].sign < 0 ? 0xc42f0000 : 0;
 }
 
-/* 0x40dfa0: the six part panels (g_panels): their corners (+-600), x, angle cleared and turning speeds; panels 2 /
+/* 0x40dfa0: the six spinning background panels (g_panels; armc_drawPanels draws 1 .. 5 with the spiral textures):
+   their corners (+-600), x, angle cleared and turning speeds; panels 2 /
    3's breathing half widths (g_panelSize2 600, g_panelSize3 200) and rates (g_panelRate2 -2, g_panelRate3 2) */
 void (armc_initPanels)(void)
 {

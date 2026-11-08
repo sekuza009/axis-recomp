@@ -216,12 +216,12 @@ static int append_parts(const Unlock *entry, u32 list, int len)
 	return len + n;
 }
 
-/* the unlocked level: in network play (g_armcFrom 3) the player's level (g_pilotLevel) less one; else the progress
-   (0x9f181c) as the exe's patch reads it (its helper at 0xb68e80): up to 14 as it is, 15 becomes 14, 16 and above
-   15. (The original's check after it, 0x7f and above becoming 14, can no longer be met.) */
-static int unlocked_level(int network)
+/* the unlocked level: opened from the Ladder game room (g_armcFrom 3) the player's level (g_pilotLevel) less one;
+   else the progress (0x9f181c) as the exe's patch reads it (its helper at 0xb68e80): up to 14 as it is, 15 becomes
+   14, 16 and above 15. (The original's check after it, 0x7f and above becoming 14, can no longer be met.) */
+static int unlocked_level(int fromRoom)
 {
-	if (network)
+	if (fromRoom)
 		return g_pilotLevel - 1;
 	int level = g_progress;
 	if (level >= 15)
@@ -232,22 +232,23 @@ static int unlocked_level(int network)
 }
 
 /* 0x40da40: the unlocked part lists up to a level (g_unlockedLevel, also g_armcLevel): for each level up to it, of the table
-   set (network play g_unlockTablesNet, else g_unlockTablesSolo; seven tables 0x320 bytes apart, an Unlock a level), the first five
+   set (opened from the Ladder game room, g_armcFrom 3: g_unlockTablesLadder; else, the arena's network play included,
+   g_unlockTablesByProgress; seven tables 0x320 bytes apart, an Unlock a level), the first five
    tables' parts appended to the five part lists (g_headList / g_chestList / g_armList / g_legList / g_boosterList, lengths
    g_headCount / g_chestCount / g_armCount / g_legCount / g_boosterCount), the last two's to the two lists that start with -1
    (g_weaponListTable / g_extraListTable, lengths g_weaponCount / g_extraCount). The lengths are read from memory at each step as the
    original does (a list long enough to run over them would change them); the caller ignores the eax it leaves */
 void (armc_buildPartLists)(void)
 {
-	int network = g_armcFrom == 3;
-	int level = unlocked_level(network);
+	int fromRoom = g_armcFrom == 3;
+	int level = unlocked_level(fromRoom);
 	g_armcLevel = level;
 	g_unlockedLevel = level;
 	static const u32 lists[5] = { OBJ(g_headList), OBJ(g_chestList), OBJ(g_armList), OBJ(g_legList), OBJ(g_boosterList) };
 	static const u32 lengths[5] = { ADDR(g_headCount), ADDR(g_chestCount), ADDR(g_armCount), ADDR(g_legCount), ADDR(g_boosterCount) };
 	for (int k = 0; k < 5; k++)
 		GAME_VAR(int, lengths[k]) = 0;
-	u32 tables = network ? OBJ(g_unlockTablesNet) : OBJ(g_unlockTablesSolo);
+	u32 tables = fromRoom ? OBJ(g_unlockTablesLadder) : OBJ(g_unlockTablesByProgress);
 #define TABLE(k, lv) ((const Unlock *)RELOC(tables) + (k) * 20 + (lv))   /* (20 levels a part kind) */
 	if (level >= 0) {
 		int last = 0;   /* the fifth list's length: the original keeps it in a register until the end */

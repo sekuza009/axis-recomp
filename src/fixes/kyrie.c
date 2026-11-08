@@ -64,7 +64,7 @@ static void add_kyrie(u8 *stage)
 			memcpy(name, MARKED, 7);
 		}
 		*count = n + 1;
-		int *level15 = (int *)(g_unlockTablesSolo + k * 0x320 + 15 * 0x28);   /* level 15 (after the last mission): count, parts */
+		int *level15 = (int *)(g_unlockTablesByProgress + k * 0x320 + 15 * 0x28);   /* level 15 (after the last mission): count, parts */
 		if (level15[0] == 1 && level15[1] == (int)k_slots[k].seraphim) {
 			level15[2] = n;
 			level15[0] = 2;

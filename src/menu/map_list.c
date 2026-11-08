@@ -211,8 +211,9 @@ void (mapList_draw)(void)
 }
 #undef cyan_text
 
-/* 0x4036c0: the map list's mouse: a click (the blink clock restarted) on a row's map (0 .. 9) or game type (10 ..
-   19), the arrows (20 / 21: one row up / down), DEFAULT (22: no map chosen, types 0), SELECT ALL (23), OK (24) or CANCEL (25); in mode 2 (g_arenaCameraMode) holding an
+/* 0x4036c0: the map list's mouse: a click (the repeat clock g_menuRepeatClock restarted) on a row's map (0 .. 9) or
+   game type (10 .. 19), the arrows (20 / 21: one row up / down), DEFAULT (22: no map chosen, types 0), SELECT ALL
+   (23), OK (24) or CANCEL (25); in mode 2 (g_arenaCameraMode) holding an
    arrow scrolls once the clock reaches 5 (k_5f), restarting it. The original leaves eax to callers that ignore
    it */
 void (mapList_mouse)(void)

@@ -135,9 +135,9 @@ typedef struct { u32 vtable; void *banks[6]; i32 count; } TextureManager;   /* t
 #define music_setVolumeSetting(v) GAME_FN(music_setVolumeSetting, 0x457140, void, int)(v)
 #define scene_resetScores(scene) GAME_THISFN(scene_resetScores, 0x4620e0, void, Scene *)(scene)
 #define events_clear(scene, time) GAME_THISFN(events_clear, 0x4629c0, void, Scene *, float)(scene, time)
-/* (app/app_frameByScreen.c: the replay's frame) */
+/* (app/main_loop.c: the replay's frame) */
 #define events_age(scene, dt) GAME_THISFN(events_age, 0x462ac0, void, void *, u32)(scene, dt)
-/* (app/app_frameByScreen.c: the match's frame) */
+/* (app/main_loop.c: the match's frame) */
 #define profile_saveProgress() GAME_FN(profile_saveProgress, 0x447010, u32, void)()
 #define stage_deactivateActors(stage) GAME_THISFN(stage_deactivateActors, 0x45e1c0, void, void *)(stage)
 #define actor_checkDataLoss(stage, a) GAME_THISFN(actor_checkDataLoss, 0x45ee40, u32, void *, int)(stage, a)   /* 0: the parts' data was changed */
@@ -172,7 +172,7 @@ typedef struct { u32 vtable; void *banks[6]; i32 count; } TextureManager;   /* t
 #define net_sendPlayerState(scene, p) GAME_THISFN(net_sendPlayerState, 0x48e2c0, void, void *, int)(scene, p)
 #define net_sendMatchEvent(scene) GAME_THISFN(net_sendMatchEvent, 0x48e680, void, void *)(scene)
 #define net_sendFlagPiece(scene, p) GAME_THISFN(net_sendFlagPiece, 0x48e990, void, void *, int)(scene, p)
-#define stage_advanceScenePath(scene, path) GAME_THISFN(stage_advanceScenePath, 0x48fd50, void, void *, u32)(scene, path)
+#define stage_advanceScenePath(stage, dtBits) GAME_THISFN(stage_advanceScenePath, 0x48fd50, void, void *, u32)(stage, dtBits)
 #define escMenu_update(scene) GAME_THISFN(escMenu_update, 0x49ca70, void, void *)(scene)
 #define crt_fprintf(...) GAME_CDECL(0x49f135, int, void *, const char *, ...)(__VA_ARGS__)
 #define net_localSlot() GAME_FN(net_localSlot, 0x4a86f0, int, void)()   /* the local player's slot */
@@ -356,7 +356,7 @@ typedef struct { u32 vtable; void *banks[6]; i32 count; } TextureManager;   /* t
 #define bullet_spawn(stage, slot, owner, homingTarget, shot, quiet) GAME_THISFN(bullet_spawn, 0x47ce50, int, void *, int, int, int, void *, int)(stage, slot, owner, homingTarget, shot, quiet)
 #define collisionTri_traceSegment(rec, p0, p1, hit, dist) GAME_THISFN(collisionTri_traceSegment, 0x47fb80, int, void *, const float *, const float *, float *, float *)(rec, p0, p1, hit, dist)
 #define ObjectList_queue(list, view, factors, tint, cull, material, extraMatrix) GAME_THISFN(ObjectList_queue, 0x46fd20, int, void *, void *, void *, u8 *, int, u32, u32)(list, view, factors, tint, cull, material, extraMatrix)
-#define tex_getItemFileBy(manager, name) GAME_THISFN(tex_getItemFileBy, 0x455550, void *, void *, const char *)(manager, name)   /* the dat file at the item's data */
+#define tex_getItemFileBy(bank, name) GAME_THISFN(tex_getItemFileBy, 0x455550, void *, void *, const char *)(bank, name)   /* the dat file at the item's data */
 #define ptx_initTables() GAME_FN(ptx_initTables, 0x46ea00, void, void)()
 #define ptx_decodeFile(path, out, fmt, width, height) GAME_FN(ptx_decodeFile, 0x46eb00, int, const char *, void *, int *, int *, int *)(path, out, fmt, width, height)
 #define ptx_decode(file, out, fmt, width, height) GAME_FN(ptx_decode, 0x46ed80, int, void *, void *, int *, int *, int *)(file, out, fmt, width, height)
@@ -594,7 +594,7 @@ typedef struct { float r, g, b, a; } Colour;   /* an RGBA colour, four floats (C
 #define editField_createEdit(chars) GAME_FN(editField_createEdit, 0x43f460, void, int)(chars)   /* the hidden EDIT control typing goes to */
 #define itoa(value, out, radix) GAME_CDECL(0x49fb53, char *, int, char *, int)(value, out, radix)
 #define g_missionProgress (*(int *)(g_pilotSave + 0x104))   /* the furthest stage reached */
-#define g_trig (g_tanTable)            /* 3600 values by tenths of a degree (the ring's radius) */
+#define g_trig (g_tanTable)            /* 3600 values by tenths of a degree (the ring's focal length and radius) */
 #define g_showFps (*(int *)&g_cfgSwitches[2])           /* 1: the FPS counter is shown */
 #define g_gameModeNames ((const char (*)[64])STR(0x4c7030, "DEATH MATCH"))   /* "DEATH MATCH", "TEAM DEATH MATCH", ... (12) */
 /* the title and profile screens */
@@ -678,8 +678,8 @@ typedef struct { float r, g, b, a; } Colour;   /* an RGBA colour, four floats (C
 #define net_announceChangedTeam(scene, player, team, text) GAME_THISFN(net_announceChangedTeam, 0x463610, void, Scene *, int, int, const char *)(scene, player, team, text)
 #define net_announceJoinedTeam(scene, player, team, text) GAME_THISFN(net_announceJoinedTeam, 0x4635b0, void, Scene *, int, int, const char *)(scene, player, team, text)
 #define notice_printCentre(scene, ...) GAME_FN(notice_printCentre, 0x463450, int, Scene *, const char *, ...)(scene, __VA_ARGS__)   /* a HUD notice (a format and its arguments) */
-#define chat_openTextField(x, y, maxLength) GAME_FN(chat_openTextField, 0x44ac90, void, int, int, int)(x, y, maxLength)   /* the match's text line opened */
-#define chat_endTyping() GAME_FN(chat_endTyping, 0x44ace0, void, void)()
+#define match_openTextField(x, y, maxLength) GAME_FN(match_openTextField, 0x44ac90, void, int, int, int)(x, y, maxLength)   /* the match's text line opened */
+#define match_endTyping() GAME_FN(match_endTyping, 0x44ace0, void, void)()
 #define replay_closeRecording(scene) GAME_THISFN(replay_closeRecording, 0x487ed0, void, Scene *)(scene)   /* the recording stopped */
 #define replay_startRecording(scene, name) GAME_THISFN(replay_startRecording, 0x487cb0, void, Scene *, const char *)(scene, name)
 #define music_playMatch(stage) GAME_THISFN(music_playMatch, 0x462850, void, Scene *)(stage)
@@ -859,7 +859,7 @@ typedef struct { float r, g, b, a; } Colour;   /* an RGBA colour, four floats (C
 #define GetModuleHandleA(name) IMPORT(0x4a915c, void *, const char *)(name)
 #define glWindow_resize(width, height) GAME_FN(glWindow_resize, 0x468450, int, int, int)(width, height)   /* app/win32.c */
 #define TimeSync_frameTime(timer) GAME_THISFN(TimeSync_frameTime, 0x487490, long double, void *)(timer)   /* seconds since its last call */
-#define loading_draw_bits(progress) GAME_FN(loading_draw, 0x469320, void, u32)(progress)   /* the loading screen at progress (float bits) */
+#define loading_draw_bits(scroll) GAME_FN(loading_draw, 0x469320, void, u32)(scroll)   /* the loading screen at scroll (float bits) */
 #define replaySelect_allIn() GAME_FN(replaySelect_allIn, 0x4417f0, void, void)()   /* every replay file of the replay selection list in (FileEntry.picked) */
 #define replaySelect_toggle(i) GAME_FN(replaySelect_toggle, 0x4417c0, void, int)(i)   /* replay file i of the replay selection list in or out (FileEntry.picked) */
 #define replaySelect_hitTest(x, y) GAME_FN(replaySelect_hitTest, 0x440b70, int, int, int)(x, y)   /* the replay selection control at (x, y), -1: none */

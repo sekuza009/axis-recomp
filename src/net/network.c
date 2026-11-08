@@ -1246,10 +1246,10 @@ static void send_buffer(u32 socket, u32 buffer, int size)
 /* 0x4521c0: packet `kind` sent to `to` (100 the lobby, 101 the game server; another value sends only the packet
    itself): its kind word (in g_netKindBuffer; none: nothing at all), then the kind's buffer: 10 .. 12 to the lobby (0x5b
    bytes), 13 the arena list request (the server list cleared first), 23 the hosted arena's address (0x10, in
-   g_lobbyKeepAlive), 14 / 15 the address request (this machine's
-   address at address), 17 .. 22 and 24 .. 29 to the game server (19 and 21 / 26 after clearing the server or player
-   tables, 22 with its first byte set). Most kinds are kept as the last request (g_netLastRequest). The callers ignore the
-   eax it leaves */
+   g_lobbyKeepAlive), 14 / 15 the Ladder login / new-ID registration (the account record g_accountPacket, 0x10b bytes,
+   with this machine's address put in), 17 .. 22 and 24 .. 29 to the game server (19 and 21 / 26 after clearing the
+   server or player tables, 22 with its first byte set). Most kinds are kept as the last request (g_netLastRequest).
+   The callers ignore the eax it leaves */
 void (net_send)(int kind, int to)
 {
 	u32 *word = g_netKindBuffer;

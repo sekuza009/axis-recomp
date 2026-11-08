@@ -637,8 +637,8 @@ void (profileList_keys)(void)
    (profile_typeNewName), 1 DELETE asked (profile_askDelete) when there is one, 2 LOG IN: logs in (g_profileLogInAsked, page 4:
    profile_logIn; with no profiles a new name typed instead), 3 LOG OUT asked (profile_askLogOut), 4 the list: a row
    (profileList_hitTest) chosen, or the chosen row clicked again (g_profileRowClicked) logs in the same way; 5 / 6 a row up / down. Then with the button held
-   (g_mouseButtonsHeld) on the arrows they step again once the blink clock (g_menuRepeatClock) reaches 5. The original leaves eax to
-   callers that ignore it */
+   (g_mouseButtonsHeld) on the arrows they step again once the repeat clock (g_menuRepeatClock) reaches 5. The original leaves eax
+   to callers that ignore it */
 void (profileList_mouse)(void)
 {
 	if (g_mouseClick) {

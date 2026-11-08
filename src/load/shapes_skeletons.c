@@ -78,8 +78,8 @@ void THISCALL (SkeletonManager_initBy)(u8 *self, const char *dir, int n, u32 sou
 /* 0x466a60 (thiscall on a shape set): set up for n shapes from the directory dir (dir, upper-cased; none or
    0x4b1304: empty), the source (where the items load from: 0 / 1 loose files, 2 the packed file) at source, n at capacity, extra bytes (dataSize) after them: the block (+8, its size n x 0x98 +
    extra at +4) holds the shapes' 0x4c-byte records (nodes), then their 0x4c-byte shapes (items, each created and
-   released), then the rest (data); the texture folder (textureDir) and the bind flags with the tint (bindFlags ..) cleared. Its callers ignore the
-   eax it leaves */
+   released), then the rest (data); the texture-name suffix (textureSuffix) and the bind flags with the tint (bindFlags ..) cleared. Its callers
+   ignore the eax it leaves */
 void THISCALL (ShapeManager_initBy)(u8 *self, const char *dir, int n, u32 source, int extra, void *mem, int size)
 {
 	ShapeManager *mg = (ShapeManager *)self;
@@ -399,7 +399,7 @@ u8 *THISCALL (skel_getSkeletonPtrBy)(u8 *cache, const char *name)
 
 /* 0x466dc0 (thiscall on a shape cache): the shape named name, as skel_getSkeletonPtrBy does it for skeletons: shape
    i (0x4c bytes each from items) loaded from the shape dat (shapeDat_getItemFileBy, shape_read) or a "shp" / "obj" file
-   (model_loadFrom), its textures looked up (shape_bindTextureBy with the cache's texture folder textureDir as the suffix and seven values
+   (model_loadFrom), its textures looked up (shape_bindTextureBy with the cache's texture-name suffix (textureSuffix) and seven values
    bindFlags ..); bound (shape_bindPartTextures) when bind is 1, found or added */
 u8 *THISCALL (shape_getByName)(u8 *cache, const char *name, int bind)
 {

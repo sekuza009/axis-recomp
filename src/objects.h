@@ -103,7 +103,7 @@
 #define g_netPlayerList ((RankedPlayer *)IMG(0xa05330))   /* RankedPlayer[10]; one ranking page as the server sends it (net_addPlayerRecord appends, unbounded; net_clearPlayerList clears 10 = 0x9b dwords; ranking_fillPage reads 10); net_resetConnection clears 0x2aa bytes (11 records' space up to g_lobbyReplyCode) */
 #define g_keySeen ((int *)IMG(0x4d1a98))   /* int[256]; a key's press seen until released (0x400 bytes) */
 #define g_briefingText ((char *)IMG(0x9f1064))   /* char[1600]; the briefing's text (memset 0x640) */
-#define g_roomMech ((u8 *)IMG(0x9dd5f8))   /* u8[11]; the Ladder account's mech (signed bytes): the five parts (head, chest, arm, leg, booster), item slots 4 / 5, then slots 2 .. 5; from the login reply (login_takeAccountRecord, g_profileReply + 0x54) or the new ID's defaults (newId_register), set from the ARM CENTER by armc_sendSelectionToNet; unpacked into the saved mech by mech_unpackFromRecord */
+#define g_roomMech ((u8 *)IMG(0x9dd5f8))   /* u8[11]; the Ladder account's mech (signed bytes): the five parts (head, chest, arm, leg, booster), the extra items of slots 4 / 5, then weapon slots 0 .. 3; from the login reply (login_takeAccountRecord, g_profileReply + 0x54) or the new ID's defaults (newId_register), set from the ARM CENTER by armc_sendSelectionToNet; unpacked into the saved mech by mech_unpackFromRecord */
 #define g_roomColours ((float *)IMG(0x9dd603))   /* float[36]; the Ladder account's colour choices (six ColourChoice slots of 0x18 bytes: hue, saturation, value twice): from the login reply (g_profileReply + 0x5f) or the new ID's defaults, set from g_armcColours by armc_sendSelectionToNet and sent with the mech; mech_unpackFromRecord copies them to g_savedColourChoices */
 #define g_armcColours ((float *)IMG(0x4dc4b8))   /* float[36]; the ARM CENTER's colour choices (0x90 bytes: six values per slot) */
 #define g_accountOldPassword ((char *)IMG(0x9dd6d8))   /* char[12]; the account page's old-password field as typed (account_editOldPassword; account_sendChange checks it against g_ladderPassword; room_enterAccountPage / account_page clear its 12 bytes) */
@@ -182,7 +182,7 @@
 #define g_skirmishRect ((int *)IMG(0x9f6308))   /* int[4]; the skirmish screen's window: left (g_skirmishRectLeft) */
 #define g_skirmishColourLit ((float *)IMG(0x9f6318))   /* float[4]; the skirmish screen's lit text colour, RGBA (0, 1, 1, 1): the title and the hovered button / arrow (menuState500_enterSkirmish) */
 #define g_skirmishColourDim ((float *)IMG(0x9f62e8))   /* float[4]; the skirmish screen's dim text colour, RGBA (0, 0.6, 0.6, 1): buttons not hovered */
-#define g_keptChat ((char *)IMG(0x9f63e4))   /* char[1024]; the typed chat line kept for the match (chat_endTyping: cleared, then copied whole (0x400) from g_inputLine; match_frame / escMenu_update read it; g_keptChatLine its first byte) */
+#define g_keptChat ((char *)IMG(0x9f63e4))   /* char[1024]; the typed line kept for the match (the chat line, or the Esc menu's replay name; match_endTyping: cleared, then copied whole (0x400) from g_inputLine; match_frame / escMenu_update read it; g_keptChatLine its first byte) */
 #define g_netSendPacket ((NetPacketMessage *)IMG(0x9f9428))   /* NetPacketMessage[1]; the packet message being sent (cleared as 0x103 words): kind (g_netPacketMessageKind) */
 #define g_pilotSave ((u8 *)IMG(0x9f1718))   /* u8[940]; the pilot's save record (0x3ac bytes, the middle of the .axs file, scrambled with key 0x7e): +0 the signature 'AXIS USER PROFILE DATA Master ver 1.0', +0x80 the pilot's name, +0x100 its value, +0x104 the progress (g_progress), +0x2d8 .. the mech's parts and colours (mech_storeToProfile / mech_loadFromProfile) */
 #define g_pilotSaveColours ((float *)(g_pilotSave + 0x31c))   /* float[36]; the save record's colour choices: six ColourChoice records (+0x31c .. +0x3ac; g_savedColourChoices' copy: mech_loadFromProfile / mech_storeToProfile) */
@@ -292,7 +292,7 @@
 #define g_boosterPanelName ((char *)IMG(0x4dce40))   /* char[64]; the booster panel's part name */
 #define g_launcherCheck ((u8 *)IMG(0x4dd988))   /* u8[12]; the launcher's eight check bytes (app_readLauncherCheck: 12 cleared, then axisplay.exe's bytes at 0x1a2b, 0x1a2c, 0x2dbf, 0x2dc0, 0x38a4, 0x38a5, 0x55f1, 0x55f2); never read */
 #define g_missionClearBuffer ((u8 *)IMG(0x9eebac))   /* u8[1600]; cleared on a mission's load (0x640) and otherwise unused */
-#define g_serverAddressArg ((char *)IMG(0x4de748))   /* char[1024]; "-ip x <server>": the server's address (0x400 cleared) */
+#define g_serverAddressArg ((char *)IMG(0x4de748))   /* char[1024]; the server's address from the launcher's line "<x> -ip <server>" (its third word, kept when g_argCount is 3 and the second word is "-ip"; 0x400 cleared); arena_startFromLauncher joins it */
 #define g_arenaGameName ((char *)IMG(0x5b191c))   /* char[32]; the arena file's gamename value (32 cleared) */
 #define g_profileHeader ((u8 *)IMG(0x9f61d8))   /* u8[260]; a profile file's header (0x104 bytes) checked on the profile scan */
 #define g_pilotNoise ((u8 *)IMG(0x9f3ac4))   /* u8[10000]; the noise blocks around a saved pilot (pilot_write: 10000 random bytes) */
@@ -372,10 +372,10 @@
 #define g_hangulLeadIndex ((signed char *)IMG(0x4ad3c4))   /* signed char[32]; lead consonant code -> index */
 #define g_hangulVowelIndex ((signed char *)IMG(0x4ad3e4))   /* signed char[32]; vowel code -> index */
 #define g_hangulTailIndex ((signed char *)IMG(0x4ad404))   /* signed char[32]; tail consonant code -> index (0 none) */
-#define g_hangulVowelSetPlain ((signed char *)IMG(0x4ad424))   /* signed char[22]; the lead's glyph set by the vowel; no tail */
-#define g_hangulVowelSetTail ((signed char *)IMG(0x4ad43a))   /* signed char[22]; the lead's glyph set by the vowel; with a tail */
-#define g_hangulLeadSetPlain ((signed char *)IMG(0x4ad450))   /* signed char[20]; the vowel's glyph set by the lead; no tail */
-#define g_hangulLeadSetTail ((signed char *)IMG(0x4ad464))   /* signed char[20]; the vowel's glyph set by the lead; with a tail */
+#define g_hangulLeadSetByVowel ((signed char *)IMG(0x4ad424))   /* signed char[22]; the lead's glyph set by the vowel; no tail */
+#define g_hangulLeadSetByVowelTail ((signed char *)IMG(0x4ad43a))   /* signed char[22]; the lead's glyph set by the vowel; with a tail */
+#define g_hangulVowelSetByLead ((signed char *)IMG(0x4ad450))   /* signed char[20]; the vowel's glyph set by the lead; no tail */
+#define g_hangulVowelSetByLeadTail ((signed char *)IMG(0x4ad464))   /* signed char[20]; the vowel's glyph set by the lead; with a tail */
 #define g_hangulTailSet ((signed char *)IMG(0x4ad478))   /* signed char[22]; the tail's glyph set by the vowel (2 padding bytes before g_textWrapX) */
 #define g_ksSyllableJohab ((u16 *)IMG(0x4b2b30))   /* u16[2350]; the Johab code of each KS X 1001 Hangul syllable (rows 0xb0 .. 0xc8, 94 a row) */
 #define g_ksJamoCodes ((u16 *)IMG(0x4b3d8c))   /* u16[39]; the KS X 1001 jamo (row 0xa4) text_hangulConvert knows (two entries are typos, 0x4ace / 0x4acf for 0xa4ce / 0xa4cf, so those two never match) */
@@ -444,8 +444,8 @@
 #define g_soundTable ((u32 *)IMG(0xa0e02c))   /* u32[400]; the sound table's buffers by index (sound_initSoundTable; to 0xa0e66c) */
 #define g_menuSoundBuffers ((u32 *)IMG(0x4dd4d4))   /* u32[10]; the ten menu sounds: a Sound pointer each (sound_loadWav; read as g_menuSounds) (sound_loadMenuSounds) */
 #define g_slotCams ((float *)IMG(0x4dfa1c))   /* float[352]; per local slot (g_localSlot) a 0x58-byte free (watching) camera record: +0 .. +8 the camera's look point (freeCam_keys), +0x28 its heading in degrees (g_freeCamYaw, written by freeCam_mouseLook's turn_update, never read back); the first click copies the point into g_freeCamMoveTarget / g_freeCamMoveEye. Only these offsets are used; 0x4dff9c .. 0x4e0458 is never referenced */
-#define g_unlockTablesSolo ((u8 *)IMG(0x4ad5f0))   /* u8[5600]; armc_buildPartLists' seven 0x320-byte Unlock tables for every ARM CENTER visit not from the Ladder room (g_armcFrom != 3: campaign, skirmish and the arena) (to 0x4aebd0) */
-#define g_unlockTablesNet ((u8 *)IMG(0x4aebd0))   /* u8[5600]; the same for network play (to 0x4b01b0) */
+#define g_unlockTablesByProgress ((u8 *)IMG(0x4ad5f0))   /* u8[5600]; armc_buildPartLists' seven 0x320-byte Unlock tables for every ARM CENTER visit not from the Ladder room (g_armcFrom != 3: campaign, skirmish and the arena), by the campaign progress (to 0x4aebd0) */
+#define g_unlockTablesLadder ((u8 *)IMG(0x4aebd0))   /* u8[5600]; the same for the Ladder game room (g_armcFrom 3), by the pilot's Ladder level less one (g_pilotLevel) (to 0x4b01b0) */
 #define g_setupWallTurns ((float *)IMG(0x4b04c4))   /* float[2]; the setup tunnel's wall turn by parity (-35; 35) */
 #define g_titleSpread ((int *)IMG(0x4b065c))   /* int[20]; by g_titleCloseFrames (0 .. 19): how far the title's quarters have moved apart (0 .. 512) */
 #define g_penPropWidths ((int *)IMG(0x4c5558))   /* int[105]; the pen font's proportional glyph widths (105 glyphs; to 0x4c56fc) */

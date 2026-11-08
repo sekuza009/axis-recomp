@@ -21,7 +21,7 @@
 0x76d484,int,g_searchResult
 0x4dbbd0,int,g_typingArenaPlayerName
 0x4dbacc,int,g_typingArenaPassword
-0x4db710,int,g_arenaJoinRow
+0x4db710,int,g_joinRow
 0x4dbac8,int,g_arenaLanListBuilt
 0x4dbaa8,int,g_arenaServerList
 0x4dbaf8,float,g_arenaListClickTimer

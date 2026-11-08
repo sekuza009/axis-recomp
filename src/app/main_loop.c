@@ -83,7 +83,7 @@ void (menu_frame)(void)
 		menu_processKeys();
 	}
 	if (g_screen == 300 && g_replayShowOn && !g_dialogPending) {
-		g_viewAspect = f32(fsubr_m(fmul_m(fld_m(&g_frameTime), k_0_05f), &g_viewAspect));   /* 0.05 a frame */
+		g_viewAspect = f32(fsubr_m(fmul_m(fld_m(&g_frameTime), k_0_05f), &g_viewAspect));   /* 0.05 x the frame time */
 		g_menuEyeZ = fadd_m(fld_m((const float *)ADDR(g_menuEyeZ)), (const float *)ADDR(k_10f));                       /* the camera 10 back */
 		long double zoom = FADD(g_replayZoomTime, g_frameTime);
 		g_replayZoomTime = zoom;
@@ -171,10 +171,11 @@ static void count_down(u8 *s, u32 offset, const float *dt)
 
 /* 0x48b200 (thiscall on the scene): the playing state's frame. The match set up first when it is not yet
    (stateFrames 0: match_setupOrStartRound); scene_averageFrameTime (its answer dropped); the frame's time (frameTime) added to the
-   second's fraction (secondFraction) and to the FPS window (windowTime); three countdowns (msgFade, readyTimer,
-   keyGuard). Past a whole second the seconds (wholeSeconds) take it, and the frame and packet counts of the window
-   (windowSent / windowReceived) become rates (sendRate / receiveRate; 0 for an empty window), the window cleared. Then
-   the input, the game mode and, in state 2, the HUD pass (through the call site the patch DLL retargets). A quit (quitAsked 1) stops the music and answers 0; else
+   second's fraction (secondFraction) and to the packet-rate window (windowTime); three countdowns (msgFade,
+   noticeTimer, keyGuard). Past a whole second the seconds (wholeSeconds) take it, and the window's sent and received
+   packet counts (windowSent / windowReceived) become rates (sendRate / receiveRate; 0 for an empty window), the
+   window cleared. Then the input, the game mode and, in state 2, the HUD pass (through the call site the patch DLL
+   retargets). A quit (quitAsked 1) stops the music and answers 0; else
    the state (matchState) */
 int THISCALL (match_playFrame)(u8 *s)
 {
@@ -791,7 +792,8 @@ static void preset_angles(u8 *s, const u8 *t, u32 preset)
 }
 
 /* the camera pulled back by the preset's zoom (cameraSettings[2][..]) from 0.85 of the actor t's height (its position with
-   eye 0), short of what is in the way, at most 300 off; facing (0, 0, 1) */
+   eye 0), traced toward a point zoom + 300 back (stopping at what is in the way), then brought 300 nearer when more
+   than 300 off; facing (0, 0, 1) */
 static void orbit_from(u8 *s, const u8 *t, u32 preset, int eye)
 {
 	float *cam = SC->cameraPos, a[3] = { 0, 0, 0 }, b[3], to[3], d[3];
@@ -1561,8 +1563,8 @@ static void muzzle_camera(u8 *s, const u8 *t)
 	dir[2] = 1.0f;
 }
 
-/* the round's slow motion: the last two seconds of a won round's end (matchOver) when the last to die (lastDeath) is
-   down (state 2), unless the time ran out */
+/* the round's slow motion: the first two seconds of a round's end (matchOver; endTime, counting down from 10, still
+   above 8) when the last to die (lastDeath) is down (state 2), unless the time ran out */
 static int slow_end(u8 *s)
 {
 	if (SC->matchOver != 1)
@@ -1616,11 +1618,11 @@ static void chat_keys(u8 *s)
 	if (mode == 0) {
 		if (SC->talkPressed == 1) {
 			SC->chatMode = 1;
-			chat_openTextField(0, 0, 0x38);
+			match_openTextField(0, 0, 0x38);
 			SC->players[SC->localPlayer].chatIcon = 1;
 		} else if (SC->teamTalkPressed == 1) {
 			SC->chatMode = 2;
-			chat_openTextField(0, 0, 0x38);
+			match_openTextField(0, 0, 0x38);
 			SC->players[SC->localPlayer].chatIcon = 2;
 		}
 		return;
@@ -1628,7 +1630,7 @@ static void chat_keys(u8 *s)
 	if ((mode != 1 && mode != 2) || g_textFieldOpen != 0)
 		return;
 	SC->chatMode = 0;
-	chat_endTyping();
+	match_endTyping();
 	const char *typed = (const char *)OBJ(g_keptChat);
 	(void)me;
 	if (strlen(typed) != 0) {
@@ -2325,7 +2327,7 @@ void THISCALL (match_frame)(u8 *s)
 			music_stop();
 			if (SC->chatMode != 0 && g_textFieldOpen == 0) {
 				SC->chatMode = 0;
-				chat_endTyping();
+				match_endTyping();
 			}
 			if (SC->ladderGame == 1)
 				ladder_addMatchScores(sc);

@@ -489,7 +489,7 @@ static u8 level_byte(float *v)
 
 /* 0x474b50 (thiscall on the scene): player record p's part (0 .. 4) coloured: two hue / saturation / value sets kept
    as bytes in the player record's colour grid (partHue / partSaturation / partValue [part][0] the first set, [1] the
-   second), then the record's shape cache for the part (headShapes ..) given the texture folder suffix _T<p>
+   second), then the record's shape cache for the part (headShapes ..) given the texture-name suffix _T<p>
    (0x4c77f8) and tinted with them (shape_setTextureSuffix, flag 2). Its callers ignore the eax it leaves */
 void THISCALL (playerRecord_setPartColour)(Stage *scene, int p, int part, float h1, float s1, float v1, float h2, float s2, float v2)
 {

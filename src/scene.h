@@ -287,7 +287,7 @@ typedef struct Actor {
 	float weaponRaise;   /* +0x490: the weapon's raise, 0 .. 1 (1: up, firing allowed: actor_processFrame needs >= 1); weaponLowering takes it down (3 a second), then it comes back up with the new slot's weapon (3 a second; 2.25 for item 3, 1.95 for item 11); the grip is set 600 x (1 - this) off (hold); 1 when set up */
 	float slotIconTime;   /* +0x494: seconds the selected slot's icon stays up at the bottom centre (its 64 x 64 cell of the menu box texture by slot, main_slotIcon): 2 when a weapon switch starts (actor_selectWeapon), counted down; its alpha, at most 1; 0 when set up */
 	i32 switchSlot;   /* +0x498: the weapon slot it is switching to (actor_selectWeapon sets it with weaponLowering 1; once weaponRaise is down to 0 actor_processFrame makes it the slot (actor_setWeaponSlot) and loads its item); another machine's actor: set to slot (and its item loaded) when slot changes; 0 when set up */
-	i32 variantLoaded;   /* +0x49c: (by use; seen running) the parts' variant loaded (0 for the selected actor, else detail + 1) */
+	i32 variantLoaded;   /* +0x49c: the weapon models' variant loaded (actor_loadWeapon's variant: ItemModelSet's shapeCount / muzzle / grip index): 0 for the cockpit actor (Stage.cockpitActor), else lowDetail + 1; the mech parts go by lowDetail / lowDetailLoaded instead */
 	i32 firePrev;   /* +0x4a0: inFire of the frame before (kept at the end of the firing code): the OUT OF AMMO! message and click, the switch to the next weapon when out of ammunition and the muzzle-in-a-wall click happen only when it is 0 (a fresh press) */
 	float effectScale;   /* +0x4a4: (by use; seen running) the emitters' scale by the speed (0.5 .. 3) */
 	float footstepTime;   /* +0x4a8: (by use; seen running) a footstep every third of a second */
@@ -398,7 +398,7 @@ typedef struct MapObject {
 	i32 id;   /* +0x0: (by use; seen running) a serial (Stage.objectSerial) */
 	i32 active;   /* +0x4: 1: in use */
 	i32 nameIndex;   /* +0x8: its type's name (Stage.objectNames); written, never read */
-	i32 flags;   /* +0xc: ObjectType.flags: 1 a light (its glow and flare: object_glow, mapObject_frame), 2 not drawn and not re-shaded (stage_drawObject, mapObject_frame), 4 no collision unit (collision_initVolume), 8 animated on approach (trigger), 0x10 animated after a wait (trigger) */
+	i32 flags;   /* +0xc: ObjectInfo.flags: 1 a light (its glow and flare: object_glow, mapObject_frame), 2 not drawn and not re-shaded (stage_drawObject, mapObject_frame), 4 no collision unit (collision_initVolume), 8 animated on approach (trigger), 0x10 animated after a wait (trigger) */
 	i32 trigger;   /* +0x10: x 100 (mapObject_frame): a proximity object's (flag 8) radius, a timed one's (flag 0x10) wait in seconds; 0 in every shipped map */
 	i32 animPeriod;   /* +0x14: its animation's period in ms (anim_start passes it x 0.001 (forwards) or x -0.001 (backwards) as object_setAnimation's period: animRate = 1 / period) */
 	char animPath[0x40];   /* +0x18: its animation ("dir/map/name"; none: empty) */
@@ -431,7 +431,7 @@ typedef struct MapObject {
 } MapObject;
 
 /* a map object as the map's object file gives it (map_loadObjectInfoFrom; object_initObjectBy) */
-typedef struct ObjectType {
+typedef struct ObjectInfo {
 	char name[0x40];   /* +0x0: its shape (Stage.objectNames) */
 	i32 flags;   /* +0x40: MapObject.flags, trigger, animPeriod */
 	i32 trigger;   /* +0x44: the object file's trigger value, copied with flags and animPeriod to MapObject.trigger (object_initObjectBy); not read here otherwise */
@@ -441,7 +441,7 @@ typedef struct ObjectType {
 	float rotation[4];   /* +0x98: a quaternion */
 	float glowSize;   /* +0xa8: the glow flare's half-size (particle kind 4; objects with flag 1 while 3D items are on) */
 	u32 glowColour;   /* +0xac: the glow flare's colour (RGB; its alpha from the glow) */
-} ObjectType;
+} ObjectInfo;
 
 /* a kind of map item (Stage.itemTypes) */
 typedef struct ItemType {
@@ -1380,8 +1380,8 @@ typedef struct Stage {
 	Space space;   /* +0xa10: (by use; seen running) the collision space (space_initBy; its planes - 0xac bytes each, hit records point into them - space.planes.records) */
 	u8 spaceData[0x9c95f0];   /* +0xb04: the collision space's block (space_initBy on +0xa10; stage_build) */
 	u32 nearObjects[1000][3];   /* +0x9ca0f4: the moving map objects (active, animated, with planes) a move or a ray may reach: each its unit's planes (SpaceUnit.lastNode), relMatrix and relInverse; the sub-models for space_testSphere (collision_moveSphere) and space_traceCells (collision_rayTrace) */
-	i32 effectTextures[9];   /* +0x9ccfd4: (by use; seen running) the effects' textures "<dir>\00" .. "08" (stage_build; objects.c TEX(k)); "09" is billboards */
-	i32 billboards;   /* +0x9ccff8: (by use; seen running) the billboard list map items are drawn with (ViewVolume_addBillboard's id) */
+	i32 effectTextures[9];   /* +0x9ccfd4: (by use; seen running) the effects' textures "<dir>\00" .. "08" (stage_build; objects.c TEX(k)); "09" is mapItemTexture */
+	i32 mapItemTexture;   /* +0x9ccff8: texture id of "<textureDir>\09" (stage_build's tenth effect texture, written as effectTextures[9] past the array): the texture the map items are drawn with (stage_drawItems -> ViewVolume_addBillboard) */
 	LightFactors mapLights;   /* +0x9ccffc: (by use; seen running) the map's lights (LightFactors_read from the map file): they shade the map objects */
 	i32 dynamicLightsSet;   /* +0x9d800c: 1 once stage_refillLights filled dynamicLights, 0 with stage_resetDynamicLights; never read */
 	LightFactors dynamicLights;   /* +0x9d8010: (by use; seen running) the lights cleared each frame (stage_resetDynamicLights); the objects' second colours */
@@ -2300,16 +2300,16 @@ _Static_assert(offsetof(MapObject, clip) == 0x2ac && sizeof(((MapObject *)0)->cl
 _Static_assert(offsetof(MapObject, pos) == 0x2bc && sizeof(((MapObject *)0)->pos) == 0xc, "scene.fields: MapObject.pos");
 _Static_assert(offsetof(MapObject, waitTime) == 0x2c8 && sizeof(((MapObject *)0)->waitTime) == 0x4, "scene.fields: MapObject.waitTime");
 _Static_assert(sizeof(MapObject) == 0x2cc, "scene.fields: size of MapObject");
-_Static_assert(offsetof(ObjectType, name) == 0x0 && sizeof(((ObjectType *)0)->name) == 0x40, "scene.fields: ObjectType.name");
-_Static_assert(offsetof(ObjectType, flags) == 0x40 && sizeof(((ObjectType *)0)->flags) == 0x4, "scene.fields: ObjectType.flags");
-_Static_assert(offsetof(ObjectType, trigger) == 0x44 && sizeof(((ObjectType *)0)->trigger) == 0x4, "scene.fields: ObjectType.trigger");
-_Static_assert(offsetof(ObjectType, animPeriod) == 0x48 && sizeof(((ObjectType *)0)->animPeriod) == 0x4, "scene.fields: ObjectType.animPeriod");
-_Static_assert(offsetof(ObjectType, animName) == 0x4c && sizeof(((ObjectType *)0)->animName) == 0x40, "scene.fields: ObjectType.animName");
-_Static_assert(offsetof(ObjectType, place) == 0x8c && sizeof(((ObjectType *)0)->place) == 0xc, "scene.fields: ObjectType.place");
-_Static_assert(offsetof(ObjectType, rotation) == 0x98 && sizeof(((ObjectType *)0)->rotation) == 0x10, "scene.fields: ObjectType.rotation");
-_Static_assert(offsetof(ObjectType, glowSize) == 0xa8 && sizeof(((ObjectType *)0)->glowSize) == 0x4, "scene.fields: ObjectType.glowSize");
-_Static_assert(offsetof(ObjectType, glowColour) == 0xac && sizeof(((ObjectType *)0)->glowColour) == 0x4, "scene.fields: ObjectType.glowColour");
-_Static_assert(sizeof(ObjectType) == 0xb0, "scene.fields: size of ObjectType");
+_Static_assert(offsetof(ObjectInfo, name) == 0x0 && sizeof(((ObjectInfo *)0)->name) == 0x40, "scene.fields: ObjectInfo.name");
+_Static_assert(offsetof(ObjectInfo, flags) == 0x40 && sizeof(((ObjectInfo *)0)->flags) == 0x4, "scene.fields: ObjectInfo.flags");
+_Static_assert(offsetof(ObjectInfo, trigger) == 0x44 && sizeof(((ObjectInfo *)0)->trigger) == 0x4, "scene.fields: ObjectInfo.trigger");
+_Static_assert(offsetof(ObjectInfo, animPeriod) == 0x48 && sizeof(((ObjectInfo *)0)->animPeriod) == 0x4, "scene.fields: ObjectInfo.animPeriod");
+_Static_assert(offsetof(ObjectInfo, animName) == 0x4c && sizeof(((ObjectInfo *)0)->animName) == 0x40, "scene.fields: ObjectInfo.animName");
+_Static_assert(offsetof(ObjectInfo, place) == 0x8c && sizeof(((ObjectInfo *)0)->place) == 0xc, "scene.fields: ObjectInfo.place");
+_Static_assert(offsetof(ObjectInfo, rotation) == 0x98 && sizeof(((ObjectInfo *)0)->rotation) == 0x10, "scene.fields: ObjectInfo.rotation");
+_Static_assert(offsetof(ObjectInfo, glowSize) == 0xa8 && sizeof(((ObjectInfo *)0)->glowSize) == 0x4, "scene.fields: ObjectInfo.glowSize");
+_Static_assert(offsetof(ObjectInfo, glowColour) == 0xac && sizeof(((ObjectInfo *)0)->glowColour) == 0x4, "scene.fields: ObjectInfo.glowColour");
+_Static_assert(sizeof(ObjectInfo) == 0xb0, "scene.fields: size of ObjectInfo");
 _Static_assert(offsetof(ItemType, name) == 0x0 && sizeof(((ItemType *)0)->name) == 0x40, "scene.fields: ItemType.name");
 _Static_assert(offsetof(ItemType, respawnSound) == 0x40 && sizeof(((ItemType *)0)->respawnSound) == 0x4, "scene.fields: ItemType.respawnSound");
 _Static_assert(offsetof(ItemType, pickSound) == 0x44 && sizeof(((ItemType *)0)->pickSound) == 0x4, "scene.fields: ItemType.pickSound");
@@ -3017,7 +3017,7 @@ _Static_assert(offsetof(Stage, space) == 0xa10 && sizeof(((Stage *)0)->space) ==
 _Static_assert(offsetof(Stage, spaceData) == 0xb04 && sizeof(((Stage *)0)->spaceData) == 0x9c95f0, "scene.fields: Stage.spaceData");
 _Static_assert(offsetof(Stage, nearObjects) == 0x9ca0f4 && sizeof(((Stage *)0)->nearObjects) == 0x2ee0, "scene.fields: Stage.nearObjects");
 _Static_assert(offsetof(Stage, effectTextures) == 0x9ccfd4 && sizeof(((Stage *)0)->effectTextures) == 0x24, "scene.fields: Stage.effectTextures");
-_Static_assert(offsetof(Stage, billboards) == 0x9ccff8 && sizeof(((Stage *)0)->billboards) == 0x4, "scene.fields: Stage.billboards");
+_Static_assert(offsetof(Stage, mapItemTexture) == 0x9ccff8 && sizeof(((Stage *)0)->mapItemTexture) == 0x4, "scene.fields: Stage.mapItemTexture");
 _Static_assert(offsetof(Stage, mapLights) == 0x9ccffc && sizeof(((Stage *)0)->mapLights) == 0xb010, "scene.fields: Stage.mapLights");
 _Static_assert(offsetof(Stage, dynamicLightsSet) == 0x9d800c && sizeof(((Stage *)0)->dynamicLightsSet) == 0x4, "scene.fields: Stage.dynamicLightsSet");
 _Static_assert(offsetof(Stage, dynamicLights) == 0x9d8010 && sizeof(((Stage *)0)->dynamicLights) == 0xb010, "scene.fields: Stage.dynamicLights");

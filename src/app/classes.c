@@ -20,7 +20,7 @@ static int clear(void *p, int dwords)
 
 /* ---- member blocks cleared, each the size of its class ---- */
 /* TextureManager: all 8 words (vtable, banks[6], count) */
-int THISCALL (TextureManager_clear)(void *self) { return clear(self, 0x8); }       /* TextureBank */
+int THISCALL (TextureManager_clear)(void *self) { return clear(self, 0x8); }       /* TextureManager */
 int THISCALL (Shape_clear)(void *self) { return clear(self, 0x13); }      /* Shape */
 int THISCALL (ShapeManager_clear)(void *self) { return clear(self, 0x93); }       /* ShapeManager */
 int THISCALL (SkeletonManager_clear)(void *self) { return clear(self, 0x4c); }       /* SkeletonManager */
@@ -485,9 +485,9 @@ static const u32 k_cameraPresets[6][10] = {
    stage (+0x1f36c8) with all its member arrays built (the CRT's vector constructors crt_vectorConstructorIterator / 0x49fd2d with their
    element constructors) and vtables set; the factor tables sized (ViewVolume_initBy into the block at viewMemory); the
    parts (stage_build with nine names), the component catalogue and the items loaded (failing: a fatal
-   message); the ten camera presets, the stage's player slots reset (stage_setCockpitActor -1), the part type tables' check sizes; the
-   help text (Help.txt: 30 lines of 63 characters into consoleLines) read, each with its line end cut (an empty one
-   cuts the byte before it), and the chat macros loaded (chat_loadMacros). (The original's SEH frame, for
+   message); the camera presets (cameraPresets, six fields by ten modes), no cockpit actor (stage_setCockpitActor -1), the part type
+   tables' check sizes (typeTablePerRow); the help text (Help.txt: 30 lines of 63 characters into helpLines) read, each with its line
+   end cut (an empty one cuts the byte before it), and the chat macros loaded (chat_loadMacros). (The original's SEH frame, for
    unwinding a failed construction, is not reproduced.) Returns the object */
 u8 *THISCALL (Console_ctor)(u8 *g)
 {
@@ -599,9 +599,9 @@ static void zero_dwords(u8 *at, int n)
    records, g_replayListCount of them) copied to replayFiles (0x40 each, count replayCount); actors and scene reset; mode 2 also
    sets silentActor and playerActor to 0 (stage_setSilentActor), the level and world boxes (levelLow .. levelHigh,
    worldLow .. worldHigh) to -100000 .. 100000, and the game type flags for type 0; the camera at g_vecOrigin,
-   facing -g_vecUnitZ, up g_vecUnitY, the HUD mode matchState (mode 2 -> 3, 3 -> 1, else 2) and its
-   defaults, the match state (teams_setup), the notices (net_clearAnnouncements) and the lobby slots (localPlayer -1 in modes 1
-   and 3). Its callers ignore the eax it leaves */
+   facing -g_vecUnitZ, up g_vecUnitY, the match state matchState (session mode 2 -> 3 the mech test mode, 3 -> 1
+   loading, else 2 playing) and its defaults, the match state (teams_setup), the notices (net_clearAnnouncements) and
+   the lobby slots (localPlayer -1 in modes 1 and 3). Its callers ignore the eax it leaves */
 void THISCALL (scene_startSession)(u8 *g, u32 client, int mode)
 {
 	if (!cd_findDrive())

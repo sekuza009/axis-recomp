@@ -161,7 +161,7 @@ static void button(int lit, float a_lit, int x0, int y0, int x1, int y1, int ty,
 }
 
 /* the preview's arrows (lit as given) and the ADVANCED button (the rotation's map list): lit in white, else at 0.4 in the colour other */
-static void preview_controls(const Form *f, int left, int right, int rotation, const u32 *other)
+static void preview_controls(const Form *f, int left, int right, int advancedLit, const u32 *other)
 {
 	bind_buttons();
 	glEnable(GL_TEXTURE_2D);
@@ -170,7 +170,7 @@ static void preview_controls(const Form *f, int left, int right, int rotation, c
 	menu_drawRightArrow(X1 - 0x50, Y0 + 0xd7, X1 - 0x20, Y0 + 0xef, right);
 	glEnable(GL_TEXTURE_2D);
 	bind_buttons();
-	if (rotation) {
+	if (advancedLit) {
 		glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 		white();
 	} else {

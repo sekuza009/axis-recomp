@@ -143,13 +143,13 @@ int (dplay_join)(int session, int guid, int player, int data)
 	return dplay_slotJoin(kind, guid, player, data, (u8)rec->gameMode);
 }
 
-/* 0x452fe0: the arena session left (when one is open, g_arenaSessionOpen and g_sessionListOpen): the host tells everyone first
+/* 0x452fe0: the arena session left (when one is open, g_dplaySessionOpen and g_sessionListOpen): the host tells everyone first
    (message g_netHostLeftMessageKind, flag g_hostGoneMessageFlag), the slot of the connection kind closed (the kind becomes 4), the session list
    freed (net_freeSessionList, whose eax it returns) and the session state cleared. 1 when there is no session */
 u32 (dplay_leaveSession)(void)
 {
 	static const u32 close[4] = { FN_ADDR(dplaySlot0_close, 0x4549a0), FN_ADDR(dplaySlot1_close, 0x454ac0), FN_ADDR(dplaySlot2_close, 0x454bd0), FN_ADDR(dplaySlot3_close, 0x454ce0) };
-	if (g_arenaSessionOpen != 1 || !g_sessionListOpen)
+	if (g_dplaySessionOpen != 1 || !g_sessionListOpen)
 		return 1;
 	if (g_isHost) {
 		g_hostGoneMessageFlag = 1;
@@ -162,7 +162,7 @@ u32 (dplay_leaveSession)(void)
 	u32 r = net_freeSessionList();   /* net_freeSessionList */
 	g_sessionListOpen = 0;
 	g_netQueueOnline = 0;
-	g_arenaSessionOpen = 0;
+	g_dplaySessionOpen = 0;
 	return r;
 }
 
@@ -174,7 +174,7 @@ int (dplay_openConnection)(u32 kind, const char *host)
 	static const u32 open[4] = { FN_ADDR(dplaySlot0_open, 0x454940), FN_ADDR(dplaySlot1_open, 0x454a50), FN_ADDR(dplaySlot2_open, 0x454b70), FN_ADDR(dplaySlot3_open, 0x454c80) };
 	char address[16] = { 0 };
 	net_freeAllSlots();
-	g_arenaSessionOpen = 1;
+	g_dplaySessionOpen = 1;
 	if (host) {
 		if (!net_resolveHost(host))   /* net_resolveHost */
 			return 0;

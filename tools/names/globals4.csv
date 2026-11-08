@@ -36,7 +36,7 @@
 0x4b04f8,int,g_lastCrosshair
 0x4e0cd0,int,g_menuTunnelTexture
 0x4de03c,float,g_setupPanelPos
-0xa0b390,int,g_arenaSessionOpen
+0xa0b390,int,g_dplaySessionOpen
 0xa0bf1c,void *,g_pingStopEvent
 0xa0bac8,int,g_serviceProviderCount
 0x9eeab8,int,g_replayListCount

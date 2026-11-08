@@ -328,10 +328,10 @@ static void volume_at_pointer(void)
 	g_setupEffectVolume = 1 - ftol(fmul_m((long double)(g_mouseX - g_setupSoundLeft - 0x90), k_m0_390625f));
 }
 
-/* 0x4221d0: the sound tab's mouse (an open page, no message box; a right click closes it but goes on): a click (the
-   blink clock restarted) on the volume's arrows (0 / 1) or slider (2), the sound toggles (5: g_setupMusicVolume 0 / 100; 6, 7:
-   g_setupSound3D, g_setupStereoReverse), OK (8) or close (9); holding the arrows or the slider repeats once the clock passes 1 (and
-   restarts it). The original leaves eax to callers that ignore it */
+/* 0x4221d0: the sound tab's mouse (an open page, no message box; a right click closes it but goes on): a click (the repeat
+   clock g_menuRepeatClock restarted) on the volume's arrows (0 / 1) or slider (2), the sound toggles (5: g_setupMusicVolume 0
+   / 100; 6, 7: g_setupSound3D, g_setupStereoReverse), OK (8) or close (9); holding the arrows or the slider repeats once the
+   clock passes 1 (and restarts it). The original leaves eax to callers that ignore it */
 void (setup_soundTabClicks)(void)
 {
 	if (g_setupCameraMode == 1 || g_setupCameraMode == 0 || g_frameOpening)
@@ -455,8 +455,8 @@ void (setup_controlTabKeys)(void)
    (and goes on). A click picks a page (0 .. 3), OK (the bindings at g_controlsEdit copied into g_controls, axis.cfg written; the
    page closed), close, the defaults; on page 3 rows 7 / 8 toggle their setting (0x4de1c0 / 0x4de1c4), 9 drags the
    slider and 10 / 11 step g_crosshairEdit (0 .. 7); any other row control with a row selected makes it wait for a key.
-   Holding the button on page 3's slider (once the blink clock passes 1) drags it. The original leaves eax to
-   callers that ignore it */
+   Holding the button on page 3's slider (once the repeat clock g_menuRepeatClock passes 1) drags it. The original
+   leaves eax to callers that ignore it */
 void (setup_controlTabClicks)(void)
 {
 	if (g_setupCameraMode == 1 || g_setupCameraMode == 0 || g_frameOpening)
@@ -581,9 +581,9 @@ static void slider_press(void)
 #undef VALUE
 }
 
-/* 0x4226b0: the slider on the control setup page: a click (g_mouseClicked), or the button held (g_mouseButtonsHeld) for over a
-   second (its timer g_menuRepeatClock past k_1f), presses the part under the cursor, the timer starting again. Nothing
-   uses the eax it leaves */
+/* 0x4226b0: the slider on the control setup page: a click (g_mouseClicked), or the button held (g_mouseButtonsHeld) once its
+   timer g_menuRepeatClock is past k_1f (one 1/60 s frame time), presses the part under the cursor, the timer starting again.
+   Nothing uses the eax it leaves */
 void (setup_sliderClicks)(void)
 {
 #define TIMER g_menuRepeatClock

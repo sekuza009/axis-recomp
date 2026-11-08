@@ -622,8 +622,9 @@ static void hit_surface(u8 *s, u8 *b, const u8 *w, u32 *r)
 	BU->struck = 1;
 }
 
-/* splash damage once the bullet hit (struck): every other live actor of the local player's (actors[].controlledBy) with health
-   over 3 within the weapon's radius (splashRadius) of the point is hurt by up to the weapon's damage (by distance) and
+/* splash damage once the bullet hit (struck): every live actor this machine runs (actors[].controlledBy == playerActor)
+   spawned over 3 s ago (spawnAge), not the one hit (hitActor) and not held out of play (outOfPlay) within the weapon's radius
+   (splashRadius) of the point is hurt by up to the weapon's damage (by distance) and
    pushed (actors[].push) */
 static void splash(u8 *s, u8 *b, const u8 *w)
 {

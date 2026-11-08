@@ -104,14 +104,14 @@ void THISCALL (map_loadMissionInfoFrom)(u8 *scene, const char *name)
    the object list: stage_clearMapObjects), the shading not loaded (shadingCached 0). Mode 0: the shading file (named by 0x4c7e90
    from mapDir and the name's base, path_stripExtension) read when there (a count, objectColourCount, then that many dwords at
    objectColours; the count cleared, shadingCached 1). The objects file (by 0x4c77f0; none: a fatal message): version
-   0x1201 (else a fatal message), a dword, the count, then the 0xb0-byte object types in blocks of 56, each added
+   0x1201 (else a fatal message), a dword, the count, then the 0xb0-byte object records in blocks of 56, each added
    (object_addObjectBy) until one fails; every second one logged. Mode 1 without shading loaded: the shading file
    written. Its caller ignores the eax it leaves */
 void THISCALL (map_loadObjectInfoFrom)(u8 *scene, const char *name, int mode)
 {
 	Stage *st = (Stage *)scene;
 	char path[0x100], base[0x100];
-	ObjectType objects[56];
+	ObjectInfo objects[56];
 	st->objectNameCount = 0;
 	ShapeManager_releaseModels((u8 *)&st->objectShapes);
 	SkeletonManager_releaseSkeletons((u8 *)&st->objectSkeletons);

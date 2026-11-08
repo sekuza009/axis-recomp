@@ -68,8 +68,6 @@ extern struct GameData g_data;
 #define g_arenaGameListTop (*(int *)g_arenaGameListTop_v)
 #undef g_arenaGameName
 #define g_arenaGameName ((char *)g_arenaGameName_v)
-#undef g_arenaGameSetUp
-#define g_arenaGameSetUp (*(int *)g_arenaGameSetUp_v)
 #undef g_arenaGameType
 #define g_arenaGameType (*(u8 *)((u8 *)g_arenaName_v + 0x23))
 #undef g_arenaInfoPacket
@@ -80,10 +78,6 @@ extern struct GameData g_data;
 #define g_arenaJoinPassword (g_data.g_arenaJoinPassword_)
 #undef g_arenaJoinPassword4
 #define g_arenaJoinPassword4 (g_data.g_arenaJoinPassword4_)
-#undef g_arenaJoinRow
-#define g_arenaJoinRow (*(int *)g_arenaJoinRow_v)
-#undef g_arenaJoinTimer
-#define g_arenaJoinTimer (*(u32 *)g_arenaJoinTimer_v)
 #undef g_arenaKeptCamX
 #define g_arenaKeptCamX (*(float *)g_arenaKeptCamX_v)
 #undef g_arenaKeptCamY
@@ -108,8 +102,6 @@ extern struct GameData g_data;
 #define g_arenaListRefreshTimer (*(float *)g_arenaListRefreshTimer_v)
 #undef g_arenaListRequest
 #define g_arenaListRequest (*(u32 * *)g_arenaListRequest_v)
-#undef g_arenaLobbyState
-#define g_arenaLobbyState (*(int *)g_arenaLobbyState_v)
 #undef g_arenaLocked
 #define g_arenaLocked (*(u8 *)((u8 *)g_arenaName_v + 0x2e))
 #undef g_arenaMap
@@ -134,8 +126,6 @@ extern struct GameData g_data;
 #define g_arenaRotation (*(u8 *)((u8 *)g_arenaName_v + 0x22))
 #undef g_arenaServerList
 #define g_arenaServerList (*(int *)g_arenaServerList_v)
-#undef g_arenaSessionOpen
-#define g_arenaSessionOpen (*(int *)g_arenaSessionOpen_v)
 #undef g_arenaTimeLimit
 #define g_arenaTimeLimit (*(u8 *)((u8 *)g_arenaName_v + 0x25))
 #undef g_arenaTunnelDepth
@@ -736,6 +726,8 @@ extern struct GameData g_data;
 #define g_dplayLobby (*(void * *)g_dplayLobby_v)
 #undef g_dplaySessionCount
 #define g_dplaySessionCount (*(int *)g_dplaySessionCount_v)
+#undef g_dplaySessionOpen
+#define g_dplaySessionOpen (*(int *)g_dplaySessionOpen_v)
 #undef g_dplaySlots
 #define g_dplaySlots ((int *)g_dplaySlots_v)
 #undef g_editCaretX
@@ -988,10 +980,10 @@ extern struct GameData g_data;
 #define g_hangulLeadGlyph (*(int *)g_hangulLeadGlyph_v)
 #undef g_hangulLeadIndex
 #define g_hangulLeadIndex ((signed char *)g_hangulLeadIndex_v)
-#undef g_hangulLeadSetPlain
-#define g_hangulLeadSetPlain ((signed char *)g_hangulLeadSetPlain_v)
-#undef g_hangulLeadSetTail
-#define g_hangulLeadSetTail ((signed char *)g_hangulLeadSetTail_v)
+#undef g_hangulLeadSetByVowel
+#define g_hangulLeadSetByVowel ((signed char *)g_hangulLeadSetByVowel_v)
+#undef g_hangulLeadSetByVowelTail
+#define g_hangulLeadSetByVowelTail ((signed char *)g_hangulLeadSetByVowelTail_v)
 #undef g_hangulTailGlyph
 #define g_hangulTailGlyph (*(int *)g_hangulTailGlyph_v)
 #undef g_hangulTailIndex
@@ -1002,10 +994,10 @@ extern struct GameData g_data;
 #define g_hangulVowelGlyph (*(int *)g_hangulVowelGlyph_v)
 #undef g_hangulVowelIndex
 #define g_hangulVowelIndex ((signed char *)g_hangulVowelIndex_v)
-#undef g_hangulVowelSetPlain
-#define g_hangulVowelSetPlain ((signed char *)g_hangulVowelSetPlain_v)
-#undef g_hangulVowelSetTail
-#define g_hangulVowelSetTail ((signed char *)g_hangulVowelSetTail_v)
+#undef g_hangulVowelSetByLead
+#define g_hangulVowelSetByLead ((signed char *)g_hangulVowelSetByLead_v)
+#undef g_hangulVowelSetByLeadTail
+#define g_hangulVowelSetByLeadTail ((signed char *)g_hangulVowelSetByLeadTail_v)
 #undef g_hasItem30mm
 #define g_hasItem30mm (g_data.g_hasItem30mm_)
 #undef g_hasItem60mm
@@ -1052,10 +1044,14 @@ extern struct GameData g_data;
 #define g_hostErrorBox (*(int *)g_hostErrorBox_v)
 #undef g_hostErrorBoxRects
 #define g_hostErrorBoxRects ((int *)g_hostErrorBoxRects_v)
+#undef g_hostGameSetUp
+#define g_hostGameSetUp (*(int *)g_hostGameSetUp_v)
 #undef g_hostGoneMessageFlag
 #define g_hostGoneMessageFlag (*(int *)((u8 *)g_hostLeavingMsg_v + 0x4))
 #undef g_hostLeavingMsg
 #define g_hostLeavingMsg ((u32 *)g_hostLeavingMsg_v)
+#undef g_hostingState
+#define g_hostingState (*(int *)g_hostingState_v)
 #undef g_inputFont
 #define g_inputFont (*(void * *)g_inputFont_v)
 #undef g_inputHistory
@@ -1112,10 +1108,14 @@ extern struct GameData g_data;
 #define g_joinPasswordAndRanking ((u8 *)g_joinPasswordAndRanking_v)
 #undef g_joinPollTicks
 #define g_joinPollTicks (*(int *)g_joinPollTicks_v)
+#undef g_joinRow
+#define g_joinRow (*(int *)g_joinRow_v)
 #undef g_joinThroughServer
 #define g_joinThroughServer (*(int *)g_joinThroughServer_v)
 #undef g_joinTimedOut
 #define g_joinTimedOut (*(int *)g_joinTimedOut_v)
+#undef g_joinTimer
+#define g_joinTimer (*(u32 *)g_joinTimer_v)
 #undef g_joinedSessionRec
 #define g_joinedSessionRec ((SessionEntry *)g_joinedSessionRec_v)
 #undef g_keepCameraAsked
@@ -1242,6 +1242,10 @@ extern struct GameData g_data;
 #define g_linearFilterTexts ((char *)g_linearFilterTexts_v)
 #undef g_listAnswered
 #define g_listAnswered (*(int *)g_listAnswered_v)
+#undef g_listBlinkClock
+#define g_listBlinkClock (*(float *)g_listBlinkClock_v)
+#undef g_listBlinkRate
+#define g_listBlinkRate (*(float *)g_listBlinkRate_v)
 #undef g_listRefreshPeriod
 #define g_listRefreshPeriod (*(int *)g_listRefreshPeriod_v)
 #undef g_loadFade
@@ -1260,10 +1264,6 @@ extern struct GameData g_data;
 #define g_loadTexture (*(int *)g_loadTexture_v)
 #undef g_loadTimer
 #define g_loadTimer ((u8 *)g_loadTimer_v)
-#undef g_lobbyBlinkClock
-#define g_lobbyBlinkClock (*(float *)g_lobbyBlinkClock_v)
-#undef g_lobbyBlinkRate
-#define g_lobbyBlinkRate (*(float *)g_lobbyBlinkRate_v)
 #undef g_lobbyConnectionBlock
 #define g_lobbyConnectionBlock (*(void * *)g_lobbyConnectionBlock_v)
 #undef g_lobbyConnectionOpen
@@ -2708,10 +2708,10 @@ extern struct GameData g_data;
 #define g_typingRoomJoinPassword (*(int *)g_typingRoomJoinPassword_v)
 #undef g_unlit
 #define g_unlit (g_data.g_unlit_)
-#undef g_unlockTablesNet
-#define g_unlockTablesNet ((u8 *)g_unlockTablesNet_v)
-#undef g_unlockTablesSolo
-#define g_unlockTablesSolo ((u8 *)g_unlockTablesSolo_v)
+#undef g_unlockTablesByProgress
+#define g_unlockTablesByProgress ((u8 *)g_unlockTablesByProgress_v)
+#undef g_unlockTablesLadder
+#define g_unlockTablesLadder ((u8 *)g_unlockTablesLadder_v)
 #undef g_unlockedLevel
 #define g_unlockedLevel (*(int *)g_unlockedLevel_v)
 #undef g_unusedAccountWord

@@ -62,8 +62,8 @@ void *THISCALL (scene_topPlayer)(Scene *scene)
 }
 
 /* 0x472310: the dynamic lights refilled: flagged (dynamicLightsSet), emptied (Light_clearCounts), then a white light for
-   each active actor, of (its glow + 1) * 2500 at its position, and for each active particle whose size is above
-   0, of that at its position */
+   each active actor, of (its glow + 1) * 2500 at its position, and for each active particle whose light radius
+   (lightRadius) is above 0, of that radius at its position */
 void THISCALL (stage_refillLights)(Stage *stage)
 {
 	u8 *pool = (u8 *)&stage->dynamicLights;

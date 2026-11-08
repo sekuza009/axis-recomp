@@ -37,7 +37,7 @@ void (lobby_enterPlayerScreen)(void)
 void (lobby_enterArenaList)(void)
 {
 	static const u32 cleared[] = { (OBJ(g_camPoints) + 0x14), ADDR(g_joinThroughServer), ADDR(g_lobbyRefreshing), ADDR(g_lanSearchStarted), ADDR(g_serverSearching), ADDR(g_lobbyJoinStarted), ADDR(g_lanJoinRequest), ADDR(g_lanSearch),
-	                               ADDR(g_lobbySearching), ADDR(g_arenaLanListBuilt), ADDR(g_arenaServerList), ADDR(g_gameCount), ADDR(g_lobbyBlinkClock), ADDR(g_pickedGame), ADDR(g_gameListTop), ADDR(g_gameListRow),
+	                               ADDR(g_lobbySearching), ADDR(g_arenaLanListBuilt), ADDR(g_arenaServerList), ADDR(g_gameCount), ADDR(g_listBlinkClock), ADDR(g_pickedGame), ADDR(g_gameListTop), ADDR(g_gameListRow),
 	                               ADDR(g_arenaListClickArmed), ADDR(g_arenaListClickTimer), ADDR(g_lobbyPanelsSliding), ADDR(g_joinConnecting), ADDR(g_lobbyConnectionOpen), ADDR(g_arenaUpdateNotice), ADDR(g_arenaListRefreshTimer), ADDR(g_typingArenaAddress) };
 	int z = (*(int *)&g_menuCameraLookZ);
 	(*(u32 *)&g_camPoint1X) = 0x420c0000;   /* 35.0 */
@@ -108,7 +108,7 @@ void (mapList_init)(void)
    list */
 void (lobby_enterCreate)(void)
 {
-	static const u32 cleared[] = { ADDR(g_arenaLobbyState), ADDR(g_connectionAwaited), ADDR(g_lobbyReportsOff), ADDR(g_hostErrorBox), ADDR(g_arenaGameSetUp), ADDR(g_lobbyPanelsSliding), ADDR(g_arenaUpdateNotice), ADDR(g_editingNewArenaName),
+	static const u32 cleared[] = { ADDR(g_hostingState), ADDR(g_connectionAwaited), ADDR(g_lobbyReportsOff), ADDR(g_hostErrorBox), ADDR(g_hostGameSetUp), ADDR(g_lobbyPanelsSliding), ADDR(g_arenaUpdateNotice), ADDR(g_editingNewArenaName),
 	                               ADDR(g_editingNewArenaFragLimit), ADDR(g_editingNewArenaTimeLimit), ADDR(g_typingArenaPassword) };
 	int z = (*(int *)&g_menuCameraLookZ);
 	(*(u32 *)&g_camPoint2X) = 0xc20c0000;   /* -35.0 */
@@ -146,7 +146,7 @@ void (room_loadSettingsRecord)(void)
 /* 0x433790: the create-game page (state 2) entered: the room's settings record, its state cleared, the map list */
 void (room_enterCreatePage)(void)
 {
-	static const u32 cleared[] = { ADDR(g_arenaLobbyState), ADDR(g_connectionAwaited), ADDR(g_lobbyReportsOff), ADDR(g_arenaGameSetUp), ADDR(g_arenaUpdateNotice), ADDR(g_editingRoomName), ADDR(g_editingFragLimit), ADDR(g_editingTimeLimit),
+	static const u32 cleared[] = { ADDR(g_hostingState), ADDR(g_connectionAwaited), ADDR(g_lobbyReportsOff), ADDR(g_hostGameSetUp), ADDR(g_arenaUpdateNotice), ADDR(g_editingRoomName), ADDR(g_editingFragLimit), ADDR(g_editingTimeLimit),
 	                               ADDR(g_editingRoomPassword) };
 	room_loadSettingsRecord();
 	g_roomState = 2;
@@ -582,8 +582,8 @@ u32 (createUpdateNotice_clicks)(void)
 }
 
 /* 0x405230: the IP address field opened (a game joined by its address, arena_joinListed(99999)): the keyboard released for typing, the input line emptied (20
-   characters at most), placed at the panel's origin + (0xd8, 0xd0), the fade timer 5, the Windows edit control made.
-   Returns what that leaves in eax */
+   characters at most), placed at the panel's origin + (0xd8, 0xd0), the key guard g_menuKeyGuard 5, the Windows edit
+   control made. Returns what that leaves in eax */
 u32 (arena_editAddress)(void)
 {
 	input_releaseKeyboard();
@@ -691,7 +691,7 @@ u32 (hostError_keys)(void)
 	(*(u32 *)&g_fragLimit) = limits & 0xff;
 	(*(u32 *)&g_timeLimit) = (limits >> 8) & 0xff;
 	g_arenaCameraMode = 0;
-	g_arenaLobbyState = 1;
+	g_hostingState = 1;
 	g_hostErrorBox = 0;
 	return limits;
 }
@@ -771,7 +771,7 @@ u32 (arena_joinSession)(int session)
 }
 
 /* 0x4062b0 (the arena join's answer, from WndProc): with the join dialog up (g_joinTimedOut)
-   message 0x44 and the connection closed; else a pending join (g_sessionFound) of the game picked (g_arenaJoinRow: 99999 for
+   message 0x44 and the connection closed; else a pending join (g_sessionFound) of the game picked (g_joinRow: 99999 for
    the one received at g_receivedSession, copied into a session record at g_joinedSessionRec, otherwise its row of the list, which
    takes the received id) is answered (dplay_join): joined, the session's settings are taken and the lobby
    connection closed; refused, messages 0x43 (501), 0x42 (502, 503), 0x44 (504), 0x45 (505) and the connection
@@ -786,10 +786,10 @@ void (arena_joinAnswer)(void)
 		g_joinConnecting = 0;
 		return;
 	}
-	int pick = g_arenaJoinRow;
+	int pick = g_joinRow;
 	SessionEntry *rec;
 	if (pick == 99999) {
-		g_arenaJoinRow = 0;
+		g_joinRow = 0;
 		if (!g_sessionFound)
 			return;
 		const SessionDesc *in = (const SessionDesc *)g_receivedSession;
@@ -971,7 +971,7 @@ int (lobby_openConnection)(void)
 	g_arenaServerList = 1;
 	g_arenaLanListBuilt = 0;
 	g_pickedGame = 0;
-	(*(u32 *)&g_lobbyBlinkClock) = 0x447a0000;   /* 1000.0f */
+	(*(u32 *)&g_listBlinkClock) = 0x447a0000;   /* 1000.0f */
 	g_gameListTop = 0;
 	g_gameListRow = 0;
 	*g_arenaListRequest = 0x180001;   /* the message to send */
@@ -1054,7 +1054,7 @@ u32 (hostError_clicks)(void)
 	g_fragLimit = g_arenaFragLimit;
 	g_timeLimit = g_arenaTimeLimit;
 	g_arenaCameraMode = 0;
-	g_arenaLobbyState = 1;
+	g_hostingState = 1;
 	g_hostErrorBox = 0;
 	return (*(u32 *)&g_arenaFragLimit);
 }
@@ -1062,7 +1062,7 @@ u32 (hostError_clicks)(void)
 /* 0x405b80: the hosting answer from the lobby server (g_hostAnswer; 2 nothing yet). 1 accepted: the music stopped, a
    TCP/IP session opened (dplay_openConnection(0, 0)), the arena hosted (dplay_host with the record g_arenaName: its
    name, g_cfgPlayerName, rotation << 8 | map, players, game type, frag and time limits, g_playerCorporation) and
-   those settings taken for the game, g_arenaGameSetUp set; then (as the state stands after) 0 closed, 3 the program
+   those settings taken for the game, g_hostGameSetUp set; then (as the state stands after) 0 closed, 3 the program
    out of date (the update notice, g_arenaUpdateNotice), 4 refused (message 0x46): the connection closed
    (net_disconnect), the state back to 2. Returns what the original leaves in eax */
 u32 (arena_takeHostAnswer)(void)
@@ -1088,7 +1088,7 @@ u32 (arena_takeHostAnswer)(void)
 		g_fragLimit = arena[0x24];
 		g_timeLimit = arena[0x25];
 		state = g_hostAnswer;
-		g_arenaGameSetUp = 1;
+		g_hostGameSetUp = 1;
 	}
 	if (state != 0 && state != 3 && state != 4)
 		return state;
@@ -1097,7 +1097,7 @@ u32 (arena_takeHostAnswer)(void)
 	if (state == 3)
 		g_arenaUpdateNotice = 1;
 	g_connectionAwaited = 0;
-	g_arenaGameSetUp = 0;
+	g_hostGameSetUp = 0;
 	if (state == 4)
 		r = menu_showMessage(0x46);   /* the message */
 	return r;
@@ -1107,7 +1107,7 @@ u32 (arena_takeHostAnswer)(void)
    (the game name into g_newArenaName unless blank (sound 6); the password into g_newArenaPassword; the two limits as
    numbers 0 .. 250 (else 250) into g_newArenaFragLimit / g_newArenaTimeLimit; an empty line changes nothing), else I
    hosts an IPX game (lobby_hostArenaIpx) and T a TCP/IP game (lobby_announceArena, else lobby_hostArenaTcpIp) unless one
-   is set up (g_arenaGameSetUp), and C / Escape leave. Returns what the original leaves in eax */
+   is set up (g_hostGameSetUp), and C / Escape leave. Returns what the original leaves in eax */
 u32 (arenaCreate_keys)(void)
 {
 	u32 mode = (*(u32 *)&g_arenaCameraMode);
@@ -1153,11 +1153,11 @@ u32 (arenaCreate_keys)(void)
 		GAME_VAR(u8, limit[k][1]) = (u8)v;
 		return (u32)v;
 	}
-	if (input_justPressed(g_dikI) && !g_arenaGameSetUp) {
+	if (input_justPressed(g_dikI) && !g_hostGameSetUp) {
 		sound_playMenu(0);
 		return lobby_hostArenaIpx();   /* lobby_hostArenaIpx: create */
 	}
-	if (input_justPressed(g_dikT) && !g_arenaGameSetUp) {
+	if (input_justPressed(g_dikT) && !g_hostGameSetUp) {
 		sound_playMenu(0);
 		u32 r = lobby_announceArena();
 		return r ? r : lobby_hostArenaTcpIp();   /* lobby_hostArenaTcpIp */
@@ -1180,7 +1180,7 @@ u32 (arenaCreate_keys)(void)
    14 the map on and 13 back (arena_stepMap), 3 the players +2 (to 16, then 2), 4 the map rotation on / off (g_newArenaRotation; the game
    type kept in range), 5 the game type on (with a turn key held back) through 0 .. 13 (0 .. 14 with the rotation on), 8
    IPX GAME (lobby_hostArenaIpx) and 9 TCP/IP GAME (lobby_announceArena, else lobby_hostArenaTcpIp), both hosting, unless a
-   game is set up (g_arenaGameSetUp); 10 SERVER SERVICE does nothing, 11 CANCEL leaves, 15 the rotation's map list (with the rotation on; mapList_startEdit). Returns what
+   game is set up (g_hostGameSetUp); 10 SERVER SERVICE does nothing, 11 CANCEL leaves, 15 the rotation's map list (with the rotation on; mapList_startEdit). Returns what
    the original leaves in eax (for the byte settings, its low byte the new value) */
 u32 (arena_createClick)(void)
 {
@@ -1247,12 +1247,12 @@ u32 (arena_createClick)(void)
 		}
 		return r;
 	case 8:
-		if (g_arenaGameSetUp)
+		if (g_hostGameSetUp)
 			return 8;
 		sound_playMenu(0);
 		return lobby_hostArenaIpx();   /* lobby_hostArenaIpx: create */
 	case 9:
-		if (g_arenaGameSetUp)
+		if (g_hostGameSetUp)
 			return 9;
 		sound_playMenu(0);
 		r = lobby_announceArena();
@@ -1272,11 +1272,12 @@ u32 (arena_createClick)(void)
 
 /* 0x4079c0: the arena lobby's game list keys (none while the address or password box is up, a panel frame opens (g_frameOpening), or before the
    arena camera has arrived, g_arenaCameraMode 2). With the join confirmation up only back answers it (the timer 0x378 killed). Up / down held
-   move along the list of games (once the blink clock reaches 5, restarting it; nine rows shown from g_gameListTop, the
-   selection in g_pickedGame); while no search runs (g_lanSearch, g_lobbySearching, the list's refresh g_lobbyRefreshing) the click key or fire
-   joins the selected game (g_lobbyJoinStarted; its join password asked for when connected, g_joinThroughServer) or joins it on the
+   move along the list of games (once the repeat clock (g_menuRepeatClock) reaches 5, restarting it; nine rows shown
+   from g_gameListTop, the selection in g_pickedGame); while no search runs (g_lanSearch, g_lobbySearching, the list's
+   refresh g_lobbyRefreshing) the click key or fire joins the selected game (g_lobbyJoinStarted; its join password
+   asked for when connected, g_joinThroughServer) or joins it on the
    LAN (g_lanJoinRequest); cancel2 and back leave (to mode 0), g_dikS cancels the search; g_dikI searches the local network
-   (a slot opened, g_lobbyBlinkClock 150), g_dikT the lobby server; g_dikP types a game's IP address (arena_editAddress) */
+   (a slot opened, g_listBlinkClock 150), g_dikT the lobby server; g_dikP types a game's IP address (arena_editAddress) */
 void (arenaGames_keys)(void)
 {
 #define g_listTop g_gameListTop
@@ -1339,12 +1340,12 @@ void (arenaGames_keys)(void)
 		net_disconnect();
 		g_serverAnswerIn = 1;
 		g_arenaCameraMode = 0;
-		(*(u32 *)&g_lobbyBlinkClock) = 0x3f800000;   /* 1 */
+		(*(u32 *)&g_listBlinkClock) = 0x3f800000;   /* 1 */
 		return;
 	}
 	if (input_justPressed(g_dikS)) {
 		g_lobbyListAnswer = 0;
-		(*(u32 *)&g_lobbyBlinkClock) = 0x3f800000;
+		(*(u32 *)&g_listBlinkClock) = 0x3f800000;
 		g_serverAnswerIn = 1;
 		g_searchResult = -1;
 		g_lobbyConnectionOpen = 0;
@@ -1362,7 +1363,7 @@ void (arenaGames_keys)(void)
 		if (busy)
 			return;
 		g_lobbyListAnswer = 0;
-		(*(u32 *)&g_lobbyBlinkClock) = 0x3f800000;
+		(*(u32 *)&g_listBlinkClock) = 0x3f800000;
 		g_serverAnswerIn = 1;
 		dplay_leaveSession();
 		net_disconnect();
@@ -1386,7 +1387,7 @@ void (arenaGames_keys)(void)
 		g_gameCount = 0;
 		g_joinThroughServer = 0;
 		g_serverSearching = 0;
-		(*(u32 *)&g_lobbyBlinkClock) = 0x43160000;   /* 150 */
+		(*(u32 *)&g_listBlinkClock) = 0x43160000;   /* 150 */
 		return;
 	}
 	if (input_justPressed(g_dikT)) {
@@ -1546,13 +1547,13 @@ static void take_arena(void)
 	g_chosenGameMode = (signed char)g_arenaGameType;
 	g_fragLimit = g_arenaFragLimit;
 	g_timeLimit = g_arenaTimeLimit;
-	g_arenaGameSetUp = 1;
+	g_hostGameSetUp = 1;
 }
 
 /* 0x4052c0: the arena hosted as an IPX game (DirectPlay session kind 1, the kind the SEARCH IPX tab lists): the
    settings kept, a special room's map; the session or the hosting failing, the role put back and the session left
    (the NETWORK INITIALIZE ERROR box up, g_hostErrorBox); else the music stopped and the settings taken
-   (g_arenaLobbyState 1, back to camera mode 0). The callers ignore the eax it leaves */
+   (g_hostingState 1, back to camera mode 0). The callers ignore the eax it leaves */
 void (lobby_hostArenaIpx)(void)
 {
 	int was = g_netRole;
@@ -1572,7 +1573,7 @@ void (lobby_hostArenaIpx)(void)
 		return;
 	}
 	music_stop();
-	g_arenaLobbyState = 1;
+	g_hostingState = 1;
 	take_arena();
 	g_arenaCameraMode = 0;
 }
@@ -1583,7 +1584,7 @@ void (lobby_hostArenaIpx)(void)
    ignore the eax it leaves */
 void (lobby_hostArenaTcpIp)(void)
 {
-	g_arenaLobbyState = 2;
+	g_hostingState = 2;
 	g_leavingForMatch = 1;
 	g_netRole = 1;
 	music_stop();
@@ -1613,7 +1614,7 @@ int (lobby_announceArena)(void)
 		menu_showMessage(0x3e);
 		return 0;
 	}
-	g_arenaGameSetUp = 1;
+	g_hostGameSetUp = 1;
 	special_map(g_arenaName, (u8 *)ADDR(g_arenaMap));
 	ArenaRecord *packet = g_arenaPacket;
 	packet->kind = 0x18;
@@ -1632,7 +1633,7 @@ int (lobby_announceArena)(void)
 	g_connectionAwaited = 1;
 	g_hostAnswer = 2;
 	net_send(0xa, 0x64);
-	g_arenaLobbyState = 2;
+	g_hostingState = 2;
 	return 1;
 }
 
@@ -1663,6 +1664,6 @@ void (room_announceGame)(void)
 	g_connectionAwaited = 1;
 	g_hostAnswer = 2;
 	net_send(0x12, 0x65);
-	g_arenaLobbyState = 2;
+	g_hostingState = 2;
 }
 #undef lstrcpyA

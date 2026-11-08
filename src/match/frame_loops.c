@@ -339,37 +339,37 @@ static void identity4(u32 *m)
    (rotation, a quaternion); its matrix (placeMatrix: translation x rotation) and inverse (placeInverse), a copy (matrix) and its
    inverse (matrixInverse), two identities (animMatrix, animInverse), the copy times the inverse (relMatrix) and its inverse (relInverse).
    Its shape (shape_getByName, bound) and two ranges of its element count from the shading pool (objectColours, used
-   objectColourCount; past 1000000 a fatal message), the type's glow (glowSize, glowColour), the counters cleared, the shape's centre through
-   the matrix (pos; no shape: the position), and its shading worked out unless the map has it (mapShaded). Its
+   objectColourCount; past 1000000 a fatal message), the record's glow (glowSize, glowColour), the counters cleared, the shape's centre
+   through the matrix (pos; no shape: the position), and its shading worked out unless the map has it (mapShaded). Its
    callers ignore the eax it leaves */
-void THISCALL (object_initObjectBy)(Stage *s, int i, const ObjectType *type)
+void THISCALL (object_initObjectBy)(Stage *s, int i, const ObjectInfo *info)
 {
 	u8 *obj = (u8 *)&ST->objects[i];
 	MapObject *mo = (MapObject *)obj;
 	int idx = 0;
 	for (; idx < ST->objectNameCount; idx++)
-		if (!strcmp(type->name, ST->objectNames[idx]))
+		if (!strcmp(info->name, ST->objectNames[idx]))
 			break;
 	if (idx == ST->objectNameCount) {
 		if (idx >= 1000)
 			sys_fatalError((char *)OBJ(g_logStage), (const char *)STR(0x4c8364, "object type buffer overflow (%d) - in..."), 1000);
 		idx = ST->objectNameCount++;
-		strcpy(ST->objectNames[idx], type->name);
+		strcpy(ST->objectNames[idx], info->name);
 	}
 	mo->id = ST->objectSerial++;
 	mo->active = 1;
 	mo->nameIndex = idx;
-	memcpy(obj + offsetof(MapObject, flags), &type->flags, 12);   /* flags, trigger, animPeriod */
-	if (type->animName[0])
-		sprintf(mo->animPath, (const char *)STR(0x4c7a30, "%s/%s/%s"), ST->stageDir, ST->stageName, type->animName);
+	memcpy(obj + offsetof(MapObject, flags), &info->flags, 12);   /* flags, trigger, animPeriod */
+	if (info->animName[0])
+		sprintf(mo->animPath, (const char *)STR(0x4c7a30, "%s/%s/%s"), ST->stageDir, ST->stageName, info->animName);
 	else
 		obj[0x18] = 0;
-	memcpy(mo->place, type->place, 12);
+	memcpy(mo->place, info->place, 12);
 	u32 move[16];
 	identity4(move);
 	for (int c = 0; c < 3; c++)
 		((float *)RELOC(move))[12 + c] = f32(fld_m(mo->place + c));
-	memcpy(mo->rotation, type->rotation, 16);
+	memcpy(mo->rotation, info->rotation, 16);
 	float turn[16];
 	Mat4_fromQuat(turn, mo->rotation);
 	float *m = mo->matrix;
@@ -381,7 +381,7 @@ void THISCALL (object_initObjectBy)(Stage *s, int i, const ObjectType *type)
 	identity4((u32 *)mo->animInverse);
 	Mat4_multiply(mo->relMatrix, m, mo->placeInverse);
 	Mat4_invert(mo->relInverse, mo->relMatrix);
-	Shape *shape = (Shape *)((u8 *)shape_getByName((u8 *)&ST->objectShapes, type->name, 1));
+	Shape *shape = (Shape *)((u8 *)shape_getByName((u8 *)&ST->objectShapes, info->name, 1));
 	mo->model = (Shape *)((u8 *)shape);
 	for (int r = 0; r < 2; r++) {
 		int need = ST->objectColourCount + shape->colourCount;
@@ -391,8 +391,8 @@ void THISCALL (object_initObjectBy)(Stage *s, int i, const ObjectType *type)
 		ST->objectColourCount += mo->model->colourCount;
 	}
 	mo->colourSide = 1;
-	BITS(mo->glowSize) = BITS(type->glowSize);
-	mo->glowColour = type->glowColour;
+	BITS(mo->glowSize) = BITS(info->glowSize);
+	mo->glowColour = info->glowColour;
 	memset(obj + offsetof(MapObject, unit), 0, 7 * 4);   /* unit .. poseStale */
 	if (shape) {
 		const float *c = shape->centre;

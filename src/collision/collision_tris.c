@@ -224,7 +224,7 @@ static int clamp_to(float *v, const float *low, const float *high)
 }
 
 /* 0x471400 (thiscall on the stage): a sphere's move (radius r from pos along vel) for this frame: an actor's
-   (actor_processFrame) or the free camera's (radius 500: free_camera in match_frame and hud_cycleF11Mode). outPos
+   (actor_processFrame) or the free camera's (radius 500: free_camera in match_frame and replay_frame). outPos
    gets pos + vel held to the world box (worldLow .. worldHigh; the move shortened to it when held); every active,
    animated map object with a collision unit whose model box, widened by |move| + r, holds pos (taken into the
    object's frame) goes in as a sub-model (nearObjects: its unit's list, relMatrix, relInverse). Then the sweep

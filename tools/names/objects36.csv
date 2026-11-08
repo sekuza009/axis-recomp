@@ -4,10 +4,10 @@
 0x4ad3e4,signed char,32,g_hangulVowelIndex,vowel code -> index
 0x4ad404,signed char,32,g_hangulTailIndex,tail consonant code -> index (0 none)
 # ... and each part's glyph set by another part (lead glyph = lead + set * 20, vowel glyph = vowel + set * 22, ...)
-0x4ad424,signed char,22,g_hangulVowelSetPlain,the lead's glyph set by the vowel; no tail
-0x4ad43a,signed char,22,g_hangulVowelSetTail,the lead's glyph set by the vowel; with a tail
-0x4ad450,signed char,20,g_hangulLeadSetPlain,the vowel's glyph set by the lead; no tail
-0x4ad464,signed char,20,g_hangulLeadSetTail,the vowel's glyph set by the lead; with a tail
+0x4ad424,signed char,22,g_hangulLeadSetByVowel,the lead's glyph set by the vowel; no tail
+0x4ad43a,signed char,22,g_hangulLeadSetByVowelTail,the lead's glyph set by the vowel; with a tail
+0x4ad450,signed char,20,g_hangulVowelSetByLead,the vowel's glyph set by the lead; no tail
+0x4ad464,signed char,20,g_hangulVowelSetByLeadTail,the vowel's glyph set by the lead; with a tail
 0x4ad478,signed char,22,g_hangulTailSet,the tail's glyph set by the vowel (2 padding bytes before 0x4ad490)
 0x4dedd8,char,32,g_matchPlayerName,the player's name for the match (match_name clears 32 bytes)
 0x4dedf8,char,261,g_mapInfoDir,the second data path ("initdata/"; app_setDataPaths clears 0x105 bytes; mapinfo.dat's folder)

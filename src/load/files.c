@@ -576,8 +576,8 @@ u32 (cfg_writeServer)(void *f)
 
 /* 0x43f160: the command line the launcher started the game with, split at spaces into g_launchArgs (the count in
    g_argCount). "-net" alone: started for a network game when axiswl.dat is there (g_launchedForNetGame and g_launchedAsHost set);
-   "-ip x <server>": the server's address into g_serverAddressArg (g_launchedForNetGame set). Empty or longer than 0x400: nothing.
-   Returns what the original leaves in eax (the count, the comparison, fclose's or strcpy's length) */
+   "<x> -ip <server>": the server's address into g_serverAddressArg (g_launchedForNetGame set). Empty or longer than 0x400:
+   nothing. Returns what the original leaves in eax (the count, the comparison, fclose's or strcpy's length) */
 u32 (app_parseCommandLine)(char *line)
 {
 	size_t length = strlen(line);
@@ -1351,10 +1351,10 @@ void (profile_scanSaves)(void)
 		}
 }
 
-/* 0x473780 (thiscall on the scene, i.e. its stage): the component catalogue from path (a failed open or a version
+/* 0x473780 (thiscall on the stage): the component catalogue from path (a failed open or a version
    other than 0x1204 is a fatal message): six tables, each logged, its count then its records read unscrambled (heads,
    chests, arms, legs, boosters, items: headTypes .. actorItems). Returns 1 */
-u32 THISCALL (catalogue_loadComponents)(u8 *scene, const char *path)
+u32 THISCALL (catalogue_loadComponents)(u8 *stage, const char *path)
 {
 	static const u32 tables[6][4] = {   /* log message, count, records, record size */
 		{ STR(0x4c755c, "read ActorHeadInfo"), offsetof(Stage, headTypeCount), offsetof(Stage, headTypes), sizeof(HeadType) }, { STR(0x4c7548, "read ActorChestInfo"), offsetof(Stage, chestTypeCount), offsetof(Stage, chestTypes), sizeof(ChestType) },
@@ -1368,9 +1368,9 @@ u32 THISCALL (catalogue_loadComponents)(u8 *scene, const char *path)
 	if (version != 0x1204)
 		sys_fatalError((char *)OBJ(g_logStage), (const char *)STR(0x4c7570, "incorrect file version, remove the fi..."), (int)path);
 	for (int k = 0; k < 6; k++) {
-		log_message((int)scene, 0, 0, (const char *)RELOC(tables[k][0]));
-		fread_scrambled(scene + tables[k][1], 4, 1, f);
-		fread_scrambled(scene + tables[k][2], tables[k][3], FIELD(u32, scene, tables[k][1]), f);
+		log_message((int)stage, 0, 0, (const char *)RELOC(tables[k][0]));
+		fread_scrambled(stage + tables[k][1], 4, 1, f);
+		fread_scrambled(stage + tables[k][2], tables[k][3], FIELD(u32, stage, tables[k][1]), f);
 	}
 	fclose(f);
 	return 1;

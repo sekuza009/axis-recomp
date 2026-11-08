@@ -406,7 +406,7 @@ int (app_init)(void *inst, int show)
 
 	memcpy((void *)OBJ(g_windowClass), &wc, sizeof wc);
 	g_mainWindow = IMPORT(0x4a9350, void *, u32, const char *, const char *, u32, int, int, int, int, void *, void *, void *, void *)
-		(0, (const char *)STR(0x4b0714, "AXIS"), (const char *)STR(0x4b2874, "AXIS"), 0x86000000, 0, -1, g_screenW, g_screenH + 1, NULL, NULL, inst, NULL);   /* CreateWindowExA: WS_POPUP | WS_VISIBLE | WS_SYSMENU */
+		(0, (const char *)STR(0x4b0714, "AXIS"), (const char *)STR(0x4b2874, "AXIS"), 0x86000000, 0, -1, g_screenW, g_screenH + 1, NULL, NULL, inst, NULL);   /* CreateWindowExA: WS_POPUP | WS_CLIPSIBLINGS | WS_CLIPCHILDREN */
 	if (!g_mainWindow)
 		return 0;
 	g_hInstance = inst;
@@ -495,7 +495,7 @@ static void edit_close(void *edit, int sent)
 /* 0x440840: the text fields' hidden edit's window procedure (set by editField_createEdit). Keys: Enter, once the open delay (g_menuKeyGuard)
    is not over k_0f, takes the line and sends it (g_fieldStep 20: the next field); Esc drops it; Tab in the room
    (g_screen 0x320) closes it (sent) and steps by Shift (g_fieldStep 10 back when held, else 20); Home and Left are swallowed (0).
-   Timers: 0x29a, in the lobby (g_arenaLobbyState 2), and 0x115c, when connected (g_roomConnected), send their keep-alives (0x17 to
+   Timers: 0x29a, in the lobby (g_hostingState 2), and 0x115c, when connected (g_roomConnected), send their keep-alives (0x17 to
    the lobby, 0x18 to the game server). Everything not swallowed goes on to the edit's own procedure (g_editOldProc) */
 long STDCALL (editField_editProc)(void *wnd, u32 msg, u32 w, u32 l)
 {
@@ -525,7 +525,7 @@ long STDCALL (editField_editProc)(void *wnd, u32 msg, u32 w, u32 l)
 		}
 	} else if (msg == 0x113) {   /* WM_TIMER */
 		if (w == 0x29a) {
-			if (g_arenaLobbyState == 2)
+			if (g_hostingState == 2)
 				net_send(0x17, 100);
 		} else if (w == 0x115c && g_roomConnected)
 			net_send(0x18, 0x65);
@@ -539,8 +539,9 @@ long STDCALL (editField_editProc)(void *wnd, u32 msg, u32 w, u32 l)
    language by the system's (Korean 0x412 / 0x812: 1 and the message 0x4b2794, else 2 and 0x4b27e4, at g_language /
    g_launchMessage); the clock check; outside the lobby (g_launchedForNetGame) the launcher, start mode and file checks, each failing
    with its message. The launcher told to quit again, app_init (failing: a message box), the screen saver off, then
-   the message loop (TranslateMessage while g_textFieldOpen) with a frame (editField_readTyping) and the fade step after each round of
-   messages, until g_gameRunning is cleared. Returns 1, or 0 on the exits. (Named game_WinMain: WinMain is the SDK's) */
+   the message loop (TranslateMessage while g_textFieldOpen) with the typed text read (editField_readTyping) and a frame (app_frame)
+   after each round of messages, until g_gameRunning is cleared. Returns 1, or 0 on the exits. (Named game_WinMain: WinMain is the
+   SDK's) */
 u32 STDCALL (game_WinMain)(void *inst, void *prev, const char *cmd, int show)
 {
 #define FindWindowA(cls, name) IMPORT(0x4a92cc, void *, const char *, const char *)(cls, name)
@@ -775,7 +776,7 @@ long STDCALL (game_wndProc)(void *wnd, u32 msg, u32 w, u32 l)
 	}
 	case 0x113:   /* WM_TIMER */
 		if (w == 0x29a) {
-			if (g_arenaLobbyState == 2)
+			if (g_hostingState == 2)
 				net_send(0x17, 100);
 		} else if (w == 0x378) {
 			dplay_listSessions();

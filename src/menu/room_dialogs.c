@@ -62,7 +62,7 @@ void (room_openLogin)(void)
    rest cleared */
 void (room_enterGameList)(void)
 {
-	static const u32 cleared[] = { ADDR(g_roomRefreshing), ADDR(g_roomSearching), ADDR(g_gameListLoaded), ADDR(g_roomSearchAnswerIn), ADDR(g_gameCount), ADDR(g_lobbyBlinkClock), ADDR(g_pickedGame), ADDR(g_gameListTop),
+	static const u32 cleared[] = { ADDR(g_roomRefreshing), ADDR(g_roomSearching), ADDR(g_gameListLoaded), ADDR(g_roomSearchAnswerIn), ADDR(g_gameCount), ADDR(g_listBlinkClock), ADDR(g_pickedGame), ADDR(g_gameListTop),
 	                               ADDR(g_gameListRow), ADDR(g_gameListRefreshClicked), ADDR(g_roomJoinStarted), ADDR(g_roomListRefreshTimer), ADDR(g_gameListClickArmed), ADDR(g_gameListClickTimer), ADDR(g_roomListPlayers) };
 	(*(u32 *)&g_unusedRoomFloat) = 0x3f333333;   /* 0.7 */
 	g_roomState = 1;
@@ -154,7 +154,7 @@ u32 (room_joinListed)(int i)
 		menu_showMessage(0x3f);
 		return dplay_leaveSession();   /* dplay_leaveSession */
 	}
-	g_arenaJoinRow = i;
+	g_joinRow = i;
 	if (!dplay_listSessions()) {        /* dplay_listSessions */
 		menu_showMessage(0x40);
 		return dplay_leaveSession();
@@ -164,7 +164,7 @@ u32 (room_joinListed)(int i)
 	g_joinTimedOut = 0;
 	g_sessionFound = 0;
 	u32 timer = SetTimer(g_mainWindow, 0x378, 2000, NULL);   /* SetTimer */
-	g_arenaJoinTimer = timer;
+	g_joinTimer = timer;
 	return timer;
 }
 
@@ -182,7 +182,7 @@ int (gameList_refresh)(void)
 	g_gameCount = 0;
 	g_gameListLoaded = 1;
 	g_pickedGame = 0;
-	(*(u32 *)&g_lobbyBlinkClock) = 0x447a0000;   /* 1000 */
+	(*(u32 *)&g_listBlinkClock) = 0x447a0000;   /* 1000 */
 	g_gameListTop = 0;
 	g_gameListRow = 0;
 	arena_clearSessionEntry();   /* arena_clearSessionEntry */
@@ -194,8 +194,9 @@ int (gameList_refresh)(void)
 }
 
 /* 0x406200: joining arena i of the list (99999: the one typed in, g_typedArenaAddress): the search stopped first if it runs,
-   the connection made (dplay_openConnection; message 0x3f and the search stopped on a failure), the join (dplay_listSessions, not
-   checked), the join's wait (timer 0x378, 2 s). Returns what the original leaves in eax */
+   the connection made (dplay_openConnection; message 0x3f and the search stopped on a failure), the sessions asked for
+   (dplay_listSessions, not checked), the join's wait (timer 0x378, 2 s; the join itself is arena_joinAnswer's dplay_join).
+   Returns what the original leaves in eax */
 u32 (arena_joinListed)(int i)
 {
 	g_lobbyJoinStarted = 0;
@@ -207,14 +208,14 @@ u32 (arena_joinListed)(int i)
 		menu_showMessage(0x3f);
 		return dplay_leaveSession();
 	}
-	g_arenaJoinRow = i;
+	g_joinRow = i;
 	dplay_listSessions();
 	g_joinPollTicks = 0;
 	g_joinConnecting = 1;
 	g_joinTimedOut = 0;
 	g_sessionFound = 0;
 	u32 timer = SetTimer(g_mainWindow, 0x378, 2000, NULL);   /* SetTimer */
-	g_arenaJoinTimer = timer;
+	g_joinTimer = timer;
 	return timer;
 }
 
@@ -624,7 +625,7 @@ u32 (newIdForm_draw)(void)
 		text_draw8(X0 + 0x30, Y0 + k * 0x30 + 0x3c, (const char *)(MSG(342, "INPUT ID") + k * 0x80));
 		menu_drawLine(X0 + 0x84, Y0 + k * 0x30 + 0x50, X0 + 0x200, Y0 + k * 0x30 + 0x50);
 	}
-	char hidden[64];   /* (30 bytes cleared, as the original's buffer) */
+	char hidden[64];   /* (the original's buffer is 30 bytes; here 64, all cleared by stars) */
 	if (!g_typingAccountName || !g_textFieldOpen)
 		text_draw8(X0 + 0x94, Y0 + 0x3c, g_accountName);
 	if (!g_typingAccountPassword || !g_textFieldOpen) {
@@ -1069,7 +1070,7 @@ u32 (ranking_drawTable)(void)
 		text_drawCentredLines16(x + 0x7d, Y1 - 0x28, x + 0x11d, (const char *)(MSG(421, "$[0] STOP") + k * 0x80));
 	}
 	if (g_rankingWaiting) {   /* loading: blinking in ten steps */
-		int step = ftol(fmul_m(fld_m((const float *)ADDR(g_lobbyBlinkClock)), k_0_333333f)) % 10;
+		int step = ftol(fmul_m(fld_m((const float *)ADDR(g_listBlinkClock)), k_0_333333f)) % 10;
 		float alpha = f32(fsubr_m(fmul_m((long double)step, (const float *)ADDR(k_0_1f)), (const float *)ADDR(k_1f)));
 		set_colour_bits(g_textColour, 0, 0x3f800000, 0, BITS(alpha));
 		text_drawCentredLines16(X0, Y0 + 0xc8, X1, (const char *)MSG(423, "DOWNLOADING RANKING DATA"));

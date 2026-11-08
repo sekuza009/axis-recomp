@@ -71,15 +71,15 @@ int THISCALL (tex_findByName)(TextureBank *self, const u8 *name)
 
 /* 0x455550 (thiscall on a texture bank): the item named, its file (file) moved to where the item starts (its
    0x44-byte record at index, +0x40); returns the file, or 0 after a fatal message when there is no such item */
-void *THISCALL (tex_getItemFileBy)(TextureBank *manager, const char *name)
+void *THISCALL (tex_getItemFileBy)(TextureBank *bank, const char *name)
 {
-	int i = tex_findByName((u8 *)manager, name);
+	int i = tex_findByName((u8 *)bank, name);
 	if (i < 0) {
 		sys_fatalError((char *)OBJ(g_logTexture), (const char *)STR(0x4b3f80, "can't find item(%s) - getItemFileBy()"), (int)name);
 		return 0;
 	}
-	crt_fseek(manager->file, GAME_VAR(long, manager->index + i * 0x44 + 0x40), 0);   /* (the index entry's offset, after its 0x40-byte name) */
-	return manager->file;
+	crt_fseek(bank->file, GAME_VAR(long, bank->index + i * 0x44 + 0x40), 0);   /* (the index entry's offset, after its 0x40-byte name) */
+	return bank->file;
 }
 
 /* 0x456be0 (thiscall on the texture manager): a texture's id by name: each of the six banks (+4 ..) asked in turn

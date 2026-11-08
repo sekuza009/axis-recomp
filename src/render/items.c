@@ -55,7 +55,7 @@ void THISCALL (stage_drawItems)(Stage *stage, void *view)
 			float uv0[2] = { texel(type % 8 * 32, 1.0f / 256), texel(type / 8 * 32, 1.0f / 256) };
 			float uv1[2] = { uv0[0] + 0.125f, uv0[1] + 0.125f };
 			float a[2] = { -150.0f, -150.0f }, b[2] = { 150.0f, 150.0f };
-			ViewVolume_addBillboard(view, stage->billboards, uv0, uv1, 150.0f, colour, a, b, item->pos, 2, 1);
+			ViewVolume_addBillboard(view, stage->mapItemTexture, uv0, uv1, 150.0f, colour, a, b, item->pos, 2, 1);
 		}
 	}
 }

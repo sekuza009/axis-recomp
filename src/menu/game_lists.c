@@ -180,7 +180,7 @@ void (arena_drawGameList)(void)
 	menu_drawUpArrow(X0 + 0x21e, Y0 + 0xa0, X0 + 0x23e, Y0 + 0xe0, hovered == 0xf);
 	menu_drawDownArrow(X0 + 0x21e, Y0 + 0xf0, X0 + 0x23e, Y0 + 0x130, hovered != 0xf && hovered == 0x10);
 	if (g_searching || g_lobbyRefreshing) {   /* blinking in fifteen steps */
-		int step = ftol(fmul_m(fld_m((const float *)ADDR(g_lobbyBlinkClock)), k_0_333333f)) % 15;
+		int step = ftol(fmul_m(fld_m((const float *)ADDR(g_listBlinkClock)), k_0_333333f)) % 15;
 		float alpha = f32(fmul_m((long double)step, k_0_0667f));
 		set_colour_bits(g_textColour, 0, 0x3f800000, 0, BITS(alpha));
 		text_drawCentredLines16(X0, Y1 - 0x4a, X1, (const char *)MSG(152, "SEARCHING FOR THE GAME SERVER"));
@@ -301,7 +301,7 @@ void (gameList_draw)(void)
 	menu_drawDownArrow(X0 + 0x226, Y0 + 0xbe, X0 + 0x246, Y0 + 0xfe, hovered != 0xd && hovered == 0xe);
 	glDisable(GL_TEXTURE_2D);
 	if (g_roomSearching || g_roomRefreshing) {   /* blinking in fifteen steps */
-		int step = ftol(fmul_m(fld_m((const float *)ADDR(g_lobbyBlinkClock)), k_0_333333f)) % 15;
+		int step = ftol(fmul_m(fld_m((const float *)ADDR(g_listBlinkClock)), k_0_333333f)) % 15;
 		float alpha = f32(fmul_m((long double)step, k_0_0667f));
 		set_colour_bits(g_textColour, 0, 0x3f800000, 0, BITS(alpha));
 		text_drawCentredLines16(X0, Y1 - 0x57, X1, (const char *)MSG(391, "SEARCHING FOR THE GAME SERVER"));
@@ -344,14 +344,14 @@ void (gameList_draw)(void)
 
 /* 0x43ea10: the game room's page of games: the double-click window's clock (g_gameListClickTimer, while g_gameListClickArmed; closed above k_20f),
    the tunnel; with the room camera arrived (g_roomCameraMode 2), and not page 99: a panel frame while it opens (g_frameOpening) alone, else the search's
-   end (g_roomSearching searching, g_roomSearchAnswerIn the answer in, g_searchResult its result: -1 .. 4) and the blinking clock (g_lobbyBlinkClock
+   end (g_roomSearching searching, g_roomSearchAnswerIn the answer in, g_searchResult its result: -1 .. 4) and the blinking clock (g_listBlinkClock
    falling, back to 1000 below k_10f); while the list refreshes (g_roomRefreshing) its timer (g_roomListRefreshTimer against g_listRefreshPeriod:
    the list asked for again, the next in 5) and a stop (g_netListDone); then the list, and with a game joined (g_roomJoinStarted)
    the join sent (g_roomJoinNeedsPassword clear) or, once a password is typed (g_typingRoomJoinPassword), it checked against the game's (+0x3b)
    (message 0x27 when wrong) */
 void (gameList_pageFrame)(void)
 {
-	const float *blinkRate = (const float *)ADDR(g_lobbyBlinkRate), *blinkFloor = (const float *)ADDR(k_10f);
+	const float *blinkRate = (const float *)ADDR(g_listBlinkRate), *blinkFloor = (const float *)ADDR(k_10f);
 	if (g_gameListClickArmed) {
 		long double t = FADD(g_frameTime, g_gameListClickTimer);
 		g_gameListClickTimer = f32(t);
@@ -386,10 +386,10 @@ void (gameList_pageFrame)(void)
 			g_roomSearchAnswerIn = 0;
 			g_roomRefreshing = 1;
 		}
-		long double blink = fsubr_m(fmul_m(fld_m(blinkRate), &g_frameTime), &g_lobbyBlinkClock);
-		g_lobbyBlinkClock = f32(blink);
+		long double blink = fsubr_m(fmul_m(fld_m(blinkRate), &g_frameTime), &g_listBlinkClock);
+		g_listBlinkClock = f32(blink);
 		if (!(blink >= *blinkFloor))
-			(*(u32 *)&g_lobbyBlinkClock) = 0x447a0000;   /* 1000 */
+			(*(u32 *)&g_listBlinkClock) = 0x447a0000;   /* 1000 */
 	}
 	if (g_roomRefreshing) {
 		long double t = FADD(g_roomListRefreshTimer, g_frameTime);
@@ -399,10 +399,10 @@ void (gameList_pageFrame)(void)
 			(*(int *)&g_roomListRefreshTimer) = 0;
 			g_listRefreshPeriod = 5;
 		}
-		long double blink = fsubr_m(fmul_m(fld_m(blinkRate), &g_frameTime), &g_lobbyBlinkClock);
-		g_lobbyBlinkClock = f32(blink);
+		long double blink = fsubr_m(fmul_m(fld_m(blinkRate), &g_frameTime), &g_listBlinkClock);
+		g_listBlinkClock = f32(blink);
 		if (!(blink >= *blinkFloor))
-			(*(u32 *)&g_lobbyBlinkClock) = 0x447a0000;
+			(*(u32 *)&g_listBlinkClock) = 0x447a0000;
 		if (g_netListDone) {
 			room_mergeReceivedSessions();
 			g_roomSearching = 0;
@@ -511,7 +511,7 @@ static int games_down(void)
 static void games_stop(void)
 {
 	sound_playMenu(0);
-	(*(u32 *)&g_lobbyBlinkClock) = 0x3f800000;   /* 1 */
+	(*(u32 *)&g_listBlinkClock) = 0x3f800000;   /* 1 */
 	g_roomListAnswer = 0;
 	g_roomSearchAnswerIn = 1;
 	if (g_roomRefreshing == 1) {
@@ -541,8 +541,8 @@ static int games_leave(void)
    or with a message box): a right click leaves the list (unless searching, g_roomSearching). A click (gameList_hitTest) on: 0
    join (not while searching or refreshing, g_roomRefreshing, and only with games; else sound 6), 1 REFRESH (the list asked for, gameList_refresh), 2 STOP
    (the search or refresh ended), 3 CANCEL (leaves the list), 13 / 14 one row up / down, or a row (4 .. 12): selects it, or on the selected row again within
-   the double-click time (g_gameListClickArmed) joins it. Holding the button on the arrows scrolls once the blink clock reaches
-   5. The original leaves eax to callers that ignore it */
+   the double-click time (g_gameListClickArmed) joins it. Holding the button on the arrows scrolls once the repeat clock
+   (g_menuRepeatClock) reaches 5. The original leaves eax to callers that ignore it */
 void (gameList_mouse)(void)
 {
 	int mode = g_roomCameraMode;
@@ -635,8 +635,8 @@ void (gameList_mouse)(void)
 /* 0x4372f0: the game room's list of games, its keys (not while joining, g_roomJoinNeedsPassword). With the join confirmation up only
    back answers it (the timer 0x378 killed). g_dikJ or fire joins the selected game (not while searching or
    refreshing, and only with games: else sound 6); g_dikR searches; g_dikS stops; back leaves the list; up / down
-   held move the selection (once the blink clock reaches 5, restarting it); cancel2 leaves the room's lists. The
-   original leaves eax to callers that ignore it */
+   held move the selection (once the repeat clock (g_menuRepeatClock) reaches 5, restarting it); cancel2 leaves the
+   room's lists. The original leaves eax to callers that ignore it */
 void (gameList_keys)(void)
 {
 	if (g_roomJoinNeedsPassword)
@@ -709,18 +709,18 @@ void (gameList_keys)(void)
 	}
 }
 
-/* the searching message's blink clock (g_lobbyBlinkClock) run down, back to 1000 once below k_10f */
+/* the searching message's blink clock (g_listBlinkClock) run down, back to 1000 once below k_10f */
 static void blink_down(void)
 {
-	long double blink = fsubr_m(fmul_m(fld_m((const float *)ADDR(g_lobbyBlinkRate)), &g_frameTime), &g_lobbyBlinkClock);
-	g_lobbyBlinkClock = f32(blink);
+	long double blink = fsubr_m(fmul_m(fld_m((const float *)ADDR(g_listBlinkRate)), &g_frameTime), &g_listBlinkClock);
+	g_listBlinkClock = f32(blink);
 	if (!(blink >= k_10f))
-		(*(u32 *)&g_lobbyBlinkClock) = 0x447a0000;   /* 1000 */
+		(*(u32 *)&g_listBlinkClock) = 0x447a0000;   /* 1000 */
 }
 
 /* 0x40cfd0: the arena lobby's page of games: the list's double-click window (g_arenaListClickTimer, while g_arenaListClickArmed), the
    arena tunnel; with the arena camera arrived (g_arenaCameraMode 2) and not on sub-screen 5: a panel frame while it opens (g_frameOpening) alone, else the
-   local network search (g_lanSearch: DirectPlay polled ten times, ended once its clock g_lobbyBlinkClock runs out), the server
+   local network search (g_lanSearch: DirectPlay polled ten times, ended once its clock g_listBlinkClock runs out), the server
    search's end (g_lobbySearching searching, g_serverAnswerIn the answer in, g_searchResult its result -1 .. 4: messages 0x40 / 0x46,
    g_lobbyRefreshing the list to fetch, g_arenaUpdateNotice) and blink, the list's refresh (g_lobbyRefreshing: its timer g_arenaListRefreshTimer against g_listRefreshPeriod,
    a stop g_netListDone); then the list; then a join (g_lobbyJoinStarted: once typed, the password, g_arenaJoinPassword, checked against the
@@ -747,8 +747,8 @@ void (arena_gamesPageFrame)(void)
 	if (g_lanSearch) {
 		for (int k = 0; k < 10; k++)
 			dplay_listSessions();
-		long double t = fsubr_m(fmul_m(fld_m((const float *)ADDR(g_lobbyBlinkRate)), &g_frameTime), &g_lobbyBlinkClock);
-		g_lobbyBlinkClock = f32(t);
+		long double t = fsubr_m(fmul_m(fld_m((const float *)ADDR(g_listBlinkRate)), &g_frameTime), &g_listBlinkClock);
+		g_listBlinkClock = f32(t);
 		if (!(t > k_0f)) {
 			arenaList_rebuild();
 			g_lanSearch = 0;
@@ -848,7 +848,7 @@ static void lobby_stopSearch(void)
 {
 	g_lobbyListAnswer = 0;
 	sound_playMenu(0);
-	(*(u32 *)&g_lobbyBlinkClock) = 0x3f800000;   /* 1 */
+	(*(u32 *)&g_listBlinkClock) = 0x3f800000;   /* 1 */
 	g_serverAnswerIn = 1;
 }
 
@@ -858,7 +858,7 @@ static void lobby_stopSearch(void)
    (the lobby server, lobby_openConnection), 2 DIRECT IP (a game's address typed, arena_editAddress), 3 JOIN (with games; not while
    busy), 4 STOP (the search or a refresh in progress ended), 5 CANCEL (leaves the list, mode 0), 15 / 16 one row up / down, or a row (6 .. 14): selects
    it, or on the selected row again (g_arenaListClickArmed) joins it. A busy lobby answers sound 6. Holding the button on the
-   arrows scrolls once the blink clock reaches 5. The caller ignores the eax it leaves */
+   arrows scrolls once the repeat clock (g_menuRepeatClock) reaches 5. The caller ignores the eax it leaves */
 void (arenaGames_mouse)(void)
 {
 	int mode = g_arenaCameraMode;
@@ -897,7 +897,7 @@ void (arenaGames_mouse)(void)
 				dplay_openConnection(1, NULL);
 				g_listAnswered = 0;
 				g_lanSearch = 1;
-				(*(u32 *)&g_lobbyBlinkClock) = 0x43160000;   /* 150 */
+				(*(u32 *)&g_listBlinkClock) = 0x43160000;   /* 150 */
 				g_gameCount = 0;
 				g_joinThroughServer = 0;
 				g_lanSearchStarted = 1;

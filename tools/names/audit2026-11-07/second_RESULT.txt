@@ -1,0 +1,31 @@
+Second independent review of every name checked by one reviewer only (2026-11-07; rule: tools/names/NAMING_RULES.txt)
+
+Ten second reviewers, each blind to the earlier verdicts (second_*_rev.txt): functions and data names judged from the
+original's instructions (their first reviewers had worked from the C), locals and tables / types / files from the C.
+  functions   1,603   WRONG 40 (mostly comments)      data names  2,466   WRONG 18
+  locals      2,396   WRONG 8                         tables / record types / typedefs / files   319   WRONG 4
+  (+ 4 Hangul globals noted CLEARER, paired with the locals)
+Third reviewers checked each of the 75 against the C and the original (second_third1.txt, second_third2.txt):
+  71 CONFIRMED, 0 not wrong, 4 CLEARER (the Hangul globals). All 75 applied.
+
+Applied, among them
+  chat_endTyping / chat_openTextField -> match_endTyping / match_openTextField (every match text field)
+  g_arenaJoinRow / g_arenaJoinTimer / g_arenaSessionOpen / g_arenaLobbyState / g_arenaGameSetUp -> g_joinRow,
+    g_joinTimer, g_dplaySessionOpen, g_hostingState, g_hostGameSetUp (the game room uses them the same way)
+  g_lobbyBlinkClock / Rate -> g_listBlinkClock / Rate; g_unlockTablesSolo / Net -> g_unlockTablesByProgress / Ladder
+  struct ObjectType -> ObjectInfo (one record per placed object); Stage.billboards -> mapItemTexture (a texture id)
+  locals / parameters: armc_buildPartLists / unlocked_level network -> fromRoom, main_ring radius -> focal,
+    bullet_drawTrail centre -> capTip, hangul_glyphs' swapped set names, loading_draw progress -> scroll,
+    stage parameters named scene, shape_shadingColours' types (u32 *out, const float *matrix)
+  ~80 comments: the menus' repeat clock called a blink clock, app_init's window style, slow_end's first (not last)
+    two seconds, net_send's requests 14 / 15, the texture-name suffix called a folder, file headers (hud_icons.c,
+    profile_dialogs.c, tex_colours.c) ...
+Same program: with the two renamed functions' names put back (the exe keeps function names as text), exesame reports
+the same program as the commit before; harness builds.
+
+Limits of this pass
+  - Several second reviewers could not fork (the concurrent agent limit) and checked their whole list alone: F2, F3
+    and D1 relied mostly on the rebuilt C (bit-exact with the original) with the original's disassembly only where
+    a claim needed it; D1 spot-checked many fields. The tables reviewer read ~60 of 286 in-function statics closely.
+  - Rate: 71 confirmed wrong among ~6,800 names (~1%), almost all comments or parameters; the uncertain names'
+    two-reviewer pass found ~3%.

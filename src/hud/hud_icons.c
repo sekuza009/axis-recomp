@@ -1,5 +1,6 @@
-/* hud_icons.c: the HUD's small icons: a player's grade badge and flag (the ranking table's), each one cell of 24 x 16
-   texels from an atlas, drawn 24 x 16 HUD units with its top left at (x, y). */
+/* hud_icons.c: the HUD's small icons from atlases: the HUD's icons (hud_drawIcon: a 32-texel cell of the icon atlas,
+   drawn 32 x 32 units at (x, y - 8)), and a player's grade badge and flag (the ranking table's: one 24 x 16-texel
+   cell each, drawn 24 x 16 HUD units with its top left at (x, y)). */
 #include "../game.h"
 #include "hud.h"
 

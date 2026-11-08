@@ -292,7 +292,7 @@ static int esc_main(Scene *scene)
 			return 1;
 		}
 		escMenu_open(scene, 2, 0);   /* the replay's name typed */
-		chat_openTextField(0, 0, 16);
+		match_openTextField(0, 0, 16);
 		return 0;
 	case 3:
 		scene->helpOpen = 1;
@@ -346,7 +346,7 @@ static int esc_name(Scene *scene)
 {
 	if (g_textFieldOpen)
 		return scene->menuKeys[KEY_ESC] == 1;
-	chat_endTyping();
+	match_endTyping();
 	if (g_keptChat[0])
 		replay_startRecording(scene, (const char *)OBJ(g_keptChat));
 	return 1;
