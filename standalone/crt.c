@@ -222,7 +222,12 @@ void crt_start(void)
 	si.dwFlags = 0;
 	GetStartupInfoA(&si);
 	int show = si.dwFlags & STARTF_USESHOWWINDOW ? si.wShowWindow : SW_SHOWDEFAULT;
+#ifdef AXIS_PORTABLE
+	int host_run(void *instance, const char *cmd, int show);   /* portable.c: the host's loop around axis_frame */
+	int r = host_run(GetModuleHandleA(NULL), cmd, show);
+#else
 	int r = game_WinMain(GetModuleHandleA(NULL), NULL, cmd, show);   /* the rebuilt WinMain (0x43f9d0), called directly */
+#endif
 	sa_log("WinMain returned %d", r);
 	CRT_EXIT(r);
 }

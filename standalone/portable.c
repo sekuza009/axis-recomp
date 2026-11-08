@@ -21,6 +21,7 @@
 #include "standalone.h"
 #include "../src/imports.h"
 #include "../src/import_list.h"
+#include "../src/axis_api.h"
 
 BOOL WINAPI axisnet_attach(HINSTANCE inst, DWORD reason, LPVOID reserved);   /* axisnet_recomp.c */
 void platform_loadSettings(void);                                            /* platform.c */
@@ -191,6 +192,35 @@ static void resolve_imports(void)
 	fprintf(g_log, "%u imports resolved by name\n", (unsigned)(sizeof k / sizeof k[0]));
 }
 
+/* AXISRC_MULTI=1 (a test, as the trace builds have it): the game's FindWindowA does not see another copy's "AXIS"
+   window, so two copies run on one PC (the two-copy sessions) */
+static HWND WINAPI find_window(LPCSTR cls, LPCSTR name)
+{
+	if ((ULONG_PTR)cls > 0xffff && !strcmp(cls, "AXIS"))
+		return NULL;
+	return FindWindowA(cls, name);
+}
+
+/* the Windows host (PORTING.md stage 4): the game started, then its frames run - each after the window's messages,
+   as the original's loop did - until it stops. (crt.c's start-up calls this after the static constructors) */
+int host_run(void *instance, const char *cmd, int show)
+{
+	if (!axis_init(instance, NULL, cmd, show))
+		return 0;
+	sa_log("axis_init done; the host's loop runs the frames (%d)", 0);
+	MSG msg;
+	while (axis_running()) {
+		while (PeekMessageA(&msg, NULL, 0, 0, PM_NOREMOVE) == 1)
+			if (GetMessageA(&msg, NULL, 0, 0)) {
+				if (axis_textInput())
+					TranslateMessage(&msg);
+				DispatchMessageA(&msg);
+			}
+		axis_frame();
+	}
+	return 1;
+}
+
 int WINAPI WinMain(HINSTANCE inst, HINSTANCE prev, LPSTR cmd, int show)
 {
 	char path[MAX_PATH];
@@ -215,6 +245,10 @@ int WINAPI WinMain(HINSTANCE inst, HINSTANCE prev, LPSTR cmd, int show)
 	SetUnhandledExceptionFilter(crash_hit);
 	place_data();
 	resolve_imports();
+	if (GetEnvironmentVariableA("AXISRC_MULTI", NULL, 0)) {   /* (a test: a second copy, as the trace builds allow) */
+		*(FARPROC *)AT(IMP_FindWindowA) = (FARPROC)find_window;
+		fprintf(g_log, "AXISRC_MULTI: the game's \"already running\" check skipped\n");
+	}
 	platform_loadSettings();
 	axisnet_attach(inst, DLL_PROCESS_ATTACH, NULL);
 	fprintf(g_log, "network layer started\n");

@@ -25,7 +25,7 @@ own `godot` branch) drives frame by frame. Decided 2026-11-08:
    (window, timer, files, input, audio, rendering, sockets, sessions); `plat/win32/` implements it with today's
    calls (OpenGL 1.x, DirectInput, DirectSound, Winsock, DirectPlay via axisnet). The 211 IMPORT_FN and 68 COM call
    sites move behind it.
-4. **The host drives the frame.** The game's own WinMain loop becomes `axis_init` / `axis_frame(dt, input)` /
+4. **The host drives the frame.** *(first pass done 2026-11-08: src/axis_api.h, below)* The game's own WinMain loop becomes `axis_init` / `axis_frame(dt, input)` /
    `axis_shutdown`; a small Windows host (`host/win32`) calls them, so the library has no message loop of its own.
 5. **Library build.** `axis.dll` (or a static library) with that API, plus the Windows host exe; play-tested against
    master's behaviour (the scripted sessions, replays).
@@ -57,3 +57,12 @@ in Godot, then replaced piece by piece.
   `plat_<name>` in the portable build (src/axis.h IMPORT_FN), the Windows platform's being jumps through the import
   slots (build/plat_imports.s). Still Windows-shaped (DirectSound buffers, OpenGL 1.x calls, Win32 messages): the
   next passes group the window / message loop (stage 4) and give rendering, input and sound neutral shapes.
+- 2026-11-08, stage 4 (first pass): `src/axis_api.h` - `axis_init` (the original WinMain's start-up: in the portable
+  build src/app/win32.c's game_WinMain is compiled as axis_init and returns before its loop), `axis_frame` (the
+  loop's body: typed text read, app_frame), `axis_running`, `axis_textInput`, `axis_shutdown`. The Windows host's
+  loop (standalone/portable.c host_run) pumps the messages and calls axis_frame. The game still owns its window and
+  ends the process itself on quitting (stage 5). Sessions: all seven passed.
+  Correction: the two-copy session (mp1) needs AXISRC_MULTI, which only the trace builds honoured, so in the
+  stage 1-3 runs above its second copy stopped at the "already running" check and the session tested nothing.
+  portable.c now honours AXISRC_MULTI too; with it the stage-4 build played the two-copy team match (both
+  players in, chat across).

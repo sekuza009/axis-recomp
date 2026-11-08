@@ -542,6 +542,11 @@ long STDCALL (editField_editProc)(void *wnd, u32 msg, u32 w, u32 l)
    the message loop (TranslateMessage while g_textFieldOpen) with the typed text read (editField_readTyping) and a frame (app_frame)
    after each round of messages, until g_gameRunning is cleared. Returns 1, or 0 on the exits. (Named game_WinMain: WinMain is the
    SDK's) */
+#ifdef AXIS_PORTABLE
+/* (the portable build: this is axis_init, the start-up only - the host runs the frames, see the end of this file
+   and src/axis_api.h) */
+#define game_WinMain axis_init
+#endif
 u32 STDCALL (game_WinMain)(void *inst, void *prev, const char *cmd, int show)
 {
 #define FindWindowA(cls, name) IMPORT_FN(FindWindowA, void *, const char *, const char *)(cls, name)
@@ -593,6 +598,9 @@ u32 STDCALL (game_WinMain)(void *inst, void *prev, const char *cmd, int show)
 	}
 	g_gameRunning = 1;
 	SystemParametersInfoA(0x61, 1, NULL, 0);   /* SystemParametersInfoA(SPI_SETSCREENSAVERRUNNING) */
+#ifdef AXIS_PORTABLE
+	return 1;   /* (the host's loop: axis_running / axis_frame) */
+#else
 	u32 msg[7];   /* MSG */
 	while (g_gameRunning) {
 		while (PeekMessageA(msg, NULL, 0, 0, 0) == 1)   /* PeekMessageA */
@@ -605,8 +613,10 @@ u32 STDCALL (game_WinMain)(void *inst, void *prev, const char *cmd, int show)
 		app_frame();
 	}
 	return 1;
+#endif
 #undef FindWindowA
 }
+#undef game_WinMain
 
 /* 0x440070: the game window's messages (its class's procedure; the patch DLL subclasses it, see axisnet's input_read).
    Returns 1 for the messages it takes (0 where noted), DefWindowProcA's answer for the rest.
@@ -852,3 +862,21 @@ long STDCALL (game_wndProc)(void *wnd, u32 msg, u32 w, u32 l)
 #undef ShellExecuteA
 #undef GAME_HEIGHT
 }
+
+#ifdef AXIS_PORTABLE
+/* ---- the host's side (src/axis_api.h): the original loop's body, one round per call ---- */
+#include "../axis_api.h"
+unsigned axis_frame(void)
+{
+	editField_readTyping();
+	app_frame();
+	return g_gameRunning != 0;
+}
+int axis_running(void) { return g_gameRunning != 0; }
+int axis_textInput(void) { return g_textFieldOpen != 0; }
+void axis_shutdown(void)
+{
+	if (g_mainWindow)
+		PostMessageA(g_mainWindow, 0x10, 0, 0);   /* WM_CLOSE: the window's own close path */
+}
+#endif
