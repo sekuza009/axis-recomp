@@ -1,0 +1,48 @@
+In-game evidence, sixth round (2026-11-08): the names still unreached after the fifth round
+
+New tools
+  tools/ftrace/probe.c, build_probes.py, probe_decode.py: record probes in the trace build only (src/ untouched):
+    the bytes of records the game keeps only briefly - every match packet sent and received, the DirectPlay
+    session descriptions, particle descriptors, map objects' info, BMP headers - kept when filled and decoded by
+    scene.fields (Axis\probe_<pid>.txt). Build: tools/ftrace/build.sh, then build_probes.py, then build_both.sh.
+  tools/testmap/: a test map (mkmap.py: valhalla.bfd with timed and approach triggers, the script commands 4 / 11
+    / 14 / 23 / 24 / 25 / 26 / 27, turned spawns, fog, the animated floor, three ground layers, timed / animated
+    objects, warp zones with a pitch). bfd.py decodes / encodes the map files (all 32 shipped maps round-trip);
+    verify.py repeats the loaders' checks; README.txt says what each record is for. Swapped in for
+    Map\valhalla.bfd (skirmish round 1) for the session only.
+
+Sessions (two copies where needed; saves, axis.cfg, axisnet.ini, valhalla.bfd backed up and put back)
+  r6_lan / r6_rocket  started as the launcher does: host "-net" with axiswl.dat (TEAM ROCKET ARENA, password,
+                      10 minutes), client "x -ip 127.0.0.1"; ARM CENTER on the way in; a 24x16 flag picture; the
+                      two fight; chat; the Esc menu; the host goes away
+  r6_types            host-only SUDDEN DEATH, SHOTGUN, IONCANNON, GLADIATOR arenas with a Korean player name,
+                      colour BLUE, customize ON, the mouse inverted and smoothed
+  r6_test             the test map for 3 minutes, then the replay viewer (held Enter, left / right clicks)
+  r6_display          1280x720 with simple menus, alt-tab out and back, the profile list, a normal quit
+
+Reached (evidence6_reached.txt): 152 of the 449 data names still unreached, and 35 of the 268 functions not run.
+  mission 16 / 22 (the triggers, spawn records, the message ring - by data no shipped map has), net 38 / 72
+  (every GamePacket field, the session list), other 75 / 208 (ground layers, fog, the floor, particle descriptors,
+  object info), replay 16 / 21, display 2 / 6, ladder 3 / 35; two of the "unreachable" (MapObject.trigger /
+  animPeriod: none in the shipped maps, seen with the test map).
+
+Findings, written into the comments
+  - The menus' free camera (freeCam_keys, freeCam_mouseLook, freeCam_stepLeft / Right and the g_freeCam* globals,
+    g_slotCams, g_watchChatOpen ...) never runs: its only caller is the menus' dispatch for screen 9999, and
+    menu_frame runs only while the screen is not 9999 (app_frameByScreen). The match's free camera is free_camera.
+  - Script command 26 (MESSAGE) stops the game with "invalid speaker / text" with any of the game's data: nothing
+    fills Stage.speakers / texts. The test map reached the message ring only with indices that wrap round to its
+    own text (32-bit address arithmetic).
+  - Command 27 (a scene path) lasts at most one frame: nothing reads the .scp file, and stage_advanceScenePath
+    clears scriptMode in the same frame, so Scene.scriptMode is never seen non-zero.
+
+Still unreached (evidence6_still_unreached.txt), and why
+  - one-frame input flags (g_rightClick, g_mouseWheel*, g_mouse3Down, Scene.playAsked ...): set and cleared within a
+    frame; the 250 ms sampler misses them (their handlers ran: the function trace)
+  - lock-on (Stage.lock*, Actor.aimTime / lockAnim / homedOn / beepTimer): the rocket arena's rockets are no
+    lock-on weapon; needs a weapon with a targeting time held on an enemy
+  - the Ladder / game-server paths (35): need DServer sessions with answers it does not send (out-of-date notice,
+    a join that times out, a ranking request in the room)
+  - Korean glyphs: the Korean player name was set, but no Korean text was drawn in the screens visited
+  - the 80 "unreachable" by design, and the free-camera globals above
+Names are as the trace exe had them (before commit 602c799's renames).

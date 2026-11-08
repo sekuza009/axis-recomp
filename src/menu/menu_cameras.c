@@ -321,7 +321,7 @@ static X side_angle(void)
 
 /* 0x42aa30: the free (watching) camera stepped left: along its heading plus a quarter turn (g_freeCamYaw + 90
    degrees) by the frame time x its speed, both the free camera's point (g_freeCamLookX / g_freeCamLookZ) and the menu
-   camera's eye (g_menuCameraPos, g_menuEyeZ). Only caller freeCam_keys, on g_keyStepLeft (A) */
+   camera's eye (g_menuCameraPos, g_menuEyeZ). Only caller freeCam_keys (which never runs), on g_keyStepLeft (A) */
 void (freeCam_stepLeft)(void)
 {
 	X a = side_angle();
@@ -337,7 +337,7 @@ void (freeCam_stepLeft)(void)
 }
 
 /* 0x42aad0: the free camera stepped right (freeCam_stepLeft's opposite; here every use of the sideways step is
-   rounded). Only caller freeCam_keys, on g_keyStepRight (D) */
+   rounded). Only caller freeCam_keys (which never runs), on g_keyStepRight (D) */
 void (freeCam_stepRight)(void)
 {
 	X a = side_angle();
@@ -364,7 +364,7 @@ static void turn_update(int slot)
 /* 0x42ab70: the free (watching) camera's mouse look, screen 9999 (not while the chat line is open, g_watchChatOpen):
    the pointer's distance from (320, 240) turns the view (g_freeCamYaw, wrapping 0 .. 360; turn_update keeps its sine
    / cosine and puts it in the local slot's g_slotCams record) and tilts it (g_freeCamTilt, -50 .. 50); the first
-   click (g_freeCamMoveStarted) sets g_freeCamMoveTarget / g_freeCamMoveEye from the slot's record */
+   click (g_freeCamMoveStarted) sets g_freeCamMoveTarget / g_freeCamMoveEye from the slot's record. Never runs in the game: its only caller is the menus' dispatch for screen 9999 (menu_processKeys / menu_processMouse), which menu_frame runs only while the screen is not 9999 (app_frameByScreen); the match's own free camera is free_camera. */
 void (freeCam_mouseLook)(void)
 {
 	if (g_watchChatOpen)
@@ -456,7 +456,7 @@ void (setup_camera)(void)
    look-at (g_freeCamLookX, g_menuCameraLookY = height + tilt, g_freeCamLookZ), eye 50 units behind along the heading at
    height + 10; the point is kept in the local slot's g_slotCams record (0x58 bytes, g_localSlot); g_dikZ_2 toggles
    g_freeCamZoom 1 / 2, and 1 / 2 / 3 / 4 step g_unusedFreeCamCounter by +1 / +10 / -1 / -10 (not below 1). The original leaves
-   eax to callers that ignore it */
+   eax to callers that ignore it. Never runs in the game: its only caller is the menus' dispatch for screen 9999 (menu_processKeys / menu_processMouse), which menu_frame runs only while the screen is not 9999 (app_frameByScreen); the match's own free camera is free_camera. */
 void (freeCam_keys)(void)
 {
 	const float *frame = (const float *)ADDR(g_frameTime), *speed = (const float *)ADDR(k_3f);
