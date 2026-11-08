@@ -46,3 +46,16 @@ Still unreached (evidence6_still_unreached.txt), and why
   - Korean glyphs: the Korean player name was set, but no Korean text was drawn in the screens visited
   - the 80 "unreachable" by design, and the free-camera globals above
 Names are as the trace exe had them (before commit 602c799's renames).
+
+Seventh session (r7, 2026-11-08, evidence7_*): the menu paths no session had clicked through. Profile screen: the
+new-name dialog with a taken name, CANCEL and a right click, pilot rows clicked; ARM CENTER: each part row (the
+stat sections), the tabs clicked; setup: the volume slider, the graphics tab's apply (A); the create-arena form with
+a Korean game name (axis.cfg) and its ADVANCED map list (rows, types, scrolled, DEFAULT, SELECT ALL, OK), IPX GAME
+(hosting works on this PC, so the network-error box stays unreached); the replay selection with 12 replays (7
+temporary copies, removed) scrolled and toggled; one start without axis.cfg (the default bindings written; the
+user's file put back). 33 more functions ran and 8 more data names were seen.
+Left (evidence7_still_unreached.txt): 200 functions - about 32 the trace cannot count (patch layer, vtable entries,
+asm entry stubs), ~45 with no caller, ~55 behind code that never runs (the menus' free camera, the mech test mode,
+the IPX / modem DirectPlay slots without such providers, the .ase / .obj loaders), the error paths, the network
+faults and the game-server-only notices - and 289 data names, mostly the by-design unreachable, one-frame input
+flags, lock-on and the Ladder server's answers.

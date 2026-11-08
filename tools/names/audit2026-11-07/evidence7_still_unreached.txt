@@ -1,0 +1,489 @@
+unreachable	BlockOwner.blockSize	not a live record (a view type); seen as Model.blockSize / ObjectList.blockSize: no session needed
+unreachable	ListedObject.colours	unreachable: no pre-lit object list is ever loaded (part_load / actor_loadWeapon pass lit 0)
+unreachable	ObjectList.ownsBlock	unreachable: every list is given the Player's memory
+unreachable	ObjectList.skel	unreachable: anim_setTime is only ever called with skeleton 0
+unreachable	ObjectList.preLit	unreachable (as ListedObject.colours)
+unreachable	Actor.cleared8838	none: only ever zeroed (actor_setupFromParts), nothing writes another value
+unreachable	Actor.boosterTilt	none with the shipped data: every booster's lean is 0.0 in Component.dat
+unreachable	DPSessionDesc2.password	unreachable (the game never passes a DirectPlay password)
+unreachable	DPSessionDesc2.reserved1	unreachable
+unreachable	DPSessionDesc2.reserved2	unreachable
+unreachable	ViewVolume.segmentCount	only the mech-test view (match_mechTestFrame with Scene.debugGrid 1) or Scene.markLights (never set) add lines
+unreachable	Stage.speakers	no in-game action makes it non-zero: never written
+unreachable	Stage.texts	no in-game action makes it non-zero: never written
+unreachable	Scene.unused233ca00	unreachable: the game only writes 0 (never set)
+unreachable	Scene.unused233cc44	unreachable: the game only writes 0 (never set)
+unreachable	Scene.unused233cc2c	unreachable: the game only writes 0 (never set)
+unreachable	Scene.restartPending	never set in the game (unreachable)
+unreachable	Scene.cheatPlayer	unreachable (never written)
+unreachable	Scene.cheatCode	unreachable (never written)
+unreachable	Scene.cheatPending	never set in the game (unreachable)
+unreachable	Scene.cleared2340ca4	unreachable: the game only writes 0 (never set)
+unreachable	Scene.markLights	never set (unreachable)
+unreachable	Scene.turnLeftHeld	unreachable (match_mechTestFrame never runs)
+unreachable	Scene.turnRightHeld	unreachable (match_mechTestFrame)
+unreachable	Scene.upKeyHeld	unreachable
+unreachable	Scene.downKeyHeld	unreachable
+unreachable	Scene.fKeys	unreachable
+unreachable	Scene.partStepDownPressed	unreachable
+unreachable	Scene.partStepUpPressed	unreachable (match_mechTestFrame)
+unreachable	Scene.zoomInHeld	unreachable
+unreachable	Scene.zoomOutHeld	unreachable
+unreachable	Scene.scenePaused	never set (unreachable)
+unreachable	Scene.restartTimer	receive a kind-13 restart (never sent by this exe: restartPending never set), so unreachable in practice
+unreachable	Scene.cleared2343323	unreachable: the game only writes 0 (never set)
+unreachable	g_textureManager	none needed: a sampler gap (constant 0x4a9570 from static start-up; same address as g_textureSets)
+unreachable	g_menuLookHomeX	every writer stores 0 in practice (look-at X 0); reach: none known
+unreachable	g_unusedKeyTable2Word1	only ever 0
+unreachable	g_unusedKeyTable2Word2	only ever 0
+unreachable	g_unusedArmcWord4	only ever 0
+unreachable	g_unusedArmcWord1	only ever 0
+unreachable	g_unusedStartupWord3	only ever 0
+unreachable	g_unusedStartupWord2	only ever 0
+unreachable	g_unusedMenuReturnWord	only ever 0
+unreachable	g_unusedStartupWord1	only ever 0
+unreachable	g_unusedRoomListWord	only ever 0
+unreachable	g_unusedRoomWord	only ever 0
+unreachable	g_unusedLoginWord	only ever 0
+unreachable	g_unusedInitWord	only ever 0
+unreachable	g_unusedReplayListWord1	only ever 0
+unreachable	g_unusedReplayListWord2	only ever 0
+unreachable	g_unusedMainMenuWord	only ever 0
+unreachable	g_unusedBriefingWord	only ever 0
+unreachable	g_netChatMessageWord1	only ever 0
+unreachable	g_netChatMessageFrom	only ever 0
+unreachable	g_netChatMessageText	only ever 0
+unreachable	g_unusedNetResetWord	only ever 0
+unreachable	g_unusedSessionWord	only ever 0
+unreachable	g_unusedDplayWord1	only ever 0
+unreachable	g_unusedDplayWord2	only ever 0
+unreachable	g_unusedDplayWord3	only ever 0
+unreachable	g_unusedDplayWord4	only ever 0
+unreachable	g_unusedPingWord1	only ever 0
+unreachable	g_unusedPingWord2	only ever 0
+unreachable	g_missionTop	unreachable in play: needs g_screen forced to 900 with more than 8 missions in axis.mis, then cursor down past row 7
+unreachable	g_desktopH	unreachable: glWindow_setDisplayModeBy runs only on glWindow full-screen, which the game never requests
+unreachable	g_desktopBits	unreachable (as g_desktopH)
+unreachable	g_desktopW	unreachable (as g_desktopH)
+unreachable	g_glWindowMade	unreachable (the game always passes its own window to glWindow_init)
+unreachable	g_glWindowContext	unreachable (glWindow never makes its own window)
+unreachable	g_modeChanged	unreachable (as g_desktopH)
+unreachable	g_editingFragLimit	unreachable (no writer of 1 in the original)
+unreachable	g_editingTimeLimit	unreachable (no writer of 1 in the original)
+unreachable	g_vecOriginXyz	none - constant (0, 0, 0)
+unreachable	g_vecZeroXyz	none - constant (0, 0, 0)
+unreachable	g_unused16	none - only 0 is ever written (netq_reset / netq_receive)
+unreachable	g_missionClearBuffer	none - only ever cleared (mission_loadBriefing memset)
+unreachable	g_realClear	none - constant (0, 0, 0, 0)
+unreachable	k_GUID_NULL	none - constant (16 zero bytes)
+mission	Actor.outOfPlay	a mission script with command 24 (script_holdActor)
+mission	Stage.scriptMode	a mission map that runs script command 27
+mission	Scene.lastMissionWon	win the last solo mission (stage 14)
+mission	Scene.scriptMode	a mission map with a scripted scene path (cut-scene)
+mission	Scene.stageCleared	win a solo mission on the current campaign stage
+mission	g_misHeader1	axis.mis's header word is 0 (or the mission screen's sampler missed it)
+korean	g_hangulTailGlyph	as g_hangulVowelGlyph
+ladder	Actor.deathsCounted	play a Ladder match, die once, reach the match end
+ladder	ArenaRecord.map	host an arena on the lobby server, and list arenas from it
+ladder	ArenaRecord.replyKind	list arenas from the lobby server
+ladder	ArenaRecord.locked	host an arena on the lobby server, and list arenas from it
+ladder	ArenaRecord.password	host an arena on the lobby server, and list arenas from it
+ladder	RoomRecord.rotation	host a Ladder game on the game server and list rooms
+ladder	RoomRecord.replyKind	list rooms on the game server
+ladder	RankedPlayer.kind	open the Ladder ranking page (formsB already loads it; the sampler reads the list, where it stays 0)
+ladder	g_joinTimedOut	join an arena / room session that does not answer for 30 ticks
+ladder	g_roomLoginDue	game room, Ladder login, press LOG IN with an ID / password
+ladder	g_roomRequestOut	game room Ladder login, LOG IN sent and waiting for the game server
+ladder	g_roomSearchAnswerIn	game room game list with the game server answering
+ladder	g_rankingRequestPending	game room RANKING page (needs the game server)
+ladder	g_retypePassword	game room Ladder login opened
+ladder	g_loginToSend	game room Ladder login, press LOG IN
+ladder	g_gameServerAnswer	game room (ladder) login answered by the game server
+ladder	g_sessionFound	join a listed arena / game-room game (client side)
+ladder	g_roomRotation	game room create form with map rotation switched on (the room form's rotation button, or registry "Customize" 1)
+ladder	g_arenaUpdateNotice	a lobby / game server answering 3 (program out of date) - needs a server that sends it
+ladder	g_roomRefreshing	game room game list REFRESH with the game server answering
+ladder	g_newIdConfirmChoice	game room -> CREATE NEW ID -> fill the form -> confirmation O or C
+ladder	g_roomUpdateNotice	Ladder login answered "program out of date" by the game server
+ladder	g_roomSearching	game room -> game list -> search (R / REFRESH) with the game server connected
+ladder	g_gameListClickTimer	game room game list with games, click a row. (gameList_draw's function comment calls it the "searching" message's clock; the global's own co
+ladder	g_gameListClickArmed	game room game list, click a game's row
+ladder	g_newIdAnswer	game room -> CREATE NEW ID -> OK with the game server answering
+ladder	g_gameListRow	pick the second row (or below) of the LAN / Ladder game list
+ladder	g_newIdFormRight	although its only writer also wrote g_newIdFormLeft (seen 30) in the same call - a sampler gap, not a naming problem; reach: open CREATE NEW
+ladder	g_unusedAccountWord	never non-zero (only 0 is written by room_enterAccountPage)
+ladder	g_newIdFormTop	Ladder game room -> login dialog -> NEW ID (room_openNewIdForm sets 0x32)
+ladder	g_lobbyReplyCode	MULTI PLAY through the lobby server (TcpDNS): host an arena so the lobby answers status request 10
+ladder	g_gameServerReplyCode	Ladder: any status request 18 to the game server answered (the room list refresh after login)
+net	Actor.onWarp	skirmish / host on a map with WARP ZONE items (the host-h2 map has warpTo 14 / 15): stand on a warp zone
+net	Actor.beepTimer	mp: the client fires a guided (homing) weapon at the host's mech; sample on the host while the round homes
+net	Scene.connectPending	join a hosted network match as a client (match_frame announces the connection), sampled between set and send
+net	Scene.changePending	Esc menu team change in a network team match
+net	Scene.packetLossTimer	a network match with lost / reordered packets (netq_skippedCount > 0)
+net	Scene.lostTime	join a network game as a client and wait for the slot (or the host goes away)
+net	g_lanJoinRequest	arena list, I (LAN search), join a found game
+net	g_netBlockSize	any DirectPlay session receiving messages (host / join)
+net	g_lastChatLine	chat sent/received in a net match (sessA free camera chat or mp chat)
+net	g_lastChatLineSet	send a chat line in a net match
+net	g_freeCamLookX	in a hosted arena's free camera, hold W (or S / strafe) - 0 until moved
+net	g_arenaCustomize	(0). The "(comments call it sex)" aside has no use behind it -> "the lobby player's customize switch (axis.cfg's set_player customize ON 1 /
+net	g_debugValue	hosted arena free camera, press 1 (it has no other effect, so the name stays generic)
+net	g_arenaJoinNeedsPassword	arena list -> join a locked (password) arena
+net	g_freeCamZoom	hosted arena free camera, press Z
+net	g_hostErrorBox	create arena -> IPX GAME (I) on a machine without IPX
+net	g_joinPollTicks	join a listed arena whose session is slow to appear (the 2 s timer ticking)
+net	g_watchChatOpen	hosted arena free camera, press Enter (chat)
+net	g_matchEndedByServer	a client in a net match the host ends (the end-of-game packet)
+net	g_netHostGone	a client whose host leaves the arena (host quits mid-match)
+net	g_typingArenaJoinPassword	arena list -> join a locked arena, type its password
+net	g_arenaJoinPassword	join a password-locked arena game from the LAN list and type its password
+net	g_arenaJoinPassword4	type a join password longer than 4 characters for a locked arena game
+net	g_unusedFreeCamMoveWord	click in the free camera (spectating in a hosted arena, sessA's free camera with a mouse click)
+net	g_freeCamYaw	in a hosted arena's free camera (screen 9999) move the mouse sideways
+net	g_freeCamMoveStarted	click the mouse once in a hosted arena's free camera (screen 9999)
+net	g_freeCamTurnSin	the yaw stays 0 unless the mouse turns the free camera (move the mouse sideways in a hosted arena's free camera)
+net	g_freeCamTurnCos	never sampled in a free-camera frame (cos 0 = 1 would be non-zero, so the free camera itself was not reached while sampling) - enter the fre
+net	g_pickedGame	arena lobby -> JOIN with two or more games listed: click the second game
+net	g_packetsSkipped	two-instance match (host + client): suspend the client process for a second mid-match so packets arrive out of turn
+net	g_sentChatBlock	in a DirectPlay session (arena lobby or a hosted match) type a chat line and press Enter (net_sendChat)
+net	g_ahead	a two-instance network match (host + client) under load, where a client packet arrives before the one due (out of order / a resend asked for
+net	g_modemProviderGuid	start multiplayer on a machine whose DirectPlay lists a modem service provider (name containing "MODEM"); dplay_enumConnections copies its G
+net	g_slotCams	host an arena match, switch to the free (watching) camera, move it with W / A / S / D (freeCam_keys writes +0 .. +8) and turn it with the mo
+replay	Actor.lowDetail	skirmish: stay far from an enemy bot (its name tag under 30 px wide on a 640-wide scale), sample its record
+replay	ShapeManager.ownsBlock	every caller in the game gives memory (match_start: objectShapeData, itemShapeData, the player records' ShapeData)
+replay	BmpFile.compression	a match start (tex_textureFileExist) or the Save\<name>.BMP flag load (playerRecord_loadFlag)
+replay	g_replayRandomOrder	replay selection dialog, tick RANDOM
+cheat/mechtest	g_cursorPoint	the mech test mode (match_mechTestFrame calls input_getCursorPos every frame); nothing else calls it
+cheat/mechtest	g_asyncKeySeen	hold Esc on the match loading screen (game_processLoadingMode: input_asyncKeyPressed(VK_ESCAPE)), or Space / Esc / Z / X in the mech test mo
+display	g_arenaListClickTimer	arena list with games, click a row once (double-click window)
+display	g_fullScreen	start with a full-screen (non-DESKTOP) display mode in axis.cfg
+display	g_displayModeLeft	non-desktop resolution, alt-tab out and back
+display	g_exitCode	quit the game from the main menu (written just before the window closes; sample right after app_closeWindow)
+other	BlockOwner.block	as BlockOwner.blockSize
+other	BlockOwner.ownsBlock	needs a block allocated without given memory (take_block with mem 0): not done for the game's shapes / lists in play; sample a shape loaded 
+other	Shape.ownsBlock	as BlockOwner.ownsBlock: shapes come from the managers' memory; likely unreachable in normal play
+other	Actor.warpWait	take a WARP ZONE; sample within 2 s
+other	Actor.lowDetailLoaded	as Player.lowDetail (follows it the next frame)
+other	Actor.homedOn	as Player.beepTimer (a guided round of another machine homing on the actor)
+other	Actor.aimTime	skirmish: select a lock-on weapon (targetingTime > 0: missile / guided launcher), keep an enemy bot inside the detection cone and in sight
+other	Actor.lockAnim	as Player.aimTime, held until the lock is made (aimTime > lockOnTime x targetingTime); sample within 0.25 s
+other	ObjectInfo.trigger	as ObjectType.name (0 in shipped maps)
+other	ObjectInfo.animPeriod	as ObjectType.name
+other	ObjectInfo.animName	as ObjectType.name
+other	Bullet.trailCount	fire a rocket / trail weapon (ActorItem.shotMode 3)
+other	Space.ownsBlock	the only caller (match_start.c) always passes Stage.spaceData, so it is 0 in the game
+other	SkirmishInfo.timeLimit	open the SKIRMISH screen
+other	ViewVolume.ownsBlock	never 1 in the game (Scene.view gets Scene.viewMemory)
+other	ViewVolume.entriesFull	needs over 10000 queued parts in a frame (not reachable in normal play)
+other	ViewVolume.matricesFull	needs over 1000 matrices a frame
+other	ViewVolume.trianglesFull	needs over 4000 queued triangles a frame
+other	ViewVolume.segmentsFull	needs over 10000 lines a frame
+other	Skeleton.ownsBlock	any match or ARM CENTER (skeletons loaded)
+other	SkelManager.ownsBlock	every caller gives memory (match_start, model_sets)
+other	TextureBank.format	no in-game action makes it non-zero: always 0, the dat format, as the comment says; formats 1/2 unreachable in game
+other	TextureBank.clearedCd13c	no in-game action makes it non-zero: always 0, as its name says
+other	TextureBank.clearedCd140	no in-game action makes it non-zero: always 0
+other	GroundLayer.waterPrims	load a map whose map file has ground layers
+other	TimeSync.vtable	no in-game action makes it non-zero: 0 after TimeSync_clear, as the comment says; the load timer's set only by TimeSync_dtor at exit
+other	ParticleDesc.isQuad	fire a beam weapon
+other	ScenePath.opened	no in-game action makes it non-zero: always 0
+other	Stage.lockTimes	lock on to an enemy with a lock-on weapon
+other	Stage.lockIds	lock on to an enemy
+other	Stage.pointCount	no in-game action makes it non-zero: always 0
+other	Stage.points	no in-game action makes it non-zero: all zero
+other	Stage.defaultColour	no in-game action makes it non-zero: never non-zero in samples
+other	Stage.shadingCached	load a map a second time after a mode-1 load wrote its shading cache
+other	Stage.lockHeld	lock on to an enemy with a lock-on weapon
+other	Stage.lockCount	lock on to an enemy
+other	TunnelRing.cleared0	no in-game action makes it non-zero: always 0
+other	TunnelRing.cleared4	no in-game action makes it non-zero: always 0
+other	TunnelRing.cleared1938	no in-game action makes it non-zero: always 0
+other	TunnelRing.cleared326c	no in-game action makes it non-zero: always 0
+other	Scene.playAsked	Esc menu START (game without teams) or pick a team in a solo game
+other	Scene.renderMode	always 0 (unreachable non-zero)
+other	Scene.lockHeld	lock onto an enemy with a homing weapon in a match
+other	g_rightClick	right-click in any menu page
+other	g_lobbyConnectionBlock	start the game from a DirectPlay lobby application
+other	g_defaultColour	always 0 by design (never non-zero)
+other	g_freeCamLookZ	free camera, hold W
+other	g_errorLogging	never non-zero (no writer in the game)
+other	g_cursorX	only the mech-test match mode (match_mechTestFrame) calls it - not reachable from the menus
+other	g_crtErrno	a C runtime error (e.g. a failed fopen of a missing file)
+other	g_arenaCorporation	pick corporation BLUE / YELLOW on the arena lobby's player setup (or set_player color BLUE in axis.cfg)
+other	g_mouseWheel	turn the mouse wheel in a match or on setup -> controls while binding
+other	g_timerRepeatCount	needs two timer_now calls within one counter tick (a coarse performance counter)
+other	g_roomRecRotation	registry HKCU\SOFTWARE\AxisArena\Character "Customize" = 1
+other	g_coloursChanged	ARM CENTER -> colour page, click a hue / saturation / value slider
+other	g_armcSlotChanged	?
+other	g_arenaListClickArmed	arena list with a listed game, click a row
+other	g_lobbyJoinStarted	arena list -> J on a listed game
+other	g_dikNone	0 by design
+other	g_armcUnusedFlag	never non-zero (only 0 is ever stored)
+other	g_mapMissing	start a match on a map index whose mapinfo.dat name is empty
+other	g_errorCleanupHook	no ErrorLog is made with a cleanup hook in the runs (all 0)
+other	g_mouseWheelTurned	turn the mouse wheel (any screen; set for that frame)
+other	k_0f	the constant 0.0 (never non-zero by nature)
+other	g_mouse3Down	hold the middle mouse button
+other	g_keyGameMenu2	bind a second GAME MENU key on setup -> controls (MISC page)
+other	g_menuLookHomeY	always 0 in the screens played
+other	g_menuEyeHomeX	eye X is 0 in every screen played
+other	g_menuEyeHomeY	eye Y 0 in every screen played
+other	g_dpMaxQueueSize	the TCP/IP provider reports 0 (no queue limit); no action changes it
+other	g_musicEndHigh	a duration under 2^32 x 100 ns (7 min 9 s) leaves it 0 - only music longer than that sets it
+other	g_mciCallback	AxisRC.exe plays the ending movie with the patch layer's player, so the MCI path is not run (only the original exe, ending movie + Esc)
+other	g_mciFrom	same (original exe's ending movie)
+other	g_mciTo	same
+other	g_mciDevice	same
+other	g_cursorPosY	only that test mode calls input_getCursorPos (play never reaches it; g_cursorX is not seen either). Name is fine (g_cursorX's partner; g_cur
+other	g_menuLookKeptX	the tunnel camera's look X is always 0
+other	g_menuLookKeptY	always 0
+other	g_menuEyeKeptX	eye X always 0
+other	g_menuEyeKeptY	always 0
+other	g_matchTextFieldY	?
+other	g_matchTextFieldX	?
+other	g_unusedKeyTable2Word0	never anything but 0
+other	g_mapEntry22On	mapList_init always turns maps 22 .. 24 off
+other	g_mapEntry23On	always off
+other	g_mapEntry24On	always off
+other	g_newArenaPassword4	type a create-arena password of 5+ characters
+other	g_armcPanelDepth	always 0 (only writer stores 0)
+other	g_freeCamLookY	nothing sets it
+other	g_misHeader2	header word 0
+other	g_misHeader3	header word 0
+other	g_unusedProfileCameraWord	quit the game from the profile screen (the process ends right after)
+other	g_profileNoneAtEntry	enter the profile screen with no profiles (an empty Save folder - back up Save first)
+other	g_vecOrigin	always 0 by design
+other	g_vecUnitZ	this is the X word (0); the comment could add particle_draw
+other	g_vecZero	always 0 by design
+other	g_penInitialized	nothing sets it
+other	g_arenaKeptCamY	the lobby points' eye y is 0
+other	g_freeCamMoveEyeX	same first click in the free camera
+other	g_freeCamMoveEyeY	same (and the slot y is non-zero)
+other	g_freeCamMoveEyeZ	same first click
+other	g_freeCamTilt	move the mouse up / down in the free camera
+other	g_freeCamMoveTargetX	first click in the free camera
+other	g_freeCamMoveTargetY	first click in the free camera
+other	g_freeCamMoveTargetZ	first click in the free camera
+other	g_replaySelectLitR	the lit colour is (0, 1, 1, 1), R is always 0
+other	g_gameListTop	scroll a game list of more than nine games
+other	g_newIdFormBottom	same sampler gap; reach: open CREATE NEW ID
+other	g_profileListTop	needs more than 13 profiles scrolled down (create 14 pilots, scroll the list - back up Save first)
+other	g_skirmishNewPartsNotice	win a skirmish round that unlocks the next round, then return to SKIRMISH PLAY
+other	g_profileQuitting	pilot screen -> LOG OUT -> YES (the game quits on the next frame)
+other	g_unusedProfileCameraSpeed	pilot screen -> LOG OUT -> YES, then click before the game closes
+other	g_profileQuitSkip	pilot screen -> LOG OUT -> YES, then press a key / click before the game closes
+other	g_unusedProfileCameraZoom	pilot screen -> LOG OUT -> YES
+other	g_unusedProfileCameraTime	never non-zero (only 0 is written)
+other	g_unusedClock3	never non-zero (only 0 is written by menuState100_intro)
+other	g_unusedClock2	never non-zero (only 0 is written)
+other	g_unusedClock1	never non-zero (only 0 is written)
+other	g_errorReported	start once with a missing (renamed) texture under initdata so sys_errorMessage reports it
+other	g_fatalReported	start once with a missing data file that sys_errorTerminate reports (e.g. rename Data\Shape.dat), sample before exit
+other	g_vecZero2	always zero by design (nothing to reach)
+other	g_textureManagerObject	?
+other	g_serialProviderGuid	start multiplayer on a machine whose DirectPlay lists a serial service provider ("SERIAL")
+other	g_emptySlot0Asked	?
+other	g_gameServerReportsOff	?
+other	g_retintAllParts	?
+other	g_unusedStartupTable	?
+other	g_unusedKeyTable2	?
+function	BMPRGBFile_deletingDtor	data/rdata.c
+function	CollisionVolume_deletingDtor	data/rdata.c
+function	ErrorLog_deletingDtor	data/rdata.c
+function	Light_deletingDtor	data/rdata.c
+function	Mat4_transpose	app/small.c
+function	Model_deletingDtor	data/rdata.c
+function	Model_dtor	app/classes.c
+function	ObjectList_relight	render/object_list.c
+function	Scene_deletingDtor	data/rdata.c
+function	ShapeManager_deletingDtor	data/rdata.c
+function	SkeletonManager_deletingDtor	data/rdata.c
+function	Stage_deletingDtor	app/objects.c
+function	TextureManager_deletingDtor	data/rdata.c
+function	Texture_deletingDtor	data/rdata.c
+function	TimeSync_deletingDtor	data/rdata.c
+function	UnitPoseInfo_deletingDtor	app/small.c
+function	Vec3_add	render/vecmath.c
+function	Vec3_cross	render/vecmath.c
+function	Vec3_dot	render/vecmath.c
+function	Vec3_length	render/vecmath.c
+function	Vec3_scale	render/vecmath.c
+function	Vec3_set	render/vecmath.c
+function	Vec3_setNoReturn	app/classes.c
+function	Vec3_sub	render/vecmath.c
+function	Vec4_set	render/vecmath.c
+function	ViewVolume_addSegment	render/view_volume.c
+function	ViewVolume_deletingDtor	app/objects.c
+function	about	app/main_loop.c
+function	add12	crt/crt_atof.c
+function	addl	crt/crt_atof.c
+function	after_value	menu/armc_stats.c
+function	app_registerWindowClassEx	app/win32.c
+function	arenaUpdateNotice_clicks	menu/lobby_states.c
+function	arenaUpdateNotice_hitTest	menu/hit_tests.c
+function	arenaUpdateNotice_keys	menu/room_clicks.c
+function	arena_editJoinPassword	menu/edit_fields.c
+function	arena_joinSession	menu/lobby_states.c
+function	armc_drawRoomTunnel	menu/setup_pages.c
+function	armc_rightClickLeave	menu/armc_misc.c
+function	armc_sendSelectionToNet	menu/armc_misc.c
+function	as_float	render/trails.c
+function	ase_float	load/skel_data.c
+function	ase_time	load/skel_data.c
+function	axisAngle_combine	render/rotations.c
+function	axisAngle_fromMatrix	render/rotations.c
+function	box_buttons	menu/settings_form.c
+function	chat_saveMacros	load/files.c
+function	choice_dword	app/small.c
+function	close0	net/dplay_slots.c
+function	close1	net/dplay_slots.c
+function	close2	net/dplay_slots.c
+function	close3	net/dplay_slots.c
+function	createUpdateNotice_clicks	menu/lobby_states.c
+function	createUpdateNotice_keys	menu/lobby_states.c
+function	crt_acos	render/rotations.c
+function	crt_atof	crt/crt_atof.c
+function	data_missing	load/files.c
+function	dialog_select	menu/profile_keys.c
+function	dplaySlot1_join	net/dplay_slots.c
+function	dplaySlot2_close	net/dplay_slots.c
+function	dplaySlot2_enum	net/dplay_slots.c
+function	dplaySlot2_host	net/dplay_slots.c
+function	dplaySlot2_join	net/dplay_slots.c
+function	dplaySlot2_open	net/dplay_slots.c
+function	dplaySlot3_close	net/dplay_slots.c
+function	dplaySlot3_enum	net/dplay_slots.c
+function	dplaySlot3_host	net/dplay_slots.c
+function	dplaySlot3_join	net/dplay_slots.c
+function	dplaySlot3_open	net/dplay_slots.c
+function	dplay_getPlayerName	net/net_tables.c
+function	esc_retry	hud/hud_escmenu.c
+function	face_start	load/skel_data.c
+function	far_point	app/main_loop.c
+function	file_format	load/skel_data.c
+function	freeCam_keys	menu/menu_cameras.c
+function	freeCam_mouseLook	menu/menu_cameras.c
+function	freeCam_stepLeft	menu/menu_cameras.c
+function	freeCam_stepRight	menu/menu_cameras.c
+function	game_returnToGameRoom	menu/menu_states.c
+function	games_leave	menu/game_lists.c
+function	games_stop	menu/game_lists.c
+function	games_up	menu/game_lists.c
+function	glWindow_restoreDisplayMode	app/win32.c
+function	glWindow_setDisplayModeBy	app/win32.c
+function	glWindow_setupPixelFormat	app/win32.c
+function	glWindow_wndProc	app/win32.c
+function	glyph_drawHangulLead31	text/glyph_quads.c
+function	glyph_drawHangulVowelTail31	text/glyph_quads.c
+function	heading	menu/menu_cameras.c
+function	hostError_clicks	menu/lobby_states.c
+function	hostError_keys	menu/lobby_states.c
+function	image_initBy	app/classes.c
+function	inc_man	crt/crt_atof.c
+function	input_asyncKeyDown	app/devices.c
+function	input_getCursorPos	app/devices.c
+function	item_path	load/skel_data.c
+function	ks_row	text/text_codes.c
+function	ld12mul	crt/crt_atof.c
+function	ld12tod	crt/crt_atof.c
+function	lobby_busy	menu/game_lists.c
+function	lobby_join	menu/game_lists.c
+function	lobby_stopSearch	menu/game_lists.c
+function	lockon_quad	hud/hud_lockon.c
+function	login_field	menu/room_clicks.c
+function	look_at	app/main_loop.c
+function	match_mechTestFrame	app/main_loop.c
+function	math_makeMathFunctionTableFile	app/math_tables.c
+function	menu_returnToArenaLobbyViaMain	menu/menu_states.c
+function	menu_returnToMainFromRoom	menu/menu_states.c
+function	missions_clickRow	menu/menu_records.c
+function	model_loadFrom	load/skel_data.c
+function	model_loadObjFormatFrom	load/skel_data.c
+function	movie_pauseEnding	app/win32.c
+function	msg_connectionLost	msg/msg_system.c
+function	msg_dataLoss	msg/msg_system.c
+function	msg_fragLimitReached	msg/msg_system.c
+function	msg_networkUnstable	msg/msg_system.c
+function	mtold12	crt/crt_atof.c
+function	multtenpow12	crt/crt_atof.c
+function	net_announceFragLimit	app/small.c
+function	net_closeSockets	net/net_tables.c
+function	net_formatChatLine	net/net_tables.c
+function	net_sendChat	net/net_tables.c
+function	net_sendFlagPiece	app/main_loop.c
+function	net_sendGamePacket	app/loading.c
+function	net_sendItemStates	net/net_tables.c
+function	net_sendMatchEvent	app/main_loop.c
+function	net_sendPlayerInfo	app/main_loop.c
+function	net_sendPlayerState	app/main_loop.c
+function	netq_clearSkipped	net/net_packets.c
+function	newPartsNotice_clickClose	app/small.c
+function	newPartsNotice_keys	menu/menu_states.c
+function	no_cursorClamp	wide.c
+function	no_fullScreen	wide.c
+function	no_mousePressed	wide.c
+function	no_next	app/loading.c
+function	obj_corner	load/skel_data.c
+function	object_activate	match/map_objects.c
+function	object_deactivate	match/map_objects.c
+function	ptx_crtlError	app/ptx_decode.c
+function	ptx_decodeFile	app/ptx_decode.c
+function	ptx_error	app/ptx_decode.c
+function	ptx_toRgb	app/ptx_decode.c
+function	quat_fromMatrix	render/rotations.c
+function	quat_toAxisAngle	render/rotations.c
+function	relight	render/object_list.c
+function	report	app/error_log.c
+function	roomLogin_leave	menu/room_dialogs.c
+function	roomUpdateNotice_keys	menu/room_clicks.c
+function	room_initCameraPoints	menu/menu_init.c
+function	room_openLogin	menu/room_dialogs.c
+function	round_man	crt/crt_atof.c
+function	scenePath_notifyStub	app/small.c
+function	script_notifyObject	match/actor_slots.c
+function	sessionList_swap	menu/menu_records.c
+function	shape_addColour	render/shape_colours.c
+function	shape_clearTint	render/shape_colours.c
+function	shape_computeBounds	render/trails.c
+function	shape_markMaterialsChanged	render/shape_colours.c
+function	shl12	crt/crt_atof.c
+function	shr12	crt/crt_atof.c
+function	shr_man	crt/crt_atof.c
+function	skel_loadAseFrom	load/skel_data.c
+function	skel_loadFrom	load/skel_data.c
+function	skirmish_drawNewPartsNotice	menu/skirmish.c
+function	skirmish_frameNewPartsNotice	menu/skirmish.c
+function	sound_playFile	sound/sound_basic.c
+function	space_transformPoint	render/rotations.c
+function	stage_triggerActionNone	app/small.c
+function	stats_copy	menu/lobby_states.c
+function	strgtold12	crt/crt_atof.c
+function	sys_errorMessage	app/error_log.c
+function	sys_errorMessageNoName	app/error_log.c
+function	sys_errorTerminate	app/error_log.c
+function	sys_fatalError	app/error_log.c
+function	sys_messageBox	app/win32.c
+function	sys_messageBoxOverActive	app/win32.c
+function	terminate	app/error_log.c
+function	tex_markMaterialChanged	app/small.c
+function	text_draw32	text/text_passes.c
+function	text_drawCentred5	text/text_passes.c
+function	trail	match/weapons.c
+function	translation	load/skel_data.c
+function	turn_update	menu/menu_cameras.c
+function	updateNotice_clicks	menu/room_clicks.c
+function	updateNotice_hitTest	menu/hit_tests.c
+function	update_notice	menu/room_dialogs.c
+function	update_notice_keys	menu/room_clicks.c
+function	vec3_negate	render/rotations.c
+function	vec3_scaleCopy	render/rotations.c
+function	wide_callAdded	wide.c
+function	wide_callSite	wide.c
+function	wide_carries	wide.c
+function	wide_fixes	wide.c
+function	wide_menuFix	wide.c
+function	wide_present	wide.c
+function	wide_state	wide.c
+function	wide_testCursor	wide.c
+function	wide_testMouseLatch	wide.c
+function	zero_tail	crt/crt_atof.c
