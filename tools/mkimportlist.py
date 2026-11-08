@@ -14,4 +14,14 @@ lines = ['/* import_list.h (tools/mkimportlist.py, from imports.h): every import
 lines += ['\tX(%s, "%s") \\' % (n, d) for n, a, d in sorted(rows, key=lambda r: int(r[1], 16))]
 lines.append('')
 open(os.path.join(R, 'src', 'import_list.h'), 'w', newline='\n').write('\n'.join(lines) + '\n')
+# --thunks out.s: the Windows platform's plat_<name> for each import (src/axis.h IMPORT_FN with AXIS_PORTABLE): a
+# jump through the game's import slot in g_rdata, so whatever is in the slot (the network layer's hooks) is called
+import sys
+if '--thunks' in sys.argv:
+	out = sys.argv[sys.argv.index('--thunks') + 1]
+	s = ['\t# plat_imports.s (tools/mkimportlist.py): the Windows platform\'s system calls - each a jump through the',
+	     '\t# game\'s import slot (in g_rdata at the original\'s offset from 0x4a9000)', '\t.text']
+	for n, a, d in sorted(rows, key=lambda r: int(r[1], 16)):
+		s += ['\t.globl _plat_%s' % n, '\t.p2align 4', '_plat_%s:\t# %s' % (n, d), '\tjmp *_g_rdata+0x%x' % (int(a, 16) - 0x4a9000)]
+	open(out, 'w', newline='\n').write('\n'.join(s) + '\n')
 print('%d imports' % len(rows))

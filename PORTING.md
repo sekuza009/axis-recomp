@@ -50,3 +50,10 @@ in Godot, then replaced piece by piece.
   (axisnet_recomp.c's hook_import_ex with AXIS_PORTABLE). Of g_image only text_data's pages (DirectInput's object
   formats) stay accessible; any other use is logged and stops the game. The patch layer's call sites (PATCHED_ /
   SITE_, src/wide.c) already compile out of native builds; they stay in src/ for master.
+- 2026-11-08, stage 3 (first pass): `src/plat/plat.h`. The 68 COM call sites (sound, music, input, network) are
+  named operations (`SND_PLAY(buffer, flags)`, `IN_READ(device, size, state)`, `NET_SEND(...)`...): on master the
+  same call as before (the harness objects are unchanged), in the portable build `plat_*` functions,
+  src/plat/win32/devices.c. Every plain system call (OpenGL, window, timers, registry, sockets: the 228 imports) is
+  `plat_<name>` in the portable build (src/axis.h IMPORT_FN), the Windows platform's being jumps through the import
+  slots (build/plat_imports.s). Still Windows-shaped (DirectSound buffers, OpenGL 1.x calls, Win32 messages): the
+  next passes group the window / message loop (stage 4) and give rendering, input and sound neutral shapes.

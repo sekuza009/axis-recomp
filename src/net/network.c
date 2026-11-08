@@ -3,6 +3,7 @@
    handled), the session table (200 SessionSlots at g_sessionTable) and the sixteen player slots (g_netSlots), the
    ping thread, this machine's address, and the match's game packets taken in (net_processGamePacket). */
 #include "../game.h"
+#include "../plat/plat.h"
 #include <string.h>
 
 /* Winsock's hostent (gethostbyname's answer): the host's addresses are addrList[0 ..], each 4 bytes */
@@ -366,19 +367,19 @@ int (dplay_release)(void)
 {
 	void *lobby = g_dplayLobby;
 	if (lobby) {
-		COM(lobby, COM_RELEASE, u32)(lobby);
+		NET_RELEASE(lobby);
 		g_dplayLobby = 0;
 	}
 	void *play = g_dplay;
 	if (play) {
 		if (g_localPlayerId) {
-			COM(play, 0x24, u32, u32)(play, g_localPlayerId);   /* DestroyPlayer */
+			NET_DESTROY_PLAYER(play, g_localPlayerId);
 			play = g_dplay;
 			g_localPlayerId = 0;
 		}
-		COM(play, 0x10, u32)(play);   /* Close */
+		NET_CLOSE(play);
 		play = g_dplay;
-		COM(play, COM_RELEASE, u32)(play);
+		NET_RELEASE(play);
 		g_dplay = 0;
 	}
 	if (g_hostAddressBlock) {
@@ -436,12 +437,12 @@ int (dplay_enumSessions)(void)
 	memcpy(desc.instance, g_providerGuid, 16);
 	memcpy(desc.application, (const void *)OBJ(k_axisAppGuid), 16);
 	if (!g_connectionKind) {
-		if (COM(play, 0x34, int, void *, u32, void *, void *, u32)(play, &desc, 0, (void *)FN(dplay_enumSessionsCallback), NULL, 0x12) < 0)
+		if (NET_ENUM_SESSIONS(play, &desc, (void *)FN(dplay_enumSessionsCallback)) < 0)
 			return 0;
 		play = g_dplay;
 	}
 	if (g_connectionKind == 1 &&
-	    COM(play, 0x34, int, void *, u32, void *, void *, u32)(play, &desc, 0, (void *)FN(dplay_enumSessionsCallback), NULL, 0x12) < 0)
+	    NET_ENUM_SESSIONS(play, &desc, (void *)FN(dplay_enumSessionsCallback)) < 0)
 		return 0;
 	return 1;
 }
@@ -622,14 +623,14 @@ int (dplay_getPlayerName)(u32 id, void **out)
 {
 	void *play = g_dplay;
 	u32 size;
-	int r = COM(play, 0x54, int, u32, void *, u32 *)(play, id, NULL, &size);
+	int r = NET_GET_PLAYER_NAME(play, id, NULL, &size);
 	if (r != (int)0x8877001e)   /* DPERR_BUFFERTOOSMALL */
 		return r;
 	void *name = GlobalLock(GlobalAlloc(0x42, size));   /* (GHND: moveable, zeroed) */
 	if (!name)
 		return 0x8007000e;
 	play = g_dplay;
-	r = COM(play, 0x54, int, u32, void *, u32 *)(play, id, name, &size);
+	r = NET_GET_PLAYER_NAME(play, id, name, &size);
 	if (r >= 0) {
 		*out = name;
 		return 0;
@@ -789,7 +790,7 @@ static DPSessionDesc2 *session_desc(const void *guid)
 static int create_player(void *play, u32 *id, const char *name)
 {
 	u32 dpname[4] = { 0x10, 0, (u32)name, 0 };   /* DPNAME: dwSize, dwFlags, lpszShortNameA, lpszLongNameA */
-	return COM(play, 0x18, int, u32 *, void *, void *, void *, u32, u32)(play, id, dpname, NULL, NULL, 0, 0);
+	return NET_CREATE_PLAYER(play, id, dpname);
 }
 
 /* 0x453cf0: a session hosted (Open with DPOPEN_CREATE): flags 0x44, the instance GUID from *g_providerGuid, the session
@@ -814,7 +815,7 @@ int (dplay_hostSession)(const char *session, const char *player, u32 user1, u32 
 		desc->user4 = net_parseAddress();       /* net_parseAddress */
 		play = g_dplay;
 	}
-	if (COM(play, 0x60, int, void *, u32)(play, desc, 2) < 0)   /* Open(DPOPEN_CREATE) */
+	if (NET_OPEN(play, desc, 2) < 0)   /* create */
 		return 0;
 	u32 id;
 	if (create_player(g_dplay, &id, player) < 0)
@@ -835,7 +836,7 @@ int (dplay_joinSession)(const void *guid, const char *player, u32 data)
 	void *play = g_dplay;
 	if (!play)
 		return 0x1fb;
-	int r = COM(play, 0x60, int, void *, u32)(play, session_desc(guid), 1);   /* Open(DPOPEN_JOIN) */
+	int r = NET_OPEN(play, session_desc(guid), 1);   /* join */
 	if (r == (int)0x887700dc)
 		return 0x1f9;
 	if (r == (int)0x887700f0)
@@ -861,33 +862,31 @@ int (dplay_joinSession)(const void *guid, const char *player, u32 data)
    first failure */
 static void dplay_lobbyConnect(void)
 {
-	if (CoCreateInstance((const void *)OBJ(k_CLSID_DirectPlayLobby), NULL, 1,
-			(const void *)OBJ(k_IID_IDirectPlayLobby3A), (void **)ADDR(g_dplayLobby)) < 0)   /* CoCreateInstance(CLSID_DirectPlayLobby, IID_IDirectPlayLobby3A) */
+	if (NET_LOBBY_CREATE((void **)ADDR(g_dplayLobby)) < 0)
 		return;
 	void *lobby = g_dplayLobby;
 	u32 size;
-	if ((u32)COM(lobby, 0x20, int, u32, void *, u32 *)(lobby, 0, NULL, &size) != 0x8877001e)   /* DPERR_BUFFERTOOSMALL */
+	if ((u32)NET_LOBBY_GET_CONNECTION(lobby, NULL, &size) != 0x8877001e)   /* DPERR_BUFFERTOOSMALL */
 		return;
 	u8 *conn = GlobalLock(GlobalAlloc(0x42, size));   /* (GHND: moveable, zeroed) */
 	g_lobbyConnectionBlock = conn;
 	if (!conn)
 		return;
 	lobby = g_dplayLobby;
-	if (COM(lobby, 0x20, int, u32, void *, u32 *)(lobby, 0, conn, &size) < 0)   /* GetConnectionSettings */
+	if (NET_LOBBY_GET_CONNECTION(lobby, conn, &size) < 0)
 		return;
 	u32 *session = *(u32 **)((*(u8 **)&g_lobbyConnectionBlock) + 8);
 	session[1] = 0x44;    /* dwFlags */
 	session[10] = 16;     /* dwMaxPlayers */
 	lobby = g_dplayLobby;
-	if (COM(lobby, 0x30, int, u32, u32, void *)(lobby, 0, 0, g_lobbyConnectionBlock) < 0)   /* SetConnectionSettings */
+	if (NET_LOBBY_SET_CONNECTION(lobby, g_lobbyConnectionBlock) < 0)
 		return;
 	lobby = g_dplayLobby;
-	if (COM(lobby, 0x3c, int, u32, const void *, void **, void *)(lobby, 0, (const void *)OBJ(k_IID_IDirectPlay4A), (void **)ADDR(g_dplay), NULL) < 0)
+	if (NET_LOBBY_CONNECT(lobby, (void **)ADDR(g_dplay)) < 0)
 		return;   /* ConnectEx */
 	u32 id;
 	void *play = g_dplay;   /* CreatePlayer with the lobby's DPNAME (lpPlayerName) */
-	if (COM(play, 0x18, int, u32 *, void *, void *, void *, u32, u32)(play, &id, *(void **)((*(u8 **)&g_lobbyConnectionBlock) + 0xc),
-			NULL, NULL, 0, 0) < 0)
+	if (NET_CREATE_PLAYER(play, &id, *(void **)((*(u8 **)&g_lobbyConnectionBlock) + 0xc)) < 0)
 		return;
 	u32 flags = *(u32 *)((*(u8 **)&g_lobbyConnectionBlock) + 4);
 	if (flags & 2)
@@ -907,7 +906,7 @@ int (dplay_create)(void)
 	if (r < 0)
 		return r;
 	void *play = g_dplay;
-	r = COM(play, 0x8c, int, const void *, void *, void *, u32)(play, (const void *)OBJ(k_axisAppGuid), (void *)FN(dplay_enumConnections), NULL, 0);
+	r = NET_ENUM_CONNECTIONS(play, (void *)FN(dplay_enumConnections));
 	if (r >= 0)
 		r = 0;
 	if (g_lobbyConnectionBlock)
@@ -993,11 +992,11 @@ int (dplay_initConnection)(int kind, const char *address)
 		element[1].size = strlen(host) + 1;
 		element[1].data = host;
 		void *lobby = g_dplayLobby;
-		COM(lobby, 0x38, int, void *, u32, void *, u32 *)(lobby, element, 2, NULL, &size);   /* CreateCompoundAddress */
+		NET_LOBBY_ADDRESS(lobby, element, 2, NULL, &size);   /* a compound address */
 		void *block = crt_malloc(size);
 		g_hostAddressBlock = block;
 		lobby = g_dplayLobby;
-		COM(lobby, 0x38, int, void *, u32, void *, u32 *)(lobby, element, 2, block, &size);
+		NET_LOBBY_ADDRESS(lobby, element, 2, block, &size);
 		g_storedConnection = g_hostAddressBlock;
 	}
 	if (!g_storedConnection)
@@ -1005,11 +1004,11 @@ int (dplay_initConnection)(int kind, const char *address)
 	if (dplay_createObject((void **)ADDR(g_dplay)) < 0 || !g_dplay)   /* dplay_createObject */
 		return 0;
 	void *play = g_dplay;
-	if (COM(play, 0x98, int, void *, u32)(play, g_storedConnection, 0) < 0)   /* InitializeConnection */
+	if (NET_INIT_CONNECTION(play, g_storedConnection) < 0)
 		return 0;
 	u32 caps[10] = { 0x28 };   /* DPCAPS */
 	play = g_dplay;
-	if (COM(play, 0x38, int, u32 *, u32)(play, caps, 0))   /* GetCaps */
+	if (NET_GET_CAPS(play, caps))
 		return 0;
 	g_dpTimeout = caps[9];   /* dwTimeout */
 	g_dpMaxBufferSize = caps[2];   /* dwMaxBufferSize */

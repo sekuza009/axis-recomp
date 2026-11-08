@@ -1,12 +1,11 @@
 /* sound_basic.c: a sound is eight DirectSound buffers of the same sample, played in turn so a sound can overlap
    itself; the menu sounds play at the menus' volume; the music player is a DirectShow graph. */
 #include "../game.h"
+#include "../plat/plat.h"
 #include <string.h>
 
 #undef sound_playNext
 #undef sound_setNextVolume
-#define DSB_PLAY 0x30
-#define DSB_SETVOLUME 0x3c
 
 typedef struct {
 	void *buffers[8];
@@ -24,7 +23,7 @@ void (sound_playNext)(Sound *sound)
 		return;
 	void *buffer = sound->buffers[sound->next];
 	if (buffer != NULL)
-		COM(buffer, DSB_PLAY, long, u32, u32, u32)(buffer, 0, 0, 0);
+		SND_PLAY(buffer, 0);
 	if (sound->next < 7)
 		sound->next++;
 	else
@@ -38,7 +37,7 @@ void (sound_setNextVolume)(Sound *sound, int volume)
 		return;
 	void *buffer = sound->buffers[sound->next];
 	if (buffer != NULL)
-		COM(buffer, DSB_SETVOLUME, long, int)(buffer, volume);
+		SND_SET_VOLUME(buffer, volume);
 }
 
 /* 0x41e760: menu sound id at the menus' volume */
@@ -55,7 +54,7 @@ void (music_stop)(void)
 {
 	if (g_music == NULL)
 		return;
-	COM(g_music, COM_RELEASE, long)(g_music);
+	MUS_RELEASE(g_music);
 	g_music = NULL;
 	CoUninitialize();
 }
@@ -89,16 +88,16 @@ u32 (music_loopIfEnded)(void)
 	if (!stream)
 		return 0;
 	u32 pos[2];
-	COM(stream, 0x20, u32, u32 *)(stream, pos);   /* the play position */
+	MUS_TIME(stream, pos);   /* the play position */
 	int hi = (int)pos[1], length_hi = g_musicLengthHigh;
 	if (hi < length_hi)
 		return (u32)hi;
 	if (hi == length_hi && pos[0] < g_musicLength)
 		return g_musicLength;
 	stream = g_music;
-	COM(stream, 0x28, u32, u32, u32)(stream, 0, 0);
+	MUS_SEEK(stream, 0, 0);
 	stream = g_music;
-	return COM(stream, 0x1c, u32, u32)(stream, 1);
+	return MUS_SET_STATE(stream, 1);
 }
 
 /* 0x467dd0: the sound's next buffer (of eight, next) played with a pan (mode 1 or 2: value, within
@@ -115,9 +114,9 @@ u32 (sound_playPanned)(u32 *sound, int mode, int value)
 	if (mode == 1 || mode == 2)
 		sd->pans[sd->next] = value;
 	void *buffer = RELOC(sd->buffers[sd->next]);
-	COM(buffer, 0x40, u32, u32)(buffer, (u32)sd->pans[sd->next]);   /* SetPan */
+	SND_SET_PAN(buffer, sd->pans[sd->next]);
 	buffer = RELOC(sd->buffers[sd->next]);
-	COM(buffer, 0x30, u32, u32, u32, u32)(buffer, 0, 0, 0);   /* Play */
+	SND_PLAY(buffer, 0);
 	u32 turn = (u32)sd->next;
 	if ((int)turn < 7) {
 		sd->next = turn + 1;
@@ -244,10 +243,6 @@ void (sound_play3D)(int index, const float *pos, const float *listener, const fl
 	sound_playPanned(GAME_VAR(void *, OBJ(g_soundTable) + index * 4) /* g_soundTable[index] */, (pan > 0) + 1, pan);
 }
 
-#define DS_CREATESOUNDBUFFER 0x0c
-#define DS_DUPLICATESOUNDBUFFER 0x14
-#define DSB_LOCK 0x2c
-#define DSB_UNLOCK 0x4c
 #undef CreateFileA
 #define CreateFileA(name, access, share, security, how, attributes, tmpl) \
 	IMPORT_FN(CreateFileA, void *, const char *, u32, u32, void *, u32, u32, void *)(name, access, share, security, how, attributes, tmpl)
@@ -305,14 +300,14 @@ Sound *(sound_loadWav)(const char *name)
 	ReadFile(file, data, size, &done, NULL);
 	CloseHandle(file);
 	void *ds = g_directSound;
-	if (COM(ds, DS_CREATESOUNDBUFFER, long, void *, void **, void *)(ds, &desc.size, &sound->buffers[0], NULL)) {
+	if (SND_CREATE_BUFFER(ds, &desc.size, &sound->buffers[0])) {
 		MessageBoxA(NULL, (const char *)STR(0x4c4dc4, "SoundBuffer create error"), (const char *)STR(0x4c4de0, "Error"), 0);
 		return NULL;
 	}
 	void *buffer = sound->buffers[0], *locked;
-	COM(buffer, DSB_LOCK, long, u32, u32, void **, u32 *, void **, u32 *, u32)(buffer, 0, size, &locked, &size, NULL, NULL, 0);
+	SND_LOCK(buffer, size, &locked, &size);
 	memcpy(locked, data, size);
-	COM(buffer, DSB_UNLOCK, long, void *, u32, void *, u32)(buffer, locked, size, NULL, 0);
+	SND_UNLOCK(buffer, locked, size);
 	sound->next = 0;
 	for (int i = 0; i < 8; i++) {
 		sound->panModes[i] = 0;
@@ -320,7 +315,7 @@ Sound *(sound_loadWav)(const char *name)
 	}
 	for (int i = 0; i < 8; i++) {
 		ds = g_directSound;
-		COM(ds, DS_DUPLICATESOUNDBUFFER, long, void *, void **)(ds, sound->buffers[0], &sound->buffers[i]);
+		SND_DUPLICATE(ds, sound->buffers[0], &sound->buffers[i]);
 	}
 	operator_delete(data);
 	return sound;
@@ -331,10 +326,10 @@ Sound *(sound_loadWav)(const char *name)
    released again when the buffer will not play) */
 int (sound_init)(void *hwnd)
 {
-	if (DirectSoundCreate(NULL, (void **)ADDR(g_directSound), NULL))   /* DirectSoundCreate */
+	if (SND_CREATE((void **)ADDR(g_directSound)))
 		return 0;
 	void *ds = g_directSound;
-	if (COM(ds, 0x18, int, void *, u32)(ds, hwnd, 2))   /* SetCooperativeLevel(DSSCL_PRIORITY) */
+	if (SND_SET_WINDOW(ds, hwnd))
 		return 0;
 	struct { u16 format, channels; u32 rate, bytesPerSecond; u16 blockAlign, bits, extra; } wave;   /* WAVEFORMATEX */
 	struct { u32 size, flags, bytes, reserved; void *format; u8 algorithm[16]; } desc;              /* DSBUFFERDESC */
@@ -349,14 +344,14 @@ int (sound_init)(void *hwnd)
 	wave.bits = 16;
 	wave.extra = 0;
 	ds = g_directSound;
-	if (COM(ds, 0xc, int, void *, void **, void *)(ds, &desc, (void **)ADDR(g_primarySoundBuffer), NULL))   /* CreateSoundBuffer */
+	if (SND_CREATE_BUFFER(ds, &desc, (void **)ADDR(g_primarySoundBuffer)))
 		return 0;
 	void *primary = g_primarySoundBuffer;
-	COM(primary, 0x38, int, void *)(primary, &wave);   /* SetFormat */
+	SND_SET_FORMAT(primary, &wave);
 	primary = g_primarySoundBuffer;
-	if (COM(primary, 0x30, int, u32, u32, u32)(primary, 0, 0, 1)) {   /* Play, looping */
+	if (SND_PLAY(primary, 1)) {   /* looping */
 		ds = g_directSound;
-		COM(ds, COM_RELEASE, u32)(ds);
+		SND_RELEASE(ds);
 		g_directSound = NULL;
 		return 0;
 	}
@@ -410,19 +405,18 @@ int (music_play)(const char *name)
 	void *stream;
 	unsigned short wname[0x104];
 	CoInitialize(NULL);   /* CoInitialize */
-	if (CoCreateInstance((const void *)OBJ(k_CLSID_AMMultiMediaStream), NULL, 1,
-			(const void *)OBJ(k_IID_IAMMultiMediaStream), &stream))   /* CoCreateInstance(CLSID_AMMultiMediaStream, IID_IAMMultiMediaStream) */
+	if (MUS_CREATE(&stream))
 		return 0;
 	MultiByteToWideChar(0, 0, name, -1, wname, 0x104);   /* MultiByteToWideChar */
-	if (COM(stream, 0x30, long, u32, u32, void *)(stream, 0, 1, NULL))   /* Initialize(read, no graph thread) */
+	if (MUS_INIT(stream))
 		return 0;
-	if (COM(stream, 0x3c, long, void *, const void *, u32, void *)(stream, NULL, (const void *)OBJ(k_MSPID_PrimaryAudio), 1, NULL))
-		return 0;   /* AddMediaStream(primary audio, default renderer) */
-	if (COM(stream, 0x40, long, const void *, u32)(stream, wname, 0))   /* OpenFile */
+	if (MUS_ADD_AUDIO(stream))   /* (the default audio renderer) */
+		return 0;
+	if (MUS_OPEN(stream, wname))
 		return 0;
 	g_music = stream;
-	COM(stream, 0x1c, long, u32)(stream, 1);   /* SetState(run) */
+	MUS_SET_STATE(stream, 1);   /* run */
 	strcpy(g_musicFile, name);
-	COM(g_music, 0x24, long, void *)(g_music, (void *)ADDR(g_musicLength));   /* GetDuration */
+	MUS_DURATION(g_music, (void *)ADDR(g_musicLength));
 	return 1;
 }

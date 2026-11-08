@@ -44,9 +44,10 @@ printf '\t# gamedata.bin %s\n\t.section .rdata,"dr"\n\t.globl _g_gamedata\n\t.p2
 $CC -c -o build/gamedata.o build/gamedata.s
 # (the portable builds: their own loader, standalone/portable.c - no gamedata.bin, no hook table, no entry jumps)
 if [ -n "$PORTABLE" ]; then
-	python tools/mkimportlist.py > /dev/null
+	python tools/mkimportlist.py --thunks build/plat_imports.s > /dev/null
+	$CC -c -o build/plat_imports.o build/plat_imports.s
 	$CC -c -O2 -Wall $NDEF -o build/standalone_main$NSUF.o standalone/portable.c
-	LOADER="build/standalone_main$NSUF.o build/standalone_crt$NSUF.o"
+	LOADER="build/standalone_main$NSUF.o build/standalone_crt$NSUF.o build/plat_imports.o"
 else
 	$CC -c -O2 -Wall $NDEF -o build/standalone_main$NSUF.o standalone/main.c
 	LOADER="build/standalone_main$NSUF.o build/standalone_crt$NSUF.o build/gamedata.o build/standalone_hooks.o"

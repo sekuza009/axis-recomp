@@ -1,19 +1,18 @@
 /* devices.c: DirectInput's keyboard and mouse (taken while the window is active, let go when it is not) and the
    objects released when the game closes. */
 #include "../game.h"
+#include "../plat/plat.h"
 #include "../wide.h"
 #include "../fixes/fixes.h"
 #include <string.h>
 
-#define DI_ACQUIRE 0x1c
-#define DI_UNACQUIRE 0x20
 
 
 /* 0x4012c0: take the keyboard again */
 void (input_reacquireKeyboard)(void)
 {
 	if (g_keyboard != NULL && g_keyboardReady != 0)
-		COM(g_keyboard, DI_ACQUIRE, long)(g_keyboard);
+		IN_ACQUIRE(g_keyboard);
 }
 
 /* 0x4012e0: take the mouse again (or let it go while g_mouseTaken is 0); 1 when there is a mouse */
@@ -22,9 +21,9 @@ int (input_reacquireMouse)(void)
 	if (g_mouse == NULL)
 		return 0;
 	if (g_mouseTaken != 0)
-		COM(g_mouse, DI_ACQUIRE, long)(g_mouse);
+		IN_ACQUIRE(g_mouse);
 	else
-		COM(g_mouse, DI_UNACQUIRE, long)(g_mouse);
+		IN_UNACQUIRE(g_mouse);
 	return 1;
 }
 
@@ -32,8 +31,8 @@ int (input_reacquireMouse)(void)
 void (input_releaseKeyboard)(void)
 {
 	if (g_keyboard != NULL) {
-		COM(g_keyboard, DI_UNACQUIRE, long)(g_keyboard);
-		COM(g_keyboard, COM_RELEASE, long)(g_keyboard);
+		IN_UNACQUIRE(g_keyboard);
+		IN_RELEASE(g_keyboard);
 		g_keyboard = NULL;
 	}
 	g_keyboardReady = 0;
@@ -43,8 +42,8 @@ void (input_releaseKeyboard)(void)
 void (input_releaseMouse)(void)
 {
 	if (g_mouse != NULL) {
-		COM(g_mouse, DI_UNACQUIRE, long)(g_mouse);
-		COM(g_mouse, COM_RELEASE, long)(g_mouse);
+		IN_UNACQUIRE(g_mouse);
+		IN_RELEASE(g_mouse);
 		g_mouse = NULL;
 	}
 	g_mouseReady = 0;
@@ -56,7 +55,7 @@ void (input_releaseAll)(void)
 	input_releaseKeyboard();
 	input_releaseMouse();
 	if (g_directInput != NULL) {
-		COM(g_directInput, COM_RELEASE, long)(g_directInput);
+		IN_RELEASE(g_directInput);
 		g_directInput = NULL;
 	}
 }
@@ -65,18 +64,17 @@ void (input_releaseAll)(void)
 void (sound_releaseDirectSound)(void)
 {
 	if (g_directSound != NULL) {
-		COM(g_directSound, COM_RELEASE, long)(g_directSound);
+		SND_RELEASE(g_directSound);
 		g_directSound = NULL;
 	}
 }
 
-#define DI_GETDEVICESTATE 0x24
 #define DIERR_INPUTLOST 0x8007001eL
 
 /* the keyboard's state into g_keyState; when the keyboard was lost it is taken again */
 static long read_keys(void)
 {
-	long r = COM(g_keyboard, DI_GETDEVICESTATE, long, u32, void *)(g_keyboard, 0x100, g_keyState);
+	long r = IN_READ(g_keyboard, 0x100, g_keyState);
 	if (r == (long)DIERR_INPUTLOST)
 		input_reacquireKeyboard();
 	return r;
@@ -106,7 +104,7 @@ int (input_keyHeldChecked)(int key)
    three worked */
 int (input_createDirectInput)(void *window, void *instance)
 {
-	if (DirectInputCreateA(instance, 0x700, &g_directInput, NULL) < 0)
+	if (IN_CREATE(instance, &g_directInput) < 0)
 		return 0;
 	if (!input_initKeyboard(window))
 		return 0;
@@ -124,7 +122,6 @@ int (input_createDirectInput)(void *window, void *instance)
    replaced the routine with code in the .axnet section's tail): while another window is in front, or the read or
    the re-take fails, the state is cleared instead of left as it was (a button down at an alt-tab stayed "held").
    1: read (or no mouse), 0: cleared */
-#define DI_GETDEVICESTATE_MOUSE 0x24
 #define DIERR_INPUTLOST_MOUSE 0x8007001e
 int (input_readMouse)(void)
 {
@@ -132,11 +129,11 @@ int (input_readMouse)(void)
 	if (g_mainWindow && GetForegroundWindow() != g_mainWindow)
 		goto clear;
 	if (g_mouse) {
-		long r = COM(g_mouse, DI_GETDEVICESTATE_MOUSE, long, u32, void *)(g_mouse, 0x10, state);
+		long r = IN_READ(g_mouse, 0x10, state);
 		if (r == (long)DIERR_INPUTLOST_MOUSE) {
-			if (COM(g_mouse, DI_ACQUIRE, long)(g_mouse) < 0)
+			if (IN_ACQUIRE(g_mouse) < 0)
 				goto clear;
-			r = COM(g_mouse, DI_GETDEVICESTATE_MOUSE, long, u32, void *)(g_mouse, 0x10, state);
+			r = IN_READ(g_mouse, 0x10, state);
 		}
 		if (r < 0)
 			goto clear;
@@ -329,11 +326,11 @@ int (input_createMouse)(void *window)
 	if (g_mouseReady)
 		return 1;
 	void *dinput = g_directInput;
-	if (COM(dinput, 0x0c, int, const void *, void **, void *)(dinput, (const void *)OBJ(k_GUID_SysMouse), &g_mouse, NULL) < 0)
+	if (IN_CREATE_MOUSE(dinput, &g_mouse) < 0)
 		return 0;
-	if (COM(g_mouse, 0x2c, int, const void *)(g_mouse, (const void *)OBJ(k_c_dfDIMouse)) < 0)
+	if (IN_SET_MOUSE_FORMAT(g_mouse) < 0)
 		return 0;
-	if (COM(g_mouse, 0x34, int, void *, u32)(g_mouse, window, 5) < 0)
+	if (IN_SET_WINDOW(g_mouse, window, 5) < 0)
 		return 0;
 	g_mouseReady = 1;
 	return 1;
@@ -347,13 +344,13 @@ int (input_initKeyboard)(void *window)
 	if (g_keyboardReady)
 		return 1;
 	void *dinput = g_directInput;
-	if (COM(dinput, 0x0c, int, const void *, void **, void *)(dinput, (const void *)OBJ(k_GUID_SysKeyboard), &g_keyboard, NULL) < 0)
+	if (IN_CREATE_KEYBOARD(dinput, &g_keyboard) < 0)
 		return 0;
-	if (COM(g_keyboard, 0x2c, int, const void *)(g_keyboard, (const void *)OBJ(k_c_dfDIKeyboard)) < 0)
+	if (IN_SET_KEYBOARD_FORMAT(g_keyboard) < 0)
 		return 0;
-	if (COM(g_keyboard, 0x34, int, void *, u32)(g_keyboard, window, 6) < 0)
+	if (IN_SET_WINDOW(g_keyboard, window, 6) < 0)
 		return 0;
-	COM(g_keyboard, DI_ACQUIRE, int)(g_keyboard);   /* (its result not checked) */
+	IN_ACQUIRE(g_keyboard);   /* (its result not checked) */
 	memset((void *)OBJ(g_keySeen), 0, 0x400);
 	g_keyboardReady = 1;
 	return 1;

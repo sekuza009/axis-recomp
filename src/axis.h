@@ -201,7 +201,18 @@ static inline int code_matches(u32 addr, const char *pattern)
 #define IMPORT(slot, ret, ...) ((ret (STDCALL *)(__VA_ARGS__))*(const u32 *)IMG(slot))
 /* the same by the function's name (its slot: IMP_<name>, src/imports.h): IMPORT_FN(GlobalLock, void *, void *)(h) */
 #include "imports.h"
+#ifdef AXIS_PORTABLE
+/* (the portable build: a system call is a call to the platform's function plat_<name> - src/plat/plat.h; the
+   Windows platform's are jumps through the import slots, build/plat_imports.s from tools/mkimportlist.py - not a
+   load from the slot at the call site) */
+#include "import_list.h"
+#define PLAT_IMPORT_DECL_(n, d) void plat_##n(void) __asm__("_plat_" #n);
+IMPORT_LIST(PLAT_IMPORT_DECL_)
+#undef PLAT_IMPORT_DECL_
+#define IMPORT_FN(name, ret, ...) ((ret (STDCALL *)(__VA_ARGS__))(void *)plat_##name)
+#else
 #define IMPORT_FN(name, ret, ...) IMPORT(IMP_##name, ret, __VA_ARGS__)
+#endif
 /* a global of the game at its address (an original one or, for memory reached through a pointer, any) */
 #define GAME_VAR(type, addr) (*(type *)RELOC(addr))
 /* a named global's address (src/globals.h): the original's in the harness, its place in AxisRC.exe - a constant
