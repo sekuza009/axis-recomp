@@ -68,10 +68,15 @@ Sessions r8 / r9 (2026-11-08, evidence8_*): lock-on and the server's answers.
     locked room (its fields reached: RoomRecord.rotation ...), --outdated answers THIS PROGRAM HAS BEEN UPDATED to
     the Ladder login and the new-ID request (the notice closed by key and by click); a DIRECT IP join to an address
     with no game timed out (CONNETION TIME OUT, the 30 poll ticks).
-  Not reached, and why: listed games never show here - the game pings each listed host over a raw ICMP socket,
-  which Windows allows only with administrator rights (ping -1), so the list's rows, sorting and joins stay
-  unreached; the arena side's update notice needs the game's own lobby connection, which this build's TCP/IP
+  Not reached in r9 (see r10 / r11 below): listed games did not show - not a rights problem (an elevated run,
+  r10, gave the same ping -1): axisnet replaces the game's IcmpSendEcho with a round trip to the listed game's own
+  host connection (port 2300), so a listed game with no host behind it never answers and stays hidden; the arena side's update notice needs the game's own lobby connection, which this build's TCP/IP
   GAME skips (it hosts directly; pointing TcpDNS at the test server did not change that).
   The Ladder ID in HKCU\SOFTWARE\AxisArena\Character was found left as "host" by the earlier Ladder sessions and put
   back to the user's ("newb256", from the 2026-11-07 registry backup).
 19 more data names and 12 more functions; left: 270 data names, 188 functions (evidence8_still_unreached.txt).
+
+Sessions r10 / r11 (2026-11-08, evidence9_*): r10 ran elevated (administrator) - no change, ping -1 (above). r11: two
+copies; the first logged in as "host" and hosted a Ladder room, so a host listened on 127.0.0.1; the test server
+listed it with two made-up rooms, one locked, at the same address; the second copy ("pilot00") saw all three with
+their pings (3 / 3, the lock icon), picked the locked one, typed its password and joined the host's match.

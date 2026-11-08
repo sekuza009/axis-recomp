@@ -1,0 +1,4 @@
+g_gameListClickTimer	ladder	r10/r11
+g_gameListClickArmed	ladder	r10/r11
+g_gameListRow	ladder	r10/r11
+g_pickedGame	net	r10/r11
