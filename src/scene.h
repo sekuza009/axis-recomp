@@ -833,6 +833,90 @@ typedef struct GamePacket {
 	u8 _pad0000038[0x8];
 } GamePacket;
 
+/* a shot slot of PlayerStatePacket (the receiver's Actor.shots[k], a ShotRecord) */
+typedef struct ShotPacket {
+	u8 flags;   /* +0x0: 1 a round in the slot (0: none), 2 a new one (ShotRecord.isNew), 4 it hit an actor, 8 it has ended (age > life) */
+	u16 target;   /* +0x1: flag 4: the actor hit (hitActor); else the collision plane hit + 1 (space.planes index; 0 none) */
+	short pos[3];   /* +0x3: the round's point x 0.1, truncated: its impact once it ended on a plane, else its position; the receiver's x 10 */
+} ShotPacket;
+
+/* match packet kind 0, a player's actor as it moves (net_sendPlayerState; read by net_processGamePacket into the actor's net* fields) */
+typedef struct PlayerStatePacket {
+	u8 number;   /* +0x0: the packet layer's number */
+	u8 kind;   /* +0x1: 0 */
+	u16 stateFlags;   /* +0x2: Actor.stateFlags (low 16 bits); the receiver takes the actor out when bit 0x4000 differs from its own */
+	u8 slotByte;   /* +0x4: bit 0: in play (Actor.state 1); bits 1 .. 3 the weapon slot (Actor.slot; 6 and 7 mean chat icon 1 / 2); bits 4 .. 7 the player */
+	short pos[3];   /* +0x5: Actor.nextPos x 0.1, truncated; the receiver's netPos is it x 10 */
+	u8 pitch;   /* +0xb: Actor.nextPitch as a byte angle (wrapped, x 0.0711111: 3600 / 256 steps); netPitch on the receiver (over 1800: less 3600) */
+	u8 yaw;   /* +0xc: Actor.nextYaw the same way; netYaw on the receiver */
+	signed char forward;   /* +0xd: Actor.nextForward x 10; netMotion[0] = it / 10 on the receiver */
+	signed char strafe;   /* +0xe: Actor.nextStrafe x 10; netMotion[1] = it / 10 */
+	u8 climbRun;   /* +0xf: Actor.nextClimb x 15 in the high nibble, nextRun x 15 in the low; netMotion[2], netMotion[4] = each / 15 */
+	u8 lean;   /* +0x10: Actor.nextLean as a byte angle (x 0.0711111); netMotion[3] = it x 14.11765 (over 1800: less 3600) */
+	u8 hit;   /* +0x11: 0, or a hit taken (Actor.hitPending, cleared on sending): 0x80, 0xc0 when it killed (armor 0), the attacker (lastAttacker) in the low nibble */
+	u8 hitWeapon;   /* +0x12: with hit: Actor.lastHitWeapon */
+	ShotPacket shots[5];   /* +0x13: the actor's five shot slots (Actor.shotBullets / shots) */
+} PlayerStatePacket;
+
+/* match packet kind 2, a player's mech and looks (net_sendPlayerInfo from its PlayerRecord; read by net_processGamePacket); the first byte is left as it was */
+typedef struct PlayerInfoPacket {
+	u8 number;   /* +0x0: the packet layer's number */
+	u8 kind;   /* +0x1: 2 */
+	char name[0x11];   /* +0x2: PlayerRecord.name (the receiver drops a packet whose name is 0x11 or longer) */
+	signed char character;   /* +0x13: PlayerRecord.character (the receiver drops it outside 0 .. 8) */
+	signed char team;   /* +0x14: PlayerRecord.team */
+	signed char grade;   /* +0x15: the actor's grade (Actor.grade; also its levelShown on the receiver) */
+	u8 player;   /* +0x16: the player (the receiver drops it at 16 or over) */
+	u8 parts[5];   /* +0x17: PlayerRecord.parts + 1: head, chest, arm, leg, booster type (each at most the receiver's count of that table) */
+	u8 items[6];   /* +0x1c: PlayerRecord.items + 1 (each at most the receiver's actorItemCount) */
+	signed char partHue[5][2];   /* +0x22: PlayerRecord.partHue, partSaturation, partValue as they are (30 bytes, one copy); the receiver applies them per part (playerRecord_applyNetColours) */
+	signed char partSaturation[5][2];   /* +0x2c: (see partHue) */
+	signed char partValue[5][2];   /* +0x36: (see partHue) */
+} PlayerInfoPacket;
+
+/* match packet kinds 3 .. 9 and 13, an event of the match (net_sendMatchEvent; read by net_processGamePacket) */
+typedef struct MatchEventPacket {
+	u8 number;   /* +0x0: the packet layer's number */
+	u8 kind;   /* +0x1: 3 the server ends the game, 4 / 5 the frag / time limit reached, 6 a cheat code used, 7 a chat line, 8 a player connecting, 9 one leaving, 13 a restart (10 / 11: TeamPacket) */
+	u8 player;   /* +0x2: the player concerned (cheatPlayer, chatPlayer, connectPlayer, quitPlayer); 'k' (0x6b) for 3, 4, 5 and 13, which carry nothing */
+	union { char line[0x39]; signed char cheatCode; };   /* +0x3: kinds 7 / 8: the chat line (chatLine) / the name connecting (connectName); 6: the cheat code (cheatCode) */
+	signed char chatTeam;   /* +0x3c: kind 7: the chat's team (chatTeam; the receiver's msg_chatLine takes it) */
+	u8 _pad000003d[0x3];
+} MatchEventPacket;
+
+/* match packet kinds 10 / 11, a player joining a team / changing team (net_sendMatchEvent; read by net_processGamePacket: team_change) */
+typedef struct TeamPacket {
+	u8 number;   /* +0x0: the packet layer's number */
+	u8 kind;   /* +0x1: 10 joined (joinPending), 11 changed (changePending: the sender's own player) */
+	u8 player;   /* +0x2: joinPlayer / the sender's localPlayer (the receiver drops it at 16 or over) */
+	signed char team;   /* +0x3: joinTeam / changeTeam (negative: out of the teams) */
+	char name[0x3c];   /* +0x4: joinName / changeName */
+} TeamPacket;
+
+/* match packet kind 12, 16 pixels of a player's flag (net_sendFlagPiece, from PlayerRecord.flag; read by net_processGamePacket) */
+typedef struct FlagPiecePacket {
+	u8 number;   /* +0x0: the packet layer's number */
+	u8 kind;   /* +0x1: 12 */
+	u8 player;   /* +0x2: whose flag */
+	short at;   /* +0x3: the first pixel's index (PlayerRecord.flagSent; the receiver drops it over 0x170), or -1 (0xffff): no pixels, the flag sent in full */
+	u8 rgb[16][3];   /* +0x5: the 16 pixels' red, green, blue (the receiver's alpha: 0xff unless all three are 0) */
+	u8 _pad0000035[0xb];
+} FlagPiecePacket;
+
+/* match packet kind 14, the map items' states (net_sendItemStates; read by net_processGamePacket once: itemLevelsTaken) */
+typedef struct ItemStatesPacket {
+	u8 number;   /* +0x0: the packet layer's number */
+	u8 kind;   /* +0x1: 14 */
+	u8 levels[0x3e];   /* +0x2: a nibble per map item, up to 124 (two to a byte, the even item low): 0 there, else taken with MapItem.timer / 10 + 1 (at most 15) to go */
+} ItemStatesPacket;
+
+/* lobby packet 27 (0x1b), the Ladder player's mech and colours for the game server (g_netSelectionPacket, allocated by net_resetConnection; armc_sendSelectionToNet) */
+typedef struct SelectionPacket {
+	char ladderId[0x1e];   /* +0x0: the Ladder ID (g_ladderId) */
+	u8 mech[11];   /* +0x1e: the mech as g_roomMech has it: the five parts (head, chest, arm, leg, booster), the items of slots 4 / 5, then weapon slots 0 .. 3 */
+	float colours[0x24];   /* +0x29: the colour choices (g_roomColours) */
+} SelectionPacket;
+
 /* the player's Ladder record sent to the game server (g_netPlayerRecordPacket, packet 0x11: lobby_states.c record_send) */
 typedef struct PlayerRecordPacket {
 	char name[0x1e];   /* +0x0: the Ladder name (written only when asked) */
@@ -2604,6 +2688,65 @@ _Static_assert(offsetof(GamePacket, checkValue) == 0x2e && sizeof(((GamePacket *
 _Static_assert(offsetof(GamePacket, checkIndex2) == 0x32 && sizeof(((GamePacket *)0)->checkIndex2) == 0x2, "scene.fields: GamePacket.checkIndex2");
 _Static_assert(offsetof(GamePacket, checkValue2) == 0x34 && sizeof(((GamePacket *)0)->checkValue2) == 0x4, "scene.fields: GamePacket.checkValue2");
 _Static_assert(sizeof(GamePacket) == 0x40, "scene.fields: size of GamePacket");
+_Static_assert(offsetof(ShotPacket, flags) == 0x0 && sizeof(((ShotPacket *)0)->flags) == 0x1, "scene.fields: ShotPacket.flags");
+_Static_assert(offsetof(ShotPacket, target) == 0x1 && sizeof(((ShotPacket *)0)->target) == 0x2, "scene.fields: ShotPacket.target");
+_Static_assert(offsetof(ShotPacket, pos) == 0x3 && sizeof(((ShotPacket *)0)->pos) == 0x6, "scene.fields: ShotPacket.pos");
+_Static_assert(sizeof(ShotPacket) == 0x9, "scene.fields: size of ShotPacket");
+_Static_assert(offsetof(PlayerStatePacket, number) == 0x0 && sizeof(((PlayerStatePacket *)0)->number) == 0x1, "scene.fields: PlayerStatePacket.number");
+_Static_assert(offsetof(PlayerStatePacket, kind) == 0x1 && sizeof(((PlayerStatePacket *)0)->kind) == 0x1, "scene.fields: PlayerStatePacket.kind");
+_Static_assert(offsetof(PlayerStatePacket, stateFlags) == 0x2 && sizeof(((PlayerStatePacket *)0)->stateFlags) == 0x2, "scene.fields: PlayerStatePacket.stateFlags");
+_Static_assert(offsetof(PlayerStatePacket, slotByte) == 0x4 && sizeof(((PlayerStatePacket *)0)->slotByte) == 0x1, "scene.fields: PlayerStatePacket.slotByte");
+_Static_assert(offsetof(PlayerStatePacket, pos) == 0x5 && sizeof(((PlayerStatePacket *)0)->pos) == 0x6, "scene.fields: PlayerStatePacket.pos");
+_Static_assert(offsetof(PlayerStatePacket, pitch) == 0xb && sizeof(((PlayerStatePacket *)0)->pitch) == 0x1, "scene.fields: PlayerStatePacket.pitch");
+_Static_assert(offsetof(PlayerStatePacket, yaw) == 0xc && sizeof(((PlayerStatePacket *)0)->yaw) == 0x1, "scene.fields: PlayerStatePacket.yaw");
+_Static_assert(offsetof(PlayerStatePacket, forward) == 0xd && sizeof(((PlayerStatePacket *)0)->forward) == 0x1, "scene.fields: PlayerStatePacket.forward");
+_Static_assert(offsetof(PlayerStatePacket, strafe) == 0xe && sizeof(((PlayerStatePacket *)0)->strafe) == 0x1, "scene.fields: PlayerStatePacket.strafe");
+_Static_assert(offsetof(PlayerStatePacket, climbRun) == 0xf && sizeof(((PlayerStatePacket *)0)->climbRun) == 0x1, "scene.fields: PlayerStatePacket.climbRun");
+_Static_assert(offsetof(PlayerStatePacket, lean) == 0x10 && sizeof(((PlayerStatePacket *)0)->lean) == 0x1, "scene.fields: PlayerStatePacket.lean");
+_Static_assert(offsetof(PlayerStatePacket, hit) == 0x11 && sizeof(((PlayerStatePacket *)0)->hit) == 0x1, "scene.fields: PlayerStatePacket.hit");
+_Static_assert(offsetof(PlayerStatePacket, hitWeapon) == 0x12 && sizeof(((PlayerStatePacket *)0)->hitWeapon) == 0x1, "scene.fields: PlayerStatePacket.hitWeapon");
+_Static_assert(offsetof(PlayerStatePacket, shots) == 0x13 && sizeof(((PlayerStatePacket *)0)->shots) == 0x2d, "scene.fields: PlayerStatePacket.shots");
+_Static_assert(sizeof(PlayerStatePacket) == 0x40, "scene.fields: size of PlayerStatePacket");
+_Static_assert(offsetof(PlayerInfoPacket, number) == 0x0 && sizeof(((PlayerInfoPacket *)0)->number) == 0x1, "scene.fields: PlayerInfoPacket.number");
+_Static_assert(offsetof(PlayerInfoPacket, kind) == 0x1 && sizeof(((PlayerInfoPacket *)0)->kind) == 0x1, "scene.fields: PlayerInfoPacket.kind");
+_Static_assert(offsetof(PlayerInfoPacket, name) == 0x2 && sizeof(((PlayerInfoPacket *)0)->name) == 0x11, "scene.fields: PlayerInfoPacket.name");
+_Static_assert(offsetof(PlayerInfoPacket, character) == 0x13 && sizeof(((PlayerInfoPacket *)0)->character) == 0x1, "scene.fields: PlayerInfoPacket.character");
+_Static_assert(offsetof(PlayerInfoPacket, team) == 0x14 && sizeof(((PlayerInfoPacket *)0)->team) == 0x1, "scene.fields: PlayerInfoPacket.team");
+_Static_assert(offsetof(PlayerInfoPacket, grade) == 0x15 && sizeof(((PlayerInfoPacket *)0)->grade) == 0x1, "scene.fields: PlayerInfoPacket.grade");
+_Static_assert(offsetof(PlayerInfoPacket, player) == 0x16 && sizeof(((PlayerInfoPacket *)0)->player) == 0x1, "scene.fields: PlayerInfoPacket.player");
+_Static_assert(offsetof(PlayerInfoPacket, parts) == 0x17 && sizeof(((PlayerInfoPacket *)0)->parts) == 0x5, "scene.fields: PlayerInfoPacket.parts");
+_Static_assert(offsetof(PlayerInfoPacket, items) == 0x1c && sizeof(((PlayerInfoPacket *)0)->items) == 0x6, "scene.fields: PlayerInfoPacket.items");
+_Static_assert(offsetof(PlayerInfoPacket, partHue) == 0x22 && sizeof(((PlayerInfoPacket *)0)->partHue) == 0xa, "scene.fields: PlayerInfoPacket.partHue");
+_Static_assert(offsetof(PlayerInfoPacket, partSaturation) == 0x2c && sizeof(((PlayerInfoPacket *)0)->partSaturation) == 0xa, "scene.fields: PlayerInfoPacket.partSaturation");
+_Static_assert(offsetof(PlayerInfoPacket, partValue) == 0x36 && sizeof(((PlayerInfoPacket *)0)->partValue) == 0xa, "scene.fields: PlayerInfoPacket.partValue");
+_Static_assert(sizeof(PlayerInfoPacket) == 0x40, "scene.fields: size of PlayerInfoPacket");
+_Static_assert(offsetof(MatchEventPacket, number) == 0x0 && sizeof(((MatchEventPacket *)0)->number) == 0x1, "scene.fields: MatchEventPacket.number");
+_Static_assert(offsetof(MatchEventPacket, kind) == 0x1 && sizeof(((MatchEventPacket *)0)->kind) == 0x1, "scene.fields: MatchEventPacket.kind");
+_Static_assert(offsetof(MatchEventPacket, player) == 0x2 && sizeof(((MatchEventPacket *)0)->player) == 0x1, "scene.fields: MatchEventPacket.player");
+_Static_assert(offsetof(MatchEventPacket, line) == 0x3 && sizeof(((MatchEventPacket *)0)->line) <= 0x39, "scene.fields: MatchEventPacket.line");
+_Static_assert(offsetof(MatchEventPacket, cheatCode) == 0x3 && sizeof(((MatchEventPacket *)0)->cheatCode) <= 0x39, "scene.fields: MatchEventPacket.cheatCode");
+_Static_assert(offsetof(MatchEventPacket, chatTeam) == 0x3c && sizeof(((MatchEventPacket *)0)->chatTeam) == 0x1, "scene.fields: MatchEventPacket.chatTeam");
+_Static_assert(sizeof(MatchEventPacket) == 0x40, "scene.fields: size of MatchEventPacket");
+_Static_assert(offsetof(TeamPacket, number) == 0x0 && sizeof(((TeamPacket *)0)->number) == 0x1, "scene.fields: TeamPacket.number");
+_Static_assert(offsetof(TeamPacket, kind) == 0x1 && sizeof(((TeamPacket *)0)->kind) == 0x1, "scene.fields: TeamPacket.kind");
+_Static_assert(offsetof(TeamPacket, player) == 0x2 && sizeof(((TeamPacket *)0)->player) == 0x1, "scene.fields: TeamPacket.player");
+_Static_assert(offsetof(TeamPacket, team) == 0x3 && sizeof(((TeamPacket *)0)->team) == 0x1, "scene.fields: TeamPacket.team");
+_Static_assert(offsetof(TeamPacket, name) == 0x4 && sizeof(((TeamPacket *)0)->name) == 0x3c, "scene.fields: TeamPacket.name");
+_Static_assert(sizeof(TeamPacket) == 0x40, "scene.fields: size of TeamPacket");
+_Static_assert(offsetof(FlagPiecePacket, number) == 0x0 && sizeof(((FlagPiecePacket *)0)->number) == 0x1, "scene.fields: FlagPiecePacket.number");
+_Static_assert(offsetof(FlagPiecePacket, kind) == 0x1 && sizeof(((FlagPiecePacket *)0)->kind) == 0x1, "scene.fields: FlagPiecePacket.kind");
+_Static_assert(offsetof(FlagPiecePacket, player) == 0x2 && sizeof(((FlagPiecePacket *)0)->player) == 0x1, "scene.fields: FlagPiecePacket.player");
+_Static_assert(offsetof(FlagPiecePacket, at) == 0x3 && sizeof(((FlagPiecePacket *)0)->at) == 0x2, "scene.fields: FlagPiecePacket.at");
+_Static_assert(offsetof(FlagPiecePacket, rgb) == 0x5 && sizeof(((FlagPiecePacket *)0)->rgb) == 0x30, "scene.fields: FlagPiecePacket.rgb");
+_Static_assert(sizeof(FlagPiecePacket) == 0x40, "scene.fields: size of FlagPiecePacket");
+_Static_assert(offsetof(ItemStatesPacket, number) == 0x0 && sizeof(((ItemStatesPacket *)0)->number) == 0x1, "scene.fields: ItemStatesPacket.number");
+_Static_assert(offsetof(ItemStatesPacket, kind) == 0x1 && sizeof(((ItemStatesPacket *)0)->kind) == 0x1, "scene.fields: ItemStatesPacket.kind");
+_Static_assert(offsetof(ItemStatesPacket, levels) == 0x2 && sizeof(((ItemStatesPacket *)0)->levels) == 0x3e, "scene.fields: ItemStatesPacket.levels");
+_Static_assert(sizeof(ItemStatesPacket) == 0x40, "scene.fields: size of ItemStatesPacket");
+_Static_assert(offsetof(SelectionPacket, ladderId) == 0x0 && sizeof(((SelectionPacket *)0)->ladderId) == 0x1e, "scene.fields: SelectionPacket.ladderId");
+_Static_assert(offsetof(SelectionPacket, mech) == 0x1e && sizeof(((SelectionPacket *)0)->mech) == 0xb, "scene.fields: SelectionPacket.mech");
+_Static_assert(offsetof(SelectionPacket, colours) == 0x29 && sizeof(((SelectionPacket *)0)->colours) == 0x90, "scene.fields: SelectionPacket.colours");
+_Static_assert(sizeof(SelectionPacket) == 0xb9, "scene.fields: size of SelectionPacket");
 _Static_assert(offsetof(PlayerRecordPacket, name) == 0x0 && sizeof(((PlayerRecordPacket *)0)->name) == 0x1e, "scene.fields: PlayerRecordPacket.name");
 _Static_assert(offsetof(PlayerRecordPacket, games) == 0x1e && sizeof(((PlayerRecordPacket *)0)->games) == 0x4, "scene.fields: PlayerRecordPacket.games");
 _Static_assert(offsetof(PlayerRecordPacket, kills) == 0x22 && sizeof(((PlayerRecordPacket *)0)->kills) == 0x4, "scene.fields: PlayerRecordPacket.kills");

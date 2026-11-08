@@ -739,6 +739,72 @@ struct GamePacket 0x40                                          # match packet k
 0x32       2          u16 checkIndex2                           # the same for the item table (actorItems, actorItemCount; perRow typeTablePerRow[5]): a mismatch is data loss, code 3
 0x34       4          u32 checkValue2                                 # (see checkIndex2) the item table's entry there; compared by table_ok, a mismatch is data loss code 3
 
+struct ShotPacket 9                                             # a shot slot of PlayerStatePacket (the receiver's Actor.shots[k], a ShotRecord)
+0          1          u8 flags                                   # 1 a round in the slot (0: none), 2 a new one (ShotRecord.isNew), 4 it hit an actor, 8 it has ended (age > life)
+1          2          u16 target                                 # flag 4: the actor hit (hitActor); else the collision plane hit + 1 (space.planes index; 0 none)
+3          6          short pos[3]                               # the round's point x 0.1, truncated: its impact once it ended on a plane, else its position; the receiver's x 10
+
+struct PlayerStatePacket 0x40                                   # match packet kind 0, a player's actor as it moves (net_sendPlayerState; read by net_processGamePacket into the actor's net* fields)
+0          1          u8 number                                  # the packet layer's number
+1          1          u8 kind                                    # 0
+2          2          u16 stateFlags                             # Actor.stateFlags (low 16 bits); the receiver takes the actor out when bit 0x4000 differs from its own
+4          1          u8 slotByte                                # bit 0: in play (Actor.state 1); bits 1 .. 3 the weapon slot (Actor.slot; 6 and 7 mean chat icon 1 / 2); bits 4 .. 7 the player
+5          6          short pos[3]                               # Actor.nextPos x 0.1, truncated; the receiver's netPos is it x 10
+0xb        1          u8 pitch                                   # Actor.nextPitch as a byte angle (wrapped, x 0.0711111: 3600 / 256 steps); netPitch on the receiver (over 1800: less 3600)
+0xc        1          u8 yaw                                     # Actor.nextYaw the same way; netYaw on the receiver
+0xd        1          signed char forward                        # Actor.nextForward x 10; netMotion[0] = it / 10 on the receiver
+0xe        1          signed char strafe                         # Actor.nextStrafe x 10; netMotion[1] = it / 10
+0xf        1          u8 climbRun                                # Actor.nextClimb x 15 in the high nibble, nextRun x 15 in the low; netMotion[2], netMotion[4] = each / 15
+0x10       1          u8 lean                                    # Actor.nextLean as a byte angle (x 0.0711111); netMotion[3] = it x 14.11765 (over 1800: less 3600)
+0x11       1          u8 hit                                     # 0, or a hit taken (Actor.hitPending, cleared on sending): 0x80, 0xc0 when it killed (armor 0), the attacker (lastAttacker) in the low nibble
+0x12       1          u8 hitWeapon                               # with hit: Actor.lastHitWeapon
+0x13       0x2d       ShotPacket shots[5]                        # the actor's five shot slots (Actor.shotBullets / shots)
+
+struct PlayerInfoPacket 0x40                                    # match packet kind 2, a player's mech and looks (net_sendPlayerInfo from its PlayerRecord; read by net_processGamePacket); the first byte is left as it was
+0          1          u8 number                                  # the packet layer's number
+1          1          u8 kind                                    # 2
+2          0x11       char name[0x11]                            # PlayerRecord.name (the receiver drops a packet whose name is 0x11 or longer)
+0x13       1          signed char character                      # PlayerRecord.character (the receiver drops it outside 0 .. 8)
+0x14       1          signed char team                           # PlayerRecord.team
+0x15       1          signed char grade                          # the actor's grade (Actor.grade; also its levelShown on the receiver)
+0x16       1          u8 player                                  # the player (the receiver drops it at 16 or over)
+0x17       5          u8 parts[5]                                # PlayerRecord.parts + 1: head, chest, arm, leg, booster type (each at most the receiver's count of that table)
+0x1c       6          u8 items[6]                                # PlayerRecord.items + 1 (each at most the receiver's actorItemCount)
+0x22       0xa        signed char partHue[5][2]                  # PlayerRecord.partHue, partSaturation, partValue as they are (30 bytes, one copy); the receiver applies them per part (playerRecord_applyNetColours)
+0x2c       0xa        signed char partSaturation[5][2]           # (see partHue)
+0x36       0xa        signed char partValue[5][2]                # (see partHue)
+
+struct MatchEventPacket 0x40                                    # match packet kinds 3 .. 9 and 13, an event of the match (net_sendMatchEvent; read by net_processGamePacket)
+0          1          u8 number                                  # the packet layer's number
+1          1          u8 kind                                    # 3 the server ends the game, 4 / 5 the frag / time limit reached, 6 a cheat code used, 7 a chat line, 8 a player connecting, 9 one leaving, 13 a restart (10 / 11: TeamPacket)
+2          1          u8 player                                  # the player concerned (cheatPlayer, chatPlayer, connectPlayer, quitPlayer); 'k' (0x6b) for 3, 4, 5 and 13, which carry nothing
+3          0x39       union { char line[0x39]; signed char cheatCode; }   # kinds 7 / 8: the chat line (chatLine) / the name connecting (connectName); 6: the cheat code (cheatCode)
+0x3c       1          signed char chatTeam                       # kind 7: the chat's team (chatTeam; the receiver's msg_chatLine takes it)
+
+struct TeamPacket 0x40                                          # match packet kinds 10 / 11, a player joining a team / changing team (net_sendMatchEvent; read by net_processGamePacket: team_change)
+0          1          u8 number                                  # the packet layer's number
+1          1          u8 kind                                    # 10 joined (joinPending), 11 changed (changePending: the sender's own player)
+2          1          u8 player                                  # joinPlayer / the sender's localPlayer (the receiver drops it at 16 or over)
+3          1          signed char team                           # joinTeam / changeTeam (negative: out of the teams)
+4          0x3c       char name[0x3c]                            # joinName / changeName
+
+struct FlagPiecePacket 0x40                                     # match packet kind 12, 16 pixels of a player's flag (net_sendFlagPiece, from PlayerRecord.flag; read by net_processGamePacket)
+0          1          u8 number                                  # the packet layer's number
+1          1          u8 kind                                    # 12
+2          1          u8 player                                  # whose flag
+3          2          short at                                   # the first pixel's index (PlayerRecord.flagSent; the receiver drops it over 0x170), or -1 (0xffff): no pixels, the flag sent in full
+5          0x30       u8 rgb[16][3]                              # the 16 pixels' red, green, blue (the receiver's alpha: 0xff unless all three are 0)
+
+struct ItemStatesPacket 0x40                                    # match packet kind 14, the map items' states (net_sendItemStates; read by net_processGamePacket once: itemLevelsTaken)
+0          1          u8 number                                  # the packet layer's number
+1          1          u8 kind                                    # 14
+2          0x3e       u8 levels[0x3e]                            # a nibble per map item, up to 124 (two to a byte, the even item low): 0 there, else taken with MapItem.timer / 10 + 1 (at most 15) to go
+
+struct SelectionPacket 0xb9                                     # lobby packet 27 (0x1b), the Ladder player's mech and colours for the game server (g_netSelectionPacket, allocated by net_resetConnection; armc_sendSelectionToNet)
+0          0x1e       char ladderId[0x1e]                        # the Ladder ID (g_ladderId)
+0x1e       0xb        u8 mech[11]                                # the mech as g_roomMech has it: the five parts (head, chest, arm, leg, booster), the items of slots 4 / 5, then weapon slots 0 .. 3
+0x29       0x90       float colours[0x24]                        # the colour choices (g_roomColours)
+
 struct PlayerRecordPacket 0x36                                  # the player's Ladder record sent to the game server (g_netPlayerRecordPacket, packet 0x11: lobby_states.c record_send)
 0          0x1e       char name[0x1e]                            # the Ladder name (written only when asked)
 0x1e       4          i32 games                                 # Ladder rounds played (g_ladderGames: one more at a Ladder match's first round, each next round and each restart)

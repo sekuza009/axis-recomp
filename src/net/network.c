@@ -5,6 +5,9 @@
 #include "../game.h"
 #include <string.h>
 
+/* Winsock's hostent (gethostbyname's answer): the host's addresses are addrList[0 ..], each 4 bytes */
+typedef struct { char *name; char **aliases; short addrType, addrLength; u32 **addrList; } HostEnt;
+
 /* 0x454110: the first free session record, -1 when all 200 are used */
 int (net_findFreeSession)(void)
 {
@@ -404,10 +407,10 @@ int (net_resolveHost)(const char *host)
 	int sock = ws_socket(2, 3, 1);        /* ws_socket(AF_INET, SOCK_RAW, IPPROTO_ICMP) */
 	if (sock == -1)
 		return 0;
-	u8 *entry = ws_gethostbyname(host);           /* gethostbyname */
+	const HostEnt *entry = (const HostEnt *)ws_gethostbyname(host);
 	if (!entry)
 		return 0;
-	u32 address = ***(u32 ***)(entry + 0xc);                                 /* h_addr_list[0] */
+	u32 address = *entry->addrList[0];
 	strcpy(g_resolvedAddress, ws_inet_ntoa(address));   /* inet_ntoa */
 	if (!strlen(g_resolvedAddress))
 		return 0;
@@ -559,9 +562,9 @@ int (net_getLocalAddress)(void)
 	memset((void *)OBJ(g_localAddress), 0, 16);
 	if (ws_gethostname(name, 0xc8) == -1)   /* gethostname */
 		return -1;
-	u8 *entry = ws_gethostbyname(name);     /* gethostbyname */
+	const HostEnt *entry = (const HostEnt *)ws_gethostbyname(name);
 	if (entry)
-		strcpy(g_localAddress, ws_inet_ntoa(***(u32 ***)(entry + 0xc)));   /* inet_ntoa */
+		strcpy(g_localAddress, ws_inet_ntoa(*entry->addrList[0]));
 	return 0;
 }
 
@@ -963,7 +966,7 @@ u32 (net_handleMessage)(const u8 *message, u32 size, u32 from)
 
 /* 0x453a90: a fresh DirectPlay connection of kind 0 .. 3: the old object closed (dplay_closeSession). The kind picks
    the service provider (g_providerGuid: g_tcpProviderGuid, g_ipxProviderGuid, g_modemProviderGuid, g_serialProviderGuid) and its stored connection (g_storedConnection from
-   OBJ(g_dpConnections) + 4 * kind); for TCP/IP (0) a compound address is made instead by the lobby from the provider and the
+   g_dpConnections[kind]); for TCP/IP (0) a compound address is made instead by the lobby from the provider and the
    host `address` (or g_noAddress), size query then fill, into a new block g_hostAddressBlock. Then (when there is a connection) a
    new DirectPlay object (dplay_createObject) initialised with it and its caps kept (timeout, buffer and queue sizes into
    0xa0bb00 .. 0xa0bb08). 0 when that fails, else 1 */
@@ -1167,12 +1170,12 @@ static int connect_socket(int *sock, int status)
 	where.address = ws_inet_addr(host);      /* inet_addr */
 	where.port = ws_htons(g_serverPort); /* htons */
 	if (where.address == 0xffffffff) {
-		u8 *entry = ws_gethostbyname(host);       /* gethostbyname */
+		const HostEnt *entry = (const HostEnt *)ws_gethostbyname(host);
 		if (!entry) {
 			WSASetLastError(0x2726);                     /* WSASetLastError(WSAEINVAL) */
 			return 0;
 		}
-		where.address = ***(u32 ***)(entry + 0xc);                          /* h_addr_list[0] */
+		where.address = *entry->addrList[0];
 	}
 	int r = ws_connect(*sock, &where, 16);   /* connect */
 	if (r == 10061 || r == -1) {
@@ -1462,17 +1465,18 @@ static void send_packet(u8 *s, u8 *packet)
    even item). Sent by send_packet. Its caller ignores the eax it leaves */
 static void THISCALL __attribute__((used)) net_sendItemStates_body(u8 *s, u8 *packet)
 {
-	packet[1] = 0xe;
+	ItemStatesPacket *pk = (ItemStatesPacket *)packet;
+	pk->kind = 0xe;
 	for (int i = 0; i < SCENE_STAGE(s)->itemCount && i < 0x7c; i++) {
 		const MapItem *it = &SCENE_STAGE(s)->items[i];
 		if (i % 2 == 0)
-			packet[2 + i / 2] = 0;
+			pk->levels[i / 2] = 0;
 		if (it->type < 0 || it->taken != 1)
 			continue;
 		int level = ftol(it->timer) / 10 + 1;
 		if (level > 15)
 			level = 15;
-		packet[2 + i / 2] |= (u8)(i % 2 ? level << 4 : level);
+		pk->levels[i / 2] |= (u8)(i % 2 ? level << 4 : level);
 	}
 	send_packet(s, packet);
 }
@@ -1489,17 +1493,19 @@ static void THISCALL __attribute__((used)) net_sendPlayerInfo_body(u8 *s, int p,
 	if (!*flag)
 		return;
 	PlayerRecord *r = &sc->playerRecords[p];
-	packet[1] = 2;
-	strcpy((char *)packet + 2, r->name);
-	packet[0x14] = (u8)r->team;
-	packet[0x13] = (u8)r->character;
-	packet[0x16] = (u8)p;
-	packet[0x15] = (u8)(sc)->players[p].grade;
+	PlayerInfoPacket *pk = (PlayerInfoPacket *)packet;
+	pk->kind = 2;
+	strcpy(pk->name, r->name);
+	pk->team = (signed char)r->team;
+	pk->character = (signed char)r->character;
+	pk->player = (u8)p;
+	pk->grade = (signed char)sc->players[p].grade;
 	for (int k = 0; k < 5; k++)
-		packet[0x17 + k] = (u8)(r->parts[k] + 1);
+		pk->parts[k] = (u8)(r->parts[k] + 1);
 	for (int k = 0; k < 6; k++)
-		packet[0x1c + k] = (u8)(r->items[k] + 1);
-	memcpy(packet + 0x22, (u8 *)r + offsetof(PlayerRecord, partHue), 30);   /* partHue, partSaturation, partValue */
+		pk->items[k] = (u8)(r->items[k] + 1);
+	/* partHue, partSaturation, partValue: the three arrays in one copy, packet and record alike */
+	memcpy(packet + offsetof(PlayerInfoPacket, partHue), (u8 *)r + offsetof(PlayerRecord, partHue), 30);
 	*flag = 0;
 	send_packet(s, packet);
 }
@@ -1512,8 +1518,8 @@ PACKET_ENTRY(net_sendPlayerInfo, 1);
 u32 STDCALL (dplay_enumConnections)(const u32 *guid, const void *connection, u32 size, const u32 *name, u32 flags, void *context)
 {
 	static const struct { u32 words[2], guid, data; } kinds[4] = {
-		{ { STR(0x4b3e64, "TCP") }, OBJ(g_tcpProviderGuid), OBJ(g_dpConnections) }, { { STR(0x4b3e60, "IPX") }, OBJ(g_ipxProviderGuid), OBJ(g_dpConnections) + 4 },
-		{ { STR(0x4b3e58, "MODEM"), STR(0x4b3e50, "\270\360\265\251") }, OBJ(g_modemProviderGuid), OBJ(g_dpConnections) + 8 }, { { STR(0x4b3e48, "SERIAL"), STR(0x4b3e40, "\301\367\267\304") }, OBJ(g_serialProviderGuid), OBJ(g_dpConnections) + 12 } };
+		{ { STR(0x4b3e64, "TCP") }, OBJ(g_tcpProviderGuid), (u32)&g_dpConnections[0] }, { { STR(0x4b3e60, "IPX") }, OBJ(g_ipxProviderGuid), (u32)&g_dpConnections[1] },
+		{ { STR(0x4b3e58, "MODEM"), STR(0x4b3e50, "\270\360\265\251") }, OBJ(g_modemProviderGuid), (u32)&g_dpConnections[2] }, { { STR(0x4b3e48, "SERIAL"), STR(0x4b3e40, "\301\367\267\304") }, OBJ(g_serialProviderGuid), (u32)&g_dpConnections[3] } };
 	char names[10][0x80];
 	char *own = names[g_serviceProviderCount];
 	strcpy(own, (const char *)RELOC(name[2]));   /* lpszShortNameA */
@@ -1552,41 +1558,43 @@ static void THISCALL __attribute__((used)) net_sendMatchEvent_body(u8 *s, u8 *pa
 #define FLAG(offset) GAME_VAR(int, s + (offset))
 #define TAKE(f) ((f) == 1 && ((f) = 0, 1))   /* a pending event taken */
 	static const u32 flags[10] = { offsetof(Scene, chatPending), offsetof(Scene, connectPending), offsetof(Scene, quitPending), offsetof(Scene, joinPending), offsetof(Scene, changePending), offsetof(Scene, endEvents[0]), offsetof(Scene, endEvents[1]), offsetof(Scene, endEvents[2]), offsetof(Scene, cheatPending), offsetof(Scene, restartPending) };
+	MatchEventPacket *ev = (MatchEventPacket *)packet;
+	TeamPacket *tp = (TeamPacket *)packet;
 	if (TAKE(SC->endEvents[0]))
-		packet[1] = 3, packet[2] = 0x6b;
+		ev->kind = 3, ev->player = 'k';
 	else if (TAKE(SC->endEvents[1]))
-		packet[1] = 4, packet[2] = 0x6b;
+		ev->kind = 4, ev->player = 'k';
 	else if (TAKE(SC->endEvents[2]))
-		packet[1] = 5, packet[2] = 0x6b;
+		ev->kind = 5, ev->player = 'k';
 	else if (TAKE(SC->cheatPending))
-		packet[1] = 6, packet[2] = (u8)SC->cheatPlayer, packet[3] = (u8)SC->cheatCode;
+		ev->kind = 6, ev->player = (u8)SC->cheatPlayer, ev->cheatCode = (signed char)SC->cheatCode;
 	else if (SC->chatPending == 1) {
-		packet[1] = 7;
-		packet[2] = (u8)SC->chatPlayer;
-		strcpy((char *)packet + 3, (const char *)SC->chatLine);
+		ev->kind = 7;
+		ev->player = (u8)SC->chatPlayer;
+		strcpy(ev->line, (const char *)SC->chatLine);
 		SC->chatPending = 0;
-		packet[0x3c] = (u8)SC->chatTeam;
+		ev->chatTeam = (signed char)SC->chatTeam;
 	} else if (SC->connectPending == 1) {
-		packet[1] = 8;
-		packet[2] = (u8)SC->connectPlayer;
-		strcpy((char *)packet + 3, (const char *)SC->connectName);
+		ev->kind = 8;
+		ev->player = (u8)SC->connectPlayer;
+		strcpy(ev->line, (const char *)SC->connectName);
 		SC->connectPending = 0;
 	} else if (TAKE(SC->quitPending))
-		packet[1] = 9, packet[2] = (u8)SC->quitPlayer;
+		ev->kind = 9, ev->player = (u8)SC->quitPlayer;
 	else if (SC->joinPending == 1) {
-		packet[1] = 10;
-		packet[2] = (u8)SC->joinPlayer;
-		packet[3] = (u8)SC->joinTeam;
-		strcpy((char *)packet + 4, (const char *)SC->joinName);
+		tp->kind = 10;
+		tp->player = (u8)SC->joinPlayer;
+		tp->team = (signed char)SC->joinTeam;
+		strcpy(tp->name, (const char *)SC->joinName);
 		SC->joinPending = 0;
 	} else if (SC->changePending == 1) {
-		packet[1] = 11;
-		packet[2] = (u8)SC->localPlayer;
-		packet[3] = (u8)SC->changeTeam;
-		strcpy((char *)packet + 4, (const char *)SC->changeName);
+		tp->kind = 11;
+		tp->player = (u8)SC->localPlayer;
+		tp->team = (signed char)SC->changeTeam;
+		strcpy(tp->name, (const char *)SC->changeName);
 		SC->changePending = 0;
 	} else if (TAKE(SC->restartPending))
-		packet[1] = 13, packet[2] = 0x6b;
+		ev->kind = 13, ev->player = 'k';
 	int pending = 0;
 	for (int k = 0; k < 10; k++)
 		pending |= FLAG(flags[k]) != 0;
@@ -1606,16 +1614,17 @@ PACKET_ENTRY(net_sendMatchEvent, 0);
 static void THISCALL __attribute__((used)) net_sendFlagPiece_body(u8 *s, int p, u8 *packet)
 {
 	PlayerRecord *pr = &((Scene *)s)->playerRecords[p];
-	packet[1] = 0xc;
-	packet[2] = (u8)p;
+	FlagPiecePacket *pk = (FlagPiecePacket *)packet;
+	pk->kind = 0xc;
+	pk->player = (u8)p;
 	if (pr->flagShown == 1 || pr->flagChanged == 1) {
 		int at = pr->flagSent;
-		memcpy(packet + 3, &at, 2);
+		memcpy(&pk->at, &at, 2);
 		for (int k = 0; k < 16; k++)
-			memcpy(packet + 5 + k * 3, (u8 *)pr->flag + (at + k) * 4, 3);
+			memcpy(pk->rgb[k], (u8 *)pr->flag + (at + k) * 4, 3);
 		pr->flagSent = at + 16;
 	} else {
-		packet[3] = packet[4] = 0xff;
+		pk->at = -1;
 		pr->flagSent = 0x180;
 	}
 	send_packet(s, packet);
@@ -1646,38 +1655,39 @@ static void THISCALL __attribute__((used)) net_sendPlayerState_body(u8 *g, int p
 {
 	u8 *a = (u8 *)&((Scene *)g)->players[p];
 	Actor *pl = (Actor *)a;
+	PlayerStatePacket *pk = (PlayerStatePacket *)packet;
 	u16 w;
-	packet[1] = 0;
-	memcpy(packet + 2, &pl->stateFlags, 2);
+	pk->kind = 0;
+	memcpy(&pk->stateFlags, &pl->stateFlags, 2);
 	switch (pl->chatIcon) {
-	case 0: packet[4] = (u8)((((u8)p << 3) | (u8)pl->slot) << 1); break;
-	case 1: packet[4] = (u8)(p << 4 | 0xc); break;
-	case 2: packet[4] = (u8)(p << 4 | 0xe); break;
+	case 0: pk->slotByte = (u8)((((u8)p << 3) | (u8)pl->slot) << 1); break;
+	case 1: pk->slotByte = (u8)(p << 4 | 0xc); break;
+	case 2: pk->slotByte = (u8)(p << 4 | 0xe); break;
 	}
 	if (pl->state == 1)
-		packet[4] |= 1;
+		pk->slotByte |= 1;
 	for (int c = 0; c < 3; c++) {
 		w = (u16)scaled(&pl->nextPos[c], ADDR(k_0_1f));
-		memcpy(packet + 5 + c * 2, &w, 2);
+		memcpy(&pk->pos[c], &w, 2);
 	}
-	packet[0xb] = (u8)angle_byte(&pl->nextPitch);
-	packet[0xc] = (u8)angle_byte(&pl->nextYaw);
-	packet[0xd] = (u8)scaled(&pl->nextForward, ADDR(k_10f));
-	packet[0xe] = (u8)scaled(&pl->nextStrafe, ADDR(k_10f));
-	packet[0xf] = (u8)(scaled(&pl->nextClimb, ADDR(k_15f)) << 4) | (u8)scaled(&pl->nextRun, ADDR(k_15f));
-	packet[0x10] = (u8)angle_byte(&pl->nextLean);
-	packet[0x11] = 0;
+	pk->pitch = (u8)angle_byte(&pl->nextPitch);
+	pk->yaw = (u8)angle_byte(&pl->nextYaw);
+	pk->forward = (signed char)scaled(&pl->nextForward, ADDR(k_10f));
+	pk->strafe = (signed char)scaled(&pl->nextStrafe, ADDR(k_10f));
+	pk->climbRun = (u8)(scaled(&pl->nextClimb, ADDR(k_15f)) << 4) | (u8)scaled(&pl->nextRun, ADDR(k_15f));
+	pk->lean = (u8)angle_byte(&pl->nextLean);
+	pk->hit = 0;
 	if (pl->hitPending == 1) {
 		u8 state = pl->armor > 0 ? 0x80 : 0xc0;
 		pl->hitPending = 0;
-		packet[0x11] = state | (u8)pl->lastAttacker;
-		packet[0x12] = (u8)pl->lastHitWeapon;
+		pk->hit = state | (u8)pl->lastAttacker;
+		pk->hitWeapon = (u8)pl->lastHitWeapon;
 	}
 	for (int k = 0; k < 5; k++)
-		packet[0x13 + k * 9] = 0;
+		pk->shots[k].flags = 0;
 	for (int k = 0; k < 5; k++) {
 		int *slot = &pl->shotBullets[k], *fresh = &pl->shots[k].isNew;
-		u8 *o = packet + 0x13 + k * 9;
+		ShotPacket *o = &pk->shots[k];
 		if (*slot < 0)
 			continue;
 		Bullet *shot = (Bullet *)((u8 *)&SCENE_STAGE(g)->bullets[*slot]);
@@ -1686,25 +1696,25 @@ static void THISCALL __attribute__((used)) net_sendPlayerState_body(u8 *g, int p
 			continue;
 		}
 		if (*fresh == 1) {
-			o[0] |= 3;
+			o->flags |= 3;
 			*fresh = 0;
 		} else
-			o[0] |= 1;
+			o->flags |= 1;
 		if (shot->hitActor >= 0) {
-			o[0] |= 4;
+			o->flags |= 4;
 			w = (u16)shot->hitActor;
 		} else if ((*(void * *)&shot->hit))
 			w = (u16)(array_indexOf((*(void * *)&shot->hit), (int)SCENE_STAGE(g)->space.planes.records, 0xac) + 1);
 		else
 			w = 0;
-		memcpy(o + 1, &w, 2);
+		memcpy(&o->target, &w, 2);
 		int ended = shot->age > shot->life;
 		if (ended)
-			o[0] |= 8;
+			o->flags |= 8;
 		u8 *at = (u8 *)(ended && (*(void * *)&shot->hit) ? shot->impact : shot->pos);
 		for (int c = 0; c < 3; c++) {
 			w = (u16)scaled(at + c * 4, ADDR(k_0_1f));
-			memcpy(o + 3 + c * 2, &w, 2);
+			memcpy(&o->pos[c], &w, 2);
 		}
 	}
 	send_packet(g, packet);
@@ -1742,37 +1752,43 @@ static u32 sample(u8 *s, u32 per_row, u32 rows, int row_len, u32 base, u8 *at)
 static void THISCALL __attribute__((used)) net_sendGamePacket_body(u8 *s, int p, u8 *packet)
 {
 	Scene *sc = (Scene *)s;
+	/* each part kind's type table, as scene offsets: its typeTablePerRow (dwords sampled a record), its count, its
+	   record in dwords, the table */
 	static const struct { u32 per_row, rows; int row_len; u32 base; } tables[5] = {
-		{ 0x23423e5, 0x15de6c8, 682, 0x15bd1f8 }, { 0x23423e9, 0x15fff84, 687, 0x15de6cc },
-		{ 0x23423ed, 0x163b588, 0x4c0, 0x15fff88 }, { 0x23423f1, 0x1679b34, 1277, 0x163b58c },
-		{ 0x23423f5, 0x16c5178, 1544, 0x1679b38 } };
+		{ offsetof(Scene, typeTablePerRow[0]), offsetof(Scene, headCount), sizeof(HeadType) / 4, SCENE_STAGE_AT + offsetof(Stage, headTypes) },
+		{ offsetof(Scene, typeTablePerRow[1]), offsetof(Scene, chestCount), sizeof(ChestType) / 4, SCENE_STAGE_AT + offsetof(Stage, chestTypes) },
+		{ offsetof(Scene, typeTablePerRow[2]), offsetof(Scene, armCount), sizeof(ArmType) / 4, SCENE_STAGE_AT + offsetof(Stage, armTypes) },
+		{ offsetof(Scene, typeTablePerRow[3]), offsetof(Scene, legCount), sizeof(LegType) / 4, SCENE_STAGE_AT + offsetof(Stage, legTypes) },
+		{ offsetof(Scene, typeTablePerRow[4]), offsetof(Scene, boosterCount), sizeof(BoosterType) / 4, SCENE_STAGE_AT + offsetof(Stage, boosterTypes) } };
+	GamePacket *pk = (GamePacket *)packet;
 	int *flag = &sc->sendFlags[p][0];
 	if (!*flag)
 		return;
-	packet[1] = 1;
-	packet[2] = (u8)p;
+	pk->kind = 1;
+	pk->player = (u8)p;
 	if (sc->rotationCount > 0 && !(sc->endTime > k_0f)) {
-		int k = sc->rotationAt * 16;
-		packet[3] = s[0x1f1668 + k];
-		packet[4] = s[0x1f1cb4];
-		packet[5] = s[0x1f166c + k];
-		packet[6] = s[0x1f1cb8];
-		memcpy(packet + 7, &sc->mapNumber, 2);
+		const Round *now = &sc->rotation[sc->rotationAt];
+		pk->map = (signed char)now->map;
+		pk->nextMap = (signed char)sc->nextMap;
+		pk->mode = (signed char)now->mode;
+		pk->nextMode = (signed char)sc->nextMode;
+		memcpy(&pk->mapNumber, &sc->mapNumber, 2);
 	} else
-		memset(packet + 3, 0xff, 6);
-	memcpy(packet + 9, &sc->elapsed, 4);
+		memset(&pk->map, 0xff, 6);   /* map .. mapNumber: none */
+	memcpy(&pk->elapsed, &sc->elapsed, 4);
 	float clock = f32(fld_m(&sc->clockFraction));
-	memcpy(packet + 0xd, &clock, 4);
+	memcpy(&pk->clockFraction, &clock, 4);
 	u32 turn = ((u32)(sc)->typeCheckTurn);
-	packet[0x2b] = (u8)(turn % 5);
+	pk->checkTable = (u8)(turn % 5);
 	sc->typeCheckTurn = turn + 1;
-	u32 v = sample(s, tables[packet[0x2b]].per_row, tables[packet[0x2b]].rows, tables[packet[0x2b]].row_len, tables[packet[0x2b]].base,
-	               packet + 0x2c);
-	memcpy(packet + 0x2e, &v, 4);
-	v = sample(s, 0x23423f9, 0x175522c, 2950, 0x16c517c, packet + 0x32);
-	memcpy(packet + 0x34, &v, 4);
-	memcpy(packet + 0x11, &sc->players[p].timePlayed, 4);
-	memcpy(packet + 0x15, &sc->players[p].timeFraction, 4);
+	u32 v = sample(s, tables[pk->checkTable].per_row, tables[pk->checkTable].rows, tables[pk->checkTable].row_len, tables[pk->checkTable].base,
+	               (u8 *)&pk->checkIndex);
+	memcpy(&pk->checkValue, &v, 4);
+	v = sample(s, offsetof(Scene, typeTablePerRow[5]), offsetof(Scene, actorItemCount), sizeof(ActorItem) / 4, offsetof(Scene, actorItems),
+	           (u8 *)&pk->checkIndex2);
+	memcpy(&pk->checkValue2, &v, 4);
+	memcpy(&pk->timePlayed, &sc->players[p].timePlayed, 4);
+	memcpy(&pk->timeFraction, &sc->players[p].timeFraction, 4);
 	u32 resendAsked[2] = { 0, 0 };
 	for (int i = 0; i < 16; i++) {
 		if (net_playerInUse(i) != 1)
@@ -1785,12 +1801,12 @@ static void THISCALL __attribute__((used)) net_sendGamePacket_body(u8 *s, int p,
 			}
 		}
 	}
-	memcpy(packet + 0x19, resendAsked, 8);
-	memcpy(packet + 0x21, &sc->players[p].kills, 2);
-	memcpy(packet + 0x23, &sc->players[p].deaths, 2);
-	memcpy(packet + 0x25, &sc->teamScores[0], 2);
-	memcpy(packet + 0x27, &sc->teamScores[1], 2);
-	memcpy(packet + 0x29, &SCENE_STAGE(s)->lastPickup, 2);
+	memcpy(pk->resendAsked, resendAsked, 8);
+	memcpy(&pk->kills, &sc->players[p].kills, 2);
+	memcpy(&pk->deaths, &sc->players[p].deaths, 2);
+	memcpy(&pk->teamScores[0], &sc->teamScores[0], 2);
+	memcpy(&pk->teamScores[1], &sc->teamScores[1], 2);
+	memcpy(&pk->lastPickup, &SCENE_STAGE(s)->lastPickup, 2);
 	SCENE_STAGE(s)->lastPickup = -1;
 	*flag = 0;
 	send_packet(s, packet);
@@ -1843,21 +1859,21 @@ static void actor_name(u8 *g, int i, const char *name)
 
 /* team change (kinds 10 / 11): the team, team colours when team colours are on, the name, the notice; a player
    leaving the teams (negative) who is alive is taken out and gets a death */
-static void team_change(u8 *g, int i, const char *pkt, u32 notice)
+static void team_change(u8 *g, int i, const TeamPacket *tp, u32 notice)
 {
-	player_setTeam(STAGE, i, pkt[3]);   /* player_setTeam */
+	player_setTeam(STAGE, i, tp->team);   /* player_setTeam */
 	if (GS->teamGame == 1) {
-		int t = scene_claimTeamSlot(g, pkt[3]);
+		int t = scene_claimTeamSlot(g, tp->team);
 		for (int k = 0; k < 5; k++)
 			CALL_THISFN(playerRecord_setPartColour, void, void *, int, int, u32, u32, u32, u32, u32, u32)(STAGE, i, k, GAME_VAR(u32, OBJ(k_teamHue) + t * 4),
 			                                                                             GAME_VAR(u32, OBJ(k_teamSaturation) + t * 4),
 			                                                                             GAME_VAR(u32, OBJ(k_teamValue) + t * 4), 0,
 			                                                                             0xbf800000, 0x3f7fbe77);   /* playerRecord_setPartColour */
 	}
-	player_setName(STAGE, i, pkt + 4);   /* player_setName */
-	actor_name(g, i, pkt + 4);
-	GAME_THISCALL(notice, void, void *, int, int)(g, i, pkt[3]);
-	if (pkt[3] >= 0 || ((Actor *)ACTOR(i))->inPlay != 1)
+	player_setName(STAGE, i, tp->name);   /* player_setName */
+	actor_name(g, i, tp->name);
+	GAME_THISCALL(notice, void, void *, int, int)(g, i, tp->team);
+	if (tp->team >= 0 || ((Actor *)ACTOR(i))->inPlay != 1)
 		return;
 	actor_deactivate(STAGE, i);   /* actor_deactivate */
 	((Actor *)ACTOR(i))->deaths++;
@@ -1899,27 +1915,29 @@ void THISCALL (net_processGamePacket)(u8 *g, u32 from, int size, const char *pkt
 		file_writeScrambled(&size, 4, 1, f);
 		file_writeScrambled(pkt, 1, size, f);
 	}
-	if (GS->matchState == 1 && pkt[1] != 1)
+	const MatchEventPacket *ev = (const MatchEventPacket *)pkt;   /* (the kinds' own records: src/scene.fields) */
+	const TeamPacket *tp = (const TeamPacket *)pkt;
+	if (GS->matchState == 1 && ev->kind != 1)
 		return;
-	const u8 *b = (const u8 *)pkt;
-	switch (b[1]) {
+	switch (ev->kind) {
 	case 0: {
-		int itemSlot = (b[4] >> 1) & 7, i = b[4] >> 4;
-		float x = tens(*(const short *)(pkt + 5)), y = tens(*(const short *)(pkt + 7)), z = tens(*(const short *)(pkt + 9));
-		long double h = fmul_m((long double)b[0xb], &k_14_0625f);
-		float pitch = f32(h);   /* b[0xb]: the pitch, b[0xc]: the heading (nextPitch, nextYaw) */
+		const PlayerStatePacket *ps = (const PlayerStatePacket *)pkt;
+		int itemSlot = (ps->slotByte >> 1) & 7, i = ps->slotByte >> 4;
+		float x = tens(ps->pos[0]), y = tens(ps->pos[1]), z = tens(ps->pos[2]);
+		long double h = fmul_m((long double)ps->pitch, &k_14_0625f);
+		float pitch = f32(h);
 		if (h > *&k_1800f)
 			pitch = f32(FSUB(pitch, k_3600f));
-		float yaw = f32(fmul_m((long double)b[0xc], &k_14_0625f));
+		float yaw = f32(fmul_m((long double)ps->yaw, &k_14_0625f));
 		if (GAME_VAR(int, PLAYER(i)) == 0) {
 			GS->sendFlags[GS->localPlayer][0] = 1;
 			GS->sendFlags[i][2] = 1;
 			return;
 		}
 		Actor *ac = (Actor *)(ACTOR(i));
-		if ((*(const u16 *)&ac->stateFlags ^ *(const u16 *)(pkt + 2)) & 0x4000)
+		if ((*(const u16 *)&ac->stateFlags ^ ps->stateFlags) & 0x4000)
 			actor_deactivate(STAGE, i);   /* actor_deactivate */
-		if (ac->active == 0 && (b[4] & 1)) {
+		if (ac->active == 0 && (ps->slotByte & 1)) {
 			u32 rec[7] = { (u32)i, 0 };
 			memcpy(&rec[2], &x, 4);
 			memcpy(&rec[3], &y, 4);
@@ -1931,7 +1949,7 @@ void THISCALL (net_processGamePacket)(u8 *g, u32 from, int size, const char *pkt
 		}
 		ac->netFired = 1;
 		ac->dropAge = f32(FADD(ac->spawnAge, k_10f));
-		BITS(ac->stateFlags) = *(const u16 *)(pkt + 2);
+		BITS(ac->stateFlags) = ps->stateFlags;
 		if (itemSlot == 6)
 			ac->chatIcon = 1;
 		else if (itemSlot == 7)
@@ -1945,73 +1963,74 @@ void THISCALL (net_processGamePacket)(u8 *g, u32 from, int size, const char *pkt
 		ac->netPos[2] = z;
 		ac->netPitch = pitch;
 		ac->netYaw = yaw;
-		ac->netMotion[0] = f32(fmul_m((long double)(signed char)b[0xd], &k_tenth));
-		ac->netMotion[1] = f32(fmul_m((long double)(signed char)b[0xe], &k_tenth));
-		ac->netMotion[2] = f32(fmul_m((long double)(b[0xf] >> 4), &k_0_06666667f));
-		ac->netMotion[4] = f32(fmul_m((long double)(b[0xf] & 0xf), &k_0_06666667f));
-		h = fmul_m((long double)b[0x10], &k_14_11765f);
+		ac->netMotion[0] = f32(fmul_m((long double)ps->forward, &k_tenth));
+		ac->netMotion[1] = f32(fmul_m((long double)ps->strafe, &k_tenth));
+		ac->netMotion[2] = f32(fmul_m((long double)(ps->climbRun >> 4), &k_0_06666667f));
+		ac->netMotion[4] = f32(fmul_m((long double)(ps->climbRun & 0xf), &k_0_06666667f));
+		h = fmul_m((long double)ps->lean, &k_14_11765f);
 		ac->netMotion[3] = f32(h);
 		if (h > *&k_1800f)
 			ac->netMotion[3] = f32(fsub_m(h, &k_3600f));
 		int hurt;
-		if (b[0x11] & 0x80) {
-			ac->lastAttacker = b[0x11] & 0xf;
-			ac->lastHitWeapon = b[0x12];
+		if (ps->hit & 0x80) {
+			ac->lastAttacker = ps->hit & 0xf;
+			ac->lastHitWeapon = ps->hitWeapon;
 			hurt = 1;
-			if ((b[0x11] & 0x40) && ac->armor > 0)
+			if ((ps->hit & 0x40) && ac->armor > 0)
 				ac->armor = 0;
 		} else {
-			hurt = !(b[4] & 1) && ac->armor > 0;
+			hurt = !(ps->slotByte & 1) && ac->armor > 0;
 			if (hurt)
 				ac->armor = 0;
 		}
 		if (hurt)
 			ac->hitFlash = 0.5f;
-		const u8 *w = b + 0x13;
-		for (int k = 0; k < 5; k++, w += 9) {
+		const ShotPacket *w = ps->shots;
+		for (int k = 0; k < 5; k++, w++) {
 			u32 *slot = (u32 *)&ac->shots[k];
-			if (!(w[0] & 1) || ac->team < 0) {
+			if (!(w->flags & 1) || ac->team < 0) {
 				slot[0] = 0;
 				continue;
 			}
 			slot[0] = 1;
-			slot[1] = (w[0] >> 1) & 1;
-			u16 v = *(const u16 *)(w + 1);
-			if (w[0] & 4) {
+			slot[1] = (w->flags >> 1) & 1;
+			u16 v = w->target;
+			if (w->flags & 4) {
 				slot[2] = v;
 				slot[3] = (u32)-1;
 			} else {
 				slot[2] = (u32)-1;
 				slot[3] = v - 1;
 			}
-			slot[4] = w[0] & 8 ? 1 : 0;
-			float p[3] = { tens(*(const short *)(w + 3)), tens(*(const short *)(w + 5)), tens(*(const short *)(w + 7)) };
+			slot[4] = w->flags & 8 ? 1 : 0;
+			float p[3] = { tens(w->pos[0]), tens(w->pos[1]), tens(w->pos[2]) };
 			memcpy(&slot[5], p, 12);
 		}
 		return;
 	}
 	case 1: {
-		if (b[2] > 0x10 || pkt[3] < -1 || pkt[4] < -1 || pkt[5] < -1 || pkt[6] < -1)
+		const GamePacket *gp = (const GamePacket *)pkt;
+		if (gp->player > 0x10 || gp->map < -1 || gp->nextMap < -1 || gp->mode < -1 || gp->nextMode < -1)
 			break;
-		if (b[2] == 0) {
-			GS->elapsed = ((const GamePacket *)pkt)->elapsed;
-			BITS(GS->clockFraction) = BITS(((const GamePacket *)pkt)->clockFraction);
-			if (pkt[3] >= 0) {
+		if (gp->player == 0) {
+			GS->elapsed = gp->elapsed;
+			BITS(GS->clockFraction) = BITS(gp->clockFraction);
+			if (gp->map >= 0) {
 				int mapIndex = g_mapIndex;
-				if (mapIndex != pkt[3] && (mapIndex < 0 || GS->awaitingHostRound == 1 || GS->elapsed > 0x1e)) {
-					g_mapIndex = pkt[3];
-					GS->nextMap = pkt[4];
-					GS->nextMode = pkt[6];
+				if (mapIndex != gp->map && (mapIndex < 0 || GS->awaitingHostRound == 1 || GS->elapsed > 0x1e)) {
+					g_mapIndex = gp->map;
+					GS->nextMap = gp->nextMap;
+					GS->nextMode = gp->nextMode;
 					scene_setMapName((Scene *)g, g_mapNames + g_mapIndex * 0x20);
 					GS->matchState = 1;
 					GS->stateFrames = 0;
-					game_setGameTypeFlags((Stage *)STAGE, pkt[5]);
+					game_setGameTypeFlags((Stage *)STAGE, gp->mode);
 					GS->awaitingHostRound = 0;
 					return;
 				}
-				GS->nextMap = pkt[4];
-				GS->nextMode = pkt[6];
-				if (g_mapIndex == pkt[3] && GS->mapNumber != *(const short *)(pkt + 7)) {
+				GS->nextMap = gp->nextMap;
+				GS->nextMode = gp->nextMode;
+				if (g_mapIndex == gp->map && GS->mapNumber != gp->mapNumber) {
 					GS->dataLossPending = 1;
 					GS->dataLossCode = 1;
 				}
@@ -2022,32 +2041,32 @@ void THISCALL (net_processGamePacket)(u8 *g, u32 from, int size, const char *pkt
 				{ SCENE_STAGE_AT + offsetof(Stage, armTypes), offsetof(Scene, typeTablePerRow[2]), offsetof(Scene, armCount), sizeof(ArmType) / 4 },
 				{ SCENE_STAGE_AT + offsetof(Stage, legTypes), offsetof(Scene, typeTablePerRow[3]), offsetof(Scene, legCount), sizeof(LegType) / 4 },
 				{ SCENE_STAGE_AT + offsetof(Stage, boosterTypes), offsetof(Scene, typeTablePerRow[4]), offsetof(Scene, boosterCount), sizeof(BoosterType) / 4 } };
-			u16 w = ((const GamePacket *)pkt)->checkIndex;
-			int part = b[0x2b];
-			if (part <= 4 && !table_ok(g, parts[part][0], parts[part][1], parts[part][2], parts[part][3], w, ((const GamePacket *)pkt)->checkValue)) {
+			u16 w = gp->checkIndex;
+			int part = gp->checkTable;
+			if (part <= 4 && !table_ok(g, parts[part][0], parts[part][1], parts[part][2], parts[part][3], w, gp->checkValue)) {
 				GS->dataLossPending = 1;
 				GS->dataLossCode = 2;
 			}
-			if (!table_ok(g, offsetof(Scene, actorItems), offsetof(Scene, typeTablePerRow[5]), offsetof(Scene, actorItemCount), sizeof(ActorItem) / 4, ((const GamePacket *)pkt)->checkIndex2, ((const GamePacket *)pkt)->checkValue2)) {
+			if (!table_ok(g, offsetof(Scene, actorItems), offsetof(Scene, typeTablePerRow[5]), offsetof(Scene, actorItemCount), sizeof(ActorItem) / 4, gp->checkIndex2, gp->checkValue2)) {
 				GS->dataLossPending = 1;
 				GS->dataLossCode = 3;
 			}
 		}
-		Actor *ac = (Actor *)(ACTOR(b[2]));
-		ac->timePlayed = ((const GamePacket *)pkt)->timePlayed;
-		BITS(ac->timeFraction) = BITS(((const GamePacket *)pkt)->timeFraction);
+		Actor *ac = (Actor *)(ACTOR(gp->player));
+		ac->timePlayed = gp->timePlayed;
+		BITS(ac->timeFraction) = BITS(gp->timeFraction);
 		int me = GS->localPlayer;
-		if (((const GamePacket *)pkt)->resendAsked[0] & 1u << (me & 0x1f))
+		if (gp->resendAsked[0] & 1u << (me & 0x1f))
 			GS->sendFlags[me][1] = 1;
-		if (((const GamePacket *)pkt)->resendAsked[1] & 1u << (me & 0x1f))
+		if (gp->resendAsked[1] & 1u << (me & 0x1f))
 			((PlayerRecord *)PLAYER(me))->flagSent = 0;
-		((Actor *)ACTOR(b[2]))->kills = ((const GamePacket *)pkt)->kills;
-		((Actor *)ACTOR(b[2]))->deaths = ((const GamePacket *)pkt)->deaths;
-		if (b[2] == 0) {
-			GS->teamScores[0] = ((const GamePacket *)pkt)->teamScores[0];
-			GS->teamScores[1] = ((const GamePacket *)pkt)->teamScores[1];
+		((Actor *)ACTOR(gp->player))->kills = gp->kills;
+		((Actor *)ACTOR(gp->player))->deaths = gp->deaths;
+		if (gp->player == 0) {
+			GS->teamScores[0] = gp->teamScores[0];
+			GS->teamScores[1] = gp->teamScores[1];
 		}
-		short item = ((const GamePacket *)pkt)->lastPickup;
+		short item = gp->lastPickup;
 		if ((GS->sessionMode != 3 || GS->replayVersion > 0x1201) && item >= 0 && SCENE_STAGE(g)->items[item].taken == 0) {
 			SCENE_STAGE(g)->items[item].taken = 1;
 			BITS(SCENE_STAGE(g)->items[item].timer) = 0;
@@ -2057,41 +2076,41 @@ void THISCALL (net_processGamePacket)(u8 *g, u32 from, int size, const char *pkt
 		return;
 	}
 	case 2: {
-		const char *name = pkt + 2;
-		const u8 *m = b + 2;   /* the record after the name's 0x11 bytes */
-		int i = m[0x14], lim = GS->actorItemCount;
-		if (strlen(name) >= 0x11 || (signed char)m[0x11] < 0 || (signed char)m[0x11] > 8 || i >= 0x10 || m[0x15] > GS->headCount ||
-		    m[0x16] > GS->chestCount || m[0x17] > GS->armCount || m[0x18] > GS->legCount || m[0x19] > GS->boosterCount)
+		const PlayerInfoPacket *ip = (const PlayerInfoPacket *)pkt;
+		const char *name = ip->name;
+		int i = ip->player, lim = GS->actorItemCount;
+		if (strlen(name) >= 0x11 || ip->character < 0 || ip->character > 8 || i >= 0x10 || ip->parts[0] > GS->headCount ||
+		    ip->parts[1] > GS->chestCount || ip->parts[2] > GS->armCount || ip->parts[3] > GS->legCount || ip->parts[4] > GS->boosterCount)
 			break;
 		int bad = 0;
 		for (int k = 0; k < 6; k++)
-			bad |= m[0x1a + k] > lim;
+			bad |= ip->items[k] > lim;
 		if (bad)
 			break;
 		((Actor *)ACTOR(i))->player = i;
 		player_setName(STAGE, i, name);   /* player_setName */
-		player_setCharacter(STAGE, i, (signed char)m[0x11]);
-		player_setTeam(STAGE, i, (signed char)m[0x12]);   /* player_setTeam */
+		player_setCharacter(STAGE, i, ip->character);
+		player_setTeam(STAGE, i, ip->team);   /* player_setTeam */
 		static const u32 setters[5] = { FN(actor_setActorTypeHeadInfoBy), FN(actor_setActorTypeChestInfoBy), FN(actor_setActorTypeArmInfoBy), FN(actor_setActorTypeLegInfoBy), FN(actor_setActorTypeBoosterInfoBy) };   /* head .. booster */
 		for (int k = 0; k < 5; k++)
-			GAME_THISCALL(setters[k], int, void *, int, int)(STAGE, i, m[0x15 + k] - 1);
+			GAME_THISCALL(setters[k], int, void *, int, int)(STAGE, i, ip->parts[k] - 1);
 		for (int k = 0; k < 6; k++)
-			actor_setActorTypeItemInfoBy(STAGE, i, k, m[0x1a + k] - 1);   /* actor_setActorTypeItemInfoBy */
-		((Actor *)ACTOR(i))->grade = (signed char)m[0x13];
+			actor_setActorTypeItemInfoBy(STAGE, i, k, ip->items[k] - 1);   /* actor_setActorTypeItemInfoBy */
+		((Actor *)ACTOR(i))->grade = ip->grade;
 		char *to = ((Actor *)ACTOR(i))->name;
 		if (name)
 			strcpy(to, name);
 		else
 			to[0] = 0;
 		((Actor *)ACTOR(i))->levelShown = ((Actor *)ACTOR(i))->grade;
-		const u8 *c = m + 0x2b;
 		/* (the original loads each colour byte into al / cl and pushes the whole register: on the first part the
 		   rest of eax is left from the actor's address and of ecx from its grade; later eax holds the player and ecx what
 		   the call left) */
 		u32 hi_a = (u32)(g + i * 0x8888) & ~0xffu, hi_c = *(u32 *)&((Actor *)ACTOR(i))->grade & ~0xffu;
-		for (int k = 0; k < 5; k++, c += 2) {
-			u32 left = thiscall8_ecx(FN(playerRecord_applyNetColours), STAGE, i, k, hi_c | c[-0xb], hi_a | c[-1], hi_c | c[9], hi_a | c[-0xa], hi_c | c[0],
-			                         hi_a | c[0xa]);   /* playerRecord_applyNetColours */
+		for (int k = 0; k < 5; k++) {
+			u32 left = thiscall8_ecx(FN(playerRecord_applyNetColours), STAGE, i, k,
+			                         hi_c | (u8)ip->partHue[k][0], hi_a | (u8)ip->partSaturation[k][0], hi_c | (u8)ip->partValue[k][0],
+			                         hi_a | (u8)ip->partHue[k][1], hi_c | (u8)ip->partSaturation[k][1], hi_a | (u8)ip->partValue[k][1]);   /* playerRecord_applyNetColours */
 			hi_a = 0;
 			hi_c = left & ~0xffu;
 		}
@@ -2100,7 +2119,7 @@ void THISCALL (net_processGamePacket)(u8 *g, u32 from, int size, const char *pkt
 		return;
 	}
 	case 3:
-		if (pkt[2] != 'k')
+		if (ev->player != 'k')
 			break;
 		if (GS->endReason == 2)
 			return;
@@ -2113,70 +2132,71 @@ void THISCALL (net_processGamePacket)(u8 *g, u32 from, int size, const char *pkt
 		g_matchEndedByServer = 1;
 		return;
 	case 4:
-		if (pkt[2] != 'k')
+		if (ev->player != 'k')
 			break;
 		match_limit(g, 0, FN(msg_fragLimitReached));
 		return;
 	case 5:
-		if (pkt[2] != 'k')
+		if (ev->player != 'k')
 			break;
 		match_limit(g, 1, FN(msg_timeLimitReached));
 		return;
 	case 6:
-		if (b[2] > 0x10)
+		if (ev->player > 0x10)
 			break;
-		msg_cheatUsed(g, b[2], b[3]);
+		msg_cheatUsed(g, ev->player, (u8)ev->cheatCode);
 		return;
 	case 7:
-		if (b[2] > 0x10 || strlen(pkt + 3) >= 0x39)
+		if (ev->player > 0x10 || strlen(ev->line) >= 0x39)
 			break;
-		msg_chatLine(g, b[2], pkt + 3, pkt[0x3c]);
+		msg_chatLine(g, ev->player, ev->line, ev->chatTeam);
 		return;
 	case 8:
-		if (b[2] > 0x10 || strlen(pkt + 3) >= 0x11)
+		if (ev->player > 0x10 || strlen(ev->line) >= 0x11)
 			break;
-		playerRecord_markFree(STAGE, b[2]);   /* playerRecord_markFree */
-		player_setName(STAGE, b[2], pkt + 3);   /* player_setName */
-		actor_resetSlot(STAGE, b[2]);   /* actor_resetSlot */
-		actor_name(g, b[2], pkt + 3);
+		playerRecord_markFree(STAGE, ev->player);   /* playerRecord_markFree */
+		player_setName(STAGE, ev->player, ev->line);   /* player_setName */
+		actor_resetSlot(STAGE, ev->player);   /* actor_resetSlot */
+		actor_name(g, ev->player, ev->line);
 		GS->sendFlags[GS->localPlayer][1] = 1;
-		msg_playerConnected(g, b[2]);
+		msg_playerConnected(g, ev->player);
 		if (GS->client == 0)
 			net_sendItemStates(g);   /* net_sendItemStates */
 		return;
 	case 9:
-		if (b[2] > 0x10)
+		if (ev->player > 0x10)
 			break;
-		msg_playerLeft(g, b[2]);   /* msg_playerLeft */
-		playerRecord_markFree(STAGE, b[2]);
-		actor_resetSlot(STAGE, b[2]);
-		((PlayerRecord *)PLAYER(b[2]))->name[0] = 0;
-		((PlayerRecord *)PLAYER(b[2]))->team = -1;
-		actor_deactivate(STAGE, b[2]);   /* actor_deactivate */
+		msg_playerLeft(g, ev->player);   /* msg_playerLeft */
+		playerRecord_markFree(STAGE, ev->player);
+		actor_resetSlot(STAGE, ev->player);
+		((PlayerRecord *)PLAYER(ev->player))->name[0] = 0;
+		((PlayerRecord *)PLAYER(ev->player))->team = -1;
+		actor_deactivate(STAGE, ev->player);   /* actor_deactivate */
 		return;
 	case 10:
-		if (b[2] >= 0x10)
+		if (tp->player >= 0x10)
 			break;
-		team_change(g, b[2], pkt, FN(msg_playerJoinedTeam));
+		team_change(g, tp->player, tp, FN(msg_playerJoinedTeam));
 		return;
 	case 11:
-		if (pkt[2] >= 0x10)
+		if ((signed char)tp->player >= 0x10)   /* (a signed byte here, as the original reads it) */
 			break;
-		team_change(g, pkt[2], pkt, FN(msg_playerChangedTeam));
+		team_change(g, (signed char)tp->player, tp, FN(msg_playerChangedTeam));
 		return;
 	case 12: {
-		short row = *(const short *)(pkt + 3);
-		if (pkt[2] > 0x10 || row > 0x170)
+		const FlagPiecePacket *fp = (const FlagPiecePacket *)pkt;
+		short row = fp->at;
+		if ((signed char)fp->player > 0x10 || row > 0x170)   /* (a signed byte here, as the original reads it) */
 			break;
-		PlayerRecord *p = (PlayerRecord *)PLAYER((signed char)pkt[2]);
+		PlayerRecord *p = (PlayerRecord *)PLAYER((signed char)fp->player);
 		if (row >= 0) {
 			u8 *to = (u8 *)p->flag + row * 4;   /* (16 pixels from pixel row: the grid as one run) */
-			const u8 *from3 = b + 5;
-			for (int k = 0; k < 16; k++, from3 += 3, to += 4) {
-				to[0] = from3[0];
-				to[1] = from3[1];
-				to[2] = from3[2];
-				to[3] = from3[0] || from3[1] || from3[2] ? 0xff : 0;
+			for (int k = 0; k < 16; k++, to += 4) {
+				const u8 *rgb = fp->rgb[k];
+				to[0] = rgb[0];
+				to[1] = rgb[1];
+				to[2] = rgb[2];
+				to[3] = rgb[0] || rgb[1] || rgb[2] ? 0xff : 0;
 			}
 		}
 		if (p->flagChanged)
@@ -2185,13 +2205,13 @@ void THISCALL (net_processGamePacket)(u8 *g, u32 from, int size, const char *pkt
 		if (p->flagShown == 0 && (mine->flagShown == 1 || mine->flagChanged == 1))
 			mine->flagSent = 0;
 		GS->flagUploadTimer = 5.0f;
-		if (*(const short *)(pkt + 3) < 0)
+		if (fp->at < 0)
 			return;
 		p->flagChanged = 1;
 		return;
 	}
 	case 13:
-		if (pkt[2] != 'k')
+		if (ev->player != 'k')
 			break;
 		GS->restartTimer = 5.0f;
 		return;
@@ -2202,7 +2222,7 @@ void THISCALL (net_processGamePacket)(u8 *g, u32 from, int size, const char *pkt
 			MapItem *it = &SCENE_STAGE(g)->items[k];
 			if (it->type < 0)
 				continue;
-			u8 v = b[2 + k / 2];
+			u8 v = ((const ItemStatesPacket *)pkt)->levels[k / 2];
 			int n = (k % 2 == 0 ? v : v >> 4) & 0xf;
 			if (n == 0)
 				it->taken = BITS(it->timer) = 0;

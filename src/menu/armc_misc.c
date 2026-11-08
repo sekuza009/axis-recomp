@@ -750,10 +750,10 @@ void (armc_sendSelectionToNet)(void)
 	room[6] = (u8)g_itemSlot5;
 	for (int i = 0; i < 5; i++)
 		room[i] = (u8)parts[i];
-	u8 *packet = g_netSelectionPacket;
-	strcpy((char *)packet, g_ladderId);
-	memcpy(packet + 0x1e, room, 11);
-	memcpy(packet + 0x29, (const void *)OBJ(g_roomColours), 0x90);
+	SelectionPacket *packet = (SelectionPacket *)g_netSelectionPacket;
+	strcpy(packet->ladderId, g_ladderId);
+	memcpy(packet->mech, room, 11);
+	memcpy(packet->colours, (const void *)OBJ(g_roomColours), 0x90);
 	net_send(0x1b, 0x65);
 }
 
