@@ -119,7 +119,7 @@ u32 (hud_drawDigits)(int x, int y, float scale, int value, int count, int padded
 	const float *heightFactor = *g_wide->digitHeight ? *g_wide->digitHeight : (const float *)ADDR(k_26f);   /* 26 */
 	void (STDCALL *const *texCoord)(u32, u32) = *g_wide->digitTexCoord
 		? (void (STDCALL *const *)(u32, u32))*g_wide->digitTexCoord
-		: (void (STDCALL *const *)(u32, u32))RELOC(IMP_glTexCoord2f);   /* glTexCoord2f's import */
+		: (void (STDCALL *const *)(u32, u32))IMG(IMP_glTexCoord2f);   /* glTexCoord2f's import */
 #else
 	const float *heightFactor = *(const float *const *)IMG(0x46bddc);          /* (the fmul's operand) */
 	void (STDCALL *const *texCoord)(u32, u32) = *(void (STDCALL *const *const *)(u32, u32))IMG(0x46be98);   /* (mov ebx, [..]) */

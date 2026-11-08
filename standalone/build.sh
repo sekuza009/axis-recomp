@@ -8,11 +8,14 @@ set -e
 cd "$(dirname "$0")/.."
 # AxisRC.exe carries the game fixes in the game's own code (AXIS_NATIVE: src/fixes/, standalone/platform.c); the
 # patch layer is only its network layer.
+# PORTABLE=1: build/AxisRC_portable.exe - the portable branch's build (src/ with AXIS_PORTABLE: RELOC maps nothing; see
+# PORTING.md). Still linked as AxisRC.exe is, so the original's range stays guarded and any original address left is caught.
 # PATCHLAYER=1: build/AxisRC_patchlayer.exe - the earlier AxisRC.exe, where the patch layer (axisnet_recomp.c)
 # applies the fixes from outside as the patch DLL does to AxisGL.exe (its objects in build/obj_patchlayer), for
 # comparison. recomp.dll (build.sh) is unaffected either way: it is checked against AxisGL.exe and its patch DLL.
 if [ -n "$NATIVE" ]; then echo "(NATIVE=1 is the default now: building AxisRC.exe)"; fi
 if [ -n "$PATCHLAYER" ]; then OBJD=build/obj_patchlayer; NDEF=; OUT=AxisRC_patchlayer.exe; NSUF=_patchlayer;
+elif [ -n "$PORTABLE" ]; then OBJD=build/obj_portable; NDEF="-DAXIS_NATIVE -DAXIS_PORTABLE"; OUT=AxisRC_portable.exe; NSUF=;
 else OBJD=build/obj_direct; NDEF=-DAXIS_NATIVE; OUT=AxisRC.exe; NSUF=; fi
 export OBJD NDEF
 CC="python -m ziglang cc -target x86-windows-gnu"

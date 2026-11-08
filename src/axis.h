@@ -50,7 +50,15 @@ extern struct GameData g_data;
                 (u32)(a) - 0x4ad000u < 0x666000u ? (u32)&g_data + ((u32)(a) - 0x4ad000u) : (u32)g_image + ((u32)(a) - IMG_BASE))
 static inline u32 img_reloc(u32 a) { return a - IMG_BASE < IMG_SIZE ? IMG(a) : a; }
 /* (of the operand's own type: a pointer stays a pointer, so RELOC(p) + 1 steps as p + 1 did) */
+#ifdef AXIS_PORTABLE
+/* (the portable build: every address the game holds at run time is a real one - src/data writes its pointers through
+   IMG() - so only a compile-time constant (an original address written in the source, F(0x4a93ec)) is mapped; a run-time
+   value never is, wherever the game is loaded. The test build keeps the original's range guarded to catch any original
+   number still reaching here at run time) */
+#define RELOC(a) ((__typeof__((a) + 0))(__builtin_constant_p((u32)(a)) ? img_reloc((u32)(a)) : (u32)(a)))
+#else
 #define RELOC(a) ((__typeof__((a) + 0))img_reloc((u32)(a)))
+#endif
 #else
 #define IMG(a) (a)
 #define RELOC(a) (a)
@@ -60,12 +68,12 @@ static inline u32 img_reloc(u32 a) { return a - IMG_BASE < IMG_SIZE ? IMG(a) : a
    call (in AxisRC.exe standalone/crt.c puts msvcrt's or a rebuilt one there) */
 #include "crt_addrs.h"
 #define CRT(name) CRTADDR_##name
-#define CRT_CALL(name, ret, ...) GAME_CDECL(CRTADDR_##name, ret, __VA_ARGS__)
+#define CRT_CALL(name, ret, ...) ((ret (CDECL *)(__VA_ARGS__))IMG(CRTADDR_##name))
 /* the game's __ftol: ST0 truncated to 64 bits, EDX:EAX; callers keep the low 32 bits */
 static inline int ftol(long double x)
 {
 	long long r;
-	__asm__ volatile("call *%1" : "=A"(r) : "r"(RELOC(CRT(ftol))), "t"(x) : "ecx", "st", "memory");
+	__asm__ volatile("call *%1" : "=A"(r) : "r"(IMG(CRT(ftol))), "t"(x) : "ecx", "st", "memory");
 	return (int)r;
 }
 
@@ -177,7 +185,7 @@ static inline int code_matches(u32 addr, const char *pattern)
 #define COM_RELEASE 0x08
 
 /* an import, through the game's import table slot */
-#define IMPORT(slot, ret, ...) ((ret (STDCALL *)(__VA_ARGS__))*(const u32 *)RELOC(slot))
+#define IMPORT(slot, ret, ...) ((ret (STDCALL *)(__VA_ARGS__))*(const u32 *)IMG(slot))
 /* the same by the function's name (its slot: IMP_<name>, src/imports.h): IMPORT_FN(GlobalLock, void *, void *)(h) */
 #include "imports.h"
 #define IMPORT_FN(name, ret, ...) IMPORT(IMP_##name, ret, __VA_ARGS__)
