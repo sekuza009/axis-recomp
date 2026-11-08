@@ -1,0 +1,16 @@
+In-game evidence for the names only the code confirmed (2026-11-07)
+
+Scripted sessions with tools/ftrace/build_both.sh's trace exe (tools/rtrace/README.txt, fifth round): two copies through
+the arena list / lobby server, Ladder games on DServer (seeded account stats, a locked room, a new ID, records sent at
+the round's end), profile create / delete and name checks, ARM CENTER weapons and colour sliders, skirmish round 15, a
+replay recorded and played back, exit through the profile screen. Saves, axis.cfg, axisnet.ini backed up and restored
+every session (checked against a separate safety copy).
+
+Reached: 251 of the 700 data names and 192 of the 448 functions never seen before (evidence_reached.txt).
+Checked by two reviewers, each against all 443 (evidence_C.txt, evidence_O.txt): everything consistent except
+  g_lobbyRefreshing comment (both): also set by the game room's list -> fixed
+  Scene.matchLeaving comment (one, confirmed against frame_loops.c / 0x49d272): the record is sent only while it is 0 -> fixed
+  optional CLEARER notes left in the reports (g_accountRank, main_score, main_ring, gameList_stopJoin, ...).
+Still unreached (evidence_still_unreached.txt): ~80 always 0 by design or never written, the mission-script fields (no
+mission maps ship), records only on the stack during a load (ObjectInfo, ParticleDesc, BmpFile), ground layers (no
+shipped map has them), lock-on, launcher / command-line starts, a few setup toggles and mouse buttons.

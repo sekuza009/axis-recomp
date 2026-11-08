@@ -1,0 +1,493 @@
+unreachable	BlockOwner.blockSize	not a live record (a view type); seen as Model.blockSize / ObjectList.blockSize: no session needed
+unreachable	ListedObject.colours	unreachable: no pre-lit object list is ever loaded (part_load / actor_loadWeapon pass lit 0)
+unreachable	ObjectList.ownsBlock	unreachable: every list is given the Player's memory
+unreachable	ObjectList.skel	unreachable: anim_setTime is only ever called with skeleton 0
+unreachable	ObjectList.preLit	unreachable (as ListedObject.colours)
+unreachable	Actor.cleared8838	none: only ever zeroed (actor_setupFromParts), nothing writes another value
+unreachable	Actor.boosterTilt	none with the shipped data: every booster's lean is 0.0 in Component.dat
+unreachable	MapObject.trigger	none in shipped maps (0 everywhere); a map whose object file sets a trigger (flag 8 / 0x10 object)
+unreachable	MapObject.animPeriod	a map with an object whose type sets animPeriod (flag 8 / 0x10 objects); none known in the shipped maps
+unreachable	DPSessionDesc2.password	unreachable (the game never passes a DirectPlay password)
+unreachable	DPSessionDesc2.reserved1	unreachable
+unreachable	DPSessionDesc2.reserved2	unreachable
+unreachable	ViewVolume.segmentCount	only the mech-test view (match_mechTestFrame with Scene.debugGrid 1) or Scene.markLights (never set) add lines
+unreachable	Stage.speakers	no in-game action makes it non-zero: never written
+unreachable	Stage.texts	no in-game action makes it non-zero: never written
+unreachable	Scene.unused233ca00	unreachable: the game only writes 0 (never set)
+unreachable	Scene.unused233cc44	unreachable: the game only writes 0 (never set)
+unreachable	Scene.unused233cc2c	unreachable: the game only writes 0 (never set)
+unreachable	Scene.restartPending	never set in the game (unreachable)
+unreachable	Scene.cheatPlayer	unreachable (never written)
+unreachable	Scene.cheatCode	unreachable (never written)
+unreachable	Scene.cheatPending	never set in the game (unreachable)
+unreachable	Scene.cleared2340ca4	unreachable: the game only writes 0 (never set)
+unreachable	Scene.markLights	never set (unreachable)
+unreachable	Scene.turnLeftHeld	unreachable (match_mechTestFrame never runs)
+unreachable	Scene.turnRightHeld	unreachable (match_mechTestFrame)
+unreachable	Scene.upKeyHeld	unreachable
+unreachable	Scene.downKeyHeld	unreachable
+unreachable	Scene.fKeys	unreachable
+unreachable	Scene.partStepDownPressed	unreachable
+unreachable	Scene.partStepUpPressed	unreachable (match_mechTestFrame)
+unreachable	Scene.zoomInHeld	unreachable
+unreachable	Scene.zoomOutHeld	unreachable
+unreachable	Scene.scenePaused	never set (unreachable)
+unreachable	Scene.restartTimer	receive a kind-13 restart (never sent by this exe: restartPending never set), so unreachable in practice
+unreachable	Scene.cleared2343323	unreachable: the game only writes 0 (never set)
+unreachable	g_textureManager	none needed: a sampler gap (constant 0x4a9570 from static start-up; same address as g_textureSets)
+unreachable	g_menuLookHomeX	every writer stores 0 in practice (look-at X 0); reach: none known
+unreachable	g_unusedKeyTable2Word1	only ever 0
+unreachable	g_unusedKeyTable2Word2	only ever 0
+unreachable	g_unusedArmcWord4	only ever 0
+unreachable	g_unusedArmcWord1	only ever 0
+unreachable	g_unusedStartupWord3	only ever 0
+unreachable	g_unusedStartupWord2	only ever 0
+unreachable	g_unusedMenuReturnWord	only ever 0
+unreachable	g_unusedStartupWord1	only ever 0
+unreachable	g_unusedRoomListWord	only ever 0
+unreachable	g_unusedRoomWord	only ever 0
+unreachable	g_unusedLoginWord	only ever 0
+unreachable	g_unusedInitWord	only ever 0
+unreachable	g_unusedReplayListWord1	only ever 0
+unreachable	g_unusedReplayListWord2	only ever 0
+unreachable	g_unusedMainMenuWord	only ever 0
+unreachable	g_unusedBriefingWord	only ever 0
+unreachable	g_netChatMessageWord1	only ever 0
+unreachable	g_netChatMessageFrom	only ever 0
+unreachable	g_netChatMessageText	only ever 0
+unreachable	g_unusedNetResetWord	only ever 0
+unreachable	g_unusedSessionWord	only ever 0
+unreachable	g_unusedDplayWord1	only ever 0
+unreachable	g_unusedDplayWord2	only ever 0
+unreachable	g_unusedDplayWord3	only ever 0
+unreachable	g_unusedDplayWord4	only ever 0
+unreachable	g_unusedPingWord1	only ever 0
+unreachable	g_unusedPingWord2	only ever 0
+unreachable	g_missionTop	unreachable in play: needs g_screen forced to 900 with more than 8 missions in axis.mis, then cursor down past row 7
+unreachable	g_desktopH	unreachable: glWindow_setDisplayModeBy runs only on glWindow full-screen, which the game never requests
+unreachable	g_desktopBits	unreachable (as g_desktopH)
+unreachable	g_desktopW	unreachable (as g_desktopH)
+unreachable	g_glWindowMade	unreachable (the game always passes its own window to glWindow_init)
+unreachable	g_glWindowContext	unreachable (glWindow never makes its own window)
+unreachable	g_modeChanged	unreachable (as g_desktopH)
+unreachable	g_editingFragLimit	unreachable (no writer of 1 in the original)
+unreachable	g_editingTimeLimit	unreachable (no writer of 1 in the original)
+unreachable	g_vecOriginXyz	none - constant (0, 0, 0)
+unreachable	g_vecZeroXyz	none - constant (0, 0, 0)
+unreachable	g_unused16	none - only 0 is ever written (netq_reset / netq_receive)
+unreachable	g_missionClearBuffer	none - only ever cleared (mission_loadBriefing memset)
+unreachable	g_realClear	none - constant (0, 0, 0, 0)
+unreachable	k_GUID_NULL	none - constant (16 zero bytes)
+mission	MessageSlot.speaker	play a single-player mission whose map script runs command 26 MESSAGE (a briefing / radio message box at the top), sample while the box show
+mission	MessageSlot.unusedC	as MessageSlot.speaker (only if the script's fourth argument is non-zero)
+mission	Actor.invulnerable	a mission whose script runs command 14 on an actor (invulnerable boss / escort), sample during it
+mission	Actor.botWait	a mission script with command 4 (a bot told to wait)
+mission	Actor.scriptFlag	a mission script with command 11 on an actor
+mission	Actor.outOfPlay	a mission script with command 24 (script_holdActor)
+mission	Trigger.time	play a mission with a timed trigger
+mission	Trigger.radiusSq	play a mission whose trigger fires on the player's approach
+mission	SpawnRecord.pitch	a mission map whose actors face up/down
+mission	SpawnRecord.yaw	a mission map with turned spawns
+mission	SpawnRecord.scriptFlag	a mission map actor with the flag set
+mission	Stage.msgWrite	a mission map whose script shows a MESSAGE (command 26)
+mission	Stage.msgRead	a mission map with script messages
+mission	Stage.scriptMode	a mission map that runs script command 27
+mission	Stage.scriptHoldsPlay	script command 27 mode 1 (no shipped map)
+mission	Stage.triggerFired	a mission where a trigger fires
+mission	Scene.lastMissionWon	win the last solo mission (stage 14)
+mission	Scene.msgWrite	a mission map whose script pushes a MESSAGE
+mission	Scene.msgRead	a scripted mission with more than 32 messages (or any MESSAGE for the box)
+mission	Scene.scriptMode	a mission map with a scripted scene path (cut-scene)
+mission	Scene.stageCleared	win a solo mission on the current campaign stage
+mission	g_misHeader1	axis.mis's header word is 0 (or the mission screen's sampler missed it)
+korean	g_hangulVowelGlyph	text with Korean double-byte characters drawn (Korean language data / a Korean player name)
+korean	g_hangulTailGlyph	as g_hangulVowelGlyph
+korean	g_hangulLeadGlyph	as g_hangulVowelGlyph
+ladder	Actor.scoreCounted	start a match with a profile that has Ladder points (Scene.levelPoints > 0), or end a Ladder match after scoring frags
+ladder	Actor.deathsCounted	play a Ladder match, die once, reach the match end
+ladder	ArenaRecord.map	host an arena on the lobby server, and list arenas from it
+ladder	ArenaRecord.timeLimit	host an arena on the lobby server, and list arenas from it
+ladder	ArenaRecord.replyKind	list arenas from the lobby server
+ladder	ArenaRecord.locked	host an arena on the lobby server, and list arenas from it
+ladder	ArenaRecord.password	host an arena on the lobby server, and list arenas from it
+ladder	RoomRecord.map	host a Ladder game on the game server and list rooms
+ladder	RoomRecord.gameMode	host a Ladder game on the game server and list rooms
+ladder	RoomRecord.rotation	host a Ladder game on the game server and list rooms
+ladder	RoomRecord.replyKind	list rooms on the game server
+ladder	RoomRecord.locked	host a Ladder game on the game server and list rooms
+ladder	SessionEntry.locked	list a password-locked game from a server
+ladder	AccountPacket.email	register a new Ladder ID
+ladder	AccountPacket.mech	register a new Ladder ID
+ladder	AccountPacket.colours	register a new Ladder ID
+ladder	GameSettings.map	Ladder room CREATE form or the arena create form
+ladder	GameSettings.password	Ladder room CREATE form or the arena create form
+ladder	GameSettings.locked	Ladder room CREATE form or the arena create form
+ladder	RankedPlayer.kind	open the Ladder ranking page (formsB already loads it; the sampler reads the list, where it stays 0)
+ladder	PlayerRecordPacket.name	finish a Ladder match (ladder_checkAndSendRecord)
+ladder	PlayerRecordPacket.games	finish a Ladder match (ladder_checkAndSendRecord)
+ladder	PlayerRecordPacket.kills	finish a Ladder match (ladder_checkAndSendRecord)
+ladder	PlayerRecordPacket.deaths	finish a Ladder match (ladder_checkAndSendRecord)
+ladder	PlayerRecordPacket.exp	finish a Ladder match (ladder_checkAndSendRecord)
+ladder	PlayerRecordPacket.level	finish a Ladder match (ladder_checkAndSendRecord)
+ladder	PlayerRecordPacket.power	finish a Ladder match (ladder_checkAndSendRecord)
+ladder	PilotStats.exp	log in to the Ladder game server
+ladder	PilotStats.rank	open the Ladder account page (rank request 29)
+ladder	PilotStats.power	log in to the Ladder game server
+ladder	PilotStats.kills	log in to the Ladder game server
+ladder	PilotStats.deaths	log in to the Ladder game server
+ladder	PilotStats.killRate	log in to the Ladder game server
+ladder	Scene.levelPoints	play a Ladder match with a logged-in pilot that has exp
+ladder	g_joinTimedOut	join an arena / room session that does not answer for 30 ticks
+ladder	g_launchedForNetGame	start AxisGL from the launcher with -net (host) or -ip <server> (join)
+ladder	g_roomLoginDue	game room, Ladder login, press LOG IN with an ID / password
+ladder	g_roomRequestOut	game room Ladder login, LOG IN sent and waiting for the game server
+ladder	g_roomSearchAnswerIn	game room game list with the game server answering
+ladder	g_rankingRequestPending	game room RANKING page (needs the game server)
+ladder	g_argCount	start the game with a command line (-net or <x> -ip <server>)
+ladder	g_retypePassword	game room Ladder login opened
+ladder	g_loginToSend	game room Ladder login, press LOG IN
+ladder	g_openLoginName	game room (ladder) -> CREATE NEW ID (set for one frame only)
+ladder	g_gameServerAnswer	game room (ladder) login answered by the game server
+ladder	g_typingRoomJoinPassword	game room game list -> JOIN a password game
+ladder	g_sessionFound	join a listed arena / game-room game (client side)
+ladder	g_roomRecMap	pick a map other than the first in the game room's create form (Ladder) and create the game
+ladder	g_accountRank	Ladder account page for a ranked pilot (rank reply in the first 1000)
+ladder	g_roomRotation	game room create form with map rotation switched on (the room form's rotation button, or registry "Customize" 1)
+ladder	g_arenaUpdateNotice	a lobby / game server answering 3 (program out of date) - needs a server that sends it
+ladder	g_roomRefreshing	game room game list REFRESH with the game server answering
+ladder	g_roomJoinStarted	game room list -> JOIN a listed game
+ladder	g_roomJoinNeedsPassword	game room list -> JOIN a locked game
+ladder	g_newIdConfirmChoice	game room -> CREATE NEW ID -> fill the form -> confirmation O or C
+ladder	g_roomUpdateNotice	Ladder login answered "program out of date" by the game server
+ladder	g_roomSearching	game room -> game list -> search (R / REFRESH) with the game server connected
+ladder	g_gameListClickTimer	game room game list with games, click a row. (gameList_draw's function comment calls it the "searching" message's clock; the global's own co
+ladder	g_gameListClickArmed	game room game list, click a game's row
+ladder	g_roomRecGameMode	registry HKCU\SOFTWARE\AxisArena\Character GameType non-zero (create a Ladder room game with a mode other than the first, which reg_writeLad
+ladder	g_newIdAnswer	game room -> CREATE NEW ID -> OK with the game server answering
+ladder	g_pilotDeathsKept	needs a Ladder account with deaths (log in to the ladder server with an ID that has died in a Ladder match)
+ladder	g_pilotDeaths	Ladder account with deaths (log in after dying in a Ladder match)
+ladder	g_pilotRank	open the Ladder account page with a ranked ID (rank reply in the first 1000)
+ladder	g_receivedRank	open the Ladder account page with a ranked ID
+ladder	g_ladderPassword8	Ladder login with a 9+ character password
+ladder	g_ladderDeaths	die in a Ladder match
+ladder	g_gameListRow	pick the second row (or below) of the LAN / Ladder game list
+ladder	g_newIdFormRight	although its only writer also wrote g_newIdFormLeft (seen 30) in the same call - a sampler gap, not a naming problem; reach: open CREATE NEW
+ladder	g_unusedAccountWord	never non-zero (only 0 is written by room_enterAccountPage)
+ladder	g_newIdFormTop	Ladder game room -> login dialog -> NEW ID (room_openNewIdForm sets 0x32)
+ladder	g_lobbyReplyCode	MULTI PLAY through the lobby server (TcpDNS): host an arena so the lobby answers status request 10
+ladder	g_gameServerReplyCode	Ladder: any status request 18 to the game server answered (the room list refresh after login)
+net	Actor.onWarp	skirmish / host on a map with WARP ZONE items (the host-h2 map has warpTo 14 / 15): stand on a warp zone
+net	Actor.beepTimer	mp: the client fires a guided (homing) weapon at the host's mech; sample on the host while the round homes
+net	MapItem.warpPitch	a map whose warp zones set a destination pitch (r[3] of the play file); the host-h2 map's are 0
+net	DPSessionDesc2.players	a client listing a hosted LAN arena (arena list over TCP/IP)
+net	SessionDesc.map	host an arena on a map other than the first and list it over LAN
+net	SessionEntry.map	list a game hosted on another map
+net	GamePacket.number	any network match (host + client), a game packet every 3 s
+net	GamePacket.kind	any network match (host + client), a game packet every 3 s
+net	GamePacket.player	any network match (host + client), a game packet every 3 s
+net	GamePacket.map	any network match (host + client), a game packet every 3 s
+net	GamePacket.nextMap	any network match (host + client), a game packet every 3 s
+net	GamePacket.mode	any network match (host + client), a game packet every 3 s
+net	GamePacket.nextMode	any network match (host + client), a game packet every 3 s
+net	GamePacket.mapNumber	any network match (host + client), a game packet every 3 s
+net	GamePacket.elapsed	any network match (host + client), a game packet every 3 s
+net	GamePacket.clockFraction	any network match (host + client), a game packet every 3 s
+net	GamePacket.timePlayed	any network match (host + client), a game packet every 3 s
+net	GamePacket.timeFraction	any network match (host + client), a game packet every 3 s
+net	GamePacket.resendAsked	any network match (host + client), a game packet every 3 s
+net	GamePacket.kills	any network match (host + client), a game packet every 3 s
+net	GamePacket.deaths	any network match (host + client), a game packet every 3 s
+net	GamePacket.teamScores	any network match (host + client), a game packet every 3 s
+net	GamePacket.lastPickup	any network match (host + client), a game packet every 3 s
+net	GamePacket.checkTable	any network match (host + client), a game packet every 3 s
+net	GamePacket.checkIndex	any network match (host + client), a game packet every 3 s
+net	GamePacket.checkValue	any network match (host + client), a game packet every 3 s
+net	GamePacket.checkIndex2	any network match (host + client), a game packet every 3 s
+net	GamePacket.checkValue2	any network match (host + client), a game packet every 3 s
+net	PlayerRecord.flag	a network match with a Save\<name>.BMP flag picture
+net	PlayerRecord.flagChanged	a network match with a Save\<name>.BMP flag picture
+net	Stage.shotgunArena	host a SHOTGUN game (types 4 / 5)
+net	Stage.ionCannonArena	host an ION CANNON game (6 / 7)
+net	Stage.rocketArena	host a ROCKET ARENA game (8 / 9)
+net	Stage.gladiator	host a GLADIATOR game (10 / 11)
+net	Stage.suddenDeath	host a SUDDEN DEATH game (types 2 / 3)
+net	Scene.connectPending	join a hosted network match as a client (match_frame announces the connection), sampled between set and send
+net	Scene.changePending	Esc menu team change in a network team match
+net	Scene.packetLossTimer	a network match with lost / reordered packets (netq_skippedCount > 0)
+net	Scene.lostTime	join a network game as a client and wait for the slot (or the host goes away)
+net	g_launchStartStep	launcher-started network game (-net / -ip)
+net	g_lanJoinRequest	arena list, I (LAN search), join a found game
+net	g_launchedAsHost	start from the launcher with -net and axiswl.dat present
+net	g_netBlockSize	any DirectPlay session receiving messages (host / join)
+net	g_localPlayerData	host / join an arena with a non-RED corporation (the arena passes g_playerCorporation)
+net	g_lastChatLine	chat sent/received in a net match (sessA free camera chat or mp chat)
+net	g_lastChatLineSet	send a chat line in a net match
+net	g_freeCamLookX	in a hosted arena's free camera, hold W (or S / strafe) - 0 until moved
+net	g_arenaFileTimeLimit	start from the launcher with an axiswl.dat (AxisPlay host)
+net	g_arenaCustomize	(0). The "(comments call it sex)" aside has no use behind it -> "the lobby player's customize switch (axis.cfg's set_player customize ON 1 /
+net	g_debugValue	hosted arena free camera, press 1 (it has no other effect, so the name stays generic)
+net	g_arenaJoinNeedsPassword	arena list -> join a locked (password) arena
+net	g_freeCamZoom	hosted arena free camera, press Z
+net	g_hostErrorBox	create arena -> IPX GAME (I) on a machine without IPX
+net	g_joinPollTicks	join a listed arena whose session is slow to appear (the 2 s timer ticking)
+net	g_watchChatOpen	hosted arena free camera, press Enter (chat)
+net	g_matchLogWritten	a match started from the launcher (AxisPlay, g_launchedForNetGame) - the log is written only then
+net	g_matchEndedByServer	a client in a net match the host ends (the end-of-game packet)
+net	g_netHostGone	a client whose host leaves the arena (host quits mid-match)
+net	g_typingArenaJoinPassword	arena list -> join a locked arena, type its password
+net	g_arenaJoinPassword	join a password-locked arena game from the LAN list and type its password
+net	g_arenaJoinPassword4	type a join password longer than 4 characters for a locked arena game
+net	g_unusedFreeCamMoveWord	click in the free camera (spectating in a hosted arena, sessA's free camera with a mouse click)
+net	g_arenaPassword	host an arena with a password (create-arena form's password) and announce it
+net	g_arenaLocked	host a password-locked arena game
+net	g_freeCamYaw	in a hosted arena's free camera (screen 9999) move the mouse sideways
+net	g_freeCamMoveStarted	click the mouse once in a hosted arena's free camera (screen 9999)
+net	g_freeCamTurnSin	the yaw stays 0 unless the mouse turns the free camera (move the mouse sideways in a hosted arena's free camera)
+net	g_freeCamTurnCos	never sampled in a free-camera frame (cos 0 = 1 would be non-zero, so the free camera itself was not reached while sampling) - enter the fre
+net	g_pickedGame	arena lobby -> JOIN with two or more games listed: click the second game
+net	g_packetsSkipped	two-instance match (host + client): suspend the client process for a second mid-match so packets arrive out of turn
+net	g_sentChatBlock	in a DirectPlay session (arena lobby or a hosted match) type a chat line and press Enter (net_sendChat)
+net	g_ahead	a two-instance network match (host + client) under load, where a client packet arrives before the one due (out of order / a resend asked for
+net	g_modemProviderGuid	start multiplayer on a machine whose DirectPlay lists a modem service provider (name containing "MODEM"); dplay_enumConnections copies its G
+net	g_slotCams	host an arena match, switch to the free (watching) camera, move it with W / A / S / D (freeCam_keys writes +0 .. +8) and turn it with the mo
+replay	Actor.lowDetail	skirmish: stay far from an enemy bot (its name tag under 30 px wide on a 640-wide scale), sample its record
+replay	ShapeManager.ownsBlock	every caller in the game gives memory (match_start: objectShapeData, itemShapeData, the player records' ShapeData)
+replay	BmpFile.vtable	a match start (tex_textureFileExist) or the Save\<name>.BMP flag load (playerRecord_loadFlag)
+replay	BmpFile.file	a match start (tex_textureFileExist) or the Save\<name>.BMP flag load (playerRecord_loadFlag)
+replay	BmpFile.type	a match start (tex_textureFileExist) or the Save\<name>.BMP flag load (playerRecord_loadFlag)
+replay	BmpFile.fileSize	a match start (tex_textureFileExist) or the Save\<name>.BMP flag load (playerRecord_loadFlag)
+replay	BmpFile.dataOffset	a match start (tex_textureFileExist) or the Save\<name>.BMP flag load (playerRecord_loadFlag)
+replay	BmpFile.infoSize	a match start (tex_textureFileExist) or the Save\<name>.BMP flag load (playerRecord_loadFlag)
+replay	BmpFile.bmpWidth	a match start (tex_textureFileExist) or the Save\<name>.BMP flag load (playerRecord_loadFlag)
+replay	BmpFile.bmpHeight	a match start (tex_textureFileExist) or the Save\<name>.BMP flag load (playerRecord_loadFlag)
+replay	BmpFile.planes	a match start (tex_textureFileExist) or the Save\<name>.BMP flag load (playerRecord_loadFlag)
+replay	BmpFile.bitCount	a match start (tex_textureFileExist) or the Save\<name>.BMP flag load (playerRecord_loadFlag)
+replay	BmpFile.compression	a match start (tex_textureFileExist) or the Save\<name>.BMP flag load (playerRecord_loadFlag)
+replay	BmpFile.width	a match start (tex_textureFileExist) or the Save\<name>.BMP flag load (playerRecord_loadFlag)
+replay	BmpFile.height	a match start (tex_textureFileExist) or the Save\<name>.BMP flag load (playerRecord_loadFlag)
+replay	Scene.replaySkip	replay viewer, hold Enter
+replay	Scene.followNextAsked	spectate a match (or replay viewer) and left-click
+replay	Scene.presetNextAsked	spectate / replay viewer, right-click
+replay	g_replayRandomOrder	replay selection dialog, tick RANDOM
+replay	g_replaySelectFirst	replay selection with more than 10 replays, scrolled down
+replay	g_repeatDown	pilot (profile) screen with 2+ pilots: hold the Down arrow in the list (or in the replay selection, F1 on the main menu)
+cheat/mechtest	g_cursorPoint	the mech test mode (match_mechTestFrame calls input_getCursorPos every frame); nothing else calls it
+cheat/mechtest	g_asyncKeySeen	hold Esc on the match loading screen (game_processLoadingMode: input_asyncKeyPressed(VK_ESCAPE)), or Space / Esc / Z / X in the mech test mo
+display	g_arenaListClickTimer	arena list with games, click a row once (double-click window)
+display	g_fullScreen	start with a full-screen (non-DESKTOP) display mode in axis.cfg
+display	g_displayModeChanged	play in a resolution other than the desktop's (not DESKTOP) and alt-tab
+display	g_otherModeWidth	a non-desktop resolution (axis.cfg not DESKTOP), then alt-tab out and back
+display	g_displayModeLeft	non-desktop resolution, alt-tab out and back
+display	g_exitCode	quit the game from the main menu (written just before the window closes; sample right after app_closeWindow)
+other	MessageSlot.text	as MessageSlot.speaker
+other	MessageSlot.colour	as MessageSlot.speaker
+other	MessageSlot.unused10	as MessageSlot.unusedC
+other	BlockOwner.block	as BlockOwner.blockSize
+other	BlockOwner.ownsBlock	needs a block allocated without given memory (take_block with mem 0): not done for the game's shapes / lists in play; sample a shape loaded 
+other	Shape.ownsBlock	as BlockOwner.ownsBlock: shapes come from the managers' memory; likely unreachable in normal play
+other	Actor.warpWait	take a WARP ZONE; sample within 2 s
+other	Actor.lowDetailLoaded	as Player.lowDetail (follows it the next frame)
+other	Actor.homedOn	as Player.beepTimer (a guided round of another machine homing on the actor)
+other	Actor.aimTime	skirmish: select a lock-on weapon (targetingTime > 0: missile / guided launcher), keep an enemy bot inside the detection cone and in sight
+other	Actor.lockAnim	as Player.aimTime, held until the lock is made (aimTime > lockOnTime x targetingTime); sample within 0.25 s
+other	MapObject.waitTime	a map with a timed object (flag 0x10)
+other	ObjectInfo.name	sample map_loadObjectInfoFrom's stack block during map load (a hook in object_addObjectBy), any map
+other	ObjectInfo.flags	as ObjectType.name
+other	ObjectInfo.trigger	as ObjectType.name (0 in shipped maps)
+other	ObjectInfo.animPeriod	as ObjectType.name
+other	ObjectInfo.animName	as ObjectType.name
+other	ObjectInfo.place	as ObjectType.name
+other	ObjectInfo.rotation	as ObjectType.name
+other	ObjectInfo.glowSize	as ObjectType.name (a light object)
+other	ObjectInfo.glowColour	as ObjectType.name (a light object)
+other	Bullet.trailCount	fire a rocket / trail weapon (ActorItem.shotMode 3)
+other	Space.ownsBlock	the only caller (match_start.c) always passes Stage.spaceData, so it is 0 in the game
+other	PartInfo.guidance	ARM CENTER weapons page, pick a slot and scroll the parts
+other	PartInfo.targetingTime	ARM CENTER weapons page, pick a slot and scroll the parts
+other	MapChoice.type	arena create form > ADVANCED map list, step a map's game type
+other	SkirmishInfo.timeLimit	open the SKIRMISH screen
+other	ViewTriangle.points	transparent meshes / effects in a match
+other	ViewTriangle.matrix	transparent meshes / effects in a match
+other	ViewTriangle.kind	transparent meshes / effects in a match
+other	ViewVolume.ownsBlock	never 1 in the game (Scene.view gets Scene.viewMemory)
+other	ViewVolume.entriesFull	needs over 10000 queued parts in a frame (not reachable in normal play)
+other	ViewVolume.matricesFull	needs over 1000 matrices a frame
+other	ViewVolume.trianglesFull	needs over 4000 queued triangles a frame
+other	ViewVolume.quadsFull	needs over 400 quads a frame (heavy effects: many trails and explosions at once)
+other	ViewVolume.segmentsFull	needs over 10000 lines a frame
+other	Skeleton.ownsBlock	any match or ARM CENTER (skeletons loaded)
+other	SkelManager.ownsBlock	every caller gives memory (match_start, model_sets)
+other	TextureBank.format	no in-game action makes it non-zero: always 0, the dat format, as the comment says; formats 1/2 unreachable in game
+other	TextureBank.clearedCd13c	no in-game action makes it non-zero: always 0, as its name says
+other	TextureBank.clearedCd140	no in-game action makes it non-zero: always 0
+other	GroundLayer.kind	load a map whose map file has ground layers
+other	GroundLayer.origin	load a map whose map file has ground layers
+other	GroundLayer.rows	load a map whose map file has ground layers
+other	GroundLayer.cols	load a map whose map file has ground layers
+other	GroundLayer.cellSize	load a map whose map file has ground layers
+other	GroundLayer.heightScale	load a map whose map file has ground layers
+other	GroundLayer.texScale	load a map whose map file has ground layers
+other	GroundLayer.water	load a map whose map file has ground layers
+other	GroundLayer.texture	load a map whose map file has ground layers
+other	GroundLayer.heights	load a map whose map file has ground layers
+other	GroundLayer.drawnCells	load a map whose map file has ground layers
+other	GroundLayer.points	load a map whose map file has ground layers
+other	GroundLayer.normals	load a map whose map file has ground layers
+other	GroundLayer.colours	load a map whose map file has ground layers
+other	GroundLayer.uv	load a map whose map file has ground layers
+other	GroundLayer.indexCapacity	load a map whose map file has ground layers
+other	GroundLayer.indices	load a map whose map file has ground layers
+other	GroundLayer.indexCount	load a map whose map file has ground layers
+other	GroundLayer.stripCapacity	load a map whose map file has ground layers
+other	GroundLayer.strips	load a map whose map file has ground layers
+other	GroundLayer.stripCount	load a map whose map file has ground layers
+other	GroundLayer.waterPoints	load a map whose map file has ground layers
+other	GroundLayer.waterColours	load a map whose map file has ground layers
+other	GroundLayer.waterUv	load a map whose map file has ground layers
+other	GroundLayer.waterIndices	load a map whose map file has ground layers
+other	GroundLayer.waterPrims	load a map whose map file has ground layers
+other	TimeSync.vtable	no in-game action makes it non-zero: 0 after TimeSync_clear, as the comment says; the load timer's set only by TimeSync_dtor at exit
+other	ParticleDesc.kind	any match with shots and boosters
+other	ParticleDesc.owner	a match with shots
+other	ParticleDesc.pos	a match with shots
+other	ParticleDesc.target	a match with shots
+other	ParticleDesc.matrixFrom	a match with shots
+other	ParticleDesc.markCorners	shoot a wall with high detail on (marks)
+other	ParticleDesc.markCoords	shoot a wall with marks on
+other	ParticleDesc.size	a match with shots
+other	ParticleDesc.isQuad	fire a beam weapon
+other	ParticleDesc.quad	fire a beam weapon
+other	ParticleDesc.quadPoints	fire a beam weapon
+other	ScenePath.opened	no in-game action makes it non-zero: always 0
+other	Stage.nearObjects	move or shoot near a moving map object (lift, door)
+other	Stage.layerParts	a map with ground layers
+other	Stage.fogOn	a map with fog
+other	Stage.pool	a map with ground layers
+other	Stage.poolUsed	a map with ground layers
+other	Stage.lockTimes	lock on to an enemy with a lock-on weapon
+other	Stage.lockIds	lock on to an enemy
+other	Stage.floorClock	a map with the animated floor (floorMode 2)
+other	Stage.pointCount	no in-game action makes it non-zero: always 0
+other	Stage.points	no in-game action makes it non-zero: all zero
+other	Stage.defaultColour	no in-game action makes it non-zero: never non-zero in samples
+other	Stage.flagAtlas	a player whose Save\<name>.BMP flag exists
+other	Stage.shadingCached	load a map a second time after a mode-1 load wrote its shading cache
+other	Stage.lockHeld	lock on to an enemy with a lock-on weapon
+other	Stage.groundLayerCount	a map with ground layers
+other	Stage.lockCount	lock on to an enemy
+other	Stage.floorMode	a map with a sky floor
+other	Stage.floorFrame	a map with floorMode 2
+other	TunnelRing.cleared0	no in-game action makes it non-zero: always 0
+other	TunnelRing.cleared4	no in-game action makes it non-zero: always 0
+other	TunnelRing.cleared1938	no in-game action makes it non-zero: always 0
+other	TunnelRing.cleared326c	no in-game action makes it non-zero: always 0
+other	Scene.previewTurn	ARM CENTER, hold the right mouse button over the preview and drag
+other	Scene.playAsked	Esc menu START (game without teams) or pick a team in a solo game
+other	Scene.fogOn	play a map whose ground info turns fog on
+other	Scene.renderMode	always 0 (unreachable non-zero)
+other	Scene.lockHeld	lock onto an enemy with a homing weapon in a match
+other	g_rightClick	right-click in any menu page
+other	g_playerCorporation	set the player colour BLUE / YELLOW (arena SETUP PLAYER or axis.cfg set_player color)
+other	g_lobbyConnectionBlock	start the game from a DirectPlay lobby application
+other	g_playerCustomize	axis.cfg set_player customize ON (or the arena player setup's customize switch)
+other	g_profileRowClicked	profile screen, click a pilot row once
+other	g_mouseInvert	setup -> controls -> invert mouse ON (or "set_mouse convertmouse ON" in axis.cfg)
+other	g_defaultColour	always 0 by design (never non-zero)
+other	g_freeCamLookZ	free camera, hold W
+other	g_arenaFileSecret	launcher start with axiswl.dat secret 1
+other	g_errorLogging	never non-zero (no writer in the game)
+other	g_cursorX	only the mech-test match mode (match_mechTestFrame) calls it - not reachable from the menus
+other	g_crtErrno	a C runtime error (e.g. a failed fopen of a missing file)
+other	g_arenaCorporation	pick corporation BLUE / YELLOW on the arena lobby's player setup (or set_player color BLUE in axis.cfg)
+other	g_mouseWheel	turn the mouse wheel in a match or on setup -> controls while binding
+other	g_timerRepeatCount	needs two timer_now calls within one counter tick (a coarse performance counter)
+other	g_roomRecRotation	registry HKCU\SOFTWARE\AxisArena\Character "Customize" = 1
+other	g_coloursChanged	ARM CENTER -> colour page, click a hue / saturation / value slider
+other	g_armcSlotChanged	?
+other	g_arenaListClickArmed	arena list with a listed game, click a row
+other	g_lobbyJoinStarted	arena list -> J on a listed game
+other	g_dikNone	0 by design
+other	g_armcUnusedFlag	never non-zero (only 0 is ever stored)
+other	g_cfgSimpleMenu	setup -> graphics -> SIMPLE MENU ON (axis.cfg set_graphic simplemenu ON), restart
+other	g_profileRowClickTime	profile screen, click a profile row (the clock runs only between the first and second click)
+other	g_mapMissing	start a match on a map index whose mapinfo.dat name is empty
+other	g_errorCleanupHook	no ErrorLog is made with a cleanup hook in the runs (all 0)
+other	g_otherModeHeight	as g_otherModeWidth
+other	g_mouseWheelTurned	turn the mouse wheel (any screen; set for that frame)
+other	k_0f	the constant 0.0 (never non-zero by nature)
+other	g_mouse3Down	hold the middle mouse button
+other	g_keyGameMenu2	bind a second GAME MENU key on setup -> controls (MISC page)
+other	g_menuLookHomeY	always 0 in the screens played
+other	g_menuEyeHomeX	eye X is 0 in every screen played
+other	g_menuEyeHomeY	eye Y 0 in every screen played
+other	g_dpMaxQueueSize	the TCP/IP provider reports 0 (no queue limit); no action changes it
+other	g_musicEndHigh	a duration under 2^32 x 100 ns (7 min 9 s) leaves it 0 - only music longer than that sets it
+other	g_mciCallback	AxisRC.exe plays the ending movie with the patch layer's player, so the MCI path is not run (only the original exe, ending movie + Esc)
+other	g_mciFrom	same (original exe's ending movie)
+other	g_mciTo	same
+other	g_mciDevice	same
+other	g_cursorPosY	only that test mode calls input_getCursorPos (play never reaches it; g_cursorX is not seen either). Name is fine (g_cursorX's partner; g_cur
+other	g_arenaFileMap	start the game from the launcher with an arena settings file (arena_loadSettings / arena_startFromLauncher)
+other	g_arenaFilePlayers	same launcher start
+other	g_arenaFileGameType	launcher start with an arena settings file
+other	g_arenaFileFragLimit	launcher start with an arena settings file
+other	g_menuLookKeptX	the tunnel camera's look X is always 0
+other	g_menuLookKeptY	always 0
+other	g_menuEyeKeptX	eye X always 0
+other	g_menuEyeKeptY	always 0
+other	g_matchTextFieldY	?
+other	g_matchTextFieldX	?
+other	g_unusedKeyTable2Word0	never anything but 0
+other	g_mapEntry22On	mapList_init always turns maps 22 .. 24 off
+other	g_mapEntry23On	always off
+other	g_mapEntry24On	always off
+other	g_newArenaPassword4	type a create-arena password of 5+ characters
+other	g_armcPanelDepth	always 0 (only writer stores 0)
+other	g_freeCamLookY	nothing sets it
+other	g_arenaPassword4	launcher start with a 5+ character password
+other	g_mouseSmooth	turn SMOOTH MOUSE ON on the setup screen's controls tab (and save)
+other	g_arenaFilePassword	launcher start with an arena file that has a password
+other	g_arenaFilePassword4	launcher arena file with a 5+ character password
+other	g_misHeader2	header word 0
+other	g_misHeader3	header word 0
+other	g_unusedProfileCameraWord	quit the game from the profile screen (the process ends right after)
+other	g_profileNoneAtEntry	enter the profile screen with no profiles (an empty Save folder - back up Save first)
+other	g_vecOrigin	always 0 by design
+other	g_vecUnitZ	this is the X word (0); the comment could add particle_draw
+other	g_vecZero	always 0 by design
+other	g_penInitialized	nothing sets it
+other	g_arenaKeptCamY	the lobby points' eye y is 0
+other	g_freeCamMoveEyeX	same first click in the free camera
+other	g_freeCamMoveEyeY	same (and the slot y is non-zero)
+other	g_freeCamMoveEyeZ	same first click
+other	g_freeCamTilt	move the mouse up / down in the free camera
+other	g_freeCamMoveTargetX	first click in the free camera
+other	g_freeCamMoveTargetY	first click in the free camera
+other	g_freeCamMoveTargetZ	first click in the free camera
+other	g_replaySelectLitR	the lit colour is (0, 1, 1, 1), R is always 0
+other	g_gameListTop	scroll a game list of more than nine games
+other	g_newIdFormBottom	same sampler gap; reach: open CREATE NEW ID
+other	g_profileListTop	needs more than 13 profiles scrolled down (create 14 pilots, scroll the list - back up Save first)
+other	g_mapTop	arena lobby -> CREATE -> open the map rotation list (with more than 10 maps) and scroll it down with its arrow
+other	g_mapListKept	arena lobby -> CREATE -> open the map rotation list -> OK
+other	g_repeatUp	pilot (profile) screen with 2+ pilots: hold the Up arrow in the list
+other	g_simpleMenu	SETUP -> GRAPHIC tab -> turn SIMPLE MENU on
+other	g_skirmishNewPartsNotice	win a skirmish round that unlocks the next round, then return to SKIRMISH PLAY
+other	g_profileQuitting	pilot screen -> LOG OUT -> YES (the game quits on the next frame)
+other	g_unusedProfileCameraSpeed	pilot screen -> LOG OUT -> YES, then click before the game closes
+other	g_profileQuitSkip	pilot screen -> LOG OUT -> YES, then press a key / click before the game closes
+other	g_unusedProfileCameraZoom	pilot screen -> LOG OUT -> YES
+other	g_unusedProfileCameraTime	never non-zero (only 0 is written)
+other	g_unusedClock3	never non-zero (only 0 is written by menuState100_intro)
+other	g_unusedClock2	never non-zero (only 0 is written)
+other	g_unusedClock1	never non-zero (only 0 is written)
+other	g_errorReported	start once with a missing (renamed) texture under initdata so sys_errorMessage reports it
+other	g_fatalReported	start once with a missing data file that sys_errorTerminate reports (e.g. rename Data\Shape.dat), sample before exit
+other	g_vecZero2	always zero by design (nothing to reach)
+other	g_textureManagerObject	?
+other	g_serialProviderGuid	start multiplayer on a machine whose DirectPlay lists a serial service provider ("SERIAL")
+other	g_emptySlot0Asked	?
+other	g_gameServerReportsOff	?
+other	g_retintAllParts	?
+other	g_unusedStartupTable	?
+other	g_unusedKeyTable2	?

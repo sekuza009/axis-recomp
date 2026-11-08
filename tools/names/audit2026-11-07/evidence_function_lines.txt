@@ -1,0 +1,192 @@
+CollisionVolume_dtor	app/classes.c	3	s210	broad1,prof1,quit1	Stage_dtor x3
+Console_deletingDtor	app/destructors.c	3	s210	broad1,prof1,quit1	app_shutdown x3
+Console_dtor	app/destructors.c	3	s210	broad1,prof1,quit1	Console_deletingDtor x3
+ErrorLog_dtor	app/classes.c	60	s210	broad1,prof1,quit1	static_endSceneLog x3, static_endTimeSyncLog x3, static_endViewVolumeLog x3, static_endLightLog x3, static_endCollisionVolumeLog x3, static_endStageLog x3, static_endUnitLog x3, static_endUnitPoseInfoLog x3, static_endUnitPartInfoLog x3, static_endPackedColorLog x3
+ResourceSet_dtor	app/classes.c	48	s210	broad1,prof1,quit1	vector_destruct x48
+Scene_dtor	app/classes.c	3	s210	broad1,prof1,quit1	Stage_dtor x3
+ShapeManager_dtor	app/classes.c	246	s210	broad1,prof1,quit1	ResourceSet_dtor x240, Stage_dtor x6
+Shape_dtor	app/classes.c	6	s210	broad1,prof1,quit1	Stage_dtor x6
+SkeletonManager_dtor	app/classes.c	246	s210	broad1,prof1,quit1	ResourceSet_dtor x240, Stage_dtor x6
+Stage_dtor	app/classes.c	3	s210	broad1,prof1,quit1	Console_dtor x3
+TextureManager_dtor	app/classes.c	3	s210	broad1,prof1,quit1	static_endTextureManager x3
+Texture_dtor	app/classes.c	18	s210	broad1,prof1,quit1	static_destroyTex256x256 x3, static_destroyTex256x128 x3, static_destroyTex128x128 x3, static_destroyTex256x64 x3, static_destroyTex128x64 x3, static_destroyTex64x64 x3
+TimeSync_dtor	app/classes.c	6	s210	broad1,prof1,quit1	Console_dtor x3, static_endTimeSync x3
+ViewVolume_dtor	app/destructors.c	3	s210	broad1,prof1,quit1	Console_dtor x3
+actor_destroyPartLists	app/classes.c	300	s210	broad1,prof1,quit1	vector_destruct x300
+answered_count	menu/game_lists.c	12047	s400,s800	lad3,lad4,net2	gameList_draw x8960, arena_drawGameList x3087
+app_closeWindow	app/app_quit.c	3	s210	broad1,prof1,quit1	app_quitGame x3
+app_invalidateLauncherMarks	load/files.c	3	s210	broad1,prof1,quit1	game_wndProc x3
+app_quitGame	app/app_quit.c	3	s210	broad1,prof1,quit1	menuState210_frame x3
+app_shutdown	app/win32.c	3	s210	broad1,prof1,quit1	game_wndProc x3
+arenaList_rebuild	net/net_sessions.c	1	s400	net2	arena_gamesPageFrame x1
+arena_askJoinPassword	menu/room_clicks.c	1	s400	net2	arenaGames_keys x1
+arena_mergeReceivedSessions	net/net_sessions.c	1	s400	net2	arena_gamesPageFrame x1
+armcColour_hitTest	menu/hit_tests.c	24727	s700	broad1,prof1	armc_drawColourEditor x24689, armc_colourPageClicks x38
+armc_applyColourSlot	menu/armc_colours.c	15	s700	broad1	armc_updatePartsPreview x15
+armc_colourPageClicks	menu/armc_misc.c	25443	s700	broad1,prof1	armc_mouse x25443
+armc_colourPageKeys	menu/armc_keys.c	25442	s700	broad1,prof1	armc_processInput x25442
+armc_drawColourEditor	menu/armc_screens.c	24689	s700	broad1,prof1	armc_drawColourPage x24689
+armc_drawColourPage	menu/armc_misc.c	25443	s700	broad1,prof1	menuState700_armCenter x25443
+armc_seedAllColourSlot	menu/armc_state.c	2	s700	broad1,prof1	armc_colourPageClicks x1, armc_colourPageKeys x1
+armc_setPrimaryHueFromPointer	menu/armc_colours.c	3	s700	broad1	armc_colourPageClicks x3
+armc_setPrimarySaturationFromPointer	menu/armc_colours.c	3	s700	broad1	armc_colourPageClicks x3
+armc_setPrimaryValueFromPointer	menu/armc_colours.c	2	s700	broad1	armc_colourPageClicks x2
+armc_setSecondaryHueFromPointer	menu/armc_colours.c	2	s700	broad1	armc_colourPageClicks x2
+armc_setSecondarySaturationFromPointer	menu/armc_colours.c	3	s700	broad1	armc_colourPageClicks x3
+armc_setSecondaryValueFromPointer	menu/armc_colours.c	2	s700	broad1	armc_colourPageClicks x2
+armc_showColourPage	app/classes.c	3	s700	broad1,prof1	armc_partsPageKeys x2, armc_weaponsPageKeys x1
+armc_spreadAllColourSlot	menu/armc_state.c	13	s700	broad1	armc_applyColourSlot x13
+bar	menu/armc_screens.c	98756	s700	broad1,prof1	armc_drawColourEditor x98756
+blink_down	menu/game_lists.c	89	s400	net2	arena_gamesPageFrame x89
+campaign_new	load/files.c	1	s210	prof1	profile_newCampaign x1
+clip_end	collision/collision_space.c	765	m2	lad4	collision_rayTrace x765
+direction	collision/collision_space.c	611	m2	lad4	collision_rayTrace x611
+dplaySlot0_close	net/dplay_slots.c	2	m0	net2	dplay_leaveSession x2
+dplaySlot1_close	net/dplay_slots.c	1	s400	net2	dplay_leaveSession x1
+dplaySlot1_enum	net/dplay_slots.c	2990	s400	net2	dplay_listSessions x2990
+dplaySlot1_open	net/dplay_slots.c	1	s400	net2	dplay_openConnection x1
+dplay_release	net/network.c	3	m0,s400	net2	dplaySlot0_close x2, dplaySlot1_close x1
+esc_name	hud/hud_escmenu.c	3769	m2	net2	escMenu_update x3769
+esc_quit	hud/hud_escmenu.c	3555	m2	net2,prof1	escMenu_update x3555
+esc_resetScore	hud/hud_escmenu.c	3	m2	lad4,net2	escMenu_update x3
+esc_yesNo	hud/hud_escmenu.c	3675	m2	net2,prof1	hud_drawEscMenu x3675
+file_writeScrambled	load/files.c	6208	m2	net2	send_packet x3108, replay_startRecording x8
+fix_powerUpText	fixes/hud.c	7	m2	prof1	main_timers x7
+gameListJoinBox_hitTest	menu/hit_tests.c	481	s800	lad3,lad4	gameList_draw x481
+gameList_draw	menu/game_lists.c	14204	s800	lad3,lad4	gameList_pageFrame x14204
+gameList_hitTest	menu/hit_tests.c	14229	s800	lad3,lad4	gameList_draw x14204, gameList_mouse x25
+gameList_keys	menu/game_lists.c	13053	s800	lad3,lad4	room_keysByState x13053
+gameList_mouse	menu/game_lists.c	14353	s800	lad3,lad4	room_clicksByState x14353
+gameList_pageFrame	menu/game_lists.c	14836	s800	lad3,lad4	menuState800_gameRoom x14836
+gameList_refresh	menu/room_dialogs.c	2	s800	lad3,lad4	gameList_keys x2
+gameList_stopJoin	menu/room_clicks.c	481	s800	lad3,lad4	room_clicksByState x481
+game_postMatch	menu/menu_states.c	4	m0	net2,prof1	app_frameByScreen x4
+game_returnToArenaLobby	menu/menu_states.c	2	m0	net2	game_postMatch x2
+game_returnToMainMenu	menu/menu_states.c	1	m0	net2	game_postMatch x1
+game_returnToSkirmish	menu/menu_states.c	1	m0	prof1	game_postMatch x1
+game_rows	menu/game_lists.c	12047	s400,s800	lad3,lad4,net2	gameList_draw x8960, arena_drawGameList x3087
+games_down	menu/game_lists.c	2	s800	lad3,lad4	gameList_keys x2
+global_free	net/network.c	3	m0,s400	net2	dplay_release x3
+half_percent	menu/armc_screens.c	49378	s700	broad1,prof1	armc_drawColourEditor x49378
+hud_drawRecordIndicator	hud/hud_clock.c	5651	m2	net2	match_drawFrame x5651
+input_releaseAll	app/devices.c	3	s210	broad1,prof1,quit1	app_shutdown x3
+input_releaseMouse	app/devices.c	3	s210	broad1,prof1,quit1	input_releaseAll x3
+kill_rate	menu/lobby_states.c	11	m2	lad3,lad4	ladder_checkAndSendRecord x11
+ladder_addMatchScores	match/frame_loops.c	9	m2	lad3,lad4	match_frame x8, esc_main x1
+ladder_checkAndSendRecord	menu/lobby_states.c	9	m2	lad3,lad4	ladder_sendRecord x9
+ladder_sendRecord	menu/menu_states.c	9	m2	lad3,lad4	ladder_addMatchScores x9
+leave_game	menu/menu_states.c	4	m0	net2,prof1	game_postMatch x4
+list_append	net/network.c	3	s400,s800	lad3,lad4,net2	net_addRoomRecord x2, net_addServerRecord x1
+lobby_openConnection	menu/lobby_states.c	1	s400	net2	arenaGames_keys x1
+login_send	menu/room_clicks.c	6	s800	broad1,lad1,lad2,lad3,lad4	roomLogin_update x6
+login_takeAccountRecord	menu/lobby_states.c	6	s800	broad1,lad1,lad2,lad3,lad4	roomLogin_update x6
+main_ring	hud/hud_main.c	7173	m2	lad3,lad4	main_draw x7173
+main_score	hud/hud_main.c	133663	m2	lad1,lad2,lad3,lad4	main_draw x133663
+marker	menu/armc_screens.c	49378	s700	broad1,prof1	armc_drawColourEditor x49378
+match_limit	net/network.c	38	m2	lad3,lad4	net_processGamePacket x38
+mem_free	app/small.c	267	s210	broad1,prof1,quit1	sound_freeAll x237, app_shutdown x30
+merge	net/net_sessions.c	3	s400,s800	lad3,lad4,net2	room_mergeReceivedSessions x2, arena_mergeReceivedSessions x1
+msg_playerChangedTeam	msg/msg_players.c	5	m2	lad4,net2	esc_main x3, team_change x2
+msg_playerLeft	msg/msg_players.c	1	m2	net2	net_processGamePacket x1
+msg_serverEndsGame	msg/msg_system.c	1	m2	net2	match_frame x1
+msg_userEndsGame	msg/msg_system.c	1	m2	prof1	match_frame x1
+net_addRoomRecord	net/network.c	2	s800	lad3,lad4	net_receiveGameServerReply x2
+net_addServerRecord	net/network.c	1	s400	net2	net_receiveLobbyReply x1
+net_announceChangedTeam	match/notices.c	3	m2	lad4,net2	esc_main x3
+net_announcePlayerQuit	match/notices.c	1	m2	net2	match_frame x1
+net_announceServerEnd	app/small.c	1	m2	net2	match_frame x1
+net_clearRoomList	app/small.c	2	s800	lad3,lad4	net_send x2
+net_clearServerList	app/small.c	1	s400	net2	net_send x1
+net_freeSessionList	net/network.c	3	m0,s400	net2	dplay_leaveSession x3
+net_freeSlotsOf	app/small.c	1	m2	net2	net_handleSystemMessage x1
+net_inetAddr	net/network.c	3	s400,s800	lad3,lad4,net2	net_pingServer x3
+net_ping	net/network.c	3	s400,s800	lad3,lad4,net2	net_pingServer x3
+net_pingAllServers	net/network.c	3	s400,s800	lad3,lad4,net2	net_pingThreadProc x3
+net_pingServer	net/net_servers.c	3	s400,s800	lad3,lad4,net2	net_pingAllServers x3
+net_pingThreadProc	net/net_servers.c	3	s400,s800	lad3,lad4,net2	BaseThreadInitThunk x3
+net_receiveGameServerReply	net/network.c	4	s800	lad3,lad4	net_recv x4
+net_receiveLobbyReply	net/network.c	2	s400	net2	net_recv x2
+net_sessionCount	app/classes.c	1	s400	net2	arenaList_rebuild x1
+net_startPingThread	net/network.c	3	s400,s800	lad3,lad4,net2	net_receiveGameServerReply x2, net_receiveLobbyReply x1
+net_stopPingThread	net/net_servers.c	3	s400,s800	lad3,lad4,net2	net_pingAllServers x3
+percent	menu/armc_screens.c	49378	s700	broad1,prof1	armc_drawColourPage x49378
+pilotSelect_clicks	menu/profile_misc.c	3468	s210	prof1	profile_screenClicks x3468
+pilotSelect_hitTest	menu/hit_tests.c	3468	s210	prof1	profile_drawPilotSelect x3467, pilotSelect_clicks x1
+pilotSelect_keys	menu/profile_keys.c	3449	s210	prof1	profile_screenKeys x3449
+pilotSelect_loadStats	menu/profile_misc.c	7	s210	prof1	pilotSelect_page x7
+pilotSelect_page	menu/profile_dialogs.c	3467	s210	prof1	menuState210_frame x3467
+pilotSelect_reset	menu/profile_misc.c	1	s210	prof1	profile_newNamePage x1
+power_from_rate	menu/lobby_states.c	11	m2	lad3,lad4	ladder_checkAndSendRecord x11
+profile_create	menu/profile_misc.c	1	s210	prof1	pilotSelect_keys x1
+profile_deleteChosen	menu/profile_misc.c	1	s210	prof1	profile_deleteKeys x1
+profile_drawMessageWindow	menu/profile_dialogs.c	457	s210	prof1	profile_newNamePage x457
+profile_drawPilotSelect	menu/profile_dialogs.c	3467	s210	prof1	pilotSelect_page x3467
+profile_messageKeys	menu/profile_keys.c	458	s210	prof1	profile_screenKeys x458
+profile_nameExists	menu/profile_misc.c	2	s210	prof1	profile_newNamePage x2
+profile_nameHasBadChar	menu/profile_misc.c	3	s210	prof1	profile_newNamePage x3
+profile_newCampaign	load/files.c	1	s210	prof1	profile_create x1
+profile_quitGame	menu/profile_misc.c	3	s210	broad1,prof1,quit1	profile_logOutKeys x3
+profile_writeFile	load/files.c	1	s210	prof1	profile_deleteChosen x1
+record_send	menu/lobby_states.c	11	m2	lad3,lad4	ladder_checkAndSendRecord x11
+reg_write	app/small.c	4	m0,s210	broad1,prof1,quit1	reg_writeStartMode x3, reg_writeEndMode x1
+reg_writeEndMode	app/small.c	1	m0	prof1	game_postMatch x1
+reg_writeStartMode	app/small.c	3	s210	broad1,prof1,quit1	game_wndProc x3
+replay_startRecording	load/files.c	1	m2	net2	esc_name x1
+reply_read	net/network.c	6	s400,s800	lad3,lad4,net2	net_receiveGameServerReply x4, net_receiveLobbyReply x2
+reset_menus	menu/menu_states.c	4	s300,s500	net2,prof1	game_postMatch x4
+roomLogin_editId	menu/edit_fields.c	2	s800	lad3,lad4	roomLogin_clicks x2
+roomLogin_endTyping	menu/room_dialogs.c	14	s800	broad1,lad1,lad2,lad3,lad4	roomLogin_clicks x8, roomLogin_update x6
+room_askJoinPassword	menu/room_clicks.c	2	s800	lad3,lad4	gameList_keys x2
+room_button	menu/game_lists.c	64349	s800	lad3,lad4	gameList_draw x57297, gameList_pageFrame x7052
+room_editJoinPassword	menu/edit_fields.c	1	s800	lad4	room_askJoinPassword x1
+room_enterGameList	menu/room_dialogs.c	2	s800	lad3,lad4	room_keys x2
+room_info	net/network.c	2	m2	lad3,lad4	net_handleSystemMessage x2
+room_joinAnswer	menu/room_clicks.c	2	s800	lad3,lad4	game_wndProc x2
+room_joinListed	menu/room_dialogs.c	2	s800	lad3,lad4	gameList_pageFrame x2
+room_leave	menu/lobby_states.c	1	s800	broad1	room_keys x1
+room_mergeReceivedSessions	net/net_sessions.c	2	s800	lad3,lad4	gameList_pageFrame x2
+row_dir	collision/collision_tris.c	280311	m2	lad4	space_collideBlock x280311
+row_point	collision/collision_tris.c	280317	m2	lad4	space_collideBlock x280317
+say	msg/msg_system.c	2	m2	net2,prof1	msg_serverEndsGame x1, msg_userEndsGame x1
+send_host_leaving	menu/menu_states.c	2	m0	net2	app_frameByScreen x2
+sessionList_sort	net/net_sessions.c	4	s400,s800	lad3,lad4,net2	merge x3, arenaList_rebuild x1
+slider_hue	menu/armc_colours.c	5	s700	broad1	armc_setPrimaryHueFromPointer x3, armc_setSecondaryHueFromPointer x2
+slider_pos	menu/armc_colours.c	15	s700	broad1	armc_colourPageClicks x10, armc_setPrimaryHueFromPointer x3, armc_setSecondaryHueFromPointer x2
+slot_close	net/dplay_slots.c	3	m0,s400	net2	dplay_leaveSession x3
+sound_releaseDirectSound	app/devices.c	3	s210	broad1,prof1,quit1	app_shutdown x3
+stage_printText	match/notices.c	1	m2	lad3	actor_dies x1
+static_destroyTex128x128	app/classes.c	3	s210	broad1,prof1,quit1	_initterm_e x3
+static_destroyTex128x64	app/classes.c	3	s210	broad1,prof1,quit1	_initterm_e x3
+static_destroyTex256x128	app/classes.c	3	s210	broad1,prof1,quit1	_initterm_e x3
+static_destroyTex256x256	app/classes.c	3	s210	broad1,prof1,quit1	_initterm_e x3
+static_destroyTex256x64	app/classes.c	3	s210	broad1,prof1,quit1	_initterm_e x3
+static_destroyTex64x64	app/classes.c	3	s210	broad1,prof1,quit1	_initterm_e x3
+static_endBMPRGBFileLog	app/statics.c	3	s210	broad1,prof1,quit1	_initterm_e x3
+static_endCollisionVolumeLog	app/statics.c	3	s210	broad1,prof1,quit1	_initterm_e x3
+static_endConsoleLog	app/statics.c	3	s210	broad1,prof1,quit1	_initterm_e x3
+static_endLightLog	app/statics.c	3	s210	broad1,prof1,quit1	_initterm_e x3
+static_endPackedColorLog	app/statics.c	3	s210	broad1,prof1,quit1	_initterm_e x3
+static_endRealColorLog	app/statics.c	3	s210	broad1,prof1,quit1	_initterm_e x3
+static_endSceneLog	app/statics.c	3	s210	broad1,prof1,quit1	_initterm_e x3
+static_endShapeLog	app/statics.c	3	s210	broad1,prof1,quit1	_initterm_e x3
+static_endShapeManagerLog	app/statics.c	3	s210	broad1,prof1,quit1	_initterm_e x3
+static_endSkeletonLog	app/statics.c	3	s210	broad1,prof1,quit1	_initterm_e x3
+static_endSkeletonManagerLog	app/statics.c	3	s210	broad1,prof1,quit1	_initterm_e x3
+static_endSoundLog	app/classes.c	3	s210	broad1,prof1,quit1	_initterm_e x3
+static_endStageLog	app/statics.c	3	s210	broad1,prof1,quit1	_initterm_e x3
+static_endTextureLog	app/statics.c	3	s210	broad1,prof1,quit1	_initterm_e x3
+static_endTextureManager	app/classes.c	3	s210	broad1,prof1,quit1	_initterm_e x3
+static_endTextureManagerLog	app/statics.c	3	s210	broad1,prof1,quit1	_initterm_e x3
+static_endTimeSync	app/classes.c	3	s210	broad1,prof1,quit1	_initterm_e x3
+static_endTimeSyncLog	app/statics.c	3	s210	broad1,prof1,quit1	_initterm_e x3
+static_endUnitLog	app/statics.c	3	s210	broad1,prof1,quit1	_initterm_e x3
+static_endUnitPartInfoLog	app/statics.c	3	s210	broad1,prof1,quit1	_initterm_e x3
+static_endUnitPoseInfoLog	app/statics.c	3	s210	broad1,prof1,quit1	_initterm_e x3
+static_endViewVolumeLog	app/statics.c	3	s210	broad1,prof1,quit1	_initterm_e x3
+take_back	menu/lobby_states.c	18	m2	lad3,lad4	ladder_checkAndSendRecord x18
+through_m	collision/collision_space.c	11623254	m2	lad4	space_traceBlock x11623254
+track	menu/armc_screens.c	148134	s700	broad1,prof1	armc_drawColourEditor x148134
+turned	menu/armc_screens.c	49378	s700	broad1,prof1	armc_drawColourPage x49378
+turned_f	menu/armc_screens.c	49378	s700	broad1,prof1	armc_drawColourEditor x49378
+vec_rotate	render/rotations.c	265401	m2	lad3,lad4	main_ring x265401
+watch_camera	app/main_loop.c	1682	m2	lad3,lad4	match_frame x1682
