@@ -36,21 +36,21 @@ static const Store k_lobbyTopOutlines[44] = {
 
 void (lobbyTop_initOutlines)(void) { apply_stores(k_lobbyTopOutlines, 44); }   /* 0x42f500: the lobby top menu's button outlines */
 
-static const Store k_vkTable[57] = {
-	{ OBJ(g_vkTable), 0x1b }, { (OBJ(g_vkTable) + 0x4), 0x31 }, { (OBJ(g_vkTable) + 0x8), 0x32 }, { (OBJ(g_vkTable) + 0xc), 0x33 }, { (OBJ(g_vkTable) + 0x10), 0x34 },
-	{ (OBJ(g_vkTable) + 0x14), 0x35 }, { (OBJ(g_vkTable) + 0x18), 0x36 }, { (OBJ(g_vkTable) + 0x1c), 0x37 }, { (OBJ(g_vkTable) + 0x20), 0x38 }, { (OBJ(g_vkTable) + 0x24), 0x39 },
-	{ (OBJ(g_vkTable) + 0x28), 0x30 }, { (OBJ(g_vkTable) + 0x2c), 0x2d }, { (OBJ(g_vkTable) + 0x30), 0x3d }, { (OBJ(g_vkTable) + 0x34), 0x8 }, { (OBJ(g_vkTable) + 0x38), 0x9 },
-	{ (OBJ(g_vkTable) + 0x3c), 0x51 }, { (OBJ(g_vkTable) + 0x40), 0x57 }, { (OBJ(g_vkTable) + 0x44), 0x45 }, { (OBJ(g_vkTable) + 0x48), 0x52 }, { (OBJ(g_vkTable) + 0x4c), 0x54 },
-	{ (OBJ(g_vkTable) + 0x50), 0x59 }, { (OBJ(g_vkTable) + 0x54), 0x55 }, { (OBJ(g_vkTable) + 0x58), 0x49 }, { (OBJ(g_vkTable) + 0x5c), 0x4f }, { (OBJ(g_vkTable) + 0x60), 0x50 },
-	{ (OBJ(g_vkTable) + 0x64), 0x5b }, { (OBJ(g_vkTable) + 0x68), 0x5d }, { (OBJ(g_vkTable) + 0x6c), 0xd }, { (OBJ(g_vkTable) + 0x70), 0x0 }, { (OBJ(g_vkTable) + 0x74), 0x41 },
-	{ (OBJ(g_vkTable) + 0x78), 0x53 }, { (OBJ(g_vkTable) + 0x7c), 0x44 }, { (OBJ(g_vkTable) + 0x80), 0x46 }, { (OBJ(g_vkTable) + 0x84), 0x47 }, { (OBJ(g_vkTable) + 0x88), 0x48 },
-	{ (OBJ(g_vkTable) + 0x8c), 0x4a }, { (OBJ(g_vkTable) + 0x90), 0x4b }, { (OBJ(g_vkTable) + 0x94), 0x4c }, { (OBJ(g_vkTable) + 0x98), 0x3b }, { (OBJ(g_vkTable) + 0x9c), 0x27 },
-	{ (OBJ(g_vkTable) + 0xa0), 0x60 }, { (OBJ(g_vkTable) + 0xa4), 0x10 }, { (OBJ(g_vkTable) + 0xa8), 0x5c }, { (OBJ(g_vkTable) + 0xac), 0x5a }, { (OBJ(g_vkTable) + 0xb0), 0x58 },
-	{ (OBJ(g_vkTable) + 0xb4), 0x43 }, { (OBJ(g_vkTable) + 0xb8), 0x56 }, { (OBJ(g_vkTable) + 0xbc), 0x42 }, { (OBJ(g_vkTable) + 0xc0), 0x4e }, { (OBJ(g_vkTable) + 0xc4), 0x4d },
-	{ (OBJ(g_vkTable) + 0xc8), 0x2c }, { (OBJ(g_vkTable) + 0xcc), 0x2e }, { (OBJ(g_vkTable) + 0xd0), 0x2f }, { (OBJ(g_vkTable) + 0xd4), 0x10 }, { (OBJ(g_vkTable) + 0xd8), 0x2a },
-	{ (OBJ(g_vkTable) + 0xdc), 0x0 }, { (OBJ(g_vkTable) + 0xe0), 0x20 } };
+static const Store k_scanCharTable[57] = {
+	{ OBJ(g_scanCharTable), 0x1b }, { (OBJ(g_scanCharTable) + 0x4), 0x31 }, { (OBJ(g_scanCharTable) + 0x8), 0x32 }, { (OBJ(g_scanCharTable) + 0xc), 0x33 }, { (OBJ(g_scanCharTable) + 0x10), 0x34 },
+	{ (OBJ(g_scanCharTable) + 0x14), 0x35 }, { (OBJ(g_scanCharTable) + 0x18), 0x36 }, { (OBJ(g_scanCharTable) + 0x1c), 0x37 }, { (OBJ(g_scanCharTable) + 0x20), 0x38 }, { (OBJ(g_scanCharTable) + 0x24), 0x39 },
+	{ (OBJ(g_scanCharTable) + 0x28), 0x30 }, { (OBJ(g_scanCharTable) + 0x2c), 0x2d }, { (OBJ(g_scanCharTable) + 0x30), 0x3d }, { (OBJ(g_scanCharTable) + 0x34), 0x8 }, { (OBJ(g_scanCharTable) + 0x38), 0x9 },
+	{ (OBJ(g_scanCharTable) + 0x3c), 0x51 }, { (OBJ(g_scanCharTable) + 0x40), 0x57 }, { (OBJ(g_scanCharTable) + 0x44), 0x45 }, { (OBJ(g_scanCharTable) + 0x48), 0x52 }, { (OBJ(g_scanCharTable) + 0x4c), 0x54 },
+	{ (OBJ(g_scanCharTable) + 0x50), 0x59 }, { (OBJ(g_scanCharTable) + 0x54), 0x55 }, { (OBJ(g_scanCharTable) + 0x58), 0x49 }, { (OBJ(g_scanCharTable) + 0x5c), 0x4f }, { (OBJ(g_scanCharTable) + 0x60), 0x50 },
+	{ (OBJ(g_scanCharTable) + 0x64), 0x5b }, { (OBJ(g_scanCharTable) + 0x68), 0x5d }, { (OBJ(g_scanCharTable) + 0x6c), 0xd }, { (OBJ(g_scanCharTable) + 0x70), 0x0 }, { (OBJ(g_scanCharTable) + 0x74), 0x41 },
+	{ (OBJ(g_scanCharTable) + 0x78), 0x53 }, { (OBJ(g_scanCharTable) + 0x7c), 0x44 }, { (OBJ(g_scanCharTable) + 0x80), 0x46 }, { (OBJ(g_scanCharTable) + 0x84), 0x47 }, { (OBJ(g_scanCharTable) + 0x88), 0x48 },
+	{ (OBJ(g_scanCharTable) + 0x8c), 0x4a }, { (OBJ(g_scanCharTable) + 0x90), 0x4b }, { (OBJ(g_scanCharTable) + 0x94), 0x4c }, { (OBJ(g_scanCharTable) + 0x98), 0x3b }, { (OBJ(g_scanCharTable) + 0x9c), 0x27 },
+	{ (OBJ(g_scanCharTable) + 0xa0), 0x60 }, { (OBJ(g_scanCharTable) + 0xa4), 0x10 }, { (OBJ(g_scanCharTable) + 0xa8), 0x5c }, { (OBJ(g_scanCharTable) + 0xac), 0x5a }, { (OBJ(g_scanCharTable) + 0xb0), 0x58 },
+	{ (OBJ(g_scanCharTable) + 0xb4), 0x43 }, { (OBJ(g_scanCharTable) + 0xb8), 0x56 }, { (OBJ(g_scanCharTable) + 0xbc), 0x42 }, { (OBJ(g_scanCharTable) + 0xc0), 0x4e }, { (OBJ(g_scanCharTable) + 0xc4), 0x4d },
+	{ (OBJ(g_scanCharTable) + 0xc8), 0x2c }, { (OBJ(g_scanCharTable) + 0xcc), 0x2e }, { (OBJ(g_scanCharTable) + 0xd0), 0x2f }, { (OBJ(g_scanCharTable) + 0xd4), 0x10 }, { (OBJ(g_scanCharTable) + 0xd8), 0x2a },
+	{ (OBJ(g_scanCharTable) + 0xdc), 0x0 }, { (OBJ(g_scanCharTable) + 0xe0), 0x20 } };
 
-void (input_initVkTable)(void) { apply_stores(k_vkTable, 57); }   /* 0x431680 the scan code -> key table (g_vkTable) */
+void (input_initScanCharTable)(void) { apply_stores(k_scanCharTable, 57); }   /* 0x431680 the scan code -> character table (g_scanCharTable) */
 
 static const Store k_textColours[64] = {
 	{ OBJ(g_textColours), 0x3f800000 }, { (OBJ(g_textColours) + 0x4), 0x3f800000 }, { (OBJ(g_textColours) + 0x8), 0x3f800000 }, { (OBJ(g_textColours) + 0xc), 0x3f800000 }, { (OBJ(g_textColours) + 0x10), 0x3f73f3f4 },

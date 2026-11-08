@@ -250,7 +250,7 @@ static void stat_float(int x, int y, float value, u32 format, u32 unit)
 }
 
 /* 0x419160: the weapons page: two buttons (MSG(115, "$[0] O K"); 3 / 4 under the pointer, by armcWeaponsPage_hitTest, lit), the six part
-   slots (the chosen one, g_armcSlot, bright), a new snapshot of it when asked (g_armcChanged), each slot's picture
+   slots (the chosen one, g_armcSlot, bright), a new snapshot of it when asked (g_armcSlotChanged), each slot's picture
    (texture OBJ(g_slotTextures) + 4 k, when it has a name, g_partRecords) and label (MSG(291, "HAND-W1($[0] 1)")) with its name (or MSG(319, "EMPTY SLOT")); the part
    box: its picture (g_armcViewedPartTexture), name (0x4dc150) and type (MSG(711, "HV-PISTOL"), by g_weaponListTable / g_extraListTable of g_armcCursor), or
    MSG(320, "REMOVE WEAPON") without one; its arrows either side of it (0xc / 0xd lit); the ROTATE box; the stats panel: nothing chosen (0x4dc190 = -1: MSG(319, "EMPTY SLOT")), a part type only
@@ -280,7 +280,7 @@ void (armc_drawWeaponsScreen)(void)
 		glColor4f(1.0f, 1.0f, 1.0f, g_armcSlot == k ? 1.0f : 0.4f);
 		menu_drawWideButton(X0 + 0x10, Y0 + k * 0x3f + 0x28, X0 + 0xa0, Y0 + k * 0x3f + 0x54, 1);
 	}
-	if (g_armcChanged)
+	if (g_armcSlotChanged)
 		armc_loadSnapshotTexture(g_armcSlot);
 	glEnable(GL_TEXTURE_2D);
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);

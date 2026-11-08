@@ -37,7 +37,7 @@ g_arenaKeptCamZ
 g_arenaListClickArmed
 g_arenaTunnelDepth
 g_argCount
-g_armcChanged
+g_armcSlotChanged
 g_tunnelStep
 g_armcCameraTravelling
 g_armcLevel
@@ -142,8 +142,8 @@ g_mapListMade
 g_mapMissing
 g_mapPreviewChanged
 g_mapPreviewTexture
-g_matchChatCaretX
-g_matchChatCaretY
+g_matchTextFieldX
+g_matchTextFieldY
 g_matchEndedByServer
 g_matchEndedByUser
 g_matchLogWritten
@@ -681,7 +681,7 @@ g_texture256x64
 g_texture128x128
 g_texture256x256
 g_texture256x128
-g_textureSets
+g_textureManagerObject
 # vectors and the music duration (objects17.csv), whole
 g_vecOriginXyz
 g_vecUnitZXyz
@@ -975,7 +975,7 @@ g_roomOutlines
 g_setupTopOutlines
 g_outlinesCopy
 # the VK table and default colours (objects27.csv), whole
-g_vkTable
+g_scanCharTable
 g_defaultColours
 # ARM CENTER part lists, panel names (objects28.csv), the cursors, lengths and unshown mech values (globals23.csv)
 g_headList

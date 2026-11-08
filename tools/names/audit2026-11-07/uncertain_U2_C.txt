@@ -1,0 +1,354 @@
+U2 C: 353 names; OK 339, WRONG 6, CLEARER 8, UNDECIDABLE 0
+Scene.restartPending | OK | only TAKE()n in net_announce (network.c:1591) -> packet kind 13 (receiver sets restartTimer 5, network.c:2199); no writer of 1 in src
+Scene.cheatPlayer | OK | only read as packet[2] of kind 6 (network.c:1565); receiver msg_cheatUsed(b[2], b[3]) (network.c:2131); never written
+Scene.cheatCode | OK | only read as packet[3] of kind 6 (network.c:1565) -> msg_cheatUsed second arg; never written
+Scene.cheatPending | OK | cleared notices.c:52, taken network.c:1564 to send kind 6; no writer of 1
+Scene.cleared2340ca4 | OK | only zero_dwords(.., 11) in scene_startSession (classes.c:651); 0x2c = 11 dwords
+Scene.markLights | OK | main_loop.c:1231: ==1 draws a star (k_star, +-100) at each used mapLights record; only zeroed (classes.c:653)
+Scene.turnLeftHeld | OK | match_mechTestFrame: = asyncKeyDown(VK_LEFT 0x25) (main_loop.c:474); turns cameraAngle[1] down (wrap 3600)
+Scene.turnRightHeld | OK | match_mechTestFrame: = asyncKeyDown(VK_RIGHT 0x27); cameraAngle[1] up, wrapped
+Scene.upKeyHeld | OK | match_mechTestFrame: VK_UP without Ctrl (main_loop.c:471); cameraAngle[0] -= turn, floored at -890 (:496)
+Scene.downKeyHeld | OK | match_mechTestFrame: VK_DOWN without Ctrl; cameraAngle[0] += turn, capped 890 (:502)
+Scene.fKeys | OK | F1..F6 (0x70+k) held (main_loop.c:486); [0..4] pick parts via k_partSteps head..booster, [5] the weapon item (:543/:552); 0x18 = 6 ints
+Scene.partStepDownPressed | OK | Z pressed or shift+Z held (main_loop.c:487); held parts set to index-1 (:539)
+Scene.partStepUpPressed | OK | X pressed or shift+X held (:488); held parts index+1 (:548)
+Scene.replaySlow | OK | replay_frame: = input_isDown(g_dikSpace) (main_loop.c:1060), read :1136 for slow motion
+Scene.replaySkip | OK | replay_frame: = isDown(g_dikEnter) (:1061); :1146 ends the replay file read -> next replay
+Scene.lastMissionWon | OK | only write main_loop.c:2087 when sessionMode 0, stageCleared 1, g_mapIndex 14 (then matchLeaving, quitDelay 0); no reader in src
+Scene.zoomInHeld | OK | mech test: Ctrl+Up (main_loop.c:465), zoom *= (1-0.6dt) floor 500; replay_frame reads it (:1114) but k_replayHeld never sets it
+Scene.zoomOutHeld | OK | mech test: Ctrl+Down (:466), zoom /= .. cap 10000; replay_frame read (:1119) never fed
+Scene.followNextAsked | OK | set by left click when spectating (main_loop.c:288) and in replay_frame (:1040); steps watchedPlayer to the next live one (:714, :1915)
+Scene.presetNextAsked | OK | right click (:292, :1044); cameraMode / cameraSlot = (+1) % 10 (:740, :1939)
+Scene.scenePaused | OK | only read ==0 gates actor/bullet/particle updates (:582, :1870) and replay file read (:1141); no writer in src
+Scene.levelPoints | OK | match_setup: = g_ladderExp in a Ladder game else 0 (match_start.c:86/91), level_fromPoints(it); match_frame gives it as score / scoreCounted (:1736)
+Scene.packetLossTimer | OK | main_loop.c:2273: 1.0 when netq_skippedCount()>0 (then cleared), else run_down to 0; no other reader
+Scene.lostTime | OK | += frameTime while net_hasSlot()==0 in a network session; >5 -> msg_connectionLost (main_loop.c:2257); 0 at round start (match_start.c:131); loading.c:448 adds too
+Scene.manualPick | OK | [0] stops followTime, [1] presetTime (:1163/:1947), [2] set by unfollow (free camera, :646), cleared when a player is followed
+Scene.quitDelay | WRONG comment -> "seconds before the match is left once matchLeaving is set (3; 0 for a client's quit and the last mission won): quit, data loss, lost connection, unstable network, the server ending the game"; the "after the round is over" claim is contradicted: round_over never sets it, every writer (main_loop.c:1709/1724/1898/2089/2260/2269, network.c:2115) sets it with matchLeaving and :2317 counts it down only while matchLeaving == 1
+Scene.playAsked | OK | escMenu sets 1 (hud_escmenu.c:278/317); acts like a fire press for team / spawn (main_loop.c:1769), cleared :1783
+Scene.quitAsked | OK | set by Esc / quit menu items / match end; read to open the Esc menu or leave (main_loop.c:1684..1730)
+Scene.fogOn | OK | = Stage.fogOn read from the map info (map_info.c:407); ==1 enables fog for the objects pass (main_loop.c:1244, hud_pass.c:46)
+Scene.renderMode | OK | passed as ViewVolume_draw mode: 1 glPolygonMode GL_LINE (0x1b01), 2 no texture (use_texture); only written 0 (classes.c:611)
+Scene.lockHeld | OK | actor_frame.c:866: per actor set to targetKeepTime while locked, else counted down; hud_lockon draws while > 0
+Scene.msgWrite | OK | small.c:232 ++msgWrite after filling messages[msgWrite & 31]; hud_message_box reads while msgRead < msgWrite
+Scene.msgRead | OK | small.c:233: bumped only when the ring overflows ((msgRead ^ head) & 31 == 0); hud shows msgRing[msgRead & 31]
+Scene.scriptMode | OK | script sets it (small.c:386); hud_pass: !=1 draws 3D, ==2 clears depth, 0 draws HUD; with scriptHoldsPlay pauses actors
+Scene.restartTimer | OK | kind 13 sets 5 (network.c:2199); main_loop.c:2280 counts down, beeps each second, resets scores/items and spawns at 0; "READY %d" in hud_messages
+Scene.recording | OK | set by replay_startRecording (files.c:1409), cleared by replay_closeRecording; packets also written while 1 (network.c:1453)
+Scene.stageCleared | OK | set 1 when the local player / team reaches fragLimit and g_mapIndex == g_progress (main_loop.c:2162/2168); then g_progress++; 0 -> MISSION FAILED, RETRY
+Scene.matchLeaving | OK | set on quit / data loss / lost connection / unstable / server end / last mission; quitDelay counts while 1 (main_loop.c:2317), HUD parts hidden
+Scene.character | OK | match_setup = g_selectedCharacter (match_start.c:84), armc_mech sets it; passed to playerRecord_set (main_loop.c:1398)
+Scene.cleared2343323 | OK | small.c:339 memset only (match_resetInputState); 0x28 bytes, the loop bound of holdAltitude..presetNextAsked
+ColourChoice.first | OK | match_start.c:103 copies first[t] (t = h,s,v) into mechColours[..][..][0]; lobby_states/menu_misc clamp first[1], first[2] >= 0
+ColourChoice.second | OK | match_start.c:104 copies second[t] into mechColours[..][..][1]; record 0x18 = two hsv triples
+ArchiveEntry.name | OK | dat archive index records of 0x44 (files.c:287/290 read count*0x44); name precedes the offset; dat_entry finds by name
+ArchiveEntry.offset | OK | dat_entry fseeks to table[index].offset (files.c:109)
+MenuOutline.points | CLEARER -> edges | it is the polygon's edge count n passed to menu_pointInPolygon (hit_tests.c:62 tests i < n with px[i+1]); g_mainMenuOutlines stores 4 with 5 x / 5 y (closed). "points" reads as the number of x/y entries (which is this + 1)
+MenuOutline.x | OK | hit_tests.c:67 px = first 5 ints after n; g_mainMenuOutlines +4..+0x14 (x[4] = x[0])
+MenuOutline.y | OK | py = px + 5 (+0x18..+0x28), centred 240 - y
+g_lobbyConnectionOpen | OK | set 1 by lobby_openConnection (lobby_states.c:958) / T search; tested to skip reconnecting (:946); cleared on disconnect / back / LAN search
+g_lobbySearching | OK | set 1 with the lobby request (lobby_states.c:964, game_lists.c:912); cleared on the answer (game_lists.c:761); part of lobby_busy
+g_lobbyRefreshing | OK | = (result == 1) on the lobby answer (game_lists.c:763); timer merges every g_listRefreshPeriod; 0 at g_netListDone (:787)
+g_lanSearch | OK | set by I / button 0 (game_lists.c:899); arena page polls dplay_listSessions until g_lobbyBlinkClock runs out, then 0 (:754)
+g_joinTimedOut | OK | WndProc WM_TIMER 0x378: ++g_joinPollTicks > 30 sets it (win32.c:783); arena_joinAnswer / room_joinAnswer leave and show 0x44
+g_rightClick | OK | g_mouseClicked[1] (layout_names: g_mouseClicked_v + 4); read as right click by every menu and spectate code
+g_playerCorporation | OK | axis.cfg set_player color RED/BLUE/YELLOW -> 0/1/2 (files.c:1080..1084); passed to dplay_host / dplay_join as player data
+g_launchedForNetGame | OK | app_parseCommandLine: 1 for "-net" with axiswl.dat or "<x> -ip <server>" (files.c:606/616); skips file checks, drives g_launchStartStep
+g_launchStartStep | OK | 0x65 logged in (profile_misc.c:204), 0x66 menus (menu_tunnel.c:425), 0x67 ARM CENTER left (armc_misc.c:132), 0x68 / 0x69 host / join (lobby_states.c:1020/998)
+g_roomLoginDue | OK | set by LOG IN / I key (room_clicks.c:196, room_dialogs.c:1126/1151); blocks the dialog; cleared on bad chars / cancel
+g_lineToLoginId | OK | set when the ID field is opened (room_clicks.c:184); roomLogin end-typing copies g_inputLine into g_accountName and clears it (room_dialogs.c:325)
+g_roomRequestOut | OK | login_send sets 1 (room_clicks.c:549); roomLogin_update waits on g_gameServerAnswer then clears (room_dialogs.c:411..528)
+g_currentProfile | OK | axisuser.dat header word written / read (files.c:408/865); = g_profileChosen on create; picks g_profileName (files.c:439/680)
+g_lobbyListAnswer | OK | net_receiveLobbyReply sets 0xca / 0xcb / 0x29 (network.c:692..700); WndProc switch maps to g_searchResult (win32.c:814)
+g_lobbyConnectionBlock | OK | dplay_lobbyConnect stores the DPLCONNECTION block (network.c:872), reads +4 flags, +8 session, +0xc name; freed in dplay_release (:388)
+g_pingTime | OK | net_ping stores the ICMP round trip (1 for 0 ms, network.c:614); net_pingAllServers copies it (-400 above 1000) into g_serverPing[i]
+g_netListDone | OK | net_pingAllServers sets 1 at the end (network.c:662) / stops set it; ends ping loop and the list refreshes (game_lists.c:406/783)
+g_joinThroughServer | OK | 1 when the list came from the lobby server (lobby_states.c:959/1400), 0 on a LAN search (:1387); lobby_join branches on it (game_lists.c:835)
+g_lanJoinRequest | OK | set by lobby_join when not through the server; arena page then arena_joinSession(g_pickedGame) (game_lists.c:818)
+g_playerCustomize | OK | axis.cfg set_player customize ON/OFF (files.c:1086/169); copied to / from g_arenaCustomize only
+g_launchedAsHost | OK | app_parseCommandLine: 1 only for "-net" with axiswl.dat (files.c:607); arena_startFromLauncher hosts when 1 else joins (lobby_states.c:992)
+g_rankingListIn | OK | WndProc sets 1 when g_playerListDone (win32.c:840); ranking_page fills the page and clears (room_clicks.c:504)
+g_roomSearchAnswerIn | OK | WndProc on g_roomListAnswer 0x28/0xca/0xcb sets 1 with g_searchResult 4/1/3 (win32.c:835..837); gameList_pageFrame consumes
+g_rankingRequestPending | OK | set on page / sort change (menu_misc.c:195, room_clicks.c:500/591); ranking_page sends the request and clears (:476)
+g_argCount | OK | app_parseCommandLine: strtok word count into g_launchArgs (files.c:594); 1 -> -net, 3 -> -ip; 0 for empty / long lines
+g_replayRandomOrder | OK | replay selection R key / RANDOM tick toggles (menu_states.c:396/429); replay_next picks at random when 1 (main_loop.c:679)
+g_chosenPilot | OK | profile_drawChosenPilot: = g_profileRecords[g_profileChosen].pilot (profile_dialogs.c:468/469); draws its portrait, name, sex, age, stats
+g_hostGoneMessageFlag | OK | +4 of the host-leaving message: set 1 around net_sendMessage in send_host_leaving / freeCam_keys / dplay_leaveSession, then 0
+g_netBlockSize | OK | net_receiveAll: buffer size grown on DPERR_BUFFERTOOSMALL (network.c:755); passed to net_handleMessage; 0 after free (:772)
+g_roomListAnswer | OK | net_receiveGameServerReply sets 0xca / 0x28 (network.c:718/723); WndProc switch (win32.c:834)
+g_serverListCount | OK | list_append count for g_serverList (network.c:470); -> g_serverPingCount at list end (:690); page count in arena list (game_lists.c:157)
+g_serverPingCount | OK | = server / room count at list end (network.c:690/716); bounds net_pingAllServers and merge loops; 0 in net_clearServers
+g_arenaServerList | OK | set 1 by lobby_openConnection (lobby_states.c:971), cleared by the LAN rebuild (net_sessions.c:113); picks lock / ping rows
+g_arenaLanListBuilt | OK | arenaList_rebuild sets 1 (net_sessions.c:111); chooses g_gameCount vs g_serverListCount (game_lists.c:157)
+g_arenaListClickTimer | OK | arena page: += g_frameTime while g_arenaListClickArmed; past 20 disarms and 0 (game_lists.c:732..736)
+g_searchResult | OK | WndProc sets 4/1/3 with the answer flags (win32.c:815..837), 0 at request (lobby_states.c:965), -1 on cancel (game_lists.c:942)
+g_retypePassword | OK | set on entering the login (screen_enter.c:203, room_dialogs.c:57); roomLogin_update reopens the password field empty and clears (room_dialogs.c:360)
+g_loginToSend | OK | LOG IN click / I key set 1 (room_clicks.c:195, room_dialogs.c:1125); roomLogin_update calls login_send and clears (room_dialogs.c:366)
+g_typingLoginId | OK | roomLogin_editId sets 1 (edit_fields.c:174); taken into g_accountName after typing (room_dialogs.c:372); ID not drawn meanwhile (:773)
+g_profileRowClicked | OK | set on a row click (profile_misc.c:682); second click on the same row logs in (:673); cleared after 20 (:228)
+g_roomListCount | OK | list_append count for g_roomList (network.c:477); -> g_serverPingCount at end; shown in answered_count (game_lists.c:277)
+g_localPlayerData | OK | dplay_hostSession / joinSession store data (network.c:822/851); 2 bytes into slot packet +0x22 (network.c:37); 0 at open
+g_pingStartEvent | OK | CreateEventA in net_startPingThread (network.c:527), SetEvent wakes the thread; ResetEvent in net_stopPingThread
+g_fullScreen | OK | glWindow_init stores the full-screen arg (win32.c:97); ==1 switches display mode (:71/:116), cleared on failure
+g_arenaListRefreshTimer | OK | += g_frameTime while g_lobbyRefreshing; past g_listRefreshPeriod merge and 0 (game_lists.c:775..779)
+g_mouseInvert | OK | axis.cfg convertmouse ON/OFF; negates mouseDy (main_loop.c:240/1082)
+g_openLoginName | CLEARER -> g_newIdOpenNameField | set by room_openNewIdForm (room_dialogs.c:45), newIdForm_update opens field 0 and clears (:443); it is the new-ID form's name field, not the login dialog's
+g_roomListRefreshTimer | OK | gameList_pageFrame: += g_frameTime while g_roomRefreshing; past period merge and 0 (game_lists.c:395..399)
+g_lastChatLine | OK | net_handleMessage: zeroed then net_formatChatLine into it (network.c:934..936); freeCam_keys sets it to g_inputLine (menu_cameras.c:470)
+g_lastChatLineSet | OK | 1 with g_lastChatLine (network.c:938, menu_cameras.c:469), 0 for an empty line (:473); no reader
+g_gameServerAnswer | OK | answer_reply for request 14 (network.c:1403); roomLogin_update acts (33 = 0x21 accepted) and clears (room_dialogs.c:413/429)
+g_pingStopEvent | OK | CreateEventA (network.c:529); SetEvent in net_stopPingThread (net_servers.c:50); second wait handle -> ExitThread
+g_defaultColour | OK | colour_initPackedClear writes 4 zero bytes (statics.c:122); fills flags (small.c:215) and flagAtlas (match_start.c:426), stage defaultColour
+g_displayModeChanged | OK | app_setDisplayMode sets 1 for a non-desktop mode, 0 when back (win32.c:208..215); WM_ACTIVATEAPP gives the mode up (:757)
+g_freeCamLookX | OK | freeCam_keys / stepLeft / stepRight move it (menu_cameras.c:332/502/511); copied to g_menuCameraLook and slot[0] (:521/526)
+g_freeCamLookZ | OK | moved with X (menu_cameras.c:334/505/513); copied to g_menuCameraLookZ and slot[2]
+g_arenaFileTimeLimit | OK | arena_loadSettings atoi("timelimit") (files.c:1035); low byte -> g_arenaTimeLimit (lobby_states.c:1016)
+g_arenaFileSecret | OK | atoi("secret") (files.c:1021); low byte -> g_arenaLocked (lobby_states.c:1005..1007)
+g_textureManager | OK | TextureManager_ctor writes the vtable word 0x4a9570 (classes.c:159); &it is g_textures (loading.c:274)
+g_gameListLoaded | OK | set by gameList_refresh (room_dialogs.c:183); rows drawn only then (game_lists.c:275); cleared on entry
+g_typingRoomJoinPassword | OK | room_editJoinPassword sets 1 (edit_fields.c:229); gameList_pageFrame compares and clears (game_lists.c:420/422)
+g_pingThreadId | OK | CreateThread lpThreadId (network.c:531); cleared in net_closeThreadHandles (:255)
+g_pingThread | OK | CreateThread handle (network.c:531); closed by net_closeThreadHandles (:245)
+g_errorLogging | OK | only read ==1 in report (error_log.c:27) to append ERROR.TXT; no writer
+g_cursorX | OK | input_getCursorPos copies GetCursorPos x (devices.c:236), returns its address
+g_crtErrno | OK | indexes g_crtSysErrList for "CRTL ERROR: %s" (ptx_decode.c:213); set by the runtime
+g_otherModeWidth | OK | app_setDisplayMode remembers a non-desktop width (win32.c:213); WM_ACTIVATEAPP restores the mode (:751)
+g_arenaCorporation | OK | arena_defaultPlayer 0, from / to g_playerCorporation (menu_misc.c:20/30, map_list.c:102)
+g_arenaCustomize | OK | arena_defaultPlayer 0, from / to g_playerCustomize (menu_misc.c:21/28, map_list.c:95); no other reader
+g_sessionFound | OK | WM_TIMER 0x378 sets 1 once net_getSession(0) answers (win32.c:788); join answers proceed only then (lobby_states.c:793, room_clicks.c:368)
+g_debugValue | CLEARER -> g_unusedFreeCamCounter | freeCam_keys steps it +1/+10/-1/-10 (min 1) on keys 1..4 (menu_cameras.c:534..542) and nothing reads it; "debug" is a guess at intent, an unread counter is all the code shows
+g_mouseWheel | OK | input_updateMouse: z / -120 (devices.c:171); WHEEL-UP < 0 / WHEEL-DOWN > 0 (:272/:274), setup binding (setup_keys.c:474)
+g_roomRecMap | OK | registry record's map byte (small.c:548..644); 22..24 -> 0 then into g_roomMap (lobby_states.c:134..136)
+g_listAnswered | OK | merge ++ per newly answered server (net_sessions.c:50), = n on LAN rebuild (:95); drawn as the left of "n / total" (game_lists.c:91)
+g_timerRepeatCount | OK | timer_now: ++ while the time equals g_lastTime, >100000 adds 1 s and resets (timer.c:68..74)
+g_accountRank | OK | account_takeRank: received rank or 0 when g_outOfRank (resets.c:62..64); 0 shows OUT OF RANK(1000) (room_dialogs.c:899)
+g_roomRotation | OK | room form rotation byte; room_stepMap keeps the map while set (map_list.c:129); from g_roomRecRotation (lobby_states.c:141/215)
+g_roomRecRotation | OK | record +0x22 copied into g_roomRotation (lobby_states.c:141/215), 0 by defaults (:199)
+g_arenaJoinNeedsPassword | OK | arena_askJoinPassword sets 1 when the picked game is locked (room_clicks.c:88/90); arena page checks the typed password and clears (game_lists.c:792..804)
+g_coloursChanged | OK | hue / saturation / value setters set 1 on click (armc_colours.c:23..56); armc_updatePartsPreview applies and clears (armc_misc.c:254)
+g_armcChanged | CLEARER -> g_armcSlotChanged | set only by armc_takeCursorItem (armc_items.c:86); armc_drawWeaponsScreen retakes that slot's snapshot (armc_screens.c:283); the bare "changed" hides that it is the weapons slot
+g_freeCamZoom | OK | Z toggles 1 / 2 (menu_cameras.c:532); menu_frame narrows / widens g_viewAngle by it (main_loop.c:126)
+g_arenaUpdateNotice | WRONG -> g_serverUpdateNotice | not limited to the arena lobby: the game room sets it too, gameList_pageFrame on search result 3 (game_lists.c:379) and room_hostingStep on answer 3 (room_clicks.c:336), and room_drawGameSettings reads it to block highlighting (settings_form.c:197); the comment says "is up in the arena lobby". It is the shared program-updated notice of the arena lobby and the Ladder room's list / create page (g_roomUpdateNotice is the login / new-ID one)
+g_roomRefreshing | OK | gameList_pageFrame sets 1 after the search answer (game_lists.c:387); merges on its timer; 0 at g_netListDone / stop
+g_roomJoinStarted | OK | gameList_mouse / keys set 1 (game_lists.c:571/612/663); pageFrame joins or checks the password, clears (:427)
+g_roomJoinNeedsPassword | OK | room_askJoinPassword 1 when locked (room_clicks.c:47); pageFrame checks typed password, clears (game_lists.c:429); blocks list input
+g_newIdConfirmChoice | OK | O / C keys and clicks set 1 / 2 (menu_misc.c:423/429, room_clicks.c:33/37); newIdConfirm_update acts and clears (room_dialogs.c:495..501)
+g_roomUpdateNotice | OK | roomLogin_update / newIdConfirm_update set 1 (room_dialogs.c:422/525); dispatches keys / clicks of states 66 / 88 to the notice
+g_replaySelectFirst | OK | first of 10 replay rows (menu_misc.c:596); scrolled within g_replayFileCount (menu_states.c:362..370)
+g_selectedCharacter | OK | = profile record +0x40 pilot (files.c:728/743); indexes g_characterProfiles for ARM CENTER skills and match_setup
+g_connectionKind | OK | dplay slot kind: 0 TCP (network.c:172/812), 1 IPX search (:441), 4 after leave (dplay_slots.c:159); picks host / join slot
+g_roomSearching | OK | gameList_refresh / R sets 1 (game_lists.c:583/675, room_dialogs.c:179); on the answer pageFrame clears and starts refreshing (:385)
+g_arenaListClickArmed | OK | row click sets 1 (game_lists.c:996), second click on the row joins (:985); timer disarms after 20 (:735)
+g_serverSearching | OK | set 1 with the lobby search (game_lists.c:913, lobby_states.c:1402); a LAN search first disconnects and clears (:904/:1388)
+g_lanSearchStarted | OK | set 1 when the LAN search opens DirectPlay (game_lists.c:903, lobby_states.c:1384); session left before another search / join
+g_connectionAwaited | OK | set by lobby_openConnection / announce / refresh (lobby_states.c:960/1630/1661, room_dialogs.c:175); polled by create pages; cleared by the host answers
+g_lobbyJoinStarted | OK | lobby_join sets 1 through the server (game_lists.c:836); arena page joins or checks password, clears (:803)
+g_gameListClickTimer | OK | gameList_pageFrame: += g_frameTime while g_gameListClickArmed, >20 disarm (game_lists.c:356..360); the global comment is right (the function comment's "searching message clock" is not)
+g_gameListClickArmed | OK | row click sets 1 (game_lists.c:616); same row again joins (:600); disarmed after 20 (:359)
+g_dikNone | OK | stored 0 by input_initDikCodes (store_tables.c:109); empty binding slot value (store_tables, setup_keys.c:190/545)
+g_hostErrorBox | OK | lobby_hostArenaIpx failure sets 1 (lobby_states.c:1566); hit test numbers its buttons 16 / 17 (hit_tests.c:53); keys / clicks clear
+g_joinPollTicks | OK | WM_TIMER 0x378 increments, >30 times out (win32.c:782); zeroed at join start / end
+g_armcUnusedFlag | OK | only "= 0" writes (classes.c:101 armc_showPartsPage, armc_misc.c:367); no reader
+g_watchChatOpen | OK | freeCam_keys opens the chat line (menu_cameras.c:484); sent / closed (:468/:472); freeCam_mouseLook returns while set (:370)
+g_roomRecGameMode | OK | record +0x23 copied into g_roomGameMode (lobby_states.c:138/216); roomSettings_page resets outside 0..11 (room_dialogs.c:305..307)
+g_cfgSimpleMenu | OK | axis.cfg simplemenu switch; app_screenSizeForMode returns g_simpleMenu = it (small.c:717); 0 by cfg_init (files.c:1278)
+g_pilotExpKept | OK | kept record's exp: copy from g_pilotExp (lobby_states.c:221), pilotRecord_syncCopies compares / caps by g_ladderExp (:247..271)
+g_pilotKillsKept | OK | kept kills: copied (lobby_states.c:222), compared with g_pilotKills / g_ladderKills (:247/:270), capped (:274)
+g_pilotExp | OK | login reply +0xff (lobby_states.c:296); synced (:264); drawn on the account panel (room_dialogs.c:909)
+g_pilotKills | OK | login reply +0xf7 (lobby_states.c:297); synced (:266); account panel count (room_dialogs.c:909)
+g_matchLogWritten | WRONG comment -> "set 1 when match_frame writes the round-end match log (g_writeMatchLog, raised by round_over; only in a launcher net game); the leaving log is then skipped; never cleared"; "opening match log" is contradicted: g_writeMatchLog is set only by round_over (main_loop.c:1607, frag / time limit reached) and match_frame writes and sets this at main_loop.c:1672..1675; the log written while it is 0 is the one on leaving (:2321)
+g_matchEndedByUser | OK | set 1 when the host / solo player quits (main_loop.c:1713/1719), 0 when a client quits (:1728); picks the leaving log text (:2322)
+g_matchEndedByServer | OK | set 1 on the end-of-game packet kind 3 'k' (network.c:2116); picks the leaving log text (main_loop.c:2322)
+g_profileRowClickTime | OK | += g_frameTime while g_profileRowClicked, >20 forgets (profile_misc.c:225..229); 0 on each click
+g_netHostGone | OK | set on host slot freed / sockets closed / message kind 2 +4 (small.c:157, network.c:294/941); read by net_hostGone (net_packets.c:123)
+g_newIdAnswer | OK | answer_reply for request 15 (network.c:1406); newIdConfirm_update reads and clears (room_dialogs.c:505..530)
+g_mapMissing | OK | game_processLoadingMode sets 1 when the map name is empty (loading.c:410); game_postMatch shows message 6 and clears (menu_states.c:766)
+g_errorCleanupHook | OK | ErrorLog_ctor stores cleanupHook (classes.c:203); terminate runs it before exit (error_log.c:42)
+g_displayModeLeft | OK | WM_ACTIVATEAPP: set 1 when the mode is given up (win32.c:761); on reactivation cleared and mode set again (:749..751)
+g_otherModeHeight | OK | app_setDisplayMode stores the height (win32.c:214); restored on reactivation (:751)
+g_typingArenaJoinPassword | OK | arena_editJoinPassword sets 1 (edit_fields.c:134); arena page copies the line into g_arenaJoinPassword and clears (game_lists.c:796..800)
+g_mouseWheelTurned | OK | input_updateMouse 1 when z != 0 else 0 (devices.c:166/170); setup binding of WHEEL-UP / DOWN (setup_keys.c:473)
+g_pilotPower | OK | login reply power (lobby_states.c:296); from g_ladderPower in sync (:265); "%.2f" on account panel (room_dialogs.c:905)
+k_0f | OK | float constant 0.0 at 0x4a93e8 used in compares / sums everywhere (49 uses)
+g_hangulVowelGlyph | OK | hangul_glyphs: vowel + leadSet x 22 (text_passes.c:24), Johab bits 5..9; layered pass draws it with the tail (:186)
+g_hangulTailGlyph | OK | tail + tailSet x 28 (bits 0..4; text_passes.c:25), returned; layered pass
+g_hangulLeadGlyph | OK | lead + vowelSet x 20 (bits 10..14; text_passes.c:23); non-layered pass draws it alone (:188)
+g_mouse3Down | OK | input_isDown key 0xfc returns it (devices.c:270); g_mouseButtonsHeld[2]
+g_keyGameMenu2 | OK | second slot of the game-menu binding: pressed2(g_keyGameMenu, g_keyGameMenu2) quits in match / replay (main_loop.c:336/1095), loading Esc (loading.c:455)
+g_menuLookHomeX | OK | home look-at X: eased toward (menu_cameras.c:434), snapped (:94/:442), set from screen points / current look (screen_enter.c:102/136/189)
+g_menuLookHomeY | OK | home look-at Y, same uses (menu_cameras.c:95/436, screen_enter.c:103/137/190)
+g_menuEyeHomeX | OK | home eye X: eased toward (menu_cameras.c:432), set from the current eye (screen_enter.c:36, menu_init.c:111)
+g_menuEyeHomeY | OK | home eye Y: snapped / eased (menu_cameras.c:99/186), set from current eye (screen_enter.c:37)
+g_pilotPowerKept | OK | only write: = g_ladderPower in pilotRecord_syncCopies (lobby_states.c:273); part of the kept PilotStats copy
+g_pilotDeathsKept | OK | copied from g_pilotDeaths (lobby_states.c:222), = g_ladderDeaths in sync (:275), zeroed on new ID (:337)
+g_gameListRefreshClicked | CLEARER -> g_gameListRefreshSent | set when gameList_refresh succeeds from the REFRESH button or the R key (game_lists.c:584/676), never read; "Clicked" leaves out the key
+g_pilotDeaths | OK | login reply +0xfb (lobby_states.c:297); synced (:267); account panel (room_dialogs.c:909)
+g_pilotKillRate | OK | login reply +0x107 (lobby_states.c:297); copied to the kept record (:221); "%.2f" on account panel (room_dialogs.c:907)
+g_lobbyReplyKind | OK | g_lobbyReplyRecord +0x4a; net_receiveLobbyReply switch: 0 server, 1 end, 2 / 3 states (network.c:685..700)
+g_gameServerReplyKind | OK | g_gameServerReply +0x68; switch 0 room, 1 end, 2 / 3 refused 0x28 (network.c:711..723)
+g_dpMaxQueueSize | OK | dplay_initConnection: = DPCAPS dwMaxQueueSize (caps[3], network.c:1016); no reader
+g_musicEndHigh | CLEARER -> g_musicLengthHigh | the high dword of the 64-bit duration whose low word is g_musicLength (g_musicDuration[1]); read in music_loopIfEnded (sound_basic.c:93). "End" vs its partner's "Length" for one value
+g_mciCallback | OK | original movie_playEnding copies its MCI_PLAY_PARMS (sent with 0x806) word 0 here (0x46c4c4); movie_pauseEnding sends the block with MCI_PAUSE 0x809
+g_mciFrom | OK | MCI_PLAY_PARMS dwFrom copy (0x46c4cd), resent with MCI_PAUSE (0x46c548)
+g_mciTo | OK | MCI_PLAY_PARMS dwTo copy (0x46c4df), resent with MCI_PAUSE
+g_mciDevice | OK | movie_playEnding stores the opened device id (0x46c486 [0xa1efd8]); movie_pauseEnding sends MCI_PAUSE to it (win32.c:34)
+g_cursorPosY | OK | input_getCursorPos copies GetCursorPos y (devices.c:237); partner of g_cursorX (g_cursorY would only be style)
+g_arenaFileMap | OK | axiswl.dat "map" atoi (files.c:1002); low byte -> g_arenaMap (lobby_states.c:1014)
+g_arenaFilePlayers | OK | "maxplayer" (files.c:1002); -> g_arenaMaxPlayers (lobby_states.c:1015)
+g_arenaFileGameType | OK | "gametype" (files.c:1002); -> g_arenaGameType (lobby_states.c:1012)
+g_arenaFileFragLimit | OK | "fraglimit"; -> g_arenaFragLimit (lobby_states.c:1011)
+g_pilotGamesKept | OK | copied from g_pilotGames (lobby_states.c:222), = g_ladderGames in sync (:276), zeroed on new ID (:338)
+g_pilotGames | OK | login reply +0xf3 (lobby_states.c:298); = g_ladderGames in sync (:268); copied to g_ladderGames (:305)
+g_menuLookKeptX | OK | first of LOOK_KEPT (menu_tunnel.c:355) the tunnel move keeps / restores; reset 0 (menu_states.c:573)
+g_menuLookKeptY | OK | LOOK_KEPT[1]; reset 0 (menu_states.c:574)
+g_menuEyeKeptX | OK | EYE_KEPT[0] (menu_tunnel.c:354); reset 0 (menu_states.c:570)
+g_menuEyeKeptY | OK | EYE_KEPT[1]; reset 0 (menu_states.c:571)
+g_matchChatCaretY | WRONG -> g_matchFieldCaretY | its only writer chat_openTextField (edit_fields.c:243) opens every match text field: the chat line (main_loop.c:1619/1623) and the Esc menu RECORD replay-name field (hud_escmenu.c:295, maxLength 16); "chat" names one use and the comment "for the match's chat line" leaves out the replay name. Never read
+g_matchChatCaretX | WRONG -> g_matchFieldCaretX | same as g_matchChatCaretY: written by chat_openTextField (edit_fields.c:242) for the chat line and the RECORD replay-name field (hud_escmenu.c:295); never read
+g_gameCount | OK | count of g_sessionList entries: merge appends (net_sessions.c:46), rebuild sets (:94); used by both list screens
+g_unusedKeyTable2Word0 | OK | only "= 0" in input_clearKeyTable2 (resets.c:22); no reader
+g_unusedKeyTable2Word1 | OK | only "= 0" (resets.c:21)
+g_unusedKeyTable2Word2 | OK | only "= 0" (resets.c:23)
+g_mapEntry22On | OK | mapList_init writes 0 (lobby_states.c:99); g_mapChoiceKeptTable[22].chosen per the 8-byte table
+g_mapEntry23On | OK | mapList_init writes 0 (lobby_states.c:100)
+g_mapEntry24On | OK | mapList_init writes 0 (lobby_states.c:101)
+g_arenaJoinPassword | OK | typed join password buffer (8 bytes): cleared, strcpy from g_inputLine, strcmp with the session's (game_lists.c:798..801); drawn (:117)
+g_arenaJoinPassword4 | OK | second dword cleared by arena_editJoinPassword (edit_fields.c:132)
+g_newArenaPassword4 | OK | second dword of the create form password cleared (lobby_states.c:82)
+g_arenaListPlayers | OK | arena merge sums players into it (net_sessions.c:69 Received table); 0 at lobby_openConnection (lobby_states.c:967); no reader
+g_unusedArmcWord4 | OK | only "= 0" by armc_open (armc_misc.c:423)
+g_unusedArmcWord1 | OK | only "= 0" by armc_openWeaponsPage (armc_items.c:115)
+g_armcPanelDepth | OK | glTranslate z of each panel (armc_misc.c:494); armc_initCameraBox writes 0 at +0x88 (armc_misc.c:585)
+g_unusedStartupWord3 | OK | only "= 0" in app_startupLoad (loading.c:306)
+g_unusedStartupWord2 | OK | only "= 0" (loading.c:305)
+g_freeCamLookY | OK | read only: eye y = it + 10, look y = it + tilt, slot[1] (menu_cameras.c:524/527/530); no writer
+g_unusedFreeCamMoveWord | OK | only written 30.0 (0x41f00000) on the first free-camera click (menu_cameras.c:395)
+g_unusedPostMatchFlag | OK | only "= 1" in game_postMatch (menu_states.c:717) and freeCam_keys cancel (menu_cameras.c:496)
+g_arenaPassword | OK | GameSettings.password: launcher copies the file's (lobby_states.c:1010); lobby_announceArena sends it (:1626)
+g_arenaPassword4 | OK | second dword cleared before the copy (lobby_states.c:1008)
+g_arenaLocked | OK | = the file's secret (lobby_states.c:1007); packet->locked (:1625)
+g_mouseSmooth | OK | axis.cfg smoothmouse ON/OFF only saved / loaded (files.c:224, store_tables.c:153)
+g_unusedMenuReturnWord | OK | only "= 0" (menu_states.c:116/569, profile_misc.c:209)
+g_arenaFilePassword | OK | axiswl.dat "password": cleared then strcpy (files.c:1025..1027); copied into g_arenaPassword (lobby_states.c:1010)
+g_arenaFilePassword4 | OK | second dword cleared (files.c:1026)
+g_unusedStartupWord1 | OK | only "= 0" (loading.c:301)
+g_unusedRoomListWord | OK | only "= 0" (lobby_states.c:969, room_dialogs.c:181)
+g_freeCamYaw | WRONG comment -> "... turn_update keeps its sine / cosine and puts it in the local slot's (g_localSlot) g_slotCams record +0x28"; the comment says "the watched slot's", but freeCam_mouseLook passes slot = g_localSlot (menu_cameras.c:373) to turn_update, which writes g_slotCams + 0x28 + slot * 88 (:361). Name itself OK (heading in degrees, wrapped 0..360)
+g_unusedRoomWord | OK | only "= 0" (menu_states.c:338, screen_enter.c:175 clear list)
+g_unusedLoginWord | OK | only "= 0" (edit_fields.c:270, room_dialogs.c:52)
+g_pilotRank | OK | account_takeRank: = received rank or 0 (resets.c:63); g_pilotStats[2]; no reader
+g_roomListPlayers | OK | room merge sums players (net_sessions.c:62 Received); 0 at entry (room_dialogs.c:191); no reader
+g_unusedInitWord | OK | only "= 0" in app_init (win32.c:372)
+g_unusedReplayListWord1 | OK | only "= 0" in replayList_open (menu_init.c:129)
+g_unusedReplayListWord2 | OK | only "= 0" (menu_init.c:130)
+g_unusedMainMenuWord | OK | only "= 0" in replaySelect_allOut / defaults (resets.c:42)
+g_unusedBriefingWord | OK | only "= 0" in mission_loadBriefing (files.c:501)
+g_misHeader1 | OK | g_missionHeader[1]: read as part of the 16-byte header, cleared (menu_init.c:43); never read on its own
+g_misHeader2 | OK | g_missionHeader[2], cleared (menu_init.c:44)
+g_misHeader3 | OK | g_missionHeader[3], cleared (menu_init.c:45)
+g_unusedProfileCameraWord | OK | only "= -1" in profile_quitGame (profile_misc.c:124)
+g_profileNoneAtEntry | OK | menuState210_enter sets 1 with no profiles (screen_enter.c:354); profile_listPage runs profile_typeNewName then (profile_misc.c:236)
+g_netChatMessageWord1 | OK | only "= 0" in net_resetState (menu_init.c:63)
+g_netChatMessageFrom | OK | only "= 0" (menu_init.c:65); +8 of the template is the sender in net_sendChat's layout
+g_netChatMessageText | OK | only "= 0" (menu_init.c:68)
+g_receivedRank | OK | rank reply +0x16, read by account_takeRank unless g_outOfRank (resets.c:62)
+g_unusedNetResetWord | OK | only "= 0" in net_resetConnection (network.c:349)
+g_unusedSessionWord | OK | only "= 0" in dplay_openConnection (dplay_slots.c:192)
+g_unusedDplayWord1 | OK | only "= 0" in dplay_init (network.c:226)
+g_unusedDplayWord2 | OK | only "= 0" (network.c:227)
+g_unusedDplayWord3 | OK | only "= 0" (network.c:228)
+g_unusedDplayWord4 | OK | only "= 0" (network.c:230)
+g_unusedPingWord1 | OK | only "= 0" in net_pingServer (net_servers.c:10)
+g_unusedPingWord2 | OK | only "= 0" (net_servers.c:11)
+g_vecOrigin | OK | vec_initOrigin set3(0,0,0) (classes.c:115); copied as camera / start point, used as the point in poseBones / particle_placeAtMatrix
+g_vecUnitZ | OK | vec_initAxisZ (0,0,1) (classes.c:117); cameraDir = -it (:641), shot direction (actor_frame.c:1002)
+g_vecZero | OK | vec_initZero (0,0,0) (classes.c:119); memcpy to clear velocities / moves, particle colour (frame_loops.c:417)
+g_penInitialized | OK | only read ==1 in pen_init (glyph_cells.c:81); no writer
+g_arenaKeptCamY | OK | kept arena eye Y: = g_menuEyeY (menu_cameras.c:74), restored (:263)
+g_freeCamMoveStarted | OK | set 1 on the first click (menu_cameras.c:392..394), never cleared
+g_freeCamMoveEyeX | OK | = sin x 2000 + slot x on the first click (menu_cameras.c:399); no reader
+g_freeCamMoveEyeY | OK | = slot y (menu_cameras.c:400); no reader
+g_freeCamMoveEyeZ | OK | = cos x 2000 + slot z (menu_cameras.c:401); no reader
+g_freeCamTurnSin | OK | turn_update: fsin(yaw in radians) (menu_cameras.c:358); freeCam_keys step and eye x (:501/:523)
+g_freeCamTilt | OK | freeCam_mouseLook moves it by dy x 0.1 x frame within -50..50 (menu_cameras.c:388..391); look y = it + g_freeCamLookY (:530)
+g_freeCamTurnCos | OK | turn_update: fcos (menu_cameras.c:359); step and eye z (:503/:529)
+g_freeCamMoveTargetX | OK | = slot record x on the first click (menu_cameras.c:396); no reader
+g_freeCamMoveTargetY | OK | = slot y (menu_cameras.c:397); no reader
+g_freeCamMoveTargetZ | OK | = slot z (menu_cameras.c:398); no reader
+g_ladderPassword | OK | login: strcpy the password into g_ladderId+0x1e (room_clicks.c:541); compared with the old password on change (:436)
+g_ladderPassword4 | OK | second dword cleared on room entry (screen_enter.c:194)
+g_ladderPassword8 | OK | third dword cleared (screen_enter.c:195)
+g_replaySelectLitR | OK | R of the bright colour used by replaySelect_drawDialog (menu_states.c:150); set 0 (screen_enter.c:62)
+g_ladderExp | OK | ladder_addMatchScores adds score - scoreCounted (frame_loops.c:193); match_setup levelPoints (match_start.c:86); synced / sent
+g_ladderPower | OK | copied from g_pilotPower (lobby_states.c:305/342); power_from_rate on send (R_POWER :1420)
+g_ladderKills | OK | adds kills - killsCounted (frame_loops.c:191); kill rate / record packet (R_KILLS)
+g_ladderDeaths | OK | adds deaths - deathsCounted (frame_loops.c:192); record packet (R_DEATHS)
+g_gameListRow | OK | selected row in the shared game list (game_lists.c:490/503/618/997); g_pickedGame = top + row
+g_gameListTop | OK | first shown game (g_listTop alias in game_lists.c:7, lobby_states.c:1282); 0 on (re)load
+g_newIdFormRight | OK | room_openNewIdForm 0x262; X1 of newIdForm_draw (room_dialogs.c:610)
+g_newIdFormBottom | OK | Y1 of the frame (room_dialogs.c:611); buttons placed from it (room_clicks.c:883/895, layouts.c:98)
+g_profileListTop | OK | first of 13 rows (profile_misc.c:382..387); saved / read in axisuser.dat header (files.c:409/866)
+g_profileListRow | OK | cursor row 0..12 (profile_misc.c:474..478); saved / read in header (files.c:410/867)
+g_profileChosen | OK | = top + row (profile_misc.c:478/571/685); its record's pilot drawn / loaded (profile_dialogs.c:468)
+g_mapTop | OK | first of 10 map rows in the map list (map_list.c:190..199), scrolled by arrows (:230..257)
+g_mapListKept | OK | only "= 1" in mapList_ok (map_list.c:89); no reader
+g_armcHideInterface | OK | left Ctrl + left Alt + M toggles (armc_keys.c:249); interface parts drawn only while 0 (armc_misc.c:17/28/39)
+g_exitCode | OK | app_closeWindow stores the code (app_quit.c:9); WM_DESTROY acts by it (win32.c:642 g_exitMode alias)
+g_repeatDown | OK | key_repeat wait for the Down key in replay select / missions / profile list (menu_states.c:410, mission_list.c:23, profile_misc.c:612)
+g_repeatUp | OK | key_repeat wait for the Up key (menu_states.c:409, mission_list.c:22, profile_misc.c:612)
+g_pickedGame | OK | = top + row (game_lists.c:493/506/619/998); joined / password-checked (:417/:793/:801/:819)
+g_simpleMenu | OK | = g_cfgSimpleMenu (small.c:717), flipped by setup button 6 (setup_keys.c:292); tunnel bands / flares / cages drawn only while 0
+g_missionTop | OK | first of 8 mission rows in missionList_draw (mission_list.c:127/130); cleared on entry
+g_skirmishNewPartsNotice | OK | set 1 when g_progress passed g_progressSeen (screen_enter.c:319); skirmish frame shows the notice; click / keys clear
+g_profileReveal | OK | portrait cell grown by 2x it (profile_dialogs.c:377..403), stepped to 8 (:412..417); 0 on cursor move / reset
+g_profileQuitting | OK | profile_quitGame sets 1 (profile_misc.c:123); menuState210_frame quits (menu_states.c:462); pointer not drawn (main_loop.c:117)
+g_pilotSelectCursor | OK | CHARACTER SELECT cursor 0..8 moved in a 3x3 grid (profile_keys.c:123..137); becomes the record's pilot (profile_misc.c:318)
+g_unusedProfileCameraSpeed | OK | only written 0.1 / 0.05 (profile_misc.c:127/260, menu_keys.c:46); no reader
+g_profileQuitSkip | OK | 0 in profile_quitGame, 5 on a key / click while quitting (menu_keys.c:43, profile_misc.c:257); gates those handlers
+g_profileRevealClock | OK | clock stepping g_profileReveal (profile_dialogs.c:337 alias); 0 on cursor move / reset (profile_keys.c:143, profile_misc.c:113/290)
+g_unusedProfileCameraZoom | OK | only written 80 / 100 (profile_misc.c:125/259, menu_keys.c:45)
+g_unusedProfileCameraTime | OK | only "= 0" (menu_keys.c:44, profile_misc.c:126/258)
+g_profileMessage | CLEARER -> g_profileNameTakenShown | only ever 1 when profile_nameExists finds the typed name (profile_misc.c:431/543) and 0 when closed; the generic "message" hides that it is the name-taken box
+g_desktopH | OK | glWindow_setDisplayModeBy: GetDeviceCaps VERTRES (win32.c:182); restored (:163)
+g_desktopBits | OK | GetDeviceCaps BITSPIXEL (win32.c:183); restored (:163)
+g_desktopW | OK | GetDeviceCaps HORZRES (win32.c:181); restored (:163)
+g_glWindowMade | OK | glWindow_init sets 1 only on its own-window path (win32.c:131), refuses a second (:90)
+g_glWindowContext | OK | glWindow_wndProc: wglCreateContext on create (win32.c:448), deleted on destroy (:463..467)
+g_modeChanged | OK | glWindow_setDisplayModeBy sets 1 after saving the desktop mode (win32.c:195); restore clears (:168)
+g_packetsSkipped | OK | netq_receive counts out-of-turn packets (net_packets.c:113); netq_skippedCount / clearSkipped used by match_frame (main_loop.c:2265/2273)
+g_unusedClock3 | OK | a double zeroed by menuState100_intro (menu_states.c:124 clocks table); no reader
+g_unusedClock2 | OK | same clocks table (menu_states.c:124)
+g_unusedClock1 | OK | same clocks table (menu_states.c:124)
+g_editingFragLimit | OK | room form editing flag in the typing / limit tables (room_clicks.c:607/713, settings_form.c:192); only cleared (lobby_states.c:149)
+g_editingTimeLimit | OK | same tables (room_clicks.c:607/713); only cleared
+g_unusedAccountWord | OK | only cleared in room_enterAccountPage (room_dialogs.c:580)
+g_newIdFormTop | OK | Y0 of newIdForm_draw (room_dialogs.c:609); field rects (layouts.c:97)
+g_errorReported | OK | report(ADDR(g_errorReported), ..) from sys_errorMessage / NoName (error_log.c:53/61); flag set, never read
+g_fatalReported | OK | report(ADDR(g_fatalReported), ..) from the terminate reporters (error_log.c:71/79)
+g_sentChatBlock | OK | net_sendChat formats the local line into it (network.c:575); never read / freed
+g_vecZero2 | OK | vec_initZero2 (0,0,0) (classes.c:116); copied as a particle record's colour (frame_loops.c:741/756, weapons.c:332)
+g_cursorPoint | OK | int[2] at 0xae2f18 = g_cursorX / g_cursorPosY; input_getCursorPos returns it (devices.c:239)
+g_lobbyReplyRecord | OK | 0x5b-byte lobby reply read (network.c:684), passed to net_addServerRecord (:687); cleared (:347)
+g_gameServerReply | OK | 0x79-byte room-list reply read (network.c:710), net_addRoomRecord (:713); cleared (:348)
+g_textureSets | CLEARER -> g_textureManagerObject | objects.h types it TextureManager[1] at the same address as g_textureManager (vtable word, then the six banks, then the count); "sets" names only the banks part. No use by this name in src
+g_vecOriginXyz | OK | float[3] view of g_vecOrigin; copied into stage points (small.c:271)
+g_vecZeroXyz | OK | float[3] view of g_vecZero (same address 0xa0e7e8)
+g_unused16 | OK | memset in netq_reset (net_packets.c:16) and "= 0" when a packet is taken (:59/:112); never read by index
+g_ahead | OK | per player x 128 flags: arrived ahead of turn, checked for the one due (net_packets.c:75), cleared when taken (:57/:110)
+g_serverPinged | OK | net_pingAllServers marks 1 (network.c:659); merge takes only those and clears (net_sessions.c:22/49)
+g_serverPing | OK | per server ping time (network.c:656/658); merge reads it (net_sessions.c:25)
+g_missionClearBuffer | OK | only memset 0x640 in mission_loadBriefing (files.c:503)
+g_modemProviderGuid | OK | dplay_enumConnections copies the "MODEM" provider's GUID (network.c:1519); provider table (:979)
+g_serialProviderGuid | OK | "SERIAL" provider's GUID (network.c:1519); provider table (:979)
+g_realClear | OK | colour_initRealClear writes four zeros (statics.c:127); no reader
+k_GUID_NULL | OK | 16 zero bytes compared against session instance GUIDs (network.c:129/155)
+g_serverList | OK | 256 ArenaRecords of 0x5b (list_append network.c:470); cleared 0x16c0 dwords (small.c:130); merged (net_sessions.c:69)
+g_lobbyReplyCode | OK | status_reply for request 10 into it, mapped to g_lobbyStatus (network.c:1397)
+g_gameServerReplyCode | OK | status_reply for request 18 (network.c:1409)
+g_asyncKeySeen | OK | input_asyncKeyPressed seen flag per virtual key (devices.c:248)
+g_slotCams | OK | per slot 0x58-byte record: look point +0..+8 (menu_cameras.c:525..528), heading +0x28 (:361); 352 floats = 16 x 0x58
+g_emptySlot0Asked | OK | only read ==1 then cleared (armc_misc.c:252/270); no writer of 1
+g_gameServerReportsOff | OK | tested before room-info and leave sends (network.c:1121/1221); only written 0 (game_lists.c:535/557)
+g_retintAllParts | OK | armc_makeSession sets 1 (armc_items.c:106); armc_retintParts re-tints all and clears (armc_colours.c:91..94)
+g_unusedStartupTable | OK | only memset 0x400 in app_startupLoad (loading.c:209)
+g_unusedKeyTable2 | OK | only memset 0x400 in input_clearKeyTable2 (resets.c:20)

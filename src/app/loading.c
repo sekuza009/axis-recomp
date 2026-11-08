@@ -249,7 +249,7 @@ int (app_startupLoad)(void *instance)
 	}
 	g_mouseX = 0x136;
 	g_mouseY = 0xe6;
-	input_initVkTable();
+	input_initScanCharTable();
 	input_clearKeyTable2();
 	(*(u32 *)&g_viewAngle) = 0x42340000;   /* 45 */
 	if (!cd_findDrive()) {

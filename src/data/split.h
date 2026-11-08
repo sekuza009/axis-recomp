@@ -1160,9 +1160,9 @@ extern u8 g_mechChanged_v[4];
 extern u8 g_chestCount_v[4];
 #endif
 #ifdef AXIS_FENCE
-#define g_armcChanged_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0x1da000 : g_fence + 0x1d9ffc))
+#define g_armcSlotChanged_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0x1da000 : g_fence + 0x1d9ffc))
 #else
-extern u8 g_armcChanged_v[4];
+extern u8 g_armcSlotChanged_v[4];
 #endif
 #ifdef AXIS_FENCE
 #define g_itemBonusShield_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0x1dc000 : g_fence + 0x1dbffc))
@@ -1965,9 +1965,9 @@ extern u8 g_exitCode_v[4];
 extern u8 g_dikInsert_2_v[4];
 #endif
 #ifdef AXIS_FENCE
-#define g_vkTable_v ((int *)(AXIS_FENCE == 2 ? g_fence + 0x31c000 : g_fence + 0x31bf1c))
+#define g_scanCharTable_v ((int *)(AXIS_FENCE == 2 ? g_fence + 0x31c000 : g_fence + 0x31bf1c))
 #else
-extern int g_vkTable_v[57];
+extern int g_scanCharTable_v[57];
 #endif
 #ifdef AXIS_FENCE
 #define g_gameConnectTexture_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0x31e000 : g_fence + 0x31dffc))
@@ -2940,9 +2940,9 @@ extern u8 g_dikWheelDown_v[4];
 extern u8 g_texture128x128_v[840004];
 #endif
 #ifdef AXIS_FENCE
-#define g_textureSets_v ((u32 *)(AXIS_FENCE == 2 ? g_fence + 0x7f6000 : g_fence + 0x7f5fe0))
+#define g_textureManagerObject_v ((u32 *)(AXIS_FENCE == 2 ? g_fence + 0x7f6000 : g_fence + 0x7f5fe0))
 #else
-extern u32 g_textureSets_v[8];
+extern u32 g_textureManagerObject_v[8];
 #endif
 #ifdef AXIS_FENCE
 #define g_hanJongRight_v ((float *)(AXIS_FENCE == 2 ? g_fence + 0x7f8000 : g_fence + 0x7f7e20))
@@ -4230,14 +4230,14 @@ extern u8 g_skirmishRoundShown_v[4];
 extern u8 g_skirmishShowBackground_v[4];
 #endif
 #ifdef AXIS_FENCE
-#define g_matchChatCaretY_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xbab000 : g_fence + 0xbaaffc))
+#define g_matchTextFieldY_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xbab000 : g_fence + 0xbaaffc))
 #else
-extern u8 g_matchChatCaretY_v[4];
+extern u8 g_matchTextFieldY_v[4];
 #endif
 #ifdef AXIS_FENCE
-#define g_matchChatCaretX_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xbad000 : g_fence + 0xbacffc))
+#define g_matchTextFieldX_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xbad000 : g_fence + 0xbacffc))
 #else
-extern u8 g_matchChatCaretX_v[4];
+extern u8 g_matchTextFieldX_v[4];
 #endif
 #ifdef AXIS_FENCE
 #define g_keptChat_v ((char *)(AXIS_FENCE == 2 ? g_fence + 0xbaf000 : g_fence + 0xbaec00))

@@ -7,4 +7,4 @@
 0x76d498,u8,840004,g_texture128x128,the 128 x 128 texture set (g_texture128x128Vtable its vtable word)
 0x83a9e0,u8,840004,g_texture256x256,the 256 x 256 texture set (g_texture256x256Vtable its vtable word)
 0x90d1e0,u8,840004,g_texture256x128,the 256 x 128 texture set (g_texture256x128Vtable its vtable word)
-0x83a5e0,u32,8,g_textureSets,the texture manager: vtable word (g_textureManager), count, the six sets (TextureManager_clear: 8 words; g_textures points here)
+0x83a5e0,u32,8,g_textureManagerObject,the texture manager: vtable word (g_textureManager), count, the six sets (TextureManager_clear: 8 words; g_textures points here)

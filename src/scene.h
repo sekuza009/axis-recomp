@@ -82,7 +82,7 @@ typedef struct ActorItem {
 	float push;   /* +0x2e14: > 0: a hit pushes the actor (x 10, away from the bullet) */
 } ActorItem;
 
-/* the head Model, Manager, SkelManager and ObjectList share: their data block (take_block) */
+/* the head Shape, ShapeManager, SkelManager and ObjectList share: their data block (take_block) */
 typedef struct BlockOwner {
 	u8 _pad0000000[0x4];
 	i32 blockSize;   /* +0x4: bytes the block needs, set by the owner before take_block: operator_new'd at this size (none: a fatal message) or the memory given checked against it (too small: a fatal message) */
@@ -145,7 +145,7 @@ typedef struct ObjectList {
 	u8 _pad0000000[0x4];
 	i32 blockSize;   /* +0x4: its block: the entries (100 bytes each), their colours when preLit, the skeletons (ObjectList_load) */
 	u8 *block;   /* +0x8: its block (ObjectList_load: allocated, owned, or the memory given such as Actor.headModelMem): the entries, the pre-lit colours, the skeleton pointers; freed by partList_release when owned */
-	i32 ownsBlock;   /* +0xc: 1: allocated here (ObjectList_load without memory; the game's lists all get the Player's memory, so 0) */
+	i32 ownsBlock;   /* +0xc: 1: allocated here (ObjectList_load without memory; the game's lists all get the Actor's memory, so 0) */
 	i32 count;   /* +0x10: its entries (ObjectList_load's ns: shapes named); 0: not queued (ObjectList_queue); looped by ObjectList_relight, ObjectList_bindTextures, ObjectList_poseBones (one bone each) */
 	ListedObject *entries;   /* +0x14: count ListedObject records (100 bytes) at the block's start (ObjectList_load); posed by ObjectList_poseBones, drawn by ObjectList_queue; a weapon's muzzle entry's matrix read by actor_processFrame */
 	i32 colourCount;   /* +0x18: the entries' shapes' colours summed */
@@ -533,7 +533,7 @@ typedef struct SpacePool {
 
 /* a node of the collision space's lists (its pool: Space.nodes): a block's items */
 typedef struct SpaceNode {
-	u8 *item;   /* +0x0: the CollisionPlane it holds (a block's item or one of a unit's planes); the plane's flags bit 0 (value 1, space_disableUnit): left out of the static space's tests (space_collideBlock / space_traceBlock skip it only outside the moving units' lists) */
+	u8 *item;   /* +0x0: the CollisionTri it holds (a block's item or one of a unit's planes); the plane's flags bit 0 (value 1, space_disableUnit): left out of the static space's tests (space_collideBlock / space_traceBlock skip it only outside the moving units' lists) */
 	u8 *block;   /* +0x4: (a block's items) the block; written (space_insertItem), never read */
 	struct SpaceNode *newer;   /* +0x8: the one put in after it (the list's back link; in the pool's free list the one before it, 0 at the head); written, never read */
 	struct SpaceNode *next;   /* +0xc: the one put in before it (the lists run from the newest through it); in the pool's free list the next free one */
@@ -994,7 +994,7 @@ typedef struct ShapeManager {
 	float tint[6];   /* +0x234: two hue / saturation / value triples (shape_setTint; passed as bits to shape_bindTextureBy) */
 } ShapeManager;
 
-/* a skeleton manager (shapes_skeletons.c: SkeletonManager_initBy): Manager's first 0x130 bytes, without the textures and tint */
+/* a skeleton manager (shapes_skeletons.c: SkeletonManager_initBy): ShapeManager's first 0x130 bytes, without the textures and tint */
 typedef struct SkelManager {
 	u8 _pad0000000[0x4];
 	i32 blockSize;   /* +0x4: its block's size: capacity x 0x70 (a 0x4c-byte name node and a 0x24-byte skeleton each) + dataSize (SkeletonManager_initBy); take_block allocates it or checks the memory given against it */

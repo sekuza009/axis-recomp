@@ -1,0 +1,466 @@
+U3 C: 465 names; OK 435, WRONG 6, CLEARER 15, UNDECIDABLE 9
+BMPRGBFile_close | OK | 0x46ce50: fclose of self[1] (the BMPRGBFile file word, BMPRGBFile_dtor closes the same), 0 without a file
+CollisionVolume_dtor | OK | vtable 0x4aa254 back, CollisionVolume_release; called by Stage_dtor for stage->space; deleting dtor 0x4637b0 calls 0x481390
+Console_deletingDtor | OK | 0x460c20 calls 0x460c40 (Console_dtor) then operator delete on flags&1, returns this (disx)
+Console_dtor | OK | 0x460c40: vtable 0x4aa238, Stage_dtor(scene stage), ViewVolume_dtor(view), TimeSync_dtor(timer); game class "class Console" = our Scene
+ErrorLog_dtor | OK | vtable 0x4aa2a0 back only; used on every g_log* class-name record (GUARDED_DTOR, static_endSoundLog)
+Mat4_transpose | OK | 0x47d830: d[(k&3)*4+(k>>2)] = s[k], a 4x4 transpose; caller shapes_skeletons.c:772
+Shape_dtor | OK | vtable 0x4aa250 back + Shape_release; Stage_dtor runs it on waterModel/layerModel; deleting dtor 0x462d10 -> 0x464ba0. (Its group comment "Model (vtable 0x4aa250)" is CLEARER as "Shape": Shape_initLog names the class "class Shape")
+ObjectList_relight | OK | 0x46f7a0: each entry with a shape recoloured by relight (shape_shadingColours with the inverse matrix, shape_addColour tint; neither: colours 0) - matches comment
+ResourceSet_dtor | OK | 0x463960: five SkeletonManager_dtor then five ShapeManager_dtor on PlayerRecord members; eh_vector_destructor element dtor for Stage.playerRecords
+Scene_dtor | OK | vtable 0x4aa258 (game "class Scene" = our ScenePath); Stage_dtor calls it on stage->scenePath; deleting 0x463810 -> 0x48b410
+ShapeManager_dtor | OK | vtable 0x4aa244 back, ShapeManager_release; used on itemShapes/objectShapes/resource sets
+SkeletonManager_dtor | OK | vtable 0x4aa240 back, SkeletonManager_release; used on itemSkeletons/objectSkeletons/resource sets
+Stage_deletingDtor | OK | 0x463830 calls 0x46ff70 (Stage_dtor) then delete on flags&1 (disx)
+Stage_dtor | OK | 0x46ff70: vtable 0x4aa23c, members destroyed last first exactly as the comment lists (scenePath, 100 actors, item/object managers, 16 resource sets, two models, three Light pools, space)
+TextureManager_dtor | OK | vtable 0x4a9570 back, TextureManager_reset; static_endTextureManager runs it on g_textureManager; deleting 0x42b350 -> 0x456990
+Texture_dtor | OK | 0x455030: vtable 0x4a956c, delete of the index block while self[0x42] >= 0, fclose self[0x44]; static_destroyTex* run it on the six g_texture* banks
+TimeSync_dtor | OK | vtable 0x4aa46c only; Console_dtor (timer) and static_endTimeSync (g_loadTimer); deleting 0x487450 -> 0x487470
+UnitPoseInfo_deletingDtor | OK | 0x45ff10 calls 0x46f470 (UnitPoseInfo_dtor) then delete on flags&1 (disx)
+Vec3_add | OK | 0x4802d0: out = b + this, per component
+Vec3_cross | OK | 0x480250: x=a1b2-b1a2, y=a2b0-a0b2, z=a0b1-a1b0 = this x b
+Vec3_dot | OK | 0x4802b0: sum of b[i]*a[i]
+Vec3_length | OK | 0x480400: fsqrt(x*x+y*y+z*z) left in ST0
+Vec3_scale | OK | 0x480370: out = s * this
+Vec3_set | OK | 0x4722c0: three floats bit-copied, returns this
+Vec3_setNoReturn | OK | 0x480210: three words stored, no return; the original calls it on a three-word member (decomp 00470000.c:7836)
+Vec3_sub | OK | 0x480320: out = this - b
+Vec4_set | OK | 0x4809d0: four floats bit-copied
+ViewVolume_addSegment | CLEARER -> ViewVolume_addSegment (param flag -> cullOutside) | body right (a 36-byte segment record: colour + two clip-space points); its last parameter only drops the record when both ends are outside one plane: "flag" says nothing
+ViewVolume_deletingDtor | OK | 0x463430 calls 0x483fb0 (ViewVolume_dtor) then delete; group comment 0x463430/0x460c20/0x463830 = ViewVolume/Console/Stage verified by disx
+ViewVolume_dtor | OK | 0x483fb0: vtable 0x4aa24c back, ViewVolume_release; Console_dtor runs it on scene->view
+about | CLEARER -> actor_relative | static helper: out = v + actor->pos (main_loop.c); "about" is true but vague
+actor_destroyPartLists | OK | 0x45ff30: UnitPoseInfo_dtor (-> partList_release) on the actor's eight *Model members, last first; eh_vector_destructor element dtor of Stage.actors
+add12 | OK | 96-bit add of y into x with carries (addl)
+addl | OK | sum stored, 1 on carry
+after_value | OK | draws p->t.line after the value column, yellow when asked; only called on the Korean paths
+anim_reset | OK | animTime/animRate 0, space_enableUnit(unit), animated 0
+anim_start | OK | object_setAnimation(animPath, animPeriod x *K(k)) - matches comment
+answered_count | OK | g_listAnswered "/" total drawn right-aligned 13 a char
+app_closeWindow | OK | 0x41e7a0: g_exitCode = code, PostMessage WM_CLOSE to g_mainWindow
+app_invalidateLauncherMarks | OK | 0x43f8b0: writes 0xa1a2a3a4/b1../c1.. at offset 2000 of profeng/profkor/skirmish.dat, deletes save\axisgame.dat and game.dat; the app_checkFile_* originals compare that dword (small.c comment)
+app_quitGame | OK | 0x44f850: app_closeWindow(0)
+app_registerWindowClassEx | OK | 0x43f840: WNDCLASSEXA (cbSize 0x30, hIconSm 0) from a 10-word WNDCLASSA, RegisterClassExA & 0xffff
+app_shutdown | OK | 0x4314e0: scalar deleting dtor of g_scene object, desktop mode, arrow cursor, input_releaseAll, music_stop, ten menu sounds freed, sound_freeAll, sound_releaseDirectSound - as commented
+arenaList_rebuild | OK | 0x406810: g_sessionList filled from net_getSession(i) (DirectPlay), g_arenaLanListBuilt 1, sessionList_sort
+arenaUpdateNotice_clicks | OK | 0x406bd0: right click / button 1 clear g_arenaUpdateNotice; button 0 also app_closeWindow(2)
+arenaUpdateNotice_hitTest | OK | 0x4045a0: hit on g_arenaUpdateNoticeRects (2)
+arenaUpdateNotice_keys | OK | update_notice_keys(&g_arenaUpdateNotice)
+arena_askJoinPassword | OK | 0x405200: g_arenaJoinNeedsPassword set and arena_editJoinPassword when g_sessionList[g_pickedGame].locked
+arena_editJoinPassword | OK | 0x405010: an 8-char edit field started empty into g_arenaJoinPassword, g_typingArenaJoinPassword 1
+arena_joinSession | OK | 0x405690: limits from the entry, dplay_join(session, guid, ...), 0x1f4 joined -> take_session, else message 0x36/0x35
+arena_loadSettings | OK | 0x40d4e0: "rt" keyword file (gamename/secret/password/gametype/maxplayer/map/fraglimit/timelimit) into g_arenaFile*; caller reads axiswl.dat
+arena_mergeReceivedSessions | OK | 0x406640: merge() over g_serverList (ArenaRecord, 0x5b) into g_sessionList with the lobby flags
+arena_startFromLauncher | OK | 0x40d840: g_launchedAsHost: arena_loadSettings("axiswl.dat") + lobby_hostArenaTcpIp; else arena_joinListed(99999) on g_serverAddressArg
+armcColour_hitTest | OK | 0x40e4d0: hit on g_armcColourRects (18), used by armc_colourPageClicks / armc_drawColourEditor
+armc_applyColourSlot | OK | 0x41cf20: tint_part(slot) or, slot 5, armc_spreadAllColourSlot then all five parts
+armc_colourPageClicks | OK | 0x40ff40: buttons 0..17 dispatched exactly as the comment lists
+armc_colourPageKeys | OK | 0x410810: OK / back / P / W / slot keys / A (slot 5 seeded) / R spin / up-down stepping as commented
+armc_drawColourEditor | OK | 0x41a280: PRIMARY/SECONDARY COLOR boxes, six slot buttons, slider tracks/bars/markers, OK buttons, ROTATE box
+armc_drawColourPage | OK | 0x41e010: preview update, mode tabs + colour editor unless the interface is hidden
+armc_drawRoomTunnel | OK | tunnel with g_ladderMenuTextures; caller armc_misc.c:300 when ARM CENTER was opened from the game room (g_armcFrom 3)
+armc_rightClickLeave | OK | 0x410160: on right click armc_snapCameraToPoint0, g_armcState 0, g_viewAspect 0
+armc_saveSelection | OK | 0x40e7a0: colours / parts / six item slots copied into the saved copies between two armc_resetSeraphimParts, profile_saveProgress
+armc_seedAllColourSlot | OK | 0x40f590: slot 5 (g_allPartsSlot) from slot 1 with [4] from slot1[1] (sic) - as commented
+armc_sendSelectionToNet | OK | 0x40e930: colours/parts/items into the room copies and g_netSelectionPacket, net_send(0x1b, 0x65)
+armc_setPrimaryHueFromPointer | OK | 0x40f5d0: slider_hue on slot*6+0
+armc_setPrimarySaturationFromPointer | OK | 0x40f670: slot*6+1 = slider_pos
+armc_setPrimaryValueFromPointer | OK | 0x40f6b0: slot*6+2 = slider_pos
+armc_setSecondaryHueFromPointer | OK | 0x40f6f0: slider_hue on slot*6+3
+armc_setSecondarySaturationFromPointer | OK | 0x40f790: slot*6+4 = 2*pos-1
+armc_setSecondaryValueFromPointer | OK | 0x40f7e0: slot*6+5 = 2*pos-1
+armc_showColourPage | OK | g_armcMode 3 (colour page; armc_colourPageClicks compares mode == button+1), slot 5
+armc_showPartsPage | OK | g_armcMode 1 (parts page), g_armcUnusedFlag 0
+armc_spreadAllColourSlot | OK | 0x41ced0: g_allPartsSlot copied into slots 0..4
+as_float | OK | bits -> float memcpy
+ase_float | OK | next token through crt_atof, negated when asked
+ase_time | OK | atoi(token) / ticks * ms, used for ASE key times
+axisAngle_combine | OK | 0x47d320: Mat4_fromAxisAngle a, b, multiply, axisAngle_fromMatrix
+axisAngle_fromMatrix | OK | 0x47d2f0: quat_fromMatrix then quat_toAxisAngle
+bar | OK | textured bar quad from X1-0xba, width pos*168, at y..y+16 (sat/value sliders)
+blink_down | OK | g_lobbyBlinkClock -= rate*frameTime, reset to 1000 below 10
+box_buttons | OK | two OK/CANCEL buttons 0xa0 apart at 0x104, lit when hovered == lit_from+k
+campaign_new | OK | fills g_pilotSave as a fresh pilot record (signature, name, cleared progress, default mech, twelve (170, 0.4, 0) triples); called by profile_newCampaign. (Comment calls "[TRAP]/[NOPA]/[ROLO]" default parts: not confirmable from the C)
+chat_saveMacros | OK | 0x4617b0: scene->chatMacros 100 x 0x39 written to Chat.scp
+choice_dword | OK | reads choice k of the six bytes from g_roomRecMap (4/5 unsigned) for the registry writer; matches choice_order / choice_names comment above it
+clip_end | OK | b moved back along d onto the plane at axis k (param a unused, kept for symmetry)
+clip_start | OK | a moved along d onto the plane, then d = b - a (direction)
+close0 | OK | dplaySlot0_close wrapper used as slot_open's close callback
+close1 | OK | dplaySlot1_close wrapper
+close2 | OK | dplaySlot2_close wrapper
+close3 | OK | dplaySlot3_close wrapper
+count_bonus | OK | appends "+n"/"n" (Korean " +n" yellow via after_value), none for 0
+createUpdateNotice_clicks | OK | 0x407270: same as arenaUpdateNotice_clicks, blocked by the create page's four edit flags and g_frameOpening
+createUpdateNotice_keys | OK | 0x4080c0: C clears g_arenaUpdateNotice, O also app_closeWindow(2)
+crt_acos | OK | calls the CRT _CIacos at 0x49ffc0 with the FPU argument
+crt_atof | OK | 0x49fe7a: skip C-locale spaces, strgtold12, ld12tod
+data_missing | OK | MessageBox(msg, "ERROR") then exit(-1); every caller passes a "... Data File Not Found" / "wrong version" text
+decimal_bonus | OK | "%.2f" bonus, loss capped at the base, Korean yellow after the value
+dialog_select | OK | g_dialogFocus = choice and the pointer glides to the left (0x9c) / right (0x114) button
+direction | OK | d = b - a per component
+display_mode | OK | DEVMODEA size/fields/bits/width/height filled
+dplaySlot0_close | OK | slot_close(0)
+dplaySlot1_close | OK | slot_close(1)
+dplaySlot1_enum | OK | slot_enum(1) -> dplay_enumSessions
+dplaySlot1_host | OK | slot_host(1, ...) -> dplay_hostSession
+dplaySlot1_join | OK | slot_join(1, ...) -> dplay_joinSession
+dplaySlot1_open | OK | closes an open slot 1 first, slot_open(1, address, close1)
+dplaySlot2_close | OK | slot_close(2)
+dplaySlot2_enum | OK | slot_enum(2)
+dplaySlot2_host | OK | slot_host(2, ...)
+dplaySlot2_join | OK | slot_join(2, ...)
+dplaySlot2_open | OK | 1 when open, else slot_open(2, address, close2)
+dplaySlot3_close | OK | slot_close(3)
+dplaySlot3_enum | OK | slot_enum(3)
+dplaySlot3_host | OK | slot_host(3, ...)
+dplaySlot3_join | OK | slot_join(3, ...)
+dplaySlot3_open | OK | 1 when open, else slot_open(3, address, close3)
+dplay_getPlayerName | OK | 0x454190: IDirectPlay GetPlayerName (vtable +0x54) sized then filled into a GlobalAlloc block
+dplay_release | OK | 0x453920: lobby released, local player destroyed, Close, Release, blocks freed, CoUninitialize
+esc_name | OK | Esc menu page 2: after typing, replay_startRecording under g_keptChat
+esc_quit | OK | page 4: YES (cursor 0) sets quitAsked
+esc_resetScore | OK | callers are the team change and SPECTATOR choices: ladder_addMatchScores in Ladder games, kills 0, deaths + 1 - matches "a team change's cost"
+esc_retry | OK | page 3: YES resets the clock and camera to mapStart and replays the music; NO quitAsked
+esc_yesNo | OK | YES / NO items drawn under a question box
+face_start | OK | first corner token; a lone "\" continues on the next line
+far_point | OK | (0, 10000, 0) rotated about axis 1 by pitch then axis 2 by yaw
+file_format | OK | extension after the last "." compared (3 letters, case-folded) with the two given: 0 / 1 / -1
+file_writeScrambled | OK | 0x46cc30: bytes ror 1 ^ 0x59, fwrite, then restored
+fix_powerUpText | OK | patch-layer fix: proportional-font centring of the power-up number, then font_penDraw (fixes/hud.c)
+freeCam_keys | OK | 0x42ada0: screen 9999 watching camera keys as commented (chat line, leave, W/S along heading, A/D step, zoom, debug value)
+freeCam_mouseLook | OK | 0x42ab70: pointer offset from centre turns g_freeCamYaw and tilts g_freeCamTilt
+freeCam_stepLeft | OK | 0x42aa30: step along heading() (yaw + 90 deg) for look point and menu eye
+freeCam_stepRight | OK | 0x42aad0: the same step subtracted
+gameListJoinBox_hitTest | OK | 0x432340: hit on g_gameListJoinBoxRects (1): the CONNECTING box's CANCEL
+gameList_draw | OK | 0x43adc0: AXIS LADDER GAME list window, rows, buttons, arrows, searching/password/connecting boxes
+gameList_hitTest | OK | 0x432300: hit on g_gameListRects (15)
+gameList_keys | OK | 0x4372f0: J / fire join, R refresh, S stop, back leave, up/down, as commented
+gameList_mouse | OK | 0x435fc0: clicks 0..14 dispatched as commented (join, refresh, stop, cancel, rows with double click, arrows)
+gameList_pageFrame | WRONG comment -> "the double-click window's clock (g_gameListClickTimer, while g_gameListClickArmed; closed above k_20f)" | its comment calls g_gameListClickTimer "the \"searching\" message's clock"; it is the row double-click clock: armed and zeroed by a row click in gameList_mouse (game_lists.c:610-617), a second click on the same row while armed joins (:600); globals.h:352-353 agree. The searching blink clock is g_lobbyBlinkClock, handled further down
+gameList_refresh | OK | 0x434d00: room list state reset, request 0x180001 sent (net_send 0x13, 0x65), period 30
+gameList_stopJoin | OK | 0x435f40: the join box's CANCEL: dplay_leaveSession, KillTimer 0x378
+game_postMatch | WRONG comment -> "the host's name (+0x43) and address (+0x33) copied from g_roomPacket into the leave record (g_roomLeavePacket)" | name OK (0x420100 after a match, by g_matchMode); its comment says "the two players' names 0x43 / 0x33 into a game record" but the code copies RoomRecord.hostName (+0x43) and RoomRecord.address (+0x33, the host's address text) - not two players' names (scene.fields RoomRecord, menu_states.c:2291-2292)
+game_returnToArenaLobby | OK | 0x41e9d0: leave_game(0,1), next 400, state/last 300, reset_menus
+game_returnToGameRoom | OK | 0x41eb00: leave_game(2,0) keeps the connection, g_roomState 99, screen 800, room flags cleared
+game_returnToMainMenu | OK | 0x41e8b0: leave_game(0,1), state 300, cameras (500, 400)
+game_returnToSkirmish | OK | 0x41ec50: leave_game(0,1), state/next 500
+game_rows | OK | nine session rows drawn (lock, name, map/ROTATION, mode, players / max, ping)
+games_down | OK | selection one row down, 0 at the last game
+games_leave | OK | leaves the list (camera mode 0, g_netListDone), 0 with sound 6 while busy
+games_stop | OK | search/refresh stopped, g_netListDone 1
+games_up | OK | selection one row up, scrolling at the top
+glWindow_restoreDisplayMode | OK | 0x468050: desktop mode back via ChangeDisplaySettingsA when g_modeChanged; message "glWindow ChangeDisplaySettings() fail"
+glWindow_setDisplayModeBy | OK | 0x467f20: desktop kept, switch to width x height (bits), g_modeChanged 1
+glWindow_setupPixelFormat | OK | 0x467e60: ChoosePixelFormat / SetPixelFormat with the glWindow messages
+glWindow_wndProc | OK | 0x4680d0: WM_CREATE/PAINT/CLOSE/SIZE/DESTROY of the GL window as commented
+global_free | OK | GlobalUnlock + GlobalFree through GlobalHandle
+glyph_drawHangulLead13 | OK | 0x427c30: lead glyph from g_hanCho tables at 13 units
+glyph_drawHangulLead31 | OK | 0x427e30: same at 31 units
+glyph_drawHangulVowelTail13 | OK | 0x427ce0: vowel (g_hanJung) and tail (g_hanJong) glyphs, 13 units
+glyph_drawHangulVowelTail31 | OK | 0x427ee0: same at 31 units
+graphics_apply | OK | graphic values taken, cfg_writeAxisCfg, app_closeWindow(1) when items 0,1,3,4 changed
+grey | OK | r == g == b ? r : -1
+ground_computeLighting | OK | 0x4728e0: light_computeLayerLightBy over the whole layer into its colours, first 1
+ground_triangle | OK | space_insertTriangle with no unit/part/indices
+half_percent | OK | (v + 1) * 100 * 0.5 capped at 99
+hangul_glyphs | OK | 0x4017d0: Johab syllable split into lead / vowel / tail glyph indices with their sets
+heading | CLEARER -> sideStepRadians | no comment; returns (g_freeCamYaw + 90) wrapped, in radians: the sideways step direction of freeCam_stepLeft/Right, not the camera's heading itself
+hostError_clicks | OK | 0x407300: right click / 0x11 close g_hostErrorBox; 0x10 starts as host with the arena record
+hostError_keys | OK | 0x408110: C closes, O starts the arena as host anyway
+host_arena | OK | dplay_host with the arena settings
+hud_drawRecordIndicator | OK | 0x496d10: record icon, mm:ss of recordTime, "AutoPlay\name" in the first half second
+image_copyTo | OK | 0x46ce80: clipped BMP block read bottom-up rows, BGR -> RGB / RGBA
+image_initBy | OK | 0x46cd00: BMP opened, headers read, 24-bit uncompressed required
+inc_man | OK | adds 1 at bit n from the top, carry out
+input_asyncKeyDown | CLEARER -> input_asyncKeyDown (comment) | 0x487ba0 tests (u16)GetAsyncKeyState != 0: also 1 when only bit 0 (pressed since the last call) is set, and 0 while another window is in front; "is the key down now" is close but not exact
+input_getCursorPos | OK | 0x487c30: GetCursorPos into g_cursorX/g_cursorPosY when in front, returns the pair
+input_releaseAll | OK | 0x4014c0: keyboard and mouse released, IDirectInput released
+input_releaseMouse | OK | 0x401490: mouse unacquired and released, g_mouseReady 0
+input_setDefaultBindings | OK | apply_cstores(k_defaultBindings, 68): the start-up defaults into g_controls (bindings + mouse lines)
+item_path | WRONG -> item_path (param out -> log) | the parameter named "out" is never written: it is the class's error log passed as sys_fatalError's first argument (callers pass OBJ(g_logSkeletonManager) / OBJ(g_logShapeManager), shapes_skeletons.c:391/429); the function itself is named right
+key_down | OK | list_down (profile list)
+key_up | OK | list_up
+keyboard_back | OK | input_resetKeys + input_initKeyboard
+kill_rate | OK | kills * 100 / (kills + deaths) as float bits; 0 without either
+ks_row | OK | KS X 1001 row pair -> Johab lead/trail
+ladder_addMatchScores | OK | 0x49d150: local player's uncounted kills/deaths/score into g_ladderKills/Deaths/Exp, counted, ladder_sendRecord unless leaving, scoreCommitTimer 300
+ladder_checkAndSendRecord | CLEARER -> ladder_checkAndSendRecord (comment) | 0x4327f0 body matches; its comment calls g_pilotLevel.. "a kept copy": g_pilotLevel.. is the pilot's account record from the server (login_takeAccountRecord), g_pilotLevelKept.. its kept copy; both are taken back by take_back - say "the account record (g_pilotLevel ..), then its kept copy (g_pilotLevelKept ..)"
+ladder_sendRecord | OK | 0x44aee0: g_ladderId copied into g_ladderName, ladder_checkAndSendRecord when not empty
+ld12mul | OK | 12-byte extended multiply with rounding
+ld12tod | OK | _ld12cvt for the double format
+leave_game | OK | g_matchMode set, dplay_leaveSession, net_disconnect when asked, the 16 net slots emptied
+light_computeLayerLightBy | OK | 0x472400: per-vertex directional light from mapLights (kind 1) into colours, water box colours, kind-2 layers white
+light_level | OK | (1 - d) * 128, at least 0
+light_mix | OK | light colour bytes * i / 256 (+ base), clamped, alpha 255
+line_wipe | OK | g_inputLine cleared for g_lineMaxLength
+list_append | OK | record strings/bytes into the next list slot and the ping address list, count + 1
+list_moved | OK | profile list selection = top + row, stat bars stale, sound 2
+lobby_busy | OK | g_lanSearch || g_lobbySearching || g_lobbyRefreshing
+lobby_hostArenaIpx | OK | 0x4052c0: dplay_openConnection(1) (IPX), special_map, host_arena; failure -> g_hostErrorBox
+lobby_hostArenaTcpIp | OK | 0x4057a0: dplay_openConnection(0, NULL), special_map, host_arena, take_arena
+lobby_join | OK | through the server: arena_askJoinPassword; else g_lanJoinRequest
+lobby_openConnection | OK | 0x4060f0: net_connect(100), net_asyncSelect, lobby list state reset, request 0x180001 (net_send 0xd, 100)
+lobby_stopSearch | OK | g_lobbyListAnswer 0, blink 1, g_serverAnswerIn 1
+lockon_quad | OK | one textured quad in screen pixels with y flipped
+login_field | OK | g_loginField = to, pointer glides to (x, y)
+login_send | OK | 0x434490: bad characters -> 0x15a/0x15b, else g_ladderId/g_ladderPassword kept and account packet 0x18 sent (net_send 0xe)
+login_takeAccountRecord | OK | 0x432db0: reply 0x21's account record into ID, e-mail, mech, colours, pilot stats, Ladder record
+look_at | OK | look_toward then cameraDir = normalised target - pos, up (0,1,0)
+main_ring | OK | the HUD alert ring sized by detectionAngle, red while homedOn
+main_score | OK | flag, emblem, score icon and score at the top left
+mapList_chooseAll | OK | 0x4034e0: every g_mapChoices[i].chosen = 1
+mapList_ok | OK | 0x403640: with one chosen, the choices kept, list closed
+mapList_setDefault | OK | 0x403530: every map unchosen, types 0
+mapList_stepGameType | OK | 0x403590: type + 1 (0..13 round), - 1 with Shift/Ctrl; maps 22..24 kept 0
+mapList_toggle | OK | 0x403560: chosen flipped; 22..24 kept 0
+marker | OK | hue slider marker quad at pos
+match_limit | OK | endReason set once, notice called, team winner from teamScores, matchOver, endTime 10
+match_mechTestFrame | OK | 0x48a370: matchState 3 mech test mode (asyncKey input, part stepping, orbit camera); comment says play never reaches it
+math_makeMathFunctionTableFile | OK | 0x46c340: sin/cos/tan (3600) and rand (4096) tables computed and written to MATHFUNC.TBL
+math_triangleNormal | OK | 0x4679a0: normalise((p2 - p0) x (p1 - p0)) - checked component by component
+mem_free | OK | 0x467d60: operator delete when not NULL
+menu_returnToArenaLobbyViaMain | OK | 0x41edc0: tunnel freed, game_returnToArenaLobby (state 300, next 400), g_screen 300
+menu_returnToMainFromRoom | OK | 0x41ed70: tunnel freed, game_returnToMainMenu, room flags cleared, g_screen 300
+merge | OK | pinged answering servers appended into g_sessionList (name, map, modes, limits, ping, lock, password, address), sorted; flags cleared at the end
+missions_clickRow | OK | 0x443d50: sk_* are g_missionTop/Row/Picked/Count (menu_misc.c:303-306): row picked when in the list
+model_loadFrom | CLEARER -> shape_loadFrom | 0x464bf0 is a thiscall on a Shape (game "class Shape", g_logShape messages) choosing shape_read / OBJ; its neighbour is skel_loadFrom: "model" is the same thing by another word
+model_loadObjFormatFrom | CLEARER -> shape_loadObjFrom | Wavefront OBJ into a Shape (Shape_release, md = (Shape *)sh); "model" vs the Shape type its siblings use
+movie_pauseEnding | OK | 0x46c540: MCI_PAUSE | MCI_NOTIFY to g_mciDevice
+msg_connectionLost | OK | 0x463390: "The network connection lost. The game..." (say, sound 0x15)
+msg_dataLoss | OK | 0x4633f0: "Game end caused by data loss(code %d)." with dataLossCode
+msg_fragLimitReached | OK | 0x462f90: "Frag limit(%d) reached."
+msg_networkUnstable | OK | 0x4633c0: "The network state is not stable..."
+msg_playerChangedTeam | OK | 0x462e30: "%s has changed team to %s." / "%s becomes a spectator"
+msg_playerLeft | OK | 0x462bc0: "%s has left the game."
+msg_serverEndsGame | OK | 0x462f30: "The server ends the game."
+msg_userEndsGame | OK | 0x462f60: "The user ends the game."
+mtold12 | OK | decimal digits -> normalised 96-bit value
+multtenpow12 | OK | x *= 10^power from the CRT tables
+neg | OK | x87 fchs
+net_addRoomRecord | OK | 0x452c80: list_append into g_roomList (RoomRecord)
+net_addServerRecord | CLEARER -> net_addServerRecord (comment: "an ArenaRecord") | 0x452af0 appends an ArenaRecord to g_serverList; its comment names a "ServerRecord" type that does not exist
+net_announceChangedTeam | OK | changePlayer/Team/Name set, changePending and announcePending 1 (net_sendMatchEvent packet 11)
+net_announceFragLimit | OK | 0x463690: endEvents[1] (packet 4, frag limit), announcePending
+net_announcePlayerQuit | OK | quitPending, quitPlayer, announcePending (packet 9)
+net_announceServerEnd | OK | 0x463670: endEvents[0] (packet 3), announcePending
+net_clearRoomList | OK | g_roomList cleared (0x1e40)
+net_clearServerList | OK | g_serverList cleared (0x16c0)
+net_closeSockets | OK | 0x4520e0: lobby and game-server sockets shut down and closed
+net_formatChatLine | OK | 0x451350: "%s > %s" with the DirectPlay short name into a GlobalAlloc block
+net_freeSessionList | OK | 0x454130: used session slots freed, count 0
+net_freeSlotsOf | OK | 0x451530: g_netSlots owned by id emptied
+net_inetAddr | OK | 0x4547c0: inet_addr
+net_ping | OK | 0x4548b0: IcmpSendEcho round trip into g_pingTime
+net_pingAllServers | OK | 0x4545b0: net_pingServer per listed address into g_serverPing, g_serverPinged, then net_stopPingThread
+net_pingServer | OK | 0x454650: net_ping(inet_addr(address), 1000) != 0
+net_pingThreadProc | OK | 0x454560: waits on start (ping all) / stop (ExitThread)
+net_receiveGameServerReply | OK | 0x452bd0: 0x79-byte reply: room added / list done (ping thread) / refused
+net_receiveLobbyReply | OK | 0x452a30: 0x5b-byte reply: server added / list done / states 0xcb, 0x29
+net_sendChat | OK | 0x4512c0: formatted line and a DirectPlay message type 1 to everyone
+net_sendFlagPiece | OK | 0x48e990: packet 0xc, the flag's next 16 pixels from flagSent
+net_sendGamePacket | OK | 0x48dbf0: packet 1, the game state (clock, scores, resend bits, checks)
+net_sendItemStates | OK | 0x48ead0: packet kind 0xe, one nibble per map item
+net_sendMatchEvent | OK | 0x48e680: the first pending event (kinds 3..13) sent, announcePending cleared when none left
+net_sendPlayerInfo | OK | 0x48e0f0: packet 2: name, character, team, emblem, parts, items, colours
+net_sendPlayerState | OK | 0x48e2c0: packet 0: flags, position, angles, hit, five shot slots
+net_sessionCount | OK | returns g_dplaySessionCount
+net_startPingThread | OK | 0x4546d0: two events, thread on net_pingThreadProc, start event set
+net_stopPingThread | OK | 0x454740: start reset, stop set
+netq_clearSkipped | OK | g_packetsSkipped = 0
+newPartsNotice_clickClose | OK | 0x447af0: a click clears g_skirmishNewPartsNotice
+newPartsNotice_keys | OK | 0x447c30: cancel2 / click key clear g_skirmishNewPartsNotice
+no_cursorClamp | OK | wide.c empty fallback for the patch DLL's cursor clamp
+no_fullScreen | OK | wide.c empty fallback
+no_mousePressed | OK | wide.c fallback returning 0
+no_next | OK | fatal "next submode not defined" message
+obj_corner | OK | OBJ "v[/a[/b]]" corner into position / texture / normal
+object_activate | OK | 0x490ee0: active 1, animated unit enabled
+object_deactivate | OK | 0x490f30: active 0, animated unit disabled
+overload_loss | OK | -(weight over limit)/limit * 4 * f, else 0
+percent | OK | v * 100 capped at 99
+pilotSelect_clicks | OK | 0x44c480: rows 0..8 pick, 9 profile_create, 10 cancel, right click back
+pilotSelect_hitTest | OK | 0x44b3e0: hit on g_pilotSelectRects (11)
+pilotSelect_keys | OK | 0x44cc60: OK profile_create, back/cancel, arrows over the 3x3 grid
+pilotSelect_loadStats | OK | 0x44bc50: load_stat_bars(g_pilotSelectCursor)
+pilotSelect_page | OK | 0x44f810: frame opening or stat bars + profile_drawPilotSelect
+pilotSelect_reset | OK | 0x44b750: profile_resetStatBars, cursor 0, reveal 0
+pool_take | OK | next n bytes of the stage's layer pool, fatal past 4,000,000
+power_from_rate | OK | R_POWER = rate * 0.01 * R_EXP
+profileList_hitTest | OK | 0x44b3a0: hit on g_profileListRects (13)
+profile_create | OK | 0x44b990: typed name + chosen pilot into the next slot, save folder, scroll, profile_newCampaign
+profile_deleteChosen | OK | 0x44ba60: save\<name>.axs deleted, slots shifted, profile_writeFile
+profile_drawMessageWindow | OK | 0x44dc60: NAME ALREADY REGISTRED window with OK
+profile_drawPilotSelect | OK | 0x44e640: CHARACTER SELECT dialog with portraits, stats, buttons
+profile_inDialogBox | OK | 0x44b2e0: 1 inside g_profileMessageClickBox, else -1
+profile_messageKeys | OK | 0x44c850: Enter / OK close the message and retype the name
+profile_nameExists | OK | 0x44b870: case-folded compare of g_inputLine with every profile name
+profile_nameHasBadChar | OK | 0x44b7e0: any of \/:*?"<>|
+profile_newCampaign | OK | 0x446590: axisuser.dat written, mech stored, campaign_new record written to the pilot file
+profile_quitGame | OK | 0x44bc00: g_profileQuitting 1 (menuState210_frame quits), page 1
+profile_writeFile | OK | 0x447320: profiles_create + profiles_write with the current name
+ptx_crtlError | OK | 0x46e1e0: "CRTL ERROR: " + errno text + message to stderr, exit on code
+ptx_decodeFile | OK | 0x46eb00: fopen "rb" (ptx_crtlError on failure) then ptx_read
+ptx_error | OK | 0x46e260: "ERROR: " + message to stderr, exit on code
+ptx_toRgb | OK | 0x46e830: Y/Cb/Cr planes (0x10000 apart) to RGB
+quat_fromMatrix | OK | 0x47d0f0: trace / largest-diagonal quaternion extraction
+quat_toAxisAngle | OK | 0x47d260: angle -2 acos(w), axis / sqrt(1 - w^2)
+record_send | CLEARER -> record_send (comment) | body right (PlayerRecordPacket filled, g_pilotLevel.. and g_pilotLevelKept.. both set, net_send 0x11); "both kept copies" calls the account record g_pilotLevel.. a kept copy too (globals.h: only g_pilotLevelKept is the kept copy)
+reg_write | OK | REG_DWORD under HKCU\SOFTWARE\AxisArena\Launcher
+reg_writeEndMode | OK | 0x41f880: reg_write(value, "EndMode")
+reg_writeStartMode | OK | 0x43f7f0: reg_write(value, "StartMode")
+relight | OK | one entry's colours: factors (shape_shadingColours), tint (shape_addColour), or 0
+replaySelect_allOut | OK | 0x440df0: 1024 picked flags 0, wrap 1, random 0
+replaySelect_scrollDown | OK | first + 1 while 10 more remain
+replaySelect_scrollUp | OK | first - 1 while > 0
+replaySelect_toggle | OK | 0x4417c0: picked flipped
+replay_startRecording | OK | 0x487cb0: AutoPlay\name.ape opened, scrambled header, send flags raised
+reply_read | OK | recv until size or 3 s
+report | OK | flag set, time stamp, ERROR.TXT appended when logging, g_errorHook
+reset_menus | OK | menu camera eye/look and kept copies, move state, entering flag, keyboard back
+roomLogin_editId | OK | 0x433b00: 16-char edit field over g_accountName, g_typingLoginId
+roomLogin_endTyping | OK | 0x433c70: EDIT destroyed, line taken into g_accountName or g_accountPassword
+roomLogin_leave | OK | camera move 4, g_roomState 99, next screen 300
+roomUpdateNotice_keys | OK | update_notice_keys(&g_roomUpdateNotice)
+room_askJoinPassword | OK | 0x434da0: g_roomJoinNeedsPassword + room_editJoinPassword when locked
+room_button | OK | wide button quad lit/dimmed and the text colour
+room_editJoinPassword | OK | 0x434320: 8-char edit field into g_roomJoinPassword
+room_enterGameList | OK | 0x433590: g_roomState 1, camera 1, list state cleared, period 30
+room_info | OK | room info packet (kind, limits, count, password, host, address) built from g_roomPacket, net_send(0x14, 0x65)
+room_initCameraPoints | OK | 0x433360: five g_camPoints/g_camAims set at the look z, home eye/look kept
+room_joinAnswer | OK | 0x434e70: timeout -> 0x44; session found -> dplay_join, settings taken; else messages 0x43.. and leave
+room_joinListed | WRONG comment -> "... its DirectPlay connection (dplay_openConnection) and the session search (dplay_listSessions: EnumSessions); the join itself follows in room_joinAnswer ..." | name OK (0x434dd0 starts joining listed game i); its comment calls dplay_listSessions "the join", but dplay_listSessions -> dplaySlotN_enum -> slot_enum -> dplay_enumSessions (dplay_calls.c:44, dplay_slots.c:33): it lists sessions; the join (dplay_join) is made later by room_joinAnswer once a session is found. (arena_joinListed's comment, room_dialogs.c:197, says the same and is wrong the same way)
+room_leave | OK | 0x435a40: g_ladderId sent as 0x19, Sleep 500, next 300, net_disconnect, mech_loadFromProfile
+room_mergeReceivedSessions | OK | 0x434ff0: merge() over g_roomList (RoomRecord 0x79) with the room flags
+room_openLogin | OK | 0x434640: login state 0x42, typing flags cleared, ID from g_ladderId
+round_man | OK | mantissa rounded to precision bits, carry out
+row_dir | OK | one row of a 4x4 matrix applied to a direction (no translation)
+row_point | OK | one row applied to a point with the translation
+say | OK | msg_print of the language's text (colour 4) and sound
+scenePath_advanceStub | CLEARER -> scenePath_advanceStub (param a -> dt) | 0x48b440: empty, returns 0; name right; its own comment says the argument is the frame time but the parameter is named a
+scenePath_notifyStub | OK | 0x48b450: empty ret 0x10; only script_notifyObject calls it
+script_holdActor | OK | 0x45dff0: heldActor / heldMode / outOfPlay as commented
+script_notifyObject | OK | 0x48fde0: scenePath_notifyStub while scriptMode, returns b
+script_pushMessage | OK | 0x48fc40: 32-slot message ring, oldest dropped
+script_startScenePath | OK | 0x48fce0: script_reset, scriptName / scriptMode kept, scriptHoldsPlay by mode
+section_arms | OK | ARM CENTER panel slot 2: FIRE CONTROL SYSTEM, four capacities, WEIGHT
+section_booster | OK | slot 4: THRUST TYPE, times, speeds, weight
+section_chest | OK | slot 1: WEIGHT LIMIT, MAX ARMOR, MAX SHIELD
+section_legs | OK | slot 3: AGILITY, INERTIA, SPD CORRECTION x4, WEIGHT
+send_host_leaving | OK | host only: net_sendMessage(g_netHostLeftMessageKind) with g_hostGoneMessageFlag raised
+sessionList_sort | OK | 0x4065e0: bubble sort of g_sessionList by ping
+sessionList_swap | OK | 0x4065a0: two SessionEntry swapped
+shape_addColour | OK | 0x466960: part_addColour on each part's colour slice
+shape_clearTint | CLEARER -> shape_clearTint (param model -> manager) | 0x4675f0 body right (bindFlags bit 1, tint[6] 0, shapes' materials marked); its parameter is a ShapeManager *, named "model"
+shape_computeBounds | OK | 0x4666d0: per-part boxes, overall box, centre and radius
+shape_markMaterialsChanged | OK | 0x466560: tex_markMaterialChanged on each part's texture
+shl12 | OK | 96-bit shift left by 1
+shr12 | OK | 96-bit shift right by 1
+shr_man | OK | mantissa shifted right by n
+skel_loadAseFrom | OK | 0x469b90: 3ds Max ASE skeleton reader
+skel_loadFrom | OK | 0x4699d0: "ske" binary or "ase" by extension
+skirmish_drawNewPartsNotice | OK | 0x449a50: YOU'VE GOT NEW PARTS AND WEAPONS over the round screen
+skirmish_frameNewPartsNotice | OK | 0x44aa30: calls skirmish_drawNewPartsNotice
+sky_floor | OK | floor grid under fog, animated texture fixed to the ground
+slider_hue | OK | pointer -> hue 0..359, stored -180 shifted and wrapped
+slider_pos | OK | (g_mouseX - g_armcPageRight + 0xb8) / 160: the pointer's position along the colour sliders
+slot_close | OK | slot cleared, dplay_release
+sound_playFile | OK | 0x457080: sound_loadWav, volume attenuation, play, free
+sound_releaseDirectSound | OK | 0x467b70: IDirectSound released
+space_enableUnit | OK | 0x480480: unit_parts_flag(unit, 0): parts back into collisions
+space_transformPoint | OK | 0x482a40: m * p with translation
+speed_change | OK | signed speed change formatted, capped at f
+speed_overload_loss | OK | overload share of (f + a)
+stage_printText | OK | 0x473450: vsprintf into stage->printText
+stage_setFog | OK | 0x472900: linear fog params kept in the stage and handed to GL
+stage_triggerActionNone | OK | empty method; the trigger loop calls it for action kinds 3 and 9 (frame_loops.c:241/256), which do nothing
+static_destroyTex128x128 | OK | atexit dtor: Texture_dtor on g_texture128x128
+static_destroyTex128x64 | OK | atexit dtor: Texture_dtor on g_texture128x64
+static_destroyTex256x128 | OK | atexit dtor: Texture_dtor on g_texture256x128
+static_destroyTex256x256 | OK | atexit dtor: Texture_dtor on g_texture256x256
+static_destroyTex256x64 | OK | atexit dtor: Texture_dtor on g_texture256x64
+static_destroyTex64x64 | OK | atexit dtor: Texture_dtor on g_texture64x64
+static_endBMPRGBFileLog | OK | GUARDED_DTOR (statics.c): ErrorLog_dtor on g_logBMPRGBFile once; registered by static_registerBMPRGBFileLogDtor; its start pair static_startBMPRGBFileLog builds "class BMPRGBFile"
+static_endCollisionVolumeLog | OK | GUARDED_DTOR (statics.c): ErrorLog_dtor on g_logCollisionVolume once; registered by static_registerCollisionVolumeLogDtor; its start pair static_startCollisionVolumeLog builds "class CollisionVolume"
+static_endConsoleLog | OK | GUARDED_DTOR (statics.c): ErrorLog_dtor on g_logConsole once; registered by static_registerConsoleLogDtor; its start pair static_startConsoleLog builds "class Console"
+static_endLightLog | OK | GUARDED_DTOR (statics.c): ErrorLog_dtor on g_logLight once; registered by static_registerLightLogDtor; its start pair static_startLightLog builds "class Light"
+static_endPackedColorLog | OK | GUARDED_DTOR (statics.c): ErrorLog_dtor on g_logPackedColor once; registered by static_registerPackedColorLogDtor; its start pair static_startPackedColorLog builds "class PackedColor"
+static_endRealColorLog | OK | GUARDED_DTOR (statics.c): ErrorLog_dtor on g_logRealColor once; registered by static_registerRealColorLogDtor; its start pair static_startRealColorLog builds "class RealColor"
+static_endSceneLog | OK | GUARDED_DTOR (statics.c): ErrorLog_dtor on g_logScene once; registered by static_registerSceneLogDtor; its start pair static_startSceneLog builds "class Scene"
+static_endShapeLog | OK | GUARDED_DTOR (statics.c): ErrorLog_dtor on g_logShape once; registered by static_registerShapeLogDtor; its start pair static_startShapeLog builds "class Shape"
+static_endShapeManagerLog | OK | GUARDED_DTOR (statics.c): ErrorLog_dtor on g_logShapeManager once; registered by static_registerShapeManagerLogDtor; its start pair static_startShapeManagerLog builds "class ShapeManager"
+static_endSkeletonLog | OK | GUARDED_DTOR (statics.c): ErrorLog_dtor on g_logSkeleton once; registered by static_registerSkeletonLogDtor; its start pair static_startSkeletonLog builds "class Skeleton"
+static_endSkeletonManagerLog | OK | GUARDED_DTOR (statics.c): ErrorLog_dtor on g_logSkeletonManager once; registered by static_registerSkeletonManagerLogDtor; its start pair static_startSkeletonManagerLog builds "class SkeletonManager"
+static_endSoundLog | OK | ErrorLog_dtor(g_logSound) (classes.c:198), the sound class log's exit dtor
+static_endStageLog | OK | GUARDED_DTOR (statics.c): ErrorLog_dtor on g_logStage once; registered by static_registerStageLogDtor; its start pair static_startStageLog builds "class Stage"
+static_endTextureLog | OK | GUARDED_DTOR (statics.c): ErrorLog_dtor on g_logTexture once; registered by static_registerTextureLogDtor; its start pair static_startTextureLog builds "class Texture"
+static_endTextureManager | OK | TextureManager_dtor on g_textureManager
+static_endTextureManagerLog | OK | GUARDED_DTOR (statics.c): ErrorLog_dtor on g_logTextureManager once; registered by static_registerTextureManagerLogDtor; its start pair static_startTextureManagerLog builds "class TextureManager"
+static_endTimeSync | OK | TimeSync_dtor on g_loadTimer
+static_endTimeSyncLog | OK | GUARDED_DTOR (statics.c): ErrorLog_dtor on g_logTimeSync once; registered by static_registerTimeSyncLogDtor; its start pair static_startTimeSyncLog builds "class TimeSync"
+static_endUnitLog | OK | GUARDED_DTOR (statics.c): ErrorLog_dtor on g_logUnit once; registered by static_registerUnitLogDtor; its start pair static_startUnitLog builds "class Unit"
+static_endUnitPartInfoLog | OK | GUARDED_DTOR (statics.c): ErrorLog_dtor on g_logUnitPartInfo once; registered by static_registerUnitPartInfoLogDtor; its start pair static_startUnitPartInfoLog builds "class UnitPartInfo"
+static_endUnitPoseInfoLog | OK | GUARDED_DTOR (statics.c): ErrorLog_dtor on g_logUnitPoseInfo once; registered by static_registerUnitPoseInfoLogDtor; its start pair static_startUnitPoseInfoLog builds "class UnitPoseInfo"
+static_endViewVolumeLog | OK | GUARDED_DTOR (statics.c): ErrorLog_dtor on g_logViewVolume once; registered by static_registerViewVolumeLogDtor; its start pair static_startViewVolumeLog builds "class ViewVolume"
+stats_copy | OK | seven PilotStats fields copied (not rank)
+strgtold12 | OK | CRT string -> 12-byte extended
+strip_pair | OK | two strip indices appended, fatal past indexCapacity
+sys_errorMessage | OK | 0x46c5f0: report with the object's name, g_errorReported
+sys_errorMessageNoName | OK | 0x46c840: report without a name
+sys_errorTerminate | OK | 0x46c950: report (fatal) then terminate
+sys_fatalError | OK | 0x46c710: report (fatal, with name) then terminate
+sys_messageBox | OK | 0x41edf0: vsprintf, MessageBox "User Message ^_^;"
+sys_messageBoxOverActive | OK | 0x46c580: MessageBox over GetActiveWindow()
+take_arena | OK | hosted arena settings into the match globals, g_arenaGameSetUp 1
+take_back | OK | when R_KILLS > kept.kills + 300 the record is replaced by that copy and its rate/power recomputed; called with g_pilotLevel then g_pilotLevelKept
+team_game | OK | modes 1,3,5,7,9,11
+terminate | OK | g_errorCleanupHook then exit(1)
+tex_markMaterialChanged | OK | 0x456820: flags & 0x11111113, changed 1
+text_draw32 | OK | 0x402c90: Hangul 31 passes + ASCII 32 pass at 26 units
+text_drawCentred5 | OK | 0x403210: 5-unit font centred, 6 per char
+text_hangulConvert | OK | 0x44aac0: EUC-KR -> Johab
+through_m | OK | p through the 4x3 part of m with the original's term order
+track | OK | slider track quad X1-0xbc .. X1-0x10
+trail | OK | bullet kind 3 trail ring of 20 cross-sections updated
+translation | OK | 4x4 identity with translation p
+turn_update | OK | g_freeCamTurnSin/Cos from g_freeCamYaw, kept in g_slotCams
+turned | OK | hue +-180 (int)
+turned_f | OK | hue +-180 (x87)
+unfollow | OK | watchedPlayer -1, playing 0, start_view
+updateNotice_clicks | OK | 0x435ab0: OK clears g_roomUpdateNotice and app_closeWindow(2), CANCEL clears it
+updateNotice_hitTest | OK | 0x4321c0: hit on g_updateNoticeRects (2)
+update_notice | OK | THIS PROGRAM HAS BEEN UPDATED box with OK / CANCEL
+update_notice_keys | CLEARER -> update_notice_keys (param question -> notice) | 0x436940 / 0x407970: back clears the flag, O also closes the game; the parameter is the notice flag (g_roomUpdateNotice / g_arenaUpdateNotice), not a question
+vec3_negate | OK | 0x480230: v = -v through the FPU
+vec3_scaleCopy | OK | 0x4803c0: v *= s, copied to out
+vec_rotate | OK | 0x467700: (x, y) rotated by tenths of a degree from the tables
+volume_at_pointer | OK | g_setupEffectVolume from the pointer along the SOUND page slider
+watch_camera | OK | look point toward the watched player, camera behind its head when blocked
+water_point | WRONG -> water_point (param scene -> stage) | its first parameter is named "scene" but is used only as a Stage (Stage *st = (Stage *)scene; st->cameraPos) and its caller ground_buildDrawLists passes its own Stage pointer s (shading.c:305/367; call sites pass STAGE(scene) / stage)
+wide_callAdded | OK | patch-layer: the call site's target via the patch DLL or a code match
+wide_callSite | OK | patch DLL's callSite or the call instruction's target
+wide_carries | OK | which rebuilt functions carry the patch DLL's fixes
+wide_fixes | OK | bit mask of installed fixes for the log
+wide_menuFix | OK | patch DLL present and its menuFix on
+wide_present | OK | g_wide != &none
+wide_state | OK | patch DLL's writable data and size
+wide_testCursor | OK | sets the patch DLL's cursor state for tests
+wide_testMouseLatch | OK | sets the patch DLL's mouse latch i
+write_log | OK | axiswl.log: title, map, limits, then the ranking lines
+zero_tail | OK | mantissa bits after n all clear
+Stage.groundLayerCount | OK | read from the ground file (map_loadGroundInfoFrom, map_info.c:441) and loops over groundLayers[4] in ground_buildLayerModels, ground_buildDrawLists, collision_tris.c:671; 0 at stage_build; no Scene alias uses
+static_emptyCtorSkelData1 | UNDECIDABLE | name no longer in src: the function (0x46b860) is now static_emptyInit_46b860, a bare "ret" run from the CRT initialiser table; an empty body names no object, so by address is right. The Ghidra symbol (disx still prints static_emptyCtorSkelData1) has no support beyond its position after skelDat_ code
+static_emptyCtorSkelData2 | UNDECIDABLE | name no longer in src: the function (0x46b880) is now static_emptyInit_46b880, a bare "ret" run from the CRT initialiser table; an empty body names no object, so by address is right. The Ghidra symbol (disx still prints static_emptyCtorSkelData2) has no support beyond its position after skelDat_ code
+static_emptyCtorSkelData3 | UNDECIDABLE | name no longer in src: the function (0x46b8a0) is now static_emptyInit_46b8a0, a bare "ret" run from the CRT initialiser table; an empty body names no object, so by address is right. The Ghidra symbol (disx still prints static_emptyCtorSkelData3) has no support beyond its position after skelDat_ code
+static_emptyCtorSkelData4 | UNDECIDABLE | name no longer in src: the function (0x46b8c0) is now static_emptyInit_46b8c0, a bare "ret" run from the CRT initialiser table; an empty body names no object, so by address is right. The Ghidra symbol (disx still prints static_emptyCtorSkelData4) has no support beyond its position after skelDat_ code
+static_emptyCtorSkelData5 | UNDECIDABLE | name no longer in src: the function (0x46b8e0) is now static_emptyInit_46b8e0, a bare "ret" run from the CRT initialiser table; an empty body names no object, so by address is right. The Ghidra symbol (disx still prints static_emptyCtorSkelData5) has no support beyond its position after skelDat_ code
+static_emptyCtorSkelData6 | UNDECIDABLE | name no longer in src: the function (0x46b900) is now static_emptyInit_46b900, a bare "ret" run from the CRT initialiser table; an empty body names no object, so by address is right. The Ghidra symbol (disx still prints static_emptyCtorSkelData6) has no support beyond its position after skelDat_ code
+static_emptyCtorSkelData7 | UNDECIDABLE | name no longer in src: the function (0x46b920) is now static_emptyInit_46b920, a bare "ret" run from the CRT initialiser table; an empty body names no object, so by address is right. The Ghidra symbol (disx still prints static_emptyCtorSkelData7) has no support beyond its position after skelDat_ code
+static_emptyCtorSkelData8 | UNDECIDABLE | name no longer in src: the function (0x46b940) is now static_emptyInit_46b940, a bare "ret" run from the CRT initialiser table; an empty body names no object, so by address is right. The Ghidra symbol (disx still prints static_emptyCtorSkelData8) has no support beyond its position after skelDat_ code
+static_emptyCtorTimeSync1 | UNDECIDABLE | name no longer in src: 0x487b70 is static_emptyInit_487b70, a bare "ret" initialiser; it sits after catalogue_loadItemInfoFrom (0x4875d0) / map_loadPlayInfoFrom (0x4876b0), not with the TimeSync code (0x4873d0..0x487490): "TimeSync" in the old (still Ghidra) symbol is unsupported; by address is right
+app_spoilDataFiles | OK | now app_invalidateLauncherMarks (0x43f8b0; disx still shows the old Ghidra symbol): it overwrites the launcher marks at offset 2000 that the app_checkFile_* originals compare, and deletes save\axisgame.dat / game.dat - "invalidate launcher marks" is the accurate, neutral name
+g_vkTable | WRONG -> g_scanCodeAscii (and input_initVkTable -> input_initScanCodeAscii) | objects.h calls it a "scan-code row -> virtual key table", but its values (k_vkTable, store_tables.c:39-51; index = scan code - 1) are the unshifted US-layout ASCII characters: scan 0x0c "-" -> 0x2d, 0x0d "=" -> 0x3d, 0x1a/0x1b "[" "]" -> 0x5b/0x5d, 0x27 ";" -> 0x3b, 0x28 "'" -> 0x27, 0x29 "`" -> 0x60, 0x2b "\" -> 0x5c, 0x33..0x35 -> 0x2c/0x2e/0x2f, numpad * -> 0x2a, space 0x20, Ctrl/Alt 0; as Windows VKs those would be INSERT, (none), LWIN, APPS, RIGHT, NUMPAD0, RWIN, SNAPSHOT, DELETE, HELP, PRINT. Only letters, digits, Esc/Bksp/Tab/Enter (same codes either way) and Shift = 0x10 match VKs. Written only, never read
+src/menu/screen_enter.c:124 colours | CLEARER -> colours_tunnel | menuState600_enterSetup's Store table: 8 words are g_setupColourLit/Dim, the other 4 are g_tunnelStripeScroll 0, g_menuTunnelSpeed 1, g_tunnelPulse 0, g_tunnelPulseStep 1 - true for the majority, but the tunnel values are not colours
+src/menu/screen_enter.c:338 colours | CLEARER -> colours_clocks | menuState210_enter's table: 8 words g_profileColour/g_profileDim, then g_menuRepeatClock, g_replayZoomTime, g_profileRowClickTime (clocks) and g_profileQuitting, g_profileRowClicked (flags) cleared - not all colours
+record_takeBest / record_send (lobby_states.c) comments "a kept copy (g_pilotLevel, then g_pilotLevelKept)" | CLEARER -> comment: "the account record (g_pilotLevel ..), then its kept copy (g_pilotLevelKept ..)" | no record_takeBest in src now (take_back / ladder_checkAndSendRecord / record_send). Reviewer is right on the wording: globals.h: g_pilotLevel.. is the pilot's account standing from the login reply (login_takeAccountRecord), g_pilotLevelKept.. "the kept copy"; but both are used the same way here (a previous copy of the record taken back, and both written by record_send), so the comment is loose, not contradicted
+k_defaultBindings / k_defaultBindingsEdit (setup_keys.c / store_tables.c) | OK | slot +0xa0 = binding 20 = row 10 of the FIRE tab (key_rows, setup_pages.c:174) = MSG(241) "ALT SHOOT" (msgeng.dat), which no match code reads (addr_access 0x4defa0: only set / axis.cfg read / write). The original really differs: input_setDefaultBindings stores g_dikRCtrl (0x42c4f3 reads 0x9dad8c), setup_defaultBindings stores g_dikLCtrl (0x420cf3 reads 0x6803a8). Both names are right (start-up defaults into g_controls / setup DEFAULT into g_controlsEdit) and neither comment claims the tables are equal; g_dikRCtrl's comment says "default ALT SHOOT" (true for start-up); g_dikLCtrl's could add "setup's DEFAULT for ALT SHOOT" (CLEARER, optional)
+the DELETING(cls, dtor) deleting destructors in src/app/classes.c (BMPRGBFile_, CollisionVolume_, ErrorLog_, Light_, Shape_, Scene_, ShapeManager_, SkeletonManager_, TextureManager_, Texture_, TimeSync_deletingDtor: is each class label right for the object it destroys?) | OK | each deleting dtor's address (recomp.c tests) calls the matching dtor (disx): 0x455a80->0x46ce60 BMPRGBFile, 0x4637b0->0x481390 CollisionVolume, 0x46c5c0->0x46c5e0 ErrorLog, 0x462580->0x483d50 Light, 0x462d10->0x464ba0 Shape, 0x463810->0x48b410 Scene, 0x463010->0x466a10 ShapeManager, 0x4637d0->0x46ae60 SkeletonManager, 0x42b350->0x456990 TextureManager, 0x42b150->0x455030 Texture, 0x487450->0x487470 TimeSync; each dtor writes its own class vtable

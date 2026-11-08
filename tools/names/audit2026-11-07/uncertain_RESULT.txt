@@ -1,0 +1,43 @@
+Two-reviewer check of the uncertain names (2026-11-07; rule: tools/names/NAMING_RULES.txt)
+
+1,165 names: every data name never seen holding a value in play (695), every function never run in the traced
+sessions (459), the 10 earlier UNSURE ones and the contested ones. Each chunk (U1, U2 data; U3 functions + the rest)
+was judged twice, independently: _C from the rebuilt C, _O from the original's instructions (uncertain_U*_C/O.txt;
+the pairs side by side: uncertain_compare.txt).
+
+Agreement
+  both OK                         1,077  (92.4%)
+  both WRONG, same reason             4  -> applied
+  same finding, one WRONG one CLEARER 7  -> applied (both found the same fact; the fix is a clarification either way)
+  both CLEARER, same suggestion       5  -> applied where cheap (4); net_addServerRecord's comment was already fixed
+  one WRONG, the other OK            24  -> NOT applied (listed below)
+  other one-sided CLEARER / UNDECIDABLE  rest (in the reports; optional)
+  U1 (347 data names): no WRONG from either reviewer.
+
+Applied
+  g_matchChatCaretX / Y -> g_matchTextFieldX / Y   every match text field (chat line, Esc menu replay name), never read
+  g_vkTable -> g_scanCharTable, k_vkTable -> k_scanCharTable, input_initVkTable -> input_initScanCharTable
+                                                   scan code -> ASCII characters, not virtual keys
+  gameList_pageFrame comment                       g_gameListClickTimer is the double-click window's clock
+  (menu_cameras.c) heading -> side_angle           the sideways step's angle (heading + 90)
+  item_path parameter out -> log                   the class's error log, never written
+  kept-copy comments (ladder_checkAndSendRecord, record_send, take_back, the R_ block)
+                                                   g_pilotLevel.. is the account record; only g_pilotLevelKept is a kept copy
+  screen_enter.c colours -> colours_tunnel / colours_clocks   the tables also set tunnel values / clear clocks
+  g_armcChanged -> g_armcSlotChanged, g_textureSets -> g_textureManagerObject, update_notice_keys question -> notice
+
+One-sided WRONG (not applied; a third reading would settle them)
+  C only:  Scene.quitDelay comment, g_matchLogWritten comment, g_freeCamYaw comment ("watched" -> local slot),
+           g_arenaUpdateNotice (also the game room's), room_joinListed comment (lists, does not join),
+           water_point parameter scene -> stage
+  O only:  UnitPoseInfo_deletingDtor (class Unit), esc_resetScore, far_point (axis 2 is y), freeCam_stepLeft / Right
+           comments (sideways, not forward / back), glWindow_setupPixelFormat (0x21 = DOUBLEBUFFER | SUPPORT_OPENGL),
+           lobby_openConnection (request 13 is the arena list), login_takeAccountRecord, net_closeSockets (WSACleanup),
+           net_receiveGameServerReply (the room list), sound_playFile (no Release), arena_ / room_mergeReceivedSessions
+           (nothing re-asked), roomLogin_endTyping, room_askJoinPassword, room_editJoinPassword, take_back parameter
+  both WRONG, different reasons: game_postMatch (C: the copied fields are the host's name and address; O: g_screen -1,
+           no "text mode")
+
+What it says about a single pass: of the 40 WRONG verdicts given (12 from C, 28 from O), 15 had the other reviewer find
+the same thing (as WRONG or as CLEARER). Each reviewer misses things the other finds - several one-sided items are plain facts (the PFD
+flags, WSACleanup) - so a one-sided verdict needs the third reading, not dismissal.

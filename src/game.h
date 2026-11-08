@@ -917,7 +917,7 @@ typedef struct { float r, g, b, a; } Colour;   /* an RGBA colour, four floats (C
 #define app_checkFile_game() GAME_FN(app_checkFile_game, 0x41e670, u32, void)()
 #define sound_init(hwnd) GAME_FN(sound_init, 0x467a50, int, void *)(hwnd)
 #define sound_loadMenuSounds() GAME_FN(sound_loadMenuSounds, 0x42bd40, u32, void)()
-#define input_initVkTable() GAME_FN(input_initVkTable, 0x431680, void, void)()
+#define input_initScanCharTable() GAME_FN(input_initScanCharTable, 0x431680, void, void)()
 #define input_clearKeyTable2() GAME_FN(input_clearKeyTable2, 0x401780, void, void)()
 #define cd_findDrive() GAME_FN(cd_findDrive, 0x401000, u32, void)()
 #define tex_initBy(tm, dir, slots, format, w, h, linear, mipmaps) GAME_THISFN(tex_initBy, 0x455080, u32, void *, const char *, int, int, int, int, u32, u32)(tm, dir, slots, format, w, h, linear, mipmaps)
@@ -1165,7 +1165,7 @@ void fix_glViewport(int x, int y, int w, int h);
 #define net_clearServers() GAME_FN(net_clearServers, 0x454690, void, void)()                  /* the server table cleared */
 #define net_resolveHost(host) GAME_FN(net_resolveHost, 0x4547d0, int, const char *)(host)   /* 1: resolved (into 0xa0d320) */
 #define net_freeBuffers() GAME_FN(net_freeBuffers, 0x4519b0, u32, void)()
-#define net_clearServerList() GAME_FN(net_clearServerList, 0x452e60, void, void)()   /* the lobby's arena (server) list cleared (g_serverList: ServerRecord, request 13) */
+#define net_clearServerList() GAME_FN(net_clearServerList, 0x452e60, void, void)()   /* the lobby's arena (server) list cleared (g_serverList: ArenaRecord, request 13) */
 #define net_receiveLobbyReply() GAME_FN(net_receiveLobbyReply, 0x452a30, void, void)()   /* the list of games received */
 #define net_receiveGameServerReply() GAME_FN(net_receiveGameServerReply, 0x452bd0, void, void)()   /* the server list received */
 #define net_receivePlayerListReply() GAME_FN(net_receivePlayerListReply, 0x452d70, void, void)()   /* the player list received */

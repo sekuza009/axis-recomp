@@ -94,12 +94,12 @@ void (arena_askJoinPassword)(void)
 
 /* 0x436940, 0x407970: the update notice's keys in the room and in the lobby: back closes it, O closes the game
    (exit code 2) */
-static void update_notice_keys(int *question)
+static void update_notice_keys(int *notice)
 {
 	if (input_justPressed(g_keyBack)) {
-		*question = 0;
+		*notice = 0;
 	} else if (input_justPressed(g_keyOk)) {
-		*question = 0;
+		*notice = 0;
 		app_closeWindow(2);
 	}
 }

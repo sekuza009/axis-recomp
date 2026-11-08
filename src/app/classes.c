@@ -177,7 +177,7 @@ void *THISCALL (CollisionVolume_ctor)(u32 *self) { self[0] = STR(0x4aa254, "\260
 int THISCALL (CollisionVolume_dtor)(u32 *self) { self[0] = STR(0x4aa254, "\2607F"); return CollisionVolume_release(self); }
 DELETING(CollisionVolume, CollisionVolume_dtor)
 
-/* Model (vtable 0x4aa250) */
+/* Shape (vtable 0x4aa250) */
 void *THISCALL (Shape_ctor)(u32 *self) { self[0] = VT(Shape, 0x4aa250); Shape_clear(self); return self; }
 int THISCALL (Shape_dtor)(u32 *self) { self[0] = VT(Shape, 0x4aa250); return Shape_release(self); }
 DELETING(Shape, Shape_dtor)

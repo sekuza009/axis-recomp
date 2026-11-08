@@ -66,7 +66,7 @@ typedef long double X;
 static void mulf(u32 dst, const float *a, const float *b) { GAME_VAR(float, dst) = (float)fmul_m(fld_m(a), b); }
 static void copyf(u32 dst, const float *src) { GAME_VAR(float, dst) = (float)fld_m(src); }   /* (an SNaN quieted) */
 
-/* armc_readMechStats (0x41c510): the ARM CENTER's mech stats from the local player's Player (*g_scene): the detection
+/* armc_readMechStats (0x41c510): the ARM CENTER's mech stats from the local player's Actor (*g_scene): the detection
    range (root of detectionRangeSq x 0.01), detection angle, hacking level, lock-on and target-keep times, the seven
    maxima (g_mechMaxima), mobility, the leg type's inertia and corrections, the booster type's thrust type
    (g_unusedMechStat), boost / recharge / rest times, the speeds and load (g_mechSpeeds); every product extended

@@ -162,8 +162,6 @@ extern struct GameData g_data;
 #define g_armcCameraBox ((u32 *)g_armcCameraBox_v)
 #undef g_armcCameraTravelling
 #define g_armcCameraTravelling (*(int *)g_armcCameraTravelling_v)
-#undef g_armcChanged
-#define g_armcChanged (*(int *)g_armcChanged_v)
 #undef g_armcColourRects
 #define g_armcColourRects ((int *)g_armcColourRects_v)
 #undef g_armcColourSlot
@@ -208,6 +206,8 @@ extern struct GameData g_data;
 #define g_armcSessionMade (*(int *)g_armcSessionMade_v)
 #undef g_armcSlot
 #define g_armcSlot (*(int *)g_armcSlot_v)
+#undef g_armcSlotChanged
+#define g_armcSlotChanged (*(int *)g_armcSlotChanged_v)
 #undef g_armcSlotItems
 #define g_armcSlotItems ((int *)g_armcSlotItems_v)
 #undef g_armcSpin
@@ -1420,10 +1420,6 @@ extern struct GameData g_data;
 #define g_mapRotation (*(int *)g_mapRotation_v)
 #undef g_mapTop
 #define g_mapTop (*(int *)g_mapTop_v)
-#undef g_matchChatCaretX
-#define g_matchChatCaretX (*(int *)g_matchChatCaretX_v)
-#undef g_matchChatCaretY
-#define g_matchChatCaretY (*(int *)g_matchChatCaretY_v)
 #undef g_matchEndedByServer
 #define g_matchEndedByServer (*(int *)g_matchEndedByServer_v)
 #undef g_matchEndedByUser
@@ -1438,6 +1434,10 @@ extern struct GameData g_data;
 #define g_matchProjMode (*(int *)g_matchProjMode_v)
 #undef g_matchRunning
 #define g_matchRunning (*(int *)g_matchRunning_v)
+#undef g_matchTextFieldX
+#define g_matchTextFieldX (*(int *)g_matchTextFieldX_v)
+#undef g_matchTextFieldY
+#define g_matchTextFieldY (*(int *)g_matchTextFieldY_v)
 #undef g_mciCallback
 #define g_mciCallback (*(u32 *)g_mciCallback_v)
 #undef g_mciDevice
@@ -2384,6 +2384,8 @@ extern struct GameData g_data;
 #define g_savedMechWeaponSlot2 (*(int *)((u8 *)g_savedMechSlotItems_v + 0x10))
 #undef g_savedMechWeaponSlot3
 #define g_savedMechWeaponSlot3 (*(int *)((u8 *)g_savedMechSlotItems_v + 0x14))
+#undef g_scanCharTable
+#define g_scanCharTable ((int *)g_scanCharTable_v)
 #undef g_screen
 #define g_screen (*(int *)g_screen_v)
 #undef g_screenCentreX
@@ -2633,9 +2635,9 @@ extern struct GameData g_data;
 #undef g_texture64x64Vtable
 #define g_texture64x64Vtable (*(u32 *)((u8 *)g_texture64x64_v + 0x0))
 #undef g_textureManager
-#define g_textureManager (*(u32 *)((u8 *)g_textureSets_v + 0x0))
-#undef g_textureSets
-#define g_textureSets ((u32 *)g_textureSets_v)
+#define g_textureManager (*(u32 *)((u8 *)g_textureManagerObject_v + 0x0))
+#undef g_textureManagerObject
+#define g_textureManagerObject ((u32 *)g_textureManagerObject_v)
 #undef g_textures
 #define g_textures (*(TextureManager * *)g_textures_v)
 #undef g_timeLimit
@@ -2858,8 +2860,6 @@ extern struct GameData g_data;
 #define g_viewedPartAmmoPerShot (*(int *)((u8 *)g_partRecords_v + 0x348))
 #undef g_viewedPartAmmoType
 #define g_viewedPartAmmoType (*(int *)((u8 *)g_partRecords_v + 0x344))
-#undef g_vkTable
-#define g_vkTable ((int *)g_vkTable_v)
 #undef g_watchChatOpen
 #define g_watchChatOpen (*(int *)g_watchChatOpen_v)
 #undef g_weaponCount

@@ -1,5 +1,5 @@
 # globals promoted from a file's local define (address,type,local name,file,global name)
-0x4dcc64,int,g_armcChanged,src/menu/armc_items.c,g_armcChanged
+0x4dcc64,int,g_armcSlotChanged,src/menu/armc_items.c,g_armcSlotChanged
 0x4dbc68,int,g_armcPreview,src/menu/armc_misc.c,g_armcPreview
 0x4dc54c,int,g_armcSessionMade,src/menu/armc_misc.c,g_armcSessionMade
 0x4dc790,int,g_armcState,src/menu/armc_misc.c,g_armcState

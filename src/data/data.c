@@ -244,7 +244,7 @@ u8 g_itemBonusMissile_v[4] __attribute__((aligned(16)));   /* 0x4dcb34 */
 int g_armcColourRects_v[72] __attribute__((aligned(16)));   /* 0x4dcb38 */
 u8 g_mechChanged_v[4] __attribute__((aligned(16)));   /* 0x4dcc58 */
 u8 g_chestCount_v[4] __attribute__((aligned(16)));   /* 0x4dcc60 */
-u8 g_armcChanged_v[4] __attribute__((aligned(16)));   /* 0x4dcc64 */
+u8 g_armcSlotChanged_v[4] __attribute__((aligned(16)));   /* 0x4dcc64 */
 u8 g_itemBonusShield_v[4] __attribute__((aligned(16)));   /* 0x4dcc68 */
 u8 g_itemBonus30mm_v[4] __attribute__((aligned(16)));   /* 0x4dcc6c */
 int g_slotTextures_v[7] __attribute__((aligned(16)));   /* 0x4dcc70 */
@@ -405,7 +405,7 @@ u8 g_cursorFrame_v[4] __attribute__((aligned(16)));   /* 0x4df03c */
 int g_arenaMenuTextures_v[2] __attribute__((aligned(16)));   /* 0x4df040 */
 u8 g_exitCode_v[4] __attribute__((aligned(16)));   /* 0x4df048 */
 u8 g_dikInsert_2_v[4] __attribute__((aligned(16)));   /* 0x4df04c */
-int g_vkTable_v[57] __attribute__((aligned(16)));   /* 0x4df054 */
+int g_scanCharTable_v[57] __attribute__((aligned(16)));   /* 0x4df054 */
 u8 g_gameConnectTexture_v[4] __attribute__((aligned(16)));   /* 0x4df450 */
 u8 g_panelGlowStep_v[4] __attribute__((aligned(16)));   /* 0x4df454 */
 float g_hanJongLeft_v[120] __attribute__((aligned(16)));   /* 0x4df458 */
@@ -600,7 +600,7 @@ u8 g_searchResult_v[4] __attribute__((aligned(16)));   /* 0x76d484 */
 u8 g_dikEscape_2_v[4] __attribute__((aligned(16)));   /* 0x76d48c */
 u8 g_dikWheelDown_v[4] __attribute__((aligned(16)));   /* 0x76d490 */
 u8 g_texture128x128_v[840004] __attribute__((aligned(16)));   /* 0x76d498 */
-u32 g_textureSets_v[8] __attribute__((aligned(16)));   /* 0x83a5e0 */
+u32 g_textureManagerObject_v[8] __attribute__((aligned(16)));   /* 0x83a5e0 */
 float g_hanJongRight_v[120] __attribute__((aligned(16)));   /* 0x83a600 */
 float g_hanJongBottom_v[120] __attribute__((aligned(16)));   /* 0x83a7e0 */
 int g_graphicSettings_v[7] __attribute__((aligned(16)));   /* 0x83a9c0 */
@@ -858,8 +858,8 @@ int g_skirmishRects_v[16] __attribute__((aligned(16)));   /* 0x9f6330 */
 u8 g_skirmishPreviewDue_v[4] __attribute__((aligned(16)));   /* 0x9f63b0 */
 u8 g_skirmishRoundShown_v[4] __attribute__((aligned(16)));   /* 0x9f63b4 */
 u8 g_skirmishShowBackground_v[4] __attribute__((aligned(16)));   /* 0x9f63b8 */
-u8 g_matchChatCaretY_v[4] __attribute__((aligned(16)));   /* 0x9f63c4 */
-u8 g_matchChatCaretX_v[4] __attribute__((aligned(16)));   /* 0x9f63c8 */
+u8 g_matchTextFieldY_v[4] __attribute__((aligned(16)));   /* 0x9f63c4 */
+u8 g_matchTextFieldX_v[4] __attribute__((aligned(16)));   /* 0x9f63c8 */
 char g_keptChat_v[1024] __attribute__((aligned(16)));   /* 0x9f63e4 */
 u8 g_chatTyping_v[4] __attribute__((aligned(16)));   /* 0x9f67e8 */
 u8 g_writeMatchLog_v[4] __attribute__((aligned(16)));   /* 0x9f67ec */
@@ -1414,7 +1414,7 @@ const DataPiece g_splitObjects[] = {
 	{ 0x4dcb38, g_armcColourRects_v, 288 },
 	{ 0x4dcc58, g_mechChanged_v, 4 },
 	{ 0x4dcc60, g_chestCount_v, 4 },
-	{ 0x4dcc64, g_armcChanged_v, 4 },
+	{ 0x4dcc64, g_armcSlotChanged_v, 4 },
 	{ 0x4dcc68, g_itemBonusShield_v, 4 },
 	{ 0x4dcc6c, g_itemBonus30mm_v, 4 },
 	{ 0x4dcc70, g_slotTextures_v, 28 },
@@ -1575,7 +1575,7 @@ const DataPiece g_splitObjects[] = {
 	{ 0x4df040, g_arenaMenuTextures_v, 8 },
 	{ 0x4df048, g_exitCode_v, 4 },
 	{ 0x4df04c, g_dikInsert_2_v, 4 },
-	{ 0x4df054, g_vkTable_v, 228 },
+	{ 0x4df054, g_scanCharTable_v, 228 },
 	{ 0x4df450, g_gameConnectTexture_v, 4 },
 	{ 0x4df454, g_panelGlowStep_v, 4 },
 	{ 0x4df458, g_hanJongLeft_v, 480 },
@@ -1770,7 +1770,7 @@ const DataPiece g_splitObjects[] = {
 	{ 0x76d48c, g_dikEscape_2_v, 4 },
 	{ 0x76d490, g_dikWheelDown_v, 4 },
 	{ 0x76d498, g_texture128x128_v, 840004 },
-	{ 0x83a5e0, g_textureSets_v, 32 },
+	{ 0x83a5e0, g_textureManagerObject_v, 32 },
 	{ 0x83a600, g_hanJongRight_v, 480 },
 	{ 0x83a7e0, g_hanJongBottom_v, 480 },
 	{ 0x83a9c0, g_graphicSettings_v, 28 },
@@ -2028,8 +2028,8 @@ const DataPiece g_splitObjects[] = {
 	{ 0x9f63b0, g_skirmishPreviewDue_v, 4 },
 	{ 0x9f63b4, g_skirmishRoundShown_v, 4 },
 	{ 0x9f63b8, g_skirmishShowBackground_v, 4 },
-	{ 0x9f63c4, g_matchChatCaretY_v, 4 },
-	{ 0x9f63c8, g_matchChatCaretX_v, 4 },
+	{ 0x9f63c4, g_matchTextFieldY_v, 4 },
+	{ 0x9f63c8, g_matchTextFieldX_v, 4 },
 	{ 0x9f63e4, g_keptChat_v, 1024 },
 	{ 0x9f67e8, g_chatTyping_v, 4 },
 	{ 0x9f67ec, g_writeMatchLog_v, 4 },

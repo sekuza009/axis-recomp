@@ -342,7 +342,7 @@ void (gameList_draw)(void)
 #undef X1
 #undef Y1
 
-/* 0x43ea10: the game room's page of games: the "searching" message's clock (g_gameListClickTimer, while g_gameListClickArmed; done above k_20f),
+/* 0x43ea10: the game room's page of games: the double-click window's clock (g_gameListClickTimer, while g_gameListClickArmed; closed above k_20f),
    the tunnel; with the room camera arrived (g_roomCameraMode 2), and not page 99: a panel frame while it opens (g_frameOpening) alone, else the search's
    end (g_roomSearching searching, g_roomSearchAnswerIn the answer in, g_searchResult its result: -1 .. 4) and the blinking clock (g_lobbyBlinkClock
    falling, back to 1000 below k_10f); while the list refreshes (g_roomRefreshing) its timer (g_roomListRefreshTimer against g_listRefreshPeriod:

@@ -632,12 +632,12 @@ u32 (armc_mouse)(void)
 }
 
 /* 0x419000: item record i's snapshot texture (0 .. 5 the item slots, 6 the item looked at) ("Actor/item/<name>/snapshot"; the name 0x80 bytes a slot at
-   g_partRecords) loaded into g_slotTextures[i]; nothing for a name shorter than 2 letters. g_armcChanged cleared either way */
+   g_partRecords) loaded into g_slotTextures[i]; nothing for a name shorter than 2 letters. g_armcSlotChanged cleared either way */
 void (armc_loadSnapshotTexture)(int i)
 {
 	const char *name = (const char *)(OBJ(g_partRecords) + i * 0x80);
 	if (strlen(name) <= 1) {
-		g_armcChanged = 0;
+		g_armcSlotChanged = 0;
 		return;
 	}
 	char path[0x80], copy[0x40];
@@ -648,7 +648,7 @@ void (armc_loadSnapshotTexture)(int i)
 	strcat(path, (const char *)STR(0x4b0360, "snapshot"));
 	strcpy(copy, path);
 	g_slotTextures[i] = tex_getIdByName((*(void **)&g_textures), copy, 0, 0, 0, 0, 0, 0, 0);
-	g_armcChanged = 0;
+	g_armcSlotChanged = 0;
 }
 
 /* 0x41dab0: the ARM CENTER's weight line at y (g_armcPageTop): the label MSG(299, "WEIGHT") right-aligned at 0x27c (8 units a

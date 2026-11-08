@@ -1,0 +1,353 @@
+Scene.restartPending | never seen non-zero in play; reach: never set in the game (unreachable)
+Scene.cheatPlayer | never seen non-zero in play; reach: unreachable (never written)
+Scene.cheatCode | never seen non-zero in play; reach: unreachable (never written)
+Scene.cheatPending | never seen non-zero in play; reach: never set in the game (unreachable)
+Scene.cleared2340ca4 | never seen non-zero in play; reach: unreachable: the game only writes 0 (never set)
+Scene.markLights | never seen non-zero in play; reach: never set (unreachable)
+Scene.turnLeftHeld | never seen non-zero in play; reach: unreachable (match_mechTestFrame never runs)
+Scene.turnRightHeld | never seen non-zero in play; reach: unreachable (match_mechTestFrame)
+Scene.upKeyHeld | never seen non-zero in play; reach: unreachable
+Scene.downKeyHeld | never seen non-zero in play; reach: unreachable
+Scene.fKeys | never seen non-zero in play; reach: unreachable
+Scene.partStepDownPressed | never seen non-zero in play; reach: unreachable
+Scene.partStepUpPressed | never seen non-zero in play; reach: unreachable (match_mechTestFrame)
+Scene.replaySlow | never seen non-zero in play; reach: replay viewer, hold Space
+Scene.replaySkip | never seen non-zero in play; reach: replay viewer, hold Enter
+Scene.lastMissionWon | never seen non-zero in play; reach: win the last solo mission (stage 14)
+Scene.zoomInHeld | never seen non-zero in play; reach: unreachable
+Scene.zoomOutHeld | never seen non-zero in play; reach: unreachable
+Scene.followNextAsked | never seen non-zero in play; reach: spectate a match (or replay viewer) and left-click
+Scene.presetNextAsked | never seen non-zero in play; reach: spectate / replay viewer, right-click
+Scene.scenePaused | never seen non-zero in play; reach: never set (unreachable)
+Scene.levelPoints | never seen non-zero in play; reach: play a Ladder match with a logged-in pilot that has exp
+Scene.packetLossTimer | never seen non-zero in play; reach: a network match with lost / reordered packets (netq_skippedCount > 0)
+Scene.lostTime | never seen non-zero in play; reach: join a network game as a client and wait for the slot (or the host goes away)
+Scene.manualPick | never seen non-zero in play; reach: spectate (or replay viewer) and click / right-click / numpad
+Scene.quitDelay | never seen non-zero in play; reach: leave a match (data loss, connection lost, last mission won, host gone)
+Scene.playAsked | never seen non-zero in play; reach: Esc menu START (game without teams) or pick a team in a solo game
+Scene.quitAsked | never seen non-zero in play; reach: quit from the Esc menu
+Scene.fogOn | never seen non-zero in play; reach: play a map whose ground info turns fog on
+Scene.renderMode | never seen non-zero in play; reach: always 0 (unreachable non-zero)
+Scene.lockHeld | never seen non-zero in play; reach: lock onto an enemy with a homing weapon in a match
+Scene.msgWrite | never seen non-zero in play; reach: a mission map whose script pushes a MESSAGE
+Scene.msgRead | never seen non-zero in play; reach: a scripted mission with more than 32 messages (or any MESSAGE for the box)
+Scene.scriptMode | never seen non-zero in play; reach: a mission map with a scripted scene path (cut-scene)
+Scene.restartTimer | never seen non-zero in play; reach: receive a kind-13 restart (never sent by this exe: restartPending never set), so unreachable in practice
+Scene.recording | never seen non-zero in play; reach: Esc menu RECORD in a match
+Scene.stageCleared | never seen non-zero in play; reach: win a solo mission on the current campaign stage
+Scene.matchLeaving | never seen non-zero in play; reach: quit a match from the Esc menu (or host ends it)
+Scene.character | never seen non-zero in play; reach: pick a pilot character other than the first (CHARACTER SELECT / profile pilot) and play
+Scene.cleared2343323 | never seen non-zero in play; reach: unreachable: the game only writes 0 (never set)
+ColourChoice.first | never seen non-zero in play; reach: not a sampled global (a record type / heap or data table); its values are seen through the arrays that hold it
+ColourChoice.second | never seen non-zero in play; reach: not a sampled global (a record type / heap or data table); its values are seen through the arrays that hold it
+ArchiveEntry.name | never seen non-zero in play; reach: not a sampled global (a record type / heap or data table); its values are seen through the arrays that hold it
+ArchiveEntry.offset | never seen non-zero in play; reach: not a sampled global (a record type / heap or data table); its values are seen through the arrays that hold it
+MenuOutline.points | never seen non-zero in play; reach: not a sampled global (a record type / heap or data table); its values are seen through the arrays that hold it
+MenuOutline.x | never seen non-zero in play; reach: not a sampled global (a record type / heap or data table); its values are seen through the arrays that hold it
+MenuOutline.y | never seen non-zero in play; reach: not a sampled global (a record type / heap or data table); its values are seen through the arrays that hold it
+g_lobbyConnectionOpen | never seen non-zero in play; reach: arena list, press T (connect to the lobby server; needs DServer running)
+g_lobbySearching | never seen non-zero in play; reach: arena list, T (lobby server search)
+g_lobbyRefreshing | never seen non-zero in play; reach: arena list with the lobby server answering a game list
+g_lanSearch | never seen non-zero in play; reach: arena list, press I (LAN search)
+g_joinTimedOut | never seen non-zero in play; reach: join an arena / room session that does not answer for 30 ticks
+g_rightClick | never seen non-zero in play; reach: right-click in any menu page
+g_playerCorporation | never seen non-zero in play; reach: set the player colour BLUE / YELLOW (arena SETUP PLAYER or axis.cfg set_player color)
+g_launchedForNetGame | never seen non-zero in play; reach: start AxisGL from the launcher with -net (host) or -ip <server> (join)
+g_launchStartStep | never seen non-zero in play; reach: launcher-started network game (-net / -ip)
+g_roomLoginDue | never seen non-zero in play; reach: game room, Ladder login, press LOG IN with an ID / password
+g_lineToLoginId | never seen non-zero in play; reach: game room Ladder login, click the ID field
+g_roomRequestOut | never seen non-zero in play; reach: game room Ladder login, LOG IN sent and waiting for the game server
+g_currentProfile | never seen non-zero in play; reach: make / choose a second pilot profile
+g_lobbyListAnswer | never seen non-zero in play; reach: arena list, T with the lobby server answering
+g_lobbyConnectionBlock | never seen non-zero in play; reach: start the game from a DirectPlay lobby application
+g_pingTime | never seen non-zero in play; reach: arena list with the lobby server's games (servers pinged)
+g_netListDone | never seen non-zero in play; reach: arena / room list with a server list being pinged
+g_joinThroughServer | never seen non-zero in play; reach: arena list, T (lobby server), then join a listed game
+g_lanJoinRequest | never seen non-zero in play; reach: arena list, I (LAN search), join a found game
+g_playerCustomize | never seen non-zero in play; reach: axis.cfg set_player customize ON (or the arena player setup's customize switch)
+g_launchedAsHost | never seen non-zero in play; reach: start from the launcher with -net and axiswl.dat present
+g_rankingListIn | never seen non-zero in play; reach: game room, RANKING page with the game server answering
+g_roomSearchAnswerIn | never seen non-zero in play; reach: game room game list with the game server answering
+g_rankingRequestPending | never seen non-zero in play; reach: game room RANKING page (needs the game server)
+g_argCount | never seen non-zero in play; reach: start the game with a command line (-net or <x> -ip <server>)
+g_replayRandomOrder | never seen non-zero in play; reach: replay selection dialog, tick RANDOM
+g_chosenPilot | never seen non-zero in play; reach: choose a profile whose pilot is not character 0 on the profile screen
+g_hostGoneMessageFlag | never seen non-zero in play; reach: host a network game and leave it
+g_netBlockSize | never seen non-zero in play; reach: any DirectPlay session receiving messages (host / join)
+g_roomListAnswer | never seen non-zero in play; reach: game room list with the game server answering
+g_serverListCount | never seen non-zero in play; reach: arena list, T with the lobby server listing servers
+g_serverPingCount | never seen non-zero in play; reach: arena / room list with servers listed
+g_arenaServerList | never seen non-zero in play; reach: arena list, T (lobby server's list)
+g_arenaLanListBuilt | never seen non-zero in play; reach: arena list, I (LAN search) until it ends
+g_arenaListClickTimer | never seen non-zero in play; reach: arena list with games, click a row once (double-click window)
+g_searchResult | never seen non-zero in play; reach: arena list T / room list with a server answering
+g_retypePassword | never seen non-zero in play; reach: game room Ladder login opened
+g_loginToSend | never seen non-zero in play; reach: game room Ladder login, press LOG IN
+g_typingLoginId | never seen non-zero in play; reach: game room Ladder login, click the ID field and type
+g_profileRowClicked | never seen non-zero in play; reach: profile screen, click a pilot row once
+g_roomListCount | never seen non-zero in play; reach: game room game list with the game server listing rooms
+g_localPlayerData | never seen non-zero in play; reach: host / join an arena with a non-RED corporation (the arena passes g_playerCorporation)
+g_pingStartEvent | never seen non-zero in play; reach: starting the ping thread (the lobby's server list ping, net_startPingThread)
+g_fullScreen | never seen non-zero in play; reach: start with a full-screen (non-DESKTOP) display mode in axis.cfg
+g_arenaListRefreshTimer | never seen non-zero in play; reach: arena list (MULTI PLAY -> internet arena) after the lobby server's list arrives (g_lobbyRefreshing)
+g_mouseInvert | never seen non-zero in play; reach: setup -> controls -> invert mouse ON (or "set_mouse convertmouse ON" in axis.cfg)
+g_openLoginName | never seen non-zero in play; reach: game room (ladder) -> CREATE NEW ID (set for one frame only)
+g_roomListRefreshTimer | never seen non-zero in play; reach: game room -> game list REFRESH while sessions come in (g_roomRefreshing)
+g_lastChatLine | never seen non-zero in play; reach: chat sent/received in a net match (sessA free camera chat or mp chat)
+g_lastChatLineSet | never seen non-zero in play; reach: send a chat line in a net match
+g_gameServerAnswer | never seen non-zero in play; reach: game room (ladder) login answered by the game server
+g_pingStopEvent | never seen non-zero in play; reach: lobby server list ping thread started (net_startPingThread)
+g_defaultColour | never seen non-zero in play; reach: always 0 by design (never non-zero)
+g_displayModeChanged | never seen non-zero in play; reach: play in a resolution other than the desktop's (not DESKTOP) and alt-tab
+g_freeCamLookX | never seen non-zero in play; reach: in a hosted arena's free camera, hold W (or S / strafe) - 0 until moved
+g_freeCamLookZ | never seen non-zero in play; reach: free camera, hold W
+g_arenaFileTimeLimit | never seen non-zero in play; reach: start from the launcher with an axiswl.dat (AxisPlay host)
+g_arenaFileSecret | never seen non-zero in play; reach: launcher start with axiswl.dat secret 1
+g_textureManager | never seen non-zero in play; reach: none needed: a sampler gap (constant 0x4a9570 from static start-up; same address as g_textureSets)
+g_gameListLoaded | never seen non-zero in play; reach: game room -> game list -> REFRESH
+g_typingRoomJoinPassword | never seen non-zero in play; reach: game room game list -> JOIN a password game
+g_pingThreadId | never seen non-zero in play; reach: lobby ping thread started (net_startPingThread)
+g_pingThread | never seen non-zero in play; reach: as g_pingThreadId
+g_errorLogging | never seen non-zero in play; reach: never non-zero (no writer in the game)
+g_cursorX | never seen non-zero in play; reach: only the mech-test match mode (match_mechTestFrame) calls it - not reachable from the menus
+g_crtErrno | never seen non-zero in play; reach: a C runtime error (e.g. a failed fopen of a missing file)
+g_otherModeWidth | never seen non-zero in play; reach: a non-desktop resolution (axis.cfg not DESKTOP), then alt-tab out and back
+g_arenaCorporation | never seen non-zero in play; reach: pick corporation BLUE / YELLOW on the arena lobby's player setup (or set_player color BLUE in axis.cfg)
+g_arenaCustomize | never seen non-zero in play; reach: (0). The "(comments call it sex)" aside has no use behind it -> "the lobby player's customize switch (axis.cfg's set_player customize ON 1 / OFF 0): 0 by arena_defaultPlayer, from / to g_playerCustomize (arena_loadPlayerSettings / arena_savePlayerSettings); nothing else reads it"
+g_sessionFound | never seen non-zero in play; reach: join a listed arena / game-room game (client side)
+g_debugValue | never seen non-zero in play; reach: hosted arena free camera, press 1 (it has no other effect, so the name stays generic)
+g_mouseWheel | never seen non-zero in play; reach: turn the mouse wheel in a match or on setup -> controls while binding
+g_roomRecMap | never seen non-zero in play; reach: pick a map other than the first in the game room's create form (Ladder) and create the game
+g_listAnswered | never seen non-zero in play; reach: an arena / game list search that gets at least one answer (a lobby server with listed games, or a LAN game)
+g_timerRepeatCount | never seen non-zero in play; reach: needs two timer_now calls within one counter tick (a coarse performance counter)
+g_accountRank | never seen non-zero in play; reach: Ladder account page for a ranked pilot (rank reply in the first 1000)
+g_roomRotation | never seen non-zero in play; reach: game room create form with map rotation switched on (the room form's rotation button, or registry "Customize" 1)
+g_roomRecRotation | never seen non-zero in play; reach: registry HKCU\SOFTWARE\AxisArena\Character "Customize" = 1
+g_arenaJoinNeedsPassword | never seen non-zero in play; reach: arena list -> join a locked (password) arena
+g_coloursChanged | never seen non-zero in play; reach: ARM CENTER -> colour page, click a hue / saturation / value slider
+g_armcChanged | never seen non-zero in play; reach: for that reason (ARM CENTER weapons page: take an item into a slot)
+g_freeCamZoom | never seen non-zero in play; reach: hosted arena free camera, press Z
+g_arenaUpdateNotice | never seen non-zero in play; reach: a lobby / game server answering 3 (program out of date) - needs a server that sends it
+g_roomRefreshing | never seen non-zero in play; reach: game room game list REFRESH with the game server answering
+g_roomJoinStarted | never seen non-zero in play; reach: game room list -> JOIN a listed game
+g_roomJoinNeedsPassword | never seen non-zero in play; reach: game room list -> JOIN a locked game
+g_newIdConfirmChoice | never seen non-zero in play; reach: game room -> CREATE NEW ID -> fill the form -> confirmation O or C
+g_roomUpdateNotice | never seen non-zero in play; reach: Ladder login answered "program out of date" by the game server
+g_replaySelectFirst | never seen non-zero in play; reach: replay selection with more than 10 replays, scrolled down
+g_selectedCharacter | never seen non-zero in play; reach: play with a pilot whose character is not the first (CHARACTER SELECT a non-first character, then a match / ARM CENTER)
+g_connectionKind | never seen non-zero in play; reach: 0 (TCP/IP) in every run - reach 1 with the arena list's LAN (IPX) search, or 4 by leaving a hosted / joined arena
+g_roomSearching | never seen non-zero in play; reach: game room -> game list -> search (R / REFRESH) with the game server connected
+g_arenaListClickArmed | never seen non-zero in play; reach: arena list with a listed game, click a row
+g_serverSearching | never seen non-zero in play; reach: arena list -> T (search through the lobby server)
+g_lanSearchStarted | never seen non-zero in play; reach: arena list -> I (LAN search)
+g_connectionAwaited | never seen non-zero in play; reach: set only while a lobby / game server answer is awaited (arena create -> T with a lobby server that answers slowly)
+g_lobbyJoinStarted | never seen non-zero in play; reach: arena list -> J on a listed game
+g_gameListClickTimer | never seen non-zero in play; reach: game room game list with games, click a row. (gameList_draw's function comment calls it the "searching" message's clock; the global's own comment is the right one)
+g_gameListClickArmed | never seen non-zero in play; reach: game room game list, click a game's row
+g_dikNone | never seen non-zero in play; reach: 0 by design
+g_hostErrorBox | never seen non-zero in play; reach: create arena -> IPX GAME (I) on a machine without IPX
+g_joinPollTicks | never seen non-zero in play; reach: join a listed arena whose session is slow to appear (the 2 s timer ticking)
+g_armcUnusedFlag | never seen non-zero in play; reach: never non-zero (only 0 is ever stored)
+g_watchChatOpen | never seen non-zero in play; reach: hosted arena free camera, press Enter (chat)
+g_roomRecGameMode | never seen non-zero in play; reach: registry HKCU\SOFTWARE\AxisArena\Character GameType non-zero (create a Ladder room game with a mode other than the first, which reg_writeLadderSettings keeps)
+g_cfgSimpleMenu | never seen non-zero in play; reach: setup -> graphics -> SIMPLE MENU ON (axis.cfg set_graphic simplemenu ON), restart
+g_pilotExpKept | never seen non-zero in play; reach: Ladder login with a pilot that has exp
+g_pilotKillsKept | never seen non-zero in play; reach: Ladder login with a pilot that has kills
+g_pilotExp | never seen non-zero in play; reach: Ladder login with a pilot that has exp
+g_pilotKills | never seen non-zero in play; reach: Ladder login with a pilot that has kills
+g_matchLogWritten | never seen non-zero in play; reach: a match started from the launcher (AxisPlay, g_launchedForNetGame) - the log is written only then
+g_matchEndedByUser | never seen non-zero in play; reach: quit a hosted / solo match via the Esc menu (msg_userEndsGame)
+g_matchEndedByServer | never seen non-zero in play; reach: a client in a net match the host ends (the end-of-game packet)
+g_profileRowClickTime | never seen non-zero in play; reach: profile screen, click a profile row (the clock runs only between the first and second click)
+g_netHostGone | never seen non-zero in play; reach: a client whose host leaves the arena (host quits mid-match)
+g_newIdAnswer | never seen non-zero in play; reach: game room -> CREATE NEW ID -> OK with the game server answering
+g_mapMissing | never seen non-zero in play; reach: start a match on a map index whose mapinfo.dat name is empty
+g_errorCleanupHook | never seen non-zero in play; reach: no ErrorLog is made with a cleanup hook in the runs (all 0)
+g_displayModeLeft | never seen non-zero in play; reach: non-desktop resolution, alt-tab out and back
+g_otherModeHeight | never seen non-zero in play; reach: as g_otherModeWidth
+g_typingArenaJoinPassword | never seen non-zero in play; reach: arena list -> join a locked arena, type its password
+g_mouseWheelTurned | never seen non-zero in play; reach: turn the mouse wheel (any screen; set for that frame)
+g_pilotPower | never seen non-zero in play; reach: Ladder login with a pilot whose power is non-zero
+k_0f | never seen non-zero in play; reach: the constant 0.0 (never non-zero by nature)
+g_hangulVowelGlyph | never seen non-zero in play; reach: text with Korean double-byte characters drawn (Korean language data / a Korean player name)
+g_hangulTailGlyph | never seen non-zero in play; reach: as g_hangulVowelGlyph
+g_hangulLeadGlyph | never seen non-zero in play; reach: as g_hangulVowelGlyph
+g_mouse3Down | never seen non-zero in play; reach: hold the middle mouse button
+g_keyGameMenu2 | never seen non-zero in play; reach: bind a second GAME MENU key on setup -> controls (MISC page)
+g_menuLookHomeX | never seen non-zero in play; reach: every writer stores 0 in practice (look-at X 0); reach: none known
+g_menuLookHomeY | never seen non-zero in play; reach: always 0 in the screens played
+g_menuEyeHomeX | never seen non-zero in play; reach: eye X is 0 in every screen played
+g_menuEyeHomeY | never seen non-zero in play; reach: eye Y 0 in every screen played
+g_pilotPowerKept | never seen non-zero in play; reach: only after a Ladder login (account record) - play a Ladder match on the ladder server and finish it
+g_pilotDeathsKept | never seen non-zero in play; reach: needs a Ladder account with deaths (log in to the ladder server with an ID that has died in a Ladder match)
+g_gameListRefreshClicked | never seen non-zero in play; reach: click REFRESH in the Ladder game room's game list
+g_pilotDeaths | never seen non-zero in play; reach: Ladder account with deaths (log in after dying in a Ladder match)
+g_pilotKillRate | never seen non-zero in play; reach: Ladder account with kills (log in after a Ladder match with a kill)
+g_lobbyReplyKind | never seen non-zero in play; reach: needs the arena lobby server's list end (open the internet arena list against a lobby server)
+g_gameServerReplyKind | never seen non-zero in play; reach: the Ladder game-room list's end reply (open the game list on the ladder server with rooms)
+g_dpMaxQueueSize | never seen non-zero in play; reach: the TCP/IP provider reports 0 (no queue limit); no action changes it
+g_musicEndHigh | never seen non-zero in play; reach: a duration under 2^32 x 100 ns (7 min 9 s) leaves it 0 - only music longer than that sets it
+g_mciCallback | never seen non-zero in play; reach: AxisRC.exe plays the ending movie with the patch layer's player, so the MCI path is not run (only the original exe, ending movie + Esc)
+g_mciFrom | never seen non-zero in play; reach: same (original exe's ending movie)
+g_mciTo | never seen non-zero in play; reach: same
+g_mciDevice | never seen non-zero in play; reach: same
+g_cursorPosY | never seen non-zero in play; reach: only that test mode calls input_getCursorPos (play never reaches it; g_cursorX is not seen either). Name is fine (g_cursorX's partner; g_cursorY would only be style)
+g_arenaFileMap | never seen non-zero in play; reach: start the game from the launcher with an arena settings file (arena_loadSettings / arena_startFromLauncher)
+g_arenaFilePlayers | never seen non-zero in play; reach: same launcher start
+g_arenaFileGameType | never seen non-zero in play; reach: launcher start with an arena settings file
+g_arenaFileFragLimit | never seen non-zero in play; reach: launcher start with an arena settings file
+g_pilotGamesKept | never seen non-zero in play; reach: needs a Ladder account with games -> "the kept copy of the pilot's games played (with g_pilotLevelKept ..): room_copyAccountRecord copies g_pilotGames in, pilotRecord_syncCopies sets it to g_ladderGames, record_send (ladder_checkAndSendRecord) stores the record's, and take_back reads it back when the record's kills are 300 past the copy's; newId_register clears it"
+g_pilotGames | never seen non-zero in play; reach: Ladder account with games played (log in after a Ladder match)
+g_menuLookKeptX | never seen non-zero in play; reach: the tunnel camera's look X is always 0
+g_menuLookKeptY | never seen non-zero in play; reach: always 0
+g_menuEyeKeptX | never seen non-zero in play; reach: eye X always 0
+g_menuEyeKeptY | never seen non-zero in play; reach: always 0
+g_matchChatCaretY | never seen non-zero in play; reach: open the chat line in a match (Enter in a skirmish / hosted match) - its y may still be 0 if the caller passes 0
+g_matchChatCaretX | never seen non-zero in play; reach: open the match chat line (Enter in a match)
+g_gameCount | never seen non-zero in play; reach: open the LAN arena list (or the Ladder game list) while another machine hosts a game, so one session is listed
+g_unusedKeyTable2Word0 | never seen non-zero in play; reach: never anything but 0
+g_unusedKeyTable2Word1 | never seen non-zero in play; reach: only ever 0
+g_unusedKeyTable2Word2 | never seen non-zero in play; reach: only ever 0
+g_mapEntry22On | never seen non-zero in play; reach: mapList_init always turns maps 22 .. 24 off
+g_mapEntry23On | never seen non-zero in play; reach: always off
+g_mapEntry24On | never seen non-zero in play; reach: always off
+g_arenaJoinPassword | never seen non-zero in play; reach: join a password-locked arena game from the LAN list and type its password
+g_arenaJoinPassword4 | never seen non-zero in play; reach: type a join password longer than 4 characters for a locked arena game
+g_newArenaPassword4 | never seen non-zero in play; reach: type a create-arena password of 5+ characters
+g_arenaListPlayers | never seen non-zero in play; reach: the internet arena list merged with a server that has players (lobby server)
+g_unusedArmcWord4 | never seen non-zero in play; reach: only ever 0
+g_unusedArmcWord1 | never seen non-zero in play; reach: only ever 0
+g_armcPanelDepth | never seen non-zero in play; reach: always 0 (only writer stores 0)
+g_unusedStartupWord3 | never seen non-zero in play; reach: only ever 0
+g_unusedStartupWord2 | never seen non-zero in play; reach: only ever 0
+g_freeCamLookY | never seen non-zero in play; reach: nothing sets it
+g_unusedFreeCamMoveWord | never seen non-zero in play; reach: click in the free camera (spectating in a hosted arena, sessA's free camera with a mouse click)
+g_unusedPostMatchFlag | never seen non-zero in play; reach: finish a match (game_postMatch) - the sampler may not have caught the post-match frame
+g_arenaPassword | never seen non-zero in play; reach: host an arena with a password (create-arena form's password) and announce it
+g_arenaPassword4 | never seen non-zero in play; reach: launcher start with a 5+ character password
+g_arenaLocked | never seen non-zero in play; reach: host a password-locked arena game
+g_mouseSmooth | never seen non-zero in play; reach: turn SMOOTH MOUSE ON on the setup screen's controls tab (and save)
+g_unusedMenuReturnWord | never seen non-zero in play; reach: only ever 0
+g_arenaFilePassword | never seen non-zero in play; reach: launcher start with an arena file that has a password
+g_arenaFilePassword4 | never seen non-zero in play; reach: launcher arena file with a 5+ character password
+g_unusedStartupWord1 | never seen non-zero in play; reach: only ever 0
+g_unusedRoomListWord | never seen non-zero in play; reach: only ever 0
+g_freeCamYaw | never seen non-zero in play; reach: in a hosted arena's free camera (screen 9999) move the mouse sideways
+g_unusedRoomWord | never seen non-zero in play; reach: only ever 0
+g_unusedLoginWord | never seen non-zero in play; reach: only ever 0
+g_pilotRank | never seen non-zero in play; reach: open the Ladder account page with a ranked ID (rank reply in the first 1000)
+g_roomListPlayers | never seen non-zero in play; reach: the Ladder game list with a room that has players
+g_unusedInitWord | never seen non-zero in play; reach: only ever 0
+g_unusedReplayListWord1 | never seen non-zero in play; reach: only ever 0
+g_unusedReplayListWord2 | never seen non-zero in play; reach: only ever 0
+g_unusedMainMenuWord | never seen non-zero in play; reach: only ever 0
+g_unusedBriefingWord | never seen non-zero in play; reach: only ever 0
+g_misHeader1 | never seen non-zero in play; reach: axis.mis's header word is 0 (or the mission screen's sampler missed it)
+g_misHeader2 | never seen non-zero in play; reach: header word 0
+g_misHeader3 | never seen non-zero in play; reach: header word 0
+g_unusedProfileCameraWord | never seen non-zero in play; reach: quit the game from the profile screen (the process ends right after)
+g_profileNoneAtEntry | never seen non-zero in play; reach: enter the profile screen with no profiles (an empty Save folder - back up Save first)
+g_netChatMessageWord1 | never seen non-zero in play; reach: only ever 0
+g_netChatMessageFrom | never seen non-zero in play; reach: only ever 0
+g_netChatMessageText | never seen non-zero in play; reach: only ever 0
+g_receivedRank | never seen non-zero in play; reach: open the Ladder account page with a ranked ID
+g_unusedNetResetWord | never seen non-zero in play; reach: only ever 0
+g_unusedSessionWord | never seen non-zero in play; reach: only ever 0
+g_unusedDplayWord1 | never seen non-zero in play; reach: only ever 0
+g_unusedDplayWord2 | never seen non-zero in play; reach: only ever 0
+g_unusedDplayWord3 | never seen non-zero in play; reach: only ever 0
+g_unusedDplayWord4 | never seen non-zero in play; reach: only ever 0
+g_unusedPingWord1 | never seen non-zero in play; reach: only ever 0
+g_unusedPingWord2 | never seen non-zero in play; reach: only ever 0
+g_vecOrigin | never seen non-zero in play; reach: always 0 by design
+g_vecUnitZ | never seen non-zero in play; reach: this is the X word (0); the comment could add particle_draw
+g_vecZero | never seen non-zero in play; reach: always 0 by design
+g_penInitialized | never seen non-zero in play; reach: nothing sets it
+g_arenaKeptCamY | never seen non-zero in play; reach: the lobby points' eye y is 0
+g_freeCamMoveStarted | never seen non-zero in play; reach: click the mouse once in a hosted arena's free camera (screen 9999)
+g_freeCamMoveEyeX | never seen non-zero in play; reach: same first click in the free camera
+g_freeCamMoveEyeY | never seen non-zero in play; reach: same (and the slot y is non-zero)
+g_freeCamMoveEyeZ | never seen non-zero in play; reach: same first click
+g_freeCamTurnSin | never seen non-zero in play; reach: the yaw stays 0 unless the mouse turns the free camera (move the mouse sideways in a hosted arena's free camera)
+g_freeCamTilt | never seen non-zero in play; reach: move the mouse up / down in the free camera
+g_freeCamTurnCos | never seen non-zero in play; reach: never sampled in a free-camera frame (cos 0 = 1 would be non-zero, so the free camera itself was not reached while sampling) - enter the free camera in a hosted arena (sessA's free camera key)
+g_freeCamMoveTargetX | never seen non-zero in play; reach: first click in the free camera
+g_freeCamMoveTargetY | never seen non-zero in play; reach: first click in the free camera
+g_freeCamMoveTargetZ | never seen non-zero in play; reach: first click in the free camera
+g_ladderPassword | never seen non-zero in play; reach: log in to the Ladder server with a non-empty password
+g_ladderPassword4 | never seen non-zero in play; reach: Ladder login with a 5+ character password
+g_ladderPassword8 | never seen non-zero in play; reach: Ladder login with a 9+ character password
+g_replaySelectLitR | never seen non-zero in play; reach: the lit colour is (0, 1, 1, 1), R is always 0
+g_ladderExp | never seen non-zero in play; reach: score in a Ladder match (or log in with an ID that has exp)
+g_ladderPower | never seen non-zero in play; reach: finish a Ladder match with a kill (or log in with an ID that has power)
+g_ladderKills | never seen non-zero in play; reach: kill someone in a Ladder match
+g_ladderDeaths | never seen non-zero in play; reach: die in a Ladder match
+g_gameListRow | never seen non-zero in play; reach: pick the second row (or below) of the LAN / Ladder game list
+g_gameListTop | never seen non-zero in play; reach: scroll a game list of more than nine games
+g_newIdFormRight | never seen non-zero in play; reach: although its only writer also wrote g_newIdFormLeft (seen 30) in the same call - a sampler gap, not a naming problem; reach: open CREATE NEW ID in the Ladder game room
+g_newIdFormBottom | never seen non-zero in play; reach: same sampler gap; reach: open CREATE NEW ID
+g_profileListTop | never seen non-zero in play; reach: needs more than 13 profiles scrolled down (create 14 pilots, scroll the list - back up Save first)
+g_profileListRow | never seen non-zero in play; reach: needs the cursor on the second profile or below (two or more pilots, pick the second)
+g_profileChosen | never seen non-zero in play; reach: only one pilot (index 0) in the sampled Save - pick the second pilot of two
+g_mapTop | never seen non-zero in play; reach: arena lobby -> CREATE -> open the map rotation list (with more than 10 maps) and scroll it down with its arrow
+g_mapListKept | never seen non-zero in play; reach: arena lobby -> CREATE -> open the map rotation list -> OK
+g_armcHideInterface | never seen non-zero in play; reach: ARM CENTER: hold left Ctrl + left Alt and press M
+g_exitCode | never seen non-zero in play; reach: quit the game from the main menu (written just before the window closes; sample right after app_closeWindow)
+g_repeatDown | never seen non-zero in play; reach: pilot (profile) screen with 2+ pilots: hold the Down arrow in the list (or in the replay selection, F1 on the main menu)
+g_repeatUp | never seen non-zero in play; reach: pilot (profile) screen with 2+ pilots: hold the Up arrow in the list
+g_pickedGame | never seen non-zero in play; reach: arena lobby -> JOIN with two or more games listed: click the second game
+g_simpleMenu | never seen non-zero in play; reach: SETUP -> GRAPHIC tab -> turn SIMPLE MENU on
+g_missionTop | never seen non-zero in play; reach: unreachable in play: needs g_screen forced to 900 with more than 8 missions in axis.mis, then cursor down past row 7
+g_skirmishNewPartsNotice | never seen non-zero in play; reach: win a skirmish round that unlocks the next round, then return to SKIRMISH PLAY
+g_profileReveal | never seen non-zero in play; reach: pilot screen -> NEW -> type a new name -> Enter -> CHARACTER SELECT page; wait a few frames
+g_profileQuitting | never seen non-zero in play; reach: pilot screen -> LOG OUT -> YES (the game quits on the next frame)
+g_pilotSelectCursor | never seen non-zero in play; reach: CHARACTER SELECT page (new pilot): press Right
+g_unusedProfileCameraSpeed | never seen non-zero in play; reach: pilot screen -> LOG OUT -> YES, then click before the game closes
+g_profileQuitSkip | never seen non-zero in play; reach: pilot screen -> LOG OUT -> YES, then press a key / click before the game closes
+g_profileRevealClock | never seen non-zero in play; reach: CHARACTER SELECT page (new pilot): sample within the first frames after the cursor moves
+g_unusedProfileCameraZoom | never seen non-zero in play; reach: pilot screen -> LOG OUT -> YES
+g_unusedProfileCameraTime | never seen non-zero in play; reach: never non-zero (only 0 is written)
+g_profileMessage | never seen non-zero in play; reach: pilot screen -> NEW -> type the name of an existing pilot -> Enter
+g_desktopH | never seen non-zero in play; reach: unreachable: glWindow_setDisplayModeBy runs only on glWindow full-screen, which the game never requests
+g_desktopBits | never seen non-zero in play; reach: unreachable (as g_desktopH)
+g_desktopW | never seen non-zero in play; reach: unreachable (as g_desktopH)
+g_glWindowMade | never seen non-zero in play; reach: unreachable (the game always passes its own window to glWindow_init)
+g_glWindowContext | never seen non-zero in play; reach: unreachable (glWindow never makes its own window)
+g_modeChanged | never seen non-zero in play; reach: unreachable (as g_desktopH)
+g_packetsSkipped | never seen non-zero in play; reach: two-instance match (host + client): suspend the client process for a second mid-match so packets arrive out of turn
+g_unusedClock3 | never seen non-zero in play; reach: never non-zero (only 0 is written by menuState100_intro)
+g_unusedClock2 | never seen non-zero in play; reach: never non-zero (only 0 is written)
+g_unusedClock1 | never seen non-zero in play; reach: never non-zero (only 0 is written)
+g_editingFragLimit | never seen non-zero in play; reach: unreachable (no writer of 1 in the original)
+g_editingTimeLimit | never seen non-zero in play; reach: unreachable (no writer of 1 in the original)
+g_unusedAccountWord | never seen non-zero in play; reach: never non-zero (only 0 is written by room_enterAccountPage)
+g_newIdFormTop | never seen non-zero in play; reach: Ladder game room -> login dialog -> NEW ID (room_openNewIdForm sets 0x32)
+g_errorReported | never seen non-zero in play; reach: start once with a missing (renamed) texture under initdata so sys_errorMessage reports it
+g_fatalReported | never seen non-zero in play; reach: start once with a missing data file that sys_errorTerminate reports (e.g. rename Data\Shape.dat), sample before exit
+g_sentChatBlock | never seen non-zero in play; reach: in a DirectPlay session (arena lobby or a hosted match) type a chat line and press Enter (net_sendChat)
+g_vecZero2 | never seen non-zero in play; reach: always zero by design (nothing to reach)
+g_cursorPoint | never seen non-zero in play; reach: the mech test mode (match_mechTestFrame calls input_getCursorPos every frame); nothing else calls it
+g_lobbyReplyRecord | never seen non-zero in play; reach: MULTI PLAY: open the arena list from the lobby server (request 13) while another instance hosts an arena there, so a 0x5b-byte server record arrives
+g_gameServerReply | never seen non-zero in play; reach: Ladder: log in to the game server (axis_server.py) with at least one room created, then open the room list (request 19) so a room record arrives
+g_textureSets | never seen non-zero in play; reach: none needed - the TextureManager object (vtable word, six bank pointers) is non-zero from start-up; NOT SEEN is a sampler miss (u32 * declared, record not walked)
+g_vecOriginXyz | never seen non-zero in play; reach: none - constant (0, 0, 0)
+g_vecZeroXyz | never seen non-zero in play; reach: none - constant (0, 0, 0)
+g_unused16 | never seen non-zero in play; reach: none - only 0 is ever written (netq_reset / netq_receive)
+g_ahead | never seen non-zero in play; reach: a two-instance network match (host + client) under load, where a client packet arrives before the one due (out of order / a resend asked for); only set in netq_receive for early packets
+g_serverPinged | never seen non-zero in play; reach: as g_serverPing: a listed server pinged, before arena_ / room_mergeReceivedSessions clears the flag (sample right after the list completes)
+g_serverPing | never seen non-zero in play; reach: MULTI PLAY / Ladder: a list with at least one server that answers ICMP ping (net_pingAllServers after the list ends)
+g_missionClearBuffer | never seen non-zero in play; reach: none - only ever cleared (mission_loadBriefing memset)
+g_modemProviderGuid | never seen non-zero in play; reach: start multiplayer on a machine whose DirectPlay lists a modem service provider (name containing "MODEM"); dplay_enumConnections copies its GUID
+g_serialProviderGuid | never seen non-zero in play; reach: start multiplayer on a machine whose DirectPlay lists a serial service provider ("SERIAL")
+g_realClear | never seen non-zero in play; reach: none - constant (0, 0, 0, 0)
+k_GUID_NULL | never seen non-zero in play; reach: none - constant (16 zero bytes)
+g_serverList | never seen non-zero in play; reach: MULTI PLAY: arena list from the lobby server with at least one hosted arena listed (net_addServerRecord)
+g_lobbyReplyCode | never seen non-zero in play; reach: MULTI PLAY through the lobby server (TcpDNS): host an arena so the lobby answers status request 10
+g_gameServerReplyCode | never seen non-zero in play; reach: Ladder: any status request 18 to the game server answered (the room list refresh after login)
+g_asyncKeySeen | never seen non-zero in play; reach: hold Esc on the match loading screen (game_processLoadingMode: input_asyncKeyPressed(VK_ESCAPE)), or Space / Esc / Z / X in the mech test mode (match_mechTestFrame)
+g_slotCams | never seen non-zero in play; reach: host an arena match, switch to the free (watching) camera, move it with W / A / S / D (freeCam_keys writes +0 .. +8) and turn it with the mouse (+0x28)
+g_emptySlot0Asked | never seen non-zero in play; reach: unreachable: the game only writes 0 (never set)
+g_gameServerReportsOff | never seen non-zero in play; reach: unreachable: the game only writes 0 (never set)
+g_retintAllParts | never seen non-zero in play; reach: ARM CENTER opened (armc_makeSession) - set and cleared within a frame
+g_unusedStartupTable | never seen non-zero in play; reach: none - only ever cleared (memset 0 in app_startupLoad)
+g_unusedKeyTable2 | never seen non-zero in play; reach: none - only ever cleared (input_clearKeyTable2)

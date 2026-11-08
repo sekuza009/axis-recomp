@@ -1415,7 +1415,8 @@ void (arenaGames_keys)(void)
 }
 
 /* ---- the player's record (from g_ladderName: the name, +0x1e the level, +0x22 exp, +0x26 power, +0x2a games played,
-   +0x2e kills, +0x32 deaths) and its two kept copies (PilotStats: g_pilotLevel and g_pilotLevelKept) ---- */
+   +0x2e kills, +0x32 deaths) and the two PilotStats records it is checked against: the pilot's account record from the login reply (g_pilotLevel)
+   and its kept copy (g_pilotLevelKept) ---- */
 #define R_EXP g_ladderExp
 #define R_POWER g_ladderPower
 #define R_GAMES g_ladderGames
@@ -1443,7 +1444,8 @@ static void power_from_rate(u32 rate)
 	R_POWER = f32(fmul_m(fld_m(&r), (const float *)ADDR(k_0_01f)) * (long double)R_EXP);
 }
 
-/* a kept copy taken back as the record, when the record's kills are more than 300 above it */
+/* a PilotStats record (the account record or its kept copy) taken back as the record, when the record's kills are
+   more than 300 above it */
 static u32 take_back(u32 kept, u32 rate)
 {
 	const PilotStats *k = &GAME_VAR(PilotStats, kept);
@@ -1458,8 +1460,8 @@ static u32 take_back(u32 kept, u32 rate)
 	return rate;
 }
 
-/* the record into the packet (g_netPlayerRecordPacket, a PlayerRecordPacket: the name when asked) and both kept
-   copies, and sent to the game server (kind 0x11) */
+/* the record into the packet (g_netPlayerRecordPacket, a PlayerRecordPacket: the name when asked), into the pilot's account
+   record (g_pilotLevel) and its kept copy (g_pilotLevelKept), and sent to the game server (kind 0x11) */
 static void record_send(u32 rate, int name)
 {
 	PlayerRecordPacket *packet = (PlayerRecordPacket *)g_netPlayerRecordPacket;
@@ -1484,8 +1486,8 @@ static void record_send(u32 rate, int name)
 	net_send(0x11, 0x65);
 }
 
-/* 0x4327f0: the player's Ladder record (g_ladderName ..) checked and sent: the power worked out from the kill rate; a kept copy (g_pilotLevel,
-   then g_pilotLevelKept) taken back when the record's kills are more than 300 above it; the record sent and kept; then, when
+/* 0x4327f0: the player's Ladder record (g_ladderName ..) checked and sent: the power worked out from the kill rate; the account record (g_pilotLevel ..),
+   then its kept copy (g_pilotLevelKept ..), taken back when the record's kills are more than 300 above it; the record sent and kept; then, when
    the exp is more than 150 a kill, it is cut to 2 a kill and the record is sent and kept again. The caller
    ignores the eax it leaves */
 void (ladder_checkAndSendRecord)(void)

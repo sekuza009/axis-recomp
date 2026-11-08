@@ -462,7 +462,7 @@ static int list_append(u32 count, u32 base, int size, const u8 *rec, const u8 *s
 	GAME_VAR(int, count) = i + 1;
 	return i * size;
 }
-/* 0x452af0: a ServerRecord into the list at g_serverList (count g_serverListCount) */
+/* 0x452af0: an ArenaRecord into the list at g_serverList (count g_serverListCount) */
 int (net_addServerRecord)(const u8 *rec)
 {
 	static const u8 strings[3] = { offsetof(ArenaRecord, address), offsetof(ArenaRecord, name), offsetof(ArenaRecord, password) };

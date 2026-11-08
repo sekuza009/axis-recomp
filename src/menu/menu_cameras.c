@@ -310,7 +310,7 @@ void (skirmish_camera)(void)
 /* ---- the free menu camera moved along its heading (the turn at g_freeCamYaw, plus a quarter turn, wrapped, in radians)
    by the frame time times its speed ---- */
 
-static X heading(void)
+static X side_angle(void)
 {
 	X v = (X)g_freeCamYaw + k_90f;
 	if (v > k_360f)
@@ -324,7 +324,7 @@ static X heading(void)
    camera's eye (g_menuCameraPos, g_menuEyeZ). Only caller freeCam_keys, on g_keyStepLeft (A) */
 void (freeCam_stepLeft)(void)
 {
-	X a = heading();
+	X a = side_angle();
 	float s = (float)x87_fsin(a);
 	X c = x87_fcos(a);
 	X t = (X)g_frameTime * s * SPEED;
@@ -340,7 +340,7 @@ void (freeCam_stepLeft)(void)
    rounded). Only caller freeCam_keys, on g_keyStepRight (D) */
 void (freeCam_stepRight)(void)
 {
-	X a = heading();
+	X a = side_angle();
 	float s = (float)x87_fsin(a);
 	X c = x87_fcos(a);
 	float tf = (float)((X)g_frameTime * s * SPEED);

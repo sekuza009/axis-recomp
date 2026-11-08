@@ -83,7 +83,7 @@ void (armc_takeCursorItem)(void)
 		item = slot < 4 ? g_weaponList[g_armcCursor] : g_extraList[g_armcCursor];
 		*slot_item(slot) = item;
 	}
-	g_armcChanged = 1;
+	g_armcSlotChanged = 1;
 	armc_itemSlotRecord(g_armcSlot, item);
 	armc_loadSnapshotTexture(g_armcSlot);
 	slot = g_armcSlot;
@@ -124,7 +124,7 @@ void (armc_openWeaponsPage)(void)
 	armc_viewedPartRecord(g_weaponList[g_armcCursor]);
 	for (int k = 0; k < 7; k++)
 		armc_loadSnapshotTexture(k);
-	g_armcChanged = 0;
+	g_armcSlotChanged = 0;
 	g_unusedArmcWord2 = 1;
 	g_armcSlot = -1;
 	armc_pickSlot(0);

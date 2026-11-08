@@ -29,8 +29,8 @@
 0x5b194c,u8,g_arenaFileGameType
 0x5b1950,u8,g_arenaFileFragLimit
 # the rest
-0x9f63c8,int,g_matchChatCaretX
-0x9f63c4,int,g_matchChatCaretY
+0x9f63c8,int,g_matchTextFieldX
+0x9f63c4,int,g_matchTextFieldY
 0x4dcc88,int,g_armcViewedPartTexture
 0x9eeab0,int,g_mainMenuFrames
 0x4a9458,u32,k_armcDistanceRoom

@@ -148,7 +148,7 @@
 #define g_timerClocks ((double *)IMG(0x9db980))   /* double[2]; the timer's two doubles: the time now (g_clockNow) and the time last returned (g_lastTime); timer_init clears them as four dwords */
 #define g_mouseClicked ((int *)IMG(0x4ded88))   /* int[3]; the three mouse buttons' click pulses (0xfa .. 0xfc) */
 #define g_mouseButtonsHeld ((int *)IMG(0x4ded94))   /* int[3]; the three mouse buttons held (devices.c's loop of 3) */
-#define g_mechMaxima ((int *)IMG(0x4dcab4))   /* int[7]; the whole mech's figures on the ARM CENTER's mech panel (section_mech): MAX ARMOR, MAX SHIELD, FCS level, then WEAPON LOAD for 30MM / 60MM / E-PAK / MISSILE - the local Player's armorMax, shieldMax, accuracy, ammoMax[4] (armc_readMechStats) */
+#define g_mechMaxima ((int *)IMG(0x4dcab4))   /* int[7]; the whole mech's figures on the ARM CENTER's mech panel (section_mech): MAX ARMOR, MAX SHIELD, FCS level, then WEAPON LOAD for 30MM / 60MM / E-PAK / MISSILE - the local Actor's armorMax, shieldMax, accuracy, ammoMax[4] (armc_readMechStats) */
 #define g_armcBright ((float *)IMG(0x4dbc58))   /* float[4]; the ARM CENTER's bright colour (RGBA 0, 1, 1, 1): the chosen tab, slot and button, labels (armc_open) */
 #define g_legsStats ((float *)IMG(0x4dc228))   /* float[7]; the legs' stats for the panel: agility, inertia, speed correction x 100 (g_legsSpeedCorrection), forward / side / back boost corrections x 100 (+0xc .. +0x14), the weight (g_legsWeight) (armc_readPartPanels) */
 #define g_armsStats ((int *)IMG(0x4dc290))   /* int[5]; the arm part's figures for the arms panel (section_arms): the FIRE CONTROL SYSTEM level (g_armsFcsLevel), then the CAPACITY FOR 30MM, 60MM, E-PAK and MISSILE (ArmType.stats, copied by armc_readPartPanels) */
@@ -204,7 +204,7 @@
 #define g_texture128x128 ((u8 *)IMG(0x76d498))   /* u8[840004]; the 128 x 128 texture set (g_texture128x128Vtable its vtable word) */
 #define g_texture256x256 ((u8 *)IMG(0x83a9e0))   /* u8[840004]; the 256 x 256 texture set (g_texture256x256Vtable its vtable word) */
 #define g_texture256x128 ((u8 *)IMG(0x90d1e0))   /* u8[840004]; the 256 x 128 texture set (g_texture256x128Vtable its vtable word) */
-#define g_textureSets ((u32 *)IMG(0x83a5e0))   /* TextureManager[1]; the texture manager: its vtable word (g_textureManager, 0x4a9570), the six sets banks[0..5] (+4 .. +0x18: 64x64, 128x64, 256x64, 128x128, 256x128, 256x256), the count (+0x1c) (TextureManager_clear: 8 words; g_textures points here) */
+#define g_textureManagerObject ((u32 *)IMG(0x83a5e0))   /* TextureManager[1]; the texture manager: its vtable word (g_textureManager, 0x4a9570), the six sets banks[0..5] (+4 .. +0x18: 64x64, 128x64, 256x64, 128x128, 256x128, 256x256), the count (+0x1c) (TextureManager_clear: 8 words; g_textures points here) */
 #define g_vecOriginXyz ((float *)IMG(0xa0e7a8))   /* float[3]; the origin (0, 0, 0; vec_initOrigin): copied as a start point (armc_update*Preview, stage_remakePlayerActor, scene_startSession) and used as an operand in actor_processFrame / ObjectList_poseBones / particle_init (g_vecOrigin its first float) */
 #define g_vecUnitZXyz ((float *)IMG(0xa0e7c8))   /* float[3]; the unit z axis (0, 0, 1; vec_initAxisZ): negated as the scene camera's direction (classes.c), a shot's default direction (actor_frame.c) */
 #define g_vecZeroXyz ((float *)IMG(0xa0e7e8))   /* float[3]; the zero vector (0, 0, 0; vec_initZero): velocities / moves / steps are cleared from it (actor_setupFromParts, particle_update, bullet_init); collisionTri_sweepSphere's fallback axis */
@@ -276,7 +276,7 @@
 #define g_roomOutlines ((int *)IMG(0x9daf88))   /* int[66]; the game room's 6 button outlines (room_clicks) */
 #define g_setupTopOutlines ((int *)IMG(0x4df918))   /* int[44]; the setup top page's 4 button outlines (copied from the lobby's: setupTop_initOutlines) */
 #define g_outlinesCopy ((int *)IMG(0x9da328))   /* int[44]; a second copy of the lobby's 4 outlines (setupTop_initOutlines; not read elsewhere) */
-#define g_vkTable ((int *)IMG(0x4df054))   /* int[57]; the scan-code row -> virtual key table (input_initVkTable; written only, never read) */
+#define g_scanCharTable ((int *)IMG(0x4df054))   /* int[57]; scan code -> character (entry k for scan code k + 1): the unshifted US-layout ASCII character of letters, digits and punctuation, Esc / Backspace / Tab / Enter, 0x10 for the Shifts, 0 for Ctrl / Alt - not Windows virtual keys (input_initScanCharTable; written only, never read) */
 #define g_defaultColours ((u32 *)IMG(0xa1f298))   /* u32[16]; the 16 default packed colours (colour_initDefaultColours: RGBA bytes); never read */
 #define g_headList ((int *)IMG(0x4dc3e8))   /* int[50]; the unlocked heads (armc_buildPartLists) */
 #define g_chestList ((int *)IMG(0x4dcd6c))   /* int[50]; the unlocked chests */

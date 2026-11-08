@@ -1,0 +1,354 @@
+U2 ORIGINAL: 353 names; OK 345, WRONG 2, CLEARER 5, UNDECIDABLE 1
+Scene.restartPending | OK | scene+0x2343243 only in net_sendMatchEvent (cmp 1, cleared, packet kind 13 0x6b); no store of 1 anywhere (Stage view 0x214fb7b untouched)
+Scene.cheatPlayer | OK | only read (byte) by net_sendMatchEvent for packet kind 6 byte 2; no writer in the exe
+Scene.cheatCode | OK | only read (byte) by net_sendMatchEvent for packet kind 6 byte 3; no writer
+Scene.cheatPending | OK | net_sendMatchEvent tests ==1 -> kind 6 and clears; net_clearAnnouncements clears; no store of 1
+Scene.cleared2340ca4 | OK | only scene_startSession stores to +0x2340ca4 (zero); no other displacement hit in either view
+Scene.markLights | OK | zeroed in scene_startSession, read ==1 by replay_frame (0x489ce8) / 3D pass drawing mapLights stars (ViewVolume_addSegment g_packedYellow); never set
+Scene.turnLeftHeld | OK | match_mechTestFrame: = GetAsyncKeyState(VK_LEFT 0x25); when set cameraAngle[1] -= turn (wrap +3600)
+Scene.turnRightHeld | OK | match_mechTestFrame: = VK_RIGHT 0x27 down; cameraAngle[1] += turn (wrap 3600)
+Scene.upKeyHeld | OK | match_mechTestFrame: VK_UP 0x26 without Ctrl (0 with Ctrl); cameraAngle[0] -= turn, clamped at -890
+Scene.downKeyHeld | OK | match_mechTestFrame: VK_DOWN 0x28 without Ctrl; cameraAngle[0] += turn, clamped at 890
+Scene.fKeys | OK | match_mechTestFrame: [k] = VK_F1+k down (k<6); [0..4] gate head/chest/arm/leg/booster setters, [5] the weapon item step
+Scene.partStepDownPressed | OK | match_mechTestFrame: asyncKeyPressed('Z') or shift+Z held; ==1 steps the F-held parts down (index-1)
+Scene.partStepUpPressed | OK | match_mechTestFrame: asyncKeyPressed('X') or shift+X; ==1 steps them up
+Scene.replaySlow | OK | replay_frame: = input_isDown(g_dikSpace); ==1 selects the slow path; only writer/reader replay_frame
+Scene.replaySkip | OK | replay_frame: = input_isDown(g_dikEnter); ==1 (or fread fails) moves to the next replay
+Scene.lastMissionWon | OK | scene_startSession clears; match_frame 0x49a65e stores 1 when sessionMode 0, stageCleared 1, g_mapIndex 14; never read
+Scene.zoomInHeld | OK | written only by match_mechTestFrame (Ctrl+VK_UP), cleared by match_resetInputState range; read there (zoom *= , min 500) and by replay_frame (always 0 there)
+Scene.zoomOutHeld | OK | match_mechTestFrame Ctrl+VK_DOWN; zoom /= factor, max 10000; replay_frame read sees 0
+Scene.followNextAsked | OK | set 1 on g_mouseClick by match_combatInput (spectating) and replay_frame; read to step watchedPlayer; cleared per frame (match_resetInputState)
+Scene.presetNextAsked | OK | set 1 on g_rightClick (match_combatInput with cameraSlot>=0, replay_frame) with manualPick[1] and cameraReset; read to step the preset
+Scene.scenePaused | OK | only stored 0 (scene_startSession); read ==0 by replay_frame, match_freeCamFrame, match_frame, mech test before moving actors / reading the replay
+Scene.levelPoints | OK | match_startRound: = g_ladderExp when ladderGame (level_fromPoints), else 0; match_frame copies it to the local player score / scoreCounted
+Scene.packetLossTimer | OK | match_frame (sessionMode 1): 1.0 when netq_skippedCount>0 (then cleared), else run down to 0; zeroed with sendTimer block; no other reader
+Scene.lostTime | OK | match_frame (client, net_hasSlot 0): += frameTime, > 5 -> msg_connectionLost + matchLeaving; also counted in game_processLoadingMode; zeroed at round start
+Scene.manualPick | OK | [0] set with followNextAsked, [1] with preset picks, [2] by unfollow (free camera); [0]/[1]==0 let followTime/presetTime run; zeroed at session/round start
+Scene.quitDelay | OK | 3.0 set with matchLeaving (quit, lost connection, unstable, server end), 0.0 for a client quit / last mission; match_frame counts it down then leaves
+Scene.playAsked | OK | set 1 by the Esc menu (hud_escmenu START / team pick); match_frame treats it like a fire press for team / spawn and clears it
+Scene.quitAsked | OK | set by Esc / QUIT paths (match_combatInput, escMenu, replay_frame, mech test Esc); match_frame / mech test leave on it
+Scene.fogOn | OK | Stage view 0x9ee044: cleared by stage_build, read from the ground info file (map_loadGroundInfoFrom); Scene view read ==1 by match_drawFrame / replay_frame before glEnable(GL_FOG)
+Scene.renderMode | OK | only store 0 (scene_startSession); passed as ViewVolume_draw mode (1 wireframe path, 2 no texture binding) by every draw site
+Scene.lockHeld | OK | Stage 0x202ea80[i]: actor_processFrame sets it to targetKeepTime on a lock, runs it down by dt; cleared on deactivate / setup; hud_drawLockOn draws when > 0
+Scene.msgWrite | OK | Stage +0x2148ed0: script_pushMessage stores at ring[msgWrite & 31] then ++; hud_drawMessageBox shows while msgRead < msgWrite
+Scene.msgRead | OK | Stage +0x2148ed4: ++ only when ((msgRead ^ head) & 31)==0 (ring overflow); hud_drawMessageBox reads ring[msgRead & 31]
+Scene.scriptMode | OK | Stage view 0x2149308 set by the script command, cleared with five more; HUD pass: !=1 draws 3D, ==2 depth clear, ==0 HUD; with scriptHoldsPlay actors stop
+Scene.restartTimer | OK | net_processGamePacket kind 13 (byte 2 k) sets 5.0; match_frame counts it down (READY %d beeps) and restarts; HUD shows it
+Scene.recording | OK | set 1 by replay_startRecording (Esc RECORD), cleared by replay_closeRecording; packets also written to replayFile while ==1; HUD record mark
+Scene.stageCleared | OK | match_frame sets 1 when sessionMode 0 and the local player / team reaches fragLimit on g_mapIndex == g_progress; then g_progress++ and profile_saveProgress
+Scene.matchLeaving | OK | set 1 with quitDelay on quit / lost connection / unstable / server end / last mission; when quitDelay runs out the match is left; HUD hidden while set
+Scene.character | OK | match_startRound = g_selectedCharacter; mech_setCharacter (ARM CENTER) writes; match_frame passes it to playerRecord_set
+Scene.cleared2343323 | OK | only match_resetInputState: lea +0x2343323 rep-stos 10 dwords; nothing else touches it
+ColourChoice.first | OK | match_start copies [i].first[t] into mechColours[t][i][0]; saturation [1] / value [2] clamped at 0 (lobby_states / menu_misc); hue at [0]
+ColourChoice.second | OK | match_start copies [i].second[t] into mechColours[t][i][1] (second tint)
+ArchiveEntry.name | OK | 0x44-byte entries searched by name (shapeDat_findByName etc.) before dat_entry
+ArchiveEntry.offset | OK | dat_entry: fseek(file, table[index] +0x40, SEEK_SET) before reading the item
+MenuOutline.points | OK | setupTop_initOutlines stores 4 at +0; menu_pointInPolygon(x, y, n, 5 xs, 5 ys) loops i < n over edges i..i+1 (n edges / corners of the closed polygon)
+MenuOutline.x | OK | +4 five ints copied from g_lobbyTopOutlines; menu_pointInPolygon's px[0..4] (x - 320 frame)
+MenuOutline.y | OK | +0x18 five ints; menu_pointInPolygon's py[0..4] (240 - y frame)
+g_lobbyConnectionOpen | OK | original: written by arenaGames_keys, arenaGames_mouse, lobby_enterArenaList, lobby_openConnection; read or address taken by lobby_openConnection; matches the name / comment
+g_lobbySearching | OK | original: written by arenaGames_keys, arenaGames_mouse, arena_gamesPageFrame, arena_mergeReceivedSessions, gameList_pageFrame, lobby_enterArenaList ..; read or address taken by arenaGames_keys, arenaGames_mouse, arena_drawGameList, arena_gamesPageFrame; matches the name / comment
+g_lobbyRefreshing | OK | original: written by arenaGames_keys, arenaGames_mouse, arena_gamesPageFrame, arena_mergeReceivedSessions, gameList_pageFrame, lobby_enterArenaList ..; read or address taken by arenaGames_keys, arenaGames_mouse, arena_drawGameList, arena_gamesPageFrame; matches the name / comment
+g_lanSearch | OK | original: written by arenaGames_keys, arenaGames_mouse, arena_gamesPageFrame, lobby_enterArenaList, menuState400_enter; read or address taken by arenaGames_keys, arenaGames_mouse, arena_drawGameList, arena_gamesPageFrame; matches the name / comment
+g_joinTimedOut | OK | original: written by arenaGames_keys, arenaJoinBox_clicks, arena_joinAnswer, arena_joinListed, gameList_keys, gameList_stopJoin ..; read or address taken by arena_joinAnswer, room_joinAnswer; matches the name / comment
+g_rightClick | OK | original: written by input_updateMouse; read or address taken by account_clicks, arenaGames_mouse, arenaUpdateNotice_clicks, arena_createClick, armc_rightClickLeave, createUpdateNotice_clicks ..; matches the name / comment
+g_playerCorporation | OK | original: written by arena_savePlayerSettings, cfg_init, cfg_readPlayer; read or address taken by arena_connectionOutcome, arena_joinAnswer, arena_joinSession, arena_loadPlayerSettings, cfg_writePlayer, lobby_hostArenaIpx ..; matches the name / comment
+g_launchedForNetGame | OK | original: written by app_parseCommandLine; read or address taken by app_init, app_startupLoad, armc_cameraStep, armc_exit, game_WinMain, game_postMatch ..; matches the name / comment
+g_launchStartStep | OK | original: written by arena_startFromLauncher, armc_exit, menuTunnel_advance, menu_showMessage, profile_logIn; read or address taken by armc_cameraStep, armc_exit, menuTunnel_advance, menu_frame; matches the name / comment
+g_roomLoginDue | OK | original: written by account_sendChange, game_returnToGameRoom, login_send, menuState800_enterGameRoom, roomLogin_clicks, roomLogin_keys ..; read or address taken by roomLogin_clicks, roomLogin_keys; matches the name / comment
+g_lineToLoginId | OK | original: written by menuState800_enterGameRoom, roomLogin_clicks, roomLogin_endTyping, roomLogin_keys, roomLogin_update; read or address taken by roomLogin_endTyping; matches the name / comment
+g_roomRequestOut | OK | original: written by login_send, menuState800_enterGameRoom, menu_returnToMainFromRoom, newIdConfirm_update, roomLogin_keys, roomLogin_update; read or address taken by roomLogin_clicks, roomLogin_draw, roomLogin_hitTest, roomLogin_keys, roomLogin_update; matches the name / comment
+g_currentProfile | OK | original: written by menuState210_enter, profile_makeCurrent, profile_newCampaign, profile_readHeader, profile_saveProgress, profile_scanSaves ..; read or address taken by menuState210_enter, profile_logIn, profile_makeCurrent, profile_newCampaign, profile_readHeader, profile_saveProgress ..; matches the name / comment
+g_lobbyListAnswer | OK | original: written by arenaGames_keys, arenaGames_mouse, lobby_openConnection, net_receiveLobbyReply; read or address taken by game_wndProc; matches the name / comment
+g_lobbyConnectionBlock | OK | original: written by dplay_create, dplay_release; read or address taken by dplay_create, dplay_release; matches the name / comment
+g_pingTime | OK | original: written by net_ping, net_pingAllServers, net_pingServer; read or address taken by net_ping, net_pingAllServers; matches the name / comment
+g_netListDone | OK | original: written by arenaGames_keys, arenaGames_mouse, gameList_keys, gameList_mouse, net_clearServers, net_pingAllServers; read or address taken by arena_gamesPageFrame, arena_mergeReceivedSessions, gameList_pageFrame, net_pingAllServers, room_mergeReceivedSessions; matches the name / comment
+g_joinThroughServer | OK | original: written by arenaGames_keys, arenaGames_mouse, lobby_enterArenaList, lobby_openConnection; read or address taken by arenaGames_keys, arenaGames_mouse; matches the name / comment
+g_lanJoinRequest | OK | original: written by arenaGames_keys, arenaGames_mouse, arena_joinListed, arena_joinSession, lobby_enterArenaList; read or address taken by arena_gamesPageFrame; matches the name / comment
+g_playerCustomize | OK | original: written by arena_savePlayerSettings, cfg_init, cfg_readPlayer; read or address taken by arena_loadPlayerSettings, cfg_writePlayer; matches the name / comment
+g_launchedAsHost | OK | original: written by app_parseCommandLine; read or address taken by arena_startFromLauncher; matches the name / comment
+g_rankingListIn | OK | original: written by game_wndProc, ranking_clicks, ranking_cycleSort, ranking_enter, ranking_keys, ranking_nextPage ..; read or address taken by ranking_page; matches the name / comment
+g_roomSearchAnswerIn | OK | original: written by gameList_keys, gameList_mouse, gameList_open, gameList_pageFrame, game_wndProc, room_enterGameList ..; read or address taken by gameList_pageFrame; matches the name / comment
+g_rankingRequestPending | OK | original: written by game_returnToGameRoom, menuState800_enterGameRoom, ranking_clicks, ranking_cycleSort, ranking_enter, ranking_nextPage ..; read or address taken by ranking_page; matches the name / comment
+g_argCount | OK | original: written by app_parseCommandLine; read or address taken by app_parseCommandLine; matches the name / comment
+g_replayRandomOrder | OK | original: written by replaySelect_allOut, replaySelect_keys, replaySelect_mouse; read or address taken by replaySelect_drawDialog, replaySelect_keys, replaySelect_mouse, replay_frame; matches the name / comment
+g_chosenPilot | OK | original: written by profile_drawChosenPilot; read or address taken by profile_drawChosenPilot; matches the name / comment
+g_hostGoneMessageFlag | OK | original: written by dplay_leaveSession, freeCam_keys, game_postMatch, net_resetState; read or address taken by none; matches the name / comment
+g_netBlockSize | OK | original: written by net_receiveAll; read or address taken by net_clearSlots, net_freeAllSlots, net_receiveAll; matches the name / comment
+g_roomListAnswer | OK | original: written by gameList_keys, gameList_mouse, gameList_open, net_receiveGameServerReply; read or address taken by game_wndProc; matches the name / comment
+g_serverListCount | OK | original: written by arenaGames_keys, arenaGames_mouse, net_addServerRecord; read or address taken by arena_drawGameList, arena_mergeReceivedSessions, net_addServerRecord, net_receiveLobbyReply; matches the name / comment
+g_serverPingCount | OK | original: written by net_clearServers, net_receiveGameServerReply, net_receiveLobbyReply; read or address taken by arena_mergeReceivedSessions, net_pingAllServers, room_mergeReceivedSessions; matches the name / comment
+g_arenaServerList | CLEARER -> g_arenaListFromServer | an int flag (lobby_openConnection 1, arenaList_rebuild 0, read by arena_drawGameList), not a list; g_serverList is the real list -> g_arenaListFromServer
+g_arenaLanListBuilt | OK | original: written by arenaList_rebuild, lobby_enterArenaList, lobby_openConnection, menuState400_enter; read or address taken by arena_drawGameList; matches the name / comment
+g_arenaListClickTimer | OK | original: written by arenaGames_mouse, arena_gamesPageFrame, lobby_enterArenaList; read or address taken by arena_gamesPageFrame; matches the name / comment
+g_searchResult | OK | original: written by arenaGames_keys, arenaGames_mouse, game_wndProc, lobby_openConnection; read or address taken by arena_gamesPageFrame, armc_drawTunnel, gameList_pageFrame, mainmenu_drawMenu, missions_drawTunnel, skirmish_drawTunnel; matches the name / comment
+g_retypePassword | OK | original: written by game_returnToGameRoom, menuState800_enterGameRoom, roomLogin_update, room_openLogin; read or address taken by roomLogin_editPassword, roomLogin_update; matches the name / comment
+g_loginToSend | OK | original: written by menuState800_enterGameRoom, roomLogin_clicks, roomLogin_keys, roomLogin_update; read or address taken by roomLogin_update; matches the name / comment
+g_typingLoginId | OK | original: written by login_send, menuState800_enterGameRoom, roomLogin_editId, roomLogin_editPassword, roomLogin_update, room_openNewIdConfirm ..; read or address taken by roomLogin_draw, roomLogin_layout, roomLogin_update; matches the name / comment
+g_profileRowClicked | OK | original: written by menuState210_enter, profileList_mouse, profile_listPage; read or address taken by profileList_mouse, profile_listPage; matches the name / comment
+g_roomListCount | OK | original: written by gameList_keys, gameList_mouse, net_addRoomRecord; read or address taken by gameList_draw, net_addRoomRecord, net_receiveGameServerReply, room_mergeReceivedSessions; matches the name / comment
+g_localPlayerData | OK | original: written by dplay_hostSession, dplay_joinSession, dplay_openConnection; read or address taken by net_takePlayerSlot; matches the name / comment
+g_pingStartEvent | OK | original: written by net_closeThreadHandles, net_startPingThread; read or address taken by net_closeThreadHandles, net_pingThreadProc, net_startPingThread, net_stopPingThread; matches the name / comment
+g_fullScreen | CLEARER -> g_glWindowFullScreen | only glWindow_init (its argument) / glWindow_resize use it; the game passes 0 (screen_enter.c glWindow_init(.., 0, g_mainWindow ..)), its own full-screen is app_setDisplayMode -> g_glWindowFullScreen, like g_glWindowMade / g_glWindowContext
+g_arenaListRefreshTimer | OK | original: written by arena_gamesPageFrame, lobby_enterArenaList; read or address taken by arena_gamesPageFrame; matches the name / comment
+g_mouseInvert | OK | original: written by cfg_readKeyBindings, input_setDefaultBindings; read or address taken by cfg_writeKeyBindings, match_combatInput, replay_frame; matches the name / comment
+g_openLoginName | OK | original: written by newIdForm_update, room_openNewIdForm; read or address taken by newIdForm_update; matches the name / comment
+g_roomListRefreshTimer | OK | original: written by gameList_pageFrame, room_enterGameList; read or address taken by gameList_pageFrame; matches the name / comment
+g_lastChatLine | OK | freeCam_keys stores g_inputLine (0x9dc92c); net_handleMessage passes its address to the formatter, reads and zeroes it
+g_lastChatLineSet | OK | original: written by freeCam_keys, net_handleMessage; read or address taken by none; matches the name / comment
+g_gameServerAnswer | OK | original: written by net_recv, roomLogin_keys, roomLogin_update; read or address taken by roomLogin_update; matches the name / comment
+g_pingStopEvent | OK | original: written by net_closeThreadHandles, net_startPingThread; read or address taken by net_closeThreadHandles, net_pingThreadProc, net_stopPingThread; matches the name / comment
+g_defaultColour | OK | original: written by colour_initPackedClear; read or address taken by playerRecord_resetFlag, stage_build, stage_resetMatrixAndPoints; matches the name / comment
+g_displayModeChanged | OK | exe patch cave 0x4a8e54 (app_setDisplayMode): byte 0xb12a80 set 1 on a non-desktop size, 0 on the desktop size (ChangeDisplaySettings NULL); WM_ACTIVATEAPP cave 0x4a8ecb tests it
+g_freeCamLookX | OK | original: written by freeCam_keys, freeCam_stepLeft, freeCam_stepRight; read or address taken by freeCam_keys, freeCam_stepLeft, freeCam_stepRight; matches the name / comment
+g_freeCamLookZ | OK | original: written by freeCam_keys, freeCam_stepLeft, freeCam_stepRight; read or address taken by freeCam_keys, freeCam_stepLeft, freeCam_stepRight; matches the name / comment
+g_arenaFileTimeLimit | OK | original: written by arena_loadSettings; read or address taken by arena_startFromLauncher; matches the name / comment
+g_arenaFileSecret | OK | original: written by arena_loadSettings; read or address taken by arena_startFromLauncher; matches the name / comment
+g_textureManager | OK | TextureManager_ctor stores vtable 0x4a9570 at 0x83a5e0; its address passed as the object (TextureManager_clear, setBanks, dtor, g_textures)
+g_gameListLoaded | OK | original: written by gameList_open, room_enterGameList; read or address taken by gameList_draw; matches the name / comment
+g_typingRoomJoinPassword | OK | original: written by gameList_pageFrame, room_editJoinPassword; read or address taken by gameList_pageFrame; matches the name / comment
+g_pingThreadId | OK | original: written by net_closeThreadHandles; read or address taken by net_closeThreadHandles, net_startPingThread; matches the name / comment
+g_pingThread | OK | original: written by net_closeThreadHandles, net_startPingThread; read or address taken by net_closeThreadHandles; matches the name / comment
+g_errorLogging | OK | original: written by none; read or address taken by sys_errorMessage, sys_errorMessageNoName, sys_errorTerminate, sys_fatalError; matches the name / comment
+g_cursorX | OK | original: written by input_getCursorPos; read or address taken by input_getCursorPos; matches the name / comment
+g_crtErrno | OK | original: written by FUN_0049ffdd, FUN_004a0090, FUN_004a4971, FUN_004a49e8, FUN_004a4a62, FUN_004a4a9f ..; read or address taken by ptx_crtlError; matches the name / comment
+g_otherModeWidth | OK | cave 0x4a8e95 stores the width (arg 1) at 0xb12a84 for a non-desktop size; WM_ACTIVATEAPP cave pushes it back into app_setDisplayMode
+g_arenaCorporation | OK | original: written by arena_defaultPlayer, arena_loadPlayerSettings; read or address taken by arena_savePlayerSettings; matches the name / comment
+g_arenaCustomize | OK | original: written by arena_defaultPlayer, arena_loadPlayerSettings; read or address taken by arena_savePlayerSettings; matches the name / comment
+g_sessionFound | OK | original: written by arena_joinAnswer, arena_joinListed, game_wndProc, room_joinAnswer, room_joinSession; read or address taken by arena_joinAnswer, createArena_layout, room_joinAnswer; matches the name / comment
+g_debugValue | OK | freeCam_keys: inc / add 10 / dec / sub 10 by four dik keys, then < 1 -> 1; no other access (generic name fits an effectless value)
+g_mouseWheel | OK | original: written by input_updateMouse; read or address taken by input_isDown, input_justPressed, setup_controlTabClicks; matches the name / comment
+g_roomRecMap | OK | original: written by reg_readLadderSettings, reg_writeLadderSettings, room_announceGame, room_keepSettings, room_loadSettingsRecord, room_setLadderDefaults; read or address taken by reg_readLadderSettings, reg_writeLadderSettings, room_announceGame, room_copyAccountRecord, room_hostingStep, room_loadSettingsRecord; matches the name / comment
+g_listAnswered | OK | original: written by arenaGames_keys, arenaGames_mouse, arenaList_rebuild, arena_mergeReceivedSessions, gameList_keys, gameList_mouse ..; read or address taken by arena_drawGameList, arena_mergeReceivedSessions, gameList_draw, room_mergeReceivedSessions; matches the name / comment
+g_timerRepeatCount | OK | original: written by timer_now; read or address taken by timer_now; matches the name / comment
+g_accountRank | OK | original: written by account_takeRank; read or address taken by account_drawPanel; matches the name / comment
+g_roomRotation | OK | original: written by room_copyAccountRecord, room_enterCreatePage, room_loadSettingsRecord, room_setLadderDefaults; read or address taken by reg_writeLadderSettings, room_drawGameSettings, room_drawMapPreview, room_keepSettings, room_stepMap; matches the name / comment
+g_roomRecRotation | OK | original: written by reg_readLadderSettings, reg_writeLadderSettings, room_keepSettings, room_setLadderDefaults; read or address taken by reg_readLadderSettings, reg_writeLadderSettings, room_announceGame, room_copyAccountRecord, room_hostingStep, room_loadSettingsRecord; matches the name / comment
+g_arenaJoinNeedsPassword | OK | original: written by arena_askJoinPassword, arena_gamesPageFrame; read or address taken by arenaGames_keys, arenaGames_mouse, arena_drawGameList, arena_gamesPageFrame; matches the name / comment
+g_coloursChanged | OK | original: written by armc_setPrimaryHueFromPointer, armc_setPrimarySaturationFromPointer, armc_setPrimaryValueFromPointer, armc_setSecondaryHueFromPointer, armc_setSecondarySaturationFromPointer, armc_setSecondaryValueFromPointer ..; read or address taken by armc_updatePartsPreview; matches the name / comment
+g_armcChanged | CLEARER -> g_armcWeaponSlotChanged | set only by armc_takeCursorItem, cleared by armc_snapshot / armc_openWeaponsPage, read by armc_drawWeaponsScreen: the weapons page slot change -> g_armcWeaponSlotChanged
+g_freeCamZoom | OK | original: written by freeCam_keys; read or address taken by freeCam_keys, menu_frame; matches the name / comment
+g_arenaUpdateNotice | OK | original: written by arenaUpdateNotice_clicks, arenaUpdateNotice_keys, arena_connectionOutcome, arena_gamesPageFrame, createUpdateNotice_clicks, createUpdateNotice_keys ..; read or address taken by arena_createDraw, arena_drawGameList, lobby_clicks, lobby_processKeys, room_drawGameSettings; matches the name / comment
+g_roomRefreshing | OK | original: written by gameList_keys, gameList_mouse, gameList_open, gameList_pageFrame, room_enterGameList, room_mergeReceivedSessions; read or address taken by gameList_draw, gameList_keys, gameList_mouse, gameList_pageFrame; matches the name / comment
+g_roomJoinStarted | OK | original: written by gameList_keys, gameList_mouse, gameList_pageFrame, room_enterGameList, room_joinSession; read or address taken by gameList_keys, gameList_mouse, gameList_pageFrame; matches the name / comment
+g_roomJoinNeedsPassword | OK | original: written by gameList_pageFrame, room_askJoinPassword; read or address taken by gameList_draw, gameList_keys, gameList_mouse, gameList_pageFrame; matches the name / comment
+g_newIdConfirmChoice | OK | original: written by newIdConfirm_clicks, newIdConfirm_keys, newIdConfirm_update, room_openNewIdConfirm; read or address taken by newIdConfirm_update; matches the name / comment
+g_roomUpdateNotice | OK | original: written by menuState800_enterGameRoom, newIdConfirm_update, roomLogin_clicks, roomLogin_update, roomUpdateNotice_keys, room_openNewIdForm ..; read or address taken by newIdConfirm_draw, roomLogin_draw, room_clicksByState, room_keysByState; matches the name / comment
+g_replaySelectFirst | OK | original: written by replayList_open, replaySelect_keys, replaySelect_mouse; read or address taken by replaySelect_drawNames, replaySelect_keys, replaySelect_mouse; matches the name / comment
+g_selectedCharacter | OK | original: written by profile_makeCurrent, profile_newCampaign, profile_saveProgress; read or address taken by armc_drawStatsPanel, armc_drawWeaponsScreen, armc_makeSession, armc_takeCursorItem, match_startRound; matches the name / comment
+g_connectionKind | OK | original: written by dplay_leaveSession, dplay_openConnection; read or address taken by dplay_enumSessions, dplay_enumSessionsCallback, dplay_host, dplay_hostSession, dplay_join, dplay_leaveSession ..; matches the name / comment
+g_roomSearching | OK | original: written by gameList_keys, gameList_mouse, gameList_open, gameList_pageFrame, room_enterGameList, room_mergeReceivedSessions; read or address taken by gameList_draw, gameList_keys, gameList_mouse, gameList_pageFrame; matches the name / comment
+g_arenaListClickArmed | OK | original: written by arenaGames_mouse, arena_gamesPageFrame, lobby_enterArenaList; read or address taken by arenaGames_mouse, arena_gamesPageFrame; matches the name / comment
+g_serverSearching | OK | original: written by arenaGames_keys, arenaGames_mouse, lobby_enterArenaList, menuState400_enter; read or address taken by arenaGames_keys, arenaGames_mouse; matches the name / comment
+g_lanSearchStarted | OK | original: written by arenaGames_keys, arenaGames_mouse, lobby_enterArenaList, menuState400_enter; read or address taken by arenaGames_keys, arenaGames_mouse, arena_joinListed; matches the name / comment
+g_connectionAwaited | OK | original: written by arena_connectionOutcome, gameList_open, lobby_announceArena, lobby_enterCreate, lobby_openConnection, menuState800_enterGameRoom ..; read or address taken by lobbyCreate_frame, roomSettings_page; matches the name / comment
+g_lobbyJoinStarted | OK | original: written by arenaGames_keys, arenaGames_mouse, arena_gamesPageFrame, arena_joinListed, arena_joinSession, lobby_enterArenaList; read or address taken by arena_gamesPageFrame; matches the name / comment
+g_gameListClickTimer | OK | original: written by gameList_mouse, gameList_pageFrame, room_enterGameList; read or address taken by gameList_pageFrame; matches the name / comment
+g_gameListClickArmed | OK | original: written by gameList_mouse, gameList_pageFrame, room_enterGameList; read or address taken by gameList_mouse, gameList_pageFrame; matches the name / comment
+g_dikNone | OK | original: written by input_initDikCodes; read or address taken by controls_fillPrimaryKeys, input_setDefaultBindings, setup_bindKey, setup_defaultBindings, setup_drawControlsPage, setup_unbindKey; matches the name / comment
+g_hostErrorBox | OK | original: written by hostError_clicks, hostError_keys, lobby_enterCreate, lobby_hostArenaIpx; read or address taken by arena_createDraw, createArena_hitTest, lobby_clicks, lobby_processKeys; matches the name / comment
+g_joinPollTicks | OK | original: written by arenaGames_keys, arenaJoinBox_clicks, arena_joinAnswer, arena_joinListed, gameList_keys, gameList_stopJoin ..; read or address taken by game_wndProc; matches the name / comment
+g_armcUnusedFlag | OK | original: written by armc_open, armc_showPartsPage; read or address taken by none; matches the name / comment
+g_watchChatOpen | OK | original: written by freeCam_keys; read or address taken by freeCam_keys, freeCam_mouseLook; matches the name / comment
+g_roomRecGameMode | OK | original: written by reg_readLadderSettings, reg_writeLadderSettings, roomSettings_page, room_keepSettings, room_setLadderDefaults; read or address taken by reg_readLadderSettings, reg_writeLadderSettings, roomSettings_page, room_announceGame, room_copyAccountRecord, room_hostingStep ..; matches the name / comment
+g_cfgSimpleMenu | OK | original: written by cfg_init, cfg_readGraphics; read or address taken by app_screenSizeForMode, cfg_writeGraphic; matches the name / comment
+g_pilotExpKept | OK | original: written by ladder_checkAndSendRecord, newId_register, pilotRecord_syncCopies, room_copyAccountRecord; read or address taken by ladder_checkAndSendRecord, pilotRecord_syncCopies; matches the name / comment
+g_pilotKillsKept | OK | original: written by ladder_checkAndSendRecord, newId_register, pilotRecord_syncCopies, room_copyAccountRecord; read or address taken by ladder_checkAndSendRecord, pilotRecord_syncCopies; matches the name / comment
+g_pilotExp | OK | original: written by ladder_checkAndSendRecord, login_takeAccountRecord, newId_register, pilotRecord_syncCopies; read or address taken by account_drawPanel, ladder_checkAndSendRecord, login_takeAccountRecord, pilotRecord_syncCopies, room_copyAccountRecord; matches the name / comment
+g_pilotKills | OK | original: written by ladder_checkAndSendRecord, login_takeAccountRecord, newId_register, pilotRecord_syncCopies; read or address taken by account_drawPanel, ladder_checkAndSendRecord, login_takeAccountRecord, pilotRecord_syncCopies, room_copyAccountRecord; matches the name / comment
+g_matchLogWritten | OK | match_frame only: stores 1 when writing the opening log, end log only while 0
+g_matchEndedByUser | OK | match_frame: 1 when the host / solo player quits (msg_userEndsGame / msg_serverEndsGame), 0 for a client quit; read for the end-log format
+g_matchEndedByServer | OK | net_processGamePacket stores 1 on the end-of-game packet; match_frame reads it for the log format
+g_profileRowClickTime | OK | original: written by menuState210_enter, profileList_mouse, profile_listPage; read or address taken by profile_listPage; matches the name / comment
+g_netHostGone | OK | original: written by match_startRound, net_closeSockets, net_freeSlotsOf, net_handleMessage, net_resetState; read or address taken by FUN_004a86e0, net_handleSystemMessage; matches the name / comment
+g_newIdAnswer | OK | original: written by net_recv, newIdConfirm_update; read or address taken by newIdConfirm_update; matches the name / comment
+g_mapMissing | OK | original: written by game_postMatch, game_processLoadingMode; read or address taken by game_postMatch; matches the name / comment
+g_errorCleanupHook | OK | original: written by ErrorLog_ctor; read or address taken by sys_errorTerminate, sys_fatalError; matches the name / comment
+g_displayModeLeft | OK | WM_ACTIVATEAPP cave: deactivated with 0xb12a80 set -> minimise, desktop mode, 0xb12a81 = 1; activated with it set -> 0 and the remembered mode set again
+g_otherModeHeight | OK | cave stores arg 2 at 0xb12a88; reused on reactivation (0x4a8eeb)
+g_typingArenaJoinPassword | OK | original: written by arena_editJoinPassword, arena_gamesPageFrame; read or address taken by arena_gamesPageFrame; matches the name / comment
+g_mouseWheelTurned | OK | original: written by game_wndProc, input_updateMouse; read or address taken by setup_controlTabClicks; matches the name / comment
+g_pilotPower | OK | original: written by ladder_checkAndSendRecord, login_takeAccountRecord, pilotRecord_syncCopies; read or address taken by account_drawPanel, login_takeAccountRecord, newId_register, pilotRecord_syncCopies; matches the name / comment
+k_0f | OK | original: written by none; read or address taken by ObjectList_poseBones, TimeSync_frameTime, actor_checkDataLoss, actor_drawIntoView, actor_pickPathPoint, actor_processFrame ..; matches the name / comment
+g_hangulVowelGlyph | OK | original: written by hangul_glyphs; read or address taken by text_hangul13LayeredPass, text_hangul31LayeredPass; matches the name / comment
+g_hangulTailGlyph | OK | original: written by hangul_glyphs; read or address taken by text_hangul13LayeredPass, text_hangul31LayeredPass; matches the name / comment
+g_hangulLeadGlyph | OK | original: written by hangul_glyphs; read or address taken by text_hangul13Pass, text_hangul31Pass; matches the name / comment
+g_mouse3Down | OK | original: written by input_updateMouse; read or address taken by input_isDown; matches the name / comment
+g_keyGameMenu2 | OK | original: written by cfg_readKeyBindings, input_setDefaultBindings; read or address taken by cfg_writeKeyBindings, game_processLoadingMode, match_combatInput, replay_frame; matches the name / comment
+g_menuLookHomeX | OK | original: written by armc_cameraStep, armc_open, menuCamera_initPoints, menuState400_enter, menuState500_enterSkirmish, menuState600_enterSetup ..; read or address taken by arena_camera, armc_cameraStep, missions_camera, room_camera, setup_camera, skirmish_camera; matches the name / comment
+g_menuLookHomeY | OK | original: written by armc_cameraStep, armc_open, menuCamera_initPoints, menuState400_enter, menuState500_enterSkirmish, menuState600_enterSetup ..; read or address taken by arena_camera, armc_cameraStep, missions_camera, room_camera, setup_camera, skirmish_camera; matches the name / comment
+g_menuEyeHomeX | OK | original: written by armc_cameraStep, armc_open, menuCamera_initPoints, menuState400_enter, menuState500_enterSkirmish, menuState600_enterSetup ..; read or address taken by arena_camera, armc_cameraStep, missions_camera, room_camera, room_drawMenu, room_pageClicks ..; matches the name / comment
+g_menuEyeHomeY | OK | original: written by armc_cameraStep, armc_open, menuCamera_initPoints, menuState400_enter, menuState500_enterSkirmish, menuState600_enterSetup ..; read or address taken by arena_camera, armc_cameraStep, missions_camera, room_camera, setup_camera, skirmish_camera; matches the name / comment
+g_pilotPowerKept | OK | original: written by ladder_checkAndSendRecord, pilotRecord_syncCopies; read or address taken by pilotRecord_syncCopies; matches the name / comment
+g_pilotDeathsKept | OK | original: written by ladder_checkAndSendRecord, newId_register, pilotRecord_syncCopies, room_copyAccountRecord; read or address taken by ladder_checkAndSendRecord, pilotRecord_syncCopies; matches the name / comment
+g_gameListRefreshClicked | OK | original: written by gameList_keys, gameList_mouse, room_enterGameList; read or address taken by none; matches the name / comment
+g_pilotDeaths | OK | original: written by ladder_checkAndSendRecord, login_takeAccountRecord, newId_register, pilotRecord_syncCopies; read or address taken by account_drawPanel, ladder_checkAndSendRecord, login_takeAccountRecord, pilotRecord_syncCopies, room_copyAccountRecord; matches the name / comment
+g_pilotKillRate | OK | original: written by ladder_checkAndSendRecord, login_takeAccountRecord, newId_register, pilotRecord_syncCopies; read or address taken by account_drawPanel, pilotRecord_syncCopies, room_copyAccountRecord; matches the name / comment
+g_lobbyReplyKind | OK | original: written by none; read or address taken by net_receiveLobbyReply; matches the name / comment
+g_gameServerReplyKind | OK | original: written by none; read or address taken by net_receiveGameServerReply; matches the name / comment
+g_dpMaxQueueSize | OK | original: written by dplay_initConnection; read or address taken by none; matches the name / comment
+g_musicEndHigh | OK | original: written by none; read or address taken by music_loopIfEnded; matches the name / comment
+g_mciCallback | OK | original: written by movie_playEnding; read or address taken by movie_pauseEnding; matches the name / comment
+g_mciFrom | OK | original: written by movie_playEnding; read or address taken by movie_pauseEnding; matches the name / comment
+g_mciTo | OK | original: written by movie_playEnding; read or address taken by movie_pauseEnding; matches the name / comment
+g_mciDevice | OK | original: written by movie_playEnding; read or address taken by movie_pauseEnding; matches the name / comment
+g_cursorPosY | OK | original: written by input_getCursorPos; read or address taken by none; matches the name / comment
+g_arenaFileMap | OK | original: written by arena_loadSettings; read or address taken by arena_startFromLauncher; matches the name / comment
+g_arenaFilePlayers | OK | original: written by arena_loadSettings; read or address taken by arena_startFromLauncher; matches the name / comment
+g_arenaFileGameType | OK | original: written by arena_loadSettings; read or address taken by arena_startFromLauncher; matches the name / comment
+g_arenaFileFragLimit | OK | original: written by arena_loadSettings; read or address taken by arena_startFromLauncher; matches the name / comment
+g_pilotGamesKept | OK | original: written by ladder_checkAndSendRecord, newId_register, pilotRecord_syncCopies, room_copyAccountRecord; read or address taken by ladder_checkAndSendRecord, pilotRecord_syncCopies; matches the name / comment
+g_pilotGames | OK | original: written by ladder_checkAndSendRecord, login_takeAccountRecord, newId_register, pilotRecord_syncCopies; read or address taken by ladder_checkAndSendRecord, login_takeAccountRecord, pilotRecord_syncCopies, room_copyAccountRecord; matches the name / comment
+g_menuLookKeptX | OK | original: written by game_returnToArenaLobby, game_returnToGameRoom, game_returnToMainMenu, game_returnToSkirmish, menuTunnel_advance; read or address taken by menuTunnel_advance; matches the name / comment
+g_menuLookKeptY | OK | original: written by game_returnToArenaLobby, game_returnToGameRoom, game_returnToMainMenu, game_returnToSkirmish, menuTunnel_advance; read or address taken by menuTunnel_advance; matches the name / comment
+g_menuEyeKeptX | OK | original: written by game_returnToArenaLobby, game_returnToGameRoom, game_returnToMainMenu, game_returnToSkirmish, menuTunnel_advance; read or address taken by menuTunnel_advance; matches the name / comment
+g_menuEyeKeptY | OK | original: written by game_returnToArenaLobby, game_returnToGameRoom, game_returnToMainMenu, game_returnToSkirmish, menuTunnel_advance; read or address taken by menuTunnel_advance; matches the name / comment
+g_matchChatCaretY | WRONG -> g_matchTextFieldY | chat_textField stores its second argument (y); same: also the Esc menu replay-name field, callers pass 0, never read -> g_matchTextFieldY
+g_matchChatCaretX | WRONG -> g_matchTextFieldX | chat_textField 0x44ac90 stores its first argument (x) here; it opens every match text field, not only the chat line: escMenu item 2 (RECORD) opens it for the replay name (chat_openTextField(0,0,16)); all callers pass 0; never read -> g_matchTextFieldX ("the x passed to chat_openTextField, the match's text field (chat line or the Esc menu's replay name); always 0; never read")
+g_gameCount | OK | original: written by arenaGames_keys, arenaGames_mouse, arenaList_rebuild, arena_mergeReceivedSessions, gameList_open, lobby_enterArenaList ..; read or address taken by arenaGames_keys, arenaGames_mouse, arenaList_rebuild, arena_clearSessionEntry, arena_drawGameList, arena_mergeReceivedSessions ..; matches the name / comment
+g_unusedKeyTable2Word0 | OK | original: written by input_clearKeyTable2; read or address taken by none; matches the name / comment
+g_unusedKeyTable2Word1 | OK | original: written by input_clearKeyTable2; read or address taken by none; matches the name / comment
+g_unusedKeyTable2Word2 | OK | original: written by input_clearKeyTable2; read or address taken by none; matches the name / comment
+g_mapEntry22On | OK | mapList_init 0x40345d stores 0 at 0x4d95b8 = g_mapChoiceKeptTable (0x4d9508, 8-byte entries) [22] +0 (the chosen flag the init loop sets to 1)
+g_mapEntry23On | OK | mapList_init stores 0 at [23].chosen (0x4d95c0)
+g_mapEntry24On | OK | mapList_init stores 0 at [24].chosen (0x4d95c8)
+g_arenaJoinPassword | OK | original: written by arena_editJoinPassword, arena_gamesPageFrame; read or address taken by arena_drawGameList, arena_gamesPageFrame; matches the name / comment
+g_arenaJoinPassword4 | OK | original: written by arena_editJoinPassword, arena_gamesPageFrame; read or address taken by none; matches the name / comment
+g_newArenaPassword4 | OK | original: written by arenaCreate_keys, lobby_loadArenaSettings; read or address taken by none; matches the name / comment
+g_arenaListPlayers | OK | original: written by arena_mergeReceivedSessions, lobby_openConnection; read or address taken by arena_mergeReceivedSessions; matches the name / comment
+g_unusedArmcWord4 | OK | original: written by armc_open; read or address taken by none; matches the name / comment
+g_unusedArmcWord1 | OK | original: written by armc_openWeaponsPage; read or address taken by none; matches the name / comment
+g_armcPanelDepth | OK | original: written by armc_initCameraBox; read or address taken by armc_drawPanels; matches the name / comment
+g_unusedStartupWord3 | OK | original: written by app_startupLoad; read or address taken by none; matches the name / comment
+g_unusedStartupWord2 | OK | original: written by app_startupLoad; read or address taken by none; matches the name / comment
+g_freeCamLookY | OK | original: written by none; read or address taken by freeCam_keys; matches the name / comment
+g_unusedFreeCamMoveWord | OK | original: written by freeCam_mouseLook; read or address taken by none; matches the name / comment
+g_unusedPostMatchFlag | OK | original: written by freeCam_keys, game_postMatch; read or address taken by none; matches the name / comment
+g_arenaPassword | OK | original: written by arena_startFromLauncher; read or address taken by arena_startFromLauncher, lobby_announceArena, lobby_keepArenaSettings; matches the name / comment
+g_arenaPassword4 | OK | original: written by arena_startFromLauncher; read or address taken by none; matches the name / comment
+g_arenaLocked | OK | original: written by arena_startFromLauncher, lobby_keepArenaSettings; read or address taken by lobby_announceArena; matches the name / comment
+g_mouseSmooth | OK | original: written by cfg_readKeyBindings, input_setDefaultBindings; read or address taken by cfg_writeKeyBindings; matches the name / comment
+g_unusedMenuReturnWord | OK | original: written by game_returnToArenaLobby, game_returnToGameRoom, game_returnToMainMenu, game_returnToSkirmish, menuState100_intro, profile_logIn; read or address taken by none; matches the name / comment
+g_arenaFilePassword | OK | original: written by arena_loadSettings; read or address taken by arena_loadSettings, arena_startFromLauncher; matches the name / comment
+g_arenaFilePassword4 | OK | original: written by arena_loadSettings; read or address taken by none; matches the name / comment
+g_unusedStartupWord1 | OK | original: written by app_startupLoad; read or address taken by none; matches the name / comment
+g_unusedRoomListWord | OK | original: written by gameList_open, lobby_openConnection; read or address taken by none; matches the name / comment
+g_freeCamYaw | OK | original: written by freeCam_mouseLook; read or address taken by freeCam_mouseLook, freeCam_stepLeft, freeCam_stepRight; matches the name / comment
+g_unusedRoomWord | OK | original: written by menuState800_enterGameRoom, menu_returnToMainFromRoom; read or address taken by none; matches the name / comment
+g_unusedLoginWord | OK | original: written by newIdForm_openField, room_openLogin; read or address taken by none; matches the name / comment
+g_pilotRank | OK | original: written by account_takeRank; read or address taken by none; matches the name / comment
+g_roomListPlayers | OK | original: written by gameList_open, room_enterGameList, room_mergeReceivedSessions; read or address taken by room_mergeReceivedSessions; matches the name / comment
+g_unusedInitWord | OK | original: written by app_init; read or address taken by none; matches the name / comment
+g_unusedReplayListWord1 | OK | original: written by replayList_open; read or address taken by none; matches the name / comment
+g_unusedReplayListWord2 | OK | original: written by replayList_open; read or address taken by none; matches the name / comment
+g_unusedMainMenuWord | CLEARER -> g_unusedReplaySelectWord | only cleared by replaySelect_allOut (the replay selection dialog) -> g_unusedReplaySelectWord
+g_unusedBriefingWord | OK | original: written by mission_loadBriefing; read or address taken by none; matches the name / comment
+g_misHeader1 | OK | mission_loadAxisMis freads 4 bytes each into 0x9ef2c0 (g_missionCount), 0x9ef2c4, 0x9ef2c8, 0x9ef2cc; only missions_clear writes it otherwise; never read
+g_misHeader2 | OK | third header dword fread by mission_loadAxisMis; missionList_hitTest only uses 0x9ef2c8 as its rect table end; never read
+g_misHeader3 | OK | fourth header dword fread by mission_loadAxisMis; cleared by missions_clear; never read
+g_unusedProfileCameraWord | OK | original: written by profile_quitGame; read or address taken by none; matches the name / comment
+g_profileNoneAtEntry | OK | original: written by menuState210_enter; read or address taken by profile_listPage; matches the name / comment
+g_netChatMessageWord1 | OK | original: written by net_resetState; read or address taken by none; matches the name / comment
+g_netChatMessageFrom | OK | original: written by net_resetState; read or address taken by none; matches the name / comment
+g_netChatMessageText | OK | original: written by net_resetState; read or address taken by none; matches the name / comment
+g_receivedRank | OK | original: written by none; read or address taken by account_takeRank; matches the name / comment
+g_unusedNetResetWord | OK | original: written by net_resetConnection; read or address taken by none; matches the name / comment
+g_unusedSessionWord | OK | original: written by dplay_openConnection; read or address taken by none; matches the name / comment
+g_unusedDplayWord1 | OK | original: written by dplay_init; read or address taken by none; matches the name / comment
+g_unusedDplayWord2 | OK | original: written by dplay_init; read or address taken by none; matches the name / comment
+g_unusedDplayWord3 | OK | original: written by dplay_init; read or address taken by none; matches the name / comment
+g_unusedDplayWord4 | OK | original: written by dplay_init; read or address taken by none; matches the name / comment
+g_unusedPingWord1 | OK | original: written by net_pingServer; read or address taken by none; matches the name / comment
+g_unusedPingWord2 | OK | original: written by net_pingServer; read or address taken by none; matches the name / comment
+g_vecOrigin | OK | original: written by vec_initOrigin; read or address taken by ObjectList_poseBones, actor_processFrame, armc_updatePartsPreview, armc_updateWeaponsPreview, map_loadPlayInfoFrom, particle_init ..; matches the name / comment
+g_vecUnitZ | OK | vec_initAxisZ stores (0, 0, 1.0) at 0xa0e7c8..d0; read by scene_startSession, actor_processFrame, particle_draw
+g_vecZero | OK | original: written by vec_initZero; read or address taken by actor_processFrame, actor_setupFromParts, bullet_init, collisionTri_sweepSphere, match_frame, particle_update ..; matches the name / comment
+g_penInitialized | OK | original: written by none; read or address taken by pen_init; matches the name / comment
+g_arenaKeptCamY | OK | original: written by arena_camera; read or address taken by armc_cameraStep; matches the name / comment
+g_freeCamMoveStarted | OK | original: written by freeCam_mouseLook; read or address taken by freeCam_mouseLook; matches the name / comment
+g_freeCamMoveEyeX | OK | original: written by freeCam_mouseLook; read or address taken by none; matches the name / comment
+g_freeCamMoveEyeY | OK | original: written by freeCam_mouseLook; read or address taken by none; matches the name / comment
+g_freeCamMoveEyeZ | OK | original: written by freeCam_mouseLook; read or address taken by none; matches the name / comment
+g_freeCamTurnSin | OK | original: written by freeCam_mouseLook; read or address taken by freeCam_keys, freeCam_mouseLook; matches the name / comment
+g_freeCamTilt | OK | original: written by freeCam_mouseLook; read or address taken by freeCam_keys, freeCam_mouseLook; matches the name / comment
+g_freeCamTurnCos | OK | original: written by freeCam_mouseLook; read or address taken by freeCam_keys, freeCam_mouseLook; matches the name / comment
+g_freeCamMoveTargetX | OK | original: written by freeCam_mouseLook; read or address taken by none; matches the name / comment
+g_freeCamMoveTargetY | OK | original: written by freeCam_mouseLook; read or address taken by none; matches the name / comment
+g_freeCamMoveTargetZ | OK | original: written by freeCam_mouseLook; read or address taken by none; matches the name / comment
+g_ladderPassword | OK | original: written by login_send, menuState800_enterGameRoom; read or address taken by account_sendChange, login_send; matches the name / comment
+g_ladderPassword4 | OK | original: written by login_send, menuState800_enterGameRoom; read or address taken by none; matches the name / comment
+g_ladderPassword8 | OK | original: written by login_send, menuState800_enterGameRoom; read or address taken by none; matches the name / comment
+g_replaySelectLitR | OK | original: written by menuState300_enter; read or address taken by replaySelect_drawDialog; matches the name / comment
+g_ladderExp | OK | original: written by ladder_addMatchScores, ladder_checkAndSendRecord, login_takeAccountRecord, newId_register; read or address taken by ladder_addMatchScores, ladder_checkAndSendRecord, match_startRound, pilotRecord_syncCopies; matches the name / comment
+g_ladderPower | OK | original: written by ladder_checkAndSendRecord, login_takeAccountRecord, newId_register; read or address taken by ladder_checkAndSendRecord, pilotRecord_syncCopies; matches the name / comment
+g_ladderKills | OK | original: written by ladder_addMatchScores, ladder_checkAndSendRecord, login_takeAccountRecord, newId_register; read or address taken by ladder_addMatchScores, ladder_checkAndSendRecord, pilotRecord_syncCopies; matches the name / comment
+g_ladderDeaths | OK | original: written by ladder_addMatchScores, ladder_checkAndSendRecord, login_takeAccountRecord, newId_register; read or address taken by ladder_addMatchScores, ladder_checkAndSendRecord, pilotRecord_syncCopies; matches the name / comment
+g_gameListRow | OK | original: written by arenaGames_keys, arenaGames_mouse, gameList_keys, gameList_mouse, gameList_open, lobby_enterArenaList ..; read or address taken by arenaGames_keys, arenaGames_mouse, gameList_keys, gameList_mouse; matches the name / comment
+g_gameListTop | OK | original: written by arenaGames_keys, arenaGames_mouse, gameList_keys, gameList_mouse, gameList_open, lobby_enterArenaList ..; read or address taken by arenaGames_keys, arenaGames_mouse, arena_drawGameList, gameList_draw, gameList_keys, gameList_mouse; matches the name / comment
+g_newIdFormRight | OK | original: written by room_openNewIdForm; read or address taken by newIdForm_draw; matches the name / comment
+g_newIdFormBottom | OK | original: written by room_openNewIdForm; read or address taken by newIdForm_draw, newIdForm_keys, newIdForm_layout, newIdForm_update; matches the name / comment
+g_profileListTop | OK | original: written by menuState210_enter, profileList_keys, profileList_mouse, profile_create, profile_deleteChosen, profile_writeCleared; read or address taken by profileList_drawNames, profileList_keys, profileList_mouse, profile_create, profile_deleteChosen, profile_makeCurrent ..; matches the name / comment
+g_profileListRow | OK | original: written by menuState210_enter, profileList_keys, profileList_mouse, profile_create, profile_deleteChosen, profile_writeCleared; read or address taken by profileList_keys, profileList_mouse, profile_deleteChosen, profile_makeCurrent, profile_newCampaign, profile_readHeader ..; matches the name / comment
+g_profileChosen | OK | original: written by menuState210_enter, profileList_keys, profileList_mouse, profile_create, profile_deleteChosen; read or address taken by profileList_drawNames, profileList_mouse, profile_deleteChosen, profile_drawChosenPilot, profile_loadPilotStats, profile_makeCurrent ..; matches the name / comment
+g_mapTop | OK | original: written by mapList_mouse; read or address taken by mapList_draw, mapList_mouse; matches the name / comment
+g_mapListKept | OK | original: written by mapList_ok; read or address taken by none; matches the name / comment
+g_armcHideInterface | OK | original: written by armc_open, armc_processInput; read or address taken by armc_drawColourPage, armc_drawPartsPage, armc_drawWeaponsPage, armc_processInput; matches the name / comment
+g_exitCode | OK | original: written by app_closeWindow; read or address taken by game_wndProc; matches the name / comment
+g_repeatDown | OK | original: written by menuState210_enter, menuState900_enterMissions, missions_listKeys, profileList_keys, replaySelect_keys; read or address taken by missions_listKeys, profileList_keys, replaySelect_keys; matches the name / comment
+g_repeatUp | OK | original: written by menuState210_enter, menuState900_enterMissions, missions_listKeys, profileList_keys, replaySelect_keys; read or address taken by missions_listKeys, profileList_keys, replaySelect_keys; matches the name / comment
+g_pickedGame | OK | original: written by arenaGames_keys, arenaGames_mouse, arenaList_rebuild, gameList_keys, gameList_mouse, gameList_open ..; read or address taken by arena_askJoinPassword, arena_drawGameList, arena_gamesPageFrame, gameList_draw, gameList_pageFrame, room_askJoinPassword; matches the name / comment
+g_simpleMenu | OK | original: written by app_screenSizeForMode, setup_graphicTabClicks; read or address taken by menu_drawBackground3D, setup_graphicTabClicks; matches the name / comment
+g_missionTop | OK | original: written by menuState900_enterMissions, missions_cursorDown, missions_cursorUp; read or address taken by missionList_draw, missions_clickRow, missions_cursorDown, missions_cursorUp; matches the name / comment
+g_skirmishNewPartsNotice | OK | original: written by menuState500_enterSkirmish, newPartsNotice_clickClose, newPartsNotice_keys, profile_makeCurrent; read or address taken by menuState500_skirmish, skirmish_keys, skirmish_screenClicks; matches the name / comment
+g_profileReveal | OK | original: written by pilotSelect_clicks, pilotSelect_keys, pilotSelect_reset, profile_drawPilotSelect; read or address taken by deleteDialog_layout, profile_drawPilotSelect; matches the name / comment
+g_profileQuitting | OK | original: written by menuState210_enter, profile_quitGame; read or address taken by menuState210_frame, menu_frame, profile_processInput, profile_screenKeys; matches the name / comment
+g_pilotSelectCursor | OK | original: written by pilotSelect_clicks, pilotSelect_keys, pilotSelect_reset; read or address taken by pilotSelect_clicks, pilotSelect_keys, pilotSelect_loadStats, profile_create, profile_drawPilotSelect; matches the name / comment
+g_unusedProfileCameraSpeed | OK | original: written by profile_processInput, profile_quitGame, profile_screenKeys; read or address taken by profileList_hitTest; matches the name / comment
+g_profileQuitSkip | OK | original: written by profile_processInput, profile_quitGame, profile_screenKeys; read or address taken by profile_processInput, profile_screenKeys; matches the name / comment
+g_profileRevealClock | OK | original: written by pilotSelect_clicks, pilotSelect_keys, pilotSelect_reset, profile_drawPilotSelect; read or address taken by profile_drawPilotSelect; matches the name / comment
+g_unusedProfileCameraZoom | OK | original: written by profile_processInput, profile_quitGame, profile_screenKeys; read or address taken by none; matches the name / comment
+g_unusedProfileCameraTime | OK | original: written by profile_processInput, profile_quitGame, profile_screenKeys; read or address taken by none; matches the name / comment
+g_profileMessage | OK | original: written by newNameDialog_clicks, profile_messageKeys, profile_newNamePage, profile_typeNewName; read or address taken by newNameDialog_clicks, profile_messageKeys, profile_newNamePage; matches the name / comment
+g_desktopH | OK | original: written by glWindow_setDisplayModeBy; read or address taken by glWindow_restoreDisplayMode; matches the name / comment
+g_desktopBits | OK | original: written by glWindow_setDisplayModeBy; read or address taken by glWindow_restoreDisplayMode; matches the name / comment
+g_desktopW | OK | original: written by glWindow_setDisplayModeBy; read or address taken by glWindow_restoreDisplayMode; matches the name / comment
+g_glWindowMade | OK | original: written by glWindow_init; read or address taken by glWindow_init; matches the name / comment
+g_glWindowContext | OK | original: written by glWindow_wndProc; read or address taken by glWindow_wndProc; matches the name / comment
+g_modeChanged | OK | original: written by glWindow_restoreDisplayMode, glWindow_setDisplayModeBy; read or address taken by glWindow_restoreDisplayMode, glWindow_setDisplayModeBy; matches the name / comment
+g_packetsSkipped | OK | netq_receive 0x4a85d4: a packet whose number is not the one due (due >= 0) moves the due number past it and increments 0xb116e4; netq_reset clears; netq_skippedCount / clearSkipped (0x4a8730 / 0x4a8720)
+g_unusedClock3 | OK | original: written by menuState100_intro; read or address taken by none; matches the name / comment
+g_unusedClock2 | OK | original: written by menuState100_intro; read or address taken by none; matches the name / comment
+g_unusedClock1 | OK | original: written by menuState100_intro; read or address taken by none; matches the name / comment
+g_editingFragLimit | OK | original: written by room_enterCreatePage, room_settingsAfterTyping; read or address taken by room_drawGameSettings, room_settingsAfterTyping, room_settingsClicks; matches the name / comment
+g_editingTimeLimit | OK | original: written by room_enterCreatePage, room_settingsAfterTyping; read or address taken by room_drawGameSettings, room_settingsAfterTyping, room_settingsClicks; matches the name / comment
+g_unusedAccountWord | OK | original: written by room_enterAccountPage; read or address taken by none; matches the name / comment
+g_newIdFormTop | OK | original: written by room_openNewIdForm; read or address taken by newIdForm_draw, newIdForm_layout, newIdForm_openField; matches the name / comment
+g_errorReported | OK | original: written by sys_errorMessage, sys_errorMessageNoName; read or address taken by none; matches the name / comment
+g_fatalReported | OK | original: written by sys_errorTerminate, sys_fatalError; read or address taken by none; matches the name / comment
+g_sentChatBlock | OK | only net_sendChat pushes its address (net_formatChatLine output); the game_returnTo* hits are a loop-end compare; never read
+g_vecZero2 | OK | original: written by vec_initZero2; read or address taken by bullet_init, particle_init; matches the name / comment
+g_cursorPoint | OK | original: written by input_getCursorPos; read or address taken by input_getCursorPos; matches the name / comment
+g_lobbyReplyRecord | OK | original: written by none; read or address taken by net_receiveLobbyReply, net_resetConnection; matches the name / comment
+g_gameServerReply | OK | original: written by none; read or address taken by net_receiveGameServerReply, net_resetConnection; matches the name / comment
+g_textureSets | CLEARER -> g_textureManagerRecord | the whole TextureManager object at 0x83a5e0 (vtable word = g_textureManager, banks at +4..+0x18); not used by name in src -> g_textureManagerRecord
+g_vecOriginXyz | OK | original: written by vec_initOrigin; read or address taken by ObjectList_poseBones, actor_processFrame, armc_updatePartsPreview, armc_updateWeaponsPreview, map_loadPlayInfoFrom, particle_init ..; matches the name / comment
+g_vecZeroXyz | OK | original: written by vec_initZero; read or address taken by actor_processFrame, actor_setupFromParts, bullet_init, collisionTri_sweepSphere, match_frame, particle_update ..; matches the name / comment
+g_unused16 | OK | netq_reset rep-stos 16 dwords at 0xaef660; netq_receive stores 0 at [player] when a packet is taken (0x4a85c3 / 0x4a8607 / 0x4a869e); never read by index
+g_ahead | UNDECIDABLE | netq_receive takes the history packet when [player*128 + next] == 1, but every store in the exe is 0 (netq_reset rep stos, netq_receive 0x4a85ae / 0x4a85ed / 0x4a868f): "arrived ahead of its turn" is never set, so the meaning cannot be confirmed; the comment should say it is never set to 1
+g_serverPinged | OK | original: written by arena_mergeReceivedSessions, net_pingAllServers, room_mergeReceivedSessions; read or address taken by arena_mergeReceivedSessions, net_clearServers, room_mergeReceivedSessions; matches the name / comment
+g_serverPing | OK | original: written by net_pingAllServers, net_pingServer; read or address taken by arena_mergeReceivedSessions, net_clearServers, room_mergeReceivedSessions; matches the name / comment
+g_missionClearBuffer | OK | original: written by none; read or address taken by mission_loadBriefing; matches the name / comment
+g_modemProviderGuid | OK | original: written by dplay_enumConnections; read or address taken by dplay_initConnection; matches the name / comment
+g_serialProviderGuid | OK | original: written by dplay_enumConnections; read or address taken by dplay_initConnection; matches the name / comment
+g_realClear | OK | original: written by colour_initRealClear; read or address taken by none; matches the name / comment
+k_GUID_NULL | OK | original: written by none; read or address taken by dplay_enumSessionsCallback, net_addSession; matches the name / comment
+g_serverList | OK | original: written by net_addServerRecord; read or address taken by net_clearServerList, net_resetConnection; matches the name / comment
+g_lobbyReplyCode | OK | original: written by none; read or address taken by net_recv; matches the name / comment
+g_gameServerReplyCode | OK | original: written by none; read or address taken by net_recv; matches the name / comment
+g_asyncKeySeen | OK | input_asyncKeyPressed: [vk] cleared while the key is up, set 1 when it is first seen down (returns 1 only then)
+g_slotCams | OK | original: written by freeCam_keys; read or address taken by freeCam_mouseLook; matches the name / comment
+g_emptySlot0Asked | OK | original: written by armc_updatePartsPreview, armc_updateWeaponsPreview; read or address taken by armc_updatePartsPreview, armc_updateWeaponsPreview; matches the name / comment
+g_gameServerReportsOff | OK | original: written by gameList_keys, gameList_mouse; read or address taken by net_disconnect, net_handleSystemMessage; matches the name / comment
+g_retintAllParts | OK | original: written by armc_makeSession, armc_retintParts; read or address taken by armc_retintParts; matches the name / comment
+g_unusedStartupTable | OK | original: written by none; read or address taken by app_startupLoad; matches the name / comment
+g_unusedKeyTable2 | OK | original: written by none; read or address taken by input_clearKeyTable2; matches the name / comment

@@ -584,7 +584,7 @@ static void decal(u8 *s, u8 *b, const u8 *w, u32 *r, const u8 *h, const float *N
 		effect(s, r, WI->shotMode + 0x28, 0, imp, N, 0, (u32)P, (u32)uv, effect_size(w), 0);
 }
 
-/* the surface the bullet hit (Bullet.hit, a CollisionPlane: its corners, normal, object):
+/* the surface the bullet hit (Bullet.hit, a CollisionTri: its corners, normal, object):
    the corners and normal taken into the world through the object's matrix (relMatrix), the impact (kind + 0x1e), a
    mark unless the surface takes none (flag 0x10) or marks are off (0x83a9c8), the hit sound */
 static void hit_surface(u8 *s, u8 *b, const u8 *w, u32 *r)

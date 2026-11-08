@@ -5,12 +5,12 @@
 
 #define FIELD(type, obj, offset) GAME_VAR(type, (u8 *)RELOC(obj) + (offset))
 
-/* a shape (Model): its parts (ShapePart, each with its material: texture) */
+/* a shape (Shape): its parts (ShapePart, each with its material: texture) */
 #define PART_COUNT(shape) (((Shape *)(shape))->partCount)
 #define PART(shape, i) ((ShapePart *)((Shape *)(shape))->parts + (i))
 #define MATERIAL_SET(m) FIELD(void *, (*(u8 **)&g_textures), ((m) / 512) * 4 + 4)
 
-/* a model (a shape Manager): its shapes (items, 0x4c bytes each, count of them); its tint (tint[6]), on while bit 1 of
+/* a shape manager (ShapeManager): its shapes (items, 0x4c bytes each, count of them); its tint (tint[6]), on while bit 1 of
    bindFlags is set */
 #define SHAPE_COUNT(model) (((ShapeManager *)(model))->count)
 #define SHAPE(model, i) (((ShapeManager *)(model))->items + (i) * 0x4c)

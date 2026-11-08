@@ -1,0 +1,347 @@
+MessageSlot.speaker | never seen non-zero in play; reach: play a single-player mission whose map script runs command 26 MESSAGE (a briefing / radio message box at the top), sample while the box shows it
+MessageSlot.text | never seen non-zero in play; reach: as MessageSlot.speaker
+MessageSlot.colour | never seen non-zero in play; reach: as MessageSlot.speaker
+MessageSlot.unusedC | never seen non-zero in play; reach: as MessageSlot.speaker (only if the script's fourth argument is non-zero)
+MessageSlot.unused10 | never seen non-zero in play; reach: as MessageSlot.unusedC
+BlockOwner.blockSize | never seen non-zero in play; reach: not a live record (a view type); seen as Model.blockSize / ObjectList.blockSize: no session needed
+BlockOwner.block | never seen non-zero in play; reach: as BlockOwner.blockSize
+BlockOwner.ownsBlock | never seen non-zero in play; reach: needs a block allocated without given memory (take_block with mem 0): not done for the game's shapes / lists in play; sample a shape loaded outside a manager, if any (likely unreachable)
+Shape.ownsBlock | never seen non-zero in play; reach: as BlockOwner.ownsBlock: shapes come from the managers' memory; likely unreachable in normal play
+ShapePart.flags | never seen non-zero in play; reach: any match: the sampler must follow Model.parts (Stage.objectShapes / itemShapes models) to the 0x80-byte part records
+ShapePart.texName | never seen non-zero in play; reach: as ShapePart.flags (strings in the part records)
+ShapePart.texture | never seen non-zero in play; reach: as ShapePart.flags
+ShapePart.colourBase | never seen non-zero in play; reach: as ShapePart.flags
+ShapePart.vertexCount | never seen non-zero in play; reach: as ShapePart.flags
+ShapePart.vertices | never seen non-zero in play; reach: as ShapePart.flags
+ShapePart.normals | never seen non-zero in play; reach: as ShapePart.flags
+ShapePart.colours | never seen non-zero in play; reach: as ShapePart.flags
+ShapePart.texCoords | never seen non-zero in play; reach: as ShapePart.flags
+ShapePart.primCount | never seen non-zero in play; reach: as ShapePart.flags
+ShapePart.prims | never seen non-zero in play; reach: as ShapePart.flags
+ShapePart.box | never seen non-zero in play; reach: as ShapePart.flags
+ShapePrim.kind | never seen non-zero in play; reach: any match: follow ShapePart.prims (0xc-byte records)
+ShapePrim.indexCount | never seen non-zero in play; reach: as ShapePrim.kind
+ShapePrim.indices | never seen non-zero in play; reach: as ShapePrim.kind
+ListedObject.colours | never seen non-zero in play; reach: unreachable: no pre-lit object list is ever loaded (part_load / actor_loadWeapon pass lit 0)
+ObjectList.ownsBlock | never seen non-zero in play; reach: unreachable: every list is given the Player's memory
+ObjectList.skel | never seen non-zero in play; reach: unreachable: anim_setTime is only ever called with skeleton 0
+ObjectList.preLit | never seen non-zero in play; reach: unreachable (as ListedObject.colours)
+Actor.invulnerable | never seen non-zero in play; reach: a mission whose script runs command 14 on an actor (invulnerable boss / escort), sample during it
+Actor.scoreCounted | never seen non-zero in play; reach: start a match with a profile that has Ladder points (Scene.levelPoints > 0), or end a Ladder match after scoring frags
+Actor.onWarp | never seen non-zero in play; reach: skirmish / host on a map with WARP ZONE items (the host-h2 map has warpTo 14 / 15): stand on a warp zone
+Actor.warpWait | never seen non-zero in play; reach: take a WARP ZONE; sample within 2 s
+Actor.bigHead | never seen non-zero in play; reach: in a match type the big-head cheat code ("give me a big head" in English) in chat, then sample (cheat 3 turns it off)
+Actor.botWait | never seen non-zero in play; reach: a mission script with command 4 (a bot told to wait)
+Actor.cleared8838 | never seen non-zero in play; reach: none: only ever zeroed (actor_setupFromParts), nothing writes another value
+Actor.boosterTilt | never seen non-zero in play; reach: none with the shipped data: every booster's lean is 0.0 in Component.dat
+Actor.netFired | never seen non-zero in play; reach: mp session: the host receives a client's state packet with shots (client fires), sample between the packet and the next actor frame
+Actor.beepTimer | never seen non-zero in play; reach: mp: the client fires a guided (homing) weapon at the host's mech; sample on the host while the round homes
+Actor.lowDetail | never seen non-zero in play; reach: skirmish: stay far from an enemy bot (its name tag under 30 px wide on a 640-wide scale), sample its record
+Actor.lowDetailLoaded | never seen non-zero in play; reach: as Player.lowDetail (follows it the next frame)
+Actor.scriptFlag | never seen non-zero in play; reach: a mission script with command 11 on an actor
+Actor.outOfPlay | never seen non-zero in play; reach: a mission script with command 24 (script_holdActor)
+Actor.homedOn | never seen non-zero in play; reach: as Player.beepTimer (a guided round of another machine homing on the actor)
+Actor.killsCounted | never seen non-zero in play; reach: play a Ladder match, score a kill, reach the match end (ladder_addMatchScores)
+Actor.deathsCounted | never seen non-zero in play; reach: play a Ladder match, die once, reach the match end
+Actor.aimTime | never seen non-zero in play; reach: skirmish: select a lock-on weapon (targetingTime > 0: missile / guided launcher), keep an enemy bot inside the detection cone and in sight
+Actor.lockAnim | never seen non-zero in play; reach: as Player.aimTime, held until the lock is made (aimTime > lockOnTime x targetingTime); sample within 0.25 s
+MapObject.trigger | never seen non-zero in play; reach: none in shipped maps (0 everywhere); a map whose object file sets a trigger (flag 8 / 0x10 object)
+MapObject.animPeriod | never seen non-zero in play; reach: a map with an object whose type sets animPeriod (flag 8 / 0x10 objects); none known in the shipped maps
+MapObject.poseStale | never seen non-zero in play; reach: set and cleared within mapObject_frame; sample inside the call (hook) on an animated object (host-h2 map)
+MapObject.waitTime | never seen non-zero in play; reach: a map with a timed object (flag 0x10)
+ObjectType.name | never seen non-zero in play; reach: sample map_loadObjectInfoFrom's stack block during map load (a hook in object_addObjectBy), any map
+ObjectType.flags | never seen non-zero in play; reach: as ObjectType.name
+ObjectType.trigger | never seen non-zero in play; reach: as ObjectType.name (0 in shipped maps)
+ObjectType.animPeriod | never seen non-zero in play; reach: as ObjectType.name
+ObjectType.animName | never seen non-zero in play; reach: as ObjectType.name
+ObjectType.place | never seen non-zero in play; reach: as ObjectType.name
+ObjectType.rotation | never seen non-zero in play; reach: as ObjectType.name
+ObjectType.glowSize | never seen non-zero in play; reach: as ObjectType.name (a light object)
+ObjectType.glowColour | never seen non-zero in play; reach: as ObjectType.name (a light object)
+MapItem.warpPitch | never seen non-zero in play; reach: a map whose warp zones set a destination pitch (r[3] of the play file); the host-h2 map's are 0
+Bullet.trailCount | never seen non-zero in play; reach: fire a rocket / trail weapon (ActorItem.shotMode 3)
+Bullet.homingPoint | never seen non-zero in play; reach: the local player fires a guided weapon (ActorItem.guidance > 0) with no locked target
+SpaceNode.item | never seen non-zero in play; reach: any match
+SpaceNode.block | never seen non-zero in play; reach: any match
+SpaceNode.newer | never seen non-zero in play; reach: any match
+SpaceNode.next | never seen non-zero in play; reach: any match
+SpaceBlock.low | never seen non-zero in play; reach: any match
+SpaceBlock.high | never seen non-zero in play; reach: any match
+SpaceBlock.items | never seen non-zero in play; reach: any match
+SpaceBlock.itemCount | never seen non-zero in play; reach: any match
+SpaceBlock.split | never seen non-zero in play; reach: any match
+SpaceBlock.children | never seen non-zero in play; reach: any match
+SpaceBlock.poolPrev | never seen non-zero in play; reach: any match
+SpaceBlock.poolNext | never seen non-zero in play; reach: any match
+Space.ownsBlock | never seen non-zero in play; reach: the only caller (match_start.c) always passes Stage.spaceData, so it is 0 in the game
+PartInfo.name | never seen non-zero in play; reach: ARM CENTER weapons page, pick a slot and scroll the parts
+PartInfo.slotType | never seen non-zero in play; reach: ARM CENTER weapons page, pick a slot and scroll the parts
+PartInfo.ammoType | never seen non-zero in play; reach: ARM CENTER weapons page, pick a slot and scroll the parts
+PartInfo.ammoPerShot | never seen non-zero in play; reach: ARM CENTER weapons page, pick a slot and scroll the parts
+PartInfo.burst | never seen non-zero in play; reach: ARM CENTER weapons page, pick a slot and scroll the parts
+PartInfo.damageType | never seen non-zero in play; reach: ARM CENTER weapons page, pick a slot and scroll the parts
+PartInfo.damage | never seen non-zero in play; reach: ARM CENTER weapons page, pick a slot and scroll the parts
+PartInfo.range | never seen non-zero in play; reach: ARM CENTER weapons page, pick a slot and scroll the parts
+PartInfo.speed | never seen non-zero in play; reach: ARM CENTER weapons page, pick a slot and scroll the parts
+PartInfo.spread | never seen non-zero in play; reach: ARM CENTER weapons page, pick a slot and scroll the parts
+PartInfo.hitRange | never seen non-zero in play; reach: ARM CENTER weapons page, pick a slot and scroll the parts
+PartInfo.splashRadius | never seen non-zero in play; reach: ARM CENTER weapons page, pick a slot and scroll the parts
+PartInfo.splashBorderDamage | never seen non-zero in play; reach: ARM CENTER weapons page, pick a slot and scroll the parts
+PartInfo.cycleTime | never seen non-zero in play; reach: ARM CENTER weapons page, pick a slot and scroll the parts
+PartInfo.guidance | never seen non-zero in play; reach: ARM CENTER weapons page, pick a slot and scroll the parts
+PartInfo.targetingTime | never seen non-zero in play; reach: ARM CENTER weapons page, pick a slot and scroll the parts
+PartInfo.weight | never seen non-zero in play; reach: ARM CENTER weapons page, pick a slot and scroll the parts
+NetSlot.waiting | never seen non-zero in play; reach: a network match with another player sending packets (mp)
+DPSessionDesc2.players | never seen non-zero in play; reach: a client listing a hosted LAN arena (arena list over TCP/IP)
+DPSessionDesc2.password | never seen non-zero in play; reach: unreachable (the game never passes a DirectPlay password)
+DPSessionDesc2.reserved1 | never seen non-zero in play; reach: unreachable
+DPSessionDesc2.reserved2 | never seen non-zero in play; reach: unreachable
+ArenaRecord.kind | never seen non-zero in play; reach: host an arena on the lobby server, and list arenas from it
+ArenaRecord.name | never seen non-zero in play; reach: host an arena on the lobby server, and list arenas from it
+ArenaRecord.address | never seen non-zero in play; reach: host an arena on the lobby server, and list arenas from it
+ArenaRecord.map | never seen non-zero in play; reach: host an arena on the lobby server, and list arenas from it
+ArenaRecord.maxPlayers | never seen non-zero in play; reach: host an arena on the lobby server, and list arenas from it
+ArenaRecord.players | never seen non-zero in play; reach: host an arena on the lobby server, and list arenas from it
+ArenaRecord.gameMode | never seen non-zero in play; reach: host an arena on the lobby server, and list arenas from it
+ArenaRecord.fragLimit | never seen non-zero in play; reach: host an arena on the lobby server, and list arenas from it
+ArenaRecord.timeLimit | never seen non-zero in play; reach: host an arena on the lobby server, and list arenas from it
+ArenaRecord.rotation | never seen non-zero in play; reach: host an arena on the lobby server, and list arenas from it
+ArenaRecord.replyKind | never seen non-zero in play; reach: list arenas from the lobby server
+ArenaRecord.locked | never seen non-zero in play; reach: host an arena on the lobby server, and list arenas from it
+ArenaRecord.password | never seen non-zero in play; reach: host an arena on the lobby server, and list arenas from it
+RoomRecord.kind | never seen non-zero in play; reach: host a Ladder game on the game server and list rooms
+RoomRecord.map | never seen non-zero in play; reach: host a Ladder game on the game server and list rooms
+RoomRecord.maxPlayers | never seen non-zero in play; reach: host a Ladder game on the game server and list rooms
+RoomRecord.players | never seen non-zero in play; reach: host a Ladder game on the game server and list rooms
+RoomRecord.gameMode | never seen non-zero in play; reach: host a Ladder game on the game server and list rooms
+RoomRecord.fragLimit | never seen non-zero in play; reach: host a Ladder game on the game server and list rooms
+RoomRecord.timeLimit | never seen non-zero in play; reach: host a Ladder game on the game server and list rooms
+RoomRecord.rotation | never seen non-zero in play; reach: host a Ladder game on the game server and list rooms
+RoomRecord.replyKind | never seen non-zero in play; reach: list rooms on the game server
+RoomRecord.locked | never seen non-zero in play; reach: host a Ladder game on the game server and list rooms
+SessionDesc.map | never seen non-zero in play; reach: host an arena on a map other than the first and list it over LAN
+SessionDesc.timeLimit | never seen non-zero in play; reach: host a LAN arena with a time limit and list it
+SessionEntry.map | never seen non-zero in play; reach: list a game hosted on another map
+SessionEntry.maxPlayers | never seen non-zero in play; reach: open the arena list with a hosted game
+SessionEntry.players | never seen non-zero in play; reach: open the arena list with a hosted game
+SessionEntry.ping | never seen non-zero in play; reach: list arenas from the lobby server / rooms from the game server
+SessionEntry.timeLimit | never seen non-zero in play; reach: join a LAN arena with a time limit
+SessionEntry.locked | never seen non-zero in play; reach: list a password-locked game from a server
+MapChoice.type | never seen non-zero in play; reach: arena create form > ADVANCED map list, step a map's game type
+AccountPacket.kind | never seen non-zero in play; reach: log in to the Ladder game server
+AccountPacket.name | never seen non-zero in play; reach: log in to the Ladder game server
+AccountPacket.password | never seen non-zero in play; reach: log in to the Ladder game server
+AccountPacket.email | never seen non-zero in play; reach: register a new Ladder ID
+AccountPacket.address | never seen non-zero in play; reach: log in to the Ladder game server
+AccountPacket.mech | never seen non-zero in play; reach: register a new Ladder ID
+AccountPacket.colours | never seen non-zero in play; reach: register a new Ladder ID
+AccountForm.name | never seen non-zero in play; reach: Ladder account panel, change the password
+AccountForm.password | never seen non-zero in play; reach: Ladder account panel, change the password
+AccountForm.email | never seen non-zero in play; reach: Ladder account panel, change the password
+GameSettings.name | never seen non-zero in play; reach: Ladder room CREATE form or the arena create form
+GameSettings.map | never seen non-zero in play; reach: Ladder room CREATE form or the arena create form
+GameSettings.maxPlayers | never seen non-zero in play; reach: Ladder room CREATE form or the arena create form
+GameSettings.rotation | never seen non-zero in play; reach: Ladder room CREATE form or the arena create form
+GameSettings.mode | never seen non-zero in play; reach: Ladder room CREATE form or the arena create form
+GameSettings.limit | never seen non-zero in play; reach: Ladder room CREATE form or the arena create form
+GameSettings.password | never seen non-zero in play; reach: Ladder room CREATE form or the arena create form
+GameSettings.locked | never seen non-zero in play; reach: Ladder room CREATE form or the arena create form
+RankedPlayer.kind | never seen non-zero in play; reach: open the Ladder ranking page (formsB already loads it; the sampler reads the list, where it stays 0)
+GamePacket.number | never seen non-zero in play; reach: any network match (host + client), a game packet every 3 s
+GamePacket.kind | never seen non-zero in play; reach: any network match (host + client), a game packet every 3 s
+GamePacket.player | never seen non-zero in play; reach: any network match (host + client), a game packet every 3 s
+GamePacket.map | never seen non-zero in play; reach: any network match (host + client), a game packet every 3 s
+GamePacket.nextMap | never seen non-zero in play; reach: any network match (host + client), a game packet every 3 s
+GamePacket.mode | never seen non-zero in play; reach: any network match (host + client), a game packet every 3 s
+GamePacket.nextMode | never seen non-zero in play; reach: any network match (host + client), a game packet every 3 s
+GamePacket.mapNumber | never seen non-zero in play; reach: any network match (host + client), a game packet every 3 s
+GamePacket.elapsed | never seen non-zero in play; reach: any network match (host + client), a game packet every 3 s
+GamePacket.clockFraction | never seen non-zero in play; reach: any network match (host + client), a game packet every 3 s
+GamePacket.timePlayed | never seen non-zero in play; reach: any network match (host + client), a game packet every 3 s
+GamePacket.timeFraction | never seen non-zero in play; reach: any network match (host + client), a game packet every 3 s
+GamePacket.resendAsked | never seen non-zero in play; reach: any network match (host + client), a game packet every 3 s
+GamePacket.kills | never seen non-zero in play; reach: any network match (host + client), a game packet every 3 s
+GamePacket.deaths | never seen non-zero in play; reach: any network match (host + client), a game packet every 3 s
+GamePacket.teamScores | never seen non-zero in play; reach: any network match (host + client), a game packet every 3 s
+GamePacket.lastPickup | never seen non-zero in play; reach: any network match (host + client), a game packet every 3 s
+GamePacket.checkTable | never seen non-zero in play; reach: any network match (host + client), a game packet every 3 s
+GamePacket.checkIndex | never seen non-zero in play; reach: any network match (host + client), a game packet every 3 s
+GamePacket.checkValue | never seen non-zero in play; reach: any network match (host + client), a game packet every 3 s
+GamePacket.checkIndex2 | never seen non-zero in play; reach: any network match (host + client), a game packet every 3 s
+GamePacket.checkValue2 | never seen non-zero in play; reach: any network match (host + client), a game packet every 3 s
+PlayerRecordPacket.name | never seen non-zero in play; reach: finish a Ladder match (ladder_checkAndSendRecord)
+PlayerRecordPacket.games | never seen non-zero in play; reach: finish a Ladder match (ladder_checkAndSendRecord)
+PlayerRecordPacket.kills | never seen non-zero in play; reach: finish a Ladder match (ladder_checkAndSendRecord)
+PlayerRecordPacket.deaths | never seen non-zero in play; reach: finish a Ladder match (ladder_checkAndSendRecord)
+PlayerRecordPacket.exp | never seen non-zero in play; reach: finish a Ladder match (ladder_checkAndSendRecord)
+PlayerRecordPacket.level | never seen non-zero in play; reach: finish a Ladder match (ladder_checkAndSendRecord)
+PlayerRecordPacket.power | never seen non-zero in play; reach: finish a Ladder match (ladder_checkAndSendRecord)
+PilotStats.level | never seen non-zero in play; reach: log in to the Ladder game server
+PilotStats.exp | never seen non-zero in play; reach: log in to the Ladder game server
+PilotStats.rank | never seen non-zero in play; reach: open the Ladder account page (rank request 29)
+PilotStats.power | never seen non-zero in play; reach: log in to the Ladder game server
+PilotStats.games | never seen non-zero in play; reach: log in to the Ladder game server
+PilotStats.kills | never seen non-zero in play; reach: log in to the Ladder game server
+PilotStats.deaths | never seen non-zero in play; reach: log in to the Ladder game server
+PilotStats.killRate | never seen non-zero in play; reach: log in to the Ladder game server
+SkirmishInfo.gameMode | never seen non-zero in play; reach: open the SKIRMISH screen
+SkirmishInfo.timeLimit | never seen non-zero in play; reach: open the SKIRMISH screen
+SkirmishInfo.fragLimit | never seen non-zero in play; reach: open the SKIRMISH screen
+ViewQuad.texture | never seen non-zero in play; reach: any match frame with effects (trails, billboards)
+ViewQuad.uv0 | never seen non-zero in play; reach: any match frame with effects (trails, billboards)
+ViewQuad.uv1 | never seen non-zero in play; reach: any match frame with effects (trails, billboards)
+ViewQuad.colour | never seen non-zero in play; reach: any match frame with effects (trails, billboards)
+ViewQuad.points | never seen non-zero in play; reach: any match frame with effects (trails, billboards)
+ViewQuad.kind | never seen non-zero in play; reach: any match frame with effects (trails, billboards)
+ViewTriangle.points | never seen non-zero in play; reach: transparent meshes / effects in a match
+ViewTriangle.matrix | never seen non-zero in play; reach: transparent meshes / effects in a match
+ViewTriangle.kind | never seen non-zero in play; reach: transparent meshes / effects in a match
+ViewVolume.ownsBlock | never seen non-zero in play; reach: never 1 in the game (Scene.view gets Scene.viewMemory)
+ViewVolume.segmentCount | never seen non-zero in play; reach: only the mech-test view (match_mechTestFrame with Scene.debugGrid 1) or Scene.markLights (never set) add lines
+ViewVolume.entriesFull | never seen non-zero in play; reach: needs over 10000 queued parts in a frame (not reachable in normal play)
+ViewVolume.matricesFull | never seen non-zero in play; reach: needs over 1000 matrices a frame
+ViewVolume.trianglesFull | never seen non-zero in play; reach: needs over 4000 queued triangles a frame
+ViewVolume.quadsFull | never seen non-zero in play; reach: needs over 400 quads a frame (heavy effects: many trails and explosions at once)
+ViewVolume.segmentsFull | never seen non-zero in play; reach: needs over 10000 lines a frame
+Skeleton.blockSize | never seen non-zero in play; reach: any match or ARM CENTER (skeletons loaded)
+Skeleton.block | never seen non-zero in play; reach: any match or ARM CENTER (skeletons loaded)
+Skeleton.ownsBlock | never seen non-zero in play; reach: any match or ARM CENTER (skeletons loaded)
+Skeleton.boneCount | never seen non-zero in play; reach: any match or ARM CENTER (skeletons loaded)
+Skeleton.bones | never seen non-zero in play; reach: any match or ARM CENTER (skeletons loaded)
+Skeleton.posKeyTotal | never seen non-zero in play; reach: any match or ARM CENTER (skeletons loaded)
+Skeleton.rotKeyTotal | never seen non-zero in play; reach: any match or ARM CENTER (skeletons loaded)
+Skeleton.duration | never seen non-zero in play; reach: any match or ARM CENTER (skeletons loaded)
+Bone.parent | never seen non-zero in play; reach: any match or ARM CENTER (skeletons loaded)
+Bone.pos | never seen non-zero in play; reach: any match or ARM CENTER (skeletons loaded)
+Bone.rotation | never seen non-zero in play; reach: any match or ARM CENTER (skeletons loaded)
+Bone.posKeyCount | never seen non-zero in play; reach: any match or ARM CENTER (skeletons loaded)
+Bone.posKeys | never seen non-zero in play; reach: any match or ARM CENTER (skeletons loaded)
+Bone.rotKeyCount | never seen non-zero in play; reach: any match or ARM CENTER (skeletons loaded)
+Bone.rotKeys | never seen non-zero in play; reach: any match or ARM CENTER (skeletons loaded)
+PosKey.time | never seen non-zero in play; reach: any match or ARM CENTER (skeletons loaded)
+PosKey.length | never seen non-zero in play; reach: any match or ARM CENTER (skeletons loaded)
+PosKey.pos | never seen non-zero in play; reach: any match or ARM CENTER (skeletons loaded)
+PosKey.delta | never seen non-zero in play; reach: any match or ARM CENTER (skeletons loaded)
+RotKey.time | never seen non-zero in play; reach: any match or ARM CENTER (skeletons loaded)
+RotKey.length | never seen non-zero in play; reach: any match or ARM CENTER (skeletons loaded)
+RotKey.rotation | never seen non-zero in play; reach: any match or ARM CENTER (skeletons loaded)
+RotKey.step | never seen non-zero in play; reach: any match or ARM CENTER (skeletons loaded)
+ShapeManager.ownsBlock | never seen non-zero in play; reach: every caller in the game gives memory (match_start: objectShapeData, itemShapeData, the player records' ShapeData)
+SkelManager.ownsBlock | never seen non-zero in play; reach: every caller gives memory (match_start, model_sets)
+PlayerRecord.flag | never seen non-zero in play; reach: a network match with a Save\<name>.BMP flag picture
+PlayerRecord.flagChanged | never seen non-zero in play; reach: a network match with a Save\<name>.BMP flag picture
+TreeNode.name | never seen non-zero in play; reach: any shape / skeleton load
+TreeNode.index | never seen non-zero in play; reach: any shape / skeleton load
+TreeNode.left | never seen non-zero in play; reach: any shape / skeleton load
+TreeNode.right | never seen non-zero in play; reach: any shape / skeleton load
+TexSlot.index | never seen non-zero in play; reach: any texture load (main menu)
+TexSlot.record | never seen non-zero in play; reach: any texture load
+TexSlot.glTexture | never seen non-zero in play; reach: any texture load
+TexSlot.next | never seen non-zero in play; reach: any texture load
+TexSlot.prev | never seen non-zero in play; reach: any texture load
+TextureBank.format | never seen non-zero in play; reach: no in-game action makes it non-zero: always 0, the dat format, as the comment says; formats 1/2 unreachable in game
+TextureBank.clearedCd13c | never seen non-zero in play; reach: no in-game action makes it non-zero: always 0, as its name says
+TextureBank.clearedCd140 | never seen non-zero in play; reach: no in-game action makes it non-zero: always 0
+GroundLayer.kind | never seen non-zero in play; reach: load a map whose map file has ground layers
+GroundLayer.origin | never seen non-zero in play; reach: load a map whose map file has ground layers
+GroundLayer.rows | never seen non-zero in play; reach: load a map whose map file has ground layers
+GroundLayer.cols | never seen non-zero in play; reach: load a map whose map file has ground layers
+GroundLayer.cellSize | never seen non-zero in play; reach: load a map whose map file has ground layers
+GroundLayer.heightScale | never seen non-zero in play; reach: load a map whose map file has ground layers
+GroundLayer.texScale | never seen non-zero in play; reach: load a map whose map file has ground layers
+GroundLayer.water | never seen non-zero in play; reach: load a map whose map file has ground layers
+GroundLayer.texture | never seen non-zero in play; reach: load a map whose map file has ground layers
+GroundLayer.heights | never seen non-zero in play; reach: load a map whose map file has ground layers
+GroundLayer.drawnCells | never seen non-zero in play; reach: load a map whose map file has ground layers
+GroundLayer.points | never seen non-zero in play; reach: load a map whose map file has ground layers
+GroundLayer.normals | never seen non-zero in play; reach: load a map whose map file has ground layers
+GroundLayer.colours | never seen non-zero in play; reach: load a map whose map file has ground layers
+GroundLayer.uv | never seen non-zero in play; reach: load a map whose map file has ground layers
+GroundLayer.indexCapacity | never seen non-zero in play; reach: load a map whose map file has ground layers
+GroundLayer.indices | never seen non-zero in play; reach: load a map whose map file has ground layers
+GroundLayer.indexCount | never seen non-zero in play; reach: load a map whose map file has ground layers
+GroundLayer.stripCapacity | never seen non-zero in play; reach: load a map whose map file has ground layers
+GroundLayer.strips | never seen non-zero in play; reach: load a map whose map file has ground layers
+GroundLayer.stripCount | never seen non-zero in play; reach: load a map whose map file has ground layers
+GroundLayer.waterPoints | never seen non-zero in play; reach: load a map whose map file has ground layers
+GroundLayer.waterColours | never seen non-zero in play; reach: load a map whose map file has ground layers
+GroundLayer.waterUv | never seen non-zero in play; reach: load a map whose map file has ground layers
+GroundLayer.waterIndices | never seen non-zero in play; reach: load a map whose map file has ground layers
+GroundLayer.waterPrims | never seen non-zero in play; reach: load a map whose map file has ground layers
+Trigger.time | never seen non-zero in play; reach: play a mission with a timed trigger
+Trigger.radiusSq | never seen non-zero in play; reach: play a mission whose trigger fires on the player's approach
+SpawnRecord.pitch | never seen non-zero in play; reach: a mission map whose actors face up/down
+SpawnRecord.yaw | never seen non-zero in play; reach: a mission map with turned spawns
+SpawnRecord.scriptFlag | never seen non-zero in play; reach: a mission map actor with the flag set
+BmpFile.vtable | never seen non-zero in play; reach: a match start (tex_textureFileExist) or the Save\<name>.BMP flag load (playerRecord_loadFlag)
+BmpFile.file | never seen non-zero in play; reach: a match start (tex_textureFileExist) or the Save\<name>.BMP flag load (playerRecord_loadFlag)
+BmpFile.type | never seen non-zero in play; reach: a match start (tex_textureFileExist) or the Save\<name>.BMP flag load (playerRecord_loadFlag)
+BmpFile.fileSize | never seen non-zero in play; reach: a match start (tex_textureFileExist) or the Save\<name>.BMP flag load (playerRecord_loadFlag)
+BmpFile.dataOffset | never seen non-zero in play; reach: a match start (tex_textureFileExist) or the Save\<name>.BMP flag load (playerRecord_loadFlag)
+BmpFile.infoSize | never seen non-zero in play; reach: a match start (tex_textureFileExist) or the Save\<name>.BMP flag load (playerRecord_loadFlag)
+BmpFile.bmpWidth | never seen non-zero in play; reach: a match start (tex_textureFileExist) or the Save\<name>.BMP flag load (playerRecord_loadFlag)
+BmpFile.bmpHeight | never seen non-zero in play; reach: a match start (tex_textureFileExist) or the Save\<name>.BMP flag load (playerRecord_loadFlag)
+BmpFile.planes | never seen non-zero in play; reach: a match start (tex_textureFileExist) or the Save\<name>.BMP flag load (playerRecord_loadFlag)
+BmpFile.bitCount | never seen non-zero in play; reach: a match start (tex_textureFileExist) or the Save\<name>.BMP flag load (playerRecord_loadFlag)
+BmpFile.compression | never seen non-zero in play; reach: a match start (tex_textureFileExist) or the Save\<name>.BMP flag load (playerRecord_loadFlag)
+BmpFile.width | never seen non-zero in play; reach: a match start (tex_textureFileExist) or the Save\<name>.BMP flag load (playerRecord_loadFlag)
+BmpFile.height | never seen non-zero in play; reach: a match start (tex_textureFileExist) or the Save\<name>.BMP flag load (playerRecord_loadFlag)
+TimeSync.vtable | never seen non-zero in play; reach: no in-game action makes it non-zero: 0 after TimeSync_clear, as the comment says; the load timer's set only by TimeSync_dtor at exit
+SpaceUnit.poolPrev | never seen non-zero in play; reach: a map load with units still free
+SpaceUnit.poolNext | never seen non-zero in play; reach: a map load with free units
+ParticleDesc.kind | never seen non-zero in play; reach: any match with shots and boosters
+ParticleDesc.owner | never seen non-zero in play; reach: a match with shots
+ParticleDesc.pos | never seen non-zero in play; reach: a match with shots
+ParticleDesc.target | never seen non-zero in play; reach: a match with shots
+ParticleDesc.matrixFrom | never seen non-zero in play; reach: a match with shots
+ParticleDesc.markCorners | never seen non-zero in play; reach: shoot a wall with high detail on (marks)
+ParticleDesc.markCoords | never seen non-zero in play; reach: shoot a wall with marks on
+ParticleDesc.size | never seen non-zero in play; reach: a match with shots
+ParticleDesc.isQuad | never seen non-zero in play; reach: fire a beam weapon
+ParticleDesc.quad | never seen non-zero in play; reach: fire a beam weapon
+ParticleDesc.quadPoints | never seen non-zero in play; reach: fire a beam weapon
+ScenePath.opened | never seen non-zero in play; reach: no in-game action makes it non-zero: always 0
+Stage.nearObjects | never seen non-zero in play; reach: move or shoot near a moving map object (lift, door)
+Stage.layerParts | never seen non-zero in play; reach: a map with ground layers
+Stage.fogOn | never seen non-zero in play; reach: a map with fog
+Stage.pool | never seen non-zero in play; reach: a map with ground layers
+Stage.poolUsed | never seen non-zero in play; reach: a map with ground layers
+Stage.lockTimes | never seen non-zero in play; reach: lock on to an enemy with a lock-on weapon
+Stage.lockIds | never seen non-zero in play; reach: lock on to an enemy
+Stage.floorClock | never seen non-zero in play; reach: a map with the animated floor (floorMode 2)
+Stage.pointCount | never seen non-zero in play; reach: no in-game action makes it non-zero: always 0
+Stage.points | never seen non-zero in play; reach: no in-game action makes it non-zero: all zero
+Stage.defaultColour | never seen non-zero in play; reach: no in-game action makes it non-zero: never non-zero in samples
+Stage.msgWrite | never seen non-zero in play; reach: a mission map whose script shows a MESSAGE (command 26)
+Stage.msgRead | never seen non-zero in play; reach: a mission map with script messages
+Stage.flagAtlas | never seen non-zero in play; reach: a player whose Save\<name>.BMP flag exists
+Stage.shotgunArena | never seen non-zero in play; reach: host a SHOTGUN game (types 4 / 5)
+Stage.ionCannonArena | never seen non-zero in play; reach: host an ION CANNON game (6 / 7)
+Stage.rocketArena | never seen non-zero in play; reach: host a ROCKET ARENA game (8 / 9)
+Stage.gladiator | never seen non-zero in play; reach: host a GLADIATOR game (10 / 11)
+Stage.speakers | never seen non-zero in play; reach: no in-game action makes it non-zero: never written
+Stage.texts | never seen non-zero in play; reach: no in-game action makes it non-zero: never written
+Stage.shadingCached | never seen non-zero in play; reach: load a map a second time after a mode-1 load wrote its shading cache
+Stage.scriptMode | never seen non-zero in play; reach: a mission map that runs script command 27
+Stage.scriptHoldsPlay | never seen non-zero in play; reach: script command 27 mode 1 (no shipped map)
+Stage.triggerFired | never seen non-zero in play; reach: a mission where a trigger fires
+Stage.lockHeld | never seen non-zero in play; reach: lock on to an enemy with a lock-on weapon
+Stage.groundLayerCount | never seen non-zero in play; reach: a map with ground layers
+Stage.lockCount | never seen non-zero in play; reach: lock on to an enemy
+Stage.suddenDeath | never seen non-zero in play; reach: host a SUDDEN DEATH game (types 2 / 3)
+Stage.floorMode | never seen non-zero in play; reach: a map with a sky floor
+Stage.floorFrame | never seen non-zero in play; reach: a map with floorMode 2
+TunnelRing.cleared0 | never seen non-zero in play; reach: no in-game action makes it non-zero: always 0
+TunnelRing.cleared4 | never seen non-zero in play; reach: no in-game action makes it non-zero: always 0
+TunnelRing.cleared1938 | never seen non-zero in play; reach: no in-game action makes it non-zero: always 0
+TunnelRing.cleared326c | never seen non-zero in play; reach: no in-game action makes it non-zero: always 0
+Scene.previewTurn | never seen non-zero in play; reach: ARM CENTER, hold the right mouse button over the preview and drag
+Scene.unused233ca00 | never seen non-zero in play; reach: unreachable: the game only writes 0 (never set)
+Scene.unused233cc44 | never seen non-zero in play; reach: unreachable: the game only writes 0 (never set)
+Scene.unused233cc2c | never seen non-zero in play; reach: unreachable: the game only writes 0 (never set)
+Scene.connectPending | never seen non-zero in play; reach: join a hosted network match as a client (match_frame announces the connection), sampled between set and send
+Scene.quitPlayer | never seen non-zero in play; reach: quit a network match from the Esc menu (as a client)
+Scene.quitPending | never seen non-zero in play; reach: quit a network match (client) from the Esc menu
+Scene.changePlayer | never seen non-zero in play; reach: Esc menu, change team (or spectate) in a team network match
+Scene.changeTeam | never seen non-zero in play; reach: Esc menu in a team network match, change team
+Scene.changePending | never seen non-zero in play; reach: Esc menu team change in a network team match

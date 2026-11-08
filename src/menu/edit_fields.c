@@ -239,8 +239,8 @@ void (chat_openTextField)(int x, int y, int maxLength)
 	g_textFieldOpen = 1;
 	g_chatTyping = 1;
 	menu_clearInputBuffer(maxLength);
-	g_matchChatCaretX = x;
-	g_matchChatCaretY = y;
+	g_matchTextFieldX = x;
+	g_matchTextFieldY = y;
 	g_menuKeyGuard = 20.0f;
 	editField_createEdit(maxLength);
 }

@@ -1,0 +1,348 @@
+U1 C: 347 names; OK 341, WRONG 0, CLEARER 6, UNDECIDABLE 0
+MessageSlot.speaker | OK | script_pushMessage (small.c) stores command 26 arg a, checked against Stage.speakers in script_processCommandBy; hud_drawMessageBox reads only text/colour
+MessageSlot.text | OK | hud_drawMessageBox: strcpy from scene->msgText[msg->text][offset] (four 0x41 lines)
+MessageSlot.colour | OK | hud_drawMessageBox: < 16 indexes g_textColours, else text_setColor(1,1,1,0)
+MessageSlot.unusedC | OK | script_pushMessage writes d; no reader in src; original reads only via lea in hud_drawMessageBox (+4/+8)
+MessageSlot.unused10 | OK | script_pushMessage writes d a second time; never read
+BlockOwner.blockSize | OK | take_block (shapes_skeletons.c): operator_new(blockSize) or size < blockSize fatal
+BlockOwner.block | OK | take_block sets it; free_owned (classes.c / small.c) deletes and clears it when ownsBlock == 1
+BlockOwner.ownsBlock | OK | take_block sets 1 on operator_new, 0 for given memory (own_flag); free_owned tests == 1
+Shape.ownsBlock | OK | shape_read -> take_block (own_flag 1); Shape_release -> free_owned
+ShapePart.flags | OK | view_volume.c: &1 draw_transparent, &2 own colours (item_colours, part_addColour), &4 no cull, &8 front cull, &0x10 no depth test; collision_space.c &0x20 skipped, &1 -> plane flag 0x10
+ShapePart.texName | OK | shape_bindTextureBy: name at part+4, suffix appended, tex_getIdByName
+ShapePart.texture | OK | shape_read sets -1, shape_bindTextureBy sets tex id; ViewVolume_queueModel list = texture + 1
+ShapePart.colourBase | OK | ViewVolume_queueModel: e[1] = colours + colourBase (u32 index = vertex)
+ShapePart.vertexCount | OK | shape_read sizes the four arrays by it; draw_opaque passes it to the array pointers
+ShapePart.vertices | OK | shape_read 12 bytes x n; glVertexPointer(3, GL_FLOAT)
+ShapePart.normals | OK | shape_read 12 bytes x n; OBJ loader / shading read them
+ShapePart.colours | OK | shape_read 4 bytes x n; item_colours returns them for an unlit part
+ShapePart.texCoords | OK | shape_read 8 bytes x n; glTexCoordPointer(2, GL_FLOAT) in draw_opaque
+ShapePart.primCount | OK | shape_read reads primCount 12-byte prims; ViewVolume_queueModel skips <= 0; draw loops
+ShapePart.prims | OK | shape_read: prims after the arrays; draw_opaque glDrawElements(pg[0], pg[1], .., pg[2])
+ShapePart.box | OK | shape_read widens Shape.low/high by box[0..2]/box[3..5]; queueModel culls by lo/hi
+ShapePrim.kind | OK | draw_opaque: glDrawElements mode; 4 -> c/3 triangles, 5/6 -> c-2; ground water prims kind 6
+ShapePrim.indexCount | OK | shape_read reads indexCount dwords; glDrawElements count
+ShapePrim.indices | OK | shape_read: block + at, 4 bytes each; glDrawElements index pointer
+ListedObject.colours | OK | ObjectList_load: entry[2] = block + colours only when preLit == 1 and a shape, else 0; relight writes, ObjectList_queue passes it
+ObjectList.ownsBlock | CLEARER | comment says "the Player's memory": the record is Actor (memory after the list, e.g. Actor.headModelMem); say "the actor's memory"
+ObjectList.skel | OK | anim_setTime sets ol->skel = i; skeletons[skel] read by ObjectList_queue / poseBones; every anim_setTime call passes 0
+ObjectList.preLit | OK | ObjectList_load ol->preLit = lit; == 1 sizes colours and relights; both callers pass lit 0
+Actor.invulnerable | OK | weapons.c:95 actor_takeDamage returns when == 1; command 14 sets, 12 and setup clear
+Actor.scoreCounted | OK | ladder_addMatchScores: g_ladderExp += score - scoreCounted, then = score; match_frame sets both from levelPoints
+Actor.onWarp | OK | item_pickup kind 4 sets 1; item_update clears for live actors and resets lastWarp when 0
+Actor.warpWait | OK | item_pickup: warp only when !(warpWait > 0), then 2.0; actor_frame countdown
+Actor.bigHead | OK | cheat 2 sets / 3 clears; stateFlags |= 0x1000; actor_frame glScalef 5 on the head when 0x1000
+Actor.botWait | OK | command 4 sets, actor_frame counts down by dt; bot goal/look block skipped while > 0
+Actor.cleared8838 | OK | only memcpy(g_vecZero) in actor_setupFromParts; no other use
+Actor.boosterTilt | OK | actor_slots.c:746 = BoosterType.lean; actor_frame.c:819 pose[1] = (1 - climb)(pitch + 900) x this x 1/1800
+Actor.netFired | OK | net_processGamePacket sets 1; actor_processFrame takes the sent rounds when == 1, clears after
+Actor.beepTimer | OK | actor_frame 366-375: counts down while aimed, sound 0x11 and 0.5 on expiry; 0 otherwise (local player only)
+Actor.lowDetail | OK | objects.c:312 = tag_narrow(ac, 30); picks the *Joint[lowDetail] / model variants; ObjectList_load detail
+Actor.lowDetailLoaded | OK | actor_frame 287-293: reload the five parts when lowDetail differs, then copy
+Actor.scriptFlag | OK | copied from SpawnRecord.scriptFlag, set 0/1 by commands 10/11; no reader
+Actor.outOfPlay | OK | script_holdActor sets; actor_frame skips/ignores it; weapons.c splash (== 1) and bullet hits (!= 0) skip it
+Actor.homedOn | OK | actor_frame 349-365: 1 when some Bullet.homingTarget == i whose owner is not run here; HUD alert and bot retarget
+Actor.killsCounted | OK | ladder_addMatchScores: g_ladderKills += kills - killsCounted, then = kills; cleared with scores
+Actor.deathsCounted | OK | ladder_addMatchScores: g_ladderDeaths += deaths - deathsCounted, then = deaths
+Actor.aimTime | OK | objects.c 295-333 adds dt while in cone with targetingTime > 0 else 0; actor_frame.c:881 lock when > lockOnTime x targetingTime; hud_lockon box
+Actor.lockAnim | OK | actor_frame 870-885: 0.25 when lock made, counted down; hud_drawLockOn grow = lockAnim x 4
+MapObject.trigger | OK | mapObject_frame: flag 8 radius = trigger x 100; flag 0x10 waits until waitTime >= trigger x 100 (seconds)
+MapObject.animPeriod | OK | anim_start: speed = animPeriod x +-0.001 -> object_setAnimation animRate = 1 / speed
+MapObject.poseStale | OK | mapObject_frame sets 1 after moving animTime, recomputes matrices when 1, clears
+MapObject.waitTime | OK | mapObject_frame flag 0x10: += dt until trigger x 100, then 0 and anim_start
+ObjectType.name | OK | object_initObjectBy: compared with/copied to Stage.objectNames, shape_getByName(objectShapes, name)
+ObjectType.flags | OK | object_initObjectBy memcpy 12 bytes from &flags to MapObject.flags/trigger/animPeriod
+ObjectType.trigger | OK | copied by that memcpy to MapObject.trigger; no other reader
+ObjectType.animPeriod | OK | copied by that memcpy to MapObject.animPeriod
+ObjectType.animName | OK | object_initObjectBy: non-empty -> sprintf animPath "%s/%s/%s"
+ObjectType.place | OK | object_initObjectBy: memcpy to MapObject.place, translation of placeMatrix
+ObjectType.rotation | OK | object_initObjectBy: memcpy to MapObject.rotation, Mat4_fromQuat
+ObjectType.glowSize | OK | object_initObjectBy -> MapObject.glowSize -> flare[5] (particle kind 4)
+ObjectType.glowColour | OK | object_initObjectBy -> MapObject.glowColour -> flare[6]
+MapItem.warpPitch | OK | item_pickup: nextPitch = to->warpPitch x 10 of the destination item
+Bullet.trailCount | OK | weapons.c trail: index % 20, ++ per cross-section; bullet_init 0; trails.c reads
+Bullet.homingPoint | OK | bullet_init: prev + aim x 200000 for a guided local round without target; home() steers to it when homingTarget < 0
+SpaceNode.item | OK | space_insertItem / space_addUnitTriangle store the plane; collide/trace read node->item
+SpaceNode.block | OK | space_insertItem node->block = block; no reader
+SpaceNode.newer | OK | written as back link (insert / addUnitTriangle) and as free-list prev (reset_pool, take_free +8); never read
+SpaceNode.next | OK | node->next = old head; lists walked through it; free-list next (take_free +0xc)
+SpaceBlock.low | OK | space_getNextFreeBlockPtrBy block[0..2] = mn; space_insertItem passes it as the box low
+SpaceBlock.high | OK | block[3..5] = mx; collisionTri_meetsBox(item, low, high, margin)
+SpaceBlock.items | OK | space_insertItem pushes nodes on it; split moves and frees them
+SpaceBlock.itemCount | OK | space_insertItem ++, split when > splitCount with depth; drop_if_empty tests <= 0
+SpaceBlock.split | OK | space_insertItem sets 1 on split; walks children when set; drop_if_empty tests 0
+SpaceBlock.children | OK | make_octant per index; walked by insert / collide / trace
+SpaceBlock.poolPrev | OK | reset_pool link (+0x48), space_getNextFreeBlockPtrBy clears next[0x48/4]; never read
+SpaceBlock.poolNext | OK | reset_pool link+4 (+0x4c); space_getNextFreeBlockPtrBy moves freeHead to block[0x4c/4]
+Space.ownsBlock | OK | space_initBy sets 1 only without mem; only caller match_start.c:301 passes st->spaceData
+PartInfo.name | OK | part_info: folder path after the last slash; drawn as the part name
+PartInfo.slotType | OK | part_info copies ActorItem.slotType (-1 empty); drawn MSG(321)+this
+PartInfo.ammoType | OK | copied from ActorItem.ammoType; MSG(323)+this, -1 SPECIAL WEAPON
+PartInfo.ammoPerShot | OK | copied; stat_int "cell"; armc_viewedPartRecord overwrites with idx for ammoType -1
+PartInfo.burst | OK | copied from ActorItem.burst; stat_int MSG(758) "Round"
+PartInfo.damageType | OK | copied; MSG(327)+this
+PartInfo.damage | OK | copied; shown with skill bonus in armc_drawWeaponsScreen
+PartInfo.range | OK | ActorItem.range x 0.01; "%.0f" m
+PartInfo.speed | OK | ActorItem.velocity x 0.01; "%.0f" m/s
+PartInfo.spread | OK | ActorItem.spread x 0.1; "%.1f" '
+PartInfo.hitRange | OK | ActorItem.hitRange x 0.01; "%.1f" m
+PartInfo.splashRadius | OK | ActorItem.splashRadius x 0.01; "%.1f" m
+PartInfo.splashBorderDamage | OK | part_info copies ActorItem.splashBorderDamage; stat_int no unit
+PartInfo.cycleTime | OK | ActorItem.cycleTime x 1000; "%.0f" ms
+PartInfo.guidance | OK | ActorItem.guidance x 0.1; "%.1f" '
+PartInfo.targetingTime | OK | ActorItem.targetingTime x 1000; "%.1f" ms
+PartInfo.weight | OK | BITS copy of ActorItem.weight; "%.1f" t
+NetSlot.waiting | OK | network.c:959 sets 1 on a stored packet; net_packets.c netq tests == 1 and clears
+DPSessionDesc2.players | OK | dplay_enumSessionsCallback copies dwCurrentPlayers to SessionDesc.players
+DPSessionDesc2.password | OK | DPSESSIONDESC2 lpszPasswordA; no store in src (memset only)
+DPSessionDesc2.reserved1 | OK | dwReserved1; only zeroed by memset (dplay_enumSessions, session_desc)
+DPSessionDesc2.reserved2 | OK | dwReserved2; only zeroed by memset
+ArenaRecord.kind | OK | lobby_announceArena 0x18, arena_info passes g_arenaPacket->kind, send_leave dst[0] = 1; net_addServerRecord copies; merge never reads
+ArenaRecord.name | OK | lobby_announceArena g_arenaName; arena_info / send_leave copy; merge -> SessionEntry.name (nameOff)
+ArenaRecord.address | OK | g_localAddress text; copied to info/leave; merge -> SessionEntry.address
+ArenaRecord.map | OK | g_arenaMap; merge s[-6] -> SessionEntry.map
+ArenaRecord.maxPlayers | OK | g_arenaMaxPlayers; merge s[-5]
+ArenaRecord.players | CLEARER | comment: arena_info sends g_playerCount less one when a player left (g_playerCount - !joined), as RoomRecord.players says
+ArenaRecord.gameMode | OK | g_arenaGameType; merge s[-3]
+ArenaRecord.fragLimit | OK | g_arenaFragLimit; merge s[-2]
+ArenaRecord.timeLimit | OK | g_arenaTimeLimit; merge s[-1]
+ArenaRecord.rotation | OK | g_arenaRotation; merge s[0] -> SessionEntry.rotation
+ArenaRecord.replyKind | OK | g_lobbyReplyKind = g_lobbyReplyRecord +0x4a; net_receiveLobbyReply switch 0..3
+ArenaRecord.locked | OK | g_arenaLocked; merge s[9] -> SessionEntry.locked
+ArenaRecord.password | OK | g_arenaPassword; merge s + 0xa -> SessionEntry.password
+RoomRecord.kind | OK | room_announceGame 0x18; room_info kind 1 or g_roomPacket->kind; send_leave 1; not read
+RoomRecord.map | OK | GameSettings.map; merge s[-6]
+RoomRecord.maxPlayers | OK | GameSettings.maxPlayers; merge s[-5]
+RoomRecord.players | OK | 1 at announce / leave (flagged 0x63), count in room_info; merge s[-4]
+RoomRecord.gameMode | OK | GameSettings.mode; merge s[-3]
+RoomRecord.fragLimit | OK | limit[0]; merge s[-2]
+RoomRecord.timeLimit | OK | limit[1]; merge s[-1]
+RoomRecord.rotation | OK | GameSettings.rotation; merge s[0]
+RoomRecord.replyKind | OK | g_gameServerReplyKind = g_gameServerReply +0x68; switch 0 room, 1 end, 2/3 0x28
+RoomRecord.locked | OK | GameSettings.locked; merge s[9]
+SessionDesc.map | OK | dplay_enumSessionsCallback memcpy(&d.map, &user1, 2): map then rotation; -> SessionEntry.map
+SessionDesc.timeLimit | OK | d.timeLimit = (u8)user3 (low byte = lo); arenaList_rebuild / arena_joinAnswer
+SessionEntry.map | OK | arenaList_rebuild / merge set; game_rows g_mapNames + map x 0x20 unless rotation
+SessionEntry.maxPlayers | OK | game_rows "players / most"
+SessionEntry.players | OK | game_rows itoa(players); merge sums into total
+SessionEntry.ping | OK | merge = g_serverPing (only > 0); arenaList_rebuild 0; sessionList_sort by it; game_rows when pings
+SessionEntry.timeLimit | OK | arena_joinSession / arena_joinAnswer / room join -> g_arenaTimeLimit etc.
+SessionEntry.locked | OK | merge s[9]; game_rows draws the lock; room_clicks asks the password when != 0
+MapChoice.type | OK | map_list.c steps 0..13, drawn g_gameTypeNames + type x 20; make_rotation uses it when g_chosenGameMode >= 14
+AccountPacket.kind | OK | login_send / newId_register set 0x18
+AccountPacket.name | OK | login_send strcpy(name = g_accountName); newId_register g_accountName
+AccountPacket.password | OK | login_send / newId_register g_accountPassword
+AccountPacket.email | OK | only newId_register strcpy g_accountEmail
+AccountPacket.address | OK | net_send case 14/15: lstrcpyA(address, g_localAddress) before send_buffer
+AccountPacket.mech | OK | newId_register default_mech(record->mech, ..): 11 bytes
+AccountPacket.colours | OK | default_mech: six (0, 1, 0.6) pairs
+AccountForm.name | OK | account_sendChange strcpy g_accountName; net_send 0x1c
+AccountForm.password | OK | strcpy g_accountPassword after the checks
+AccountForm.email | OK | strcpy g_accountEmail
+GameSettings.name | OK | settings_store copies; dplay_host session name; g_gameTitle memcpy 32
+GameSettings.map | OK | dplay_host user1 low byte (arena), g_mapIndex = [0x20]; RoomRecord.map
+GameSettings.maxPlayers | OK | dplay_host maxPlayers [0x21]; RoomRecord.maxPlayers; form keeps 0..16 else 8
+GameSettings.rotation | OK | user1 byte 1, g_mapRotation = [0x22]
+GameSettings.mode | OK | dplay_host user2 [0x23], g_chosenGameMode; RoomRecord.gameMode
+GameSettings.limit | OK | [0x24] hi = frag (g_fragLimit), [0x25] lo = time (g_timeLimit); SessionDesc frag = user3 >> 8
+GameSettings.password | OK | settings_store copies; locked = password[0] != 0; RoomRecord.password
+GameSettings.locked | OK | settings_store: from->locked = to->locked = password not empty
+RankedPlayer.kind | OK | g_playerListReplyKind = g_playerListReply +0x1e; 0 net_addPlayerRecord, 1 g_playerListDone
+GamePacket.number | OK | packet[0] (send_packet / packet layer), resend bit per NetSlot.packet comment
+GamePacket.kind | OK | net_sendGamePacket packet[1] = 1; receiver case 1
+GamePacket.player | OK | packet[2] = p; receiver drops b[2] > 0x10, player 0 sets clock/rotation/checks/team scores
+GamePacket.map | OK | packet[3] = rotation[rotationAt].map (0xff none); receiver g_mapIndex = pkt[3]
+GamePacket.nextMap | OK | packet[4] = Scene.nextMap (0x1f1cb4); receiver GS->nextMap
+GamePacket.mode | OK | packet[5] = rotation[..].mode; receiver game_setGameTypeFlags(pkt[5]) on map switch
+GamePacket.nextMode | OK | packet[6] = Scene.nextMode; receiver GS->nextMode
+GamePacket.mapNumber | OK | memcpy(packet + 7, &mapNumber, 2); receiver dataLossCode 1 on mismatch
+GamePacket.elapsed | OK | packet + 9 = Scene.elapsed; receiver from player 0
+GamePacket.clockFraction | OK | packet + 0xd = clockFraction
+GamePacket.timePlayed | OK | packet + 0x11 = Actor.timePlayed; receiver sets the sender actor
+GamePacket.timeFraction | OK | packet + 0x15 = Actor.timeFraction
+GamePacket.resendAsked | OK | packet + 0x19: bits from sendFlags[i][2/3]; receiver [0] -> sendFlags[me][1], [1] -> flagSent = 0
+GamePacket.kills | OK | packet + 0x21 = kills (2 bytes); receiver sets actor kills
+GamePacket.deaths | OK | packet + 0x23 = deaths
+GamePacket.teamScores | OK | packet + 0x25 / 0x27; receiver takes them from player 0 only
+GamePacket.lastPickup | OK | packet + 0x29 = Stage.lastPickup (then -1); receiver marks the item taken
+GamePacket.checkTable | OK | packet[0x2b] = typeCheckTurn % 5; receiver parts[part] table_ok -> code 2
+GamePacket.checkIndex | OK | sample() writes packet + 0x2c; receiver table_ok w
+GamePacket.checkValue | OK | packet + 0x2e = sample value; table_ok compares
+GamePacket.checkIndex2 | OK | packet + 0x32 for the actorItems table; mismatch code 3
+GamePacket.checkValue2 | OK | packet + 0x34; table_ok code 3
+PlayerRecordPacket.name | OK | record_send strcpy g_ladderName only when name
+PlayerRecordPacket.games | OK | record_send = R_GAMES (g_ladderGames)
+PlayerRecordPacket.kills | OK | record_send = R_KILLS
+PlayerRecordPacket.deaths | OK | record_send = R_DEATHS
+PlayerRecordPacket.exp | OK | record_send = R_EXP; ladder_checkAndSendRecord cuts it
+PlayerRecordPacket.level | OK | record_send = level_fromPoints(R_EXP)
+PlayerRecordPacket.power | OK | record_send = R_POWER (g_ladderPower)
+PilotStats.level | OK | g_pilotLevel (+0): login reply, 1 for new ID, record_send level_fromPoints
+PilotStats.exp | OK | record_send copies[k] + exp = R_EXP; pilotRecord_syncCopies compares
+PilotStats.rank | OK | account_takeRank: g_pilotRank = g_receivedRank (+0x16) or 0 when g_outOfRank
+PilotStats.power | OK | record_send copies R_POWER bits
+PilotStats.games | OK | record_send copies R_GAMES
+PilotStats.kills | OK | record_send copies R_KILLS; take_back compares
+PilotStats.deaths | OK | record_send copies R_DEATHS
+PilotStats.killRate | OK | record_send copies rate (kill_rate)
+SkirmishInfo.gameMode | OK | skirmish_startRound -> g_chosenGameMode; skirmish.c record[0x48/4] MSG(471)+; make_rotation mode
+SkirmishInfo.timeLimit | OK | skirmish_startRound -> g_timeLimit; skirmish.c record[0x4c/4] "MIN"; set_round
+SkirmishInfo.fragLimit | OK | skirmish_startRound -> g_fragLimit; skirmish.c record[0x50/4] "FRAGS"; set_round
+ViewQuad.texture | OK | quad_fields id; < 0 untextured (use_texture, billboard textured = cur >= 0)
+ViewQuad.uv0 | OK | billboard: r+1 for points[3]; (uv1[0], uv0[1]) for points[2]; (uv0[0], uv1[1]) for points[0]
+ViewQuad.uv1 | OK | billboard: r+3 for points[1]
+ViewQuad.colour | OK | quad_fields *colour; billboard glColor4ubv(r + 5)
+ViewQuad.points | OK | glVertex4fv(r + 6 .. 0x12); depth key from points[0..1][2]
+ViewQuad.kind | OK | ViewVolume_draw: 2 -> quadOrderA, 3 -> quadOrderB, else not drawn
+ViewTriangle.points | OK | ViewVolume_addTriangle R = rec + 10; triangle() glVertex4fv
+ViewTriangle.matrix | OK | r[0x16] glMultMatrixf for kind 1
+ViewTriangle.kind | OK | r[0x17]: 1 drawn under its matrix, 2 -> triangleOrder
+ViewVolume.ownsBlock | OK | ViewVolume_initBy (factors.c) 1 on operator_new; ViewVolume_release frees when 1
+ViewVolume.segmentCount | OK | next_record(0x908c) ++, -- when culled; ViewVolume_draw loops; reset clears
+ViewVolume.entriesFull | CLEARER | comment "1: a list overflowed" reads as any list; this flag is only the entries list (ViewVolume_queueModel); the others have their own
+ViewVolume.matricesFull | OK | ViewVolume_queueModel sets 1 when matrixCount >= matrixLimit
+ViewVolume.trianglesFull | OK | ViewVolume_addTriangle sets 1 when full
+ViewVolume.quadsFull | OK | next_record(vv, 0x9070, 0x909c, 92) in addQuad / addBillboard
+ViewVolume.segmentsFull | OK | next_record(vv, 0x908c, 0x90a0, 36) in addSegment
+Skeleton.blockSize | OK | skel_loadFromFile header / skel_loadAseFrom bones x 0x70 + rot x 0x28 + pos x 0x20
+Skeleton.block | OK | take_block / skel_loadAseFrom; bones = block, keys after
+Skeleton.ownsBlock | OK | take_block own 1 / 0; skel_loadAseFrom sets 1 or 0
+Skeleton.boneCount | OK | fread boneCount x 0x70; skel_getBoneMatrix identity past it; poseBones breaks at it
+Skeleton.bones | OK | = block; Bone records 0x70 apart
+Skeleton.posKeyTotal | OK | skel_loadAseFrom counts POS_KEYs; sizes the block
+Skeleton.rotKeyTotal | OK | counts CONTROL_TCB_ROT_KEY; sizes the block
+Skeleton.duration | OK | ASE ms x frames; skel_getBoneMatrix t x duration; poseBones animTick % (duration + 1)
+Bone.parent | OK | ObjectList_poseBones loads root when < 0 else entries[parent].matrix; ASE NODE_PARENT
+Bone.pos | OK | glTranslatef(pos) without keys; ASE TM_POS
+Bone.rotation | OK | rotate(rotation[0] x 57.2958, &rotation[1]); ASE TM_ROTANGLE / TM_ROTAXIS
+Bone.posKeyCount | OK | fread posKeyCount x 0x20; key_at n
+Bone.posKeys | OK | block + at; key_at(posKeys, ..)
+Bone.rotKeyCount | OK | fread rotKeyCount x 0x28; key_at n
+Bone.rotKeys | OK | after the pos keys; key_at(rotKeys, ..)
+PosKey.time | OK | key_at compares frame with it; ase_time in ms
+PosKey.length | OK | f = (t - time) / length when > 0
+PosKey.pos | OK | translate pos + f x delta
+PosKey.delta | OK | translate pos + f x delta
+RotKey.time | OK | key_at; (t - time) / length
+RotKey.length | OK | f when > 0 else 0
+RotKey.rotation | OK | rotate(rotation[0] x deg, rotation[1..3]); ASE axisAngle_combine
+RotKey.step | OK | rotate(f x step[0] x deg, step[1..3])
+ShapeManager.ownsBlock | OK | take_block in ShapeManager_initBy; ShapeManager_release free_owned
+SkelManager.ownsBlock | OK | take_block in SkeletonManager_initBy; SkeletonManager_release free_owned
+PlayerRecord.flag | OK | playerRecord_loadFlag image_copyTo 24 x 16 x 4; flag_uploadAtlas copies 16 rows of 24 dwords
+PlayerRecord.flagChanged | OK | flag_uploadAtlas copies when == 1 then 0; set from playerRecord_loadFlag and packet 12
+TreeNode.name | OK | tree_lookup strcmp(key, node); strcpy(node, key)
+TreeNode.index | OK | tree_lookup returns ->index; set i
+TreeNode.left | OK | link = node + 0x44 when c < 0
+TreeNode.right | OK | link = node + 0x48 otherwise
+TexSlot.index | OK | tex_initBy slot[0] = i; tex_bind texture->slot = slot->index
+TexSlot.record | OK | tex_initBy -1; tex_bind slot->record = i; old one's slot -1
+TexSlot.glTexture | OK | glGenTextures; tex_upload / glBindTexture
+TexSlot.next | OK | tex_bind oldest = slot->next; ring link (+0xc)
+TexSlot.prev | OK | tex_bind relinks via prev (+0x10)
+TextureBank.format | OK | tex_initBy stores; 0 opens Image*.dat; every caller (loading.c 261-271) passes 0
+TextureBank.clearedCd13c | OK | only = 0 in tex_initBy and tex_clearSetCounters
+TextureBank.clearedCd140 | OK | only = 0 in tex_initBy and tex_clearSetCounters
+GroundLayer.kind | OK | ground_buildLayerModels flags 0 / 8 / 6; map_loadGroundInfoFrom negates normals for 1
+GroundLayer.origin | OK | point = origin + (c x cellSize, h x heightScale, r x cellSize)
+GroundLayer.rows | OK | loops r <= rows; sizes
+GroundLayer.cols | OK | (cols + 1) per row
+GroundLayer.cellSize | OK | p[0] = c x cellSize + origin[0]
+GroundLayer.heightScale | OK | y = heights x heightScale + origin[1]
+GroundLayer.texScale | OK | uv = x / texScale, z / texScale
+GroundLayer.water | OK | ground_buildLayerModels: water part primCount 4 when == 1
+GroundLayer.texture | OK | ground_tex "%s/Ground%dMap"; parts' texture
+GroundLayer.heights | OK | grey of each point from the image
+GroundLayer.drawnCells | OK | 1 when the four corners are grey
+GroundLayer.points | OK | 3 floats a point; layerModel part vertices
+GroundLayer.normals | OK | sum of four triangle normals, border g_vecUnitY, negated for kind 1
+GroundLayer.colours | OK | pool_take 4 x points; ground_computeLighting; part colours
+GroundLayer.uv | OK | x / texScale, z / texScale; part texCoords
+GroundLayer.indexCapacity | OK | (cols + 200) x rows x 2
+GroundLayer.indices | OK | pool heap of indexCapacity dwords
+GroundLayer.indexCount | OK | per-frame use in ground_buildDrawLists (strip_pair)
+GroundLayer.stripCapacity | OK | rows x 200 + 4
+GroundLayer.strips | OK | pool 12-byte prims; layerModel part prims
+GroundLayer.stripCount | OK | ground_buildDrawLists; part primCount
+GroundLayer.waterPoints | OK | water part vertices (12)
+GroundLayer.waterColours | OK | water part colours
+GroundLayer.waterUv | OK | water part texCoords
+GroundLayer.waterIndices | OK | four 5-index fans from sides[] (ground_buildLayerModels)
+GroundLayer.waterPrims | OK | kind 6, 5 indices, -> waterIndices[f]
+Trigger.time | OK | script_processTriggers flag 1: clockSeconds + clockFraction >= time
+Trigger.radiusSq | OK | map_loadTriggerInfoFrom r^2 x 10000; compared with the squared distance
+SpawnRecord.pitch | OK | actor_applySpawnRecord spawn[5] -> actor_setupFromParts AC->pitch
+SpawnRecord.yaw | OK | spawn[6] -> AC->yaw
+SpawnRecord.scriptFlag | OK | AC->scriptFlag = SR->scriptFlag
+BmpFile.vtable | OK | playerRecord_loadFlag / tex_* set VT(BMPRGBFile 0x4a96f8); BMPRGBFile_dtor sets it
+BmpFile.file | OK | image_initBy / tryOpen fopen; dtor fclose when set
+BmpFile.type | OK | fread 0xe bytes at &type (BITMAPFILEHEADER from +8)
+BmpFile.fileSize | OK | part of that read; no reader
+BmpFile.dataOffset | OK | image_copyTo fseek(dataOffset + ...)
+BmpFile.infoSize | OK | fread 0x28 at &infoSize (BITMAPINFOHEADER)
+BmpFile.bmpWidth | OK | width = bmpWidth
+BmpFile.bmpHeight | OK | height = bmpHeight
+BmpFile.planes | OK | read with the info header; no reader
+BmpFile.bitCount | OK | != 24 fatal / fail
+BmpFile.compression | OK | != 0 fatal / fail
+BmpFile.width | OK | image_copyTo row offset; playerRecord_loadFlag >= 23
+BmpFile.height | OK | image_copyTo rows bottom-up; playerRecord_loadFlag >= 15
+TimeSync.vtable | OK | TimeSync_ctor sets, TimeSync_clear (clear 0xe dwords from +0) zeroes it
+SpaceUnit.poolPrev | CLEARER | comment "its links in the units' pool": it is the back link only (poolNext the forward), written never read, as SpaceBlock.poolPrev says
+SpaceUnit.poolNext | OK | space_resetUnits e->poolNext = e + 0x14; take_free moves freeHead to +0x10
+ParticleDesc.kind | OK | particle_init PR->kind = pd->kind; switch by kind
+ParticleDesc.owner | OK | PR->owner = pd->owner; mapObject_frame flare[1] = glow x 255
+ParticleDesc.pos | OK | memcpy PR->pos
+ParticleDesc.target | OK | memcpy PR->target; kind 4 colour = target[1]; effect() r + 5 dir
+ParticleDesc.matrixFrom | OK | PR->matrixFrom; Mat4_copy when set
+ParticleDesc.markCorners | OK | particle_mark memcpy markPoints[0..2] from markCorners
+ParticleDesc.markCoords | OK | particle_mark q[0,2..5] -> markUv, q[1] unused
+ParticleDesc.size | OK | BITS(PR->baseSize) = pd->size
+ParticleDesc.isQuad | OK | particle_init: == 1 -> kind 0x32 from quad / quadPoints
+ParticleDesc.quad | OK | memcpy(&PR->quadTexture, pd->quad, 0x18)
+ParticleDesc.quadPoints | OK | memcpy PR->quadPoints[0..3]
+ScenePath.opened | OK | stage_advanceScenePath: if (!opened) scenePath_openStub; no write in src (Scene_ctor sets only the vtable)
+Stage.nearObjects | OK | collision_tris.c 276-282 fills [planes, relMatrix, relInverse]; collision_space.c 932-938 traces them
+Stage.layerParts | OK | layerModel's parts (ground_buildLayerModels writes B = layerModel.parts + i)
+Stage.fogOn | OK | map_loadGroundInfoFrom reads; hud_pass / match_drawFrame enable GL fog when == 1
+Stage.pool | CLEARER -> layerPool | holds only the ground layers' tables (pool_take in map_info.c); "pool" alone is vague in Stage (name free)
+Stage.poolUsed | CLEARER -> layerPoolUsed | pairs with Stage.pool (name free)
+Stage.lockTimes | OK | actor_frame 893-898: lockHeld > 0 copied with lockIds
+Stage.lockIds | OK | lockIds[count] = j
+Stage.floorClock | OK | stage_advanceClocks += dt x 15 while floorMode 2; at 1 floorFrame++ % 16
+Stage.pointCount | OK | stage_resetMatrixAndPoints = 0; no reader
+Stage.points | OK | stage_resetMatrixAndPoints origin; Console_ctor VECTOR; no reader
+Stage.defaultColour | OK | stage_resetMatrixAndPoints = g_defaultColour; no reader
+Stage.msgWrite | OK | script_pushMessage ++, slot msgWrite & 0x1f; hud reads Scene.msgWrite
+Stage.msgRead | OK | script_pushMessage moves on when full; hud shows msgRing[msgRead & 31] while < msgWrite
+Stage.flagAtlas | OK | flag_uploadAtlas copies flags 4 a row, glTexImage2D 128 x 64
+Stage.shotgunArena | OK | game_setGameTypeFlags types 4/5 (MSG 475 SHOTGUN ARENA); remap_item kinds 0..9 -> 2
+Stage.ionCannonArena | OK | types 6/7 (IONCANNON ARENA); remap_item 0..9 -> 3, 15..19 -> -5
+Stage.rocketArena | OK | types 8/9 (ROCKET ARENA); remap_item -> 5; actor_slots 744/758
+Stage.gladiator | OK | types 10/11 (GLADIATOR); remap_item 0..9 -> -1
+Stage.speakers | OK | script_processCommandBy case 26 checks first dword; no writer in src
+Stage.texts | OK | case 26 checks first dword; Scene.msgText aliases +4; no writer
+Stage.shadingCached | OK | map_loadObjectInfoFrom 0, 1 after reading the cache; object_initObjectBy shades when 0; mode 1 writes the file when 0
+Stage.scriptMode | OK | script_startScenePath = mode; paused() / stage_advanceClocks / hud_pass / stage_advanceScenePath
+Stage.scriptHoldsPlay | OK | script_startScenePath 1 for mode 1, 0 for 0/2; paused() with scriptMode
+Stage.triggerFired | OK | script_processTriggers 1 for fired, 0 else each pass; actor_frame botWaitTrigger
+Stage.lockHeld | OK | actor_frame 866-890: targetKeepTime on lock, counted down, 0 when not live
+Stage.groundLayerCount | OK | map_loadGroundInfoFrom reads; ground_buildLayerModels / collision_tris / shading loops
+Stage.lockCount | OK | actor_frame: ++ per lockHeld > 0
+Stage.suddenDeath | OK | types 2/3; remap_item; actor_frame 177/226 half points
+Stage.floorMode | OK | map_loadGroundInfoFrom; sky.c draws when != 0; collision_tris plane; == 2 animated
+Stage.floorFrame | OK | stage_advanceClocks % 16; sky.c binds floorTextures[floorFrame]
+TunnelRing.cleared0 | OK | tunnelRing_build = 0; no other use
+TunnelRing.cleared4 | OK | tunnelRing_build = 0; no other use
+TunnelRing.cleared1938 | OK | tunnelRing_build = 0; no other use
+TunnelRing.cleared326c | OK | tunnelRing_build zeroes [0..2]; no other use
+Scene.previewTurn | OK | armc_misc.c 181: turn - angle mod 3600 while g_mouse2Down; nextYaw = it every call
+Scene.unused233ca00 | OK | only = 0 in scene_startSession (classes.c 638)
+Scene.unused233cc44 | OK | only = 0 in scene_startSession (classes.c 646)
+Scene.unused233cc2c | OK | only = 0 in game_processLoadingMode (loading.c)
+Scene.connectPending | OK | net_announcePlayerConnected 1; net_sendMatchEvent kind 8, clears; net_clearAnnouncements 0
+Scene.quitPlayer | OK | net_announcePlayerQuit stores player; sent packet[2] with kind 9
+Scene.quitPending | OK | net_announcePlayerQuit 1; TAKE in net_sendMatchEvent
+Scene.changePlayer | OK | net_announceChangedTeam stores player; net_sendMatchEvent sends localPlayer instead; no reader
+Scene.changeTeam | OK | net_announceChangedTeam; packet[3] kind 11
+Scene.changePending | OK | net_announceChangedTeam 1; net_sendMatchEvent kind 11, clears

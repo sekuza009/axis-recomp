@@ -121,7 +121,7 @@ void (menuState600_enterSetup)(void)
 		{ ADDR(g_setupTab), 0x29a }, { ADDR(g_setupTunnelDepth), 0xc4af0000 }, { ADDR(g_setupPanelMoving), 1 }, { ADDR(g_setupPanelPos), 0 }, { ADDR(g_setupCameraMode), 2 },
 		{ ADDR(g_setupSoundLeft), 0x32 }, { (OBJ(g_setupSoundRect) + 0x4), 0x3c }, { (OBJ(g_setupSoundRect) + 0xc), 0x1a4 }, { OBJ(g_setupGraphicRect), 0x64 }, { (OBJ(g_setupGraphicRect) + 0x8), 0x21c },
 		{ (OBJ(g_setupGraphicRect) + 0xc), 0x1c2 }, { ADDR(g_setupControlLeft), 0x28 }, { (OBJ(g_setupControlRect) + 0xc), 0x1b8 } };
-	static const Store colours[] = {
+	static const Store colours_tunnel[] = {
 		{ OBJ(g_setupColourLit), 0 }, { (OBJ(g_setupColourLit) + 0x4), ONE }, { (OBJ(g_setupColourLit) + 0x8), ONE }, { (OBJ(g_setupColourLit) + 0xc), ONE }, { OBJ(g_setupColourDim), 0 },
 		{ (OBJ(g_setupColourDim) + 0x4), 0x3f19999a }, { (OBJ(g_setupColourDim) + 0x8), 0x3f19999a }, { (OBJ(g_setupColourDim) + 0xc), ONE }, { ADDR(g_tunnelStripeScroll), 0 }, { ADDR(g_menuTunnelSpeed), ONE },
 		{ ADDR(g_tunnelPulse), 0 }, { ADDR(g_tunnelPulseStep), ONE } };
@@ -139,7 +139,7 @@ void (menuState600_enterSetup)(void)
 	setupSound_layout();
 	setupGraphic_layout();
 	setupControl_layout();
-	STORE_ALL(colours);
+	STORE_ALL(colours_tunnel);
 	for (int k = 0; k < 2; k++) {
 		const char *text = (const char *)(MSG(435, "OFF") + k * 0x80);
 		int o = k * 0x32;
@@ -335,7 +335,7 @@ u32 (menuState210_enter)(void)
 		{ ADDR(g_logOutDialogRight), 0x208 }, { ADDR(g_pilotSelectLeft), 0x1e }, { ADDR(g_pilotSelectTop), 0x14 }, { ADDR(g_pilotSelectRight), 0x262 }, { ADDR(g_pilotSelectBottom), 0x1c2 } };
 	static const u32 cleared[] = { ADDR(g_profileNoneAtEntry), ADDR(g_profileLogInAsked), ADDR(g_profileListTop), ADDR(g_profileListRow), ADDR(g_profileChosen), ADDR(g_currentProfile), ADDR(g_repeatDown), ADDR(g_repeatUp),
 	                               ADDR(g_pointerGliding) };
-	static const Store colours[] = {
+	static const Store colours_clocks[] = {
 		{ OBJ(g_profileColour), 0 }, { (OBJ(g_profileColour) + 0x4), ONE }, { (OBJ(g_profileColour) + 0x8), ONE }, { (OBJ(g_profileColour) + 0xc), ONE }, { OBJ(g_profileDim), 0 },
 		{ (OBJ(g_profileDim) + 0x4), 0x3f19999a }, { (OBJ(g_profileDim) + 0x8), 0x3f19999a }, { (OBJ(g_profileDim) + 0xc), ONE }, { ADDR(g_menuRepeatClock), 0 }, { ADDR(g_replayZoomTime), 0 },
 		{ ADDR(g_profileQuitting), 0 }, { ADDR(g_profileRowClicked), 0 }, { ADDR(g_profileRowClickTime), 0 } };
@@ -358,7 +358,7 @@ u32 (menuState210_enter)(void)
 	g_profilePage = 1;
 	for (int k = 0; k < 7; k++)
 		GAME_CDECL(rects[k], void, void)();
-	STORE_ALL(colours);
+	STORE_ALL(colours_clocks);
 	return profile_resetStatBars();   /* profile_resetStatBars */
 }
 

@@ -348,7 +348,7 @@ static int tree_lookup(u8 *cache, const char *key, char *out, u32 no_room, u32 f
 
 /* an item's file path: "dir\name.ext" with the cache's directory (dir), or "name.ext"; the extension by the cache's
    format (source: 0 or 1, another a fatal message) */
-static void item_path(char *path, u8 *cache, const char *name, u32 ext0, u32 ext1, char *out, u32 bad)
+static void item_path(char *path, u8 *cache, const char *name, u32 ext0, u32 ext1, char *log, u32 bad)
 {
 	ShapeManager *mg = (ShapeManager *)cache;
 	char ext[4];
@@ -356,7 +356,7 @@ static void item_path(char *path, u8 *cache, const char *name, u32 ext0, u32 ext
 	if (format == 0 || format == 1)
 		strcpy(ext, (const char *)(RELOC(format) ? ext1 : ext0));
 	else
-		sys_fatalError(out, (const char *)RELOC(bad), format);
+		sys_fatalError(log, (const char *)RELOC(bad), format);
 	if (mg->dir[0])
 		sprintf(path, (const char *)STR(0x4c4d5c, "%s\\%s.%s"), mg->dir, name, ext);
 	else
