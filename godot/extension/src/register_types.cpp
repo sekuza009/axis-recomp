@@ -9,9 +9,14 @@
 
 using namespace godot;
 
+extern "C" void axis_crash_report_install(void);   // crash_report.c
+
 static void initialize(ModuleInitializationLevel p_level) {
 	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE)
 		return;
+#ifdef DEBUG_ENABLED
+	axis_crash_report_install();   // (debug builds: a crash reported with its place)
+#endif
 	GDREGISTER_CLASS(AxisReplay);
 	GDREGISTER_CLASS(AxisGame);
 }

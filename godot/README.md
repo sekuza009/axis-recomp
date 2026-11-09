@@ -126,3 +126,11 @@ holds initdata, else the one above it. --game-dir and the check options still ap
 2026-11-09: game.tscn is the main scene (the editor's Play runs the game; the replay is started by name,
 res://main.tscn). To work in the editor: open godot/project/project.godot (Godot 4.7.2 32-bit,
 C:/Users/Alexander/Tools/godot/editor); bin/ must hold the extension DLL and axis.dll (built as above).
+
+2026-11-09, the editor: Godot's official 32-bit editor crashes on start-up here, any project (_beginthreadex
+fails: the exe is not large-address-aware, 2 GB of address space, and the editor at 4K with a worker thread per
+CPU thread - 24, 8 MB stacks - runs out). Use the copies marked large-address-aware (4 GB on 64-bit Windows):
+C:/Users/Alexander/Tools/godot/editor/Godot_v4.7.2-stable_win32_4GB.exe (and _4GB_console.exe), made with pefile
+(IMAGE_FILE_LARGE_ADDRESS_AWARE, checksum redone). Checked: the project opens and Play runs the game (embedded in
+the editor's game window, windowed). Debug builds of the extension report a crash's place (crash_report.c: the
+function, source line and calls from the PDBs via dbghelp, to stderr and axis_crash.txt).

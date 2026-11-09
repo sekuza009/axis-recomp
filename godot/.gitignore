@@ -4,3 +4,4 @@ extension/test/*.exe
 extension/test/*.pdb
 extension/**/*.o
 extension/.sconsign.dblite
+project/axis_crash.txt

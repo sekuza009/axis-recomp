@@ -10,5 +10,6 @@ env = SConscript(os.environ.get("GODOT_CPP", "C:/Users/Alexander/Tools/godot/god
 env["SHOBJSUFFIX"] = ".o"   # (zig takes objects by their extension)
 env.Append(CPPPATH=["src/"])
 sources = Glob("src/*.cpp") + Glob("src/*.c")
+env.Append(LIBS=["dbghelp"])
 library = env.SharedLibrary("../project/bin/axis_godot{}{}".format(env["suffix"], env["SHLIBSUFFIX"]), source=sources)
 Default(library)
