@@ -17,7 +17,7 @@ void (menu_initColours)(void)
    armc_open */
 void (armc_initCameraPoints)(void)
 {
-	for (int *p = (int *)OBJ(g_armcViewPoints); p < (int *)OBJ(g_armcViewPoints) + 6 * 4; p += 4)
+	for (int *p = AP(int, OBJ(g_armcViewPoints)); p < AP(int, OBJ(g_armcViewPoints)) + 6 * 4; p += 4)
 		p[0] = p[1] = p[2] = 0;
 	(*(u32 *)&g_unusedArmcPoint0Y) = 0x43960000;   /* 300 */
 	(*(u32 *)&g_unusedArmcPoint3Y) = 0xc3fa0000;   /* -500 */
@@ -31,9 +31,9 @@ void (arena_initOptionTexts)(void)
 	                                  { OBJ(g_arenaOnOff), MSG(444, "OFF") }, { (OBJ(g_arenaOnOff) + 0x14), MSG(445, "ON") }, { OBJ(g_rotationOnOff), MSG(444, "OFF") },
 	                                  { (OBJ(g_rotationOnOff) + 0x14), MSG(445, "ON") } };
 	for (int k = 0; k < 7; k++)
-		strcpy((char *)RELOC(copies[k][0]), (const char *)RELOC(copies[k][1]));
+		strcpy(AP(char, RELOC(copies[k][0])), AP(const char, RELOC(copies[k][1])));
 	for (u32 s = MSG(456, "DM"), d = OBJ(g_gameTypeNames); s < MSG(471, "DEATH MATCH"); s += 0x80, d += 0x14)
-		strcpy((char *)RELOC(d), (const char *)RELOC(s));
+		strcpy(AP(char, RELOC(d)), AP(const char, RELOC(s)));
 }
 
 /* 0x443570: the mission list's 30 entries (g_missions) emptied (unusedF0 -1) */
@@ -64,7 +64,7 @@ void (net_resetState)(void)
 	g_hostGoneMessageFlag = 0;
 	g_netChatMessageFrom = 0;
 	g_netSlotMessageKind = 0;
-	memset((void *)ADDR(g_netPacketMessageKind), 0, 0x103 * 4);
+	memset(AP(void, ADDR(g_netPacketMessageKind)), 0, 0x103 * 4);
 	g_netChatMessageText = 0;
 	g_netClaimedSlot = 0;
 	g_netChatMessageKind = 1;
@@ -99,14 +99,14 @@ void (room_initCameraPoints)(void)
 {
 	static const u32 point[][2] = {
 		{ ADDR(g_camPoint0X), 0x41a00000 }, { ADDR(g_camPoint0Y), 0xc1200000 }, { ADDR(g_camAim0X), 0xc28c0000 }, { ADDR(g_camAim0Y), 0x425c0000 },
-		{ ADDR(g_camPoint1X), 0x41a00000 }, { (u32)&g_camPoints[5], 0 }, { ADDR(g_camAim1X), 0xc28c0000 }, { ADDR(g_camAim1Y), 0 },
+		{ ADDR(g_camPoint1X), 0x41a00000 }, { ADDR_AT(g_camPoints, 5), 0 }, { ADDR(g_camAim1X), 0xc28c0000 }, { ADDR(g_camAim1Y), 0 },
 		{ ADDR(g_camPoint2X), 0x41a00000 }, { ADDR(g_camPoint2Y), 0x41200000 }, { ADDR(g_camAim2X), 0xc28c0000 }, { ADDR(g_camAim2Y), 0xc25c0000 },
-		{ (u32)&g_camPoints[12], 0xc1a00000 }, { (u32)&g_camPoints[13], 0xc1200000 }, { (u32)&g_camAims[12], 0x428c0000 }, { (u32)&g_camAims[13], 0x425c0000 },
-		{ (u32)&g_camPoints[16], 0xc1a00000 }, { (u32)&g_camPoints[17], 0 }, { (u32)&g_camAims[16], 0x428c0000 }, { (u32)&g_camAims[17], 0 } };   /* (+-20, +-10), (-+70, +-55) */
+		{ ADDR_AT(g_camPoints, 12), 0xc1a00000 }, { ADDR_AT(g_camPoints, 13), 0xc1200000 }, { ADDR_AT(g_camAims, 12), 0x428c0000 }, { ADDR_AT(g_camAims, 13), 0x425c0000 },
+		{ ADDR_AT(g_camPoints, 16), 0xc1a00000 }, { ADDR_AT(g_camPoints, 17), 0 }, { ADDR_AT(g_camAims, 16), 0x428c0000 }, { ADDR_AT(g_camAims, 17), 0 } };   /* (+-20, +-10), (-+70, +-55) */
 	int z = (*(int *)&g_menuCameraLookZ);
 	for (int i = 0; i < 5; i++) {
-		GAME_VAR(int, ((u32)&g_camPoints[2]) + i * 0x10) = z;
-		GAME_VAR(int, ((u32)&g_camAims[2]) + i * 0x10) = z;
+		GAME_VAR(int, (ADDR_AT(g_camPoints, 2)) + i * 0x10) = z;
+		GAME_VAR(int, (ADDR_AT(g_camAims, 2)) + i * 0x10) = z;
 	}
 	(*(int *)&g_menuEyeHomeX) = (*(int *)&g_menuEyeX);
 	(*(int *)&g_menuEyeHomeY) = (*(int *)&g_menuEyeY);
@@ -146,7 +146,7 @@ u32 (replayList_open)(void)
 u32 (frontEnd_startUp)(void)
 {
 	static const u32 steps[5] = { FN(menu_initMainOutlines), FN(lobbyTop_initOutlines), FN(room_initOutlines), FN(setupTop_initOutlines), FN(net_clearSlots) };
-	memset((void *)OBJ(g_inputHistory), 0, 0x300 * 4);
+	memset(AP(void, OBJ(g_inputHistory)), 0, 0x300 * 4);
 	menu_initColours();   /* menu_initColours: the colours */
 	u32 r = 0;
 	for (int k = 0; ; k++) {

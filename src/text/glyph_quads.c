@@ -7,7 +7,7 @@
 
 static void glyph_quad(int x, int y, int w, int h, int i, u32 u0, u32 v0, u32 u1, u32 v1)
 {
-	const u32 *L = (const u32 *)RELOC(u0), *T = (const u32 *)RELOC(v0), *R = (const u32 *)RELOC(u1), *B = (const u32 *)RELOC(v1);
+	const u32 *L = AP(const u32, RELOC(u0)), *T = AP(const u32, RELOC(v0)), *R = AP(const u32, RELOC(u1)), *B = AP(const u32, RELOC(v1));
 	glTexCoord2f_bits(L[i], T[i]);
 	menu_vertex(x, y);
 	glTexCoord2f_bits(R[i], T[i]);

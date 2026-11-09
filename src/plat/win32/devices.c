@@ -4,7 +4,7 @@
    may hook). */
 #include "../../game.h"
 #include <string.h>
-#ifdef AXIS_PORTABLE
+#if defined(AXIS_PORTABLE) && !defined(AXIS_64)   /* (the 64-bit build: plat/host/devices.c) */
 #undef AXIS_PORTABLE   /* (plat.h's master definitions: the original's calls) */
 #include "../plat.h"
 #define AXIS_PORTABLE
@@ -54,7 +54,7 @@ long plat_soundCreateBuffer(void *ds, void *desc, void **buffer)
 		*buffer = HOST_PRIMARY;
 		return 0;
 	}
-	HostBuf *b = host_wrap(HS->create(HU, (const void *)d[4], d[2]), d[2]);
+	HostBuf *b = host_wrap(HS->create(HU, AP(const void, d[4]), d[2]), d[2]);
 	*buffer = b;
 	return b ? 0 : (long)0x80004005;   /* E_FAIL */
 }

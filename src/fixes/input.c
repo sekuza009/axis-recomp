@@ -66,7 +66,7 @@ int fix_readMouse(void)
 {
 	int r = ((int (CDECL *)(void))(void *)FN_input_readMouse)();
 	u8 *buttons = (u8 *)g_mouseState + 0xc;   /* DIMOUSESTATE.rgbButtons */
-	if (g_mainWindow && !platform_isForeground(g_mainWindow))
+	if (g_mainWindow && !platform_isForeground(AP(void, g_mainWindow)))
 		g_buttonsAwaitingRelease = 0x0f;
 	else {
 		platform_mouseButtons((buttons[0] >> 7) | (buttons[1] >> 7 << 1) | (buttons[2] >> 7 << 2));
@@ -79,7 +79,7 @@ int fix_readMouse(void)
 	}
 	menu_pointerSpeed(g_mouseState);   /* DIMOUSESTATE.lX / lY */
 	if (g_mainWindow)
-		platform_watchWindow(g_mainWindow, (void **)ADDR(g_hEditField), (void **)ADDR(g_mouse));
+		platform_watchWindow(AP(void, g_mainWindow), AP(APTR(void), ADDR(g_hEditField)), AP(APTR(void), ADDR(g_mouse)));
 	return r;
 }
 

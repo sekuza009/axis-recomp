@@ -31,7 +31,9 @@ int (*g_platHostLaunch)(void *user, const char *program, const char *arguments);
 int g_platScreenW = 1920, g_platScreenH = 1080;
 
 static uint32_t g_handles = 0x100;   /* (handles the game keeps but never looks into) */
-static uintptr_t new_handle(void) { return g_handles += 4; }
+/* (the 64-bit build: a handle is an address in the game's arena too - the loader hands them out, standalone/host64.c) */
+void *(*g_platNewHandle)(void);
+static uintptr_t new_handle(void) { return g_platNewHandle ? (uintptr_t)g_platNewHandle() : (g_handles += 4); }
 
 PLAT(int, MessageBoxA, void *owner, const char *text, const char *title, uint32_t type)
 {

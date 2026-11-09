@@ -8,20 +8,20 @@
 #undef sound_setNextVolume
 
 typedef struct {
-	void *buffers[8];
+	APTR(void) buffers[8];
 	i32 next;            /* the buffer to play next */
 	i32 panModes[8];     /* per buffer: the last play's mode (1 / 2: with a pan; sound_playPanned) */
 	i32 pans[8];         /* and its pan (SetPan) */
 } Sound;                 /* 100 bytes */
 
-#define g_menuSounds ((Sound *const *)OBJ(g_menuSoundBuffers))
+#define g_menuSounds (AP(const APTR(Sound), OBJ(g_menuSoundBuffers)))
 
 /* 0x467d70: play the sound's next buffer; the turn moves on (0 .. 7) */
 void (sound_playNext)(Sound *sound)
 {
 	if (sound == NULL)
 		return;
-	void *buffer = sound->buffers[sound->next];
+	void *buffer = AP(void, sound->buffers[sound->next]);
 	if (buffer != NULL)
 		SND_PLAY(buffer, 0);
 	if (sound->next < 7)
@@ -35,7 +35,7 @@ void (sound_setNextVolume)(Sound *sound, int volume)
 {
 	if (sound == NULL)
 		return;
-	void *buffer = sound->buffers[sound->next];
+	void *buffer = AP(void, sound->buffers[sound->next]);
 	if (buffer != NULL)
 		SND_SET_VOLUME(buffer, volume);
 }
@@ -45,17 +45,17 @@ void (sound_playMenu)(int id)
 {
 	if (g_soundOn != 1)
 		return;
-	sound_setNextVolume(g_menuSounds[id], g_menuVolume);
-	sound_playNext(g_menuSounds[id]);
+	sound_setNextVolume(AP(Sound, g_menuSounds[id]), g_menuVolume);
+	sound_playNext(AP(Sound, g_menuSounds[id]));
 }
 
 /* 0x457310: the music graph released, then COM let go */
 void (music_stop)(void)
 {
-	if (g_music == NULL)
+	if (g_music == 0)
 		return;
-	MUS_RELEASE(g_music);
-	g_music = NULL;
+	MUS_RELEASE(AP(void, g_music));
+	g_music = AREF(NULL);
 	CoUninitialize();
 }
 
@@ -75,7 +75,7 @@ int (sound_setVolume)(int v)
 		g_soundBaseVolume = 0;
 		return p;
 	}
-	int r = ftol(fmul_m((long double)((p * 5 - 500) * 20), (const float *)ADDR(k_0_1f)));
+	int r = ftol(fmul_m((long double)((p * 5 - 500) * 20), AP(const float, ADDR(k_0_1f))));
 	g_soundBaseVolume = r;
 	return r;
 }
@@ -84,7 +84,7 @@ int (sound_setVolume)(int v)
    bits). Returns what the original leaves in eax */
 u32 (music_loopIfEnded)(void)
 {
-	void *stream = g_music;
+	void *stream = AP(void, g_music);
 	if (!stream)
 		return 0;
 	u32 pos[2];
@@ -94,9 +94,9 @@ u32 (music_loopIfEnded)(void)
 		return (u32)hi;
 	if (hi == length_hi && pos[0] < g_musicLength)
 		return g_musicLength;
-	stream = g_music;
+	stream = AP(void, g_music);
 	MUS_SEEK(stream, 0, 0);
-	stream = g_music;
+	stream = AP(void, g_music);
 	return MUS_SET_STATE(stream, 1);
 }
 
@@ -113,9 +113,9 @@ u32 (sound_playPanned)(u32 *sound, int mode, int value)
 	sd->panModes[sd->next] = mode;
 	if (mode == 1 || mode == 2)
 		sd->pans[sd->next] = value;
-	void *buffer = RELOC(sd->buffers[sd->next]);
+	void *buffer = AP(void, RELOC(sd->buffers[sd->next]));
 	SND_SET_PAN(buffer, sd->pans[sd->next]);
-	buffer = RELOC(sd->buffers[sd->next]);
+	buffer = AP(void, RELOC(sd->buffers[sd->next]));
 	SND_PLAY(buffer, 0);
 	u32 turn = (u32)sd->next;
 	if ((int)turn < 7) {
@@ -134,7 +134,7 @@ u32 (sound_loadMenuSounds)(void)
 	                               STR(0x4b1580, "sound/if_arm_equip.wav"), STR(0x4b1564, "sound/if_arm_equipslide.wav") };
 	u32 r = 0;
 	for (int k = 0; k < 10; k++)
-		g_menuSoundBuffers[k] = r = sound_loadWav((const char *)RELOC(names[k]));
+		g_menuSoundBuffers[k] = r = sound_loadWav(AP(const char, RELOC(names[k])));
 	return r;
 }
 
@@ -171,9 +171,9 @@ int (sound_initSoundTable)(const char *file, int volume)
 		return 0;
 	sound_freeAll();   /* sound_freeAll */
 	sound_setVolume(volume);   /* sound_setVolume */
-	void *f = crt_fopen(file, (const char *)STR(0x4ad170, "rb"));
+	void *f = crt_fopen(file, AP(const char, STR(0x4ad170, "rb")));
 	if (!f)
-		sys_fatalErrorN((void *)OBJ(g_logSound), (const char *)STR(0x4b42e8, "can't open file %s - initSoundTable()"), file);   /* sys_fatalError */
+		sys_fatalErrorN(AP(void, OBJ(g_logSound)), AP(const char, STR(0x4b42e8, "can't open file %s - initSoundTable()")), file);   /* sys_fatalError */
 	int index;
 	char name[0x100];
 	fread_scrambled(&index, 4, 1, f);
@@ -195,7 +195,7 @@ u32 (sound_playVolume)(int index, int volume)
 	u32 on = (*(u32 *)&g_soundOn);
 	if (!on)
 		return 0;
-	void *sound = GAME_VAR(void *, OBJ(g_soundTable) + index * 4);
+	void *sound = AP(void, GAME_VAR(APTR(void), OBJ(g_soundTable) + index * 4));
 	if (!sound)
 		return on;
 	int level;
@@ -206,7 +206,7 @@ u32 (sound_playVolume)(int index, int volume)
 	else
 		level = ftol(fmul_m((long double)volume, k_0_01f_4a9504) * (long double)(g_soundBaseVolume + 10000)) - 10000;
 	CALL_FN(sound_setNextVolume, void, void *, int)(sound, level);   /* sound_setNextVolume */
-	return CALL_FN(sound_playNext, u32, void *)(GAME_VAR(void *, OBJ(g_soundTable) + index * 4));   /* sound_playNext */
+	return CALL_FN(sound_playNext, u32, void *)(AP(void, GAME_VAR(APTR(void), OBJ(g_soundTable) + index * 4)));   /* sound_playNext */
 }
 
 /* 0x456ed0: sound index played at pos as heard from listener (side: the listener's right, the listener's up at
@@ -215,7 +215,7 @@ u32 (sound_playVolume)(int index, int volume)
    Nothing out of range or with sound off. The callers ignore the eax it leaves */
 void (sound_play3D)(int index, const float *pos, const float *listener, const float *side, float range)
 {
-	if (!g_soundOn || !GAME_VAR(void *, OBJ(g_soundTable) + index * 4))
+	if (!g_soundOn || !AP(void, GAME_VAR(APTR(void), OBJ(g_soundTable) + index * 4)))
 		return;
 	const float *up = g_vecUnitY;
 	float d[3], v[3], c[3];
@@ -229,7 +229,7 @@ void (sound_play3D)(int index, const float *pos, const float *listener, const fl
 	if (!(range > 0.0f))
 		return;
 	int base = g_soundBaseVolume + 10000;
-	int volume = ftol(fsubr_m(FDIV(distance, range), (const float *)ADDR(k_1f)) * (long double)base) - 10000;
+	int volume = ftol(fsubr_m(FDIV(distance, range), AP(const float, ADDR(k_1f))) * (long double)base) - 10000;
 	if (volume > 0)
 		volume = 0;
 	c[0] = f32(FMUL(d[1], up[2]) - FMUL(d[2], up[1]));
@@ -238,9 +238,9 @@ void (sound_play3D)(int index, const float *pos, const float *listener, const fl
 	Vec3_normalize(c);
 	long double across = FMUL(c[1], side[1]) + FMUL(c[2], side[2]);
 	across = across + FMUL(c[0], side[0]);
-	int pan = ftol(fmul_m(across, (const float *)(g_stereoReverse ? ADDR(k_m1500f) : ADDR(k_1500f_4a9700))));
-	CALL_FN(sound_setNextVolume, void, void *, int)(GAME_VAR(void *, OBJ(g_soundTable) + index * 4), volume);   /* sound_setNextVolume */
-	sound_playPanned(GAME_VAR(void *, OBJ(g_soundTable) + index * 4) /* g_soundTable[index] */, (pan > 0) + 1, pan);
+	int pan = ftol(fmul_m(across, AP(const float, (g_stereoReverse ? ADDR(k_m1500f) : ADDR(k_1500f_4a9700)))));
+	CALL_FN(sound_setNextVolume, void, void *, int)(AP(void, GAME_VAR(APTR(void), OBJ(g_soundTable) + index * 4)), volume);   /* sound_setNextVolume */
+	sound_playPanned(AP(void, GAME_VAR(APTR(void), OBJ(g_soundTable) + index * 4)) /* g_soundTable[index] */, (pan > 0) + 1, pan);
 }
 
 #undef CreateFileA
@@ -257,7 +257,7 @@ typedef struct __attribute__((packed)) {
 	u32 samplesPerSec, avgBytesPerSec;
 	u16 blockAlign, bitsPerSample;
 	u32 size, flags, bufferBytes, reserved;   /* DSBUFFERDESC */
-	void *format;
+	APTR(void) format;
 	u8 algorithm3D[16];
 } WaveDesc;
 
@@ -294,17 +294,17 @@ Sound *(sound_loadWav)(const char *name)
 	desc.size = 0x24;
 	desc.flags = 0xe2;
 	desc.bufferBytes = size;
-	desc.format = &desc;
+	desc.format = AREF(&desc);
 	u8 *data = operator_new(size);
 	Sound *sound = operator_new(100);
 	FILE_READ(file, data, size, &done);
 	FILE_CLOSE(file);
-	void *ds = g_directSound;
+	void *ds = AP(void, g_directSound);
 	if (SND_CREATE_BUFFER(ds, &desc.size, &sound->buffers[0])) {
-		MessageBoxA(NULL, (const char *)STR(0x4c4dc4, "SoundBuffer create error"), (const char *)STR(0x4c4de0, "Error"), 0);
+		MessageBoxA(NULL, AP(const char, STR(0x4c4dc4, "SoundBuffer create error")), AP(const char, STR(0x4c4de0, "Error")), 0);
 		return NULL;
 	}
-	void *buffer = sound->buffers[0], *locked;
+	void *buffer = AP(void, sound->buffers[0]), *locked;
 	SND_LOCK(buffer, size, &locked, &size);
 	memcpy(locked, data, size);
 	SND_UNLOCK(buffer, locked, size);
@@ -314,8 +314,8 @@ Sound *(sound_loadWav)(const char *name)
 		sound->pans[i] = 0;
 	}
 	for (int i = 0; i < 8; i++) {
-		ds = g_directSound;
-		SND_DUPLICATE(ds, sound->buffers[0], &sound->buffers[i]);
+		ds = AP(void, g_directSound);
+		SND_DUPLICATE(ds, AP(void, sound->buffers[0]), &sound->buffers[i]);
 	}
 	operator_delete(data);
 	return sound;
@@ -326,13 +326,13 @@ Sound *(sound_loadWav)(const char *name)
    released again when the buffer will not play) */
 int (sound_init)(void *hwnd)
 {
-	if (SND_CREATE((void **)ADDR(g_directSound)))
+	if (SND_CREATE(AP(APTR(void), ADDR(g_directSound))))
 		return 0;
-	void *ds = g_directSound;
+	void *ds = AP(void, g_directSound);
 	if (SND_SET_WINDOW(ds, hwnd))
 		return 0;
 	struct { u16 format, channels; u32 rate, bytesPerSecond; u16 blockAlign, bits, extra; } wave;   /* WAVEFORMATEX */
-	struct { u32 size, flags, bytes, reserved; void *format; u8 algorithm[16]; } desc;              /* DSBUFFERDESC */
+	struct { u32 size, flags, bytes, reserved; APTR(void) format; u8 algorithm[16]; } desc;              /* DSBUFFERDESC */
 	memset(&desc, 0, sizeof desc);
 	desc.size = 0x24;
 	desc.flags = 1;   /* DSBCAPS_PRIMARYBUFFER */
@@ -343,16 +343,16 @@ int (sound_init)(void *hwnd)
 	wave.blockAlign = 4;
 	wave.bits = 16;
 	wave.extra = 0;
-	ds = g_directSound;
-	if (SND_CREATE_BUFFER(ds, &desc, (void **)ADDR(g_primarySoundBuffer)))
+	ds = AP(void, g_directSound);
+	if (SND_CREATE_BUFFER(ds, &desc, AP(APTR(void), ADDR(g_primarySoundBuffer))))
 		return 0;
-	void *primary = g_primarySoundBuffer;
+	void *primary = AP(void, g_primarySoundBuffer);
 	SND_SET_FORMAT(primary, &wave);
-	primary = g_primarySoundBuffer;
+	primary = AP(void, g_primarySoundBuffer);
 	if (SND_PLAY(primary, 1)) {   /* looping */
-		ds = g_directSound;
+		ds = AP(void, g_directSound);
 		SND_RELEASE(ds);
-		g_directSound = NULL;
+		g_directSound = AREF(NULL);
 		return 0;
 	}
 	g_soundOn = 1;
@@ -367,20 +367,20 @@ u32 THISCALL (music_playMatch)(Scene *scene)
 	static const u32 kind1[4] = { STR(0x4b496c, "Music/trance soul.mp3"), STR(0x4b4a6c, "Music/Dark Core.mp3"), STR(0x4b4b6c, "Music/Mean street.mp3"), STR(0x4b4c6c, "Music/Thrill Seeker.mp3") };   /* trance soul, Dark Core, Mean street, Thrill Seeker */
 	static const u32 kind3[3] = { STR(0x4b4d6c, "Music/Forgotten.mp3"), STR(0x4b4e6c, "Music/desert wind.mp3"), STR(0x4b506c, "Music/ashes of past.mp3") };             /* Forgotten, desert wind, ashes of past */
 	static const u32 kind4[3] = { STR(0x4b516c, "Music/Speed of Light.mp3"), STR(0x4b536c, "Music/Fierce battle.mp3"), STR(0x4b546c, "Music/Valhalla.mp3") };             /* Speed of Light, Fierce battle, Valhalla */
-	const u32 *random = (const u32 *)OBJ(g_randTable);
+	const u32 *random = AP(const u32, OBJ(g_randTable));
 	u32 kindIndex = (u32)scene->musicKind - 1;
 	u32 n;
 	switch (kindIndex) {
 	case 0:
 		n = g_randPos++;
-		return music_play((const char *)RELOC(kind1[random[n & 0xfff] & 3]));   /* music_play */
+		return music_play(AP(const char, RELOC(kind1[random[n & 0xfff] & 3])));   /* music_play */
 	case 1:
 		g_randPos++;
-		return music_play((const char *)STR(0x4b4f6c, "Music/darkness.mp3"));   /* darkness */
+		return music_play(AP(const char, STR(0x4b4f6c, "Music/darkness.mp3")));   /* darkness */
 	case 2:
 	case 3:
 		n = ++g_randPos;
-		return music_play((const char *)(RELOC(kindIndex) == 2 ? kind3 : kind4)[random[n & 0xfff] % 3]);
+		return music_play(AP(const char, (RELOC(kindIndex) == 2 ? kind3 : kind4)[random[n & 0xfff] % 3]));
 	}
 	return kindIndex;
 }
@@ -402,21 +402,21 @@ int (music_play)(const char *name)
 			music_stop();
 		return 1;
 	}
-	void *stream;
+	APTR(void) stream;
 	unsigned short wname[0x104];
 	CoInitialize(NULL);   /* CoInitialize */
 	if (MUS_CREATE(&stream))
 		return 0;
 	MultiByteToWideChar(0, 0, name, -1, wname, 0x104);   /* MultiByteToWideChar */
-	if (MUS_INIT(stream))
+	if (MUS_INIT(AP(void, stream)))
 		return 0;
-	if (MUS_ADD_AUDIO(stream))   /* (the default audio renderer) */
+	if (MUS_ADD_AUDIO(AP(void, stream)))   /* (the default audio renderer) */
 		return 0;
-	if (MUS_OPEN(stream, wname))
+	if (MUS_OPEN(AP(void, stream), wname))
 		return 0;
 	g_music = stream;
-	MUS_SET_STATE(stream, 1);   /* run */
+	MUS_SET_STATE(AP(void, stream), 1);   /* run */
 	strcpy(g_musicFile, name);
-	MUS_DURATION(g_music, (void *)ADDR(g_musicLength));
+	MUS_DURATION(AP(void, g_music), AP(void, ADDR(g_musicLength)));
 	return 1;
 }

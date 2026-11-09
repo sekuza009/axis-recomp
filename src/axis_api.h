@@ -17,10 +17,24 @@
 #ifndef AXIS_API_H
 #define AXIS_API_H
 
+/* (the 64-bit build: the game's own API functions - src/app/win32.c - are game_axis_*; the loader's axis_* run them on
+   the arena's stack, standalone/host64.c) */
+#if __SIZEOF_POINTER__ == 8 && defined(AXIS_DIRECT)
+#define axis_init game_axis_init
+#define axis_frame game_axis_frame
+#define axis_running game_axis_running
+#define axis_textInput game_axis_textInput
+#define axis_shutdown game_axis_shutdown
+#define axis_key game_axis_key
+#define axis_char game_axis_char
+#endif
+
 /* (PORTABLE=3: the game is axis.dll, AXIS_DLL, and the host AxisHost.exe, AXIS_HOST - host/win32/main.c) */
-#if defined(AXIS_DLL)
+#if defined(AXIS_DLL) && !defined(_WIN32)
+#define AXIS_API __attribute__((visibility("default")))
+#elif defined(AXIS_DLL)
 #define AXIS_API __declspec(dllexport)
-#elif defined(AXIS_HOST)
+#elif defined(AXIS_HOST) && defined(_WIN32)
 #define AXIS_API __declspec(dllimport)
 #else
 #define AXIS_API

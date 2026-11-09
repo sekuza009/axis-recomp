@@ -59,7 +59,7 @@ void (font_initHangulGrids)(void)
    right, bottom left */
 static void pen_cell(const u32 corner[4], int g, int x0, int x1, int y0, int y1)
 {
-	const float *texel = (const float *)ADDR(k_0_00390625f);
+	const float *texel = AP(const float, ADDR(k_0_00390625f));
 	float left = f32(fmul_m((long double)x0, texel)), right = f32(fmul_m((long double)x1, texel));
 	float top = f32(fmul_m((long double)y0, texel)), bottom = f32(fmul_m((long double)y1, texel));
 	const float st[4][2] = { { left, top }, { right, top }, { right, bottom }, { left, bottom } };
@@ -79,10 +79,10 @@ int (pen_init)(const char *name)
 	static const u32 fixed[4] = { OBJ(g_penFixedTopLeft) - 8, OBJ(g_penFixedTopRight) - 8, OBJ(g_penFixedBottomRight) - 8, OBJ(g_penFixedBottomLeft) - 8 };
 	static const u32 proportional[4] = { OBJ(g_penPropTopLeft) - 8, OBJ(g_penPropTopRight) - 8, OBJ(g_penPropBottomRight) - 8, OBJ(g_penPropBottomLeft) - 8 };
 	if (g_penInitialized == 1) {
-		sys_errorMessageNoName((const char *)STR(0x4c56fc, "pen duplicate initialization - penInit()"));
+		sys_errorMessageNoName(AP(const char, STR(0x4c56fc, "pen duplicate initialization - penInit()")));
 		return 0;
 	}
-	g_penFontTexture = tex_getIdByName((*(void **)&g_textures), name, 0, 0, 0, 0, 0, 0, 0);
+	g_penFontTexture = tex_getIdByName(AGET(void, g_textures), name, 0, 0, 0, 0, 0, 0, 0);
 	for (int i = 0; i < 0x69; i++)
 		g_penFixedWidths[i] = 8;
 	int g = 1;
@@ -108,7 +108,7 @@ int (pen_init)(const char *name)
    0x46be96) may be its half-texel inset. Returns glDisable's eax */
 u32 (hud_drawDigits)(int x, int y, float scale, int value, int count, int padded)
 {
-	const float *texel = (const float *)ADDR(k_0_00390625f);                         /* 1/256 */
+	const float *texel = AP(const float, ADDR(k_0_00390625f));                         /* 1/256 */
 #ifdef AXIS_NATIVE
 	/* (the native build: its own, fixes/screen.c) */
 	static void (STDCALL *const fixTexCoord)(u32, u32) = fix_digitTexCoord;
@@ -116,7 +116,7 @@ u32 (hud_drawDigits)(int x, int y, float scale, int value, int count, int padded
 	void (STDCALL *const *texCoord)(u32, u32) = &fixTexCoord;
 #elif defined(AXIS_DIRECT)
 	/* (AxisRC.exe: the patch layer's two changes as its state, Wide) */
-	const float *heightFactor = *g_wide->digitHeight ? *g_wide->digitHeight : (const float *)ADDR(k_26f);   /* 26 */
+	const float *heightFactor = *g_wide->digitHeight ? *g_wide->digitHeight : AP(const float, ADDR(k_26f));   /* 26 */
 	void (STDCALL *const *texCoord)(u32, u32) = *g_wide->digitTexCoord
 		? (void (STDCALL *const *)(u32, u32))*g_wide->digitTexCoord
 		: (void (STDCALL *const *)(u32, u32))IMG(IMP_glTexCoord2f);   /* glTexCoord2f's import */
@@ -126,7 +126,7 @@ u32 (hud_drawDigits)(int x, int y, float scale, int value, int count, int padded
 #endif
 	int w = ftol(fmul_m(fld_m(&scale), k_28f));       /* 28 */
 	int h = ftol(fmul_m(fld_m(&scale), heightFactor));
-	int pad = ftol(fmul_m(fld_m(&scale), (const float *)ADDR(k_3f)));
+	int pad = ftol(fmul_m(fld_m(&scale), AP(const float, ADDR(k_3f))));
 	x += (int)((u32)w * (u32)count) / 2;
 	int top = y - h / 2, negative = 0;
 	if (value < 0) {
@@ -134,7 +134,7 @@ u32 (hud_drawDigits)(int x, int y, float scale, int value, int count, int padded
 		negative = 1;
 	}
 	glEnable(GL_TEXTURE_2D);
-	tex_bind(g_textures->banks[g_penFontTexture / 512], g_penFontTexture % 512);
+	tex_bind(AP(void, AP(TextureManager, g_textures)->banks[g_penFontTexture / 512]), g_penFontTexture % 512);
 	glBegin(GL_QUADS);
 	void (STDCALL *tc)(u32, u32) = *texCoord;
 	int place = 10;
@@ -190,15 +190,15 @@ u32 (font_penDraw)(int x, int y, int font, const char *format, ...)
 	const int *widths;
 	int height;
 	if (font) {
-		topLeft = (const u8 *)OBJ(g_penPropTopLeft); topRight = (const u8 *)OBJ(g_penPropTopRight); bottomRight = (const u8 *)OBJ(g_penPropBottomRight);
-		bottomLeft = (const u8 *)OBJ(g_penPropBottomLeft); widths = g_penPropWidths; height = 14;
+		topLeft = AP(const u8, OBJ(g_penPropTopLeft)); topRight = AP(const u8, OBJ(g_penPropTopRight)); bottomRight = AP(const u8, OBJ(g_penPropBottomRight));
+		bottomLeft = AP(const u8, OBJ(g_penPropBottomLeft)); widths = g_penPropWidths; height = 14;
 	} else {
-		topLeft = (const u8 *)OBJ(g_penFixedTopLeft); topRight = (const u8 *)OBJ(g_penFixedTopRight); bottomRight = (const u8 *)OBJ(g_penFixedBottomRight);
-		bottomLeft = (const u8 *)OBJ(g_penFixedBottomLeft); widths = g_penFixedWidths; height = 8;
+		topLeft = AP(const u8, OBJ(g_penFixedTopLeft)); topRight = AP(const u8, OBJ(g_penFixedTopRight)); bottomRight = AP(const u8, OBJ(g_penFixedBottomRight));
+		bottomLeft = AP(const u8, OBJ(g_penFixedBottomLeft)); widths = g_penFixedWidths; height = 8;
 	}
 	int left = x;
 	glEnable(GL_TEXTURE_2D);
-	tex_bind(g_textures->banks[g_penFontTexture / 512], g_penFontTexture % 512);
+	tex_bind(AP(void, AP(TextureManager, g_textures)->banks[g_penFontTexture / 512]), g_penFontTexture % 512);
 #ifdef AXIS_NATIVE   /* (the power-up countdown pixel-sharp: fixes/hud.c) */
 	int sharp[2], sharpOn = g_fixPenSharp && g_settings.sharpText && platform_texNearest(sharp);
 #endif

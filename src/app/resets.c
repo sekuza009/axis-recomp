@@ -7,7 +7,7 @@
    again), the menu keys held off (g_menuKeyGuard 5), the input line emptied (g_lineMaxLength, g_inputLineLength 0) */
 void (input_resetKeys)(void)
 {
-	memset((void *)OBJ(g_keySeen), 0, 0x100 * 4);
+	memset(AP(void, OBJ(g_keySeen)), 0, 0x100 * 4);
 	(*(u32 *)&g_menuKeyGuard) = 0x40a00000;   /* 5.0 */
 	g_lineMaxLength = 0;
 	g_inputLineLength = 0;
@@ -17,7 +17,7 @@ void (input_resetKeys)(void)
 void (input_clearKeyTable2)(void)
 {
 	g_unusedKeyTable2Flags = 0x8000;
-	memset((void *)OBJ(g_unusedKeyTable2), 0, 0x100 * 4);
+	memset(AP(void, OBJ(g_unusedKeyTable2)), 0, 0x100 * 4);
 	g_unusedKeyTable2Word1 = 0;
 	g_unusedKeyTable2Word0 = 0;
 	g_unusedKeyTable2Word2 = 0;
@@ -26,8 +26,8 @@ void (input_clearKeyTable2)(void)
 /* 0x4515d0: the server settings cleared: the game-list and ladder servers' names (50 bytes each) and ports */
 void (net_clearServerSettings)(void)
 {
-	memset((void *)OBJ(g_tcpDns), 0, 0xc * 4 + 2);
-	memset((void *)OBJ(g_ladderDns), 0, 0xc * 4 + 2);
+	memset(AP(void, OBJ(g_tcpDns)), 0, 0xc * 4 + 2);
+	memset(AP(void, OBJ(g_ladderDns)), 0, 0xc * 4 + 2);
 	g_lobbyTcpPort = 0;
 	g_ladderPort = 0;
 }

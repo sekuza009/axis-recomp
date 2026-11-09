@@ -3,12 +3,12 @@
 #include "../game.h"
 #include <string.h>
 
-#define FIELD(type, obj, offset) GAME_VAR(type, (u8 *)RELOC(obj) + (offset))
+#define FIELD(type, obj, offset) GAME_VAR(type, AP(u8, RELOC(obj)) + (offset))
 
 /* a shape (Shape): its parts (ShapePart, each with its material: texture) */
 #define PART_COUNT(shape) (((Shape *)(shape))->partCount)
-#define PART(shape, i) ((ShapePart *)((Shape *)(shape))->parts + (i))
-#define MATERIAL_SET(m) FIELD(void *, (*(u8 **)&g_textures), ((m) / 512) * 4 + 4)
+#define PART(shape, i) (AP(ShapePart, ((Shape *)(shape))->parts) + (i))
+#define MATERIAL_SET(m) AP(void, FIELD(APTR(void), AGET(u8, g_textures), ((m) / 512) * 4 + 4))
 
 /* a shape manager (ShapeManager): its shapes (items, 0x4c bytes each, count of them); its tint (tint[6]), on while bit 1 of
    bindFlags is set */
@@ -49,7 +49,7 @@ void THISCALL (shape_setTint)(ShapeManager *model, u32 h1, u32 s1, u32 v1, u32 h
 	BITS(model->tint[4]) = s2;
 	BITS(model->tint[5]) = v2;
 	for (int i = 0; i < SHAPE_COUNT((u8 *)model); i++)
-		shape_setMaterialTints(SHAPE((u8 *)model, i), h1, s1, v1, h2, s2, v2);
+		shape_setMaterialTints(AP(void, SHAPE((u8 *)model, i)), h1, s1, v1, h2, s2, v2);
 }
 
 /* 0x4675f0: the shape manager's tint record cleared (bindFlags bit 1 off, tint[0..5] 0) and each shape's part
@@ -62,7 +62,7 @@ void THISCALL (shape_clearTint)(ShapeManager *model)
 	for (int k = 0; k < 6; k++)
 		model->tint[k] = 0;
 	for (int i = 0; i < SHAPE_COUNT((u8 *)model); i++)
-		shape_markMaterialsChanged(SHAPE((u8 *)model, i));
+		shape_markMaterialsChanged(AP(void, SHAPE((u8 *)model, i)));
 }
 
 /* 0x466960: one RGBA colour added to (mode 0) or set on (mode 1) every part's vertex colours, which are the part's
@@ -110,7 +110,7 @@ int (shape_shadingColours)(u32 *out, int first, u8 *shape, void *factors, const 
 {
 	Shape *md = (Shape *)shape;
 	for (int i = 0; i < md->partCount; i++) {
-		ShapePart *part = (ShapePart *)(md->parts + i * 0x80);
+		ShapePart *part = AP(ShapePart, (md->parts + i * 0x80));
 		shape_getShadingColorBufferBy(out + part->colourBase, first, (u8 *)part, factors,
 		                                                                matrix);   /* shape_getShadingColorBufferBy */
 	}

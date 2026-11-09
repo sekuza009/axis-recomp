@@ -1,6 +1,9 @@
 /* split.h (tools/mkdatasrc.py): the variables split out of g_data, and in a fence build (AXIS_FENCE) their places
    in g_fence: AXIS_FENCE 1 at the end of their pages, the guard page after; 2 after the guard page */
 #pragma once
+#ifdef AXIS_64
+#include "split64.h"   /* (the 64-bit build: each at its original address, g_arena) */
+#else
 #ifdef AXIS_FENCE
 extern u8 g_fence[];
 #endif
@@ -5779,3 +5782,4 @@ extern u8 g_otherModeWidth_v[4];
 #else
 extern u8 g_otherModeHeight_v[4];
 #endif
+#endif   /* AXIS_64 */

@@ -33,7 +33,7 @@
 #define FULL_SCREEN(on) g_wide->fullScreen(on)
 #endif
 
-#define g_menuColour ((const u32 *)OBJ(g_rectColour))     /* RGBA floats */
+#define g_menuColour (AP(const u32, OBJ(g_rectColour)))     /* RGBA floats */
 
 /* the menu cursor's x (px = x * the scale, pixels) on the full screen, placed as it would be in the viewport it is
    drawn over (wide.h cursorX/cursorW), so it lines up with the menus */
@@ -186,14 +186,14 @@ u32 (menu_frameBegin)(void)
    menuState400_frame (arena lobby) and menuState300_frame tail-jump to it. Returns menu_drawRect's eax */
 u32 (menu_drawWhiteFade)(void)
 {
-	long double a = fadd_m(fmul_m(fld_m(&g_frameTime), k_0_015f), (const float *)ADDR(g_whiteFade));
+	long double a = fadd_m(fmul_m(fld_m(&g_frameTime), k_0_015f), AP(const float, ADDR(g_whiteFade)));
 	g_whiteFade = (float)a;
 	float alpha = (float)a;
 	if (a > k_1f)
 		alpha = 1.0f;
 	gfx_setProjection2D3D(2);
 	glLoadIdentity();
-	Color4_set_bits((void *)OBJ(g_rectColour), 0x3f800000, 0x3f800000, 0x3f800000, BITS(alpha));   /* the menu colour (1, 1, 1, alpha) */
+	Color4_set_bits(AP(void, OBJ(g_rectColour)), 0x3f800000, 0x3f800000, 0x3f800000, BITS(alpha));   /* the menu colour (1, 1, 1, alpha) */
 	return menu_drawRect(0, 0, 640, 480, 1);   /* menu_drawRect, filled */
 }
 
@@ -202,11 +202,11 @@ u32 (menu_drawWhiteFade)(void)
    point (g_menuCameraLook ..), y up. Returns gluLookAt's eax */
 u32 (gfx_setMenuCamera)(void)
 {
-	float z = (float)-fld_m((const float *)ADDR(g_menuEyeZ)), y = (float)-fld_m((const float *)ADDR(g_menuEyeY)),
-	      x = (float)-fld_m((const float *)ADDR(g_menuEyeX));
+	float z = (float)-fld_m(AP(const float, ADDR(g_menuEyeZ))), y = (float)-fld_m(AP(const float, ADDR(g_menuEyeY))),
+	      x = (float)-fld_m(AP(const float, ADDR(g_menuEyeX)));
 	glTranslatef(x, y, z);   /* glTranslatef */
 	glLoadIdentity();
-	const float *eye = (const float *)ADDR(g_menuEyeX), *at = (const float *)ADDR(g_menuCameraLook);
+	const float *eye = AP(const float, ADDR(g_menuEyeX)), *at = AP(const float, ADDR(g_menuCameraLook));
 	return IMPORT_FN(gluLookAt, u32, double, double, double, double, double, double, double, double, double)(
 		eye[0], eye[1], eye[2], at[0], at[1], at[2], 0.0, 1.0, 0.0);   /* gluLookAt */
 }
@@ -230,8 +230,8 @@ static int up_to(long double progress, int limit)
 /* the fading lines' alpha: 1 - frames x the frame time / 10, 0 once below */
 static float fading(void)
 {
-	long double a = frame_progress((const float *)ADDR(k_0_1f));
-	return a > k_1f ? 0.0f : f32(fsubr_m(a, (const float *)ADDR(k_1f)));   /* 1 - a */
+	long double a = frame_progress(AP(const float, ADDR(k_0_1f)));
+	return a > k_1f ? 0.0f : f32(fsubr_m(a, AP(const float, ADDR(k_1f))));   /* 1 - a */
 }
 
 static void line(int xa, int ya, int xb, int yb)
@@ -317,11 +317,11 @@ u32 (menu_drawMessageBox)(void)
 {
 	gfx_setProjection2D3D(2);
 	glLoadIdentity();
-	Color4_set_bits((void *)OBJ(g_rectColour), 0x3e4ccccd, 0x3e4ccccd, 0x3f333333, 0x3f333333);
+	Color4_set_bits(AP(void, OBJ(g_rectColour)), 0x3e4ccccd, 0x3e4ccccd, 0x3f333333, 0x3f333333);
 	menu_drawRect(0x50, 0xc8, 0x230, 0x118, 1);
-	Color4_set_bits((void *)OBJ(g_textColour), 0x3f800000, 0x3f800000, 0, 0x3f800000);
+	Color4_set_bits(AP(void, OBJ(g_textColour)), 0x3f800000, 0x3f800000, 0, 0x3f800000);
 	text_drawCentredLines16(0x69, 0xdc, 0x217, g_messageBoxLine);
-	return text_drawCentredLines16(0x69, 0xf4, 0x217, (const char *)MSG(0, "PRESS ENTER OR CLICK MOUSE"));
+	return text_drawCentredLines16(0x69, 0xf4, 0x217, AP(const char, MSG(0, "PRESS ENTER OR CLICK MOUSE")));
 }
 
 /* 0x428890: the text cursor at (x, y), a green bar 7 x 15 menu units, its alpha 1 - a timer (g_cursorBlinkTimer: grows by the
@@ -330,7 +330,7 @@ u32 (menu_drawTextCursor)(int x, int y)
 {
 	long double t = fmul_m(fld_m(&g_frameTime), k_0_035f);
 	int frames = g_frameCounter40 + 1;
-	t = fadd_m(t, (const float *)ADDR(g_cursorBlinkTimer));
+	t = fadd_m(t, AP(const float, ADDR(g_cursorBlinkTimer)));
 	g_frameCounter40 = frames;
 	g_cursorBlinkTimer = (float)t;
 	if (frames > 0x28)
@@ -338,7 +338,7 @@ u32 (menu_drawTextCursor)(int x, int y)
 	if (t > k_0_9f)
 		(*(int *)&g_cursorBlinkTimer) = 0;
 	gfx_setProjection2D3D(2);
-	float alpha = (float)fsub_m(fld_m((const float *)ADDR(k_1f)), (const float *)ADDR(g_cursorBlinkTimer));
+	float alpha = (float)fsub_m(fld_m(AP(const float, ADDR(k_1f))), AP(const float, ADDR(g_cursorBlinkTimer)));
 	glColor4f_bits(0, 0x3f800000, 0, BITS(alpha));
 	glBegin(GL_QUADS);
 	menu_vertex(x, y);
@@ -354,7 +354,7 @@ u32 (menu_drawInputLine)(int x, int y)
 {
 	if (g_frameOpening)
 		return (u32)g_frameOpening;
-	Color4_set_bits((void *)OBJ(g_textColour), 0, 0x3f800000, 0, 0x3f800000);
+	Color4_set_bits(AP(void, OBJ(g_textColour)), 0, 0x3f800000, 0, 0x3f800000);
 	menu_drawTextCursor(x + g_inputLineLength * 8, y);   /* menu_drawTextCursor: the cursor */
 	if (!g_inputLineHidden)
 		return text_draw8(x, y, g_inputLine);   /* text_draw8 */

@@ -35,7 +35,7 @@ u32 (net_sendPacketData)(int size, const void *data)
 	if (!net_hasSlot())
 		return 0;
 	if (size != 0x40)
-		sys_errorTerminate((const char *)STR(0x4d1640, "incorrect packet data size(%d/%d) - p..."), size, 0x40);
+		sys_errorTerminate(AP(const char, STR(0x4d1640, "incorrect packet data size(%d/%d) - p...")), size, 0x40);
 	u8 slot = g_localSlot;
 	g_send->size = (short)size;
 	memcpy(g_send->data, data, (u32)size);

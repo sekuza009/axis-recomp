@@ -37,7 +37,7 @@ void (lobby_enterPlayerScreen)(void)
 /* 0x404b30: sub-screen 1, the arena list: its 24 state words cleared, 999 (no selection), the refresh period 30 (1/60 s: half a second) */
 void (lobby_enterArenaList)(void)
 {
-	static const u32 cleared[] = { (u32)&g_camPoints[5], ADDR(g_joinThroughServer), ADDR(g_lobbyRefreshing), ADDR(g_lanSearchStarted), ADDR(g_serverSearching), ADDR(g_lobbyJoinStarted), ADDR(g_lanJoinRequest), ADDR(g_lanSearch),
+	static const u32 cleared[] = { ADDR_AT(g_camPoints, 5), ADDR(g_joinThroughServer), ADDR(g_lobbyRefreshing), ADDR(g_lanSearchStarted), ADDR(g_serverSearching), ADDR(g_lobbyJoinStarted), ADDR(g_lanJoinRequest), ADDR(g_lanSearch),
 	                               ADDR(g_lobbySearching), ADDR(g_arenaLanListBuilt), ADDR(g_arenaListFromServer), ADDR(g_gameCount), ADDR(g_listBlinkClock), ADDR(g_pickedGame), ADDR(g_gameListTop), ADDR(g_gameListRow),
 	                               ADDR(g_arenaListClickArmed), ADDR(g_arenaListClickTimer), ADDR(g_lobbyPanelsSliding), ADDR(g_joinConnecting), ADDR(g_lobbyConnectionOpen), ADDR(g_arenaUpdateNotice), ADDR(g_arenaListRefreshTimer), ADDR(g_typingArenaAddress) };
 	int z = (*(int *)&g_menuCameraLookZ);
@@ -63,13 +63,13 @@ void (lobby_loadArenaSettings)(void)
 	signed char map = g_arenaMap;
 	if (map >= 0x16 && map <= 0x18)
 		g_arenaMap = map = 0;
-	if (!strcmp(g_arenaName, (const char *)STR(0x4ad4a4, "AXIS ARENA"))) {
-		memset((void *)OBJ(g_arenaName), 0, 32);
+	if (!strcmp(g_arenaName, AP(const char, STR(0x4ad4a4, "AXIS ARENA")))) {
+		memset(AP(void, OBJ(g_arenaName)), 0, 32);
 		strcpy(g_arenaName, g_cfgPlayerName);
-		strcat(g_arenaName, (const char *)STR(0x4ad49c, " room"));
+		strcat(g_arenaName, AP(const char, STR(0x4ad49c, " room")));
 		map = g_arenaMap;
 	}
-	memset((void *)OBJ(g_newArenaName), 0, 32);
+	memset(AP(void, OBJ(g_newArenaName)), 0, 32);
 	strcpy(g_newArenaName, g_arenaName);
 	u8 b1 = g_arenaMaxPlayers, b2 = g_arenaRotation, b3 = g_arenaGameType, b4 = g_arenaFragLimit,
 	   b5 = g_arenaTimeLimit;
@@ -135,7 +135,7 @@ void (room_loadSettingsRecord)(void)
 	if (g_roomRecMap > 0x15 && g_roomRecMap < 0x19)
 		(*(u8 *)&g_roomRecMap) = 0;
 	(*(u8 *)&g_roomMap) = (*(u8 *)&g_roomRecMap);
-	memset((void *)OBJ(g_roomSettingsName), 0, 32);
+	memset(AP(void, OBJ(g_roomSettingsName)), 0, 32);
 	(*(u8 *)&g_roomGameMode) = (*(u8 *)&g_roomRecGameMode);   /* stored before the name is copied, as in the original */
 	strcpy(g_roomSettingsName, g_roomRecName);
 	g_roomMaxPlayers = (*(u8 *)&g_roomRecMaxPlayers);
@@ -183,7 +183,7 @@ void (ranking_enter)(void)
    and 10, no map rotation, in both the room's form and its record (the Ladder ID copied); the mech unpacked */
 void (room_setLadderDefaults)(void)
 {
-	strcpy(g_roomSettingsName, (const char *)STR(0x4b17bc, "Axis Ladder Game"));
+	strcpy(g_roomSettingsName, AP(const char, STR(0x4b17bc, "Axis Ladder Game")));
 	(*(char *)&g_roomMaxPlayers) = 8;
 	(*(char *)&g_roomGameMode) = 0;
 	strcpy(g_ladderIdCopy, g_ladderId);
@@ -217,9 +217,9 @@ void (room_copyAccountRecord)(void)
 	(*(u8 *)&g_roomGameMode) = (*(u8 *)&g_roomRecGameMode);
 	g_roomFragLimit = g_roomRecFragLimit;
 	g_roomTimeLimit = g_roomRecTimeLimit;
-	memcpy((void *)OBJ(g_roomMechKept), (void *)OBJ(g_roomMech), 11);
-	memcpy((void *)OBJ(g_roomColoursKept), (void *)OBJ(g_roomColours), 0x90);
-	static const u32 copy[6][2] = { { ADDR(g_pilotLevelKept), ADDR(g_pilotLevel) }, { ADDR(g_pilotExpKept), ADDR(g_pilotExp) }, { (u32)&g_pilotStatsKept[7], ADDR(g_pilotKillRate) },
+	memcpy(AP(void, OBJ(g_roomMechKept)), AP(void, OBJ(g_roomMech)), 11);
+	memcpy(AP(void, OBJ(g_roomColoursKept)), AP(void, OBJ(g_roomColours)), 0x90);
+	static const u32 copy[6][2] = { { ADDR(g_pilotLevelKept), ADDR(g_pilotLevel) }, { ADDR(g_pilotExpKept), ADDR(g_pilotExp) }, { ADDR_AT(g_pilotStatsKept, 7), ADDR(g_pilotKillRate) },
 	                                { ADDR(g_pilotKillsKept), ADDR(g_pilotKills) }, { ADDR(g_pilotDeathsKept), ADDR(g_pilotDeaths) }, { ADDR(g_pilotGamesKept), ADDR(g_pilotGames) } };
 	for (int k = 0; k < 6; k++)
 		GAME_VAR(int, copy[k][0]) = GAME_VAR(int, copy[k][1]);
@@ -228,8 +228,8 @@ void (room_copyAccountRecord)(void)
 /* a PilotStats record's seven fields copied (all but rank, in the original's order) */
 static void stats_copy(u32 dst, u32 src)
 {
-	PilotStats *d = (PilotStats *)RELOC(dst);
-	const PilotStats *s = (const PilotStats *)RELOC(src);
+	PilotStats *d = AP(PilotStats, RELOC(dst));
+	const PilotStats *s = AP(const PilotStats, RELOC(src));
 	d->level = s->level;
 	BITS(d->power) = BITS(s->power);
 	BITS(d->killRate) = BITS(s->killRate);
@@ -283,11 +283,11 @@ void (pilotRecord_syncCopies)(void)
    stats; then the room's settings, the Ladder record (g_ladderName ..) and the mech */
 void (login_takeAccountRecord)(void)
 {
-	strcpy(g_ladderId, (const char *)(OBJ(g_profileReply) + 0x4));
-	strcpy(g_ladderEmail, (const char *)(OBJ(g_profileReply) + 0x22));
-	memcpy((void *)OBJ(g_roomMech), (void *)(OBJ(g_profileReply) + 0x54), 11);
+	strcpy(g_ladderId, AP(const char, (OBJ(g_profileReply) + 0x4)));
+	strcpy(g_ladderEmail, AP(const char, (OBJ(g_profileReply) + 0x22)));
+	memcpy(AP(void, OBJ(g_roomMech)), AP(void, (OBJ(g_profileReply) + 0x54)), 11);
 	for (int k = 0; k < 6; k++) {
-		memcpy((void *)(OBJ(g_roomColours) + k * 0x18), (void *)((OBJ(g_profileReply) + 0x5f) + k * 0x18), 0x18);
+		memcpy(AP(void, (OBJ(g_roomColours) + k * 0x18)), AP(void, ((OBJ(g_profileReply) + 0x5f) + k * 0x18)), 0x18);
 		ColourChoice *c = &((ColourChoice *)g_roomColours)[(u32)k];
 		if (!(c->first[1] >= k_0f))   /* the first tint's saturation and value: not below 0 */
 			BITS(c->first[1]) = 0;
@@ -300,7 +300,7 @@ void (login_takeAccountRecord)(void)
 	for (int k = 0; k < 7; k++)
 		GAME_VAR(int, replyStats[k][0]) = GAME_VAR(int, replyStats[k][1]);
 	room_copyAccountRecord();
-	memset((void *)OBJ(g_ladderName), 0, 7 * 4 + 2);
+	memset(AP(void, OBJ(g_ladderName)), 0, 7 * 4 + 2);
 	strcpy(g_ladderName, g_ladderId);
 	static const u32 ladderStats[6][2] = { { ADDR(g_ladderLevel), ADDR(g_pilotLevel) }, { ADDR(g_ladderExp), ADDR(g_pilotExp) }, { ADDR(g_ladderKills), ADDR(g_pilotKills) },
 	                                 { ADDR(g_ladderDeaths), ADDR(g_pilotDeaths) }, { ADDR(g_ladderGames), ADDR(g_pilotGames) }, { ADDR(g_ladderPower), ADDR(g_pilotPower) } };
@@ -331,12 +331,12 @@ u32 (newId_register)(void)
 	strcpy(g_ladderId, g_accountName);
 	strcpy(g_ladderEmail, g_accountEmail);
 	default_mech(g_roomMechKept, ((u8 *)g_roomColoursKept));
-	default_mech(g_roomMech, (u8 *)OBJ(g_roomColours));
+	default_mech(g_roomMech, AP(u8, OBJ(g_roomColours)));
 	g_pilotLevelKept = 1;
 	g_pilotLevel = 1;
-	memset((void *)OBJ(g_ladderName), 0, 7 * 4 + 2);
+	memset(AP(void, OBJ(g_ladderName)), 0, 7 * 4 + 2);
 	static const u32 zero[] = { ADDR(g_pilotExp), ADDR(g_pilotKills), ADDR(g_pilotDeaths), ADDR(g_pilotGames), ADDR(g_pilotKillRate), ADDR(g_pilotExpKept), ADDR(g_pilotKillsKept), ADDR(g_pilotDeathsKept),
-	                            ADDR(g_pilotGamesKept), (u32)&g_pilotStatsKept[7] };
+	                            ADDR(g_pilotGamesKept), ADDR_AT(g_pilotStatsKept, 7) };
 	for (unsigned k = 0; k < sizeof zero / sizeof zero[0]; k++)
 		GAME_VAR(int, zero[k]) = 0;
 	strcpy(g_ladderName, g_ladderId);
@@ -345,7 +345,7 @@ u32 (newId_register)(void)
 	static const u32 zero2[] = { ADDR(g_ladderExp), ADDR(g_ladderKills), ADDR(g_ladderDeaths), ADDR(g_ladderGames) };
 	for (int k = 0; k < 4; k++)
 		GAME_VAR(int, zero2[k]) = 0;
-	AccountPacket *record = g_accountPacket;
+	AccountPacket *record = AP(AccountPacket, g_accountPacket);
 	strcpy(record->name, g_accountName);
 	strcpy(record->password, g_accountPassword);
 	strcpy(record->email, g_accountEmail);
@@ -520,7 +520,7 @@ u32 (arenaJoinBox_clicks)(void)
 	g_joinTimedOut = 0;
 	dplay_leaveSession();   /* dplay_leaveSession */
 	g_joinConnecting = 0;
-	return ((u32)KillTimer(g_mainWindow, 0x378));   /* KillTimer */
+	return ((u32)KillTimer(AP(void, g_mainWindow), 0x378));   /* KillTimer */
 }
 
 /* 0x403870: the map list's keys: O takes the list (mapList_ok; a second O test right after, closing the list with a
@@ -547,7 +547,7 @@ u32 (mapList_keys)(void)
    second, back to the main menu (state 300), the connection closed, the mech reloaded from the profile */
 u32 (room_leave)(void)
 {
-	strcpy(g_netLeaveBuffer, g_ladderId);
+	strcpy(AP(char, g_netLeaveBuffer), g_ladderId);
 	net_send(0x19, 0x65);   /* net_send */
 	TIME_SLEEP(500);                   /* Sleep */
 	menuCamera_setMove(4);
@@ -590,7 +590,7 @@ u32 (arena_editAddress)(void)
 	input_releaseKeyboard();
 	g_textFieldOpen = 1;
 	menu_clearInputBuffer(0x14);
-	memset((void *)OBJ(g_inputLine), 0, 0x400);
+	memset(AP(void, OBJ(g_inputLine)), 0, 0x400);
 	g_typedArenaAddress = 0;
 	g_inputLineX = g_arenaGameListLeft + 0xd8;
 	g_inputLineY = g_arenaGameListTop + 0xd0;
@@ -631,9 +631,9 @@ static u32 settings_store(GameSettings *from, GameSettings *to, u32 then)
 }
 /* 0x405140: the arena being created (g_newArenaName) kept as the arena settings (g_arenaName), its locked flag set
    from the password, then axis.cfg written (cfg_writeAxisCfg) */
-u32 (lobby_keepArenaSettings)(void) { return settings_store((GameSettings *)OBJ(g_newArenaName), (GameSettings *)OBJ(g_arenaName), FN(cfg_writeAxisCfg)); }
+u32 (lobby_keepArenaSettings)(void) { return settings_store(AP(GameSettings, OBJ(g_newArenaName)), AP(GameSettings, OBJ(g_arenaName)), FN(cfg_writeAxisCfg)); }
 /* 0x433640: the room's settings kept (g_roomRecName) and written to the registry (reg_writeLadderSettings) */
-u32 (room_keepSettings)(void) { return settings_store((GameSettings *)OBJ(g_roomSettingsName), (GameSettings *)OBJ(g_roomRecName), FN(reg_writeLadderSettings)); }
+u32 (room_keepSettings)(void) { return settings_store(AP(GameSettings, OBJ(g_roomSettingsName)), AP(GameSettings, OBJ(g_roomRecName)), FN(reg_writeLadderSettings)); }
 
 /* 0x40d390: the create-arena page's frame: the tunnel, then (camera modes other than 0 and 1, not on sub-screen 5)
    just the form's frame while it opens (g_frameOpening), else the arena record kept in range (players 0 .. 16 else 8,
@@ -687,7 +687,7 @@ u32 (hostError_keys)(void)
 	u32 limits = (*(u32 *)&g_arenaFragLimit);
 	g_mapRotation = (*(signed char *)&g_arenaRotation);
 	g_mapIndex = g_arenaMap;
-	memcpy((void *)OBJ(g_gameTitle), (const void *)OBJ(g_arenaName), 32);
+	memcpy(AP(void, OBJ(g_gameTitle)), AP(const void, OBJ(g_arenaName)), 32);
 	g_chosenGameMode = (*(signed char *)&g_arenaGameType);
 	(*(u32 *)&g_fragLimit) = limits & 0xff;
 	(*(u32 *)&g_timeLimit) = (limits >> 8) & 0xff;
@@ -742,7 +742,7 @@ static void take_session(const SessionEntry *rec)
 {
 	music_stop();
 	g_mapIndex = rec->map;
-	memcpy((void *)OBJ(g_gameTitle), rec->name, 32);
+	memcpy(AP(void, OBJ(g_gameTitle)), rec->name, 32);
 	g_mapRotation = rec->rotation;
 	g_arenaCameraMode = 0;
 	g_leavingForMatch = 1;
@@ -793,7 +793,7 @@ void (arena_joinAnswer)(void)
 		g_joinRow = 0;
 		if (!g_sessionFound)
 			return;
-		const SessionDesc *in = (const SessionDesc *)g_receivedSession;
+		const SessionDesc *in = AP(const SessionDesc, g_receivedSession);
 		rec = g_joinedSessionRec;
 		rec->guid = in->guid;
 		rec->fragLimit = in->fragLimit;
@@ -806,7 +806,7 @@ void (arena_joinAnswer)(void)
 		if (!g_sessionFound)
 			return;
 		rec = &g_sessionList[pick];
-		rec->guid = ((const SessionDesc *)g_receivedSession)->guid;
+		rec->guid = (AP(const SessionDesc, g_receivedSession))->guid;
 		g_arenaFragLimit = rec->fragLimit;
 		g_arenaTimeLimit = rec->timeLimit;
 	}
@@ -875,7 +875,7 @@ u32 (lobby_topPageClicks)(void)
 	if (g_leavingForMatch == 1)
 		return 0;
 	if (g_mouseClick) {
-		const Outline *buttons = (const Outline *)OBJ(g_lobbyTopOutlines);
+		const Outline *buttons = AP(const Outline, OBJ(g_lobbyTopOutlines));
 		for (int i = 0; i < 4; i++) {
 			if (point_in_outline(g_mouseX, g_mouseY, buttons[i]) != 1)
 				continue;
@@ -915,7 +915,7 @@ u32 (lobbyPlayer_keys)(void)
 		g_typingArenaPlayerName = 0;
 		if (!length)
 			return 0;
-		memset((void *)OBJ(g_arenaPlayerName), 0, 32);
+		memset(AP(void, OBJ(g_arenaPlayerName)), 0, 32);
 		strcpy(g_arenaPlayerName, typed);
 		return length + 1;
 	}
@@ -951,7 +951,7 @@ int (lobby_openConnection)(void)
 			menu_showMessage(r == 0 ? 0x3d : 0x46);   /* the message */
 			return 0;
 		}
-		if (!net_asyncSelect(g_mainWindow, 100)) {   /* net_asyncSelect */
+		if (!net_asyncSelect(AP(void, g_mainWindow), 100)) {   /* net_asyncSelect */
 			menu_showMessage(0x3e);
 			return 0;
 		}
@@ -975,7 +975,7 @@ int (lobby_openConnection)(void)
 	(*(u32 *)&g_listBlinkClock) = 0x447a0000;   /* 1000.0f */
 	g_gameListTop = 0;
 	g_gameListRow = 0;
-	*g_arenaListRequest = 0x180001;   /* the message to send */
+	*AP(u32, g_arenaListRequest) = 0x180001;   /* the message to send */
 	net_send(0xd, 100);   /* net_send */
 	g_joinConnecting = 0;
 	g_listRefreshPeriod = 30;
@@ -993,22 +993,22 @@ u32 (arena_startFromLauncher)(void)
 	if (g_launchedAsHost != 1) {
 		menuState400_enter();   /* menuState400_enter */
 		lobby_enterArenaList();   /* lobby_enterArenaList */
-		memset((void *)ADDR(g_typedArenaAddress), 0, 24);
-		strcpy((char *)ADDR(g_typedArenaAddress), g_serverAddressArg);
+		memset(AP(void, ADDR(g_typedArenaAddress)), 0, 24);
+		strcpy(AP(char, ADDR(g_typedArenaAddress)), g_serverAddressArg);
 		u32 r = arena_joinListed(99999);   /* arena_joinListed */
 		g_launchStartStep = 0x69;
 		return r;
 	}
-	if (!arena_loadSettings((const char *)STR(0x4ad5e4, "axiswl.dat")))
+	if (!arena_loadSettings(AP(const char, STR(0x4ad5e4, "axiswl.dat"))))
 		return PostQuitMessage(0);                               /* PostQuitMessage */
-	memset((void *)OBJ(g_arenaName), 0, 32);
+	memset(AP(void, OBJ(g_arenaName)), 0, 32);
 	strcpy(g_arenaName, g_arenaGameName);
 	u8 secret = (*(u8 *)&g_arenaFileSecret);   /* (1: a password game) */
 	g_arenaPassword = 0;
 	g_arenaLocked = secret;
 	g_arenaPassword4 = 0;
 	if (secret == 1)
-		strcpy((char *)ADDR(g_arenaPassword), (const char *)ADDR(g_arenaFilePassword));
+		strcpy(AP(char, ADDR(g_arenaPassword)), AP(const char, ADDR(g_arenaFilePassword)));
 	g_arenaFragLimit = (*(u8 *)&g_arenaFileFragLimit);
 	g_arenaGameType = (*(u8 *)&g_arenaFileGameType);
 	g_arenaRotation = 0;
@@ -1050,7 +1050,7 @@ u32 (hostError_clicks)(void)
 	music_stop();
 	g_mapRotation = (signed char)g_arenaRotation;
 	g_mapIndex = (signed char)(*(u8 *)&g_arenaMap);
-	memcpy((void *)OBJ(g_gameTitle), (const void *)OBJ(g_arenaName), 32);
+	memcpy(AP(void, OBJ(g_gameTitle)), AP(const void, OBJ(g_arenaName)), 32);
 	g_chosenGameMode = (signed char)g_arenaGameType;
 	g_fragLimit = g_arenaFragLimit;
 	g_timeLimit = g_arenaTimeLimit;
@@ -1071,19 +1071,19 @@ u32 (arena_takeHostAnswer)(void)
 	int state = g_hostAnswer;
 	if (state == 2)
 		return 2;
-	const u8 *arena = (const u8 *)OBJ(g_arenaName);
+	const u8 *arena = AP(const u8, OBJ(g_arenaName));
 	if (state == 1) {
 		g_connectionAwaited = 0;
 		g_leavingForMatch = 1;
 		g_netRole = 1;
 		music_stop();
 		g_arenaCameraMode = 0;
-		CALL_FN(dplay_openConnection, void, int, int)(0, 0);   /* dplay_openConnection */
-		dplay_host(arena, (const void *)OBJ(g_cfgPlayerName),
+		CALL_FN(dplay_openConnection, void, int, const char *)(0, AP(const char, 0));   /* dplay_openConnection */
+		dplay_host(arena, AP(const void, OBJ(g_cfgPlayerName)),
 			(int)(signed char)arena[0x22] << 8 | (int)(signed char)arena[0x20], (signed char)arena[0x21], (signed char)arena[0x23],
 			arena[0x24], arena[0x25], (*(u32 *)&g_playerCorporation));   /* dplay_host: host */
 		g_mapIndex = (signed char)arena[0x20];
-		memcpy((void *)OBJ(g_gameTitle), arena, 32);
+		memcpy(AP(void, OBJ(g_gameTitle)), arena, 32);
 		g_mapRotation = (signed char)arena[0x22];
 		g_chosenGameMode = (signed char)arena[0x23];
 		g_fragLimit = arena[0x24];
@@ -1124,17 +1124,17 @@ u32 (arenaCreate_keys)(void)
 			return r;
 		}
 		g_editingNewArenaName = 0;
-		memset((void *)OBJ(g_newArenaName), 0, 32);
+		memset(AP(void, OBJ(g_newArenaName)), 0, 32);
 		strcpy(g_newArenaName, line);
 		return strlen(line) + 1;
 	}
 	if (g_typingArenaPassword) {   /* the password */
 		if (g_textFieldOpen)
 			return mode;
-		memset((void *)ADDR(g_newArenaPassword), 0, 8);
+		memset(AP(void, ADDR(g_newArenaPassword)), 0, 8);
 		g_typingArenaPassword = 0;
 		g_inputLineHidden = 0;
-		strcpy((char *)ADDR(g_newArenaPassword), line);
+		strcpy(AP(char, ADDR(g_newArenaPassword)), line);
 		return 0;
 	}
 	static const u32 limit[2][2] = { { ADDR(g_editingNewArenaFragLimit), ADDR(g_newArenaFragLimit) }, { ADDR(g_editingNewArenaTimeLimit), ADDR(g_newArenaTimeLimit) } };
@@ -1201,7 +1201,7 @@ u32 (arena_createClick)(void)
 	if (!g_mouseClick || mode != 2)
 		return mode;
 	u32 button = ((u32)createArena_hitTest(g_mouseX, g_mouseY));   /* createArena_hitTest */
-	u8 *players = (u8 *)ADDR(g_newArenaMaxPlayers), *rotation = (u8 *)ADDR(g_newArenaRotation), *type = (u8 *)ADDR(g_newArenaMode);
+	u8 *players = AP(u8, ADDR(g_newArenaMaxPlayers)), *rotation = AP(u8, ADDR(g_newArenaRotation)), *type = AP(u8, ADDR(g_newArenaMode));
 	u32 r;
 	u8 old;
 	switch (button) {
@@ -1293,7 +1293,7 @@ void (arenaGames_keys)(void)
 			g_joinTimedOut = 0;
 			dplay_leaveSession();
 			g_joinConnecting = 0;
-			KillTimer(g_mainWindow, 0x378);
+			KillTimer(AP(void, g_mainWindow), 0x378);
 		}
 		return;
 	}
@@ -1434,7 +1434,7 @@ static u32 kill_rate(int kills, int deaths, int checked)
 	int total = kills + deaths;
 	if (checked && total <= 0)
 		return 0;
-	float rate = f32(fmul_m((long double)kills, (const float *)ADDR(k_100f)) / (long double)total);   /* x 100 / total */
+	float rate = f32(fmul_m((long double)kills, AP(const float, ADDR(k_100f))) / (long double)total);   /* x 100 / total */
 	return BITS(rate);
 }
 
@@ -1443,7 +1443,7 @@ static void power_from_rate(u32 rate)
 {
 	float r;
 	BITS(r) = rate;
-	R_POWER = f32(fmul_m(fld_m(&r), (const float *)ADDR(k_0_01f)) * (long double)R_EXP);
+	R_POWER = f32(fmul_m(fld_m(&r), AP(const float, ADDR(k_0_01f))) * (long double)R_EXP);
 }
 
 /* a PilotStats record (the account record or its kept copy) taken back as the record, when the record's kills are
@@ -1466,7 +1466,7 @@ static u32 take_back(u32 stats, u32 rate)
    record (g_pilotLevel) and its kept copy (g_pilotLevelKept), and sent to the game server (kind 0x11) */
 static void record_send(u32 rate, int name)
 {
-	PlayerRecordPacket *packet = (PlayerRecordPacket *)g_netPlayerRecordPacket;
+	PlayerRecordPacket *packet = AP(PlayerRecordPacket, g_netPlayerRecordPacket);
 	if (name)
 		strcpy(packet->name, g_ladderName);
 	packet->games = R_GAMES;
@@ -1524,7 +1524,7 @@ static void special_map(const char *name, u8 *map)
 		{ 0x17, { STR(0x4ad4e8, "\260\263\271\337\300\332\271\346"), STR(0x4ad4d8, "developer room"), STR(0x4ad4c8, "DEVELOPER ROOM"), STR(0x4ad4b8, "Developer Room") } } };
 	for (int r = 0; r < 3; r++)
 		for (int k = 0; k < 4; k++)
-			if (!strcmp(name, (const char *)rooms[r].names[k])) {
+			if (!strcmp(name, AP(const char, rooms[r].names[k]))) {
 				*map = rooms[r].map;
 				break;
 			}
@@ -1542,7 +1542,7 @@ static int host_arena(void)
 static void take_arena(void)
 {
 	g_mapIndex = g_arenaMap;
-	memcpy((void *)OBJ(g_gameTitle), (const void *)OBJ(g_arenaName), 32);
+	memcpy(AP(void, OBJ(g_gameTitle)), AP(const void, OBJ(g_arenaName)), 32);
 	g_mapRotation = (signed char)g_arenaRotation;
 	g_chosenGameMode = (signed char)g_arenaGameType;
 	g_fragLimit = g_arenaFragLimit;
@@ -1562,7 +1562,7 @@ void (lobby_hostArenaIpx)(void)
 	lobby_keepArenaSettings();
 	int hosted = dplay_openConnection(1, NULL);
 	if (hosted) {
-		special_map(g_arenaName, (u8 *)ADDR(g_arenaMap));
+		special_map(g_arenaName, AP(u8, ADDR(g_arenaMap)));
 		hosted = host_arena();
 	}
 	if (!hosted) {
@@ -1590,7 +1590,7 @@ void (lobby_hostArenaTcpIp)(void)
 	music_stop();
 	g_arenaCameraMode = 0;
 	dplay_openConnection(0, NULL);
-	special_map(g_arenaName, (u8 *)ADDR(g_arenaMap));
+	special_map(g_arenaName, AP(u8, ADDR(g_arenaMap)));
 	host_arena();
 	take_arena();
 }
@@ -1610,13 +1610,13 @@ int (lobby_announceArena)(void)
 		menu_showMessage(0x46);
 		return 0;
 	}
-	if (!net_asyncSelect(g_mainWindow, 100)) {
+	if (!net_asyncSelect(AP(void, g_mainWindow), 100)) {
 		menu_showMessage(0x3e);
 		return 0;
 	}
 	g_hostGameSetUp = 1;
-	special_map(g_arenaName, (u8 *)ADDR(g_arenaMap));
-	ArenaRecord *packet = g_arenaPacket;
+	special_map(g_arenaName, AP(u8, ADDR(g_arenaMap)));
+	ArenaRecord *packet = AP(ArenaRecord, g_arenaPacket);
 	packet->kind = 0x18;
 	packet->rotation = g_arenaRotation;
 	packet->timeLimit = g_arenaTimeLimit;
@@ -1626,10 +1626,10 @@ int (lobby_announceArena)(void)
 	packet->map = g_arenaMap;
 	packet->maxPlayers = g_arenaMaxPlayers;
 	packet->locked = g_arenaLocked;
-	lstrcpyA(packet->password, (const char *)ADDR(g_arenaPassword));
-	lstrcpyA(g_arenaPacket->name, g_arenaName);
+	lstrcpyA(packet->password, AP(const char, ADDR(g_arenaPassword)));
+	lstrcpyA(AP(ArenaRecord, g_arenaPacket)->name, g_arenaName);
 	jmp_net_getLocalAddress();
-	lstrcpyA(g_arenaPacket->address, g_localAddress);
+	lstrcpyA(AP(ArenaRecord, g_arenaPacket)->address, g_localAddress);
 	g_connectionAwaited = 1;
 	g_hostAnswer = 2;
 	net_send(0xa, 0x64);
@@ -1643,11 +1643,11 @@ int (lobby_announceArena)(void)
 void (room_announceGame)(void)
 {
 	room_keepSettings();
-	special_map(g_roomRecName, (u8 *)ADDR(g_roomRecMap));
-	RoomRecord *packet = g_roomPacket;
+	special_map(g_roomRecName, AP(u8, ADDR(g_roomRecMap)));
+	RoomRecord *packet = AP(RoomRecord, g_roomPacket);
 	crt_strncpy(packet->hostName, g_ladderId, 0x1e);   /* strncpy */
-	packet = g_roomPacket;
-	const GameSettings *room = (const GameSettings *)OBJ(g_roomRecName);
+	packet = AP(RoomRecord, g_roomPacket);
+	const GameSettings *room = AP(const GameSettings, OBJ(g_roomRecName));
 	packet->kind = 0x18;
 	packet->rotation = room->rotation;
 	packet->timeLimit = room->limit[1];
@@ -1657,10 +1657,10 @@ void (room_announceGame)(void)
 	packet->map = room->map;
 	packet->maxPlayers = room->maxPlayers;
 	packet->locked = room->locked;
-	lstrcpyA(packet->password, ((const GameSettings *)OBJ(g_roomRecName))->password);
-	lstrcpyA(g_roomPacket->name, g_roomRecName);
+	lstrcpyA(packet->password, (AP(const GameSettings, OBJ(g_roomRecName)))->password);
+	lstrcpyA(AP(RoomRecord, g_roomPacket)->name, g_roomRecName);
 	jmp_net_getLocalAddress();
-	lstrcpyA(g_roomPacket->address, g_localAddress);
+	lstrcpyA(AP(RoomRecord, g_roomPacket)->address, g_localAddress);
 	g_connectionAwaited = 1;
 	g_hostAnswer = 2;
 	net_send(0x12, 0x65);

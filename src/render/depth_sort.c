@@ -58,10 +58,10 @@ static void depth_sort(const QsGlobals *q, u32 *e, int lo, int hi)
 #undef PIV
 }
 
-static const QsGlobals k_triangleSort = { (OBJ(g_sortState) + 0x2000), OBJ(g_sortBounds), (u32)&g_sortBounds[2048], OBJ(g_sortState), (OBJ(g_sortState) + 0x4008), (OBJ(g_sortState) + 0xa018), (OBJ(g_sortState) + 0x6008) };
+static const QsGlobals k_triangleSort = { (OBJ(g_sortState) + 0x2000), OBJ(g_sortBounds), ADDR_AT(g_sortBounds, 2048), OBJ(g_sortState), (OBJ(g_sortState) + 0x4008), (OBJ(g_sortState) + 0xa018), (OBJ(g_sortState) + 0x6008) };
 
 void (render_depthSortTriangles)(u32 *e, int lo, int hi) { depth_sort(&k_triangleSort, e, lo, hi); }
 
-static const QsGlobals k_billboardSort = { (OBJ(g_sortState) + 0x2004), (u32)&g_sortBounds[4096], (u32)&g_sortBounds[6144], (OBJ(g_sortState) + 0x8018), (OBJ(g_sortState) + 0x6018), (OBJ(g_sortState) + 0x2008), (OBJ(g_sortState) + 0x6010) };
+static const QsGlobals k_billboardSort = { (OBJ(g_sortState) + 0x2004), ADDR_AT(g_sortBounds, 4096), ADDR_AT(g_sortBounds, 6144), (OBJ(g_sortState) + 0x8018), (OBJ(g_sortState) + 0x6018), (OBJ(g_sortState) + 0x2008), (OBJ(g_sortState) + 0x6010) };
 
 void (render_depthSortBillboards)(u32 *e, int lo, int hi) { depth_sort(&k_billboardSort, e, lo, hi); }

@@ -38,7 +38,87 @@ typedef uint64_t u64;
    itself is kept unmapped (inaccessible) in AxisRC.exe, so an address missed here stops the game at once */
 #define IMG_BASE 0x400000u
 #define IMG_SIZE 0x76b000u
-#ifdef AXIS_DIRECT
+/* the 64-bit build (AXIS_64): the game's addresses stay 32-bit numbers - its records, tables and saved data hold them
+   in 32-bit fields - measured from g_arena, a 4 GB block reserved for the game that reproduces the original's address
+   space: the image's data at its original addresses (so IMG(a) is a itself), the heap, the stacks the game runs on and
+   every buffer the game keeps an address of. AP(T, v) is the address v as a T pointer, AV(p) a pointer's address (0 and
+   NULL each the other's); APTR(T) a record's pointer field (scene.h). In the 32-bit builds all three are the plain
+   casts and pointer types they replace */
+#if __SIZEOF_POINTER__ == 8
+#define AXIS_64 1
+extern unsigned char *g_arena;
+static inline void *arena_ptr(u32 v) { return v ? (void *)(g_arena + v) : (void *)0; }
+/* (a pointer from outside the arena made an address - memory the game should not keep: reported, standalone/arena.c) */
+void arena_bad(const void *p, const void *caller);
+static inline u32 arena_ref(const void *p)
+{
+	if (!p)
+		return 0;
+	uintptr_t o = (uintptr_t)((const unsigned char *)p - g_arena);
+	if (o >> 32)
+		arena_bad(p, __builtin_return_address(0));
+	return (u32)o;
+}
+#define APTR(T) u32
+/* (either takes a pointer as well, passed on as it is: AP(T, p) a plain cast, AV(v) of a number the number) */
+#define AP(T, v) ((T *)__builtin_choose_expr(__builtin_classify_type(v) == 5, (void *)(uintptr_t)(v),                                              arena_ptr((u32)(uintptr_t)(v))))
+#define AV(p) __builtin_choose_expr(__builtin_classify_type(p) == 5, arena_ref((const void *)(uintptr_t)(p)), (u32)(uintptr_t)(p))
+#else
+#define APTR(T) T *
+#define AP(T, v) ((T *)(v))
+#define AV(p) ((u32)(p))
+#endif
+/* a float argument the 32-bit builds pass to the system as its bits (copied without the FPU): FBT its type in a
+   prototype, FB(bits) the argument. x86-64 passes floats in other registers than integers, so there it is a float -
+   the same bits (SSE moves do not quiet a signalling NaN) */
+#ifdef AXIS_64
+static inline float bits_f(u32 u) { union { u32 u; float f; } x; x.u = u; return x.f; }
+static inline u32 f_bits(float f) { union { float f; u32 u; } x; x.f = f; return x.u; }
+#define FBT float
+#define FB(u) bits_f(u)
+/* the reverse, for a game function a call gives a float that takes the float's bits (a u32 parameter) */
+#define F2U_T u32
+#define F2U(f) f_bits(f)
+#else
+#define FBT u32
+#define FB(u) (u)
+#define F2U_T float
+#define F2U(f) (f)
+#endif
+/* a 32-bit place of the game's (a global or field of any declared type) read as a T pointer / a pointer stored in it:
+   AGET(T, place), ASET(place, p) - the retyped accesses (*(T **)&place) of the 32-bit builds */
+#ifdef AXIS_64
+#define AGET(T, place) AP(T, *(u32 *)&(place))
+#define ASET(place, p) (*(u32 *)&(place) = AV(p))
+#else
+#define AGET(T, place) (*(T **)&(place))
+#define ASET(place, p) (*(void **)&(place) = (p))
+#endif
+/* a function's table that holds pointers into the game's memory: static in the 32-bit builds; made each time the function
+   runs in the 64-bit one, where g_arena is known only at run time */
+#ifdef AXIS_64
+#define ASTATIC
+#else
+#define ASTATIC static
+#endif
+/* a pointer stored in an APTR field (or a pointer global): AV(p) in the 64-bit build, p itself in the 32-bit ones */
+#ifdef AXIS_64
+#define AREF(p) AV(p)
+#else
+#define AREF(p) (p)
+#endif
+#ifdef AXIS_64
+/* (AXIS_64CHECK, a check compile only: every address constant made a run-time value, so the compiler warns about each
+   one cast to a pointer - which would be a pointer outside g_arena - as it does for the others) */
+#ifdef AXIS_64CHECK
+extern u32 g_axisZero;
+#define AXIS_K + g_axisZero
+#else
+#define AXIS_K
+#endif
+#define IMG(a) ((u32)(a) AXIS_K)
+#define RELOC(a) (a)
+#elif defined(AXIS_DIRECT)
 /* (its read-only data, 0x4a9000 .. 0x4ad000, and writable data, 0x4ad000 .. 0xb13000, are the structs g_rdata and
    g_data of src/data/layout.h; the rest - the header, the code bytes still read - is g_image) */
 extern unsigned char g_image[];
@@ -76,19 +156,28 @@ enum { CRTIX_NONE = -1
 CRT_ENTRIES(CRT_IX_)
 #undef CRT_IX_
 , CRT_COUNT };
+#ifdef AXIS_64
+extern void *g_crtFn[CRT_COUNT];
+#else
 extern u32 g_crtFn[CRT_COUNT];
+#endif
 #define CRT_FN(name) (g_crtFn[CRTIX_##name])
 #else
 #define CRT_FN(name) IMG(CRT(name))   /* an entry of the game's runtime as a value (to call through) */
 #endif
 #define CRT_CALL(name, ret, ...) ((ret (CDECL *)(__VA_ARGS__))CRT_FN(name))
 /* the game's __ftol: ST0 truncated to 64 bits, EDX:EAX; callers keep the low 32 bits */
+#ifdef AXIS_64
+/* (the 64-bit build: the same truncation - an out-of-range value gives the x87's indefinite, whose low 32 bits are 0) */
+static inline int ftol(long double x) { return (int)(long long)x; }
+#else
 static inline int ftol(long double x)
 {
 	long long r;
 	__asm__ volatile("call *%1" : "=A"(r) : "r"(CRT_FN(ftol)), "t"(x) : "ecx", "st", "memory");
 	return (int)r;
 }
+#endif
 
 /* x rounded to a float, as the original's fstp dword does. Needed wherever a rounded value is used again in
    arithmetic: clang keeps x87 temporaries at 80 bits even through a (float) cast or a float variable, and rounds
@@ -122,22 +211,47 @@ static inline long double fdivr_m(long double x, const float *m) { __asm__("fdiv
 
 
 /* a game function at its original address, as a callable expression */
-#define GAME_CDECL(addr, ret, ...) ((ret (CDECL *)(__VA_ARGS__))RELOC(addr))
-#define GAME_THISCALL(addr, ret, ...) ((ret (THISCALL *)(__VA_ARGS__))RELOC(addr))
+/* a function value the game holds (a handler table's entry, a vtable's method: a 32-bit number in the 64-bit build, the
+   function's original address - FN_ADDR - which fn_ptr looks up) as a callable of type `type` */
+#ifdef AXIS_64
+void *fn_ptr(u32 address);
+u32 fn_ref(void *fn);
+#define FNP(type, v) ((type)fn_ptr((u32)(v)))
+/* a system's function kept where the game keeps a function (an extension's entry point): its number, which FNP calls */
+#define FNREF(fn) fn_ref((void *)(fn))
+#else
+#define FNP(type, v) ((type)(v))
+#define FNREF(fn) (fn)
+#endif
+#define GAME_CDECL(addr, ret, ...) FNP(ret (CDECL *)(__VA_ARGS__), RELOC(addr))
+#define GAME_THISCALL(addr, ret, ...) FNP(ret (THISCALL *)(__VA_ARGS__), RELOC(addr))
 /* a rebuilt game function, by its C name and original address: in the harness (recomp.dll) a call to the address,
    where the harness's tests can stand a mock or the original in for it; in AxisRC.exe (built with AXIS_DIRECT) a
    direct call to the C function, its address checked against the hook table at compile time (build/fn_syms.h,
    tools/hooktable.py) */
 #include "fn_addrs.h"   /* FNADDR_<name>: each rebuilt function's original address */
 #ifdef AXIS_DIRECT
+#ifdef AXIS_64
+#include "fn_syms64.h"   /* (build/: tools/mkfn64.py) */
+#else
 #include "fn_syms.h"
+#endif
 #define FN_CHECK(name, addr) (void)sizeof(char[(addr) == FNADDR_##name ? 1 : -1])
 #define GAME_FN(name, addr, ret, ...) (FN_CHECK(name, addr), (ret (CDECL *)(__VA_ARGS__))(void *)FN_##name)
 #define GAME_THISFN(name, addr, ret, ...) (FN_CHECK(name, addr), (ret (THISCALL *)(__VA_ARGS__))(void *)FN_##name)
-/* a rebuilt function's address as a value (a callback, a table of handlers), constant enough for static data */
+/* a rebuilt function's address as a value (a callback, a table of handlers), constant enough for static data (the
+   64-bit build: its original address, a 32-bit number like every other address the game holds - FNP calls it) */
+#ifdef AXIS_64
+#define FN_ADDR(name, addr) ((u32)(addr) + 0 * sizeof(char[(addr) == FNADDR_##name ? 1 : -1]))
+#define FN_VIA(name, addr, stub) ((u32)(stub) + 0 * sizeof(char[(addr) == FNADDR_##name ? 1 : -1]))
+/* the C function itself, for the system (a thread's procedure, a sort's comparison) */
+#define FN_REAL(name) ((void *)FN_##name)
+#else
 #define FN_ADDR(name, addr) ((u32)(void *)FN_##name + 0 * sizeof(char[(addr) == FNADDR_##name ? 1 : -1]))
 /* the same through a compiler jump stub at stub (the original's data points at the stub, which only jumps on) */
 #define FN_VIA(name, addr, stub) FN_ADDR(name, addr)
+#define FN_REAL(name) ((void *)FN_##name)
+#endif
 #else
 #define GAME_FN(name, addr, ret, ...) GAME_CDECL(addr, ret, __VA_ARGS__)
 #define GAME_THISFN(name, addr, ret, ...) GAME_THISCALL(addr, ret, __VA_ARGS__)
@@ -180,7 +294,7 @@ int wide_callAdded(u32 site, u32 at, const char *pattern);
    a block the patch DLL rewrites at start-up, so the rebuild follows whichever version is in memory */
 static inline int code_matches(u32 addr, const char *pattern)
 {
-	const u8 *code = (const u8 *)RELOC(addr);
+	const u8 *code = AP(const u8, RELOC(addr));
 	for (const char *p = pattern; *p; code++) {
 		if (p[0] != '?') {
 			unsigned hi = p[0] <= '9' ? p[0] - '0' : p[0] - 'a' + 10, lo = p[1] <= '9' ? p[1] - '0' : p[1] - 'a' + 10;
@@ -214,12 +328,28 @@ IMPORT_LIST(PLAT_IMPORT_DECL_)
 #define IMPORT_FN(name, ret, ...) IMPORT(IMP_##name, ret, __VA_ARGS__)
 #endif
 /* a global of the game at its address (an original one or, for memory reached through a pointer, any) */
-#define GAME_VAR(type, addr) (*(type *)RELOC(addr))
+#define GAME_VAR(type, addr) (*AP(type, RELOC(addr)))
 /* a named global's address (src/globals.h): the original's in the harness, its place in AxisRC.exe - a constant
    either way (in AxisRC.exe every name is a member of g_rdata / g_data or IMG()'s place: src/data/layout_names.h) */
-#define ADDR(name) ((u32)&(name))
+#ifdef AXIS_64
+/* (the 64-bit build: the original address itself, a constant - src/addr_consts.h, tools/mkaddrc.py) */
+#include "addr_consts.h"
+#define ADDR(name) (ADDRC_##name AXIS_K)
+#define ADDR_AT(name, i) (ADDRC_##name AXIS_K + (u32)(i) * (u32)sizeof (name)[0])
+#define ADDR_ATF(name, i, member) (ADDRC_##name AXIS_K + (u32)(i) * (u32)sizeof (name)[0] + (u32)__builtin_offsetof(__typeof__((name)[0]), member))
+#else
+#define ADDR(name) AV(&(name))
+/* the address of element i of a named array */
+#define ADDR_AT(name, i) ((u32)&(name)[i])
+/* the address of a member of element i (member: a field, its index or both: x, pos[1], a.b) */
+#define ADDR_ATF(name, i, member) ((u32)&(name)[i].member)
+#endif
 /* an array / buffer / record of src/objects.h (a pointer name) as an address number */
-#define OBJ(name) ((u32)(name))
+#ifdef AXIS_64
+#define OBJ(name) (ADDRC_##name AXIS_K)
+#else
+#define OBJ(name) AV(name)
+#endif
 /* a text of the image by its address, with the text for the reader (tools/img_strings.py checks it against the
    data): STR(0x4b4418, "Data/Component.dat"); MSG(n, text) is line n of the message table (0x80 bytes a line from
    0x74de24, read from msgeng.dat at start-up). Both the address as IMG() gives it */

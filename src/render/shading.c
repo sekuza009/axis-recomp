@@ -9,9 +9,9 @@ typedef struct {
 	u32 flags;
 	u8 _04[0x48];
 	int count;
-	const float *verts;     /* +0x50 */
-	const float *normals;   /* +0x54 */
-	const u8 *base;         /* +0x58 */
+	APTR(const float) verts;     /* +0x50 */
+	APTR(const float) normals;   /* +0x54 */
+	APTR(const u8) base;         /* +0x58 */
 	u8 _5c[0xc];
 	float min[3], max[3];   /* +0x68 */
 } Part;
@@ -104,8 +104,8 @@ void (shape_getShadingColorBufferBy)(u8 *out, int first, const Part *part, const
 			} else
 				memcpy(L, l->dir, sizeof L);
 			for (int j = 0; j < part->count; j++) {
-				const float *n = part->normals + j * 3;
-				const u8 *b = part->base + j * 4;
+				const float *n = AP(const float, part->normals + j * 3);
+				const u8 *b = AP(const u8, part->base + j * 4);
 				int k = facing((MUL(&L[2], &n[2]) + MUL(&L[1], &n[1])) + MUL(&L[0], &n[0]));
 				put(out + j * 4, first == 1, mul(mul(b[0], k), R) >> 16, mul(mul(b[1], k), G) >> 16, mul(mul(b[2], k), B) >> 16);
 			}
@@ -134,8 +134,8 @@ void (shape_getShadingColorBufferBy)(u8 *out, int first, const Part *part, const
 			float r2 = f32(rr), inner = f32(fmul_m(rr, &k_0_2f));
 			float range = f32(FSUB(r2, inner));
 			for (int j = 0; j < part->count; j++) {
-				const u8 *b = part->base + j * 4;
-				long double dd = offset(part->verts + j * 3, p, d);
+				const u8 *b = AP(const u8, part->base + j * 4);
+				long double dd = offset(AP(const float, part->verts + j * 3), p, d);
 				float d2 = f32(dd);
 				if (dd >= r2) {   /* out of reach */
 					if (first == 1)
@@ -169,9 +169,9 @@ void (shape_getShadingColorBufferBy)(u8 *out, int first, const Part *part, const
 			long double rr = MUL(&r, &r);
 			float r2 = f32(rr), inner = f32(fmul_m(rr, &k_0_04f));
 			for (int j = 0; j < part->count; j++) {
-				const float *n = part->normals + j * 3;
-				const u8 *b = part->base + j * 4;
-				long double dd = offset(part->verts + j * 3, p, d);
+				const float *n = AP(const float, part->normals + j * 3);
+				const u8 *b = AP(const u8, part->base + j * 4);
+				long double dd = offset(AP(const float, part->verts + j * 3), p, d);
 				float d2 = f32(dd);
 				if (dd >= r2) {
 					if (first == 1)
@@ -194,7 +194,7 @@ void (shape_getShadingColorBufferBy)(u8 *out, int first, const Part *part, const
 			break;
 		}
 		default:
-			sys_errorTerminate((const char *)STR(0x4c4a4c, "light factor type(%d) not yet impleme..."), l->kind);
+			sys_errorTerminate(AP(const char, STR(0x4c4a4c, "light factor type(%d) not yet impleme...")), l->kind);
 		}
 	}
 }
@@ -227,7 +227,7 @@ void THISCALL (light_computeLayerLightBy)(Stage *stage, u8 *layer, u8 *colours, 
 {
 	GroundLayer *gl = (GroundLayer *)layer;
 	if (gl->kind == 2) {
-		memset(((void *)(gl)->colours), 0xff, (gl->cols + 1) * (gl->rows + 1) * 4);
+		memset((AP(void, (gl)->colours)), 0xff, (gl->cols + 1) * (gl->rows + 1) * 4);
 		if (gl->water == 1)
 			memset(gl->waterColours, 0xff, 12 * 4);
 		return;
@@ -241,13 +241,13 @@ void THISCALL (light_computeLayerLightBy)(Stage *stage, u8 *layer, u8 *colours, 
 		if (kind == 0 || kind == 2)
 			continue;
 		if (kind != 1) {
-			sys_fatalError((char *)OBJ(g_logStage), (const char *)STR(0x4c74a8, "light factor type(%d) not yet impleme..."), kind);
+			sys_fatalError(AP(char, OBJ(g_logStage)), AP(const char, STR(0x4c74a8, "light factor type(%d) not yet impleme...")), kind);
 			continue;
 		}
 		for (int row = r0; row <= r1; row++)
 			for (int col = c0; col <= c1; col++) {
 				int v = (gl->cols + 1) * row + col;
-				const float *n = ((const float *)(gl)->normals) + v * 3;
+				const float *n = (AP(const float, (gl)->normals)) + v * 3;
 				int i = light_level(MUL(&n[1], &dir[1]) + MUL(&n[2], &dir[2]) + MUL(&dir[0], &n[0]));
 				light_mix(colours + v * 4, light, i, first == 1 ? NULL : colours + v * 4);
 			}
@@ -269,7 +269,7 @@ static void strip_pair(u8 *layer, u32 *idx, int *n, int r, int c, int w)
 {
 	GroundLayer *gl = (GroundLayer *)layer;
 	if (gl->indexCount + 2 > gl->indexCapacity)
-		sys_fatalErrorN((char *)OBJ(g_logStage), (const char *)STR(0x4d052c, "primitiveElementIndexHeap overflow(%d..."), gl->indexCount + 2, gl->indexCapacity);
+		sys_fatalErrorN(AP(char, OBJ(g_logStage)), AP(const char, STR(0x4d052c, "primitiveElementIndexHeap overflow(%d...")), gl->indexCount + 2, gl->indexCapacity);
 	idx[(*n)++] = r * w + c;
 	gl->indexCount++;
 	idx[(*n)++] = (r + 1) * w + c;
@@ -286,8 +286,8 @@ static void water_point(u8 *stage, u8 *layer, u8 *part, int at, int tex_at, floa
 	Vec3_rotateAxis(v, 2, angle);
 	v[0] = f32(FADD(v[0], st->cameraPos[0]));
 	v[2] = f32(FADD(v[2], st->cameraPos[2]));
-	memcpy(sp->vertices + at, v, 12);
-	float *t = (float *)(((u8 *)(sp)->texCoords) + tex_at);
+	memcpy(AP(void, sp->vertices + at), v, 12);
+	float *t = (float *)((AP(u8, (sp)->texCoords)) + tex_at);
 	t[0] = f32(FDIV(v[0], gl->texScale));
 	t[1] = f32(FDIV(v[2], gl->texScale));
 }
@@ -309,8 +309,8 @@ void THISCALL (ground_buildDrawLists)(u8 *s, void *view, float h)
 	for (int i = 0; i < st->groundLayerCount; i++) {
 		u8 *layer = (u8 *)&st->groundLayers[i];
 		GroundLayer *gl = (GroundLayer *)layer;
-		ShapePart *part = (ShapePart *)(st->layerModel.parts + i * 0x80);
-		u8 *water = st->waterModel.parts + i * 0x80;
+		ShapePart *part = AP(ShapePart, (st->layerModel.parts + i * 0x80));
+		u8 *water = AP(u8, st->waterModel.parts + i * 0x80);
 		ShapePart *sp = (ShapePart *)water;
 		const float *size = &gl->cellSize, *origin = (const float *)(layer + 4);
 		int c0 = !(origin[0] >= min_x) ? ftol(fdiv_m(FSUB(min_x, origin[0]), size)) : 0;
@@ -328,27 +328,27 @@ void THISCALL (ground_buildDrawLists)(u8 *s, void *view, float h)
 			int open = 0, n = 0, c = c0;
 			u32 *prim = NULL;
 			for (; c <= c1; c++) {
-				if (gl->drawnCells[r * gl->cols + c] & 1) {
+				if (AP(u8, gl->drawnCells)[r * gl->cols + c] & 1) {
 					if (!open) {
 						if (gl->stripCount >= gl->stripCapacity)
-							sys_fatalErrorN((char *)OBJ(g_logStage), (const char *)STR(0x4d056c, "primitiveBuffer overflow(%d/%d)-proce..."), gl->stripCount + 1, gl->stripCapacity);
-						prim = (u32 *)(gl->strips + gl->stripCount * 12);
+							sys_fatalErrorN(AP(char, OBJ(g_logStage)), AP(const char, STR(0x4d056c, "primitiveBuffer overflow(%d/%d)-proce...")), gl->stripCount + 1, gl->stripCapacity);
+						prim = AP(u32, (gl->strips + gl->stripCount * 12));
 						gl->stripCount++;
 						open = 1;
 						n = 0;
 						prim[0] = 5;
 						prim[1] = 0;
-						prim[2] = (u32)(((u8 *)(gl)->indices) + gl->indexCount * 4);
+						prim[2] = AV(((AP(u8, (gl)->indices)) + gl->indexCount * 4));
 					}
-					strip_pair(layer, (u32 *)RELOC(prim[2]), &n, r, c, w);
+					strip_pair(layer, AP(u32, RELOC(prim[2])), &n, r, c, w);
 				} else if (open) {
 					open = 0;
-					strip_pair(layer, (u32 *)RELOC(prim[2]), &n, r, c, w);
+					strip_pair(layer, AP(u32, RELOC(prim[2])), &n, r, c, w);
 					prim[1] = n;
 				}
 			}
 			if (open) {
-				strip_pair(layer, (u32 *)RELOC(prim[2]), &n, r, c, w);
+				strip_pair(layer, AP(u32, RELOC(prim[2])), &n, r, c, w);
 				prim[1] = n;
 			}
 		}

@@ -107,8 +107,8 @@ void (arena_savePlayerSettings)(void)
    lock byte is set; the change flagged (g_mapPreviewChanged) */
 static void map_step(int dir, u32 lock, u32 choice)
 {
-	signed char *c = (signed char *)RELOC(choice);
-	if (*(char *)RELOC(lock))
+	signed char *c = AP(signed char, RELOC(choice));
+	if (*AP(char, RELOC(lock)))
 		return;
 	if (dir > 0) {
 		if (++*c == 0x16)
@@ -148,7 +148,7 @@ static void map_buttons(int hovered, int first, int y, int label)
 	for (int k = 0; k < 2; k++) {
 		glEnable(GL_TEXTURE_2D);
 		int texture = g_buttonTexture;
-		tex_bind(g_textures->banks[texture / 512], texture % 512);
+		tex_bind(AP(void, AP(TextureManager, g_textures)->banks[texture / 512]), texture % 512);
 		int x = 0xaa + k * 0xa0;
 		if (hovered == first + k) {
 			glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
@@ -158,7 +158,7 @@ static void map_buttons(int hovered, int first, int y, int label)
 			set_colour_bits(g_textColour, 0x3e99999a, 0x3f333333, 0x3f333333, 0x3f800000);   /* 0.3, 0.7, 0.7, 1 */
 		}
 		menu_drawWideButton(x, y, x + 0x8c, y + 0x20, 1);
-		text_drawCentredLines16(x, y + 8, x + 0x8c, (const char *)(RELOC(label) + k * 0x80));
+		text_drawCentredLines16(x, y + 8, x + 0x8c, AP(const char, (RELOC(label) + k * 0x80)));
 	}
 }
 
@@ -176,9 +176,9 @@ void (mapList_draw)(void)
 	set_colour_bits(g_rectColour, 0, 0x3f800000, 0x3f800000, 0x3f4ccccd);
 	menu_drawRect(0x90, 0x2c, 0x1f0, 0x1b4, 0);
 	cyan_text(0x3f800000);
-	text_draw8(0xc8, 0x32, (const char *)MSG(502, "MAP"));
+	text_draw8(0xc8, 0x32, AP(const char, MSG(502, "MAP")));
 	cyan_text(0x3f800000);
-	text_draw8(0x168, 0x32, (const char *)MSG(503, "TYPE"));
+	text_draw8(0x168, 0x32, AP(const char, MSG(503, "TYPE")));
 	set_colour_bits(g_rectColour, 0, 0x3f800000, 0x3f800000, 0x3f4ccccd);
 	menu_drawLine(0x96, 0x4b, 0x1ea, 0x4b);
 	for (int i = 0; i < g_mapCount && i < 10; i++) {
@@ -194,15 +194,15 @@ void (mapList_draw)(void)
 		itoa(map + 1, number, 10);
 		map_cell(g_mapTop + i, 0x96, 0x154, y);
 		text_draw8(0xb4 - (int)strlen(number) * 8, y + 3, number);
-		text_draw8(0xbe, y + 3, (const char *)(OBJ(g_mapNames) + (g_mapTop + i) * 0x20));
+		text_draw8(0xbe, y + 3, AP(const char, (OBJ(g_mapNames) + (g_mapTop + i) * 0x20)));
 		map_cell(g_mapTop + i, 0x168, 0x1a4, y);
-		text_draw8(0x17c, y + 3, (const char *)(OBJ(g_gameTypeNames) + g_mapChoices[g_mapTop + i].type * 20));
+		text_draw8(0x17c, y + 3, AP(const char, (OBJ(g_gameTypeNames) + g_mapChoices[g_mapTop + i].type * 20)));
 	}
 	set_colour_bits(g_rectColour, 0, 0x3f800000, 0x3f800000, 0x3f4ccccd);
 	menu_drawLine(0x96, 0x14f, 0x1ea, 0x14f);
 	glEnable(GL_TEXTURE_2D);
 	int texture = g_buttonTexture;
-	tex_bind(g_textures->banks[texture / 512], texture % 512);
+	tex_bind(AP(void, AP(TextureManager, g_textures)->banks[texture / 512]), texture % 512);
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 	menu_drawUpArrow(0x1c2, 0x96, 0x1e0, 0xca, hovered == 0x14);
 	menu_drawDownArrow(0x1c2, 0xdc, 0x1e0, 0x110, hovered != 0x14 && hovered == 0x15);
@@ -218,7 +218,7 @@ void (mapList_draw)(void)
    it */
 void (mapList_mouse)(void)
 {
-	const float *repeat = (const float *)ADDR(k_5f);
+	const float *repeat = AP(const float, ADDR(k_5f));
 	if (g_mouseClick) {
 		g_menuRepeatClock = 0.0f;
 		int on = mapList_hitTest(g_mouseX, g_mouseY);

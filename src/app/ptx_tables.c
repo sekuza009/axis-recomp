@@ -10,13 +10,13 @@
 /* 0x46e320: the clamp table: 0 below, the identity, 255 above */
 void (ptx_initClampTable)(void)
 {
-	memset((void *)OBJ(g_ptxClampTable), 0, 0x100);
-	g_ptxClamp = (u8 *)(OBJ(g_ptxClampTable) + 0x100);
+	memset(AP(void, OBJ(g_ptxClampTable)), 0, 0x100);
+	g_ptxClamp = AREF(AP(u8, (OBJ(g_ptxClampTable) + 0x100)));
 	for (int i = 0; i < 256; i++)
 		g_ptxClampTable[0x100 + i] = (u8)i;
-	memset((void *)(OBJ(g_ptxClampTable) + 0x200), 0xff, 0x180);
-	memset((void *)(OBJ(g_ptxClampTable) + 0x380), 0, 0x180);
-	memcpy((void *)(OBJ(g_ptxClampTable) + 0x500), g_ptxClamp, 0x80);
+	memset(AP(void, (OBJ(g_ptxClampTable) + 0x200)), 0xff, 0x180);
+	memset(AP(void, (OBJ(g_ptxClampTable) + 0x380)), 0, 0x180);
+	memcpy(AP(void, (OBJ(g_ptxClampTable) + 0x500)), AP(const void, g_ptxClamp), 0x80);
 }
 
 /* 0x46e7c0: YCbCr -> RGB, the four per-component tables (Cr to red, Cb and Cr to green, Cb to blue) */

@@ -98,8 +98,8 @@ int (profile_inDialogBox)(int x, int y)
    be loaded again (g_statBarsStale), the frame's pulse restarted (g_profileFrameAlpha 40, g_profileFrameStep -1) */
 void (profile_resetStatBars)(void)
 {
-	memset((void *)OBJ(g_statBarTargets), 0, 36);
-	memset((void *)OBJ(g_statBars), 0, 36);
+	memset(AP(void, OBJ(g_statBarTargets)), 0, 36);
+	memset(AP(void, OBJ(g_statBars)), 0, 36);
 	g_statBarsStale = 1;
 	(*(u32 *)&g_profileFrameAlpha) = 0x42200000;   /* 40.0 */
 	(*(u32 *)&g_profileFrameStep) = 0xbf800000;   /* -1.0 */
@@ -141,7 +141,7 @@ int (profile_nameExists)(void)
 	for (int i = 0, n = (int)strlen(s); i < n; i++)
 		typed[i] = s[i] >= 'A' && s[i] <= 'Z' ? s[i] + 0x20 : s[i];
 	for (int e = 0; e < g_profileCount; e++) {
-		const char *p = (const char *)(OBJ(g_profileNames) + e * 0x48);
+		const char *p = AP(const char, (OBJ(g_profileNames) + e * 0x48));
 		for (int i = 0, n = (int)strlen(p); i < n; i++)
 			name[i] = p[i] >= 'A' && p[i] <= 'Z' ? p[i] + 0x20 : p[i];
 		if (!strcmp(typed, name))
@@ -209,7 +209,7 @@ u32 (profile_logIn)(void)
 	g_menuCameraMove = 2;
 	g_unusedMenuReturnWord = 0;
 	crt_strncpy(g_cfgPlayerName,
-	                                                        (const char *)(OBJ(g_profileNames) + g_currentProfile * 0x48), 0x20);   /* strncpy */
+	                                                        AP(const char, (OBJ(g_profileNames) + g_currentProfile * 0x48)), 0x20);   /* strncpy */
 	return cfg_writeAxisCfg();   /* cfg_writeAxisCfg */
 }
 
@@ -223,7 +223,7 @@ u32 (profile_logIn)(void)
 u32 (profile_listPage)(void)
 {
 	if (g_profileRowClicked) {
-		long double t = fadd_m(fld_m(&g_frameTime), (const float *)ADDR(g_profileRowClickTime));
+		long double t = fadd_m(fld_m(&g_frameTime), AP(const float, ADDR(g_profileRowClickTime)));
 		g_profileRowClickTime = (float)t;
 		if (t > k_20f) {
 			g_profileRowClicked = 0;
@@ -315,13 +315,13 @@ int (pilotSelect_clicks)(void)
 u32 (profile_create)(void)
 {
 	int n = g_profileCount;
-	strcpy((char *)(OBJ(g_profileNames) + n * 0x48), g_inputLine);
+	strcpy(AP(char, (OBJ(g_profileNames) + n * 0x48)), g_inputLine);
 	g_profileRecords[(u32)n].pilot = g_pilotSelectCursor;
-	if (chdir_((const char *)STR(0x4b2adc, "save"))) {
-		mkdir_((const char *)STR(0x4b2adc, "save"));
-		chdir_((const char *)STR(0x4b2adc, "save"));
+	if (chdir_(AP(const char, STR(0x4b2adc, "save")))) {
+		mkdir_(AP(const char, STR(0x4b2adc, "save")));
+		chdir_(AP(const char, STR(0x4b2adc, "save")));
 	}
-	chdir_((const char *)STR(0x4b2a80, ".."));
+	chdir_(AP(const char, STR(0x4b2a80, "..")));
 	int count = n + 1;
 	g_profileCount = count;
 	if (count <= 0xd) {
@@ -346,7 +346,7 @@ static u32 glide_page(const float *rate, const u32 *frame, u32 panel)
 		g_mouseX += step;
 		step = ftol(fmul_m(fmul_m((long double)(g_pointerGlideY - g_mouseY), &g_frameTime), rate));
 		g_mouseY += step;
-		long double t = fsub_m(fld_m((const float *)ADDR(g_pointerGlideTime)), &g_frameTime);
+		long double t = fsub_m(fld_m(AP(const float, ADDR(g_pointerGlideTime))), &g_frameTime);
 		g_pointerGlideTime = (float)t;
 		if (!(t >= k_0f))
 			g_pointerGliding = 0;
@@ -361,13 +361,13 @@ static u32 glide_page(const float *rate, const u32 *frame, u32 panel)
 u32 (profile_deletePage)(void)
 {
 	static const u32 frame[4] = { ADDR(g_deleteDialogX), ADDR(g_deleteDialogY), ADDR(g_deleteDialogRight), ADDR(g_deleteDialogBottom) };
-	return glide_page((const float *)ADDR(k_0_25f), frame, FN(profile_drawDeleteQuestion));
+	return glide_page(AP(const float, ADDR(k_0_25f)), frame, FN(profile_drawDeleteQuestion));
 }
 /* 0x44f740: the log-out question's page (profile_drawLogOutQuestion), gliding at its own rate */
 u32 (profile_logOutPage)(void)
 {
 	static const u32 frame[4] = { ADDR(g_logOutDialogX), ADDR(g_logOutDialogY), ADDR(g_logOutDialogRight), ADDR(g_logOutDialogBottom) };
-	return glide_page((const float *)ADDR(k_0_2f), frame, FN(profile_drawLogOutQuestion));
+	return glide_page(AP(const float, ADDR(k_0_2f)), frame, FN(profile_drawLogOutQuestion));
 }
 
 /* 0x44ce90: the profile list's names drawn (13 rows from the top entry g_profileListTop, 20 units apart in the panel at
@@ -379,13 +379,13 @@ u32 (profileList_drawNames)(void)
 	for (int i = 0; i < 13 && i < g_profileCount; i++) {
 		int page1 = g_profilePage == 1;
 		u32 shade = page1 ? 0x3f000000 : 0x3e99999a;   /* 0.5 / 0.3 */
-		Color4_set_bits((void *)OBJ(g_textColour), 0, shade, shade, 0x3f800000);
+		Color4_set_bits(AP(void, OBJ(g_textColour)), 0, shade, shade, 0x3f800000);
 		if (g_profileListTop + i == g_profileChosen) {
 			shade = g_profilePage == 1 ? 0x3f800000 : 0x3f000000;   /* 1 / 0.5 */
-			Color4_set_bits((void *)OBJ(g_textColour), 0, shade, shade, 0x3f800000);
+			Color4_set_bits(AP(void, OBJ(g_textColour)), 0, shade, shade, 0x3f800000);
 		}
 		r = text_draw8(g_profilePageLeft + 0x28, g_profilePageTop + 0x24 + i * 0x14,
-		                                                      (const char *)(OBJ(g_profileNames) + (g_profileListTop + i) * 0x48));   /* text_draw8 */
+		                                                      AP(const char, (OBJ(g_profileNames) + (g_profileListTop + i) * 0x48)));   /* text_draw8 */
 	}
 	return r;
 }
@@ -447,14 +447,14 @@ u32 (profile_deleteChosen)(void)
 {
 	int chosen = g_profileChosen;
 	ProfileRecord *records = (ProfileRecord *)g_profiles;
-	if (crt_chdir((const char *)STR(0x4b2adc, "save")) == 0) {   /* chdir("save") */
+	if (crt_chdir(AP(const char, STR(0x4b2adc, "save"))) == 0) {   /* chdir("save") */
 		char path[0x80];
 		memset(path, 0, sizeof path);
 		strcpy(path, records[chosen].name);
-		strcat(path, (const char *)STR(0x4b2afc, ".axs"));
+		strcat(path, AP(const char, STR(0x4b2afc, ".axs")));
 		if (!((int)FILE_DELETE(path)))   /* DeleteFileA */
 			FILE_DELETE(path);
-		crt_chdir((const char *)STR(0x4b2a80, ".."));   /* chdir("..") */
+		crt_chdir(AP(const char, STR(0x4b2a80, "..")));   /* chdir("..") */
 	}
 	int count = g_profileCount - 1, last = chosen;
 	for (; last < count; last++)
@@ -486,7 +486,7 @@ u32 (profile_deleteChosen)(void)
 static u32 keyboard_back(void)
 {
 	input_resetKeys();
-	return ((u32)input_initKeyboard(g_mainWindow));   /* input_initKeyboard */
+	return ((u32)input_initKeyboard(AP(void, g_mainWindow)));   /* input_initKeyboard */
 }
 
 /* the typed line emptied (its length g_lineMaxLength) */
@@ -494,7 +494,7 @@ static void line_wipe(void)
 {
 	int n = g_lineMaxLength;
 	if (n > 0)
-		memset((void *)OBJ(g_inputLine), 0, n);
+		memset(AP(void, OBJ(g_inputLine)), 0, n);
 }
 
 /* 0x44c190: the new-name dialog's clicks (page 2). While the name-taken message is up (g_profileNameTakenShown): any click

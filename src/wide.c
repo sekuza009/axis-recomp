@@ -56,7 +56,7 @@ int wide_carries(u32 addr)
 #ifdef AXIS_DIRECT
 	const int entryJumps = 1;   /* (AxisRC.exe: the patch layer's flags say it all; it rewrites no game code) */
 #else
-	const u8 *p = (const u8 *)RELOC(addr);
+	const u8 *p = AP(const u8, RELOC(addr));
 	const int entryJumps = p[0] == 0xE9;
 #endif
 	switch (addr) {

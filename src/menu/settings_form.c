@@ -52,7 +52,7 @@ static const u32 k_white[4] = { 0x3f800000, 0x3f800000, 0x3f800000, 0x3f800000 }
 static void bind_buttons(void)
 {
 	int texture = g_buttonTexture;
-	tex_bind(g_textures->banks[texture / 512], texture % 512);
+	tex_bind(AP(void, AP(TextureManager, g_textures)->banks[texture / 512]), texture % 512);
 }
 
 /* the password as stars into out (cleared first, f->stars bytes) */
@@ -65,11 +65,11 @@ static const char *stars(const Form *f, char *out)
 	return out;
 }
 
-static const char *map_name(const Form *f) { return (const char *)(OBJ(g_mapAbouts) + f->s->map * 0x50); }
-static const char *mode_name(const Form *f) { return (const char *)(RELOC(f->modes) + f->s->mode * 0x80); }
+static const char *map_name(const Form *f) { return AP(const char, (OBJ(g_mapAbouts) + f->s->map * 0x50)); }
+static const char *mode_name(const Form *f) { return AP(const char, (RELOC(f->modes) + f->s->mode * 0x80)); }
 static const char *rotation_text(const Form *f)
 {
-	return f->rotationNames ? (const char *)(RELOC(f->rotationNames) + f->s->rotation * 20) : (const char *)RELOC(f->rotationFixed);
+	return f->rotationNames ? AP(const char, (RELOC(f->rotationNames) + f->s->rotation * 20)) : AP(const char, RELOC(f->rotationFixed));
 }
 
 /* the eight rows' values in their boxes (white text); a value being edited is left out */
@@ -85,7 +85,7 @@ static void draw_values(const Form *f, char *text)
 		text_draw8(X0 + 0xa4, Y0 + 0x54, stars(f, text));
 	field_box(X0 + 0x9f, Y0 + 0x6d, X0 + 0x18f, Y0 + 0x91);
 	if (s->rotation)
-		text_draw8(X0 + 0xa4, Y0 + 0x76, (const char *)STR(0x4ad56c, "CUSTOM"));   /* CUSTOM */
+		text_draw8(X0 + 0xa4, Y0 + 0x76, AP(const char, STR(0x4ad56c, "CUSTOM")));   /* CUSTOM */
 	else
 		text_draw8(X0 + 0xa4, Y0 + 0x6f, map_name(f));
 	field_box(X0 + 0x9f, Y0 + 0x95, X0 + 0xef, Y0 + 0xab);
@@ -157,7 +157,7 @@ static void button(int lit, float a_lit, int x0, int y0, int x1, int y1, int ty,
 	glColor4f(1.0f, 1.0f, 1.0f, lit ? a_lit : 0.4f);
 	menu_drawWideButton(x0, y0, x1, y1, 1);
 	colour(lit ? bright : dim);
-	text_drawCentredLines16(x0, ty, x1, (const char *)RELOC(text));
+	text_drawCentredLines16(x0, ty, x1, AP(const char, RELOC(text)));
 }
 
 /* the preview's arrows (lit as given) and the ADVANCED button (the rotation's map list): lit in white, else at 0.4 in the colour other */
@@ -178,7 +178,7 @@ static void preview_controls(const Form *f, int left, int right, int advancedLit
 		colour(other);
 	}
 	menu_drawWideButton(X1 - 0x96, Y0 + 0xf5, X1 - 0x16, Y0 + 0x111, 1);
-	text_drawCentredLines16(X1 - 0x96, Y0 + 0xfb, X1 - 0x16, (const char *)MSG(501, "ADVANCED"));
+	text_drawCentredLines16(X1 - 0x96, Y0 + 0xfb, X1 - 0x16, AP(const char, MSG(501, "ADVANCED")));
 }
 
 /* 0x43bfe0: the game room's settings form (0x9dd1b8 .. 0x9dd1c4) for g_roomSettingsName: the title MSG(396, "CREATE LADDER GAME"), a cyan line, the
@@ -189,7 +189,7 @@ static void preview_controls(const Form *f, int left, int right, int advancedLit
    the map list is up, g_mapListOpen); the border. The caller ignores the eax it leaves */
 void (room_drawGameSettings)(void)
 {
-	static const Form form = { ADDR(g_roomFormLeft), (GameSettings *)OBJ(g_roomSettingsName), { ADDR(g_editingRoomName), ADDR(g_editingRoomPassword), ADDR(g_editingFragLimit), ADDR(g_editingTimeLimit) }, MSG(791, "DEATH MATCH"),
+	ASTATIC const Form form = { ADDR(g_roomFormLeft), AP(GameSettings, OBJ(g_roomSettingsName)), { ADDR(g_editingRoomName), ADDR(g_editingRoomPassword), ADDR(g_editingFragLimit), ADDR(g_editingTimeLimit) }, MSG(791, "DEATH MATCH"),
 	                           MSG(17, "DO NOT USE"), 0, 20 };
 	static const u32 advancedDim[4] = { 0x3e99999a, 0x3f333333, 0x3f333333, 0x3f800000 };   /* 0.3, 0.7, 0.7, 1 */
 	const Form *f = &form;
@@ -202,11 +202,11 @@ void (room_drawGameSettings)(void)
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 	menu_drawTexture(X0, Y0, X1, Y1, g_dialogFrameTexture);
 	colour(bright);
-	text_draw16(X0 + 0x20, Y0 + 0x10, (const char *)MSG(396, "CREATE LADDER GAME"));
+	text_draw16(X0 + 0x20, Y0 + 0x10, AP(const char, MSG(396, "CREATE LADDER GAME")));
 	set_colour_bits(g_rectColour, 0, 0x3f800000, 0x3f800000, 0x3f800000);
 	menu_drawLine(X0 + 0x10, Y0 + 0x28, X1 - 0x10, Y0 + 0x28);
 	for (int k = 0; k < 8; k++)   /* (the original would grey labels past the eighth: there are none) */
-		text_draw8(X0 + 0x40, Y0 + 0x32 + k * 0x22, (const char *)(MSG(397, "TITLE") + k * 0x80));
+		text_draw8(X0 + 0x40, Y0 + 0x32 + k * 0x22, AP(const char, (MSG(397, "TITLE") + k * 0x80)));
 	draw_values(f, text);
 	if (!open)
 		draw_hover(f, hovered, text);
@@ -242,7 +242,7 @@ static void box_buttons(int hovered, int lit_from)
    The caller ignores the eax it leaves */
 void (arena_createDraw)(void)
 {
-	static const Form form = { ADDR(g_newArenaFormLeft), (GameSettings *)OBJ(g_newArenaName), { ADDR(g_editingNewArenaName), ADDR(g_typingArenaPassword), ADDR(g_editingNewArenaFragLimit), ADDR(g_editingNewArenaTimeLimit) }, MSG(471, "DEATH MATCH"),
+	ASTATIC const Form form = { ADDR(g_newArenaFormLeft), AP(GameSettings, OBJ(g_newArenaName)), { ADDR(g_editingNewArenaName), ADDR(g_typingArenaPassword), ADDR(g_editingNewArenaFragLimit), ADDR(g_editingNewArenaTimeLimit) }, MSG(471, "DEATH MATCH"),
 	                           0, OBJ(g_rotationOnOff), 10 };
 	const Form *f = &form;
 	const u32 *bright = ((u32 *)g_arenaBright), *dim = ((u32 *)g_arenaDim);
@@ -255,10 +255,10 @@ void (arena_createDraw)(void)
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 	menu_drawTexture(X0, Y0, X1, Y1, g_dialogFrameTexture);
 	colour(bright);
-	text_draw16(X0 + 0x50, Y0 + 0x10, (const char *)MSG(156, "CREATE ARENA"));
+	text_draw16(X0 + 0x50, Y0 + 0x10, AP(const char, MSG(156, "CREATE ARENA")));
 	for (int k = 0; k < 8; k++) {
 		colour(bright);
-		text_draw8(X0 + 0x40, Y0 + 0x32 + k * 0x22, (const char *)(MSG(157, "GAME NAME") + k * 0x80));
+		text_draw8(X0 + 0x40, Y0 + 0x32 + k * 0x22, AP(const char, (MSG(157, "GAME NAME") + k * 0x80)));
 	}
 	draw_values(f, text);
 	if (!blocked)
@@ -277,8 +277,8 @@ void (arena_createDraw)(void)
 		glColor4f(0.7f, 0.0f, 1.0f, 1.0f);
 		menu_drawTextureFlipped(0x64, 0xb4, 0x21c, 0x140, g_dialogFrameTexture);
 		white();
-		text_drawCentredLines16(0x64, 0xc8, 0x21c, (const char *)MSG(168, "$[0] CANCEL"));
-		text_drawCentredLines16(0x64, 0xdc, 0x21c, (const char *)MSG(169, "NETWORK INITIALIZE ERROR"));
+		text_drawCentredLines16(0x64, 0xc8, 0x21c, AP(const char, MSG(168, "$[0] CANCEL")));
+		text_drawCentredLines16(0x64, 0xdc, 0x21c, AP(const char, MSG(169, "NETWORK INITIALIZE ERROR")));
 		box_buttons(hovered, 15);
 		glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 		CALL_FN(menu_drawTopRightOrnament, void, int, int, int, int)(0x64, 0xb4, 0x21c, 0x140);   /* menu_drawTopRightOrnament */
@@ -292,8 +292,8 @@ void (arena_createDraw)(void)
 		set_colour_bits(g_rectColour, 0, 0x3f800000, 0x3f800000, 0x3f800000);
 		menu_drawRect(0x68, 0xb8, 0x218, 0x13c, 0);
 		white();
-		text_drawCentredLines16(0x64, 0xc8, 0x21c, (const char *)MSG(3, "THIS PROGRAM HAS BEEN UPDATED"));
-		text_drawCentredLines16(0x64, 0xdc, 0x21c, (const char *)MSG(4, "DO DOWNLOAD A NEW VERSION"));
+		text_drawCentredLines16(0x64, 0xc8, 0x21c, AP(const char, MSG(3, "THIS PROGRAM HAS BEEN UPDATED")));
+		text_drawCentredLines16(0x64, 0xdc, 0x21c, AP(const char, MSG(4, "DO DOWNLOAD A NEW VERSION")));
 		box_buttons(noticeHovered, 0);
 	}
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);

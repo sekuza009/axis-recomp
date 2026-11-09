@@ -13,7 +13,7 @@ u32 (net_freeBuffers)(void)
 	for (int i = 0; i < 19; i++) {
 		r = GAME_VAR(u32, buffers[i]);
 		if (r) {
-			r = crt_free((void *)RELOC(r));
+			r = crt_free(AP(void, RELOC(r)));
 			GAME_VAR(u32, buffers[i]) = 0;
 		}
 	}
@@ -29,7 +29,7 @@ u32 (sound_freeAll)(void)
 	for (u32 p = OBJ(g_soundTable); p < OBJ(g_soundTable) + 400 * 4; p += 4) {   /* (400 entries) */
 		r = GAME_VAR(u32, p);
 		if (r) {
-			r = mem_free((void *)RELOC(r));
+			r = mem_free(AP(void, RELOC(r)));
 			GAME_VAR(u32, p) = 0;
 		}
 	}

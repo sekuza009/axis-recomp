@@ -13,7 +13,7 @@ void (timer_init)(void)
 {
 	u64 f;
 	if (!TIME_FREQUENCY(&f))
-		sys_messageBox((const char *)STR(0x4b24d4, "No hardware timer available"));
+		sys_messageBox(AP(const char, STR(0x4b24d4, "No hardware timer available")));
 	g_timerFrequency = f;
 	int shift = 0;
 	g_timerShift = 0;
@@ -87,7 +87,7 @@ long double (timer_now)(void)
 long double THISCALL (TimeSync_frameTime)(u8 *t)
 {
 	TimeSync *ts = (TimeSync *)t;
-#define fatal() sys_fatalErrorN((char *)OBJ(g_logTimeSync), (const char *)STR(0x4c7b80, "invalid system time"))
+#define fatal() sys_fatalErrorN(AP(char, OBJ(g_logTimeSync)), AP(const char, STR(0x4c7b80, "invalid system time")))
 	if (ts->started == 0) {
 		if (!TIME_FREQUENCY(&ts->frequency))
 			fatal();

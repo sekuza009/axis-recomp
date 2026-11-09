@@ -8,9 +8,9 @@
 static void say(Scene *scene, u32 korean, u32 english, int sound)
 {
 	if (g_language == KOREAN)
-		msg_print(scene, 4, (const char *)RELOC(korean));
+		msg_print(scene, 4, AP(const char, RELOC(korean)));
 	else if (g_language == ENGLISH)
-		msg_print(scene, 4, (const char *)RELOC(english));
+		msg_print(scene, 4, AP(const char, RELOC(english)));
 	sound_playVolume(sound, 100);
 }
 
@@ -18,9 +18,9 @@ static void say(Scene *scene, u32 korean, u32 english, int sound)
 static void say_number(Scene *scene, u32 korean, u32 english, int n, int sound)
 {
 	if (g_language == KOREAN)
-		msg_print(scene, 4, (const char *)RELOC(korean), n);
+		msg_print(scene, 4, AP(const char, RELOC(korean)), n);
 	else if (g_language == ENGLISH)
-		msg_print(scene, 4, (const char *)RELOC(english), n);
+		msg_print(scene, 4, AP(const char, RELOC(english)), n);
 	sound_playVolume(sound, 100);
 }
 

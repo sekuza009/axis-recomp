@@ -5,26 +5,26 @@
 
 /* ---- each class's error log: an ErrorLog record (vtable 0x4aa2a0) holding the class's name, built once at start-up;
    the fatal and error messages print it (sys_fatalError(g_logStage, ..)) ---- */
-void *(Texture_initLog)(void) { return ErrorLog_ctor((void *)OBJ(g_logTexture), (const char *)STR(0x4b3e74, "class Texture"), 0); }   /* 0x454fe0 "class Texture" */
-void *(TextureManager_initLog)(void) { return ErrorLog_ctor((void *)OBJ(g_logTextureManager), (const char *)STR(0x4b4134, "class TextureManager"), 0); }   /* 0x456940 "class TextureManager" */
-void *(Sound_initLog)(void) { return ErrorLog_ctor((void *)OBJ(g_logSound), (const char *)STR(0x4b42e0, "Sound"), 0); }   /* 0x456c90 "Sound" */
-void *(Console_initLog)(void) { return ErrorLog_ctor((void *)OBJ(g_logConsole), (const char *)STR(0x4c456c, "class Console"), 0); }   /* 0x460520 "class Console" */
-void *(Shape_initLog)(void) { return ErrorLog_ctor((void *)OBJ(g_logShape), (const char *)STR(0x4c4a40, "class Shape"), 0); }   /* 0x463b30 "class Shape" */
-void *(ShapeManager_initLog)(void) { return ErrorLog_ctor((void *)OBJ(g_logShapeManager), (const char *)STR(0x4c4ca8, "class ShapeManager"), 0); }   /* 0x4669c0 "class ShapeManager" */
-void *(Skeleton_initLog)(void) { return ErrorLog_ctor((void *)OBJ(g_logSkeleton), (const char *)STR(0x4c534c, "class Skeleton"), 0); }   /* 0x469930 "class Skeleton" */
-void *(SkeletonManager_initLog)(void) { return ErrorLog_ctor((void *)OBJ(g_logSkeletonManager), (const char *)STR(0x4c549c, "class SkeletonManager"), 0); }   /* 0x46ae10 "class SkeletonManager" */
-void *(BMPRGBFile_initLog)(void) { return ErrorLog_ctor((void *)OBJ(g_logBMPRGBFile), (const char *)STR(0x4c58f4, "class BMPRGBFile"), 0); }   /* 0x46ccb0 "class BMPRGBFile" */
-void *(RealColor_initLog)(void) { return ErrorLog_ctor((void *)OBJ(g_logRealColor), (const char *)STR(0x4c59c0, "struct RealColor"), 0); }   /* 0x46d270 "struct RealColor" */
-void *(PackedColor_initLog)(void) { return ErrorLog_ctor((void *)OBJ(g_logPackedColor), (const char *)STR(0x4c59d4, "struct PackedColor"), 0); }   /* 0x46da70 "struct PackedColor" */
-void *(UnitPartInfo_initLog)(void) { return ErrorLog_ctor((void *)OBJ(g_logUnitPartInfo), (const char *)STR(0x4c6ffc, "struct UnitPartInfo"), 0); }   /* 0x46f360 "struct UnitPartInfo" */
-void *(UnitPoseInfo_initLog)(void) { return ErrorLog_ctor((void *)OBJ(g_logUnitPoseInfo), (const char *)STR(0x4c7010, "struct UnitPoseInfo"), 0); }   /* 0x46f3c0 "struct UnitPoseInfo" */
-void *(Unit_initLog)(void) { return ErrorLog_ctor((void *)OBJ(g_logUnit), (const char *)STR(0x4c7024, "class Unit"), 0); }   /* 0x46f420 "class Unit" */
-void *(Stage_initLog)(void) { return ErrorLog_ctor((void *)OBJ(g_logStage), (const char *)STR(0x4c73b0, "class Stage"), 0); }   /* 0x46ff20 "class Stage" */
-void *(CollisionVolume_initLog)(void) { return ErrorLog_ctor((void *)OBJ(g_logCollisionVolume), (const char *)STR(0x4c7800, "class CollisionVolume"), 0); }   /* 0x481340 "class CollisionVolume" */
-void *(Light_initLog)(void) { return ErrorLog_ctor((void *)OBJ(g_logLight), (const char *)STR(0x4c7ad4, "class Light"), 0); }   /* 0x483d00 "class Light" */
-void *(ViewVolume_initLog)(void) { return ErrorLog_ctor((void *)OBJ(g_logViewVolume), (const char *)STR(0x4c7b08, "class ViewVolume"), 0); }   /* 0x483f60 "class ViewVolume" */
-void *(TimeSync_initLog)(void) { return ErrorLog_ctor((void *)OBJ(g_logTimeSync), (const char *)STR(0x4c7b70, "class TimeSync"), 0); }   /* 0x4873e0 "class TimeSync" */
-void *(Scene_initLog)(void) { return ErrorLog_ctor((void *)OBJ(g_logScene), (const char *)STR(0x4c7d18, "class Scene"), 0); }   /* 0x48b3c0 "class Scene" */
+void *(Texture_initLog)(void) { return ErrorLog_ctor(AP(void, OBJ(g_logTexture)), AP(const char, STR(0x4b3e74, "class Texture")), 0); }   /* 0x454fe0 "class Texture" */
+void *(TextureManager_initLog)(void) { return ErrorLog_ctor(AP(void, OBJ(g_logTextureManager)), AP(const char, STR(0x4b4134, "class TextureManager")), 0); }   /* 0x456940 "class TextureManager" */
+void *(Sound_initLog)(void) { return ErrorLog_ctor(AP(void, OBJ(g_logSound)), AP(const char, STR(0x4b42e0, "Sound")), 0); }   /* 0x456c90 "Sound" */
+void *(Console_initLog)(void) { return ErrorLog_ctor(AP(void, OBJ(g_logConsole)), AP(const char, STR(0x4c456c, "class Console")), 0); }   /* 0x460520 "class Console" */
+void *(Shape_initLog)(void) { return ErrorLog_ctor(AP(void, OBJ(g_logShape)), AP(const char, STR(0x4c4a40, "class Shape")), 0); }   /* 0x463b30 "class Shape" */
+void *(ShapeManager_initLog)(void) { return ErrorLog_ctor(AP(void, OBJ(g_logShapeManager)), AP(const char, STR(0x4c4ca8, "class ShapeManager")), 0); }   /* 0x4669c0 "class ShapeManager" */
+void *(Skeleton_initLog)(void) { return ErrorLog_ctor(AP(void, OBJ(g_logSkeleton)), AP(const char, STR(0x4c534c, "class Skeleton")), 0); }   /* 0x469930 "class Skeleton" */
+void *(SkeletonManager_initLog)(void) { return ErrorLog_ctor(AP(void, OBJ(g_logSkeletonManager)), AP(const char, STR(0x4c549c, "class SkeletonManager")), 0); }   /* 0x46ae10 "class SkeletonManager" */
+void *(BMPRGBFile_initLog)(void) { return ErrorLog_ctor(AP(void, OBJ(g_logBMPRGBFile)), AP(const char, STR(0x4c58f4, "class BMPRGBFile")), 0); }   /* 0x46ccb0 "class BMPRGBFile" */
+void *(RealColor_initLog)(void) { return ErrorLog_ctor(AP(void, OBJ(g_logRealColor)), AP(const char, STR(0x4c59c0, "struct RealColor")), 0); }   /* 0x46d270 "struct RealColor" */
+void *(PackedColor_initLog)(void) { return ErrorLog_ctor(AP(void, OBJ(g_logPackedColor)), AP(const char, STR(0x4c59d4, "struct PackedColor")), 0); }   /* 0x46da70 "struct PackedColor" */
+void *(UnitPartInfo_initLog)(void) { return ErrorLog_ctor(AP(void, OBJ(g_logUnitPartInfo)), AP(const char, STR(0x4c6ffc, "struct UnitPartInfo")), 0); }   /* 0x46f360 "struct UnitPartInfo" */
+void *(UnitPoseInfo_initLog)(void) { return ErrorLog_ctor(AP(void, OBJ(g_logUnitPoseInfo)), AP(const char, STR(0x4c7010, "struct UnitPoseInfo")), 0); }   /* 0x46f3c0 "struct UnitPoseInfo" */
+void *(Unit_initLog)(void) { return ErrorLog_ctor(AP(void, OBJ(g_logUnit)), AP(const char, STR(0x4c7024, "class Unit")), 0); }   /* 0x46f420 "class Unit" */
+void *(Stage_initLog)(void) { return ErrorLog_ctor(AP(void, OBJ(g_logStage)), AP(const char, STR(0x4c73b0, "class Stage")), 0); }   /* 0x46ff20 "class Stage" */
+void *(CollisionVolume_initLog)(void) { return ErrorLog_ctor(AP(void, OBJ(g_logCollisionVolume)), AP(const char, STR(0x4c7800, "class CollisionVolume")), 0); }   /* 0x481340 "class CollisionVolume" */
+void *(Light_initLog)(void) { return ErrorLog_ctor(AP(void, OBJ(g_logLight)), AP(const char, STR(0x4c7ad4, "class Light")), 0); }   /* 0x483d00 "class Light" */
+void *(ViewVolume_initLog)(void) { return ErrorLog_ctor(AP(void, OBJ(g_logViewVolume)), AP(const char, STR(0x4c7b08, "class ViewVolume")), 0); }   /* 0x483f60 "class ViewVolume" */
+void *(TimeSync_initLog)(void) { return ErrorLog_ctor(AP(void, OBJ(g_logTimeSync)), AP(const char, STR(0x4c7b70, "class TimeSync")), 0); }   /* 0x4873e0 "class TimeSync" */
+void *(Scene_initLog)(void) { return ErrorLog_ctor(AP(void, OBJ(g_logScene)), AP(const char, STR(0x4c7d18, "class Scene")), 0); }   /* 0x48b3c0 "class Scene" */
 
 /* ---- global objects: the vtable 0x4a956c (Texture) and an empty second field ---- */
 void (static_initTex64x64)(void) { g_texture64x64Vtable = VT(Texture); ((TextureBank *)g_texture64x64)->ready = 0; }   /* 0x42b130 */
@@ -35,34 +35,34 @@ void (static_initTex256x128)(void) { g_texture256x128Vtable = VT(Texture); ((Tex
 void (static_initTex256x256)(void) { g_texture256x256Vtable = VT(Texture); ((TextureBank *)g_texture256x256)->ready = 0; }   /* 0x42b2e0 */
 
 /* ---- a global object's destructor registered with atexit (the result of atexit) ---- */
-int (static_registerTex64x64Dtor)(void) { return atexit((void (*)(void))FN(static_destroyTex64x64)); }
-int (static_registerTex128x64Dtor)(void) { return atexit((void (*)(void))FN(static_destroyTex128x64)); }
-int (static_registerTex256x64Dtor)(void) { return atexit((void (*)(void))FN(static_destroyTex256x64)); }
-int (static_registerTex128x128Dtor)(void) { return atexit((void (*)(void))FN(static_destroyTex128x128)); }
-int (static_registerTex256x128Dtor)(void) { return atexit((void (*)(void))FN(static_destroyTex256x128)); }
-int (static_registerTex256x256Dtor)(void) { return atexit((void (*)(void))FN(static_destroyTex256x256)); }
-int (static_registerTextureManagerDtor)(void) { return atexit((void (*)(void))FN(static_endTextureManager)); }
-int (static_registerTextureLogDtor)(void) { return atexit((void (*)(void))FN(static_endTextureLog)); }
-int (static_registerTextureManagerLogDtor)(void) { return atexit((void (*)(void))FN(static_endTextureManagerLog)); }
-int (static_registerSoundLogDtor)(void) { return atexit((void (*)(void))FN(static_endSoundLog)); }
-int (static_registerConsoleLogDtor)(void) { return atexit((void (*)(void))FN(static_endConsoleLog)); }
-int (static_registerShapeLogDtor)(void) { return atexit((void (*)(void))FN(static_endShapeLog)); }
-int (static_registerShapeManagerLogDtor)(void) { return atexit((void (*)(void))FN(static_endShapeManagerLog)); }
-int (static_registerTimeSyncDtor)(void) { return atexit((void (*)(void))FN(static_endTimeSync)); }
-int (static_registerSkeletonLogDtor)(void) { return atexit((void (*)(void))FN(static_endSkeletonLog)); }
-int (static_registerSkeletonManagerLogDtor)(void) { return atexit((void (*)(void))FN(static_endSkeletonManagerLog)); }
-int (static_registerBMPRGBFileLogDtor)(void) { return atexit((void (*)(void))FN(static_endBMPRGBFileLog)); }
-int (static_registerRealColorLogDtor)(void) { return atexit((void (*)(void))FN(static_endRealColorLog)); }
-int (static_registerPackedColorLogDtor)(void) { return atexit((void (*)(void))FN(static_endPackedColorLog)); }
-int (static_registerUnitPartInfoLogDtor)(void) { return atexit((void (*)(void))FN(static_endUnitPartInfoLog)); }
-int (static_registerUnitPoseInfoLogDtor)(void) { return atexit((void (*)(void))FN(static_endUnitPoseInfoLog)); }
-int (static_registerUnitLogDtor)(void) { return atexit((void (*)(void))FN(static_endUnitLog)); }
-int (static_registerStageLogDtor)(void) { return atexit((void (*)(void))FN(static_endStageLog)); }
-int (static_registerCollisionVolumeLogDtor)(void) { return atexit((void (*)(void))FN(static_endCollisionVolumeLog)); }
-int (static_registerLightLogDtor)(void) { return atexit((void (*)(void))FN(static_endLightLog)); }
-int (static_registerViewVolumeLogDtor)(void) { return atexit((void (*)(void))FN(static_endViewVolumeLog)); }
-int (static_registerTimeSyncLogDtor)(void) { return atexit((void (*)(void))FN(static_endTimeSyncLog)); }
-int (static_registerSceneLogDtor)(void) { return atexit((void (*)(void))FN(static_endSceneLog)); }
+int (static_registerTex64x64Dtor)(void) { return atexit(FNP(void (*)(void), FN(static_destroyTex64x64))); }
+int (static_registerTex128x64Dtor)(void) { return atexit(FNP(void (*)(void), FN(static_destroyTex128x64))); }
+int (static_registerTex256x64Dtor)(void) { return atexit(FNP(void (*)(void), FN(static_destroyTex256x64))); }
+int (static_registerTex128x128Dtor)(void) { return atexit(FNP(void (*)(void), FN(static_destroyTex128x128))); }
+int (static_registerTex256x128Dtor)(void) { return atexit(FNP(void (*)(void), FN(static_destroyTex256x128))); }
+int (static_registerTex256x256Dtor)(void) { return atexit(FNP(void (*)(void), FN(static_destroyTex256x256))); }
+int (static_registerTextureManagerDtor)(void) { return atexit(FNP(void (*)(void), FN(static_endTextureManager))); }
+int (static_registerTextureLogDtor)(void) { return atexit(FNP(void (*)(void), FN(static_endTextureLog))); }
+int (static_registerTextureManagerLogDtor)(void) { return atexit(FNP(void (*)(void), FN(static_endTextureManagerLog))); }
+int (static_registerSoundLogDtor)(void) { return atexit(FNP(void (*)(void), FN(static_endSoundLog))); }
+int (static_registerConsoleLogDtor)(void) { return atexit(FNP(void (*)(void), FN(static_endConsoleLog))); }
+int (static_registerShapeLogDtor)(void) { return atexit(FNP(void (*)(void), FN(static_endShapeLog))); }
+int (static_registerShapeManagerLogDtor)(void) { return atexit(FNP(void (*)(void), FN(static_endShapeManagerLog))); }
+int (static_registerTimeSyncDtor)(void) { return atexit(FNP(void (*)(void), FN(static_endTimeSync))); }
+int (static_registerSkeletonLogDtor)(void) { return atexit(FNP(void (*)(void), FN(static_endSkeletonLog))); }
+int (static_registerSkeletonManagerLogDtor)(void) { return atexit(FNP(void (*)(void), FN(static_endSkeletonManagerLog))); }
+int (static_registerBMPRGBFileLogDtor)(void) { return atexit(FNP(void (*)(void), FN(static_endBMPRGBFileLog))); }
+int (static_registerRealColorLogDtor)(void) { return atexit(FNP(void (*)(void), FN(static_endRealColorLog))); }
+int (static_registerPackedColorLogDtor)(void) { return atexit(FNP(void (*)(void), FN(static_endPackedColorLog))); }
+int (static_registerUnitPartInfoLogDtor)(void) { return atexit(FNP(void (*)(void), FN(static_endUnitPartInfoLog))); }
+int (static_registerUnitPoseInfoLogDtor)(void) { return atexit(FNP(void (*)(void), FN(static_endUnitPoseInfoLog))); }
+int (static_registerUnitLogDtor)(void) { return atexit(FNP(void (*)(void), FN(static_endUnitLog))); }
+int (static_registerStageLogDtor)(void) { return atexit(FNP(void (*)(void), FN(static_endStageLog))); }
+int (static_registerCollisionVolumeLogDtor)(void) { return atexit(FNP(void (*)(void), FN(static_endCollisionVolumeLog))); }
+int (static_registerLightLogDtor)(void) { return atexit(FNP(void (*)(void), FN(static_endLightLog))); }
+int (static_registerViewVolumeLogDtor)(void) { return atexit(FNP(void (*)(void), FN(static_endViewVolumeLog))); }
+int (static_registerTimeSyncLogDtor)(void) { return atexit(FNP(void (*)(void), FN(static_endTimeSyncLog))); }
+int (static_registerSceneLogDtor)(void) { return atexit(FNP(void (*)(void), FN(static_endSceneLog))); }
 
 /* ---- empty functions ---- */
 /* ten empty start-up initialisers (each a bare "ret", run once from crt_start's initialiser table): the eight at
@@ -119,19 +119,19 @@ int (static_startSceneLog)(void) { Scene_initLog(); return static_registerSceneL
 void (colour_initPackedBlue)(void) { u8 *c = g_packedBlue; c[0] = 0; c[1] = 0; c[2] = 0xff; c[3] = 0xff; }   /* 0x46dbf0 */
 void (colour_initPackedGrey)(void) { u8 *c = g_packedGrey; c[0] = 0x7f; c[1] = 0x7f; c[2] = 0x7f; c[3] = 0xff; }   /* 0x46db30 */
 void (colour_initPackedYellow)(void) { u8 *c = g_packedYellow; c[0] = 0xff; c[1] = 0xff; c[2] = 0; c[3] = 0xff; }   /* 0x46dc20 */
-void (colour_initPackedClear)(void) { u8 *c = (u8 *)ADDR(g_defaultColour); c[0] = 0; c[1] = 0; c[2] = 0; c[3] = 0; }   /* 0x46dad0 */
-void (colour_initPackedRed)(void) { u8 *c = (u8 *)ADDR(g_packedRed); c[0] = 0xff; c[1] = 0; c[2] = 0; c[3] = 0xff; }   /* 0x46db90 */
+void (colour_initPackedClear)(void) { u8 *c = AP(u8, ADDR(g_defaultColour)); c[0] = 0; c[1] = 0; c[2] = 0; c[3] = 0; }   /* 0x46dad0 */
+void (colour_initPackedRed)(void) { u8 *c = AP(u8, ADDR(g_packedRed)); c[0] = 0xff; c[1] = 0; c[2] = 0; c[3] = 0xff; }   /* 0x46db90 */
 void (colour_initPackedWhite)(void) { u8 *c = g_packedWhite; c[0] = 0xff; c[1] = 0xff; c[2] = 0xff; c[3] = 0xff; }   /* 0x46db60 */
-void (colour_initPackedBlack)(void) { u8 *c = (u8 *)ADDR(g_unlit); c[0] = 0; c[1] = 0; c[2] = 0; c[3] = 0xff; }   /* 0x46db00 */
+void (colour_initPackedBlack)(void) { u8 *c = AP(u8, ADDR(g_unlit)); c[0] = 0; c[1] = 0; c[2] = 0; c[3] = 0xff; }   /* 0x46db00 */
 void (colour_initPackedGreen)(void) { u8 *c = g_packedGreen; c[0] = 0; c[1] = 0xff; c[2] = 0; c[3] = 0xff; }   /* 0x46dbc0 */
-void (colour_initRealClear)(void) { u32 *c = (u32 *)OBJ(g_realClear); c[0] = 0; c[1] = 0; c[2] = 0; c[3] = 0; }   /* 0x46d2d0 */
-void (colour_initRealBlue)(void) { u32 *c = (u32 *)OBJ(g_realBlue); c[0] = 0; c[1] = 0; c[2] = 0x3f800000u; c[3] = 0x3f800000u; }   /* 0x46d450 */
-void (colour_initRealWhite)(void) { u32 *c = (u32 *)OBJ(g_realWhite); c[0] = 0x3f800000u; c[1] = 0x3f800000u; c[2] = 0x3f800000u; c[3] = 0x3f800000u; }   /* 0x46d390 */
-void (colour_initRealGreen)(void) { u32 *c = (u32 *)OBJ(g_realGreen); c[0] = 0; c[1] = 0x3f800000u; c[2] = 0; c[3] = 0x3f800000u; }   /* 0x46d410 */
-void (colour_initRealRed)(void) { u32 *c = (u32 *)OBJ(g_realRed); c[0] = 0x3f800000u; c[1] = 0; c[2] = 0; c[3] = 0x3f800000u; }   /* 0x46d3d0 */
-void (colour_initRealBlack)(void) { u32 *c = (u32 *)OBJ(g_realBlack); c[0] = 0; c[1] = 0; c[2] = 0; c[3] = 0x3f800000u; }   /* 0x46d310 */
-void (colour_initRealYellow)(void) { u32 *c = (u32 *)OBJ(g_realYellow); c[0] = 0x3f800000u; c[1] = 0x3f800000u; c[2] = 0; c[3] = 0x3f800000u; }   /* 0x46d490 */
-void (colour_initRealGrey)(void) { u32 *c = (u32 *)OBJ(g_realGrey); c[0] = 0x3f000000u; c[1] = 0x3f000000u; c[2] = 0x3f000000u; c[3] = 0x3f800000u; }   /* 0x46d350 */
+void (colour_initRealClear)(void) { u32 *c = AP(u32, OBJ(g_realClear)); c[0] = 0; c[1] = 0; c[2] = 0; c[3] = 0; }   /* 0x46d2d0 */
+void (colour_initRealBlue)(void) { u32 *c = AP(u32, OBJ(g_realBlue)); c[0] = 0; c[1] = 0; c[2] = 0x3f800000u; c[3] = 0x3f800000u; }   /* 0x46d450 */
+void (colour_initRealWhite)(void) { u32 *c = AP(u32, OBJ(g_realWhite)); c[0] = 0x3f800000u; c[1] = 0x3f800000u; c[2] = 0x3f800000u; c[3] = 0x3f800000u; }   /* 0x46d390 */
+void (colour_initRealGreen)(void) { u32 *c = AP(u32, OBJ(g_realGreen)); c[0] = 0; c[1] = 0x3f800000u; c[2] = 0; c[3] = 0x3f800000u; }   /* 0x46d410 */
+void (colour_initRealRed)(void) { u32 *c = AP(u32, OBJ(g_realRed)); c[0] = 0x3f800000u; c[1] = 0; c[2] = 0; c[3] = 0x3f800000u; }   /* 0x46d3d0 */
+void (colour_initRealBlack)(void) { u32 *c = AP(u32, OBJ(g_realBlack)); c[0] = 0; c[1] = 0; c[2] = 0; c[3] = 0x3f800000u; }   /* 0x46d310 */
+void (colour_initRealYellow)(void) { u32 *c = AP(u32, OBJ(g_realYellow)); c[0] = 0x3f800000u; c[1] = 0x3f800000u; c[2] = 0; c[3] = 0x3f800000u; }   /* 0x46d490 */
+void (colour_initRealGrey)(void) { u32 *c = AP(u32, OBJ(g_realGrey)); c[0] = 0x3f000000u; c[1] = 0x3f000000u; c[2] = 0x3f000000u; c[3] = 0x3f800000u; }   /* 0x46d350 */
 
 /* ---- a global object's destructor, run once (the guard byte's bit 0 set first): ErrorLog_dtor of the object ---- */
 #define GUARDED_DTOR(name, guard, obj) \
@@ -139,7 +139,7 @@ void (colour_initRealGrey)(void) { u32 *c = (u32 *)OBJ(g_realGrey); c[0] = 0x3f0
 	{ \
 		if (!(GAME_VAR(u8, guard) & 1)) { \
 			GAME_VAR(u8, guard) |= 1; \
-			ErrorLog_dtor((void *)(obj)); \
+			ErrorLog_dtor(AP(void, (obj))); \
 		} \
 	}
 GUARDED_DTOR(static_endTextureLog, 0xa0e009, OBJ(g_logTexture))

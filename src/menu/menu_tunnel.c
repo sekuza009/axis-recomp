@@ -7,15 +7,15 @@
 
 static void bind(int texture)
 {
-	tex_bind(g_textures->banks[texture / 512], texture % 512);
+	tex_bind(AP(void, AP(TextureManager, g_textures)->banks[texture / 512]), texture % 512);
 }
 
 /* the last ring of the chain and the number of rings */
 static TunnelRing *last_ring(TunnelRing *ring, int *count)
 {
 	int n = 1;
-	while (ring->next != NULL) {
-		ring = ring->next;
+	while (ring->next != 0) {
+		ring = AP(TunnelRing, ring->next);
 		n++;
 	}
 	*count = n;
@@ -74,7 +74,7 @@ static void outer_bands(TunnelRing *first)
 		ring->spin = f32(spun(ring->spin, ring->spinSpeed, 1));
 		if (ring->spin >= 360.0f)
 			ring->spin = -360.0f;
-		ring = ring->back;
+		ring = AP(TunnelRing, ring->back);
 	}
 	/* a stray pop after two rings (sic): nothing on the menu path pushes a matrix (gfx_setMenuCamera loads the
 	   identity; the original's 21 glPushMatrix calls are all in ARM CENTER panels, match drawing, particles and
@@ -104,7 +104,7 @@ static void inner_bands(TunnelRing *first)
 			ring->innerSpin = f32(spun(ring->innerSpin, ring->innerSpeed, 0));
 		if (ring->innerSpin >= 360.0f)
 			ring->innerSpin = -360.0f;
-		ring = ring->back;
+		ring = AP(TunnelRing, ring->back);
 	}
 }
 
@@ -175,7 +175,7 @@ static void flares(TunnelRing *first)
 			if (!(f->spin >= -360.0f))
 				f->spin = 360.0f;
 		}
-		ring = ring->back;
+		ring = AP(TunnelRing, ring->back);
 	}
 }
 
@@ -227,7 +227,7 @@ static void cages(TunnelRing *first)
 		ring->cageSpin = f32(s);
 		if (s >= 360.0f)
 			ring->cageSpin = -360.0f;
-		ring = ring->back;
+		ring = AP(TunnelRing, ring->back);
 	}
 }
 
@@ -248,12 +248,12 @@ void (menu_drawBackground3D)(TunnelRing *first)
 
 
 /* 0x441190: the last ring of the chain at *head taken off and freed (free's result) */
-u32 (tunnel_removeLastRing)(TunnelRing **head)
+u32 (tunnel_removeLastRing)(APTR(TunnelRing) *head)
 {
-	TunnelRing *first = *head, *last = first, *prev = first;
-	while (last->next != NULL) {
+	TunnelRing *first = AP(TunnelRing, *head), *last = first, *prev = first;
+	while (last->next != 0) {
 		prev = last;
-		last = last->next;
+		last = AP(TunnelRing, last->next);
 	}
 	if (first == last)
 		*head = last->next;
@@ -267,8 +267,8 @@ TunnelRing *(tunnel_addRing)(void)
 {
 	g_tunnelRings += 1;
 	tunnel_appendRing(&g_menuTunnel);
-	TunnelRing *ring = g_menuTunnel;
-	for (; ring->next != NULL; ring = ring->next)
+	TunnelRing *ring = AP(TunnelRing, g_menuTunnel);
+	for (; ring->next != 0; ring = AP(TunnelRing, ring->next))
 		ring->alpha = 1.0f;
 	return ring;
 }
@@ -292,7 +292,7 @@ void (tunnelRing_build)(u8 *o, int index)
 		if (pass) {   /* the second circle after the path's four fields */
 			(*(int *)&tr->spin) = 0;
 			if (tr->back)
-				BITS(tr->spin) = BITS(tr->back->spin);
+				BITS(tr->spin) = BITS(AP(struct TunnelRing, tr->back)->spin);
 			tr->spinSpeed = 0.2f;
 			tr->cleared1938 = 0;
 			(*(int *)&tr->depthShift) = 0;
@@ -316,7 +316,7 @@ void (tunnelRing_build)(u8 *o, int index)
 	}
 	BITS(tr->innerSpin) = 0x43b40000;   /* 360 */
 	if (tr->back)
-		BITS(tr->innerSpin) = BITS(tr->back->innerSpin);
+		BITS(tr->innerSpin) = BITS(AP(struct TunnelRing, tr->back)->innerSpin);
 	tr->innerSpeed = -0.5f;
 	BITS(tr->cleared326c[0]) = BITS(tr->cleared326c[1]) = BITS(tr->cleared326c[2]) = 0;
 	X z = H * k_m1100f - k_550f;
@@ -349,10 +349,10 @@ void (tunnelRing_build)(u8 *o, int index)
 /* ---- the menu camera's move along the tunnel: its eye (g_menuEyeX, three floats) and the point it looks at
    (g_menuCameraLook), kept at g_menuEyeKeptX / g_menuLookKeptX; the move's state in g_menuCameraMove (0 still, 1 / 3 moving in / out a ring,
    2 / 4 the view swinging up before them) ---- */
-#define EYE ((float *)ADDR(g_menuEyeX))
-#define LOOK ((float *)ADDR(g_menuCameraLook))
-#define EYE_KEPT ((float *)ADDR(g_menuEyeKeptX))
-#define LOOK_KEPT ((float *)ADDR(g_menuLookKeptX))
+#define EYE (AP(float, ADDR(g_menuEyeX)))
+#define LOOK (AP(float, ADDR(g_menuCameraLook)))
+#define EYE_KEPT (AP(float, ADDR(g_menuEyeKeptX)))
+#define LOOK_KEPT (AP(float, ADDR(g_menuLookKeptX)))
 
 static void camera_keep(void)
 {
@@ -406,9 +406,9 @@ void (menuTunnel_advance)(TunnelRing *ring)
 	if (g_leavingForMatch)
 		ringLength = 0x898;
 	TunnelRing *r = ring;
-	for (TunnelRing *last = ring; last->next != NULL; last = last->next)
+	for (TunnelRing *last = ring; last->next != 0; last = AP(TunnelRing, last->next))
 		r = last;
-	const float *stepF = (const float *)ADDR(g_tunnelStepF);
+	const float *stepF = AP(const float, ADDR(g_tunnelStepF));
 	int state = g_menuCameraMove;
 	switch (state) {
 	case 0:
@@ -437,7 +437,7 @@ void (menuTunnel_advance)(TunnelRing *ring)
 		r->moveSteps += step;
 		if (r->moveSteps >= ringLength) {
 			if (state == 1)
-				r->depthShift = f32(fsub_m(fld_m(&r->depthShift), (const float *)(g_leavingForMatch ? ADDR(k_2200f) : OBJ(k_1100f))));
+				r->depthShift = f32(fsub_m(fld_m(&r->depthShift), AP(const float, (g_leavingForMatch ? ADDR(k_2200f) : OBJ(k_1100f)))));
 			else
 				r->depthShift = f32(fadd_m(fld_m(&r->depthShift), k_1100f));
 			r->moveSteps = 0;
@@ -470,7 +470,7 @@ void (menuTunnel_advance)(TunnelRing *ring)
 			}
 		} else if (state == 1)
 			return;
-		lower_view((const float *)ADDR(k_0_5f));
+		lower_view(AP(const float, ADDR(k_0_5f)));
 		return;
 	case 2:
 	case 4:

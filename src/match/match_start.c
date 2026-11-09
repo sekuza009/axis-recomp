@@ -3,7 +3,7 @@
 #include "../game.h"
 #include <string.h>
 
-#define FIELD(type, obj, offset) GAME_VAR(type, (u8 *)RELOC(obj) + (offset))
+#define FIELD(type, obj, offset) GAME_VAR(type, AP(u8, RELOC(obj)) + (offset))
 
 
 static void set_round(Round *r, int map, int mode, int score, int time)
@@ -24,7 +24,7 @@ static void make_rotation(Scene *s)
 		s->rotationCount = 0;
 		int k;
 		for (k = 0; k < 15; k++) {
-			const SkirmishInfo *si = (const SkirmishInfo *)OBJ(g_skirmishInfo) + k;
+			const SkirmishInfo *si = AP(const SkirmishInfo, OBJ(g_skirmishInfo)) + k;
 			set_round(&s->rotation[s->rotationCount++], k, si->gameMode, si->fragLimit, si->timeLimit);
 		}
 		s->rotationAt = g_mapIndex;
@@ -86,7 +86,7 @@ static void match_setup(Scene *s)
 		s->levelPoints = g_ladderExp;
 		s->level = level_fromPoints(s->levelPoints);
 		if (s->level < 1 || s->level > 20)
-			sys_fatalError((char *)OBJ(g_logConsole), (const char *)STR(0x4d0710, "incorrect level(%d) - processGameMode..."), s->level);
+			sys_fatalError(AP(char, OBJ(g_logConsole)), AP(const char, STR(0x4d0710, "incorrect level(%d) - processGameMode...")), s->level);
 	} else {
 		s->levelPoints = 0;
 		s->level = 1;
@@ -297,21 +297,21 @@ void THISCALL (stage_build)(u8 *s, u32 stageDir, u32 mapDir, const char *texture
                                   u32 bulletDir, u32 effectDir, u32 sceneDir)
 {
 	Stage *st = (Stage *)s;
-	stage_setFolders(s, stageDir, mapDir, (u32)textureDir, shapeDir, (u32)skeletonDir, actorDir, bulletDir, effectDir, sceneDir);
+	stage_setFolders(s, stageDir, mapDir, AV(textureDir), shapeDir, AV(skeletonDir), actorDir, bulletDir, effectDir, sceneDir);
 	space_initBy((u8 *)&st->space, 0x9c40, 0x27100, 0x3e8, 0x2710, 0x3e8, st->spaceData, sizeof st->spaceData);
 	char name[0x100];
 	for (int i = 0; i < 10; i++) {
-		sprintf(name, (const char *)STR(0x4c7410, "%s\\%02d"), textureDir, i);
-		st->effectTextures[i] = tex_getIdByName((*(void **)&g_textures), name, i > 7, 0, 0, 0, 0, 0, 0);
+		sprintf(name, AP(const char, STR(0x4c7410, "%s\\%02d")), textureDir, i);
+		st->effectTextures[i] = tex_getIdByName(AGET(void, g_textures), name, i > 7, 0, 0, 0, 0, 0, 0);
 	}
 	Light_clearCounts((u8 *)&st->mapLights);
-	factors_addAmbient((u8 *)&st->mapLights, (const void *)OBJ(g_packedWhite));
+	factors_addAmbient((u8 *)&st->mapLights, AP(const void, OBJ(g_packedWhite)));
 	stage_resetDynamicLights(s);
 	Light_clearCounts((u8 *)&st->actorLights);
 	u8 grey[4] = { 0x40, 0x40, 0x40, 0xff };
 	factors_addAmbient((u8 *)&st->actorLights, grey);
 	u32 down[3] = { 0xbf800000, 0xbf800000, 0xbf800000 };
-	factors_addDirectional((u8 *)&st->actorLights, (const void *)OBJ(g_packedWhite), down);
+	factors_addDirectional((u8 *)&st->actorLights, AP(const void, OBJ(g_packedWhite)), down);
 	long double root = 1;
 	root = x87_fsqrt(k_27);
 	memset((u8 *)s + offsetof(Stage, clearOn), 0, 14 * 4);   /* clearOn and the next 13 dwords */
@@ -345,9 +345,9 @@ void THISCALL (stage_build)(u8 *s, u32 stageDir, u32 mapDir, const char *texture
 		int ai = ftol(fmul_m(fsub_m((long double)i, &k_3f), &k_200f));
 		for (int j = 0; j <= 6; j++, dome += 3) {
 			u32 v[3] = { 0, 0x3f800000, 0 };
-			Vec3_rotateAxis((float *)RELOC(v), 1, ai);
-			Vec3_rotateAxis((float *)RELOC(v), 0, ftol(fmul_m(fsub_m((long double)j, &k_3f), &k_200f)));
-			((float *)RELOC(v))[1] = f32(fsub_m(fld_m((float *)&v[1]), &k_0_5f));
+			Vec3_rotateAxis(AP(float, RELOC(v)), 1, ai);
+			Vec3_rotateAxis(AP(float, RELOC(v)), 0, ftol(fmul_m(fsub_m((long double)j, &k_3f), &k_200f)));
+			(AP(float, RELOC(v)))[1] = f32(fsub_m(fld_m((float *)&v[1]), &k_0_5f));
 			memcpy(dome, v, 12);
 		}
 	}
@@ -356,7 +356,7 @@ void THISCALL (stage_build)(u8 *s, u32 stageDir, u32 mapDir, const char *texture
 		st->sideTextures[o] = -1;
 		for (int k = 0; k < 4; k++) {
 			u32 v[3] = { 0, 0x3f800000, 0x3f800000 };
-			Vec3_rotateAxis((float *)RELOC(v), 2, angle + k * 200);
+			Vec3_rotateAxis(AP(float, RELOC(v)), 2, angle + k * 200);
 			memcpy(st->sides[o][k], v, 12);
 			float *low = st->sides[o][4 + k];
 			low[0] = f32(fld_m((float *)&v[0]));
@@ -385,8 +385,8 @@ void THISCALL (stage_build)(u8 *s, u32 stageDir, u32 mapDir, const char *texture
 	st->layerPoolUsed = 0;
 	memcpy(st->worldHigh, st->levelHigh, 12);
 	st->groundLayerCount = 0;
-	st->layerModel.parts = st->layerParts;
-	st->waterModel.parts = (u8 *)st->waterParts;
+	st->layerModel.parts = AREF(st->layerParts);
+	st->waterModel.parts = AREF((u8 *)st->waterParts);
 	const char *dir = st->shapeDir;
 	ShapeManager_initBy((u8 *)&st->objectShapes, dir, 0x190, 2, 0xe54c0, st->objectShapeData, sizeof st->objectShapeData);
 	st->objectColourCount = 0;
@@ -414,8 +414,8 @@ void THISCALL (stage_build)(u8 *s, u32 stageDir, u32 mapDir, const char *texture
 	effect_initShapes(s);
 	static const u32 names[3] = { STR(0x4c73f4, "Texture\\Item_damagemap_ani0"), STR(0x4c73d8, "Texture\\Item_booster_ani0"), STR(0x4c73bc, "Texture\\Item_shield_ani0") };
 	for (int k = 0; k < 3; k++) {
-		sprintf(name, (const char *)RELOC(names[k]));
-		st->itemTextures[k] = tex_getIdByName((*(void **)&g_textures), name, 0, 0, 0, 0, 0, 0, 0);
+		sprintf(name, AP(const char, RELOC(names[k])));
+		st->itemTextures[k] = tex_getIdByName(AGET(void, g_textures), name, 0, 0, 0, 0, 0, 0, 0);
 	}
 	for (int k = 0; k < 16; k++) {
 		BITS(st->faintActorMatrix[k]) = k % 5 == 0 ? 0x3f800000 : 0;

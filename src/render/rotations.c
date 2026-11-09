@@ -62,7 +62,7 @@ void THISCALL (vec3_scaleCopy)(float *v, float *out, float s)
 
 /* 0x46c100: an angle in tenths of a degree wrapped into 0 .. 3600 (a - whole turns, plus a turn when that is
    negative or NaN); returned unrounded */
-#define TURN ((const float *)ADDR(k_3600f))        /* 3600 */
+#define TURN (AP(const float, ADDR(k_3600f)))        /* 3600 */
 #define PER_TURN (k_0_000277778f)    /* 1 / 3600 */
 #define ZERO k_0f
 long double (angle_wrap)(float a)
@@ -213,8 +213,12 @@ void THISCALL (quat_fromMatrix)(float *q, const float *m)
 /* the game's CRT acos (_CIacos: the argument and result on the FPU stack) */
 static X crt_acos(X x)
 {
+#ifdef AXIS_64   /* (VC6's _CIacos: atan2(sqrt(1 - x * x), x) with fsqrt / fpatan on the x87, done here) */
+	return x87_fpatan(x87_fsqrt(1 - x * x), x);
+#else
 	__asm__ volatile("call *%1" : "+t"(x) : "r"(CRT_FN(CIacos)) : "eax", "ecx", "edx", "memory");
 	return x;
+#endif
 }
 
 /* 0x47d260: out = (angle, axis) of the quaternion q = (x, y, z, w): the angle -2 acos(w) (0 for w >= 1, -2 pi for
@@ -224,15 +228,15 @@ void THISCALL (quat_toAxisAngle)(float *out, const float *q)
 	if (q[3] >= ONE)
 		out[0] = 0;
 	else if (q[3] > k_m1f)
-		out[0] = (float)fmul_m(crt_acos(fld_m(&q[3])), (const float *)ADDR(k_m2f));   /* * -2 */
+		out[0] = (float)fmul_m(crt_acos(fld_m(&q[3])), AP(const float, ADDR(k_m2f)));   /* * -2 */
 	else
 		BITS(out[0]) = 0xc0c90fdb;   /* -2 pi */
 	X w = fld_m(&q[3]);
-	X s = fsubr_m(w * w, (const float *)ADDR(k_1f)), a;
+	X s = fsubr_m(w * w, AP(const float, ADDR(k_1f))), a;
 	s = x87_fsqrt(s);
 	a = x87_fabs(s);
 	if (!(a >= k_1em8))
-		s = fld_m((const float *)ADDR(k_1f));
+		s = fld_m(AP(const float, ADDR(k_1f)));
 	out[1] = (float)(fld_m(&q[0]) / s);
 	out[2] = (float)(fld_m(&q[1]) / s);
 	out[3] = (float)(fld_m(&q[2]) / s);

@@ -37,8 +37,8 @@ static float tex255(int n) { return f32((long double)n * (1.0f / 255)); }
 #define ENERGY_HEIGHT g_energyBarHeight
 #define ENERGY_WIDTH  g_energyBarWidth
 #else
-#define ENERGY_HEIGHT (*(const float *)RELOC(*(const u32 *)IMG(0x493db8)))   /* 160 on disk */
-#define ENERGY_WIDTH  (*(const float *)RELOC(*(const u32 *)IMG(0x493f29)))   /* 8 on disk */
+#define ENERGY_HEIGHT (*AP(const float, RELOC(*AP(const u32, IMG(0x493db8)))))   /* 160 on disk */
+#define ENERGY_WIDTH  (*AP(const float, RELOC(*AP(const u32, IMG(0x493f29)))))   /* 8 on disk */
 #endif
 
 /* the alert ring, drawn by main_draw while a round homes on the player (homedOn) or the held item is a lock-on weapon
@@ -87,7 +87,7 @@ static void main_counters(Scene *scene, Actor *player)
 	float w8 = f32(wx(8.0f));
 	int x = ftol(wx(8.0f) + w8);
 	glEnable(GL_TEXTURE_2D);
-	tex_bind(g_textures->banks[scene->hudBarTexture / 512], scene->hudBarTexture % 512);
+	tex_bind(AP(void, AP(TextureManager, g_textures)->banks[scene->hudBarTexture / 512]), scene->hudBarTexture % 512);
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 	glBegin(GL_QUADS);
 	glTexCoord2f(0.0f, 0.7109375f);
@@ -152,7 +152,7 @@ static void main_ammo(Scene *scene, Actor *player)
 		int x = ftol(wx(acrossf) + left);
 		int other = player->ammoKind != i;
 		glEnable(GL_TEXTURE_2D);
-		tex_bind(g_textures->banks[scene->hudBarTexture / 512], scene->hudBarTexture % 512);
+		tex_bind(AP(void, AP(TextureManager, g_textures)->banks[scene->hudBarTexture / 512]), scene->hudBarTexture % 512);
 		glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 		glBegin(GL_QUADS);
 		float t0 = tex256(other * 39 + 48);
@@ -198,7 +198,7 @@ static void main_slotIcon(Scene *scene, Actor *player)
 	float centre = f32(gfx_getWidth() / 2);
 	int x = ftol(centre - wx(32.0f));
 	glEnable(GL_TEXTURE_2D);
-	tex_bind(g_textures->banks[scene->menuBoxTexture / 512], scene->menuBoxTexture % 512);
+	tex_bind(AP(void, AP(TextureManager, g_textures)->banks[scene->menuBoxTexture / 512]), scene->menuBoxTexture % 512);
 	float fade = player->slotIconTime;
 	glColor4f(1.0f, 1.0f, 1.0f, fade > 1.0f ? 1.0f : fade);
 	glBegin(GL_QUADS);
@@ -237,7 +237,7 @@ static void main_timers(Scene *scene, Actor *player)
 		w = f32(w - wx(8.0f));
 		int x = ftol(w - wx(32.0f));
 		glEnable(GL_TEXTURE_2D);
-		tex_bind(g_textures->banks[scene->iconTexture / 512], scene->iconTexture % 512);
+		tex_bind(AP(void, AP(TextureManager, g_textures)->banks[scene->iconTexture / 512]), scene->iconTexture % 512);
 		glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 		glBegin(GL_QUADS);
 		float s0 = tex255(k * 32);
@@ -301,10 +301,10 @@ static void main_snapshot(Scene *scene, Actor *player)
 	glEnable(GL_TEXTURE_2D);
 	if (scene->snapshotTex[player->heldItem] < 0) {
 		sprintf(name, "Actor/%s/SnapShot", scene->actorItems[player->heldItem].name);
-		scene->snapshotTex[player->heldItem] = tex_getIdByName(g_textures, name, 0, 0, 0, 0, 0, 0, 0);
+		scene->snapshotTex[player->heldItem] = tex_getIdByName(AP(void, g_textures), name, 0, 0, 0, 0, 0, 0, 0);
 	}
 	int id = scene->snapshotTex[player->heldItem];
-	tex_bind(g_textures->banks[id / 512], id % 512);
+	tex_bind(AP(void, AP(TextureManager, g_textures)->banks[id / 512]), id % 512);
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 	glBegin(GL_QUADS);
 	glTexCoord2f(0.0f, 0.0f);
@@ -403,7 +403,7 @@ static void main_crosshair(Scene *scene, Actor *player)
 	int top = gfx_getHeight() / 2 - h / 2;
 	int left = gfx_getWidth() / 2 - w / 2;
 	glEnable(GL_TEXTURE_2D);
-	tex_bind(g_textures->banks[scene->crosshairTexture / 512], scene->crosshairTexture % 512);
+	tex_bind(AP(void, AP(TextureManager, g_textures)->banks[scene->crosshairTexture / 512]), scene->crosshairTexture % 512);
 	glColor4f(1.0f, 1.0f, 1.0f, player->fireAnim > 0.0f ? 0.75f : 1.0f);
 	glBegin(GL_QUADS);
 	glTexCoord2f(0.0f, 0.0f);
@@ -421,7 +421,7 @@ static void main_crosshair(Scene *scene, Actor *player)
 /* a 64-pixel mark in the top right corner, one cell of a 256-texel texture */
 static void main_cornerMark(int x, int texture, float s0, float s1)
 {
-	tex_bind(g_textures->banks[texture / 512], texture % 512);
+	tex_bind(AP(void, AP(TextureManager, g_textures)->banks[texture / 512]), texture % 512);
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 	glBegin(GL_QUADS);
 	glTexCoord2f(s0, 0.75f);

@@ -6,7 +6,7 @@
 /* a collision unit's planes (from its last, lastPlane, back through listPrev) flagged or not (flag 1: off) */
 static void unit_parts_flag(void *unit, int set)
 {
-	for (u32 *p = (u32 *)((SpaceUnit *)unit)->lastPlane; p; p = (u32 *)((CollisionTri *)p)->listPrev)
+	for (u32 *p = AP(u32, ((SpaceUnit *)unit)->lastPlane); p; p = AP(u32, ((CollisionTri *)p)->listPrev))
 		if (set)
 			*p |= 1;
 		else
@@ -18,8 +18,8 @@ void THISCALL (space_disableUnit)(void *unit) { unit_parts_flag(unit, 1); }
 void THISCALL (space_enableUnit)(void *unit) { unit_parts_flag(unit, 0); }
 
 /* an object's collision unit, switched with it only while it animates (animated 1) */
-#define OBJECT_UNIT(o) (((MapObject *)RELOC(o))->unit)
-#define OBJECT_ANIMATED(o) (((MapObject *)RELOC(o))->animated)
+#define OBJECT_UNIT(o) ((AP(MapObject, RELOC(o)))->unit)
+#define OBJECT_ANIMATED(o) ((AP(MapObject, RELOC(o)))->animated)
 
 /* 0x490ee0, 0x490f30: map object i switched on / off (when it was not already), its unit with it */
 void THISCALL (object_activate)(Stage *stage, int i)
@@ -29,7 +29,7 @@ void THISCALL (object_activate)(Stage *stage, int i)
 		return;
 	o->active = 1;
 	if (OBJECT_ANIMATED(o) == 1 && OBJECT_UNIT(o))
-		space_enableUnit(OBJECT_UNIT(o));
+		space_enableUnit(AP(void, OBJECT_UNIT(o)));
 }
 
 void THISCALL (object_deactivate)(Stage *stage, int i)
@@ -39,7 +39,7 @@ void THISCALL (object_deactivate)(Stage *stage, int i)
 		return;
 	o->active = 0;
 	if (OBJECT_ANIMATED(o) == 1 && OBJECT_UNIT(o))
-		space_disableUnit(OBJECT_UNIT(o));
+		space_disableUnit(AP(void, OBJECT_UNIT(o)));
 }
 
 /* 0x490df0: script command 0x1c: object i's animation: none (no name, or mode 0) stops it; otherwise its skeleton
@@ -52,9 +52,9 @@ void THISCALL (object_setAnimation)(Stage *stage, int i, u32 name, float period,
 		BITS(o->animRate) = 0;
 		return;
 	}
-	o->skeleton = skel_getSkeletonPtrBy((u8 *)&stage->objectSkeletons, name);
+	o->skeleton = AREF(skel_getSkeletonPtrBy((u8 *)&stage->objectSkeletons, name));
 	if (o->unit)
-		space_disableUnit(o->unit);
+		space_disableUnit(AP(void, o->unit));
 	o->animated = 1;
 	o->animMode = mode;
 	long double p = period;

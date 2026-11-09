@@ -25,10 +25,10 @@ void THISCALL (shape_computeBounds)(u8 *shape)
 	}
 	u32 min[3] = { 0, 0, (*(u32 *)&k_0f) }, max[3] = { 0, 0, 0 };
 	for (int i = 0; i < md->partCount; i++) {
-		ShapePart *part = (ShapePart *)(md->parts + i * 0x80);
+		ShapePart *part = AP(ShapePart, (md->parts + i * 0x80));
 		for (int k = 0; k < 6; k++)
 			(*(int *)&part->box[k]) = 0;
-		const u32 *v = ((const u32 *)(part)->vertices);
+		const u32 *v = (AP(const u32, (part)->vertices));
 		for (int n = part->vertexCount; n > 0; n--, v += 3)
 			for (int a = 0; a < 3; a++) {
 				if (!(part->box[3 + a] >= as_float(v[a])))
@@ -49,8 +49,8 @@ void THISCALL (shape_computeBounds)(u8 *shape)
 		md->centre[a] = centre[a] = f32(((X)as_float(min[a]) + as_float(max[a])) * half);
 	float r2 = 0;
 	for (int i = 0; i < md->partCount; i++) {
-		ShapePart *part = (ShapePart *)(md->parts + i * 0x80);
-		const float *v = ((const float *)(part)->vertices);
+		ShapePart *part = AP(ShapePart, (md->parts + i * 0x80));
+		const float *v = (AP(const float, (part)->vertices));
 		for (int n = part->vertexCount; n > 0; n--, v += 3) {
 			X dz = (X)v[2] - centre[2], dy = (X)v[1] - centre[1], dx = (X)v[0] - centre[0];
 			X d2 = dx * dx + dy * dy + dz * dz;

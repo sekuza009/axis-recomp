@@ -8,12 +8,13 @@
 #define Y0 g_armcPageTop
 #define X1 g_armcPageRight
 #define Y1 g_armcPageBottom
-#define K(addr) ((const float *)RELOC(addr))
+#define K(addr) (AP(const float, RELOC(addr)))
 #define g_slot g_armcColourSlot
 #define SLOT (g_armcColours + g_slot * 6)
 #define glVertex(x, y) menu_vertex(x, y)
 
-static const u32 *const bright = ((u32 *)g_armcBright), *const dim = ((u32 *)g_armcDim);
+#define bright ((const u32 *)g_armcBright)
+#define dim ((const u32 *)g_armcDim)
 #define TEXT(c) set_colour_bits(g_textColour, (c)[0], (c)[1], (c)[2], (c)[3])
 
 /* the box at the bottom right: "<MSG(287, "$[0] ROTATE")> <the name of g_armcSpin (MSG(118, "OFF"))>" (the texture bound) */
@@ -23,9 +24,9 @@ static void rotate_box(void)
 	menu_drawWideButton(X1 - 0xa0, Y1 - 0x20, X1, Y1, 1);
 	TEXT(bright);
 	char text[50] = { 0 };
-	strcpy(text, (const char *)MSG(287, "$[0] ROTATE"));
-	strcat(text, (const char *)STR(0x4b035c, " "));
-	strcat(text, (const char *)(MSG(118, "OFF") + g_armcSpin * 0x80));
+	strcpy(text, AP(const char, MSG(287, "$[0] ROTATE")));
+	strcat(text, AP(const char, STR(0x4b035c, " ")));
+	strcat(text, AP(const char, (MSG(118, "OFF") + g_armcSpin * 0x80)));
 	text_drawCentredLines16(X1 - 0xa0, Y1 - 0x18, X1, text);
 }
 
@@ -54,9 +55,9 @@ static int half_percent(long double v)
 static void value_line(int k, int y, int value)
 {
 	char line[50] = { 0 }, number[50] = { 0 };
-	strcpy(line, (const char *)(MSG(493, "HUE") + k * 0x80));
-	strcat(line, (const char *)STR(0x4b037c, " ["));
-	sprintf(number, (const char *)STR(0x4b0378, "%d]"), value);
+	strcpy(line, AP(const char, (MSG(493, "HUE") + k * 0x80)));
+	strcat(line, AP(const char, STR(0x4b037c, " [")));
+	sprintf(number, AP(const char, STR(0x4b0378, "%d]")), value);
 	strcat(line, number);
 	text_draw8(X1 - 0xc0, y, line);
 }
@@ -116,8 +117,8 @@ void (armc_drawColourEditor)(void)
 		menu_drawRect(X1 - 200, Y0 + 0x30 + box * 0xb0, X1, Y0 + 0xd0 + box * 0xb0, 1);
 	}
 	TEXT(bright);
-	text_drawCentred8(X1 - 200, Y0 + 0x34, X1, (const char *)MSG(491, "PRIMARY COLOR"));
-	text_drawCentred8(X1 - 200, Y0 + 0xe4, X1, (const char *)MSG(492, "SECONDARY COLOR"));
+	text_drawCentred8(X1 - 200, Y0 + 0x34, X1, AP(const char, MSG(491, "PRIMARY COLOR")));
+	text_drawCentred8(X1 - 200, Y0 + 0xe4, X1, AP(const char, MSG(492, "SECONDARY COLOR")));
 	for (int k = 0; k < 3; k++) {
 		int y = Y0 + k * 0x30;
 		int v1 = k == 0 ? ftol(fmul_m((long double)turned(ftol(fld_m(&SLOT[0]))), &k_0_2777778f))
@@ -130,7 +131,7 @@ void (armc_drawColourEditor)(void)
 	/* the slots */
 	glEnable(GL_TEXTURE_2D);
 	int texture = g_buttonTexture;
-	tex_bind(g_textures->banks[texture / 512], texture % 512);
+	tex_bind(AP(void, AP(TextureManager, g_textures)->banks[texture / 512]), texture % 512);
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 	for (int k = 0; k < 6; k++) {
 		glColor4f(1.0f, 1.0f, 1.0f, g_slot == k ? 0.8f : 0.4f);
@@ -142,20 +143,20 @@ void (armc_drawColourEditor)(void)
 		else
 			TEXT(dim);
 		if (k == 5)
-			text_drawCentredLines16(X0 + 0x10, Y0 + 0x13d, X0 + 0xb0, (const char *)MSG(286, "VIEW $[0] ALL"));
+			text_drawCentredLines16(X0 + 0x10, Y0 + 0x13d, X0 + 0xb0, AP(const char, MSG(286, "VIEW $[0] ALL")));
 		else
-			text_draw8(X0 + 0x18, Y0 + k * 0x30 + 0x44, (const char *)(MSG(281, "$[0] HEAD") + k * 0x80));
+			text_draw8(X0 + 0x18, Y0 + k * 0x30 + 0x44, AP(const char, (MSG(281, "$[0] HEAD") + k * 0x80)));
 	}
 	if (g_armcPreview) {
 		static const u32 names[5] = { OBJ(g_headPanelName), OBJ(g_chestPanelName), OBJ(g_armPanelName), OBJ(g_legPanelName), OBJ(g_boosterPanelName) };
 		TEXT(bright);
 		for (int k = 0; k < 5; k++)
-			text_draw8(X0 + 0x28, Y0 + 0x54 + k * 0x30, (const char *)RELOC(names[k]));
+			text_draw8(X0 + 0x28, Y0 + 0x54 + k * 0x30, AP(const char, RELOC(names[k])));
 	}
 	/* the sliders' tracks: the hue's rainbow, saturation and value plain */
 	glEnable(GL_TEXTURE_2D);
 	texture = g_buttonTexture;
-	tex_bind(g_textures->banks[texture / 512], texture % 512);
+	tex_bind(AP(void, AP(TextureManager, g_textures)->banks[texture / 512]), texture % 512);
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 	glBegin(GL_QUADS);
 	for (int k = 0; k < 3; k++)
@@ -199,21 +200,21 @@ void (armc_drawColourEditor)(void)
 			TEXT(bright);
 		else
 			TEXT(dim);
-		text_drawCentredLines16(X0 + k * 0x64 + 0x10, Y1 - 0x18, X0 + k * 0x64 + 0x70, (const char *)(MSG(115, "$[0] O K") + k * 0x80));
+		text_drawCentredLines16(X0 + k * 0x64 + 0x10, Y1 - 0x18, X0 + k * 0x64 + 0x70, AP(const char, (MSG(115, "$[0] O K") + k * 0x80)));
 	}
 	glEnable(GL_TEXTURE_2D);
 	texture = g_buttonTexture;
-	tex_bind(g_textures->banks[texture / 512], texture % 512);
+	tex_bind(AP(void, AP(TextureManager, g_textures)->banks[texture / 512]), texture % 512);
 	rotate_box();
 }
 
 /* ---- the weapons page ---- */
-#define SLOT_NAME(k) ((const char *)OBJ(g_partRecords) + (k) * 0x80)
-#define PART ((const PartInfo *)OBJ(g_viewedPart))   /* the part looked at (armc_viewedPartRecord) */
+#define SLOT_NAME(k) (AP(const char, OBJ(g_partRecords)) + (k) * 0x80)
+#define PART (AP(const PartInfo, OBJ(g_viewedPart)))   /* the part looked at (armc_viewedPartRecord) */
 
 static void bind_texture(int texture)
 {
-	tex_bind(g_textures->banks[texture / 512], texture % 512);
+	tex_bind(AP(void, AP(TextureManager, g_textures)->banks[texture / 512]), texture % 512);
 }
 
 /* a texture's whole quad on (x0, y0) .. (x1, y1) */
@@ -237,15 +238,15 @@ static void stat_int(int x, int y, int value, u32 unit)
 	char text[50] = { 0 };
 	itoa(value, text, 10);
 	if (unit)
-		strcat(text, (const char *)RELOC(unit));
+		strcat(text, AP(const char, RELOC(unit)));
 	armc_drawTextRight(x, y, text);
 }
 
 static void stat_float(int x, int y, float value, u32 format, u32 unit)
 {
 	char text[50] = { 0 };
-	sprintf(text, (const char *)RELOC(format), (double)value);   /* "%.0f" / "%.1f" */
-	strcat(text, (const char *)RELOC(unit));
+	sprintf(text, AP(const char, RELOC(format)), (double)value);   /* "%.0f" / "%.1f" */
+	strcat(text, AP(const char, RELOC(unit)));
 	armc_drawTextRight(x, y, text);
 }
 
@@ -271,7 +272,7 @@ void (armc_drawWeaponsScreen)(void)
 			TEXT(bright);
 		else
 			TEXT(dim);
-		text_drawCentredLines16(x + 0x10, Y1 - 0x18, x + 0x70, (const char *)(MSG(115, "$[0] O K") + k * 0x80));
+		text_drawCentredLines16(x + 0x10, Y1 - 0x18, x + 0x70, AP(const char, (MSG(115, "$[0] O K") + k * 0x80)));
 	}
 	glEnable(GL_TEXTURE_2D);
 	bind_texture(g_buttonTexture);
@@ -291,10 +292,10 @@ void (armc_drawWeaponsScreen)(void)
 		}
 	for (int k = 0; k < 6; k++) {
 		TEXT(bright);
-		text_draw8(X0 + 0x14, Y0 + k * 0x3f + 0x19, (const char *)(MSG(291, "HAND-W1($[0] 1)") + k * 0x80));
+		text_draw8(X0 + 0x14, Y0 + k * 0x3f + 0x19, AP(const char, (MSG(291, "HAND-W1($[0] 1)") + k * 0x80)));
 		TEXT(yellow);
 		if (strlen(SLOT_NAME(k)) <= 1)
-			text_drawCentred8(X0 + 0x10, Y0 + k * 0x3f + 0x36, X0 + 0xa0, (const char *)MSG(319, "EMPTY SLOT"));
+			text_drawCentred8(X0 + 0x10, Y0 + k * 0x3f + 0x36, X0 + 0xa0, AP(const char, MSG(319, "EMPTY SLOT")));
 		else
 			text_draw5(X0 + 0x18, Y0 + k * 0x3f + 0x2d, SLOT_NAME(k));
 	}
@@ -305,20 +306,20 @@ void (armc_drawWeaponsScreen)(void)
 	menu_drawRect(x, y + 0x118, x + 0xa0, y + 0x17c, 1);
 	set_colour_bits(g_rectColour, 0, 0x3f800000, 0x3f800000, 0x3f800000);
 	menu_drawRect(x, y + 0x118, x + 0xa0, y + 0x17c, 0);
-	if (strlen((const char *)OBJ(g_viewedPart)) <= 1) {
+	if (strlen(AP(const char, OBJ(g_viewedPart))) <= 1) {
 		TEXT(yellow);
-		text_drawCentred8(x, y + 0x142, x + 0xa0, (const char *)MSG(320, "REMOVE WEAPON"));
+		text_drawCentred8(x, y + 0x142, x + 0xa0, AP(const char, MSG(320, "REMOVE WEAPON")));
 	} else {
 		glEnable(GL_TEXTURE_2D);
 		glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 		bind_texture(g_armcViewedPartTexture);
 		picture(x + 0x10, y + 0x11c, x + 0x90, y + 0x158);
 		TEXT(white);
-		armc_drawText(x + 5, y + 0x158, (const char *)OBJ(g_viewedPart));
+		armc_drawText(x + 5, y + 0x158, AP(const char, OBJ(g_viewedPart)));
 		int cursor = g_armcCursor;
 		int type = g_armcSlot > 3 ? (g_extraListTable)[cursor] : (g_weaponListTable)[cursor];
 		TEXT(white);
-		armc_drawText(x + 5, y + 0x16a, (const char *)(MSG(711, "HV-PISTOL") + type * 0x80));
+		armc_drawText(x + 5, y + 0x16a, AP(const char, (MSG(711, "HV-PISTOL") + type * 0x80)));
 	}
 	glEnable(GL_TEXTURE_2D);
 	bind_texture(g_buttonTexture);
@@ -334,44 +335,44 @@ void (armc_drawWeaponsScreen)(void)
 	menu_drawRect(x + 4, y + 4, x + 0xc4, y + 0x10a, 0);
 	if (PART->slotType == -1) {
 		TEXT(yellow);
-		text_drawCentredLines16(x, y + 0x40, x + 0xc8, (const char *)MSG(319, "EMPTY SLOT"));
+		text_drawCentredLines16(x, y + 0x40, x + 0xc8, AP(const char, MSG(319, "EMPTY SLOT")));
 		return;
 	}
 	if (PART->ammoType == -1) {
 		TEXT(yellow);
-		text_draw8(x + 8, y + 0x10, (const char *)MSG(771, "SPECIAL WEAPON"));
+		text_draw8(x + 8, y + 0x10, AP(const char, MSG(771, "SPECIAL WEAPON")));
 		TEXT(white);
-		armc_drawText(x + 8, y + 0x28, (const char *)(MSG(745, "GRAVITY CONTROLLER") + PART->ammoPerShot * 0x80));
+		armc_drawText(x + 8, y + 0x28, AP(const char, (MSG(745, "GRAVITY CONTROLLER") + PART->ammoPerShot * 0x80)));
 		return;
 	}
 	TEXT(bright);
 	TEXT(white);
 	for (int k = 0; k < 16; k++)
-		armc_drawText(x + 8, y + 8 + k * 0x10, (const char *)(MSG(301, "SLOT TYPE") + k * 0x80));
+		armc_drawText(x + 8, y + 8 + k * 0x10, AP(const char, (MSG(301, "SLOT TYPE") + k * 0x80)));
 	set_colour_bits(g_textColour, 0, 0x3f800000, 0x3f800000, 0x3f800000);
 	int vx = x + 0xc0;
 	char text[50] = { 0 };
-	strcpy(text, (const char *)(MSG(321, "HAND") + PART->slotType * 0x80));
+	strcpy(text, AP(const char, (MSG(321, "HAND") + PART->slotType * 0x80)));
 	armc_drawTextRight(vx, y + 8, text);
 	char ammoName[50] = { 0 };
-	strcpy(ammoName, (const char *)(MSG(323, "30mm") + PART->ammoType * 0x80));
+	strcpy(ammoName, AP(const char, (MSG(323, "30mm") + PART->ammoType * 0x80)));
 	armc_drawTextRight(vx, y + 0x18, ammoName);
 	stat_int(vx, y + 0x28, PART->ammoPerShot, MSG(756, "cell"));
 	stat_int(vx, y + 0x38, PART->burst, MSG(758, "Round"));
 	char damageName[50] = { 0 };
-	strcpy(damageName, (const char *)(MSG(327, "IMPACT") + PART->damageType * 0x80));
+	strcpy(damageName, AP(const char, (MSG(327, "IMPACT") + PART->damageType * 0x80)));
 	armc_drawTextRight(vx, y + 0x48, damageName);
 	/* the sixth with the pilot's skill (of the part's kind) in percent of it as a bonus */
 	char value[50] = { 0 }, bonus[16];
 	itoa(PART->damage, value, 10);
 	static const u8 skill[5] = { 0, 0, 1, 2, 3 };   /* the profile's stat by kind; above 3 the last */
 	int ammoKind = (unsigned)PART->ammoType <= 3 ? PART->ammoType : 4;
-	long double b = fmul_m((long double)((CharacterProfile *)g_characterProfiles)[g_selectedCharacter].stats[skill[ammoKind]], (const float *)ADDR(k_0_01f));
+	long double b = fmul_m((long double)((CharacterProfile *)g_characterProfiles)[g_selectedCharacter].stats[skill[ammoKind]], AP(const float, ADDR(k_0_01f)));
 	b *= (long double)PART->damage;
 	if (b >= k_0f)
-		sprintf(bonus, (const char *)STR(0x4b02f0, " +%d"), ftol(b));
+		sprintf(bonus, AP(const char, STR(0x4b02f0, " +%d")), ftol(b));
 	else
-		sprintf(bonus, (const char *)STR(0x4b02f8, " %d"), ftol(b));
+		sprintf(bonus, AP(const char, STR(0x4b02f8, " %d")), ftol(b));
 	strcat(value, bonus);
 	armc_drawTextRight(vx, y + 0x58, value);
 	stat_float(vx, y + 0x68, PART->range, STR(0x4b0354, "%.0f"), MSG(751, "m"));

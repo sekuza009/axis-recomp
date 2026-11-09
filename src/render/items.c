@@ -37,7 +37,7 @@ void THISCALL (stage_drawItems)(Stage *stage, void *view)
 				colour[3] = (u8)ftol((long double)item->timer * 255.0f);
 				tint = colour;
 			}
-			Shape *model = kind->model;
+			Shape *model = AP(Shape, kind->model);
 			if (model == NULL)
 				continue;
 			glPushMatrix();

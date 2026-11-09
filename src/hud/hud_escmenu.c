@@ -170,7 +170,7 @@ void THISCALL (hud_drawMenuBox)(Scene *scene, int x0, int y0, int x1, int y1)
 		}
 	}
 	glEnable(GL_TEXTURE_2D);
-	tex_bind(g_textures->banks[scene->menuBoxTexture / 512], scene->menuBoxTexture % 512);
+	tex_bind(AP(void, AP(TextureManager, g_textures)->banks[scene->menuBoxTexture / 512]), scene->menuBoxTexture % 512);
 	glBegin(GL_QUADS);
 	for (int k = 0; k < 9; k++) {
 		int row = k / 3, col = k % 3;
@@ -271,7 +271,7 @@ static int esc_main(Scene *scene)
 				scene_updateRanking(scene);
 				scene->watchedPlayer = -1;
 			}
-			notice_printCentre(scene, (const char *)STR(0x4d06f4, "YOU ARE A SPECTATOR NOW."));
+			notice_printCentre(scene, AP(const char, STR(0x4d06f4, "YOU ARE A SPECTATOR NOW.")));
 			return 1;
 		}
 		if (scene->teamGame != 1) {   /* START */
@@ -348,7 +348,7 @@ static int esc_name(Scene *scene)
 		return scene->menuKeys[KEY_ESC] == 1;
 	match_endTyping();
 	if (g_keptChat[0])
-		replay_startRecording(scene, (const char *)OBJ(g_keptChat));
+		replay_startRecording(scene, AP(const char, OBJ(g_keptChat)));
 	return 1;
 }
 

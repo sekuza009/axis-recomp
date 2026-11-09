@@ -9,7 +9,7 @@
    original too): the logo is never dimmed ---- */
 static void draw_logo(int first)
 {
-	const u32 *clear = (const u32 *)OBJ(g_clearColour);
+	const u32 *clear = AP(const u32, OBJ(g_clearColour));
 	glClearColor_bits(clear[0], clear[1], clear[2], clear[3]);   /* glClearColor */
 	glClear(0x4100);
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
@@ -22,7 +22,7 @@ static void draw_logo(int first)
 	glEnable(GL_TEXTURE_2D);
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 	int texture = g_logoTexture;
-	tex_bind(g_textures->banks[texture / 512], texture % 512);
+	tex_bind(AP(void, AP(TextureManager, g_textures)->banks[texture / 512]), texture % 512);
 	glBegin(GL_QUADS);
 	glTexCoord2d(0.0, 0.0);
 	menu_vertex(0xa0, 0x3c);
@@ -82,7 +82,7 @@ int (frontEnd_drawProgress)(void)
 		} while (i + 400 < n);
 	}
 	glFinish();
-	return SwapBuffers(g_windowDC);
+	return SwapBuffers(AP(void, g_windowDC));
 }
 
 /* 0x41f540: the intro: the start-up logo shown once (draw_logo's dimming has no effect), then the loading picture stepped four times (g_loadStep) around the start-up loads, with
@@ -95,7 +95,7 @@ void (menuState100_intro)(void)
 	g_loadStep = 0;
 	draw_logo(1);
 	glFinish();
-	SwapBuffers(g_windowDC);
+	SwapBuffers(AP(void, g_windowDC));
 	set_colour_bits(g_textColour, 0x3f800000, 0, 0, 0x3f800000);   /* red text */
 	g_loadStep++;
 	frontEnd_drawProgress();
@@ -120,7 +120,7 @@ void (menuState100_intro)(void)
 	(*(u32 *)&g_tunnelPulseStep) = 0x3f800000;
 	g_mouseX = 0x136;
 	g_mouseY = 0xe6;
-	music_play((const char *)STR(0x4b01cc, "music/Netsphere.mp3"));
+	music_play(AP(const char, STR(0x4b01cc, "music/Netsphere.mp3")));
 	static const u32 clocks[] = { ADDR(g_unusedClock1), ADDR(g_unusedClock2), ADDR(g_unusedClock3), ADDR(g_lastFrameClock) };   /* four doubles */
 	for (int i = 0; i < 4; i++) {
 		GAME_VAR(u32, clocks[i]) = 0;
@@ -131,9 +131,9 @@ void (menuState100_intro)(void)
 /* 0x441740: the 3D background behind the menus: the tunnel's rings moved on (menuTunnel_advance) and drawn */
 void (menu_drawBackground)(void)
 {
-	menuTunnel_advance(g_menuTunnel);
+	menuTunnel_advance(AP(void, g_menuTunnel));
 	gfx_setProjection2D3D(1);
-	menu_drawBackground3D(g_menuTunnel);
+	menu_drawBackground3D(AP(void, g_menuTunnel));
 }
 
 /* 0x442e10: the replay selection dialog (0x9dd908 .. 0x9dd914): the window, its title MSG(21, "SELECT RECORDED GAME"), the list's frame with
@@ -147,24 +147,24 @@ void (replaySelect_drawDialog)(void)
 #define Y0 g_replaySelectTop
 #define X1 g_replaySelectRight
 #define Y1 g_replaySelectBottom
-	const u32 *bright = (const u32 *)ADDR(g_replaySelectLitR), *dim = (const u32 *)ADDR(g_replaySelectDimR);
+	const u32 *bright = AP(const u32, ADDR(g_replaySelectLitR)), *dim = AP(const u32, ADDR(g_replaySelectDimR));
 	int hovered = replaySelect_hitTest(g_mouseX, g_mouseY);
 	gfx_setProjection2D3D(2);
 	glLoadIdentity();
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 	menu_drawTexture(X0, Y0, X1, Y1, g_dialogFrameTexture);
 	set_colour_bits(g_textColour, bright[0], bright[1], bright[2], bright[3]);
-	text_draw16(X0 + 0x20, Y0 + 0x10, (const char *)MSG(21, "SELECT RECORDED GAME"));
+	text_draw16(X0 + 0x20, Y0 + 0x10, AP(const char, MSG(21, "SELECT RECORDED GAME")));
 	set_colour_bits(g_rectColour, 0, 0x3f800000, 0x3f800000, 0x3f800000);
 	menu_drawRect(X0 + 0x10, Y0 + 0x28, X1 - 0x40, Y0 + 0xf5, 0);
 	glEnable(GL_TEXTURE_2D);
 	int texture = g_buttonTexture;
-	tex_bind(g_textures->banks[texture / 512], texture % 512);
+	tex_bind(AP(void, AP(TextureManager, g_textures)->banks[texture / 512]), texture % 512);
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 	menu_drawUpArrow(X1 - 0x32, Y0 + 0x48, X1 - 0x12, Y0 + 0x88, hovered == 0);
 	menu_drawDownArrow(X1 - 0x32, Y0 + 0xac, X1 - 0x12, Y0 + 0xec, hovered != 0 && hovered == 1);
 	glDisable(GL_TEXTURE_2D);
-	const int *ticked[2] = { (const int *)ADDR(g_replayWrap), (const int *)ADDR(g_replayRandomOrder) };
+	const int *ticked[2] = { AP(const int, ADDR(g_replayWrap)), AP(const int, ADDR(g_replayRandomOrder)) };
 	for (int k = 0; k < 2; k++) {
 		int y = Y0 + 0xfe + k * 0x1e;
 		set_colour_bits(g_rectColour, 0, 0x3f800000, 0x3f800000, 0x3f800000);
@@ -174,20 +174,20 @@ void (replaySelect_drawDialog)(void)
 			menu_drawRect(X0 + 0x12, y + 2, X0 + 0x1d, y + 0xd, 1);
 		}
 		set_colour_bits(g_textColour, bright[0], bright[1], bright[2], bright[3]);
-		text_draw16(X0 + 0x28, k ? y : y + 2, (const char *)(MSG(22, "AUTO REPEAT") + k * 0x80));   /* (the second label 2 higher) */
+		text_draw16(X0 + 0x28, k ? y : y + 2, AP(const char, (MSG(22, "AUTO REPEAT") + k * 0x80)));   /* (the second label 2 higher) */
 	}
 	for (int row = 0; row < 2; row++)
 		for (int k = 0; k < 2; k++) {
 			glEnable(GL_TEXTURE_2D);
 			texture = g_buttonTexture;
-			tex_bind(g_textures->banks[texture / 512], texture % 512);
+			tex_bind(AP(void, AP(TextureManager, g_textures)->banks[texture / 512]), texture % 512);
 			int lit = hovered == 4 + row * 2 + k;
 			glColor4f(1.0f, 1.0f, 1.0f, lit ? 1.0f : 0.4f);
 			int x = X0 + k * 0xa0, y = Y1 - 0x5c + row * 0x28;
 			menu_drawWideButton(x + 0x64, y, x + 0xdc, y + 0x20, 1);
 			const u32 *colour = lit ? bright : dim;
 			set_colour_bits(g_textColour, colour[0], colour[1], colour[2], colour[3]);
-			text_drawCentredLines16(x + 0x64, y + 8, x + 0xdc, (const char *)(MSG(24, "$[0] ALL FILES") + row * 0x100 + k * 0x80));
+			text_drawCentredLines16(x + 0x64, y + 8, x + 0xdc, AP(const char, (MSG(24, "$[0] ALL FILES") + row * 0x100 + k * 0x80)));
 		}
 	if (hovered > 7 && hovered < 0x12) {
 		set_colour_bits(g_rectColour, 0x3dcccccd, 0x3e99999a, 0x3f800000, 0x3e99999a);   /* 0.1, 0.3, 1, 0.3 */
@@ -320,7 +320,7 @@ void (skirmish_keys)(void)
    g_screen 300 */
 void (menu_returnToArenaLobbyViaMain)(void)
 {
-	while (g_menuTunnel != NULL)
+	while (g_menuTunnel != 0)
 		armc_freeRing(&g_menuTunnel);
 	game_returnToArenaLobby();
 	g_screen = 300;
@@ -331,7 +331,7 @@ void (menu_returnToArenaLobbyViaMain)(void)
    room's state cleared, state 300 */
 void (menu_returnToMainFromRoom)(void)
 {
-	while (g_menuTunnel != NULL)
+	while (g_menuTunnel != 0)
 		armc_freeRing(&g_menuTunnel);
 	game_returnToMainMenu();
 	g_roomRequestOut = 0;
@@ -417,7 +417,7 @@ void (replaySelect_keys)(void)
    to callers that ignore it */
 void (replaySelect_mouse)(void)
 {
-	const float *repeat = (const float *)ADDR(k_5f);
+	const float *repeat = AP(const float, ADDR(k_5f));
 	if (g_mouseClick) {
 		g_menuRepeatClock = 0.0f;
 		int on = replaySelect_hitTest(g_mouseX, g_mouseY);
@@ -585,7 +585,7 @@ static u32 reset_menus(u32 eyeZ, u32 lookZ, int cameraMove, int entering, int sh
 		return typing;
 	g_textFieldOpen = 0;
 	input_resetKeys();
-	return ((u32)input_initKeyboard(g_mainWindow));   /* input_initKeyboard */
+	return ((u32)input_initKeyboard(AP(void, g_mainWindow)));   /* input_initKeyboard */
 }
 #define FAR_BACK 0xc3e10000u    /* -450: the eye's z */
 #define NEAR_BACK 0xc4098000u   /* -550: the look-at's z */
@@ -654,10 +654,10 @@ u32 (game_returnToGameRoom)(void)
 u32 (menuState800_gameRoom)(void)
 {
 	if (g_pointerGliding) {
-		int *mouse = (int *)ADDR(g_mouseX);
-		mouse[0] += ftol(fmul_m(fmul_m((long double)(g_pointerGlideX - mouse[0]), (const float *)ADDR(g_frameTime)), (const float *)ADDR(k_0_25f)));
-		mouse[1] += ftol(fmul_m(fmul_m((long double)(g_pointerGlideY - mouse[1]), (const float *)ADDR(g_frameTime)), (const float *)ADDR(k_0_25f)));
-		long double timeLeft = fsub_m(fld_m((const float *)ADDR(g_pointerGlideTime)), (const float *)ADDR(g_frameTime));
+		int *mouse = AP(int, ADDR(g_mouseX));
+		mouse[0] += ftol(fmul_m(fmul_m((long double)(g_pointerGlideX - mouse[0]), AP(const float, ADDR(g_frameTime))), AP(const float, ADDR(k_0_25f))));
+		mouse[1] += ftol(fmul_m(fmul_m((long double)(g_pointerGlideY - mouse[1]), AP(const float, ADDR(g_frameTime))), AP(const float, ADDR(k_0_25f))));
+		long double timeLeft = fsub_m(fld_m(AP(const float, ADDR(g_pointerGlideTime))), AP(const float, ADDR(g_frameTime)));
 		g_pointerGlideTime = f32(timeLeft);
 		if (!(timeLeft >= 0))   /* below 0, or not a number */
 			g_pointerGliding = 0;
@@ -703,7 +703,7 @@ static void send_host_leaving(void)
 	if (!g_isHost)
 		return;
 	g_hostGoneMessageFlag = 1;
-	CALL_FN(net_sendMessage, int, void *, u32, u32)((void *)ADDR(g_netHostLeftMessageKind), 0, 0);
+	CALL_FN(net_sendMessage, int, void *, u32, u32)(AP(void, ADDR(g_netHostLeftMessageKind)), 0, 0);
 	g_hostGoneMessageFlag = 0;
 }
 
@@ -734,7 +734,7 @@ u32 (game_postMatch)(void)
 	case 2:
 		if (g_isHost) {
 			send_host_leaving();
-			RoomRecord *to = (*(RoomRecord **)&g_roomLeavePacket), *from = g_roomPacket;
+			RoomRecord *to = AGET(RoomRecord, g_roomLeavePacket), *from = AP(RoomRecord, g_roomPacket);
 			lstrcpyA(to->hostName, from->hostName);
 			lstrcpyA(to->address, from->address);
 			net_send(0x16, 0x65);   /* net_send */
@@ -762,7 +762,7 @@ u32 (game_postMatch)(void)
 	default:
 		game_returnToMainMenu();
 	}
-	r = music_play((const char *)STR(0x4b01cc, "music/Netsphere.mp3"));   /* music_play */
+	r = music_play(AP(const char, STR(0x4b01cc, "music/Netsphere.mp3")));   /* music_play */
 message:
 	if (g_mapMissing) {
 		r = menu_showMessage(6);

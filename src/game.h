@@ -20,8 +20,8 @@
 #define glColor4f(r, g, b, a) IMPORT_FN(glColor4f, void, float, float, float, float)(r, g, b, a)
 /* a colour kept in memory, passed on bit for bit (the original copies the four values without the FPU, which
    would turn a signalling NaN into a quiet one) */
-#define glColor4f_stored(c) IMPORT_FN(glColor4f, void, u32, u32, u32, u32)(((const u32 *)RELOC(c))[0], ((const u32 *)RELOC(c))[1], \
-	((const u32 *)(c))[2], ((const u32 *)(c))[3])
+#define glColor4f_stored(c) IMPORT_FN(glColor4f, void, FBT, FBT, FBT, FBT)(FB((AP(const u32, RELOC(c)))[0]), FB((AP(const u32, RELOC(c)))[1]), \
+	FB((AP(const u32, c))[2]), FB((AP(const u32, c))[3]))
 #define glEnable(cap) IMPORT_FN(glEnable, void, u32)(cap)
 #define GL_FOG 0x0b60
 #define GL_DEPTH_BUFFER_BIT 0x0100
@@ -29,9 +29,9 @@
 #define glClear(mask) IMPORT_FN(glClear, void, u32)(mask)
 #define glClearDepth(depth) IMPORT_FN(glClearDepth, void, double)(depth)
 /* a clear colour kept in memory (three floats), passed on bit for bit, alpha 1 */
-#define glClearColor_stored(c) IMPORT_FN(glClearColor, void, u32, u32, u32, u32)(((const u32 *)(c))[0], ((const u32 *)(c))[1], ((const u32 *)(c))[2], 0x3f800000u)
+#define glClearColor_stored(c) IMPORT_FN(glClearColor, void, FBT, FBT, FBT, FBT)(FB((AP(const u32, c))[0]), FB((AP(const u32, c))[1]), FB((AP(const u32, c))[2]), FB(0x3f800000u))
 #define glClearColor(r, g, b, a) IMPORT_FN(glClearColor, void, float, float, float, float)(r, g, b, a)
-#define glClearColor_bits(r, g, b, a) IMPORT_FN(glClearColor, void, u32, u32, u32, u32)(r, g, b, a)   /* (the floats as their bits) */
+#define glClearColor_bits(r, g, b, a) IMPORT_FN(glClearColor, void, FBT, FBT, FBT, FBT)(FB(r), FB(g), FB(b), FB(a))   /* (the floats as their bits) */
 #define GL_QUADS 7
 #define GL_LINE_LOOP 2
 #define GL_QUAD_STRIP 8
@@ -58,7 +58,7 @@ void fix_hudVertex(int x, int y);
 #define glFogi(pname, v) IMPORT_FN(glFogi, void, u32, int)(pname, v)
 #define glFogfv(pname, v) IMPORT_FN(glFogfv, void, u32, const void *)(pname, v)
 /* a float kept in memory, passed on bit for bit */
-#define glFogf_stored(pname, v) IMPORT_FN(glFogf, void, u32, u32)(pname, v)
+#define glFogf_stored(pname, v) IMPORT_FN(glFogf, void, u32, FBT)(pname, FB(v))
 #define glHint(target, mode) IMPORT_FN(glHint, void, u32, u32)(target, mode)
 #define glPushMatrix() IMPORT_FN(glPushMatrix, void, void)()
 #define glLoadIdentity() IMPORT_FN(glLoadIdentity, void, void)()
@@ -82,19 +82,19 @@ void fix_hudVertex(int x, int y);
 #define glColor4ubv(c) IMPORT_FN(glColor4ubv, void, const void *)(c)
 #define glTexCoord2fv(v) IMPORT_FN(glTexCoord2fv, void, const void *)(v)
 #define glVertex4fv(v) IMPORT_FN(glVertex4fv, void, const void *)(v)
-#define glTexCoord2f_bits(s, t) IMPORT_FN(glTexCoord2f, void, u32, u32)(s, t)
+#define glTexCoord2f_bits(s, t) IMPORT_FN(glTexCoord2f, void, FBT, FBT)(FB(s), FB(t))
 /* a point kept in memory (three floats), passed on bit for bit */
-#define glVertex3f_stored(v) IMPORT_FN(glVertex3f, void, u32, u32, u32)(((const u32 *)RELOC(v))[0], ((const u32 *)RELOC(v))[1], ((const u32 *)RELOC(v))[2])
+#define glVertex3f_stored(v) IMPORT_FN(glVertex3f, void, FBT, FBT, FBT)(FB((AP(const u32, RELOC(v)))[0]), FB((AP(const u32, RELOC(v)))[1]), FB((AP(const u32, RELOC(v)))[2]))
 /* colours and translations given as float bits (see BITS) */
-#define glColor4f_bits(r, g, b, a) IMPORT_FN(glColor4f, void, u32, u32, u32, u32)(r, g, b, a)
-#define glTranslatef_bits(x, y, z) IMPORT_FN(glTranslatef, void, u32, u32, u32)(x, y, z)
-#define glScalef_bits(x, y, z) IMPORT_FN(glScalef, void, u32, u32, u32)(x, y, z)
+#define glColor4f_bits(r, g, b, a) IMPORT_FN(glColor4f, void, FBT, FBT, FBT, FBT)(FB(r), FB(g), FB(b), FB(a))
+#define glTranslatef_bits(x, y, z) IMPORT_FN(glTranslatef, void, FBT, FBT, FBT)(FB(x), FB(y), FB(z))
+#define glScalef_bits(x, y, z) IMPORT_FN(glScalef, void, FBT, FBT, FBT)(FB(x), FB(y), FB(z))
 /* GLU, through the game's jump to its import */
 #define gluLookAt(ex, ey, ez, cx, cy, cz, ux, uy, uz) IMPORT_FN(gluLookAt, void, double, double, double, double, double, double, \
 	double, double, double)(ex, ey, ez, cx, cy, cz, ux, uy, uz)
 #define glPopMatrix() IMPORT_FN(glPopMatrix, void, void)()
 /* a point kept in memory (three floats), passed on bit for bit */
-#define glTranslatef_stored(v) IMPORT_FN(glTranslatef, void, u32, u32, u32)(((const u32 *)RELOC(v))[0], ((const u32 *)RELOC(v))[1], ((const u32 *)RELOC(v))[2])
+#define glTranslatef_stored(v) IMPORT_FN(glTranslatef, void, FBT, FBT, FBT)(FB((AP(const u32, RELOC(v)))[0]), FB((AP(const u32, RELOC(v)))[1]), FB((AP(const u32, RELOC(v)))[2]))
 #define glRotatef(angle, x, y, z) IMPORT_FN(glRotatef, void, float, float, float, float)(angle, x, y, z)
 
 /* ---- C runtime of the game ---- */
@@ -110,17 +110,17 @@ void fix_hudVertex(int x, int y);
 /* glRotatef about x, then y, then z (degrees, as float bits) */
 #define gfx_rotateXYZ(x, y, z) CALL_FN(gl_rotateXYZ, void, u32, u32, u32)(x, y, z)
 /* the 3D background (menu_tunnel.c) */
-#define g_flareTextures ((const int *)(OBJ(g_spiralTextures) + 0x14))     /* flare k's texture is g_flareTextures[-k] */
+#define g_flareTextures (AP(const int, (OBJ(g_spiralTextures) + 0x14)))     /* flare k's texture is g_flareTextures[-k] */
 /* ---- textures ---- */
 typedef void (*Cleanup)(void);   /* a fatal error's clean-up before exit(1) (g_errorCleanupHook) */
-typedef struct { u32 vtable; void *banks[6]; i32 count; } TextureManager;   /* the game's TextureManager (0x83a5e0): six texture banks (the game's class Texture, one per size: TextureBank); a texture id names banks[id / 512], slot id % 512 */
+typedef struct { u32 vtable; APTR(void) banks[6]; i32 count; } TextureManager;   /* the game's TextureManager (0x83a5e0): six texture banks (the game's class Texture, one per size: TextureBank); a texture id names banks[id / 512], slot id % 512 */
 #define tex_bind(manager, slot) CALL_THISFN(tex_bind, void, void *, int)(manager, slot)
 #define gfx_getWidth() CALL_FN(gfx_getWidth, int, void)()
 #define gfx_getHeight() CALL_FN(gfx_getHeight, int, void)()
 #define gfx_fillRect(x0, y0, x1, y1) CALL_FN(gfx_fillRect, void, int, int, int, int)(x0, y0, x1, y1)
 
 /* ---- text ---- */
-#define text_setColor(r, g, b, a) CALL_FN(text_setColor, void, float, float, float, float)(r, g, b, a)
+#define text_setColor(r, g, b, a) CALL_FN(text_setColor, void, F2U_T, F2U_T, F2U_T, F2U_T)(F2U(r), F2U(g), F2U(b), F2U(a))
 #define text_draw5(x, y, text) CALL_FN(text_draw5, void, int, int, const char *)(x, y, text)
 #define text_draw8(x, y, text) CALL_FN(text_draw8, u32, int, int, const char *)(x, y, text)
 #define createArena_hitTest(x, y) CALL_FN(createArena_hitTest, int, int, int)(x, y)   /* the new-arena form: the item under (x, y), -1 none */
@@ -137,9 +137,9 @@ typedef struct { u32 vtable; void *banks[6]; i32 count; } TextureManager;   /* t
 #define sound_setVolume(v) CALL_FN(sound_setVolume, int, int)(v)
 #define music_setVolumeSetting(v) CALL_FN(music_setVolumeSetting, void, int)(v)
 #define scene_resetScores(scene) CALL_THISFN(scene_resetScores, void, Scene *)(scene)
-#define events_clear(scene, time) CALL_THISFN(events_clear, void, Scene *, float)(scene, time)
+#define events_clear(scene, time) CALL_THISFN(events_clear, void, Scene *, F2U_T)(scene, F2U(time))
 /* (app/main_loop.c: the replay's frame) */
-#define events_age(scene, dt) CALL_THISFN(events_age, void, void *, u32)(scene, dt)
+#define events_age(scene, dt) CALL_THISFN(events_age, void, void *, FBT)(scene, FB(dt))
 /* (app/main_loop.c: the match's frame) */
 #define profile_save() CALL_FN(profile_save, u32, void)()
 #define stage_deactivateActors(stage) CALL_THISFN(stage_deactivateActors, void, void *)(stage)
@@ -180,52 +180,59 @@ typedef struct { u32 vtable; void *banks[6]; i32 count; } TextureManager;   /* t
 #define crt_fprintf(...) CRT_CALL(fprintf, int, void *, const char *, ...)(__VA_ARGS__)
 #define net_localSlot() CALL_FN(net_localSlot, int, void)()   /* the local player's slot */
 #define netq_clearSkipped() CALL_FN(netq_clearSkipped, void, void)()
-#define actor_setPartColor_bits(stage, p, part, h1, s1, v1, h2, s2, v2) CALL_THISFN(playerRecord_setPartColour, u32, void *, int, int, u32, u32, u32, \
-	u32, u32, u32)(stage, p, part, h1, s1, v1, h2, s2, v2)   /* (the six as a float's bits) */
+#define actor_setPartColor_bits(stage, p, part, h1, s1, v1, h2, s2, v2) CALL_THISFN(playerRecord_setPartColour, u32, void *, int, int, FBT, FBT, FBT, FBT, FBT, FBT)(stage, p, part, FB(h1), FB(s1), FB(v1), FB(h2), FB(s2), FB(v2))   /* (the six as a float's bits) */
 #define view_setFov(fovBits) CALL_FN(view_setFov, int, u32)(fovBits)   /* the view angle (0x4c4dec) set, a float's bits */
 #define msg_kill(scene, victim, killer) CALL_THISFN(msg_kill, void, void *, int, int)(scene, victim, killer)
 #define flag_uploadAtlas(scene) CALL_THISFN(flag_uploadAtlas, void, void *)(scene)
-#define item_update(s, dt) CALL_THISFN(item_update, void, void *, u32)(s, dt)
+#define item_update(s, dt) CALL_THISFN(item_update, void, void *, FBT)(s, FB(dt))
 #define stage_updateObjects(s, dt) CALL_THISFN(stage_updateObjects, void, void *, u32)(s, dt)
-#define stage_advanceClocks(stage, dt) CALL_THISFN(stage_advanceClocks, void, void *, u32)(stage, dt)
-#define collision_moveSphere(stage, r, pos, vel, step, k, outPos, outVel, outDist, outPlane, axis) CALL_THISFN(collision_moveSphere, int, void *, float, const float *, const float *, u32, u32, float *, float *, float *, float *, u32)(stage, r, pos, vel, step, k, outPos, outVel, outDist, outPlane, axis)
+#define stage_advanceClocks(stage, dt) CALL_THISFN(stage_advanceClocks, void, void *, FBT)(stage, FB(dt))
+#define collision_moveSphere(stage, r, pos, vel, step, k, outPos, outVel, outDist, outPlane, axis) CALL_THISFN(collision_moveSphere, int, void *, float, const float *, const float *, u32, u32, float *, u32, u32, u32, u32)(stage, r, pos, vel, step, k, outPos, AV(outVel), AV(outDist), AV(outPlane), axis)
 #define teams_setup(scene) CALL_THISFN(teams_setup, void, Scene *)(scene)
 #define armcPartsPage_hitTest(x, y) CALL_FN(armcPartsPage_hitTest, int, int, int)(x, y)   /* the ARM CENTER's item under (x, y), -1 none */
 #define quat_fromMatrix(q, m) CALL_THISFN(quat_fromMatrix, void, float *, const float *)(q, m)   /* a rotation matrix to a quaternion */
 #define quat_toAxisAngle(out, q) CALL_THISFN(quat_toAxisAngle, void, float *, const float *)(out, q)
 #define factor_addFactorBy(pool, record) CALL_THISFN(factor_addFactorBy, void, void *, void *)(pool, record)   /* a 0x2c-byte factor record added */
-#define light_computeLayerLightBy(scene, layer, cols, first, r0, c0, r1, c1) CALL_THISFN(light_computeLayerLightBy, void, void *, const void *, u32, int, int, int, int, int)(scene, layer, cols, first, r0, c0, r1, c1)
+#define light_computeLayerLightBy(scene, layer, cols, first, r0, c0, r1, c1) CALL_THISFN(light_computeLayerLightBy, void, void *, const void *, u8 *, int, int, int, int, int)(scene, layer, AP(u8, cols), first, r0, c0, r1, c1)
 #define bullet_update(scene, slot, dt_bits) CALL_THISFN(bullet_update, void, void *, int, int)(scene, slot, dt_bits)
-#define particle_update(scene, slot, dt) CALL_THISFN(particle_update, void, void *, int, int)(scene, slot, dt)   /* one effect updated */
-#define mapObject_frame(scene, i, dt) CALL_THISFN(mapObject_frame, void, void *, int, int)(scene, i, dt)
+#define particle_update(scene, slot, dt) CALL_THISFN(particle_update, void, void *, int, FBT)(scene, slot, FB(dt))   /* one effect updated */
+#define mapObject_frame(scene, i, dt) CALL_THISFN(mapObject_frame, void, void *, int, FBT)(scene, i, FB(dt))
 #define tex_findByName(manager, name) CALL_THISFN(tex_findByName, int, void *, const char *)(manager, name)   /* the item's index by name, < 0 none */
 #define crt_fseek(f, offset, origin) CRT_CALL(fseek, int, void *, int, int)(f, offset, origin)
 #define crt_strncpy(to, from, n) CRT_CALL(strncpy, char *, char *, const char *, int)(to, from, n)
 #define Mat4_copy(d, s) CALL_FN(Mat4_copy, void, void *, const void *)(d, s)   /* a 4 x 4 matrix copied */
 #define Mat4_multiply(out, a, b) CALL_FN(Mat4_multiply, void, float *, const float *, const float *)(out, a, b)
 #define space_getNextFreeNodePtr(space) CALL_THISFN(space_getNextFreeNodePtr, void *, void *)(space)
+#ifdef AXIS_64   /* (the 64-bit build: as the function takes them; the 32-bit code kept as it was) */
+#define space_insertTriangle(space, flags, v0, v1, v2, unit, part, i0, i1, i2) CALL_THISFN(space_insertTriangle, u8 *, void *, u32, const float *, const float *, const float *, u32, u32, u32, u32, u32)(space, flags, AP(const float, v0), AP(const float, v1), AP(const float, v2), AV(unit), part, i0, i1, i2)
+#else
 #define space_insertTriangle(space, flags, v0, v1, v2, unit, part, i0, i1, i2) CALL_THISFN(space_insertTriangle, u8 *, void *, u32, u32, u32, u32, void *, u32, u32, u32, u32)(space, flags, v0, v1, v2, unit, part, i0, i1, i2)
-#define scenePath_openStub(self, a0, a1) CALL_THISFN(scenePath_openStub, void, void *, void *, const void *)(self, a0, a1)   /* (an empty method) */
+#endif
+#define scenePath_openStub(self, a0, a1) CALL_THISFN(scenePath_openStub, void, void *, int, int)(self, AV(a0), AV(a1))   /* (an empty method) */
 #define scenePath_advanceStub(self, a) CALL_THISFN(scenePath_advanceStub, int, void *, u32)(self, a)                             /* (answers 0) */
 #define sound_playFile(name, volume) CALL_FN(sound_playFile, u32, const char *, int)(name, volume)
-#define actor_setupFromParts(scene, a, id, controlledBy, spawn) CALL_THISFN(actor_setupFromParts, void, void *, int, u32, u32, u32)(scene, a, id, controlledBy, spawn)
-#define particle_init(system, slot, desc) CALL_THISFN(particle_init, void, void *, int, u32)(system, slot, desc)
-#define tex_getIdBy(manager, name, flags, h1, s1, v1, h2, s2, v2) CALL_THISFN(tex_getIdBy, int, void *, u32, u32, u32, u32, u32, u32, u32, u32)(manager, name, flags, h1, s1, v1, h2, s2, v2)
+#define actor_setupFromParts(scene, a, id, controlledBy, spawn) CALL_THISFN(actor_setupFromParts, void, void *, int, u32, u32, const u32 *)(scene, a, id, controlledBy, AP(const u32, spawn))
+#define particle_init(system, slot, desc) CALL_THISFN(particle_init, void, void *, int, const u8 *)(system, slot, AP(const u8, desc))
+#define tex_getIdBy(manager, name, flags, h1, s1, v1, h2, s2, v2) CALL_THISFN(tex_getIdBy, int, void *, const char *, u32, u32, u32, u32, u32, u32, u32)(manager, AP(const char, name), flags, h1, s1, v1, h2, s2, v2)
 #define playerRecord_setPartColour(scene, p, part, h1, s1, v1, h2, s2, v2) CALL_THISFN(playerRecord_setPartColour, u32, void *, int, int, float, float, float, float, float, float)(scene, p, part, h1, s1, v1, h2, s2, v2)
-#define actor_processFrame(scene, i, dt_bits) CALL_THISFN(actor_processFrame, void, void *, int, float)(scene, i, dt_bits)
+#define actor_processFrame(scene, i, dt_bits) CALL_THISFN(actor_processFrame, void, void *, int, F2U_T)(scene, i, F2U(dt_bits))
 #define script_processTriggers(scene) CALL_THISFN(script_processTriggers, void, void *)(scene)
-#define bullet_init(scene, slot, id, owner, homingTarget, shot, quiet) CALL_THISFN(bullet_init, void, void *, int, u32, u32, u32, u32, u32)(scene, slot, id, owner, homingTarget, shot, quiet)
-#define object_initObjectBy(scene, slot, type) CALL_THISFN(object_initObjectBy, void, void *, int, u32)(scene, slot, type)
+#define bullet_init(scene, slot, id, owner, homingTarget, shot, quiet) CALL_THISFN(bullet_init, void, void *, int, u32, u32, u32, const u8 *, u32)(scene, slot, id, owner, homingTarget, AP(const u8, shot), quiet)
+#define object_initObjectBy(scene, slot, type) CALL_THISFN(object_initObjectBy, void, void *, int, const ObjectInfo *)(scene, slot, AP(const ObjectInfo, type))
 #define sys_errorMessage(log, format, a, b) CALL_FN(sys_errorMessage, void, char *, const char *, int, int)(log, format, a, b)
 #define ObjectList_load(list, shapes, skels, ns, names, nk, knames, lit, factors, tint, mem, size) CALL_THISFN(ObjectList_load, void, void *, void *, void *, u32, void *, u32, void *, u32, u32, u32, void *, u32)(list, shapes, skels, ns, names, nk, knames, lit, factors, tint, mem, size)
+#ifdef AXIS_64   /* (the 64-bit build: as the function takes them; the 32-bit code kept as it was) */
+#define shape_getByName(cache, name, bind) AV(CALL_THISFN(shape_getByName, u8 *, void *, const char *, int)(cache, name, bind))
+#else
 #define shape_getByName(cache, name, bind) CALL_THISFN(shape_getByName, u32, void *, const char *, int)(cache, name, bind)
+#endif
 #define sys_fatalErrorN(log, ...) CALL_FN(sys_fatalError, void, char *, const char *, ...)((char *)(log), __VA_ARGS__)   /* (a format and any values) */
 #define script_processCommandBy(scene, actorIndex, trig, entry) CALL_THISFN(script_processCommandBy, void, void *, int, int, int)(scene, actorIndex, trig, entry)
 #define space_resetPlanes(space) CALL_THISFN(space_resetPlanes, int, void *)(space)
 #define space_resetNodes(space) CALL_THISFN(space_resetNodes, int, void *)(space)
 #define space_resetUnits(space) CALL_THISFN(space_resetUnits, void, void *)(space)
 #define space_resetBlocks(space) CALL_THISFN(space_resetBlocks, int, void *)(space)
-#define image_tryOpen(image, path) CALL_THISFN(image_tryOpen, int, void *, const char *)(image, path)   /* a BMP opened */
+#define image_tryOpen(image, path) AV(CALL_THISFN(image_tryOpen, void *, void *, const char *)(image, path))   /* a BMP opened */
 #define image_copyTo(image, dst, dw, dh, depth, sx, sy, dx, dy, w, h, topDown) CALL_THISFN(image_copyTo, int, void *, void *, int, int, int, int, int, int, int, int, int, int)(image, dst, dw, dh, depth, sx, sy, dx, dy, w, h, topDown)
 #define BMPRGBFile_close(self) CALL_THISFN(BMPRGBFile_close, u32, void *)(self)   /* the object's file closed */
 #define map_loadWayPointInfoFrom(scene, f) CALL_THISFN(map_loadWayPointInfoFrom, void, void *, void *)(scene, f)
@@ -241,7 +248,7 @@ typedef struct { u32 vtable; void *banks[6]; i32 count; } TextureManager;   /* t
 #define tex_applyTintMask(tex, i) CALL_THISFN(tex_applyTintMask, void, void *, int)(tex, i)
 #define tex_upload(textures, id, mode) CALL_THISFN(tex_upload, void, void *, u32, int)(textures, id, mode)
 #define glPixelStorei(pname, v) IMPORT_FN(glPixelStorei, void, u32, int)(pname, v)
-#define glTexParameterf_bits(target, pname, bits) IMPORT_FN(glTexParameterf, void, u32, u32, u32)(target, pname, bits)   /* (the float as its bits) */
+#define glTexParameterf_bits(target, pname, bits) IMPORT_FN(glTexParameterf, void, u32, u32, FBT)(target, pname, FB(bits))   /* (the float as its bits) */
 #define glTexImage2D(target, level, format, w, h, border, layout, type, data) IMPORT_FN(glTexImage2D, void, u32, int, int, int, int, int, u32, u32, const void *)(target, level, format, w, h, border, layout, type, data)
 #define setupSlider_hitTest(x, y) CALL_FN(setupSlider_hitTest, int, int, int)(x, y)   /* the slider's part under the cursor */
 #define actor_loadWeapon(scene, a, slot, variant) CALL_THISFN(actor_loadWeapon, void, void *, int, int, u32)(scene, a, slot, variant)
@@ -255,14 +262,18 @@ typedef struct { u32 vtable; void *banks[6]; i32 count; } TextureManager;   /* t
 #define text_findSubstring(text, word, exact) CALL_FN(text_findSubstring, const char *, const char *, const char *, int)(text, word, exact)
 #define file_existsf(format) CALL_FN(file_existsf, int, const char *)(format)
 #define space_collideAt(space, r, pos, vel, k, outPos, outVel, outDist, outPlane, axis, subs, nsubs) \
-	CALL_THISFN(space_collideAt, int, void *, u32, float *, float *, u32, u32, u32, u32, u32, u32, u32, u32)(space, r, pos, vel, k, outPos, outVel, outDist, outPlane, axis, subs, nsubs)
+	CALL_THISFN(space_collideAt, int, void *, u32, float *, float *, u32, float *, u32, u32, u32, u32, u32, u32)(space, r, pos, vel, k, AP(float, outPos), outVel, outDist, outPlane, axis, subs, nsubs)
 #define image_initBy(image, path) CALL_THISFN(image_initBy, void *, void *, const char *)(image, path)   /* a 24-bit BMP opened */
 #define ShapeManager_releaseShapes(models) CALL_THISFN(ShapeManager_releaseShapes, int, void *)(models)   /* the shape cache emptied */
 #define SkeletonManager_releaseSkeletons(skels) CALL_THISFN(SkeletonManager_releaseSkeletons, int, void *)(skels)   /* the skeleton cache emptied */
 #define path_stripExtension(src, dst) CALL_FN(path_stripExtension, void, const char *, char *)(src, dst)
 #define stage_clearMapObjects(stage) CALL_THISFN(stage_clearMapObjects, void, void *)(stage)
+#ifdef AXIS_64   /* (the 64-bit build: as the function takes them; the 32-bit code kept as it was) */
+#define object_addObjectBy(scene, type) CALL_THISFN(object_addObjectBy, int, void *, u32)(scene, AV(type))
+#else
 #define object_addObjectBy(scene, type) CALL_THISFN(object_addObjectBy, int, void *, const void *)(scene, type)
-#define ObjectList_relight(list, factors, tint) CALL_THISFN(ObjectList_relight, void, void *, u32, u32)(list, factors, tint)
+#endif
+#define ObjectList_relight(list, factors, tint) CALL_THISFN(ObjectList_relight, void, void *, const LightFactors *, const void *)(list, AP(const LightFactors, factors), AP(const void, tint))
 #define glTranslatef(x, y, z) IMPORT_FN(glTranslatef, void, float, float, float)(x, y, z)
 #define app_parseCommandLine(line) CALL_FN(app_parseCommandLine, void, const char *)(line)
 #define app_readLauncherCheck() CALL_FN(app_readLauncherCheck, u32, void)()
@@ -271,13 +282,13 @@ typedef struct { u32 vtable; void *banks[6]; i32 count; } TextureManager;   /* t
 #define app_frame() CALL_FN(app_frame, void, void)()   /* the whole frame: the music, the menus' key guard, then app_frameByScreen */
 #define app_init(inst, show) CALL_FN(app_init, int, void *, int)(inst, show)
 #define space_testSphere(space, r, pos, vel, step, k, outPos, outVel, outDist, outPlane, axis, subs, nsubs) \
-	CALL_THISFN(space_testSphere, int, void *, u32, const float *, const float *, u32, u32, u32, u32, u32, u32, u32, void *, int)(space, r, pos, vel, step, k, outPos, outVel, outDist, outPlane, axis, subs, nsubs)
+	CALL_THISFN(space_testSphere, int, void *, u32, const float *, const float *, FBT, u32, u32, u32, u32, u32, u32, u32, int)(space, r, pos, vel, FB(step), k, outPos, outVel, outDist, outPlane, axis, AV(subs), nsubs)
 #define array_recordAt(i, base, stride) CALL_FN(array_recordAt, int, int, int, int)(i, base, stride)   /* record i of an array (none when negative) */
 #define collisionTri_sweepSphere(rec, r, pos, vel, k, outPos, outVel, outDist, outPlane, axis) \
-	CALL_THISFN(collisionTri_sweepSphere, int, void *, float, const float *, const float *, u32, float *, float *, float *, float *, u32)(rec, r, pos, vel, k, outPos, outVel, outDist, outPlane, axis)
+	CALL_THISFN(collisionTri_sweepSphere, int, void *, float, const float *, const float *, FBT, float *, float *, float *, float *, const float *)(rec, r, pos, vel, FB(k), outPos, outVel, outDist, outPlane, AP(const float, axis))
 #define space_collideBlock(node, r, pos, vel, k, outPos, outVel, outDist, outPlane, axis, subs, nsubs) \
-	CALL_THISFN(space_collideBlock, int, void *, u32, const float *, const float *, u32, float *, u32, u32, u32, u32, u32, u32)(node, r, pos, vel, k, outPos, outVel, outDist, outPlane, axis, subs, nsubs)
-#define collisionTri_meetsBox(item, low, high, margin) CALL_THISFN(collisionTri_meetsBox, int, void *, const float *, const float *, u32)(item, low, high, margin)   /* the item meets the box (widened) */
+	CALL_THISFN(space_collideBlock, int, void *, FBT, const float *, const float *, u32, float *, float *, float *, float *, u32, const u32 *, u32)(node, FB(r), pos, vel, k, outPos, AP(float, outVel), AP(float, outDist), AP(float, outPlane), axis, AP(const u32, subs), nsubs)
+#define collisionTri_meetsBox(item, low, high, margin) CALL_THISFN(collisionTri_meetsBox, int, void *, const float *, const float *, FBT)(item, low, high, FB(margin))   /* the item meets the box (widened) */
 #define space_getNextFreeBlockPtrBy(space, low, high) CALL_THISFN(space_getNextFreeBlockPtrBy, u8 *, void *, const float *, const float *)(space, low, high)
 #define space_freeNode(space, node) CALL_THISFN(space_freeNode, void, void *, void *)(space, node)   /* a node back to the free list */
 #define space_freeBlock(space, node) CALL_THISFN(space_freeBlock, void, void *, void *)(space, node)   /* a block back to the free list */
@@ -286,13 +297,13 @@ typedef struct { u32 vtable; void *banks[6]; i32 count; } TextureManager;   /* t
 #define shape_setTextureSuffix(model, folder, flags, h1, s1, v1, h2, s2, v2) CALL_THISFN(shape_setTextureSuffix, void, void *, const char *, int, u32, u32, u32, u32, u32, u32)(model, folder, flags, h1, s1, v1, h2, s2, v2)
 #define space_getNextFreePlanePtr(space) CALL_THISFN(space_getNextFreePlanePtr, u8 *, void *)(space)
 #define collisionTri_setup(plane, flags, v0, v1, v2, object, part, corner0, corner1, corner2) CALL_THISFN(collisionTri_setup, void, void *, u32, const float *, const float *, const float *, u32, u32, u32, u32, u32)(plane, flags, v0, v1, v2, object, part, corner0, corner1, corner2)   /* the triangle's planes */
-#define array_indexOf(record, base, stride) CALL_FN(array_indexOf, int, void *, int, int)(record, base, stride)   /* a record's index in its array */
+#define array_indexOf(record, base, stride) CALL_FN(array_indexOf, int, int, int, int)(AV(record), base, stride)   /* a record's index in its array */
 #define stage_triggerActionNone(scene, a) CALL_THISFN(stage_triggerActionNone, void, void *, u32)(scene, a)
 #define actor_applySpawnRecord(scene, a, rec) CALL_THISFN(actor_applySpawnRecord, int, void *, int, void *)(scene, a, rec)
 #define script_holdActor(stage, i, mode, value) CALL_THISFN(script_holdActor, void, void *, u32, u32, u32)(stage, i, mode, value)
 #define script_pushMessage(stage, speaker, text, colour, unused) CALL_THISFN(script_pushMessage, void, void *, u32, u32, u32, u32)(stage, speaker, text, colour, unused)
 #define script_startScenePath(stage, name, mode) CALL_THISFN(script_startScenePath, void, void *, const char *, u32)(stage, name, mode)
-#define object_setAnimation(stage, i, name, period, mode) CALL_THISFN(object_setAnimation, void, void *, u32, const char *, u32, u32)(stage, i, name, period, mode)
+#define object_setAnimation(stage, i, name, period, mode) CALL_THISFN(object_setAnimation, void, void *, u32, u32, FBT, u32)(stage, i, AV(name), FB(period), mode)
 #define object_activate(stage, i) CALL_THISFN(object_activate, void, void *, u32)(stage, i)
 #define object_deactivate(stage, i) CALL_THISFN(object_deactivate, void, void *, u32)(stage, i)
 #define playerRecord_setFromMapPlayer(stage, p, rec) CALL_THISFN(playerRecord_setFromMapPlayer, void, void *, int, void *)(stage, p, rec)   /* a player set up from its map record */
@@ -317,12 +328,12 @@ typedef struct { u32 vtable; void *banks[6]; i32 count; } TextureManager;   /* t
 #define collision_rayTrace(scene, from, p1, hit) CALL_THISFN(collision_rayTrace, int, void *, const float *, const float *, void *)(scene, from, p1, hit)   /* 0: nothing in the way */
 #define crt_ftell(f) CRT_CALL(ftell, long, void *)(f)
 #define shape_computeBounds(shape) CALL_THISFN(shape_computeBounds, void, void *)(shape)
-#define angle_wrap_bits(bits) CALL_FN(angle_wrap, long double, u32)(bits)   /* (the angle passed as its bits) */
-#define space_buildUnit(space, id, shape, matrix) CALL_THISFN(space_buildUnit, u32, void *, int, void *, const float *)(space, id, shape, matrix)
+#define angle_wrap_bits(bits) CALL_FN(angle_wrap, long double, FBT)(FB(bits))   /* (the angle passed as its bits) */
+#define space_buildUnit(space, id, shape, matrix) AV(CALL_THISFN(space_buildUnit, u32 *, void *, int, void *, const float *)(space, id, shape, matrix))
 #define space_getNextFreeUnitPtr(space) CALL_THISFN(space_getNextFreeUnitPtr, u32 *, void *)(space)
-#define space_addUnitTriangle(space, flags, owner, part, i0, i1, i2, v0, v1, v2) CALL_THISFN(space_addUnitTriangle, void, void *, u32, void *, u32, u32, u32, u32, const float *, const float *, const float *)(space, flags, owner, part, i0, i1, i2, v0, v1, v2)
+#define space_addUnitTriangle(space, flags, owner, part, i0, i1, i2, v0, v1, v2) CALL_THISFN(space_addUnitTriangle, void, void *, u32, void *, u32, u32, u32, u32, u32, u32, u32)(space, flags, owner, part, i0, i1, i2, AV(v0), AV(v1), AV(v2))
 #define space_transformPoint(out, m, p) CALL_FN(space_transformPoint, void, float *, const float *, const float *)(out, m, p)   /* a point through a matrix */
-#define space_traceBlock(block, from, to, hit, dist, subs, nsubs) CALL_THISFN(space_traceBlock, int, void *, const float *, const float *, u32, float *, u32, u32)(block, from, to, hit, dist, subs, nsubs)
+#define space_traceBlock(block, from, to, hit, dist, subs, nsubs) CALL_THISFN(space_traceBlock, int, void *, const float *, const float *, float *, float *, const u32 *, u32)(block, from, to, AP(float, hit), dist, AP(const u32, subs), nsubs)
 #define Vec3_rotateAxis(v, axis, angle) CALL_THISFN(Vec3_rotateAxis, void, float *, int, int)(v, axis, angle)   /* about axis 0 / 1 / 2 by tenths of a degree */
 #define factors_addAmbient(pool, colour) CALL_THISFN(factors_addAmbient, void, void *, const void *)(pool, colour)
 #define factors_addDirectional(pool, colour, dir) CALL_THISFN(factors_addDirectional, void, void *, const void *, const void *)(pool, colour, dir)
@@ -332,14 +343,14 @@ typedef struct { u32 vtable; void *banks[6]; i32 count; } TextureManager;   /* t
 #define stage_resetActors(stage) CALL_THISFN(stage_resetActors, void, void *)(stage)
 #define stage_reset(scene) CALL_THISFN(stage_reset, void, void *)(scene)
 #define effect_initShapes(scene) CALL_THISFN(effect_initShapes, void, void *)(scene)
-#define stage_setFolders(self, stageDir, mapDir, textureDir, shapeDir, skeletonDir, actorDir, bulletDir, effectDir, sceneDir) CALL_THISFN(stage_setFolders, void, void *, u32, u32, u32, u32, u32, u32, u32, u32, u32)(self, stageDir, mapDir, textureDir, shapeDir, skeletonDir, actorDir, bulletDir, effectDir, sceneDir)
-#define particle_spawn(scene, desc) CALL_THISFN(particle_spawn, void, void *, const void *)(scene, desc)
+#define stage_setFolders(self, stageDir, mapDir, textureDir, shapeDir, skeletonDir, actorDir, bulletDir, effectDir, sceneDir) CALL_THISFN(stage_setFolders, void, void *, const char *, const char *, const char *, const char *, const char *, const char *, const char *, const char *, const char *)(self, AP(const char, stageDir), AP(const char, mapDir), AP(const char, textureDir), AP(const char, shapeDir), AP(const char, skeletonDir), AP(const char, actorDir), AP(const char, bulletDir), AP(const char, effectDir), AP(const char, sceneDir))
+#define particle_spawn(scene, desc) CALL_THISFN(particle_spawn, void, void *, u32)(scene, AV(desc))
 /* (match/weapons.c: a bullet's frame) */
-#define sound_play3D(index, pos, listener, side, range) CALL_FN(sound_play3D, void, int, const void *, const void *, const void *, u32)(index, pos, listener, side, range)
+#define sound_play3D(index, pos, listener, side, range) CALL_FN(sound_play3D, void, int, const void *, const void *, const void *, FBT)(index, pos, listener, side, FB(range))
 #define actor_takeDamage(scene, attacker, target, mode, damage, shotMode, weapon) CALL_THISFN(actor_takeDamage, void, void *, int, int, int, int, int, int)(scene, attacker, target, mode, damage, shotMode, weapon)
 #define bullet_free(stage, b) CALL_THISFN(bullet_free, void, void *, int)(stage, b)
 #define math_segmentSphere(p0, p1, dir, ctr, radius, hit, t_out) CALL_FN(math_segmentSphere, int, const float *, const float *, const float *, const float *, float, float *, float *)(p0, p1, dir, ctr, radius, hit, t_out)   /* 1: the segment meets the sphere */
-#define skel_getBoneMatrix(sk, out, bone, t) CALL_THISFN(skel_getBoneMatrix, void, void *, void *, int, u32)(sk, out, bone, t)
+#define skel_getBoneMatrix(sk, out, bone, t) CALL_THISFN(skel_getBoneMatrix, void, void *, void *, int, FBT)(sk, out, bone, FB(t))
 /* (match/actor_frame.c: an actor's frame) */
 #define actor_loadHead(scene, a) CALL_THISFN(actor_loadHead, void, void *, int)(scene, a)
 #define actor_loadChest(scene, a) CALL_THISFN(actor_loadChest, void, void *, int)(scene, a)
@@ -352,8 +363,8 @@ typedef struct { u32 vtable; void *banks[6]; i32 count; } TextureManager;   /* t
 #define actor_pickRandomWeapon(stage, i) CALL_THISFN(actor_pickRandomWeapon, void, void *, int)(stage, i)
 #define actor_pickPathPoint(scene, p) CALL_THISFN(actor_pickPathPoint, void, void *, int)(scene, p)
 #define angle_turn(from, b) CALL_FN(angle_turn, long double, u32, u32)(from, b)   /* the turn from one angle to another */
-#define angle_stepTowards(from, b, t) CALL_FN(angle_stepTowards, long double, u32, u32, u32)(from, b, t)   /* an angle part way */
-#define anim_setTime(anim, i, scale) CALL_THISFN(anim_setTime, void, void *, int, u32)(anim, i, scale)
+#define angle_stepTowards(from, b, t) CALL_FN(angle_stepTowards, long double, u32, u32, FBT)(from, b, FB(t))   /* an angle part way */
+#define anim_setTime(anim, i, scale) CALL_THISFN(anim_setTime, void, void *, int, FBT)(anim, i, FB(scale))
 #define ObjectList_poseBones(pose, base) CALL_THISFN(ObjectList_poseBones, void, void *, void *)(pose, base)
 #define ObjectList_bindTextures(list) CALL_THISFN(ObjectList_bindTextures, void, void *)(list)
 #define bullet_spawn(stage, slot, owner, homingTarget, shot, quiet) CALL_THISFN(bullet_spawn, int, void *, int, int, int, void *, int)(stage, slot, owner, homingTarget, shot, quiet)
@@ -373,12 +384,12 @@ typedef struct { u32 vtable; void *banks[6]; i32 count; } TextureManager;   /* t
 #define netq_skippedCount() CALL_FN(netq_skippedCount, int, void)()
 #define map_loadGroundInfoFrom(stage, name) CALL_THISFN(map_loadGroundInfoFrom, int, void *, const char *)(stage, name)
 #define map_loadObjectInfoFrom(scene, name, mode) CALL_THISFN(map_loadObjectInfoFrom, void, void *, const char *, int)(scene, name, mode)
-#define collision_initVolume(stage, size_z, size_x, size_y, margin, splitCount, depth) CALL_THISFN(collision_initVolume, void, void *, u32, u32, u32, u32, int, int)(stage, size_z, size_x, size_y, margin, splitCount, depth)
+#define collision_initVolume(stage, size_z, size_x, size_y, margin, splitCount, depth) CALL_THISFN(collision_initVolume, void, void *, FBT, FBT, FBT, u32, int, int)(stage, FB(size_z), FB(size_x), FB(size_y), margin, splitCount, depth)
 #define map_loadPlayInfoFrom(scene, name) CALL_THISFN(map_loadPlayInfoFrom, void, void *, const char *)(scene, name)
 #define map_loadMissionInfoFrom(scene, name) CALL_THISFN(map_loadMissionInfoFrom, void, void *, const char *)(scene, name)
 #define map_loadActorInfoFrom(scene, name) CALL_THISFN(map_loadActorInfoFrom, void, void *, const char *)(scene, name)
 #define font_penDraw(x, y, font, format) CALL_FN(font_penDraw, void, int, int, int, const char *)(x, y, font, format)
-#define space_traceCells(space, p0, p1, hit, subs, nsubs) CALL_THISFN(space_traceCells, u32, void *, const float *, const float *, void *, void *, int)(space, p0, p1, hit, subs, nsubs)
+#define space_traceCells(space, p0, p1, hit, subs, nsubs) CALL_THISFN(space_traceCells, u32, void *, const float *, const float *, u32, u32, int)(space, p0, p1, AV(hit), AV(subs), nsubs)
 #define match_resetInputState(scene) CALL_THISFN(match_resetInputState, void, void *)(scene)
 #define net_hostGone() CALL_FN(net_hostGone, int, void)()   /* the network says the match is over? */
 #define crt_fread(p, size, count, f) CRT_CALL(fread, u32, void *, u32, u32, void *)(p, size, count, f)
@@ -387,7 +398,7 @@ typedef struct { u32 vtable; void *banks[6]; i32 count; } TextureManager;   /* t
 #define ground_computeLighting(scene, layer) CALL_THISFN(ground_computeLighting, void, void *, void *)(scene, layer)   /* a layer's light map */
 #define ground_buildLayerModels(stage) CALL_THISFN(ground_buildLayerModels, void, void *)(stage)   /* the layer meshes */
 #define crt_atof(s) CRT_CALL(atof, double, const char *)(s)
-#define axisAngle_combine(out, a, b) CALL_FN(axisAngle_combine, float *, float *, const float *, const float *)(out, a, b)   /* two rotations combined */
+#define axisAngle_combine(out, a, b) AP(float, CALL_FN(axisAngle_combine, u32, float *, const float *, const float *)(out, a, b))   /* two rotations combined */
 #define Mat4_transpose(out, s) CALL_FN(Mat4_transpose, void, float *, const float *)(out, s)   /* copied transposed */
 #define axisAngle_fromMatrix(out, m) CALL_THISFN(axisAngle_fromMatrix, u32, float *, const float *)(out, m)   /* matrix -> (angle, axis) */
 #define input_asyncKeyDown(key) CALL_FN(input_asyncKeyDown, int, int)(key)
@@ -395,7 +406,7 @@ typedef struct { u32 vtable; void *banks[6]; i32 count; } TextureManager;   /* t
 #define input_getCursorPos() CALL_FN(input_getCursorPos, const int *, void)()
 #define actor_setInput(stage, i, v0, v1, v2, v3, v4, v5, v6, v7, v8, v9, v10, v11) CALL_THISFN(actor_setInput, void, void *, u32, u32, u32, u32, u32, u32, u32, u32, u32, u32, u32, u32, u32)(stage, i, v0, v1, v2, v3, v4, v5, v6, v7, v8, v9, v10, v11)   /* the local actor's controls */
 #define view_nearPlane() CALL_FN(view_nearPlane, float, void)()
-#define stage_updateActorsAndTriggers(stage, dt) CALL_THISFN(stage_updateActorsAndTriggers, void, void *, u32)(stage, dt)
+#define stage_updateActorsAndTriggers(stage, dt) CALL_THISFN(stage_updateActorsAndTriggers, void, void *, FBT)(stage, FB(dt))
 #define bullet_updateAll(stage, dt) CALL_THISFN(bullet_updateAll, void, void *, u32)(stage, dt)
 #define stage_updateParticles(stage, dt) CALL_THISFN(stage_updateParticles, void, void *, u32)(stage, dt)
 #define ViewVolume_addSegment(view, colour, p, q, flag) CALL_THISFN(ViewVolume_addSegment, void, void *, const void *, const float *, const float *, int)(view, colour, p, q, flag)   /* a line in a packed colour */
@@ -510,14 +521,14 @@ typedef struct { u32 vtable; void *banks[6]; i32 count; } TextureManager;   /* t
 #define profile_create() CALL_FN(profile_create, void, void)()
 #define deleteDialog_hitTest(x, y) CALL_FN(deleteDialog_hitTest, int, int, int)(x, y)  /* the button at (x, y): 0 left, 1 right */
 #define logOutDialog_hitTest(x, y) CALL_FN(logOutDialog_hitTest, int, int, int)(x, y)
-#define Color4_set(dst, r, g, b, a) CALL_FN(Color4_set, void, Colour *, float, float, float, float)(dst, r, g, b, a)
+#define Color4_set(dst, r, g, b, a) CALL_FN(Color4_set, void, Colour *, F2U_T, F2U_T, F2U_T, F2U_T)(dst, F2U(r), F2U(g), F2U(b), F2U(a))
 #define Color4_set_bits(dst, r, g, b, a) CALL_FN(Color4_set, void, void *, u32, u32, u32, u32)(dst, r, g, b, a)   /* (the floats as their bits) */
 
 /* ---- the in-match 2D pass: the scene's view, its stage's overlay parts, the HUD elements ---- */
 #define gfx_setMatchProjection(mode, scale) CALL_FN(gfx_setMatchProjection, void, int, float)(mode, scale)
-#define gfx_setMatchProjection_bits(mode, scale) CALL_FN(gfx_setMatchProjection, void, int, u32)(mode, scale)   /* (the scale as its bits) */
-#define factors_addPointLight(pool, colour, radius, pos) CALL_THISFN(factors_addPointLight, int, void *, u32, float, void *)(pool, colour, radius, pos)   /* a light of radius at pos */
-#define factors_addPointLight_bits(pool, colour, strength, pos) CALL_THISFN(factors_addPointLight, int, void *, u32, u32, void *)(pool, colour, strength, pos)   /* (the strength as its bits) */
+#define gfx_setMatchProjection_bits(mode, scale) CALL_FN(gfx_setMatchProjection, void, int, FBT)(mode, FB(scale))   /* (the scale as its bits) */
+#define factors_addPointLight(pool, colour, radius, pos) CALL_THISFN(factors_addPointLight, int, void *, const u32 *, F2U_T, void *)(pool, AP(const u32, colour), F2U(radius), pos)   /* a light of radius at pos */
+#define factors_addPointLight_bits(pool, colour, strength, pos) CALL_THISFN(factors_addPointLight, int, void *, const u32 *, u32, void *)(pool, AP(const u32, colour), strength, pos)   /* (the strength as its bits) */
 #define view_farPlane() CALL_FN(view_farPlane, float, void)()             /* view_farPlane: a float setting */
 #define tex_clearSetCounters(textures) CALL_THISFN(tex_clearSetCounters, void, void *)(textures)
 #define ViewVolume_clearDrawCounts(view) CALL_THISFN(ViewVolume_clearDrawCounts, void, void *)(view)
@@ -542,12 +553,12 @@ typedef struct { u32 vtable; void *banks[6]; i32 count; } TextureManager;   /* t
    or none), cull (1: skip meshes outside a clip plane),
    material (< 0: the mesh's own), a8 */
 #define ViewVolume_queueModel(view, model, extra, matrix, factors, colour, cull, material, extraMatrix) CALL_THISFN(ViewVolume_queueModel, void, void *, \
-	void *, u32, const float *, int, const void *, int, int, int)(view, model, extra, matrix, factors, colour, cull, material, extraMatrix)
+	void *, u32 *, const float *, int, u32, int, int, int)(view, model, AP(u32, extra), matrix, factors, AV(colour), cull, material, extraMatrix)
 #define ViewVolume_draw(view, mode, alpha) CALL_THISFN(ViewVolume_draw, void, void *, int, float)(view, mode, alpha)
 #define sky_draw(stage, scale) CALL_THISFN(sky_draw, void, Stage *, float)(stage, scale)   /* the sky (render/sky.c) */
 #define ground_buildDrawLists(stage, view, scale) CALL_THISFN(ground_buildDrawLists, void, void *, void *, float)(stage, view, scale)
 /* the stage, the scene's own object (scene.fields: Stage) */
-#define STAGE(scene) ((Stage *)((u8 *)RELOC(scene) + 0x1f36c8))
+#define STAGE(scene) ((Stage *)(AP(u8, RELOC(scene)) + 0x1f36c8))
 #define SCENE_STAGE_AT 0x1f36c8   /* where a scene's stage (its Stage object) starts */
 #define SCENE_STAGE(scene) ((Stage *)((u8 *)(scene) + SCENE_STAGE_AT))   /* the same for a runtime scene pointer (no RELOC) */
 #define stage_drawObjects(stage, view) CALL_THISFN(stage_drawObjects, void, Stage *, void *)(stage, view)
@@ -599,7 +610,7 @@ typedef struct { float r, g, b, a; } Colour;   /* an RGBA colour, four floats (C
 #define g_missionProgress (*(int *)(g_pilotSave + 0x104))   /* the furthest stage reached */
 #define g_trig (g_tanTable)            /* 3600 values by tenths of a degree (the ring's focal length and radius) */
 #define g_showFps (*(int *)&g_cfgSwitches[2])           /* 1: the FPS counter is shown */
-#define g_gameModeNames ((const char (*)[64])STR(0x4c7030, "DEATH MATCH"))   /* "DEATH MATCH", "TEAM DEATH MATCH", ... (12) */
+#define g_gameModeNames ((const char (*)[64])AP(const char, STR(0x4c7030, "DEATH MATCH")))   /* "DEATH MATCH", "TEAM DEATH MATCH", ... (12) */
 /* the title and profile screens */
 /* the title emblem (menu_title.c) */
 #define g_titleTextures (g_introTextures)     /* eight: the base picture's quarters, then the pulsing layer's */
@@ -637,21 +648,21 @@ typedef struct { float r, g, b, a; } Colour;   /* an RGBA colour, four floats (C
 /* two-button dialogs: the highlighted choice and its marker */
 /* the profile screen's pages */
 /* the skirmish screen (screen 500) */
-#define g_skirmishBox ((const int *)ADDR(g_skirmishRectLeft))         /* the dialog frame: x0, y0, x1, y1 */
+#define g_skirmishBox (AP(const int, ADDR(g_skirmishRectLeft)))         /* the dialog frame: x0, y0, x1, y1 */
 /* exe strings passed to the text passes (the address itself is what the callee gets) */
-#define STR_COPYRIGHT ((const char *)STR(0x4b0474, "AXIS by Jamie System Development"))
-#define STR_2D ((const char *)STR(0x4d03e0, "%2d"))
-#define STR_VERSION ((const char *)STR(0x4b0384, "Axis v1.03"))
+#define STR_COPYRIGHT (AP(const char, STR(0x4b0474, "AXIS by Jamie System Development")))
+#define STR_2D (AP(const char, STR(0x4d03e0, "%2d")))
+#define STR_VERSION (AP(const char, STR(0x4b0384, "Axis v1.03")))
 
 /* ---- DirectPlay (net/dplay_slots.c) ---- */
 #define dplay_init() CALL_FN(dplay_init, int, void)()                     /* 0 when COM is up */
 #define dplay_connectionAvailable(kind) CALL_FN(net_connectionAvailable, int, int)(kind)  /* net_connectionAvailable */
-#define dplay_initConnection(kind, address) CALL_FN(dplay_initConnection, int, int, int)(kind, address)
+#define dplay_initConnection(kind, address) CALL_FN(dplay_initConnection, int, int, const char *)(kind, AP(const char, address))
 #define dplay_release() CALL_FN(dplay_release, int, void)()
 #define dplay_enumSessions() CALL_FN(dplay_enumSessions, int, void)()
-#define dplay_hostSession(session, player, user1, maxPlayers, user2, hi, lo, data) CALL_FN(dplay_hostSession, int, int, int, int, int, int, int, int, int)\
-	(session, player, user1, maxPlayers, user2, hi, lo, data)
-#define dplay_joinSession(guid, player, data, gameMode) CALL_FN(dplay_joinSession, int, int, int, int, int)(guid, player, data, gameMode)
+#define dplay_hostSession(session, player, user1, maxPlayers, user2, hi, lo, data) CALL_FN(dplay_hostSession, int, const char *, const char *, int, int, int, int, int, int)\
+	(AP(const char, session), AP(const char, player), user1, maxPlayers, user2, hi, lo, data)
+#define dplay_joinSession(guid, player, data, gameMode) CALL_FN(dplay_joinSession, int, const void *, const char *, int, int)(AP(const void, guid), AP(const char, player), data, gameMode)
 #define dplay_create() CALL_FN(dplay_create, int, void)()
 #define net_resetState() CALL_FN(net_resetState, void, void)()
 #define dplaySlot0_close() CALL_FN(dplaySlot0_close, int, void)()   /* close slot 0 .. 3 */
@@ -793,9 +804,9 @@ typedef struct { float r, g, b, a; } Colour;   /* an RGBA colour, four floats (C
 #define cfg_readKeyBindings(f) CALL_FN(cfg_readKeyBindings, void, void *)(f)      /* its key bindings */
 #define input_setDefaultBindings() CALL_FN(input_setDefaultBindings, void, void)()     /* the default key bindings */
 #define armc_open() CALL_FN(armc_open, u32, void)()
-#define dplay_join(session, guid, player, data) CALL_FN(dplay_join, int, int, u32, const char *, int)(session, guid, player, data)   /* a join: 500 joined */
+#define dplay_join(session, guid, player, data) CALL_FN(dplay_join, int, int, u32, int, int)(session, guid, AV(player), data)   /* a join: 500 joined */
 #define tunnel_addRing() CALL_FN(tunnel_addRing, TunnelRing *, void)()   /* one more tunnel ring */
-#define tunnel_removeLastRing(head) CALL_FN(tunnel_removeLastRing, u32, TunnelRing **)(head)   /* the last ring taken off and freed */
+#define tunnel_removeLastRing(head) CALL_FN(tunnel_removeLastRing, u32, APTR(TunnelRing) *)(head)   /* the last ring taken off and freed */
 #define crypt_record4c(p, key) CALL_FN(crypt_record4c, int, u8 *, u8)(p, key)   /* a 0x4c-byte record decoded (xor key, key + 1, ...) */
 #define cfg_writeAxisCfg() CALL_FN(cfg_writeAxisCfg, u32, void)()
 #define setup_bindKey(key) CALL_FN(setup_bindKey, void, int)(key)   /* the row being bound gets key (a key, mouse button or wheel code) */
@@ -931,7 +942,7 @@ typedef struct { float r, g, b, a; } Colour;   /* an RGBA colour, four floats (C
 #define Console_ctor(scene) CALL_THISFN(Console_ctor, void *, void *)(scene)   /* the scene's constructor */
 #define sound_initSoundTable(file, volume) CALL_FN(sound_initSoundTable, int, const char *, int)(file, volume)
 #define mciSendCommandA(device, msg, flags, params) IMPORT_FN(mciSendCommandA, u32, u32, u32, u32, void *)(device, msg, flags, params)
-#define glRotatef_bits(angle, x, y, z) IMPORT_FN(glRotatef, void, u32, u32, u32, u32)(angle, x, y, z)
+#define glRotatef_bits(angle, x, y, z) IMPORT_FN(glRotatef, void, FBT, FBT, FBT, FBT)(FB(angle), FB(x), FB(y), FB(z))
 #define arena_editJoinPassword() CALL_FN(arena_editJoinPassword, void, void)()
 #define armc_freeRing(first) CALL_FN(tunnel_removeLastRing, void, void *)(first)   /* frees the last ring of the tunnel whose first is *first */
 #define game_returnToArenaLobby() CALL_FN(game_returnToArenaLobby, void, void)()
@@ -957,7 +968,7 @@ typedef struct { float r, g, b, a; } Colour;   /* an RGBA colour, four floats (C
 #define input_initKeyboard(window) CALL_FN(input_initKeyboard, int, void *)(window)
 #define input_createMouse(window) CALL_FN(input_createMouse, int, void *)(window)   /* the mouse */
 
-#define stage_setupActorSlot(scene, i, id, controlledBy, spawn) CALL_THISFN(stage_setupActorSlot, int, Stage *, int, int, int, void *)(scene, i, id, controlledBy, spawn)   /* claim actor slot a */
+#define stage_setupActorSlot(scene, i, id, controlledBy, spawn) CALL_THISFN(stage_setupActorSlot, int, Stage *, int, int, int, u32)(scene, i, id, controlledBy, AV(spawn))   /* claim actor slot a */
 #define actor_setWeaponSlot(stage, actor, slot) CALL_THISFN(actor_setWeaponSlot, void, void *, int, int)(stage, actor, slot)   /* select a weapon slot */
 #define ladder_checkAndSendRecord() CALL_FN(ladder_checkAndSendRecord, void, void)()
 
@@ -1074,8 +1085,8 @@ typedef struct { float r, g, b, a; } Colour;   /* an RGBA colour, four floats (C
 #define ptx_initFdctDivisors(q) CALL_FN(ptx_initFdctDivisors, void, int)(q)
 #define ptx_initColourTables() CALL_FN(ptx_initColourTables, void, void)()
 #define ptx_initDequantTables(q) CALL_FN(ptx_initDequantTables, void, int)(q)
-#define ptx_error(...) ((int (CDECL *)(int, const char *, ...))FN(ptx_error))(__VA_ARGS__)   /* app/ptx_decode.c */
-#define ptx_crtlError(...) ((int (CDECL *)(int, const char *, ...))FN(ptx_crtlError))(__VA_ARGS__)
+#define ptx_error(...) (FNP(int (CDECL *)(int, const char *, ...), FN(ptx_error)))(__VA_ARGS__)   /* app/ptx_decode.c */
+#define ptx_crtlError(...) (FNP(int (CDECL *)(int, const char *, ...), FN(ptx_crtlError)))(__VA_ARGS__)
 #define ptx_startBitReader(data) CALL_FN(ptx_startBitReader, void, const u8 *)(data)   /* the bit reader started at data */
 #define ptx_readBlock(block) CALL_FN(ptx_readBlock, int, int *)(block)   /* one block's coefficients; the bit position */
 #define ptx_inverseDct(in, out) CALL_FN(ptx_inverseDct, void, const int *, u8 *)(in, out)
@@ -1121,8 +1132,8 @@ void fix_glViewport(int x, int y, int w, int h);
 #define glViewport(x, y, w, h) fix_glViewport(x, y, w, h)
 #endif
 #define glMatrixMode(mode) IMPORT_FN(glMatrixMode, void, u32)(mode)
-#define gluPerspective(angle, aspect, zNear, zFar) ((void (STDCALL *)(double, double, double, double))*(const u32 *)STR(0x4a9048, "j\300\n"))(angle, aspect, zNear, zFar)
-#define gluOrtho2D(left, right, bottom, top) ((void (STDCALL *)(double, double, double, double))*(const u32 *)STR(0x4a9050, "|\300\n"))(left, right, bottom, top)
+#define gluPerspective(angle, aspect, zNear, zFar) IMPORT_FN(gluPerspective, void, double, double, double, double)(angle, aspect, zNear, zFar)
+#define gluOrtho2D(left, right, bottom, top) IMPORT_FN(gluOrtho2D, void, double, double, double, double)(left, right, bottom, top)
 
 /* ---- small methods and resets (app/small.c, app/classes.c, match/actor_slots.c, collision/collision_space.c, render/rotations.c) ---- */
 #define path_normalize(path) CALL_FN(path_normalize, char *, char *)(path)   /* upper-cased in place, '/' -> '\' */
@@ -1178,13 +1189,13 @@ void fix_glViewport(int x, int y, int w, int h);
 #define crt_strtok(s, delimiters) CRT_CALL(strtok, char *, char *, const char *)(s, delimiters)   /* the game's CRT strtok */
 #define crt_atoi(s) CRT_CALL(atoi, int, const char *)(s)
 #define tunnelRing_build(node, index) CALL_FN(tunnelRing_build, u32, void *, int)(node, index)
-#define tex_tintHsv(rgb, dh, ds, dv) CALL_THISFN(tex_tintHsv, void, float *, u32, u32, u32)(rgb, dh, ds, dv)
-#define skel_getSkeletonPtrBy(cache, name) CALL_THISFN(skel_getSkeletonPtrBy, void *, void *, u32)(cache, name)
+#define tex_tintHsv(rgb, dh, ds, dv) CALL_THISFN(tex_tintHsv, void, float *, FBT, FBT, FBT)(rgb, FB(dh), FB(ds), FB(dv))
+#define skel_getSkeletonPtrBy(cache, name) CALL_THISFN(skel_getSkeletonPtrBy, void *, void *, const char *)(cache, AP(const char, name))
 #define mech_unpackFromRecord() CALL_FN(mech_unpackFromRecord, void, void)()   /* the mech unpacked */
 
 /* ---- (render/tex_colours.c) ---- */
-#define color_rgbToHsv(r, g, b, h, s, v) CALL_FN(color_rgbToHsv, void, u32, u32, u32, float *, float *, float *)(r, g, b, h, s, v)   /* RGB -> HSV (r, g, b as float bits) */
-#define color_hsvToRgb(hue, sat, val, r, g, b) CALL_FN(color_hsvToRgb, void, u32, u32, u32, float *, float *, float *)(hue, sat, val, r, g, b)   /* (h, s, v as float bits) */
+#define color_rgbToHsv(r, g, b, h, s, v) CALL_FN(color_rgbToHsv, void, FBT, FBT, FBT, float *, float *, float *)(FB(r), FB(g), FB(b), h, s, v)   /* RGB -> HSV (r, g, b as float bits) */
+#define color_hsvToRgb(hue, sat, val, r, g, b) CALL_FN(color_hsvToRgb, void, FBT, FBT, FBT, float *, float *, float *)(FB(hue), FB(sat), FB(val), r, g, b)   /* (h, s, v as float bits) */
 #define tex_tintRgba(rgba, dh, ds, dv) CALL_THISFN(tex_tintRgba, int, u8 *, u32, u32, u32)(rgba, dh, ds, dv)   /* an RGBA byte colour tinted */
 
 /* ---- (net/net_sessions.c) ---- */
@@ -1207,7 +1218,7 @@ void fix_glViewport(int x, int y, int w, int h);
 #define gameList_refresh() CALL_FN(gameList_refresh, int, void)()    /* the search asked for: 1 sent */
 #define roomLogin_hitTest(x, y) CALL_FN(roomLogin_hitTest, int, int, int)(x, y)   /* the Ladder login dialog's button at (x, y) */
 #define room_openNewIdForm() CALL_FN(room_openNewIdForm, u32, void)()
-#define dplay_host(session, player, user1, maxPlayers, user2, hi, lo, data) CALL_FN(dplay_host, int, const void *, const char *, int, int, int, int, int, int)(session, player, user1, maxPlayers, user2, hi, lo, data)   /* the arena hosted: 0 failed */
+#define dplay_host(session, player, user1, maxPlayers, user2, hi, lo, data) CALL_FN(dplay_host, int, int, int, int, int, int, int, int, int)(AV(session), AV(player), user1, maxPlayers, user2, hi, lo, data)   /* the arena hosted: 0 failed */
 #define net_asyncSelect(wnd, which) CALL_FN(net_asyncSelect, int, void *, int)(wnd, which)
 #define lobby_keepArenaSettings() CALL_FN(lobby_keepArenaSettings, u32, void)()   /* the arena's settings kept (0x4db528 into 0x4ded20) */
 #define room_keepSettings() CALL_FN(room_keepSettings, u32, void)()    /* the room's settings kept (0x4df9c8 into 0x5b1b30) */
@@ -1219,7 +1230,7 @@ void fix_glViewport(int x, int y, int w, int h);
 #define arena_joinListed(i) CALL_FN(arena_joinListed, u32, int)(i)   /* game i joined (99999: the one typed) */
 #define arena_joinSession(session) CALL_FN(arena_joinSession, u32, int)(session)   /* session i joined */
 #define sys_checkClockTampering() CALL_FN(sys_checkClockTampering, void, void)()
-#define glWindow_init(title, width, height, colourBits, depthBits, fullscreen, window, dc) CALL_FN(glWindow_init, void, const char *, int, int, int, int, int, void *, int)(title, width, height, colourBits, depthBits, fullscreen, window, dc)
+#define glWindow_init(title, width, height, colourBits, depthBits, fullscreen, window, dc) CALL_FN(glWindow_init, void, const char *, int, int, int, int, int, void *, void *)(title, width, height, colourBits, depthBits, fullscreen, window, AP(void, dc))
 #define map_fileExists(map) CALL_FN(map_fileExists, int, int)(map)   /* the map's files loaded: 0 failed */
 #define pilotRecord_syncCopies() CALL_FN(pilotRecord_syncCopies, void, void)()
 #define scene_setMapName(scene, folder) CALL_THISFN(scene_setMapName, void, Scene *, const char *)(scene, folder)

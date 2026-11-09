@@ -259,8 +259,8 @@ void (editField_readTyping)(void)
 {
 	if (g_textFieldOpen == 0)
 		return;
-	int n = GetWindowTextLengthA(g_hEditField);
-	GetWindowTextA(g_hEditField, g_inputLine, n + 1);
+	int n = GetWindowTextLengthA(AP(void, g_hEditField));
+	GetWindowTextA(AP(void, g_hEditField), g_inputLine, n + 1);
 	g_inputLineLength = line_length();
 }
 
@@ -287,7 +287,7 @@ int (newIdForm_openField)(int k)
 		EDITING(field[k].editing) = 1;
 		if (field[k].flag)
 			g_inputLineHidden = 1;
-		line_set((const char *)RELOC(field[k].text));
+		line_set(AP(const char, RELOC(field[k].text)));
 		editField_createEdit(field[k].maxLength);
 		row = k;
 	}

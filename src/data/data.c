@@ -6,6 +6,7 @@
 #include "split.h"
 
 /* the game's writable data (0x4ad000 .. 0xb13000): src/data/layout.h; the pieces below copied in at start-up */
+#ifndef AXIS_64   /* (the 64-bit build: g_data and the split variables are the game's address space's, g_arena) */
 struct GameData g_data __attribute__((aligned(4096)));
 
 /* the objects and globals split out of g_data (tools/names/split.txt): variables of their own; their old pages in
@@ -2340,6 +2341,7 @@ const DataPiece g_splitObjects[] = {
 	{ 0xb12a88, g_otherModeHeight_v, 4 },
 	{ 0, 0, 0 }
 };
+#endif   /* AXIS_64 */
 
 static const u32 d_4ad000[] = {   /* 0x4ad000 */
 	0x00000000, FN(static_startTex64x64),

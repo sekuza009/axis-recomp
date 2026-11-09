@@ -253,6 +253,6 @@ void (armc_processInput)(void)
 	case 1: armc_partsPageKeys(); break;
 	case 2: armc_weaponsPageKeys(); break;
 	case 3: armc_colourPageKeys(); break;
-	case 4: shared_emptyFunction((*(Scene **)&g_armcMode)); break;   /* (its ecx: the original jumps there with the page in ecx) */
+	case 4: shared_emptyFunction(AGET(Scene, g_armcMode)); break;   /* (its ecx: the original jumps there with the page in ecx) */
 	}
 }

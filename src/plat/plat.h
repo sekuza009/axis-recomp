@@ -22,10 +22,10 @@
 /* ---- sound: a device, sound buffers of PCM samples (the description and format as DirectSound's DSBUFFERDESC /
    WAVEFORMATEX), each played, its volume and pan set; 0 = success, as the original tests them */
 #ifdef AXIS_PORTABLE
-long plat_soundCreate(void **device);
+long plat_soundCreate(APTR(void) *device);
 long plat_soundSetWindow(void *device, void *window);
-long plat_soundCreateBuffer(void *device, void *desc, void **buffer);
-long plat_soundDuplicate(void *device, void *buffer, void **copy);
+long plat_soundCreateBuffer(void *device, void *desc, APTR(void) *buffer);
+long plat_soundDuplicate(void *device, void *buffer, APTR(void) *copy);
 u32 plat_soundRelease(void *object);
 long plat_soundSetFormat(void *buffer, void *format);
 long plat_soundPlay(void *buffer, u32 flags);
@@ -61,7 +61,7 @@ long plat_soundUnlock(void *buffer, void *data, u32 bytes);
 /* ---- music: a stream playing a file (the original: DirectShow's multimedia stream); its time and duration in 100 ns
    units, 64 bits as two words */
 #ifdef AXIS_PORTABLE
-long plat_musicCreate(void **stream);
+long plat_musicCreate(APTR(void) *stream);
 long plat_musicInit(void *stream);
 long plat_musicAddAudio(void *stream);
 long plat_musicOpen(void *stream, const void *wideName);
@@ -80,10 +80,10 @@ long plat_musicRelease(void *stream);
 #define MUS_SEEK(s, low, high) plat_musicSeek(s, low, high)
 #define MUS_RELEASE(s) plat_musicRelease(s)
 #else
-#define MUS_CREATE(stream) CoCreateInstance((const void *)OBJ(k_CLSID_AMMultiMediaStream), NULL, 1, \
-	(const void *)OBJ(k_IID_IAMMultiMediaStream), stream)
+#define MUS_CREATE(stream) CoCreateInstance(AP(const void, OBJ(k_CLSID_AMMultiMediaStream)), NULL, 1, \
+	AP(const void, OBJ(k_IID_IAMMultiMediaStream)), stream)
 #define MUS_INIT(s) COM(s, 0x30, long, u32, u32, void *)(s, 0, 1, NULL)   /* Initialize(read, no graph thread) */
-#define MUS_ADD_AUDIO(s) COM(s, 0x3c, long, void *, const void *, u32, void *)(s, NULL, (const void *)OBJ(k_MSPID_PrimaryAudio), 1, NULL)
+#define MUS_ADD_AUDIO(s) COM(s, 0x3c, long, void *, const void *, u32, void *)(s, NULL, AP(const void, OBJ(k_MSPID_PrimaryAudio)), 1, NULL)
 #define MUS_OPEN(s, wideName) COM(s, 0x40, long, const void *, u32)(s, wideName, 0)
 #define MUS_SET_STATE(s, state) COM(s, 0x1c, u32, u32)(s, state)   /* (1: run) */
 #define MUS_DURATION(s, time) COM(s, 0x24, long, void *)(s, time)
@@ -97,9 +97,9 @@ long plat_musicRelease(void *stream);
    256 bytes (DIK codes, bit 7 held), a mouse state of 16 bytes (movement x, y, wheel, 4 buttons); results below 0
    are failures, 0x8007001e "input lost" (taken again then) */
 #ifdef AXIS_PORTABLE
-long plat_inputCreate(void *instance, void **input);
-long plat_inputCreateKeyboard(void *input, void **keyboard);
-long plat_inputCreateMouse(void *input, void **mouse);
+long plat_inputCreate(void *instance, APTR(void) *input);
+long plat_inputCreateKeyboard(void *input, APTR(void) *keyboard);
+long plat_inputCreateMouse(void *input, APTR(void) *mouse);
 long plat_inputSetKeyboardFormat(void *keyboard);
 long plat_inputSetMouseFormat(void *mouse);
 long plat_inputSetWindow(void *device, void *window, u32 mode);
@@ -119,10 +119,10 @@ long plat_inputRelease(void *object);
 #define IN_RELEASE(object) plat_inputRelease(object)
 #else
 #define IN_CREATE(instance, input) DirectInputCreateA(instance, 0x700, input, NULL)
-#define IN_CREATE_KEYBOARD(di, keyboard) COM(di, 0x0c, int, const void *, void **, void *)(di, (const void *)OBJ(k_GUID_SysKeyboard), keyboard, NULL)
-#define IN_CREATE_MOUSE(di, mouse) COM(di, 0x0c, int, const void *, void **, void *)(di, (const void *)OBJ(k_GUID_SysMouse), mouse, NULL)
-#define IN_SET_KEYBOARD_FORMAT(k) COM(k, 0x2c, int, const void *)(k, (const void *)OBJ(k_c_dfDIKeyboard))
-#define IN_SET_MOUSE_FORMAT(m) COM(m, 0x2c, int, const void *)(m, (const void *)OBJ(k_c_dfDIMouse))
+#define IN_CREATE_KEYBOARD(di, keyboard) COM(di, 0x0c, int, const void *, void **, void *)(di, AP(const void, OBJ(k_GUID_SysKeyboard)), keyboard, NULL)
+#define IN_CREATE_MOUSE(di, mouse) COM(di, 0x0c, int, const void *, void **, void *)(di, AP(const void, OBJ(k_GUID_SysMouse)), mouse, NULL)
+#define IN_SET_KEYBOARD_FORMAT(k) COM(k, 0x2c, int, const void *)(k, AP(const void, OBJ(k_c_dfDIKeyboard)))
+#define IN_SET_MOUSE_FORMAT(m) COM(m, 0x2c, int, const void *)(m, AP(const void, OBJ(k_c_dfDIMouse)))
 #define IN_SET_WINDOW(d, window, mode) COM(d, 0x34, int, void *, u32)(d, window, mode)   /* (5 exclusive, 6 non-exclusive; foreground) */
 #define IN_ACQUIRE(d) COM(d, 0x1c, long)(d)
 #define IN_UNACQUIRE(d) COM(d, 0x20, long)(d)
@@ -230,9 +230,9 @@ extern void (*g_platLoadLog)(const void *timeSync, int mode);
 /* ---- network: DirectPlay-shaped sessions (the original: DirectPlay 4 and its lobby, which the network layer,
    axisnet, serves); a later port may replace the whole with its own netcode (no crossplay, PORTING.md) */
 #ifdef AXIS_PORTABLE
-long plat_netCreate(void **out);
+long plat_netCreate(APTR(void) *out);
 #define NET_CREATE(out) plat_netCreate(out)
-long plat_netLobbyCreate(void **out);
+long plat_netLobbyCreate(APTR(void) *out);
 #define NET_LOBBY_CREATE(out) plat_netLobbyCreate(out)
 long plat_netRelease(void *o);
 #define NET_RELEASE(o) plat_netRelease(o)
@@ -252,7 +252,7 @@ int plat_netLobbyGetConnection(void *l, void *buffer, u32 *size);
 #define NET_LOBBY_GET_CONNECTION(l, buffer, size) plat_netLobbyGetConnection(l, buffer, size)
 int plat_netLobbySetConnection(void *l, void *connection);
 #define NET_LOBBY_SET_CONNECTION(l, connection) plat_netLobbySetConnection(l, connection)
-int plat_netLobbyConnect(void *l, void **out);
+int plat_netLobbyConnect(void *l, APTR(void) *out);
 #define NET_LOBBY_CONNECT(l, out) plat_netLobbyConnect(l, out)
 int plat_netEnumConnections(void *p, void *callback);
 #define NET_ENUM_CONNECTIONS(p, callback) plat_netEnumConnections(p, callback)
@@ -267,8 +267,8 @@ long plat_netReceive(void *p, u32 *from, u32 *to, u32 flags, void *data, u32 *si
 long plat_netSend(void *p, u32 from, u32 to, u32 flags, const void *data, u32 size);
 #define NET_SEND(p, from, to, flags, data, size) plat_netSend(p, from, to, flags, data, size)
 #else
-#define NET_CREATE(out) CoCreateInstance((const void *)OBJ(k_CLSID_DirectPlay), NULL, 1, (const void *)OBJ(k_IID_IDirectPlay4A), out)
-#define NET_LOBBY_CREATE(out) CoCreateInstance((const void *)OBJ(k_CLSID_DirectPlayLobby), NULL, 1, (const void *)OBJ(k_IID_IDirectPlayLobby3A), out)
+#define NET_CREATE(out) CoCreateInstance(AP(const void, OBJ(k_CLSID_DirectPlay)), NULL, 1, AP(const void, OBJ(k_IID_IDirectPlay4A)), out)
+#define NET_LOBBY_CREATE(out) CoCreateInstance(AP(const void, OBJ(k_CLSID_DirectPlayLobby)), NULL, 1, AP(const void, OBJ(k_IID_IDirectPlayLobby3A)), out)
 #define NET_RELEASE(o) COM(o, COM_RELEASE, long)(o)
 #define NET_CLOSE(p) COM(p, 0x10, long)(p)
 #define NET_DESTROY_PLAYER(p, id) COM(p, 0x24, u32, u32)(p, id)
@@ -278,8 +278,8 @@ long plat_netSend(void *p, u32 from, u32 to, u32 flags, const void *data, u32 si
 #define NET_OPEN(p, desc, flags) COM(p, 0x60, int, void *, u32)(p, desc, flags)
 #define NET_LOBBY_GET_CONNECTION(l, buffer, size) COM(l, 0x20, int, u32, void *, u32 *)(l, 0, buffer, size)
 #define NET_LOBBY_SET_CONNECTION(l, connection) COM(l, 0x30, int, u32, u32, void *)(l, 0, 0, connection)
-#define NET_LOBBY_CONNECT(l, out) COM(l, 0x3c, int, u32, const void *, void **, void *)(l, 0, (const void *)OBJ(k_IID_IDirectPlay4A), out, NULL)
-#define NET_ENUM_CONNECTIONS(p, callback) COM(p, 0x8c, int, const void *, void *, void *, u32)(p, (const void *)OBJ(k_axisAppGuid), callback, NULL, 0)
+#define NET_LOBBY_CONNECT(l, out) COM(l, 0x3c, int, u32, const void *, void **, void *)(l, 0, AP(const void, OBJ(k_IID_IDirectPlay4A)), out, NULL)
+#define NET_ENUM_CONNECTIONS(p, callback) COM(p, 0x8c, int, const void *, void *, void *, u32)(p, AP(const void, OBJ(k_axisAppGuid)), callback, NULL, 0)
 #define NET_LOBBY_ADDRESS(l, elements, n, block, size) COM(l, 0x38, int, void *, u32, void *, u32 *)(l, elements, n, block, size)
 #define NET_INIT_CONNECTION(p, connection) COM(p, 0x98, int, void *, u32)(p, connection, 0)
 #define NET_GET_CAPS(p, caps) COM(p, 0x38, int, u32 *, u32)(p, caps, 0)

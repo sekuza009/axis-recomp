@@ -32,7 +32,7 @@ void (net_clearServers)(void)
    server, net_pingAllServers) and g_pingStopEvent (1: ExitThread); anything else waits again */
 void (net_pingThreadProc)(void)
 {
-	void *events[2] = { g_pingStartEvent, g_pingStopEvent };
+	void *events[2] = { AP(void, g_pingStartEvent), AP(void, g_pingStopEvent) };
 	for (;;) {
 		u32 r = WaitForMultipleObjects(2, events, 0, 0xffffffff);
 		if (r == 0)
@@ -46,6 +46,6 @@ void (net_pingThreadProc)(void)
    ExitThread). SetEvent's result */
 int (net_stopPingThread)(void)
 {
-	ResetEvent(g_pingStartEvent);
-	return SetEvent(g_pingStopEvent);
+	ResetEvent(AP(void, g_pingStartEvent));
+	return SetEvent(AP(void, g_pingStopEvent));
 }

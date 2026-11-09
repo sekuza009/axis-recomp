@@ -6,12 +6,12 @@
 #include <string.h>
 #define ST ((Stage *)s)   /* the stage (s in each function) by its fields (src/scene.fields) */
 
-#define K(address) ((const float *)RELOC(address))
+#define K(address) (AP(const float, RELOC(address)))
 #define AC ((Actor *)a)   /* the same by its fields (src/scene.fields) */
 #define AF(offset) GAME_VAR(float, a + (offset))
 #define AU(offset) GAME_VAR(u32, a + (offset))
 /* point k of path r: trigger r's way point k */
-#define PATH_POINT(r, k) (((const WayPoint *)ST->triggers[r].wayPoints)[k].pos)
+#define PATH_POINT(r, k) ((AP(const WayPoint, ST->triggers[r].wayPoints))[k].pos)
 
 
 
@@ -99,7 +99,7 @@ static const float *part_matrix(u8 *base, const int *joints, int pose)
 /* the local player's weapon at its grip (negated), drawn back by 600 while it comes up (or out, for the sixth) */
 static void hold(float *grip, const u8 *at, int out, const float *raise)
 {
-	const float *o = (const float *)RELOC(at);
+	const float *o = AP(const float, RELOC(at));
 	float x = f32(-fld_m(&o[0])), y = f32(-fld_m(&o[1])), z = f32(-fld_m(&o[2]));
 	long double d = fmul_m(fsub_m(fld_m(&k_1f), raise), k_600f);
 	grip[0] = f32(out ? fadd_m(d, &x) : fsubr_m(d, &x));
@@ -183,18 +183,18 @@ static void actor_dies(u8 *s, u8 *a, int i, u32 *fx, float *scratch)
 			if (AC->lastAttacker == ST->playerActor) {
 				if (AC->isKing == 1) {
 					if (ST->showExp == 1)
-						stage_print(s, (const char *)STR(0x4b44f8, "YOU FRAGED KING %s, +1(x%d) FRAGS +%d..."), 5, AC->name, points, 5);
+						stage_print(s, AP(const char, STR(0x4b44f8, "YOU FRAGED KING %s, +1(x%d) FRAGS +%d...")), 5, AC->name, points, 5);
 					else
-						stage_print(s, (const char *)STR(0x4b44d4, "YOU FRAGED KING %s, +1(x%d) FRAGS"), AC->name, 5);
+						stage_print(s, AP(const char, STR(0x4b44d4, "YOU FRAGED KING %s, +1(x%d) FRAGS")), AC->name, 5);
 					ST->kingActor = -1;
 				} else if (ST->showExp == 1)
-					stage_print(s, (const char *)STR(0x4b44c4, "+1 FRAG +%d EXP"), points);
+					stage_print(s, AP(const char, STR(0x4b44c4, "+1 FRAG +%d EXP")), points);
 				else
-					stage_print(s, (const char *)STR(0x4b44bc, "+1 FRAG"));
+					stage_print(s, AP(const char, STR(0x4b44bc, "+1 FRAG")));
 			}
 		} else {
 			AC->kills--;
-			stage_print(s, (const char *)STR(0x4b44b4, "-1 FRAG"));
+			stage_print(s, AP(const char, STR(0x4b44b4, "-1 FRAG")));
 		}
 	} else if (ST->platoon == 1) {   /* teams, the leader down: each of the other team gets the team's worth */
 		if (AC->isCommander == 1) {
@@ -210,11 +210,11 @@ static void actor_dies(u8 *s, u8 *a, int i, u32 *fx, float *scratch)
 			int lt = ST->actors[ST->playerActor].team;
 			if (lt >= 0 && lt != AC->team) {
 				if (ST->showExp == 1)
-					stage_print(s, (const char *)STR(0x4b447c, "YOU FRAGED COMMANDER %s, +1(x%d) FRAG..."), AC->name, n, sum);
+					stage_print(s, AP(const char, STR(0x4b447c, "YOU FRAGED COMMANDER %s, +1(x%d) FRAG...")), AC->name, n, sum);
 				else
-					stage_print(s, (const char *)STR(0x4b4450, "YOU FRAGED COMMANDER %s, +1(x%d) FRAG(S)"), AC->name, n);
+					stage_print(s, AP(const char, STR(0x4b4450, "YOU FRAGED COMMANDER %s, +1(x%d) FRAG(S)")), AC->name, n);
 			} else if (lt == AC->team)
-				stage_print(s, (const char *)STR(0x4b442c, "YOUR COMMANDER %s HAS BEEN KILLED!"), AC->name);
+				stage_print(s, AP(const char, STR(0x4b442c, "YOUR COMMANDER %s HAS BEEN KILLED!")), AC->name);
 			if (AC->team == 0)
 				ST->frags[1] += n;
 			else
@@ -229,9 +229,9 @@ static void actor_dies(u8 *s, u8 *a, int i, u32 *fx, float *scratch)
 		award(s, k, 1, points);
 		if (AC->lastAttacker == ST->playerActor) {
 			if (ST->showExp == 1)
-				stage_print(s, (const char *)STR(0x4b44c4, "+1 FRAG +%d EXP"), points);
+				stage_print(s, AP(const char, STR(0x4b44c4, "+1 FRAG +%d EXP")), points);
 			else
-				stage_print(s, (const char *)STR(0x4b44bc, "+1 FRAG"));
+				stage_print(s, AP(const char, STR(0x4b44bc, "+1 FRAG")));
 		}
 		int t = ST->actors[AC->lastAttacker].team;
 		if (t >= 0)
@@ -239,7 +239,7 @@ static void actor_dies(u8 *s, u8 *a, int i, u32 *fx, float *scratch)
 	} else {
 		AC->kills--;
 		if (AC->lastAttacker == ST->playerActor)
-			stage_print(s, (const char *)STR(0x4b44b4, "-1 FRAG"));
+			stage_print(s, AP(const char, STR(0x4b44b4, "-1 FRAG")));
 		if (ST->teamGame == 1)
 			ST->frags[AC->team]--;
 	}
@@ -454,7 +454,7 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 				}
 			}
 			AC->stuckTime = 1.0f;
-			memcpy(AC->stuckMove, (const void *)ADDR(g_vecZero), 12);
+			memcpy(AC->stuckMove, AP(const void, ADDR(g_vecZero)), 12);
 		}
 		if (AC->bot == 1 && AC->path < 0 && (AC->botTarget < 0 || ((*(u8 *)&AC->botNeeds) & 3))) {
 			actor_pickPathPoint(s, i);
@@ -500,7 +500,7 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 					d[c] = f32(FSUB(at[c], AC->pos[c]));
 				memcpy(scratch, d, 12);
 				long double distSq = FMUL(d[0], d[0]) + FMUL(d[2], d[2]);
-				memcpy(AC->botGoal, distSq + FMUL(d[1], d[1]) > *&k_9000000f ? (const void *)RELOC(at) : (const void *)AC->pos, 12);
+				memcpy(AC->botGoal, distSq + FMUL(d[1], d[1]) > *&k_9000000f ? AP(const void, RELOC(at)) : (const void *)AC->pos, 12);
 			} else if (AC->path >= 0) {   /* its path's point while over 1000 away */
 				const float *pt = PATH_POINT(AC->path, AC->pathPoint);
 				float d[3];
@@ -969,7 +969,7 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 					if (i == ST->playerActor) {
 						if (AC->firePrev != 0)
 							break;
-						strcpy(AC->message, (const char *)STR(0x4b4528, "OUT OF AMMO!"));
+						strcpy(AC->message, AP(const char, STR(0x4b4528, "OUT OF AMMO!")));
 						BITS(AC->messageTime) = BITS(*dt);
 						sound_playVolume(0xa5, 0x64);
 					}
@@ -979,7 +979,7 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 				}
 				if (w >= 0) {
 					const int *muzzle = (const int *)(((u8 *)weapon) + (AC->slot == 5 ? 0x2ca4 : 0x15e8) + AC->variantLoaded * 64);
-					skel_getBoneMatrix(*(void **)model->skeletons, muzzle_m, muzzle[0], 0);
+					skel_getBoneMatrix(AP(void, *AP(APTR(void), model->skeletons)), muzzle_m, muzzle[0], 0);
 					Mat4_invert(muzzle_inv, muzzle_m);
 					memset(ungrip, 0, 64);   /* the grip undone: grip_shift = muzzle_inv x ungrip x muzzle_m */
 					BITS(ungrip[0]) = BITS(ungrip[5]) = BITS(ungrip[10]) = BITS(ungrip[15]) = 0x3f800000;
@@ -1069,7 +1069,7 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 				if (*bullet >= 0)
 					bullet_free(s, *bullet);
 				const int *muzzle = (const int *)(((u8 *)weapon) + (AC->slot == 5 ? 0x2ca4 : 0x15e8) + AC->variantLoaded * 64);
-				skel_getBoneMatrix(*(void **)model->skeletons, muzzle_m, muzzle[0], 0);
+				skel_getBoneMatrix(AP(void, *AP(APTR(void), model->skeletons)), muzzle_m, muzzle[0], 0);
 				Mat4_invert(muzzle_inv, muzzle_m);
 				memset(ungrip, 0, 64);
 				BITS(ungrip[0]) = BITS(ungrip[5]) = BITS(ungrip[10]) = BITS(ungrip[15]) = 0x3f800000;
@@ -1105,7 +1105,7 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 			if (b->active != 1)
 				continue;
 			b->hitActor = f[1];
-			b->hit = (struct CollisionTri *)array_recordAt(f[2], (*(int *)&ST->space.planes.records), 0xac);
+			b->hit = AREF(AP(struct CollisionTri, array_recordAt(f[2], (*(int *)&ST->space.planes.records), 0xac)));
 			if (f[3] == 1)
 				b->life = f32(fsub_m(fld_m(&b->age), dt));
 			memcpy(b->netPoint, f + 4, 12);
@@ -1183,7 +1183,7 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 			AC->stateTime = 0.0f;
 			if (i == ST->playerActor)   /* the patch DLL's cat_wrap */
 #ifdef AXIS_NATIVE
-				fix_catalogueLoad(s, (const char *)(*(u32 *)&g_componentDatPath));   /* (the KYRIE parts added: fixes/kyrie.c) */
+				fix_catalogueLoad(s, AP(const char, (*(u32 *)&g_componentDatPath)));   /* (the KYRIE parts added: fixes/kyrie.c) */
 #else
 				SITE_THISCALL(0x45c638, catalogue_loadComponents, void, void *, u32)(s, (*(u32 *)&g_componentDatPath));
 #endif

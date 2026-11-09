@@ -12,7 +12,7 @@ void THISCALL (stage_drawObject)(Stage *stage, int i, void *view)
 	MapObject *o = &stage->objects[i];
 	if (o->flags & 2)
 		return;
-	Shape *model = o->model;
+	Shape *model = AP(Shape, o->model);
 	if (model == NULL)
 		return;
 	float r = f32((long double)model->radius + stage->cullMargin);
@@ -51,7 +51,7 @@ void THISCALL (stage_drawParticles)(Stage *stage, void *view)
 			particle_draw(stage, i, view);
 }
 
-#define K(address) ((const float *)RELOC(address))
+#define K(address) (AP(const float, RELOC(address)))
 #define MO ((MapObject *)obj)   /* a map object (obj in these functions) by its fields */
 
 /* an object's animation stopped at its start: time and speed 0, its collision unit put back (space_enableUnit), the
@@ -60,7 +60,7 @@ static void anim_reset(u8 *obj)
 {
 	(*(int *)&MO->animTime) = (*(int *)&MO->animRate) = 0;
 	if (MO->unit)
-		space_enableUnit(MO->unit);
+		space_enableUnit(AP(void, MO->unit));
 	MO->animated = 0;
 }
 
@@ -137,7 +137,7 @@ void THISCALL (mapObject_frame)(u8 *s, int i, float dt)
 		MO->poseStale = 1;
 	}
 	if (MO->poseStale == 1) {
-		skel_getBoneMatrix(MO->skeleton, MO->animMatrix, 0, BITS(MO->animTime));
+		skel_getBoneMatrix(AP(void, MO->skeleton), MO->animMatrix, 0, BITS(MO->animTime));
 		float *m = MO->matrix;
 		Mat4_multiply(m, MO->placeMatrix, MO->animMatrix);
 		Mat4_invert(MO->matrixInverse, m);
@@ -145,18 +145,18 @@ void THISCALL (mapObject_frame)(u8 *s, int i, float dt)
 		Mat4_multiply(MO->relMatrix, m, MO->placeInverse);
 		Mat4_invert(MO->relInverse, MO->relMatrix);
 		if (!(obj[0xc] & 2))
-			shape_shadingColours((*(u32 * *)&MO->colourRuns[0]), 1, (Shape *)((u8 *)MO->model), (const LightFactors *)&st->mapLights,
+			shape_shadingColours(AGET(u32, MO->colourRuns[0]), 1, (Shape *)(AP(u8, MO->model)), (const LightFactors *)&st->mapLights,
 			                 MO->matrixInverse);
 		MO->poseStale = 0;
-		const float *c = MO->model->centre;
+		const float *c = AP(Shape, MO->model)->centre;
 		float *out = MO->pos;
 		out[0] = f32(fadd_m(FMUL(m[8], c[2]) + FMUL(m[4], c[1]) + FMUL(m[0], c[0]), &m[12]));
 		for (int r = 1; r < 3; r++)
 			out[r] = f32(fadd_m(FMUL(m[8 + r], c[2]) + FMUL(m[r], c[0]) + FMUL(m[4 + r], c[1]), &m[12 + r]));
 	}
 	if (MO->colourSide == 1 && !(obj[0xc] & 2)) {
-		memcpy((*(void * *)&MO->colourRuns[1]), (*(void * *)&MO->colourRuns[0]), MO->model->colourCount * 4);
-		shape_shadingColours((*(u32 * *)&MO->colourRuns[1]), 0, (Shape *)((u8 *)MO->model), (const LightFactors *)&st->dynamicLights,
+		memcpy(AGET(void, MO->colourRuns[1]), AGET(void, MO->colourRuns[0]), AP(Shape, MO->model)->colourCount * 4);
+		shape_shadingColours(AGET(u32, MO->colourRuns[1]), 0, (Shape *)(AP(u8, MO->model)), (const LightFactors *)&st->dynamicLights,
 		                 MO->matrixInverse);
 	}
 	if ((obj[0xc] & 1) && g_highDetail == 1) {
@@ -172,7 +172,7 @@ void THISCALL (mapObject_frame)(u8 *s, int i, float dt)
 			flare[6] = MO->glowColour;
 			for (int k = 8; k < 13; k++)
 				flare[k] = 0;
-			particle_spawn(s, (const void *)RELOC(flare));
+			particle_spawn(s, AP(const void, RELOC(flare)));
 		}
 	}
 	if (obj[0xc] & 8) {
@@ -210,7 +210,7 @@ void THISCALL (mapObject_frame)(u8 *s, int i, float dt)
 }
 #undef K
 
-#define K(address) ((const float *)RELOC(address))
+#define K(address) (AP(const float, RELOC(address)))
 #define AC ((Actor *)ac)   /* the same by its fields (src/scene.fields) */
 
 
@@ -601,13 +601,13 @@ void THISCALL (particle_draw)(u8 *s, int i, void *vv)
 		static const u32 k_parts[4] = { offsetof(PlayerRecord, headShapes), offsetof(PlayerRecord, chestShapes), offsetof(PlayerRecord, armShapes), offsetof(PlayerRecord, legShapes) };
 		int part = i % 5;
 		ShapeManager *cache = (ShapeManager *)((u8 *)&ST->playerRecords[PR->owner] + (part >= 0 && part < 4 ? k_parts[part] : offsetof(PlayerRecord, boosterShapes)));
-		shape(vv, p, cache->items + i % cache->count * 0x4c, 0, 1);
+		shape(vv, p, AP(void, cache->items + i % cache->count * 0x4c), 0, 1);
 		return;
 	}
 	case 10:
 	case 11:
 	case 18:
-		shape(vv, p, (void *)ST->effectShapes[type == 10 ? 0 : type == 11 ? 2 : 3], 0, 1);   /* shell / rail / blade fire */
+		shape(vv, p, AP(void, ST->effectShapes[type == 10 ? 0 : type == 11 ? 2 : 3]), 0, 1);   /* shell / rail / blade fire */
 		glow(s, p, vv, FSUB(k_1f, t), 600.0f, 300.0f);
 		return;
 	case 12:
@@ -637,7 +637,7 @@ void THISCALL (particle_draw)(u8 *s, int i, void *vv)
 	case 20:
 	case 21:
 		if (PR->owner != ST->cockpitActor)
-			shape(vv, p, (void *)ST->effectShapes[type == 20 ? 1 : 4], (u8 *)&PR->colour, 0);   /* shell / rail bullet */
+			shape(vv, p, AP(void, ST->effectShapes[type == 20 ? 1 : 4]), (u8 *)&PR->colour, 0);   /* shell / rail bullet */
 		return;
 	case 22:
 		if (PR->owner == 1)
@@ -652,20 +652,20 @@ void THISCALL (particle_draw)(u8 *s, int i, void *vv)
 	case 24: {
 		long double a = FSUB(k_1f, t);
 		ALPHA(PR->colour) = clamp255(ftol(fmul_m(a * a, &k_256f)));
-		shape(vv, p, (*(void * *)&ST->effectShapes[5]), (u8 *)&PR->colour, 0);
+		shape(vv, p, AGET(void, ST->effectShapes[5]), (u8 *)&PR->colour, 0);
 		return;
 	}
 	case 25:
 		if (PR->owner == 1)
 			return;
-		shape(vv, p, (*(void * *)&ST->effectShapes[6]), 0, 1);
+		shape(vv, p, AGET(void, ST->effectShapes[6]), 0, 1);
 		square(ab, 500.0f);
 		quad(vv, TEX(0), k_glowUV, 0, p, ab, at, 2);
 		return;
 	case 26:
 		if (PR->owner == 1)
 			return;
-		shape(vv, p, (*(void * *)&ST->effectShapes[7]), 0, 1);
+		shape(vv, p, AGET(void, ST->effectShapes[7]), 0, 1);
 		sized_glow(s, p, vv, FSUB(k_1f, t), &k_500f);
 		return;
 	case 30:
@@ -702,7 +702,7 @@ void THISCALL (particle_draw)(u8 *s, int i, void *vv)
 		if (PR->drawAge > 1.0f)
 			ALPHA(PR->markColours[0]) = ALPHA(PR->markColours[1]) = ALPHA(PR->markColours[2]) = clamp255(ftol(fmul_m(FSUB(k_2f, PR->drawAge), &k_256f)));
 		ViewVolume_addTriangle(vv, tex, (const u32 *)PR->markUv, PR->markColours, &PR->markPoints[0][0],
-		                           (*(const float * *)&PR->matrixFrom), 1, 1);
+		                           AGET(const float, PR->matrixFrom), 1, 1);
 		return;
 	}
 	case 50:

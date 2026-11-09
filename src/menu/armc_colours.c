@@ -64,7 +64,7 @@ static const u32 part_shapes[5] = { offsetof(PlayerRecord, headShapes), offsetof
 static void tint_part(int part, int slot)
 {
 	const u32 *c = (const u32 *)g_armcColours + slot * 6;
-	Scene *scene = g_scene;
+	Scene *scene = AP(Scene, g_scene);
 	shape_setTint((u8 *)&scene->playerRecords[scene->localPlayer] + part_shapes[part], c[0], c[1], c[2], c[3], c[4], c[5]);
 }
 

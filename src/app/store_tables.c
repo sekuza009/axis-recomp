@@ -16,92 +16,92 @@ static void apply_cstores(const CStore *s, int n)
 }
 
 static const Store k_defaultColours[16] = {
-	{ OBJ(g_defaultColours), 0xffffffff }, { (u32)&g_defaultColours[1], 0xff5454f3 }, { (u32)&g_defaultColours[3], 0xfff35466 }, { (u32)&g_defaultColours[2], 0xffe7b7fd }, { (u32)&g_defaultColours[4], 0xffffcc00 },
-	{ (u32)&g_defaultColours[6], 0xffa6ffcc }, { (u32)&g_defaultColours[7], 0xff00f0ff }, { (u32)&g_defaultColours[8], 0xffd3c8c8 }, { (u32)&g_defaultColours[9], 0xffa09090 }, { (u32)&g_defaultColours[5], 0xff23d33c },
-	{ (u32)&g_defaultColours[10], 0xff859a98 }, { (u32)&g_defaultColours[11], 0xff000085 }, { (u32)&g_defaultColours[12], 0xffff000c }, { (u32)&g_defaultColours[13], 0xffff00d2 }, { (u32)&g_defaultColours[14], 0xff3a322e },
-	{ (u32)&g_defaultColours[15], 0xffa2ff00 } };
+	{ OBJ(g_defaultColours), 0xffffffff }, { ADDR_AT(g_defaultColours, 1), 0xff5454f3 }, { ADDR_AT(g_defaultColours, 3), 0xfff35466 }, { ADDR_AT(g_defaultColours, 2), 0xffe7b7fd }, { ADDR_AT(g_defaultColours, 4), 0xffffcc00 },
+	{ ADDR_AT(g_defaultColours, 6), 0xffa6ffcc }, { ADDR_AT(g_defaultColours, 7), 0xff00f0ff }, { ADDR_AT(g_defaultColours, 8), 0xffd3c8c8 }, { ADDR_AT(g_defaultColours, 9), 0xffa09090 }, { ADDR_AT(g_defaultColours, 5), 0xff23d33c },
+	{ ADDR_AT(g_defaultColours, 10), 0xff859a98 }, { ADDR_AT(g_defaultColours, 11), 0xff000085 }, { ADDR_AT(g_defaultColours, 12), 0xffff000c }, { ADDR_AT(g_defaultColours, 13), 0xffff00d2 }, { ADDR_AT(g_defaultColours, 14), 0xff3a322e },
+	{ ADDR_AT(g_defaultColours, 15), 0xffa2ff00 } };
 
 void (colour_initDefaultColours)(void) { apply_stores(k_defaultColours, 16); }   /* 0x46dc50 default RGBA colours (bytes) */
 
 static const Store k_lobbyTopOutlines[44] = {
-	{ (u32)&g_lobbyTopOutlines[6], 0xe7 }, { (u32)&g_lobbyTopOutlines[10], 0xe7 }, { (u32)&g_lobbyTopOutlines[29], 0xe7 }, { (u32)&g_lobbyTopOutlines[1], 0xffffff65 }, { (u32)&g_lobbyTopOutlines[5], 0xffffff65 },
-	{ (u32)&g_lobbyTopOutlines[3], 0xffffff7e }, { (u32)&g_lobbyTopOutlines[4], 0xfffffef2 }, { (u32)&g_lobbyTopOutlines[12], 0xfffffef2 }, { (u32)&g_lobbyTopOutlines[13], 0xffffff7e }, { (u32)&g_lobbyTopOutlines[16], 0xfffffef2 },
-	{ (u32)&g_lobbyTopOutlines[25], 0x10e }, { (u32)&g_lobbyTopOutlines[35], 0x10e }, { (u32)&g_lobbyTopOutlines[17], 0xffffffc1 }, { (u32)&g_lobbyTopOutlines[21], 0xffffffc1 }, { (u32)&g_lobbyTopOutlines[40], 0xffffffc1 },
-	{ OBJ(g_lobbyTopOutlines), 0x4 }, { (u32)&g_lobbyTopOutlines[2], 0xffffffb6 }, { (u32)&g_lobbyTopOutlines[7], 0x6e }, { (u32)&g_lobbyTopOutlines[8], 0x1f }, { (u32)&g_lobbyTopOutlines[9], 0x42 },
-	{ (u32)&g_lobbyTopOutlines[11], 0x4 }, { (u32)&g_lobbyTopOutlines[18], 0xffffffe2 }, { (u32)&g_lobbyTopOutlines[14], 0xffffffb5 }, { (u32)&g_lobbyTopOutlines[19], 0xffffff90 }, { (u32)&g_lobbyTopOutlines[15], 0xffffff67 },
-	{ (u32)&g_lobbyTopOutlines[20], 0xffffff1a }, { (u32)&g_lobbyTopOutlines[22], 0x4 }, { (u32)&g_lobbyTopOutlines[23], 0x49 }, { (u32)&g_lobbyTopOutlines[28], 0x70 }, { (u32)&g_lobbyTopOutlines[24], 0x9b },
-	{ (u32)&g_lobbyTopOutlines[30], 0x42 }, { (u32)&g_lobbyTopOutlines[26], 0x82 }, { (u32)&g_lobbyTopOutlines[31], 0x1f }, { (u32)&g_lobbyTopOutlines[27], 0x49 }, { (u32)&g_lobbyTopOutlines[32], 0x70 },
-	{ (u32)&g_lobbyTopOutlines[33], 0x4 }, { (u32)&g_lobbyTopOutlines[34], 0x82 }, { (u32)&g_lobbyTopOutlines[39], 0xffffffe2 }, { (u32)&g_lobbyTopOutlines[36], 0x9b }, { (u32)&g_lobbyTopOutlines[41], 0xffffff1a },
-	{ (u32)&g_lobbyTopOutlines[37], 0x4b }, { (u32)&g_lobbyTopOutlines[42], 0xffffff90 }, { (u32)&g_lobbyTopOutlines[38], 0x82 }, { (u32)&g_lobbyTopOutlines[43], 0xffffffe2 } };
+	{ ADDR_AT(g_lobbyTopOutlines, 6), 0xe7 }, { ADDR_AT(g_lobbyTopOutlines, 10), 0xe7 }, { ADDR_AT(g_lobbyTopOutlines, 29), 0xe7 }, { ADDR_AT(g_lobbyTopOutlines, 1), 0xffffff65 }, { ADDR_AT(g_lobbyTopOutlines, 5), 0xffffff65 },
+	{ ADDR_AT(g_lobbyTopOutlines, 3), 0xffffff7e }, { ADDR_AT(g_lobbyTopOutlines, 4), 0xfffffef2 }, { ADDR_AT(g_lobbyTopOutlines, 12), 0xfffffef2 }, { ADDR_AT(g_lobbyTopOutlines, 13), 0xffffff7e }, { ADDR_AT(g_lobbyTopOutlines, 16), 0xfffffef2 },
+	{ ADDR_AT(g_lobbyTopOutlines, 25), 0x10e }, { ADDR_AT(g_lobbyTopOutlines, 35), 0x10e }, { ADDR_AT(g_lobbyTopOutlines, 17), 0xffffffc1 }, { ADDR_AT(g_lobbyTopOutlines, 21), 0xffffffc1 }, { ADDR_AT(g_lobbyTopOutlines, 40), 0xffffffc1 },
+	{ OBJ(g_lobbyTopOutlines), 0x4 }, { ADDR_AT(g_lobbyTopOutlines, 2), 0xffffffb6 }, { ADDR_AT(g_lobbyTopOutlines, 7), 0x6e }, { ADDR_AT(g_lobbyTopOutlines, 8), 0x1f }, { ADDR_AT(g_lobbyTopOutlines, 9), 0x42 },
+	{ ADDR_AT(g_lobbyTopOutlines, 11), 0x4 }, { ADDR_AT(g_lobbyTopOutlines, 18), 0xffffffe2 }, { ADDR_AT(g_lobbyTopOutlines, 14), 0xffffffb5 }, { ADDR_AT(g_lobbyTopOutlines, 19), 0xffffff90 }, { ADDR_AT(g_lobbyTopOutlines, 15), 0xffffff67 },
+	{ ADDR_AT(g_lobbyTopOutlines, 20), 0xffffff1a }, { ADDR_AT(g_lobbyTopOutlines, 22), 0x4 }, { ADDR_AT(g_lobbyTopOutlines, 23), 0x49 }, { ADDR_AT(g_lobbyTopOutlines, 28), 0x70 }, { ADDR_AT(g_lobbyTopOutlines, 24), 0x9b },
+	{ ADDR_AT(g_lobbyTopOutlines, 30), 0x42 }, { ADDR_AT(g_lobbyTopOutlines, 26), 0x82 }, { ADDR_AT(g_lobbyTopOutlines, 31), 0x1f }, { ADDR_AT(g_lobbyTopOutlines, 27), 0x49 }, { ADDR_AT(g_lobbyTopOutlines, 32), 0x70 },
+	{ ADDR_AT(g_lobbyTopOutlines, 33), 0x4 }, { ADDR_AT(g_lobbyTopOutlines, 34), 0x82 }, { ADDR_AT(g_lobbyTopOutlines, 39), 0xffffffe2 }, { ADDR_AT(g_lobbyTopOutlines, 36), 0x9b }, { ADDR_AT(g_lobbyTopOutlines, 41), 0xffffff1a },
+	{ ADDR_AT(g_lobbyTopOutlines, 37), 0x4b }, { ADDR_AT(g_lobbyTopOutlines, 42), 0xffffff90 }, { ADDR_AT(g_lobbyTopOutlines, 38), 0x82 }, { ADDR_AT(g_lobbyTopOutlines, 43), 0xffffffe2 } };
 
 void (lobbyTop_initOutlines)(void) { apply_stores(k_lobbyTopOutlines, 44); }   /* 0x42f500: the lobby top menu's button outlines */
 
 static const Store k_scanCharTable[57] = {
-	{ OBJ(g_scanCharTable), 0x1b }, { (u32)&g_scanCharTable[1], 0x31 }, { (u32)&g_scanCharTable[2], 0x32 }, { (u32)&g_scanCharTable[3], 0x33 }, { (u32)&g_scanCharTable[4], 0x34 },
-	{ (u32)&g_scanCharTable[5], 0x35 }, { (u32)&g_scanCharTable[6], 0x36 }, { (u32)&g_scanCharTable[7], 0x37 }, { (u32)&g_scanCharTable[8], 0x38 }, { (u32)&g_scanCharTable[9], 0x39 },
-	{ (u32)&g_scanCharTable[10], 0x30 }, { (u32)&g_scanCharTable[11], 0x2d }, { (u32)&g_scanCharTable[12], 0x3d }, { (u32)&g_scanCharTable[13], 0x8 }, { (u32)&g_scanCharTable[14], 0x9 },
-	{ (u32)&g_scanCharTable[15], 0x51 }, { (u32)&g_scanCharTable[16], 0x57 }, { (u32)&g_scanCharTable[17], 0x45 }, { (u32)&g_scanCharTable[18], 0x52 }, { (u32)&g_scanCharTable[19], 0x54 },
-	{ (u32)&g_scanCharTable[20], 0x59 }, { (u32)&g_scanCharTable[21], 0x55 }, { (u32)&g_scanCharTable[22], 0x49 }, { (u32)&g_scanCharTable[23], 0x4f }, { (u32)&g_scanCharTable[24], 0x50 },
-	{ (u32)&g_scanCharTable[25], 0x5b }, { (u32)&g_scanCharTable[26], 0x5d }, { (u32)&g_scanCharTable[27], 0xd }, { (u32)&g_scanCharTable[28], 0x0 }, { (u32)&g_scanCharTable[29], 0x41 },
-	{ (u32)&g_scanCharTable[30], 0x53 }, { (u32)&g_scanCharTable[31], 0x44 }, { (u32)&g_scanCharTable[32], 0x46 }, { (u32)&g_scanCharTable[33], 0x47 }, { (u32)&g_scanCharTable[34], 0x48 },
-	{ (u32)&g_scanCharTable[35], 0x4a }, { (u32)&g_scanCharTable[36], 0x4b }, { (u32)&g_scanCharTable[37], 0x4c }, { (u32)&g_scanCharTable[38], 0x3b }, { (u32)&g_scanCharTable[39], 0x27 },
-	{ (u32)&g_scanCharTable[40], 0x60 }, { (u32)&g_scanCharTable[41], 0x10 }, { (u32)&g_scanCharTable[42], 0x5c }, { (u32)&g_scanCharTable[43], 0x5a }, { (u32)&g_scanCharTable[44], 0x58 },
-	{ (u32)&g_scanCharTable[45], 0x43 }, { (u32)&g_scanCharTable[46], 0x56 }, { (u32)&g_scanCharTable[47], 0x42 }, { (u32)&g_scanCharTable[48], 0x4e }, { (u32)&g_scanCharTable[49], 0x4d },
-	{ (u32)&g_scanCharTable[50], 0x2c }, { (u32)&g_scanCharTable[51], 0x2e }, { (u32)&g_scanCharTable[52], 0x2f }, { (u32)&g_scanCharTable[53], 0x10 }, { (u32)&g_scanCharTable[54], 0x2a },
-	{ (u32)&g_scanCharTable[55], 0x0 }, { (u32)&g_scanCharTable[56], 0x20 } };
+	{ OBJ(g_scanCharTable), 0x1b }, { ADDR_AT(g_scanCharTable, 1), 0x31 }, { ADDR_AT(g_scanCharTable, 2), 0x32 }, { ADDR_AT(g_scanCharTable, 3), 0x33 }, { ADDR_AT(g_scanCharTable, 4), 0x34 },
+	{ ADDR_AT(g_scanCharTable, 5), 0x35 }, { ADDR_AT(g_scanCharTable, 6), 0x36 }, { ADDR_AT(g_scanCharTable, 7), 0x37 }, { ADDR_AT(g_scanCharTable, 8), 0x38 }, { ADDR_AT(g_scanCharTable, 9), 0x39 },
+	{ ADDR_AT(g_scanCharTable, 10), 0x30 }, { ADDR_AT(g_scanCharTable, 11), 0x2d }, { ADDR_AT(g_scanCharTable, 12), 0x3d }, { ADDR_AT(g_scanCharTable, 13), 0x8 }, { ADDR_AT(g_scanCharTable, 14), 0x9 },
+	{ ADDR_AT(g_scanCharTable, 15), 0x51 }, { ADDR_AT(g_scanCharTable, 16), 0x57 }, { ADDR_AT(g_scanCharTable, 17), 0x45 }, { ADDR_AT(g_scanCharTable, 18), 0x52 }, { ADDR_AT(g_scanCharTable, 19), 0x54 },
+	{ ADDR_AT(g_scanCharTable, 20), 0x59 }, { ADDR_AT(g_scanCharTable, 21), 0x55 }, { ADDR_AT(g_scanCharTable, 22), 0x49 }, { ADDR_AT(g_scanCharTable, 23), 0x4f }, { ADDR_AT(g_scanCharTable, 24), 0x50 },
+	{ ADDR_AT(g_scanCharTable, 25), 0x5b }, { ADDR_AT(g_scanCharTable, 26), 0x5d }, { ADDR_AT(g_scanCharTable, 27), 0xd }, { ADDR_AT(g_scanCharTable, 28), 0x0 }, { ADDR_AT(g_scanCharTable, 29), 0x41 },
+	{ ADDR_AT(g_scanCharTable, 30), 0x53 }, { ADDR_AT(g_scanCharTable, 31), 0x44 }, { ADDR_AT(g_scanCharTable, 32), 0x46 }, { ADDR_AT(g_scanCharTable, 33), 0x47 }, { ADDR_AT(g_scanCharTable, 34), 0x48 },
+	{ ADDR_AT(g_scanCharTable, 35), 0x4a }, { ADDR_AT(g_scanCharTable, 36), 0x4b }, { ADDR_AT(g_scanCharTable, 37), 0x4c }, { ADDR_AT(g_scanCharTable, 38), 0x3b }, { ADDR_AT(g_scanCharTable, 39), 0x27 },
+	{ ADDR_AT(g_scanCharTable, 40), 0x60 }, { ADDR_AT(g_scanCharTable, 41), 0x10 }, { ADDR_AT(g_scanCharTable, 42), 0x5c }, { ADDR_AT(g_scanCharTable, 43), 0x5a }, { ADDR_AT(g_scanCharTable, 44), 0x58 },
+	{ ADDR_AT(g_scanCharTable, 45), 0x43 }, { ADDR_AT(g_scanCharTable, 46), 0x56 }, { ADDR_AT(g_scanCharTable, 47), 0x42 }, { ADDR_AT(g_scanCharTable, 48), 0x4e }, { ADDR_AT(g_scanCharTable, 49), 0x4d },
+	{ ADDR_AT(g_scanCharTable, 50), 0x2c }, { ADDR_AT(g_scanCharTable, 51), 0x2e }, { ADDR_AT(g_scanCharTable, 52), 0x2f }, { ADDR_AT(g_scanCharTable, 53), 0x10 }, { ADDR_AT(g_scanCharTable, 54), 0x2a },
+	{ ADDR_AT(g_scanCharTable, 55), 0x0 }, { ADDR_AT(g_scanCharTable, 56), 0x20 } };
 
 void (input_initScanCharTable)(void) { apply_stores(k_scanCharTable, 57); }   /* 0x431680 the scan code -> character table (g_scanCharTable) */
 
 static const Store k_messageColours[64] = {
-	{ OBJ(g_messageColours), 0x3f800000 }, { (u32)&g_messageColours[0].g, 0x3f800000 }, { (u32)&g_messageColours[0].b, 0x3f800000 }, { (u32)&g_messageColours[0].a, 0x3f800000 }, { (u32)&g_messageColours[1].r, 0x3f73f3f4 },
-	{ (u32)&g_messageColours[1].g, 0x3ea8a8a9 }, { (u32)&g_messageColours[1].b, 0x3ea8a8a9 }, { (u32)&g_messageColours[1].a, 0x3f800000 }, { (u32)&g_messageColours[2].r, 0x3f7dfdfe }, { (u32)&g_messageColours[2].g, 0x3f37b7b8 },
-	{ (u32)&g_messageColours[2].b, 0x3f67e7e8 }, { (u32)&g_messageColours[2].a, 0x3f800000 }, { (u32)&g_messageColours[3].r, 0x3ecccccd }, { (u32)&g_messageColours[3].g, 0x3ea8a8a9 }, { (u32)&g_messageColours[3].b, 0x3f73f3f4 },
-	{ (u32)&g_messageColours[3].a, 0x3f800000 }, { (u32)&g_messageColours[4].r, 0x0 }, { (u32)&g_messageColours[4].g, 0x3f4ccccd }, { (u32)&g_messageColours[4].b, 0x3f800000 }, { (u32)&g_messageColours[4].a, 0x3f800000 },
-	{ (u32)&g_messageColours[5].r, 0x3e70f0f1 }, { (u32)&g_messageColours[5].g, 0x3f53d3d4 }, { (u32)&g_messageColours[5].b, 0x3e0c8c8d }, { (u32)&g_messageColours[5].a, 0x3f800000 }, { (u32)&g_messageColours[6].r, 0x3f4ccccd },
-	{ (u32)&g_messageColours[6].g, 0x3f800000 }, { (u32)&g_messageColours[6].b, 0x3f26a6a7 }, { (u32)&g_messageColours[6].a, 0x3f800000 }, { (u32)&g_messageColours[7].r, 0x3f800000 }, { (u32)&g_messageColours[7].g, 0x3f70f0f1 },
-	{ (u32)&g_messageColours[7].b, 0x0 }, { (u32)&g_messageColours[7].a, 0x3f800000 }, { (u32)&g_messageColours[8].r, 0x3f48c8c9 }, { (u32)&g_messageColours[8].g, 0x3f48c8c9 }, { (u32)&g_messageColours[8].b, 0x3f53d3d4 },
-	{ (u32)&g_messageColours[8].a, 0x3f800000 }, { (u32)&g_messageColours[9].r, 0x3f109091 }, { (u32)&g_messageColours[9].g, 0x3f109091 }, { (u32)&g_messageColours[9].b, 0x3f20a0a1 }, { (u32)&g_messageColours[9].a, 0x3f800000 },
-	{ (u32)&g_messageColours[10].r, 0x3f189899 }, { (u32)&g_messageColours[10].g, 0x3f1a9a9b }, { (u32)&g_messageColours[10].b, 0x3f058586 }, { (u32)&g_messageColours[10].a, 0x3f800000 }, { (u32)&g_messageColours[11].r, 0x3f058586 },
-	{ (u32)&g_messageColours[11].g, 0x0 }, { (u32)&g_messageColours[11].b, 0x0 }, { (u32)&g_messageColours[11].a, 0x3f800000 }, { (u32)&g_messageColours[12].r, 0x3d40c0c1 }, { (u32)&g_messageColours[12].g, 0x0 },
-	{ (u32)&g_messageColours[12].b, 0x3f800000 }, { (u32)&g_messageColours[12].a, 0x3f800000 }, { (u32)&g_messageColours[13].r, 0x3f52d2d3 }, { (u32)&g_messageColours[13].g, 0x0 }, { (u32)&g_messageColours[13].b, 0x3f800000 },
-	{ (u32)&g_messageColours[13].a, 0x3f800000 }, { (u32)&g_messageColours[14].r, 0x3e38b8b9 }, { (u32)&g_messageColours[14].g, 0x3e48c8c9 }, { (u32)&g_messageColours[14].b, 0x3e68e8e9 }, { (u32)&g_messageColours[14].a, 0x3f800000 },
-	{ (u32)&g_messageColours[15].r, 0x0 }, { (u32)&g_messageColours[15].g, 0x3f800000 }, { (u32)&g_messageColours[15].b, 0x3f22a2a3 }, { (u32)&g_messageColours[15].a, 0x3f800000 } };
+	{ OBJ(g_messageColours), 0x3f800000 }, { ADDR_ATF(g_messageColours, 0, g), 0x3f800000 }, { ADDR_ATF(g_messageColours, 0, b), 0x3f800000 }, { ADDR_ATF(g_messageColours, 0, a), 0x3f800000 }, { ADDR_ATF(g_messageColours, 1, r), 0x3f73f3f4 },
+	{ ADDR_ATF(g_messageColours, 1, g), 0x3ea8a8a9 }, { ADDR_ATF(g_messageColours, 1, b), 0x3ea8a8a9 }, { ADDR_ATF(g_messageColours, 1, a), 0x3f800000 }, { ADDR_ATF(g_messageColours, 2, r), 0x3f7dfdfe }, { ADDR_ATF(g_messageColours, 2, g), 0x3f37b7b8 },
+	{ ADDR_ATF(g_messageColours, 2, b), 0x3f67e7e8 }, { ADDR_ATF(g_messageColours, 2, a), 0x3f800000 }, { ADDR_ATF(g_messageColours, 3, r), 0x3ecccccd }, { ADDR_ATF(g_messageColours, 3, g), 0x3ea8a8a9 }, { ADDR_ATF(g_messageColours, 3, b), 0x3f73f3f4 },
+	{ ADDR_ATF(g_messageColours, 3, a), 0x3f800000 }, { ADDR_ATF(g_messageColours, 4, r), 0x0 }, { ADDR_ATF(g_messageColours, 4, g), 0x3f4ccccd }, { ADDR_ATF(g_messageColours, 4, b), 0x3f800000 }, { ADDR_ATF(g_messageColours, 4, a), 0x3f800000 },
+	{ ADDR_ATF(g_messageColours, 5, r), 0x3e70f0f1 }, { ADDR_ATF(g_messageColours, 5, g), 0x3f53d3d4 }, { ADDR_ATF(g_messageColours, 5, b), 0x3e0c8c8d }, { ADDR_ATF(g_messageColours, 5, a), 0x3f800000 }, { ADDR_ATF(g_messageColours, 6, r), 0x3f4ccccd },
+	{ ADDR_ATF(g_messageColours, 6, g), 0x3f800000 }, { ADDR_ATF(g_messageColours, 6, b), 0x3f26a6a7 }, { ADDR_ATF(g_messageColours, 6, a), 0x3f800000 }, { ADDR_ATF(g_messageColours, 7, r), 0x3f800000 }, { ADDR_ATF(g_messageColours, 7, g), 0x3f70f0f1 },
+	{ ADDR_ATF(g_messageColours, 7, b), 0x0 }, { ADDR_ATF(g_messageColours, 7, a), 0x3f800000 }, { ADDR_ATF(g_messageColours, 8, r), 0x3f48c8c9 }, { ADDR_ATF(g_messageColours, 8, g), 0x3f48c8c9 }, { ADDR_ATF(g_messageColours, 8, b), 0x3f53d3d4 },
+	{ ADDR_ATF(g_messageColours, 8, a), 0x3f800000 }, { ADDR_ATF(g_messageColours, 9, r), 0x3f109091 }, { ADDR_ATF(g_messageColours, 9, g), 0x3f109091 }, { ADDR_ATF(g_messageColours, 9, b), 0x3f20a0a1 }, { ADDR_ATF(g_messageColours, 9, a), 0x3f800000 },
+	{ ADDR_ATF(g_messageColours, 10, r), 0x3f189899 }, { ADDR_ATF(g_messageColours, 10, g), 0x3f1a9a9b }, { ADDR_ATF(g_messageColours, 10, b), 0x3f058586 }, { ADDR_ATF(g_messageColours, 10, a), 0x3f800000 }, { ADDR_ATF(g_messageColours, 11, r), 0x3f058586 },
+	{ ADDR_ATF(g_messageColours, 11, g), 0x0 }, { ADDR_ATF(g_messageColours, 11, b), 0x0 }, { ADDR_ATF(g_messageColours, 11, a), 0x3f800000 }, { ADDR_ATF(g_messageColours, 12, r), 0x3d40c0c1 }, { ADDR_ATF(g_messageColours, 12, g), 0x0 },
+	{ ADDR_ATF(g_messageColours, 12, b), 0x3f800000 }, { ADDR_ATF(g_messageColours, 12, a), 0x3f800000 }, { ADDR_ATF(g_messageColours, 13, r), 0x3f52d2d3 }, { ADDR_ATF(g_messageColours, 13, g), 0x0 }, { ADDR_ATF(g_messageColours, 13, b), 0x3f800000 },
+	{ ADDR_ATF(g_messageColours, 13, a), 0x3f800000 }, { ADDR_ATF(g_messageColours, 14, r), 0x3e38b8b9 }, { ADDR_ATF(g_messageColours, 14, g), 0x3e48c8c9 }, { ADDR_ATF(g_messageColours, 14, b), 0x3e68e8e9 }, { ADDR_ATF(g_messageColours, 14, a), 0x3f800000 },
+	{ ADDR_ATF(g_messageColours, 15, r), 0x0 }, { ADDR_ATF(g_messageColours, 15, g), 0x3f800000 }, { ADDR_ATF(g_messageColours, 15, b), 0x3f22a2a3 }, { ADDR_ATF(g_messageColours, 15, a), 0x3f800000 } };
 
 void (colour_initMessageColours)(void) { apply_stores(k_messageColours, 64); }   /* 0x46d4d0: the 16 message colours (g_messageColours, four floats each; hud_drawMessageBox colours each line by MessageSlot.colour) */
 
 static const Store k_mainMenuOutlines[66] = {
-	{ (u32)&g_mainMenuOutlines[12], 0xfffffefc }, { (u32)&g_mainMenuOutlines[15], 0xfffffefc }, { (u32)&g_mainMenuOutlines[16], 0xfffffefc }, { (u32)&g_mainMenuOutlines[13], 0xffffff81 }, { (u32)&g_mainMenuOutlines[14], 0xffffff81 },
-	{ (u32)&g_mainMenuOutlines[1], 0xffffff6f }, { (u32)&g_mainMenuOutlines[5], 0xffffff6f }, { (u32)&g_mainMenuOutlines[26], 0xffffff6f }, { OBJ(g_mainMenuOutlines), 0x4 }, { (u32)&g_mainMenuOutlines[6], 0xe8 },
-	{ (u32)&g_mainMenuOutlines[10], 0xe8 }, { (u32)&g_mainMenuOutlines[11], 0x4 }, { (u32)&g_mainMenuOutlines[22], 0x4 }, { (u32)&g_mainMenuOutlines[23], 0xffffff01 }, { (u32)&g_mainMenuOutlines[27], 0xffffff01 },
-	{ (u32)&g_mainMenuOutlines[33], 0x4 }, { (u32)&g_mainMenuOutlines[40], 0xe8 }, { (u32)&g_mainMenuOutlines[44], 0x4 }, { (u32)&g_mainMenuOutlines[55], 0x4 }, { (u32)&g_mainMenuOutlines[28], 0xffffff9c },
-	{ (u32)&g_mainMenuOutlines[32], 0xffffff9c }, { (u32)&g_mainMenuOutlines[62], 0xffffff9c }, { (u32)&g_mainMenuOutlines[34], 0x46 }, { (u32)&g_mainMenuOutlines[38], 0x46 }, { (u32)&g_mainMenuOutlines[59], 0x46 },
-	{ (u32)&g_mainMenuOutlines[2], 0xffffffba }, { (u32)&g_mainMenuOutlines[7], 0x6e }, { (u32)&g_mainMenuOutlines[3], 0xffffff86 }, { (u32)&g_mainMenuOutlines[8], 0x32 }, { (u32)&g_mainMenuOutlines[4], 0xffffff06 },
-	{ (u32)&g_mainMenuOutlines[9], 0x64 }, { (u32)&g_mainMenuOutlines[17], 0x56 }, { (u32)&g_mainMenuOutlines[18], 0x28 }, { (u32)&g_mainMenuOutlines[19], 0xffffffd8 }, { (u32)&g_mainMenuOutlines[20], 0xffffffad },
-	{ (u32)&g_mainMenuOutlines[21], 0x56 }, { (u32)&g_mainMenuOutlines[24], 0xffffff86 }, { (u32)&g_mainMenuOutlines[29], 0xffffffcf }, { (u32)&g_mainMenuOutlines[25], 0xffffffb8 }, { (u32)&g_mainMenuOutlines[30], 0xffffff91 },
-	{ (u32)&g_mainMenuOutlines[31], 0xffffff1a }, { (u32)&g_mainMenuOutlines[39], 0x6f }, { (u32)&g_mainMenuOutlines[35], 0x91 }, { (u32)&g_mainMenuOutlines[36], 0xff }, { (u32)&g_mainMenuOutlines[41], 0x67 },
-	{ (u32)&g_mainMenuOutlines[37], 0x78 }, { (u32)&g_mainMenuOutlines[42], 0x32 }, { (u32)&g_mainMenuOutlines[43], 0x6f }, { (u32)&g_mainMenuOutlines[45], 0x7d }, { (u32)&g_mainMenuOutlines[50], 0x28 },
-	{ (u32)&g_mainMenuOutlines[46], 0x106 }, { (u32)&g_mainMenuOutlines[51], 0x56 }, { (u32)&g_mainMenuOutlines[47], 0x106 }, { (u32)&g_mainMenuOutlines[52], 0xffffffaa }, { (u32)&g_mainMenuOutlines[48], 0x7d },
-	{ (u32)&g_mainMenuOutlines[53], 0xffffffd8 }, { (u32)&g_mainMenuOutlines[49], 0x7d }, { (u32)&g_mainMenuOutlines[54], 0x28 }, { (u32)&g_mainMenuOutlines[56], 0x78 }, { (u32)&g_mainMenuOutlines[61], 0xffffffce },
-	{ (u32)&g_mainMenuOutlines[57], 0xff }, { (u32)&g_mainMenuOutlines[58], 0x92 }, { (u32)&g_mainMenuOutlines[63], 0xffffff1a }, { (u32)&g_mainMenuOutlines[64], 0xffffff91 }, { (u32)&g_mainMenuOutlines[60], 0x78 },
-	{ (u32)&g_mainMenuOutlines[65], 0xffffffce } };
+	{ ADDR_AT(g_mainMenuOutlines, 12), 0xfffffefc }, { ADDR_AT(g_mainMenuOutlines, 15), 0xfffffefc }, { ADDR_AT(g_mainMenuOutlines, 16), 0xfffffefc }, { ADDR_AT(g_mainMenuOutlines, 13), 0xffffff81 }, { ADDR_AT(g_mainMenuOutlines, 14), 0xffffff81 },
+	{ ADDR_AT(g_mainMenuOutlines, 1), 0xffffff6f }, { ADDR_AT(g_mainMenuOutlines, 5), 0xffffff6f }, { ADDR_AT(g_mainMenuOutlines, 26), 0xffffff6f }, { OBJ(g_mainMenuOutlines), 0x4 }, { ADDR_AT(g_mainMenuOutlines, 6), 0xe8 },
+	{ ADDR_AT(g_mainMenuOutlines, 10), 0xe8 }, { ADDR_AT(g_mainMenuOutlines, 11), 0x4 }, { ADDR_AT(g_mainMenuOutlines, 22), 0x4 }, { ADDR_AT(g_mainMenuOutlines, 23), 0xffffff01 }, { ADDR_AT(g_mainMenuOutlines, 27), 0xffffff01 },
+	{ ADDR_AT(g_mainMenuOutlines, 33), 0x4 }, { ADDR_AT(g_mainMenuOutlines, 40), 0xe8 }, { ADDR_AT(g_mainMenuOutlines, 44), 0x4 }, { ADDR_AT(g_mainMenuOutlines, 55), 0x4 }, { ADDR_AT(g_mainMenuOutlines, 28), 0xffffff9c },
+	{ ADDR_AT(g_mainMenuOutlines, 32), 0xffffff9c }, { ADDR_AT(g_mainMenuOutlines, 62), 0xffffff9c }, { ADDR_AT(g_mainMenuOutlines, 34), 0x46 }, { ADDR_AT(g_mainMenuOutlines, 38), 0x46 }, { ADDR_AT(g_mainMenuOutlines, 59), 0x46 },
+	{ ADDR_AT(g_mainMenuOutlines, 2), 0xffffffba }, { ADDR_AT(g_mainMenuOutlines, 7), 0x6e }, { ADDR_AT(g_mainMenuOutlines, 3), 0xffffff86 }, { ADDR_AT(g_mainMenuOutlines, 8), 0x32 }, { ADDR_AT(g_mainMenuOutlines, 4), 0xffffff06 },
+	{ ADDR_AT(g_mainMenuOutlines, 9), 0x64 }, { ADDR_AT(g_mainMenuOutlines, 17), 0x56 }, { ADDR_AT(g_mainMenuOutlines, 18), 0x28 }, { ADDR_AT(g_mainMenuOutlines, 19), 0xffffffd8 }, { ADDR_AT(g_mainMenuOutlines, 20), 0xffffffad },
+	{ ADDR_AT(g_mainMenuOutlines, 21), 0x56 }, { ADDR_AT(g_mainMenuOutlines, 24), 0xffffff86 }, { ADDR_AT(g_mainMenuOutlines, 29), 0xffffffcf }, { ADDR_AT(g_mainMenuOutlines, 25), 0xffffffb8 }, { ADDR_AT(g_mainMenuOutlines, 30), 0xffffff91 },
+	{ ADDR_AT(g_mainMenuOutlines, 31), 0xffffff1a }, { ADDR_AT(g_mainMenuOutlines, 39), 0x6f }, { ADDR_AT(g_mainMenuOutlines, 35), 0x91 }, { ADDR_AT(g_mainMenuOutlines, 36), 0xff }, { ADDR_AT(g_mainMenuOutlines, 41), 0x67 },
+	{ ADDR_AT(g_mainMenuOutlines, 37), 0x78 }, { ADDR_AT(g_mainMenuOutlines, 42), 0x32 }, { ADDR_AT(g_mainMenuOutlines, 43), 0x6f }, { ADDR_AT(g_mainMenuOutlines, 45), 0x7d }, { ADDR_AT(g_mainMenuOutlines, 50), 0x28 },
+	{ ADDR_AT(g_mainMenuOutlines, 46), 0x106 }, { ADDR_AT(g_mainMenuOutlines, 51), 0x56 }, { ADDR_AT(g_mainMenuOutlines, 47), 0x106 }, { ADDR_AT(g_mainMenuOutlines, 52), 0xffffffaa }, { ADDR_AT(g_mainMenuOutlines, 48), 0x7d },
+	{ ADDR_AT(g_mainMenuOutlines, 53), 0xffffffd8 }, { ADDR_AT(g_mainMenuOutlines, 49), 0x7d }, { ADDR_AT(g_mainMenuOutlines, 54), 0x28 }, { ADDR_AT(g_mainMenuOutlines, 56), 0x78 }, { ADDR_AT(g_mainMenuOutlines, 61), 0xffffffce },
+	{ ADDR_AT(g_mainMenuOutlines, 57), 0xff }, { ADDR_AT(g_mainMenuOutlines, 58), 0x92 }, { ADDR_AT(g_mainMenuOutlines, 63), 0xffffff1a }, { ADDR_AT(g_mainMenuOutlines, 64), 0xffffff91 }, { ADDR_AT(g_mainMenuOutlines, 60), 0x78 },
+	{ ADDR_AT(g_mainMenuOutlines, 65), 0xffffffce } };
 
 void (menu_initMainOutlines)(void) { apply_stores(k_mainMenuOutlines, 66); }   /* 0x42f2b0: the main menu's button outlines */
 
 static const Store k_roomOutlines[66] = {
-	{ (u32)&g_roomOutlines[12], 0xfffffefc }, { (u32)&g_roomOutlines[15], 0xfffffefc }, { (u32)&g_roomOutlines[16], 0xfffffefc }, { (u32)&g_roomOutlines[13], 0xffffff81 }, { (u32)&g_roomOutlines[14], 0xffffff81 },
-	{ (u32)&g_roomOutlines[1], 0xffffff6f }, { (u32)&g_roomOutlines[5], 0xffffff6f }, { (u32)&g_roomOutlines[26], 0xffffff6f }, { OBJ(g_roomOutlines), 0x4 }, { (u32)&g_roomOutlines[6], 0xe8 },
-	{ (u32)&g_roomOutlines[10], 0xe8 }, { (u32)&g_roomOutlines[11], 0x4 }, { (u32)&g_roomOutlines[22], 0x4 }, { (u32)&g_roomOutlines[23], 0xffffff01 }, { (u32)&g_roomOutlines[27], 0xffffff01 },
-	{ (u32)&g_roomOutlines[33], 0x4 }, { (u32)&g_roomOutlines[40], 0xe8 }, { (u32)&g_roomOutlines[44], 0x4 }, { (u32)&g_roomOutlines[55], 0x4 }, { (u32)&g_roomOutlines[28], 0xffffff9c },
-	{ (u32)&g_roomOutlines[32], 0xffffff9c }, { (u32)&g_roomOutlines[62], 0xffffff9c }, { (u32)&g_roomOutlines[34], 0x46 }, { (u32)&g_roomOutlines[38], 0x46 }, { (u32)&g_roomOutlines[59], 0x46 },
-	{ (u32)&g_roomOutlines[2], 0xffffffba }, { (u32)&g_roomOutlines[7], 0x6e }, { (u32)&g_roomOutlines[3], 0xffffff86 }, { (u32)&g_roomOutlines[8], 0x32 }, { (u32)&g_roomOutlines[4], 0xffffff06 },
-	{ (u32)&g_roomOutlines[9], 0x64 }, { (u32)&g_roomOutlines[17], 0x56 }, { (u32)&g_roomOutlines[18], 0x28 }, { (u32)&g_roomOutlines[19], 0xffffffd8 }, { (u32)&g_roomOutlines[20], 0xffffffad },
-	{ (u32)&g_roomOutlines[21], 0x56 }, { (u32)&g_roomOutlines[24], 0xffffff86 }, { (u32)&g_roomOutlines[29], 0xffffffcf }, { (u32)&g_roomOutlines[25], 0xffffffb8 }, { (u32)&g_roomOutlines[30], 0xffffff91 },
-	{ (u32)&g_roomOutlines[31], 0xffffff1a }, { (u32)&g_roomOutlines[39], 0x6f }, { (u32)&g_roomOutlines[35], 0x91 }, { (u32)&g_roomOutlines[36], 0xff }, { (u32)&g_roomOutlines[41], 0x67 },
-	{ (u32)&g_roomOutlines[37], 0x78 }, { (u32)&g_roomOutlines[42], 0x32 }, { (u32)&g_roomOutlines[43], 0x6f }, { (u32)&g_roomOutlines[45], 0x7d }, { (u32)&g_roomOutlines[50], 0x28 },
-	{ (u32)&g_roomOutlines[46], 0x106 }, { (u32)&g_roomOutlines[51], 0x56 }, { (u32)&g_roomOutlines[47], 0x106 }, { (u32)&g_roomOutlines[52], 0xffffffaa }, { (u32)&g_roomOutlines[48], 0x7d },
-	{ (u32)&g_roomOutlines[53], 0xffffffd8 }, { (u32)&g_roomOutlines[49], 0x7d }, { (u32)&g_roomOutlines[54], 0x28 }, { (u32)&g_roomOutlines[56], 0x78 }, { (u32)&g_roomOutlines[61], 0xffffffce },
-	{ (u32)&g_roomOutlines[57], 0xff }, { (u32)&g_roomOutlines[58], 0x92 }, { (u32)&g_roomOutlines[63], 0xffffff1a }, { (u32)&g_roomOutlines[64], 0xffffff91 }, { (u32)&g_roomOutlines[60], 0x78 },
-	{ (u32)&g_roomOutlines[65], 0xffffffce } };
+	{ ADDR_AT(g_roomOutlines, 12), 0xfffffefc }, { ADDR_AT(g_roomOutlines, 15), 0xfffffefc }, { ADDR_AT(g_roomOutlines, 16), 0xfffffefc }, { ADDR_AT(g_roomOutlines, 13), 0xffffff81 }, { ADDR_AT(g_roomOutlines, 14), 0xffffff81 },
+	{ ADDR_AT(g_roomOutlines, 1), 0xffffff6f }, { ADDR_AT(g_roomOutlines, 5), 0xffffff6f }, { ADDR_AT(g_roomOutlines, 26), 0xffffff6f }, { OBJ(g_roomOutlines), 0x4 }, { ADDR_AT(g_roomOutlines, 6), 0xe8 },
+	{ ADDR_AT(g_roomOutlines, 10), 0xe8 }, { ADDR_AT(g_roomOutlines, 11), 0x4 }, { ADDR_AT(g_roomOutlines, 22), 0x4 }, { ADDR_AT(g_roomOutlines, 23), 0xffffff01 }, { ADDR_AT(g_roomOutlines, 27), 0xffffff01 },
+	{ ADDR_AT(g_roomOutlines, 33), 0x4 }, { ADDR_AT(g_roomOutlines, 40), 0xe8 }, { ADDR_AT(g_roomOutlines, 44), 0x4 }, { ADDR_AT(g_roomOutlines, 55), 0x4 }, { ADDR_AT(g_roomOutlines, 28), 0xffffff9c },
+	{ ADDR_AT(g_roomOutlines, 32), 0xffffff9c }, { ADDR_AT(g_roomOutlines, 62), 0xffffff9c }, { ADDR_AT(g_roomOutlines, 34), 0x46 }, { ADDR_AT(g_roomOutlines, 38), 0x46 }, { ADDR_AT(g_roomOutlines, 59), 0x46 },
+	{ ADDR_AT(g_roomOutlines, 2), 0xffffffba }, { ADDR_AT(g_roomOutlines, 7), 0x6e }, { ADDR_AT(g_roomOutlines, 3), 0xffffff86 }, { ADDR_AT(g_roomOutlines, 8), 0x32 }, { ADDR_AT(g_roomOutlines, 4), 0xffffff06 },
+	{ ADDR_AT(g_roomOutlines, 9), 0x64 }, { ADDR_AT(g_roomOutlines, 17), 0x56 }, { ADDR_AT(g_roomOutlines, 18), 0x28 }, { ADDR_AT(g_roomOutlines, 19), 0xffffffd8 }, { ADDR_AT(g_roomOutlines, 20), 0xffffffad },
+	{ ADDR_AT(g_roomOutlines, 21), 0x56 }, { ADDR_AT(g_roomOutlines, 24), 0xffffff86 }, { ADDR_AT(g_roomOutlines, 29), 0xffffffcf }, { ADDR_AT(g_roomOutlines, 25), 0xffffffb8 }, { ADDR_AT(g_roomOutlines, 30), 0xffffff91 },
+	{ ADDR_AT(g_roomOutlines, 31), 0xffffff1a }, { ADDR_AT(g_roomOutlines, 39), 0x6f }, { ADDR_AT(g_roomOutlines, 35), 0x91 }, { ADDR_AT(g_roomOutlines, 36), 0xff }, { ADDR_AT(g_roomOutlines, 41), 0x67 },
+	{ ADDR_AT(g_roomOutlines, 37), 0x78 }, { ADDR_AT(g_roomOutlines, 42), 0x32 }, { ADDR_AT(g_roomOutlines, 43), 0x6f }, { ADDR_AT(g_roomOutlines, 45), 0x7d }, { ADDR_AT(g_roomOutlines, 50), 0x28 },
+	{ ADDR_AT(g_roomOutlines, 46), 0x106 }, { ADDR_AT(g_roomOutlines, 51), 0x56 }, { ADDR_AT(g_roomOutlines, 47), 0x106 }, { ADDR_AT(g_roomOutlines, 52), 0xffffffaa }, { ADDR_AT(g_roomOutlines, 48), 0x7d },
+	{ ADDR_AT(g_roomOutlines, 53), 0xffffffd8 }, { ADDR_AT(g_roomOutlines, 49), 0x7d }, { ADDR_AT(g_roomOutlines, 54), 0x28 }, { ADDR_AT(g_roomOutlines, 56), 0x78 }, { ADDR_AT(g_roomOutlines, 61), 0xffffffce },
+	{ ADDR_AT(g_roomOutlines, 57), 0xff }, { ADDR_AT(g_roomOutlines, 58), 0x92 }, { ADDR_AT(g_roomOutlines, 63), 0xffffff1a }, { ADDR_AT(g_roomOutlines, 64), 0xffffff91 }, { ADDR_AT(g_roomOutlines, 60), 0x78 },
+	{ ADDR_AT(g_roomOutlines, 65), 0xffffffce } };
 
 void (room_initOutlines)(void) { apply_stores(k_roomOutlines, 66); }   /* 0x42f690: the game room's button outlines */
 
@@ -134,43 +134,43 @@ static const Store k_dikCodes[118] = {
 void (input_initDikCodes)(void) { apply_stores(k_dikCodes, 118); }   /* 0x42fd40: the DirectInput key codes (DIK_*) into their globals */
 
 static const CStore k_defaultBindings[68] = {
-	{ ADDR(g_keyBackward), ADDR(g_dikS), 1 }, { ADDR(g_keyStepLeft), ADDR(g_dikA), 1 }, { ADDR(g_keyStepRight), ADDR(g_dikD), 1 }, { (u32)&g_controls[8], ADDR(g_dikLeft), 1 },
-	{ (u32)&g_controls[10], ADDR(g_dikRight), 1 }, { (u32)&g_controls[12], ADDR(g_dikMouse2), 1 }, { (u32)&g_controls[14], ADDR(g_dikSpace), 1 }, { (u32)&g_controls[16], ADDR(g_dikR), 1 },
-	{ (u32)&g_controls[18], ADDR(g_dikF), 1 }, { (u32)&g_controls[20], ADDR(g_dikMouse1), 1 }, { (u32)&g_controls[22], ADDR(g_dikQ), 1 }, { (u32)&g_controls[24], ADDR(g_dikE), 1 },
-	{ (u32)&g_controls[30], ADDR(g_dik1), 1 }, { (u32)&g_controls[32], ADDR(g_dik2), 1 }, { (u32)&g_controls[34], ADDR(g_dik3), 1 }, { (u32)&g_controls[36], ADDR(g_dik4), 1 },
-	{ (u32)&g_controls[26], ADDR(g_dik5), 1 }, { (u32)&g_controls[28], ADDR(g_dik6), 1 }, { (u32)&g_controls[38], ADDR(g_dikLShift), 1 }, { (u32)&g_controls[40], ADDR(g_dikRCtrl), 1 },
-	{ ADDR(g_keyChat), ADDR(g_dikEnter), 1 }, { (u32)&g_controls[44], ADDR(g_dikC), 1 }, { ADDR(g_keyForward), ADDR(g_dikW), 1 }, { (u32)&g_controls[46], ADDR(g_dikX), 1 },
-	{ (u32)&g_controls[48], ADDR(g_dikB), 1 }, { (u32)&g_controls[1], ADDR(g_dikNone), 1 }, { (u32)&g_controls[3], ADDR(g_dikNone), 1 }, { (u32)&g_controls[5], ADDR(g_dikNone), 1 },
-	{ (u32)&g_controls[7], ADDR(g_dikNone), 1 }, { (u32)&g_controls[9], ADDR(g_dikNone), 1 }, { (u32)&g_controls[11], ADDR(g_dikNone), 1 }, { (u32)&g_controls[13], ADDR(g_dikNone), 1 },
-	{ (u32)&g_controls[15], ADDR(g_dikNone), 1 }, { (u32)&g_controls[17], ADDR(g_dikNone), 1 }, { (u32)&g_controls[19], ADDR(g_dikNone), 1 }, { (u32)&g_controls[21], ADDR(g_dikNone), 1 },
-	{ (u32)&g_controls[23], ADDR(g_dikNone), 1 }, { (u32)&g_controls[25], ADDR(g_dikNone), 1 }, { (u32)&g_controls[31], ADDR(g_dikNone), 1 }, { (u32)&g_controls[33], ADDR(g_dikNone), 1 },
-	{ (u32)&g_controls[35], ADDR(g_dikNone), 1 }, { (u32)&g_controls[37], ADDR(g_dikNone), 1 }, { (u32)&g_controls[27], ADDR(g_dikNone), 1 }, { (u32)&g_controls[29], ADDR(g_dikNone), 1 },
-	{ (u32)&g_controls[39], ADDR(g_dikNone), 1 }, { (u32)&g_controls[41], ADDR(g_dikNone), 1 }, { (u32)&g_controls[43], ADDR(g_dikNone), 1 }, { (u32)&g_controls[45], ADDR(g_dikNone), 1 },
-	{ (u32)&g_controls[47], ADDR(g_dikNone), 1 }, { (u32)&g_controls[49], ADDR(g_dikNone), 1 }, { ADDR(g_keyGameMenu), ADDR(g_dikEscape_2), 1 }, { ADDR(g_keyGameMenu2), ADDR(g_dikNone), 1 },
-	{ (u32)&g_controls[52], ADDR(g_dikF4), 1 }, { (u32)&g_controls[54], ADDR(g_dikF5), 1 }, { (u32)&g_controls[53], ADDR(g_dikNone), 1 }, { (u32)&g_controls[55], ADDR(g_dikNone), 1 },
-	{ (u32)&g_controls[56], ADDR(g_dikTab), 1 }, { (u32)&g_controls[57], ADDR(g_dikNone), 1 }, { (u32)&g_controls[58], ADDR(g_dikF10), 1 }, { (u32)&g_controls[59], ADDR(g_dikNone), 1 },
-	{ (u32)&g_controls[61], ADDR(g_dikNone), 1 }, { (u32)&g_controls[63], ADDR(g_dikNone), 1 }, { (u32)&g_controls[60], ADDR(g_dikV), 1 }, { (u32)&g_controls[62], ADDR(g_dikF1), 1 },
+	{ ADDR(g_keyBackward), ADDR(g_dikS), 1 }, { ADDR(g_keyStepLeft), ADDR(g_dikA), 1 }, { ADDR(g_keyStepRight), ADDR(g_dikD), 1 }, { ADDR_AT(g_controls, 8), ADDR(g_dikLeft), 1 },
+	{ ADDR_AT(g_controls, 10), ADDR(g_dikRight), 1 }, { ADDR_AT(g_controls, 12), ADDR(g_dikMouse2), 1 }, { ADDR_AT(g_controls, 14), ADDR(g_dikSpace), 1 }, { ADDR_AT(g_controls, 16), ADDR(g_dikR), 1 },
+	{ ADDR_AT(g_controls, 18), ADDR(g_dikF), 1 }, { ADDR_AT(g_controls, 20), ADDR(g_dikMouse1), 1 }, { ADDR_AT(g_controls, 22), ADDR(g_dikQ), 1 }, { ADDR_AT(g_controls, 24), ADDR(g_dikE), 1 },
+	{ ADDR_AT(g_controls, 30), ADDR(g_dik1), 1 }, { ADDR_AT(g_controls, 32), ADDR(g_dik2), 1 }, { ADDR_AT(g_controls, 34), ADDR(g_dik3), 1 }, { ADDR_AT(g_controls, 36), ADDR(g_dik4), 1 },
+	{ ADDR_AT(g_controls, 26), ADDR(g_dik5), 1 }, { ADDR_AT(g_controls, 28), ADDR(g_dik6), 1 }, { ADDR_AT(g_controls, 38), ADDR(g_dikLShift), 1 }, { ADDR_AT(g_controls, 40), ADDR(g_dikRCtrl), 1 },
+	{ ADDR(g_keyChat), ADDR(g_dikEnter), 1 }, { ADDR_AT(g_controls, 44), ADDR(g_dikC), 1 }, { ADDR(g_keyForward), ADDR(g_dikW), 1 }, { ADDR_AT(g_controls, 46), ADDR(g_dikX), 1 },
+	{ ADDR_AT(g_controls, 48), ADDR(g_dikB), 1 }, { ADDR_AT(g_controls, 1), ADDR(g_dikNone), 1 }, { ADDR_AT(g_controls, 3), ADDR(g_dikNone), 1 }, { ADDR_AT(g_controls, 5), ADDR(g_dikNone), 1 },
+	{ ADDR_AT(g_controls, 7), ADDR(g_dikNone), 1 }, { ADDR_AT(g_controls, 9), ADDR(g_dikNone), 1 }, { ADDR_AT(g_controls, 11), ADDR(g_dikNone), 1 }, { ADDR_AT(g_controls, 13), ADDR(g_dikNone), 1 },
+	{ ADDR_AT(g_controls, 15), ADDR(g_dikNone), 1 }, { ADDR_AT(g_controls, 17), ADDR(g_dikNone), 1 }, { ADDR_AT(g_controls, 19), ADDR(g_dikNone), 1 }, { ADDR_AT(g_controls, 21), ADDR(g_dikNone), 1 },
+	{ ADDR_AT(g_controls, 23), ADDR(g_dikNone), 1 }, { ADDR_AT(g_controls, 25), ADDR(g_dikNone), 1 }, { ADDR_AT(g_controls, 31), ADDR(g_dikNone), 1 }, { ADDR_AT(g_controls, 33), ADDR(g_dikNone), 1 },
+	{ ADDR_AT(g_controls, 35), ADDR(g_dikNone), 1 }, { ADDR_AT(g_controls, 37), ADDR(g_dikNone), 1 }, { ADDR_AT(g_controls, 27), ADDR(g_dikNone), 1 }, { ADDR_AT(g_controls, 29), ADDR(g_dikNone), 1 },
+	{ ADDR_AT(g_controls, 39), ADDR(g_dikNone), 1 }, { ADDR_AT(g_controls, 41), ADDR(g_dikNone), 1 }, { ADDR_AT(g_controls, 43), ADDR(g_dikNone), 1 }, { ADDR_AT(g_controls, 45), ADDR(g_dikNone), 1 },
+	{ ADDR_AT(g_controls, 47), ADDR(g_dikNone), 1 }, { ADDR_AT(g_controls, 49), ADDR(g_dikNone), 1 }, { ADDR(g_keyGameMenu), ADDR(g_dikEscape_2), 1 }, { ADDR(g_keyGameMenu2), ADDR(g_dikNone), 1 },
+	{ ADDR_AT(g_controls, 52), ADDR(g_dikF4), 1 }, { ADDR_AT(g_controls, 54), ADDR(g_dikF5), 1 }, { ADDR_AT(g_controls, 53), ADDR(g_dikNone), 1 }, { ADDR_AT(g_controls, 55), ADDR(g_dikNone), 1 },
+	{ ADDR_AT(g_controls, 56), ADDR(g_dikTab), 1 }, { ADDR_AT(g_controls, 57), ADDR(g_dikNone), 1 }, { ADDR_AT(g_controls, 58), ADDR(g_dikF10), 1 }, { ADDR_AT(g_controls, 59), ADDR(g_dikNone), 1 },
+	{ ADDR_AT(g_controls, 61), ADDR(g_dikNone), 1 }, { ADDR_AT(g_controls, 63), ADDR(g_dikNone), 1 }, { ADDR_AT(g_controls, 60), ADDR(g_dikV), 1 }, { ADDR_AT(g_controls, 62), ADDR(g_dikF1), 1 },
 	{ ADDR(g_mouseInvert), 0x0, 0 }, { ADDR(g_mouseSmooth), 0x0, 0 }, { ADDR(g_mouseSensitivity), 0x32, 0 }, { ADDR(g_crosshairSetting), 0x0, 0 } };
 
 void (input_setDefaultBindings)(void) { apply_cstores(k_defaultBindings, 68); }   /* the default key bindings (g_controls) */
 
 static const CStore k_defaultBindingsEdit[68] = {
-	{ (u32)&g_controlsEdit[2], ADDR(g_dikS), 1 }, { (u32)&g_controlsEdit[4], ADDR(g_dikA), 1 }, { (u32)&g_controlsEdit[6], ADDR(g_dikD), 1 }, { (u32)&g_controlsEdit[8], ADDR(g_dikLeft), 1 },
-	{ (u32)&g_controlsEdit[10], ADDR(g_dikRight), 1 }, { (u32)&g_controlsEdit[12], ADDR(g_dikMouse2), 1 }, { (u32)&g_controlsEdit[14], ADDR(g_dikSpace), 1 }, { (u32)&g_controlsEdit[16], ADDR(g_dikR), 1 },
-	{ (u32)&g_controlsEdit[18], ADDR(g_dikF), 1 }, { (u32)&g_controlsEdit[20], ADDR(g_dikMouse1), 1 }, { (u32)&g_controlsEdit[22], ADDR(g_dikQ), 1 }, { (u32)&g_controlsEdit[24], ADDR(g_dikE), 1 },
-	{ (u32)&g_controlsEdit[30], ADDR(g_dik1), 1 }, { (u32)&g_controlsEdit[32], ADDR(g_dik2), 1 }, { (u32)&g_controlsEdit[34], ADDR(g_dik3), 1 }, { (u32)&g_controlsEdit[36], ADDR(g_dik4), 1 },
-	{ (u32)&g_controlsEdit[26], ADDR(g_dik5), 1 }, { (u32)&g_controlsEdit[28], ADDR(g_dik6), 1 }, { (u32)&g_controlsEdit[38], ADDR(g_dikLShift), 1 }, { (u32)&g_controlsEdit[40], ADDR(g_dikLCtrl), 1 },
-	{ (u32)&g_controlsEdit[42], ADDR(g_dikEnter), 1 }, { (u32)&g_controlsEdit[44], ADDR(g_dikC), 1 }, { OBJ(g_controlsEdit), ADDR(g_dikW), 1 }, { (u32)&g_controlsEdit[46], ADDR(g_dikX), 1 },
-	{ (u32)&g_controlsEdit[48], ADDR(g_dikB), 1 }, { (u32)&g_controlsEdit[1], ADDR(g_dikNone), 1 }, { (u32)&g_controlsEdit[3], ADDR(g_dikNone), 1 }, { (u32)&g_controlsEdit[5], ADDR(g_dikNone), 1 },
-	{ (u32)&g_controlsEdit[7], ADDR(g_dikNone), 1 }, { (u32)&g_controlsEdit[9], ADDR(g_dikNone), 1 }, { (u32)&g_controlsEdit[11], ADDR(g_dikNone), 1 }, { (u32)&g_controlsEdit[13], ADDR(g_dikNone), 1 },
-	{ (u32)&g_controlsEdit[15], ADDR(g_dikNone), 1 }, { (u32)&g_controlsEdit[17], ADDR(g_dikNone), 1 }, { (u32)&g_controlsEdit[19], ADDR(g_dikNone), 1 }, { (u32)&g_controlsEdit[21], ADDR(g_dikNone), 1 },
-	{ (u32)&g_controlsEdit[23], ADDR(g_dikNone), 1 }, { (u32)&g_controlsEdit[25], ADDR(g_dikNone), 1 }, { (u32)&g_controlsEdit[31], ADDR(g_dikNone), 1 }, { (u32)&g_controlsEdit[33], ADDR(g_dikNone), 1 },
-	{ (u32)&g_controlsEdit[35], ADDR(g_dikNone), 1 }, { (u32)&g_controlsEdit[37], ADDR(g_dikNone), 1 }, { (u32)&g_controlsEdit[27], ADDR(g_dikNone), 1 }, { (u32)&g_controlsEdit[29], ADDR(g_dikNone), 1 },
-	{ (u32)&g_controlsEdit[39], ADDR(g_dikNone), 1 }, { (u32)&g_controlsEdit[41], ADDR(g_dikNone), 1 }, { (u32)&g_controlsEdit[43], ADDR(g_dikNone), 1 }, { (u32)&g_controlsEdit[45], ADDR(g_dikNone), 1 },
-	{ (u32)&g_controlsEdit[47], ADDR(g_dikNone), 1 }, { (u32)&g_controlsEdit[49], ADDR(g_dikNone), 1 }, { (u32)&g_controlsEdit[50], ADDR(g_dikEscape_2), 1 }, { (u32)&g_controlsEdit[51], ADDR(g_dikNone), 1 },
-	{ (u32)&g_controlsEdit[52], ADDR(g_dikF4), 1 }, { (u32)&g_controlsEdit[54], ADDR(g_dikF5), 1 }, { (u32)&g_controlsEdit[53], ADDR(g_dikNone), 1 }, { (u32)&g_controlsEdit[55], ADDR(g_dikNone), 1 },
-	{ (u32)&g_controlsEdit[56], ADDR(g_dikTab), 1 }, { (u32)&g_controlsEdit[57], ADDR(g_dikNone), 1 }, { (u32)&g_controlsEdit[58], ADDR(g_dikF10), 1 }, { (u32)&g_controlsEdit[59], ADDR(g_dikNone), 1 },
-	{ (u32)&g_controlsEdit[61], ADDR(g_dikNone), 1 }, { (u32)&g_controlsEdit[63], ADDR(g_dikNone), 1 }, { (u32)&g_controlsEdit[60], ADDR(g_dikV), 1 }, { (u32)&g_controlsEdit[62], ADDR(g_dikF1), 1 },
+	{ ADDR_AT(g_controlsEdit, 2), ADDR(g_dikS), 1 }, { ADDR_AT(g_controlsEdit, 4), ADDR(g_dikA), 1 }, { ADDR_AT(g_controlsEdit, 6), ADDR(g_dikD), 1 }, { ADDR_AT(g_controlsEdit, 8), ADDR(g_dikLeft), 1 },
+	{ ADDR_AT(g_controlsEdit, 10), ADDR(g_dikRight), 1 }, { ADDR_AT(g_controlsEdit, 12), ADDR(g_dikMouse2), 1 }, { ADDR_AT(g_controlsEdit, 14), ADDR(g_dikSpace), 1 }, { ADDR_AT(g_controlsEdit, 16), ADDR(g_dikR), 1 },
+	{ ADDR_AT(g_controlsEdit, 18), ADDR(g_dikF), 1 }, { ADDR_AT(g_controlsEdit, 20), ADDR(g_dikMouse1), 1 }, { ADDR_AT(g_controlsEdit, 22), ADDR(g_dikQ), 1 }, { ADDR_AT(g_controlsEdit, 24), ADDR(g_dikE), 1 },
+	{ ADDR_AT(g_controlsEdit, 30), ADDR(g_dik1), 1 }, { ADDR_AT(g_controlsEdit, 32), ADDR(g_dik2), 1 }, { ADDR_AT(g_controlsEdit, 34), ADDR(g_dik3), 1 }, { ADDR_AT(g_controlsEdit, 36), ADDR(g_dik4), 1 },
+	{ ADDR_AT(g_controlsEdit, 26), ADDR(g_dik5), 1 }, { ADDR_AT(g_controlsEdit, 28), ADDR(g_dik6), 1 }, { ADDR_AT(g_controlsEdit, 38), ADDR(g_dikLShift), 1 }, { ADDR_AT(g_controlsEdit, 40), ADDR(g_dikLCtrl), 1 },
+	{ ADDR_AT(g_controlsEdit, 42), ADDR(g_dikEnter), 1 }, { ADDR_AT(g_controlsEdit, 44), ADDR(g_dikC), 1 }, { OBJ(g_controlsEdit), ADDR(g_dikW), 1 }, { ADDR_AT(g_controlsEdit, 46), ADDR(g_dikX), 1 },
+	{ ADDR_AT(g_controlsEdit, 48), ADDR(g_dikB), 1 }, { ADDR_AT(g_controlsEdit, 1), ADDR(g_dikNone), 1 }, { ADDR_AT(g_controlsEdit, 3), ADDR(g_dikNone), 1 }, { ADDR_AT(g_controlsEdit, 5), ADDR(g_dikNone), 1 },
+	{ ADDR_AT(g_controlsEdit, 7), ADDR(g_dikNone), 1 }, { ADDR_AT(g_controlsEdit, 9), ADDR(g_dikNone), 1 }, { ADDR_AT(g_controlsEdit, 11), ADDR(g_dikNone), 1 }, { ADDR_AT(g_controlsEdit, 13), ADDR(g_dikNone), 1 },
+	{ ADDR_AT(g_controlsEdit, 15), ADDR(g_dikNone), 1 }, { ADDR_AT(g_controlsEdit, 17), ADDR(g_dikNone), 1 }, { ADDR_AT(g_controlsEdit, 19), ADDR(g_dikNone), 1 }, { ADDR_AT(g_controlsEdit, 21), ADDR(g_dikNone), 1 },
+	{ ADDR_AT(g_controlsEdit, 23), ADDR(g_dikNone), 1 }, { ADDR_AT(g_controlsEdit, 25), ADDR(g_dikNone), 1 }, { ADDR_AT(g_controlsEdit, 31), ADDR(g_dikNone), 1 }, { ADDR_AT(g_controlsEdit, 33), ADDR(g_dikNone), 1 },
+	{ ADDR_AT(g_controlsEdit, 35), ADDR(g_dikNone), 1 }, { ADDR_AT(g_controlsEdit, 37), ADDR(g_dikNone), 1 }, { ADDR_AT(g_controlsEdit, 27), ADDR(g_dikNone), 1 }, { ADDR_AT(g_controlsEdit, 29), ADDR(g_dikNone), 1 },
+	{ ADDR_AT(g_controlsEdit, 39), ADDR(g_dikNone), 1 }, { ADDR_AT(g_controlsEdit, 41), ADDR(g_dikNone), 1 }, { ADDR_AT(g_controlsEdit, 43), ADDR(g_dikNone), 1 }, { ADDR_AT(g_controlsEdit, 45), ADDR(g_dikNone), 1 },
+	{ ADDR_AT(g_controlsEdit, 47), ADDR(g_dikNone), 1 }, { ADDR_AT(g_controlsEdit, 49), ADDR(g_dikNone), 1 }, { ADDR_AT(g_controlsEdit, 50), ADDR(g_dikEscape_2), 1 }, { ADDR_AT(g_controlsEdit, 51), ADDR(g_dikNone), 1 },
+	{ ADDR_AT(g_controlsEdit, 52), ADDR(g_dikF4), 1 }, { ADDR_AT(g_controlsEdit, 54), ADDR(g_dikF5), 1 }, { ADDR_AT(g_controlsEdit, 53), ADDR(g_dikNone), 1 }, { ADDR_AT(g_controlsEdit, 55), ADDR(g_dikNone), 1 },
+	{ ADDR_AT(g_controlsEdit, 56), ADDR(g_dikTab), 1 }, { ADDR_AT(g_controlsEdit, 57), ADDR(g_dikNone), 1 }, { ADDR_AT(g_controlsEdit, 58), ADDR(g_dikF10), 1 }, { ADDR_AT(g_controlsEdit, 59), ADDR(g_dikNone), 1 },
+	{ ADDR_AT(g_controlsEdit, 61), ADDR(g_dikNone), 1 }, { ADDR_AT(g_controlsEdit, 63), ADDR(g_dikNone), 1 }, { ADDR_AT(g_controlsEdit, 60), ADDR(g_dikV), 1 }, { ADDR_AT(g_controlsEdit, 62), ADDR(g_dikF1), 1 },
 	{ OBJ(g_mouseSwitchesEdit), 0x0, 0 }, { (OBJ(g_mouseSwitchesEdit) + 0x4), 0x0, 0 }, { ADDR(g_sensitivitySlider), 0x32, 0 }, { ADDR(g_crosshairEdit), 0x0, 0 } };
 
 void (setup_defaultBindings)(void) { apply_cstores(k_defaultBindingsEdit, 68); }   /* the setup page's DEFAULT: the defaults into its edit copy (g_controlsEdit) */

@@ -4,7 +4,7 @@
 #include "../game.h"
 #include <string.h>
 
-#define fatal4(format, a, b) sys_fatalErrorN((char *)OBJ(g_logStage), (const char *)RELOC(format), a, b)
+#define fatal4(format, a, b) sys_fatalErrorN(AP(char, OBJ(g_logStage)), AP(const char, RELOC(format)), a, b)
 
 /* 0x48b4a0 (thiscall on the scene): the way points: their count (wayPointCount) and 0x14-byte records (wayPoints), each
    given its run of 0x30-byte actor commands (commands: from commands; commandCount: its length); the commands' total against commandCount.
@@ -18,7 +18,7 @@ void THISCALL (map_loadWayPointInfoFrom)(u8 *scene, void *f)
 	int total = 0;
 	for (int i = 0; i < *count; i++) {
 		WayPoint *r = &st->wayPoints[i];
-		r->commands = st->commands[total];
+		r->commands = AREF(st->commands[total]);
 		total += r->commandCount;
 	}
 	if (total != st->commandCount)
@@ -38,7 +38,7 @@ void THISCALL (map_loadTriggerInfoFrom)(u8 *scene, void *f)
 	for (int i = 0; i < *count; i++) {
 		Trigger *r = &st->triggers[i];
 		long double radius = r->radiusSq;
-		r->wayPoints = (u8 *)&st->wayPoints[total];
+		r->wayPoints = AREF((u8 *)&st->wayPoints[total]);
 		total += r->wayPointCount;
 		r->radiusSq = (float)(radius * radius * k_10000f);
 	}
@@ -52,20 +52,20 @@ void THISCALL (map_loadTriggerInfoFrom)(u8 *scene, void *f)
 int THISCALL (catalogue_loadItemInfoFrom)(u8 *scene, const char *path)
 {
 	Stage *st = (Stage *)scene;
-	void *f = crt_fopen(path, (const char *)STR(0x4ad170, "rb"));
+	void *f = crt_fopen(path, AP(const char, STR(0x4ad170, "rb")));
 	if (!f)
-		sys_fatalErrorN((char *)OBJ(g_logStage), (const char *)STR(0x4c7bd4, "can not read file %s - loadItemInfoFr..."), path);
+		sys_fatalErrorN(AP(char, OBJ(g_logStage)), AP(const char, STR(0x4c7bd4, "can not read file %s - loadItemInfoFr...")), path);
 	u32 version;
 	crt_fread(&version, 4, 1, f);
 	if (version != 0x1201)
-		sys_fatalErrorN((char *)OBJ(g_logStage), (const char *)STR(0x4c7b94, "incorrect file version, remove the fi..."), path);
+		sys_fatalErrorN(AP(char, OBJ(g_logStage)), AP(const char, STR(0x4c7b94, "incorrect file version, remove the fi...")), path);
 	int *count = &st->itemTypeCount;
 	fread_scrambled(count, 4, 1, f);
 	fread_scrambled(st->itemTypes, 0x90, *count, f);
 	fclose(f);
 	for (int i = 0; i < *count; i++) {
 		ItemType *item = &st->itemTypes[i];
-		item->model = (Shape *)(((u8 *)item)[0] ? shape_getByName((u8 *)&st->itemShapes, item->shapeName, 1) : 0);
+		item->model = AREF(AP(Shape, (((u8 *)item)[0] ? shape_getByName((u8 *)&st->itemShapes, item->shapeName, 1) : 0)));
 	}
 	return 1;
 }
@@ -77,25 +77,25 @@ int THISCALL (catalogue_loadItemInfoFrom)(u8 *scene, const char *path)
 void THISCALL (map_loadMissionInfoFrom)(u8 *scene, const char *name)
 {
 	char path[0x100];
-	sprintf(path, (const char *)STR(0x4c77f0, "%s/%s"), ((Stage *)scene)->mapDir, name);
-	void *f = crt_fopen(path, (const char *)STR(0x4ad170, "rb"));
+	sprintf(path, AP(const char, STR(0x4c77f0, "%s/%s")), ((Stage *)scene)->mapDir, name);
+	void *f = crt_fopen(path, AP(const char, STR(0x4ad170, "rb")));
 	if (!f)
-		sys_fatalError((char *)OBJ(g_logStage), (const char *)STR(0x4c7dec, "can not open file %s - loadMissionInf..."), (int)path);
-	log_message((int)scene, 0, 0, (const char *)STR(0x4c77b4, "check version"));
+		sys_fatalError(AP(char, OBJ(g_logStage)), AP(const char, STR(0x4c7dec, "can not open file %s - loadMissionInf...")), (int)AV(path));
+	log_message((int)AV(scene), 0, 0, AP(const char, STR(0x4c77b4, "check version")));
 	u32 version, skip;
 	crt_fread(&version, 4, 1, f);
 	if (version != 0x1201)
-		sys_fatalError((char *)OBJ(g_logStage), (const char *)STR(0x4c7768, "incorrect file version, please remake..."), (int)name);
+		sys_fatalError(AP(char, OBJ(g_logStage)), AP(const char, STR(0x4c7768, "incorrect file version, please remake...")), (int)AV(name));
 	for (int k = 0; k < 2; k++) {
 		fread_scrambled(&skip, 4, 1, f);
 		crt_fseek(f, skip, 1);   /* SEEK_CUR */
 	}
 	fread_scrambled(&skip, 4, 1, f);
-	log_message((int)scene, 0, 0, (const char *)STR(0x4c7ddc, "load command"));
+	log_message((int)AV(scene), 0, 0, AP(const char, STR(0x4c7ddc, "load command")));
 	map_readCommands(scene, f);
-	log_message((int)scene, 0, 0, (const char *)STR(0x4c7dcc, "load way point"));
+	log_message((int)AV(scene), 0, 0, AP(const char, STR(0x4c7dcc, "load way point")));
 	map_loadWayPointInfoFrom(scene, f);
-	log_message((int)scene, 0, 0, (const char *)STR(0x4c7dbc, "load trigger"));
+	log_message((int)AV(scene), 0, 0, AP(const char, STR(0x4c7dbc, "load trigger")));
 	map_loadTriggerInfoFrom(scene, f);
 	fclose(f);
 }
@@ -119,10 +119,10 @@ void THISCALL (map_loadObjectInfoFrom)(u8 *scene, const char *name, int mode)
 	st->shadingCached = 0;
 	if (mode == 0) {
 		path_stripExtension(name, base);
-		sprintf(path, (const char *)STR(0x4c7e90, "%s/Temp-%s-objectShadingInfo.dat"), st->mapDir, base);
-		void *f = crt_fopen(path, (const char *)STR(0x4ad170, "rb"));
+		sprintf(path, AP(const char, STR(0x4c7e90, "%s/Temp-%s-objectShadingInfo.dat")), st->mapDir, base);
+		void *f = crt_fopen(path, AP(const char, STR(0x4ad170, "rb")));
 		if (f) {
-			log_message((int)scene, 0, 0, (const char *)STR(0x4c7e74, "load object shading data"));
+			log_message((int)AV(scene), 0, 0, AP(const char, STR(0x4c7e74, "load object shading data")));
 			fread_scrambled(&st->objectColourCount, 4, 1, f);
 			fread_scrambled(st->objectColours, 4, ((u32)st->objectColourCount), f);
 			fclose(f);
@@ -130,20 +130,20 @@ void THISCALL (map_loadObjectInfoFrom)(u8 *scene, const char *name, int mode)
 			st->shadingCached = 1;
 		}
 	}
-	sprintf(path, (const char *)STR(0x4c77f0, "%s/%s"), st->mapDir, name);
-	void *f = crt_fopen(path, (const char *)STR(0x4ad170, "rb"));
+	sprintf(path, AP(const char, STR(0x4c77f0, "%s/%s")), st->mapDir, name);
+	void *f = crt_fopen(path, AP(const char, STR(0x4ad170, "rb")));
 	if (!f)
-		sys_fatalError((char *)OBJ(g_logStage), (const char *)STR(0x4c7e48, "can not open file %s-loadObjectInfoFr..."), (int)path);
-	log_message((int)scene, 0, 0, (const char *)STR(0x4c77b4, "check version"));
+		sys_fatalError(AP(char, OBJ(g_logStage)), AP(const char, STR(0x4c7e48, "can not open file %s-loadObjectInfoFr...")), (int)AV(path));
+	log_message((int)AV(scene), 0, 0, AP(const char, STR(0x4c77b4, "check version")));
 	int version, value, count;
 	crt_fread(&version, 4, 1, f);
 	if (version != 0x1201)
-		sys_fatalError((char *)OBJ(g_logStage), (const char *)STR(0x4c7768, "incorrect file version, please remake..."), (int)name);
+		sys_fatalError(AP(char, OBJ(g_logStage)), AP(const char, STR(0x4c7768, "incorrect file version, please remake...")), (int)AV(name));
 	fread_scrambled(&value, 4, 1, f);
 	fread_scrambled(&count, 4, 1, f);
 	for (int i = 0; i < count; i++) {
 		if (i % 2 == 0)
-			log_message((int)scene, 0, i, (const char *)STR(0x4c7e38, "load object %d"), i);
+			log_message((int)AV(scene), 0, i, AP(const char, STR(0x4c7e38, "load object %d")), i);
 		unsigned k = (unsigned)i % 56;
 		if (k == 0)
 			fread_scrambled(objects, 0xb0, 56, f);
@@ -152,11 +152,11 @@ void THISCALL (map_loadObjectInfoFrom)(u8 *scene, const char *name, int mode)
 	}
 	fclose(f);
 	path_stripExtension(name, base);
-	sprintf(path, (const char *)STR(0x4c7e90, "%s/Temp-%s-objectShadingInfo.dat"), st->mapDir, base);
+	sprintf(path, AP(const char, STR(0x4c7e90, "%s/Temp-%s-objectShadingInfo.dat")), st->mapDir, base);
 	if (mode == 1 && st->shadingCached == 0) {
-		f = crt_fopen(path, (const char *)STR(0x4b2ab0, "wb"));
+		f = crt_fopen(path, AP(const char, STR(0x4b2ab0, "wb")));
 		if (f) {
-			log_message((int)scene, 0, 0, (const char *)STR(0x4c7e1c, "save object shading data"));
+			log_message((int)AV(scene), 0, 0, AP(const char, STR(0x4c7e1c, "save object shading data")));
 			file_writeScrambled(&st->objectColourCount, 4, 1, f);
 			file_writeScrambled(st->objectColours, 4, ((u32)st->objectColourCount), f);
 			fclose(f);
@@ -198,27 +198,27 @@ static void remap_item(u8 *scene, int *kind)
 void THISCALL (map_loadPlayInfoFrom)(u8 *scene, const char *name)
 {
 	Stage *st = (Stage *)scene;
-	const float *scale = (const float *)ADDR(k_10f);
-	memcpy(st->startPos, (const void *)ADDR(g_vecOrigin), 12);
+	const float *scale = AP(const float, ADDR(k_10f));
+	memcpy(st->startPos, AP(const void, ADDR(g_vecOrigin)), 12);
 	(*(int *)&st->startAngle[0]) = 0;
 	(*(int *)&st->startAngle[1]) = 0;
 	st->startCount = 0;
 	st->itemCount = 0;
 	st->lastPickup = -1;
 	char path[0x100];
-	sprintf(path, (const char *)STR(0x4c77f0, "%s/%s"), st->mapDir, name);
-	void *f = crt_fopen(path, (const char *)STR(0x4ad170, "rb"));
+	sprintf(path, AP(const char, STR(0x4c77f0, "%s/%s")), st->mapDir, name);
+	void *f = crt_fopen(path, AP(const char, STR(0x4ad170, "rb")));
 	if (!f)
-		sys_fatalError((char *)OBJ(g_logStage), (const char *)STR(0x4c7c8c, "can not open file %s - loadPlayInfoFr..."), (int)path);
-	log_message((int)scene, 0, 0, (const char *)STR(0x4c77b4, "check version"));
+		sys_fatalError(AP(char, OBJ(g_logStage)), AP(const char, STR(0x4c7c8c, "can not open file %s - loadPlayInfoFr...")), (int)AV(path));
+	log_message((int)AV(scene), 0, 0, AP(const char, STR(0x4c77b4, "check version")));
 	int version, value, count;
 	crt_fread(&version, 4, 1, f);
 	if (version != 0x1201)
-		sys_fatalError((char *)OBJ(g_logStage), (const char *)STR(0x4c7768, "incorrect file version, please remake..."), (int)name);
+		sys_fatalError(AP(char, OBJ(g_logStage)), AP(const char, STR(0x4c7768, "incorrect file version, please remake...")), (int)AV(name));
 	fread_scrambled(&value, 4, 1, f);
 	crt_fseek(f, value, 1);   /* SEEK_CUR */
 	fread_scrambled(&value, 4, 1, f);
-	log_message((int)scene, 0, 0, (const char *)STR(0x4c7c7c, "load play info"));
+	log_message((int)AV(scene), 0, 0, AP(const char, STR(0x4c7c7c, "load play info")));
 	fread_scrambled(&count, 4, 1, f);
 	u32 records[0x71c][9];
 	for (int i = 0; i < count; i++) {
@@ -226,14 +226,14 @@ void THISCALL (map_loadPlayInfoFrom)(u8 *scene, const char *name)
 		if (k == 0)
 			fread_scrambled(records, 0x24, 0x71c, f);
 		u32 *r = records[k];
-		float *rf = (float *)RELOC(r);
+		float *rf = AP(float, RELOC(r));
 		if (r[0] == 0) {
 			st->startAngle[0] = f32(fmul_m(fld_m(&rf[7]), scale));
 			st->startAngle[1] = f32(fmul_m(fld_m(&rf[8]), scale));
 			memcpy(st->startPos, &r[4], 12);
 		} else if (r[0] == 1) {
 			if (st->startCount >= 32)
-				sys_fatalError((char *)OBJ(g_logStage), (const char *)STR(0x4c7c00, "numOfMultiPlayStartPoint overflow(lim..."), 0x20);
+				sys_fatalError(AP(char, OBJ(g_logStage)), AP(const char, STR(0x4c7c00, "numOfMultiPlayStartPoint overflow(lim...")), 0x20);
 			StartPoint *start = &st->starts[st->startCount];
 			memcpy((u8 *)start, &r[4], 12);
 			start->angle[0] = f32(fmul_m(fld_m(&rf[7]), scale));
@@ -241,7 +241,7 @@ void THISCALL (map_loadPlayInfoFrom)(u8 *scene, const char *name)
 			st->startCount++;
 		} else if (r[0] == 2) {
 			if (st->itemCount >= 200)
-				sys_fatalError((char *)OBJ(g_logStage), (const char *)STR(0x4c7c44, "numOfItemPoint overflow(limit:%d) - l..."), 0x20);
+				sys_fatalError(AP(char, OBJ(g_logStage)), AP(const char, STR(0x4c7c44, "numOfItemPoint overflow(limit:%d) - l...")), 0x20);
 			u8 *item = (u8 *)&st->items[st->itemCount];
 			MapItem *mi = (MapItem *)item;
 			mi->type = r[1];
@@ -284,28 +284,28 @@ static const u32 k_schemeVal[10][2] = {
 void THISCALL (map_loadActorInfoFrom)(u8 *scene, const char *name)
 {
 	Stage *st = (Stage *)scene;
-#define setPartColor(p, part, s) CALL_THISFN(playerRecord_setPartColour, void, void *, int, int, u32, u32, u32, u32, u32, u32)(scene, p, part, \
-	k_schemeHue[s][0], k_schemeSat[s][0], k_schemeVal[s][0], k_schemeHue[s][1], k_schemeSat[s][1], k_schemeVal[s][1])
+#define setPartColor(p, part, s) CALL_THISFN(playerRecord_setPartColour, void, void *, int, int, FBT, FBT, FBT, FBT, FBT, FBT)(scene, p, part, FB(\
+	k_schemeHue[s][0]), FB(k_schemeSat[s][0]), FB(k_schemeVal[s][0]), FB(k_schemeHue[s][1]), FB(k_schemeSat[s][1]), FB(k_schemeVal[s][1]))
 	static const int fixed[5] = { 3, 5, 0x24, 0x19, 0x16 };
 	char path[0x100];
-	sprintf(path, (const char *)STR(0x4c77f0, "%s/%s"), st->mapDir, name);
-	void *f = crt_fopen(path, (const char *)STR(0x4ad170, "rb"));
+	sprintf(path, AP(const char, STR(0x4c77f0, "%s/%s")), st->mapDir, name);
+	void *f = crt_fopen(path, AP(const char, STR(0x4ad170, "rb")));
 	if (!f)
-		sys_fatalError((char *)OBJ(g_logStage), (const char *)STR(0x4c77c4, "can not open file %s - loadActorInfoF..."), (int)path);
-	log_message((int)scene, 0, 0, (const char *)STR(0x4c77b4, "check version"));
+		sys_fatalError(AP(char, OBJ(g_logStage)), AP(const char, STR(0x4c77c4, "can not open file %s - loadActorInfoF...")), (int)AV(path));
+	log_message((int)AV(scene), 0, 0, AP(const char, STR(0x4c77b4, "check version")));
 	int version, value;
 	crt_fread(&version, 4, 1, f);
 	if (version != 0x1201)
-		sys_fatalError((char *)OBJ(g_logStage), (const char *)STR(0x4c7768, "incorrect file version, please remake..."), (int)name);
+		sys_fatalError(AP(char, OBJ(g_logStage)), AP(const char, STR(0x4c7768, "incorrect file version, please remake...")), (int)AV(name));
 	for (int k = 0; k < 3; k++) {
 		fread_scrambled(&value, 4, 1, f);
 		crt_fseek(f, value, 1);   /* SEEK_CUR */
 	}
 	fread_scrambled(&value, 4, 1, f);
-	log_message((int)scene, 0, 0, (const char *)STR(0x4c774c, "load actor type info info"));
+	log_message((int)AV(scene), 0, 0, AP(const char, STR(0x4c774c, "load actor type info info")));
 	fread_scrambled(&st->mapPlayerCount, 4, 1, f);
 	fread_scrambled(st->mapPlayers, 0x58, ((u32)st->mapPlayerCount), f);
-	log_message((int)scene, 0, 0, (const char *)STR(0x4c7734, "load actor spawn info"));
+	log_message((int)AV(scene), 0, 0, AP(const char, STR(0x4c7734, "load actor spawn info")));
 	fread_scrambled(&st->mapActorCount, 4, 1, f);
 	fread_scrambled(st->mapActors, 0x5c, ((u32)st->mapActorCount), f);
 	fclose(f);
@@ -331,8 +331,8 @@ void THISCALL (map_loadActorInfoFrom)(u8 *scene, const char *name)
 	st->playerRecordCount = st->mapPlayerCount;
 	for (int i = 1; i < st->mapActorCount; i++)
 		st->mapActors[i].bot = 1;
-	sprintf(path, (const char *)STR(0x4c7724, "Stage\\%s\\Clan"), st->stageName);
-	st->clanTexture = tex_getIdByName((*(void **)&g_textures), path, 0, 0, 0, 0, 0, 0, 0);
+	sprintf(path, AP(const char, STR(0x4c7724, "Stage\\%s\\Clan")), st->stageName);
+	st->clanTexture = tex_getIdByName(AGET(void, g_textures), path, 0, 0, 0, 0, 0, 0, 0);
 	for (int p = 0; p < st->mapPlayerCount; p++) {
 		st->playerRecords[p].flagShown = 1;
 		st->playerRecords[p].flagSent = 0x180;
@@ -349,15 +349,15 @@ static u8 *pool_take(u8 *s, int n)
 	Stage *st = (Stage *)s;
 	int used = st->layerPoolUsed;
 	if (used + n > POOL_MAX)
-		sys_fatalErrorN((char *)OBJ(g_logStage), (const char *)STR(0x4c7eb4, "layer data heap overflow(%d/%d)-loadD..."), used + n, POOL_MAX);
+		sys_fatalErrorN(AP(char, OBJ(g_logStage)), AP(const char, STR(0x4c7eb4, "layer data heap overflow(%d/%d)-loadD...")), used + n, POOL_MAX);
 	return st->layerPool + st->layerPoolUsed;
 }
 
 /* texture id of "<dir>/<what>" (with an optional number) */
 static u32 ground_tex(const char *dir, u32 fmt, int n, char *name)
 {
-	sprintf(name, (const char *)RELOC(fmt), dir, n);
-	return tex_getIdByName((*(void **)&g_textures), name, 0, 0, 0, 0, 0, 0, 0);
+	sprintf(name, AP(const char, RELOC(fmt)), dir, n);
+	return tex_getIdByName(AGET(void, g_textures), name, 0, 0, 0, 0, 0, 0, 0);
 }
 
 /* the grey value of a height-map pixel (r = g = b), or -1 */
@@ -383,33 +383,33 @@ int THISCALL (map_loadGroundInfoFrom)(u8 *s, const char *name)
 	u8 image[0x30000];   /* (on the stack, as the original's: the file reads log its address) */
 	char path[0x100], dir[0x100], tex[0x100];
 	u32 n;
-	sprintf(path, (const char *)STR(0x4c77f0, "%s/%s"), st->mapDir, name);
-	void *f = crt_fopen(path, (const char *)STR(0x4ad170, "rb"));
+	sprintf(path, AP(const char, STR(0x4c77f0, "%s/%s")), st->mapDir, name);
+	void *f = crt_fopen(path, AP(const char, STR(0x4ad170, "rb")));
 	if (!f)
-		sys_fatalError((char *)OBJ(g_logStage), (const char *)STR(0x4c806c, "can not open file %s - loadGroundInfo..."), (int)path);
-	log_message((int)s, 0, 0, (const char *)STR(0x4c77b4, "check version"));
+		sys_fatalError(AP(char, OBJ(g_logStage)), AP(const char, STR(0x4c806c, "can not open file %s - loadGroundInfo...")), (int)AV(path));
+	log_message((int)AV(s), 0, 0, AP(const char, STR(0x4c77b4, "check version")));
 	crt_fread(&n, 4, 1, f);
 	if (n != 0x1201)
-		sys_fatalError((char *)OBJ(g_logStage), (const char *)STR(0x4c7768, "incorrect file version, please remake..."), (int)name);
+		sys_fatalError(AP(char, OBJ(g_logStage)), AP(const char, STR(0x4c7768, "incorrect file version, please remake...")), (int)AV(name));
 	for (int k = 0; k < 4; k++) {
 		fread_scrambled(&n, 4, 1, f);
 		crt_fseek(f, n, 1);
 	}
 	fread_scrambled(dir, 1, 0x100, f);
-	log_message((int)s, 0, 0, (const char *)STR(0x4c804c, "get default rendering distance"));
+	log_message((int)AV(s), 0, 0, AP(const char, STR(0x4c804c, "get default rendering distance")));
 	fread_scrambled(&st->cullMargin, 4, 1, f);
-	log_message((int)s, 0, 0, (const char *)STR(0x4c8040, "load light"));
+	log_message((int)AV(s), 0, 0, AP(const char, STR(0x4c8040, "load light")));
 	LightFactors_read((u8 *)&st->mapLights, f);
-	log_message((int)s, 0, 0, (const char *)STR(0x4c802c, "load clearing color"));
+	log_message((int)AV(s), 0, 0, AP(const char, STR(0x4c802c, "load clearing color")));
 	fread_scrambled(&st->clearOn, 4, 1, f);
 	fread_scrambled(st->clearColour, 0x10, 1, f);
-	log_message((int)s, 0, 0, (const char *)STR(0x4c801c, "load fog info"));
+	log_message((int)AV(s), 0, 0, AP(const char, STR(0x4c801c, "load fog info")));
 	fread_scrambled(&st->fogOn, 4, 1, f);
 	fread_scrambled(st->glFogColour, 0x10, 1, f);
 	void *fog_and_modes[] = { &st->glFogStart, &st->glFogEnd, &st->glFogDensity, &st->skyMode, &st->layerMode, &st->sideMode, &st->floorMode };
 	for (int k = 0; k < 7; k++)
 		fread_scrambled(fog_and_modes[k], 4, 1, f);
-	log_message((int)s, 0, 0, (const char *)STR(0x4c8004, "load background sphere"));
+	log_message((int)AV(s), 0, 0, AP(const char, STR(0x4c8004, "load background sphere")));
 	int mode = st->skyMode;
 	if (mode == 1 || mode == 2) {
 		if (mode == 2)
@@ -418,22 +418,22 @@ int THISCALL (map_loadGroundInfoFrom)(u8 *s, const char *name)
 		for (int k = 0; k < 5; k++)
 			st->skyTextures[k] = (i32) ground_tex(dir, sphere[k], 0, tex);
 	}
-	log_message((int)s, 0, 0, (const char *)STR(0x4c7f8c, "load background sky"));
+	log_message((int)AV(s), 0, 0, AP(const char, STR(0x4c7f8c, "load background sky")));
 	mode = st->layerMode;
 	if (mode == 1 || mode == 2) {
 		if (mode == 2)
 			(*(u32 *)&st->skyLayerTextures[1]) = ground_tex(dir, STR(0x4c7f78, "%s/SkyInnerLayer"), 0, tex);   /* SkyInnerLayer */
 		(*(u32 *)&st->skyLayerTextures[0]) = ground_tex(dir, STR(0x4c7f64, "%s/SkyOuterLayer"), 0, tex);       /* SkyOuterLayer */
 	}
-	log_message((int)s, 0, 0, (const char *)STR(0x4c7f4c, "load background side"));
+	log_message((int)AV(s), 0, 0, AP(const char, STR(0x4c7f4c, "load background side")));
 	if (st->sideMode > 0 && st->sideMode <= 2)
 		for (int k = 0; k < 6; k++)
 			st->sideTextures[k] = (i32) ground_tex(dir, STR(0x4c7f3c, "%s/SideLayer%d"), k + 1, tex);   /* SideLayer<n> */
-	log_message((int)s, 0, 0, (const char *)STR(0x4c7f24, "load background floor"));
+	log_message((int)AV(s), 0, 0, AP(const char, STR(0x4c7f24, "load background floor")));
 	if (st->floorMode > 0 && st->floorMode <= 2)
 		for (int k = 0; k < 16; k++)
 			st->floorTextures[k] = (i32) ground_tex(dir, STR(0x4c7f14, "%s/FloorAni%02d"), k + 1, tex);   /* FloorAni<nn> */
-	log_message((int)s, 0, 0, (const char *)STR(0x4c7f04, "load area limit"));
+	log_message((int)AV(s), 0, 0, AP(const char, STR(0x4c7f04, "load area limit")));
 	void *limits[7] = { st->levelLow, st->levelHigh, st->worldLow, st->worldHigh, &st->unused9ef934, &st->mapNumber, &st->musicKind };
 	static const u8 sizes[7] = { 0xc, 0xc, 0xc, 0xc, 4, 4, 4 };
 	for (int k = 0; k < 7; k++)
@@ -443,13 +443,13 @@ int THISCALL (map_loadGroundInfoFrom)(u8 *s, const char *name)
 	for (int i = 0; i < st->groundLayerCount; i++) {
 		u8 *l = (u8 *)&st->groundLayers[i];
 		GroundLayer *gl = (GroundLayer *)l;
-		log_message((int)s, 0, i, (const char *)STR(0x4c7ef4, "load layer %d"), i);
+		log_message((int)AV(s), 0, i, AP(const char, STR(0x4c7ef4, "load layer %d")), i);
 		fread_scrambled(l, 0x20c, 1, f);
 		gl->texture = ground_tex(dir, STR(0x4c7ee4, "%s/Ground%dMap"), i, tex);
 		fread_scrambled(image, 0x300, 0x100, f);
 		int rows = gl->rows, cols = gl->cols, w = cols + 1;
 		int count = w * (rows + 1);
-		u8 *heights = gl->heights = pool_take(s, count);
+		u8 *heights = AP(u8, gl->heights = AREF(pool_take(s, count)));
 		for (int r = 0; r <= gl->rows; r++)
 			for (int c = 0; c <= gl->cols; c++) {
 				int g = grey(image + r * 0x300 + c * 3);
@@ -457,7 +457,7 @@ int THISCALL (map_loadGroundInfoFrom)(u8 *s, const char *name)
 			}
 		st->layerPoolUsed += count;
 		int cells = gl->cols * gl->rows;
-		u8 *drawn = gl->drawnCells = pool_take(s, cells);
+		u8 *drawn = AP(u8, gl->drawnCells = AREF(pool_take(s, cells)));
 		for (int r = 0; r < gl->rows; r++)
 			for (int c = 0; c < gl->cols; c++) {
 				const u8 *px = image + r * 0x300 + c * 3;
@@ -465,7 +465,7 @@ int THISCALL (map_loadGroundInfoFrom)(u8 *s, const char *name)
 			}
 		st->layerPoolUsed += cells;
 		int size = (gl->cols + 1) * (gl->rows + 1) * 12;
-		float *v = gl->points = (float *)pool_take(s, size);
+		float *v = AP(float, gl->points = AREF((float *)pool_take(s, size)));
 		const float *origin = (const float *)(l + 4), *cell = &gl->cellSize, *hs = &gl->heightScale;
 		for (int r = 0; r <= gl->rows; r++)
 			for (int c = 0; c <= gl->cols; c++) {
@@ -479,20 +479,20 @@ int THISCALL (map_loadGroundInfoFrom)(u8 *s, const char *name)
 			}
 		st->layerPoolUsed += size;
 		size = (gl->cols + 1) * (gl->rows + 1) * 12;
-		u8 *normals = (u8 *)(gl->normals = (float *)pool_take(s, size));
+		u8 *normals = AP(u8, (gl->normals = AREF((float *)pool_take(s, size))));
 		w = gl->cols + 1;
 		for (int r = 0; r <= gl->rows; r++) {
-			memcpy(normals + (w * r) * 12, (const void *)OBJ(g_vecUnitY), 12);
-			memcpy(normals + (w * r + gl->cols) * 12, (const void *)OBJ(g_vecUnitY), 12);
+			memcpy(normals + (w * r) * 12, AP(const void, OBJ(g_vecUnitY)), 12);
+			memcpy(normals + (w * r + gl->cols) * 12, AP(const void, OBJ(g_vecUnitY)), 12);
 		}
 		for (int c = 1; c < gl->cols; c++) {
-			memcpy(normals + c * 12, (const void *)OBJ(g_vecUnitY), 12);
-			memcpy(normals + ((gl->cols + 1) * gl->rows + c) * 12, (const void *)OBJ(g_vecUnitY), 12);
+			memcpy(normals + c * 12, AP(const void, OBJ(g_vecUnitY)), 12);
+			memcpy(normals + ((gl->cols + 1) * gl->rows + c) * 12, AP(const void, OBJ(g_vecUnitY)), 12);
 		}
 		for (int r = 1; r < gl->rows; r++)
 			for (int c = 1; c < gl->cols; c++) {
 				w = gl->cols + 1;
-				const float *vs = ((const float *)(gl)->points);
+				const float *vs = (AP(const float, (gl)->points));
 				const float *p = vs + (w * r + c) * 3, *up = vs + (w * (r - 1) + c) * 3, *down = vs + (w * (r + 1) + c) * 3;
 				const float *right = p + 3, *left = p - 3;
 				float t[3], n1[3], n2[3], n3[3], n4[3];
@@ -500,7 +500,7 @@ int THISCALL (map_loadGroundInfoFrom)(u8 *s, const char *name)
 				memcpy(n2, math_triangleNormal(t, up, p, right), 12);
 				memcpy(n3, math_triangleNormal(t, right, p, down), 12);
 				memcpy(n4, math_triangleNormal(t, down, p, left), 12);
-				float *out = (float *)(((u8 *)(gl)->normals) + (w * r + c) * 12);
+				float *out = (float *)((AP(u8, (gl)->normals)) + (w * r + c) * 12);
 				for (int k = 0; k < 3; k++)
 					out[k] = f32(fadd_m(fadd_m(FADD(n4[k], n3[k]), &n2[k]), &n1[k]));
 				if (GAME_VAR(int, l) == 1)
@@ -509,15 +509,15 @@ int THISCALL (map_loadGroundInfoFrom)(u8 *s, const char *name)
 			}
 		st->layerPoolUsed += size;
 		size = (gl->cols + 1) * (gl->rows + 1) * 4;
-		gl->colours = (u32 *)pool_take(s, size);
+		gl->colours = AREF((u32 *)pool_take(s, size));
 		ground_computeLighting(s, l);
 		st->layerPoolUsed += size;
 		size = (gl->cols + 1) * (gl->rows + 1) * 8;
-		float *uv = gl->uv = (float *)pool_take(s, size);
+		float *uv = AP(float, gl->uv = AREF((float *)pool_take(s, size)));
 		for (int r = 0; r <= gl->rows; r++)
 			for (int c = 0; c <= gl->cols; c++) {
 				int at = (gl->cols + 1) * r + c;
-				const float *p = ((const float *)(gl)->points) + at * 3;
+				const float *p = (AP(const float, (gl)->points)) + at * 3;
 				long double tz = FDIV(p[2], gl->texScale);
 				uv[at * 2] = f32(FDIV(p[0], gl->texScale));
 				uv[at * 2 + 1] = f32(tz);
@@ -526,12 +526,12 @@ int THISCALL (map_loadGroundInfoFrom)(u8 *s, const char *name)
 		int indices = (gl->cols + 200) * gl->rows * 2;
 		u8 *heap = pool_take(s, indices * 4);
 		gl->indexCapacity = indices;
-		gl->indices = (u32 *)heap;
+		gl->indices = AREF((u32 *)heap);
 		st->layerPoolUsed += indices * 4;
 		int prims = gl->rows * 200 + 4;
 		heap = pool_take(s, prims * 12);
 		gl->stripCapacity = prims;
-		gl->strips = heap;
+		gl->strips = AREF(heap);
 		st->layerPoolUsed += prims * 12;
 	}
 	ground_buildLayerModels(s);

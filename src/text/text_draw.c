@@ -28,7 +28,7 @@ static void text_begin(int charWidth)
 /* a font texture by its id: manager id / 512 of the texture set, slot id % 512 */
 static void text_bindFont(int id)
 {
-	tex_bind(g_textures->banks[id / 512], id % 512);
+	tex_bind(AP(void, AP(TextureManager, g_textures)->banks[id / 512]), id % 512);
 }
 /* the room a string takes, in characters: its length less five for each colour code */
 static int text_visibleLength(const char *text)

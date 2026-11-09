@@ -84,9 +84,13 @@ void crt_fixArgs(const char *format, const u32 *args, u32 *out, int room)
 /* 0x49ed2e: vsprintf as VC6's */
 int (crt_vsprintf)(char *out, const char *format, va_list args)
 {
+#ifdef AXIS_64   /* (the 64-bit build: the arguments are this system's; crt64.c's runtime formats them as VC6's) */
+	return g_crtLib->vsprintf_(out, format, args);
+#else
 	u32 copy[64];
 	crt_fixArgs(format, (const u32 *)args, copy, 64);
 	return g_crtLib->vsprintf_(out, format, (va_list)copy);
+#endif
 }
 
 /* 0x49e9dd: sprintf as VC6's */

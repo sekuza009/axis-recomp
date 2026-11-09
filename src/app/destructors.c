@@ -39,10 +39,10 @@ void *THISCALL (Stage_deletingDtor)(Stage *stage, int flags)
 
 /* 0x401290 (crt_vectorConstructorIterator): the compiler's array constructor: construct (thiscall) on count objects of size bytes
    from first (stdcall) */
-void STDCALL (crt_vectorConstructorIterator)(u8 *first, int size, int count, void (THISCALL *construct)(void *))
+void STDCALL (crt_vectorConstructorIterator)(u8 *first, int size, int count, u32 construct)
 {
 	for (int i = 0; i < count; i++, first += size)
-		construct(first);
+		FNP(void (THISCALL *)(void *), construct)(first);
 }
 
 /* 0x460c40: the game's class Console's destructor (the Console is our Scene, the game object): its vtable back (0x4aa238), then its members

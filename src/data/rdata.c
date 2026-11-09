@@ -6,6 +6,11 @@
 #include "data.h"
 #include "layout.h"
 
+#ifdef AXIS_64   /* (the 64-bit build: these are the initial values, copied to 0x4a9000 in g_arena at start-up) */
+#undef g_rdata
+#define g_rdata g_rdataInit
+static
+#endif
 struct GameRdata g_rdata __attribute__((aligned(4096))) = {
 	.d_4a9000 = {
 		0x000abdfe,   /* import RegSetValueExA */
@@ -2215,4 +2220,8 @@ struct GameRdata g_rdata __attribute__((aligned(4096))) = {
 	.d_4ac92c = "DESKTOP",
 };
 
+#ifdef AXIS_64
+const DataPiece g_rdataPieces[] = { { 0x4a9000, &g_rdataInit, sizeof g_rdataInit }, { 0, 0, 0 } };
+#else
 const DataPiece g_rdataPieces[] = { { 0, 0, 0 } };   /* (nothing to copy: g_rdata is in place) */
+#endif

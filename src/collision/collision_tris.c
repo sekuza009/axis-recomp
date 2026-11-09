@@ -7,7 +7,7 @@
 #include "../game.h"
 #include <string.h>
 
-#define FIELD(type, obj, offset) GAME_VAR(type, (u8 *)RELOC(obj) + (offset))
+#define FIELD(type, obj, offset) GAME_VAR(type, AP(u8, RELOC(obj)) + (offset))
 
 typedef long double X;
 
@@ -64,7 +64,7 @@ int THISCALL (collisionTri_setup)(u8 *self, int flags, const float *v0, const fl
 		copy_through_fpu(plane + 2, &p[2]);
 		plane[3] = (float)pd;
 	}
-	tp->unit = (struct SpaceUnit *)(uintptr_t)(u32)unit;
+	tp->unit = AREF((struct SpaceUnit *)(uintptr_t)(u32)unit);
 	tp->part = part;
 	tp->cornerIndices[0] = corner0;
 	tp->cornerIndices[1] = corner1;
@@ -257,7 +257,7 @@ int THISCALL (collision_moveSphere)(u8 *stage, float r, const float *pos, const 
 		const MapObject *obj = &st->objects[i];
 		if (obj->active != 1 || obj->animated != 1)
 			continue;
-		u32 tris = (u32)((const SpaceUnit *)obj->unit)->lastNode;
+		u32 tris = (u32)(AP(const SpaceUnit, obj->unit))->lastNode;
 		if (!tris)
 			continue;
 		const float *m = obj->matrixInverse;
@@ -265,7 +265,7 @@ int THISCALL (collision_moveSphere)(u8 *stage, float r, const float *pos, const 
 		at[0] = f32(fadd_m(mul(fld_m(&m[8]), &pos[2]) + mul(fld_m(&m[4]), &pos[1]) + mul(fld_m(&m[0]), &pos[0]), &m[12]));
 		at[1] = f32(fadd_m(mul(fld_m(&m[1]), &pos[0]) + mul(fld_m(&m[9]), &pos[2]) + mul(fld_m(&m[5]), &pos[1]), &m[13]));
 		at[2] = f32(fadd_m(mul(fld_m(&m[2]), &pos[0]) + mul(fld_m(&m[10]), &pos[2]) + mul(fld_m(&m[6]), &pos[1]), &m[14]));
-		const Shape *md = obj->model;
+		const Shape *md = AP(const Shape, obj->model);
 		int inside = 1;
 		for (int c = 0; c < 3 && inside; c++)
 			inside = !(fld_m(&md->low[c]) - reach >= at[c]);
@@ -274,19 +274,19 @@ int THISCALL (collision_moveSphere)(u8 *stage, float r, const float *pos, const 
 		if (!inside)
 			continue;
 		st->nearObjects[count][0] = tris;
-		st->nearObjects[count][1] = (u32)obj->relMatrix;
-		st->nearObjects[count][2] = (u32)obj->relInverse;
+		st->nearObjects[count][1] = AV(obj->relMatrix);
+		st->nearObjects[count][2] = AV(obj->relInverse);
 		count++;
 	}
-	return space_testSphere((u8 *)&st->space, *(u32 *)&r, pos, d, step, k, (u32)outPos, outVel, outDist, outPlane, axis,
+	return space_testSphere((u8 *)&st->space, *(u32 *)&r, pos, d, step, k, AV(outPos), outVel, outDist, outPlane, axis,
 	                        st->nearObjects, count);
 }
 
 /* ---- collisionTri_sweepSphere: a moving sphere against one triangle ---- */
-#define TINY ((const float *)ADDR(k_1em8f))    /* 1e-8 */
-#define ONE ((const float *)ADDR(k_1f))
-#define MINUS_ONE ((const float *)ADDR(k_m1f))
-#define REST ((const float *)ADDR(g_vecZero))    /* the axis a response falls back to */
+#define TINY (AP(const float, ADDR(k_1em8f)))    /* 1e-8 */
+#define ONE (AP(const float, ADDR(k_1f)))
+#define MINUS_ONE (AP(const float, ADDR(k_m1f)))
+#define REST (AP(const float, ADDR(g_vecZero)))    /* the axis a response falls back to */
 
 static void vset(float *o, float x, float y, float z) { o[0] = x; o[1] = y; o[2] = z; }
 /* a x b, each component's products in the original's order */
@@ -576,7 +576,7 @@ int THISCALL (space_collideBlock)(SpaceBlock *self, float r, const float *pos, c
 	SpaceNode *last = 0;
 	for (int pass = 0;; pass++) {
 		memcpy(at, from, 12);
-		SpaceNode *node = self->items;
+		SpaceNode *node = AP(SpaceNode, self->items);
 		int sub = -1, hit = 0;
 		BITS(best) = 0xff7fffff;   /* -FLT_MAX */
 		memcpy(move, step, 12);
@@ -584,15 +584,15 @@ int THISCALL (space_collideBlock)(SpaceBlock *self, float r, const float *pos, c
 			if (!node) {
 				if (++sub >= nsubs)
 					break;
-				const float *in = (const float *)RELOC(subs[sub * 3 + 2]);
-				node = (SpaceNode *)RELOC(subs[sub * 3]);
+				const float *in = AP(const float, RELOC(subs[sub * 3 + 2]));
+				node = AP(SpaceNode, RELOC(subs[sub * 3]));
 				for (int i = 0; i < 3; i++)
 					at[i] = row_point(in, from, i);
 				for (int i = 0; i < 3; i++)
 					move[i] = row_dir(in, step, i);
 			}
-			if (node != last && (sub >= 0 || !(*RELOC(node)->item & 1))
-			    && collisionTri_sweepSphere(RELOC(node)->item, r, at, move, k, hitPos, hitVel, &dist, plane, axis) == 1) {
+			if (node != last && (sub >= 0 || !(*AP(u8, RELOC(node)->item) & 1))
+			    && collisionTri_sweepSphere(AP(void, RELOC(node)->item), r, at, move, k, hitPos, hitVel, &dist, plane, axis) == 1) {
 				hit = 1;
 				if (dist > best) {
 					if (sub < 0) {
@@ -600,7 +600,7 @@ int THISCALL (space_collideBlock)(SpaceBlock *self, float r, const float *pos, c
 						memcpy(outVel, hitVel, 12);
 						memcpy(outPlane, plane, 16);
 					} else {
-						const float *out = (const float *)RELOC(subs[sub * 3 + 1]);
+						const float *out = AP(const float, RELOC(subs[sub * 3 + 1]));
 						for (int i = 0; i < 3; i++)
 							outPos[i] = row_point(out, hitPos, i);
 						for (int i = 0; i < 3; i++)
@@ -613,13 +613,13 @@ int THISCALL (space_collideBlock)(SpaceBlock *self, float r, const float *pos, c
 					BITS(best) = BITS(dist);
 				}
 			}
-			node = RELOC(node)->next;
+			node = AP(SpaceNode, RELOC(node)->next);
 		}
-		const float *tiny = (const float *)ADDR(k_1em8f);   /* 1e-8 */
+		const float *tiny = AP(const float, ADDR(k_1em8f));   /* 1e-8 */
 		if (!(hit == 1 && best > *tiny))
 			return result;
 		if (!(mul(fld_m(&outVel[2]), &vel[2]) + mul(fld_m(&outVel[1]), &vel[1]) + mul(fld_m(&outVel[0]), &vel[0]) > *tiny)) {
-			memcpy(outVel, (const void *)ADDR(g_vecZero), 12);
+			memcpy(outVel, AP(const void, ADDR(g_vecZero)), 12);
 			BITS(*outDist) = 0;
 			return 1;
 		}
@@ -627,7 +627,7 @@ int THISCALL (space_collideBlock)(SpaceBlock *self, float r, const float *pos, c
 		memcpy(from, outPos, 12);
 		memcpy(step, outVel, 12);
 		BITS(*outDist) = BITS(best);
-		if (pass != 0 && mul(fld_m(&r), (const float *)ADDR(k_0_1f)) > best)
+		if (pass != 0 && mul(fld_m(&r), AP(const float, ADDR(k_0_1f))) > best)
 			return result;
 		if (pass + 1 > 5)
 			return result;
@@ -637,7 +637,7 @@ int THISCALL (space_collideBlock)(SpaceBlock *self, float r, const float *pos, c
 /* a triangle of the stage's ground or bounds put into the collision space (no unit, part or indices) */
 static void ground_triangle(u8 *grid, u32 flags, const void *a, const void *b, const void *c)
 {
-	space_insertTriangle(grid, flags, (u32)a, (u32)b, (u32)c, 0, -1, -1, -1, -1);
+	space_insertTriangle(grid, flags, AV(a), AV(b), AV(c), 0, -1, -1, -1, -1);
 }
 
 /* 0x471040 (thiscall on the stage): its collision space (space) set up over the world box (levelLow low, levelHigh
@@ -652,12 +652,12 @@ void THISCALL (collision_initVolume)(u8 *stage, float size_z, float size_x, floa
 	Stage *st = (Stage *)stage;
 	u8 *grid = (u8 *)&st->space;
 	const float *low = st->levelLow, *high = st->levelHigh;
-	log_message((int)stage, 0, 0, (const char *)STR(0x4c7490, "init. collision volume"));
+	log_message((int)AV(stage), 0, 0, AP(const char, STR(0x4c7490, "init. collision volume")));
 	int ny = ftol(fdiv_m(FSUB(high[1], low[1]), &size_y));
 	int nx = ftol(fdiv_m(FSUB(high[0], low[0]), &size_x));
 	int nz = ftol(fdiv_m(FSUB(high[2], low[2]), &size_z));
 	space_setBy(grid, (void *)low, (void *)high, nz, nx, ny, margin, splitCount, depth);
-	log_message((int)stage, 0, 0, (const char *)STR(0x4c747c, "add floor planes"));
+	log_message((int)AV(stage), 0, 0, AP(const char, STR(0x4c747c, "add floor planes")));
 	if (st->floorMode) {
 #define F(v) f32(fld_m(&(v)))
 		float va[3] = { F(high[0]), F(low[1]), F(low[2]) }, vb[3] = { F(low[0]), F(low[1]), F(high[2]) };
@@ -674,10 +674,10 @@ void THISCALL (collision_initVolume)(u8 *stage, float size_z, float size_x, floa
 		if (kind != 0 && kind != 1)
 			continue;
 		for (int r = 0; r < layer->rows; r++) {
-			log_message((int)stage, 0, r, (const char *)(RELOC(kind) ? STR(0x4c7430, "add layer ceiling type planes row %d") : STR(0x4c7458, "add layer floor type planes row %d")), r);
+			log_message((int)AV(stage), 0, r, AP(const char, (RELOC(kind) ? STR(0x4c7430, "add layer ceiling type planes row %d") : STR(0x4c7458, "add layer floor type planes row %d"))), r);
 			for (int c = 0; c < layer->cols; c++) {
 				int w = layer->cols + 1;
-				const float *v = layer->points;
+				const float *v = AP(const float, layer->points);
 				const float *p00 = v + (w * r + c) * 3, *p01 = p00 + 3, *p10 = v + (w * (r + 1) + c) * 3, *p11 = p10 + 3;
 				if (kind == 0) {
 					ground_triangle(grid, 0, p00, p10, p01);
@@ -694,7 +694,7 @@ void THISCALL (collision_initVolume)(u8 *stage, float size_z, float size_x, floa
 		if (obj->active != 1 || (obj->flags & 4))
 			continue;
 		if (i % 2 == 0)
-			log_message((int)stage, 0, i, (const char *)STR(0x4c7418, "add object %d planes"), i);
-		obj->unit = (void *)space_buildUnit(grid, i, obj->model, obj->matrix);
+			log_message((int)AV(stage), 0, i, AP(const char, STR(0x4c7418, "add object %d planes")), i);
+		obj->unit = AREF(AP(void, space_buildUnit(grid, i, AP(void, obj->model), obj->matrix)));
 	}
 }
