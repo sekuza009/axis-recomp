@@ -1,6 +1,6 @@
 /* platform64.c: the services the native build's fixes use (src/fixes/settings.h) in the 64-bit build - standalone/
    platform.c's, under a host: the settings from axisnet.ini in the game folder, the focus from the host, the pixel-sharp
-   text's texture filters recorded for the host (glrec64.c). The ending movie is not played yet in this build. */
+   text's texture filters recorded for the host (glrec64.c), the ending movie (movie64.c). */
 #if defined(__x86_64__) || defined(__aarch64__)
 #include <stdio.h>
 #include <stdlib.h>
@@ -81,9 +81,13 @@ int glrec64_texNearest(int saved[2]);
 void glrec64_texRestore(const int saved[2]);
 int platform_texNearest(int saved[2]) { return glrec64_texNearest(saved); }
 void platform_texRestore(const int saved[2]) { glrec64_texRestore(saved); }
+/* the ending movie: started here, shown over the host's next frames (movie64.c; host64.c axis_frame) */
+extern const void *g_platSound;   /* (the host's AxisSound: src/plat/host/devices.c) */
+extern void *g_platSoundUser;
+int movie64_start(const char *path, const void *sound, void *user);
 void platform_playMovie(void *owner, const char *file, int w, int h)
 {
 	(void)owner; (void)w; (void)h;
-	hlog("the ending movie (%s): not played in the 64-bit build yet\n", file);
+	movie64_start(file, g_platSound, g_platSoundUser);
 }
 #endif

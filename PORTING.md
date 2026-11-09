@@ -231,7 +231,7 @@ and gives them a 4 GB space of their own:
   host64.c (the loader: slots and thunks for the system calls - tools/mkthunks64.py -, the API on the arena stack, a
   crash report), crt64.c (the C runtime: files as arena records, VC6's printf and rand), glrec64.c (the drawing in
   glrec.c's stream format, no driver), hostwin64.c (the window stood in), platform64.c, src/plat/host/devices.c
-  (sound, music and input from the host; the network not yet). Built for x86-64 Linux by standalone/build64.sh;
+  (sound, music and input from the host; the network and movie: below). Built for x86-64 Linux by standalone/build64.sh;
   tools/plat_tests/run64.sh runs it headless in WSL (a scratch game folder in /dev/shm), host32_test.c / run32.sh run
   the 32-bit axis.dll the same way on Windows, tools/streamcmp.py compares the two streams: the intro's first 41
   frames are bit-identical (texture uploads included), later ones differ only in time-driven values. The silent
@@ -239,6 +239,21 @@ and gives them a 4 GB space of their own:
   places (AGET / ASET), function values cast to function types (FNP), records with pointer members (APTR), a call's
   argument kinds differing from the function's (tools/abi64.py), arguments read as an array from the first one (the
   32-bit stack), 'long' reads (8 bytes on 64-bit Linux), sizeof arithmetic cast to a pointer.
+- **Windows x64 and Godot 64-bit (2026-11-09):** standalone/win64.c, build/axis64.dll, the official 64-bit Godot
+  editor (the extension built against its own generated godot-cpp bindings), export preset "Windows Desktop 64-bit".
+- **The network (2026-11-09):** standalone/net64.c - axisnet's DirectPlay (axisnet_dp.c) built into the library on
+  Windows x64 and Linux, the same protocol as the 32-bit game and the DServer relay; plat.h's NET_ operations
+  translate DirectPlay's records (the session description, the player name, the connection names) between the game's
+  32-bit layout and axisnet's; on Windows the game's own sockets, threads (on arena stacks), events and ping with its
+  prototypes, on Linux src/plat/posix/net.c's with its records in the arena. Tested in Godot: 64-bit host + 64-bit
+  client, and 32-bit host + 64-bit client, in one match (join by IP, chat, scores).
+- **The ending movie (2026-11-09):** standalone/movie64.c - initdata/battle.sra read by the library (its own AVI
+  reader), the video decoded with FFmpeg's indeo3 decoder (../axisnet/iv32/ffmpeg, unmodified, LGPL 2.1+ - the code
+  the 32-bit build gives Windows' MCI), each picture drawn into the frame stream (glrec64_movieFrame) and the sound
+  played as one host sound buffer. The game ends right after it, so platform_playMovie only starts it: the loader's
+  axis_frame shows it and axis_running stays 1 until it ends or a new Esc press skips it. Works with any host, no
+  change to Godot's side; tested in Godot (all 210 s, the sound, Esc) and headless on Linux. AXIS_TEST_ENDING=<frames>
+  triggers it (as in the 32-bit build).
 - **Earlier note - the runtime as planned:** the arena with its heap and stacks (the game runs on an arena stack: its locals'
   addresses go into its records), the function table, the C runtime's entries (files as arena handles, VC6's printf
   and rand), and every system call as a C function: under a host the game needs no real window, so the 64-bit

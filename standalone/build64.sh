@@ -24,9 +24,13 @@ export CC OBJD DEFS CFLAGS
 find src -name '*.c' | grep -v '^src/plat/win32/' | grep -v '^src/plat/posix/directplay.c' | sort | xargs -P "$(nproc)" -I{} sh -c '
 	f={}; o="$OBJD/$(echo "${f#src/}" | tr "/" "_" | sed "s/\.c$/.o/")"
 	$CC -c $CFLAGS $DEFS -Ibuild -o "$o" "$f" 2> "$o.log" || { cat "$o.log"; exit 255; }'
-LOADER="arena host64 crt64 glrec64 hostwin64 platform64 glstate net64"; [ "$TARGET" = windows ] && LOADER="$LOADER win64"
+LOADER="arena host64 crt64 glrec64 hostwin64 platform64 glstate net64 movie64"; [ "$TARGET" = windows ] && LOADER="$LOADER win64"
 for f in $LOADER; do
-	$CC -c $CFLAGS -DAXIS_PORTABLE -I../axisnet -o "$OBJD/sa_$f.o" "standalone/$f.c" || exit 1
+	$CC -c $CFLAGS -DAXIS_PORTABLE -I../axisnet -I../axisnet/iv32/ffmpeg -o "$OBJD/sa_$f.o" "standalone/$f.c" || exit 1
+done
+# the ending movie's decoder: FFmpeg's indeo3 (../axisnet/iv32/ffmpeg, unmodified, LGPL 2.1+)
+for f in indeo3 hpeldsp; do
+	$CC -c -O2 -w -DHAVE_AV_CONFIG_H -I../axisnet/iv32/ffmpeg -o "$OBJD/ff_$f.o" "../axisnet/iv32/ffmpeg/libavcodec/$f.c" || exit 1
 done
 $CC -c $CFLAGS -Ibuild -o "$OBJD/sa_fn_table64.o" build/fn_table64.c
 $CC -c -o "$OBJD/sa_thunks.o" build/plat_thunks64_$TARGET.s

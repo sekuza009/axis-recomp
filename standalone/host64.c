@@ -345,6 +345,7 @@ static void run_ctors(void *a)
 	hlog("the game's static constructors run (%d)\n", n);
 }
 
+static long g_testEnding = -1, g_testEndingCode = 99;   /* (AXIS_TEST_ENDING: axis_frame) */
 void crt_setLib(const void *lib);   /* src/crt/crt_format.c */
 static struct { int (*vsprintf_)(char *, const char *, va_list); } g_crtLib = { crt64_vsprintf };
 
@@ -395,6 +396,21 @@ AXIS_API int axis_load(void)
 	SET(GetCommandLineA, h_GetCommandLineA);
 	if (g_hostSet)
 		host_install();
+	{
+		char t[64] = "";
+#ifdef _WIN32
+		if (GetEnvironmentVariableA("AXIS_TEST_ENDING", t, sizeof t))
+			SetEnvironmentVariableA("AXIS_TEST_ENDING", NULL);   /* (a copy the game starts does not inherit it) */
+#else
+		if (getenv("AXIS_TEST_ENDING"))
+			snprintf(t, sizeof t, "%s", getenv("AXIS_TEST_ENDING"));
+#endif
+		if (atoi(t) > 0) {
+			g_testEnding = atoi(t);
+			g_testEndingCode = strchr(t, ',') ? atoi(strchr(t, ',') + 1) : 99;
+			hlog("AXIS_TEST_ENDING: the game closes after %ld frames (exit code %ld)\n", g_testEnding, g_testEndingCode);
+		}
+	}
 	arena_call(run_ctors, NULL);
 	return 1;
 }
@@ -428,13 +444,30 @@ AXIS_API unsigned axis_init(void *instance, void *previous, const char *commandL
 	return c.r;
 }
 static void do_frame(void *a) { *(unsigned *)a = game_axis_frame(); }
+int movie64_active(void);   /* movie64.c: the ending movie, after the game's last frame */
+void movie64_frame(const unsigned char keys[256]);
+/* (a test, AXIS_TEST_ENDING=<frames>[,<exit code>]: after that many frames the game closes as after the last mission -
+   exit code 99, app_closeWindow(0x63) - and the ending movie plays; standalone/portable.c's) */
+static void test_ending(void)
+{
+	if (g_testEnding > 0 && --g_testEnding == 0) {
+		*(int *)(g_arena + 0x4df048) = (int)g_testEndingCode;   /* g_exitCode */
+		u32 win = *(u32 *)(g_arena + 0x4ded18);                  /* g_mainWindow */
+		((int (*)(void *, u32, u32, u32))*host64_slot("PostMessageA"))(win ? g_arena + win : NULL, 0x10, 0, 0);   /* WM_CLOSE */
+	}
+}
 AXIS_API unsigned axis_frame(void)
 {
+	if (movie64_active()) {
+		movie64_frame(g_platKeys);
+		return 1;
+	}
+	test_ending();
 	unsigned r = 0;
 	arena_call(do_frame, &r);
 	return r;
 }
-AXIS_API int axis_running(void) { return game_axis_running(); }
+AXIS_API int axis_running(void) { return game_axis_running() || movie64_active(); }
 AXIS_API int axis_textInput(void) { return game_axis_textInput(); }
 static void do_shutdown(void *a) { (void)a; game_axis_shutdown(); }
 AXIS_API void axis_shutdown(void) { arena_call(do_shutdown, NULL); }

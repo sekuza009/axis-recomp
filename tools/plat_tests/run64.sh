@@ -22,9 +22,9 @@ for f in Chat.scp Help.txt MATHFUNC.TBL axisnet.ini AxisPlay.exe; do [ -e "\$f" 
 [ -e registry.txt ] || printf '[80000001\\SOFTWARE\\AxisArena\\SelectServer]\nTcpDNS=1:3132372e302e302e3100\nLadderDNS=1:3132372e302e302e3100\nTcpPort=4:e4070000\nLadderPort=4:f8070000\n[80000001\\SOFTWARE\\AxisArena\\Launcher]\nStartMode=4:00000000\n' > registry.txt
 cp "$B/axis64_test" /dev/shm/axis64_test
 set +e
-AXIS_SETTINGS=/dev/shm/axis64/registry.txt /dev/shm/axis64_test /dev/shm/axis64 $FRAMES $STREAM
+AXIS_TEST_ENDING=$AXIS_TEST_ENDING AXIS_SETTINGS=/dev/shm/axis64/registry.txt /dev/shm/axis64_test /dev/shm/axis64 $FRAMES $STREAM
 echo "exit \$?"
 echo '---- standalone64.log'
-head -80 /dev/shm/axis64/standalone64.log
+head -80 /dev/shm/axis64/standalone64.log; grep -a "ending movie" /dev/shm/axis64/standalone64.log
 EOF
 MSYS_NO_PATHCONV=1 wsl.exe -d "$DISTRO" -- sh "$B/run64_inner.sh" | tr -d '\0'
