@@ -168,3 +168,14 @@ most of them OpenGL (recorded for the host, glrec.c). The rest, by group, with t
   with Windows' rules (names without regard to case, a failed open leaving *key, new / existing on create, 2 / 234
   on reads, bytes as written); tools/plat_tests' 16 checks with the game's own sequences pass on Linux, 32- and
   64-bit. (Without the launcher a port needs SelectServer's values from somewhere - a default file shipped with it.)
+- 2026-11-09, stage 3 second pass, the rest ("other"): of the 98 imports outside the interfaces so far, most are
+  never called (the original's own C runtime: heap, environment, locale tables - the rebuild uses the system's), so
+  a platform needs no function for them. The ones the game does call: a host now shows its message boxes and
+  starts its programs (AxisHostConfig.message / launch: the loader routes MessageBoxA / ShellExecuteA to them) and
+  gives its screen size. This fixed a real fault: a graphics change made the game start AxisGL.exe - the original -
+  and quit; the Godot host now restarts itself instead (checked: a new copy at the title screen, no AxisGL.exe).
+  plat/posix/system.c answers the small calls on Linux / macOS as the game needs them (message box / launch through
+  the host, the screen from the host, the language from LANG - Korean for ko - Windows' version as the game sees
+  it, handles, success); tools/plat_tests' 12 checks call them as the game does ("_plat_<name>", stdcall on 32-bit)
+  and pass on Linux, 32- and 64-bit. Test switches: AXIS_TEST_ENDING=<reads>[,<exit code>], AXIS_TEST_MESSAGE=<text>
+  (both cleared from the environment once read, so a copy the game starts does not inherit them).

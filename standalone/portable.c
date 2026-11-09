@@ -271,7 +271,8 @@ extern void (*g_platMouseLog)(long dx, long dy);
 static FILE *g_mouseLog;
 static DWORD g_mouseT;
 static long g_mReads, g_mDx, g_mDy, g_mMax, g_mMoving;
-static long g_testEnding = -1;
+static long g_testEnding = -1, g_testEndingCode = 99;
+static char g_testMessage[256];   /* (AXIS_TEST_MESSAGE=<text>: a message box on the first frame, through the game's slot) */
 
 /* AXIS_IMPORTLOG=<file> (a check, PORTING.md stage 3): which of the game's imports it really calls, and how often -
    a counting stub in front of every import slot (after the host's and the GL layers' own), the counts written every
@@ -321,9 +322,15 @@ static void mouse_log(long dx, long dy)
 		g_importLogT = GetTickCount();
 		import_log_write();
 	}
+	if (g_testMessage[0]) {
+		char t[256];
+		strcpy(t, g_testMessage);
+		g_testMessage[0] = 0;
+		((int (WINAPI *)(HWND, LPCSTR, LPCSTR, UINT))*slot_by_name("MessageBoxA"))(NULL, t, "Axis (a test message)", 0);
+	}
 	if (g_testEnding > 0 && --g_testEnding == 0) {
 		extern unsigned char g_exitCode_v[], g_mainWindow_v[];
-		*(int *)g_exitCode_v = 99;   /* (app_closeWindow(0x63): game_postMatch after mission 15) */
+		*(int *)g_exitCode_v = g_testEndingCode;   /* (99: app_closeWindow(0x63), game_postMatch after mission 15; 1: a graphics change) */
 		/* (through the game's own slot, as app_closeWindow posts it: a host's stand-in window gets it too) */
 		((BOOL (WINAPI *)(HWND, UINT, WPARAM, LPARAM))*slot_by_name("PostMessageA"))(*(HWND *)g_mainWindow_v, WM_CLOSE, 0, 0);
 	}
@@ -479,6 +486,20 @@ static ATOM WINAPI h_RegisterClassExA(const WNDCLASSEXA *c)
 	return r_RegisterClassExA(&w);
 }
 
+/* the host's message box and program launches (AxisHostConfig.message / launch) in place of Windows' */
+static int WINAPI h_MessageBoxA(HWND owner, LPCSTR text, LPCSTR title, UINT type)
+{
+	(void)owner;
+	(void)type;
+	return g_host.message(g_host.user, title ? title : "", text ? text : "");
+}
+static HINSTANCE WINAPI h_ShellExecuteA(HWND w, LPCSTR verb, LPCSTR file, LPCSTR args, LPCSTR dir, INT show)
+{
+	(void)w; (void)verb; (void)dir; (void)show;
+	int ok = g_host.launch(g_host.user, file ? file : "", args ? args : "");
+	return (HINSTANCE)(ULONG_PTR)(ok ? 42 : 2);   /* (ShellExecute: above 32 done, else an error) */
+}
+
 static void host_install(void)
 {
 	if (g_host.window)
@@ -530,6 +551,14 @@ static void host_install(void)
 #undef SWAP
 #undef SET
 		fprintf(g_log, "host: the input from the host, the game's window hidden\n");
+	}
+	if (g_host.message) {
+		*slot_by_name("MessageBoxA") = (void *)h_MessageBoxA;
+		fprintf(g_log, "host: the game's message boxes shown by the host\n");
+	}
+	if (g_host.launch) {
+		*slot_by_name("ShellExecuteA") = (void *)h_ShellExecuteA;
+		fprintf(g_log, "host: the programs the game starts (itself again, the patcher, DServer) started by the host\n");
 	}
 	{
 		char p[MAX_PATH];
@@ -603,8 +632,15 @@ int WINAPI WinMain(HINSTANCE inst, HINSTANCE prev, LPSTR cmd, int show)
 			g_platMouseLog = mouse_log;   /* (written from the per-frame mouse read) */
 		else
 			g_importLogPath[0] = 0;
-		if (GetEnvironmentVariableA("AXIS_TEST_ENDING", p, sizeof p) && atoi(p) > 0) {
+		if (GetEnvironmentVariableA("AXIS_TEST_MESSAGE", g_testMessage, sizeof g_testMessage)) {
+			SetEnvironmentVariableA("AXIS_TEST_MESSAGE", NULL);
+			g_platMouseLog = mouse_log;
+		} else
+			g_testMessage[0] = 0;
+		if (GetEnvironmentVariableA("AXIS_TEST_ENDING", p, sizeof p) && atoi(p) > 0) {   /* <reads>[,<exit code>] */
 			g_testEnding = atoi(p);
+			g_testEndingCode = strchr(p, ',') ? atoi(strchr(p, ',') + 1) : 99;
+			SetEnvironmentVariableA("AXIS_TEST_ENDING", NULL);   /* (a copy the game starts does not inherit it) */
 			g_platMouseLog = mouse_log;
 		}
 		if (GetEnvironmentVariableA("AXIS_LOADLOG", p, sizeof p) && (g_loadLog = fopen(p, "w")))
