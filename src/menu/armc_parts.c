@@ -21,7 +21,7 @@ static void part_info(u8 *rec, int idx)
 		memset(rec + offsetof(PartInfo, ammoType), 0, sizeof(PartInfo) - offsetof(PartInfo, ammoType));   /* ammoType .. the end */
 		return;
 	}
-	ActorItem *info = &g_scene->actorItems[idx];
+	ActorItem *info = &AP(Scene, g_scene)->actorItems[idx];
 
 	/* the name: the folder path's part after its last slash */
 	char path[128] = { 0 };

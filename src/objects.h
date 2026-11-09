@@ -437,7 +437,7 @@
 #define g_newIdConfirmBox (AP(int, IMG(0x9dd1a0)))   /* int[4]; the new ID confirmation's box (room_openNewIdConfirm; newIdConfirm_layout) */
 #define g_roomMechKept (AP(u8, IMG(0x9dd260)))   /* u8[11]; a copy of the room record's mech (g_roomMech: the five parts, settings 4 / 5, then 0 .. 3) made by room_copyAccountRecord, or newId_register's defaults; written only, never read */
 #define g_roomColoursKept (AP(float, IMG(0x9dd26b)))   /* float[36]; the room's colour choices (g_roomColours) kept: copied by room_copyAccountRecord, set to the defaults by newId_register; never read */
-#define g_launchArgs (AP(char *, IMG(0x9dd890)))   /* char *[14]; the launch line's words: pointers into the line strtok cut at spaces (count g_argCount; lines over 0x400 or under 2 characters are not split). No bound on the count: 14 fit before g_launchMessage (0x9dd8c8) */
+#define g_launchArgs (AP(APTR(char), IMG(0x9dd890)))   /* char *[14]; the launch line's words: pointers into the line strtok cut at spaces (count g_argCount; lines over 0x400 or under 2 characters are not split). No bound on the count: 14 fit before g_launchMessage (0x9dd8c8) */
 #define g_shapeDat (AP(u32, IMG(0xa0e79c)))   /* u32[3]; Data\Shape.dat: the entry count; the table; the FILE */
 #define g_skelDat (AP(u32, IMG(0xa0eab4)))   /* u32[3]; Data\Skeleton.dat: the entry count; the table; the FILE */
 #define g_skirmishInfo (AP(u8, IMG(0x9db998)))   /* u8[1380]; skirmish.dat's 15 records of 0x5c (to 0x9dbefc) */

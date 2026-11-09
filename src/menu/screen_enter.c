@@ -392,7 +392,7 @@ static void match_name(const char *name)
 void (match_enter)(void)
 {
 	while (g_menuTunnel)   /* the menus' tunnel, ring by ring */
-		tunnel_removeLastRing(AP(TunnelRing *, ADDR(g_menuTunnel)));
+		tunnel_removeLastRing(AP(APTR(TunnelRing), ADDR(g_menuTunnel)));
 	if (!g_launchedForNetGame)
 		check_profiles();
 	g_matchRunning = 1;
@@ -431,7 +431,7 @@ void (match_enter)(void)
 		scene_startSession(AP(Scene, scene), g_netRole == 1 ? 0 : 1, 1);
 		break;
 	case 3:
-		match_name((const char *)(OBJ(g_pilotSave) + 0x80));
+		match_name(AP(const char, (OBJ(g_pilotSave) + 0x80)));
 		scene_startSession(AP(Scene, scene), 0, 0);
 		break;
 	}

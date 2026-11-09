@@ -18,9 +18,11 @@
 #define AXIS_API_H
 
 /* (PORTABLE=3: the game is axis.dll, AXIS_DLL, and the host AxisHost.exe, AXIS_HOST - host/win32/main.c) */
-#if defined(AXIS_DLL)
+#if defined(AXIS_DLL) && !defined(_WIN32)
+#define AXIS_API __attribute__((visibility("default")))
+#elif defined(AXIS_DLL)
 #define AXIS_API __declspec(dllexport)
-#elif defined(AXIS_HOST)
+#elif defined(AXIS_HOST) && defined(_WIN32)
 #define AXIS_API __declspec(dllimport)
 #else
 #define AXIS_API

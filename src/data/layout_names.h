@@ -3114,7 +3114,7 @@ extern struct GameData g_data;
 #undef k_1em8
 #define k_1em8 (*AP(double, IMG(0x4aa458)))
 #undef g_imp_wsprintfA
-#define g_imp_wsprintfA (*(APTR(void) *)IMG(0x4a92f0))
+#define g_imp_wsprintfA (*AP(APTR(void), IMG(0x4a92f0)))
 #undef k_5f
 #define k_5f (*AP(float, IMG(0x4a93d0)))
 #undef k_1000000f
@@ -3128,7 +3128,7 @@ extern struct GameData g_data;
 #undef k_27
 #define k_27 (*AP(double, IMG(0x4aa408)))
 #undef g_scene
-#define g_scene (*(APTR(Scene) *)IMG(0x9087b4))
+#define g_scene (*AP(APTR(Scene), IMG(0x9087b4)))
 #undef g_white
 #define g_white (*AP(u32, IMG(0xa1f23c)))
 #undef k_1_95f

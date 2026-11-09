@@ -7,14 +7,14 @@
 
 static void bind(int texture)
 {
-	tex_bind(g_textures->banks[texture / 512], texture % 512);
+	tex_bind(AP(TextureManager, g_textures)->banks[texture / 512], texture % 512);
 }
 
 /* the last ring of the chain and the number of rings */
 static TunnelRing *last_ring(TunnelRing *ring, int *count)
 {
 	int n = 1;
-	while (ring->next != NULL) {
+	while (ring->next != 0) {
 		ring = AP(TunnelRing, ring->next);
 		n++;
 	}
@@ -248,15 +248,15 @@ void (menu_drawBackground3D)(TunnelRing *first)
 
 
 /* 0x441190: the last ring of the chain at *head taken off and freed (free's result) */
-u32 (tunnel_removeLastRing)(TunnelRing **head)
+u32 (tunnel_removeLastRing)(APTR(TunnelRing) *head)
 {
-	TunnelRing *first = *head, *last = first, *prev = first;
-	while (last->next != NULL) {
+	TunnelRing *first = AP(TunnelRing, *head), *last = first, *prev = first;
+	while (last->next != 0) {
 		prev = last;
 		last = AP(TunnelRing, last->next);
 	}
 	if (first == last)
-		*head = AP(TunnelRing, last->next);
+		*head = last->next;
 	else
 		prev->next = last->next;
 	return crt_free(last);
@@ -268,7 +268,7 @@ TunnelRing *(tunnel_addRing)(void)
 	g_tunnelRings += 1;
 	tunnel_appendRing(&g_menuTunnel);
 	TunnelRing *ring = AP(TunnelRing, g_menuTunnel);
-	for (; ring->next != NULL; ring = AP(TunnelRing, ring->next))
+	for (; ring->next != 0; ring = AP(TunnelRing, ring->next))
 		ring->alpha = 1.0f;
 	return ring;
 }
@@ -292,7 +292,7 @@ void (tunnelRing_build)(u8 *o, int index)
 		if (pass) {   /* the second circle after the path's four fields */
 			(*(int *)&tr->spin) = 0;
 			if (tr->back)
-				BITS(tr->spin) = BITS(tr->back->spin);
+				BITS(tr->spin) = BITS(AP(struct TunnelRing, tr->back)->spin);
 			tr->spinSpeed = 0.2f;
 			tr->cleared1938 = 0;
 			(*(int *)&tr->depthShift) = 0;
@@ -316,7 +316,7 @@ void (tunnelRing_build)(u8 *o, int index)
 	}
 	BITS(tr->innerSpin) = 0x43b40000;   /* 360 */
 	if (tr->back)
-		BITS(tr->innerSpin) = BITS(tr->back->innerSpin);
+		BITS(tr->innerSpin) = BITS(AP(struct TunnelRing, tr->back)->innerSpin);
 	tr->innerSpeed = -0.5f;
 	BITS(tr->cleared326c[0]) = BITS(tr->cleared326c[1]) = BITS(tr->cleared326c[2]) = 0;
 	X z = H * k_m1100f - k_550f;
@@ -406,7 +406,7 @@ void (menuTunnel_advance)(TunnelRing *ring)
 	if (g_leavingForMatch)
 		ringLength = 0x898;
 	TunnelRing *r = ring;
-	for (TunnelRing *last = ring; last->next != NULL; last = AP(TunnelRing, last->next))
+	for (TunnelRing *last = ring; last->next != 0; last = AP(TunnelRing, last->next))
 		r = last;
 	const float *stepF = AP(const float, ADDR(g_tunnelStepF));
 	int state = g_menuCameraMove;

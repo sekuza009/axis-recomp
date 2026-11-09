@@ -243,7 +243,7 @@ void THISCALL (ViewVolume_release)(u8 *view)
 	vw->entryPointsSet = 1;
 	static const u32 names[3] = { STR(0x4c7b48, "glVertexPointerEXT"), STR(0x4c7b34, "glColorPointerEXT"), STR(0x4c7b1c, "glTexCoordPointerEXT") };   /* the three entry points' names */
 	for (int k = 0; k < 3; k++)
-		vw->glArrays[k] = AREF(wglGetProcAddress(AP(const char, RELOC(names[k]))));   /* wglGetProcAddress */
+		vw->glArrays[k] = FNREF(wglGetProcAddress(AP(const char, RELOC(names[k]))));   /* wglGetProcAddress */
 }
 
 /* a box corner (x stored as a float, y and z kept on the FPU) through the 4 x 4 matrix m into clip space: each row
@@ -380,7 +380,7 @@ static void identity_matrices(void)
 static void bind(u8 *vv, int t)
 {
 	glEnable(GL_TEXTURE_2D);
-	tex_bind(g_textures->banks[t / 512], t % 512);
+	tex_bind(AP(TextureManager, g_textures)->banks[t / 512], t % 512);
 	VV->textureBinds++;
 }
 
@@ -394,7 +394,7 @@ static void use_texture(u8 *vv, int t, int mode)
 }
 
 /* texture t's scrolling (its record's scrollMode): 1 / 2 v / u up by b, 3 / 4 down, else none */
-static int tex_scroll(int t) { return ((TextureBank *)g_textures->banks[t / 512])->records[t % 512].scrollMode; }
+static int tex_scroll(int t) { return ((TextureBank *)AP(TextureManager, g_textures)->banks[t / 512])->records[t % 512].scrollMode; }
 
 static void scroll(float *uv, int n, int kind, const float *b)
 {
@@ -485,12 +485,12 @@ static void draw_opaque(u8 *vv, const u32 *it, const u8 *mesh, const u32 *col, i
 {
 	ArrayFn fn;
 	glEnableClientState(0x8074);
-	if ((fn = (ArrayFn)VV->glArrays[0]))
+	if ((fn = FNP(ArrayFn, VV->glArrays[0])))
 		fn(3, 0x1406, 0, ((const ShapePart *)mesh)->vertexCount, (AP(void, ((const ShapePart *)mesh)->vertices)));
 	else
 		glVertexPointer(3, 0x1406, 0, (AP(void, ((const ShapePart *)mesh)->vertices)));
 	glEnableClientState(0x8076);
-	if ((fn = (ArrayFn)VV->glArrays[1]))
+	if ((fn = FNP(ArrayFn, VV->glArrays[1])))
 		fn(4, 0x1401, 0, ((const ShapePart *)mesh)->vertexCount, col);
 	else
 		glColorPointer(4, 0x1401, 0, col);
@@ -503,7 +503,7 @@ static void draw_opaque(u8 *vv, const u32 *it, const u8 *mesh, const u32 *col, i
 			uv = uvs;
 		}
 		glEnableClientState(0x8078);
-		if ((fn = (ArrayFn)VV->glArrays[2]))
+		if ((fn = FNP(ArrayFn, VV->glArrays[2])))
 			fn(2, 0x1406, 0, ((const ShapePart *)mesh)->vertexCount, uv);
 		else
 			glTexCoordPointer(2, 0x1406, 0, uv);
@@ -730,7 +730,7 @@ void THISCALL (ViewVolume_draw)(u8 *vv, int mode, float b)
 		u8 *r = AP(u8, VV->triangles + i * 0x60);
 		if (((ViewTriangle *)r)->kind != 2)
 			continue;
-		(AP(u8 *, VV->triangleOrder))[VV->triangleOrderCount * 2] = r;
+		AP(APTR(u8), VV->triangleOrder)[VV->triangleOrderCount * 2] = AREF(r);
 		X z = fadd_m(FADD(((ViewTriangle *)r)->points[2][2], ((ViewTriangle *)r)->points[1][2]), &((ViewTriangle *)r)->points[0][2]);
 		(AP(float, VV->triangleOrder))[VV->triangleOrderCount * 2 + 1] = (float)fmul_m(z, &k_third);
 		VV->triangleOrderCount++;
@@ -812,7 +812,7 @@ void THISCALL (ViewVolume_draw)(u8 *vv, int mode, float b)
 	glDisable(GL_DEPTH_TEST);
 	glBegin(GL_QUADS);
 	for (int i = 0; i < VV->quadOrderBCount; i++) {
-		const u32 *r = (AP(const u32 *, VV->quadOrderB))[i * 2];
+		const u32 *r = AP(const u32, AP(APTR(const u32), VV->quadOrderB)[i * 2]);
 		if ((int)r[0] != cur) {
 			glEnd();
 			cur = (int)r[0];

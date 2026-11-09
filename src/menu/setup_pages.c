@@ -41,7 +41,7 @@ void (setup_drawSoundPage)(void)
 	set_colour_bits(g_textColour, bright[0], bright[1], bright[2], bright[3]);
 	text_draw16(X0 + 0x50, Y0 + 0x10, AP(const char, MSG(171, "SETUP SOUND")));
 	int texture = g_buttonTexture;
-	tex_bind(g_textures->banks[texture / 512], texture % 512);
+	tex_bind(AP(TextureManager, g_textures)->banks[texture / 512], texture % 512);
 	glEnable(GL_TEXTURE_2D);
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 	tex_quad(0.0f, 0.25f, 0.25f, 0.375f, X0 + 0x50, Y0 + 0x50, X0 + 0x90, Y0 + 0x70);      /* the arrows */
@@ -88,7 +88,7 @@ void (setup_drawSoundPage)(void)
 	for (int k = 0; k < 2; k++) {
 		glEnable(GL_TEXTURE_2D);
 		texture = g_buttonTexture;
-		tex_bind(g_textures->banks[texture / 512], texture % 512);
+		tex_bind(AP(TextureManager, g_textures)->banks[texture / 512], texture % 512);
 		int lit = hovered == k + 8;
 		glColor4f(1.0f, 1.0f, 1.0f, lit ? 1.0f : 0.4f);
 		int bx = X0 + k * 0x8c;
@@ -127,7 +127,7 @@ void (setup_drawGraphicPage)(void)
 	text_draw16(X0 + 0x50, Y0 + 0x10, AP(const char, MSG(181, "SETUP GRAPHIC")));
 	glEnable(GL_TEXTURE_2D);
 	int texture = g_buttonTexture;
-	tex_bind(g_textures->banks[texture / 512], texture % 512);
+	tex_bind(AP(TextureManager, g_textures)->banks[texture / 512], texture % 512);
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 	for (int k = 0; k < 7; k++)
 		text_draw8(X0 + 0x50, Y0 + 0x44 + k * 0x28, AP(const char, (MSG(182, "VIDEO MODE") + k * 0x80)));
@@ -149,7 +149,7 @@ void (setup_drawGraphicPage)(void)
 	for (int k = 0; k < 2; k++) {
 		glEnable(GL_TEXTURE_2D);
 		texture = g_buttonTexture;
-		tex_bind(g_textures->banks[texture / 512], texture % 512);
+		tex_bind(AP(TextureManager, g_textures)->banks[texture / 512], texture % 512);
 		int lit = hovered == k + 7;
 		glColor4f(1.0f, 1.0f, 1.0f, lit ? 1.0f : 0.4f);
 		int bx = X0 + k * 0x8c;
@@ -186,7 +186,7 @@ static void key_tab(int tab)
 	static const u32 labels[3] = { MSG(216, "FORWARD"), MSG(231, "FIRE"), MSG(246, "CHAT") };
 	static const int rows[3] = { 10, 11, 10 };
 	const u32 *bright = ((u32 *)g_setupColourLit);
-	const char *const *key_name = (const char *const *)OBJ(g_keyNames);
+	const char *const *key_name = AP(const char *const, OBJ(g_keyNames));
 	int none = g_dikNone;
 	set_colour_bits(g_textColour, bright[0], bright[1], bright[2], bright[3]);
 	text_draw16(X0 + 0x46 + tab * 0x78, Y0 + 0x12, AP(const char, (MSG(202, "$[0] MOVE") + tab * 0x80)));
@@ -230,7 +230,7 @@ static void mouse_tab(void)
 	for (int k = 0; k < 2; k++)
 		text_draw8(X0 + 0xc8, Y0 + 0x5c + k * 0x18, AP(const char, (g_mouseSwitchesEdit[(u32)k] == 1 ? MSG(119, "ON") : MSG(118, "OFF"))));
 	int texture = g_buttonTexture;
-	tex_bind(g_textures->banks[texture / 512], texture % 512);
+	tex_bind(AP(TextureManager, g_textures)->banks[texture / 512], texture % 512);
 	glEnable(GL_TEXTURE_2D);
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 	menu_drawLeftArrow(X0 + 0xc8, Y0 + 0x88, X0 + 0x108, Y0 + 0xa0, 0);   /* the arrows */
@@ -256,7 +256,7 @@ static void mouse_tab(void)
 	}
 	glEnable(GL_TEXTURE_2D);
 	texture = g_crosshairTexture;
-	tex_bind(g_textures->banks[texture / 512], texture % 512);
+	tex_bind(AP(TextureManager, g_textures)->banks[texture / 512], texture % 512);
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 	glBegin(GL_QUADS);
 	glTexCoord2i(0, 0);
@@ -329,7 +329,7 @@ void (setup_drawControlsPage)(void)
 	for (int k = 0; k < 3; k++) {
 		glEnable(GL_TEXTURE_2D);
 		int texture = g_buttonTexture;
-		tex_bind(g_textures->banks[texture / 512], texture % 512);
+		tex_bind(AP(TextureManager, g_textures)->banks[texture / 512], texture % 512);
 		int lit = hovered == k + 4 && !editing;
 		glColor4f(1.0f, 1.0f, 1.0f, lit ? 1.0f : 0.4f);
 		int bx = X0 + 0x50 + k * 0x8c;
@@ -472,7 +472,7 @@ void (setup_drawTunnel)(void)
 			texture = g_ctrlMenuTextures[3 - layer];   /* (layer 3: [0], ctrlmenu01) */
 		} else
 			continue;
-		tex_bind(g_textures->banks[texture / 512], texture % 512);
+		tex_bind(AP(TextureManager, g_textures)->banks[texture / 512], texture % 512);
 		for (int wall = 0; wall < 4; wall++) {
 			int parity = wall % 2, far = wall >= 2;
 			gfx_setMenuCamera();
@@ -587,7 +587,7 @@ static void menu_tunnel(const Tunnel *t, const Highlight *h)
 		if (layer > 1)
 			s0 = 0.5f, ds = 0, t0 = t->t0, t1 = t->t1, s_far = 1.0f;
 		int texture = layer < 2 ? g_menuTunnelTexture : GAME_VAR(int, t->textures - layer * 4);
-		tex_bind(g_textures->banks[texture / 512], texture % 512);
+		tex_bind(AP(TextureManager, g_textures)->banks[texture / 512], texture % 512);
 		for (int wall = 0; wall < t->walls; wall++) {
 			int place = wall % places, far = wall >= places;
 			gfx_setMenuCamera();
@@ -712,10 +712,10 @@ static const Highlight none = { -1, NULL, 0, 0, 0 };
 static const float white[3] = { 1.0f, 1.0f, 1.0f };
 #define SIX_WALLS 6, AP(const float, ADDR(k_10f)), k_0_15625f, 0.46875f, 0.625f
 #define FOUR_WALLS 4, k_12f, AP(const float, ADDR(k_0_25f)), 0.5f, 0.75f
-void (skirmish_drawTunnel)(void) { static const Tunnel t = { 0xc4098000, ADDR_AT(g_mainMenuTextures, 3), 0, 0, 0, 0, SIX_WALLS }; menu_tunnel(&t, &none); }
-void (missions_drawTunnel)(void) { static const Tunnel t = { 0xc4098000, ADDR_AT(g_mainMenuTextures, 3), 0, 0, 1, 0, SIX_WALLS }; menu_tunnel(&t, &none); }
-void (armc_drawTunnel)(void) { static const Tunnel t = { 0xc4098000, ADDR_AT(g_mainMenuTextures, 3), 0, 0, 1, 0, SIX_WALLS }; menu_tunnel(&t, &none); }
-void (armc_drawRoomTunnel)(void) { static const Tunnel t = { 0xc4ce4000, ADDR_AT(g_ladderMenuTextures, 3), 1, 1, 0, 1, SIX_WALLS }; menu_tunnel(&t, &none); }
+void (skirmish_drawTunnel)(void) { ASTATIC const Tunnel t = { 0xc4098000, ADDR_AT(g_mainMenuTextures, 3), 0, 0, 0, 0, SIX_WALLS }; menu_tunnel(&t, &none); }
+void (missions_drawTunnel)(void) { ASTATIC const Tunnel t = { 0xc4098000, ADDR_AT(g_mainMenuTextures, 3), 0, 0, 1, 0, SIX_WALLS }; menu_tunnel(&t, &none); }
+void (armc_drawTunnel)(void) { ASTATIC const Tunnel t = { 0xc4098000, ADDR_AT(g_mainMenuTextures, 3), 0, 0, 1, 0, SIX_WALLS }; menu_tunnel(&t, &none); }
+void (armc_drawRoomTunnel)(void) { ASTATIC const Tunnel t = { 0xc4ce4000, ADDR_AT(g_ladderMenuTextures, 3), 1, 1, 0, 1, SIX_WALLS }; menu_tunnel(&t, &none); }
 void (room_drawTunnel)(void)
 {
 	static const float glow[3] = { 0.5f, 0.1f, 1.0f };   /* (no wall glows: the original compares with -1) */

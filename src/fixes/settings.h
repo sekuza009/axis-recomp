@@ -19,7 +19,10 @@ extern Settings g_settings;
 /* the Windows side (standalone/platform.c) */
 void platform_loadSettings(void);              /* g_settings from axisnet.ini next to the exe (at start-up) */
 int platform_isForeground(void *window);       /* the window is the foreground window */
-void platform_watchWindow(void *window, void **editField, void **mouseDevice);
+#ifndef APTR
+#define APTR(T) T *   /* (standalone/platform.c: without axis.h) */
+#endif
+void platform_watchWindow(void *window, APTR(void) *editField, APTR(void) *mouseDevice);
 	/* subclass the game window once (again if it changes): on activation the text fields' hidden EDIT
 	   control (*editField)  gets the focus back; on deactivation the DirectInput mouse (*mouseDevice) is unacquired and the
 	   real mouse buttons are watched so none stays held in Windows */

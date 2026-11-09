@@ -11,14 +11,14 @@
 /* 0x4012c0: take the keyboard again */
 void (input_reacquireKeyboard)(void)
 {
-	if (g_keyboard != NULL && g_keyboardReady != 0)
+	if (g_keyboard != 0 && g_keyboardReady != 0)
 		IN_ACQUIRE(AP(void, g_keyboard));
 }
 
 /* 0x4012e0: take the mouse again (or let it go while g_mouseTaken is 0); 1 when there is a mouse */
 int (input_reacquireMouse)(void)
 {
-	if (g_mouse == NULL)
+	if (g_mouse == 0)
 		return 0;
 	if (g_mouseTaken != 0)
 		IN_ACQUIRE(AP(void, g_mouse));
@@ -30,7 +30,7 @@ int (input_reacquireMouse)(void)
 /* 0x401460: let the keyboard go and release it */
 void (input_releaseKeyboard)(void)
 {
-	if (g_keyboard != NULL) {
+	if (g_keyboard != 0) {
 		IN_UNACQUIRE(AP(void, g_keyboard));
 		IN_RELEASE(AP(void, g_keyboard));
 		g_keyboard = AREF(NULL);
@@ -41,7 +41,7 @@ void (input_releaseKeyboard)(void)
 /* 0x401490: the same for the mouse */
 void (input_releaseMouse)(void)
 {
-	if (g_mouse != NULL) {
+	if (g_mouse != 0) {
 		IN_UNACQUIRE(AP(void, g_mouse));
 		IN_RELEASE(AP(void, g_mouse));
 		g_mouse = AREF(NULL);
@@ -54,7 +54,7 @@ void (input_releaseAll)(void)
 {
 	input_releaseKeyboard();
 	input_releaseMouse();
-	if (g_directInput != NULL) {
+	if (g_directInput != 0) {
 		IN_RELEASE(AP(void, g_directInput));
 		g_directInput = AREF(NULL);
 	}
@@ -63,7 +63,7 @@ void (input_releaseAll)(void)
 /* 0x467b70: DirectSound released */
 void (sound_releaseDirectSound)(void)
 {
-	if (g_directSound != NULL) {
+	if (g_directSound != 0) {
 		SND_RELEASE(AP(void, g_directSound));
 		g_directSound = AREF(NULL);
 	}
@@ -126,7 +126,7 @@ int (input_createDirectInput)(void *window, void *instance)
 int (input_readMouse)(void)
 {
 	void *state = AP(void, OBJ(g_mouseState));
-	if (g_mainWindow && GetForegroundWindow() != g_mainWindow)
+	if (g_mainWindow && AV(GetForegroundWindow()) != g_mainWindow)
 		goto clear;
 	if (g_mouse) {
 		long r = IN_READ(AP(void, g_mouse), 0x10, state);
@@ -186,7 +186,7 @@ void (input_updateMouse)(void)
 	}
 #endif
 
-	const u8 *buttons = (const u8 *)(ADDR_AT(g_mouseState, 3));
+	const u8 *buttons = AP(const u8, (ADDR_AT(g_mouseState, 3)));
 	for (int i = 0; i < 3; i++) {
 		int held = buttons[i] & 0x80;
 		int *pulse = AP(int, (OBJ(g_mouseClicked) + i * 4)), *was = AP(int, (OBJ(g_mouseWasDown) + i * 4));
@@ -209,7 +209,7 @@ u32 (input_setCursorPos)(int x, int y)
 {
 	if (g_mainWindow) {
 		void *front = GetForegroundWindow();
-		if (g_mainWindow != front)
+		if (g_mainWindow != AV(front))
 			return AV(front);
 	}
 	return SetCursorPos(x, y);
@@ -218,7 +218,7 @@ u32 (input_setCursorPos)(int x, int y)
 /* 0x487ba0: is the key down now (1 or 0; GetAsyncKeyState's low 16 bits)? */
 int (input_asyncKeyDown)(int key)
 {
-	if (g_mainWindow && GetForegroundWindow() != g_mainWindow)
+	if (g_mainWindow && AV(GetForegroundWindow()) != g_mainWindow)
 		return 0;
 	return (u16)GetAsyncKeyState(key) != 0;
 }
@@ -227,7 +227,7 @@ int (input_asyncKeyDown)(int key)
    returns the point */
 int *(input_getCursorPos)(void)
 {
-	if (!g_mainWindow || GetForegroundWindow() == g_mainWindow) {
+	if (!g_mainWindow || AV(GetForegroundWindow()) == g_mainWindow) {
 		int p[2];
 		GetCursorPos(p);
 		g_cursorX = p[0];
@@ -240,7 +240,7 @@ int *(input_getCursorPos)(void)
    when the key is up */
 int (input_asyncKeyPressed)(int key)
 {
-	if (g_mainWindow && GetForegroundWindow() != g_mainWindow)
+	if (g_mainWindow && AV(GetForegroundWindow()) != g_mainWindow)
 		return 0;
 	int *seen = AP(int, (OBJ(g_asyncKeySeen) + key * 4));
 	if (!(u16)GetAsyncKeyState(key))
@@ -296,7 +296,7 @@ int (input_justPressed)(int key)
 #endif
 	}
 	if (key == 0xfd) {
-		int *latch = (int *)(ADDR_AT(g_keySeen, 253));
+		int *latch = AP(int, (ADDR_AT(g_keySeen, 253)));
 		if (g_mouseWheel >= 0) {
 			*latch = 0;
 			return 0;

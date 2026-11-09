@@ -17,8 +17,8 @@ static void relight(ListedObject *e, const LightFactors *factors, const void *ti
 			Mat4_invert(inverse, e->matrix);
 			shape_shadingColours(AP(u32, e->colours), 1, AP(Shape, e->shape), factors, inverse);
 		} else {
-			for (u32 k = 0; k < (u32)e->shape->colourCount; k++)
-				e->colours[k] = 0;
+			for (u32 k = 0; k < (u32)AP(Shape, e->shape)->colourCount; k++)
+				AP(u32, e->colours)[k] = 0;
 		}
 	} else if (factors != NULL) {
 		Mat4_invert(inverse, e->matrix);
@@ -37,8 +37,8 @@ static void relight(ListedObject *e, const LightFactors *factors, const void *ti
 void THISCALL (ObjectList_relight)(ObjectList *list, const LightFactors *factors, const void *tint)
 {
 	for (int i = 0; i < list->count; i++) {
-		ListedObject *e = &list->entries[i];
-		if (e->shape != NULL)
+		ListedObject *e = &AP(ListedObject, list->entries)[i];
+		if (e->shape != 0)
 			relight(e, factors, tint);
 	}
 }
@@ -51,11 +51,11 @@ void THISCALL (ObjectList_relight)(ObjectList *list, const LightFactors *factors
 int THISCALL (ObjectList_queue)(ObjectList *list, void *view, const LightFactors *factors, const void *tint, int cull,
                           int material, int extraMatrix)
 {
-	if (list->skelCount <= 0 || list->count <= 0 || list->skeletons[list->skel] == 0)
+	if (list->skelCount <= 0 || list->count <= 0 || AP(APTR(struct Skeleton), list->skeletons)[list->skel] == 0)
 		return 0;
 	for (int i = 0; i < list->count; i++) {
-		ListedObject *e = &list->entries[i];
-		if (e->shape == NULL)
+		ListedObject *e = &AP(ListedObject, list->entries)[i];
+		if (e->shape == 0)
 			continue;
 		if (list->preLit == 1) {
 			if (tint != NULL || factors == NULL || factors->enabled == 1)
@@ -133,7 +133,7 @@ void THISCALL (ground_buildLayerModels)(u8 *stage)
 void THISCALL (ObjectList_bindTextures)(ObjectList *list)
 {
 	for (int i = 0; i < list->count; i++) {
-		void *shape = list->entries[i].shape;
+		void *shape = AP(void, AP(ListedObject, list->entries)[i].shape);
 		if (shape)
 			shape_bindPartTextures(shape);
 	}
@@ -148,7 +148,7 @@ void THISCALL (shape_bindPartTextures)(u8 *shape)
 	for (int i = 0; i < md->partCount; i++) {
 		int id = (AP(ShapePart, (md)->parts) + i)->texture;
 		if (id >= 0)
-			tex_bind(g_textures->banks[id / 512], id % 512);
+			tex_bind(AP(TextureManager, g_textures)->banks[id / 512], id % 512);
 	}
 	glDisable(GL_TEXTURE_2D);
 }

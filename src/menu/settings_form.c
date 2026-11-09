@@ -52,7 +52,7 @@ static const u32 k_white[4] = { 0x3f800000, 0x3f800000, 0x3f800000, 0x3f800000 }
 static void bind_buttons(void)
 {
 	int texture = g_buttonTexture;
-	tex_bind(g_textures->banks[texture / 512], texture % 512);
+	tex_bind(AP(TextureManager, g_textures)->banks[texture / 512], texture % 512);
 }
 
 /* the password as stars into out (cleared first, f->stars bytes) */
@@ -189,7 +189,7 @@ static void preview_controls(const Form *f, int left, int right, int advancedLit
    the map list is up, g_mapListOpen); the border. The caller ignores the eax it leaves */
 void (room_drawGameSettings)(void)
 {
-	static const Form form = { ADDR(g_roomFormLeft), AP(GameSettings, OBJ(g_roomSettingsName)), { ADDR(g_editingRoomName), ADDR(g_editingRoomPassword), ADDR(g_editingFragLimit), ADDR(g_editingTimeLimit) }, MSG(791, "DEATH MATCH"),
+	ASTATIC const Form form = { ADDR(g_roomFormLeft), AP(GameSettings, OBJ(g_roomSettingsName)), { ADDR(g_editingRoomName), ADDR(g_editingRoomPassword), ADDR(g_editingFragLimit), ADDR(g_editingTimeLimit) }, MSG(791, "DEATH MATCH"),
 	                           MSG(17, "DO NOT USE"), 0, 20 };
 	static const u32 advancedDim[4] = { 0x3e99999a, 0x3f333333, 0x3f333333, 0x3f800000 };   /* 0.3, 0.7, 0.7, 1 */
 	const Form *f = &form;
@@ -242,7 +242,7 @@ static void box_buttons(int hovered, int lit_from)
    The caller ignores the eax it leaves */
 void (arena_createDraw)(void)
 {
-	static const Form form = { ADDR(g_newArenaFormLeft), AP(GameSettings, OBJ(g_newArenaName)), { ADDR(g_editingNewArenaName), ADDR(g_typingArenaPassword), ADDR(g_editingNewArenaFragLimit), ADDR(g_editingNewArenaTimeLimit) }, MSG(471, "DEATH MATCH"),
+	ASTATIC const Form form = { ADDR(g_newArenaFormLeft), AP(GameSettings, OBJ(g_newArenaName)), { ADDR(g_editingNewArenaName), ADDR(g_typingArenaPassword), ADDR(g_editingNewArenaFragLimit), ADDR(g_editingNewArenaTimeLimit) }, MSG(471, "DEATH MATCH"),
 	                           0, OBJ(g_rotationOnOff), 10 };
 	const Form *f = &form;
 	const u32 *bright = ((u32 *)g_arenaBright), *dim = ((u32 *)g_arenaDim);

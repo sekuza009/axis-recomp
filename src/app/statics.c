@@ -139,7 +139,7 @@ void (colour_initRealGrey)(void) { u32 *c = AP(u32, OBJ(g_realGrey)); c[0] = 0x3
 	{ \
 		if (!(GAME_VAR(u8, guard) & 1)) { \
 			GAME_VAR(u8, guard) |= 1; \
-			ErrorLog_dtor((void *)(obj)); \
+			ErrorLog_dtor(AP(void, (obj))); \
 		} \
 	}
 GUARDED_DTOR(static_endTextureLog, 0xa0e009, OBJ(g_logTexture))

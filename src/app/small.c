@@ -406,7 +406,7 @@ void THISCALL (anim_setTime)(u8 *anim, int i, float t)
 	if (!ol->skeletons || i >= ol->skelCount)
 		return;
 	ol->skel = i;
-	const int *skeleton = (AP(int *, ol->skeletons))[i];
+	const int *skeleton = AP(const int, AP(APTR(int), ol->skeletons)[i]);
 	ol->animTick = ftol(fmul_m((long double)skeleton[8], &t));
 }
 
@@ -512,7 +512,7 @@ void (log_message)(int a, int b, int c, const char *format, ...)
 {
 	char text[0x400];
 	(void)a;
-	void (CDECL *hook)(int, int, const char *) = g_logHook;
+	void (CDECL *hook)(int, int, const char *) = FNP(void (CDECL *)(int, int, const char *), g_logHook);
 	if (!hook)
 		return;
 	va_list args;

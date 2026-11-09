@@ -158,7 +158,7 @@ int STDCALL (dplay_enumSessionsCallback)(const u8 *desc, void *timeout, u32 flag
 	if (!memcmp(guid, AP(const void, OBJ(k_GUID_NULL)), 16))
 		return 1;
 	for (int k = 0; k < g_dplaySessionCount; k++)
-		if (!memcmp(guid, g_sessionTable[k].desc->instance, 16))
+		if (!memcmp(guid, AP(SessionDesc, g_sessionTable[k].desc)->instance, 16))
 			return 0;
 	u8 *block = GlobalLock(GlobalAlloc(0x42, 0x10));   /* GlobalLock(GlobalAlloc(GHND)) */
 	d.guid = AV(block);
@@ -482,7 +482,7 @@ int (net_addRoomRecord)(const u8 *rec)
 /* 0x451350: a chat line as text: \"<name> > <text>\" (format 0x4b3e30 \"%s > %s\"; the sender's short name from
    DirectPlay through dplay_getPlayerName, \"unknown\" (0x4b3e38) when it has none) in a new global block, stored in
    *out. Returns the name lookup's result, or 0x8007000e (E_OUTOFMEMORY) when the block cannot be had */
-int (net_formatChatLine)(u32 from, const char *text, char **out)
+int (net_formatChatLine)(u32 from, const char *text, APTR(char) *out)
 {
 	u8 *name = NULL;
 	int r = dplay_getPlayerName(from, &name);
@@ -495,8 +495,12 @@ int (net_formatChatLine)(u32 from, const char *text, char **out)
 		if (!line)
 			r = 0x8007000e;
 		else {
+#ifdef AXIS_PORTABLE
+			((int (CDECL *)(char *, const char *, ...))(void *)plat_wsprintfA)(line, AP(const char, STR(0x4b3e30, "%s > %s")), shortName, text);
+#else
 			((int (CDECL *)(char *, const char *, ...))g_imp_wsprintfA)(line, AP(const char, STR(0x4b3e30, "%s > %s")), shortName, text);   /* wsprintfA */
-			*out = line;
+#endif
+			*out = AREF(line);
 		}
 	}
 	if (name)
@@ -573,7 +577,7 @@ int (net_getLocalAddress)(void)
    the player g_localPlayerId, the text at +0xc) in a new global block sent to everyone (dplay_send). 1 when sent */
 int (net_sendChat)(const char *text)
 {
-	if (net_formatChatLine(g_localPlayerId, text, AP(char *, ADDR(g_sentChatBlock))) < 0)   /* net_formatChatLine */
+	if (net_formatChatLine(g_localPlayerId, text, AP(APTR(char), ADDR(g_sentChatBlock))) < 0)   /* net_formatChatLine */
 		return 0;
 	int size = lstrlenA(text) + 0x10;
 	u8 *message = GlobalLock(GlobalAlloc(0x42, size));   /* GlobalLock(GlobalAlloc(GHND)) */
@@ -862,7 +866,7 @@ int (dplay_joinSession)(const void *guid, const char *player, u32 data)
    first failure */
 static void dplay_lobbyConnect(void)
 {
-	if (NET_LOBBY_CREATE(AP(void *, ADDR(g_dplayLobby))) < 0)
+	if (NET_LOBBY_CREATE(AP(APTR(void), ADDR(g_dplayLobby))) < 0)
 		return;
 	void *lobby = AP(void, g_dplayLobby);
 	u32 size;
@@ -882,7 +886,7 @@ static void dplay_lobbyConnect(void)
 	if (NET_LOBBY_SET_CONNECTION(lobby, AP(void, g_lobbyConnectionBlock)) < 0)
 		return;
 	lobby = AP(void, g_dplayLobby);
-	if (NET_LOBBY_CONNECT(lobby, AP(void *, ADDR(g_dplay))) < 0)
+	if (NET_LOBBY_CONNECT(lobby, AP(APTR(void), ADDR(g_dplay))) < 0)
 		return;   /* ConnectEx */
 	u32 id;
 	void *play = AP(void, g_dplay);   /* CreatePlayer with the lobby's DPNAME (lpPlayerName) */
@@ -902,7 +906,7 @@ static void dplay_lobbyConnect(void)
 int (dplay_create)(void)
 {
 	dplay_lobbyConnect();
-	int r = dplay_createObject(AP(void *, ADDR(g_dplay)));   /* dplay_createObject */
+	int r = dplay_createObject(AP(APTR(void), ADDR(g_dplay)));   /* dplay_createObject */
 	if (r < 0)
 		return r;
 	void *play = AP(void, g_dplay);
@@ -932,7 +936,7 @@ u32 (net_handleMessage)(const u8 *message, u32 size, u32 from)
 	case 1:
 		if ((*(int *)&g_lastChatLine))
 			(*(int *)&g_lastChatLine) = 0;
-		r = net_formatChatLine(from, message + 0xc, AP(char *, ADDR(g_lastChatLine)));   /* net_formatChatLine */
+		r = net_formatChatLine(from, message + 0xc, AP(APTR(char), ADDR(g_lastChatLine)));   /* net_formatChatLine */
 		if (r >= 0)
 			g_lastChatLineSet = 1;
 		return r;
@@ -1001,7 +1005,7 @@ int (dplay_initConnection)(int kind, const char *address)
 	}
 	if (!g_storedConnection)
 		return 1;
-	if (dplay_createObject(AP(void *, ADDR(g_dplay))) < 0 || !g_dplay)   /* dplay_createObject */
+	if (dplay_createObject(AP(APTR(void), ADDR(g_dplay))) < 0 || !g_dplay)   /* dplay_createObject */
 		return 0;
 	void *play = AP(void, g_dplay);
 	if (NET_INIT_CONNECTION(play, AP(void, g_storedConnection)) < 0)
@@ -1126,7 +1130,7 @@ void (net_handleSystemMessage)(const u32 *msg)
 		if (joined)
 			room_sendInfo(AP(u8, g_roomInfoPacket), 1, (u8)g_playerCount);
 		else
-			room_sendInfo(g_roomInfoPacket, g_roomPacket->kind, (u8)(g_playerCount - 1));
+			room_sendInfo(AP(u8, g_roomInfoPacket), AP(RoomRecord, g_roomPacket)->kind, (u8)(g_playerCount - 1));
 		break;
 	case 200:
 		if (g_lobbyReportsOff || !(*(int *)&g_lobbySocket))
@@ -1135,7 +1139,7 @@ void (net_handleSystemMessage)(const u32 *msg)
 			g_playerCount = msg[3];
 		if (!g_arenaInfoPacket)
 			return;
-		arena_sendInfo(g_arenaInfoPacket, g_arenaPacket->kind, (u8)(g_playerCount - !joined));
+		arena_sendInfo(AP(u8, g_arenaInfoPacket), AP(ArenaRecord, g_arenaPacket)->kind, (u8)(g_playerCount - !joined));
 		break;
 	}
 }
@@ -1290,7 +1294,7 @@ void (net_send)(int kind, int to)
 		if (!g_accountPacket)
 			return;
 		jmp_net_getLocalAddress();
-		lstrcpyA(g_accountPacket->address, g_localAddress);
+		lstrcpyA(AP(AccountPacket, g_accountPacket)->address, g_localAddress);
 		send_buffer(ADDR(g_gameServerSocket), ADDR(g_accountPacket), 0x10b);
 		return;
 	case 19:
@@ -1310,7 +1314,7 @@ void (net_send)(int kind, int to)
 		g_netLastRequest = 0x16;
 		if (!g_roomLeavePacket)
 			return;
-		*g_roomLeavePacket = 1;
+		*AP(u8, g_roomLeavePacket) = 1;
 		send_buffer(ADDR(g_gameServerSocket), ADDR(g_roomLeavePacket), 0x79);
 		return;
 	case 24:

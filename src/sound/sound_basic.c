@@ -8,20 +8,20 @@
 #undef sound_setNextVolume
 
 typedef struct {
-	void *buffers[8];
+	APTR(void) buffers[8];
 	i32 next;            /* the buffer to play next */
 	i32 panModes[8];     /* per buffer: the last play's mode (1 / 2: with a pan; sound_playPanned) */
 	i32 pans[8];         /* and its pan (SetPan) */
 } Sound;                 /* 100 bytes */
 
-#define g_menuSounds ((Sound *const *)OBJ(g_menuSoundBuffers))
+#define g_menuSounds (AP(Sound *const, OBJ(g_menuSoundBuffers)))
 
 /* 0x467d70: play the sound's next buffer; the turn moves on (0 .. 7) */
 void (sound_playNext)(Sound *sound)
 {
 	if (sound == NULL)
 		return;
-	void *buffer = sound->buffers[sound->next];
+	void *buffer = AP(void, sound->buffers[sound->next]);
 	if (buffer != NULL)
 		SND_PLAY(buffer, 0);
 	if (sound->next < 7)
@@ -35,7 +35,7 @@ void (sound_setNextVolume)(Sound *sound, int volume)
 {
 	if (sound == NULL)
 		return;
-	void *buffer = sound->buffers[sound->next];
+	void *buffer = AP(void, sound->buffers[sound->next]);
 	if (buffer != NULL)
 		SND_SET_VOLUME(buffer, volume);
 }
@@ -52,7 +52,7 @@ void (sound_playMenu)(int id)
 /* 0x457310: the music graph released, then COM let go */
 void (music_stop)(void)
 {
-	if (g_music == NULL)
+	if (g_music == 0)
 		return;
 	MUS_RELEASE(AP(void, g_music));
 	g_music = AREF(NULL);
@@ -113,9 +113,9 @@ u32 (sound_playPanned)(u32 *sound, int mode, int value)
 	sd->panModes[sd->next] = mode;
 	if (mode == 1 || mode == 2)
 		sd->pans[sd->next] = value;
-	void *buffer = RELOC(sd->buffers[sd->next]);
+	void *buffer = AP(void, RELOC(sd->buffers[sd->next]));
 	SND_SET_PAN(buffer, sd->pans[sd->next]);
-	buffer = RELOC(sd->buffers[sd->next]);
+	buffer = AP(void, RELOC(sd->buffers[sd->next]));
 	SND_PLAY(buffer, 0);
 	u32 turn = (u32)sd->next;
 	if ((int)turn < 7) {
@@ -304,7 +304,7 @@ Sound *(sound_loadWav)(const char *name)
 		MessageBoxA(NULL, AP(const char, STR(0x4c4dc4, "SoundBuffer create error")), AP(const char, STR(0x4c4de0, "Error")), 0);
 		return NULL;
 	}
-	void *buffer = sound->buffers[0], *locked;
+	void *buffer = AP(void, sound->buffers[0]), *locked;
 	SND_LOCK(buffer, size, &locked, &size);
 	memcpy(locked, data, size);
 	SND_UNLOCK(buffer, locked, size);
@@ -315,7 +315,7 @@ Sound *(sound_loadWav)(const char *name)
 	}
 	for (int i = 0; i < 8; i++) {
 		ds = AP(void, g_directSound);
-		SND_DUPLICATE(ds, sound->buffers[0], &sound->buffers[i]);
+		SND_DUPLICATE(ds, AP(void, sound->buffers[0]), &sound->buffers[i]);
 	}
 	operator_delete(data);
 	return sound;
@@ -326,7 +326,7 @@ Sound *(sound_loadWav)(const char *name)
    released again when the buffer will not play) */
 int (sound_init)(void *hwnd)
 {
-	if (SND_CREATE(AP(void *, ADDR(g_directSound))))
+	if (SND_CREATE(AP(APTR(void), ADDR(g_directSound))))
 		return 0;
 	void *ds = AP(void, g_directSound);
 	if (SND_SET_WINDOW(ds, hwnd))
@@ -344,7 +344,7 @@ int (sound_init)(void *hwnd)
 	wave.bits = 16;
 	wave.extra = 0;
 	ds = AP(void, g_directSound);
-	if (SND_CREATE_BUFFER(ds, &desc, AP(void *, ADDR(g_primarySoundBuffer))))
+	if (SND_CREATE_BUFFER(ds, &desc, AP(APTR(void), ADDR(g_primarySoundBuffer))))
 		return 0;
 	void *primary = AP(void, g_primarySoundBuffer);
 	SND_SET_FORMAT(primary, &wave);
@@ -402,20 +402,20 @@ int (music_play)(const char *name)
 			music_stop();
 		return 1;
 	}
-	void *stream;
+	APTR(void) stream;
 	unsigned short wname[0x104];
 	CoInitialize(NULL);   /* CoInitialize */
 	if (MUS_CREATE(&stream))
 		return 0;
 	MultiByteToWideChar(0, 0, name, -1, wname, 0x104);   /* MultiByteToWideChar */
-	if (MUS_INIT(stream))
+	if (MUS_INIT(AP(void, stream)))
 		return 0;
-	if (MUS_ADD_AUDIO(stream))   /* (the default audio renderer) */
+	if (MUS_ADD_AUDIO(AP(void, stream)))   /* (the default audio renderer) */
 		return 0;
-	if (MUS_OPEN(stream, wname))
+	if (MUS_OPEN(AP(void, stream), wname))
 		return 0;
-	g_music = AREF(stream);
-	MUS_SET_STATE(stream, 1);   /* run */
+	g_music = stream;
+	MUS_SET_STATE(AP(void, stream), 1);   /* run */
 	strcpy(g_musicFile, name);
 	MUS_DURATION(AP(void, g_music), AP(void, ADDR(g_musicLength)));
 	return 1;

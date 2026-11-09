@@ -52,8 +52,8 @@ void (menu_clearInputBuffer)(int max)
 /* 0x4315c0: the line pushed onto the history (the oldest line dropped) */
 void (menu_pushInputHistory)(void)
 {
-	memcpy((void *)(OBJ(g_inputHistory) + 0x800), (void *)(OBJ(g_inputHistory) + 0x400), 0x400);
-	memcpy((void *)(OBJ(g_inputHistory) + 0x400), AP(void, OBJ(g_inputHistory)), 0x400);
+	memcpy(AP(void, (OBJ(g_inputHistory) + 0x800)), AP(void, (OBJ(g_inputHistory) + 0x400)), 0x400);
+	memcpy(AP(void, (OBJ(g_inputHistory) + 0x400)), AP(void, OBJ(g_inputHistory)), 0x400);
 	memcpy(AP(void, OBJ(g_inputHistory)), AP(void, OBJ(g_inputLine)), 0x400);
 }
 

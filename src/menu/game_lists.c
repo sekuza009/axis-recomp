@@ -7,7 +7,8 @@
 #define g_listTop g_gameListTop
 #define g_searching (g_lanSearch || g_lobbySearching)
 
-static const u32 *const bright = ((u32 *)g_arenaBright), *const dim = ((u32 *)g_arenaDim);
+#define bright ((const u32 *)g_arenaBright)
+#define dim ((const u32 *)g_arenaDim)
 #define TEXT(c) set_colour_bits(g_textColour, (c)[0], (c)[1], (c)[2], (c)[3])
 #define RECT(r, g, b, a) set_colour_bits(g_rectColour, r, g, b, a)
 
@@ -15,7 +16,7 @@ static void bind_buttons(void)
 {
 	glEnable(GL_TEXTURE_2D);
 	int texture = g_buttonTexture;
-	tex_bind(g_textures->banks[texture / 512], texture % 512);
+	tex_bind(AP(TextureManager, g_textures)->banks[texture / 512], texture % 512);
 }
 
 /* a button's quad (x0, y0 .. x1, y1), lit or dimmed, and the text colour to match */
@@ -41,7 +42,7 @@ static void game_rows(int x0, int y0, int y, int end, int locks, u32 kinds, int 
 		if (locks && game->locked) {
 			glEnable(GL_TEXTURE_2D);
 			int texture = g_fontAscii;
-			tex_bind(g_textures->banks[texture / 512], texture % 512);
+			tex_bind(AP(TextureManager, g_textures)->banks[texture / 512], texture % 512);
 			glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 			glBegin(GL_QUADS);
 			glTexCoord2f(0.0f, 0.8125f);
@@ -175,7 +176,7 @@ void (arena_drawGameList)(void)
 	}
 	glEnable(GL_TEXTURE_2D);
 	int texture = g_buttonTexture;
-	tex_bind(g_textures->banks[texture / 512], texture % 512);
+	tex_bind(AP(TextureManager, g_textures)->banks[texture / 512], texture % 512);
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 	menu_drawUpArrow(X0 + 0x21e, Y0 + 0xa0, X0 + 0x23e, Y0 + 0xe0, hovered == 0xf);
 	menu_drawDownArrow(X0 + 0x21e, Y0 + 0xf0, X0 + 0x23e, Y0 + 0x130, hovered != 0xf && hovered == 0x10);
@@ -199,7 +200,7 @@ void (arena_drawGameList)(void)
 		text_drawCentredLines16(0x69, 0xf4, 0x217, AP(const char, MSG(154, "PLEASE WAIT")));
 		glEnable(GL_TEXTURE_2D);
 		texture = g_buttonTexture;
-		tex_bind(g_textures->banks[texture / 512], texture % 512);
+		tex_bind(AP(TextureManager, g_textures)->banks[texture / 512], texture % 512);
 		glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 		button(on == 0, 0x104, 0x118, 0x17c, 0x138, 0.7f);
 		text_drawCentredLines16(0x104, 0x120, 0x17c, AP(const char, MSG(116, "$[0] CANCEL")));
@@ -236,7 +237,8 @@ void (arena_drawGameList)(void)
 #define X1 g_roomGameListRight
 #define Y1 g_roomGameListBottom
 
-static const u32 *const room_bright = ((u32 *)g_roomBright), *const room_dim = ((u32 *)g_roomDim);
+#define room_bright ((const u32 *)g_roomBright)
+#define room_dim ((const u32 *)g_roomDim)
 
 /* a room button's quad, lit or dimmed, and the text colour to match */
 static void room_button(int lit, int x0, int y0, int x1, int y1, float dim_alpha)
@@ -295,7 +297,7 @@ void (gameList_draw)(void)
 	}
 	glEnable(GL_TEXTURE_2D);
 	int texture = g_buttonTexture;
-	tex_bind(g_textures->banks[texture / 512], texture % 512);
+	tex_bind(AP(TextureManager, g_textures)->banks[texture / 512], texture % 512);
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 	menu_drawUpArrow(X0 + 0x226, Y0 + 0x6e, X0 + 0x246, Y0 + 0xae, hovered == 0xd);
 	menu_drawDownArrow(X0 + 0x226, Y0 + 0xbe, X0 + 0x246, Y0 + 0xfe, hovered != 0xd && hovered == 0xe);
@@ -328,7 +330,7 @@ void (gameList_draw)(void)
 		text_drawCentredLines16(0x69, 0xf4, 0x217, AP(const char, MSG(154, "PLEASE WAIT")));
 		glEnable(GL_TEXTURE_2D);
 		texture = g_buttonTexture;
-		tex_bind(g_textures->banks[texture / 512], texture % 512);
+		tex_bind(AP(TextureManager, g_textures)->banks[texture / 512], texture % 512);
 		glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 		room_button(on == 0, 0x104, 0x118, 0x17c, 0x138, 0.7f);
 		glDisable(GL_TEXTURE_2D);

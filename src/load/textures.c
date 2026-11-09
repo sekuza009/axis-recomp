@@ -131,8 +131,8 @@ void THISCALL (tex_bind)(u8 *tm, int i)
 	TextureBank *mg = (TextureBank *)tm;
 	TexRecord *texture = &mg->records[i];
 	TexSlot *slot;
-#define OLDEST ((TexSlot *)mg->oldest)
-#define SLOT(p) ((TexSlot *)(p))
+#define OLDEST (AP(TexSlot, mg->oldest))
+#define SLOT(p) (AP(TexSlot, (p)))
 	if (texture->slot < 0) {
 		slot = OLDEST;
 		slot->record = i;

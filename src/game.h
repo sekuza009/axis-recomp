@@ -110,7 +110,7 @@ void fix_hudVertex(int x, int y);
 /* glRotatef about x, then y, then z (degrees, as float bits) */
 #define gfx_rotateXYZ(x, y, z) CALL_FN(gl_rotateXYZ, void, u32, u32, u32)(x, y, z)
 /* the 3D background (menu_tunnel.c) */
-#define g_flareTextures ((const int *)(OBJ(g_spiralTextures) + 0x14))     /* flare k's texture is g_flareTextures[-k] */
+#define g_flareTextures (AP(const int, (OBJ(g_spiralTextures) + 0x14)))     /* flare k's texture is g_flareTextures[-k] */
 /* ---- textures ---- */
 typedef void (*Cleanup)(void);   /* a fatal error's clean-up before exit(1) (g_errorCleanupHook) */
 typedef struct { u32 vtable; void *banks[6]; i32 count; } TextureManager;   /* the game's TextureManager (0x83a5e0): six texture banks (the game's class Texture, one per size: TextureBank); a texture id names banks[id / 512], slot id % 512 */
@@ -599,7 +599,7 @@ typedef struct { float r, g, b, a; } Colour;   /* an RGBA colour, four floats (C
 #define g_missionProgress (*(int *)(g_pilotSave + 0x104))   /* the furthest stage reached */
 #define g_trig (g_tanTable)            /* 3600 values by tenths of a degree (the ring's focal length and radius) */
 #define g_showFps (*(int *)&g_cfgSwitches[2])           /* 1: the FPS counter is shown */
-#define g_gameModeNames ((const char (*)[64])STR(0x4c7030, "DEATH MATCH"))   /* "DEATH MATCH", "TEAM DEATH MATCH", ... (12) */
+#define g_gameModeNames ((const char (*)[64])AP(const char, STR(0x4c7030, "DEATH MATCH")))   /* "DEATH MATCH", "TEAM DEATH MATCH", ... (12) */
 /* the title and profile screens */
 /* the title emblem (menu_title.c) */
 #define g_titleTextures (g_introTextures)     /* eight: the base picture's quarters, then the pulsing layer's */
@@ -795,7 +795,7 @@ typedef struct { float r, g, b, a; } Colour;   /* an RGBA colour, four floats (C
 #define armc_open() CALL_FN(armc_open, u32, void)()
 #define dplay_join(session, guid, player, data) CALL_FN(dplay_join, int, int, u32, const char *, int)(session, guid, player, data)   /* a join: 500 joined */
 #define tunnel_addRing() CALL_FN(tunnel_addRing, TunnelRing *, void)()   /* one more tunnel ring */
-#define tunnel_removeLastRing(head) CALL_FN(tunnel_removeLastRing, u32, TunnelRing **)(head)   /* the last ring taken off and freed */
+#define tunnel_removeLastRing(head) CALL_FN(tunnel_removeLastRing, u32, APTR(TunnelRing) *)(head)   /* the last ring taken off and freed */
 #define crypt_record4c(p, key) CALL_FN(crypt_record4c, int, u8 *, u8)(p, key)   /* a 0x4c-byte record decoded (xor key, key + 1, ...) */
 #define cfg_writeAxisCfg() CALL_FN(cfg_writeAxisCfg, u32, void)()
 #define setup_bindKey(key) CALL_FN(setup_bindKey, void, int)(key)   /* the row being bound gets key (a key, mouse button or wheel code) */
@@ -1121,8 +1121,8 @@ void fix_glViewport(int x, int y, int w, int h);
 #define glViewport(x, y, w, h) fix_glViewport(x, y, w, h)
 #endif
 #define glMatrixMode(mode) IMPORT_FN(glMatrixMode, void, u32)(mode)
-#define gluPerspective(angle, aspect, zNear, zFar) ((void (STDCALL *)(double, double, double, double))*AP(const u32, STR(0x4a9048, "j\300\n")))(angle, aspect, zNear, zFar)
-#define gluOrtho2D(left, right, bottom, top) ((void (STDCALL *)(double, double, double, double))*AP(const u32, STR(0x4a9050, "|\300\n")))(left, right, bottom, top)
+#define gluPerspective(angle, aspect, zNear, zFar) IMPORT_FN(gluPerspective, void, double, double, double, double)(angle, aspect, zNear, zFar)
+#define gluOrtho2D(left, right, bottom, top) IMPORT_FN(gluOrtho2D, void, double, double, double, double)(left, right, bottom, top)
 
 /* ---- small methods and resets (app/small.c, app/classes.c, match/actor_slots.c, collision/collision_space.c, render/rotations.c) ---- */
 #define path_normalize(path) CALL_FN(path_normalize, char *, char *)(path)   /* upper-cased in place, '/' -> '\' */

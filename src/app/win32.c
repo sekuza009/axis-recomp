@@ -16,7 +16,7 @@
    only access to 0x76d224 in the original). Returns GetCurrentDirectoryA's answer */
 u32 (app_readCurrentDirectory)(void)
 {
-	return FILE_CURRENT_DIRECTORY(0x105, (char *)(OBJ(g_messages) + 0x1f400));
+	return FILE_CURRENT_DIRECTORY(0x105, AP(char, (OBJ(g_messages) + 0x1f400)));
 }
 
 /* 0x46c580: a message box over the active window (title, text); MessageBox's answer */
@@ -41,9 +41,13 @@ int (sys_messageBox)(const char *format, ...)
 {
 	va_list args;
 	va_start(args, format);
+#ifdef AXIS_64   /* (a 64-bit va_list is no address: none kept) */
+	vsprintf(g_messageBoxText, format, args);
+#else
 	g_messageBoxArgs = args;
 	vsprintf(g_messageBoxText, format, args);
 	(*(void **)&g_messageBoxArgs) = NULL;
+#endif
 	int answer = MessageBoxA(GetActiveWindow(), g_messageBoxText, AP(const char, STR(0x4b043c, "User Message ^_^;")), 0);
 	va_end(args);
 	return answer;
@@ -122,7 +126,7 @@ void *(glWindow_init)(const char *title, int width, int height, int colourBits, 
 		g_glWindow = AREF(IMPORT_FN(CreateWindowExA, void *, u32, const char *, const char *, u32, int, int, int, int, void *, void *, void *, void *)(
 			0, g_glTitle, g_glTitle, 0x86000000, 0, 0, g_glWidth, g_glHeight, NULL, NULL,
 			GetModuleHandleA(NULL), NULL));                                                             /* CreateWindowExA: WS_POPUP | WS_CLIPSIBLINGS | WS_CLIPCHILDREN */
-		if (g_glWindow == NULL) {
+		if (g_glWindow == 0) {
 			sys_errorMessageNoName(AP(const char, STR(0x4c4f14, "glWindow window handle initializing f...")));
 			return NULL;
 		}

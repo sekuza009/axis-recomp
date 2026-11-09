@@ -13,7 +13,7 @@ for a hand edit instead. --dry: list only."""
 import collections, os, re, sys
 
 ROOT = os.path.normpath(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..'))
-SKIP = ('src/axis.h', 'src/plat/posix/', 'src/addr_consts.h', 'src/data/')
+SKIP = ('src/axis.h', 'src/plat/posix/', 'src/addr_consts.h', 'src/data/', 'src/app/../axis_api.h', 'src/plat/win32/../../axis_api.h')
 TYPE_WORDS = {'u8', 'u16', 'u32', 'u64', 'i32', 'int', 'char', 'float', 'double', 'void', 'short', 'long', 'unsigned',
               'signed', 'const', 'volatile', 'struct', 'BYTE', 'WORD', 'DWORD', 'uintptr_t', 'size_t', 'intptr_t',
               'HANDLE', 'HWND', 'HDC', 'BOOL', 'LONG', 'UINT', 'ULONG'}
@@ -100,6 +100,25 @@ def unary_end(t, i):
             return j
 
 
+def unary_base_end(t, i):
+    """from i, the end of the postfix expression up to its last [ (for a subscripted pointer field: base[...])"""
+    end = unary_end(t, i)
+    k = end
+    while t[k - 1] in ' 	':
+        k -= 1
+    if t[k - 1] != ']':
+        raise ValueError('no subscript')
+    depth = 0
+    while True:
+        k -= 1
+        if t[k] == ']':
+            depth += 1
+        elif t[k] == '[':
+            depth -= 1
+            if not depth:
+                return k
+
+
 def match_str(t, i):
     q = t[i]
     j = i + 1
@@ -140,12 +159,74 @@ def first_type(msg, after):
     return m.group(1) if m else None
 
 
+def field_types():
+    """the APTR fields and globals by name -> their pointee type (None where two disagree)"""
+    out = {}
+    def add(name, ty):
+        ty = re.sub(r'\s+', ' ', ty.strip())
+        out[name] = ty if out.get(name, ty) == ty else None
+    for f in ('src/scene.h', 'src/data/layout.h'):
+        for m in re.finditer(r'APTR\(((?:[^()]|\([^()]*\))*)\)\s+(\w+)', open(os.path.join(ROOT, f)).read()):
+            add(m.group(2), m.group(1))
+    for m in re.finditer(r'#define (\w+) GAME_VAR\(APTR\(([^()]*)\),', open(os.path.join(ROOT, 'src/globals.h')).read()):
+        add(m.group(1), m.group(2))
+    return out
+
+
+FIELDS = None
+
+
+def base_start(t, end):
+    """the start of the postfix expression ending at end (just before -> or [)"""
+    j = end
+    while t[j - 1] in ' \t':
+        j -= 1
+    while True:
+        c = t[j - 1]
+        if c in ')]':
+            depth = 0
+            k = j - 1
+            while True:
+                if t[k] in ')]':
+                    depth += 1
+                elif t[k] in '([':
+                    depth -= 1
+                    if not depth:
+                        break
+                k -= 1
+            j = k
+            # (a call or a subscript: its callee / array before it)
+            if c == ']' or (j > 0 and (t[j - 1].isalnum() or t[j - 1] == '_')):
+                continue
+            return j
+        m = re.search(r'[A-Za-z_]\w*$', t[:j])
+        if not m:
+            raise ValueError('no base')
+        j = m.start()
+        if t[j - 2:j] == '->':
+            j -= 2
+            continue
+        if t[j - 1] == '.':
+            j -= 1
+            continue
+        return j
+
+
+def last_name(expr):
+    m = re.search(r'(\w+)\s*(\[[^\]]*\])?\s*$', expr)
+    return m.group(1) if m else None
+
+
 def plan(msg, flag):
     """-> (kind, pointer base type or None)"""
     if flag in ('-Wint-to-pointer-cast', '-Wint-to-void-pointer-cast'):
         return 'cast_ap', None
     if flag in ('-Wpointer-to-int-cast', '-Wvoid-pointer-to-int-cast'):
         return 'cast_av', None
+    if msg.startswith('member reference type') and 'is not a pointer' in msg:
+        return 'deref_arrow', None
+    if msg.startswith('subscripted value is not an array'):
+        return 'deref_index', None
     if flag == '-Wint-conversion':
         if msg.startswith('incompatible integer to pointer conversion'):
             ty = first_type(msg, 'to parameter of type') or first_type(msg, 'initializing') or \
@@ -178,6 +259,24 @@ def apply(t, pos, kind, base):
         if ty in ('u32', 'DWORD', 'unsigned', 'unsigned int', 'uint32_t'):
             return t[:pos] + 'AV(%s)' % inner + t[end:]
         return t[:pos] + '(%s)AV(%s)' % (ty, inner) + t[end:]
+    if kind in ('deref_arrow', 'deref_index'):
+        global FIELDS
+        if FIELDS is None:
+            FIELDS = field_types()
+        if kind == 'deref_arrow':   # (clang points at the member's name: the -> before it)
+            k = t.rfind('->', 0, pos)
+            if k < 0 or t[k + 2:pos].strip():
+                return None
+        else:   # (at the [)
+            k = pos
+            if t[k] != '[':
+                return None
+        s = base_start(t, k)
+        expr = t[s:k].rstrip()
+        ty = FIELDS.get(last_name(expr) or '')
+        if not ty:
+            return None
+        return t[:s] + 'AP(%s, %s)' % (ty, expr) + t[s + len(expr):]
     if kind in ('wrap_ap', 'wrap_av'):
         p = skip_ws(t, pos)
         m = re.compile(r'[A-Za-z_]\w*\s*=(?!=)').match(t, p)
@@ -195,6 +294,19 @@ def apply(t, pos, kind, base):
     return None
 
 
+_lines = {}
+
+
+def char_at(path, ln, col):
+    if path not in _lines:
+        try:
+            _lines[path] = open(os.path.join(ROOT, path), encoding='latin-1').read().replace('\r\n', '\n').split('\n')
+        except OSError:
+            _lines[path] = []
+    L = _lines[path]
+    return L[ln - 1][col - 1:col] if ln <= len(L) else ''
+
+
 def main():
     dry = '--dry' in sys.argv
     diags = collections.OrderedDict()
@@ -206,8 +318,22 @@ def main():
                 continue
             path, ln, col, msg, flag = m.group(1), int(m.group(2)), int(m.group(3)), m.group(4), m.group(5)
             # (from a macro: the next lines say "expanded from macro"; such a site is listed, not edited)
-            macro = any('expanded from macro' in lines[x] for x in range(k + 1, min(k + 6, len(lines)))
-                        if not DIAG.match(lines[x]) and 'note:' in lines[x])
+            notes = []
+            for x in range(k + 1, len(lines)):
+                if DIAG.match(lines[x]):
+                    break
+                n = re.match(r'^(src/[^:]+):(\d+):(\d+): note: expanded from macro', lines[x])
+                if n:
+                    notes.append((os.path.normpath(n.group(1)).replace('\\', '/'), int(n.group(2)), int(n.group(3))))
+            macro = bool(notes)
+            # (a cast spelled inside a macro: the site is where the cast is written - the first expansion note whose text
+            # there is a cast - not where the macro is used)
+            if flag in ('-Wint-to-pointer-cast', '-Wint-to-void-pointer-cast', '-Wpointer-to-int-cast', '-Wvoid-pointer-to-int-cast') \
+                    and notes and char_at(path, ln, col) != '(':
+                for np_, nl, nc in notes:
+                    if not np_.startswith(SKIP) and char_at(np_, nl, nc) == '(':
+                        path, ln, col = np_, nl, nc
+                        break
             diags.setdefault((path, ln, col), (msg, flag, macro))
     byfile = collections.defaultdict(list)
     manual = []
@@ -217,7 +343,9 @@ def main():
             if flag in ('-Wint-conversion', '-Wint-to-pointer-cast', '-Wpointer-to-int-cast', None):
                 manual.append('%s:%d:%d: %s' % (path, ln, col, msg))
             continue
-        if path.startswith(SKIP) or path.endswith('.h'):
+        # (a cast is rewritten in macros and headers too - AP / AV take a number or a pointer alike, so it stays right for
+        # every use; the other kinds only outside them)
+        if path.startswith(SKIP) or (path.endswith('.h') and kind not in ('cast_ap', 'cast_av')):
             manual.append('%s:%d:%d: %s%s' % (path, ln, col, msg, ' (macro)' if macro else ''))
             continue
         byfile[path].append((ln, col, kind, base, msg))
@@ -235,7 +363,7 @@ def main():
             pos = starts[ln - 1] + col - 1
             line = t[starts[ln - 1]:t.find('\n', starts[ln - 1])]
             prev = t[starts[ln - 2]:starts[ln - 1] - 1] if ln > 1 else ''
-            if line.lstrip().startswith('#') or prev.rstrip().endswith('\\'):   # (a macro's definition)
+            if (line.lstrip().startswith('#') or prev.rstrip().endswith('\\')) and kind not in ('cast_ap', 'cast_av'):
                 manual.append('%s:%d:%d: %s (#define)' % (path, ln, col, msg))
                 continue
             try:

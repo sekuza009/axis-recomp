@@ -220,7 +220,7 @@ void THISCALL (ObjectList_load)(u8 *list, void *shapes, void *skels, int ns, con
 		} else
 			entry[2] = 0;
 	}
-	ol->skeletons = AREF(AP(struct Skeleton *, (ol->block + colours)));
+	ol->skeletons = AREF(AP(APTR(struct Skeleton), (ol->block + colours)));
 	for (int j = 0; j < ol->skelCount; j++)
 		AT(void *, ol->skeletons, j * 4) = skel_getSkeletonPtrBy(skels, AV((knames + j * 0x40)));
 	if (ol->preLit == 1)
@@ -474,13 +474,13 @@ void THISCALL (shape_read)(u8 *shape, void *f, void *mem, int size)
 		sp->texture = -1;
 		int n = sp->vertexCount;
 		static const u8 sizes[4] = { 12, 12, 4, 8 };   /* vertices, normals, colours, texture coordinates */
-		u8 **arrays[4] = { &sp->vertices, &sp->normals, &sp->colours, (u8 **)&sp->texCoords };
+		APTR(u8) *arrays[4] = { &sp->vertices, &sp->normals, &sp->colours, (APTR(u8) *)&sp->texCoords };
 		for (int t = 0; t < 4; t++) {
-			*arrays[t] = AP(u8, md->block + at);
+			*arrays[t] = md->block + at;
 			at += n * sizes[t];
 		}
 		for (int t = 0; t < 4; t++)
-			crt_fread(*arrays[t], sizes[t], ((u32)sp->vertexCount), f);
+			crt_fread(AP(u8, *arrays[t]), sizes[t], ((u32)sp->vertexCount), f);
 		sp->prims = md->block + at;
 		crt_fread(AP(void, sp->prims), 0xc, ((u32)sp->primCount), f);
 		at += 0xc;
@@ -530,12 +530,12 @@ void THISCALL (ObjectList_poseBones)(u8 *list, const float *base)
 	float saved[16], root[16];
 	glGetFloatv(0xba6, saved);   /* GL_MODELVIEW_MATRIX */
 	Mat4_copy(root, base ? base : saved);
-	u8 **entry = (AP(u8 *, ol->skeletons)) + ol->skel;
+	APTR(u8) *entry = AP(APTR(u8), ol->skeletons) + ol->skel;
 	if (!*entry)
 		return;
 	const float *toDegrees = k_57_2958f, *point = AP(const float, ADDR(g_vecOrigin));
 	for (int i = 0; i < ol->count; i++) {
-		Skeleton *sk = (Skeleton *)(*entry);
+		Skeleton *sk = AP(Skeleton, *entry);
 		ListedObject *out = (ListedObject *)((AP(u8, ol->entries)) + i * 0x64);
 		u8 *b = AP(u8, sk->bones + i * 0x70);
 		Bone *bn = (Bone *)b;
@@ -791,7 +791,7 @@ void THISCALL (skel_loadAseFrom)(u8 *sk, void *f, u8 *mem, int memSize)
 #define SPACE STR(0x4ad5dc, " \t")
 #define LINE_END STR(0x4b4310, " \t\n")
 #define SLASH STR(0x4ad564, "/")
-#define BAD_OBJ() sys_fatalError(AP(char, OBJ(g_logShape)), AP(const char, STR(0x4c4c20, "invalid obj format string(%s)-loadObj...")), (int)line)
+#define BAD_OBJ() sys_fatalError(AP(char, OBJ(g_logShape)), AP(const char, STR(0x4c4c20, "invalid obj format string(%s)-loadObj...")), (int)AV(line))
 
 /* a face's first corner token: a lone "\" continues the face on the next line */
 static char *face_start(char *line, void *f)

@@ -58,6 +58,13 @@ static inline u32 arena_ref(const void *p) { return p ? (u32)((const unsigned ch
 #define AP(T, v) ((T *)(v))
 #define AV(p) ((u32)(p))
 #endif
+/* a function's table that holds pointers into the game's memory: static in the 32-bit builds; made each time the function
+   runs in the 64-bit one, where g_arena is known only at run time */
+#ifdef AXIS_64
+#define ASTATIC
+#else
+#define ASTATIC static
+#endif
 /* a pointer stored in an APTR field (or a pointer global): AV(p) in the 64-bit build, p itself in the 32-bit ones */
 #ifdef AXIS_64
 #define AREF(p) AV(p)
@@ -65,7 +72,15 @@ static inline u32 arena_ref(const void *p) { return p ? (u32)((const unsigned ch
 #define AREF(p) (p)
 #endif
 #ifdef AXIS_64
-#define IMG(a) ((u32)(a))
+/* (AXIS_64CHECK, a check compile only: every address constant made a run-time value, so the compiler warns about each
+   one cast to a pointer - which would be a pointer outside g_arena - as it does for the others) */
+#ifdef AXIS_64CHECK
+extern u32 g_axisZero;
+#define AXIS_K + g_axisZero
+#else
+#define AXIS_K
+#endif
+#define IMG(a) ((u32)(a) AXIS_K)
 #define RELOC(a) (a)
 #elif defined(AXIS_DIRECT)
 /* (its read-only data, 0x4a9000 .. 0x4ad000, and writable data, 0x4ad000 .. 0xb13000, are the structs g_rdata and
@@ -164,9 +179,13 @@ static inline long double fdivr_m(long double x, const float *m) { __asm__("fdiv
    function's original address - FN_ADDR - which fn_ptr looks up) as a callable of type `type` */
 #ifdef AXIS_64
 void *fn_ptr(u32 address);
+u32 fn_ref(void *fn);
 #define FNP(type, v) ((type)fn_ptr((u32)(v)))
+/* a system's function kept where the game keeps a function (an extension's entry point): its number, which FNP calls */
+#define FNREF(fn) fn_ref((void *)(fn))
 #else
 #define FNP(type, v) ((type)(v))
+#define FNREF(fn) (fn)
 #endif
 #define GAME_CDECL(addr, ret, ...) FNP(ret (CDECL *)(__VA_ARGS__), RELOC(addr))
 #define GAME_THISCALL(addr, ret, ...) FNP(ret (THISCALL *)(__VA_ARGS__), RELOC(addr))
@@ -275,9 +294,9 @@ IMPORT_LIST(PLAT_IMPORT_DECL_)
 #ifdef AXIS_64
 /* (the 64-bit build: the original address itself, a constant - src/addr_consts.h, tools/mkaddrc.py) */
 #include "addr_consts.h"
-#define ADDR(name) ADDRC_##name
-#define ADDR_AT(name, i) (ADDRC_##name + (u32)(i) * (u32)sizeof (name)[0])
-#define ADDR_ATF(name, i, member) (ADDR_AT(name, i) + (u32)__builtin_offsetof(__typeof__((name)[0]), member))
+#define ADDR(name) (ADDRC_##name AXIS_K)
+#define ADDR_AT(name, i) (ADDRC_##name AXIS_K + (u32)(i) * (u32)sizeof (name)[0])
+#define ADDR_ATF(name, i, member) (ADDRC_##name AXIS_K + (u32)(i) * (u32)sizeof (name)[0] + (u32)__builtin_offsetof(__typeof__((name)[0]), member))
 #else
 #define ADDR(name) AV(&(name))
 /* the address of element i of a named array */
@@ -287,7 +306,7 @@ IMPORT_LIST(PLAT_IMPORT_DECL_)
 #endif
 /* an array / buffer / record of src/objects.h (a pointer name) as an address number */
 #ifdef AXIS_64
-#define OBJ(name) ADDRC_##name
+#define OBJ(name) (ADDRC_##name AXIS_K)
 #else
 #define OBJ(name) AV(name)
 #endif

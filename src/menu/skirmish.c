@@ -10,8 +10,8 @@
 #define X1 (g_skirmishRect[2])
 #define Y1 (g_skirmishRect[3])
 #define K(addr) (AP(const float, RELOC(addr)))
-#define record ((const int *)((OBJ(g_skirmishInfo) + 0x4) + g_skirmishRoundShown * 0x5c))
-#define map_name ((const char *)(OBJ(g_mapNames) + g_skirmishRoundShown * 0x20))
+#define record (AP(const int, ((OBJ(g_skirmishInfo) + 0x4) + g_skirmishRoundShown * 0x5c)))
+#define map_name (AP(const char, (OBJ(g_mapNames) + g_skirmishRoundShown * 0x20)))
 
 static void white_text(void)
 {
@@ -20,7 +20,7 @@ static void white_text(void)
 
 static void bind(int texture)
 {
-	tex_bind(g_textures->banks[texture / 512], texture % 512);
+	tex_bind(AP(TextureManager, g_textures)->banks[texture / 512], texture % 512);
 }
 
 /* "<label> : <value>" at y: the value a number and its unit, or the text none when it is 0 */

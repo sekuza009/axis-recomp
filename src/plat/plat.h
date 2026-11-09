@@ -22,10 +22,10 @@
 /* ---- sound: a device, sound buffers of PCM samples (the description and format as DirectSound's DSBUFFERDESC /
    WAVEFORMATEX), each played, its volume and pan set; 0 = success, as the original tests them */
 #ifdef AXIS_PORTABLE
-long plat_soundCreate(void **device);
+long plat_soundCreate(APTR(void) *device);
 long plat_soundSetWindow(void *device, void *window);
-long plat_soundCreateBuffer(void *device, void *desc, void **buffer);
-long plat_soundDuplicate(void *device, void *buffer, void **copy);
+long plat_soundCreateBuffer(void *device, void *desc, APTR(void) *buffer);
+long plat_soundDuplicate(void *device, void *buffer, APTR(void) *copy);
 u32 plat_soundRelease(void *object);
 long plat_soundSetFormat(void *buffer, void *format);
 long plat_soundPlay(void *buffer, u32 flags);
@@ -61,7 +61,7 @@ long plat_soundUnlock(void *buffer, void *data, u32 bytes);
 /* ---- music: a stream playing a file (the original: DirectShow's multimedia stream); its time and duration in 100 ns
    units, 64 bits as two words */
 #ifdef AXIS_PORTABLE
-long plat_musicCreate(void **stream);
+long plat_musicCreate(APTR(void) *stream);
 long plat_musicInit(void *stream);
 long plat_musicAddAudio(void *stream);
 long plat_musicOpen(void *stream, const void *wideName);
@@ -97,9 +97,9 @@ long plat_musicRelease(void *stream);
    256 bytes (DIK codes, bit 7 held), a mouse state of 16 bytes (movement x, y, wheel, 4 buttons); results below 0
    are failures, 0x8007001e "input lost" (taken again then) */
 #ifdef AXIS_PORTABLE
-long plat_inputCreate(void *instance, void **input);
-long plat_inputCreateKeyboard(void *input, void **keyboard);
-long plat_inputCreateMouse(void *input, void **mouse);
+long plat_inputCreate(void *instance, APTR(void) *input);
+long plat_inputCreateKeyboard(void *input, APTR(void) *keyboard);
+long plat_inputCreateMouse(void *input, APTR(void) *mouse);
 long plat_inputSetKeyboardFormat(void *keyboard);
 long plat_inputSetMouseFormat(void *mouse);
 long plat_inputSetWindow(void *device, void *window, u32 mode);
@@ -230,9 +230,9 @@ extern void (*g_platLoadLog)(const void *timeSync, int mode);
 /* ---- network: DirectPlay-shaped sessions (the original: DirectPlay 4 and its lobby, which the network layer,
    axisnet, serves); a later port may replace the whole with its own netcode (no crossplay, PORTING.md) */
 #ifdef AXIS_PORTABLE
-long plat_netCreate(void **out);
+long plat_netCreate(APTR(void) *out);
 #define NET_CREATE(out) plat_netCreate(out)
-long plat_netLobbyCreate(void **out);
+long plat_netLobbyCreate(APTR(void) *out);
 #define NET_LOBBY_CREATE(out) plat_netLobbyCreate(out)
 long plat_netRelease(void *o);
 #define NET_RELEASE(o) plat_netRelease(o)
@@ -252,7 +252,7 @@ int plat_netLobbyGetConnection(void *l, void *buffer, u32 *size);
 #define NET_LOBBY_GET_CONNECTION(l, buffer, size) plat_netLobbyGetConnection(l, buffer, size)
 int plat_netLobbySetConnection(void *l, void *connection);
 #define NET_LOBBY_SET_CONNECTION(l, connection) plat_netLobbySetConnection(l, connection)
-int plat_netLobbyConnect(void *l, void **out);
+int plat_netLobbyConnect(void *l, APTR(void) *out);
 #define NET_LOBBY_CONNECT(l, out) plat_netLobbyConnect(l, out)
 int plat_netEnumConnections(void *p, void *callback);
 #define NET_ENUM_CONNECTIONS(p, callback) plat_netEnumConnections(p, callback)

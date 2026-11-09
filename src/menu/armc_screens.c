@@ -13,7 +13,8 @@
 #define SLOT (g_armcColours + g_slot * 6)
 #define glVertex(x, y) menu_vertex(x, y)
 
-static const u32 *const bright = ((u32 *)g_armcBright), *const dim = ((u32 *)g_armcDim);
+#define bright ((const u32 *)g_armcBright)
+#define dim ((const u32 *)g_armcDim)
 #define TEXT(c) set_colour_bits(g_textColour, (c)[0], (c)[1], (c)[2], (c)[3])
 
 /* the box at the bottom right: "<MSG(287, "$[0] ROTATE")> <the name of g_armcSpin (MSG(118, "OFF"))>" (the texture bound) */
@@ -130,7 +131,7 @@ void (armc_drawColourEditor)(void)
 	/* the slots */
 	glEnable(GL_TEXTURE_2D);
 	int texture = g_buttonTexture;
-	tex_bind(g_textures->banks[texture / 512], texture % 512);
+	tex_bind(AP(TextureManager, g_textures)->banks[texture / 512], texture % 512);
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 	for (int k = 0; k < 6; k++) {
 		glColor4f(1.0f, 1.0f, 1.0f, g_slot == k ? 0.8f : 0.4f);
@@ -155,7 +156,7 @@ void (armc_drawColourEditor)(void)
 	/* the sliders' tracks: the hue's rainbow, saturation and value plain */
 	glEnable(GL_TEXTURE_2D);
 	texture = g_buttonTexture;
-	tex_bind(g_textures->banks[texture / 512], texture % 512);
+	tex_bind(AP(TextureManager, g_textures)->banks[texture / 512], texture % 512);
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 	glBegin(GL_QUADS);
 	for (int k = 0; k < 3; k++)
@@ -203,7 +204,7 @@ void (armc_drawColourEditor)(void)
 	}
 	glEnable(GL_TEXTURE_2D);
 	texture = g_buttonTexture;
-	tex_bind(g_textures->banks[texture / 512], texture % 512);
+	tex_bind(AP(TextureManager, g_textures)->banks[texture / 512], texture % 512);
 	rotate_box();
 }
 
@@ -213,7 +214,7 @@ void (armc_drawColourEditor)(void)
 
 static void bind_texture(int texture)
 {
-	tex_bind(g_textures->banks[texture / 512], texture % 512);
+	tex_bind(AP(TextureManager, g_textures)->banks[texture / 512], texture % 512);
 }
 
 /* a texture's whole quad on (x0, y0) .. (x1, y1) */

@@ -4,7 +4,7 @@
 #include "../game.h"
 
 #define g_armcColourBits (AP(u32, OBJ(g_armcColours)))           /* the six colour slots, six values each (see g_armcColours) */
-#define g_allPartsSlot ((u32 *)(OBJ(g_armcColours) + 0x78))            /* colour slot 5 (VIEW ALL): its six values */
+#define g_allPartsSlot (AP(u32, (OBJ(g_armcColours) + 0x78)))            /* colour slot 5 (VIEW ALL): its six values */
 #define g_savedParts (AP(const u32, ADDR(g_savedMechHead)))         /* the saved mech: head, chest, arm, leg, booster */
 #define g_workParts (AP(u32, OBJ(g_armcParts)))                /* the working copy, same order */
 

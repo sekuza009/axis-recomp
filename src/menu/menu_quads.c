@@ -72,7 +72,7 @@ void (menu_drawDownArrow)(int x0, int y0, int x1, int y1, int lit)
 static void bind(int texture)
 {
 	glEnable(GL_TEXTURE_2D);
-	tex_bind(g_textures->banks[texture / 512], texture % 512);
+	tex_bind(AP(TextureManager, g_textures)->banks[texture / 512], texture % 512);
 }
 
 /* 0x427a90: all of texture on the rectangle (a panel's background) */

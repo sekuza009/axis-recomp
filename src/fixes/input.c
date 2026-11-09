@@ -79,7 +79,7 @@ int fix_readMouse(void)
 	}
 	menu_pointerSpeed(g_mouseState);   /* DIMOUSESTATE.lX / lY */
 	if (g_mainWindow)
-		platform_watchWindow(AP(void, g_mainWindow), AP(void *, ADDR(g_hEditField)), AP(void *, ADDR(g_mouse)));
+		platform_watchWindow(AP(void, g_mainWindow), AP(APTR(void), ADDR(g_hEditField)), AP(APTR(void), ADDR(g_mouse)));
 	return r;
 }
 

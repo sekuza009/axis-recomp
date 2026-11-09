@@ -138,8 +138,8 @@ void (skirmish_layout)(void)
 {
 	static const RArg a[4] = { RA(ADDR(g_skirmishRectLeft), 0x96, 1), RA(ADDR_AT(g_skirmishRect, 3), -0x30, 0), RA(ADDR(g_skirmishRectLeft), 0x10e, 1), RA(ADDR_AT(g_skirmishRect, 3), -0x10, 0) };
 	rect_spec(OBJ(g_skirmishRects), ADDR_AT(g_skirmishRects, 8), 0x8c, a);
-	rect_set(g_skirmishRectLeft + 0x98, g_skirmishRectTop + 0x4c, g_skirmishRectLeft + 0xd0, g_skirmishRectTop + 0x74, (int *)(ADDR_AT(g_skirmishRects, 8)));
-	rect_set(g_skirmishRectLeft + 0x160, g_skirmishRectTop + 0x4c, g_skirmishRectLeft + 0x198, g_skirmishRectTop + 0x74, (int *)(ADDR_AT(g_skirmishRects, 12)));
+	rect_set(g_skirmishRectLeft + 0x98, g_skirmishRectTop + 0x4c, g_skirmishRectLeft + 0xd0, g_skirmishRectTop + 0x74, AP(int, (ADDR_AT(g_skirmishRects, 8))));
+	rect_set(g_skirmishRectLeft + 0x160, g_skirmishRectTop + 0x4c, g_skirmishRectLeft + 0x198, g_skirmishRectTop + 0x74, AP(int, (ADDR_AT(g_skirmishRects, 12))));
 }
 
 void (pilotSelect_layout)(void)        /* 3 x 3 grid, then a row of two */
@@ -291,8 +291,8 @@ void (mapList_layout)(void)
 		rect_set(0x96, y, 0x154, y + 0x14, AP(int, (RELOC(rec) - 0xa0)));
 		rect_set(0x168, y, 0x1a4, y + 0x14, AP(int, RELOC(rec)));
 	}
-	rect_set(0x1c2, 0x96, 0x1e0, 0xca, (int *)(ADDR_AT(g_mapListRects, 80)));
-	rect_set(0x1c2, 0xdc, 0x1e0, 0x110, (int *)(ADDR_AT(g_mapListRects, 84)));
+	rect_set(0x1c2, 0x96, 0x1e0, 0xca, AP(int, (ADDR_AT(g_mapListRects, 80))));
+	rect_set(0x1c2, 0xdc, 0x1e0, 0x110, AP(int, (ADDR_AT(g_mapListRects, 84))));
 	int x = 0xaa;
 	for (u32 rec = (OBJ(g_mapListRects) + 0x180); rec < (OBJ(g_mapListRects) + 0x1a0); rec += 16, x += 0xa0) {
 		rect_set(x, 0x15e, x + 0x8c, 0x17e, AP(int, (RELOC(rec) - 0x20)));

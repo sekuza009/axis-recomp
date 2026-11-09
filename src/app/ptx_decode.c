@@ -18,7 +18,7 @@ int (ptx_readBits)(int *out, int n)
 		return n;
 	for (int k = n - 1; n > 0; n--, k--) {
 		int pos = g_ptxBitPos;
-		if (g_bitStream[pos >> 3] & (u8)(1 << (7 - (pos & 7))))
+		if (AP(const u8, g_bitStream)[pos >> 3] & (u8)(1 << (7 - (pos & 7))))
 			*out |= 1u << (k & 31);
 		g_ptxBitPos = pos + 1;
 	}
@@ -93,9 +93,9 @@ int (ptx_readBlock)(int *block)
 }
 
 /* the RGB of a pixel from its Y, Cb and Cr (16.16 tables for green) */
-#define RED(Y, Cr) g_ptxClamp[g_ptxCrRed[Cr] + (Y)]
-#define GREEN(Y, Cb, Cr) g_ptxClamp[((g_ptxCbGreen[Cb] + g_ptxCrGreen[Cr]) >> 16) + (Y)]
-#define BLUE(Y, Cb) g_ptxClamp[g_ptxCbBlue[Cb] + (Y)]
+#define RED(Y, Cr) AP(const u8, g_ptxClamp)[g_ptxCrRed[Cr] + (Y)]
+#define GREEN(Y, Cb, Cr) AP(const u8, g_ptxClamp)[((g_ptxCbGreen[Cb] + g_ptxCrGreen[Cr]) >> 16) + (Y)]
+#define BLUE(Y, Cb) AP(const u8, g_ptxClamp)[g_ptxCbBlue[Cb] + (Y)]
 
 /* 0x46e830: n pixels to RGB */
 void (ptx_toRgb)(const u8 *y, u8 *dst, unsigned n)

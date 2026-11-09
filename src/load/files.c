@@ -213,7 +213,7 @@ u32 (cfg_writeKeyBindings)(void *f)
 		{ STR(0x4b1c00, "set_key help1 "), 62 }, { STR(0x4b1bf0, "set_key help2 "), 63 },   /* help */
 	};
 	const int *binding = AP(const int, ADDR(g_keyForward));
-	const char *const *key_name = (const char *const *)OBJ(g_keyNames);
+	const char *const *key_name = AP(const char *const, OBJ(g_keyNames));
 	for (int k = 0; k < 64; k++) {
 		FPUTS(keys[k].line);
 		FPUTS(key_name[binding[keys[k].binding]]);
@@ -588,18 +588,18 @@ u32 (app_parseCommandLine)(char *line)
 		g_launchedAsHost = 0;
 		return 0;
 	}
-	char **args = AP(char *, OBJ(g_launchArgs));
+	APTR(char) *args = AP(APTR(char), OBJ(g_launchArgs));
 	char *word = crt_strtok(line, AP(const char, STR(0x4b035c, " ")));
 	g_argCount = 0;
 	do {
-		args[g_argCount++] = word;
+		args[g_argCount++] = AREF(word);
 		word = crt_strtok(NULL, AP(const char, STR(0x4b035c, " ")));
 	} while (word);
 	g_launchedForNetGame = 0;
 	g_launchedAsHost = 0;
 	u32 r = (*(u32 *)&g_argCount);
 	if (r == 1) {
-		r = (u32)str_order(args[0], AP(const char, STR(0x4b2880, "-net")));
+		r = (u32)str_order(AP(const char, args[0]), AP(const char, STR(0x4b2880, "-net")));
 		if (r)
 			return r;
 		void *f = crt_fopen(AP(const char, STR(0x4ad5e4, "axiswl.dat")), AP(const char, STR(0x4ad5e0, "rt")));
@@ -611,14 +611,14 @@ u32 (app_parseCommandLine)(char *line)
 	}
 	if (g_argCount != 3)
 		return r;
-	r = (u32)str_order(args[1], AP(const char, STR(0x4b287c, "-ip")));
+	r = (u32)str_order(AP(const char, args[1]), AP(const char, STR(0x4b287c, "-ip")));
 	if (r)
 		return r;
 	g_launchedForNetGame = 1;
 	memset(AP(void, OBJ(g_serverAddressArg)), 0, 0x400);
 	g_launchedAsHost = 0;
-	strcpy(g_serverAddressArg, args[2]);
-	return strlen(args[2]) + 1;
+	strcpy(g_serverAddressArg, AP(const char, args[2]));
+	return strlen(AP(const char, args[2])) + 1;
 }
 
 /* the game ended with an error box (title "ERROR"): a data file missing, too short, without its header or of the
@@ -673,7 +673,7 @@ u32 (data_loadMessages)(void)
    (a signature 0x4b0fa0 first, the pilot's name at +0x80, its value at +0x100) between blocks of noise, 20000 bytes
    before it and 24999 after (the same 10000 random bytes below 0xfe each time), scrambled with key 0x7e ---- */
 #define g_pilot g_profileChosen               /* the pilot chosen in the list */
-#define pilot_name(i) ((const char *)(OBJ(g_profileNames) + (i) * 0x48))
+#define pilot_name(i) (AP(const char, (OBJ(g_profileNames) + (i) * 0x48)))
 
 /* the current profile's name as axisuser.dat keeps it */
 static void set_current_name(void)
@@ -743,18 +743,18 @@ static void campaign_new(void)
 {
 	memset(g_pilotSave, 0, 0x80);
 	strcpy((char *)g_pilotSave, AP(const char, STR(0x4b0fa0, "AXIS USER PROFILE DATA Master ver 1.0...")));
-	memset((void *)(OBJ(g_pilotSave) + 0x80), 0, 0x80);
-	memcpy((void *)(OBJ(g_pilotSave) + 0x80), pilot_name(g_pilot), 0x80);
+	memset(AP(void, (OBJ(g_pilotSave) + 0x80)), 0, 0x80);
+	memcpy(AP(void, (OBJ(g_pilotSave) + 0x80)), pilot_name(g_pilot), 0x80);
 	(*(u32 *)&g_selectedCharacter) = GAME_VAR(u32, OBJ(g_profileNames) + 0x40 + g_pilot * 0x48);   /* g_profileRecords[g_pilot].pilot */
 	g_progress = 0;
-	memset((void *)(OBJ(g_pilotSave) + 0x108), 0, 0x190);
-	memset((void *)(OBJ(g_pilotSave) + 0x298), 0, 0x40);
+	memset(AP(void, (OBJ(g_pilotSave) + 0x108)), 0, 0x190);
+	memset(AP(void, (OBJ(g_pilotSave) + 0x298)), 0, 0x40);
 	static const u32 cleared[6] = { (OBJ(g_pilotSave) + 0x2d8), (OBJ(g_pilotSave) + 0x2f4), (OBJ(g_pilotSave) + 0x2dc), (OBJ(g_pilotSave) + 0x2f8), (OBJ(g_pilotSave) + 0x314), (OBJ(g_pilotSave) + 0x318) };
 	for (int i = 0; i < 6; i++)
 		GAME_VAR(u32, cleared[i]) = 0;
-	strcpy((char *)(OBJ(g_pilotSave) + 0x2d8), AP(const char, STR(0x4b2af4, "[TRAP]")));
-	strcpy((char *)(OBJ(g_pilotSave) + 0x2f4), AP(const char, STR(0x4b2aec, "[NOPA]")));
-	strcpy((char *)(OBJ(g_pilotSave) + 0x314), AP(const char, STR(0x4b2ae4, "[ROLO]")));
+	strcpy(AP(char, (OBJ(g_pilotSave) + 0x2d8)), AP(const char, STR(0x4b2af4, "[TRAP]")));
+	strcpy(AP(char, (OBJ(g_pilotSave) + 0x2f4)), AP(const char, STR(0x4b2aec, "[NOPA]")));
+	strcpy(AP(char, (OBJ(g_pilotSave) + 0x314)), AP(const char, STR(0x4b2ae4, "[ROLO]")));
 	g_profileMechWeaponSlot3 = -1;
 	g_profileMechItemSlot4 = -1;
 	for (u32 a = ADDR(g_profileMechHead); a <= ADDR(g_profileMechBooster); a += 4)
@@ -763,7 +763,7 @@ static void campaign_new(void)
 	g_profileMechWeaponSlot1 = 2;
 	g_profileMechWeaponSlot2 = 8;
 	g_profileMechItemSlot5 = 0x11;
-	for (u32 *t = (u32 *)(OBJ(g_pilotSave) + 0x31c); t < (u32 *)(OBJ(g_pilotSave) + 0x3ac); t += 3) {
+	for (u32 *t = AP(u32, (OBJ(g_pilotSave) + 0x31c)); t < AP(u32, (OBJ(g_pilotSave) + 0x3ac)); t += 3) {
 		t[0] = 0x432a0000;   /* 170 */
 		t[1] = 0x3ecccccd;   /* 0.4 */
 		t[2] = 0;
@@ -829,7 +829,7 @@ u32 (profile_makeCurrent)(void)
 			crt_fread(record, sizeof record, 1, f);
 			save_cryptRecord(record, 0x7e);
 			memcpy(g_pilotSave, record, sizeof record);
-			memcpy((void *)(OBJ(g_pilotSave) + 0x80), pilot_name(g_pilot), 0x80);
+			memcpy(AP(void, (OBJ(g_pilotSave) + 0x80)), pilot_name(g_pilot), 0x80);
 		}
 	} else {
 		campaign_new();
@@ -1224,7 +1224,7 @@ static int read_binding(int line)
    (ON; g_mouseInvert, g_mouseSmooth), the sensitivity and the crosshairs (g_mouseSensitivity, g_crosshairSetting); then one more line */
 void (cfg_readKeyBindings)(void *f)
 {
-	const char *const *key_name = (const char *const *)OBJ(g_keyNames);
+	const char *const *key_name = AP(const char *const, OBJ(g_keyNames));
 	CfgBuf b;
 	__asm__("" : "=m"(b));
 	for (int n = 0; n < 0x44; n++) {
@@ -1320,7 +1320,7 @@ void (profile_scanSaves)(void)
 		profile_writeCleared(0);
 		return;
 	}
-	char (*files)[0x40] = (char (*)[0x40])OBJ(g_saveFileNames);
+	char (*files)[0x40] = (char (*)[0x40])AP(char, OBJ(g_saveFileNames));
 	strcpy(files[0], found.name);
 	int count = 1;
 	while (!crt_findnext(search, &found))

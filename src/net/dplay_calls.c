@@ -9,7 +9,7 @@
    DirectPlay */
 long (dplay_receive)(u32 *from, u32 *to, u32 flags, void *data, u32 *size)
 {
-	if (g_dplay == NULL)
+	if (g_dplay == 0)
 		return 0;
 	return NET_RECEIVE(AP(void, g_dplay), from, to, flags, data, size);
 }
@@ -17,7 +17,7 @@ long (dplay_receive)(u32 *from, u32 *to, u32 flags, void *data, u32 *size)
 /* 0x450bf0 (dplay_send): send data (size bytes) from one player to another; 0 without DirectPlay */
 long (dplay_send)(u32 from, u32 to, u32 flags, const void *data, u32 size)
 {
-	if (g_dplay == NULL)
+	if (g_dplay == 0)
 		return 0;
 	return NET_SEND(AP(void, g_dplay), from, to, flags, data, size);
 }
@@ -33,7 +33,7 @@ long (dplay_closeSession)(void *dplay)
 
 /* 0x4539f0: a plain DirectPlay object (CoCreateInstance of k_CLSID_DirectPlay, interface k_IID_IDirectPlay4A) into
    *out; CoCreateInstance's result */
-long (dplay_createObject)(void **out)
+long (dplay_createObject)(APTR(void) *out)
 {
 	return NET_CREATE(out);
 }

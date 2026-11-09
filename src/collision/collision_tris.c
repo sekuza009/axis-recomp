@@ -591,7 +591,7 @@ int THISCALL (space_collideBlock)(SpaceBlock *self, float r, const float *pos, c
 				for (int i = 0; i < 3; i++)
 					move[i] = row_dir(in, step, i);
 			}
-			if (node != last && (sub >= 0 || !(*RELOC(node)->item & 1))
+			if (node != last && (sub >= 0 || !(*AP(u8, RELOC(node)->item) & 1))
 			    && collisionTri_sweepSphere(AP(void, RELOC(node)->item), r, at, move, k, hitPos, hitVel, &dist, plane, axis) == 1) {
 				hit = 1;
 				if (dist > best) {

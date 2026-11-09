@@ -7,7 +7,7 @@
 
 /* a shape (Shape): its parts (ShapePart, each with its material: texture) */
 #define PART_COUNT(shape) (((Shape *)(shape))->partCount)
-#define PART(shape, i) ((ShapePart *)((Shape *)(shape))->parts + (i))
+#define PART(shape, i) (AP(ShapePart, ((Shape *)(shape))->parts) + (i))
 #define MATERIAL_SET(m) FIELD(void *, (*(u8 **)&g_textures), ((m) / 512) * 4 + 4)
 
 /* a shape manager (ShapeManager): its shapes (items, 0x4c bytes each, count of them); its tint (tint[6]), on while bit 1 of

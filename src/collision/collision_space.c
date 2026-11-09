@@ -17,14 +17,14 @@ static int reset_pool(SpacePool *pool, int stride, Clear clear, int link)
 		clear(AP(void, pool->records + i * stride));
 	for (int i = 1; i < pool->count; i++) {
 		u8 *e = AP(u8, pool->records + i * stride);
-		FIELD(u8 *, e, link) = e - stride;
+		FIELD(APTR(u8), e, link) = AREF(e - stride);
 	}
 	int r = pool->count;
 	if (pool->count - 1 > 0) {
 		int i;
 		for (i = 0; i < pool->count - 1; i++) {
 			u8 *a = AP(u8, pool->records);
-			FIELD(u8 *, a + i * stride, link + 4) = a + (i + 1) * stride;
+			FIELD(APTR(u8), a + i * stride, link + 4) = AREF(a + (i + 1) * stride);
 		}
 		r = i * stride;
 	}
@@ -59,10 +59,10 @@ static void *take_free(u8 *space, SpacePool *pool, int next, int prev, Clear cle
 			sp->blocks.count);
 		return 0;
 	}
-	u8 *after = FIELD(u8 *, r, next);
+	u8 *after = AP(u8, FIELD(APTR(u8), r, next));
 	if (after) {
 		pool->freeHead = AREF(after);
-		FIELD(u8 *, after, prev) = 0;
+		FIELD(APTR(u8), after, prev) = 0;
 	} else
 		pool->freeHead = 0;
 	pool->used++;
@@ -111,7 +111,7 @@ void *THISCALL (space_getNextFreeBlockPtrBy)(u8 *space, const u32 *mn, const u32
    (SpaceUnit.lastNode). Its callers ignore the eax it leaves */
 void THISCALL (space_addUnitTriangle)(void *space, u32 flags, u8 *owner, u32 part, u32 i0, u32 i1, u32 i2, u32 v0, u32 v1, u32 v2)
 {
-#define PL(p) ((CollisionTri *)(p))
+#define PL(p) AP(CollisionTri, p)
 	SpaceUnit *un = (SpaceUnit *)owner;
 	u8 *plane = space_insertTriangle(space, flags, v0, v1, v2, owner, part, i0, i1, i2);
 	if (!plane)
@@ -127,8 +127,8 @@ void THISCALL (space_addUnitTriangle)(void *space, u32 flags, u8 *owner, u32 par
 	SpaceNode *last_node = AP(SpaceNode, un->lastNode);
 	if (last_node) {
 		PL(last_node->item)->listNext = AREF(plane);
-		PL(node->item)->listPrev = un->lastNode->item;
-		RELOC(un->lastNode)->newer = node;
+		PL(node->item)->listPrev = AP(SpaceNode, un->lastNode)->item;
+		AP(SpaceNode, RELOC(un->lastNode))->newer = AREF(node);
 		RELOC(node)->next = un->lastNode;
 	}
 	un->lastNode = AREF(node);
@@ -291,7 +291,7 @@ int THISCALL (space_collideAt)(u8 *space, u32 r, const float *pos, const float *
 	int cy = ftol(fdiv_m(FSUB(outPos[1], low[1]), size_y));
 	if (cy > ny - 1)
 		cy = ny - 1;
-	u16 root = sp->cells[(nz * cy + cz) * nx + cx];
+	u16 root = AP(u16, sp->cells)[(nz * cy + cz) * nx + cx];
 	if (root == 0xffff)
 		return 0;
 	SpaceBlock *node = (SpaceBlock *)(AP(u8, array_recordAt(root, (*(int *)&sp->blocks.records), 0x50)));
@@ -339,11 +339,11 @@ static u8 *make_octant(u8 *space, const float *low, const float *high, int i)
 }
 
 /* a child block that ended up with no items and no children given back (space_freeBlock) and forgotten */
-static void drop_if_empty(u8 *space, u8 **child)
+static void drop_if_empty(u8 *space, APTR(u8) *child)
 {
 	if ((AP(SpaceBlock, RELOC(*child)))->itemCount <= 0 && (AP(SpaceBlock, RELOC(*child)))->split == 0) {
-		space_freeBlock(space, *child);
-		*child = NULL;
+		space_freeBlock(space, AP(u8, *child));
+		*child = AREF(NULL);
 	}
 }
 
@@ -361,14 +361,14 @@ int THISCALL (space_insertItem)(u8 *space, u8 *block, u8 *item, int depth)
 	if (!collisionTri_meetsBox(item, low, high, BITS(sp->margin)))
 		return 0;
 	SpaceNode *first = AP(SpaceNode, bk->items);
-	if (first && first->item == item)
+	if (first && AP(u8, first->item) == item)
 		return 0;
-	u8 **child = bk->children;
+	APTR(u8) *child = bk->children;
 	if (bk->split) {
 		for (int i = 0; i < 8; i++) {
 			if (!child[i])
-				child[i] = make_octant(space, low, high, i);
-			space_insertItem(space, child[i], item, depth - 1);
+				child[i] = AREF(make_octant(space, low, high, i));
+			space_insertItem(space, AP(u8, child[i]), item, depth - 1);
 			drop_if_empty(space, &child[i]);
 		}
 		return 1;
@@ -378,17 +378,17 @@ int THISCALL (space_insertItem)(u8 *space, u8 *block, u8 *item, int depth)
 	node->block = AREF(block);
 	node->next = bk->items;
 	if (bk->items)
-		bk->items->newer = node;
+		AP(SpaceNode, bk->items)->newer = AREF(node);
 	bk->items = AREF(node);
 	if (++bk->itemCount <= sp->splitCount || depth <= 0)
 		return 1;
 	for (int i = 0; i < 8; i++) {
-		child[i] = make_octant(space, low, high, i);
+		child[i] = AREF(AREF(make_octant(space, low, high, i)));
 		bk->split = 1;
 	}
 	for (SpaceNode *n = AP(SpaceNode, bk->items); n;) {
 		for (int j = 0; j < 8; j++)
-			space_insertItem(space, child[j], AP(void, RELOC(n->item)), depth - 1);
+			space_insertItem(space, AP(u8, child[j]), AP(void, RELOC(n->item)), depth - 1);
 		SpaceNode *next = AP(SpaceNode, RELOC(n->next));
 		space_freeNode(space, n);
 		n = next;
@@ -463,11 +463,11 @@ u8 *THISCALL (space_insertTriangle)(u8 *space, u32 flags, const float *v0, const
 				if (collisionTri_meetsBox(plane, box, box + 3, *(const u32 *)margin) != 1)
 					continue;
 				int cell = (sp->cellsZ * y + z) * sp->cellsX + x;
-				if (sp->cells[cell] == 0xffff) {
+				if (AP(u16, sp->cells)[cell] == 0xffff) {
 					u8 *block = space_getNextFreeBlockPtrBy(space, box, box + 3);
-					sp->cells[cell] = (u16)array_indexOf(block, (*(int *)&sp->blocks.records), 0x50);
+					AP(u16, sp->cells)[cell] = (u16)array_indexOf(block, (*(int *)&sp->blocks.records), 0x50);
 				}
-				space_insertItem(space, sp->blocks.records + sp->cells[cell] * 0x50, plane, sp->depth);
+				space_insertItem(space, AP(void, sp->blocks.records + AP(u16, sp->cells)[cell] * 0x50), plane, sp->depth);
 			}
 		}
 	return plane;
@@ -533,8 +533,8 @@ u32 *THISCALL (space_buildUnit)(u8 *space, u32 id, u8 *shape, const float *matri
 		for (int j = 0; j < sp->primCount; j++) {
 			ShapePrim *prim = AP(ShapePrim, (sp->prims + j * 0xc));
 			int n = prim->indexCount;
-#define IDX(k) ((const u32 *)prim->indices)[k]
-#define VERT(k) ((const float *)(sp)->vertices + IDX(k) * 3)
+#define IDX(k) AP(const u32, prim->indices)[k]
+#define VERT(k) (AP(const float, (sp)->vertices) + IDX(k) * 3)
 			float a[3], b[3], c[3];
 			switch (prim->kind) {
 			case 6:   /* a fan */
@@ -665,7 +665,7 @@ int THISCALL (space_traceCells)(u8 *space, const float *p0, const float *p1, u32
 						q[2] = f32(fadd_m(FMUL(db[2], t), &a2[2]));
 					}
 				}
-				u16 root = sp->cells[(cy * sp->cellsZ + cz) * sp->cellsX + cx];
+				u16 root = AP(u16, sp->cells)[(cy * sp->cellsZ + cz) * sp->cellsX + cx];
 				if (root != 0xffff) {
 					int r = space_traceBlock(AP(void, sp->blocks.records + root * 0x50), a3, e3, hit, &dist, subs, nsubs);
 					if (r)
@@ -888,7 +888,7 @@ u32 THISCALL (collision_rayTrace)(u8 *s, const float *p0, const float *p1, void 
 		if (o->active != 1 || o->animated != 1 || !(AP(SpaceUnit, o->unit))->lastNode)
 			continue;
 		const float *m = o->matrixInverse;
-		const float *lo = o->model->low, *hi = o->model->high;
+		const float *lo = AP(Shape, o->model)->low, *hi = AP(Shape, o->model)->high;
 		float a[3], b[3], d[3];
 		for (int r = 0; r < 3; r++)
 			a[r] = f32(fadd_m(FMUL(p0[2], m[8 + r]) + FMUL(p0[r ? 1 : 0], m[r ? 4 + r : 0]) +

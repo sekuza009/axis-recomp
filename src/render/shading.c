@@ -328,7 +328,7 @@ void THISCALL (ground_buildDrawLists)(u8 *s, void *view, float h)
 			int open = 0, n = 0, c = c0;
 			u32 *prim = NULL;
 			for (; c <= c1; c++) {
-				if (gl->drawnCells[r * gl->cols + c] & 1) {
+				if (AP(u8, gl->drawnCells)[r * gl->cols + c] & 1) {
 					if (!open) {
 						if (gl->stripCount >= gl->stripCapacity)
 							sys_fatalErrorN(AP(char, OBJ(g_logStage)), AP(const char, STR(0x4d056c, "primitiveBuffer overflow(%d/%d)-proce...")), gl->stripCount + 1, gl->stripCapacity);

@@ -13,7 +13,7 @@ void (menu_drawCursor)(void)
 	gfx_setProjection2D3D(2);
 	glEnable(GL_TEXTURE_2D);
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
-	tex_bind(g_textures->banks[g_cursorTexture / 512], g_cursorTexture % 512);
+	tex_bind(AP(TextureManager, g_textures)->banks[g_cursorTexture / 512], g_cursorTexture % 512);
 #ifdef AXIS_NATIVE   /* (pixel-sharp: the linear filter blended in the next frame's cell, a thin line at its edge) */
 	int sharp[2], sharpOn = g_settings.sharpText && platform_texNearest(sharp);
 #endif

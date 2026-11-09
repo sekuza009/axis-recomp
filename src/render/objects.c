@@ -148,14 +148,14 @@ void THISCALL (mapObject_frame)(u8 *s, int i, float dt)
 			shape_shadingColours((*(u32 * *)&MO->colourRuns[0]), 1, (Shape *)(AP(u8, MO->model)), (const LightFactors *)&st->mapLights,
 			                 MO->matrixInverse);
 		MO->poseStale = 0;
-		const float *c = MO->model->centre;
+		const float *c = AP(Shape, MO->model)->centre;
 		float *out = MO->pos;
 		out[0] = f32(fadd_m(FMUL(m[8], c[2]) + FMUL(m[4], c[1]) + FMUL(m[0], c[0]), &m[12]));
 		for (int r = 1; r < 3; r++)
 			out[r] = f32(fadd_m(FMUL(m[8 + r], c[2]) + FMUL(m[r], c[0]) + FMUL(m[4 + r], c[1]), &m[12 + r]));
 	}
 	if (MO->colourSide == 1 && !(obj[0xc] & 2)) {
-		memcpy((*(void * *)&MO->colourRuns[1]), (*(void * *)&MO->colourRuns[0]), MO->model->colourCount * 4);
+		memcpy((*(void * *)&MO->colourRuns[1]), (*(void * *)&MO->colourRuns[0]), AP(Shape, MO->model)->colourCount * 4);
 		shape_shadingColours((*(u32 * *)&MO->colourRuns[1]), 0, (Shape *)(AP(u8, MO->model)), (const LightFactors *)&st->dynamicLights,
 		                 MO->matrixInverse);
 	}

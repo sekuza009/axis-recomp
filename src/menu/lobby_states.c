@@ -283,9 +283,9 @@ void (pilotRecord_syncCopies)(void)
    stats; then the room's settings, the Ladder record (g_ladderName ..) and the mech */
 void (login_takeAccountRecord)(void)
 {
-	strcpy(g_ladderId, (const char *)(OBJ(g_profileReply) + 0x4));
-	strcpy(g_ladderEmail, (const char *)(OBJ(g_profileReply) + 0x22));
-	memcpy(AP(void, OBJ(g_roomMech)), (void *)(OBJ(g_profileReply) + 0x54), 11);
+	strcpy(g_ladderId, AP(const char, (OBJ(g_profileReply) + 0x4)));
+	strcpy(g_ladderEmail, AP(const char, (OBJ(g_profileReply) + 0x22)));
+	memcpy(AP(void, OBJ(g_roomMech)), AP(void, (OBJ(g_profileReply) + 0x54)), 11);
 	for (int k = 0; k < 6; k++) {
 		memcpy(AP(void, (OBJ(g_roomColours) + k * 0x18)), AP(void, ((OBJ(g_profileReply) + 0x5f) + k * 0x18)), 0x18);
 		ColourChoice *c = &((ColourChoice *)g_roomColours)[(u32)k];
@@ -975,7 +975,7 @@ int (lobby_openConnection)(void)
 	(*(u32 *)&g_listBlinkClock) = 0x447a0000;   /* 1000.0f */
 	g_gameListTop = 0;
 	g_gameListRow = 0;
-	*g_arenaListRequest = 0x180001;   /* the message to send */
+	*AP(u32, g_arenaListRequest) = 0x180001;   /* the message to send */
 	net_send(0xd, 100);   /* net_send */
 	g_joinConnecting = 0;
 	g_listRefreshPeriod = 30;
@@ -1627,9 +1627,9 @@ int (lobby_announceArena)(void)
 	packet->maxPlayers = g_arenaMaxPlayers;
 	packet->locked = g_arenaLocked;
 	lstrcpyA(packet->password, AP(const char, ADDR(g_arenaPassword)));
-	lstrcpyA(g_arenaPacket->name, g_arenaName);
+	lstrcpyA(AP(ArenaRecord, g_arenaPacket)->name, g_arenaName);
 	jmp_net_getLocalAddress();
-	lstrcpyA(g_arenaPacket->address, g_localAddress);
+	lstrcpyA(AP(ArenaRecord, g_arenaPacket)->address, g_localAddress);
 	g_connectionAwaited = 1;
 	g_hostAnswer = 2;
 	net_send(0xa, 0x64);
@@ -1658,9 +1658,9 @@ void (room_announceGame)(void)
 	packet->maxPlayers = room->maxPlayers;
 	packet->locked = room->locked;
 	lstrcpyA(packet->password, (AP(const GameSettings, OBJ(g_roomRecName)))->password);
-	lstrcpyA(g_roomPacket->name, g_roomRecName);
+	lstrcpyA(AP(RoomRecord, g_roomPacket)->name, g_roomRecName);
 	jmp_net_getLocalAddress();
-	lstrcpyA(g_roomPacket->address, g_localAddress);
+	lstrcpyA(AP(RoomRecord, g_roomPacket)->address, g_localAddress);
 	g_connectionAwaited = 1;
 	g_hostAnswer = 2;
 	net_send(0x12, 0x65);

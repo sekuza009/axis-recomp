@@ -573,13 +573,13 @@ static void decal(u8 *s, u8 *b, const u8 *w, u32 *r, const u8 *h, const float *N
 		uv[q * 2] = f32(fdiv_m((fmul_m(f2, &e[2]) + fmul_m(f1, &e[1])) + fmul_m(f0, &e[0]), &le));
 		uv[q * 2 + 1] = f32(((fmul_m(f2, &c2) + f1 * c1) + f0 * c0) / lc);
 	}
-	const int *obj = &((const CollisionTri *)h)->unit->index;   /* (its unit's map object number) */
+	const int *obj = &AP(struct SpaceUnit, ((const CollisionTri *)h)->unit)->index;   /* (its unit's map object number) */
 	if (obj) {
-		const ShapePart *part = (const ShapePart *)ST->objects[*obj].model->parts + ((const CollisionTri *)h)->part;
+		const ShapePart *part = AP(const ShapePart, AP(Shape, ST->objects[*obj].model)->parts) + ((const CollisionTri *)h)->part;
 		float tri[9];
 		for (int k = 0; k < 3; k++)
 			memcpy(tri + k * 3, AP(const float, part->vertices) + ((const CollisionTri *)h)->cornerIndices[k] * 3, 12);
-		effect(s, r, WI->shotMode + 0x28, 0, imp, N, (u32)ST->objects[((const CollisionTri *)h)->unit->index].matrix, AV(tri), AV(uv), 0, 0);
+		effect(s, r, WI->shotMode + 0x28, 0, imp, N, AV(ST->objects[AP(struct SpaceUnit, ((const CollisionTri *)h)->unit)->index].matrix), AV(tri), AV(uv), 0, 0);
 	} else
 		effect(s, r, WI->shotMode + 0x28, 0, imp, N, 0, AV(P), AV(uv), effect_size(w), 0);
 }
@@ -594,7 +594,7 @@ static void hit_surface(u8 *s, u8 *b, const u8 *w, u32 *r)
 		return;
 	float N[3], P[9];
 	const float *n = ((const CollisionTri *)h)->normal, *p = &((const CollisionTri *)h)->cornerPoints[0][0];
-	const int *obj = &((const CollisionTri *)h)->unit->index;   /* (its unit's map object number) */
+	const int *obj = &AP(struct SpaceUnit, ((const CollisionTri *)h)->unit)->index;   /* (its unit's map object number) */
 	if (obj) {
 		const float *M = ST->objects[*obj].relMatrix;
 		N[0] = f32((FMUL(n[2], M[8]) + FMUL(n[1], M[4])) + FMUL(n[0], M[0]));

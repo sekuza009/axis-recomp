@@ -10,7 +10,7 @@
 static void marker_quad(int texture, float alpha, int x, int y, int w, int h, float s0, float t0, float s1, float t1)
 {
 	glEnable(GL_TEXTURE_2D);
-	tex_bind(g_textures->banks[texture / 512], texture % 512);
+	tex_bind(AP(TextureManager, g_textures)->banks[texture / 512], texture % 512);
 	glColor4f(1.0f, 1.0f, 1.0f, alpha);
 	glBegin(GL_QUADS);
 	glTexCoord2f(s0, t0);

@@ -388,7 +388,7 @@ void THISCALL (object_initObjectBy)(Stage *s, int i, const ObjectInfo *info)
 		if (need > 1000000)
 			sys_fatalErrorN(AP(char, OBJ(g_logStage)), AP(const char, STR(0x4c8314, "object(%d) objectShapeElementShadingC...")), i, need, 1000000);
 		mo->colourRuns[r] = AV(&ST->objectColours[ST->objectColourCount]);
-		ST->objectColourCount += mo->model->colourCount;
+		ST->objectColourCount += AP(Shape, mo->model)->colourCount;
 	}
 	mo->colourSide = 1;
 	BITS(mo->glowSize) = BITS(info->glowSize);

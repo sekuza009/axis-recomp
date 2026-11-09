@@ -1334,7 +1334,7 @@ static int team_game(void)
    time (the original's: the same slot the network packets are read into later) */
 static void write_log(u8 *s, const char *format, int own_time, int stack_time)
 {
-	static const char *const k_teams[3] = { AP(const char, STR(0x4b21b8, "RED")), AP(const char, STR(0x4b21b0, "BLUE")), AP(const char, STR(0x4d06ec, "NOTEAM")) };   /* NOTEAM */
+	ASTATIC const char *const k_teams[3] = { AP(const char, STR(0x4b21b8, "RED")), AP(const char, STR(0x4b21b0, "BLUE")), AP(const char, STR(0x4d06ec, "NOTEAM")) };   /* NOTEAM */
 	void *f = crt_fopen(AP(const char, STR(0x4d06e0, "axiswl.log")), AP(const char, STR(0x4b21a4, "wt")));
 	crt_fprintf(f, format, g_gameTitle, g_mapIndex, g_fragLimit, g_timeLimit, g_matchPlayerName);
 	for (int k = 0; k < SC->rankCount; k++) {

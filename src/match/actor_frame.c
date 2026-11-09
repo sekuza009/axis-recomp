@@ -11,7 +11,7 @@
 #define AF(offset) GAME_VAR(float, a + (offset))
 #define AU(offset) GAME_VAR(u32, a + (offset))
 /* point k of path r: trigger r's way point k */
-#define PATH_POINT(r, k) (((const WayPoint *)ST->triggers[r].wayPoints)[k].pos)
+#define PATH_POINT(r, k) ((AP(const WayPoint, ST->triggers[r].wayPoints))[k].pos)
 
 
 
@@ -979,7 +979,7 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 				}
 				if (w >= 0) {
 					const int *muzzle = (const int *)(((u8 *)weapon) + (AC->slot == 5 ? 0x2ca4 : 0x15e8) + AC->variantLoaded * 64);
-					skel_getBoneMatrix(*AP(void *, model->skeletons), muzzle_m, muzzle[0], 0);
+					skel_getBoneMatrix(AP(void, *AP(APTR(void), model->skeletons)), muzzle_m, muzzle[0], 0);
 					Mat4_invert(muzzle_inv, muzzle_m);
 					memset(ungrip, 0, 64);   /* the grip undone: grip_shift = muzzle_inv x ungrip x muzzle_m */
 					BITS(ungrip[0]) = BITS(ungrip[5]) = BITS(ungrip[10]) = BITS(ungrip[15]) = 0x3f800000;
@@ -1069,7 +1069,7 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 				if (*bullet >= 0)
 					bullet_free(s, *bullet);
 				const int *muzzle = (const int *)(((u8 *)weapon) + (AC->slot == 5 ? 0x2ca4 : 0x15e8) + AC->variantLoaded * 64);
-				skel_getBoneMatrix(*AP(void *, model->skeletons), muzzle_m, muzzle[0], 0);
+				skel_getBoneMatrix(AP(void, *AP(APTR(void), model->skeletons)), muzzle_m, muzzle[0], 0);
 				Mat4_invert(muzzle_inv, muzzle_m);
 				memset(ungrip, 0, 64);
 				BITS(ungrip[0]) = BITS(ungrip[5]) = BITS(ungrip[10]) = BITS(ungrip[15]) = 0x3f800000;
