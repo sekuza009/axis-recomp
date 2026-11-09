@@ -4,6 +4,8 @@
 #include <godot_cpp/classes/audio_stream_generator.hpp>
 #include <godot_cpp/classes/display_server.hpp>
 #include <godot_cpp/classes/file_access.hpp>
+#include <godot_cpp/classes/time.hpp>
+#include <godot_cpp/classes/rendering_server.hpp>
 #include <godot_cpp/classes/input.hpp>
 #include <godot_cpp/classes/input_event_key.hpp>
 #include <godot_cpp/classes/input_event_mouse_button.hpp>
@@ -91,12 +93,13 @@ unsigned vk_of(Key k) {
 } // namespace
 
 void AxisGame::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("start", "game_dir", "library", "driver"), &AxisGame::start, DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("start", "game_dir", "library", "driver", "raw_mouse"), &AxisGame::start, DEFVAL(false), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("is_running"), &AxisGame::is_running);
 	ClassDB::bind_method(D_METHOD("get_game_frames"), &AxisGame::get_game_frames);
 	ClassDB::bind_method(D_METHOD("get_game_size"), &AxisGame::get_game_size);
 	ClassDB::bind_method(D_METHOD("get_audio_status"), &AxisGame::get_audio_status);
 	ClassDB::bind_method(D_METHOD("get_input_status"), &AxisGame::get_input_status);
+	ClassDB::bind_method(D_METHOD("take_frame_events"), &AxisGame::take_frame_events);
 }
 
 void AxisGame::on_frame(void *user, const unsigned *words, unsigned count, int width, int height) {
@@ -106,6 +109,15 @@ void AxisGame::on_frame(void *user, const unsigned *words, unsigned count, int w
 	g->lastW = width;
 	g->lastH = height;
 	g->gameFrames++;
+	if (g->inStep) {   // (a step still running after 30 ms - a loading screen: shown now, ~120 times a second, as the original shows each frame it draws)
+		const uint64_t now = Time::get_singleton()->get_ticks_usec();
+		if (now - g->stepStart > 30000 && now - g->lastShown > 8000) {
+			RenderingServer::get_singleton()->force_draw(true, 0.0);
+			g->feed_audio();
+			g->lastShown = now;
+			g->shownInStep++;
+		}
+	}
 }
 
 // ---- the sound: the game's buffers into the mixer, its music into an MP3 player ----
@@ -157,13 +169,19 @@ void AxisGame::m_close(void *u) {
 	g->musicStream.unref();
 }
 
+String AxisGame::take_frame_events() {
+	String s = frameEvents;
+	frameEvents = String();
+	return s;
+}
+
 String AxisGame::get_input_status() {
 	const char *modes[] = { "visible", "hidden", "captured", "confined", "confined_hidden" };
 	const int mode = (int)Input::get_singleton()->get_mouse_mode();
 	String s = String("mouse mode ") + (mode >= 0 && mode < 5 ? modes[mode] : "?") + ", focused " + (get_window() && get_window()->has_focus() ? "yes" : "no") +
 		", motion events " + String::num_int64(nMotion) + " (relative " + String::num(relX, 1) + ", " + String::num(relY, 1) +
 		"; screen relative " + String::num(srelX, 1) + ", " + String::num(srelY, 1) + "), sent to the game " + String::num_int64(sentX) +
-		", " + String::num_int64(sentY) + (rawMouse ? String(" (raw input, ") + String::num_int64(nRaw) + " raw events, taken back " + String::num_int64(rawRetaken) + "x)" : String(" (Godot's motion events)")) + "; button events " + String::num_int64(nButton) + ", buttons now " + String::num_int64(buttons);
+		", " + String::num_int64(sentY) + (cursorMouse ? String(" (cursor movement)") : rawMouse ? String(" (raw input, ") + String::num_int64(nRaw) + " raw events, taken back " + String::num_int64(rawRetaken) + "x)" : String(" (Godot's motion events)")) + "; button events " + String::num_int64(nButton) + ", buttons now " + String::num_int64(buttons);
 	nMotion = nButton = nRaw = 0;
 	relX = relY = srelX = srelY = 0;
 	sentX = sentY = 0;
@@ -193,7 +211,7 @@ void AxisGame::feed_audio() {
 	playback->push_buffer(frames);
 }
 
-bool AxisGame::start(const String &p_game_dir, const String &p_library, bool p_driver) {
+bool AxisGame::start(const String &p_game_dir, const String &p_library, bool p_driver, bool p_raw_mouse) {
 	gameDir = p_game_dir;
 	{	// the players: the sounds' mix (44.1 kHz, as the game's primary buffer) and the music
 		Ref<AudioStreamGenerator> gen;
@@ -244,7 +262,8 @@ bool AxisGame::start(const String &p_game_dir, const String &p_library, bool p_d
 	hostWindow = config.window;
 	// the mouse as the original has it: hidden, kept in the window, its movement read raw (not Godot's captured mode)
 	Input::get_singleton()->set_mouse_mode(Input::MOUSE_MODE_HIDDEN);
-	rawMouse = host_raw_mouse_start() != 0;
+	cursorMouse = !p_raw_mouse;
+	rawMouse = p_raw_mouse && host_raw_mouse_start() != 0;
 	return true;
 }
 
@@ -300,11 +319,19 @@ void AxisGame::_process(double p_delta) {
 	if (focused != confined) {   // (the pointer kept in the window while it has the focus, free otherwise)
 		host_confine(hostWindow, focused);
 		confined = focused;
+		if (focused && cursorMouse) {   // (the cursor centred, its way there not counted: the game starts from rest, as DirectInput does)
+			int ix, iy;
+			host_cursor_delta(hostWindow, &ix, &iy);
+		}
 	} else if (focused && gameFrames % 60 == 0)
 		host_confine(hostWindow, 1);   // (again now and then: a resize or another program may have let it go)
 	int dx = (int)moveX, dy = (int)moveY;
 	moveX -= dx;
 	moveY -= dy;
+	if (cursorMouse && focused) {   // (the cursor's movement, re-centred: as the original's DirectInput reported it)
+		host_cursor_delta(hostWindow, &dx, &dy);
+		nRaw++;
+	}
 	if (rawMouse && !host_raw_mouse_keep()) rawRetaken++;
 	if (rawMouse) {   // (raw counts instead of Godot's motion events, once the reader has had any)
 		int rx, ry, n;
@@ -323,7 +350,16 @@ void AxisGame::_process(double p_delta) {
 	const int py = lastH > 0 && vs.y > 0 ? (int)(pointer.y * lastH / vs.y) : (int)pointer.y;
 	api.input(keys, focused ? dx : 0, focused ? dy : 0, focused ? wheel : 0, buttons, px, py, focused);
 	wheel = 0;
+	const uint64_t t0 = Time::get_singleton()->get_ticks_usec();
+	const int f0 = gameFrames;
+	inStep = true;
+	stepStart = t0;
+	shownInStep = 0;
 	api.frame();
+	inStep = false;
+	const uint64_t took = Time::get_singleton()->get_ticks_usec() - t0;
+	if (took > 50000)   // (a step of more than 50 ms: its frames could not be shown until it returned)
+		frameEvents += String("game step of ") + String::num_int64((int64_t)(took / 1000)) + " ms drew " + String::num_int64(gameFrames - f0) + " frames, showed " + String::num_int64(shownInStep) + " (game frame " + String::num_int64(gameFrames) + ")\n";
 	feed_audio();
 	if (!api.running()) {
 		running = false;

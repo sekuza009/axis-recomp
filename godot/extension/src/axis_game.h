@@ -18,12 +18,13 @@ class AxisGame : public AxisReplay {
 	GDCLASS(AxisGame, AxisReplay)
 
 public:
-	bool start(const String &p_game_dir, const String &p_library, bool p_driver = false);
+	bool start(const String &p_game_dir, const String &p_library, bool p_driver = false, bool p_raw_mouse = false);
 	bool is_running() const { return running; }
 	int get_game_frames() const { return gameFrames; }
 	Vector2i get_game_size() const { return Vector2i(lastW, lastH); }
 	String get_audio_status();
 	String get_input_status();
+	String take_frame_events();   // (the frame log: game steps that took long, and the frames drawn in them)
 	void _process(double p_delta) override;
 	void _input(const Ref<InputEvent> &p_event) override;
 
@@ -48,7 +49,13 @@ private:
 	void *hostWindow = nullptr;   // Godot's window (confining the pointer)
 	bool confined = false;
 	int rawRetaken = 0;
-	bool rawSeen = false;   // the raw reader has had events (until then Godot's motion events are used)   // the mouse's movement read as raw input (host_win.c), not from Godot's motion events
+	String frameEvents;
+	bool rawSeen = false;
+	bool cursorMouse = false;   // the movement as the cursor moves (the original's); else raw counts (--raw-mouse)
+	// (a long game step - a loading screen - shown as it draws: RenderingServer.force_draw from the frame callback)
+	bool inStep = false;
+	uint64_t stepStart = 0, lastShown = 0;
+	int shownInStep = 0;   // the raw reader has had events (until then Godot's motion events are used)   // the mouse's movement read as raw input (host_win.c), not from Godot's motion events
 	int nRaw = 0;
 	static void on_frame(void *user, const unsigned *words, unsigned count, int width, int height);
 	// the sound (AxisSound): the buffers mixed here into a generator stream; the music an MP3 player

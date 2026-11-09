@@ -126,6 +126,22 @@ void host_confine(void *window, int on)
 	ClipCursor(&c);
 }
 
+/* the cursor's movement since the last call, the cursor then put back at the window's centre: the movement as
+   Windows moves the cursor - its pointer speed, acceleration and the display's scaling applied - which is what the
+   original's DirectInput mouse reported (measured: 100 counts injected came to the game as 150 at 150% scaling) */
+void host_cursor_delta(void *window, int *dx, int *dy)
+{
+	RECT r;
+	GetClientRect((HWND)window, &r);
+	POINT c = { (r.left + r.right) / 2, (r.top + r.bottom) / 2 }, p;
+	ClientToScreen((HWND)window, &c);
+	*dx = *dy = 0;
+	if (!GetCursorPos(&p)) return;
+	*dx = p.x - c.x;
+	*dy = p.y - c.y;
+	if (*dx || *dy) SetCursorPos(c.x, c.y);
+}
+
 /* the movement since the last call (and the number of raw events, for the input log) */
 void host_raw_mouse_take(int *dx, int *dy, int *events)
 {

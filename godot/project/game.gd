@@ -10,6 +10,7 @@ var audio_log: FileAccess = null   # (--audio-log <file>: the sound status every
 var audio_t := 0.0
 var input_log: FileAccess = null   # (--input-log <file>: what the mouse did, every second)
 var input_t := 0.0
+var frame_log: FileAccess = null   # (--frame-log <file>: game steps that took long)
 var scene_motion := 0   # (motion events the scene itself saw: a check apart from AxisGame)
 var scene_rel := Vector2()
 var no_game := false
@@ -41,6 +42,11 @@ func _ready() -> void:
 			pass
 		elif a == "--no-game":
 			no_game = true
+		elif a == "--frame-log":
+			i += 1
+			frame_log = FileAccess.open(args[i], FileAccess.WRITE)
+		elif a == "--raw-mouse":
+			pass
 		elif a == "--gl":
 			pass
 		elif a == "--status":
@@ -58,7 +64,7 @@ func _ready() -> void:
 	$View.texture = game.get_texture()
 	if no_game:   # (a check: only the mouse captured, no game)
 		Input.mouse_mode = Input.MOUSE_MODE_VISIBLE if args.find("--visible") >= 0 else Input.MOUSE_MODE_CAPTURED
-	elif not game.start(dir, lib, args.find("--gl") >= 0):   # (--gl: the game draws with OpenGL too, as before)
+	elif not game.start(dir, lib, args.find("--gl") >= 0, args.find("--raw-mouse") >= 0):   # (--raw-mouse: the device's counts, unscaled)   # (--gl: the game draws with OpenGL too, as before)
 		$Status.text = game.get_status()
 
 func _input(e: InputEvent) -> void:
@@ -80,6 +86,11 @@ func _process(_delta: float) -> void:
 	if game == null or not game.is_running():
 		return
 	var f := game.get_game_frames()
+	if frame_log:
+		var ev: String = game.take_frame_events()
+		if ev != "":
+			frame_log.store_string(ev)
+			frame_log.flush()
 	if input_log:
 		input_t += _delta
 		if input_t >= 1.0:

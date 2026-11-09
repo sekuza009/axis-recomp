@@ -90,3 +90,12 @@ counts (DirectInput's) from a raw-input reader with its own thread and message l
 taken back if Godot re-registers), the pointer hidden and kept in the window with ClipCursor while it has the focus;
 Godot's motion events only as a fallback until the reader has had any. Checked: injected moves arrive as exact raw
 counts (-150, 40 -> -150, 40) and move the menu pointer. game.gd --input-log <file> logs the mouse every second.
+
+2026-11-09, measured against the original (AXIS_MOUSELOG, game.gd --frame-log):
+- Menu mouse: the original's DirectInput mouse reports the cursor's movement as Windows moves it, so the display
+  scaling (150% here) and the pointer speed apply: 100 counts injected came to the original as 150. The raw reader
+  gave 100, so the mouse was 2/3 as fast. Now the movement is the cursor's, re-centred each frame (host_cursor_delta),
+  which also gives 150. --raw-mouse keeps the unscaled raw counts.
+- Loading: the original shows each frame it draws while it loads (one game step of ~1 s draws hundreds of frames).
+  In Godot a step runs inside Godot's frame, so only its last frame was shown. Now a step that has run for more than
+  30 ms shows its frames with RenderingServer.force_draw, up to ~120 a second (measured: ~117 shown in a 1 s load).
