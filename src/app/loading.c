@@ -3,6 +3,7 @@
    loading screen between the menus and a match: a scrolling textured cylinder (Iftex/Cylinder) behind the status text
    lines, faded in from black and out to black (no progress bar). */
 #include "../game.h"
+#include "../plat/plat.h"
 #include <string.h>
 
 #define g_loadText g_loadStatusText
@@ -31,6 +32,7 @@ void (loading_drawScreen)(int mode, int unused, const char *text)
 {
 	(void)unused;
 	long double dt = TimeSync_frameTime(g_loadTimer);
+	PLAT_LOADLOG(g_loadTimer, mode);
 	if (mode == -2) {
 		g_loadScroll = fadd_m(dt, &g_loadScroll);
 		strcpy(g_loadText, text);

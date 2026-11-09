@@ -285,6 +285,27 @@ static void mouse_log(long dx, long dy)
 	}
 }
 
+/* AXIS_LOADLOG=<file> (a check): each loading-screen frame (loading_drawScreen): the time, the frame's real length
+   and the length the animation advanced by (TimeSync_frameTime: at most 1/15 s) */
+void (*g_platLoadLog)(const void *timeSync, int mode);
+static FILE *g_loadLog;
+static void load_log(const void *t, int mode)
+{
+	/* (TimeSync, src/scene.h: the frequency at +0xc, the rise at +0x1c, the frame time at +0x30) */
+	const char *ts = (const char *)t;
+	unsigned long long freq;
+	long long rise;
+	float ft;
+	memcpy(&freq, ts + 0xc, 8);
+	memcpy(&rise, ts + 0x1c, 8);
+	memcpy(&ft, ts + 0x30, 4);
+	LARGE_INTEGER now;
+	QueryPerformanceCounter(&now);
+	fprintf(g_loadLog, "%.1f ms mode %d: frame %.2f ms, advanced %.2f ms\n", now.QuadPart * 1000.0 / (double)freq, mode,
+	        rise * 1000.0 / (double)freq, ft * 1000.0);
+	fflush(g_loadLog);
+}
+
 /* ---- a host (axis_api.h axis_host): its drawing callback, its input, the game's window kept hidden ---- */
 static AxisHostConfig g_host;
 static int g_hostSet;
@@ -454,6 +475,8 @@ int WINAPI WinMain(HINSTANCE inst, HINSTANCE prev, LPSTR cmd, int show)
 		host_install();
 	{
 		char p[MAX_PATH];
+		if (GetEnvironmentVariableA("AXIS_LOADLOG", p, sizeof p) && (g_loadLog = fopen(p, "w")))
+			g_platLoadLog = load_log;
 		if (GetEnvironmentVariableA("AXIS_MOUSELOG", p, sizeof p) && (g_mouseLog = fopen(p, "w"))) {
 			g_mouseT = GetTickCount();
 			g_platMouseLog = mouse_log;
