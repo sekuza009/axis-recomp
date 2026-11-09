@@ -109,3 +109,27 @@ in Godot, then replaced piece by piece.
   registers its class, but the test fails: no engine class has its instance-binding callbacks ("Cannot find instance
   binding callbacks for class 'Object'"), with the 4.5 and the 4.7 API alike. Not yet understood - the next thing
   to settle before the godot branch builds on godot-cpp (a C extension on gdextension_interface.h is the fallback).
+
+## Stage 3, second pass: what the game still asks of Windows under a host (measured 2026-11-09)
+
+AXIS_IMPORTLOG counted the imports really called in the Godot version (start-up, menus, a skirmish): 96 of 232,
+most of them OpenGL (recorded for the host, glrec.c). The rest, by group, with the plan for each:
+
+- **Window, messages, timers** (CreateWindowExA hidden, DefWindowProcA, ShowWindow, GetDC, GetClientRect; quitting
+  by PostMessageA(WM_CLOSE); SetTimer / KillTimer: the keep-alives 0x29a, 0x115c, 0x309 and the join poll 0x378;
+  the text field, an EDIT control subclassed by editField_editProc, read with GetWindowTextA): a message queue and
+  a timer list in the library, delivered to the game's window procedure from axis_frame; a built-in text field
+  answering the EDIT messages the game sends. Then no window at all. *(first: in the loader's host mode)*
+- **Network events** (WSAAsyncSelect: the lobby connection's socket events posted to the window): polled each frame
+  (select) into the same queue; the netcode itself is replaced later.
+- **Time** (QueryPerformanceCounter - 11 million calls, the busy waits - QueryPerformanceFrequency, timeGetTime,
+  GetLocalTime, GetSystemTime, Sleep): one time interface.
+- **Files** (CreateFileA / ReadFile / CloseHandle, GetCurrentDirectoryA, and the C runtime's): a file interface with
+  '/' paths and case-insensitive lookup (the data's names are mixed case: "Iftex/Cylinder").
+- **Settings** (RegOpenKeyExA, RegQueryValueExA, RegCreateKeyExA, RegSetValueExA: the ladder ID, start / end modes):
+  a settings file.
+- **Graphics leftovers** (ChoosePixelFormat, SetPixelFormat, wglCreateContext, wglMakeCurrent, SwapBuffers,
+  GetDeviceCaps, GetStockObject, glGetString): answered by the no-GL layer already; into the interface.
+- **Other** (MessageBoxA, ShellExecuteA for the patcher / DServer, the ending movie via MCI, CoInitialize,
+  GetVersion, GetSystemDefaultLangID, LoadIconA / LoadCursorA, SystemParametersInfoA): a host message box, the
+  launcher links Windows-only, the movie played by the host (Ogg Theora), the rest dropped.
