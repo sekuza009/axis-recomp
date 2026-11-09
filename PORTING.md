@@ -227,7 +227,19 @@ and gives them a 4 GB space of their own:
   tools/to_arena.py (the mechanical cast rewrite) and tools/fix64.py (rewrites driven by the compiler's 64-bit
   diagnostics, with a check mode, AXIS_64CHECK, that turns every address constant into a run-time value so that its
   casts are reported too). The remaining hand edits are listed in the commits.
-- **Next:** the 64-bit runtime - the arena with its heap and stacks (the game runs on an arena stack: its locals'
+- **The runtime (2026-11-09):** standalone/arena.c (the arena, its heap, the stack switch, the function table),
+  host64.c (the loader: slots and thunks for the system calls - tools/mkthunks64.py -, the API on the arena stack, a
+  crash report), crt64.c (the C runtime: files as arena records, VC6's printf and rand), glrec64.c (the drawing in
+  glrec.c's stream format, no driver), hostwin64.c (the window stood in), platform64.c, src/plat/host/devices.c
+  (sound, music and input from the host; the network not yet). Built for x86-64 Linux by standalone/build64.sh;
+  tools/plat_tests/run64.sh runs it headless in WSL (a scratch game folder in /dev/shm), host32_test.c / run32.sh run
+  the 32-bit axis.dll the same way on Windows, tools/streamcmp.py compares the two streams: the intro's first 41
+  frames are bit-identical (texture uploads included), later ones differ only in time-driven values. The silent
+  64-bit cases found on the way (none reported by the compiler): pointers read from game memory through retyped
+  places (AGET / ASET), function values cast to function types (FNP), records with pointer members (APTR), a call's
+  argument kinds differing from the function's (tools/abi64.py), arguments read as an array from the first one (the
+  32-bit stack), 'long' reads (8 bytes on 64-bit Linux), sizeof arithmetic cast to a pointer.
+- **Earlier note - the runtime as planned:** the arena with its heap and stacks (the game runs on an arena stack: its locals'
   addresses go into its records), the function table, the C runtime's entries (files as arena handles, VC6's printf
   and rand), and every system call as a C function: under a host the game needs no real window, so the 64-bit
   platform is the host one (the window and messages stood in, drawing recorded for the host, sound and input from it)
