@@ -64,8 +64,17 @@ static int g_recording = 1;
 
 /* the thunks: eax = op; the common part records the words above the return address, then jumps to the driver's
    function with the stack untouched (stdcall: it pops its own arguments) */
+static void track_param(u32 pname, int v);
+static u32 g_bound;
 void glrec_record(int op, const u32 *args)
 {
+	if (op == 1)            /* glBindTexture: the bound texture (the no-driver mode's filters by texture) */
+		g_bound = args[1];
+	else if (op == 32) {    /* glTexParameterf */
+		float f;
+		memcpy(&f, &args[2], 4);
+		track_param(args[1], (int)f);
+	}
 	if (!g_recording)
 		return;
 	put((u32)op | (u32)k_plain[op].words << 16);
@@ -107,7 +116,8 @@ enum { OP_COLOR4UBV = 64, OP_FOGFV, OP_LOADMATRIX, OP_MULTMATRIX, OP_TEXCOORD2FV
 extern void (S *g_texParameteri)(u32, u32, int);
 extern void (S *g_getTexParameteriv)(u32, u32, int *);
 static void (S *r_glTexParameteri)(u32, u32, int);
-static void S w_glTexParameteri(u32 t, u32 p, int v) { r_glTexParameteri(t, p, v); put((u32)OP_TEXPARAMI | 3u << 16); put(t); put(p); put((u32)v); }
+static void track_param(u32 pname, int v);
+static void S w_glTexParameteri(u32 t, u32 p, int v) { r_glTexParameteri(t, p, v); track_param(p, v); put((u32)OP_TEXPARAMI | 3u << 16); put(t); put(p); put((u32)v); }
 static void (S *r_glColor4ubv)(const void *), (S *r_glFogfv)(u32, const float *), (S *r_glLoadMatrixf)(const float *),
 	(S *r_glMultMatrixf)(const float *), (S *r_glTexCoord2fv)(const float *), (S *r_glVertex3fv)(const float *),
 	(S *r_glVertex4fv)(const float *), (S *r_glPixelStorei)(u32, int),
@@ -559,6 +569,78 @@ static int S w_wglMakeCurrent(HDC dc, HGLRC rc)
 }
 
 /* the layer put in front of the game's GL slots (slot(name): a slot's place). Returns the number wrapped */
+
+/* ---- no driver (glrec_nogl, for a host with config.nogl): every call is recorded and goes nowhere - no GL context,
+   no drawing into the game's hidden window. What a driver would answer comes from here: texture names, the
+   extension string (none: the game uses the core vertex arrays), contexts, SwapBuffers, and the texture filters the
+   fixes' pixel-sharp text saves and restores (kept per texture from the recorded calls); glstate.c (mode 3) answers
+   the matrix, viewport and fog queries */
+__asm__(".text\n_glrec_nop0:\n\tret\n_glrec_nop1:\n\tret $4\n_glrec_nop2:\n\tret $8\n_glrec_nop3:\n\tret $12\n"
+        "_glrec_nop4:\n\tret $16\n_glrec_nop5:\n\tret $20\n_glrec_nop7:\n\txor %eax, %eax\n\tret $28\n_glrec_nop8:\n\tret $32\n"
+        "_glrec_nop9:\n\tret $36\n_glrec_nop18:\n\tret $72\n");
+void glrec_nop0(void), glrec_nop1(void), glrec_nop2(void), glrec_nop3(void), glrec_nop4(void), glrec_nop5(void),
+	glrec_nop7(void), glrec_nop8(void), glrec_nop9(void), glrec_nop18(void);
+static void *nop_for(int words)
+{
+	switch (words) {
+	case 0: return (void *)glrec_nop0; case 1: return (void *)glrec_nop1; case 2: return (void *)glrec_nop2;
+	case 3: return (void *)glrec_nop3; case 4: return (void *)glrec_nop4; case 5: return (void *)glrec_nop5;
+	case 7: return (void *)glrec_nop7; case 8: return (void *)glrec_nop8; case 9: return (void *)glrec_nop9;
+	default: return (void *)glrec_nop18;
+	}
+}
+static int g_nogl;
+static u32 g_nextName = 1;
+static int g_minF[4096], g_magF[4096];   /* (by texture name; 0: GL's defaults) */
+static void track_param(u32 pname, int v)
+{
+	if (g_bound >= 4096) return;
+	if (pname == 0x2801) g_minF[g_bound] = v;
+	else if (pname == 0x2800) g_magF[g_bound] = v;
+}
+static void S f_glGenTextures(int n, u32 *names) { for (int i = 0; i < n; i++) names[i] = g_nextName++; }
+static const char *S f_glGetString(u32 name) { return name == 0x1f03 ? "" : "AxisRC (no driver: the host draws)"; }
+static void S f_glGetFloatv(u32 p, float *out) { (void)p; out[0] = 0; }   /* (glstate.c answers the ones the game reads) */
+static void S f_glGetBooleanv(u32 p, unsigned char *out) { (void)p; out[0] = 0; }
+static void S f_glGetTexParameteriv(u32 t, u32 p, int *out)
+{
+	(void)t;
+	int v = g_bound < 4096 ? (p == 0x2801 ? g_minF[g_bound] : g_magF[g_bound]) : 0;
+	*out = v ? v : (p == 0x2801 ? 0x2702 : 0x2601);   /* GL_NEAREST_MIPMAP_LINEAR / GL_LINEAR */
+}
+static HGLRC S f_wglCreateContext(HDC dc) { (void)dc; return (HGLRC)(ULONG_PTR)0x41584953; }
+static BOOL S f_wglTrue1(void *a) { (void)a; return TRUE; }
+static BOOL S f_wglMakeCurrent(HDC dc, HGLRC rc) { (void)dc; (void)rc; return TRUE; }
+static void *S f_wglGetProcAddress(const char *n) { (void)n; return NULL; }
+static BOOL S f_SwapBuffers(HDC dc) { (void)dc; return TRUE; }
+static int S f_ChoosePixelFormat(HDC dc, const void *pfd) { (void)dc; (void)pfd; return 1; }
+static BOOL S f_SetPixelFormat(HDC dc, int f, const void *pfd) { (void)dc; (void)f; (void)pfd; return TRUE; }
+
+int glrec_nogl(void **(*slot)(const char *name))
+{
+	g_nogl = 1;
+	for (int i = 0; i < NPLAIN; i++)   /* (the recorded plain calls: their driver side does nothing) */
+		g_glrecReal[i] = nop_for(k_plain[i].words);
+	*(void **)&r_glColor4ubv = nop_for(1); *(void **)&r_glFogfv = nop_for(2); *(void **)&r_glLoadMatrixf = nop_for(1);
+	*(void **)&r_glMultMatrixf = nop_for(1); *(void **)&r_glTexCoord2fv = nop_for(1); *(void **)&r_glVertex3fv = nop_for(1);
+	*(void **)&r_glVertex4fv = nop_for(1); *(void **)&r_glPixelStorei = nop_for(2);
+	*(void **)&r_glVertexPointer = nop_for(4); *(void **)&r_glColorPointer = nop_for(4); *(void **)&r_glTexCoordPointer = nop_for(4);
+	*(void **)&r_glDrawElements = nop_for(4); *(void **)&r_glTexImage2D = nop_for(9); *(void **)&r_gluBuild2DMipmaps = nop_for(7);
+	*(void **)&r_glEnableClientState = nop_for(1); *(void **)&r_glDisableClientState = nop_for(1);
+	*(void **)&r_glTexParameteri = nop_for(3);
+	*(void **)&r_wglGetProcAddress = (void *)f_wglGetProcAddress;
+	*(void **)&r_wglMakeCurrent = (void *)f_wglMakeCurrent;
+	*(void **)&r_SwapBuffers = (void *)f_SwapBuffers;
+	*(void **)&g_getTexParameteriv = (void *)f_glGetTexParameteriv;
+	int n = 0;
+#define SET(name, f) do { void **p = slot(#name); if (p) { *p = (void *)(f); n++; } } while (0)
+	SET(glGenTextures, f_glGenTextures); SET(glGetString, f_glGetString); SET(glGetFloatv, f_glGetFloatv);
+	SET(glGetBooleanv, f_glGetBooleanv); SET(glFinish, nop_for(0)); SET(wglCreateContext, f_wglCreateContext);
+	SET(wglDeleteContext, f_wglTrue1); SET(ChoosePixelFormat, f_ChoosePixelFormat); SET(SetPixelFormat, f_SetPixelFormat);
+#undef SET
+	return n;
+}
+
 int glrec_install(void **(*slot)(const char *name), const char *dir);
 int glrec_install_live(void **(*slot)(const char *name), const char *dir,
                        void (*live)(void *user, const u32 *words, unsigned count, int width, int height), void *user)

@@ -347,6 +347,13 @@ static void host_install(void)
 		strcpy(dir, g_logPath);
 		*(strrchr(dir, '\\') + 1) = 0;
 		fprintf(g_log, "host: each frame's drawing to the host (%d GL calls recorded)\n", glrec_install_live(slot_by_name, dir, g_host.frame, g_host.user));
+		if (g_host.nogl) {   /* (no OpenGL: recorded only; the queries from glstate.c, mode 3 - in front of the record) */
+			int glrec_nogl(void **(*slot)(const char *));
+			int glstate_install(void **(*slot)(const char *name), int mode, const char *dir);
+			int faked = glrec_nogl(slot_by_name);
+			fprintf(g_log, "host: no OpenGL (%d driver calls answered here, %d by the software GL state)\n", faked,
+			        glstate_install(slot_by_name, 3, dir));
+		}
 	}
 	if (g_host.input) {
 		g_platHostInput = 1;

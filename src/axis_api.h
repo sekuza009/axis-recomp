@@ -35,6 +35,8 @@ typedef struct {
 	void *user;
 	int input;      /* 1: the host supplies keyboard and mouse (axis_input / axis_key / axis_char) and the game's own
 	                   window stays hidden */
+	int nogl;       /* 1 (with frame): no OpenGL at all - the calls are only recorded for the host, the game's GL
+	                   queries answered in software (standalone/glstate.c); no context, no drawing in the hidden window */
 } AxisHostConfig;
 AXIS_API void axis_host(const AxisHostConfig *config);
 /* the stream's header (an AXGLREC1 file's start: its calls' table) into out; its size (out 0 or room too small: only
