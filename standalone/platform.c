@@ -117,6 +117,8 @@ static DWORD WINAPI watch_buttons(void *ready)
 
 static void activated(int active)
 {
+	if (g_platformHostFocus >= 0)   /* (a host supplies the input and owns the focus: no devices to let go) */
+		return;
 	if (!active) {
 		void *dev = g_mouseDevice ? *g_mouseDevice : NULL;   /* (an IDirectInputDevice) */
 		if (dev)
