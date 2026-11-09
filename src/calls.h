@@ -276,7 +276,7 @@
 #define GlobalUnlock(a0) IMPORT_FN(GlobalUnlock, u32, void *)(a0)
 #define GlobalFree(a0) IMPORT_FN(GlobalFree, u32, void *)(a0)
 #define GlobalLock(a0) IMPORT_FN(GlobalLock, u8 *, void *)(a0)
-#define CloseHandle(a0) IMPORT_FN(CloseHandle, u32, u32)(a0)
+#define CloseHandle(a0) IMPORT_FN(CloseHandle, u32, void *)(AP(void, a0))
 #define CreateFileA(a0, a1, a2, a3, a4, a5, a6) IMPORT_FN(CreateFileA, void *, const char *, u32, u32, void *, u32, u32, void *)(a0, a1, a2, a3, a4, a5, a6)
 #define glFrontFace(a0) IMPORT_FN(glFrontFace, void, u32)(a0)
 #define glTexEnvf(a0, a1, a2) IMPORT_FN(glTexEnvf, void, u32, u32, FBT)(a0, a1, FB(a2))

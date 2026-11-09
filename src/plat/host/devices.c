@@ -175,25 +175,5 @@ long plat_inputRead(void *d, u32 size, void *state)
 }
 long plat_inputRelease(void *object) { (void)object; return 0; }
 
-/* network: not yet in the 64-bit build (DirectPlay's records still to be translated between the game's 32-bit layout and
-   axisnet's own) - every operation fails, as with no DirectPlay installed */
-#define DPERR_ ((long)(i32)0x80004005)
-long plat_netCreate(APTR(void) *out) { *out = 0; return DPERR_; }
-long plat_netLobbyCreate(APTR(void) *out) { *out = 0; return DPERR_; }
-long plat_netRelease(void *o) { (void)o; return 0; }
-long plat_netClose(void *p) { (void)p; return 0; }
-u32 plat_netDestroyPlayer(void *p, u32 id) { (void)p; (void)id; return 0; }
-int plat_netEnumSessions(void *p, void *desc, void *callback) { (void)p; (void)desc; (void)callback; return (int)DPERR_; }
-int plat_netGetPlayerName(void *p, u32 id, void *name, u32 *size) { (void)p; (void)id; (void)name; (void)size; return (int)DPERR_; }
-int plat_netCreatePlayer(void *p, u32 *id, void *name) { (void)p; (void)id; (void)name; return (int)DPERR_; }
-int plat_netOpen(void *p, void *desc, u32 flags) { (void)p; (void)desc; (void)flags; return (int)DPERR_; }
-int plat_netLobbyGetConnection(void *l, void *buffer, u32 *size) { (void)l; (void)buffer; (void)size; return (int)DPERR_; }
-int plat_netLobbySetConnection(void *l, void *connection) { (void)l; (void)connection; return (int)DPERR_; }
-int plat_netLobbyConnect(void *l, APTR(void) *out) { (void)l; *out = 0; return (int)DPERR_; }
-int plat_netEnumConnections(void *p, void *callback) { (void)p; (void)callback; return (int)DPERR_; }
-int plat_netLobbyAddress(void *l, void *elements, u32 n, void *block, u32 *size) { (void)l; (void)elements; (void)n; (void)block; (void)size; return (int)DPERR_; }
-int plat_netInitConnection(void *p, void *connection) { (void)p; (void)connection; return (int)DPERR_; }
-int plat_netGetCaps(void *p, u32 *caps) { (void)p; (void)caps; return (int)DPERR_; }
-long plat_netReceive(void *p, u32 *from, u32 *to, u32 flags, void *data, u32 *size) { (void)p; (void)from; (void)to; (void)flags; (void)data; (void)size; return DPERR_; }
-long plat_netSend(void *p, u32 from, u32 to, u32 flags, const void *data, u32 size) { (void)p; (void)from; (void)to; (void)flags; (void)data; (void)size; return DPERR_; }
+/* (network: standalone/net64.c - axisnet's DirectPlay, the records translated) */
 #endif
