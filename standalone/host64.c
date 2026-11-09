@@ -296,7 +296,35 @@ static LONG WINAPI crashed(EXCEPTION_POINTERS *e)
 	hlog("\n");
 	return EXCEPTION_CONTINUE_SEARCH;
 }
-static void crash_handler(void) { SetUnhandledExceptionFilter(crashed); }
+/* (a first-chance access violation logged too, once: one on an arena stack or in the C runtime may never reach the
+   unhandled-exception filter) */
+static LONG WINAPI first_chance(EXCEPTION_POINTERS *e)
+{
+	static LONG done;
+	if (e->ExceptionRecord->ExceptionCode == EXCEPTION_ACCESS_VIOLATION && !InterlockedExchange(&done, 1)) {
+		CONTEXT *c = e->ContextRecord;
+		HMODULE m = NULL, at = NULL;
+		GetModuleHandleExA(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS | GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT, (LPCSTR)crashed, &m);
+		GetModuleHandleExA(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS | GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT, (LPCSTR)c->Rip, &at);
+		char name[MAX_PATH] = "?";
+		if (at)
+			GetModuleFileNameA(at, name, sizeof name);
+		hlog("ACCESS VIOLATION (first chance) at %p in %s, address %p; our module's return addresses on the stack:",
+		     (void *)c->Rip, name, (void *)e->ExceptionRecord->ExceptionInformation[1]);
+		MEMORY_BASIC_INFORMATION mi;
+		VirtualQuery(m, &mi, sizeof mi);
+		uintptr_t lo = (uintptr_t)m, hi = lo + 0x400000;
+		uintptr_t *sp = (uintptr_t *)c->Rsp;
+		for (int i = 0, n = 0; i < 512 && n < 16; i++)
+			if (sp[i] - lo < hi - lo) {
+				hlog(" %llx", (unsigned long long)(sp[i] - lo));
+				n++;
+			}
+		hlog("\n");
+	}
+	return EXCEPTION_CONTINUE_SEARCH;
+}
+static void crash_handler(void) { SetUnhandledExceptionFilter(crashed); AddVectoredExceptionHandler(1, first_chance); }
 #else
 static void crash_handler(void) {}
 #endif

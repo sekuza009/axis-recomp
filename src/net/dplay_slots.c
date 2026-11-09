@@ -194,7 +194,7 @@ int (dplay_openConnection)(u32 kind, const char *host)
 	(*(int *)&g_localPlayerData) = 0;
 	if (kind > 3)
 		return 0;
-	int r = kind == 0 ? GAME_CDECL(open[0], int, const char *)(address) : GAME_CDECL(open[kind], int, int)(0);
+	int r = kind == 0 ? GAME_CDECL(open[0], int, int)((int)AV(address)) : GAME_CDECL(open[kind], int, int)(0);   /* (dplaySlot0_open takes the address as a game address) */
 	if (!r)
 		return 0;
 	g_sessionListOpen = 1;
