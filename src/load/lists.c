@@ -24,15 +24,15 @@ void THISCALL (space_freeBlock)(void *self, u8 *node) { push_front(self, node, 0
 
 /* 0x441120: a new 0x3538-byte node (malloc'd; prev back, next next) appended to the list at *head, and set up
    by tunnelRing_build as ring number g_tunnelRings (returns what that leaves in eax; 0 without memory) */
-u32 (tunnel_appendRing)(u8 **head)
+u32 (tunnel_appendRing)(APTR(u8) *head)
 {
-	u8 *first = *head;
+	u8 *first = AP(u8, *head);
 	u8 *node = crt_malloc(0x3538);
 	if (!node)
 		return 0;
 	TunnelRing *ring = (TunnelRing *)node;
 	if (!*head) {
-		*head = node;
+		*head = AREF(node);
 		ring->back = 0;
 	} else {
 		TunnelRing *last = (TunnelRing *)first;

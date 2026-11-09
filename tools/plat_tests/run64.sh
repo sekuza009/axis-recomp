@@ -18,6 +18,8 @@ for d in Data Map Sound Music; do [ -e "\$d" ] || ln -s "$G/\$d" "\$d"; done
 [ -d Save ] || cp -r "$G/Save" Save
 [ -d initdata ] || cp -r "$G/initdata" initdata
 for f in Chat.scp Help.txt MATHFUNC.TBL axisnet.ini AxisPlay.exe; do [ -e "\$f" ] || cp "$G/\$f" .; done
+# (the launcher's settings the game reads: a server list - here a local one - and the start mode)
+[ -e registry.txt ] || printf '[80000001\\SOFTWARE\\AxisArena\\SelectServer]\nTcpDNS=1:3132372e302e302e3100\nLadderDNS=1:3132372e302e302e3100\nTcpPort=4:e4070000\nLadderPort=4:f8070000\n[80000001\\SOFTWARE\\AxisArena\\Launcher]\nStartMode=4:00000000\n' > registry.txt
 cp "$B/axis64_test" /dev/shm/axis64_test
 set +e
 AXIS_SETTINGS=/dev/shm/axis64/registry.txt /dev/shm/axis64_test /dev/shm/axis64 $FRAMES $STREAM

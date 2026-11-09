@@ -319,7 +319,7 @@ void THISCALL (space_resetUnits)(u8 *self)
 {
 	Space *sp = (Space *)self;
 	for (int i = 0; i < sp->units.count; i++)
-		spaceSlot_clear((int *)(sp->units.records + i * sizeof(SpaceUnit)));
+		spaceSlot_clear(AP(int, sp->units.records + i * sizeof(SpaceUnit)));
 	for (int i = 1; i < sp->units.count; i++) {
 		u8 *e = AP(u8, sp->units.records + i * sizeof(SpaceUnit));
 		((SpaceUnit *)e)->poolPrev = AREF(e - sizeof(SpaceUnit));
