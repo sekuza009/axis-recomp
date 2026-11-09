@@ -4,6 +4,7 @@
    handling. The lobby's three sub-screens are 0 (the player's own record), 1 (the arena list) and 2 (creating an
    arena). */
 #include "../game.h"
+#include "../plat/plat.h"
 #include <string.h>
 
 
@@ -548,7 +549,7 @@ u32 (room_leave)(void)
 {
 	strcpy(g_netLeaveBuffer, g_ladderId);
 	net_send(0x19, 0x65);   /* net_send */
-	Sleep(500);                   /* Sleep */
+	TIME_SLEEP(500);                   /* Sleep */
 	menuCamera_setMove(4);
 	g_nextScreen = 300;
 	CALL_FN(shared_emptyFunction, void, void)();                 /* shared_emptyFunction */

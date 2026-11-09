@@ -1,6 +1,7 @@
 /* small.c: one-line pieces from all over the game that need nothing of their own: clears, flags, getters and
    setters, list toggles, string lengths. Grouped by where they are used. */
 #include "../game.h"
+#include "../plat/plat.h"
 #include <stdarg.h>
 #include <string.h>
 
@@ -727,8 +728,8 @@ int (app_screenSizeForMode)(void)
 int (sys_checkClockTampering)(void)
 {
 	const u16 *now = g_clockNowTime, *last = g_clockLastTime;   /* SYSTEMTIME: [4] hour, [5] minute, [6] second */
-	GetSystemTime((void *)OBJ(g_clockNowTime));
-	u32 tick = timeGetTime();
+	TIME_UTC((void *)OBJ(g_clockNowTime));
+	u32 tick = TIME_MS();
 	g_clockCheckTick = tick;
 	u32 minutes = now[5] + (now[4] > last[4] ? 60 : 0);
 	int seconds = minutes > last[5] ? (int)(minutes * 60 - last[5] * 60 - last[6] + now[6]) : (int)(now[6] - last[6]);
@@ -742,12 +743,12 @@ int (sys_checkClockTampering)(void)
 			PostMessageA(g_mainWindow, 0x10, 0, 0);   /* WM_CLOSE */
 			return 1;
 		}
-		GetSystemTime((void *)OBJ(g_clockLastTime));
-		g_startTicks = timeGetTime();
+		TIME_UTC((void *)OBJ(g_clockLastTime));
+		g_startTicks = TIME_MS();
 		return 0;
 	}
-	GetSystemTime((void *)OBJ(g_clockLastTime));
-	g_startTicks = timeGetTime();
+	TIME_UTC((void *)OBJ(g_clockLastTime));
+	g_startTicks = TIME_MS();
 	return 1;
 }
 

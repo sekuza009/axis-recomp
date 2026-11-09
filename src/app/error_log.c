@@ -2,6 +2,7 @@
    appends both to ERROR.TXT when logging is on (g_errorLogging), and hands them to the error hook (g_errorHook);
    sys_errorTerminate and sys_fatalError then run the cleanup hook (g_errorCleanupHook) and exit. */
 #include "../game.h"
+#include "../plat/plat.h"
 #include <stdarg.h>
 
 #define sprintf_game ((int (CDECL *)(char *, const char *, ...))CRT_FN(sprintf))
@@ -18,7 +19,7 @@ static int report(u32 flag, const u8 *object, u32 timeFormat, const char *format
 	u16 st[8];   /* SYSTEMTIME: year, month, weekday, day, hour, minute, second, milliseconds */
 	char stamp[0x100], text[0x400];
 	GAME_VAR(int, flag) = 1;
-	GetLocalTime(st);
+	TIME_LOCAL(st);
 	if (object)
 		sprintf_game(stamp, (const char *)RELOC(timeFormat), *(const u32 *)(object + 4), st[0], st[1], st[3], st[4], st[5], st[6], st[7]);
 	else

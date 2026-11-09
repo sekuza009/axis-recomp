@@ -1,6 +1,7 @@
 /* timer.c: the game's clock: the performance counter, shifted right until its frequency is at most 2 MHz (so the
    counter's low 32 bits are enough between two frames), and a wait on it. */
 #include "../game.h"
+#include "../plat/plat.h"
 
 #define TIMER_MAX_FREQUENCY k_2000000
 #define ONE k_1
@@ -11,7 +12,7 @@
 void (timer_init)(void)
 {
 	u64 f;
-	if (!QueryPerformanceFrequency(&f))
+	if (!TIME_FREQUENCY(&f))
 		sys_messageBox((const char *)STR(0x4b24d4, "No hardware timer available"));
 	g_timerFrequency = f;
 	int shift = 0;
@@ -43,7 +44,7 @@ long double (timer_now)(void)
 {
 #define g_time g_clockNow
 	u32 counter[2];
-	IMPORT_FN(QueryPerformanceCounter, int, u32 *)(counter);   /* QueryPerformanceCounter */
+	TIME_COUNTER(counter);   /* QueryPerformanceCounter */
 	int shift = g_timerShift;
 	g_perfCounterHigh = counter[1];
 	g_perfCounterLow = counter[0];
@@ -86,13 +87,11 @@ long double (timer_now)(void)
 long double THISCALL (TimeSync_frameTime)(u8 *t)
 {
 	TimeSync *ts = (TimeSync *)t;
-#undef QueryPerformanceCounter
-#define QueryPerformanceCounter(out) IMPORT_FN(QueryPerformanceCounter, int, u64 *)(out)
 #define fatal() sys_fatalErrorN((char *)OBJ(g_logTimeSync), (const char *)STR(0x4c7b80, "invalid system time"))
 	if (ts->started == 0) {
-		if (!QueryPerformanceFrequency(&ts->frequency))
+		if (!TIME_FREQUENCY(&ts->frequency))
 			fatal();
-		if (!QueryPerformanceCounter(&ts->lastCount))
+		if (!TIME_COUNTER(&ts->lastCount))
 			fatal();
 		if (!(ts->maxFrame > 0))
 			ts->maxFrame = 0.06666667f;   /* 1/15 */
@@ -100,7 +99,7 @@ long double THISCALL (TimeSync_frameTime)(u8 *t)
 	}
 	ts->frames++;
 	u64 now;
-	QueryPerformanceCounter(&now);
+	TIME_COUNTER(&now);
 	int64_t rise = (int64_t)(now - ts->lastCount);
 	ts->rise = rise;
 	ts->lastCount = now;
@@ -120,7 +119,6 @@ long double THISCALL (TimeSync_frameTime)(u8 *t)
 	if (dt > ts->maxFrame)
 		BITS(ts->frameTime) = BITS(ts->maxFrame);
 	return ts->frameTime;
-#undef QueryPerformanceCounter
 #undef fatal
 }
 

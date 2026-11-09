@@ -266,13 +266,13 @@ u32 (net_closeThreadHandles)(void)
 void (net_receivePlayerListReply)(void)
 {
 	u8 *reply = g_playerListReply;
-	u32 start = GetTickCount();
+	u32 start = TIME_TICKS();
 	u32 got = 0;
 	do {
 		int n = ws_recv((*(u32 *)&g_gameServerSocket), reply, 0x3e, 0);   /* recv */
 		if (n > 0)
 			got += n;
-	} while (GetTickCount() - start <= 3000 && got < 0x3e);
+	} while (TIME_TICKS() - start <= 3000 && got < 0x3e);
 	switch (g_playerListReplyKind) {
 	case 0:
 		net_addPlayerRecord(reply);
@@ -668,13 +668,13 @@ u32 (net_pingAllServers)(void)
    buf's start (as in the original); the bytes are only counted ---- */
 static void reply_read(u32 socket, void *buf, u32 size)
 {
-	u32 start = GetTickCount();   /* GetTickCount */
+	u32 start = TIME_TICKS();   /* GetTickCount */
 	u32 got = 0;
 	do {
 		int n = ws_recv(GAME_VAR(u32, socket), buf, size, 0);   /* recv */
 		if (n > 0)
 			got += n;
-	} while (GetTickCount() - start <= 3000 && got < size);
+	} while (TIME_TICKS() - start <= 3000 && got < size);
 }
 
 /* 0x452a30: a lobby reply (0x5b bytes into g_lobbyReplyRecord, socket g_lobbySocket), by its type (g_lobbyReplyKind): 0 a server for the
@@ -1044,7 +1044,7 @@ static int send_leave(u32 from, u32 to, const u8 *bytes, int nbytes, int flagged
 	for (int i = 0; i < 3; i++)
 		lstrcpyA(GAME_VAR(char *, to) + names[i], GAME_VAR(char *, from) + names[i]);
 	net_send(type, code);   /* net_send */
-	Sleep(1000);                 /* Sleep */
+	TIME_SLEEP(1000);                 /* Sleep */
 	return 1;
 }
 
@@ -1334,7 +1334,7 @@ static int recv_all(u32 socket, void *buf, int size, u32 start)
 		int n = ws_recv(GAME_VAR(u32, socket), buf, size, 0);   /* recv */
 		if (n > 0)
 			got += n;
-		if (GetTickCount() - start > 3000)
+		if (TIME_TICKS() - start > 3000)
 			return 0;
 		if (got >= (u32)size)
 			return 1;
@@ -1389,7 +1389,7 @@ static void answer_reply(u32 answer, const u8 *codes, int count, u32 start)
    (g_rankReplyCode; g_rankReplyIn when it is not empty). The callers ignore the eax it leaves */
 void (net_recv)(void)
 {
-	u32 start = GetTickCount();
+	u32 start = TIME_TICKS();
 	static const u8 answers14[6] = { 0x1f, 0x20, 0x21, 0x22, 0x28, 0x2a }, answers15[4] = { 0x1e, 0x21, 0x28, 0x2a };
 	switch (g_netLastRequest) {
 	case 10:
