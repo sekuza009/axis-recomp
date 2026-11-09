@@ -114,3 +114,11 @@ counts (-150, 40 -> -150, 40) and move the menu pointer. game.gd --input-log <fi
   attached before each frame shown in a step (AxisReplay::apply_texture), and on a size change the view is laid out
   and drawn at once (game.gd refit_now, signal game_size_changed). Checked with --step-shots <dir>: Godot's display
   at frames 5 / 20 / 35 of the start-up step shows the logo and the progress bar advancing.
+
+2026-11-09, the exported game: `bash godot/export.sh release install` (needs build/axis.dll from PORTABLE=3 and the
+release extension: the build command above with target=template_release). Godot's 4.7.2 export templates are
+installed in %APPDATA%/Godot/export_templates/4.7.2.stable (only the 32-bit Windows ones, from the official .tpz,
+SHA-512 checked). The export: build/godot_export/ - AxisGodot.exe (Godot's 32-bit release runtime), AxisGodot.pck,
+the extension DLL and axis.dll; `install` copies it to <Axis>/Godot. Exported, game.tscn is the main scene
+(run/main_scene.template), axis.dll is loaded from beside the exe and the game's folder is the exe's own when it
+holds initdata, else the one above it. --game-dir and the check options still apply.
