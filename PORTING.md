@@ -99,3 +99,13 @@ in Godot, then replaced piece by piece.
   with glTexParameteri outside the import slots (now routed so a layer can see it - a platform port must take it
   over too); and a framebuffer object rounds sample positions differently from a window's buffer, so the replay
   draws into a window as the game does. Result over the seven sessions: 5,551 frames compared, all identical.
+- 2026-11-08, AXIS_GLREC_DUMP=<file> (with AXIS_GLREC): the stream written to a file for a replayer elsewhere -
+  "AXGLREC1", the plain calls' table, then per frame its window size and words (format: standalone/glrec.c). The
+  skirmish session's first 2,000 frames (title, menus): 114 MB, the first frame 8.6 MB (the texture uploads), then
+  a median of ~32 KB a frame at 3840 x 2161.
+- 2026-11-08, Godot set up (outside the repo): Godot 4.7.2 stable, 32-bit editor (SHA-512 checked) and godot-cpp
+  4.5 in C:/Users/Alexander/Tools/godot; godot-cpp builds for x86_32 with zig through small launcher exes named as
+  MinGW tools (zig-mingw/launcher.c; SHOBJSUFFIX .o, as zig needs). The 32-bit editor loads its test extension and
+  registers its class, but the test fails: no engine class has its instance-binding callbacks ("Cannot find instance
+  binding callbacks for class 'Object'"), with the 4.5 and the 4.7 API alike. Not yet understood - the next thing
+  to settle before the godot branch builds on godot-cpp (a C extension on gdextension_interface.h is the fallback).

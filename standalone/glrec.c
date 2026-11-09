@@ -421,6 +421,25 @@ static void replay(const u32 *p, const u32 *end)
 	}
 }
 
+/* AXIS_GLREC_DUMP=<file> (with AXIS_GLREC): the stream written to a file instead of replayed - the first
+   AXIS_GLREC_DUMP_FRAMES frames (600), each as its window size and its words - for a replayer elsewhere (the
+   Godot branch). The file: "AXGLREC1", the plain calls' table (count, then each: words, name length, name), then
+   per frame: width, height, the number of words, the words. The ops from 64 are as in replay() above */
+static FILE *g_dump;
+static unsigned g_dumpFrames = 600;
+static void dump_header(void)
+{
+	fwrite("AXGLREC1", 1, 8, g_dump);
+	u32 n = NPLAIN;
+	fwrite(&n, 4, 1, g_dump);
+	for (int i = 0; i < NPLAIN; i++) {
+		u32 w = (u32)k_plain[i].words, l = (u32)strlen(k_plain[i].name);
+		fwrite(&w, 4, 1, g_dump);
+		fwrite(&l, 4, 1, g_dump);
+		fwrite(k_plain[i].name, 1, l, g_dump);
+	}
+}
+
 static BOOL S w_SwapBuffers(HDC dc)
 {
 	g_frames++;
@@ -429,6 +448,22 @@ static BOOL S w_SwapBuffers(HDC dc)
 	HWND wnd = WindowFromDC(dc);
 	GetClientRect(wnd, &rc);
 	int w = rc.right, h = rc.bottom;
+	if (g_dump) {
+		if (g_frames <= g_dumpFrames) {
+			u32 head[3] = { (u32)w, (u32)h, (u32)g_len };
+			fwrite(head, 4, 3, g_dump);
+			fwrite(g_buf, 4, g_len, g_dump);
+			if (g_frames == g_dumpFrames) {
+				fclose(g_dump);
+				g_dump = NULL;
+				g_recording = 0;   /* (done: the game runs on without the layer's work) */
+			}
+		}
+		g_len = 0;
+		if (check)
+			report();
+		return r_SwapBuffers(dc);
+	}
 	unsigned char *game = NULL, *mine = NULL;
 	if (check && w > 0 && h > 0) {   /* the game's frame, from its back buffer */
 		game = malloc((size_t)w * h * 4);
@@ -500,6 +535,13 @@ int glrec_install(void **(*slot)(const char *name), const char *dir)
 	strcpy(g_dir, dir);
 	char v[16];
 	g_useFbo = GetEnvironmentVariableA("AXIS_GLREC_FBO", NULL, 0) != 0;
+	{
+		char path[MAX_PATH];
+		if (GetEnvironmentVariableA("AXIS_GLREC_DUMP", path, sizeof path) && (g_dump = fopen(path, "wb")))
+			dump_header();
+		if (GetEnvironmentVariableA("AXIS_GLREC_DUMP_FRAMES", v, sizeof v) && atoi(v) > 0)
+			g_dumpFrames = (unsigned)atoi(v);
+	}
 	if (GetEnvironmentVariableA("AXIS_GLREC_EVERY", v, sizeof v) && atoi(v) > 0)
 		g_every = (unsigned)atoi(v);
 	HMODULE gl = LoadLibraryA("opengl32.dll");
