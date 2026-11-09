@@ -131,6 +131,31 @@ long plat_inputRelease(void *object);
 #endif
 
 
+/* ---- settings: the registry's keys and values as the game uses them (under HKEY_CURRENT_USER, SOFTWARE/AxisArena/
+   Launcher / Character / SelectServer; the launcher and DServer share them on Windows): a key opened (0, or an error
+   with *key left as it was), created (*disposition 1 new, 2 existing), a value read (type and size out; 234 when the
+   room is too small, 2 when it is missing) or written, the key closed. Windows' rules; plat/posix/registry.c keeps
+   them in a settings file elsewhere. */
+#ifdef AXIS_PORTABLE
+int plat_regOpen(u32 root, const char *path, u32 *key);
+int plat_regCreate(u32 root, const char *path, u32 *key, u32 *disposition);
+int plat_regQuery(u32 key, const char *name, u32 *type, void *data, u32 *size);
+int plat_regSet(u32 key, const char *name, u32 type, const void *data, u32 size);
+u32 plat_regClose(u32 key);
+#define REG_OPEN(root, path, options, access, key) plat_regOpen(root, path, key)
+#define REG_CREATE(root, path, reserved, cls, options, access, security, key, disposition) plat_regCreate(root, path, key, disposition)
+#define REG_QUERY(key, name, reserved, type, data, size) plat_regQuery(key, name, type, data, size)
+#define REG_SET(key, name, reserved, type, data, size) plat_regSet(key, name, type, data, size)
+#define REG_CLOSE(key) plat_regClose(key)
+#else
+#define REG_OPEN(root, path, options, access, key) 	IMPORT_FN(RegOpenKeyExA, int, u32, const char *, u32, u32, u32 *)(root, path, options, access, key)
+#define REG_CREATE(root, path, reserved, cls, options, access, security, key, disposition) 	IMPORT_FN(RegCreateKeyExA, int, u32, const char *, u32, const char *, u32, u32, void *, u32 *, u32 *) 		(root, path, reserved, cls, options, access, security, key, disposition)
+#define REG_QUERY(key, name, reserved, type, data, size) 	IMPORT_FN(RegQueryValueExA, int, u32, const char *, u32, u32 *, void *, u32 *)(key, name, reserved, type, data, size)
+#define REG_SET(key, name, reserved, type, data, size) 	IMPORT_FN(RegSetValueExA, int, u32, const char *, u32, u32, const void *, u32)(key, name, reserved, type, data, size)
+#define REG_CLOSE(key) IMPORT_FN(RegCloseKey, u32, u32)(key)
+#endif
+
+
 /* ---- files the game reaches past the C runtime: a whole file read (the sounds' WAVs: opened for reading - (void *)-1
    when it cannot be - read, closed), files deleted (nonzero = deleted), the current directory. (The C runtime's file
    functions - fopen, _findfirst ... - are bound by the loader: standalone/crt.c on Windows; plat/posix/files.c has

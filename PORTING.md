@@ -160,3 +160,11 @@ most of them OpenGL (recorded for the host, glrec.c). The rest, by group, with t
   _findfirst / _findnext / _findclose with Windows' wildcards, "." and "..", NTFS's order and VC6's _finddata_t).
   tools/plat_tests/run_posix.sh runs its 18 checks on real Linux (static 32- and 64-bit programs in WSL): all pass.
   (Binding the runtime entries to them is part of the Linux loader, with the other platforms.)
+- 2026-11-09, stage 3 second pass, settings: plat.h REG_OPEN / REG_CREATE / REG_QUERY / REG_SET / REG_CLOSE at the
+  registry calls (small.c: Launcher's modes, Character's ladder settings, SelectServer's servers); master expands
+  them to the original calls (objcmp: 0 differ). plat/win32/registry.c is the registry itself (the launcher and
+  DServer share those keys); checked in Godot: the same calls, the user's values untouched. plat/posix/registry.c
+  keeps them in a text file ($AXIS_SETTINGS, else ~/.config/axis/registry.txt; each value's type and bytes in hex)
+  with Windows' rules (names without regard to case, a failed open leaving *key, new / existing on create, 2 / 234
+  on reads, bytes as written); tools/plat_tests' 16 checks with the game's own sequences pass on Linux, 32- and
+  64-bit. (Without the launcher a port needs SelectServer's values from somewhere - a default file shipped with it.)
