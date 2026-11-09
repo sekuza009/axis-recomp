@@ -523,9 +523,9 @@ void (log_message)(int a, int b, int c, const char *format, ...)
 }
 
 /* ---- the registry: a DWORD value under HKCU\<the game's key> (0x4b0458) ---- */
-#define RegOpenKeyExA(root, key, options, access, out) IMPORT_FN(RegOpenKeyExA, int, u32, const char *, u32, u32, u32 *)(root, key, options, access, out)
-#define RegSetValueExA(key, name, reserved, type, data, size) IMPORT_FN(RegSetValueExA, int, u32, const char *, u32, u32, const void *, u32)(key, name, reserved, type, data, size)
-#define RegCloseKey(key) IMPORT_FN(RegCloseKey, u32, u32)(key)
+#define RegOpenKeyExA(root, key, options, access, out) REG_OPEN(root, key, options, access, out)   /* (plat.h) */
+#define RegSetValueExA(key, name, reserved, type, data, size) REG_SET(key, name, reserved, type, data, size)
+#define RegCloseKey(key) REG_CLOSE(key)
 
 /* value written as name (a REG_DWORD); returns RegCloseKey's answer. The key's handle goes into the argument's own
    slot, so when the key can't be opened the original closes whatever RegOpenKeyExA left there */
@@ -604,7 +604,7 @@ int (app_reportDisplayModeError)(int code)
 }
 
 
-#define RegQueryValueExA(key, name, reserved, type, data, size) IMPORT_FN(RegQueryValueExA, int, u32, const char *, u32, u32 *, void *, u32 *)(key, name, reserved, type, data, size)
+#define RegQueryValueExA(key, name, reserved, type, data, size) REG_QUERY(key, name, reserved, type, data, size)
 
 /* the six choices (0x5b1b50 ..) in the order the registry keeps them, with their value names; the fourth and fifth
    (the flag and time limits) are unsigned */
@@ -642,8 +642,7 @@ void (reg_readLadderSettings)(void)
 	u32 key, disposition, type, value;
 	char buf[0x400];
 	__asm__("" : "=m"(disposition));   /* left as the stack has it when the key can't be created, as in the original */
-	IMPORT_FN(RegCreateKeyExA, int, u32, const char *, u32, const char *, u32, u32, void *, u32 *, u32 *)
-		(0x80000001, (const char *)STR(0x4b179c, "SOFTWARE\\AxisArena\\Character"), 0, NULL, 0, 0xf003f, NULL, &key, &disposition);   /* RegCreateKeyExA */
+	REG_CREATE(0x80000001, (const char *)STR(0x4b179c, "SOFTWARE\\AxisArena\\Character"), 0, NULL, 0, 0xf003f, NULL, &key, &disposition);   /* RegCreateKeyExA */
 	signed char *choice = (signed char *)ADDR(g_roomRecMap);
 	if (disposition == 1) {   /* REG_CREATED_NEW_KEY */
 		RegSetValueExA(key, (const char *)STR(0x4b1794, "Name"), 0, 1, (const void *)OBJ(g_ladderId), 0x1e);
