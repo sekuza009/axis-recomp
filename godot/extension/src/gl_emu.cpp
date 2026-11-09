@@ -202,6 +202,9 @@ void GLEmu::emit(int prim, const EmuVertex *v, int n) {
 	b.scissor[0] = viewport[0]; b.scissor[1] = fbH - viewport[1] - viewport[3]; b.scissor[2] = viewport[2]; b.scissor[3] = viewport[3];
 	const uint32_t first = (uint32_t)verts.size();
 	verts.insert(verts.end(), v, v + n);
+	if (prim == 1)   // lines: a hundredth of a pixel down, so a line exactly between two rows falls on the row GL picks
+		for (uint32_t k = first; k < first + (uint32_t)n; k++)   // (the y flip turns GL's tie-break the other way)
+			verts[k].pos[1] += 0.01f * 2.0f / (float)fbH * verts[k].pos[3];
 	if (!cmds.empty() && cmds.back().kind == EmuCmd::BATCH) {
 		EmuBatch &l = cmds.back().batch;
 		if (l.pipe == b.pipe && l.texture == b.texture && l.minFilter == b.minFilter && l.magFilter == b.magFilter &&

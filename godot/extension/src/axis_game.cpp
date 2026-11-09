@@ -92,6 +92,7 @@ void AxisGame::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("start", "game_dir", "library"), &AxisGame::start);
 	ClassDB::bind_method(D_METHOD("is_running"), &AxisGame::is_running);
 	ClassDB::bind_method(D_METHOD("get_game_frames"), &AxisGame::get_game_frames);
+	ClassDB::bind_method(D_METHOD("get_game_size"), &AxisGame::get_game_size);
 }
 
 void AxisGame::on_frame(void *user, const unsigned *words, unsigned count, int width, int height) {

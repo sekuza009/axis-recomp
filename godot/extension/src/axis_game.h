@@ -17,6 +17,7 @@ public:
 	bool start(const String &p_game_dir, const String &p_library);
 	bool is_running() const { return running; }
 	int get_game_frames() const { return gameFrames; }
+	Vector2i get_game_size() const { return Vector2i(lastW, lastH); }
 	void _process(double p_delta) override;
 	void _input(const Ref<InputEvent> &p_event) override;
 

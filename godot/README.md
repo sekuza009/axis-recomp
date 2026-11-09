@@ -56,3 +56,16 @@ surfaces (the arena's walls and floor, the backdrop seen from inside) drew their
 A match recorded with the game's own images (frames 6,000 / 7,000 / 8,000 of the skirmish session) and replayed:
 before, 2% identical; now 99.5 / 99.1 / 99.2% identical, every pixel within 8 levels. (The menu recording had not
 exercised culling.)
+
+2026-11-09, measured from the menus into the match (a session recorded with the game's own image every 300 frames,
+70 frames: title, profile, menu, set-up, loading, free camera, fighting with boost / damage / deaths, respawn, help,
+Esc menu), replayed in Godot, both its render and what its window showed:
+- the window showed the frame 32-44% darker: the game's blended drawing leaves partial alpha in the frame, which the
+  game's window ignores and Godot drew over its background (glows and particles near black). The frame's alpha is
+  now kept at 1 (no alpha writes, opaque clears): shown within 0.6% of the render.
+- lines exactly between two pixel rows fell a row high (GL's tie-break turned by the y flip): nudged a hundredth of a
+  pixel. Menu frames' pixels off by more than 32 levels: 0.12% -> 0.01% (single glyph-edge columns).
+- full screen at the game's size the frame is shown pixel for pixel (its window's extra row above the screen, as the
+  original's); otherwise scaled with smoothing (it was squeezed unsmoothed into 1280 x 720). --windowed for a window.
+Result over the 70 frames: 97.7-100% of pixels identical, 99.99-100% within 8 levels of 255; the lowest identical
+shares (64-95%, boost and flash frames) are 1-5 level rounding where a translucent full-screen layer blends.

@@ -255,6 +255,12 @@ void AxisReplay::ensure_framebuffer(int w, int h) {
 	atts.push_back(depthTex);
 	framebuffer = rd->framebuffer_create(atts);
 	fbFormat = rd->framebuffer_get_format(framebuffer);
+	{	// (cleared once, opaque black: alpha stays 1 from here on)
+		PackedColorArray black;
+		black.push_back(Color(0, 0, 0, 1));
+		rd->draw_list_begin(framebuffer, RenderingDevice::DRAW_CLEAR_COLOR_0 | RenderingDevice::DRAW_CLEAR_DEPTH, black, 1.0);
+		rd->draw_list_end();
+	}
 	fbW = w;
 	fbH = h;
 	for (auto &kv : pipelines) rd->free_rid(kv.second);
@@ -350,6 +356,9 @@ RID AxisReplay::pipeline_for(const EmuPipe &p) {
 	a->set_dst_color_blend_factor(blend_factor(p.dst));
 	a->set_src_alpha_blend_factor(blend_factor(p.src));
 	a->set_dst_alpha_blend_factor(blend_factor(p.dst));
+	// (alpha left at 1: the game's window ignores it - drawn as it is, a frame with the game's blended alphas came out
+	// darker over Godot's background, its glows and particles near black)
+	a->set_write_a(false);
 	Ref<RDPipelineColorBlendState> bs;
 	bs.instantiate();
 	TypedArray<RDPipelineColorBlendStateAttachment> as;
@@ -398,7 +407,7 @@ void AxisReplay::_render() {
 			if (c.clearMask & 0x4000) flags.set_flag(RenderingDevice::DRAW_CLEAR_COLOR_0);
 			if (c.clearMask & 0x100) flags.set_flag(RenderingDevice::DRAW_CLEAR_DEPTH);
 			PackedColorArray colors;
-			colors.push_back(Color(c.clearColor[0], c.clearColor[1], c.clearColor[2], c.clearColor[3]));
+			colors.push_back(Color(c.clearColor[0], c.clearColor[1], c.clearColor[2], 1.0));   // (opaque: see pipeline_for)
 			dl = rd->draw_list_begin(framebuffer, flags, colors, c.clearDepth);
 			continue;
 		}

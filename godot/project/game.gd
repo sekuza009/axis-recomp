@@ -24,16 +24,25 @@ func _ready() -> void:
 			i += 1
 			var parts: PackedStringArray = args[i].split(":", true, 1)
 			shots[int(parts[0])] = parts[1]
+		elif a == "--status":
+			pass
+		elif a == "--windowed":
+			pass
 		elif a == "--quit-after":
 			i += 1
 			quit_after = int(args[i])
 		i += 1
+	if args.find("--windowed") < 0:
+		DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_FULLSCREEN)
+	$Status.visible = args.find("--status") >= 0
 	game = $Game
 	$View.texture = game.get_texture()
 	if not game.start(dir, lib):
 		$Status.text = game.get_status()
 
 func _process(_delta: float) -> void:
+	if game != null:
+		fit_view(game.get_game_size())
 	if game == null or not game.is_running():
 		return
 	var f := game.get_game_frames()
@@ -48,3 +57,20 @@ func _process(_delta: float) -> void:
 	if quit_after >= 0 and f >= quit_after:
 		print("AxisGame: quitting after ", f, " frames")
 		get_tree().quit()
+
+## the frame shown as the original shows it: when the window is the game's size (full screen at the desktop's size,
+## the game's own setting) pixel for pixel, the game window's one extra row above the screen (it starts at y -1);
+## otherwise scaled to fit, smoothed
+func fit_view(frame: Vector2i) -> void:
+	var win := get_viewport().get_visible_rect().size
+	var view: TextureRect = $View
+	if frame.x == int(win.x) and (frame.y == int(win.y) or frame.y == int(win.y) + 1):
+		view.set_anchors_preset(Control.PRESET_TOP_LEFT)
+		view.stretch_mode = TextureRect.STRETCH_KEEP
+		view.position = Vector2(0, win.y - frame.y)
+		view.size = Vector2(frame)
+		view.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+	else:
+		view.set_anchors_preset(Control.PRESET_FULL_RECT)
+		view.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+		view.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR
