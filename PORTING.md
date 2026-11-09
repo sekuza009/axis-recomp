@@ -179,3 +179,12 @@ most of them OpenGL (recorded for the host, glrec.c). The rest, by group, with t
   it, handles, success); tools/plat_tests' 12 checks call them as the game does ("_plat_<name>", stdcall on 32-bit)
   and pass on Linux, 32- and 64-bit. Test switches: AXIS_TEST_ENDING=<reads>[,<exit code>], AXIS_TEST_MESSAGE=<text>
   (both cleared from the environment once read, so a copy the game starts does not inherit them).
+- 2026-11-09, stage 3 second pass, network (the game's own calls): measured in the two-copy session - the GlobalAlloc
+  family (some 900 each: DirectPlay's message blocks), a few socket calls (socket, connect, send, recv,
+  gethostbyname, inet_*, WSAStartup), CoCreateInstance for DirectPlay; the ping thread and ICMP serve the online
+  server list. Winsock is BSD sockets in Windows' shapes, so plat/posix/net.c answers each import under its own name
+  (no change to the game code; Windows untouched): sockets with Windows' sockaddr_in and hostent layouts (macOS's
+  sockaddr differs), no SIGPIPE; threads, auto- / manual-reset events and WaitForMultipleObjects on pthreads; the
+  ICMP ping over an unprivileged ICMP socket, else a raw one, else none; the GlobalAlloc family. tools/plat_tests'
+  22 checks (a TCP exchange with Windows' layouts, name lookup, events and a thread, the blocks, a ping) pass on
+  Linux, 32- and 64-bit; it compiles for x86-64 and arm64 macOS. Left: DirectPlay itself (the NET_ operations).
