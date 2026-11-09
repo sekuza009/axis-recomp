@@ -9,10 +9,10 @@
               axis_textInput() - a text field is open)...
            axis_frame();                                               // one frame of the game
        }
-       axis_exit(1);
+       return axis_exit(1);
 
-   axis_shutdown() asks the game to close (its window's own close path, as the window's close button: the game
-   then ends the process itself - handing the exit back to the host is stage 5). The game still creates and owns its
+   axis_shutdown() asks the game to close (its window's own close path, as the window's close button); when it has,
+   axis_running() is 0 and axis_exit() gives the host the game's exit code. The game still creates and owns its
    window (app_init); a later stage gives the host the window and the GL context. */
 #ifndef AXIS_API_H
 #define AXIS_API_H
@@ -29,8 +29,10 @@
 /* the library made ready (once, before axis_init): the game's data placed, its imports and C runtime set up, the
    network layer started, the static constructors run. 1, or 0 (the reason in standalone.log / a message box) */
 AXIS_API int axis_load(void);
-/* the game ended with code (WinMain's result): its exit list run, the process ended */
-AXIS_API void axis_exit(int code);
+/* the end, after the loop: when the game quit itself (its window closed), its exit code, returned to the host;
+   otherwise (axis_init failed, or the host stopped early) the game's exit list is run with code and the process
+   ends, as the original's did */
+AXIS_API int axis_exit(int code);
 
 /* the start-up (the original WinMain's, src/app/win32.c game_WinMain, up to its loop): 1, or 0 when the game
    would not start (the reason shown in a message box) */

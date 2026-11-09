@@ -210,7 +210,7 @@ void crt_construct(void)
 }
 
 /* the game's exit with WinMain's result: msvcrt's exit (the game's atexit list: its destructors), the process ends */
-void crt_exit(int r)
+void crt_finish(int r)
 {
 	sa_log("WinMain returned %d", r);
 	CRT_EXIT(r);
@@ -238,10 +238,12 @@ void crt_start(void)
 	int show = si.dwFlags & STARTF_USESHOWWINDOW ? si.wShowWindow : SW_SHOWDEFAULT;
 #ifdef AXIS_PORTABLE
 	int host_run(void *instance, const char *cmd, int show);   /* portable.c: the host's loop around axis_frame */
+	int axis_exit(int code);
 	int r = host_run(GetModuleHandleA(NULL), cmd, show);
+	ExitProcess(axis_exit(r));   /* (the game quit itself: ended as the original did, without the exit list) */
 #else
 	int r = game_WinMain(GetModuleHandleA(NULL), NULL, cmd, show);   /* the rebuilt WinMain (0x43f9d0), called directly */
 #endif
-	crt_exit(r);
+	crt_finish(r);
 }
 #endif

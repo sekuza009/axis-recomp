@@ -656,7 +656,14 @@ long STDCALL (game_wndProc)(void *wnd, u32 msg, u32 w, u32 l)
 #define PostQuitMessage(code) IMPORT_FN(PostQuitMessage, void, int)(code)
 #undef GetClientRect
 #define GetClientRect(wnd, rect) IMPORT_FN(GetClientRect, int, void *, int *)(wnd, rect)
+#ifdef AXIS_PORTABLE
+/* (the portable build: quitting hands back to the host - the frames stop, axis_exit gives the host the code; each
+   ExitProcess here is followed by the procedure's return, which now runs. See the end of this file) */
+void axis_ended(u32 code);
+#define ExitProcess(code) axis_ended(code)
+#else
 #define ExitProcess(code) IMPORT_FN(ExitProcess, void, u32)(code)
+#endif
 #undef ShellExecuteA
 #define ShellExecuteA(wnd, verb, file, args, dir, show) \
 	IMPORT_FN(ShellExecuteA, void *, void *, const char *, const char *, const char *, const char *, int)(wnd, verb, file, args, dir, show)
@@ -868,11 +875,30 @@ long STDCALL (game_wndProc)(void *wnd, u32 msg, u32 w, u32 l)
 /* ---- the host's side (src/axis_api.h): the original loop's body, one round per call ---- */
 unsigned axis_frame(void)
 {
+	if (!g_gameRunning)   /* (stopped - the window may be gone: no frame, as the original's loop ran none) */
+		return 0;
 	editField_readTyping();
 	app_frame();
 	return g_gameRunning != 0;
 }
 int axis_running(void) { return g_gameRunning != 0; }
+/* the game quitting (its window destroyed: the original ended the process there, without its exit list) */
+static int g_ended;
+static u32 g_endCode;
+void axis_ended(u32 code)
+{
+	if (!g_ended) {
+		g_ended = 1;
+		g_endCode = code;
+	}
+	g_gameRunning = 0;
+}
+/* 1 (and the code) once the game has quit that way (standalone/portable.c axis_exit) */
+int axis_hasEnded(u32 *code)
+{
+	*code = g_endCode;
+	return g_ended;
+}
 int axis_textInput(void) { return g_textFieldOpen != 0; }
 void axis_shutdown(void)
 {

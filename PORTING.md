@@ -70,6 +70,10 @@ in Godot, then replaced piece by piece.
   data, C runtime table, platform layer and network layer; relocatable, ASLR) and `build/AxisHost.exe`
   (host/win32/main.c: nothing of the game - it loads axis.dll from the game folder and calls `axis_load`,
   `axis_init`, then pumps messages and calls `axis_frame` until the game stops). axis.dll exports only the API of
-  src/axis_api.h. Still to do for a clean library: the game ends the process itself on quitting (its window's
-  close path calls ExitProcess), the game creates its own window and GL context, and its logs go to the game
+  src/axis_api.h. Still to do for a clean library: the game creates its own window and GL context, and its logs go to the game
   folder as AxisRC's did.
+- 2026-11-08, quitting hands back to the host: in the portable builds the window procedure's ExitProcess calls are
+  `axis_ended(code)` (the frames stop; each was followed by the procedure's return, which now runs) and
+  `axis_exit` returns the code to the host, the game's exit list not run (as the original ended there).
+  `axis_frame` runs no frame once stopped. The quit, profile and skirmish sessions with axis.dll: "the game quit
+  (code 0): back to the host", the host then ending itself.

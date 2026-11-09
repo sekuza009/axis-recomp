@@ -230,9 +230,23 @@ static HWND WINAPI find_window(LPCSTR cls, LPCSTR name)   /* (AXISRC_MULTI, as a
 	return FindWindowA(cls, name);
 }
 void crt_construct(void);
-void crt_exit(int r);
-AXIS_API void axis_exit(int code) { crt_exit(code); }
 #endif
+
+void crt_finish(int r);
+int axis_hasEnded(unsigned *code);   /* src/app/win32.c */
+/* the end: when the game quit itself (its window destroyed), its code, back to the host (the original ended the
+   process there, its exit list not run); otherwise - axis_init failed, or the host stopped - the game's exit list
+   and the process ended, as the original's WinMain returning did */
+AXIS_API int axis_exit(int code)
+{
+	unsigned c;
+	if (axis_hasEnded(&c)) {
+		sa_log("the game quit (code %d): back to the host", (int)c);
+		return (int)c;
+	}
+	crt_finish(code);
+	return code;
+}
 
 #ifdef AXIS_DLL
 AXIS_API int axis_load(void)

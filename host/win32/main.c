@@ -29,10 +29,8 @@ int WINAPI WinMain(HINSTANCE inst, HINSTANCE prev, LPSTR unused, int show)
 	(void)prev; (void)unused;
 	if (!axis_load())
 		return 1;
-	if (!axis_init(inst, NULL, arguments(), show)) {
-		axis_exit(0);
-		return 0;
-	}
+	if (!axis_init(inst, NULL, arguments(), show))
+		return axis_exit(0);
 	MSG msg;
 	while (axis_running()) {
 		while (PeekMessageA(&msg, NULL, 0, 0, PM_NOREMOVE) == 1)
@@ -43,6 +41,5 @@ int WINAPI WinMain(HINSTANCE inst, HINSTANCE prev, LPSTR unused, int show)
 			}
 		axis_frame();
 	}
-	axis_exit(1);
-	return 1;
+	return axis_exit(1);   /* (the game quit: its code; the host ends) */
 }
