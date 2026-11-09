@@ -28,7 +28,8 @@ LOADER="arena host64 crt64 glrec64 hostwin64 platform64 glstate net64 movie64"; 
 for f in $LOADER; do
 	$CC -c $CFLAGS -DAXIS_PORTABLE -I../axisnet -I../axisnet/iv32/ffmpeg -o "$OBJD/sa_$f.o" "standalone/$f.c" || exit 1
 done
-# the ending movie's decoder: FFmpeg's indeo3 (../axisnet/iv32/ffmpeg, unmodified, LGPL 2.1+)
+# the ending movie's reader and decoder: avimovie.c and FFmpeg's indeo3 (../axisnet/iv32/ffmpeg, unmodified, LGPL 2.1+)
+$CC -c $CFLAGS -DHAVE_AV_CONFIG_H -I../axisnet/iv32/ffmpeg -o "$OBJD/sa_avimovie.o" standalone/avimovie.c || exit 1
 for f in indeo3 hpeldsp; do
 	$CC -c -O2 -w -DHAVE_AV_CONFIG_H -I../axisnet/iv32/ffmpeg -o "$OBJD/ff_$f.o" "../axisnet/iv32/ffmpeg/libavcodec/$f.c" || exit 1
 done
