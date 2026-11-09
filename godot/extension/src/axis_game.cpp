@@ -439,11 +439,12 @@ void AxisGame::_process(double p_delta) {
 				Node *scene = get_tree()->get_current_scene();
 				args.push_back(scene && !scene->get_scene_file_path().is_empty() ? scene->get_scene_file_path() : String("res://game.tscn"));
 			}
-			const PackedStringArray user = OS::get_singleton()->get_cmdline_user_args();
-			if (user.size()) {
-				args.push_back("--");
-				args.append_array(user);
-			}
+			// (--play: straight into the game again, not the launcher - as the original started AxisGL.exe itself)
+			PackedStringArray user = OS::get_singleton()->get_cmdline_user_args();
+			if (!user.has("--play"))
+				user.push_back("--play");
+			args.push_back("--");
+			args.append_array(user);
 			const int pid = OS::get_singleton()->create_instance(args);
 			UtilityFunctions::print("AxisGame: the game started again (process ", pid, ")");
 		}

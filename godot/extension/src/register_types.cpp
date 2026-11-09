@@ -6,6 +6,8 @@
 
 #include "axis_replay.h"
 #include "axis_game.h"
+#include "axis_launcher.h"
+#include "axis_movie.h"
 
 using namespace godot;
 
@@ -19,6 +21,8 @@ static void initialize(ModuleInitializationLevel p_level) {
 #endif
 	GDREGISTER_CLASS(AxisReplay);
 	GDREGISTER_CLASS(AxisGame);
+	GDREGISTER_CLASS(AxisLauncher);
+	GDREGISTER_CLASS(AxisMovie);
 }
 
 static void uninitialize(ModuleInitializationLevel p_level) {

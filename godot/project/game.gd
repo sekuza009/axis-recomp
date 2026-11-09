@@ -69,6 +69,10 @@ func _ready() -> void:
 		i += 1
 	if args.find("--windowed") < 0:
 		DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_FULLSCREEN)
+	elif get_window().borderless:   # (started directly: the project's window is the launcher's, 642 x 482 without a frame)
+		get_window().borderless = false
+		get_window().size = Vector2i(1280, 720)
+		get_window().move_to_center()
 	$Status.visible = args.find("--status") >= 0
 	game = $Game
 	$View.texture = game.get_texture()

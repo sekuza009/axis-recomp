@@ -18,11 +18,43 @@ The rebuilt game on Godot 4 (PORTING.md). Windows first, 32-bit (the game librar
   movement, buttons, wheel), focus and typed text are its input. The game's own window is created but kept hidden;
   its timer and socket messages still arrive through Godot's message loop, its sound plays with Godot's window.
   `host_win.c` holds the Windows calls (loading the DLL) apart from godot-cpp.
-- `project/` - the Godot project: `main.tscn` shows the replay full-window. Command line after `--`:
+- `extension/src/axis_launcher.cpp`, `axis_movie.cpp` - `AxisLauncher` (the game's settings, the system's language)
+  and `AxisMovie` (the game's movies decoded: standalone/avimovie.c with FFmpeg's indeo3 from ../axisnet/iv32) for
+  the launcher (below).
+- `project/` - the Godot project: `launcher.tscn` (the main scene: the launcher, below), `game.tscn` (the game),
+  `main.tscn` shows the replay full-window. Command line after `--`:
   `<file.glrec> [--fps N] [--shot frame:file.png ...] [--quit-after N]`.
 
 Run the game: `Godot --path project res://game.tscn -- --game-dir <the Axis folder>` (`--shot frame:file.png`,
 `--quit-after N` for checks). The replay: `res://main.tscn -- <file.glrec>`.
+
+## The launcher
+
+`project/launcher.tscn` (the main scene) is AxisPlay.exe rewritten from its decompiled code (Ghidra; the
+addresses in `launcher.gd` are AxisPlay.exe's). It keeps the original's look and behaviour:
+- the 642 x 482 bordered window centred on the screen (drawn at that size, scaled to the screen's DPI), the
+  background `Launcher\Resource\BackGround\MainBK.bmp`, eight buttons with their four pictures (normal, lit,
+  pressed, grey) read from **the user's own AxisPlay.exe** (`pe_resources.gd`: its bitmaps, icon IDI_LAUNCHER and
+  cursor CURSOR2), `Launcher\lsound\mmove.wav` when the pointer lights a button, `mclick.wav` on a press (which acts
+  at once, as the original's);
+- installed (MathFunc.tbl in the game folder): Install Game grey, the rest live; otherwise only Install Game, Help,
+  Install DirectX and Quit;
+- Play Game: a server chosen first (the server dialog), a render mode chosen (Video Setup), StartMode 1, then the
+  game - `game.tscn` in the same program instead of AxisGL.exe;
+- the dialogs as the original's templates (`launcher_ui.gd`, `launcher_dialog.gd`: classic grey dialogs in dialog
+  units): Cinematics (Opening `interface.sra`; Ending `battle.sra` once EndMode is set - the movies decoded by
+  `AxisMovie`, standalone/avimovie.c, full screen with their sound, Esc skips), Help (the readme in Notepad / the
+  default editor, www.axisarena.net), Change Server (`Launcher\ServerList.dat` into
+  `HKCU\SOFTWARE\AxisArena\SelectServer`; List Update runs GetList.exe), Video Setup;
+- the settings under `HKCU\SOFTWARE\AxisArena` (`AxisLauncher`: the registry on Windows, the library's own text
+  file elsewhere - src/plat/posix/registry.c - so the launcher and the game share them), the defaults the original
+  writes at its start; the English or Korean texts by the system's language.
+
+Differences: Video Setup's Direct3D, Savage and GLSetup choices are grey (this version has one renderer); Install
+DirectX is grey off Windows (it runs DirectX 7's installer, after asking); Install Game runs
+`Launcher\AxisInstall\Setup.exe` only where it exists. `--play` (after `--`) skips the launcher - the game's own
+restart after a graphics change passes it, as the original game started AxisGL.exe itself. AxisRC.exe keeps the
+original AxisPlay.exe.
 
 ## Building (Windows, zig as the compiler)
 
