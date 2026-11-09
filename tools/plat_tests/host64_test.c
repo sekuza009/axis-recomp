@@ -10,6 +10,36 @@
 #endif
 #include "../../src/axis_api.h"
 
+#ifdef AXIS_TEST_DLOPEN   /* (the library as a host loads it: libaxis64.so through dlopen - $AXIS_TEST_LIB) */
+#include <dlfcn.h>
+#define FN(name) static __typeof__(name) *p_##name;
+FN(axis_host) FN(axis_stream_header) FN(axis_load) FN(axis_init) FN(axis_running) FN(axis_input) FN(axis_frame)
+FN(axis_exit)
+static int load_lib(void)
+{
+	const char *path = getenv("AXIS_TEST_LIB") ? getenv("AXIS_TEST_LIB") : "./libaxis64.so";
+	void *lib = dlopen(path, RTLD_NOW | RTLD_LOCAL);
+	if (!lib) {
+		printf("dlopen(%s): %s\n", path, dlerror());
+		return 0;
+	}
+#define GET(name) if (!(p_##name = (__typeof__(name) *)dlsym(lib, #name))) { printf("%s has no %s\n", path, #name); return 0; }
+	GET(axis_host) GET(axis_stream_header) GET(axis_load) GET(axis_init) GET(axis_running) GET(axis_input)
+	GET(axis_frame) GET(axis_exit)
+	printf("loaded %s\n", path);
+	return 1;
+}
+#define axis_host p_axis_host
+#define axis_stream_header p_axis_stream_header
+#define axis_load p_axis_load
+#define axis_init p_axis_init
+#define axis_running p_axis_running
+#define axis_input p_axis_input
+#define axis_frame p_axis_frame
+#define axis_exit p_axis_exit
+#endif
+
+
 static unsigned g_frames, g_words, g_maxWords;
 static FILE *g_dump;
 static unsigned g_dumpFrames = 600;
@@ -41,6 +71,10 @@ int main(int argc, char **argv)
 		fprintf(stderr, "usage: %s <game folder> [frames] [stream file]\n", argv[0]);
 		return 2;
 	}
+#ifdef AXIS_TEST_DLOPEN
+	if (!load_lib())
+		return 1;
+#endif
 	setenv("AXIS_GAME_DIR", argv[1], 1);
 	int frames = argc > 2 ? atoi(argv[2]) : 300;
 	if (argc > 3 && (g_dump = fopen(argv[3], "wb"))) {

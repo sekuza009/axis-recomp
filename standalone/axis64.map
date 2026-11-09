@@ -1,0 +1,6 @@
+/* axis64.map: the 64-bit library's exports on Linux / macOS - only the host API (src/axis_api.h); everything else stays
+   inside it (its C runtime stand-ins, its copy of FFmpeg's decoder, the platform functions) */
+{
+	global: axis_*;
+	local: *;
+};

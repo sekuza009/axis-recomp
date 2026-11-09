@@ -28,6 +28,8 @@ int main(void)
 	put("/tmp/axt/initdata/battle.sra", "movie");
 	if (chdir("/tmp/axt") != 0)
 		return 2;
+	setenv("AXIS_USER_DIR", "-", 1);   /* (first the game folder written as before; the user folder below) */
+	plat_userReset();
 	char p[1024];
 	int f;
 
@@ -82,6 +84,71 @@ int main(void)
 	check(plat_chdir("save") == 0 && plat_currentDirectory(sizeof p, p) && !strcmp(p, "/tmp/axt/Save"), "chdir(save) -> /tmp/axt/Save");
 	fp = plat_fopen("ALEX.axs", "r");
 	check(fp != NULL, "fopen(ALEX.axs) from there");
+	if (fp) fclose(fp);
+
+	/* ---- the user folder laid over the game folder */
+	if (chdir("/tmp/axt") != 0)
+		return 2;
+	system("rm -rf /tmp/axu");
+	setenv("AXIS_USER_DIR", "/tmp/axu", 1);
+	plat_userReset();
+	check(!strcmp(plat_userDir(), "/tmp/axu") && access("/tmp/axu", F_OK) == 0, "user folder /tmp/axu (made)");
+	memset(buf, 0, sizeof buf);
+	fp = plat_fopen("save\\ALEX.AXS", "rb");
+	check(fp && fread(buf, 1, sizeof buf, fp) == 4 && !strcmp(buf, "alex"), "read through: save\\ALEX.AXS from the game folder");
+	if (fp) fclose(fp);
+	fp = plat_fopen("save\\Alex.axs", "wb");
+	if (fp) { fputs("ALEX2", fp); fclose(fp); }
+	check(access("/tmp/axu/save/Alex.axs", F_OK) == 0, "written: save\\Alex.axs -> /tmp/axu/save/Alex.axs");
+	memset(buf, 0, sizeof buf);
+	fp = plat_fopen("SAVE\\alex.axs", "rb");
+	check(fp && fread(buf, 1, sizeof buf, fp) == 5 && !strcmp(buf, "ALEX2"), "read back: the user folder's copy");
+	if (fp) fclose(fp);
+	fp = plat_fopen("initdata\\battle.sra", "r+");
+	if (fp) { fputc('X', fp); fclose(fp); }
+	memset(buf, 0, sizeof buf);
+	fp = plat_fopen("/tmp/axt/initdata/BATTLE.sra", "rb");
+	check(fp && fread(buf, 1, sizeof buf, fp) == 5 && !strcmp(buf, "Xovie"), "r+: copied to the user folder, then changed (read by absolute name)");
+	if (fp) fclose(fp);
+	got[0] = 0;
+	fh = plat_findfirst("save\\*.axs", &d);
+	for (int r = fh == -1 ? -1 : 0; r == 0; r = plat_findnext(fh, &d)) { strcat(got, d.name); strcat(got, " "); }
+	plat_findclose(fh);
+	check(!strcmp(got, "Alex.axs newguy.axs "), "findfirst(save\\*.axs): both folders, one Alex.axs");
+	printf("      got: %s\n", got);
+	check(plat_fileDelete("save\\newguy.axs") == 1 && access("/tmp/axt/Save/newguy.axs", F_OK) == 0,
+	      "delete of a game-folder file: done, the file itself kept");
+	check(plat_fopen("save\\newguy.axs", "rb") == NULL, "  ... and no longer readable");
+	got[0] = 0;
+	fh = plat_findfirst("save\\*.axs", &d);
+	for (int r = fh == -1 ? -1 : 0; r == 0; r = plat_findnext(fh, &d)) { strcat(got, d.name); strcat(got, " "); }
+	plat_findclose(fh);
+	check(!strcmp(got, "Alex.axs "), "  ... nor listed");
+	plat_userReset();
+	check(plat_fopen("save\\newguy.axs", "rb") == NULL, "  ... still deleted after a restart (.axis-deleted)");
+	fp = plat_fopen("save\\newguy.axs", "wb");
+	if (fp) { fputs("again", fp); fclose(fp); }
+	memset(buf, 0, sizeof buf);
+	fp = plat_fopen("save\\newguy.axs", "rb");
+	check(fp && fread(buf, 1, sizeof buf, fp) == 5 && !strcmp(buf, "again"), "written again: there again");
+	if (fp) fclose(fp);
+	check(plat_mkdir("save") == -1 && errno == EEXIST, "mkdir(save): there already (EEXIST)");
+	check(plat_mkdir("AutoPlay") == 0 && access("/tmp/axu/AutoPlay", F_OK) == 0 && access("/tmp/axt/AutoPlay", F_OK) != 0,
+	      "mkdir(AutoPlay): in the user folder only");
+	check(plat_chdir("autoplay") == 0 && plat_currentDirectory(sizeof p, p) && !strcmp(p, "/tmp/axt/autoplay"),
+	      "chdir(autoplay) into a user-folder-only folder; current directory /tmp/axt/autoplay (as typed, as Windows)");
+	fp = plat_fopen("Match1.ape", "wb");
+	if (fp) fclose(fp);
+	check(access("/tmp/axu/AutoPlay/Match1.ape", F_OK) == 0, "  ... a file made there: /tmp/axu/AutoPlay/Match1.ape");
+	check(plat_chdir("..") == 0 && plat_currentDirectory(sizeof p, p) && !strcmp(p, "/tmp/axt"), "chdir(..): the game folder");
+	check(plat_chdir("nosuch") == -1, "chdir to a missing folder: -1");
+	memset(buf, 0, sizeof buf);
+	fp = fopen("/tmp/axt/Save/Alex.axs", "rb");
+	check(fp && fread(buf, 1, sizeof buf, fp) == 4 && !strcmp(buf, "alex"), "the game folder untouched: Save/Alex.axs still alex");
+	if (fp) fclose(fp);
+	memset(buf, 0, sizeof buf);
+	fp = fopen("/tmp/axt/initdata/battle.sra", "rb");
+	check(fp && fread(buf, 1, sizeof buf, fp) == 5 && !strcmp(buf, "movie"), "  ... initdata/battle.sra still movie");
 	if (fp) fclose(fp);
 
 	printf("%s: %d failed\n", fails ? "FAILED" : "ALL PASSED", fails);

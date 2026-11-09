@@ -32,6 +32,7 @@
 #define AXIS_PORTABLE 1
 #include "../src/plat/posix/win32_compat.h"
 #define AXISNET_POSIX 1
+#define AXISNET_USERDIR 1   /* (the log and axisnet.ini: the user folder, src/plat/posix/files.c) */
 #endif
 #define AXIS_NATIVE 1
 #include "../axisnet_dp.c"
