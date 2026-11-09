@@ -261,6 +261,55 @@ static int f_SwapBuffers(void *dc)
 	return 1;
 }
 
+/* a frame of the ending movie (movie64.c): the picture (RGB, w x h; NULL: the last one again) on a quad filling the
+   frame with its aspect kept, black around it */
+void glrec64_movieFrame(const u8 *rgb, int w, int h)
+{
+	static u32 tex;
+	int sw = 0, sh = 0;
+	hostwin_size(&sw, &sh);
+	if (sw <= 0 || sh <= 0)
+		sw = w, sh = h;
+	if (!tex)
+		tex = g_nextName++;
+	r_glViewport(0, 0, sw, sh);
+	r_glClearColor(0, 0, 0, 1);
+	r_glClear(0x4100);   /* (colour, depth) */
+	static const u32 off[] = { 0x0b71, 0x0b50, 0x0b60, 0x0be2, 0x0b44, 0x0bc0 };   /* depth test, lighting, fog, blend, cull, alpha test */
+	for (int i = 0; i < 6; i++)
+		r_glDisable(off[i]);
+	r_glEnable(0x0de1);
+	r_glMatrixMode(0x1701);
+	r_glLoadIdentity();
+	r_gluOrtho2D(0, sw, sh, 0);
+	r_glMatrixMode(0x1700);
+	r_glLoadIdentity();
+	r_glBindTexture(0x0de1, tex);
+	if (rgb) {
+		glTexParameteri_(0x0de1, 0x2801, 0x2601);   /* (linear, no mipmaps; clamped) */
+		glTexParameteri_(0x0de1, 0x2800, 0x2601);
+		glTexParameteri_(0x0de1, 0x2802, 0x812f);
+		glTexParameteri_(0x0de1, 0x2803, 0x812f);
+		r_glPixelStorei(0x0cf5, 1);
+		r_glTexImage2D(0x0de1, 0, 0x1907, w, h, 0, 0x1907, 0x1401, rgb);
+	}
+	r_glTexEnvf(0x2300, 0x2200, (float)0x2100);   /* GL_MODULATE */
+	r_glColor4ub(255, 255, 255, 255);
+	int dw = sw, dh = (int)((long long)sw * h / w);
+	if (dh > sh) {
+		dh = sh;
+		dw = (int)((long long)sh * w / h);
+	}
+	int x0 = (sw - dw) / 2, y0 = (sh - dh) / 2;
+	r_glBegin(7);   /* GL_QUADS */
+	r_glTexCoord2f(0, 0); r_glVertex2i(x0, y0);
+	r_glTexCoord2f(1, 0); r_glVertex2i(x0 + dw, y0);
+	r_glTexCoord2f(1, 1); r_glVertex2i(x0 + dw, y0 + dh);
+	r_glTexCoord2f(0, 1); r_glVertex2i(x0, y0 + dh);
+	r_glEnd();
+	f_SwapBuffers(NULL);
+}
+
 /* the stream's header ("AXGLREC1", the plain calls' table), as glrec.c's */
 unsigned glrec64_header(unsigned char *out, unsigned room)
 {
