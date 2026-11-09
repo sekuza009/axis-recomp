@@ -368,6 +368,11 @@ AXIS_API int axis_load(void)
 		strcpy(g_dir, "./");
 	char path[1100];
 	snprintf(path, sizeof path, "%sstandalone64.log", g_dir);
+#ifndef _WIN32   /* (Linux / macOS: the user folder, src/plat/posix/files.c - the game folder may not be writable) */
+	const char *plat_userDir(void);
+	if (plat_userDir()[0])
+		snprintf(path, sizeof path, "%s/standalone64.log", plat_userDir());
+#endif
 	g_log = fopen(path, "w");
 	arena_setLog(g_log);
 	crash_handler();

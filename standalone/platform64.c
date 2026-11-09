@@ -16,7 +16,12 @@ int g_platformHostFocus = -1;
 static void ini_get(const char *section, const char *key, const char *def, char *out, size_t room)
 {
 	snprintf(out, room, "%s", def);
+#ifdef _WIN32
 	FILE *f = fopen("axisnet.ini", "r");
+#else   /* (the user folder's when there is one: src/plat/posix/files.c) */
+	FILE *plat_fopen(const char *path, const char *mode);
+	FILE *f = plat_fopen("axisnet.ini", "r");
+#endif
 	if (!f)
 		return;
 	char line[256];

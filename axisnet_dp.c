@@ -70,11 +70,12 @@ static double g_hudaspect = 16.0 / 9.0;
 static double g_menusens = 1.0;
 #endif
 
+static char g_logdir[MAX_PATH];   /* (the log's folder: the game folder, or the user folder - AXISNET_USERDIR) */
 static void logf(const char *fmt, ...) {
     if (!g_log) return;
     char path[MAX_PATH], line[1024];
     va_list ap; va_start(ap, fmt); vsnprintf(line, sizeof line, fmt, ap); va_end(ap);
-    snprintf(path, sizeof path, "%saxisnet.log", g_dir);
+    snprintf(path, sizeof path, "%saxisnet.log", g_logdir);
     EnterCriticalSection(&g_logcs);
     FILE *f = fopen(path, "a");
     if (f) { SYSTEMTIME t; GetLocalTime(&t);
@@ -102,6 +103,21 @@ static void load_config(void) {
     char *p = strrchr(g_dir, AXNET_SEP); if (p) p[1] = 0; else g_dir[0] = 0;
     }
     snprintf(ini, sizeof ini, "%saxisnet.ini", g_dir);
+    snprintf(g_logdir, sizeof g_logdir, "%s", g_dir);
+#ifdef AXISNET_USERDIR   /* (Linux / macOS, the 64-bit build: the user folder - src/plat/posix/files.c - takes the log,
+                            and its axisnet.ini, when there is one, is the one read) */
+    {
+        const char *plat_userDir(void);
+        const char *u = plat_userDir();
+        if (u && *u) {
+            char mine[MAX_PATH];
+            snprintf(g_logdir, sizeof g_logdir, "%s/", u);
+            snprintf(mine, sizeof mine, "%s/axisnet.ini", u);
+            FILE *t = fopen(mine, "r");
+            if (t) { fclose(t); snprintf(ini, sizeof ini, "%s", mine); }
+        }
+    }
+#endif
     GetPrivateProfileStringA("net", "mode", "local", mode, sizeof mode, ini);
     g_local = _stricmp(mode, "server") != 0;
     GetPrivateProfileStringA("net", "server", "", g_server, sizeof g_server, ini);
