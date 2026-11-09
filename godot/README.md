@@ -84,6 +84,20 @@ project directly - no large-address-aware copy needed. It needs:
 - for an export, `bash godot/export.sh release install 64` (the "Windows Desktop 64-bit" preset, the x86_64 export
   templates; installed to <Axis>/Godot64).
 
+**Linux x86-64 (2026-11-09).** Cross-built on Windows with zig:
+- the game library: `bash standalone/build64.sh linux-gnu` -> `build/libaxis64.so` (glibc 2.28, exports only
+  `axis_*`), copied to `project/bin/`; game.gd picks it off Windows;
+- the extension: `bash extension/build_linux.sh [debug|release]` (godot-cpp from `Tools/godot/godot-cpp64` - its
+  generated 64-bit bindings serve Linux too - compiled with the flags its SCons uses; its archive kept in
+  `extension/obj_linux_<mode>/`) -> `project/bin/libaxis_godot.linux.template_<mode>.x86_64.so` (`host_posix.c`
+  instead of `host_win.c`: dlopen; the mouse is Godot's captured mode);
+- the export: `bash godot/export.sh release install linux` (the "Linux 64-bit" preset; the linux export templates
+  extracted from the .tpz into `%APPDATA%/Godot/export_templates/4.7.2.stable`) -> `<Axis>/GodotLinux`
+  (`AxisGodot.x86_64`).
+Saves and settings on Linux go to the user folder (`~/.local/share/axis`, laid over the game folder, which is never
+written; `~/.config/axis/registry.txt` for the registry's values) - src/plat/posix/files.c. Checked in WSL (musl,
+headless): the library loaded with dlopen and run; the Godot build itself still needs a real Linux desktop.
+
 ## Checked
 
 The skirmish session's first 2,000 frames (title, menus) recorded with the game's own images at frames 500, 1,000

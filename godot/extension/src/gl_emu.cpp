@@ -5,6 +5,10 @@
 #include <cmath>
 #include <cstdio>
 #include <cstring>
+#ifndef _WIN32   // (64-bit file offsets: Windows' names for them, here POSIX's)
+#define _ftelli64 ftello
+#define _fseeki64 fseeko
+#endif
 
 namespace {
 

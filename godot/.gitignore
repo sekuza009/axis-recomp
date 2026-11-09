@@ -5,3 +5,4 @@ extension/test/*.pdb
 extension/**/*.o
 extension/.sconsign.dblite
 project/axis_crash.txt
+extension/obj_*/

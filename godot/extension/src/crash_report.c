@@ -2,6 +2,7 @@
    the function and source line it happened in, and the calls that led there - read from the DLLs' debug symbols
    (PDB) with Windows' own dbghelp - written to stderr and to axis_crash.txt in the current folder. The crash then
    goes on as before. */
+#ifdef _WIN32   /* (Windows only: host_posix.c elsewhere) */
 #include <windows.h>
 #include <dbghelp.h>
 #include <stdio.h>
@@ -100,3 +101,4 @@ void axis_crash_report_install(void)
 {
 	AddVectoredExceptionHandler(1, on_crash);
 }
+#endif

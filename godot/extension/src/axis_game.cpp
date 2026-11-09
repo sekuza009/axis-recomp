@@ -181,6 +181,16 @@ void AxisGame::m_close(void *u) {
 	g->musicStream.unref();
 }
 
+// the mouse while the game runs: hidden, its movement read by the host (Windows: the cursor re-centred or raw input,
+// host_win.c); elsewhere Godot's captured mode, whose motion events are the mouse's relative movement
+static Input::MouseMode game_mouse_mode() {
+#ifdef _WIN32
+	return Input::MOUSE_MODE_HIDDEN;
+#else
+	return Input::MOUSE_MODE_CAPTURED;
+#endif
+}
+
 // the game's message box: Godot's own (a native OK box on each platform), the pointer let go while it is up
 int AxisGame::s_message(void *u, const char *title, const char *text) {
 	AxisGame *g = static_cast<AxisGame *>(u);
@@ -188,7 +198,7 @@ int AxisGame::s_message(void *u, const char *title, const char *text) {
 	g->confined = false;
 	Input::get_singleton()->set_mouse_mode(Input::MOUSE_MODE_VISIBLE);
 	OS::get_singleton()->alert(String(text), String(title));
-	Input::get_singleton()->set_mouse_mode(Input::MOUSE_MODE_HIDDEN);
+	Input::get_singleton()->set_mouse_mode(game_mouse_mode());
 	return 1;   // IDOK
 }
 
@@ -315,9 +325,13 @@ bool AxisGame::start(const String &p_game_dir, const String &p_library, bool p_d
 	UtilityFunctions::print(status);
 	hostWindow = config.window;
 	// the mouse as the original has it: hidden, kept in the window, its movement read raw (not Godot's captured mode)
-	Input::get_singleton()->set_mouse_mode(Input::MOUSE_MODE_HIDDEN);
+	Input::get_singleton()->set_mouse_mode(game_mouse_mode());
+#ifdef _WIN32
 	cursorMouse = !p_raw_mouse;
 	rawMouse = p_raw_mouse && host_raw_mouse_start() != 0;
+#else
+	cursorMouse = rawMouse = false;   // (Godot's captured motion: moveX / moveY)
+#endif
 	return true;
 }
 
@@ -380,6 +394,9 @@ void AxisGame::_process(double p_delta) {
 	if (focused != confined) {   // (the pointer kept in the window while it has the focus, free otherwise)
 		host_confine(hostWindow, focused);
 		confined = focused;
+#ifndef _WIN32
+		Input::get_singleton()->set_mouse_mode(focused ? game_mouse_mode() : Input::MOUSE_MODE_VISIBLE);
+#endif
 		if (focused && cursorMouse) {   // (the cursor centred, its way there not counted: the game starts from rest, as DirectInput does)
 			int ix, iy;
 			host_cursor_delta(hostWindow, &ix, &iy);

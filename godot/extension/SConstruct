@@ -10,7 +10,10 @@ env = SConscript(os.environ.get("GODOT_CPP", "C:/Users/Alexander/Tools/godot/god
 env["SHOBJSUFFIX"] = ".o"   # (zig takes objects by their extension)
 env.Append(CPPPATH=["src/"])
 sources = Glob("src/*.cpp") + Glob("src/*.c")
-env.Append(LIBS=["dbghelp", "advapi32"])
+if env["platform"] == "windows":
+	env.Append(LIBS=["dbghelp", "advapi32"])
+else:
+	env.Append(LIBS=["dl"])
 # the launcher's movies: the library's reader and FFmpeg's indeo3 decoder (../../axisnet/iv32/ffmpeg, LGPL 2.1+), and
 # off Windows the library's registry stand-in (the launcher's settings, shared with the game); objects kept here
 ffenv = env.Clone()

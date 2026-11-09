@@ -1,5 +1,6 @@
 /* host_win.c: the Windows calls AxisGame needs (kept apart from godot-cpp's headers, which windows.h does not mix
    with): the game folder in the environment, axis.dll loaded and its functions found. */
+#ifdef _WIN32   /* (Windows only: host_posix.c elsewhere) */
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 
@@ -159,3 +160,4 @@ void host_raw_mouse_take(int *dx, int *dy, int *events)
 	*dy = (int)InterlockedExchange(&g_rawY, 0);
 	*events = (int)InterlockedExchange(&g_rawEvents, 0);
 }
+#endif
