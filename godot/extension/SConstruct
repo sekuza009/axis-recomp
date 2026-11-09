@@ -1,0 +1,14 @@
+# The Godot extension of the godot branch (godot/README.md): build/axis_godot*.dll into godot/project/bin.
+#   python -m SCons platform=windows arch=x86_32 use_mingw=yes use_llvm=yes mingw_prefix=<zig-mingw> \
+#       target=template_debug debug_symbols=yes custom_api_file=<godot 4.7 extension_api.json>
+# GODOT_CPP: the godot-cpp checkout (default C:/Users/Alexander/Tools/godot/godot-cpp). debug_symbols=yes is
+# needed with zig: its linker drops a DLL's static constructors when stripping (-s), and godot-cpp registers the
+# engine classes from static constructors (godot/README.md).
+import os
+
+env = SConscript(os.environ.get("GODOT_CPP", "C:/Users/Alexander/Tools/godot/godot-cpp") + "/SConstruct")
+env["SHOBJSUFFIX"] = ".o"   # (zig takes objects by their extension)
+env.Append(CPPPATH=["src/"])
+sources = Glob("src/*.cpp")
+library = env.SharedLibrary("../project/bin/axis_godot{}{}".format(env["suffix"], env["SHLIBSUFFIX"]), source=sources)
+Default(library)

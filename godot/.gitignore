@@ -1,0 +1,6 @@
+project/bin/
+project/.godot/
+extension/test/*.exe
+extension/test/*.pdb
+extension/**/*.o
+extension/.sconsign.dblite
