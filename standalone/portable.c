@@ -249,9 +249,13 @@ int axis_hasEnded(unsigned *code);   /* src/app/win32.c */
 /* the end: when the game quit itself (its window destroyed), its code, back to the host (the original ended the
    process there, its exit list not run); otherwise - axis_init failed, or the host stopped - the game's exit list
    and the process ended, as the original's WinMain returning did */
+static char g_importLogPath[MAX_PATH];   /* (AXIS_IMPORTLOG, below) */
+static void import_log_write(void);
 AXIS_API int axis_exit(int code)
 {
 	unsigned c;
+	if (g_importLogPath[0])
+		import_log_write();
 	if (axis_hasEnded(&c)) {
 		sa_log("the game quit (code %d): back to the host", (int)c);
 		return (int)c;
@@ -268,8 +272,55 @@ static FILE *g_mouseLog;
 static DWORD g_mouseT;
 static long g_mReads, g_mDx, g_mDy, g_mMax, g_mMoving;
 static long g_testEnding = -1;
+
+/* AXIS_IMPORTLOG=<file> (a check, PORTING.md stage 3): which of the game's imports it really calls, and how often -
+   a counting stub in front of every import slot (after the host's and the GL layers' own), the counts written every
+   five seconds (only the ones called) */
+#define IMPORT_NAME_(n, d) #n,
+static const char *const k_importNames[] = { IMPORT_LIST(IMPORT_NAME_) };
+#undef IMPORT_NAME_
+#define N_IMPORTS (sizeof k_importNames / sizeof k_importNames[0])
+static volatile LONG g_importCount[N_IMPORTS];
+static void *g_importTarget[N_IMPORTS];
+static char g_importLogPath[MAX_PATH];
+static DWORD g_importLogT;
+static void import_log_write(void)
+{
+	FILE *f = fopen(g_importLogPath, "w");
+	if (!f)
+		return;
+	for (unsigned i = 0; i < N_IMPORTS; i++)
+		if (g_importCount[i])
+			fprintf(f, "%s %ld\n", k_importNames[i], g_importCount[i]);
+	fclose(f);
+}
+static void import_log_install(void)
+{
+	unsigned char *code = VirtualAlloc(NULL, N_IMPORTS * 12, MEM_COMMIT | MEM_RESERVE, PAGE_EXECUTE_READWRITE);
+	if (!code)
+		return;
+	for (unsigned i = 0; i < N_IMPORTS; i++) {
+		void **slot = slot_by_name(k_importNames[i]);
+		if (!slot)
+			continue;
+		unsigned char *s = code + i * 12;
+		g_importTarget[i] = *slot;
+		s[0] = 0xff; s[1] = 0x05;   /* inc dword ptr [count] */
+		*(void **)(s + 2) = (void *)&g_importCount[i];
+		s[6] = 0xff; s[7] = 0x25;   /* jmp dword ptr [target] */
+		*(void **)(s + 8) = (void *)&g_importTarget[i];
+		*slot = s;
+	}
+	FlushInstructionCache(GetCurrentProcess(), code, N_IMPORTS * 12);
+	g_importLogT = GetTickCount();
+}
+
 static void mouse_log(long dx, long dy)
 {
+	if (g_importLogPath[0] && GetTickCount() - g_importLogT >= 5000) {
+		g_importLogT = GetTickCount();
+		import_log_write();
+	}
 	if (g_testEnding > 0 && --g_testEnding == 0) {
 		extern unsigned char g_exitCode_v[], g_mainWindow_v[];
 		*(int *)g_exitCode_v = 99;   /* (app_closeWindow(0x63): game_postMatch after mission 15) */
@@ -483,6 +534,10 @@ int WINAPI WinMain(HINSTANCE inst, HINSTANCE prev, LPSTR cmd, int show)
 		host_install();
 	{
 		char p[MAX_PATH];
+		if (GetEnvironmentVariableA("AXIS_IMPORTLOG", g_importLogPath, sizeof g_importLogPath))
+			g_platMouseLog = mouse_log;   /* (written from the per-frame mouse read) */
+		else
+			g_importLogPath[0] = 0;
 		if (GetEnvironmentVariableA("AXIS_TEST_ENDING", p, sizeof p) && atoi(p) > 0) {
 			g_testEnding = atoi(p);
 			g_platMouseLog = mouse_log;
@@ -511,6 +566,8 @@ int WINAPI WinMain(HINSTANCE inst, HINSTANCE prev, LPSTR cmd, int show)
 			fprintf(g_log, "AXIS_GLSTATE=%s: %d GL calls layered (glstate.log)\n", v, glstate_install(slot_by_name, v[0] - '0', dir));
 		}
 	}
+	if (g_importLogPath[0])
+		import_log_install();   /* (last: after every other layer in front of the slots) */
 	int n = 0;
 	const char *missing = crt_install(&n);
 	if (missing)
