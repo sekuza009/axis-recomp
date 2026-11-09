@@ -9,6 +9,7 @@ typedef struct {
 	void (*frame)(void *user, const unsigned *words, unsigned count, int width, int height);
 	void *user;
 	int input;
+	int nogl;
 } AxisHostConfig;   /* (as src/axis_api.h's) */
 
 typedef struct {

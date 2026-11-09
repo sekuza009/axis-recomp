@@ -89,7 +89,7 @@ unsigned vk_of(Key k) {
 } // namespace
 
 void AxisGame::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("start", "game_dir", "library"), &AxisGame::start);
+	ClassDB::bind_method(D_METHOD("start", "game_dir", "library", "driver"), &AxisGame::start, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("is_running"), &AxisGame::is_running);
 	ClassDB::bind_method(D_METHOD("get_game_frames"), &AxisGame::get_game_frames);
 	ClassDB::bind_method(D_METHOD("get_game_size"), &AxisGame::get_game_size);
@@ -104,7 +104,7 @@ void AxisGame::on_frame(void *user, const unsigned *words, unsigned count, int w
 	g->gameFrames++;
 }
 
-bool AxisGame::start(const String &p_game_dir, const String &p_library) {
+bool AxisGame::start(const String &p_game_dir, const String &p_library, bool p_driver) {
 	const String lib = ProjectSettings::get_singleton()->globalize_path(p_library);
 	char error[512] = "";
 	if (!host_load(lib.utf8().get_data(), p_game_dir.utf8().get_data(), &api, error, sizeof error)) {
@@ -126,6 +126,7 @@ bool AxisGame::start(const String &p_game_dir, const String &p_library) {
 	config.frame = &AxisGame::on_frame;
 	config.user = this;
 	config.input = 1;
+	config.nogl = p_driver ? 0 : 1;   // (no OpenGL: the game's calls only recorded, its queries answered in software)
 	api.host(&config);
 	if (!api.load()) { status = "AxisGame: axis_load failed (standalone.log in the game folder)"; return false; }
 	if (!api.init(host_instance(), nullptr, "", 1)) {

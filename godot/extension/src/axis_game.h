@@ -14,7 +14,7 @@ class AxisGame : public AxisReplay {
 	GDCLASS(AxisGame, AxisReplay)
 
 public:
-	bool start(const String &p_game_dir, const String &p_library);
+	bool start(const String &p_game_dir, const String &p_library, bool p_driver = false);
 	bool is_running() const { return running; }
 	int get_game_frames() const { return gameFrames; }
 	Vector2i get_game_size() const { return Vector2i(lastW, lastH); }

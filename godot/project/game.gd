@@ -24,6 +24,8 @@ func _ready() -> void:
 			i += 1
 			var parts: PackedStringArray = args[i].split(":", true, 1)
 			shots[int(parts[0])] = parts[1]
+		elif a == "--gl":
+			pass
 		elif a == "--status":
 			pass
 		elif a == "--windowed":
@@ -37,7 +39,7 @@ func _ready() -> void:
 	$Status.visible = args.find("--status") >= 0
 	game = $Game
 	$View.texture = game.get_texture()
-	if not game.start(dir, lib):
+	if not game.start(dir, lib, args.find("--gl") >= 0):   # (--gl: the game draws with OpenGL too, as before)
 		$Status.text = game.get_status()
 
 func _process(_delta: float) -> void:

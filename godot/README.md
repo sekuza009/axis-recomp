@@ -69,3 +69,10 @@ Esc menu), replayed in Godot, both its render and what its window showed:
   original's); otherwise scaled with smoothing (it was squeezed unsmoothed into 1280 x 720). --windowed for a window.
 Result over the 70 frames: 97.7-100% of pixels identical, 99.99-100% within 8 levels of 255; the lowest identical
 shares (64-95%, boost and flash frames) are 1-5 level rounding where a translucent full-screen layer blends.
+
+2026-11-09, no OpenGL: AxisGame starts the game with AxisHostConfig.nogl - its GL calls are only recorded for Godot
+(no context, no drawing into the hidden window), its matrix / viewport / fog queries answered by the software GL
+state (standalone/glstate.c mode 3), the rest a driver would give answered by the recorder (standalone/glrec.c
+glrec_nogl). `--gl` runs the game's OpenGL as before, for comparison. Checked: the live skirmish session (title,
+profile, match, chat, help, death) plays and looks the same. (The loaded-module check cannot tell the modes apart:
+NVIDIA's Vulkan driver, which Godot uses, is the same nvoglv32.dll.)
