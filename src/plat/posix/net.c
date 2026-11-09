@@ -45,7 +45,9 @@
 /* ---- sockets ---- */
 typedef struct { uint16_t family, port; uint32_t addr; uint8_t zero[8]; } WinSockaddrIn;   /* Windows' sockaddr_in */
 
-static socklen_t native_addr(const void *win, int len, struct sockaddr_in *out)
+/* the game's address (Windows' layout) as this system's (plat/posix/directplay.c uses it too) */
+socklen_t net_native_addr(const void *win, int len, struct sockaddr_in *out);
+socklen_t net_native_addr(const void *win, int len, struct sockaddr_in *out)
 {
 	WinSockaddrIn w;
 	memset(&w, 0, sizeof w);
@@ -81,16 +83,18 @@ PLAT(int, socket, int af, int type, int protocol)
 #endif
 	return s;
 }
-PLAT(int, connect, int s, const void *addr, int len)
+/* (the game's connect is axisnet's - plat/posix/directplay.c, as on Windows; this is the plain one under it) */
+int net_connect_win(int s, const void *addr, int len);
+int net_connect_win(int s, const void *addr, int len)
 {
 	struct sockaddr_in a;
-	socklen_t n = native_addr(addr, len, &a);
+	socklen_t n = net_native_addr(addr, len, &a);
 	return connect(s, (struct sockaddr *)&a, n);
 }
 PLAT(int, bind, int s, const void *addr, int len)
 {
 	struct sockaddr_in a;
-	socklen_t n = native_addr(addr, len, &a);
+	socklen_t n = net_native_addr(addr, len, &a);
 	return bind(s, (struct sockaddr *)&a, n);
 }
 PLAT(int, send, uint32_t s, const void *buf, int len, int flags)
@@ -285,7 +289,10 @@ static uint16_t checksum(const void *p, size_t n)
 }
 PLAT(void *, IcmpCreateFile, void) { return (void *)(uintptr_t)0x49434d50; }
 PLAT(int, IcmpCloseHandle, void *h) { (void)h; return 1; }
-PLAT(uint32_t, IcmpSendEcho, void *h, uint32_t dest, const void *data, uint16_t size, void *options, void *reply, uint32_t replySize, uint32_t timeout)
+/* (the game's IcmpSendEcho is axisnet's, which times a TCP connection to the game's host as on Windows; this real
+   ICMP echo is kept for a host or a later use) */
+uint32_t net_icmp_echo(void *h, uint32_t dest, const void *data, uint16_t size, void *options, void *reply, uint32_t replySize, uint32_t timeout);
+uint32_t net_icmp_echo(void *h, uint32_t dest, const void *data, uint16_t size, void *options, void *reply, uint32_t replySize, uint32_t timeout)
 {
 	(void)h; (void)options;
 	int raw = 0, s = socket(AF_INET, SOCK_DGRAM, IPPROTO_ICMP);   /* (unprivileged: the system fills the id) */
