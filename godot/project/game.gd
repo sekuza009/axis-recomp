@@ -6,6 +6,8 @@ extends Control
 var game: AxisGame
 var shots := {}
 var quit_after := -1
+var audio_log: FileAccess = null   # (--audio-log <file>: the sound status every 3 s, flushed each line)
+var audio_t := 0.0
 
 func _ready() -> void:
 	var args := OS.get_cmdline_user_args()
@@ -24,6 +26,9 @@ func _ready() -> void:
 			i += 1
 			var parts: PackedStringArray = args[i].split(":", true, 1)
 			shots[int(parts[0])] = parts[1]
+		elif a == "--audio-log":
+			i += 1
+			audio_log = FileAccess.open(args[i], FileAccess.WRITE)
 		elif a == "--gl":
 			pass
 		elif a == "--status":
@@ -48,6 +53,12 @@ func _process(_delta: float) -> void:
 	if game == null or not game.is_running():
 		return
 	var f := game.get_game_frames()
+	if audio_log:
+		audio_t += _delta
+		if audio_t >= 3.0:
+			audio_t = 0.0
+			audio_log.store_line("frame %d: %s" % [f, game.get_audio_status()])
+			audio_log.flush()
 	$Status.text = "frame %d" % f
 	for s in shots.keys():
 		if f >= s:

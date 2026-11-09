@@ -4,12 +4,29 @@
 extern "C" {
 #endif
 
+typedef struct {   /* (as src/axis_api.h's) */
+	void *(*create)(void *user, const void *waveFormat, unsigned bytes);
+	void *(*duplicate)(void *user, void *buffer);
+	void (*write)(void *user, void *buffer, const void *data, unsigned bytes);
+	void (*play)(void *user, void *buffer, int loop);
+	void (*volume)(void *user, void *buffer, int hundredthsOfDb);
+	void (*pan)(void *user, void *buffer, int pan);
+	void (*release)(void *user, void *buffer);
+	int (*music_open)(void *user, const char *file);
+	void (*music_run)(void *user, int run);
+	double (*music_time)(void *user);
+	double (*music_length)(void *user);
+	void (*music_seek)(void *user, double seconds);
+	void (*music_close)(void *user);
+} AxisSound;
+
 typedef struct {
 	void *window;
 	void (*frame)(void *user, const unsigned *words, unsigned count, int width, int height);
 	void *user;
 	int input;
 	int nogl;
+	const AxisSound *sound;
 } AxisHostConfig;   /* (as src/axis_api.h's) */
 
 typedef struct {

@@ -1,7 +1,9 @@
 // axis_game.cpp: see axis_game.h.
 #include "axis_game.h"
 
+#include <godot_cpp/classes/audio_stream_generator.hpp>
 #include <godot_cpp/classes/display_server.hpp>
+#include <godot_cpp/classes/file_access.hpp>
 #include <godot_cpp/classes/input.hpp>
 #include <godot_cpp/classes/input_event_key.hpp>
 #include <godot_cpp/classes/input_event_mouse_button.hpp>
@@ -93,6 +95,7 @@ void AxisGame::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_running"), &AxisGame::is_running);
 	ClassDB::bind_method(D_METHOD("get_game_frames"), &AxisGame::get_game_frames);
 	ClassDB::bind_method(D_METHOD("get_game_size"), &AxisGame::get_game_size);
+	ClassDB::bind_method(D_METHOD("get_audio_status"), &AxisGame::get_audio_status);
 }
 
 void AxisGame::on_frame(void *user, const unsigned *words, unsigned count, int width, int height) {
@@ -104,7 +107,93 @@ void AxisGame::on_frame(void *user, const unsigned *words, unsigned count, int w
 	g->gameFrames++;
 }
 
+// ---- the sound: the game's buffers into the mixer, its music into an MP3 player ----
+const AxisSound AxisGame::k_sound = { &AxisGame::s_create, &AxisGame::s_duplicate, &AxisGame::s_write, &AxisGame::s_play,
+	&AxisGame::s_volume, &AxisGame::s_pan, &AxisGame::s_release, &AxisGame::m_open, &AxisGame::m_run, &AxisGame::m_time,
+	&AxisGame::m_length, &AxisGame::m_seek, &AxisGame::m_close };
+void *AxisGame::s_create(void *u, const void *f, unsigned b) { return static_cast<AxisGame *>(u)->mixer.create(f, b); }
+void *AxisGame::s_duplicate(void *u, void *b) { return static_cast<AxisGame *>(u)->mixer.duplicate((AxisMixer::Voice *)b); }
+void AxisGame::s_write(void *u, void *b, const void *d, unsigned n) { static_cast<AxisGame *>(u)->mixer.write((AxisMixer::Voice *)b, d, n); }
+void AxisGame::s_play(void *u, void *b, int loop) { static_cast<AxisGame *>(u)->mixer.play((AxisMixer::Voice *)b, loop != 0); }
+void AxisGame::s_volume(void *u, void *b, int v) { static_cast<AxisGame *>(u)->mixer.set_volume((AxisMixer::Voice *)b, v); }
+void AxisGame::s_pan(void *u, void *b, int p) { static_cast<AxisGame *>(u)->mixer.set_pan((AxisMixer::Voice *)b, p); }
+void AxisGame::s_release(void *u, void *b) { static_cast<AxisGame *>(u)->mixer.release((AxisMixer::Voice *)b); }
+int AxisGame::m_open(void *u, const char *file) {
+	AxisGame *g = static_cast<AxisGame *>(u);
+	const String path = g->gameDir.path_join(String(file).replace("\\", "/"));
+	const PackedByteArray data = FileAccess::get_file_as_bytes(path);
+	if (data.is_empty()) return 1;
+	g->musicStream.instantiate();
+	g->musicStream->set_data(data);
+	g->music->set_stream(g->musicStream);
+	g->musicSeekTo = 0;
+	return 0;
+}
+void AxisGame::m_run(void *u, int run) {
+	AxisGame *g = static_cast<AxisGame *>(u);
+	if (!g->musicStream.is_valid()) return;
+	if (run) { if (!g->music->is_playing()) g->music->play((float)g->musicSeekTo); }
+	else g->music->stop();
+}
+double AxisGame::m_time(void *u) {
+	AxisGame *g = static_cast<AxisGame *>(u);
+	if (!g->music->is_playing()) return g->musicStream.is_valid() ? g->musicStream->get_length() : 0;   // (finished: at its end)
+	return g->music->get_playback_position();
+}
+double AxisGame::m_length(void *u) {
+	AxisGame *g = static_cast<AxisGame *>(u);
+	return g->musicStream.is_valid() ? g->musicStream->get_length() : 0;
+}
+void AxisGame::m_seek(void *u, double s) {
+	AxisGame *g = static_cast<AxisGame *>(u);
+	g->musicSeekTo = s;
+	if (g->musicStream.is_valid()) g->music->play((float)s);   // (the game seeks to replay from the start)
+}
+void AxisGame::m_close(void *u) {
+	AxisGame *g = static_cast<AxisGame *>(u);
+	g->music->stop();
+	g->music->set_stream(Ref<AudioStream>());
+	g->musicStream.unref();
+}
+
+String AxisGame::get_audio_status() {
+	String s = String("sounds playing ") + String::num_int64(mixer.playing_count()) + ", peak " + String::num(mixer.peak, 3);
+	mixer.peak = 0;
+	if (musicStream.is_valid())
+		s += String(", music ") + (music->is_playing() ? "playing " : "stopped ") + String::num(music->get_playback_position(), 1) + " / " + String::num(musicStream->get_length(), 1) + " s";
+	else
+		s += ", no music";
+	return s;
+}
+
+void AxisGame::feed_audio() {
+	if (!playback.is_valid()) return;
+	const int n = playback->get_frames_available();
+	if (n <= 0) return;
+	std::vector<float> buf((size_t)n * 2);
+	mixer.mix(buf.data(), n);
+	PackedVector2Array frames;
+	frames.resize(n);
+	Vector2 *w = frames.ptrw();
+	for (int i = 0; i < n; i++) w[i] = Vector2(buf[2 * i], buf[2 * i + 1]);
+	playback->push_buffer(frames);
+}
+
 bool AxisGame::start(const String &p_game_dir, const String &p_library, bool p_driver) {
+	gameDir = p_game_dir;
+	{	// the players: the sounds' mix (44.1 kHz, as the game's primary buffer) and the music
+		Ref<AudioStreamGenerator> gen;
+		gen.instantiate();
+		gen->set_mix_rate(44100);
+		gen->set_buffer_length(0.1f);
+		sfx = memnew(AudioStreamPlayer);
+		sfx->set_stream(gen);
+		add_child(sfx);
+		sfx->play();
+		playback = sfx->get_stream_playback();
+		music = memnew(AudioStreamPlayer);
+		add_child(music);
+	}
 	const String lib = ProjectSettings::get_singleton()->globalize_path(p_library);
 	char error[512] = "";
 	if (!host_load(lib.utf8().get_data(), p_game_dir.utf8().get_data(), &api, error, sizeof error)) {
@@ -127,6 +216,7 @@ bool AxisGame::start(const String &p_game_dir, const String &p_library, bool p_d
 	config.user = this;
 	config.input = 1;
 	config.nogl = p_driver ? 0 : 1;   // (no OpenGL: the game's calls only recorded, its queries answered in software)
+	config.sound = &k_sound;           // (the sound and music through Godot: no DirectSound / DirectShow)
 	api.host(&config);
 	if (!api.load()) { status = "AxisGame: axis_load failed (standalone.log in the game folder)"; return false; }
 	if (!api.init(host_instance(), nullptr, "", 1)) {
@@ -197,6 +287,7 @@ void AxisGame::_process(double p_delta) {
 	api.input(keys, focused ? dx : 0, focused ? dy : 0, focused ? wheel : 0, buttons, px, py, focused);
 	wheel = 0;
 	api.frame();
+	feed_audio();
 	if (!api.running()) {
 		running = false;
 		const int code = api.exit(1);

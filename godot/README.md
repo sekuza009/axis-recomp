@@ -76,3 +76,10 @@ state (standalone/glstate.c mode 3), the rest a driver would give answered by th
 glrec_nogl). `--gl` runs the game's OpenGL as before, for comparison. Checked: the live skirmish session (title,
 profile, match, chat, help, death) plays and looks the same. (The loaded-module check cannot tell the modes apart:
 NVIDIA's Vulkan driver, which Godot uses, is the same nvoglv32.dll.)
+
+2026-11-09, sound through Godot: AxisGame gives the game an AxisSound table (src/axis_api.h): its sound buffers go
+to AxisMixer (extension/src/axis_audio.cpp - DirectSound's behaviour: play from the start unless playing, looping,
+volume in hundredths of a dB, its pan law, 8 / 16-bit PCM resampled to 44.1 kHz, the sum clipped) feeding a Godot
+AudioStreamGenerator; its music files play through Godot's AudioStreamMP3 (time, length, the seek it loops with).
+No DirectSound or DirectShow then. Checked (game.gd --audio-log <file>): the menu music and sounds, the match's
+music and up to 20 sounds at once in the fighting.

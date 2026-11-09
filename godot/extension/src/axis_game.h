@@ -7,6 +7,10 @@
 #include "axis_replay.h"
 #include <godot_cpp/classes/input_event.hpp>
 #include "host_win.h"
+#include "axis_audio.h"
+#include <godot_cpp/classes/audio_stream_player.hpp>
+#include <godot_cpp/classes/audio_stream_generator_playback.hpp>
+#include <godot_cpp/classes/audio_stream_mp3.hpp>
 
 namespace godot {
 
@@ -18,6 +22,7 @@ public:
 	bool is_running() const { return running; }
 	int get_game_frames() const { return gameFrames; }
 	Vector2i get_game_size() const { return Vector2i(lastW, lastH); }
+	String get_audio_status();
 	void _process(double p_delta) override;
 	void _input(const Ref<InputEvent> &p_event) override;
 
@@ -35,6 +40,28 @@ private:
 	unsigned buttons = 0;
 	Vector2 pointer;
 	static void on_frame(void *user, const unsigned *words, unsigned count, int width, int height);
+	// the sound (AxisSound): the buffers mixed here into a generator stream; the music an MP3 player
+	AxisMixer mixer;
+	AudioStreamPlayer *sfx = nullptr, *music = nullptr;
+	Ref<AudioStreamGeneratorPlayback> playback;
+	Ref<AudioStreamMP3> musicStream;
+	String gameDir;
+	double musicSeekTo = 0;
+	void feed_audio();
+	static const AxisSound k_sound;
+	static void *s_create(void *u, const void *f, unsigned b);
+	static void *s_duplicate(void *u, void *b);
+	static void s_write(void *u, void *b, const void *d, unsigned n);
+	static void s_play(void *u, void *b, int loop);
+	static void s_volume(void *u, void *b, int v);
+	static void s_pan(void *u, void *b, int p);
+	static void s_release(void *u, void *b);
+	static int m_open(void *u, const char *file);
+	static void m_run(void *u, int run);
+	static double m_time(void *u);
+	static double m_length(void *u);
+	static void m_seek(void *u, double s);
+	static void m_close(void *u);
 	void release_all();
 };
 
