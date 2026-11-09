@@ -298,6 +298,10 @@ static void S l_glGetFloatv(unsigned pname, float *out)
 	}
 	if (!st)
 		return;
+	if (g_answer == 3) {   /* (no driver: the software answer, nothing compared) */
+		memcpy(out, soft, n * 4);
+		return;
+	}
 	EnterCriticalSection(&g_cs);
 	compare(st, out, soft, n);
 	LeaveCriticalSection(&g_cs);
@@ -309,6 +313,10 @@ static void S l_glGetBooleanv(unsigned pname, unsigned char *out)
 	r_glGetBooleanv(pname, out);
 	if (pname != 0x0b60)
 		return;
+	if (g_answer == 3) {
+		*out = (unsigned char)g_fog;
+		return;
+	}
 	float driver = *out, soft = (float)g_fog;
 	EnterCriticalSection(&g_cs);
 	compare(&g_stats[5], &driver, &soft, 1);
@@ -344,10 +352,12 @@ int glstate_install(void **(*slot)(const char *name), int mode, const char *dir)
 	InitializeCriticalSection(&g_cs);
 	for (int k = 0; k < NSTACK; k++)
 		identity(g_stack[k][0]);
-	snprintf(g_logPath, sizeof g_logPath, "%sglstate.log", dir);
-	char detail[MAX_PATH];
-	snprintf(detail, sizeof detail, "%sglstate_diff.log", dir);
-	g_detail = fopen(detail, "w");
+	if (mode != 3) {   /* (mode 3: no driver - nothing to compare, no logs) */
+		snprintf(g_logPath, sizeof g_logPath, "%sglstate.log", dir);
+		char detail[MAX_PATH];
+		snprintf(detail, sizeof detail, "%sglstate_diff.log", dir);
+		g_detail = fopen(detail, "w");
+	}
 	int n = 0;
 #define WRAP(name) do { void **p = slot(#name); if (p) { *(void **)&r_##name = *p; *p = (void *)l_##name; n++; } } while (0)
 	WRAP(glMatrixMode); WRAP(glLoadIdentity); WRAP(glLoadMatrixf); WRAP(glMultMatrixf); WRAP(glPushMatrix);
@@ -355,6 +365,7 @@ int glstate_install(void **(*slot)(const char *name), int mode, const char *dir)
 	WRAP(glDisable); WRAP(glFogf); WRAP(glFogi); WRAP(glFogfv); WRAP(glGetFloatv); WRAP(glGetBooleanv);
 	WRAP(gluLookAt); WRAP(gluPerspective); WRAP(gluOrtho2D);
 #undef WRAP
-	CloseHandle(CreateThread(NULL, 0, report, NULL, 0, NULL));
+	if (mode != 3)
+		CloseHandle(CreateThread(NULL, 0, report, NULL, 0, NULL));
 	return n;
 }
