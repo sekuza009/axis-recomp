@@ -166,12 +166,13 @@ void platform_watchWindow(void *window, void **editField, void **mouseDevice)
    not import ---- */
 typedef void (WINAPI *TEXPARAMI)(unsigned, unsigned, int);
 typedef void (WINAPI *GETTEXPARAMIV)(unsigned, unsigned, int *);
-static TEXPARAMI g_texParameteri;
-static GETTEXPARAMIV g_getTexParameteriv;
+/* (looked up at first use unless already set: glrec.c, the drawing recorder, puts its own in front) */
+TEXPARAMI g_texParameteri;
+GETTEXPARAMIV g_getTexParameteriv;
 
 int platform_texNearest(int saved[2])
 {
-	if (!g_texParameteri) {
+	if (!g_texParameteri || !g_getTexParameteriv) {
 		HMODULE gl = GetModuleHandleA("opengl32.dll");
 		g_texParameteri = gl ? (TEXPARAMI)GetProcAddress(gl, "glTexParameteri") : NULL;
 		g_getTexParameteriv = gl ? (GETTEXPARAMIV)GetProcAddress(gl, "glGetTexParameteriv") : NULL;

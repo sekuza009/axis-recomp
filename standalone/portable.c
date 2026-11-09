@@ -304,6 +304,13 @@ int WINAPI WinMain(HINSTANCE inst, HINSTANCE prev, LPSTR cmd, int show)
 	platform_loadSettings();
 	axisnet_attach(inst, DLL_PROCESS_ATTACH, NULL);
 	fprintf(g_log, "network layer started\n");
+	if (GetEnvironmentVariableA("AXIS_GLREC", NULL, 0)) {   /* (a check: the drawing recorded and replayed, glrec.c) */
+		int glrec_install(void **(*slot)(const char *name), const char *dir);
+		char dir[MAX_PATH];
+		strcpy(dir, g_logPath);
+		*(strrchr(dir, '\\') + 1) = 0;
+		fprintf(g_log, "AXIS_GLREC: %d GL calls recorded (glrec.log)\n", glrec_install(slot_by_name, dir));
+	}
 	{	/* AXIS_GLSTATE=1 / 2 (a check): the software GL state in front of the GL slots, glstate.c */
 		char v[8];
 		if (GetEnvironmentVariableA("AXIS_GLSTATE", v, sizeof v)) {

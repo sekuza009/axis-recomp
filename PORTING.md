@@ -90,3 +90,12 @@ in Godot, then replaced piece by piece.
   close to - but not exactly - the 0x5f3759df trick with two Newton steps (tools/glprobe/fitc.c). Not pursued
   further: the original game's own maths already depends on the player's GPU driver in those last bits (an AMD or
   Intel driver rounds differently), so a port only has to stay that close.
+- 2026-11-08, rendering seam, step 2 - the drawing recorded and proved complete (standalone/glrec.c, AXIS_GLREC=1).
+  Every GL / GLU call is still executed and also appended to a command stream, with the data behind its pointers
+  copied in (matrices, vectors, the vertex arrays each glDrawElements reads, texture pixels), so the stream stands
+  alone; queries are not recorded. At each SwapBuffers the stream is replayed into a second, hidden GL context
+  drawing into its own window's back buffer, and every 30th frame both images are compared pixel for pixel
+  (glrec.log). Two things had to be found: the fixes' pixel-sharp text (standalone/platform.c) set texture filters
+  with glTexParameteri outside the import slots (now routed so a layer can see it - a platform port must take it
+  over too); and a framebuffer object rounds sample positions differently from a window's buffer, so the replay
+  draws into a window as the game does. Result over the seven sessions: 5,551 frames compared, all identical.
