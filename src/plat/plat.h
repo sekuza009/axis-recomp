@@ -131,6 +131,15 @@ long plat_inputRelease(void *object);
 #endif
 
 
+/* ---- a check (AXIS_LOADLOG, standalone/portable.c): each loading-screen frame's timer, logged */
+#ifdef AXIS_PORTABLE
+extern void (*g_platLoadLog)(const void *timeSync, int mode);
+#define PLAT_LOADLOG(timeSync, mode) do { if (g_platLoadLog) g_platLoadLog(timeSync, mode); } while (0)
+#else
+#define PLAT_LOADLOG(timeSync, mode) ((void)0)
+#endif
+
+
 /* ---- network: DirectPlay-shaped sessions (the original: DirectPlay 4 and its lobby, which the network layer,
    axisnet, serves); a later port may replace the whole with its own netcode (no crossplay, PORTING.md) */
 #ifdef AXIS_PORTABLE
