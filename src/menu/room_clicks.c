@@ -318,7 +318,7 @@ u32 (room_hostingStep)(void)
 		g_netRole = 1;
 		music_stop();
 		g_roomCameraMode = 0;
-		CALL_FN(dplay_openConnection, int, int, int)(0, 0);   /* dplay_openConnection */
+		CALL_FN(dplay_openConnection, int, int, const char *)(0, AP(const char, 0));   /* dplay_openConnection */
 		dplay_host(
 			room, g_ladderId, (signed char)room[0x23], (signed char)room[0x21], (signed char)room[0x23],
 			room[0x24], room[0x25], 0);   /* dplay_host: host */

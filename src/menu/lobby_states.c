@@ -1078,7 +1078,7 @@ u32 (arena_takeHostAnswer)(void)
 		g_netRole = 1;
 		music_stop();
 		g_arenaCameraMode = 0;
-		CALL_FN(dplay_openConnection, void, int, int)(0, 0);   /* dplay_openConnection */
+		CALL_FN(dplay_openConnection, void, int, const char *)(0, AP(const char, 0));   /* dplay_openConnection */
 		dplay_host(arena, AP(const void, OBJ(g_cfgPlayerName)),
 			(int)(signed char)arena[0x22] << 8 | (int)(signed char)arena[0x20], (signed char)arena[0x21], (signed char)arena[0x23],
 			arena[0x24], arena[0x25], (*(u32 *)&g_playerCorporation));   /* dplay_host: host */

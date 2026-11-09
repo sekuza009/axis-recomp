@@ -1868,10 +1868,7 @@ static void team_change(u8 *g, int i, const TeamPacket *tp, u32 notice)
 	if (GS->teamGame == 1) {
 		int t = scene_claimTeamSlot(g, tp->team);
 		for (int k = 0; k < 5; k++)
-			CALL_THISFN(playerRecord_setPartColour, void, void *, int, int, u32, u32, u32, u32, u32, u32)(STAGE, i, k, GAME_VAR(u32, OBJ(k_teamHue) + t * 4),
-			                                                                             GAME_VAR(u32, OBJ(k_teamSaturation) + t * 4),
-			                                                                             GAME_VAR(u32, OBJ(k_teamValue) + t * 4), 0,
-			                                                                             0xbf800000, 0x3f7fbe77);   /* playerRecord_setPartColour */
+			CALL_THISFN(playerRecord_setPartColour, void, void *, int, int, FBT, FBT, FBT, FBT, FBT, FBT)(STAGE, i, k, FB(GAME_VAR(u32, OBJ(k_teamHue) + t * 4)), FB(GAME_VAR(u32, OBJ(k_teamSaturation) + t * 4)), FB(GAME_VAR(u32, OBJ(k_teamValue) + t * 4)), FB(0), FB(0xbf800000), FB(0x3f7fbe77));   /* playerRecord_setPartColour */
 	}
 	player_setName(STAGE, i, tp->name);   /* player_setName */
 	actor_name(g, i, tp->name);

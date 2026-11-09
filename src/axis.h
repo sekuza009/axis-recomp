@@ -58,6 +58,23 @@ static inline u32 arena_ref(const void *p) { return p ? (u32)((const unsigned ch
 #define AP(T, v) ((T *)(v))
 #define AV(p) ((u32)(p))
 #endif
+/* a float argument the 32-bit builds pass to the system as its bits (copied without the FPU): FBT its type in a
+   prototype, FB(bits) the argument. x86-64 passes floats in other registers than integers, so there it is a float -
+   the same bits (SSE moves do not quiet a signalling NaN) */
+#ifdef AXIS_64
+static inline float bits_f(u32 u) { union { u32 u; float f; } x; x.u = u; return x.f; }
+static inline u32 f_bits(float f) { union { float f; u32 u; } x; x.f = f; return x.u; }
+#define FBT float
+#define FB(u) bits_f(u)
+/* the reverse, for a game function a call gives a float that takes the float's bits (a u32 parameter) */
+#define F2U_T u32
+#define F2U(f) f_bits(f)
+#else
+#define FBT u32
+#define FB(u) (u)
+#define F2U_T float
+#define F2U(f) (f)
+#endif
 /* a 32-bit place of the game's (a global or field of any declared type) read as a T pointer / a pointer stored in it:
    AGET(T, place), ASET(place, p) - the retyped accesses (*(T **)&place) of the 32-bit builds */
 #ifdef AXIS_64
