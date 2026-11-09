@@ -4,6 +4,7 @@
 #include <stdarg.h>
 #include <string.h>
 #include "../game.h"
+#include "../plat/plat.h"
 #include "../fixes/fixes.h"
 #include "../wide.h"
 
@@ -882,6 +883,11 @@ unsigned axis_frame(void)
 	unsigned short was, cw = 0x027f;
 	__asm__ volatile("fnstcw %0" : "=m"(was));
 	__asm__ volatile("fldcw %0" : : "m"(cw));
+	PLAT_PUMP();   /* (a host without the window: its posted messages, timers and socket events, as the loop's messages) */
+	if (!g_gameRunning) {   /* (a message ended the game) */
+		__asm__ volatile("fldcw %0" : : "m"(was));
+		return 0;
+	}
 	editField_readTyping();
 	app_frame();
 	__asm__ volatile("fldcw %0" : : "m"(was));

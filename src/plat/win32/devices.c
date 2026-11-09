@@ -13,6 +13,8 @@
    devices - the keyboard's 256 bytes and the mouse's movement, wheel and buttons come from the host each frame */
 int g_platHostInput;
 unsigned char g_platKeys[256];
+/* (a host without the game's window: its messages, timers and socket events delivered each frame - standalone/host_window.c) */
+void (*g_platPump)(void);
 int g_platMouse[3];          /* x, y, wheel since the last read */
 unsigned g_platButtons;      /* bit 0 left, 1 right, 2 middle, 3 the fourth */
 void *g_platHostWindow;      /* the host's window: sound has the focus with it */

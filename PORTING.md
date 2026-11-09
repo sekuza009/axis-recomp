@@ -133,3 +133,14 @@ most of them OpenGL (recorded for the host, glrec.c). The rest, by group, with t
 - **Other** (MessageBoxA, ShellExecuteA for the patcher / DServer, the ending movie via MCI, CoInitialize,
   GetVersion, GetSystemDefaultLangID, LoadIconA / LoadCursorA, SystemParametersInfoA): a host message box, the
   launcher links Windows-only, the movie played by the host (Ogg Theora), the rest dropped.
+- 2026-11-09, stage 3 second pass, the window: under a host (Godot) the game runs with no window at all.
+  standalone/host_window.c answers the window calls the game makes for its own window and its text field (21 slots:
+  RegisterClassA/ExA, CreateWindowExA, DestroyWindow, DefWindowProcA, GetClientRect, GetDC, SetTimer / KillTimer,
+  PostMessageA / SendMessageA, SetWindowLongA / CallWindowProcA, GetWindowTextA, WSAAsyncSelect, ...): creation and
+  destruction send the messages the hidden window got (AXIS_MSGLOG: WM_NCCREATE, WM_NCCALCSIZE, WM_CREATE, WM_SIZE,
+  WM_MOVE; WM_DESTROY, WM_NCDESTROY); posted messages, timers (WM_TIMER at the set intervals, coalesced) and socket
+  events (select, FD_READ / FD_CLOSE) are delivered from axis_frame (PLAT_PUMP) before the frame; the text field is a
+  line with a caret holding width / 8 characters (measured on the real control). The drawing recorder takes the
+  frame size from it (g_glrecFrameSize). AXIS_REALWINDOW=1 keeps the hidden window. Checked in Godot: start-up,
+  menus, a skirmish, the timers at 30 / 60 s, the ending (close, destroy, the movie, Esc, back to the host), and the
+  two-copy network session (joined by a typed IP, a team match, chat sent). Master unchanged (objcmp: 0 differ).
