@@ -49,6 +49,7 @@ void *host_instance(void);
 int host_raw_mouse_start(void);                          /* the mouse's raw movement (as DirectInput reads it) */
 void host_raw_mouse_take(int *dx, int *dy, int *events);
 void host_confine(void *window, int on);
+int host_key_down(int vk);                                  /* a key held now (GetAsyncKeyState) */
 void host_cursor_delta(void *window, int *dx, int *dy);   /* the cursor's movement, then re-centred (as the original's DirectInput) */
 int host_raw_mouse_keep(void);                            /* the raw mouse taken back if Godot re-registered it */                  /* the pointer kept in the window (ClipCursor) */
 

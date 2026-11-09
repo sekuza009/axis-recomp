@@ -50,6 +50,7 @@ private:
 	bool confined = false;
 	int rawRetaken = 0;
 	String frameEvents;
+	String keyEvents;   // (the input log: key events since the last status)
 	bool rawSeen = false;
 	bool cursorMouse = false;   // the movement as the cursor moves (the original's); else raw counts (--raw-mouse)
 	// (a long game step - a loading screen - shown as it draws: RenderingServer.force_draw from the frame callback)

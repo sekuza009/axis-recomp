@@ -5,6 +5,7 @@
 #include <godot_cpp/classes/display_server.hpp>
 #include <godot_cpp/classes/file_access.hpp>
 #include <godot_cpp/classes/time.hpp>
+#include <godot_cpp/classes/os.hpp>
 #include <godot_cpp/classes/rendering_server.hpp>
 #include <godot_cpp/classes/input.hpp>
 #include <godot_cpp/classes/input_event_key.hpp>
@@ -182,6 +183,10 @@ String AxisGame::get_input_status() {
 		", motion events " + String::num_int64(nMotion) + " (relative " + String::num(relX, 1) + ", " + String::num(relY, 1) +
 		"; screen relative " + String::num(srelX, 1) + ", " + String::num(srelY, 1) + "), sent to the game " + String::num_int64(sentX) +
 		", " + String::num_int64(sentY) + (cursorMouse ? String(" (cursor movement)") : rawMouse ? String(" (raw input, ") + String::num_int64(nRaw) + " raw events, taken back " + String::num_int64(rawRetaken) + "x)" : String(" (Godot's motion events)")) + "; button events " + String::num_int64(nButton) + ", buttons now " + String::num_int64(buttons);
+	s += "; key events" + keyEvents + "; held:";
+	keyEvents = String();
+	for (int i = 0; i < 256; i++)
+		if (keys[i]) s += String(" ") + String::num_int64(i);
 	nMotion = nButton = nRaw = 0;
 	relX = relY = srelX = srelY = 0;
 	sentX = sentY = 0;
@@ -278,6 +283,8 @@ void AxisGame::_input(const Ref<InputEvent> &p_event) {
 	if (k.is_valid()) {
 		const int dik = dik_of(k->get_physical_keycode(), k->get_location());
 		if (dik >= 0) keys[dik] = k->is_pressed() ? 0x80 : 0;
+		if (!k->is_echo())
+			keyEvents += String(" [") + OS::get_singleton()->get_keycode_string(k->get_physical_keycode()) + " loc " + String::num_int64((int64_t)k->get_location()) + (k->is_pressed() ? " down" : " up") + " dik " + String::num_int64(dik) + "]";
 		if (api.text_input()) {   // (a text field: its keys and characters as Windows would send them)
 			const unsigned vk = vk_of(k->get_keycode());
 			if (vk) api.key(vk, k->is_pressed());
@@ -316,6 +323,11 @@ void AxisGame::_process(double p_delta) {
 	if (!running) return;
 	const bool focused = get_window() && get_window()->has_focus();
 	if (!focused) release_all();
+	else {   // (the modifiers' releases from Windows' own key state: Godot sends a Shift's press but not its release)
+		static const struct { int dik, vk; } mods[] = { { 0x2a, 0xa0 }, { 0x36, 0xa1 }, { 0x1d, 0xa2 }, { 0x9d, 0xa3 }, { 0x38, 0xa4 }, { 0xb8, 0xa5 }, { 0xdb, 0x5b }, { 0xdc, 0x5c } };
+		for (const auto &m : mods)
+			if (keys[m.dik] && !host_key_down(m.vk)) keys[m.dik] = 0;
+	}
 	if (focused != confined) {   // (the pointer kept in the window while it has the focus, free otherwise)
 		host_confine(hostWindow, focused);
 		confined = focused;

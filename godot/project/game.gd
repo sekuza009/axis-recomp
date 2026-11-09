@@ -62,6 +62,9 @@ func _ready() -> void:
 	$Status.visible = args.find("--status") >= 0
 	game = $Game
 	$View.texture = game.get_texture()
+	# the game's start-up screen (logo and progress bar) is drawn in its first step: Godot's window shown first
+	for _f in 3:
+		await get_tree().process_frame
 	if no_game:   # (a check: only the mouse captured, no game)
 		Input.mouse_mode = Input.MOUSE_MODE_VISIBLE if args.find("--visible") >= 0 else Input.MOUSE_MODE_CAPTURED
 	elif not game.start(dir, lib, args.find("--gl") >= 0, args.find("--raw-mouse") >= 0):   # (--raw-mouse: the device's counts, unscaled)   # (--gl: the game draws with OpenGL too, as before)

@@ -142,6 +142,12 @@ void host_cursor_delta(void *window, int *dx, int *dy)
 	if (*dx || *dy) SetCursorPos(c.x, c.y);
 }
 
+/* a virtual key physically held now (Windows' own state: Godot does not send the release of Shift) */
+int host_key_down(int vk)
+{
+	return (GetAsyncKeyState(vk) & 0x8000) != 0;
+}
+
 /* the movement since the last call (and the number of raw events, for the input log) */
 void host_raw_mouse_take(int *dx, int *dy, int *events)
 {
