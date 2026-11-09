@@ -9,6 +9,12 @@
 #include <string.h>
 #include "../src/fixes/settings.h"
 #include "../../axisnet/iv32/iv32.h"
+#ifdef AXIS_PORTABLE
+void sa_log(const char *fmt, int arg);   /* main.c: standalone.log */
+#define MOVIE_LOG(fmt, arg) sa_log(fmt, arg)
+#else
+#define MOVIE_LOG(fmt, arg) ((void)0)
+#endif
 
 Settings g_settings = { 1, 1, 16.0f / 9.0f, 1, 1.0f, 1.0f };
 
@@ -244,6 +250,8 @@ void platform_playMovie(void *owner, const char *file, int w, int h)
 	open.lpstrDeviceType = "AVIVideo";
 	open.lpstrElementName = path;
 	MCIERROR e = win ? mciSendCommandA(0, MCI_OPEN, MCI_OPEN_TYPE | MCI_OPEN_ELEMENT, (DWORD_PTR)&open) : MCIERR_INTERNAL;
+	MOVIE_LOG("ending movie: window %d", win != NULL);
+	MOVIE_LOG("ending movie: MCI open answer %d", (int)e);
 	if (e) {
 		if (win)
 			DestroyWindow(win);
@@ -257,6 +265,9 @@ void platform_playMovie(void *owner, const char *file, int w, int h)
 		vw = source.rc.right;
 		vh = source.rc.bottom;
 	}
+	MOVIE_LOG("ending movie: source width %d", vw);
+	MOVIE_LOG("ending movie: source height %d", vh);
+	MOVIE_LOG("ending movie: screen width %d", sw);
 	int dw = sw, dh = sw * vh / vw;
 	if (dh > sh) {
 		dh = sh;
@@ -274,8 +285,10 @@ void platform_playMovie(void *owner, const char *file, int w, int h)
 	SetForegroundWindow(win);
 	MCI_DGV_PLAY_PARMS play = { 0 };
 	e = mciSendCommandA(dev, MCI_PLAY, 0, (DWORD_PTR)&play);
+	MOVIE_LOG("ending movie: MCI play answer %d", (int)e);
+	MOVIE_LOG("ending movie: in the foreground %d", GetForegroundWindow() == win);
 	DWORD start = GetTickCount();
-	int quit = 0, played = 0;
+	int quit = 0, played = 0, why = 0;
 	WPARAM quitCode = 0;
 	while (!e) {
 		MSG msg;
@@ -288,18 +301,27 @@ void platform_playMovie(void *owner, const char *file, int w, int h)
 			TranslateMessage(&msg);
 			DispatchMessageA(&msg);
 		}
-		if (GetAsyncKeyState(VK_ESCAPE) & 0x8000)
+		if (GetAsyncKeyState(VK_ESCAPE) & 0x8000) {
+			why = 1;
 			break;
+		}
 		MCI_STATUS_PARMS status = { 0 };
 		status.dwItem = MCI_STATUS_MODE;
-		if (mciSendCommandA(dev, MCI_STATUS, MCI_STATUS_ITEM, (DWORD_PTR)&status))
+		if (mciSendCommandA(dev, MCI_STATUS, MCI_STATUS_ITEM, (DWORD_PTR)&status)) {
+			why = 2;
 			break;
+		}
 		if (status.dwReturn == MCI_MODE_PLAY)
 			played = 1;
-		else if (status.dwReturn != MCI_MODE_SEEK && (played || GetTickCount() - start > 3000))
+		else if (status.dwReturn != MCI_MODE_SEEK && (played || GetTickCount() - start > 3000)) {
+			why = played ? 3 : 4;
 			break;
+		}
 		Sleep(15);
 	}
+	MOVIE_LOG("ending movie: played %d", played);
+	MOVIE_LOG("ending movie: ms %d", (int)(GetTickCount() - start));
+	MOVIE_LOG("ending movie: ended by (1 Esc, 2 status error, 3 finished, 4 never played) %d", why);
 	mciSendCommandA(dev, MCI_CLOSE, 0, 0);
 	DestroyWindow(win);
 	UnregisterClassA(wc.lpszClassName, wc.hInstance);

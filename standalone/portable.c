@@ -267,8 +267,16 @@ extern void (*g_platMouseLog)(long dx, long dy);
 static FILE *g_mouseLog;
 static DWORD g_mouseT;
 static long g_mReads, g_mDx, g_mDy, g_mMax, g_mMoving;
+static long g_testEnding = -1;
 static void mouse_log(long dx, long dy)
 {
+	if (g_testEnding > 0 && --g_testEnding == 0) {
+		extern unsigned char g_exitCode_v[], g_mainWindow_v[];
+		*(int *)g_exitCode_v = 99;   /* (app_closeWindow(0x63): game_postMatch after mission 15) */
+		PostMessageA(*(HWND *)g_mainWindow_v, WM_CLOSE, 0, 0);
+	}
+	if (!g_mouseLog)
+		return;
 	g_mReads++;
 	g_mDx += dx;
 	g_mDy += dy;
@@ -475,6 +483,10 @@ int WINAPI WinMain(HINSTANCE inst, HINSTANCE prev, LPSTR cmd, int show)
 		host_install();
 	{
 		char p[MAX_PATH];
+		if (GetEnvironmentVariableA("AXIS_TEST_ENDING", p, sizeof p) && atoi(p) > 0) {
+			g_testEnding = atoi(p);
+			g_platMouseLog = mouse_log;
+		}
 		if (GetEnvironmentVariableA("AXIS_LOADLOG", p, sizeof p) && (g_loadLog = fopen(p, "w")))
 			g_platLoadLog = load_log;
 		if (GetEnvironmentVariableA("AXIS_MOUSELOG", p, sizeof p) && (g_mouseLog = fopen(p, "w"))) {
