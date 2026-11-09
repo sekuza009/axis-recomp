@@ -8,6 +8,11 @@ var shots := {}
 var quit_after := -1
 var audio_log: FileAccess = null   # (--audio-log <file>: the sound status every 3 s, flushed each line)
 var audio_t := 0.0
+var input_log: FileAccess = null   # (--input-log <file>: what the mouse did, every second)
+var input_t := 0.0
+var scene_motion := 0   # (motion events the scene itself saw: a check apart from AxisGame)
+var scene_rel := Vector2()
+var no_game := false
 
 func _ready() -> void:
 	var args := OS.get_cmdline_user_args()
@@ -29,6 +34,13 @@ func _ready() -> void:
 		elif a == "--audio-log":
 			i += 1
 			audio_log = FileAccess.open(args[i], FileAccess.WRITE)
+		elif a == "--input-log":
+			i += 1
+			input_log = FileAccess.open(args[i], FileAccess.WRITE)
+		elif a == "--visible":
+			pass
+		elif a == "--no-game":
+			no_game = true
 		elif a == "--gl":
 			pass
 		elif a == "--status":
@@ -44,15 +56,38 @@ func _ready() -> void:
 	$Status.visible = args.find("--status") >= 0
 	game = $Game
 	$View.texture = game.get_texture()
-	if not game.start(dir, lib, args.find("--gl") >= 0):   # (--gl: the game draws with OpenGL too, as before)
+	if no_game:   # (a check: only the mouse captured, no game)
+		Input.mouse_mode = Input.MOUSE_MODE_VISIBLE if args.find("--visible") >= 0 else Input.MOUSE_MODE_CAPTURED
+	elif not game.start(dir, lib, args.find("--gl") >= 0):   # (--gl: the game draws with OpenGL too, as before)
 		$Status.text = game.get_status()
 
+func _input(e: InputEvent) -> void:
+	if e is InputEventMouseMotion:
+		scene_motion += 1
+		scene_rel += e.relative
+
 func _process(_delta: float) -> void:
+	if no_game and input_log:
+		input_t += _delta
+		if input_t >= 1.0:
+			input_t = 0.0
+			input_log.store_line("no game: mouse mode %d, scene motion events %d, relative %s" % [Input.mouse_mode, scene_motion, scene_rel])
+			input_log.flush()
+			scene_motion = 0
+			scene_rel = Vector2()
 	if game != null:
 		fit_view(game.get_game_size())
 	if game == null or not game.is_running():
 		return
 	var f := game.get_game_frames()
+	if input_log:
+		input_t += _delta
+		if input_t >= 1.0:
+			input_t = 0.0
+			input_log.store_line("frame %d: %s; scene saw %d motion events %s" % [f, game.get_input_status(), scene_motion, scene_rel])
+			scene_motion = 0
+			scene_rel = Vector2()
+			input_log.flush()
 	if audio_log:
 		audio_t += _delta
 		if audio_t >= 3.0:

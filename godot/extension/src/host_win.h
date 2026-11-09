@@ -46,6 +46,10 @@ typedef struct {
 
 int host_load(const char *library, const char *game_dir, AxisFunctions *f, char *error, int room);
 void *host_instance(void);
+int host_raw_mouse_start(void);                          /* the mouse's raw movement (as DirectInput reads it) */
+void host_raw_mouse_take(int *dx, int *dy, int *events);
+void host_confine(void *window, int on);
+int host_raw_mouse_keep(void);                            /* the raw mouse taken back if Godot re-registered it */                  /* the pointer kept in the window (ClipCursor) */
 
 #ifdef __cplusplus
 }

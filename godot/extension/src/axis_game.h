@@ -23,6 +23,7 @@ public:
 	int get_game_frames() const { return gameFrames; }
 	Vector2i get_game_size() const { return Vector2i(lastW, lastH); }
 	String get_audio_status();
+	String get_input_status();
 	void _process(double p_delta) override;
 	void _input(const Ref<InputEvent> &p_event) override;
 
@@ -39,6 +40,16 @@ private:
 	int wheel = 0;
 	unsigned buttons = 0;
 	Vector2 pointer;
+	// (the input log: what came from Godot and went to the game since the last get_input_status)
+	int nMotion = 0, nButton = 0;
+	double relX = 0, relY = 0, srelX = 0, srelY = 0;
+	long sentX = 0, sentY = 0;
+	bool rawMouse = false;
+	void *hostWindow = nullptr;   // Godot's window (confining the pointer)
+	bool confined = false;
+	int rawRetaken = 0;
+	bool rawSeen = false;   // the raw reader has had events (until then Godot's motion events are used)   // the mouse's movement read as raw input (host_win.c), not from Godot's motion events
+	int nRaw = 0;
 	static void on_frame(void *user, const unsigned *words, unsigned count, int width, int height);
 	// the sound (AxisSound): the buffers mixed here into a generator stream; the music an MP3 player
 	AxisMixer mixer;

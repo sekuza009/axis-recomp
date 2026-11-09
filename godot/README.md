@@ -83,3 +83,10 @@ volume in hundredths of a dB, its pan law, 8 / 16-bit PCM resampled to 44.1 kHz,
 AudioStreamGenerator; its music files play through Godot's AudioStreamMP3 (time, length, the seek it loops with).
 No DirectSound or DirectShow then. Checked (game.gd --audio-log <file>): the menu music and sounds, the match's
 music and up to 20 sounds at once in the fighting.
+
+2026-11-09, the mouse: in Godot's captured mode no movement reached the game (nor Godot's own events: Godot takes the
+process's raw mouse input and its loop consumes the raw input messages). Now as the original reads it: the raw
+counts (DirectInput's) from a raw-input reader with its own thread and message loop (host_win.c, the registration
+taken back if Godot re-registers), the pointer hidden and kept in the window with ClipCursor while it has the focus;
+Godot's motion events only as a fallback until the reader has had any. Checked: injected moves arrive as exact raw
+counts (-150, 40 -> -150, 40) and move the menu pointer. game.gd --input-log <file> logs the mouse every second.

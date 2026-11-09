@@ -96,6 +96,7 @@ void AxisGame::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_game_frames"), &AxisGame::get_game_frames);
 	ClassDB::bind_method(D_METHOD("get_game_size"), &AxisGame::get_game_size);
 	ClassDB::bind_method(D_METHOD("get_audio_status"), &AxisGame::get_audio_status);
+	ClassDB::bind_method(D_METHOD("get_input_status"), &AxisGame::get_input_status);
 }
 
 void AxisGame::on_frame(void *user, const unsigned *words, unsigned count, int width, int height) {
@@ -154,6 +155,19 @@ void AxisGame::m_close(void *u) {
 	g->music->stop();
 	g->music->set_stream(Ref<AudioStream>());
 	g->musicStream.unref();
+}
+
+String AxisGame::get_input_status() {
+	const char *modes[] = { "visible", "hidden", "captured", "confined", "confined_hidden" };
+	const int mode = (int)Input::get_singleton()->get_mouse_mode();
+	String s = String("mouse mode ") + (mode >= 0 && mode < 5 ? modes[mode] : "?") + ", focused " + (get_window() && get_window()->has_focus() ? "yes" : "no") +
+		", motion events " + String::num_int64(nMotion) + " (relative " + String::num(relX, 1) + ", " + String::num(relY, 1) +
+		"; screen relative " + String::num(srelX, 1) + ", " + String::num(srelY, 1) + "), sent to the game " + String::num_int64(sentX) +
+		", " + String::num_int64(sentY) + (rawMouse ? String(" (raw input, ") + String::num_int64(nRaw) + " raw events, taken back " + String::num_int64(rawRetaken) + "x)" : String(" (Godot's motion events)")) + "; button events " + String::num_int64(nButton) + ", buttons now " + String::num_int64(buttons);
+	nMotion = nButton = nRaw = 0;
+	relX = relY = srelX = srelY = 0;
+	sentX = sentY = 0;
+	return s;
 }
 
 String AxisGame::get_audio_status() {
@@ -227,7 +241,10 @@ bool AxisGame::start(const String &p_game_dir, const String &p_library, bool p_d
 	running = true;
 	status = String("AxisGame: running from ") + p_game_dir;
 	UtilityFunctions::print(status);
-	Input::get_singleton()->set_mouse_mode(Input::MOUSE_MODE_CAPTURED);
+	hostWindow = config.window;
+	// the mouse as the original has it: hidden, kept in the window, its movement read raw (not Godot's captured mode)
+	Input::get_singleton()->set_mouse_mode(Input::MOUSE_MODE_HIDDEN);
+	rawMouse = host_raw_mouse_start() != 0;
 	return true;
 }
 
@@ -253,6 +270,9 @@ void AxisGame::_input(const Ref<InputEvent> &p_event) {
 	Ref<InputEventMouseMotion> m = p_event;
 	if (m.is_valid()) {
 		const Vector2 r = m->get_screen_relative();
+		nMotion++;
+		relX += m->get_relative().x; relY += m->get_relative().y;
+		srelX += r.x; srelY += r.y;
 		moveX += r.x;
 		moveY += r.y;
 		pointer = m->get_position();
@@ -261,13 +281,13 @@ void AxisGame::_input(const Ref<InputEvent> &p_event) {
 	Ref<InputEventMouseButton> b = p_event;
 	if (b.is_valid()) {
 		const MouseButton i = b->get_button_index();
+		nButton++;
 		if (i == MOUSE_BUTTON_WHEEL_UP && b->is_pressed()) wheel += 120;
 		else if (i == MOUSE_BUTTON_WHEEL_DOWN && b->is_pressed()) wheel -= 120;
 		else {
 			const unsigned bit = i == MOUSE_BUTTON_LEFT ? 1 : i == MOUSE_BUTTON_RIGHT ? 2 : i == MOUSE_BUTTON_MIDDLE ? 4 : 0;
 			if (b->is_pressed()) buttons |= bit; else buttons &= ~bit;
-			if (b->is_pressed() && Input::get_singleton()->get_mouse_mode() != Input::MOUSE_MODE_CAPTURED)
-				Input::get_singleton()->set_mouse_mode(Input::MOUSE_MODE_CAPTURED);   // (clicked back into the game)
+
 		}
 	}
 }
@@ -277,9 +297,26 @@ void AxisGame::_process(double p_delta) {
 	if (!running) return;
 	const bool focused = get_window() && get_window()->has_focus();
 	if (!focused) release_all();
-	const int dx = (int)moveX, dy = (int)moveY;
+	if (focused != confined) {   // (the pointer kept in the window while it has the focus, free otherwise)
+		host_confine(hostWindow, focused);
+		confined = focused;
+	} else if (focused && gameFrames % 60 == 0)
+		host_confine(hostWindow, 1);   // (again now and then: a resize or another program may have let it go)
+	int dx = (int)moveX, dy = (int)moveY;
 	moveX -= dx;
 	moveY -= dy;
+	if (rawMouse && !host_raw_mouse_keep()) rawRetaken++;
+	if (rawMouse) {   // (raw counts instead of Godot's motion events, once the reader has had any)
+		int rx, ry, n;
+		host_raw_mouse_take(&rx, &ry, &n);
+		if (n) rawSeen = true;
+		if (rawSeen) {
+			dx = rx;
+			dy = ry;
+		}
+		nRaw += n;
+	}
+	if (focused) { sentX += dx; sentY += dy; }
 	// the pointer in the game window's pixels (the view is the window, stretched)
 	const Vector2 vs = get_viewport()->get_visible_rect().size;
 	const int px = lastW > 0 && vs.x > 0 ? (int)(pointer.x * lastW / vs.x) : (int)pointer.x;
@@ -292,6 +329,7 @@ void AxisGame::_process(double p_delta) {
 		running = false;
 		const int code = api.exit(1);
 		UtilityFunctions::print("AxisGame: the game quit (code ", code, ")");
+		host_confine(hostWindow, 0);
 		Input::get_singleton()->set_mouse_mode(Input::MOUSE_MODE_VISIBLE);
 		get_tree()->quit(code);
 	}
