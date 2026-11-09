@@ -149,6 +149,22 @@ PLAT(void *, gethostbyname, const char *name)
 	return &h;
 }
 
+/* (the 64-bit build: the records the game keeps a pointer to - threads, events, GlobalAlloc blocks - in its arena, and
+   its threads on stacks there; the loader sets these, standalone/net64.c) */
+void *(*g_platAlloc)(size_t size);
+void (*g_platFree)(void *p);
+void (*g_platRunThread)(uint32_t (WINAPI *proc)(void *), void *param);
+static void *net_calloc(size_t n)
+{
+	if (!g_platAlloc)
+		return calloc(1, n);
+	void *p = g_platAlloc(n);
+	if (p)
+		memset(p, 0, n);
+	return p;
+}
+static void net_free(void *p) { if (g_platFree) g_platFree(p); else free(p); }
+
 /* ---- handles: threads and events (CloseHandle of either) ---- */
 #define KIND_THREAD 0x54485244u
 #define KIND_EVENT 0x45564e54u
@@ -161,13 +177,17 @@ static pthread_cond_t g_changed = PTHREAD_COND_INITIALIZER;   /* (any event set:
 static void *thread_start(void *p)
 {
 	Thread *t = p;
+	if (g_platRunThread) {
+		g_platRunThread(t->proc, t->param);
+		return NULL;
+	}
 	uint32_t r = t->proc(t->param);
 	return (void *)(uintptr_t)r;
 }
 PLAT(void *, CreateThread, void *security, size_t stack, uint32_t (WINAPI *proc)(void *), void *param, uint32_t flags, uint32_t *id)
 {
 	(void)security; (void)flags;
-	Thread *t = calloc(1, sizeof *t);
+	Thread *t = net_calloc(sizeof *t);
 	if (!t)
 		return NULL;
 	t->h.kind = KIND_THREAD;
@@ -181,7 +201,7 @@ PLAT(void *, CreateThread, void *security, size_t stack, uint32_t (WINAPI *proc)
 	int e = pthread_create(&t->t, &a, thread_start, t);
 	pthread_attr_destroy(&a);
 	if (e) {
-		free(t);
+		net_free(t);
 		return NULL;
 	}
 	if (id)
@@ -193,7 +213,7 @@ PLAT(void, ExitThread, uint32_t code) { pthread_exit((void *)(uintptr_t)code); }
 PLAT(void *, CreateEventA, void *security, int manualReset, int initial, const char *name)
 {
 	(void)security; (void)name;
-	Event *e = calloc(1, sizeof *e);
+	Event *e = net_calloc(sizeof *e);
 	if (!e)
 		return NULL;
 	e->h.kind = KIND_EVENT;
@@ -263,7 +283,7 @@ PLAT(int, CloseHandle, void *h)
 		return 0;
 	if (x->kind == KIND_EVENT) {
 		x->kind = 0;
-		free(x);
+		net_free(x);
 		return 1;
 	}
 	if (x->kind == KIND_THREAD) {
@@ -367,7 +387,7 @@ uint32_t net_icmp_echo(void *h, uint32_t dest, const void *data, uint16_t size, 
 typedef struct { uint32_t magic, size, locks, pad; } Global;
 PLAT(void *, GlobalAlloc, uint32_t flags, size_t size)
 {
-	Global *g = (flags & 0x40) ? calloc(1, sizeof(Global) + size) : malloc(sizeof(Global) + size);   /* GMEM_ZEROINIT */
+	Global *g = net_calloc(sizeof(Global) + size);   /* (zeroed whether GMEM_ZEROINIT or not) */
 	if (!g)
 		return NULL;
 	g->magic = GLOBAL_MAGIC;
@@ -403,7 +423,7 @@ PLAT(void *, GlobalFree, void *h)
 	if (!g || g->magic != GLOBAL_MAGIC)
 		return h;   /* (not one of ours: as Windows, the handle back means it failed) */
 	g->magic = 0;
-	free(g);
+	net_free(g);
 	return NULL;
 }
 #endif

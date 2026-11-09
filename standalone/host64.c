@@ -361,6 +361,8 @@ AXIS_API int axis_load(void)
 	int win64_install(void **(*slot)(const char *name));   /* win64.c */
 	hlog("the Windows platform: %d system calls\n", win64_install(host64_slot));
 #endif
+	int net64_install(void **(*slot)(const char *name));   /* net64.c */
+	hlog("the network: axisnet's DirectPlay (%d system calls)\n", net64_install(host64_slot));
 	SET(GetModuleHandleA, h_GetModuleHandleA); SET(GetModuleFileNameA, h_GetModuleFileNameA);
 	SET(GetCommandLineA, h_GetCommandLineA);
 	if (g_hostSet)
